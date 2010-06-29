@@ -72,14 +72,14 @@ ClassImp(AliAnaCalorimeterQA)
     fHistoXBins(100),          fHistoXMax(1000),           fHistoXMin(-1000),
     fHistoYBins(100),          fHistoYMax(1000),           fHistoYMin(-1000),
     fHistoZBins(100),          fHistoZMax(1000),           fHistoZMin(-1000),
-	fHistoSSBins(40),          fHistoSSMax(10),            fHistoSSMin(0),
+    fHistoSSBins(40),          fHistoSSMax(10),            fHistoSSMin(0),
     fhE(0),fhPt(0),fhPhi(0),fhEta(0),   fhEtaPhiE(0),
     fhECharged(0),fhPtCharged(0),fhPhiCharged(0),fhEtaCharged(0), fhEtaPhiECharged(0), 
     //fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
     fhDeltaE(0), fhDeltaPt(0),fhDeltaPhi(0),fhDeltaEta(0), fhRatioE(0), fhRatioPt(0),fhRatioPhi(0),fhRatioEta(0),
     fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0),
-	fhLambda(0), fhDispersion(0), 
-	fhIM(0), fhIMCellCut(0),fhAsym(0), 
+    fhLambda(0), fhDispersion(0), 
+    fhIM(0), fhIMCellCut(0),fhAsym(0), 
     fhNCellsPerCluster(0),fhNCellsPerClusterMIP(0), fhNCellsPerClusterMIPCharged(0), fhNClusters(0), 
     fhClusterTimeEnergy(0),fhCellTimeSpreadRespectToCellMax(0),fhCellIdCellLargeTimeSpread(0),
     fhRNCells(0),fhXNCells(0),fhYNCells(0),fhZNCells(0),
@@ -88,7 +88,7 @@ ClassImp(AliAnaCalorimeterQA)
     fhDeltaCellClusterRNCells(0),fhDeltaCellClusterXNCells(0),fhDeltaCellClusterYNCells(0),fhDeltaCellClusterZNCells(0),
     fhDeltaCellClusterRE(0),     fhDeltaCellClusterXE(0),     fhDeltaCellClusterYE(0),     fhDeltaCellClusterZE(0),
     fhNCells(0), fhAmplitude(0), fhAmpId(0), fhEtaPhiAmp(0), 
-	fhTime(0), fhTimeId(0), fhTimeAmp(0), //fhT0Time(0), fhT0TimeId(0), fhT0TimeAmp(0), 
+    fhTime(0), fhTimeId(0), fhTimeAmp(0), //fhT0Time(0), fhT0TimeId(0), fhT0TimeAmp(0), 
     fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
     fhEMod(0), fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
     fhGridCellsMod(0), fhGridCellsEMod(0), fhGridCellsTimeMod(0), 
@@ -122,7 +122,7 @@ ClassImp(AliAnaCalorimeterQA)
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //____________________________________________________________________________
 AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :   
   AliAnaPartCorrBaseClass(qa), fCalorimeter(qa.fCalorimeter), fStyleMacro(qa.fStyleMacro), 
@@ -202,7 +202,7 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
   // cpy ctor
   
 }
-
+*/
 //________________________________________________________________________________________________________________________________________________
 //AliAnaCalorimeterQA::~AliAnaCalorimeterQA() {
 	// dtor
@@ -320,25 +320,25 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	outputContainer->Add(fhEtaPhiECharged);	
 
 
-//	fhEChargedNoOut  = new TH1F ("hEChargedNoOut","E reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                                                      \
-//	fhEChargedNoOut->SetXTitle("E (GeV)");                                                                                                                                                           \
-//	outputContainer->Add(fhEChargedNoOut);                                                                                                                                                           \
-//	                                                                                                                                                                                                 \
-//	fhPtChargedNoOut  = new TH1F ("hPtChargedNoOut","p_{T} reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                                                \
-//	fhPtChargedNoOut->SetXTitle("p_{T} (GeV/c)");                                                                                                                                                    \
-//	outputContainer->Add(fhPtChargedNoOut);                                                                                                                                                          \
-//	                                                                                                                                                                                                 \
-//	fhPhiChargedNoOut  = new TH1F ("hPhiChargedNoOut","#phi reconstructed clusters, matched with track, no output track params",nphibins,phimin,phimax);                                             \
-//	fhPhiChargedNoOut->SetXTitle("#phi (rad)");                                                                                                                                                      \
-//	outputContainer->Add(fhPhiChargedNoOut);                                                                                                                                                         \
-//	                                                                                                                                                                                                 \
-//	fhEtaChargedNoOut  = new TH1F ("hEtaChargedNoOut","#eta reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax);                                             \
-//	fhEtaChargedNoOut->SetXTitle("#eta ");                                                                                                                                                           \
-//	outputContainer->Add(fhEtaChargedNoOut);                                                                                                                                                         \
-//	                                                                                                                                                                                                 \
-//	fhEtaPhiChargedNoOut  = new TH2F ("hEtaPhiChargedNoOut","#eta vs #phi, reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax,nphibins,phimin,phimax);       \
-//	fhEtaPhiChargedNoOut->SetXTitle("#eta ");                                                                                                                                                        \
-//	fhEtaPhiChargedNoOut->SetYTitle("#phi ");                                                                                                                                                        \
+//	fhEChargedNoOut  = new TH1F ("hEChargedNoOut","E reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                                     
+//	fhEChargedNoOut->SetXTitle("E (GeV)");                                                                                                                                          
+//	outputContainer->Add(fhEChargedNoOut);                                                                                                                                         
+//	                                                                                                                                                                
+//	fhPtChargedNoOut  = new TH1F ("hPtChargedNoOut","p_{T} reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                               
+//	fhPtChargedNoOut->SetXTitle("p_{T} (GeV/c)");                                                                                                                               
+//	outputContainer->Add(fhPtChargedNoOut);                                                                                                                                       
+//	                                                                                                                                                                        
+//	fhPhiChargedNoOut  = new TH1F ("hPhiChargedNoOut","#phi reconstructed clusters, matched with track, no output track params",nphibins,phimin,phimax);                    
+//	fhPhiChargedNoOut->SetXTitle("#phi (rad)");                                                                                                                               
+//	outputContainer->Add(fhPhiChargedNoOut);                                                                                                                        
+//	                                                                                                                                                                  
+//	fhEtaChargedNoOut  = new TH1F ("hEtaChargedNoOut","#eta reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax);               
+//	fhEtaChargedNoOut->SetXTitle("#eta ");                                                                                                                           
+//	outputContainer->Add(fhEtaChargedNoOut);                                                                                                                             
+//	                                                                                                                                                                      
+//	fhEtaPhiChargedNoOut  = new TH2F ("hEtaPhiChargedNoOut","#eta vs #phi, reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax,nphibins,phimin,phimax); 
+//	fhEtaPhiChargedNoOut->SetXTitle("#eta ");                                                                                                    
+//	fhEtaPhiChargedNoOut->SetYTitle("#phi ");                                                                                                                       
 //	outputContainer->Add(fhEtaPhiChargedNoOut);	
 
 	fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);

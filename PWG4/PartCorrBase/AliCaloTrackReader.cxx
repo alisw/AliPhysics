@@ -63,7 +63,7 @@ ClassImp(AliCaloTrackReader)
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //____________________________________________________________________________
 AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & reader) :   
   TObject(reader), fEventNumber(reader.fEventNumber), fCurrentFileName(reader.fCurrentFileName), 
@@ -97,7 +97,7 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & reader) :
 {
   // cpy ctor  
 }
-
+*/
 //_________________________________________________________________________
 //AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & source)
 //{

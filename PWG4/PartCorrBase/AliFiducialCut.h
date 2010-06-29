@@ -25,12 +25,15 @@ class TLorentzVector ;
 
 class AliFiducialCut : public TObject {
 
-public: 
-
+ public: 
   AliFiducialCut() ; // ctor
+  virtual ~AliFiducialCut() ;//virtual dtor
+
+ private:
   AliFiducialCut(const AliFiducialCut & g) ; // cpy ctor
   AliFiducialCut & operator = (const AliFiducialCut & g) ;//cpy assignment
-  virtual ~AliFiducialCut() ;//virtual dtor
+  
+ public:
 
   void InitParameters();
   

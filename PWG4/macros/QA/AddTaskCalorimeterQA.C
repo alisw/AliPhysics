@@ -170,7 +170,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   maker->SetCaloUtils(cu); //pointer to calorimeter utils
   maker->AddAnalysis(emcalQA,0);
   maker->AddAnalysis(phosQA,1);
-  maker->SetAnaDebug(0)  ; // 0 to at least print the event number
+  maker->SetAnaDebug(-1)  ; // 0 to at least print the event number
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOffAODsMaker()  ;
   if(kPrintSettings) maker->Print("");

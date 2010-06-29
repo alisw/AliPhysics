@@ -55,6 +55,7 @@ ClassImp(AliAnaChargedParticles)
   InitParameters();
 }
 
+/*
 //____________________________________________________________________________
 AliAnaChargedParticles::AliAnaChargedParticles(const AliAnaChargedParticles & ch) :   
   AliAnaPartCorrBaseClass(ch), fPdg(ch.fPdg),  fhPt(ch.fhPt),  fhPhi(ch.fhPhi),fhEta(ch.fhEta), 
@@ -91,6 +92,7 @@ AliAnaChargedParticles & AliAnaChargedParticles::operator = (const AliAnaCharged
   return *this;
   
 }
+*/
 
 //________________________________________________________________________
 TList *  AliAnaChargedParticles::GetCreateOutputObjects()

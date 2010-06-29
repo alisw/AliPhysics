@@ -51,20 +51,20 @@ ClassImp(AliAnaPartCorrBaseClass)
     fAODObjArrayName(""), fAddToHistogramsName(""),
     fAODCaloCells(0x0),//fAODCaloClusters(0x0),  
     fCaloPID(0x0), fFidCut(0x0), fIC(0x0),fMCUtils(0x0), fNMS(0x0),
-	fCaloUtils(0x0),
-	//fAnaOutContainer(0x0),
+    fCaloUtils(0x0),
+    //fAnaOutContainer(0x0),
     fHistoPtBins(0),   fHistoPtMax(0.),   fHistoPtMin(0.),
     fHistoPhiBins(0),  fHistoPhiMax(0.),  fHistoPhiMin(0.),
     fHistoEtaBins(0),  fHistoEtaMax(0.),  fHistoEtaMin(0.),
     fHistoMassBins(0), fHistoMassMax(0.), fHistoMassMin(0.),
-	fHistoAsymBins(0), fHistoAsymMax(0.), fHistoAsymMin(0.)
+    fHistoAsymBins(0), fHistoAsymMax(0.), fHistoAsymMin(0.)
 {
   //Default Ctor
     
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //___________________________________________________________
 AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass & abc) :   
   TObject(), fDataMC(abc.fDataMC), fDebug(abc.fDebug),
@@ -91,7 +91,8 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   // cpy ctor
 
 }
-
+*/
+  /*
 //_________________________________________________________________________
 AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartCorrBaseClass & abc)
 {
@@ -138,7 +139,7 @@ AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartC
   return *this;
   
 }
-
+  */
 //____________________________________________________________________________
 AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass() 
 {
@@ -484,8 +485,8 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fMinPt = 0.1  ; //Min pt in particle analysis
   fMaxPt = 300. ; //Max pt in particle analysis
 
-  fReader    = new AliCaloTrackReader();
-  fCaloUtils = new AliCalorimeterUtils();
+  //fReader    = new AliCaloTrackReader(); //Initialized in maker
+  //fCaloUtils = new AliCalorimeterUtils();//Initialized in maker
   fCaloPID   = new AliCaloPID();
   fFidCut    = new AliFiducialCut();
   fIC        = new AliIsolationCut();

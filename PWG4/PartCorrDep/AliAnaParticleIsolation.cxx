@@ -113,7 +113,7 @@ ClassImp(AliAnaParticleIsolation)
 
 
 }
-
+/*
 //____________________________________________________________________________
 AliAnaParticleIsolation::AliAnaParticleIsolation(const AliAnaParticleIsolation & g) : 
   AliAnaPartCorrBaseClass(g), fCalorimeter(g.fCalorimeter),
@@ -272,6 +272,7 @@ AliAnaParticleIsolation & AliAnaParticleIsolation::operator = (const AliAnaParti
   return *this;
   
 }
+*/
 
 //____________________________________________________________________________
 AliAnaParticleIsolation::~AliAnaParticleIsolation() 

@@ -23,12 +23,14 @@ class AliAODPWG4ParticleCorrelation ;
 class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   
  public: 
-  
   AliAnaParticleHadronCorrelation() ; // default ctor
+  virtual ~AliAnaParticleHadronCorrelation() {;} //virtual dtor
+ private:  
   AliAnaParticleHadronCorrelation(const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;//cpy assignment
-  virtual ~AliAnaParticleHadronCorrelation() {;} //virtual dtor
-  
+
+ public:
+
   TList * GetCreateOutputObjects();
   
   Double_t GetDeltaPhiMaxCut() const {return fDeltaPhiMaxCut ; }

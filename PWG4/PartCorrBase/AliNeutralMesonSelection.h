@@ -24,12 +24,14 @@ class TH2F ;
 class AliNeutralMesonSelection : public TObject {
   
  public: 
-  
   AliNeutralMesonSelection() ; // default ctor
+  virtual ~AliNeutralMesonSelection() ; //virtual dtor  
+ private:
   AliNeutralMesonSelection(const AliNeutralMesonSelection & g) ; // cpy ctor
   AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & g) ;//cpy assignment
-  virtual ~AliNeutralMesonSelection() ; //virtual dtor
   
+ public:
+
   TList * GetCreateOutputObjects();
   
   Double_t GetAngleMaxParam(Int_t i) const {return fAngleMaxParam.At(i) ; }

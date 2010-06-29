@@ -23,12 +23,15 @@ class TH1F;
  
 class AliAnaExample : public AliAnaPartCorrBaseClass {
   
- public: 
-  
+ public:   
   AliAnaExample() ; // default ctor
+  virtual ~AliAnaExample() {;} //virtual dtor
+  
+ private :
   AliAnaExample(const AliAnaExample & g) ; // cpy ctor
   AliAnaExample & operator = (const AliAnaExample & g) ;//cpy assignment
-  virtual ~AliAnaExample() {;} //virtual dtor
+  
+ public:
   
   TList * GetCreateOutputObjects();
   

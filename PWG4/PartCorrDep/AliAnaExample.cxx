@@ -59,7 +59,7 @@ ClassImp(AliAnaExample)
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //____________________________________________________________________________
 AliAnaExample::AliAnaExample(const AliAnaExample & ex) :   
   AliAnaPartCorrBaseClass(ex), fPdg(ex.fPdg), fDetector(ex.fDetector), fhPt(ex.fhPt),  fhPhi(ex.fhPhi),fhEta(ex.fhEta), 
@@ -91,7 +91,7 @@ AliAnaExample & AliAnaExample::operator = (const AliAnaExample & ex)
   return *this;
 
 }
-
+*/
 // //____________________________________________________________________________
 // AliAnaExample::~AliAnaExample() 
 // {

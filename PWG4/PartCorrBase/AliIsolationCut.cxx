@@ -51,7 +51,7 @@ ClassImp(AliIsolationCut)
   InitParameters();
 
 }
-
+/*
 //____________________________________________________________________________
 AliIsolationCut::AliIsolationCut(const AliIsolationCut & g) : 
   TObject(g),
@@ -79,7 +79,7 @@ AliIsolationCut & AliIsolationCut::operator = (const AliIsolationCut & source)
   return *this;
   
 }
-
+*/
 //____________________________________________________________________________
 TString AliIsolationCut::GetICParametersList()
 {

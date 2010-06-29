@@ -26,13 +26,16 @@ class AliAODPWG4ParticleCorrelation ;
 
 class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
 
-public: 
-	
+ public:   
   AliAnaParticleIsolation() ; // default ctor
+  virtual ~AliAnaParticleIsolation() ; //virtual dtor
+
+ private:
   AliAnaParticleIsolation(const AliAnaParticleIsolation & g) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & g) ;//cpy assignment
-  virtual ~AliAnaParticleIsolation() ; //virtual dtor
-  
+
+ public:
+
   Bool_t CheckInvMass(const Int_t icalo,const AliAODPWG4Particle * ph) const ;
   
   TList *  GetCreateOutputObjects();

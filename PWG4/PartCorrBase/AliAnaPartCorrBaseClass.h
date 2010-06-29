@@ -36,14 +36,16 @@ class AliPHOSGeoUtils;
 
 class AliAnaPartCorrBaseClass : public TObject {
 	
-public: 
-	
+ public:   
   AliAnaPartCorrBaseClass() ; // default ctor
-  AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass & g) ; // cpy ctor
-  AliAnaPartCorrBaseClass & operator = (const AliAnaPartCorrBaseClass & g) ;//cpy assignment
   virtual ~AliAnaPartCorrBaseClass() ; //virtual dtor
   
-//	virtual void AddAODCaloCluster(AliAODCaloCluster calo) ;
+ private:
+  AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass & g) ; // cpy ctor
+  AliAnaPartCorrBaseClass & operator = (const AliAnaPartCorrBaseClass & g) ;//cpy assignment
+  
+ public:
+  //	virtual void AddAODCaloCluster(AliAODCaloCluster calo) ;
   virtual void AddAODParticle(AliAODPWG4Particle part) ;
   
 //	virtual void ConnectAODCaloClusters();

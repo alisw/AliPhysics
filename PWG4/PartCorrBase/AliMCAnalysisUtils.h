@@ -24,16 +24,14 @@ class AliStack ;
 
 class AliMCAnalysisUtils : public TObject {
 	
-public: 
-	
-	AliMCAnalysisUtils() ; // ctor
-	AliMCAnalysisUtils(const AliMCAnalysisUtils & mcu) ; // cpy ctor
-	virtual ~AliMCAnalysisUtils() ;//virtual dtor
+ public: 
+  AliMCAnalysisUtils() ; // ctor
+  virtual ~AliMCAnalysisUtils() ;//virtual dtor
+ private:
+  AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & ) ;//cpy assignment
+  AliMCAnalysisUtils(const AliMCAnalysisUtils & mcu) ; // cpy ctor
 
-private:
-	AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & ) ;//cpy assignment
-
-public:
+ public:
 	//"Mostly" photon parent types on line 1,
 	//                                                  
 	//then "mostly" electron parent types on line 2, (e.g. electrons can

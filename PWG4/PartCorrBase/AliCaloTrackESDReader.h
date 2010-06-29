@@ -27,7 +27,7 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
   public: 
   
   AliCaloTrackESDReader() ; // ctor
-  AliCaloTrackESDReader(const AliCaloTrackESDReader & g) ; // cpy ctor
+  //AliCaloTrackESDReader(const AliCaloTrackESDReader & g) ; // cpy ctor
   //AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & g) ;//cpy assignment
   virtual ~AliCaloTrackESDReader() {;} //virtual dtor
   

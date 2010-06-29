@@ -46,18 +46,13 @@ AliAnaPartCorrMaker::AliAnaPartCorrMaker() :
 TObject(),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE), fMakeAOD(kFALSE), fMakeMixing(kFALSE), fAnaDebug(0), 
-fReader(0x0), fCaloUtils(0x0), fAODBranchList(new TList ), 
-fhNEvents(0x0)
+fReader(new AliCaloTrackReader()), fCaloUtils(new AliCalorimeterUtils()), 
+fAODBranchList(new TList ), fhNEvents(0x0)
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker  Constructor *** \n");
   
   //Initialize parameters, pointers and histograms
-  if(!fReader)
-    fReader    = new AliCaloTrackReader();
-  if(!fCaloUtils)
-    fCaloUtils = new AliCalorimeterUtils();
-	
   InitParameters();
 }
 
@@ -67,8 +62,8 @@ TObject(),
 fOutputContainer(new TList()), fAnalysisContainer(new TList()), 
 fMakeHisto(maker.fMakeHisto), fMakeAOD(maker.fMakeAOD), fMakeMixing(maker.fMakeMixing), 
 fAnaDebug(maker.fAnaDebug),
-fReader(new AliCaloTrackReader(*maker.fReader)), 
-fCaloUtils(new AliCalorimeterUtils(*maker.fCaloUtils)),
+fReader(),//new AliCaloTrackReader(*maker.fReader)), 
+fCaloUtils(),//(new AliCalorimeterUtils(*maker.fCaloUtils)),
 fAODBranchList(new TList()), 
 fhNEvents(maker.fhNEvents)
 {

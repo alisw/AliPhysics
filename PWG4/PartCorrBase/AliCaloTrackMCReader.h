@@ -30,12 +30,10 @@ class AliVEvent   ;
 class AliCaloTrackMCReader : public AliCaloTrackReader {
   
  public: 
-  
   AliCaloTrackMCReader() ; // ctor
-  AliCaloTrackMCReader(const AliCaloTrackMCReader & g) ; // cpy ctor
   virtual ~AliCaloTrackMCReader() ;//virtual dtor
-
- private :	
+ private :
+  AliCaloTrackMCReader(const AliCaloTrackMCReader & g) ; // cpy ctor	
   AliCaloTrackMCReader & operator = (const AliCaloTrackMCReader & g) ;//cpy assignment
 
 public:

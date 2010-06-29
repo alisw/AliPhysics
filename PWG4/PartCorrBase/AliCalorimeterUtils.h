@@ -31,16 +31,14 @@ class AliESDCaloCells;
 
 class AliCalorimeterUtils : public TObject {
 
-public: 
-  
+ public:   
   AliCalorimeterUtils() ; // ctor
-  AliCalorimeterUtils(const AliCalorimeterUtils & g) ; // cpy ctor
   virtual ~AliCalorimeterUtils() ;//virtual dtor
-
-private:
+ private:
+  AliCalorimeterUtils(const AliCalorimeterUtils & g) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & g) ;//cpy assignment
 
-public:
+ public:
   
   virtual void InitParameters();
   virtual void Print(const Option_t * opt) const;
@@ -125,18 +123,20 @@ public:
   void InitPHOSRecalibrationFactors () ;
 	
   Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-	  if(fEMCALRecalibrationFactors->GetEntriesFast()>0) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
-	  else return 1;}
-	
+    if(fEMCALRecalibrationFactors) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 1;}
+  
   Float_t GetPHOSChannelRecalibrationFactor (Int_t imod, Int_t iCol, Int_t iRow) const { 
-	  if(fPHOSRecalibrationFactors->GetEntriesFast()>0)return (Float_t) ((TH2F*)fPHOSRecalibrationFactors->At(imod))->GetBinContent(iCol,iRow); 
-	  else return 1;}
-	
+    if(fPHOSRecalibrationFactors)return (Float_t) ((TH2F*)fPHOSRecalibrationFactors->At(imod))->GetBinContent(iCol,iRow); 
+    else return 1;}
+  
   void SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-	  ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c);}
+    if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors();
+    ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c);}
 	
   void SetPHOSChannelRecalibrationFactor (Int_t imod, Int_t iCol, Int_t iRow, Double_t c = 1) {
-	  ((TH2F*)fPHOSRecalibrationFactors->At(imod))->SetBinContent(iCol,iRow,c);}
+    if(!fPHOSRecalibrationFactors)  InitPHOSRecalibrationFactors();
+    ((TH2F*)fPHOSRecalibrationFactors->At(imod))->SetBinContent(iCol,iRow,c);}
     
   void SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) {fEMCALRecalibrationFactors->AddAt(h,iSM);}
   void SetPHOSChannelRecalibrationFactors(Int_t imod , TH2F* h) {fPHOSRecalibrationFactors ->AddAt(h,imod);}

@@ -26,12 +26,14 @@ class TList ;
 class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
 
  public: 
-  
   AliAnaPi0EbE() ; // default ctor
+  virtual ~AliAnaPi0EbE() ; //virtual dtor
+ private:
   AliAnaPi0EbE(const AliAnaPi0EbE & g) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ;//cpy assignment
-  virtual ~AliAnaPi0EbE() ; //virtual dtor
-  
+
+ public:  
+
   enum anaTypes {kIMCalo, kSSCalo, kIMCaloTracks};
   
   TList *  GetCreateOutputObjects();

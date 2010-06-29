@@ -47,7 +47,7 @@
 {
   //Ctor
 }
-
+/*
 //____________________________________________________________________________
 AliMCAnalysisUtils::AliMCAnalysisUtils(const AliMCAnalysisUtils & mcutils) :   
   TObject(mcutils), fCurrentEvent(mcutils.fCurrentEvent), fDebug(mcutils.fDebug),
@@ -56,6 +56,7 @@ AliMCAnalysisUtils::AliMCAnalysisUtils(const AliMCAnalysisUtils & mcutils) :
   // cpy ctor
   
 }
+*/
 
 //_________________________________________________________________________
 //AliMCAnalysisUtils & AliMCAnalysisUtils::operator = (const AliMCAnalysisUtils & mcutils)

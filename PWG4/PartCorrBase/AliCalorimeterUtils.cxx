@@ -47,17 +47,17 @@ ClassImp(AliCalorimeterUtils)
     fEMCALGeo(0x0), fPHOSGeo(0x0), 
     fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE), 
     fRemoveBadChannels(kFALSE),
-    fEMCALBadChannelMap(new TObjArray()),fPHOSBadChannelMap(new TObjArray()), 
+    fEMCALBadChannelMap(0x0),fPHOSBadChannelMap(0x0), 
     fNCellsFromEMCALBorder(0), fNCellsFromPHOSBorder(0), 
     fNoEMCALBorderAtEta0(kFALSE),fRecalibration(kFALSE),
-    fEMCALRecalibrationFactors(new TObjArray()), fPHOSRecalibrationFactors(new TObjArray())
+    fEMCALRecalibrationFactors(), fPHOSRecalibrationFactors()
 {
   //Ctor
   
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //____________________________________________________________________________
 AliCalorimeterUtils::AliCalorimeterUtils(const AliCalorimeterUtils & calo) :   
   TObject(calo), fDebug(calo.fDebug),
@@ -78,7 +78,7 @@ AliCalorimeterUtils::AliCalorimeterUtils(const AliCalorimeterUtils & calo) :
 {
   // cpy ctor  
 }
-
+*/
 
 //_________________________________
 AliCalorimeterUtils::~AliCalorimeterUtils() {
@@ -97,12 +97,12 @@ AliCalorimeterUtils::~AliCalorimeterUtils() {
   }
 	
   if(fEMCALRecalibrationFactors) { 
-	  fEMCALRecalibrationFactors->Clear();
-	  delete  fEMCALRecalibrationFactors;
+    fEMCALRecalibrationFactors->Clear();
+    delete  fEMCALRecalibrationFactors;
   }
   if(fPHOSRecalibrationFactors) { 
-	  fPHOSRecalibrationFactors->Clear();
-	  delete  fPHOSRecalibrationFactors;
+    fPHOSRecalibrationFactors->Clear();
+    delete  fPHOSRecalibrationFactors;
   }
 	
 }
@@ -290,8 +290,8 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 	
 	if (!fRemoveBadChannels) return kFALSE;
 	
-	if(calorimeter == "EMCAL" && !fEMCALBadChannelMap->GetEntries()) return kFALSE;
-	if(calorimeter == "PHOS"  && !fPHOSBadChannelMap ->GetEntries()) return kFALSE;
+	if(calorimeter == "EMCAL" && !fEMCALBadChannelMap) return kFALSE;
+	if(calorimeter == "PHOS"  && !fPHOSBadChannelMap)  return kFALSE;
 
 	Int_t icol = -1;
 	Int_t irow = -1;
@@ -516,13 +516,19 @@ void AliCalorimeterUtils::InitEMCALBadChannelStatusMap(){
   //In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  
-  //for (int i = 0; i < 12; i++) fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_SM%d_%s",i,fTaskName.Data()),Form("EMCALBadChannelMap_SM%d",i),  48, 0, 48, 24, 0, 24));
-  for (int i = 0; i < 12; i++) fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_SM%d",i),Form("EMCALBadChannelMap_SM%d",i),  48, 0, 48, 24, 0, 24));
+
+  fEMCALBadChannelMap = new TObjArray(12);
+  //TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
+  for (int i = 0; i < 12; i++) {
+    fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_Mod%d",i),Form("EMCALBadChannelMap_Mod%d",i), 48, 0, 48, 24, 0, 24));
+    //fEMCALBadChannelMap->Add((TH2I*)hTemp->Clone(Form("EMCALBadChannelMap_Mod%d",i)));
+  }
+
+  //delete hTemp;
 
   fEMCALBadChannelMap->SetOwner(kTRUE);
   fEMCALBadChannelMap->Compress();
-  
+
   //In order to avoid rewriting the same histograms
   TH1::AddDirectory(oldStatus);		
 }
@@ -534,8 +540,8 @@ void AliCalorimeterUtils::InitPHOSBadChannelStatusMap(){
   //In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-	
-  //for (int i = 0; i < 5; i++)fPHOSBadChannelMap->Add(new TH2I(Form("PHOSBadChannelMap_Mod%d_%s",i,fTaskName.Data()),Form("PHOSBadChannelMap_Mod%d",i), 56, 0, 56, 64, 0, 64));
+
+  fPHOSBadChannelMap = new TObjArray(5);	
   for (int i = 0; i < 5; i++)fPHOSBadChannelMap->Add(new TH2I(Form("PHOSBadChannelMap_Mod%d",i),Form("PHOSBadChannelMap_Mod%d",i), 56, 0, 56, 64, 0, 64));
 
   fPHOSBadChannelMap->SetOwner(kTRUE);
@@ -552,7 +558,8 @@ void AliCalorimeterUtils::InitEMCALRecalibrationFactors(){
 	//In order to avoid rewriting the same histograms
 	Bool_t oldStatus = TH1::AddDirectoryStatus();
 	TH1::AddDirectory(kFALSE);
-	
+
+	fEMCALRecalibrationFactors = new TObjArray(12);
 	for (int i = 0; i < 12; i++) fEMCALRecalibrationFactors->Add(new TH2F(Form("EMCALRecalFactors_SM%d",i),Form("EMCALRecalFactors_SM%d",i),  48, 0, 48, 24, 0, 24));
 	//Init the histograms with 1
 	for (Int_t sm = 0; sm < 12; sm++) {
@@ -576,6 +583,8 @@ void AliCalorimeterUtils::InitPHOSRecalibrationFactors(){
 	//In order to avoid rewriting the same histograms
 	Bool_t oldStatus = TH1::AddDirectoryStatus();
 	TH1::AddDirectory(kFALSE);
+
+	fPHOSRecalibrationFactors = new TObjArray(5);
 	for (int i = 0; i < 5; i++)fPHOSRecalibrationFactors->Add(new TH2F(Form("PHOSRecalFactors_Mod%d",i),Form("PHOSRecalFactors_Mod%d",i), 56, 0, 56, 64, 0, 64));
 	//Init the histograms with 1
 	for (Int_t m = 0; m < 5; m++) {

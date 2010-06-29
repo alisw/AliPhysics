@@ -55,14 +55,14 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
   fTrackStatus|=AliESDtrack::kITSrefit;
 
 }
-
+/*
 //____________________________________________________________________________
 AliCaloTrackAODReader::AliCaloTrackAODReader(const AliCaloTrackAODReader & aodr) :   
   AliCaloTrackReader(aodr), fWriteOutputStdAOD(aodr.fWriteOutputStdAOD)
 {
   // cpy ctor
 }
-
+*/
 //_________________________________________________________________________
 //AliCaloTrackAODReader & AliCaloTrackAODReader::operator = (const AliCaloTrackAODReader & source)
 //{

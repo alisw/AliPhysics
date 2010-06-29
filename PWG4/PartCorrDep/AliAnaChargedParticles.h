@@ -22,12 +22,14 @@ class TH2F;
 class AliAnaChargedParticles : public AliAnaPartCorrBaseClass {
   
  public: 
-  
   AliAnaChargedParticles() ; // default ctor
+  virtual ~AliAnaChargedParticles() {;} //virtual dtor
+ private:  
   AliAnaChargedParticles(const AliAnaChargedParticles & g) ; // cpy ctor
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & g) ;//cpy assignment
-  virtual ~AliAnaChargedParticles() {;} //virtual dtor
-  
+
+ public:
+
   TList * GetCreateOutputObjects();
   
   void Init();

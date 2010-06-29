@@ -107,7 +107,7 @@ AliAnaElectron::AliAnaElectron()
   InitParameters();
 
 }
-
+/*
 //____________________________________________________________________________
 AliAnaElectron::AliAnaElectron(const AliAnaElectron & g) 
   : AliAnaPartCorrBaseClass(g),fCalorimeter(g.fCalorimeter),
@@ -295,6 +295,7 @@ AliAnaElectron & AliAnaElectron::operator = (const AliAnaElectron & g)
   return *this;
   
 }
+*/
 
 //____________________________________________________________________________
 AliAnaElectron::~AliAnaElectron() 

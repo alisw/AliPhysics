@@ -17,13 +17,15 @@ class TH2F ;
 
 class AliAnaParticlePartonCorrelation : public AliAnaPartCorrBaseClass {
        
-  public: 
-       
-       AliAnaParticlePartonCorrelation() ; // default ctor
-       AliAnaParticlePartonCorrelation(const AliAnaParticlePartonCorrelation & g) ; // cpy ctor
-       AliAnaParticlePartonCorrelation & operator = (const AliAnaParticlePartonCorrelation & g) ;//cpy assignment
-       virtual ~AliAnaParticlePartonCorrelation() {;} //virtual dtor
-              
+ public:
+  AliAnaParticlePartonCorrelation() ; // default ctor
+  virtual ~AliAnaParticlePartonCorrelation() {;} //virtual dtor              
+ private:
+  AliAnaParticlePartonCorrelation(const AliAnaParticlePartonCorrelation & g) ; // cpy ctor
+  AliAnaParticlePartonCorrelation & operator = (const AliAnaParticlePartonCorrelation & g) ;//cpy assignment
+
+ public:
+
        TList * GetCreateOutputObjects();
        
        void InitParameters();
