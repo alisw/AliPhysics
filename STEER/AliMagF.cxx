@@ -474,7 +474,7 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
   const Float_t tolerance=0.03; // relative current tolerance
   const Float_t zero=77.;       // "zero" current (A)
   //
-  BMap_t map;
+  BMap_t map = k5kG;
   double sclL3,sclDip;
   //
   Float_t l3Pol = l3Cur > 0 ? 1:-1;

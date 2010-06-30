@@ -28,7 +28,7 @@ fSize(0),fNGroups(0),fRunID(0),fGroupID(0),fIndex(0),fValue(0),fWeight(1) {SetUn
 
 //_____________________________________________________________________________________________
 AliMillePedeRecord::AliMillePedeRecord(const AliMillePedeRecord& src) : 
-  TObject(src),fSize(src.fSize),fNGroups(src.fNGroups),fGroupID(0),fRunID(src.fRunID),fIndex(0),fValue(0),fWeight(src.fWeight)
+  TObject(src),fSize(src.fSize),fNGroups(src.fNGroups),fRunID(src.fRunID),fGroupID(0),fIndex(0),fValue(0),fWeight(src.fWeight)
 {
   fIndex = new Int_t[GetDtBufferSize()];
   memcpy(fIndex,src.fIndex,fSize*sizeof(Int_t));
