@@ -462,9 +462,9 @@ Bool_t AliAnalysisAlien::CheckInputData()
       return kTRUE;
    }
    // Process declared files
-   Bool_t is_collection = kFALSE;
-   Bool_t is_xml = kFALSE;
-   Bool_t use_tags = kFALSE;
+   Bool_t isCollection = kFALSE;
+   Bool_t isXml = kFALSE;
+   Bool_t useTags = kFALSE;
    Bool_t checked = kFALSE;
    CdWork();
    TString file;
@@ -491,12 +491,12 @@ Bool_t AliAnalysisAlien::CheckInputData()
          CheckDataType(file, iscoll, isxml, usetags);
          if (!checked) {
             checked = kTRUE;
-            is_collection = iscoll;
-            is_xml = isxml;
-            use_tags = usetags;
-            TObject::SetBit(AliAnalysisGrid::kUseTags, use_tags);
+            isCollection = iscoll;
+            isXml = isxml;
+            useTags = usetags;
+            TObject::SetBit(AliAnalysisGrid::kUseTags, useTags);
          } else {
-            if ((iscoll != is_collection) || (isxml != is_xml) || (usetags != use_tags)) {
+            if ((iscoll != isCollection) || (isxml != isXml) || (usetags != useTags)) {
                Error("CheckInputData", "Some conflict was found in the types of inputs");
                return kFALSE;
             } 
@@ -514,12 +514,12 @@ Bool_t AliAnalysisAlien::CheckInputData()
       Error("CheckInputData", "Data directory %s not existing.", fGridDataDir.Data());
       return kFALSE;
    }
-   if (is_collection) {
+   if (isCollection) {
       Error("CheckInputData", "You are using raw AliEn collections as input. Cannot process run numbers.");
       return kFALSE;   
    }
    
-   if (checked && !is_xml) {
+   if (checked && !isXml) {
       Error("CheckInputData", "Cannot mix processing of full runs with non-xml files");
       return kFALSE;   
    }
@@ -531,10 +531,10 @@ Bool_t AliAnalysisAlien::CheckInputData()
    TString path;
    if (!checked) {
       checked = kTRUE;
-      use_tags = fDataPattern.Contains("tag");
-      TObject::SetBit(AliAnalysisGrid::kUseTags, use_tags);
+      useTags = fDataPattern.Contains("tag");
+      TObject::SetBit(AliAnalysisGrid::kUseTags, useTags);
    }   
-   if (use_tags != fDataPattern.Contains("tag")) {
+   if (useTags != fDataPattern.Contains("tag")) {
       Error("CheckInputData", "Cannot mix input files using/not using tags");
       return kFALSE;
    }
@@ -552,7 +552,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
          TString msg = "\n#####   file: ";
          msg += path;
          msg += " type: xml_collection;";
-         if (use_tags) msg += " using_tags: Yes";
+         if (useTags) msg += " using_tags: Yes";
          else          msg += " using_tags: No";
          Info("CheckDataType", msg.Data());
          if (fNrunsPerMaster<2) {
@@ -580,7 +580,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
          TString msg = "\n#####   file: ";
          msg += path;
          msg += " type: xml_collection;";
-         if (use_tags) msg += " using_tags: Yes";
+         if (useTags) msg += " using_tags: Yes";
          else          msg += " using_tags: No";
          Info("CheckDataType", msg.Data());
          if (fNrunsPerMaster<2) {
@@ -653,13 +653,13 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
          if (res) delete res;
          // Write standard output to file
          gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
-         Bool_t has_grep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
-         Bool_t null_file = kFALSE;
-         if (!has_grep) {
+         Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
+         Bool_t nullFile = kFALSE;
+         if (!hasGrep) {
             Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
          } else {
-            null_file = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
-            if (null_file) {
+            nullFile = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
+            if (nullFile) {
                Error("CreateDataset","Dataset %s produced by the previous find command is empty !", file.Data());
                return kFALSE;
             }   
@@ -680,7 +680,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       return kTRUE;
    }   
    // Several runs
-   Bool_t null_result = kTRUE;
+   Bool_t nullResult = kTRUE;
    if (fRunNumbers.Length()) {
       TObjArray *arr = fRunNumbers.Tokenize(" ");
       TObjString *os;
@@ -702,19 +702,19 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             if (res) delete res;
             // Write standard output to file
             gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
-            Bool_t has_grep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
-            Bool_t null_file = kFALSE;
-            if (!has_grep) {
+            Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
+            Bool_t nullFile = kFALSE;
+            if (!hasGrep) {
                Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
             } else {
-               null_file = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
-               if (null_file) {
+               nullFile = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
+               if (nullFile) {
                   Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
                   fRunNumbers.ReplaceAll(os->GetString().Data(), "");
                   continue;
                }   
             }
-            null_result = kFALSE;         
+            nullResult = kFALSE;         
          }
          if (TestBit(AliAnalysisGrid::kTest)) break;
          // Check if there is one run per master job.
@@ -766,7 +766,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
          }
       }   
       delete arr;
-      if (null_result) {
+      if (nullResult) {
          Error("CreateDataset", "No valid dataset corresponding to the query!");
          return kFALSE;
       }
@@ -796,18 +796,18 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             if (res) delete res;
             // Write standard output to file
             gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
-            Bool_t has_grep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
-            Bool_t null_file = kFALSE;
-            if (!has_grep) {
+            Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
+            Bool_t nullFile = kFALSE;
+            if (!hasGrep) {
                Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
             } else {
-               null_file = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
-               if (null_file) {
+               nullFile = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
+               if (nullFile) {
                   Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
                   continue;
                }   
             }
-            null_result = kFALSE;         
+            nullResult = kFALSE;         
          }   
          if (TestBit(AliAnalysisGrid::kTest)) break;
          // Check if there is one run per master job.
@@ -870,7 +870,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             }
          }   
       }
-      if (null_result) {
+      if (nullResult) {
          Error("CreateDataset", "No valid dataset corresponding to the query!");
          return kFALSE;
       }      
@@ -1327,23 +1327,23 @@ Bool_t AliAnalysisAlien::DirectoryExists(const char *dirname)
 }      
 
 //______________________________________________________________________________
-void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &is_collection, Bool_t &is_xml, Bool_t &use_tags)
+void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &isCollection, Bool_t &isXml, Bool_t &useTags)
 {
 // Check input data type.
-   is_collection = kFALSE;
-   is_xml = kFALSE;
-   use_tags = kFALSE;
+   isCollection = kFALSE;
+   isXml = kFALSE;
+   useTags = kFALSE;
    if (!gGrid) {
       Error("CheckDataType", "No connection to grid");
       return;
    }
-   is_collection = IsCollection(lfn);
+   isCollection = IsCollection(lfn);
    TString msg = "\n#####   file: ";
    msg += lfn;
-   if (is_collection) {
+   if (isCollection) {
       msg += " type: raw_collection;";
    // special treatment for collections
-      is_xml = kFALSE;
+      isXml = kFALSE;
       // check for tag files in the collection
       TGridResult *res = gGrid->Command(Form("listFilesFromCollection -z -v %s",lfn), kFALSE);
       if (!res) {
@@ -1358,16 +1358,16 @@ void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &is_collection, Boo
          return;
       }   
       TString file = typeStr;
-      use_tags = file.Contains(".tag");
-      if (use_tags) msg += " using_tags: Yes";
+      useTags = file.Contains(".tag");
+      if (useTags) msg += " using_tags: Yes";
       else          msg += " using_tags: No";
       Info("CheckDataType", msg.Data());
       return;
    }
    TString slfn(lfn);
    slfn.ToLower();
-   is_xml = slfn.Contains(".xml");
-   if (is_xml) {
+   isXml = slfn.Contains(".xml");
+   if (isXml) {
    // Open xml collection and check if there are tag files inside
       msg += " type: xml_collection;";
       TGridCollection *coll = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"alien://%s\",1);",lfn));
@@ -1385,17 +1385,17 @@ void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &is_collection, Boo
       map = (TMap*)map->GetValue("");
       TString file;
       if (map && map->GetValue("name")) file = map->GetValue("name")->GetName();
-      use_tags = file.Contains(".tag");
+      useTags = file.Contains(".tag");
       delete coll;
-      if (use_tags) msg += " using_tags: Yes";
+      if (useTags) msg += " using_tags: Yes";
       else          msg += " using_tags: No";
       Info("CheckDataType", msg.Data());
       return;
    }
-   use_tags = slfn.Contains(".tag");
+   useTags = slfn.Contains(".tag");
    if (slfn.Contains(".root")) msg += " type: root file;";
    else                        msg += " type: unknown file;";
-   if (use_tags) msg += " using_tags: Yes";
+   if (useTags) msg += " using_tags: Yes";
    else          msg += " using_tags: No";
    Info("CheckDataType", msg.Data());
 }
@@ -1618,16 +1618,16 @@ void AliAnalysisAlien::SetDefaults()
 Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge)
 {
 // Merge all registered outputs from basedir.
-   TString output_file = output;
+   TString outputFile = output;
    TString command;
-   TString output_chunk;
-   TString previous_chunk = "";
-   Int_t count_chunk = 0;
-   Int_t count_zero = nmaxmerge;
+   TString outputChunk;
+   TString previousChunk = "";
+   Int_t countChunk = 0;
+   Int_t countZero = nmaxmerge;
    Bool_t merged = kTRUE;
-   Int_t index = output_file.Index("@");
-   if (index > 0) output_file.Remove(index);
-   command = Form("find %s/ *%s", basedir, output_file.Data());
+   Int_t index = outputFile.Index("@");
+   if (index > 0) outputFile.Remove(index);
+   command = Form("find %s/ *%s", basedir, outputFile.Data());
    printf("command: %s\n", command.Data());
    TGridResult *res = gGrid->Command(command);
    if (!res) {
@@ -1639,43 +1639,43 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
    TIter nextmap(res);
    TMap *map = 0;
    // Check if there is a merge operation to resume
-   output_chunk = output_file;
-   output_chunk.ReplaceAll(".root", "_*.root");
+   outputChunk = outputFile;
+   outputChunk.ReplaceAll(".root", "_*.root");
    // Check for existent temporary merge files
    // Check overwrite mode and remove previous partial results if needed
-   if (!gSystem->Exec(Form("ls %s 2>/dev/null", output_chunk.Data()))) {
+   if (!gSystem->Exec(Form("ls %s 2>/dev/null", outputChunk.Data()))) {
       while (1) {
          // Skip as many input files as in a chunk
          for (Int_t counter=0; counter<nmaxmerge; counter++) map = (TMap*)nextmap();
          if (!map) {
-            ::Error("MergeOutputs", "Cannot resume merging for <%s>, nentries=%d", output_file.Data(), res->GetSize());
+            ::Error("MergeOutputs", "Cannot resume merging for <%s>, nentries=%d", outputFile.Data(), res->GetSize());
             delete res;
             return kFALSE;
          }
-         output_chunk = output_file;
-         output_chunk.ReplaceAll(".root", Form("_%04d.root", count_chunk));
-         count_chunk++;
-         if (gSystem->AccessPathName(output_chunk)) continue;
-         // Merged file with chunks up to <count_chunk> found
-         printf("Resume merging of <%s> from <%s>\n", output_file.Data(), output_chunk.Data());
-         previous_chunk = output_chunk;
+         outputChunk = outputFile;
+         outputChunk.ReplaceAll(".root", Form("_%04d.root", countChunk));
+         countChunk++;
+         if (gSystem->AccessPathName(outputChunk)) continue;
+         // Merged file with chunks up to <countChunk> found
+         printf("Resume merging of <%s> from <%s>\n", outputFile.Data(), outputChunk.Data());
+         previousChunk = outputChunk;
          break;
       }
    }   
-   count_zero = nmaxmerge;
+   countZero = nmaxmerge;
    
    while ((map=(TMap*)nextmap())) {
    // Loop 'find' results and get next LFN
-      if (count_zero == nmaxmerge) {
+      if (countZero == nmaxmerge) {
          // First file in chunk - create file merger and add previous chunk if any.
          fm = new TFileMerger(kFALSE);
          fm->SetFastMethod(kTRUE);
-         if (previous_chunk.Length()) fm->AddFile(previous_chunk.Data());
-         output_chunk = output_file;
-         output_chunk.ReplaceAll(".root", Form("_%04d.root", count_chunk));
+         if (previousChunk.Length()) fm->AddFile(previousChunk.Data());
+         outputChunk = outputFile;
+         outputChunk.ReplaceAll(".root", Form("_%04d.root", countChunk));
       }
       // If last file found, put merged results in the output file
-      if (map == res->Last()) output_chunk = output_file;
+      if (map == res->Last()) outputChunk = outputFile;
       TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
       if (!objs || !objs->GetString().Length()) {
          // Nothing found - skip this output
@@ -1685,35 +1685,35 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
       } 
       // Add file to be merged and decrement chunk counter.
       fm->AddFile(objs->GetString());
-      count_zero--;
-      if (count_zero==0 || map == res->Last()) {            
-         fm->OutputFile(output_chunk);
+      countZero--;
+      if (countZero==0 || map == res->Last()) {            
+         fm->OutputFile(outputChunk);
          if (!fm->GetMergeList() || !fm->GetMergeList()->GetSize()) {
          // Nothing found - skip this output
-            ::Warning("MergeOutputs", "No <%s> files found.", output_file.Data());
+            ::Warning("MergeOutputs", "No <%s> files found.", outputFile.Data());
             delete res;
             delete fm;
             return kFALSE;
          }
          // Merge the outputs, then go to next chunk      
          if (!fm->Merge()) {
-            ::Error("MergeOutputs", "Could not merge all <%s> files", output_file.Data());
+            ::Error("MergeOutputs", "Could not merge all <%s> files", outputFile.Data());
             delete res;
             delete fm;
             merged = kFALSE;
             return kFALSE;
          } else {
-            ::Info("MergeOutputs", "\n#####   Merged %d output files to <%s>", fm->GetMergeList()->GetSize(), output_chunk.Data());
-            gSystem->Unlink(previous_chunk);
+            ::Info("MergeOutputs", "\n#####   Merged %d output files to <%s>", fm->GetMergeList()->GetSize(), outputChunk.Data());
+            gSystem->Unlink(previousChunk);
          }
          if (map == res->Last()) {
             delete res;
             delete fm;
             break;
          }      
-         count_chunk++;
-         count_zero = nmaxmerge;
-         previous_chunk = output_chunk;
+         countChunk++;
+         countZero = nmaxmerge;
+         previousChunk = outputChunk;
       }
    }
    return merged;
@@ -1769,39 +1769,39 @@ Bool_t AliAnalysisAlien::MergeOutputs()
    TObjArray *list = fOutputFiles.Tokenize(",");
    TIter next(list);
    TObjString *str;
-   TString output_file;
+   TString outputFile;
    Bool_t merged = kTRUE;
    while((str=(TObjString*)next())) {
-      output_file = str->GetString();
-      Int_t index = output_file.Index("@");
-      if (index > 0) output_file.Remove(index);
-      TString output_chunk = output_file;
-      output_chunk.ReplaceAll(".root", "_*.root");
+      outputFile = str->GetString();
+      Int_t index = outputFile.Index("@");
+      if (index > 0) outputFile.Remove(index);
+      TString outputChunk = outputFile;
+      outputChunk.ReplaceAll(".root", "_*.root");
       // Skip already merged outputs
-      if (!gSystem->AccessPathName(output_file)) {
+      if (!gSystem->AccessPathName(outputFile)) {
          if (fOverwriteMode) {
-            Info("MergeOutputs", "Overwrite mode. Existing file %s was deleted.", output_file.Data());
-            gSystem->Unlink(output_file);
-            if (!gSystem->Exec(Form("ls %s 2>/dev/null", output_chunk.Data()))) {
+            Info("MergeOutputs", "Overwrite mode. Existing file %s was deleted.", outputFile.Data());
+            gSystem->Unlink(outputFile);
+            if (!gSystem->Exec(Form("ls %s 2>/dev/null", outputChunk.Data()))) {
                Info("MergeOutput", "Overwrite mode: partial merged files %s will removed",
-                     output_chunk.Data());
-               gSystem->Exec(Form("rm -f %s", output_chunk.Data()));
+                     outputChunk.Data());
+               gSystem->Exec(Form("rm -f %s", outputChunk.Data()));
             }
          } else {   
-            Info("MergeOutputs", "Output file <%s> found. Not merging again.", output_file.Data());
+            Info("MergeOutputs", "Output file <%s> found. Not merging again.", outputFile.Data());
             continue;
          }   
       } else {
-         if (!gSystem->Exec(Form("ls %s 2>/dev/null", output_chunk.Data()))) {
+         if (!gSystem->Exec(Form("ls %s 2>/dev/null", outputChunk.Data()))) {
             Info("MergeOutput", "Overwrite mode: partial merged files %s will removed",
-                  output_chunk.Data());
-            gSystem->Exec(Form("rm -f %s", output_chunk.Data()));
+                  outputChunk.Data());
+            gSystem->Exec(Form("rm -f %s", outputChunk.Data()));
          }   
       }
       if (fMergeExcludes.Length() &&
-          fMergeExcludes.Contains(output_file.Data())) continue;
+          fMergeExcludes.Contains(outputFile.Data())) continue;
       // Perform a 'find' command in the output directory, looking for registered outputs    
-      merged = MergeOutput(output_file, fGridOutputDir, fMaxMergeFiles);
+      merged = MergeOutput(outputFile, fGridOutputDir, fMaxMergeFiles);
       if (!merged) {
          Error("MergeOutputs", "Terminate() will  NOT be executed");
          return kFALSE;
@@ -1963,12 +1963,12 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       TObjArray *list = fOutputFiles.Tokenize(",");
       TIter next(list);
       TObjString *str;
-      TString output_file;
+      TString outputFile;
       while((str=(TObjString*)next())) {
-         output_file = str->GetString();
-         Int_t index = output_file.Index("@");
-         if (index > 0) output_file.Remove(index);         
-         if (!gSystem->AccessPathName(output_file)) gSystem->Exec(Form("rm %s", output_file.Data()));
+         outputFile = str->GetString();
+         Int_t index = outputFile.Index("@");
+         if (index > 0) outputFile.Remove(index);         
+         if (!gSystem->AccessPathName(outputFile)) gSystem->Exec(Form("rm %s", outputFile.Data()));
       }
       delete list;
       gSystem->Exec(Form("bash %s 2>stderr", fExecutable.Data()));
@@ -2703,21 +2703,21 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   TObjArray *list = outputFiles.Tokenize(\" \");" << endl;
       out << "   TIter *iter = new TIter(list);" << endl;
       out << "   TObjString *str;" << endl;
-      out << "   TString output_file;" << endl;
+      out << "   TString outputFile;" << endl;
       out << "   Bool_t merged = kTRUE;" << endl;
       out << "   while((str=(TObjString*)iter->Next())) {" << endl;
-      out << "      output_file = str->GetString();" << endl;
-      out << "      Int_t index = output_file.Index(\"@\");" << endl;
-      out << "      if (index > 0) output_file.Remove(index);" << endl;
+      out << "      outputFile = str->GetString();" << endl;
+      out << "      Int_t index = outputFile.Index(\"@\");" << endl;
+      out << "      if (index > 0) outputFile.Remove(index);" << endl;
       out << "      // Skip already merged outputs" << endl;
-      out << "      if (!gSystem->AccessPathName(output_file)) {" << endl;
-      out << "         printf(\"Output file <%s> found. Not merging again.\",output_file.Data());" << endl;
+      out << "      if (!gSystem->AccessPathName(outputFile)) {" << endl;
+      out << "         printf(\"Output file <%s> found. Not merging again.\",outputFile.Data());" << endl;
       out << "         continue;" << endl;
       out << "      }" << endl;
-      out << "      if (mergeExcludes.Contains(output_file.Data())) continue;" << endl;
-      out << "      merged = AliAnalysisAlien::MergeOutput(output_file, outputDir, " << fMaxMergeFiles << ");" << endl;
+      out << "      if (mergeExcludes.Contains(outputFile.Data())) continue;" << endl;
+      out << "      merged = AliAnalysisAlien::MergeOutput(outputFile, outputDir, " << fMaxMergeFiles << ");" << endl;
       out << "      if (!merged) {" << endl;
-      out << "         printf(\"ERROR: Cannot merge %s\\n\", output_file.Data());" << endl;
+      out << "         printf(\"ERROR: Cannot merge %s\\n\", outputFile.Data());" << endl;
       out << "      }" << endl;
       out << "   }" << endl;
       out << "// read the analysis manager from file" << endl;
@@ -2999,8 +2999,8 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       Error("WriteValidationScript", "Alien connection required");
       return;
    }
-   TString out_stream = "";
-   if (!TestBit(AliAnalysisGrid::kTest)) out_stream = " >> stdout";
+   TString outStream = "";
+   if (!TestBit(AliAnalysisGrid::kTest)) outStream = " >> stdout";
    if (!TestBit(AliAnalysisGrid::kSubmit)) {  
       ofstream out;
       out.open(validationScript, ios::out);
@@ -3016,22 +3016,22 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       out << "fi" << endl << endl;
       out << "cd $validateout;" << endl;
       out << "validateworkdir=`pwd`;" << endl << endl;
-      out << "echo \"*******************************************************\"" << out_stream << endl;
-      out << "echo \"* Automatically generated validation script           *\""  << out_stream << endl;
+      out << "echo \"*******************************************************\"" << outStream << endl;
+      out << "echo \"* Automatically generated validation script           *\""  << outStream << endl;
       out << "" << endl;
-      out << "echo \"* Time:    $validatetime \""  << out_stream << endl;
-      out << "echo \"* Dir:     $validateout\""  << out_stream << endl;
-      out << "echo \"* Workdir: $validateworkdir\""  << out_stream << endl;
-      out << "echo \"* ----------------------------------------------------*\""  << out_stream << endl;
-      out << "ls -la ./"  << out_stream << endl;
-      out << "echo \"* ----------------------------------------------------*\""  << out_stream << endl << endl;
+      out << "echo \"* Time:    $validatetime \""  << outStream << endl;
+      out << "echo \"* Dir:     $validateout\""  << outStream << endl;
+      out << "echo \"* Workdir: $validateworkdir\""  << outStream << endl;
+      out << "echo \"* ----------------------------------------------------*\""  << outStream << endl;
+      out << "ls -la ./"  << outStream << endl;
+      out << "echo \"* ----------------------------------------------------*\""  << outStream << endl << endl;
       out << "##################################################" << endl;
       out << "" << endl;
 
       out << "if [ ! -f stderr ] ; then" << endl;
       out << "   error=1" << endl;
-      out << "   echo \"* ########## Job not validated - no stderr  ###\" " << out_stream << endl;
-      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "   echo \"* ########## Job not validated - no stderr  ###\" " << outStream << endl;
+      out << "   echo \"Error = $error\" " << outStream << endl;
       out << "fi" << endl;
 
       out << "parArch=`grep -Ei \"Cannot Build the PAR Archive\" stderr`" << endl;
@@ -3042,49 +3042,49 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
 
       out << "if [ \"$parArch\" != \"\" ] ; then" << endl;
       out << "   error=1" << endl;
-      out << "   echo \"* ########## Job not validated - PAR archive not built  ###\" " << out_stream << endl;
-      out << "   echo \"$parArch\" " << out_stream << endl;
-      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "   echo \"* ########## Job not validated - PAR archive not built  ###\" " << outStream << endl;
+      out << "   echo \"$parArch\" " << outStream << endl;
+      out << "   echo \"Error = $error\" " << outStream << endl;
       out << "fi" << endl;
 
       out << "if [ \"$segViol\" != \"\" ] ; then" << endl;
       out << "   error=1" << endl;
-      out << "   echo \"* ########## Job not validated - Segment. violation  ###\" " << out_stream << endl;
-      out << "   echo \"$segViol\" " << out_stream << endl;
-      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "   echo \"* ########## Job not validated - Segment. violation  ###\" " << outStream << endl;
+      out << "   echo \"$segViol\" " << outStream << endl;
+      out << "   echo \"Error = $error\" " << outStream << endl;
       out << "fi" << endl;
 
       out << "if [ \"$segFault\" != \"\" ] ; then" << endl;
       out << "   error=1" << endl;
-      out << "   echo \"* ########## Job not validated - Segment. fault  ###\" " << out_stream << endl;
-      out << "   echo \"$segFault\" " << out_stream << endl;
-      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "   echo \"* ########## Job not validated - Segment. fault  ###\" " << outStream << endl;
+      out << "   echo \"$segFault\" " << outStream << endl;
+      out << "   echo \"Error = $error\" " << outStream << endl;
       out << "fi" << endl;
 
       out << "if [ \"$glibcErr\" != \"\" ] ; then" << endl;
       out << "   error=1" << endl;
-      out << "   echo \"* ########## Job not validated - *** glibc detected ***  ###\" " << out_stream << endl;
-      out << "   echo \"$glibcErr\" " << out_stream << endl;
-      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "   echo \"* ########## Job not validated - *** glibc detected ***  ###\" " << outStream << endl;
+      out << "   echo \"$glibcErr\" " << outStream << endl;
+      out << "   echo \"Error = $error\" " << outStream << endl;
       out << "fi" << endl;
 
       // Part dedicated to the specific analyses running into the train
 
       TObjArray *arr = fOutputFiles.Tokenize(",");
       TIter next1(arr);
-      TString output_file;
+      TString outputFile;
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       TString extra = mgr->GetExtraFiles();
       while ((os=(TObjString*)next1())) { 
-         output_file = os->GetString();
-         Int_t index = output_file.Index("@");
-         if (index > 0) output_file.Remove(index);
-         if (merge && fMergeExcludes.Contains(output_file)) continue;
-         if (extra.Contains(output_file)) continue;
-         if (output_file.Contains("*")) continue;
-         out << "if ! [ -f " << output_file.Data() << " ] ; then" << endl;
+         outputFile = os->GetString();
+         Int_t index = outputFile.Index("@");
+         if (index > 0) outputFile.Remove(index);
+         if (merge && fMergeExcludes.Contains(outputFile)) continue;
+         if (extra.Contains(outputFile)) continue;
+         if (outputFile.Contains("*")) continue;
+         out << "if ! [ -f " << outputFile.Data() << " ] ; then" << endl;
          out << "   error=1" << endl;
-         out << "   echo \"Output file(s) not found. Job FAILED !\""  << out_stream << endl;
+         out << "   echo \"Output file(s) not found. Job FAILED !\""  << outStream << endl;
          out << "   echo \"Output file(s) not found. Job FAILED !\" >> stderr" << endl;
          out << "fi" << endl;
       }   
@@ -3098,16 +3098,16 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       }  
       
       out << "if [ $error = 0 ] ; then" << endl;
-      out << "   echo \"* ----------------   Job Validated  ------------------*\""  << out_stream << endl;
+      out << "   echo \"* ----------------   Job Validated  ------------------*\""  << outStream << endl;
       if (!IsKeepLogs()) {
          out << "   echo \"* === Logs std* will be deleted === \"" << endl;
-         out_stream = "";
+         outStream = "";
          out << "   rm -f std*" << endl;
       }            
       out << "fi" << endl;
 
-      out << "echo \"* ----------------------------------------------------*\""  << out_stream << endl;
-      out << "echo \"*******************************************************\""  << out_stream << endl;
+      out << "echo \"* ----------------------------------------------------*\""  << outStream << endl;
+      out << "echo \"*******************************************************\""  << outStream << endl;
       out << "cd -" << endl;
       out << "exit $error" << endl;
    }    
