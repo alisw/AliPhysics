@@ -73,6 +73,13 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
 
   
   //Histograms
+  //leading particles 
+  TH1F * fhPtLeadingCharged;         //! pT distribution of leading particles
+  TH2F * fhPhiLeadingCharged;        //! phi distribution vs pT of leading particles
+  TH2F * fhEtaLeadingCharged;        //! eta distribution vs pT of leading particles
+  TH2F * fhDeltaPhiDeltaEtaCharged ; //! differences of eta and phi between trigger and charged hadrons
+  TH2F * fhDeltaPhiDeltaEtaNeutral ; //! differences of eta and phi between trigger and neutral hadrons (pi0)
+	
   TH2F * fhPhiCharged  ; //! Phi distribution of charged particles
   TH2F * fhPhiNeutral   ;  //! Phi distribution of neutral particles
   TH2F * fhEtaCharged  ; //! Eta distribution of charged particles
@@ -97,8 +104,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhPtHbpNeutral  ; //! Trigger particle -neutral particle momentim HBP histogram
   TH2F * fhPtHbpUeNeutral  ; //! Trigger particle -underlying neutral hadron momentim HBP histogram  
 
-
-//if several UE calculation is on, most useful for jet-jet events contribution
+  //if several UE calculation is on, most useful for jet-jet events contribution
   TH2F * fhDeltaPhiUeLeftCharged  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
   TH2F * fhDeltaPhiUeRightCharged  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi 
   TH2F * fhDeltaPhiUeLeftNeutral  ;  //! Difference of charged particle from underlying events phi and trigger particle  phi as function of neutral particle pT
@@ -113,7 +119,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhPtHbpUeRightNeutral  ; //! Trigger particle -underlying neutral hadron momentim HBP histogram  
 	
 	
-  ClassDef(AliAnaParticleHadronCorrelation,2)
+  ClassDef(AliAnaParticleHadronCorrelation,3)
 } ;
  
 

@@ -35,7 +35,7 @@ ClassImp(AliNeutralMesonSelection)
   AliNeutralMesonSelection::AliNeutralMesonSelection() : 
     TObject(), fM(0),
     fInvMassMaxCut(0.), fInvMassMinCut(0.),
-    fAngleMaxParam(),  fKeepNeutralMesonHistos(0), 
+    fAngleMaxParam(),  fUseAngleCut(0), fKeepNeutralMesonHistos(0), 
     fhAnglePairNoCut(0), fhAnglePairOpeningAngleCut(0), 
     fhAnglePairAllCut(0), 
     fhInvMassPairNoCut(0), fhInvMassPairOpeningAngleCut(0), 
@@ -194,7 +194,7 @@ void AliNeutralMesonSelection::InitParameters()
   
   //Initialize the parameters of the analysis.
   fKeepNeutralMesonHistos = kFALSE ;
-  
+  fUseAngleCut = kFALSE;
   fAngleMaxParam.Set(4) ;
   fAngleMaxParam.AddAt(0.4,0);//={0.4,-0.25,0.025,-2e-4};
   fAngleMaxParam.AddAt(-0.25,1) ;
@@ -228,7 +228,9 @@ void AliNeutralMesonSelection::InitParameters()
 Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float_t e) const {
   //Check if the opening angle of the candidate pairs is inside 
   //our selection windowd
-
+  
+  if (!fUseAngleCut) return kTRUE; //Accept any angle
+	
   Bool_t result = kFALSE;
   Double_t max =  fAngleMaxParam.At(0)*TMath::Exp(fAngleMaxParam.At(1)*e)
     +fAngleMaxParam.At(2)+fAngleMaxParam.At(3)*e;

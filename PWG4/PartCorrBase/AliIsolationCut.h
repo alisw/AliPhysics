@@ -34,24 +34,28 @@ class AliIsolationCut : public TObject {
  public: 
  
   enum type {kPtThresIC, kSumPtIC, kPtFracIC, kSumPtFracIC};
-  
-  Float_t    GetConeSize()        const {return fConeSize ; }
-  Float_t    GetPtThreshold()     const {return fPtThreshold ; }
-  Float_t    GetPtFraction()      const {return fPtFraction ; }
-  Int_t      GetICMethod()        const {return fICMethod ; }
+  enum partInCone {kNeutralAndCharged=0, kOnlyNeutral=1, kOnlyCharged=2};
+	
+  Float_t    GetConeSize()           const {return fConeSize   ;}
+  Float_t    GetPtThreshold()        const {return fPtThreshold;}
+  Float_t    GetPtFraction()         const {return fPtFraction ;}
+  Int_t      GetICMethod()           const {return fICMethod   ;}
+  Int_t      GetParticleTypeInCone() const {return fPartInCone ;}
+	
   TString    GetICParametersList() ; 
-  
+
   void MakeIsolationCut(TObjArray * const plCTS, TObjArray * const plNe, AliCaloTrackReader * const reader, 
 			const Bool_t fillAOD, AliAODPWG4ParticleCorrelation  * pCandidate, const TString aodObjArrayName,
 			Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated) const ;  
   
   void Print(const Option_t * opt)const;
   
-  void SetConeSize(Float_t r)       {fConeSize = r ; }
-  void SetPtThreshold(Float_t pt)   {fPtThreshold = pt; }
-  void SetPtFraction(Float_t pt)    {fPtFraction = pt; }
-  void SetICMethod(Int_t i )        {fICMethod = i ; }
-  
+  void SetConeSize(Float_t r)        {fConeSize = r ; }
+  void SetPtThreshold(Float_t pt)    {fPtThreshold = pt; }
+  void SetPtFraction(Float_t pt)     {fPtFraction = pt; }
+  void SetICMethod(Int_t i )         {fICMethod = i ; }
+  void SetParticleTypeInCone(Int_t i){fPartInCone = i;}
+	
   void InitParameters();
   
   
@@ -65,8 +69,12 @@ class AliIsolationCut : public TObject {
                               // kSumPtIC: Cone pt sum method
                               // kPtFracIC:   Pt threshold, fraction of candidate pt, method
                               // kSumPtFracIC:   Cone pt sum , fraction of cone sum, method
-  
-  ClassDef(AliIsolationCut,1)
+  Int_t        fPartInCone;   // Type of particles inside cone:
+							  // kNeutralAndCharged, kOnlyNeutral, kOnlyCharged
+	                         
+	
+	
+  ClassDef(AliIsolationCut,2)
 } ;
 
 

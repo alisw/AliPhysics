@@ -42,7 +42,7 @@ ClassImp(AliIsolationCut)
 //____________________________________________________________________________
   AliIsolationCut::AliIsolationCut() : 
     TObject(),
-    fConeSize(0.),fPtThreshold(0.), fPtFraction(0.), fICMethod(0)
+    fConeSize(0.),fPtThreshold(0.), fPtFraction(0.), fICMethod(0),fPartInCone(0)
  
 {
   //default ctor
@@ -98,7 +98,9 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;
   sprintf(onePar,"fICMethod=%d (isolation cut case) \n",fICMethod) ;
   parList+=onePar ;
-  
+  sprintf(onePar,"fPartInCone=%d \n",fPartInCone) ;
+  parList+=onePar ;
+
   return parList; 
 }
 
@@ -107,11 +109,11 @@ void AliIsolationCut::InitParameters()
 {
   //Initialize the parameters of the analysis.
   
-  fConeSize          = 0.4 ; 
-  fPtThreshold       = 1. ; 
-  fPtFraction        = 0.1 ; 
-  
-  fICMethod = kPtThresIC; // 0 pt threshol method, 1 cone pt sum method
+  fConeSize    = 0.4 ; 
+  fPtThreshold = 1. ; 
+  fPtFraction  = 0.1 ; 
+  fPartInCone  = kNeutralAndCharged;
+  fICMethod    = kPtThresIC; // 0 pt threshol method, 1 cone pt sum method
   
 }
 
@@ -140,7 +142,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   Int_t nclusterrefs = 0;
   
   //Check charged particles in cone.
-  if(plCTS){
+  if(plCTS && (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged)){
     TVector3 p3;
     for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ ){
       AliAODTrack* track = (AliAODTrack *)(plCTS->At(ipr)) ; 
@@ -174,7 +176,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   }//Tracks
   
   //Check neutral particles in cone.  
-  if(plNe){
+  if(plNe && (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged)){
 	  
 	//Get vertex for photon momentum calculation
 	Double_t vertex[]  = {0,0,0} ; //vertex ;
@@ -269,7 +271,7 @@ void AliIsolationCut::Print(const Option_t * opt) const
   printf("Cone Size          =     %1.2f\n", fConeSize) ; 
   printf("pT threshold       =     %2.1f\n", fPtThreshold) ;
   printf("pT fraction        =     %3.1f\n", fPtFraction) ;
-
+  printf("particle type in cone =  %d\n",fPartInCone);
   printf("    \n") ;
   
 } 
