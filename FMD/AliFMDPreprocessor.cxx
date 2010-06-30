@@ -304,26 +304,27 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
       Log(Form("File %s not found!", filename));
       continue;
     }
-
-    // Get header (how long is it ?)
-    TString header;
-    header.ReadLine(in);
-    header.ToLower();
-    if(!header.Contains(pars->GetPedestalShuttleID())) {
-      Log("File header is not from pedestal!");
-      continue;
-    }
-    Log("File contains data from pedestals");
-    
-    // Read columns line
-    int lineno = 2;
-    header.ReadLine(in);
-    
     // Loop until EOF
-    while(in.peek()!=EOF) {
+    int lineno = 0;
+    char cc;
+    while((cc = in.peek())!=EOF) {
       if(in.bad()) { 
 	Log(Form("Bad read at line %d in %s", lineno, filename));
 	break;
+      }
+      if (cc == '#') { 
+	TString line;
+	line.ReadLine(in);
+	lineno++;
+	if (lineno == 1) {
+	  line.ToLower();
+	  if(!line.Contains(pars->GetPedestalShuttleID())) {
+	    Log(Form("File header is not from pedestal!: %s", line.Data()));
+	    break;
+	  }
+	  Log("File contains data from pedestals");
+	}
+	continue;
       }
       UShort_t det, sec, strip;
       Char_t ring;
@@ -384,26 +385,27 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
       Log(Form("File %s not found!", filename));
       continue;
     }
-
-    //Get header (how long is it ?)
-    TString header;
-    header.ReadLine(in);
-    header.ToLower();
-    if(!header.Contains(pars->GetGainShuttleID())) {
-      Log("File header is not from gain!");
-      continue;
-    }
-    Log("File contains data from pulse gain");
-
-    // Read column headers
-    header.ReadLine(in);
-
-    int lineno  = 2;
-    // Read until EOF 
-    while(in.peek()!=EOF) {
-      if(in.bad()) { 
-	Log(Form("Bad read at line %d in %s", lineno, filename));
-	break;
+    // Loop until EOF                                                                                                                                   
+    int lineno = 0;
+    char cc;
+    while((cc = in.peek())!=EOF) {
+      if(in.bad()) {
+        Log(Form("Bad read at line %d in %s", lineno, filename));
+        break;
+      }
+      if (cc == '#') {
+        TString line;
+        line.ReadLine(in);
+        lineno++;
+        if (lineno == 1) {
+          line.ToLower();
+          if(!line.Contains(pars->GetGainShuttleID())) {
+            Log(Form("File header is not from gains!: %s", line.Data()));
+            break;
+          }
+          Log("File contains data from gains");
+        }
+	continue;
       }
       UShort_t det, sec, strip;
       Char_t ring;
