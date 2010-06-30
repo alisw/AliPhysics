@@ -240,8 +240,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  x2[im]=xx1[im]=yy1[im]=260+20*im;
 	  } 
 	  */	  
-      Bool_t ok=true;
-      TGraph *grwalkqtc = new TGraph (nmips,x1,y1);
+       TGraph *grwalkqtc = new TGraph (nmips,x1,y1);
       grwalkqtc->SetTitle(Form("PMT%i",i));
       TGraph *grwalkled = new TGraph (nmips,x2,y1);
       grwalkled->SetTitle(Form("PMT%i",i));
