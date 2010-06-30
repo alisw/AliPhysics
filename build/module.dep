@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 
 ALIROOT/module.mk:	ALIROOT/binaliroot.pkg 
-ANALYSIS/module.mk:	ANALYSIS/libANALYSIS.pkg ANALYSIS/libANALYSISalice.pkg ANALYSIS/libANALYSIScalib.pkg ANALYSIS/libANALYSISRL.pkg ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
+ANALYSIS/module.mk:	ANALYSIS/libANALYSIS.pkg ANALYSIS/libANALYSISalice.pkg ANALYSIS/libANALYSIScalib.pkg  ANALYSIS/libAliengui.pkg ANALYSIS/binaliengui.pkg
 ACORDE/module.mk:	ACORDE/libACORDEbase.pkg ACORDE/libACORDErec.pkg ACORDE/libACORDEsim.pkg
 EMCAL/module.mk:	EMCAL/libEMCALbase.pkg EMCAL/libEMCALsim.pkg EMCAL/libEMCALrec.pkg  EMCAL/libEMCALUtils.pkg
 EPOS/module.mk:		EPOS/libEPOS.pkg
