@@ -28,7 +28,7 @@
 // --- ROOT system --- 
 #include <TClonesArray.h>
 #include <TList.h>
-//#include <TObjString.h>
+#include <TObjString.h>
 #include <TH2F.h>
 //#include <Riostream.h>
 #include <TClass.h>
@@ -307,6 +307,54 @@ Bool_t AliAnaParticleIsolation::CheckInvMass(const Int_t iaod, const AliAODPWG4P
   }//loop
   
   return kFALSE;
+}
+
+//________________________________________________________________________
+TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
+{ 
+	//Save parameters used for analysis
+	 TString parList ; //this will be list of parameters used for this analysis.
+	 char onePar[255] ;
+	 
+	 sprintf(onePar,"--- AliAnaParticleIsolation ---\n") ;
+	 parList+=onePar ;	
+	 sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"fReMakeIC =%d (Flag for reisolation during histogram filling) \n",fReMakeIC) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"fMakeSeveralIC=%d (Flag for isolation with several cuts at the same time ) \n",fMakeSeveralIC) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"fMakeInvMass=%d (Flag for rejection of candidates with a pi0 inv mass pair) \n",fMakeInvMass) ;
+	 parList+=onePar ;
+	 
+	 if(fMakeSeveralIC){
+	   sprintf(onePar,"fNCones =%d (Number of cone sizes) \n",fNCones) ;
+	   parList+=onePar ;
+	   sprintf(onePar,"fNPtThresFrac=%d (Flag for isolation with several cuts at the same time ) \n",fNPtThresFrac) ;
+	   parList+=onePar ;
+	   
+	   for(Int_t icone = 0; icone < fNCones ; icone++){
+	     sprintf(onePar,"fConeSizes[%d]=%1.2f (isolation cone size) \n",icone, fConeSizes[icone]) ;
+	     parList+=onePar ;	
+	   }
+	   for(Int_t ipt = 0; ipt < fNPtThresFrac ; ipt++){
+	     sprintf(onePar,"fPtThresholds[%d]=%1.2f (isolation pt threshold) \n",ipt, fPtThresholds[ipt]) ;
+	     parList+=onePar ;	
+	   }
+	   for(Int_t ipt = 0; ipt < fNPtThresFrac ; ipt++){
+	     sprintf(onePar,"fPtFractions[%d]=%1.2f (isolation pt fraction threshold) \n",ipt, fPtFractions[ipt]) ;
+	     parList+=onePar ;	
+	   }		
+	 }
+	 
+	 //Get parameters set in base class.
+	 parList += GetBaseParametersList() ;
+	 
+	 //Get parameters set in IC class.
+	 if(!fMakeSeveralIC)parList += GetIsolationCut()->GetICParametersList() ;
+	 
+	 return new TObjString(parList) ;
+	
 }
 
 //________________________________________________________________________
@@ -628,51 +676,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       for(Int_t i = 0; i < nmsHistos->GetEntries(); i++) outputContainer->Add(nmsHistos->At(i)) ;
 	delete nmsHistos;
   }
-  
-  //Save parameters used for analysis
-//  TString parList ; //this will be list of parameters used for this analysis.
-//  char onePar[255] ;
-//  
-//  sprintf(onePar,"--- AliAnaParticleIsolation ---\n") ;
-//  parList+=onePar ;	
-//  sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"fReMakeIC =%d (Flag for reisolation during histogram filling) \n",fReMakeIC) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"fMakeSeveralIC=%d (Flag for isolation with several cuts at the same time ) \n",fMakeSeveralIC) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"fMakeInvMass=%d (Flag for rejection of candidates with a pi0 inv mass pair) \n",fMakeInvMass) ;
-//  parList+=onePar ;
-//  
-//  if(fMakeSeveralIC){
-//    sprintf(onePar,"fNCones =%d (Number of cone sizes) \n",fNCones) ;
-//    parList+=onePar ;
-//    sprintf(onePar,"fNPtThresFrac=%d (Flag for isolation with several cuts at the same time ) \n",fNPtThresFrac) ;
-//    parList+=onePar ;
-//    
-//    for(Int_t icone = 0; icone < fNCones ; icone++){
-//      sprintf(onePar,"fConeSizes[%d]=%1.2f (isolation cone size) \n",icone, fConeSizes[icone]) ;
-//      parList+=onePar ;	
-//    }
-//    for(Int_t ipt = 0; ipt < fNPtThresFrac ; ipt++){
-//      sprintf(onePar,"fPtThresholds[%d]=%1.2f (isolation pt threshold) \n",ipt, fPtThresholds[ipt]) ;
-//      parList+=onePar ;	
-//    }
-//    for(Int_t ipt = 0; ipt < fNPtThresFrac ; ipt++){
-//      sprintf(onePar,"fPtFractions[%d]=%1.2f (isolation pt fraction threshold) \n",ipt, fPtFractions[ipt]) ;
-//      parList+=onePar ;	
-//    }		
-//  }
-//  
-//  //Get parameters set in base class.
-//  parList += GetBaseParametersList() ;
-//  
-//  //Get parameters set in IC class.
-//  if(!fMakeSeveralIC)parList += GetIsolationCut()->GetICParametersList() ;
-//  
-//  TObjString *oString= new TObjString(parList) ;
-//  outputContainer->Add(oString);
-  
   
   return outputContainer ;
   

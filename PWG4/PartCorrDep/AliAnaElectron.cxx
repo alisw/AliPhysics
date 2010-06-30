@@ -29,7 +29,7 @@
 #include <TParticle.h>
 #include <TNtuple.h>
 #include <TClonesArray.h>
-//#include <TObjString.h>
+#include <TObjString.h>
 //#include <Riostream.h>
 
 // --- Analysis system --- 
@@ -304,6 +304,55 @@ AliAnaElectron::~AliAnaElectron()
 
 }
 
+//________________________________________________________________________
+TObjString *  AliAnaElectron::GetAnalysisCuts()
+{
+	//Save parameters used for analysis
+	 TString parList ; //this will be list of parameters used for this analysis.
+	 char onePar[500] ;
+	 
+	 sprintf(onePar,"--- AliAnaElectron ---\n") ;
+	 parList+=onePar ;	
+	 sprintf(onePar,"fCalorimeter: %s\n",fCalorimeter.Data()) ;
+	 parList+=onePar ;  
+	 sprintf(onePar,"fpOverEmin: %f\n",fpOverEmin) ;
+	 parList+=onePar ;  
+	 sprintf(onePar,"fpOverEmax: %f\n",fpOverEmax) ;
+	 parList+=onePar ;  
+	 sprintf(onePar,"fResidualCut: %f\n",fResidualCut) ;
+	 parList+=onePar ;  
+	 sprintf(onePar,"fMinClusEne: %f\n",fMinClusEne) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"---DVM Btagging\n");
+	 parList+=onePar ;
+	 sprintf(onePar,"max IP-cut (e,h): %f\n",fImpactCut);
+	 parList+=onePar ;
+	 sprintf(onePar,"min ITS-hits: %d\n",fITSCut);
+	 parList+=onePar ;
+	 sprintf(onePar,"max dR (e,h): %f\n",fDrCut);
+	 parList+=onePar ;
+	 sprintf(onePar,"max pairDCA: %f\n",fPairDcaCut);
+	 parList+=onePar ;
+	 sprintf(onePar,"max decaylength: %f\n",fDecayLenCut);
+	 parList+=onePar ;
+	 sprintf(onePar,"min Associated Pt: %f\n",fAssocPtCut);
+	 parList+=onePar ;
+	 sprintf(onePar,"---IPSig Btagging\n");
+	 parList+=onePar ;
+	 sprintf(onePar,"min tag track: %d\n",fNTagTrkCut);
+	 parList+=onePar ;
+	 sprintf(onePar,"min IP significance: %f\n",fIPSigCut);
+	 parList+=onePar ;
+	//
+	 //Get parameters set in base class.
+	 parList += GetBaseParametersList() ;
+	 
+	 //Get parameters set in FiducialCut class (not available yet)
+	 //parlist += GetFidCut()->GetFidCutParametersList() 
+	 
+	 return new TObjString(parList) ;
+  	
+}
 
 //________________________________________________________________________
 TList *  AliAnaElectron::GetCreateOutputObjects()
@@ -553,52 +602,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
 
   }//Histos with MC
   
-  //Save parameters used for analysis
-//  TString parList ; //this will be list of parameters used for this analysis.
-//  char onePar[500] ;
-//  
-//  sprintf(onePar,"--- AliAnaElectron ---\n") ;
-//  parList+=onePar ;	
-//  sprintf(onePar,"fCalorimeter: %s\n",fCalorimeter.Data()) ;
-//  parList+=onePar ;  
-//  sprintf(onePar,"fpOverEmin: %f\n",fpOverEmin) ;
-//  parList+=onePar ;  
-//  sprintf(onePar,"fpOverEmax: %f\n",fpOverEmax) ;
-//  parList+=onePar ;  
-//  sprintf(onePar,"fResidualCut: %f\n",fResidualCut) ;
-//  parList+=onePar ;  
-//  sprintf(onePar,"fMinClusEne: %f\n",fMinClusEne) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"---DVM Btagging\n");
-//  parList+=onePar ;
-//  sprintf(onePar,"max IP-cut (e,h): %f\n",fImpactCut);
-//  parList+=onePar ;
-//  sprintf(onePar,"min ITS-hits: %d\n",fITSCut);
-//  parList+=onePar ;
-//  sprintf(onePar,"max dR (e,h): %f\n",fDrCut);
-//  parList+=onePar ;
-//  sprintf(onePar,"max pairDCA: %f\n",fPairDcaCut);
-//  parList+=onePar ;
-//  sprintf(onePar,"max decaylength: %f\n",fDecayLenCut);
-//  parList+=onePar ;
-//  sprintf(onePar,"min Associated Pt: %f\n",fAssocPtCut);
-//  parList+=onePar ;
-//  sprintf(onePar,"---IPSig Btagging\n");
-//  parList+=onePar ;
-//  sprintf(onePar,"min tag track: %d\n",fNTagTrkCut);
-//  parList+=onePar ;
-//  sprintf(onePar,"min IP significance: %f\n",fIPSigCut);
-//  parList+=onePar ;
-//
-//  //Get parameters set in base class.
-//  parList += GetBaseParametersList() ;
-//  
-//  //Get parameters set in FiducialCut class (not available yet)
-//  //parlist += GetFidCut()->GetFidCutParametersList() 
-//  
-//  TObjString *oString= new TObjString(parList) ;
-//  outputContainer->Add(oString);
-  
+
   return outputContainer ;
   
 }

@@ -14,6 +14,7 @@
 class TH3F;
 class TH2F;
 class TH1F;
+class TObjString;
 
 // --- Analysis system --- 
 class AliESDCaloCluster;
@@ -37,6 +38,7 @@ public:
 						 const Int_t nTracksMatched, const TObject* track, 
 						 const Int_t * labels, const Int_t nLabels);
 	
+  TObjString * GetAnalysisCuts();
   TList * GetCreateOutputObjects();
 
   void Init();

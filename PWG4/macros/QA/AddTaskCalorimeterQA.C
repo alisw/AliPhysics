@@ -189,20 +189,26 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   task->SetAnalysisMaker(maker);	
   mgr->AddTask(task);
   
+  //Create containers
 //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer("Calo.Performance",TList::Class(),
 //							   AliAnalysisManager::kOutputContainer, "Calo.Performance.root");
 	
-	
   TString outputfile = AliAnalysisManager::GetCommonFileName(); 
-  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer("CaloQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:CaloQA",outputfile.Data()));
+  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer("CaloQA", TList::Class(), 
+															 AliAnalysisManager::kOutputContainer, 
+															 Form("%s:CaloQA",outputfile.Data()));
 	
-	
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer("CaloQACuts", TList::Class(), 
+															  AliAnalysisManager::kParamContainer, 
+															  Form("%s:CaloQACuts",outputfile.Data()));
+	//Form("%s:PartCorrCuts",outputfile.Data()));	
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
-  
+  mgr->ConnectOutput (task, 2, cout_cuts);
+
   return task;
 }
 

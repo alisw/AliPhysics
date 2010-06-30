@@ -16,6 +16,7 @@
 class TList;
 class TH3D ;
 class TH2D ;
+class TObjString;
 
 //Analysis
 class AliAODEvent ;
@@ -33,7 +34,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
  public:
 
-  TList * GetCreateOutputObjects(); 
+  TObjString * GetAnalysisCuts();
+  TList      * GetCreateOutputObjects(); 
   
   void Print(const Option_t * opt) const;
   

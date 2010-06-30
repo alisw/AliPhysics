@@ -27,7 +27,7 @@
 // --- ROOT system --- 
 #include <TH2F.h>
 #include <TClonesArray.h>
-//#include <TObjString.h>
+#include <TObjString.h>
 //#include <Riostream.h>
 #include "TParticle.h"
 
@@ -160,6 +160,38 @@ AliAnaPhoton::~AliAnaPhoton()
 {
   //dtor
 
+}
+
+//________________________________________________________________________
+TObjString *  AliAnaPhoton::GetAnalysisCuts()
+{  	
+  //Save parameters used for analysis
+  TString parList ; //this will be list of parameters used for this analysis.
+  char onePar[255] ;
+  
+  sprintf(onePar,"--- AliAnaPhoton ---\n") ;
+  parList+=onePar ;	
+  sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+  parList+=onePar ;
+  sprintf(onePar,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+  parList+=onePar ;
+  sprintf(onePar,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+  parList+=onePar ;
+  sprintf(onePar,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+  parList+=onePar ;
+  sprintf(onePar,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
+  parList+=onePar ;  
+  
+  //Get parameters set in base class.
+  parList += GetBaseParametersList() ;
+  
+  //Get parameters set in PID class.
+  parList += GetCaloPID()->GetPIDParametersList() ;
+  
+  //Get parameters set in FiducialCut class (not available yet)
+  //parlist += GetFidCut()->GetFidCutParametersList() 
+  
+  return new TObjString(parList) ;
 }
 
 
@@ -363,36 +395,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhEtaUnknown) ;
 	
   }//Histos with MC
-  
-  //Save parameters used for analysis
-//  TString parList ; //this will be list of parameters used for this analysis.
-//  char onePar[255] ;
-//  
-//  sprintf(onePar,"--- AliAnaPhoton ---\n") ;
-//  parList+=onePar ;	
-//  sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
-//  parList+=onePar ;  
-//  
-//  //Get parameters set in base class.
-//  parList += GetBaseParametersList() ;
-//  
-//  //Get parameters set in PID class.
-//  parList += GetCaloPID()->GetPIDParametersList() ;
-//  
-//  //Get parameters set in FiducialCut class (not available yet)
-//  //parlist += GetFidCut()->GetFidCutParametersList() 
-//  
-//  TObjString *oString= new TObjString(parList) ;
-//  outputContainer->Add(oString);
-  
+    
   return outputContainer ;
   
 }

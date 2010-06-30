@@ -38,6 +38,7 @@ class AliAnaPartCorrMaker : public TObject {
 	
   //Setter and getters
   TList * GetAODBranchList() ;
+  TList * GetListOfAnalysisCuts();
   TList * GetOutputContainer() ;
 
   Int_t GetAnaDebug() const  { return fAnaDebug ; }
@@ -89,10 +90,12 @@ class AliAnaPartCorrMaker : public TObject {
   AliCaloTrackReader  *  fReader ;     //  Pointer to reader 
   AliCalorimeterUtils *  fCaloUtils ;  //  Pointer to CalorimeterUtils
 
-  TList * fAODBranchList ;          //! List with AOD branches created and needed in analysis
-  TH1I  * fhNEvents;                //! Number of events counter histogram
+  TList * fAODBranchList ;     //! List with AOD branches created and needed in analysis  
+  TList * fCuts ;	           //! List with analysis cuts
+
+  TH1I  * fhNEvents;           //! Number of events counter histogram
 	
-  ClassDef(AliAnaPartCorrMaker,4)
+  ClassDef(AliAnaPartCorrMaker,5)
 } ;
  
 

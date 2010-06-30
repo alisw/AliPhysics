@@ -47,7 +47,7 @@ TObject(),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE), fMakeAOD(kFALSE), fMakeMixing(kFALSE), fAnaDebug(0), 
 fReader(new AliCaloTrackReader()), fCaloUtils(new AliCalorimeterUtils()), 
-fAODBranchList(new TList ), fhNEvents(0x0)
+fAODBranchList(new TList ),fCuts(new TList), fhNEvents(0x0)
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker  Constructor *** \n");
@@ -64,7 +64,7 @@ fMakeHisto(maker.fMakeHisto), fMakeAOD(maker.fMakeAOD), fMakeMixing(maker.fMakeM
 fAnaDebug(maker.fAnaDebug),
 fReader(),//new AliCaloTrackReader(*maker.fReader)), 
 fCaloUtils(),//(new AliCalorimeterUtils(*maker.fCaloUtils)),
-fAODBranchList(new TList()), 
+fAODBranchList(new TList()), fCuts(new TList()), 
 fhNEvents(maker.fhNEvents)
 {
   // cpy ctor
@@ -121,25 +121,49 @@ AliAnaPartCorrMaker::~AliAnaPartCorrMaker()
     delete fAODBranchList ;
   }
   
+  if(fCuts){
+	  fCuts->Delete();
+	  delete fCuts;
+  }
+	
 //	printf("====== Maker deleted \n");
+}
+
+//________________________________________________________________________
+TList * AliAnaPartCorrMaker::GetListOfAnalysisCuts()
+{ 
+
+	// Get the list of the cuts used for the analysis
+	// The list is filled in the maker, called by the task in LocalInit() and posted there
+	//printf("GetListOfAnalysis! \n");
+
+	for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
+		AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+		TObjString * objstring = ana->GetAnalysisCuts();
+		//printf("analysis %d cuts %p\n",iana,objstring);
+		if(objstring)fCuts->Add(objstring);
+	}
+    //printf("Maker::GetEntries() %d\n",fCuts->GetEntries());
+	return fCuts ;
+  
 }
 
 //________________________________________________________________________
 TList * AliAnaPartCorrMaker::GetAODBranchList()
 { 
-
-// Get any new output AOD branches from analysis and put them in a list
-// The list is filled in the maker, and new branch passed to the analysis frame
-// AliAnalysisTaskPartCorr
- 
-  for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
-    
-    AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-    if(ana->NewOutputAOD()) fAODBranchList->Add(ana->GetCreateOutputAODBranch());
-  }
-  
-  return fAODBranchList ;
-  
+	
+	// Get any new output AOD branches from analysis and put them in a list
+	// The list is filled in the maker, and new branch passed to the analysis frame
+	// AliAnalysisTaskPartCorr
+	
+	for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
+		
+		AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+		if(ana->NewOutputAOD()) fAODBranchList->Add(ana->GetCreateOutputAODBranch());
+	}
+	
+	return fAODBranchList ;
+	
 }
 
 //________________________________________________________________________

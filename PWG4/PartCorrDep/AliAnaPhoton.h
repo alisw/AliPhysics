@@ -17,6 +17,7 @@
 class TH2F ;
 class TH1F;
 class TString ;
+class TObjString;
 
 // --- ANALYSIS system ---
 #include "AliAnaPartCorrBaseClass.h"
@@ -37,8 +38,9 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;//cpy assignment
 
  public:
-
-  TList *  GetCreateOutputObjects();
+	
+  TObjString * GetAnalysisCuts();
+  TList      * GetCreateOutputObjects();
 
   void Init();
 
