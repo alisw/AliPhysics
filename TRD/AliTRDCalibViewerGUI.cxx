@@ -671,7 +671,7 @@ void AliTRDCalibViewerGUI::MouseMove(Int_t event, Int_t x, Int_t y, TObject *sel
     return;
   if(!selectedObject->InheritsFrom("TH2")) return;
 
-  Int_t layerNo = (Int_t)(fNmbLayer->GetNumber());
+  //Int_t layerNo = (Int_t)(fNmbLayer->GetNumber());
   Int_t sectorNo = (Int_t)(fNmbSector->GetNumber());
   Int_t stackNo = (Int_t)(fNmbStack->GetNumber());
 

@@ -1356,11 +1356,11 @@ void AliTRDCalibViewer::DumpCalibToTree(const Char_t* inFilename, const Char_t* 
           Double_t rocMedian=0;
           
           if (calROC){
-            Int_t index = 0;
+            Int_t index2 = 0;
             for(Short_t iRow=0; iRow<nrows; iRow++) {
               for(Short_t iCol=0; iCol<ncols; iCol++) {
-                valueVector->GetMatrixArray()[index] = calROC->GetValue(iCol,iRow);
-                index++;
+                valueVector->GetMatrixArray()[index2] = calROC->GetValue(iCol,iRow);
+                index2++;
               }
             }
             rocMean   = calROC->GetMean();
