@@ -48,5 +48,5 @@ void AliZDCRecoParam::SetGlauberMCDist(Float_t beamEnergy)
 {
   // Implemented in AliZDCRecoParamPbPb
   fBeamEnergy = beamEnergy;
-  printf("Setting beam energy = %1.0f\n");
+  printf("Setting beam energy = %1.0f GeV\n", fBeamEnergy);
 }
