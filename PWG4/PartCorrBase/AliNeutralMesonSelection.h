@@ -35,25 +35,28 @@ class AliNeutralMesonSelection : public TObject {
   TList * GetCreateOutputObjects();
   
   Double_t GetAngleMaxParam(Int_t i) const {return fAngleMaxParam.At(i) ; }
-  void SetAngleMaxParam(Int_t i, Double_t par){fAngleMaxParam.AddAt(par,i) ; }
+  void     SetAngleMaxParam(Int_t i, Double_t par){fAngleMaxParam.AddAt(par,i) ; }
   
   Double_t GetInvMassMaxCut() const {return fInvMassMaxCut ; }
   Double_t GetInvMassMinCut() const {return fInvMassMinCut ; }
-  void SetInvMassCutRange(Double_t invmassmin, Double_t invmassmax)
+  void     SetInvMassCutRange(Double_t invmassmin, Double_t invmassmax)
   {fInvMassMaxCut =invmassmax;  fInvMassMinCut =invmassmin;}	
   
   Double_t GetMass() const {return fM ; }
   void SetMass(Double_t m) { fM =m ; }
   
   Bool_t AreNeutralMesonSelectionHistosKept() const { return fKeepNeutralMesonHistos ; }
-  void KeepNeutralMesonSelectionHistos(Bool_t keep) { fKeepNeutralMesonHistos = keep ; }
+  void  KeepNeutralMesonSelectionHistos(Bool_t keep) { fKeepNeutralMesonHistos = keep ; }
   
   void InitParameters();	
   Bool_t IsAngleInWindow(const Float_t angle, const Float_t e) const ;
   void Print(const Option_t * opt) const;
   
   Bool_t  SelectPair(TLorentzVector particlei,  TLorentzVector particlej)  ;
-  
+	
+  void SwitchOnAngleSelection()    {fUseAngleCut = kTRUE ; }
+  void SwitchOffAngleSelection()   {fUseAngleCut = kFALSE ; }
+	
   //Histogrammes setters and getters
   
   virtual void SetHistoERangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -98,12 +101,12 @@ class AliNeutralMesonSelection : public TObject {
   
   
  private:
-  Double_t fM ; //mass of the neutral meson
-  Double_t   fInvMassMaxCut ;  // Invariant Mass cut maximum
-  Double_t   fInvMassMinCut ;  // Invariant Masscut minimun
-  TArrayD    fAngleMaxParam ; //Max opening angle selection parameters
-  
-  Bool_t  fKeepNeutralMesonHistos ; // Keep neutral meson selection histograms
+  Double_t fM ;              // Mass of the neutral meson
+  Double_t fInvMassMaxCut ;  // Invariant Mass cut maximum
+  Double_t fInvMassMinCut ;  // Invariant Masscut minimun
+  TArrayD  fAngleMaxParam ;  // Max opening angle selection parameters
+  Bool_t   fUseAngleCut ;    // Select pairs depending on their opening angle
+  Bool_t   fKeepNeutralMesonHistos ; // Keep neutral meson selection histograms
   
   //Histograms
   TH2F * fhAnglePairNoCut  ;  //Aperture angle of decay photons, no cuts
@@ -127,7 +130,7 @@ class AliNeutralMesonSelection : public TObject {
   Float_t fHistoIMMax ;   //Maximum value of Invariant Mass histogram range
   Float_t fHistoIMMin ;   //Minimum value of Invariant Mass histogram range
   
-  ClassDef(AliNeutralMesonSelection,2)
+  ClassDef(AliNeutralMesonSelection,3)
     
     } ;
 

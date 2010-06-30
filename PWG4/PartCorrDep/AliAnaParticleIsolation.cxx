@@ -760,8 +760,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t etacluster = aod->Eta();
     //Recover reference arrays with clusters and tracks
 	TObjArray * refclusters = aod->GetObjArray(GetAODObjArrayName()+"Clusters");
-    TObjArray * reftracks = aod->GetObjArray(GetAODObjArrayName()+"Tracks");
+    TObjArray * reftracks   = aod->GetObjArray(GetAODObjArrayName()+"Tracks");
   
+	//If too small or too large pt, skip
+	if(aod->Pt() < GetMinPt() || aod->Pt() > GetMaxPt() ) continue ; 
+	  
     if(fMakeSeveralIC) {
       //Analysis of multiple IC at same time
       MakeSeveralICAnalysis(aod);
