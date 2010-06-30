@@ -931,7 +931,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     //
     pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0); // C side
     for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
-        TH1* his1D=0;
+        //TH1* his1D=0;
         Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
         Float_t phiUp    = -TMath::Pi() + (i+1)*(20./360.)*(2*TMath::Pi());
         pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
