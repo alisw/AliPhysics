@@ -49,21 +49,21 @@ class AliMUONTrackLight : public TObject {
   /// Set primary vertex position from the ITS
   void SetVertex(Double_t *xyz) {for (Int_t i=0; i<3; i++) fXYZ[i]=xyz[i];}
   /// Return primary vertex x position from the ITS 
-  Double_t GetX() { return fXYZ[0]; } 
+  Double_t GetX() const { return fXYZ[0]; } 
   /// Return primary vertex y position from the ITS 
-  Double_t GetY() { return fXYZ[1]; } 
+  Double_t GetY() const { return fXYZ[1]; } 
   /// Return primary vertex z position from the ITS 
-  Double_t GetZ() { return fXYZ[2]; } 
+  Double_t GetZ() const { return fXYZ[2]; } 
   /// Return  primary vertex position from the ITS
   Double_t* GetVertex() { return fXYZ; } 
   /// Set chi2 / ndf in the MUON track fit
   void SetChi2(Double_t chi2) {fChi2=chi2;}
   /// Return chi2 / ndf in the MUON track fit 
-  Double_t GetChi2() { return fChi2; } 
+  Double_t GetChi2() const { return fChi2; } 
   /// Set weight assigned to the muon
   void SetWeight(Double_t w) {fWeight=w;}
   /// Return weight assigned to the muon 
-  Double_t GetWeight() { return fWeight; } 
+  Double_t GetWeight() const { return fWeight; } 
   
   /// Set muon charge 
   void SetCharge(Int_t charge) {fCharge = charge;}
@@ -106,7 +106,7 @@ class AliMUONTrackLight : public TObject {
   //"K" muon kinematics
   //"A" all variables
   Int_t GetParentFlavour(Int_t idParent=0) const;
-  Bool_t IsDiquark(Int_t pdg);
+  Bool_t IsDiquark(Int_t pdg) const;
 protected:
   static const Int_t fgkNParentsMax = 5;   ///< maximum number of parents
   TLorentzVector fPrec; ///< reconstructed 4-momentum

@@ -149,7 +149,7 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
 
   if ( check ) 
   {
-    Master()->Log("Could not read some input file(s). Aborting");
+    Master()->Log("Could not read some input file(s). Exiting");
     Master()->Invalidate();
     return kFALSE;
   }

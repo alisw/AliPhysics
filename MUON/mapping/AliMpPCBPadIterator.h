@@ -39,7 +39,7 @@ private:
   /// Not implemented
   AliMpPCBPadIterator&  operator = (const AliMpPCBPadIterator& right);
   
-  Bool_t GetNextPosition(Int_t& ix, Int_t& iy);
+  Bool_t GetNextPosition(Int_t& ix, Int_t& iy) const;
   Bool_t CropArea(const AliMpArea& area);
   void SetPad(AliMpPad& pad, Int_t ix, Int_t iy);
   

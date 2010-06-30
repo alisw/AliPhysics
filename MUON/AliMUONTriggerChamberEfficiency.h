@@ -9,8 +9,8 @@
 ///
 //  Author: Diego Stocco; Subatech, Nantes
 
-#ifndef ALIMUONTRIGGEREFFICIENCY_H
-#define ALIMUONTRIGGEREFFICIENCY_H
+#ifndef ALIMUONTRIGGERCHAMBEREFFICIENCY_H
+#define ALIMUONTRIGGERCHAMBEREFFICIENCY_H
 
 #include "TObject.h"
 class TH1;

@@ -78,10 +78,10 @@ void AliMUONRawStream::Swap(UInt_t* buffer, Int_t size) const
 
     for (int i = 0 ; i < size; i++) {
       temp = *(((RawWord*)buffer)+i);
-      word->b1 = temp.b4;
-      word->b2 = temp.b3;
-      word->b3 = temp.b2;
-      word->b4 = temp.b1;
+      word->fB1 = temp.fB4;
+      word->fB2 = temp.fB3;
+      word->fB3 = temp.fB2;
+      word->fB4 = temp.fB1;
       word++;
     }
 

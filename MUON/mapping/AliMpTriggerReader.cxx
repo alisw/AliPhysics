@@ -337,7 +337,7 @@ AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
 
 //___________________________________________________________________________
 Int_t
-AliMpTriggerReader::IsLayerLine(const TString& sline)
+AliMpTriggerReader::IsLayerLine(const TString& sline) const
 {
   /// Whether sline contains LAYER keyword
 

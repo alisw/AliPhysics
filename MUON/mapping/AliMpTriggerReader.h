@@ -68,7 +68,7 @@ private:
   
   Int_t GetLine(const TString& slatType);
   
-  Int_t IsLayerLine(const TString& sline);
+  Int_t IsLayerLine(const TString& sline) const;
     
   int LocalBoardNumber(const char* localBoardName);
   

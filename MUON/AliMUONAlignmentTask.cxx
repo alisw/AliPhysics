@@ -357,49 +357,49 @@ void AliMUONAlignmentTask::FinishTaskOutput()
 //   fMSDEp = (TGraphErrors*)fList->At(3);
 
   // Store results
-  Double_t DEid[156] = {0};
-  Double_t MSDEx[156] = {0};
-  Double_t MSDEy[156] = {0};
-  Double_t MSDEz[156] = {0};
-  Double_t MSDEp[156] = {0};
-  Double_t DEidErr[156] = {0};
-  Double_t MSDExErr[156] = {0};
-  Double_t MSDEyErr[156] = {0};
-  Double_t MSDEzErr[156] = {0};
-  Double_t MSDEpErr[156] = {0};
+  Double_t deId[156] = {0};
+  Double_t msdEx[156] = {0};
+  Double_t msdEy[156] = {0};
+  Double_t msdEz[156] = {0};
+  Double_t msdEp[156] = {0};
+  Double_t deIdErr[156] = {0};
+  Double_t msdExErr[156] = {0};
+  Double_t msdEyErr[156] = {0};
+  Double_t msdEzErr[156] = {0};
+  Double_t msdEpErr[156] = {0};
   Int_t lNDetElem = 4*2+4*2+18*2+26*2+26*2;
   Int_t lNDetElemCh[10] = {4,4,4,4,18,18,26,26,26,26};
   // Int_t lSNDetElemCh[10] = {4,8,12,16,34,52,78,104,130,156};
   Int_t idOffset = 0; // 400
   Int_t lSDetElemCh = 0;
   for(Int_t iDE=0; iDE<lNDetElem; iDE++){
-    DEidErr[iDE] = 0.;
-    DEid[iDE] = idOffset+100;
-    DEid[iDE] += iDE; 
+    deIdErr[iDE] = 0.;
+    deId[iDE] = idOffset+100;
+    deId[iDE] += iDE; 
     lSDetElemCh = 0;
     for(Int_t iCh=0; iCh<9; iCh++){
       lSDetElemCh += lNDetElemCh[iCh];
       if (iDE>=lSDetElemCh) {
-	DEid[iDE] += 100;
-	DEid[iDE] -= lNDetElemCh[iCh];
+	deId[iDE] += 100;
+	deId[iDE] -= lNDetElemCh[iCh];
       }
     }
-    MSDEx[iDE]=fParameters[3*iDE+0];
-    MSDEy[iDE]=fParameters[3*iDE+1];
-    MSDEz[iDE]=fParameters[3*iDE+3];
-    MSDEp[iDE]=fParameters[3*iDE+2];
-    MSDExErr[iDE]=(Double_t)fAlign->GetParError(3*iDE+0);
-    MSDEyErr[iDE]=(Double_t)fAlign->GetParError(3*iDE+1);
-    MSDEzErr[iDE]=(Double_t)fAlign->GetParError(3*iDE+3);
-    MSDEpErr[iDE]=(Double_t)fAlign->GetParError(3*iDE+2);
-    fMSDEx->SetPoint(iDE,DEid[iDE],fParameters[3*iDE+0]);
-    fMSDEx->SetPoint(iDE,DEidErr[iDE],(Double_t)fAlign->GetParError(3*iDE+0));
-    fMSDEy->SetPoint(iDE,DEid[iDE],fParameters[3*iDE+1]);
-    fMSDEy->SetPoint(iDE,DEidErr[iDE],(Double_t)fAlign->GetParError(3*iDE+1));
-    fMSDEp->SetPoint(iDE,DEid[iDE],fParameters[3*iDE+2]);
-    fMSDEp->SetPoint(iDE,DEidErr[iDE],(Double_t)fAlign->GetParError(3*iDE+2));
-    fMSDEz->SetPoint(iDE,DEid[iDE],fParameters[3*iDE+3]);
-    fMSDEz->SetPoint(iDE,DEidErr[iDE],(Double_t)fAlign->GetParError(3*iDE+3));
+    msdEx[iDE]=fParameters[3*iDE+0];
+    msdEy[iDE]=fParameters[3*iDE+1];
+    msdEz[iDE]=fParameters[3*iDE+3];
+    msdEp[iDE]=fParameters[3*iDE+2];
+    msdExErr[iDE]=(Double_t)fAlign->GetParError(3*iDE+0);
+    msdEyErr[iDE]=(Double_t)fAlign->GetParError(3*iDE+1);
+    msdEzErr[iDE]=(Double_t)fAlign->GetParError(3*iDE+3);
+    msdEpErr[iDE]=(Double_t)fAlign->GetParError(3*iDE+2);
+    fMSDEx->SetPoint(iDE,deId[iDE],fParameters[3*iDE+0]);
+    fMSDEx->SetPoint(iDE,deIdErr[iDE],(Double_t)fAlign->GetParError(3*iDE+0));
+    fMSDEy->SetPoint(iDE,deId[iDE],fParameters[3*iDE+1]);
+    fMSDEy->SetPoint(iDE,deIdErr[iDE],(Double_t)fAlign->GetParError(3*iDE+1));
+    fMSDEp->SetPoint(iDE,deId[iDE],fParameters[3*iDE+2]);
+    fMSDEp->SetPoint(iDE,deIdErr[iDE],(Double_t)fAlign->GetParError(3*iDE+2));
+    fMSDEz->SetPoint(iDE,deId[iDE],fParameters[3*iDE+3]);
+    fMSDEz->SetPoint(iDE,deIdErr[iDE],(Double_t)fAlign->GetParError(3*iDE+3));
   }
 
   // Post final data. Write histo list to a file with option "RECREATE"

@@ -233,7 +233,7 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 //------------------------------------------------------------------  
 void AliMUONResponseTriggerV1::Neighbours(const Int_t cath, 
 					  const Int_t ix, const Int_t iy, 
-					  Int_t Xlist[10], Int_t Ylist[10]) 
+					  Int_t Xlist[10], Int_t Ylist[10]) const
 {
     ///-----------------BENDING-----------------------------------------      /n
     /// Returns list of 10 next neighbours for given X strip (ix, iy)         /n

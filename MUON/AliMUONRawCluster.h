@@ -84,7 +84,7 @@ public:
   virtual Int_t    GetMCLabel() const {return GetTrack(0);}
   
   /// Return radius
-   Float_t      GetRadius(Int_t i) {return TMath::Sqrt(fX[i]*fX[i]+fY[i]*fY[i]);}
+   Float_t      GetRadius(Int_t i) const {return TMath::Sqrt(fX[i]*fX[i]+fY[i]*fY[i]);}
    /// Return true as the function Compare() is implemented
    Bool_t       IsSortable() const {return kTRUE;}
    Int_t        Compare(const TObject *obj) const;

@@ -114,7 +114,6 @@ class AliMUONRawStreamTrigger: public AliMUONVRawStreamTrigger {
 
 
     Bool_t fNextDDL;      ///< flag for next DDL to be read
-    Bool_t fEnableErrorLogger; //!< flag to enable the error info logger
 
     static const Int_t  fgkMaxDDL;       ///< maximum number of DDLs
 

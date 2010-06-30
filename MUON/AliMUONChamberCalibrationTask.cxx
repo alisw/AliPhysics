@@ -77,7 +77,7 @@ ClassImp( AliMUONChamberCalibrationTask )
 AliMUONChamberCalibrationTask::AliMUONChamberCalibrationTask():
   AliAnalysisTaskSE( "AliMUONChamberCalibrationTask" ),
   fOCDBPath( "local://$ALICE_ROOT/OCDB" ),
-  fCalibChoice(NOGAIN),
+  fCalibChoice(kNOGAIN),
   fClusterInfoTree(0x0),
   fMuonRecoParam(0x0),
   fClusterInfo(0x0),
@@ -99,7 +99,7 @@ AliMUONChamberCalibrationTask::AliMUONChamberCalibrationTask( const char* name,
 							      const Int_t my_calib_option ):
   AliAnalysisTaskSE( name ),
   fOCDBPath( "local://$ALICE_ROOT/OCDB" ),
-  fCalibChoice(NOGAIN),
+  fCalibChoice(kNOGAIN),
   fClusterInfoTree(0x0),
   fMuonRecoParam(0x0),
   fClusterInfo(0x0),
@@ -114,12 +114,12 @@ AliMUONChamberCalibrationTask::AliMUONChamberCalibrationTask( const char* name,
   //
 
   fOCDBPath = ocdbpath;
-  if ( (my_calib_option >= ((Int_t)NOGAIN)) && (my_calib_option <= ((Int_t)INJECTIONGAIN)) ) 
+  if ( (my_calib_option >= ((Int_t)kNOGAIN)) && (my_calib_option <= ((Int_t)kINJECTIONGAIN)) ) 
     fCalibChoice = (Calibration_t)my_calib_option;
   else {
     AliWarning( Form("Wrong value of the calibration option %d not within [%d, %d] !!! Will use NOGAIN", 
-		     my_calib_option, (Int_t)NOGAIN, (Int_t)INJECTIONGAIN ) );
-    fCalibChoice = NOGAIN;
+		     my_calib_option, (Int_t)kNOGAIN, (Int_t)kINJECTIONGAIN ) );
+    fCalibChoice = kNOGAIN;
   }
 }
 
@@ -204,9 +204,9 @@ void AliMUONChamberCalibrationTask::LocalInit()
   TString caliboption4 = "INJECTIONGAIN";
 
   TString caliboption = caliboption1;
-  if ( fCalibChoice == GAINCONSTANTCAPA ) caliboption = caliboption2;
-  if ( fCalibChoice == GAIN ) caliboption = caliboption3;  
-  if ( fCalibChoice == INJECTIONGAIN ) caliboption = caliboption4;
+  if ( fCalibChoice == kGAINCONSTANTCAPA ) caliboption = caliboption2;
+  if ( fCalibChoice == kGAIN ) caliboption = caliboption3;  
+  if ( fCalibChoice == kINJECTIONGAIN ) caliboption = caliboption4;
   fMuonRecoParam->SetCalibrationMode(caliboption.Data());
 
   for (Int_t iCh=0; iCh<10; iCh++) {

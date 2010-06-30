@@ -183,7 +183,7 @@ AliMpPCBPadIterator::First()
 
 //_____________________________________________________________________________
 Bool_t
-AliMpPCBPadIterator::GetNextPosition(Int_t& ix, Int_t& iy)
+AliMpPCBPadIterator::GetNextPosition(Int_t& ix, Int_t& iy) const
 {
   /// Get the next iteration position. 
   /// On input, fOffset must be a valid position (i.e. within iteration

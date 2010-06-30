@@ -56,10 +56,10 @@ class AliMUONRawStream: public TObject {
     AliMUONRawStream& operator = (const AliMUONRawStream& stream);
 
     typedef struct {
-     UInt_t b1:8; ///< first byte word
-     UInt_t b2:8; ///< second byte word
-     UInt_t b3:8; ///< third byte word
-     UInt_t b4:8; ///< fourth byte word
+     UInt_t fB1:8; ///< first byte word
+     UInt_t fB2:8; ///< second byte word
+     UInt_t fB3:8; ///< third byte word
+     UInt_t fB4:8; ///< fourth byte word
     } RawWord;
 
     AliRawReader* fRawReader;    //!< object for reading the raw data  

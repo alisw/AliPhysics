@@ -306,7 +306,7 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
     Bool_t dateOutput = ConvertRawFilesToDate();
     if (!dateOutput) 
     {
-      AliError("DATE output failed. Aborting.");
+      AliError("DATE output failed. Exiting.");
       return;
     }    
   }

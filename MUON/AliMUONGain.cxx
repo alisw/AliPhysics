@@ -496,14 +496,14 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 
 	  Int_t fitproceed=1;
 	  Int_t nbpf2Dynamic=nbpf2;
-	  Int_t ADClimit=4090; // when RMS < 0.5 (in other cases mean values forced to 4095, see DA_PED)
+	  Int_t adcLimit=4090; // when RMS < 0.5 (in other cases mean values forced to 4095, see DA_PED)
 	  for (Int_t j = 0; j < nbs; ++j)
 	    {
 	      Int_t k = j + fnInit;
 	      x[j]    = pedMean[k];
 	      if(x[j]<=0.){fitproceed=0; break;}
 	      //	      if(x[j]>= ADCMax())
-	      if(x[j]>= ADClimit)
+	      if(x[j]>= adcLimit)
 		{
 		  if(j < nbs-1){fitproceed=0; break;}
 		  else { nbpf2Dynamic=nbpf2-1; break;}

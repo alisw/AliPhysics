@@ -333,7 +333,7 @@ AliMUONLocalTrigger::GetName() const
 
 
 //----------------------------------------------------------------------
-Bool_t AliMUONLocalTrigger::IsTrigX()
+Bool_t AliMUONLocalTrigger::IsTrigX() const
 {
 /// Trigger response X strips
   Bool_t xTrig;
@@ -345,7 +345,7 @@ Bool_t AliMUONLocalTrigger::IsTrigX()
 
 
 //----------------------------------------------------------------------
-Bool_t AliMUONLocalTrigger::IsTrigY()
+Bool_t AliMUONLocalTrigger::IsTrigY() const
 {
 /// Trigger response Y strips
   Bool_t yTrig;

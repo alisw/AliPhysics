@@ -57,10 +57,10 @@ public:
   Int_t NumberOfEvents() const;
   
   /// Return the reconstructed data of current event
-  const AliESDEvent* GetESDEvent() { return fESDEvent; }
+  const AliESDEvent* GetESDEvent() const { return fESDEvent; }
   
   /// Return the interface to the Monte Carlo data of current event
-  const AliMCEventHandler* GetMCEventHandler() { return fMCEventHandler; }
+  const AliMCEventHandler* GetMCEventHandler() const { return fMCEventHandler; }
   
   /// Return the track from the store matched with the given track (or 0x0) and the fraction of matched clusters.
   static AliMUONTrack* FindCompatibleTrack(AliMUONTrack &track, AliMUONVTrackStore &trackStore,

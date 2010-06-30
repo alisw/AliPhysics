@@ -380,7 +380,7 @@ Bool_t AliMUONTrackLight::IsParentPionOrKaon(Int_t idparent){
   else return kFALSE;
 }
 //====================================
-Bool_t AliMUONTrackLight::IsDiquark(Int_t pdg){
+Bool_t AliMUONTrackLight::IsDiquark(Int_t pdg) const{
   /// check if the provided pdg code corresponds to a diquark 
   pdg = TMath::Abs(pdg);
   if((pdg > 1000) && (pdg%100 < 10)) return kTRUE;

@@ -48,7 +48,7 @@ public:
   /// Get list of histograms
   TList* GetHistoList() { return fCountHistoList; }
 
-  TH1F* GetOldEffHisto(Int_t hType, Int_t ich, Int_t icath); // obsolete
+  TH1F* GetOldEffHisto(Int_t hType, Int_t ich, Int_t icath) const; // obsolete
 
 protected:
     void ResetHistos(Bool_t deleteObjects = kFALSE);

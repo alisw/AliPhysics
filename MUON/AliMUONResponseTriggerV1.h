@@ -37,7 +37,7 @@ class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger
     void SetParameters(Float_t hv);
     // parametrization of the cluster-size
     Float_t FireStripProb(Float_t x4, Float_t theta) const;
-    void Neighbours(const Int_t cath, const Int_t iX, const Int_t iY, Int_t Xlist[10], Int_t Ylist[10]);
+    void Neighbours(const Int_t cath, const Int_t iX, const Int_t iY, Int_t Xlist[10], Int_t Ylist[10]) const;
     
   ClassDef(AliMUONResponseTriggerV1,1) // Implementation of RPC response
     

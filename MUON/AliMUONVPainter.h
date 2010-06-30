@@ -271,20 +271,20 @@ protected:
     
   virtual TCollection* Children() const;
 
-  mutable TH1* fHistogram; //!< histogram
-  
-  AliMUONVTrackerData* InteractiveReadOutConfig() const;
-  
-private:
-  
-    void FlatList(TList& list);
-
-  AliMUONPainterGroup* CreateGroup(const char* type, Int_t depth);
-  
-protected:
   void CreateGroups();
 
+  AliMUONVTrackerData* InteractiveReadOutConfig() const;
+  
+  mutable TH1* fHistogram; //!< histogram
+  
+  TMap* fPainterGroups; ///< map of groups
+  AliMUONPainterGroup* fResponderGroup; ///< the responder group
+
 private:
+  
+  void FlatList(TList& list);
+
+  AliMUONPainterGroup* CreateGroup(const char* type, Int_t depth);
   
   void GetBoundingBox(Double_t& x1, Double_t& y1, 
                       Double_t& x2, Double_t& y2) const;
@@ -295,21 +295,13 @@ private:
   
   void GetIROCManuList(TObjArray& manuList);
 
-private:
-  
   TString fName; ///< our (short) name
   TString fPathName; ///< our long name
   TString fType; ///< our type (DE, Chamber, MANU, etc...)
   AliMUONVPainter* fMother;  ///< our mother
   AliMUONPainterGroup* fGroup; ///< our group
   AliMUONContour* fContour;  ///< our contour
-protected:
-  TMap* fPainterGroups; ///< map of groups
-private:
   TObjArray* fChildren; ///< our children
-protected:
-  AliMUONPainterGroup* fResponderGroup; ///< the responder group
-private:
   AliMUONPainterGroup* fPlotterGroup; ///< the plotter group
   Double_t fBorderFactor; ///< border factor for visu 
   TVirtualPad* fPad; ///< the pad we're drawn in

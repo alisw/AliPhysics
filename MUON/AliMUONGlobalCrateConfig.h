@@ -28,7 +28,7 @@ class AliMUONGlobalCrateConfig : public  TNamed {
           /// set global crate enbale
     void SetGlobalCrateEnable(UInt_t enable) {fGlobalCrateEnable = enable;}
          /// Get global crate enbale
-    UInt_t GetGlobalCrateEnable() {return fGlobalCrateEnable;}
+    UInt_t GetGlobalCrateEnable() const {return fGlobalCrateEnable;}
     
     // Jtag
             /// Get Jtag board VME address

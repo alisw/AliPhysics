@@ -49,8 +49,6 @@ class AliMUONRawStreamTracker: public AliMUONVRawStreamTracker {
     
     virtual Bool_t NextDDL();
 
-    /// Return maximum number of DDLs
-    Int_t GetMaxDDL() const {return fgkMaxDDL;}
     /// Return maximum number of block per DDL in DATE file
     Int_t GetMaxBlock() const {return  fPayload->GetMaxBlock();}
     /// Return maximum number of Dsp per block in DATE file
@@ -124,7 +122,6 @@ class AliMUONRawStreamTracker: public AliMUONVRawStreamTracker {
     Int_t fCurrentBusStructIndex;            //!< for iterator: current bus index    
     Int_t fCurrentDataIndex;                 //!< for iterator: current data index
     Int_t  fDDL;                             //!< number of DDL
-    static const Int_t  fgkMaxDDL;           //!< maximum number of DDLs
 
     ClassDef(AliMUONRawStreamTracker, 4)    // base class for reading MUON raw digits
 };

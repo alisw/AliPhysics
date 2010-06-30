@@ -68,7 +68,7 @@ public:
 private:
   Bool_t AddSortedPoint(Float_t currVal, TArrayD& position, const Float_t kResetValue);
   /// Return index
-  Int_t GetIndex(Int_t chamber, Int_t cathode) { return 2*chamber + cathode;}
+  Int_t GetIndex(Int_t chamber, Int_t cathode) const { return 2*chamber + cathode;}
 
   Bool_t InitOrDisplayTriggerInfo(TObject* inputHisto, TH2* displayHisto,
 				  EDisplayType displayType,

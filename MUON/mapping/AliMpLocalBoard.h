@@ -91,13 +91,13 @@ class AliMpLocalBoard : public TNamed
     // Id to be copy to or from
     
     /// Get Id from where the X input are copied
-    Int_t GetInputXfrom() {return fInputXfrom;}
+    Int_t GetInputXfrom() const {return fInputXfrom;}
     /// Get Id to where the X input are copied
-    Int_t GetInputXto()   {return fInputXto;}
+    Int_t GetInputXto() const   {return fInputXto;}
     /// Get Id from where the Y input are copied
-    Int_t GetInputYfrom() {return fInputYfrom;}
+    Int_t GetInputYfrom() const {return fInputYfrom;}
     /// Get Id to where the Y input are copied
-    Int_t GetInputYto()   {return fInputYto;}
+    Int_t GetInputYto() const  {return fInputYto;}
 
     /// Set Id from where the X input are copied 
     void SetInputXfrom(Int_t id) {fInputXfrom = id;}

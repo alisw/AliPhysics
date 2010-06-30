@@ -72,7 +72,7 @@ class AliMUONGeometryBuilder : public TObject
 	     const char* only, Bool_t makeAssembly = false) const;
     void CreateGeometryWithTGeo();
     void CreateGeometryWithoutTGeo();
-    void SetAlign(AliMUONVGeometryBuilder* builder);	     
+    void SetAlignToBuilder(AliMUONVGeometryBuilder* builder) const;	     
 
     // static data members
     static const TString  fgkDefaultVolPathsFileName;  ///< default volume paths file name					   

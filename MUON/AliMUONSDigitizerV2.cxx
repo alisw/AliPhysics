@@ -144,7 +144,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     runLoader->GetEvent(iEvent);
   
     // for pile up studies
-    float T0=fgkMaxIntTime;  int AA=0;
+    float t0=fgkMaxIntTime;  int aa=0;
     AliHeader* header = runLoader->GetHeader();   
     AliGenCocktailEventHeader* cocktailHeader =
       dynamic_cast<AliGenCocktailEventHeader*>(header->GenEventHeader());
@@ -155,15 +155,15 @@ AliMUONSDigitizerV2::Exec(Option_t*)
       AliGenEventHeader *entry; 
       while((entry = (AliGenEventHeader*)nextH())) {
 	float t = entry->InteractionTime();	
-	if (TMath::Abs(t)<TMath::Abs(T0)) T0 = t;      
-	AA++;
+	if (TMath::Abs(t)<TMath::Abs(t0)) t0 = t;      
+	aa++;
       }
     } else {
       AliGenEventHeader* evtHeader = 
 	(AliGenEventHeader*)(header->GenEventHeader());
       float t = evtHeader->InteractionTime();		
-      if (TMath::Abs(t)<TMath::Abs(T0)) T0 = t;           
-      AA++;
+      if (TMath::Abs(t)<TMath::Abs(t0)) t0 = t;           
+      aa++;
     }
 
     loader->MakeSDigitsContainer();
@@ -196,14 +196,14 @@ AliMUONSDigitizerV2::Exec(Option_t*)
       while ( ( hit = static_cast<AliMUONHit*>(next()) ) )       
       {
 	Int_t chamberId = hit->Chamber()-1;
- 	Float_t age = hit->Age()-T0;
+ 	Float_t age = hit->Age()-t0;
 
         AliMUONChamber& chamber = muon->Chamber(chamberId);
         AliMUONResponse* response = chamber.ResponseModel();
         
         // This is the heart of this method : the dis-integration
         TList digits;        
-	if (AA>1){  // if there are pileup events
+	if (aa>1){  // if there are pileup events
 	  Float_t chamberTime = AliMUONConstants::AverageChamberT(chamberId);
 	  Float_t timeDif=age-chamberTime;	  
 	  if (timeDif>fgkMaxPosTimeDif || timeDif<fgkMaxNegTimeDif) {

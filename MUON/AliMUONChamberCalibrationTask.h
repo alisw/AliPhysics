@@ -35,10 +35,10 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
 
   /// enumerate the list of the available modes for the calibration
   enum Calibration_t { 
-    NOGAIN, 
-    GAINCONSTANTCAPA, 
-    GAIN, 
-    INJECTIONGAIN 
+    kNOGAIN, 
+    kGAINCONSTANTCAPA, 
+    kGAIN, 
+    kINJECTIONGAIN 
   }; 
 
   // Constructors

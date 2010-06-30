@@ -497,7 +497,7 @@ AliMpMotifType::Save(const char* motifName) const
     << "#connecteur_berg kapton padname not_used" << endl
     << "#for slats there's no kapton connector, so it's always 1" 
     << " (zero make the reader" << endl
-    << "#abort, so it's not a valid value here)." << endl
+    << "#exit, so it's not a valid value here)." << endl
     << "#" << endl;
   
   for ( Int_t ix = 0; ix < GetNofPadsX(); ++ix ) 

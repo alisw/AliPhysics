@@ -50,9 +50,6 @@
 ClassImp(AliMUONRawStreamTracker)
 /// \endcond
 
-const Int_t AliMUONRawStreamTracker::fgkMaxDDL = 20;
-
-
 //___________________________________________
 AliMUONRawStreamTracker::AliMUONRawStreamTracker()
  : AliMUONVRawStreamTracker(),

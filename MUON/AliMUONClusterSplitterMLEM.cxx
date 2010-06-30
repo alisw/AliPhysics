@@ -238,7 +238,7 @@ AliMUONClusterSplitterMLEM::Fcn1(const AliMUONCluster& cluster,
 }
 
 //_____________________________________________________________________________
-Double_t AliMUONClusterSplitterMLEM::Param2Coef(Int_t icand, Double_t coef, Double_t *par)
+Double_t AliMUONClusterSplitterMLEM::Param2Coef(Int_t icand, Double_t coef, Double_t *par) const
 {
   /// Extract hit contribution scale factor from fit parameters
   

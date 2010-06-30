@@ -94,14 +94,13 @@ protected:
   Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE);                 
   Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE);  
   
+  AliQADataMakerRec* fMaster; ///< master to get access to its methods
+
 private:
   /// Not implemented
   AliMUONVQADataMakerRec(const AliMUONVQADataMakerRec& rhs);
   /// Not implemented
   AliMUONVQADataMakerRec& operator=(const AliMUONVQADataMakerRec& rhs);
-  
-protected:
-  AliQADataMakerRec* fMaster; ///< master to get access to its methods
   
   ClassDef(AliMUONVQADataMakerRec,1) // Interface for a MUON QADataMakerRec
 };

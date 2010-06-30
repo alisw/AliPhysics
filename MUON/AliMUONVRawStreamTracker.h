@@ -69,6 +69,10 @@ public:
 		kParityErr      = 3  ///< parity error
 	};
 
+protected:	
+
+	static const Int_t fgkMaxDDL;   //!< maximum number of DDLs
+
 private:
 
 	// Do not allow copying of this class.
@@ -76,8 +80,6 @@ private:
 	AliMUONVRawStreamTracker(const AliMUONVRawStreamTracker& stream);
         /// Not implemented
 	AliMUONVRawStreamTracker& operator = (const AliMUONVRawStreamTracker& stream);
-
-	static const Int_t fgkMaxDDL;   //!< maximum number of DDLs
 
 	ClassDef(AliMUONVRawStreamTracker, 0) // Base class for reading MUON raw digits from tracking chambers.
 };

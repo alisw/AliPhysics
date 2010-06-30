@@ -149,7 +149,7 @@ AliMUONVCluster* AliMUONClusterStoreV2::Add(const AliMUONVCluster& vCluster)
   // check that there is no cluster with the same Id
   AliMUONVCluster *c = FindObject(cluster->GetUniqueID());
   if (c) {
-    AliError("cluster store already contains a cluster with the same ID --> add() aborted:");
+    AliError("cluster store already contains a cluster with the same ID --> add() exited:");
     c->Print("FULL");
     return 0x0;
   }
@@ -176,7 +176,7 @@ AliMUONVCluster* AliMUONClusterStoreV2::Add(Int_t chamberId, Int_t detElemId, In
   // check that there is no cluster with the same Id
   AliMUONVCluster *c = FindObject(AliMUONVCluster::BuildUniqueID(chamberId, detElemId, clusterIndex));
   if (c) {
-    AliError("cluster store already contains a cluster with the same ID --> add() aborted:");
+    AliError("cluster store already contains a cluster with the same ID --> add() exited:");
     c->Print("FULL");
     return 0x0;
   }

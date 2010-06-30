@@ -255,7 +255,7 @@ AliMUONTriggerEfficiencyCells::GetHistoName(Int_t histoType, Int_t countType,
 
 //__________________________________________________________________________
 TH1F* AliMUONTriggerEfficiencyCells::GetOldEffHisto(Int_t histoType,
-						    Int_t ich, Int_t icath)
+						    Int_t ich, Int_t icath) const
 {
   //
   /// Compatibility with old class

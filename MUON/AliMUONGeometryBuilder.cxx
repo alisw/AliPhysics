@@ -492,7 +492,7 @@ void AliMUONGeometryBuilder::CreateGeometryWithoutTGeo()
 }
 
 //_____________________________________________________________________________
-void AliMUONGeometryBuilder::SetAlign(AliMUONVGeometryBuilder* builder)
+void AliMUONGeometryBuilder::SetAlignToBuilder(AliMUONVGeometryBuilder* builder) const
 {
 /// Set align option to all geometry modules associated with the builder
 
@@ -523,7 +523,7 @@ void AliMUONGeometryBuilder::AddBuilder(AliMUONVGeometryBuilder* geomBuilder)
   if (geomBuilder->ApplyGlobalTransformation())
     geomBuilder->SetReferenceFrame(fGlobalTransformation);
   
-  SetAlign(geomBuilder);
+  SetAlignToBuilder(geomBuilder);
 }
 
 //______________________________________________________________________________
@@ -635,7 +635,7 @@ void AliMUONGeometryBuilder::SetAlign(Bool_t align)
     AliMUONVGeometryBuilder* builder
       = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
     
-    SetAlign(builder); 
+    SetAlignToBuilder(builder); 
   }   
 }
 
@@ -652,6 +652,6 @@ void AliMUONGeometryBuilder::SetAlign(const TString& fileName, Bool_t align)
     AliMUONVGeometryBuilder* builder
       = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
     
-    SetAlign(builder); 
+    SetAlignToBuilder(builder); 
   }   
 }

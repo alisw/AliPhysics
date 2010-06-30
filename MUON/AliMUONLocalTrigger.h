@@ -73,9 +73,9 @@ class AliMUONLocalTrigger : public TObject {
   void  SetDeviation(Int_t deviation);
 
   /// Trigger response X strips
-  Bool_t IsTrigX();
+  Bool_t IsTrigX() const;
   /// Trigger response Y strips
-  Bool_t IsTrigY();
+  Bool_t IsTrigY() const;
 
   /// Hit pattern from the re-calculated trigger response after removing chambers one-by-one
   UShort_t GetHitPatternFromResponse() const {return fHitPatternFromResponse; }

@@ -170,8 +170,8 @@ private:
   
   mutable AliMUONRejectList* fRejectList; //!< reject list
 
-  static AliMUONVStore* fBypassPedestals;
-  static AliMUONVStore* fBypassGains;
+  static AliMUONVStore* fgBypassPedestals;
+  static AliMUONVStore* fgBypassGains;
   
   mutable AliMUONVStore* fConfig; //!< configuration of the tracker
   
