@@ -126,7 +126,7 @@ void AliEveVZEROModule::DigitSelected(Int_t idx)
   hADC->SetYTitle("ADC value");
   hADC->SetStats(kFALSE);
   for (Int_t iEv = 0; iEv < AliVZERORawStream::kNEvOfInt; ++iEv) {
-    printf("%4.1f ",fStream->GetPedestal(iPMT,iEv));
+    printf("%4d ",fStream->GetPedestal(iPMT,iEv));
     hADC->SetBinContent(iEv+1,fStream->GetPedestal(iPMT,iEv));
   }
   printf("\nTime = %3.1f ns  Width = %3.1f ns\n",(Float_t)fStream->GetTime(iPMT)/10.,(Float_t)fStream->GetWidth(iPMT)/10.);
