@@ -276,10 +276,11 @@ AliMUONReconstructor::CreateDigitMaker() const
 
   fDigitMaker = new AliMUONDigitMaker(enableErrorLogging);
   option.ToUpper();
-  if ( option.Contains("SAVEDIGITS" ))
-    {
-      fDigitMaker->SetMakeTriggerDigits(kTRUE);
-    }
+
+  // Always make trigger digits
+  // (needed when calculating trigger chamber efficiency)
+  fDigitMaker->SetMakeTriggerDigits(kTRUE);
+
   if ( GetRecoParam()->TryRecover() )
   {
     fDigitMaker->SetTryRecover(kTRUE);
@@ -310,7 +311,6 @@ AliMUONReconstructor::CreateTracker() const
   /// Create the MUONTracker object
   
   CreateTriggerCircuit();
-  CreateDigitMaker();
   CreateClusterServer();
 
   AliMUONTracker* tracker(0x0);
@@ -320,7 +320,6 @@ AliMUONReconstructor::CreateTracker() const
     tracker = new AliMUONTracker(GetRecoParam(),
 				 0x0,
                                  *DigitStore(),
-                                 fDigitMaker,
                                  fTransformer,
                                  fTriggerCircuit);
   }
@@ -329,7 +328,6 @@ AliMUONReconstructor::CreateTracker() const
     tracker = new AliMUONTracker(GetRecoParam(),
 				 fClusterServer,
                                  *DigitStore(),
-                                 fDigitMaker,
                                  fTransformer,
                                  fTriggerCircuit);
   }

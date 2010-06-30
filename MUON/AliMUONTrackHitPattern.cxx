@@ -35,8 +35,7 @@
 
 #include "AliMUONConstants.h"
 #include "AliMUONVDigit.h"
-#include "AliMUONDigitMaker.h"
-#include "AliMUONDigitStoreV1.h"
+#include "AliMUONVDigitStore.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONLocalTriggerBoard.h"
@@ -81,11 +80,11 @@ ClassImp(AliMUONTrackHitPattern) // Class implementation in ROOT context
 //______________________________________________________________________________
 AliMUONTrackHitPattern::AliMUONTrackHitPattern(const AliMUONRecoParam* recoParam,
                                                const AliMUONGeometryTransformer& transformer,
-                                               const AliMUONDigitMaker& digitMaker)
+                                               const AliMUONVDigitStore& digitStore)
 : TObject(),
 fkRecoParam(recoParam),
 fkTransformer(transformer),
-fkDigitMaker(digitMaker),
+fkDigitStore(digitStore),
 fkMaxDistance(99999.)
 {
     /// Default constructor
@@ -121,14 +120,11 @@ void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackSt
   /// and searches for matching trigger tracks and digits
   //
 
-  AliMUONDigitStoreV1 digitStore;
-  fkDigitMaker.TriggerToDigitsStore(triggerStore,digitStore);
-
   // Get the hit pattern for all trigger tracks
   AliMUONTriggerTrack* triggerTrack;
   TIter itTriggerTrack(triggerTrackStore.CreateIterator());
   while ( ( triggerTrack = static_cast<AliMUONTriggerTrack*>(itTriggerTrack() ) ) ){
-    UShort_t pattern = GetHitPattern(triggerTrack, digitStore);
+    UShort_t pattern = GetHitPattern(triggerTrack);
     triggerTrack->SetHitsPatternInTrigCh(pattern);
     AliDebug(1, Form("Hit pattern: hits 0x%x  slat %2i  board %3i  effFlag %i",
 		     pattern & 0xFF, AliESDMuonTrack::GetSlatOrInfo(pattern),
@@ -155,7 +151,7 @@ void AliMUONTrackHitPattern::ExecuteValidation(const AliMUONVTrackStore& trackSt
     // the obtained pattern is good for check, but not good for efficiency determination.
     UShort_t pattern = matchedTriggerTrack ?
       matchedTriggerTrack->GetHitsPatternInTrigCh() : 
-      GetHitPattern(&trackParam, digitStore);
+      GetHitPattern(&trackParam);
 
     track->SetHitsPatternInTrigCh(pattern);
   }
@@ -293,21 +289,19 @@ AliMUONTrackHitPattern::MatchTriggerTrack(AliMUONTrack* track,
 
 
 //______________________________________________________________________________
-UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTriggerTrack* matchedTriggerTrack,
-					       AliMUONVDigitStore& digitStore) const
+UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTriggerTrack* matchedTriggerTrack) const
 {
   //
   /// Get hit pattern on trigger chambers for the current trigger track
   //
   UShort_t pattern = 0;
-  PerformTrigTrackMatch(pattern, matchedTriggerTrack, digitStore);
+  PerformTrigTrackMatch(pattern, matchedTriggerTrack);
   return pattern;
 }
 
 
 //______________________________________________________________________________
-UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTrackParam* trackParam,
-					       AliMUONVDigitStore& digitStore) const
+UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTrackParam* trackParam) const
 {
   //
   /// Get hit pattern on trigger chambers for the current tracker track
@@ -320,7 +314,7 @@ UShort_t AliMUONTrackHitPattern::GetHitPattern(AliMUONTrackParam* trackParam,
   {
     Int_t iChamber = kNTrackingCh+ch;
     AliMUONTrackExtrap::ExtrapToZCov(trackParam, AliMUONConstants::DefaultChamberZ(iChamber));
-    FindPadMatchingTrack(digitStore, *trackParam, isMatch, iChamber);
+    FindPadMatchingTrack(*trackParam, isMatch, iChamber);
     for(Int_t cath=0; cath<2; ++cath)
     {
       if(isMatch[cath]) AliESDMuonTrack::SetFiredChamber(pattern, cath, ch);
@@ -354,8 +348,7 @@ AliMUONTrackHitPattern::ApplyMCSCorrections(AliMUONTrackParam& trackParam) const
 
 //______________________________________________________________________________
 void 
-AliMUONTrackHitPattern::FindPadMatchingTrack(const AliMUONVDigitStore& digitStore,
-                                             const AliMUONTrackParam& trackParam,
+AliMUONTrackHitPattern::FindPadMatchingTrack(const AliMUONTrackParam& trackParam,
                                              Bool_t isMatch[2], Int_t iChamber) const
 {
     //
@@ -370,7 +363,7 @@ AliMUONTrackHitPattern::FindPadMatchingTrack(const AliMUONVDigitStore& digitStor
       minMatchDist[cath]=fkMaxDistance/10.;
     }
 
-    TIter next(digitStore.CreateIterator());
+    TIter next(fkDigitStore.CreateTriggerIterator());
     AliMUONVDigit* mDigit;
 
     while ( ( mDigit = static_cast<AliMUONVDigit*>(next()) ) )
@@ -438,7 +431,7 @@ AliMUONTrackHitPattern::MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t z
 
 
 //_____________________________________________________________________________
-Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(const AliMUONVDigitStore& digitStore, Int_t &detElemId,
+Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(Int_t &detElemId,
 						  Float_t coor[2], Bool_t isMatch[2],
 						  TArrayI nboard[2], TArrayF &zRealMatch, Float_t y11) const
 {
@@ -466,7 +459,7 @@ Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(const AliMUONVDigitStore& digi
     Float_t foundZmatch=999.;
     Float_t yCoorAtPadZ=999.;
 
-    TIter next(digitStore.CreateIterator());
+    TIter next(fkDigitStore.CreateTriggerIterator());
     AliMUONVDigit* mDigit;
     Int_t idigit=0;
     
@@ -660,8 +653,7 @@ void AliMUONTrackHitPattern::LocalBoardFromPos(Float_t x, Float_t y,
 
 //_____________________________________________________________________________
 Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
-						     const AliMUONTriggerTrack* matchedTrigTrack,
-						     AliMUONVDigitStore& digitStore) const
+						     const AliMUONTriggerTrack* matchedTrigTrack) const
 {
   //
   /// It searches for matching digits around the trigger track.
@@ -749,7 +741,7 @@ Bool_t AliMUONTrackHitPattern::PerformTrigTrackMatch(UShort_t &pattern,
       continue;
     }
 		
-    triggeredDigits[currCh] = FindPadMatchingTrig(digitStore, detElemIdFromTrack, trackIntersectCh[currCh], isMatch, nboard, zRealMatch, y11);
+    triggeredDigits[currCh] = FindPadMatchingTrig(detElemIdFromTrack, trackIntersectCh[currCh], isMatch, nboard, zRealMatch, y11);
 
     // if FindPadMatchingTrig = -500 => too many digits matching pad =>
     //                               => Event not clear => Do not use for efficiency calculation

@@ -20,7 +20,6 @@ class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
 class AliMUONVTriggerTrackStore;
 class AliMUONTrackParam;
-class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
 class AliMUONVDigitStore;
 class AliMUONTriggerTrack;
@@ -33,7 +32,7 @@ public:
 
   AliMUONTrackHitPattern(const AliMUONRecoParam* recoParam,
                          const AliMUONGeometryTransformer& transformer,
-                         const AliMUONDigitMaker& digitMaker);
+                         const AliMUONVDigitStore& digitStore);
   virtual ~AliMUONTrackHitPattern(); // Destructor
 
   void ExecuteValidation(const AliMUONVTrackStore& trackStore,
@@ -45,18 +44,15 @@ public:
 					 const AliMUONVTriggerTrackStore& triggerTrackStore,
 					 const AliMUONVTriggerStore& triggerStore) const;
 
-  UShort_t GetHitPattern(AliMUONTriggerTrack* matchedTriggerTrack,
-			 AliMUONVDigitStore& digitStore) const;
+  UShort_t GetHitPattern(AliMUONTriggerTrack* matchedTriggerTrack) const;
   
-  UShort_t GetHitPattern(AliMUONTrackParam* trackParam,
-			 AliMUONVDigitStore& digitStore) const;
+  UShort_t GetHitPattern(AliMUONTrackParam* trackParam) const;
 
 protected:
   void ApplyMCSCorrections(AliMUONTrackParam& trackParam) const;
   
   // Methods for hit pattern from tracker track
-  void FindPadMatchingTrack(const AliMUONVDigitStore& digitStore,
-			    const AliMUONTrackParam& trackParam,
+  void FindPadMatchingTrack(const AliMUONTrackParam& trackParam,
 			    Bool_t isMatch[2], Int_t iChamber) const;
 
   Float_t MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t zPad,
@@ -65,10 +61,9 @@ protected:
 
   // Methods for hit pattern from matched trigger track
   Bool_t PerformTrigTrackMatch(UShort_t &pattern,
-			       const AliMUONTriggerTrack* matchedTrigTrack,
-			       AliMUONVDigitStore& digitStore) const;
+			       const AliMUONTriggerTrack* matchedTrigTrack) const;
   
-  Int_t FindPadMatchingTrig(const AliMUONVDigitStore& digitStore, Int_t &detElemId, Float_t coor[2],
+  Int_t FindPadMatchingTrig(Int_t &detElemId, Float_t coor[2],
 			    Bool_t isMatch[2], TArrayI nboard[2],
 			    TArrayF &zRealMatch, Float_t y11) const;
   
@@ -93,7 +88,7 @@ private:
 
   const AliMUONRecoParam* fkRecoParam; //!< pointer to reco parameters
   const AliMUONGeometryTransformer& fkTransformer; //!< geometry transformer
-  const AliMUONDigitMaker& fkDigitMaker; //!< pointer to digit maker
+  const AliMUONVDigitStore& fkDigitStore; //!< digitStore
 
   const Float_t fkMaxDistance; //!< Maximum distance for reference
   static const Int_t fgkNcathodes=2; //!<Number of cathodes

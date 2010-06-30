@@ -15,7 +15,6 @@
 
 class AliCluster;
 class AliESDEvent;
-class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
 class AliMUONRecoParam;
 class AliMUONTrackHitPattern;
@@ -35,7 +34,6 @@ class AliMUONTracker : public AliTracker
   AliMUONTracker(const AliMUONRecoParam* recoParam,
                  AliMUONVClusterServer* clusterServer,
                  AliMUONVDigitStore& digitStore,
-                 const AliMUONDigitMaker* digitMaker=0,
                  const AliMUONGeometryTransformer* transformer=0,
                  const AliMUONTriggerCircuit* triggerCircuit=0);
   virtual ~AliMUONTracker();
@@ -73,7 +71,6 @@ private:
   void SetupClusterServer(AliMUONVClusterServer& clusterServer);
   
 private:
-  const AliMUONDigitMaker* fkDigitMaker; //!< digit maker (not owner)
   const AliMUONGeometryTransformer* fkTransformer; //!< geometry transformer (not owner)
   const AliMUONTriggerCircuit* fkTriggerCircuit; //!< trigger circuit (not owner)
   AliMUONTrackHitPattern* fTrackHitPatternMaker; //!< trigger hit pattern maker
