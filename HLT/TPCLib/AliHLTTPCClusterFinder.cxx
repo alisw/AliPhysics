@@ -87,20 +87,31 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fDoMC(kFALSE),
   fClusterMCVector(),
   fOfflineTransform(NULL),
+  fOfflineTPCParam( NULL ),
   fOfflineTPCRecoParam(*AliTPCRecoParam::GetHLTParam()),
   fTimeMeanDiff(2),
   fReleaseMemory(0)
 {
   //constructor  
+
+  //uptate the transform class
+
   fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform(); 
   if(!fOfflineTransform){
-    HLTError("AliHLTTPCClusterFinder():  Offline transform not in AliTPCcalibDB.");
+    HLTError("AliHLTTPCClusterFinder()::UpdateCAlibDB::  Offline transform not in AliTPCcalibDB.");
   }
   else{
-    fOfflineTPCRecoParam.SetUseExBCorrection(1);
-    fOfflineTPCRecoParam.SetUseTOFCorrection(1);
     fOfflineTransform->SetCurrentRecoParam(&fOfflineTPCRecoParam);
   }
+
+  fOfflineTPCParam = AliTPCcalibDB::Instance()->GetParameters();
+  if( !fOfflineTPCParam ){
+    HLTError("AliHLTTPCClusterFinder()::UpdateCAlibDB::  Offline TPC parameters not in AliTPCcalibDB.");
+  } else {
+    fOfflineTPCParam->Update();
+    fOfflineTPCParam->ReadGeoMatrices();
+  }    
+
 }
 
 AliHLTTPCClusterFinder::~AliHLTTPCClusterFinder(){
@@ -637,14 +648,29 @@ Bool_t AliHLTTPCClusterFinder::UpdateCalibDB(){
   //update the db
   AliTPCcalibDB::Instance()->Update();
 
+  Bool_t ret = 1;
+
   //uptate the transform class
-  AliTPCTransform * tmp = AliTPCcalibDB::Instance()->GetTransform(); 
-  if(!tmp){
-    HLTError("AliHLTTPCClusterFinder::UpdateCAlibDB: Offline transform not in AliTPCcalibDB.");
-    return 0;
+
+  fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform(); 
+  if(!fOfflineTransform){
+    HLTError("AliHLTTPCClusterFinder()::UpdateCAlibDB::  Offline transform not in AliTPCcalibDB.");
+    ret = 0;
   }
-  fOfflineTransform = tmp;
-  return 1;
+  else{
+    fOfflineTransform->SetCurrentRecoParam(&fOfflineTPCRecoParam);
+  }
+
+  fOfflineTPCParam = AliTPCcalibDB::Instance()->GetParameters();
+  if( !fOfflineTPCParam ){
+    HLTError("AliHLTTPCClusterFinder()::UpdateCAlibDB::  Offline TPC parameters not in AliTPCcalibDB.");
+    ret = 0;
+  } else {
+    fOfflineTPCParam->Update();
+    fOfflineTPCParam->ReadGeoMatrices();
+  }    
+
+  return ret;
 }
 
 //---------------------------------- Under this line the old sorted clusterfinder functions can be found --------------------------------
@@ -1161,13 +1187,11 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	  Int_t iSector[1]={thissector};
 	  fOfflineTransform->Transform(x,iSector,0,1);
 	  double y[3] = {x[0], x[1], x[2] };	  
-	  {
-	    const AliTPCParam * tpcPar = AliTPCcalibDB::Instance()->GetParameters();
-	    if( tpcPar ){
-	      TGeoHMatrix  *alignment = tpcPar->GetClusterMatrix( thissector );
-	      if ( alignment ) alignment->LocalToMaster( x, y);
-	    }
-	  }
+	  
+	  if( fOfflineTPCParam && thissector<fOfflineTPCParam->GetNSector() ){
+	    TGeoHMatrix  *alignment = fOfflineTPCParam->GetClusterMatrix( thissector );
+	    if ( alignment ) alignment->LocalToMaster( x, y);
+	  }	  
 
 	  fSpacePointData[counter].fX = y[0];
 	  fSpacePointData[counter].fY = y[1];
