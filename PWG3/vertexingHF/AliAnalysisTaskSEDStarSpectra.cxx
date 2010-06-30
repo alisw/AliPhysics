@@ -1033,7 +1033,11 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(Int_t ptbin, AliAODRecoCas
   Double_t wrongMassD0=0.,wrongMassDstar=0.;
   theD0particle->SelectD0(vhf->GetD0toKpiCuts(),okD0WrongSign,okD0barWrongSign);
   
-  if(part->Charge()>0 ? ( okD0WrongSign = 0) : ( okD0barWrongSign = 0));
+  if(part->Charge()>0) { 
+    okD0WrongSign = 0;
+  } else {
+    okD0barWrongSign = 0;
+  }
   //wrong D0 inv mass
   if(okD0WrongSign==1){
     wrongMassD0 = theD0particle->InvMassD0();

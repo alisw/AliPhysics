@@ -1537,7 +1537,7 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
     if(writeFitInfo > 1){
       for (Int_t i=0;i<fNFinalPars-3;i++){
 	pinfob->SetTextColor(kRed);
-	TString str=Form("%s = %f #pm %f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+	str=Form("%s = %f #pm %f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
 	pinfob->AddText(str);
       }
       pd->cd();
