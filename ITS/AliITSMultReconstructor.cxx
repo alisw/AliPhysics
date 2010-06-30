@@ -377,7 +377,7 @@ void AliITSMultReconstructor::Reconstruct(AliESDEvent* esd, TTree* treeRP)
   // see if there is a SPD vertex 
   Bool_t isVtxOK=kTRUE, isCosmics=kFALSE;
   AliESDVertex* vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexSPD();
-  if (!vtx && vtx->GetNContributors()<0) isVtxOK = kFALSE;
+  if (!vtx || vtx->GetNContributors()<1) isVtxOK = kFALSE;
   if (vtx && strstr(vtx->GetTitle(),"cosmics")) {
     isVtxOK = kFALSE;
     isCosmics = kTRUE;
@@ -1006,8 +1006,8 @@ void AliITSMultReconstructor::ProcessESDTracks()
   //
   if (!fESDEvent) return;
   AliESDVertex* vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexTracks();
-  if (!vtx) vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexSPD();
-  if (!vtx) {
+  if (!vtx || vtx->GetNContributors()<1) vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexSPD();
+  if (!vtx || vtx->GetNContributors()<1) {
     AliDebug(1,"No primary vertex: cannot flag primary tracks");
     return;
   }
@@ -1189,4 +1189,3 @@ Bool_t AliITSMultReconstructor::CanBeElectron(const AliESDtrack* trc) const
     pid[AliPID::kElectron]>fCutMinElectronProbESD;
   //
 }
-
