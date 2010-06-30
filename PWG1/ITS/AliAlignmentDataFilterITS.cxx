@@ -768,7 +768,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
   if(ntracks==0) return;
 
   const AliESDVertex *vertexTracks = esd->GetPrimaryVertexTracks();
-  if(!vertexTracks);
+  if(!vertexTracks) return;
   if(vertexTracks->GetNContributors()<=0) return;
 
   Double_t vtxpos[3]; vertexTracks->GetXYZ(vtxpos);
