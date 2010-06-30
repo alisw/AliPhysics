@@ -49,7 +49,31 @@
 #pragma link C++ class AliHLTBlockDataCollection+;
 #pragma link C++ class AliHLTTriggerDecision+;
 #pragma link C++ class AliHLTGlobalTriggerDecision-;  // '-' option since the class uses a custom streamer.
+
+#include "RVersion.h"
+#if ROOT_VERSION_CODE < 334336 //ROOT_VERSION(5,26,0)
+
+#pragma link C++ class AliHLTReadoutList-;  // '-' option since the class uses a custom streamer.
+
+#else // ROOT version check
+
 #pragma link C++ class AliHLTReadoutList+;
+
+// Do nothing special with schema evolution for new versions of the readout list.
+#pragma read sourceClass="AliHLTReadoutList" version="[3-]" targetClass="AliHLTReadoutList"
+
+// For old versions we need to convert the format of the readout list into the new one.
+#pragma read sourceClass="AliHLTReadoutList" version="[1-2]" targetClass="AliHLTReadoutList"\
+  source="AliHLTEventDDL fReadoutList" target="fReadoutList"\
+  code="{\
+    fReadoutList.fCount = gkAliHLTDDLListSize;\
+    for (int i = 0; i < 28; ++i) fReadoutList.fList[i] = onfile.fReadoutList.fList[i];\
+    fReadoutList.fList[28] = 0x0;\
+    for (int i = 29; i < gkAliHLTDDLListSize; ++i) fReadoutList.fList[i] = onfile.fReadoutList.fList[i-1];\
+  }"
+
+#endif // ROOT version check
+
 #pragma link C++ class AliHLTTriggerDomain+;
 #pragma link C++ class AliHLTDomainEntry+;
 #pragma link C++ class AliHLTTriggerMenu+;

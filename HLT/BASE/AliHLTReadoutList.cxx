@@ -152,24 +152,7 @@ AliHLTReadoutList::AliHLTReadoutList(const AliHLTEventDDL& list) :
 {
   // Constructor to create readout list from AliHLTEventDDL structure.
   // See header file for more details.
-  fReadoutList.fCount = gkAliHLTDDLListSize;  // Required by ALICE-INT-2007-015
-  memset(fReadoutList.fList, 0x0, sizeof(fReadoutList.fList));
-  // Handle lists of different sizes. If the size is for a known version
-  // of AliHLTEventDDL then handle appropriately, otherwise just copy only
-  // the overlapping part of the list.
-  if (list.fCount == gkAliHLTDDLListSizeV0)
-  {
-    memcpy(&fReadoutList.fList[0], &list.fList[0], sizeof(AliHLTUInt32_t)*28);
-    memcpy(&fReadoutList.fList[29], &list.fList[28], sizeof(AliHLTUInt32_t)*2);
-  }
-  else if (list.fCount == gkAliHLTDDLListSizeV1)
-  {
-    memcpy(&fReadoutList.fList, &list.fList, sizeof(AliHLTEventDDL));
-  }
-  else
-  {
-    memcpy(&fReadoutList.fList, &list.fList, (fReadoutList.fCount<list.fCount?fReadoutList.fCount:list.fCount)*sizeof(AliHLTUInt32_t));
-  }
+  FillStruct(list);
 }
 
 
@@ -179,7 +162,39 @@ AliHLTReadoutList::AliHLTReadoutList(const AliHLTReadoutList& list) :
 {
   // Copy constructor performs a deep copy.
   
-  memcpy(&fReadoutList, &list.fReadoutList, sizeof(fReadoutList));
+  if (list.fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize)
+  {
+    memcpy(&fReadoutList, &list.fReadoutList, sizeof(fReadoutList));
+  }
+  else
+  {
+    FillStruct(list);
+  }
+}
+
+
+void AliHLTReadoutList::FillStruct(const AliHLTEventDDL& list)
+{
+  // Fills internal DDL bits structure.
+
+  fReadoutList.fCount = gkAliHLTDDLListSize;  // Required by ALICE-INT-2007-015
+  memset(fReadoutList.fList, 0x0, sizeof(fReadoutList.fList));
+  // Handle lists of different sizes. If the size is for a known version
+  // of AliHLTEventDDL then handle appropriately, otherwise just copy only
+  // the overlapping part of the list.
+  if (list.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  {
+    memcpy(&fReadoutList.fList[0], &list.fList[0], sizeof(AliHLTUInt32_t)*28);
+    memcpy(&fReadoutList.fList[29], &list.fList[28], sizeof(AliHLTUInt32_t)*2);
+  }
+  else if (list.fCount == (unsigned)gkAliHLTDDLListSizeV1)
+  {
+    memcpy(&fReadoutList.fList, &list.fList, sizeof(AliHLTEventDDL));
+  }
+  else
+  {
+    memcpy(&fReadoutList.fList, &list.fList, (fReadoutList.fCount<list.fCount?fReadoutList.fCount:list.fCount)*sizeof(AliHLTUInt32_t));
+  }
 }
 
 
@@ -205,6 +220,14 @@ void AliHLTReadoutList::Clear(Option_t* /*option*/)
 {
   // Resets all the DDL readout bits.
   memset(fReadoutList.fList, 0x0, sizeof(fReadoutList.fList));
+
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+  // Check if we need to convert to new format and do so.
+  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  {
+    fReadoutList.fCount = gkAliHLTDDLListSize;
+  }
+#endif
 }
 
 
@@ -291,6 +314,26 @@ Bool_t AliHLTReadoutList::GetDDLBit(Int_t ddlId) const
   
   Int_t wordIndex, bitIndex;
   if (! DecodeDDLID(ddlId, wordIndex, bitIndex)) return kFALSE;
+
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+  // Check if we need to convert to new format and do so.
+  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  {
+    if (wordIndex == 27)
+    {
+      if (bitIndex >= 24) return kFALSE;
+    }
+    else if (wordIndex == 28)
+    {
+      return kFALSE;
+    }
+    else if (wordIndex > 28)
+    {
+      --wordIndex;
+    }
+  }
+#endif
+
   return ((fReadoutList.fList[wordIndex] >> bitIndex) & 0x1) == 0x1;
 }
 
@@ -299,6 +342,16 @@ void AliHLTReadoutList::SetDDLBit(Int_t ddlId, Bool_t state)
 {
   // Sets the bit value for a particular DDL in the readout list.
   // See header file for more details.
+
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+  // Check if we need to convert to new format and do so.
+  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  {
+    AliHLTEventDDL copy = fReadoutList;
+    FillStruct(copy);
+  }
+#endif
+  assert(fReadoutList.fCount == gkAliHLTDDLListSize);
   
   Int_t wordIndex, bitIndex;
   if (! DecodeDDLID(ddlId, wordIndex, bitIndex)) return;
@@ -316,6 +369,16 @@ void AliHLTReadoutList::Enable(Int_t detector)
 {
   // Enables all DDLs for a particular detector or detectors.
   // See header file for more details.
+
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+  // Check if we need to convert to new format and do so.
+  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  {
+    AliHLTEventDDL copy = fReadoutList;
+    FillStruct(copy);
+  }
+#endif
+  assert(fReadoutList.fCount == gkAliHLTDDLListSize);
   
   if ((detector & kITSSPD) != 0) fReadoutList.fList[0] = 0x000FFFFF;
   if ((detector & kITSSDD) != 0) fReadoutList.fList[1] = 0x00FFFFFF;
@@ -364,6 +427,16 @@ void AliHLTReadoutList::Disable(Int_t detector)
 {
   // Disables all DDLs for a particular detector or detectors.
   // See header file for more details.
+
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+  // Check if we need to convert to new format and do so.
+  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  {
+    AliHLTEventDDL copy = fReadoutList;
+    FillStruct(copy);
+  }
+#endif
+  assert(fReadoutList.fCount == gkAliHLTDDLListSize);
   
   if ((detector & kITSSPD) != 0) fReadoutList.fList[0] = 0x00000000;
   if ((detector & kITSSDD) != 0) fReadoutList.fList[1] = 0x00000000;
@@ -446,13 +519,24 @@ bool AliHLTReadoutList::DetectorEnabled(Int_t detector) const
   if ((detector & kZDC) != 0) result &= fReadoutList.fList[24] == 0x00000001;
   if ((detector & kACORDE) != 0) result &= fReadoutList.fList[25] == 0x00000001;
   if ((detector & kTRG) != 0) result &= fReadoutList.fList[26] == 0x00000001;
-  if ((detector & kEMCAL) != 0)
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
   {
-    result &= fReadoutList.fList[27] == 0xFFFFFFFF;
-    result &= fReadoutList.fList[28] == 0x00003FFF;
+    if ((detector & kEMCAL) != 0) result &= fReadoutList.fList[27] == 0x00FFFFFF;
+    if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[28] == 0x00000001;
+    if ((detector & kHLT) != 0) result &= fReadoutList.fList[29] == 0x000003FF;
   }
-  if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000001;
-  if ((detector & kHLT) != 0) result &= fReadoutList.fList[30] == 0x000003FF;
+  else
+#endif
+  {
+    if ((detector & kEMCAL) != 0)
+    {
+      result &= fReadoutList.fList[27] == 0xFFFFFFFF;
+      result &= fReadoutList.fList[28] == 0x00003FFF;
+    }
+    if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000001;
+    if ((detector & kHLT) != 0) result &= fReadoutList.fList[30] == 0x000003FF;
+  }
   
   return result;
 }
@@ -496,13 +580,24 @@ bool AliHLTReadoutList::DetectorDisabled(Int_t detector) const
   if ((detector & kZDC) != 0) result &= fReadoutList.fList[24] == 0x00000000;
   if ((detector & kACORDE) != 0) result &= fReadoutList.fList[25] == 0x00000000;
   if ((detector & kTRG) != 0) result &= fReadoutList.fList[26] == 0x00000000;
-  if ((detector & kEMCAL) != 0)
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
   {
-    result &= fReadoutList.fList[27] == 0x00000000;
-    result &= fReadoutList.fList[28] == 0x00000000;
+    if ((detector & kEMCAL) != 0) result &= fReadoutList.fList[27] == 0x00000000;
+    if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[28] == 0x00000000;
+    if ((detector & kHLT) != 0) result &= fReadoutList.fList[29] == 0x00000000;
   }
-  if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000000;
-  if ((detector & kHLT) != 0) result &= fReadoutList.fList[30] == 0x00000000;
+  else
+#endif
+  {
+    if ((detector & kEMCAL) != 0)
+    {
+      result &= fReadoutList.fList[27] == 0x00000000;
+      result &= fReadoutList.fList[28] == 0x00000000;
+    }
+    if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000000;
+    if ((detector & kHLT) != 0) result &= fReadoutList.fList[30] == 0x00000000;
+  }
   
   return result;
 }
@@ -614,6 +709,7 @@ AliHLTReadoutList::EDetectorId AliHLTReadoutList::GetDetectorFromWord(Int_t word
 AliHLTReadoutList::EDetectorId AliHLTReadoutList::GetFirstUsedDetector(EDetectorId startAfter) const
 {
   // See header file for more details.
+
   if (startAfter < kITSSPD and fReadoutList.fList[0] != 0x00000000) return kITSSPD;
   if (startAfter < kITSSDD and fReadoutList.fList[1] != 0x00000000) return kITSSDD;
   if (startAfter < kITSSSD and fReadoutList.fList[2] != 0x00000000) return kITSSSD;
@@ -642,9 +738,20 @@ AliHLTReadoutList::EDetectorId AliHLTReadoutList::GetFirstUsedDetector(EDetector
   if (startAfter < kACORDE and fReadoutList.fList[25] != 0x00000000) return kACORDE;
   if (startAfter < kTRG and fReadoutList.fList[26] != 0x00000000) return kTRG;
   if (startAfter < kEMCAL and fReadoutList.fList[27] != 0x00000000) return kEMCAL;
-  if (startAfter < kEMCAL and fReadoutList.fList[28] != 0x00000000) return kEMCAL;
-  if (startAfter < kDAQTEST and fReadoutList.fList[29] != 0x00000000) return kDAQTEST;
-  if (startAfter < kHLT and fReadoutList.fList[30] != 0x00000000) return kHLT;
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+  // Check if we need to convert to new format and do so.
+  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  {
+    if (startAfter < kDAQTEST and fReadoutList.fList[28] != 0x00000000) return kDAQTEST;
+    if (startAfter < kHLT and fReadoutList.fList[29] != 0x00000000) return kHLT;
+  }
+  else
+#endif
+  {
+    if (startAfter < kEMCAL and fReadoutList.fList[28] != 0x00000000) return kEMCAL;
+    if (startAfter < kDAQTEST and fReadoutList.fList[29] != 0x00000000) return kDAQTEST;
+    if (startAfter < kHLT and fReadoutList.fList[30] != 0x00000000) return kHLT;
+  }
   return kNoDetector;
 }
 
@@ -681,7 +788,14 @@ AliHLTReadoutList& AliHLTReadoutList::operator = (const AliHLTReadoutList& list)
   TObject::operator = (list);
   if (&list != this)
   {
-    memcpy(&fReadoutList, &list.fReadoutList, sizeof(fReadoutList));
+    if (list.fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize)
+    {
+      memcpy(&fReadoutList, &list.fReadoutList, sizeof(fReadoutList));
+    }
+    else
+    {
+      FillStruct(list);
+    }
   }
   return *this;
 }
@@ -701,6 +815,7 @@ AliHLTReadoutList& AliHLTReadoutList::OrEq(const AliHLTReadoutList& list)
   // See header file for more details.
   
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
+  assert( fReadoutList.fCount == list.fCount );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
   {
     fReadoutList.fList[i] |= list.fReadoutList.fList[i];
@@ -724,6 +839,7 @@ AliHLTReadoutList& AliHLTReadoutList::XorEq(const AliHLTReadoutList& list)
   // See header file for more details.
   
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
+  assert( fReadoutList.fCount == list.fCount );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
   {
     fReadoutList.fList[i] ^= list.fReadoutList.fList[i];
@@ -747,6 +863,7 @@ AliHLTReadoutList& AliHLTReadoutList::AndEq(const AliHLTReadoutList& list)
   // See header file for more details.
 
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
+  assert( fReadoutList.fCount == list.fCount );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
   {
     fReadoutList.fList[i] &= list.fReadoutList.fList[i];
@@ -760,6 +877,7 @@ AliHLTReadoutList& AliHLTReadoutList::operator -= (const AliHLTReadoutList& list
   // See header file for more details.
   
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
+  assert( fReadoutList.fCount == list.fCount );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
   {
     // Effectively apply: this = this & (~ (this & list))
@@ -776,7 +894,7 @@ AliHLTReadoutList AliHLTReadoutList::operator ~ () const
   // See header file for more details.
   
   AliHLTReadoutList readoutlist;
-  readoutlist.fReadoutList.fCount = fReadoutList.fCount;
+  readoutlist.fReadoutList.fCount = gkAliHLTDDLListSize;
   readoutlist.fReadoutList.fList[0] = 0x000FFFFF & (~fReadoutList.fList[0]);
   readoutlist.fReadoutList.fList[1] = 0x00FFFFFF & (~fReadoutList.fList[1]);
   readoutlist.fReadoutList.fList[2] = 0x0000FFFF & (~fReadoutList.fList[2]);
@@ -804,10 +922,43 @@ AliHLTReadoutList AliHLTReadoutList::operator ~ () const
   readoutlist.fReadoutList.fList[24] = 0x00000001 & (~fReadoutList.fList[24]);
   readoutlist.fReadoutList.fList[25] = 0x00000001 & (~fReadoutList.fList[25]);
   readoutlist.fReadoutList.fList[26] = 0x00000001 & (~fReadoutList.fList[26]);
-  readoutlist.fReadoutList.fList[27] = 0xFFFFFFFF & (~fReadoutList.fList[27]);
-  readoutlist.fReadoutList.fList[28] = 0x00003FFF & (~fReadoutList.fList[28]);
-  readoutlist.fReadoutList.fList[29] = 0x00000001 & (~fReadoutList.fList[29]);
-  readoutlist.fReadoutList.fList[30] = 0x000003FF & (~fReadoutList.fList[30]);
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+  // Check if we need to convert to new format and do so.
+  if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+  {
+    readoutlist.fReadoutList.fList[27] = 0x00FFFFFF & (~fReadoutList.fList[27]);
+    readoutlist.fReadoutList.fList[28] = 0x00000000;
+    readoutlist.fReadoutList.fList[29] = 0x00000001 & (~fReadoutList.fList[28]);
+    readoutlist.fReadoutList.fList[30] = 0x000003FF & (~fReadoutList.fList[29]);
+  }
+  else
+#endif
+  {
+    readoutlist.fReadoutList.fList[27] = 0xFFFFFFFF & (~fReadoutList.fList[27]);
+    readoutlist.fReadoutList.fList[28] = 0x00003FFF & (~fReadoutList.fList[28]);
+    readoutlist.fReadoutList.fList[29] = 0x00000001 & (~fReadoutList.fList[29]);
+    readoutlist.fReadoutList.fList[30] = 0x000003FF & (~fReadoutList.fList[30]);
+  }
   return readoutlist;
 }
 
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,26,0)
+void AliHLTReadoutList::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliHLTReadoutList.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(AliHLTReadoutList::Class(),this);
+      // Convert old structure to new version if necessary.
+      if (fReadoutList.fCount == (unsigned)gkAliHLTDDLListSizeV0)
+      {
+        fReadoutList.fList[30] = fReadoutList.fList[29];
+        fReadoutList.fList[29] = fReadoutList.fList[28];
+        fReadoutList.fList[28] = 0x0;
+        fReadoutList.fCount = gkAliHLTDDLListSizeV1;
+      }
+   } else {
+      R__b.WriteClassBuffer(AliHLTReadoutList::Class(),this);
+   }
+}
+#endif // ROOT version check.

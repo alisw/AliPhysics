@@ -248,9 +248,9 @@ class AliHLTReadoutList : public TNamed
   /**
    * This typecast operator converts the readout list to the AliHLTEventDDL
    * structure format.
-   * \return  Copy of the AliHLTEventDDL raw structure.
+   * \return  Constant reference to the AliHLTEventDDL raw structure.
    */
-  operator AliHLTEventDDL () const { return fReadoutList; }
+  operator const AliHLTEventDDL& () const { return fReadoutList; }
   
   /**
    * This typecast operator converts the readout list to the AliHLTEventDDL
@@ -381,8 +381,6 @@ class AliHLTReadoutList : public TNamed
     return result.operator -= (list);
   }
   
- private:
-  
   /**
    * Decodes the word index and bit index within that word for the readout list structure.
    * \param ddlId <i>[in]</i>  The ID number of the DDL to decode.
@@ -395,6 +393,15 @@ class AliHLTReadoutList : public TNamed
    *    are performed to see that we do not overflow the buffer fReadoutList.fList.
    */
   static bool DecodeDDLID(Int_t ddlId, Int_t& wordIndex, Int_t& bitIndex);
+  
+ private:
+  
+  /**
+   * This method fills the internal bit field structure taking care of converting
+   * from the old format to the new one.
+   * \param list  The raw DDL readout list bits.
+   */
+  void FillStruct(const AliHLTEventDDL& list);
   
   AliHLTEventDDL fReadoutList; /// The DDL readout list structure.
   

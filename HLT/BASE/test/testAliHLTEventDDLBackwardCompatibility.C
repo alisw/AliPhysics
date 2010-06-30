@@ -347,6 +347,9 @@ bool CheckReadingOldFormat(const char* filename = "oldAliHLTReadoutListFormat.ro
 				<< endl;
 			return false;
 		}
+#if 1 // ROOT_SVN_REVISION < 9999  //FIXME: after fixed https://savannah.cern.ch/bugs/?69241
+		r->SetDDLBit(9999999, kTRUE);  // Triggers a reformating of the internal structure to the new version.
+#endif
 		if (memcmp(r->Buffer(), rl[i]->Buffer(), r->BufferSize()) != 0)
 		{
 			cerr << "ERROR: readoutlist" << i+1
