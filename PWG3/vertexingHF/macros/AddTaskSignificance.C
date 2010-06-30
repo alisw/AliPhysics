@@ -47,7 +47,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
     suffix="D04";
     break;
   case 5:
-    analysiscuts = (AliRDHFCutsLambdactopKpi*)filecuts->Get(cutsobjname);
+    analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get(cutsobjname);
     suffix="Lc";
     break;
   }

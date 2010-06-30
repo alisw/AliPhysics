@@ -32,6 +32,7 @@
 #include <TH1F.h>
 #include <TDatabasePDG.h>
 
+#include <AliLog.h>
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
@@ -47,7 +48,11 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsD0toKpipipi.h"
+#include "AliRDHFCutsDstoKKpi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
+#include "AliRDHFCutsLctopKpi.h"
 #include "AliMultiDimVector.h"
 
 #include "AliAnalysisTaskSESignificance.h"
@@ -111,7 +116,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
 
   SetMassLimits(0.1,pdg); //check range
   fNPtBins=fRDCuts->GetNPtBins();
-  
+
   if(fDebug>1)fRDCuts->PrintAll();
    // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -232,7 +237,9 @@ void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
 
   //same number of steps in each multiDimVectorPtBin%d !
   Int_t nHist=((AliMultiDimVector*)fCutList->FindObject("multiDimVectorPtBin0"))->GetNTotCells();
+  cout<<"ncells = "<<nHist<<" n ptbins = "<<fNPtBins<<endl;
   nHist=nHist*fNPtBins;
+  cout<<"Total = "<<nHist<<endl;
   for(Int_t i=0;i<nHist;i++){
 
     TString hisname;
@@ -270,7 +277,7 @@ void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
 
   fHistNEvents=new TH1F("fHistNEvents","Number of AODs scanned",4,0,4.);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvNoSelected");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvNotSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"nCandidatesSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"nTotEntries Mass hists");
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
@@ -287,7 +294,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
   // heavy flavor candidates association to MC truth
    
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-  if(fDebug>1) printf("Analysing decay %d\n",fDecChannel);
+  if(fDebug>2) printf("Analysing decay %d\n",fDecChannel);
   // Post the data already here
   PostData(1,fOutput);
   TClonesArray *arrayProng =0;
@@ -458,7 +465,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     
     if(isSelected) {
       fHistNEvents->Fill(2); // count selected with loosest cuts
-      if(fDebug>1) printf("Is Selected\n");
+      if(fDebug>1) printf("+++++++Is Selected\n");
     
       const Int_t nvars=fRDCuts->GetNVarsForOpt();
       Float_t *vars = new Float_t[nvars];
@@ -495,9 +502,17 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       }
 
 
-      if(fDecChannel==AliAnalysisTaskSESignificance::kD0toKpi){ //repeat the cycle to checks cuts passed as D0bar
-	pdgdaughters[0]=321;
-	pdgdaughters[1]=211;
+      if(fDecChannel==AliAnalysisTaskSESignificance::kD0toKpi || fDecChannel==AliAnalysisTaskSESignificance::kLambdactopKpi){ //repeat the cycle to checks cuts passed as D0bar
+	if(fDecChannel==AliAnalysisTaskSESignificance::kD0toKpi){
+	  pdgdaughters[0]=321;
+	  pdgdaughters[1]=211; 
+	}
+	if(fDecChannel==AliAnalysisTaskSESignificance::kLambdactopKpi){
+	  pdgdaughters[0]=211;
+	  pdgdaughters[1]=321;
+ 	  pdgdaughters[2]=2212;
+	}
+
 	invMass=d->InvMass(nprongs,(UInt_t*)pdgdaughters);
 	fRDCuts->GetCutVarsForOpt(d,vars,nvars,pdgdaughters);
 	addresses = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetGlobalAddressesAboveCuts(vars,(Float_t)d->Pt(),nVals);
