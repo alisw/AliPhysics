@@ -34,10 +34,10 @@ public TObject
   virtual ~AliTOFTDCErrorBuffer(); //destructor
 
   void Reset() {fBuffer.Clear();}; // reset
-  void Add(const AliTOFTDCError &Error); //add hit
+  void Add(const AliTOFTDCError &err); //add hit
   TClonesArray *GetBuffer() {return &fBuffer;}; //get buffer
   Int_t GetEntries() const {return fBuffer.GetEntries();}; //get entries
-  AliTOFTDCError *GetError(Int_t Error) const {return (Error < GetEntries() ? (AliTOFTDCError *)fBuffer.At(Error) : 0x0);}; //get error
+  AliTOFTDCError *GetError(Int_t ierr) const {return (ierr < GetEntries() ? (AliTOFTDCError *)fBuffer.At(ierr) : 0x0);}; //get error
 
  private:
 

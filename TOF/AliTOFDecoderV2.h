@@ -116,7 +116,7 @@ class AliTOFDecoderV2 : public TObject
   void SetV2718Patch(Bool_t V2718Patch = kTRUE) {fV2718Patch = V2718Patch;}; //set V2718 patch (no DRM)
   void SetRecoverError(Bool_t RecoverError = kTRUE) {fRecoverError = RecoverError;}; //decoder will try to recover decoding errors
   void SetRecoverErrorThr(Int_t value) {fRecoverErrorThr = value;}; // setter
-  void SetSpider(Bool_t Spider = kTRUE) {fSpider = Spider;}; //set spider
+  void SetSpider(Bool_t value = kTRUE) {fSpider = value;}; //set spider
   void SetRunNumber(Int_t RunNumber) {fRunNumber = RunNumber;}; //set run number
   void SetEventNumber(UInt_t EventNumber) {fEventNumber = EventNumber;}; //set event number
   void SetEquipmentID(Int_t EquipmentID) {fEquipmentID = EquipmentID;}; //set equipment ID

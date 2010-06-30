@@ -49,9 +49,9 @@ AliTOFTDCErrorBuffer::~AliTOFTDCErrorBuffer()
 //_________________________________________________________________
 
 void
-AliTOFTDCErrorBuffer::Add(const AliTOFTDCError &Error)
+AliTOFTDCErrorBuffer::Add(const AliTOFTDCError &err)
 {
   /* add function */
 
-  new (fBuffer[GetEntries()]) AliTOFTDCError(Error);
+  new (fBuffer[GetEntries()]) AliTOFTDCError(err);
 }
