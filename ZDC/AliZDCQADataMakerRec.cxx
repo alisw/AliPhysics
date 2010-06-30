@@ -183,10 +183,10 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hZEM1Spectrum, 4, !expert, image);
   Add2RawsList(hZEM2Spectrum, 5, !expert, image);
   //
-  TH2F * hZNCpmCvsPMq = new TH2F("hZNCpmCvsPMq", "ZNC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
-  TH2F * hZPCpmCvsPMq = new TH2F("hZPCpmCvsPMq", "ZPC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
-  TH2F * hZNApmCvsPMq = new TH2F("hZNApmCvsPMq", "ZNA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
-  TH2F * hZPApmCvsPMq = new TH2F("hZPApmCvsPMq", "ZPA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
+  TH2F * hZNCpmCvsPMq = new TH2F("hZNCpmCvsPMq", "ZNC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1207.,50,7., 1207.);
+  TH2F * hZPCpmCvsPMq = new TH2F("hZPCpmCvsPMq", "ZPC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1207.,50,7., 1207.);
+  TH2F * hZNApmCvsPMq = new TH2F("hZNApmCvsPMq", "ZNA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1207.,50,7., 1207.);
+  TH2F * hZPApmCvsPMq = new TH2F("hZPApmCvsPMq", "ZPA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1207.,50,7., 1207.);
   Add2RawsList(hZNCpmCvsPMq, 6, !expert, image);
   Add2RawsList(hZNApmCvsPMq, 7, !expert, image);
   Add2RawsList(hZPCpmCvsPMq, 8, !expert, image);
@@ -437,15 +437,17 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     int const kNch = 24;
     Float_t meanPed[2*kNch];    
     for(Int_t jj=0; jj<2*kNch; jj++) meanPed[jj] = fPedCalibData->GetMeanPed(jj);
+    
+    Float_t zncSignal=0., znaSignal=0., zpcSignal=0., zpaSignal=0.;
+    Float_t zncSumQ=0., znaSumQ=0., zpcSumQ=0., zpaSumQ=0.;
+    Float_t zncpmC=0., znapmC=0., zpcpmC=0., zpapmC=0.;
+    Bool_t isZNCFired=kFALSE, isZPCFired=kFALSE, isZNAFired=kFALSE, isZPAFired=kFALSE;
+    Int_t  indZNC=0, indZNA=0, indZPC=0, indZPA=0;
   
+    rawReader->Reset();
     AliZDCRawStream stream(rawReader);
     while(stream.Next()){
-  
-      Float_t zncSignal=0., znaSignal=0., zpcSignal=0., zpaSignal=0.;
-      Float_t zncSumQ=0., znaSumQ=0., zpcSumQ=0., zpaSumQ=0.;
-      Float_t zncpmC=0., znapmC=0., zpcpmC=0., zpapmC=0.;
-      Bool_t isZNCFired=kFALSE, isZPCFired=kFALSE, isZNAFired=kFALSE, isZPAFired=kFALSE;
-    
+
       if(stream.IsADCDataWord() && 
     	 (stream.GetADCModule()==0 || stream.GetADCModule()==1)){
        
@@ -468,6 +470,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   		GetRawsData(10)->Fill(zncpmC);
   	      }
   	    }
+	    indZNC++;
   	  }
   	  else if(det == 2){ 
   	    pedindex = quad+5;
@@ -481,6 +484,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   		GetRawsData(12)->Fill(zpcpmC);
   	      }
   	    }
+	    indZPC++;
   	  }
   	  else if(det == 3){ 
   	    pedindex = quad+9;
@@ -509,6 +513,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   		GetRawsData(11)->Fill(znapmC);
   	      }
   	    }
+	    indZNA++;
   	  }
   	  else if(det == 5){
   	    pedindex = quad+17;
@@ -522,29 +527,47 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   		GetRawsData(13)->Fill(zpapmC);
   	      }
   	    }
+	    indZPA++;
   	  }
   	 }
   	 //
-  	 if(isZNCFired){
+  	 if(isZNCFired && indZNC==5){
   	   GetRawsData(0)->Fill(zncSignal);
   	   GetRawsData(6)->Fill(zncSumQ, zncpmC);
   	   GetRawsData(14)->Fill(zncSumQ); 
   	 }
-  	 if(isZPCFired){
+  	 if(isZPCFired && indZPC==5){
   	   GetRawsData(2)->Fill(zpcSignal);
            GetRawsData(8)->Fill(zpcSumQ, zpcpmC);
            GetRawsData(16)->Fill(zpcSumQ); 
          }
-         if(isZNAFired){ 
+         if(isZNAFired && indZNA==5){ 
           GetRawsData(1)->Fill(znaSignal);
           GetRawsData(7)->Fill(znaSumQ, znapmC);
           GetRawsData(15)->Fill(znaSumQ); 
          }
-         if(isZPAFired){ 
+         if(isZPAFired && indZPA==5){ 
           GetRawsData(3)->Fill(zpaSignal);
           GetRawsData(9)->Fill(zpaSumQ, zpapmC);
           GetRawsData(17)->Fill(zpaSumQ); 
          }
+	 
+	 if(indZNC==5){
+	   zncSignal = zncSumQ = zncpmC = 0;
+	   isZNCFired=kFALSE; indZNC=0;
+	 }
+	 if(indZPC==5){
+	   zpcSignal = zpcSumQ = zpcpmC = 0;
+	   isZPCFired=kFALSE; indZPC=0;
+	 }
+	 if(indZNA==5){
+	   znaSignal = znaSumQ = znapmC = 0;
+	   isZNAFired=kFALSE; indZNA=0;
+	 }
+	 if(indZPA==5){
+	   zpaSignal = zpaSumQ = zpapmC = 0;
+	   isZPAFired=kFALSE; indZPA=0;
+	 }
        
       } //IsADCDataWord && signal ADCs
     
@@ -705,7 +728,6 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  printf("  AliZDCQADataMakerRec::EndOfDetectorCycle for task %d \n", task);
   if( task == AliQAv1::kRAWS){
      if (!GetRawsData(4) || !GetRawsData(5) || !GetRawsData(6) || !GetRawsData(7) || 
         !GetRawsData(8) || !GetRawsData(9) || !GetRawsData(10) || !GetRawsData(11) || 
@@ -713,14 +735,6 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	 printf("  WARNING!!! AliZDCQADataMaker Rec -> No histogram for DQM found!\n"); 
      }
      else{
-       TLine* diag = new TLine(7., 7., 1407., 1407.);
-       diag->SetLineColor(kRed);
-       diag->SetLineWidth(2);
-     
-       ((TH2F*)GetRawsData(6))->GetListOfFunctions()->Add(diag);
-       ((TH2F*)GetRawsData(7))->GetListOfFunctions()->Add(diag);
-       ((TH2F*)GetRawsData(8))->GetListOfFunctions()->Add(diag);
-       ((TH2F*)GetRawsData(9))->GetListOfFunctions()->Add(diag);
       
        GetRawsData(6)->SetOption("colz");
        GetRawsData(7)->SetOption("colz");
@@ -734,12 +748,12 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
        GetRawsData(12)->SetLineColor(kBlue+5); GetRawsData(12)->SetLineWidth(2);
        GetRawsData(13)->SetLineColor(kBlue+6); GetRawsData(13)->SetLineWidth(2);
      
-       /*GetRawsData(4)->SetDrawOption("LOGY");
-       GetRawsData(5)->SetDrawOption("LOGY");
-       GetRawsData(10)->SetDrawOption("LOGY");
-       GetRawsData(11)->SetDrawOption("LOGY");
-       GetRawsData(12)->SetDrawOption("LOGY");
-       GetRawsData(13)->SetDrawOption("LOGY");*/
+       if(((GetRawsData(4))->GetEntries())>0)  GetRawsData(4)->SetDrawOption("LOGY");
+       if(((GetRawsData(5))->GetEntries())>0)  GetRawsData(5)->SetDrawOption("LOGY");
+       if(((GetRawsData(10))->GetEntries())>0) GetRawsData(10)->SetDrawOption("LOGY");
+       if(((GetRawsData(11))->GetEntries())>0) GetRawsData(11)->SetDrawOption("LOGY");
+       if(((GetRawsData(12))->GetEntries())>0) GetRawsData(12)->SetDrawOption("LOGY");
+       if(((GetRawsData(13))->GetEntries())>0) GetRawsData(13)->SetDrawOption("LOGY");
      }
   }
   	
