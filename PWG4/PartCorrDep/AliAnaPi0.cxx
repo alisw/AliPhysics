@@ -32,7 +32,7 @@
 #include "TPad.h"
 #include "TROOT.h"
 #include "TClonesArray.h"
-//#include "TObjString.h"
+#include "TObjString.h"
 
 //---- AliRoot system ----
 #include "AliAnaPi0.h"
@@ -155,6 +155,37 @@ void AliAnaPi0::InitParameters()
  // }
   
 //}
+
+
+//________________________________________________________________________________________________________________________________________________
+TObjString * AliAnaPi0::GetAnalysisCuts()
+{  
+	 //Save parameters used for analysis
+	 TString parList ; //this will be list of parameters used for this analysis.
+	 char onePar[255] ;
+	 sprintf(onePar,"--- AliAnaPi0 ---\n") ;
+	 parList+=onePar ;	
+	 sprintf(onePar,"Number of bins in Centrality:  %d \n",fNCentrBin) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"Number of bins in Reac. Plain: %d \n",fNrpBin) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"Depth of event buffer: %d \n",fNmaxMixEv) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"Number of different PID used:  %d \n",fNPID) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"Cuts: \n") ;
+	 parList+=onePar ;
+	 sprintf(onePar,"Z vertex position: -%f < z < %f \n",fZvtxCut,fZvtxCut) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"Calorimeter: %s \n",fCalorimeter.Data()) ;
+	 parList+=onePar ;
+	 sprintf(onePar,"Number of modules: %d \n",fNModules) ;
+	 parList+=onePar ;
+	 
+	 return new TObjString(parList) ;	
+}
 
 //________________________________________________________________________________________________________________________________________________
 TList * AliAnaPi0::GetCreateOutputObjects()
@@ -336,34 +367,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhReMod[imod]  = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
     outputContainer->Add(fhReMod[imod]) ;
   }
-  
-  
-//  //Save parameters used for analysis
-//  TString parList ; //this will be list of parameters used for this analysis.
-//  char onePar[255] ;
-//  sprintf(onePar,"--- AliAnaPi0 ---\n") ;
-//  parList+=onePar ;	
-//  sprintf(onePar,"Number of bins in Centrality:  %d \n",fNCentrBin) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"Number of bins in Z vert. pos: %d \n",fNZvertBin) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"Number of bins in Reac. Plain: %d \n",fNrpBin) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"Depth of event buffer: %d \n",fNmaxMixEv) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"Number of different PID used:  %d \n",fNPID) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"Cuts: \n") ;
-//  parList+=onePar ;
-//  sprintf(onePar,"Z vertex position: -%f < z < %f \n",fZvtxCut,fZvtxCut) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"Calorimeter: %s \n",fCalorimeter.Data()) ;
-//  parList+=onePar ;
-//  sprintf(onePar,"Number of modules: %d \n",fNModules) ;
-//  parList+=onePar ;
-//  
-//  TObjString *oString= new TObjString(parList) ;
-//  outputContainer->Add(oString);
   
   return outputContainer;
 }

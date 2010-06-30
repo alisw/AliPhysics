@@ -34,6 +34,7 @@
 #include "TH2F.h"
 #include "TLegend.h"
 #include "TStyle.h"
+#include <TObjString.h>
 
 //---- AliRoot system ----
 #include "AliAnaCalorimeterQA.h"
@@ -208,6 +209,29 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
 	// dtor
 	
 //}
+
+//________________________________________________________________________
+TObjString *  AliAnaCalorimeterQA::GetAnalysisCuts()
+{  	
+	//Save parameters used for analysis
+	TString parList ; //this will be list of parameters used for this analysis.
+	char onePar[255] ;
+	
+	sprintf(onePar,"--- AliAnaCalorimeterQA ---\n") ;
+	parList+=onePar ;	
+	sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+	parList+=onePar ;
+	sprintf(onePar,"Time Cut : %2.2f < T < %2.2f ns  \n",fTimeCutMin, fTimeCutMax) ;
+	parList+=onePar ;
+		
+	//Get parameters set in base class.
+	//parList += GetBaseParametersList() ;
+	
+	//Get parameters set in FiducialCut class (not available yet)
+	//parlist += GetFidCut()->GetFidCutParametersList() 
+	
+	return new TObjString(parList) ;
+}
 
 
 //________________________________________________________________________

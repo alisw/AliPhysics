@@ -45,7 +45,7 @@ AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation():
   AliAnalysisTaskSE(),
   fAna(0x0),
   fOutputContainer(0x0),
-  fConfigName("")
+  fConfigName(""), fCuts(0x0)
 {
   // Default constructor
 }
@@ -55,12 +55,12 @@ AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation(const cha
   AliAnalysisTaskSE(name),
   fAna(0x0),
   fOutputContainer(0x0),
-  fConfigName("")
+  fConfigName(""), fCuts(0x0)
 {
   // Default constructor
   
   DefineOutput(1, TList::Class());
-
+  DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
 
 //_____________________________________________________
@@ -104,6 +104,22 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
  
   PostData(1,fOutputContainer);
 	
+}
+//_____________________________________________________
+void AliAnalysisTaskParticleCorrelation::LocalInit()
+{
+	// Local Initialization
+	
+	// Create cuts/param objects and publish to slot
+	//printf("LocalInit! \n");
+	fCuts = fAna->GetListOfAnalysisCuts();
+	//fCuts->SetOwner(kTRUE);
+	//printf("Cuts entries %d \n",fCuts->GetEntries());
+
+	// Post Data
+	for(Int_t i = 0; i < fCuts->GetEntries(); i++) PostData(2, fCuts->At(i));
+	
+	Init();
 }
 
 //_____________________________________________________

@@ -31,7 +31,7 @@ class AliAnalysisTaskParticleCorrelation : public AliAnalysisTaskSE
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
-  virtual void LocalInit() {Init();}
+  virtual void LocalInit() ;
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   
@@ -47,8 +47,9 @@ class AliAnalysisTaskParticleCorrelation : public AliAnalysisTaskSE
   AliAnaPartCorrMaker* fAna;  //  Pointer to the manager class 
   TList * fOutputContainer ;  //! Histogram container
   TString fConfigName ;       // Configuration file name
+  TList * fCuts ;             //! List with analysis cuts
 	
-  ClassDef(AliAnalysisTaskParticleCorrelation, 2); // Analysis task for standard gamma correlation analysis
+  ClassDef(AliAnalysisTaskParticleCorrelation, 3); // Analysis task for standard gamma correlation analysis
 };
 
 #endif //ALIANALYSISTASKPARTICLECORRELATION_H

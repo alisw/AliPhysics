@@ -17,6 +17,7 @@
 // --- ROOT system ---
 class TH2F;
 class TList ;
+class TObjString;
 
 // --- ANALYSIS system ---
 #include "AliAnaPartCorrBaseClass.h"
@@ -38,7 +39,8 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
 
   Bool_t CheckInvMass(const Int_t icalo,const AliAODPWG4Particle * ph) const ;
   
-  TList *  GetCreateOutputObjects();
+  TObjString * GetAnalysisCuts();
+  TList      * GetCreateOutputObjects();
   
   void MakeAnalysisFillAOD()  ;
   

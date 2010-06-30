@@ -19,6 +19,7 @@
 // --- ROOT system ---
 class TH2F ; 
 class TList ;
+class TObjString;
 
 // --- ANALYSIS system ---
 #include "AliAnaPartCorrBaseClass.h"
@@ -35,8 +36,9 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
  public:  
 
   enum anaTypes {kIMCalo, kSSCalo, kIMCaloTracks};
-  
-  TList *  GetCreateOutputObjects();
+	
+  TObjString * GetAnalysisCuts();
+  TList      * GetCreateOutputObjects();
   
   void Init();
   void InitParameters();

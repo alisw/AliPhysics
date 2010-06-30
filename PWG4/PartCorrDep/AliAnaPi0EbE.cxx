@@ -28,7 +28,7 @@
 // --- ROOT system --- 
 #include <TList.h>
 #include <TClonesArray.h>
-//#include <TObjString.h>
+#include <TObjString.h>
 #include <TH2F.h>
 //#include "Riostream.h"
 
@@ -109,6 +109,38 @@ AliAnaPi0EbE::~AliAnaPi0EbE()
     fInputAODGammaConv->Clear() ; 
     delete fInputAODGammaConv ;
   }
+}
+
+//________________________________________________________________________
+TObjString *  AliAnaPi0EbE::GetAnalysisCuts()
+{	
+	//Save parameters used for analysis
+	 TString parList ; //this will be list of parameters used for this analysis.
+	 char onePar[255] ;
+	 
+	 sprintf(onePar,"--- AliAnaPi0EbE ---\n") ;
+	 parList+=onePar ;	
+	 sprintf(onePar,"fAnaType=%d (Pi0 selection type) \n",fAnaType) ;
+	 parList+=onePar ;
+	 
+	 if(fAnaType == kSSCalo){
+	   sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+	   parList+=onePar ;
+	   sprintf(onePar,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+	   parList+=onePar ;
+	   sprintf(onePar,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+	   parList+=onePar ;
+	   sprintf(onePar,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+	   parList+=onePar ;
+	 }
+	 
+	 //Get parameters set in base class.
+	 parList += GetBaseParametersList() ;
+	 
+	 //Get parameters set in PID class.
+	 if(fAnaType == kSSCalo) parList += GetCaloPID()->GetPIDParametersList() ;
+	 
+	 return new TObjString(parList) ;
 }
 
 //________________________________________________________________________
@@ -199,35 +231,6 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
 	delete nmsHistos;
 	  
   }
-  
-  //Save parameters used for analysis
-//  TString parList ; //this will be list of parameters used for this analysis.
-//  char onePar[255] ;
-//  
-//  sprintf(onePar,"--- AliAnaPi0EbE ---\n") ;
-//  parList+=onePar ;	
-//  sprintf(onePar,"fAnaType=%d (Pi0 selection type) \n",fAnaType) ;
-//  parList+=onePar ;
-//  
-//  if(fAnaType == kSSCalo){
-//    sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
-//    parList+=onePar ;
-//    sprintf(onePar,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
-//    parList+=onePar ;
-//    sprintf(onePar,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
-//    parList+=onePar ;
-//    sprintf(onePar,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
-//    parList+=onePar ;
-//  }
-//  
-//  //Get parameters set in base class.
-//  parList += GetBaseParametersList() ;
-//  
-//  //Get parameters set in PID class.
-//  if(fAnaType == kSSCalo) parList += GetCaloPID()->GetPIDParametersList() ;
-//  
-//  TObjString *oString= new TObjString(parList) ;
-//  outputContainer->Add(oString);
   
   return outputContainer ;
   

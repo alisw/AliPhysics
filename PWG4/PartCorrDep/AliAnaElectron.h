@@ -18,6 +18,7 @@ class TH2F ;
 class TString ;
 class TNtuple ;
 class TH3F;
+class TObjString;
 
 // --- ANALYSIS system ---
 #include "AliAnaPartCorrBaseClass.h"
@@ -37,8 +38,9 @@ class AliAnaElectron : public AliAnaPartCorrBaseClass {
   AliAnaElectron & operator = (const AliAnaElectron & g) ;//cpy assignment
   
  public:
-
-  TList *  GetCreateOutputObjects();
+	
+  TObjString * GetAnalysisCuts();
+  TList      * GetCreateOutputObjects();
 
   void Init();
 

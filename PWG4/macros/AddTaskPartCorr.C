@@ -218,6 +218,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliIsolationCut * ic =  anaisol->GetIsolationCut();	
   ic->SetConeSize(0.4);
   ic->SetPtThreshold(0.2);
+  ic->SetParticleTypeInCone(AliIsolationCut::kOnlyCharged);
   ic->SetICMethod(AliIsolationCut::kPtThresIC);
   if(kPrintSettings) ic->Print("");
   
@@ -474,6 +475,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //if(!kSimulation)task->SelectCollisionCandidates(); //AliPhysicsSelection has to be attached before.
   mgr->AddTask(task);
   
+  //Create containers
   char name[128];
   sprintf(name,"PartCorr_%s",calorimeter.Data());
   cout<<"Name of task "<<name<<endl;
@@ -482,8 +484,14 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   TString outputfile = AliAnalysisManager::GetCommonFileName(); 
   //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form("PartCorr_%s",calorimeter.Data()),  TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PartCorr_%s",outputfile.Data(),calorimeter.Data()));
-  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(calorimeter.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PartCorr",outputfile.Data()));
-  
+  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(calorimeter.Data(), TList::Class(), 
+															 AliAnalysisManager::kOutputContainer, 
+															 Form("%s:PartCorr",outputfile.Data()));
+	
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("%sCuts",calorimeter.Data()), TList::Class(), 
+															 AliAnalysisManager::kParamContainer, 
+															 Form("%s:PartCorrCuts",outputfile.Data()));
+	
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
@@ -491,7 +499,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // AOD output slot will be used in a different way in future
   if(!data.Contains("delta")) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
-  
+  mgr->ConnectOutput (task, 2, cout_cuts);
+
   return task;
 }
 

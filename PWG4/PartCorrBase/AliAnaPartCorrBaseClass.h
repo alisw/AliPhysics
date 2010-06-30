@@ -15,6 +15,7 @@ class TClonesArray ;
 class TObjArray ;
 #include <TList.h> 
 #include <TObject.h>
+class TObjString;
 
 //Analysis
 class AliESDCaloCluster;
@@ -69,6 +70,8 @@ class AliAnaPartCorrBaseClass : public TObject {
   virtual void MakeAnalysisFillHistograms() {;}
   
   virtual void MakeMixingAnalysisFillHistograms() {;}
+	
+  virtual TObjString * GetAnalysisCuts() {return 0x0;}
 	
   virtual Int_t GetDebug() const  { return fDebug ; }
   virtual void SetDebug(Int_t d)   { fDebug = d ; }
