@@ -54,6 +54,7 @@ using namespace std;
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "TGeoGlobalMagField.h"
+#include "AliGeomManager.h"
 
 #include <sys/time.h>
 
@@ -223,6 +224,10 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   }
   calib->SetExBField(GetBz());
 
+  if(!AliGeomManager::GetGeometry()){
+    AliGeomManager::LoadGeometry();
+  }
+
   fClusterFinder = new AliHLTTPCClusterFinder();
 
   // first configure the default
@@ -355,6 +360,12 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 {
   // see header file for class documentation
   int iResult=0;
+  //SG!!!
+  //fDeconvTime = kTRUE;
+  //fClusterFinder->SetDeconvTime(fDeconvTime);
+  // fDeconvPad = kTRUE;
+  //fClusterFinder->SetDeconvPad(fDeconvPad);
+    
 
   if(fReader == NULL){
     HLTFatal("Digit reader not initialized, skipping HLT TPC cluster reconstruction.");
