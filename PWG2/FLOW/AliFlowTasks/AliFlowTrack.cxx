@@ -52,7 +52,7 @@ AliFlowTrack::AliFlowTrack(const AliFlowTrack& aTrack):
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrack* AliFlowTrack::Clone(const char* option) const
+AliFlowTrack* AliFlowTrack::Clone(const char* /*option*/) const
 {
   //clone "constructor"
   return new AliFlowTrack(*this);

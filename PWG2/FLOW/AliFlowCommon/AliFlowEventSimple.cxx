@@ -649,10 +649,13 @@ void AliFlowEventSimple::DefineDeadZone( Double_t etaMin,
 Int_t AliFlowEventSimple::CleanUpDeadTracks()
 {
   //remove tracks that have no flow tags set and cleanup the container
+  //returns number of cleaned tracks
+  Int_t ncleaned=0;
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track->IsDead()) delete track;
+    if (track->IsDead()) {delete track;ncleaned++;}
   }
   fTrackCollection->Compress(); //clean up empty slots
+  return ncleaned;
 }
