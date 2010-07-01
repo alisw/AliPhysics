@@ -816,7 +816,12 @@ void AliAnalysisManager::Terminate()
 	      if (fDebug>0) printf("Opening file: %s  option=%s\n",filename, openoption.Data());
          file = new TFile(filename, openoption);
       } else {
-         if (fDebug>0) printf("File already opened: %s\n", filename);
+         if (fDebug>0) printf("File <%s> already opened with option: <%s> \n", filename, file->GetOption());
+         openoption = file->GetOption();
+         if (openoption == "READ") {
+            if (fDebug>0) printf("...reopening in UPDATE mode\n");
+            file->ReOpen("UPDATE");            
+         }
       }   
       if (file->IsZombie()) {
          Error("Terminate", "Cannot open output file %s", filename);

@@ -100,6 +100,7 @@ enum EAliAnalysisFlags {
    AliVEventHandler*   GetMCtruthEventHandler() const {return fMCtruthEventHandler;}
    AliVEventHandler*   GetOutputEventHandler() const  {return fOutputEventHandler;}
    TObjArray          *GetOutputs() const         {return fOutputs;}
+   TObjArray          *GetParamOutputs() const    {return fParamCont;}
    TObjArray          *GetTasks() const           {return fTasks;}
    TObjArray          *GetTopTasks() const        {return fTopTasks;}
    TTree              *GetTree() const            {return fTree;}
@@ -176,7 +177,7 @@ private:
    TObjArray              *fContainers;          // List of all containers
    TObjArray              *fInputs;              // List of containers with input data
    TObjArray              *fOutputs;             // List of containers with results
-   TObjArray              *fParamCont;           //! List of containers with results
+   TObjArray              *fParamCont;           // List of containers with results
    AliAnalysisDataContainer *fCommonInput;       // Common input container
    AliAnalysisDataContainer *fCommonOutput;      // Common output container
    AliAnalysisSelector    *fSelector;            //! Current selector
@@ -185,6 +186,6 @@ private:
 
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,6)  // Analysis manager class
+   ClassDef(AliAnalysisManager,7)  // Analysis manager class
 };   
 #endif

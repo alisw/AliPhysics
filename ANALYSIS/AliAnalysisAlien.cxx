@@ -1805,7 +1805,9 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       if (!merged) {
          Error("MergeOutputs", "Terminate() will  NOT be executed");
          return kFALSE;
-      }   
+      }
+      TFile *fileOpened = (TFile*)gROOT->GetListOfFiles()->FindObject(outputFile);
+      if (fileOpened) fileOpened->Close();
    } 
    return kTRUE;
 }   
