@@ -16,8 +16,8 @@ class AliHMPIDHit : public AliHit //   TObject-AliHit-AliHMPIDHit
 {
 public:
   AliHMPIDHit(                                                                           ):AliHit(     ),fCh(-1),fPid(-1 ),fQ(-1),fLx(0),fLy(0),fT(0) {} //default ctor
-  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y, Float_t time, const TVector3 &p):AliHit(0,tid),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y),fT(time) {e=QdcTot(e);fX=p.X();fY=p.Y();fZ=p.Z();}
-  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y, Float_t time                 ):AliHit(     ),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y),fT(time){e=QdcTot(e);fTrack=tid;}//manual ctor 
+  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y, Float_t time, const TVector3 &p):AliHit(0,tid),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y),fT(time) {e=QdcTot(e,time);fX=p.X();fY=p.Y();fZ=p.Z();}
+  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y, Float_t time                 ):AliHit(     ),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y),fT(time){e=QdcTot(e,time);fTrack=tid;}//manual ctor 
   AliHMPIDHit(const AliHMPIDHit &h):AliHit(h),fCh(h.fCh),fPid(h.fPid),fQ(h.fQ),fLx(h.fLx),fLy(h.fLy),fT(h.fT) {}//copy ctor
   virtual ~AliHMPIDHit()                                                                                                                                 {}
 //framework part
@@ -31,7 +31,7 @@ public:
          Float_t HitTime(                               )const{return fT;                                     }       //hit formation time, [sec]
          Int_t   Pid    (                               )const{return fPid;                                   }       //PID
          Float_t Q      (                               )const{return fQ;                                     }       //total charge, [QDC]
-  inline Float_t QdcTot (Float_t e                      );                                                            //calculate total charge of the hit          
+  inline Float_t QdcTot (Float_t e, Float_t time        );                                                            //calculate total charge of the hit          
          Int_t   Tid    (                               )const{return fTrack;                                 }       //TID
          void    SetQ   (Float_t q                      )     {fQ=q;                                          }       //for debugging...
 protected:                                                                     //AliHit has fTrack,fX,fY,fZ 
@@ -44,7 +44,7 @@ protected:                                                                     /
   ClassDef(AliHMPIDHit,5)                                                      //HMPID hit class 
 };//class AliHMPIDhit
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
-Float_t AliHMPIDHit::QdcTot(Float_t e)
+Float_t AliHMPIDHit::QdcTot(Float_t e, Float_t time)
 {
 // Samples total charge of the hit
 // Arguments: e- hit energy [GeV] for mip Eloss for photon Etot   
@@ -66,6 +66,8 @@ Float_t AliHMPIDHit::QdcTot(Float_t e)
     fQ-=qdcEle*TMath::Log(rnd);                
   }
  }
+  if(time>1.2e-6) fQ=0;
+ 
   return fQ;
 }  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
