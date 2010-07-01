@@ -1534,7 +1534,7 @@ AliMUONCDB::ShowConfig(Bool_t withStatusMap)
         
         if ( withStatusMap ) 
         {
-          Bool_t badChannel = ( statusMapMaker->StatusMap(detElemId,manuId,i) & AliMUONPadStatusMapMaker::SelfDeadMask() != 0);
+          Bool_t badChannel = ( ( statusMapMaker->StatusMap(detElemId,manuId,i) & AliMUONPadStatusMapMaker::SelfDeadMask() ) != 0);
           if ( badChannel ) ++badChannels;
           if ( badBusPatch && badChannel ) ++badAndRemovedChannels;
           if ( badBusPatch || badChannel ) ++badOrRemovedChannels;          
