@@ -15,6 +15,7 @@ class AliMUONTrackParam;
 class AliMUONTrack;
 class AliMUONVCluster;
 class AliMUONGeometryTransformer;
+class TList;
 class TClonesArray;
 
 class AliCheckMuonDetEltResponse : public TObject
@@ -26,11 +27,10 @@ public:
 //Constructor:
   AliCheckMuonDetEltResponse(const AliMUONGeometryTransformer* transformer,
 			     AliESDEvent* esd,
-			     TClonesArray* detEltTDHistList,
-			     TClonesArray* detEltTTHistList,
-			     TClonesArray* chamberTDHistList,
-			     TClonesArray* chamberTTHistList,
-			     Bool_t isCosmic = kFALSE);
+			     TList* detEltTDHistList,
+			     TList* detEltTTHistList,
+			     TList* chamberTDHistList,
+			     TList* chamberTTHistList);
 
 //Destructor:
   virtual ~AliCheckMuonDetEltResponse();
@@ -42,8 +42,6 @@ public:
 
   Int_t GetNbrUsableTracks() const {return fNbrUsableTracks;};
   void SetNbrUsableTracks(Int_t nUsable){fNbrUsableTracks = nUsable;};
-  Bool_t IsCosmic() const {return fIsCosmicData;};
-  void SetCosmic(Bool_t isCosmic) {fIsCosmicData = isCosmic;};
  
 private:
   
@@ -74,17 +72,16 @@ private:
   Int_t fNbrClustersCh[10];      //!<Number of clusters in the chamber [fChamberNbr].
   Int_t fTracksTotalNbr;         //!<Total number of tracks in the event.
   Int_t fTrackFilter[10];        //!<To select track for the efficiency calculation.
-  Bool_t fIsCosmicData;          //!<Check if the data are cosmic rays (used only to cut cosmic shower at the trigger level if true)
   Int_t fNbrUsableTracks;        //!<Number of usable tracks (matches trigger and contains traker data, plus a trigger condition for cosmic)
 
   TClonesArray     * fTrackParams;  //!<Array of track param
   AliMUONTrackParam* fTrackParam;   //!<Current track param
   AliMUONVCluster  * fCluster;      //!<Current cluster
 
-  TClonesArray* fDetEltTDHistList; //!<List of histograms of the tracks detected in the detection elements 
-  TClonesArray* fDetEltTTHistList; //!<List of histograms of the tracks which have passed through the detection elements
-  TClonesArray* fChamberTDHistList; //!<List of histograms of the tracks detected in the chambers 
-  TClonesArray* fChamberTTHistList; //!<List of histograms of the tracks which have passed through the chambers
+  TList* fDetEltTDHistList; //!<List of histograms of the tracks detected in the detection elements 
+  TList* fDetEltTTHistList; //!<List of histograms of the tracks which have passed through the detection elements
+  TList* fChamberTDHistList; //!<List of histograms of the tracks detected in the chambers 
+  TList* fChamberTTHistList; //!<List of histograms of the tracks which have passed through the chambers
 
   static const Int_t fgkNCh;                     ///< The total number of chamber in the tracking system.
   static const Int_t fgkNSt;                     ///< The total number of station in the tracking system.
@@ -93,6 +90,6 @@ private:
   static const Int_t fgkFirstDetectionElt[10];   ///< The Id of the first detection element of each chamber.
   static const Int_t fgkOffset;                  ///< fFirstDetectionElt[iChamber] = fOffset * (iChamber+1).
 
-  ClassDef(AliCheckMuonDetEltResponse, 0)
+  ClassDef(AliCheckMuonDetEltResponse, 0);
 };
 #endif
