@@ -390,17 +390,17 @@ void AliITSDetTypeRec::SetDefaults(){
       SetSegmentationModel(dettype,seg);
       SetDigitClassName(dettype,"AliITSdigitSPD");
     }
-    if(fLoadOnlySPDCalib==kFALSE){
-      if(dettype==1){
-	seg = new AliITSsegmentationSDD();
+    if(dettype==1){
+      seg = new AliITSsegmentationSDD();
+      if(fLoadOnlySPDCalib==kFALSE){
 	AliITSCalibrationSDD* cal=(AliITSCalibrationSDD*)GetCalibrationModel(fgkDefaultNModulesSPD+1);
 	if(cal->IsAMAt20MHz()){ 
 	  seg->SetPadSize(seg->Dpz(0),20.);
 	  seg->SetNPads(seg->Npz()/2,128);
 	}
-	SetSegmentationModel(dettype,seg);
-	SetDigitClassName(dettype,"AliITSdigitSDD");
       }
+      SetSegmentationModel(dettype,seg);
+      SetDigitClassName(dettype,"AliITSdigitSDD");
     }
     if(dettype==2){
       AliITSsegmentationSSD* seg2 = new AliITSsegmentationSSD();

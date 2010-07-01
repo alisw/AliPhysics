@@ -18,19 +18,20 @@ class AliRawReader;
 class AliMultiplicity;
 class AliESDVertex;
 class AliITSDetTypeRec;
+class AliITSVertexer;
 
 class AliITSMeanVertexer : public TObject {
 
  public:
   // default constructor
-    AliITSMeanVertexer();   
+    AliITSMeanVertexer(Bool_t mode = kTRUE);   
     virtual ~AliITSMeanVertexer();
  
     Bool_t Init();
  
     void   SetFilterOnContributors(Int_t nc=1){fFilterOnContributors = nc;}
     void   SetFilterOnTracklets(Int_t nc=1){fFilterOnTracklets = nc;}
-    Bool_t Reconstruct(AliRawReader *rawReader, Bool_t mode = kTRUE);
+    Bool_t Reconstruct(AliRawReader *rawReader);
     void   WriteVertices(const char *filename);
 
     const TH2F*GetVertexXY() const { return fVertexXY; }
@@ -65,6 +66,9 @@ class AliITSMeanVertexer : public TObject {
     Float_t fSigmaOnAverTracks;  //! RMS of fAverTracklets
     Int_t fFilterOnContributors; //! Numb. of contrib must be > fFilter...
     Int_t fFilterOnTracklets;    //! Numb. of tracklets must be > fFilterOnTr...
+    Bool_t fMode;                //! kTRUE for Vertexer3D; 
+                                 //! kFALSE for VertexerTapan
+    AliITSVertexer* fVertexer;   //! vertexer
 
     ClassDef(AliITSMeanVertexer,0)
 };

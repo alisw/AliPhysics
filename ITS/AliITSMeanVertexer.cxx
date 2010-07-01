@@ -5,6 +5,7 @@
 #include "AliITSDetTypeRec.h"
 #include "AliITSInitGeometry.h"
 #include "AliITSMeanVertexer.h"
+#include "AliITSRecPointContainer.h"
 #include "AliITSLoader.h"
 #include "AliLog.h"
 #include "AliRawReader.h"
@@ -38,7 +39,7 @@ ClassImp(AliITSMeanVertexer)
 /* $Id$ */
 
 //______________________________________________________________________
-AliITSMeanVertexer::AliITSMeanVertexer():TObject(),
+AliITSMeanVertexer::AliITSMeanVertexer(Bool_t mode):TObject(),
 fDetTypeRec(NULL),
 fVertexXY(NULL),
 fVertexZ(NULL),
@@ -48,7 +49,9 @@ fAverTracklets(0.),
 fTotTrackletsSq(0.),
 fSigmaOnAverTracks(0.), 
 fFilterOnContributors(0),
-fFilterOnTracklets(0)
+fFilterOnTracklets(0),
+fMode(mode),
+fVertexer(NULL)
 {
   // Default Constructor
   for(Int_t i=0;i<3;i++){
@@ -100,6 +103,15 @@ Bool_t AliITSMeanVertexer::Init() {
   SetFilterOnContributors();
   SetFilterOnTracklets();
 
+  // Instatiate vertexer
+  if (!fMode) {
+    fVertexer = new AliITSVertexer3DTapan(1000);
+  }
+  else {
+    fVertexer = new AliITSVertexer3D();
+    fVertexer->SetDetTypeRec(fDetTypeRec);
+    fVertexer->SetComputeMultiplicity(kTRUE);
+  }
   return kTRUE;
 }
 
@@ -109,35 +121,27 @@ AliITSMeanVertexer::~AliITSMeanVertexer() {
   delete fDetTypeRec;
   delete fVertexXY;
   delete fVertexZ;
+  delete fVertexer;
 }
 
 //______________________________________________________________________
-Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader, Bool_t mode){
+Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader){
   // Performs SPD local reconstruction
   // and vertex finding
   // returns true in case a vertex is found
 
   // Run SPD cluster finder
+  AliITSRecPointContainer::Instance()->PrepareToRead();
   TTree* clustersTree = new TTree("TreeR", "Reconstructed Points Container"); //make a tree
   fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree,"SPD");
 
   Bool_t vtxOK = kFALSE;
-  AliESDVertex *vtx = NULL;
-  // Run Tapan's vertex-finder
-  if (!mode) {
-    AliITSVertexer3DTapan *vertexer1 = new AliITSVertexer3DTapan(1000);
-    vtx = vertexer1->FindVertexForCurrentEvent(clustersTree);
-    delete vertexer1;
+  AliESDVertex *vtx = fVertexer->FindVertexForCurrentEvent(clustersTree);
+  if (!fMode) {
     if (TMath::Abs(vtx->GetChi2()) < 0.1) vtxOK = kTRUE;
   }
   else {
-  // Run standard vertexer3d
-    AliITSVertexer3D *vertexer2 = new AliITSVertexer3D();
-    vertexer2->SetDetTypeRec(fDetTypeRec);
-    vertexer2->SetComputeMultiplicity(kTRUE);
-    vtx = vertexer2->FindVertexForCurrentEvent(clustersTree);
-    AliMultiplicity *mult = vertexer2->GetMultiplicity();
-    delete vertexer2;
+    AliMultiplicity *mult = fVertexer->GetMultiplicity();
     if(Filter(vtx,mult)) vtxOK = kTRUE;
   }
   delete clustersTree;
