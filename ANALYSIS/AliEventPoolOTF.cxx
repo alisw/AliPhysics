@@ -150,7 +150,7 @@ TChain* AliEventPoolOTF::GetNextChain()
  	return 0;
     } else {
     printf("Current bin (lower) %13.3f %13.3f %13.3f %13.3f %13.3f \n", fValue[kMultiplicity], fValue[kZVertex], fValue[kEventPlane],fValue[kLeadingParticleEta],fValue[kLeadingParticlePhi]);
-    printf("Current bin (upper) %13.3f %13.3f %13.3f %13.3f %13.3f \n", fValue[kMultiplicity] + fValueStep[kMultiplicity], 
+    printf("Current bin (upper) %13.3f %13.3f %13.3f %13.3f %13.3f \n", fValue[kMultiplicity] + fValueStep[kMultiplicity] - 1, 
 	   fValue[kZVertex]      + fValueStep[kZVertex], 
 	   fValue[kEventPlane]   + fValueStep[kEventPlane],
 	   fValue[kLeadingParticleEta]   + fValueStep[kLeadingParticleEta],
@@ -158,7 +158,7 @@ TChain* AliEventPoolOTF::GetNextChain()
     
 	   );
 
-	fEventCuts->SetMultiplicityRange(Int_t(fValue[kMultiplicity]) , Int_t(fValue[kMultiplicity] + fValueStep[kMultiplicity]));
+	fEventCuts->SetMultiplicityRange(Int_t(fValue[kMultiplicity]) , Int_t(fValue[kMultiplicity] + fValueStep[kMultiplicity] - 1));
 	fEventCuts->SetPrimaryVertexZRange(fValue[kZVertex] , fValue[kZVertex] + fValueStep[kZVertex]);
         fEventCuts->SetEtaLeadingParticleRange(fValue[kLeadingParticleEta] , fValue[kLeadingParticleEta] + fValueStep[kLeadingParticleEta]);
         fEventCuts->SetPhiLeadingParticleRange(fValue[kLeadingParticlePhi] , fValue[kLeadingParticlePhi] + fValueStep[kLeadingParticlePhi]);
