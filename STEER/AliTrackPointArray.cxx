@@ -402,6 +402,15 @@ void AliTrackPoint::SetXYZ(const Float_t *xyz, const Float_t *cov)
 }
 
 //______________________________________________________________________________
+void AliTrackPoint::SetCov(const Float_t *cov)
+{
+  // Set XYZ cov matrix
+  //
+  if (cov)
+    memcpy(fCov,cov,6*sizeof(Float_t));
+}
+
+//______________________________________________________________________________
 void AliTrackPoint::GetXYZ(Float_t *xyz, Float_t *cov) const
 {
   xyz[0] = fX;

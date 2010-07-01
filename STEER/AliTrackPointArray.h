@@ -31,6 +31,7 @@ class AliTrackPoint : public TObject {
 
   void     SetXYZ(Float_t x, Float_t y, Float_t z, const Float_t *cov = 0);
   void     SetXYZ(const Float_t *xyz, const Float_t *cov = 0);
+  void     SetCov(const Float_t *cov);
   void     SetVolumeID(UShort_t volid) { fVolumeID = volid; }
   void     SetCharge(Float_t charge) { fCharge = charge; }
   void     SetDriftTime(Float_t time) { fDriftTime = time; }
