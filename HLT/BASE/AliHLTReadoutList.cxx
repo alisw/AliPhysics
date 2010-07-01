@@ -815,7 +815,7 @@ AliHLTReadoutList& AliHLTReadoutList::OrEq(const AliHLTReadoutList& list)
   // See header file for more details.
   
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
-  assert( fReadoutList.fCount == list.fCount );
+  assert( fReadoutList.fCount == list.fReadoutList.fCount );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
   {
     fReadoutList.fList[i] |= list.fReadoutList.fList[i];
@@ -839,7 +839,7 @@ AliHLTReadoutList& AliHLTReadoutList::XorEq(const AliHLTReadoutList& list)
   // See header file for more details.
   
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
-  assert( fReadoutList.fCount == list.fCount );
+  assert( fReadoutList.fCount == list.fReadoutList.fCount );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
   {
     fReadoutList.fList[i] ^= list.fReadoutList.fList[i];
@@ -863,7 +863,7 @@ AliHLTReadoutList& AliHLTReadoutList::AndEq(const AliHLTReadoutList& list)
   // See header file for more details.
 
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
-  assert( fReadoutList.fCount == list.fCount );
+  assert( fReadoutList.fCount == list.fReadoutList.fCount );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
   {
     fReadoutList.fList[i] &= list.fReadoutList.fList[i];
@@ -877,7 +877,7 @@ AliHLTReadoutList& AliHLTReadoutList::operator -= (const AliHLTReadoutList& list
   // See header file for more details.
   
   assert( fReadoutList.fCount == (unsigned)gkAliHLTDDLListSize );
-  assert( fReadoutList.fCount == list.fCount );
+  assert( fReadoutList.fCount == list.fReadoutList.fCount );
   for (Int_t i = 0; i < gkAliHLTDDLListSize; i++)
   {
     // Effectively apply: this = this & (~ (this & list))
