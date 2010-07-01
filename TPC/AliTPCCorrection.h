@@ -107,7 +107,7 @@ protected:
   Double_t Interpolate( const Double_t xArray[], const Double_t yArray[], 
 			const Int_t order, const Double_t x );
   void Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low );
-  virtual const Int_t IsPowerOfTwo ( Int_t i ) ;
+  virtual Int_t IsPowerOfTwo ( Int_t i ) const  ;
     
   // Algorithms to solve the laplace or possion equation 
   void PoissonRelaxation2D(TMatrixD &arrayV, const TMatrixD &chargeDensity, TMatrixD &arrayErOverEz, const Int_t rows, const Int_t columns, const Int_t iterations );

@@ -696,7 +696,7 @@ void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, const TMatrixD &cha
 
 
 
-const Int_t AliTPCCorrection::IsPowerOfTwo(Int_t i) {
+Int_t AliTPCCorrection::IsPowerOfTwo(Int_t i) const {
   //
   // Helperfunction: Check if integer is a power of 2
   //
