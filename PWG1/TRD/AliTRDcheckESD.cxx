@@ -27,6 +27,7 @@
 //////////////////////////////////////////////////////
 
 #include <TClonesArray.h>
+#include <TCanvas.h>
 #include <TObjArray.h>
 #include <TPad.h>
 #include <TLegend.h>
@@ -139,6 +140,18 @@ void AliTRDcheckESD::UserCreateOutputObjects()
   Histos();
 }
 
+//____________________________________________________________________
+void AliTRDcheckESD::MakeSummary(){
+  TCanvas *cOut = new TCanvas(Form("summary%s1", GetName()), Form("Summary 1 for task %s", GetName()), 1024, 768);
+  cOut->cd();
+  GetRefFigure(4);
+  cOut->SaveAs(Form("TRDsummary%s1.gif", GetName()));
+
+  cOut = new TCanvas(Form("summary%s2", GetName()), Form("Summary 2 for task %s", GetName()), 1024, 768);
+  cOut->cd();
+  GetRefFigure(5);
+  cOut->SaveAs(Form("TRDsummary%s2.gif", GetName()));
+}
 
 //____________________________________________________________________
 Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)

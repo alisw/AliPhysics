@@ -102,6 +102,7 @@ public:
   void          SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
   Bool_t        PutTrendValue(const Char_t *name, Double_t val);
   void          Terminate(Option_t *);
+  void          MakeSummary();
 
 private:
   static const Float_t fgkxTPC; // end radial position of TPC

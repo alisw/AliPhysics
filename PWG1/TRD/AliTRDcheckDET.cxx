@@ -228,29 +228,42 @@ Bool_t AliTRDcheckDET::PostProcess(){
 }
 
 //_______________________________________________________
+void AliTRDcheckDET::MakeSummary(){
+  //
+  // Create summary plots for TRD check DET
+  // This function creates 2 summary plots:
+  // - General Quantities
+  // - PHS
+  // The function will reuse GetRefFigure
+  //
+  
+  TCanvas *cOut = new TCanvas(Form("summary%s1", GetName()), Form("Summary 1 for task %s", GetName()), 1024, 768);
+  cOut->Divide(3,3);
+
+  // Create figures using GetRefFigure
+  cOut->cd(1); GetRefFigure(kFigNtracksEvent);  
+  cOut->cd(2); GetRefFigure(kFigNtracksSector);
+  cOut->cd(3); GetRefFigure(kFigNclustersTrack);
+  cOut->cd(4); GetRefFigure(kFigNclustersTracklet);
+  cOut->cd(5); GetRefFigure(kFigNtrackletsTrack);
+  cOut->cd(6); GetRefFigure(kFigNTrackletsP);
+  cOut->cd(7); GetRefFigure(kFigChargeCluster);
+  cOut->cd(8); GetRefFigure(kFigChargeTracklet);
+  cOut->SaveAs(Form("TRDsummary%s1.gif", GetName()));
+  delete cOut;
+
+  // Second Plot: PHS
+  cOut = new TCanvas(Form("summary%s2", GetName()), Form("Summary 2 for task %s", GetName()), 1024, 512);
+  cOut->cd(); GetRefFigure(kFigPH);
+  cOut->SaveAs(Form("TRDsummary%s2.gif", GetName())); 
+  delete cOut;
+}
+
+//_______________________________________________________
 Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
   //
   // Setting Reference Figures
   //
-  enum FigureType_t{
-    kFigNclustersTrack,
-    kFigNclustersTracklet,
-    kFigNtrackletsTrack,
-    kFigNTrackletsP,
-    kFigNtrackletsCross,
-    kFigNtrackletsFindable,
-    kFigNtracksEvent,
-    kFigNtracksSector,
-    kFigTrackStatus,
-    kFigTrackletStatus,
-    kFigChi2,
-    kFigPH,
-    kFigChargeCluster,
-    kFigChargeTracklet,
-    kFigNeventsTrigger,
-    kFigNeventsTriggerTracks,
-    kFigTriggerPurity
-  };
   gPad->SetLogy(0);
   gPad->SetLogx(0);
   TH1 *h = NULL; TObjArray *arr=NULL;
@@ -325,6 +338,7 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
     gPad->SetLogy(0);
     return kTRUE;
   case kFigChi2:
+    return kTRUE;
     MakePlotChi2();
     return kTRUE;
   case kFigPH:
@@ -727,7 +741,8 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
       AliError("Input track params missing");
       return NULL;
     }
-    hBarrel->Fill(par->P(), nTracklets);
+    p = par->P(); // p needed later in the debug streaming
+    hBarrel->Fill(p, nTracklets);
   } else {
     // Stand alone Track: momentum dependence not usefull
     method = 0;
@@ -740,32 +755,30 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
 
   if(DebugLevel() > 2){
     AliTRDseedV1 *tracklet = NULL;
-    Int_t sector = -1;
+    Int_t sector = -1, stack = -1, detector;
     for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
       if(!(tracklet = fkTrack->GetTracklet(itl)) || !(tracklet->IsOK())) continue;
-      sector = fGeo->GetSector(tracklet->GetDetector());
+      detector = tracklet->GetDetector();
+      sector = fGeo->GetSector(detector);
+      stack = fGeo->GetStack(detector);
       break;
     }
     (*DebugStream()) << "NTrackletsTrack"
       << "Sector="      << sector
+      << "Stack="        << stack 
       << "NTracklets="  << nTracklets
       << "Method="      << method
       << "p="           << p
       << "\n";
   }
   if(DebugLevel() > 3){
-    if(nTracklets == 1){
-      // If we have one Tracklet, check in which layer this happens
-      Int_t layer = -1;
-      AliTRDseedV1 *tracklet = NULL;
-      for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
-        if((tracklet = fkTrack->GetTracklet(il)) && tracklet->IsOK()){layer =  il; break;}
-      }
-      if(layer >= 0){
+    AliTRDseedV1 *tracklet = NULL;
+    for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
+      if((tracklet = fkTrack->GetTracklet(il)) && tracklet->IsOK()){
         (*DebugStream()) << "NTrackletsLayer"
-          << "Layer=" << layer
-          << "p=" << p
-          << "\n";
+        << "Layer=" << il
+        << "p=" << p
+        << "\n";
       }
     }
   }
@@ -978,24 +991,28 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
       h->Fill(localtime, absoluteCharge);
       phs2D->Fill(localtime, absoluteCharge); 
       if(DebugLevel() > 3){
+        Int_t inChamber = c->IsInChamber() ? 1 : 0;
         Double_t distance[2];
         GetDistanceToTracklet(distance, tracklet, c);
         Float_t theta = TMath::ATan(tracklet->GetZref(1));
         Float_t phi = TMath::ATan(tracklet->GetYref(1));
-        Float_t momentum = 0.;
+        AliExternalTrackParam *trdPar = fkTrack->GetTrackIn();
+        Float_t momentumMC = 0, momentumRec = trdPar ? trdPar->P() : track->P(); // prefer Track Low
         Int_t pdg = 0;
         Int_t kinkIndex = fkESD ? fkESD->GetKinkIndex() : 0;
         UShort_t TPCncls = fkESD ? fkESD->GetTPCncls() : 0;
         if(fkMC){
-          if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+          if(fkMC->GetTrackRef()) momentumMC = fkMC->GetTrackRef()->P();
           pdg = fkMC->GetPDG();
         }
         (*DebugStream()) << "PHt"
           << "Detector="	<< detector
           << "crossing="	<< crossing
+          << "inChamber=" << inChamber
           << "Timebin="		<< localtime
           << "Charge="		<< absoluteCharge
-          << "momentum="	<< momentum
+          << "momentumMC="	<< momentumMC
+          << "momentumRec="	<< momentumRec
           << "pdg="				<< pdg
           << "theta="			<< theta
           << "phi="				<< phi
@@ -1353,6 +1370,7 @@ Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
   h->SetMarkerStyle(24);
   h->SetMarkerColor(kBlack);
   h->SetLineColor(kBlack);
+  h->GetYaxis()->SetTitleOffset(1.5);
   h->Draw("e1");
   // Trending for the pulse height: plateau value, slope and timebin of the maximum
   TLinearFitter fit(1,"pol1");
@@ -1392,6 +1410,7 @@ Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
 
   output->cd(2);
   TH2 *ph2d = (TH2F *)arr->At(2);
+  ph2d->GetYaxis()->SetTitleOffset(1.8);
   ph2d->SetStats(kFALSE);
   ph2d->Draw("colz");
   return kTRUE;
