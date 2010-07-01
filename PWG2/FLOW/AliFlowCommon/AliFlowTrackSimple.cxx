@@ -79,7 +79,7 @@ AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackSimple* AliFlowTrackSimple::Clone(const char* option) const
+AliFlowTrackSimple* AliFlowTrackSimple::Clone(const char* /*option*/) const
 {
   //clone "constructor"
   return new AliFlowTrackSimple(*this);
@@ -203,7 +203,7 @@ void AliFlowTrackSimple::AddFlow( Double_t v1,
 }
 
 //______________________________________________________________________________
-void AliFlowTrackSimple::Print( Option_t* option ) const
+void AliFlowTrackSimple::Print( Option_t* /*option*/ ) const
 {
   //print stuff
   printf("Phi: %.3f, Eta: %+.3f, Pt: %.3f",fPhi,fEta,fPt);
