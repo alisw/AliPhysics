@@ -798,13 +798,13 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value)
    addr = addr - fgkDmemStartAddress;
 
    if(addr < 0 || addr >=  fgkDmemWords) {
-      AliDebug(5, Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
+      AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
       return kFALSE;
    }
 
    switch(fDmemDepth[addr]) {
    case fgkDmemSizeEmpty:
-      AliDebug(5, Form("DMEM address %i not active", addr));
+      AliDebug(4, Form("DMEM address %i not active", addr));
       return kFALSE;
       break;
    case fgkDmemSizeUniform:
@@ -864,7 +864,7 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob,
 
    switch(fDmemDepth[addr]) {
    case fgkDmemSizeEmpty:
-      AliError(Form("DMEM address 0x%08x not active", addr+fgkDmemStartAddress));
+      AliDebug(4, Form("DMEM address 0x%08x not active", addr+fgkDmemStartAddress));
       return kFALSE;
       break;
    case fgkDmemSizeUniform:
@@ -925,7 +925,7 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob,
 UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr) const
 {
    addr = addr - fgkDmemStartAddress;
-   if(addr >=  fgkDmemWords) {
+   if(addr < 0 || addr >=  fgkDmemWords) {
       AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
       return 0;
    }
@@ -955,7 +955,7 @@ UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t
 
    switch(fDmemDepth[addr]) {
    case fgkDmemSizeEmpty:
-      AliError(Form("DMEM address 0x%08x not active", addr+fgkDmemStartAddress));
+      AliDebug(4, Form("DMEM address 0x%08x not active", addr+fgkDmemStartAddress));
       return 0;
       break;
    case fgkDmemSizeUniform:
@@ -1076,52 +1076,6 @@ Bool_t AliTRDtrapConfig::LoadConfig()
   // raw data
   SetTrapReg(kNES, (0x0000 << 16) | 0x1000);
 
-  return kTRUE;
-}
-
-
-Bool_t  AliTRDtrapConfig::LoadConfig(Int_t det, TString filename)
-{
-   // load a TRAP configuration from a file
-   // The file format is the format created by the standalone 
-   // command coder: scc / show_cfdat 
-   // which are two tools to inspect/export configurations from wingDB
-
-  ResetRegs(); // does not really make sense here???
-
-  std::ifstream infile;
-  infile.open(filename.Data(), std::ifstream::in);
-  if (!infile.is_open()) {
-    AliError("Can not open MCM configuration file");
-    return kFALSE;
-  }
-
-  Int_t cmd, extali, addr, data;
-  Int_t no;
-  char tmp;
-  
-  while(infile.good()) {
-    cmd=-1;
-    extali=-1;
-    addr=-1;
-    data=-1;
-    infile >> std::skipws >> no >> tmp >> cmd >> addr >> data >> extali;
-    //      std::cout << "no: " << no << ", cmd " << cmd << ", extali " << extali << ", addr " << addr << ", data " << data <<  endl;
-    
-    if(cmd!=-1 && extali!=-1 && addr != -1 && data!= -1) {
-      AddValues(det, cmd, extali, addr, data);
-    }
-    else if(!infile.eof() && !infile.good()) {
-      infile.clear();
-      infile.ignore(256, '\n');
-    }
-    
-    if(!infile.eof())
-      infile.clear();
-  }
-  
-  infile.close();
-  
   return kTRUE;
 }
 

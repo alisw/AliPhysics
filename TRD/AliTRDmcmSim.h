@@ -122,10 +122,6 @@ class AliTRDmcmSim : public TObject {
 	  // PID
 	  Int_t GetPID(Int_t q0, Int_t q1);
 	  void PrintPidLutHuman();
-	  void PrintPidLutDatx(ostream& os) const;
-	  void SetPIDLutScaleDMEM();
-	  void SetPIDLut(TH2F * const lut);
-	  void SetPIDLut(Int_t *lut, Int_t nbinsq0, Int_t nbinsq1);
 
 	  // I/O
 	  void PrintFitRegXml(ostream& os) const;

@@ -57,6 +57,7 @@ SRCS= AliTRDarraySignal.cxx \
       AliTRDalignment.cxx \
       AliTRDtrapConfig.cxx \
       AliTRDmcmSim.cxx \
+      AliTRDtrapConfigHandler.cxx \
       AliTRDtrackGTU.cxx \
       AliTRDtrackletBase.cxx \
       AliTRDtrackletGTU.cxx \

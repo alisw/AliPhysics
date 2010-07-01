@@ -500,7 +500,6 @@ class AliTRDtrapConfig : public TObject
 
   // configuration handling
   Bool_t LoadConfig();
-  Bool_t LoadConfig(Int_t det, TString filename);
 
   Bool_t ReadPackedConfig(Int_t det, UInt_t *data, Int_t size);
 

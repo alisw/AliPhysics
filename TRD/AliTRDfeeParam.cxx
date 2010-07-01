@@ -401,12 +401,12 @@ Short_t AliTRDfeeParam::ChipmaskToMCMlist( UInt_t cmA, UInt_t cmB, UShort_t link
   
   Short_t nmcm = 0;
   Short_t i;
-  for( i = 0 ; i < listSize ; i++ ) {
-     if( (cmA & (1 << i)) != 0 ) {
+  for( i = 0 ; i < 18 ; i++ ) {  // 18: number of MCMs on a ROB
+     if( (cmA & (1 << i)) != 0 && nmcm<listSize) {
         mcmList[nmcm] = ((linkpair*2) << 7) | i;
 	++nmcm;
     }
-    if( (cmB & (1 << i)) != 0 ) {
+    if( (cmB & (1 << i)) != 0  && nmcm<listSize) {
        mcmList[nmcm] = ((linkpair*2+1) << 7) | i;
        ++nmcm;
     }
