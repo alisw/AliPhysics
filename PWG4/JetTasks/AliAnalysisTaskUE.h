@@ -61,7 +61,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
 
     //  Setters/Getters
     virtual     void         SetDebugLevel( Int_t level )  { fDebug = level; }
-    virtual const Int_t       GetDebugLevel()  { return fDebug; }
+    virtual     Int_t        GetDebugLevel() const { return fDebug; }
     
     void   	SetPtRangeInHist( Int_t bin, Double_t min, Double_t max ) {
       			fBinsPtInHist = bin; 
@@ -71,8 +71,8 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
 
     // Read AODs
     void   	  SelectAODBranch(const char* val)     { fAODBranch = val;   }
-    virtual const TString   	GetAODBranch()                       { return fAODBranch;   }
-    virtual const AliAODEvent*   GetAOD()                             { return fAOD; } 
+    virtual       TString   	 GetAODBranch() const  { return fAODBranch;   }
+    virtual       AliAODEvent*   GetAOD()       const  { return fAOD; } 
 
     // Setters/Getters for MC
     void   	SetConstrainDistance(Bool_t val1, Double_t val2){ fMinDistance = val2; fConstrainDistance = val1;}
@@ -80,11 +80,11 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   	SetUseAODMCParticle(){fUseAliStack = kFALSE;}
     void	SetUseMCBranch(){fUseMCParticleBranch = kTRUE;}
 
-    virtual const Bool_t 	GetConstrainDistance() {return fConstrainDistance;}
-    virtual const Double_t 	GetMinDistance() {return fMinDistance;}
-    virtual const Bool_t 	GetSimulateChJetPt(){return fSimulateChJetPt;}
-    virtual const Bool_t 	GetUseAODMCParticle(){return fUseAliStack;}
-    virtual const Bool_t 	GetUseMCParticleBranch(){return fUseMCParticleBranch;}
+    virtual  Bool_t 	GetConstrainDistance() const  {return fConstrainDistance;}
+    virtual  Double_t 	GetMinDistance() const {return fMinDistance;}
+    virtual  Bool_t 	GetSimulateChJetPt() const {return fSimulateChJetPt;}
+    virtual  Bool_t 	GetUseAODMCParticle() const {return fUseAliStack;}
+    virtual  Bool_t 	GetUseMCParticleBranch() const {return fUseMCParticleBranch;}
 
     //Setters for Events QA
     void  SetZVertex( Double_t val ) { fZVertex = val; }
@@ -104,18 +104,18 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   SetUseNegativeChargeType()        { fUsePositiveCharge = kFALSE; }
     void   SetUseSingleCharge()              { fUseSingleCharge = kTRUE; } 
     
-    virtual const Int_t     GetAnaTopology()    		 { return fAnaType; }
-    virtual const Int_t     GetConePosition()                  { return fConePosition; }
-    virtual const Double_t  GetConeRadius()  	                 { return fConeRadius; }
-    virtual const Bool_t    GetDoNotNormalizeQuantities()      { return fIsNorm2Area; }
-    virtual const UInt_t    GetFilterBit()     		 { return fFilterBit;  }
-    virtual const Bool_t    GetJetsOnFly()     	         { return fJetsOnFly;  }
-    virtual const Int_t     GetPtSumOrdering()                 { return fOrdering;   }
-    virtual const Int_t     GetRegionType()                    { return fRegionType; }
-    virtual const Bool_t    GetUseChargeHadrons()              { return fUseChargeHadrons; }
-    virtual const Int_t     GetUseChPartJet()                  { return fUseChPartJet; }
-    virtual const Bool_t    GetUseNegativeChargeType()         { return fUsePositiveCharge; }
-    virtual const Bool_t    GetUseSingleCharge()               { return fUseSingleCharge; } 
+    virtual Int_t     GetAnaTopology()   const               { return fAnaType; }
+    virtual Int_t     GetConePosition()  const               { return fConePosition; }
+    virtual Double_t  GetConeRadius()  	 const               { return fConeRadius; }
+    virtual Bool_t    GetDoNotNormalizeQuantities()   const  { return fIsNorm2Area; }
+    virtual UInt_t    GetFilterBit()     const 		     { return fFilterBit;  }
+    virtual Bool_t    GetJetsOnFly()     const	             { return fJetsOnFly;  }
+    virtual Int_t     GetPtSumOrdering() const               { return fOrdering;   }
+    virtual Int_t     GetRegionType()    const               { return fRegionType; }
+    virtual Bool_t    GetUseChargeHadrons() const            { return fUseChargeHadrons; }
+    virtual Int_t     GetUseChPartJet()  const               { return fUseChPartJet; }
+    virtual Bool_t    GetUseNegativeChargeType() const       { return fUsePositiveCharge; }
+    virtual Bool_t    GetUseSingleCharge()       const       { return fUseSingleCharge; } 
     
     // Jet cuts
     void   SetJet1EtaCut( Double_t val )      { fJet1EtaCut = val; }
@@ -124,18 +124,18 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void   SetJet3PtCut( Double_t val )       { fJet3PtCut = val; }
     void   SetPtMinChPartJet( Double_t val )  { fChJetPtMin = val; }
     
-    virtual const Double_t   GetJet1EtaCut()                { return fJet1EtaCut; }
-    virtual const Double_t   GetJet2DeltaPhiCut() 	      { return fJet2DeltaPhiCut; }
-    virtual const Double_t   GetJet2RatioPtCut()            { return fJet2RatioPtCut; }
-    virtual const Double_t   GetJet3PtCut()                 { return fJet3PtCut; }
-    virtual const Double_t   GetPtMinChPartJet()            { return fChJetPtMin; }
+    virtual Double_t   GetJet1EtaCut()     const           { return fJet1EtaCut; }
+    virtual Double_t   GetJet2DeltaPhiCut() const	   { return fJet2DeltaPhiCut; }
+    virtual Double_t   GetJet2RatioPtCut() const           { return fJet2RatioPtCut; }
+    virtual Double_t   GetJet3PtCut()      const           { return fJet3PtCut; }
+    virtual Double_t   GetPtMinChPartJet() const           { return fChJetPtMin; }
     
     // track cuts
     void   SetTrackEtaCut( Double_t val ) { fTrackEtaCut = val; }
     void   SetTrackPtCut( Double_t val )  { fTrackPtCut = val; }
 
-    virtual const Double_t   GetTrackEtaCut()           { return fTrackEtaCut; }
-    virtual const Double_t   GetTrackPtCut()            { return fTrackPtCut; }
+    virtual Double_t   GetTrackEtaCut()  const         { return fTrackEtaCut; }
+    virtual Double_t   GetTrackPtCut()   const         { return fTrackPtCut; }
     
 
     AliHistogramsUE*    fHistosUE;        //! points to AliHistogramsUE class   

@@ -77,8 +77,8 @@ class AliAnalyseUE : public TObject {
   void  	QSortTracks(TObjArray &a, Int_t first, Int_t last);
   void  	SetRegionArea(TVector3 *jetVect);
   TObjArray*    SortChargedParticles();     
-  virtual const Bool_t	TrackSelected(AliAODTrack* part);
-  virtual const Bool_t	TrackMCSelected(Double_t charge, Double_t pT, Double_t eta, Int_t pdgCode);
+  virtual Bool_t   TrackSelected(AliAODTrack* part) const;
+  virtual Bool_t   TrackMCSelected(Double_t charge, Double_t pT, Double_t eta, Int_t pdgCode) const;
 
   
     //AliAnalysisTaskUE    fTaskUE;        //  current instance of the analysis-task
