@@ -47,6 +47,7 @@ public:
   const Char_t*  GetNameId() const       { return fNameId;}
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
   virtual Bool_t GetRefFigure(Int_t ifig);
+  virtual void   MakeSummary();
 
   Bool_t         HasFriends() const      { return TestBit(kFriends);};
   Bool_t         HasMCdata() const       { return TestBit(kMCdata);};

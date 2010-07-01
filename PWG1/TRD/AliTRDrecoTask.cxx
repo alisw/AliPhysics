@@ -225,6 +225,12 @@ Bool_t AliTRDrecoTask::PostProcess()
 }
 
 //_______________________________________________________
+void AliTRDrecoTask::MakeSummary(){
+// To be implemented by particular tasks
+  AliWarning("Summary not available");
+}
+
+//_______________________________________________________
 void AliTRDrecoTask::SetDebugLevel(Int_t level)
 {
 // Generic debug handler

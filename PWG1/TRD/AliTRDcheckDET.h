@@ -48,7 +48,26 @@ public:
     kTrackletStatus     = 17,
     kNTrackletsP        = 18
   };
-
+  enum FigureType_t{
+    kFigNclustersTrack,
+    kFigNclustersTracklet,
+    kFigNtrackletsTrack,
+    kFigNTrackletsP,
+    kFigNtrackletsCross,
+    kFigNtrackletsFindable,
+    kFigNtracksEvent,
+    kFigNtracksSector,
+    kFigTrackStatus,
+    kFigTrackletStatus,
+    kFigChi2,
+    kFigPH,
+    kFigChargeCluster,
+    kFigChargeTracklet,
+    kFigNeventsTrigger,
+    kFigNeventsTriggerTracks,
+    kFigTriggerPurity
+  };
+ 
   AliTRDcheckDET();
   AliTRDcheckDET(char* name);
   virtual ~AliTRDcheckDET();
@@ -74,6 +93,7 @@ public:
 
   virtual Bool_t PostProcess();
   virtual Bool_t GetRefFigure(Int_t ifig);
+  virtual void MakeSummary();
   
   Bool_t IsUsingClustersOutsideChamber() const {return TESTBIT(fFlags, kUseClustersOutsideChamber);}
   void UseClustersOutsideChamber(Bool_t b = kTRUE) {if(b) SETBIT(fFlags, kUseClustersOutsideChamber); else CLRBIT(fFlags, kUseClustersOutsideChamber);}

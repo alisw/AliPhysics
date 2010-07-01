@@ -75,10 +75,11 @@ Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", 
 // define setup
 TCanvas *c = 0x0;
 Bool_t mc(kFALSE), friends(kFALSE);
+Bool_t summary(kTRUE);
 
 void processTRD(TNamed* task, const Char_t *filename);
 void processESD(TNamed* task, const Char_t *filename);
-void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char_t *cid = "", Bool_t kGRID=kFALSE)
+void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char_t *cid = "", Bool_t kGRID=kFALSE, Bool_t dosummary = kTRUE)
 {
   if(kGRID){
     if(!gSystem->Getenv("GSHELL_ROOT")){
@@ -110,7 +111,10 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
   }
   Int_t fSteerTask = ParseOptions(opt);
 
-  if(!c) c=new TCanvas("c", "Performance", 10, 10, 800, 500);
+  if(!dosummary){
+    summary = kFLASE;
+    if(!c) c=new TCanvas("c", "Performance", 10, 10, 800, 500);
+  }
 
   TClass *ctask = new TClass;
   AliAnalysisTask *task = 0x0;
@@ -151,10 +155,13 @@ void processTRD(TNamed *otask, const Char_t *filename)
     delete task;
     return;
   }
-  for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
-    c->Clear();
-    if(!task->GetRefFigure(ipic)) continue;
-    c->SaveAs(Form("%s_Fig%02d.gif", task->GetName(), ipic), "gif");
+  if(summary) task->MakeSummary();
+  else{
+    for(Int_t ipic=0; ipic<task->GetNRefFigures(); ipic++){
+      c->Clear();
+      if(!task->GetRefFigure(ipic)) continue;
+      c->SaveAs(Form("%s_Fig%02d.gif", task->GetName(), ipic), "gif");
+    }
   }
   delete task;
 }
@@ -177,11 +184,14 @@ void processESD(TNamed *otask, const Char_t *filename)
     return;
   }
   esd->Terminate(NULL);
-
-  for(Int_t ipic(0); ipic<esd->GetNRefFigures(); ipic++){
-    c->Clear(); 
-    if(!esd->GetRefFigure(ipic)) continue;
-    c->SaveAs(Form("%s_Fig%02d.gif", esd->GetName(), ipic));
+  
+  if(summary) esd->MakeSummary();
+  else{
+    for(Int_t ipic(0); ipic<esd->GetNRefFigures(); ipic++){
+      c->Clear(); 
+      if(!esd->GetRefFigure(ipic)) continue;
+      c->SaveAs(Form("%s_Fig%02d.gif", esd->GetName(), ipic));
+    }
   }
   delete esd;
 }
