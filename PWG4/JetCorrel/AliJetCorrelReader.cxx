@@ -207,7 +207,7 @@ void AliJetCorrelReader::FillESDTrackList(CorrelList_t *list, Bool_t isTrigg){
 void AliJetCorrelReader::FillESDPhotonList(CorrelList_t *list, Bool_t isTrigg){
   // TBI
   std::cerr<<"WARNING : FillESDPhotonList() not emplemented yet. Doing nothing..."<<std::endl;
-  std::cerr<<"Photon list size:"<<list->Size()<<std::endl;
+  std::cerr<<"Photon list size:"<<list->Size()<<" type:"<<isTrigg<<std::endl;
 }
 
 void AliJetCorrelReader::FillESDDiphotonList(CorrelList_t* list, Bool_t isTrigg){
