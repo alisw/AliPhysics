@@ -1039,7 +1039,7 @@ TObjArray*  AliAnalyseUE::SortChargedParticles()
 
 
 //____________________________________________________________________
-const Bool_t AliAnalyseUE::TrackMCSelected(Double_t charge, Double_t pT, Double_t eta, Int_t pdgCode){
+Bool_t AliAnalyseUE::TrackMCSelected(Double_t charge, Double_t pT, Double_t eta, Int_t pdgCode)const{
   
   // MC track selection 
   Double_t const kMyTolerance = 0.0000001;
@@ -1065,7 +1065,7 @@ const Bool_t AliAnalyseUE::TrackMCSelected(Double_t charge, Double_t pT, Double_
 }
 
 //____________________________________________________________________
-const Bool_t AliAnalyseUE::TrackSelected(AliAODTrack* part){
+Bool_t AliAnalyseUE::TrackSelected(AliAODTrack* part)const{
 
   // Real track selection
   if ( !part->TestFilterBit(fFilterBit) ) return kFALSE; // track cut selection
