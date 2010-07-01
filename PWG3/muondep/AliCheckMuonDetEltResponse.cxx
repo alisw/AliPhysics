@@ -43,6 +43,7 @@
 
 //include ROOT:
 #include <TH2F.h>
+#include <TList.h>
 #include <TClonesArray.h>
 
 /// \cond CLASSIMP
@@ -62,19 +63,17 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
   fkTransformer(0x0),
   fESD(0x0),
   fTracksTotalNbr(0x0),
-  fIsCosmicData(kFALSE),
   fNbrUsableTracks(0),
   fTrackParams(0x0),
   fTrackParam(0x0),
   fCluster(0x0),
-  fDetEltTDHistList(0x0),
-  fDetEltTTHistList(0x0),
-  fChamberTDHistList(0x0),
-  fChamberTTHistList(0x0)
+  fDetEltTDHistList(0),
+  fDetEltTTHistList(0),
+  fChamberTDHistList(0),
+  fChamberTTHistList(0)
 {
 /// Default constructor
 
-    fIsCosmicData = kFALSE;
     fNbrUsableTracks = 0;
 
     for (Int_t iCluster = 0; iCluster<fgkNCh; ++iCluster)
@@ -90,15 +89,14 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliCheckMuonDetEltR
   fkTransformer(0x0),
   fESD(0x0),
   fTracksTotalNbr(0x0),
-  fIsCosmicData(kFALSE),
   fNbrUsableTracks(0),
   fTrackParams(0x0),
   fTrackParam(0x0),
   fCluster(0x0),
-  fDetEltTDHistList(0x0),
-  fDetEltTTHistList(0x0),
-  fChamberTDHistList(0x0),
-  fChamberTTHistList(0x0)
+  fDetEltTDHistList(0),
+  fDetEltTTHistList(0),
+  fChamberTDHistList(0),
+  fChamberTTHistList(0)
 {
  src.Copy(*this);
 }
@@ -116,16 +114,14 @@ AliCheckMuonDetEltResponse& AliCheckMuonDetEltResponse::operator=(const AliCheck
 //_____________________________________________________________________________
 AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTransformer* transformer,
 						       AliESDEvent* esd,
-						       TClonesArray* detEltTDHistList,
-						       TClonesArray* detEltTTHistList,
-						       TClonesArray* chamberTDHistList,
-						       TClonesArray* chamberTTHistList,
-						       Bool_t isCosmic) 
+						       TList* detEltTDHistList,
+						       TList* detEltTTHistList,
+						       TList* chamberTDHistList,
+						       TList* chamberTTHistList) 
 : TObject(),
   fkTransformer(transformer),
   fESD(esd),
   fTracksTotalNbr(0),
-  fIsCosmicData(kFALSE),
   fNbrUsableTracks(0),
   fTrackParams(0x0),
   fTrackParam(0),
@@ -137,7 +133,6 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
 {
 /// Constructor
 
-    fIsCosmicData = isCosmic;
     fNbrUsableTracks = 0;
 
     for (Int_t iCluster = 0; iCluster<fgkNCh; ++iCluster)
@@ -145,7 +140,6 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
     
     for (Int_t i=0; i<fgkNCh; ++i)
       fTrackFilter[i] = 0;
-    
 }
 
 
@@ -194,60 +188,10 @@ void AliCheckMuonDetEltResponse::TrackLoop()
 	
 	if(esdTrack->ContainTrackerData() && esdTrack->GetMatchTrigger() > 0)
 	  {
-	    if (fIsCosmicData)
-	      {
-		// Beginnig of long stuff to check the number of trigger hit (to only keep muon trigger and cut cosmic showers)
-		Int_t nTriggerHit = 0;
-		Int_t nTriggerHitStrip[8] = {0, 0, 0, 0, 
-					     0, 0, 0, 0};
-		UShort_t triggerPattern[8] = {esdTrack->GetTriggerX1Pattern(), esdTrack->GetTriggerX2Pattern(), esdTrack->GetTriggerX3Pattern(), esdTrack->GetTriggerX4Pattern(), 
-					      esdTrack->GetTriggerY1Pattern(), esdTrack->GetTriggerY2Pattern(), esdTrack->GetTriggerY3Pattern(), esdTrack->GetTriggerY4Pattern()};
-		
-		for (Int_t ii = 0; ii < 8; ii++)
-		  {
-		    UShort_t pattern = triggerPattern[ii];
-		    Int_t binaryValue[16] = {0, 0, 0, 0,
-					     0, 0, 0, 0,
-					     0, 0, 0, 0,
-					     0, 0, 0, 0};
-		    
-		    for (Int_t jj = 15; jj >= 0; jj--)
-		      {
-			Int_t base = 1;
-			for (Int_t bb = 0; bb < jj; bb++)
-			  base *= 2;
-			
-			if (pattern/base == 1)
-			  {
-			    binaryValue[jj] = 1;
-			    pattern = pattern - base;
-			  }
-		      }
-		  }
-		
-		for (Int_t ii = 0; ii < 8; ii++)
-		  nTriggerHit += nTriggerHitStrip[ii];
-		// End of long stuff
-		
-		
-		// Important part
-		if (nTriggerHit < 10)
-		  {
-		    AliMUONESDInterface::ESDToMUON(*esdTrack, track);
-		    fTrackParams = track.GetTrackParamAtCluster();
-		    TrackParamLoop(); //!<Loop on trackParam.
-		    fNbrUsableTracks += 1;
-		  }
-	      }
-	    
-	    // No trigger cut is required for non-cosmic data
-	    else
-	      {
-		AliMUONESDInterface::ESDToMUON(*esdTrack, track);
-		fTrackParams = track.GetTrackParamAtCluster();
-		TrackParamLoop(); //!<Loop on trackParam.
-		fNbrUsableTracks += 1;
-	      }
+	    AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+	    fTrackParams = track.GetTrackParamAtCluster();
+	    TrackParamLoop(); //!<Loop on trackParam.
+	    fNbrUsableTracks += 1;
 	  }
       }
   }
@@ -266,7 +210,6 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
   
   for (Int_t ch = 0; ch < fgkNCh; ++ch)
     fTrackFilter[ch] = 0;
-
 
   Double_t posXL, posYL, posZL;          //!<Local positions.
   Double_t posXG, posYG, posZG;          //!<Global. positions.
@@ -376,13 +319,12 @@ void AliCheckMuonDetEltResponse::FillTDHistos(Int_t chamber,
     {
       Int_t iDet = 0; //!<Position of the detection element in the histograms' list.
       iDet = FromDetElt2iDet(chamber, detElt);
-      ((TH2F*) fDetEltTDHistList->UncheckedAt(iDet))->Fill(posXL, posYL);
-      ((TH2F*) fDetEltTDHistList->UncheckedAt(fgkNDE))->Fill(chamber, 0);
-  
+      ((TH2F*) fDetEltTDHistList->At(iDet))->Fill(posXL, posYL);
+
       Int_t detEltLocalId = 0;  //!<Id of the detection element in the station
       detEltLocalId =  FromDetElt2LocalId(chamber, detElt);
-      ((TH1F*) fChamberTDHistList->UncheckedAt(chamber))->Fill(detEltLocalId);
-      ((TH1F*) fChamberTDHistList->UncheckedAt(10))->Fill(chamber);
+      ((TH1F*) fChamberTDHistList->At(chamber))->Fill(detEltLocalId);
+      ((TH1F*) fChamberTDHistList->At(fgkNCh))->Fill(chamber + 1);
    }
 }
 
@@ -400,13 +342,12 @@ void AliCheckMuonDetEltResponse::FillTTHistos(Int_t chamber,
     {
       Int_t iDet = 0; //!<Position of the detection element in the histograms' list.
       iDet = FromDetElt2iDet(chamber, detElt);
-      ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
-      ((TH2F*) fDetEltTTHistList->UncheckedAt(fgkNDE))->Fill(chamber, 0);
+      ((TH2F*) fDetEltTTHistList->At(iDet)) -> Fill(posXL, posYL);
      
       Int_t detEltLocalId = 0;  //!<Id of the detection element in the station
       detEltLocalId =  FromDetElt2LocalId(chamber, detElt);
-      ((TH1F*) fChamberTTHistList->UncheckedAt(chamber))->Fill(detEltLocalId);
-      ((TH1F*) fChamberTTHistList->UncheckedAt(10))->Fill(chamber);
+      ((TH1F*) fChamberTTHistList->At(chamber))->Fill(detEltLocalId);
+      ((TH1F*) fChamberTTHistList->At(fgkNCh))->Fill(chamber + 1);
     }
 }
 

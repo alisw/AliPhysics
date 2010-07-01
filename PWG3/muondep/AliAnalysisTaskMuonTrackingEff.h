@@ -5,18 +5,16 @@
 
 /// \ingroup base
 /// \class AliAnalysisTaskMuonTrackingEff
-/// \brief tracking chamber efficiency from data
+/// \brief tracking chamber efficiency from ESD data
 //Author: Nicolas LE BRIS - SUBATECH Nantes
 
-
 #include "AliAnalysisTask.h"
-
 
 class AliCheckMuonDetEltResponse;
 class AliMUONGeometryTransformer;
 class AliESDEvent;
-class TClonesArray;
-class TH2F;
+class TList;
+class TString;
 
 class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
 {
@@ -24,8 +22,7 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
   AliAnalysisTaskMuonTrackingEff();
   AliAnalysisTaskMuonTrackingEff(const AliAnalysisTaskMuonTrackingEff& rhs);
   AliAnalysisTaskMuonTrackingEff& operator=(const AliAnalysisTaskMuonTrackingEff&);
-  AliAnalysisTaskMuonTrackingEff(const char* name,
-				 Bool_t isCosmic = kFALSE);
+  AliAnalysisTaskMuonTrackingEff(TString name, TString path = "alien://folder=/alice/data/2010/OCDB");
   virtual ~AliAnalysisTaskMuonTrackingEff();
 
   // Implementation of interface methods
@@ -34,30 +31,29 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
   virtual void Exec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  static const Int_t fgkTotNbrOfDetectionElt;    ///< The total number of detection element in the tracking system.
-  static const Int_t fgkTotNbrOfChamber;
-
-  void ComputeErrors();                        ///< Compute the error on the efficiency (see .cxx for the formula)
-  
-  void SetCosmic(Bool_t isCosmic) {fIsCosmicData = isCosmic;};
-  Bool_t IsCosmic() const {return fIsCosmicData;};
-
  private:
-  AliESDEvent * fESD;                             //!<ESD object
-  AliMUONGeometryTransformer *fTransformer;       //!<Transformer object
+  Bool_t fIsInit;                   //!< Determine if the object has been initialized
+  Bool_t fIsLoaded;                    //!< Determine if the OCDB and =geometry have been loaded
+  TString fOCDBpath;                //!< OCDB path
+  Int_t fUsableTracks;              //!< Number of usable tracks
 
-  TClonesArray* fDetEltEffHistList; //!<Detetcion efficiencies histograms list. 
-  TClonesArray* fDetEltTDHistList;  //!<List of histograms of the tracks detected in the detection elements. 
-  TClonesArray* fDetEltTTHistList;  //!<List of histograms of the tracks which have passed through the detection elements. 
-  TClonesArray* fChamberEffHistList;
-  TClonesArray* fChamberTDHistList;
-  TClonesArray* fChamberTTHistList;
+  AliESDEvent * fESD;                             //< ESD object
+  AliMUONGeometryTransformer *fTransformer;       //< Transformer object
 
-  AliCheckMuonDetEltResponse* fChamberEff;
+  static const Int_t fgkTotNbrOfDetectionElt;    //< The total number of detection element in the tracking system.
+  static const Int_t fgkTotNbrOfChamber;         //< The total number of tracking chambers in the muon spectrometer
 
-  Bool_t fIsCosmicData;
+  TList* fDetEltTDHistList;    //< List of histograms of the tracks detected in the detection elements. 
+  TList* fDetEltTTHistList;    //< List of histograms of the tracks which have passed through the detection elements. 
+  TList* fChamberTDHistList;   //< List of histograms of the tracks detected in the chambers.
+  TList* fChamberTTHistList;   //< List of histograms of the tracks which have passed through the chambers.
 
-  ClassDef(AliAnalysisTaskMuonTrackingEff, 0)
+  AliCheckMuonDetEltResponse* fChamberEff;  //< Class computing the efficiency
+
+  void Init();                                 // Initialize the object  
+  void LoadOCDBandGeometry();                  // Load the OCDB and the geometry
+
+  ClassDef(AliAnalysisTaskMuonTrackingEff, 1)
 };
 
 #endif
