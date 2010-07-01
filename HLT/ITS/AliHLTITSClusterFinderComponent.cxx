@@ -73,6 +73,8 @@ AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
   fSPDNModules(0),
   fSDDNModules(0),
   fSSDNModules(0),
+  fFirstModule(0),
+  fLastModule(0),
   fclusters(),
   fBenchmark(GetComponentID())
 { 
