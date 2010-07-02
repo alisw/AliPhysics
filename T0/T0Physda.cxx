@@ -43,8 +43,6 @@ SOULD BE CHANGED BACK BEFORE BEAM
 #include "TSpectrum.h"
 #include "TMath.h"
 
-int kbx, kcbx, kt0bx, knpmtA, knpmtC;
-float klx,kmx,kclx,kcmx, kt0lx, kt0hx;
 
 /* Main routine
       Arguments: 
@@ -74,6 +72,8 @@ int main(int argc, char **argv) {
     printf("Input file >>inPhys.dat<< not found !!!\n");
     return -1;
   }
+  int  kcbx, kt0bx, knpmtA, knpmtC;
+  float kclx,kcmx, kt0lx, kt0hx;
   
   while((c=getc(inp))!=EOF) {
     switch(c) {
