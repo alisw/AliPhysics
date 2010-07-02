@@ -189,7 +189,7 @@ void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  mgr->StartAnalysis("local",chain,500);
+  mgr->StartAnalysis("local",chain);
 
   timer.Stop();
   timer.Print();
