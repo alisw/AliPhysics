@@ -155,7 +155,7 @@ AliPHOSGeoUtils::~AliPHOSGeoUtils(void)
     for(Int_t istrip=0; istrip<224; istrip++)
       delete fStripMatrix[mod][istrip];
     delete fCPVMatrix[mod];
-    //    delete fPHOSMatrix[mod];
+    delete fPHOSMatrix[mod];
   }
 }
 //____________________________________________________________________________
@@ -629,7 +629,10 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
 void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
   //Fills pointers to geo matrixes
  
-  fPHOSMatrix[mod]=m ;
+  if(fPHOSMatrix[mod]){ //have been set already. Can not be changed any more
+    return ;
+  }
+  fPHOSMatrix[mod]= new TGeoHMatrix(*m) ;
 
   //If module does not exist, make sure all its matrices are zero
   if(m==NULL){
