@@ -94,6 +94,8 @@ public:
    void    SetPrimaryIonisation(Bool_t flag = kTRUE) {fPrimaryIonisation = flag;}
    void    SetGainFactor(Float_t gain){fGainFactor=gain;} //gas gain scaling factor
    Float_t GetGainFactor()const {return fGainFactor;}//gas gain scaling factor
+   // LHC clock phase switch 0 - no phase, 1 - random, 2 - from the OCDB
+   void SetLHCclockPhase(Int_t sw){fLHCclockPhaseSw = sw;}
 // static functions
    static AliTPCParam* LoadTPCParam(TFile *file); 
 protected:
@@ -136,7 +138,8 @@ protected:
   Bool_t*    fActiveSectors; //! bool indicating which sectors are active
   Float_t    fGainFactor; // scaling factor
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
-  ClassDef(AliTPC,13)  // Time Projection Chamber class
+  Int_t fLHCclockPhaseSw; //! lhc clock phase switch
+  ClassDef(AliTPC,14)  // Time Projection Chamber class
 };
 
 

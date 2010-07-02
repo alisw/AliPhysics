@@ -52,6 +52,7 @@
 #include <TTree.h>
 #include <TVector.h>
 #include <TVirtualMC.h>
+#include <TParameter.h>
 
 #include "AliDigits.h"
 #include "AliMagF.h"
@@ -99,7 +100,8 @@ ClassImp(AliTPC)
 		   fCurrentNoise(0),
 		   fActiveSectors(0),
                    fGainFactor(1.),
-    fDebugStreamer(0)
+                   fDebugStreamer(0),
+                   fLHCclockPhaseSw(0)
 
 {
   //
@@ -132,8 +134,9 @@ AliTPC::AliTPC(const char *name, const char *title)
 		   fNoiseTable(0),
 		   fCurrentNoise(0),
                    fActiveSectors(0),
-    fGainFactor(1.),
-     fDebugStreamer(0)
+                   fGainFactor(1.),
+                   fDebugStreamer(0),
+                   fLHCclockPhaseSw(0)
                   
 {
   //
@@ -1309,7 +1312,25 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   SetDigitsArray(arr);
 
   fDigitsSwitch=0; // standard digits
-
+  // here LHC clock phase
+  Float_t lhcph = 0.;
+  switch (fLHCclockPhaseSw){
+  case 0: 
+    // no phase
+    lhcph=0.;
+    break;
+  case 1:
+    // random phase
+    lhcph = (Int_t)(gRandom->Rndm()/0.25);    
+    break;
+  case 2:
+    lhcph=0.;
+    // not implemented yet
+    break;
+  }
+  // adding phase to the TreeD user info 
+  fLoader->TreeD()->GetUserInfo()->Add(new TParameter<float>("lhcphase0",lhcph));
+  //
   for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
     if (IsSectorActive(isec)) {
       AliDebug(1,Form("Hits2Digits","Sector %d is active.",isec));
@@ -1376,6 +1397,25 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
   fDigitsSwitch=1; // summable digits
   
     // set zero suppression to "0"
+  // here LHC clock phase
+  Float_t lhcph = 0.;
+  switch (fLHCclockPhaseSw){
+  case 0: 
+    // no phase
+    lhcph=0.;
+    break;
+  case 1:
+    // random phase
+    lhcph = (Int_t)(gRandom->Rndm()/0.25);    
+    break;
+  case 2:
+    lhcph=0.;
+    // not implemented yet
+    break;
+  }
+  // adding phase to the TreeS user info 
+  
+  fLoader->TreeS()->GetUserInfo()->Add(new TParameter<float>("lhcphase0",lhcph));
 
   fTPCParam->SetZeroSup(0);
 
@@ -1420,7 +1460,7 @@ void AliTPC::Hits2SDigits()
     SetActiveSectors();
     Hits2SDigits2(iEvent);
   }
-
+  
   fLoader->UnloadHits();
   fLoader->UnloadSDigits();
   if (fDebugStreamer) {
@@ -1681,6 +1721,15 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
   TMatrixF &signal = *m1;
   TMatrixF &total = *m2;
   //
+  // Get LHC clock phase
+  //
+  TParameter<float> *ph;
+  if(fDigitsSwitch){// s-digits
+    ph = (TParameter<float>*)fLoader->TreeS()->GetUserInfo()->FindObject("lhcphase0");  
+  }
+  else{ // normal digits
+    ph = (TParameter<float>*)fLoader->TreeD()->GetUserInfo()->FindObject("lhcphase0");
+  } 
   //  Loop over all electrons
   //
   for(Int_t nel=0; nel<nElectrons; nel++){
@@ -1688,7 +1737,8 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
     Float_t aval =  v(idx+4);
     Float_t eltoadcfac=aval*fTPCParam->GetTotalNormFac(); 
     Float_t xyz[4]={v(idx+1),v(idx+2),v(idx+3),v(idx+5)};
-    Int_t n = ((AliTPCParamSR*)fTPCParam)->CalcResponseFast(xyz,fCurrentIndex,fCurrentIndex[3]);
+    Int_t n = ((AliTPCParamSR*)fTPCParam)->CalcResponseFast(xyz,fCurrentIndex,
+							    fCurrentIndex[3],ph->GetVal());
 
     Int_t *index = fTPCParam->GetResBin(0);  
     Float_t *weight = & (fTPCParam->GetResWeight(0));

@@ -21,7 +21,7 @@ public:
   virtual ~AliTPCParamSR();
 
   Int_t  CalcResponse(Float_t* x, Int_t * index, Int_t row);
-  Int_t CalcResponseFast(Float_t* x, Int_t * index, Int_t row);
+  Int_t CalcResponseFast(Float_t* x, Int_t * index, Int_t row,Float_t phase);
   //calculate bin response as function of the input position -x 
   //return number of valid response bin
 

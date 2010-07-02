@@ -38,6 +38,7 @@
 #include <TFile.h>
 #include <TDirectory.h>
 #include <Riostream.h>
+#include <TParameter.h>
 
 #include "AliTPCDigitizer.h"
 
@@ -146,20 +147,33 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
    }
   }
   
-  pTPC->GenerNoise(500000); //create teble with noise
+  pTPC->GenerNoise(500000); //create table with noise
   //
   Int_t nInputs = fManager->GetNinputs();
   Int_t * masks = new Int_t[nInputs];
   for (Int_t i=0; i<nInputs;i++)
     masks[i]= fManager->GetMask(i);
   Short_t **pdig= new Short_t*[nInputs];   //pointers to the expanded digits array
-  Int_t **ptr=  new Int_t*[nInputs];       //pointers to teh expanded tracks array
+  Int_t **ptr=  new Int_t*[nInputs];       //pointers to the expanded tracks array
   Bool_t *active=  new Bool_t[nInputs];    //flag for active input segments
-
+  Char_t phname[100];
   
   //create digits array for given sectors
   // make indexes
-  
+  //
+  //create branch's in TPC treeD
+  orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  ogime = orl->GetLoader("TPCLoader");
+  TTree * tree  = ogime->TreeD();
+  AliSimDigits * digrow = new AliSimDigits;  
+
+  if (tree == 0x0)
+   {
+     ogime->MakeTree("D");
+     tree  = ogime->TreeD();
+   }
+  tree->Branch("Segment","AliSimDigits",&digrow);
+  //  
   AliSimDigits ** digarr = new AliSimDigits*[nInputs]; 
   for (Int_t i1=0;i1<nInputs; i1++)
     {
@@ -176,26 +190,25 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
             <<" input "<< i1<<endl;
         return;
        }
-    
+
+      sprintf(phname,"lhcphase%d",i1);
+      TParameter<float> *ph = (TParameter<float>*)treear->GetUserInfo()
+	                       ->FindObject("lhcphase0");
+      if(!ph){
+        cerr<<"AliTPCDigitizer: LHC phase  not found in"
+            <<" input "<< i1<<endl;
+        return;
+      }
+      tree->GetUserInfo()->Add(new TParameter<float>(phname,ph->GetVal()));
+	      //
       if (treear->GetIndex()==0)  
 	treear->BuildIndex("fSegmentID","fSegmentID");
       treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
     }
 
 
-  //create branch's in TPC treeD
-  AliSimDigits * digrow = new AliSimDigits;
 
-  orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  ogime = orl->GetLoader("TPCLoader");
-  
-  TTree * tree  = ogime->TreeD();
-  if (tree == 0x0)
-   {
-     ogime->MakeTree("D");
-     tree  = ogime->TreeD();
-   }
-  tree->Branch("Segment","AliSimDigits",&digrow);
+
   //
 
   param->SetZeroSup(2);

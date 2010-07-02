@@ -448,7 +448,7 @@ void AliTPCParamSR::Streamer(TBuffer &R__b)
       AliTPCParam::Streamer(R__b);    
    }
 }
-Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
+Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row, Float_t phase)
 {
   //
   //calculate bin response as function of the input position -x 
@@ -525,7 +525,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   //calulate deviation
   Float_t dpadrow = xyz[0];
   Float_t dpad    = xyz[1]-cpad;
-  Float_t dtime   = xyz[2]+zoffset2+xyz[3]-ctime;
+  Float_t dtime   = xyz[2]+zoffset2+xyz[3]-ctime+phase*0.25;
   Int_t cindex =0;
   Int_t cindex3 =0;
   Int_t maxt =GetMaxTBin();
