@@ -43,6 +43,7 @@
 #include "TClonesArray.h"
 #include "TStopwatch.h"
 #include "TParameter.h"
+#include "TF1.h"
 
 // --- AliRoot header files ---
 #include "AliRun.h"
@@ -53,10 +54,15 @@
 #include "AliVZEROBuffer.h"
 #include "AliRunDigitizer.h"
 #include "AliVZEROdigit.h"
+#include "AliVZEROSDigit.h"
 #include "AliDAQ.h"
 #include "AliRawReader.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliVZERORawStream.h"
 #include "AliVZEROCalibData.h"
+#include "AliVZERORecoParam.h"
+#include "AliVZEROReconstructor.h"
 
 ClassImp(AliVZERO)
  //__________________________________________________________________
@@ -67,13 +73,23 @@ AliVZERO::AliVZERO(): AliDetector(),
 	  fMaxStepQua(0.),
 	  fMaxStepAlu(0.),
 	  fMaxDestepQua(0.),
-	  fMaxDestepAlu(0.)
+          fMaxDestepAlu(0.),
+          fCalibData(NULL),
+          fTimeSlewing(NULL),
+          fSignalShape(NULL),
+          fRecoParam(NULL)
 {
 /// Default Constructor
     
     AliDebug(1,Form("default (empty) ctor this=%p",this));
-    fIshunt          = 0;	  
+    fIshunt          = 0;
+
+    for(Int_t i = 0 ; i < 64; ++i) {
+      fNBins[i] = 0;
+      fBinSize[i] = 0;
+    }
 }
+
 //_____________________________________________________________________________
 AliVZERO::AliVZERO(const char *name, const char *title)
        : AliDetector(name,title),
@@ -83,7 +99,11 @@ AliVZERO::AliVZERO(const char *name, const char *title)
 	 fMaxStepQua(0.05),
 	 fMaxStepAlu(0.01),
 	 fMaxDestepQua(-1.0),
-	 fMaxDestepAlu(-1.0)
+	 fMaxDestepAlu(-1.0),
+	 fCalibData(NULL),
+	 fTimeSlewing(NULL),
+         fSignalShape(NULL),
+	 fRecoParam(NULL)
 {
   
   // Standard constructor for VZERO Detector
@@ -106,7 +126,10 @@ AliVZERO::AliVZERO(const char *name, const char *title)
 //   fMaxDestepQua =  -1.0;
 //   fMaxDestepAlu =  -1.0;
   
-  
+  for(Int_t i = 0 ; i < 64; ++i) {
+    fNBins[i] = 0;
+    fBinSize[i] = 0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -125,6 +148,14 @@ AliVZERO::~AliVZERO()
         fDigits->Delete();
         delete fDigits;
         fDigits=0; }
+    if (fSignalShape) {
+      delete fSignalShape;
+      fSignalShape = NULL;
+    }
+    if (fRecoParam) {
+      delete fRecoParam;
+      fRecoParam = NULL;
+    }
 }
 
 //_____________________________________________________________________________
@@ -394,32 +425,169 @@ Bool_t AliVZERO::Raw2SDigits(AliRawReader* rawReader){
 
   if(!fLoader) {
     AliError("no VZERO loader found");
-    return kFALSE; }
+    return kFALSE;
+  }
+  fLoader->LoadSDigits("UPDATE");
 
-  TTree* treeD  = fLoader->TreeD();
-  if(!treeD) {
-      fLoader->MakeTree("D");
-      treeD = fLoader->TreeD(); }
-        
-  AliVZEROdigit  digit;
-  AliVZEROdigit* pdigit = &digit;
-  const Int_t kBufferSize = 4000;
-   
-  treeD->Branch("VZERO", "AliVZEROdigit",  &pdigit, kBufferSize);
+  if (!fLoader->TreeS()) fLoader->MakeTree("S");
+  fLoader->MakeSDigitsContainer();
+  TTree* treeS  = fLoader->TreeS();
 
-  rawReader->Reset();
-  AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader);    
+  TClonesArray *sdigits = new TClonesArray("AliVZEROSDigit", 64);
+  treeS->Branch("VZEROSDigit", &sdigits); 
+
+  {
+    rawReader->Reset();
+    AliVZERORawStream rawStream(rawReader);    
      
-  if (!rawStream->Next()) return kFALSE; // No VZERO data found
-  
-  fLoader->WriteDigits("OVERWRITE");
-  fLoader->UnloadDigits();	
-	
-  delete rawStream;
+    if (!rawStream.Next()) return kFALSE; // No VZERO data found
 
+    GetCalibData();
+
+    Int_t nSDigits = 0;
+    Float_t *charges = NULL;
+    Int_t nbins = 0;
+    for(Int_t iChannel=0; iChannel < 64; ++iChannel) {
+      Int_t offlineCh = rawStream.GetOfflineChannel(iChannel);
+      Short_t chargeADC[AliVZEROdigit::kNClocks];
+      for(Int_t iClock=0; iClock < AliVZEROdigit::kNClocks; ++iClock) {
+	chargeADC[iClock] = rawStream.GetPedestal(iChannel,iClock);
+      }
+      // Integrator flag
+      Bool_t integrator = rawStream.GetIntegratorFlag(iChannel,AliVZEROdigit::kNClocks/2);
+      // HPTDC data (leading time and width)
+      Int_t board = AliVZEROCalibData::GetBoardNumber(offlineCh);
+      Float_t time = rawStream.GetTime(iChannel)*fCalibData->GetTimeResolution(board);
+      //      Float_t width = rawStream.GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
+      Float_t adc = 0;
+
+      // Pedestal retrieval and suppression
+      Float_t maxadc = 0;
+      Int_t imax = -1;
+      Float_t adcPedSub[AliVZEROdigit::kNClocks];
+      Float_t integral = fSignalShape->Integral(0,200);
+      for(Int_t iClock=0; iClock < AliVZEROdigit::kNClocks; ++iClock) {
+	Bool_t iIntegrator = (iClock%2 == 0) ? integrator : !integrator;
+	Int_t k = offlineCh + 64*iIntegrator;
+	adcPedSub[iClock] = (Float_t)chargeADC[iClock] - fCalibData->GetPedestal(k);
+	if(adcPedSub[iClock] <= fRecoParam->GetNSigmaPed()*fCalibData->GetSigma(k)) {
+	  adcPedSub[iClock] = 0;
+	  continue;
+	}
+	if(iClock < fRecoParam->GetStartClock() || iClock > fRecoParam->GetEndClock()) continue;
+	if(adcPedSub[iClock] > maxadc) {
+	  maxadc = adcPedSub[iClock];
+	  imax   = iClock;
+	}
+      }
+      if (imax != -1) {
+	Int_t start = imax - fRecoParam->GetNPreClocks();
+	if (start < 0) start = 0;
+	Int_t end = imax + fRecoParam->GetNPostClocks();
+	if (end > 20) end = 20;
+	for(Int_t iClock = start; iClock <= end; iClock++) {
+	  adc += adcPedSub[iClock];
+	}
+      }
+      Float_t correctedTime = CorrectLeadingTime(offlineCh,time,adc);
+
+      if (!charges) {
+	nbins = fNBins[offlineCh];
+	charges = new Float_t[nbins];
+      }
+      else if (nbins != fNBins[offlineCh]) {
+	delete [] charges;
+	nbins = fNBins[offlineCh];
+	charges = new Float_t[nbins];
+      }
+      memset(charges,0,nbins*sizeof(Float_t));
+
+      // Now lets produce SDigit
+      if ((correctedTime > (AliVZEROReconstructor::kInvalidTime + 1e-6)) &&
+	  (adc > 1e-6)) {
+	for(Int_t iBin = 0; iBin < nbins; ++iBin) {
+	  Float_t t = fBinSize[offlineCh]*Float_t(iBin);
+	  if ((t < correctedTime) ||
+	      (t > (correctedTime+200.))) continue;
+	  charges[iBin] = kChargePerADC*adc*(fSignalShape->Eval(t-correctedTime)*fBinSize[offlineCh]/integral);
+	}
+      }
+
+      TClonesArray &sdigitsref = *sdigits;  
+      new (sdigitsref[nSDigits++]) AliVZEROSDigit(offlineCh,fNBins[offlineCh],charges);
+    }
+    if (charges) delete [] charges;
+  }
+  
+  treeS->Fill();
+  fLoader->WriteSDigits("OVERWRITE");
+  fLoader->UnloadSDigits();	
+	
   timer.Stop();
   timer.Print();
   return kTRUE;
 }
 
+//_____________________________________________________________________________
+void AliVZERO::GetCalibData()
+{
+  // Gets calibration object for VZERO set
+  // Do nothing in case it is already loaded
+  if (fCalibData) return;
 
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("VZERO/Calib/Data");
+  if (entry) fCalibData = (AliVZEROCalibData*) entry->GetObject();
+  if (!fCalibData)  AliFatal("No calibration data from calibration database !");
+
+  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("VZERO/Calib/TimeSlewing");
+  if (!entry2) AliFatal("VZERO time slewing function is not found in OCDB !");
+  fTimeSlewing = (TF1*)entry2->GetObject();
+
+  for(Int_t i = 0 ; i < 64; ++i) {
+    Int_t board = AliVZEROCalibData::GetBoardNumber(i);
+    fNBins[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0+
+			     (Float_t)kMaxTDCWidth*fCalibData->GetWidthResolution(board))/
+			    fCalibData->GetTimeResolution(board));
+    fBinSize[i] = fCalibData->GetTimeResolution(board);
+  }
+
+  fSignalShape = new TF1("VZEROSDigitSignalShape",this,&AliVZERO::SignalShape,0,200,6,"AliVZERO","SignalShape");
+  fSignalShape->SetParameters(0,1.57345e1,-4.25603e-1,
+			      2.9,6.40982,3.69339e-01);
+
+  fRecoParam = new AliVZERORecoParam;
+
+  return;
+}
+
+Float_t AliVZERO::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const
+{
+  // Correct the leading time
+  // for slewing effect and
+  // misalignment of the channels
+  if (time < 1e-6) return -1024;
+
+  // In case of pathological signals
+  if (adc < 1e-6) return time;
+
+  // Slewing correction
+  Float_t thr = fCalibData->GetDiscriThr(i);
+  time -= fTimeSlewing->Eval(adc/thr);
+
+  return time;
+}
+
+double AliVZERO::SignalShape(double *x, double *par)
+{
+  // this function simulates the signal
+  // shape used in Raw->SDigits method
+
+  Double_t xx = x[0];
+  if (xx <= par[0]) return 0;
+  Double_t a = 1./TMath::Power((xx-par[0])/par[1],1./par[2]);
+  if (xx <= par[3]) return a;
+  Double_t b = 1./TMath::Power((xx-par[3])/par[4],1./par[5]);
+  Double_t f = a*b/(a+b);
+  AliDebug(100,Form("x=%f func=%f",xx,f));
+  return f;
+}

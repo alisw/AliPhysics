@@ -22,10 +22,13 @@
 
 class TNamed;
 class TTree;
+class TF1;
 
 class AliVZEROLoader;
 class AliVZEROhit; 
 class AliVZEROdigit;
+class AliVZEROCalibData;
+class AliVZERORecoParam;
   
 class AliVZERO : public AliDetector {
  
@@ -63,6 +66,10 @@ public:
 
   AliDigitizer*  CreateDigitizer(AliRunDigitizer* manager) const;
 
+  void           GetCalibData();
+  Float_t        CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
+  double         SignalShape(double *x, double *par);
+
 protected:
 
    Int_t   fIdSens1;      // Sensitive volume  in VZERO
@@ -74,8 +81,19 @@ protected:
    Float_t fMaxStepAlu;   // Maximum step size inside the  aluminum volumes
    Float_t fMaxDestepQua; // Maximum relative energy loss in quartz
    Float_t fMaxDestepAlu; // Maximum relative energy loss in aluminum
-  
-  ClassDef(AliVZERO,1)  //Class for the VZERO detector
+
+private:
+   AliVZERO(const AliVZERO& /*vzero*/); 
+   AliVZERO& operator = (const AliVZERO& /*vzero*/); 
+
+   AliVZEROCalibData *fCalibData;      //! Pointer to the calibration object
+   Int_t              fNBins[64];      //! Number of bins in each SDigit
+   Float_t            fBinSize[64];    //! Bin size in each SDigit
+   TF1*               fTimeSlewing;    //! Function for time slewing correction
+   TF1*               fSignalShape;    //! Function for signal shape used in Raw->SDigits
+   AliVZERORecoParam *fRecoParam;      //! Reco params used in Raw->SDigits
+
+  ClassDef(AliVZERO,2)  //Class for the VZERO detector
 };
 
 //____________________________________________________________
