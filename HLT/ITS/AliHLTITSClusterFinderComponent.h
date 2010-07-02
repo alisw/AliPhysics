@@ -22,10 +22,11 @@
 #include "AliHLTDataTypes.h"
 #include "TTree.h"
 #include "AliHLTComponentBenchmark.h"
+#include "AliITSRecPoint.h"
 
 class AliHLTITSClusterFinderSPD;
 class AliHLTITSClusterFinderSSD;
-
+class AliHLTITSClusterData;
 
 /**
  * @class AliHLTITSClusterFinderComponent
@@ -179,6 +180,7 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   int Configure(const char* arguments);
 
   void RecPointToSpacePoint(AliHLTUInt8_t* outputPtr,AliHLTUInt32_t& size);
+  void RecpointToOutput(AliHLTITSClusterData *outputClusters, AliITSRecPoint *recpoint, int &clustIdx);
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private
@@ -220,6 +222,7 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   
   Int_t fFirstModule;                                         //!transient    
   Int_t fLastModule;                                          //!transient
+  Int_t fnClusters;                                           //!transient
 
   std::vector<AliITSRecPoint> fclusters;                      //!transient
 

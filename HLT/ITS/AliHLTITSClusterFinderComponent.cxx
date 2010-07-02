@@ -73,6 +73,9 @@ AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
   fSPDNModules(0),
   fSDDNModules(0),
   fSSDNModules(0),
+  fFirstModule(0),
+  fLastModule(0),
+  fnClusters(0),
   fclusters(),
   fBenchmark(GetComponentID())
 { 
@@ -258,7 +261,7 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
     fNddl=AliHLTDAQ::NumberOfDdls("ITSSSD");
   }
   else if(fModeSwitch==kClusterFinderDigits) {
-    //tR = new TTree();
+    tR = new TTree();
   }
   else{
      HLTFatal("No mode set for clusterfindercomponent");
@@ -324,7 +327,7 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
   }
 
   tD = NULL;
-  tR = NULL;
+  //tR = NULL;
 
   return Configure( arguments.Data() );
 }
@@ -413,9 +416,10 @@ int AliHLTITSClusterFinderComponent::DoEvent
       //
       // Conclusion: TTree objects are hardly to be sent via TMessage, there are direct
       // links to the file required anyhow.
+      fnClusters = 0;
       TFile* dummy=new TFile("ITS.Digits.root");
       tD->SetDirectory(dummy);
-      tR = new TTree();
+      tR->Reset();
       tR->SetDirectory(0);
       fDettype->SetTreeAddressD(tD);
       fDettype->MakeBranch(tR,"R");
@@ -428,27 +432,19 @@ int AliHLTITSClusterFinderComponent::DoEvent
       tR->SetBranchAddress("ITSRecPoints",&fRecPoints);
       for(Int_t treeEntry=0;treeEntry<tR->GetEntries();treeEntry++){
 	tR->GetEntry(treeEntry);
-	for(Int_t tCloneEntry=0;tCloneEntry<fRecPoints->GetEntries();tCloneEntry++){
-	  AliITSRecPoint *recpoint=(AliITSRecPoint*)fRecPoints->At(tCloneEntry);
-	  fclusters.push_back(*recpoint);
-	}
-      }
-      
-      if(tR){
-	tR->Delete();
+	fnClusters += fRecPoints->GetEntries();
       }
 
       tD->SetDirectory(0);
       delete dummy;
-      UInt_t nClusters=fclusters.size();
-      
-      UInt_t bufferSize = nClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
+
+      UInt_t bufferSize = fnClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
       if( size + bufferSize > maxBufferSize ){
 	HLTWarning( "Output buffer size exceed (buffer size %d, current size %d)", maxBufferSize, size+bufferSize);
 	ret = -ENOSPC;      
 	break;		
       }
-      if( nClusters>0 ){
+      if( fnClusters>0 ){
 	fBenchmark.Start(1);
 	RecPointToSpacePoint(outputPtr,size);
 	fBenchmark.Stop(1);
@@ -461,7 +457,6 @@ int AliHLTITSClusterFinderComponent::DoEvent
 	outputBlocks.push_back( bd );
 	size += bufferSize;
 	fBenchmark.AddOutput(bd.fSize);
-	fclusters.clear();	
       }
     }
   }
@@ -469,14 +464,14 @@ int AliHLTITSClusterFinderComponent::DoEvent
 
     AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
 
-    if(fUseOfflineFinder){
-      if(fModeSwitch==kClusterFinderSPD){rpc->ResetSPD();}
-      if(fModeSwitch==kClusterFinderSSD){rpc->ResetSSD();}
-    }
-    if(fModeSwitch==kClusterFinderSDD){rpc->ResetSDD();}
-
     // -- Loop over blocks
     for( const AliHLTComponentBlockData* iter = GetFirstInputBlock(fInputDataType); iter != NULL; iter = GetNextInputBlock() ) {
+
+      if(fUseOfflineFinder){
+	if(fModeSwitch==kClusterFinderSPD){rpc->ResetSPD();}
+	if(fModeSwitch==kClusterFinderSSD){rpc->ResetSSD();}
+      }
+      if(fModeSwitch==kClusterFinderSDD){rpc->ResetSDD();}
       
       // -- Debug output of datatype --
       HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
@@ -513,44 +508,49 @@ int AliHLTITSClusterFinderComponent::DoEvent
 
       fBenchmark.Start(1);
 
+      fnClusters = 0;
+
       if(fModeSwitch==kClusterFinderSPD && !fUseOfflineFinder){ fSPD->RawdataToClusters( fRawReader, fclusters ); }
       else if(fModeSwitch==kClusterFinderSSD && !fUseOfflineFinder){ fSSD->RawdataToClusters( fclusters ); }
       else{
 	if(fModeSwitch==kClusterFinderSPD && fUseOfflineFinder) {fDettype->DigitsToRecPoints(fRawReader,"SPD");}
 	if(fModeSwitch==kClusterFinderSSD && fUseOfflineFinder) {fDettype->DigitsToRecPoints(fRawReader,"SSD");}
 	if(fModeSwitch==kClusterFinderSDD) {fDettype->DigitsToRecPoints(fRawReader,"SDD");}
-	//AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
 	TClonesArray* clusters = NULL;
 	for(int i=fFirstModule;i<fLastModule;i++){
 	  clusters = rpc->UncheckedGetClusters(i);
 	  if(clusters != NULL){
-	    for(int j=0;j<clusters->GetEntriesFast();j++){
-	      AliITSRecPoint *recpoint = (AliITSRecPoint*) (clusters->At(j));
-	      fclusters.push_back(*recpoint);
-	    }
+	    fnClusters += clusters->GetEntriesFast();
 	  }
 	}     
       }
-  
-      if(fUseOfflineFinder){
-	if(fModeSwitch==kClusterFinderSPD){rpc->ResetSPD();}
-	if(fModeSwitch==kClusterFinderSSD){rpc->ResetSSD();}
-      }
-      if(fModeSwitch==kClusterFinderSDD){rpc->ResetSDD();}
-  
+      
+      /* Do not work
+	 if(fModeSwitch==kClusterfinderSPD){
+	 fnClusters = rpc->GetNClustersInLayerFast(1) + rpc->GetNClustersInLayerFast(2);
+	 }
+	 if(fModeSwitch==kClusterfinderSDD){
+	 fnClusters = rpc->GetNClustersInLayerFast(3) + rpc->GetNClustersInLayerFast(4);
+	 }
+	 if(fModeSwitch==kClusterfinderSSD){
+	 fnClusters = rpc->GetNClustersInLayerFast(5) + rpc->GetNClustersInLayerFast(6);
+	 }
+      */
+
       fBenchmark.Stop(1);
       
       fRawReader->ClearBuffers();    
-         
-      UInt_t nClusters=fclusters.size();
       
-      UInt_t bufferSize = nClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
+      UInt_t nClusters=fclusters.size();
+      if(nClusters>0){fnClusters = nClusters;}
+
+      UInt_t bufferSize = fnClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
       if( size + bufferSize > maxBufferSize ){
 	HLTWarning( "Output buffer size exceed (buffer size %d, current size %d)", maxBufferSize, size+bufferSize);
 	ret = -ENOSPC;      
 	break;		
       }
-      if( nClusters>0 ){
+      if( fnClusters>0 ){
 
 	RecPointToSpacePoint(outputPtr,size);
 
@@ -563,7 +563,7 @@ int AliHLTITSClusterFinderComponent::DoEvent
 	outputBlocks.push_back( bd );
 	size += bufferSize;
 	fBenchmark.AddOutput(bd.fSize);
-	fclusters.clear();	
+	if(nClusters>0){fclusters.clear();}	
       }
       
     } // input blocks
@@ -667,23 +667,52 @@ void AliHLTITSClusterFinderComponent::GetOCDBObjectDescription( TMap* const targ
 
 void AliHLTITSClusterFinderComponent::RecPointToSpacePoint(AliHLTUInt8_t* outputPtr,AliHLTUInt32_t& size){
   AliHLTITSClusterData *outputClusters = reinterpret_cast<AliHLTITSClusterData*>(outputPtr + size);
-  outputClusters->fSpacePointCnt=fclusters.size();    
+  outputClusters->fSpacePointCnt=fnClusters;    
   int clustIdx=0;
-  for(UInt_t i=0;i<fclusters.size();i++){
-    AliITSRecPoint *recpoint = (AliITSRecPoint*) &(fclusters[i]);
-    outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
-    outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
-    outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
-    outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
-    outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
-    outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
-    outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
-    outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
-    outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
-    outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex() | recpoint->GetPindex() | recpoint->GetNindex();
-    outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
-    outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
-    outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);      
-    clustIdx++;
+  if(fModeSwitch==kClusterFinderDigits) {
+    TClonesArray * fRecPoints = NULL;
+    tR->SetBranchAddress("ITSRecPoints",&fRecPoints);
+    for(Int_t treeEntry=0;treeEntry<tR->GetEntries();treeEntry++){
+      tR->GetEntry(treeEntry);
+      fnClusters += fRecPoints->GetEntries();
+      for(Int_t tCloneEntry=0;tCloneEntry<fRecPoints->GetEntries();tCloneEntry++){
+	AliITSRecPoint *recpoint=(AliITSRecPoint*)fRecPoints->At(tCloneEntry);
+	RecpointToOutput(outputClusters,recpoint,clustIdx);
+      }
+    } 
   }
+  else if(fclusters.size()>0){
+    for(UInt_t i=0;i<fclusters.size();i++){
+      AliITSRecPoint *recpoint = (AliITSRecPoint*) &(fclusters[i]);
+      RecpointToOutput(outputClusters,recpoint,clustIdx);
+    }
+  }
+  else{
+    AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
+    TClonesArray* clusters = NULL;
+    for(Int_t i=fFirstModule;i<fLastModule;i++){
+      clusters = rpc->UncheckedGetClusters(i);
+      for(Int_t j=0;j<clusters->GetEntriesFast();j++){
+	AliITSRecPoint *recpoint = (AliITSRecPoint*) clusters->At(j);
+	RecpointToOutput(outputClusters,recpoint,clustIdx);
+      }
+    } 
+  }
+}
+
+void AliHLTITSClusterFinderComponent::RecpointToOutput(AliHLTITSClusterData *outputClusters, AliITSRecPoint *recpoint, int &clustIdx){
+  outputClusters->fSpacePoints[clustIdx].fY=recpoint->GetY();
+  outputClusters->fSpacePoints[clustIdx].fZ=recpoint->GetZ();
+  outputClusters->fSpacePoints[clustIdx].fSigmaY2=recpoint->GetSigmaY2();
+  outputClusters->fSpacePoints[clustIdx].fSigmaZ2=recpoint->GetSigmaZ2();
+  outputClusters->fSpacePoints[clustIdx].fSigmaYZ=recpoint->GetSigmaYZ();
+  outputClusters->fSpacePoints[clustIdx].fQ=recpoint->GetQ();
+  outputClusters->fSpacePoints[clustIdx].fNy=recpoint->GetNy();
+  outputClusters->fSpacePoints[clustIdx].fNz=recpoint->GetNz();
+  outputClusters->fSpacePoints[clustIdx].fLayer=recpoint->GetLayer();
+  outputClusters->fSpacePoints[clustIdx].fIndex=recpoint->GetDetectorIndex() | recpoint->GetPindex() | recpoint->GetNindex();
+  outputClusters->fSpacePoints[clustIdx].fTracks[0]=recpoint->GetLabel(0);
+  outputClusters->fSpacePoints[clustIdx].fTracks[1]=recpoint->GetLabel(1);
+  outputClusters->fSpacePoints[clustIdx].fTracks[2]=recpoint->GetLabel(2);      
+  clustIdx++;
 }
