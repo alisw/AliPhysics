@@ -1009,47 +1009,47 @@ void AliAnalysisTaskFragmentationFunction::DefineJetH()
 
   farrayRadii = new Double_t[fnRBin];
 
-  Double_t Emin    = 0;
-  Double_t Emax    = 0;
+  Double_t eMin    = 0;
+  Double_t eMax    = 0;
   Double_t pasE    = (Double_t)((fEmax-fEmin)/fnEInterval);
   TString energy;
   TString energy2;
 
-  Double_t R    = 0.;
+  Double_t r    = 0.;
   Double_t pasR = (Double_t)((fRmax-fRmin)/fnRInterval);
   TString radius;
 
   for (Int_t i = 0; i < fnEBin; i++)
   {
-    Emin       = 0;
-    Emax       = 0;
+    eMin       = 0;
+    eMax       = 0;
 
-    if (i==0) Emin = fEmin;
-    if (i!=0) Emin = fEmin + pasE*i;
-    Emax = Emin+pasE;
+    if (i==0) eMin = fEmin;
+    if (i!=0) eMin = fEmin + pasE*i;
+    eMax = eMin+pasE;
     energy2 = "E_{jet1} : ";
     energy = "E_{jet} : ";
-    energy += Emin;
-    energy2 += Emin;
+    energy += eMin;
+    energy2 += eMin;
     energy += "-";
     energy2 += "-";
-    energy +=Emax;
-    energy2 += Emax;
+    energy +=eMax;
+    energy2 += eMax;
     energy += "GeV";
     energy2 += "GeV";
 
-    farrayEmin[i]      = Emin;
-    farrayEmax[i]      = Emax;
+    farrayEmin[i]      = eMin;
+    farrayEmax[i]      = eMax;
 
     for (Int_t j = 0; j < fnRBin; j++)
     {
  
-      if (j==0) R = fRmin;
-      if (j!=0) R = fRmin + pasR*j;
+      if (j==0) r = fRmin;
+      if (j!=0) r = fRmin + pasR*j;
       radius = ", R = ";
-      radius += R;    
+      radius += r;    
 
-      farrayRadii[j] = R;
+      farrayRadii[j] = r;
 
       fEtaMonoJet1H[i]   = new TH1F("fEtaMonoJet1H,"+energy, "#eta_{jet1},"+energy, fnEtaHBin, fEtaHBinMin, fEtaHBinMax);
       fPhiMonoJet1H[i]   = new TH1F("fPhiMonoJet1H,"+energy, "#phi_{jet1},"+energy, fnPhiHBin, fPhiHBinMin, fPhiHBinMax);
@@ -1345,73 +1345,6 @@ void AliAnalysisTaskFragmentationFunction::SetProperties(TH1* h,const char* x, c
   h->GetXaxis()->SetTitleColor(1);
   h->GetYaxis()->SetTitleColor(1);
   h->Sumw2();
-}
-
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-
-void AliAnalysisTaskFragmentationFunction::MakeJetContainer()
-{
-  //
-  // Create the particle container for the correction framework manager and 
-  // link it
-  //
-  const Int_t kNvar   = 3 ; //number of variables on the grid:pt,eta, phi
-  const Double_t kPtmin = 5.0, kPtmax = 105.; // we do not want to have empty bins at the beginning...
-  const Double_t kEtamin = -3.0, kEtamax = 3.0;
-  const Double_t kPhimin = 0., kPhimax = 2. * TMath::Pi();
-
-  // can we neglect migration in eta and phi?
-  // phi should be no problem since we cover full phi and are phi symmetric
-  // eta migration is more difficult  due to needed acceptance correction
-  // in limited eta range
-
-  //arrays for the number of bins in each dimension
-  Int_t iBin[kNvar];
-  iBin[0] = 100; //bins in pt
-  iBin[1] =  1; //bins in eta
-  iBin[2] = 1; // bins in phi
-
-  //arrays for lower bounds :
-  Double_t* binEdges[kNvar];
-  for(Int_t ivar = 0; ivar < kNvar; ivar++)
-    binEdges[ivar] = new Double_t[iBin[ivar] + 1];
-
-  //values for bin lower bounds
-  //  for(Int_t i=0; i<=iBin[0]; i++) binEdges[0][i]=(Double_t)TMath::Power(10,TMath::Log10(kPtmin) + (TMath::Log10(kPtmax)-TMath::Log10(kPtmin))/iBin[0]*(Double_t)i);  
-  for(Int_t i=0; i<=iBin[0]; i++) binEdges[0][i]=(Double_t)kPtmin  + (kPtmax-kPtmin)/(Double_t)iBin[0]*(Double_t)i;
-  for(Int_t i=0; i<=iBin[1]; i++) binEdges[1][i]=(Double_t)kEtamin  + (kEtamax-kEtamin)/iBin[1]*(Double_t)i;
-  for(Int_t i=0; i<=iBin[2]; i++) binEdges[2][i]=(Double_t)kPhimin  + (kPhimax-kPhimin)/iBin[2]*(Double_t)i;
-
-  /*
-  for(int i = 0;i < kMaxStep*2;++i){
-    fhnJetContainer[i] = new THnSparseF(Form("fhnJetContainer%d",i),Form("THnSparse jet info %d"),kNvar,iBin);
-    for (int k=0; k<kNvar; k++) {
-      fhnJetContainer[i]->SetBinEdges(k,binEdges[k]);
-    }
-  }
-  //create correlation matrix for unfolding
-  Int_t thnDim[2*kNvar];
-  for (int k=0; k<kNvar; k++) {
-    //first half  : reconstructed 
-    //second half : MC
-    thnDim[k]      = iBin[k];
-    thnDim[k+kNvar] = iBin[k];
-  }
-
-  fhnCorrelation = new THnSparseF("fhnCorrelation","THnSparse with correlations",2*kNvar,thnDim);
-  for (int k=0; k<kNvar; k++) {
-    fhnCorrelation->SetBinEdges(k,binEdges[k]);
-    fhnCorrelation->SetBinEdges(k+kNvar,binEdges[k]);
-  }
-  fhnCorrelation->Sumw2();
-
-  // Add a histogram for Fake jets
-  //  thnDim[3] = AliPID::kSPECIES;
-  //  fFakeElectrons = new THnSparseF("fakeEkectrons", "Output for Fake Electrons", kNvar + 1, thnDim);
-  // for(Int_t idim = 0; idim < kNvar; idim++)
-  //  fFakeElectrons->SetBinEdges(idim, binEdges[idim]);
-  */
 }
 
 //////////////////////////////////////////////////////////////////////////////
