@@ -216,7 +216,6 @@ int AliHLTMUONRootifierComponent::DoEvent(
 			// -- Check if TMessage payload is TObject
 			if ( fMessage->What() == kMESS_OBJECT )
 			{
-				TString fClassName = fMessage->GetClass()->GetName();
 				AliESDEvent* esd = reinterpret_cast<AliESDEvent*>(fMessage->ReadObject( fMessage->GetClass() ));
 				esd->GetStdContent();
 				event.Add(esd);
