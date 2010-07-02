@@ -177,7 +177,9 @@ protected:
       fSPDhighLimit(o.fSPDhighLimit),   
       fCentralSelection(o.fCentralSelection),
       fSharingObjectPresent(o.fSharingObjectPresent),
-      fNumberOfEtaBinsToCut(o.fNumberOfEtaBinsToCut)
+      fNumberOfEtaBinsToCut(o.fNumberOfEtaBinsToCut),
+      fEtaLowBinLimits(o.fEtaLowBinLimits),
+      fEtaHighBinLimits(o.fEtaHighBinLimits)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}

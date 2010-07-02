@@ -89,7 +89,9 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fSPDhighLimit(999999999),
   fCentralSelection(kFALSE),
   fSharingObjectPresent(kTRUE),
-  fNumberOfEtaBinsToCut(1)
+  fNumberOfEtaBinsToCut(1),
+  fEtaLowBinLimits(),
+  fEtaHighBinLimits()
 {
   // Default constructor 
   fPhysicsSelection = new AliPhysicsSelection;
