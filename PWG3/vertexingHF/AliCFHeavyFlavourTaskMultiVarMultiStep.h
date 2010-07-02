@@ -33,23 +33,26 @@ class AliAODRecoDecay;
 class AliAODRecoDecayHF2Prong;
 class AliAODMCParticle;
 class THnSparse;
+class AliRDHFCutsD0toKpi;
 
 class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   public:
 
   enum {
-    kStepGenerated       = 0,
-    kStepAcceptance      = 1,
-    kStepVertex          = 2,
-    kStepRefit           = 3,
-    kStepReconstructed   = 4,
-    kStepRecoAcceptance  = 5,
-    kStepRecoITSClusters = 6,
-    kStepRecoPPR         = 7
+    kStepGeneratedLimAcc = 0,
+    kStepGenerated       = 1,
+    kStepAcceptance      = 2,
+    kStepVertex          = 3,
+    kStepRefit           = 4,
+    kStepReconstructed   = 5,
+    kStepRecoAcceptance  = 6,
+    kStepRecoITSClusters = 7,
+    kStepRecoPPR         = 8,
+    kStepRecoPID         = 9
   };
 
   AliCFHeavyFlavourTaskMultiVarMultiStep();
-  AliCFHeavyFlavourTaskMultiVarMultiStep(const Char_t* name);
+  AliCFHeavyFlavourTaskMultiVarMultiStep(const Char_t* name, AliRDHFCutsD0toKpi* cuts);
   AliCFHeavyFlavourTaskMultiVarMultiStep& operator= (const AliCFHeavyFlavourTaskMultiVarMultiStep& c);
   AliCFHeavyFlavourTaskMultiVarMultiStep(const AliCFHeavyFlavourTaskMultiVarMultiStep& c);
   virtual ~AliCFHeavyFlavourTaskMultiVarMultiStep();
@@ -94,6 +97,7 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Int_t fCountRecoAcc;          //  Reco particle found that satisfy cuts in requested acceptance
   Int_t fCountRecoITSClusters;  //  Reco particle found that satisfy cuts in n. of ITS clusters
   Int_t fCountRecoPPR;          //  Reco particle found that satisfy cuts in PPR
+  Int_t fCountRecoPID;          //  Reco particle found that satisfy cuts in PPR, and PID condition
   Int_t fEvents;                //  n. of events
   Bool_t fFillFromGenerated;    //  flag to indicate whether data container should be filled 
                                 //  with generated values also for reconstructed particles
@@ -101,8 +105,9 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Bool_t fAcceptanceUnf;        //  flag for unfolding before or after cuts.
 
   Bool_t fKeepD0fromB;          // flag to consider also D0 coming from B
+  AliRDHFCutsD0toKpi* fCuts;    // cuts
   
-  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,3); // class for HF corrections as a function of many variables
+  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,4); // class for HF corrections as a function of many variables
 };
 
 #endif

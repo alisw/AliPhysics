@@ -35,33 +35,37 @@ const Int_t    minITSClusters = 5;
 
 //----------------------------------------------------
 
-AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeepD0fromB=kFALSE)
+AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* cutFile = "../cut_files/D0toKpiCutsTGH.root",Bool_t isKeepD0fromB=kFALSE)
 {
+	printf("Addig CF task using cuts from file %s\n",cutFile);
 
-  Double_t ptmin_0_4;
-  Double_t ptmax_0_4;
-  Double_t ptmin_4_8;
-  Double_t ptmax_4_8;
-  Double_t ptmin_8_10;
-  Double_t ptmax_8_10;
+	TFile* fileCuts = new TFile(cutFile);
+	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCuts");
 
-  if(!isKeepD0fromB){
-    ptmin_0_4 =  0.0 ;
-    ptmax_0_4 =  4.0 ;
-    ptmin_4_8 =  4.0 ;
-    ptmax_4_8 =  8.0 ;
-    ptmin_8_10 =  8.0 ;
-    ptmax_8_10 =  10.0 ;
-  } else{
-    ptmin_0_4 =  0.0 ;
-    ptmax_0_4 =  3.0 ;
-    ptmin_4_8 =  3.0 ;
-    ptmax_4_8 =  5.0 ;
-    ptmin_8_10 =  5.0 ;
-    ptmax_8_10 =  10.0 ;
-  }
-
-
+	/*
+	  Double_t ptmin_0_4;
+	  Double_t ptmax_0_4;
+	  Double_t ptmin_4_8;
+	  Double_t ptmax_4_8;
+	  Double_t ptmin_8_10;
+	  Double_t ptmax_8_10;
+	  
+	  if(!isKeepD0fromB){
+	  ptmin_0_4 =  0.0 ;
+	  ptmax_0_4 =  4.0 ;
+	  ptmin_4_8 =  4.0 ;
+	  ptmax_4_8 =  8.0 ;
+	  ptmin_8_10 =  8.0 ;
+	  ptmax_8_10 =  10.0 ;
+	  } else{
+	  ptmin_0_4 =  0.0 ;
+	  ptmax_0_4 =  3.0 ;
+	  ptmin_4_8 =  3.0 ;
+	  ptmax_4_8 =  5.0 ;
+	  ptmin_8_10 =  5.0 ;
+	  ptmax_8_10 =  10.0 ;
+	  }
+	*/
 
 	//CONTAINER DEFINITION
 	Info("AliCFHeavyFlavourTaskMultiVarMultiStep","SETUP CONTAINER");
@@ -83,12 +87,13 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 	const Double_t phimax = 2*TMath::Pi();
 
 	//Setting up the container grid... 
-	UInt_t nstep = 8; //number of selection steps: MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included) 
+	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID 
 	const Int_t nvar   = 13 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
 // 	const Int_t nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
 // 	const Int_t nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
 // 	const Int_t nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
 
+/*
 	Int_t nbin0_0_4;
 	Int_t nbin0_4_8;
 	Int_t nbin0_8_10;
@@ -101,7 +106,9 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 	  nbin0_4_8  = 1 ; //bins in pt from 3 to 5 GeV
 	  nbin0_8_10  = 1 ; //bins in pt from 5 to 10 GeV
 	}
-
+*/
+	const Int_t nbin0 = cutsD0toKpi->GetNPtBins(); // bins in pT
+	printf("pT: nbin (from cuts file) = %d\n",nbin0);
 	const Int_t nbin1  = 42 ; //bins in y
 	const Int_t nbin2  = 42 ; //bins in cosThetaStar 
 	const Int_t nbin3_0_4  = 8 ; //bins in ptPi from 0 to 4 GeV
@@ -121,11 +128,14 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 
 	//arrays for the number of bins in each dimension
 	Int_t iBin[nvar];
- 	iBin[0]=nbin0_0_4+nbin0_4_8+nbin0_8_10;
+ 	//iBin[0]=nbin0_0_4+nbin0_4_8+nbin0_8_10;
+	iBin[0]=nbin0;
 	iBin[1]=nbin1;
 	iBin[2]=nbin2;
- 	iBin[3]=nbin3_0_4+nbin3_4_8+nbin3_8_10;
- 	iBin[4]=nbin4_0_4+nbin4_4_8+nbin4_8_10;
+	// 	iBin[3]=nbin3_0_4+nbin3_4_8+nbin3_8_10;
+ 	//iBin[4]=nbin4_0_4+nbin4_4_8+nbin4_8_10;
+ 	iBin[3]=nbin0;
+ 	iBin[4]=nbin0;
 	iBin[5]=nbin5;
 	iBin[6]=nbin6;
 	iBin[7]=nbin7;
@@ -151,15 +161,25 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 	Double_t *binLim12=new Double_t[iBin[12]+1];
 
 	// checking limits
+	/*
 	if (ptmax_0_4 != ptmin_4_8) {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","max lim 1st range != min lim 2nd range, please check!");
 	}
 	if (ptmax_4_8 != ptmin_8_10) {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","max lim 2nd range != min lim 3rd range, please check!");
 	}
-
+	*/
 	// values for bin lower bounds
 	// pt
+	Float_t* floatbinLim0 = cutsD0toKpi->GetPtBinLimits();
+	for (Int_t ibin0 = 0 ; ibin0<iBin[0]+1; ibin0++){
+		binLim0[ibin0] = (Double_t)floatbinLim0[ibin0];
+		binLim3[ibin0] = (Double_t)floatbinLim0[ibin0];
+		binLim4[ibin0] = (Double_t)floatbinLim0[ibin0];
+	}
+	for(Int_t i=0; i<=nbin0; i++) printf("binLim0[%d]=%f\n",i,binLim0[i]);  
+
+	/*
 	for(Int_t i=0; i<=nbin0_0_4; i++) binLim0[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin0_0_4*(Double_t)i ; 
 	if (binLim0[nbin0_0_4] != ptmin_4_8)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
@@ -169,6 +189,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	}
 	for(Int_t i=0; i<=nbin0_8_10; i++) binLim0[i+nbin0_0_4+nbin0_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin0_8_10*(Double_t)i ; 
+	*/
 
 	// y
 	for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ymin  + (ymax-ymin)  /nbin1*(Double_t)i ;
@@ -176,6 +197,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 	// cosThetaStar
 	for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)cosmin  + (cosmax-cosmin)  /nbin2*(Double_t)i ;
 
+	/*
 	// ptPi
 	for(Int_t i=0; i<=nbin3_0_4; i++) binLim3[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin3_0_4*(Double_t)i ; 
 	if (binLim3[nbin3_0_4] != ptmin_4_8)  {
@@ -197,7 +219,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptKa - 2nd range - differs from expected!\n");
 	}
 	for(Int_t i=0; i<=nbin4_8_10; i++) binLim4[i+nbin4_0_4+nbin4_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin4_8_10*(Double_t)i ; 
-
+	*/
 	// cT
 	for(Int_t i=0; i<=nbin5; i++) binLim5[i]=(Double_t)cTmin  + (cTmax-cTmin)  /nbin5*(Double_t)i ;
 
@@ -240,30 +262,54 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 	//	}
 
 	//one "container" for MC
-	AliCFContainer* container = new AliCFContainer("container","container for tracks",nstep,nvar,iBin);
+	TString nameContainer="";
+	if(!isKeepD0fromB) {
+	  nameContainer="CFHFccontainer0";
+	}
+	else  {
+	  nameContainer="CFHFccontainer0allD0";
+
+	}
+
+	AliCFContainer* container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBin);
 	//setting the bin limits
+	printf("pt\n");
 	container -> SetBinLimits(ipt,binLim0);
+	printf("y\n");
 	container -> SetBinLimits(iy,binLim1);
+	printf("cts\n");
 	container -> SetBinLimits(icosThetaStar,binLim2);
+	printf("ptPi\n");
 	container -> SetBinLimits(ipTpi,binLim3);
+	printf("ptK\n");
 	container -> SetBinLimits(ipTk,binLim4);
+	printf("cT\n");
 	container -> SetBinLimits(icT,binLim5);
+	printf("dca\n");
 	container -> SetBinLimits(idca,binLim6);
+	printf("d0Pi\n");
 	container -> SetBinLimits(id0pi,binLim7);
+	printf("d0K\n");
 	container -> SetBinLimits(id0K,binLim8);
+	printf("d0xd0\n");
 	container -> SetBinLimits(id0xd0,binLim9);
+	printf("pointing\n");
 	container -> SetBinLimits(ipointing,binLim10);
+	printf("phi\n");
 	container -> SetBinLimits(iphi,binLim11);
+	printf("z\n");
 	container -> SetBinLimits(iz,binLim12);
 	
-	container -> SetStepTitle(0, "MC");
-        container -> SetStepTitle(1, "MCAcc");
-        container -> SetStepTitle(2, "RecoVertex");
-        container -> SetStepTitle(3, "RecoRefit");
-        container -> SetStepTitle(4, "Reco");
-        container -> SetStepTitle(5, "RecoAcc");
-	container -> SetStepTitle(6, "RecoITSCluster");
-	container -> SetStepTitle(7, "RecoCuts");
+	container -> SetStepTitle(0, "MCLimAcc");
+	container -> SetStepTitle(1, "MC");
+        container -> SetStepTitle(2, "MCAcc");
+        container -> SetStepTitle(3, "RecoVertex");
+        container -> SetStepTitle(4, "RecoRefit");
+        container -> SetStepTitle(5, "Reco");
+        container -> SetStepTitle(6, "RecoAcc");
+	container -> SetStepTitle(7, "RecoITSCluster");
+	container -> SetStepTitle(8, "RecoCuts");
+	container -> SetStepTitle(8, "RecoPID");
 
         container -> SetVarTitle(ipt,"pt");
 	container -> SetVarTitle(iy,"y");
@@ -324,14 +370,16 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 	printf("CREATE INTERFACE AND CUTS\n");
 	AliCFManager* man = new AliCFManager() ;
 	man->SetParticleContainer     (container);
-	man->SetParticleCutsList(0 , mcList); // MC
-	man->SetParticleCutsList(1 , accList); // Acceptance 
-	man->SetParticleCutsList(2 , emptyList); // Vertex 
-	man->SetParticleCutsList(3 , emptyList); // Refit 
-	man->SetParticleCutsList(4 , emptyList); // AOD
-	man->SetParticleCutsList(5 , emptyList); // AOD in Acceptance
-	man->SetParticleCutsList(6 , emptyList); // AOD with required n. of ITS clusters
-	man->SetParticleCutsList(7 , emptyList); // AOD Reco (PPR cuts implemented in Task)
+	man->SetParticleCutsList(0 , mcList); // MC, Limited Acceptance
+	man->SetParticleCutsList(1 , mcList); // MC
+	man->SetParticleCutsList(2 , accList); // Acceptance 
+	man->SetParticleCutsList(3 , emptyList); // Vertex 
+	man->SetParticleCutsList(4 , emptyList); // Refit 
+	man->SetParticleCutsList(5 , emptyList); // AOD
+	man->SetParticleCutsList(6 , emptyList); // AOD in Acceptance
+	man->SetParticleCutsList(7 , emptyList); // AOD with required n. of ITS clusters
+	man->SetParticleCutsList(8 , emptyList); // AOD Reco (PPR cuts implemented in Task)
+	man->SetParticleCutsList(9 , emptyList); // AOD Reco PID
 	
 	// Get the pointer to the existing analysis manager via the static access method.
 	//==============================================================================
@@ -343,7 +391,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 	//CREATE THE TASK
 	printf("CREATE TASK\n");
 	// create the task
-	AliCFHeavyFlavourTaskMultiVarMultiStep *task = new AliCFHeavyFlavourTaskMultiVarMultiStep("AliCFHeavyFlavourTaskMultiVarMultiStep");
+	AliCFHeavyFlavourTaskMultiVarMultiStep *task = new AliCFHeavyFlavourTaskMultiVarMultiStep("AliCFHeavyFlavourTaskMultiVarMultiStep",cutsD0toKpi);
 	task->SetFillFromGenerated(kFALSE);
 	task->SetMinITSClusters(minITSClusters);
 	task->SetCFManager(man); //here is set the CF manager
@@ -365,7 +413,16 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
         thnDim[1] = iBin[1];
         thnDim[3] = iBin[1];
 
-        THnSparseD* correlation = new THnSparseD("correlation","THnSparse with correlations",4,thnDim);
+	TString nameCorr="";
+	if(!isKeepD0fromB) {
+	  nameCorr="CFHFcorr0";
+	}
+	else  {
+	  nameCorr="CFHFcorr0allD0";
+
+	}
+
+        THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
         Double_t** binEdges = new Double_t[2];
 
         // set bin limits
@@ -395,17 +452,15 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(Bool_t isKeep
 	
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
 	TString output1name="", output2name="", output3name="";
+	output2name=nameContainer;
+	output3name=nameCorr;
 	if(!isKeepD0fromB) {
 	  outputfile += ":PWG3_D2H_CFtaskD0toKpi";
 	  output1name="CFHFchist0";
-	  output2name="CFHFccontainer0";
-	  output3name="CFHFcorr0";
 	}
 	else  {
 	  outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepD0fromB";
 	  output1name="CFHFchist0allD0";
-	  output2name="CFHFccontainer0allD0";
-	  output3name="CFHFcorr0allD0";
 
 	}
 
