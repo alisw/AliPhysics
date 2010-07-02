@@ -286,9 +286,9 @@ void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas 
 	  TH1F* histo = dynamic_cast<TH1F*>(object);
 	  if (histo) {
 	    
-	    TString name2 = histo->GetName();
+	    TString name = histo->GetName();
 	    
-	    if(name2.Contains("Energy")) {
+	    if(name.Contains("Energy")) {
 	      histo->SetAxisRange(0, histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1) + 3), "X");
 	    }
 	    
