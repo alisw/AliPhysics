@@ -160,14 +160,14 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fEMCALGeoMatrixSet;     //  Check if the transformation matrix is set for EMCAL
   Bool_t             fPHOSGeoMatrixSet ;     //  Check if the transformation matrix is set for PHOS
   Bool_t             fRemoveBadChannels;     //  Check the channel status provided and remove clusters with bad channels
-  TObjArray        * fEMCALBadChannelMap;    //! Array of histograms with map of bad channels, EMCAL
-  TObjArray        * fPHOSBadChannelMap;     //! Array of histograms with map of bad channels, PHOS
+  TObjArray        * fEMCALBadChannelMap;    //  Array of histograms with map of bad channels, EMCAL
+  TObjArray        * fPHOSBadChannelMap;     //  Array of histograms with map of bad channels, PHOS
   Int_t              fNCellsFromEMCALBorder; //  Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Int_t              fNCellsFromPHOSBorder;  //  Number of cells from PHOS  border the cell with maximum amplitude has to be.
   Bool_t             fNoEMCALBorderAtEta0;   //  Do fiducial cut in EMCAL region eta = 0?
   Bool_t             fRecalibration;         //  Switch on or off the recalibration
-  TObjArray        * fEMCALRecalibrationFactors; //! Array of histograms with map of recalibration factors, EMCAL
-  TObjArray        * fPHOSRecalibrationFactors;  //! Array of histograms with map of recalibration factors, PHOS
+  TObjArray        * fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
+  TObjArray        * fPHOSRecalibrationFactors;  // Array of histograms with map of recalibration factors, PHOS
 
   ClassDef(AliCalorimeterUtils,2)
 } ;
