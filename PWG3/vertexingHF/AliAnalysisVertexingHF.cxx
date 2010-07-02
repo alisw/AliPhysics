@@ -447,7 +447,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
   AliAODRecoDecayHF   *rd = 0;
   AliAODRecoCascadeHF *rc = 0;
-  AliAODv0            *V0 = 0;
+  AliAODv0            *v0 = 0;
   AliESDv0         *esdV0 = 0;
 
   // LOOP ON  POSITIVE  TRACKS
@@ -460,21 +460,22 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
     if(!TESTBIT(seleFlags[iTrkP1],kBitDispl)) continue;
 
-    // LOOP ON v0s here
+    // Make cascades with V0+track
     // 
-    if(fCascades) 
+    if(fCascades) {
+      // loop on V0's
       for(iv0=0; iv0<nv0; iv0++){
 
 	AliDebug(1,Form("   loop on v0s for track number %d and v0 number %d",iTrkP1,iv0));	
 
 	// Get the V0 
-	if(fInputAOD) V0 = ((AliAODEvent*)event)->GetV0(iv0);
-	else {
+	if(fInputAOD) {
+	  v0 = ((AliAODEvent*)event)->GetV0(iv0);
+	} else {
 	  esdV0 = ((AliESDEvent*)event)->GetV0(iv0);
 	}
-	if ( (!V0 || !V0->IsA()->InheritsFrom("AliAODv0") ) && 
-	     (!esdV0 || !esdV0->IsA()->InheritsFrom("AliESDv0") ) )
-	  continue;
+	if ( (!v0 || !v0->IsA()->InheritsFrom("AliAODv0") ) && 
+	     (!esdV0 || !esdV0->IsA()->InheritsFrom("AliESDv0") ) ) continue;
 	
 
 	// Get the tracks that form the V0
@@ -484,8 +485,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	AliExternalTrackParam * negV0track;
 
 	if(fInputAOD){
-          AliAODTrack *posVV0track = (AliAODTrack*)(V0->GetDaughter(0));
-	  AliAODTrack *negVV0track = (AliAODTrack*)(V0->GetDaughter(1));
+          AliAODTrack *posVV0track = (AliAODTrack*)(v0->GetDaughter(0));
+	  AliAODTrack *negVV0track = (AliAODTrack*)(v0->GetDaughter(1));
 	  if( !posVV0track || !negVV0track ) continue;
 	  //
 	  // Apply some basic V0 daughter criteria
@@ -506,8 +507,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  negVV0track->PxPyPz(pxpypz); 	                  negVV0track->XvYvZv(xyz);
 	  negVV0track->GetCovarianceXYZPxPyPz(cv);	  sign=negVV0track->Charge();
 	  negV0track = new AliExternalTrackParam(xyz,pxpypz,cv,sign);
-	}
-	else {
+	}  else {
 	  AliESDtrack *posVV0track = (AliESDtrack*)(event->GetTrack( esdV0->GetPindex() ));
           AliESDtrack *negVV0track = (AliESDtrack*)(event->GetTrack( esdV0->GetNindex() ));
 	  if( !posVV0track || !negVV0track ) continue;
@@ -525,8 +525,11 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  //  reject kinks (only necessary on AliESDtracks)
 	  if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
 	  // Get AliExternalTrackParam out of the AliESDtracks	
-	  posV0track = dynamic_cast<AliExternalTrackParam*>(posVV0track);
-	  negV0track = dynamic_cast<AliExternalTrackParam*>(negVV0track);
+	  posV0track = new AliExternalTrackParam(*posVV0track);
+	  negV0track = new AliExternalTrackParam(*negVV0track);
+
+	  // Define the AODv0 from ESDv0 if reading ESDs
+	  v0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
 	}
 	if( !posV0track || !negV0track ){
 	  AliDebug(1,Form(" Couldn't get the V0 daughters"));
@@ -537,29 +540,20 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
  	twoTrackArrayV0->AddAt(posV0track,0);
  	twoTrackArrayV0->AddAt(negV0track,1);
 
-	// Define the AODv0 from ESDv0 if reading ESDs
-	if(!fInputAOD) V0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
-
  	// Get the V0 dca
-	dcaV0 = V0->DcaV0Daughters();
+	dcaV0 = v0->DcaV0Daughters();
 
 	// Define the V0 (neutral) track
 	AliNeutralTrackParam *trackV0;
 	if(fInputAOD) {
-	  const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(V0);
-	  if(!trackVV0) continue;
-	  trackV0 = new AliNeutralTrackParam(trackVV0);
-	}
-	else{  
+	  const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
+	  if(trackVV0) trackV0 = new AliNeutralTrackParam(trackVV0);
+	} else {  
 	  Double_t xyz[3], pxpypz[3];
 	  esdV0->XvYvZv(xyz);
 	  esdV0->PxPyPz(pxpypz);
 	  Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
 	  trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
-	}
-	if(!trackV0){
-	  AliDebug(1, Form("Couldn't define the V0 as a neutral track !! \n"));
-	  continue;
 	}
 	// Fill in the object array to create the cascade
 	twoTrackArrayCasc->AddAt(postrack1,0);
@@ -581,13 +575,17 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  vertexCasc = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,2);
 	  dcaCasc = 0.;
 	}
-	if(!vertexCasc) { 
+	if(!vertexCasc) {
+	  delete posV0track; posV0track=NULL;
+	  delete negV0track; negV0track=NULL;
+	  delete trackV0; trackV0=NULL;
+	  if(!fInputAOD) {delete v0; v0=NULL;}
 	  twoTrackArrayCasc->Clear();
 	  continue; 
 	}
 
 	// Create and store the Cascade if passed the cuts
-	ioCascade = MakeCascade(twoTrackArrayCasc,event,vertexCasc,V0,dcaCasc,okCascades);
+	ioCascade = MakeCascade(twoTrackArrayCasc,event,vertexCasc,v0,dcaCasc,okCascades);
 	if(okCascades && ioCascade) {
 	  AliDebug(1,Form("Storing a cascade object... "));
 	  // add the vertex and the cascade to the AOD
@@ -596,19 +594,24 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  rc->SetSecondaryVtx(vCasc);
 	  vCasc->SetParent(rc);
 	  rc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
-	  if(!fInputAOD) vCasc->AddDaughter(V0); // just to fill ref #0 ??
+	  if(!fInputAOD) vCasc->AddDaughter(v0); // just to fill ref #0 ??
 	  AddRefs(vCasc,rc,event,twoTrackArrayCasc); // add the track (proton)
-	  vCasc->AddDaughter(V0); // fill the 2prong V0 
+	  vCasc->AddDaughter(v0); // fill the 2prong V0 
 	}
 
 	// Clean up 
+	delete posV0track; posV0track=NULL;
+	delete negV0track; negV0track=NULL;
+	delete trackV0; trackV0=NULL;
 	twoTrackArrayV0->Clear();
 	twoTrackArrayCasc->Clear();
 	if(ioCascade) { delete ioCascade; ioCascade=NULL; }
 	if(vertexCasc) { delete vertexCasc; vertexCasc=NULL; }
-      }
+	if(!fInputAOD) {delete v0; v0=NULL;}
 
-
+      } // end loop on V0's
+    } 
+  
     // If there is less than 2 particles exit
     if(trkEntries<2) {
       AliDebug(1,Form(" Not enough tracks: %d",trkEntries));
@@ -1265,17 +1268,17 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   }
 
   // select Cascades
-  bool okLcksp=0, okLcLpi=0;
+  Bool_t okLcksp=0, okLcLpi=0;
   if(fCascades && fInputAOD){
     if(fCutsLctoV0) {
-      okCascades = (bool)fCutsLctoV0->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
+      okCascades = (Bool_t)fCutsLctoV0->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
       if(okCascades==1) okLcksp=1;
       if(okCascades==2) okLcLpi=1;
       if(okCascades==3) { okLcksp=1; okLcLpi=1;}
     }
     else okCascades = tmpCascade->SelectLctoV0(fLctoV0Cuts,okLcksp,okLcLpi);
   }
-  else { AliDebug(2,Form("The cascade is contructed from ESDs, no cuts are applied")); okCascades=true; }// no cuts implemented from ESDs
+  else { AliDebug(2,Form("The cascade is contructed from ESDs, no cuts are applied")); okCascades=kTRUE; }// no cuts implemented from ESDs
   tmpCascade->GetSecondaryVtx()->RemoveDaughters();
   tmpCascade->UnsetOwnPrimaryVtx(); 
   delete tmpCascade; tmpCascade=NULL;
@@ -2344,7 +2347,7 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
   //  this function takes the ESDv0 vertex, computes the DCA variables from the ESDv0
   //  and creates an AODv0 out of them
   //
-  double vertex[3]; esdV0->GetXYZ(vertex[0],vertex[1],vertex[2]);
+  Double_t vertex[3]; esdV0->GetXYZ(vertex[0],vertex[1],vertex[2]);
   AliAODVertex *vertexV0 = new AliAODVertex(vertex,esdV0->GetChi2V0(),AliAODVertex::kV0,2);
 
   // create the v0 neutral track to compute the DCA to the primary vertex
@@ -2355,30 +2358,35 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
   AliNeutralTrackParam *trackesdV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
   if(!trackesdV0) return 0;
   Double_t d0z0[2],covd0z0[3];
-  trackesdV0->PropagateToDCA(PrimaryVertex(),fBzkG,kVeryBig,d0z0,covd0z0);
+  AliAODVertex *primVertexAOD = PrimaryVertex(); 
+  trackesdV0->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
   Double_t dcaV0ToPrimVertex = TMath::Sqrt(covd0z0[0]);
   // get the v0 daughters to compute their DCA to the v0 vertex and get their momentum
   Double_t dcaV0DaughterToPrimVertex[2];  
   AliExternalTrackParam *posV0track = (AliExternalTrackParam*)twoTrackArrayV0->UncheckedAt(0);
   AliExternalTrackParam *negV0track = (AliExternalTrackParam*)twoTrackArrayV0->UncheckedAt(1);
-  if( !posV0track || !negV0track) return 0;
-  posV0track->PropagateToDCA(PrimaryVertex(),fBzkG,kVeryBig,d0z0,covd0z0);
+  if( !posV0track || !negV0track) {
+    if(trackesdV0) {delete trackesdV0; trackesdV0=NULL;}
+    return 0;
+  }
+  posV0track->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
   //  if ( covd0z0[0]<=0.) dcaV0DaughterToPrimVertex[0] = 0;
   //  else 
   dcaV0DaughterToPrimVertex[0] = TMath::Sqrt(covd0z0[0]);
-  negV0track->PropagateToDCA(PrimaryVertex(),fBzkG,kVeryBig,d0z0,covd0z0);  
+  negV0track->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);  
   //  if ( covd0z0[0]<=0.)dcaV0DaughterToPrimVertex[1] = 0;
   //  else 
   dcaV0DaughterToPrimVertex[1] = TMath::Sqrt(covd0z0[0]);
-  double dcaV0Daughters = esdV0->GetDcaV0Daughters();
-  double pmom[3];  double nmom[3];
+  Double_t dcaV0Daughters = esdV0->GetDcaV0Daughters();
+  Double_t pmom[3],nmom[3];
   esdV0->GetNPxPyPz(nmom[0],nmom[1],nmom[2]);
   esdV0->GetPPxPyPz(pmom[0],pmom[1],pmom[2]);
 
   AliAODv0 *aodV0 = new AliAODv0(vertexV0,dcaV0Daughters,dcaV0ToPrimVertex,pmom,nmom,dcaV0DaughterToPrimVertex);
   aodV0->SetOnFlyStatus(esdV0->GetOnFlyStatus());
 
-  if(trackesdV0) delete trackesdV0;
+  if(trackesdV0) {delete trackesdV0; trackesdV0=NULL;}
+  if(primVertexAOD) {delete primVertexAOD; primVertexAOD=NULL;}
 
   return aodV0;
 }
