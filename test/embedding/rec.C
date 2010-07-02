@@ -12,7 +12,7 @@ void rec(Int_t embrun=0) {
 //   AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLowFluxParam();
 //   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
 //   AliTPCReconstructor::SetStreamLevel(0);
-  reco.SetRunReconstruction("ITS TPC TRD TOF");
+  reco.SetRunReconstruction("ITS TPC TRD TOF VZERO");
 //   reco.SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Ideal/");
 //   reco.SetRunQA(kFALSE);
 //   reco.SetRunGlobalQA(kFALSE);

@@ -6,7 +6,7 @@ void sim(Int_t embrun)
     cdbm->SetRun(atoi(gSystem->Getenv("DC_RUN")));
     cdbm->SetDefaultStorage("local://$ALICE_ROOT/OCDB");     
     cdbm->SetSpecificStorage("GRP/GRP/Data",Form("local://%s",gSystem->pwd()));
-    sim.SetMakeSDigits("ITS TPC TRD TOF");  
+    sim.SetMakeSDigits("ITS TPC TRD TOF VZERO");  
 
     sim.ConvertRaw2SDigits("raw.root","AliESDs.root");
     return;
@@ -19,11 +19,11 @@ void sim(Int_t embrun)
   }
   else {
     sim.SetRunGeneration(kTRUE);
-    sim.SetMakeSDigits("ITS TPC TRD TOF");
+    sim.SetMakeSDigits("ITS TPC TRD TOF VZERO");
   }
   sim.SetRunSimulation(kTRUE);
-  sim.SetMakeDigits("ITS TPC TRD TOF");
-  sim.SetWriteRawData("ITS TPC TRD TOF","raw.root",kTRUE);
+  sim.SetMakeDigits("ITS TPC TRD TOF VZERO");
+  sim.SetWriteRawData("ITS TPC TRD TOF VZERO","raw.root",kTRUE);
   if (embrun == 1)
     sim.MergeWith("../BackgroundSDigits/galice.root",1);
 
