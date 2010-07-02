@@ -76,6 +76,10 @@
 #include  "THnSparse.h"
 
 #include  "AliTPCLaserTrack.h"
+#include  "AliESDVertex.h"
+#include  "AliVertexerTracks.h"
+#include  "TDatabasePDG.h"
+#include  "TF1.h"
 
 #include "AliTPCCorrection.h"
 #include "AliLog.h"
@@ -731,28 +735,33 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   const Int_t    npoints0=roc->GetNRows(0)+roc->GetNRows(36);
   const Double_t kRTPC0  =roc->GetPadRowRadii(0,0);
   const Double_t kRTPC1  =roc->GetPadRowRadii(36,roc->GetNRows(36)-1);
-    
   const Double_t kMaxSnp = 0.85;  
   const Double_t kSigmaY=0.1;
   const Double_t kSigmaZ=0.1;
+  const Double_t kMaxR=500;
+  const Double_t kMaxZ=500;
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  Int_t npoints1=0;
+  Int_t npoints2=0;
 
   AliExternalTrackParam  track(trackIn); // 
   // generate points
   AliTrackPointArray pointArray0(npoints0);
   AliTrackPointArray pointArray1(npoints0);
   Double_t xyz[3];
-  AliTrackerBase::PropagateTrackToBxByBz(&track,kRTPC0,kMass,3,kTRUE,kMaxSnp);
+  if (!AliTrackerBase::PropagateTrackToBxByBz(&track,kRTPC0,kMass,3,kTRUE,kMaxSnp)) return 0;
   //
   // simulate the track
   Int_t npoints=0;
   Float_t covPoint[6]={0,0,0, kSigmaY*kSigmaY,0,kSigmaZ*kSigmaZ};  //covariance at the local frame
   for (Double_t radius=kRTPC0; radius<kRTPC1; radius++){
-    AliTrackerBase::PropagateTrackToBxByBz(&track,radius,kMass,3,kTRUE,kMaxSnp);
+    if (!AliTrackerBase::PropagateTrackToBxByBz(&track,radius,kMass,3,kTRUE,kMaxSnp)) return 0;
     track.GetXYZ(xyz);
-    xyz[0]+=gRandom->Gaus(0,0.005);
-    xyz[1]+=gRandom->Gaus(0,0.005);
-    xyz[2]+=gRandom->Gaus(0,0.005);
+    xyz[0]+=gRandom->Gaus(0,0.00005);
+    xyz[1]+=gRandom->Gaus(0,0.00005);
+    xyz[2]+=gRandom->Gaus(0,0.00005);
+    if (TMath::Abs(track.GetZ())>kMaxZ) break;
+    if (TMath::Abs(track.GetX())>kMaxR) break;
     AliTrackPoint pIn0;                               // space point          
     AliTrackPoint pIn1;
     Int_t sector= (xyz[2]>0)? 0:18;
@@ -806,8 +815,13 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     AliTrackPoint prot0 = pIn0.Rotate(track0->GetAlpha());   // rotate to the local frame - non distoted  point
     AliTrackPoint prot1 = pIn1.Rotate(track1->GetAlpha());   // rotate to the local frame -     distorted point
     //
-    AliTrackerBase::PropagateTrackToBxByBz(track0,prot0.GetX(),kMass,3,kFALSE,kMaxSnp);
-    AliTrackerBase::PropagateTrackToBxByBz(track1,prot0.GetX(),kMass,3,kFALSE,kMaxSnp);
+    if (!AliTrackerBase::PropagateTrackToBxByBz(track0,prot0.GetX(),kMass,3,kFALSE,kMaxSnp)) break;
+    if (!AliTrackerBase::PropagateTrackToBxByBz(track1,prot0.GetX(),kMass,3,kFALSE,kMaxSnp)) break;
+    if (TMath::Abs(track0->GetZ())>kMaxZ) break;
+    if (TMath::Abs(track0->GetX())>kMaxR) break;
+    if (TMath::Abs(track1->GetZ())>kMaxZ) break;
+    if (TMath::Abs(track1->GetX())>kMaxR) break;
+
     track.GetXYZ(xyz);  // distorted track also propagated to the same reference radius
     //
     Double_t pointPos[2]={0,0};
@@ -817,7 +831,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     pointCov[0]=prot0.GetCov()[3];//simay^2
     pointCov[1]=prot0.GetCov()[4];//sigmayz
     pointCov[2]=prot0.GetCov()[5];//sigmaz^2
-    track0->Update(pointPos,pointCov);
+    if (!track0->Update(pointPos,pointCov)) break;
     //
     Double_t deltaX=prot1.GetX()-prot0.GetX();   // delta X 
     Double_t deltaYX=deltaX*TMath::Tan(TMath::ASin(track1->GetSnp()));  // deltaY due  delta X
@@ -828,12 +842,14 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     pointCov[0]=prot1.GetCov()[3];//simay^2
     pointCov[1]=prot1.GetCov()[4];//sigmayz
     pointCov[2]=prot1.GetCov()[5];//sigmaz^2
-    track1->Update(pointPos,pointCov);
+    if (!track1->Update(pointPos,pointCov)) break;
+    npoints1++;
+    npoints2++;
   }
-
+  if (npoints2<npoints)  return 0;
   AliTrackerBase::PropagateTrackToBxByBz(track0,refX,kMass,2.,kTRUE,kMaxSnp);
   track1->Rotate(track0->GetAlpha());
-  track1->PropagateTo(track0->GetX(),AliTrackerBase::GetBz());
+  AliTrackerBase::PropagateTrackToBxByBz(track1,refX,kMass,2.,kTRUE,kMaxSnp);
 
   if (pcstream) (*pcstream)<<Form("fitDistort%s",GetName())<<
     "point0.="<<&pointArray0<<   //  points
@@ -1246,3 +1262,85 @@ void AliTPCCorrection::StoreInOCDB(Int_t startRun, Int_t endRun, const char *com
   gStorage->Put(this, (*id1), metaData);
 }
 
+
+void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTracks, AliESDVertex &aV, AliESDVertex &avOrg, AliESDVertex &cV, AliESDVertex &cvOrg, TTreeSRedirector * const pcstream){
+
+  AliVertexerTracks *vertexer = new AliVertexerTracks(5);// 5kGaus
+
+  TObjArray   ATrk;               // Original Track array of Aside
+  TObjArray   dATrk;              // Distorted Track array of A side
+  UShort_t    *AId = new UShort_t[nTracks];      // A side Track ID
+  TObjArray   CTrk;               
+  TObjArray   dCTrk;
+  UShort_t    *CId = new UShort_t [nTracks];
+  Int_t ID=0; 
+  Double_t mass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  TF1 fpt("fpt",Form("x*(1+(sqrt(x*x+%f^2)-%f)/([0]*[1]))^(-[0])",mass),0.4,10);
+  fpt.SetParameters(7.24,0.120);
+  fpt.SetNpx(10000);
+  for(Int_t nt=0; nt<nTracks; nt++){
+    Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
+    Double_t eta = gRandom->Uniform(-0.8, 0.8);
+    Double_t pt = fpt.GetRandom();// momentum for f1
+    Short_t sign=1;
+    if(gRandom->Rndm() < 0.5){
+      sign =1;
+    }else{
+      sign=-1;
+    }
+
+    Double_t theta = 2*TMath::ATan(TMath::Exp(-eta))-TMath::Pi()/2.;
+    Double_t pxyz[3];
+    pxyz[0]=pt*TMath::Cos(phi);
+    pxyz[1]=pt*TMath::Sin(phi);
+    pxyz[2]=pt*TMath::Tan(theta);
+    Double_t cv[21]={0};
+    AliExternalTrackParam *t= new AliExternalTrackParam(orgVertex, pxyz, cv, sign);
+
+    Double_t refX=1.;
+    Int_t dir=-1;
+    AliExternalTrackParam *td = FitDistortedTrack(*t, refX, dir,  NULL);
+    if (!td) continue;
+    if (pcstream) (*pcstream)<<"track"<<
+      "eta="<<eta<<
+      "theta="<<theta<<
+      "tOrig.="<<t<<
+      "td.="<<td<<
+      "\n";
+    if( eta>0.07 ) { // - log(tan(0.5*theta)), theta = 0.5*pi - ATan(5.0/80.0)
+      if (td){
+	dATrk.AddLast(td);
+	ATrk.AddLast(t);
+	Int_t nn=ATrk.GetEntriesFast();
+	AId[nn]=ID;
+      }
+    }else if( eta<-0.07 ){
+      if (td){
+	dCTrk.AddLast(td);
+	CTrk.AddLast(t);
+	Int_t nn=CTrk.GetEntriesFast();
+	CId[nn]=ID;
+      }
+    }
+    ID++;  
+  }// end of track loop
+
+  vertexer->SetTPCMode();
+  vertexer->SetConstraintOff();
+
+  aV = *((AliESDVertex*)vertexer->FindPrimaryVertex(&dATrk,AId));  
+  avOrg = *((AliESDVertex*)vertexer->FindPrimaryVertex(&ATrk,AId));
+  cV = *((AliESDVertex*)vertexer->FindPrimaryVertex(&dCTrk,CId));  
+  cvOrg = *((AliESDVertex*)vertexer->FindPrimaryVertex(&CTrk,CId));
+  if (pcstream) (*pcstream)<<"vertex"<<
+    "x="<<orgVertex[0]<<
+    "y="<<orgVertex[1]<<
+    "z="<<orgVertex[2]<<
+    "av.="<<&aV<<              // distorted vertex A side
+    "cv.="<<&cV<<              // distroted vertex C side
+    "avO.="<<&avOrg<<         // original vertex A side
+    "cvO.="<<&cvOrg<<
+    "\n";
+  delete []AId;
+  delete []CId;
+}

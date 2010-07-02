@@ -37,7 +37,8 @@
 #include "AliTPCExBBShape.h"
 #include "TRandom.h"
 #include "AliGeomManager.h"
-
+#include "AliESDVertex.h"
+#include "AliTPCcalibDB.h"
 #endif
 
 
@@ -209,3 +210,61 @@ void DrawDistortionMap(){
   grY3->Draw("p");
 }
 
+
+void TestVertex(){
+  //
+  //
+  //  .x ConfigCalibTrain.C(120829)
+
+  AliTPCComposedCorrection * corrC = ( AliTPCComposedCorrection *)AliTPCcalibDB::Instance()->GetTPCComposedCorrection(0.5);
+  AliTPCCorrection * corrT = (AliTPCCorrection *)corrC->GetCorrections()->FindObject("exb_twist");
+  AliTPCCorrection * corrS = (AliTPCCorrection *)corrC->GetCorrections()->FindObject("ExB");
+  
+  TTreeSRedirector *pcstream = new TTreeSRedirector("vertexDistort.root");
+  TTreeSRedirector *pcstreamS = new TTreeSRedirector("vertexDistortS.root");
+  TTreeSRedirector *pcstreamT = new TTreeSRedirector("vertexDistortT.root");
+  Double_t orgVertex[3] ;
+  AliESDVertex aV,cV,aVO,cVO;
+  for (Int_t iv=0; iv<100; iv++){
+    printf("%d\n",iv);
+    orgVertex[0]=gRandom->Gaus()*0.01;
+    orgVertex[1]=gRandom->Gaus()*0.01;
+    orgVertex[2]=gRandom->Gaus()*3;
+    corrC->FastSimDistortedVertex(orgVertex,100, aV,aVO,cV,cVO,pcstream);
+    corrS->FastSimDistortedVertex(orgVertex,100, aV,aVO,cV,cVO,pcstreamS);
+    corrT->FastSimDistortedVertex(orgVertex,100, aV,aVO,cV,cVO,pcstreamT);
+  }
+  delete pcstream;
+  delete pcstreamS;
+  delete pcstreamT;
+  TFile fC("vertexDistortC.root");
+  TFile fT("vertexDistortT.root");
+  TFile fS("vertexDistortS.root");
+  TTree * treeT=(TTree*)fT.Get("vertex"); // twist distrotions
+  TTree * treeS=(TTree*)fS.Get("vertex"); // shape distortions
+  TCanvas *canvasD=new TCanvas("canvasD","canvasD");
+  canvasD->Divide(2,2);
+  canvasD->cd(1);
+  treeT->SetLineColor(2);
+  treeT->Draw("av.fPosition[0]-x>>hisATX(100,-0.2,0.2)","","");
+  treeT->SetLineColor(4);
+  treeT->Draw("cv.fPosition[0]-x>>hisCTX(100,-0.2,0.2)","","same");
+  canvasD->cd(2);
+  treeT->SetLineColor(2);
+  treeT->Draw("av.fPosition[1]-y>>hisATY(100,-0.2,0.2)","","");
+  treeT->SetLineColor(4);
+  treeT->Draw("cv.fPosition[1]-y>>hisCTY(100,-0.2,0.2)","","same");
+  //
+  canvasD->cd(3);
+  treeS->SetLineColor(2);
+  treeS->Draw("av.fPosition[0]-x>>hisASX(100,-0.2,0.2)","","");
+  treeS->SetLineColor(4);
+  treeS->Draw("cv.fPosition[0]-x>>hisCSX(100,-0.2,0.2)","","same");
+  canvasD->cd(4);
+  treeS->SetLineColor(2);
+  treeS->Draw("av.fPosition[1]-y>>hisASY(100,-0.2,0.2)","","");
+  treeS->SetLineColor(4);
+  treeS->Draw("cv.fPosition[1]-y>>hisCSY(100,-0.2,0.2)","","same");
+  canvasD->SaveAs("vertexShift.ps");
+
+}

@@ -40,7 +40,7 @@ class TTreeSRedirector;
 class AliExternalTrackParam;
 class TTree;
 class THnSparse;
-
+class AliESDVertex;
 
 
 class AliTPCCorrection : public TNamed {
@@ -81,6 +81,8 @@ public:
   void StoreInOCDB(Int_t startRun, Int_t endRun, const char *comment=0);
   static void MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step=1, Bool_t debug=0);
   static void MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray, Int_t itype);
+  void  FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTracks, AliESDVertex &aV, AliESDVertex &avOrg, AliESDVertex &cV, AliESDVertex &cvOrg, TTreeSRedirector * const pcstream);
+
 protected:
   TH2F* CreateTH2F(const char *name,const char *title,
 		   const char *xlabel,const char *ylabel,const char *zlabel,
