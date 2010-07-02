@@ -37,6 +37,7 @@
 #include <TLinearFitter.h>
 #include <TMath.h>
 #include <TMap.h>
+#include <TProfile2D.h>
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TObjString.h>
@@ -257,6 +258,13 @@ void AliTRDcheckDET::MakeSummary(){
   cOut->cd(); GetRefFigure(kFigPH);
   cOut->SaveAs(Form("TRDsummary%s2.gif", GetName())); 
   delete cOut;
+
+  // Third Plot: Mean Number of clusters as function of eta, phi and layer
+   cOut = new TCanvas(Form("summary%s3", GetName()), Form("Summary 3 for task %s", GetName()), 1024, 768);
+  cOut->cd(); MakePlotMeanClustersLayer();
+  cOut->SaveAs(Form("TRDsummary%s3.gif", GetName())); 
+  delete cOut;
+
 }
 
 //_______________________________________________________
@@ -394,6 +402,18 @@ TObjArray *AliTRDcheckDET::Histos(){
   } else h->Reset();
   fContainer->AddAt(h, kNclustersTrack);
 
+  TObjArray *arr = new TObjArray(AliTRDgeometry::kNlayer);
+  arr->SetOwner(kTRUE);  arr->SetName("clusters");
+  fContainer->AddAt(arr, kNclustersLayer);
+  for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
+    if(!(h = (TProfile2D *)gROOT->FindObject(Form("hNcl%d", ily)))){
+      h = new TProfile2D(Form("hNcl%d", ily), Form("Mean Number of clusters in Layer %d", ily), 100, -1.0, 1.0, 50, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+      h->GetXaxis()->SetTitle("#eta");
+      h->GetYaxis()->SetTitle("#phi");
+    } else h->Reset();
+    arr->AddAt(h, ily);
+  }
+
   if(!(h = (TH1F *)gROOT->FindObject("hNclTls"))){
     h = new TH1F("hNclTls","N_{clusters} / tracklet", 51, -0.5, 50.5);
     h->GetXaxis()->SetTitle("N_{clusters}");
@@ -468,7 +488,7 @@ TObjArray *AliTRDcheckDET::Histos(){
   }
   fContainer->AddAt(h, kTrackStatus);
 
-  TObjArray *arr = new TObjArray(AliTRDgeometry::kNlayer);
+  arr = new TObjArray(AliTRDgeometry::kNlayer);
   arr->SetOwner(kTRUE);  arr->SetName("TrackletStatus");
   fContainer->AddAt(arr, kTrackletStatus);
   for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
@@ -636,15 +656,28 @@ TH1 *AliTRDcheckDET::PlotNClustersTracklet(const AliTRDtrackV1 *track){
     AliDebug(4, "No Track defined.");
     return NULL;
   }
+  AliExternalTrackParam *par = fkTrack->GetTrackIn() ? fkTrack->GetTrackIn() : fkTrack->GetTrackOut();
   TH1 *h = NULL;
+  TProfile2D *hlayer = NULL;
+  Double_t eta = 0., phi = 0.;
   if(!(h = dynamic_cast<TH1F *>(fContainer->At(kNclustersTracklet)))){
     AliWarning("No Histogram defined.");
     return NULL;
   }
   AliTRDseedV1 *tracklet = NULL;
+  TObjArray *histosLayer = dynamic_cast<TObjArray *>(fContainer->At(kNclustersLayer));
+  if(!histosLayer){
+    AliWarning("No Histograms for single layer defined");
+  }
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
     h->Fill(tracklet->GetN2());
+    if(histosLayer && par){
+      if((hlayer = dynamic_cast<TProfile2D *>(histosLayer->At(itl)))){
+        GetEtaPhiAt(par, tracklet->GetX0(), eta, phi);
+        hlayer->Fill(eta, phi, tracklet->GetN2());
+      }
+    }
   }
   return h;
 }
@@ -1212,6 +1245,20 @@ void AliTRDcheckDET::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 * const 
   dist[1] = c->GetZ() - tracklet->GetZat(x);
 }
 
+//________________________________________________________
+void AliTRDcheckDET::GetEtaPhiAt(AliExternalTrackParam *track, Double_t x, Double_t &eta, Double_t &phi){
+  //
+  // Get phi and eta at a given radial position
+  // 
+  AliExternalTrackParam workpar(*track);
+
+  Double_t posLocal[3];
+  Bool_t sucPos = workpar.GetXYZAt(x, fEventInfo->GetRunInfo()->GetMagneticField(), posLocal);
+  Double_t sagPhi = sucPos ? TMath::ATan2(posLocal[1], posLocal[0]) : 0.;
+  phi = sagPhi;
+  eta = workpar.Eta();
+}
+
 
 //_______________________________________________________
 TH1* AliTRDcheckDET::MakePlotChi2()
@@ -1414,6 +1461,27 @@ Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
   ph2d->SetStats(kFALSE);
   ph2d->Draw("colz");
   return kTRUE;
+}
+
+//________________________________________________________
+void AliTRDcheckDET::MakePlotMeanClustersLayer(){
+  //
+  // Create Summary plot for the mean number of clusters per layer
+  //
+  TCanvas *output = gPad->GetCanvas();
+  output->Divide(3,2);
+  TObjArray *histos = (TObjArray *)fContainer->At(kNclustersLayer);
+  if(!histos){
+    AliWarning("Histos for each layer not found");
+    return;
+  }
+  TProfile2D *hlayer = NULL;
+  for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
+    hlayer = dynamic_cast<TProfile2D *>(histos->At(ily));
+    output->cd(ily + 1);
+    gPad->SetGrid(0,0);
+    hlayer->Draw("colz");
+  }
 }
 
 //________________________________________________________

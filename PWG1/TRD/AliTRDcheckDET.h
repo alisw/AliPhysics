@@ -18,6 +18,7 @@ class TObjArray;
 class TH1;
 class TMap;
 class AliESDHeader;
+class AliExternalTrackParam;
 class AliTRDcluster;
 class AliTRDseedV1;
 class AliTRDgeometry;
@@ -46,7 +47,8 @@ public:
     kTriggerPurity      = 15,
     kTrackStatus        = 16,
     kTrackletStatus     = 17,
-    kNTrackletsP        = 18
+    kNTrackletsP        = 18,
+    kNclustersLayer     = 19
   };
   enum FigureType_t{
     kFigNclustersTrack,
@@ -110,7 +112,9 @@ private:
   TH1* MakePlotNTracklets();
   Bool_t MakePlotPulseHeight();
   void MakePlotnTrackletsVsP();
+  void MakePlotMeanClustersLayer();
   Bool_t MakeBarPlot(TH1 *histo, Int_t Color);
+  void GetEtaPhiAt(AliExternalTrackParam *track, Double_t x, Double_t &eta, Double_t &phi);
 
   AliTRDeventInfo *fEventInfo;         //! ESD Header
   TMap *fTriggerNames;                 //! Containing trigger class names
