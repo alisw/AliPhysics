@@ -304,6 +304,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE); 
     h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos));
     h2FtpcP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
     h2FtpcP->GetXaxis()->SetTitle("#eta");
@@ -324,6 +325,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(1)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg));
     h2FtpcN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
     h2FtpcN->GetXaxis()->SetTitle("#eta");
@@ -343,6 +345,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(3)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos));
     h2FtrdP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
     h2FtrdP->GetXaxis()->SetTitle("#eta");
@@ -364,6 +367,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(4)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg));
     h2FtrdN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
     h2FtrdN->GetXaxis()->SetTitle("#eta");
@@ -384,6 +388,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(6)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     h2Feff = (TH2F*)h2FtrdP->Clone();
     h2Feff->Reset();
     h2Feff->Divide(h2FtrdP, h2FtpcP);
@@ -405,6 +410,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(7)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     h2Feff = (TH2F*)h2FtrdN->Clone();
     h2Feff->Reset();
     h2Feff->Divide(h2FtrdN, h2FtpcN);
@@ -427,6 +433,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(2)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvNtrkl));
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
@@ -448,6 +455,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(5)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
     pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     hFeffP = TRDEfficiency(+1);
     hFeffN = TRDEfficiency(-1);
     h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.1);
@@ -492,6 +500,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(8)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.12);
     pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     pad->SetLogz();
     h2F = dynamic_cast<TH2F*>(fHistos->At(kNClsTrackTRD));
     h2F->SetStats(kFALSE);
@@ -517,6 +526,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+0));
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
@@ -538,6 +548,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(3)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+1));
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
@@ -559,6 +570,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(6)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+2));
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
@@ -580,6 +592,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(1)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+3));
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
@@ -601,6 +614,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(4)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+4));
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
@@ -622,6 +636,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(7)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+5));
     hProf2D->SetStats(kFALSE);
     hProf2D->SetTitle("");
@@ -643,6 +658,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(2)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     h2F = dynamic_cast<TH2F*>(fHistos->At(kPHSlice));
     h2F->SetStats(kFALSE);
     h2F->SetTitle("");
@@ -664,6 +680,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad = ((TVirtualPad*)l->At(5)); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     pad->SetLogz();
     h2F = dynamic_cast<TH2F*>(fHistos->At(kQtotP));
     h2F->SetStats(kFALSE);
