@@ -31,6 +31,13 @@ public:
    * @param pedDA Object to copy from
    */  
   AliFMDPedestalDA(const AliFMDPedestalDA & pedDA);
+  /** 
+   * Assignment operator 
+   * 
+   * @param pedDA Object to assign from
+   */  
+  AliFMDPedestalDA& operator=(const AliFMDPedestalDA&) { return *this; }
+
   //  AliFMDPedestalDA& operator = (const AliFMDPedestalDA & pedDA) ; 
   /** 
    * Destructor
@@ -116,29 +123,29 @@ private:
 		UShort_t chan) const;
   void FillinTimebins(std::ofstream& out, UShort_t ddl);
   /** Current strip */ 
-  Int_t fCurrentChannel;
-  /** Pedestal summary */
-  TH1F  fPedSummary;
+  Int_t fCurrentChannel;                                   //The current channel
+  /** Pedestal summary */ 
+  TH1F  fPedSummary;                                       //Summary of pedestals
   /** Noise summary */
-  TH1F  fNoiseSummary;
+  TH1F  fNoiseSummary;                                     //Summary of noises
   /** Output file for zero-suppression for FMD1 */
-  std::ofstream fZSfileFMD1;
+  std::ofstream fZSfileFMD1;                               //Stream for ZS FMD1
   /** Output file for zero-suppression for FMD2 */
-  std::ofstream fZSfileFMD2;
+  std::ofstream fZSfileFMD2;                               //Stream for ZS FMD2
   /** Output file for zero-suppression for FMD3 */
-  std::ofstream fZSfileFMD3;
+  std::ofstream fZSfileFMD3;                               //Stream for ZS FMD3 
   /** The minimum timebin seen for all channels */
-  TArrayS fMinTimebin;
+  TArrayS fMinTimebin;                                     //minimum timebin
   /** The maximum timebin seen for all channels */
-  TArrayS fMaxTimebin;
+  TArrayS fMaxTimebin;                                     //maximum timebin
   
   void  MakeSummary(UShort_t det, Char_t ring);
 
-  TH2* fSummaryFMD1i;
-  TH2* fSummaryFMD2i;
-  TH2* fSummaryFMD2o;
-  TH2* fSummaryFMD3i;
-  TH2* fSummaryFMD3o;
+  TH2* fSummaryFMD1i;                                      //Summary of FMD1
+  TH2* fSummaryFMD2i;                                      //Summary of FMD2I 
+  TH2* fSummaryFMD2o;                                      //Summary of FMD2O
+  TH2* fSummaryFMD3i;                                      //Summary of FMD3I
+  TH2* fSummaryFMD3o;                                      //Summary of FMD3O
   
   ClassDef(AliFMDPedestalDA,0)
 };

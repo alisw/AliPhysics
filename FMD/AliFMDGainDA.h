@@ -32,6 +32,12 @@ public:
    */  
   AliFMDGainDA(const AliFMDGainDA & gainDA) ;
   /** 
+   * Assignment operator 
+   * 
+   * @param gainDA Object to assign from
+   */  
+  AliFMDGainDA& operator=(const AliFMDGainDA&) { return *this; }
+  /** 
    * Destructor 
    * 
    */
@@ -153,16 +159,16 @@ private:
 
   void  MakeSummary(UShort_t det, Char_t ring);
 
-  TH2* fGainFMD1i;
-  TH2* fGainFMD2i;
-  TH2* fGainFMD2o;
-  TH2* fGainFMD3i;
-  TH2* fGainFMD3o;
-  TH2* fChi2FMD1i;
-  TH2* fChi2FMD2i;
-  TH2* fChi2FMD2o;
-  TH2* fChi2FMD3i;
-  TH2* fChi2FMD3o;
+  TH2* fGainFMD1i;                 //Gains, FMD1
+  TH2* fGainFMD2i;                 //Gains, FMD2I
+  TH2* fGainFMD2o;                 //Gains, FMD2O
+  TH2* fGainFMD3i;                 //Gains, FMD3I
+  TH2* fGainFMD3o;                 //Gains, FMD3O
+  TH2* fChi2FMD1i;                 //Chi2 of fits, FMD1
+  TH2* fChi2FMD2i;                 //Chi2 of fits, FMD2I
+  TH2* fChi2FMD2o;                 //Chi2 of fits, FMD2O
+  TH2* fChi2FMD3i;                 //Chi2 of fits, FMD3I
+  TH2* fChi2FMD3o;                 //Chi2 of fits, FMD3O
   
   ClassDef(AliFMDGainDA,0) // Detector algorithm for gain runs
 

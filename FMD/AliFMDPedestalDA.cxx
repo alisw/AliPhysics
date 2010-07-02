@@ -164,6 +164,7 @@ void AliFMDPedestalDA::FillChannels(AliFMDDigit* digit)
 //_____________________________________________________________________
 void AliFMDPedestalDA::MakeSummary(UShort_t det, Char_t ring)
 {
+  //Create summary hists for FMD pedestals
   std::cout << "Making summary for FMD" << det << ring << " ..." << std::endl;
   switch (det) { 
   case 1: 
