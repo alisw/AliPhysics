@@ -236,7 +236,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
    
     if (!AcceptTrack(t)) continue;
 
-    if(t->GetP() < fLowerMomBound || t->GetIntegratedLength() < 350 || t->GetTOFsignalToT() < 0.000000001)continue; //skip decays
+    if(t->GetIntegratedLength() < 350)continue; //skip decays
     if(time <= mintime) mintime=time;
     tracks[ngoodtrk]=t;
     ngoodtrk++;
@@ -693,7 +693,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
    
     if (!AcceptTrack(t)) continue;
 
-    if(t->GetP() < fLowerMomBound || t->GetIntegratedLength() < 350 || t->GetTOFsignalToT() < 0.000000001)continue; //skip decays
+    if(t->GetIntegratedLength() < 350)continue; //skip decays
     if(t->GetP() > pMinCut && t->GetP() < pMaxCut) continue;
     if(time <= mintime) mintime=time;
     tracks[ngoodtrk]=t;
