@@ -1,3 +1,9 @@
+//
+// Implementation file for implementation of data analysis aft 900 GeV
+//
+// Author: A. Pulvirenti
+//
+
 #include "Riostream.h"
 
 #include "TH1.h"
@@ -459,7 +465,7 @@ void AliRsnAnalysisPhi900GeV::SetTPCparams(Bool_t isMC)
 }
 
 
-Double_t AliRsnAnalysisPhi900GeV::AlephBB(Double_t p, Double_t mass)
+Double_t AliRsnAnalysisPhi900GeV::AlephBB(Double_t p, Double_t mass) const
 {
 //
 // Compute expected Bethe-Bloch for that momentum and mass

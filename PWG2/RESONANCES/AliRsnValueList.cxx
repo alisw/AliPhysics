@@ -107,4 +107,6 @@ Bool_t AliRsnValueList::Eval(TObject * const obj, const AliRsnPairDef *pairDef)
     AliRsnValue *val = (AliRsnValue*)fValueList[i];
     fArray[i] = val->Eval(obj, pairDef);
   }
+  
+  return kTRUE;
 }
