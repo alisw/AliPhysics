@@ -4,6 +4,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
+//
+// Task for fragmentation
+// 
+
 #include "AliAnalysisTaskSE.h"
 
 class AliJetHeader;
@@ -64,7 +68,6 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE
   AliAnalysisTaskFragmentationFunction(const AliAnalysisTaskFragmentationFunction &det);
   AliAnalysisTaskFragmentationFunction &operator=(const AliAnalysisTaskFragmentationFunction &det);
   
-  void MakeJetContainer();
  
  private:
   AliJetHeader *fJetHeaderRec;
@@ -91,157 +94,156 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE
   Float_t       fExternalWeight;        // external weight
   Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
 
-  Double_t      fR;
-  Double_t      fdRdNdxi;
-  Double_t      fPartPtCut;
-  Double_t      fEfactor;
-  Int_t         fNff;
-  Int_t         fNim;
-  TList*        fList;
+  Double_t      fR;                     // tmp
+  Double_t      fdRdNdxi;               // tmp
+  Double_t      fPartPtCut;             // tmp
+  Double_t      fEfactor;               // tmp
+  Int_t         fNff;                   // tmp
+  Int_t         fNim;                   // tmp
+  TList*        fList;                  // tmp
 
-  Int_t         fGlobVar;
-
-  Bool_t        fCDFCut;
+  Int_t         fGlobVar;               // tmp
+ 
+  Bool_t        fCDFCut;                // tmp
 
   // INTERVALS
   Int_t     fnEBin;       // Number of energy bins
-  Double_t  fEmin;
-  Double_t  fEmax;
-  Int_t     fnEInterval;
+  Double_t  fEmin; // tmp
+  Double_t  fEmax; // tmp
+  Int_t     fnEInterval; // tmp
 
   Int_t     fnRBin;       // Number of radius bins
-  Double_t  fRmin;
-  Double_t  fRmax;
-  Int_t     fnRInterval;
-
+  Double_t  fRmin; // tmp
+  Double_t  fRmax; // tmp
+  Int_t     fnRInterval; // tmp
+ 
   // HISTOGRAMS LIMITS
-  Int_t     fnEtaHBin;
-  Double_t  fEtaHBinMin;
-  Double_t  fEtaHBinMax;
+  Int_t     fnEtaHBin; // tmp
+  Double_t  fEtaHBinMin; // tmp
+  Double_t  fEtaHBinMax; // tmp
+ 
+  Int_t     fnPhiHBin; // tmp
+  Double_t  fPhiHBinMin; // tmp
+  Double_t  fPhiHBinMax; // tmp 
 
-  Int_t     fnPhiHBin;
-  Double_t  fPhiHBinMin;
-  Double_t  fPhiHBinMax;
+  Int_t     fnPtHBin; // tmp
+  Double_t  fPtHBinMin; // tmp
+  Double_t  fPtHBinMax; // tmp
 
-  Int_t     fnPtHBin;
-  Double_t  fPtHBinMin;
-  Double_t  fPtHBinMax;
+  Int_t     fnEHBin; // tmp
+  Double_t  fEHBinMin; // tmp
+  Double_t  fEHBinMax; // tmp 
 
-  Int_t     fnEHBin;
-  Double_t  fEHBinMin;
-  Double_t  fEHBinMax;
+  Int_t     fnXiHBin; // tmp
+  Double_t  fXiHBinMax; // tmp
+  Double_t  fXiHBinMin; // tmp
 
-  Int_t     fnXiHBin;
-  Double_t  fXiHBinMax;
-  Double_t  fXiHBinMin;
+  Int_t     fnPthadHBin; // tmp
+  Double_t  fPthadHBinMin; // tmp
+  Double_t  fPthadHBinMax; // tmp
 
-  Int_t     fnPthadHBin;
-  Double_t  fPthadHBinMin;
-  Double_t  fPthadHBinMax;
+  Int_t     fnZHBin; // tmp
+  Double_t  fZHBinMin; // tmp
+  Double_t  fZHBinMax; // tmp
 
-  Int_t     fnZHBin;
-  Double_t  fZHBinMin;
-  Double_t  fZHBinMax;
+  Int_t     fnThetaHBin; // tmp 
+  Double_t  fThetaHBinMax; // tmp
 
-  Int_t     fnThetaHBin;
-  Double_t  fThetaHBinMin;
-  Double_t  fThetaHBinMax;
+  Int_t     fnCosThetaHBin; // tmp
+  Double_t  fcosThetaHBinMin; // tmp
+  Double_t  fcosThetaHBinMax; // tmp
 
-  Int_t     fnCosThetaHBin;
-  Double_t  fcosThetaHBinMin;
-  Double_t  fcosThetaHBinMax;
+  Int_t     fnkTHBin; // tmp
+  Double_t  fkTHBinMin; // tmp
+  Double_t  fkTHBinMax; // tmp
 
-  Int_t     fnkTHBin;
-  Double_t  fkTHBinMin;
-  Double_t  fkTHBinMax;
+  Int_t     fnRHBin; // tmp
+  Double_t  fRHBinMin; // tmp
+  Double_t  fRHBinMax; // tmp
 
-  Int_t     fnRHBin;
-  Double_t  fRHBinMin;
-  Double_t  fRHBinMax;
-
-  Int_t fnPtTrigBin;
+  Int_t fnPtTrigBin; // tmp
 
   //HISTOGRAMS
-  TH1F**        fEtaMonoJet1H;
-  TH1F**        fPhiMonoJet1H;
-  TH1F**        fPtMonoJet1H;
-  TH1F**        fEMonoJet1H;
+  TH1F**        fEtaMonoJet1H; // tmp
+  TH1F**        fPhiMonoJet1H; // tmp 
+  TH1F**        fPtMonoJet1H; // tmp
+  TH1F**        fEMonoJet1H; // tmp
 
-  TH1F***        fdNdXiMonoJet1H;
-  TH1F***        fdNdPtMonoJet1H;
-  TH1F***        fdNdZMonoJet1H;
-  TH1F***        fdNdThetaMonoJet1H;
-  TH1F***        fdNdcosThetaMonoJet1H;
-  TH1F***        fdNdkTMonoJet1H;
-  TH1F***        fdNdpTvsZMonoJet1H;
-  TH1F***        fShapeMonoJet1H;
-  TH1F***        fNMonoJet1sH;
+  TH1F***        fdNdXiMonoJet1H; // tmp
+  TH1F***        fdNdPtMonoJet1H; // tmp
+  TH1F***        fdNdZMonoJet1H; // tmp
+  TH1F***        fdNdThetaMonoJet1H; // tmp
+  TH1F***        fdNdcosThetaMonoJet1H; // tmp
+  TH1F***        fdNdkTMonoJet1H; // tmp
+  TH1F***        fdNdpTvsZMonoJet1H; // tmp
+  TH1F***        fShapeMonoJet1H; // tmp
+  TH1F***        fNMonoJet1sH; // tmp
 
-  TH2F***        fThetaPtPartMonoJet1H;
-  TH2F***        fcosThetaPtPartMonoJet1H;
-  TH2F***        fkTPtPartMonoJet1H;
-  TH2F***        fThetaPtJetMonoJet1H;
-  TH2F***        fcosThetaPtJetMonoJet1H;
-  TH2F***        fkTPtJetMonoJet1H;
-  TH2F***        fpTPtJetMonoJet1H;
+  TH2F***        fThetaPtPartMonoJet1H; // tmp
+  TH2F***        fcosThetaPtPartMonoJet1H; // tmp
+  TH2F***        fkTPtPartMonoJet1H; // tmp
+  TH2F***        fThetaPtJetMonoJet1H; // tmp
+  TH2F***        fcosThetaPtJetMonoJet1H; // tmp
+  TH2F***        fkTPtJetMonoJet1H; // tmp
+  TH2F***        fpTPtJetMonoJet1H; // tmp
 
   //ARRAYS
-  Double_t*        farrayEmin; //!
-  Double_t*        farrayEmax; //!
-  Double_t*        farrayRadii; //!
-  Double_t*        farrayPtTrigmin; //!
-  Double_t*        farrayPtTrigmax; //!
+  Double_t*        farrayEmin; //! tmp
+  Double_t*        farrayEmax; //! tmp
+  Double_t*        farrayRadii; //!  tmp
+  Double_t*        farrayPtTrigmin; //! tmp
+  Double_t*        farrayPtTrigmax; //! tmp
 
   // TRACK CONTROL PLOTS
-  TH1F* fptAllTracks; //!
-  TH1F* fetaAllTracks; //!
-  TH1F* fphiAllTracks; //!
-  TH2F* fetaphiptAllTracks; //!
-  TH2F* fetaphiAllTracks; //!
-  TH1F* fptAllTracksCut; //!
-  TH1F* fetaAllTracksCut; //!
-  TH1F* fphiAllTracksCut; //!
-  TH2F* fetaphiptAllTracksCut; //!
-  TH2F* fetaphiAllTracksCut; //!
+  TH1F* fptAllTracks; //! tmp
+  TH1F* fetaAllTracks; //! tmp
+  TH1F* fphiAllTracks; //! tmp
+  TH2F* fetaphiptAllTracks; //! tmp
+  TH2F* fetaphiAllTracks; //! tmp
+  TH1F* fptAllTracksCut; //! tmp
+  TH1F* fetaAllTracksCut; //! tmp 
+  TH1F* fphiAllTracksCut; //! tmp
+  TH2F* fetaphiptAllTracksCut; //! tmp
+  TH2F* fetaphiAllTracksCut; //! tmp
 
-  TH1F** fptTracks; //!
-  TH1F** fetaTracks; //!
-  TH1F** fphiTracks; //!
-  TH1F** fdetaTracks; //!
-  TH1F** fdphiTracks; //!
-  TH2F** fetaphiptTracks; //!
-  TH2F** fetaphiTracks; //!
-  TH2F** fdetadphiTracks; //!
-  TH1F** fptTracksCut; //!
-  TH1F** fetaTracksCut; //!
-  TH1F** fphiTracksCut; //!
-  TH1F** fdetaTracksCut; //!
-  TH1F** fdphiTracksCut; //!
-  TH2F** fetaphiptTracksCut; //!
-  TH2F** fetaphiTracksCut; //!
-  TH2F** fdetadphiTracksCut; //!
-  TH1F** fNPtTrig;
-  TH1F** fNPtTrigCut;
+  TH1F** fptTracks; //! tmp
+  TH1F** fetaTracks; //! tmp
+  TH1F** fphiTracks; //!  tmp
+  TH1F** fdetaTracks; //! tmp
+  TH1F** fdphiTracks; //! tmp 
+  TH2F** fetaphiptTracks; //! tmp 
+  TH2F** fetaphiTracks; //! tmp
+  TH2F** fdetadphiTracks; //! tmp 
+  TH1F** fptTracksCut; //! tmp
+  TH1F** fetaTracksCut; //! tmp
+  TH1F** fphiTracksCut; //! tmp
+  TH1F** fdetaTracksCut; //! tmp
+  TH1F** fdphiTracksCut; //! tmp
+  TH2F** fetaphiptTracksCut; //! tmp
+  TH2F** fetaphiTracksCut; //! tmp
+  TH2F** fdetadphiTracksCut; //! tmp
+  TH1F** fNPtTrig; // tmp
+  TH1F** fNPtTrigCut; // tmp
 
-  TH2F* fvertexXY; //!
-  TH1F* fvertexZ; //!
-  TH1F* fEvtMult; //!
-  TH2F* fEvtMultvsJetPt; //!
-  TH2F* fPtvsEtaJet; //!
-  TH2F* fNpvsEtaJet; //!
-  TH2F* fNpevtvsEtaJet; //!
-  TH2F* fPtvsPtJet; //!
-  TH2F* fNpvsPtJet; //!
-  TH2F* fNpevtvsPtJet; //!
-  TH1F* fPtvsPtJet1D; //!
-  TH1F* fNpvsPtJet1D; //!
-  TH1F* fNpevtvsPtJet1D; //!
-  TH1F* fptLeadingJet; //!
-  TH1F* fetaLeadingJet; //!
-  TH1F* fphiLeadingJet; //!
-  TH1F* fptJet; //!
-  TH1F* fetaJet; //!
-  TH1F* fphiJet; //!
+  TH2F* fvertexXY; //! tmp
+  TH1F* fvertexZ; //! tmp
+  TH1F* fEvtMult; //! tmp
+  TH2F* fEvtMultvsJetPt; //! tmp
+  TH2F* fPtvsEtaJet; //! tmp
+  TH2F* fNpvsEtaJet; //! tmp
+  TH2F* fNpevtvsEtaJet; //! tmp
+  TH2F* fPtvsPtJet; //! tmp
+  TH2F* fNpvsPtJet; //! tmp
+  TH2F* fNpevtvsPtJet; //! tmp
+  TH1F* fPtvsPtJet1D; //! tmp
+  TH1F* fNpvsPtJet1D; //! tmp
+  TH1F* fNpevtvsPtJet1D; //! tmp
+  TH1F* fptLeadingJet; //! tmp
+  TH1F* fetaLeadingJet; //! tmp
+  TH1F* fphiLeadingJet; //! // 
+  TH1F* fptJet; //! // tmp
+  TH1F* fetaJet; //! // tmp
+  TH1F* fphiJet; //! // tmp
 
 
   TList*        fHistList; //! Output list
