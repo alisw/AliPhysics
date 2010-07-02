@@ -72,19 +72,19 @@ class AliCalorimeterUtils : public TObject {
   void InitPHOSBadChannelStatusMap () ;
 
   Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-    if(fEMCALBadChannelMap->GetEntriesFast()>0) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
+    if(fEMCALBadChannelMap) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
     else return 0;}//Channel is ok by default
 
   Int_t GetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow) const { 
-    if(fPHOSBadChannelMap->GetEntriesFast()>0)return (Int_t) ((TH2I*)fPHOSBadChannelMap->At(imod))->GetBinContent(iCol,iRow); 
+    if(fPHOSBadChannelMap)return (Int_t) ((TH2I*)fPHOSBadChannelMap->At(imod))->GetBinContent(iCol,iRow); 
     else return 0;}//Channel is ok by default
   
   void SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-    if(!fEMCALBadChannelMap->GetEntriesFast())InitEMCALBadChannelStatusMap() ;
+    if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ;
     ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c);}
   
   void SetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow, Double_t c = 1) {
-	if(!fPHOSBadChannelMap->GetEntriesFast()) InitPHOSBadChannelStatusMap() ; 
+	if(!fPHOSBadChannelMap) InitPHOSBadChannelStatusMap() ; 
 	((TH2I*)fPHOSBadChannelMap->At(imod))->SetBinContent(iCol,iRow,c);}
     
   TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap->At(iSM);}
