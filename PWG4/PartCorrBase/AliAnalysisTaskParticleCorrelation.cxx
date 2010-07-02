@@ -110,16 +110,15 @@ void AliAnalysisTaskParticleCorrelation::LocalInit()
 {
 	// Local Initialization
 	
-	// Create cuts/param objects and publish to slot
-	//printf("LocalInit! \n");
-	fCuts = fAna->GetListOfAnalysisCuts();
-	//fCuts->SetOwner(kTRUE);
-	//printf("Cuts entries %d \n",fCuts->GetEntries());
-
-	// Post Data
-	for(Int_t i = 0; i < fCuts->GetEntries(); i++) PostData(2, fCuts->At(i));
-	
+	//Call the Init to initialize the configuration of the analysis
 	Init();
+	
+	// Create cuts/param objects and publish to slot
+	fCuts = fAna->GetListOfAnalysisCuts();
+	
+	// Post Data
+	PostData(2, fCuts);
+	
 }
 
 //_____________________________________________________
