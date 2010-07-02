@@ -164,9 +164,9 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
     haxis5->SetXTitle("RUN no.");
     haxis5->SetYTitle("ZEM pedestals");
     //
-    graph[ic+9]->SetMarkerStyle(22);
-    graph[ic+9]->SetMarkerColor(kGreen+1);
-    graph[ic+9]->Draw("P");
+    graph[ic+10]->SetMarkerStyle(22);
+    graph[ic+10]->SetMarkerColor(kGreen+1);
+    graph[ic+10]->Draw("P");
     // *** Ref. pedestals
     cothPeds->cd(ic+3);
     //

@@ -741,12 +741,12 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
        GetRawsData(8)->SetOption("colz");
        GetRawsData(9)->SetOption("colz");  
      
-       GetRawsData(4)->SetLineColor(kBlue+1);  GetRawsData(4)->SetLineWidth(2);
-       GetRawsData(5)->SetLineColor(kBlue+2);  GetRawsData(5)->SetLineWidth(2);
-       GetRawsData(10)->SetLineColor(kBlue+3); GetRawsData(10)->SetLineWidth(2);
-       GetRawsData(11)->SetLineColor(kBlue+4); GetRawsData(11)->SetLineWidth(2);
-       GetRawsData(12)->SetLineColor(kBlue+5); GetRawsData(12)->SetLineWidth(2);
-       GetRawsData(13)->SetLineColor(kBlue+6); GetRawsData(13)->SetLineWidth(2);
+       GetRawsData(4)->SetLineColor(kAzure+1); GetRawsData(4)->SetLineWidth(2);
+       GetRawsData(5)->SetLineColor(kAzure+2); GetRawsData(5)->SetLineWidth(2);
+       GetRawsData(10)->SetLineColor(kBlue);   GetRawsData(10)->SetLineWidth(2);
+       GetRawsData(11)->SetLineColor(kBlue+1); GetRawsData(11)->SetLineWidth(2);
+       GetRawsData(12)->SetLineColor(kBlue+2); GetRawsData(12)->SetLineWidth(2);
+       GetRawsData(13)->SetLineColor(kBlue+3); GetRawsData(13)->SetLineWidth(2);
      
        if(((GetRawsData(4))->GetEntries())>0)  GetRawsData(4)->SetDrawOption("LOGY");
        if(((GetRawsData(5))->GetEntries())>0)  GetRawsData(5)->SetDrawOption("LOGY");
