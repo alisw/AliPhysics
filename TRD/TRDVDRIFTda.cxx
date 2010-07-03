@@ -42,8 +42,9 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDrawFastStream.h"
-#include "AliTRDrawStreamBase.h"
+//#include "AliTRDrawFastStream.h"
+//#include "AliTRDrawStreamBase.h"
+#include "AliLog.h"
 
 //
 //AMORE
@@ -122,7 +123,8 @@ int main(int argc, char **argv) {
   Int_t  nbvdrift    = 0;     // number of events with entries for vdrift
 
    // setting
-  AliTRDrawFastStream::DisableSkipData();
+  //AliTRDrawFastStream::DisableSkipData();
+  AliLog::SetGlobalLogLevel(AliLog::kFatal); 
     
   /* main loop (infinite) */
   for(;;) {
@@ -165,7 +167,7 @@ int main(int argc, char **argv) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       rawReader->Select("TRD");
 
-      Int_t result = calibra->ProcessEventDAQ2((AliRawReader *)rawReader);
+      Int_t result = calibra->ProcessEventDAQ3((AliRawReader *)rawReader);
       if(!result) passvdrift = kFALSE;
       else nbvdrift += (Int_t) result/2;
              
@@ -245,4 +247,3 @@ int main(int argc, char **argv) {
   if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
   } 
 */
-

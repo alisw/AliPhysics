@@ -13,6 +13,8 @@
 
 #ifndef ROOT_THnSparse
 #include <THnSparse.h>
+#include <TCanvas.h>
+#include <TH2.h>
 #endif
 
 class AliRawReader;
@@ -35,6 +37,7 @@ public:
   AliTRDCalibChamberStatus& operator = (const  AliTRDCalibChamberStatus &source);
 
   void ProcessEvent(AliRawReader    *rawReader, Int_t nevents_physics);
+  void ProcessEvent3(AliRawReader    *rawReader, Int_t nevents_physics);
   
   void Init();
   void AnalyseHisto();
@@ -43,7 +46,7 @@ public:
   void Add(AliTRDCalibChamberStatus *calibChamberStatus);
 
   Int_t GetNumberEventNotEmpty() const { return fCounterEventNotEmpty; };
-
+  
   THnSparseI *GetSparseI()       const {return fHnSparseI;};
   THnSparseI *GetSparseHCM()     const {return fHnSparseHCM;};
   // for fDebugLevel>0
@@ -57,6 +60,11 @@ public:
   void  DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
   
   Bool_t TestEventHisto(Int_t nevent);
+
+  // Plot
+  TH2D *PlotSparseI(Int_t sm, Int_t side);    // Plot fStatus for sm 
+  TH2F *MakeHisto2DSmPlEORStatus(AliTRDCalDCS *calDCS, Int_t sm, Int_t pl);
+  TCanvas *PlotHistos2DSmEORStatus(AliTRDCalDCS *calDCS,Int_t sm, const Char_t *name);
 
   // Debug
   void     SetDebugLevel(Short_t level)  { fDebugLevel = level;   }
@@ -77,10 +85,11 @@ public:
   THnSparseI *fHnSparseDebug;     //  THnSparse for half chambers satuts
   THnSparseI *fHnSparseMCM;       //  THnSparse for DCS MCM status
 
+  TCanvas *fC1;
+
   Short_t     fDebugLevel;                   // Flag for debugging
 
   ClassDef(AliTRDCalibChamberStatus,1)
     
 };
 #endif
-

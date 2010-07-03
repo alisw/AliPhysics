@@ -37,8 +37,8 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDrawFastStream.h"
-#include "AliTRDrawStreamBase.h"
+//#include "AliTRDrawFastStream.h"
+//#include "AliTRDrawStreamBase.h"
 #include "AliLog.h"
 //#include "AliCDBManager.h"
 
@@ -110,10 +110,11 @@ int main(int argc, char **argv) {
   // AliTRDCalibPadStatus object
   AliTRDCalibChamberStatus calipad = AliTRDCalibChamberStatus();
   calipad.Init();
+    
   unsigned long32 runNb=0;      //run number
 
   // setting
-  AliTRDrawFastStream::DisableSkipData();
+  //AliTRDrawFastStream::DisableSkipData();
   AliLog::SetGlobalLogLevel(AliLog::kFatal); 
 
   /* read the file  until EOF */
@@ -148,7 +149,7 @@ int main(int argc, char **argv) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       rawReader->Select("TRD");
       
-      calipad.ProcessEvent((AliRawReader *) rawReader,nevents);
+      calipad.ProcessEvent3((AliRawReader *) rawReader,nevents);
       nevents++;
       delete rawReader;
       
@@ -169,15 +170,17 @@ int main(int argc, char **argv) {
     }
   }
   
-
+  Int_t neventused = calipad.GetNumberEventNotEmpty();
+  
   /* report progress */
-  printf("%d events processed and %d used\n",nevents_total,nevents);
+  printf("%d events processed and %d used\n",nevents_total,neventused);
   
   /* write file in any case to see what happens in case of problems*/
   TFile *fileTRD = new TFile(RESULT_FILE,"recreate");
   calipad.AnalyseHisto();
   calipad.Write("calibchamberstatus");
   fileTRD->Close();   
+  
 
   /* Send to amore */
   SendToAmoreDB(&calipad,runNb);
@@ -188,7 +191,6 @@ int main(int argc, char **argv) {
     printf("Failed to export file : %d\n",status);
     return -1;
   }
-
   
   return status;
 

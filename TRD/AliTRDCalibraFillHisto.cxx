@@ -76,6 +76,9 @@
 #include "AliTRDSignalIndex.h"
 #include "AliTRDarrayADC.h"
 
+#include "AliTRDrawStream.h"
+
+
 #ifdef ALI_DATE
 #include "event.h"
 #endif
@@ -2705,6 +2708,145 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ2(AliRawReader *rawReader)
     return withInput;
  }//main
 //_____________________________________________________________________
+Int_t AliTRDCalibraFillHisto::ProcessEventDAQ3(AliRawReader *rawReader)
+ { //main
+  //
+  // Event Processing loop - AliTRDrawStream
+  // 
+  // 0 timebin problem
+  // 1 no input
+  // 2 input
+  // Same algorithm as TestBeam but different reader
+  //
+
+   //  AliTRDrawFastStream *rawStream = AliTRDrawFastStream::GetRawStream(rawReader);
+  AliTRDrawStream *rawStream = new AliTRDrawStream(rawReader);
+  rawStream->SetNoErrorWarning();
+  rawStream->SetSharedPadReadout(kFALSE);
+
+  AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager(kTRUE);
+  digitsManager->CreateArrays();
+    
+  Int_t withInput = 1;
+  
+  Double_t phvalue[16][144][36];
+  for(Int_t k = 0; k < 36; k++){
+    for(Int_t j = 0; j < 16; j++){
+      for(Int_t c = 0; c < 144; c++){
+	phvalue[j][c][k] = 0.0;
+      }
+    }
+  }
+  
+  fDetectorPreviousTrack = -1;
+  fMCMPrevious           = -1;
+  fROBPrevious           = -1;
+  
+  Int_t nbtimebin = 0;                                        
+  Int_t baseline  = 10;  
+
+  
+    fTimeMax = 0;
+       
+    Int_t det    = 0;
+    while ((det = rawStream->NextChamber(digitsManager, NULL, NULL)) >= 0) { //idetector
+
+      if (digitsManager->GetIndexes(det)->HasEntry()) {//QA
+	//	printf("there is ADC data on this chamber!\n");
+
+	AliTRDarrayADC *digits = (AliTRDarrayADC *) digitsManager->GetDigits(det); //mod
+	if (digits->HasData()) { //array
+	  
+	  AliTRDSignalIndex   *indexes = digitsManager->GetIndexes(det);
+	  if (indexes->IsAllocated() == kFALSE) {
+	    AliError("Indexes do not exist!");
+	    break;
+	  }
+	  Int_t iRow  = 0;
+	  Int_t iCol  = 0;
+	  indexes->ResetCounters();
+	  
+	  while (indexes->NextRCIndex(iRow, iCol)) { //column,row
+	    //printf(" det %d \t row %d \t col %d \t digit\n",det,iRow,iCol);
+	    //while (rawStream->Next()) {
+	    
+	    Int_t idetector = det;                                             //  current detector
+	    //Int_t imcm      = rawStream->GetMCM();                            //  current MCM
+	    //Int_t irob      = rawStream->GetROB();                            //  current ROB
+	    
+	  
+	    if((fDetectorPreviousTrack != idetector) && (fDetectorPreviousTrack != -1)) {
+	      // Fill
+	      withInput = TMath::Max(FillDAQ(phvalue),withInput);
+	      
+	      // reset
+	      for(Int_t k = 0; k < 36; k++){
+		for(Int_t j = 0; j < 16; j++){
+		  for(Int_t c = 0; c < 144; c++){
+		    phvalue[j][c][k] = 0.0;
+		  }
+		}
+	      }
+	    }
+	    
+	    fDetectorPreviousTrack = idetector;
+	    //fMCMPrevious           = imcm;
+	    //fROBPrevious           = irob;
+	    
+	    //	  nbtimebin              = rawStream->GetNumberOfTimeBins();              //  number of time bins read from data
+	    AliTRDdigitsParam *digitParam = (AliTRDdigitsParam *)digitsManager->GetDigitsParam();
+	    nbtimebin              = digitParam->GetNTimeBins(det);              //  number of time bins read from data
+	    baseline               = digitParam->GetADCbaseline(det);            //  baseline
+	    
+	    if(nbtimebin == 0) return 0;
+	    if((fTimeMax != 0) && (nbtimebin != fTimeMax)) return 0;
+	    fTimeMax          = nbtimebin;
+	    
+	    fNumberClustersf    = fTimeMax;
+	    fNumberClusters     = (Int_t)(fNumberClustersProcent*fTimeMax);
+	  	  
+	    
+	    for(Int_t itime = 0; itime < nbtimebin; itime++) {
+	      //	    phvalue[row][col][itime] = signal[itime]-baseline;
+	      phvalue[iRow][iCol][itime] = (Short_t)(digits->GetData(iRow,iCol,itime) - baseline);
+	      /*if(phvalue[iRow][iCol][itime] >= 20) {
+		 printf("----------> phvalue[%d][%d][%d] %d  baseline %d \n",
+		       iRow,
+		       iCol,
+		       itime,
+		       (Short_t)(digits->GetData(iRow,iCol,itime)),
+		       baseline);
+		       }*/
+	    }
+	    
+	  }//column,row
+	  
+	  // fill the last one
+	  if(fDetectorPreviousTrack != -1){
+	    
+	    // Fill
+	    withInput = TMath::Max(FillDAQ(phvalue),withInput);
+	    //	    printf("\n ---> withinput %d\n\n",withInput);
+	    // reset
+	    for(Int_t k = 0; k < 36; k++){
+	      for(Int_t j = 0; j < 16; j++){
+		for(Int_t c = 0; c < 144; c++){
+		  phvalue[j][c][k] = 0.0;
+		}
+	      }
+	    }
+	  }
+	  
+	}//array
+      }//QA
+      digitsManager->ClearArrays(det);
+    }//idetector
+    delete digitsManager;
+
+    delete rawStream;
+    return withInput;
+ }//main
+//_____________________________________________________________________
 //////////////////////////////////////////////////////////////////////////////
 // Routine inside the DAQ process
 /////////////////////////////////////////////////////////////////////////////
@@ -3414,5 +3556,4 @@ void AliTRDCalibraFillHisto::AnalyseLinearFitter()
     }
   }
 }
-
 

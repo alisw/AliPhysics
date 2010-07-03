@@ -99,6 +99,8 @@
 #include "AliTRDarrayADC.h"
 #include "AliTRDfeeParam.h"
 
+#include "AliTRDrawStream.h"
+
 #ifdef ALI_DATE
 #include "event.h"
 #endif
@@ -563,6 +565,135 @@ Int_t AliTRDCalibPadStatus::ProcessEvent2(AliRawReader *rawReader)
   delete rawStream;
   return withInput;
 }
+
+//_____________________________________________________________________
+
+Int_t AliTRDCalibPadStatus::ProcessEvent3(AliRawReader *rawReader)
+{
+  //
+  // RawReader = AliTRDrawStream (Jochen Klein) 
+  //
+  // Event Processing loop - AliTRDRawStreamCosmic
+  // 0 time bin problem or zero suppression
+  // 1 no input
+  // 2 input
+  // Raw version number: 
+  // [3,31] non zero suppressed
+  // 2,4 and [32,63] zero suppressed 
+  //
+  
+ 
+
+  Int_t withInput = 1;
+
+  AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager(kTRUE);
+  digitsManager->CreateArrays();
+
+  AliTRDrawStream *rawStream = new AliTRDrawStream(rawReader);
+  rawStream->SetDigitsManager(digitsManager);
+  //rawStream->SetNoErrorWarning();
+  //rawStream->SetSharedPadReadout(kTRUE);
+  
+  AliTRDfeeParam *feeParam = AliTRDfeeParam::Instance();
+
+  Int_t det    = 0;
+  while ((det = rawStream->NextChamber(digitsManager, NULL, NULL)) >= 0) { //idetector
+    if (digitsManager->GetIndexes(det)->HasEntry()) {//QA
+      //      printf("there is ADC data on this chamber!\n");
+      
+       AliTRDarrayADC *digits = (AliTRDarrayADC *) digitsManager->GetDigits(det); //mod
+      if (digits->HasData()) { //array
+	
+	AliTRDSignalIndex   *indexes = digitsManager->GetIndexes(det);
+	if (indexes->IsAllocated() == kFALSE) {
+	  AliError("Indexes do not exist!");
+	  break;
+	}
+	Int_t iRow  = 0;
+	Int_t iCol  = 0;
+	indexes->ResetCounters();
+	
+	while (indexes->NextRCIndex(iRow, iCol)) { //column,row
+	
+	  AliTRDdigitsParam *digitParam = (AliTRDdigitsParam *)digitsManager->GetDigitsParam();
+	  
+	  Int_t mcm          = 0;     // MCM from AliTRDfeeParam
+	  Int_t rob          = 0;     // ROB from AliTRDfeeParam
+	  Int_t extCol       = 0;     // extended column from AliTRDfeeParam  
+	  mcm = feeParam->GetMCMfromPad(iRow,iCol);
+	  rob = feeParam->GetROBfromPad(iRow,iCol);
+	  
+	  Int_t idetector  = det;                            //  current detector
+	  Int_t iRowMax    = 16;                              //  current rowmax
+	  if(GetStack(det) == 2) iRowMax = 12;
+	  	  
+	  Int_t adc        = 20 - (iCol%18) -1;                 //  current adc
+	  Int_t col        = 0;                              //  col!=0 ->Shared Pad
+	  extCol = feeParam->GetExtendedPadColFromADC(rob,mcm,adc);
+	  //printf("  iCol %d  iRow %d  iRowMax %d  rob %d  mcm %d  adc %d  extCol %d\n",iCol,iRow,iRowMax,rob,mcm,adc,extCol);	  
+	  
+	  // Signal for regular pads
+	  Int_t nbtimebin  = digitParam->GetNTimeBins(idetector);  //  number of time bins read from data	  
+	  for(Int_t k = 0; k < nbtimebin; k++){
+	    Short_t signal = 0;
+	    signal = digits->GetData(iRow,iCol,k);
+
+	    if(signal>0) {
+	      UpdateHisto2(idetector,iRow,iCol,signal,iRowMax,col,mcm,rob);
+	    }
+	  }
+	  
+	  
+	  
+	  if((adc==3-1 || adc==20-1 || adc==19-1) && (iCol > 1 && iCol <142)  ) { //SHARED PADS
+	    
+	    switch(adc) {
+	    case 2:  
+	      adc = 20;                                       //shared Pad adc 
+	      mcm = feeParam->GetMCMfromSharedPad(iRow,iCol); //shared Pad mcm 
+	      col =  1;
+	      break;
+	    case 19:  
+	      adc = 1;                                        //shared Pad adc  
+	      mcm = feeParam->GetMCMfromSharedPad(iRow,iCol); //shared Pad mcm  
+	      col =  2;
+	      break;
+	    case 18: 
+	      adc =  0;                                       //shared Pad adc  
+	      mcm = feeParam->GetMCMfromSharedPad(iRow,iCol); //shared Pad mcm 
+	      col =  3;
+	      break;
+	    }
+	    rob = feeParam->GetROBfromSharedPad(iRow,iCol);     //shared Pad rob 
+	    
+	    
+	    extCol = feeParam->GetExtendedPadColFromADC(rob,mcm,adc);     //extended pad col via the shared pad rob,mcm and adc
+	    
+	    //printf("SHARED PAD ---  iCol %d  iRow %d  rob %d  mcm %d  adc %d  extCol %d  col %d\n",iCol,iRow,rob,mcm,adc,extCol,col);
+	    for(Int_t k = 0; k < nbtimebin; k++){
+	      Short_t signal = 0;
+	      signal = digits->GetDataByAdcCol(iRow,extCol,k);
+	      
+	      if(signal>0) {
+		UpdateHisto2(idetector,iRow,iCol,signal,iRowMax,col,mcm,rob);
+	      }
+	    }
+	  } //shared pads end
+	  
+	  
+	  withInput = 2;
+	}//column,row
+
+      }//array
+    }//QA
+    digitsManager->ClearArrays(det);
+  }//idetector
+  delete digitsManager;
+  delete rawStream;
+  return withInput;
+  
+}
+
 
 //_____________________________________________________________________
 Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent, Int_t sm, Int_t ch) /*FOLD00*/
@@ -1074,4 +1205,3 @@ Int_t AliTRDCalibPadStatus::GetSector(Int_t d) const
   return ((Int_t) (d / 30));
 
 }
-

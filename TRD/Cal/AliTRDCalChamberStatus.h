@@ -32,7 +32,8 @@ class AliTRDCalChamberStatus : public TNamed {
   Bool_t IsHalfChamberSideAMasked(Int_t det) const     { return (GetStatus(det) == kHalfChamberSideAMasked)    ? kTRUE : kFALSE; }
   Bool_t IsHalfChamberSideBMasked(Int_t det) const     { return (GetStatus(det) == kHalfChamberSideBMasked)    ? kTRUE : kFALSE; }
 
-  TH2D *Plot(Int_t sm);                     // Plot fStatus for sm 
+ TH2D *Plot(Int_t sm, Int_t rphi);          // Plot fStatus for sm and halfchamberside  
+ TH2D *Plot(Int_t sm);                     // Plot fStatus for sm 
 
 
  protected:
@@ -44,4 +45,3 @@ class AliTRDCalChamberStatus : public TNamed {
 };
 
 #endif
-

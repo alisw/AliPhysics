@@ -37,10 +37,11 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDrawFastStream.h"
-#include "AliTRDrawStreamBase.h"
+//#include "AliTRDrawFastStream.h"
+//#include "AliTRDrawStreamBase.h"
 #include "AliTRDgeometry.h"
 #include "AliCDBManager.h"
+#include "AliLog.h"
 
 //
 //AMORE
@@ -104,8 +105,8 @@ int main(int argc, char **argv) {
   unsigned long32 runNb=0;      //run number
 
   // setting
-  AliTRDrawFastStream::DisableSkipData();
- 
+  //AliTRDrawFastStream::DisableSkipData();
+  AliLog::SetGlobalLogLevel(AliLog::kFatal); 
 
   /* read the data files */
   int n;
@@ -150,7 +151,7 @@ int main(int argc, char **argv) {
 	// for debug
 	//rawReader->SelectEquipment(-1,1024,1025);
 	
-	Int_t result = calipad.ProcessEvent2((AliRawReader *) rawReader);
+	Int_t result = calipad.ProcessEvent3((AliRawReader *) rawReader);
 	// 0 error, 1 no input, 2 output
 	if(result == 2) nevents++;
 	if(result == 0) passpadstatus = kFALSE;
@@ -249,9 +250,9 @@ void SendToAmoreDB(TObject *calipad, unsigned long32 runNb)
     statusDA+=amoreDA.Send("Pedestals",calipad);
     statusDA+=amoreDA.Send("Info",&info);
     if ( statusDA )
-      printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+      printf("Warning: Failed to write one of the calib objects to the AMORE database\n");
   }  else {
-    printf("Waring: No data found!\n");
+    printf("Warning: No data found!\n");
   }
   
   // reset env var
@@ -259,6 +260,5 @@ void SendToAmoreDB(TObject *calipad, unsigned long32 runNb)
   
 }
   
-
 
 

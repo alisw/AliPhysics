@@ -74,6 +74,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(const eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ2(AliRawReader *rawReader);
+	  Int_t   ProcessEventDAQ3(AliRawReader *rawReader);
 
   // Is Pad on
           Bool_t   IsPadOn(Int_t detector, Int_t row, Int_t col) const;
@@ -325,4 +326,3 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 };
   
 #endif
-
