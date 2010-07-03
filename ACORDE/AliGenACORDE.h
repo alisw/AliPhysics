@@ -37,6 +37,9 @@ class AliGenACORDE : public AliGenerator {
   Float_t GetMomentum() const;
   Float_t GetZenithAngle(Float_t mom) const;
 
+
+  void SetNumberOfParticles(Int_t nParticles) {fNParticles = nParticles;}
+
   // The following methods are for testing pourpuses
   TF1* GetMomentumDistibution() const {return fMomentumDist;}
   TF1* GetUnfoldedDistribution() const {return fUnfoldedMomentumDist;}
@@ -80,6 +83,8 @@ class AliGenACORDE : public AliGenerator {
   TF1*     fZenithDist;         //! Function to generate the zenith angle dist.
 
   TClonesArray* fPDist;         //! Array of fZenithDist, to be used by a(p).
+
+  Int_t fNParticles;		//! Fixed number of particles per event
 
   ClassDef(AliGenACORDE, 1) // Generator for AliACORDE class
 };

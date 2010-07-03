@@ -97,7 +97,8 @@ AliGenACORDE::AliGenACORDE(Int_t npart)
     fMomentumDist(0),
     fUnfoldedMomentumDist(0),
     fZenithDist(0),
-    fPDist(0)
+    fPDist(0),
+    fNParticles(0)
 {
   //
   // Standard ctor.
@@ -132,7 +133,7 @@ void AliGenACORDE::Generate()
   // Call the respective method inside the loop for the number
   // of tracks per trigger.
 
-  for (Int_t i = 0; i < fNpart; i++ ) {
+  for (Int_t i = 0; i < fNParticles; i++ ) {
 
     if ( fCRMode == kMuonBundle ) {
       this->GenerateOneMuonBundle();
@@ -156,6 +157,12 @@ void AliGenACORDE::Init()
   //
   // Initialize some internal methods.
   //
+
+
+   printf("**************************************************************\n");
+   printf("<<< *** Starting the AliGenACORDE cosmic generator ******** >>>\n");
+   printf("<<< *** No. of muons generated at the surface of P2: %d,  * >>>\n",fNParticles);
+   printf("**************************************************************\n");
 
   // Determine some specific data members.
   fPRange = TMath::Abs(fPMax-fPMin);
