@@ -427,6 +427,18 @@ Bool_t AliFastJetFinder::ProcessEvent()
 
   fJetBkg->SetHeader(fHeader);
   fJetBkg->SetReader(fReader);
+  Double_t sigma1,meanarea1,sigma2,meanarea2;
+  Double_t bkg1,bkg2;
+  fJetBkg->SetFastJetInput(fInputFJ);
+  fJetBkg->BkgFastJetb(bkg1,sigma1,meanarea1);
+  fJetBkg->BkgFastJetWoHardest(bkg2,sigma2,meanarea2);
+  fAODEvBkg->SetBackground(0,bkg1,sigma1,meanarea1);
+  fAODEvBkg->SetBackground(1,bkg2,sigma2,meanarea2);
+
+
+
+
+
   /*
   fJetBkg->SetFastJetInput(fInputFJ);
   Double_t bkg1=fJetBkg->BkgFastJet();
@@ -469,6 +481,15 @@ Bool_t AliFastJetFinder::ProcessEvent2()
   fJetBkg->SetHeader(fHeader);
   fJetBkg->SetReader(fReader);
   fJetBkg->SetFastJetInput(fInputFJ);
+  Double_t sigma1,meanarea1,sigma2,meanarea2;
+  Double_t bkg1,bkg2;
+  fJetBkg->BkgFastJetb(bkg1,sigma1,meanarea1);
+  fJetBkg->BkgFastJetWoHardest(bkg2,sigma2,meanarea2);
+  fAODEvBkg->SetBackground(0,bkg1,sigma1,meanarea1);
+  fAODEvBkg->SetBackground(1,bkg2,sigma2,meanarea2);
+
+
+
 //  Double_t bkg1=fJetBkg->BkgFastJet();
 //  Double_t bkg2=fJetBkg->BkgChargedFastJet();
 //  Double_t bkg3=fJetBkg->BkgFastJetCone(fAODjets);

@@ -153,6 +153,7 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
 	if(fAODExtension)fJetFinder->ConnectAODNonStd(fAODExtension->GetAOD(), fNonStdBranch.Data()); 
       }
       else{
+	if (fDebug > 1) printf("Connecting Non Std Branch AOD %p %s \n",AODEvent(),fNonStdBranch.Data());
 	fJetFinder->ConnectAODNonStd(AODEvent(), fNonStdBranch.Data()); 
       }
     }

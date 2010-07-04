@@ -31,6 +31,8 @@ class AliJetBkg : public TObject
     void SetHeader(AliJetHeader *header)  {fHeader=header;}
     void SetReader(AliJetReader *reader)  {fReader=reader;}
     void SetFastJetInput(AliFastJetInput *fjinput)  {fInputFJ=fjinput;}
+    void BkgFastJetb(Double_t& x,Double_t& y, Double_t& z);
+    void BkgFastJetWoHardest(Double_t& x,Double_t& y, Double_t& z);
     Float_t BkgFastJet();
     Float_t BkgChargedFastJet();
     Float_t BkgStat();
@@ -43,7 +45,12 @@ class AliJetBkg : public TObject
     
  private:
     Double_t CalcRho(vector<fastjet::PseudoJet> input_particles,Double_t RparamBkg,TString method);
-
+    void CalcRhob(Double_t& median, Double_t& sigma, Double_t& 
+meanarea,vector<fastjet::PseudoJet> input_particles,Double_t RparamBkg,TString 
+method);
+    void CalcRhoWoHardest(Double_t& median, Double_t& sigma, Double_t& 
+meanarea,vector<fastjet::PseudoJet> input_particles,Double_t RparamBkg,TString 
+method);
     AliJetReader *fReader;   //! reader
     AliJetHeader *fHeader;   //! header
     AliFastJetInput *fInputFJ; //! input particles

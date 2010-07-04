@@ -83,6 +83,211 @@ AliJetBkg& AliJetBkg::operator=(const AliJetBkg& source){
     return *this;
 
 }
+
+
+//___________________________________________________________________
+  void AliJetBkg::BkgFastJetb(Double_t& rho,Double_t& sigma, 
+Double_t& meanarea){
+  
+  cout<<"===============  AliJetBkg::BkgFastJetb()  =========== "<<endl;
+  vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
+  
+  //cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;
+  
+
+   
+  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  double rParamBkg = header->GetRparamBkg(); //Radius for background calculation
+
+  Double_t medianb,sigmab,meanareab;
+  CalcRhob(medianb,sigmab,meanareab,inputParticles,rParamBkg,"All");
+  rho=medianb;
+  sigma=sigmab;
+  meanarea=meanareab;
+ 
+}
+//_________________________________________________________________
+
+  void AliJetBkg::BkgFastJetWoHardest(Double_t& rho,Double_t& sigma, 
+Double_t& meanarea){
+  
+  cout<<"===============  AliJetBkg::BkgWoHardest()  =========== "<<endl;
+  vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
+  
+  //cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;
+  
+
+   
+  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  double rParamBkg = header->GetRparamBkg(); //Radius for background calculation  
+  Double_t medianb,sigmab,meanareab;
+  CalcRhoWoHardest(medianb,sigmab,meanareab,inputParticles,rParamBkg,"All");
+  rho=medianb;
+  sigma=sigmab;
+  meanarea=meanareab;
+
+  }
+
+//____________________________________________________________________
+
+ void AliJetBkg::CalcRhob(Double_t& median,Double_t& 
+sigma,Double_t& 
+meanarea,vector<fastjet::PseudoJet> inputParticles,Double_t 
+rParamBkg,TString method){
+  //calculate rho using the fastjet method
+
+  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  Bool_t debug  = header->GetDebug();     // debug option
+
+  fastjet::Strategy strategy = header->GetStrategy();
+  fastjet::RecombinationScheme recombScheme = header->GetRecombScheme();
+  fastjet::JetAlgorithm algorithm = header->GetAlgorithm(); 
+  fastjet::JetDefinition jetDef(algorithm, rParamBkg, recombScheme, strategy);
+
+  // create an object that specifies how we to define the area
+  fastjet::AreaDefinition areaDef;
+  double ghostEtamax = header->GetGhostEtaMax(); 
+  double ghostArea   = header->GetGhostArea(); 
+  int    activeAreaRepeats = header->GetActiveAreaRepeats(); 
+
+  // now create the object that holds info about ghosts
+
+  
+
+  fastjet::GhostedAreaSpec ghost_spec(ghostEtamax, activeAreaRepeats, ghostArea);
+  // and from that get an area definition
+  fastjet::AreaType areaType = header->GetAreaType();
+  areaDef = fastjet::AreaDefinition(areaType,ghost_spec);
+  
+  //fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef);
+  fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef,areaDef);
+  TString comment = "Running FastJet algorithm for BKG calculation with the following setup. ";
+  comment+= "Jet definition: ";
+  comment+= TString(jetDef.description());
+  //  comment+= ". Area definition: ";
+  //comment+= TString(areaDef.description());
+  comment+= ". Strategy adopted by FastJet: ";
+  comment+= TString(clust_seq.strategy_string());
+  header->SetComment(comment);
+  if(debug){
+    cout << "--------------------------------------------------------" << endl;
+    cout << comment << endl;
+    cout << "--------------------------------------------------------" << endl;
+  }
+
+  vector<fastjet::PseudoJet> inclusiveJets = clust_seq.inclusive_jets(0.);
+  vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusiveJets); 
+
+ 
+  //cout<<"# of BKG jets = "<<jets.size()<<endl;
+      //  for (size_t j = 0; j < jets.size(); j++) { // loop for jets   
+      //printf("BKG Jet found %5d %9.5f %8.5f %10.3f %4.4f 
+      //\n",(Int_t)j,jets[j].rap(),jets[j].phi(),jets[j].perp(),
+      //clust_seq.area(jets[j]));
+      // }
+  
+  
+  double phiMin = 0, phiMax = 0, rapMin = 0, rapMax = 0;
+
+ 
+    phiMin = 0;
+    phiMax = 2*TMath::Pi();
+ 
+  rapMax = ghostEtamax - rParamBkg;
+  rapMin = - ghostEtamax + rParamBkg;
+
+
+  fastjet::RangeDefinition range(rapMin, rapMax, phiMin, phiMax);
+
+
+  double medianb, sigmab, meanareab;
+  clust_seq.get_median_rho_and_sigma(inclusiveJets, range, false, medianb, sigmab, meanareab, false);
+  median=medianb;
+  sigma=sigmab;
+  meanarea=meanareab; 
+
+ 
+ }
+
+//____________________________________________________________________
+
+
+ void AliJetBkg::CalcRhoWoHardest(Double_t& median,Double_t& 
+sigma,Double_t& 
+meanarea,vector<fastjet::PseudoJet> inputParticles,Double_t 
+rParamBkg,TString method){
+  //calculate rho using the fastjet method
+
+  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  Bool_t debug  = header->GetDebug();     // debug option
+
+  fastjet::Strategy strategy = header->GetStrategy();
+  fastjet::RecombinationScheme recombScheme = header->GetRecombScheme();
+  fastjet::JetAlgorithm algorithm = header->GetAlgorithm(); 
+  fastjet::JetDefinition jetDef(algorithm, rParamBkg, recombScheme, strategy);
+
+  // create an object that specifies how we to define the area
+  fastjet::AreaDefinition areaDef;
+  double ghostEtamax = header->GetGhostEtaMax(); 
+  double ghostArea   = header->GetGhostArea(); 
+  int    activeAreaRepeats = header->GetActiveAreaRepeats(); 
+
+  // now create the object that holds info about ghosts
+
+ 
+
+  fastjet::GhostedAreaSpec ghost_spec(ghostEtamax, activeAreaRepeats, ghostArea);
+  // and from that get an area definition
+  fastjet::AreaType areaType = header->GetAreaType();
+  areaDef = fastjet::AreaDefinition(areaType,ghost_spec);
+  //cout<<"rParamBkg="<<rParamBkg<<"  ghostEtamax="<<ghostEtamax<<"  ghostArea="<<ghostArea<<" areadef="<<TString(areaDef.description())<<endl;
+  //fastjet::ClusterSequenceArea clust_seq(inputParticles, jetDef);
+  fastjet::ClusterSequenceArea clust_seq(inputParticles,jetDef,areaDef);
+  TString comment = "Running FastJet algorithm for BKG calculation with the following setup. ";
+  comment+= "Jet definition: ";
+  comment+= TString(jetDef.description());
+  //  comment+= ". Area definition: ";
+  //comment+= TString(areaDef.description());
+  comment+= ". Strategy adopted by FastJet: ";
+  comment+= TString(clust_seq.strategy_string());
+  header->SetComment(comment);
+  if(debug){
+    cout << "--------------------------------------------------------" << endl;
+    cout << comment << endl;
+    cout << "--------------------------------------------------------" << endl;
+  }
+
+  vector<fastjet::PseudoJet> inclusiveJets = clust_seq.inclusive_jets(0.);
+  vector<fastjet::PseudoJet> jets = sorted_by_pt(inclusiveJets); 
+  vector<fastjet::PseudoJet> jets2=sorted_by_pt(inclusiveJets);
+  if(jets2.size()>=2) jets2.erase(jets2.begin(),jets2.begin()+1);
+  
+   
+  
+  double phiMin = 0, phiMax = 0, rapMin = 0, rapMax = 0;
+
+ 
+    phiMin = 0;
+    phiMax = 2*TMath::Pi();
+ 
+  rapMax = ghostEtamax - rParamBkg;
+  rapMin = - ghostEtamax + rParamBkg;
+
+
+  fastjet::RangeDefinition range(rapMin, rapMax, phiMin, phiMax);
+
+
+  double medianb, sigmab, meanareab;
+  clust_seq.get_median_rho_and_sigma(jets2, range, false, medianb, sigmab, 
+meanareab, false);
+  median=medianb;
+  sigma=sigmab;
+  meanarea=meanareab; 
+
+  
+ }
+
+
 //___________________________________________________________________
 Float_t AliJetBkg::BkgFastJet(){
   
