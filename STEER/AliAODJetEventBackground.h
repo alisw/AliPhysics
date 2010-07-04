@@ -21,15 +21,28 @@ class AliAODJetEventBackground : public TNamed {
     AliAODJetEventBackground(const AliAODJetEventBackground& jet); 
     AliAODJetEventBackground& operator=(const AliAODJetEventBackground& jet);
 
-
-    virtual void SetBackground(Int_t i,Double_t back){
+    virtual void SetBackground(Int_t i,Double_t back,Double_t sigma,Double_t meanarea){
       fBackground[i] = back;
+      fSigma[i]=sigma;
+      fMeanArea[i]=meanarea;
     }
 
     virtual Double_t GetBackground(Int_t i){
       if(i>=0&&i<kMaxBackground)return fBackground[i];
       return 0;
     }
+
+
+    virtual Double_t GetSigma(Int_t i){
+      if(i>=0&&i<kMaxBackground)return fSigma[i];
+      return 0;
+    }
+
+    virtual Double_t GetMeanarea(Int_t i){     
+      if(i>=0&&i<kMaxBackground)return fMeanArea[i];     
+      return 0;
+    }
+
 
     static const char* StdBranchName(){return fgkStdBranchName.Data();}
     virtual void       Print(Option_t* /*option*/) const;
@@ -44,7 +57,10 @@ class AliAODJetEventBackground : public TNamed {
  private:
     static TString fgkStdBranchName;                    // Standard branch name
     Double32_t      fBackground[kMaxBackground];        // Background from different schemes, normalized to area
-    ClassDef(AliAODJetEventBackground,1);
+
+    Double32_t      fSigma[kMaxBackground];
+    Double32_t      fMeanArea[kMaxBackground]; 
+    ClassDef(AliAODJetEventBackground,3);
 
 };
 

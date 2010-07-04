@@ -35,6 +35,9 @@ AliAODJetEventBackground::AliAODJetEventBackground() :
 {
   for(int i = 0;i < kMaxBackground;++i){
     fBackground[i] = 0;
+    fSigma[i] = 0;
+    fMeanArea[i] = 0; 
+
   } 
 }
 
@@ -55,6 +58,8 @@ AliAODJetEventBackground::AliAODJetEventBackground(const AliAODJetEventBackgroun
   //
   for(int i = 0;i < kMaxBackground;++i){
     fBackground[i] = back.fBackground[i];
+    fSigma[i] = back.fSigma[i];
+    fMeanArea[i] = back.fMeanArea[i]; 
   } 
   
 }
@@ -70,6 +75,8 @@ AliAODJetEventBackground& AliAODJetEventBackground::operator=(const AliAODJetEve
     TNamed::operator=(back);
     for(int i = 0;i < kMaxBackground;++i){
       fBackground[i] = back.fBackground[i];
+      fSigma[i] = back.fSigma[i];
+      fMeanArea[i] = back.fMeanArea[i]; 
     } 
   }
 
@@ -84,7 +91,7 @@ void AliAODJetEventBackground::Print(Option_t* /*option*/) const
 
   printf("Jet EventBackground :\n");
   for(int i = 0;i < kMaxBackground;++i){
-    printf("%d: %3.E GeV \n",i,fBackground[i]);
+    printf("%d: %3.E GeV Sigma %3.E Mean Area %3.E  \n",i,fBackground[i],fSigma[i],fMeanArea[i]);
   } 
 }
 
@@ -95,5 +102,7 @@ void AliAODJetEventBackground::Reset()
   //
   for(int i = 0;i < kMaxBackground;++i){
     fBackground[i] = 0;
+    fSigma[i] = 0;
+    fMeanArea[i] = 0; 
   } 
 }
