@@ -314,8 +314,13 @@ void AliCaloTrackAODReader::FillInputPHOSCells() {
 //____________________________________________________________________________
 void AliCaloTrackAODReader::GetVertex(Double_t  v[3]) const {
   //Return vertex position
+ if(((AliAODEvent*)fInputEvent)->GetPrimaryVertex())
+	 ((AliAODEvent*)fInputEvent)->GetPrimaryVertex()->GetXYZ(v); 
+ else {
+	 printf("AliCaloTrackAODReader::GetVertex() - No vertex available, InputEvent()->GetPrimaryVertex() = 0, return (0,0,0)\n");
+	 v[0]=0; v[1]=0; v[2]=0;
+ }
 
- ((AliAODEvent*)fInputEvent)->GetPrimaryVertex()->GetXYZ(v);
 	
 }
 
