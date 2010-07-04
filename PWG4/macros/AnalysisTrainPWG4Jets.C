@@ -120,7 +120,7 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-26-00b-7";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginRootVersion       = "v5-26-00b-6";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-19-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
@@ -1416,9 +1416,9 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 
    // Add external packages
    if (iJETAN||iDIJETAN) {
-      plugin->AddExternalPackage("boost::v1_38_0");
-      plugin->AddExternalPackage("cgal::v3.3.1");
-      plugin->AddExternalPackage("fastjet::v2.4.0");
+      plugin->AddExternalPackage("boost::v1_43_0");
+      plugin->AddExternalPackage("cgal::v3.6");
+      plugin->AddExternalPackage("fastjet::v2.4.2");
    }   
 
 
@@ -1527,7 +1527,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    }
 
    TString outputArchive;
-   outputArchive = Form("log_archive.zip:stdout,stderr@%s",kGridOutputStorages.Data());
+   outputArchive = Form("log_archive.zip:std*r@%s",kGridOutputStorages.Data());
    listaods.ReplaceAll(" ", ",");
    listhists.ReplaceAll(" ", ",");
    if (listhists.Length()) listhists = Form("hist_archive.zip:%s@%s", listhists.Data(), kGridOutputStorages.Data());
@@ -1696,7 +1696,7 @@ Bool_t PatchAnalysisMacro(){
 
   if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
   add += "\n\n // added by CKB \n";
-  add += "\n gSystem->AddIncludePath(\"./\") \n";
+  add += "\n gSystem->AddIncludePath(\"./\"); \n";
   if(gGrid&&kPluginAliRootVersion.Length()==0){
     add += "\n // Dirty hack for TRD reference data \n";
     add += "\n gSystem->Setenv(\"ALICE_ROOT\",\"";
@@ -1707,7 +1707,7 @@ Bool_t PatchAnalysisMacro(){
   st.Insert(index,add.Data());
 
   if(kUseDebug){
-    st.Insert(index,"\n gROOT->ProcessLine(\".trace\"); // CKB \n");
+    //    st.Insert(index,"\n gROOT->ProcessLine(\".trace\"); // CKB \n");
   }
 
   if(kUseCPAR&&kPluginAliRootVersion.Length()==0){
@@ -1741,7 +1741,7 @@ Bool_t PatchAnalysisMacro(){
   index = st2.Index("gSystem->Load(\"libPhysics\");");
   index += strlen("gSystem->Load(\"libPhysics\");");
   TString add2 = "";
-  add2 += "\n gSystem->AddIncludePath(\"./\") \n";
+  add2 += "\n gSystem->AddIncludePath(\"./\"); \n";
   if(gGrid&&kPluginAliRootVersion.Length()==0){
     add2 += "\n // Dirty hack for TRD reference data \n";
     add2 += "\n gSystem->Setenv(\"ALICE_ROOT\",\"";
@@ -1754,7 +1754,7 @@ Bool_t PatchAnalysisMacro(){
 
 
   if(kUseDebug){
-    st2.Insert(index,"\n gROOT->ProcessLine(\".trace\"); // CKB \n");
+    //    st2.Insert(index,"\n gROOT->ProcessLine(\".trace\"); // CKB \n");
   }
 
   if(kUseCPAR&&kPluginAliRootVersion.Length()==0){

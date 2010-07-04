@@ -159,7 +159,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    // Connect jet finder to task.
    jetana->SetJetFinder(jetFinder);
    jetana->SetConfigFile("");
-   jetana->SetDebugLevel(0);
+   jetana->SetDebugLevel(2);
    mgr->AddTask(jetana);
 
    // Create ONLY the output containers for the data produced by the task.
@@ -204,19 +204,25 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     // DEFAULT is ANTI KT
     AliFastJetHeaderV1 *jh = new AliFastJetHeaderV1();
     jh->SetRparam(0.4); // setup parameters                                  
+    Double_t rBkg = 0.6;
     if(radius>0)jh->SetRparam(radius);
     jh->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
     jetFinder = new AliFastJetFinder();
     jh->SetPtMin(1);
+    jh->SetRparamBkg(rBkg);
+    jh->SetGhostEtaMax(0.9+rBkg);
     if (jh) jetFinder->SetJetHeader(jh);
     break;
 
   case "FASTKT":
     AliFastJetHeaderV1 *jh = new AliFastJetHeaderV1();
     jh->SetRparam(0.4); // setup parameters                                  
+    Double_t rBkg = 0.6;
     if(radius>0)jh->SetRparam(radius);
     jh->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh
     jh->SetPtMin(1);
+    jh->SetRparamBkg(rBkg);
+    jh->SetGhostEtaMax(0.9+rBkg);
     jetFinder = new AliFastJetFinder();
     if (jh) jetFinder->SetJetHeader(jh);
     break;
