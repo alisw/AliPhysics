@@ -130,7 +130,6 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fSkipV0(0),
   fBIFactorA(1),
   fBIFactorC(1),
-  fRatioBEEE(2),
   fComputeBG(0),
   fUseBXNumbers(1),
   fUseMuonTriggers(0),
@@ -494,8 +493,24 @@ const char * AliPhysicsSelection::GetFillingScheme(UInt_t runNumber)  {
   }
   else if (runNumber >= 105256 && runNumber <= 105268) {
     return "4x4c";
-  } else if (runNumber >= 114786 && runNumber <= 116684) {
+  } 
+  else if (runNumber >= 114786 && runNumber <= 116684) {
     return "Single_2b_1_1_1";
+  }
+  else if (runNumber >= 117048 && runNumber <= 117120) {
+    return "Single_3b_2_2_2";
+  }
+  else if (runNumber >= 117220 && runNumber <= 119163) {
+    return "Single_2b_1_1_1";
+  }
+  else if (runNumber >= 119837 && runNumber <= 119862) {
+    return "Single_4b_2_2_2";
+  }
+  else if (runNumber >= 119902 && runNumber <= 120691) {
+    return "Single_6b_3_3_3";
+  }
+  else if (runNumber >= 120741 && runNumber <= 122375) {
+    return "Single_13b_8_8_8";
   }
   else {
     AliError(Form("Unknown filling scheme (run %d)", runNumber));
@@ -503,34 +518,6 @@ const char * AliPhysicsSelection::GetFillingScheme(UInt_t runNumber)  {
 
   return "Unknown";
 }
-
-Int_t AliPhysicsSelection::GetRatioBBBE(Int_t runNumber) {
-
-
-  if(fMC) return 1;
-
-  if (runNumber == 105143 || runNumber == 105160) {
-    return 8;
-  }else if (runNumber == 114786 || runNumber == 114798 ) {
-    return 1;
-  } else if (runNumber >= 114783 && runNumber <= 116684){
-    return 1;
-  }
-  else if (fComputeBG &&
-	   !(runNumber >= 105256 && runNumber <= 105268) &&
-	   !(runNumber >= 104065 && runNumber <= 104160) &&
-	   !(runNumber >= 104315 && runNumber <= 104321) &&
-	   !(runNumber >= 104792 && runNumber <= 104803) &&
-	   !(runNumber >= 104824 && runNumber <= 104892)
-	   ){     
-
-    AliError(Form("Unknown run %d, assuming ratio BE/EE = 2",runNumber));
-
-  }
-
-  return 2;
-}
-
 
 const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigger)  {
 
@@ -565,7 +552,6 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else AliError(Form("Unknown trigger: %s", trigger));
   }
   else if (runNumber == 105143 || runNumber == 105160) {
-    fRatioBEEE = 8;
     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #1337 #1418 #2228 #2309 #3119 #3200 #446 #527";
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #1580  #1742  #1904  #2066  #2630  #2792  #2954  #3362";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "  #845  #1007  #1169   #1577 #3359 #3521 #119  #281 ";
@@ -585,6 +571,50 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #1238";
     else AliError(Form("Unknown trigger: %s", trigger));
   }
+  else if (runNumber >= 117048 && runNumber <= 117120) {
+    //    return "Single_3b_2_2_2";
+   if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #346  #1240 ";
+   else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131 ";
+   else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019 ";
+   else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1238";
+   else AliError(Form("Unknown trigger: %s", trigger));
+
+  }
+  else if (runNumber >= 117220 && runNumber <= 119163) {
+    //    return "Single_2b_1_1_1";
+    if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #346 ";
+    else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131 ";
+    else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019 ";
+    else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1238 ";
+    else AliError(Form("Unknown trigger: %s", trigger));						    
+  }
+  else if (runNumber >= 119837 && runNumber <= 119862) {
+    //    return "Single_4b_2_2_2";
+    if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #669  #3019 ";
+    else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #346  #2454 ";
+    else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #1234  #2128 ";
+    else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1681 #3463";
+    else AliError(Form("Unknown trigger: %s", trigger));
+
+  }
+  else if (runNumber >= 119902 && runNumber <= 120691) {
+    //    return "Single_6b_3_3_3";
+    if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #346  #546  #746 ";
+    else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131  #2331  #2531 ";
+    else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019  #3219  #3419 ";
+    else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1296 #1670";
+    else AliError(Form("Unknown trigger: %s", trigger));
+  }
+  else if (runNumber >= 120741 && runNumber <= 122375) {
+    //    return "Single_13b_8_8_8";
+    if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #346  #446  #546  #646  #1240  #1340  #1440  #1540 ";
+    else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #946  #2131  #2231  #2331  #2431 ";
+    else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019  #3119  #3219  #3319  #3519 ";
+    else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1835 #2726";
+    else AliError(Form("Unknown trigger: %s", trigger));
+    
+  }
+
   else {
     AliError(Form("Unknown run %d, using all BXs!",runNumber));
   }
@@ -622,7 +652,6 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
   if(fUseBXNumbers && fFillingScheme != "" && fFillingScheme != GetFillingScheme(runNumber))
     AliFatal("Cannot process runs with different filling scheme if usage of BX numbers is requested");
 
-  fRatioBEEE          = GetRatioBBBE(runNumber);
   fFillingScheme      = GetFillingScheme(runNumber);
 
   if(fComputeBG) SetBIFactors(runNumber);
@@ -976,6 +1005,25 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
     } else if (fUseMuonTriggers) {
       AliWarning("BG estimate with muon triggers to be implemented");
     } else {
+      // 0. Determine the ratios of triggers E/B, A/B, C/B from the stat histogram
+      // Those are used to rescale the different classes to the same number of bx ids
+      Float_t nB = 0;
+      Float_t nC = 0;
+      Float_t nA = 0;
+      Float_t nE = 0;
+      for (Int_t j=1; j<=fHistBunchCrossing->GetNbinsX(); j++) {
+	if (fHistBunchCrossing->GetBinContent(j, 1) > 0) nB++;
+	if (fHistBunchCrossing->GetBinContent(j, 2) > 0) nA++;
+	if (fHistBunchCrossing->GetBinContent(j, 3) > 0) nC++;
+	if (fHistBunchCrossing->GetBinContent(j, 4) > 0) nE++;
+      }
+      Float_t ratioBE = nB/nE;
+      Float_t ratioBA = nB/nA;
+      Float_t ratioBC = nB/nC;
+      Printf("Ratio between the BX ids in the different trigger classes:");
+      Printf("  B/E = %f",ratioBE);
+      Printf("  B/A = %f",ratioBA);
+      Printf("  B/C = %f",ratioBC);
       Int_t nHistStat = 2;
       // TODO: get number of rows in a more flexible way
       // 1. loop over all cols
@@ -991,22 +1039,22 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 	  Int_t cint1E = (Int_t) fHistStatistics[iHistStat]->GetBinContent(icol,4);      
       
 	  if (cint1B>0) {
-	    Int_t acc  = fRatioBEEE*cint1E; 
-	    Double_t acc_err = TMath::Sqrt(fRatioBEEE*fRatioBEEE*cint1E);
+	    Int_t acc  = ratioBE*cint1E; 
+	    Double_t acc_err = TMath::Sqrt(ratioBE*ratioBE*cint1E);
 	    //      Int_t bg   = cint1A + cint1C - 2*acc;
-	    Float_t bg   = fBIFactorA*(cint1A-acc) + fBIFactorC*(cint1C-acc) ;
+	    Float_t bg   = fBIFactorA*(ratioBA*cint1A-acc) + fBIFactorC*(ratioBC*cint1C-acc) ;
 	    Float_t good = Float_t(cint1B) - bg - acc;
 	    if (icol ==1) good1 = good;
 	    //      Float_t errGood     = TMath::Sqrt(2*(cint1A+cint1C+cint1E));// Error on the number of goods assuming only bg fluctuates
 	    //      DeltaG^2 = B + FA^2 A + FC^2 C + Ratio^2 (FA+FC-1)^2 E.
 	    Float_t errGood     = TMath::Sqrt( cint1B + 
-					       fBIFactorA*fBIFactorA*cint1A +
-					       fBIFactorC*fBIFactorC*cint1C +
-					       fRatioBEEE * fRatioBEEE * 
+					       fBIFactorA*fBIFactorA*ratioBA*ratioBA*cint1A +
+					       fBIFactorC*fBIFactorC*ratioBC*ratioBC*cint1C +
+					       ratioBE * ratioBE * 
 					       (fBIFactorA + fBIFactorC - 1)*(fBIFactorA + fBIFactorC - 1)*cint1E);
-	    Float_t errBG = TMath::Sqrt(fBIFactorA*fBIFactorA*cint1A+
-					fBIFactorC*fBIFactorC*cint1C+
-					fRatioBEEE*fRatioBEEE*(fBIFactorA+fBIFactorC)*(fBIFactorA+fBIFactorC)*cint1E);
+	    Float_t errBG = TMath::Sqrt(fBIFactorA*fBIFactorA*ratioBA*ratioBA*cint1A+
+					fBIFactorC*fBIFactorC*ratioBC*ratioBC*cint1C+
+					ratioBE*ratioBE*(fBIFactorA+fBIFactorC)*(fBIFactorA+fBIFactorC)*cint1E);
 	
 	
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowBG,bg);	

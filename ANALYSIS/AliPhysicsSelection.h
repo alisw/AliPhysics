@@ -33,6 +33,7 @@ class AliPhysicsSelection : public AliAnalysisCuts
 {
 public:
 
+public:
   enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatFMD,kStatFO1,kStatFO2,kStatV0A,kStatV0C,kStatSSD1,kStatFO1AndV0,kStatV0,kStatAny2Hits,kStatOffline,kStatBG,kStatAccepted};
 
 #ifdef VERBOSE_STAT
@@ -90,7 +91,6 @@ protected:
   Int_t GetTriggerScheme(UInt_t runNumber) const;
   const char * GetBXIDs(UInt_t runNumber, const char * trigger ) ;
   const char * GetFillingScheme(UInt_t runNumber) ;
-  Int_t GetRatioBBBE(Int_t runNumber);
   TH2F * BookHistStatistics(const char * tag) ;
 
     
@@ -114,7 +114,6 @@ protected:
   Float_t fBIFactorA;                 // ratio of interacting over non interacting bunch intensities for beam 1
   Float_t fBIFactorC;                 // ratio of interacting over non interacting bunch intensities for beam 2
 
-  Int_t fRatioBEEE; // ratio between the number of BX in the Beam-Empty and the Empty-Empty. Depends on the filling and on the trigger scheme
 
   Bool_t fComputeBG; // Switch on computation of background and filling of relevant stat table entries. If you enable this you can only process one run at a time (the relative bunch intensity used to compute this chages from run to run)
   Bool_t fUseBXNumbers;	// Explicitely select "good" bunch crossing numbers (exclude pilot, afterpulses and fakes). If you anable this you can only process  runs within the same filling scheme.
@@ -124,7 +123,7 @@ protected:
   TString fBin0CallBack; // callback used to determine if an event is in the bin0 (name of the task where the callback is implemented);
   Bin0Callback_t fBin0CallBackPointer; //! don't stream this. TO BE REMOVED SOON
 
-  ClassDef(AliPhysicsSelection, 8)
+  ClassDef(AliPhysicsSelection, 9)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);
