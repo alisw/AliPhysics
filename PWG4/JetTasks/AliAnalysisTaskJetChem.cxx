@@ -429,8 +429,10 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
     return; 
   }
     
-    
-  if(primVertex->GetName() == "TPCVertex"){
+  TString primVtxName(primVertex->GetName());
+  
+  if(primVtxName.CompareTo("TPCVertex",TString::kIgnoreCase) == 1){
+
     AliInfo("found TPC prim Vertex  - skip event");
     fhPrimVertexNCont->Fill(-1);
     return; 
