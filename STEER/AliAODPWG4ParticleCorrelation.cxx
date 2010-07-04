@@ -36,6 +36,7 @@ ClassImp(AliAODPWG4ParticleCorrelation)
    fListOfObjArrays(new TList)
 {
   // constructor
+  fListOfObjArrays->SetOwner(kTRUE);
 }
 
 //______________________________________________________________________________
@@ -46,6 +47,8 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double
 {
   // constructor
   SetMomentum(new TLorentzVector(px, py, pz, e));
+  fListOfObjArrays->SetOwner(kTRUE);
+
 }
 
 //______________________________________________________________________________
@@ -54,6 +57,8 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p)
   fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(), fRefJet(0),  fListOfObjArrays(new TList)
 {
   // constructor
+  fListOfObjArrays->SetOwner(kTRUE);
+
 }
 
 //______________________________________________________________________________
@@ -62,7 +67,8 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(AliAODPWG4Particle 
   fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0),   fListOfObjArrays(new TList)
 {
   // constructor
-  
+  fListOfObjArrays->SetOwner(kTRUE);
+
 }
 
 //______________________________________________________________________________
