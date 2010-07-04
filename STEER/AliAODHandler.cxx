@@ -398,7 +398,7 @@ Bool_t AliAODHandler::FinishEvent()
       FillTree();
   }
 
-  if (fFillAOD) {      
+  if (fFillAOD && fFillAODRun) {      
       if (fExtensions) {
 	  TIter next(fExtensions);
 	  AliAODExtension *ext;
