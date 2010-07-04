@@ -703,8 +703,6 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
 	    continue ; 
 	
-	AliInfo(Form("Processed %i physics raw events",fProcessedRawEventN));
-
 	if (fCalibData){
 	    //normalize TRM hits plots to the number of enabled channels from OCDB object
 	    TH1F * hTrmChannels035 = new TH1F("hTrmchannels035", "Active channels per TRM - crates 0 to 35;TRM index = SMid(crate*10)+TRM(0-9);Active channels",  361, 0., 361.) ;
@@ -732,12 +730,39 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	if (fEnableDqmShifterOpt){
 	    // Help make the raw qa histogram easier to interpret for the DQM shifter
 	    // This is still to be optimized...
-
+	    
 	    if (!GetRawsData(0) || !GetRawsData(5) || !GetRawsData(10) 
 		|| !GetRawsData(15) || !GetRawsData(16) || !GetRawsData(17)) {
 		printf("No histogram for DQM found - Possible memory corruption ???. Please check\n") ; 
 		continue;
 	    }
+	    AliInfo(Form("Processed %i physics raw events",fProcessedRawEventN));
+	    
+	    
+	    if (fCalibData){
+		//normalize TRM hits plots to the number of enabled channels from OCDB object
+		TH1F * hTrmChannels035 = new TH1F("hTrmchannels035", "Active channels per TRM - crates 0 to 35;TRM index = SMid(crate*10)+TRM(0-9);Active channels",  361, 0., 361.) ;
+		TH1F * hTrmChannels3671 = new TH1F("hTrmChannels3671","Active channels per TRM - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Active channels", 361, 360., 721.) ;
+		
+		for (Int_t ch = 0; ch <  fCalibData->GetSize(); ch++) {
+		    if (!(fCalibData->GetNoiseStatus(ch)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
+			&& (fCalibData->GetHWStatus(ch) == AliTOFChannelOnlineStatusArray::kTOFHWOk)){
+			Int_t geoId[5];
+			Int_t detId[5];
+			AliTOFGeometry::GetVolumeIndices(ch,geoId);
+			AliTOFRawStream::Geant2EquipmentId(geoId,detId); //detID=(ddl,trm,tdc, chain,channel)
+			if (detId[0]<36) hTrmChannels035->Fill((detId[1]-3)+detId[0]*10);
+			else hTrmChannels3671->Fill((detId[1]-3)+detId[0]*10);
+		    }
+		}
+		GetRawsData(16)->Divide(hTrmChannels035);
+		GetRawsData(16)->SetTitle("TRMs average hit number per active channel - crates 0-35");
+		GetRawsData(16)->GetYaxis()->SetTitle("hits/active channels");
+		GetRawsData(17)->Divide(hTrmChannels3671);
+		GetRawsData(17)->SetTitle("TRMs average hit number per active channel - crates 36-71");
+		GetRawsData(17)->GetYaxis()->SetTitle("hits/active channels");
+	    }
+	    
 	    
 	    Double_t yTimeMin = GetRawsData(5)->GetMinimum();
 	    Double_t yTimeMax = GetRawsData(5)->GetMaximum();
