@@ -41,14 +41,15 @@
 /// \author Diego Stocco, Subatech, Nantes
 
 void MUONTriggerChamberEfficiency(const Char_t* inputFile="./MUON.TriggerEfficiencyMap.root",
-				  Bool_t addMapInLocalOCDB = kFALSE,
-				  Int_t firstRun=0, Int_t lastRun = AliCDBRunRange::Infinity())
+				  const Char_t* outputCDB = "",
+				  Int_t firstRun=0, Int_t lastRun = AliCDBRunRange::Infinity()
+)
 {
 /// \param inputFile (default "./MUON.TriggerEfficiencyMaps.root")
 ///     File with the numerator and denominator histos for efficiency calculation
 ///     (It is the output of the PWG3/muon/AliAnalysisTaskTrigChEff analysis
-/// \param addMapInLocalOCDB (default kFALSE)
-///     if the map is OK, add it in local OCDB
+/// \param outputCDB (default "")
+///     add the map on the specified CDB
 /// \param firstRun (default 0)
 ///     first run of validity for CDB object
 /// \param lastRun (default AliCDBRunRange::Infinity())
@@ -57,31 +58,44 @@ void MUONTriggerChamberEfficiency(const Char_t* inputFile="./MUON.TriggerEfficie
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(inputFile);
-  if ( ! addMapInLocalOCDB ){
+  TString outCDB(outputCDB);
+
+  if ( outCDB.IsNull() ){
+    // Draw the efficiency and exit
     AliCDBManager::Instance()->SetRun(firstRun);
-    AliMUONTriggerChamberEfficiency trigChEff(effMap);
+    AliMUONTriggerChamberEfficiency* trigChEff = new AliMUONTriggerChamberEfficiency(effMap);
  
-    trigChEff.DisplayEfficiency();
+    trigChEff->DisplayEfficiency(kFALSE,kFALSE);
+    return;
   }
-  else
-    AliMUONCDB::WriteToCDB("MUON/Calib/TriggerEfficiency", effMap, firstRun, lastRun,true);
+
+
+  // Write efficiency on OCDB
+
+  AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/TriggerEfficiency", outputCDB);
+  
+  AliMUONCDB::WriteToCDB(effMap, "MUON/Calib/TriggerEfficiency", firstRun, lastRun, "Measured efficiencies");
 }
 
 //____________________________________________________________
-void ShowOCDBmap(Int_t runNumber = 0, TString ocdbPath="local://$ALICE_ROOT/OCDB")
+void ShowOCDBmap(Int_t runNumber = 0, TString specificCDB="", TString ocdbPath = "local://$ALICE_ROOT/OCDB")
 {
 /// \param runNumber (default 0)
 ///     run number
+/// \param specificCDB (default "")
+///     specific CDB for trigger efficiency
 /// \param ocdbPath(default "local://$ALICE_ROOT/OCDB")
 ///     path to OCDB
   if ( ocdbPath.BeginsWith("alien://") || ocdbPath.BeginsWith("raw://"))
     TGrid::Connect("alien://");
 
   AliCDBManager::Instance()->SetDefaultStorage(ocdbPath.Data());
+  if ( !specificCDB.IsNull() )
+    AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/TriggerEfficiency", specificCDB.Data());
   AliCDBManager::Instance()->SetRun(runNumber);
   AliMUONCalibrationData calib(runNumber);
 
-  AliMUONTriggerChamberEfficiency trigChEff(calib.TriggerEfficiency());
-  trigChEff.DisplayEfficiency();
+  AliMUONTriggerChamberEfficiency* trigChEff = new AliMUONTriggerChamberEfficiency(calib.TriggerEfficiency());
+  trigChEff->DisplayEfficiency();
 }
 
