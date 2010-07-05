@@ -289,7 +289,7 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 	// in fEMCALBadChannelMap or fPHOSBadChannelMap
 	
 	if (!fRemoveBadChannels) return kFALSE;
-	
+	//printf("fEMCALBadChannelMap %p, fPHOSBadChannelMap %p \n",fEMCALBadChannelMap,fPHOSBadChannelMap);
 	if(calorimeter == "EMCAL" && !fEMCALBadChannelMap) return kFALSE;
 	if(calorimeter == "PHOS"  && !fPHOSBadChannelMap)  return kFALSE;
 
@@ -743,7 +743,7 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
   //Set the calorimeters transformation matrices
 	
   //Get the EMCAL transformation geometry matrices from ESD 
-  if (!gGeoManager && fEMCALGeo) {//&& !fEMCALGeoMatrixSet) { FIXME
+  if (!gGeoManager && fEMCALGeo && !fEMCALGeoMatrixSet) { 
 	  if(fDebug > 1) 
 		  printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load EMCAL misalignment matrices. \n");
 	  if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
