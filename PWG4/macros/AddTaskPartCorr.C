@@ -277,7 +277,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
 	}
 	anaelectron->SetOutputAODName("ElectronsEMCAL");
 	anaelectron->SetOutputAODClassName("AliAODPWG4Particle");
-	anaelectron->SetWriteNtuple(kFALSE);
 	//Determine which cuts to use based on enum
 	anaelectron->SetpOverEmin(pOverEmin);
 	anaelectron->SetpOverEmax(pOverEmax);
