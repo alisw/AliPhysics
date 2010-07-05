@@ -660,6 +660,15 @@ class AliV0Reader : public TObject {
   void SetPIDMinPPionRejectionLowP(Double_t PIDMinPPionRejectionLowP ){fPIDMinPPionRejectionLowP=PIDMinPPionRejectionLowP;}
 
   /*
+   *Set if we want to use Gamma Selection based on Qt from Armenteros
+   */
+  void SetDoQtGammaSelection(Bool_t doQtGammaSelection){fDoQtGammaSelection=doQtGammaSelection;}
+  /*
+   * Sets the MaxQtCut value.
+   */
+  void SetQtMax(Double_t qtMax){fQtMax=qtMax;}
+
+  /*
    * Updates the V0 information of the current V0.
    */
   Bool_t UpdateV0Information();
@@ -717,6 +726,8 @@ class AliV0Reader : public TObject {
   Int_t GetMultiplicity(){return CountESDTracks();}
 
   void SetESDtrackCuts(AliESDtrackCuts * const trackCuts){fEsdTrackCuts = trackCuts;}
+
+  void SetNEventsForBG(Int_t nev){nEventsForBGCalculation = nev;}
 
   Int_t CountESDTracks();
 
@@ -808,7 +819,8 @@ class AliV0Reader : public TObject {
   Double_t fPIDMinPKaonRejectionLowP; // Momentum limit to apply kaon rejection
   Double_t fPIDMinPProtonRejectionLowP; // Momentum limit to apply proton rejection
   Double_t fPIDMinPPionRejectionLowP; // Momentum limit to apply proton rejection
-
+  Bool_t   fDoQtGammaSelection; // Select gammas using qtMax
+  Double_t fQtMax; // Maximum Qt from Armenteros to select Gammas
   Double_t fXVertexCut; //vertex cut
   Double_t fYVertexCut; //vertex cut
   Double_t fZVertexCut; // vertexcut
@@ -837,7 +849,9 @@ class AliV0Reader : public TObject {
 
   static AliESDpid* fgESDpid;                 // ESD pid object
 
-  ClassDef(AliV0Reader,10)
+  Int_t nEventsForBGCalculation;
+
+  ClassDef(AliV0Reader,11)
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)

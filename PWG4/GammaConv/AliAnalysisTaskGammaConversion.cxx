@@ -36,7 +36,6 @@
 #include "AliGammaConversionBGHandler.h"
 #include "AliESDCaloCluster.h" // for combining PHOS and GammaConv
 #include "AliKFVertex.h"
-#include "AliV0.h"
 class AliCFContainer;
 class AliCFManager;
 class AliKFVertex;
@@ -1407,7 +1406,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	fHistograms->FillHistogram("ESD_TrueConvGamma_P_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetPositiveTrackP()/fV0Reader->GetMotherCandidateP());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_E_dEdxP",fV0Reader->GetNegativeTrackP(),fV0Reader->GetNegativeTrackTPCdEdx());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_P_dEdxP",fV0Reader->GetPositiveTrackP(),fV0Reader->GetPositiveTrackTPCdEdx());
-
+	fHistograms->FillHistogram("ESD_TrueConvGamma_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+ 
 
 				
 	//store MCTruth properties
@@ -1716,6 +1716,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
       if(twoGammaCandidate->GetNDF()>0){
 	chi2TwoGammaCandidate = twoGammaCandidate->GetChi2()/twoGammaCandidate->GetNDF();
 				
+	fHistograms->FillHistogram("ESD_Mother_Chi2",chi2TwoGammaCandidate);
 	if(chi2TwoGammaCandidate>0 && chi2TwoGammaCandidate<fV0Reader->GetChi2CutMeson()){
 					
 	  TVector3 momentumVectorTwoGammaCandidate(twoGammaCandidate->GetPx(),twoGammaCandidate->GetPy(),twoGammaCandidate->GetPz());
@@ -2170,7 +2171,7 @@ void AliAnalysisTaskGammaConversion::RecalculateV0ForGamma(){
  Double_t xPrimaryVertex=vtxT3D->GetXv();
  Double_t yPrimaryVertex=vtxT3D->GetYv();
  Double_t zPrimaryVertex=vtxT3D->GetZv();
- Float_t primvertex[3]={xPrimaryVertex,yPrimaryVertex,zPrimaryVertex};
+ // Float_t primvertex[3]={xPrimaryVertex,yPrimaryVertex,zPrimaryVertex};
 
  Float_t nsigmaTPCtrackPos;
  Float_t nsigmaTPCtrackNeg;
@@ -2303,12 +2304,8 @@ void AliAnalysisTaskGammaConversion::RecalculateV0ForGamma(){
 
      Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
 
-     AliV0 pvertex;
-     pvertex.SetParamN(nt);
-     pvertex.SetParamP(pt);
-     pvertex.Update(primvertex);
  
-     Float_t v0Rr=pvertex.GetRr();
+
      //  cout<< "v0Rr::"<< v0Rr<<endl;
      // if (pvertex.GetRr()<0.5){
      // continue;
@@ -2351,7 +2348,6 @@ void AliAnalysisTaskGammaConversion::RecalculateV0ForGamma(){
 	 fHistograms->FillHistogram("ESD_RecalculateV0_P_dEdxP",curElecPosAt.P(),posTrack->GetTPCsignal());
 	 fHistograms->FillHistogram("ESD_RecalculateV0_cpa",cpa);
 	 fHistograms->FillHistogram("ESD_RecalculateV0_dca",dca);
-	 fHistograms->FillHistogram("ESD_RecalculateV0_Rr",v0Rr);
 	 fHistograms->FillHistogram("ESD_RecalculateV0_normdistP",normdistP);
 	 fHistograms->FillHistogram("ESD_RecalculateV0_normdistN",normdistN);
 

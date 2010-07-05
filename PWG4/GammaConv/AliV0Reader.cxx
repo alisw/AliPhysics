@@ -109,6 +109,8 @@ AliV0Reader::AliV0Reader() :
   fPIDMinPKaonRejectionLowP(0),
   fPIDMinPProtonRejectionLowP(0),
   fPIDMinPPionRejectionLowP(0),
+  fDoQtGammaSelection(kFALSE),
+  fQtMax(100.),
   fXVertexCut(0.),
   fYVertexCut(0.),
   fZVertexCut(0.),
@@ -124,7 +126,8 @@ AliV0Reader::AliV0Reader() :
   fBGEventHandler(NULL),
   fBGEventInitialized(kFALSE),
   fEsdTrackCuts(NULL),
-  fNumberOfESDTracks(0)
+  fNumberOfESDTracks(0),
+  nEventsForBGCalculation(10)
 {
   //fESDpid = new AliESDpid;	
 }
@@ -191,6 +194,8 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fPIDMinPKaonRejectionLowP(original.fPIDMinPKaonRejectionLowP),
   fPIDMinPProtonRejectionLowP(original.fPIDMinPProtonRejectionLowP),
   fPIDMinPPionRejectionLowP(original.fPIDMinPPionRejectionLowP),
+  fDoQtGammaSelection(original.fDoQtGammaSelection),
+  fQtMax(original.fQtMax),
   fXVertexCut(original.fXVertexCut),
   fYVertexCut(original.fYVertexCut),
   fZVertexCut(original.fZVertexCut),
@@ -206,7 +211,8 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fBGEventHandler(original.fBGEventHandler),
   fBGEventInitialized(original.fBGEventInitialized),
   fEsdTrackCuts(original.fEsdTrackCuts),
-  fNumberOfESDTracks(original.fNumberOfESDTracks)
+  fNumberOfESDTracks(original.fNumberOfESDTracks),
+  nEventsForBGCalculation(original.nEventsForBGCalculation)
 {
 	
 }
@@ -333,7 +339,7 @@ void AliV0Reader::Initialize(){
       multiplicityBinLimitsArray[3] = 27.5;
       multiplicityBinLimitsArray[4] = 41.5;
           
-      fBGEventHandler = new AliGammaConversionBGHandler(8,5,10);
+      fBGEventHandler = new AliGammaConversionBGHandler(8,5,nEventsForBGCalculation);
       
       /*
       // ---------------------------------
@@ -635,7 +641,17 @@ Bool_t AliV0Reader::NextV0(){
       }
     }
 
-    
+    // Gamma selection based on QT from Armenteros
+    if(fDoQtGammaSelection == kTRUE){
+      if(armenterosQtAlfa[0]>fQtMax){
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutQt_InvMass",GetMotherCandidateMass());
+	}
+	fCurrentV0IndexNumber++;
+	continue;
+      }
+    }
+
     //checks if we have a prim vertex
     if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) { 
       if(fHistograms != NULL){
