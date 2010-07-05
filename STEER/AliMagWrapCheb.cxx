@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include "AliMagWrapCheb.h"
+#include "AliLog.h"
 #include <TSystem.h>
 #include <TArrayF.h>
 #include <TArrayI.h>
@@ -464,6 +465,10 @@ void AliMagWrapCheb::GetTPCInt(const Double_t *xyz, Double_t *b) const
   // If point is outside of the parameterized region get it at closeset valid point
   static Double_t rphiz[3];
   //
+  if (!xyz || !b) {
+    AliError(Form("Wrong pointers: xyz:%p b:%p",xyz,b));
+    return;
+  }
   // TPCInt region
   // convert coordinates to cyl system
   CartToCyl(xyz,rphiz);
@@ -486,6 +491,10 @@ void AliMagWrapCheb::GetTPCRatInt(const Double_t *xyz, Double_t *b) const
   // If point is outside of the parameterized region get it at closeset valid point
   static Double_t rphiz[3];
   //
+  if (!xyz || !b) {
+    AliError(Form("Wrong pointers: xyz:%p b:%p",xyz,b));
+    return;
+  }
   // TPCRatInt region
   // convert coordinates to cyl system
   CartToCyl(xyz,rphiz);
@@ -542,6 +551,11 @@ void AliMagWrapCheb::GetTPCIntCyl(const Double_t *rphiz, Double_t *b) const
     b[0] = b[1] = b[2] = 0;
     return;
   }
+  if (id>=fNParamsTPC) {
+    AliError(Form("Wrong TPCParam segment %d",id));
+    b[0] = b[1] = b[2] = 0;
+    return;
+  }
   AliCheb3D* par = GetParamTPCInt(id);
   if (par->IsInside(rphiz)) {
     par->Eval(rphiz,b); 
@@ -559,6 +573,11 @@ void AliMagWrapCheb::GetTPCRatIntCyl(const Double_t *rphiz, Double_t *b) const
   // note: the check for the point being inside the parameterized region is done outside
   int id = FindTPCRatSegment(rphiz);
   if (id<0) {
+    b[0] = b[1] = b[2] = 0;
+    return;
+  }
+  if (id>=fNParamsTPCRat) {
+    AliError(Form("Wrong TPCRatParam segment %d",id));
     b[0] = b[1] = b[2] = 0;
     return;
   }
