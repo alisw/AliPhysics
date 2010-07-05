@@ -78,7 +78,12 @@ void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
   //
   // Create Output Objects conenct filter to outputtree
   // 
+  if(OutputTree()){
     OutputTree()->GetUserInfo()->Add(fTrackFilter);
+  }
+  else{
+    AliError("No OutputTree() for adding the track filter");
+  }
 }
 
 void AliAnalysisTaskESDfilter::Init()
