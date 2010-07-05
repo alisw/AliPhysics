@@ -61,7 +61,7 @@
 #endif
 
 const char* OUTPUT_FILE = "mch.occupancy";
-const char* DAVERSION = "MUONTRKOCCda v1.4 ($Id$)";
+const char* DAVERSION = "MUONTRKOCCda v1.5 ($Id$)";
 
 //______________________________________________________________________________
 void Add(AliMUONVStore& destStore, const AliMUONVStore& srcStore)
