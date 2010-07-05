@@ -16,18 +16,17 @@
 
 //_________________________________________________________________________
 //
-// Class for the electron identification and b-tagging.
+// Class for the electron identification and B-tagging.
 // Clusters from EMCAL matched to tracks
 // and kept in the AOD. Few histograms produced.
 //
-// -- Author: T.R.P-R.Aronsson (Yale) J.L. Klay (Cal Poly), M. Heinz (Yale)
+// -- Author: T.R.P.Aronsson (Yale) J.L. Klay (Cal Poly), M. Heinz (Yale)
 //////////////////////////////////////////////////////////////////////////////
   
 // --- ROOT system --- 
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TParticle.h>
-#include <TNtuple.h>
 #include <TClonesArray.h>
 //#include <TObjString.h>
 //#include <Riostream.h>
@@ -58,9 +57,7 @@ AliAnaBtag::AliAnaBtag()
   fpOverEmin(0.),fpOverEmax(0.),fResidualCut(0.),fMinClusEne(0.),
   fDrCut(0.),fPairDcaCut(0.),fDecayLenCut(0.),fImpactCut(0.),
   fAssocPtCut(0.),fMassCut(0.),fSdcaCut(0.),fITSCut(0),
-  fNTagTrkCut(0),fIPSigCut(0.),fJetEtaCut(0.3),fJetPhiMin(1.8),fJetPhiMax(2.9),fWriteNtuple(0),
-
-  fEleNtuple(0),
+  fNTagTrkCut(0),fIPSigCut(0.),fJetEtaCut(0.3),fJetPhiMin(1.8),fJetPhiMax(2.9),
   fhEmcalElectrons(0),fhTRDElectrons(0),fhTPCElectrons(0),fhDVM1(0),fhDVM2(0),fhJets(0),fhJetsAllEtaPhi(0),fhJetsLeadingBElectronEtaPhi(0),fhDVM1EtaPhi(0),fhBJetElectronDetaDphi(0),fhClusterEnergy(0),fhTestalle(0),fhResidual(0),fhElectrons(0),fhTracks(0)
 {
   //default ctor
@@ -69,72 +66,7 @@ AliAnaBtag::AliAnaBtag()
   InitParameters();
 
 }
-/*
-//____________________________________________________________________________
-AliAnaBtag::AliAnaBtag(const AliAnaBtag & g) 
-  : AliAnaPartCorrBaseClass(g),fCalorimeter(g.fCalorimeter),
-    fpOverEmin(g.fpOverEmin),fpOverEmax(g.fpOverEmax),
-    fResidualCut(g.fResidualCut),fMinClusEne(g.fMinClusEne),
-    fDrCut(g.fDrCut),fPairDcaCut(g.fPairDcaCut),fDecayLenCut(g.fDecayLenCut),fImpactCut(g.fImpactCut),
-    fAssocPtCut(g.fAssocPtCut),fMassCut(g.fMassCut),fSdcaCut(g.fSdcaCut),fITSCut(g.fITSCut),
-    fNTagTrkCut(g.fNTagTrkCut),fIPSigCut(g.fIPSigCut),
-    fJetEtaCut(g.fJetEtaCut),fJetPhiMin(g.fJetPhiMin),fJetPhiMax(g.fJetPhiMax),
-    fWriteNtuple(g.fWriteNtuple),
 
-    fEleNtuple(g.fEleNtuple),
-    fhEmcalElectrons(g.fhEmcalElectrons),fhTRDElectrons(g.fhTRDElectrons),fhTPCElectrons(g.fhTPCElectrons),fhDVM1(g.fhDVM1),fhDVM2(g.fhDVM2),fhJets(g.fhJets),fhJetsAllEtaPhi(g.fhJetsAllEtaPhi),fhJetsLeadingBElectronEtaPhi(g.fhJetsLeadingBElectronEtaPhi),fhDVM1EtaPhi(g.fhDVM1EtaPhi),fhBJetElectronDetaDphi(g.fhBJetElectronDetaDphi),fhClusterEnergy(g.fhClusterEnergy),fhTestalle(g.fhTestalle),fhResidual(g.fhResidual),fhElectrons(g.fhElectrons),fhTracks(g.fhTracks)
-{
-  // cpy ctor
-  
-}
-
-//_________________________________________________________________________
-AliAnaBtag & AliAnaBtag::operator = (const AliAnaBtag & g)
-{
-  // assignment operator
-  
-  if(&g == this) return *this;
-  fCalorimeter = g.fCalorimeter;
-  fpOverEmin = g.fpOverEmin;
-  fpOverEmax = g.fpOverEmax;
-  fResidualCut = g.fResidualCut;
-  fMinClusEne = g.fMinClusEne;
-  fDrCut = g.fDrCut;
-  fPairDcaCut = g.fPairDcaCut;
-  fDecayLenCut = g.fDecayLenCut;
-  fImpactCut = g.fImpactCut;
-  fAssocPtCut = g.fAssocPtCut;
-  fMassCut = g.fMassCut;
-  fSdcaCut = g.fSdcaCut;
-  fITSCut = g.fITSCut;
-  fNTagTrkCut = g.fNTagTrkCut;
-  fIPSigCut = g.fIPSigCut;
-  fJetEtaCut = g.fJetEtaCut;
-  fJetPhiMin = g.fJetPhiMin;
-  fJetPhiMax = g.fJetPhiMax;
-  fWriteNtuple = g.fWriteNtuple;
-
-  fEleNtuple = g.fEleNtuple; 
-
-  fhEmcalElectrons = g.fhEmcalElectrons;
-  fhTRDElectrons = g.fhTRDElectrons;
-  fhTPCElectrons = g.fhTPCElectrons;
-  fhDVM1 = g.fhDVM1;
-  fhDVM2 = g.fhDVM2;
-  fhJets = g.fhJets;
-  fhJetsAllEtaPhi = g.fhJetsAllEtaPhi;
-  fhJetsLeadingBElectronEtaPhi = g.fhJetsLeadingBElectronEtaPhi;
-  fhDVM1EtaPhi = g.fhDVM1EtaPhi;
-  fhBJetElectronDetaDphi = g.fhBJetElectronDetaDphi;
-  fhClusterEnergy = g.fhClusterEnergy;
-  fhTestalle = g.fhTestalle;
-  fhResidual = g.fhResidual;
-  fhElectrons = g.fhElectrons;
-  fhTracks = g.fhTracks;
-  return *this;
-  
-}
-*/
 //____________________________________________________________________________
 AliAnaBtag::~AliAnaBtag() 
 {
@@ -152,20 +84,7 @@ TList *  AliAnaBtag::GetCreateOutputObjects()
   outputContainer->SetName("ElectronHistos") ; 
 
 
-  if(IsDataMC()){
-
-    //electron ntuple for further analysis
-    if(fWriteNtuple) {
-      fEleNtuple = new TNtuple("EleNtuple","Electron Ntuple","fluff");
-      outputContainer->Add(fEleNtuple) ;
-    }
-
-
-
-  }//Histos with MC
-
-
-    fhEmcalElectrons = new TH1F("fhEmcalElectrons","",400,0,400);
+	fhEmcalElectrons = new TH1F("fhEmcalElectrons","",400,0,400);
     outputContainer->Add(fhEmcalElectrons);
     
     fhTRDElectrons = new TH1F("fhTRDElectrons","",400,0,400);
@@ -183,22 +102,6 @@ TList *  AliAnaBtag::GetCreateOutputObjects()
 
     fhJets = new TH2F("fhJets","",400,0,400,20,0,20);
     outputContainer->Add(fhJets);
-
-
-    //Big one:
-    //1 is All Jets
-    //2 empty
-    //3 Jets within pt 10 cut
-    //4 Jets With geometric cut
-    //5 Leading jet
-    //6 DVM jet
-    //9 All identified tracks as electrons
-    //10 is all track Pt()
-    //11 Tracks "in"
-    //12 is Cluster energy plot
-
-
-
 
     fhJetsAllEtaPhi = new TH2F("fhJetsAllEtaPhi","",100,-2,2,100,-2,8);
     outputContainer->Add(fhJetsAllEtaPhi);
@@ -313,9 +216,6 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
     for(Int_t iclus = 0; iclus < ntot; iclus++) {
       AliAODCaloCluster * clus = (AliAODCaloCluster*) (cl->At(iclus));
       if(!clus) continue;
-      //Double_t x[3];
-      //clus->GetPosition(x);
-      //if(clus->E()>3.) fhJets->Fill(clus->E(),12);
       fhClusterEnergy->Fill(clus->E());
     }
   }
@@ -434,11 +334,6 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
               minPt = track->Pt();
             }
 
-	    
-	    
-	    if(fWriteNtuple) {
-	      fEleNtuple->Fill(1);
-	    }
 
 	  } else {
 	      //unmatched
@@ -822,9 +717,6 @@ Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , float ma
 
 
 //__________________________________________________________________
-//PhotonicPrim() removed, it's shit.
-
-//__________________________________________________________________
 Bool_t AliAnaBtag::PhotonicV0(Int_t id) 
 {
   //This method checks to see whether a track that has been flagged as
@@ -956,8 +848,6 @@ Bool_t  AliAnaBtag::IsMcBJet(Double_t jeta, Double_t jphi)
   //Check the jet eta,phi against that of the b-quark
   //to decide whether it is an MC B-jet
   Bool_t bjet=kFALSE;
-
-  //      printf("MTH: McStack ,nparticles=%d \n", stack->GetNtrack() );
 
   AliStack* stack = 0x0;
   
