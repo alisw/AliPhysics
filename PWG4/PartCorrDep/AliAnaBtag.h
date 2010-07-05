@@ -46,13 +46,12 @@ public:
   void MakeAnalysisFillHistograms() ; 
   
   //B-tagging
-  Int_t GetDVMBtag(AliAODTrack * tr); //returns # tracks from secvtx
+  Int_t GetDVMBtag(AliAODTrack * tr);//Main tagger
 
-  //Temporary local method to get DCA because AliAODTrack is stupid
+  //Temporary local method to get DCA
   Bool_t GetDCA(const AliAODTrack* tr,Double_t imp[2], Double_t cov[3]);
   Bool_t PhotonicV0(Int_t trackId); //check with V0 list
 
-  //check if track has been flagged as a non-photonic or DVM electron
   //used with the jet tracks to tag bjets
   Bool_t CheckIfBjet(const AliAODTrack* track);
   Bool_t IsMcBJet(Double_t x, Double_t y);
@@ -63,7 +62,6 @@ public:
   TString GetCalorimeter()   const {return fCalorimeter ; }
   Double_t GetpOverEmin()   const {return fpOverEmin ; }
   Double_t GetpOverEmax()   const {return fpOverEmax ; }
-  Bool_t GetWriteNtuple()   const {return fWriteNtuple ; }
 
   Double_t GetDrCut() const { return fDrCut; }
   Double_t GetPairDcaCut() const { return fPairDcaCut; }
@@ -81,7 +79,6 @@ public:
   void SetpOverEmin(Double_t min)     {fpOverEmin = min ; }
   void SetpOverEmax(Double_t max)     {fpOverEmax = max ; }
   void SetResidualCut(Double_t cut)     {fResidualCut = cut ; }
-  void SetWriteNtuple(Bool_t val)     {fWriteNtuple = val ; }
 
   void SetDrCut(Double_t dr)  { fDrCut = dr; }
   void SetPairDcaCut(Double_t pdca) { fPairDcaCut = pdca; }
@@ -130,15 +127,9 @@ public:
   Double_t fJetPhiMin;   //min phi for jets
   Double_t fJetPhiMax;   //max phi for jets
 
-  Bool_t  fWriteNtuple; //flag for filling ntuple or not
   
-
-  ///////////////////////////////////////
-  //Output histograms and Ntuples
-
-  TNtuple * fEleNtuple;                 //Ntuple for electrons if neede
-
-
+  
+  //Histograms
   TH1F * fhEmcalElectrons;              //All electrons, as id:ed by EMCAL
   TH1F * fhTRDElectrons;                //Electrons from TRD
   TH1F * fhTPCElectrons;                //Electrons from TPC
@@ -150,7 +141,7 @@ public:
   TH2F * fhDVM1EtaPhi;                  //eta phi for b-electrons
   TH2F * fhBJetElectronDetaDphi;        //eta phi for jet with b-electrons
   TH1F * fhClusterEnergy;               //cluster E of EMCAL
-  TH1F * fhTestalle;
+  TH1F * fhTestalle;					//Temp histo for EMCAL cluster energy
   TH1F * fhResidual;                    //Residuals from trackmatching
 
   //Analysis of electrons
@@ -159,7 +150,7 @@ public:
   TH2F * fhTracks;
 
 
-  ClassDef(AliAnaBtag,12)
+  ClassDef(AliAnaBtag,2)
 
 } ;
  
