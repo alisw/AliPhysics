@@ -469,8 +469,8 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   		zncpmC = pedSubVal;
   		GetRawsData(10)->Fill(zncpmC);
   	      }
+	      indZNC++;
   	    }
-	    indZNC++;
   	  }
   	  else if(det == 2){ 
   	    pedindex = quad+5;
@@ -483,8 +483,8 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   		zpcpmC = pedSubVal;
   		GetRawsData(12)->Fill(zpcpmC);
   	      }
+	      indZPC++;
   	    }
-	    indZPC++;
   	  }
   	  else if(det == 3){ 
   	    pedindex = quad+9;
@@ -512,8 +512,8 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   		znapmC = pedSubVal;
   		GetRawsData(11)->Fill(znapmC);
   	      }
+	      indZNA++;
   	    }
-	    indZNA++;
   	  }
   	  else if(det == 5){
   	    pedindex = quad+17;
@@ -526,8 +526,8 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   		zpapmC = pedSubVal;
   		GetRawsData(13)->Fill(zpapmC);
   	      }
+	      indZPA++;
   	    }
-	    indZPA++;
   	  }
   	 }
   	 //
