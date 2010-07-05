@@ -136,7 +136,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   
   // -------------------------------------------------
-  // --- Photon Isolation and Correlation Analysis ---
+  // --- Photon/Pi0/Omega/Electron Analysis ---
   // -------------------------------------------------
   
   AliAnaPhoton *anaphoton = new AliAnaPhoton();
@@ -201,9 +201,97 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SetHistoMassRangeAndNBins(0., 0.6, 200) ;
   anapi0->SetHistoAsymmetryRangeAndNBins(0., 1. , 10) ;
   if(kPrintSettings) anapi0->Print("");
-  
+	
+  //---------------------------  
+  //Pi0, event by event
+  //---------------------------  
+
+  AliNeutralMesonSelection *nms = new AliNeutralMesonSelection();
+  nms->SetInvMassCutRange(0.05, 0.2)     ;
+  nms->KeepNeutralMesonSelectionHistos(kTRUE);
+  //Set Histrograms bins and ranges
+  nms->SetHistoERangeAndNBins(0, 50, 200) ;
+  //      nms->SetHistoPtRangeAndNBins(0, 50, 100) ;
+  //      nms->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
+  //      nsm->SetHistoIMRangeAndNBins(0, 0.4, 100) ;  
+		
+  AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
+  anapi0ebe->SetDebug(-1);//10 for lots of messages
+  anapi0ebe->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
+  anapi0ebe->SetMinPt(0);
+  anapi0ebe->SetCalorimeter(calorimeter);
+  anapi0ebe->SetInputAODName(Form("Photons%s",calorimeter.Data()));
+  if(!data.Contains("delta")) {
+	anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
+	anapi0ebe->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  }
+  else  anapi0ebe->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
+	
+  if(kUseKinematics) anapi0ebe->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  anapi0ebe->SwitchOffDataMC() ;	
+  anapi0ebe->SetNeutralMesonSelection(nms);
+  //Set Histrograms bins and ranges
+  anapi0ebe->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  //      anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      anapi0->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  if(kPrintSettings) anapi0ebe->Print("");
+	
+  //-------------------------------------
+  //*** analysis the omega->pi0+gamma ***
+  //------------------------------------
+  AliAnaOmegaToPi0Gamma *anaomegaToPi0Gamma = new AliAnaOmegaToPi0Gamma();
+  anaomegaToPi0Gamma->SetDebug(-1);//10 for lots of messages
+  anaomegaToPi0Gamma->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
+  anaomegaToPi0Gamma->SetInputAODPhotonName(Form("Photons%s",calorimeter.Data()));
+  anaomegaToPi0Gamma->SetNPID(1);
+  anaomegaToPi0Gamma->SetNVtxZ(1);
+  anaomegaToPi0Gamma->SetNEventsMixed(4);
+  if(calorimeter=="PHOS")
+	anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.008); // PHOS
+  else if(calorimeter=="EMCAL")
+	anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.012); // EMCAL 
+  anaomegaToPi0Gamma->SetHistoPtRangeAndNBins(0, 20, 100) ;
+  anaomegaToPi0Gamma->SetHistoMassRangeAndNBins(0, 1, 100) ;
+  anaomegaToPi0Gamma->SetPi0OverOmegaPtCut(0.8);
+  anaomegaToPi0Gamma->SetGammaOverOmegaPtCut(0.2);
+  if(kUseKinematics) anaomegaToPi0Gamma->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else anaomegaToPi0Gamma->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+  anaomegaToPi0Gamma->AddToHistogramsName(Form("AnaOmegaToPi0Gamma%s_",calorimeter.Data()));
+  if(kPrintSettings)   anaomegaToPi0Gamma->Print("");
+	
+	
+  //---------------------------------------------------------------------
+  // Electron/btag
+  //---------------------------------------------------------------------
+  if(calorimeter=="EMCAL"){
+	Double_t pOverEmin = 0.8;  //tight
+	Double_t pOverEmax = 1.2;  //tight
+	Double_t dRmax     = 0.02; //tight
+	
+	AliAnaBtag *anaelectron = new AliAnaBtag();
+	anaelectron->SetDebug(-1); //10 for lots of messages
+	anaelectron->SetCalorimeter("EMCAL");
+	if(kUseKinematics){
+		anaelectron->SwitchOffDataMC();
+		anaelectron->SetMinPt(1.);
+	}
+	anaelectron->SetOutputAODName("Electrons");
+	anaelectron->SetOutputAODClassName("AliAODPWG4Particle");
+	anaelectron->SetWriteNtuple(kFALSE);
+	//Determine which cuts to use based on enum
+	anaelectron->SetpOverEmin(pOverEmin);
+	anaelectron->SetpOverEmax(pOverEmax);
+	anaelectron->SetResidualCut(dRmax);
+	//Set Histrograms bins and ranges 
+	anaelectron->SetHistoPtRangeAndNBins(0, 100, 100) ;
+	anaelectron->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+	anaelectron->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+	if(kPrintSettings)anaelectron->Print("");
+  }
+  //==================================
   // ### Isolation analysis ###	
-  
+  //=================================
+  //Photon
   AliAnaParticleIsolation *anaisol = new AliAnaParticleIsolation();
   anaisol->SetDebug(-1);
   anaisol->SetMinPt(0);
@@ -234,6 +322,39 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaisol->AddToHistogramsName("AnaIsolPhoton_");
   if(kPrintSettings) anaisol->Print("");
   
+  //Pi0
+  AliAnaParticleIsolation *anaisolpi0 = new AliAnaParticleIsolation();
+  anaisolpi0->SetDebug(-1);
+  anaisolpi0->SetMinPt(0);
+  anaisolpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
+  anaisolpi0->AddToHistogramsName("AnaIsolPi0_");
+  anaisolpi0->SetCalorimeter(calorimeter);
+  if(kUseKinematics) anaisolpi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else  anaisolpi0->SwitchOffDataMC() ;
+  //Select clusters with no pair, if both clusters with pi0 mass
+  anaisolpi0->SwitchOffInvariantMass();
+  //anaisol->SetNeutralMesonSelection(nms);
+  //Do isolation cut
+  AliIsolationCut * ic2 =  anaisolpi0->GetIsolationCut();	
+  ic2->SetConeSize(0.4);
+  ic2->SetPtThreshold(0.2);
+  ic2->SetICMethod(AliIsolationCut::kPtThresIC);
+  if(kPrintSettings) ic->Print("");
+  //Do or not do isolation with previously produced AODs.
+  //No effect if use of SwitchOnSeveralIsolation()
+  anaisolpi0->SwitchOffReIsolation();
+  //Multiple IC
+  anaisolpi0->SwitchOffSeveralIsolation() ;
+  //Set Histograms bins and ranges
+  anaisolpi0->SetHistoPtRangeAndNBins(0, 50, 200) ;
+  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  if(kPrintSettings) anaisol->Print("");
+	
+  //===========================
+  //Correlation analysis
+  //===========================
+	
   // ### Correlation with Jet Finder AOD output
   AliAnaParticleJetFinderCorrelation *anacorrjet = new AliAnaParticleJetFinderCorrelation();
   anacorrjet->SetInputAODName(Form("Photons%s",calorimeter.Data()));
@@ -301,68 +422,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anacorrisohadron->Print("");
   
-  // -------------------------------------------------
-  // --- Pi0    Isolation and Correlation Analysis ---
-  // -------------------------------------------------
-	
-  AliNeutralMesonSelection *nms = new AliNeutralMesonSelection();
-  nms->SetInvMassCutRange(0.05, 0.2)     ;
-  nms->KeepNeutralMesonSelectionHistos(kTRUE);
-  //Set Histrograms bins and ranges
-  nms->SetHistoERangeAndNBins(0, 50, 200) ;
-  //      nms->SetHistoPtRangeAndNBins(0, 50, 100) ;
-  //      nms->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
-  //      nsm->SetHistoIMRangeAndNBins(0, 0.4, 100) ;  
-  
-  AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
-  anapi0ebe->SetDebug(-1);//10 for lots of messages
-  anapi0ebe->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
-  anapi0ebe->SetMinPt(0);
-  anapi0ebe->SetCalorimeter(calorimeter);
-  anapi0ebe->SetInputAODName(Form("Photons%s",calorimeter.Data()));
-  if(!data.Contains("delta")) {
-    anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
-    anapi0ebe->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-  }
-  else  anapi0ebe->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
-  
-  if(kUseKinematics) anapi0ebe->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  else  anapi0ebe->SwitchOffDataMC() ;	
-  anapi0ebe->SetNeutralMesonSelection(nms);
-  //Set Histrograms bins and ranges
-  anapi0ebe->SetHistoPtRangeAndNBins(0, 50, 200) ;
-  //      anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-  //      anapi0->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-  if(kPrintSettings) anapi0ebe->Print("");
-  
-  AliAnaParticleIsolation *anaisolpi0 = new AliAnaParticleIsolation();
-  anaisolpi0->SetDebug(-1);
-  anaisolpi0->SetMinPt(0);
-  anaisolpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
-  anaisolpi0->AddToHistogramsName("AnaIsolPi0_");
-  anaisolpi0->SetCalorimeter(calorimeter);
-  if(kUseKinematics) anaisolpi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  else  anaisolpi0->SwitchOffDataMC() ;
-  //Select clusters with no pair, if both clusters with pi0 mass
-  anaisolpi0->SwitchOffInvariantMass();
-  //anaisol->SetNeutralMesonSelection(nms);
-  //Do isolation cut
-  AliIsolationCut * ic2 =  anaisolpi0->GetIsolationCut();	
-  ic2->SetConeSize(0.4);
-  ic2->SetPtThreshold(0.2);
-  ic2->SetICMethod(AliIsolationCut::kPtThresIC);
-  if(kPrintSettings) ic->Print("");
-  //Do or not do isolation with previously produced AODs.
-  //No effect if use of SwitchOnSeveralIsolation()
-  anaisolpi0->SwitchOffReIsolation();
-  //Multiple IC
-  anaisolpi0->SwitchOffSeveralIsolation() ;
-  //Set Histograms bins and ranges
-  anaisolpi0->SetHistoPtRangeAndNBins(0, 50, 200) ;
-  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-  if(kPrintSettings) anaisol->Print("");
-  
   
   // ### Pi0 Correlation with hadrons, not isolated
   AliAnaParticleHadronCorrelation *anacorrhadronpi0 = new AliAnaParticleHadronCorrelation();
@@ -414,26 +473,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anacorrhadronisopi0->Print("");
   
-  //*** analysis the omega->pi0+gamma ***
-  AliAnaOmegaToPi0Gamma *anaomegaToPi0Gamma = new AliAnaOmegaToPi0Gamma();
-  anaomegaToPi0Gamma->SetDebug(-1);//10 for lots of messages
-  anaomegaToPi0Gamma->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
-  anaomegaToPi0Gamma->SetInputAODPhotonName(Form("Photons%s",calorimeter.Data()));
-  anaomegaToPi0Gamma->SetNPID(1);
-  anaomegaToPi0Gamma->SetNVtxZ(1);
-  anaomegaToPi0Gamma->SetNEventsMixed(4);
-  if(calorimeter=="PHOS")
-    anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.008); // PHOS
-  else if(calorimeter=="EMCAL")
-    anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.012); // EMCAL 
-  anaomegaToPi0Gamma->SetHistoPtRangeAndNBins(0, 20, 100) ;
-  anaomegaToPi0Gamma->SetHistoMassRangeAndNBins(0, 1, 100) ;
-  anaomegaToPi0Gamma->SetPi0OverOmegaPtCut(0.8);
-  anaomegaToPi0Gamma->SetGammaOverOmegaPtCut(0.2);
-  if(kUseKinematics) anaomegaToPi0Gamma->SwitchOnDataMC() ;//Access MC stack and fill more histograms
-  else anaomegaToPi0Gamma->SwitchOffDataMC() ;//Access MC stack and fill more histograms
-  anaomegaToPi0Gamma->AddToHistogramsName(Form("AnaOmegaToPi0Gamma%s_",calorimeter.Data()));
-  if(kPrintSettings)   anaomegaToPi0Gamma->Print("");
   
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
@@ -444,7 +483,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anaphoton,n++);
   maker->AddAnalysis(anapi0,n++);
   maker->AddAnalysis(anapi0ebe,n++);
-  maker->AddAnalysis(anaomegaToPi0Gamma,n++);   
+  maker->AddAnalysis(anaomegaToPi0Gamma,n++);  
+  if(calorimeter=="EMCAL")maker->AddAnalysis(anaelectron,n++);   
   // Isolation analysis
   maker->AddAnalysis(anaisol,n++);
   maker->AddAnalysis(anacorrisohadron,n++);
