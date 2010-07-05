@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -63,37 +62,34 @@ ClassImp(AliAnalysisTaskChargedHadronSpectra)
 
 //________________________________________________________________________
 AliAnalysisTaskChargedHadronSpectra::AliAnalysisTaskChargedHadronSpectra() 
-  : AliAnalysisTaskSE("TaskChargedHadron"), fESD(0), fListHist(0), fESDtrackCuts(0),fESDpid(0),
-    fMCtrue(0),
-    fAlephParameters(),
-    fHistPtMCKaon(0),
-    fHistPtMCProton(0),
-    fHistPtMCPion(0),
-    fHistPtMCElectron(0),
-    fHistPtMCMuon(0),
-    fHistPtEtaKaon(0),
-    fHistPtEtaKaonNoKink(0),
-    fHistPtEtaProton(0),
-    fHistPtEtaProtonDCA(0),
-    fHistPtEtaPion(0),
-    fHistPtEtaElectron(0),
-    fHistClassicKaon(0),
-    fHistClassicProton(0),
-    fHistClassicPion(0),
-    fHistClassicElectron(0),
-    fDeDx(0),
-    fHistTrackPerEvent(0),
-    fHistTrackPerEventMC(0),
-    fSecProtons(0),
-    fVertexZ(0),
-    fHistEtaNcls(0),
-    fHistEtaPhi(0),
-    fHistEffProton(0),
-    fHistEffProtonDCA(0),
-    fHistEffPion(0),
-    fHistEffKaon(0),
-    fHighPtElectrons(0),
-    fHighPtHadrons(0)
+: AliAnalysisTaskSE("TaskChargedHadron"), fESD(0), fListHist(0), fESDtrackCuts(0),fESDpid(0),
+  fMCtrue(0),
+  fTrackingMode(0),
+  fAlephParameters(),
+  fHistPtMCKaon(0),
+  fHistPtMCProton(0),
+  fHistPtMCPion(0),
+  fHistPtEtaKaon(0),
+  fHistPtEtaKaonNoKink(0),
+  fHistPtEtaProton(0),
+  fHistPtEtaProtonDCA(0),
+  fHistPtEtaPion(0),
+  fHistClassicKaon(0),
+  fHistClassicProton(0),
+  fHistClassicPion(0),
+  fDeDx(0),
+  fHistTrackPerEvent(0),
+  fHistTrackPerEventMC(0),
+  fSecProtons(0),
+  fVertexZ(0),
+  fHistEtaNcls(0),
+  fHistEtaPhi(0),
+  fHistEffProton(0),
+  fHistEffProtonDCA(0),
+  fHistEffPion(0),
+  fHistEffKaon(0),
+  fHistRealTracks(0),
+  fHistMCparticles(0)  
 {
   // default Constructor
 }
@@ -103,22 +99,19 @@ AliAnalysisTaskChargedHadronSpectra::AliAnalysisTaskChargedHadronSpectra()
 AliAnalysisTaskChargedHadronSpectra::AliAnalysisTaskChargedHadronSpectra(const char *name) 
   : AliAnalysisTaskSE(name), fESD(0), fListHist(0), fESDtrackCuts(0),fESDpid(0),
     fMCtrue(0),
+    fTrackingMode(0),
     fAlephParameters(),
     fHistPtMCKaon(0),
     fHistPtMCProton(0),
     fHistPtMCPion(0),
-    fHistPtMCElectron(0),
-    fHistPtMCMuon(0),
     fHistPtEtaKaon(0),
     fHistPtEtaKaonNoKink(0),
     fHistPtEtaProton(0),
     fHistPtEtaProtonDCA(0),
     fHistPtEtaPion(0),
-    fHistPtEtaElectron(0),
     fHistClassicKaon(0),
     fHistClassicProton(0),
     fHistClassicPion(0),
-    fHistClassicElectron(0),
     fDeDx(0),
     fHistTrackPerEvent(0),
     fHistTrackPerEventMC(0),
@@ -130,33 +123,70 @@ AliAnalysisTaskChargedHadronSpectra::AliAnalysisTaskChargedHadronSpectra(const c
     fHistEffProtonDCA(0),
     fHistEffPion(0),
     fHistEffKaon(0),
-    fHighPtElectrons(0),
-    fHighPtHadrons(0)
+    fHistRealTracks(0),
+    fHistMCparticles(0)
 {
   //
-  // standard constructur which should be used - PID objects is initialized
+  // standard constructur which should be used
   //
-
-  fMCtrue = kTRUE; // change two things for processing real data: 1. set this to false! / 2. change ALEPH parameters
-  fAlephParameters[0] = 4.23232575531564326e+00;//50*0.76176e-1;
-  fAlephParameters[1] = 8.68482806165147636e+00;//10.632; 
-  fAlephParameters[2] = 1.34000000000000005e-05;//0.13279e-4;
-  fAlephParameters[3] = 2.30445734159456084e+00;//1.8631;
-  fAlephParameters[4] = 2.25624744086878559e+00;//1.9479;
-
-  fESDpid = new AliESDpid();
-  fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0]/50.,fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
-  
-  // Constructor
   Printf("*** CONSTRUCTOR CALLED ****");
-  // Define input and output slots here
-  // Input slot #0 works with a TChain
-  //DefineInput(0, TChain::Class()); <-> not needed in AliAnalysisTaskSE
-  
+  //
+  fMCtrue = kFALSE; // change three things for processing real data: 1. set this to false! / 2. change ALEPH parameters / 3. change parameters in the Exec()
+  fTrackingMode = 0;
+  /* real */
+  fAlephParameters[0] = 0.0283086;
+  fAlephParameters[1] = 2.63394e+01;
+  fAlephParameters[2] = 5.04114e-11;
+  fAlephParameters[3] = 2.12543e+00;
+  fAlephParameters[4] = 4.88663e+00;
+  //
+  // initialize PID object
+  //
+  fESDpid = new AliESDpid();
+  //
+  // create track cuts
+  //
+  fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
+  //
+  Initialize();
   // Output slot #0 writes into a TList container
   DefineOutput(1, TList::Class());
 
- 
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskChargedHadronSpectra::Initialize()
+{
+  //
+  // updating parameters in case of changes
+  //
+  // 1. pid parameters
+  //
+  fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+  //
+  // 2. track cuts
+  //
+  //fESDtrackCuts->SetMaxCovDiagonalElements(2, 2, 0.5, 0.5, 2);  // BEWARE STANDARD VALUES ARE: 2, 2, 0.5, 0.5, 2
+  //fESDtrackCuts->SetMaxNsigmaToVertex(3);
+  //fESDtrackCuts->SetRequireSigmaToVertex(kTRUE);
+  fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fESDtrackCuts->SetMinNClustersTPC(80);
+  fESDtrackCuts->SetMaxChi2PerClusterTPC(4);
+  //fESDtrackCuts->SetMaxDCAToVertexXY(3);
+  //fESDtrackCuts->SetMaxDCAToVertexZ(3);
+  //
+  if (fTrackingMode == 1) {//for GLOBAL running IN ADDITION
+    fESDtrackCuts->SetRequireTPCRefit(kTRUE);
+    fESDtrackCuts->SetRequireITSRefit(kTRUE);
+    fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny); //TEMPORARY <-> REMOVE
+    //
+    //fESDtrackCuts->SetMinNClustersITS(3);
+    //
+    //fESDtrackCuts->SetMaxDCAToVertexXY(0.5);
+    //fESDtrackCuts->SetMaxDCAToVertexZ(0.05); // this is now done in this special function...
+  }
+
 
 }
 
@@ -169,17 +199,17 @@ void AliAnalysisTaskChargedHadronSpectra::UserCreateOutputObjects()
   fListHist = new TList();
   //fListHist->SetOwner(); // Whoever knows how the data handling is ...?
 
-  const Int_t kPtBins = 2*56;
-  const Double_t kPtMax  = 16.0;
+  const Int_t kPtBins = 2*30;
+  const Double_t kPtMax  = 2.0;
   const Int_t kEtaBins = 4;
-  const Double_t kEtaMax = 0.8;
-  const Int_t kDeDxBins = 200;
+  const Double_t kEtaMax = 1;
+  const Int_t kDeDxBins = 100;
   const Double_t kDeDxMax = 1;
   const Int_t kMultBins = 10;
   const Int_t kMultMax = 300;
 
   // sort pT-bins ..
-  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0, -2.2, -2.4, -2.6, -2.8, -3.0, -3.2, -3.4, -3.6, -3.8, -4.0, -4.5, -5.0, -5.5, -6.0, -6.5, -7.0, -7.5, -8.0, -9.0, -10.0, -11.0, -12.0, -13.0, -14.0, -15.0, -16.0};
+  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0};
   Int_t indexes[kPtBins+1];
   TMath::Sort(kPtBins+1,binsPtDummy,indexes,kFALSE);
   Double_t binsPt[kPtBins+1];
@@ -190,70 +220,57 @@ void AliAnalysisTaskChargedHadronSpectra::UserCreateOutputObjects()
   fHistPtMCKaon = new TH3F("HistPtMCKaon", "PtEtaKaon; mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
   fHistPtMCProton = new TH3F("HistPtMCProton", "PtEtaProton;mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
   fHistPtMCPion = new TH3F("HistPtMCPion", "PtEtaPion;mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
-  fHistPtMCElectron = new TH3F("HistPtMCElectron", "PtEtaElectron;mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
-  fHistPtMCMuon = new TH3F("HistPtMCMuon", "PtEtaMuon;mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
   //
   fHistPtMCKaon->GetZaxis()->Set(kPtBins, binsPt);
   fHistPtMCProton->GetZaxis()->Set(kPtBins, binsPt);
   fHistPtMCPion->GetZaxis()->Set(kPtBins, binsPt);
-  fHistPtMCElectron->GetZaxis()->Set(kPtBins, binsPt);
-  fHistPtMCMuon->GetZaxis()->Set(kPtBins, binsPt);
   //
   fListHist->Add(fHistPtMCKaon);
   fListHist->Add(fHistPtMCProton);
   fListHist->Add(fHistPtMCPion);
-  fListHist->Add(fHistPtMCElectron);
-  fListHist->Add(fHistPtMCMuon);
-
+  //
   // reconstructed particle histograms
   fHistPtEtaKaon = new TH3F("HistPtEtaKaon", "PtEtaKaon;mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
   fHistPtEtaKaonNoKink = new TH3F("HistPtEtaKaonNoKink", "PtEtaKaonNoKink;mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
   fHistPtEtaProton = new TH3F("HistPtEtaProton", "PtEtaProton;mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
-  fHistPtEtaProtonDCA = new TH3F("HistPtEtaProtonDCA", "PtEtaProton;DCA (cm); #eta; p_{T} (GeV)",200,0,15,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
+  fHistPtEtaProtonDCA = new TH3F("HistPtEtaProtonDCA", "PtEtaProton;DCA (cm); #eta; p_{T} (GeV)",1000,0,50,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
   fHistPtEtaPion = new TH3F("HistPtEtaPion", "PtEtaPion;mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
-  fHistPtEtaElectron = new TH3F("HistPtEtaElectron", "PtEtaElectron;mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
   //
   fHistPtEtaKaon->GetZaxis()->Set(kPtBins, binsPt);
   fHistPtEtaKaonNoKink->GetZaxis()->Set(kPtBins, binsPt);
   fHistPtEtaProton->GetZaxis()->Set(kPtBins, binsPt);  
   fHistPtEtaProtonDCA->GetZaxis()->Set(kPtBins, binsPt);
   fHistPtEtaPion->GetZaxis()->Set(kPtBins, binsPt);
-  fHistPtEtaElectron->GetZaxis()->Set(kPtBins, binsPt);
   //
   fListHist->Add(fHistPtEtaKaon);
   fListHist->Add(fHistPtEtaKaonNoKink);
   fListHist->Add(fHistPtEtaProton);
   fListHist->Add(fHistPtEtaProtonDCA);
   fListHist->Add(fHistPtEtaPion);
-  fListHist->Add(fHistPtEtaElectron);
-
+ 
   // histograms for the classical analysis
   fHistClassicKaon = new TH3F("HistClassicKaon", "PtEtaKaon;p_{T} (GeV);#eta;delta dEdx",kPtBins,-kPtMax,kPtMax,kEtaBins,0,kEtaMax,kDeDxBins,-kDeDxMax,kDeDxMax);
   fHistClassicProton = new TH3F("HistClassicProton", "PtEtaProton;p_{T} (GeV);#eta;delta dEdx",kPtBins,-kPtMax,kPtMax,kEtaBins,0,kEtaMax,kDeDxBins,-kDeDxMax,kDeDxMax);
   fHistClassicPion = new TH3F("HistClassicPion", "PtEtaPion;p_{T} (GeV);#eta;delta dEdx",kPtBins,-kPtMax,kPtMax,kEtaBins,0,kEtaMax,kDeDxBins,-kDeDxMax,kDeDxMax);
-  fHistClassicElectron = new TH3F("HistClassicElectron", "PtEtaElectron;p_{T} (GeV);#eta;delta dEdx",kPtBins,-kPtMax,kPtMax,kEtaBins,0,kEtaMax,kDeDxBins,-kDeDxMax,kDeDxMax);
   //
   fHistClassicKaon->GetXaxis()->Set(kPtBins, binsPt);
   fHistClassicProton->GetXaxis()->Set(kPtBins, binsPt);
   fHistClassicPion->GetXaxis()->Set(kPtBins, binsPt);
-  fHistClassicElectron->GetXaxis()->Set(kPtBins, binsPt);
   //
   fListHist->Add(fHistClassicKaon);
   fListHist->Add(fHistClassicProton);
   fListHist->Add(fHistClassicPion);
-  fListHist->Add(fHistClassicElectron);
-
   // histograms of general interest
-  fDeDx = new TH2F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",500,0.01,20.,1000,0.,500);
+  fDeDx = new TH3F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",500,0.1,100.,1000,0.,1000,2,-2,2);
   BinLogX(fDeDx);
   fListHist->Add(fDeDx);
-  fHistTrackPerEvent = new TH1F("HistTrackPerEvent", "Tracks per event;Number of Tracks;Number of Events",101,-0.5,100);
+  fHistTrackPerEvent = new TH2F("HistTrackPerEvent", "Tracks per event;Number of Tracks;Number of Events; code",101,-0.5,100,10,-0.5,9.5);
   fListHist->Add(fHistTrackPerEvent);
-  fHistTrackPerEventMC  = new TH2F("HistTrackPerEventMC", "Tracks per event;Number of Tracks;Number of Events",10,-0.5,9,101,-0.5,100);
+  fHistTrackPerEventMC  = new TH3F("HistTrackPerEventMC", "Tracks per event;code;TrackPerEvent;IsSelected",10,-0.5,9,101,-0.5,100,2,-0.5,1.5);
   fListHist->Add(fHistTrackPerEventMC);
   fSecProtons = new TH2F("SecProtons", "xy;x;y",100,-10,10,100,-10,10);
   fListHist->Add(fSecProtons);
-  fVertexZ = new TH1F("VertexZ", "vertex position;z (cm);counts",200,-50,50);
+  fVertexZ = new TH3F("VertexZ", "vertex position;x (cm); y (cm); z (cm); counts",100,-5,5,100,-5,5,100,-25,25);
   fListHist->Add(fVertexZ);
   //
   fHistEtaNcls = new TH2F("HistEtaNcls", "EtaNcls;#eta;Ncls",100,-1.5,1.5,80,0,160);
@@ -276,38 +293,36 @@ void AliAnalysisTaskChargedHadronSpectra::UserCreateOutputObjects()
   fHistEffPion->GetZaxis()->Set(kPtBins, binsPt);
   fHistEffKaon->GetZaxis()->Set(kPtBins, binsPt);
   //
-
-  
-  // histograms for dN/dpT
-  fHighPtElectrons = new TH1F("HistHighPtElectrons", "backgr;p_{T} (GeV); electron contamination (%)",15,2,15);
-  fListHist->Add(fHighPtElectrons);
-  fHighPtHadrons = new TH1F("HistHighPtHadrons", "backgr;p_{T} (GeV); electron contamination (%)",15,2,15);
-  fListHist->Add(fHighPtHadrons);
-
+  // create the histograms with all necessary information
   //
-  // Create Objects which are needed for the rest of the analysis
+  //  (0.) multiplicity, (1.) eta, (2.) pT, (3.) sign, (4.) rapPion, (5.) rapKaon, (6.) rapProton, (7.) dca, (8.) nclIter1, (9.) pullPion, (10.) pullKaon, (11.) pullProton
+  //                               0,   1, 2, 3,  4 ,   5,   6, 7,  8,  9, 10, 11
+  Int_t    binsHistReal[12] = {  301,  16,20, 2,  16,  16,  16,60, 10,100,100,100};
+  Double_t xminHistReal[12] = { -0.5,-0.8, 0,-2,-0.8,-0.8,-0.8, 0, 60,-10,-10,-10};
+  Double_t xmaxHistReal[12] = {300.5, 0.8, 2, 2, 0.8, 0.8, 0.8,15,160, 10, 10, 10};
+  fHistRealTracks = new THnSparseS("fHistRealTracks","real tracks; (0.) multiplicity, (1.) eta, (2.) pT, (3.) sign, (4.) rapPion, (5.) rapKaon, (6.) rapProton, (7.) dca, (8.) nclIter1, (9.) pullPion, (10.) pullKaon, (11.) pullProton",12,binsHistReal,xminHistReal,xmaxHistReal);
+  fListHist->Add(fHistRealTracks);
   //
-  fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
-  fESDtrackCuts->SetMaxCovDiagonalElements(2, 2, 0.5, 0.5, 2);  // BEWARE STANDARD VALUES ARE: 2, 2, 0.5, 0.5, 2
-  fESDtrackCuts->SetMaxNsigmaToVertex(3);
-  fESDtrackCuts->SetRequireSigmaToVertex(kTRUE);
-  fESDtrackCuts->SetRequireTPCRefit(kFALSE);
-  fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fESDtrackCuts->SetMinNClustersTPC(100);
-  fESDtrackCuts->SetMaxChi2PerClusterTPC(3.5);
-  //fESDtrackCuts->SetMaxDCAToVertex(3);
+  // (0.) multiplicity, (1.) eta, (2.) pT, (3.) sign, (4.) rap, (5.) dca, (6.) ID, (7.) code
+  //                            0,   1, 2, 3,   4, 5,   6,  7
+  Int_t    binsHistMC[8] = {  301,  16,20, 2,  16,60,   5,  10};
+  Double_t xminHistMC[8] = { -0.5,-0.8, 0,-2,-0.8, 0,-0.5,-0.5};
+  Double_t xmaxHistMC[8] = {300.5, 0.8, 2, 2, 0.8,15, 4.5, 9.5};
+  fHistMCparticles = new THnSparseS("fHistMCparticles"," (0.) multiplicity, (1.) eta, (2.) pT, (3.) sign, (4.) rap, (5.) dca, (6.) ID, (7.) code",8,binsHistMC,xminHistMC,xmaxHistMC);
+  fListHist->Add(fHistMCparticles);
   //
-  fListHist->Add(fESDtrackCuts);
   //
-  // 
+  //
  
+  
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskChargedHadronSpectra::UserExec(Option_t *) 
 {
+  //
   // main event loop
-  
+  //
   AliLog::SetGlobalLogLevel(AliLog::kError);
   //
   // Check Monte Carlo information and other access first:
@@ -317,13 +332,19 @@ void AliAnalysisTaskChargedHadronSpectra::UserExec(Option_t *)
     //Printf("ERROR: Could not retrieve MC event handler");
     if (fMCtrue) return;
   }
-  
-  AliMCEvent* mcEvent = eventHandler->MCEvent();
+  //
+  AliMCEvent* mcEvent = 0x0;
+  AliStack* stack = 0x0;
+  if (eventHandler) mcEvent = eventHandler->MCEvent();
   if (!mcEvent) {
     //Printf("ERROR: Could not retrieve MC event");
     if (fMCtrue) return;
   }
-  
+  if (fMCtrue) {
+    stack = mcEvent->Stack();
+    if (!stack) return;
+  }
+  //
   fESD = dynamic_cast<AliESDEvent*>( InputEvent() );
   if (!fESD) {
     //Printf("ERROR: fESD not available");
@@ -336,263 +357,284 @@ void AliAnalysisTaskChargedHadronSpectra::UserExec(Option_t *)
   }
   
   Int_t trackCounter = 0;
-
- // monitor vertex position
- const AliESDVertex *vertex = fESD->GetPrimaryVertexTPC();
- if (!vertex) {
-   fHistTrackPerEvent->Fill(trackCounter);
-   PostData(1, fListHist);
-   return;
- } else {
-   if (vertex->GetZv() != 0) fVertexZ->Fill(vertex->GetZv());
-   if (TMath::Abs(vertex->GetZv()) > 10) {
-     fHistTrackPerEvent->Fill(trackCounter);
-     PostData(1, fListHist);
-     return;
-   }   
- }
- 
- 
- 
- // 1st track loop to determine multiplicities
- for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
-   AliESDtrack *track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,i);
-   if (!track) continue;
-   if (fESDtrackCuts->AcceptTrack(track) &&  TMath::Abs(track->Eta())< 0.9) {
-     trackCounter++;
-     //
-   }
-   delete track;
- }
- 
- 
- // MC loop
- AliStack* stack = mcEvent->Stack();
- 
- if (fMCtrue) {
-   //
-   //
-   //
-   AliHeader * header = mcEvent->Header();
-   Int_t processtype = GetPythiaEventProcessType(header);
-   // non diffractive
-   if (processtype !=92 && processtype !=93 && processtype != 94) fHistTrackPerEventMC->Fill(1., trackCounter);
-   // single diffractive
-   if ((processtype == 92 || processtype == 93)) fHistTrackPerEventMC->Fill(2., trackCounter);
-   // double diffractive
-   if (processtype == 94) fHistTrackPerEventMC->Fill(3., trackCounter);
-   //
-   Int_t mult = trackCounter;//stack->GetNprimary();
-   fHistTrackPerEventMC->Fill(0., trackCounter);
-   //
-   for(Int_t i = 0; i < stack->GetNtrack(); i++) {
-     TParticle * trackMC = stack->Particle(i);
-     Int_t pdg = trackMC->GetPdgCode();
-     //
-     Double_t xv = trackMC->Vx();
-     Double_t yv = trackMC->Vy();
-     Double_t zv = trackMC->Vz();
-     Double_t dxy = 0;
-     dxy = TMath::Sqrt(xv*xv + yv*yv); // so stupid to avoid warnings
-     Double_t dz = 0;
-     dz = TMath::Abs(zv); // so stupid to avoid warnings
-     //
-     // vertex cut - selection of primaries
-     //
-     //if (dxy > 3 || dz > 10) continue; // fixed cut at 3cm in r
-     if (pdg == 11) fHistPtMCElectron->Fill(mult, TMath::Abs(trackMC->Eta()), -trackMC->Pt()); // select e- only; before vertex
-     if (pdg == -11) fHistPtMCElectron->Fill(mult, TMath::Abs(trackMC->Eta()), trackMC->Pt()); // select e+ only; before vertex
-     //
-     if (!stack->IsPhysicalPrimary(i)) continue;
-     //
-     if (pdg == 321) fHistPtMCKaon->Fill(mult, TMath::Abs(trackMC->Eta()), trackMC->Pt()); // select K+ only
-     if (pdg == 211) fHistPtMCPion->Fill(mult, TMath::Abs(trackMC->Eta()), trackMC->Pt()); // select Pi+ only
-     if (pdg == 2212) fHistPtMCProton->Fill(mult, TMath::Abs(trackMC->Eta()), trackMC->Pt()); // select p+ only
-     if (pdg == -13) fHistPtMCMuon->Fill(mult, TMath::Abs(trackMC->Eta()), trackMC->Pt()); // select mu+ only
-     //
-     if (pdg == -321) fHistPtMCKaon->Fill(mult, TMath::Abs(trackMC->Eta()), -trackMC->Pt()); // select K- only
-     if (pdg == -211) fHistPtMCPion->Fill(mult, TMath::Abs(trackMC->Eta()), -trackMC->Pt()); // select Pi- only
-     if (pdg == -2212) fHistPtMCProton->Fill(mult, TMath::Abs(trackMC->Eta()), -trackMC->Pt()); // select p- only
-     if (pdg == 13) fHistPtMCMuon->Fill(mult, TMath::Abs(trackMC->Eta()), -trackMC->Pt()); // select mu- only
-     //
-     // special Kaon checks - those which decay before entering the TPC fiducial volume
-     //
-     if (TMath::Abs(pdg)==321) {
-       TParticle * trackDaughterMC = stack->Particle(TMath::Abs(trackMC->GetFirstDaughter()));
-       Int_t pdgDaughter = trackDaughterMC->GetPdgCode();
-       if (pdgDaughter == TMath::Abs(13) && pdg == 321) fHistEffKaon->Fill(5, TMath::Abs(trackMC->Eta()), trackMC->Pt()); // Kaon control hist
-       if (pdgDaughter == TMath::Abs(13) && pdg == -321) fHistEffKaon->Fill(5, TMath::Abs(trackMC->Eta()), -trackMC->Pt()); // Kaon control hist
-     }
-   }
- }
- 
- //end MC tracks loop 
- 
- 
- // ESD loop
- // definition of PID functions --> to be put to CreateOutputObjects()
- 
- TF1 foProton("foProton", "AliExternalTrackParam::BetheBlochAleph(x/0.93827,[0],[1],[2],[3],[4])",0.05,20); 
- TF1 foPion("foPion", "AliExternalTrackParam::BetheBlochAleph(x/0.13957,[0],[1],[2],[3],[4])",0.05,20);
- TF1 foElec("foElec", "AliExternalTrackParam::BetheBlochAleph(x/0.000511,[0],[1],[2],[3],[4])",0.05,20);
- TF1 foKaon("foKaon", "AliExternalTrackParam::BetheBlochAleph(x/0.493677,[0],[1],[2],[3],[4])",0.05,20);
- TF1 foMuon("foMuon", "AliExternalTrackParam::BetheBlochAleph(x/0.105658,[0],[1],[2],[3],[4])",0.05,20);
-
- foProton.SetParameters(fAlephParameters);
- foPion.SetParameters(fAlephParameters);
- foElec.SetParameters(fAlephParameters);
- foKaon.SetParameters(fAlephParameters);
- foMuon.SetParameters(fAlephParameters);  
- 
- const Float_t k2sigmaCorr = 1/0.9545;
-
- Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
- 
- for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
-   //
-   // 1. select TPC tracks only and propagate them to the primary vertex determined with the TPC standalone
-   //
-   AliESDtrack *track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,i);
-   if (!track) continue;
-   AliESDtrack *trackDummy = fESD->GetTrack(i);
-   if (!trackDummy->GetInnerParam()) { // DEBUG DEBUG
-     delete track;
-     continue;
-   }
-   AliExternalTrackParam trackIn(*trackDummy->GetInnerParam()); 
-   Double_t ptot = trackIn.GetP(); // momentum for dEdx determination
-   Double_t pT = track->Pt();
-   Double_t eta = TMath::Abs(track->Eta());
-   //
-   fHistEtaNcls->Fill(track->Eta(),track->GetTPCNcls());
-   fHistEtaPhi->Fill(track->Eta(),track->Phi());
-   // cut for dead regions in the detector
-   //   if (track->Eta() > 0.1 && (track->Eta() < 0.2 && track->Phi() > 0.1 && track->Phi() < 0.1) continue;
-   //
-   // 2.a) apply some standard track cuts according to general recommendations
-   //
- 
-   if (!fESDtrackCuts->AcceptTrack(track)) {
-     //
-     if (fMCtrue) {
-       TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
-       Int_t pdg = TMath::Abs(trackMC->GetPdgCode());     
-       if (pdg == 321 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffKaon->Fill(6,eta,track->GetSign()*pT); // Kaon control hist
-     }
-     //
-     delete track;
-     continue;
-   }
-   
-   //
-   // 3. make the PID
-   //
-   Double_t sign = track->GetSign();
-   
-   Double_t tpcSignal = track->GetTPCsignal();
-   //
-   fDeDx->Fill(ptot, tpcSignal);
-   //
-   //
-   //
-   fHistClassicKaon->Fill(sign*pT,eta,(tpcSignal-foKaon.Eval(ptot))/foKaon.Eval(ptot));
-   fHistClassicProton->Fill(sign*pT,eta,(tpcSignal-foProton.Eval(ptot))/foProton.Eval(ptot));
-   fHistClassicPion->Fill(sign*pT,eta,(tpcSignal-foPion.Eval(ptot))/foPion.Eval(ptot));
-   fHistClassicElectron->Fill(sign*pT,eta,(tpcSignal-foElec.Eval(ptot))/foElec.Eval(ptot));
-   //
-   // fill histograms for dNdpT
-   //
-   if (eta < 0.15) {
-     fHighPtHadrons->Fill(pT);
-     Double_t delta = (tpcSignal - foElec.Eval(ptot))/foElec.Eval(ptot);
-     if (delta > 0) fHighPtElectrons->Fill(pT);
-   }
-   //
-   /* 2sigma PID with 2sigma eff correction! */
-   Double_t tpcMom = track->GetP();
-   const AliExternalTrackParam *in = track->GetTPCInnerParam();
-   if (in)
-      tpcMom = in->GetP();
-   // PION
-   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kPion)) < 2) {
-     fHistPtEtaPion->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
-     //
-     if (trackCounter < 300 && fMCtrue) {
-       TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
-       Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
-       if (pdg == 211 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffPion->Fill(0,eta,sign*pT,k2sigmaCorr);
-       if (pdg == 211 && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
-	 fHistEffPion->Fill(1,eta,sign*pT,k2sigmaCorr);
-	 TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
-	 Int_t code = TMath::Abs(trackMother->GetPdgCode());
-	 if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) fHistEffPion->Fill(3,eta,sign*pT,k2sigmaCorr);
-       }
-       if (TMath::Abs(trackMC->GetPdgCode()) != 211) fHistEffPion->Fill(2,eta,sign*pT,k2sigmaCorr);
-       if (TMath::Abs(trackMC->GetPdgCode()) == 13)  fHistEffPion->Fill(4,eta,sign*pT,k2sigmaCorr);
-       }
-   }
-   // KAON
-   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon)) < 2) {
-     fHistPtEtaKaon->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
-     //
-     if (trackCounter < 300 && fMCtrue) {
-       TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
-       Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
-       if (pdg == 321 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffKaon->Fill(0,eta,sign*pT,k2sigmaCorr);
-       if (pdg == 321 && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
-	 fHistEffKaon->Fill(1,eta,sign*pT,k2sigmaCorr);
-	 TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
-	 Int_t code = TMath::Abs(trackMother->GetPdgCode());
-	 if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) fHistEffKaon->Fill(3,eta,sign*pT,k2sigmaCorr);
-       }
-	 if (TMath::Abs(trackMC->GetPdgCode()) != 321) fHistEffKaon->Fill(2,eta,sign*pT,k2sigmaCorr);
-     }
-   }
-   // KAON NO KINK
-   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon)) < 2 && track->GetKinkIndex(0)==0) fHistPtEtaKaonNoKink->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
-   // PROTON
-   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kProton)) < 2) {
-     fHistPtEtaProton->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
-     //
-     track->GetImpactParameters(dca,cov);
-     Float_t primVtxDCA = TMath::Sqrt(dca[0]*dca[0] + dca[1]*dca[1]);
-     fHistPtEtaProtonDCA->Fill(primVtxDCA, eta, sign*pT, k2sigmaCorr);
-     //
-     if (trackCounter < 300 && fMCtrue) {
-       TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
-       Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
-       if (pdg == 2212 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
-	 fHistEffProton->Fill(0.,eta,sign*pT,k2sigmaCorr);
-	 if (eta < 0.15) fHistEffProtonDCA->Fill(0.,primVtxDCA,sign*pT,k2sigmaCorr);
-       }
-       if (pdg == 2212 && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
-	 fHistEffProton->Fill(1,eta,sign*pT,k2sigmaCorr);
-	 if (eta < 0.15) fHistEffProtonDCA->Fill(1,primVtxDCA,sign*pT,k2sigmaCorr);
-	 TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
-	 Int_t code = TMath::Abs(trackMother->GetPdgCode());
-	 if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) {
-	   fHistEffProton->Fill(3,eta,sign*pT,k2sigmaCorr);
-	   if (eta < 0.15) fHistEffProtonDCA->Fill(3,primVtxDCA,sign*pT,k2sigmaCorr);
-	 }
-	 if (code!=3122&&code!=3222&&code!=3212&&code!=3112&&code!=3322&&code!=3312&&code!=3332&&code!=130&&code!=310) fSecProtons->Fill(trackMC->Vx(),trackMC->Vy());
-       }
-       if (TMath::Abs(trackMC->GetPdgCode()) != 2212) fHistEffProton->Fill(2,eta,sign*pT,k2sigmaCorr);
-     }
-   }
-   // ELECTRON
-   if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kElectron))) fHistPtEtaElectron->Fill(trackCounter, eta, sign*pT, k2sigmaCorr);
-   
-   delete track;
-   
- } // end of track loop
- 
- fHistTrackPerEvent->Fill(trackCounter);
- 
- // Post output data
- 
- 
- PostData(1, fListHist);
-
+  //
+  // check if event is selected by physics selection class
+  //
+  fHistTrackPerEvent->Fill(fESD->GetNumberOfTracks(),0);
+  Bool_t isSelected = kFALSE;
+  isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if (isSelected) fHistTrackPerEvent->Fill(fESD->GetNumberOfTracks(),1); 
+  //
+  // monitor vertex position
+  //
+  const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
+  if(vertex->GetNContributors()<1) {
+    // SPD vertex
+    vertex = fESD->GetPrimaryVertexSPD();
+    if(vertex->GetNContributors()<1) vertex = 0x0;
+  }  
+  
+  // 1st track loop to determine multiplicities
+  for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
+    AliESDtrack *track = 0x0;
+    if (fTrackingMode == 0) track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,i);
+    if (fTrackingMode == 1) track = new AliESDtrack(*fESD->GetTrack(i));  // alternative: global track GLOBAL GLOBAL  GLOBAL GLOBAL  GLOBAL GLOBAL  GLOBAL
+    if (!track) continue;
+    if (fESDtrackCuts->AcceptTrack(track) &&  TMath::Abs(track->Eta())< 0.9) {
+      trackCounter++;
+      //
+    }
+    delete track;
+  }
+  
+  fHistTrackPerEventMC->Fill(0., trackCounter, isSelected);
+  fHistTrackPerEvent->Fill(trackCounter,2);  
+  
+  if (fMCtrue) {
+    //
+    //
+    //
+    AliHeader * header = mcEvent->Header();
+    Int_t processtype = GetPythiaEventProcessType(header);
+    // non diffractive
+    if (processtype !=92 && processtype !=93 && processtype != 94) fHistTrackPerEventMC->Fill(1., trackCounter, isSelected);
+    // single diffractive
+    if ((processtype == 92 || processtype == 93)) fHistTrackPerEventMC->Fill(2., trackCounter, isSelected);
+    // double diffractive
+    if (processtype == 94) fHistTrackPerEventMC->Fill(3., trackCounter, isSelected);
+    //
+    Int_t mult = trackCounter;//stack->GetNprimary();
+    //
+    for(Int_t i = 0; i < stack->GetNtrack(); i++) {
+      TParticle * trackMC = stack->Particle(i);
+      Int_t pdg = trackMC->GetPdgCode();
+      //
+      Double_t xv = trackMC->Vx();
+      Double_t yv = trackMC->Vy();
+      Double_t zv = trackMC->Vz();
+      Double_t dxy = 0;
+      dxy = TMath::Sqrt(xv*xv + yv*yv); // so stupid to avoid warnings
+      Double_t dz = 0;
+      dz = TMath::Abs(zv); // so stupid to avoid warnings
+      //
+      // vertex cut - selection of primaries
+      //
+      //if (dxy > 3 || dz > 10) continue; // fixed cut at 3cm in r
+      //
+      if (!stack->IsPhysicalPrimary(i)) continue;
+      //
+      if (pdg == 321) fHistPtMCKaon->Fill(mult, TMath::Abs(trackMC->Y()), trackMC->Pt()); // select K+ only
+      if (pdg == 211) fHistPtMCPion->Fill(mult, TMath::Abs(trackMC->Y()), trackMC->Pt()); // select Pi+ only
+      if (pdg == 2212) fHistPtMCProton->Fill(mult, TMath::Abs(trackMC->Y()), trackMC->Pt()); // select p+ only
+      //
+      if (pdg == -321) fHistPtMCKaon->Fill(mult, TMath::Abs(trackMC->Y()), -trackMC->Pt()); // select K- only
+      if (pdg == -211) fHistPtMCPion->Fill(mult, TMath::Abs(trackMC->Y()), -trackMC->Pt()); // select Pi- only
+      if (pdg == -2212) fHistPtMCProton->Fill(mult, TMath::Abs(trackMC->Y()), -trackMC->Pt()); // select p- only
+      //
+      // special Kaon checks - those which decay before entering the TPC fiducial volume
+      // <-> should be revisited by looping from first to last daugther and check if UniqueID is 4
+      //
+      if (TMath::Abs(pdg)==321) {
+	TParticle * trackDaughterMC = stack->Particle(TMath::Abs(trackMC->GetFirstDaughter()));
+	Int_t pdgDaughter = trackDaughterMC->GetPdgCode();
+	if (TMath::Abs(pdgDaughter) == 13 && pdg == 321) fHistEffKaon->Fill(5, TMath::Abs(trackMC->Y()), trackMC->Pt()); // Kaon control hist
+	if (TMath::Abs(pdgDaughter) == 13 && pdg == -321) fHistEffKaon->Fill(5, TMath::Abs(trackMC->Y()), -trackMC->Pt()); // Kaon control hist
+      }
+    }
+  }
+  //
+  //end MC tracks loop <-> now check event selection criteria
+  //
+  if (!isSelected) {
+    PostData(1, fListHist);
+    return;
+  }
+  //
+  if (!vertex) {
+    fHistTrackPerEventMC->Fill(0., trackCounter, isSelected);
+    PostData(1, fListHist);
+    return;
+  } else {
+    fVertexZ->Fill(vertex->GetXv(),vertex->GetYv(),vertex->GetZv());
+    if (TMath::Abs(vertex->GetZv()) > 10) {
+      fHistTrackPerEventMC->Fill(0., trackCounter, isSelected);
+      PostData(1, fListHist);
+      return;
+    }
+  }
+  //
+  // tarck loop
+  //
+  const Float_t kNsigmaCut = 3;
+  const Float_t k2sigmaCorr = 1/(0.5*(TMath::Erf(kNsigmaCut/sqrt(2))-TMath::Erf(-kNsigmaCut/sqrt(2))))/*1/0.9545*/;
+  
+  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
+  
+  for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
+    //
+    // 1. select TPC tracks only and propagate them to the primary vertex determined with the TPC standalone
+    //
+    AliESDtrack *track = 0x0;
+    if (fTrackingMode == 0) track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,i);
+    if (fTrackingMode == 1) track = new AliESDtrack(*fESD->GetTrack(i)); // alternative: global track GLOBAL GLOBAL  GLOBAL GLOBAL 
+    if (!track) continue;
+    AliESDtrack *trackDummy = fESD->GetTrack(i);
+    if (!trackDummy->GetInnerParam()) { // DEBUG DEBUG
+      delete track;
+      continue;
+    }
+    //
+    if (track->GetTPCNclsIter1() < 80) {
+      delete track;
+      continue;
+    }
+    //
+    AliExternalTrackParam trackIn(*trackDummy->GetInnerParam()); 
+    Double_t ptot = trackIn.GetP(); // momentum for dEdx determination
+    Double_t pT = track->Pt();
+    Double_t eta = TMath::Abs(track->Eta());
+    //
+    fHistEtaNcls->Fill(track->Eta(),track->GetTPCNcls());
+    fHistEtaPhi->Fill(track->Eta(),track->Phi());
+    //
+    // cut for dead regions in the detector
+    // if (track->Eta() > 0.1 && (track->Eta() < 0.2 && track->Phi() > 0.1 && track->Phi() < 0.1) continue;
+    //
+    // 2.a) apply some standard track cuts according to general recommendations
+    //
+    if (!fESDtrackCuts->AcceptTrack(track)) {
+      //
+      if (fMCtrue) {
+	TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
+	Int_t pdg = TMath::Abs(trackMC->GetPdgCode());     
+	if (pdg == 321 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffKaon->Fill(6,eta,track->GetSign()*pT); // Kaon control hist
+      }
+      //
+      delete track;
+      continue;
+    }
+    
+    if (fTrackingMode == 1) {
+      /*if (!SelectOnImpPar(track)) {
+	delete track;
+	continue;
+	}*/
+    }
+    
+    //
+    // calculate rapidities and kinematics
+    // 
+    //
+    Double_t pvec[3];
+    track->GetPxPyPz(pvec);
+    Double_t energyPion = TMath::Sqrt(track->GetP()*track->GetP() + AliPID::ParticleMass(AliPID::kPion)*AliPID::ParticleMass(AliPID::kPion));
+    Double_t energyKaon = TMath::Sqrt(track->GetP()*track->GetP() + AliPID::ParticleMass(AliPID::kKaon)*AliPID::ParticleMass(AliPID::kKaon));
+    Double_t energyProton = TMath::Sqrt(track->GetP()*track->GetP() + AliPID::ParticleMass(AliPID::kProton)*AliPID::ParticleMass(AliPID::kProton));
+    //
+    Double_t rapPion = TMath::Abs(0.5*TMath::Log((energyPion + pvec[2])/(energyPion - pvec[2])));
+    Double_t rapKaon = TMath::Abs(0.5*TMath::Log((energyKaon + pvec[2])/(energyKaon - pvec[2])));
+    Double_t rapProton = TMath::Abs(0.5*TMath::Log((energyProton + pvec[2])/(energyProton - pvec[2])));
+    //
+    // 3. make the PID
+    //
+    Double_t sign = track->GetSign();   
+    Double_t tpcSignal = track->GetTPCsignal();
+    //
+    if (eta < 0.8 && track->GetTPCsignalN() > 70) fDeDx->Fill(ptot, tpcSignal, sign);
+    //
+    // 3.a. calculate expected signals
+    //
+    Float_t sigKaon     = fESDpid->GetTPCResponse().GetExpectedSignal(ptot, AliPID::kKaon);
+    Float_t sigProton   = fESDpid->GetTPCResponse().GetExpectedSignal(ptot, AliPID::kProton);
+    Float_t sigPion     = fESDpid->GetTPCResponse().GetExpectedSignal(ptot, AliPID::kPion);
+    //
+    // 3.b. fill histograms
+    //
+    fHistClassicKaon->Fill(sign*pT,rapKaon,(tpcSignal-sigKaon)/sigKaon);
+    fHistClassicProton->Fill(sign*pT,rapProton,(tpcSignal-sigProton)/sigProton);
+    fHistClassicPion->Fill(sign*pT,rapPion,(tpcSignal-sigPion)/sigPion);
+    //
+    /* 2sigma PID with 2sigma eff correction! */
+    // PION
+    if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kPion)) < kNsigmaCut) {
+      fHistPtEtaPion->Fill(trackCounter, rapPion, sign*pT, k2sigmaCorr);
+      //
+      if (trackCounter < 300 && fMCtrue) {
+	TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
+	Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
+	if (pdg == 211 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffPion->Fill(0,rapPion,sign*pT,k2sigmaCorr);
+	if (pdg == 211 && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
+	  fHistEffPion->Fill(1,rapPion,sign*pT,k2sigmaCorr);
+	  if (trackMC->GetFirstMother() > 0) {
+	    TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
+	    Int_t code = TMath::Abs(trackMother->GetPdgCode());
+	    if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) fHistEffPion->Fill(3,rapPion,sign*pT,k2sigmaCorr);
+	  }
+	}
+	if (TMath::Abs(trackMC->GetPdgCode()) != 211) fHistEffPion->Fill(2,rapPion,sign*pT,k2sigmaCorr);
+	if (TMath::Abs(trackMC->GetPdgCode()) == 13)  fHistEffPion->Fill(4,rapPion,sign*pT,k2sigmaCorr);
+      }
+    }
+    // KAON
+    if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon)) < kNsigmaCut) {
+      fHistPtEtaKaon->Fill(trackCounter, rapKaon, sign*pT, k2sigmaCorr);
+      //
+      if (trackCounter < 300 && fMCtrue) {
+	TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
+	Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
+	if (pdg == 321 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) fHistEffKaon->Fill(0,rapKaon,sign*pT,k2sigmaCorr);
+	if (pdg == 321 && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
+	  fHistEffKaon->Fill(1,rapKaon,sign*pT,k2sigmaCorr);
+	  if (trackMC->GetFirstMother() > 0) {
+	    TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
+	    Int_t code = TMath::Abs(trackMother->GetPdgCode());
+	    if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) fHistEffKaon->Fill(3,rapKaon,sign*pT,k2sigmaCorr);
+	  }
+	}
+	if (TMath::Abs(trackMC->GetPdgCode()) != 321) fHistEffKaon->Fill(2,rapKaon,sign*pT,k2sigmaCorr);
+      }
+    }
+    // KAON NO KINK
+    if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kKaon)) < kNsigmaCut && track->GetKinkIndex(0)==0) fHistPtEtaKaonNoKink->Fill(trackCounter, rapKaon, sign*pT, k2sigmaCorr);
+    // PROTON
+    if (TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kProton)) < kNsigmaCut) {
+      fHistPtEtaProton->Fill(trackCounter, rapProton, sign*pT, k2sigmaCorr);
+      //
+      track->GetImpactParameters(dca,cov);
+      Float_t primVtxDCA = TMath::Sqrt(dca[0]*dca[0] + dca[1]*dca[1]);
+      fHistPtEtaProtonDCA->Fill(primVtxDCA, rapProton, sign*pT, k2sigmaCorr);
+      //
+      if (trackCounter < 300 && fMCtrue) {
+	TParticle *trackMC = stack->Particle(TMath::Abs(track->GetLabel()));
+	Int_t pdg = TMath::Abs(trackMC->GetPdgCode());
+	if (pdg == 2212 && stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
+	  fHistEffProton->Fill(0.,rapProton,sign*pT,k2sigmaCorr);
+	  if (rapProton < 0.15) fHistEffProtonDCA->Fill(0.,primVtxDCA,sign*pT,k2sigmaCorr);
+	}
+	if (pdg == 2212 && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) {
+	  fHistEffProton->Fill(1,rapProton,sign*pT,k2sigmaCorr);
+	  if (rapProton < 0.15) fHistEffProtonDCA->Fill(1,primVtxDCA,sign*pT,k2sigmaCorr);
+	  if (trackMC->GetFirstMother() > 0) {
+	    TParticle *trackMother = stack->Particle(trackMC->GetFirstMother());
+	    Int_t code = TMath::Abs(trackMother->GetPdgCode());
+	    if (code==3122||code==3222||code==3212||code==3112||code==3322||code==3312||code==3332||code==130||code==310) {
+	      fHistEffProton->Fill(3,rapProton,sign*pT,k2sigmaCorr);
+	      if (rapProton < 0.15) fHistEffProtonDCA->Fill(3,primVtxDCA,sign*pT,k2sigmaCorr);
+	    }
+	    if (code!=3122&&code!=3222&&code!=3212&&code!=3112&&code!=3322&&code!=3312&&code!=3332&&code!=130&&code!=310) fSecProtons->Fill(trackMC->Vx(),trackMC->Vy());
+	  }
+	}
+	if (TMath::Abs(trackMC->GetPdgCode()) != 2212) fHistEffProton->Fill(2,rapProton,sign*pT,k2sigmaCorr);
+      }
+    }
+    
+    delete track;
+    
+  } // end of track loop
+  
+  // Post output data  
+  PostData(1, fListHist);
+  
 }      
 
 
@@ -601,11 +643,28 @@ void AliAnalysisTaskChargedHadronSpectra::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
-  cout << "*** TERMINATE ***" << endl;
+  Printf("*** CONSTRUCTOR CALLED ****");
 
 }
 
 
+//________________________________________________________________________
+Bool_t AliAnalysisTaskChargedHadronSpectra::SelectOnImpPar(AliESDtrack* t) {
+  //
+  // cut on transverse impact parameter
+  //
+  Float_t d0z0[2],covd0z0[3];
+  t->GetImpactParameters(d0z0,covd0z0);
+  Float_t sigma= 0.0050+0.0060/TMath::Power(t->Pt(),0.9);
+  Float_t d0max = 7.*sigma;
+  //
+  Float_t sigmaZ = 0.0146+0.0070/TMath::Power(t->Pt(),1.114758);
+  if (t->Pt() > 1) sigmaZ = 0.0216;
+  Float_t d0maxZ = 5.*sigmaZ;
+  //
+  if (TMath::Abs(d0z0[0]) < d0max && TMath::Abs(d0z0[1]) < d0maxZ) return kTRUE;
+  return kFALSE;
+}
 
 
 //________________________________________________________________________
@@ -675,7 +734,7 @@ Int_t AliAnalysisTaskChargedHadronSpectra::GetPythiaEventProcessType(const AliHe
 
 
 //________________________________________________________________________
-TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicProton(const TH3F * input, Int_t EtaBin, const Double_t * AlephParams) {
+TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicProton(const TH3F * input, Int_t EtaBinLow, Int_t EtaBinHigh,const  Double_t * AlephParams) {
   //
   // The multiple Gauss fitting is happening here...
   // input histogram is of the form (Pt, eta, difference in dEdx)
@@ -696,13 +755,13 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicProton(const TH3F * in
   
   const Double_t kSigma = 0.06; // expected resolution (roughly)
 
-  const Int_t kPtBins = 2*56/*input->GetXaxis()->GetNbins()*/;
+  const Int_t kPtBins = 2*30/*input->GetXaxis()->GetNbins()*/;
   const Double_t kPtMax  = input->GetXaxis()->GetXmax();
   const Int_t kEtaBins = input->GetYaxis()->GetNbins();
 
   TH1D * histPt = new TH1D("histPt", "Pt; pT (Gev); dN",kPtBins,-kPtMax,kPtMax);
   // sort pT-bins ..
-  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0, -2.2, -2.4, -2.6, -2.8, -3.0, -3.2, -3.4, -3.6, -3.8, -4.0, -4.5, -5.0, -5.5, -6.0, -6.5, -7.0, -7.5, -8.0, -9.0, -10.0, -11.0, -12.0, -13.0, -14.0, -15.0, -16.0};
+  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0};
   Int_t indexes[kPtBins+1];
   TMath::Sort(kPtBins+1,binsPtDummy,indexes,kFALSE);
   Double_t binsPt[kPtBins+1];
@@ -715,39 +774,51 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicProton(const TH3F * in
 
   for(Int_t x=1; x < kPtBins+1; x++) {
     Double_t pT = input->GetXaxis()->GetBinCenter(x);
+    cout << "Now fitting: " << pT << endl;
     for(Int_t y=1; y < kEtaBins+1; y++) {
-      Double_t eta = input->GetYaxis()->GetBinCenter(y);
+      Double_t rapidity =  input->GetYaxis()->GetBinCenter(y);
+      Double_t eta = TMath::ASinH(TMath::Sqrt(1 + (0.938*0.938)/(pT*pT))*TMath::SinH(rapidity)); 
       Double_t theta = 2*TMath::ATan(TMath::Exp(-eta));
       Double_t ptot = TMath::Abs(pT/TMath::Sin(theta));
-      TH1D *histDeDx = input->ProjectionZ(Form("dedx_%i_%i",x,y),x,x,y,y);
+      TH1D *histDeDx = input->ProjectionZ(Form("dedx_%i_%i",x,y),x,x,y,y + EtaBinHigh - EtaBinLow);
       histDeDx->SetTitle(Form("pt_%f",pT));
       Float_t maxYield = histDeDx->GetEntries()/(TMath::Sqrt(2*TMath::Pi())*0.04/histDeDx->GetBinWidth(1));
       //
       TF1 * gausFit = new TF1("gausFit", "gaus(0) + gaus(3) + gaus(6) + gaus(9)",-1/*-7*kSigma*/,1/*7*kSigma*/);
-      Double_t parameters[12] = {maxYield/2.,0,kSigma,maxYield/2.,(foPion->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot),kSigma,maxYield/2.,(foElec->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot),kSigma,maxYield/2.,(foKaon->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot),kSigma};
+      Double_t parameters[12] = {maxYield/2.,0,kSigma,
+				 maxYield/2.,(foPion->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot),kSigma*(foPion->Eval(ptot)/foProton->Eval(ptot)),
+				 maxYield/2.,(foElec->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot),kSigma*(foElec->Eval(ptot)/foProton->Eval(ptot)),
+				 maxYield/2.,(foKaon->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot),kSigma*(foKaon->Eval(ptot)/foProton->Eval(ptot))};
       gausFit->SetParameters(parameters);
-      gausFit->SetParLimits(0,0.,maxYield);
-      gausFit->SetParLimits(1,-0.05,0.05);
-      gausFit->SetParLimits(2,0.04,0.08);
-      //
-      Double_t pionPosition = (foPion->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot);
-      gausFit->SetParLimits(0,0.,maxYield);
-      gausFit->SetParLimits(4, 0.95*pionPosition, 1.05*pionPosition);
-      gausFit->SetParLimits(5,0.8*kSigma*(foPion->Eval(ptot)/foProton->Eval(ptot)),1.2*kSigma*(foPion->Eval(ptot)/foProton->Eval(ptot)));
-      //
-      Double_t elecPosition = (foElec->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot);
-      gausFit->SetParLimits(0,0.,maxYield);
-      gausFit->SetParLimits(7, 0.95*elecPosition, 1.05*elecPosition);
-      gausFit->SetParLimits(8,0.8*kSigma*(foElec->Eval(ptot)/foProton->Eval(ptot)),1.2*kSigma*(foElec->Eval(ptot)/foProton->Eval(ptot)));
-      //
-      Double_t kaonPosition = (foKaon->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot);
-      gausFit->SetParLimits(0,0.,maxYield);
-      gausFit->SetParLimits(10, 0.95*kaonPosition, 1.05*kaonPosition);
-      gausFit->SetParLimits(11,0.8*kSigma*(foKaon->Eval(ptot)/foProton->Eval(ptot)),1.2*kSigma*(foKaon->Eval(ptot)/foProton->Eval(ptot)));
+      if (TMath::Abs(pT) < 0.7) {
+	gausFit = new TF1("gausFit", "gaus(0)",-1/*-7*kSigma*/,1/*7*kSigma*/);
+	gausFit->SetRange(-6*kSigma,6*kSigma);
+	gausFit->SetParameters(parameters);
+	gausFit->SetParLimits(0,0.,maxYield);
+	//for(Int_t ipar = 3; ipar < 12; ipar++) gausFit->FixParameter(ipar,0.);
+	gausFit->SetParLimits(1,-0.15,0.15);
+	gausFit->SetParLimits(2,0.02,0.18);
+	//
+      } else {
+	Double_t pionPosition = (foPion->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot);
+	gausFit->SetParLimits(3,0.,maxYield);
+	gausFit->SetParLimits(4, 0.95*pionPosition, 1.05*pionPosition);
+	gausFit->SetParLimits(5,0.8*kSigma*(foPion->Eval(ptot)/foProton->Eval(ptot)),1.2*kSigma*(foPion->Eval(ptot)/foProton->Eval(ptot)));
+	//
+	Double_t elecPosition = (foElec->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot);
+	gausFit->SetParLimits(6,0.,maxYield);
+	gausFit->SetParLimits(7, 0.95*elecPosition, 1.05*elecPosition);
+	gausFit->SetParLimits(8,0.8*kSigma*(foElec->Eval(ptot)/foProton->Eval(ptot)),1.2*kSigma*(foElec->Eval(ptot)/foProton->Eval(ptot)));
+	//
+	Double_t kaonPosition = (foKaon->Eval(ptot)-foProton->Eval(ptot))/foProton->Eval(ptot);
+	gausFit->SetParLimits(9,0.,maxYield);
+	gausFit->SetParLimits(10, 0.95*kaonPosition, 1.05*kaonPosition);
+	gausFit->SetParLimits(11,0.8*kSigma*(foKaon->Eval(ptot)/foProton->Eval(ptot)),1.2*kSigma*(foKaon->Eval(ptot)/foProton->Eval(ptot)));
+      }
       histDeDx->Fit("gausFit","QNR");
       gausFit->GetParameters(parameters);
       // visualization      
-      if (y == EtaBin) {
+      if (y == EtaBinLow) {
 	canvMany->cd(x);
 	gPad->SetLogy();  
 	histDeDx->SetMarkerStyle(21);
@@ -779,22 +850,13 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicProton(const TH3F * in
 	gausFit1.Draw("same"); 
 	gausFit2.Draw("same"); 
 	gausFit3.Draw("same");
-	canvMany->Print("canvManyProton.ps");
+	if (TMath::Abs(pT) < 2) canvMany->Print("canvManyProton.ps");
       }
       
       Double_t yield = gausFit->GetParameter(0)*TMath::Sqrt(2*TMath::Pi())*gausFit->GetParameter(2)/histDeDx->GetBinWidth(1); // area of the gaus fit
       delete gausFit;
       //
-      // stupid solution --> remove as soon as possible
-      /*yield = 0;
-      TF1 * gausYield = new TF1("gausYield", "gaus(0)",-5*kSigma,5*kSigma);
-      gausYield->SetParameters(gausFit->GetParameter(0),gausFit->GetParameter(1),gausFit->GetParameter(2));
-      for(Int_t i=1; i < histDeDx->GetXaxis()->GetNbins(); i++) {
-        Double_t delta = histDeDx->GetXaxis()->GetBinCenter(i);
-	yield += gausYield->Eval(delta);
-      }*/
-      //
-      if (y == EtaBin && yield > 0) histPt->Fill(pT,yield);
+      if (y == EtaBinLow && yield > 0) histPt->Fill(pT,yield);
       //delete gausYield;
     }
   }
@@ -810,11 +872,12 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicProton(const TH3F * in
 
 
 //________________________________________________________________________
-TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicPion(const TH3F * input, Int_t EtaBin,const  Double_t * AlephParams) {
+TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicPion(const TH3F * input, Int_t EtaBinLow, Int_t EtaBinHigh,const  Double_t * AlephParams) {
   //
   // The multiple Gauss fitting is happening here...
+  // input histogram is of the form (Pt, eta, difference in dEdx)
   //
-  
+
   TF1 *foProton = new TF1("foProton", "AliExternalTrackParam::BetheBlochAleph(x/0.93827,[0],[1],[2],[3],[4])",0.05,20); 
   TF1 *foPion = new TF1("foPion", "AliExternalTrackParam::BetheBlochAleph(x/0.13957,[0],[1],[2],[3],[4])",0.05,20);
   TF1 *foElec = new TF1("foElec", "AliExternalTrackParam::BetheBlochAleph(x/0.000511,[0],[1],[2],[3],[4])",0.05,20);
@@ -827,17 +890,16 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicPion(const TH3F * inpu
   foKaon->SetParameters(AlephParams);  
   foMuon->SetParameters(AlephParams);
 
-  // input histogram is of the form (Pt, eta, difference in dEdx)
-
+  
   const Double_t kSigma = 0.06; // expected resolution (roughly)
 
-  const Int_t kPtBins = 2*56/*input->GetXaxis()->GetNbins()*/;
+  const Int_t kPtBins = 2*30/*input->GetXaxis()->GetNbins()*/;
   const Double_t kPtMax  = input->GetXaxis()->GetXmax();
   const Int_t kEtaBins = input->GetYaxis()->GetNbins();
- 
+
   TH1D * histPt = new TH1D("histPt", "Pt; pT (Gev); dN",kPtBins,-kPtMax,kPtMax);
   // sort pT-bins ..
-  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0, -2.2, -2.4, -2.6, -2.8, -3.0, -3.2, -3.4, -3.6, -3.8, -4.0, -4.5, -5.0, -5.5, -6.0, -6.5, -7.0, -7.5, -8.0, -9.0, -10.0, -11.0, -12.0, -13.0, -14.0, -15.0, -16.0};
+  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0};
   Int_t indexes[kPtBins+1];
   TMath::Sort(kPtBins+1,binsPtDummy,indexes,kFALSE);
   Double_t binsPt[kPtBins+1];
@@ -845,66 +907,104 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicPion(const TH3F * inpu
   histPt->GetXaxis()->Set(kPtBins, binsPt);
   //
 
-  TCanvas * canvMany = new TCanvas();
-  canvMany->Divide(8,5);
+  TCanvas * canvMany = new TCanvas("canvManyPion","canvManyPion");
+  canvMany->Print("canvManyPion.ps[");
 
   for(Int_t x=1; x < kPtBins+1; x++) {
     Double_t pT = input->GetXaxis()->GetBinCenter(x);
     for(Int_t y=1; y < kEtaBins+1; y++) {
-      Double_t eta = input->GetYaxis()->GetBinCenter(y);
+      Double_t rapidity =  input->GetYaxis()->GetBinCenter(y);
+      Double_t eta = TMath::ASinH(TMath::Sqrt(1 + (0.1395*0.1395)/(pT*pT))*TMath::SinH(rapidity));  
       Double_t theta = 2*TMath::ATan(TMath::Exp(-eta));
       Double_t ptot = TMath::Abs(pT/TMath::Sin(theta));
-      TH1D *histDeDx = input->ProjectionZ(Form("dedx_%i_%i",x,y),x,x,y,y);
+      TH1D *histDeDx = input->ProjectionZ(Form("dedx_%i_%i",x,y),x,x,y,y + EtaBinHigh - EtaBinLow);
+      histDeDx->SetTitle(Form("pt_%f",pT));
+      Float_t maxYield = histDeDx->GetEntries()/(TMath::Sqrt(2*TMath::Pi())*0.04/histDeDx->GetBinWidth(1));
       //
-      TF1 * gausFit = new TF1("gausFit", "gaus(0) + gaus(3) + gaus(6) + gaus(9)",-5*kSigma,5*kSigma);
-      //Double_t parameters[12] = {100,0,kSigma,100,TMath::Log(foProton->Eval(ptot)/foPion->Eval(ptot)),kSigma,100,TMath::Log(foElec->Eval(ptot)/foPion->Eval(ptot)),kSigma,100,TMath::Log(foKaon->Eval(ptot)/foPion->Eval(ptot)),kSigma};
-      Double_t parameters[12] = {100,0,kSigma,100,(foProton->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot),kSigma,100,(foElec->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot),kSigma,100,(foKaon->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot),kSigma};
+      TF1 * gausFit = new TF1("gausFit", "gaus(0) + gaus(3) + gaus(6) + gaus(9)",-1/*-7*kSigma*/,1/*7*kSigma*/);
+      Double_t parameters[12] = {maxYield/2.,0,kSigma,
+				 maxYield/2.,(foProton->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot),kSigma*(foPion->Eval(ptot)/foPion->Eval(ptot)),
+				 maxYield/2.,(foElec->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot),kSigma*(foElec->Eval(ptot)/foPion->Eval(ptot)),
+				 maxYield/2.,(foKaon->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot),kSigma*(foKaon->Eval(ptot)/foPion->Eval(ptot))};
       gausFit->SetParameters(parameters);
-      gausFit->SetParLimits(1,-0.05,0.05);//gausFit->FixParameter(1,0); DEBUG DEBUG DEBUG
-      gausFit->SetParLimits(2,0.04,0.08);//gausFit->FixParameter(2,kSigma); DEBUG DEBUG DEBUG
+      gausFit->SetParLimits(0,0.,maxYield);
+      gausFit->SetParLimits(1,-0.05,0.05);
+      gausFit->SetParLimits(2,0.04,0.08);
       //
-      gausFit->FixParameter(4,(foProton->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot));
-      gausFit->FixParameter(5,kSigma);
-      gausFit->FixParameter(7,(foElec->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot));
-      gausFit->FixParameter(8,kSigma);
-      gausFit->FixParameter(10,(foKaon->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot));
-      gausFit->FixParameter(11,kSigma);
-      histDeDx->Fit("gausFit","Q0");
-      if (y == EtaBin && pT < 0) {
-	canvMany->cd(x);	
-	gPad->SetLogy();
-	histDeDx->Draw();
+      Double_t protonPosition = (foProton->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot);
+      gausFit->SetParLimits(3,0.,maxYield);
+      gausFit->SetParLimits(4, 0.95*protonPosition, 1.05*protonPosition);
+      gausFit->SetParLimits(5,0.8*kSigma*(foProton->Eval(ptot)/foPion->Eval(ptot)),1.2*kSigma*(foProton->Eval(ptot)/foPion->Eval(ptot)));
+      //
+      Double_t elecPosition = (foElec->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot);
+      gausFit->SetParLimits(6,0.,maxYield);
+      gausFit->SetParLimits(7, 0.95*elecPosition, 1.05*elecPosition);
+      gausFit->SetParLimits(8,0.8*kSigma*(foElec->Eval(ptot)/foPion->Eval(ptot)),1.2*kSigma*(foElec->Eval(ptot)/foPion->Eval(ptot)));
+      //
+      Double_t kaonPosition = (foKaon->Eval(ptot)-foPion->Eval(ptot))/foPion->Eval(ptot);
+      gausFit->SetParLimits(9,0.,maxYield);
+      gausFit->SetParLimits(10, 0.95*kaonPosition, 1.05*kaonPosition);
+      gausFit->SetParLimits(11,0.8*kSigma*(foKaon->Eval(ptot)/foPion->Eval(ptot)),1.2*kSigma*(foKaon->Eval(ptot)/foPion->Eval(ptot)));
+      histDeDx->Fit("gausFit","QNR");
+      gausFit->GetParameters(parameters);
+      // visualization      
+      if (y == EtaBinLow) {
+	canvMany->cd(x);
+	gPad->SetLogy();  
+	histDeDx->SetMarkerStyle(21);
+	histDeDx->SetMarkerSize(0.7);
+	histDeDx->Draw("E");
+	gausFit->SetLineWidth(2);
 	gausFit->Draw("same");
+	//
+	TF1 gausFit0("gausFit0", "gaus(0)",-1,1);
+	TF1 gausFit1("gausFit1", "gaus(0)",-1,1);
+	TF1 gausFit2("gausFit2", "gaus(0)",-1,1);
+	TF1 gausFit3("gausFit3", "gaus(0)",-1,1);
+	gausFit0.SetParameters(parameters[0],parameters[1],parameters[2]);
+	gausFit1.SetParameters(parameters[3],parameters[4],parameters[5]);
+	gausFit2.SetParameters(parameters[6],parameters[7],parameters[8]);
+	gausFit3.SetParameters(parameters[9],parameters[10],parameters[11]);
+	//
+	gausFit0.SetLineColor(4);
+	gausFit1.SetLineColor(2);
+	gausFit2.SetLineColor(6);
+	gausFit3.SetLineColor(8);
+	//
+	gausFit0.SetLineWidth(1);
+	gausFit1.SetLineWidth(1);
+	gausFit2.SetLineWidth(1);
+	gausFit3.SetLineWidth(1);
+	//
+	gausFit0.Draw("same");
+	gausFit1.Draw("same"); 
+	gausFit2.Draw("same"); 
+	gausFit3.Draw("same");
+	if (TMath::Abs(pT) < 2) canvMany->Print("canvManyPion.ps");
       }
-      Double_t yield = gausFit->GetParameter(0)*TMath::Sqrt(2*TMath::Pi())*gausFit->GetParameter(2); // area of the gaus fit
-      // stupid solution --> remove as soon as possible
-      yield = 0;
-      TF1 * gausYield = new TF1("gausYield", "gaus(0)",-5*kSigma,5*kSigma);
-      gausYield->SetParameters(gausFit->GetParameter(0),gausFit->GetParameter(1),gausFit->GetParameter(2));
-      for(Int_t i=1; i < histDeDx->GetXaxis()->GetNbins(); i++) {
-	Double_t delta = histDeDx->GetXaxis()->GetBinCenter(i);
-	yield += gausYield->Eval(delta);
-      }
+      
+      Double_t yield = gausFit->GetParameter(0)*TMath::Sqrt(2*TMath::Pi())*gausFit->GetParameter(2)/histDeDx->GetBinWidth(1); // area of the gaus fit
+      delete gausFit;
       //
-      if (y == EtaBin && yield > 0) histPt->Fill(pT,yield);
-      //delete gausFit;
-      delete gausYield;      
+      if (y == EtaBinLow && yield > 0) histPt->Fill(pT,yield);
+      //delete gausYield;
     }
   }
-  
+  canvMany->Print("canvManyPion.ps]");
+
   TCanvas * canvPt = new TCanvas();
   canvPt->cd();
   histPt->Draw();
-
-  return histPt;
   
+  return histPt;
 }
 
 
 //________________________________________________________________________
-TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicKaon(const TH3F * input, Int_t EtaBin,const  Double_t * AlephParams) {
+TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicKaon(const TH3F * input, Int_t EtaBinLow, Int_t EtaBinHigh,const  Double_t * AlephParams) {
   //
   // The multiple Gauss fitting is happening here...
+  // input histogram is of the form (Pt, eta, difference in dEdx)
   //
 
   TF1 *foProton = new TF1("foProton", "AliExternalTrackParam::BetheBlochAleph(x/0.93827,[0],[1],[2],[3],[4])",0.05,20); 
@@ -919,15 +1019,16 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicKaon(const TH3F * inpu
   foKaon->SetParameters(AlephParams);  
   foMuon->SetParameters(AlephParams);
 
-  const Double_t kSigma = 0.06; // expected resolution (roughly)
+  
+  const Double_t kSigma = 0.055; // expected resolution (roughly)
 
-  const Int_t kPtBins = 2*56/*input->GetXaxis()->GetNbins()*/;
+  const Int_t kPtBins = 2*30/*input->GetXaxis()->GetNbins()*/;
   const Double_t kPtMax  = input->GetXaxis()->GetXmax();
-  const Int_t kEtaBins = input->GetYaxis()->GetNbins();
+  //const Int_t kEtaBins = input->GetYaxis()->GetNbins();
 
   TH1D * histPt = new TH1D("histPt", "Pt; pT (Gev); dN",kPtBins,-kPtMax,kPtMax);
   // sort pT-bins ..
-  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0, -2.2, -2.4, -2.6, -2.8, -3.0, -3.2, -3.4, -3.6, -3.8, -4.0, -4.5, -5.0, -5.5, -6.0, -6.5, -7.0, -7.5, -8.0, -9.0, -10.0, -11.0, -12.0, -13.0, -14.0, -15.0, -16.0};
+  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0};
   Int_t indexes[kPtBins+1];
   TMath::Sort(kPtBins+1,binsPtDummy,indexes,kFALSE);
   Double_t binsPt[kPtBins+1];
@@ -935,59 +1036,140 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicKaon(const TH3F * inpu
   histPt->GetXaxis()->Set(kPtBins, binsPt);
   //
 
-  TCanvas * canvMany = new TCanvas();
-  canvMany->Divide(8,5);
+  TCanvas * canvMany = new TCanvas("canvManyKaon","canvManyKaon");
+  canvMany->Print("canvManyKaon.ps[");
 
   for(Int_t x=1; x < kPtBins+1; x++) {
     Double_t pT = input->GetXaxis()->GetBinCenter(x);
-    for(Int_t y=1; y < kEtaBins+1; y++) {
-      Double_t eta = input->GetYaxis()->GetBinCenter(y);
+    for(Int_t y=1; y < 2/*kEtaBins+1*/; y++) {
+      Double_t rapidity =  input->GetYaxis()->GetBinCenter(y);
+      Double_t eta = TMath::ASinH(TMath::Sqrt(1 + (0.4936*0.4936)/(pT*pT))*TMath::SinH(rapidity));  
       Double_t theta = 2*TMath::ATan(TMath::Exp(-eta));
       Double_t ptot = TMath::Abs(pT/TMath::Sin(theta));
-      TH1D *histDeDx = input->ProjectionZ(Form("dedx_%i_%i",x,y),x,x,y,y);
+      TH1D *histDeDx = input->ProjectionZ(Form("dedx_%i_%i",x,y),x,x,y,y + EtaBinHigh - EtaBinLow);
+      histDeDx->SetTitle(Form("pt_%f",pT));
+      Float_t maxYield = histDeDx->GetEntries()/(TMath::Sqrt(2*TMath::Pi())*0.04/histDeDx->GetBinWidth(1));
       //
-      TF1 * gausFit = new TF1("gausFit", "gaus(0) + gaus(3) + gaus(6) + gaus(9)",-5*kSigma,5*kSigma);
-      //Double_t parameters[12] = {100,0,kSigma,100,TMath::Log(foProton->Eval(ptot)/foKaon->Eval(ptot)),kSigma,100,TMath::Log(foElec->Eval(ptot)/foKaon->Eval(ptot)),kSigma,100,TMath::Log(foPion->Eval(ptot)/foPion->Eval(ptot)),kSigma};
-      Double_t parameters[12] = {100,0,kSigma,100,(foProton->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot),kSigma,100,(foElec->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot),kSigma,100,(foPion->Eval(ptot)-foKaon->Eval(ptot))/foPion->Eval(ptot),kSigma};
+      TF1 * gausFit = new TF1("gausFit", "gaus(0) + gaus(3) + gaus(6) + gaus(9)",-1 /*-5*kSigma*/, 1/*5*kSigma*/);
+      Double_t parameters[12] = {maxYield*0.1,0,kSigma,
+				 maxYield*0.8,(foPion->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot),kSigma*(foPion->Eval(ptot)/foKaon->Eval(ptot)),
+				 maxYield*0.01,(foElec->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot),kSigma*(foElec->Eval(ptot)/foKaon->Eval(ptot)),
+				 maxYield*0.1,(foProton->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot),kSigma*(foProton->Eval(ptot)/foKaon->Eval(ptot))};
       gausFit->SetParameters(parameters);
-      gausFit->SetParLimits(1,-0.05,0.05);//gausFit->FixParameter(1,0); DEBUG DEBUG DEBUG
-      gausFit->SetParLimits(2,0.04,0.08);//gausFit->FixParameter(2,kSigma); DEBUG DEBUG DEBUG
+      gausFit->SetParLimits(0,0.,maxYield);
+      gausFit->SetParLimits(1,-0.15,0.15);
+      gausFit->SetParLimits(2,0.04,0.08);
       //
-      gausFit->FixParameter(4,(foProton->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot));
-      gausFit->FixParameter(5,kSigma);
-      gausFit->FixParameter(7,(foElec->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot));
-      gausFit->FixParameter(8,kSigma);
-      gausFit->FixParameter(10,(foPion->Eval(ptot)- foKaon->Eval(ptot))/foKaon->Eval(ptot));
-      gausFit->FixParameter(11,kSigma);
-      histDeDx->Fit("gausFit","Q0");
-      if (y == EtaBin && pT < 0) {
+      Double_t pionPosition = (foPion->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot);
+      //Double_t elecPosition = (foElec->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot);
+      Double_t protonPosition = (foProton->Eval(ptot)-foKaon->Eval(ptot))/foKaon->Eval(ptot);
+      //
+      if (TMath::Abs(pT) < 0.4) {
+	cout << " fixing the parameters " << endl;
+	gausFit->SetParameter(3,0.); gausFit->SetParameter(6,0.); gausFit->SetParameter(9,0.);
+	gausFit->FixParameter(3,0); gausFit->FixParameter(6,0);	gausFit->FixParameter(9,0);
+	//gausFit->SetParLimits(0,0.,maxYield);
+	//gausFit->SetParLimits(1,-0.15,0.15);
+	//gausFit->SetParLimits(2,0.03,0.18);
+      } else {
+	//
+	gausFit->SetParLimits(0,0.,0.5*maxYield);
+	gausFit->SetParLimits(1,-0.05,0.05);
+	gausFit->SetParLimits(2,0.04,0.08);
+	//
+	gausFit->SetParLimits(3,0.,maxYield);
+	gausFit->SetParLimits(4, 0.5*pionPosition, 1.5*pionPosition);
+	gausFit->SetParLimits(5,0.6*kSigma*(foPion->Eval(ptot)/foKaon->Eval(ptot)),1.4*kSigma*(foPion->Eval(ptot)/foKaon->Eval(ptot)));
+	//
+	gausFit->FixParameter(6,0);
+	gausFit->FixParameter(7,0);
+	gausFit->FixParameter(8,0);
+	/*
+	  gausFit->SetParLimits(6,0.,0.2*maxYield);
+	  gausFit->SetParLimits(7, 0.9*elecPosition, 1.1*elecPosition);
+	  gausFit->SetParLimits(8,0.6*kSigma*(foElec->Eval(ptot)/foKaon->Eval(ptot)),1.4*kSigma*(foElec->Eval(ptot)/foKaon->Eval(ptot)));
+	*/
+	//
+	gausFit->SetParLimits(9,0.,0.2*maxYield);
+	gausFit->SetParLimits(10, 0.9*protonPosition, 1.1*protonPosition);
+	gausFit->SetParLimits(11,0.6*kSigma*(foProton->Eval(ptot)/foKaon->Eval(ptot)),1.4*kSigma*(foProton->Eval(ptot)/foKaon->Eval(ptot)));
+      }
+      histDeDx->Fit("gausFit","QNR");
+      gausFit->GetParameters(parameters);
+      // visualization      
+      if (y == EtaBinLow) {
 	canvMany->cd(x);
-	gPad->SetLogy();
-	histDeDx->Draw();
+	//gPad->SetLogy();  
+	histDeDx->SetMarkerStyle(21);
+	histDeDx->SetMarkerSize(0.7);
+	histDeDx->Draw("E");
+	gausFit->SetLineWidth(2);
 	gausFit->Draw("same");
+	//
+	TF1 gausFit0("gausFit0", "gaus(0)",-1,1);
+	TF1 gausFit1("gausFit1", "gaus(0)",-1,1);
+	TF1 gausFit2("gausFit2", "gaus(0)",-1,1);
+	TF1 gausFit3("gausFit3", "gaus(0)",-1,1);
+	gausFit0.SetParameters(parameters[0],parameters[1],parameters[2]);
+	gausFit1.SetParameters(parameters[3],parameters[4],parameters[5]);
+	gausFit2.SetParameters(parameters[6],parameters[7],parameters[8]);
+	gausFit3.SetParameters(parameters[9],parameters[10],parameters[11]);
+	//
+	gausFit0.SetLineColor(4);
+	gausFit1.SetLineColor(2);
+	gausFit2.SetLineColor(6);
+	gausFit3.SetLineColor(8);
+	//
+	gausFit0.SetLineWidth(1);
+	gausFit1.SetLineWidth(1);
+	gausFit2.SetLineWidth(1);
+	gausFit3.SetLineWidth(1);
+	//
+	gausFit0.Draw("same");
+	gausFit1.Draw("same"); 
+	gausFit2.Draw("same"); 
+	gausFit3.Draw("same");
+	if (TMath::Abs(pT) < 2) canvMany->Print("canvManyKaon.ps");
+	//
+	// propaganda slots for the paper
+	//
+	if (pT > 0.374 && pT < 0.376) {
+	  TFile f1("slice1.root","RECREATE");
+	  canvMany->Write();
+	  f1.Close();
+	}
+	if (pT > 0.524 && pT < 0.526) {
+	  TFile f1("slice2.root","RECREATE");
+	  canvMany->Write();
+	  f1.Close();	  
+	}
+	if (pT > 0.674 && pT < 0.676) {
+	  TFile f1("slice3.root","RECREATE");
+	  canvMany->Write();
+	  f1.Close();
+	}
+	if (pT > 0.624 && pT < 0.626) {
+	  TFile f1("slice4.root","RECREATE");
+	  canvMany->Write();
+	  f1.Close();
+	}
       }
-      Double_t yield = gausFit->GetParameter(0)*TMath::Sqrt(2*TMath::Pi())*gausFit->GetParameter(2); // area of the gaus fit
-      // stupid solution --> remove as soon as possible
-      yield = 0;
-      TF1 * gausYield = new TF1("gausYield", "gaus(0)",-5*kSigma,5*kSigma);
-      gausYield->SetParameters(gausFit->GetParameter(0),gausFit->GetParameter(1),gausFit->GetParameter(2));
-      for(Int_t i=1; i < histDeDx->GetXaxis()->GetNbins(); i++) {
-	Double_t delta = histDeDx->GetXaxis()->GetBinCenter(i);
-	yield += gausYield->Eval(delta);
-      }
+      
+      Double_t yield = gausFit->GetParameter(0)*TMath::Sqrt(2*TMath::Pi())*gausFit->GetParameter(2)/histDeDx->GetBinWidth(1); // area of the gaus fit
+      cout << pT << " res.: " << parameters[2] << " " << " yield: " << yield << endl;
+      delete gausFit;
       //
-      if (y == EtaBin && yield > 0) histPt->Fill(pT,yield);
-      //delete gausFit;
-      delete gausYield;
+      if (y == EtaBinLow && yield > 0) histPt->Fill(pT,yield);
+      //delete gausYield;
     }
   }
+  canvMany->Print("canvManyKaon.ps]");
 
   TCanvas * canvPt = new TCanvas();
   canvPt->cd();
   histPt->Draw();
   
   return histPt;
-
 }
 
 
@@ -1022,6 +1204,7 @@ void AliAnalysisTaskChargedHadronSpectra::Postprocess(const TList * ListOfHistog
   TH3F* histPtMCKaonData = ( TH3F *)ListOfHistogramsData->FindObject("HistPtMCKaon");
   TH3F* histPtMCProtonData = ( TH3F *)ListOfHistogramsData->FindObject("HistPtMCProton");
   TH3F* histPtMCPionData = ( TH3F *)ListOfHistogramsData->FindObject("HistPtMCPion");
+
 
   TFile spectraFile(filename,"RECREATE");
 
