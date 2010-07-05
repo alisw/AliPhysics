@@ -73,6 +73,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils():
   fEnvelop[0] = 0.;
   fEnvelop[1] = 0.;
   fEnvelop[2] = 0.;
+  for(Int_t i=0;i<12;i++)fkSModuleMatrix[i]=0 ;
 
 }  
 
@@ -94,6 +95,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const AliEMCALGeoUtils & geo)
   fEnvelop[0] = geo.fEnvelop[0];
   fEnvelop[1] = geo.fEnvelop[1];
   fEnvelop[2] = geo.fEnvelop[2];
+  for(Int_t i=0;i<12;i++)fkSModuleMatrix[i]=0 ;
 }
 
 //____________________________________________________________________________
@@ -182,6 +184,11 @@ AliEMCALGeoUtils & AliEMCALGeoUtils::operator = (const AliEMCALGeoUtils  & /*rva
 AliEMCALGeoUtils::~AliEMCALGeoUtils(void)
 {
   // dtor
+  for(Int_t smod = 0 ; smod < fEMCGeometry->GetNumberOfSuperModules(); smod++){
+    if(fkSModuleMatrix[smod])
+       delete fkSModuleMatrix[smod] ;
+      fkSModuleMatrix[smod]=0 ;
+  }
   if(fEMCGeometry){
     delete fEMCGeometry; fEMCGeometry = 0 ;
   }
@@ -809,7 +816,7 @@ Bool_t  AliEMCALGeoUtils::Impact(const TParticle * particle) const
   TVector3 vtx(particle->Vx(),particle->Vy(),particle->Vz());
   TVector3 vimpact(0,0,0);
   ImpactOnEmcal(vtx,particle->Theta(),particle->Phi(),absID,vimpact);
-  if(absID >=0) 
+  if(absID>=0) 
     in=kTRUE;
   return in;
 }
@@ -827,8 +834,8 @@ void AliEMCALGeoUtils::ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi,
   absId=-1;
   if(phi==0 || theta==0) return;
 
-   TVector3 direction;
-   Double_t factor = (fIPDistance-vtx[1])/p[1];
+  TVector3 direction;
+  Double_t factor = (fIPDistance-vtx[1])/p[1];
   direction = vtx + factor*p;
 
   //from particle direction -> tower hitted

@@ -15,9 +15,9 @@
 #include <TMath.h>
 #include <TArrayD.h>
 #include <TVector3.h>
+#include <TGeoMatrix.h> 
 class TBrowser ;
 class TParticle ;
-class TGeoHMatrix ;
 
 // --- AliRoot header files ---
 #include "AliEMCALEMCGeometry.h"
@@ -147,7 +147,9 @@ public:
 
   //Method to set shift-rotational matrixes from ESDHeader
   void SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) {
-	  if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules()) fkSModuleMatrix[smod] = m ;
+	  if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules()){
+            if(!fkSModuleMatrix[smod]) fkSModuleMatrix[smod] = new TGeoHMatrix(*m) ; //Set only if not set yet
+          }
 	  else AliFatal(Form("Wrong supermodule index -> %d",smod));
   }
 	
@@ -200,7 +202,7 @@ protected:
   Float_t  fZLength;			     // Total length in z direction
   Float_t  fSampling;			     // Sampling factor
 
-  const TGeoHMatrix* fkSModuleMatrix[12] ; //Orientations of EMCAL super modules
+  TGeoHMatrix* fkSModuleMatrix[12] ; //Orientations of EMCAL super modules
 
 	
   ClassDef(AliEMCALGeoUtils,1)       // EMCAL geometry class 
