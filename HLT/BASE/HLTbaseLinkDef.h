@@ -12,6 +12,7 @@
 #pragma link C++ class AliHLTCalibrationProcessor+;
 #pragma link C++ class AliHLTConfiguration+;
 #pragma link C++ class AliHLTConfigurationHandler+;
+#pragma link C++ class AliHLTTTreeProcessor+;
 #pragma link C++ class AliHLTTask+;
 #pragma link C++ class AliHLTDumpTask+;
 #pragma link C++ class AliHLTControlTask+;

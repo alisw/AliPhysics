@@ -13,6 +13,7 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTCalibrationProcessor.h \
 		AliHLTConfiguration.h \
 		AliHLTConfigurationHandler.h \
+		AliHLTTTreeProcessor.h \
 		AliHLTTask.h \
 		AliHLTDumpTask.h \
 		AliHLTControlTask.h \
