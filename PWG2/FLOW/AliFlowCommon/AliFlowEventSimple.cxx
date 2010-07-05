@@ -159,7 +159,7 @@ void AliFlowEventSimple::Generate(Int_t nParticles,
   {
     AddTrack(new AliFlowTrackSimple( gRandom->Uniform(phiMin,phiMax),
                                      gRandom->Uniform(etaMin,etaMax),
-                                     ptDist->GetRandom()));
+                                     ptDist->GetRandom(),1.));
   }
 }
 
@@ -191,21 +191,22 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
 
   Int_t iOrder = n;
   Double_t iUsedTracks = 0;
-  Double_t dPhi=0.;
-  Double_t dPt=0.;
-  Double_t dEta=0.;
+  Double_t dPhi = 0.;
+  Double_t dPt = 0.;
+  Double_t dEta = 0.;
+  Double_t dWeight = 1.;
 
   AliFlowTrackSimple* pTrack = NULL;
 
-  Int_t nBinsPhi=0;
-  Double_t dBinWidthPt=0.;
-  Double_t dPtMin=0.;
-  Double_t dBinWidthEta=0.;
-  Double_t dEtaMin=0.;
+  Int_t nBinsPhi = 0;
+  Double_t dBinWidthPt = 0.;
+  Double_t dPtMin = 0.;
+  Double_t dBinWidthEta = 0.;
+  Double_t dEtaMin = 0.;
 
-  Double_t wPhi=1.; // weight Phi
-  Double_t wPt=1.;  // weight Pt
-  Double_t wEta=1.; // weight Eta
+  Double_t wPhi = 1.; // weight Phi
+  Double_t wPt = 1.;  // weight Pt
+  Double_t wEta = 1.; // weight Eta
 
   TH1F *phiWeights = NULL;
   TH1D *ptWeights  = NULL;
@@ -249,6 +250,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
         dPhi = pTrack->Phi();
         dPt  = pTrack->Pt();
         dEta = pTrack->Eta();
+	dWeight = pTrack->Weight();
 
         // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
         if(phiWeights && nBinsPhi)
@@ -267,11 +269,11 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
         }
 
         // building up the weighted Q-vector:
-        dQX += wPhi*wPt*wEta*TMath::Cos(iOrder*dPhi);
-        dQY += wPhi*wPt*wEta*TMath::Sin(iOrder*dPhi);
+        dQX += dWeight*wPhi*wPt*wEta*TMath::Cos(iOrder*dPhi);
+        dQY += dWeight*wPhi*wPt*wEta*TMath::Sin(iOrder*dPhi);
 
         // weighted multiplicity:
-        iUsedTracks+=wPhi*wPt*wEta;
+        iUsedTracks += dWeight*wPhi*wPt*wEta;
 
       } // end of if (pTrack->InRPSelection())
     } // end of if (pTrack)
@@ -301,10 +303,12 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
   Double_t dPhi = 0.;
   Double_t dPt  = 0.;
   Double_t dEta = 0.;
+  Double_t dWeight = 1.;
 
   AliFlowTrackSimple* pTrack = NULL;
 
-  Int_t    iNbinsPhi   = 0;
+  Int_t    iNbinsPhiSub0 = 0;
+  Int_t    iNbinsPhiSub1 = 0;
   Double_t dBinWidthPt = 0.;
   Double_t dPtMin      = 0.;
   Double_t dBinWidthEta= 0.;
@@ -314,7 +318,8 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
   Double_t dWpt  = 1.;  // weight Pt
   Double_t dWeta = 1.;  // weight Eta
 
-  TH1F* phiWeights = NULL;
+  TH1F* phiWeightsSub0 = NULL;
+  TH1F* phiWeightsSub1 = NULL;
   TH1D* ptWeights  = NULL;
   TH1D* etaWeights = NULL;
 
@@ -322,10 +327,13 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
   {
     if(usePhiWeights)
     {
-      phiWeights = dynamic_cast<TH1F *>(weightsList->FindObject("phi_weights"));
-      if(phiWeights)
-      {
-        iNbinsPhi = phiWeights->GetNbinsX();
+      phiWeightsSub0 = dynamic_cast<TH1F *>(weightsList->FindObject("phi_weights_sub0"));
+      phiWeightsSub1 = dynamic_cast<TH1F *>(weightsList->FindObject("phi_weights_sub1"));
+      if(phiWeightsSub0) {
+        iNbinsPhiSub0 = phiWeightsSub0->GetNbinsX();
+      }
+      if(phiWeightsSub1) {
+        iNbinsPhiSub1 = phiWeightsSub1->GetNbinsX();
       }
     }
     if(usePtWeights)
@@ -361,20 +369,28 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
         {
           if (pTrack->InSubevent(s))
           {
-            dPhi = pTrack->Phi();
-            dPt  = pTrack->Pt();
-            dEta = pTrack->Eta();
+            dPhi    = pTrack->Phi();
+            dPt     = pTrack->Pt();
+            dEta    = pTrack->Eta();
+	    dWeight = pTrack->Weight();
 
             // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
-            if(phiWeights && iNbinsPhi)
-            {
-              dWphi = phiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNbinsPhi/TMath::TwoPi())));
-            }
+            if(s == 0) { //subevent 0
+	      if(phiWeightsSub0 && iNbinsPhiSub0){
+		dWphi = phiWeightsSub0->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNbinsPhiSub0/TMath::TwoPi())));
+	      } 
+	    } else if (s == 1) {
+	      if(phiWeightsSub1 && iNbinsPhiSub1){
+		dWphi = phiWeightsSub1->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNbinsPhiSub1/TMath::TwoPi())));
+	      } 
+	    }
+
             // determine v'(pt) weight:
             if(ptWeights && dBinWidthPt)
             {
               dWpt=ptWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-dPtMin)/dBinWidthPt)));
             }
+
             // determine v'(eta) weight:
             if(etaWeights && dBinWidthEta)
             {
@@ -382,11 +398,11 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
             }
 
             // building up the weighted Q-vector:
-            dQX += dWphi*dWpt*dWeta*TMath::Cos(iOrder*dPhi);
-            dQY += dWphi*dWpt*dWeta*TMath::Sin(iOrder*dPhi);
+            dQX += dWeight*dWphi*dWpt*dWeta*TMath::Cos(iOrder*dPhi);
+            dQY += dWeight*dWphi*dWpt*dWeta*TMath::Sin(iOrder*dPhi);
 
             // weighted multiplicity:
-            iUsedTracks+=dWphi*dWpt*dWeta;
+            iUsedTracks+=dWeight*dWphi*dWpt*dWeta;
 
           } // end of subevent
         } // end of if (pTrack->InRPSelection())

@@ -30,6 +30,7 @@
 #include "TTree.h"
 #include "TFile.h" //needed as include
 #include "TList.h"
+#include "TH2F.h"
 #include "TRandom3.h"
 #include "TTimeStamp.h"
 
@@ -100,11 +101,11 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
 }
 
 //________________________________________________________________________
-AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed) :
+AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPtype, Bool_t on, UInt_t iseed) :
   AliAnalysisTaskSE(name),
   //  fOutputFile(NULL),
   fAnalysisType("ESD"),
-  fRPType("Global"),
+  fRPType(RPtype),
   fCFManager1(NULL),
   fCFManager2(NULL),
   fQAInt(NULL),
@@ -131,6 +132,10 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, 
   fMyTRandom3 = new TRandom3(iseed);
   gRandom->SetSeed(fMyTRandom3->Integer(65539));
 
+  //FMD input slot
+  if (strcmp(RPtype,"FMD")==0) {
+    DefineInput(1, TList::Class());
+  }
 
   // Define output slots here
   // Define here the flow event output
@@ -180,8 +185,21 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliESDEvent* myESD = dynamic_cast<AliESDEvent*>(InputEvent()); // from TaskSE
   AliAODEvent* myAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
   AliMultiplicity* myTracklets = NULL;
+  TH2F* histFMD = NULL;
 
-  /*test*/ cout<<"(AliAnalysisTaskFlowEvent::UserExec)fRPType = "<<fRPType<<endl;
+  if(GetNinputs()==2) {                   
+    TList* FMDdata = dynamic_cast<TList*>(GetInputData(1));
+    if(!FMDdata) {
+      cout<<" No FMDdata "<<endl;
+      exit(2);
+    }
+    histFMD = dynamic_cast<TH2F*>(FMDdata->FindObject("dNdetadphiHistogramTrVtx"));
+    if (!histFMD) {
+      cout<< "No histFMD"<<endl;
+      exit(2);
+    }
+  }
+  
 
   // Make the FlowEvent for MC input
   if (fAnalysisType == "MC")
@@ -243,6 +261,10 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     else if (fRPType == "Tracklet"){
       flowEvent = new AliFlowEvent(myESD,myTracklets,fCFManager2);
     }
+    else if (fRPType == "FMD"){
+      flowEvent = new AliFlowEvent(myESD,histFMD,fCFManager2);
+    }
+    
     // if monte carlo event get reaction plane from monte carlo (depends on generator)
     if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
     //set reference multiplicity, TODO: maybe move it to the constructor?

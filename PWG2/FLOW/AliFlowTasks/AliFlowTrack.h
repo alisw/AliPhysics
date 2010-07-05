@@ -28,8 +28,6 @@ public:
   virtual  ~AliFlowTrack();
   virtual AliFlowTrack* Clone(const char* option="") const;
  
-  void SetFMDMultiplicity( const Float_t m ) {fFMDmultiplicity=m;} 
-  Float_t GetFMDMultiplicity() const {return fFMDmultiplicity;}
   void SetSource( trackSource s )
                   { fTrackSourceBits.SetBitNumber(UInt_t(s),kTRUE); }
   Bool_t IsSource( trackSource s ) const
@@ -37,9 +35,7 @@ public:
 
 private:
   TBits fTrackSourceBits; //where do i come from?
-  Float_t fFMDmultiplicity; //FMD multiplicity
   
-
   ClassDef(AliFlowTrack,1);
 };
 

@@ -21,6 +21,7 @@
 
 #include "Riostream.h"
 #include "TList.h"
+#include "TH2F.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliCFManager.h"
@@ -364,8 +365,8 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
-			                      const AliMultiplicity* anInputTracklets,
-			                      const AliCFManager* poiCFManager ):
+			    const AliMultiplicity* anInputTracklets,
+			    const AliCFManager* poiCFManager ):
   AliFlowEventSimple(20)
 {
 
@@ -405,9 +406,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
   //Select the reference particles from the SPD tracklets
   anInputTracklets = anInput->GetMultiplicity();
   Int_t multSPD = anInputTracklets->GetNumberOfTracklets();
-
-  cout << "N tracklets: " << multSPD << endl; //for testing
-
+  
   //loop over tracklets
   for (Int_t itracklet=0; itracklet<multSPD; ++itracklet) {
     Float_t thetaTr= anInputTracklets->GetTheta(itracklet);
@@ -431,4 +430,76 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 
 }
 
+
+//-----------------------------------------------------------------------
+AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
+			    const TH2F* anInputFMDhist,
+			    const AliCFManager* poiCFManager ):
+  AliFlowEventSimple(20)
+{
+
+  //Select the particles of interest from the ESD
+  Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
+
+  //loop over tracks
+  for (Int_t itrkN=0; itrkN<iNumberOfInputTracks; itrkN++)
+    {
+      AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
+
+      //check if pParticle passes the cuts
+      Bool_t poiOK = kTRUE;
+      if (poiCFManager)
+	{
+	  poiOK = ( poiCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+		    poiCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle));
+	}
+      if (!poiOK) continue;
+ 
+      //make new AliFLowTrack
+      AliFlowTrack* pTrack = new AliFlowTrack();
+      pTrack->SetPt(pParticle->Pt() );
+      pTrack->SetEta(pParticle->Eta() );
+      pTrack->SetPhi(pParticle->Phi() );
+          
+      //marking the particles used for the particle of interest (POI) selection:
+      if(poiOK && poiCFManager)
+	{
+	  pTrack->SetForPOISelection(kTRUE);
+	  pTrack->SetSource(AliFlowTrack::kFromESD);
+	}
+
+      AddTrack(pTrack);
+    }//end of while (itrkN < iNumberOfInputTracks)
+
+  //Select the reference particles from the FMD hits
+  //loop over FMD histogram
+  Int_t iBinsEta = anInputFMDhist->GetNbinsX();
+  Int_t iBinsPhi = anInputFMDhist->GetNbinsY();
+  
+  for (Int_t iEta = 1; iEta <= iBinsEta; iEta++){
+    Double_t etaFMD = anInputFMDhist->GetXaxis()->GetBinCenter(iEta);
+    for (Int_t iPhi = 1; iPhi <= iBinsPhi; iPhi++){
+      Double_t phiFMD = anInputFMDhist->GetYaxis()->GetBinCenter(iPhi);
+      Double_t weightFMD = anInputFMDhist->GetBinContent(iEta,iPhi);
+    
+      if (weightFMD > 0.0) { //do not add empty bins
+	//make new AliFLowTrackSimple
+	AliFlowTrack* pTrack = new AliFlowTrack();
+	pTrack->SetPt(0.0);
+	pTrack->SetEta(etaFMD);
+	pTrack->SetPhi(phiFMD);
+	pTrack->SetWeight(weightFMD);
+	//marking the particles used for the reference particle (RP) selection:
+	pTrack->SetForRPSelection(kTRUE);
+	pTrack->SetSource(AliFlowTrack::kFromFMD);
+	fNumberOfRPs++;
+
+	//Add the track to the flowevent
+	AddTrack(pTrack);
+	
+      }
+    }
+  }
+
+}
 

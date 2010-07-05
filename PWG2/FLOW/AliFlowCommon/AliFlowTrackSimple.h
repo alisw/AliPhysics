@@ -20,7 +20,7 @@ public:
   AliFlowTrackSimple();
   AliFlowTrackSimple(const TParticle* p);
   AliFlowTrackSimple(const AliFlowTrackSimple& aTrack);
-  AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt);
+  AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight);
   virtual AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
   virtual  ~AliFlowTrackSimple();
   virtual AliFlowTrackSimple* Clone(const char* option="") const;
@@ -31,7 +31,8 @@ public:
 
   Double_t Eta() const; 
   Double_t Pt()  const; 
-  Double_t Phi() const; 
+  Double_t Phi() const;
+  Double_t Weight() const; 
 
   Bool_t InRPSelection() const; 
   Bool_t InPOISelection() const; 
@@ -41,6 +42,7 @@ public:
   void SetEta(Double_t eta);
   void SetPt(Double_t pt); 
   void SetPhi(Double_t phi);
+  void SetWeight(Double_t weight);
   void SetForRPSelection(Bool_t b=kTRUE); 
   void SetForPOISelection(Bool_t b=kTRUE); 
   void SetForSubevent(Int_t i); 
@@ -69,24 +71,28 @@ public:
                 Int_t maxNumberOfIterations=100 );
     
   const TBits* GetFlowBits() const {return &fFlowBits;}
+
  private:
-  Double_t fEta;    // eta
-  Double_t fPt;     // pt
-  Double_t fPhi;    // phi
-  TBits fFlowBits;  // bits to set if track is selected
-  TBits fSubEventBits;  // bits to set if track is selected for a subevent
+  Double_t fEta;         // eta
+  Double_t fPt;          // pt
+  Double_t fPhi;         // phi
+  Double_t fTrackWeight; // weight
+  TBits    fFlowBits;    // bits to set if track is selected
+  TBits    fSubEventBits;// bits to set if track is selected for a subevent
 
   ClassDef(AliFlowTrackSimple,1)                 // macro for rootcint
 
 };
 
+//Setters
 inline Double_t AliFlowTrackSimple::Eta() const { 
   return this->fEta; }
 inline Double_t AliFlowTrackSimple::Pt() const {  
-  //  cout << "Returned pt:" << fPt << endl; 
   return this->fPt;}
 inline Double_t AliFlowTrackSimple::Phi() const { 
   return this->fPhi; }
+inline Double_t AliFlowTrackSimple::Weight() const { 
+  return this->fTrackWeight; }
 //TBits
 inline Bool_t AliFlowTrackSimple::InRPSelection() const { 
   return this->fFlowBits.TestBitNumber(0); }
@@ -95,13 +101,15 @@ inline Bool_t AliFlowTrackSimple::InPOISelection() const {
 inline Bool_t AliFlowTrackSimple::InSubevent(Int_t i) const { 
   return this->fSubEventBits.TestBitNumber(i); }
 
+//Getters
 inline void AliFlowTrackSimple::SetEta(Double_t val) {
   fEta = val; }
 inline void AliFlowTrackSimple::SetPt(Double_t val) {
   fPt = val; }
-  //  cout << "pt set to:" << fPt << endl;}
 inline void AliFlowTrackSimple::SetPhi(Double_t val) {
   fPhi = val; }
+inline void AliFlowTrackSimple::SetWeight(Double_t val) {
+  fTrackWeight = val; }
 //TBits
 inline void AliFlowTrackSimple::SetForRPSelection(Bool_t val) {
   fFlowBits.SetBitNumber(0,val); }

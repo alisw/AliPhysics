@@ -31,9 +31,9 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1, 
+void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1, 
 //Bool_t DATA = kTRUE, const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
-                //Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
+                Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
 
 //void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
@@ -42,7 +42,7 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10a18_140012", Int_t offset=0) //perugia0 7 TeV
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10a20_140514", Int_t offset=0) //phojet 7 TeV
 
-void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
+//void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
 {
   TStopwatch timer;
   timer.Start();
@@ -74,10 +74,10 @@ void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
   if (type == "ESD"){
     AliVEventHandler* esdH = new AliESDInputHandler;
     mgr->SetInputEventHandler(esdH);
-    if (MCEP) { 
+    //if (MCEP) { //Because of FMD task
       AliMCEventHandler *mc = new AliMCEventHandler();
       mgr->SetMCtruthEventHandler(mc); 
-    }
+      //}
   }
   
   if (type == "AOD"){
@@ -178,6 +178,8 @@ void LoadLibraries(const anaModes mode) {
     gSystem->Load("libCORRFW");
     cerr<<"libCORRFW loaded..."<<endl;
     if (mode==mLocal) {
+      gSystem->Load("libPWG2forward");
+      cerr<<"libPWG2forward loaded..."<<endl;
       gSystem->Load("libPWG2flowCommon");
       cerr<<"libPWG2flowCommon loaded..."<<endl;
       gSystem->Load("libPWG2flowTasks");
