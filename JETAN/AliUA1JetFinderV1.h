@@ -15,6 +15,7 @@
 #include "AliJetFinder.h"
 class AliUA1JetHeaderV1;
 class TH2F;
+class TH1F;
 
 class AliUA1JetFinderV1 : public AliJetFinder
 {
@@ -51,12 +52,22 @@ class AliUA1JetFinderV1 : public AliJetFinder
   void Reset();
   void Init();
   void WriteJHeaderToFile() const;
+  
+  enum {kMaxJets = 30};
 
  protected:
   AliUA1JetFinderV1(const AliUA1JetFinderV1& rJetF1);
   AliUA1JetFinderV1& operator = (const AliUA1JetFinderV1& rhsf);
-  TH2F           * fLego;           //Lego Histo
-  ClassDef(AliUA1JetFinderV1,1)
+  TH2F*          fLego;           //Lego Histo
+  // temporary histos for background, reset for each event, no need to stream
+  TH1F*          fhEtJet[kMaxJets];   //! histogram for background subtraction
+  TH1F*          fhAreaJet[kMaxJets]; //! histogram for background subtraction (store global not to create it with every event
+  TH1F*          fhEtBackg;           //! histogram for background subtraction
+  TH1F*          fhAreaBackg;           //! histogram for background subtraction
+
+  //
+
+  ClassDef(AliUA1JetFinderV1,2)
 };
 
 #endif

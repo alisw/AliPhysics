@@ -46,9 +46,14 @@ ClassImp(AliUA1JetFinderV1)
 
 AliUA1JetFinderV1::AliUA1JetFinderV1() :
     AliJetFinder(),
-    fLego(0)
+  fLego(0),
+  fhEtBackg(0),
+  fhAreaBackg(0)
 {
   // Constructor
+  for(int i = 0;i < kMaxJets;i++){
+    fhAreaJet[i] = fhEtJet[i] = 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -59,6 +64,16 @@ AliUA1JetFinderV1::~AliUA1JetFinderV1()
   // destructor
   delete fLego;
   fLego = 0;
+  if(fhEtBackg)delete  fhEtBackg;
+  fhEtBackg = 0;
+  if( fhAreaBackg) delete  fhAreaBackg;
+  fhAreaBackg = 0;
+  for(int i = 0;i < kMaxJets;i++){
+    if(fhAreaJet[i])delete fhAreaJet[i];
+    if(fhEtJet[i]) delete fhEtJet[i];
+    fhAreaJet[i] = fhEtJet[i] = 0;
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -85,16 +100,23 @@ void AliUA1JetFinderV1::FindJets()
   if (nIn == 0) return;
 
   // local arrays for input
+  // ToDo: check memory fragmentation, maybe better to 
+  // define them globally and resize as needed
+  // Fragementation should be worse for low mult...
   Float_t* ptT   = new Float_t[nIn];
   Float_t* etaT  = new Float_t[nIn];
   Float_t* phiT  = new Float_t[nIn];
   Int_t*   injet = new Int_t[nIn];
 
-  //total energy in array
-  Float_t  etbgTotal = 0.0;
-  TH1F* hPtTotal = new TH1F("hPt","Pt distribution of all particles ",100,0.0,15.0);
+
 
   // load input vectors and calculate total energy in array
+
+  //total energy in array
+  Float_t  etbgTotal = 0.0;
+  Float_t npart = 0;
+  Float_t etbg2 = 0;
+
   for (Int_t i = 0; i < nIn; i++){
     TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
     ptT[i]  = lv->Pt();
@@ -102,18 +124,24 @@ void AliUA1JetFinderV1::FindJets()
     phiT[i] = ((lv->Phi() < 0) ? (lv->Phi()) + 2 * TMath::Pi() : lv->Phi());
     if (fReader->GetCutFlag(i) != 1) continue;
     fLego ->Fill(etaT[i], phiT[i], ptT[i]);
-    hPtTotal->Fill(ptT[i]);
+    npart += 1;
     etbgTotal+= ptT[i];
+    etbg2 += ptT[i]*ptT[i];
   }
 
   // calculate total energy and fluctuation in map
-  Double_t meanpt = hPtTotal->GetMean();
-  Double_t ptRMS  = hPtTotal->GetRMS();
-  Double_t npart  = hPtTotal->GetEntries();
+  Double_t meanpt = 0;
+  Double_t ptRMS = 0;
+  if(npart>0){
+    meanpt = etbgTotal/npart;
+    etbg2 = etbg2/npart;
+    if(etbg2>(meanpt*meanpt)){// prenent NAN, should only happen due to numerical instabilities
+      ptRMS = TMath::Sqrt(etbg2-meanpt*meanpt);
+    }
+  }
   Double_t dEtTotal = (TMath::Sqrt(npart))*TMath::Sqrt(meanpt * meanpt + ptRMS*ptRMS);
 
   // arrays to hold jets
-  const int kMaxJets = 30;
   Float_t etaJet[kMaxJets];
   Float_t phiJet[kMaxJets];
   Float_t etJet[kMaxJets];
@@ -182,10 +210,9 @@ void AliUA1JetFinderV1::FindJets()
   }
   
   // add jets to list
-  Int_t* idxjets = new Int_t[nj];
+  Int_t idxjets[kMaxJets];
   Int_t nselectj = 0;
-//  printf("Found %d jets \n", nj);
-  
+
   TRefArray *refs = 0;
   Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
   if (fromAod) refs = fReader->GetReferences();
@@ -216,9 +243,9 @@ void AliUA1JetFinderV1::FindJets()
   } //end particle loop
 
   //add signal percentage and total signal  in AliJets for analysis tool
-  Float_t* percentage  = new Float_t[nselectj];
-  Int_t* ncells      = new Int_t[nselectj];
-  Int_t* mult        = new Int_t[nselectj];
+  Float_t percentage[kMaxJets];
+  Int_t ncells[kMaxJets];
+  Int_t mult[kMaxJets];
   for(Int_t i = 0; i< nselectj; i++){
      percentage[i] = etsigJet[idxjets[i]]/etJet[idxjets[i]];
      ncells[i] = ncellsJet[idxjets[i]];
@@ -243,11 +270,6 @@ void AliUA1JetFinderV1::FindJets()
   delete [] etaT;
   delete [] phiT;
   delete [] injet;
-  delete hPtTotal;
-  delete [] idxjets;
-  delete [] percentage;
-  delete [] ncells;
-  delete [] mult;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -300,15 +322,15 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
 
 
   // tmp array of jets form algoritm
-  Float_t etaAlgoJet[30];
-  Float_t phiAlgoJet[30];
-  Float_t etAlgoJet[30];
-  Int_t   ncellsAlgoJet[30];
+  Float_t etaAlgoJet[kMaxJets];
+  Float_t phiAlgoJet[kMaxJets];
+  Float_t etAlgoJet[kMaxJets];
+  Int_t   ncellsAlgoJet[kMaxJets];
 
   //run algorithm//
 
   // sort cells by et
-  Int_t * index  = new Int_t[nCell];
+  Int_t  index[nBinsMax];
   TMath::Sort(nCell, etCell, index);
   // variable used in centroide loop
   Float_t eta   = 0.0;
@@ -430,19 +452,24 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
         }
         //store tmp jet info !!!
        if(etbmax < etcmin) {
-             etaAlgoJet[nJets] = eta;
-             phiAlgoJet[nJets] = phi;
-             etAlgoJet[nJets] = etCone;
-             ncellsAlgoJet[nJets] = nCellIn;
-             nJets++;
-        }
-
+	 if(nJets<kMaxJets){
+	   etaAlgoJet[nJets] = eta;
+	   phiAlgoJet[nJets] = phi;
+	   etAlgoJet[nJets] = etCone;
+	   ncellsAlgoJet[nJets] = nCellIn;
+	   nJets++;
+	 }
+	 else{
+	   AliError(Form("Too many jets (> %d) found by UA1JetFinder, adapt your cuts",kMaxJets));
+	   break;
+	 }
+       }
   } // end of cells loop
 
   //reorder jets by et in cone
   //sort jets by energy
-  Int_t * idx  = new Int_t[nJets];
-  TMath::Sort(nJets, etAlgoJet, idx);
+  Int_t idx[kMaxJets];
+  TMath::Sort(nJets, etAlgoJet, idx); // sort only the found jets
   for(Int_t p = 0; p < nJets; p++){
      etaJet[p] = etaAlgoJet[idx[p]];
      phiJet[p] = phiAlgoJet[idx[p]];
@@ -450,11 +477,6 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
      etallJet[p] = etAlgoJet[idx[p]];
      ncellsJet[p] = ncellsAlgoJet[idx[p]];
   }
-
-
-  //delete
-  delete[] index;
-  delete[] idx;
 
 }
 ////////////////////////////////////////////////////////////////////////
@@ -469,7 +491,7 @@ void AliUA1JetFinderV1::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&
   //calculate energy inside and outside cones
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   Float_t rc= header->GetRadius();
-  Float_t etIn[30];
+  Float_t etIn[kMaxJets];
   Float_t etOut = 0;
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
      // if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
@@ -494,7 +516,7 @@ void AliUA1JetFinderV1::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&
   } //end particle loop
 
   //estimate jets and background areas
-  Float_t areaJet[30];
+  Float_t areaJet[kMaxJets];
   Float_t areaOut = 4*(header->GetLegoEtaMax())*TMath::Pi();
   for(Int_t k=0; k<nJ; k++){
       Float_t detamax = etaJet[k] + rc;
@@ -538,7 +560,7 @@ void AliUA1JetFinderV1::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float
 
   //calculate energy inside
   Float_t rc= header->GetRadius();
-  Float_t etIn[30];
+  Float_t etIn[kMaxJets];
 
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
      //if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
@@ -561,7 +583,7 @@ void AliUA1JetFinderV1::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float
   } //end particle loop
 
   //calc jets areas
-  Float_t areaJet[30];
+  Float_t areaJet[kMaxJets];
   Float_t areaOut = 4*(header->GetLegoEtaMax())*TMath::Pi();
   for(Int_t k=0; k<nJ; k++){
       Float_t detamax = etaJet[k] + rc;
@@ -604,17 +626,25 @@ void AliUA1JetFinderV1::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float
    Int_t ndiv = 100;
 
    // jet energy and area arrays
-   TH1F* hEtJet[30];
-   TH1F* hAreaJet[30];
+   char hEtname[256];char hAreaname[256];
+
    for(Int_t mjet=0; mjet<nJ; mjet++){
-     char hEtname[256]; char hAreaname[256];
-     sprintf(hEtname, "hEtJet%d", mjet); sprintf(hAreaname, "hAreaJet%d", mjet);
-     hEtJet[mjet] = new TH1F(hEtname,"et dist in eta ",ndiv,etamin,etamax);
-     hAreaJet[mjet] = new TH1F(hAreaname,"area dist in eta ",ndiv,etamin,etamax);
-  }
+     if(!fhEtJet[mjet]){ 
+       sprintf(hEtname, "hEtJet%d", mjet); 
+       fhEtJet[mjet] = new TH1F(hEtname,"et dist in eta ",ndiv,etamin,etamax);
+     }
+     if(!fhAreaJet[mjet]){ 
+       sprintf(hAreaname, "hAreaJet%d", mjet);
+       fhAreaJet[mjet] = new TH1F(hAreaname,"area dist in eta ",ndiv,etamin,etamax);       
+     }
+     fhEtJet[mjet]->Reset();
+     fhAreaJet[mjet]->Reset();
+   }
    // background energy and area
-   TH1F* hEtBackg = new TH1F("hEtBackg"," backg et dist in eta ",ndiv,etamin,etamax);
-   TH1F* hAreaBackg = new TH1F("hAreaBackg","backg area dist in eta ",ndiv,etamin,etamax);
+   if(!fhEtBackg)fhEtBackg = new TH1F("hEtBackg"," backg et dist in eta ",ndiv,etamin,etamax);
+   fhEtBackg->Reset();
+   if(!fhAreaBackg) fhAreaBackg = new TH1F("hAreaBackg","backg area dist in eta ",ndiv,etamin,etamax);
+   fhAreaBackg->Reset();
 
    //fill energies
    for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
@@ -628,14 +658,14 @@ void AliUA1JetFinderV1::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float
              injet[jpart] = ijet;
              multJet[ijet]++;
              if((fReader->GetCutFlag(jpart)) == 1){// pt cut
-                hEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone
+                fhEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone
                 if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet] += ptT[jpart];
              }
              break;
          }
      }// end jets loop
      if(injet[jpart] == -1  && fReader->GetCutFlag(jpart) == 1)
-        hEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
+        fhEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
   } //end particle loop
 
    //calc areas
@@ -665,10 +695,10 @@ void AliUA1JetFinderV1::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float
              if((eta0 < etaJet[ijet]) && (etaJet[ijet]<eta1)) areaj = rc*rc*TMath::Pi() - acc1 -acc0; // case 2
              if(etaJet[ijet] < eta0) areaj = acc0 -acc1; // case 3
           }
-          hAreaJet[ijet]->Fill(etac,areaj);
+          fhAreaJet[ijet]->Fill(etac,areaj);
           areabg = areabg - areaj;
       } // end jets loop
-      hAreaBackg->Fill(etac,areabg);
+      fhAreaBackg->Fill(etac,areabg);
       eta0 = eta1;
       eta1 = eta1 + etaw;
    } // end loop for all eta bins
@@ -677,29 +707,20 @@ void AliUA1JetFinderV1::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float
    for(Int_t kjet=0; kjet<nJ; kjet++){
        etJet[kjet] = 0.0; // first  clear etJet for this jet
        for(Int_t bin = 0; bin< ndiv; bin++){
-           if(hAreaJet[kjet]->GetBinContent(bin)){
-              Float_t areab = hAreaBackg->GetBinContent(bin);
-              Float_t etb = hEtBackg->GetBinContent(bin);
-              Float_t areaR = (hAreaJet[kjet]->GetBinContent(bin))/areab;
-              etJet[kjet] = etJet[kjet] + ((hEtJet[kjet]->GetBinContent(bin)) - etb*areaR); //subtraction
+           if(fhAreaJet[kjet]->GetBinContent(bin)){
+              Float_t areab = fhAreaBackg->GetBinContent(bin);
+              Float_t etb = fhEtBackg->GetBinContent(bin);
+              Float_t areaR = (fhAreaJet[kjet]->GetBinContent(bin))/areab;
+              etJet[kjet] = etJet[kjet] + ((fhEtJet[kjet]->GetBinContent(bin)) - etb*areaR); //subtraction
            }
        }
    }
 
    // calc background total
-   Double_t etOut = hEtBackg->Integral();
-   Double_t areaOut = hAreaBackg->Integral();
+   Double_t etOut = fhEtBackg->Integral();
+   Double_t areaOut = fhAreaBackg->Integral();
    Float_t areaT = 4*(header->GetLegoEtaMax())*TMath::Pi();
    etbgTotalN = etOut*areaT/areaOut;
-
-   //delete
-   for(Int_t ljet=0; ljet<nJ; ljet++){  // loop for all jets
-       delete hEtJet[ljet];
-       delete hAreaJet[ljet];
-   }
-
-   delete hEtBackg;
-   delete hAreaBackg;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -723,17 +744,26 @@ void AliUA1JetFinderV1::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ, Flo
    Int_t ndiv = 100;
 
    // jet energy and area arrays
-   TH1F* hEtJet[30];
-   TH1F* hAreaJet[30];
+   // jet energy and area arrays
+   char hEtname[256];char hAreaname[256];
+
    for(Int_t mjet=0; mjet<nJ; mjet++){
-     char hEtname[256]; char hAreaname[256];
-     sprintf(hEtname, "hEtJet%d", mjet); sprintf(hAreaname, "hAreaJet%d", mjet);
-     hEtJet[mjet] = new TH1F(hEtname,"et dist in eta ",ndiv,etamin,etamax);        // change range
-     hAreaJet[mjet] = new TH1F(hAreaname,"area dist in eta ",ndiv,etamin,etamax);  // change range
-  }
+     if(!fhEtJet[mjet]){ 
+       sprintf(hEtname, "hEtJet%d", mjet); 
+       fhEtJet[mjet] = new TH1F(hEtname,"et dist in eta ",ndiv,etamin,etamax);
+     }
+     if(!fhAreaJet[mjet]){ 
+       sprintf(hAreaname, "hAreaJet%d", mjet);
+       fhAreaJet[mjet] = new TH1F(hAreaname,"area dist in eta ",ndiv,etamin,etamax);       
+     }
+     fhEtJet[mjet]->Reset();
+     fhAreaJet[mjet]->Reset();
+   }
    // background energy and area
-   TH1F* hEtBackg = new TH1F("hEtBackg"," backg et dist in eta ",ndiv,etamin,etamax);         // change range
-   TH1F* hAreaBackg = new TH1F("hAreaBackg","backg area dist in eta ",ndiv,etamin,etamax);  // change range
+   if(!fhEtBackg)fhEtBackg = new TH1F("hEtBackg"," backg et dist in eta ",ndiv,etamin,etamax);
+   fhEtBackg->Reset();
+   if(!fhAreaBackg) fhAreaBackg = new TH1F("hAreaBackg","backg area dist in eta ",ndiv,etamin,etamax);
+   fhAreaBackg->Reset();
 
    //fill energies
    for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
@@ -748,13 +778,13 @@ void AliUA1JetFinderV1::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ, Flo
             multJet[ijet]++;
             injet[jpart] = ijet;
             if((fReader->GetCutFlag(jpart)) == 1){ //pt cut
-               hEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone and pt cut
+               fhEtJet[ijet]->Fill(etaT[jpart],ptT[jpart]); //particle inside cone and pt cut
                if(fReader->GetSignalFlag(jpart) == 1) etsigJet[ijet] += ptT[jpart];
             }
             break;
          }
      }// end jets loop
-     if(injet[jpart] == -1) hEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
+     if(injet[jpart] == -1) fhEtBackg->Fill(etaT[jpart],ptT[jpart]); // particle outside cones
   } //end particle loop
 
    //calc areas
@@ -784,10 +814,10 @@ void AliUA1JetFinderV1::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ, Flo
              if((eta0 < etaJet[ijet]) && (etaJet[ijet]<eta1)) areaj = rc*rc*TMath::Pi() - acc1 -acc0; // case 2
              if(etaJet[ijet] < eta0) areaj = acc0 -acc1; // case 3
           }
-          hAreaJet[ijet]->Fill(etac,areaj);
+          fhAreaJet[ijet]->Fill(etac,areaj);
           areabg = areabg - areaj;
       } // end jets loop
-      hAreaBackg->Fill(etac,areabg);
+      fhAreaBackg->Fill(etac,areabg);
       eta0 = eta1;
       eta1 = eta1 + etaw;
    } // end loop for all eta bins
@@ -796,29 +826,20 @@ void AliUA1JetFinderV1::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ, Flo
    for(Int_t kjet=0; kjet<nJ; kjet++){
        etJet[kjet] = 0.0; // first  clear etJet for this jet
        for(Int_t bin = 0; bin< ndiv; bin++){
-           if(hAreaJet[kjet]->GetBinContent(bin)){
-              Float_t areab = hAreaBackg->GetBinContent(bin);
-              Float_t etb = hEtBackg->GetBinContent(bin);
-              Float_t areaR = (hAreaJet[kjet]->GetBinContent(bin))/areab;
-              etJet[kjet] = etJet[kjet] + ((hEtJet[kjet]->GetBinContent(bin)) - etb*areaR*bgRatioCut); //subtraction
+           if(fhAreaJet[kjet]->GetBinContent(bin)){
+              Float_t areab = fhAreaBackg->GetBinContent(bin);
+              Float_t etb = fhEtBackg->GetBinContent(bin);
+              Float_t areaR = (fhAreaJet[kjet]->GetBinContent(bin))/areab;
+              etJet[kjet] = etJet[kjet] + ((fhEtJet[kjet]->GetBinContent(bin)) - etb*areaR*bgRatioCut); //subtraction
            }
        }
    }
 
    // calc background total
-   Double_t etOut = hEtBackg->Integral();
-   Double_t areaOut = hAreaBackg->Integral();
+   Double_t etOut = fhEtBackg->Integral();
+   Double_t areaOut = fhAreaBackg->Integral();
    Float_t areaT = 4*(header->GetLegoEtaMax())*TMath::Pi();
    etbgTotalN = etOut*areaT/areaOut;
-
-   //delete
-   for(Int_t ljet=0; ljet<nJ; ljet++){  // loop for all jets
-       delete hEtJet[ljet];
-       delete hAreaJet[ljet];
-   }
-
-   delete hEtBackg;
-   delete hAreaBackg;
 }
 
 ////////////////////////////////////////////////////////////////////////
