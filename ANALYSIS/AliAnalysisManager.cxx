@@ -208,7 +208,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
   // Init() will be called many times when running with PROOF.
    Bool_t init = kFALSE;
    if (!tree) return kFALSE; // Should not happen - protected in selector caller
-   if (fDebug > 0) {
+   if (fDebug > 1) {
       printf("->AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
    // Call InitTree of EventHandler
@@ -268,7 +268,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
       return kFALSE;
    }
    top->SetData(tree);
-   if (fDebug > 0) {
+   if (fDebug > 1) {
       printf("<-AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
    return kTRUE;
@@ -280,7 +280,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
-   if (fDebug > 0) printf("->AliAnalysisManager::SlaveBegin()\n");
+   if (fDebug > 1) printf("->AliAnalysisManager::SlaveBegin()\n");
    static Bool_t isCalled = kFALSE;
    Bool_t init = kFALSE;
    Bool_t initOK = kTRUE;
@@ -345,7 +345,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       itask++;
       if (curdir) curdir->cd();
    }
-   if (fDebug > 0) printf("<-AliAnalysisManager::SlaveBegin()\n");
+   if (fDebug > 1) printf("<-AliAnalysisManager::SlaveBegin()\n");
 }
 
 //______________________________________________________________________________
@@ -364,7 +364,7 @@ Bool_t AliAnalysisManager::Notify()
       return kFALSE;
    }   
    
-   if (fDebug > 0) printf("->AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
+   if (fDebug > 1) printf("->AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
    TIter next(fTasks);
    AliAnalysisTask *task;
    // Call Notify for all tasks
@@ -383,7 +383,7 @@ Bool_t AliAnalysisManager::Notify()
    if (fMCtruthEventHandler) {
        fMCtruthEventHandler->Notify(curfile->GetName());
    }
-   if (fDebug > 0) printf("<-AliAnalysisManager::Notify()\n");
+   if (fDebug > 1) printf("<-AliAnalysisManager::Notify()\n");
    return kTRUE;
 }    
 
@@ -407,7 +407,7 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
   //  The entry is always the local entry number in the current tree.
   //  Assuming that fChain is the pointer to the TChain being processed,
   //  use fChain->GetTree()->GetEntry(entry).
-   if (fDebug > 0) printf("->AliAnalysisManager::Process(%lld)\n", entry);
+   if (fDebug > 1) printf("->AliAnalysisManager::Process(%lld)\n", entry);
 
    if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);
@@ -415,7 +415,7 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
    
    GetEntry(entry);
    ExecAnalysis();
-   if (fDebug > 0) printf("<-AliAnalysisManager::Process()\n");
+   if (fDebug > 1) printf("<-AliAnalysisManager::Process()\n");
    return kTRUE;
 }
 
@@ -424,7 +424,7 @@ void AliAnalysisManager::PackOutput(TList *target)
 {
   // Pack all output data containers in the output list. Called at SlaveTerminate
   // stage in PROOF case for each slave.
-   if (fDebug > 0) printf("->AliAnalysisManager::PackOutput()\n");
+   if (fDebug > 1) printf("->AliAnalysisManager::PackOutput()\n");
    if (!target) {
       Error("PackOutput", "No target. Exiting.");
       return;
@@ -442,10 +442,10 @@ void AliAnalysisManager::PackOutput(TList *target)
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)nexttask())) {
       if (!task->IsPostEventLoop()) {
-         if (fDebug > 0) printf("->FinishTaskOutput: task %s\n", task->GetName());
+         if (fDebug > 1) printf("->FinishTaskOutput: task %s\n", task->GetName());
          task->FinishTaskOutput();
          gROOT->cd();
-         if (fDebug > 0) printf("<-FinishTaskOutput: task %s\n", task->GetName());
+         if (fDebug > 1) printf("<-FinishTaskOutput: task %s\n", task->GetName());
       }
    }      
    
@@ -619,14 +619,14 @@ void AliAnalysisManager::PackOutput(TList *target)
       }
    } 
    cdir->cd();
-   if (fDebug > 0) printf("<-AliAnalysisManager::PackOutput: output list contains %d containers\n", target->GetSize());
+   if (fDebug > 1) printf("<-AliAnalysisManager::PackOutput: output list contains %d containers\n", target->GetSize());
 }
 
 //______________________________________________________________________________
 void AliAnalysisManager::ImportWrappers(TList *source)
 {
 // Import data in output containers from wrappers coming in source.
-   if (fDebug > 0) printf("->AliAnalysisManager::ImportWrappers()\n");
+   if (fDebug > 1) printf("->AliAnalysisManager::ImportWrappers()\n");
    TIter next(fOutputs);
    AliAnalysisDataContainer *cont;
    AliAnalysisDataWrapper   *wrap;
@@ -695,14 +695,14 @@ void AliAnalysisManager::ImportWrappers(TList *source)
       cont->ImportData(wrap);
    }
    if (cdir) cdir->cd();
-   if (fDebug > 0) printf("<-AliAnalysisManager::ImportWrappers(): %d containers imported\n", icont);
+   if (fDebug > 1) printf("<-AliAnalysisManager::ImportWrappers(): %d containers imported\n", icont);
 }
 
 //______________________________________________________________________________
 void AliAnalysisManager::UnpackOutput(TList *source)
 {
   // Called by AliAnalysisSelector::Terminate only on the client.
-   if (fDebug > 0) printf("->AliAnalysisManager::UnpackOutput()\n");
+   if (fDebug > 1) printf("->AliAnalysisManager::UnpackOutput()\n");
    if (!source) {
       Error("UnpackOutput", "No target. Exiting.");
       return;
@@ -726,13 +726,13 @@ void AliAnalysisManager::UnpackOutput(TList *source)
             task->CheckNotify(kTRUE);
             // If task is active, execute it
             if (task->IsPostEventLoop() && task->IsActive()) {
-               if (fDebug > 0) printf("== Executing post event loop task %s\n", task->GetName());
+               if (fDebug > 1) printf("== Executing post event loop task %s\n", task->GetName());
                task->ExecuteTask();
             }   
          }
       }   
    }
-   if (fDebug > 0) printf("<-AliAnalysisManager::UnpackOutput()\n");
+   if (fDebug > 1) printf("<-AliAnalysisManager::UnpackOutput()\n");
 }
 
 //______________________________________________________________________________
@@ -741,7 +741,7 @@ void AliAnalysisManager::Terminate()
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically.
-   if (fDebug > 0) printf("->AliAnalysisManager::Terminate()\n");
+   if (fDebug > 1) printf("->AliAnalysisManager::Terminate()\n");
    TDirectory *cdir = gDirectory;
    gROOT->cd();
    AliAnalysisTask *task;
@@ -761,7 +761,7 @@ void AliAnalysisManager::Terminate()
       itask++;   
       if (TObject::TestBit(kSaveCanvases)) {
          if (!gROOT->IsBatch()) {
-            if (fDebug>0) printf("Waiting 5 sec for %s::Terminate() to finish drawing ...", task->ClassName());
+            if (fDebug>1) printf("Waiting 5 sec for %s::Terminate() to finish drawing ...", task->ClassName());
             timer.Start();
             while (timer.CpuTime()<5) {
                timer.Continue();
@@ -813,13 +813,13 @@ void AliAnalysisManager::Terminate()
       if (!file) {
 	      //if (handlerFile == filename && !gSystem->AccessPathName(filename)) openoption = "UPDATE";
          if (!gSystem->AccessPathName(filename)) openoption = "UPDATE";
-	      if (fDebug>0) printf("Opening file: %s  option=%s\n",filename, openoption.Data());
+	      if (fDebug>1) printf("Opening file: %s  option=%s\n",filename, openoption.Data());
          file = new TFile(filename, openoption);
       } else {
-         if (fDebug>0) printf("File <%s> already opened with option: <%s> \n", filename, file->GetOption());
+         if (fDebug>1) printf("File <%s> already opened with option: <%s> \n", filename, file->GetOption());
          openoption = file->GetOption();
          if (openoption == "READ") {
-            if (fDebug>0) printf("...reopening in UPDATE mode\n");
+            if (fDebug>1) printf("...reopening in UPDATE mode\n");
             file->ReOpen("UPDATE");            
          }
       }   
@@ -835,7 +835,7 @@ void AliAnalysisManager::Terminate()
          if (!file->GetDirectory(dir)) file->mkdir(dir);
          file->cd(dir);
       }  
-      if (fDebug > 0) printf("...writing container %s to file %s:%s\n", output->GetName(), file->GetName(), output->GetFolderName());
+      if (fDebug > 1) printf("...writing container %s to file %s:%s\n", output->GetName(), file->GetName(), output->GetFolderName());
       if (output->GetData()->InheritsFrom(TCollection::Class())) {
       // If data is a collection, we set the name of the collection 
       // as the one of the container and we save as a single key.
@@ -973,7 +973,7 @@ void AliAnalysisManager::Terminate()
       out.close();
    }
    cdir->cd();      
-   if (fDebug > 0) printf("<-AliAnalysisManager::Terminate()\n");
+   if (fDebug > 1) printf("<-AliAnalysisManager::Terminate()\n");
 }
 //______________________________________________________________________________
 void AliAnalysisManager::ProfileTask(Int_t itop, const char *option) const
@@ -1012,7 +1012,7 @@ void AliAnalysisManager::ProfileTask(const char *name, const char */*option*/) c
       Error("ProfileTask", "No tree named <syswatch> found in file syswatch.root");
       return;
    }   
-   if (fDebug > 0) printf("=== Profiling task %s (class %s)\n", name, task->ClassName());
+   if (fDebug > 1) printf("=== Profiling task %s (class %s)\n", name, task->ClassName());
    TCanvas *canvas = new TCanvas(Form("profile_%d",itop),Form("Profile of task %s (class %s)",name,task->ClassName()),10,10,800,600);
    canvas->Divide(2, 2, 0.01, 0.01);
    Int_t ipad = 1;
@@ -1300,7 +1300,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
       cdir->cd();
       return -1;
    }
-   if (fDebug > 0) printf("StartAnalysis %s\n",GetName());
+   if (fDebug > 1) printf("StartAnalysis %s\n",GetName());
    TString anaType = type;
    anaType.ToLower();
    fMode = kLocalAnalysis;
@@ -1466,7 +1466,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
       Error("StartAnalysis","Analysis manager was not initialized !");
       return -1;
    }
-   if (fDebug > 0) printf("StartAnalysis %s\n",GetName());
+   if (fDebug > 1) printf("StartAnalysis %s\n",GetName());
    TString anaType = type;
    anaType.ToLower();
    if (!anaType.Contains("proof")) {
@@ -1657,9 +1657,16 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 {
 // Execute analysis.
    static Long64_t ncalls = 0;
+   static Long64_t nentries = 0;
+   static TStopwatch *timer = new TStopwatch();
    if (fDebug > 0) printf("MGR: Processing event #%lld\n", ncalls);
-   TDirectory *cdir = gDirectory;
+   else {
+      if (!nentries && fTree) nentries = fTree->GetEntries();
+      if (!ncalls) timer->Start();
+      ProgressBar("Processing event", ncalls, 10000, timer, kFALSE);
+   }
    gROOT->cd();
+   TDirectory *cdir = gDirectory;
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
    if (getsysInfo && ((ncalls%fNSysInfo)==0)) AliSysInfo::AddStamp("Exec_start", (Int_t)ncalls);
    ncalls++;
