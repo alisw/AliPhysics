@@ -20,6 +20,7 @@ class AliESDEvent;
 class AliMCEvent;
 class AliAODEvent;
 class AliMultiplicity;
+class TH2F;
 
 #include "AliFlowEventSimple.h"
 
@@ -50,6 +51,10 @@ public:
   AliFlowEvent( const AliESDEvent* anInput,
                 const AliMultiplicity* anInputTracklets,
                 const AliCFManager* poiCFManager );
+  AliFlowEvent( const AliESDEvent* anInput,
+                const TH2F* anInputFMDhist,
+                const AliCFManager* poiCFManager );
+
 
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
 

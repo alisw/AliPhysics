@@ -27,17 +27,15 @@ ClassImp(AliFlowTrack)
 //-----------------------------------------------------------------------
 AliFlowTrack::AliFlowTrack():
   AliFlowTrackSimple(),
-  fTrackSourceBits(),
-  fFMDmultiplicity(0.)
+  fTrackSourceBits() 
 {
   //constructor 
 }
 
 //-----------------------------------------------------------------------
 AliFlowTrack::AliFlowTrack(AliVParticle* p):
-  AliFlowTrackSimple(p->Phi(),p->Eta(),p->Pt()),
-  fTrackSourceBits(),
-  fFMDmultiplicity(0.)
+  AliFlowTrackSimple(p->Phi(),p->Eta(),p->Pt(),1.),
+  fTrackSourceBits()
 {
   //constructor 
 }
@@ -45,8 +43,7 @@ AliFlowTrack::AliFlowTrack(AliVParticle* p):
 //-----------------------------------------------------------------------
 AliFlowTrack::AliFlowTrack(const AliFlowTrack& aTrack):
   AliFlowTrackSimple(aTrack),
-  fTrackSourceBits(aTrack.fTrackSourceBits),
-  fFMDmultiplicity(aTrack.fFMDmultiplicity)
+  fTrackSourceBits(aTrack.fTrackSourceBits)
 {
   //copy constructor 
 }
@@ -64,7 +61,6 @@ AliFlowTrack& AliFlowTrack::operator=(const AliFlowTrack& aTrack)
   //assignment
   AliFlowTrackSimple::operator=(aTrack);
   fTrackSourceBits = aTrack.fTrackSourceBits;
-  fFMDmultiplicity = aTrack.fFMDmultiplicity;
   return *this;
 }
 
@@ -77,12 +73,10 @@ AliFlowTrackSimple& AliFlowTrack::operator=(const AliFlowTrackSimple& aTrack)
   if (pft)
   {
     fTrackSourceBits = pft->fTrackSourceBits;
-    fFMDmultiplicity = pft->fFMDmultiplicity;
   }
   else
   {
     fTrackSourceBits.ResetAllBits();
-    fFMDmultiplicity=0.;
   }
   return *this;
 }

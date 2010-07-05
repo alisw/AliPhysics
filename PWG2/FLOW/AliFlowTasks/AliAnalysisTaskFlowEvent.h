@@ -21,7 +21,7 @@ class TString;
 class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFlowEvent();
-  AliAnalysisTaskFlowEvent(const char *name,Bool_t QAon,UInt_t=666);
+  AliAnalysisTaskFlowEvent(const char *name,TString RPtype,Bool_t QAon,UInt_t=666);
   virtual ~AliAnalysisTaskFlowEvent();
   
   virtual void   UserCreateOutputObjects();
@@ -80,7 +80,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   //  AliESDEvent*  fESD;                   // ESD object
   //  AliAODEvent*  fAOD;                   // AOD object
   TString       fAnalysisType;          // can be MC, ESD or AOD
-  TString       fRPType;                // can be Global or Tracklet
+  TString       fRPType;                // can be Global or Tracklet or FMD
   AliCFManager* fCFManager1;            // correction framework manager
   AliCFManager* fCFManager2;            // correction framework manager
   TList*        fQAInt;                 // QA histogram list

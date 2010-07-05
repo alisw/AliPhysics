@@ -8,9 +8,15 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 // Define the range for eta subevents (for SP method)
+//(FMD 1.7 - 5.0)
+//Double_t minA = -5.0;
+//Double_t maxA = -1.7;
+//Double_t minB = 1.7;
+//Double_t maxB = 5.0;
+//(Tracklets 0.9 - 2.0)
 Double_t minA = -2.0;
-Double_t maxA = -0.1;
-Double_t minB = 0.1;
+Double_t maxA = -0.9;
+Double_t minB = 0.9;
 Double_t maxB = 2.0;
 
 // use physics selection class
@@ -43,9 +49,11 @@ const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centr
 
 
 //----------For RP selection----------
-// Use Global tracks ("Global") or SPD tracklets ("Tracklet") for the RP selection
+// Use Global tracks ("Global"), or SPD tracklets ("Tracklet") 
+// or FMD hits ("FMD") for the RP selection
 const TString rptype = "Global";
 //const TString rptype = "Tracklet";
+//const TString rptype = "FMD";
 
 //KINEMATICS (on generated and reconstructed tracks)
 Bool_t UseKineforRP =  kTRUE;
@@ -302,6 +310,18 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     cout<<"LYZEP input file/list read..."<<endl;
   }
   
+  // Create the FMD task and add it to the manager
+  //===========================================================================
+  AliFMDAnalysisTaskSE *taskfmd = NULL;
+  if (rptype == "FMD") {
+    taskfmd = new AliFMDAnalysisTaskSE("TaskFMD");
+    mgr->AddTask(taskfmd);
+  
+    AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+    pars->Init();
+    pars->SetProcessPrimary(kTRUE);
+    pars->SetProcessHits(kFALSE);
+  }
 
 
   // Create the task, add it to the manager.
@@ -309,9 +329,9 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   AliAnalysisTaskFlowEvent *taskFE = NULL;
   if (QA) { 
     if(AddToEvent) { 
-      taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kTRUE,1);
+      taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kTRUE,1);
       taskFE->SetEllipticFlowValue(ellipticFlow); }    //TEST
-    else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kTRUE); }
+    else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kTRUE); }
     taskFE->SetAnalysisType(type);
     taskFE->SetRPType(rptype); //only for ESD
     if (UseMultCut) {
@@ -327,9 +347,9 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   }
   else { 
     if(AddToEvent) { 
-      taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kFALSE,1);
+      taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE,1);
       taskFE->SetEllipticFlowValue(ellipticFlow); }    //TEST
-    else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kFALSE); }
+    else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE); }
     taskFE->SetAnalysisType(type);
     if (UseMultCut) {
       taskFE->SetMinMult(multmin);
@@ -746,7 +766,19 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   // Connect to the input and output containers
   //===========================================================================
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutputFE = mgr->CreateContainer("cobjFlowEventSimple",  AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+  
+  if (rptype == "FMD") {
+    AliAnalysisDataContainer *coutputFMD = 
+      mgr->CreateContainer("BackgroundCorrected", TList::Class(), AliAnalysisManager::kExchangeContainer);                        
+    //input and output taskFMD     
+    mgr->ConnectInput(taskfmd, 0, cinput1);
+    mgr->ConnectOutput(taskfmd, 1, coutputFMD);
+    //input into taskFE
+    mgr->ConnectInput(taskFE,1,coutputFMD);
+  }
+
+  AliAnalysisDataContainer *coutputFE = 
+    mgr->CreateContainer("cobjFlowEventSimple",  AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
   mgr->ConnectInput(taskFE,0,cinput1); 
   mgr->ConnectOutput(taskFE,1,coutputFE);
 

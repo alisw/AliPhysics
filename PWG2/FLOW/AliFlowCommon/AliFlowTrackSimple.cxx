@@ -36,6 +36,7 @@ AliFlowTrackSimple::AliFlowTrackSimple():
   fEta(0),
   fPt(0),
   fPhi(0),
+  fTrackWeight(1.),
   fFlowBits(0),
   fSubEventBits(0)
 {
@@ -43,11 +44,12 @@ AliFlowTrackSimple::AliFlowTrackSimple():
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt):
+AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight):
   TObject(),
   fEta(eta),
   fPt(pt),
   fPhi(phi),
+  fTrackWeight(weight),
   fFlowBits(0),
   fSubEventBits(0)
 {
@@ -60,6 +62,7 @@ AliFlowTrackSimple::AliFlowTrackSimple(const TParticle* p):
   fEta(p->Eta()),
   fPt(p->Pt()),
   fPhi(p->Phi()),
+  fTrackWeight(1.),
   fFlowBits(0),
   fSubEventBits(0)
 {
@@ -72,6 +75,7 @@ AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
   fEta(aTrack.fEta),
   fPt(aTrack.fPt),
   fPhi(aTrack.fPhi),
+  fTrackWeight(aTrack.fTrackWeight),
   fFlowBits(aTrack.fFlowBits),
   fSubEventBits(aTrack.fSubEventBits)
 {
@@ -91,6 +95,7 @@ AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTra
   fEta = aTrack.fEta;
   fPt = aTrack.fPt;
   fPhi = aTrack.fPhi;
+  fTrackWeight = aTrack.fTrackWeight;
   fFlowBits = aTrack.fFlowBits;
   fSubEventBits = aTrack.fSubEventBits;
 
@@ -206,7 +211,7 @@ void AliFlowTrackSimple::AddFlow( Double_t v1,
 void AliFlowTrackSimple::Print( Option_t* /*option*/ ) const
 {
   //print stuff
-  printf("Phi: %.3f, Eta: %+.3f, Pt: %.3f",fPhi,fEta,fPt);
+  printf("Phi: %.3f, Eta: %+.3f, Pt: %.3f, weight: %.3f",fPhi,fEta,fPt,fTrackWeight);
   if (InRPSelection()) printf(", RP");
   if (InPOISelection()) printf(", POI");
   for (Int_t i=0; i<2; i++)
