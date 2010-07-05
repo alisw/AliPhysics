@@ -52,7 +52,7 @@ AliKFParticle::AliKFParticle( const AliVTrack &track, Int_t PID )
 {
   // Constructor from ALICE track, PID hypothesis should be provided
 
-  track.XvYvZv(fP);
+  track.GetXYZ(fP);
   track.PxPyPz(fP+3);
   fQ = track.Charge();
   track.GetCovarianceXYZPxPyPz( fC );
