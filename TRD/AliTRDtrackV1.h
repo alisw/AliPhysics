@@ -82,7 +82,7 @@ public:
   Int_t          GetClusterIndex(Int_t id) const;
   Float_t        GetEdep() const {return fDE;}
   Int_t          GetESDid() const {return fESDid;}
-  inline Float_t GetMomentum(Int_t plane) const;
+  inline Float_t GetMomentum(Int_t plane=-1) const;
   inline Int_t   GetNCross();
   inline Int_t   GetNumberOfTracklets() const;
   Double_t       GetPIDsignal() const   { return 0.;}
@@ -157,7 +157,16 @@ private:
 //____________________________________________________
 inline Float_t AliTRDtrackV1::GetMomentum(Int_t plane) const
 {
-  return plane >=0 && plane < kNplane && fTrackletIndex[plane] != -1 ? fTracklet[plane]->GetMomentum() : -1.;
+// Return ESD momentum stored in the tracklet reconstructed in layer = "plane". 
+// By default returns the ESD momentum in first tracklet attached to track
+  if(plane==-1){
+    for(Int_t i(0); i<kNplane; i++){
+      if(fTracklet[i]) return fTracklet[i]->GetMomentum();
+    }
+  } else if( plane >=0 && plane < kNplane){
+    if(fTracklet[plane]) return fTracklet[plane]->GetMomentum();
+  }
+  return -1.;
 }
 
 //____________________________________________________

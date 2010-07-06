@@ -744,7 +744,7 @@ TH1 *AliTRDcheckPID::PlotNTracklets(const AliTRDtrackV1 *track)
     pdg = fkMC->GetPDG();
   } else {
     //AliWarning("No MC info available!");
-    momentum = cTrack.GetMomentum(0);
+    momentum = cTrack.GetMomentum();
     pdg = CalcPDG(&cTrack);
   }
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
