@@ -358,7 +358,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       if(iJETAN&1)taskjets = AddTaskJets(kHighPtFilterMask); 
       if(iJETAN&2){
 	UInt_t selection = 0;
-	if(!kFillAOD) selection = 0xffffff; //&~(1<<13);
+	if(!kFillAOD) selection = 0xffffff&~(1<<13)&~(1<<5)&~(1<<6);
 	else selection = 0xffffff&~(1<<13);// selection = 1<<0|1<<1|1<<2|1<<5|1<<6|1<<7|1<<8|1<<9|1<<10|1<<11|1<<12;
 	AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC,selection); 
       }
@@ -1527,7 +1527,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    }
 
    TString outputArchive;
-   outputArchive = Form("log_archive.zip:std*r@%s",kGridOutputStorages.Data());
+   outputArchive = Form("log_archive.zip:std*@%s",kGridOutputStorages.Data());
    listaods.ReplaceAll(" ", ",");
    listhists.ReplaceAll(" ", ",");
    if (listhists.Length()) listhists = Form("hist_archive.zip:%s@%s", listhists.Data(), kGridOutputStorages.Data());
@@ -1557,7 +1557,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Optionally resubmit threshold.
 //   plugin->SetMasterResubmitThreshold(90);
 // Optionally set time to live (default 30000 sec)
-   plugin->SetTTL(30000);
+   plugin->SetTTL(36000); // 10h...
 // Optionally set input format (default xml-single)
    plugin->SetInputFormat("xml-single");
 // Optionally modify the name of the generated JDL (default analysis.jdl)
