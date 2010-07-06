@@ -7,7 +7,7 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfri
        AliESDpid.cxx AliESDkink.cxx \
        AliESDCaloCluster.cxx AliESDMuonCluster.cxx AliESDMuonPad.cxx \
        AliKFParticleBase.cxx AliKFParticle.cxx AliKFVertex.cxx\
-       AliKalmanTrack.cxx AliNeutralTrackParam.cxx \
+       AliKalmanTrack.cxx \
        AliVertexerTracks.cxx AliStrLine.cxx \
        AliESDV0Params.cxx \
        AliTrackPointArray.cxx \

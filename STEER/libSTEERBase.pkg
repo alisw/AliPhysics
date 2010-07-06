@@ -25,6 +25,7 @@ SRCS = AliVParticle.cxx \
        AliTrackReference.cxx AliSysInfo.cxx \
        AliMCEvent.cxx AliMCParticle.cxx AliMCVertex.cxx \
        AliMagF.cxx AliMagWrapCheb.cxx AliCheb3D.cxx AliCheb3DCalc.cxx \
+       AliNeutralTrackParam.cxx \
        AliCodeTimer.cxx \
        AliPDG.cxx \
        AliTimeStamp.cxx AliTriggerScalers.cxx AliTriggerScalersRecord.cxx \

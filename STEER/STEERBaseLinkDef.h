@@ -64,6 +64,8 @@
 #pragma link C++ class  AliCheb3DCalc+;
 #pragma link C++ class  AliCheb3D+;
 
+#pragma link C++ class  AliNeutralTrackParam+;
+
 #pragma link C++ class AliCodeTimer+;
 #pragma link C++ class AliCodeTimer::AliPair+;
 

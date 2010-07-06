@@ -52,7 +52,6 @@
 #pragma link C++ class  AliKFVertex+;
 
 #pragma link C++ class  AliKalmanTrack+;
-#pragma link C++ class  AliNeutralTrackParam+;
 #pragma link C++ class  AliVertexerTracks+;
 #pragma link C++ class  AliStrLine+;
 #pragma link C++ class  AliTrackPointArray+;
