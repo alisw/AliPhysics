@@ -131,18 +131,28 @@ class AliHLTPluginBase;
  *
  * @subsection sec_alihltreconstructor_hltout_esd ESD HLTOUT data
  * The framework implements a standard handling of ESD data
- * blocks of type ::kAliHLTDataTypeESDTree {ESD_TREE:ANY}. \em ANY can be
+ * blocks of type ::kAliHLTDataTypeESDObject {ALIESDV0:ANY} and 
+ * ::kAliHLTDataTypeESDTree {ESD_TREE:ANY}. Please note that the V0 refers to
+ * a foreseen version number, not the AliESDV0 class. \em ANY can be
  * any detector origin. Each ESD block contains the data of only one event,
- * the ESDs are merged by the AliHLTEsdManager and written to files of the
- * naming scheme AliHLT\em DET ESDs.root. The first ESD block is also copied
- * to the hltEsd provided by the AliReconstruction. This is a temporary
- * solution as the handling and merging of HLT ESDs is under discussion.
- * At the time of writing (May 08) only the TPC HLT components produce ESD
- * blocks.
+ * the ESDs are merged by the AliHLTEsdManager into the hltEsd. Optionally,
+ * ESD contributions are written to files following the naming scheme
+ * AliHLT\em DET ESDs.root. This debugging feature can be enabled by option
+ * esdmanager='-writelocal -directory=dir'. The specification of target
+ * directory is optional.
+ *
  * The module agent can provide a handler for multiple ESD data blocks, e.g.
  * for merging within one event prior to the writing. Instead of the individual
  * ESDs the one provided by the handler is passed to the AliHLTEsdManager. The
  * handler is of type \link AliHLTModuleAgent::AliHLTOUTHandlerType kEsd \endlink.
+ * 
+ * A specific handler AliHLTOUTHandlerEsdBranch allows to simply merge a
+ * streamed Root object into the ESD. The class can be used as-is by just
+ * specifying the data type and specification of the relevant data block and
+ * the branch name. Alternatively, a child class can implement conversion of
+ * binary data to a Root object or merging of several data blocks into one
+ * object to be added to the ESD. \b Note: in order to create the branch at
+ * the beginning of reconstruction the hltEsd layout needs to be adjusted.
  *
  * @subsection sec_alihltreconstructor_hltout_rawreader DDL raw HLTOUT data
  * The HLT can perform selective readout and produces a reduced amount of data
@@ -164,9 +174,12 @@ class AliHLTPluginBase;
  * first stage of the offline reconstruction might need some adaptions.
  *
  * @subsection sec_alihltreconstructor_hltout_chain HLTOUT data fed into a chain
- * At the time of writing (May 08), handler type 
- * \link AliHLTModuleAgent::AliHLTOUTHandlerType kChain \endlink
- * is foreseen but not yet implemented. Has to be discussed.
+ * Handlers of type \link AliHLTModuleAgent::AliHLTOUTHandlerType kChain \endlink
+ * can execute a normal HLT chain and thus process HLTOUT data blocks by normal
+ * HLT components just as if the components were running on-line. The base class
+ * is provided by AliHLTOUTHandlerChain and can be used as it is just specifying
+ * the chain to be run.<br>
+ * Example:
  *
  * @subsection sec_alihltreconstructor_hltout_proprietary Proprietary HLTOUT data
  * This is a handler of proprietary detector data. Handlers of type 
