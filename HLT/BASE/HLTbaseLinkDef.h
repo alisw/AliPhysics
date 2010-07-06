@@ -45,6 +45,7 @@
 #pragma link C++ class AliHLTOUTHandlerEquId+;
 #pragma link C++ class AliHLTOUTHandlerDetectorDDL+;
 #pragma link C++ class AliHLTOUTHandlerChain+;
+#pragma link C++ class AliHLTOUTHandlerEsdBranch+;
 #pragma link C++ class AliHLTMemoryFile+;
 #pragma link C++ class AliHLTMessage+;
 #pragma link C++ class AliHLTEventStatistics+;
