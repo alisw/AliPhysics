@@ -14,10 +14,10 @@
 */
 
 #include "AliHLTEsdManager.h"
+#include "AliESDEvent.h"
 #include "TString.h"
 #include <vector>
 
-class AliESDEvent;
 class TTree;
 class TFile;
 
@@ -97,6 +97,11 @@ class AliHLTEsdManagerImplementation : public AliHLTEsdManager {
    * The tree object needs to be deleted by the caller.
    */
   static TTree* EmbedIntoTree(AliESDEvent* pESD, const char* name="esdTree", const char* title="Tree with HLT ESD objects");
+
+  class AliHLTESDEventHelper : public AliESDEvent {
+  public:
+    static bool IsStdContent(const char* key);
+  };
 
  protected:
 

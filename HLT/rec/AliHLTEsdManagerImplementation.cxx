@@ -728,8 +728,11 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
       } else if (pSrcObject->IsA()==AliESDACORDE::Class()) {
 	AliESDACORDE* pESDACORDE=dynamic_cast<AliESDACORDE*>(pSrcObject);
 	copy=(pESDACORDE && false); // have to find an easy valid condition
+      } else if (!AliHLTESDEventHelper::IsStdContent(name)) {
+	// this is likely to be ok as long as it is not any object of the std content.
+	copy=true;
       } else {
-	  HLTError("no merging implemented for object %s, omitting", name.Data());
+	HLTError("no merging implemented for object %s, omitting", name.Data());
       }
       if (copy) {
 	//pSrcObject->Print();
@@ -794,4 +797,14 @@ int AliHLTEsdManagerImplementation::Merge(AliESDEvent* pTgt, AliESDEvent* pSrc) 
     }
   }
   return iResult;
+}
+
+bool AliHLTEsdManagerImplementation::AliHLTESDEventHelper::IsStdContent(const char* key)
+{
+  // check if the key denotes a std object
+  TString needle=key;
+  for (int i=0; i<kESDListN; i++) {
+    if (needle.CompareTo(fgkESDListName[i])==0) return true;
+  }
+  return false;
 }
