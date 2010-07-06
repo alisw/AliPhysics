@@ -30,12 +30,13 @@ TEveGeoShape* geom_gentle_hlt(Bool_t register_as_global=kTRUE) {
   elTRD->SetRnrState(kFALSE);
 
   TEveElement* elHMPID = gsre->FindChild("HMPID");
-  elHMPID->SetRnrState(kTRUE);
+  elHMPID->SetRnrState(kFALSE);
 
   TEveElement* elPHOS = gsre->FindChild("PHOS");
   elPHOS->SetRnrState(kTRUE);
   elPHOS->FindChild("PHOS_4")->SetRnrState(kFALSE);
   elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
+
 
   if (register_as_global) {
     gEve->AddGlobalElement(gsre);
