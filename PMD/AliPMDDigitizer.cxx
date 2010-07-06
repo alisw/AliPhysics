@@ -1446,14 +1446,14 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
 {
   // This converts the simulated edep to ADC according to the
   // Test Beam Data
-  //PS Test in May 2009, Voltage @ 1350 V
+  // PS Test in June 2010, Voltage @ 1300 V
   // KeV - ADC conversion for 12bit ADC
   // MPV data used for the fit and taken here
 
-  const Float_t kConstant   = -0.1602;
-  const Float_t kErConstant =  0.9914;
-  const Float_t kSlope      = 77.47;
-  const Float_t kErSlope    =  3.16;
+  const Float_t kConstant   = 16.807;
+  const Float_t kErConstant = 6.62215;
+  const Float_t kSlope      = 128.875;
+  const Float_t kErSlope    = 6.21713;
   
   Float_t cons   = gRandom->Gaus(kConstant,kErConstant);
   Float_t slop   = gRandom->Gaus(kSlope,kErSlope);
