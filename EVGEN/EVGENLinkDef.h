@@ -62,4 +62,5 @@
 #pragma link C++ class  AliGenFunction+;
 #pragma link C++ class  AliGenTHnSparse+;
 #pragma link C++ class  AliOmegaDalitz+;
+#pragma link C++ class  AliGenDeuteron+;
 #endif
