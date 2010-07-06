@@ -29,7 +29,7 @@
 #include "AliTRDCalPadStatus.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
-#include "AliTRDCalSingleChamberStatus.h"
+#include "AliTRDCalSingleChamberStatus.h"  // test
 
 ClassImp(AliTRDCalPadStatus)
 
@@ -155,19 +155,35 @@ AliTRDCalSingleChamberStatus* AliTRDCalPadStatus::GetCalROC(Int_t p, Int_t c, In
 TH1F *AliTRDCalPadStatus::MakeHisto1D()
 {
   //
-  // make 1D histo
+  // Make 1D histo
   //
 
   char  name[1000];
   sprintf(name,"%s Pad 1D",GetTitle());
-  TH1F * his = new TH1F(name,name,5, 0,5);
-  for (Int_t idet = 0; idet < kNdet; idet++) {
-    if (fROC[idet]){
-      for (Int_t ichannel=0; ichannel<fROC[idet]->GetNchannels(); ichannel++){
-        his->Fill((Float_t)fROC[idet]->GetStatus(ichannel));
-      }
+  TH1F * his = new TH1F(name,name,6, -0.5,5.5);
+  his->GetXaxis()->SetBinLabel(1,"Good");
+  his->GetXaxis()->SetBinLabel(2,"Masked");
+  his->GetXaxis()->SetBinLabel(3,"PadBridgedLeft");
+  his->GetXaxis()->SetBinLabel(4,"PadBridgedRight");
+  his->GetXaxis()->SetBinLabel(5,"ReadSecond");
+  his->GetXaxis()->SetBinLabel(6,"NotConnected");
+
+  for (Int_t idet = 0; idet < kNdet; idet++) 
+    {
+      if (fROC[idet])
+	{
+	  for (Int_t ichannel=0; ichannel<fROC[idet]->GetNchannels(); ichannel++)
+	    {
+	      Int_t status = (Int_t) fROC[idet]->GetStatus(ichannel);
+	      if(status==2)  status= 1;
+	      if(status==4)  status= 2;
+	      if(status==8)  status= 3;
+	      if(status==16) status= 4;
+	      if(status==32) status= 5;
+	      his->Fill(status);
+	    }
+	}
     }
-  }
 
   return his;
 
