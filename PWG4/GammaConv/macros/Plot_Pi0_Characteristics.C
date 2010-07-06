@@ -15,7 +15,7 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
   gROOT->Reset();	
   gROOT->SetStyle("Plain");
   gStyle->SetOptFit(0);
-
+  gStyle->SetPalette(1);
   TString filename = Form("%s%s.root",path,inputRootFile);	
   TFile f(filename.Data());  
   
@@ -421,16 +421,16 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
 
   for(Int_t cuts=0;cuts<cutsAdded;cuts++){
     cout<<"CUT: "<<cutSelectionArray[cuts].Data()<<endl;
-    for(Int_t bin=2;bin<32;bin++){
+    //    for(Int_t bin=2;bin<15;bin++){
       TCanvas *canvasTest = new  TCanvas("canvastest","",200,10,600,600);
       TPad *pad = new TPad(padname.Data(),"",0.,0.,1.,1.,0);
       pad->SetFillColor(0);
       pad->GetFrame()->SetFillColor(0);
       pad->SetBorderMode(0);
-      pad->Divide(1,2);
+      pad->Divide(4,4);
       pad->Draw();
-
-      pad->cd(1);
+    for(Int_t bin=2;bin<18;bin++){
+      pad->cd(bin-1);
       TString namet= Form("Mapping_Reco_InvMass_in_Pt_Bin%s%02d",cutSelectionArray[cuts].Data(),bin);
       cout<<"Getting histogram: "<<namet.Data()<<endl;
       TH1F * signalt = (TH1F*)f.Get(namet.Data());
@@ -438,7 +438,7 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
       TString titlet= Form("Inv_Mass_cut%s_pt[%f,%f]",cutSelectionArray[cuts].Data(),lowBinLimits[bin],highBinLimits[bin]);
       signalt->SetTitle(titlet.Data());
       signalt->Sumw2();
-      signalt->SetAxisRange(0.,0.4);
+      signalt->SetAxisRange(0.,0.7);
       signalt->Draw();
 
       TString nameb= Form("Mapping_Back_InvMass_in_Pt_Bin%s%02d",cutSelectionArray[cuts].Data(),bin);
@@ -447,25 +447,109 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
       signalb->Rebin(rebinValue);
       TString titleb= Form("Inv_Mass_cut%s_pt[%f,%f]",cutSelectionArray[cuts].Data(),lowBinLimits[bin],highBinLimits[bin]);
       signalb->SetTitle(titleb.Data());
-      signalb->SetAxisRange(0.,0.4);
+      signalb->SetAxisRange(0.,0.7);
       signalb->SetLineColor(4);
       signalb->Draw("same");
-      
-      pad->cd(2);
-      canvasTest->SetFillColor(0);
+      canvasTest->Update();
+
+      //      ps_characteristics->NewPage();
+    }
+    ps_characteristics->NewPage();
+
+    TCanvas *canvasTestDiff = new  TCanvas("canvastestdiff","",200,10,600,600);
+    TPad *padD = new TPad(padname.Data(),"",0.,0.,1.,1.,0);
+    canvasTestDiff->SetFillColor(0);
+    padD->SetFillColor(0);
+    padD->GetFrame()->SetFillColor(0);
+    padD->SetBorderMode(0);
+    padD->Divide(4,4);
+    padD->Draw();
+    for(Int_t bin=2;bin<18;bin++){
+      padD->cd(bin-1);
       TString name= Form("Mapping_Signal_InvMass_in_Pt_Bin%s%02d",cutSelectionArray[cuts].Data(),bin);
       cout<<"Getting histogram: "<<name.Data()<<endl;
       TH1F * signal = (TH1F*)f.Get(name.Data());
       signal->Rebin(rebinValue);
       TString title= Form("Signal_Inv_Mass_cut%s_pt[%f,%f]",cutSelectionArray[cuts].Data(),lowBinLimits[bin],highBinLimits[bin]);
       signal->SetTitle(title.Data());
-      signal->SetAxisRange(0.,0.4);
+      signal->SetAxisRange(0.,0.7);
       signal->Draw();
-      canvasTest->Update();
+      
+      canvasTestDiff->Update();
 
-      ps_characteristics->NewPage();
+      //      ps_characteristics->NewPage();
     }
-
+    ps_characteristics->NewPage();
   }
+
+  TCanvas *canvasTest = new  TCanvas("canvastest","",200,10,600,600);
+  TPad *pad = new TPad(padname.Data(),"",0.,0.,1.,1.,0);
+  pad->SetFillColor(0);
+  pad->GetFrame()->SetFillColor(0);
+  pad->SetBorderMode(0);
+  pad->Divide(3,3);
+  pad->Draw();
+  for(Int_t bin=0;bin<cutsAdded;bin++){
+    cout<<"CUT: "<<cutSelectionArray[bin].Data()<<endl;
+    pad->cd(bin+1);
+    pad->cd(bin+1)->SetLogz(1);
+    TString namet= Form("ESD_Mother_InvMass_%s",cutSelectionArray[bin].Data());
+    cout<<"Getting histogram: "<<namet.Data()<<endl;
+    TH1F * massAll = (TH1F*)f.Get(namet.Data());
+    
+    TString titlet= Form("CutId%s",cutSelectionArray[bin].Data());
+    massAll->SetTitle(titlet.Data());
+    massAll->Draw();
+    canvasTest->Update();
+    canvasTest->Print("massAll.gif");
+  }
+  ps_characteristics->NewPage();
+
+    //    for(Int_t bin=2;bin<15;bin++){
+  TCanvas *canvasTest = new  TCanvas("canvastest","",200,10,600,600);
+  TPad *pad = new TPad(padname.Data(),"",0.,0.,1.,1.,0);
+  pad->SetFillColor(0);
+  pad->GetFrame()->SetFillColor(0);
+  pad->SetBorderMode(0);
+  pad->Divide(3,3);
+  pad->Draw();
+  for(Int_t bin=0;bin<cutsAdded;bin++){
+    cout<<"CUT: "<<cutSelectionArray[bin].Data()<<endl;
+    pad->cd(bin+1);
+    pad->cd(bin+1)->SetLogx(1);
+    pad->cd(bin+1)->SetLogz(1);
+    TString namet= Form("ESD_ConvGamma_E_dEdxP_%s",cutSelectionArray[bin].Data());
+    cout<<"Getting histogram: "<<namet.Data()<<endl;
+    TH1F * dedxp = (TH1F*)f.Get(namet.Data());
+    
+    TString titlet= Form("CutId%s",cutSelectionArray[bin].Data());
+    dedxp->SetTitle(titlet.Data());
+    dedxp->Draw("col2");
+    canvasTest->Update();
+    canvasTest->Print("dedxp.gif");
+  }
+  ps_characteristics->NewPage();
+  TCanvas *canvasTest = new  TCanvas("canvastest","",200,10,600,600);
+  TPad *pad = new TPad(padname.Data(),"",0.,0.,1.,1.,0);
+  pad->SetFillColor(0);
+  pad->GetFrame()->SetFillColor(0);
+  pad->SetBorderMode(0);
+  pad->Divide(3,3);
+  pad->Draw();
+  for(Int_t bin=0;bin<cutsAdded;bin++){
+    cout<<"CUT: "<<cutSelectionArray[bin].Data()<<endl;
+    pad->cd(bin+1);
+    pad->cd(bin+1)->SetLogz(1);
+    TString namet= Form("ESD_ConvGamma_alfa_qt_%s",cutSelectionArray[bin].Data());
+    cout<<"Getting histogram: "<<namet.Data()<<endl;
+    TH1F * armen = (TH1F*)f.Get(namet.Data());
+    
+    TString titlet= Form("CutId%s",cutSelectionArray[bin].Data());
+    armen->SetTitle(titlet.Data());
+    armen->Draw("col2");
+    canvasTest->Update();
+    canvasTest->Print("armen.gif");
+  }
+
   ps_characteristics->Close();
 }
