@@ -237,6 +237,7 @@ void AliTRDrecoTask::SetDebugLevel(Int_t level)
 
   AliAnalysisTaskSE::SetDebugLevel(level);
   if(DebugLevel()>=1){
+    AliInfo(Form("Debug Level for Task %s set to %d", GetName(), level));
     TDirectory *savedir = gDirectory;
     fgDebugStream = new TTreeSRedirector("TRD.DebugPerformance.root");
     savedir->cd();
@@ -254,9 +255,7 @@ void AliTRDrecoTask::Terminate(Option_t *)
     delete fgDebugStream;
     fgDebugStream = NULL;
   }
-  fContainer = dynamic_cast<TObjArray *>(GetOutputData(1));
-  PostProcess();
-  MakeSummary();
+  if(HasPostProcess()) PostProcess();
 }
 
 //________________________________________________________

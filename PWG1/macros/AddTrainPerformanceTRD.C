@@ -73,7 +73,7 @@
 
 #include "../TRD/macros/AliTRDperformanceTrain.h"
 
-Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL")
+Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$ALICE_ROOT/PWG1/TRD/macros")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) { 
@@ -88,8 +88,9 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL")
   // initialize TRD settings
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
   AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBinsDCS());
+  Info("AddTrainPerformanceTRD", Form("Add Macros taken from %s", addMacroPath));
   for(Int_t it=0; it<NTRDQATASKS; it++){
-    if(gROOT->LoadMacro(Form("$ALICE_ROOT/PWG1/TRD/macros/Add%s.C+", TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
+    if(gROOT->LoadMacro(Form("%s/Add%s.C+", addMacroPath, TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
       Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
       return kFALSE;
     } 
