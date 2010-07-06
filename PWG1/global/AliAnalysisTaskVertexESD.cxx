@@ -175,7 +175,11 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   }
   AliESDEvent* esdE = (AliESDEvent*) InputEvent();
   
-  if(fCheckEventType && (esdE->GetEventType())!=7) return; 
+  // Select PHYSICS events (type=7, for data) and MC events (type=0)
+  // fCheckEventType is kFALSE if fReadMC is kTRUE, hence check is skipped
+  if(fCheckEventType) {
+    if(esdE->GetEventType()!=7 && esdE->GetEventType()!=0) return; 
+  }
 
 
   TArrayF mcVertex(3);
