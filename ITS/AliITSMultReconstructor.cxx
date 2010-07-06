@@ -390,8 +390,13 @@ void AliITSMultReconstructor::Reconstruct(AliESDEvent* esd, TTree* treeRP)
     }
     vtx = 0;
   }
-  float vtxf[3] = {vtx->GetX(),vtx->GetY(),vtx->GetZ()};
-  FindTracklets(vtxf);
+  if(vtx){
+    float vtxf[3] = {vtx->GetX(),vtx->GetY(),vtx->GetZ()};
+    FindTracklets(vtxf);
+  }
+  else {
+    FindTracklets(0);
+  }
   //
   CreateMultiplicityObject();
 }
