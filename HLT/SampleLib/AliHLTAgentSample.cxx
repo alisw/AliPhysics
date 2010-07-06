@@ -37,6 +37,7 @@
 
 // raw data handler of HLTOUT data
 #include "AliHLTOUTHandlerEquId.h"
+#include "AliHLTOUTHandlerEsdBranch.h"
 
 /** global instance for agent registration */
 AliHLTAgentSample gAliHLTAgentSample;
@@ -154,6 +155,15 @@ int AliHLTAgentSample::GetHandlerDescription(AliHLTComponentDataType dt,
 	      GetModuleId(), AliHLTComponent::DataType2Text(dt).c_str(), spec, spec);
       return 1;
   }
+
+  // add TObject data blocks of type {ROOTTOBJ:SMPL} to ESD
+  if (dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginSample)) {
+      desc=AliHLTOUTHandlerDesc(kEsd, dt, GetModuleId());
+      HLTInfo("module %s handles data block type %s specification %d (0x%x)", 
+	      GetModuleId(), AliHLTComponent::DataType2Text(dt).c_str(), spec, spec);
+      return 1;
+  }
+
   return 0;
 }
 
@@ -163,8 +173,19 @@ AliHLTOUTHandler* AliHLTAgentSample::GetOutputHandler(AliHLTComponentDataType dt
   // see header file for class documentation
   if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginSample)) {
     // use the default handler
-    return new AliHLTOUTHandlerEquId;
+    static AliHLTOUTHandlerEquId handler;
+    return &handler;
   }
+
+  if (dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginSample)) {
+    // use AliHLTOUTHandlerEsdBranch handler to add the TObject
+    // to the ESD branch
+    // Note: the object should have an appropriate name returned
+    // by GetName(). Use SetName() to prepare the object before streaming
+    static AliHLTOUTHandlerEsdBranch handler;
+    return &handler;
+  }
+
   return NULL;
 }
 
@@ -173,6 +194,6 @@ int AliHLTAgentSample::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
   // see header file for class documentation
   if (pInstance==NULL) return -EINVAL;
 
-  delete pInstance;
+  // nothing to delete, the handler have been defined static
   return 0;
 }
