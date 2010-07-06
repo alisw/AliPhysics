@@ -1658,12 +1658,16 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 // Execute analysis.
    static Long64_t ncalls = 0;
    static Long64_t nentries = 0;
+   static TTree *lastTree = 0;
    static TStopwatch *timer = new TStopwatch();
    if (fDebug > 0) printf("MGR: Processing event #%lld\n", ncalls);
    else {
-      if (!nentries && fTree) nentries = fTree->GetEntries();
+      if (fTree && (fTree != lastTree)) {
+         nentries += fTree->GetEntries();
+         lastTree = fTree;
+      }   
       if (!ncalls) timer->Start();
-      ProgressBar("Processing event", ncalls, 10000, timer, kFALSE);
+      ProgressBar("Processing event", ncalls, nentries, timer, kFALSE);
    }
    gROOT->cd();
    TDirectory *cdir = gDirectory;
