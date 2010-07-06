@@ -27,6 +27,7 @@
 //                                                                        //
 // Authors:                                                               //
 //   R. Bailhache (R.Bailhache@gsi.de)                                    //
+//   J. Book (jbook@ikf.uni-frankfurt.de)                                 //
 //   W. Monange   (w.monange@gsi.de)                                      //
 //   F. Kramer    (kramer@ikf.uni-frankfurt.de)                           //
 //                                                                        //
@@ -51,10 +52,12 @@
 #include "AliTRDCalibPadStatus.h"
 #include "AliTRDSaxHandler.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDCalibChamberStatus.h"
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalPadStatus.h"
 #include "Cal/AliTRDCalDCS.h"
 #include "Cal/AliTRDCalSingleChamberStatus.h"
+#include "Cal/AliTRDCalChamberStatus.h"
 #include "Cal/AliTRDCalROC.h"
 
 ClassImp(AliTRDPreprocessor)
@@ -62,19 +65,33 @@ ClassImp(AliTRDPreprocessor)
 //______________________________________________________________________________________________
 AliTRDPreprocessor::AliTRDPreprocessor(AliShuttleInterface *shuttle)
   :AliPreprocessor("TRD", shuttle)
+  ,fCalDCSObjSOR(0)
+  ,fCalDCSObjEOR(0)
   ,fVdriftHLT(0)
 {
   //
   // Constructor
   //
 
+
   AddRunType("PHYSICS");
   AddRunType("STANDALONE");
   AddRunType("PEDESTAL");
   AddRunType("DAQ");
   
+  
 }
-
+//______________________________________________________________________________________________
+ AliTRDPreprocessor::AliTRDPreprocessor(const AliTRDPreprocessor&  ) :
+   AliPreprocessor("TRD",0),
+   fCalDCSObjSOR(0),
+   fCalDCSObjEOR(0),
+   fVdriftHLT(0)
+{
+  
+  Fatal("AliTRDPreprocessor", "copy constructor not implemented");
+  
+}
 //______________________________________________________________________________________________
 AliTRDPreprocessor::~AliTRDPreprocessor()
 {
@@ -82,8 +99,22 @@ AliTRDPreprocessor::~AliTRDPreprocessor()
   // Destructor
   //
 
-}
+  if (fCalDCSObjSOR != NULL) {
+    delete fCalDCSObjSOR;
+    fCalDCSObjSOR =0;
+  }
+  if (fCalDCSObjEOR != NULL) {
+    delete fCalDCSObjEOR;
+    fCalDCSObjEOR =0;
+  }
 
+}
+//______________________________________________________________________________________________
+AliTRDPreprocessor& AliTRDPreprocessor::operator = (const AliTRDPreprocessor& )
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
 //______________________________________________________________________________________________
 void AliTRDPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
@@ -92,7 +123,7 @@ void AliTRDPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   //
 
   AliPreprocessor::Initialize(run,startTime,endTime);
-
+  
 }
 
 //______________________________________________________________________________________________
@@ -108,7 +139,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   // always process the configuration data
   Int_t DCSConfigReturn = ProcessDCSConfigData();
   if(DCSConfigReturn) return DCSConfigReturn; 
-  
+
   if (runType=="PEDESTAL"){
     if(ExtractPedestals()) return 1;
     return 0;
@@ -116,7 +147,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
 
   if ((runType=="PHYSICS") || (runType=="STANDALONE") || (runType=="DAQ")){
     // DCS
-    if(ProcessDCS(dcsAliasMap)) return 1; 
+    if(ProcessDCS(dcsAliasMap)) return 1;
     if(runType=="PHYSICS"){
       // HLT if On
       //TString runPar = GetRunParameter("HLTStatus");
@@ -131,6 +162,9 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
 	ExtractDriftVelocityDAQ(); // for testing!
       }
     }
+    //if((runType=="PHYSICS") || (runType=="STANDALONE")) {
+      //      if(ExtractHalfChamberStatusDAQ()) return 1;
+    //}
   }
   
   return 0;  
@@ -167,7 +201,7 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
 
   Log("****** DCS ******\n");
 	
-  TObjArray * list=AliTRDSensorArray::GetList ();
+  TObjArray * list=AliTRDSensorArray::GetList();
 	
   if (list == 0x0) {
     Log ("Error during AliTRDSensorArray::GetList");
@@ -275,7 +309,98 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
   return error;
 
 }
+//______________________________________________________________________________________________
+Bool_t AliTRDPreprocessor::ExtractHalfChamberStatusDAQ()
+{
+  //
+  // Half chamber status algorithm running on DAQ
+  //
 
+  Bool_t error = kFALSE;
+
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Raphaelle Bailhache");
+  metaData.SetComment("TRD calib test");
+  
+  // Take the output of the DA on DAQ
+  TList * listpad = GetFileSources(kDAQ,"HALFCHAMBERSTATUS");
+  if (!listpad) {
+    Log("No list found for the HalfChamberStatus");
+    return kTRUE;
+  }
+
+  AliTRDCalibChamberStatus *calPed = 0x0;
+    
+  // loop through all files (only one normally)
+  UInt_t index = 0;
+  while (listpad->At(index)!=NULL) {
+    TObjString* fileNameEntry = (TObjString*) listpad->At(index);
+    if (fileNameEntry != NULL)
+      {
+        TString fileName = GetFile(kDAQ, "HALFCHAMBERSTATUS",
+				   fileNameEntry->GetString().Data());
+	if(fileName.Length() ==0){
+	  Log(Form("Error by retrieving the file %d for the halfchamberstatus",(Int_t)index));
+	  delete listpad;
+	  return kTRUE;
+	}
+	
+	TFile *f = TFile::Open(fileName);
+	f->GetObject("calibchamberstatus",calPed);
+	
+	if(calPed) {
+	  
+	  // store as reference data
+	  TString name("HalfChamberStatus");
+	  if(!StoreReferenceData("DAQData",(const char *)name,(TObject *) calPed,&metaData)){
+	    Log(Form("Error storing AliTRDCalibPadStatus object %d as reference data",(Int_t)index));
+	    error = kTRUE;
+	  }
+	} // calPed
+	else Log(Form("Error getting AliTRDCalibChamberStatus onject from file"));
+		 
+      } // fileNameEntry
+    ++index;
+  }// while (list)
+
+  Log(Form("%d elements found in the list for the halfchamberstatus",(Int_t)index));
+  if(index!=1){
+    delete listpad;
+    return kTRUE;
+  }
+
+  //
+  // Produce the AliTRDCalChamberStatus  name calHalfChamberStatus
+  //
+  AliTRDCalChamberStatus *calHalfChamberStatus = 0x0;
+  if(calPed) {
+    //calPed->AnalyseHisto();   // check number of events, create calHalfChamberStatus (done on DAQ)
+    if(fCalDCSObjEOR) {
+      calPed->CheckEORStatus((AliTRDCalDCS *)fCalDCSObjEOR);
+    }
+    calHalfChamberStatus=(AliTRDCalChamberStatus *)calPed->GetCalChamberStatus();
+  }
+
+  //
+  // Store  
+  //  
+
+  AliCDBMetaData md3; 
+  md3.SetObjectClassName("AliTRDCalChamberStatus");
+  md3.SetResponsible("Raphaelle Bailhache");
+  md3.SetBeamPeriod(1);
+  md3.SetComment("TRD calib test");
+  if(!Store("Calib","ChamberStatus"    ,(TObject *)calHalfChamberStatus, &md3, 0, kTRUE)){
+    Log("Error storing the pedestal");
+    delete listpad;
+    return kTRUE;
+  }
+  
+  delete listpad;
+  return error; 
+  
+}
 //______________________________________________________________________________________________
 Bool_t AliTRDPreprocessor::ExtractPedestals()
 {
@@ -694,28 +819,28 @@ Bool_t AliTRDPreprocessor::ExtractDriftVelocityDAQ()
 	calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
 	TObjArray object      = calibra->GetVectorFit();
 	AliTRDCalDet *objdriftvelocitydet = calibra->CreateDetObjectVdrift(&object,kTRUE);
-	//TObject *objdriftvelocitypad = calibra->CreatePadObjectVdrift();
+	//	TObject *objdriftvelocitypad = calibra->CreatePadObjectVdrift();
 	object              = calibra->GetVectorFit2();
 	AliTRDCalDet *objtime0det         = calibra->CreateDetObjectT0(&object,kTRUE);
-	//TObject *objtime0pad         = calibra->CreatePadObjectT0();
+	//	TObject *objtime0pad         = calibra->CreatePadObjectT0();
 	calibra->ResetVectorFit();
 	// store
-	if(!Store("Calib","ChamberVdrift"    ,(TObject *) objdriftvelocitydet,&md1,0,kTRUE)){
-	  Log("Error storing the calibration object for the chamber vdrift (DAQ)");
-	  error = kTRUE;
-	}
-	if(!Store("Calib","ChamberT0"        ,(TObject *) objtime0det        ,&md1,0,kTRUE)){
-	  Log("Error storing the calibration object for the chamber t0 (DAQ)");
-	  error = kTRUE;
-	}
-	//if(!Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,&md2,0,kTRUE)){
-	//  Log("Error storing the calibration object for the local drift velocity (DAQ)");
-	//  error = kTRUE;
-	//}
-	//if(!Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,&md2,0,kTRUE)){
-	//  Log("Error storing the calibration object for the local time0 (DAQ)");
-	//  error = kTRUE;
-	//}
+	 if(!Store("Calib","ChamberVdrift"    ,(TObject *) objdriftvelocitydet,&md1,0,kTRUE)){
+	 	  Log("Error storing the calibration object for the chamber vdrift (DAQ)");
+	 	  error = kTRUE;
+	 	}
+	 	if(!Store("Calib","ChamberT0"        ,(TObject *) objtime0det        ,&md1,0,kTRUE)){
+	 	  Log("Error storing the calibration object for the chamber t0 (DAQ)");
+	 	  error = kTRUE;
+	 	}
+	// 	if(!Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,&md2,0,kTRUE)){
+	// 	  Log("Error storing the calibration object for the local drift velocity (DAQ)");
+	// 	  error = kTRUE;
+	// 	}
+	// 	if(!Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,&md2,0,kTRUE)){
+	// 	  Log("Error storing the calibration object for the local time0 (DAQ)");
+	// 	  error = kTRUE;
+	// 	}
       }
       else{
 	Log("Not enough statistics for the average pulse height (DAQ)");
@@ -806,16 +931,16 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
 	calibra->PutMeanValueOtherVectorFit(1,kTRUE);
 	TObjArray object           = calibra->GetVectorFit();
 	AliTRDCalDet *objgaindet   = calibra->CreateDetObjectGain(&object);
-	//TObject *objgainpad        = calibra->CreatePadObjectGain();
+	//	TObject *objgainpad        = calibra->CreatePadObjectGain();
 	// store them
 	if(!Store("Calib","ChamberGainFactor",(TObject *) objgaindet         ,&md1,0,kTRUE)){
 	  Log("Error storing the calibration object for the chamber gain");
 	  error = kTRUE;
 	}
-	//if(!Store("Calib","LocalGainFactor"  ,(TObject *) objgainpad         ,&md2,0,kTRUE)){
-	//  Log("Error storing the calibration object for the local gain factor");
-	//  error = kTRUE;
-	//}
+	// 	if(!Store("Calib","LocalGainFactor"  ,(TObject *) objgainpad         ,&md2,0,kTRUE)){
+	// 	  Log("Error storing the calibration object for the local gain factor");
+	// 	  error = kTRUE;
+	// 	}
       }
       calibra->ResetVectorFit();
     }// if histogain
@@ -849,7 +974,7 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
 	calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
 	TObjArray object  = calibra->GetVectorFit();
 	AliTRDCalDet *objdriftvelocitydet = calibra->CreateDetObjectVdrift(&object,kTRUE);
-	//TObject *objdriftvelocitypad      = calibra->CreatePadObjectVdrift();
+	//	TObject *objdriftvelocitypad      = calibra->CreatePadObjectVdrift();
 	object              = calibra->GetVectorFit2();
 	AliTRDCalDet *objtime0det  = calibra->CreateDetObjectT0(&object,kTRUE);
 	//TObject *objtime0pad       = calibra->CreatePadObjectT0();
@@ -862,14 +987,14 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
 	  Log("Error storing the calibration object for the chamber t0 (HLT)");
 	  error = kTRUE;
 	}
-	//if(!Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,&md2,0,kTRUE)){
-	//  Log("Error storing the calibration object for the local drift velocity (HLT)");
-	//  error = kTRUE;
-	//}
-	//if(!Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,&md2,0,kTRUE)){
-	//  Log("Error storing the calibration object for the local time0 (HLT)");
-	//  error = kTRUE;
-	//}
+	// if(!Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,&md2,0,kTRUE)){
+	// 	  Log("Error storing the calibration object for the local drift velocity (HLT)");
+	// 	  error = kTRUE;
+	// 	}
+	// 	if(!Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,&md2,0,kTRUE)){
+	// 	  Log("Error storing the calibration object for the local time0 (HLT)");
+	// 	  error = kTRUE;
+	// 	}
 	fVdriftHLT = kTRUE;
       }
       calibra->ResetVectorFit();
@@ -1046,47 +1171,53 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   Log("SAX handler reports no errors.");
 
   // put both objects in one TObjArray to store them
-  TObjArray* fCalObjArray = new TObjArray(2);
-  fCalObjArray->SetOwner();
+  TObjArray* calObjArray = new TObjArray(2);
+  calObjArray->SetOwner();
 
   // get the calibration object storing the data from the handler
   if (fileExistS) {
-    AliTRDCalDCS* fCalDCSObjSOR = saxHandlerS.GetCalDCSObj();
+    if(fCalDCSObjSOR) delete fCalDCSObjSOR;
+    fCalDCSObjSOR = (AliTRDCalDCS *) saxHandlerS.GetCalDCSObj()->Clone();
     fCalDCSObjSOR->EvaluateGlobalParameters();
     fCalDCSObjSOR->SetRunType(GetRunType());
     fCalDCSObjSOR->SetStartTime(GetStartTimeDCSQuery());
     fCalDCSObjSOR->SetEndTime(GetEndTimeDCSQuery());
-    fCalObjArray->AddAt(fCalDCSObjSOR,0);
+    calObjArray->AddAt(fCalDCSObjSOR,0);
     Log("TRDCalDCS object for SOR created.");
   }
 
   if (fileExistE) {
-    AliTRDCalDCS* fCalDCSObjEOR = saxHandlerE.GetCalDCSObj();
+    if(fCalDCSObjEOR) delete fCalDCSObjEOR;
+    fCalDCSObjEOR = (AliTRDCalDCS *) saxHandlerE.GetCalDCSObj()->Clone();
     fCalDCSObjEOR->EvaluateGlobalParameters();
     fCalDCSObjEOR->SetRunType(GetRunType());
     fCalDCSObjEOR->SetStartTime(GetStartTimeDCSQuery());
     fCalDCSObjEOR->SetEndTime(GetEndTimeDCSQuery());
-    fCalObjArray->AddAt(fCalDCSObjEOR,1);
+    calObjArray->AddAt(fCalDCSObjEOR,1);
     Log("TRDCalDCS object for EOR created.");
+    //    printf("globalnumberoftimebins %d \n",fCalDCSObjEOR->GetGlobalNumberOfTimeBins());
   }
+
+
 
   // store the DCS calib data in the CDB
   AliCDBMetaData metaData1;
   metaData1.SetBeamPeriod(0);
   metaData1.SetResponsible("Frederick Kramer");
   metaData1.SetComment("DCS configuration data in two AliTRDCalDCS objects in one TObjArray (0:SOR, 1:EOR).");
-  if (!Store("Calib", "DCS", fCalObjArray, &metaData1, 0, kTRUE)) {
+  if (!Store("Calib", "DCS", calObjArray, &metaData1, 0, kTRUE)) {
     Log("problems while storing DCS config data object");
     return 16;
   } else {
     Log("DCS config data object stored.");
   }
 
-  //delete fCalObjArray;
+  //delete calObjArray;
 
   Log("SUCCESS: Processing of the DCS config summary file DONE.");  
   return 0;
 }
+
 
 
 
