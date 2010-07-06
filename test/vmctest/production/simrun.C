@@ -6,6 +6,9 @@
 // Set job and simulation variables as :
 // root.exe -b -q simrun.C  --run <x> --event <y> --process <kPythia6/kPhojet/kPythia6ATLAS_Flat/kPythia6D6T> --field <kNoField/k5kG> --energy <900/2360/10000> --physicslist <QGSP_BERT_CHIPS/CHIPS/QGSP_BERT_EMV>
 //
+// For LHC10c9 production test:
+// root.exe -b -q simrun.C  --run 119846 --event 1 --process kPythia6D6T --field k5kG --energy 7000 --physicslist QGSP_BERT_CHIPS_OPTICAL
+//
 // By E. Sicking, CERN
 {
   int nrun = 0;
@@ -53,6 +56,7 @@
   }
 
   seed = nrun * 100000 + nevent;
+  //seed = nrun + nevent;   // LHC10c9 production test 
   sprintf(sseed,"%d",seed);
 
   if (seed==0) {

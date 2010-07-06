@@ -146,23 +146,8 @@ void Config()
   gAlice->SetTriggerDescriptor("p-p");
   //  AliSimulation::Instance()->SetTriggerConfig("p-p");
 
- 
-  //
-  // FIELD
-  //
-  AliMagF* field = 0x0;
-  if (mag == kNoField) {
-    comment = comment.Append(" | L3 field 0.0 T");
-    field = new AliMagF("Maps","Maps", 0., 0., AliMagF::k5kGUniform,AliMagF::kBeamTypepp, energy/2.0);
-  } else if (mag == k5kG) {
-    comment = comment.Append(" | L3 field 0.5 T");
-    field = new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG,	AliMagF::kBeamTypepp, energy/2.0);
-  }
-
   printf("\n \n Comment: %s \n \n", comment.Data());
-
-  TGeoGlobalMagField::Instance()->SetField(field);
-    
+ 
   rl->CdGAFile();
   
   Int_t iABSO  = 1;
@@ -257,7 +242,7 @@ void Config()
       //============================ TPC parameters =====================
 
         AliTPC *TPC = new AliTPCv2("TPC", "Default");
-        TPC->SetPrimaryIonisation(); // not used with Geant3
+	// TPC->SetPrimaryIonisation(); // not used with Geant3
     }
 
 
@@ -324,26 +309,9 @@ void Config()
     {
         //=================== PHOS parameters ===========================
 
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV");
-        //Set simulation parameters different from the default ones.
-        AliPHOSSimParam* simEmc = AliPHOSSimParam::GetInstance() ;
-  
-        // APD noise of warm (+20C) PHOS:
-        // a2 = a1*(Y1/Y2)*(M1/M2), where a1 = 0.012 is APD noise at -25C,
-        // Y1 = 4.3 photo-electrons/MeV, Y2 = 1.7 p.e/MeV - light yields at -25C and +20C,
-        // M1 = 50, M2 = 50 - APD gain factors chosen for t1 = -25C and t2 = +20C,
-        // Y = MeanLightYield*APDEfficiency.
+       AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123");
 
-        Float_t apdNoise = 0.012*2.5; 
-        simEmc->SetAPDNoise(apdNoise);
-
-        //Raw Light Yield at +20C
-        simEmc->SetMeanLightYield(18800);
-
-        //ADC channel width at +18C.
-        simEmc->SetADCchannelW(0.0125);
     }
-
 
     if (iPMD)
     {
@@ -440,8 +408,19 @@ void Config()
   geant4->ProcessGeantCommand("/mcVerbose/composedPhysicsList 2");  
   geant4->ProcessGeantCommand("/mcTracking/skipNeutrino true");
 
-
-
+  /*
+  // Set PAI model for TPC (TPC_Ne-CO2-N-2)
+  geant4->ProcessGeantCommand("/mcPhysics/emModel/selectMedium 219");
+  geant4->ProcessGeantCommand("/mcPhysics/emModel/setElossModel PAI");
+  geant4->ProcessGeantCommand("/mcPhysics/emModel/setFluctModel PAI");
+  geant4->ProcessGeantCommand("/mcPhysics/emModel/setParticles  all");
+  
+  // Set PAI model for TRD (TRD_XeCO2)
+  geant4->ProcessGeantCommand("/mcPhysics/emModel/selectMedium 291");
+  geant4->ProcessGeantCommand("/mcPhysics/emModel/setElossModel PAI");
+  geant4->ProcessGeantCommand("/mcPhysics/emModel/setFluctModel PAI");
+  geant4->ProcessGeantCommand("/mcPhysics/emModel/setParticles  all");
+  */
 
 
  //
