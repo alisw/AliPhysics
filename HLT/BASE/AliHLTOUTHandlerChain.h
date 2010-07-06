@@ -84,9 +84,8 @@ class AliHLTOUTHandlerChain : public AliHLTOUTHandler {
 
   /**
    * Process a data block.
-   * The handler retrieves the data and it's properties and derives the
-   * equipment id from it. The default behavior returns the specification as
-   * equipment id and does not touch the data itself.
+   * The handler runs a normal HLT chain for processing of the selected blocks.
+   * The input of the chain is provided by the AliHLTOUTPublisher component.
    * @return equipment id the block should be used for.
    */
   virtual int ProcessData(AliHLTOUT* pData);
