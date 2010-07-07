@@ -33,8 +33,17 @@ class AliAnalysisHelperJetTasks : public TObject {
 
 
   enum {kMaxJets = 6}; //  needed for array size not to fragemnt memory on the heap by many new/delete 
-  enum { kNone = 1<<0,kBunchBunch = 1<<1,kBunchEmpty = 1<<2,kEmptyEmpty= 1<<3,
-	 kPhysicsSelection = 1<<4, kVertexIn = 1<<5, kIsCosmic = 1<<6, kIsPileUp = 1<<7,kTotalSelections = (1<<8) - 1};
+
+
+  enum { kNone = 1<<0,
+	 kBunchBunch = 1<<1,
+	 kBunchEmpty = 1<<2,
+	 kEmptyEmpty= 1<<3,
+	 kPhysicsSelection = 1<<4, 
+	 kVertexIn = 1<<5, 
+	 kIsCosmic = 1<<6, 
+	 kIsPileUp = 1<<7,
+	 kTotalSelections = (1<<8) - 1};
 
   enum Trigger {kAcceptAll = 0,kMB1,kMB2,kMB3,kSPDGFO,kTrigger}; // 
 
@@ -42,6 +51,7 @@ class AliAnalysisHelperJetTasks : public TObject {
 
   static Bool_t IsPileUp(); // Wrapper for SelectInfo with PileUp
   static Bool_t IsCosmic(); // Wrapper for SelectInfo with cosmic
+  static Bool_t TestSelectInfo(UInt_t iMask); // Wrapper for testing the SelectInfo bitmask
 
   static UInt_t SelectInfo(Bool_t bSet = kFALSE,UInt_t iNew = 0); // static function to store the state bitmask of the selection from service task
   

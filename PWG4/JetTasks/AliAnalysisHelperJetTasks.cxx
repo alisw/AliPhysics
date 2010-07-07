@@ -457,6 +457,11 @@ Bool_t  AliAnalysisHelperJetTasks::IsPileUp(){
 }
 
 
+Bool_t  AliAnalysisHelperJetTasks::TestSelectInfo(UInt_t iMask){
+  return ((SelectInfo()&iMask)==iMask);
+}
+
+
 UInt_t  AliAnalysisHelperJetTasks::SelectInfo(Bool_t bSet,UInt_t iNew){
   static UInt_t iSelectInfo = 0; //
   if(bSet){
