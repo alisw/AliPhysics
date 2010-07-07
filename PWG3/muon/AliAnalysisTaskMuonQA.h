@@ -14,7 +14,8 @@ class AliCounterCollection;
 class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
 public:
   
-  AliAnalysisTaskMuonQA(const char *name = "MuonQA");
+  AliAnalysisTaskMuonQA();
+  AliAnalysisTaskMuonQA(const char *name);
   virtual ~AliAnalysisTaskMuonQA();
   
   virtual void   UserCreateOutputObjects();
@@ -69,6 +70,7 @@ private:
   
   TObjArray*  fList;       //!< List of output object for everybody
   TObjArray*  fListExpert; //!< List of output object for experts
+  TObjArray*  fListNorm;   //!< Normalized histograms
   
   AliCounterCollection* fTrackCounters; //!< track statistics
   AliCounterCollection* fEventCounters; //!< event statistics
@@ -83,7 +85,7 @@ private:
   static const char* fgkTriggerClass[10];     ///< full trigger class name
   static const char* fgkTriggerShortName[11]; ///< short trigger class name for counters
   
-  ClassDef(AliAnalysisTaskMuonQA, 1);
+  ClassDef(AliAnalysisTaskMuonQA, 2);
 };
 
 #endif

@@ -41,14 +41,16 @@ AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kTRUE, Short_t selec
   outputfile += ":MUON_QA";
   
   // Create and connect output containers
-  AliAnalysisDataContainer *cout_histo1 = mgr->CreateContainer("general", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile);
+  AliAnalysisDataContainer *cout_histo1 = mgr->CreateContainer("general1", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile);
   AliAnalysisDataContainer *cout_histo2 = mgr->CreateContainer("expert", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile);
   AliAnalysisDataContainer *cout_trackStat = mgr->CreateContainer("trackCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile);
   AliAnalysisDataContainer *cout_eventStat = mgr->CreateContainer("eventCounters", AliCounterCollection::Class(), AliAnalysisManager::kOutputContainer, outputfile);
+  AliAnalysisDataContainer *cout_normalized = mgr->CreateContainer("general2", TObjArray::Class(), AliAnalysisManager::kParamContainer, outputfile);
   mgr->ConnectOutput(task, 1, cout_histo1);
   mgr->ConnectOutput(task, 2, cout_histo2);
   mgr->ConnectOutput(task, 3, cout_trackStat);
   mgr->ConnectOutput(task, 4, cout_eventStat);
+  mgr->ConnectOutput(task, 5, cout_normalized);
   
   return task;
 }   
