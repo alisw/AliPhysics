@@ -231,6 +231,12 @@ Int_t AliEMCALTriggerTRU::L0()
 */		
 		if ( !nPeaks )
 		{
+			//Delete, avoid leak
+			for (Int_t x = 0; x < xsize; x++)
+			  {
+			    delete [] peaks[x];
+			  }
+			delete [] peaks;
 			ZeroRegion();
 			continue;
 		}
@@ -277,6 +283,8 @@ Int_t AliEMCALTriggerTRU::L0()
 					if ( AliDebugLevel() ) ShowFastOR(i,idx[index]);
 				}
 			}
+
+			delete [] idx;
 			
 			if ( !foundPeak ) 
 			{
