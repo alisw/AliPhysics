@@ -4,8 +4,16 @@
  * @brief Extraction of data blocks from HLTOUT
  *
  * <pre>
- * Usage: aliroot -b -q extract-hltout-payload.C'("raw.root")' | tee extract-hltout-payload.log
+ * Usage: aliroot -b -q extract-hltout-payload.C'("raw.root", "selection", nofEvents)' \
+ *            | tee extract-hltout-payload.log
+ *
+ * Defaults
+ *     selection=""      -> no data type selection
+ *     nofEvents=-1      -> all events
  * </pre>
+ *
+ * The raw input file can be accessed directly from the GRID, e.g
+ * "alien:///alice/data/2010/LHC10b/000115887/raw/10000115887021.20.root"
  *
  * The macro stores all data blocks from the HLTOUT payload into separated
  * folders for each event. The file names are derived from data type and
@@ -24,10 +32,19 @@
  * </pre>
  *
  * @author Matthias.Richter@ift.uib.no
- * @ingroup alihlt_its
+ * @ingroup alihlt_programs
  */
 void extract_hltout_payload(const char* input, const char* selection="", int maxEvent=-1)
 {
+  /////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////
+  //
+  // setup GRID if input is not a local file
+  TString strfile=input;
+  if (strfile.Contains("://") && !strfile.Contains("local://")) {
+    TGrid::Connect("alien");
+  }
+
   /////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////
   //
@@ -59,7 +76,7 @@ void extract_hltout_payload(const char* input, const char* selection="", int max
   // setup of the reconstruction
 
   AliHLTReconstructor hltRec;
-  hltRec.Init("chains=sink1");
+  hltRec.Init("chains=sink1 ignore-ctp");
 
   AliRawReader* rawreader=AliRawReader::Create(input);
   if (!rawreader) {
