@@ -255,7 +255,9 @@ void AliTRDrecoTask::Terminate(Option_t *)
     delete fgDebugStream;
     fgDebugStream = NULL;
   }
-  if(HasPostProcess()) PostProcess();
+  fContainer = dynamic_cast<TObjArray *>(GetOutputData(1));
+  PostProcess();
+  MakeSummary();
 }
 
 //________________________________________________________
