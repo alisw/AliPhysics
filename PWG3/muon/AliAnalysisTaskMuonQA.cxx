@@ -78,10 +78,25 @@ const char* AliAnalysisTaskMuonQA::fgkTriggerShortName[11] =
 };
 
 //________________________________________________________________________
+AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
+  AliAnalysisTaskSE(), 
+  fList(0x0),
+  fListExpert(0x0),
+  fListNorm(0x0),
+  fTrackCounters(0x0),
+  fEventCounters(0x0),
+  fSelectCharge(0),
+  fSelectPhysics(kFALSE)
+{
+// Dummy constructor
+}
+
+//________________________________________________________________________
 AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   AliAnalysisTaskSE(name), 
   fList(0x0),
   fListExpert(0x0),
+  fListNorm(0x0),
   fTrackCounters(0x0),
   fEventCounters(0x0),
   fSelectCharge(0),
@@ -97,6 +112,8 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   DefineOutput(3,AliCounterCollection::Class());
   // Output slot #4 writes event counters
   DefineOutput(4,AliCounterCollection::Class());
+  // Output slot #5 writes normalized histograms
+  DefineOutput(5,TObjArray::Class());
 }
 
 //________________________________________________________________________
@@ -105,6 +122,7 @@ AliAnalysisTaskMuonQA::~AliAnalysisTaskMuonQA()
   /// Destructor
   delete fList;
   delete fListExpert;
+  delete fListNorm;
   delete fTrackCounters;
   delete fEventCounters;
 }
@@ -165,14 +183,14 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   hNClustersPerCh->SetOption("P");
   hNClustersPerCh->SetMarkerStyle(kFullDotMedium);
   hNClustersPerCh->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hNClustersPerCh, kNClustersPerCh);
+  fListExpert->AddAtAndExpand(hNClustersPerCh, kNClustersPerCh);
   
   TH1F* hNClustersPerDE = new TH1F("hNClustersPerDE", "averaged number of clusters per DE per track;DetElem ID;<n_{clusters}>", nDE+1, -0.5, nDE+0.5);
   hNClustersPerDE->Sumw2();
   hNClustersPerDE->SetOption("P");
   hNClustersPerDE->SetMarkerStyle(kFullDotMedium);
   hNClustersPerDE->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hNClustersPerDE, kNClustersPerDE);
+  fListExpert->AddAtAndExpand(hNClustersPerDE, kNClustersPerDE);
   
   for (Int_t i = 0; i < nCh; i++) {
     Float_t rMax = 0.5*dMax[i/2];
@@ -192,54 +210,6 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   
   TH2F* hClusterSizePerDE = new TH2F("hClusterSizePerDE", "cluster size distribution per DE;DetElem ID;size (n_{pads})", nDE+1, -0.5, nDE+0.5, 200, 0., 200.);
   fListExpert->AddAtAndExpand(hClusterSizePerDE, kClusterSizePerDE);
-  
-  TH1F* hClusterChargePerChMean = new TH1F("hClusterChargePerChMean", "cluster mean charge per chamber;chamber ID;<charge> (fC)", nCh, -0.5, nCh-0.5);
-  hClusterChargePerChMean->SetOption("P");
-  hClusterChargePerChMean->SetMarkerStyle(kFullDotMedium);
-  hClusterChargePerChMean->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hClusterChargePerChMean, kClusterChargePerChMean);
-  
-  TH1F* hClusterChargePerChSigma = new TH1F("hClusterChargePerChSigma", "cluster charge dispersion per chamber;chamber ID;#sigma_{charge} (fC)", nCh, -0.5, nCh-0.5);
-  hClusterChargePerChSigma->SetOption("P");
-  hClusterChargePerChSigma->SetMarkerStyle(kFullDotMedium);
-  hClusterChargePerChSigma->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hClusterChargePerChSigma, kClusterChargePerChSigma);
-  
-  TH1F* hClusterChargePerDEMean = new TH1F("hClusterChargePerDEMean", "cluster mean charge per DE;DetElem ID;<charge> (fC)", nDE+1, -0.5, nDE+0.5);
-  hClusterChargePerDEMean->SetOption("P");
-  hClusterChargePerDEMean->SetMarkerStyle(kFullDotMedium);
-  hClusterChargePerDEMean->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hClusterChargePerDEMean, kClusterChargePerDEMean);
-  
-  TH1F* hClusterChargePerDESigma = new TH1F("hClusterChargePerDESigma", "cluster charge dispersion per DE;DetElem ID;#sigma_{charge} (fC)", nDE+1, -0.5, nDE+0.5);
-  hClusterChargePerDESigma->SetOption("P");
-  hClusterChargePerDESigma->SetMarkerStyle(kFullDotMedium);
-  hClusterChargePerDESigma->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hClusterChargePerDESigma, kClusterChargePerDESigma);
-  
-  TH1F* hClusterSizePerChMean = new TH1F("hClusterSizePerChMean", "cluster mean size per chamber;chamber ID;<size> (n_{pads})", nCh, -0.5, nCh-0.5);
-  hClusterSizePerChMean->SetOption("P");
-  hClusterSizePerChMean->SetMarkerStyle(kFullDotMedium);
-  hClusterSizePerChMean->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hClusterSizePerChMean, kClusterSizePerChMean);
-  
-  TH1F* hClusterSizePerChSigma = new TH1F("hClusterSizePerChSigma", "cluster size dispersion per chamber;chamber ID;#sigma_{size} (n_{pads})", nCh, -0.5, nCh-0.5);
-  hClusterSizePerChSigma->SetOption("P");
-  hClusterSizePerChSigma->SetMarkerStyle(kFullDotMedium);
-  hClusterSizePerChSigma->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hClusterSizePerChSigma, kClusterSizePerChSigma);
-  
-  TH1F* hClusterSizePerDEMean = new TH1F("hClusterSizePerDEMean", "cluster mean size per DE;DetElem ID;<size> (n_{pads})", nDE+1, -0.5, nDE+0.5);
-  hClusterSizePerDEMean->SetOption("P");
-  hClusterSizePerDEMean->SetMarkerStyle(kFullDotMedium);
-  hClusterSizePerDEMean->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hClusterSizePerDEMean, kClusterSizePerDEMean);
-  
-  TH1F* hClusterSizePerDESigma = new TH1F("hClusterSizePerDESigma", "cluster size dispersion per DE;DetElem ID;#sigma_{size} (n_{pads})", nDE+1, -0.5, nDE+0.5);
-  hClusterSizePerDESigma->SetOption("P");
-  hClusterSizePerDESigma->SetMarkerStyle(kFullDotMedium);
-  hClusterSizePerDESigma->SetMarkerColor(kBlue);
-  fList->AddAtAndExpand(hClusterSizePerDESigma, kClusterSizePerDESigma);
   
   // initialize track counters
   fTrackCounters = new AliCounterCollection("trackCounters");
@@ -347,8 +317,8 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
       Int_t chId = esdCluster->GetChamberId();
       Int_t deId = esdCluster->GetDetElemId();
       
-      ((TH1F*)fList->UncheckedAt(kNClustersPerCh))->Fill(chId);
-      ((TH1F*)fList->UncheckedAt(kNClustersPerDE))->Fill(deId);
+      ((TH1F*)fListExpert->UncheckedAt(kNClustersPerCh))->Fill(chId);
+      ((TH1F*)fListExpert->UncheckedAt(kNClustersPerDE))->Fill(deId);
       
       ((TH1F*)fListExpert->UncheckedAt(kClusterHitMapInCh+chId))->Fill(esdCluster->GetX(), esdCluster->GetY());
       
@@ -444,14 +414,9 @@ void AliAnalysisTaskMuonQA::Terminate(Option_t *)
   /// Draw result to the screen
   /// Print statistics
   
-  // recover output objects
-  fList = static_cast<TObjArray*> (GetOutputData(1));
-  fListExpert = static_cast<TObjArray*> (GetOutputData(2));
-  if (!fList || !fListExpert) return;
-  fTrackCounters = static_cast<AliCounterCollection*> (GetOutputData(3));
-  fEventCounters = static_cast<AliCounterCollection*> (GetOutputData(4));
-  
   // global statistic
+  fTrackCounters = static_cast<AliCounterCollection*>(GetOutputData(3));
+  fEventCounters = static_cast<AliCounterCollection*>(GetOutputData(4));
   if (fTrackCounters && fEventCounters) {
     if (!gROOT->IsBatch()) {
       cout<<"whole statistics without selection:"<<endl;
@@ -471,18 +436,75 @@ void AliAnalysisTaskMuonQA::Terminate(Option_t *)
     }
   }
   
-  // normalize histograms and fill summary plots
+  // recover output histograms
+  fList = static_cast<TObjArray*>(GetOutputData(1));
+  fListExpert = static_cast<TObjArray*>(GetOutputData(2));
+  if (!fList || !fListExpert) return;
+  
+  // create summary plots
+  fListNorm = new TObjArray(1000);
+  fListNorm->SetOwner();
+  
+  // mean/dispersion of cluster charge per chamber/DE
+  TH1F* hClusterChargePerChMean = new TH1F("hClusterChargePerChMean", "cluster mean charge per chamber;chamber ID;<charge> (fC)", nCh, -0.5, nCh-0.5);
+  hClusterChargePerChMean->SetOption("P");
+  hClusterChargePerChMean->SetMarkerStyle(kFullDotMedium);
+  hClusterChargePerChMean->SetMarkerColor(kBlue);
+  fListNorm->AddAtAndExpand(hClusterChargePerChMean, kClusterChargePerChMean);
+  
+  TH1F* hClusterChargePerChSigma = new TH1F("hClusterChargePerChSigma", "cluster charge dispersion per chamber;chamber ID;#sigma_{charge} (fC)", nCh, -0.5, nCh-0.5);
+  hClusterChargePerChSigma->SetOption("P");
+  hClusterChargePerChSigma->SetMarkerStyle(kFullDotMedium);
+  hClusterChargePerChSigma->SetMarkerColor(kBlue);
+  fListNorm->AddAtAndExpand(hClusterChargePerChSigma, kClusterChargePerChSigma);
+  
+  TH1F* hClusterChargePerDEMean = new TH1F("hClusterChargePerDEMean", "cluster mean charge per DE;DetElem ID;<charge> (fC)", nDE+1, -0.5, nDE+0.5);
+  hClusterChargePerDEMean->SetOption("P");
+  hClusterChargePerDEMean->SetMarkerStyle(kFullDotMedium);
+  hClusterChargePerDEMean->SetMarkerColor(kBlue);
+  fListNorm->AddAtAndExpand(hClusterChargePerDEMean, kClusterChargePerDEMean);
+  
+  TH1F* hClusterChargePerDESigma = new TH1F("hClusterChargePerDESigma", "cluster charge dispersion per DE;DetElem ID;#sigma_{charge} (fC)", nDE+1, -0.5, nDE+0.5);
+  hClusterChargePerDESigma->SetOption("P");
+  hClusterChargePerDESigma->SetMarkerStyle(kFullDotMedium);
+  hClusterChargePerDESigma->SetMarkerColor(kBlue);
+  fListNorm->AddAtAndExpand(hClusterChargePerDESigma, kClusterChargePerDESigma);
+  
+  // mean/dispersion of cluster size per chamber/DE
+  TH1F* hClusterSizePerChMean = new TH1F("hClusterSizePerChMean", "cluster mean size per chamber;chamber ID;<size> (n_{pads})", nCh, -0.5, nCh-0.5);
+  hClusterSizePerChMean->SetOption("P");
+  hClusterSizePerChMean->SetMarkerStyle(kFullDotMedium);
+  hClusterSizePerChMean->SetMarkerColor(kBlue);
+  fListNorm->AddAtAndExpand(hClusterSizePerChMean, kClusterSizePerChMean);
+  
+  TH1F* hClusterSizePerChSigma = new TH1F("hClusterSizePerChSigma", "cluster size dispersion per chamber;chamber ID;#sigma_{size} (n_{pads})", nCh, -0.5, nCh-0.5);
+  hClusterSizePerChSigma->SetOption("P");
+  hClusterSizePerChSigma->SetMarkerStyle(kFullDotMedium);
+  hClusterSizePerChSigma->SetMarkerColor(kBlue);
+  fListNorm->AddAtAndExpand(hClusterSizePerChSigma, kClusterSizePerChSigma);
+  
+  TH1F* hClusterSizePerDEMean = new TH1F("hClusterSizePerDEMean", "cluster mean size per DE;DetElem ID;<size> (n_{pads})", nDE+1, -0.5, nDE+0.5);
+  hClusterSizePerDEMean->SetOption("P");
+  hClusterSizePerDEMean->SetMarkerStyle(kFullDotMedium);
+  hClusterSizePerDEMean->SetMarkerColor(kBlue);
+  fListNorm->AddAtAndExpand(hClusterSizePerDEMean, kClusterSizePerDEMean);
+  
+  TH1F* hClusterSizePerDESigma = new TH1F("hClusterSizePerDESigma", "cluster size dispersion per DE;DetElem ID;#sigma_{size} (n_{pads})", nDE+1, -0.5, nDE+0.5);
+  hClusterSizePerDESigma->SetOption("P");
+  hClusterSizePerDESigma->SetMarkerStyle(kFullDotMedium);
+  hClusterSizePerDESigma->SetMarkerColor(kBlue);
+  fListNorm->AddAtAndExpand(hClusterSizePerDESigma, kClusterSizePerDESigma);
+  
+  // normalize histograms
   Float_t nTracks = ((TH1F*)fList->UncheckedAt(kNClustersPerTrack))->GetEntries();
   if (nTracks > 0.) {
-    ((TH1F*)fList->UncheckedAt(kNClustersPerCh))->Scale(1./nTracks);
-    ((TH1F*)fList->UncheckedAt(kNClustersPerDE))->Scale(1./nTracks);
+    ((TH1F*)fListExpert->UncheckedAt(kNClustersPerCh))->Scale(1./nTracks);
+    ((TH1F*)fListExpert->UncheckedAt(kNClustersPerDE))->Scale(1./nTracks);
+    fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerCh))->Clone(), kNClustersPerCh);
+    fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerDE))->Clone(), kNClustersPerDE);
   }
   
   // fill summary plots per chamber
-  TH1* hClusterChargePerChMean = ((TH1F*)fList->UncheckedAt(kClusterChargePerChMean));
-  TH1* hClusterChargePerChSigma = ((TH1F*)fList->UncheckedAt(kClusterChargePerChSigma));
-  TH1* hClusterSizePerChMean = ((TH1F*)fList->UncheckedAt(kClusterSizePerChMean));
-  TH1* hClusterSizePerChSigma = ((TH1F*)fList->UncheckedAt(kClusterSizePerChSigma));
   for (Int_t iCh = 0; iCh < nCh; iCh++) {
     
     TH1* hClusterChargeInCh = ((TH1F*)fListExpert->UncheckedAt(kClusterChargeInCh+iCh));
@@ -501,11 +523,7 @@ void AliAnalysisTaskMuonQA::Terminate(Option_t *)
   
   // fill summary plots per DE
   TH2F* hClusterChargePerDE = ((TH2F*)fListExpert->UncheckedAt(kClusterChargePerDE));
-  TH1F* hClusterChargePerDEMean = ((TH1F*)fList->UncheckedAt(kClusterChargePerDEMean));
-  TH1F* hClusterChargePerDESigma = ((TH1F*)fList->UncheckedAt(kClusterChargePerDESigma));
   TH2F* hClusterSizePerDE = ((TH2F*)fListExpert->UncheckedAt(kClusterSizePerDE));
-  TH1F* hClusterSizePerDEMean = ((TH1F*)fList->UncheckedAt(kClusterSizePerDEMean));
-  TH1F* hClusterSizePerDESigma = ((TH1F*)fList->UncheckedAt(kClusterSizePerDESigma));
   for (Int_t iDE = 1; iDE < nDE+1; iDE++) {
     
     TH1D *tmp = hClusterChargePerDE->ProjectionY("tmp",iDE,iDE,"e");
@@ -528,15 +546,8 @@ void AliAnalysisTaskMuonQA::Terminate(Option_t *)
     
   }
   
-  TFile *histoFile = new TFile("histo.root", "RECREATE");
-  histoFile->mkdir("general","general");
-  histoFile->cd("general");
-  fList->Write();
-  histoFile->mkdir("expert","expert");
-  histoFile->cd("expert");
-  fListExpert->Write();
-  histoFile->Close();
-  
+  // Post summary data.
+  PostData(5, fListNorm);
 }
 
 //________________________________________________________________________
