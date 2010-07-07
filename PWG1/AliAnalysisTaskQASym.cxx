@@ -104,8 +104,6 @@ ClassImp(AliAnalysisTaskQASym)
     ,fVertexX(0)
     ,fVertexY(0)
     ,fVertexZ(0)
-    ,test(0)
-  
     ,fRecDcaPosPhi(0)
     ,fRecDcaNegPhi(0)
     ,fRecPtPosPhi(0)
@@ -155,13 +153,6 @@ ClassImp(AliAnalysisTaskQASym)
     ,fEtavPt(0)  
     ,fCompareTPCparam(0)
     ,fITSlayer(0)
-    
-    ,sdca(0)
-    ,xy(0)
-    ,z(0)
-    ,xvertexcor(0)
-    ,yvertexcor(0)  
- 
     ,fCuts(0)
 
 {
@@ -211,8 +202,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   Double_t pt = 20.;
 
   fHists = new TList();
-  //  test   = new TNtuple("test","test",  
-  //			  "pt:phi:theta:x:y:z:charge");
+
   fHistRECpt   = new TH1F("fHistRECpt", 
 			  " p_{T}",
 			  200, 0., pt);
@@ -1116,7 +1106,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     sigmapt= sqrt(sigmapt);
     sigmapt= sigmapt *(tpcP->Pt()*tpcP->Pt()); 
 
-    if(sigmapt == 0.)continue;
+    if(TMath::Abs(sigmapt) < 1.e-10) continue;
+
     fsigmaPt->Fill(TMath::Log10(sigmapt));
  
 
@@ -1155,10 +1146,12 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
    
    
     //------------------- 
+    Float_t xvertexcor = 0.;
+    Float_t yvertexcor = 0.;
 
     xvertexcor = tpcP->Xv() - vertex->GetX(); // coordinate corrected for vertex position
     yvertexcor = tpcP->Yv() - vertex->GetY(); // "
-    sdca = (tpcP->Py()*xvertexcor - tpcP->Px()*yvertexcor)/tpcP->Pt();
+    Double_t sdca = (tpcP->Py()*xvertexcor - tpcP->Px()*yvertexcor)/tpcP->Pt();
 
 
     fqPtRec[cas]->Fill(tpcP->Charge()/tpcP->Pt());
@@ -1181,6 +1174,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     fDca->Fill(sdca);
     fRecQPtPhi->Fill(tpcP->Charge()/tpcP->Pt(), phiIn);
 
+    Float_t xy = 0.;
+    Float_t  z = 0.;
 
     tpcP->GetImpactParameters(xy,z);
     fDiffDcaD->Fill(sdca+xy);
