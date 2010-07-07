@@ -78,6 +78,7 @@
 #include <TGeoTube.h> // contains TGeoTubeSeg
 #include <TGeoVolume.h>
 #include <TGeoXtru.h>
+#include <TGeoPcon.h>
 
 // AliRoot includes
 #include "AliLog.h"
@@ -227,169 +228,6 @@ TGeoMedium* AliITSv11GeometrySPD::GetMedium(const char* mediumName,
      if (!medium) AliError(Form("Medium <%s> not found", mediumName));
 
      return medium;
-}
-//______________________________________________________________________
-Int_t AliITSv11GeometrySPD::CreateSPDCentralMaterials(Int_t &medOffset,
-                                                      Int_t &matOffset) const
-{
-    //
-    // Define the specific materials used for the ITS SPD central detectors.
-    // ---
-    // NOTE: These are the same old names.
-    //       By the ALICE naming conventions, they start with "ITS SPD ...."
-    //       Data taken from ** AliITSvPPRasymmFMD::CreateMaterials() **.
-    // ---
-    // Arguments [the ones passed by reference contain output values]:
-    // - medOffset --> (by ref) starting number of the list of media
-    // - matOffset --> (by ref) starting number of the list of Materials
-    // ---
-    // Inputs:
-    //   Int_t &medOffset  Starting number of the list of media
-    //   Int_t &matOffset  Starting number of the list of materials
-    // Outputs:
-    //   Int_t &medOffset  Ending number of the list of media
-    //   Int_t &matOffset  Ending number of the list of materials
-    // Return:
-    //   The last material indexused +1. (= next avaiable material index)
-    //
-    const Double_t ktmaxfd    = 0.1 * fgkDegree; // Degree
-    const Double_t kstemax    = 1.0 * fgkcm; // cm
-    const Double_t kdeemax    = 0.1;//Fraction of particle's energy 0<deemax<=1
-    const Double_t kepsil     = 1.0E-4; //
-    const Double_t kstmin     = 0.0 * fgkcm; // cm "Default value used"
-    const Double_t ktmaxfdAir = 0.1 * fgkDegree; // Degree
-    const Double_t kstemaxAir = 1.0000E+00 * fgkcm; // cm
-    const Double_t kdeemaxAir = 0.1;//Fraction of particle's energy 0<deemax<=1
-    const Double_t kepsilAir  = 1.0E-4;//
-    const Double_t kstminAir  = 0.0 * fgkcm; // cm "Default value used"
-    const Double_t ktmaxfdSi  = 0.1 * fgkDegree; // .10000E+01; // Degree
-    const Double_t kstemaxSi  = 0.0075 * fgkcm; //  .10000E+01; // cm
-    const Double_t kdeemaxSi  = 0.1;//Fraction of particle's energy 0<deemax<=1
-    const Double_t kepsilSi   = 1.0E-4;//
-    const Double_t kstminSi   = 0.0 * fgkcm; // cm "Default value used"
-    //
-    Int_t matindex = matOffset;
-    Int_t medindex = medOffset;
-    TGeoMaterial *mat;
-    TGeoMixture  *mix;
-    TGeoMedium   *med;
-    //
-    Int_t    ifield = (((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ());
-    Double_t fieldm = (((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max());
-    Double_t params[8] = {8 * 0.0};
-
-    params[1] = (Double_t) ifield;
-    params[2] = fieldm;
-    params[3] = ktmaxfdSi;
-    params[4] = kstemaxSi;
-    params[5] = kdeemaxSi;
-    params[6] = kepsilSi;
-    params[7] = kstminSi;
-
-    // Definition of materials and mediums.
-    // Last argument in material definition is its pressure,
-    // which is initialized to ZERO.
-    // For better readability, it is simply set to zero.
-    // Then the writing "0.0 * fgkPascal" is replaced by "0."
-    // (Alberto)
-
-    // silicon definition for ITS (overall)
-    mat = new TGeoMaterial("ITS_SI", 28.086, 14.0, 2.33 * fgkgcm3,
-                           TGeoMaterial::kMatStateSolid, 25.0*fgkCelsius, 0.);
-    mat->SetIndex(matindex);
-    med = new TGeoMedium("SI", medindex++, mat, params);
-
-    // silicon for ladder chips
-    mat = new TGeoMaterial("SPD SI CHIP", 28.086, 14.0, 2.33 * fgkgcm3,
-                           TGeoMaterial::kMatStateSolid, 25.0*fgkCelsius, 0.);
-    mat->SetIndex(matindex);
-    med = new TGeoMedium("SPD SI CHIP", medindex++, mat, params);
-
-    // silicon for pixel bus
-    mat = new TGeoMaterial("SPD SI BUS", 28.086, 14.0, 2.33 * fgkgcm3,
-                           TGeoMaterial::kMatStateSolid, 25.0*fgkCelsius, 0.);
-    mat->SetIndex(matindex);
-    med = new TGeoMedium("SPD SI BUS", medindex++, mat, params);
-
-    // carbon fiber material is defined as a mix of C-O-N-H
-    // defined in terms of fractional weights according to 'C (M55J)'
-    // it is used for the support and clips
-    mix = new TGeoMixture("C (M55J)", 4, 1.9866 * fgkgcm3);
-    mix->SetIndex(matindex);
-    mix->DefineElement(0, 12.01070, 6.0, 0.908508078);// C by fractional weight
-    mix->DefineElement(1, 14.00670, 7.0, 0.010387573);// N by fractional weight
-    mix->DefineElement(2, 15.99940, 8.0, 0.055957585);// O by fractional weight
-    mix->DefineElement(3,  1.00794, 1.0, 0.025146765);// H by fractional weight
-    mix->SetPressure(0.0 * fgkPascal);
-    mix->SetTemperature(25.0 * fgkCelsius);
-    mix->SetState(TGeoMaterial::kMatStateSolid);
-    params[3] = ktmaxfd;
-    params[4] = kstemax;
-    params[5] = kdeemax;
-    params[6] = kepsil;
-    params[7] = kstmin;
-    med = new TGeoMedium("ITSspdCarbonFiber", medindex++, mix, params);
-
-    // air defined as a mixture of C-N-O-Ar:
-    // it is used to fill all containers
-    mix = new TGeoMixture("Air", 4, 1.20479E-3 * fgkgcm3);
-    mix->SetIndex(matindex);
-    mix->DefineElement(0, 12.0107,  6.0, 0.000124); // C by fractional weight
-    mix->DefineElement(1, 14.0067,  7.0, 0.755267); // N by fractional weight
-    mix->DefineElement(2, 15.9994,  8.0, 0.231781); // O by fractional weight
-    mix->DefineElement(3, 39.9480, 18.0, 0.012827); // Ar by fractional weight
-    mix->SetPressure(101325.0 * fgkPascal); // = 1 atmosphere
-    mix->SetTemperature(25.0 * fgkCelsius);
-    mix->SetState(TGeoMaterial::kMatStateGas);
-    params[3] = ktmaxfdAir;
-    params[4] = kstemaxAir;
-    params[5] = kdeemaxAir;
-    params[6] = kepsilAir;
-    params[7] = kstminAir;
-    med = new TGeoMedium("ITSspdAir", medindex++, mix, params);
-
-    // inox stainless steel, defined as a mixture
-    // used for all metallic parts
-    mix = new TGeoMixture("INOX", 9, 8.03 * fgkgcm3);
-    mix->SetIndex(matindex);
-    mix->DefineElement(0, 12.0107,  6., .0003);  // C  by fractional weight
-    mix->DefineElement(1, 54.9380, 25., .02);    // Fe by fractional weight
-    mix->DefineElement(2, 28.0855, 14., .01);    // Na by fractional weight
-    mix->DefineElement(3, 30.9738, 15., .00045); // P  by fractional weight
-    mix->DefineElement(4, 32.066 , 16., .0003);  // S  by fractional weight
-    mix->DefineElement(5, 58.6928, 28., .12);    // Ni by fractional weight
-    mix->DefineElement(6, 55.9961, 24., .17);    //    by fractional weight
-    mix->DefineElement(7, 95.84  , 42., .025);   //    by fractional weight
-    mix->DefineElement(8, 55.845 , 26., .654);   //    by fractional weight
-    mix->SetPressure(0.0 * fgkPascal);
-    mix->SetTemperature(25.0 * fgkCelsius);
-    mix->SetState(TGeoMaterial::kMatStateSolid);
-    params[3] = ktmaxfdAir;
-    params[4] = kstemaxAir;
-    params[5] = kdeemaxAir;
-    params[6] = kepsilAir;
-    params[7] = kstminAir;
-    med = new TGeoMedium("ITSspdStainlessSteel", medindex++, mix, params);
-
-    // freon gas which fills the cooling system (C+F)
-    mix = new TGeoMixture("Freon", 2, 1.63 * fgkgcm3);
-    mix->SetIndex(matindex);
-    mix->DefineElement(0, 12.0107   , 6.0,  4);  // C by fractional weight
-    mix->DefineElement(1, 18.9984032, 9.0, 10); // F by fractional weight
-    mix->SetPressure(101325.0 * fgkPascal); // = 1 atmosphere
-    mix->SetTemperature(25.0 * fgkCelsius);
-    mix->SetState(TGeoMaterial::kMatStateLiquid);
-    params[3] = ktmaxfdAir;
-    params[4] = kstemaxAir;
-    params[5] = kdeemaxAir;
-    params[6] = kepsilAir;
-    params[7] = kstminAir;
-    med = new TGeoMedium("ITSspdCoolingFluid", medindex++, mix, params);
-
-    // return the next index to be used in case of adding new materials
-    medOffset = medindex;
-    matOffset = matindex;
-    return matOffset;
 }
 
 //______________________________________________________________________
@@ -704,14 +542,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
         ksecR10, ksecR11, -.5 * ksecDipLength - ksecDipRadii,
         ksecR12, ksecR13
     };
-    /*
-      Double_t secDip[ksecNRadii] = {
-      0., 0., ksecDip0, 0., 0., ksecDip1,
-      0., 0., ksecDip2, 0., 0., ksecDip3,
-      0., 0., ksecDip4, 0., 0., ksecDip5,
-      0., 0.
-      };
-    */
+
     Double_t secX2[ksecNRadii];
     Double_t secY2[ksecNRadii];
     Double_t secR2[ksecNRadii] = {
@@ -1181,26 +1012,9 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     vM0->AddNode(vB3,1,rotrans); // Put Mounting bracket on sector
     rotrans = new TGeoCombiTrans("",x0,y0,-z0,rot);
     vM0->AddNode(vB3,2,rotrans); // Put Mounting bracket on sector
-    /*
-    j = 0; // right side, find point with largest x value
-    x1 = sB0->GetX(0);
-    for(i=1;i<sB0->GetNvert();i++)if(sB0->GetX(i)>x1) {j=i;x1=sB0->GetX(i);}
-    j--; // Too big by 1
-    //t = -TMath::RadToDeg()*TMath::ATan2(
-    //                               sB0->GetX(j)-sB0->GetX(j-1),
-    //                               sB0->GetY(j)-sB0->GetY(j-1));
-    */
     t *= -1.0;
     rot = new TGeoRotation("",t,0.0,0.0); // z axis rotation
-    /*  // this way gets correct orientation but wrong "height"
-    x0 = 0.5*(sB0->GetX(j)+sB0->GetX(j-1))+
-        sB3->GetDX()*TMath::Cos(t*TMath::DegToRad());
-    y0 = 0.5*(sB0->GetY(j)+sB0->GetY(j-1))+
-        sB3->GetDX()*TMath::Sin(t*TMath::DegToRad());
-    z0 = sB0->GetZ(0)+sB3->GetDZ();
-    */ // I don't understand the need for this factor 3.5.
-    // posibly the SPD sector as coded isn't symetric which the
-    // plans would suggest.
+  
     x0 = -0.5*(sB0->GetX(0)+sB0->GetX(sB0->GetNvert()-1))-3.5*
         sB3->GetDX()*TMath::Cos(t*TMath::DegToRad());
     y0 = 0.5*(sB0->GetY(0)+sB0->GetY(sB0->GetNvert()-1))-3.5*
@@ -1305,8 +1119,8 @@ Bool_t AliITSv11GeometrySPD::GetSectorMountingPoints(Int_t index,Double_t &x0,
 
     x0 = x1 = y0 = y1 = 0.0;
     if(index < 0 || index > isize) {
-        AliError(Form("index = %d: allowed 0 --> %", index, isize));
-        return kFALSE;
+      AliError(Form("index = %d: allowed 0 --> %d", index, isize));
+      return kFALSE;
     } // end if(index<0||index>isize)
     x0 = fSPDsectorX0[index];
     x1 = fSPDsectorX1[index];
@@ -1522,158 +1336,6 @@ TGeoVolume* AliITSv11GeometrySPD::CreateLadder(Int_t layer,TArrayD &sizes,
     return container;
 }
 
-/*
-//______________________________________________________________________
-TGeoVolume* AliITSv11GeometrySPD::CreateLadder
-        (Int_t layer, TArrayD &sizes, TGeoManager *mgr) const
-{
-    //
-    // Creates the "ladder" = silicon sensor + 5 chips.
-    // Returns a TGeoVolume containing the following components:
-    //  - the sensor (TGeoBBox), whose name depends on the layer
-    //  - 5 identical chips (TGeoBBox)
-    //  - a guard ring around the sensor (subtraction of TGeoBBoxes),
-    //    which is separated from the rest of sensor because it is not
-    //    a sensitive part
-    //  - bump bondings (TGeoBBox stripes for the whole width of the
-    //    sensor, one per column).
-    // ---
-    // Arguments:
-    //  1 - the owner layer (MUST be 1 or 2 or a fatal error is raised)
-    //  2 - a TArrayD passed by reference, which will contain relevant
-    //      dimensions related to this object:
-    //      size[0] = 'thickness' (the smallest dimension)
-    //      size[1] = 'length' (the direction along the ALICE Z axis)
-    //      size[2] = 'width' (extension in the direction perp. to the
-    //                         above ones)
-    //  3 - the used TGeoManager
-
-    // ** CRITICAL CHECK ******************************************************
-    // layer number can be ONLY 1 or 2
-    if (layer != 1 && layer != 2) AliFatal("Layer number MUST be 1 or 2");
-
-    // ** MEDIA ***************************************************************
-
-    TGeoMedium *medAir       = GetMedium("AIR$",mgr);
-    TGeoMedium *medSPDSiChip = GetMedium("SPD SI CHIP$",mgr); // SPD SI CHIP
-    TGeoMedium *medSi        = GetMedium("SI$",mgr);
-    TGeoMedium *medBumpBond  = GetMedium("COPPER$",mgr);  // ??? BumpBond
-
-    // ** SIZES ***************************************************************
-
-    Double_t chipThickness  = fgkmm *  0.150;
-    Double_t chipWidth      = fgkmm * 15.950;
-    Double_t chipLength     = fgkmm * 13.600;
-    Double_t chipSpacing    = fgkmm *  0.400; // separation of chips along Z
-    Double_t sensThickness  = fgkmm *  0.200;
-    Double_t sensLength     = fgkmm * 69.600;
-    Double_t sensWidth      = fgkmm * 12.800;
-    Double_t guardRingWidth = fgkmm *  0.560; // guard ring around sensor
-    Double_t bbLength       = fgkmm * 0.042;
-    Double_t bbWidth        = sensWidth;
-    Double_t bbThickness    = fgkmm * 0.012;
-    Double_t bbPos          = 0.080;          // Z position w.r. to left pixel edge
-
-    // the three dimensions of the box which contains the ladder
-    // are returned in the 'sizes' argument, and are used for volumes positionement
-    // for readability purpose, they are linked by reference to a more meaningful name
-    sizes.Set(3);
-    Double_t &thickness = sizes[0];
-    Double_t &length = sizes[1];
-    Double_t &width = sizes[2];
-    // the container is a box which exactly enclose all the stuff
-    width = chipWidth;
-    length = sensLength + 2.0*guardRingWidth;
-    thickness = sensThickness + chipThickness + bbThickness;
-
-    // ** VOLUMES *************************************************************
-
-    // This is a sensitive volume.
-    // Local X must correspond to x coordinate of the sensitive volume:
-    // to respect this, the origin of the local reference system
-    // must be shifted from the middle of the box, using
-    // an additional option ('originShift') when creating the container shape:
-    Double_t xSens = 0.5 * (width - sensWidth - 2.0*guardRingWidth);
-    Double_t originShift[3] = {-xSens, 0., 0.};
-
-    // now the container is a TGeoBBox with this shift,
-    // and the volume is made of air (it does not exist in reality)
-    TGeoBBox *shLadder = new TGeoBBox(0.5*width, 0.5*thickness, 0.5*length, originShift);
-    TGeoVolume *vLadder = new TGeoVolume(Form("ITSSPDlay%d-Ladder", layer), shLadder, medAir);
-
-    // the chip is a common box
-    TGeoVolume *vChip = mgr->MakeBox("ITSSPDchip", medSPDSiChip,
-                                     0.5*chipWidth, 0.5*chipThickness, 0.5*chipLength);
-
-    // to build the sensor with its guard ring, we create a TGeoBBox with the size
-    // of the sensor + guard ring, and we insert the true sensor into it as an
-    // internal node: this simplifies the implementation with the same result
-    TGeoVolume *vSensGuard = mgr->MakeBox(Form("%s-guardRing", GetSenstiveVolumeName(layer)),
-                                          medSi,
-                                          0.5*sensWidth + guardRingWidth,
-                                          0.5*sensThickness,
-                                          0.5*sensLength + guardRingWidth);
-    TGeoVolume *vSens = mgr->MakeBox(GetSenstiveVolumeName(layer), medSi,
-                                     0.5*sensWidth,0.5*sensThickness,0.5*sensLength);
-    vSensGuard->AddNode(vSens, 0);
-    vSensGuard->SetTransparency(50);
-
-    // bump bond is a common box for one whole column
-    TGeoVolume *vBB = mgr->MakeBox("ITSSPDbb", medBumpBond,
-                                   0.5*bbWidth, 0.5*bbThickness, 0.5*bbLength);
-
-    // set colors of all objects for visualization
-    vLadder->SetLineColor(kRed);
-    vSens->SetLineColor(kYellow + 1);
-    vChip->SetLineColor(kGreen);
-    vSensGuard->SetLineColor(kYellow + 3);
-    vBB->SetLineColor(kGray);
-
-    // ** MOVEMENTS **
-    // sensor is translated along thickness (Y) and width (X)
-    Double_t ySens = 0.5 * (thickness - sensThickness);
-    Double_t zSens = 0.0;
-    // we want that the x of the ladder is the same as the one of
-    // its sensitive volume
-    TGeoTranslation *trSens = new TGeoTranslation(0.0, ySens, zSens);
-    // bump bonds are translated along all axes:
-    // keep same Y used for sensors, but change the Z
-    TGeoTranslation *trBB[160];
-    Double_t x =  0.0;
-    Double_t y =  0.5 * (thickness - bbThickness) - sensThickness;
-    Double_t z = -0.5 * sensLength + guardRingWidth + fgkmm*0.425 - bbPos;
-    Int_t i;
-    for (i = 0; i < 160; i++) {
-        trBB[i] = new TGeoTranslation(x, y, z);
-        switch(i) {
-            case  31:case  63:case  95:case 127:
-                z += fgkmm * 0.625 + fgkmm * 0.2;
-                break;
-            default:
-                z += fgkmm * 0.425;
-        } // end switch
-    } // end for i
-    // the chips are translated along the length (Z) and thickness (X)
-    TGeoTranslation *trChip[5] = {0, 0, 0, 0, 0};
-    x = -xSens;
-    y = 0.5 * (chipThickness - thickness);
-    z = 0.0;
-    for (i = 0; i < 5; i++) {
-        z = -0.5*length + guardRingWidth
-                + (Double_t)i*chipSpacing + ((Double_t)(i) + 0.5)*chipLength;
-        trChip[i] = new TGeoTranslation(x, y, z);
-    } // end ofr i
-
-    // add nodes to container
-    vLadder->AddNode(vSensGuard, 1, trSens);
-    //vLadderAddNode(volBorder, 1, trSens);
-    for (i = 0; i < 160; i++) vLadder->AddNode(vBB,i+1,trBB[i]);
-    for (i = 0; i < 5; i++) vLadder->AddNode(vChip,i+3,trChip[i]);
-    // return the container
-    return vLadder;
-}
-*/
-
 //______________________________________________________________________
 TGeoVolume* AliITSv11GeometrySPD::CreateClip(TArrayD &sizes,Bool_t isDummy,
                                              TGeoManager *mgr) const
@@ -1792,7 +1454,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreatePatchPanel(TArrayD &sizes,
     //
     Double_t hLength         = fgkmm *  50.0;    // horizontal length
     Double_t vLength         = fgkmm *  50.0;    // vertical length
-    Double_t angle           = 87.5;             // angle between hor and vert
+    Double_t angle           = 88.3;             // angle between hor and vert
     Double_t thickness       = fgkmm *   4.0;    // thickness
     Double_t width           = fgkmm * 100.0;    // width looking from cone
 
@@ -1848,7 +1510,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreatePatchPanel(TArrayD &sizes,
     return vPatch;
 }
 
-//______________________________________________________________________
+//___________________________________________________________________
 TGeoCompositeShape* AliITSv11GeometrySPD::CreateGroundingFoilShape
                        (Int_t itype,Double_t &length,Double_t &width,
                         Double_t thickness,TArrayD &sizes)
@@ -2539,216 +2201,6 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateMCM(Bool_t isRight,
     return mcmAssembly;
 }
 
-/*
-//__________________________________________________________________________________________
-TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
-(Bool_t isRight, TArrayD &sizes, TGeoManager *mgr) const
-{
-    //
-    // The pixel bus is implemented as a TGeoBBox with some objects on it,
-    // which could affect the particle energy loss.
-    // ---
-    // In order to avoid confusion, the bus is directly displaced
-    // according to the axis orientations which are used in the final stave:
-    // X --> thickness direction
-    // Y --> width direction
-    // Z --> length direction
-    //
-
-
-    // ** MEDIA **
-
-    //PIXEL BUS
-    TGeoMedium *medBus     = GetMedium("SPDBUS(AL+KPT+EPOX)$",mgr);
-    TGeoMedium *medPt1000  = GetMedium("CERAMICS$",mgr); // ??? PT1000
-    // Capacity
-    TGeoMedium *medCap     = GetMedium("SDD X7R capacitors$",mgr);
-    // ??? Resistance
-    // TGeoMedium *medRes     = GetMedium("SDD X7R capacitors$",mgr);
-    TGeoMedium *medRes     = GetMedium("ALUMINUM$",mgr);
-    TGeoMedium *medExt     = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
-    // ** SIZES & POSITIONS **
-    Double_t busLength          = 170.501 * fgkmm; // length of plane part
-    Double_t busWidth           =  13.800 * fgkmm; // width
-    Double_t busThickness       =   0.280 * fgkmm; // thickness
-    Double_t pt1000Length       = fgkmm * 1.50;
-    Double_t pt1000Width        = fgkmm * 3.10;
-    Double_t pt1000Thickness    = fgkmm * 0.60;
-    Double_t pt1000Y, pt1000Z[10];// position of the pt1000's along the bus
-    Double_t capLength          = fgkmm * 2.55;
-    Double_t capWidth           = fgkmm * 1.50;
-    Double_t capThickness       = fgkmm * 1.35;
-    Double_t capY[2], capZ[2];
-
-    Double_t resLength          = fgkmm * 2.20;
-    Double_t resWidth           = fgkmm * 0.80;
-    Double_t resThickness       = fgkmm * 0.35;
-    Double_t resY[2], resZ[2];
-
-    Double_t extThickness       = fgkmm * 0.25;
-    Double_t ext1Length         = fgkmm * (26.7 - 10.0);
-    Double_t ext2Length         = fgkmm * (285.0 - ext1Length + extThickness);
-    Double_t extWidth           = fgkmm * 11.0;
-    Double_t extHeight          = fgkmm * 2.5;
-
-
-    // position of pt1000, resistors and capacitors depends on the
-    // bus if it's left or right one
-    if (!isRight) {
-        pt1000Y    =   64400.;
-        pt1000Z[0] =   66160.;
-        pt1000Z[1] =  206200.;
-        pt1000Z[2] =  346200.;
-        pt1000Z[3] =  486200.;
-        pt1000Z[4] =  626200.;
-        pt1000Z[5] =  776200.;
-        pt1000Z[6] =  916200.;
-        pt1000Z[7] = 1056200.;
-        pt1000Z[8] = 1196200.;
-        pt1000Z[9] = 1336200.;
-        resZ[0]    = 1397500.;
-        resY[0]    =   26900.;
-        resZ[1]    =  682500.;
-        resY[1]    =   27800.;
-        capZ[0]    = 1395700.;
-        capY[0]    =   45700.;
-        capZ[1]    =  692600.;
-        capY[1]    =   45400.;
-    } else {
-        pt1000Y    =   66100.;
-        pt1000Z[0] =  319700.;
-        pt1000Z[1] =  459700.;
-        pt1000Z[2] =  599700.;
-        pt1000Z[3] =  739700.;
-        pt1000Z[4] =  879700.;
-        pt1000Z[5] = 1029700.;
-        pt1000Z[6] = 1169700.;
-        pt1000Z[7] = 1309700.;
-        pt1000Z[8] = 1449700.;
-        pt1000Z[9] = 1589700.;
-        capY[0]    =   44500.;
-        capZ[0]    =  266700.;
-        capY[1]    =   44300.;
-        capZ[1]    =  974700.;
-        resZ[0]    =  266500.;
-        resY[0]    =   29200.;
-        resZ[1]    =  974600.;
-        resY[1]    =   29900.;
-    } // end if isRight
-    Int_t i;
-    pt1000Y *= 1E-4 * fgkmm;
-    for (i = 0; i < 10; i++) {
-        pt1000Z[i] *= 1E-4 * fgkmm;
-        if (i < 2) {
-            capZ[i] *= 1E-4 * fgkmm;
-            capY[i] *= 1E-4 * fgkmm;
-            resZ[i] *= 1E-4 * fgkmm;
-            resY[i] *= 1E-4 * fgkmm;
-        }  // end if iM2
-    } // end for i
-
-    Double_t &fullLength = sizes[1];
-    Double_t &fullWidth = sizes[2];
-    Double_t &fullThickness = sizes[0];
-    fullLength = busLength;
-    fullWidth = busWidth;
-    // add the thickness of the thickest component on bus (capacity)
-    fullThickness = busThickness + capThickness;
-    // ** VOLUMES **
-    TGeoVolumeAssembly *container = new TGeoVolumeAssembly("PixelBus");
-    TGeoVolume *bus = mgr->MakeBox("Bus", medBus, 0.5*busThickness, 0.5*busWidth, 0.5*busLength);
-    TGeoVolume *pt1000 = mgr->MakeBox("PT1000", medPt1000, 0.5*pt1000Thickness, 0.5*pt1000Width, 0.5*pt1000Length);
-    TGeoVolume *res = mgr->MakeBox("Resistor", medRes, 0.5*resThickness, 0.5*resWidth, 0.5*resLength);
-    TGeoVolume *cap = mgr->MakeBox("Capacitor", medCap, 0.5*capThickness, 0.5*capWidth, 0.5*capLength);
-    TGeoVolume *ext1 = mgr->MakeBox("Extender1", medExt, 0.5*extThickness, 0.5*extWidth, 0.5*ext1Length);
-    TGeoVolume *ext2 = mgr->MakeBox("Extender2", medExt, 0.5*extHeight - extThickness, 0.5*extWidth, 0.5*extThickness);
-    TGeoVolume *ext3 = mgr->MakeBox("Extender3", medExt, extThickness, 0.5*extWidth, 0.5*ext2Length);
-    bus->SetLineColor(kYellow + 2);
-    pt1000->SetLineColor(kGreen + 3);
-    res->SetLineColor(kRed + 1);
-    cap->SetLineColor(kBlue - 7);
-    ext1->SetLineColor(kGray);
-    ext2->SetLineColor(kGray);
-    ext3->SetLineColor(kGray);
-
-    // ** MOVEMENTS AND POSITIONEMENT **
-    // bus
-    TGeoTranslation *trBus = new TGeoTranslation(0.5 * (busThickness -
-                                                        fullThickness), 0.0, 0.0);
-    container->AddNode(bus, 0, trBus);
-    Double_t zRef, yRef, x, y, z;
-    if (isRight) {
-        zRef = -0.5*fullLength;
-        yRef = -0.5*fullWidth;
-    } else {
-        zRef = -0.5*fullLength;
-        yRef = -0.5*fullWidth;
-    } // end if isRight
-    // pt1000
-    x = 0.5*(pt1000Thickness - fullThickness) + busThickness;
-    for (i = 0; i < 10; i++) {
-        y = yRef + pt1000Y;
-        z = zRef + pt1000Z[i];
-        TGeoTranslation *tr = new TGeoTranslation(x, y, z);
-        container->AddNode(pt1000, i, tr);
-    } // end for i
-    // capacitors
-    x = 0.5*(capThickness - fullThickness) + busThickness;
-    for (i = 0; i < 2; i++) {
-        y = yRef + capY[i];
-        z = zRef + capZ[i];
-        TGeoTranslation *tr = new TGeoTranslation(x, y, z);
-        container->AddNode(cap, i, tr);
-    } // end for i
-    // resistors
-    x = 0.5*(resThickness - fullThickness) + busThickness;
-    for (i = 0; i < 2; i++) {
-        y = yRef + resY[i];
-        z = zRef + resZ[i];
-        TGeoTranslation *tr = new TGeoTranslation(x, y, z);
-        container->AddNode(res, i, tr);
-    } // end for i
-    // extender
-    if (isRight) {
-        y = 0.5 * (-fullWidth + extWidth);
-        z = 0.5 * (-fullLength + fgkmm * 10.0);
-    }
-    else {
-        y = 0.5 * (fullWidth - extWidth);
-        z = 0.5 * ( fullLength - fgkmm * 10.0);
-    }
-    x = 0.5 * (extThickness - fullThickness) + busThickness;
-    //y = 0.5 * (fullWidth - extWidth);
-    TGeoTranslation *trExt1 = new TGeoTranslation(x, y, z);
-    if (isRight) {
-        z -= 0.5 * (ext1Length - extThickness);
-    }
-    else {
-        z += 0.5 * (ext1Length - extThickness);
-    }
-    x += 0.5*(extHeight - extThickness);
-    TGeoTranslation *trExt2 = new TGeoTranslation(x, y, z);
-    if (isRight) {
-        z -= 0.5 * (ext2Length - extThickness);
-    }
-    else {
-        z += 0.5 * (ext2Length - extThickness);
-    }
-    x += 0.5*(extHeight - extThickness) + extThickness;
-    TGeoTranslation *trExt3 = new TGeoTranslation(x, y, z);
-    container->AddNode(ext1, 0, trExt1);
-    container->AddNode(ext2, 0, trExt2);
-    container->AddNode(ext3, 0, trExt3);
-
-
-    sizes[3] = yRef + pt1000Y;
-    sizes[4] = zRef + pt1000Z[2];
-    sizes[5] = zRef + pt1000Z[7];
-
-    return container;
-}
-*/
-
 //______________________________________________________________________
 TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
 (Bool_t isRight, Int_t ilayer, TArrayD &sizes, TGeoManager *mgr) const
@@ -2990,6 +2442,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     // Updated:      03 May 2010  M. Sitta
     // Updated:      20 Jun 2010  A. Pulvirenti  Optical patch panels
     // Updated:      22 Jun 2010  M. Sitta  Fiber cables
+    // Updated:      04 Jul 2010  M. Sitta  Water cooling
     //
 
     TGeoMedium *medInox  = GetMedium("INOX$",mgr);
@@ -3000,6 +2453,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     TGeoMedium *medFreon = GetMedium("Freon$", mgr);
     TGeoMedium *medGas   = GetMedium("GASEOUS FREON$", mgr);
     TGeoMedium *medFibs  = GetMedium("SDD OPTICFIB$",mgr);
+    TGeoMedium *medCopper= GetMedium("COPPER$",mgr);
 
     Double_t extThickness = fgkmm * 0.25;
     Double_t ext1Length   = fgkmm * (26.7 - 10.0);
@@ -3027,7 +2481,20 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     const Double_t kConeTubeRmax    =   3.0  *fgkmm;
 
     const Double_t kHorizTubeLen    = 150.0  *fgkmm;
-    const Double_t kYtoHalfStave    =   6.8  *fgkmm;
+    const Double_t kYtoHalfStave    =   7.3  *fgkmm;
+
+    const Double_t kWaterCoolRMax   =   2.6  *fgkmm;
+    const Double_t kWaterCoolThick  =   0.04 *fgkmm;
+    const Double_t kWaterCoolLen    = 250.0  *fgkmm;
+    const Double_t kWCPlateThick    =   0.5  *fgkmm;
+    const Double_t kWCPlateWide     =  33.0  *fgkmm;
+    const Double_t kWCPlateLen      = 230.0  *fgkmm;
+    const Double_t kWCFittingRext1  =   2.4  *fgkmm;
+    const Double_t kWCFittingRext2  =   3.7  *fgkmm;
+    const Double_t kWCFittingRint1  =   1.9  *fgkmm;
+    const Double_t kWCFittingRint2  = kWaterCoolRMax;
+    const Double_t kWCFittingLen1   =   7.0  *fgkmm;
+    const Double_t kWCFittingLen2   =   8.0  *fgkmm;
 
     const Double_t kOptFibDiamet    =   4.5  *fgkmm;
 
@@ -3036,11 +2503,12 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
 
     Int_t kPurple = 6; // Purple (Root does not define it)
 
-    TGeoVolumeAssembly* container[3];
+    TGeoVolumeAssembly* container[5];
     container[0] = new TGeoVolumeAssembly("ITSSPDConeModule");
     container[1] = new TGeoVolumeAssembly("ITSSPDCoolingModuleSideA");
     container[2] = new TGeoVolumeAssembly("ITSSPDCoolingModuleSideC");
     container[3] = new TGeoVolumeAssembly("ITSSPDPatchPanelModule");
+    container[4] = new TGeoVolumeAssembly("ITSSPDWaterCooling");
 
     // The extender on the cone as a Xtru
     x[0] = 0.0;
@@ -3169,6 +2637,54 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     TArrayD psizes;
     TGeoVolume *volPatch = CreatePatchPanel(psizes, mgr);
 
+    // The water cooling tube as a Tube
+    TGeoTube *shWatCool = new TGeoTube(kWaterCoolRMax-kWaterCoolThick,
+				       kWaterCoolRMax, kWaterCoolLen/2);
+
+    TGeoVolume *volWatCool = new TGeoVolume("ITSSPDWaterCoolingOnCone",
+					    shWatCool, medInox);
+    volWatCool->SetLineColor(kGray);
+
+    // The support plate for the water tubes: a Tubs and a BBox
+    TGeoTubeSeg *shWCPltT = new TGeoTubeSeg(kWaterCoolRMax,
+					    kWaterCoolRMax+kWCPlateThick,
+					    kWCPlateLen/2, 180., 360.);
+
+    Double_t plateBoxWide = (kWCPlateWide - 2*kWaterCoolRMax)/2;
+    TGeoBBox *shWCPltB = new TGeoBBox(plateBoxWide/2,
+				      kWCPlateThick/2,
+				      kWCPlateLen/2);
+
+    TGeoVolume *volWCPltT = new TGeoVolume("ITSSPDWaterCoolingTubsPlate",
+					  shWCPltT, medPlate);
+    volWCPltT->SetLineColor(kRed);
+
+    TGeoVolume *volWCPltB = new TGeoVolume("ITSSPDWaterCoolingBoxPlate",
+					  shWCPltB, medPlate);
+    volWCPltB->SetLineColor(kRed);
+
+    // The fitting for the water cooling tube: a Pcon
+    TGeoPcon *shFitt = new TGeoPcon(0., 360., 4);
+    shFitt->Z(0)    = -kWCFittingLen1;
+    shFitt->Rmin(0) =  kWCFittingRint1;
+    shFitt->Rmax(0) =  kWCFittingRext1;
+
+    shFitt->Z(1)    =  0;
+    shFitt->Rmin(1) =  kWCFittingRint1;
+    shFitt->Rmax(1) =  kWCFittingRext1;
+
+    shFitt->Z(2)    =  0;
+    shFitt->Rmin(2) =  kWCFittingRint2;
+    shFitt->Rmax(2) =  kWCFittingRext2;
+
+    shFitt->Z(3)    =  kWCFittingLen2;
+    shFitt->Rmin(3) =  kWCFittingRint2;
+    shFitt->Rmax(3) =  kWCFittingRext2;
+
+    TGeoVolume *volFitt = new TGeoVolume("ITSSPDWaterCoolingFitting",
+					 shFitt, medCopper);
+    volFitt->SetLineColor(kOrange);
+
     // Now place everything in the containers
     volTubeA->AddNode(volGasFr, 1, 0);
     volTubeC->AddNode(volFreon, 1, 0);
@@ -3218,12 +2734,32 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
 				     new TGeoRotation("",0.,angrot,0.)));
 
     xloc = shOptFibs->GetRmax() + 2*shTube->GetRmax();
-    yloc = shOptFibs->GetRmax();
+    yloc = 1.6*shOptFibs->GetRmax();
     zloc = shOptFibs->GetDZ() - shTube->GetRmax() - kYtoHalfStave;
     container[1]->AddNode(volOptFibs, 1,
 			  new TGeoTranslation(-xloc, -yloc, zloc));
     container[2]->AddNode(volOptFibs, 1,
 			  new TGeoTranslation(-xloc, -yloc, zloc));
+
+    yloc = shWatCool->GetRmax();
+    zloc = (2*shTube->GetDz() - shTube->GetRmax() - kYtoHalfStave)/2;
+    container[4]->AddNode(volWatCool, 1,
+			  new TGeoTranslation(0, -yloc, zloc));
+
+    container[4]->AddNode(volWCPltT, 1,
+			  new TGeoTranslation(0, -yloc, zloc));
+
+    yloc -= shWCPltB->GetDY();
+    xloc = shWatCool->GetRmax() + shWCPltB->GetDX();
+    container[4]->AddNode(volWCPltB, 1,
+			  new TGeoTranslation( xloc, -yloc, zloc));
+    container[4]->AddNode(volWCPltB, 2,
+			  new TGeoTranslation(-xloc, -yloc, zloc));
+
+    yloc = shWatCool->GetRmax();
+    zloc -= shWatCool->GetDz();
+    container[4]->AddNode(volFitt, 1,
+			  new TGeoTranslation(0, -yloc, zloc));
 
     // Finally create the list of assemblies and return it to the caller
     TList* conemodulelist = new TList();
@@ -3231,6 +2767,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     conemodulelist->Add(container[1]);
     conemodulelist->Add(container[2]);
     conemodulelist->Add(container[3]);
+    conemodulelist->Add(container[4]);
 
     return conemodulelist;
 }
@@ -3243,6 +2780,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     //
     // Created:      ?? ??? 2008  Alberto Pulvirenti
     // Updated:      03 May 2010  Mario Sitta
+    // Updated:      04 Jul 2010  Mario Sitta  Water cooling
     //
 
     const Int_t kNumberOfModules    =  10;
@@ -3250,7 +2788,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     const Double_t kInnerRadius     =  80.775*fgkmm;
     const Double_t kZTrans          = 452.000*fgkmm;
     const Double_t kAlphaRot        =  46.500*fgkDegree;
-    const Double_t kAlphaSpaceCool  =   9.500*fgkDegree;
+    const Double_t kAlphaSpaceCool  =   9.200*fgkDegree;
 
     TList* modulelist = CreateConeModule(90-kAlphaRot);
     TGeoVolumeAssembly* module;
@@ -3276,7 +2814,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
         xloc = kInnerRadius*CosD(anglem[i]);
         yloc = kInnerRadius*SinD(anglem[i]);
 	zloc = kZTrans;
-        moth->AddNode(module, 2*i,
+        moth->AddNode(module, 2*i+2,
 		      new TGeoCombiTrans( xloc, yloc, zloc, rot1));
 
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
@@ -3295,12 +2833,12 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     for (Int_t i = 0; i < kNumberOfModules; i++) {
         anglec = anglem[i] + kAlphaSpaceCool;
         TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
-        rot1->RotateX(-90.0+kAlphaRot);
-	rot1->RotateZ(-90+anglec);
+        rot1->RotateX(-90.0+kAlphaRot-0.04); // 0.04 fixes small overlap
+	rot1->RotateZ(-90.0+anglec);
         xloc = kInnerRadius*CosD(anglec);
         yloc = kInnerRadius*SinD(anglec);
-	zloc = kZTrans;
-        moth->AddNode(module, 2*i, 
+	zloc = kZTrans+0.162; // 0.162 fixes small overlap
+        moth->AddNode(module, 2*i+2, 
 		      new TGeoCombiTrans( xloc, yloc, zloc, rot1));
     }
 
@@ -3309,14 +2847,40 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     for (Int_t i = 0; i < kNumberOfModules; i++) {
         anglec = anglem[i] - kAlphaSpaceCool;
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
-        rot2->RotateX(-90.0+kAlphaRot);
+        rot2->RotateX(-90.0+kAlphaRot-0.04); // 0.04 fixes small overlap
 	rot2->RotateY(180.);
-	rot2->RotateZ(90.+anglec);
+	rot2->RotateZ(90.0+anglec);
         xloc = kInnerRadius*CosD(anglec);
         yloc = kInnerRadius*SinD(anglec);
-	zloc = kZTrans;
+	zloc = kZTrans+0.162; // 0.162 fixes small overlap
         moth->AddNode(module, 2*i+1,
 		      new TGeoCombiTrans(-xloc,-yloc,-zloc, rot2));
+    }
+
+    // Then the water cooling tubes
+    module = (TGeoVolumeAssembly*)modulelist->At(4);
+    for (Int_t i = 1; i < kNumberOfModules; i++) { // i = 1,2,...,9
+        if (i != 5) { // There is no tube in this position
+	  anglec = (anglem[i-1]+anglem[i])/2;
+	    TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
+	    rot1->RotateX(-90.0+kAlphaRot);
+	    rot1->RotateZ(-90.0+anglec);
+	    xloc = kInnerRadius*CosD(anglec);
+	    yloc = kInnerRadius*SinD(anglec);
+	    zloc = kZTrans;
+	    moth->AddNode(module, 2*i+2,
+			  new TGeoCombiTrans( xloc, yloc, zloc, rot1));
+
+	    TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
+	    rot2->RotateX(-90.0+kAlphaRot);
+	    rot2->RotateY(180.);
+	    rot2->RotateZ(90.0+anglec);
+	    xloc = kInnerRadius*CosD(anglec);
+	    yloc = kInnerRadius*SinD(anglec);
+	    zloc = kZTrans;
+	    moth->AddNode(module, 2*i+1,
+			  new TGeoCombiTrans(-xloc,-yloc,-zloc, rot2));
+	}
     }
 
     // Finally the optical patch panels
@@ -3328,7 +2892,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
         xloc = kInnerRadius*CosD(anglep[i]);
         yloc = kInnerRadius*SinD(anglep[i]);
 	zloc = kZTrans;
-        moth->AddNode(module, 2*i,
+        moth->AddNode(module, 2*i+2,
 		      new TGeoCombiTrans( xloc, yloc, zloc, rot1));
 
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
@@ -3342,6 +2906,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     }
 
 }
+
 
 //______________________________________________________________________
 TGeoVolume* AliITSv11GeometrySPD::CreateExtender(
@@ -3433,194 +2998,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreateExtender(
     extenderXtru->DefineSection(1, 0.5*extenderParams[4]);
     return extenderXtruVol;
 }
-//______________________________________________________________________
-TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBusAndExtensions
-(Bool_t /*zpos*/, TGeoManager *mgr) const
-{
-    //
-    // Creates an assembly which contains the pixel bus and its extension
-    // and the extension of the MCM.
-    // By: Renaud Vernet
-    // NOTE: to be defined its material and its extension in the outside
-    // direction
-    //
-    // ====   constants   =====
-    //get the media
-    // PIXEL BUS
-    //TGeoMedium   *medPixelBus    = GetMedium("SPDBUS(AL+KPT+EPOX)$",mgr);
-    // IXEL BUS EXTENDER
-    TGeoMedium *medPBExtender  = GetMedium("SDDKAPTON (POLYCH2)$",mgr);
-    //MCM EXTENDER
-    TGeoMedium *medMCMExtender = GetMedium("SDDKAPTON (POLYCH2)$",mgr);
-    //   //geometrical constants
-    const Double_t kPbextenderThickness     =   0.07 * fgkmm;
-    //design=?? 70 deg. seems OK
-    const Double_t kPbExtenderSlopeAngle    =  70.0  * TMath::Pi()/180.;
-    // = 2.6 - (0.28+0.05+0.35) cf design
-    const Double_t kPbExtenderHeight        =   1.92 * fgkmm;
-    const Double_t kPbExtenderWidthY        =  11.0  * fgkmm;
-    //design=?? 70 deg. seems OK
-    const Double_t kMcmExtenderSlopeAngle   =  70.0  * TMath::Pi()/180.;
-    const Double_t kMcmExtenderThickness    =   0.10 * fgkmm;
-    const Double_t kMcmExtenderHeight       =   1.8  * fgkmm;
-    const Double_t kMcmExtenderWidthY       =   kPbExtenderWidthY;
-    //   const Double_t groundingThickness    =   0.07  * fgkmm;
-    //   const Double_t grounding2pixelBusDz  =   0.625 * fgkmm;
-    //   const Double_t pixelBusThickness     =   0.28  * fgkmm;
-    //   const Double_t groundingWidthX       = 170.501 * fgkmm;
-    //   const Double_t pixelBusContactDx     =   1.099 * fgkmm;
-    //   const Double_t pixelBusWidthY        =  13.8   * fgkmm;
-    //design=20 deg.
-    //   const Double_t pixelBusContactPhi    =  20.0   * TMath::Pi()/180.
-    //   const Double_t pbExtenderTopZ        =   2.72  * fgkmm;
-    //   const Double_t mcmThickness          =   0.35  * fgkmm;
-    //   const Double_t halfStaveTotalLength  = 247.64  * fgkmm;
-    //   const Double_t deltaYOrigin          =  15.95/2.* fgkmm;
-    //   const Double_t deltaXOrigin          =   1.1    * fgkmm;
-    //   const Double_t deltaZOrigin          = halfStaveTotalLength / 2.;
-    //   const Double_t grounding2pixelBusDz2 = grounding2pixelBusDz+
-    //                           groundingThickness/2. + pixelBusThickness/2.;
-    //   const Double_t pixelBusWidthX        = groundingWidthX;
-    //   const Double_t pixelBusRaiseLength   = (pixelBusContactDx-
-    //                  pixelBusThickness*TMath::Sin(pixelBusContactPhi))/
-    //                                       TMath::Cos(pixelBusContactPhi);
-    //   const Double_t pbExtenderBaseZ       = grounding2pixelBusDz2 +
-    //        pixelBusRaiseLength*TMath::Sin(pixelBusContactPhi) +
-    //        2*pixelBusThickness*TMath::Sin(pixelBusContactPhi)*
-    //        TMath::Tan(pixelBusContactPhi);
-    //   const Double_t pbExtenderDeltaZ      = pbExtenderTopZ-pbExtenderBaseZ;
-    //   const Double_t pbExtenderEndPointX   = 2*deltaZOrigin -
-    //    groundingWidthX - 2*pixelBusThickness*TMath::Sin(pixelBusContactPhi);
-    //   const Double_t pbExtenderXtru3L   = 1.5 * fgkmm; //arbitrary ?
-    //   const Double_t pbExtenderXtru4L   = (pbExtenderDeltaZ +
-    //             pixelBusThickness*(TMath::Cos(extenderSlope)-2))/
-    //                                      TMath::Sin(extenderSlope);
-    //   const Double_t kMcmExtenderEndPointX  = deltaZOrigin - 48.2 * fgkmm;
-    //   const Double_t kMcmExtenderXtru3L     = 1.5  * fgkmm;
-    //   //=====  end constants  =====
-    const Double_t kPbExtenderInnerLength    = 10. * fgkmm;
-    const Double_t kPbExtenderOuterLength    = 15. * fgkmm;
-    const Double_t kMcmExtenderInnerLength   = 10. * fgkmm;
-    const Double_t kMcmExtenderOuterLength   = 15. * fgkmm;
-    Double_t pbExtenderParams[6]  = {kPbExtenderInnerLength,  //0
-                                     kPbextenderThickness,    //1
-                                     kPbExtenderSlopeAngle,   //2
-                                     kPbExtenderHeight,       //3
-                                     kPbExtenderOuterLength,  //4
-                                     kPbExtenderWidthY};      //5
 
-    Double_t mcmExtenderParams[6] = {kMcmExtenderInnerLength, //0
-                                     kMcmExtenderThickness,   //1
-                                     kMcmExtenderSlopeAngle,  //2
-                                     kMcmExtenderHeight,      //3
-                                     kMcmExtenderOuterLength, //4
-                                     kMcmExtenderWidthY};     //5
-
-    TArrayD sizes(3);
-    TGeoVolume* pbExtender  = CreateExtender(pbExtenderParams,medPBExtender,
-                                             sizes);
-    if(GetDebug(1))printf("CREATED AN EXTENDER : THICKNESS = %5.5f cm\t"
-              "LENGTH=%5.5f cm\tWIDTH=%5.5f cm\n",sizes[0],sizes[1],sizes[2]);
-    TGeoVolume* mcmExtender = CreateExtender(mcmExtenderParams,medMCMExtender,
-                                             sizes);
-    if(GetDebug(1))printf("CREATED AN EXTENDER : THICKNESS = %5.5f cm\t"
-             "LENGTH=%5.5f cm\tWIDTH=%5.5f cm\n",sizes[0],sizes[1],sizes[2]);
-    //   Double_t pixelBusValues[5]    = {pixelBusWidthX,        //0
-    //                     pixelBusThickness,     //1
-    //                     pixelBusContactPhi,    //2
-    //                     pixelBusRaiseLength,   //3
-    //                     pixelBusWidthY};      //4
-
-    //   Double_t pbExtenderValues[8]  = {pixelBusRaiseLength,   //0
-    //                     pixelBusContactPhi,     //1
-    //                     pbExtenderXtru3L,       //2
-    //                     pixelBusThickness,      //3
-    //                     extenderSlope,     //4
-    //                     pbExtenderXtru4L,      //5
-    //                     pbExtenderEndPointX,   //6
-    //                     kPbExtenderWidthY};    //7
-
-    //   Double_t mcmExtenderValues[6] = {mcmExtenderXtru3L,     //0
-    //                     mcmExtenderThickness,  //1
-    //                     extenderSlope,     //2
-    //                     deltaMcmMcmExtender,    //3
-    //                     mcmExtenderEndPointX,  //4
-    //                     mcmExtenderWidthY};    //5
-    //   TGeoVolumeAssembly *pixelBus=new TGeoVolumeAssembly("ITSSPDpixelBus");
-    //   CreatePixelBus(pixelBus,pixelBusValues,medPixelBus);
-    //   TGeoVolumeAssembly *pbExtender = new TGeoVolumeAssembly(
-    //                                              "ITSSPDpixelBusExtender");
-    //   CreatePixelBusExtender(pbExtender,pbExtenderValues,medPBExtender);
-    //   TGeoVolumeAssembly *mcmExtender = new TGeoVolumeAssembly(
-    //                                                 "ITSSPDmcmExtender");
-    //   CreateMCMExtender(mcmExtender,mcmExtenderValues,medMCMExtender);
-    //--------------   DEFINITION OF GEOMETRICAL TRANSFORMATIONS --------
-    //   TGeoRotation    * commonRot  = new TGeoRotation("commonRot",0,90,0);
-    //   commonRot->MultiplyBy(new TGeoRotation("rot",-90,0,0));
-    //   TGeoTranslation * pixelBusTrans   = new TGeoTranslation(
-    //                      pixelBusThickness/2. - deltaXOrigin + 0.52*fgkmm ,
-    //                                   -pixelBusWidthY/2.   + deltaYOrigin ,
-    //                                   -groundingWidthX/2.  + deltaZOrigin);
-    //   TGeoRotation    *pixelBusRot     = new TGeoRotation(*commonRot);
-    //   TGeoTranslation *pbExtenderTrans =new TGeoTranslation(*pixelBusTrans);
-    //   TGeoRotation    *pbExtenderRot   = new TGeoRotation(*pixelBusRot);
-    //   pbExtenderTrans->SetDz(*(pbExtenderTrans->GetTranslation()+2) -
-    //                          pixelBusWidthX/2. - 2*pixelBusThickness*
-    //                                    TMath::Sin(pixelBusContactPhi));
-    //   if (!zpos) {
-    //     pbExtenderTrans->SetDy(*(pbExtenderTrans->GetTranslation()+1) -
-    //                               (pixelBusWidthY - kPbExtenderWidthY)/2.);
-    //   } else {
-    //     pbExtenderTrans->SetDy(*(pbExtenderTrans->GetTranslation()+1) +
-    //                            (pixelBusWidthY - kPbExtenderWidthY)/2.);
-    //   }
-    //   pbExtenderTrans->SetDx(*(pbExtenderTrans->GetTranslation()) +
-    //                      pixelBusThickness/2 + 2*pixelBusThickness*
-    //                      TMath::Sin(pixelBusContactPhi)*
-    //                      TMath::Tan(pixelBusContactPhi));
-    //   TGeoTranslation * mcmExtenderTrans = new TGeoTranslation(0.12*fgkmm +
-    //                                    mcmThickness - deltaXOrigin,
-    //                                    pbExtenderTrans->GetTranslation()[1],
-    //                                    -4.82);
-    //   TGeoRotation    * mcmExtenderRot   = new TGeoRotation(*pbExtenderRot);
-    //   // add pt1000 components
-    //   Double_t pt1000Z = fgkmm * 64400. * 1E-4;
-    //   //Double_t pt1000X[10] = {319700.,  459700.,  599700.,  739700.,
-    //                             879700., 1029700., 1169700., 1309700.,
-    //                            1449700., 1589700.};
-    //   Double_t pt1000X[10] ={66160., 206200.,  346200.,  486200.,  626200.,
-    //                         776200., 916200., 1056200., 1196200., 1336200.};
-    //   Double_t pt1000size[3] = {fgkmm*1.5, fgkmm*0.6, fgkmm*3.1};
-    //   Int_t i;
-    //   for (i = 0; i < 10; i++) {
-    //     pt1000X[i] *= fgkmm * 1E-4;
-    //   }
-    //   TGeoVolume *pt1000 = mgr->MakeBox("ITSSPDpt1000",0,0.5*pt1000size[0],
-    //                              0.5*pt1000size[1], 0.5*pt1000size[2]);
-    //   pt1000->SetLineColor(kGray);
-    //   Double_t refThickness = - pixelBusThickness;
-    //   for (i = 0; i < 10; i++) {
-    //     TGeoTranslation *tr = new TGeoTranslation(pt1000X[i]-
-    //          0.5*pixelBusWidthX, 0.002+0.5*(-3.*refThickness+pt1000size[3]),
-    //                                            pt1000Z -0.5*pixelBusWidthY);
-    //     pixelBus->AddNode(pt1000, i+1, tr);
-    //   }
-
-    //CREATE FINAL VOLUME ASSEMBLY AND ROTATE IT
-    TGeoVolumeAssembly *assembly = new TGeoVolumeAssembly("ITSSPDextenders");
-    //   assembly->AddNode((TGeoVolume*)pixelBus,1,
-    //          new TGeoCombiTrans(*pixelBusTrans,*pixelBusRot));
-    //   assembly->AddNode((TGeoVolume*)pbExtender,1,
-    //           new TGeoCombiTrans(*pbExtenderTrans,*pbExtenderRot));
-    //   assembly->AddNode((TGeoVolume*)mcmExtender,1,
-    //         new TGeoCombiTrans(*mcmExtenderTrans,*mcmExtenderRot));
-    //   assembly->AddNode(mcmExtender,1,new TGeoIdentity());
-    assembly->AddNode(pbExtender,1);
-    assembly->AddNode(mcmExtender,1);
-    //   assembly->SetTransparency(50);
-
-    return assembly;
-}
 //______________________________________________________________________
 TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateHalfStave(Bool_t isRight,
 Int_t layer,Int_t idxCentral,Int_t idxSide,TArrayD &sizes,TGeoManager *mgr)
@@ -4129,109 +3507,7 @@ Double_t AliITSv11GeometrySPD::GetSPDSectorTranslation(
     c = y0-a*x0-r*b;
     return -c;
 }
-//______________________________________________________________________
-void AliITSv11GeometrySPD::CreateFigure0(const Char_t *filepath,
-                                         const Char_t *type,
-                                         TGeoManager *mgr) const
-{
-    //
-    // Creates Figure 0 for the documentation of this class. In this
-    // specific case, it creates the X,Y cross section of the SPD suport
-    // section, center and ends. The output is written to a standard
-    // file name to the path specificed.
-    // Inputs:
-    //   const Char_t *filepath  Path where the figure is to be drawn
-    //   const Char_t *type      The type of file, default is gif.
-    //   TGeoManager  *mgr       The TGeoManager default gGeoManager
-    // Output:
-    //   none.
-    // Return:
-    //   none.
-    //
-    TGeoXtru *sA0,*sA1,*sB0,*sB1;
-    //TPolyMarker *pmA,*pmB;
-    TPolyLine plA0,plA1,plB0,plB1;
-    TCanvas *canvas;
-    TLatex txt;
-    Double_t x=0.0,y=0.0;
-    Int_t i,kNRadii=6;
 
-    if(strcmp(filepath,"")){
-        Error("CreateFigure0","filepath=%s type=%s",filepath,type);
-    } // end if
-    //
-    sA0 = (TGeoXtru*) mgr->GetVolume("ITSSPDCarbonFiberSupportSectorA0_1")->
-              GetShape();
-    sA1 = (TGeoXtru*) mgr->GetVolume("ITSSPDCarbonFiberSupportSectorAirA1_1")->
-              GetShape();
-    sB0 = (TGeoXtru*) mgr->GetVolume("ITSSPDCarbonFiberSupportSectorEndB0_1")->
-             GetShape();
-    sB1 = (TGeoXtru*) mgr->GetVolume("ITSSPDCarbonFiberSupportSectorEndAirB1_1"
-           )->GetShape();
-    //pmA = new TPolyMarker();
-    //pmA.SetMarkerStyle(2); // +
-    //pmA.SetMarkerColor(7); // light blue
-    //pmB = new TPolyMarker();
-    //pmB.SetMarkerStyle(5); // X
-    //pmB.SetMarkerColor(6); // purple
-    plA0.SetPolyLine(sA0->GetNvert());
-    plA0.SetLineColor(1); // black
-    plA0.SetLineStyle(1);
-    plA1.SetPolyLine(sA1->GetNvert());
-    plA1.SetLineColor(2); // red
-    plA1.SetLineStyle(1);
-    plB0.SetPolyLine(sB0->GetNvert());
-    plB0.SetLineColor(3); // Green
-    plB0.SetLineStyle(2);
-    plB1.SetPolyLine(sB1->GetNvert());
-    plB1.SetLineColor(4); // Blue
-    plB1.SetLineStyle(2);
-    //for(i=0;i<kNRadii;i++) pmA.SetPoint(i,xyB1p[i][0],xyB1p[i][1]);
-    //for(i=0;i<kNRadii;i++) pmB.SetPoint(i,xyB1p[i][0],xyB1p[i][1]);
-    for(i=0;i<sA0->GetNvert();i++) plA0.SetPoint(i,sA0->GetX(i),sA0->GetY(i));
-    for(i=0;i<sA1->GetNvert();i++) plA1.SetPoint(i,sA1->GetX(i),sA1->GetY(i));
-    for(i=0;i<sB0->GetNvert();i++) plB0.SetPoint(i,sB0->GetX(i),sB0->GetY(i));
-    for(i=0;i<sB1->GetNvert();i++) plB1.SetPoint(i,sB1->GetX(i),sB1->GetY(i));
-    canvas = new TCanvas("AliITSv11GeometrySPDFig0","",1000,1000);
-    canvas->Range(-3.,-3.,3.,3.);
-    txt.SetTextSize(0.05);
-    txt.SetTextAlign(33);
-    txt.SetTextColor(1);
-    txt.DrawLatex(2.9,2.9,"Section A-A outer Carbon Fiber surface");
-    txt.SetTextColor(2);
-    txt.DrawLatex(2.9,2.5,"Section A-A Inner Carbon Fiber surface");
-    txt.SetTextColor(3);
-    txt.DrawLatex(2.9,2.1,"Section E-E outer Carbon Fiber surface");
-    txt.SetTextColor(4);
-    txt.DrawLatex(2.9,1.7,"Section E-E Inner Carbon Fiber surface");
-    plA0.Draw();
-    plA1.Draw();
-    plB0.Draw();
-    plB1.Draw();
-    //pmA.Draw();
-    //pmB.Draw();
-    //
-    x = 1.0;
-    y = -2.5;
-    Char_t chr[3];
-    for(i=0;i<kNRadii;i++){
-        sprintf(chr,"%2d",i);txt.DrawLatex(x-0.1,y,chr);
-        sprintf(chr,"%8.4f",5.000);txt.DrawLatex(x,y,chr);
-        sprintf(chr,"%8.4f",5.000);txt.DrawLatex(x+0.5,y,chr);
-        sprintf(chr,"%8.4f",5.000);txt.DrawLatex(x+1.0,y,chr);
-        sprintf(chr,"%8.4f",5.000);txt.DrawLatex(x+1.5,y,chr);
-        sprintf(chr,"%8.4f",5.000);txt.DrawLatex(x+2.0,y,chr);
-        if(kTRUE) txt.DrawLatex(x+2.5,y,"A-A/E-E");
-        else txt.DrawLatex(x+2.5,y,"E-E");
-    } // end for i
-    txt.DrawLatex(x,y,"x_{c} mm");
-    txt.DrawLatex(x+0.5,y,"y_{c} mm");
-    txt.DrawLatex(x+1.0,y,"R mm");
-    txt.DrawLatex(x+1.5,y,"#theta_{start}^{#circle}");
-    txt.DrawLatex(x+2.0,y,"#theta_{end}^{#circle}");
-    txt.DrawLatex(x+2.5,y,"Section");
-    //
-}
 //______________________________________________________________________
 void AliITSv11GeometrySPD::PrintAscii(ostream *os) const
 {
@@ -4350,90 +3626,4 @@ istream &operator>>(istream &is,AliITSv11GeometrySPD &s)
     s.ReadAscii(&is);
     return is;
 }
-//
-//______________________________________________________________________
-Bool_t AliITSv11GeometrySPD::Make2DCrossSections(TPolyLine &a0,TPolyLine &a1,
-                             TPolyLine &b0,TPolyLine &b1,TPolyMarker &p)const
-{
-    //
-    // Fill the objects with the points representing
-    // a0 the outer carbon fiber SPD sector shape Cross Section A
-    // a1 the inner carbon fiber SPD sector shape Cross Section A
-    // b0 the outer carbon fiber SPD sector shape Cross Section B
-    // b1 the inner carbon fiber SPD sector shape Cross Section B
-    //
-    // Inputs:
-    //   TPolyLine &a0   The outer carbon fiber SPD sector shape
-    //   TPolyLine &a1   The Inner carbon fiber SPD sector shape
-    //   TPolyLine &b0   The outer carbon fiber SPD sector shape
-    //   TPolyLine &b1   The Inner carbon fiber SPD sector shape
-    //   TPolyMarker &p  The points where the ladders are to be placed
-    // Outputs:
-    //   TPolyLine &a0   The shape filled with the points
-    //   TPolyLine &a1   The shape filled with the points
-    //   TPolyLine &b0   The shape filled with the points
-    //   TPolyLine &b1   The shape filled with the points
-    //   TPolyMarker &p  The filled array of points
-    // Return:
-    //     An error flag.
-    //
-    Int_t n0,n1,i;
-    Double_t x,y;
-    TGeoVolume *a0V,*a1V,*b0V,*b1V;
-    TGeoXtru *a0S,*a1S,*b0S,*b1S;
-    TGeoManager *mgr = gGeoManager;
 
-    a0V = mgr->GetVolume("ITS SPD Carbon fiber support Sector A0");
-    a0S = dynamic_cast<TGeoXtru*>(a0V->GetShape());
-    n0 = a0S->GetNvert();
-    a0.SetPolyLine(n0+1);
-    //for(i=0;i<fSPDsectorPoints0.GetSize();i++)
-    //  printf("%d %d %d\n",i,fSPDsectorPoints0[i],fSPDsectorPoints1[i]);
-    for(i=0;i<n0;i++){
-        x = a0S->GetX(i);
-          y = a0S->GetY(i);
-          //printf("%d %g %g\n",i,x,y);
-        a0.SetPoint(i,x,y);
-          if(i==0) a0.SetPoint(n0,x,y);
-    } // end for i
-    a1V = mgr->GetVolume("ITSSPDCarbonFiberSupportSectorAirA1");
-    a1S = dynamic_cast<TGeoXtru*>(a1V->GetShape());
-    n1 = a1S->GetNvert();
-    a1.SetPolyLine(n1+1);
-    for(i=0;i<n1;i++){
-        x = a1S->GetX(i);
-          y = a1S->GetY(i);
-        a1.SetPoint(i,x,y);
-          if(i==0) a1.SetPoint(n1,x,y);
-    } // end for i
-    // Cross Section B
-    b0V = mgr->GetVolume("ITSSPDCarbonFiberSupportSectorEndB0");
-    b0S = dynamic_cast<TGeoXtru*>(b0V->GetShape());
-    n0 = b0S->GetNvert();
-    b0.SetPolyLine(n0+1);
-    for(i=0;i<n0;i++){
-        x = b0S->GetX(i);
-          y = b0S->GetY(i);
-        b0.SetPoint(i,x,y);
-          if(i==0) b0.SetPoint(n0,x,y);
-    } // end for i
-    b1V = mgr->GetVolume("ITSSPDCarbonFiberSupportSectorEndAirB1");
-    b1S = dynamic_cast<TGeoXtru*>(b1V->GetShape());
-    n1 = b1S->GetNvert();
-    b1.SetPolyLine(n1+1);
-    for(i=0;i<n1;i++){
-        x = b1S->GetX(i);
-          y = b1S->GetY(i);
-        b1.SetPoint(i,x,y);
-          if(i==0) b1.SetPoint(n1,x,y);
-    } // end for i
-    //
-    Double_t x0,y0,x1,y1;
-    p.SetPolyMarker(2*fSPDsectorX0.GetSize());
-    for(i=0;i<fSPDsectorX0.GetSize();i++){
-          GetSectorMountingPoints(i,x0,y0,x1,y1);
-          p.SetPoint(2*i,x0,y0);
-          p.SetPoint(2*i+1,x1,y1);
-    } // end for i
-    return kTRUE;
-}

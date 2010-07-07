@@ -464,6 +464,8 @@ const Double_t AliITSv11GeometrySDD::fgkSectionPlastPerMod = (TMath::Pi()*(3*0.3
 							      - fgkSectionCuPerMod);
 
 const Double_t AliITSv11GeometrySDD::fgkSectionGlassPerMod = 3*0.006; // ???
+const Double_t AliITSv11GeometrySDD::fgkSectionCoolPolyuEL = 0.4672;
+const Double_t AliITSv11GeometrySDD::fgkSectionCoolWaterEL = 0.3496;
 // (sections are given in cm square)
 const Double_t AliITSv11GeometrySDD::fgkCableBendRatio = 1.3; // ??? this factor account for the bending of cables
 
@@ -4471,12 +4473,14 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
   TGeoMedium *copper          = GetMedium("COPPER$");
   TGeoMedium *plastic         = GetMedium("SDDKAPTON (POLYCH2)$");  // ???
   TGeoMedium *airSDD          = GetMedium("SDD AIR$");
-  TGeoMedium *opticalFiber    = GetMedium("SDD SI insensitive$");  //  To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *opticalFiber    = GetMedium("SDD OPTICFIB$");
+  TGeoMedium *polyurethane    = GetMedium("POLYURETHANE$");
 
   Double_t endLadPipeUlength = fgkEndLadPipeUlengthLay3;
   Double_t endLadPipeArmZ    = fgkEndLadPipeArmZLay3;
   Int_t    nCards = 3;
   Double_t rREF   = fgkEndLaddCardsShortRadiusLay3;
+  Double_t deltaZcables = 0;
   // reference radius corresponding to local y=0
 
   if (iLay==4) {
@@ -4484,6 +4488,7 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
     endLadPipeArmZ = fgkEndLadPipeArmZLay4;
     nCards = 4;
     rREF = fgkEndLaddCardsShortRadiusLay4;
+    deltaZcables = 2.8*fgkmm;
   }
 
   Double_t cardLVxShift = (fgkEndLadPipeUwidth/2-fgkEndLadPipeArmX/2
@@ -4528,10 +4533,10 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
   // are escaping...
   Double_t cableSectionR1 = cablesRadius-thickTotCable/2;
   Double_t cableSectionR2 = rMax;
-  Double_t cableSectionZ1 = zMax + 6.3*fgkmm + 2.5*fgkcm;
-  Double_t cableSectionZ2 = zMax + 7.3*fgkmm + 4*fgkcm;
-  // Those 6.3 and 7.3 are to be fixed to stick the maximum to the SDD cone
-  // (I'm waiting for the new cone)
+  Double_t cableSectionZ1 = zMax + 23.6*fgkmm + 3.0*fgkcm + deltaZcables;
+  Double_t cableSectionZ2 = zMax + 23.6*fgkmm + 4.0*fgkcm + deltaZcables;
+  // Those numbers are to be fixed to stick the maximum to the SDD cone
+  // (hardcoded numbers are ugly, but it's easier to find where to stop)
 
   containerShape->DefineSection(8, cableSectionZ1, cableSectionR1, rMax);
   containerShape->DefineSection(9, cableSectionZ2, cableSectionR2, rMax);
@@ -4712,18 +4717,25 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
   Double_t sectionV   = (fgkSectionCuPerMod+fgkSectionPlastPerMod
 			 + fgkSectionGlassPerMod)*nCards;
   // We fix thickness, then width is calculated accordingly
-   Double_t width      = sectionV/thickTotCable;
+  Double_t width      = sectionV/thickTotCable;
   Double_t thickCu    = thickTotCable*fgkSectionCuPerMod
-              / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod);
+            / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod);
   Double_t thickPlast = thickTotCable*fgkSectionPlastPerMod
-              / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod);
+            / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod);
   Double_t thickGlass = thickTotCable - thickCu - thickPlast;
 
-  AliITSv11GeomCableFlat cable("SDDcableEndLadder",width,thickTotCable);
-  cable.SetNLayers(3);
+  Double_t thickCoolPolyu = fgkSectionCoolPolyuEL/width;
+  Double_t thickCoolWater = fgkSectionCoolWaterEL/width;
+
+  Double_t totalThick = thickTotCable + thickCoolPolyu + thickCoolWater;
+
+  AliITSv11GeomCableFlat cable("SDDcableEndLadder",width,totalThick);
+  cable.SetNLayers(5);
   cable.SetLayer(0, thickCu, copper, kRed);
   cable.SetLayer(1, thickPlast, plastic, kYellow);
   cable.SetLayer(2, thickGlass, opticalFiber, kGreen);
+  cable.SetLayer(3, thickCoolPolyu, polyurethane, kGray);
+  cable.SetLayer(4, thickCoolWater, coolerMediumSDD, kBlue);
 
   Double_t zVect[3]={0,0,1};
   Double_t xMinCable = firstCarlosCardZ+nCards*(fgkCarlosSuppZ3

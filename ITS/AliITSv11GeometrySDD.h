@@ -578,6 +578,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkSectionCuPerMod;    // area of copper per mod.
   static const Double_t fgkSectionPlastPerMod; // area of plast per mod.
   static const Double_t fgkSectionGlassPerMod; // area of optical fiber per mod.
+  static const Double_t fgkSectionCoolPolyuEL; // area of cooling tubes on End Ladders
+  static const Double_t fgkSectionCoolWaterEL; // area of cooling water on End Ladders
   static const Double_t fgkCableBendRatio; // ??? this factor account for the bending of cables
 
   static const Double_t fgkConeSDDr1; // define SDD cone slope and pos
