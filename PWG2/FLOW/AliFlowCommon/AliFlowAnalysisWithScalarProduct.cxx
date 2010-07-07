@@ -49,7 +49,8 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
    fRelDiffMsub(1.),
    fWeightsList(NULL),
    fUsePhiWeights(kFALSE),
-   fPhiWeights(NULL),
+   fPhiWeightsSub0(NULL),
+   fPhiWeightsSub1(NULL),
    fHistList(NULL),
    fHistProUQetaRP(NULL),
    fHistProUQetaPOI(NULL),
@@ -295,13 +296,23 @@ void AliFlowAnalysisWithScalarProduct::Init() {
       cout<<"WARNING: fWeightsList is NULL in the Scalar Product method."<<endl;
       exit(0);  
     }
-    if(fWeightsList->FindObject("phi_weights"))  {
-      fPhiWeights = dynamic_cast<TH1F*>(fWeightsList->FindObject("phi_weights"));
-      fHistList->Add(fPhiWeights);
+    if(fWeightsList->FindObject("phi_weights_sub0"))  {
+      fPhiWeightsSub0 = dynamic_cast<TH1F*>
+	(fWeightsList->FindObject("phi_weights_sub0"));
+      fHistList->Add(fPhiWeightsSub0);
     } else {
       cout<<"WARNING: histogram with phi weights is not accessible in Scalar Product"<<endl;
       exit(0);
     }
+    if(fWeightsList->FindObject("phi_weights_sub1"))  {
+      fPhiWeightsSub1 = dynamic_cast<TH1F*>
+	(fWeightsList->FindObject("phi_weights_sub1"));
+      fHistList->Add(fPhiWeightsSub1);
+    } else {
+      cout<<"WARNING: histogram with phi weights is not accessible in Scalar Product"<<endl;
+      exit(0);
+    }
+
   } // end of if(fUsePhiWeights)
 
   fEventNumber = 0;  //set number of events to zero    
@@ -344,7 +355,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 
 	//fill some SP control histograms
 	fHistProQaQb -> Fill(1.,vQa*vQb,1.); //Fill with weight 1 -> Weight with MaMb????
-	fHistQaQbCos ->Fill(0.5*TMath::ACos((vQa/vQa.Mod())*(vQb/vQb.Mod())));  //Acos(Qa*Qb) = 2*phi
+	fHistQaQbCos ->Fill(TMath::ACos((vQa/vQa.Mod())*(vQb/vQb.Mod())));  //Acos(Qa*Qb) = angle
 	fHistResolution -> Fill(TMath::Cos( vQa.Phi()- vQb.Phi() ));  //vQa.Phi() returns 2*phi
 	fHistQaQb -> Fill(vQa*vQb);
 	fHistMavsMb -> Fill(dMb,dMa);
@@ -388,10 +399,16 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	      //set default phi weight to 1
 	      Double_t dW = 1.; 
 	      //phi weight of pTrack
-	      if(fUsePhiWeights && fPhiWeights) {
-		Int_t iNBinsPhi = fPhiWeights->GetNbinsX();
-		dW = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNBinsPhi/TMath::TwoPi())));  
-		//bin = 1 + value*nbins/range
+	      if(fUsePhiWeights && fPhiWeightsSub0 && fPhiWeightsSub1) {
+		if (pTrack->InSubevent(0) ) {
+		  Int_t iNBinsPhiSub0 = fPhiWeightsSub0->GetNbinsX();
+		  dW = fPhiWeightsSub0->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub0/TMath::TwoPi())));  
+		}
+		else if ( pTrack->InSubevent(1)) { 
+		  Int_t iNBinsPhiSub1 = fPhiWeightsSub1->GetNbinsX();
+		  dW = fPhiWeightsSub1->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub1/TMath::TwoPi())));
+		}
+   		//bin = 1 + value*nbins/range
 		//TMath::Floor rounds to the lower integer
 	      }     
 	    
@@ -410,8 +427,8 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	      Double_t dQmY = 0.;
 	      //subtract particle from the flowvector if used to define it
 	      if (pTrack->InSubevent(0) || pTrack->InSubevent(1)) { 
-		dQmX = (vQ.X() - dW*dUX)/(dMq-1);
-		dQmY = (vQ.Y() - dW*dUY)/(dMq-1);
+		dQmX = (vQ.X() - dW*(pTrack->Weight())*dUX)/(dMq-1);
+		dQmY = (vQ.Y() - dW*(pTrack->Weight())*dUY)/(dMq-1);
 		vQm.Set(dQmX,dQmY);
 	      
 		//dUQ = scalar product of vU and vQm

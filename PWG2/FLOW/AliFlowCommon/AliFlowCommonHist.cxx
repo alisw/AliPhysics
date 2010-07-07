@@ -386,7 +386,7 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
     return kFALSE;
   }
 
-  Double_t dPt, dPhi, dEta;
+  Double_t dPt, dPhi, dEta, dWeight;
 
 
   //fill the histograms
@@ -404,65 +404,66 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
   vQ.Set(dQX,dQY);
   fHistQ->Fill(vQ.Mod());
 
-  Int_t iMultRP = 0;
-  Int_t iMultPOI = 0;
+  Double_t dMultRP = 0.;
+  Double_t dMultPOI = 0.;
   
   AliFlowTrackSimple* pTrack = NULL;     
 
   for (Int_t i=0;i<iNumberOfTracks;i++) {
     pTrack = anEvent->GetTrack(i);
     if (pTrack ) {
+      dWeight = pTrack->Weight();
       if (pTrack->InRPSelection()){
 	//pt
 	dPt = pTrack->Pt();
-	fHistPtRP->Fill(dPt);
+	fHistPtRP->Fill(dPt,dWeight);
 	//phi
 	dPhi = pTrack->Phi();
 	if (dPhi<0.) dPhi+=2*TMath::Pi();
-	fHistPhiRP->Fill(dPhi);
+	fHistPhiRP->Fill(dPhi,dWeight);
 	//eta
 	dEta = pTrack->Eta();
-	fHistEtaRP->Fill(dEta);
+	fHistEtaRP->Fill(dEta,dWeight);
 	//eta vs phi
-	fHistPhiEtaRP->Fill(dEta,dPhi);
+	fHistPhiEtaRP->Fill(dEta,dPhi,dWeight);
 	//count
-	iMultRP++;
+	dMultRP += dWeight;
 	if (pTrack->InSubevent(0)){
 	  //Fill distributions for the subevent
-	  fHistPtSub0 -> Fill(dPt);
-	  fHistPhiSub0 -> Fill(dPhi);
-	  fHistEtaSub0 -> Fill(dEta);
+	  fHistPtSub0 -> Fill(dPt,dWeight);
+	  fHistPhiSub0 -> Fill(dPhi,dWeight);
+	  fHistEtaSub0 -> Fill(dEta,dWeight);
 	} 
 	else if (pTrack->InSubevent(1)){
 	  //Fill distributions for the subevent
-	  fHistPtSub1 -> Fill(dPt);
-	  fHistPhiSub1 -> Fill(dPhi);
-	  fHistEtaSub1 -> Fill(dEta);
+	  fHistPtSub1 -> Fill(dPt,dWeight);
+	  fHistPhiSub1 -> Fill(dPhi,dWeight);
+	  fHistEtaSub1 -> Fill(dEta,dWeight);
 	} 
       }
       if (pTrack->InPOISelection()){
 	//pt
 	dPt = pTrack->Pt();
-	fHistPtPOI->Fill(dPt);
+	fHistPtPOI->Fill(dPt,dWeight);
 	//phi
 	dPhi = pTrack->Phi();
 	if (dPhi<0.) dPhi+=2*TMath::Pi();
-	fHistPhiPOI->Fill(dPhi);
+	fHistPhiPOI->Fill(dPhi,dWeight);
 	//eta
 	dEta = pTrack->Eta();
-	fHistEtaPOI->Fill(dEta);
+	fHistEtaPOI->Fill(dEta,dWeight);
 	//eta vs phi
-	fHistPhiEtaPOI->Fill(dEta,dPhi);
+	fHistPhiEtaPOI->Fill(dEta,dPhi,dWeight);
 	//mean pt
-	fHistProMeanPtperBin->Fill(dPt,dPt);
+	fHistProMeanPtperBin->Fill(dPt,dPt,dWeight);
 	//count
-	iMultPOI++;
+	dMultPOI += dWeight;
       }
     } //track
   } //loop over tracks
   
-  fHistMultRP->Fill(iMultRP);
-  fHistMultPOI->Fill(iMultPOI);
+  fHistMultRP->Fill(dMultRP);
+  fHistMultPOI->Fill(dMultPOI);
 
   return kTRUE; 
 }

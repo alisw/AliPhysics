@@ -39,7 +39,7 @@ AliFlowCommonConstants::AliFlowCommonConstants():
   fNbinsMult(10000),
   fNbinsPt(100),   
   fNbinsPhi(72),
-  fNbinsEta(80),
+  fNbinsEta(200),
   fNbinsQ(500),
   fMultMin(0.),            
   fMultMax(10000.),
@@ -47,8 +47,8 @@ AliFlowCommonConstants::AliFlowCommonConstants():
   fPtMax(10.),
   fPhiMin(0.),	     
   fPhiMax(TMath::TwoPi()),
-  fEtaMin(-2.),	     
-  fEtaMax(2.),	     
+  fEtaMin(-5.),	     
+  fEtaMax(5.),	     
   fQMin(0.),	     
   fQMax(3.)
 {
