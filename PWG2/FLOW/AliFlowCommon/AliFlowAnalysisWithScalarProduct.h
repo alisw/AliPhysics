@@ -63,7 +63,7 @@ class AliFlowAnalysisWithScalarProduct {
    Bool_t  GetUsePhiWeights() const                   {return this->fUsePhiWeights;}
 
    // Output 
-   TList*    GetHistList() const    { return this->fHistList ; }     // Gets output histogram list
+   TList*    GetHistList() const    { return this->fHistList ; } // Gets output histogram list
    //histogram getters
    TProfile* GetHistProUQetaRP() const  {return this->fHistProUQetaRP;} 
    TProfile* GetHistProUQetaPOI() const {return this->fHistProUQetaPOI;}
@@ -166,7 +166,8 @@ class AliFlowAnalysisWithScalarProduct {
 
    TList*     fWeightsList;      // list holding input histograms with phi weights
    Bool_t     fUsePhiWeights;    // use phi weights
-   TH1F*      fPhiWeights;       // histogram holding phi weights
+   TH1F*      fPhiWeightsSub0;   // histogram holding phi weights for subevent 0
+   TH1F*      fPhiWeightsSub1;   // histogram holding phi weights for subevent 1
 
    TList*     fHistList;         //list to hold all output histograms  
 

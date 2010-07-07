@@ -1,11 +1,13 @@
-//=====================================================================================//
-// Macro makeWeights.C is used to make phi, pt and eta weights. Before using the macro // 
-// makeWeights.C you should already have available the output .root files from various // 
-// methods stored in the common output file "AnalysisResults.root". When calling this  //
-// macro you must specify the analysis type and the method whose output file you would //
-// like to use to make the weights for the subsequent runs (for cumulants, GFC and QC, //
-// you must also specify the cumulant order).                                          // 
-//=====================================================================================//
+//=======================================================================//
+// Macro makeWeights.C is used to make phi, pt and eta weights. 
+// Before using the macro makeWeights.C you should already have 
+// available the output .root files from various methods stored 
+// in the common output file "AnalysisResults.root". 
+// When calling this macro you must specify the analysis type 
+// and the method whose output file you would like to use 
+// to make the weights for the subsequent runs (for cumulants, GFC and QC,
+// you must also specify the cumulant order).
+//=======================================================================//
 
 //========================= phi-weights ========================
 // Phi-weights are obtained by inverting and normalizing the
@@ -38,7 +40,7 @@ Bool_t useQuadraticPtWeights = kFALSE;
 enum libModes {mLocal,mLocalSource};
 
 //void makeWeights(TString type="", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocalSource)
-void makeWeights(TString type="", TString method="QC", TString cumulantOrder="4th", Int_t mode=mLocal)
+void makeWeights(TString type="ESD", TString method="", TString cumulantOrder="", Int_t mode=mLocal)
 { 
  // 1. type: "ESD", "AOD", "ESDMCkineESD", "ESDMCkineMC", for Monte Carlo and 'on the fly' use simply "", ;
  // 2. method: MCEP, LYZ1, LYZ2, LYZEP, SP, FQD, GFC or QC; 
@@ -166,6 +168,75 @@ void makeWeights(TString type="", TString method="QC", TString cumulantOrder="4t
     cout<<"WARNING: Couldn't create phi weights because "<<counterOfEmptyBinsPhi<<" phi bins were empty !!!!"<<endl;
    }
  
+// phi-weights for eta subevents:
+if (method=="SP"){
+  //subevent 0
+  TH1F *phiWeightsSub0 = (TH1F*)commonHist->
+    GetHistPhiSub0()->Clone("phi_weights_sub0"); 
+  phiWeightsSub0->SetTitle("#phi-weights for subevent 0");
+  phiWeightsSub0->SetYTitle("w_{#phi}");
+  phiWeightsSub0->SetXTitle("#phi"); 
+  Int_t nBinsPhiSub0 = 0; // number of phi bins
+  Int_t counterOfEmptyBinsPhiSub0 = 0; // number of empty phi bins
+  Double_t nParticlesInBinSub0 = 0.; // number of particles in this phi bin
+  Double_t nParticlesPerBinSub0 = 0.; // average number of particles/bin
+  Double_t nParticlesSub0 = 0.; // number of particles in all phi bins 
+  //subevent 1
+  TH1F *phiWeightsSub1 = (TH1F*)commonHist->
+    GetHistPhiSub1()->Clone("phi_weights_sub1"); 
+  phiWeightsSub1->SetTitle("#phi-weights for subevent 0");
+  phiWeightsSub1->SetYTitle("w_{#phi}");
+  phiWeightsSub1->SetXTitle("#phi"); 
+  Int_t nBinsPhiSub1 = 0; // number of phi bins
+  Int_t counterOfEmptyBinsPhiSub1 = 0; // number of empty phi bins
+  Double_t nParticlesInBinSub1 = 0.; // number of particles in this phi bin
+  Double_t nParticlesPerBinSub1 = 0.; // average number of particles/bin
+  Double_t nParticlesSub1 = 0.; // number of particles in all phi bins 
+
+  // calculate phi-weights for subevent 0:
+  nBinsPhiSub0 = phiWeightsSub0->GetNbinsX();
+  nParticlesSub0 = phiWeightsSub0->Integral();
+  if(nBinsPhiSub0) nParticlesPerBinSub0 = nParticlesSub0/nBinsPhiSub0; 
+  for(Int_t b=1;b<=nBinsPhiSub0;b++) {
+    Double_t wPhiSub0 = 0.; // phi-weight for particular phi bin 
+    nParticlesInBinSub0 = phiWeightsSub0->GetBinContent(b);
+    if(nParticlesInBinSub0) {
+      wPhiSub0 = nParticlesPerBinSub0/nParticlesInBinSub0;
+    } else {
+      counterOfEmptyBinsPhiSub0++;
+    }
+    phiWeightsSub0->SetBinContent(b,wPhiSub0);
+  }
+  if(!counterOfEmptyBinsPhiSub0) {
+    weightsList->Add(phiWeightsSub0);
+    cout<<"Phi weights created."<<endl;
+  } else {
+    cout<<"WARNING: Couldn't create phi weights for subevent 0 because "<<counterOfEmptyBinsPhiSub0<<" phi bins were empty !!!!"<<endl;
+  }
+
+  // calculate phi-weights for subevent 1:
+  nBinsPhiSub1 = phiWeightsSub1->GetNbinsX();
+  nParticlesSub1 = phiWeightsSub1->Integral();
+  if(nBinsPhiSub1) nParticlesPerBinSub1 = nParticlesSub1/nBinsPhiSub1; 
+  for(Int_t b=1;b<=nBinsPhiSub1;b++) {
+    Double_t wPhiSub1 = 0.; // phi-weight for particular phi bin 
+    nParticlesInBinSub1 = phiWeightsSub1->GetBinContent(b);
+    if(nParticlesInBinSub1) {
+      wPhiSub1 = nParticlesPerBinSub1/nParticlesInBinSub1;
+    } else {
+      counterOfEmptyBinsPhiSub1++;
+    }
+    phiWeightsSub1->SetBinContent(b,wPhiSub1);
+  }
+  if(!counterOfEmptyBinsPhiSub1) {
+    weightsList->Add(phiWeightsSub1);
+    cout<<"Phi weights created."<<endl;
+  } else {
+    cout<<"WARNING: Couldn't create phi weights for subevent 1 because "<<counterOfEmptyBinsPhiSub1<<" phi bins were empty !!!!"<<endl;
+  }
+
+ }
+
  // pt-weights:  
  Double_t ptMin = AliFlowCommonConstants::GetMaster()->GetPtMin();
  Double_t ptMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
