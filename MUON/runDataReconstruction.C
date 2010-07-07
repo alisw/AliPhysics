@@ -30,32 +30,46 @@
 #include <TSystem.h>
 #endif
 
-void runDataReconstruction(const char* input = "raw://run117099",
+void runDataReconstruction(const char* input = "raw://run124360",
                            const char* ocdbPath = "raw://",
                            const char* recoptions="SAVEDIGITS",
-                           Int_t numberOfEvents=10000)
+                           Int_t numberOfEvents=1000)
 { 
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbPath);
 
-  AliReconstruction MuonRec;
+  AliReconstruction rec;
   
-  MuonRec.SetInput(gSystem->ExpandPathName(input));
-  MuonRec.SetRunVertexFinder(kFALSE);
-  MuonRec.SetRunLocalReconstruction("MUON");
-  MuonRec.SetRunTracking("MUON");
-  MuonRec.SetFillESD(" ");
-  MuonRec.SetLoadAlignData("MUON");
-  MuonRec.SetNumberOfEventsPerFile(500); // must set a limit otherwise time per event increases with event number (this is a "bug" of the loaders)
-  MuonRec.SetOption("MUON",recoptions);  
-  MuonRec.SetRunQA("MUON:ALL");
-  MuonRec.SetQAWriteExpert(AliQAv1::kMUON);
+  rec.SetRunReconstruction("MUON");
+
+  rec.SetRunQA("MUON:ALL");
+
+  rec.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
+
+  rec.SetWriteESDfriend(kTRUE);
+  rec.SetWriteAlignmentData();
+
+  rec.SetInput(gSystem->ExpandPathName(input));
+
+  rec.SetUseTrackingErrorsForAlignment("ITS");
+
+  rec.SetCleanESD(kFALSE);
+
+  rec.SetStopOnError(kFALSE);
+
+  rec.SetNumberOfEventsPerFile(500); // must set a limit otherwise time per event increases with event number (this is a "bug" of the loaders)
+
+  rec.SetOption("MUON",recoptions);  
+
+  rec.SetQAWriteExpert(AliQAv1::kMUON);
 
   if ( numberOfEvents > 0 )
   {
-    MuonRec.SetEventRange(0,numberOfEvents);
+    rec.SetEventRange(0,numberOfEvents);
   }
-  MuonRec.Run();
+
+  AliLog::Flush();
+  rec.Run();
   
 }
 
