@@ -509,7 +509,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     selected = AliAnalysisHelperJetTasks::Selected();
   }
   else if(fUseGlobalSelection&&fEventSelectionMask>0){
-    selected = ((AliAnalysisHelperJetTasks::SelectInfo()&fEventSelectionMask)==fEventSelectionMask);
+    selected = AliAnalysisHelperJetTasks::TestSelectInfo(fEventSelectionMask);
   }
 
   if(!selected){
@@ -733,7 +733,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     if(phi<0)phi+=TMath::Pi()*2.;    
     Float_t eta = leading->Eta();
     pt = leading->Pt();
-     while((tmpRec = (AliAODJet*)(recIter->Next()))){
+    while((tmpRec = (AliAODJet*)(recIter->Next()))){
       Float_t tmpPt = tmpRec->Pt();
       fh1PtJetsRecIn->Fill(tmpPt);
       if(tmpRec==leading){
@@ -996,7 +996,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
     fhnJetContainer[kStep0+kMaxStep]->Fill(container,eventW);
     if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
-
+  
     Float_t zLeading = -1;
     if(TMath::Abs(etaRec)<fRecEtaWindow){
       fh2JetPtJetPhi->Fill(ptRec,phiRec);
