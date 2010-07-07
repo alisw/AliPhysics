@@ -115,17 +115,26 @@ void AliAODpidUtil::MakeITSPID(AliAODTrack *track,Double_t *p) const
   for(Int_t i=2; i<6; i++){
    if(clumap&(1<<i)) ++nPointsForPid;
   }
-  if(nPointsForPid<3) return;// track not to be used for PID purposes
-
+  if(nPointsForPid<3) { // track not to be used for combined PID purposes
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) 
+      p[j] = 1./AliPID::kSPECIES;
+    return;
+  }
   Double_t mom=track->P();  
   AliAODPid *pidObj = track->GetDetPid();
 
-  Double_t dedx=pidObj->GetITSsignal();
-  Bool_t mismatch=kTRUE;
+  Double_t dedx = pidObj->GetITSsignal();
+  Bool_t mismatch = kTRUE;
+  Bool_t isSA = kTRUE;
+  if(track->GetStatus() & AliESDtrack::kTPCin){
+    isSA = kFALSE;
+    if (pidObj)
+      mom = pidObj->GetTPCmomentum();
+  }
   for (Int_t j=0; j<AliPID::kSPECIES; j++) {
-    Double_t mass=AliPID::ParticleMass(j);//GeV/c^2
-    Double_t bethe=fITSResponse.Bethe(mom,mass);
-    Double_t sigma=fITSResponse.GetResolution(bethe);
+    Double_t mass = AliPID::ParticleMass(j);//GeV/c^2
+    Double_t bethe = fITSResponse.Bethe(mom,mass);
+    Double_t sigma = fITSResponse.GetResolution(bethe,nPointsForPid,isSA);
     if (TMath::Abs(dedx-bethe) > fRange*sigma) {
       p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
     } else {

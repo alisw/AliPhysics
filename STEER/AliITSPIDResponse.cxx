@@ -28,7 +28,7 @@
 
 ClassImp(AliITSPIDResponse)
 
-AliITSPIDResponse::AliITSPIDResponse(): 
+AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC): 
   fRes(0.13),
   fKp1(15.77),
   fKp2(4.95),
@@ -36,6 +36,33 @@ AliITSPIDResponse::AliITSPIDResponse():
   fKp4(2.14),
   fKp5(0.82)
 {
+  if(!isMC){
+    fBBtpcits[0]=0.73;
+    fBBtpcits[1]=14.68;
+    fBBtpcits[2]=0.905;
+    fBBtpcits[3]=1.2;
+    fBBtpcits[4]=6.6;
+    fBBsa[0]=5.33458E4;
+    fBBsa[1]=16.5303;
+    fBBsa[2]=2.60065E-3;
+    fBBsa[3]=3.59533E-4;
+    fBBsa[4]=7.51168E-5;  
+    for(Int_t i=0; i<5;i++) fResolSA[i]=0.15;
+    for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
+  }else{
+    fBBtpcits[0]=0.73;
+    fBBtpcits[1]=14.68;
+    fBBtpcits[2]=0.905;
+    fBBtpcits[3]=0.2;
+    fBBtpcits[4]=6.6;
+    fBBsa[0]=139.1;
+    fBBsa[1]=23.36;
+    fBBsa[2]=0.06052;
+    fBBsa[3]=0.2043;
+    fBBsa[4]=-0.0004999;
+    for(Int_t i=0; i<5;i++) fResolSA[i]=0.15;
+    for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
+  }
 }
 
 //_________________________________________________________________________
@@ -53,22 +80,59 @@ AliITSPIDResponse::AliITSPIDResponse(Double_t *param):
 }
 
 
-Double_t AliITSPIDResponse::Bethe(Double_t p,Double_t mass) const {
+Double_t AliITSPIDResponse::BetheAleph(Double_t p, Double_t mass) const {
   //
   // returns AliExternalTrackParam::BetheBloch normalized to 
   // fgMIP at the minimum
   //
+  
   Double_t bb=
     AliExternalTrackParam::BetheBlochAleph(p/mass,fKp1,fKp2,fKp3,fKp4,fKp5);
   return bb;
 }
 
-Double_t AliITSPIDResponse::GetResolution(Double_t bethe) const {
+Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const {
+  //
+  // returns AliExternalTrackParam::BetheBloch normalized to 
+  // fgMIP at the minimum
+  //
+
+  Double_t bg=p/mass;
+  Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
+  Double_t gamma=bg/beta;
+  Double_t par[5];
+  if(isSA){
+    for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsa[ip];
+  }else{
+    for(Int_t ip=0; ip<5;ip++) par[ip]=fBBtpcits[ip];
+  }
+  Double_t eff=1.0;
+  if(bg<par[2])
+    eff=(bg-par[3])*(bg-par[3])+par[4];
+  else
+    eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
+
+  Double_t bb=0.;
+  if(gamma>=0. && beta>0.){
+    bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;
+  }
+  return bb;
+}
+
+Double_t AliITSPIDResponse::GetResolution(Double_t bethe, 
+					  Int_t nPtsForPid, 
+					  Bool_t isSA) const {
   // 
   // Calculate expected resolution for truncated mean
   //
-  return fRes*bethe;
+  Float_t r;
+  if(isSA) r=fResolSA[nPtsForPid];
+  else r=fResolTPCITS[nPtsForPid];
+  return r*bethe;
 }
+
+
+
 
 void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES]) const {
   //
@@ -115,3 +179,4 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
   condprobfun[AliPID::kProton] = itsProb[0];
   return;
 }
+

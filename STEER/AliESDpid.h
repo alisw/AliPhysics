@@ -73,7 +73,21 @@ inline Float_t AliESDpid::NumberOfSigmasTOF(const AliESDtrack *track, AliPID::EP
 }
 
 inline Float_t AliESDpid::NumberOfSigmasITS(const AliESDtrack *track, AliPID::EParticleType type) const {
-  return fITSResponse.GetNumberOfSigmas(track->GetP(),track->GetITSsignal(),type); 
+  ULong_t trStatus=track->GetStatus();
+  Float_t dEdx=track->GetITSsignal();
+  UChar_t clumap=track->GetITSClusterMap();
+  Int_t nPointsForPid=0;
+  for(Int_t i=2; i<6; i++){
+    if(clumap&(1<<i)) ++nPointsForPid;
+  }
+  if(trStatus&AliESDtrack::kTPCin){
+    const AliExternalTrackParam *in = track->GetInnerParam();
+    Float_t mom=in->P();
+    return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,kFALSE);
+  }else{
+    Float_t mom=track->P();
+    return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,kTRUE);
+  }
 }
 #endif
 

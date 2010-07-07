@@ -71,7 +71,19 @@ inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliAODTrack *track, AliPID
 
 inline Float_t AliAODpidUtil::NumberOfSigmasITS(const AliAODTrack *track, AliPID::EParticleType type) const {
   AliAODPid *pidObj = track->GetDetPid();
-  return fITSResponse.GetNumberOfSigmas(track->P(),pidObj->GetITSsignal(),type); 
+  Float_t dEdx=pidObj->GetITSsignal();
+  UChar_t clumap=track->GetITSClusterMap();
+  Int_t nPointsForPid=0;
+  for(Int_t i=2; i<6; i++){
+    if(clumap&(1<<i)) ++nPointsForPid;
+  }
+  if(track->GetTPCNcls()>0){
+    Float_t mom=pidObj->GetTPCmomentum();
+    return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,kFALSE);
+  }else{
+    Float_t mom=track->P();
+    return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,kTRUE);
+  }
 }
 #endif
 

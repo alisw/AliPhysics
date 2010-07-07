@@ -118,12 +118,32 @@ void AliESDpid::MakeITSPID(AliESDtrack *track) const
   Double_t mom=track->GetP();  
   if (fITSPIDmethod == kITSTruncMean) {
     Double_t dedx=track->GetITSsignal();
+    Bool_t isSA=kTRUE;
+    Double_t momITS=mom;
+    ULong_t trStatus=track->GetStatus();
+    if(trStatus&AliESDtrack::kTPCin){
+      isSA=kFALSE;
+      const AliExternalTrackParam *in = track->GetInnerParam();
+      momITS=in->P();
+    }
+    UChar_t clumap=track->GetITSClusterMap();
+    Int_t nPointsForPid=0;
+    for(Int_t i=2; i<6; i++){
+      if(clumap&(1<<i)) ++nPointsForPid;
+    }
+
+    if(nPointsForPid<3) { // track not to be used for combined PID purposes
+      track->ResetStatus(AliESDtrack::kITSpid);
+      return;
+    }
+
     Double_t p[10];
+
     Bool_t mismatch=kTRUE, heavy=kTRUE;
     for (Int_t j=0; j<AliPID::kSPECIES; j++) {
       Double_t mass=AliPID::ParticleMass(j);//GeV/c^2
-      Double_t bethe=fITSResponse.Bethe(mom,mass);
-      Double_t sigma=fITSResponse.GetResolution(bethe);
+      Double_t bethe=fITSResponse.Bethe(momITS,mass);
+      Double_t sigma=fITSResponse.GetResolution(bethe,nPointsForPid,isSA);
       if (TMath::Abs(dedx-bethe) > fRange*sigma) {
 	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
       } else {
