@@ -49,16 +49,17 @@ public:
   void    Digitize(Int_t event);          // Make Digits from SDigits stored in fSDigits
   void    Exec(Option_t *option);               // Supervising method
 
-  Int_t   GetDigitThreshold() const { return fDigitThreshold;}
+  Int_t    GetDigitThreshold() const { return fDigitThreshold;}
   //Float_t GetPedestal()       const { return fPedestal; }
-  Float_t GetPinNoise()       const { return fPinNoise;}
+  Float_t  GetPinNoise()       const { return fPinNoise;}
   //Float_t GetSlope()          const { return fSlope; }
   Double_t GetTimeResolution() const { return fTimeResolution ; }
-  Float_t GetECAchannel()     const { return fADCchannelEC ; }
-  Float_t GetECApedestal()    const { return fADCpedestalEC ; }
-  void    SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
-  void    SetDigitThreshold(Int_t EMCThreshold)  {fDigitThreshold = EMCThreshold;}
-  void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
+  Double_t GetTimeDelay()      const { return fTimeDelay ; }
+  Float_t  GetECAchannel()     const { return fADCchannelEC ; }
+  Float_t  GetECApedestal()    const { return fADCpedestalEC ; }
+  void     SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
+  void     SetDigitThreshold(Int_t EMCThreshold)  {fDigitThreshold = EMCThreshold;}
+  void     SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
 
   //General
   Int_t GetDigitsInRun()  const { return fDigitsInRun; } 
@@ -103,25 +104,26 @@ private:
   TString * fInputFileNames ;     //[fInput] List of file names to merge 
   TString * fEventNames ;         //[fInput] List of event names to merge
 
-  Int_t   fDigitThreshold  ;      // Threshold for storing digits in EMC, ACD units
-  Int_t   fMeanPhotonElectron ;   // number of photon electrons per GeV deposited energy 
+  Int_t    fDigitThreshold  ;     // Threshold for storing digits in EMC, ACD units
+  Int_t    fMeanPhotonElectron ;  // number of photon electrons per GeV deposited energy 
   //Float_t fPedestal ;           // Calibration parameters //Not used, remove?
   //Float_t fSlope ;              // read from SDigitizer   //Not used, remove?
-  Float_t fPinNoise ;             // Electronics noise in EMC
-  Double_t fTimeResolution ;       // Time resolution of FEE electronics
+  Float_t  fPinNoise ;            // Electronics noise in EMC
+  Double_t fTimeDelay;            // Time delay to reproduce data delay
+  Double_t fTimeResolution ;      // Time resolution of FEE electronics
   //Float_t fTimeThreshold ;        // Threshold to start timing for given crystall //Not used, remove?
   //Float_t fTimeSignalLength ;     // Length of the timing signal //Not used, remove?
   Float_t fADCchannelEC ;         // width of one ADC channel in EC section (GeV)
   Float_t fADCpedestalEC ;        // pedestal for one ADC channel
   Int_t   fNADCEC ;               // number of channels in EC section ADC
 
-  TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
-  Int_t   fFirstEvent;        // first event to process
-  Int_t   fLastEvent;         // last  event to process
-
+  TString  fEventFolderName;      // skowron: name of EFN to read data from in stand alone mode
+  Int_t    fFirstEvent;           // first event to process
+  Int_t    fLastEvent;            // last  event to process
+	
   AliEMCALCalibData * fCalibData; //Calibration data pointer
 
-  ClassDef(AliEMCALDigitizer,8)  // description 
+  ClassDef(AliEMCALDigitizer,9)  // description 
 };
 
 

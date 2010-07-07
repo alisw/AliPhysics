@@ -134,13 +134,9 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetMinECut(0.45);
   params->SetUnfold(kFALSE);
   params->SetLocMaxCut(0.03);
-  params->SetTimeCut(100e-9);//100 ns
-  //Simulation
-  //params->SetTimeMin(5e-9);//100 ns
-  //params->SetTimeMax(50e-9);//100 ns
-   //Real Data
-  params->SetTimeMin(525e-9);//100 ns
-  params->SetTimeMax(725e-9);//100 ns
+  params->SetTimeCut(250e-9);//250 ns
+  params->SetTimeMin(425e-9);//425 ns
+  params->SetTimeMax(825e-9);//825 ns
 
   //Track matching
   params->SetTrkCutX(6.0);
@@ -294,7 +290,7 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetTau(2.35);
   params->SetNoiseThreshold(3);
   params->SetNPedSamples(5);
-  params->SetRemoveBadChannels(kTRUE);
+  params->SetRemoveBadChannels(kFALSE);
   params->SetFittingAlgorithm(AliEMCALRawUtils::kStandard);  
   params->SetFALTROUsage(kTRUE); 
   params->SetLEDFit(kFALSE);   
@@ -312,13 +308,9 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   AliEMCALRecParam* params =  AliEMCALRecParam::GetDefaultParameters();
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
   params->SetMinECut(0.01);  //10 MeV       	
-  params->SetTimeCut(100e-9);//100 ns
-  //Simulation
-  //params->SetTimeMin(5e-9);//100 ns
-  //params->SetTimeMax(50e-9);//100 ns
-  //Real Data
-  params->SetTimeMin(525e-9);//100 ns
-  params->SetTimeMax(725e-9);//100 ns
+  params->SetTimeCut(250e-9);//250 ns
+  params->SetTimeMin(425e-9);//425 ns
+  params->SetTimeMax(825e-9);//825 ns
 
   //PID parameters for pp  implemented 
   // as a first step, all array elements are initialized to 0.0
@@ -463,7 +455,7 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   params->SetTau(2.35);
   params->SetNoiseThreshold(3);
   params->SetNPedSamples(5);
-  params->SetRemoveBadChannels(kTRUE);
+  params->SetRemoveBadChannels(kFALSE);
   params->SetFittingAlgorithm(AliEMCALRawUtils::kStandard);  
   params->SetFALTROUsage(kTRUE); 
   params->SetLEDFit(kFALSE);   

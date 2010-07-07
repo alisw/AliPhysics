@@ -141,6 +141,7 @@ AliEMCALDigitizer::AliEMCALDigitizer()
 //    fPedestal(0), //Not used, remove?
 //    fSlope(0),    //Not used, remove?
     fPinNoise(0),
+    fTimeDelay(0),
     fTimeResolution(0),
 //    fTimeThreshold(0),    //Not used, remove?
 //    fTimeSignalLength(0), //Not used, remove?
@@ -171,6 +172,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
 //    fPedestal(0),//Not used, remove?
 //    fSlope(0),   //Not used, remove?
     fPinNoise(0),
+	fTimeDelay(0),
     fTimeResolution(0),
 //    fTimeThreshold(0),    //Not used, remove?
 //    fTimeSignalLength(0), //Not used, remove?
@@ -202,6 +204,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
 //    fPedestal(d.fPedestal), //Not used, remove?
 //    fSlope(d.fSlope),       //Not used, remove?
     fPinNoise(d.fPinNoise),
+    fTimeDelay(d.fTimeDelay),
     fTimeResolution(d.fTimeResolution),
 //    fTimeThreshold(d.fTimeThreshold),       //Not used, remove?
 //    fTimeSignalLength(d.fTimeSignalLength), //Not used, remove?
@@ -230,6 +233,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
 //    fPedestal(0), //Not used, remove?
 //    fSlope(0.),   //Not used, remove?
     fPinNoise(0.),
+    fTimeDelay(0.),
     fTimeResolution(0.),
 //    fTimeThreshold(0),    //Not used, remove?
 //    fTimeSignalLength(0), //Not used, remove?
@@ -495,6 +499,8 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     digit->SetIndexInList(i) ; 
     energy = sDigitizer->Calibrate(digit->GetAmplitude()) ;
     digit->SetAmplitude(DigitizeEnergy(energy, digit->GetId()) ) ;
+	//Add delay to time
+	digit->SetTime(digit->GetTime()+fTimeDelay) ;
 	 // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
   }
 
@@ -847,7 +853,8 @@ void AliEMCALDigitizer::InitParameters()
   if (fPinNoise < 0.0001 ) 
     Warning("InitParameters", "No noise added\n") ; 
   fDigitThreshold     = simParam->GetDigitThreshold(); //fPinNoise * 3; // 3 * sigma
-  fTimeResolution     = simParam->GetTimeResolution(); //0.6e-9 ; // 600 psc
+  fTimeResolution     = simParam->GetTimeResolution(); //0.6e-9 ; // 600 pc
+  fTimeDelay          = simParam->GetTimeDelay(); //600e-9 ; // 600 ns
 
   // These defaults are normally not used. 
   // Values are read from calibration database instead

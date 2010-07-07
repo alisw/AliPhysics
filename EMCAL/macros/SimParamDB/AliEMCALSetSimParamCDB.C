@@ -29,7 +29,8 @@ void AliEMCALSetSimParamCDB()
   AliEMCALSimParam *simParam = new AliEMCALSimParam();
   //Digits 
 //   simParam->SetDigitThreshold(3) ;
-//   simParam->SetPinNoise(0.012) ;     
+//   simParam->SetPinNoise(0.012) ;
+//  simParam->SetTimeDelay(600e-9) ;      
 //   simParam->SetTimeResolution(0.6e-9) ; 
 //   simParam->SetNADCED( (Int_t) TMath::Power(2,16)) ;     
 //   simParam->SetMeanPhotonElectron(4400);
