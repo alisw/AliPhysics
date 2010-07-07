@@ -240,8 +240,8 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 	}
     }
 
-  AliPMDDiscriminator *pmddiscriminator = new AliPMDEmpDiscriminator();
-  pmddiscriminator->Discrimination(fPMDcontin,fPMDcontout);
+  AliPMDEmpDiscriminator pmddiscriminator;
+  pmddiscriminator.Discrimination(fPMDcontin,fPMDcontout);
 
   const Float_t kzpos = 361.5;    // middle of the PMD
 
@@ -341,6 +341,7 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
       esdpmdtr->SetClusterSigmaY(rady);
 
       event->AddPmdTrack(esdpmdtr);
+      delete esdpmdtr;
     }
 
   fPMDcontin->Delete();
