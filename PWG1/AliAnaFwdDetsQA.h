@@ -33,25 +33,25 @@ class AliAnaFwdDetsQA : public AliAnalysisTaskSE
   
  private:
 
-  TList* fListOfHistos;
+  TList* fListOfHistos; // Container for output histos
 
-  TH1F* fT0vtxRec;
-  TH2F* fT0vtxRecGen;
-  TH1F* fT0time;
-  TH1F* fT0time2;
-  TH1F* fT0mult;
-  TH1F* fT0vtxRes;
-  TH1F* fT0ampl;
+  TH1F* fT0vtxRec;      // T0 reconstructed z vertex
+  TH2F* fT0vtxRecGen;   // T0 reconstructed vs generate z vertex
+  TH1F* fT0time;        // T0 time0
+  TH1F* fT0time2;       // T0 time0
+  TH1F* fT0mult;        // T0 multiplicity
+  TH1F* fT0vtxRes;      // T0 z vertex resolution
+  TH1F* fT0ampl;        // T0 signals amplitude
 
-  TH1F* fV0a;
-  TH1F* fV0c;
-  TH1F* fV0multA;
-  TH1F* fV0multC;
-  TH2F* fV0multAcorr;
-  TH2F* fV0multCcorr;
-  TH2F* fV0Acorr;
-  TH2F* fV0Ccorr;
-  TH1F* fV0ampl;
+  TH1F* fV0a;           // V0 number of fired PMs A side
+  TH1F* fV0c;           // V0 number of fired PMs C side
+  TH1F* fV0multA;       // V0 multiplicity on A side
+  TH1F* fV0multC;       // V0 multiplicity on C side
+  TH2F* fV0multAcorr;   // V0 reconstructed vs generated multiplicity on A side
+  TH2F* fV0multCcorr;   // V0 reconstructed vs generated multiplicity on C side
+  TH2F* fV0Acorr;       // V0 number of fired PMs (reco vs gen) A side
+  TH2F* fV0Ccorr;       // V0 number of fired PMs (reco vs gen) C side
+  TH1F* fV0ampl;        // V0 multiplicity in single channel
 
   AliAnaFwdDetsQA(const AliAnaFwdDetsQA&); // not implemented
   AliAnaFwdDetsQA& operator=(const AliAnaFwdDetsQA&); // not implemented

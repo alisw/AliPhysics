@@ -96,9 +96,9 @@ AliAnalysisTaskSE(name),
   fV0ampl(0)
 {
   // Constructor
-  AliInfo("Constructor AliAnaFwdDetsQA");
   // Define input and output slots here
   // Input slot #0 works with a TChain
+  AliInfo("Constructor AliAnaFwdDetsQA");
   DefineInput(0, TChain::Class());
   // Output slot #1 TList
   DefineOutput(1, TList::Class());
@@ -108,7 +108,8 @@ TH1F * AliAnaFwdDetsQA::CreateHisto(const char* name, const char* title,Int_t nB
 					    Double_t xMin, Double_t xMax,
 					    const char* xLabel, const char* yLabel)
 {
-  // create a histogram
+  // helper method which can be used
+  // in order to create a histogram
   TH1F* result = new TH1F(name, title, nBins, xMin, xMax);
   result->SetOption("E");
   if (xLabel) result->GetXaxis()->SetTitle(xLabel);
@@ -119,7 +120,8 @@ TH1F * AliAnaFwdDetsQA::CreateHisto(const char* name, const char* title,Int_t nB
 
 TH1F *AliAnaFwdDetsQA::CreateEffHisto(const TH1F* hGen, const TH1F* hRec)
 {
-  // create an efficiency histogram
+  // helper method which can be used
+  // in order create an efficiency histogram
   Int_t nBins = hGen->GetNbinsX();
   TH1F* hEff = (TH1F*) hGen->Clone("hEff");
   hEff->SetTitle("");
@@ -135,7 +137,7 @@ TH1F *AliAnaFwdDetsQA::CreateEffHisto(const TH1F* hGen, const TH1F* hRec)
       Double_t eff = nRecEff/nGenEff;
       hEff->SetBinContent(iBin, 100. * eff);
       Double_t error = sqrt(eff*(1.-eff) / nGenEff);
-      if (error == 0) error = 0.0001;
+      if (error < 1e-12) error = 0.0001;
       hEff->SetBinError(iBin, 100. * error);			
     }
     else {
@@ -149,7 +151,8 @@ TH1F *AliAnaFwdDetsQA::CreateEffHisto(const TH1F* hGen, const TH1F* hRec)
 
 Bool_t AliAnaFwdDetsQA::FitHisto(TH1* histo, Double_t& res, Double_t& resError)
 {
-  // fit a gaussian to a histogram
+  // fit a gaussian to
+  // a histogram
   static TF1* fitFunc = new TF1("fitFunc", "gaus");
   fitFunc->SetLineWidth(2);
   fitFunc->SetFillStyle(0);
@@ -172,8 +175,8 @@ Bool_t AliAnaFwdDetsQA::FitHisto(TH1* histo, Double_t& res, Double_t& resError)
 void AliAnaFwdDetsQA::UserCreateOutputObjects()
 {
   // Create histograms
-  AliInfo("AliAnaFwdDetsQA::UserCreateOutputObjects");
   // Create output container
+  AliInfo("AliAnaFwdDetsQA::UserCreateOutputObjects");
   fListOfHistos = new TList();
   
   fT0vtxRec = CreateHisto("hT0vtxRec", "Z vertex reconstructed with T0", 100, -25, 25, "Z_{vtx} [cm]", "");
@@ -229,7 +232,8 @@ void AliAnaFwdDetsQA::UserCreateOutputObjects()
 
 void AliAnaFwdDetsQA::UserExec(Option_t */*option*/)
 {
-
+  // The analysis code
+  // goes here
   AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent) {
     Printf("ERROR: Could not retrieve MC event");
@@ -311,6 +315,8 @@ void AliAnaFwdDetsQA::UserExec(Option_t */*option*/)
 
 void AliAnaFwdDetsQA::Terminate(Option_t *)
 {
+  // Terminate
+  // Store the output histos
   fListOfHistos = dynamic_cast<TList*>(GetOutputData(1));
   if (!fListOfHistos) {
     Printf("ERROR: fListOfHistos not available");
