@@ -12,6 +12,7 @@
 //  Modified by Yaxian Mao:
 // 1. add the UE subtraction for corrlation study
 // 2. change the correlation variable
+// 3. Only use leading particle(cluster/track) as trigger for correlation (2010/07/02)
 
 // --- ROOT system ---
 class TH2F;
@@ -74,9 +75,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   
   //Histograms
   //leading particles 
-  TH1F * fhPtLeadingCharged;         //! pT distribution of leading particles
-  TH2F * fhPhiLeadingCharged;        //! phi distribution vs pT of leading particles
-  TH2F * fhEtaLeadingCharged;        //! eta distribution vs pT of leading particles
+  TH1F * fhPtLeading;         //! pT distribution of leading particles
+  TH2F * fhPhiLeading;        //! phi distribution vs pT of leading particles
+  TH2F * fhEtaLeading;        //! eta distribution vs pT of leading particles
   TH2F * fhDeltaPhiDeltaEtaCharged ; //! differences of eta and phi between trigger and charged hadrons
   TH2F * fhDeltaPhiDeltaEtaNeutral ; //! differences of eta and phi between trigger and neutral hadrons (pi0)
 	

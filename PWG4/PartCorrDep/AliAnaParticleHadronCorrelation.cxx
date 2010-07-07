@@ -22,6 +22,7 @@
 //  Modified by Yaxian Mao:
 // 1. add the UE subtraction for corrlation study
 // 2. change the correlation variable
+// 3. Only use leading particle(cluster/track) as trigger for correlation (2010/07/02)
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -53,7 +54,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     AliAnaPartCorrBaseClass(),
     fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), fSelectIsolated(0),
     fMakeSeveralUE(0),  fUeDeltaPhiMaxCut(0.), fUeDeltaPhiMinCut(0.), 
-    fhPtLeadingCharged(0),fhPhiLeadingCharged(0),fhEtaLeadingCharged(0), 
+    fhPtLeading(0),fhPhiLeading(0),fhEtaLeading(0), 
     fhDeltaPhiDeltaEtaCharged(0),fhDeltaPhiDeltaEtaNeutral(0),
     fhPhiCharged(0), fhPhiNeutral(0), fhEtaCharged(0), fhEtaNeutral(0), 
     fhDeltaPhiCharged(0), fhDeltaPhiNeutral(0), 
@@ -84,6 +85,8 @@ AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation(const AliAnaPar
   fSelectIsolated(g.fSelectIsolated),
   fMakeSeveralUE(g.fMakeSeveralUE),  fUeDeltaPhiMaxCut(g.fUeDeltaPhiMaxCut), 
   fUeDeltaPhiMinCut(g.fUeDeltaPhiMinCut), 
+  fhPtLeading(g.fhPtLeading),fhPhiLeading(g.fhPhiLeading),fhEtaLeading(g.fhEtaLeading), 
+  fhDeltaPhiDeltaEtaCharged(g.fhDeltaPhiDeltaEtaCharged),fhDeltaPhiDeltaEtaNeutral(g.fhDeltaPhiDeltaEtaNeutral),
   fhPhiCharged(g.fhPhiCharged), fhPhiNeutral(g.fhPhiNeutral), 
   fhEtaCharged(g.fhEtaCharged), fhEtaNeutral(g.fhEtaNeutral), 
   fhDeltaPhiCharged(g.fhDeltaPhiCharged),  
@@ -132,7 +135,12 @@ AliAnaParticleHadronCorrelation & AliAnaParticleHadronCorrelation::operator = (c
   fSelectIsolated = source.fSelectIsolated ;
   fMakeSeveralUE = source.fMakeSeveralUE ;
   fUeDeltaPhiMaxCut = source.fUeDeltaPhiMaxCut ; 
-  fUeDeltaPhiMinCut = source.fUeDeltaPhiMinCut ;   
+  fUeDeltaPhiMinCut = source.fUeDeltaPhiMinCut ;  
+  fhPtLeading = source.fhPtLeading;
+  fhPhiLeading = source.fhPhiLeading;
+  fhEtaLeading = source.fhEtaLeading;  
+  fhDeltaPhiDeltaEtaCharged = source.fhDeltaPhiDeltaEtaCharged ;
+  fhDeltaPhiDeltaEtaNeutral = source.fhDeltaPhiDeltaEtaNeutral ;  
   fhPhiCharged = source.fhPhiCharged ; fhPhiNeutral = source.fhPhiNeutral ; 
   fhEtaCharged = source.fhEtaCharged ; fhEtaNeutral = source.fhEtaNeutral ; 
   fhDeltaPhiCharged = source.fhDeltaPhiCharged ;  
@@ -186,24 +194,26 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   Float_t ptmin  = GetHistoPtMin();
   Float_t phimin = GetHistoPhiMin();
   Float_t etamin = GetHistoEtaMin();	
+
+  fhPtLeading  = new TH1F ("hPtLeading","p_T distribution of leading particles", nptbins,ptmin,ptmax); 
+  fhPtLeading->SetXTitle("p_{T}^{trig} (GeV/c)");
+  
+  fhPhiLeading  = new TH2F ("hPhiLeading","#phi distribution of leading Particles",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+  fhPhiLeading->SetYTitle("#phi (rad)");
+  
+  fhEtaLeading  = new TH2F ("hEtaLeading","#eta distribution of leading",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
+  fhEtaLeading->SetYTitle("#eta ");  
+  outputContainer->Add(fhPtLeading);
+  outputContainer->Add(fhPhiLeading);
+  outputContainer->Add(fhEtaLeading);
   
   //Correlation with charged hadrons
   if(GetReader()->IsCTSSwitchedOn()) {
-	  
-	fhPtLeadingCharged  = new TH1F ("hPtLeadingCharged","p_T distribution of leading particles", nptbins,ptmin,ptmax); 
-	fhPtLeadingCharged->SetXTitle("p_{T}^{trig} (GeV/c)");
-	  
-	fhPhiLeadingCharged  = new TH2F ("hPhiLeadingCharged","#phi distribution of leading Particles",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-	fhPhiLeadingCharged->SetYTitle("#phi (rad)");
-	  
-	fhEtaLeadingCharged  = new TH2F ("hEtaLeadingCharged","#eta distribution of leading",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
-	fhEtaLeadingCharged->SetYTitle("#eta ");
-	  
-	fhDeltaPhiDeltaEtaCharged  = new TH2F
-	  ("DeltaPhiDeltaEtaCharged","#phi_{trigger} - #phi_{h^{#pm}} vs #eta_{trigger} - #eta_{h^{#pm}}",
+  	fhDeltaPhiDeltaEtaCharged  = new TH2F
+	   ("DeltaPhiDeltaEtaCharged","#phi_{trigger} - #phi_{h^{#pm}} vs #eta_{trigger} - #eta_{h^{#pm}}",
 	   140,-2.,5.,200,-2,2); 
-	fhDeltaPhiDeltaEtaCharged->SetXTitle("#Delta #phi");
-	fhDeltaPhiDeltaEtaCharged->SetYTitle("#Delta #eta");    
+	  fhDeltaPhiDeltaEtaCharged->SetXTitle("#Delta #phi");
+	  fhDeltaPhiDeltaEtaCharged->SetYTitle("#Delta #eta");    
 	  
     fhPhiCharged  = new TH2F
       ("PhiCharged","#phi_{h^{#pm}}  vs p_{T #pm}",
@@ -265,10 +275,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhPtHbpUeCharged->SetYTitle("ln(1/x_{E})");
     fhPtHbpUeCharged->SetXTitle("p_{T trigger}");
 	  
-	outputContainer->Add(fhPtLeadingCharged);
-	outputContainer->Add(fhPhiLeadingCharged);
-	outputContainer->Add(fhEtaLeadingCharged);
-	outputContainer->Add(fhDeltaPhiDeltaEtaCharged);
+	  outputContainer->Add(fhDeltaPhiDeltaEtaCharged);
     outputContainer->Add(fhPhiCharged) ;
     outputContainer->Add(fhEtaCharged) ;
     outputContainer->Add(fhDeltaPhiCharged) ; 
@@ -395,7 +402,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
 	fhPtHbpUeNeutral->SetXTitle("p_{T trigger}");
 	  
 	  
-	outputContainer->Add(fhDeltaPhiDeltaEtaNeutral); 
+	  outputContainer->Add(fhDeltaPhiDeltaEtaNeutral); 
     outputContainer->Add(fhPhiNeutral) ;  
     outputContainer->Add(fhEtaNeutral) ;   
     outputContainer->Add(fhDeltaPhiNeutral) ; 
@@ -562,9 +569,9 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
     //Trigger particle in CTS, correlation with PHOS, EMCAL and CTS
     else if(particle->GetDetector()=="CTS" ){
       if(GetReader()->IsPHOSSwitchedOn() && GetAODPHOS()->GetEntriesFast() > 0) 
-	MakeNeutralCorrelationFillAOD(particle, GetAODPHOS(),"PHOS");
+	       MakeNeutralCorrelationFillAOD(particle, GetAODPHOS(),"PHOS");
       if(GetReader()->IsEMCALSwitchedOn() && GetAODEMCAL()->GetEntriesFast() > 0) 
-	MakeNeutralCorrelationFillAOD(particle, GetAODEMCAL(),"EMCAL");
+	       MakeNeutralCorrelationFillAOD(particle, GetAODEMCAL(),"EMCAL");
     }
   
 	
@@ -593,38 +600,38 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   Double_t ptTrig = 0.;
   Int_t trigIndex = -1 ;
-  for(Int_t iaod = 0; iaod < naod ; iaod++){	  
+  for(Int_t iaod = 0; iaod < naod ; iaod++){	 //loop on input trigger AOD file 
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     //check if the particle is isolated or if we want to take the isolation into account
     if(OnlyIsolated() && !particle->IsIsolated()) continue;
-	//find the leading particles with highest momentum
-	if (particle->Pt()>ptTrig) {
-		ptTrig = particle->Pt() ;
-		trigIndex = iaod ;
-	}
-  }//finish searching for trigger particle
+	   //find the leading particles with highest momentum
+    if (particle->Pt()>ptTrig) {
+      ptTrig = particle->Pt() ;
+		  trigIndex = iaod ;
+    }
+  }//finish searching for leading trigger particle
 	
   if(trigIndex!=-1){ //using trigger partilce to do correlations
-	AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(trigIndex));
+    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(trigIndex));
 	  
-	//Fill leading particle histogram   
-	fhPtLeadingCharged->Fill(particle->Pt());
-	Float_t phi = particle->Phi();
-	if(phi<0)phi+=TMath::TwoPi();
-	fhPhiLeadingCharged->Fill(particle->Pt(), phi);
-	fhEtaLeadingCharged->Fill(particle->Pt(), particle->Eta());
+	  //Fill leading particle histogram   
+	  fhPtLeading->Fill(particle->Pt());
+	  Float_t phi = particle->Phi();
+	  if(phi<0)phi+=TMath::TwoPi();
+	  fhPhiLeading->Fill(particle->Pt(), phi);
+	  fhEtaLeading->Fill(particle->Pt(), particle->Eta());
 	  
     //Make correlation with charged hadrons
     TObjArray * reftracks   = particle->GetObjArray(GetAODObjArrayName()+"Tracks");
     if(reftracks){
-      if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Particle %d, In Track Refs  entries %d\n", trigIndex, reftracks->GetEntriesFast());
+      if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading %d, In Track Refs  entries %d\n", trigIndex, reftracks->GetEntriesFast());
       if(reftracks->GetEntriesFast() > 0) MakeChargedCorrelation(particle, reftracks,kTRUE);
     }
     
     //Make correlation with neutral pions
     if(GetOutputAODBranch() && GetOutputAODBranch()->GetEntriesFast() > 0){
-      if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Particle %d, In Cluster Refs entries %d\n",trigIndex, GetOutputAODBranch()->GetEntriesFast());      
+      if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading %d, In Cluster Refs entries %d\n",trigIndex, GetOutputAODBranch()->GetEntriesFast());      
       MakeNeutralCorrelationFillHistograms(particle);
     }
     
