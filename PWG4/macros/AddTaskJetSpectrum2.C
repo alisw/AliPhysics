@@ -1,49 +1,49 @@
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1,UInt_t iEventSelectionMask = 0);
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1,UInt_t iFlag){
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0){
   AliAnalysisTaskJetSpectrum2 *js = 0;
   if(kUseAODMC){
-    if(iFlag&(1<<0))js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104",filterMask,iPhysicsSelection);
-    if(iFlag&(1<<1))js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104",filterMask,iPhysicsSelection);
+    if(iFlag&(1<<0))js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104",filterMask,iPhysicsSelection, iEventSelectionMask);
+    if(iFlag&(1<<1))js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104",filterMask,iPhysicsSelection, iEventSelectionMask);
 
-    if(iFlag&(1<<2))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",filterMask,iPhysicsSelection);
-    if(iFlag&(1<<3))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",filterMask,iPhysicsSelection);
+    if(iFlag&(1<<2))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",filterMask,iPhysicsSelection, iEventSelectionMask);
+    if(iFlag&(1<<3))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",filterMask,iPhysicsSelection,  iEventSelectionMask);
 
     if(iFlag&(1<<4)){
-      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",filterMask,iPhysicsSelection);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",filterMask,iPhysicsSelection,iEventSelectionMask);
     }
-    if(iFlag&(1<<5))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04",filterMask,iPhysicsSelection);
-    if(iFlag&(1<<6))js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107",filterMask,iPhysicsSelection);
+    if(iFlag&(1<<5))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask);
+    if(iFlag&(1<<6))js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107",filterMask,iPhysicsSelection, iEventSelectionMask);
   }
 
-  if(iFlag&(1<<7))js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",filterMask,iPhysicsSelection);
+  if(iFlag&(1<<7))js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",filterMask,iPhysicsSelection, iEventSelectionMask);
 
-  if(iFlag&(1<<8))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",filterMask,iPhysicsSelection);
-  if(iFlag&(1<<9))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",filterMask,iPhysicsSelection);
-  if(iFlag&(1<<10))js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","",filterMask,iPhysicsSelection);
+  if(iFlag&(1<<8))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",filterMask,iPhysicsSelection, iEventSelectionMask);
+  if(iFlag&(1<<9))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",filterMask,iPhysicsSelection, iEventSelectionMask);
+  if(iFlag&(1<<10))js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","",filterMask,iPhysicsSelection, iEventSelectionMask);
   
   if(iFlag&(1<<11)){
-    js = AddTaskJetSpectrum2("jetsAOD_UA107","",filterMask,iPhysicsSelection);
+    js = AddTaskJetSpectrum2("jetsAOD_UA107","",filterMask,iPhysicsSelection, iEventSelectionMask);
     js->SetRecEtaWindow(0.2);
   }
   if(iFlag&(1<<12)){
-    js = AddTaskJetSpectrum2("jetsAOD_FASTJET07","",filterMask,iPhysicsSelection);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTJET07","",filterMask,iPhysicsSelection, iEventSelectionMask);
     js->SetRecEtaWindow(0.2);
   }
   if(iFlag&(1<<13)){
-    js = AddTaskJetSpectrum2("jetsAOD_FASTKT07","",filterMask,iPhysicsSelection);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTKT07","",filterMask,iPhysicsSelection, iEventSelectionMask);
     js->SetRecEtaWindow(0.2);
   }
   if(iFlag&(1<<14)){
-    js = AddTaskJetSpectrum2("jetsAOD_SISCONE07","",filterMask,iPhysicsSelection);
+    js = AddTaskJetSpectrum2("jetsAOD_SISCONE07","",filterMask,iPhysicsSelection, iEventSelectionMask);
     js->SetRecEtaWindow(0.2);
   }
   return js;
 }
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,UInt_t filterMask,Int_t iPhysicsSelection)
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,UInt_t filterMask,Int_t iPhysicsSelection,UInt_t iEventSelectionMask)
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -69,7 +69,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    // Create the task and configure it.
    //===========================================================================
    
-   AliAnalysisTaskJetSpectrum2* pwg4spec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s%s",bRec,bGen));
+   AliAnalysisTaskJetSpectrum2* pwg4spec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s%s_%010d",bRec,bGen,iEventSelectionMask));
       
    // or a config file
    // pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum2::kAnaMC);
@@ -119,13 +119,14 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    }
 
    if(iPhysicsSelection)pwg4spec->SelectCollisionCandidates();
+   if(iEventSelectionMask)pwg4spec->SetEventSelectionMask(iEventSelectionMask);
 
    mgr->AddTask(pwg4spec);
      
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwg4spec2_%s_%s",bRec,bGen), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_spec2_%s_%s",AliAnalysisManager::GetCommonFileName(),bRec,bGen));
+   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("pwg4spec2_%s_%s_%010d",bRec,bGen,iEventSelectionMask),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_spec2_%s_%s_%010d",AliAnalysisManager::GetCommonFileName(),bRec,bGen,iEventSelectionMask));
 
    mgr->ConnectInput  (pwg4spec, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (pwg4spec, 0, mgr->GetCommonOutputContainer());

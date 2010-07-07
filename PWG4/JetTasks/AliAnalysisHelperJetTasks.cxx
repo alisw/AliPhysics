@@ -448,6 +448,24 @@ Bool_t  AliAnalysisHelperJetTasks::Selected(Bool_t bSet,Bool_t bNew){
   return bSelected;
 }
 
+Bool_t  AliAnalysisHelperJetTasks::IsCosmic(){
+  return ((SelectInfo()&kIsCosmic)==kIsCosmic);
+}
+
+Bool_t  AliAnalysisHelperJetTasks::IsPileUp(){
+  return ((SelectInfo()&kIsPileUp)==kIsPileUp);
+}
+
+
+UInt_t  AliAnalysisHelperJetTasks::SelectInfo(Bool_t bSet,UInt_t iNew){
+  static UInt_t iSelectInfo = 0; //
+  if(bSet){
+    iSelectInfo = iNew;
+  }
+  return iSelectInfo;
+}
+
+
 //___________________________________________________________________________________________________________
 
 Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes)

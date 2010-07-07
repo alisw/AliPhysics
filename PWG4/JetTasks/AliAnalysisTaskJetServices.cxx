@@ -70,6 +70,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fUseAODInput(kFALSE),
   fUsePhysicsSelection(kFALSE),
   fRealData(kFALSE),
+  fSelectionInfoESD(0),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -80,6 +81,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fh1Trials(0x0),
   fh1PtHard(0x0),
   fh1PtHardTrials(0x0),
+  fh1SelectionInfoESD(0x0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -96,6 +98,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fUseAODInput(kFALSE),
   fUsePhysicsSelection(kFALSE),
   fRealData(kFALSE),
+  fSelectionInfoESD(0),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -106,6 +109,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh1Trials(0x0),
   fh1PtHard(0x0),
   fh1PtHardTrials(0x0),
+  fh1SelectionInfoESD(0x0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -202,7 +206,10 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   fHistList->Add(fh1PtHard);
   fh1PtHardTrials = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",nBinPt,binLimitsPt);
   fHistList->Add(fh1PtHardTrials);
+  fh1SelectionInfoESD = new TH1F("fh1SelectionInfoESD","Bit Masks that satisfy the selection info",
+				 AliAnalysisHelperJetTasks::kTotalSelections,0.5,AliAnalysisHelperJetTasks::kTotalSelections+0.5);
 
+  fHistList->Add(fh1SelectionInfoESD);
   // 3 decisions, 0 trigger X, X + SPD vertex, X + SPD vertex in range  
   // 3 triggers BB BE/EB EE
 
@@ -246,6 +253,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   AliESDEvent *esd = 0;
 
   AliAnalysisHelperJetTasks::Selected(kTRUE,kFALSE); // set slection to false
+  fSelectionInfoESD = 0; // reset
+  AliAnalysisHelperJetTasks::SelectInfo(kTRUE,fSelectionInfoESD); // set slection to false
+
 
   if(fUseAODInput){    
     aod = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -265,6 +275,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     esd = dynamic_cast<AliESDEvent*>(InputEvent());
   }
   
+  fSelectionInfoESD |= AliAnalysisHelperJetTasks::kNone;
+
   if(esd){
     Float_t run = (Float_t)esd->GetRunNumber();
     const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
@@ -284,6 +296,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
        ||esd->GetFiredTriggerClasses().Contains("MB1")
        ||esd->GetFiredTriggerClasses().Contains("CINT6B")){
       iTrig = 0;
+      fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kBunchBunch;
     }
     else if(esd->GetFiredTriggerClasses().Contains("CINT1A")
 	    ||esd->GetFiredTriggerClasses().Contains("CSMBA")
@@ -293,10 +306,12 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	    ||esd->GetFiredTriggerClasses().Contains("CINT6C")){
       // empty bunch or bunch empty
       iTrig = 1;
+      fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kBunchEmpty;
     }
-    if(esd->GetFiredTriggerClasses().Contains("CINT1-E")
+    else if(esd->GetFiredTriggerClasses().Contains("CINT1-E")
        ||esd->GetFiredTriggerClasses().Contains("CINT6-E")){
       iTrig = 2;
+      fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kEmptyEmpty;
     }
 
     
@@ -323,8 +338,24 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   // Apply additional constraints
   Bool_t esdEventSelected = IsEventSelectedESD(esd);
+  Bool_t esdEventPileUp = IsEventPileUpESD(esd);
+  Bool_t esdEventCosmic = IsEventCosmicESD(esd);
+
   Bool_t aodEventSelected = IsEventSelectedAOD(aod);
-  
+
+  Bool_t physicsSelection = fInputHandler->IsEventSelected();
+
+  if(esdEventSelected) fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kVertexIn;
+  if(esdEventPileUp)   fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kIsPileUp;
+  if(esdEventCosmic)   fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kIsCosmic;
+  if(physicsSelection) fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kPhysicsSelection;
+
+
+  // here we have all selection information, fill histogram
+  for(unsigned int i = 1;i<(UInt_t)fh1SelectionInfoESD->GetNbinsX();i++){
+    if((i&fSelectionInfoESD)==i)fh1SelectionInfoESD->Fill(i);
+  }
+  AliAnalysisHelperJetTasks::SelectInfo(kTRUE,fSelectionInfoESD); // set slection to false
 
   if(esd&&aod&&fDebug){
     if(esdEventSelected&&!aodEventSelected){
@@ -457,6 +488,18 @@ Bool_t AliAnalysisTaskJetServices::IsEventSelectedESD(AliESDEvent* esd){
   return eventSel;
 }
 
+Bool_t AliAnalysisTaskJetServices::IsEventPileUpESD(AliESDEvent* esd){
+  if(!esd)return kFALSE;
+  return esd->IsPileupFromSPD();
+}
+
+Bool_t AliAnalysisTaskJetServices::IsEventCosmicESD(AliESDEvent* esd){
+  if(!esd)return kFALSE;
+  // add track cuts for which we look for cosmics...
+  return kTRUE;
+}
+
+
 Bool_t AliAnalysisTaskJetServices::IsEventSelectedAOD(AliAODEvent* aod){
   if(!aod)return kFALSE;
   const AliAODVertex *vtx = aod->GetPrimaryVertex();
@@ -490,6 +533,7 @@ Bool_t AliAnalysisTaskJetServices::IsEventSelectedAOD(AliAODEvent* aod){
   Bool_t eventSel = TMath::Abs(zvtx)<fVtxZCut&&r2<(fVtxRCut*fVtxRCut);
   return eventSel;
 }
+
 
 
 
