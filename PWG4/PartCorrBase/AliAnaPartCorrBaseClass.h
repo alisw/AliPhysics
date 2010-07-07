@@ -149,19 +149,19 @@ class AliAnaPartCorrBaseClass : public TObject {
   virtual AliNeutralMesonSelection * GetNeutralMesonSelection()  {if(!fNMS) fNMS = new AliNeutralMesonSelection(); return  fNMS ;}
   virtual void SetNeutralMesonSelection(AliNeutralMesonSelection * const nms) { fNMS = nms ;}
 	
-  virtual Bool_t     IsDataMC()       {return fDataMC ; fMCUtils = new AliMCAnalysisUtils();}
-  virtual void SwitchOnDataMC()       {fDataMC = kTRUE ; }
+  virtual Bool_t     IsDataMC()       {return fDataMC ; }
+  virtual void SwitchOnDataMC()       {fDataMC = kTRUE ; if(!fMCUtils)fMCUtils = new AliMCAnalysisUtils();}
   virtual void SwitchOffDataMC()      {fDataMC = kFALSE ; }
 
-  virtual Bool_t IsFiducialCutOn()       {return fCheckFidCut ; }
-  virtual void SwitchOnFiducialCut()     { fCheckFidCut = kTRUE;  fFidCut = new AliFiducialCut();}
+  virtual Bool_t IsFiducialCutOn()       { return fCheckFidCut ; }
+  virtual void SwitchOnFiducialCut()     { fCheckFidCut = kTRUE;  if(!fFidCut)fFidCut = new AliFiducialCut();}
   virtual void SwitchOffFiducialCut()    { fCheckFidCut = kFALSE;}
   
-  virtual Bool_t IsCaloPIDOn()       {return fCheckCaloPID ; fCaloPID = new AliCaloPID();}
-  virtual void SwitchOnCaloPID()     { fCheckCaloPID = kTRUE;}
+  virtual Bool_t IsCaloPIDOn()       { return fCheckCaloPID ; }
+  virtual void SwitchOnCaloPID()     { fCheckCaloPID = kTRUE; if(!fCaloPID)fCaloPID = new AliCaloPID();}
   virtual void SwitchOffCaloPID()    { fCheckCaloPID = kFALSE;}
   
-  virtual Bool_t IsCaloPIDRecalculationOn()       {return fRecalculateCaloPID ; }
+  virtual Bool_t IsCaloPIDRecalculationOn()       { return fRecalculateCaloPID ; }
   virtual void SwitchOnCaloPIDRecalculation()     { fRecalculateCaloPID  = kTRUE;}
   virtual void SwitchOffCaloPIDRecalculation()    { fRecalculateCaloPID  = kFALSE;}
   
