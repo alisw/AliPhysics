@@ -1,12 +1,11 @@
-#ifndef AliAnalysisTaskQASym_cxx
-#define AliAnalysisTaskQASym_cxx
+#ifndef ALIANALYSISTASKQASYM_H
+#define ALIANALYSISTASKQASYM_H
  
 
 class TH1F;
 class TH2F;
 class TH3F;
 class TList;
-class TNtuple;
 
 class AliESDEvent;
 class AliESDtrack;
@@ -15,7 +14,6 @@ class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 #include "TFile.h"
-#include "TNtuple.h"
 
 class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
  public:
@@ -37,9 +35,9 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   
  private:
 
-  Int_t       fTrackType;
-  Int_t       fStandAlone; // needed for ITS tracks
-  Bool_t      fFieldOn;
+  Int_t       fTrackType;       // track type
+  Int_t       fStandAlone;      // needed for ITS tracks
+  Bool_t      fFieldOn;         // field status
 
   TList       *fHists;          // List of histos
 
@@ -82,7 +80,7 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
 
   // 2D: all measures as function of z of first trackpoint 
   TH2F        *fRecPtPosVz;     //pt-zfirst of pos tracks
-  TH2F        *fRecPtNegVz;      //pt-zfirst of neg tracks
+  TH2F        *fRecPtNegVz;     //pt-zfirst of neg tracks
   TH2F        *fRecEtaPosVz;    //eta-zfirst of pos tracks
   TH2F        *fRecEtaNegVz;    //eta-zfirst of neg tracks
   TH2F        *fRecPhiPosVz;    //phi-zfirst of pos tracks
@@ -110,7 +108,6 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH1F * fVertexX;             // x of vertex
   TH1F * fVertexY;             // y of vertex
   TH1F * fVertexZ;             // z of vertex
-  TNtuple * test;
 
   //new
   TH2F        *fRecDcaPosPhi;     //dca-phi for pos.
@@ -158,13 +155,11 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   //  TH3F        *fRecDcaPhiPtPosEtaNeg; //dca-pt-phi for pos tracks and neg eta
   //  TH3F        *fRecDcaPhiPtNegEtaNeg; //dca-pt-phi for neg tracks and neg eta
 
-  TH2F        *fEtavPt;
-  TH2F        *fCompareTPCparam;
-  TH1F        *fITSlayer;
+  TH2F        *fEtavPt;                 // eta vs pt 
+  TH2F        *fCompareTPCparam;        // TPC param
+  TH1F        *fITSlayer;               // ITS layer
 
-  Double_t  sdca;
-  Float_t xy, z, xvertexcor, yvertexcor;
-  AliESDtrackCuts* fCuts;                      // List of cuts
+  AliESDtrackCuts* fCuts;               // List of cuts
 
   // sectors of TPC 
   TH1F        *fRecPtTpcSector[18];     //pt for TPC sectors
