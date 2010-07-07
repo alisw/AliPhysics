@@ -113,8 +113,10 @@ void AliCaloTrackESDReader::FillInputCTS() {
 	track->GetPxPyPz(p) ;
 	TLorentzVector momentum(p[0],p[1],p[2],0);
       
-	if(fCTSPtMin < momentum.Pt() &&fFiducialCut->IsInFiducialCut(momentum,"CTS")){
-	
+	if(fCTSPtMin < momentum.Pt()){
+		
+		if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
+		
 		if(fDebug > 3 && momentum.Pt() > 0.2) printf("AliCaloTrackESDReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						    momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	
@@ -217,8 +219,10 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 	clus->GetMomentum(momentum, v);      
 	if(fDebug > 3 && momentum.E() > 0.1) printf("AliCaloTrackESDReader::FillInputEMCAL() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta()); 
-	if(fEMCALPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"EMCAL")){
+	if(fEMCALPtMin < momentum.Pt()){
 	  
+	  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) continue;
+		
 	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackESDReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  
@@ -309,8 +313,10 @@ void AliCaloTrackESDReader::FillInputPHOS() {
 	clus->GetMomentum(momentum, v);      
 	if(fDebug > 3 && momentum.E() > 0.1)printf("AliCaloTrackESDReader::FillInputPHOS() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-	if(fPHOSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"PHOS")){
-	  
+	if(fPHOSPtMin < momentum.Pt()){
+
+	  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) continue;
+
 	  if(fDebug > 2 && momentum.E() > 0.1)printf("AliCaloTrackESDReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  

@@ -487,11 +487,6 @@ void AliAnaPartCorrBaseClass::InitParameters()
 
   //fReader    = new AliCaloTrackReader(); //Initialized in maker
   //fCaloUtils = new AliCalorimeterUtils();//Initialized in maker
-  fCaloPID   = new AliCaloPID();
-  fFidCut    = new AliFiducialCut();
-  fIC        = new AliIsolationCut();
-  fMCUtils   = new AliMCAnalysisUtils();	
-  fNMS       = new AliNeutralMesonSelection;
   
   //fAnaOutContainer = new TList();
 	

@@ -116,8 +116,8 @@ public:
   Bool_t IsParticleInJetCone(const Double_t eta, Double_t phi, const Double_t etal, Double_t phil) const ;
   
   void GetLeadingCharge(AliAODPWG4ParticleCorrelation* const particle, TLorentzVector & pLeading) const ;
-  void GetLeadingPi0   (AliAODPWG4ParticleCorrelation* const particle, TLorentzVector & pLeading)  const ;
-  Bool_t GetLeadingParticle(AliAODPWG4ParticleCorrelation *particle, TLorentzVector &  pLeading) const ;
+  void GetLeadingPi0   (AliAODPWG4ParticleCorrelation* const particle, TLorentzVector & pLeading) ;
+  Bool_t GetLeadingParticle(AliAODPWG4ParticleCorrelation *particle, TLorentzVector &  pLeading)  ;
   
   void MakeAnalysisFillAOD();
   void MakeAnalysisFillHistograms();   
@@ -125,7 +125,7 @@ public:
   void MakeJetFromAOD(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector pLeading, 
 		      TLorentzVector & jet, TLorentzVector & bkg) const ; 
   
-  Bool_t  SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) const ;
+  Bool_t  SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) ;
   
  private:
   

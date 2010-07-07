@@ -27,7 +27,7 @@ class AliGenEventHeader ;
 class AliVEvent;
 class AliAODEvent;
 class AliMCEvent;
-class AliFiducialCut;
+#include "AliFiducialCut.h"
 class AliAODMCHeader;
 #include "AliCalorimeterUtils.h"
 
@@ -129,8 +129,12 @@ public:
 
   virtual void ResetLists();
 
-  virtual AliFiducialCut * GetFiducialCut() const {return  fFiducialCut ;}
+  virtual AliFiducialCut * GetFiducialCut() {if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
+	  return  fFiducialCut ;}
   virtual void SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc ;}
+  virtual Bool_t IsFiducialCutOn()       {return fCheckFidCut ; }
+  virtual void SwitchOnFiducialCut()     { fCheckFidCut = kTRUE;  fFiducialCut = new AliFiducialCut();}
+  virtual void SwitchOffFiducialCut()    { fCheckFidCut = kFALSE;}
 	
   virtual void SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) {;}
 	
@@ -189,7 +193,8 @@ public:
   Int_t            fDataType ;   // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;       // Debugging level
   AliFiducialCut * fFiducialCut; //! Acceptance cuts
-	
+  Bool_t           fCheckFidCut ;// Do analysis for clusters in defined region         
+
   Bool_t           fComparePtHardAndJetPt;  // In MonteCarlo, jet events, reject fake events with wrong jet energy.
   Float_t          fPtHardAndJetPtFactor;   // Factor between ptHard and jet pT to reject/accept event.
 
@@ -236,7 +241,7 @@ public:
 	
   AliCalorimeterUtils *  fCaloUtils ;  //  Pointer to CalorimeterUtils
 	
-  ClassDef(AliCaloTrackReader,14)
+  ClassDef(AliCaloTrackReader,15)
 } ;
 
 

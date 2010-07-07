@@ -857,7 +857,7 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
 
 //____________________________________________________________________________
 Bool_t  AliAnaParticleJetLeadingConeCorrelation::GetLeadingParticle(AliAODPWG4ParticleCorrelation *particle, TLorentzVector & pLeading) 
-  const {
+{
   //Search Charged or Neutral leading particle, select the highest one and fill AOD
   
   TLorentzVector pLeadingCh(0,0,0,0) ;
@@ -939,7 +939,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingCharge(AliAODPWG4Partic
 }
 
 //____________________________________________________________________________
-void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleCorrelation* const particle, TLorentzVector & pLeading) const
+void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleCorrelation* const particle, TLorentzVector & pLeading)
 {  
   //Search for the neutral pion with highest pt and with 
   //Phi=Phi_trigger-Pi and pT=0.1E_gamma
@@ -1682,7 +1682,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
 }
 
 //____________________________________________________________________________
-Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) const {
+Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) {
   //Select cluster depending on its pid and acceptance selections
   
   //Skip matched clusters with tracks

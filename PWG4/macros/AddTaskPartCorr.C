@@ -120,21 +120,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   // ##### Analysis algorithm settings ####
   
-  
-  AliFiducialCut * fidCut1stYear = new AliFiducialCut();
-  fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
-  if(kSimulation){
-    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
-    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
-    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
-    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
-  } 
-  else{
-    fidCut1stYear->DoEMCALFiducialCut(kFALSE) ;
-    fidCut1stYear->DoPHOSFiducialCut(kFALSE) ;
-  }	
-  
-  
   // -------------------------------------------------
   // --- Photon/Pi0/Omega/Electron Analysis ---
   // -------------------------------------------------
@@ -159,7 +144,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton->SwitchOffFiducialCut();
   if(kSimulation){
     anaphoton->SwitchOnFiducialCut();
-    anaphoton->SetFiducialCut(fidCut1stYear);
+	AliFiducialCut * fidCut1stYear = anaphoton->GetFidutialCut();
+	fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
+	fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+	fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+	fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+	fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
   }
   
   if(!data.Contains("delta")) {
@@ -184,8 +174,14 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SetCalorimeter(calorimeter);
   if(kSimulation){
     anapi0->SwitchOnFiducialCut();
-    anapi0->SetFiducialCut(fidCut1stYear);
+	AliFiducialCut * fidCut1stYear = anapi0->GetFiducialCut();
+	fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
+	fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
   }  
+	
   anapi0->SetNPID(1); //Available from tag AliRoot::v4-18-15-AN
   //settings for pp collision
   anapi0->SetNCentrBin(1);
@@ -206,14 +202,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //Pi0, event by event
   //---------------------------  
 
-  AliNeutralMesonSelection *nms = new AliNeutralMesonSelection();
-  nms->SetInvMassCutRange(0.05, 0.2)     ;
-  nms->KeepNeutralMesonSelectionHistos(kTRUE);
-  //Set Histrograms bins and ranges
-  nms->SetHistoERangeAndNBins(0, 50, 200) ;
-  //      nms->SetHistoPtRangeAndNBins(0, 50, 100) ;
-  //      nms->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
-  //      nsm->SetHistoIMRangeAndNBins(0, 0.4, 100) ;  
 		
   AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
   anapi0ebe->SetDebug(-1);//10 for lots of messages
@@ -229,7 +217,15 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
 	
   if(kUseKinematics) anapi0ebe->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else  anapi0ebe->SwitchOffDataMC() ;	
-  anapi0ebe->SetNeutralMesonSelection(nms);
+	
+  AliNeutralMesonSelection *nms = anapi0ebe->GetNeutralMesonSelection();
+  nms->SetInvMassCutRange(0.05, 0.2)     ;
+  nms->KeepNeutralMesonSelectionHistos(kTRUE);
+  //Set Histrograms bins and ranges
+  nms->SetHistoERangeAndNBins(0, 50, 200) ;
+  //      nms->SetHistoPtRangeAndNBins(0, 50, 100) ;
+  //      nms->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
+  //      nsm->SetHistoIMRangeAndNBins(0, 0.4, 100) ;  
   //Set Histrograms bins and ranges
   anapi0ebe->SetHistoPtRangeAndNBins(0, 50, 200) ;
   //      anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
@@ -300,7 +296,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else  anaisol->SwitchOffDataMC() ;
   //Select clusters with no pair, if both clusters with pi0 mass
   anaisol->SwitchOffInvariantMass();
-  //anaisol->SetNeutralMesonSelection(nms);
   //Do isolation cut
   AliIsolationCut * ic =  anaisol->GetIsolationCut();	
   ic->SetConeSize(0.4);
@@ -332,7 +327,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else  anaisolpi0->SwitchOffDataMC() ;
   //Select clusters with no pair, if both clusters with pi0 mass
   anaisolpi0->SwitchOffInvariantMass();
-  //anaisol->SetNeutralMesonSelection(nms);
   //Do isolation cut
   AliIsolationCut * ic2 =  anaisolpi0->GetIsolationCut();	
   ic2->SetConeSize(0.4);
