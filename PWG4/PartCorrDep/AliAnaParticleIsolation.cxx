@@ -287,7 +287,7 @@ AliAnaParticleIsolation::~AliAnaParticleIsolation()
 }
 
 //_________________________________________________________________________
-Bool_t AliAnaParticleIsolation::CheckInvMass(const Int_t iaod, const AliAODPWG4Particle * part1) const
+Bool_t AliAnaParticleIsolation::CheckInvMass(const Int_t iaod, const AliAODPWG4Particle * part1)
 {
   // Search if there is a companion decay photon to the candidate 
   // and discard it in such case

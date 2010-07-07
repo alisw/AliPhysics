@@ -22,11 +22,11 @@ class AliESDCaloCluster;
 class AliAODCaloCluster;
 class AliAODCaloCells;
 #include "AliCaloTrackReader.h"   
-class AliCaloPID ;
-class AliFiducialCut ;
-class AliIsolationCut ;
-class AliMCAnalysisUtils ;
-class AliNeutralMesonSelection ;
+#include "AliCaloPID.h"
+#include "AliFiducialCut.h"
+#include "AliIsolationCut.h"
+#include "AliMCAnalysisUtils.h"
+#include "AliNeutralMesonSelection.h"
 #include "AliCalorimeterUtils.h" 
 class AliStack ; 
 class AliHeader ; 
@@ -134,41 +134,41 @@ class AliAnaPartCorrBaseClass : public TObject {
   virtual AliGenEventHeader* GetMCGenEventHeader() const ;
   
   //Analysis helpers classes pointers setters and getters
-  virtual AliCaloPID * GetCaloPID() const {return  fCaloPID ;}
+  virtual AliCaloPID * GetCaloPID() {if(!fCaloPID) fCaloPID = new AliCaloPID(); return  fCaloPID ;}
   virtual void SetCaloPID(AliCaloPID * const pid) { fCaloPID = pid ;}
   
-  virtual AliFiducialCut * GetFiducialCut() const {return  fFidCut ;}
+  virtual AliFiducialCut * GetFiducialCut() {if(fFidCut) fFidCut = new AliFiducialCut(); return  fFidCut ;}
   virtual void SetFiducialCut(AliFiducialCut * const fc) { fFidCut = fc ;}
   
-  virtual AliIsolationCut * GetIsolationCut() const {return  fIC ;}
+  virtual AliIsolationCut * GetIsolationCut() {if(!fIC) fIC = new AliIsolationCut();  return  fIC ;}
   virtual void SetIsolationCut(AliIsolationCut * const ic) { fIC = ic ;}
   
-  virtual AliMCAnalysisUtils * GetMCAnalysisUtils() const {return  fMCUtils ;}
+  virtual AliMCAnalysisUtils * GetMCAnalysisUtils()  {if(!fMCUtils) fMCUtils = new AliMCAnalysisUtils(); return  fMCUtils ;}
   virtual void SetMCAnalysisUtils(AliMCAnalysisUtils * const mcutils) { fMCUtils = mcutils ;}	
   
-  virtual AliNeutralMesonSelection * GetNeutralMesonSelection() const {return  fNMS ;}
+  virtual AliNeutralMesonSelection * GetNeutralMesonSelection()  {if(!fNMS) fNMS = new AliNeutralMesonSelection(); return  fNMS ;}
   virtual void SetNeutralMesonSelection(AliNeutralMesonSelection * const nms) { fNMS = nms ;}
 	
-  virtual Bool_t     IsDataMC() const {return fDataMC ; }
-  virtual void SwitchOnDataMC()    {fDataMC = kTRUE ; }
-  virtual void SwitchOffDataMC()    {fDataMC = kFALSE ; }
+  virtual Bool_t     IsDataMC()       {return fDataMC ; fMCUtils = new AliMCAnalysisUtils();}
+  virtual void SwitchOnDataMC()       {fDataMC = kTRUE ; }
+  virtual void SwitchOffDataMC()      {fDataMC = kFALSE ; }
+
+  virtual Bool_t IsFiducialCutOn()       {return fCheckFidCut ; }
+  virtual void SwitchOnFiducialCut()     { fCheckFidCut = kTRUE;  fFidCut = new AliFiducialCut();}
+  virtual void SwitchOffFiducialCut()    { fCheckFidCut = kFALSE;}
   
-  virtual Bool_t IsFiducialCutOn() const {return fCheckFidCut ; }
-  virtual void SwitchOnFiducialCut() { fCheckFidCut = kTRUE;}
-  virtual void SwitchOffFiducialCut() { fCheckFidCut = kFALSE;}
+  virtual Bool_t IsCaloPIDOn()       {return fCheckCaloPID ; fCaloPID = new AliCaloPID();}
+  virtual void SwitchOnCaloPID()     { fCheckCaloPID = kTRUE;}
+  virtual void SwitchOffCaloPID()    { fCheckCaloPID = kFALSE;}
   
-  virtual Bool_t IsCaloPIDOn() const {return fCheckCaloPID ; }
-  virtual void SwitchOnCaloPID() { fCheckCaloPID = kTRUE;}
-  virtual void SwitchOffCaloPID() { fCheckCaloPID = kFALSE;}
-  
-  virtual Bool_t IsCaloPIDRecalculationOn() const {return fRecalculateCaloPID ; }
-  virtual void SwitchOnCaloPIDRecalculation() { fRecalculateCaloPID  = kTRUE;}
-  virtual void SwitchOffCaloPIDRecalculation() { fRecalculateCaloPID  = kFALSE;}
+  virtual Bool_t IsCaloPIDRecalculationOn()       {return fRecalculateCaloPID ; }
+  virtual void SwitchOnCaloPIDRecalculation()     { fRecalculateCaloPID  = kTRUE;}
+  virtual void SwitchOffCaloPIDRecalculation()    { fRecalculateCaloPID  = kFALSE;}
   
   virtual Float_t    GetMaxPt()         const {return fMaxPt ; }
   virtual Float_t    GetMinPt()         const {return fMinPt ; }
-  virtual void SetMaxPt(Float_t pt)              {fMaxPt = pt ; }
-  virtual void SetMinPt(Float_t pt)              {fMinPt = pt ; }
+  virtual void SetMaxPt(Float_t pt)           {fMaxPt = pt ; }
+  virtual void SetMinPt(Float_t pt)           {fMinPt = pt ; }
   virtual void SetPtCutRange(Double_t ptmin, Double_t ptmax)
   {  fMaxPt=ptmax;   fMinPt=ptmin;}
   

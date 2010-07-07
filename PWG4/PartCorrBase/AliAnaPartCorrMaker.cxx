@@ -175,10 +175,10 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
     //abort();
   }
 
-  //Initialize the geometry pointers
-  GetCaloUtils()->InitPHOSGeometry();
-  GetCaloUtils()->InitEMCALGeometry();
-		
+  //Initialize calorimeters  geometry pointers
+  fCaloUtils->InitPHOSGeometry();
+  fCaloUtils->InitEMCALGeometry();
+
   char newname[128];
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;

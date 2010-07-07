@@ -61,16 +61,16 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   void MakeAnalysisFillAOD()  ;
   void MakeAnalysisFillHistograms() ; 
   
-  Bool_t SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) const ;
+  Bool_t SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) ;
   
  private:
   
   Double_t   fDeltaPhiMaxCut ;      // Minimum Delta Phi Gamma-Hadron
   Double_t   fDeltaPhiMinCut ;      // Maximum Delta Phi Gamma-Hadron
   Bool_t     fSelectIsolated ;      // Select only trigger particles isolated
-  Bool_t   fMakeSeveralUE ; // Do analysis for several underlying events contribution
-  Double_t   fUeDeltaPhiMaxCut ;      // Minimum Delta Phi Gamma-Underlying Hadron
-  Double_t   fUeDeltaPhiMinCut ;      // Maximum Delta Phi Gamma-Underlying Hadron
+  Bool_t     fMakeSeveralUE ;       // Do analysis for several underlying events contribution
+  Double_t   fUeDeltaPhiMaxCut ;    // Minimum Delta Phi Gamma-Underlying Hadron
+  Double_t   fUeDeltaPhiMinCut ;    // Maximum Delta Phi Gamma-Underlying Hadron
 
   
   //Histograms

@@ -90,8 +90,10 @@ void AliCaloTrackAODReader::FillInputCTS() {
     track->GetPxPyPz(p) ;
     TLorentzVector momentum(p[0],p[1],p[2],0);
     
-    if(fCTSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"CTS")){
-      
+    if(fCTSPtMin < momentum.Pt()){
+
+	  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
+
       if(fDebug > 2 && momentum.Pt() > 0.1) printf("AliCaloTrackAODReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						  momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  
@@ -119,8 +121,10 @@ void AliCaloTrackAODReader::FillInputCTS() {
 		  track->GetPxPyPz(p) ;
 		  TLorentzVector momentum(p[0],p[1],p[2],0);
 		  
-		  if(fCTSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"CTS")){
-			  
+		  if(fCTSPtMin < momentum.Pt()){
+
+			  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) continue;
+
 			  if(fDebug > 2 && momentum.Pt() > 0.1) printf("AliCaloTrackAODReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 														   momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 			  
@@ -162,8 +166,10 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
 	
-	if(fEMCALPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"EMCAL")){
+	if(fEMCALPtMin < momentum.Pt()){
     
+	  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) continue;
+		
 	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  
@@ -198,8 +204,10 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 					TLorentzVector momentum ;
 					clus->GetMomentum(momentum, v);      
 					
-					if(fEMCALPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"EMCAL")){
-						
+					if(fEMCALPtMin < momentum.Pt()){
+
+						if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) continue;
+
 						if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 																	momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 						if(fWriteOutputStdAOD){
@@ -241,8 +249,10 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
 	
-	if(fPHOSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"PHOS")){
-	  
+	if(fPHOSPtMin < momentum.Pt()){
+
+	  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) continue;
+
 	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 		
@@ -277,8 +287,10 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 					TLorentzVector momentum ;
 					clus->GetMomentum(momentum, v);      
 					
-					if(fPHOSPtMin < momentum.Pt() && fFiducialCut->IsInFiducialCut(momentum,"PHOS")){
-						
+					if(fPHOSPtMin < momentum.Pt()){
+
+						if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) continue;
+
 						if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 																	momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 						if(fWriteOutputStdAOD){

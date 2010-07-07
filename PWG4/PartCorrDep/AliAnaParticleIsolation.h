@@ -37,7 +37,7 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
 
  public:
 
-  Bool_t CheckInvMass(const Int_t icalo,const AliAODPWG4Particle * ph) const ;
+  Bool_t CheckInvMass(const Int_t icalo,const AliAODPWG4Particle * ph) ;
   
   TObjString * GetAnalysisCuts();
   TList      * GetCreateOutputObjects();
