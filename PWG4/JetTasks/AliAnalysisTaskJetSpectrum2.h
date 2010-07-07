@@ -58,6 +58,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
+    virtual void SetEventSelectionMask(UInt_t i){fEventSelectionMask = i;}
     // use for the CF
 
 
@@ -108,7 +109,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Bool_t        fUseGlobalSelection;    // Limit the eta of the generated jets
     Bool_t        fUseExternalWeightOnly; // use only external weight
     Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
-    UInt_t        fFilterMask;             // filter bit for slecected tracks
+    UInt_t        fFilterMask;            // filter bit for slecected tracks
+    UInt_t        fEventSelectionMask;    // Selection information used to filter events
     Int_t         fAnalysisType;          // Analysis type 
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
@@ -176,7 +178,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 4) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 5) // Analysis task for standard jet analysis
 };
  
 #endif

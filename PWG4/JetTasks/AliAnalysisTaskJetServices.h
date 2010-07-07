@@ -49,8 +49,12 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void SetRealData(Bool_t b){fRealData = b;}
     virtual void SetUsePhysicsSelection(Bool_t b){fUsePhysicsSelection = b;}
     Bool_t IsEventSelectedESD(AliESDEvent* esd);
+    Bool_t IsEventPileUpESD(AliESDEvent* esd);
+    Bool_t IsEventCosmicESD(AliESDEvent* esd);
     Bool_t IsEventSelectedAOD(AliAODEvent* aod);
     enum { kAllTriggered = 0,kTriggeredVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexIn,kSelected,kConstraints};
+
+
 
  private:
 
@@ -60,6 +64,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Bool_t        fUseAODInput;        // take jet from input AOD not from ouptu AOD
     Bool_t        fUsePhysicsSelection;// decide wether we take into account physicsselction task
     Bool_t        fRealData;           // true for real data to allow correct trigger slection
+    UInt_t        fSelectionInfoESD;      // slection info bit mask
     Float_t       fAvgTrials;          // Average number of trials
     Float_t       fVtxXMean;          // mean x for cuts
     Float_t       fVtxYMean;          // mean y for cuts
@@ -71,6 +76,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH1F*         fh1Trials;           // trials are added
     TH1F*         fh1PtHard;           // Pt har of the event...       
     TH1F*         fh1PtHardTrials;     // Number of trials 
+    TH1F*         fh1SelectionInfoESD; // Masks that satisfy fSelectionInfo
     TH2F*         fh2TriggerCount;     // number of fire triggers in each case
     TH2F*         fh2ESDTriggerCount;  // number of fire triggers in each case
     TH2F*         fh2TriggerVtx;       // vtx. position vs. trigger decision
@@ -79,7 +85,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH2F*         fh2VtxXY;          // XY position of VTX were available
     TList *fHistList; // Output list
    
-    ClassDef(AliAnalysisTaskJetServices,4)
+    ClassDef(AliAnalysisTaskJetServices,5)
 };
  
 #endif

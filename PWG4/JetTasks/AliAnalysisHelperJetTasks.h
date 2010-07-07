@@ -33,17 +33,24 @@ class AliAnalysisHelperJetTasks : public TObject {
 
 
   enum {kMaxJets = 6}; //  needed for array size not to fragemnt memory on the heap by many new/delete 
+  enum { kNone = 1<<0,kBunchBunch = 1<<1,kBunchEmpty = 1<<2,kEmptyEmpty= 1<<3,
+	 kPhysicsSelection = 1<<4, kVertexIn = 1<<5, kIsCosmic = 1<<6, kIsPileUp = 1<<7,kTotalSelections = (1<<8) - 1};
 
   enum Trigger {kAcceptAll = 0,kMB1,kMB2,kMB3,kSPDGFO,kTrigger}; // 
 
   static Bool_t Selected(Bool_t bSet = kFALSE,Bool_t bNew = kTRUE); // static function to store the state of selection from service task
+
+  static Bool_t IsPileUp(); // Wrapper for SelectInfo with PileUp
+  static Bool_t IsCosmic(); // Wrapper for SelectInfo with cosmic
+
+  static UInt_t SelectInfo(Bool_t bSet = kFALSE,UInt_t iNew = 0); // static function to store the state bitmask of the selection from service task
   
   // these methods have been essentially copied from PWG0/AliTriggerAnalysis and expanded to use with AOD
   static Bool_t IsTriggerFired(const AliVEvent* aEsd, Trigger trigger);
 
   private:
   
-  ClassDef(AliAnalysisHelperJetTasks, 1) 
+  ClassDef(AliAnalysisHelperJetTasks, 2) 
 };
 
 #endif // ALIANALYSISHELPERJETTASKS_H

@@ -359,7 +359,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       if(iJETAN&2){
 	UInt_t selection = 0;
 	if(!kFillAOD) selection = 0xffffff&~(1<<13)&~(1<<5)&~(1<<6);
-	else selection = 0xffffff&~(1<<13);// selection = 1<<0|1<<1|1<<2|1<<5|1<<6|1<<7|1<<8|1<<9|1<<10|1<<11|1<<12;
+	else selection = 0xffffff&~(1<<13);  // selection = 1<<0|1<<1|1<<2|1<<5|1<<6|1<<7|1<<8|1<<9|1<<10|1<<11|1<<12; (DA takes quite long....)
 	AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC,selection); 
       }
       if (!taskjets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
@@ -429,6 +429,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        if(!iAODanalysis){
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
+	 taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection, AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection);      
+	 taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,AliAnalysisHelperJetTasks::kNone);      
+	 if(kIsMC){
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,AliAnalysisHelperJetTasks::kNone);      
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",kHighPtFilterMask,iPhysicsSelection,AliAnalysisHelperJetTasks::kNone);      
+	 }
        }
        if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
        taskjetSpectrum->SetDebugLevel(1);

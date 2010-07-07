@@ -78,6 +78,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
 							    fUseExternalWeightOnly(kFALSE),
 							    fLimitGenJetEta(kFALSE),
 							    fFilterMask(0),
+  fEventSelectionMask(0),
 							    fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -158,6 +159,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
   fFilterMask(0),
+  fEventSelectionMask(0),
   fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -501,12 +503,22 @@ void AliAnalysisTaskJetSpectrum2::Init()
 void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 {
 
-  if(!AliAnalysisHelperJetTasks::Selected()&&fUseGlobalSelection){
+  Bool_t selected = kTRUE;
+
+  if(fUseGlobalSelection&&fEventSelectionMask==0){
+    selected = AliAnalysisHelperJetTasks::Selected();
+  }
+  else if(fUseGlobalSelection&&fEventSelectionMask>0){
+    selected = ((AliAnalysisHelperJetTasks::SelectInfo()&fEventSelectionMask)==fEventSelectionMask);
+  }
+
+  if(!selected){
     // no selection by the service task, we continue
     if (fDebug > 1)Printf("Not selected %s:%d",(char*)__FILE__,__LINE__);
     PostData(1, fHistList);
     return;
   }
+
 
   //
   // Execute analysis for current event
