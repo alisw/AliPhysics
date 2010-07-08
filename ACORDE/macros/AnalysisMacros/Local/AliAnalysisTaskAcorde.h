@@ -8,7 +8,7 @@
 //	Also it is implemented a simple matching between tracks
 //	to look for the extrapolation of them to ACORDE modules
 //
-//	Create some histograms and one tree with the information
+//	Create some fHistograms and one tree with the information
 //	of the matching tracks
 //
 //  Author: Mario Rodríguez Cahuantzi
@@ -20,8 +20,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef AliAnalysisTaskAcorde_cxx
-#define AliAnalysisTaskAcorde_cxx
+#ifndef ALIANALYSISTASKACORDE_H
+#define ALIANALYSISTASKACORDE_H
 
 class TH2F;
 class TH1F;
@@ -36,7 +36,7 @@ class AliAnalysisTaskAcorde : public AliAnalysisTask {
   virtual ~AliAnalysisTaskAcorde();		//! Destructor fo task
   
   virtual void   ConnectInputData(Option_t *); 	//! Connects input data to class analysis
-  virtual void   CreateOutputObjects(); 	//! Creates output object (cosmicTree)
+  virtual void   CreateOutputObjects(); 	//! Creates output object (fCosmicTree)
   virtual void   Exec(Option_t *option); 	//! Execution class
   virtual void   Terminate(Option_t *); 	//! Terminate class 
 
@@ -45,34 +45,34 @@ class AliAnalysisTaskAcorde : public AliAnalysisTask {
 
   AliESDEvent *fESD;    		//! ESD object
   TArrayI      *fPair;			//! Pair track connected (up & down)
-  TTree *cosmicTree;			//! TTree with some information of matched tracks
-  Int_t nTracks;			//! # of recontructed tracks
-  Int_t nMatchTracks;			//! # of matched tracks
+  TTree *fCosmicTree;			//! TTree with some information of matched tracks
+  Int_t fnTracks;			//! # of recontructed tracks
+  Int_t fNMatchTracks;			//! # of matched tracks
 
 
   // Cut definitions
 
-  const Int_t minTPCclusters; 		//! cut in clusters
-  const Float_t minTrackDist;		//! cut in distance
-  const Float_t minCutDir;		//! minimum cut
+  const Int_t fkMinTPCclusters; 		//! cut in clusters
+  const Float_t fkMinTrackDist;		//! cut in distance
+  const Float_t fkMinCutDir;		//! minimum cut
 
-  Float_t xAco;				//! x-coordinate of extrapolated track to ACORDE
-  Float_t yAco;				//! y-coordinate of extrapolated track to ACORDE
-  Float_t zAco;				//! z-coordinate of extrapolated track to ACORDE
-  Int_t trigger;			//! trigger label
-  TString ActiveTriggerDetector;	//! detector string	
+  Float_t fXAco;				//! x-coordinate of extrapolated track to ACORDE
+  Float_t fYAco;				//! y-coordinate of extrapolated track to ACORDE
+  Float_t fZAco;				//! z-coordinate of extrapolated track to ACORDE
+  Int_t fTrigger;			//! fTrigger label
+  TString fActiveTriggerDetector;	//! detector string	
 
-  Int_t nSingleTracks;			//! no. of single track
-  Int_t nMatchedTracks;			//! no. of matched track
+  Int_t fNSingleTracks;			//! no. of single track
+  Int_t fNMatchedTracks;			//! no. of matched track
   
 
-  TList *histo;				//! list of histograms
-  TH1F *acordeHitsAll;			//! hits of acorde
-  TH1F *acordeMultiAll;			//! multi. of acorde modules
-  TH1F *acordeHitsTPC;			//! hits of acorde (if track)
-  TH1F *acordeMultiTPC;			//! multi. of acorde modules (if track)
-  TH1F *nTracksMatched;			//! matched tracks
-  TH1F *ntracks;			//! no. of tracks
+  TList *fHisto;				//! list of fHistograms
+  TH1F *fAcordeHitsAll;			//! hits of acorde
+  TH1F *fAcordeMultiAll;			//! multi. of acorde modules
+  TH1F *fAcordeHitsTPC;			//! hits of acorde (if track)
+  TH1F *fAcordeMultiTPC;			//! multi. of acorde modules (if track)
+  TH1F *fNTracksMatched;			//! matched tracks
+  TH1F *fNTracks;			//! no. of tracks
   TH2F *fTracksToAcorde;		//! tracks extrapolated to acorde.
 
   AliAnalysisTaskAcorde(const AliAnalysisTaskAcorde&); // not implemented
