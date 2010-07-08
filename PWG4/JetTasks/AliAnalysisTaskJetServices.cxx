@@ -77,6 +77,9 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fVtxZMean(0),
   fVtxRCut(1.),
   fVtxZCut(8.),
+  fPtMinCosmic(5.),
+  fRIsolMinCosmic(3.),
+  fMaxCosmicAngle(0.01),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -88,6 +91,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fh2ESDTriggerVtx(0x0),
   fh2ESDTriggerRun(0x0),
   fh2VtxXY(0x0),
+  fh1NCosmicsPerEvent(0x0),
   fHistList(0x0)  
 {
   fRunRange[0] = fRunRange[1] = 0; 
@@ -105,6 +109,9 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fVtxZMean(0),
   fVtxRCut(1.),
   fVtxZCut(8.),
+  fPtMinCosmic(5.),
+  fRIsolMinCosmic(3.),
+  fMaxCosmicAngle(0.01),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -116,6 +123,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh2ESDTriggerVtx(0x0),
   fh2ESDTriggerRun(0x0),
   fh2VtxXY(0x0),
+  fh1NCosmicsPerEvent(0x0),
   fHistList(0x0)  
 {
   fRunRange[0] = fRunRange[1] = 0; 
@@ -228,6 +236,9 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
     THnSparse *hn = dynamic_cast<THnSparse*>(fHistList->At(i));
     if(hn)hn->Sumw2();
   }
+
+  fh1NCosmicsPerEvent = new TH1F("fh1NCosmicsPerEvent","Number of cosmic candidates per event",10,0.,10.);
+  fHistList->Add(fh1NCosmicsPerEvent),
 
 
   TH1::AddDirectory(oldStatus);
@@ -496,7 +507,46 @@ Bool_t AliAnalysisTaskJetServices::IsEventPileUpESD(AliESDEvent* esd){
 Bool_t AliAnalysisTaskJetServices::IsEventCosmicESD(AliESDEvent* esd){
   if(!esd)return kFALSE;
   // add track cuts for which we look for cosmics...
-  return kTRUE;
+
+  Bool_t isCosmic = kFALSE;
+  Int_t nTracks = esd->GetNumberOfTracks();
+  Int_t nCosmicCandidates = 0;
+
+  for (Int_t iTrack1 = 0; iTrack1 < nTracks; iTrack1++) {
+    AliESDtrack* track1 = (AliESDtrack*)esd->GetTrack(iTrack1);
+    if (!track1)  continue;
+    if(track1->Pt()<fPtMinCosmic) continue;
+    //Start 2nd track loop to look for correlations
+    for (Int_t iTrack2 = iTrack1+1; iTrack2 < nTracks; iTrack2++) {
+      AliESDtrack* track2 = (AliESDtrack*)esd->GetTrack(iTrack2);
+      if(!track2) continue;
+      if(track2->Pt()<fPtMinCosmic) continue;
+      //Check if back-to-back
+      Double_t mom1[3],mom2[3];
+      track1->GetPxPyPz(mom1);
+      track2->GetPxPyPz(mom2);
+      TVector3 momv1(mom1[0],mom1[1],mom1[2]);
+      TVector3 momv2(mom2[0],mom2[1],mom2[2]);
+      Float_t theta = (float)(momv1.Phi()-momv2.Phi());
+      if(theta<-0.5*TMath::Pi()) theta+=2.*TMath::Pi();
+
+      Float_t deltaPhi = track1->Phi()-track2->Phi();
+      if(deltaPhi<-0.5*TMath::Pi()) deltaPhi+=2.*TMath::Pi();
+
+      Float_t rIsol = (float)(TMath::Sqrt( deltaPhi*deltaPhi+(track1->Eta()-track2->Eta())*(track1->Eta()-track2->Eta()) ));
+      if(rIsol<fRIsolMinCosmic) continue;
+
+      if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) {
+	nCosmicCandidates+=1.;
+	isCosmic = kTRUE;
+      }
+      
+    }
+  }
+
+  fh1NCosmicsPerEvent->Fill((float)nCosmicCandidates);
+
+  return isCosmic;
 }
 
 
