@@ -256,13 +256,13 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 
     FillResiduals(hmpTrk,bestHmpCluster,kFALSE);
  
+    Int_t iRad     = pParam->Radiator(yRa);                                                      //evaluate the radiator involved
     
     //evaluate nMean
     if(tsRight){
      if(pNmean->GetEntries()==21) {                                                              //for backward compatibility
        nmean=((TF1*)pNmean->At(3*ipCh))->Eval(ts);                                               //C6F14 Nmean for this chamber
      } else {
-       Int_t iRad     = pParam->Radiator(yRa);                                                   //evaluate the radiator involved
        if(iRad < 0) {
 	nmean = -1;
        } else {
@@ -376,12 +376,14 @@ Int_t AliHMPIDTracker::ReconHiddenTrk(AliESDEvent *pEsd,TObjArray *pClus,TObjArr
 
     Double_t yRa = yMip;                                                                        //just an approx...
     Double_t nmean;
+
+    Int_t iRad     = pParam->Radiator(yRa);                                                   //evaluate the radiator involved
+    
     //evaluate nMean
     if(tsRight){
     if(pNmean->GetEntries()==21) {                                                              //for backward compatibility
       nmean=((TF1*)pNmean->At(3*chMip))->Eval(ts);                                              //C6F14 Nmean for this chamber
     } else {
-      Int_t iRad     = pParam->Radiator(yRa);                                                   //evaluate the radiator involved
       if(iRad < 0) {
 	nmean = -1;
       } else {

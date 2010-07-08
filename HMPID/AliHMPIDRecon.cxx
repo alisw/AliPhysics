@@ -127,7 +127,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,fPhotCnt);                                                 //store mip info in any case 
   pTrk->SetHMPIDcluIdx(chId,index+1000*sizeClu);                                              //set index of cluster
   
-  if(fPhotCnt<=nMinPhotAcc) {                                                                 //no reconstruction with <=3 photon candidates
+  if(fPhotCnt<nMinPhotAcc) {                                                                  //no reconstruction with <=3 photon candidates
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //set the appropriate flag
     return;
   }
@@ -141,7 +141,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
   Int_t iNrec=FlagPhot(HoughResponse());                                                      //flag photons according to individual theta ckov with respect to most probable
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNrec);                                                    //store mip info 
 
-  if(iNrec<1){
+  if(iNrec<nMinPhotAcc){
     pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //no photon candidates are accepted
     return;
   }

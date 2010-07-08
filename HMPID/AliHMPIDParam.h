@@ -79,8 +79,9 @@ public:
   inline void SetGeomAccept();
   
   inline static Int_t  InHVSector(           Float_t y     );                                                           //find HV sector
-  static Int_t  Radiator(          Float_t y               )       {if (InHVSector(y)<0) return -1; return InHVSector(y)/2;}
-  static Bool_t  IsInside    (Float_t x,Float_t y,Float_t d=0)     {return  x>-d&&y>-d&&x<fgkMaxPcX[kMaxPc]+d&&y<fgkMaxPcY[kMaxPc]+d; } //is point inside chamber boundaries?
+  static Int_t     Radiator(          Float_t y               )       {if (InHVSector(y)<0) return -1; return InHVSector(y)/2;}
+  static Double_t  HinRad(Float_t y)         {if (Radiator(y)<0) return -1;return y-Radiator(y)*fgkMinPcY[Radiator(y)];}                                   // height in the radiator to estimate temperature from gradient
+  static Bool_t    IsInside    (Float_t x,Float_t y,Float_t d=0)     {return  x>-d&&y>-d&&x<fgkMaxPcX[kMaxPc]+d&&y<fgkMaxPcY[kMaxPc]+d; } //is point inside chamber boundaries?
 
   //For optical properties
   static Double_t   EPhotMin()                       {return 5.5;}           //
@@ -272,13 +273,13 @@ Int_t AliHMPIDParam::InHVSector(Float_t y)
 Double_t AliHMPIDParam::FindTemp(Double_t tLow,Double_t tHigh,Double_t y)
 {
 //  Model for gradient in temperature
+  Double_t yRad = HinRad(y);     //height in a given radiator
+  if(tHigh<tLow) tHigh = tLow;   //if Tout < Tin consider just Tin as reference...
+  if(yRad<0        ) yRad = 0;         //protection against fake y values
+  if(yRad>SizePcY()) yRad = SizePcY(); //protection against fake y values
   
-//  Double_t gradT = (t2-t1)/SizePcY();  // linear gradient
-//  return gradT*y+t1;
-  Double_t halfPadSize = 0.5*SizePadY();
-  Double_t gradT = (TMath::Log(SizePcY()) - TMath::Log(halfPadSize))/(TMath::Log(tHigh)-TMath::Log(tLow));
-  if(y<0) y = 0;
-  return tLow + TMath::Power(y/halfPadSize,1./gradT);  
+  Double_t gradT = (tHigh-tLow)/SizePcY();  // linear gradient
+  return gradT*yRad+tLow;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDParam::SetChStatus(Int_t ch,Bool_t status)
