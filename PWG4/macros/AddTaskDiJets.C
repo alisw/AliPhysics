@@ -6,7 +6,7 @@ AliAnalysisTaskDiJets *AddTaskDiJets(Char_t *jb="jets")
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddTaskJets", "No analysis manager to connect to.");
+      ::Error("AddTaskDiJets", "No analysis manager to connect to.");
       return NULL;
    }
 
