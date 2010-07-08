@@ -35,8 +35,6 @@
 //---- AliRoot system ---- 
 #include "AliAnaPartCorrBaseClass.h" 
 #include "AliAnaPartCorrMaker.h" 
-#include "AliCaloTrackReader.h" 
-
 
 ClassImp(AliAnaPartCorrMaker)
 
@@ -46,7 +44,7 @@ AliAnaPartCorrMaker::AliAnaPartCorrMaker() :
 TObject(),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(kFALSE), fMakeAOD(kFALSE), fMakeMixing(kFALSE), fAnaDebug(0), 
-fReader(new AliCaloTrackReader()), fCaloUtils(new AliCalorimeterUtils()), 
+fReader(0), fCaloUtils(0), 
 fAODBranchList(new TList ),fCuts(new TList), fhNEvents(0x0)
 {
   //Default Ctor

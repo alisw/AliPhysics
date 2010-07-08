@@ -564,8 +564,10 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhAmplitude  = new TH1F ("hAmplitude","Cell Energy", nptbins*2,ptmin,ptmax); 
 	fhAmplitude->SetXTitle("Cell Energy (GeV)");
 	outputContainer->Add(fhAmplitude);
-	
-	fhAmpId  = new TH2F ("hAmpId","Cell Energy", nptbins*2,ptmin,ptmax*2,rowmax*colmax*fNModules,0,rowmax*colmax*fNModules); 
+	Int_t nb = 5000;
+	Float_t ptmax2 = 5.;
+	if(fCalorimeter == "EMCAL") ptmax2 = 20.;
+	fhAmpId  = new TH2F ("hAmpId","Cell Energy", nb,0,ptmax2,rowmax*colmax*fNModules,0,rowmax*colmax*fNModules); 
 	fhAmpId->SetXTitle("Cell Energy (GeV)");
 	outputContainer->Add(fhAmpId);
 	
@@ -1441,7 +1443,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(nModule < fNModules) nClustersInModule[nModule]++;
 			//MC labels
 			nLabel = clus->GetNLabels();
-			if(clus->GetLabels()) labels =  (clus->GetLabels())->GetArray();
+			labels = clus->GetLabels();
 			//Cells per cluster
 			nCaloCellsPerCluster =  clus->GetNCells();
 			//if(mom.E() > 10 && nCaloCellsPerCluster == 1 ) printf("%s:************** E = %f ********** ncells = %d\n",fCalorimeter.Data(), mom.E(),nCaloCellsPerCluster);
@@ -1459,7 +1461,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			//Shower shape parameters
 			showerShape[0] = clus->GetM20();
 			showerShape[1] = clus->GetM02();
-			showerShape[2] = clus->GetClusterDisp();
+			showerShape[2] = clus->GetDispersion();
 
 			//======================
 			//Cells in cluster
@@ -1595,7 +1597,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(nModule < fNModules)  nClustersInModule[nModule]++;
 			//MC labels
 			nLabel = clus->GetNLabel();
-			if(clus->GetLabels()) labels =  clus->GetLabels();
+			labels = clus->GetLabels();
 			//Cells per cluster
 			nCaloCellsPerCluster = clus->GetNCells();
 			//matched cluster with tracks
