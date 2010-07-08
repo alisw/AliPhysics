@@ -130,9 +130,9 @@ Double_t& meanarea){
 //____________________________________________________________________
 
  void AliJetBkg::CalcRhob(Double_t& median,Double_t& 
-sigma,Double_t& 
-meanarea,vector<fastjet::PseudoJet> inputParticles,Double_t 
-rParamBkg,TString method){
+			  sigma,Double_t& 
+			  meanarea,vector<fastjet::PseudoJet> inputParticles,Double_t 
+			  rParamBkg,TString method){
   //calculate rho using the fastjet method
 
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
@@ -167,6 +167,7 @@ rParamBkg,TString method){
   //comment+= TString(areaDef.description());
   comment+= ". Strategy adopted by FastJet: ";
   comment+= TString(clust_seq.strategy_string());
+  comment+= Form("Method: %s",method.Data());
   header->SetComment(comment);
   if(debug){
     cout << "--------------------------------------------------------" << endl;
@@ -249,6 +250,7 @@ rParamBkg,TString method){
   //comment+= TString(areaDef.description());
   comment+= ". Strategy adopted by FastJet: ";
   comment+= TString(clust_seq.strategy_string());
+  comment+= Form("Method: %s",method.Data());
   header->SetComment(comment);
   if(debug){
     cout << "--------------------------------------------------------" << endl;
