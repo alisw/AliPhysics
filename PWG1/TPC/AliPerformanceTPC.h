@@ -66,6 +66,8 @@ public :
 
   // getters
   //
+  //THnSparse *GetTPCClustHisto1() const  { return fTPCClustHisto1; }
+  //THnSparse *GetTPCClustHisto2() const  { return fTPCClustHisto2; }
   THnSparse *GetTPCClustHisto() const  { return fTPCClustHisto; }
   THnSparse *GetTPCEventHisto() const  { return fTPCEventHisto; }
   THnSparse *GetTPCTrackHisto() const  { return fTPCTrackHisto; }
@@ -74,9 +76,11 @@ public :
 private:
 
   // TPC histogram
-  THnSparseF *fTPCClustHisto; //-> gclX:gclY:TPCSide
-  THnSparseF *fTPCEventHisto; //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
-  THnSparseF *fTPCTrackHisto; //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge
+  //THnSparseF *fTPCClustHisto1; //-> gclX:gclY:TPCSide
+  //THnSparseF *fTPCClustHisto2; //-> padRow:phi:TPCSide
+  THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCSide
+  THnSparseF *fTPCEventHisto;  //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
+  THnSparseF *fTPCTrackHisto;  //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge
 
   // Global cuts objects
   AliRecInfoCuts* fCutsRC;  // selection cuts for reconstructed tracks
@@ -89,7 +93,7 @@ private:
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,3);
+  ClassDef(AliPerformanceTPC,4);
 };
 
 #endif

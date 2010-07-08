@@ -27,8 +27,9 @@
 
   // user can save whole comparison object (or only folder with anlysed histograms) 
   // in the seperate output file (e.g.)
-  TFile fout("Analysed_DEdx.root"."recreate");
-  compObj->Write(); // compObj->GetAnalysisFolder()->Write();
+  TFile fout("Analysed_DEdx.root","recreate");
+  //compObj->Write(); // compObj->GetAnalysisFolder()->Write();
+  compObj->GetAnalysisFolder()->Write();
   fout.Close();
 
 */

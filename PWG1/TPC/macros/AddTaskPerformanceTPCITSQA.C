@@ -71,7 +71,7 @@ AliPerformanceTask* AddTaskPerformanceTPCITSQA(Bool_t bUseMCInfo=kFALSE, Bool_t 
   mgr->AddTask(task);
 
   //
-  // Create TPC-ESD track reconstruction cuts
+  // Create TPC-ITS ESD track reconstruction cuts
   // MB tracks
   //
   AliRecInfoCuts *pRecInfoCutsTPC = new AliRecInfoCuts(); 
@@ -84,6 +84,7 @@ AliPerformanceTask* AddTaskPerformanceTPCITSQA(Bool_t bUseMCInfo=kFALSE, Bool_t 
     pRecInfoCutsTPC->SetMinNClustersTPC(70);
     pRecInfoCutsTPC->SetMaxChi2PerClusterTPC(1000000.);
     pRecInfoCutsTPC->SetDCAToVertex2D(kFALSE);
+    pRecInfoCutsTPC->SetMinNClustersITS(2);
 
     pRecInfoCutsTPC->SetHistogramsOn(kFALSE); 
   } 
