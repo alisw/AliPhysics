@@ -54,7 +54,11 @@ public:
   AliAnalysisFilter& GetTrackFilter() { return fTrackFilter; }
   AliAnalysisFilter& GetPairFilter()  { return fPairFilter;  }
 
-  void SetMotherPdg( Int_t pdgMother ) { fPdgMother=pdgMother; }
+  void  SetMotherPdg( Int_t pdgMother ) { fPdgMother=pdgMother; }
+  void  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2) { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
+  Int_t GetMotherPdg() const { return fPdgMother; }
+  Int_t GetLeg1Pdg()   const { return fPdgLeg1;   }
+  Int_t GetLeg2Pdg()   const { return fPdgLeg2;   }
   
   const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
   const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<10)?
@@ -85,6 +89,8 @@ private:
   AliAnalysisFilter fPairFilter;  // pair cuts
   
   Int_t fPdgMother;     // pdg code of mother tracks
+  Int_t fPdgLeg1;       // pdg code leg1
+  Int_t fPdgLeg2;       // pdg code leg2
   
   AliDielectronHistos *fHistos;   // Histogram manager
                                   //  Streaming and merging should be handled
@@ -124,7 +130,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,2);
+  ClassDef(AliDielectron,3);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

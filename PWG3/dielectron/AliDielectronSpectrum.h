@@ -46,10 +46,14 @@ public:
 
   void SetStepForSignal(Bool_t step=kTRUE)       { fStepSignal=step;       }
   void SetStepForSignificance(Bool_t step=kTRUE) { fStepSignificance=step; }
-  void SetStepForSignalOverBackground(Bool_t step=kTRUE) { fStepSOB=step; }
-
+  void SetStepForSignalOverBackground(Bool_t step=kTRUE) { fStepSOB=step;  }
+  void SetStepForMass(Bool_t step=kTRUE)         { fStepMass=step;         }
+  void SetStepForMassWidth(Bool_t step=kTRUE)    { fStepMassWidth=step;    }
+  
   void SetNoOwnerSpectrum(Bool_t noOwner=kTRUE) { fOwnerSpectrum=!noOwner; }
-    
+
+  void SetVisualDebug(Bool_t vis=kTRUE) { fVisualDebug=vis; }
+  
   AliCFContainer* GetSpectrumContainer() const { return fCFSpectrum;   }
   AliCFGridSparse* GetCorrectionMatrix() const { return fCFCorrMatrix; }
   
@@ -65,7 +69,9 @@ private:
   Bool_t fStepSignal;                       // if to create a step for the signal
   Bool_t fStepSignificance;                 // if to create a step for the significance
   Bool_t fStepSOB;                          // if to create a step for signal over background
-
+  Bool_t fStepMass;                         // if to create a setp for the mass
+  Bool_t fStepMassWidth;                    // if to create a setp for the mass width
+  
   Int_t fSignalStep;                        // step to use from the signal container
   
   Int_t fCorrNom;                           // Nominator to use from corr matrix container
@@ -75,6 +81,8 @@ private:
   TString      fVariables;                  // variable names as a function of which to extract the signal
 
   Bool_t fOwnerSpectrum;                    // if we own the creted spectrum
+
+  Bool_t fVisualDebug;                      // if we want to show the fit and print it
   
   Int_t        fNvars;                      //! number of variables
   Int_t        *fVars;                      //! variable numbers translated from fVariables

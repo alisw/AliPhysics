@@ -6,8 +6,14 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
 void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
 
 AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition);
-
-TString names=("trackQ+Pt>1GeV+loose_PID;trackQ+Pt>1GeV+tight_PID;trackQ+Pt>.5GeV");
+/*
+trackQ+Pt>1GeV+|TPCnSigE|<3
+trackQ+PID1
+trackQ+PID6
+trackQ+PID7
+trackQ+Pt>.5GeV
+*/
+TString names=("trackQ+Pt>1GeV+|TPCnSigE|<3;trackQ+PID1;trackQ+PID6;trackQ+PID7;trackQ+Pt>.5GeV");
 TObjArray *arrNames=names.Tokenize(";");
 
 const Int_t nDie=arrNames->GetEntries();
@@ -39,7 +45,7 @@ AliDielectron* ConfigJpsi2ee(Int_t cutDefinition)
   InitHistograms(die,cutDefinition);
 
   // the last definition uses no cuts and only the QA histograms should be filled!
-  if (cutDefinition<nDie-1) InitCF(die,cutDefinition);
+//   if (cutDefinition<nDie-1) InitCF(die,cutDefinition);
   
   return die;
 }
@@ -65,36 +71,32 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     return;
   }
 
-  
-  AliDielectronVarCuts *pt = new AliDielectronVarCuts("Pt>1","Pt>1");
-  pt->AddCut(AliDielectronVarManager::kPt,1.,1e30);
-  die->GetTrackFilter().AddCuts(pt);
-  
-  //loose PID
+  // pt + 3 sigma ele TPC
   if (cutDefinition==0){
-    //ESD pid cuts (TPC nSigma Electrons)
-    AliDielectronVarCuts *pid = new AliDielectronVarCuts("TPCpid","TPC nSigma cut |e|<3 pi>2 |P|>2 |K|>2");
-    //include
-    pid->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -3., 3.);
-    //exclude
-    pid->AddCut(AliDielectronVarManager::kTPCnSigmaPio, -20., 2., kTRUE);
-    pid->AddCut(AliDielectronVarManager::kTPCnSigmaPro, -2., 2., kTRUE);
-    pid->AddCut(AliDielectronVarManager::kTPCnSigmaKao, -2., 2., kTRUE);
+    AliDielectronVarCuts *pt = new AliDielectronVarCuts("Pt>1+|TPCnSigE|<3","Pt>1+|TPCnSigE|<3");
+    pt->AddCut(AliDielectronVarManager::kPt,1.,1e30);
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -3., 3.);
+    die->GetTrackFilter().AddCuts(pt);
+  }
+  
+  //PID 1
+  if (cutDefinition==0){
+    AliDielectronPID *pid=new AliDielectronPID("pid1","pid1");
+    pid->SetDefaults(1);
     die->GetTrackFilter().AddCuts(pid);
   }
 
-  //tight PID
+  //PID 6
   if (cutDefinition==1){
-    //ESD pid cuts (TPC nSigma Electrons)
-    AliDielectronVarCuts *pid = new AliDielectronVarCuts("TPCpid","TPC nSigma cut |e|<2 pi>2 |P|>2 |K|>2; |dXY|<200um");
-    //include
-    pid->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2., 2.);
-    //exclude
-    pid->AddCut(AliDielectronVarManager::kTPCnSigmaPio, -2., 2., kTRUE);
-    pid->AddCut(AliDielectronVarManager::kTPCnSigmaPro, -2., 2., kTRUE);
-    pid->AddCut(AliDielectronVarManager::kTPCnSigmaKao, -2., 2., kTRUE);
-    //tighten Impact parameter to 200um
-    pid->AddCut(AliDielectronVarManager::kImpactParXY, -0.02, 0.02);
+    AliDielectronPID *pid=new AliDielectronPID("pid6","pid6");
+    pid->SetDefaults(6);
+    die->GetTrackFilter().AddCuts(pid);
+  }
+  
+  //PID 7
+  if (cutDefinition==2){
+    AliDielectronPID *pid=new AliDielectronPID("pid7","pid7");
+    pid->SetDefaults(7);
     die->GetTrackFilter().AddCuts(pid);
   }
   
@@ -131,7 +133,7 @@ AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition)
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
   
-  esdTrackCuts->SetMinNClustersTPC(75);
+  esdTrackCuts->SetMinNClustersTPC(110);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   
   return esdTrackCuts;

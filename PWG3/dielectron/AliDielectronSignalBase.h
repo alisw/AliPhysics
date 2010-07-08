@@ -42,7 +42,9 @@ public:
   void SetBackground(Double_t val, Double_t valErr)           {fValues(1)=val; fErrors(1)=valErr;}
   void SetSignificance(Double_t val, Double_t valErr)         {fValues(2)=val; fErrors(2)=valErr;}
   void SetSignalOverBackground(Double_t val, Double_t valErr) {fValues(3)=val; fErrors(3)=valErr;}
-
+  void SetMass(Double_t val, Double_t valErr)                 {fValues(4)=val; fErrors(4)=valErr;}
+  void SetMassWidth(Double_t val, Double_t valErr)            {fValues(5)=val; fErrors(5)=valErr;}
+  
   const TVectorD& GetValues() const {return fValues;}
   const TVectorD& GetErrors() const {return fErrors;}
 
@@ -53,11 +55,15 @@ public:
   Double_t GetBackground()           {return fValues(1);}
   Double_t GetSignificance()         {return fValues(2);}
   Double_t GetSignalOverBackground() {return fValues(3);}
+  Double_t GetMass()                 {return fValues(4);}
+  Double_t GetMassWidth()            {return fValues(5);}
   
   Double_t GetSignalError()               {return fErrors(0);}
   Double_t GetBackgroundError()           {return fErrors(1);}
   Double_t GetSignificanceError()         {return fErrors(2);}
   Double_t GetSignalOverBackgroundError() {return fErrors(3);}
+  Double_t GetMassError()                 {return fErrors(4);}
+  Double_t GetMassWidthError()            {return fValues(5);}
   
   void GetSignal(Double_t &val, Double_t &valErr)               {val=fValues(0); valErr=fErrors(0);}
   void GetBackground(Double_t &val, Double_t &valErr)           {val=fValues(1); valErr=fErrors(1);}
@@ -75,6 +81,8 @@ public:
               1: Background entries
               2: Significance ( S/sqr(S+B) )
               3: Signal/Background
+              4: Mass
+              5: Mass width
 
   It is enough to calculate the signal and background and then call
             SetSignificanceAndSOB(TVectorD &values, TVectorD &errors)

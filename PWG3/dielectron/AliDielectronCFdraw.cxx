@@ -605,10 +605,9 @@ void AliDielectronCFdraw::Draw(const TObjArray *arr, const char* opt)
 //   }
   
   TCanvas *c=gPad->GetCanvas();
-  if (!gVirtualPS&&!drawSamePlus) c->Clear();
+  if (!gVirtualPS&&!drawSamePlus&&!drawSame&&nPads>1) c->Clear();
   
-  
-  if (!drawSame){
+  if (!drawSame&&nPads>1){
     //optimised division
     Int_t nCols = (Int_t)TMath::Ceil( TMath::Sqrt(nPads) );
     Int_t nRows = (Int_t)TMath::Ceil( (Double_t)nPads/(Double_t)nCols );

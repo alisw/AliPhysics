@@ -68,7 +68,10 @@ public:
   virtual Double_t M() const { return fPair.GetMass(); }
   
   virtual Double_t Eta() const { return fPair.GetEta();}
-  virtual Double_t Y()  const  { return TLorentzVector(Px(),Py(),Pz(),E()).Rapidity();}
+  virtual Double_t Y()  const  { 
+    if((E()*E()-Px()*Px()-Py()*Py()-Pz()*Pz())>0.) return TLorentzVector(Px(),Py(),Pz(),E()).Rapidity();
+    else return -1111.;
+  }
   
   virtual Short_t Charge() const    { return fPair.GetQ();}
   virtual Int_t   GetLabel() const  { return fLabel;      }
@@ -89,6 +92,10 @@ public:
   Double_t DistanceDaughtersXY()  const { return fD1.GetDistanceFromParticleXY(fD2);  }
   Double_t DeviationDaughters()   const { return fD1.GetDeviationFromParticle(fD2);   }
   Double_t DeviationDaughtersXY() const { return fD1.GetDeviationFromParticleXY(fD2); }
+  // calculate cos(theta*) and phi* in HE and CS pictures
+  Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const;
+  static Double_t ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2, 
+			     const Bool_t isHE, const Bool_t isTheta);
   
   // internal KF particle
   const AliKFParticle& GetKFParticle()       const { return fPair; }
@@ -96,6 +103,9 @@ public:
   const AliKFParticle& GetKFSecondDaughter() const { return fD2;   }
   
   // daughter references
+  void SetRefFirstDaughter(AliVParticle * const track)  {fRefD1 = track;}
+  void SetRefSecondDaughter(AliVParticle * const track) {fRefD2 = track;}
+  
   AliVParticle* GetFirstDaughter()   const { return dynamic_cast<AliVParticle*>(fRefD1.GetObject()); }
   AliVParticle* GetSecondDaughter()  const { return dynamic_cast<AliVParticle*>(fRefD2.GetObject()); }
 

@@ -240,7 +240,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
 
   //Pure MC truth
   if (fStepForMCtruth){
-      fCfContainer->SetStepTitle(step++,"MC truth");
+    fCfContainer->SetStepTitle(step++,"MC truth");
   }
 
   //before cuts (MC truth)
@@ -317,8 +317,8 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
         cutName+="&";
         cutName+=filter.GetCuts()->At(iCut)->GetName();
       }
-      fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut
     }
+    fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut
     if (fHasMC){
       if (fStepsForSignal)
         fCfContainer->SetStepTitle(step++, (cutName+" (Signal)").Data()); //Step for the cut with MC truth
@@ -328,7 +328,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
   }
 
   if (step!=fNSteps) {
-    AliError("Something went wrong in the naming of the steps!!!");
+    AliError(Form("Something went wrong in the naming of the steps!!! (%d != %d)",step,fNSteps));
   }
 }
 
@@ -371,7 +371,7 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
   // step 0 would be full MC truth and is handled in FillMC
   Int_t step=0;
   if (fStepForMCtruth) ++step;
-
+  
   //No cuts (MC truth)
   if (fStepForNoCutsMCmotherPid){
     if (isMCTruth) fCfContainer->Fill(fValues,step);
@@ -483,6 +483,15 @@ void AliDielectronCF::FillMC(const TObject *particle)
   
   Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::Fill(particle,valuesPair);
+
+  AliVParticle *d1=0x0;
+  AliVParticle *d2=0x0;
+  AliDielectronMC::Instance()->GetDaughters(particle,d1,d2);
+  
+  valuesPair[AliDielectronVarManager::kThetaHE]=AliDielectronPair::ThetaPhiCM(d1,d2,kTRUE,kTRUE);
+  valuesPair[AliDielectronVarManager::kPhiHE]=AliDielectronPair::ThetaPhiCM(d1,d2,kTRUE,kFALSE);
+  valuesPair[AliDielectronVarManager::kThetaCS]=AliDielectronPair::ThetaPhiCM(d1,d2,kFALSE,kTRUE);
+  valuesPair[AliDielectronVarManager::kPhiCS]=AliDielectronPair::ThetaPhiCM(d1,d2,kFALSE,kFALSE);
   
   //TODO: temporary solution, set manually the pair type to 1: unlikesign SE
   valuesPair[AliDielectronVarManager::kPairType]=1;
@@ -493,9 +502,6 @@ void AliDielectronCF::FillMC(const TObject *particle)
   }
   
   if (fNVarsLeg>0){
-    AliVParticle *d1=0x0;
-    AliVParticle *d2=0x0;
-    AliDielectronMC::Instance()->GetDaughters(particle,d1,d2);
     Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
     Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
     if (d1->Pt()>d2->Pt()){

@@ -52,7 +52,8 @@ AliDielectronSignalFunc::AliDielectronSignalFunc() :
   fFitMin(2.5),
   fFitMax(4),
   fParM(-1),
-  fParMres(-1)
+  fParMres(-1),
+  fSignalHist(0x0)
 {
   //
   // Default Constructor
@@ -72,7 +73,8 @@ AliDielectronSignalFunc::AliDielectronSignalFunc(const char* name, const char* t
   fFitMin(2.5),
   fFitMax(4),
   fParM(-1),
-  fParMres(-1)
+  fParMres(-1),
+  fSignalHist(0x0)
 {
   //
   // Named Constructor
@@ -104,6 +106,9 @@ void AliDielectronSignalFunc::Process(TH1 * const hist)
     AliError("Use 'SetFunctions(TF1*,TF1*)' or 'SetDefaults(Int_t)' to setup the signal functions first'!");
     return;
   }
+  
+  //set current signal hist pointer
+  fSignalHist=hist;
   
   //initial the fit function to its default parameters
   if (fVInitParam.GetMatrixArray()) fSigBack->SetParameters(fVInitParam.GetMatrixArray());
@@ -153,7 +158,10 @@ void AliDielectronSignalFunc::Process(TH1 * const hist)
   SetSignal(signal,signal_err);
   SetBackground(background,background_err);
   SetSignificanceAndSOB();
-  
+  if (fParM>-1){
+    SetMass(fSigBack->GetParameter(fParM), fSigBack->GetParError(fParM));
+    SetMassWidth(fSigBack->GetParameter(fParMres), fSigBack->GetParError(fParMres));
+  }
   //cleanup
   delete hSignal;
   delete hBackground;
@@ -295,7 +303,12 @@ void AliDielectronSignalFunc::Draw(const Option_t* option)
   fBackground->SetRange(fFitMin,fFitMax);
   
   if (!drawOpt.Contains("same")){
-    grSig->Draw("af");
+    if (fSignalHist){
+      fSignalHist->Draw();
+      grSig->Draw("f");
+    } else {
+      grSig->Draw("af");
+    }
   } else {
     grSig->Draw("f");
   }
@@ -303,10 +316,7 @@ void AliDielectronSignalFunc::Draw(const Option_t* option)
   fSigBack->Draw("same");
   fBackground->Draw("same");
 
-  if (optStat) {
-    TPaveText* pave=DrawStats();
-    if (fParM>=0) pave->AddText(Form("Mass: %.3f #pm %.3f", fSigBack->GetParameter(fParM), fSigBack->GetParError(fParM)));
-    if (fParMres>=0) pave->AddText(Form("Mass res.: %.3f #pm %.3f", fSigBack->GetParameter(fParMres), fSigBack->GetParError(fParMres)));
-  }
+  if (optStat) DrawStats();
+    
 }
 
