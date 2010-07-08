@@ -34,7 +34,7 @@ public:
   AliTPC(const char *name, const char *title);
   
   virtual AliLoader* MakeLoader(const char* topfoldername);
-  
+  void          CreateDebugStremer();
   virtual      ~AliTPC();
   virtual void  AddHit(Int_t a1, Int_t *a2, Float_t *a3);
   virtual void  CreateGeometry() {}
@@ -116,7 +116,7 @@ protected:
 
   Float_t        fSide;  // selects left(-1), right(+1), or both(0) sides of the TPC
   Bool_t     fPrimaryIonisation; //switch between Fluka(true) and geant3(false)
- private:
+ protected:
   AliTPC(const AliTPC& t);
   AliTPC &operator = (const AliTPC & param);
   //

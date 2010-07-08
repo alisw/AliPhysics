@@ -187,7 +187,12 @@ AliTPC::AliTPC(const char *name, const char *title)
   }
 
 }
-
+void AliTPC::CreateDebugStremer(){
+  //
+  // Create Debug streamer to check simulation
+  // 
+  fDebugStreamer = new TTreeSRedirector("TPCSimdebug.root");
+}
 //_____________________________________________________________________________
 AliTPC::~AliTPC()
 {
@@ -1441,7 +1446,6 @@ void AliTPC::Hits2SDigits()
   //-----------------------------------------------------------
   //   summable digits - 16 bit "ADC", no noise, no saturation
   //-----------------------------------------------------------
-  if (0) fDebugStreamer = new TTreeSRedirector("TPCSimdebug.root");
 
   if (!fTPCParam->IsGeoRead()){
     //

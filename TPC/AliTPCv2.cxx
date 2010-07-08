@@ -50,6 +50,7 @@
 #include "TGeoPara.h"
 #include "TGeoPhysicalNode.h"
 #include "TGeoHalfSpace.h"
+#include "TTreeStream.h"
 
 ClassImp(AliTPCv2)
  
@@ -1798,7 +1799,27 @@ void AliTPCv2::StepManager()
     hits[4]=gMC->TrackTime();
  
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);
-
+    if (fDebugStreamer){   
+      // You can dump here what you need
+      // function  CreateDebugStremer() to be called in the Config.C  macro
+      // if you want to enable it
+      // By default debug streaemer is OFF
+      Float_t edep = gMC->Edep();
+      Float_t tstep = gMC->TrackStep();
+      Int_t pid=gMC->TrackPid();
+      (*fDebugStreamer)<<"hit"<<      
+	"x="<<hits[0]<<  // hit position
+ 	"y="<<hits[1]<<
+ 	"z="<<hits[2]<<
+ 	"nel="<<hits[3]<<  // number of electorns
+ 	"tof="<<hits[4]<<  // hit TOF
+	"edep="<<edep<<    // energy deposit
+	"pid="<<pid<<      // pid
+	"step="<<tstep<<
+  	"p.="<<&p<<
+	"\n";
+    }
+    
   } // step>0 
   } //within sector's limits
   // Stemax calculation for the next step
