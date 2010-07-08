@@ -886,6 +886,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     static Float_t attachSlopeC = 0;
     static Float_t attachSlopeA = 0;
 
+    TH1 * his1D = 0;
+
     meanMIPvsSector.Zero();
     //
     // select MIP particles
@@ -913,7 +915,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     TObjArray arrayFit;
     his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit);
     delete his2D;
-    TH1 * his1D = (TH1*) arrayFit.At(1);
+    his1D = (TH1*) arrayFit.At(1);
     his1D->Fit(fpol,"QNROB=0.8","QNR",-1,0);
     attachSlopeC = fpol->GetParameter(1);
     //
@@ -945,7 +947,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     //
     pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
     for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
-        TH1* his1D=0;
+        //TH1* his1D=0;
         Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
         Float_t phiUp    = -TMath::Pi() + (i+1)*(20./360.)*(2*TMath::Pi());
         pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
