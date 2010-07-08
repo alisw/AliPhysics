@@ -112,7 +112,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
   Int_t fSteerTask = ParseOptions(opt);
 
   if(!dosummary){
-    summary = kFLASE;
+    summary = kFALSE;
     if(!c) c=new TCanvas("c", "Performance", 10, 10, 800, 500);
   }
 
