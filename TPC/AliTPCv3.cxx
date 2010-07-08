@@ -1052,7 +1052,7 @@ void AliTPCv3::Init()
   //
   // Initialises version 3 of the TPC after that it has been built
   //
-  Int_t *idtmed = fIdtmed->GetArray();
+  //Int_t *idtmed = fIdtmed->GetArray();
 
   AliTPC::Init();
 
