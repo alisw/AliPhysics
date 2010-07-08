@@ -55,13 +55,12 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
   UInt_t ichi2TPC = 4;
 
   //Setting up the container grid... 
-  UInt_t nstep = 6; //Steps/Modes for containers
+  UInt_t nstep = 5; //Steps/Modes for containers
   Int_t kStepReconstructed = 0;
   Int_t kStepReconstructedTPCOnly = 1;
   Int_t kStepSecondaries = 2;
-  Int_t kStepMCtrackable = 3;
-  Int_t kStepReconstructedMC = 4;
-  Int_t kStepMCAcceptance = 5;
+  Int_t kStepReconstructedMC = 3;
+  Int_t kStepMCAcceptance = 4;
   
   const Int_t nvar   = 5; //number of variables on the grid: pt:phi:eta:DCAR:Chi2/NClusTPC
   const Int_t nbin11 = (int)(ptmax1-ptmin1);
@@ -142,9 +141,9 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
   mcAccCuts->SetMinNHitTPC(mintrackrefsTPC);
 
   TObjArray* recList = new TObjArray(0);
-  TObjArray* recMCList = new TObjArray(0);
   TObjArray* recTPConlyList = new TObjArray(0);
   TObjArray* secList = new TObjArray(0) ;
+  TObjArray* recMCList = new TObjArray(0);
 
   printf("CREATE MC KINE CUTS\n");
   TObjArray* mcList = new TObjArray(0) ;
@@ -155,19 +154,21 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
   printf("CREATE INTERFACE AND CUTS\n");
   AliCFManager* manPos = new AliCFManager("manPos","Manager for Positive tracks") ;
   manPos->SetParticleContainer(containerPos);
-  manPos->SetParticleCutsList(0,recList);
-  manPos->SetParticleCutsList(1,recTPConlyList);
-  manPos->SetParticleCutsList(2,secList);
-  manPos->SetParticleCutsList(3,mcList);
-  manPos->SetParticleCutsList(4,recMCList);
+  manPos->SetParticleCutsList(kStepReconstructed,recList);
+  manPos->SetParticleCutsList(kStepReconstructedTPCOnly,recTPConlyList);
+  manPos->SetParticleCutsList(kStepSecondaries,secList);
+  manPos->SetParticleCutsList(kStepReconstructedMC,recMCList);
+  manPos->SetParticleCutsList(kStepMCAcceptance,mcList);
+
 
   AliCFManager* manNeg = new AliCFManager("manNeg","Manager for Negative tracks") ;
   manNeg->SetParticleContainer(containerNeg);
-  manNeg->SetParticleCutsList(0,recList);
-  manNeg->SetParticleCutsList(1,recTPConlyList);
-  manNeg->SetParticleCutsList(2,secList);
-  manNeg->SetParticleCutsList(3,mcList);
-  manNeg->SetParticleCutsList(4,recMCList);
+  manNeg->SetParticleCutsList(kStepReconstructed,recList);
+  manNeg->SetParticleCutsList(kStepReconstructedTPCOnly,recTPConlyList);
+  manNeg->SetParticleCutsList(kStepSecondaries,secList);
+  manNeg->SetParticleCutsList(kStepReconstructedMC,recMCList);
+  manNeg->SetParticleCutsList(kStepMCAcceptance,mcList);
+
 
 
   printf("Create task AliPWG4HighPtSpectra\n");

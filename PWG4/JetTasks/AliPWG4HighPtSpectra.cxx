@@ -335,19 +335,9 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	containerInputMC[3] = 0.0;
 	containerInputMC[4] = 0.0;
 
-	int counter;
-	Float_t trackLengthTPC = 0.;
 	if(stack->IsPhysicalPrimary(iPart)) {
-	  if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(3,mcPart)) {
-	    fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance) ;
-	    trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
-	    if(trackLengthTPC > (float)fTrackCuts->GetMinNClusterTPC()) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
-	  }
-	  if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(3,mcPart)) {
-	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance) ;
-	    trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
-	    if(trackLengthTPC > (float)fTrackCuts->GetMinNClusterTPC()) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
-	  }
+	  if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
+	  if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
 	}
       }
   }
@@ -365,6 +355,7 @@ void AliPWG4HighPtSpectra::Terminate(Option_t*)
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
+
 }
 
 //___________________________________________________________________________
