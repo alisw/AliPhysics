@@ -88,15 +88,17 @@ AliJetBkg& AliJetBkg::operator=(const AliJetBkg& source){
 //___________________________________________________________________
   void AliJetBkg::BkgFastJetb(Double_t& rho,Double_t& sigma, 
 Double_t& meanarea){
-  
-  cout<<"===============  AliJetBkg::BkgFastJetb()  =========== "<<endl;
+
+    AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader; 
+    Bool_t debug  = header->GetDebug();     // debug option 
+    if(debug)cout<<"===============  AliJetBkg::BkgFastJetb()  =========== "<<endl;
   vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
   
   //cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;
   
 
    
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+
   double rParamBkg = header->GetRparamBkg(); //Radius for background calculation
 
   Double_t medianb,sigmab,meanareab;
@@ -110,15 +112,12 @@ Double_t& meanarea){
 
   void AliJetBkg::BkgFastJetWoHardest(Double_t& rho,Double_t& sigma, 
 Double_t& meanarea){
-  
-  cout<<"===============  AliJetBkg::BkgWoHardest()  =========== "<<endl;
+    AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader; 
+    Bool_t debug  = header->GetDebug();     // debug option 
+    if(debug)cout<<"===============  AliJetBkg::BkgWoHardest()  =========== "<<endl;
   vector<fastjet::PseudoJet> inputParticles=fInputFJ->GetInputParticles();
   
-  //cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;
-  
-
-   
-  AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
+  //cout<<"printing inputParticles for BKG "<<inputParticles.size()<<endl;   
   double rParamBkg = header->GetRparamBkg(); //Radius for background calculation  
   Double_t medianb,sigmab,meanareab;
   CalcRhoWoHardest(medianb,sigmab,meanareab,inputParticles,rParamBkg,"All");
@@ -331,7 +330,7 @@ Float_t  AliJetBkg::BkgChargedFastJet(){
 
   Double_t rho=CalcRho(inputParticlesCharged,rParam,"Charg");
 
-  cout<<"-------- rho (from CHARGED part)="<<rho<<endl; 
+  if(debug)cout<<"-------- rho (from CHARGED part)="<<rho<<endl; 
   return rho;
 }
 
