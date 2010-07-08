@@ -1,0 +1,97 @@
+NOTE: for all the steps, you need a valid alien certificate (obviously ;-) )
+alien-token-init
+source /tmp/gclient_env_$USERID
+
+
++++++++ STEP 1 +++++++++++++
+
+Create a run.list file which contains the run number in which you 
+are interested in:
+
+see for example: $ALICE_ROOT/TPC/scripts/OCDBscan/makeRunList.sh
+
+####################
+#!/bin/sh
+# find a list of runs which have the following OCDB entries
+# GRP, HV, ALTRO
+
+prefix=/alice/data/2010/OCDB/
+
+alien_find $prefix/GRP/GRP/Data Run > grpAlien.txt
+alien_find $prefix/TPC/Calib/HighVoltage Run > hvAlien.txt
+alien_find $prefix/TPC/Calib/AltroConfig Run > altroAlien.txt
+
+cat grpAlien.txt | sed s/_/\ /g | gawk '{ print $2}' | sort > grp.txt
+cat hvAlien.txt | sed s/_/\ /g | gawk '{ print $2}'  | sort > hv.txt
+cat altroAlien.txt | sed s/_/\ /g | gawk '{ print $2}'  | sort > altro.txt
+
+for run in `cat hv.txt | sort`; do
+   grun=`cat grp.txt | grep -c $run`
+   arun=`cat altro.txt | grep -c $run`   
+   if [ $grun -gt 0 ] && [ $arun -gt 0 ]; then
+      echo $run
+   fi 
+done > runList.txt
+# clean up
+rm grpAlien.txt hvAlien.txt altroAlien.txt grp.txt hv.txt altro.txt
+
+###################
+
++++++++ STEP 2 +++++++++++++
+
+Submit the alienjobs (one job per run)
+but skip already existing entries ...
+Note1: PATHtoOUTPUT is usually defined in your jdl!
+
+Note2: check your job status with e.g. `alien_ps`
+
+
+####################
+#!/bin/sh
+# submit an alienjob per entry in the runList.txt
+
+PATHtoOUTPUT="/alice/cern.ch/user/s/srossegg/CalibSummary/output/"
+
+for RUN in `cat runList.txt`; do
+alien_find $PATHtoOUTPUT run$RUN	
+    entry=`alien_find $PATHtoOUTPUT run$RUN`
+    if [ "$entry" = "" ]
+       then
+       echo "Submitting job to produce the calib summary for run $RUN"
+       alien_submit CalibSummary.jdl $RUN
+    else
+       echo "The calib summary for run $RUN was already created! Skipping entry ..."
+    fi
+
+done;
+
+###################
+
++++++++ STEP 3 +++++++++++++
+
+print a list of all the produced calibSummary entries and copy them to 
+a local directory (if wished)
+
+###################
+#!/bin/sh
+# list and copy the created calibSummary files ...
+
+PATHtoOUTPUT="/alice/cern.ch/user/s/srossegg/CalibSummary/output/"
+alien_find $PATHtoOUTPUT calibSum
+
+# copy them to one direcotory
+ENTRIES=`alien_find $PATHtoOUTPUT calibSum | grep calibSum`
+COPYPATH="./"
+for ENTRY in $ENTRIES; do
+    alien_cp alien:$ENTRY $COPYPATH 
+done;
+
+##### don't do the following if you are not sure #######
+
+# or delete the entries on alien
+ENTRIES=`alien_find $PATHtoOUTPUT calibSum | grep calibSum`
+for ENTRY in $ENTRIES; do
+    alien_erase $ENTRY
+done;
+
+###################

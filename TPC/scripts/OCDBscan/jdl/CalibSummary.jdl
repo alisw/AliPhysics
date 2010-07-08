@@ -1,0 +1,24 @@
+
+Executable="/alice/cern.ch/user/s/srossegg/bin/runCalibSummary.sh";
+
+Packages = "VO_ALICE@AliRoot::v4-19-19-AN";
+
+JDLVariables={"Packages", "OutputDir"};
+
+TTL = "7200";
+Price = 1;
+
+Validationcommand ="/alice/cern.ch/user/s/srossegg/CalibSummary/validation.sh";
+
+Arguments = "$1";
+
+InputFile={"LF:/alice/cern.ch/user/s/srossegg/CalibSummary/runCalibSummary.C",	
+           "LF:/alice/cern.ch/user/s/srossegg/CalibSummary/ConfigOCDB.C"
+};
+
+OutputDir="/alice/cern.ch/user/s/srossegg/CalibSummary/output/$1/";
+
+OutputFile = {"*.root"};
+
+OutputArchive={"log_archive:*.log@disk=1",
+              "root_archive.zip:*.root,@disk=1"};
