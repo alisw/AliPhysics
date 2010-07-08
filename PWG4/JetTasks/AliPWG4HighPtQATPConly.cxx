@@ -864,7 +864,8 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
 
   const AliESDVertex *vtx = fESD->GetPrimaryVertexTracks();
   // Need vertex cut
-  if (vtx->GetNContributors() < 2) {
+  TString vtxName(vtx->GetName());
+  if(vtx->GetNContributors() < 2 || (vtxName.Contains("TPCVertex")) ) {
     // SPD vertex
     vtx = fESD->GetPrimaryVertexSPD();
     if(vtx->GetNContributors()<2) {
@@ -876,7 +877,7 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       return;
     }
   }
-
+  
   AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
   double primVtx[3] = {0.,0.,0.};
   vtx->GetXYZ(primVtx);

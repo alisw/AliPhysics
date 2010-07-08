@@ -515,11 +515,17 @@ Bool_t AliAnalysisTaskJetServices::IsEventCosmicESD(AliESDEvent* esd){
   for (Int_t iTrack1 = 0; iTrack1 < nTracks; iTrack1++) {
     AliESDtrack* track1 = (AliESDtrack*)esd->GetTrack(iTrack1);
     if (!track1)  continue;
+    UInt_t status1 = track1->GetStatus();
+    //If track is ITS stand alone track, skip the track
+    if (((status1 & AliESDtrack::kITSin) == 0 || (status1 & AliESDtrack::kTPCin))) continue;
     if(track1->Pt()<fPtMinCosmic) continue;
     //Start 2nd track loop to look for correlations
     for (Int_t iTrack2 = iTrack1+1; iTrack2 < nTracks; iTrack2++) {
       AliESDtrack* track2 = (AliESDtrack*)esd->GetTrack(iTrack2);
       if(!track2) continue;
+      UInt_t status2 = track2->GetStatus();
+      //If track is ITS stand alone track, skip the track
+      if (((status2 & AliESDtrack::kITSin) == 0 || (status2 & AliESDtrack::kTPCin))) continue;
       if(track2->Pt()<fPtMinCosmic) continue;
       //Check if back-to-back
       Double_t mom1[3],mom2[3];
@@ -537,7 +543,7 @@ Bool_t AliAnalysisTaskJetServices::IsEventCosmicESD(AliESDEvent* esd){
       if(rIsol<fRIsolMinCosmic) continue;
 
       if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) {
-	nCosmicCandidates+=1.;
+	nCosmicCandidates+=1;
 	isCosmic = kTRUE;
       }
       
