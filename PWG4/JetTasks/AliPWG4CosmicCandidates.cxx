@@ -14,7 +14,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-// Analysis task looking for cosmic candidates
+// Analysis task looking for cosmic candidates embedded in a p-p event
 // Task checks if particles are back-to-back in eta and phi
 //             
 //
@@ -136,14 +136,18 @@ AliPWG4CosmicCandidates::AliPWG4CosmicCandidates(const AliPWG4CosmicCandidates &
     fRisolTheta(0),
     fHistListCosmics(0)
 {
-    // Dummy copy constructor
+  //
+  // Dummy copy constructor
+  //
 }
 
 //________________________________________________________________________
 AliPWG4CosmicCandidates& AliPWG4CosmicCandidates::operator=(const AliPWG4CosmicCandidates& /*trclass*/)
 {
-    // Dummy assignment operator
-    return *this;
+  //
+  // Dummy assignment operator
+  //
+  return *this;
 }
 
 //________________________________________________________________________
@@ -158,7 +162,8 @@ void AliPWG4CosmicCandidates::LocalInit()
 //________________________________________________________________________
 void AliPWG4CosmicCandidates::UserCreateOutputObjects()
 {
-  //Create output objects
+  //
+  // Create output objects
   // Called once
   AliDebug(2,Form(">> AliPWG4CosmicCandidates::UserCreateOutputObjects \n")); 
 
@@ -249,8 +254,9 @@ void AliPWG4CosmicCandidates::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliPWG4CosmicCandidates::UserExec(Option_t *) 
 {
-//   // Main loop
-//   // Called for each event
+  // Main loop
+  // Called for each event
+  //
 
   // All events without selection
   fNEventAll->Fill(0.);
@@ -291,12 +297,11 @@ void AliPWG4CosmicCandidates::UserExec(Option_t *)
     return;
   }
 
- fNEventSel->Fill(0.);
+  fNEventSel->Fill(0.);
 
   Float_t dcaR[2] = {0.,0.};
   Float_t dcaZ[2] = {0.,0.};
 
-  // Track loop to fill a pT spectrum
   for (Int_t iTrack1 = 0; iTrack1 < nTracks; iTrack1++) {
 
     AliESDtrack* track1 = (AliESDtrack*)fInputEvent->GetTrack(iTrack1);
@@ -357,7 +362,8 @@ void AliPWG4CosmicCandidates::UserExec(Option_t *)
 //________________________________________________________________________
 void AliPWG4CosmicCandidates::Terminate(Option_t *) 
 {
+  //
   // Called once at the end of the query
-
+  //
   
 }

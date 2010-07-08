@@ -46,13 +46,11 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
-  Bool_t IsCosmic(const AliESDtrack* track1 = 0x0, Int_t trackNumber = 0, Double_t ptMin = 6.);
   virtual void   Terminate(Option_t *);
 
   void SetCutType(Int_t ctype) {fCutType = ctype;}
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
-  void SetMaxCosmicAngle(Double_t angle) {fMaxCosmicAngle = angle;}
 
   Int_t GetCutType() {return fCutType;}
 
@@ -71,8 +69,6 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global vs TPConly comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
   
-  Double_t fMaxCosmicAngle;       // Max deviation from pi (angle between two tracks) in case of cosmic candidate
-
   TH1F *fNEventAll;                             //! Event counter
   TH1F *fNEventSel;                             //! Event counter: Selected events for analysis
   TH1F *fPtAll;                                 //! Pt spectrum all charged particles
@@ -163,20 +159,6 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtRel1PtUncertaintyChi2PerClusTPC;     //! Global Pt vs relUncertainty1Pt vs Chi2PerClusTPC
 
   TList *fHistListITS; //! List of Histograms
-
-  TH1F *fPtSignedCosmicCandidates;              //! Cosmic Candidates
-  TH1F *fDeltaPtCosmicCandidates;               //! Cosmic Candidates Delta Pt
-  TH2F *fDeltaPhiSumEta;                        //! Cosmic Candidates Delta Phi vs Sum Eta
-  TH2F *fDCAZCosmicCandidates;                  //! Cosmic Candidates DCAZ track1 vs track2
-  TH2F *fDCARCosmicCandidates;                  //! Cosmic Candidates DCAR track1 vs track2
-  TH1F *fTheta;                                 //! Angle \theta between cosmic candidates in 3D space
-  TH1F *fThetaZoom;                             //! Angle between cosmic candidates in 3D space zoomed into back-to-back region
-  TH3F *fThetaPt1Pt2;                           //! Angle theta vs Pt1 vs Pt2
-  TH3F *fDeltaPhiSumEtaPt1;                     //! Delta Phi vs Sum Eta vs Pt1
-  TH3F *fDeltaPhiSumEtaPt2;                     //! Delta Phi vs Sum Eta vs Pt2
-  TH3F *fThetaDCAZ1DCAZ2;                       //! Angle theta vs DCAZ1 vs DCAZ2
-
-  TList *fHistListCosmics;                      //! List of Histograms for cosmic candidates
 
   ClassDef(AliPWG4HighPtQATPConly,1) 
   
