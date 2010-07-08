@@ -202,7 +202,9 @@ void AliGenDPMjet::Generate()
 
       // Temporaneo
       fGenImpPar = fDPMjet->GetBImpac();
-      
+
+      if(TMath::Abs(fXingAngleY) > 1.e-10) BeamCrossAngle();
+
       Int_t np = fParticles.GetEntriesFast();
       //
       // Multiplicity Trigger
