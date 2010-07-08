@@ -242,7 +242,7 @@ void Config()
       //============================ TPC parameters =====================
 
         AliTPC *TPC = new AliTPCv2("TPC", "Default");
-	// TPC->SetPrimaryIonisation(); // not used with Geant3
+	TPC->SetPrimaryIonisation(); // not used with Geant3
     }
 
 
@@ -407,6 +407,7 @@ void Config()
   geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
   geant4->ProcessGeantCommand("/mcVerbose/composedPhysicsList 2");  
   geant4->ProcessGeantCommand("/mcTracking/skipNeutrino true");
+  geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 1 cm");
 
   /*
   // Set PAI model for TPC (TPC_Ne-CO2-N-2)
