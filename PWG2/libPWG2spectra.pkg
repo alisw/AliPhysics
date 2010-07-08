@@ -21,7 +21,10 @@ SRCS= SPECTRA/AliProtonAnalysisBase.cxx \
       SPECTRA/AliAnalysisCentralCutEvtMC.cxx \
       SPECTRA/AliAnalysisCentralCutEvtESD.cxx \
       SPECTRA/AliAnalysisCentralExtrapolate.cxx \
-      SPECTRA/AliAnalysisTaskCentral.cxx
+      SPECTRA/AliAnalysisTaskCentral.cxx \
+      SPECTRA/Fit/AliBWTools.cxx \
+      SPECTRA/Fit/AliBWFunc.cxx \
+      SPECTRA/Fit/AliLatexTable.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 
