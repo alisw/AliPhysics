@@ -42,6 +42,9 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
     virtual void SetZVertexCut(Float_t f){fVtxZCut = f;}
+    virtual void SetPtMinCosmic(Float_t ptMin) {fPtMinCosmic = ptMin;}
+    virtual void SetRMinCosmic(Float_t rMin) {fRIsolMinCosmic = rMin;}
+    virtual void SetMaxCosmicAngle(Float_t angle)   {fMaxCosmicAngle = angle;}
     virtual Bool_t Notify();
 
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
@@ -64,13 +67,16 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Bool_t        fUseAODInput;        // take jet from input AOD not from ouptu AOD
     Bool_t        fUsePhysicsSelection;// decide wether we take into account physicsselction task
     Bool_t        fRealData;           // true for real data to allow correct trigger slection
-    UInt_t        fSelectionInfoESD;      // slection info bit mask
+    UInt_t        fSelectionInfoESD;   // slection info bit mask
     Float_t       fAvgTrials;          // Average number of trials
-    Float_t       fVtxXMean;          // mean x for cuts
-    Float_t       fVtxYMean;          // mean y for cuts
-    Float_t       fVtxZMean;          // mean z for cuts
-    Float_t       fVtxRCut;           // vtx cut in R
-    Float_t       fVtxZCut;           // vtzx cut in Z
+    Float_t       fVtxXMean;           // mean x for cuts
+    Float_t       fVtxYMean;           // mean y for cuts
+    Float_t       fVtxZMean;           // mean z for cuts
+    Float_t       fVtxRCut;            // vtx cut in R
+    Float_t       fVtxZCut;            // vtzx cut in Z
+    Float_t       fPtMinCosmic;        // Minimum pT to be considered as cosmic candidate
+    Float_t       fRIsolMinCosmic;     // Minimum R = sqrt{deltaPhi^2 + deltaEta^2} to be considered as cosmic candidate
+    Float_t       fMaxCosmicAngle;     // Max deviation from pi (angle between two tracks) in case of cosmic candidate
     Float_t       fRunRange[2];        // only important for real data for 
     TProfile*     fh1Xsec;             // pythia cross section and trials
     TH1F*         fh1Trials;           // trials are added
@@ -80,9 +86,10 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH2F*         fh2TriggerCount;     // number of fire triggers in each case
     TH2F*         fh2ESDTriggerCount;  // number of fire triggers in each case
     TH2F*         fh2TriggerVtx;       // vtx. position vs. trigger decision
-    TH2F*         fh2ESDTriggerVtx;  // vtx. position vs. trigger decision 
-    TH2F*         fh2ESDTriggerRun;  // fired triggers vs. run number
-    TH2F*         fh2VtxXY;          // XY position of VTX were available
+    TH2F*         fh2ESDTriggerVtx;    // vtx. position vs. trigger decision 
+    TH2F*         fh2ESDTriggerRun;    // fired triggers vs. run number
+    TH2F*         fh2VtxXY;            // XY position of VTX were available
+    TH1F*         fh1NCosmicsPerEvent;  // Number of coscmic candidates found in event
     TList *fHistList; // Output list
    
     ClassDef(AliAnalysisTaskJetServices,5)
