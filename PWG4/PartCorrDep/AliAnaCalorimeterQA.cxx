@@ -1443,7 +1443,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(nModule < fNModules) nClustersInModule[nModule]++;
 			//MC labels
 			nLabel = clus->GetNLabels();
-			labels = clus->GetLabels();
+			//labels = clus->GetLabels();
+			if(clus->GetLabels()) labels =  (clus->GetLabels())->GetArray();
 			//Cells per cluster
 			nCaloCellsPerCluster =  clus->GetNCells();
 			//if(mom.E() > 10 && nCaloCellsPerCluster == 1 ) printf("%s:************** E = %f ********** ncells = %d\n",fCalorimeter.Data(), mom.E(),nCaloCellsPerCluster);
@@ -1461,7 +1462,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			//Shower shape parameters
 			showerShape[0] = clus->GetM20();
 			showerShape[1] = clus->GetM02();
-			showerShape[2] = clus->GetDispersion();
+			//showerShape[2] = clus->GetDispersion();
+			showerShape[2] = clus->GetClusterDisp();
 
 			//======================
 			//Cells in cluster
@@ -1597,7 +1599,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(nModule < fNModules)  nClustersInModule[nModule]++;
 			//MC labels
 			nLabel = clus->GetNLabel();
-			labels = clus->GetLabels();
+			//labels = clus->GetLabels();
+			if(clus->GetLabels()) labels =  clus->GetLabels();
 			//Cells per cluster
 			nCaloCellsPerCluster = clus->GetNCells();
 			//matched cluster with tracks
