@@ -229,8 +229,7 @@ void AliPerformanceDCA::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
 
   if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
   if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters  
-  Int_t clusterITS[200];
-  if(esdTrack->GetITSclusters(clusterITS)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
+  if(esdTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
 
   Double_t vDCAHisto[5]={dca[0],dca[1],esdTrack->Eta(),esdTrack->Pt(), esdTrack->Phi()};
   fDCAHisto->Fill(vDCAHisto);

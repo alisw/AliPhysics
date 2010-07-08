@@ -728,7 +728,8 @@ if(!esdTrack) return kFALSE;
   Bool_t recStatus = kFALSE;
 
   if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return kFALSE; // TPC refit
-  if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return kFALSE; // min. nb. TPC clusters
+  if ((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0) return kFALSE; // ITS refit
+  if (esdTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return kFALSE;  // min. nb. ITS clusters
   //if ((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0) return kFALSE; // ITS refit
   //Int_t clusterITS[200];
   //if(esdTrack->GetITSclusters(clusterITS)<fCutsRC->GetMinNClustersITS()) return kFALSE;  // min. nb. ITS clusters
