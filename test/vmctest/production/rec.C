@@ -6,7 +6,7 @@ void rec() {
 
 //
 // switch off cleanESD, write ESDfriends and Alignment data
-
+  
   reco.SetCleanESD(kFALSE);
   reco.SetWriteESDfriend();
   reco.SetWriteAlignmentData();
@@ -24,13 +24,20 @@ void rec() {
 
 
 //
+// GRP from local OCDB
+
+ reco.SetSpecificStorage("GRP/GRP/Data",
+                          Form("local://%s",gSystem->pwd()));
+
+
+//
 // Vertex from RAW OCDB
 
   reco.SetSpecificStorage("GRP/Calib/MeanVertexTPC","alien://folder=/alice/data/2010/OCDB");
   reco.SetSpecificStorage("GRP/Calib/MeanVertex","alien://folder=/alice/data/2010/OCDB");
 
 
-//
+// 
 // EMCAL from RAW OCDB
 
   reco.SetSpecificStorage("EMCAL/Calib/Data","alien://Folder=/alice/data/2010/OCDB");
@@ -46,7 +53,7 @@ void rec() {
 
   reco.SetSpecificStorage("ITS/Calib/SPDDead","alien://folder=/alice/data/2010/OCDB");
   reco.SetSpecificStorage("TRIGGER/SPD/PITConditions","alien://folder=/alice/data/2010/OCDB");
-  reco.SetSpecificStorage("ITS/Calib/SPDNoise","alien://folder=/alice/data/2010/OCDB");
+  reco.SetSpecificStorage("ITS/Calib/SPDNoise","alien://folder=/alice/data/2010/OCDB"); 
   reco.SetSpecificStorage("ITS/Calib/CalibSDD","alien://Folder=/alice/data/2010/OCDB");
 
 //
@@ -72,16 +79,19 @@ void rec() {
 //
 // TOF from RAW OCDB
 
-//  reco.SetSpecificStorage("TOF/Calib/Status","alien://folder=/alice/data/2010/OCDB");
+  reco.SetSpecificStorage("TOF/Calib/Status","alien://folder=/alice/data/2010/OCDB");
 
 //
-// QA off
+// FMD from RAW OCDB
 
-  reco.SetRunQA(":");
+  reco.SetSpecificStorage("FMD/Calib/Pedestal", "alien://folder=/alice/data/2010/OCDB");
+  reco.SetSpecificStorage("FMD/Calib/PulseGain","alien://folder=/alice/data/2010/OCDB");
+  reco.SetSpecificStorage("FMD/Calib/Dead", "alien://folder=/alice/data/2010/OCDB");
+  reco.SetSpecificStorage("FMD/Calib/AltroMap","alien://folder=/alice/data/2010/OCDB");
+
+
 
 //
-// The rest
- 
   TStopwatch timer;
   timer.Start();
   reco.Run();

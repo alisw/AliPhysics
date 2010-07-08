@@ -5,14 +5,14 @@ void sim(Int_t nev=20) {
   AliSimulation simulator;
   simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
   simulator.SetMakeDigitsFromHits("ITS TPC");
-  
+
 //
 // Ideal OCDB
 
   simulator.SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Ideal/");
 
 //
-// Mean verrtex from RAW OCDB
+// Mean verrtex from RAW OCDB 
 
  simulator.SetSpecificStorage("GRP/Calib/MeanVertexSPD", "alien://folder=/alice/data/2010/OCDB");
 
@@ -44,7 +44,16 @@ void sim(Int_t nev=20) {
 //
 // TOF from RAW OCDB
 
-//  simulator.SetSpecificStorage("TOF/Calib/Status","alien://folder=/alice/data/2010/OCDB");
+  simulator.SetSpecificStorage("TOF/Calib/Status","alien://folder=/alice/data/2010/OCDB");
+
+//
+// FMD from RAW OCDB
+
+  simulator.SetSpecificStorage("FMD/Calib/Pedestal", "alien://folder=/alice/data/2010/OCDB");
+  simulator.SetSpecificStorage("FMD/Calib/PulseGain","alien://folder=/alice/data/2010/OCDB");
+  simulator.SetSpecificStorage("FMD/Calib/Dead", "alien://folder=/alice/data/2010/OCDB");
+  simulator.SetSpecificStorage("FMD/Calib/AltroMap","alien://folder=/alice/data/2010/OCDB");
+
 
 //
 // Read GRP Data from RAW
