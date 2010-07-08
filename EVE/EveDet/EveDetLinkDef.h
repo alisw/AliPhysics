@@ -85,7 +85,7 @@
 #pragma link C++ class AliEveTRDNode+;
 #pragma link C++ class AliEveTRDModuleEditor+;
 #pragma link C++ class AliEveTRDDigits+;
-#pragma link C++ class AliEveTRDDigitsEditor+;
+//#pragma link C++ class AliEveTRDDigitsEditor+;
 #pragma link C++ class AliEveTRDHits+;
 #pragma link C++ class AliEveTRDHitsEditor+;
 #pragma link C++ class AliEveTRDClusters+;

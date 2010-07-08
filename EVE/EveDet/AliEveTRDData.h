@@ -49,24 +49,24 @@ private:
 class AliTRDdigitsManager;
 class AliEveTRDDigits : public TEveQuadSet
 {
-  friend class AliEveTRDDigitsEditor;
+  //friend class AliEveTRDDigitsEditor;
 
 public:
   AliEveTRDDigits(AliEveTRDChamber *p);
   ~AliEveTRDDigits();
 
   void			ComputeRepresentation();
-  const AliTRDarrayADC*	GetData() const {return fData.HasData() ? &fData : NULL;}
+  //const AliTRDarrayADC*	GetData() const {return fData.HasData() ? &fData : NULL;}
   //void			Paint(Option_t *opt="");
-  void			Reset();
+  //void			Reset(){};
   void			SetData(AliTRDdigitsManager *digits);
 
 protected:
   AliEveTRDChamber *fParent;
 
 private:
-  TEveBoxSet		fBoxes; // Boxset for didigit representation.
-  AliTRDarrayADC	fData;  // Raw-data array.
+//   TEveBoxSet		fBoxes; // Boxset for didigit representation.
+//   AliTRDarrayADC	fData;  // Raw-data array.
 
   AliEveTRDDigits(const AliEveTRDDigits&);            // Not implemented
   AliEveTRDDigits& operator=(const AliEveTRDDigits&); // Not implemented

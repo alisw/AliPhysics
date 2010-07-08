@@ -8,10 +8,12 @@
  **************************************************************************/
 
 #include "TROOT.h"
+#include "TStyle.h"
 #include "TVector.h"
 #include "TLinearFitter.h"
 #include "TCanvas.h"
 #include "TGeoMatrix.h"
+#include "TGeoManager.h"
 
 #include "TEveTrans.h"
 #include "TEveManager.h"
@@ -61,10 +63,16 @@ ClassImp(AliEveTRDmcm)
 ///////////////////////////////////////////////////////////
 
 //______________________________________________________________________________
-AliEveTRDDigits::AliEveTRDDigits(AliEveTRDChamber *p) :
-  TEveQuadSet("digits", ""), fParent(p), fBoxes(), fData()
+AliEveTRDDigits::AliEveTRDDigits(AliEveTRDChamber *p) 
+  :TEveQuadSet("digits", "")
+  ,fParent(p)
+  /*, fBoxes(), fData()*/
 {
-  // Constructor.
+  // Constructor.   
+  SetOwnIds(kTRUE);
+  gStyle->SetPalette(1, 0);
+  SetPalette(new TEveRGBAPalette(0, 512));
+  Reset(TEveQuadSet::kQT_RectangleXY, kFALSE, 32);
 }
 
 //______________________________________________________________________________
@@ -81,18 +89,17 @@ void AliEveTRDDigits::ComputeRepresentation()
   // - digits scale (log/lin)
   // - digits threshold
   // - digits apparence (quads/boxes)
-
-  if(!fData.HasData()){
+  //if(!fData.HasData()){
     return;
-  }
+  //}
 
   TEveQuadSet::Reset(TEveQuadSet::kQT_RectangleYZ, kTRUE, 64);
 
   Double_t scale, dy, dz;
   Int_t q, color;
-  Int_t nrows = fData.GetNrow(),
-        ncols = fData.GetNcol(),
-        ntbs  = fData.GetNtime(),
+  Int_t nrows = 0/*fData.GetNrow()*/,
+        ncols = 0/*fData.GetNcol()*/,
+        ntbs  = 0/*fData.GetNtime()*/,
         det   = fParent->GetID(),
         ly    = AliTRDgeometry::GetLayer(det),
         stk   = AliTRDgeometry::GetStack(det),
@@ -104,17 +111,18 @@ void AliEveTRDDigits::ComputeRepresentation()
   AliTRDtransform transform(det);
   AliTRDgeometry *geo = fParent->fGeo;
   AliTRDpadPlane *pp = geo->GetPadPlane(geo->GetLayer(det), geo->GetStack(det));
-
+  
+  printf("DET[%d] nr[%d] nc[%d] nt[%d] threshold[%f]\n", det, nrows, ncols, ntbs, threshold);
   // express position in tracking coordinates
   AliTRDcluster c;
-  fData.Expand();
+  //fData.Expand();
   for (Int_t ir = 0; ir < nrows; ir++) {
     dz = pp->GetRowSize(ir);
     for (Int_t ic = 0; ic < ncols; ic++) {
       dy = pp->GetColSize(ic);
       for (Int_t it = 0; it < ntbs; it++) {
-        q = fData.GetData(ir, ic, it);
-        if (q < threshold) continue;
+        //q = fData.GetData(ir, ic, it);
+        //if (q < threshold) continue;
         
 /*        Double_t x[6] = {0., 0., Double_t(q), 0., 0., 0.}; 
         Int_t  roc[3] = {ir, ic, 0}; 
@@ -124,17 +132,17 @@ void AliEveTRDDigits::ComputeRepresentation()
         transform.Transform(&c);
 
         scale = q < 512 ? q/512. : 1.;
-        color  = 50+int(scale*50.);
+        color  = kRed;//50+int(scale*50.);
         
-        AliDebug(4, Form("y[%f] z[%f] x[%f] w[%f] h[%f]\n", c.GetY(), c.GetZ(), c.GetX(), .9*dy, dz*scale));
-        AddQuad(c.GetY(), c.GetZ(), c.GetX(), .9*dy, dz*scale);
-        QuadValue(q);
+        printf("\ty[%f] z[%f] x[%f] w[%f] h[%f] color[%d] q[%d]\n", c.GetY(), c.GetZ(), c.GetX(), .9*dy, dz*scale, color, q);
+        AddQuad(c.GetY(), c.GetZ(), c.GetX(), .9*dy, /*dz*scale*/100.);
+        QuadValue(Float_t(q));
         QuadColor(color);
-        QuadId(new TNamed(Form("Charge%d", q), "dummy title"));
+        //QuadId(new TNamed(Form("ADC %d", adc), "det[%3d] col[%3d] row[%2d] tb[%2d]"));
       }  // end time loop
     }  // end col loop
   }  // end row loop
-  fData.Compress();
+  //fData.Compress();
   
   // rotate to global coordinates
   //RefitPlex();
@@ -155,12 +163,33 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
   AliTRDSignalIndex *indexes = digits->GetIndexes(det);
   if(!indexes->IsAllocated()) digits->BuildIndexes(det);
 
-  if(!fData.HasData()) fData.Allocate(data->GetNrow(), data->GetNcol(), data->GetNtime());
-  fData.Expand();
+/*  if(!fData.HasData()) fData.Allocate(data->GetNrow(), data->GetNcol(), data->GetNtime());
+  fData.Expand();*/
+  TEveQuadSet::Reset(TEveQuadSet::kQT_RectangleYZ, kTRUE, 64);
 
+  Double_t scale, dy, dz;
+  Int_t q, color;
+  Int_t /*nrows = fData.GetNrow(),
+        ncols = fData.GetNcol(),
+        ntbs  = fData.GetNtime(),*/
+        //det   = fParent->GetID(),
+        ly    = AliTRDgeometry::GetLayer(det),
+        stk   = AliTRDgeometry::GetStack(det),
+        sec   = AliTRDgeometry::GetSector(det),
+        vid   = AliGeomManager::LayerToVolUID(AliGeomManager::kTRD1 + ly, stk + AliTRDgeometry::Nstack() * sec);
+  Float_t threshold = fParent->GetDigitsThreshold();
+  Short_t sig[7]={0,0,0,10,0,0,0};
+
+  AliTRDtransform transform(det);
+  AliTRDpadPlane *pp(fParent->fGeo->GetPadPlane(ly, stk));
+
+  printf("DET[%d]\n", det);
   Int_t row, col, time, adc;
+  AliTRDcluster c;
   indexes->ResetCounters();
   while (indexes->NextRCIndex(row, col)){
+    dz = pp->GetRowSize(row);
+    dy = pp->GetColSize(col);
     indexes->ResetTbinCounter();
     while (indexes->NextTbinIndex(time)){
       if(data->IsPadCorrupted(row, col, time)){
@@ -169,12 +198,26 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
       }
       adc = data->GetData(row, col, time);
       if(adc <= 1) continue;
-      fData.SetData(row, col, time, adc);
-      //fIndex->AddIndexTBin(row,col,time);
-      //printf("\tr[%d] c[%d] t[%d] ADC[%d]\n", row, col, time, adc);
+      new (&c) AliTRDcluster(det, col, row, time, sig, vid);
+      transform.Transform(&c);
+
+      scale = adc < 512 ? adc/512. : 1.;
+      color  = kRed;//50+int(scale*50.);
+      printf("\tr[%d] c[%d] t[%d] ADC[%d]\n", row, col, time, adc);
+      printf("\ty[%f] z[%f] x[%f] w[%f] h[%f] color[%d]\n", c.GetY(), c.GetZ(), c.GetX(), dy, dz, color);
+      AddQuad(c.GetY(), c.GetZ(), c.GetX(), .9*dy, dz);
+      QuadValue(Float_t(adc));
+      //QuadColor(color);
+      //QuadId(new TNamed(Form("Charge%d", adc), "dummy title"));
+      QuadId(new TNamed(Form("ADC %d", adc), Form("det[%3d] col[%3d] row[%2d] tb[%2d]", det, col, row, time)));
     } 
   }
-  fData.Compress();
+//  fData.Compress();
+
+  // rotate to global coordinates
+  RefitPlex();
+  TEveTrans& t = RefMainTrans();
+  //t.SetRotByAngles((sec+.5)*AliTRDgeometry::GetAlpha(), 0.,0.);
 }
 
 
@@ -187,15 +230,15 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
 //   else TEveQuadSet::Paint(option);
 // }
 
-//______________________________________________________________________________
-void AliEveTRDDigits::Reset()
-{
-  // Reset raw and visual data.
-
-  TEveQuadSet::Reset(TEveQuadSet::kQT_RectangleYZ, kTRUE, 64);
-  // MT fBoxes.fBoxes.clear();
-  fData.Reset();
-}
+// //______________________________________________________________________________
+// void AliEveTRDDigits::Reset()
+// {
+//   // Reset raw and visual data.
+// 
+//   TEveQuadSet::Reset(TEveQuadSet::kQT_RectangleYZ, kTRUE, 64);
+//   // MT fBoxes.fBoxes.clear();
+//   fData.Reset();
+// }
 
 ///////////////////////////////////////////////////////////
 /////////////   AliEveTRDHits         /////////////////////
@@ -355,6 +398,10 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   // Constructor.
   SetName("tracklet");
   
+  TGeoManager *gGeo(AliEveEventManager::AssertGeometry());
+  printf("gGeo[%p] Closed[%c]\n", (void*)gGeo, gGeo->IsClosed()?'y':'n');
+  trklt->Print("a");
+
   SetUserData(trklt);
   Float_t dx;
   Float_t x0   = trklt->GetX0();
@@ -362,7 +409,7 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   Float_t z0   = trklt->GetZref(0);
   Float_t dydx = trklt->GetYref(1);
   Float_t dzdx = trklt->GetZref(1);
-  Float_t tilt = trklt->GetTilt();
+  Float_t  tilt = trklt->GetTilt();
   Float_t g[3];
   AliTRDcluster *c = NULL;
   for(Int_t ic=0; ic<AliTRDseedV1::kNclusters; ic++){
@@ -378,6 +425,8 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
     Int_t id = fClusters->SetNextPoint(g[0], g[1], g[2]);    
     //Int_t id = fClusters->SetNextPoint(c->GetX(), c->GetY(), c->GetZ());    
     c->SetY(yc);
+    printf("************* id[%d] \n", id);
+    c->Print();
     fClusters->SetPointId(id, new AliTRDcluster(*c));
   } 
   if(fClusters){
@@ -443,7 +492,7 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk)
   SetUserData(trk);
   SetName("");
 
-  AliTRDtrackerV1::SetNTimeBins(24);
+//  AliTRDtrackerV1::SetNTimeBins(24);
 
   fRim = new AliRieman(trk->GetNumberOfClusters());
   AliTRDseedV1 *tracklet = NULL;
@@ -452,10 +501,10 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk)
     if(!tracklet->IsOK()) continue;
     AddElement(new AliEveTRDTracklet(tracklet));
 
-    AliTRDcluster *c = NULL;
 //     tracklet->ResetClusterIter(kFALSE);
 //     while((c = tracklet->PrevCluster())){
-    for(Int_t ic=AliTRDseedV1::kNtb; ic--;){
+    AliTRDcluster *c(NULL);
+/*    for(Int_t ic=AliTRDseedV1::kNtb; ic--;){
       if(!(c=tracklet->GetClusters(ic))) continue;
       Float_t xc = c->GetX();
       Float_t yc = c->GetY();
@@ -463,7 +512,7 @@ AliEveTRDTrack::AliEveTRDTrack(AliTRDtrackV1 *trk)
       Float_t zt = tracklet->GetZref(0) - (tracklet->GetX0()-xc)*tracklet->GetZref(1); 
       yc -= tracklet->GetTilt()*(zc-zt);
       fRim->AddPoint(xc, yc, zc, .05, 2.3);
-    }
+    }*/
   }
   if(trk->GetNumberOfTracklets()>1) fRim->Update();
   SetStatus(fTrackState);
@@ -489,7 +538,7 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
 {
   // nothing to be done
   if(fPoints && fTrackState == s) return;
-
+  //return;
   const Int_t nc = AliTRDtrackV1::kMAXCLUSTERSPERTRACK;
   AliTRDtrackV1 *trk(NULL);
   if(!(trk=static_cast<AliTRDtrackV1*>(GetUserData()))) {
@@ -532,11 +581,12 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
         //printf("Kalman track\n");
         if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitKalman(trk, NULL, kFALSE, nc, fPoints);
       } else { 
-        //printf("Rieman track\n");
-        if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitRiemanTilt(trk, NULL, kTRUE, nc, fPoints);
+        //printf("Rieman track rim[%p] nc[%d]\n", (void*)fRim, nc);
+        //if(trk->GetNumberOfTracklets() >=4) AliTRDtrackerV1::FitRiemanTilt(trk, NULL, kTRUE, nc, fPoints);
         Float_t x = 0.;
         for(Int_t ip = nc; ip--;){
           x = fPoints[ip].GetX();
+          //printf("%2d x[%f] y[%f] z[%f]\n", ip, x, fRim->GetYat(x), fRim->GetZat(x));
           fPoints[ip].SetXYZ(x, fRim->GetYat(x), fRim->GetZat(x));
         }
       }
@@ -546,6 +596,8 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
     for(Int_t ip=0; ip<nc; ip++){
       fPoints[ip].Rotate(-fAlpha).GetXYZ(global);
       SetPoint(ip, global[0], global[1], global[2]);
+      //printf("*** %2d x[%f] y[%f] z[%f]\n", ip, global[0], global[1], global[2]);
+    
     }
     SetSmooth(kTRUE);
   }
@@ -602,6 +654,7 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
       pid = trk->GetPID(is);
       species = is;
     }
+  printf("species [%d]\n", species);
 
   SetTitle(Form(
     "Tracklets[%d] Clusters[%d]\n"
@@ -611,9 +664,12 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
     1.E2*trk->GetPID(0), 1.E2*trk->GetPID(1),
     1.E2*trk->GetPID(2), 1.E2*trk->GetPID(3), 1.E2*trk->GetPID(4), trk->GetLabel()));
 
+  printf("name [%s]\n", GetName());
   if(GetName()){
     char id[6]; strncpy(id, GetName(), 6); 
+     printf("id [%s]\n", id);
     SetName(Form("%s %s", id, AliPID::ParticleName(species)));
+    printf("new name [%s]\n", GetName());
   }
 
   // save track status

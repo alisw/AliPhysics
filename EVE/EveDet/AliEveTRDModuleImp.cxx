@@ -326,7 +326,7 @@ void AliEveTRDChamber::LoadDigits(AliTRDdigitsManager *digits)
 
   if(!fDigits) AddElement(fDigits = new AliEveTRDDigits(this));
 
-  fDigits->Reset();
+  //fDigits->Reset();
   fDigits->SetData(digits);
   fDigits->StampObjProps();
   fDigitsNeedRecompute = kTRUE;  
@@ -435,11 +435,11 @@ void AliEveTRDChamber::Reset()
     fHits->Reset();
     fLoadHits = kFALSE;
   }
-  if(fDigits){
+/*  if(fDigits){
     fDigits->Reset();
     fLoadDigits = kFALSE;
     fDigitsNeedRecompute = kTRUE;
-  }
+  }*/
   if(fRecPoints){
     fRecPoints->Reset();
     fLoadRecPoints = kFALSE;
@@ -477,11 +477,12 @@ void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
 // * (TGeoShape**) (((char*)eg_shape) + shape_offset) = gGeoManager->GetCurrentVolume()->GetShape();
 // 
 // eg_shape->StampColorSelection();
-  if(!(gGeoManager)){ 
-    AliCDBManager *fCDBManager=AliCDBManager::Instance();
-    fCDBManager->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-    fCDBManager->SetRun(0);
+  if(!(gGeoManager)){
     AliEveEventManager::AssertGeometry();
+    if(!(gGeoManager)){
+      AliError("Geo manager not available.");
+      return;
+    }
   }
 
   // define rendarable volumes
