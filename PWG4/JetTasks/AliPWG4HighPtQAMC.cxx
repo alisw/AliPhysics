@@ -357,12 +357,20 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
   // Need vertex cut
-  if (vtx->GetNContributors() < 2) {
-    PostData(0, fHistList);
-    PostData(1, fHistListITS);
-    return;
+  TString vtxName(vtx->GetName());
+  if(vtx->GetNContributors() < 2 || (vtxName.Contains("TPCVertex")) ) {
+    // SPD vertex
+    vtx = fESD->GetPrimaryVertexSPD();
+    if(vtx->GetNContributors()<2) {
+      vtx = 0x0;
+      // Post output data
+      PostData(0, fHistList);
+      PostData(1, fHistListITS);
+      return;
+    }
   }
- double primVtx[3];
+
+  double primVtx[3];
   vtx->GetXYZ(primVtx);
   //  printf("primVtx: %g  %g  %g \n",primVtx[0],primVtx[1],primVtx[2]);
   if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){

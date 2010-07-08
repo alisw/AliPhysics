@@ -180,7 +180,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       AliDebug(2,Form("ERROR: Could not retrieve MC event"));
       PostData(0,fHistList);
       PostData(1,fCFManagerPos->GetParticleContainer());
-    PostData(2,fCFManagerNeg->GetParticleContainer());
+      PostData(2,fCFManagerNeg->GetParticleContainer());
     return;
     }
     
@@ -194,11 +194,18 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
   AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
   // Need vertex cut
-  if (vtx->GetNContributors() < 2) {
-    PostData(0,fHistList);
-    PostData(1,fCFManagerPos->GetParticleContainer());
-    PostData(2,fCFManagerNeg->GetParticleContainer());
-    return;
+  TString vtxName(vtx->GetName());
+  if(vtx->GetNContributors() < 2 || (vtxName.Contains("TPCVertex")) ) {
+    // SPD vertex
+    vtx = fESD->GetPrimaryVertexSPD();
+    if(vtx->GetNContributors()<2) {
+      vtx = 0x0;
+      // Post output data
+      PostData(0,fHistList);
+      PostData(1,fCFManagerPos->GetParticleContainer());
+      PostData(2,fCFManagerNeg->GetParticleContainer());
+      return;
+    }
   }
   
   double primVtx[3];
