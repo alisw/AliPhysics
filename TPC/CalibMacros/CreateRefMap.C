@@ -1,16 +1,25 @@
-CreateRefMap(){
-  //cdb storage
-  TString storage="local:///data/Work/data/2009/myOCDB";
+/*
+  Create refernce map
+
+*/
+
+void CreateRefMap(){
+  // aliroot -b -q $ALICE_ROOT/TPC/CalibMacros/CreateRefMap.C
+  //
+  //cdb storage - output stored in the working directory
+  //
+
+  TString storage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
   //set reference run numbers for the various ocdb entries
-  Int_t pedestalRun=86876;
-  Int_t noiseRun=86876;
-  Int_t pulserRun=83680;
-  Int_t ceRun=83680;
-  Int_t altroRun=83680;
-  Int_t qaRun=83680;
-  Int_t rawRun=83680;
+  Int_t pedestalRun=121642;
+  Int_t noiseRun=121642;
+  Int_t pulserRun=121645;
+  Int_t ceRun=120818;
+  Int_t altroRun=120503;
+  Int_t qaRun=123537;
+  Int_t rawRun=123537;
   //comment why the update was done
-  TString comment("Update of Pedestal Referenc: 3FECs exchanged.");
+  TString comment("");
   //find first run for which the data are valid
   Int_t first=0;
   first=TMath::Max(first,pedestalRun);
@@ -36,7 +45,7 @@ CreateRefMap(){
   metaData->SetObjectClassName("TMap");
   metaData->SetResponsible("Jens Wiechula (Jens.Wiechula@cern.ch)");
   metaData->SetBeamPeriod(1);
-  metaData->SetAliRootVersion("5-24-00"); //root version
+  metaData->SetAliRootVersion("5-26-00"); //root version
   metaData->SetComment("Map for reference run numbers");
   //store object
   AliCDBId id1("TPC/Calib/Ref", first, AliCDBRunRange::Infinity());
@@ -44,3 +53,4 @@ CreateRefMap(){
   gStorage = AliCDBManager::Instance()->GetStorage(storage.Data());
   gStorage->Put(&map, id1, metaData);
 }
+
