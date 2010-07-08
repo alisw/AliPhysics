@@ -291,6 +291,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaisol->SetDebug(-1);
   anaisol->SetMinPt(0);
   anaisol->SetInputAODName(Form("Photons%s",calorimeter.Data()));
+  anaisol->SetAODObjArrayName("ICPhoton"); 
   anaisol->SetCalorimeter(calorimeter);
   if(kUseKinematics) anaisol->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else  anaisol->SwitchOffDataMC() ;
@@ -322,6 +323,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaisolpi0->SetMinPt(0);
   anaisolpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
   anaisolpi0->AddToHistogramsName("AnaIsolPi0_");
+  anaisolpi0->SetAODObjArrayName("ICPi0"); 
   anaisolpi0->SetCalorimeter(calorimeter);
   if(kUseKinematics) anaisolpi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else  anaisolpi0->SwitchOffDataMC() ;
@@ -369,6 +371,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaParticleHadronCorrelation *anacorrhadron = new AliAnaParticleHadronCorrelation();
   anacorrhadron->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   anacorrhadron->AddToHistogramsName("AnaHadronCorrPhoton_");
+  anacorrhadron->SetAODObjArrayName("PhotonHadronCorr"); 
   anacorrhadron->SetDebug(-1);
   anacorrhadron->SwitchOffCaloPID();
   anacorrhadron->SwitchOffFiducialCut();
@@ -394,6 +397,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaParticleHadronCorrelation *anacorrisohadron = new AliAnaParticleHadronCorrelation();
   anacorrisohadron->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   anacorrisohadron->AddToHistogramsName("AnaHadronCorrIsoPhoton_");
+  anacorrisohadron->SetAODObjArrayName("IsoPhotonHadronCorr"); 
   anacorrisohadron->SetDebug(-1);
   anacorrisohadron->SwitchOffCaloPID();
   anacorrisohadron->SwitchOffFiducialCut();
@@ -420,6 +424,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaParticleHadronCorrelation *anacorrhadronpi0 = new AliAnaParticleHadronCorrelation();
   anacorrhadronpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
   anacorrhadronpi0->AddToHistogramsName("AnaHadronCorrPi0_");
+  anacorrhadronpi0->SetAODObjArrayName("Pi0HadronCorr"); 
   anacorrhadronpi0->SetDebug(-1);
   anacorrhadronpi0->SwitchOffCaloPID();
   anacorrhadronpi0->SwitchOffFiducialCut();
@@ -445,6 +450,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaParticleHadronCorrelation *anacorrhadronisopi0 = new AliAnaParticleHadronCorrelation();
   anacorrhadronisopi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
   anacorrhadronisopi0->AddToHistogramsName("AnaHadronCorrIsoPi0_");
+  anacorrhadronisopi0->SetAODObjArrayName("IsoPi0HadronCorr"); 
   anacorrhadronisopi0->SetDebug(-1);
   anacorrhadronisopi0->SwitchOffCaloPID();
   anacorrhadronisopi0->SwitchOffFiducialCut();

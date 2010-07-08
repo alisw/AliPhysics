@@ -21,8 +21,8 @@ class TString;
 class TH1I;
 
 // --- Analysis system ---
-class AliCaloTrackReader ;
-class AliCalorimeterUtils ;
+#include "AliCaloTrackReader.h" 
+#include "AliCalorimeterUtils.h"
 
 class AliAnaPartCorrMaker : public TObject {
 
@@ -62,10 +62,10 @@ class AliAnaPartCorrMaker : public TObject {
       abort();}
   }
   
-  AliCaloTrackReader * GetReader() const {return fReader ; }
+  AliCaloTrackReader * GetReader() {if(!fReader) fReader = new AliCaloTrackReader ();return fReader ; }
   void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
   	
-  AliCalorimeterUtils * GetCaloUtils() const {return fCaloUtils ; }
+  AliCalorimeterUtils * GetCaloUtils() {if(!fCaloUtils) fCaloUtils = new AliCalorimeterUtils(); return fCaloUtils ; }
   void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
 	
   //Others
