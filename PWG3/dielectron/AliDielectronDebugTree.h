@@ -26,6 +26,7 @@
 
 class TTreeSRedirector;
 class AliDielectronPair;
+class AliDielectron;
 
 class AliDielectronDebugTree : public TNamed {
 public:
@@ -41,6 +42,8 @@ public:
   
   void Fill(AliDielectronPair *pair);
 
+  void SetDielectron(AliDielectron * const dielectron) { fDielectron=dielectron; }
+  
   void DeleteStreamer();
   void WriteTree();
 private:
@@ -52,7 +55,8 @@ private:
   Int_t  fVariablesLeg[AliDielectronVarManager::kNMaxValues]; //configured variables for the legs
 
   TTreeSRedirector *fStreamer;     //! Tree Redirector
-  
+  AliDielectron *fDielectron;      //! pointer to mother dielectron manager
+
   AliDielectronDebugTree(const AliDielectronDebugTree &c);
   AliDielectronDebugTree &operator=(const AliDielectronDebugTree &c);
 

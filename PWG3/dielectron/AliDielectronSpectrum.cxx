@@ -29,6 +29,8 @@ Detailed description
 #include <TMath.h>
 #include <TVectorT.h>
 #include <TH1.h>
+#include <TROOT.h>
+#include <TCanvas.h>
 
 #include <AliCFContainer.h>
 #include <AliCFGridSparse.h>
@@ -49,12 +51,15 @@ AliDielectronSpectrum::AliDielectronSpectrum() :
   fStepSignal(kTRUE),
   fStepSignificance(kFALSE),
   fStepSOB(kFALSE),
+  fStepMass(kFALSE),
+  fStepMassWidth(kFALSE),
   fSignalStep(-1),
   fCorrNom(-1),
   fCorrDenom(-1),
   fSignalMethods(0),
   fVariables("Pt"),
   fOwnerSpectrum(kTRUE),
+  fVisualDebug(kFALSE),
   fNvars(0),
   fVars(0x0),
   fNbins(0x0),
@@ -77,12 +82,15 @@ AliDielectronSpectrum::AliDielectronSpectrum(const char* name, const char* title
   fStepSignal(kTRUE),
   fStepSignificance(kFALSE),
   fStepSOB(kFALSE),
+  fStepMass(kFALSE),
+  fStepMassWidth(kFALSE),
   fSignalStep(-1),
   fCorrNom(-1),
   fCorrDenom(-1),
   fSignalMethods(0),
   fVariables("Pt"),
   fOwnerSpectrum(kTRUE),
+  fVisualDebug(kFALSE),
   fNvars(0),
   fVars(0x0),
   fNbins(0x0),
@@ -199,6 +207,8 @@ void AliDielectronSpectrum::CreateCFSpectrum()
   if (fStepSignal)       nAddStep+=2;
   if (fStepSignificance) ++nAddStep;
   if (fStepSOB)          ++nAddStep;
+  if (fStepMass)         ++nAddStep;
+  if (fStepMassWidth)    ++nAddStep;
   
   Int_t nStep=nAddStep*(fSignalMethods.GetEntries());
   if (fSignalMethods.GetEntries()>1) nStep+=nAddStep;
@@ -224,6 +234,12 @@ void AliDielectronSpectrum::CreateCFSpectrum()
     }
     if (fStepSOB){
       fCFSpectrum->SetStepTitle(steps++,(name+" (S/B)").Data());
+    }
+    if (fStepMass){
+      fCFSpectrum->SetStepTitle(steps++,(name+" (Mass)").Data());
+    }
+    if (fStepMassWidth){
+      fCFSpectrum->SetStepTitle(steps++,(name+" (Mass width)").Data());
     }
   }
 
@@ -302,6 +318,18 @@ void AliDielectronSpectrum::ExtractSignalInBins(Int_t variable)
     for (Int_t iMethod=0; iMethod<fSignalMethods.GetEntries(); ++iMethod){
       AliDielectronSignalBase *signalMethod=(AliDielectronSignalBase*)fSignalMethods.At(iMethod);
       signalMethod->Process(&arrPairTypes);
+      if (fVisualDebug){
+        TCanvas *c=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("SpectrumVisualDebug");
+        if (!c) c=new TCanvas("SpectrumVisualDebug","SpectrumVisualDebug");
+        c->Clear();
+        TString binsProc;
+        for (Int_t ivar=0; ivar<fNvars; ++ivar) binsProc+=Form("_%02d",fCurrentBins[ivar]);
+        signalMethod->Draw("stat");
+        binsProc.Append(".png");
+        binsProc.Prepend("SpectrumVisualDebug");
+        c->Update();
+        c->Print(binsProc.Data());
+      }
       const TVectorD &val=signalMethod->GetValues();
       const TVectorD &err=signalMethod->GetErrors();
       
@@ -338,6 +366,18 @@ void AliDielectronSpectrum::ExtractSignalInBins(Int_t variable)
       if (fStepSOB) {
         fCFSpectrum->GetGrid(step)->SetElement(fCurrentBins,val(3));
         fCFSpectrum->GetGrid(step)->SetElementError(fCurrentBins,err(3));
+        ++step;
+      }
+
+      if (fStepMass) {
+        fCFSpectrum->GetGrid(step)->SetElement(fCurrentBins,val(4));
+        fCFSpectrum->GetGrid(step)->SetElementError(fCurrentBins,err(4));
+        ++step;
+      }
+      
+      if (fStepMassWidth) {
+        fCFSpectrum->GetGrid(step)->SetElement(fCurrentBins,val(5));
+        fCFSpectrum->GetGrid(step)->SetElementError(fCurrentBins,err(5));
         ++step;
       }
     }// end method loop

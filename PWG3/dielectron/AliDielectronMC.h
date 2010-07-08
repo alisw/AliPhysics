@@ -42,14 +42,14 @@ public:
   void Initialize();                              // initialization
   Int_t GetNMCTracks();                                     // return number of generated tracks
   Int_t GetNMCTracksFromStack();                            // return number of generated tracks from stack
-  Int_t GetMCPID(AliESDtrack* _track);                      // return MC PID
-  Int_t GetMCPIDFromStack(AliESDtrack* _track);             // return MC PID
-  Int_t GetMotherPDG(AliESDtrack* _track);                  // return mother PID from the MC stack
-  Int_t GetMotherPDGFromStack(AliESDtrack* _track);         // return mother PID from the MC stack
-  Int_t GetMCProcess(AliESDtrack* _track);                  // return process number
-  Int_t GetMCProcessFromStack(AliESDtrack* _track);         // return process number
-  Int_t GetMCProcessMother(AliESDtrack* _track);            // return process number of the mother track
-  Int_t GetMCProcessMotherFromStack(AliESDtrack* _track);   // return process number of the mother track
+  Int_t GetMCPID(const AliESDtrack* _track);                      // return MC PID
+  Int_t GetMCPIDFromStack(const AliESDtrack* _track);             // return MC PID
+  Int_t GetMotherPDG(const AliESDtrack* _track);                  // return mother PID from the MC stack
+  Int_t GetMotherPDGFromStack(const AliESDtrack* _track);         // return mother PID from the MC stack
+  Int_t GetMCProcess(const AliESDtrack* _track);                  // return process number
+  Int_t GetMCProcessFromStack(const AliESDtrack* _track);         // return process number
+  Int_t GetMCProcessMother(const AliESDtrack* _track);            // return process number of the mother track
+  Int_t GetMCProcessMotherFromStack(const AliESDtrack* _track);   // return process number of the mother track
   
   Bool_t ConnectMCEvent();
   Bool_t UpdateStack();
@@ -57,16 +57,25 @@ public:
   Bool_t IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Bool_t IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Bool_t IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMother);
+
+  Bool_t HaveSameMother(const AliDielectronPair *pair);
   
   Int_t GetLabelMotherWithPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Int_t GetLabelMotherWithPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
   AliVParticle* GetMCTrackFromMCEvent(AliVParticle *track);   // return MC track directly from MC event
   AliVParticle* GetMCTrackFromMCEvent(Int_t _itrk);           // return MC track directly from MC event
-  TParticle* GetMCTrackFromStack(AliESDtrack* _track);        // return MC track from stack
-  AliMCParticle* GetMCTrack(AliESDtrack* _track);             // return MC track associated with reco track
-  TParticle* GetMCTrackMotherFromStack(AliESDtrack* _track);  // return MC mother track from stack
-  AliMCParticle* GetMCTrackMother(AliESDtrack* _track);       // return MC mother track from stack
+  TParticle* GetMCTrackFromStack(const AliESDtrack* _track);        // return MC track from stack
+  AliMCParticle* GetMCTrack(const AliESDtrack* _track);             // return MC track associated with reco track
+  
+  TParticle* GetMCTrackMotherFromStack(const AliESDtrack* _track);  // return MC mother track from stack
+  AliMCParticle* GetMCTrackMother(const AliESDtrack* _track);       // return MC mother track from stack
+  AliMCParticle* GetMCTrackMother(const AliMCParticle* _particle);       // return MC mother track from stack
+  AliAODMCParticle* GetMCTrackMother(const AliAODMCParticle* _particle);       // return MC mother track from stack
+
+  Int_t NumberOfDaughters(const AliESDtrack* track);                 // return number of daughters
+  Int_t NumberOfDaughters(const AliMCParticle* particle);                 // return number of daughters
+  Int_t NumberOfDaughters(const AliAODMCParticle* particle);                 // return number of daughters
 
   void GetDaughters(const TObject *mother, AliVParticle* &d1, AliVParticle* &d2);
   

@@ -66,6 +66,8 @@ private:
 
   Int_t fParM;                 // Paramter which defines the mass
   Int_t fParMres;              // Paramter which defines the resolution of the mass
+
+  TH1 *fSignalHist;            // Current signal histogram
   
   AliDielectronSignalFunc(const AliDielectronSignalFunc &c);
   AliDielectronSignalFunc &operator=(const AliDielectronSignalFunc &c);

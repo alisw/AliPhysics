@@ -35,9 +35,9 @@ ClassImp(AliDielectronSignalBase)
 
 AliDielectronSignalBase::AliDielectronSignalBase() :
   TNamed(),
-  fValues(4),
-  fErrors(4),
-  fIntMin(2.99),
+  fValues(6),
+  fErrors(6),
+  fIntMin(3.01),
   fIntMax(3.19)
 {
   //
@@ -49,9 +49,9 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
 //______________________________________________
 AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* title) :
   TNamed(name, title),
-  fValues(4),
-  fErrors(4),
-  fIntMin(2.99),
+  fValues(6),
+  fErrors(6),
+  fIntMin(3.01),
   fIntMax(3.19)
 {
   //
@@ -85,10 +85,14 @@ TPaveText* AliDielectronSignalBase::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=
   t->SetFillColor(kWhite);
   t->SetBorderSize(1);
   t->SetTextAlign(12);
-  t->AddText(Form("Singal : %.2f #pm %.2f",GetSignal(),GetSignalError()));
-  t->AddText(Form("Backgnd: %.2f #pm %.2f",GetBackground(),GetBackgroundError()));
-  t->AddText(Form("Signif.: %.2f #pm %.2f",GetSignificance(),GetSignificanceError()));
-  t->AddText(Form("SoB    : %.2f #pm %.2f",GetSignalOverBackground(),GetSignalOverBackgroundError()));
+  t->AddText(Form("Signal : %.5g #pm %.5g",GetSignal(),GetSignalError()));
+  t->AddText(Form("Backgnd: %.5g #pm %.5g",GetBackground(),GetBackgroundError()));
+  t->AddText(Form("Signif.: %.5g #pm %.5g",GetSignificance(),GetSignificanceError()));
+  t->AddText(Form("SoB    : %.5g #pm %.5g",GetSignalOverBackground(),GetSignalOverBackgroundError()));
+  if (GetMass()>0){
+    t->AddText(Form("Mass: %.5g #pm %.5g", GetMass(), GetMassError()));
+    t->AddText(Form("Mass res.: %.5g #pm %.5g", GetMassWidth(), GetMassWidthError()));
+  }
   t->Draw();
 
   return t;

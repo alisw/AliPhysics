@@ -22,6 +22,7 @@
 
 #include "AliDielectronPair.h"
 #include "AliVTrack.h"
+#include "AliPID.h"
 
 ClassImp(AliDielectronPair)
 
@@ -77,13 +78,13 @@ void AliDielectronPair::SetTracks(AliVTrack * const particle1, Int_t pid1,
   fPair.Initialize();
   fD1.Initialize();
   fD2.Initialize();
-  
+
   AliKFParticle kf1(*particle1,pid1);
   AliKFParticle kf2(*particle2,pid2);
 
   fPair.AddDaughter(kf1);
   fPair.AddDaughter(kf2);
-  
+
   if (particle1->Pt()>particle2->Pt()){
     fRefD1 = particle1;
     fRefD2 = particle2;
@@ -97,3 +98,100 @@ void AliDielectronPair::SetTracks(AliVTrack * const particle1, Int_t pid1,
   }
 }
 
+//______________________________________________
+Double_t AliDielectronPair::ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2, 
+				       const Bool_t isHE, const Bool_t isTheta) {
+  // The function calculates theta and phi in the mother rest frame with 
+  // respect to the helicity coordinate system and Collins-Soper coordinate system
+  // TO DO: generalize for different decays (only J/Psi->e+e- now)
+
+  // Laboratory frame 4-vectors:
+  // projectile beam & target beam 4-mom
+  const Double_t kBeamEnergy   = 3500.;      //TODO: need to retrieve the beam energy from somewhere
+  TLorentzVector projMom(0.,0.,-kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+AliPID::ParticleMass(AliPID::kProton)*AliPID::ParticleMass(AliPID::kProton))); 
+  TLorentzVector targMom(0.,0.,kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+AliPID::ParticleMass(AliPID::kProton)*AliPID::ParticleMass(AliPID::kProton))); 
+  
+  // first & second daughter 4-mom
+  TLorentzVector p1Mom(d1->Px(),d1->Py(),d1->Pz(),TMath::Sqrt(d1->Px()*d1->Px()+d1->Py()*d1->Py()+d1->Pz()*d1->Pz()+AliPID::ParticleMass(AliPID::kElectron)*AliPID::ParticleMass(AliPID::kElectron)));
+  TLorentzVector p2Mom(d2->Px(),d2->Py(),d2->Pz(),TMath::Sqrt(d2->Px()*d2->Px()+d2->Py()*d2->Py()+d2->Pz()*d2->Pz()+AliPID::ParticleMass(AliPID::kElectron)*AliPID::ParticleMass(AliPID::kElectron)));
+  // J/Psi 4-momentum vector
+  TLorentzVector motherMom=p1Mom+p2Mom;
+  
+  // boost all the 4-mom vectors to the mother rest frame
+  TVector3 beta = (-1.0/motherMom.E())*motherMom.Vect();
+  p1Mom.Boost(beta);
+  p2Mom.Boost(beta);
+  projMom.Boost(beta);
+  targMom.Boost(beta);
+  
+  // x,y,z axes 
+  TVector3 zAxis;
+  if(isHE) zAxis = (motherMom.Vect()).Unit();
+  else zAxis = ((projMom.Vect()).Unit()-(targMom.Vect()).Unit()).Unit();
+  TVector3 yAxis = ((projMom.Vect()).Cross(targMom.Vect())).Unit();
+  TVector3 xAxis = (yAxis.Cross(zAxis)).Unit();
+  
+  // return either theta or phi
+  if(isTheta) {
+    if(d1->Charge()>0)
+      return zAxis.Dot((p1Mom.Vect()).Unit());
+    else 
+      return zAxis.Dot((p2Mom.Vect()).Unit());
+
+  }
+  else {
+    if(d1->Charge()>0)
+      return TMath::ATan2((p1Mom.Vect()).Dot(yAxis), (p1Mom.Vect()).Dot(xAxis));
+    else
+      return TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxis));
+  }
+}
+
+//______________________________________________
+Double_t AliDielectronPair::ThetaPhiCM(const Bool_t isHE, const Bool_t isTheta) const {
+  // The function calculates theta and phi in the mother rest frame with 
+  // respect to the helicity coordinate system and Collins-Soper coordinate system
+  // TO DO: generalize for different decays (only J/Psi->e+e- now)
+
+  // Laboratory frame 4-vectors:
+  // projectile beam & target beam 4-mom
+  const Double_t kBeamEnergy   = 3500.;      //TODO: need to retrieve the beam energy from somewhere
+  TLorentzVector projMom(0.,0.,-kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+AliPID::ParticleMass(AliPID::kProton)*AliPID::ParticleMass(AliPID::kProton))); 
+  TLorentzVector targMom(0.,0.,kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+AliPID::ParticleMass(AliPID::kProton)*AliPID::ParticleMass(AliPID::kProton))); 
+
+  // first & second daughter 4-mom
+  AliVParticle *d1 = dynamic_cast<AliVParticle*>(fRefD1.GetObject());
+  AliVParticle *d2 = dynamic_cast<AliVParticle*>(fRefD2.GetObject());
+  TLorentzVector p1Mom(d1->Px(),d1->Py(),d1->Pz(),TMath::Sqrt(d1->Px()*d1->Px()+d1->Py()*d1->Py()+d1->Pz()*d1->Pz()+AliPID::ParticleMass(AliPID::kElectron)*AliPID::ParticleMass(AliPID::kElectron)));
+  TLorentzVector p2Mom(d2->Px(),d2->Py(),d2->Pz(),TMath::Sqrt(d2->Px()*d2->Px()+d2->Py()*d2->Py()+d2->Pz()*d2->Pz()+AliPID::ParticleMass(AliPID::kElectron)*AliPID::ParticleMass(AliPID::kElectron)));
+  // J/Psi 4-momentum vector
+  TLorentzVector motherMom=p1Mom+p2Mom;
+
+  // boost all the 4-mom vectors to the mother rest frame
+  TVector3 beta = (-1.0/motherMom.E())*motherMom.Vect();
+  p1Mom.Boost(beta);
+  p2Mom.Boost(beta);
+  projMom.Boost(beta);
+  targMom.Boost(beta);
+
+  // x,y,z axes 
+  TVector3 zAxis;
+  if(isHE) zAxis = (motherMom.Vect()).Unit();
+  else zAxis = ((projMom.Vect()).Unit()-(targMom.Vect()).Unit()).Unit();
+  TVector3 yAxis = ((projMom.Vect()).Cross(targMom.Vect())).Unit();
+  TVector3 xAxis = (yAxis.Cross(zAxis)).Unit();
+
+  // return either theta or phi
+  if(isTheta) {
+    if(fD1.GetQ()>0) 
+      return zAxis.Dot((p1Mom.Vect()).Unit());
+    else
+      return zAxis.Dot((p2Mom.Vect()).Unit());
+  }
+  else {
+    if(fD1.GetQ()>0)
+      return TMath::ATan2((p1Mom.Vect()).Dot(yAxis), (p1Mom.Vect()).Dot(xAxis));
+    else
+      return TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxis));
+  }
+}

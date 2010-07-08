@@ -26,7 +26,7 @@
 
 class AliDielectronPairLegCuts : public AliAnalysisCuts {
 public:
-  enum CutType { kBothLegs=0, kAnyLeg };
+  enum CutType { kBothLegs=0, kAnyLeg, kMixLegs };
 
   AliDielectronPairLegCuts();
   AliDielectronPairLegCuts(const char* name, const char* title);

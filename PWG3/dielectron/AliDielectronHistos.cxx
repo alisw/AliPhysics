@@ -445,6 +445,14 @@ void AliDielectronHistos::Draw(const Option_t* option)
       if ( TMath::Abs(h->GetXaxis()->GetBinWidth(1)-h->GetXaxis()->GetBinWidth(2))>1e-10 ) gPad->SetLogx();
       if ( TMath::Abs(h->GetYaxis()->GetBinWidth(1)-h->GetYaxis()->GetBinWidth(2))>1e-10 ) gPad->SetLogy();
       if ( TMath::Abs(h->GetZaxis()->GetBinWidth(1)-h->GetZaxis()->GetBinWidth(2))>1e-10 ) gPad->SetLogz();
+      TString histOpt=h->GetOption();
+      histOpt.ToLower();
+      if (histOpt.Contains("logx")) gPad->SetLogx();
+      if (histOpt.Contains("logy")) gPad->SetLogy();
+      if (histOpt.Contains("logz")) gPad->SetLogz();
+      histOpt.ReplaceAll("logx","");
+      histOpt.ReplaceAll("logy","");
+      histOpt.ReplaceAll("logz","");
       h->Draw(drawOpt.Data());
     }
     if (gVirtualPS) c->Update();

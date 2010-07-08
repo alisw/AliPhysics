@@ -49,8 +49,6 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   // Setup the track cuts
   //
   
-  //ESD quality cuts
-  die->GetTrackFilter().AddCuts(SetupESDtrackCuts(cutDefinition));
   
 
   //QA no CF

@@ -37,6 +37,8 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Init();
   virtual void LocalInit() {Init();}
+
+  void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
   
   void SetDielectron(AliDielectron * const die) { fDielectron = die; }
   
@@ -44,6 +46,8 @@ private:
   
   AliDielectron *fDielectron;             // J/psi framework object
 
+  Bool_t fSelectPhysics;                  // Whether to use physics selection
+  
   AliAnalysisTaskDielectronFilter(const AliAnalysisTaskDielectronFilter &c);
   AliAnalysisTaskDielectronFilter& operator= (const AliAnalysisTaskDielectronFilter &c);
   

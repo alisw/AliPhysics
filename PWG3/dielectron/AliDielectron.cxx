@@ -90,6 +90,8 @@ AliDielectron::AliDielectron() :
   fTrackFilter("TrackFilter"),
   fPairFilter("PairFilter"),
   fPdgMother(443),
+  fPdgLeg1(11),
+  fPdgLeg2(11),
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
   fCfManagerPair(0x0),
@@ -108,6 +110,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fTrackFilter("TrackFilter"),
   fPairFilter("PairFilter"),
   fPdgMother(443),
+  fPdgLeg1(11),
+  fPdgLeg2(11),
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
   fCfManagerPair(0x0),
@@ -137,7 +141,7 @@ void AliDielectron::Init()
   // Initialise objects
   //
   if (fCfManagerPair) fCfManagerPair->InitialiseContainer(fPairFilter);
-  
+  if (fDebugTree) fDebugTree->SetDielectron(this);
 } 
 
 //________________________________________________________________
@@ -295,9 +299,9 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2) {
     Int_t end=ntrack2;
     if (arr1==arr2) end=itrack1;
     for (Int_t itrack2=0; itrack2<end; ++itrack2){
-      //create the pair TODO: change hardcoded PID of tracks
-      candidate->SetTracks(static_cast<AliVTrack*>(fTracks[arr1].UncheckedAt(itrack1)), 11,
-                           static_cast<AliVTrack*>(fTracks[arr2].UncheckedAt(itrack2)), 11);
+      //create the pair
+      candidate->SetTracks(static_cast<AliVTrack*>(fTracks[arr1].UncheckedAt(itrack1)), fPdgLeg1,
+                           static_cast<AliVTrack*>(fTracks[arr2].UncheckedAt(itrack2)), fPdgLeg2);
       candidate->SetType(pairIndex);
       candidate->SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother));
 

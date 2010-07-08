@@ -37,6 +37,11 @@ public:
   void ProcessLS(TObjArray* const arrhist);  // like-sign method
   void ProcessEM(TObjArray* const arrhist);  // event mixing method
   
+  // getters
+  TH1F* GetHistogramSignal()     const { return fSignal; } 
+  TH1F* GetHistogramBackground() const { return fBackground; }
+
+  // setters
   void SetMethod(Int_t method){ fMethod=method; }
   void SetHistograms(TH1F* const unlike, TH1F* const backg, TH1F* const signal);
   void SetRebin(Int_t rebin) {fRebin = rebin;}

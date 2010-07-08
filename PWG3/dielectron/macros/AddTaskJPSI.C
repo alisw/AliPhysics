@@ -32,9 +32,6 @@ AliAnalysisTask *AddTaskJPSI(const char* config=""){
   //----------------------
   //create data containers
   //----------------------
-
-  //find input container
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWG3_dielectron";

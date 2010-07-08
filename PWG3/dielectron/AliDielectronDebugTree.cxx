@@ -38,6 +38,8 @@ NOTE: Please use with extream care! Only for debugging and test purposes!!!
 #include <AliESDEvent.h>
 #include <AliVTrack.h>
 
+#include "AliDielectron.h"
+#include "AliDielectronMC.h"
 #include "AliDielectronPair.h"
 
 #include "AliDielectronDebugTree.h"
@@ -49,7 +51,8 @@ AliDielectronDebugTree::AliDielectronDebugTree() :
   fFileName("jpsi_debug.root"),
   fNVars(0),
   fNVarsLeg(0),
-  fStreamer(0x0)
+  fStreamer(0x0),
+  fDielectron(0x0)
 {
   //
   // Default Constructor
@@ -66,7 +69,8 @@ AliDielectronDebugTree::AliDielectronDebugTree(const char* name, const char* tit
   fFileName("jpsi_debug.root"),
   fNVars(0),
   fNVarsLeg(0),
-  fStreamer(0x0)
+  fStreamer(0x0),
+  fDielectron(0x0)
 {
   //
   // Named Constructor
@@ -106,6 +110,7 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   //Get File and event information
   TObjString fileName;
   Int_t eventInFile=-1;
+  Int_t runNumber=-1;
   
   TTree *t=man->GetTree();
   if (t) {
@@ -117,6 +122,7 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   if (han){
     AliESDEvent *ev=dynamic_cast<AliESDEvent*>(han->GetEvent());
     eventInFile=ev->GetEventNumberInFile();
+    runNumber=ev->GetRunNumber();
   }
   
   if (!fStreamer) fStreamer=new TTreeSRedirector(fFileName.Data());
@@ -126,9 +132,19 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   (*fStreamer) << "Pair"
     << "File.="       << &fileName
     << "EventInFile=" << eventInFile
+    << "Run="         << runNumber
     << "Leg1_ID="     << id1
     << "Leg2_ID="     << id2;
   
+  //Fill MC information
+  Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
+  if (hasMC){
+    Int_t pdg=443;
+    if (fDielectron) pdg=fDielectron->GetMotherPdg();
+    Bool_t isMotherMC = AliDielectronMC::Instance()->IsMotherPdg(pair,pdg);
+    (*fStreamer) << "Pair"
+      << "mcTruth=" << isMotherMC;
+  }
   
   Int_t var=0;
   Double_t values[AliDielectronVarManager::kNMaxValues];
