@@ -1493,11 +1493,11 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    }   
    sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
    gROOT->ProcessLine(line);
-   sprintf(line, "gProof->GetDataSet(\"%s\");", dataset);
-   if (!gROOT->ProcessLine(line)) {
-      Error("StartAnalysis", "Dataset %s not found", dataset);
-      return -1;
-   }   
+//   sprintf(line, "gProof->GetDataSet(\"%s\");", dataset);
+//   if (!gROOT->ProcessLine(line)) {
+//      Error("StartAnalysis", "Dataset %s not found", dataset);
+//      return -1;
+//   }   
    sprintf(line, "gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
            dataset, nentries, firstentry);
    cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
