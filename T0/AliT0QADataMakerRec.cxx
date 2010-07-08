@@ -505,7 +505,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     {  
       
       UInt_t type =rawReader->GetType();
-      if (type == 8){ shift=101; fnEventCal++;} 
+      if (type == 8){ shift=101; } 
       if (type == 7){ shift=0;   fnEventPhys++;}
       Int_t allData[110][5];
       for (Int_t i0=0; i0<105; i0++)
@@ -517,7 +517,10 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  allData[i][iHit]= start->GetData(i,iHit);
       
       if ( type == 7  && allData[0][0] > 0 ) GetRawsData(0) -> Fill( allData[0][0]);
-      if ( type == 8  && allData[0][0] > 0 ) GetRawsData(358) -> Fill( allData[0][0]);
+      if ( type == 8  && allData[0][0] > 0 ) { 
+	GetRawsData(358) -> Fill( allData[0][0]);
+	fnEventCal++;
+	}
  
       refpoint = allData[refPointParam][0];
       if (refPointParam <  0 ) refpoint=0; 
