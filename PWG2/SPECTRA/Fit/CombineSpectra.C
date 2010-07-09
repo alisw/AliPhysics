@@ -31,7 +31,7 @@ using namespace std;
 
 // A bunch of useful enums and constants
 enum {kPion=0,kKaon,kProton,kNPart};
-enum {kTPC=0,kTOF,kITS,kITSTPC,kK0,kKinks,kCombTOFTPC,kNHist};// "k0" listed here as a kind of PID method...
+enum {kTPC=0,kTOF,kITS,kITSTPC,kK0,kKinks,kCombTOFTPC,kCombAll,kNHist};// "k0" listed here as a kind of PID method...
 const Int_t kNDet = kITS+2;
 enum {kPos=0,kNeg,kNCharge};
 enum {kPhojet=0,kPyTuneAtlasCSC, kPyTuneCMS6D6T, kPyTunePerugia0, kNTunes} ;
@@ -65,8 +65,8 @@ const Int_t mcLineStyle[] = {1,2,3,4};
 
 
 // Template needed to combine different detectors
-const Float_t templBins[] = {0.05,0.1,0.15,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2,2.2,2.4,2.6};
-Int_t nbinsTempl=31;
+const Float_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2,2.2,2.4,2.6};
+Int_t nbinsTempl=34;
 
 TH1F * htemplate = new TH1F("htemplate", "htemplate",nbinsTempl, templBins );
 
@@ -105,6 +105,7 @@ Int_t  fitFuncID = kFitLevi;
 Bool_t scaleKaons =  kFALSE;
 Bool_t correctSecondaries  = 1;
 Bool_t correctGeantFlukaXS = 1;
+Int_t iCombInStudy = kCombAll;
 
 void CombineSpectra() {
 
@@ -216,19 +217,19 @@ void CombineSpectra() {
 	fitmax = 1.0;
       }
 
-      if(!AliBWTools::Fit(hSpectra[kCombTOFTPC][ipart][icharge],func,fitmin,fitmax)) {
+      if(!AliBWTools::Fit(hSpectra[iCombInStudy][ipart][icharge],func,fitmin,fitmax)) {
 	cout << " FIT ERROR " << endl;
 	return;      
       }
-      hSpectra[kCombTOFTPC][ipart][icharge]->Draw("same");    
-      hSpectra[kCombTOFTPC][ipart][icharge]->GetListOfFunctions()->At(0)->Draw("same");
-      ((TF1*)hSpectra[kCombTOFTPC][ipart][icharge]->GetListOfFunctions()->At(0))->SetRange(0,4);
-      l->AddEntry(hSpectra[kCombTOFTPC][ipart][icharge], 
+      hSpectra[iCombInStudy][ipart][icharge]->Draw("same");    
+      hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->At(0)->Draw("same");
+      ((TF1*)hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->At(0))->SetRange(0,4);
+      l->AddEntry(hSpectra[iCombInStudy][ipart][icharge], 
 		  scaleKaons && ipart == kKaon ? 
 		  (TString(partLabel[ipart][icharge])+" #times 2").Data() 
 		  : partLabel[ipart][icharge]);
-//       TF1 * fClone = (TF1*) hSpectra[kCombTOFTPC][ipart][icharge]->GetListOfFunctions()->At(0)->Clone();
-//       hSpectra[kCombTOFTPC][ipart][icharge]->GetListOfFunctions()->Add(fClone);
+//       TF1 * fClone = (TF1*) hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->At(0)->Clone();
+//       hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->Add(fClone);
 //       fClone->SetLineStyle(kDashed);
 //       fClone->SetRange(0,100);
 //       fClone->Draw("same");
@@ -242,7 +243,7 @@ void CombineSpectra() {
 
       Double_t yieldTools, yieldETools;
       Double_t partialYields[3],partialYieldsErrors[3]; 
-      AliBWTools::GetYield(hSpectra[kCombTOFTPC][ipart][icharge], func, yieldTools, yieldETools, 
+      AliBWTools::GetYield(hSpectra[iCombInStudy][ipart][icharge], func, yieldTools, yieldETools, 
 			   0, 100, partialYields,partialYieldsErrors);
       Double_t tslope   = func->GetParameter(2);
       Double_t tslopeE  = func->GetParError(2);	
@@ -254,7 +255,7 @@ void CombineSpectra() {
       table.SetNextCol(tslope,tslopeE,-4);
       table.SetNextCol(func->GetParameter(1)); 
       table.SetNextCol(Form("%2.2f/%d",func->GetChisquare(),func->GetNDF())); 
-      Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[kCombTOFTPC][ipart][icharge]);
+      Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[iCombInStudy][ipart][icharge]);
       //Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[kITS][ipart][icharge]);
       Float_t yieldAbove  = func->Integral(lowestPoint,100);
       table.SetNextCol(lowestPoint,-2);
@@ -569,6 +570,20 @@ void LoadSpectra() {
   
 
 
+
+  // Create fake weights for the mean; To be update once we have syst errors
+  TH1F * hWeights[3];
+  const Double_t kWeights[3] = {0.1,0.1,0.2}; // TPC, TOF, ITS
+  for(Int_t idet = 0; idet <= kITS ; idet++){
+    hWeights[idet] = (TH1F*) hSpectra[idet][kPion][kPos]->Clone();
+    Int_t nbin = hWeights[idet]->GetNbinsX();
+    for(Int_t ibin = 0; ibin < nbin; ibin++){
+      hWeights[idet]->SetBinError(ibin, kWeights[idet]);
+    }    
+  }
+  
+
+
   // Combine detectors
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
     for(Int_t icharge = 0; icharge < kNCharge; icharge++){
@@ -582,6 +597,14 @@ void LoadSpectra() {
       hSpectra[kCombTOFTPC][ipart][icharge] = AliBWTools::CombineHistos(hSpectra[kTOF][ipart][icharge],
 									hSpectra[kTPC][ipart][icharge],
 									htemplLocal,1.);;
+      hSpectra[kCombAll][ipart][icharge]   = 
+	AliBWTools::Combine3HistosWithErrors(hSpectra[kITS][ipart][icharge],
+					     hSpectra[kTPC][ipart][icharge],
+					     hSpectra[kTOF][ipart][icharge],
+					     hWeights[kITS],
+					     hWeights[kTPC],
+					     hWeights[kTOF],
+					     htemplLocal,1);;
 //       if (convertToMT) {
 // 	TH1F * htmp = (TH1F*) AliBWTools::GetOneOverPtdNdPt(hSpectra[kCombTOFTPC][ipart][icharge]);
 // 	hSpectra[kCombTOFTPC][ipart][icharge] = (TH1F*)AliBWTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
@@ -755,7 +778,7 @@ void DrawWithModels() {
 
       TLegend * l =new TLegend(       0.543624,  0.431818,  0.892617,0.629371);
       l->SetFillColor(kWhite);
-      hSpectra[kCombTOFTPC][ipart][icharge]->Draw("same");
+      hSpectra[iCombInStudy][ipart][icharge]->Draw("same");
       l->AddEntry(hSpectra[kTOF][ipart][icharge],TString ("Data: ")+partLabel[ipart][icharge]);
       for(Int_t itune = 0; itune < kNTunes; itune++){      
 	l->AddEntry(hSpectraMC[itune][ipart][icharge],mcTuneName[itune]);
@@ -785,7 +808,7 @@ void DrawWithModels() {
 	TF1* f = fm.GetHistoFunc(hSpectraMC[itune][ipart][icharge], TString("f")+mcTuneName[itune]);
 
 	//	l->AddEntry(hSpectraMC[itune][ipart][icharge],mcTuneName[itune]);
-	TH1F* hRatio = AliBWTools::DivideHistoByFunc(hSpectra[kCombTOFTPC][ipart][icharge],f);
+	TH1F* hRatio = AliBWTools::DivideHistoByFunc(hSpectra[iCombInStudy][ipart][icharge],f);
 	hRatio->SetLineStyle(hSpectraMC[itune][ipart][icharge]->GetLineStyle());
 	hRatio->SetLineColor(hSpectraMC[itune][ipart][icharge]->GetLineColor());
 	hRatio->SetLineWidth(hSpectraMC[itune][ipart][icharge]->GetLineWidth());
@@ -816,8 +839,8 @@ void DrawAllAndKaons() {
 
   gStyle->SetOptFit(0);
 
-  TH1F * hKaonsAllTPCTOF = (TH1F*) hSpectra[kCombTOFTPC][kKaon][kPos]->Clone();
-  hKaonsAllTPCTOF->Add(hSpectra[kCombTOFTPC][kKaon][kNeg]);
+  TH1F * hKaonsAllTPCTOF = (TH1F*) hSpectra[iCombInStudy][kKaon][kPos]->Clone();
+  hKaonsAllTPCTOF->Add(hSpectra[iCombInStudy][kKaon][kNeg]);
   
   TH1F * hK0Scaled    = (TH1F*) hSpectra[kK0][kKaon][kPos]->Clone();
   hK0Scaled->Add(hSpectra[kK0][kKaon][kPos]);
@@ -920,7 +943,7 @@ void DrawWithJacek() {
   //1. Convert spectra to dNdeta and sum
   TH1F * hsum = (TH1F*) htemplate->Clone();
   hsum->Reset();
-  Int_t idet= kCombTOFTPC;
+  Int_t idet= iCombInStudy;
   for(Int_t icharge = 0; icharge < kNCharge; icharge++){
     for(Int_t ipart = 0; ipart < kNPart; ipart++){
       TH1 * h = hSpectra[idet][ipart][icharge];
@@ -980,7 +1003,7 @@ void DrawRatioToStar() {
   Double_t scaleYield = 3.58/3.02; // from paper 2
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
     for(Int_t icharge = 0; icharge < kNCharge; icharge++){
-      hSpectra[kCombTOFTPC][ipart][icharge]->Scale(scaleYield);
+      hSpectra[iCombInStudy][ipart][icharge]->Scale(scaleYield);
     }    
   }
   
@@ -1001,17 +1024,17 @@ void DrawRatioToStar() {
 
   hempty->Draw();
   TGraphErrors * g ;
-  g = AliBWTools::DivideGraphByHisto(gStar[0],hSpectra[kCombTOFTPC][kPion][kNeg],1);
+  g = AliBWTools::DivideGraphByHisto(gStar[0],hSpectra[iCombInStudy][kPion][kNeg],1);
   g->SetMarkerStyle(kFullCircle);
   g->SetMarkerColor(kBlack);
   g->Draw("p");
   leg->AddEntry(g,"#pi^{-}","lp");
-  g = AliBWTools::DivideGraphByHisto(gStar[2],hSpectra[kCombTOFTPC][kKaon][kNeg],1);
+  g = AliBWTools::DivideGraphByHisto(gStar[2],hSpectra[iCombInStudy][kKaon][kNeg],1);
   g->SetMarkerStyle(kOpenCircle);
   g->SetMarkerColor(kRed);
   g->Draw("p");
   leg->AddEntry(g,"K^{-}","lp");
-  g = AliBWTools::DivideGraphByHisto(gStar[4],hSpectra[kCombTOFTPC][kProton][kNeg],1);
+  g = AliBWTools::DivideGraphByHisto(gStar[4],hSpectra[iCombInStudy][kProton][kNeg],1);
   g->SetMarkerStyle(kOpenSquare);
   g->SetMarkerColor(kBlue);
   g->Draw("p");
@@ -1031,17 +1054,17 @@ void DrawRatioToStar() {
   leg->SetFillColor(0);
   leg->SetFillStyle(1001);
  //  TGraphErrors * g ;
-  g = AliBWTools::DivideGraphByHisto(gStar[1],hSpectra[kCombTOFTPC][kPion][kPos],1);
+  g = AliBWTools::DivideGraphByHisto(gStar[1],hSpectra[iCombInStudy][kPion][kPos],1);
   g->SetMarkerStyle(kFullCircle);
   g->SetMarkerColor(kBlack);
   g->Draw("p");
   leg->AddEntry(g,"#pi^{+}","lp");
-  g = AliBWTools::DivideGraphByHisto(gStar[3],hSpectra[kCombTOFTPC][kKaon][kPos],1);
+  g = AliBWTools::DivideGraphByHisto(gStar[3],hSpectra[iCombInStudy][kKaon][kPos],1);
   g->SetMarkerStyle(kOpenCircle);
   g->SetMarkerColor(kRed);
   g->Draw("p");
   leg->AddEntry(g,"K^{+}","lp");
-  g = AliBWTools::DivideGraphByHisto(gStar[5],hSpectra[kCombTOFTPC][kProton][kPos],1);
+  g = AliBWTools::DivideGraphByHisto(gStar[5],hSpectra[iCombInStudy][kProton][kPos],1);
   g->SetMarkerStyle(kOpenSquare);
   g->SetMarkerColor(kBlue);
   g->Draw("p");
@@ -1077,17 +1100,17 @@ void DrawRatios() {
   TH1F * hPosNegRatio[kNPart];
   
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
-    hPosNegRatio[ipart] = (TH1F*) hSpectra[kCombTOFTPC][ipart][kPos]->Clone();
-    hPosNegRatio[ipart]->Divide(hSpectra[kCombTOFTPC][ipart][kNeg]);
+    hPosNegRatio[ipart] = (TH1F*) hSpectra[iCombInStudy][ipart][kPos]->Clone();
+    hPosNegRatio[ipart]->Divide(hSpectra[iCombInStudy][ipart][kNeg]);
     hPosNegRatio[ipart]->SetYTitle(TString(partLabel[ipart][kPos])+"/"+partLabel[ipart][kNeg]);    
     hPosNegRatio[ipart]->SetMinimum(0.5);
     hPosNegRatio[ipart]->SetMaximum(1.5);
   }
   
-  TH1F * hKPiRatio = (TH1F*) hSpectra[kCombTOFTPC][kKaon][kPos]->Clone();
-  hKPiRatio->Add(hSpectra[kCombTOFTPC][kKaon][kNeg]);
-  TH1F * htmp = (TH1F*) hSpectra[kCombTOFTPC][kPion][kPos]->Clone();
-  htmp->Add(hSpectra[kCombTOFTPC][kPion][kNeg]);
+  TH1F * hKPiRatio = (TH1F*) hSpectra[iCombInStudy][kKaon][kPos]->Clone();
+  hKPiRatio->Add(hSpectra[iCombInStudy][kKaon][kNeg]);
+  TH1F * htmp = (TH1F*) hSpectra[iCombInStudy][kPion][kPos]->Clone();
+  htmp->Add(hSpectra[iCombInStudy][kPion][kNeg]);
   hKPiRatio->Divide(htmp);
   hKPiRatio->SetYTitle("(K^{+}+K^{-})/(#pi^{+}+#pi^{-})");
 
@@ -1103,10 +1126,10 @@ void DrawRatios() {
   
 
 
-  TH1F * hPPiRatio = (TH1F*) hSpectra[kCombTOFTPC][kProton][kPos]->Clone();
-  hPPiRatio->Add(hSpectra[kCombTOFTPC][kProton][kNeg]);
-  htmp = (TH1F*) hSpectra[kCombTOFTPC][kPion][kPos]->Clone();
-  htmp->Add(hSpectra[kCombTOFTPC][kPion][kNeg]);
+  TH1F * hPPiRatio = (TH1F*) hSpectra[iCombInStudy][kProton][kPos]->Clone();
+  hPPiRatio->Add(hSpectra[iCombInStudy][kProton][kNeg]);
+  htmp = (TH1F*) hSpectra[iCombInStudy][kPion][kPos]->Clone();
+  htmp->Add(hSpectra[iCombInStudy][kPion][kNeg]);
   hPPiRatio->Divide(htmp);
   hPPiRatio->SetYTitle("(p+#bar{p})/(#pi^{+}+#pi^{-})");
 

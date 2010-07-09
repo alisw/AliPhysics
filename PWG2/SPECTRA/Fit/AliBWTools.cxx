@@ -224,6 +224,112 @@ TGraphErrors * AliBWTools::ConcatenateGraphs(TGraphErrors * g1,TGraphErrors * g2
 }
 
 
+TH1F * AliBWTools::Combine3HistosWithErrors(TH1 * h1,  TH1 * h2,  TH1* h3, 
+					    TH1 * he1, TH1 * he2, TH1 * he3, 
+					    TH1* htemplate, Int_t statFrom, 
+					    Float_t renorm1, Float_t renorm2, Float_t renorm3) {
+
+  // Combines 3 histos (h1,h2,h3), weighting by the errors provided in
+  // he1,he2,he3, supposed to be the independent systematic errors.
+  // he1,he2,he3 are also assumed to have the same binning as h1,h2,h3
+  // The combined histo must fit the template provided (no check is performed on this)
+  // The histogram are supposed to come from the same (nearly) sample
+  // of tracks. statFrom tells the stat error of which of the 3 is
+  // going to be assigned to the combined
+  // Optionally, it is possible to rescale any of the histograms.
+
+  TH1F * hcomb = (TH1F*) htemplate->Clone(TString("hComb_")+h1->GetName()+"_"+h2->GetName()+h3->GetName());
+
+  // TODO: I should have used an array for h*local...
+
+  // Clone histos locally to rescale them
+  TH1F * h1local = (TH1F*) h1->Clone();
+  TH1F * h2local = (TH1F*) h2->Clone();
+  TH1F * h3local = (TH1F*) h3->Clone();
+  h1local->Scale(renorm1);
+  h2local->Scale(renorm2);
+  h3local->Scale(renorm3);
+
+  TH1 * hStatError = 0;
+  if (statFrom == 0)      hStatError = h1; 
+  else if (statFrom == 1) hStatError = h2; 
+  else if (statFrom == 2) hStatError = h3; 
+  else Printf("AliBWTools::Combine3HistosWithErrors: wrong value of the statFrom parameter");
+  Printf("AliBWTools::Combine3HistosWithErrors: improve error on combined");
+  // Loop over all bins and take weighted mean of all points
+  Int_t nBinComb = hcomb->GetNbinsX();
+  for(Int_t ibin = 1; ibin <= nBinComb; ibin++){
+    Int_t ibin1 = h1local->FindBin(hcomb->GetBinCenter(ibin));
+    Int_t ibin2 = h2local->FindBin(hcomb->GetBinCenter(ibin));
+    Int_t ibin3 = h3local->FindBin(hcomb->GetBinCenter(ibin));
+    Int_t ibinError = -1; // bin used to get stat error
+
+    if (statFrom == 0)      ibinError = ibin1; 
+    else if (statFrom == 1) ibinError = ibin2; 
+    else if (statFrom == 2) ibinError = ibin3; 
+    else Printf("AliBWTools::Combine3HistosWithErrors: wrong value of the statFrom parameter");
+
+
+    Double_t y[3];
+    Double_t ye[3];
+    y[0]  = h1local->GetBinContent(ibin1);
+    y[1]  = h2local->GetBinContent(ibin2);
+    y[2]  = h3local->GetBinContent(ibin3);
+    ye[0] = he1->GetBinError(ibin1);
+    ye[1] = he2->GetBinError(ibin2);
+    ye[2] = he3->GetBinError(ibin3);
+ 
+    // Set error to 0 if content is 0 (means it was not filled)
+    if(h1local->GetBinContent(ibin1)==0) ye[0] = 0;
+    if(h2local->GetBinContent(ibin2)==0) ye[1] = 0;
+    if(h3local->GetBinContent(ibin3)==0) ye[2] = 0;
+    
+    // Compute weighted mean
+    Double_t mean, err;
+    WeightedMean(3,y,ye,mean,err);
+
+
+    // Fill combined
+    // TODO: return error from weighted mean somehow...
+    hcomb->SetBinContent(ibin,mean);
+    Double_t statError = 0;
+    if (hStatError->GetBinContent(ibinError) != 0) {
+      //      cout << "def" << endl;
+      statError = hStatError->GetBinError(ibinError)/hStatError->GetBinContent(ibinError)*hcomb->GetBinContent(ibin);
+    }
+    else if (h1local->GetBinContent(ibin1) != 0) {
+      //      cout << "1" << endl;
+      statError = h1local->GetBinError(ibin1)/h1local->GetBinContent(ibin1)*hcomb->GetBinContent(ibin);
+    }
+    else if (h2local->GetBinContent(ibin2) != 0) {
+      //      cout << "2" << endl;
+      statError = h2local->GetBinError(ibin2)/h2local->GetBinContent(ibin2)*hcomb->GetBinContent(ibin);
+    }
+    else if (h3local->GetBinContent(ibin3) != 0) {
+      //      cout << "3" << endl;
+      statError = h3local->GetBinError(ibin3)/h3local->GetBinContent(ibin3)*hcomb->GetBinContent(ibin);
+    }
+    hcomb->SetBinError  (ibin,statError);
+
+    //    cout << "BIN " << ibin << " " << mean << " " << statError << endl;
+
+  }
+
+  hcomb->SetMarkerStyle(hStatError->GetMarkerStyle());
+  hcomb->SetMarkerColor(hStatError->GetMarkerColor());
+  hcomb->SetLineColor  (hStatError->GetLineColor());
+
+  hcomb->SetXTitle(hStatError->GetXaxis()->GetTitle());
+  hcomb->SetYTitle(hStatError->GetYaxis()->GetTitle());
+
+  delete h1local;
+  delete h2local;
+  delete h3local;
+
+  return hcomb;
+}
+
+
 TH1F * AliBWTools::CombineHistos(TH1 * h1, TH1 * h2, TH1* htemplate, Float_t renorm1){
 
   // Combine two histos. This assumes the histos have the same binning
@@ -777,4 +883,37 @@ TH1F * AliBWTools::DivideHistoByFunc(TH1F * h, TF1 * f, Bool_t invert){
 
   return hRatio;
 
+}
+
+void AliBWTools::WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr){
+
+
+  mean = 0;
+  meanerr = 0;
+
+  Double_t sumweight = 0;
+
+  for (Int_t ipoint = 0; ipoint < npoints; ipoint++){
+    
+    Double_t xerr2 = xerr[ipoint]*xerr[ipoint];
+    if(xerr2>0){
+      //      cout << "xe2 " << xerr2 << endl;
+      Double_t weight = 1. / xerr2;
+      sumweight += weight;
+      mean += weight * x[ipoint];
+    }
+    
+  }
+
+
+  if(sumweight){
+    mean /= sumweight;
+    meanerr = TMath::Sqrt(1./ sumweight);
+  }
+  else {
+    mean = 0;
+    meanerr = 0;
+  }
+
+  
 }

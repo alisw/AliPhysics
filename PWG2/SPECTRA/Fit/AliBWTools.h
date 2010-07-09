@@ -39,6 +39,10 @@ public:
   static TH1F *         GetHistoFromGraph(TGraphErrors * g, TH1F* hTemplate) ;  
   static TGraphErrors * GetGraphFromHisto(TH1F * h, Bool_t binWidth = kTRUE) ; 
   static TH1F *         CombineHistos(TH1 * h1, TH1 * h2, TH1* htemplate, Float_t renorm1=1.);
+  static TH1F *         Combine3HistosWithErrors(TH1 * h1,  TH1 * h2,  TH1* h3, 
+						 TH1 * he1, TH1 * he2, TH1 * he3, 
+						 TH1* htemplate, Int_t statFrom = 0, 
+						 Float_t renorm1=1., Float_t renorm2=1., Float_t renorm3=1.);
   static void GetFromHistoGraphDifferentX(TH1F * h, TF1 * f, TGraphErrors ** gBarycentre, TGraphErrors ** gXlw); 
   static Float_t GetMean(TH1F * h, Float_t min, Float_t max) ; 
 
@@ -61,6 +65,9 @@ public:
   static TGraphErrors * DivideGraphByFunc (TGraphErrors * g, TF1 * f, Bool_t invert = kFALSE);
   static TGraphErrors * DivideGraphByHisto(TGraphErrors * g, TH1 * h, Bool_t invert = kFALSE);
   static TH1F         * DivideHistoByFunc (TH1F * h, TF1 * f, Bool_t invert = kFALSE);
+
+  static void WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr);
+
 
 private:
 
