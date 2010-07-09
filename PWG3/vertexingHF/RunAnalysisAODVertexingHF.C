@@ -292,10 +292,9 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Set data search pattern
    plugin->SetGridDataDir("/alice/data/2010/LHC10c");
    plugin->SetDataPattern("pass2/*AliAOD.root");
-   plugin->SetRunPrefix("000");
-   
+   // Adds only the good runs from the Monalisa Run Condition Table
+   AddGoodRuns(plugin,"LHC10c");
    // ...then add run numbers to be considered
-   plugin->AddRunNumber(119048);
    plugin->SetMaxMergeFiles(100);
    plugin->SetNrunsPerMaster(100);
    plugin->SetNumberOfReplicas(2);
@@ -358,4 +357,33 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
 
 
    return plugin;
+}
+//----------------------------------------------------------------------------
+void AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod) {
+  //
+  // Adds good runs from the Monalisa Run Condition Table
+  //
+  plugin->SetRunPrefix("000");
+
+  if(lhcPeriod=="LHC10b") {
+    Int_t nruns=52;
+    Int_t runlist[52]={117222, 117220, 117120, 117118, 117116, 117112, 117109, 117099, 117092, 117086, 117082, 117077, 117063, 117060, 117059, 117054, 117053, 117052, 117050, 117048, 116684, 116643, 116642, 116611, 116610, 116609, 116574, 116571, 116562, 116561, 116559, 116403, 116402, 116401, 116288, 116287, 116102, 115514, 115414, 115413, 115401, 115393, 115345, 115335, 115328, 115325, 115322, 115318, 115310, 115193, 115186, 114931};
+   
+    for(Int_t k=0;k<nruns;k++){
+      plugin->AddRunNumber(runlist[k]);
+    }
+    plugin->SetNRuns(nruns);
+  }
+
+  if(lhcPeriod=="LHC10c") { 
+    Int_t nruns=57;
+    Int_t runlist[57]={120829, 120825, 120824, 120823, 120822, 120821, 120820, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120504, 120503, 120244, 120079, 120076, 120073, 120072, 120069, 120067, 120066, 120064, 119971, 119969, 119965, 119961, 119952, 119948, 119941, 119935, 119934, 119926, 119924, 119923, 119917, 119913, 119909, 119907, 119904, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 119838, 119837, 119163, 119161, 119159};
+   
+    for(Int_t k=0;k<nruns;k++){
+      plugin->AddRunNumber(runlist[k]);
+    }
+    plugin->SetNRuns(nruns);
+  }
+
+  return;
 }
