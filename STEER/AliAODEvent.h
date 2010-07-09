@@ -80,7 +80,7 @@ class AliAODEvent : public AliVEvent {
   void     SetMagneticField(Double_t mf){if (fHeader) fHeader->SetMagneticField(mf);}
   void     SetMuonMagFieldScale(Double_t mf){if (fHeader) fHeader->SetMuonMagFieldScale(mf);}
   void     SetDiamond(Float_t xy[2],Float_t cov[3]){if (fHeader) fHeader->SetDiamond(xy,cov);}
-
+  void     SetDiamondZ(Float_t z, Float_t sig2z){if (fHeader) fHeader->SetDiamondZ(z,sig2z);}
   Int_t    GetRunNumber() const {return fHeader ? fHeader->GetRunNumber() : -999;}
   UInt_t   GetPeriodNumber() const {return fHeader ? fHeader->GetPeriodNumber() : 0;}
   UInt_t   GetOrbitNumber() const {return fHeader ? fHeader->GetOrbitNumber() : 0;}
@@ -89,7 +89,11 @@ class AliAODEvent : public AliVEvent {
   Double_t GetMuonMagFieldScale() const {return fHeader ? fHeader->GetMuonMagFieldScale() : -999.;}
   Double_t GetDiamondX() const {return fHeader ? fHeader->GetDiamondX() : -999.;}
   Double_t GetDiamondY() const {return fHeader ? fHeader->GetDiamondY() : -999.;}
+  Double_t GetDiamondZ() const {return fHeader ? fHeader->GetDiamondZ() : -999.;}
   void     GetDiamondCovXY(Float_t cov[3]) const {cov[0]=-999.; if(fHeader) fHeader->GetDiamondCovXY(cov);}
+  Double_t GetSigma2DiamondX() const {return fHeader ? fHeader->GetSigma2DiamondX() : -999.;}
+  Double_t GetSigma2DiamondY() const {return fHeader ? fHeader->GetSigma2DiamondY() : -999.;}
+  Double_t GetSigma2DiamondZ() const {return fHeader ? fHeader->GetSigma2DiamondZ() : -999.;}
   
   void      SetEventType(UInt_t eventType){fHeader->SetEventType(eventType);}
   void      SetTriggerMask(ULong64_t n) {fHeader->SetTriggerMask(n);}
@@ -124,6 +128,16 @@ class AliAODEvent : public AliVEvent {
   
   // primary vertex
   virtual AliAODVertex *GetPrimaryVertex() const { return GetVertex(0); }
+  virtual AliAODVertex *GetPrimaryVertexSPD() const;
+
+  // -- Pileup vertices 
+  Int_t         GetNumberOfPileupVerticesTracks()   const;
+  Int_t         GetNumberOfPileupVerticesSPD()    const;
+  virtual AliAODVertex *GetPileupVertexSPD(Int_t iV=0) const;
+  virtual AliAODVertex *GetPileupVertexTracks(Int_t iV=0) const;
+  virtual Bool_t  IsPileupFromSPD(Int_t minContributors=3, Double_t minZdist=0.8, Double_t nSigmaZdist=3., Double_t nSigmaDiamXY=2., Double_t nSigmaDiamZ=5.) const;
+
+
 
   // V0
   TClonesArray *GetV0s()                 const { return fV0s; }

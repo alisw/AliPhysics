@@ -373,7 +373,7 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
   fVertices->Delete();
   if (vtxArrSize > fVertices->GetSize()) 
     fVertices->Expand(vtxArrSize);
-  	 
+
   fV0s->Delete();
   if (v0ArrSize > fV0s->GetSize()) 
     fV0s->Expand(v0ArrSize);
@@ -617,6 +617,118 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     // must not delete it
     fAODObjects->SetOwner(kTRUE);
   }
+}
+//______________________________________________________________________________
+Int_t  AliAODEvent::GetNumberOfPileupVerticesSPD() const{
+  // count number of SPD pileup vertices
+  Int_t nVertices=GetNumberOfVertices();
+  Int_t nPileupVertices=0;
+  for(Int_t iVert=0; iVert<nVertices; iVert++){
+    AliAODVertex *v=GetVertex(iVert);
+    if(v->GetType()==AliAODVertex::kPileupSPD) nPileupVertices++;
+  }
+  return nPileupVertices;
+}
+//______________________________________________________________________________
+Int_t  AliAODEvent::GetNumberOfPileupVerticesTracks() const{
+  // count number of track pileup vertices
+  Int_t nVertices=GetNumberOfVertices();
+  Int_t nPileupVertices=0;
+  for(Int_t iVert=0; iVert<nVertices; iVert++){
+    AliAODVertex *v=GetVertex(iVert);
+    if(v->GetType()==AliAODVertex::kPileupTracks) nPileupVertices++;
+  }
+  return nPileupVertices;
+}
+//______________________________________________________________________________
+AliAODVertex* AliAODEvent::GetPrimaryVertexSPD() const{
+  //
+  Int_t nVertices=GetNumberOfVertices();
+  for(Int_t iVert=0; iVert<nVertices; iVert++){
+    AliAODVertex *v=GetVertex(iVert);
+    if(v->GetType()==AliAODVertex::kMainSPD) return v;
+  }
+  return 0;
+}
+//______________________________________________________________________________
+AliAODVertex* AliAODEvent::GetPileupVertexSPD(Int_t iV) const{
+  //
+  Int_t nVertices=GetNumberOfVertices();
+  Int_t counter=0;
+  for(Int_t iVert=0; iVert<nVertices; iVert++){
+    AliAODVertex *v=GetVertex(iVert);
+    if(v->GetType()==AliAODVertex::kPileupSPD){
+      if(counter==iV) return v;
+      ++counter;
+    }
+  }
+  return 0;
+}
+//______________________________________________________________________________
+AliAODVertex* AliAODEvent::GetPileupVertexTracks(Int_t iV) const{
+  //
+  Int_t nVertices=GetNumberOfVertices();
+  Int_t counter=0;
+  for(Int_t iVert=0; iVert<nVertices; iVert++){
+    AliAODVertex *v=GetVertex(iVert);
+    if(v->GetType()==AliAODVertex::kPileupTracks){
+      if(counter==iV) return v;
+      ++counter;
+    }
+  }
+  return 0;
+}
+//______________________________________________________________________________
+Bool_t  AliAODEvent::IsPileupFromSPD(Int_t minContributors, 
+				     Double_t minZdist, 
+				     Double_t nSigmaZdist, 
+				     Double_t nSigmaDiamXY, 
+				     Double_t nSigmaDiamZ) const{
+  //
+  // This function checks if there was a pile up
+  // reconstructed with SPD
+  //
+  AliAODVertex *mainV=GetPrimaryVertexSPD();
+  if(!mainV) return kFALSE;
+  Int_t nc1=mainV->GetNContributors();
+  if(nc1<1) return kFALSE;
+  Int_t nPileVert=GetNumberOfPileupVerticesSPD();
+  if(nPileVert==0) return kFALSE;
+  Int_t nVertices=GetNumberOfVertices();
+  
+  for(Int_t iVert=0; iVert<nVertices; iVert++){
+    AliAODVertex *pv=GetVertex(iVert);
+    if(pv->GetType()!=AliAODVertex::kPileupSPD) continue;
+    Int_t nc2=pv->GetNContributors();
+    if(nc2>=minContributors){
+      Double_t z1=mainV->GetZ();
+      Double_t z2=pv->GetZ();
+      Double_t distZ=TMath::Abs(z2-z1);
+      Double_t distZdiam=TMath::Abs(z2-GetDiamondZ());
+      Double_t cutZdiam=nSigmaDiamZ*GetSigma2DiamondZ();
+      if(GetSigma2DiamondZ()<0.0001)cutZdiam=99999.; //protection for missing z diamond information
+      if(distZ>minZdist && distZdiam<cutZdiam){
+	Double_t x2=pv->GetX();
+	Double_t y2=pv->GetY();
+	Double_t distXdiam=TMath::Abs(x2-GetDiamondX());
+	Double_t distYdiam=TMath::Abs(y2-GetDiamondY());
+	Double_t cov1[6],cov2[6];	
+	mainV->GetCovarianceMatrix(cov1);
+	pv->GetCovarianceMatrix(cov2);
+	Double_t errxDist=TMath::Sqrt(cov2[0]+GetSigma2DiamondX());
+	Double_t erryDist=TMath::Sqrt(cov2[2]+GetSigma2DiamondY());
+	Double_t errzDist=TMath::Sqrt(cov1[5]+cov2[5]);
+	Double_t cutXdiam=nSigmaDiamXY*errxDist;
+	if(GetSigma2DiamondX()<0.0001)cutXdiam=99999.; //protection for missing diamond information
+	Double_t cutYdiam=nSigmaDiamXY*erryDist;
+	if(GetSigma2DiamondY()<0.0001)cutYdiam=99999.; //protection for missing diamond information
+	if( (distXdiam<cutXdiam) && (distYdiam<cutYdiam) && (distZ>nSigmaZdist*errzDist) ){
+	  return kTRUE;
+	}
+      }
+    }
+  }
+  return kFALSE;
 }
 
 //______________________________________________________________________________

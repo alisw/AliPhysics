@@ -187,12 +187,17 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     Float_t diamxy[2]={esd->GetDiamondX(),esd->GetDiamondY()};
     Float_t diamcov[3]; esd->GetDiamondCovXY(diamcov);
     header->SetDiamond(diamxy,diamcov);
+    header->SetDiamondZ(esd->GetDiamondZ(),esd->GetSigma2DiamondZ());
 //
 //
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = esd->GetNumberOfCascades();
     Int_t nKinks    = esd->GetNumberOfKinks();
     Int_t nVertices = nV0s + nCascades /*V0 wihtin cascade already counted*/+ nKinks + 1 /* = prim. vtx*/;
+    Int_t nPileSPDVertices=1+esd->GetNumberOfPileupVerticesSPD(); // also SPD main vertex
+    Int_t nPileTrkVertices=esd->GetNumberOfPileupVerticesTracks();
+    nVertices+=nPileSPDVertices;
+    nVertices+=nPileTrkVertices;
     Int_t nJets     = 0;
     Int_t nCaloClus = esd->GetNumberOfCaloClusters();
     Int_t nFmdClus  = 0;
@@ -279,6 +284,41 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       primary->SetNContributors(vtx->GetNContributors());
 
     if (fDebug > 0) primary->Print();
+
+
+    // Add SPD "main" vertex 
+    const AliESDVertex *vtxS = esd->GetPrimaryVertexSPD();
+    vtxS->GetXYZ(pos); // position
+    vtxS->GetCovMatrix(covVtx); //covariance matrix
+    AliAODVertex * mVSPD = new(vertices[jVertices++])
+      AliAODVertex(pos, covVtx, vtxS->GetChi2toNDF(), NULL, -1, AliAODVertex::kMainSPD);
+    mVSPD->SetName(vtxS->GetName());
+    mVSPD->SetTitle(vtxS->GetTitle());
+    mVSPD->SetNContributors(vtxS->GetNContributors()); 
+
+    // Add SPD pileup vertices
+    for(Int_t iV=0; iV<nPileSPDVertices-1; iV++){
+      const AliESDVertex *vtxP = esd->GetPileupVertexSPD(iV);
+      vtxP->GetXYZ(pos); // position
+      vtxP->GetCovMatrix(covVtx); //covariance matrix
+      AliAODVertex * pVSPD =  new(vertices[jVertices++])
+	AliAODVertex(pos, covVtx, vtxP->GetChi2toNDF(), NULL, -1, AliAODVertex::kPileupSPD);
+      pVSPD->SetName(vtxP->GetName());
+      pVSPD->SetTitle(vtxP->GetTitle());
+      pVSPD->SetNContributors(vtxP->GetNContributors()); 
+    }
+
+    // Add TRK pileup vertices
+    for(Int_t iV=0; iV<nPileTrkVertices; iV++){
+      const AliESDVertex *vtxP = esd->GetPileupVertexTracks(iV);
+      vtxP->GetXYZ(pos); // position
+      vtxP->GetCovMatrix(covVtx); //covariance matrix
+      AliAODVertex * pVTRK = new(vertices[jVertices++])
+	AliAODVertex(pos, covVtx, vtxP->GetChi2toNDF(), NULL, -1, AliAODVertex::kPileupTracks);
+      pVTRK->SetName(vtxP->GetName());
+      pVTRK->SetTitle(vtxP->GetTitle());
+      pVTRK->SetNContributors(vtxP->GetNContributors());
+    }
 
     // Create vertices starting from the most complex objects
     Double_t chi2 = 0.;

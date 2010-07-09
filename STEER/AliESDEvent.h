@@ -254,13 +254,17 @@ public:
     return (const AliESDVertex *)(fSPDPileupVertices?fSPDPileupVertices->UncheckedAt(i):0x0);
   }
   Char_t  AddPileupVertexSPD(const AliESDVertex *vtx);
-  Bool_t  IsPileupFromSPD(Int_t ncont=2, Double_t distz=1., Double_t nSigmaDeltaZ=3., Double_t nSigmaXY=2., Int_t option=0) const;
-
   const AliESDVertex *GetPileupVertexTracks(Int_t i) const {
     return (const AliESDVertex *)(fTrkPileupVertices?fTrkPileupVertices->UncheckedAt(i):0x0);
   }
   Char_t  AddPileupVertexTracks(const AliESDVertex *vtx);
 
+  virtual Bool_t  IsPileupFromSPD(Int_t minContributors=3, 
+				  Double_t minZdist=0.8, 
+				  Double_t nSigmaZdist=3., 
+				  Double_t nSigmaDiamXY=2., 
+				  Double_t nSigmaDiamZ=5.) const;
+  
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)(fTracks?fTracks->UncheckedAt(i):0x0);
   }

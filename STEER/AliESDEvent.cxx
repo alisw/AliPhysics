@@ -1603,64 +1603,54 @@ Bool_t    AliESDEvent::IsHLTTriggerFired(const char* name) const
   return kTRUE;
 }
 
-Bool_t  AliESDEvent::IsPileupFromSPD(Int_t ncont, Double_t distz, Double_t nSigmaDeltaZ, Double_t nSigmaXY, Int_t option) const {
+//______________________________________________________________________________
+Bool_t  AliESDEvent::IsPileupFromSPD(Int_t minContributors, 
+				     Double_t minZdist, 
+				     Double_t nSigmaZdist, 
+				     Double_t nSigmaDiamXY, 
+				     Double_t nSigmaDiamZ) const{
   //
   // This function checks if there was a pile up
   // reconstructed with SPD
   //
-  Double_t diamx= GetDiamondX();
-  Double_t diamsigma2x= GetSigma2DiamondX();
-  Double_t diamy= GetDiamondY();
-  Double_t diamsigma2y= GetSigma2DiamondY();
-  
-  Double_t sigmax= TMath::Sqrt(diamsigma2x);
-  Double_t sigmay= TMath::Sqrt(diamsigma2y);
-  
-  Double_t z1=fSPDVertex->GetZ();
   Int_t nc1=fSPDVertex->GetNContributors();
   if(nc1<1) return kFALSE;
   Int_t nPileVert=GetNumberOfPileupVerticesSPD();
   if(nPileVert==0) return kFALSE;
+  
   for(Int_t i=0; i<nPileVert;i++){
     const AliESDVertex* pv=GetPileupVertexSPD(i);
-    Double_t z2=pv->GetZ();
-    Double_t x2=pv->GetX();
-    Double_t y2=pv->GetY();
     Int_t nc2=pv->GetNContributors();
-    Double_t distanceZ=TMath::Abs(z2-z1);
-    Double_t distanceX=TMath::Abs(x2-diamx);
-    Double_t distanceY=TMath::Abs(y2-diamy);
-    Double_t errzDist=0.;
-    Double_t errxDist=0.;
-    Double_t erryDist=0.;
-    if(option==0){
-      Double_t ez1=fSPDVertex->GetZRes();
-      Double_t ez2=pv->GetZRes();
-      errzDist=TMath::Sqrt(ez1*ez1+ez2*ez2);
-    }else{  
-      Double_t resol1=-75.6+834.6/TMath::Sqrt((Double_t)nc1);
-      resol1/=10000.;
-      Double_t resol2=-75.6+834.6/TMath::Sqrt((Double_t)nc2);
-      resol2/=10000.;
-      errzDist=TMath::Sqrt(resol1*resol1+resol2*resol2); 
+    if(nc2>=minContributors){
+      Double_t z1=fSPDVertex->GetZ();
+      Double_t z2=pv->GetZ();
+      Double_t distZ=TMath::Abs(z2-z1);
+      Double_t distZdiam=TMath::Abs(z2-GetDiamondZ());
+      Double_t cutZdiam=nSigmaDiamZ*GetSigma2DiamondZ();
+      if(GetSigma2DiamondZ()<0.0001)cutZdiam=99999.; //protection for missing z diamond information
+      if(distZ>minZdist && distZdiam<cutZdiam){
+	Double_t x2=pv->GetX();
+	Double_t y2=pv->GetY();
+	Double_t distXdiam=TMath::Abs(x2-GetDiamondX());
+	Double_t distYdiam=TMath::Abs(y2-GetDiamondY());
+	Double_t cov1[6],cov2[6];	
+	fSPDVertex->GetCovarianceMatrix(cov1);
+	pv->GetCovarianceMatrix(cov2);
+	Double_t errxDist=TMath::Sqrt(cov2[0]+GetSigma2DiamondX());
+	Double_t erryDist=TMath::Sqrt(cov2[2]+GetSigma2DiamondY());
+	Double_t errzDist=TMath::Sqrt(cov1[5]+cov2[5]);
+	Double_t cutXdiam=nSigmaDiamXY*errxDist;
+	if(GetSigma2DiamondX()<0.0001)cutXdiam=99999.; //protection for missing diamond information
+	Double_t cutYdiam=nSigmaDiamXY*erryDist;
+	if(GetSigma2DiamondY()<0.0001)cutYdiam=99999.; //protection for missing diamond information
+	if( (distXdiam<cutXdiam) && (distYdiam<cutYdiam) && (distZ>nSigmaZdist*errzDist) ){
+	  return kTRUE;
+	}
+      }
     }
-
-    
-      Double_t ex2 = pv->GetXRes();
-      Double_t ey2= pv->GetYRes();
-      errxDist=TMath::Sqrt(ex2*ex2+sigmax*sigmax); 
-      erryDist=TMath::Sqrt(ey2*ey2+sigmay*sigmay); 
-    
-      if(nc2>=ncont && distanceZ>nSigmaDeltaZ*errzDist && distanceX<nSigmaXY*errxDist && distanceY<nSigmaXY*erryDist && distanceZ>distz)
-	
-	return kTRUE;
   }
-	    
-	    
-      
-      return kFALSE;
-  }
-
+  return kFALSE;
+}
 
 //______________________________________________________________________________
 void AliESDEvent::EstimateMultiplicity(Int_t &tracklets, Int_t &trITSTPC, Int_t &trITSSApure, Double_t eta, Bool_t useDCAFlag,Bool_t useV0Flag) const
