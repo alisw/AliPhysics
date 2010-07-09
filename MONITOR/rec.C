@@ -5,6 +5,7 @@ void rec(const char *filename="raw.root")
   // Script for the online reconstruction/visualization
   //
   /////////////////////////////////////////////////////////////////////////////////////////
+  AliTPCRecoParam::SetUseTimeCalibration(kFALSE);
 
   // Setting CDB
   AliCDBManager * man = AliCDBManager::Instance();
@@ -27,7 +28,7 @@ void rec(const char *filename="raw.root")
   rec.SetWriteESDfriend(kTRUE);
   rec.SetWriteAlignmentData();
   rec.SetInput(filename);
-  rec.SetRunReconstruction("ALL");
+  rec.SetRunReconstruction("ALL -PHOS -HLT");
   rec.SetUseTrackingErrorsForAlignment("ITS");
 
   // switch off cleanESD
