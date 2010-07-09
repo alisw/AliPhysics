@@ -69,10 +69,6 @@ fout.Close();
 #include "AliESDfriend.h"
 #include "AliESDtrackCuts.h"
 
-
-#include "AliPhysicsSelection.h"
-#include "AliTriggerAnalysis.h"
-
 #include "AliPerfAnalyzeInvPt.h"
 #include "AliPerformancePtCalib.h"
 
@@ -103,10 +99,7 @@ ClassImp(AliPerformancePtCalib)
       //options for cuts
       fOptTPC(0),
       fESDcuts(0),
-      fPhysSel(0),
       fEtaAcceptance(0),
-      fTrigger(AliTriggerAnalysis::kMB1),
-      fPhysicsSelection(0),
       fCutsRC(0),
       fCutsMC(0),
       fList(0),
@@ -139,7 +132,6 @@ ClassImp(AliPerformancePtCalib)
    //options for cuts
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
-   fPhysSel = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
    
@@ -184,10 +176,7 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    //options for cuts
    fOptTPC(0),
    fESDcuts(0),
-   fPhysSel(0),
    fEtaAcceptance(0),
-   fTrigger(AliTriggerAnalysis::kMB1),
-   fPhysicsSelection(0),
    fCutsRC(0),
    fCutsMC(0),
    fList(0),
@@ -218,7 +207,6 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    //options for cuts
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
-   fPhysSel = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
    
@@ -350,39 +338,10 @@ void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *con
 
    if (!(esdEvent->GetNumberOfTracks()))  return;
 
-   if (GetTriggerClass()){
-      Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
-      if(!isEventTriggered) return;
-   }
    
-   
-   // trigger selection
-   Bool_t isEventTriggered = kTRUE;
-   AliPhysicsSelection *trigSel = NULL;
-   AliTriggerAnalysis *trigAna = NULL;
-   
-   if(fPhysSel){ trigSel = GetPhysicsTriggerSelection();
-      if(!trigSel) {
-	 Printf("cannot get trigSel \n");
-	 return;
-      }
-   }
-   
-   //if(esdEvent) isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);//does not work, crashes
-     if(fTrigger == AliTriggerAnalysis::kV0AND) 
-	{
-	   trigAna = trigSel->GetTriggerAnalysis();
-	   if(!trigAna) 
-	      return;
-	   isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent,GetTrigger());
-	}
-     
-     if(fPhysSel && !isEventTriggered) return;
-     
-     
-     //vertex info for cut
-     const AliESDVertex *vtx = esdEvent->GetPrimaryVertex();
-     if (!vtx->GetStatus()) return ;
+   //vertex info for cut
+   const AliESDVertex *vtx = esdEvent->GetPrimaryVertex();
+   if (!vtx->GetStatus()) return ;
      
    //histo fo user defined shift in charge/pt 
    if(fShift) fHistUserPtShift->Fill(fDeltaInvP);
