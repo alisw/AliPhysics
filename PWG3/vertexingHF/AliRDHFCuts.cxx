@@ -54,7 +54,9 @@ fVarsForOpt(0),
 fGlobalIndex(1),
 fCutsRD(0),
 fIsUpperCut(0),
-fUsePID(kFALSE)
+fUsePID(kFALSE),
+fPidHF(0),
+fWhyRejection(0)
 {
   //
   // Default Constructor
@@ -79,7 +81,9 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fGlobalIndex(source.fGlobalIndex),
   fCutsRD(0),
   fIsUpperCut(0),
-  fUsePID(source.fUsePID)
+  fUsePID(source.fUsePID),
+  fPidHF(0),
+  fWhyRejection(source.fWhyRejection)
 {
   //
   // Copy constructor
@@ -90,6 +94,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   if(source.fVarNames) SetVarNames(source.fnVars,source.fVarNames,source.fIsUpperCut);
   if(source.fCutsRD) SetCuts(source.fGlobalIndex,source.fCutsRD);
   if(source.fVarsForOpt) SetVarsForOpt(source.fnVarsForOpt,source.fVarsForOpt);
+  if(source.fPidHF) SetPidHF(source.fPidHF);
   PrintAll();
 
 }
@@ -113,6 +118,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fGlobalIndex=source.fGlobalIndex;
   fnVarsForOpt=source.fnVarsForOpt;
   fUsePID=source.fUsePID;
+  SetPidHF(source.GetPidHF());
+  fWhyRejection=source.fWhyRejection;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -136,7 +143,10 @@ AliRDHFCuts::~AliRDHFCuts() {
     fCutsRD=0;
   }
   if(fIsUpperCut) {delete [] fIsUpperCut; fIsUpperCut=0;}
-
+  if(fPidHF){ 
+    delete fPidHF;
+    fPidHF=0;
+  }
 }
 //---------------------------------------------------------------------------
 Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) const {
