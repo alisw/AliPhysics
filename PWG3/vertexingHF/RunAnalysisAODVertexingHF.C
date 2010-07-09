@@ -282,8 +282,8 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    plugin->SetNtestFiles(1);
    // Set versions of used packages
    plugin->SetAPIVersion("V2.4");
-   plugin->SetROOTVersion("v5-24-00");
-   plugin->SetAliROOTVersion("v4-18-07-AN");
+   plugin->SetROOTVersion("v5-26-00");
+   plugin->SetAliROOTVersion("v4-19-19-AN");
    // Declare input data to be processed.
    // Method 1: Create automatically XML collections using alien 'find' command.
    // Define production directory LFN
