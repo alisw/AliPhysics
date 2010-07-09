@@ -2,10 +2,6 @@
 // Macro to setup AliPerformanceTask for 
 // TPC performance QA to run on PWG1 QA train. 
 //
-// Input: ESDs, ESDfriends (optional), Kinematics (optional), TrackRefs (optional)
-// ESD and MC input handlers must be attached to AliAnalysisManager
-// to run default configuration. 
-//
 // By default 1 performance component is added to 
 // the task: 
 // 1. AliPerformancePtCalib
@@ -17,22 +13,28 @@
 // gSystem->Load("libTPCcalib.so");
 // gSystem->Load("libPWG1.so");
 //
-// gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceTPC.C");
-// AliPerformanceTask *tpcQA = AddTaskPerformanceTPC("kTRUE","kTRUE"); 
+// gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceTPCPtCalib.C");
+// AliPerformanceTask *tpcQA = AddTaskPerformanceTPCPtCalib("kTRUE","kTRUE","CINT1B-ABCE-NOPF-ALL"); 
 // 
 // Output:
-// TPC.Performance.root file with TPC performance components is created.
+// TPCPtCalib.Performance.root file with TPC performance components is created.
 //
 // Each of the components contains THnSparse generic histograms which 
 // have to be analysed (post-analysis) by using Analyse() function. 
 // Each component contains such function.
 //
-//13.10.2009 -  J.Otwinowski@gsi.de
+// June 2010 -  Simone Schuchmann sschuchm@ikf.uni-frankfurt.de
 ///////////////////////////////////////////////////////////////////////////////
 
 //____________________________________________
-AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfriend=kTRUE)
+AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kFALSE, const char *triggerClass=0)
 {
+
+//
+  // Create physics trigger selection class
+  //
+    AliPhysicsSelection *physTrigSel =  new AliPhysicsSelection();
+  
   //
   // Add AliPerformanceTask with TPC performance components
   //
@@ -57,17 +59,21 @@ AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kTRUE, Bool_t
   //
   // Create task
   //
-  AliPerformanceTask *task = new AliPerformanceTask("Performance","TPC Performance PtCalib");
+  AliPerformanceTask *task = new AliPerformanceTask("TPCPerformanceInvPt","TPC Performance PtCalib");
   if (!task) {
     Error("AddTaskPerformanceTPCPtCalib", "TPC performance task cannot be created!");
     return NULL;
   }
   task->SetUseMCInfo(bUseMCInfo);
-  task->SetUseESDfriend(bUseESDfriend);
+  task->SetUseESDfriend(kFALSE);
 
   //
-  // Add task to analysis manager
+  // Add physics selection task to analysis manager
   //
+  //    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+  //    mgr->AddTask(physSelTask);
+
   mgr->AddTask(task);
 
   //
@@ -103,58 +109,48 @@ AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kTRUE, Bool_t
   enum { kTPC = 0, kTPCITS, kConstrained, kTPCInner, kTPCOuter, kTPCSec };
 
 
+
   AliPerformancePtCalib *ptCalib =  NULL;
   AliPerformancePtCalibMC *ptCalibMC = NULL;
 
   if(bUseMCInfo){
-     ptCalibMC = new AliPerformancePtCalibMC("AliPerformancePtCalibMC","AliPerformancePtCalibMC");//,kTPC,kTRUE);
+     ptCalibMC = new AliPerformancePtCalibMC("AliPerformancePtCalibMC","AliPerformancePtCalibMC");
      if(!ptCalibMC) {
 	Error("AddTaskPerformanceTPCPtCalib", "Cannot create AliPerformancePtCalibMC");
      }
-    
+     // physTrigSel->SetAnalyzeMC();
+     // ptCalibMC->SetPhysicsTriggerSelection(physTrigSel); 
      ptCalibMC->SetAliRecInfoCuts(pRecInfoCuts);
      ptCalibMC->SetReadTPCTracks(kTRUE);  
-     ptCalibMC->SetTPCRefit(kFALSE) ;         
-     ptCalibMC->SetITSRefit(kFALSE);          
-     ptCalibMC->SetESDCuts(kTRUE);            
-     ptCalibMC->SetDCACuts(kTRUE);             
-     ptCalibMC->SetAcceptKinkDaughters(kFALSE);   
-     ptCalibMC->SetRequireSigmaToVertex(kFALSE);
-     ptCalibMC->SetfDCAToVertex2D(kFALSE)   ;
-
-     // const Double_t esdCutvalues[6] ={};//set esd track cut values
-     // ptCalibMC->SetESDcutValues(esdCutvalues);
-     // ptCalibMC->SetEtaRange(0.9);
-     // ptCalibMC->SetAliMCInfoCuts(pMCInfoCut);
-     
+     AliESDtrackCuts* esdtrackCuts = new AliESDtrackCuts("AliESDtrackCutsPtMC");
+     esdtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
+     ptCalibMC->SetAliESDtrackCuts(esdtrackCuts);
+     //ptCalibMC->SetEtaRange(0.9);
   }
   else{
 
-     ptCalib =  new AliPerformancePtCalib("AliPerformancePtCalib","AliPerformancePtCalib");//,kTPC,kFALSE);
+     ptCalib =  new AliPerformancePtCalib("AliPerformancePtCalib","AliPerformancePtCalib");
      if(!ptCalib) {
 	Error("AddTaskPerformanceTPCPtCalib", "Cannot create AliPerformancePtCalib");
      }
      ptCalib->SetAliRecInfoCuts(pRecInfoCuts);
      ptCalib->SetReadTPCTracks(kTRUE);  
-     ptCalib->SetTPCRefit(kFALSE) ;         
-     ptCalib->SetITSRefit(kFALSE);          
-     ptCalib->SetESDCuts(kTRUE);            
-     ptCalib->SetDCACuts(kTRUE);             
-     ptCalib->SetAcceptKinkDaughters(kFALSE);   
-     ptCalib->SetRequireSigmaToVertex(kFALSE);
-     ptCalib->SetfDCAToVertex2D(kFALSE)   ;
-     
-     // const Double_t esdCutvalues[6] ={};
-     // ptCalib->SetESDcutValues(esdCutvalues);
-     // ptCalib->SetEtaRange(0.9);
+     ptCalib->SetEtaRange(0.8);
      // ptCalib->SetAliMCInfoCuts(pMCInfoCut);
+
+     //if(triggerClass) ptCalib->SetTriggerClass(triggerClass);
+     //ptCalib->SetPhysicsTriggerSelection(physTrigSel);
+     //ptCalib->SetTrigger(AliTriggerAnalysis::kMB1);
+     AliESDtrackCuts* esdtrackCuts = new AliESDtrackCuts("AliESDtrackCutsPt");
+     esdtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
+     ptCalib->SetAliESDtrackCuts(esdtrackCuts);
+      
   }
- 
-     
+  
   // add components to the performance task
   
-  if(bUseMCInfo) task->AddPerformanceObject( ptCalibMC);
-  else task->AddPerformanceObject( ptCalib );
+  if(bUseMCInfo) task->AddPerformanceObject(ptCalibMC);
+  else task->AddPerformanceObject(ptCalib);
   
   // Create containers for input
   //
@@ -163,7 +159,7 @@ AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kTRUE, Bool_t
   //
   // Create containers for output
   //
-  AliAnalysisDataContainer *coutput_tpcptcalib = mgr->CreateContainer("TPCPtCalib", TList::Class(), AliAnalysisManager::kOutputContainer, Form("TPCPtCalib.%s.root", task->GetName()));
+  AliAnalysisDataContainer *coutput_tpcptcalib = mgr->CreateContainer("TPCPtCalib", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s.Performance.root", task->GetName()));
   mgr->ConnectOutput(task, 1, coutput_tpcptcalib);
 
 return task;  
