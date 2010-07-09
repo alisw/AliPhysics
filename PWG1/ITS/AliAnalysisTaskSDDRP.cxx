@@ -80,7 +80,8 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"
   fMinTPCpts(70),
   fMinPfordEdx(0.5),
   fOnlyCINT1BTrig(0),
-  fInitialised(0)
+  fInitialised(0),
+  fExcludeBadMod(kFALSE)
 {
   //
   DefineOutput(1, TList::Class());
@@ -235,8 +236,8 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
 void AliAnalysisTaskSDDRP::UserExec(Option_t *)
 {
   //
-    fESD = (AliESDEvent*) (InputEvent());
-    fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+  fESD = (AliESDEvent*) (InputEvent());
+  fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
 
 
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -251,7 +252,6 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
     return;
   } 
-    //  fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
 
 
   if(!fESDfriend) {
@@ -288,7 +288,7 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
       Int_t modId=imod+AliITSgeomTGeo::GetModuleIndex(3,1,1);
       Int_t lay,lad,det;
       AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
-      if(!CheckModule(lay,lad,det)) continue;
+      if(fExcludeBadMod && !CheckModule(lay,lad,det)) continue;
       for(Int_t ian=0; ian<512; ian++){
 	if(cal->IsBadChannel(ian)) continue;
 	countGoodMod[imod]++;
@@ -364,7 +364,7 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
       modId+=AliITSgeomTGeo::GetModuleIndex(layerId,1,1);
       Int_t lay,lad,det;
       AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
-      if(!CheckModule(lay,lad,det)) continue;
+      if(fExcludeBadMod && !CheckModule(lay,lad,det)) continue;
       fTrackPMod->Fill(modId);
       fDriftTimeTPAll->Fill(point.GetDriftTime());
       if(point.IsExtra()) fDriftTimeTPExtra->Fill(point.GetDriftTime());
@@ -391,7 +391,7 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
     for (Int_t modId=240; modId<500; modId++){
       Int_t lay,lad,det;
       AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
-      if(!CheckModule(lay,lad,det)) continue;
+      if(fExcludeBadMod && !CheckModule(lay,lad,det)) continue;
       branch->GetEvent(modId);
       Int_t nrecp = ITSrec->GetEntries();	
       fRecPMod->Fill(modId,nrecp);	  

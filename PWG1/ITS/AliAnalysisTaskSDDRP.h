@@ -48,14 +48,17 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   void SetMinPfordEdx(Float_t minp=0.5){
     fMinPfordEdx=minp;
   }
+  void SetExcludeBadModules(Bool_t opt=kTRUE){
+    fExcludeBadMod=opt;
+  }
   Bool_t CheckModule(Int_t lay, Int_t lad, Int_t det) const;
-
+  
 
  private:
   AliAnalysisTaskSDDRP(const AliAnalysisTaskSDDRP &source);
   AliAnalysisTaskSDDRP& operator=(const AliAnalysisTaskSDDRP &source);
   
-  TList*  fOutput;          //! ntuple with output of vertexers
+  TList*  fOutput;          //! QA histos
   TH1F*   fHistNEvents;     //! histo with N of events  
   TH1F*   fHistAllPMod;     //! histo of tracks crossing SDD modules
   TH1F*   fHistGoodPMod;    //! histo of tracks with good point in SDD module
@@ -90,7 +93,9 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   Float_t fMinPfordEdx;     // Minimum momentum for dE/dx
   Bool_t  fOnlyCINT1BTrig;  // Flag for using all events or only intections
   Bool_t  fInitialised;     // True if initialised
-  ClassDef(AliAnalysisTaskSDDRP,2);  
+  Bool_t  fExcludeBadMod;   // Flag to reject bad modules
+ 
+  ClassDef(AliAnalysisTaskSDDRP,3);  
 };
 
 
