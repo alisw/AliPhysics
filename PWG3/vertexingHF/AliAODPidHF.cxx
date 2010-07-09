@@ -47,7 +47,7 @@ AliAODPidHF::AliAODPidHF():
   fTOF(kFALSE),
   fITS(kFALSE),
   fTRD(kFALSE),
-  fMatch(kFALSE),
+  fMatch(0),
   fCompat(kFALSE)
 {
  //
@@ -190,7 +190,7 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
    if (nsigma>fnSigma[0]) {
     pid=-1; 
    }else{
-    pid=1;
+    pid=specie;
    }
   }
 
@@ -225,7 +225,7 @@ Int_t AliAODPidHF::ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const{
    if (nsigma>fnSigma[4]) {
     pid=-1; 
    }else{
-    pid=1;
+    pid=specie;
    }
   }
  return pid; 
@@ -261,7 +261,7 @@ Int_t AliAODPidHF::ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const{
    if (nsigma>fnSigma[3]*fTOFSigma) {
     pid=-1; 
    }else{
-    pid=1;
+    pid=specie;
    }
   }
  return pid; 
@@ -437,7 +437,7 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
  // convention: 
  // for the single detectors: -1 = kFALSE, 1 = kTRUE, 0 = compatible
  // the method returns the sum of the response of the 2 detectors
-  if(fTPC && fTOF)  if(!CheckStatus(track,"TPC") && !CheckStatus(track,"TOF")) return 0;
+  if(fTPC && fTOF) {if(!CheckStatus(track,"TPC") && !CheckStatus(track,"TOF")) return 0;}
 
   
   Int_t TPCinfo=0;
@@ -495,7 +495,7 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
    Double_t ptrack=track->P();
    if(ptrack>1.5) TOFinfo=0;
   }
-}
+ }
  return TPCinfo+TOFinfo;
 }
  if(mode==2){
@@ -514,16 +514,15 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
    }
   }
 
-  Int_t TOFinfo=0;
+  Int_t TOFinfo=1;
   if(fTOF){
    if(fTPC && !CheckStatus(track,"TOF")) return TPCinfo;
-   TOFinfo=1;
 
    if(specie==2 && !IsPionRaw(track,"TOF")) TOFinfo=-1;
    if(specie==3 && !IsKaonRaw(track,"TOF")) TOFinfo=-1;
    if(specie==4 && !IsProtonRaw(track,"TOF")) TOFinfo=-1;
   }
-   if(TOFinfo+TPCinfo>=2) return 1;
+  if(TOFinfo==1 && TPCinfo==1) return 1;
 
    return -1;
 
@@ -572,20 +571,20 @@ Int_t AliAODPidHF::MakeRawPid(AliAODTrack *track, Int_t specie){
   return MatchTPCTOF(track,fMatch,specie,fCompat); //clarify
  }else{
   if(fTPC && !fTOF && !fITS) {
-   return ApplyPidTPCRaw(track,specie);
+   if(ApplyPidTPCRaw(track,specie)==specie){return 1;}else{return ApplyPidTPCRaw(track,specie);};
   }else{
    AliError("You should enable just one detector if you don't want to match");
    return 0;
   }
   if(fTOF && !fTPC && !fITS) {
-   return ApplyPidTOFRaw(track,specie);
+   if(ApplyPidTOFRaw(track,specie)==specie){return 1;}else{return ApplyPidTPCRaw(track,specie);};
   }else{
    AliError("You should enable just one detector if you don't want to match");
    return 0;
   }
 
   if(fITS && !fTPC && !fTOF) {
-   return ApplyPidITSRaw(track,specie);
+   if(ApplyPidITSRaw(track,specie)==specie){return 1;}else{return ApplyPidTPCRaw(track,specie);};
   }else{
    AliError("You should enable just one detector if you don't want to match");
    return 0;

@@ -23,20 +23,37 @@ class AliAODPidHF : public AliAODPid{
  virtual ~AliAODPidHF();
 
  //Setters
- void SetSigma(Double_t *sigma){fnSigma=sigma;return;}
+ void SetSigma(Double_t *sigma){
+    for(Int_t i=0; i<fnNSigma; i++) fnSigma[i]=sigma[i];
+     }
  void SetSigma(Int_t idet,Double_t sigma){fnSigma[idet]=sigma;return;}
+ void SetSigmaForTPC(Double_t *sigma){for(Int_t i=0;i<3;i++) fnSigma[i]=sigma[i];return;}
+ void SetSigmaForTOF(Double_t sigma){fnSigma[3]=sigma;return;}
+ void SetSigmaForITS(Double_t sigma){fnSigma[4]=sigma;return;}
  void SetTofSigma(Double_t sigma){fTOFSigma=sigma;return;}
  void SetPriors(Double_t *priors){fPriors=priors;return;}
-// void SetPLimit(Double_t *plim){fPLimit=plim;return;}
- void SetPLimit(Double_t *plim){for(Int_t i=0;i<2;i++){fPLimit[i]=plim[i];}return;}
+ void SetPLimit(Double_t *plim){for(Int_t i=0;i<fnPLimit;i++) fPLimit[i]=plim[i];return;}
+ void SetPLimit(Double_t *plim,Int_t npLim){fnPLimit=npLim;for(Int_t i=0;i<fnPLimit;i++) fPLimit[i]=plim[i];return;}
  void SetAsym(Bool_t asym){fAsym=asym;return;}
  void SetTPC(Bool_t tpc){fTPC=tpc;return;}
  void SetTOF(Bool_t tof){fTOF=tof;return;}
  void SetITS(Bool_t its){fITS=its;return;}
  void SetTRD(Bool_t trd){fTRD=trd;return;}
- void SetMatch(Bool_t match){fMatch=match;return;}
+ void SetMatch(Int_t match){fMatch=match;return;}
  void SetCompat(Bool_t comp){fCompat=comp;return;}
  
+ //Getters
+ Double_t GetSigma(Int_t idet){return fnSigma[idet];}
+ Double_t GetTofSigma(){return fTOFSigma;}
+ void GetPriors(Double_t *priors){priors=fPriors;return;}
+ void GetPLimit(Double_t *plim){plim=fPLimit;}
+ Bool_t GetAsym(){return fAsym;}
+ Bool_t GetTPC(){return fTPC;}
+ Bool_t GetTOF(){return fTOF;}
+ Bool_t GetITS(){return fITS;}
+ Bool_t GetTRD(){return fTRD;}
+ Int_t GetMatch(){return fMatch;}
+ Bool_t GetCompat(){return fCompat;}
 
  Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
  Bool_t IsKaonRaw (AliAODTrack *track, TString detector) const;
@@ -77,12 +94,12 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fTOF; // switch to include or exclude TOF
  Bool_t fITS; //switch to include or exclude ITS
  Bool_t fTRD; // switch to include or exclude TRD
- Bool_t fMatch; //switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
+ Int_t fMatch; //switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
  Bool_t fCompat; // compatibility region : useful only if fMatch=1
  
 
 
- ClassDef(AliAODPidHF,3) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,5) // AliAODPid for heavy flavor PID
 
 };
 
