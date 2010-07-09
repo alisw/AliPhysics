@@ -11,6 +11,7 @@
 
 #include "AliAnalysisCuts.h"
 #include "AliESDtrackCuts.h"
+#include "AliAODPidHF.h"
 #include "AliVEvent.h"
 
 class AliAODTrack;
@@ -43,6 +44,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   void AddTrackCuts(const AliESDtrackCuts *cuts) 
          {fTrackCuts=new AliESDtrackCuts(*cuts); return;}
   void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
+  void SetPidHF(AliAODPidHF* pidObj) {
+    if(fPidHF) delete fPidHF;
+    fPidHF=new AliAODPidHF(*pidObj);
+  }
+  AliAODPidHF* GetPidHF() const {return fPidHF;}
 
   Float_t *GetPtBinLimits() const {return fPtBinLimits;}
   Int_t   GetNPtBins() const {return fnPtBins;}
@@ -73,6 +79,9 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   virtual Bool_t IsInFiducialAcceptance(Double_t /*pt*/,Double_t /*y*/) const {return kTRUE;}
 
+  void SetWhyRejection(Int_t why) {fWhyRejection=why; return;}
+  Int_t GetWhyRejection() const {return fWhyRejection;}
+
   enum{kAll,kTracks,kPID,kCandidate};
 
  protected:
@@ -100,9 +109,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t *fCutsRD; //[fGlobalIndex] the cuts values
   Bool_t  *fIsUpperCut; //[fnVars] use > or < to select
   Bool_t fUsePID; // enable PID usage (off by default)
+  AliAODPidHF *fPidHF; // PID for heavy flavours manager
+  Int_t fWhyRejection; // used to code the step at which candidate was rejected
 
-  ClassDef(AliRDHFCuts,2);  // base class for cuts on AOD reconstructed 
-                            // heavy-flavour decays
+  ClassDef(AliRDHFCuts,4);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
