@@ -11,7 +11,7 @@
 // variable you want to use calling AliBWFunc::SetVarType with one of
 // the elements of the VarType_t enum.
 //
-// Warning: not all variables are iplemented for a 
+// Warning: not all variables are implemented for all the functions.
 //
 // Author: M. Floris, CERN
 //----------------------------------------------------------------------
@@ -22,6 +22,7 @@
 #include "TF3.h"
 #include "TH1.h"
 #include "TSpline.h"
+#include "AliLog.h"
 
 ClassImp(AliBWFunc)
 
@@ -255,7 +256,7 @@ TF1 * AliBWFunc::GetUA1(Double_t mass, Double_t p0star, Double_t pt0, Double_t n
 
 // Backend (private functions and support functions for numerical integration)
 
-Double_t AliBWFunc::StaticHistoFunc(double * x, double* p){
+Double_t AliBWFunc::StaticHistoFunc(const double * x, const double* p){
 
   // provides a function interpolating a histo with a spline; 
   // using double to store a pointer... This is a bad hack. To be replaced
@@ -281,7 +282,7 @@ Double_t AliBWFunc::StaticHistoFunc(double * x, double* p){
   
 }
 
-Double_t AliBWFunc::StaticUA1Func(double * x, double* p) {
+Double_t AliBWFunc::StaticUA1Func(const double * x, const double* p) {
   
 
   // "mass","p0star","pt0","n","T","norm"
@@ -289,17 +290,17 @@ Double_t AliBWFunc::StaticUA1Func(double * x, double* p) {
   Double_t p0star = p[1];
   Double_t pt0    = p[2];
   Double_t n      = p[3];
-  Double_t T      = p[4];
+  Double_t temp   = p[4];
   Double_t norm   = p[5];
   
   Double_t xx = x[0];
 
   static AliBWFunc * self = new AliBWFunc;
   static TF1 * fPLaw   = self->GetPowerLawdNdptTimesPt(pt0, n, norm, "fLocalPLawUA1");
-  static TF1 * fPMTExp = self->GetMTExpdNdptTimesPt   (mass, T, norm, "fLocalMTexpUA1");
+  static TF1 * fPMTExp = self->GetMTExpdNdptTimesPt   (mass, temp, norm, "fLocalMTexpUA1");
 
   fPLaw->SetParameters(norm,pt0,n);
-  fPMTExp->SetParameters(1,T);
+  fPMTExp->SetParameters(1,temp);
   
 
   Double_t normMT =fPMTExp->Eval(p0star) >0 ? fPLaw->Eval(p0star) / fPMTExp->Eval(p0star) *  fPMTExp->GetParameter(0) : 1;
@@ -319,7 +320,7 @@ Double_t AliBWFunc::StaticUA1Func(double * x, double* p) {
 }
 
 
-Double_t AliBWFunc::IntegrandBG(double * x, double* p){
+Double_t AliBWFunc::IntegrandBG(const double * x, const double* p){
   // integrand for boltzman-gibbs blast wave
 
   double x0 = x[0]; 
@@ -327,21 +328,21 @@ Double_t AliBWFunc::IntegrandBG(double * x, double* p){
   double mass = p[0];
   double pT   = p[1];
   double beta = p[2];
-  double T    = p[3];
+  double temp    = p[3];
   
   double mT      = TMath::Sqrt(mass*mass+pT*pT);
 
   double rho0   = TMath::ATanH(beta*x0);  
-  double arg0_0 = pT*TMath::SinH(rho0)/T;
-  double arg0_1 = mT*TMath::CosH(rho0)/T;
-  double f0 = x0*mT*TMath::BesselI0(arg0_0)*TMath::BesselK1(arg0_1);
+  double arg00 = pT*TMath::SinH(rho0)/temp;
+  double arg01 = mT*TMath::CosH(rho0)/temp;
+  double f0 = x0*mT*TMath::BesselI0(arg00)*TMath::BesselK1(arg01);
 
   return f0;
 }
 
 
 
-Double_t AliBWFunc::StaticBGdNdPt(double * x, double* p) {
+Double_t AliBWFunc::StaticBGdNdPt(const double * x, const double* p) {
 
   // implementation of BGBW (1/pt dNdpt)
 
@@ -350,31 +351,31 @@ Double_t AliBWFunc::StaticBGdNdPt(double * x, double* p) {
 
   double mass = p[0];
   double beta = p[1];
-  double T    = p[2];
+  double temp    = p[2];
 
   static TF1 * fIntBG = 0;
   if(!fIntBG)
     fIntBG = new TF1 ("fIntBG", IntegrandBG, 0, 1, 4);
 
-  fIntBG->SetParameters(mass, pT, beta, T);
+  fIntBG->SetParameters(mass, pT, beta, temp);
   double result = fIntBG->Integral(0,1);
   return result*p[3];//*1e30;;
 
 }
 
-Double_t AliBWFunc::StaticBGdNdPtTimesPt(double * x, double* p) {
+Double_t AliBWFunc::StaticBGdNdPtTimesPt(const double * x, const double* p) {
   // BGBW dNdpt implementation
   return x[0]*StaticBGdNdPt(x,p);
 }
 
 
-TF1 * AliBWFunc::GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t T,
+TF1 * AliBWFunc::GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t temp,
 			    Double_t norm, const char * name){
   
   // BGBW 1/pt dNdpt
 
   fLastFunc = new TF1 (name, StaticBGdNdPt, 0.0, 10, 4);
-  fLastFunc->SetParameters(mass,beta,T,norm);    
+  fLastFunc->SetParameters(mass,beta,temp,norm);    
   fLastFunc->SetParNames("mass", "#beta", "T", "norm");
   fLastFunc->SetLineWidth(fLineWidth);
   return fLastFunc;
@@ -385,7 +386,7 @@ TF1 * AliBWFunc::GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t T,
 //_____________________________________________________________________
 // Tsallis
 
-Double_t AliBWFunc::IntegrandTsallis(double * x, double* p){
+Double_t AliBWFunc::IntegrandTsallis(const double * x, const double* p){
 
   // integrand for numerical integration (tsallis)
 
@@ -396,7 +397,7 @@ Double_t AliBWFunc::IntegrandTsallis(double * x, double* p){
   Double_t mass = p[0];
   Double_t pt   = p[1];
   Double_t beta = p[2];
-  Double_t T    = p[3];
+  Double_t temp    = p[3];
   Double_t q    = p[4];
   
   Double_t mt      = TMath::Sqrt(mass*mass+pt*pt);
@@ -405,7 +406,7 @@ Double_t AliBWFunc::IntegrandTsallis(double * x, double* p){
 
   Double_t res = mt*
     r*TMath::CosH(y) *TMath::Power( (
-				     1+(q-1)/T * (
+				     1+(q-1)/temp * (
 						  mt*TMath::CosH(y)*TMath::CosH(rho) -
 						  pt*TMath::SinH(rho)*TMath::Cos(phi)
 						  )
@@ -419,7 +420,7 @@ Double_t AliBWFunc::IntegrandTsallis(double * x, double* p){
 
 
 
-Double_t AliBWFunc::StaticTsallisdNdPt(double * x, double* p) {
+Double_t AliBWFunc::StaticTsallisdNdPt(const double * x, const double* p) {
 
   // tsallis BW implementation 1/pt dNdpt
 
@@ -428,7 +429,7 @@ Double_t AliBWFunc::StaticTsallisdNdPt(double * x, double* p) {
 
   double mass = p[0];
   double beta = p[1];
-  double T    = p[2];
+  double temp    = p[2];
   double q    = p[3];
 
   Double_t ymax = p[5];
@@ -442,7 +443,7 @@ Double_t AliBWFunc::StaticTsallisdNdPt(double * x, double* p) {
 //     fInt->SetNpz(10000);
   }
   
-  fInt->SetParameters(mass, pT, beta, T, q);
+  fInt->SetParameters(mass, pT, beta, temp, q);
   double result = fInt->Integral(0,1, -TMath::Pi(), TMath::Pi(), -ymax, ymax);
   //  double result = fInt->Integral(0,1, -2, 2, -ymax, ymax);
   
@@ -450,25 +451,25 @@ Double_t AliBWFunc::StaticTsallisdNdPt(double * x, double* p) {
 
 }
 
-Double_t AliBWFunc::StaticTsallisdNdPtTimesPt(double * x, double* p) {
+Double_t AliBWFunc::StaticTsallisdNdPtTimesPt(const double * x, const double* p) {
 
   // tsallis BW , implementatio of dNdpt
   return x[0]*StaticTsallisdNdPt(x,p);
 
 }
 
-TF1 * AliBWFunc::GetTsallisBWdNdpt(Double_t mass, Double_t beta, Double_t T, Double_t q,
+TF1 * AliBWFunc::GetTsallisBWdNdpt(Double_t mass, Double_t beta, Double_t temp, Double_t q,
 				   Double_t norm, Double_t ymax,const char * name){
   
 
   // tsallis BW, 1/pt dNdpt
 
   fLastFunc = new TF1 (name, StaticTsallisdNdPt, 0.0, 10, 6);
-  fLastFunc->SetParameters(mass,beta,T,q,norm,ymax);
+  fLastFunc->SetParameters(mass,beta,temp,q,norm,ymax);
   fLastFunc->SetParLimits(1,0.0,0.99);
   fLastFunc->SetParLimits(2,0.01,0.99);
   fLastFunc->SetParLimits(3,1.0001,1.9);
-  fLastFunc->SetParNames("mass", "#beta", "T", "q", "norm", "ymax");
+  fLastFunc->SetParNames("mass", "#beta", "temp", "q", "norm", "ymax");
   fLastFunc->SetLineWidth(fLineWidth);
   return fLastFunc;
   
@@ -476,14 +477,14 @@ TF1 * AliBWFunc::GetTsallisBWdNdpt(Double_t mass, Double_t beta, Double_t T, Dou
 
 // Times Pt funcs
 // Boltzmann-Gibbs Blast Wave
-TF1 * AliBWFunc::GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t T,
+TF1 * AliBWFunc::GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp,
 				     Double_t norm, const char * name){
 
   // BGBW, dNdpt
 
   fLastFunc = new TF1 (name, StaticBGdNdPtTimesPt, 0.0, 10, 4);
-  fLastFunc->SetParameters(mass,beta,T,norm);    
-  fLastFunc->SetParNames("mass", "#beta", "T", "norm");
+  fLastFunc->SetParameters(mass,beta,temp,norm);    
+  fLastFunc->SetParNames("mass", "#beta", "temp", "norm");
   fLastFunc->SetLineWidth(fLineWidth);
   return fLastFunc;
 
@@ -492,14 +493,14 @@ TF1 * AliBWFunc::GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t T,
 
 
 
-TF1 * AliBWFunc::GetTsallisBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t T, Double_t q,
+TF1 * AliBWFunc::GetTsallisBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp, Double_t q,
 					  Double_t norm, Double_t ymax, const char * name){
 
 // Tsallis blast wave, dNdpt
 
   fLastFunc = new TF1 (name, StaticTsallisdNdPtTimesPt, 0.0, 10, 6);
-  fLastFunc->SetParameters(mass,beta,T,q,norm,ymax);    
-  fLastFunc->SetParNames("mass", "#beta", "T", "q", "norm", "ymax");
+  fLastFunc->SetParameters(mass,beta,temp,q,norm,ymax);    
+  fLastFunc->SetParNames("mass", "#beta", "temp", "q", "norm", "ymax");
   fLastFunc->SetLineWidth(fLineWidth);
   return fLastFunc;
  
@@ -508,13 +509,13 @@ TF1 * AliBWFunc::GetTsallisBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t
 
 
 
-TF1 * AliBWFunc::GetMTExpdNdptTimesPt(Double_t mass, Double_t T, Double_t norm, const char * name){
+TF1 * AliBWFunc::GetMTExpdNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
 
   // Simple exponential in 1/mt*MT, as a function of dNdpt
   char formula[500];
   sprintf(formula,"[0]*x*exp(-sqrt(x**2+%f**2)/[1])", mass);
   fLastFunc=new TF1(name,formula,0,10);
-  fLastFunc->SetParameters(norm, T);
+  fLastFunc->SetParameters(norm, temp);
   fLastFunc->SetParLimits(1, 0.01, 10);
   fLastFunc->SetParNames("norm", "T");
   fLastFunc->SetLineWidth(fLineWidth);
@@ -524,13 +525,13 @@ TF1 * AliBWFunc::GetMTExpdNdptTimesPt(Double_t mass, Double_t T, Double_t norm, 
 }
 
 
-TF1 * AliBWFunc::GetPTExpdNdptTimesPt(Double_t T, Double_t norm, const char * name){
+TF1 * AliBWFunc::GetPTExpdNdptTimesPt(Double_t temp, Double_t norm, const char * name){
 
   // Simple exponential in 1/pt*dNdpT, as a function of dNdpt
   char formula[500];
   sprintf(formula,"[0]*x*exp(-x/[1])");
   fLastFunc=new TF1(name,formula,0,10);
-  fLastFunc->SetParameters(norm, T);
+  fLastFunc->SetParameters(norm, temp);
   fLastFunc->SetParLimits(1, 0.01, 10);
   fLastFunc->SetParNames("norm", "T");
   fLastFunc->SetLineWidth(fLineWidth);
@@ -540,12 +541,12 @@ TF1 * AliBWFunc::GetPTExpdNdptTimesPt(Double_t T, Double_t norm, const char * na
 }
 
 
-TF1 * AliBWFunc::GetBoltzmanndNdptTimesPt(Double_t mass, Double_t T, Double_t norm, const char * name){
+TF1 * AliBWFunc::GetBoltzmanndNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
   // Boltzmann (exp in 1/mt*dNdmT times mt) as a function of dNdpt
  char formula[500];
  sprintf(formula,"[0]*x*sqrt(x**2+%f**2)*exp(-sqrt(x**2+%f**2)/[1])", mass,mass);
   fLastFunc=new TF1(name,formula,0,10);
-  fLastFunc->SetParameters(norm, T);
+  fLastFunc->SetParameters(norm, temp);
   fLastFunc->SetParLimits(1, 0.01, 10);
   fLastFunc->SetParNames("norm", "T");
   fLastFunc->SetLineWidth(fLineWidth);
@@ -573,7 +574,7 @@ TF1 * AliBWFunc::GetBoltzmanndNdptTimesPt(Double_t mass, Double_t T, Double_t no
 // }
 
 
-TF1 * AliBWFunc::GetLevidNdptTimesPt(Double_t mass, Double_t T, Double_t n, Double_t norm, const char * name){
+TF1 * AliBWFunc::GetLevidNdptTimesPt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name){
 
   // Levi function, dNdpt
   char formula[500];
@@ -581,7 +582,7 @@ TF1 * AliBWFunc::GetLevidNdptTimesPt(Double_t mass, Double_t T, Double_t n, Doub
   sprintf(formula,"( x*[0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (sqrt([3]*[3]+x*x) -[3])/([1]*[2])  )^(-[1])");
   //  sprintf(formula,"( x*[0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (sqrt([3]*[3]+x*x))/([1]*[2])  )^(-[1])");
   fLastFunc=new TF1(name,formula,0,10);
-  fLastFunc->SetParameters(norm, n, T,mass);
+  fLastFunc->SetParameters(norm, n, temp,mass);
   fLastFunc->SetParLimits(2, 0.01, 10);
   fLastFunc->SetParNames("norm (dN/dy)", "n", "T", "mass");
   fLastFunc->FixParameter(3,mass);
@@ -625,14 +626,14 @@ TF1 * AliBWFunc::GetPowerLawdNdpt(Double_t pt0, Double_t n, Double_t norm, const
 }
 
 
-TF1 * AliBWFunc::GetLevidNdpt(Double_t mass, Double_t T, Double_t n, Double_t norm, const char * name){
+TF1 * AliBWFunc::GetLevidNdpt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name){
 
   // Levi function, dNdpt
   char formula[500];
 
   sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (sqrt([3]*[3]+x*x) -[3])/([1]*[2])  )^(-[1])");
   fLastFunc=new TF1(name,formula,0,10);
-  fLastFunc->SetParameters(norm, n, T,mass);
+  fLastFunc->SetParameters(norm, n, temp,mass);
   fLastFunc->SetParLimits(2, 0.01, 10);
   fLastFunc->SetParNames("norm (dN/dy)", "n", "T", "mass");
   fLastFunc->FixParameter(3,mass);
@@ -642,7 +643,7 @@ TF1 * AliBWFunc::GetLevidNdpt(Double_t mass, Double_t T, Double_t n, Double_t no
 
 }
 
-TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t T, Double_t n, Double_t norm, const char * name){
+TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name){
 
   // Levi function, dNdmt
   char formula[500];
@@ -651,7 +652,7 @@ TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t T, Double_t n, Double_t no
   sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + x/([1]*[2])  )^(-[1])");
   //  sprintf(formula,"[0] * ( 1 + x/([1]*[2])  )^(-[1])");
   fLastFunc=new TF1(name,formula,0,10);
-  fLastFunc->SetParameters(norm, n, T,mass);
+  fLastFunc->SetParameters(norm, n, temp,mass);
   fLastFunc->SetParLimits(2, 0.01, 10);
   fLastFunc->SetParNames("norm", "n", "T", "mass");
   fLastFunc->FixParameter(3,mass);
@@ -664,7 +665,7 @@ TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t T, Double_t n, Double_t no
 
 
 // Test Function
-Double_t AliBWFunc::IntegrandTest(double * x, double* p){
+Double_t AliBWFunc::IntegrandTest(const double * x, const double* p){
 
   // test function
 
@@ -672,15 +673,15 @@ Double_t AliBWFunc::IntegrandTest(double * x, double* p){
 
   Double_t mass = p[0];
   Double_t pt   = p[1];
-  Double_t T    = p[2];
+  Double_t temp    = p[2];
 
   Double_t mt      = TMath::Sqrt(mass*mass+pt*pt);    
   
-  return mt*TMath::CosH(y)*TMath::Exp(-mt*TMath::CosH(y)/T);
+  return mt*TMath::CosH(y)*TMath::Exp(-mt*TMath::CosH(y)/temp);
 
 }
 
-Double_t AliBWFunc::StaticTest(double * x, double* p) {
+Double_t AliBWFunc::StaticTest(const double * x, const double* p) {
 
   // test function
 
@@ -688,7 +689,7 @@ Double_t AliBWFunc::StaticTest(double * x, double* p) {
   
 
   double mass = p[0];
-  double T    = p[1];
+  double temp    = p[1];
   Double_t ymax = p[3];
 
 
@@ -698,19 +699,19 @@ Double_t AliBWFunc::StaticTest(double * x, double* p) {
     //    fInt->SetNpx(10000);
   }
   
-  fIntTest->SetParameters(mass, pT, T);
+  fIntTest->SetParameters(mass, pT, temp);
   double result = fIntTest->Integral(-ymax, ymax);
   
   return result*p[2];//*1e30;;
 
 }
 
-TF1 * AliBWFunc::GetTestFunc(Double_t mass, Double_t T, Double_t norm, Double_t ymax, const char * name){
+TF1 * AliBWFunc::GetTestFunc(Double_t mass, Double_t temp, Double_t norm, Double_t ymax, const char * name){
   
   // test function
   
   fLastFunc = new TF1 (name, StaticTest, 0.0, 10, 4);
-  fLastFunc->SetParameters(mass,T,norm,ymax);    
+  fLastFunc->SetParameters(mass,temp,norm,ymax);    
   fLastFunc->SetParNames("mass", "#beta", "T", "q", "norm", "ymax");
   fLastFunc->SetLineWidth(fLineWidth);
   return fLastFunc;
@@ -721,13 +722,13 @@ TF1 * AliBWFunc::GetTestFunc(Double_t mass, Double_t T, Double_t norm, Double_t 
 //___________________________________________________________
 
 
-TF1 * AliBWFunc::GetMTExpdNdpt(Double_t mass, Double_t T, Double_t norm, const char * name){
+TF1 * AliBWFunc::GetMTExpdNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
   // Simple exp in 1/mt dNdmt, as a function of dNdpt
   // mt scaling
   char formula[500];
   sprintf(formula,"[0]*exp(-sqrt(x**2+%f**2)/[1])", mass);
   fLastFunc=new TF1(name,formula,0,10);
-  fLastFunc->SetParameters(norm, T);
+  fLastFunc->SetParameters(norm, temp);
   fLastFunc->SetParLimits(1, 0.01, 10);
   fLastFunc->SetParNames("norm", "T");
   fLastFunc->SetLineWidth(fLineWidth);
@@ -736,12 +737,12 @@ TF1 * AliBWFunc::GetMTExpdNdpt(Double_t mass, Double_t T, Double_t norm, const c
 
 
 // // Simple tsallis (a la CMS)
-// TF1 * AliBWFunc::GetTsallisdNdpt(Double_t mass, Double_t T, Double_t q, Double_t norm, const char * name){
+// TF1 * AliBWFunc::GetTsallisdNdpt(Double_t mass, Double_t temp, Double_t q, Double_t norm, const char * name){
   
 //   char formula[500];
 //   sprintf(formula,"[0]*sqrt(x**2+%f**2)*pow((1+(([2]-1)/[1])*(sqrt(x**2+%f**2))),(-1/([2]-1)))", mass,mass); 
 //   fLastFunc=new TF1(name,formula,0,10);
-//   fLastFunc->SetParameters(norm, T, q);
+//   fLastFunc->SetParameters(norm, temp, q);
 //   fLastFunc->SetParLimits(1, 0.01, 10);
 //   fLastFunc->SetParNames("norm", "T", "q");
 //   fLastFunc->SetLineWidth(fLineWidth);
