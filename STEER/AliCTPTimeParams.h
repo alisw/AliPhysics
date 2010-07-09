@@ -25,23 +25,23 @@ public:
 	static AliCTPTimeParams* LoadCTPTimeParamsFromString(const char* timeparams);
 		Bool_t ProcessCTPTimeParamsLine(const char* line);
 		  void AddInput( TString& inputName, UInt_t& inputLevel, UInt_t inputDelay, TString inputEdge, UInt_t deltamin, UInt_t deltamax );
-		  void AddDelayL0L1L2(UInt_t delayL1L0, UInt_t delayL2L0);
+		  void AddDelayL0L1L2(Int_t delayL1L0, UInt_t delayL2L0);
 	  virtual void Print(const Option_t* opt="") const;
 		//Setters
 
 		//Getters
-		UInt_t  GetDelayL1L0()   const { return fDelayL1L0; }
+		Int_t   GetDelayL1L0()   const { return fDelayL1L0; }
 	        UInt_t  GetDelayL2L0()   const { return fDelayL2L0; }                  const TObjArray* GetInputTimeParams() const { return &fCTPInputTimeParams; }
       AliCTPInputTimeParams* GetTimeParamsForInput(TString inputname);
       Int_t GetDeltasforClass(TString classname,Int_t& deltamin,Int_t& deltamax);
 
                 enum {kNMaxInputs = 60}; //CTP can manage up to 60 trigger detector inputs
 private:
-			UInt_t fDelayL1L0;
+			Int_t  fDelayL1L0;
 			UInt_t fDelayL2L0;
 			TObjArray fCTPInputTimeParams;
 
-  ClassDef( AliCTPTimeParams, 2 ) 
+  ClassDef( AliCTPTimeParams, 3 ) 
 };
 
 #endif

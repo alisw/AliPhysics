@@ -32,8 +32,8 @@ ClassImp(AliCTPTimeParams)
 //______________________________________________________________________________
 AliCTPTimeParams::AliCTPTimeParams():
 TNamed(),
-fDelayL1L0(),
-fDelayL2L0(),
+fDelayL1L0(0),
+fDelayL2L0(0),
 fCTPInputTimeParams()
 {
 //Default constructor
@@ -85,7 +85,7 @@ void AliCTPTimeParams::AddInput( TString& inputName, UInt_t& inputLevel, UInt_t 
 }
 
 //______________________________________________________________________________
-void AliCTPTimeParams::AddDelayL0L1L2(UInt_t delayL1L0, UInt_t delayL2L0)
+void AliCTPTimeParams::AddDelayL0L1L2(Int_t delayL1L0, UInt_t delayL2L0)
 {
  fDelayL1L0 = delayL1L0;
  fDelayL2L0 = delayL2L0;

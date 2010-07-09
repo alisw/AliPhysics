@@ -264,6 +264,7 @@ private:
   AliEventInfo   fEventInfo;          // an object which contains essential event information
   AliTriggerRunScalers* fRunScalers;  // an object which contains the trigger counters for xsection
   AliCTPTimeParams* fCTPTimeParams;   // an object which contains the trigger delays
+  AliCTPTimeParams* fCTPTimeAlign;    // an object which contains the CTP (mis)alignment data
   AliRunLoader*  fRunLoader;          //! current run loader object
   AliRawReader*  fRawReader;          //! current raw data reader
   AliRawReader*  fParentRawReader;    //! parent raw data reader in case of AliRawReaderHLT
@@ -320,7 +321,7 @@ private:
   
   TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
 
-  ClassDef(AliReconstruction, 37)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 38)      // class for running the reconstruction
 };
 
 #endif

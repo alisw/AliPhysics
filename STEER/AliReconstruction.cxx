@@ -248,6 +248,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fEventInfo(),
   fRunScalers(NULL),
   fCTPTimeParams(NULL),  
+  fCTPTimeAlign(NULL),  
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -355,6 +356,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fEventInfo(),
   fRunScalers(NULL),
   fCTPTimeParams(NULL),
+  fCTPTimeAlign(NULL),
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -489,6 +491,8 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
 
   delete fCTPTimeParams; fCTPTimeParams = NULL;
   if (rec.fCTPTimeParams) fCTPTimeParams = new AliCTPTimeParams(*rec.fCTPTimeParams);
+  delete fCTPTimeAlign; fCTPTimeAlign = NULL;
+  if (rec.fCTPTimeAlign) fCTPTimeAlign = new AliCTPTimeParams(*rec.fCTPTimeAlign);
 
   fRunLoader       = NULL;
   fRawReader       = NULL;
@@ -568,6 +572,7 @@ AliReconstruction::~AliReconstruction()
   delete fGRPData;
   delete fRunScalers;
   delete fCTPTimeParams;
+  delete fCTPTimeAlign;
   fOptions.Delete();
   if (fAlignObjArray) {
     fAlignObjArray->Delete();
@@ -1207,16 +1212,20 @@ Bool_t AliReconstruction::LoadCTPTimeParamsCDB()
   // from OCDB.
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
+  if (!entry) return kFALSE;
 
-  if (entry) {
+  AliInfo("Found an AliCTPTimeParams in GRP/CTP/CTPtiming, reading it");
+  fCTPTimeParams = dynamic_cast<AliCTPTimeParams*> (entry->GetObject());
+  entry->SetOwner(0);
 
-       AliInfo("Found an AliCTPTimeParams in GRP/CTP/CTPtiming, reading it");
-       fCTPTimeParams = dynamic_cast<AliCTPTimeParams*> (entry->GetObject());
-       entry->SetOwner(0);
-       return kTRUE;
-  }
-  
-  return kFALSE; 
+  AliCDBEntry* entry2 = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
+  if (!entry2) return kFALSE;
+
+  AliInfo("Found an AliCTPTimeParams in GRP/CTP/TimeAlign, reading it");
+  fCTPTimeAlign = dynamic_cast<AliCTPTimeParams*> (entry->GetObject());
+  entry->SetOwner(0);
+
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
