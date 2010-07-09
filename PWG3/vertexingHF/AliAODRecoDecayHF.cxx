@@ -22,6 +22,7 @@
 
 #include <TDatabasePDG.h>
 #include <TVector3.h>
+#include <TRandom.h>
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODEvent.h"
@@ -310,4 +311,112 @@ AliAODVertex* AliAODRecoDecayHF::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod)
   }
 
   return vtxAODNew;
+}
+
+
+
+
+//-----------------------------------------------------------------------------------
+void AliAODRecoDecayHF::Misalign(TString misal) {
+  //
+  // Method to smear the impact parameter of the duaghter tracks
+  // and the sec. vtx position accordinlgy 
+  // Useful to study effect of misalignment.
+  // The starting point are parameterisations of the impact parameter resolution
+  // from MC and data 
+  // Errors on d0 and vtx are not recalculated (to be done)
+  //
+  if(misal=="null")return;
+  Double_t pard0rphiMC[3]={36.7,36.,1.25};// d0(pt)=[0]+[1]/(pt^[2]); in micron, conversion to cm is done later
+  Double_t pard0rphimisal[3]={0,0,0};
+  Double_t pard0zMC[3]={85.,130.,0.7};// d0(pt)=[0]+[1]/(pt^[2]); in micron, conversion to cm is done later
+  Double_t pard0zmisal[3]={0,0,0};
+  if(misal=="data") {
+    //use this to reproduce data d0(pt) trend for pions
+    pard0rphimisal[0]=37.;
+    pard0rphimisal[1]=37.5;
+    pard0rphimisal[2]=1.25;
+    pard0zmisal[0]=96.;
+    pard0zmisal[1]=131.;
+    pard0zmisal[2]=0.7;
+  }
+  else if(misal=="resB") {
+    // temporary values: asymptotic value larger by a factor 1.2 w.r.t. MC
+    pard0rphimisal[0]=44.4;
+    pard0rphimisal[1]=37.5;
+    pard0rphimisal[2]=1.25;
+    pard0zmisal[0]=115.2;
+    pard0zmisal[1]=131.;
+    pard0zmisal[2]=0.7;
+  }
+  else if(misal=="resC") {
+    // temporary values: slightly larger asymptotic value, larger values at low pt
+    pard0rphimisal[0]=40.;
+    pard0rphimisal[1]=40.;
+    pard0rphimisal[2]=1.3;
+    pard0zmisal[0]=125.;
+    pard0zmisal[1]=131.;
+    pard0zmisal[2]=0.85;
+  }
+  else printf("AliAODRecoDecayHF::Misalign():  wrong misalign type specified \n");
+ 
+
+  AliAODVertex *evVtx=0x0,*secVtx=0x0;
+  Double_t evVtxPos[3]={-9999.,-9999.,-9999.},secVtxPos[3]={-9999.,9999.,9999.};
+  if(fOwnPrimaryVtx)fOwnPrimaryVtx->GetXYZ(evVtxPos);
+  else {
+    evVtx=(AliAODVertex*)(fEventPrimaryVtx.GetObject());
+    evVtx->GetXYZ(evVtxPos);
+  }
+  secVtx=(AliAODVertex*)GetSecondaryVtx();
+  secVtx->GetXYZ(secVtxPos);
+  
+  TVector3 v2v1(secVtxPos[0]-evVtxPos[0],secVtxPos[1]-evVtxPos[1],0.);
+
+  Double_t sigmarphinull,sigmarphimisal,sigmarphiadd;
+  Double_t sigmaznull,sigmazmisal,sigmazadd;
+  Double_t deltad0rphi[10],deltad0z[10];
+  
+  // loop on the two prongs
+  for(Int_t i=0; i<fNProngs; i++) { 
+    sigmarphinull = pard0rphiMC[0]+pard0rphiMC[1]/TMath::Power(PtProng(i),pard0rphiMC[2]);
+    sigmarphimisal = pard0rphimisal[0]+pard0rphimisal[1]/TMath::Power(PtProng(i),pard0rphimisal[2]);
+    if(sigmarphimisal>sigmarphinull) {
+      sigmarphiadd = TMath::Sqrt(sigmarphimisal*sigmarphimisal-
+				 sigmarphinull*sigmarphinull);
+      deltad0rphi[i] = gRandom->Gaus(0.,sigmarphiadd);
+    } else {
+      deltad0rphi[i] = 0.;
+    }
+
+    sigmaznull =  pard0zMC[0]+pard0zMC[1]/TMath::Power(PtProng(i),pard0zMC[2]);
+    sigmazmisal = pard0zmisal[0]+pard0zmisal[1]/TMath::Power(PtProng(i),pard0zmisal[2]);
+    if(sigmazmisal>sigmaznull) {
+      sigmazadd = TMath::Sqrt(sigmazmisal*sigmazmisal-
+			      sigmaznull*sigmaznull);
+      deltad0z[i] = gRandom->Gaus(0.,sigmazadd);
+    } else {
+      deltad0z[i] = 0.;
+    }
+
+    TVector3 pxy(fPx[i],fPy[i],0.);
+    TVector3 pxycrossv2v1=pxy.Cross(v2v1);
+    if( pxycrossv2v1.Z()*fd0[i] > 0 ) {
+      secVtxPos[0]+=1.e-4*deltad0rphi[i]*(-fPy[i])/PtProng(i);// e-4: conversion to cm
+      secVtxPos[1]+=1.e-4*deltad0rphi[i]*(+fPx[i])/PtProng(i);    
+    } else {
+      secVtxPos[0]+=1.e-4*deltad0rphi[i]*(+fPy[i])/PtProng(i);
+      secVtxPos[1]+=1.e-4*deltad0rphi[i]*(-fPx[i])/PtProng(i);    
+    }
+    
+    // change d0rphi
+    fd0[i] += 1.e-4*deltad0rphi[i]; // e-4: conversion to cm
+    // change secondary vertex z
+    secVtxPos[2]+=0.5e-4*deltad0z[i];
+  }
+  secVtx->SetX(secVtxPos[0]);
+  secVtx->SetY(secVtxPos[1]);
+  secVtx->SetZ(secVtxPos[2]);
+
+  return;
 }
