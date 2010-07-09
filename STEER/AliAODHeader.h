@@ -76,8 +76,10 @@ class AliAODHeader : public AliVHeader {
 
   Double_t GetDiamondX() const {return fDiamondXY[0];}
   Double_t GetDiamondY() const {return fDiamondXY[1];}
+  Double_t GetDiamondZ() const {return fDiamondZ;}
   Double_t GetSigma2DiamondX() const {return fDiamondCovXY[0];}
   Double_t GetSigma2DiamondY() const {return fDiamondCovXY[2];}
+  Double_t GetSigma2DiamondZ() const {return fDiamondSig2Z;}
   void GetDiamondCovXY(Float_t cov[3]) const {
     for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
   }
@@ -111,6 +113,9 @@ class AliAODHeader : public AliVHeader {
 
   void SetDiamond(Float_t xy[2],Float_t cov[3]) { 
     for(Int_t i=0;i<3;i++) {if(i<2) fDiamondXY[i]=xy[i]; fDiamondCovXY[i]=cov[i];}
+  }
+  void SetDiamondZ(Float_t z, Float_t sig2z){
+    fDiamondZ=z; fDiamondSig2Z=sig2z;
   }
 
   void Print(Option_t* option = "") const;
@@ -159,10 +164,12 @@ class AliAODHeader : public AliVHeader {
   UChar_t     fTriggerCluster;      // Trigger cluster (mask)
   Double32_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
   Double32_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
+  Double32_t      fDiamondZ;        // Interaction diamond (z) in RUN
+  Double32_t      fDiamondSig2Z;    // Interaction diamond sigma^2 (z) in RUN
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix];   //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
 
-  ClassDef(AliAODHeader,10);
+  ClassDef(AliAODHeader,11);
 };
 
 #endif
