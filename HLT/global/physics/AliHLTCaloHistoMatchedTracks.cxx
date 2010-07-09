@@ -44,26 +44,26 @@ AliHLTCaloHistoMatchedTracks::AliHLTCaloHistoMatchedTracks(TString det) :
   fHistUnMatchedEnergy(NULL)
 {
 
-  fHistMatchDistance = new TH1F( Form("%s fHistMatchDistance", det.Data()), Form("%s Track - Cluster residuals (cm)", det.Data()), 50, 0, 50);
+  fHistMatchDistance = new TH1F( Form("%s_fHistMatchDistance", det.Data()), Form("%s Track - Cluster residuals (cm)", det.Data()), 50, 0, 50);
   fHistMatchDistance->GetXaxis()->SetTitle("Distance (cm)");
   fHistMatchDistance->GetYaxis()->SetTitle("Count");
   fHistMatchDistance->SetMarkerStyle(21);
   fHistArray->AddLast(fHistMatchDistance);
 
-  fHistMatchedEnergy = new TH1F( Form("%s fHistMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with matching tracks", det.Data()), 5000, 0, 100);
+  fHistMatchedEnergy = new TH1F( Form("%s_fHistMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with matching tracks", det.Data()), 5000, 0, 100);
   fHistMatchedEnergy->GetXaxis()->SetTitle("Cluster Energy (GeV)");
   fHistMatchedEnergy->GetYaxis()->SetTitle("Number of clusters");
   fHistMatchedEnergy->SetMarkerStyle(21);
   fHistArray->AddLast(fHistMatchedEnergy);
 
-  fHistUnMatchedEnergy = new TH1F( Form("%s fHistUnMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with no matching track", det.Data()), 5000, 0, 100);
+  fHistUnMatchedEnergy = new TH1F( Form("%s_fHistUnMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with no matching track", det.Data()), 5000, 0, 100);
   fHistUnMatchedEnergy->GetXaxis()->SetTitle("Cluster Energy (GeV)");
   fHistUnMatchedEnergy->GetYaxis()->SetTitle("Number of clusters");
   fHistUnMatchedEnergy->SetMarkerStyle(21);
   fHistArray->AddLast(fHistUnMatchedEnergy);
 
 
-  fHistDxyDz = new TH2F( Form("%s fHist dXY dZ", det.Data()), Form("%s dXY - dZ distribution of track - cluster residuals", det.Data()), 50, -50, 50, 50, -50, 50);
+  fHistDxyDz = new TH2F( Form("%s_fHistdXYdZ", det.Data()), Form("%s dXY - dZ distribution of track - cluster residuals", det.Data()), 50, -50, 50, 50, -50, 50);
   fHistDxyDz->GetXaxis()->SetTitle("sqrt(dx^2 + dy^2)  (cm)");
   fHistDxyDz->GetYaxis()->SetTitle("dz (cm)");
   //fHistDxyDz->SetMarkerStyle(21);
@@ -98,7 +98,7 @@ Int_t AliHLTCaloHistoMatchedTracks::FillHistograms(Int_t nc, TRefArray * cluster
   //See header file for documentation
   for(int ic = 0; ic < nc; ic++) {
     AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(clusterArray->At(ic));
-    return FillMatchedTracks(cluster);
+    FillMatchedTracks(cluster);
   }
   return 0;
 }
@@ -106,7 +106,7 @@ Int_t AliHLTCaloHistoMatchedTracks::FillHistograms(Int_t nc, TRefArray * cluster
 Int_t AliHLTCaloHistoMatchedTracks::FillHistograms(Int_t nc, vector<AliHLTCaloClusterDataStruct*> &cVec) {
   for(int ic = 0; ic < nc; ic++) {
     AliHLTCaloClusterDataStruct * cluster = cVec.at(ic);
-    return FillMatchedTracks(cluster);
+    FillMatchedTracks(cluster);
   }
   return 0;
 }
