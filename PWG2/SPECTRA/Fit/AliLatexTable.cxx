@@ -34,7 +34,7 @@
 
 using namespace std;
 
-ClassImp(AliLatexTable);
+ClassImp(AliLatexTable)
 
 AliLatexTable::AliLatexTable(Int_t ncol, TString format) : fNcol(0), fFormat(""), fRows(0), fCols(0), fNcolReady(0){
   // constructor, specify number of cols 
@@ -440,7 +440,7 @@ void AliLatexTable::StripLatex(TString &text, TString format) {
     //    cout << "col " << text.Data() << endl;
     // in case of multicol span, replace first column with content and
     // add n empty cols
-    TObjArray * array = TPRegexp("multicolumn\{(.*)\\}\{.*\\}\{(.*)\\}").MatchS(text); // Added double \\ because gcc 4 triggers hard error on unknown escape sequence. Hope it still works...
+    TObjArray * array = TPRegexp("multicolumn\\{(.*)\\}\\{.*\\}\\{(.*)\\}").MatchS(text); // Added double \\ because gcc 4 triggers hard error on unknown escape sequence. Hope it still works...
     const TString content = ((TObjString *)array->At(2))->GetString();
     Int_t nspan   = ((TObjString *)array->At(1))->GetString().Atoi();
     text = content;
