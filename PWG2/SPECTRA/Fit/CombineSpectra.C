@@ -42,7 +42,7 @@ enum {kFitLevi=0, kFitUA1, kFitPowerLaw,
 
 // flags, labels and names
 const char * partFlag[] = {"Pion", "Kaon", "Proton"};
-const char * detFlag[]  = {"TPC", "TOF", "ITS", "ITS Global", "K0", "Kinks", "Combined TOF + TPC"};
+const char * detFlag[]  = {"TPC", "TOF", "ITS", "ITS Global", "K0", "Kinks", "Combined TOF + TPC", "Combined TOF + TPC + ITS"};
 const char * chargeFlag[]  = {"Pos", "Neg"};
 const char * chargeLabel[]  = {"Positive", "Negative"};
 const char * partLabel[kNPart][kNCharge] = {{"#pi^{+}", "#pi^{-}"}, 
@@ -100,7 +100,7 @@ TString today = "";
 
 // Switches
 Bool_t convertToMT = 0;
-Bool_t doPrint = 0;
+Bool_t doPrint = 1;
 Int_t  fitFuncID = kFitLevi;
 Bool_t scaleKaons =  kFALSE;
 Bool_t correctSecondaries  = 1;
@@ -143,8 +143,8 @@ void CombineSpectra() {
   //  DrawWithModels() ;
   //DrawWithJacek();
   //DrawRatioToStar();
-  //DrawRatios();
-  //return;
+  DrawRatios();
+  return;
 
 
   // Draw combined & Fit
@@ -1166,7 +1166,11 @@ void DrawRatios() {
   
 
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
-    TCanvas * c1 = new TCanvas(TString("cRatio_")+partFlag[ipart], TString("cRatio_")+partFlag[ipart]);
+    TString detName = detFlag[iCombInStudy];
+    detName.ReplaceAll(" ", "_");
+    detName.ReplaceAll("+", "");
+
+    TCanvas * c1 = new TCanvas(TString("cRatio_")+detName+partFlag[ipart], TString("cRatio_")+detName+partFlag[ipart]);
     hPosNegRatio[ipart]->Draw();
     TF1 * fRatio = new TF1 (TString("fRatio")+partFlag[ipart], TString(fLevi[ipart][kPos]->GetName())+"/"+fLevi[ipart][kNeg]->GetName());
     //    fRatio->Draw("same");
@@ -1174,7 +1178,7 @@ void DrawRatios() {
     if (doPrint) {
       c1->Update();
       gSystem->ProcessEvents();
-      c1->Print(TString(c1->GetName()) + ".eps");
+      c1->Print(TString(c1->GetName()) + ".png");
     }
     
   }
