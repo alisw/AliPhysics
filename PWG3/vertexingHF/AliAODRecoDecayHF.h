@@ -102,6 +102,9 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
 				 Bool_t topoCostraint,Double_t bzkG,
 				 Double_t *mass) const;
   
+  // misalign
+  void Misalign(TString misal="null");
+
  protected:
 
   AliAODVertex *fOwnPrimaryVtx; // primary vertex for this candidate
