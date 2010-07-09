@@ -20,7 +20,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 #include "TObject.h"
-#include "AliLog.h"
 
 class TF1;
 class TH1;
@@ -145,32 +144,32 @@ protected:
 
   // static functions for TF1
   // Boltzmann-Gibbs Blast Wave
-  static Double_t StaticBGdNdPt(double * x, double* p);
-  static Double_t StaticBGdNdPtTimesPt(double * x, double* p);
+  static Double_t StaticBGdNdPt(const double * x, const double* p);
+  static Double_t StaticBGdNdPtTimesPt(const double * x, const double* p);
   // Tsallis blast wave
-  static Double_t StaticTsallisdNdPt(double * x, double* p);
-  static Double_t StaticTsallisdNdPtTimesPt(double * x, double* p);
+  static Double_t StaticTsallisdNdPt(const double * x, const double* p);
+  static Double_t StaticTsallisdNdPtTimesPt(const double * x, const double* p);
   // Helper funcs for numeric integration
-  static Double_t IntegrandBG(double * x, double* p);
-  static Double_t IntegrandTsallis(double * x, double* p);
+  static Double_t IntegrandBG(const double * x, const double* p);
+  static Double_t IntegrandTsallis(const double * x, const double* p);
 
   // Test func
-  static Double_t StaticTest(double * x, double* p);
-  static Double_t IntegrandTest(double * x, double* p);
+  static Double_t StaticTest(const double * x, const double* p);
+  static Double_t IntegrandTest(const double * x, const double* p);
 
   // histo func
-  static Double_t StaticHistoFunc(double * x, double* p);
+  static Double_t StaticHistoFunc(const double * x, const double* p);
 
   // UA1 parametrization
-  static Double_t StaticUA1Func(double * x, double* p);
+  static Double_t StaticUA1Func(const double * x, const double* p);
   
 
 private:
 
 
-  TF1 * fLastFunc;
-  Width_t fLineWidth;
-  VarType_t fVarType;
+  TF1 * fLastFunc;     // Last function returned
+  Width_t fLineWidth;  // Line width
+  VarType_t fVarType;  // Variable types (e.g. dNdpt vs pt, 1/mt dNdmt vs mt...) 
   
   AliBWFunc(const AliBWFunc&);            // not implemented
   AliBWFunc& operator=(const AliBWFunc&); // not implemented
