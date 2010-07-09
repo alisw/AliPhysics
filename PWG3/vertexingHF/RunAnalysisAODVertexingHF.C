@@ -1,4 +1,5 @@
 class AliAnalysisGrid;
+class AliAnalysisAlien;
 
 void RunAnalysisAODVertexingHF()
 {
@@ -372,7 +373,7 @@ void AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod) {
     for(Int_t k=0;k<nruns;k++){
       plugin->AddRunNumber(runlist[k]);
     }
-    plugin->SetNRuns(nruns);
+    plugin->SetNrunsPerMaster(nruns);
   }
 
   if(lhcPeriod=="LHC10c") { 
@@ -382,7 +383,7 @@ void AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod) {
     for(Int_t k=0;k<nruns;k++){
       plugin->AddRunNumber(runlist[k]);
     }
-    plugin->SetNRuns(nruns);
+    plugin->SetNrunsPerMaster(nruns);
   }
 
   return;
