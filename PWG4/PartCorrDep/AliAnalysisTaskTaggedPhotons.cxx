@@ -942,8 +942,8 @@ void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
     }
   }
   else{ //EMCAL
-    fEMCALgeom = new AliEMCALGeoUtils("EMCAL_COMPLETE");
-    for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ //<---Gustavo, could you check???
+    fEMCALgeom = new AliEMCALGeoUtils("EMCAL_FIRSTYEAR");
+    for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
       if(esd){
         const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
         fEMCALgeom->SetMisalMatrix(m, mod) ;
