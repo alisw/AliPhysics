@@ -70,9 +70,6 @@ fout.Close();
 #include "AliESDfriendTrack.h"
 #include "AliESDfriend.h"
 
-#include "AliPhysicsSelection.h"
-#include "AliTriggerAnalysis.h"
-
 #include "AliPerformancePtCalibMC.h"
 #include "AliPerfAnalyzeInvPt.h"
 
@@ -103,10 +100,7 @@ ClassImp(AliPerformancePtCalibMC)
       //options for cuts
       fOptTPC(0),
       fESDcuts(0),
-      fPhysSel(0),
       fEtaAcceptance(0),
-      fTrigger(AliTriggerAnalysis::kMB1),
-      fPhysicsSelection(0),
       fCutsRC(0),
       fCutsMC(0),
       fList(0),
@@ -154,7 +148,6 @@ ClassImp(AliPerformancePtCalibMC)
 
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
-   fPhysSel = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
 
@@ -182,64 +175,61 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerforman
    AliPerformanceObject(name,title),
    // option parameter for AliPerformancePtCalibMC::Analyse()
    fNThetaBins(0), 
-      fNPhiBins(0),
-      fMaxPhi(0),
-      fMinPhi(0),
-      fMaxTheta(0),
-      fMinTheta(0),
-      fRange(0),
-      fExclRange(0),
-      fFitGaus(0) ,
-      fDoRebin(0),
-      fRebin(0),
-      fAnaMC(0),
-      // option parameter for user defined charge/pt shift
-      fShift(0),
-      fDeltaInvP(0),
-      //options for cuts
-      fOptTPC(0),
-      fESDcuts(0),
-      fPhysSel(0),
-      fEtaAcceptance(0),
-      fTrigger(AliTriggerAnalysis::kMB1),
-      fPhysicsSelection(0),
-      fCutsRC(0),
-      fCutsMC(0),
-      fList(0),
+   fNPhiBins(0),
+   fMaxPhi(0),
+   fMinPhi(0),
+   fMaxTheta(0),
+   fMinTheta(0),
+   fRange(0),
+   fExclRange(0),
+   fFitGaus(0) ,
+   fDoRebin(0),
+   fRebin(0),
+   fAnaMC(0),
+   // option parameter for user defined charge/pt shift
+   fShift(0),
+   fDeltaInvP(0),
+   //options for cuts
+   fOptTPC(0),
+   fESDcuts(0),
+   fEtaAcceptance(0),
+   fCutsRC(0),
+   fCutsMC(0),
+   fList(0),
           
-      // histograms
-      fHistInvPtPtThetaPhi(0),
-      fHistPtShift0(0),
-      fHistPrimaryVertexPosX(0),
-      fHistPrimaryVertexPosY(0),
-      fHistPrimaryVertexPosZ(0),
-      fHistTrackMultiplicity(0),
-      fHistTrackMultiplicityCuts(0),
-      fHistTPCMomentaPosP(0),
-      fHistTPCMomentaNegP(0),
-      fHistTPCMomentaPosPt(0),
-      fHistTPCMomentaNegPt(0),
-      fHistInvPtPtThetaPhiMC(0),
-      fHistInvPtMCESD(0),
-      fHistInvPtMCTPC(0),
-      fHistPtMCESD(0),
-      fHistPtMCTPC(0),
-      fHistMomresMCESD(0),
-      fHistMomresMCTPC(0),
-      fHistTPCMomentaPosInvPtMC(0),
-      fHistTPCMomentaNegInvPtMC(0),
-      fHistTPCMomentaPosPtMC(0),
-      fHistTPCMomentaNegPtMC(0),
-      fHistESDMomentaPosInvPtMC(0),
-      fHistESDMomentaNegInvPtMC(0),
-      fHistESDMomentaPosPtMC(0), 
-      fHistESDMomentaNegPtMC(0),
-      fHistUserPtShift(0),
+   // histograms
+   fHistInvPtPtThetaPhi(0),
+   fHistPtShift0(0),
+   fHistPrimaryVertexPosX(0),
+   fHistPrimaryVertexPosY(0),
+   fHistPrimaryVertexPosZ(0),
+   fHistTrackMultiplicity(0),
+   fHistTrackMultiplicityCuts(0),
+   fHistTPCMomentaPosP(0),
+   fHistTPCMomentaNegP(0),
+   fHistTPCMomentaPosPt(0),
+   fHistTPCMomentaNegPt(0),
+   fHistInvPtPtThetaPhiMC(0),
+   fHistInvPtMCESD(0),
+   fHistInvPtMCTPC(0),
+   fHistPtMCESD(0),
+   fHistPtMCTPC(0),
+   fHistMomresMCESD(0),
+   fHistMomresMCTPC(0),
+   fHistTPCMomentaPosInvPtMC(0),
+   fHistTPCMomentaNegInvPtMC(0),
+   fHistTPCMomentaPosPtMC(0),
+   fHistTPCMomentaNegPtMC(0),
+   fHistESDMomentaPosInvPtMC(0),
+   fHistESDMomentaNegInvPtMC(0),
+   fHistESDMomentaPosPtMC(0), 
+   fHistESDMomentaNegPtMC(0),
+   fHistUserPtShift(0),
       
-      //esd track cuts
-      fESDTrackCuts(0),
-      // analysis folder 
-      fAnalysisFolder(0)
+   //esd track cuts
+   fESDTrackCuts(0),
+   // analysis folder 
+   fAnalysisFolder(0)
 {
    // Dummy constructor
    
@@ -250,7 +240,6 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerforman
 
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
-   fPhysSel = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
 
@@ -454,46 +443,11 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
       return;
    }
 
-  if (GetTriggerClass()){
-      Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
-      if(!isEventTriggered) return;
-   }
    
-  /*
-   // trigger selection
-   Bool_t isEventTriggered = kTRUE;
-   AliPhysicsSelection *trigSel = NULL;
-   AliTriggerAnalysis *trigAna = NULL;
-   
-   if(fPhysSel){ trigSel = GetPhysicsTriggerSelection();
-   if(!trigSel) {
-   Printf("cannot get trigSel \n");
-   return;
-   }
-   }
-   
-//   if(esdEvent) isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);// crashes
-   
-   if(fTrigger == AliTriggerAnalysis::kV0AND) 
-   {Printf("physics selection V0AND");//test
-   trigAna = trigSel->GetTriggerAnalysis();
-   if(!trigAna) 
-   return;
-   
-   isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent,GetTrigger());
-	
-   }
-   
-   if(fPhysSel && !isEventTriggered) return;
-    
-  
    //vertex info for cut
-   const AliESDVertex *vtx = esdEvent->GetPrimaryVertex();
-   if (!vtx->GetStatus()) return ;
-   */
-
-
-   
+   //const AliESDVertex *vtx = esdEvent->GetPrimaryVertex();
+   //if (!vtx->GetStatus()) return ;
+     
    if(fShift) fHistUserPtShift->Fill(fDeltaInvP);
   
    // read primary vertex info

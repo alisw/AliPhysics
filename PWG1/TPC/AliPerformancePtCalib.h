@@ -33,9 +33,7 @@ class AliESDfriendTrack;
 class AliMCInfoCuts;
 class AliRecInfoCuts;
 class AliESDtrackCuts;
-class AliPhysicsSelection;
 
-#include "AliTriggerAnalysis.h"
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
@@ -69,8 +67,7 @@ public:
    void SetEtaRange(const Double_t eta)               {fEtaAcceptance =  eta ;}//sets eta window
   
    void SetAliESDtrackCuts( AliESDtrackCuts* esdTrackCuts) { fESDTrackCuts = esdTrackCuts;fESDcuts=kTRUE;}//neu
-   void SetPhysicsTriggerSelection(AliPhysicsSelection* const selection)  { fPhysicsSelection = selection; }
-   void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; fPhysSel=kTRUE;}
+
 
    void SetPtShift(const Double_t shiftVal); // set user defined shift in charge/pt
 
@@ -90,8 +87,6 @@ public:
    // Selection cuts
    void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
    void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
-   AliPhysicsSelection* GetPhysicsTriggerSelection() const       { return fPhysicsSelection; }
-   AliTriggerAnalysis::Trigger GetTrigger() const                { return fTrigger; }
 
    AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
    AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
@@ -121,12 +116,10 @@ private:
    //options for cuts
    Bool_t fOptTPC;// flag for reading of TPC tracks in Exec
    Bool_t fESDcuts;//flag for usage of esd track cuts
-   Bool_t fPhysSel;// flag for usage of AliPhysicsselction
+
    //ESD track cut values
    Double_t fEtaAcceptance;//sets value of eta window
 
-   AliTriggerAnalysis::Trigger fTrigger;         // trigger definition MB1, MB2 ...
-   AliPhysicsSelection* fPhysicsSelection; // physics trigger selection class
    AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
    AliMCInfoCuts*  fCutsMC;     // selection cuts for MC tracks
   
