@@ -123,7 +123,7 @@ Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, vector<AliHLTCaloClusterD
 
 
 
-Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, TRefArray * clusterArray) {
+Int_t AliHLTCaloHistoInvMass::FillHistograms(const Int_t nc, TRefArray * clusterArray) {
   //See header file for documentation
   
   Float_t cPos[nc][3];
@@ -140,7 +140,7 @@ Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, TRefArray * clusterArray)
 }
 
 
-Int_t AliHLTCaloHistoInvMass::FillInvariantMassHistograms(Int_t nc, Float_t cPos[][3], Float_t  cEnergy[]){ 
+Int_t AliHLTCaloHistoInvMass::FillInvariantMassHistograms(const Int_t nc, Float_t cPos[][3], Float_t  cEnergy[]){ 
 
   Int_t iResult = 0;
 
@@ -162,20 +162,21 @@ Int_t AliHLTCaloHistoInvMass::FillInvariantMassHistograms(Int_t nc, Float_t cPos
       if(cEnergy[jc] < 0.5)
 	continue;
 
-      
-
-      
       //Get second momentum vector
       TVector3 jVec(cPos[jc]);
       jVec = jVec.Unit();
       jVec = cEnergy[jc] * jVec;
       
       //Calculate inv mass
-      Double_t m = TMath::Sqrt( 2 *(cEnergy[ic]* cEnergy[jc] - iVec.Dot(jVec) ) );
+      Double_t m2 = 2 *(cEnergy[ic]* cEnergy[jc] - iVec.Dot(jVec));
+      Double_t m = 0.0;
+      if(m2 > 0) { 
+	m = TMath::Sqrt(m2);
+      }
       
       //Fill histograms
       
-      Float_t sum = cEnergy[ic]+cEnergy[ic];
+      Float_t sum = cEnergy[ic]+cEnergy[jc];
       if(sum > 1.5)
       {
 	 if(sum > 2.0)
