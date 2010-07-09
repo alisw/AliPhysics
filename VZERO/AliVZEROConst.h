@@ -5,7 +5,7 @@
 
 const Float_t kIntTimeRes = 0.39; // intrinsic time resolution of the scintillator
 const Float_t kV0CDelayCables = 8.1; // delay cables on the C side (in ns)
-const Float_t kV0Offset = 1461.4; // general V0 offset between the TDCs and the trigger
+const Float_t kV0Offset = 1981.4; // general V0 offset between the TDCs and the trigger
 const Float_t kClockOffset = 62.0; // Sampling clock offset (in ns)
 const Int_t   kNClocks = 21; // Number of ADC clocks that are read out
 const Float_t kChargePerADC = 0.6e-12; // Charge per ADC
