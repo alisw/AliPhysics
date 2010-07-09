@@ -208,6 +208,11 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hRawSumQZNA, 15, expert, !image);
   Add2RawsList(hRawSumQZPC, 16, expert, !image);
   Add2RawsList(hRawSumQZPA, 17, expert, !image);
+  
+  TH1F * hRawTDCZEM1 = new TH1F("hRawTDCZEM1", "Raw TDC ZEM1;TDC [ns]",200, -100., -50.);
+  Add2RawsList(hRawTDCZEM1, 18, !expert, image);
+  TH1F * hRawTDCZPC = new TH1F("hRawTDCZPC", "Raw TDC ZPC;TDC [ns]",200, -100., -50.);
+  Add2RawsList(hRawTDCZPC, 19, !expert, image);
 
 }
 
@@ -443,7 +448,13 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     Float_t zncpmC=0., znapmC=0., zpcpmC=0., zpapmC=0.;
     Bool_t isZNCFired=kFALSE, isZPCFired=kFALSE, isZNAFired=kFALSE, isZPAFired=kFALSE;
     Int_t  indZNC=0, indZNA=0, indZPC=0, indZPA=0;
-  
+    Float_t zpcTDC[10], zem1TDC[10];
+    for(Int_t i=0; i<10; i++){
+       zpcTDC[i] = zem1TDC[i] = -999.;
+    }
+    Float_t tdcL0=-999.;
+    Int_t iMultZPCTDC=0, iMultZEMTDC=0;
+    
     rawReader->Reset();
     AliZDCRawStream stream(rawReader);
     while(stream.Next()){
@@ -570,6 +581,35 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	 }
        
       } //IsADCDataWord && signal ADCs
+      else if(stream.IsZDCTDCDatum()){
+	 if(stream.GetChannel()==3){
+	    zpcTDC[iMultZPCTDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    iMultZPCTDC++;
+	 }
+	 else if(stream.GetChannel()==8){
+	    zem1TDC[iMultZEMTDC] = (0.025*(stream.GetZDCTDCDatum()));
+	    iMultZEMTDC++;
+	 }
+	 else if(stream.GetChannel()==16) tdcL0 = (0.025*(stream.GetZDCTDCDatum()));
+	 
+	 if(stream.GetChannel()==16 && tdcL0!=-999.){
+	   for(Int_t iHit=0; iHit<10; iHit++){
+	      if(zpcTDC[iHit]!=-999.){
+	        Float_t diffZPC = zpcTDC[iHit]-tdcL0;
+	        GetRawsData(19)->Fill(diffZPC);
+	      }
+	      if(zem1TDC[iHit]!=-999.){
+	        Float_t diffZEM1 = zem1TDC[iHit]-tdcL0;
+	        GetRawsData(18)->Fill(diffZEM1);
+	      }
+	   }
+	   //
+	   tdcL0 = -999.;
+           for(Int_t i=0; i<10; i++){
+              zpcTDC[i] = zem1TDC[i] = -999.;
+           } 
+	 }
+      }
     
     } //stream.Next()
 //  } // check on event type
