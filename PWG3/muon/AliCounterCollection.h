@@ -45,8 +45,8 @@ public:
   void PrintValue(TString selections);
   // Print desired rubrics for the given selection
   void Print(TString rubrics, TString selections);
-  // Print the overall statistics under the given rubric for the given selection
-  void PrintSum(TString rubric, TString selections = "");
+  // Print the overall statistics for the given selection (result is integrated over not specified rubrics)
+  void PrintSum(TString selections = "");
   
   /// Overload TObject::Draw(Option_t*): Call "Draw(TString rubric1=opt, TString selections="")"
   virtual void Draw(Option_t* opt = "") {Draw(opt, "");}
@@ -73,6 +73,11 @@ private:
   /// Not implemented
   AliCounterCollection& operator = (const AliCounterCollection& rhs);
   
+  // return the number of labels in that rubric
+  Int_t GetNActiveBins(Int_t dim);
+  // return kTRUE if that rubric contains the keyWord "ANY"
+  Bool_t ContainsAny(Int_t dim);
+    
   // Return the corresponding bins ordered by rubric or 0x0 if externalKey is not valid
   const Int_t* FindBins(const TString& externalKey, Bool_t allocate, Int_t& nEmptySlots);
   // Return the dimension corresponding to that rubric (or -1)
@@ -80,6 +85,11 @@ private:
   // Return the bin number corresponding to that key word (or -1)
   Int_t FindBin(Int_t dim, const TString& keyWord, Bool_t allocate);
   
+  // Tag the selected keywords in each rubric (-1=subtract; 0=discard; 1=add)
+  Short_t** DecodeSelection(const TString& selections, const TObjArray& displayedRubrics);
+  // Tag the selected keywords (separated by ',') in that rubric (-1=subtract; 0=discard; 1=add)
+  Bool_t Select(Bool_t include, const TString& rubric, const TString& keywords, Bool_t displayed, Short_t* selectBins[]);
+    
   // Make sure all strings appear only once in this list
   void CleanListOfStrings(TObjArray* list);
   

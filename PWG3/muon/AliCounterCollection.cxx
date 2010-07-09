@@ -152,6 +152,22 @@ void AliCounterCollection::Init()
 }
 
 //-----------------------------------------------------------------------
+Int_t AliCounterCollection::GetNActiveBins(Int_t dim)
+{
+  /// return the number of labels in that rubric.
+  THashList* labels = fCounters->GetAxis(dim)->GetLabels();
+  return (labels) ? labels->GetSize() : 0;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliCounterCollection::ContainsAny(Int_t dim)
+{
+  /// return kTRUE if that rubric contains the keyWord "ANY".
+  THashList* labels = fCounters->GetAxis(dim)->GetLabels();
+  return (labels && labels->Contains("ANY"));
+}
+
+//-----------------------------------------------------------------------
 const Int_t* AliCounterCollection::FindBins(const TString& externalKey, Bool_t allocate, Int_t& nEmptySlots)
 {
   /// Return the corresponding bins ordered by rubric or 0x0 if externalKey is not valid.
@@ -163,7 +179,7 @@ const Int_t* AliCounterCollection::FindBins(const TString& externalKey, Bool_t a
   // produce an empty array of keys
   Int_t nRubrics = fRubrics->GetSize();
   Int_t* bins = new Int_t[nRubrics];
-  memset(bins, -1, sizeof(Int_t) * nRubrics);
+  for (Int_t i=0; i<nRubrics; i++) bins[i] = -1;
   nEmptySlots = nRubrics;
   Bool_t isValid = kTRUE;
   
@@ -267,6 +283,163 @@ Int_t AliCounterCollection::FindBin(Int_t dim, const TString& keyWord, Bool_t al
   if (bin<0) AliError(Form("invalid key word: %s:%s",axis->GetName(),keyWord.Data()));
   
   return bin;
+}
+
+//-----------------------------------------------------------------------
+Short_t** AliCounterCollection::DecodeSelection(const TString& selections, const TObjArray& displayedRubrics)
+{
+  /// Tag the selected keywords in each rubric (-1=subtract; 0=discard; 1=add). Format:
+  /// "rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.." (order does not matter).
+  /// It is the responsability of the user to delete the returned array.
+  
+  // produce an empty array of selected keys
+  Int_t nRubrics = fCounters->GetNdimensions();
+  Short_t** selects = new Short_t*[nRubrics];
+  for (Int_t i=0; i<nRubrics; i++) selects[i] = 0x0;
+  
+  // get the list of rubric:LisOfKeyWord pairs
+  TObjArray* rubricKeyPairs = selections.Tokenize("/");
+  
+  // loop over each rubric:keyWord pair
+  TObjString* pair = 0x0;
+  TIter next(rubricKeyPairs);
+  while ((pair = static_cast<TObjString*>(next()))) {
+    
+    // get both rubric and associated list of key words
+    TObjArray* rubricKeyPair = pair->String().Tokenize(":");
+    
+    // check the format of the pair
+    if (rubricKeyPair->GetEntriesFast() != 2) {
+      AliError("invalid key format");
+      delete rubricKeyPair;
+      delete rubricKeyPairs;
+      for (Int_t i=0; i<nRubrics; i++) if (selects[i]) delete[] selects[i];
+      delete[] selects;
+      return 0x0;
+    }
+    
+    // check wether to select or to discard the keyWords
+    Int_t include = kTRUE;
+    TString ListOfKeyWords(static_cast<TObjString*>(rubricKeyPair->UncheckedAt(1))->String());
+    if (ListOfKeyWords.BeginsWith("ANY-")) {
+      ListOfKeyWords.Remove(0,4);
+      include = kFALSE;
+    }
+    
+    // select the key words
+    const TString& rubric = static_cast<TObjString*>(rubricKeyPair->UncheckedAt(0))->String();
+    if (!Select(include, rubric, ListOfKeyWords, displayedRubrics.Contains(rubric.Data()), selects)) {
+      delete rubricKeyPair;
+      delete rubricKeyPairs;
+      for (Int_t i=0; i<nRubrics; i++) if (selects[i]) delete[] selects[i];
+      delete[] selects;
+      return 0x0;
+    }
+    
+    // clean memory
+    delete rubricKeyPair;
+  }
+  
+  // clean memory
+  delete rubricKeyPairs;
+  
+  // complete the selection of other rubrics
+  for (Int_t i=0; i<nRubrics; i++) {
+    
+    // skip already processed rubrics
+    if (selects[i]) continue;
+    
+    // create the list of bins
+    Int_t nBins = GetNActiveBins(i) + 1;
+    selects[i] = new Short_t[nBins];
+    
+    // select all key words or only the key work "ANY"
+    if (ContainsAny(i) && !displayedRubrics.Contains(fCounters->GetAxis(i)->GetName())) {
+      memset(selects[i], 0, sizeof(Short_t) * nBins);
+      selects[i][FindBin(i, "ANY", kFALSE)] = 1;
+    } else for (Int_t j=0; j<nBins; j++) selects[i][j] = 1;
+    
+  }
+  
+  return selects;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliCounterCollection::Select(Bool_t include, const TString& rubric, const TString& keywords,
+				    Bool_t displayed, Short_t* selectBins[])
+{
+  /// Tag the selected keywords (separated by ',') in that rubric (-1=subtract; 0=discard; 1=add).
+  
+  Int_t dim = FindDim(rubric);
+  if (dim < 0) return kFALSE;
+  
+  if (selectBins[dim]) {
+    AliWarning(Form("selection already made for rubric %s --> ignored",rubric.Data()));
+    return kTRUE;
+  }
+  
+  // get list of key words to select
+  TObjArray* keys = keywords.Tokenize(",");
+  if (keys->GetEntriesFast() == 0) {
+    AliError(Form("no key word specified for rubric %s",rubric.Data()));
+    delete keys;
+    return kFALSE;
+  }
+  
+  // create the list of bins
+  Int_t nBins = GetNActiveBins(dim) + 1;
+  selectBins[dim] = new Short_t[nBins];
+  
+  // select/unselect all bins
+  Bool_t containsAny = ContainsAny(dim);
+  if (include || (containsAny && !displayed)) {
+    memset(selectBins[dim], 0, sizeof(Short_t) * nBins);
+    if (!include) selectBins[dim][FindBin(dim, "ANY", kFALSE)] = 1;
+  } else for (Int_t j=0; j<nBins; j++) selectBins[dim][j] = 1;
+  
+  // select/unselect specific key words
+  TObjString* key = 0x0;
+  TIter nextKey(keys);
+  while ((key = static_cast<TObjString*>(nextKey()))) {
+    
+    // special case of key word "ANY"
+    if (key->String() == "ANY") {
+      
+      if (containsAny) {
+	
+	Int_t binAny = FindBin(dim, "ANY", kFALSE);
+	if (include) selectBins[dim][binAny] = 1;
+	else selectBins[dim][binAny] = 0;
+	
+      } else {
+	
+	if (include) for (Int_t j=0; j<nBins; j++) selectBins[dim][j] = 1;
+	else memset(selectBins[dim], 0, sizeof(Short_t) * nBins);
+	
+      }
+      
+    } else { // other cases
+      
+      // find the corresponding bin
+      Int_t bin = FindBin(dim, key->String().Data(), kFALSE);
+      if (bin < 0) {
+	delete keys;
+	return kFALSE;
+      }
+      
+      // select/unselect it
+      if (include) selectBins[dim][bin] = 1;
+      else if (containsAny && !displayed) selectBins[dim][bin] = -1;
+      else selectBins[dim][bin] = 0;
+      
+    }
+    
+  }
+  
+  // clean memory
+  delete keys;
+  
+  return kTRUE;
 }
 
 //-----------------------------------------------------------------------
@@ -407,6 +580,7 @@ void AliCounterCollection::PrintKeyWords() const
 void AliCounterCollection::PrintValue(TString selections)
 {
   /// Print value of selected counter.
+  /// format of "selections" is rubric:keyWord/rubric:keyWord/rubric:keyWord/...
   
   if (!fCounters) {
     AliError("counters are not initialized");
@@ -439,7 +613,7 @@ void AliCounterCollection::Print(TString rubrics, TString selections)
 {
   /// Print desired rubrics for the given selection:
   /// - format of "rubrics" is rubric1/rubric2/.. (order matters only for output).
-  /// - format of "selections" is rubric:keyWord/rubric:keyWord/.. (order does not matter).
+  /// - format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
   /// If "data" contains 1 rubric, the output will be one counter for each element of that rubric.
   /// If "data" contains 2 rubrics, the output will be an array of counters, rubric1 vs rubric2.
   /// If "data" contains 3 rubrics, the output will be an array rubric1 vs rubric2 for each element in rubric3.
@@ -473,11 +647,11 @@ void AliCounterCollection::Print(TString rubrics, TString selections)
   
   // print counters
   Int_t nRubricsToPrint = rubricsToPrint->GetEntriesFast();
-  if (nRubricsToPrint == 1 && (static_cast<TH1D*>(hist))->Integral() > 0.)
+  if (nRubricsToPrint == 1 && (static_cast<TH1D*>(hist))->GetEntries() > 0)
     PrintList(static_cast<TH1D*>(hist));
-  else if (nRubricsToPrint == 2 && (static_cast<TH2D*>(hist))->Integral() > 0.)
+  else if (nRubricsToPrint == 2 && (static_cast<TH2D*>(hist))->GetEntries() > 0)
     PrintArray(static_cast<TH2D*>(hist));
-  else if (nRubricsToPrint > 2 && (static_cast<THnSparse*>(hist))->GetNbins() > 0)
+  else if (nRubricsToPrint > 2 && (static_cast<THnSparse*>(hist))->GetEntries() > 0)
     PrintListOfArrays(static_cast<THnSparse*>(hist));
   else
     printf("\nselected counters are empty\n\n");
@@ -488,43 +662,47 @@ void AliCounterCollection::Print(TString rubrics, TString selections)
 }
 
 //-----------------------------------------------------------------------
-void AliCounterCollection::PrintSum(TString rubric, TString selections)
+void AliCounterCollection::PrintSum(TString selections)
 {
-  /// Print the overall statistics under the given rubric for the given selection:
-  /// - format of "selections" is rubric:keyWord/rubric:keyWord/.. (order does not matter).
-  /// Result is integrated over rubrics not specified neither in "rubric" nor in "selections".
+  /// Print the overall statistics for the given selection (result is integrated over not specified rubrics):
+  /// - format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
   
   if (!fCounters) {
     AliError("counters are not initialized");
     return;
   }
   
-  rubric.ToUpper();
   selections.ToUpper();
   
-  // fill the rubric to sum
-  TObjArray rubricsToSum(1);
-  rubricsToSum.SetOwner();
-  rubricsToSum.AddLast(new TObjString(rubric.Data()));
+  // decode the selections
+  Short_t** select = DecodeSelection(selections, TObjArray());
+  if (!select) return;
   
-  // project counters in the rubric to sum according to the selections
-  TH1D* hist = static_cast<TH1D*>(Projection(rubricsToSum, selections));
-  if (!hist) return;
-  
-  // check for empty rubric
-  THashList* labels = hist->GetXaxis()->GetLabels();
-  if (!labels) {
-    printf("\n0\n\n");
-    return;
+  // loop over every filled counters and compute integral
+  Int_t sum = 0;
+  Int_t nDims = fCounters->GetNdimensions();
+  Int_t* coord = new Int_t[nDims];
+  for (Long64_t i=0; i<fCounters->GetNbins(); ++i) {
+    
+    // get the content of the counter
+    Double_t value = fCounters->GetBinContent(i, coord);
+    
+    // discard not selected counters and compute the selection factor
+    Int_t selectionFactor = 1;
+    for (Int_t dim = 0; dim < nDims && selectionFactor != 0; dim++) selectionFactor *= select[dim][coord[dim]];
+    if (selectionFactor == 0) continue;
+    
+    // compute integral
+    sum += selectionFactor * ((Int_t) value);
   }
   
-  // print the sum of counters under that rubric
-  TObjString* any = static_cast<TObjString*>(labels->FindObject("ANY"));
-  if (any) printf("\n%d\n\n", (Int_t) hist->GetBinContent((Int_t)any->GetUniqueID()));
-  else printf("\n%d\n\n", (Int_t) hist->Integral());
-  
   // clean memory
-  delete hist;
+  for (Int_t iDim=0; iDim<nDims; iDim++) delete[] select[iDim];
+  delete[] select;
+  delete[] coord;
+  
+  // print result
+  printf("\n%d\n\n", sum);
 }
 
 //-----------------------------------------------------------------------
@@ -733,7 +911,7 @@ Int_t AliCounterCollection::GetMaxLabelSize(THashList* labels) const
 TH1D* AliCounterCollection::Draw(TString rubric, TString selections)
 {
   /// Draw counters of the rubric "rubric" for the given "selection".
-  /// Format of "selections" is rubric:keyWord/rubric:keyWord/.. (order does not matter).
+  /// Format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
   /// Results are integrated over rubrics not specified neither in "rubric1" nor in "selections".
   /// It is the responsability of the user to delete the returned histogram.
   
@@ -760,20 +938,6 @@ TH1D* AliCounterCollection::Draw(TString rubric, TString selections)
     hist->Draw("htext");
     hist->SetStats(kFALSE);
     
-    // set title
-    TString title = "Selections:  ";
-    selections.Remove(TString::kBoth, '/');
-    if (selections.Length() > 0) title += Form("%s/", selections.Data());
-    TObject* rub = 0x0;
-    TIter nextRubric(fRubrics);
-    while ((rub = nextRubric())) {
-      if (selections.Contains(Form("%s:",rub->GetName()))) continue;
-      if (rubricsToPrint.Contains(rub->GetName())) continue;
-      title += Form("%s:ANY/", rub->GetName());
-    }
-    title.ReplaceAll("/", "  ");
-    hist->SetTitle(title.Data());
-    
     // draw X axis
     TAxis* axis = hist->GetXaxis();
     THashList* labels = axis->GetLabels();
@@ -793,7 +957,7 @@ TH1D* AliCounterCollection::Draw(TString rubric, TString selections)
 TH2D* AliCounterCollection::Draw(TString rubric1, TString rubric2, TString selections)
 {
   /// Draw counters of the "rubric1" vs "rubric2" for the given "selection".
-  /// Format of "selections" is rubric:keyWord/rubric:keyWord/.. (order does not matter).
+  /// Format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
   /// Results are integrated over rubrics not specified neither in "rubric1", "rubric2" nor in "selections".
   /// It is the responsability of the user to delete the returned histogram.
   
@@ -822,20 +986,6 @@ TH2D* AliCounterCollection::Draw(TString rubric1, TString rubric2, TString selec
     hist->Draw("text");
     hist->SetStats(kFALSE);
     
-    // set title
-    TString title = "Selections:  ";
-    selections.Remove(TString::kBoth, '/');
-    if (selections.Length() > 0) title += Form("%s/", selections.Data());
-    TObject* rub = 0x0;
-    TIter nextRubric(fRubrics);
-    while ((rub = nextRubric())) {
-      if (selections.Contains(Form("%s:",rub->GetName()))) continue;
-      if (rubricsToPrint.Contains(rub->GetName())) continue;
-      title += Form("%s:ANY/", rub->GetName());
-    }
-    title.ReplaceAll("/", "  ");
-    hist->SetTitle(title.Data());
-    
     // draw X axis
     TAxis* axisX = hist->GetXaxis();
     THashList* labelsX = axisX->GetLabels();
@@ -863,107 +1013,135 @@ TObject* AliCounterCollection::Projection(const TObjArray& data, const TString& 
   /// The type of the histogram (TH1D, TH2D or THnSparse) depend on the number of data.
   /// It is the responsability of the user to delete the returned histogram.
   
-  // get the corresponding dimensions
-  Int_t nTargetDim = data.GetEntriesFast();
-  Int_t* targetDims = new Int_t[nTargetDim];
-  for (Int_t i=0; i<nTargetDim; i++) {
+  // decode the selections
+  Short_t** select = DecodeSelection(selections, data);
+  if (!select) return 0x0;
+  
+  // define name and dimensions of projection histo
+  TString name(fCounters->GetName());
+  Int_t nDims = fCounters->GetNdimensions();
+  Int_t nTargetDims = data.GetEntriesFast();
+  TArrayI targetDims(nTargetDims);
+  TArrayI nNewBins(nTargetDims);
+  TArrayI* OldToNewCoord = new TArrayI[nTargetDims];
+  for (Int_t i=0; i<nTargetDims; i++) {
+    
+    // histo name
+    name += Form("_%s",static_cast<TObjString*>(data.UncheckedAt(i))->String().Data());
+    
+    // find target dims
     targetDims[i] = FindDim(static_cast<TObjString*>(data.UncheckedAt(i))->String());
-    if (targetDims[i] < 0) {
-      delete[] targetDims;
+    
+    // set number of selected bins in the target dims and make the correspondence between old and new coordinates
+    nNewBins[i] = 0;
+    if (targetDims[i] > -1) {
+      Int_t nBins = GetNActiveBins(targetDims[i]) + 1;
+      OldToNewCoord[i].Set(nBins);
+      for (Int_t j=1; j<nBins; j++) if (select[targetDims[i]][j] > 0) OldToNewCoord[i][j] = ++nNewBins[i];
+    }
+    
+    // clean memory and return 0x0 in case of problem
+    if (nNewBins[i] == 0) {
+      for (Int_t iDim=0; iDim<nDims; iDim++) delete[] select[iDim];
+      delete[] select;
+      delete[] OldToNewCoord;
       return 0x0;
     }
+    
   }
   
-  // find bins to select
-  Int_t nEmptySlots = 0;
-  const Int_t* selectedBins = FindBins(selections, kFALSE, nEmptySlots);
-  if (!selectedBins) {
-    delete[] targetDims;
-    return 0x0;
+  // define title of projection histo
+  TString title = "Selections:  ";
+  TString selectionString(selections);
+  selectionString.Remove(TString::kBoth, '/');
+  if (selectionString.Length() > 0) title += Form("%s/", selectionString.Data());
+  TObject* rub = 0x0;
+  TIter nextRubric(fRubrics);
+  while ((rub = nextRubric())) {
+    if (selectionString.Contains(Form("%s:",rub->GetName()))) continue;
+    if (data.Contains(rub->GetName())) continue;
+    title += Form("%s:ANY/", rub->GetName());
   }
+  title.ReplaceAll("/", "  ");
   
-  // apply selection for each rubric
-  Int_t nRubrics = fCounters->GetNdimensions();
-  for (Int_t iDim=0; iDim<nRubrics; iDim++) {
-    TAxis* axis = fCounters->GetAxis(iDim);
-    
-    // select the desired key word
-    if (selectedBins[iDim] >= 0) axis->SetRange(selectedBins[iDim], selectedBins[iDim]);
-    
-    // or select all key words
-    else if (data.Contains(axis->GetName())) axis->SetRange();
-    
-    // or integrate over all cases
-    else {
-      THashList* labels = axis->GetLabels();
-      TObjString* label = (labels) ? static_cast<TObjString*>(labels->FindObject("ANY")) : 0x0;
-      Int_t binAny = (label) ? (Int_t)label->GetUniqueID() : -1;
-      if (binAny >= 0) axis->SetRange(binAny, binAny);
-      else axis->SetRange();
-    }
-  }
+  // Create new histograms
+  TObject* hist;
+  if (nTargetDims == 1) hist = new TH1D(name.Data(), title.Data(), nNewBins[0], 0., 1.);
+  else if (nTargetDims == 2) hist = new TH2D(name.Data(), title.Data(), nNewBins[0], 0., 1., nNewBins[1], 0., 1.);
+  else hist = new THnSparseT<TArrayI>(name.Data(), title.Data(), nTargetDims, nNewBins.GetArray(), 0x0, 0x0);
   
-  // do projection
-  TObject* hist = 0x0;
-  if (nTargetDim == 1) {
+  // Set new axis labels
+  TObjString* label;
+  if (nTargetDims < 3) {
     
-    // project counters to TH1D
-    hist = fCounters->Projection(targetDims[0]);
-    
-    // reset bin labels lost when producing TH1D
-    if (selectedBins[targetDims[0]] >= 0)
-      static_cast<TH1D*>(hist)->GetXaxis()->SetBinLabel(1, fCounters->GetAxis(targetDims[0])->GetBinLabel(selectedBins[targetDims[0]]));
-    else {
-      TObjString* label;
-      TIter nextLabel(fCounters->GetAxis(targetDims[0])->GetLabels());
-      while ((label = static_cast<TObjString*>(nextLabel())))
-	static_cast<TH1D*>(hist)->GetXaxis()->SetBinLabel((Int_t)label->GetUniqueID(), label->String().Data());
+    // X axis
+    TIter nextLabelX(fCounters->GetAxis(targetDims[0])->GetLabels());
+    while ((label = static_cast<TObjString*>(nextLabelX()))) {
+      if (select[targetDims[0]][label->GetUniqueID()] > 0) {
+	static_cast<TH1*>(hist)->GetXaxis()->SetBinLabel(OldToNewCoord[0][label->GetUniqueID()], label->String().Data());
+      }
     }
     
-  } else if (nTargetDim == 2) {
-    
-    // project counters to TH2D (warning X and Y inverted in THnSparse::Projection(X,Y))
-    hist = fCounters->Projection(targetDims[1], targetDims[0]);
-    
-    // reset bin labels in X axis lost when producing TH2D
-    if (selectedBins[targetDims[0]] >= 0)
-      static_cast<TH2D*>(hist)->GetXaxis()->SetBinLabel(1, fCounters->GetAxis(targetDims[0])->GetBinLabel(selectedBins[targetDims[0]]));
-    else {
-      TObjString* label;
-      TIter nextLabel(fCounters->GetAxis(targetDims[0])->GetLabels());
-      while ((label = static_cast<TObjString*>(nextLabel())))
-	static_cast<TH2D*>(hist)->GetXaxis()->SetBinLabel((Int_t)label->GetUniqueID(), label->String().Data());
-    }
-    
-    // reset bin labels in Y axis lost when producing TH2D
-    if (selectedBins[targetDims[1]] >= 0)
-      static_cast<TH2D*>(hist)->GetYaxis()->SetBinLabel(1, fCounters->GetAxis(targetDims[1])->GetBinLabel(selectedBins[targetDims[1]]));
-    else {
-      TObjString* label;
-      TIter nextLabel(fCounters->GetAxis(targetDims[1])->GetLabels());
-      while ((label = static_cast<TObjString*>(nextLabel())))
-	static_cast<TH2D*>(hist)->GetYaxis()->SetBinLabel((Int_t)label->GetUniqueID(), label->String().Data());
+    // Y axis if any
+    if (nTargetDims == 2) {
+      TIter nextLabelY(fCounters->GetAxis(targetDims[1])->GetLabels());
+      while ((label = static_cast<TObjString*>(nextLabelY()))) {
+	if (select[targetDims[1]][label->GetUniqueID()] > 0) {
+	  static_cast<TH1*>(hist)->GetYaxis()->SetBinLabel(OldToNewCoord[1][label->GetUniqueID()], label->String().Data());
+	}
+      }
     }
     
   } else {
     
-    // project counters to THnSparse (labels are not lost in that case)
-    hist = fCounters->Projection(nTargetDim, targetDims);
-    
-    // reset bin labels in case only one bin has been selected
-    for (Int_t i=0; i<nTargetDim; i++) {
-      if (selectedBins[targetDims[i]] >= 0) {
-	TAxis* axis = static_cast<THnSparse*>(hist)->GetAxis(i);
-	axis->GetLabels()->Clear();
-	axis->SetBinLabel(1, fCounters->GetAxis(targetDims[i])->GetBinLabel(selectedBins[targetDims[i]]));
+    // all axes
+    for (Int_t i=0; i<nTargetDims; i++) {
+      TIter nextLabel(fCounters->GetAxis(targetDims[i])->GetLabels());
+      while ((label = static_cast<TObjString*>(nextLabel()))) {
+	if (select[targetDims[i]][label->GetUniqueID()] > 0) {
+	  static_cast<THnSparse*>(hist)->GetAxis(i)->SetBinLabel(OldToNewCoord[i][label->GetUniqueID()], label->String().Data());
+	}
       }
     }
     
   }
   
+  // loop over every filled counters
+  Int_t* coord = new Int_t[nDims];
+  Int_t* newCoord = new Int_t[nTargetDims];
+  Int_t nEntries = 0;
+  for (Long64_t i=0; i<fCounters->GetNbins(); ++i) {
+    
+    // get the content of the counter
+    Double_t value = fCounters->GetBinContent(i, coord);
+    
+    // discard not selected counters and compute the selection factor
+    Int_t selectionFactor = 1;
+    for (Int_t dim = 0; dim < nDims && selectionFactor != 0; dim++) selectionFactor *= select[dim][coord[dim]];
+    if (selectionFactor == 0) continue;
+    
+    // find new coordinates in the projection histo
+    for (Int_t d = 0; d < nTargetDims; ++d) newCoord[d] = OldToNewCoord[d][coord[targetDims[d]]];
+    
+    // fill projection histo
+    if (nTargetDims < 3) {
+      Int_t linBin = (nTargetDims == 1) ? newCoord[0] : static_cast<TH1*>(hist)->GetBin(newCoord[0], newCoord[1]);
+      static_cast<TH1*>(hist)->AddBinContent(linBin, selectionFactor*value);
+    } else static_cast<THnSparse*>(hist)->AddBinContent(newCoord, selectionFactor*value);
+    
+    nEntries++;
+  }
+  
+  // update the number of entries
+  if (nTargetDims < 3) static_cast<TH1*>(hist)->SetEntries(nEntries);
+  else static_cast<THnSparse*>(hist)->SetEntries(nEntries);
+  
   // clean memory
-  delete[] targetDims;
-  delete[] selectedBins;
+  for (Int_t iDim=0; iDim<nDims; iDim++) delete[] select[iDim];
+  delete[] select;
+  delete[] coord;
+  delete[] newCoord;
+  delete[] OldToNewCoord;
   
   return hist;
 }
