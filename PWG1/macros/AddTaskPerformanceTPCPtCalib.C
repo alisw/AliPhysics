@@ -66,6 +66,7 @@ AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kFALSE, Bool_
   }
   task->SetUseMCInfo(bUseMCInfo);
   task->SetUseESDfriend(kFALSE);
+  task->SelectCollisionCandidates();
 
   //
   // Add physics selection task to analysis manager
