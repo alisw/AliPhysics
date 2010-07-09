@@ -23,7 +23,7 @@ class AliAODVertex : public AliVVertex {
 
  public :
 
-  enum AODVtx_t {kUndef=-1, kPrimary, kKink, kV0, kCascade, kMulti};
+  enum AODVtx_t {kUndef=-1, kPrimary, kKink, kV0, kCascade, kMulti, kMainSPD, kPileupSPD, kPileupTracks};
 
   AliAODVertex();
   AliAODVertex(const Double_t *position, 
