@@ -1,5 +1,4 @@
 class AliAnalysisGrid;
-TString mySE="ALICE::CNAF::SE";
 
 void RunAnalysisAODVertexingHF()
 {
@@ -14,17 +13,16 @@ void RunAnalysisAODVertexingHF()
   // "grid" mode added by R.Bala, bala@to.infn.it
   //
 
-  gSystem->Setenv("alien_CLOSE_SE",mySE.Data());
 
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/vertexingHF -g"); 
   //
   TString trainName = "D2H";
   TString analysisMode = "grid"; // "local", "grid", or "proof"
   TString inputMode    = "list"; // "list", "xml", or "dataset"
-  Long64_t nentries=1000,firstentry=0;
+  Long64_t nentries=123567890,firstentry=0;
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
-  TString pluginmode="test";
+  TString pluginmode="full";
   Bool_t saveProofToAlien=kFALSE;
   TString proofOutdir = "";
   TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/macros/";
@@ -164,8 +162,9 @@ void RunAnalysisAODVertexingHF()
 
   // Input
   AliAODInputHandler *inputHandler = new AliAODInputHandler();
+  inputHandler->AddFriend("./AliAOD.VertexingHF.root");
+  //inputHandler->AddFriend("deltas/AliAOD.VertexingHF.root");
   if(analysisMode=="proof" ) {
-    inputHandler->AddFriend("AliAOD.VertexingHF.root");
     if(saveProofToAlien) mgr->SetSpecialOutputLocation(proofOutdir);
   }
   mgr->SetInputEventHandler(inputHandler);
@@ -176,85 +175,86 @@ void RunAnalysisAODVertexingHF()
   // Analysis tasks (wagons of the train)   
   //
   TString taskName;
+  
   ////// ADD THE FULL D2H TRAIN
   taskName="AddD2HTrain.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   Bool_t readMC=kFALSE;
   AddD2HTrain(readMC);//,1,0,0,0,0,0,0,0,0,0,0);
-
+  
   ////// OR ADD INDIVIDUAL TASKS
+  
   /*
+    taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
+    
+    taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
+    AliAnalysisTaskSED0Mass *d0massLikeSignTask = AddTaskD0Mass(1); 
   
-  //taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
-  //gROOT->LoadMacro(taskName.Data());
-  //AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
+    taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
   
-  taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
-  AliAnalysisTaskSED0Mass *d0massLikeSignTask = AddTaskD0Mass(1); 
-  
-  taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
-  
-  taskName="AddTaskDs.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEDs *dsTask = AddTaskDs();
-
-  //taskName="AddTaskSelectHF.C"; taskName.Prepend(loadMacroPath.Data());
-  //gROOT->LoadMacro(taskName.Data());
-  //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
-  
-  taskName="AddTaskBkgLikeSignD0.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEBkgLikeSignD0 *lsD0Task = AddTaskBkgLikeSignD0();
-
-  taskName="AddTaskBkgLikeSignJPSI.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliAnalysisTaskSEBkgLikeSignJPSI *lsJPSITask = AddTaskBkgLikeSignJPSI();
-
-  //taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
-  //gROOT->LoadMacro(taskName.Data());
-  //AliAnalysisTaskSEBtoJPSItoEle *jpsiTask = AddTaskBtoJPSItoEle();
-
-  taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
-
-  taskName="AddTaskCharmFraction.C"; taskName.Prepend(loadMacroPath.Data());
-  gROOT->LoadMacro(taskName.Data());
-  Int_t switchMC[5]={1,1,1,1,1};
-  AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0",switchMC);
-  */
-  // attach a private task (not committed)
-  // (the files MyTask.h MyTask.cxx AddMyTask.C have to be declared in plugin
-  // configuration, see below)
-  /*
-  if(analysisMode.Data()=="proof") {
+    taskName="AddTaskDs.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEDs *dsTask = AddTaskDs();
+    
+    //taskName="AddTaskSelectHF.C"; taskName.Prepend(loadMacroPath.Data());
+    //gROOT->LoadMacro(taskName.Data());
+    //AliAnalysisTaskSESelectHF *seleTask = AddTaskSelectHF();
+    
+    taskName="AddTaskBkgLikeSignD0.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEBkgLikeSignD0 *lsD0Task = AddTaskBkgLikeSignD0();
+    
+    taskName="AddTaskBkgLikeSignJPSI.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEBkgLikeSignJPSI *lsJPSITask = AddTaskBkgLikeSignJPSI();
+    
+    //taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
+    //gROOT->LoadMacro(taskName.Data());
+    //AliAnalysisTaskSEBtoJPSItoEle *jpsiTask = AddTaskBtoJPSItoEle();
+    
+    taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
+    
+    taskName="AddTaskCharmFraction.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    Int_t switchMC[5]={1,1,1,1,1};
+    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0",switchMC);
+    
+    // attach a private task (not committed)
+    // (the files MyTask.h MyTask.cxx AddMyTask.C have to be declared in plugin
+    // configuration, see below)
+    
+    if(analysisMode.Data()=="proof") {
     gProof->LoadMacro("MyTask.cxx++g");
-  } else {
+    } else {
     gROOT->LoadMacro("MyTask.cxx++g");
-  }
-  gROOT->LoadMacro("AddMyTask.C");
-  MyTask *myTask = AddMyTask();
-  */
-  /*
-  if(analysisMode.Data()=="proof") {
+    }
+    gROOT->LoadMacro("AddMyTask.C");
+    MyTask *myTask = AddMyTask();
+    
+    
+    if(analysisMode.Data()=="proof") {
     gProof->LoadMacro("AliDStarJets.cxx++g");
-  } else {
+    } else {
     gROOT->LoadMacro("AliDStarJets.cxx++g");
-  }
-  gROOT->LoadMacro("AddTaskDStarJets.C");
-  AliDStarJets *myTask = AddTaskDStarJets();
+    }
+    gROOT->LoadMacro("AddTaskDStarJets.C");
+    AliDStarJets *myTask = AddTaskDStarJets();
   */
   //-------------------------------------------------------------------
-
+  
   //
   // Run the analysis
   //    
   if(chainAOD) printf("CHAIN HAS %d ENTRIES\n",(Int_t)chainAOD->GetEntries());
-
+  
   if(!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   if(analysisMode=="grid" && !useAlienPlugin) analysisMode="local";
@@ -264,7 +264,7 @@ void RunAnalysisAODVertexingHF()
     // proof
     mgr->StartAnalysis(analysisMode.Data(),dataset.Data(),nentries,firstentry);
   }
-
+  
   return;
 }
 //_____________________________________________________________________________
@@ -278,23 +278,27 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    AliAnalysisAlien *plugin = new AliAnalysisAlien();
    // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(pluginmode.Data());
-   plugin->SetUser("dainesea");
+   plugin->SetUser("rbala");
    plugin->SetNtestFiles(1);
    // Set versions of used packages
-   plugin->SetAPIVersion("V2.4");
-   plugin->SetROOTVersion("v5-26-00");
-   plugin->SetAliROOTVersion("v4-19-19-AN");
+   plugin->SetAPIVersion("V1.1x");
+   plugin->SetROOTVersion("v5-26-00b-6");
+   plugin->SetAliROOTVersion("v4-19-18-AN");
    // Declare input data to be processed.
    // Method 1: Create automatically XML collections using alien 'find' command.
    // Define production directory LFN
-   plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/data_pass4_good_runCINT1B_8thfeb/");
+   //  plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/data_pass4_good_runCINT1B_8thfeb/");
    //plugin->SetGridDataDir("/alice/sim/PDC_09/LHC09a4/AOD3/");
    // Set data search pattern
-   plugin->SetDataPattern("AliAOD.root");
-   plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
-   //plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
+   plugin->SetGridDataDir("/alice/data/2010/LHC10c");
+   plugin->SetDataPattern("pass2/*AliAOD.root");
+   plugin->SetRunPrefix("000");
+   
    // ...then add run numbers to be considered
-   //plugin->AddRunNumber(529007);
+   plugin->AddRunNumber(119048);
+   plugin->SetMaxMergeFiles(100);
+   plugin->SetNrunsPerMaster(100);
+   plugin->SetNumberOfReplicas(2);
    //  or
    //plugin->SetRunRange(529000,529007);
    // Method 2: Declare existing data files (raw collections, xml collections, root file)
@@ -304,7 +308,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->AddDataFile("/alice/cern.ch/user/r/rbala/newtrain/collection/collection_aod_lhc08w.xml");
    //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
    // Define alien work directory where all files will be copied. Relative to alien $HOME.
-   plugin->SetGridWorkingDir("lhc09a5_231009");
+   plugin->SetGridWorkingDir("myHFanalysis");
    // Declare alien output directory. Relative to working directory.
    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
    // Declare the analysis source files names separated by blancs. To be compiled runtime
@@ -332,11 +336,11 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->SetOutputFiles("output.root CmpHF.root CmpHFnt.root D0InvMass.root InvMassDplus.root InvMassDplus_nt1.root InvMassDplus_nt2.root");
    // Optionally define the files to be archived.
    //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:*.root@ALICE::NIHAM::File");
-   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
+   //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
    // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro("AnalysisHF.C");
    // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(5);
+   plugin->SetSplitMaxInputFileNumber(10);
    // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
    //plugin->SetMaxInitFailed(5);
    // Optionally resubmit threshold.
@@ -351,8 +355,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->SetPrice(1);      
    // Optionally modify split mode (default 'se')    
    plugin->SetSplitMode("se");
-   // Optionally set the preferred SE    
-   plugin->SetPreferedSE(mySE.Data());
-   
+
+
    return plugin;
 }
