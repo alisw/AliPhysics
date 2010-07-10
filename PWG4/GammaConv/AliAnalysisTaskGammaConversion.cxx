@@ -416,7 +416,11 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     if(!fV0Reader->GetESDEvent()->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
   }
   */
-	
+
+  if(!fV0Reader->CheckForPrimaryVertexZ() ){
+    return;
+  }
+
   // Process the MC information
   if(fDoMCTruth){
     ProcessMCData();
@@ -953,6 +957,10 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	      fHistograms->FillHistogram("MC_Pi0_Pt_Eta_ConvGamma_withinAcceptance", particle->Pt(),particle->Eta());
 	      fHistograms->FillHistogram("MC_Pi0_Pt_Rapid_ConvGamma_withinAcceptance", particle->Pt(),rapidity);
 	      fHistograms->FillHistogram("MC_Pi0_ZR_ConvGamma_withinAcceptance", particle->Vz(),particle->R());
+	      fHistograms->FillHistogram("MC_Pi0_ConvGamma_OpeningAngle_Pt", particle->Pt(),GetMCOpeningAngle(daughter0,daughter1));
+	      fHistograms->FillHistogram("MC_Pi0_ConvGamma_PtGamma_Pt", particle->Pt(),daughter0->Pt());
+	      fHistograms->FillHistogram("MC_Pi0_ConvGamma_PtGamma_Pt", particle->Pt(),daughter1->Pt());
+
 	      Double_t alfa=0.;
 	      if((daughter0->Energy()+daughter1->Energy())!= 0.){
 		alfa= TMath::Abs((daughter0->Energy()-daughter1->Energy())/(daughter0->Energy()+daughter1->Energy()));
@@ -984,6 +992,10 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	    fHistograms->FillHistogram("MC_Eta_Pt_Eta_ConvGamma_withinAcceptance", particle->Pt(),particle->Eta());
 	    fHistograms->FillHistogram("MC_Eta_Pt_Rapid_ConvGamma_withinAcceptance", particle->Pt(),rapidity);
 	    fHistograms->FillHistogram("MC_Eta_ZR_ConvGamma_withinAcceptance", particle->Vz(),particle->R());
+	    fHistograms->FillHistogram("MC_Eta_ConvGamma_OpeningAngle_Pt", particle->Pt(),GetMCOpeningAngle(daughter0,daughter1));
+	    fHistograms->FillHistogram("MC_Eta_ConvGamma_PtGamma_Pt", particle->Pt(),daughter0->Pt());
+	    fHistograms->FillHistogram("MC_Eta_ConvGamma_PtGamma_Pt", particle->Pt(),daughter1->Pt());
+
 	  }
 					
 	}
@@ -1758,6 +1770,16 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  }
 	  fHistograms->FillHistogram("ESD_Mother_InvMass",massTwoGammaCandidate);
 
+	  /* Kenneth, just for testing*/
+	  AliGammaConversionBGHandler * bgHandler = fV0Reader->GetBGHandler();
+	  
+	  Int_t zbin= bgHandler->GetZBinIndex(fV0Reader->GetVertexZ());
+	  Int_t mbin= bgHandler->GetMultiplicityBinIndex(fV0Reader->CountESDTracks());
+
+	  fHistograms->FillHistogram(Form("%d%dESD_Mother_InvMass",zbin,mbin),massTwoGammaCandidate);
+
+	  /* end Kenneth, just for testing*/
+
 	  if(fCalculateBackground){
 	    AliGammaConversionBGHandler * bgHandler = fV0Reader->GetBGHandler();
 	    Int_t mbin= bgHandler->GetMultiplicityBinIndex(fV0Reader->CountESDTracks());
@@ -1771,6 +1793,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	      fV0Reader->GetV0(indexKF1);//updates to the correct v0
 	      Double_t eta1 = fV0Reader->GetMotherCandidateEta();
 	      Bool_t isRealPi0=kFALSE;
+	      Bool_t isRealEta=kFALSE;
 	      Int_t gamma1MotherLabel=-1;
 	      if(fV0Reader->HasSameMCMother() == kTRUE){
 		//cout<<"This v0 is a real v0!!!!"<<endl;
@@ -1807,12 +1830,16 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		  if(fV0Reader->CheckIfPi0IsMother(gamma1MotherLabel)){
 		    isRealPi0=kTRUE;
 		  }
+		  if(fV0Reader->CheckIfEtaIsMother(gamma1MotherLabel)){
+		    isRealEta=kTRUE;
+		  }
+
 		}
 
 		if(TMath::Abs(eta1)>0.9 && TMath::Abs(eta2)>0.9){
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_1212",massTwoGammaCandidate);
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-		  if(isRealPi0){
+		  if(isRealPi0 || isRealEta){
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_1212",massTwoGammaCandidate);
 		    fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_1212",openingAngleTwoGammaCandidate);
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
@@ -1823,7 +1850,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		else if(TMath::Abs(eta1)>0.9 || TMath::Abs(eta2)>0.9){
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_0912",massTwoGammaCandidate);
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-		  if(isRealPi0){
+		  if(isRealPi0 || isRealEta){
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_0912",massTwoGammaCandidate);
 		    fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_0912",openingAngleTwoGammaCandidate);
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
@@ -1834,7 +1861,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		else{
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_0909",massTwoGammaCandidate);
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-		  if(isRealPi0){
+		  if(isRealPi0 || isRealEta){
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_0909",massTwoGammaCandidate);
 		    fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_0909",openingAngleTwoGammaCandidate);
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());

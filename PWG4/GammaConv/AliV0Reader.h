@@ -435,6 +435,11 @@ class AliV0Reader : public TObject {
    * Update data which need to be updated every event.
    */
   void UpdateEventByEventData();
+
+  /*
+   * Gets the MaxRCut value.
+   */
+  Double_t GetMaxVertexZ() const{return fMaxVertexZ;}
 	
   /*
    * Gets the MaxRCut value.
@@ -492,6 +497,11 @@ class AliV0Reader : public TObject {
   Double_t GetPositiveNTPCClusters() const{return fCurrentPositiveESDTrack->GetTPCNcls();}
   Double_t GetNegativeNTPCClusters() const{return fCurrentNegativeESDTrack->GetTPCNcls();}
 	
+  /*
+   * Sets the MaxVertexZ value.
+   */
+  void SetMaxVertexZ(Double_t maxVertexZ){fMaxVertexZ=maxVertexZ;}
+
   /*
    * Sets the MaxRCut value.
    */
@@ -595,6 +605,11 @@ class AliV0Reader : public TObject {
    */
   void SetPIDMinPnSigmaAbovePionLine(Double_t MinPnSigmaAbovePion){fPIDMinPnSigmaAbovePionLine=MinPnSigmaAbovePion;}
 
+ /*
+   * Sets the PIDMinPnSigmaAbovePion cut value for the tracks.
+   */
+  void SetPIDMaxPnSigmaAbovePionLine(Double_t MaxPnSigmaAbovePion){fPIDMaxPnSigmaAbovePionLine=MaxPnSigmaAbovePion;}
+
   /*
    * Sets the SigmaMassCut value.
    */
@@ -689,6 +704,11 @@ class AliV0Reader : public TObject {
   Bool_t CheckForPrimaryVertex();
 	
   /*
+   * Check for primary vertex Z.
+   */
+  Bool_t CheckForPrimaryVertexZ();
+
+  /*
    * Gets a vector of good v0s.
    */
   TClonesArray* GetCurrentEventGoodV0s() const{return fCurrentEventGoodV0s;}
@@ -734,6 +754,7 @@ class AliV0Reader : public TObject {
   Int_t GetCurrentV0IndexNumber() const {return fCurrentV0IndexNumber;}
 
   Bool_t CheckIfPi0IsMother(Int_t label);
+  Bool_t CheckIfEtaIsMother(Int_t label);
 
   static void InitESDpid(Int_t type=0);
   static void SetESDpid(AliESDpid * const pid) {fgESDpid=pid;}
@@ -790,7 +811,9 @@ class AliV0Reader : public TObject {
   Bool_t fUseKFParticle;   // flag 
   Bool_t fUseESDTrack;     // flag 
   Bool_t fDoMC;            // flag 
-	
+
+  //Event Cuts
+  Double_t fMaxVertexZ;
   //cuts
   Double_t fMaxR; //r cut
   Double_t fEtaCut; //eta cut
@@ -810,6 +833,7 @@ class AliV0Reader : public TObject {
   Double_t fPIDnSigmaBelowElectronLine; // sigma cut
   Double_t fPIDnSigmaAbovePionLine;     // sigma cut
   Double_t fPIDMinPnSigmaAbovePionLine; // sigma cut
+  Double_t fPIDMaxPnSigmaAbovePionLine; // sigma cut
   Double_t fDoKaonRejectionLowP;   // Kaon rejection at low p
   Double_t fDoProtonRejectionLowP; // Proton rejection at low p
   Double_t fDoPionRejectionLowP;   // Pion rejection at low p
@@ -851,7 +875,7 @@ class AliV0Reader : public TObject {
 
   Int_t nEventsForBGCalculation;
 
-  ClassDef(AliV0Reader,11)
+  ClassDef(AliV0Reader,12)
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)
