@@ -333,8 +333,10 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Bool_t mb1prime = (fastOROffline > 1 || (fastOROffline > 0 && (v0A || v0C)) || (v0A && v0C) ) && (!v0BG);
 
       // Background rejection
-      Bool_t bgID = ! fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd));
-
+      Bool_t bgID = kFALSE;
+      if (fBackgroundIdentification)
+        bgID = ! fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd));
+      
       Int_t ntrig = fastOROffline; // any 2 hits
       if(v0A)              ntrig += 1;
       if(v0C)              ntrig += 1; //v0C alone is enough

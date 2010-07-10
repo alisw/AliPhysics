@@ -450,6 +450,7 @@ Long64_t AliBackgroundSelection::Merge(TCollection* const list)
 	}
       }
 
+      delete iterlist;
       // re-sort before checking
       hlist->Sort();
       fOutputHist->Sort();
