@@ -49,6 +49,23 @@ void Extract_Pi0_Characteristics(const char *cutSelection="", const char *inputR
   TList *fMCContainer = (TList*)fHistosGammaConversion->FindObject("MC histograms");
   TList *fBackgroundContainer = (TList*)fHistosGammaConversion->FindObject("Background histograms");
 
+  TH1F *ESD_Mother_InvMass =fESDContainer->FindObject("ESD_Mother_InvMass");
+  ESD_Mother_InvMass->SetName(Form("ESD_Mother_InvMass_%s",cutSelection));
+  ESD_Mother_InvMass->Write();
+
+  TH1F *ESD_Background_InvMass =fBackgroundContainer->FindObject("ESD_Background_InvMass");
+  ESD_Background_InvMass->SetName(Form("ESD_Background_InvMass_%s",cutSelection));
+  ESD_Background_InvMass->Write();
+
+  TH1F *ESD_dedx =fESDContainer->FindObject("ESD_ConvGamma_E_dEdxP");
+  ESD_dedx->SetName(Form("ESD_ConvGamma_E_dEdxP_%s",cutSelection));
+  ESD_dedx->Write();
+
+  TH2F *ESD_alfaqt = fESDContainer->FindObject("ESD_ConvGamma_alfa_qt");
+  ESD_alfaqt->SetName(Form("ESD_ConvGamma_alfa_qt_%s",cutSelection));
+  ESD_alfaqt->Write();
+
+
   TH2F *ESD_Mother_InvMass_vs_Pt = fESDContainer->FindObject("ESD_Mother_InvMass_vs_Pt");
   ESD_Mother_InvMass_vs_Pt->Sumw2();	
   TH2F *ESD_Background_InvMass_vs_Pt = fBackgroundContainer->FindObject("ESD_Background_InvMass_vs_Pt");

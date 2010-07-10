@@ -30,6 +30,8 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
   TH1F* MassPerBin[32];
   TH1F* FWHMPerBin[32];
 
+  Double_t BGFit_range[2] = {0.6,0.69};   	
+
   Float_t lowBinLimits[32];
   Float_t highBinLimits[32];
 
@@ -441,6 +443,7 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
       signalt->SetAxisRange(0.,0.7);
       signalt->Draw();
 
+
       TString nameb= Form("Mapping_Back_InvMass_in_Pt_Bin%s%02d",cutSelectionArray[cuts].Data(),bin);
       cout<<"Getting histogram: "<<nameb.Data()<<endl;
       TH1F * signalb = (TH1F*)f.Get(nameb.Data());
@@ -449,6 +452,27 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
       signalb->SetTitle(titleb.Data());
       signalb->SetAxisRange(0.,0.7);
       signalb->SetLineColor(4);
+
+      TLine *lowline= new TLine(BGFit_range[0],0,BGFit_range[0],signalt->GetMaximum());
+      lowline->SetLineColor(3);
+      lowline->Draw("same");
+      TLine *highline= new TLine(BGFit_range[1],0,BGFit_range[1],signalt->GetMaximum());
+      highline->SetLineColor(3);
+      highline->Draw("same");
+      //normalixation
+      TAxis *xaxis_reco = signalt->GetXaxis();							
+      Int_t r_1 = xaxis_reco->FindBin(BGFit_range[0]);
+      Int_t r_2 = xaxis_reco->FindBin(BGFit_range[1]);  
+      Double_t r =  signalt->Integral(r_1,r_2); // Integral(75,125)
+      TAxis *xaxis_back = signalb->GetXaxis();							
+      Int_t b_1 = xaxis_back->FindBin(BGFit_range[0]);
+      Int_t b_2 = xaxis_back->FindBin(BGFit_range[1]);   
+      Double_t b =  signalb->Integral(b_1,b_2);
+      Double_t norm = 1;
+      if(b != 0) norm = r/b;
+      signalb->Sumw2();		
+      signalb->Scale(norm);
+
       signalb->Draw("same");
       canvasTest->Update();
 
@@ -492,7 +516,7 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
   for(Int_t bin=0;bin<cutsAdded;bin++){
     cout<<"CUT: "<<cutSelectionArray[bin].Data()<<endl;
     pad->cd(bin+1);
-    pad->cd(bin+1)->SetLogz(1);
+    //    pad->cd(bin+1)->SetLogz(1);
     TString namet= Form("ESD_Mother_InvMass_%s",cutSelectionArray[bin].Data());
     cout<<"Getting histogram: "<<namet.Data()<<endl;
     TH1F * massAll = (TH1F*)f.Get(namet.Data());
@@ -500,11 +524,48 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
     TString titlet= Form("CutId%s",cutSelectionArray[bin].Data());
     massAll->SetTitle(titlet.Data());
     massAll->Draw();
+    
+    TString nameb= Form("ESD_Background_InvMass_%s",cutSelectionArray[bin].Data());
+    TH1F * massAllBG = (TH1F*)f.Get(nameb.Data());
+    /*
+    TLine *lowline= new TLine(BGFit_range[0],0,BGFit_range[0],signalt->GetMaximum());
+    lowline->SetLineColor(3);
+    lowline->Draw("same");
+    TLine *highline= new TLine(BGFit_range[1],0,BGFit_range[1],signalt->GetMaximum());
+    highline->SetLineColor(3);
+    highline->Draw("same");
+    */
+ 
+   //normalixation
+    TAxis *xaxis_reco = massAll->GetXaxis();							
+    Int_t r_1 = xaxis_reco->FindBin(BGFit_range[0]);
+    Int_t r_2 = xaxis_reco->FindBin(BGFit_range[1]);  
+    Double_t r =  massAll->Integral(r_1,r_2); // Integral(75,125)
+    TAxis *xaxis_back = massAllBG->GetXaxis();							
+    Int_t b_1 = xaxis_back->FindBin(BGFit_range[0]);
+    Int_t b_2 = xaxis_back->FindBin(BGFit_range[1]);   
+    Double_t b =  massAllBG->Integral(b_1,b_2);
+    Double_t norm = 1;
+    if(b != 0) norm = r/b;
+    massAllBG->Sumw2();		
+    massAllBG->Scale(norm);
+    
+
+    TString titleb= Form("CutId%s",cutSelectionArray[bin].Data());
+    massAllBG->SetTitle(titleb.Data());
+    massAllBG->SetLineColor(4);
+    massAllBG->Draw("same");
+    /*
     canvasTest->Update();
-    canvasTest->Print("massAll.gif");
+    canvasTest->Print(Form("%smassAllAndBG%s.gif",path,cutSelectionArray[bin].Data()));
+    */
   }
+  canvasTest->Update();
+  canvasTest->Print(Form("%smassAll%s.gif",path,cutSelectionArray[bin].Data()));
+
   ps_characteristics->NewPage();
 
+  delete canvasTest;
     //    for(Int_t bin=2;bin<15;bin++){
   TCanvas *canvasTest = new  TCanvas("canvastest","",200,10,600,600);
   TPad *pad = new TPad(padname.Data(),"",0.,0.,1.,1.,0);
@@ -520,15 +581,17 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
     pad->cd(bin+1)->SetLogz(1);
     TString namet= Form("ESD_ConvGamma_E_dEdxP_%s",cutSelectionArray[bin].Data());
     cout<<"Getting histogram: "<<namet.Data()<<endl;
-    TH1F * dedxp = (TH1F*)f.Get(namet.Data());
+    TH2F * dedxp = (TH2F*)f.Get(namet.Data());
     
     TString titlet= Form("CutId%s",cutSelectionArray[bin].Data());
     dedxp->SetTitle(titlet.Data());
     dedxp->Draw("col2");
-    canvasTest->Update();
-    canvasTest->Print("dedxp.gif");
   }
+  canvasTest->Update();
+  canvasTest->Print(Form("%sdedxp%s.gif",path,cutSelectionArray[bin].Data()));
+
   ps_characteristics->NewPage();
+
   TCanvas *canvasTest = new  TCanvas("canvastest","",200,10,600,600);
   TPad *pad = new TPad(padname.Data(),"",0.,0.,1.,1.,0);
   pad->SetFillColor(0);
@@ -548,7 +611,7 @@ void Plot_Pi0_Characteristics(const char *inputRootFile = "Pi0Characteristics",c
     armen->SetTitle(titlet.Data());
     armen->Draw("col2");
     canvasTest->Update();
-    canvasTest->Print("armen.gif");
+    canvasTest->Print(Form("%sarmen%s.gif",path,cutSelectionArray[bin].Data()));
   }
 
   ps_characteristics->Close();

@@ -65,3 +65,4 @@ done
 
     root -b -q $ALICE_ROOT/PWG4/GammaConv/macros/Plot_IntegratedPi0Yield.C\(\"$DatFilenameBase\"\,\"$OutputDirectory\"\,\"$Suffix\"\)
 
+    root -b -q $ALICE_ROOT/PWG4/GammaConv/macros/Plot_Pi0_Characteristics.C

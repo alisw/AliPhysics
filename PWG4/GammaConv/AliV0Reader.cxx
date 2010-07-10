@@ -82,6 +82,7 @@ AliV0Reader::AliV0Reader() :
   fUseKFParticle(kTRUE),
   fUseESDTrack(kFALSE),
   fDoMC(kFALSE),
+  fMaxVertexZ(100.),// 100 cm(from the 0)
   fMaxR(10000),// 100 meter(outside of ALICE)
   fEtaCut(0.),
   fPtCut(0.),
@@ -100,6 +101,7 @@ AliV0Reader::AliV0Reader() :
   fPIDnSigmaBelowElectronLine(-100),
   fPIDnSigmaAbovePionLine(-100), 
   fPIDMinPnSigmaAbovePionLine(100), 
+  fPIDMaxPnSigmaAbovePionLine(100), 
   fDoKaonRejectionLowP(kFALSE),
   fDoProtonRejectionLowP(kFALSE),
   fDoPionRejectionLowP(kFALSE),
@@ -167,6 +169,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fUseKFParticle(kTRUE),
   fUseESDTrack(kFALSE),
   fDoMC(kFALSE),
+  fMaxVertexZ(original.fMaxVertexZ),
   fMaxR(original.fMaxR),
   fEtaCut(original.fEtaCut),
   fPtCut(original.fPtCut),
@@ -185,6 +188,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fPIDnSigmaBelowElectronLine(original.fPIDnSigmaBelowElectronLine),
   fPIDnSigmaAbovePionLine(original.fPIDnSigmaAbovePionLine), 
   fPIDMinPnSigmaAbovePionLine(original.fPIDMinPnSigmaAbovePionLine), 
+  fPIDMaxPnSigmaAbovePionLine(original.fPIDMaxPnSigmaAbovePionLine), 
   fDoKaonRejectionLowP(original.fDoKaonRejectionLowP),
   fDoProtonRejectionLowP(original.fDoProtonRejectionLowP),
   fDoPionRejectionLowP(original.fDoPionRejectionLowP),
@@ -322,7 +326,7 @@ void AliV0Reader::Initialize(){
     if(fBGEventInitialized == kFALSE){
 
       
-      Double_t *zBinLimitsArray = new Double_t[8];
+      Double_t *zBinLimitsArray = new Double_t[9];
       zBinLimitsArray[0] = -50.00;
       zBinLimitsArray[1] = -4.07;
       zBinLimitsArray[2] = -2.17;
@@ -331,15 +335,18 @@ void AliV0Reader::Initialize(){
       zBinLimitsArray[5] = 2.17;
       zBinLimitsArray[6] = 4.11;
       zBinLimitsArray[7] = 50.00;
+      zBinLimitsArray[8] = 1000.00;
       
-      Double_t *multiplicityBinLimitsArray= new Double_t[5];
+      
+      Double_t *multiplicityBinLimitsArray= new Double_t[6];
       multiplicityBinLimitsArray[0] = 0;
       multiplicityBinLimitsArray[1] = 8.5;
       multiplicityBinLimitsArray[2] = 16.5;
       multiplicityBinLimitsArray[3] = 27.5;
       multiplicityBinLimitsArray[4] = 41.5;
+      multiplicityBinLimitsArray[5] = 100.;
           
-      fBGEventHandler = new AliGammaConversionBGHandler(8,5,nEventsForBGCalculation);
+      fBGEventHandler = new AliGammaConversionBGHandler(9,6,nEventsForBGCalculation);
       
       /*
       // ---------------------------------
@@ -369,6 +376,16 @@ Bool_t AliV0Reader::CheckForPrimaryVertex(){
   return fESDEvent->GetPrimaryVertex()->GetNContributors()>0;
 }
 
+Bool_t AliV0Reader::CheckForPrimaryVertexZ(){
+  //see headerfile for documentation
+
+  if(TMath::Abs(fESDEvent->GetPrimaryVertex()->GetZ())<GetMaxVertexZ()){
+    return kTRUE;
+  }else{
+    return kFALSE;
+  }
+  return kTRUE;
+}
 
 Bool_t AliV0Reader::CheckV0FinderStatus(Int_t index){
   // see headerfile for documentation
@@ -522,7 +539,7 @@ Bool_t AliV0Reader::NextV0(){
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepdEdx_electronselection);               // for CF
       }
 
-      if( fCurrentPositiveESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
+      if( fCurrentPositiveESDTrack->P()>fPIDMinPnSigmaAbovePionLine && fCurrentPositiveESDTrack->P()<fPIDMaxPnSigmaAbovePionLine ){
 	if(fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
 	   fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
 	   fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
@@ -538,7 +555,7 @@ Bool_t AliV0Reader::NextV0(){
 	}
       }
       
-      if( fCurrentNegativeESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
+      if( fCurrentNegativeESDTrack->P()>fPIDMinPnSigmaAbovePionLine && fCurrentNegativeESDTrack->P()<fPIDMaxPnSigmaAbovePionLine){
 	if(fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
 	   fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
 	   fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
@@ -558,7 +575,7 @@ Bool_t AliV0Reader::NextV0(){
       }
 
     }
-    //    Float_t fPIDMinPKaonRejectionLowP=1.5;
+
     if(fDoKaonRejectionLowP == kTRUE){
       if( fCurrentNegativeESDTrack->P()<fPIDMinPKaonRejectionLowP ){
 	if( TMath::Abs(fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
@@ -585,7 +602,7 @@ Bool_t AliV0Reader::NextV0(){
 	}
       }
     }
-    //    Float_t fPIDMinPProtonRejection=2;
+
     if(fDoProtonRejectionLowP == kTRUE){
       if( fCurrentNegativeESDTrack->P()<fPIDMinPProtonRejectionLowP){
 	if( TMath::Abs(fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
@@ -613,7 +630,7 @@ Bool_t AliV0Reader::NextV0(){
       }
 
     }
-    //    Float_t fPIDMinPPionRejection=0.3;
+
     if(fDoPionRejectionLowP == kTRUE){
       if( fCurrentNegativeESDTrack->P()<fPIDMinPPionRejectionLowP ){
 	if( TMath::Abs(fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
@@ -640,6 +657,7 @@ Bool_t AliV0Reader::NextV0(){
 	}
       }
     }
+
 
     // Gamma selection based on QT from Armenteros
     if(fDoQtGammaSelection == kTRUE){
@@ -773,6 +791,23 @@ Bool_t AliV0Reader::NextV0(){
 	fCurrentV0IndexNumber++;
 	continue;
       }
+
+      if(TMath::Abs(fCurrentNegativeKFParticle->GetEta())> fEtaCut){
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
+	}
+	fCurrentV0IndexNumber++;
+	continue;
+      }
+
+      if(TMath::Abs(fCurrentPositiveKFParticle->GetEta())> fEtaCut){
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
+	}
+	fCurrentV0IndexNumber++;
+	continue;
+      }
+
       if(fDoCF){
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepEta);			// for CF
       }
@@ -1449,6 +1484,16 @@ Bool_t AliV0Reader::CheckIfPi0IsMother(Int_t label){
   Bool_t iResult=kFALSE;
   //  cout<<"Checking particle label, particle is: "<<fMCStack->Particle(TMath::Abs(label))->GetName()<<endl;
   if(fMCStack->Particle(TMath::Abs(label))->GetPdgCode() == 111){
+    iResult=kTRUE;
+  }
+  return iResult;
+}
+
+Bool_t AliV0Reader::CheckIfEtaIsMother(Int_t label){
+  // see headerfile for documentation
+  Bool_t iResult=kFALSE;
+  //  cout<<"Checking particle label, particle is: "<<fMCStack->Particle(TMath::Abs(label))->GetName()<<endl;
+  if(fMCStack->Particle(TMath::Abs(label))->GetPdgCode() == 221){
     iResult=kTRUE;
   }
   return iResult;
