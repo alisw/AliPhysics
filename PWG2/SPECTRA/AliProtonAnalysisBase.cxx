@@ -77,13 +77,15 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fNSigma(0), fNRatio(0),
   fElectronFunction(0), fMuonFunction(0),
   fPionFunction(0), fKaonFunction(0), fProtonFunction(0),
-  fDebugMode(kFALSE), fListVertexQA(new TList()) {
+  fDebugMode(kFALSE), fListVertexQA(0) {
   //Default constructor
   for(Int_t i = 0; i < 5; i++) fPartFrac[i] = 0.0;
   /*for(Int_t i = 0; i < 24; i++) {
     fdEdxMean[i] = 0.0;
     fdEdxSigma[i] = 0.0;
     }*/
+
+  fListVertexQA = new TList();
   fListVertexQA->SetName("fListVertexQA");
   TH1F *gHistVx = new TH1F("gHistVx",
 			   "Vx distribution;V_{x} [cm];Entries",
@@ -130,6 +132,8 @@ AliProtonAnalysisBase::~AliProtonAnalysisBase() {
   if(fKaonFunction) delete fKaonFunction;
   if(fProtonFunction) delete fProtonFunction;
   if(fListVertexQA) delete fListVertexQA;
+  if(fPtDependentDcaXY) delete fPtDependentDcaXY;
+  if(fPhysicsSelection) delete fPhysicsSelection;
 }
 
 //____________________________________________________________________//
@@ -984,14 +988,15 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
       fAlephParameters[4] = 4.88663e+00;
     }
     
-    AliESDpid *fESDpid = new AliESDpid(); 
-    AliTPCPIDResponse tpcResponse = fESDpid->GetTPCResponse(); 
-    tpcResponse.SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+    AliTPCPIDResponse *tpcResponse = new AliTPCPIDResponse();
+    tpcResponse->SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
 
     Double_t normalizeddEdx = -10.;
-    if((track->GetTPCsignal() > 0.0) && (tpcResponse.GetExpectedSignal(gP,AliPID::kProton) > 0.0))
-      TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton));
-    
+    if((track->GetTPCsignal() > 0.0) && (tpcResponse->GetExpectedSignal(gP,AliPID::kProton) > 0.0))
+      normalizeddEdx = TMath::Log(track->GetTPCsignal()/tpcResponse->GetExpectedSignal(gP,AliPID::kProton));
+
+    delete tpcResponse;
+
     if(normalizeddEdx >= fNRatio)
       return kTRUE;
   }//kRatio PID mode
@@ -1014,48 +1019,20 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
     }
 
     Double_t nsigma = 100.0;
-    AliESDpid *fESDpid = new AliESDpid(); 
-    fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+    AliTPCPIDResponse *tpcResponse = new AliTPCPIDResponse();
+    tpcResponse->SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
     
-    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
-    if(tpcTrack)
-      nsigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track,AliPID::kProton));
+    Double_t mom = track->GetP();
+    const AliExternalTrackParam *in = track->GetInnerParam();
+    if (in)
+      mom = in->GetP();
+
+    nsigma = TMath::Abs(tpcResponse->GetNumberOfSigmas(mom,track->GetTPCsignal(),track->GetTPCsignalN(),AliPID::kProton));
   
+    delete tpcResponse;
     if(nsigma <= fNSigma) 
       return kTRUE;
   }//kSigma PID method
-  //Another definition of an N-sigma area around the dE/dx vs P band
-  /*else if(fProtonPIDMode == kSigma2) {
-    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
-    if(tpcTrack) {
-      gPt = tpcTrack->Pt();
-      gP = tpcTrack->P();
-      gEta = tpcTrack->Eta();
-    }
-    Double_t fAlephParameters[5];
-    if(fAnalysisMC) {
-      fAlephParameters[0] = 2.15898e+00/50.;
-      fAlephParameters[1] = 1.75295e+01;
-      fAlephParameters[2] = 3.40030e-09;
-      fAlephParameters[3] = 1.96178e+00;
-      fAlephParameters[4] = 3.91720e+00;
-    }
-    else {
-      fAlephParameters[0] = 0.0283086;
-      fAlephParameters[1] = 2.63394e+01;
-      fAlephParameters[2] = 5.04114e-11;
-      fAlephParameters[3] = 2.12543e+00;
-      fAlephParameters[4] = 4.88663e+00;
-    }
-
-    AliESDpid *fESDpid = new AliESDpid(); 
-    AliTPCPIDResponse tpcResponse = fESDpid->GetTPCResponse(); 
-    tpcResponse.SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
-    Double_t normalizeddEdx = TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton));
-
-    if(normalizeddEdx >= -0.15)
-      return kTRUE;
-  }*/
 
   return kFALSE;
 }

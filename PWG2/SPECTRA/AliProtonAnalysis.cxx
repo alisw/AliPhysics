@@ -424,6 +424,9 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY,
   fAntiProtonContainer->SetBinLimits(0,binLimY); //rapidity
   fAntiProtonContainer->SetBinLimits(1,binLimPt); //pT
 
+  delete [] binLimY;
+  delete [] binLimPt;
+
   //Initialize the QA
   if(!fInitQAFlag) InitQA();
 }
@@ -918,9 +921,9 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
     fAlephParameters[3] = 2.12543e+00;
     fAlephParameters[4] = 4.88663e+00;
   }
-  AliESDpid *fESDpid = new AliESDpid();
-  AliTPCPIDResponse tpcResponse = fESDpid->GetTPCResponse(); 
-  tpcResponse.SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
+
+  AliTPCPIDResponse *tpcResponse = new AliTPCPIDResponse();
+  tpcResponse->SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
   //=========================================//  
 
   fHistEvents->Fill(1); //number of analyzed events
@@ -933,20 +936,6 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
     AliESDtrack* track = esd->GetTrack(iTracks);
     AliESDtrack trackTPC;
 
-    //in case it's a TPC only track relate it to the proper vertex
-    /*if(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC) {
-      Float_t p[2],cov[3];
-      track->GetImpactParametersTPC(p,cov);
-      if (p[0]==0 && p[1]==0)  
-	track->RelateToVertexTPC(((AliESDEvent*)esd)->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
-      if (!track->FillTPCOnlyTrack(trackTPC)) {
-	continue;
-      }
-      track = &trackTPC ;
-      }*/
-
-    //Int_t  fIdxInt[200];
-    //Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
     Int_t nClustersTPC = track->GetTPCclusters(0x0);
     Int_t npointsTPCdEdx = track->GetTPCsignalN();
     Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
@@ -956,7 +945,6 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
       if(!tpcTrack) continue;
       gPt = tpcTrack->Pt();
-      //gP = tpcTrack->P();
       gP = track->GetInnerParam()->P();
       tpcTrack->PropagateToDCA(vertex,
 			       esd->GetMagneticField(),
@@ -964,10 +952,10 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       dca3D = TMath::Sqrt(TMath::Power(dca[0],2) +
 			  TMath::Power(dca[1],2));
 
-      //if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
-      //if(fProtonAnalysisBase->IsAccepted(track)) {
-	  /*((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
-	  ((TH2F *)(fQA2DList->At(2)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
+      if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
+	if(fProtonAnalysisBase->IsAccepted(track)) {
+	  ((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
+	  ((TH2F *)(fQA2DList->At(2)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse->GetExpectedSignal(gP,AliPID::kProton)));
 	  ((TH3F *)(fQA2DList->At(4)))->Fill(tpcTrack->Eta(),
 					     tpcTrack->Phi()*180./TMath::Pi(),
 					     npointsTPCdEdx);
@@ -983,9 +971,9 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  if(track->Charge() > 0)
 	    ((TH2F *)(fQA2DList->At(20)))->Fill(gP,track->GetTPCsignal());
 	  if(track->Charge() < 0)
-	  ((TH2F *)(fQA2DList->At(21)))->Fill(gP,track->GetTPCsignal());*/
-      //}//quality cuts
-      //}//primary cuts
+	  ((TH2F *)(fQA2DList->At(21)))->Fill(gP,track->GetTPCsignal());
+	}//quality cuts
+      }//primary cuts
       
       if(fProtonAnalysisBase->IsProton(track)) {
 	//Step: kStepIdentified
@@ -1016,8 +1004,8 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  
 	  //Step: kStepSurvived
 	  if(fProtonAnalysisBase->IsAccepted(track)) {
-	    /*((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
-	    ((TH2F *)(fQA2DList->At(3)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
+	    ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
+	    ((TH2F *)(fQA2DList->At(3)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse->GetExpectedSignal(gP,AliPID::kProton)));
 	    ((TH3F *)(fQA2DList->At(5)))->Fill(tpcTrack->Eta(),
 					       tpcTrack->Phi()*180./TMath::Pi(),
 					       npointsTPCdEdx);
@@ -1029,11 +1017,11 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 					       npointsTPCdEdx);
 	    ((TH3F *)(fQA2DList->At(11)))->Fill(gPt,
 					       tpcTrack->Phi()*180./TMath::Pi(),
-					       nClustersTPC);*/
+						nClustersTPC);
 	    
 	    if(tpcTrack->Charge() > 0) {
 	      fProtonContainer->Fill(containerInput,kStepSurvived);   
-	      /*((TH2F *)(fQA2DList->At(12)))->Fill(tpcTrack->Eta(),
+	      ((TH2F *)(fQA2DList->At(12)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Phi()*180./TMath::Pi());
 	      if(fProtonAnalysisBase->GetEtaMode()) {
 		((TH3F *)(fQA2DList->At(14)))->Fill(tpcTrack->Eta(),
@@ -1056,11 +1044,11 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 		((TH3F *)(fQA2DList->At(18)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
 						    tpcTrack->Pt(),
 						    TMath::Abs(dca3D));
-						    }*/
+						    }
 	    }//protons
 	    else if(tpcTrack->Charge() < 0) {
 	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
-	      /*((TH2F *)(fQA2DList->At(13)))->Fill(tpcTrack->Eta(),
+	      ((TH2F *)(fQA2DList->At(13)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Phi()*180./TMath::Pi());
 	      if(fProtonAnalysisBase->GetEtaMode()) {
 		((TH3F *)(fQA2DList->At(16)))->Fill(tpcTrack->Eta(),
@@ -1083,7 +1071,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 		((TH3F *)(fQA2DList->At(19)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
 						    tpcTrack->Pt(),
 						    TMath::Abs(dca3D));
-						    }*/
+	      }
 	    }//antiprotons
 	    
 	    //Step: kStepInPhaseSpace
@@ -1126,10 +1114,10 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       dca3D = TMath::Sqrt(TMath::Power(dca[0],2) +
 			  TMath::Power(dca[1],2));
 
-      /*if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
+      if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
 	if(fProtonAnalysisBase->IsAccepted(track)) {
 	  ((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
-	  ((TH2F *)(fQA2DList->At(2)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
+	  ((TH2F *)(fQA2DList->At(2)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse->GetExpectedSignal(gP,AliPID::kProton)));
 	  ((TH3F *)(fQA2DList->At(4)))->Fill(tpcTrack->Eta(),
 					     tpcTrack->Phi()*180./TMath::Pi(),
 					     npointsTPCdEdx);
@@ -1147,7 +1135,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  if(track->Charge() < 0)
 	    ((TH2F *)(fQA2DList->At(21)))->Fill(gP,track->GetTPCsignal());
 	}//quality cuts
-	}*///primary cuts
+      }//primary cuts
       
       if(fProtonAnalysisBase->IsProton(track)) {
 	//Step: kStepIdentified
@@ -1174,12 +1162,12 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  else if(tpcTrack->Charge() < 0) 
 	    fAntiProtonContainer->Fill(containerInput,kStepIsPrimary);   
 	  
-	  //FillQA(esd,vertex,track);	  
+	  FillQA(esd,vertex,track);	  
 	  
 	  //Step: kStepSurvived
 	  if(fProtonAnalysisBase->IsAccepted(track)) {
-	    /*((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
-	    ((TH2F *)(fQA2DList->At(3)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
+	    ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
+	    ((TH2F *)(fQA2DList->At(3)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse->GetExpectedSignal(gP,AliPID::kProton)));
 	    ((TH3F *)(fQA2DList->At(5)))->Fill(tpcTrack->Eta(),
 					       tpcTrack->Phi()*180./TMath::Pi(),
 					       npointsTPCdEdx);
@@ -1191,11 +1179,11 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 					       npointsTPCdEdx);
 	    ((TH3F *)(fQA2DList->At(11)))->Fill(gPt,
 					       tpcTrack->Phi()*180./TMath::Pi(),
-					       nClustersTPC);*/
+						nClustersTPC);
 	    
 	    if(tpcTrack->Charge() > 0) {
 	      fProtonContainer->Fill(containerInput,kStepSurvived);   
-	      /*((TH2F *)(fQA2DList->At(12)))->Fill(tpcTrack->Eta(),
+	      ((TH2F *)(fQA2DList->At(12)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Phi()*180./TMath::Pi());
 	      if(fProtonAnalysisBase->GetEtaMode()) {
 		((TH3F *)(fQA2DList->At(14)))->Fill(tpcTrack->Eta(),
@@ -1218,11 +1206,11 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 		((TH3F *)(fQA2DList->At(18)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
 						    tpcTrack->Pt(),
 						    TMath::Abs(dca3D));
-						    }*/
+	      }
 	    }//protons
 	    else if(tpcTrack->Charge() < 0) {
 	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
-	      /*((TH2F *)(fQA2DList->At(13)))->Fill(tpcTrack->Eta(),
+	      ((TH2F *)(fQA2DList->At(13)))->Fill(tpcTrack->Eta(),
 						  tpcTrack->Phi()*180./TMath::Pi());
 	      if(fProtonAnalysisBase->GetEtaMode()) {
 		((TH3F *)(fQA2DList->At(16)))->Fill(tpcTrack->Eta(),
@@ -1245,7 +1233,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 		((TH3F *)(fQA2DList->At(19)))->Fill(fProtonAnalysisBase->Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz()),
 						    tpcTrack->Pt(),
 						    TMath::Abs(dca3D));
-						    }*/
+	      }
 	    }//antiprotons
 	    
 	    //Step: kStepInPhaseSpace
@@ -1278,10 +1266,10 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
       dca3D = TMath::Sqrt(TMath::Power(dca[0],2) +
 			  TMath::Power(dca[1],2));
 
-      /*if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
+      if(fProtonAnalysisBase->IsPrimary(esd,vertex,track)) {
 	if(fProtonAnalysisBase->IsAccepted(track)) {
 	  ((TH2F *)(fQA2DList->At(0)))->Fill(gP,track->GetTPCsignal());
-	  ((TH2F *)(fQA2DList->At(2)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
+	  ((TH2F *)(fQA2DList->At(2)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse->GetExpectedSignal(gP,AliPID::kProton)));
 	  ((TH3F *)(fQA2DList->At(4)))->Fill(track->Eta(),
 					     track->Phi()*180./TMath::Pi(),
 					     npointsTPCdEdx);
@@ -1299,7 +1287,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  if(track->Charge() < 0)
 	    ((TH2F *)(fQA2DList->At(21)))->Fill(gP,track->GetTPCsignal());
 	}//quality cuts
-	}*///primary cuts
+      }//primary cuts
       
       if(fProtonAnalysisBase->IsProton(track)) {
 	//Step: kStepIdentified
@@ -1330,8 +1318,8 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  
 	  //Step: kStepSurvived
 	  if(fProtonAnalysisBase->IsAccepted(track)) {
-	    /*((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
-	    ((TH2F *)(fQA2DList->At(3)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton)));
+	    ((TH2F *)(fQA2DList->At(1)))->Fill(gP,track->GetTPCsignal());
+	    ((TH2F *)(fQA2DList->At(3)))->Fill(gP,TMath::Log(track->GetTPCsignal()/tpcResponse->GetExpectedSignal(gP,AliPID::kProton)));
 	    ((TH3F *)(fQA2DList->At(5)))->Fill(track->Eta(),
 					       track->Phi()*180./TMath::Pi(),
 					       npointsTPCdEdx);
@@ -1343,11 +1331,11 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 					       npointsTPCdEdx);
 	    ((TH3F *)(fQA2DList->At(11)))->Fill(gPt,
 					       track->Phi()*180./TMath::Pi(),
-					       nClustersTPC);*/
+					       nClustersTPC);
 	    
 	    if(track->Charge() > 0) {
 	      fProtonContainer->Fill(containerInput,kStepSurvived);   
-	      /*((TH2F *)(fQA2DList->At(12)))->Fill(track->Eta(),
+	      ((TH2F *)(fQA2DList->At(12)))->Fill(track->Eta(),
 						  track->Phi()*180./TMath::Pi());
 	      if(fProtonAnalysisBase->GetEtaMode()) {
 		((TH3F *)(fQA2DList->At(14)))->Fill(track->Eta(),
@@ -1371,11 +1359,11 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 		((TH3F *)(fQA2DList->At(18)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),track->Py(),track->Pz()),
 						    track->Pt(),
 						    TMath::Abs(dca3D));
-						    }*/
+						    }
 	    }//protons
 	    else if(track->Charge() < 0) {
 	      fAntiProtonContainer->Fill(containerInput,kStepSurvived);   
-	      /*((TH2F *)(fQA2DList->At(13)))->Fill(track->Eta(),
+	      ((TH2F *)(fQA2DList->At(13)))->Fill(track->Eta(),
 						  track->Phi()*180./TMath::Pi());
 	      if(fProtonAnalysisBase->GetEtaMode()) {
 		((TH3F *)(fQA2DList->At(16)))->Fill(track->Eta(),
@@ -1398,7 +1386,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 		((TH3F *)(fQA2DList->At(19)))->Fill(fProtonAnalysisBase->Rapidity(track->Px(),track->Py(),track->Pz()),
 						    track->Pt(),
 						    TMath::Abs(dca3D));
-						    }*/
+	      }
 	    }//antiprotons
 	    
 	    //Step: kStepInPhaseSpace
@@ -1422,7 +1410,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
     }//Global tracking
   }//track loop 
   
-  delete fESDpid;
+  delete tpcResponse;
 
   if((nIdentifiedProtons > 0)||(nIdentifiedAntiProtons > 0))
     fHistEvents->Fill(2); //number of analyzed events with at least one (anti)proton
