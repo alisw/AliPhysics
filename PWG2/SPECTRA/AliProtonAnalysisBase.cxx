@@ -45,6 +45,7 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fPhysicsSelection(0),
   fProtonAnalysisMode(kTPC), fProtonPIDMode(kBayesian),
   fAnalysisEtaMode(kFALSE),
+  fRunQAAnalysis(kFALSE),
   fVxMax(100.), fVyMax(100.), fVzMax(100.), fMinNumOfContributors(0),
   fNBinsX(0), fMinX(0), fMaxX(0),
   fNBinsY(0), fMinY(0), fMaxY(0),

@@ -37,9 +37,9 @@ class AliProtonAnalysisBase;
 class AliProtonAnalysis : public TObject {
  public:
   enum {
-    kStepIdentified      = 0,
+    kStepSurvived        = 0,
     kStepIsPrimary       = 1,
-    kStepSurvived        = 2,
+    kStepIdentified      = 2,
     kStepInPhaseSpace    = 3,
     kNSteps = 4
   };
@@ -205,7 +205,6 @@ class AliProtonAnalysis : public TObject {
   TList *fQAProtonsRejectedList; //rejected protons
   TList *fQAAntiProtonsAcceptedList; //accepted antiprotons
   TList *fQAAntiProtonsRejectedList; //rejected antiprotons
-  Bool_t fInitQAFlag;//Init flag
 
   ClassDef(AliProtonAnalysis,1);
 };

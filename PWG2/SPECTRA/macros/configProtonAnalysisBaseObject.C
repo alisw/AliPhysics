@@ -3,10 +3,12 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
 						   const char* esdAnalysisType = "Hybrid",
 						   const char* pidMode = "Bayesian",
 						   Bool_t kUseOnlineTrigger = kFALSE,
-						   Bool_t kUseOfflineTrigger = kFALSE) {
+						   Bool_t kUseOfflineTrigger = kFALSE,
+						   Bool_t kRunQA = kFALSE) {
   //Function to setup the AliProtonAnalysisBase object and return it
   AliProtonAnalysisBase *baseAnalysis = new AliProtonAnalysisBase();
   //baseAnalysis->SetDebugMode();
+  if(kRunQA) baseAnalysis->SetRunQA();
   baseAnalysis->SetAnalysisLevel(analysisLevel);
   if(analysisLevel == "ESD") {
     if(kAnalyzeMC)
