@@ -277,6 +277,8 @@ class AliProtonAnalysisBase : public TObject {
   void SetDebugMode() {fDebugMode = kTRUE;}
   Bool_t GetDebugMode() const {return fDebugMode;}
 
+  void SetRunQA() {fRunQAAnalysis = kTRUE;}
+  Bool_t IsQARun() {return fRunQAAnalysis;}
   TList *GetVertexQAList() {return fListVertexQA;}
 
  private:
@@ -293,6 +295,7 @@ class AliProtonAnalysisBase : public TObject {
   PIDMode fProtonPIDMode; //PID mode: Bayesian-dE/dx ratio-Nsigma areas
   Bool_t fAnalysisEtaMode; //run the analysis in eta or y
 
+  Bool_t fRunQAAnalysis; //boolnean to indicate to run the QA or not
   Double_t fVxMax, fVyMax, fVzMax; //vertex diamond constrain 
   Int_t fMinNumOfContributors;//min number of contributors
 

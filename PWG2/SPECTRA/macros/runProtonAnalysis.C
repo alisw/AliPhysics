@@ -2,7 +2,8 @@ void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
 		       const char* esdAnalysisType = "Hybrid",
 		       const char* pidMode = "Ratio",
 		       Bool_t kUseOnlineTrigger = kTRUE,
-		       Bool_t kUseOfflineTrigger = kTRUE) {
+		       Bool_t kUseOfflineTrigger = kTRUE,
+		       Bool_t kRunQA = kFALSE) {
   //Macro to run the proton analysis tested for local, proof & GRID.
   //Local: Takes six arguments, the analysis mode, a boolean to define the ESD
   //       analysis of MC data, the type of the ESD analysis, the PID mode, 
@@ -108,7 +109,8 @@ void runLocal(const char* mode = "ESD",
 							analysisType,
 							pidMode,
 							kUseOnlineTrigger,
-							kUseOfflineTrigger);
+							kUseOfflineTrigger,
+							kRunQA);
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisManager");
@@ -219,7 +221,8 @@ void runInteractive(const char* mode = "ESD",
 							analysisType,
 							pidMode,
 							kUseOnlineTrigger,
-							kUseOfflineTrigger);
+							kUseOfflineTrigger,
+							kRunQA);
   //runNumberForOfflineTtrigger);
   //____________________________________________//
   // Make the analysis manager
@@ -321,7 +324,8 @@ void runBatch(const char* mode = "ESD",
 							analysisType,
 							pidMode,
 							kUseOnlineTrigger,
-							kUseOfflineTrigger);
+							kUseOfflineTrigger,
+							kRunQA);
   //runNumberForOfflineTtrigger);
   //____________________________________________//
   // Make the analysis manager
@@ -414,7 +418,8 @@ void runProof(const char* mode = "ESD",
 							analysisType,
 							pidMode,
 							kUseOnlineTrigger,
-							kUseOfflineTrigger);
+							kUseOfflineTrigger,
+							kRunQA);
   //____________________________________________//
 
   //____________________________________________//
