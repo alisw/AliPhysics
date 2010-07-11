@@ -171,11 +171,11 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   Int_t CouldBeADCmask(UInt_t adcmask) const { return ((0xf & adcmask) == 0xc && (0x3 & adcmask >> 30) == 0x1); }
       
   // error message generation
-  TString EquipmentError(ErrorCode_t err = kUnknown, TString msg = "", ...); 
-  TString StackError    (ErrorCode_t err = kUnknown, TString msg = "", ...);     
-  TString LinkError     (ErrorCode_t err = kUnknown, TString msg = "", ...); 
-  TString ROBError      (ErrorCode_t err = kUnknown, TString msg = "", ...); 
-  TString MCMError      (ErrorCode_t err = kUnknown, TString msg = "", ...); 
+  void EquipmentError(ErrorCode_t err = kUnknown, const char *const msg = "", ...); 
+  void StackError    (ErrorCode_t err = kUnknown, const char *const msg = "", ...);     
+  void LinkError     (ErrorCode_t err = kUnknown, const char *const msg = "", ...); 
+  void ROBError      (ErrorCode_t err = kUnknown, const char *const msg = "", ...); 
+  void MCMError      (ErrorCode_t err = kUnknown, const char *const msg = "", ...); 
 
   static const char* fgErrorMessages[kLastErrorCode];     // error messages corresponding to the error codes
   static const Int_t fgErrorDebugLevel[kLastErrorCode];   // error debug level

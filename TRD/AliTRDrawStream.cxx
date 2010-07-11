@@ -1149,7 +1149,7 @@ Bool_t AliTRDrawStream::ConnectTracklets(TTree *trklTree)
 }
 
 
-TString AliTRDrawStream::EquipmentError(ErrorCode_t err, TString msg, ...)
+void AliTRDrawStream::EquipmentError(ErrorCode_t err, const char *const msg, ...)
 { 
   // register error according to error code on equipment level 
   // and return the corresponding error message
@@ -1167,17 +1167,16 @@ TString AliTRDrawStream::EquipmentError(ErrorCode_t err, TString msg, ...)
     AliDebug(fgErrorDebugLevel[err],
 	     Form("Event %6i: Eq. %2d - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgErrorMessages[err],
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgErrorMessages[err],
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
-  return "";
 }										
 
 
-TString AliTRDrawStream::StackError(ErrorCode_t err, TString msg, ...)
+void AliTRDrawStream::StackError(ErrorCode_t err, const char *const msg, ...)
 { 
   // register error according to error code on stack level 
   // and return the corresponding error message
@@ -1195,17 +1194,16 @@ TString AliTRDrawStream::StackError(ErrorCode_t err, TString msg, ...)
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgErrorMessages[err],
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d S %i - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgErrorMessages[err],
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
-  return "";
 } 
 
 
-TString AliTRDrawStream::LinkError(ErrorCode_t err, TString msg, ...)
+void AliTRDrawStream::LinkError(ErrorCode_t err, const char *const msg, ...)
 { 
   // register error according to error code on link level 
   // and return the corresponding error message
@@ -1223,17 +1221,16 @@ TString AliTRDrawStream::LinkError(ErrorCode_t err, TString msg, ...)
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i l %2i - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgErrorMessages[err],
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d S %i l %2i - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgErrorMessages[err],
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
-  return "";
 } 
 
 
-TString AliTRDrawStream::ROBError(ErrorCode_t err, TString msg, ...)
+void AliTRDrawStream::ROBError(ErrorCode_t err, const char *const msg, ...)
 { 
   // register error according to error code on ROB level 
   // and return the corresponding error message
@@ -1251,17 +1248,16 @@ TString AliTRDrawStream::ROBError(ErrorCode_t err, TString msg, ...)
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i l %2i ROB %i - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgErrorMessages[err],
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d S %i l %2i ROB %i - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgErrorMessages[err], 
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
-  return "";
 } 
 
 
-TString AliTRDrawStream::MCMError(ErrorCode_t err, TString msg, ...)
+void AliTRDrawStream::MCMError(ErrorCode_t err, const char *const msg, ...)
 { 
   // register error according to error code on MCM level 
   // and return the corresponding error message
@@ -1279,13 +1275,12 @@ TString AliTRDrawStream::MCMError(ErrorCode_t err, TString msg, ...)
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i l %2i ROB %i MCM %2i - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgErrorMessages[err], 
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   else 
     AliError(Form("Event %6i: Eq. %2d S %i l %2i ROB %i MCM %2i - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgErrorMessages[err], 
-		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg, ap), va_end(ap), fErrorBuffer) ));
   fErrorFlags |= fgErrorBehav[err];
-  return "";
 }
 
 const char* AliTRDrawStream::GetErrorMessage(ErrorCode_t errCode)
