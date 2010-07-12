@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     TString sqlQuery;
     TTimeStamp ts;
     sqlQuery.Form("SELECT run FROM logbook WHERE DAQ_time_start > %u AND DAQ_time_end IS NULL AND partition REGEXP 'PHYSICS.*'",
-		  ts.GetSec()-86400);
+		  (UInt_t)ts.GetSec()-86400);
     TSQLResult* result = server->Query(sqlQuery);
     if (!result)
     {
