@@ -64,7 +64,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*3+2;}
   Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*5;}
  
-  enum {kMaxPtBins=10};
+  enum {kMaxPtBins=20};
 
   TList   *fOutput; //! list send on output slot 0
   TH1F    *fHistNEvents; //!hist. for No. of events

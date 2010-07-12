@@ -29,6 +29,7 @@
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 
+
 ClassImp(AliRDHFCutsDplustoKpipi)
 
 //--------------------------------------------------------------------------
@@ -80,6 +81,22 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const char* name) :
   SetVarsForOpt(5,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
+  if(fPidHF)delete fPidHF;
+  fPidHF=new AliAODPidHF();
+  Double_t plim[2]={0.6,0.8};
+  Double_t nsigma[5]={2.,1.,2.,3.,0.};
+  
+  fPidHF->SetPLimit(plim);
+  fPidHF->SetAsym(kTRUE);
+  fPidHF->SetSigma(nsigma);
+  fPidHF->SetMatch(1);
+  fPidHF->SetTPC(1);
+  fPidHF->SetTOF(1);
+  fPidHF->SetITS(0);
+  fPidHF->SetTRD(0);
+  fPidHF->SetCompat(kTRUE);
+
+  
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi &source) :
@@ -102,6 +119,7 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
 
   return *this;
 }
+//
 
 
 //---------------------------------------------------------------------------
@@ -206,6 +224,42 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   }
   return;
 }
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)const {
+  //PID 
+  if(!fUsePID || !rd) return 1;
+  //if(fUsePID)printf("i am inside the pid \n");
+  Int_t nkaons=0;
+  Int_t nNotKaons=0;
+  Int_t sign= rd->GetCharge(); 
+  for(Int_t daught=0;daught<3;daught++){
+    AliAODTrack *track=(AliAODTrack*)rd->GetDaughter(daught);
+    Int_t isPion=fPidHF->MakeRawPid(track,AliPID::kPion);
+    Int_t isKaon=fPidHF->MakeRawPid(track,AliPID::kKaon);
+    Int_t isProton=fPidHF->MakeRawPid(track,AliPID::kProton);
+    
+    if(isProton>0 &&  isKaon<0  && isPion<0) return 0;
+    if(isKaon>0 && isPion<0) nkaons++;
+    if(isKaon<0) nNotKaons++;  
+    if(sign==track->Charge()){//pions
+      if(isPion<0)return 0;
+    }
+      else{//kaons
+	if(isKaon<0)return 0;
+      }
+    
+      
+  }
+  
+  if(nkaons>1)return 0;
+  if(nNotKaons==3)return 0;
+  
+  return 1;   
+}
+
+
+
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   //
@@ -232,15 +286,27 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
      selectionLevel==AliRDHFCuts::kTracks) {
     if(!AreDaughtersSelected(d)) return 0;
   }
+  
+  // PID selection
+  Int_t returnvaluePID=1;  
+                                          
 
+  //if(selectionLevel==AliRDHFCuts::kAll || 
+  if(selectionLevel==AliRDHFCuts::kCandidate ||     
+ selectionLevel==AliRDHFCuts::kPID) {
+    returnvaluePID = IsSelectedPID(d);
+  }
+  if(returnvaluePID==0)return 0;
+  
+  
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate) {
     
     Double_t pt=d->Pt();
-   
+    
     Int_t ptbin=PtBin(pt);
-
+    
     Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
     Double_t mDplus=d->InvMassDplus();
     if(TMath::Abs(mDplus-mDplusPDG)>fCutsRD[GetGlobalIndex(0,ptbin)])return 0;
