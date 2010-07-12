@@ -829,10 +829,10 @@ void AliMultiplicityTask::Exec(Option_t*)
               
               Printf("Particle %d (%s) decayed at %f, daugher uniqueID: %d:", i, particle->GetName(), trackref->R(), uID);
               particle->Print();
-              Printf("Daughers:");
+              Printf("Daugthers:");
               for (Int_t d = particle->GetFirstDaughter(); d <= particle->GetLastDaughter(); d++)
                 stack->Particle(d)->Print();
-              Printf("");
+              Printf(" ");
               
               fParticleCorrection[id]->GetTrackCorrection()->FillGene(vtxMC[2], particle->Eta(), particle->Pt());
               continue;
@@ -844,7 +844,7 @@ void AliMultiplicityTask::Exec(Option_t*)
             // stopped
             Printf("Particle %d stopped at %f:", i, trackref->R());
             particle->Print();
-            Printf("");
+            Printf(" ");
             
             fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], particle->Eta(), particle->Pt());
             continue;
@@ -852,7 +852,7 @@ void AliMultiplicityTask::Exec(Option_t*)
           
           Printf("Particle %d simply not tracked", i);
           particle->Print();
-          Printf("");
+          Printf(" ");
         }
       }
       
