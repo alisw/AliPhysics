@@ -13,6 +13,7 @@
 */
 #include "monitor.h"
 #include "event.h"
+#include <AliLog.h>
 #include <TSystem.h>
 #include <TString.h>
 #include <AliFMDParameters.h>
@@ -60,6 +61,7 @@ int main(int argc, char **argv)
     return -1;
   }
   
+  if (argc > 2) AliLog::SetModuleDebugLevel("FMD", atoi(argv[2]));
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );
   if (status!=0) {
