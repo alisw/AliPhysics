@@ -382,8 +382,8 @@ void AliVZERO::Digits2Raw()
 	   aBBflag[iChannel] = (aBBflagsV0A >> (fVZERODigit->PMNumber()-32)) & 0x1;
 	   aBGflag[iChannel] = (aBGflagsV0A >> (fVZERODigit->PMNumber()-32)) & 0x1;
 	 }
-         AliDebug(1,Form("DDL: %s\tdigit number: %d\tPM number: %d\tADC: %f\tTime: %f",
-			 fileName,k,fVZERODigit->PMNumber(),aADC[k],aTime[k])); 
+         AliDebug(1,Form("DDL: %s\tdigit number: %d\tPM number: %d\tADC: %d\tTime: %f",
+			 fileName,k,fVZERODigit->PMNumber(),aADC[k][AliVZEROdigit::kNClocks/2],aTime[k])); 
      }        
    }
 
