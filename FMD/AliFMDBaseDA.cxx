@@ -423,6 +423,9 @@ void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader)
       }
     }
   }
+  // sampleRate->WriteToFile(std::cout, fSeenDetectors);
+  // stripRange->WriteToFile(std::cout, fSeenDetectors);
+
   if(fConditionsFile.is_open()) {
     
     fConditionsFile.write("# EOF\n",6);
