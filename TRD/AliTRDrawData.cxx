@@ -240,8 +240,8 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
       iwbuffer[0] = iwbuffer[0] | bStackMask;  // add stack masks to SM index word
       if (fgDataSuppressionLevel==0) iwbuffer[0] = 0x0044a03f;    // no suppression : all stacks are active
       of->WriteBuffer((char *) iwbuffer, nheader*4);
-      AliDebug(11, Form("SM %d index word: %08x", iwbuffer[0]));
-      AliDebug(11, Form("SM %d header: %08x", iwbuffer[1]));
+      AliDebug(11, Form("SM %d index word: %08x", sect, iwbuffer[0]));
+      AliDebug(11, Form("SM %d header: %08x", sect, iwbuffer[1]));
     }
     // end of SM & stack header ------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------------------

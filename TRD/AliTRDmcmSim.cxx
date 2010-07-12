@@ -1872,7 +1872,7 @@ Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
    addrQ0 = (((addrQ0*q0)>>16)>>16); // because addrQ0 = (q0 * corrQ0) >> 32; does not work for unknown reasons
 
    if(addrQ0 >= nBinsQ0) {  // check for overflow
-      AliDebug(5,Form("Overflow in q0: %i/4 is bigger then %i", addrQ0, nBinsQ0));
+      AliDebug(5,Form("Overflow in q0: %i/4 is bigger then %u", addrQ0, nBinsQ0));
       addrQ0 = nBinsQ0 -1;
    } 
 
@@ -1881,7 +1881,7 @@ Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
    addr = addrQ0 + nBinsQ0*addr; // because addr = addrQ0 + nBinsQ0* (((corrQ1*q1)>>32); does not work
 
    if(addr >= pidTotalSize) {
-      AliDebug(5,Form("Overflow in q1. Address %i/4 is bigger then %i", addr, pidTotalSize));
+      AliDebug(5,Form("Overflow in q1. Address %i/4 is bigger then %u", addr, pidTotalSize));
       addr = pidTotalSize -1;
    } 
 

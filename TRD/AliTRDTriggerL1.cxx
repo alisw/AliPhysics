@@ -79,7 +79,7 @@ void AliTRDTriggerL1::Trigger()
     return;
   }
   TBranch *branch = trackTree->GetBranch("TRDtrackGTU");
-  AliDebug(1,Form("TRD trigger: found %i tracks", trackTree->GetEntriesFast()));
+  AliDebug(1,Form("TRD trigger: found %d tracks", trackTree->GetEntriesFast()));
   
   // trigger thresholds should go elsewhere
   Float_t ptThreshold1 = 2;

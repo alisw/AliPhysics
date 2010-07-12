@@ -123,7 +123,7 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
 		fTMU->WriteTrackletsToTree(fTrackletTree);
 		WriteTracksToDataFile(listOfTracks, iEventPrev);
 		if (listOfTracks->GetEntries() > 0) 
-		    AliDebug(2,Form("   %d GeV/c", ((AliTRDtrackGTU*) listOfTracks->At(0))->GetPt() ));
+		    AliDebug(2,Form("   %4.1f GeV/c", ((AliTRDtrackGTU*) listOfTracks->At(0))->GetPt() ));
 		delete fTMU;
 		fTMU = new AliTRDgtuTMU(); 
 		delete listOfTracks;
@@ -439,7 +439,7 @@ Bool_t AliTRDgtuSim::WriteTracksToLoader()
   if (!trackTree->GetBranch("TRDtrackGTU"))
     trackTree->Branch("TRDtrackGTU", "AliTRDtrackGTU", &trk, 32000);
   
-  AliDebug(1,Form("Found %i tracks", fTrackTree->GetEntries()));
+  AliDebug(1,Form("Found %d tracks", fTrackTree->GetEntries()));
 
   for (Int_t iTrack = 0; iTrack < fTrackTree->GetEntries(); iTrack++) {
     fTrackTree->SetBranchAddress("TRDgtuTrack", &trk);

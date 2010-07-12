@@ -147,7 +147,7 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
 
 
    if(ignoredLines>readLines)
-      AliError(Form("More then 50% of the input file could not be processed. Perhaps you should check the input file %s", filename.Data()));
+      AliError(Form("More than 50 %% of the input file could not be processed. Perhaps you should check the input file %s", filename.Data()));
 
 
    return kTRUE;
