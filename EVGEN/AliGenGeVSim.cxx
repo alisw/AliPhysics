@@ -144,7 +144,7 @@ AliGenGeVSim::AliGenGeVSim(Float_t psi, Bool_t isMultTotal)
   // checking consistancy
   
   if (psi < 0 || psi > 360 ) 
-    Error ("AliGenGeVSim", "Reaction plane angle ( %d )out of range [0..360]", psi);
+    Error ("AliGenGeVSim", "Reaction plane angle ( %13.3f )out of range [0..360]", psi);
 
   fPsi = psi * TMath::Pi() / 180. ;
   fIsMultTotal = isMultTotal;

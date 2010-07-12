@@ -483,7 +483,6 @@ void AliGenAfterBurnerFlow::Generate()
   // M.G. Poghosyan 
   // PWG2 meeting on 06.05.2008 and 03.06.2008
 
-  Info("Generate()","");
 
   if (0) 
     for(Int_t ii=0; ii<fCounter;ii++)
