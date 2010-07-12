@@ -284,10 +284,10 @@ AliFMDAltroMapping::Sector2Board(Char_t ring, UShort_t sec) const
   switch (ring) { 
   case 'I': 
   case 'i':
-    return (sec / 10) * 16;
+    return (sec < 10 ? 16 : 0); // (sec / 10) * 16;
   case 'O': 
   case 'o': 
-    return (sec / 20) * 16 + 1;
+    return (sec < 20 ? 16 : 0) + 1; // (sec / 20) * 16 + 1;
   }
   return -1;
 }
