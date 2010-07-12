@@ -553,6 +553,14 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
   UInt_t strip_high[18];
   UInt_t pulse_size[18];
   UInt_t pulse_length[18];  
+  for (size_t i = 0; i < 18; i++) { 
+    shift_clk[i]    = 0;
+    sample_clk[i]   = 0;
+    strip_low[i]    = 0;
+    strip_high[i]   = 0;
+    pulse_size[i]   = 0;
+    pulse_length[i] = 0;
+  }
   AliFMDParameters*   param = AliFMDParameters::Instance();
   AliFMDAltroMapping* map   = param->GetAltroMap();
   
@@ -708,6 +716,8 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       case 0x24: break; // FMD: L2 timeout
       case 0x25: // FMD: Shift clk 
 	shift_clk[board] = ((data >> 8 ) & 0xFF); 
+	AliFMDDebug(30, ("Read shift_clk=%d for board 0x%02x", 
+			shift_clk[board], board));
 	break; 
       case 0x26: // FMD: Strips 
 	strip_low[board]  = ((data >> 0 ) & 0xFF); 
@@ -721,6 +731,8 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       case 0x2A: break; // FMD: Preamp ref
       case 0x2B: // FMD: Sample clk 
 	sample_clk[board] = ((data >> 8 ) & 0xFF); 
+	AliFMDDebug(30, ("Read sample_clk=%d for board 0x%02x", 
+			sample_clk[board], board));
 	break; 
       case 0x2C: break; // FMD: Commands
       case 0x4B: // FMD: Cal events 
@@ -745,7 +757,8 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       det = map->DDL2Detector(ddl);
       map->Channel2StripBase(boards[i], chip, channel, ring, sector, strip);
      
-      UInt_t samplerate = 1;
+      UInt_t samplerate = 0;
+#if USE_VOTE
       if(sample_clk[boards[i]] == 0) {
 	if(ddl == 0) {
 	  Int_t sample1 = sample_clk[boards[0]];
@@ -776,14 +789,17 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
 	    strip_high[boards[i]] = strip_high[boards[idx]];
 	    pulse_length[boards[i]] = pulse_length[boards[idx]];
 	    pulse_size[boards[i]] = pulse_size[boards[idx]];
-	    AliFMDDebug(0, ("Vote taken for ddl %d, board 0x%x",
+	    AliFMDDebug(3, ("Vote taken for ddl %d, board 0x%x",
 			    ddl,boards[i]));
 	  }
 	}
       } 
+#endif
       
       if(sample_clk[boards[i]])
 	samplerate = shift_clk[boards[i]]/sample_clk[boards[i]];
+      AliFMDDebug(10, ("Sample rate for board 0x%02x is %d", 
+		      boards[i], samplerate));
       sampleRate->Set(det,ring,sector,0,samplerate);
       stripRange->Set(det,ring,sector,0,
 		      strip_low[boards[i]],strip_high[boards[i]]);
@@ -804,9 +820,9 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
 		       strip_low[boards[i]], strip_high[boards[i]],
 		       shift_clk[boards[i]], sample_clk[boards[i]],
 		       pulse_size[boards[i]],pulse_length[boards[i]]));
-      }
-    
     }
+    
+  }
   
   AliFMDParameters::Instance()->SetSampleRate(sampleRate);
   AliFMDParameters::Instance()->SetStripRange(stripRange);
