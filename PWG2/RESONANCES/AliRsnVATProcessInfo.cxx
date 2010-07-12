@@ -111,7 +111,7 @@ void AliRsnVATProcessInfo::PrintInfo(const Long64_t &num)
 // to inform about number of events processed
 //
 
-  if ((num+1) % fPrintInfoNumber == 0) AliInfo(Form("Events processed %d",num+1));
+  if ((num+1) % fPrintInfoNumber == 0) AliInfo(Form("Events processed %l",num+1));
 }
 
 

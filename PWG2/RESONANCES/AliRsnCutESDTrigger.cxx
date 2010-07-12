@@ -74,7 +74,7 @@ Bool_t AliRsnCutESDTrigger::IsSelected(ETarget tgt, AliRsnEvent* const event)
 
   // coherence check
   if (tgt != AliRsnCut::kEvent) {
-    AliError(Form("Wrong target. Skipping cut", GetName()));
+    AliError(Form("[%s] Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }
 

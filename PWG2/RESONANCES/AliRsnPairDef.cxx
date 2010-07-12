@@ -105,7 +105,7 @@ Bool_t AliRsnPairDef::SetPairElement(Int_t i, Char_t charge, AliPID::EParticleTy
     return kFALSE;
   }
   if (charge != '+' && charge != '-') {
-    AliError(Form("Character '%c' not recognized as charge sign"));
+    AliError(Form("Character '%c' not recognized as charge sign", charge));
     return kFALSE;
   }
   if (type < 0 && type > (Int_t)AliPID::kSPECIES) {

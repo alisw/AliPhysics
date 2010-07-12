@@ -243,10 +243,10 @@ Bool_t AliRsnCut::OkValue()
     fCutResult = (fCutValueU == fMinU);
     // print debug message
     AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-    AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
-    AliDebug(AliLog::kDebug + 3, Form("Checked value: %d", fCutValueU));
-    AliDebug(AliLog::kDebug + 3, Form("Cut value    : %d", fMinU));
-    AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+    AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s" , GetName()));
+    AliDebug(AliLog::kDebug + 3, Form("Checked value: %lu", fCutValueU));
+    AliDebug(AliLog::kDebug + 3, Form("Cut value    : %lu", fMinU));
+    AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s" , (fCutResult ? "PASSED" : "NOT PASSED")));
     AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
     break;
   case kDouble:
@@ -294,10 +294,10 @@ Bool_t AliRsnCut::OkRange()
     fCutResult = ((fCutValueU >= fMinU) && (fCutValueU <= fMaxU));
     // print debug message
     AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
-    AliDebug(AliLog::kDebug + 2, Form("Checked value: %d", fCutValueU));
-    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %d , %d", fMinU, fMaxU));
-    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s"       , GetName()));
+    AliDebug(AliLog::kDebug + 2, Form("Checked value: %lu"      , fCutValueU));
+    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %lu , %lu", fMinU, fMaxU));
+    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s"       , (fCutResult ? "PASSED" : "NOT PASSED")));
     AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
     break;
   case kDouble:
