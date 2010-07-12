@@ -31,7 +31,6 @@ public:
    * @param gainDA  Object to copy from
    */  
   AliFMDGainDA(const AliFMDGainDA & gainDA) ;
-  AliFMDGainDA& operator=(const AliFMDGainDA&) { return *this; }
   /** 
    * Assignment operator 
    * 
