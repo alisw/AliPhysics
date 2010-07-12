@@ -1585,10 +1585,10 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
   if(phil < 0) phil+=TMath::TwoPi();
   Double_t etal = pLeading.Eta();
   
-  TObjArray * refclusters    = particle->GetObjArray(Form("Clusters"   ,GetAODObjArrayName().Data()));
-  TObjArray * reftracks      = particle->GetObjArray(Form("Tracks"     ,GetAODObjArrayName().Data()));
-  TObjArray * refclustersbkg = particle->GetObjArray(Form("ClustersBkg",GetAODObjArrayName().Data()));
-  TObjArray * reftracksbkg   = particle->GetObjArray(Form("TracksBkg"  ,GetAODObjArrayName().Data()));
+  TObjArray * refclusters    = particle->GetObjArray(Form("Clusters%s"   ,GetAODObjArrayName().Data()));
+  TObjArray * reftracks      = particle->GetObjArray(Form("Tracks%s"     ,GetAODObjArrayName().Data()));
+  TObjArray * refclustersbkg = particle->GetObjArray(Form("ClustersBkg%s",GetAODObjArrayName().Data()));
+  TObjArray * reftracksbkg   = particle->GetObjArray(Form("TracksBkg%s"  ,GetAODObjArrayName().Data()));
   
   //Different pt cut for jet particles in different collisions systems
   Float_t ptcut = fJetPtThreshold;
