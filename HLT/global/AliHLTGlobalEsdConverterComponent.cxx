@@ -472,9 +472,15 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// HLT does not provide such standalone tracking
 	{
 	  AliHLTGlobalBarrelTrack outPar(*element);	  
-	  outPar.AliExternalTrackParam::PropagateTo( element->GetLastPointX(), fSolenoidBz );
+	  //outPar.AliExternalTrackParam::PropagateTo( element->GetLastPointX(), fSolenoidBz );
+	  const Int_t N=10; // number of steps.
+	  const Float_t xRange = element->GetLastPointX() - element->GetX();
+	  const Float_t xStep = xRange / N ;
+	  for(int i = 1; i <= N; ++i) {
+	    if(!outPar.AliExternalTrackParam::PropagateTo(element->GetX() + xStep * i, fSolenoidBz)) break;
+	  }
 	  outPar.SetLabel(element->GetLabel());
-	  //iotrack.UpdateTrackParams(&outPar,AliESDtrack::kTPCout);
+	  iotrack.UpdateTrackParams(&outPar,AliESDtrack::kTPCout);
 	}
 	// 2.2 TPC tracking estimates parameters at first cluster
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCin);
