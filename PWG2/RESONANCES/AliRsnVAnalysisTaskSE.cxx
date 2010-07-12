@@ -268,9 +268,9 @@ void AliRsnVAnalysisTaskSE::Terminate(Option_t* opt)
   }
 
   AliInfo(Form("=== %s ==================",GetName()));
-  AliInfo(Form("Number Of Events Processed : %10d",(Long64_t)hEventInfo->Integral()));
-  AliInfo(Form("Number Of Events Accepted  : %10d",(Long64_t)hEventInfo->GetBinContent(2)));
-  AliInfo(Form("Number Of Events Skipped   : %10d",(Long64_t)hEventInfo->GetBinContent(1)));
+  AliInfo(Form("Number Of Events Processed : %10l",(Long64_t)hEventInfo->Integral()));
+  AliInfo(Form("Number Of Events Accepted  : %10l",(Long64_t)hEventInfo->GetBinContent(2)));
+  AliInfo(Form("Number Of Events Skipped   : %10l",(Long64_t)hEventInfo->GetBinContent(1)));
   AliInfo(Form("=== end %s ==============",GetName()));
 
   AliDebug(AliLog::kDebug+2, "->");

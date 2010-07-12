@@ -118,7 +118,7 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
 
   // coherence check
   if (tgt != AliRsnCut::kParticle) {
-    AliError(Form("Wrong target. Skipping cut", GetName()));
+    AliError(Form("[%s] Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }
 

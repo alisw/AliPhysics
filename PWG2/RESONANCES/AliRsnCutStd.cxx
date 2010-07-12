@@ -70,7 +70,7 @@ AliRsnCutStd::AliRsnCutStd
     if (fVarType != kULong) {
       AliWarning(Form("[INT CONSTRUCTOR] Cut '%s' is based on ULONG. Casting values to ULONG", GetName()));
       SetRange((ULong_t)val1, (ULong_t)val2);
-      AliWarning(Form("[INT CONSTRUCTOR] Cut '%s' ULONG range = %d, %d", GetName(), fMinU, fMaxU));
+      AliWarning(Form("[INT CONSTRUCTOR] Cut '%s' ULONG range = %lu, %lu", GetName(), fMinU, fMaxU));
     }
     break;
     // double
@@ -189,7 +189,7 @@ AliRsnCutStd::AliRsnCutStd
     if (fVarType != kULong) {
       AliWarning(Form("[DOUBLE CONSTRUCTOR] Cut '%s' is based on ULONG. Casting values to ULONG", GetName()));
       SetRange((ULong_t)val1, (ULong_t)val2);
-      AliWarning(Form("[DOUBLE CONSTRUCTOR] Cut '%s' ULONG range = %d, %d", GetName(), fMinU, fMaxU));
+      AliWarning(Form("[DOUBLE CONSTRUCTOR] Cut '%s' ULONG range = %lu, %lu", GetName(), fMinU, fMaxU));
     }
     break;
     // double
@@ -219,7 +219,7 @@ Bool_t AliRsnCutStd::IsSelected(ETarget tgt, AliRsnDaughter * const track)
 
   // coherence check
   if (tgt != AliRsnCut::kParticle) {
-    AliError(Form("Wrong target. Skipping cut", GetName()));
+    AliError(Form("[%s] Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }
 
@@ -302,7 +302,7 @@ Bool_t AliRsnCutStd::IsSelected(ETarget tgt, AliRsnPairParticle * const pair)
 
   // coherence check
   if (tgt != AliRsnCut::kPair) {
-    AliError(Form("Wrong target. Skipping cut", GetName()));
+    AliError(Form("[%s] Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }
 
@@ -340,7 +340,7 @@ Bool_t AliRsnCutStd::IsSelected(ETarget tgt, AliRsnEvent * const event)
 
   // coherence check
   if (tgt != AliRsnCut::kEvent) {
-    AliError(Form("Wrong target. Skipping cut", GetName()));
+    AliError(Form("[%s] Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }
 
@@ -364,7 +364,7 @@ Bool_t AliRsnCutStd::IsSelected(ETarget tgt, AliRsnEvent * const ev1, AliRsnEven
 
   // coherence check
   if (tgt != AliRsnCut::kMixEvent) {
-    AliError(Form("Wrong target. Skipping cut", GetName()));
+    AliError(Form("[%s] Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }
 
