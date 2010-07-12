@@ -26,6 +26,22 @@
 // strips, and dead areas can be handled off-line. 
 // This information comes from DCS or the like.
 //
+// IMPORTANT:  The member function WriteToFile writes out the entries
+// in the format 
+//
+//     det,ring,id,min,max
+//
+// Here, id is a number from 0 to 1, which represents the division in
+// half-rings.  The mapping is as follows: 
+//
+//  Inner rings:              Outer Rings
+//    id   Sectors   Board     id   Sectors   Board 
+//   ----+---------+-------   ----+---------+-------
+//     0 |  0 -  9 |  0x10     0  |  0 - 19 |  0x11
+//     1 | 10 - 19 |  0x0      1  | 20 - 39 |  0x1
+//
+// The same mapping is used in the ReadFromFile member function
+//
 #include <iostream>
 #include "AliFMDCalibStripRange.h"	// ALIFMDCALIBGAIN_H
 #include "TString.h"
@@ -108,12 +124,14 @@ AliFMDCalibStripRange::WriteToFile(std::ostream &outFile, Bool_t* detectors)
     UShort_t FirstRing = (det == 1 ? 1 : 0);
     for (UShort_t ir = FirstRing; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'O' : 'I');
+      UInt_t   nSec = (ring == 'I' ? 10 : 20);
       for(UShort_t board =0; board < 2;  board++)  {
+	UShort_t sector = board*nSec;
 	outFile << det                     << ','
 		<< ring                    << ','
 		<< board                   << ','
-		<< Min(det,ring,board)     << ','
-		<< Max(det,ring,board)     << "\n";
+		<< Min(det,ring,sector)    << ','
+		<< Max(det,ring,sector)    << "\n";
 	  
 
       }

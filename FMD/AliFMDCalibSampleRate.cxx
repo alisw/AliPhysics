@@ -26,6 +26,22 @@
 // this value will be the same for all detectors.  This value must be
 // retrived from DCS or the like. 
 //
+// IMPORTANT:  The member function WriteToFile writes out the entries
+// in the format 
+//
+//     det,ring,id,rate
+//
+// Here, id is a number from 0 to 1, which represents the division in
+// half-rings.  The mapping is as follows: 
+//
+//  Inner rings:              Outer Rings
+//    id   Sectors   Board     id   Sectors   Board 
+//   ----+---------+-------   ----+---------+-------
+//     0 |  0 -  9 |  0x10     0  |  0 - 19 |  0x11
+//     1 | 10 - 19 |  0x0      1  | 20 - 39 |  0x1
+//
+// The same mapping is used in the ReadFromFile member function
+//
 #include "AliFMDCalibSampleRate.h"	// ALIFMDCALIBGAIN_H
 // #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
 // #include <AliLog.h>
@@ -73,6 +89,8 @@ AliFMDCalibSampleRate::Set(UShort_t det, Char_t ring,
   UInt_t nSec  = (ring == 'I' ? 10 : 20);
   UInt_t board = sector / nSec;
   fRates(det, ring, board, 0) = rate;
+  AliFMDDebug(15, ("Setting sample rate for FMD%d%c[%2d,0] (board %d): %d", 
+		   det, ring, sector, board, rate));
   
 }
 
@@ -101,13 +119,14 @@ AliFMDCalibSampleRate::WriteToFile(std::ostream &outFile, Bool_t* detectors)
     UShort_t FirstRing = (det == 1 ? 1 : 0);
     for (UShort_t ir = FirstRing; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'O' : 'I');
-      // UShort_t nsec = (ir == 0 ? 40  : 20);
+      UShort_t nsec = (ir == 0 ? 40  : 20) / 2;
       
       for(UShort_t board = 0; board < 2;  board++)  {
-	outFile << det                     << ','
-		<< ring                    << ','
-		<< board                   << ','
-		<< Rate(det,ring,board)    << "\n";
+	UShort_t sector = board*nsec;
+	outFile << det                       << ','
+		<< ring                      << ','
+		<< board                     << ','
+		<< Rate(det,ring,sector)     << "\n";
 	  
 
       }
@@ -151,7 +170,7 @@ AliFMDCalibSampleRate::ReadFromFile(std::istream &inFile)
 	       >> board        >> c[2]
 	       >> sampleRate;
     
-    UInt_t nSec  = (ring == 'I' ? 10 : 20);
+    UInt_t nSec  = (ring == 'I' ? 20 : 40)/2;
     UShort_t sector = board*nSec;
     Set(det,ring,sector,0,sampleRate);
     
