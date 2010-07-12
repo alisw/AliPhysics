@@ -24,7 +24,6 @@ class AliHLTTPCPad;
 class AliHLTTPCSpacePointData;
 class AliHLTTPCClusters;
 class AliTPCTransform;
-class AliTPCParam;
 
 /**
  * @class AliHLTTPCClusterFinder
@@ -287,8 +286,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   vector<MCWeight> fClusterMCVector;                               //! transient
 
   AliTPCTransform * fOfflineTransform;                             //! transient
-
-  AliTPCParam   *fOfflineTPCParam;                                 //! transient
 
   AliTPCRecoParam fOfflineTPCRecoParam;                            //! transient
 
