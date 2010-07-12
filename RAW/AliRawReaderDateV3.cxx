@@ -306,7 +306,7 @@ Bool_t AliRawReaderDateV3::ReadHeader()
       // check that there are enough bytes left for the data header
       if (fPosition + sizeof(AliRawDataHeader) > fEnd) {
 	Error("ReadHeader", "could not read data header data!");
-	Warning("ReadHeader", "skipping %d bytes\n"
+	Warning("ReadHeader", "skipping %ld bytes\n"
 		" run: %d  event: %d\n", 
 		fEnd - fPosition, fSubEvent->runNb, fSubEvent->nbInRun);
 	fCount = 0;
@@ -320,7 +320,7 @@ Bool_t AliRawReaderDateV3::ReadHeader()
       if ((fPosition + fHeader->fSize) != fEnd) {
 	if (fHeader->fSize != 0xFFFFFFFF)
 	  Warning("ReadHeader",
-		  "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		  "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
 		  fHeader->fSize, fEnd - fPosition);
 	fHeader->fSize = fEnd - fPosition;
       }
@@ -333,7 +333,7 @@ Bool_t AliRawReaderDateV3::ReadHeader()
       // check consistency of data size in the header and in the sub event
       if (fPosition + fCount > fEnd) {
 	Error("ReadHeader", "size in data header exceeds event size!");
-	Warning("ReadHeader", "skipping %d bytes\n"
+	Warning("ReadHeader", "skipping %ld bytes\n"
 		" run: %d  event: %d\n", 
 		fEnd - fPosition, fSubEvent->runNb, fSubEvent->nbInRun);
 	fCount = 0;
@@ -491,7 +491,7 @@ Int_t AliRawReaderDateV3::CheckData() const
       if ((position + header->fSize) != end) {
 	if (header->fSize != 0xFFFFFFFF)
 	  Warning("ReadHeader",
-		  "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		  "raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
 		  header->fSize, end - position);
 	header->fSize = end - position;
 	result |= kErrSize;

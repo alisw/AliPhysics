@@ -428,7 +428,7 @@ Bool_t AliRawReaderRoot::ReadHeader()
       // check that there are enough bytes left for the data header
       if (fPosition + sizeof(AliRawDataHeader) > fEnd) {
 	Error("ReadHeader", "could not read data header!");
-	Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
+	Warning("ReadHeader", "skipping %ld bytes", fEnd - fPosition);
 	fEquipment->GetEquipmentHeader()->Dump();
 	fCount = 0;
 	fPosition = fEnd;
@@ -445,7 +445,7 @@ Bool_t AliRawReaderRoot::ReadHeader()
       if ((fPosition + fHeader->fSize) != fEnd) {
 	if (fHeader->fSize != 0xFFFFFFFF)
 	  Warning("ReadHeader",
-		  "Equipment %d : raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		  "Equipment %d : raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
 		  fEquipment->GetEquipmentHeader()->GetId(),fHeader->fSize, fEnd - fPosition);
 	fHeader->fSize = fEnd - fPosition;
       }
@@ -458,7 +458,7 @@ Bool_t AliRawReaderRoot::ReadHeader()
       // check consistency of data size in the header and in the sub event
       if (fPosition + fCount > fEnd) {  
 	Error("ReadHeader", "size in data header exceeds event size!");
-	Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
+	Warning("ReadHeader", "skipping %ld bytes", fEnd - fPosition);
 	fEquipment->GetEquipmentHeader()->Dump();
 	fCount = 0;
 	fPosition = fEnd;
@@ -649,7 +649,7 @@ Int_t AliRawReaderRoot::CheckData() const
       if ((position + header->fSize) != end) {
 	if (header->fSize != 0xFFFFFFFF)
 	  Warning("ReadHeader",
-		  "Equipment %d : raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		  "Equipment %d : raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
 		  equipment->GetEquipmentHeader()->GetId(),header->fSize, end - position);
 	header->fSize = end - position;
 	result |= kErrSize;

@@ -179,7 +179,7 @@ Int_t AliCaloAltroMapping::GetHWAddress(Int_t row, Int_t col, Int_t caloFlag)
     return -1;
   }
   if (col < fMinCol || col > fMaxCol) {
-    AliWarning(Form("Index of column (%d) outside the range (0 -> %d) !",col,fMinCol,fMaxCol));
+    AliWarning(Form("Index of column (%d) outside the range (%d -> %d) !",col,fMinCol,fMaxCol));
     return -1;
   }
   if (caloFlag < 0 || caloFlag > 3) {

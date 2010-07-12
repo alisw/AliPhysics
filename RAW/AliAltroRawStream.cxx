@@ -683,7 +683,7 @@ Double_t AliAltroRawStream::GetL1Phase() const
 
   Double_t tSample = GetTSample();
   if (phase >= tSample) {
-    AliWarning(Form("Invalid L1 trigger phase (%f >= %d) !",
+    AliWarning(Form("Invalid L1 trigger phase (%f >= %f) !",
 		    phase,tSample));
     phase = 0.;
   }
