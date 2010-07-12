@@ -267,7 +267,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     }
   }
   
-  Int_t returnvalue=0;
+  Int_t returnvalue=1;
   
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
