@@ -1241,7 +1241,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 
   }
   else {
-    AliDebug(AliLog::kError, Form("Found analysis type %s", GetAnalysisMode()));
+    AliDebug(AliLog::kError, Form("Found analysis type %d", GetAnalysisMode()));
     return; 
   }
 
