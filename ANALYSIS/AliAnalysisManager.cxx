@@ -1800,8 +1800,8 @@ Bool_t AliAnalysisManager::GetFileFromWrapper(const char *filename, const TList 
       Error("GetFileFromWrapper", "TProofOutputFile object not found in output list for file %s", filename);
       return kFALSE;
    }
-   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", fullPath, pof));
-   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", chUrl));
+   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", (ULong_t)fullPath, (ULong_t)pof));
+   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", (ULong_t)chUrl));
    TString clientUrl(chUrl);
    TString fullPath_str(fullPath);
    if (clientUrl.Contains("localhost")){
