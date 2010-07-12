@@ -561,8 +561,6 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   inclusiveJets = clustSeq.inclusive_jets();
   sortedJets    = sorted_by_pt(inclusiveJets);
  
-  if(fDebug)Printf("%s:%d Found %d jets",(char*)__FILE__,__LINE__, inclusiveJets.size());
-
   fh1NJetsRec->Fill(sortedJets.size());
 
  // loop over all jets an fill information, first on is the leading jet
