@@ -81,7 +81,7 @@ private:
   //
   // THnSparse track histograms
   //
-  THnSparseF *fRecMCTrackHist; //-> nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isNotKink:isPrim:polarity
+  THnSparseF *fRecMCTrackHist; //-> nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:kinkIdx:isPrim:polarity
 
   AlidNdPtCutAnalysis(const AlidNdPtCutAnalysis&); // not implemented
   AlidNdPtCutAnalysis& operator=(const AlidNdPtCutAnalysis&); // not implemented
