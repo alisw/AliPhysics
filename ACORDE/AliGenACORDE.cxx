@@ -69,7 +69,8 @@ AliGenACORDE::AliGenACORDE()
     fMomentumDist(0),
     fUnfoldedMomentumDist(0),
     fZenithDist(0),
-    fPDist(0)
+    fPDist(0),
+    fNParticles(0)
 {
   //
   // Default ctor.
