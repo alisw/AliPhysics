@@ -148,12 +148,12 @@ void AlidNdPtCutAnalysis::Init(){
   // THnSparse track histograms
   //
 
-  //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim:polarity
-  Int_t binsRecMCTrackHist[11]={160,80,80,100,100,30,90,ptNbins, 2, 2, 2};
-  Double_t minRecMCTrackHist[11]={0., 0., 0., -5.,-5.,-1.5, 0., ptMin, 0., 0., 0.};
-  Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 5.,5.,1.5, 2.*TMath::Pi(), ptMax, 2.,2., 2.};
+  //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:kinkIdx:isPrim:polarity
+  Int_t binsRecMCTrackHist[11]={160,80,80,100,100,30,90,ptNbins, 3, 2, 2};
+  Double_t minRecMCTrackHist[11]={0., 0., 0., -5.,-5.,-1.5, 0., ptMin, -1., 0., 0.};
+  Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 5.,5.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2.};
 
-  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:isKink:isPrim:polarity",11,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
+  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:kinkIdx:isPrim:polarity",11,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
   fRecMCTrackHist->SetBinEdges(7,binsPt);
 
   fRecMCTrackHist->GetAxis(0)->SetTitle("nClust");
@@ -164,7 +164,7 @@ void AlidNdPtCutAnalysis::Init(){
   fRecMCTrackHist->GetAxis(5)->SetTitle("#eta");
   fRecMCTrackHist->GetAxis(6)->SetTitle("#phi (rad)");
   fRecMCTrackHist->GetAxis(7)->SetTitle("p_{T} (GeV/c)");
-  fRecMCTrackHist->GetAxis(8)->SetTitle("isKink");
+  fRecMCTrackHist->GetAxis(8)->SetTitle("kinkIdx"); // 0 - no kink, -1 - kink mother, 1 - kink daugther 
   fRecMCTrackHist->GetAxis(9)->SetTitle("isPrim");
   fRecMCTrackHist->GetAxis(10)->SetTitle("polarity");
   fRecMCTrackHist->Sumw2();
@@ -348,6 +348,8 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
       AliESDtrack *track = (AliESDtrack*)allChargedTracks->At(i);
       if(!track) continue;
 
+      if(!esdTrackCuts->AcceptTrack(track)) continue;
+
       //
       Bool_t isOK = kFALSE;
       Double_t x[3]; track->GetXYZ(x);
@@ -427,14 +429,21 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   Float_t b[2], bCov[3];
   esdTrack->GetImpactParameters(b,bCov);
 
-  // kink daughter
-  Bool_t isKink = kFALSE;
-  if(esdTrack->GetKinkIndex(0)>0) isKink=kTRUE;
+  // kink idx
+  Int_t kinkIdx = 0;
+  //if(esdTrack->GetKinkIndex(0) > 0.)   isKink  = kTRUE;
+  if(esdTrack->GetKinkIndex(0) > 0)      kinkIdx = 1;   // kink daughter
+  else if(esdTrack->GetKinkIndex(0) < 0) kinkIdx = -1;  // kink mother
+  else kinkIdx = 0; // not kink
+
+  //printf("esdTrack->GetKinkIndex(0) %d \n", esdTrack->GetKinkIndex(0));
+  //printf("esdTrack->GetKinkIndex(1) %d \n", esdTrack->GetKinkIndex(1));
+  //printf("esdTrack->GetKinkIndex(2) %d \n", esdTrack->GetKinkIndex(2));
+  //printf("kinkIdx %d \n", kinkIdx);
 
   //
   // Fill rec vs MC information
   //
-
   Bool_t isPrim = kTRUE;
 
   if(IsUseMCInfo()) {
@@ -444,13 +453,15 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
     if(!particle) return;
     if(particle->GetPDG() && particle->GetPDG()->Charge()==0.) return;
     isPrim = stack->IsPhysicalPrimary(label);
-  }
 
+    //if(isPrim && pt > 1.5 && kinkIdx == -1) printf("nClust  %d \n", nClust);
+  }
+  
   // fill histo
   Int_t polarity = -2;
   if (esdTrack->Charge() < 0.) polarity = 0; 
   else polarity = 1; 
-  Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,isKink,isPrim, polarity }; 
+  Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,kinkIdx,isPrim, polarity }; 
   fRecMCTrackHist->Fill(vRecMCTrackHist);
 }
 
