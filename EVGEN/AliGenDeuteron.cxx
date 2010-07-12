@@ -1,3 +1,37 @@
+/**************************************************************************
+ * Copyright(c) 2009-2010, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//
+// A very simple model based on the article "Physics Letters B325 (1994) 7-12".
+// The only addition is to model the freeze-out at which the
+// light nuclei can form for the energies of the LHC, since PYTHIA does not give
+// any detailed spatial description of the generated particles at the level of a
+// few fermis.
+//
+// There are two options to place the nucleons: a thermal picture where all
+// nucleons are placed randomly and homogeneously in an spherical volume of a
+// few fermis, and expansion one where they are projected on its surface.
+//
+// A (anti)deuteron will form if there is a pair of (anti)proton-(anti)neutron
+// with momentum difference less than ~ 300MeV and relative distance less than a
+// ~ 2.1fm. Only 3/4 of this clusters are accepted due to the deuteron spin.
+//
+// Author: Eulogio Serradilla <eulogio.serradilla@ciemat.es>,
+//         Arturo Menchaca <menchaca@fisica.unam.mx>
+//
+
 #include "Riostream.h"
 #include "TParticle.h"
 #include "AliStack.h"
@@ -7,26 +41,11 @@
 #include "TMCProcess.h"
 #include "TList.h"
 #include "TVector3.h"
-#include "TRandom3.h"
 #include "AliMC.h"
-/*
-A very simple model based on the article "Physics Letters B325 (1994) 7-12". 
-The only addition is to model the freeze-out at which the
-light nuclei can form for the energies of the LHC, since PYTHIA does not give
-any detailed spatial description of the generated particles at the level of a
-few fermis.
-
-There are two options to place the nucleons: a thermal picture where all
-nucleons are placed randomly and homogeneously in an spherical volume of a
-few fermis, and expansion one where they are projected on its surface.
-
-A (anti)deuteron will form if there is a pair of (anti)proton-(anti)neutron
-with momentum difference less than ~ 300MeV and relative distance less than a
-~ 2.1fm. Only 3/4 of this clusters are accepted due to the deuteron spin.
-*/
+#include "TArrayF.h"
+#include "AliGenCocktailEventHeader.h"
 
 ClassImp(AliGenDeuteron)
-
 
 AliGenDeuteron::AliGenDeuteron(Int_t sign, Double_t pmax, Double_t rmax, Double_t rsrc, Int_t model):
 fDeuteronMass(1.87561282), //pdg
@@ -61,9 +80,6 @@ void AliGenDeuteron::Generate()
 	Info("Generate","spin probability : %g ",fSpinProb);
 	Info("Generate","sign             : %d ",fSign);
 	
-	TRandom3 rnd(0);
-	TRandom3 rnd2(0);
-	
 	Int_t ntr;
 	
 	// Get the cocktail generator
@@ -88,12 +104,10 @@ void AliGenDeuteron::Generate()
 		TList* neutrons = new TList();
 		neutrons->SetOwner(kFALSE);
 		
-		// FIXME: primary vertex
-		//TVector3 r0(AliGenerator::fVertex[0],AliGenerator::fVertex[1],AliGenerator::fVertex[2]);
-		
-		// workaround for primary vertex
-		TParticle* prim = stack->Particle(0);
-		TVector3 r0(prim->Vx(),prim->Vy(),prim->Vz()); // primary vertex
+		// primary vertex of current event
+		TArrayF primVtx;
+		gener->GetActiveEventHeader()->PrimaryVertex(primVtx);
+		TVector3 r0(primVtx[0],primVtx[1],primVtx[2]);
 		
 		for (Int_t i=0; i<stack->GetNtrack(); ++i)
 		{
@@ -107,12 +121,12 @@ void AliGenDeuteron::Generate()
 			Int_t pdgCode = iParticle->GetPdgCode();
 			if(pdgCode == fSign*2212)// (anti)proton
 			{
-				FixProductionVertex(iParticle,rnd2);
+				FixProductionVertex(iParticle);
 				protons->Add(iParticle);
 			}
 			else if(pdgCode == fSign*2112) // (anti)neutron
 			{
-				FixProductionVertex(iParticle,rnd2);
+				FixProductionVertex(iParticle);
 				neutrons->Add(iParticle);
 			}
 		}
@@ -149,7 +163,7 @@ void AliGenDeuteron::Generate()
 			
 			if(jNeutron == 0) continue; // with next proton
 			
-			if(rnd.Rndm() > fSpinProb) continue;
+			if(Rndm() > fSpinProb) continue;
 			
 			// neutron captured!
 			
@@ -186,16 +200,16 @@ void AliGenDeuteron::Generate()
 }
 
 // create the freeze-out nucleon distribution around the collision vertex
-void AliGenDeuteron::FixProductionVertex(TParticle* i, TRandom3& rnd)
+void AliGenDeuteron::FixProductionVertex(TParticle* i)
 {
 	Double_t x,y,z;
 	
 	if(fModel == kThermal) // homogeneous volume
 	{
 		// random (r,theta,phi)
-		Double_t r = fRsrc*TMath::Power(rnd.Rndm(),1./3.);
-		Double_t theta = TMath::ACos(2.*rnd.Rndm()-1.);
-		Double_t phi = 2.*TMath::Pi()*rnd.Rndm();
+		Double_t r = fRsrc*TMath::Power(Rndm(),1./3.);
+		Double_t theta = TMath::ACos(2.*Rndm()-1.);
+		Double_t phi = 2.*TMath::Pi()*Rndm();
 	
 		// transform coordenates
 		x = r*TMath::Sin(theta)*TMath::Cos(phi);
@@ -209,6 +223,6 @@ void AliGenDeuteron::FixProductionVertex(TParticle* i, TRandom3& rnd)
 		z = fRsrc*TMath::Cos(i->Theta());
 	}
 	
-	// assume nucleons in the freeze-out have the same production vertex
+	// assume nucleons at the freeze-out have the same production vertex
 	i->SetProductionVertex(i->Vx()+x, i->Vy()+y, i->Vz()+z, i->T());
 }

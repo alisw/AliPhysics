@@ -49,6 +49,7 @@ class AliGenCocktailAfterBurner : public  AliGenCocktail
     Int_t         GetActiveEventNumber() const {return fActiveEvent;}
     virtual Int_t GetNumberOfEvents() const {return AliRunLoader::Instance()->GetNumberOfEventsPerRun() + fNBgEvents;}
     void          SetNBgEvents(Int_t nbg=0){fNBgEvents = nbg;}
+    AliGenCocktailEventHeader* GetActiveEventHeader() const { return fHeaders[fActiveEvent]; }
 
     static TMCProcess IntToMCProcess(Int_t no);
 

@@ -1,8 +1,12 @@
 #ifndef _ALIGENDEUTERON_H_
 #define _ALIGENDEUTERON_H_
 
+/* Copyright(c) 2009-2010, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // Afterburner to simulate coalescence of nucleons
-//
+// Author: Eulogio Serradilla <eulogio.serradilla@ciemat.es>
+//         Arturo Menchaca <menchaca@fisica.unam.mx>
 
 #include "AliGenerator.h"
 
@@ -39,7 +43,7 @@ class AliGenDeuteron: public AliGenerator
 	AliGenDeuteron(const AliGenDeuteron &other);
 	AliGenDeuteron& operator=(const AliGenDeuteron &other);
 	
-	void FixProductionVertex(class TParticle* i, class TRandom3& rnd);
+	void FixProductionVertex(class TParticle* i);
 	
  private:
 	
