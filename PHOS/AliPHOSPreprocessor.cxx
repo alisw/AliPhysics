@@ -183,9 +183,14 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
   AliCDBMetaData emcMetaData;
 
   //Data valid from current run until updated (validityInfinite=kTRUE)
-  Bool_t result = Store("Calib","EmcGainPedestals",&calibData,&emcMetaData,0,kTRUE);
-  return result;
+  //Bool_t result = Store("Calib","EmcGainPedestals",&calibData,&emcMetaData,0,kTRUE);
 
+  //Store reference data
+  Bool_t refOK = StoreReferenceLED(list);
+  if(refOK) Log(Form("LED reference data successfully stored."));
+  
+  //return result;
+  return kTRUE;
 }
 
 Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
@@ -417,10 +422,10 @@ Bool_t AliPHOSPreprocessor::CalibrateEmc()
     //Store EMC calibration data
     AliCDBMetaData emcMetaData;
     
-    if(lastCalib)
-      result[i] *= Store(path.Data(), "EmcGainPedestals", lastCalib, &emcMetaData, 0, kFALSE);
-    else
-      result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, 0, kFALSE);
+    // if(lastCalib)
+    //   result[i] *= Store(path.Data(), "EmcGainPedestals", lastCalib, &emcMetaData, 0, kFALSE);
+    // else
+    //   result[i] *= Store(path.Data(), "EmcGainPedestals", &calibData, &emcMetaData, 0, kFALSE);
 
     //Store reference data
     Bool_t refOK = StoreReferenceEmc(system[i],list);
@@ -447,6 +452,20 @@ Bool_t AliPHOSPreprocessor::StoreReferenceEmc(Int_t system, TList* list)
   Bool_t resultRef = StoreReferenceFile(fileName.Data(),"CalibRefPHOS.root");
   return resultRef;
 
+}
+
+Bool_t AliPHOSPreprocessor::StoreReferenceLED(TList* list)
+{
+  //Put HG/LG histograms to the reference storage.
+  
+  TObjString *source = dynamic_cast<TObjString *> (list->First());
+  if(!source) return kFALSE;
+  
+  TString fileName = GetFile(kDAQ, "LED", source->GetName());
+  
+  Bool_t resultRef = StoreReferenceFile(fileName.Data(),"LEDRefPHOS.root");
+  return resultRef;
+  
 }
 
 
