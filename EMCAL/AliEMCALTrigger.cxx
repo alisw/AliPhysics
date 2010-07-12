@@ -820,7 +820,7 @@ void AliEMCALTrigger::FillTRU(const TClonesArray * digits, TClonesArray * ampmat
     // Get eta and phi cell position in supermodule
     Bool_t bCell = fGeom->GetCellIndex(id, iSupMod, nModule, nIphi, nIeta) ;
     if(!bCell)
-      AliError(Form("FillTRU","%i Wrong cell id number %i ", idig, id)) ;
+      AliError(Form("%i Wrong cell id number %i ", idig, id)) ;
     
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
     // iphim, ietam - module indexes in SM
@@ -1024,7 +1024,7 @@ void AliEMCALTrigger::FillJetMatrixFromSMs(TClonesArray *ampmatrixsmod, TMatrixD
       }
     }
   } // cycle on SM
-  if(ampSum <= 0.0) AliDebug(1,Form("FillJetMatrixFromSMs","ampSum %f (<=0.0) ", ampSum));
+  if(ampSum <= 0.0) AliDebug(1,Form("ampSum %f (<=0.0) ", ampSum));
 }
 
 //____________________________________________________________________________

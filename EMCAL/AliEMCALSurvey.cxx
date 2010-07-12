@@ -335,11 +335,11 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     Double_t activeX = ((xval[0] + (xval[2] - xval[0])/2.)        //x00 and x10
 			+(xval[1] + (xval[3] - xval[1])/2.) ) /2.; //x01 and x11
     
-    Double_t activeY = ((yval[0] + (yval[2] - yval[0])/2.)
-			+(yval[1] + (yval[3] - yval[1])/2.) ) /2.;
-    
-    Double_t activeZ = ((zval[0] + (zval[2] - zval[0])/2.)
-			+(zval[1] + (zval[3] - zval[1])/2.) ) /2.;
+//    Double_t activeY = ((yval[0] + (yval[2] - yval[0])/2.)
+//			+(yval[1] + (yval[3] - yval[1])/2.) ) /2.;
+//    
+//    Double_t activeZ = ((zval[0] + (zval[2] - zval[0])/2.)
+//			+(zval[1] + (zval[3] - zval[1])/2.) ) /2.;
     
     //printf("Bottom Center of active area of SM %s: %.2f, %.2f, %.2f\n",substr,activeX,activeY,activeZ);
     

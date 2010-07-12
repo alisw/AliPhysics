@@ -413,7 +413,7 @@ void AliEMCALClusterizerv1::Init()
   else 
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
 
-  AliDebug(1,Form("geom 0x%x",fGeom));
+  AliDebug(1,Form("geom %p",fGeom));
 
   if(!gMinuit) 
     gMinuit = new TMinuit(100) ;
@@ -536,7 +536,7 @@ void AliEMCALClusterizerv1::MakeClusters()
     else    
       ehs += e;
   } 
-  AliDebug(1,Form("MakeClusters: Number of digits %d  -> (e %f), ehs %d\n",
+  AliDebug(1,Form("MakeClusters: Number of digits %d  -> (e %f), ehs %f\n",
 		  fDigitsArr->GetEntries(),fMinECut,ehs));
 
   nextdigitC.Reset();

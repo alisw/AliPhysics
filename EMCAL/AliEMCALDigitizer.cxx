@@ -863,7 +863,7 @@ void AliEMCALDigitizer::InitParameters()
 
   fNADCEC          = simParam->GetNADCEC();//(Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
 
-  AliDebug(2,Form("Mean Photon Electron %d, Noise %f, E Threshold %f,Time Resolution %g,NADCEC %d",
+  AliDebug(2,Form("Mean Photon Electron %d, Noise %f, Digit Threshold %d,Time Resolution %g,NADCEC %d",
 		fMeanPhotonElectron,fPinNoise,fDigitThreshold,fTimeResolution,fNADCEC));
 
   // Not used anymore, remove?

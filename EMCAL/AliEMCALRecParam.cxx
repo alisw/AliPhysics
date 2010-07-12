@@ -557,7 +557,8 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%2.1f ns\n fTimeMin=%2.1f ns\n fTimeMax=%2.1f ns\n",
 		 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9));
     
-    AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %\n", fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
+    AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %f\n", 
+				 fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
   }
   
   if(!strcmp("",opt) || !strcmp("pid",opt)){

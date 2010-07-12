@@ -468,11 +468,11 @@ void AliEMCALCalibTimeDep::GetCalibSignalInfo()
   }
 
   if (fCalibSignal) { 
-    AliInfo( Form("CalibSignal: NEvents %d NAcceptedEvents %d Entries %d AvgEntries LEDRefEntries %d LEDRefAvgEntries %d",
+    AliInfo( Form("CalibSignal: NEvents %d NAcceptedEvents %d Entries %lld AvgEntries LEDRefEntries %lld LEDRefEntries %lld, LEDRefAvgEntries %lld",
 		  fCalibSignal->GetNEvents(), fCalibSignal->GetNAcceptedEvents(),
 		  fCalibSignal->GetTreeAmpVsTime()->GetEntries(),
 		  fCalibSignal->GetTreeAvgAmpVsTime()->GetEntries(),
-                  fCalibSignal->GetTreeLEDAmpVsTime()->GetEntries(),
+		  fCalibSignal->GetTreeLEDAmpVsTime()->GetEntries(),
 		  fCalibSignal->GetTreeLEDAvgAmpVsTime()->GetEntries() ) );		  
   }
   else {

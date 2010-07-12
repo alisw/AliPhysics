@@ -530,7 +530,7 @@ void AliEMCALv0::Trd1Tower3X3(const double *parSCM0)
 
     PbInTrap(parTRAP, scmx);
   }
-  AliDebug(2,Form("Trd1Tower3X3()", "Ver. 1.0 : was tested."));
+  AliDebug(2,"Trd1Tower3X3 - Ver. 1.0 : was tested.");
 }
 
 // 8-dec-04 by PAI
