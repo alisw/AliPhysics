@@ -335,7 +335,6 @@ void AlidNdPtAnalysis::Init(){
   const Int_t etaNbins = 30;
   const Int_t zvNbins = 12;
 
-
   Double_t binsMult[multNbins+1] = {-0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,
                                      9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,
 				     19.5,20.5, 21.5, 22.5, 23.5, 24.5, 29.5, 149.5};
@@ -1147,7 +1146,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        multMBTracks = vtxESD->GetNContributors();
   }
   else {
-    AliDebug(AliLog::kError, Form("Found analysis type %s", GetAnalysisMode()));
+    AliDebug(AliLog::kError, Form("Found analysis type %d", GetAnalysisMode()));
     return; 
   }
 
@@ -1322,6 +1321,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	     track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
 
              if(accCuts->AcceptTrack(track)) {
+
                FillHistograms(track,stack,AlidNdPtHelper::kRecTracks); 
 	       labelsRec[multRec] = TMath::Abs(track->GetLabel());
 	       multRec++;
@@ -1330,6 +1330,9 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
           else {
              if(accCuts->AcceptTrack(track)) 
 	     {
+	       //
+               //if(track->GetKinkIndex(0) < 0) continue;
+
                FillHistograms(track,stack,AlidNdPtHelper::kRecTracks); 
 	       labelsRec[multRec] = TMath::Abs(track->GetLabel());
 	       multRec++;
@@ -1375,7 +1378,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
    if(IsUseMCInfo())  
    {
-    
      /*
      //
      // multiplicity correlation matrix
@@ -1608,8 +1610,12 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	     {
                fRecTrackMatrix->Fill(vTrackMatrix);
 
-               if( AlidNdPtHelper::IsPrimaryParticle(stack, iMc, GetParticleMode()) ) 
+               if( AlidNdPtHelper::IsPrimaryParticle(stack, iMc, GetParticleMode()) ) {
 	         fRecPrimTrackMatrix->Fill(vTrackMatrix);
+	         //AliESDtrack *track = esdEvent->GetTrack(iRec);
+                 //if(track && track->GetKinkIndex(0) < 0) 
+		 //  printf("prim kink \n");
+	       }
 
                if(!prim) fRecSecTrackMatrix->Fill(vTrackMatrix);
 
