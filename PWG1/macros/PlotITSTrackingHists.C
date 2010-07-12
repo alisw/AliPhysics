@@ -6,9 +6,15 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
 
   //gStyle->SetOptStat(0);
 
-  TFile *f= new TFile(fname.Data());
+  if(fname.Contains("alien")) TGrid::Connect("alien://");
+
+  TFile *f= TFile::Open(fname.Data());
 
   TList *list=(TList*)f->Get("cOutputITS");
+  if(!list) {
+    TDirectoryFile *dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
+    list = (TList*)dir->Get("cOutputITS");
+  }
   TH1F *fHistNclsITSSA = (TH1F*)list->FindObject("fHistNclsITSSA");
   TH1F *fHistClusterMapITSSA = (TH1F*)list->FindObject("fHistClusterMapITSSA");
   TH1F *fHistClusterMapITSSAok = (TH1F*)list->FindObject("fHistClusterMapITSSAok");
@@ -44,6 +50,8 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   TH1F *fHistPhiITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistPhiITSMIokbadoutinz6InAcc");
 
   TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
+  TH1F *fHistPtTPCInAccSfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
+  TH1F *fHistPtTPCInAccPfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccPfromStrange");
   TH1F *fHistPtTPCInAccMCtwoSPD = (TH1F*)list->FindObject("fHistPtTPCInAccMCtwoSPD");
   TH1F *fHistPtTPCInAccMConeSPD = (TH1F*)list->FindObject("fHistPtTPCInAccMConeSPD");
   TH1F *fHistPtITSMI6InAcc = (TH1F*)list->FindObject("fHistPtITSMI6InAcc");
@@ -53,6 +61,7 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
   TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
   TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPtITSMIoneSPDthreeSDDSSDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDthreeSDDSSDInAcc");
   TH1F *fHistPtITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz6InAcc");
   TH1F *fHistPtITSMIokbadoutinz5InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz5InAcc");
   TH1F *fHistPtITSMIokbadoutinz4InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz4InAcc");
@@ -88,11 +97,10 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   TH1F *fHistPtITSTPCselSfromStrange = (TH1F*)list->FindObject("fHistPtITSTPCselSfromStrange");
   TH1F *fHistPtITSTPCselSfromMat = (TH1F*)list->FindObject("fHistPtITSTPCselSfromMat");
 
-  TH1F *fHistPtTPCInAccPfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
-  TH1F *fHistPtTPCInAccSfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
   TH1F *fHistPtTPCInAccSfromMat = (TH1F*)list->FindObject("fHistPtTPCInAccSfromMat");
 
-
+  //ReweightStrange(fHistPtTPCInAcc,fHistPtTPCInAccPfromStrange,fHistPtTPCInAccSfromStrange);
+  //ReweightStrange(fHistPtITSTPCsel,fHistPtITSTPCselPfromStrange,fHistPtITSTPCselSfromStrange);
 
   //---------------------------------------------------------------
   TH1F *fHistPtITSMIge2InAcc = (TH1F*)fHistPtITSMI6InAcc->Clone("fHistPtITSMIge2InAcc");
@@ -295,43 +303,49 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   c5->Divide(2,1);
   c5_1->SetGridy();
   c5_2->SetGridy();
+  c5_1->SetLogx();
+  c5_2->SetLogx();
   c5->cd(1);
   fHistPtITSMIge2InAcc->SetMaximum(1.5);
   fHistPtITSMIge2InAcc->SetMinimum(0);
   fHistPtITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points");
   fHistPtITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
-  fHistPtITSMIge2InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMIge2InAcc->Divide(fHistPtITSMIge2InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMIge2InAcc->Draw();
   l3->AddEntry(fHistPtITSMIge2InAcc,">=2 cls","l");
-  fHistPtITSMI6InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMI6InAcc->Divide(fHistPtITSMI6InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMI6InAcc->SetLineColor(2);
   l3->AddEntry(fHistPtITSMI6InAcc,"6 cls","l");
   fHistPtITSMI6InAcc->Draw("same");
-  fHistPtITSMI5InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMI5InAcc->Divide(fHistPtITSMI5InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMI5InAcc->SetLineColor(3);
   l3->AddEntry(fHistPtITSMI5InAcc,"5 cls","l");
   fHistPtITSMI5InAcc->Draw("same");
-  fHistPtITSMI4InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMI4InAcc->Divide(fHistPtITSMI4InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMI4InAcc->SetLineColor(4);
   l3->AddEntry(fHistPtITSMI4InAcc,"4 cls","l");
   fHistPtITSMI4InAcc->Draw("same");
-  fHistPtITSMI3InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMI3InAcc->Divide(fHistPtITSMI3InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMI3InAcc->SetLineColor(6);
   l3->AddEntry(fHistPtITSMI3InAcc,"3 cls","l");
   fHistPtITSMI3InAcc->Draw("same");
-  fHistPtITSMI2InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMI2InAcc->Divide(fHistPtITSMI2InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMI2InAcc->SetLineColor(7);
   l3->AddEntry(fHistPtITSMI2InAcc,"2 cls","l");
   fHistPtITSMI2InAcc->Draw("same");
-  fHistPtITSMISPDInAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMISPDInAcc->Divide(fHistPtITSMISPDInAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMISPDInAcc->SetLineColor(9);
   l3->AddEntry(fHistPtITSMISPDInAcc,"2SPD + any","l");
   fHistPtITSMISPDInAcc->Draw("same");
-  fHistPtITSMIoneSPDInAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMIoneSPDInAcc->Divide(fHistPtITSMIoneSPDInAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMIoneSPDInAcc->SetLineColor(15);
   l3->AddEntry(fHistPtITSMIoneSPDInAcc,">=1SPD + any","l");
   fHistPtITSMIoneSPDInAcc->Draw("same");
-  fHistPtITSTPCsel->Divide(fHistPtTPCInAcc);
+  //fHistPtITSMIoneSPDthreeSDDSSDInAcc->Divide(fHistPtITSMIoneSPDthreeSDDSSDInAcc,fHistPtTPCInAcc,1,1,"B");
+  //fHistPtITSMIoneSPDthreeSDDSSDInAcc->SetLineColor(kOrange);
+  //l3->AddEntry(fHistPtITSMIoneSPDthreeSDDSSDInAcc,">=1SPD + >=3SDDSSD","l");
+  //fHistPtITSMIoneSPDthreeSDDSSDInAcc->Draw("same");
+  fHistPtITSTPCsel->Divide(fHistPtITSTPCsel,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSTPCsel->SetLineColor(kAzure+1);
   l3->AddEntry(fHistPtITSTPCsel,">=1SPD + any + d_{0} cut","l");
   fHistPtITSTPCsel->Draw("same");
@@ -345,16 +359,16 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   fHistPtITSMIokbadoutinzge4InAcc->SetMinimum(0);
   fHistPtITSMIokbadoutinzge4InAcc->SetTitle("Fraction of prolonged tracks with N ITS layers \"ok\"");
   fHistPtITSMIokbadoutinzge4InAcc->SetYTitle("ITS+TPC / TPC");
-  fHistPtITSMIokbadoutinzge4InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMIokbadoutinzge4InAcc->Divide(fHistPtITSMIokbadoutinzge4InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMIokbadoutinzge4InAcc->SetLineColor(1);
   fHistPtITSMIokbadoutinzge4InAcc->Draw();
-  fHistPtITSMIokbadoutinz6InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMIokbadoutinz6InAcc->Divide(fHistPtITSMIokbadoutinz6InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMIokbadoutinz6InAcc->SetLineColor(2);
   fHistPtITSMIokbadoutinz6InAcc->Draw("same");
-  fHistPtITSMIokbadoutinz5InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMIokbadoutinz5InAcc->Divide(fHistPtITSMIokbadoutinz5InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMIokbadoutinz5InAcc->SetLineColor(3);
   fHistPtITSMIokbadoutinz5InAcc->Draw("same");
-  fHistPtITSMIokbadoutinz4InAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMIokbadoutinz4InAcc->Divide(fHistPtITSMIokbadoutinz4InAcc,fHistPtTPCInAcc,1,1,"B");
   fHistPtITSMIokbadoutinz4InAcc->SetLineColor(4);
   fHistPtITSMIokbadoutinz4InAcc->Draw("same");
   fHistPtITSMIokbadoutinzge4InAcc->Draw("same");
@@ -373,11 +387,11 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   fHistPtITSMISPDInAccMC->SetMinimum(0);
   fHistPtITSMISPDInAccMC->SetTitle("Fraction of prolonged tracks with N ITS points");
   fHistPtITSMISPDInAccMC->SetYTitle("ITS+TPC / TPC");
-  fHistPtITSMISPDInAccMC->Divide(fHistPtTPCInAccMCtwoSPD);
+  fHistPtITSMISPDInAccMC->Divide(fHistPtITSMISPDInAccMC,fHistPtTPCInAccMCtwoSPD,1,1,"B");
   fHistPtITSMISPDInAccMC->SetLineColor(9);
   l4d->AddEntry(fHistPtITSMISPDInAccMC,"2SPD + any","l");
   fHistPtITSMISPDInAccMC->Draw();
-  fHistPtITSMIoneSPDInAccMC->Divide(fHistPtTPCInAccMConeSPD);
+  fHistPtITSMIoneSPDInAccMC->Divide(fHistPtITSMIoneSPDInAccMC,fHistPtTPCInAccMConeSPD,1,1,"B");
   fHistPtITSMIoneSPDInAccMC->SetLineColor(15);
   l4d->AddEntry(fHistPtITSMIoneSPDInAccMC,">=1SPD + any","l");
   fHistPtITSMIoneSPDInAccMC->Draw("same");
@@ -392,7 +406,9 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   fHistPtITSMI2InAcc->Write();
   fHistPtITSMISPDInAcc->Write();
   fHistPtITSMIoneSPDInAcc->Write();
+  //fHistPtITSMIoneSPDthreeSDDSSDInAcc->Write();
   fHistPtITSTPCsel->Write();
+  fHistNclsITSMI->Write();
   fHistClusterMapModuleITSMIokRatioInAcc->Write();
   fHistClusterMapModuleITSMIbadRatioInAcc->Write();
   fHistClusterMapModuleITSMInoclsRatioInAcc->Write();
@@ -412,6 +428,8 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
 
   TCanvas *c5a =new TCanvas("c5a","c5a",10,10,1200,600);
   c5a->Divide(2,1);
+  c5a_1->SetLogx();
+  c5a_2->SetLogx();
   c5a_1->SetGridy();
   c5a_2->SetGridy();
   c5a->cd(1);
@@ -420,29 +438,29 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   fHistPtITSMIge2InAccP->SetTitle("Fraction of prolonged tracks with N ITS points");
   fHistPtITSMIge2InAccP->SetYTitle("ITS+TPC / TPC");
   fHistPtITSMIge2InAccP->Draw();
-  fHistPtITSMIge2InAccP->Divide(fHistPtTPCInAccP);
-  fHistPtITSMI6InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMIge2InAccP->Divide(fHistPtITSMIge2InAccP,fHistPtTPCInAccP,1,1,"B");
+  fHistPtITSMI6InAccP->Divide(fHistPtITSMI6InAccP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSMI6InAccP->SetLineColor(2);
   fHistPtITSMI6InAccP->Draw("same");
-  fHistPtITSMI5InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI5InAccP->Divide(fHistPtITSMI5InAccP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSMI5InAccP->SetLineColor(3);
   fHistPtITSMI5InAccP->Draw("same");
-  fHistPtITSMI4InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI4InAccP->Divide(fHistPtITSMI4InAccP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSMI4InAccP->SetLineColor(4);
   fHistPtITSMI4InAccP->Draw("same");
-  fHistPtITSMI3InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI3InAccP->Divide(fHistPtITSMI3InAccP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSMI3InAccP->SetLineColor(6);
   fHistPtITSMI3InAccP->Draw("same");
-  fHistPtITSMI2InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI2InAccP->Divide(fHistPtITSMI2InAccP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSMI2InAccP->SetLineColor(7);
   fHistPtITSMI2InAccP->Draw("same");
-  fHistPtITSMISPDInAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMISPDInAccP->Divide(fHistPtITSMISPDInAccP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSMISPDInAccP->SetLineColor(9);
   fHistPtITSMISPDInAccP->Draw("same");
-  fHistPtITSMIoneSPDInAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMIoneSPDInAccP->Divide(fHistPtITSMIoneSPDInAccP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSMIoneSPDInAccP->SetLineColor(15);
   fHistPtITSMIoneSPDInAccP->Draw("same");
-  fHistPtITSTPCselP->Divide(fHistPtTPCInAccP);
+  fHistPtITSTPCselP->Divide(fHistPtITSTPCselP,fHistPtTPCInAccP,1,1,"B");
   fHistPtITSTPCselP->SetLineColor(kAzure+1);
   fHistPtITSTPCselP->Draw("same");
   fHistPtITSMIge2InAccP->Draw("same");
@@ -452,30 +470,30 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   fHistPtITSMIge2InAccS->SetMinimum(0);
   fHistPtITSMIge2InAccS->SetTitle("Fraction of prolonged tracks with N ITS points");
   fHistPtITSMIge2InAccS->SetYTitle("ITS+TPC / TPC");
-  fHistPtITSMIge2InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMIge2InAccS->Divide(fHistPtITSMIge2InAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMIge2InAccS->Draw();
-  fHistPtITSMI6InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI6InAccS->Divide(fHistPtITSMI6InAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMI6InAccS->SetLineColor(2);
   fHistPtITSMI6InAccS->Draw("same");
-  fHistPtITSMI5InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI5InAccS->Divide(fHistPtITSMI5InAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMI5InAccS->SetLineColor(3);
   fHistPtITSMI5InAccS->Draw("same");
-  fHistPtITSMI4InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI4InAccS->Divide(fHistPtITSMI4InAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMI4InAccS->SetLineColor(4);
   fHistPtITSMI4InAccS->Draw("same");
-  fHistPtITSMI3InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI3InAccS->Divide(fHistPtITSMI3InAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMI3InAccS->SetLineColor(6);
   fHistPtITSMI3InAccS->Draw("same");
-  fHistPtITSMI2InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI2InAccS->Divide(fHistPtITSMI2InAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMI2InAccS->SetLineColor(7);
   fHistPtITSMI2InAccS->Draw("same");
-  fHistPtITSMISPDInAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMISPDInAccS->Divide(fHistPtITSMISPDInAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMISPDInAccS->SetLineColor(9);
   fHistPtITSMISPDInAccS->Draw("same");
-  fHistPtITSMIoneSPDInAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMIoneSPDInAccS->Divide(fHistPtITSMIoneSPDInAccS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSMIoneSPDInAccS->SetLineColor(15);
   fHistPtITSMIoneSPDInAccS->Draw("same");
-  fHistPtITSTPCselS->Divide(fHistPtTPCInAccS);
+  fHistPtITSTPCselS->Divide(fHistPtITSTPCselS,fHistPtTPCInAccS,1,1,"B");
   fHistPtITSTPCselS->SetLineColor(kAzure+1);
   fHistPtITSTPCselS->Draw("same");
   fHistPtITSMIge2InAccS->Draw("same");
@@ -586,7 +604,7 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
 //-----------------------------------------------------------------------------
 void PlotEffRatio() {
 
-  TFile *f= new TFile("eff_lhc10a8_100k_trkvtx.root");
+  TFile *f= new TFile("eff_117220_117223_pass1.root");
 
   TH1F *fHistPtITSMI6InAcc = (TH1F*)f->Get("fHistPtITSMI6InAcc");
   TH1F *fHistPtITSMI5InAcc = (TH1F*)f->Get("fHistPtITSMI5InAcc");
@@ -596,10 +614,13 @@ void PlotEffRatio() {
   TH1F *fHistPtITSMIge2InAcc = (TH1F*)f->Get("fHistPtITSMIge2InAcc");
   TH1F *fHistPtITSMISPDInAcc = (TH1F*)f->Get("fHistPtITSMISPDInAcc");
   TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)f->Get("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPtITSMIoneSPDthreeSDDSSDInAcc = (TH1F*)f->Get("fHistPtITSMIoneSPDthreeSDDSSDInAcc");
   TH1F *fHistPtITSTPCsel = (TH1F*)f->Get("fHistPtITSTPCsel");
   TH1F *fHistClusterMapModuleITSMIokRatioInAcc = (TH1F*)f->Get("fHistClusterMapModuleITSMIokRatioInAcc");
+  TH1F *fHistNclsITSMI = (TH1F*)f->Get("fHistNclsITSMI");
 
-  TFile *fMC= new TFile("eff_lhc10a8_100k_spdvtx.root");
+
+  TFile *fMC= new TFile("eff_lhc10c4.root");
 
   TH1F *fHistPtITSMI6InAccMC = (TH1F*)fMC->Get("fHistPtITSMI6InAcc");
   TH1F *fHistPtITSMI5InAccMC = (TH1F*)fMC->Get("fHistPtITSMI5InAcc");
@@ -609,11 +630,29 @@ void PlotEffRatio() {
   TH1F *fHistPtITSMIge2InAccMC = (TH1F*)fMC->Get("fHistPtITSMIge2InAcc");
   TH1F *fHistPtITSMISPDInAccMC = (TH1F*)fMC->Get("fHistPtITSMISPDInAcc");
   TH1F *fHistPtITSMIoneSPDInAccMC = (TH1F*)fMC->Get("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPtITSMIoneSPDthreeSDDSSDInAccMC = (TH1F*)fMC->Get("fHistPtITSMIoneSPDthreeSDDSSDInAcc");
   TH1F *fHistPtITSTPCselMC = (TH1F*)fMC->Get("fHistPtITSTPCsel");
   TH1F *fHistClusterMapModuleITSMIokRatioInAccMC = (TH1F*)fMC->Get("fHistClusterMapModuleITSMIokRatioInAcc");
+  TH1F *fHistNclsITSMIMC = (TH1F*)fMC->Get("fHistNclsITSMIMC");
 
+  /*
+  TCanvas *c0 = new TCanvas("c0","c0",0,0,600,500);
+  c0->SetGridy();
+  fHistNclsITSMI->SetLineColor(4);
+  fHistNclsITSMI->SetMarkerColor(4);
+  fHistNclsITSMI->SetLineStyle(1);
+  fHistNclsITSMI->SetMarkerStyle(20);
+  fHistNclsITSMI->Draw();
+  fHistNclsITSMIMC->SetLineColor(4);
+  fHistNclsITSMIMC->SetMarkerColor(4);
+  fHistNclsITSMIMC->SetLineStyle(2);
+  fHistNclsITSMIMC->SetMarkerStyle(24);
+  fHistNclsITSMIMC->Draw("same");
+  */
   TCanvas *c = new TCanvas("c","c",0,0,600,500);
   c->SetGridy();
+  c->SetLogx();
+  
   fHistPtITSMI6InAcc->Divide(fHistPtITSMI6InAccMC);
   fHistPtITSMI6InAcc->Draw();
   fHistPtITSMI5InAcc->Divide(fHistPtITSMI5InAccMC);
@@ -630,8 +669,12 @@ void PlotEffRatio() {
   fHistPtITSMISPDInAcc->Draw("same");
   fHistPtITSMIoneSPDInAcc->Divide(fHistPtITSMIoneSPDInAccMC);
   fHistPtITSMIoneSPDInAcc->Draw("same");
+  //fHistPtITSMIoneSPDthreeSDDSSDInAcc->Divide(fHistPtITSMIoneSPDthreeSDDSSDInAccMC);
+  //fHistPtITSMIoneSPDthreeSDDSSDInAcc->Draw("same");
+  
   fHistPtITSTPCsel->Divide(fHistPtITSTPCselMC);
   fHistPtITSTPCsel->Draw("same");
+  
   TLegend *l3=new TLegend(0.5,0.5,0.9,0.9);
   l3->AddEntry(fHistPtITSMIge2InAcc,">=2 cls","l");
   l3->AddEntry(fHistPtITSMI6InAcc,"6 cls","l");
@@ -641,9 +684,10 @@ void PlotEffRatio() {
   l3->AddEntry(fHistPtITSMI2InAcc,"2 cls","l");
   l3->AddEntry(fHistPtITSMISPDInAcc,"2SPD + any","l");
   l3->AddEntry(fHistPtITSMIoneSPDInAcc,">=1SPD + any","l");
+  //l3->AddEntry(fHistPtITSMIoneSPDthreeSDDSSDInAcc,">=1SPD + >=3SDDSSD","l");
   l3->AddEntry(fHistPtITSTPCsel,">=1SPD + any + d_{0} cut","l");
   l3->Draw();
-
+  
   TCanvas *cc = new TCanvas("cc","cc",0,0,600,500);
   cc->Divide(1,2);
   cc->cd(1);
@@ -666,20 +710,155 @@ void PlotEffRatio() {
   return;
 }
 
+//-----------------------------------------------------------------------------
+void PlotEffOfficial(Bool_t drawRatio=kTRUE) {
+
+  gStyle->SetOptStat(0);
+
+  gROOT->LoadMacro("/Users/dainesea/ALICEWorkInProgress.C");
+
+  TFile *f= new TFile("eff_115328_115393_minipass.root");
+
+  TH1F *fHistPtITSMI6InAcc = (TH1F*)f->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMI5InAcc = (TH1F*)f->Get("fHistPtITSMI5InAcc");
+  TH1F *fHistPtITSMI4InAcc = (TH1F*)f->Get("fHistPtITSMI4InAcc");
+  TH1F *fHistPtITSMI3InAcc = (TH1F*)f->Get("fHistPtITSMI3InAcc");
+  TH1F *fHistPtITSMI2InAcc = (TH1F*)f->Get("fHistPtITSMI2InAcc");
+  TH1F *fHistPtITSMIge2InAcc = (TH1F*)f->Get("fHistPtITSMIge2InAcc");
+  fHistPtITSMIge2InAcc->SetLineColor(1);
+  fHistPtITSMIge2InAcc->SetLineStyle(1);
+  fHistPtITSMIge2InAcc->SetMarkerColor(1);
+  fHistPtITSMIge2InAcc->SetMarkerStyle(21);
+  TH1F *fHistPtITSMISPDInAcc = (TH1F*)f->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)f->Get("fHistPtITSMIoneSPDInAcc");
+  fHistPtITSMIoneSPDInAcc->SetLineColor(2);
+  fHistPtITSMIoneSPDInAcc->SetLineStyle(1);
+  fHistPtITSMIoneSPDInAcc->SetMarkerColor(2);
+  fHistPtITSMIoneSPDInAcc->SetMarkerStyle(20);
+  TH1F *fHistPtITSTPCsel = (TH1F*)f->Get("fHistPtITSTPCsel");
+  TH1F *fHistClusterMapModuleITSMIokRatioInAcc = (TH1F*)f->Get("fHistClusterMapModuleITSMIokRatioInAcc");
+  TH1F *fHistNclsITSMI = (TH1F*)f->Get("fHistNclsITSMI");
+
+
+  TFile *fMC= new TFile("eff_lhc10b2.root");
+
+  TH1F *fHistPtITSMI6InAccMC = (TH1F*)fMC->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMI5InAccMC = (TH1F*)fMC->Get("fHistPtITSMI5InAcc");
+  TH1F *fHistPtITSMI4InAccMC = (TH1F*)fMC->Get("fHistPtITSMI4InAcc");
+  TH1F *fHistPtITSMI3InAccMC = (TH1F*)fMC->Get("fHistPtITSMI3InAcc");
+  TH1F *fHistPtITSMI2InAccMC = (TH1F*)fMC->Get("fHistPtITSMI2InAcc");
+  TH1F *fHistPtITSMIge2InAccMC = (TH1F*)fMC->Get("fHistPtITSMIge2InAcc");
+  fHistPtITSMIge2InAccMC->SetLineColor(1);
+  fHistPtITSMIge2InAccMC->SetLineStyle(2);
+  fHistPtITSMIge2InAccMC->SetMarkerColor(1);
+  fHistPtITSMIge2InAccMC->SetMarkerStyle(25);
+  TH1F *fHistPtITSMISPDInAccMC = (TH1F*)fMC->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAccMC = (TH1F*)fMC->Get("fHistPtITSMIoneSPDInAcc");
+  fHistPtITSMIoneSPDInAccMC->SetLineColor(2);
+  fHistPtITSMIoneSPDInAccMC->SetLineStyle(2);
+  fHistPtITSMIoneSPDInAccMC->SetMarkerColor(2);
+  fHistPtITSMIoneSPDInAccMC->SetMarkerStyle(24);
+  TH1F *fHistPtITSTPCselMC = (TH1F*)fMC->Get("fHistPtITSTPCsel");
+  TH1F *fHistClusterMapModuleITSMIokRatioInAccMC = (TH1F*)fMC->Get("fHistClusterMapModuleITSMIokRatioInAcc");
+  TH1F *fHistNclsITSMIMC = (TH1F*)fMC->Get("fHistNclsITSMI");
+
+
+  TCanvas *c0 = new TCanvas("c0","c0",0,0,600,500);
+  c0->SetGridy();
+  fHistNclsITSMI->SetLineColor(4);
+  fHistNclsITSMI->SetMarkerColor(4);
+  fHistNclsITSMI->SetLineStyle(1);
+  fHistNclsITSMI->SetMarkerStyle(20);
+  fHistNclsITSMI->Scale(1./fHistNclsITSMI->Integral());
+  fHistNclsITSMI->Draw();
+  fHistNclsITSMIMC->SetLineColor(4);
+  fHistNclsITSMIMC->SetMarkerColor(4);
+  fHistNclsITSMIMC->SetLineStyle(2);
+  fHistNclsITSMIMC->SetMarkerStyle(24);
+  fHistNclsITSMIMC->Scale(1./fHistNclsITSMIMC->Integral());
+  fHistNclsITSMIMC->Draw("same");
+
+  TLegend *l0=new TLegend(0.5,0.5,0.9,0.9);
+  l0->SetFillStyle(0);
+  l0->SetBorderSize(0);
+  l0->AddEntry(fHistNclsITSMI,"Data","lp");
+  l0->AddEntry(fHistNclsITSMIMC,"MC","lp");
+  l0->Draw();
+ 
+  ALICEWorkInProgress(c0,"20/05/2010");
+
+  TCanvas *c = new TCanvas("c","c",0,0,600,500);
+  c->SetGridy();
+  c->SetLogx();
+
+  TLegend *l3=new TLegend(0.5,0.5,0.9,0.9);
+  l3->SetFillStyle(0);
+  l3->SetBorderSize(0);
+  
+  if(drawRatio) {
+    //fHistPtITSMI6InAcc->Divide(fHistPtITSMI6InAccMC);
+    //fHistPtITSMI6InAcc->Draw();
+    //fHistPtITSMI5InAcc->Divide(fHistPtITSMI5InAccMC);
+    //fHistPtITSMI5InAcc->Draw("same");
+    //fHistPtITSMI4InAcc->Divide(fHistPtITSMI4InAccMC);
+    //fHistPtITSMI4InAcc->Draw("same");
+    //fHistPtITSMI3InAcc->Divide(fHistPtITSMI3InAccMC);
+    //fHistPtITSMI3InAcc->Draw("same");
+    //fHistPtITSMI2InAcc->Divide(fHistPtITSMI2InAccMC);
+    //fHistPtITSMI2InAcc->Draw("same");
+    fHistPtITSMIge2InAcc->SetYTitle("Data efficiency / MC efficiency");
+    fHistPtITSMIge2InAcc->Divide(fHistPtITSMIge2InAccMC);
+    fHistPtITSMIge2InAcc->Draw();
+    //fHistPtITSMISPDInAcc->Divide(fHistPtITSMISPDInAccMC);
+    //fHistPtITSMISPDInAcc->Draw("same");
+    fHistPtITSMIoneSPDInAcc->Divide(fHistPtITSMIoneSPDInAccMC);
+    fHistPtITSMIoneSPDInAcc->Draw("same");
+    
+    //fHistPtITSTPCsel->Divide(fHistPtITSTPCselMC);
+    //fHistPtITSTPCsel->Draw("same");
+    l3->AddEntry(fHistPtITSMIge2InAcc,"at least 2 ITS hits","lp");
+    //l3->AddEntry(fHistPtITSMI6InAcc,"6 cls","l");
+    //l3->AddEntry(fHistPtITSMI5InAcc,"5 cls","l");
+    //l3->AddEntry(fHistPtITSMI4InAcc,"4 cls","l");
+    //l3->AddEntry(fHistPtITSMI3InAcc,"3 cls","l");
+    //l3->AddEntry(fHistPtITSMI2InAcc,"2 cls","l");
+    //l3->AddEntry(fHistPtITSMISPDInAcc,"2 SPD hits","lp");
+    l3->AddEntry(fHistPtITSMIoneSPDInAcc,"at least 1 SPD hit","lp");
+    //l3->AddEntry(fHistPtITSTPCsel,">=1SPD + any + d_{0} cut","l");
+
+  } else {
+    fHistPtITSMIge2InAcc->SetYTitle("ITS prolongation efficiency");
+    fHistPtITSMIge2InAcc->Draw();
+    fHistPtITSMIge2InAccMC->Draw("same");
+    fHistPtITSMIoneSPDInAcc->Draw("same");
+    fHistPtITSMIoneSPDInAccMC->Draw("same");
+    l3->AddEntry(fHistPtITSMIge2InAcc,"at least 2 ITS hits (Data)","lp");
+    l3->AddEntry(fHistPtITSMIoneSPDInAcc,"at least 1 SPD hit (Data)","lp");
+    l3->AddEntry(fHistPtITSMIge2InAccMC,"at least 2 ITS hits (MC)","lp");
+    l3->AddEntry(fHistPtITSMIoneSPDInAccMC,"at least 1 SPD hit (MC)","lp");
+  } 
+
+  l3->Draw();
+  
+  ALICEWorkInProgress(c,"20/05/2010");
+
+  return;
+}
+
 void PlotImpPar_rphi(Int_t rebin=1) {
 
 
-  TFile *fMC= new TFile("ITS.Performance.root");
+  TFile *fMC= new TFile("ITS.Performance_lhc10b2.root");
 
   TList *list=(TList*)fMC->Get("cOutputITS");
   TH1F *fHistd0rphiITSMIoneSPDInAccP150200MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP150200");
   TH1F *fHistd0rphiITSMIoneSPDInAccS150200MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200");
   TH1F *fHistd0rphiITSMIoneSPDInAccS150200fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200fromStrange");
   TH1F *fHistd0rphiITSMIoneSPDInAccS150200fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200fromMat");
-  /*  TH1F *fHistd0rphiITSMIoneSPDInAccP350450MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP350450");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP350450MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP350450");
   TH1F *fHistd0rphiITSMIoneSPDInAccS350450MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450");
   TH1F *fHistd0rphiITSMIoneSPDInAccS350450fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450fromStrange");
-  TH1F *fHistd0rphiITSMIoneSPDInAccS350450fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450fromMat");*/
+  TH1F *fHistd0rphiITSMIoneSPDInAccS350450fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450fromMat");
   TH1F *fHistd0rphiITSMIoneSPDInAccP500700MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP500700");
   TH1F *fHistd0rphiITSMIoneSPDInAccS500700MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700");
   TH1F *fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700fromStrange");
@@ -693,68 +872,68 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   TH1F *fHistd0rphiITSMIoneSPDInAccS10001500MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS10001500");
   TH1F *fHistd0rphiITSMIoneSPDInAccS10001500fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS10001500fromStrange");
   TH1F *fHistd0rphiITSMIoneSPDInAccS10001500fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS10001500fromMat");
-  /*  TH1F *fHistd0rphiITSMIoneSPDInAccP25004000MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP25004000");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP25004000MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP25004000");
   TH1F *fHistd0rphiITSMIoneSPDInAccS25004000MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS25004000");
   TH1F *fHistd0rphiITSMIoneSPDInAccS25004000fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS25004000fromStrange");
   TH1F *fHistd0rphiITSMIoneSPDInAccS25004000fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS25004000fromMat");
   TH1F *fHistd0rphiITSMIoneSPDInAccP40008000MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP40008000");
   TH1F *fHistd0rphiITSMIoneSPDInAccS40008000MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000");
   TH1F *fHistd0rphiITSMIoneSPDInAccS40008000fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000fromStrange");
-  TH1F *fHistd0rphiITSMIoneSPDInAccS40008000fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000fromMat"); */
+  TH1F *fHistd0rphiITSMIoneSPDInAccS40008000fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000fromMat"); 
 
   TH1F *fHistd0rphiITSMIoneSPDInAcc150200MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP150200MC->Clone("fHistd0rphiITSMIoneSPDInAcc150200MC");
   fHistd0rphiITSMIoneSPDInAcc150200MC->Add(fHistd0rphiITSMIoneSPDInAccS150200MC);
   fHistd0rphiITSMIoneSPDInAcc150200MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc150200MC->GetEntries());
-  /*  TH1F *fHistd0rphiITSMIoneSPDInAcc350450MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP350450MC->Clone("fHistd0rphiITSMIoneSPDInAcc350450MC");
-      fHistd0rphiITSMIoneSPDInAcc350450MC->Add(fHistd0rphiITSMIoneSPDInAccS350450MC); 
-      fHistd0rphiITSMIoneSPDInAcc350450MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc350450MC->GetEntries());*/
+  TH1F *fHistd0rphiITSMIoneSPDInAcc350450MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP350450MC->Clone("fHistd0rphiITSMIoneSPDInAcc350450MC");
+  fHistd0rphiITSMIoneSPDInAcc350450MC->Add(fHistd0rphiITSMIoneSPDInAccS350450MC); 
+  fHistd0rphiITSMIoneSPDInAcc350450MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc350450MC->GetEntries());
   TH1F *fHistd0rphiITSMIoneSPDInAcc500700MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP500700MC->Clone("fHistd0rphiITSMIoneSPDInAcc500700MC");
   fHistd0rphiITSMIoneSPDInAcc500700MC->Add(fHistd0rphiITSMIoneSPDInAccS500700MC);
   fHistd0rphiITSMIoneSPDInAcc500700MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc500700MC->GetEntries());
   TH1F *fHistd0rphiITSMIoneSPDInAcc10001500MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP10001500MC->Clone("fHistd0rphiITSMIoneSPDInAcc10001500MC");
   fHistd0rphiITSMIoneSPDInAcc10001500MC->Add(fHistd0rphiITSMIoneSPDInAccS10001500MC);
   fHistd0rphiITSMIoneSPDInAcc10001500MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc10001500MC->GetEntries());
-  /*  TH1F *fHistd0rphiITSMIoneSPDInAcc25004000MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP25004000MC->Clone("fHistd0rphiITSMIoneSPDInAcc25004000MC");
+  TH1F *fHistd0rphiITSMIoneSPDInAcc25004000MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP25004000MC->Clone("fHistd0rphiITSMIoneSPDInAcc25004000MC");
   fHistd0rphiITSMIoneSPDInAcc25004000MC->Add(fHistd0rphiITSMIoneSPDInAccS25004000MC);
   fHistd0rphiITSMIoneSPDInAcc25004000MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc25004000MC->GetEntries());
   TH1F *fHistd0rphiITSMIoneSPDInAcc40008000MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP40008000MC->Clone("fHistd0rphiITSMIoneSPDInAcc40008000MC");
   fHistd0rphiITSMIoneSPDInAcc40008000MC->Add(fHistd0rphiITSMIoneSPDInAccS40008000MC);
   fHistd0rphiITSMIoneSPDInAcc40008000MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc40008000MC->GetEntries());
-  */
+  
 
-  TFile *f= new TFile("ITS.Performance_104065_104892_pass4_trkvtx_noTPCdca.root");
+  TFile *f= new TFile("ITS.Performance_117048_117223_pass1.root");
 
   TList *list=(TList*)f->Get("cOutputITS");
   TH1F *fHistd0rphiITSMIoneSPDInAccP150200 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP150200");
   TH1F *fHistd0rphiITSMIoneSPDInAccS150200 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200");
-  /*TH1F *fHistd0rphiITSMIoneSPDInAccP350450 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP350450");
-    TH1F *fHistd0rphiITSMIoneSPDInAccS350450 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450");*/
+  TH1F *fHistd0rphiITSMIoneSPDInAccP350450 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP350450");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS350450 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450");
   TH1F *fHistd0rphiITSMIoneSPDInAccP500700 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP500700");
   TH1F *fHistd0rphiITSMIoneSPDInAccS500700 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700");
   TH1F *fHistd0rphiITSMIoneSPDInAccP10001500 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP10001500");
   TH1F *fHistd0rphiITSMIoneSPDInAccS10001500 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS10001500");
-  /*TH1F *fHistd0rphiITSMIoneSPDInAccP25004000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP25004000");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP25004000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP25004000");
   TH1F *fHistd0rphiITSMIoneSPDInAccS25004000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS25004000");
   TH1F *fHistd0rphiITSMIoneSPDInAccP40008000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP40008000");
-  TH1F *fHistd0rphiITSMIoneSPDInAccS40008000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000");*/
+  TH1F *fHistd0rphiITSMIoneSPDInAccS40008000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000");
   TH1F *fHistd0rphiITSMIoneSPDInAcc150200=(TH1F*)fHistd0rphiITSMIoneSPDInAccP150200->Clone("fHistd0rphiITSMIoneSPDInAcc150200");
   fHistd0rphiITSMIoneSPDInAcc150200->Add(fHistd0rphiITSMIoneSPDInAccS150200);
   fHistd0rphiITSMIoneSPDInAcc150200->Scale(1./fHistd0rphiITSMIoneSPDInAcc150200->GetEntries());
-  /*TH1F *fHistd0rphiITSMIoneSPDInAcc350450=(TH1F*)fHistd0rphiITSMIoneSPDInAccP350450->Clone("fHistd0rphiITSMIoneSPDInAcc350450");
+  TH1F *fHistd0rphiITSMIoneSPDInAcc350450=(TH1F*)fHistd0rphiITSMIoneSPDInAccP350450->Clone("fHistd0rphiITSMIoneSPDInAcc350450");
   fHistd0rphiITSMIoneSPDInAcc350450->Add(fHistd0rphiITSMIoneSPDInAccS350450);
-  fHistd0rphiITSMIoneSPDInAcc350450->Scale(1./fHistd0rphiITSMIoneSPDInAcc350450->GetEntries());*/
+  fHistd0rphiITSMIoneSPDInAcc350450->Scale(1./fHistd0rphiITSMIoneSPDInAcc350450->GetEntries());
   TH1F *fHistd0rphiITSMIoneSPDInAcc500700=(TH1F*)fHistd0rphiITSMIoneSPDInAccP500700->Clone("fHistd0rphiITSMIoneSPDInAcc500700");
   fHistd0rphiITSMIoneSPDInAcc500700->Add(fHistd0rphiITSMIoneSPDInAccS500700);
   fHistd0rphiITSMIoneSPDInAcc500700->Scale(1./fHistd0rphiITSMIoneSPDInAcc500700->GetEntries());
   TH1F *fHistd0rphiITSMIoneSPDInAcc10001500=(TH1F*)fHistd0rphiITSMIoneSPDInAccP10001500->Clone("fHistd0rphiITSMIoneSPDInAcc10001500");
   fHistd0rphiITSMIoneSPDInAcc10001500->Add(fHistd0rphiITSMIoneSPDInAccS10001500);
   fHistd0rphiITSMIoneSPDInAcc10001500->Scale(1./fHistd0rphiITSMIoneSPDInAcc10001500->GetEntries());
-  /*TH1F *fHistd0rphiITSMIoneSPDInAcc25004000=(TH1F*)fHistd0rphiITSMIoneSPDInAccP25004000->Clone("fHistd0rphiITSMIoneSPDInAcc25004000");
+  TH1F *fHistd0rphiITSMIoneSPDInAcc25004000=(TH1F*)fHistd0rphiITSMIoneSPDInAccP25004000->Clone("fHistd0rphiITSMIoneSPDInAcc25004000");
   fHistd0rphiITSMIoneSPDInAcc25004000->Add(fHistd0rphiITSMIoneSPDInAccS25004000);
   fHistd0rphiITSMIoneSPDInAcc25004000->Scale(1./fHistd0rphiITSMIoneSPDInAcc25004000->GetEntries());
   TH1F *fHistd0rphiITSMIoneSPDInAcc40008000=(TH1F*)fHistd0rphiITSMIoneSPDInAccP40008000->Clone("fHistd0rphiITSMIoneSPDInAcc40008000");
   fHistd0rphiITSMIoneSPDInAcc40008000->Add(fHistd0rphiITSMIoneSPDInAccS40008000);
-  fHistd0rphiITSMIoneSPDInAcc40008000->Scale(1./fHistd0rphiITSMIoneSPDInAcc40008000->GetEntries()); */
+  fHistd0rphiITSMIoneSPDInAcc40008000->Scale(1./fHistd0rphiITSMIoneSPDInAcc40008000->GetEntries()); 
 
 
   TCanvas *c1 = new TCanvas("c1","c1");
@@ -766,13 +945,13 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   fHistd0rphiITSMIoneSPDInAcc150200MC->Draw();
   fHistd0rphiITSMIoneSPDInAcc150200->SetLineColor(4);
   fHistd0rphiITSMIoneSPDInAcc150200->Draw("same");
-  /*  c1->cd(2);
+  c1->cd(2);
   fHistd0rphiITSMIoneSPDInAcc350450MC->Rebin(rebin);
   fHistd0rphiITSMIoneSPDInAcc350450->Rebin(rebin);
   fHistd0rphiITSMIoneSPDInAcc350450MC->SetLineColor(2);
   fHistd0rphiITSMIoneSPDInAcc350450MC->Draw();
   fHistd0rphiITSMIoneSPDInAcc350450->SetLineColor(4);
-  fHistd0rphiITSMIoneSPDInAcc350450->Draw("same"); */
+  fHistd0rphiITSMIoneSPDInAcc350450->Draw("same"); 
   c1->cd(3);
   fHistd0rphiITSMIoneSPDInAcc500700MC->Rebin(rebin);
   fHistd0rphiITSMIoneSPDInAcc500700->Rebin(rebin);
@@ -787,7 +966,7 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   fHistd0rphiITSMIoneSPDInAcc10001500MC->Draw();
   fHistd0rphiITSMIoneSPDInAcc10001500->SetLineColor(4);
   fHistd0rphiITSMIoneSPDInAcc10001500->Draw("same");
-  /*  c1->cd(5);
+   c1->cd(5);
   fHistd0rphiITSMIoneSPDInAcc25004000MC->Rebin(rebin);
   fHistd0rphiITSMIoneSPDInAcc25004000->Rebin(rebin);
   fHistd0rphiITSMIoneSPDInAcc25004000MC->SetLineColor(2);
@@ -801,8 +980,8 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   fHistd0rphiITSMIoneSPDInAcc40008000MC->Draw();
   fHistd0rphiITSMIoneSPDInAcc40008000->SetLineColor(4);
   fHistd0rphiITSMIoneSPDInAcc40008000->Draw("same");
-  */
-
+  
+  
   TCanvas *c1a = new TCanvas("c1a","c1a");
   c1a->Divide(3,1);
   c1a->cd(1);
@@ -841,7 +1020,7 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   fHistd0rphiITSMIoneSPDInAccS150200fromStrangeMC->Draw("same");
   fHistd0rphiITSMIoneSPDInAccS150200fromMatMC->SetLineColor(9);
   fHistd0rphiITSMIoneSPDInAccS150200fromMatMC->Draw("same");
-  /* c2->cd(2);
+  c2->cd(2);
   fHistd0rphiITSMIoneSPDInAccP350450MC->SetMinimum(1);
   fHistd0rphiITSMIoneSPDInAccS350450MC->SetMinimum(1);
   fHistd0rphiITSMIoneSPDInAccS350450fromStrangeMC->SetMinimum(1);
@@ -853,8 +1032,7 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   fHistd0rphiITSMIoneSPDInAccS350450fromStrangeMC->SetLineColor(8);
   fHistd0rphiITSMIoneSPDInAccS350450fromStrangeMC->Draw("same");
   fHistd0rphiITSMIoneSPDInAccS350450fromMatMC->SetLineColor(9);
-  fHistd0rphiITSMIoneSPDInAccS350450fromMatMC->Draw("same");
-*/ 
+  fHistd0rphiITSMIoneSPDInAccS350450fromMatMC->Draw("same"); 
  c2->cd(3);
   fHistd0rphiITSMIoneSPDInAccP500700MC->SetMinimum(1);
   fHistd0rphiITSMIoneSPDInAccS500700MC->SetMinimum(1);
@@ -881,7 +1059,6 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   fHistd0rphiITSMIoneSPDInAccS10001500fromStrangeMC->Draw("same");
   fHistd0rphiITSMIoneSPDInAccS10001500fromMatMC->SetLineColor(9);
   fHistd0rphiITSMIoneSPDInAccS10001500fromMatMC->Draw("same");
-  /*
   c2->cd(5);
   fHistd0rphiITSMIoneSPDInAccP25004000MC->SetMinimum(1);
   fHistd0rphiITSMIoneSPDInAccS25004000MC->SetMinimum(1);
@@ -908,7 +1085,7 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   fHistd0rphiITSMIoneSPDInAccS40008000fromStrangeMC->Draw("same");
   fHistd0rphiITSMIoneSPDInAccS40008000fromMatMC->SetLineColor(9);
   fHistd0rphiITSMIoneSPDInAccS40008000fromMatMC->Draw("same");
-*/
+
   TCanvas *c2b = new TCanvas("c2b","c2b");
   fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC->SetMinimum(1);
   fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC->SetLineColor(8);
@@ -944,7 +1121,7 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   c3_5->SetLogx();
   c3_6->SetLogx();
   Float_t d0cut[15]={0.0301,0.0401,0.0501,0.0601,0.0801,0.101,0.151,0.201,0.251,0.301,0.401,0.601,0.801,1.001,1.401};
-  /*
+  
   c3->cd(1);
   Float_t fracP150200[15],fracS150200[15],fracSfromStrange150200[15],fracS150200Strp30[15],fracS150200Strm30[15],fracS150200Matm10[15],fracS150200Matp10[15];
   Float_t intPtot150200=fHistd0rphiITSMIoneSPDInAccP150200MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP150200MC->GetNbinsX());
@@ -977,8 +1154,8 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   TGraph *gfracSfromStrange150200=new TGraph(15,d0cut,fracSfromStrange150200);
   gfracSfromStrange150200->SetMarkerColor(8);
   gfracSfromStrange150200->SetMarkerStyle(22);
-  gfracSfromStrange150200->Draw("p");  */
-   /*
+  gfracSfromStrange150200->Draw("p");  
+   
   c3->cd(2);
   Float_t fracP350450[15],fracS350450[15],fracSfromStrange350450[15],fracS350450Strp30[15],fracS350450Strm30[15],fracS350450Matm10[15],fracS350450Matp10[15];
   Float_t intPtot350450=fHistd0rphiITSMIoneSPDInAccP350450MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP350450MC->GetNbinsX());
@@ -1012,7 +1189,7 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   gfracSfromStrange350450->SetMarkerColor(8);
   gfracSfromStrange350450->SetMarkerStyle(22);
   gfracSfromStrange350450->Draw("p");
-*/
+
   c3->cd(3);
   Float_t fracP500700[15],fracS500700[15],fracSfromStrange500700[15],fracS500700Strp30[15],fracS500700Strm30[15],fracS500700Matm10[15],fracS500700Matp10[15];
   Float_t intPtot500700=fHistd0rphiITSMIoneSPDInAccP500700MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP500700MC->GetNbinsX());
@@ -1080,7 +1257,7 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   gfracSfromStrange10001500->SetMarkerColor(8);
   gfracSfromStrange10001500->SetMarkerStyle(22);
   gfracSfromStrange10001500->Draw("p");
-  /*
+  
   c3->cd(5);
   Float_t fracP25004000[15],fracS25004000[15],fracSfromStrange25004000[15],fracS25004000Strp30[15],fracS25004000Strm30[15],fracS25004000Matm10[15],fracS25004000Matp10[15];
   Float_t intPtot25004000=fHistd0rphiITSMIoneSPDInAccP25004000MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP25004000MC->GetNbinsX());
@@ -1148,9 +1325,8 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   gfracSfromStrange40008000->SetMarkerColor(8);
   gfracSfromStrange40008000->SetMarkerStyle(22);
   gfracSfromStrange40008000->Draw("p");
-*/
 
-  /*
+  
   TCanvas *c4 = new TCanvas("c4","c4");
   c4->Divide(3,1);
   c4_1->SetLogx();
@@ -1310,7 +1486,7 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   gintDataPall10001500Matm10->SetMarkerColor(3);
   gintDataPall10001500Matm10->SetMarkerStyle(22);
   gintDataPall10001500Matm10->Draw("p");
-  */
+  
   return;
 }
 //---------------------------------------------------------------------------
@@ -2357,6 +2533,30 @@ void PlotEffVSErrors() {
   fHistPtITSMISPDInAcctestnew8->Draw("same");
   fHistPtITSMIoneSPDInAcctestnew8->Draw("same");
 
+
+  return;
+}
+//--------------------------------------------------------------------------
+void ReweightStrange(TH1F *hPt,TH1F* hPtPfromStrange,TH1F* hPtSfromStrange) {
+
+  for(Int_t i=1;i<=hPt->GetNbinsX();i++) {
+    Double_t pt=hPt->GetBinCenter(i);
+    Double_t weight=1.;
+    Double_t weightP=1.;
+    if(pt<.25) {
+      weight=1.3;//1.;
+    } else if(pt>=0.25 && pt<0.5) {
+      weight=1.5;//1.3;
+    } else if(pt>=0.5 && pt<1.1) {
+      weight=1.7;//1.44;
+    } else if(pt>=1.1) {
+      weight=2;//1.7;
+    }
+    
+    weightP*=1.3;
+    hPt->SetBinContent(i,hPt->GetBinContent(i)+(weight-1.)*hPtSfromStrange->GetBinContent(i));
+    if(hPtPfromStrange) hPt->SetBinContent(i,hPt->GetBinContent(i)+(weightP-1.)*hPtPfromStrange->GetBinContent(i));
+  }
 
   return;
 }
