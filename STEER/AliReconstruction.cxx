@@ -1222,8 +1222,8 @@ Bool_t AliReconstruction::LoadCTPTimeParamsCDB()
   if (!entry2) return kFALSE;
 
   AliInfo("Found an AliCTPTimeParams in GRP/CTP/TimeAlign, reading it");
-  fCTPTimeAlign = dynamic_cast<AliCTPTimeParams*> (entry->GetObject());
-  entry->SetOwner(0);
+  fCTPTimeAlign = dynamic_cast<AliCTPTimeParams*> (entry2->GetObject());
+  entry2->SetOwner(0);
 
   return kTRUE;
 }
