@@ -220,7 +220,9 @@ void AliFMDGainDA::FillChannels(AliFMDDigit* digit)
 //_____________________________________________________________________
 void AliFMDGainDA::MakeSummary(UShort_t det, Char_t ring)
 {
-  //Create summary hists for FMD gains and chi2 of the fits
+  // 
+  // Create summary hists for FMD gains and chi2 of the fits
+  //
   switch (det) { 
   case 1: 
     fGainFMD1i = MakeSummaryHistogram("gain", "Gains", det, ring);

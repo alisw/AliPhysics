@@ -31,6 +31,7 @@ public:
    * @param gainDA  Object to copy from
    */  
   AliFMDGainDA(const AliFMDGainDA & gainDA) ;
+  AliFMDGainDA& operator=(const AliFMDGainDA&) { return *this; }
   /** 
    * Assignment operator 
    * 
@@ -159,16 +160,16 @@ private:
 
   void  MakeSummary(UShort_t det, Char_t ring);
 
-  TH2* fGainFMD1i;                 //Gains, FMD1
-  TH2* fGainFMD2i;                 //Gains, FMD2I
-  TH2* fGainFMD2o;                 //Gains, FMD2O
-  TH2* fGainFMD3i;                 //Gains, FMD3I
-  TH2* fGainFMD3o;                 //Gains, FMD3O
-  TH2* fChi2FMD1i;                 //Chi2 of fits, FMD1
-  TH2* fChi2FMD2i;                 //Chi2 of fits, FMD2I
-  TH2* fChi2FMD2o;                 //Chi2 of fits, FMD2O
-  TH2* fChi2FMD3i;                 //Chi2 of fits, FMD3I
-  TH2* fChi2FMD3o;                 //Chi2 of fits, FMD3O
+  TH2* fGainFMD1i; // AMORE DQM histogram
+  TH2* fGainFMD2i; // AMORE DQM histogram
+  TH2* fGainFMD2o; // AMORE DQM histogram
+  TH2* fGainFMD3i; // AMORE DQM histogram
+  TH2* fGainFMD3o; // AMORE DQM histogram
+  TH2* fChi2FMD1i; // AMORE DQM histogram
+  TH2* fChi2FMD2i; // AMORE DQM histogram
+  TH2* fChi2FMD2o; // AMORE DQM histogram
+  TH2* fChi2FMD3i; // AMORE DQM histogram
+  TH2* fChi2FMD3o; // AMORE DQM histogram
   
   ClassDef(AliFMDGainDA,0) // Detector algorithm for gain runs
 
