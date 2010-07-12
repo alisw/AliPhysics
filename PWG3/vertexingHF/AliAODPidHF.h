@@ -43,17 +43,17 @@ class AliAODPidHF : public AliAODPid{
  void SetCompat(Bool_t comp){fCompat=comp;return;}
  
  //Getters
- Double_t GetSigma(Int_t idet){return fnSigma[idet];}
- Double_t GetTofSigma(){return fTOFSigma;}
- void GetPriors(Double_t *priors){priors=fPriors;return;}
- void GetPLimit(Double_t *plim){plim=fPLimit;}
- Bool_t GetAsym(){return fAsym;}
- Bool_t GetTPC(){return fTPC;}
- Bool_t GetTOF(){return fTOF;}
- Bool_t GetITS(){return fITS;}
- Bool_t GetTRD(){return fTRD;}
- Int_t GetMatch(){return fMatch;}
- Bool_t GetCompat(){return fCompat;}
+ Double_t GetSigma(Int_t idet) const{return fnSigma[idet];}
+ Double_t GetTofSigma() const{return fTOFSigma;}
+ void GetPriors(Double_t *priors) const{priors=fPriors;return;}
+ void GetPLimit(Double_t *plim) const{plim=fPLimit;}
+ Bool_t GetAsym() const{return fAsym;}
+ Bool_t GetTPC() const{return fTPC;}
+ Bool_t GetTOF() const{return fTOF;}
+ Bool_t GetITS() const{return fITS;}
+ Bool_t GetTRD() const{return fTRD;}
+ Int_t GetMatch() const{return fMatch;}
+ Bool_t GetCompat() const{return fCompat;}
 
  Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
  Bool_t IsKaonRaw (AliAODTrack *track, TString detector) const;
