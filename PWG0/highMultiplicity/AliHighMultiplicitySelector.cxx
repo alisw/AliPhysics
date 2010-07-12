@@ -2032,7 +2032,7 @@ void AliHighMultiplicitySelector::MBComparison()
         if (triggerLimit > limit)
           Printf("   WARNING: interesting events also counted inside the trigger limit");
 
-        Printf("");
+        Printf(" ");
       }
 
       canvas->cd(currentLimit+1)->SetLogx();
