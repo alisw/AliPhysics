@@ -37,8 +37,6 @@ public:
    * @param pedDA Object to assign from
    */  
   AliFMDPedestalDA& operator=(const AliFMDPedestalDA&) { return *this; }
-
-  //  AliFMDPedestalDA& operator = (const AliFMDPedestalDA & pedDA) ; 
   /** 
    * Destructor
    * 
@@ -123,35 +121,36 @@ private:
 		UShort_t chan) const;
   void FillinTimebins(std::ofstream& out, UShort_t ddl);
   /** Current strip */ 
-  Int_t fCurrentChannel;                                   //The current channel
+  Int_t fCurrentChannel;                           //The current channel
   /** Pedestal summary */ 
-  TH1F  fPedSummary;                                       //Summary of pedestals
+  TH1F  fPedSummary;                               //Summary of pedestals
   /** Noise summary */
-  TH1F  fNoiseSummary;                                     //Summary of noises
+  TH1F  fNoiseSummary;                             //Summary of noises
   /** Output file for zero-suppression for FMD1 */
-  std::ofstream fZSfileFMD1;                               //Stream for ZS FMD1
+  std::ofstream fZSfileFMD1;                       //Stream for ZS FMD1
   /** Output file for zero-suppression for FMD2 */
-  std::ofstream fZSfileFMD2;                               //Stream for ZS FMD2
+  std::ofstream fZSfileFMD2;                       //Stream for ZS FMD2
   /** Output file for zero-suppression for FMD3 */
-  std::ofstream fZSfileFMD3;                               //Stream for ZS FMD3 
+  std::ofstream fZSfileFMD3;                       //Stream for ZS FMD3 
   /** The minimum timebin seen for all channels */
-  TArrayS fMinTimebin;                                     //minimum timebin
+  TArrayS fMinTimebin;                             //minimum timebin
   /** The maximum timebin seen for all channels */
-  TArrayS fMaxTimebin;                                     //maximum timebin
+  TArrayS fMaxTimebin;                             //maximum timebin
   
   void  MakeSummary(UShort_t det, Char_t ring);
 
-  TH2* fSummaryFMD1i;                                      //Summary of FMD1
-  TH2* fSummaryFMD2i;                                      //Summary of FMD2I 
-  TH2* fSummaryFMD2o;                                      //Summary of FMD2O
-  TH2* fSummaryFMD3i;                                      //Summary of FMD3I
-  TH2* fSummaryFMD3o;                                      //Summary of FMD3O
+  TH2* fSummaryFMD1i;                              //Summary of FMD1
+  TH2* fSummaryFMD2i;                              //Summary of FMD2I 
+  TH2* fSummaryFMD2o;                              //Summary of FMD2O
+  TH2* fSummaryFMD3i;                              //Summary of FMD3I
+  TH2* fSummaryFMD3o;                              //Summary of FMD3O
   
   ClassDef(AliFMDPedestalDA,0)
 };
 
 inline Int_t
-AliFMDPedestalDA::HWIndex(UShort_t ddl, UShort_t b, UShort_t a, UShort_t c)const
+AliFMDPedestalDA::HWIndex(UShort_t ddl, UShort_t b, 
+			  UShort_t a, UShort_t c) const
 {
   // Save some array entries 
   UShort_t lb = (b > 1 ? b-16+2 : b);

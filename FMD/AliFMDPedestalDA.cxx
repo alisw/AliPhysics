@@ -31,6 +31,7 @@
 #include "AliFMDAltroMapping.h"
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include "AliLog.h"
 #include "TF1.h"
 #include "TObject.h"
@@ -127,11 +128,8 @@ void AliFMDPedestalDA::AddChannelContainer(TObjArray* sectorArray,
   TObjArray*        sampleArray = new TObjArray(samples);
   sampleArray->SetOwner();
   for (UInt_t sample = 0; sample < samples; sample++) {
-    TH1S* hSample = new TH1S(Form("FMD%d%c[%02d,03%d]_%d",
-				  det,ring,sec,strip,sample),
-			     Form("FMD%d%c[%02d,%03%d]_%d",
-				  det,ring,sec,strip),
-			     1024,-.5,1023.5);
+    TString name(Form("FMD%d%c[%02d,%03d]_%d", det,ring,sec,strip,sample));
+    TH1S* hSample = new TH1S(name.Data(),name.Data(), 1024,-.5,1023.5);
     hSample->SetXTitle("ADC");
     hSample->SetYTitle("Events");
     hSample->SetDirectory(0);
@@ -390,6 +388,9 @@ void AliFMDPedestalDA::Terminate(TFile* diagFile)
 //_____________________________________________________________________
 void AliFMDPedestalDA::FillinTimebins(std::ofstream& out, UShort_t /*ddl*/)
 {
+  // 
+  // Fill missing timebins
+  //
 #if 0
   unsigned short  boards[] = { 0x0, 0x1, 0x10, 0x11, 0xFFFF };
   unsigned short* board    = boards;
@@ -434,7 +435,9 @@ void AliFMDPedestalDA::FillinTimebins(std::ofstream& out, UShort_t /*ddl*/)
 //_____________________________________________________________________
 void AliFMDPedestalDA::WriteHeaderToFile() 
 {
+  //
   // Write headers to output files 
+  //
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fOutputFile.write(Form("# %s \n",pars->GetPedestalShuttleID()),13);
   TDatime now;
