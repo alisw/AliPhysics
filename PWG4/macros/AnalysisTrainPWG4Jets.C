@@ -51,8 +51,18 @@ TString     kCommonOutputFileName = "PWG4_JetTasksOutput.root";
 Bool_t      kSkipTerminate      = kTRUE; // Do not call Teminate
 Bool_t      kUseDate            = kFALSE; // use date in train name
 Bool_t      kUseDebug           = kTRUE; // activate debugging
-Int_t       kUseSysInfo         = 0; // activate debugging
-Long_t      kNumberOfEvents     = 1234567890; // number of events to process from the chain
+Int_t         kErrorIgnoreLevel = -1; // takes the errror print level from .rootrc 
+// From TError.h:
+// const Int_t kUnset    =  -1;
+// const Int_t kPrint    =   0;
+// const Int_t kInfo     =   1000;
+// const Int_t kWarning  =   2000;
+// const Int_t kError    =   3000;
+// const Int_t kBreak    =   4000;
+// const Int_t kSysError =   5000;
+// const Int_t kFatal    =   6000; 
+Int_t         kUseSysInfo         = 0; // activate debugging
+Long_t     kNumberOfEvents     = 1234567890; // number of events to process from the chain
 Bool_t      kUseMC              = kTRUE;  // use MC info
 Bool_t      kIsMC               = kTRUE;  // is MC info, if false it overwrites Use(AOD)MC
 Bool_t      kUseAODMC           = kTRUE;  // use MC infA
@@ -307,10 +317,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(kGridMergeExclude.Length())kGridMergeExclude += " ";
      kGridMergeExclude += "syswatch.root";
    }
-
    else{
      AliLog::SetGlobalLogLevel(AliLog::kError);
    }
+
+
    //==========================================================================
    // Create the chain. In this example it is created only from ALIEN files but
    // can be done to work in batch or grid mode as well.
@@ -429,11 +440,22 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        if(!iAODanalysis){
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
-	 taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection, AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection);      
-	 taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,AliAnalysisHelperJetTasks::kNone);      
+
 	 if(kIsMC){
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,AliAnalysisHelperJetTasks::kNone);      
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",kHighPtFilterMask,iPhysicsSelection,AliAnalysisHelperJetTasks::kNone);      
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
+						 AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);  
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
+						 AliAnalysisHelperJetTasks::kNone);  
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
+						 AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);  
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
+						 AliAnalysisHelperJetTasks::kNone);  
+
+	 }
+	 else{
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection, 
+						 AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);      
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,AliAnalysisHelperJetTasks::kNone);      
 	 }
        }
        if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
@@ -651,9 +673,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        mgr->Write();
        fM->Close();
      }
-
+     
+     // grmpf, aliroot error handler overwrites root
+     gErrorIgnoreLevel = kErrorIgnoreLevel;
+     if(gErrorIgnoreLevel>3000) AliLog::SetGlobalLogLevel(AliLog::kFatal);
      StartAnalysis(smode, chain);
-       
      if((kUseSysInfo>0&&smode=="LOCAL")||!strcmp(plugin_mode, "test")){
        for(int i = 0;i < mgr->GetTopTasks()->GetEntries();i++){
 	 mgr->ProfileTask(i);
@@ -1702,6 +1726,7 @@ Bool_t PatchAnalysisMacro(){
 
   if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
   add += "\n\n // added by CKB \n";
+  if(kErrorIgnoreLevel>0)add += Form("gErrorIgnoreLevel = %d;\n",kErrorIgnoreLevel);
   add += "\n gSystem->AddIncludePath(\"./\"); \n";
   if(gGrid&&kPluginAliRootVersion.Length()==0){
     add += "\n // Dirty hack for TRD reference data \n";
@@ -1720,6 +1745,12 @@ Bool_t PatchAnalysisMacro(){
     index = st.Index("gSystem->AddIncludePath(\"-I$"); // uncommen $ALICE_ROOT include for par files
     if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
     st.Insert(index,"// CKB comment out whehn no aliroot is provided \n //");
+  }
+
+  if(AliLog::GetGlobalLogLevel()==AliLog::kFatal){
+    index = st.Index("AliLog::SetGlobal"); // ncomment setting of log level, do my own
+    if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
+    st.Insert(index,"AliLog::SetGlobalLogLevel(AliLog::kFatal);// CKB \n  // CKB comment out for own setting \n  //");
   }
 
   ofstream out;
@@ -1764,7 +1795,7 @@ Bool_t PatchAnalysisMacro(){
   }
 
   if(kUseCPAR&&kPluginAliRootVersion.Length()==0){
-    index = st2.Index("gSystem->AddIncludePath(\"-I$"); // uncommen $ALICE_ROOT include for par files
+    index = st2.Index("gSystem->AddIncludePath(\"-I$"); // uncomment $ALICE_ROOT include for par files
     if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
     st2.Insert(index,"// CKB comment out whehn no aliroot is provided \n //");
   }
