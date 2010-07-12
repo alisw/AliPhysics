@@ -758,7 +758,6 @@ void AliAnalysisTaskSEDStarJets::Terminate(Option_t*)
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
   
-  Info("Terminate","");
   AliAnalysisTaskSE::Terminate();
   
   AliInfo(Form("Found %i of that MC D*->D0pi(D0->kpi) are in acceptance, in %d events",fCountDStar,fEvents));
