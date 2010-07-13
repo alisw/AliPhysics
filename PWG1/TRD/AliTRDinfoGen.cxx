@@ -35,7 +35,8 @@
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TString.h>
-#include <TH1F.h>
+#include <TH1S.h>
+#include <TPad.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TROOT.h>
@@ -108,6 +109,7 @@ AliTRDinfoGen::AliTRDinfoGen()
   ,fTracksSA(NULL)
   ,fTracksKink(NULL)
   ,fV0List(NULL)
+  ,fContainer(NULL)
   ,fDebugStream(NULL)
 {
   //
@@ -132,6 +134,7 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   ,fTracksSA(NULL)
   ,fTracksKink(NULL)
   ,fV0List(NULL)
+  ,fContainer(NULL)
   ,fDebugStream(NULL)
 {
   //
@@ -143,6 +146,7 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   DefineOutput(kTracksKink, TObjArray::Class());
   DefineOutput(kEventInfo, AliTRDeventInfo::Class());
   DefineOutput(kV0List, TObjArray::Class());
+  DefineOutput(kMonitor, TObjArray::Class()); // histogram list
 }
 
 //____________________________________________________________________
@@ -175,6 +179,22 @@ AliTRDinfoGen::~AliTRDinfoGen()
     delete fV0List;
     fV0List = NULL;
   }
+  if(fContainer){ 
+    fContainer->Delete(); 
+    delete fContainer;
+    fContainer = NULL;
+  }
+}
+
+//____________________________________________________________________
+Bool_t AliTRDinfoGen::GetRefFigure(Int_t)
+{
+  if(!gPad){
+    AliWarning("Please provide a canvas to draw results.");
+    return kFALSE;
+  }
+  fContainer->At(0)->Draw("bar");
+  return kTRUE;
 }
 
 //____________________________________________________________________
@@ -191,6 +211,50 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fTracksSA = new TObjArray(20); fTracksSA->SetOwner(kTRUE);
   fTracksKink = new TObjArray(20); fTracksKink->SetOwner(kTRUE);
   fV0List = new TObjArray(10); fV0List->SetOwner(kTRUE);
+
+  // define general monitor
+  fContainer = new TObjArray(1); fContainer->SetOwner(kTRUE);
+  TH1 *h=new TH1S("hStat", "Run statistics;Observable;Entries", 12, -0.5, 11.5);
+  TAxis *ax(h->GetXaxis());
+  ax->SetBinLabel( 1, "ESD");
+  ax->SetBinLabel( 2, "MC");
+  ax->SetBinLabel( 3, "V0");
+  ax->SetBinLabel( 4, "TPC");
+  ax->SetBinLabel( 5, "TRDin");
+  ax->SetBinLabel( 6, "TRDout");
+  ax->SetBinLabel( 7, "Barrel");
+  ax->SetBinLabel( 8, "BarrelMC");
+  ax->SetBinLabel( 9, "SA");
+  ax->SetBinLabel(10, "SAMC");
+  ax->SetBinLabel(11, "Kink");
+  ax->SetBinLabel(12, "KinkMC");
+  fContainer->AddAt(h, 0);
+}
+
+//____________________________________________________________________
+Bool_t AliTRDinfoGen::Load(const Char_t *file, const Char_t *dir, const Char_t *name)
+{
+// Load data from performance file
+
+  if(!TFile::Open(file)){
+    AliWarning(Form("Couldn't open file %s.", file));
+    return kFALSE;
+  }
+  if(dir){
+    if(!gFile->cd(dir)){
+      AliWarning(Form("Couldn't cd to %s in %s.", dir, file));
+      return kFALSE;
+    }
+  }
+  TObjArray *o(NULL);
+  const Char_t *tn=(name ? name : GetName());
+  if(!(o = (TObjArray*)gDirectory->Get(tn))){
+    AliWarning(Form("Missing histogram container %s.", tn));
+    return kFALSE;
+  }
+  fContainer = (TObjArray*)o->Clone(GetName());
+  gFile->Close();
+  return kTRUE;
 }
 
 //____________________________________________________________________
@@ -545,12 +609,27 @@ void AliTRDinfoGen::UserExec(Option_t *){
     ,nSA, nSAMC, fTracksSA->GetEntries()
     ,nKink, nKinkMC, fTracksKink->GetEntries()
   ));
+  // save track statistics
+  TH1 *h((TH1S*)fContainer->At(0));
+  h->Fill( 0., nTracksESD);
+  h->Fill( 1., nTracksMC);
+  h->Fill( 2., fV0List->GetEntries());
+  h->Fill( 3., nTPC);
+  h->Fill( 4., nTRDin);
+  h->Fill( 5., nTRDout);
+  h->Fill( 6., nBarrel);
+  h->Fill( 7., nBarrelMC);
+  h->Fill( 8., nSA);
+  h->Fill( 9., nSAMC);
+  h->Fill(10., nKink);
+  h->Fill(11., nKinkMC);
 
   PostData(kTracksBarrel, fTracksBarrel);
   PostData(kTracksSA, fTracksSA);
   PostData(kTracksKink, fTracksKink);
   PostData(kEventInfo, fEventInfo);
   PostData(kV0List, fV0List);
+  PostData(kMonitor, fContainer);
 }
 
 //____________________________________________________________________
@@ -579,5 +658,6 @@ TTreeSRedirector* AliTRDinfoGen::DebugStream()
   }
   return fDebugStream;
 }
+
 
 

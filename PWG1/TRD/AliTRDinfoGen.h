@@ -44,9 +44,12 @@ public:
   static Float_t GetEndITS() { return fgkITS;}
   static Float_t GetEndTPC() { return fgkTPC;}
   static Float_t GetEndTRD() { return fgkTRD;}
+  Int_t   GetNRefFigures() const  { return 1;} 
+  Bool_t  GetRefFigure(Int_t ifig);
+  Bool_t  Load(const Char_t *fn="AnalysisResults.root", const Char_t *dir="TRD_Performance", const Char_t *name=NULL);
 
   Bool_t  HasMCdata() const       { return TestBit(kMCdata);};
-  // temporary until check with AliAnalysisTaskSE collision selection mechannism
+  // temporary until check with AliAnalysisTaskSE collision selection mechanism
   Bool_t  IsCollision() const {return TestBit(kCollision);}
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
 
@@ -98,8 +101,9 @@ private:
   TObjArray        *fTracksSA;       //! Array of stand alone tracks
   TObjArray        *fTracksKink;     //! Array of kink tracks
   TObjArray        *fV0List;         //! V0 container
+  TObjArray        *fContainer;      //! container to store results
   TTreeSRedirector *fDebugStream;    //! debug stream
 
-  ClassDef(AliTRDinfoGen, 5)         // entry to TRD analysis train
+  ClassDef(AliTRDinfoGen, 6)         // entry to TRD analysis train
 };
 #endif
