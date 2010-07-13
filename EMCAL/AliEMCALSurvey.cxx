@@ -178,12 +178,22 @@ void AliEMCALSurvey::CreateAliAlignObjParams(TClonesArray &array)
       smodName += (smodnum-10+1);
     }    
     AliEMCALSuperModuleDelta t(GetSuperModuleTransformation(smodnum));
+
+    ///////////////////////////////
+    // JLK 13-July-2010
+    //
+    // VERY IMPORTANT!!!!
+    //
+    // All numbers were calculated in ALICE global c.s., which means
+    // that the last argument in the creation of AliAlignObjParams
+    // MUST BE set to true
+    //////////////////////////////
     new(array[arrayInd])
       AliAlignObjParams(
 			smodName.Data(), volid, 
 			t.fXShift, t.fYShift, t.fZShift, 
 			-t.fPsi, -t.fTheta, -t.fPhi, 
-			false
+			true
 			);
     ++arrayInd;
 
