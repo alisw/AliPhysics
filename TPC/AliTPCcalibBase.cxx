@@ -277,7 +277,7 @@ TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t ax
   TH1D * projectionHist =0;
   //
 
-  for(Int_t i=1; i < hist->GetNbinsX(); i++) {
+  for(Int_t i=1; i <= hist->GetNbinsX(); i++) {
     Int_t nsum=0;
     Int_t imin   =  i;
     Int_t imax   =  i;
