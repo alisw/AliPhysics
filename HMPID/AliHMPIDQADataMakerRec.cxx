@@ -162,7 +162,7 @@ void AliHMPIDQADataMakerRec::InitRaws()
     
    Add2RawsList(hSumErr[iddl],iddl,expert,!image, !saveCorr);
     
-    hDilo[iddl] = new TH2F(Form("hDiloDDL%i",iddl),Form("Dilogic response at DDL;Row # ;Dilogic #",iddl),24,1,25,10,1,11);
+    hDilo[iddl] = new TH2F(Form("hDiloDDL%i",iddl),Form("Dilogic response at DDL %i;Row # ;Dilogic #",iddl),24,1,25,10,1,11);
     Add2RawsList(hDilo[iddl],14+iddl,expert,!image, !saveCorr);
   }//DDL loop
   for(Int_t iCh = AliHMPIDParam::kMinCh; iCh <=AliHMPIDParam::kMaxCh ;iCh++) {

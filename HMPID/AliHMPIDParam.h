@@ -345,9 +345,9 @@ void AliHMPIDParam::PrintChStatus(Int_t ch)
        printf("%d",fgMapPad[padx][pady][ch]);
      }
      printf(" %d \n",pady+1);
-     if(pady%48==0) Printf("");
+     if(pady%48==0) printf("\n");
    }
-   Printf("");
+   printf("\n");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDParam::SetGeomAccept()
