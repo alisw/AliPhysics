@@ -101,6 +101,7 @@
 #pragma link C++ class  AliTRDefficiency+;
 #pragma link C++ class  AliTRDefficiencyMC+;
 #pragma link C++ class  AliTRDcheckPID+;
+#pragma link C++ class  AliTRDv0Monitor+;
 // TRD offline calibration classes
 #pragma link C++ class  AliTRDmultiplicity+;
 #pragma link C++ class  AliTRDclusterResolution+;

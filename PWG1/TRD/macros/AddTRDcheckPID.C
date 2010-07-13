@@ -62,5 +62,22 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorLQ", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
   mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
   mgr->ConnectOutput(ref, 3, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMakerLQ", mgr->GetCommonFileName())));
+
+
+  //V0 Monitoring
+  AliTRDv0Monitor *v0Mon = new AliTRDv0Monitor("v0Monitor","v0Monitor");
+  mgr->AddTask(v0Mon);
+  v0Mon->SetDebugLevel(0);
+  //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
+  v0Mon->SetMCdata(mgr->GetMCtruthEventHandler());
+  v0Mon->SetFriends(kTRUE);
+  //v0Mon->SetSource(AliTRDpidRefMaker::kV0,AliTRDpidRefMaker::kRec);
+  mgr->ConnectInput( v0Mon, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectInput( v0Mon, 1, ci[0]);
+  mgr->ConnectInput( v0Mon, 2, ci[1]);
+  mgr->ConnectInput( v0Mon, 3, ce);
+
+  mgr->ConnectOutput(v0Mon, 1, mgr->CreateContainer("MonitorV0", TList::Class(), AliAnalysisManager::kOutputContainer, "V0Monitor.root"));
+  //mgr->ConnectOutput(v0Mon, 2, mgr->CreateContainer(v0Mon->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
 }
 
