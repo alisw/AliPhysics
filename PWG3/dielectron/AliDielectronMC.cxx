@@ -110,14 +110,14 @@ Int_t AliDielectronMC::GetNMCTracksFromStack()
 }
 
 //____________________________________________________________
-AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t _itrk)
+AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t itrk)
 {
   //
   // return MC track directly from MC event
   //
-  if (_itrk<0) return NULL;
+  if (itrk<0) return NULL;
   if (!fMCEvent){ AliError("No fMCEvent"); return NULL;}
-  AliVParticle * track = fMCEvent->GetTrack(_itrk); //  tracks from MC event
+  AliVParticle * track = fMCEvent->GetTrack(itrk); //  tracks from MC event
   return track;
 }
 
@@ -531,23 +531,24 @@ Bool_t AliDielectronMC::HaveSameMother(const AliDielectronPair * pair)
   const AliVParticle * daughter1 = pair->GetFirstDaughter();
   const AliVParticle * daughter2 = pair->GetSecondDaughter();
 
-  AliMCParticle *mcDaughter1=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(daughter1->GetLabel()));
-  AliMCParticle *mcDaughter2=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(daughter2->GetLabel()));
+  AliVParticle *mcDaughter1=GetMCTrackFromMCEvent(daughter1->GetLabel());
+  AliVParticle *mcDaughter2=GetMCTrackFromMCEvent(daughter2->GetLabel());
   if (!mcDaughter1 || !mcDaughter2) return 0;
 
-  TParticle *tDaughter1 = mcDaughter1->Particle();
-  TParticle *tDaughter2 = mcDaughter2->Particle();
-  if(!tDaughter1 || !tDaughter2)return 0;
+  Int_t labelMother1=-1;
+  Int_t labelMother2=-1;
 
-  TParticle *mother1 = fStack->Particle(tDaughter1->GetMother(0));
-  TParticle *mother2 = fStack->Particle(tDaughter2->GetMother(0));
-  if(!mother1 || !mother2) return 0;
+  if (mcDaughter1->IsA()==AliMCParticle::Class()){
+    labelMother1=(static_cast<AliMCParticle*>(mcDaughter1))->GetMother();
+    labelMother2=(static_cast<AliMCParticle*>(mcDaughter2))->GetMother();
+  } else if (mcDaughter1->IsA()==AliAODMCParticle::Class()) {
+    labelMother1=(static_cast<AliAODMCParticle*>(mcDaughter1))->GetMother();
+    labelMother2=(static_cast<AliAODMCParticle*>(mcDaughter2))->GetMother();
+  }
 
+  Bool_t sameMother=(labelMother1>-1)&&(labelMother2>-1)&&(labelMother1==labelMother2);
 
-  if(mother1->IsEqual(mother2)) return 1 ;
-
-  return 0;
-
+  return sameMother;
 }
 
 

@@ -566,14 +566,14 @@ inline void AliDielectronVarManager::InitESDpid(Int_t type)
   fgESDpid->GetTOFResponse().SetTimeResolution(80.);
   
   // data
-  if (type==1){
-    alephParameters[0] = 0.0283086;
+  if (type==1){    
+    alephParameters[0] = 0.0283086/0.97;
     alephParameters[1] = 2.63394e+01;
     alephParameters[2] = 5.04114e-11;
     alephParameters[3] = 2.12543e+00;
     alephParameters[4] = 4.88663e+00;
     fgESDpid->GetTOFResponse().SetTimeResolution(130.);
-    fgESDpid->GetTPCResponse().SetMip(47.9);
+    fgESDpid->GetTPCResponse().SetMip(50.);
   }
 
   fgESDpid->GetTPCResponse().SetBetheBlochParameters(
