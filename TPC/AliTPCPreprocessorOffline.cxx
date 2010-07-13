@@ -523,7 +523,7 @@ TGraphErrors * AliTPCPreprocessorOffline::MakeGraphFilter0(THnSparse *hisN, Int_
   TVectorD vecMean1(entries);
   TVectorD vecRMS1(entries);
   entries=0;
-  {for (Int_t ibin=firstBinA; ibin<lastBinA; ibin++){
+  {for (Int_t ibin=firstBinA; ibin<=lastBinA; ibin++){
       Double_t cont = hisT->GetBinContent(ibin);
       if (cont<minEntries) continue;
       hisN->GetAxis(itime)->SetRange(ibin-1,ibin+1);
@@ -769,22 +769,24 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRun
   
 
   // 2.) try to create Cosmic spline
-  fGainCosmic->GetHistGainTime()->GetAxis(2)->SetRangeUser(0.51,1.49); // only cosmics
-  fGainCosmic->GetHistGainTime()->GetAxis(4)->SetRangeUser(20,100);    // only Fermi-Plateau muons
-  //
-  fGraphCosmic = AliTPCcalibBase::FitSlices(fGainCosmic->GetHistGainTime(),0,1,minEntriesGaussFit,10);
-  if (fGraphCosmic->GetN()==0) fGraphCosmic = 0x0;
-  //
-  if (fGraphCosmic) {
-    for(Int_t i=0; i < fGraphCosmic->GetN(); i++) {
-      fGraphCosmic->GetY()[i] /= FPtoMIPratio;
-      fGraphCosmic->GetEY()[i] /= FPtoMIPratio;
+  if (fGainCosmic){
+    fGainCosmic->GetHistGainTime()->GetAxis(2)->SetRangeUser(0.51,1.49); // only cosmics
+    fGainCosmic->GetHistGainTime()->GetAxis(4)->SetRangeUser(20,100);    // only Fermi-Plateau muons
+    //
+    fGraphCosmic = AliTPCcalibBase::FitSlices(fGainCosmic->GetHistGainTime(),0,1,minEntriesGaussFit,10);
+    if (fGraphCosmic->GetN()==0) fGraphCosmic = 0x0;
+    //
+    if (fGraphCosmic) {
+      for(Int_t i=0; i < fGraphCosmic->GetN(); i++) {
+	fGraphCosmic->GetY()[i] /= FPtoMIPratio;
+	fGraphCosmic->GetEY()[i] /= FPtoMIPratio;
+      }
     }
+    //
+    if (fGraphCosmic) fFitCosmic = AliTPCcalibTimeGain::MakeSplineFit(fGraphCosmic);
+    if (fGraphCosmic) fGraphCosmic->SetName("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL"); // set proper names according to naming convention
+    fGainArray->AddAt(fFitCosmic,1);
   }
-  //
-  if (fGraphCosmic) fFitCosmic = AliTPCcalibTimeGain::MakeSplineFit(fGraphCosmic);
-  if (fGraphCosmic) fGraphCosmic->SetName("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL"); // set proper names according to naming convention
-  fGainArray->AddAt(fFitCosmic,1);
   // with naming convention and backward compatibility
   fGainArray->AddAt(fGraphMIP,2);
   fGainArray->AddAt(fGraphCosmic,3);
