@@ -170,6 +170,7 @@ void AliEMCALSurvey::CreateAliAlignObjParams(TClonesArray &array)
   Int_t arrayInd = array.GetEntries(), iIndex = 0;
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
+  AliAlignObjParams* myobj = 0x0;
 
   for (Int_t smodnum = 0; smodnum < geom->GetNumberOfSuperModules(); ++smodnum) {
     TString smodName(TString::Format("EMCAL/FullSupermodule%d", smodnum+1));
@@ -196,6 +197,9 @@ void AliEMCALSurvey::CreateAliAlignObjParams(TClonesArray &array)
 			true
 			);
     ++arrayInd;
+    myobj = (AliAlignObjParams*)array.UncheckedAt(smodnum);
+    printf("==== AliAlignObjParams for SM %d ====\n",smodnum);
+    myobj->Print("");
 
   }
 
@@ -437,10 +441,7 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     AliEMCALSuperModuleDelta &t = fSuperModuleData[i];
     t.fXShift = real.fX1 - ideal.fX1;
     t.fYShift = real.fY1 - ideal.fY1;
-    t.fZShift = ideal.fZ1 - real.fZ1; //due to z flip for C side
-    if(i%2==0) {
-      t.fZShift *= -1.0;  //correct shift for C side
-    }
+    t.fZShift = real.fZ1 - ideal.fZ1;
     t.fPhi = real.fPhi - ideal.fPhi;
     t.fTheta = real.fTheta - ideal.fTheta;
     t.fPsi = real.fPsi - ideal.fPsi;
