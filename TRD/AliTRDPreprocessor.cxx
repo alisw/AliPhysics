@@ -1151,21 +1151,21 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   }
   // report errors of the parser if present
   if (fileExistS && saxParserS.GetParseCode() != 0) {
-    Log(Form("ERROR in XML file validation. SOR Parse Code: %s", saxParserS.GetParseCode()));
+    Log(Form("ERROR in XML file validation. SOR Parse Code: %d", saxParserS.GetParseCode()));
     return 12;
   }
   if (fileExistE && saxParserE.GetParseCode() != 0) {
-    Log(Form("ERROR in XML file validation. EOR Parse Code: %s", saxParserE.GetParseCode()));
+    Log(Form("ERROR in XML file validation. EOR Parse Code: %d", saxParserE.GetParseCode()));
     return 13;
   }
   Log("XML file validation OK.");
   // report errors of the handler if present
   if (fileExistS && saxHandlerS.GetHandlerStatus() != 0) {
-    Log(Form("ERROR while creating calibration objects. SOR Error code: %s", saxHandlerS.GetHandlerStatus()));
+    Log(Form("ERROR while creating calibration objects. SOR Error code: %d", saxHandlerS.GetHandlerStatus()));
     return 14;  
   }
   if (fileExistE && saxHandlerE.GetHandlerStatus() != 0) {
-    Log(Form("ERROR while creating calibration objects. EOR Error code: %s", saxHandlerE.GetHandlerStatus()));
+    Log(Form("ERROR while creating calibration objects. EOR Error code: %d", saxHandlerE.GetHandlerStatus()));
     return 15;
   }
   Log("SAX handler reports no errors.");
