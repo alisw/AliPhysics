@@ -290,7 +290,7 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
   }
   Int_t ndata[kWS]; memset(ndata, 0, kWS*sizeof(Int_t));
 
-  AliDebug(1, Form("Loading data[%d]", fData->GetEntries()));
+  AliDebug(1, Form("Loading %d entries.", (Int_t)fData->GetEntries()));
   for(Int_t itrk=0; itrk < fData->GetEntries(); itrk++){
     if(!(fData->GetEntry(itrk))) continue;
     Int_t sbin(fPIDdataArray->GetPID());

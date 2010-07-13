@@ -849,7 +849,7 @@ void AliTRDclusterResolution::ProcessCenterPad()
         fP[0] = fp.GetParameter(1); fP[1] = fp.GetParError(1);
         fP[2] = fp.GetParameter(2); fP[3] = fp.GetParError(2);
 
-        AliDebug(4, Form("ly[%d] tb[%2d] y[%+5.2f] m[%5.3f] s[%5.3f] pm[%5.3f] ps[%5.3f]", fLy, fT, fY, fR[0], fR[2], fP[0], fP[2]));
+        AliDebug(4, Form("ly[%d] tb[%2d] y[%+5.2f] m[%5.3f] s[%5.3f] pm[%5.3f] ps[%5.3f]", fLy, (Int_t)fT, fY, fR[0], fR[2], fP[0], fP[2]));
         t->Fill();
       }
     }

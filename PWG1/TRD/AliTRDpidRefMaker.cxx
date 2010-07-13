@@ -322,7 +322,7 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo 
     AliWarning("PID reference source not implemented");
     return;
   }
-  AliDebug(4, Form("Ref PID [%] : %s[%5.2f] %s[%5.2f] %s[%5.2f] %s[%5.2f] %s[%5.2f]"
+  AliDebug(4, Form("Ref PID : %s[%5.2f] %s[%5.2f] %s[%5.2f] %s[%5.2f] %s[%5.2f]"
     ,AliPID::ParticleShortName(0), 1.e2*fPID[0]
     ,AliPID::ParticleShortName(1), 1.e2*fPID[1]
     ,AliPID::ParticleShortName(2), 1.e2*fPID[2]
