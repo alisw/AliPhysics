@@ -542,7 +542,7 @@ Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
   if(fPtDependentDcaXYFlag) {
     if(TMath::Abs(dca[0]) > kMicrometer2Centimeter*fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt)) {
       if(fDebugMode)
-	Printf("IsPrimary: Track rejected because it has a value of the dca(xy) higher than the %d sigma pt dependent cut: %lf (max. requested: %lf)",TMath::Abs(dca[0]),fNSigmaDCAXY,fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt));
+	Printf("IsPrimary: Track rejected because it has a value of the dca(xy) higher than the %d sigma pt dependent cut: %lf (max. requested: %lf)",fNSigmaDCAXY,TMath::Abs(dca[0]),fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt));
       return kFALSE;
     }
   }
