@@ -90,7 +90,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   //
   // Constructor. Initialization of Inputs and Outputs
   //
-  AliDebug(2,Form("AliPWG4HighPtSpectra","Calling Constructor"));
+  AliDebug(2,Form("AliPWG4HighPtSpectra Calling Constructor"));
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList
@@ -370,7 +370,7 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   //HERE ONE CAN CREATE OUTPUT OBJECTS, IN PARTICULAR IF THE OBJECT PARAMETERS DON'T NEED
   //TO BE SET BEFORE THE EXECUTION OF THE TASK
   //
-  AliDebug(2,Form("CreateOutputObjects","CreateOutputObjects of task %s", GetName()));
+  AliDebug(2,Form("CreateOutputObjects CreateOutputObjects of task %s", GetName()));
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE); 

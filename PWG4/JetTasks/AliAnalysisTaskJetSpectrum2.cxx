@@ -1092,7 +1092,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   // link it
   //
   const Int_t kNvar   = 3 ; //number of variables on the grid:pt,eta, phi
-  const Double_t kPtmin = 0.0, kPtmax = 160.; // we do not want to have empty bins at the beginning...
+  const Double_t kPtmin = 0.0, kPtmax = 240.; // we do not want to have empty bins at the beginning...
   const Double_t kEtamin = -3.0, kEtamax = 3.0;
   const Double_t kPhimin = 0., kPhimax = 2. * TMath::Pi();
   const Double_t kZmin = 0., kZmax = 1;
@@ -1104,7 +1104,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
 
   //arrays for the number of bins in each dimension
   Int_t iBin[kNvar];
-  iBin[0] = 160; //bins in pt
+  iBin[0] = 240; //bins in pt
   iBin[1] =  1; //bins in eta 
   iBin[2] = 1; // bins in phi
 
@@ -1121,7 +1121,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
 
 
   for(int i = 0;i < kMaxStep*2;++i){
-    fhnJetContainer[i] = new THnSparseF(Form("fhnJetContainer%d",i),Form("THnSparse jet info %d"),kNvar,iBin);
+    fhnJetContainer[i] = new THnSparseF(Form("fhnJetContainer%d",i),Form("THnSparse jet info %d",i),kNvar,iBin);
     for (int k=0; k<kNvar; k++) {
       fhnJetContainer[i]->SetBinEdges(k,binEdges[k]);
     }
@@ -1207,7 +1207,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
       if(fDebug>0){
 	if(tr->Pt()>20){
 	  Printf("High pT track found in Event %d with p_T, %E",(int)Entry(),tr->Pt());
-	  Printf("%s read event, %d",fInputHandler->GetTree()->GetCurrentFile()->GetName(),fInputHandler->GetTree()->GetReadEntry());
+	  Printf("%s read event, %ld",fInputHandler->GetTree()->GetCurrentFile()->GetName(),fInputHandler->GetTree()->GetReadEntry());
 	  tr->Print();
 	  //	tr->Dump();
 	  AliESDEvent *fESD = dynamic_cast<AliESDEvent*> (InputEvent());
