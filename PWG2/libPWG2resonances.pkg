@@ -32,7 +32,8 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnAnalysisEffSE.cxx \
       RESONANCES/AliRsnAnalysisTrackEffSE.cxx \
       RESONANCES/AliRsnTOFT0maker.cxx \
-      RESONANCES/AliRsnAnalysisPhi900GeV.cxx
+      RESONANCES/AliRsnAnalysisPhi900GeV.cxx \
+      RESONANCES/AliRsnAnalysisPhi7TeV.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
