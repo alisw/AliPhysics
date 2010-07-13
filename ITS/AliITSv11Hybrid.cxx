@@ -5437,6 +5437,12 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t wFEP[2] = {  1.    ,  2.    };
     Float_t dFEP    = 2.15;
 
+    // PVC (C2H3Cl)n - 08 Jul 10
+    Float_t aPVC[3] = { 12.0107, 1.00794, 35.4527};
+    Float_t zPVC[3] = {  6.    , 1.     , 35.   };
+    Float_t wPVC[3] = {  2.    , 3.     ,  1.   };
+    Float_t dPVC    = 1.3;
+
     //SSD NiSn capacitor ends
     Float_t aNiSn[2]  = { 56.6934,118.710};
     Float_t zNiSn[2]  = {     28.,     50.};
@@ -5498,6 +5504,9 @@ void AliITSv11Hybrid::CreateMaterials(){
 
     AliMixture(27,"GEN Air$",aAir,zAir,dAir,4,wAir);
     AliMedium(27,"GEN Air$",27,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
+
+    AliMixture(47,"PVC$",aPVC,zPVC,dPVC,-3,wPVC);
+    AliMedium(47,"PVC$",47,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     Double_t cuFrac = 0.56;
     Double_t kFrac  = 1.0 - cuFrac;
@@ -5884,6 +5893,27 @@ void AliITSv11Hybrid::CreateMaterials(){
     den = 1.158910;
     AliMixture(67,"POLYURETHANE$",aA,zZ,den,+4,wW);
     AliMedium(67,"POLYURETHANE$",67,0,ifield,fieldm,tmaxfd,stemax,
+	      deemax,epsil,stmin);
+
+    //  POM (Polyoxymethylene = (CH2O)n ) - 02 May 10
+    zZ[2] =  8.0; aA[2] =  15.9994; // Oxigen
+
+    wW[0] = 0.067137;//H
+    wW[1] = 0.400016;//C
+    wW[2] = 0.532847;//O
+    wW[3] = 0.000000;//O
+    wW[4] = 0.000000;//S
+    wW[5] = 0.000000;//F
+    wW[6] = 0.000000;//Sn
+    wW[7] = 0.000000;//Pb
+    wW[8] = 0.000000;//Cr
+    wW[9] = 0.000000;//Si
+    wW[10] = 0.000000;//Ni
+    wW[11] = 0.000000;//Ca
+
+    den = 1.4200;
+    AliMixture(57,"POLYOXYMETHYLENE$",aA,zZ,den,+3,wW);
+    AliMedium(57,"POLYOXYMETHYLENE$",57,0,ifield,fieldm,tmaxfd,stemax,
 	      deemax,epsil,stmin);
 
 

@@ -93,7 +93,7 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     virtual TGeoVolume* CreatePatchPanel(TArrayD &sizes,
                                         TGeoManager *mgr = gGeoManager) const;
 
-    virtual TList* CreateConeModule(const Double_t angle,
+    virtual TList* CreateConeModule(Bool_t sideC, const Double_t angle,
 				    TGeoManager *mgr = gGeoManager) const;
     virtual void CreateCones(TGeoVolume *moth) const;
     // a half-stave (put together ladders + MCM + bus, and add clips

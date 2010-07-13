@@ -2430,7 +2430,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
 }
 
 //______________________________________________________________________
-TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
+TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angrot,
 					      TGeoManager *mgr) const
 {
     //
@@ -2443,6 +2443,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     // Updated:      20 Jun 2010  A. Pulvirenti  Optical patch panels
     // Updated:      22 Jun 2010  M. Sitta  Fiber cables
     // Updated:      04 Jul 2010  M. Sitta  Water cooling
+    // Updated:      08 Jul 2010  A. Pulvirenti  Air cooling on Side C
     //
 
     TGeoMedium *medInox  = GetMedium("INOX$",mgr);
@@ -2454,6 +2455,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     TGeoMedium *medGas   = GetMedium("GASEOUS FREON$", mgr);
     TGeoMedium *medFibs  = GetMedium("SDD OPTICFIB$",mgr);
     TGeoMedium *medCopper= GetMedium("COPPER$",mgr);
+    TGeoMedium *medPVC   = GetMedium("PVC$",mgr);
 
     Double_t extThickness = fgkmm * 0.25;
     Double_t ext1Length   = fgkmm * (26.7 - 10.0);
@@ -2495,6 +2497,13 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     const Double_t kWCFittingRint2  = kWaterCoolRMax;
     const Double_t kWCFittingLen1   =   7.0  *fgkmm;
     const Double_t kWCFittingLen2   =   8.0  *fgkmm;
+    
+    const Double_t kCollWidth       =  40.0  *fgkmm;
+    const Double_t kCollLength      =  60.0  *fgkmm;
+    const Double_t kCollThickness   =  10.0  *fgkmm;
+    const Double_t kCollTubeThick   =   1.0  *fgkmm;
+    const Double_t kCollTubeRadius  =   7.0  *fgkmm;
+    const Double_t kCollTubeLength  = 190.0  *fgkmm;
 
     const Double_t kOptFibDiamet    =   4.5  *fgkmm;
 
@@ -2569,6 +2578,14 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     TGeoVolume *volPlate = new TGeoVolume("ITSSPDPlate",
 					  shPlate, medPlate);
     volPlate->SetLineColor(kRed);
+    
+    // The air cooling tubes
+    TGeoBBox   *shCollBox   = new TGeoBBox("ITSSPD_shape_collector_box", 0.5*kCollLength, 0.5*kCollWidth, 0.5*kCollThickness);
+    TGeoTube   *shCollTube  = new TGeoTube("ITSSPD_shape_collector_tube",kCollTubeRadius - kCollTubeThick, kCollTubeRadius, 0.5*kCollTubeLength);
+    TGeoVolume *volCollBox  = new TGeoVolume("ITSSPDCollectorBox", shCollBox, medPVC);
+    TGeoVolume *volCollTube = new TGeoVolume("ITSSPDCollectorTube", shCollTube, medPVC);
+    volCollBox->SetLineColor(kAzure);
+    volCollTube->SetLineColor(kAzure);
 
     // The cooling tube on the cone as a Ctub
     Double_t tubeLength = shCable->GetX(5) - shCable->GetX(0) + kYtoHalfStave;
@@ -2710,6 +2727,17 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     rot2->RotateY(163.0);
     //rot2->RotateZ(132.5);
     
+    // add collectors only on side C
+    if (sideC)
+    {
+      TGeoTranslation *trCollBox   = new TGeoTranslation(xloc - 0.5*kPlateLength + 0.5*kCollLength, 0.0, +0.5*(kPlateThickness+1.1*kCollThickness));
+      TGeoRotation    *rotCollTube = new TGeoRotation(*gGeoIdentity);
+      rotCollTube->RotateY(90.0);
+      TGeoCombiTrans  *trCollTube  = new TGeoCombiTrans(xloc + 0.5*kCollTubeLength - (0.5*kPlateLength - kCollLength), 0.0, +0.5*(kPlateThickness+2.0*kCollTubeRadius+kCollTubeThick), rotCollTube);
+      container[0]->AddNode(volCollBox, 1, trCollBox);
+      container[0]->AddNode(volCollTube, 1, trCollTube);
+    }
+        
     Double_t dxPatch = 2.9;
     Double_t dzPatch = 2.8;
     TGeoCombiTrans *tr2 = new TGeoCombiTrans(1.7*ext2Length - dxPatch, 0.0, dzPatch, rot2);
@@ -2790,8 +2818,10 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     const Double_t kAlphaRot        =  46.500*fgkDegree;
     const Double_t kAlphaSpaceCool  =   9.200*fgkDegree;
 
-    TList* modulelist = CreateConeModule(90-kAlphaRot);
-    TGeoVolumeAssembly* module;
+    TList*  modulelistA = CreateConeModule(kFALSE, 90-kAlphaRot);
+    TList*  modulelistC = CreateConeModule(kTRUE , 90-kAlphaRot);
+    TList* &modulelist  = modulelistC;
+    TGeoVolumeAssembly* module, *moduleA, *moduleC;
 
     Double_t xloc, yloc, zloc;
 
@@ -2806,7 +2836,8 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
 //    Double_t angle2c[10] = {18., 44., 90., 126., 162., 198.0, 223.0, 270.0, 309.0, 342.0};
 
     // First add the cables
-    module = (TGeoVolumeAssembly*)modulelist->At(0);
+    moduleA = (TGeoVolumeAssembly*)modulelistA->At(0);
+    moduleC = (TGeoVolumeAssembly*)modulelistC->At(0);
     for (Int_t i = 0; i < kNumberOfModules; i++) {
         TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
 	rot1->RotateY(-kAlphaRot);
@@ -2814,7 +2845,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
         xloc = kInnerRadius*CosD(anglem[i]);
         yloc = kInnerRadius*SinD(anglem[i]);
 	zloc = kZTrans;
-        moth->AddNode(module, 2*i+2,
+        moth->AddNode(moduleA, 2*i+2,
 		      new TGeoCombiTrans( xloc, yloc, zloc, rot1));
 
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
@@ -2823,7 +2854,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
         xloc = kInnerRadius*CosD(anglem[i]);
         yloc = kInnerRadius*SinD(anglem[i]);
 	zloc = kZTrans;
-        moth->AddNode(module, 2*i+1,
+        moth->AddNode(moduleC, 2*i+1,
 		      new TGeoCombiTrans(-xloc,-yloc,-zloc, rot2));
     }
 
