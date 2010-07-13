@@ -714,7 +714,7 @@ case kCH2DVector:{
     hdetector = 0x0;
     if((TMath::Abs(max) <= 0.001) || (detectormax <0.0) || (detectormax >=540.0)) break;
     if(!(hdetector = (TH2S *)h->GetLinearFitterHisto((Int_t)detectormax,kFALSE))) break;
-    AliInfo(Form("The detector with the maximum of entries is %d",detectormax));
+    AliInfo(Form("The detector with the maximum of entries is %f",detectormax));
     hdetector->Draw();
     return kTRUE;
   }
