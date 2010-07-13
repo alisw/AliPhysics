@@ -73,7 +73,7 @@ class AliTRD : public AliDetector {
   AliTRD(const AliTRD &trd);
   AliTRD  &operator=(const AliTRD &trd);
 
-  ClassDef(AliTRD,11)                          //  Transition Radiation Detector base class
+  ClassDef(AliTRD,12)                          //  Transition Radiation Detector base class
 
 };
 
