@@ -69,6 +69,7 @@ public:
   Bool_t  GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
   Bool_t  Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir="TRD_Performance");
+  void    MakeSummary();
 
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
   void    UserExec(Option_t * opt);
