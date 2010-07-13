@@ -322,7 +322,7 @@ void AliITSSurveyToAlign::CreateAlignObjSDDModules(){
       Double_t z =pt->GetZ();
       Double_t xE=pt->GetPrecisionX();
       Double_t yE=pt->GetPrecisionY();
-      //      Double_t zE=pt->GetPrecisionZ();
+      Double_t zE=pt->GetPrecisionZ();
   
          if(iLayer==3 && iLadder==2)
       	{
@@ -344,7 +344,7 @@ void AliITSSurveyToAlign::CreateAlignObjSDDModules(){
       fSDDmeP[iPoint][2]=z;
       fSDDmeP[iPoint][3]=xE;
       fSDDmeP[iPoint][4]=yE;
-      fSDDmeP[iPoint][5]=xE;
+      fSDDmeP[iPoint][5]=zE;
       fSDDisMe[iPoint]=kTRUE;
 
       if(iLayer==3) uid = AliGeomManager::LayerToVolUID(iLayer0,iModuleIndex-240);
@@ -402,7 +402,7 @@ void AliITSSurveyToAlign::CreateAlignObjSDDModules(){
       if(imod!=(fSurveyPoints->GetEntries()-1)) imod--;
     }
   }//module loop
-  printf("done\n");
+//  printf("done\n");
 }
 
 //______________________________________________________________________
