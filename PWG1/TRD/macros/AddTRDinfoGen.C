@@ -37,6 +37,10 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   co[kTracksSA] = mgr->CreateContainer("tracksSA", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[kTracksKink] = mgr->CreateContainer("tracksKink", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[kV0List] = mgr->CreateContainer("v0List", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-  for(Int_t ios(1);ios<kNOutSlots;ios++) mgr->ConnectOutput(info, ios, co[ios]);
+  for(Int_t ios(1);ios<kNOutSlots-1;ios++) mgr->ConnectOutput(info, ios, co[ios]);
+  
+  // add last monitor container
+  AliAnalysisDataContainer *mon=mgr->CreateContainer("infoGen", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName()));
+  mgr->ConnectOutput(info, kNOutSlots-1, mon);
 }
 

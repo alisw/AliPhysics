@@ -123,9 +123,14 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
     new(ctask) TClass(fgkTRDtaskClassName[itask]);
     task = (AliAnalysisTask*)ctask->New();
     task->SetName(Form("%s%s", task->GetName(), cid));
-    printf("task %s, output file %s\n", task->GetName(), outputFile.Data());
+    printf(" *** task %s, output file %s\n", task->GetName(), outputFile.Data());
     if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task, outputFile.Data());
-    else processESD(task, outputFile.Data());
+    else if(strcmp(task->IsA()->GetName(), "AliTRDcheckESD")==0) processESD(task, outputFile.Data());
+    else if(strcmp(task->IsA()->GetName(), "AliTRDinfoGen")==0)processGEN(task, outputFile.Data());
+    else{
+      Error("makeResults.C", Form("Handling of class task \"%s\" not implemented.", task->IsA()->GetName()));
+      delete task;
+    }
   }
   delete ctask;
   delete c;
@@ -194,4 +199,27 @@ void processESD(TNamed *otask, const Char_t *filename)
     }
   }
   delete esd;
+}
+
+//______________________________________________________
+void processGEN(TNamed *otask, const Char_t *filename)
+{
+  printf("process[%s] : %s\n", otask->GetName(), otask->GetTitle());
+
+  AliTRDinfoGen *info = dynamic_cast<AliTRDinfoGen*>(otask);
+
+  if(!info->Load(filename, "TRD_Performance")){
+    Error("makeResults.C", Form("Load data container for task %s failed.", info->GetName()));
+    delete info;
+    return;
+  }
+  if(!summary){
+    for(Int_t ipic(0); ipic<info->GetNRefFigures(); ipic++){
+      c->Clear(); 
+      if(!info->GetRefFigure(ipic)) continue;
+      c->SaveAs(Form("%s_Fig%02d.gif", info->GetName(), ipic));
+    }
+  }
+
+  delete info;
 }

@@ -105,6 +105,7 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
 
   // VERY GENERAL SETTINGS
   //AliLog::SetGlobalLogLevel(AliLog::kError);
+  gStyle->SetOptStat(0);
   if(gSystem->Load("libANALYSIS.so")<0) return;
   if(gSystem->Load("libANALYSISalice.so")<0) return;
   if(gSystem->Load("libTENDER.so")<0) return;

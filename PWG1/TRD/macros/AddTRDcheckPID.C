@@ -6,6 +6,7 @@
 #include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
 #include "PWG1/TRD/AliTRDcheckPID.h"
 #include "PWG1/TRD/AliTRDpidRefMaker.h"
+#include "PWG1/TRD/AliTRDv0Monitor.h"
 #include "PWG1/TRD/AliTRDpidRefMakerNN.h"
 #include "PWG1/TRD/AliTRDpidRefMakerLQ.h"
 #endif
