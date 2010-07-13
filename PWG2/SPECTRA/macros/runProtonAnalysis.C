@@ -34,14 +34,15 @@ void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
   timer.Start();
   
   /*runLocal("ESD", 
-	   kAnalyzeMC,
-	   esdAnalysisType,
-	   pidMode, kUseOnlineTrigger,kUseOfflineTrigger,
-	   "/home/pchrist/ALICE/Baryons/Data/104070");*/
-  //runInteractive("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, kUseOfflineTrigger, "tag.xml");
-  //runBatch("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, kUseOfflineTrigger, "wn.xml");  
+    kAnalyzeMC,
+    esdAnalysisType,
+    pidMode, kUseOnlineTrigger,kUseOfflineTrigger,    
+    kRunQA,
+    "/home/pchrist/ALICE/Baryons/Data/104070");*/
+  //runInteractive("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, kUseOfflineTrigger, kRunQA, "tag.xml");
+  //runBatch("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, kUseOfflineTrigger, kRunQA, "wn.xml");  
   runProof("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, 
-	   kUseOfflineTrigger,
+	   kUseOfflineTrigger, kRunQA,
 	   500000,0,"/COMMON/COMMON/LHC10a8_run104867_8#esdTree");
 
   timer.Stop();
@@ -55,6 +56,7 @@ void runLocal(const char* mode = "ESD",
 	      const char* pidMode = 0x0,
 	      Bool_t kUseOnlineTrigger = kTRUE,
 	      Bool_t kUseOfflineTrigger = kTRUE,
+	      Bool_t kRunQA = kFALSE,
 	      const char* path = "/home/pchrist/ALICE/Alien/Tutorial/November2007/Tags") {
   TString smode = mode;
   TString cutFilename = "ListOfCuts."; cutFilename += mode;
@@ -159,6 +161,7 @@ void runInteractive(const char* mode = "ESD",
 		    const char* pidMode = 0x0,
 		    Bool_t kUseOnlineTrigger = kTRUE,
 		    Bool_t kUseOfflineTrigger = kTRUE,
+		    Bool_t kRunQA = kFALSE,
 		    const char* collectionName = "tag.xml") {
   gSystem->Load("libProofPlayer.so");
   
@@ -272,6 +275,7 @@ void runBatch(const char* mode = "ESD",
 	      const char* pidMode = 0x0,
 	      Bool_t kUseOnlineTrigger = kTRUE,
 	      Bool_t kUseOfflineTrigger = kTRUE,
+	      Bool_t kRunQA = kFALSE,
 	      const char *collectionfile = "wn.xml") {
   TString smode = mode;
   TString cutFilename = "ListOfCuts."; cutFilename += mode;
@@ -375,6 +379,7 @@ void runProof(const char* mode = "ESD",
 	      const char* pidMode = 0x0,
 	      Bool_t kUseOnlineTrigger = kTRUE,
 	      Bool_t kUseOfflineTrigger = kTRUE,
+	      Bool_t kRunQA = kFALSE,
 	      Int_t stats = 0, Int_t startingPoint = 0,
 	      const char* dataset = 0x0) {  
   TString smode = mode;
