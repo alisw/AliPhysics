@@ -98,40 +98,40 @@ void AliEveTRDNode::Expand()
 }
 
 //______________________________________________________________________________
-void AliEveTRDNode::EnableListElements()
+void AliEveTRDNode::EnableListElements(Bool_t rnr_self, Bool_t rnr_children)
 {
   // Enable list elements.
 
-  SetRnrSelf(kTRUE);
-  AliEveTRDNode *node = 0x0;
-  AliEveTRDChamber *chmb = 0x0;
+  SetRnrSelf(rnr_self);
+  AliEveTRDNode *node(NULL);
+  AliEveTRDChamber *chmb(NULL);
   List_i iter = fChildren.begin();
   while(iter != fChildren.end()){
     if((node = dynamic_cast<AliEveTRDNode*>(*iter))){
-      node->SetRnrSelf(kTRUE);
-      node->EnableListElements();
+      node->SetRnrSelf(rnr_children);
+      node->EnableListElements(rnr_children, rnr_children);
     }
-    if((chmb = dynamic_cast<AliEveTRDChamber*>(*iter))) chmb->SetRnrSelf(kTRUE);
+    if((chmb = dynamic_cast<AliEveTRDChamber*>(*iter))) chmb->EnableListElements(rnr_children, rnr_children);
     iter++;
   }
   gEve->Redraw3D();
 }
 
 //______________________________________________________________________________
-void AliEveTRDNode::DisableListElements()
+void AliEveTRDNode::DisableListElements(Bool_t rnr_self, Bool_t rnr_children)
 {
   // Disable list elements.
 
-  SetRnrSelf(kFALSE);
-  AliEveTRDNode *node = 0x0;
-  AliEveTRDChamber *chmb = 0x0;
+  SetRnrSelf(rnr_self);
+  AliEveTRDNode *node(NULL);
+  AliEveTRDChamber *chmb(NULL);
   List_i iter = fChildren.begin();
   while(iter != fChildren.end()){
     if((node = dynamic_cast<AliEveTRDNode*>(*iter))){
-      node->SetRnrSelf(kFALSE);
-      node->DisableListElements();
+      node->SetRnrSelf(rnr_children);
+      node->DisableListElements(rnr_children, rnr_children);
     }
-    if((chmb = dynamic_cast<AliEveTRDChamber*>(*iter))) chmb->SetRnrSelf(kFALSE);
+    if((chmb = dynamic_cast<AliEveTRDChamber*>(*iter))) chmb->DisableListElements(rnr_children, rnr_children);
     iter++;
   }
   gEve->Redraw3D();

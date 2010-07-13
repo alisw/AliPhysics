@@ -91,8 +91,8 @@ public:
 
   void Collapse();            // *MENU*
   void Expand();              // *MENU*
-  void EnableListElements();  // *MENU*
-  void DisableListElements(); // *MENU*
+  void EnableListElements(Bool_t rnr_self = kTRUE, Bool_t rnr_children = kTRUE);  // *MENU*
+  void DisableListElements(Bool_t rnr_self = kTRUE, Bool_t rnr_children = kTRUE); // *MENU*
   void UpdateLeaves();
   void UpdateNode();
 
