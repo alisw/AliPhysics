@@ -64,7 +64,7 @@ public:
   Int_t GetLabelMotherWithPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
   AliVParticle* GetMCTrackFromMCEvent(AliVParticle *track);   // return MC track directly from MC event
-  AliVParticle* GetMCTrackFromMCEvent(Int_t _itrk);           // return MC track directly from MC event
+  AliVParticle* GetMCTrackFromMCEvent(Int_t itrk);           // return MC track directly from MC event
   TParticle* GetMCTrackFromStack(const AliESDtrack* _track);        // return MC track from stack
   AliMCParticle* GetMCTrack(const AliESDtrack* _track);             // return MC track associated with reco track
   
