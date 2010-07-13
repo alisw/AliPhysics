@@ -2710,7 +2710,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   TString outputFiles = \"" << fOutputFiles << "\";" << endl;
       out << "   TString mergeExcludes = \"" << fMergeExcludes << "\";" << endl;
       out << "   mergeExcludes += \"" << AliAnalysisManager::GetAnalysisManager()->GetExtraFiles() << "\";" << endl;
-      out << "   TObjArray *list = outputFiles.Tokenize(\" \");" << endl;
+      out << "   TObjArray *list = outputFiles.Tokenize(\",\");" << endl;
       out << "   TIter *iter = new TIter(list);" << endl;
       out << "   TObjString *str;" << endl;
       out << "   TString outputFile;" << endl;
