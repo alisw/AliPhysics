@@ -140,7 +140,7 @@ AliTriggerIR::~AliTriggerIR()
 void AliTriggerIR::Print( const Option_t* ) const
 {
   // Print
-  cout << "Trigger Ineteraction Record:" << endl; 
+  cout << "Trigger Interaction Record:" << endl; 
   cout << "  Orbit:                0x" << hex << fOrbit << dec << endl;
   cout << "  Number of signals:    " << fNWord << endl;
   for (UInt_t i = 0; i < fNWord; i++)
