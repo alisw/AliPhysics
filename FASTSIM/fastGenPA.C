@@ -2,26 +2,26 @@ AliGenerator*  CreateGenerator();
 
 void fastGenPA(Int_t nev = 1, char* filename = "galice.root")
 {
-//
-//                        Construction
-//
-//  Output file
-    TFile*  file         = new TFile(filename, "recreate");
-//  Create stack
-    AliStack* stack      = new AliStack(10000);
-    stack->MakeTree(0, filename);
+//  Runloader
+    AliRunLoader* rl = AliRunLoader::Open("galice.root", "FASTRUN", "recreate");
 
-//  Create Header
-    AliHeader* header    = new AliHeader();
-//  Create Header Tree
-    TTree* treeE         = new TTree("TE","Headers");
-    treeE->Branch("Header", "AliHeader", &header, 4000, 0);
-    treeE->Write();
-//
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(10000);
+    rl->LoadKinematics("RECREATE");
+    rl->MakeTree("E");
+    gAlice->SetRunLoader(rl);
+
+
+//  Create stack
+    rl->MakeStack();
+    AliStack* stack      = rl->Stack();
+ 
+//  Header
+    AliHeader* header = rl->GetHeader();
+
+
 //  Create and Initialize Generator
     AliGenerator *gener = CreateGenerator();
-    AliPythia* pyth = AliPythia::Instance();
-    
     gener->Init();
     gener->SetStack(stack);
     
@@ -33,22 +33,24 @@ void fastGenPA(Int_t nev = 1, char* filename = "galice.root")
     for (iev = 0; iev < nev; iev++) {
 
 	printf("\n \n Event number %d \n \n", iev);
-	
-//  Initialize event
+
+	//  Initialize event
+
 	header->Reset(0,iev);
+	rl->SetEventNumber(iev);
 	stack->Reset();
-	stack->BeginEvent(iev);
+	rl->MakeTree("K");
 
 //  Generate event
+
 	gener->Generate();
-		
+
 //  Analysis
 	Int_t npart = stack->GetNprimary();
-//	printf("Analyse %d Particles\n", npart);
+	printf("Analyse %d Particles\n", npart);
 	for (Int_t part=0; part<npart; part++) {
 	    TParticle *MPart = stack->Particle(part);
 	    Int_t mpart  = MPart->GetPdgCode();
-	    printf("Particle %d\n", mpart);
 	}
 	
 //  Finish event
@@ -56,25 +58,20 @@ void fastGenPA(Int_t nev = 1, char* filename = "galice.root")
 	header->SetNtrack(stack->GetNtrack());  
 //      I/O
 //	
-//	stack->FinishEvent();
-//	header->SetStack(stack);
-//	treeE->Fill();
-//	(stack->TreeK())->Write(0,TObject::kOverwrite);
+	stack->FinishEvent();
+	header->SetStack(stack);
+	rl->TreeE()->Fill();
+	rl->WriteKinematics("OVERWRITE");
     } // event loop
 //
 //                         Termination
 //  Generator
-    printf("Calling Finish Run \n");
-    
     gener->FinishRun();
-//  Header
-    treeE->Write(0,TObject::kOverwrite);
-    delete treeE;   treeE = 0;
-//  Stack
-    stack->FinishRun();
-//  Write file
+
+    //  Write file
+    rl->WriteHeader("OVERWRITE");
     gener->Write();
-    file->Write();
+    rl->Write();
 }
 
 
