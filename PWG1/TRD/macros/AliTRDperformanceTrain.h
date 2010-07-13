@@ -16,7 +16,8 @@ enum ETRDinfoGenOutSlots {
   ,kTracksSA      = 3
   ,kTracksKink    = 4
   ,kV0List        = 5
-  ,kNOutSlots     = 6
+  ,kMonitor       = 6
+  ,kNOutSlots     = 7
 };
 
 enum ETRDrecoTasks{
