@@ -33,11 +33,16 @@
 //   Markus Heide <mheide@uni-muenster.de>                                //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+
 #include "TMath.h"
+#include "TDatabasePDG.h"
 
 #include "AliESDtrack.h"
 #include "AliESDv0.h"
 #include "AliLog.h"
+#include "TVector3.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
 
 #include "AliTRDv0Info.h"
 #include "AliTRDtrackInfo.h"
@@ -60,6 +65,8 @@ AliTRDv0Info::AliTRDv0Info()
   ,fTrackN(NULL)
   ,fNindex(0)
   ,fPindex(0)
+  ,fInputEvent(NULL)
+  ,fPrimaryVertex(NULL)
 {
   //
   // Default constructor
@@ -70,6 +77,9 @@ AliTRDv0Info::AliTRDv0Info()
   memset(fDetPID, 0, 2*kNDaughters*kNDetectors*AliPID::kSPECIES*sizeof(Float_t));
   memset(fComPID, 0, 2*kNDaughters*AliPID::kSPECIES*sizeof(Float_t));
   memset(fInvMass, 0, kNMomBins*kNDecays*sizeof(Double_t));
+  memset(fArmenteros, 0, kNDecays*sizeof(Bool_t));
+  memset(fTPCdEdx, 0, kNDecays*sizeof(Float_t));
+  memset(fChi2ndf, 0, kNDecays*sizeof(Double_t));
 
   /////////////////////////////////////////////////////////////////////////////
   //Set Cut values: First specify decay in brackets, then the actual cut value!
@@ -100,6 +110,12 @@ AliTRDv0Info::AliTRDv0Info()
   fDownInvMass[kLambda] = 1.107;
   fDownInvMass[kAntiLambda] = 1.107;
 
+  //Upper limit for KF Chi2/NDF value;
+  fUpChi2ndf[kGamma] = 10000.;//7.;
+  fUpChi2ndf[kK0s] = 10000.;//5.;
+  fUpChi2ndf[kLambda] = 10000.;//5.;
+  fUpChi2ndf[kAntiLambda] = 10000.;//5.;
+
   //Lower limit for distance from secondary vertex to primary vertex in x-y plane :
   fDownRadius[kGamma] = 6.;
   fDownRadius[kK0s] = 0.;
@@ -125,6 +141,55 @@ AliTRDv0Info::AliTRDv0Info()
   fUpPsiPair[kAntiLambda] = 1.6;
 
   //Lower limit for likelihood value of TPC PID :
+  fDownTPCPIDneg[AliPID::kElectron] = 0.;
+  fDownTPCPIDpos[AliPID::kElectron] = 0.;
+
+  fDownTPCPIDneg[AliPID::kMuon] = 0.;
+  fDownTPCPIDpos[AliPID::kMuon] = 0.;
+
+  fDownTPCPIDneg[AliPID::kPion] = 0.;
+  fDownTPCPIDpos[AliPID::kPion] = 0.;
+
+  fDownTPCPIDneg[AliPID::kKaon] = 0.;
+  fDownTPCPIDpos[AliPID::kKaon] = 0.;
+
+  fDownTPCPIDneg[AliPID::kProton] = 0.;
+  fDownTPCPIDpos[AliPID::kProton] = 0.;
+
+ //Lower limit for likelihood value of combined PID :
+  fDownComPIDneg[AliPID::kElectron] = 0.;
+  fDownComPIDpos[AliPID::kElectron] = 0.;
+
+  fDownComPIDneg[AliPID::kMuon] = 0.;
+  fDownComPIDpos[AliPID::kMuon] = 0.;
+
+  fDownComPIDneg[AliPID::kPion] = 0.;
+  fDownComPIDpos[AliPID::kPion] = 0.;
+
+  fDownComPIDneg[AliPID::kKaon] = 0.;
+  fDownComPIDpos[AliPID::kKaon] = 0.;
+
+  fDownComPIDneg[AliPID::kProton] = 0.;
+  fDownComPIDpos[AliPID::kProton] = 0.;
+
+ //Lower limit for likelihood value of combined PID for daughter track which doesn't enter reference data (here: pion daughters from Lambda decays:
+  fDownComPIDnegPart[AliPID::kElectron] = 0.;
+  fDownComPIDposPart[AliPID::kElectron] = 0.;
+
+  fDownComPIDnegPart[AliPID::kMuon] = 0.;
+  fDownComPIDposPart[AliPID::kMuon] = 0.;
+
+  fDownComPIDnegPart[AliPID::kPion] = 0.;
+  fDownComPIDposPart[AliPID::kPion] = 0.;
+
+  fDownComPIDnegPart[AliPID::kKaon] = 0.;
+  fDownComPIDposPart[AliPID::kKaon] = 0.;
+
+  fDownComPIDnegPart[AliPID::kProton] = 0.;
+  fDownComPIDposPart[AliPID::kProton] = 0.;
+
+  //Parameters for data with well-calibrated PID (after usage of tender):
+  /* //Lower limit for likelihood value of TPC PID :
   fDownTPCPIDneg[AliPID::kElectron] = 0.21;
   fDownTPCPIDpos[AliPID::kElectron] = 0.21;
 
@@ -140,7 +205,7 @@ AliTRDv0Info::AliTRDv0Info()
   fDownTPCPIDneg[AliPID::kProton] = 0.21;
   fDownTPCPIDpos[AliPID::kProton] = 0.21;
 
- //Lower limit for likelihood value of combined PID :
+  //Lower limit for likelihood value of combined PID :
   fDownComPIDneg[AliPID::kElectron] = 0.21;
   fDownComPIDpos[AliPID::kElectron] = 0.21;
 
@@ -170,7 +235,7 @@ AliTRDv0Info::AliTRDv0Info()
   fDownComPIDposPart[AliPID::kKaon] = 0.05;
 
   fDownComPIDnegPart[AliPID::kProton] = 0.05;
-  fDownComPIDposPart[AliPID::kProton] = 0.05;
+  fDownComPIDposPart[AliPID::kProton] = 0.05;*/
 }
 
 //_________________________________________________
@@ -182,12 +247,14 @@ AliTRDv0Info::AliTRDv0Info(const AliTRDv0Info &ref)
   ,fOpenAngle(ref.fOpenAngle)
   ,fPsiPair(ref.fPsiPair)
   ,fMagField(ref.fMagField)
-  ,fRadius(ref.fMagField)
+  ,fRadius(ref.fRadius)
   ,fV0Momentum(ref.fV0Momentum)
   ,fTrackP(ref.fTrackP)
   ,fTrackN(ref.fTrackN)
   ,fNindex(ref.fNindex)
   ,fPindex(ref.fPindex)
+  ,fInputEvent(ref.fInputEvent)
+  ,fPrimaryVertex(ref.fPrimaryVertex)
 {
   //
   // Copy constructor
@@ -198,6 +265,9 @@ AliTRDv0Info::AliTRDv0Info(const AliTRDv0Info &ref)
   memcpy(fDetPID, ref.fDetPID, 2*kNDaughters*kNDetectors*AliPID::kSPECIES*sizeof(Float_t));
   memcpy(fComPID, ref.fComPID, 2*kNDaughters*AliPID::kSPECIES*sizeof(Float_t));
   memcpy(fInvMass, ref.fInvMass, kNMomBins*kNDecays*sizeof(Double_t));
+  memcpy(fArmenteros, ref.fArmenteros, kNDecays*sizeof(Bool_t));
+  memcpy(fChi2ndf, ref.fChi2ndf, kNDecays*sizeof(Double_t));
+  memcpy(fTPCdEdx, ref.fTPCdEdx, kNDaughters*sizeof(Float_t));
 
   //Upper limit for distance of closest approach of two daughter tracks :
   memcpy(fUpDCA, ref.fUpDCA, kNDecays*sizeof(Float_t));
@@ -208,6 +278,7 @@ AliTRDv0Info::AliTRDv0Info(const AliTRDv0Info &ref)
   memcpy(fDownPsiPair, ref.fDownPsiPair, kNDecays*sizeof(Float_t));
   memcpy(fUpInvMass, ref.fUpInvMass, kNDecays*kNMomBins*sizeof(Double_t));
   memcpy(fDownInvMass, ref.fDownInvMass, kNDecays*sizeof(Double_t));
+  memcpy(fUpChi2ndf, ref.fUpChi2ndf, kNDecays*sizeof(Double_t));
   memcpy(fUpRadius, ref.fUpRadius, kNDecays*sizeof(Float_t));
   memcpy(fDownRadius, ref.fDownRadius, kNDecays*sizeof(Float_t));
   memcpy(fDownTPCPIDneg, ref.fDownTPCPIDneg, AliPID::kSPECIES*sizeof(Float_t));
@@ -240,6 +311,8 @@ void AliTRDv0Info::SetV0Info(AliESDv0 *esdv0)
   //4 decay types : conversions, K0s, Lambda, Anti-Lambda 
     //five particle types: electrons, muons, pions, kaons, protons (muons and kaons not involved)
   for(Int_t idecay(0), part1(-1), part2(-1); idecay < kNDecays; idecay++){
+
+    fArmenteros[idecay]=Armenteros(esdv0, idecay);//Attribute the Armenteros yes/no decision for every decay type
     if(idecay == kLambda){ //protons and pions from Lambda
       part1 = AliPID::kProton;
       part2 = AliPID::kPion;
@@ -252,11 +325,16 @@ void AliTRDv0Info::SetV0Info(AliESDv0 *esdv0)
       part1 = part2 = AliPID::kElectron;
     } 
     fInvMass[idecay] = InvMass(part1, part2, esdv0);//Calculate invariant mass for all of our four supposed decays
+    fChi2ndf[idecay] = KFChi2ndf(part1, part2,idecay);
+   
   }
   //Gets all likelihood values from TPC, TOF and ITS PID for the fDetPID[kNDaughters][kNDetectors][AliPID::kSPECIES] array
   GetDetectorPID();
   //Bayesian combination of likelihoods from TPC and TOF
   CombinePID();
+  //TPC dE/dx values for both tracks
+  GetTPCdEdx();
+
 }
 //_________________________________________________
 Float_t  AliTRDv0Info::V0Momentum(AliESDv0 *esdv0) const
@@ -293,8 +371,8 @@ Double_t AliTRDv0Info::InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0) const
   esdv0->GetNPxPyPz(mn[0],mn[1],mn[2]);//reconstructed cartesian momentum components of negative daughter;
   esdv0->GetPPxPyPz(mp[0],mp[1],mp[2]);//reconstructed cartesian momentum components of positive daughter;
   
-  Double_t mass1 = kpmass[part1];//sets supposed rest masses for both daughters
-  Double_t mass2 = kpmass[part2];   
+  Double_t mass1 = kpmass[part1];//sets supposed rest masses for both daughters: positive
+  Double_t mass2 = kpmass[part2];//negative   
 
   //Calculate daughters' energies :
   Double_t e1    = TMath::Sqrt(mass1*mass1+
@@ -382,7 +460,48 @@ Float_t AliTRDv0Info::PsiPair(AliESDv0 *esdv0)
   return fPsiPair; 
 
 }
+//_________________________________________________
+Double_t AliTRDv0Info::KFChi2ndf(Int_t part1, Int_t part2,Int_t decay){
+  //Calculates Kalman filter Chi2/NDF
+  Int_t mothers[4]={22,310,3122,3122};
 
+  const Double_t partMass=TDatabasePDG::Instance()->GetParticle(mothers[decay])->Mass();
+  const Double_t massWidth[4] = {0.001, 0., 0., 0.};
+ 
+  AliKFParticle *kfMother = CreateMotherParticle(fTrackP, fTrackN, part1, part2);
+ 
+  // Lambda
+  if(!kfMother) {
+  return kFALSE;
+  }
+  
+  // production vertex is set in the 'CreateMotherParticle' function
+  kfMother->SetMassConstraint(partMass, massWidth[decay]);
+ 
+  Double_t chi2ndf = (kfMother->GetChi2()/kfMother->GetNDF());
+ 
+  if(kfMother)delete kfMother;
+  return chi2ndf; 
+}
+//________________________________________________________________
+AliKFParticle *AliTRDv0Info::CreateMotherParticle(AliESDtrack *pdaughter, AliESDtrack *ndaughter, Int_t pspec, Int_t nspec){
+  //
+  // Creates a mother particle
+  //
+  AliKFParticle pkfdaughter(*pdaughter, pspec);
+  AliKFParticle nkfdaughter(*ndaughter, nspec);
+  
+ 
+  // Create the mother particle 
+  AliKFParticle *m = new AliKFParticle(pkfdaughter, nkfdaughter);
+ 
+  AliKFVertex improvedVertex = *fPrimaryVertex;
+  improvedVertex += *m;
+  m->SetProductionVertex(improvedVertex);
+  
+
+  return m;
+}
 //_________________________________________________
 Int_t AliTRDv0Info::HasTrack(AliTRDtrackInfo * const track)
 {
@@ -464,10 +583,71 @@ void AliTRDv0Info::CombinePID()
     }
 }
 //_________________________________________________
+void AliTRDv0Info::GetTPCdEdx()
+{
+  fTPCdEdx[kNeg] = fTrackN->GetTPCsignal();
+  fTPCdEdx[kPos] = fTrackP->GetTPCsignal();
+
+}
+//_________________________________________________
+Bool_t AliTRDv0Info::TPCdEdxCuts(Int_t part, AliTRDtrackInfo * const track)
+{
+  //Bethe-Bloch lines
+  Double_t alephParameters[5];
+  
+  // data
+  alephParameters[0] = 0.0283086;
+  alephParameters[1] = 2.63394e+01;
+  alephParameters[2] = 5.04114e-11;
+  alephParameters[3] = 2.12543e+00;
+  alephParameters[4] = 4.88663e+00;
+  
+
+  Double_t deposit = 0;
+  Float_t x = 0;
+  if(HasTrack(track) == 1){
+    x = fTrackP->P();
+    deposit = fTPCdEdx[kPos];
+  }
+  else if(HasTrack(track) == -1){
+    x = fTrackN->P();
+    deposit = fTPCdEdx[kNeg];
+  }
+  else{
+    printf("No track found");
+    return 0;
+  }
+  if(x < 0.2)return 0;
+
+  Float_t upLimits[5]={85,1000,50*AliExternalTrackParam::BetheBlochAleph(x/0.13957, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])+6,1000,50*AliExternalTrackParam::BetheBlochAleph(x/0.93827, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])+10};
+  Float_t downLimits[5]={62,40,50*AliExternalTrackParam::BetheBlochAleph(x/0.13957, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])-6,40,50*AliExternalTrackParam::BetheBlochAleph(x/0.93827, alephParameters[0], alephParameters[1], alephParameters[2], alephParameters[3],  alephParameters[4])-11};
+  
+  
+  if(x < 0.7){
+    downLimits[4]=90;
+  }
+  if(x < 1.25){
+    upLimits[0] = 85;
+  }
+  else{
+    downLimits[0] = 64;
+  }
+
+
+  if(deposit < downLimits[part])
+    return 0;
+  if(deposit > upLimits[part])
+    return 0;
+
+ 
+  return 1;
+
+}
+//_________________________________________________
 Float_t AliTRDv0Info::Radius(AliESDv0 *esdv0)
 {//distance from secondary vertex to primary vertex in x-y plane
   Double_t x, y, z;
-  esdv0->GetXYZ(x,y,z); //Reconstructed coordinates of V0; to be replaced by Markus Rammler's method in case of conversions!
+  esdv0->GetXYZ(x,y,z); //Reconstructed coordinates of V0
   fRadius = TMath::Sqrt(x*x + y*y);
   return fRadius;
 
@@ -492,42 +672,137 @@ Int_t AliTRDv0Info::Quality(AliESDv0 *const esdv0)
   fQuality = 0;
 
 
+  if (!(esdv0->GetOnFlyStatus()))//accept only vertices from online V0 finder
+    return -1;
+
   Float_t clsRatioN; 
   Float_t clsRatioP;
 
-  if((nClsFN == 0) || (nClsFP == 0)) return -2;
+  if((nClsFN < 80) || (nClsFP < 80)) return -2;//reject all V0s where at least one track has less than 80 TPC clusters
+
+ // Chi2 per TPC cluster
+  Int_t nTPCclustersP = fTrackP->GetTPCclusters(0);
+  Int_t nTPCclustersN = fTrackN->GetTPCclusters(0);
+  Float_t chi2perTPCclusterP = fTrackP->GetTPCchi2()/Float_t(nTPCclustersP);
+  Float_t chi2perTPCclusterN = fTrackN->GetTPCchi2()/Float_t(nTPCclustersN);
+ 
+  if((chi2perTPCclusterN > 3.5)||(chi2perTPCclusterP > 3.5)) return -3;//reject all V0s where at least one track has a chi2 above 3.5
     
   clsRatioN = nClsN/nClsFN; //ratios of found to findable clusters in TPC 
   clsRatioP = nClsP/nClsFP;
-    
-  if (!(esdv0->GetOnFlyStatus()))//accept only vertices from online V0 finder
-    return -3;
+  
+  if((clsRatioN < 0.6)||(clsRatioP < 0.6))//exclude tracks with low ratio of found to findable TPC clusters
+    return -4;
+ 
   if (!((fTrackP->GetStatus() &
   AliESDtrack::kTPCrefit)))//accept only vertices in which both tracks have TPC refit
-    return -4;
+    return -5;
   if (!((fTrackN->GetStatus() &
   AliESDtrack::kTPCrefit)))
-    return -5;	
+    return -6;	
   if (fTrackP->GetKinkIndex(0)>0  ||
       fTrackN->GetKinkIndex(0)>0 )//exclude tracks with kinks
-    return -6;
-  if((clsRatioN < 0.6)||(clsRatioP < 0.6))//exclude tracks with low ratio of found to findable TPC clusters
     return -7;
+ 
+  if(!(V0SignCheck()))
+       return -8;
   fQuality = 1;
   return fQuality;
+}
+//________________________________________________________________
+Bool_t AliTRDv0Info::V0SignCheck(){
+  //
+  // Check if v0 daughters really carry opposite charges
+  //
+ 
+  Int_t qP = fTrackP->Charge();
+  Int_t qN = fTrackN->Charge();
+
+  if((qP*qN) != -1) return kFALSE;
+
+  return kTRUE;
+}
+//___________________________________________________________________
+Bool_t AliTRDv0Info::Armenteros(AliESDv0 *esdv0, Int_t decay){
+  //
+  // computes the Armenteros variables for given V0
+  //
+  Double_t mn[3] = {0,0,0};
+  Double_t mp[3] = {0,0,0};  
+  Double_t mm[3] = {0,0,0};  
+ 
+  if(V0SignCheck()){
+    esdv0->GetNPxPyPz(mn[0],mn[1],mn[2]); //reconstructed cartesian momentum components of negative daughter
+    esdv0->GetPPxPyPz(mp[0],mp[1],mp[2]); //reconstructed cartesian momentum components of positive daughter
+  }
+  else{
+    esdv0->GetPPxPyPz(mn[0],mn[1],mn[2]); //reconstructed cartesian momentum components of negative daughter
+    esdv0->GetNPxPyPz(mp[0],mp[1],mp[2]); //reconstructed cartesian momentum components of positive daughter
+  }
+  esdv0->GetPxPyPz(mm[0],mm[1],mm[2]); //reconstructed cartesian momentum components of mother
+
+  TVector3 vecN(mn[0],mn[1],mn[2]);
+  TVector3 vecP(mp[0],mp[1],mp[2]);
+  TVector3 vecM(mm[0],mm[1],mm[2]);
+  
+  Double_t thetaP = acos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
+  Double_t thetaN = acos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
+  
+  Double_t alfa = ((vecP.Mag())*cos(thetaP)-(vecN.Mag())*cos(thetaN))/
+    ((vecP.Mag())*cos(thetaP)+(vecN.Mag())*cos(thetaN)) ;
+  Double_t qt = vecP.Mag()*sin(thetaP);
+
+  Float_t ap[2];
+  ap[0] = alfa;
+  ap[1] = qt;
+
+  Double_t LcutAP[2];//Lambda/Anti-Lambda cuts
+  if(decay == 0){
+    // armenteros cuts
+    const Double_t cutAlpha[2] = {0.35, 0.45};   // [0.35, 0.45]
+    const Double_t cutQT = 0.015;
+    if(TMath::Abs(ap[0]) > cutAlpha[0] && TMath::Abs(ap[0]) < cutAlpha[1]) return kFALSE;
+   
+    if(ap[1] > cutQT) return kFALSE;
+  }
+  
+  else if(decay == 1){
+    const Double_t cutQT = 0.1075;
+    const Double_t cutAP = 0.22 * TMath::Sqrt( TMath::Abs( (1-ap[0]*ap[0]/(0.92*0.92)) ) );
+    if(ap[1] < cutQT) return kFALSE;
+    if(ap[1] > cutAP) return kFALSE;
+  }
+  else if(decay == 2){
+    const Double_t cutQT = 0.03;
+    const Double_t cutAlpha = 0.7;  // VERY strong - should supress the overlap with K0
+    LcutAP[0] = 1.0 - (ap[0]-0.7 * ap[0]-0.7)*1.1 - 0.87;
+    if(TMath::Abs(ap[0]) > cutAlpha) return kFALSE;
+    if(ap[1] < cutQT) return kFALSE;
+    if(ap[1] > LcutAP[0]) return kFALSE;
+
+  }
+  else if(decay == 3){
+    const Double_t cutQT = 0.03;
+    const Double_t cutAlpha = 0.7;  // VERY strong - should supress the overlap with K0
+    LcutAP[1] = 1.0 - (ap[0]+0.7 * ap[0]+0.7)*1.1 - 0.87;
+    if(TMath::Abs(ap[0]) > cutAlpha) return kFALSE;
+    if(ap[1] < cutQT) return kFALSE;
+    if(ap[1] > LcutAP[1]) return kFALSE;
+  }
+  return kTRUE;
 }
 //_________________________________________________
 Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
 {
-// Decides if track is accepted for one of the reference data samples
-  
+  // Decides if track is accepted for one of the reference data samples
+  Int_t cutCode = -99;
   if(!(track)) {
     AliError("No track info");
     return -1;
   }
   if(!HasTrack(track)){
     AliDebug(2, "Track not attached to v0.");
-    return -1;
+    return -2;
   }
 
   //translate ipart to decay (Anti-Lambda will be treated separately)
@@ -538,23 +813,24 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
   case AliPID::kProton: iDecay = kLambda; break;
   default:
     AliWarning(Form("Hypothesis \"ipart=%d\" not handled", ipart));
-    return -1;
+    return -3;
   }
 
   //... it fulfills our quality criteria
-  if(!(fQuality == 1)) return 0;
+  if(!(fQuality == 1)) return -4;
   //... distance of closest approach between daughters is reasonably small
-  if((fDCA > fUpDCA[iDecay])) return 0;
+  if((fDCA > fUpDCA[iDecay])) return -5;
   //... pointing angle between momentum of mother particle and vector from prim. to sec. vertex is small
-  if((fPointingAngle > fUpPointingAngle[iDecay])) return 0;
+  if((fPointingAngle > fUpPointingAngle[iDecay])) return -6;
   //... x-y plane distance of decay point to prim. vertex is bigger than a certain minimum value (for conversions)
-  if((fRadius < fDownRadius[iDecay])) return 0;
+  if((fRadius < fDownRadius[iDecay])) return -7;
   //...or smaller than a maximum value (for K0s)
-  if((fRadius > fUpRadius[iDecay])) return 0;
+  if((fRadius > fUpRadius[iDecay])) return -8;
   //... opening angle is close enough to zero (for conversions)
-  if((fOpenAngle > fUpOpenAngle[iDecay])) return 0;
+  if((fOpenAngle > fUpOpenAngle[iDecay])) return -9;
   //... Psi-pair angle is close enough to zero(for conversions)
-  if((TMath::Abs(fPsiPair) > fUpPsiPair[iDecay])) return 0;
+  if((TMath::Abs(fPsiPair) > fUpPsiPair[iDecay])) return -10;
+ 
 
 
   //Mother momentum slots above/below 2.5 GeV
@@ -563,49 +839,100 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
 
   //specific cut criteria :
   if(ipart == AliPID::kProton) {
-    if((fInvMass[kK0s] < fUpInvMass[kK0s][iPSlot]) && (fInvMass[kK0s] > fDownInvMass[kK0s])) return 0;//explicit exclusion of K0s decays
-  
+    if((fInvMass[kK0s] < fUpInvMass[kK0s][iPSlot]) && (fInvMass[kK0s] > fDownInvMass[kK0s])) return -11;//explicit exclusion of K0s decays
+
+    if(fOpenAngle < (0.3 - 0.2*fV0Momentum))return -9;
+
+ 
+
     //for proton sample: separate treatment of Lamba and Anti-Lambda decays:
     //for Anti-Lambda:
     //Combined PID likelihoods high enough for pi+ and anti-proton ; invariant mass calculated postulating these two particle species...
-    if((fComPID[kNeg][AliPID::kProton] > fDownComPIDneg[AliPID::kProton]) && (fComPID[kPos][AliPID::kPion] > fDownComPIDposPart[AliPID::kPion])) {
-      if(fNindex == trackID) {
-        if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda])) return 1;
+    //if((fComPID[kNeg][AliPID::kProton] > fDownComPIDneg[AliPID::kProton]) && (fComPID[kPos][AliPID::kPion] > fDownComPIDposPart[AliPID::kPion])) {
+    //if((fDetPID[kNeg][kTPC][AliPID::kProton] > fDownTPCPIDneg[AliPID::kProton]) && (fDetPID[kPos][kTPC][AliPID::kPion] > fDownTPCPIDpos[AliPID::kPion])){
+    if((TPCdEdxCuts(ipart, track))){//momentary solution: direct cut on TPC dE/dx
+      if(fNindex == trackID) {//we're only interested in the anti-proton
+	if(fArmenteros[kAntiLambda]){//Armenteros condition has to be fulfilled	  
+	  if(fChi2ndf[kAntiLambda] < fUpChi2ndf[kAntiLambda]){//Kalman filter Chi2/NDF not allowed to be too large
+	    if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda])){  
+        return 1;
+	    } else cutCode = -15;
+	  }
+	  else cutCode =-14;
+	}
+	else cutCode = -13;
       }
     }
+    else cutCode = -12;
     //for Lambda:
     //TPC PID likelihoods high enough for pi- and proton ; invariant mass calculated accordingly
-    if((fComPID[kNeg][AliPID::kPion] > fDownComPIDnegPart[AliPID::kPion]) && (fComPID[kPos][AliPID::kProton] > fDownComPIDpos[AliPID::kProton])) {
+    //if((fComPID[kNeg][AliPID::kPion] > fDownComPIDnegPart[AliPID::kPion]) && (fComPID[kPos][AliPID::kProton] > fDownComPIDpos[AliPID::kProton])) {
+    //if((fDetPID[kNeg][kTPC][AliPID::kPion] > fDownTPCPIDneg[AliPID::kPion]) && (fDetPID[kPos][kTPC][AliPID::kProton] > fDownTPCPIDpos[AliPID::kProton])){
+    if((TPCdEdxCuts(ipart, track))){//momentary solution: direct TPC dE/dx cuts
       if(fPindex == trackID) {
-        if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda])) return 1;
+	if(fArmenteros[kLambda]){
+	  if(fChi2ndf[kLambda] < fUpChi2ndf[kLambda]){
+	    if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda])){ 
+        return 1;
+	    } else cutCode = -15;
+	  }
+	  else cutCode = -14;
+	}
+	else cutCode = -13;
       }
     }
+    else cutCode = -12;
+    return cutCode;
   }
-
-  //Invariant mass cut for K0s and photons, assuming two pions/two electrons as daughters:
-  if((fInvMass[iDecay] > fUpInvMass[iDecay][iPSlot]) || (fInvMass[iDecay] < fDownInvMass[iDecay])) return 0;
-
+ 
   //for K0s decays: equal TPC PID likelihood criteria for both daughters ; invariant mass calculated postulating two pions
   if(ipart == AliPID::kPion) {
+    
+    if(fOpenAngle < (1.0/(fV0Momentum + 0.3) - 0.1))
+      return -9;
+    
     //explicit exclusion of Lambda decays
-    if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda])) return 0;
+    if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda])) return -11;
     //explicit exclusion of Anti-Lambda decays
-    if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda])) return 0;
-
-    if((fDetPID[kNeg][kTPC][ipart] > fDownTPCPIDneg[ipart]) && (fDetPID[kPos][kTPC][ipart] > fDownTPCPIDpos[ipart])) return 1;
-  }
-
-  //for photon conversions: equal combined PID likelihood criteria for both daughters ; invariant mass calculated postulating two electrons
-  //No Lambda/K0s exclusion is provided, since these contributions hardly ever interfere with gamma invariant mass!
-  Float_t momentum(track->GetESDinfo()->GetOuterParam()->P());
-  if(ipart == AliPID::kElectron) {
-    if(momentum > 1.75) {//since combined PID performs a little worse in simulations than TPC standalone for higher momenta, ONLY TPC PID is used here
-      if((fDetPID[kNeg][kTPC][ipart] > fDownTPCPIDneg[ipart]) && (fDetPID[kPos][kTPC][ipart] > fDownTPCPIDpos[ipart])) return 1;
-    } else {//for low momenta, combined PID from TOF and TPC is used to get rid of proton contamination
-      if((fComPID[kNeg][ipart] > fDownComPIDneg[ipart]) && (fComPID[kPos][ipart] > fDownComPIDpos[ipart])) return 1;
+    if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda])) return -11;
+    
+    //if((fDetPID[kNeg][kTPC][ipart] < fDownTPCPIDneg[ipart]) || (fDetPID[kPos][kTPC][ipart] < fDownTPCPIDpos[ipart])) return -12;
+    if(!(TPCdEdxCuts(ipart, track))){//momentary solution: direct TPC dE/dx cuts
+      return -12;
     }
   }
-  return 0;
+  
+  
+  //for photon conversions: equal combined PID likelihood criteria for both daughters ; invariant mass calculated postulating two electrons
+  //No Lambda/K0s exclusion is provided, since these contributions hardly ever interfere with gamma invariant mass!
+  //Float_t momentum(track->GetESDinfo()->GetOuterParam()->P());
+  if(ipart == AliPID::kElectron) {
+    //if(momentum > 1.75) {//since combined PID performs a little worse in simulations than TPC standalone for higher momenta, ONLY TPC PID is used here
+    //if((fDetPID[kNeg][kTPC][ipart] < fDownTPCPIDneg[ipart]) || (fDetPID[kPos][kTPC][ipart] < fDownTPCPIDpos[ipart])) return -12;
+    //} else {//for low momenta, combined PID from TOF and TPC is used to get rid of proton contamination
+    //if((fComPID[kNeg][ipart] > fDownComPIDneg[ipart]) && (fComPID[kPos][ipart] > fDownComPIDpos[ipart])) return 1;
+    //}
+    if(!(TPCdEdxCuts(ipart, track))){//momentary solution for direct TPC dE/dx cut
+      return -12;
+    }
+    
+  }
+  
+ 
+  //Armenteros-Polanski cut
+  if(!(fArmenteros[iDecay])) return -13;
+  
+  //Kalman filter Chi2/NDF cut
+  if(fChi2ndf[iDecay] > fUpChi2ndf[iDecay]) return -14;
+
+  //Invariant mass cut for K0s and photons, assuming two pions/two electrons as daughters:
+ 
+  if((fInvMass[iDecay] > fUpInvMass[iDecay][iPSlot]) || (fInvMass[iDecay] < fDownInvMass[iDecay])) {
+    return -15;
+    
+  }
+   
+  return 1;
 }
 
 

@@ -26,6 +26,10 @@
 
 class AliESDv0;
 class AliESDtrack;
+class AliKFParticle;
+class AliKFVertex;
+class AliVEvent;
+class AliVTrack;
 //class AliTRDtrackV1;
 class AliTRDtrackInfo;
 class AliTRDv0Info : public TObject
@@ -38,9 +42,10 @@ public:
     ,kNDaughters = 2//for positive and negative track
     ,kNDecays = 4//number of decay types considered for reference data (conversions, K0s, Lambda, Anti-Lambda)  
     ,kNMomBins = 2//number of different momentum bins to consider for different cuts; first example: below /above 2.5 GeV-> to be refined!
+    ,kNArmenteros = 2//number of Armenteros-Polanski parameters
   };
 
-  enum EDaughter{
+  enum EDaughter{  
     kNeg = 0
     ,kPos = 1
   };
@@ -71,6 +76,8 @@ public:
 
   void   SetMagField(Float_t b) {fMagField = b;}
   void   SetV0tracks(AliESDtrack *p, AliESDtrack *n);
+  void SetInputEvent(AliVEvent *e)      { fInputEvent = e; };
+  void SetPrimaryVertex(AliKFVertex *v) { fPrimaryVertex = v; };
 
   //Set values of measured/calculated variables:
   void SetQuality(Int_t SQuality){fQuality = SQuality;}
@@ -84,6 +91,7 @@ public:
   void SetInvMass(Int_t iDecay, Float_t SInvMass){fInvMass[iDecay] = SInvMass;}
   void SetDetPID(Int_t iDaughter, Int_t iDetector, Int_t iSpecies, Float_t SDetPID){fDetPID[iDaughter][iDetector][iSpecies] = SDetPID;}
   void SetComPID(Int_t iDaughter, Int_t iSpecies, Float_t SComPID){fComPID[iDaughter][iSpecies] = SComPID;}
+  void SetTPCdEdx(Int_t iDaughter, Float_t STpcdEdx){fTPCdEdx[iDaughter] = STpcdEdx;}
 
 //____________________________________________________________
  //Set cut values:
@@ -107,11 +115,40 @@ public:
 
   void SetV0Info(AliESDv0 *v0);//gets most of the variables below
 
+  Double_t fChi2ndf[kNDecays];//Chi2/NDF from KF
+
+
+  Double_t fInvMass[kNDecays];  // invariant mass for different decay scenarios (conversions, K0s, Lambda->p+pi-, Lambda->p-pi+)
+  Int_t fQuality;              // track quality status for both V0 daughters; OnFly, TPCrefit, Kinks, TPC clusters
+ 
+ Double_t fDetPID[kNDaughters][kNDetectors][AliPID::kSPECIES]; // PID provided by TPC, TOF and ITS
+  Double_t fComPID[kNDaughters][AliPID::kSPECIES];//Combined PID, momentarily from TPC and TOF only
+
+  Float_t fDCA;  // Distance of closest approach of daughter tracks
+  Float_t fPointingAngle;// = TMath::ACos(esdv0->GetV0CosineOfPointingAngle()); // Cosine of pointing angle
+  Float_t fOpenAngle;  // opening angle between daughters
+  Float_t fPsiPair; // /Angle between daughter momentum plane and plane perpendicular to magnetic field
+ 
+  Bool_t fArmenteros[kNDecays];// Array for the Armenteros yes/no decision for all decays
+  Double_t fMagField; //magnetic field strength
+  Float_t fRadius; //distance of decay/conversion from primary vertex in x-y plane
+  Float_t fV0Momentum; //V0 mother's momentum
+  Float_t fTPCdEdx[kNDaughters]; //Energy deposition in the TPC
+
+  Double_t fUpInvMass[kNDecays][kNMomBins];  // invariant mass, upper limit
+  Double_t fDownInvMass[kNDecays];           // invariant mass, lower limit
+
+  AliESDtrack *fTrackP; //!positive daughter
+  AliESDtrack *fTrackN; //!negative daughter
+
 private:
   AliTRDv0Info& operator=(const AliTRDv0Info&);
 
   void GetDetectorPID();//operating with likelihood values of different detectors
   void CombinePID();//Bayesian combination of TPC and TOF likelihoods
+  Bool_t TPCdEdxCuts(Int_t part, AliTRDtrackInfo * const track);//direct cuts on TPC dE/dx
+
+  void GetTPCdEdx();//TPC dE/dx values from both tracks
   Int_t Quality(AliESDv0 * const esdv0);//checks for track/vertex quality criteria
   Double_t InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0) const;//invariant mass of mother
   Float_t PsiPair(AliESDv0 *esdv0);//angle between daughters in plane perpendicular to magnetic field (characteristically around zero for conversions)
@@ -120,21 +157,14 @@ private:
   Float_t DCA() const {return fDCA;}//distance of closest approach between supposed daughter tracks
   Float_t PointingAngle() const {return fPointingAngle;}//pointing angle: between vector from primary to secondary vertex and reconstructed momentum of V0 mother particle
   Float_t V0Momentum(AliESDv0 *esdv0) const;//reconstructed momentum of V0 mother particle
-  Int_t fQuality;              // track quality status for both V0 daughters; OnFly, TPCrefit, Kinks, TPC clusters
- 
+  Bool_t V0SignCheck();//checks if daughters have opposite signs
+  Bool_t  Armenteros(AliESDv0 *esdv0, Int_t species);//the famous Armenteros-Polanski cut
+  Double_t KFChi2ndf(Int_t part1, Int_t part2,Int_t decay);//Chi2ndf from KF
+  AliKFParticle *CreateMotherParticle(AliESDtrack *pdaughter, AliESDtrack *ndaughter, Int_t pspec, Int_t nspec);//Mother Particle from KF
+
   Float_t fPplus[2*kNlayer];    // momentum and variance for the positive daughter  
   Float_t fPminus[2*kNlayer];   // momentum and variance for the negative daughter  
-  Double_t fDetPID[kNDaughters][kNDetectors][AliPID::kSPECIES]; // PID provided by TPC, TOF and ITS
-  Double_t fComPID[kNDaughters][AliPID::kSPECIES];//Combined PID, momentarily from TPC and TOF only
-
-  Float_t fDCA;  // Distance of closest approach of daughter tracks
-  Float_t fPointingAngle;// = TMath::ACos(esdv0->GetV0CosineOfPointingAngle()); // Cosine of pointing angle
-  Float_t fOpenAngle;  // opening angle between daughters
-  Float_t fPsiPair; // /Angle between daughter momentum plane and plane perpendicular to magnetic field
-  Double_t fInvMass[kNDecays];  // invariant mass for different decay scenarios (conversions, K0s, Lambda->p+pi-, Lambda->p-pi+)
-  Double_t fMagField; //magnetic field strength
-  Float_t fRadius; //distance of decay/conversion from primary vertex in x-y plane
-  Float_t fV0Momentum; //V0 mother's momentum
+ 
 
   //____________________________________________________________
   //Upper and lower limits for cut variables:
@@ -145,8 +175,8 @@ private:
   Float_t fDownOpenAngle[kNDecays];          // opening angle, lower limit
   Float_t fUpPsiPair[kNDecays];              // psi angle, upper limit
   Float_t fDownPsiPair[kNDecays];            // psi angle, lower limit
-  Double_t fUpInvMass[kNDecays][kNMomBins];  // invariant mass, upper limit
-  Double_t fDownInvMass[kNDecays];           // invariant mass, lower limit
+ 
+  Double_t fUpChi2ndf[kNDecays];
   Float_t fUpRadius[kNDecays];               // radius, upper limit
   Float_t fDownRadius[kNDecays];             // radius, lower limit
   Float_t fDownTPCPIDneg[AliPID::kSPECIES];  // TPC PID negatives, lower limit
@@ -155,12 +185,13 @@ private:
   Float_t fDownComPIDpos[AliPID::kSPECIES];  // Combined PID positives, lower limit
   Float_t fDownComPIDnegPart[AliPID::kSPECIES]; // Combined PID positive partner daughters (NOT the daughter track that would go into the reference data; here: pion daughters from Lambda decays; lower limit
   Float_t fDownComPIDposPart[AliPID::kSPECIES]; // Combined PID positive partner daughters (NOT the daughter track that would go into the reference data; here: pion daughters from Lambda decays; lower limit
- 
-  AliESDtrack *fTrackP; //!positive daughter
-  AliESDtrack *fTrackN; //!negative daughter
+  
 
   Int_t       fNindex; //indices of positive and negative daughter track
   Int_t       fPindex; //indices of positive and negative daughter track
+
+  AliVEvent            *fInputEvent;    // Input Event
+  AliKFVertex          *fPrimaryVertex; // primary vertex
   
   
   ClassDef(AliTRDv0Info, 1) // extracted V0 MC information
