@@ -115,7 +115,7 @@ void AliAnalysisTaskAddObject::Exec(Option_t */*option*/)
 {
 
 	//	if (fDebug > 1) {
-	Long_t entry = fESDhandler->GetReadEntry();
+	Long64_t entry = fESDhandler->GetReadEntry();
 	AliDebug(2,Form("AliAnalysisTaskAddObject::Exec() %s ==> processing event %lld", fESDhandler->GetTree()->GetCurrentFile()->GetName(),entry));
 	//}  
 	fESDInput = fESDhandler->GetEvent();

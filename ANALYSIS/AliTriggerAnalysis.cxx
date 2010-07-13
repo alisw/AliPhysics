@@ -1050,7 +1050,7 @@ void AliTriggerAnalysis::PrintTriggerClasses() const
   {
     TParameter<Long64_t>* param = static_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(obj));
     
-    Printf(" %s: %lld triggers", obj->String().Data(), param->GetVal());
+    Printf(" %s: %ld triggers", obj->String().Data(), (Long_t)param->GetVal());
     
     TObjArray* tokens = obj->String().Tokenize(" ");
     for (Int_t i=0; i<tokens->GetEntries(); i++)
@@ -1075,7 +1075,7 @@ void AliTriggerAnalysis::PrintTriggerClasses() const
   {
     TParameter<Long64_t>* param = static_cast<TParameter<Long64_t>*> (singleTrigger.GetValue(obj));
     
-    Printf("  %s: %lld triggers", obj->String().Data(), param->GetVal());
+    Printf("  %s: %ld triggers", obj->String().Data(), (Long_t)param->GetVal());
   }
   delete iter;
   

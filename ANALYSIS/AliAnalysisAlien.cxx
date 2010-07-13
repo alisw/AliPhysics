@@ -1766,6 +1766,8 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       gEnv->SetValue("XNet.ReconnectTimeout",10);
       gEnv->SetValue("XNet.FirstConnectMaxCnt",1);
    }   
+   // Make sure we change the temporary directory
+   gSystem->Setenv("TMPDIR", gSystem->pwd());
    TObjArray *list = fOutputFiles.Tokenize(",");
    TIter next(list);
    TObjString *str;
@@ -2362,6 +2364,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }   
+      // Change temp directory to current one
+      out << "// Set temporary merging directory to current one" << endl;
+      out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
       out << "// connect to AliEn and make the chain" << endl;
       out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       if (IsUsingTags()) {
@@ -2694,7 +2699,10 @@ void AliAnalysisAlien::WriteMergingMacro()
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
          out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
-      }   
+      }
+      // Change temp directory to current one
+      out << "// Set temporary merging directory to current one" << endl;
+      out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
       out << "// Connect to AliEn" << endl;
       out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       out << "   TString outputDir = \"" << fGridOutputDir << "/\";" << endl;  

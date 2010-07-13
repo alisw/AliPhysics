@@ -305,7 +305,7 @@ Double_t AliCollisionNormalization::ComputeNint() {
     Int_t cint1E = (Int_t) fHistStatBin0->GetBinContent(icol,4);      
     bg   = cint1A + cint1C-2*cint1E ;
     if (cint1B != triggeredEventsWith0MultWithBG) {
-      AliWarning(Form("Events in bin0 from physics selection and local counter not consistent: %d - %d", cint1B, triggeredEventsWith0MultWithBG));
+      AliWarning(Form("Events in bin0 from physics selection and local counter not consistent: %d - %d", cint1B, (Int_t)triggeredEventsWith0MultWithBG));
     }
   }
 
@@ -674,7 +674,7 @@ void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& ref_
       }    
   } 
   else {
-    AliFatal(Form("Unknown energy %f", origin, fEnergy));
+    AliFatal(Form("Unknown energy %f", fEnergy));
   }
     
 }

@@ -129,7 +129,7 @@ void AliTender::UserExec(Option_t* /*option*/)
 //
 // Execute all supplied analysis of one event. Notify run change via RunChanged().
   if (fDebug > 1) {
-    Long_t entry = fESDhandler->GetReadEntry();
+    Long64_t entry = fESDhandler->GetReadEntry();
     Printf("AliTender::Exec() %s ==> processing event %lld\n", fESDhandler->GetTree()->GetCurrentFile()->GetName(),entry);
   }  
   fESD = fESDhandler->GetEvent();
