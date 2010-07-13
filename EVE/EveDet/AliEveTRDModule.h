@@ -44,8 +44,6 @@ public:
   virtual Bool_t GetDigitsLog() const {return fDigitsLog;}
   virtual UShort_t GetDigitsThreshold() const {return fDigitsThreshold;}
   virtual Int_t	GetID() const {return fDet;}
-  virtual void	Paint(Option_t* option="")=0;
-  virtual void	Reset()=0;
 
 protected:
   // UI section

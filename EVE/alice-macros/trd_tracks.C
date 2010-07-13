@@ -21,8 +21,9 @@ void trd_tracks(TEveElement *cont = 0)
     return;
   }
 
-  AliEveEventManager::AssertGeometry();
-
+/*  AliEveEventManager::AssertGeometry();
+  AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
+*/
   AliTRDrecoParam *trdRecoParam = AliTRDrecoParam::GetLowFluxParam();
   trdRecoParam->SetPIDNeuralNetwork();
   AliTRDReconstructor *reco = new AliTRDReconstructor();
@@ -34,7 +35,7 @@ void trd_tracks(TEveElement *cont = 0)
     if(!esdTrack) continue;
     AliESDfriendTrack *friendTrack(esdTrack->GetFriendTrack());
     if(!friendTrack) continue;
-    Info("trd_tracks", Form("Track[%3d] esd[%p] friend[%p]", n, (void*)esdTrack, (void*)friendTrack));
+    //Info("trd_tracks", Form("Track[%3d] esd[%p] friend[%p]", n, (void*)esdTrack, (void*)friendTrack));
 
     TObject *cal(NULL);
     Int_t ical(0);

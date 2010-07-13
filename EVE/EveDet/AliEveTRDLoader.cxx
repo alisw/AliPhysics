@@ -351,7 +351,7 @@ void AliEveTRDLoader::Unload()
 
   List_i ichmb = fChildren.begin();
   while(ichmb != fChildren.end()){
-    (dynamic_cast<AliEveTRDModule*>(*ichmb))->Reset();
+    //(dynamic_cast<AliEveTRDModule*>(*ichmb))->Reset();
     ichmb++;
   }
 }

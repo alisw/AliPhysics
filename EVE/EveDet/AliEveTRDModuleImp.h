@@ -58,9 +58,6 @@ public:
   void  LoadDigits(AliTRDdigitsManager *digits);
   void  LoadTracklets(TTree *trklTree);
 
-  void  Paint(Option_t* option="");
-  void  Reset();
-
   void  SetGeometry(AliTRDgeometry *geo);
   void  SetNtime(Int_t nt) {fNtime = nt;}
 

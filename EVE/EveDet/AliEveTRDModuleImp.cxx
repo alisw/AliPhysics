@@ -62,7 +62,7 @@ void AliEveTRDNode::Reset()
 
   List_i iter = fChildren.begin();
   while(iter != fChildren.end()){
-    (dynamic_cast<AliEveTRDModule*>(*iter))->Reset();
+    //(dynamic_cast<AliEveTRDModule*>(*iter))->Reset();
     iter++;
   }
 }
@@ -402,53 +402,6 @@ void AliEveTRDChamber::LoadTracklets(TTree *trklTree)
   fLoadTracklets = kTRUE;
 }
 
-//____________________________________________________
-void AliEveTRDChamber::Paint(Option_t* option)
-{
-  // Paint object.
-
-  if(!fRnrSelf) return;
-  if(fDigits && fRnrDigits){
-    if(fDigitsNeedRecompute){
-      fDigits->ComputeRepresentation();
-      fDigitsNeedRecompute = kFALSE;
-    }
-    fDigits->Paint(option);
-  }
-
-  if(fRecPoints && fRnrRecPoints) fRecPoints->GetObject()->Paint(option);
-
-  if(fHits && fRnrHits) fHits->GetObject()->Paint(option);
-
-  if(fTracklets && fRnrTracklets){
-//    for (Int_t iTrkl = 0; iTrkl < fTracklets->GetEntriesFast(); iTrkl++) 
-//      ((AliEveTRDTrackletOnline*) (*fTracklets)[iTrkl])->Paint();
-  }
-}
-
-//______________________________________________________________________________
-void AliEveTRDChamber::Reset()
-{
-  // Reset.
-
-  if(fHits){
-    fHits->Reset();
-    fLoadHits = kFALSE;
-  }
-/*  if(fDigits){
-    fDigits->Reset();
-    fLoadDigits = kFALSE;
-    fDigitsNeedRecompute = kTRUE;
-  }*/
-  if(fRecPoints){
-    fRecPoints->Reset();
-    fLoadRecPoints = kFALSE;
-  }
-  if(fTracklets){
-    fTracklets->Delete();
-    fLoadTracklets = kFALSE;
-  }
-}
 
 //______________________________________________________________________________
 void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
