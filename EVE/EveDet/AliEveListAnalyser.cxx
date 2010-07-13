@@ -683,7 +683,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     if (!object1->GetRnrState())  continue;
     
     // Cast to the "real" object behind
-    gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", object1));
+    gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", (void*)object1));
     gROOT->ProcessLineSync("TObject* automaticObject_1 = (TObject*)automaticEveElement->GetUserData();");
 
     // Collect data for each macro
@@ -749,7 +749,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           }
       
           // Cast to the "real" object behind
-          gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", object2));
+          gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", (void*)object2));
           gROOT->ProcessLineSync("TObject* automaticObject_2 = (TObject*)automaticEveElement->GetUserData();");
 
           // Select object by default (so it will be processed, if there are no correlated objects selection macros!)
@@ -842,7 +842,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           }
     
           // Cast to the "real" object behind
-          gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", object2));
+          gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", (void*)object2));
           gROOT->ProcessLineSync("TObject* automaticObject_2 = (TObject*)automaticEveElement->GetUserData();");
 
           // Select object by default (so it will be processed, if there are no correlated objects selection macros!)
@@ -991,7 +991,7 @@ void AliEveListAnalyser::ApplySOSelectionMacros(const TList* iterator)
             !((TObject*)object1->GetUserData())->InheritsFrom(macro->GetObjectType()))  continue;
 
         // Cast to the "real" object behind
-        gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", object1));
+        gROOT->ProcessLineSync(Form("TEveElement *automaticEveElement = (TEveElement*)0x%xl;", (void*)object1));
         gROOT->ProcessLineSync("TObject* automaticObject_1 = (TObject*)automaticEveElement->GetUserData();");
 
         // GetCmd() will cast the automatic objects to the correct type for each macro!

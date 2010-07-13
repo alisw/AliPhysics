@@ -297,7 +297,7 @@ void AliEveTRDTrackList::AddStandardContent()
     }
 
     // export task to CINT and add functions
-    gROOT->ProcessLine(Form("%s* %s = (%s*)0x%lx;", fgkTRDtaskClassName[it], task->GetName(), fgkTRDtaskClassName[it], (void*)task));
+    gROOT->ProcessLine(Form("%s* %s = (%s*)0x%x;", fgkTRDtaskClassName[it], task->GetName(), fgkTRDtaskClassName[it], (void*)task));
     TIter iter(fPlots); TMethodCall *m = 0x0;
     while((m = dynamic_cast<TMethodCall*>(iter()))){
       AddMacroFast("", Form("%s->%s", task->GetName(), m->GetMethodName()), kSingleTrackHisto);
@@ -353,7 +353,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
     mProcType = new AliEveTRDTrackListMacroType[procIterator->GetEntries()];
   }
 
-  TString* selCmds  = 0;
+  TString* selCmds(NULL);
   AliEveTRDTrackListMacroType* mSelType = 0;
   if (selIterator->GetEntries() > 0) {
     selCmds = new TString[selIterator->GetEntries()];
@@ -366,8 +366,8 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
   Int_t numHistoMacros = 0;
   TH1** histos = 0;
 
-  AliEveTRDTrack* track1 = 0;
-  AliEveTRDTrack* track2 = 0;
+  AliEveTRDTrack* track1(NULL);
+  AliEveTRDTrack* track2(NULL);
 
   // Collect the commands for each process macro and add them to "data-from-list"
   for (Int_t i = 0; i < procIterator->GetEntries(); i++){
@@ -461,7 +461,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
     if (!track1->GetRnrState())  continue;
     
     // Cast to AliTRDtrackV1
-    gROOT->ProcessLineSync(Form("AliEveTRDTrack *automaticTrack = (AliEveTRDTrack*)0x%xl;", track1));
+    gROOT->ProcessLineSync(Form("AliEveTRDTrack *automaticTrack = (AliEveTRDTrack*)0x%x;", (void*)track1));
     gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_1 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
 
     // Collect data for each macro
@@ -486,7 +486,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           if (!track2->GetRnrState())  continue;
       
           // Cast to AliTRDtrackV1
-          gROOT->ProcessLineSync(Form("AliEveTRDTrack *automaticTrack = (AliEveTRDTrack*)0x%xl;", track2));
+          gROOT->ProcessLineSync(Form("AliEveTRDTrack *automaticTrack = (AliEveTRDTrack*)0x%x;", (void*)track2));
           gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_2 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
 
           // Select track by default (so it will be processed, if there are no correlated tracks selection macros!)
@@ -542,7 +542,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           if (!track2->GetRnrState())  continue;
     
           // Cast to AliTRDtrackV1
-          gROOT->ProcessLineSync(Form("AliEveTRDTrack *automaticTrack = (AliEveTRDTrack*)0x%xl;", track2));
+          gROOT->ProcessLineSync(Form("AliEveTRDTrack *automaticTrack = (AliEveTRDTrack*)0x%x;", (void*)track2));
           gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_2 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
 
           // Select track by default (so it will be processed, if there are no correlated tracks selection macros!)
@@ -668,7 +668,7 @@ void AliEveTRDTrackList::ApplySTSelectionMacros(const TList* iterator)
         if (!track1->GetRnrState()) continue;
 
         // Cast to AliTRDtrackV1
-        gROOT->ProcessLineSync(Form("AliEveTRDTrack *automaticTrack = (AliEveTRDTrack*)0x%xl;", track1));
+        gROOT->ProcessLineSync(Form("AliEveTRDTrack *automaticTrack = (AliEveTRDTrack*)0x%x;", (void*)track1));
         gROOT->ProcessLineSync("AliTRDtrackV1* automaticTrackV1_1 = (AliTRDtrackV1*)automaticTrack->GetUserData();");
         selectedByMacro = (Bool_t)gROOT->ProcessLineSync(macro->GetCmd());
         track1->SetRnrState(selectedByMacro && track1->GetRnrState());               
