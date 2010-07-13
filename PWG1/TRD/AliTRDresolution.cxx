@@ -1753,6 +1753,133 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   return kFALSE;
 }
 
+//________________________________________________________
+void AliTRDresolution::MakeSummary()
+{
+// Build summary plots
+
+  if(!fGraphS || !fGraphM){
+    AliError("Missing results");
+    return;
+  }  
+  Float_t xy[4] = {0., 0., 0., 0.};
+  Int_t iSumPlot(0);
+  TCanvas *cOut = new TCanvas(Form("TRDsummary%s_%d", GetName(), iSumPlot), "Cluster & Tracklet Resolution", 1024, 768);
+  TF1 fg("fg", "gaus", -500., 500.);
+
+  if(!HasMCdata()) return;
+  cOut->Divide(3,2);
+  
+  TH2 *h2 = new TH2I("h2SF", "", 20, -.2, .2, fgkNresYsegm[fSegmentLevel], -0.5, fgkNresYsegm[fSegmentLevel]-0.5);
+  h2->GetXaxis()->CenterTitle();
+  h2->GetYaxis()->CenterTitle();
+  h2->GetZaxis()->CenterTitle();
+  TH1 *h1 = new TH1F("h1SF0", "", 120, -200., 1000.);
+  TGraphErrors *g(NULL);
+  TAxis *ax(h2->GetXaxis());
+  Double_t x, y;
+  TObjArray *a(NULL);
+
+  cOut->cd(1); 
+  h2->SetTitle(Form("Cluster R-Phi Resolution;tg(#phi);%s;Sigma [#mum]", fgkResYsegmName[fSegmentLevel]));
+  a=(TObjArray*)  ((TObjArray*)fGraphS->At(kMCcluster))->At(0);
+  for(Int_t iseg(0); iseg<fgkNresYsegm[fSegmentLevel]; iseg++){
+    g=(TGraphErrors*)a->At(iseg);
+    for(Int_t in(0); in<g->GetN(); in++){
+      g->GetPoint(in, x, y);
+      h2->SetBinContent(ax->FindBin(x), iseg+1, y);
+      h1->Fill(y);
+    }
+  }
+  Int_t jBinMin(1), jBinMax(h1->GetNbinsX());
+  for(Int_t ibin(h1->GetMaximumBin()); ibin--;){
+    if(h1->GetBinContent(ibin)==0){
+      jBinMin=ibin; break;
+    }
+  }
+  for(Int_t ibin(h1->GetMaximumBin()); ibin++;){
+    if(h1->GetBinContent(ibin)==0){
+      jBinMax=ibin; break;
+    }
+  }
+  h2->GetZaxis()->SetRangeUser(h1->GetBinCenter(jBinMin), h1->GetBinCenter(jBinMax));
+  h2->Draw("col2z");
+
+  cOut->cd(2); 
+  h2=(TH2I*)h2->Clone("h2SF"); h2->Reset(); h2->SetTitle(Form("Cluster R-Phi Systematics;tg(#phi);%s;Mean [#mum]", fgkResYsegmName[fSegmentLevel]));
+  h1=(TH1F*)h1->Clone("h1SF1"); h1->Reset();
+  //h2->GetZaxis()->SetRangeUser(-100., 100.);
+  a=(TObjArray*)  ((TObjArray*)fGraphM->At(kMCcluster))->At(0);
+  for(Int_t iseg(0); iseg<fgkNresYsegm[fSegmentLevel]; iseg++){
+    g=(TGraphErrors*)a->At(iseg);
+    for(Int_t in(0); in<g->GetN(); in++){
+      g->GetPoint(in, x, y);
+      h2->SetBinContent(ax->FindBin(x), iseg+1, y);
+      h1->Fill(y);
+    }
+  }
+  h1->Fit(&fg, "QN");
+  Double_t m(fg.GetParameter(1)), s(fg.GetParameter(2));
+  h2->GetZaxis()->SetRangeUser(m-2.5*s, m+2.5*s);
+  h2->Draw("col2z");
+
+  cOut->cd(3); 
+  xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
+  GetGraphArray(xy, kMCcluster, 1, 1);
+
+  cOut->cd(4); 
+  h2=(TH2I*)h2->Clone("h2SF"); h2->Reset();
+  h2->SetTitle(Form("Tracklet R-Phi Resolution;tg(#phi);%s;Sigma [#mum]", fgkResYsegmName[fSegmentLevel]));
+  //h2->GetZaxis()->SetRangeUser(100., 500.);
+  h1=(TH1F*)h1->Clone("h1SF2"); h1->Reset();
+  a=(TObjArray*)  ((TObjArray*)fGraphS->At(kMCtracklet))->At(0);
+  for(Int_t iseg(0); iseg<fgkNresYsegm[fSegmentLevel]; iseg++){
+    g=(TGraphErrors*)a->At(iseg);
+    for(Int_t in(0); in<g->GetN(); in++){
+      g->GetPoint(in, x, y);
+      h2->SetBinContent(ax->FindBin(x), iseg+1, y);
+      h1->Fill(y);
+    }
+  }
+  jBinMin=1; jBinMax=h1->GetNbinsX();
+  for(Int_t ibin(h1->GetMaximumBin()); ibin--;){
+    if(h1->GetBinContent(ibin)==0){
+      jBinMin=ibin; break;
+    }
+  }
+  for(Int_t ibin(h1->GetMaximumBin()); ibin++;){
+    if(h1->GetBinContent(ibin)==0){
+      jBinMax=ibin; break;
+    }
+  }
+  h2->GetZaxis()->SetRangeUser(h1->GetBinCenter(jBinMin), h1->GetBinCenter(jBinMax));
+  h2->Draw("col2z");
+
+  cOut->cd(5); 
+  h2=(TH2I*)h2->Clone("h2SF"); h2->Reset(); h2->SetTitle(Form("Tracklet R-Phi Systematics;tg(#phi);%s;Mean [#mum]", fgkResYsegmName[fSegmentLevel]));
+  h1=(TH1F*)h1->Clone("h1SF3"); h1->Reset();
+  a=(TObjArray*)  ((TObjArray*)fGraphM->At(kMCtracklet))->At(0);
+  for(Int_t iseg(0); iseg<fgkNresYsegm[fSegmentLevel]; iseg++){
+    g=(TGraphErrors*)a->At(iseg);
+    for(Int_t in(0); in<g->GetN(); in++){
+      g->GetPoint(in, x, y);
+      h2->SetBinContent(ax->FindBin(x), iseg+1, y);
+      h1->Fill(y);
+    }
+  }
+  h1->Fit(&fg, "QN");
+  m=fg.GetParameter(1); s=fg.GetParameter(2);
+  h2->GetZaxis()->SetRangeUser(m-2.5*s, m+2.5*s);
+  h2->Draw("col2z");
+
+  cOut->cd(6); 
+  xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
+  GetGraphArray(xy, kMCtracklet, 1, 1);
+
+  cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+}
+
+//________________________________________________________
 Char_t const *fgParticle[11]={
   " p bar", " K -", " #pi -", " #mu -", " e -",
   " No PID",
@@ -1773,7 +1900,6 @@ const Marker_t fgMarker[11]={
 28,
 20, 21, 22, 29, 29
 };
-//________________________________________________________
 Bool_t AliTRDresolution::PostProcess()
 {
   //fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
