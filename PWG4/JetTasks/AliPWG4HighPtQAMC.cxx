@@ -119,7 +119,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   //
   // Constructor. Initialization of Inputs and Outputs
   //
-  AliDebug(2,Form("AliPWG4HighPtQAMC","Calling Constructor"));
+  AliDebug(2,Form("AliPWG4HighPtQAMC Calling Constructor"));
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList
