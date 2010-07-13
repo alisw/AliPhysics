@@ -8,9 +8,13 @@
 //* See cxx source for full Copyright notice                               *
 
 /// @file   AliHLTTTreeProcessor.h
-/// @author 
+/// @author Timur Pocheptsov, Matthias Richter
 /// @date   05.07.2010
 /// @brief  Generic component for data collection in a TTree
+
+#include <list>
+
+#include <TString.h>
 
 #include "AliHLTProcessor.h"
 
@@ -37,8 +41,13 @@ class TH1;
  * @ingroup alihlt_base
  */
 class AliHLTTTreeProcessor : public AliHLTProcessor {
- public:
-  /// standard constructor
+private:
+  enum EDefaults {
+    kMaxEntries = 1000,
+    kInterval = 5
+  };
+public:
+  /// default constructor
   AliHLTTTreeProcessor();
   /// destructor
   virtual ~AliHLTTTreeProcessor();
@@ -47,45 +56,87 @@ class AliHLTTTreeProcessor : public AliHLTProcessor {
   virtual AliHLTComponentDataType GetOutputDataType();
 
   /// inherited from AliHLTComponent, get the output data size estimator
-  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
- protected:
+protected:
   /// initialization, overloaded from AliHLTComponent
-  int DoInit( int argc, const char** argv );
-  /// initialization, overloaded from AliHLTComponent
+  int DoInit(int argc, const char** argv);
+  /// deinitialization, overloaded from AliHLTComponent
   int DoDeinit();
   /// inherited from AliHLTProcessor, data processing
-  int DoEvent( const AliHLTComponentEventData& evtData,
-	       AliHLTComponentTriggerData& trigData );
+  int DoEvent(const AliHLTComponentEventData& evtData,
+              AliHLTComponentTriggerData& trigData);
   using AliHLTProcessor::DoEvent;
+
+  class AliHLTHistogramDefinition {
+  public:
+    AliHLTHistogramDefinition()
+        : fName(), fSize(0), fExpr(), fCut(), fOpt()
+    {
+    }
+
+	const TString& GetName()const{return fName;}
+	void SetName(const TString& name){fName = name;}
+
+	int GetSize()const{return fSize;}
+	void SetSize(int size){fSize = size;}
+
+	const TString& GetExpression()const{return fExpr;}
+	void SetExpression(const TString& expr){fExpr = expr;}
+
+	const TString& GetCut()const{return fCut;}
+	void SetCut(const TString& cut){fCut = cut;}
+
+	const TString& GetDrawOption()const{return fOpt;}
+	void SetDrawOption(const TString& opt){fOpt = opt;}
+
+  private:
+
+    TString fName;
+    int     fSize;
+    TString fExpr;
+    TString fCut;
+    TString fOpt;
+  };
+
+  std::list<AliHLTHistogramDefinition> fDefinitions;
+  typedef std::list<AliHLTHistogramDefinition>::iterator list_iterator;
+  typedef std::list<AliHLTHistogramDefinition>::const_iterator list_const_iterator;
+
+
+private:
   /// inherited from AliHLTComponent, scan argument
   int ScanConfigurationArgument(int argc, const char** argv);
-
   /// create the tree instance and all branches
   virtual TTree* CreateTree(int argc, const char** argv) = 0;
-
   /// process input blocks and fill tree
-  virtual int FillTree(TTree* pTree) = 0;
-
- private:
-  /// copy constructor prohibited
-  AliHLTTTreeProcessor(const AliHLTTTreeProcessor&);
-  /// assignment operator prohibited
-  AliHLTTTreeProcessor& operator=(const AliHLTTTreeProcessor&);
+  virtual int FillTree(TTree* pTree, const AliHLTComponentEventData& evtData, 
+                       AliHLTComponentTriggerData& trigData ) = 0;
+  /// dtOrigin for PushBack.
+  virtual AliHLTComponentDataType GetOriginDataType()const = 0;
+  /// spec for PushBack
+  virtual AliHLTUInt32_t GetDataSpec()const = 0;
+  /// default histogram definitions.
+  virtual void FillHistogramDefinitions() = 0;
 
   /// create a histogram from the tree
-  TH1* CreateHistogram(TTree* pTree,
-		       const char* name,
-		       const char* condition, 
-		       const char* selection,
-		       const char* option);
+  TH1* CreateHistogram(const AliHLTHistogramDefinition& def);
+  /// parse arguments, containing histogram definition.
+  int ParseHistogramDefinition(int argc, const char** argv, int pos, AliHLTHistogramDefinition& dst)const;
 
   /// the TTree
   TTree* fTree; //! the tree instance
   /// max entries
   int fMaxEntries; //! maximum number of entries in the circular tree
   /// publish interval in s
-  int fPublishInterval; //! publish interval in s
+  unsigned fPublishInterval; //! publish interval in s
+  /// time stamp - publish or not.
+  unsigned fLastTime; //! last time the histogramms were published
+
+  /// copy constructor prohibited
+  AliHLTTTreeProcessor(const AliHLTTTreeProcessor&);
+  /// assignment operator prohibited
+  AliHLTTTreeProcessor& operator = (const AliHLTTTreeProcessor&);
 
   ClassDef(AliHLTTTreeProcessor, 0)
 };
