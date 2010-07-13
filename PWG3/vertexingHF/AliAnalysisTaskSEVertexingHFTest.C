@@ -12,7 +12,7 @@ void AliAnalysisTaskSEVertexingHFTest()
   TString mode="local"; // otherwise, "grid" 
   Bool_t useParFiles=kFALSE;
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
   LoadLibraries(useParFiles);
 
   TChain *chain = 0;
@@ -115,7 +115,7 @@ void AliAnalysisTaskSEVertexingHFTest()
   }
 
   // Vertexing analysis task    
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskVertexingHF.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/AddTaskVertexingHF.C");
   AliAnalysisTaskSEVertexingHF *hfTask = AddTaskVertexingHF(deltaAODfname);
   
   

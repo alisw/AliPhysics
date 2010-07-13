@@ -8,7 +8,7 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
   //
 
   Bool_t useParFiles=kFALSE;
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/LoadLibraries.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
   LoadLibraries(useParFiles);
 
   // create a test histogram
