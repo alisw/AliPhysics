@@ -206,7 +206,7 @@ Bool_t AliTRDcheckDET::PostProcess(){
   Float_t ok = h->GetBinContent(1);
   Int_t nerr = h->GetNbinsX();
   for(Int_t ierr=nerr; ierr--;){
-    h->SetBinContent(ierr+1, 1.e2*h->GetBinContent(ierr+1)/ok);
+    h->SetBinContent(ierr+1, ok>0.?1.e2*h->GetBinContent(ierr+1)/ok:0.);
   }
   h->SetBinContent(1, 0.);
 
@@ -218,7 +218,7 @@ Bool_t AliTRDcheckDET::PostProcess(){
     Float_t okB = h->GetBinContent(1);
     Int_t nerrB = h->GetNbinsX();
     for(Int_t ierr=nerrB; ierr--;){
-      h->SetBinContent(ierr+1, 1.e2*h->GetBinContent(ierr+1)/okB);
+      h->SetBinContent(ierr+1, okB>0.?1.e2*h->GetBinContent(ierr+1)/okB:0.);
     }
     h->SetBinContent(1, 0.);
   }
