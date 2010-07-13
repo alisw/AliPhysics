@@ -117,7 +117,7 @@ AliT0RecoParam *AliT0RecoParam::GetLowFluxParam()
   param->fLatencyL1A = 7781.90;
   param->fLatencyL1C =  7782.19;
   param->fLatencyHPTDC = 22000;
-  param->fVertexShift = 4.6;
+  param->fVertexShift = 0;
   for (Int_t i=0; i<500; i++)
     {
      param-> fLow[i]=0.;
@@ -142,9 +142,8 @@ AliT0RecoParam *AliT0RecoParam::GetHighFluxParam()
   param->fLatencyL1 = 7782.05;
   param->fLatencyL1A = 7781.90;
   param->fLatencyL1C =  7782.19;
+  param->fVertexShift = 0;
   param->fLatencyHPTDC = 22000;
-
-  param->fVertexShift = 4.6;
   for (Int_t i=0; i<500; i++)
     {
       param-> fLow[i]=0.;
@@ -171,8 +170,8 @@ AliT0RecoParam *AliT0RecoParam::GetLaserTestParam()
   param->fLatencyL1A = 7781.90;
   param->fLatencyL1C =  7782.19;
   param->fLatencyHPTDC = 22000;
-
   param->fVertexShift = 0;
+
   for (Int_t i=0; i<500; i++)
     {
      param-> fLow[i]=0.;
@@ -192,8 +191,8 @@ void AliT0RecoParam::PrintParameters() const
   //
   AliInfo(Form(" Reference amplitude for walk corerection : %f", fRefAmp));
   AliInfo(Form(" Reference point in channel  : %i", fRefPoint));
-  AliInfo(Form(" Current latency  : %i ns", fLatencyL1));
-  AliInfo(Form(" HPTDC latency  : %i ns", fLatencyHPTDC));
+  AliInfo(Form(" Current latency  : %f ns", fLatencyL1));
+  AliInfo(Form(" HPTDC latency  : %f ns", fLatencyHPTDC));
   //  cout<<" AliT0RecoParam::PrintParameters() "<<endl;
   //  for (Int_t i=0; i<500; i++) cout<<i<<" "<<fLow[i]<<" "<<fHigh[i]<<endl; 
 }

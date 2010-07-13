@@ -156,7 +156,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 
       Double_t ampMip =((TGraph*)fAmpLED.At(ipmt))->Eval(sl);
       Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
-      AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f in channels %i\n ",ampMip,qtMip, adc[ipmt]));
+      AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f in channels %f\n ",ampMip,qtMip, adc[ipmt]));
       
       frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
       frecpoints->SetAmp(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
@@ -210,7 +210,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 
   //online mean
   frecpoints->SetOnlineMean(Int_t(onlineMean));
-  AliDebug(10,Form("  timeDiff %i #channel,  meanTime %i #channel, vertex %f cm online mean %i timeclock %i ps",timeDiff, meanTime,vertex, Int_t(onlineMean), timeclock));
+  AliDebug(10,Form("  timeDiff %f #channel,  meanTime %f #channel, vertex %f cm online mean %i timeclock %f ps",timeDiff, meanTime,vertex, Int_t(onlineMean), timeclock));
   
   
 

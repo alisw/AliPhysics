@@ -352,7 +352,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
     if (sumMult > threshold){
       fSumMult =  Int_t (1000.* TMath::Log(Double_t(sumMult) / Double_t(sumMultCoeff))
 			 /channelWidth);
-      AliDebug(10,Form("summult mv %i   mult  in chammens %i in ps %i ", 
+      AliDebug(10,Form("summult mv %i   mult  in chammens %i in ps %f ", 
 		      sumMult, fSumMult, fSumMult*channelWidth));
     }
 
