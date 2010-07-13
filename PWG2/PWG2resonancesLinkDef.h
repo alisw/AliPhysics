@@ -43,5 +43,6 @@
 
 #pragma link C++ class AliRsnTOFT0maker+;
 #pragma link C++ class AliRsnAnalysisPhi900GeV+;
+#pragma link C++ class AliRsnAnalysisPhi7TeV+;
 
 #endif
