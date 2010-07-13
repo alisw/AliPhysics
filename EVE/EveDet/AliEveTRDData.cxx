@@ -309,9 +309,10 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   // Constructor.
   SetName("tracklet");
   
-  TGeoManager *gGeo(AliEveEventManager::AssertGeometry());
-  AliInfo(Form("gGeo[%p] Closed[%c]", (void*)gGeo, gGeo->IsClosed()?'y':'n'));
-
+  if(!gGeoManager){ 
+    AliEveEventManager::AssertGeometry();
+    AliInfo(Form("gGeo[%p] Closed[%c]", (void*)gGeoManager, gGeoManager->IsClosed()?'y':'n'));
+  }
   SetUserData(trklt);
   Float_t dx;
   Float_t x0   = trklt->GetX0();
@@ -562,7 +563,6 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
       pid = trk->GetPID(is);
       species = is;
     }
-  printf("species [%d]\n", species);
 
   SetTitle(Form(
     "Tracklets[%d] Clusters[%d]\n"
