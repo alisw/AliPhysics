@@ -824,18 +824,10 @@ void AliTRDtrackV1::UnsetTracklet(Int_t plane)
 
 
 //_______________________________________________________________
-Bool_t  AliTRDtrackV1::Update(Double_t *p, Double_t *cov, Double_t chi2, Bool_t use)
+void AliTRDtrackV1::UpdateChi2(Float_t chi2)
 {
-  //
-  // Update track 
-  //
-  AliDebug(2, Form("Point:\n  p=[%6.2f %6.2f]\n  V=[%6.2f %6.2f]\n    [%6.2f %6.2f]", p[0], p[1], cov[0], cov[1], cov[1], cov[2]));
-  if(use && !AliExternalTrackParam::Update(p, cov)) return kFALSE;
-
-  // Register info to track
-  SetNumberOfClusters();
+// Update chi2/track with one tracklet contribution
   SetChi2(GetChi2() + chi2);
-  return kTRUE;
 }
 
 //_______________________________________________________________

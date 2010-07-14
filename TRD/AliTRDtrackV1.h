@@ -134,8 +134,8 @@ public:
   inline void    SetReconstructor(const AliTRDReconstructor *rec);
   inline Float_t StatusForTOF();
   void           UnsetTracklet(Int_t plane);
-  Bool_t         Update(Double_t *p, Double_t *cov, Double_t chi2, Bool_t useTRD=kTRUE);
   Bool_t         Update(const AliCluster *, Double_t, Int_t) { return kFALSE; };
+  void           UpdateChi2(Float_t chi2);
   void           UpdateESDtrack(AliESDtrack *t);
 
 private:

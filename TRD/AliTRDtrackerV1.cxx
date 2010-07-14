@@ -612,7 +612,10 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     Double_t cov[3]; tracklet->GetCovAt(x, cov);
     Double_t p[2] = { tracklet->GetY(), tracklet->GetZ()};
     Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
-    if (chi2 < 1e+10 && t.Update(p, cov, chi2)){ 
+    if (chi2 < 1e+10 && ((AliExternalTrackParam&)t).Update(p, cov)){ 
+      // Register info to track
+      t.SetNumberOfClusters();
+      t.UpdateChi2(chi2);
       nClustersExpected += tracklet->GetN();
     }
   }
@@ -960,22 +963,24 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       AliDebug(4, Form("Failed Chi2[%f]", chi2));
       continue; 
     }
-    if(!t.Update(p, cov, chi2, kUseTRD)) {
-      n=-1; 
-      t.SetStatus(AliTRDtrackV1::kUpdate);
-      if(debugLevel > 2){
-        UChar_t status(t.GetStatusTRD());
-        AliTRDseedV1  trackletCp(*ptrTracklet);
-        AliTRDtrackV1 trackCp(t);
-        trackCp.SetOwner();
-        (*cstreamer) << "FollowBackProlongation1"
-            << "status="      << status
-            << "tracklet.="   << &trackletCp
-            << "track.="      << &trackCp
-            << "\n";
+    if(kUseTRD){
+      if(!((AliExternalTrackParam&)t).Update(p, cov)) {
+        n=-1; 
+        t.SetStatus(AliTRDtrackV1::kUpdate);
+        if(debugLevel > 2){
+          UChar_t status(t.GetStatusTRD());
+          AliTRDseedV1  trackletCp(*ptrTracklet);
+          AliTRDtrackV1 trackCp(t);
+          trackCp.SetOwner();
+          (*cstreamer) << "FollowBackProlongation1"
+              << "status="      << status
+              << "tracklet.="   << &trackletCp
+              << "track.="      << &trackCp
+              << "\n";
+        }
+        AliDebug(4, Form("Failed Track Update @ y[%7.2f] z[%7.2f] s2y[%f] s2z[%f] covyz[%f]", p[0], p[1], cov[0], cov[2], cov[1]));
+        break;
       }
-      AliDebug(4, Form("Failed Track Update @ y[%7.2f] z[%7.2f] s2y[%f] s2z[%f] covyz[%f]", p[0], p[1], cov[0], cov[2], cov[1]));
-      break;
     }
     if(!kStandAlone) ptrTracklet->UseClusters();
     // fill residuals ?!
@@ -987,6 +992,10 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     ptrTracklet = SetTracklet(ptrTracklet);
     Int_t index(fTracklets->GetEntriesFast()-1);
     t.SetTracklet(ptrTracklet, index);
+    // Register info to track
+    t.SetNumberOfClusters();
+    t.UpdateChi2(chi2);
+
     n += ptrTracklet->GetN();
     AliDebug(2, Form("Setting Tracklet[%d] @ Idx[%d]", ily, index));
 
@@ -1744,7 +1753,7 @@ Double_t AliTRDtrackerV1::FitKalman(AliTRDtrackV1 *track, AliTRDseedV1 * const t
     Double_t cov[3]; ptrTracklet->GetCovAt(x, cov);
     Double_t p[2] = { ptrTracklet->GetY(), ptrTracklet->GetZ()};
     Double_t chi2 = ((AliExternalTrackParam*)track)->GetPredictedChi2(p, cov);
-    if(chi2<1e+10) track->Update(p, cov, chi2);
+    if(chi2<1e+10) ((AliExternalTrackParam*)track)->Update(p, cov);
     if(!up) continue;
 
 		//Reset material budget if 2 consecutive gold
