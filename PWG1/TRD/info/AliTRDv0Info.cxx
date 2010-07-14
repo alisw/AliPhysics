@@ -325,7 +325,10 @@ void AliTRDv0Info::SetV0Info(AliESDv0 *esdv0)
       part1 = part2 = AliPID::kElectron;
     } 
     fInvMass[idecay] = InvMass(part1, part2, esdv0);//Calculate invariant mass for all of our four supposed decays
-    fChi2ndf[idecay] = KFChi2ndf(part1, part2,idecay);
+
+    // Comment out until bug fix is provided
+    // A.Bercuci 14. July 2010
+    //fChi2ndf[idecay] = KFChi2ndf(part1, part2,idecay);
    
   }
   //Gets all likelihood values from TPC, TOF and ITS PID for the fDetPID[kNDaughters][kNDetectors][AliPID::kSPECIES] array
