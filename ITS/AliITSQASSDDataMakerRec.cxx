@@ -521,7 +521,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
       gName += "_Module"; gName += gModule; 
       gTitle += "_Module"; gTitle += gModule; 
       
-      fHistSSDOccupancyModule[i-500] = new TH1D(gName.Data(),Form("%s;N_{strip};Occupancy [%]", gTitle.Data()),
+      fHistSSDOccupancyModule[i-500] = new TH1D(gName.Data(),Form("%s;N_{strip};Occupancy [%%]", gTitle.Data()),
 						2*fgkNumberOfPSideStrips,0,2*fgkNumberOfPSideStrips);
       fHistSSDOccupancyModule[i-500]->GetXaxis()->SetTitleColor(1);
       rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDOccupancyModule[i-500], 
@@ -552,7 +552,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
         gName += "_PSide";
         gTitle += "_PSide";
         fHistSSDOccupancyLadder[occupancyCounter] = new TH1D(gName.Data(),
-                                                             Form("%s;Module number;Occupancy [%]", gTitle.Data()),
+                                                             Form("%s;Module number;Occupancy [%%]", gTitle.Data()),
                                                              AliITSgeomTGeo::GetNDetectors(iLayer),
                                                              0.5,AliITSgeomTGeo::GetNDetectors(iLayer)+0.5);
         fHistSSDOccupancyLadder[occupancyCounter]->GetXaxis()->SetTitleColor(1);
@@ -577,7 +577,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
         gName += "_NSide";
         gTitle += "_NSide";
         fHistSSDOccupancyLadder[occupancyCounter] = new TH1D(gName.Data(),
-                                                             Form("%s;Module number;Occupancy [%]", gTitle.Data()),
+                                                             Form("%s;Module number;Occupancy [%%]", gTitle.Data()),
                                                              AliITSgeomTGeo::GetNDetectors(iLayer),
                                                              0.5,AliITSgeomTGeo::GetNDetectors(iLayer)+0.5);
         fHistSSDOccupancyLadder[occupancyCounter]->GetXaxis()->SetTitleColor(1);

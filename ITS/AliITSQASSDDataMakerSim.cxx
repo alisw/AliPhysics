@@ -190,7 +190,7 @@ Int_t AliITSQASSDDataMakerSim::MakeSDigits(TTree *sdigits) {
   iSSDEmpty.Clear();
   TClonesArray *iSSDsdigits = &iSSDEmpty;
 
-  AliDebug(AliQAv1::GetQADebugLevel(), Form("Trying to access the sdigits histogram: %d\n",fGenOffsetS));
+  //  AliDebug(AliQAv1::GetQADebugLevel(), Form("Trying to access the sdigits histogram: %d\n",fGenOffsetS));
 
   TBranch *brchSDigits = sdigits->GetBranch("ITS");
   brchSDigits->SetAddress(&iSSDsdigits);

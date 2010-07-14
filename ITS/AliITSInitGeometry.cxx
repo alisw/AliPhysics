@@ -1135,7 +1135,7 @@ Bool_t AliITSInitGeometry::GetTransformation(const TString &volumePath,
     gGeoManager->PushPath();
     if (!gGeoManager->cd(volumePath.Data())) {
       gGeoManager->PopPath();
-      Error("GetTransformation","Error in cd-ing to ",volumePath.Data());
+      Error("GetTransformation","Error in cd-ing to %s",volumePath.Data());
       return kFALSE;
     } // end if !gGeoManager
     mat = *gGeoManager->GetCurrentMatrix();
@@ -2078,7 +2078,7 @@ void AliITSInitGeometry::RecodeDetectorvPPRasymmFMD(Int_t mod,Int_t &cpn0,
             cpn1 = 26-det;
         } break;
         default:{
-            Error("RecodeDetector","New: mod=%d lay=%d not 1-6.");
+	  AliError(Form("New: mod=%d lay=%d not 1-6.",mod,lay));
             return;
         } break;
         } // end switch
@@ -2104,7 +2104,7 @@ void AliITSInitGeometry::RecodeDetectorvPPRasymmFMD(Int_t mod,Int_t &cpn0,
         cpn0 = lad;
     } break;
     default:{
-        Error("RecodeDetector","Old: mod=%d lay=%d not 1-6.");
+      AliError(Form("RecodeDetector","Old: mod=%d lay=%d not 1-6.",mod,lay));
         return;
     } break;
     } // end switch

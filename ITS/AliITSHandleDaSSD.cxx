@@ -311,7 +311,7 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname)
       datasize = rawreaderdate->GetDataSize();
       eqbelsize = rawreaderdate->GetEquipmentElementSize();
       if ( datasize % eqbelsize ) {
-        AliError(Form("AliITSHandleDaSSD: Error Init(%s): event data size %i is not an integer of equipment data size %i", 
+        AliError(Form("AliITSHandleDaSSD: Error Init(%s): event data size %ld is not an integer of equipment data size %ld", 
 	                            rdfname, datasize, eqbelsize));
         MakeZombie();
 	    return kFALSE;
@@ -319,7 +319,7 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname)
       nofstripsev += (Int_t) (datasize / eqbelsize);
     }
     if (physeventind++) {
-      if (nofstrips != nofstripsev) AliWarning(Form("AliITSHandleDaSSD: number of strips varies from event to event, ev = %i, %i", 
+      if (nofstrips != nofstripsev) AliWarning(Form("AliITSHandleDaSSD: number of strips varies from event to event, ev = %ld, %ld", 
                                                      physeventind, nofstripsev));
       if (nofeqipment != nofeqipmentev) AliWarning("AliITSHandleDaSSD: number of DDLs varies from event to event");
     }
@@ -341,7 +341,7 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname)
     else AliWarning(Form("AliITSHandleDaSSD: Error Init(%s): Index array for %i modules was not created", 
                                      rdfname, fgkNumberOfSSDModulesPerDdl * eqn));
     if (SetNumberOfModules(fgkNumberOfSSDModulesPerDdl * eqn)) {
-      TString str = TString::Format("Max number of equipment: %i, max number of channels: %i\n", eqn, strn);
+      TString str = TString::Format("Max number of equipment: %d, max number of channels: %ld\n", eqn, strn);
       DumpInitData(str.Data());
       return kTRUE;
     }  
@@ -509,7 +509,7 @@ Bool_t AliITSHandleDaSSD::ReadDDLModuleMap(const Char_t *filename)
   Int_t ind = 0;
   while((!ddlmfile.eof()) && (ind < (fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl))) {
     ddlmfile >> fDDLModuleMap[ind++];
-    if (ddlmfile.fail()) AliError(Form("Error extracting number from the DDL map file %s, ind: ", filename, ind));
+    if (ddlmfile.fail()) AliError(Form("Error extracting number from the DDL map file %s, ind: %d ", filename, ind));
   }
   if (ind != (fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl))
     AliWarning(Form("Only %i (< %i) entries were read from DDL Map!", ind, (fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl)));
@@ -849,7 +849,7 @@ Bool_t AliITSHandleDaSSD::CalculateCM(AliITSModuleDaSSD *const module)
       if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cmsum /= (Float_t)(n);
       else cmsum = 0.0L;
       if (!(module->SetCM(cmsum, chipind, ev))) 
-        AliError(Form("AliITSHandleDaSSD: Error, module->SetCM(...) returned kFALSE module:chip:event : [%i]:[%i]:[%i]\n",
+        AliError(Form("AliITSHandleDaSSD: Error, module->SetCM(...) returned kFALSE module:chip:event : [%d]:[%d]:[%ld]\n",
 	                   module->GetModuleId(), chipind, ev));
     } 
   }
@@ -1269,7 +1269,7 @@ Int_t AliITSHandleDaSSD::ChannelIsBad(const UChar_t ddl, const UChar_t ad, const
     modn = RetrieveModuleId(ddl, ad, adc);
     if (modn < 0) return -1;
     if (modn < fgkMinSSDModuleId) {
-      AliWarning(Form("Module ddl/ad/adc: %i/%i/%i has number %i which is wrong for SSD module", ddl, ad, adc, strn, modn));
+      AliWarning(Form("Module ddl/ad/adc: %d/%d/%d has number %d which is wrong for SSD module %d", ddl, ad, adc, strn, modn));
 	  return -1;
     }
     Short_t modid = modn - fgkMinSSDModuleId;
@@ -1590,10 +1590,10 @@ Bool_t AliITSHandleDaSSD::CalculateCMW(AliITSModuleDaSSD *const module)
       }
       if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr - 1) > 0) cmsigma = sqrt(cmsigma / static_cast<Double_t>(n));
       else {
-        AliWarning(Form("AliITSHandleDaSSD: Too little number of strips have a signal for module:chip:event : [%i]:[%i]:[%i]\n",
+        AliWarning(Form("AliITSHandleDaSSD: Too little number of strips have a signal for module:chip:event : [%d]:[%d]:[%ld]\n",
                    module->GetModuleId(), chipind, ev));
         if (!(module->SetCM(0.0f, chipind, ev))) 
-          AliError(Form("AliITSHandleDaSSD: Error, module->SetCM(...) returned kFALSE module:chip:event : [%i]:[%i]:[%i]\n",
+          AliError(Form("AliITSHandleDaSSD: Error, module->SetCM(...) returned kFALSE module:chip:event : [%d]:[%d]:[%ld]\n",
                    module->GetModuleId(), chipind, ev));
         continue;
       }
@@ -1610,7 +1610,7 @@ Bool_t AliITSHandleDaSSD::CalculateCMW(AliITSModuleDaSSD *const module)
       if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cmsum /= (Double_t)(n);
       else cmsum = 0.0L;
       if (!(module->SetCM(static_cast<Float_t>(cmsum), chipind, ev))) 
-        AliError(Form("AliITSHandleDaSSD: Error, module->SetCM(...) returned kFALSE module:chip:event : [%i]:[%i]:[%i]\n",
+        AliError(Form("AliITSHandleDaSSD: Error, module->SetCM(...) returned kFALSE module:chip:event : [%d]:[%d]:[%ld]\n",
                  module->GetModuleId(), chipind, ev));
     } 
   }

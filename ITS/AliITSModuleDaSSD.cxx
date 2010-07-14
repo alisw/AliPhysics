@@ -395,7 +395,7 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
     if (fStrips[i]) { 
       if (!fStrips[i]->SetEvenetsNumber(eventsnumber)) {
         for (Int_t j = 0; j < i; j++) fStrips[j]->DeleteSignal();
-        AliError(Form("AliITSModuleDaSSD: Error allocating memory for i% events for module %i, strip %i",eventsnumber, (Int_t)fModuleId, i));
+        AliError(Form("AliITSModuleDaSSD: Error allocating memory for %ld event for module %d, strip %d",eventsnumber, (Int_t)fModuleId, i));
         return kFALSE;
       }
     }

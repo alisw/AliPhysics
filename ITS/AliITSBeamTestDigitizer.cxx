@@ -116,7 +116,7 @@ void AliITSBeamTestDigitizer::Init(const char* filename){
   fRunLoader = AliRunLoader::Open(filename,AliConfig::GetDefaultEventFolderName(),"update");
   if (fRunLoader == 0x0)
     {
-      Error("AliITSBeamTestDigitizer","Can not load the session",filename);
+      Error("AliITSBeamTestDigitizer","Can not load the session %s",filename);
       return;
     }
   fRunLoader->LoadgAlice();

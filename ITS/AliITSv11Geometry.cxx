@@ -84,7 +84,7 @@ void AliITSv11Geometry::IntersectLines(Double_t m, Double_t x0, Double_t y0,
     // Created:      14 Dec 2009  Mario Sitta
 
     if (TMath::Abs(m-n) < 0.000001) {
-      AliError(Form("Lines are parallel: m = %f n = %f\n"));
+      AliError(Form("Lines are parallel: m = %f n = %f\n",m,n));
       return;
     }
 

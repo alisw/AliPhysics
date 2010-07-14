@@ -690,7 +690,7 @@ void AliITSsimulationSDD::ChargeToSignal(Int_t mod,Bool_t bAddNoise, Bool_t bAdd
 	newcont = maxcont;
 	if (newcont >= maxadc) newcont = maxadc -1;
 	if(newcont >= baseline){
-	  Warning("","newcont=%d>=baseline=%d",newcont,baseline);
+	  Warning("","newcont=%f>=baseline=%f",newcont,baseline);
 	} // end if
 	  // back to analog: ?
 	fHitMap2->SetHit(i,k,newcont);

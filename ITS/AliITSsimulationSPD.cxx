@@ -677,7 +677,7 @@ void AliITSsimulationSPD::SpreadChargeAsym(Double_t x0,Double_t z0,
 
 
    if(GetDebug(4)) Info("SpreadChargeAsym","(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,"
-                        "sig=%e,t=%d,i=%d)",x0,z0,ix0,iz0,el,sigx,sigz,t,hi);
+                        "sigx=%e, sigz=%e, t=%d,i=%d)",x0,z0,ix0,iz0,el,sigx,sigz,t,hi);
    if(sigx<=0.0 || sigz<=0.0) { // if sig<=0 No diffusion to simulate.
        GetMap()->AddSignal(iz0,ix0,t,hi,GetModuleNumber(),el);
        if(GetDebug(2)){

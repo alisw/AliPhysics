@@ -93,7 +93,7 @@ AliITSreconstruction::AliITSreconstruction(const char* filename):
     fRunLoader = AliRunLoader::Open(filename);
     if (fRunLoader == 0x0)
      {
-       Error("AliITSreconstruction","Can not load the session",filename);
+       Error("AliITSreconstruction","Can not load the session %s \n",filename);
        return;
      }
 
@@ -141,7 +141,7 @@ Bool_t AliITSreconstruction::Init(){
     //   none.
     // Return:
     //    kTRUE if no errors initilizing this class occurse else kFALSE
-    Info("Init","");
+    Info("Init"," Init ITS reconstruction");
     if (fRunLoader == 0x0)
      {
        Error("Init","Run Loader is NULL");
@@ -228,9 +228,9 @@ void AliITSreconstruction::Exec(const Option_t *opt){
     } // end if !fInit
     for(evnt=0;evnt<fEnt;evnt++)
      {
-      Info("Exec","");
+       //      Info("Exec","");
       Info("Exec","Processing Event %d",evnt);
-      Info("Exec","");
+      //      Info("Exec","");
 
       fRunLoader->GetEvent(evnt);
       if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");

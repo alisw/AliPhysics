@@ -425,8 +425,8 @@ void AliITSgeom::ReadNewFile(const char *filename){
                 arrayGm = kTRUE;
             } // end if
 	    if(ldet<0||ldet>=fGm.GetSize()){
-		Error("ReadNewFile","ldet<0||ldet>=fGm.GetSize()=%d",
-		      ldet,fGm.GetSize());
+		Error("ReadNewFile","ldet<0||ldet>=fGm.GetSize()=%d , ldet=%d",
+		      fGm.GetSize(),ldet);
 		return;
 	    } // end if
             delete fGm.At(ldet);
@@ -436,7 +436,7 @@ void AliITSgeom::ReadNewFile(const char *filename){
             m = 0;
             break;
         default:
-            AliError(Form("ReadNewFile","Data line i=%d c=%c",i,c));
+            AliError(Form("ReadNewFile","Data line i=%d c=%s",i,c));
             while(fp->get(c)) if(c=='\n') break; // skip this line
             break;
         } // end switch i
@@ -616,8 +616,8 @@ fShape(0,0)      // TObjArray of detector geom.
         rot6[0] = (Double_t)o;rot6[1] = (Double_t)p;rot6[2] = (Double_t)q;
         rot6[3] = (Double_t)r;rot6[4] = (Double_t)s;rot6[5] = (Double_t)t;
 	if(lm<0||lm>=fGm.GetSize()){
-	    Error("AliITSgeom(filename)","lm<0||lm>=fGm.GetSize()=%d",
-		  lm,fGm.GetSize());
+	    Error("AliITSgeom(filename)","lm<0||lm>=fGm.GetSize()=%d , lm=%d",
+		  fGm.GetSize(),lm);
 	    return;
 	} // end if
         switch (l){
@@ -1166,8 +1166,8 @@ void AliITSgeom::ReadGeom(istream *rb){
     fGm.SetOwner(kTRUE);
     for(i=0;i<fNmodules;i++){
 	if(i<0||i>=fGm.GetSize()){
-	    Error("ReadGeom","i<0||i>=fGm.GetSize()=%d",
-		  i,fGm.GetSize());
+	    Error("ReadGeom","i<0||i>=fGm.GetSize()=%d , i=%d",
+		  fGm.GetSize(),i);
 	    return;
 	} // end if
         fGm.AddAt(new AliITSgeomMatrix,i);

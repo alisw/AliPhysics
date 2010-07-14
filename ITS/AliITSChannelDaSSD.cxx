@@ -87,7 +87,7 @@ AliITSChannelDaSSD::AliITSChannelDaSSD(const UShort_t stripID, const Long_t even
     fEventsNumber = eventsnumber;
     memset(fSignal, fgkDefaultSignal, (eventsnumber * sizeof(Short_t)));
   } else {
-    AliError(Form("AliITSChannelDaSSD: Error allocating memory for %i Short_t objects!", eventsnumber));
+    AliError(Form("AliITSChannelDaSSD: Error allocating memory for %ld Short_t objects!", eventsnumber));
     fSignal = NULL;
     fEventsNumber = 0;
   }
@@ -112,7 +112,7 @@ AliITSChannelDaSSD::AliITSChannelDaSSD(const AliITSChannelDaSSD& strip) :
     if (fSignal) {
       memcpy(fSignal, strip.fSignal, (strip.fEventsNumber * sizeof(Short_t)));
     } else {
-      AliError(Form("AliITSChannelDaSSD: Error allocating memory for %i Short_t objects!", strip.fEventsNumber));
+      AliError(Form("AliITSChannelDaSSD: Error allocating memory for %ld Short_t objects!", strip.fEventsNumber));
       fSignal = NULL;
       fEventsNumber = 0;
     }
@@ -139,7 +139,7 @@ AliITSChannelDaSSD& AliITSChannelDaSSD::operator = (const AliITSChannelDaSSD& st
   if (fSignal) {
     memcpy(fSignal, strip.fSignal, (strip.fEventsNumber * sizeof(Short_t)));
   } else {
-    AliError(Form("AliITSChannelDaSSD: Error allocating memory for %i Short_t objects!", strip.fEventsNumber));
+    AliError(Form("AliITSChannelDaSSD: Error allocating memory for %ld Short_t objects!", strip.fEventsNumber));
     fSignal = NULL;
     fEventsNumber = 0;
   }
@@ -166,7 +166,7 @@ Bool_t AliITSChannelDaSSD::SetEvenetsNumber(const Long_t eventsnumber)
     memset(fSignal, fgkDefaultSignal, (eventsnumber * sizeof(Short_t)));
     return kTRUE;
   } else {
-    AliError(Form("AliITSChannelDaSSD: Error allocating memory for %i Short_t objects!", eventsnumber));
+    AliError(Form("AliITSChannelDaSSD: Error allocating memory for %ld Short_t objects!", eventsnumber));
     fSignal = NULL;
     fEventsNumber = 0;
     return kFALSE;

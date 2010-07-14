@@ -432,7 +432,7 @@ void AliITShit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof){
         y = l[1];
         z = l[2];
     } else {
-        Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+        Error("AliITShit","NULL pointer to the geometry! return smth else");
         // AliITSv7 - SDD case
         x=fX;
         y=fY;
@@ -468,7 +468,7 @@ void AliITShit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,
         y = l[1];
         z = l[2];
     } else {
-        Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+        Error("AliITShit","NULL pointer to the geometry! return smth else");
         x=fx0;
         y=fy0;
         z=fz0;
@@ -500,7 +500,7 @@ void AliITShit::GetMomentumL(Float_t &px,Float_t &py,Float_t &pz){
         py = l[1];
         pz = l[2];
     } else {
-        Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+        Error("AliITShit","NULL pointer to the geometry! return smth else");
         px=fPx;
         py=fPy;
         pz=fPz;

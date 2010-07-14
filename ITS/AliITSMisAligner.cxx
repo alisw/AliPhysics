@@ -640,7 +640,7 @@ Bool_t AliITSMisAligner::AddAlignObj(char* name,Double_t dx,Double_t dy,Double_t
 	vtheta=dtheta;
 	vphi=dphi;
     }else{
-	AliFatal(Form("Invalid string \"%s\" specifying the misalignment type for the volume \"%s\""));
+      AliFatal(Form("Invalid string \"%s\" specifying the misalignment type for the volume \"%s\"",sdistrib.Data(),name));
     }
 
     new((*fAlignObjArray)[fInd]) AliAlignObjParams(name,0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);

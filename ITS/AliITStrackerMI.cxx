@@ -2554,7 +2554,7 @@ Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
     Int_t nDeadZoneWithProbNot1=(Int_t)(track->GetNDeadZone())-sumDeadZoneProbability;
     if(nDeadZoneWithProbNot1>0) {
       Float_t deadZoneProbability = track->GetNDeadZone()-(Float_t)sumDeadZoneProbability;
-      AliDebug(2,Form("nDeadZone %f sumDZProbability %f nDZWithProbNot1 %f deadZoneProb %f\n",track->GetNDeadZone(),sumDeadZoneProbability,nDeadZoneWithProbNot1,deadZoneProbability));
+      AliDebug(2,Form("nDeadZone %f sumDZProbability %d nDZWithProbNot1 %d deadZoneProb %f\n",track->GetNDeadZone(),sumDeadZoneProbability,nDeadZoneWithProbNot1,deadZoneProbability));
       deadZoneProbability /= (Float_t)nDeadZoneWithProbNot1;
       Float_t one = 1.;
       deadZoneProbability = TMath::Min(deadZoneProbability,one);
@@ -2565,7 +2565,7 @@ Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
   Double_t normchi2 = 2*track->GetNSkipped()+match+deadzonefactor+(1+(2*track->GetNSkipped()+deadzonefactor)/track->GetNumberOfClusters())*
     (chi2)/TMath::Max(double(sum-track->GetNSkipped()),
 				1./(1.+track->GetNSkipped()));     
-  AliDebug(2,Form("match %f deadzonefactor %f chi2 %f sum %f skipped\n",match,deadzonefactor,chi2,sum,track->GetNSkipped()));
+  AliDebug(2,Form("match %f deadzonefactor %f chi2 %f sum %f skipped %f\n",match,deadzonefactor,chi2,sum,track->GetNSkipped()));
   AliDebug(2,Form("NormChi2 %f  cls %d\n",normchi2,track->GetNumberOfClusters()));
   return normchi2;
 }

@@ -897,7 +897,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     sim      = (AliITSsimulation*)GetSimulationModel(id);
     if (!sim) {
       Error("HitsToFastPoints","The simulation class was not "
-	    "instanciated for module %d type %x!",module,
+	    "instantiated for module %d type %s!",module,
 	    geom->GetModuleTypeName(module));
       exit(1);
     } // end if !sim

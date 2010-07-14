@@ -88,7 +88,7 @@ void AliITSQASSDChecker::CheckRaws(TH1* histo) {
       AliWarning("Data size per LDC histogram is empty");
     }    
     else {
-      AliInfo(Form("Data size per LDC histogram has %i entries",histo->GetEntries()));
+      AliInfo(Form("Data size per LDC histogram has %f entries",histo->GetEntries()));
       for(Int_t i = 170; i < 178; i++) {
         if(histo->GetBinContent(histo->FindBin(i))==0) {
           AliWarning(Form("Data size / LDC histogram: bin for LDC %i is empty",i));
