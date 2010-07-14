@@ -124,7 +124,7 @@ void Config()
 
 
     // Set the trigger configuration
-    gAlice->SetTriggerDescriptor(pprTrigConfName[strig]);
+    AliSimulation::Instance()->SetTriggerConfig(pprTrigConfName[strig]);
     cout<<"Trigger configuration is set to  "<<pprTrigConfName[strig]<<endl;
 
     //
@@ -260,7 +260,7 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-  FRAME->SetHoles(1);
+	FRAME->SetHoles(1);
     }
 
     if (iSHIL)
@@ -282,7 +282,7 @@ void Config()
     {
         //=================== ITS parameters ============================
 
-  AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+	AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
     }
 
     if (iTPC)
@@ -294,8 +294,8 @@ void Config()
 
     if (iTOF) {
         //=================== TOF parameters ============================
-  AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
-    }
+	AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
+     }
 
 
     if (iHMPID)
@@ -318,19 +318,33 @@ void Config()
         //=================== TRD parameters ============================
 
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+        AliTRDgeometry *geoTRD = TRD->GetGeometry();
+	// Partial geometry: modules at 0,1,7,8,9,10,17
+	// starting at 3h in positive direction
+	geoTRD->SetSMstatus(2,0);
+	geoTRD->SetSMstatus(3,0);
+	geoTRD->SetSMstatus(4,0);
+        geoTRD->SetSMstatus(5,0);
+	geoTRD->SetSMstatus(6,0);
+        geoTRD->SetSMstatus(11,0);
+        geoTRD->SetSMstatus(12,0);
+        geoTRD->SetSMstatus(13,0);
+        geoTRD->SetSMstatus(14,0);
+        geoTRD->SetSMstatus(15,0);
+        geoTRD->SetSMstatus(16,0);
     }
 
     if (iFMD)
     {
         //=================== FMD parameters ============================
-  AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
+	AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
    }
 
     if (iMUON)
     {
         //=================== MUON parameters ===========================
         // New MUONv1 version (geometry defined via builders)
-        AliMUON *MUON = new AliMUONv1("MUON", "default");
+        AliMUON *MUON = new AliMUONv1("MUON","default");
     }
     //=================== PHOS parameters ===========================
 

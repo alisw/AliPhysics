@@ -125,7 +125,7 @@ void Config()
     gAlice->SetRunLoader(rl);
 
     // Set the trigger configuration
-    gAlice->SetTriggerDescriptor(pprTrigConfName[strig]);
+    AliSimulation::Instance()->SetTriggerConfig(pprTrigConfName[strig]);
     cout<<"Trigger configuration is set to  "<<pprTrigConfName[strig]<<endl;
 
     //
@@ -231,7 +231,6 @@ void Config()
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
 
-
     if (iMAG)
     {
         //=================== MAG parameters ============================
@@ -294,7 +293,7 @@ void Config()
 
     if (iTPC)
     {
-      //============================ TPC parameters =====================
+        //============================ TPC parameters ===================
         AliTPC *TPC = new AliTPCv2("TPC", "Default");
     }
 
@@ -302,7 +301,7 @@ void Config()
     if (iTOF) {
         //=================== TOF parameters ============================
 	AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
-    }
+     }
 
 
     if (iHMPID)
@@ -325,6 +324,20 @@ void Config()
         //=================== TRD parameters ============================
 
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+        AliTRDgeometry *geoTRD = TRD->GetGeometry();
+	// Partial geometry: modules at 0,1,7,8,9,10,17
+	// starting at 3h in positive direction
+	geoTRD->SetSMstatus(2,0);
+	geoTRD->SetSMstatus(3,0);
+	geoTRD->SetSMstatus(4,0);
+        geoTRD->SetSMstatus(5,0);
+	geoTRD->SetSMstatus(6,0);
+        geoTRD->SetSMstatus(11,0);
+        geoTRD->SetSMstatus(12,0);
+        geoTRD->SetSMstatus(13,0);
+        geoTRD->SetSMstatus(14,0);
+        geoTRD->SetSMstatus(15,0);
+        geoTRD->SetSMstatus(16,0);
     }
 
     if (iFMD)
@@ -337,7 +350,7 @@ void Config()
     {
         //=================== MUON parameters ===========================
         // New MUONv1 version (geometry defined via builders)
-        AliMUON *MUON = new AliMUONv1("MUON", "default");
+        AliMUON *MUON = new AliMUONv1("MUON","default");
     }
     //=================== PHOS parameters ===========================
 

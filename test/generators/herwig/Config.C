@@ -134,7 +134,7 @@ void Config()
   gAlice->SetRunLoader(rl);
 
   // Set the trigger configuration: proton-proton
-  gAlice->SetTriggerDescriptor(pprTrigConfName[strig]);
+  AliSimulation::Instance()->SetTriggerConfig(pprTrigConfName[strig]);
   cout << "Trigger configuration is set to  " << pprTrigConfName[strig] << endl;
 
   //
@@ -394,23 +394,6 @@ void Config()
     //=================== PHOS parameters ===========================
 
     AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
-    //Set simulation parameters different from the default ones.
-    AliPHOSSimParam* simEmc = AliPHOSSimParam::GetInstance();
-
-    // APD noise of warm (+20C) PHOS:
-    // a2 = a1*(Y1/Y2)*(M1/M2), where a1 = 0.012 is APD noise at -25C,
-    // Y1 = 4.3 photo-electrons/MeV, Y2 = 1.7 p.e/MeV - light yields at -25C and +20C,
-    // M1 = 50, M2 = 50 - APD gain factors chosen for t1 = -25C and t2 = +20C,
-    // Y = MeanLightYield*APDEfficiency.
-
-    Float_t apdNoise = 0.012 * 2.5;
-    simEmc->SetAPDNoise(apdNoise);
-
-    //Raw Light Yield at +20C
-    simEmc->SetMeanLightYield(18800);
-
-    //ADC channel width at +18C.
-    simEmc->SetADCchannelW(0.0125);
   }
 
   if (iPMD)
