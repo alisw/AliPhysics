@@ -43,6 +43,7 @@
 #include <TGeoMatrix.h>
 #include <TGeoNode.h>
 #include <TGeoPcon.h>
+#include <TGeoTorus.h>
 
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
@@ -466,6 +467,7 @@ const Double_t AliITSv11GeometrySDD::fgkSectionPlastPerMod = (TMath::Pi()*(3*0.3
 const Double_t AliITSv11GeometrySDD::fgkSectionGlassPerMod = 3*0.006; // ???
 const Double_t AliITSv11GeometrySDD::fgkSectionCoolPolyuEL = 0.4672;
 const Double_t AliITSv11GeometrySDD::fgkSectionCoolWaterEL = 0.3496;
+const Double_t AliITSv11GeometrySDD::fgkEndLadderEarthCableR = 0.5*fgkmm;
 // (sections are given in cm square)
 const Double_t AliITSv11GeometrySDD::fgkCableBendRatio = 1.3; // ??? this factor account for the bending of cables
 
@@ -4715,21 +4717,23 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
 
 
   Double_t sectionV   = (fgkSectionCuPerMod+fgkSectionPlastPerMod
-			 + fgkSectionGlassPerMod)*nCards;
+			 + fgkSectionGlassPerMod)*nCards
+			 + fgkSectionCoolPolyuEL + fgkSectionCoolWaterEL;
   // We fix thickness, then width is calculated accordingly
   Double_t width      = sectionV/thickTotCable;
   Double_t thickCu    = thickTotCable*fgkSectionCuPerMod
-            / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod);
+            / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod+fgkSectionCoolPolyuEL+fgkSectionCoolWaterEL);
   Double_t thickPlast = thickTotCable*fgkSectionPlastPerMod
-            / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod);
-  Double_t thickGlass = thickTotCable - thickCu - thickPlast;
+            / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod+fgkSectionCoolPolyuEL+fgkSectionCoolWaterEL);
+  Double_t thickGlass = thickTotCable*fgkSectionGlassPerMod
+            / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod+fgkSectionCoolPolyuEL+fgkSectionCoolWaterEL);
 
-  Double_t thickCoolPolyu = fgkSectionCoolPolyuEL/width;
-  Double_t thickCoolWater = fgkSectionCoolWaterEL/width;
+  Double_t thickCoolPolyu = thickTotCable*fgkSectionCoolPolyuEL
+            / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod+fgkSectionCoolPolyuEL+fgkSectionCoolWaterEL);
+  Double_t thickCoolWater = thickTotCable*fgkSectionCoolWaterEL
+            / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod+fgkSectionCoolPolyuEL+fgkSectionCoolWaterEL);
 
-  Double_t totalThick = thickTotCable + thickCoolPolyu + thickCoolWater;
-
-  AliITSv11GeomCableFlat cable("SDDcableEndLadder",width,totalThick);
+  AliITSv11GeomCableFlat cable("SDDcableEndLadder",width,thickTotCable);
   cable.SetNLayers(5);
   cable.SetLayer(0, thickCu, copper, kRed);
   cable.SetLayer(1, thickPlast, plastic, kYellow);
@@ -4751,6 +4755,17 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
   cable.AddCheckPoint( endLadderCards, 1, pos2, zVect );
   cable.SetInitialNode(endLadderCards);
   cable.CreateAndInsertCableSegment(1);
+
+  // The earth cable
+  TGeoTorus *earthShape = new TGeoTorus(rMax-fgkEndLadderEarthCableR,
+					0., fgkEndLadderEarthCableR,
+					phi0, dphi); // same as containerShape
+
+  TGeoVolume *earthCable = new TGeoVolume("SDDcableEndLadderEarthCable",
+					  earthShape, copper);
+
+  endLadderCards->AddNode(earthCable, 1,
+			new TGeoTranslation(0, 0, fgkDistEndLaddCardsLadd+1));
 
   return endLadderCards;
 }
