@@ -1,4 +1,4 @@
-void loadlibssim () 
+Int_t loadlibssim () 
 {
   // Macro which loads the libraries needed for simulation
   // Possible usage: In a Root session (no AliRoot) one does
@@ -6,90 +6,94 @@ void loadlibssim ()
   // root [1] gAlice = new AliRun("gAlice","test")           
   // root [2] AliSimulation sim
   // root [3] sim.Run()
+  
+  Int_t ret=-1;
+  
+  if ( gSystem->Load("libPhysics") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMinuit") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libProof") < 0 ) return ret; ret--;
 
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libProof");
+  if ( gSystem->Load("libmicrocern") < 0 ) return ret; ret--;
+  if ( gSystem->Load("liblhapdf") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libpythia6") < 0 ) return ret; ret--;
 
-  gSystem->Load("libmicrocern");
-  gSystem->Load("liblhapdf");
-  gSystem->Load("libpythia6");
+  if ( gSystem->Load("libEG") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libGeom") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libVMC") < 0 ) return ret; ret--;
 
-  gSystem->Load("libEG");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
+  if ( gSystem->Load("libEGPythia6") < 0 ) return ret; ret--;
 
-  gSystem->Load("libEGPythia6");
+  if ( gSystem->Load("libNet") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTree") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libGui") < 0 ) return ret; ret--;
 
-  gSystem->Load("libNet");
-  gSystem->Load("libTree");
-  gSystem->Load("libGui");
+  if ( gSystem->Load("libSTEERBase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libESD") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libCDB") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libRAWDatabase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libRAWDatarec") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libAOD") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libSTEER") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libRAWDatasim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libFASTSIM") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libEVGEN") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libAliPythia6") < 0 ) return ret; ret--;
 
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libCDB");
-  gSystem->Load("libRAWDatabase");
-  gSystem->Load("libRAWDatarec");
-  gSystem->Load("libAOD");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libRAWDatasim");
-  gSystem->Load("libFASTSIM");
-  gSystem->Load("libEVGEN");
-  gSystem->Load("libAliPythia6");
+  if ( gSystem->Load("libhijing") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTHijing") < 0 ) return ret; ret--;// AliGenHijingEventHeader needed by libZDCsim.so
 
-  gSystem->Load("libhijing");
-  gSystem->Load("libTHijing");// AliGenHijingEventHeader needed by libZDCsim.so
+  if ( gSystem->Load("libSTRUCT") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libPHOSUtils") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libPHOSbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libPHOSsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMUONcore") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMUONmapping") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMUONgeometry") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMUONcalib") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMUONraw") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMUONtrigger") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMUONbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMUONsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMUONrec") < 0 ) return ret; ret--; // Needed by libAliHLTMUON
+  if ( gSystem->Load("libFMDbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libFMDsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libPMDbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libPMDsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libHMPIDbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libHMPIDsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libT0base") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libT0sim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libT0rec") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libZDCbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libZDCsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libACORDEbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libACORDErec") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libACORDEsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libVZERObase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libVZEROrec") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libVZEROsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libEMCALUtils") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libEMCALbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libEMCALsim") < 0 ) return ret; ret--;
 
-  gSystem->Load("libSTRUCT");
-  gSystem->Load("libPHOSUtils");
-  gSystem->Load("libPHOSbase");
-  gSystem->Load("libPHOSsim");
-  gSystem->Load("libMUONcore");
-  gSystem->Load("libMUONmapping");
-  gSystem->Load("libMUONgeometry");
-  gSystem->Load("libMUONcalib");
-  gSystem->Load("libMUONraw");
-  gSystem->Load("libMUONtrigger");
-  gSystem->Load("libMUONbase");
-  gSystem->Load("libMUONsim");
-  gSystem->Load("libMUONrec"); // Needed by libAliHLTMUON
-  gSystem->Load("libFMDbase");
-  gSystem->Load("libFMDsim");
-  gSystem->Load("libPMDbase");
-  gSystem->Load("libPMDsim");
-  gSystem->Load("libHMPIDbase");
-  gSystem->Load("libHMPIDsim");
-  gSystem->Load("libT0base");
-  gSystem->Load("libT0sim");
-  gSystem->Load("libT0rec");
-  gSystem->Load("libZDCbase");
-  gSystem->Load("libZDCsim");
-  gSystem->Load("libACORDEbase");
-  gSystem->Load("libACORDErec");
-  gSystem->Load("libACORDEsim");
-  gSystem->Load("libVZERObase");
-  gSystem->Load("libVZEROrec");
-  gSystem->Load("libVZEROsim");
-  gSystem->Load("libEMCALUtils");
-  gSystem->Load("libEMCALbase");
-  gSystem->Load("libEMCALsim");
+  if ( gSystem->Load("libTPCbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTPCsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTPCrec") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libITSbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libITSsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libITSrec") < 0 ) return ret; ret--; // Needed by libAliHLTITS
+  if ( gSystem->Load("libSTAT") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTRDbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTRDsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTRDrec") < 0 ) return ret; ret--; // Needed by libAliHLTTRD
+  if ( gSystem->Load("libTOFbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTOFrec") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libTOFsim") < 0 ) return ret; ret--;
 
-  gSystem->Load("libTPCbase");
-  gSystem->Load("libTPCsim");
-  gSystem->Load("libTPCrec");
-  gSystem->Load("libITSbase");
-  gSystem->Load("libITSsim");
-  gSystem->Load("libITSrec"); // Needed by libAliHLTITS
-  gSystem->Load("libSTAT");
-  gSystem->Load("libTRDbase");
-  gSystem->Load("libTRDsim");
-  gSystem->Load("libTRDrec"); // Needed by libAliHLTTRD
-  gSystem->Load("libTOFbase");
-  gSystem->Load("libTOFrec");
-  gSystem->Load("libTOFsim");
-
-  gSystem->Load("libHLTbase");
-  gSystem->Load("libHLTinterface");
-  gSystem->Load("libHLTsim");
-  gSystem->Load("libHLTrec");
+  if ( gSystem->Load("libHLTbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libHLTinterface") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libHLTsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libHLTrec") < 0 ) return ret; ret--;
+  
+  return 0;
 }
