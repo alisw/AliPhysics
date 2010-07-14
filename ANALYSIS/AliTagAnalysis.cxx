@@ -177,7 +177,7 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
   
   //Defining tag objects
   AliRunTag   *tag     = new AliRunTag;
-  AliEventTag *evTag   = new AliEventTag;
+  AliEventTag *evTag   = 0x0;
   fChain->SetBranchAddress("AliTAG",&tag);
 
   TString guid;
@@ -249,7 +249,7 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut,
   
   //Defining tag objects 	 
   AliRunTag   *tag   = new AliRunTag; 	 
-  AliEventTag *evTag = new AliEventTag; 	 
+  AliEventTag *evTag = 0x0;
   fChain->SetBranchAddress("AliTAG",&tag); 	 
   
   TString guid; 	 
@@ -448,7 +448,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
 
   //Defining tag objects
   AliRunTag *tag     = new AliRunTag;
-  AliEventTag *evTag = new AliEventTag;
+  AliEventTag *evTag = 0x0;
   fChain->SetBranchAddress("AliTAG",&tag);
 
   TTreeFormula *fRunFormula = new TTreeFormula("fRun",fRunCut,fChain);
