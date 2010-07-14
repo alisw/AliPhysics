@@ -43,7 +43,7 @@ public:
   virtual void   SetDebugLevel(Int_t level);
   
     
-  Int_t          GetNRefFigures() const  { return fNRefFigures; } 
+  Int_t          GetNRefFigures() const; 
   const Char_t*  GetNameId() const       { return fNameId;}
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
   virtual Bool_t GetRefFigure(Int_t ifig);

@@ -102,6 +102,13 @@ AliTRDrecoTask::~AliTRDrecoTask()
 }
 
 //_______________________________________________________
+Int_t AliTRDrecoTask::GetNRefFigures() const  
+{ 
+  if(!fNRefFigures) AliWarning("No reference plots available.");
+  return fNRefFigures; 
+} 
+
+//_______________________________________________________
 void AliTRDrecoTask::UserExec(Option_t *)
 {
 // Loop over Plot functors published by particular tasks
@@ -221,7 +228,7 @@ Bool_t AliTRDrecoTask::PostProcess()
 // To be implemented by particular tasks
 
   AliWarning("Post processing of reference histograms not implemented.");
-  return kFALSE;
+  return kTRUE;
 }
 
 //_______________________________________________________

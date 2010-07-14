@@ -41,6 +41,7 @@ Int_t ParseOptions(Char_t *trd)
   if(TSTBIT(fSteerTask, kClErrParam)) SETBITT(fSteerTask, kResolution);
   if(TSTBIT(fSteerTask, kAlignment)) SETBITT(fSteerTask, kResolution);
   if(TSTBIT(fSteerTask, kPIDRefMaker)) SETBITT(fSteerTask, kCheckPID);
+  if(TSTBIT(fSteerTask, kV0Monitor)) SETBITT(fSteerTask, kCheckPID);
 
   return fSteerTask;
 }

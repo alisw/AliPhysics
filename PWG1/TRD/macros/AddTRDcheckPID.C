@@ -6,13 +6,12 @@
 #include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
 #include "PWG1/TRD/AliTRDcheckPID.h"
 #include "PWG1/TRD/AliTRDpidRefMaker.h"
-#include "PWG1/TRD/AliTRDv0Monitor.h"
 #include "PWG1/TRD/AliTRDpidRefMakerNN.h"
 #include "PWG1/TRD/AliTRDpidRefMakerLQ.h"
 #endif
 
 #include "PWG1/TRD/macros/helper.C"
-void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
+void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci, AliAnalysisDataContainer **co)
 {
   Int_t map = ParseOptions(trd);
   if(!TSTBIT(map, kCheckPID)) return;
@@ -25,60 +24,44 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   pid->SetMCdata(mgr->GetMCtruthEventHandler());
 
   // define PID exchange container
-  AliAnalysisDataContainer *ce = mgr->CreateContainer("InfoPID", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[0] = mgr->CreateContainer("InfoPID", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   mgr->ConnectInput (pid, 0, mgr->GetCommonInputContainer());
   mgr->ConnectInput (pid, 1, ci[0]);
   mgr->ConnectInput (pid, 2, ci[1]);
   mgr->ConnectOutput(pid, 1, mgr->CreateContainer(pid->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
-  mgr->ConnectOutput(pid, 2, ce);
+  mgr->ConnectOutput(pid, 2, co[0]);
 
-  if(!TSTBIT(map, kPIDRefMaker)) return;
+  if(TSTBIT(map, kPIDRefMaker)){
 
-  //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
-  //AliLog::SetClassDebugLevel("AliTRDpidRefMakerNN", 3);
-  //AliLog::SetClassDebugLevel("AliTRDpidRefMakerLQ", 3);
-
-  // TRD pid reference maker NN
-  AliTRDpidRefMaker *ref(NULL);
-  mgr->AddTask(ref = new AliTRDpidRefMakerNN((char*)"refMakerNN"));
-  ref->SetDebugLevel(3);
-  ref->SetMCdata(mgr->GetMCtruthEventHandler());
-  ref->SetFriends(kTRUE);
-  mgr->ConnectInput( ref, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput( ref, 1, ci[0]);
-  mgr->ConnectInput( ref, 2, ci[1]);
-  mgr->ConnectInput( ref, 3, ce);
-  mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorNN", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker",mgr->GetCommonFileName())));
-  mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
-
-  // TRD pid reference maker LQ 
-  mgr->AddTask(ref = new AliTRDpidRefMakerLQ((char*)"refMakerLQ"));
-  ref->SetDebugLevel(3);
-  ref->SetMCdata(mgr->GetMCtruthEventHandler());
-  ref->SetFriends(kTRUE);
-  mgr->ConnectInput(ref, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput(ref, 1, ci[0]);
-  mgr->ConnectInput(ref, 2, ci[1]);
-  mgr->ConnectInput(ref, 3, ce);
-  mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorLQ", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
-  mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
-  mgr->ConnectOutput(ref, 3, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMakerLQ", mgr->GetCommonFileName())));
-
-
-  //V0 Monitoring
-  AliTRDv0Monitor *v0Mon = new AliTRDv0Monitor("v0Monitor","v0Monitor");
-  mgr->AddTask(v0Mon);
-  v0Mon->SetDebugLevel(0);
-  //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
-  v0Mon->SetMCdata(mgr->GetMCtruthEventHandler());
-  v0Mon->SetFriends(kTRUE);
-  //v0Mon->SetSource(AliTRDpidRefMaker::kV0,AliTRDpidRefMaker::kRec);
-  mgr->ConnectInput( v0Mon, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput( v0Mon, 1, ci[0]);
-  mgr->ConnectInput( v0Mon, 2, ci[1]);
-  mgr->ConnectInput( v0Mon, 3, ce);
-
-  mgr->ConnectOutput(v0Mon, 1, mgr->CreateContainer("MonitorV0", TList::Class(), AliAnalysisManager::kOutputContainer, "V0Monitor.root"));
-  //mgr->ConnectOutput(v0Mon, 2, mgr->CreateContainer(v0Mon->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
+    //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
+    //AliLog::SetClassDebugLevel("AliTRDpidRefMakerNN", 3);
+    //AliLog::SetClassDebugLevel("AliTRDpidRefMakerLQ", 3);
+  
+    // TRD pid reference maker NN
+    AliTRDpidRefMaker *ref(NULL);
+    mgr->AddTask(ref = new AliTRDpidRefMakerNN((char*)"refMakerNN"));
+    ref->SetDebugLevel(3);
+    ref->SetMCdata(mgr->GetMCtruthEventHandler());
+    ref->SetFriends(kTRUE);
+    mgr->ConnectInput( ref, 0, mgr->GetCommonInputContainer());
+    mgr->ConnectInput( ref, 1, ci[0]);
+    mgr->ConnectInput( ref, 2, ci[1]);
+    mgr->ConnectInput( ref, 3, co[0]);
+    mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorNN", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker",mgr->GetCommonFileName())));
+    mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
+  
+    // TRD pid reference maker LQ 
+    mgr->AddTask(ref = new AliTRDpidRefMakerLQ((char*)"refMakerLQ"));
+    ref->SetDebugLevel(3);
+    ref->SetMCdata(mgr->GetMCtruthEventHandler());
+    ref->SetFriends(kTRUE);
+    mgr->ConnectInput(ref, 0, mgr->GetCommonInputContainer());
+    mgr->ConnectInput(ref, 1, ci[0]);
+    mgr->ConnectInput(ref, 2, ci[1]);
+    mgr->ConnectInput(ref, 3, co[0]);
+    mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorLQ", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
+    mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
+    mgr->ConnectOutput(ref, 3, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMakerLQ", mgr->GetCommonFileName())));
+  }
 }
 
