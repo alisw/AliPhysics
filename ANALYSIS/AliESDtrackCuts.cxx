@@ -98,6 +98,10 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutMaxDCAToVertexZPtDep(""),
   fCutMinDCAToVertexXYPtDep(""),
   fCutMinDCAToVertexZPtDep(""),
+  f1CutMaxDCAToVertexXYPtDep(0x0),
+  f1CutMaxDCAToVertexZPtDep(0x0),
+  f1CutMinDCAToVertexXYPtDep(0x0),
+  f1CutMinDCAToVertexZPtDep(0x0),
   fCutDCAToVertex2D(0),
   fPMin(0),
   fPMax(0),
@@ -187,6 +191,10 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutMaxDCAToVertexZPtDep(""),
   fCutMinDCAToVertexXYPtDep(""),
   fCutMinDCAToVertexZPtDep(""),
+  f1CutMaxDCAToVertexXYPtDep(0x0),
+  f1CutMaxDCAToVertexZPtDep(0x0),
+  f1CutMinDCAToVertexXYPtDep(0x0),
+  f1CutMinDCAToVertexZPtDep(0x0),
   fCutDCAToVertex2D(0),
   fPMin(0),
   fPMax(0),
@@ -267,6 +275,16 @@ AliESDtrackCuts::~AliESDtrackCuts()
       delete fhEta[i];
   }
 
+  if(f1CutMaxDCAToVertexXYPtDep)delete f1CutMaxDCAToVertexXYPtDep;
+  f1CutMaxDCAToVertexXYPtDep = 0;
+  if( f1CutMaxDCAToVertexZPtDep) delete  f1CutMaxDCAToVertexZPtDep;
+  f1CutMaxDCAToVertexZPtDep = 0;
+  if( f1CutMinDCAToVertexXYPtDep)delete  f1CutMinDCAToVertexXYPtDep;
+  f1CutMinDCAToVertexXYPtDep = 0;
+  if(f1CutMinDCAToVertexZPtDep)delete  f1CutMinDCAToVertexZPtDep; 
+  f1CutMinDCAToVertexZPtDep = 0;
+
+
   if (ffDTheoretical)
     delete ffDTheoretical;
 
@@ -319,6 +337,17 @@ void AliESDtrackCuts::Init()
   fCutMaxDCAToVertexZPtDep = "";
   fCutMinDCAToVertexXYPtDep = "";
   fCutMinDCAToVertexZPtDep = "";
+
+  if(f1CutMaxDCAToVertexXYPtDep)delete f1CutMaxDCAToVertexXYPtDep;
+  f1CutMaxDCAToVertexXYPtDep = 0;
+  if( f1CutMaxDCAToVertexXYPtDep) delete  f1CutMaxDCAToVertexXYPtDep;
+  f1CutMaxDCAToVertexXYPtDep = 0;
+  if( f1CutMaxDCAToVertexZPtDep) delete  f1CutMaxDCAToVertexZPtDep;
+  f1CutMaxDCAToVertexZPtDep = 0;
+  if( f1CutMinDCAToVertexXYPtDep)delete  f1CutMinDCAToVertexXYPtDep;
+  f1CutMinDCAToVertexXYPtDep = 0;
+  if(f1CutMinDCAToVertexZPtDep)delete f1CutMinDCAToVertexZPtDep;
+  f1CutMinDCAToVertexZPtDep = 0;
 
   
   fPMin = 0;
@@ -428,10 +457,18 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutDCAToVertex2D = fCutDCAToVertex2D;
   target.fCutMinDCAToVertexXY = fCutMinDCAToVertexXY;
   target.fCutMinDCAToVertexZ = fCutMinDCAToVertexZ;
+
   target.fCutMaxDCAToVertexXYPtDep = fCutMaxDCAToVertexXYPtDep;
+  target.SetMaxDCAToVertexXYPtDep(fCutMaxDCAToVertexXYPtDep.Data());
+
   target.fCutMaxDCAToVertexZPtDep = fCutMaxDCAToVertexZPtDep;
+  target.SetMaxDCAToVertexZPtDep(fCutMaxDCAToVertexZPtDep.Data());
+
   target.fCutMinDCAToVertexXYPtDep = fCutMinDCAToVertexXYPtDep;
+  target.SetMinDCAToVertexXYPtDep(fCutMinDCAToVertexXYPtDep.Data());
+
   target.fCutMinDCAToVertexZPtDep = fCutMinDCAToVertexZPtDep;
+  target.SetMinDCAToVertexZPtDep(fCutMinDCAToVertexZPtDep.Data());
 
   target.fPMin = fPMin;
   target.fPMax = fPMax;
@@ -1457,37 +1494,28 @@ void AliESDtrackCuts::SetPtDepDCACuts(Double_t pt) {
   // set the pt-dependent DCA cuts
   //
 
-  if(CheckPtDepDCA(fCutMaxDCAToVertexXYPtDep)) {
-    TString formula=fCutMaxDCAToVertexXYPtDep;
-    formula.ReplaceAll("pt","x");
-    TFormula dcacut("dcacut",formula.Data());
-    fCutMaxDCAToVertexXY=dcacut.Eval(pt);
+  if(f1CutMaxDCAToVertexXYPtDep) {
+     fCutMaxDCAToVertexXY=f1CutMaxDCAToVertexXYPtDep->Eval(pt);
   }
 
-  if(CheckPtDepDCA(fCutMaxDCAToVertexZPtDep)) {
-    TString formula=fCutMaxDCAToVertexZPtDep;
-    formula.ReplaceAll("pt","x");
-    TFormula dcacut("dcacut",formula.Data());
-    fCutMaxDCAToVertexZ=dcacut.Eval(pt);
+  if(f1CutMaxDCAToVertexZPtDep) {
+    fCutMaxDCAToVertexZ=f1CutMaxDCAToVertexZPtDep->Eval(pt);
   }
 
-  if(CheckPtDepDCA(fCutMinDCAToVertexXYPtDep)) {
-    TString formula=fCutMinDCAToVertexXYPtDep;
-    formula.ReplaceAll("pt","x");
-    TFormula dcacut("dcacut",formula.Data());
-    fCutMinDCAToVertexXY=dcacut.Eval(pt);
+  if(f1CutMinDCAToVertexXYPtDep) {
+    fCutMinDCAToVertexXY=f1CutMinDCAToVertexXYPtDep->Eval(pt);
   }
 
-  if(CheckPtDepDCA(fCutMinDCAToVertexZPtDep)) {
-    TString formula=fCutMinDCAToVertexZPtDep;
-    formula.ReplaceAll("pt","x");
-    TFormula dcacut("dcacut",formula.Data());
-    fCutMinDCAToVertexZ=dcacut.Eval(pt);
+  if(f1CutMinDCAToVertexZPtDep) {
+    fCutMinDCAToVertexZ=f1CutMinDCAToVertexZPtDep->Eval(pt);
   }
 
 
   return;
 }
+
+
+
 //--------------------------------------------------------------------------
 Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
   //
@@ -1502,3 +1530,44 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
   return retval;
 }
 
+ void AliESDtrackCuts::SetMaxDCAToVertexXYPtDep(const char *dist){
+   if(!CheckPtDepDCA(dist,kTRUE)) return;
+   if(f1CutMaxDCAToVertexXYPtDep)delete f1CutMaxDCAToVertexXYPtDep;
+   fCutMaxDCAToVertexXYPtDep = dist;
+   TString tmp(dist);
+   tmp.ReplaceAll("pt","x");
+   f1CutMaxDCAToVertexXYPtDep = new TFormula("f1CutMaxDCAToVertexXYPtDep",tmp.Data());
+ 
+}
+
+ void AliESDtrackCuts::SetMaxDCAToVertexZPtDep(const char *dist){
+   if(!CheckPtDepDCA(dist,kTRUE)) return;
+   if(f1CutMaxDCAToVertexZPtDep)delete f1CutMaxDCAToVertexZPtDep;
+   fCutMaxDCAToVertexZPtDep = dist;
+   TString tmp(dist);
+   tmp.ReplaceAll("pt","x");
+   f1CutMaxDCAToVertexZPtDep = new TFormula("f1CutMaxDCAToVertexZPtDep",tmp.Data());
+
+   
+}
+
+
+ void AliESDtrackCuts::SetMinDCAToVertexXYPtDep(const char *dist){
+   if(!CheckPtDepDCA(dist,kTRUE)) return;
+   if(f1CutMinDCAToVertexXYPtDep)delete f1CutMinDCAToVertexXYPtDep;
+   fCutMinDCAToVertexXYPtDep = dist;
+   TString tmp(dist);
+   tmp.ReplaceAll("pt","x");
+   f1CutMinDCAToVertexXYPtDep = new TFormula("f1CutMinDCAToVertexXYPtDep",tmp.Data());
+
+}
+
+
+ void AliESDtrackCuts::SetMinDCAToVertexZPtDep(const char *dist){
+   if(!CheckPtDepDCA(dist,kTRUE)) return;
+   if(f1CutMinDCAToVertexZPtDep)delete f1CutMinDCAToVertexZPtDep;
+   fCutMinDCAToVertexZPtDep = dist;
+   TString tmp(dist);
+   tmp.ReplaceAll("pt","x");
+   f1CutMinDCAToVertexZPtDep = new TFormula("f1CutMinDCAToVertexZPtDep",tmp.Data());
+}

@@ -34,6 +34,7 @@ class TH1F;
 class TH2F;
 class TF1;
 class TCollection;
+class TFormula;
 
 class AliESDtrackCuts : public AliAnalysisCuts
 {
@@ -91,10 +92,10 @@ public:
   void SetMaxDCAToVertexZ(Float_t dist=1e10)          {fCutMaxDCAToVertexZ = dist;}
   void SetMinDCAToVertexXY(Float_t dist=0.)           {fCutMinDCAToVertexXY = dist;}
   void SetMinDCAToVertexZ(Float_t dist=0.)            {fCutMinDCAToVertexZ = dist;}
-  void SetMaxDCAToVertexXYPtDep(const char *dist="")         {CheckPtDepDCA(dist,kTRUE); fCutMaxDCAToVertexXYPtDep = dist;}
-  void SetMaxDCAToVertexZPtDep(const char *dist="")          {CheckPtDepDCA(dist,kTRUE); fCutMaxDCAToVertexZPtDep = dist;}
-  void SetMinDCAToVertexXYPtDep(const char *dist="")           {CheckPtDepDCA(dist,kTRUE); fCutMinDCAToVertexXYPtDep = dist;}
-  void SetMinDCAToVertexZPtDep(const char *dist="")            {CheckPtDepDCA(dist,kTRUE); fCutMinDCAToVertexZPtDep= dist;}
+  void SetMaxDCAToVertexXYPtDep(const char *dist="");
+  void SetMaxDCAToVertexZPtDep(const char *dist=""); 
+  void SetMinDCAToVertexXYPtDep(const char *dist="");
+  void SetMinDCAToVertexZPtDep(const char *dist=""); 
   void SetDCAToVertex2D(Bool_t b=kFALSE)              {fCutDCAToVertex2D = b;}
 
 
@@ -204,10 +205,18 @@ protected:
   Float_t fCutMaxDCAToVertexZ;        // track-to-vertex cut in max absolute distance in z-plane
   Float_t fCutMinDCAToVertexXY;       // track-to-vertex cut on min absolute distance in xy-plane
   Float_t fCutMinDCAToVertexZ;        // track-to-vertex cut on min absolute distance in z-plane
+  // 
   TString fCutMaxDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut in max absolute distance in xy-plane
   TString fCutMaxDCAToVertexZPtDep;   // pt-dep track-to-vertex cut in max absolute distance in z-plane
   TString fCutMinDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut on min absolute distance in xy-plane
   TString fCutMinDCAToVertexZPtDep;   // pt-dep track-to-vertex cut on min absolute distance in z-plane
+
+  // only internal use, set via strings above
+  TFormula *f1CutMaxDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut in max absolute distance in xy-plane
+  TFormula *f1CutMaxDCAToVertexZPtDep;   // pt-dep track-to-vertex cut in max absolute distance in z-plane
+  TFormula *f1CutMinDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut on min absolute distance in xy-plane
+  TFormula *f1CutMinDCAToVertexZPtDep;   // pt-dep track-to-vertex cut on min absolute distance in z-plane
+
   Bool_t  fCutDCAToVertex2D;          // if true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
 
   // esd kinematics cuts
@@ -255,7 +264,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 10)
+  ClassDef(AliESDtrackCuts, 11)
 };
 
 
