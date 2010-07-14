@@ -164,7 +164,7 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
     SetRefPID(fRefPID, track, fPID);
     // get particle type
     Int_t idx(TMath::LocMax(AliPID::kSPECIES, fPID)); 
-    if(fPID[0]<1.e-5) continue;
+    if(fPID[idx]<1.e-5) continue;
 
     // prepare PID data array
     if(!fPIDdataArray){ 
