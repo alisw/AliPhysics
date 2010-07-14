@@ -174,8 +174,8 @@ void AliZDCQADataMakerRec::InitRaws()
   TH1F * hZPCSpectrum = new TH1F("hZPCSpectrum","ZPC spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZNASpectrum = new TH1F("hZNASpectrum","ZNA spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZPASpectrum = new TH1F("hZPASpectrum","ZPA spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
-  TH1F * hZEM1Spectrum = new TH1F("hZEM1Spectrum","ZEM1 spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
-  TH1F * hZEM2Spectrum = new TH1F("hZEM2Spectrum","ZEM2 spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
+  TH1F * hZEM1Spectrum = new TH1F("hZEM1Spectrum","ZEM1 spectrum;Amplitude [ADC counts];Counts",100,7., 1207.);
+  TH1F * hZEM2Spectrum = new TH1F("hZEM2Spectrum","ZEM2 spectrum;Amplitude [ADC counts];Counts",100,7., 1207.);
   Add2RawsList(hZNCSpectrum, 0, expert, !image);
   Add2RawsList(hZNASpectrum, 1, expert, !image);
   Add2RawsList(hZPCSpectrum, 2, expert, !image);
@@ -192,10 +192,10 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hZPCpmCvsPMq, 8, !expert, image);
   Add2RawsList(hZPApmCvsPMq, 9, !expert, image);
     
-  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw ZNC PMC;Amplitude [ADC counts];Counts",100, 0., 1200.);
-  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw ZNA PMC;Amplitude [ADC counts];Counts",100, 0., 1200.);
-  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw ZPC PMC;Amplitude [ADC counts];Counts",100, 0., 1200.);
-  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw ZPA PMC;Amplitude [ADC counts];Counts",100, 0., 1200.);
+  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw ZNC PMC;Amplitude [ADC counts];Counts",100, 7., 1207.);
+  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw ZNA PMC;Amplitude [ADC counts];Counts",100, 7., 1207.);
+  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw ZPC PMC;Amplitude [ADC counts];Counts",100, 7., 1207.);
+  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw ZPA PMC;Amplitude [ADC counts];Counts",100, 7., 1207.);
   Add2RawsList(hRawPMCZNC, 10, !expert, image);
   Add2RawsList(hRawPMCZNA, 11, !expert, image);
   Add2RawsList(hRawPMCZPC, 12, !expert, image);
@@ -788,12 +788,12 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
        GetRawsData(12)->SetLineColor(kBlue+2); GetRawsData(12)->SetLineWidth(2);
        GetRawsData(13)->SetLineColor(kBlue+3); GetRawsData(13)->SetLineWidth(2);
      
-       if(((GetRawsData(4))->GetEntries())>0)  GetRawsData(4)->SetDrawOption("LOGY");
+       /*if(((GetRawsData(4))->GetEntries())>0)  GetRawsData(4)->SetDrawOption("LOGY");
        if(((GetRawsData(5))->GetEntries())>0)  GetRawsData(5)->SetDrawOption("LOGY");
        if(((GetRawsData(10))->GetEntries())>0) GetRawsData(10)->SetDrawOption("LOGY");
        if(((GetRawsData(11))->GetEntries())>0) GetRawsData(11)->SetDrawOption("LOGY");
        if(((GetRawsData(12))->GetEntries())>0) GetRawsData(12)->SetDrawOption("LOGY");
-       if(((GetRawsData(13))->GetEntries())>0) GetRawsData(13)->SetDrawOption("LOGY");
+       if(((GetRawsData(13))->GetEntries())>0) GetRawsData(13)->SetDrawOption("LOGY");*/
      }
   }
   	

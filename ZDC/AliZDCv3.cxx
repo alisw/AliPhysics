@@ -2086,6 +2086,7 @@ void AliZDCv3::CreateMaterials()
   Float_t stmin  = 0.01;   // Min. value 4 max. step (cm)
   Float_t stemax = 1.;     // Max. step permitted (cm) 
   Float_t tmaxfd = 0.;     // Maximum angle due to field (degrees) 
+  Float_t tmaxfdv = 0.1;   // Maximum angle due to field (degrees) 
   Float_t deemax = -1.;    // Maximum fractional energy loss
   Float_t nofieldm = 0.;   // Max. field value (no field)
   Float_t fieldm = 45.;    // Max. field value (with field)
@@ -2105,7 +2106,7 @@ void AliZDCv3::CreateMaterials()
   AliMedium(8, "ZIRONN",8, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(9, "ZCOPL", 6, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(10,"ZVOID",10, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfdv, stemax, deemax, epsil, stmin);
   AliMedium(12,"ZAIR", 12, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(13,"ZTANT",13, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(14, "ZIRONT", 7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);

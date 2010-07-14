@@ -60,7 +60,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
       count = 0; 
       TH1 * hdata;	  
       
-      Float_t res=0., percentageDiff=0.20;
+      Float_t res=0., percentageDiff=0.30;
       Float_t meanZNA=0., meanZNC=0., meanZPA=0., meanZPC=0.;
       Float_t pmCZNA=0., pmCZNC=0., pmCZPA=0., pmCZPC=0.;
       Float_t pmQZNA=0., pmQZNC=0., pmQZPA=0., pmQZPC=0.;
