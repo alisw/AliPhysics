@@ -17,7 +17,7 @@ class AliMultiplicity : public TObject {
   AliMultiplicity();               // default constructor
   // standard constructor
   AliMultiplicity(Int_t ntr,Float_t *th, Float_t *ph, Float_t *dth, Float_t *dph, Int_t *labels,
-         Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOrFiredChips);
+         Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Int_t *labelss, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOrFiredChips);
   AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOr);
   AliMultiplicity(const AliMultiplicity& m);
   AliMultiplicity& operator=(const AliMultiplicity& m);
@@ -49,6 +49,9 @@ class AliMultiplicity : public TObject {
 
   Int_t GetLabel(Int_t i, Int_t layer) const;
   void  SetLabel(Int_t i, Int_t layer, Int_t label);
+  Int_t GetLabelSingle(Int_t i) const;
+  void  SetLabelSingle(Int_t i, Int_t label);
+
 
   Bool_t FreeClustersTracklet(Int_t i, Int_t mode) const {return (mode>=0&&mode<2&&i>=0&&i<fNtracks) ? !fUsedClusT[mode].TestBitNumber(i):kFALSE;}
   Bool_t FreeSingleCluster(Int_t i, Int_t mode)    const {return (mode>=0&&mode<2&&i>=0&&i<fNsingle) ? !fUsedClusS[mode].TestBitNumber(i):kFALSE;}
@@ -91,8 +94,9 @@ class AliMultiplicity : public TObject {
   Double_t* GetDeltPhi()     const {return (Double_t*)fDeltPhi;}
   Double_t* GetThetaSingle() const {return (Double_t*)fThsingle;}
   Double_t* GetPhiSingle()   const {return (Double_t*)fPhisingle;}
-  Int_t*    GetLabels()      const {return (Int_t*)fLabels;}
+  Int_t*    GetLabels()      const {return (Int_t*)fLabels;}  
   Int_t*    GetLabels2()     const {return (Int_t*)fLabelsL2;}
+  Int_t*    GetLabelsSingle()      const {return (Int_t*)fLabelssingle;} 
   
   void SetTrackletData(Int_t id, const Float_t* tlet, UInt_t bits);
   void SetSingleClusterData(Int_t id, const Float_t* scl,UInt_t bits);
@@ -114,14 +118,15 @@ class AliMultiplicity : public TObject {
   Double32_t *fDeltPhi;      //[fNtracks] array with delta phi values
   Double32_t *fThsingle;     //[fNsingle] array with theta values of L1 clusters
   Double32_t *fPhisingle;    //[fNsingle] array with phi values of L1 clusters
+  Int_t *fLabelssingle;      //[fNsingle] array with labels of clusters in L1 not used for tracklets 
   Short_t fFiredChips[2];    // Number of fired chips in the two SPD layers
-  UInt_t fITSClusters[6];   // Number of ITS cluster per layer
+  UInt_t fITSClusters[6];    // Number of ITS cluster per layer
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
   TBits fClusterFiredChips;  // Map of fired chips (= at least one cluster)
   TBits fUsedClusT[2];       // flag that at least one of tracklets clusters is used by TPC/ITS+ITS_SA (0) or ITS_SA_PURE tracks (1)
   TBits fUsedClusS[2];       // flag that the single clusters is used by TPC/ITS+ITS_SA (0) or ITS_SA_PURE tracks
 
-  ClassDef(AliMultiplicity,13);
+  ClassDef(AliMultiplicity,14);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const
@@ -144,4 +149,18 @@ inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const
     }
     return -9999;
 }
+
+inline Int_t AliMultiplicity::GetLabelSingle(Int_t i) const 
+{
+    if(i>=0 && i<fNsingle) {
+      return fLabelssingle[i];
+    } else {
+        Error("GetLabelSingle","Invalid cluster number %d",i); return -9999;
+    }
+    return -9999;
+}
+
+
+
+
 #endif

@@ -58,6 +58,7 @@
 //     - RS: Clusters are sorted in Z in roder to have the same numbering as in the ITS reco
 //     - RS: Clusters used by ESDtrack are flagged, this information is passed to AliMulitiplicity object 
 //           when storing the tracklets and single cluster info
+//     - MN: first MC label of single clusters stored  
 //_________________________________________________________________________
 
 #include <TClonesArray.h>
@@ -349,17 +350,7 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
 
 //____________________________________________________________________
 void AliITSMultReconstructor::Reconstruct(AliESDEvent* esd, TTree* treeRP) 
-{
-  //
-  // - calls LoadClusterArrays that finds the position of the clusters
-  //   (in global coord) 
-  // - convert the cluster coordinates to theta, phi (seen from the
-  //   interaction vertex). 
-  // - makes an array of tracklets 
-  //   
-  // After this method has been called, the clusters of the two layers
-  // and the tracklets can be retrieved by calling the Get'er methods.
-
+{  
   if (!treeRP) { AliError(" Invalid ITS cluster tree !\n"); return; }
   if (!esd) {AliError("ESDEvent is not available, use old reconstructor"); return;}
   // reset counters
@@ -405,15 +396,7 @@ void AliITSMultReconstructor::Reconstruct(AliESDEvent* esd, TTree* treeRP)
 void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /* vtxRes*/) {
   //
   // RS NOTE - this is old reconstructor invocation, to be used from VertexFinder
-  //
-  // - calls LoadClusterArray that finds the position of the clusters
-  //   (in global coord) 
-  // - convert the cluster coordinates to theta, phi (seen from the
-  //   interaction vertex). 
-  // - makes an array of tracklets 
-  //   
-  // After this method has been called, the clusters of the two layers
-  // and the tracklets can be retrieved by calling the Get'er methods.
+
   if (fMult) delete fMult; fMult = 0;
   fNClustersLay1 = 0;
   fNClustersLay2 = 0;
@@ -432,6 +415,17 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
 //____________________________________________________________________
 void AliITSMultReconstructor::FindTracklets(const Float_t *vtx) 
 {
+
+  // - calls LoadClusterArrays that finds the position of the clusters
+  //   (in global coord) 
+  // - convert the cluster coordinates to theta, phi (seen from the
+  //   interaction vertex). 
+  // - makes an array of tracklets 
+  //   
+  // After this method has been called, the clusters of the two layers
+  // and the tracklets can be retrieved by calling the Get'er methods.
+
+
   // Find tracklets converging to vertex
   //
   LoadClusterArrays(fTreeRP);
@@ -521,8 +515,8 @@ void AliITSMultReconstructor::FindTracklets(const Float_t *vtx)
     // Loop on layer 1 
     for (Int_t iC1=0; iC1<fNClustersLay1; iC1++) {    
 
-      // already used or in the overlap ?
-      if (associatedLay1[iC1] != 0 || fOverlapFlagClustersLay1[iC1]) continue;
+      // already used ?
+      if (associatedLay1[iC1] != 0) continue; 
 
       found++;
 
@@ -534,8 +528,6 @@ void AliITSMultReconstructor::FindTracklets(const Float_t *vtx)
       // Loop on layer 2 
       for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {      
 
-        // in the overlap ?
-        if (fOverlapFlagClustersLay2[iC2]) continue;
 	float* clPar2 = GetClusterLayer2(iC2);
 
         if (blacklist[iC1]) {
@@ -550,7 +542,7 @@ void AliITSMultReconstructor::FindTracklets(const Float_t *vtx)
         }
 
 	// find the difference in angles
-	Double_t dTheta = TMath::Abs(clPar2[kClTh] - clPar1[kClTh]);
+	Double_t dTheta = TMath::Abs(clPar2[kClTh] - clPar1[kClTh]);  
 	Double_t dPhi   = TMath::Abs(clPar2[kClPh] - clPar1[kClPh]);
         // take into account boundary condition
         if (dPhi>pi) dPhi=2.*pi-dPhi;
@@ -697,6 +689,7 @@ void AliITSMultReconstructor::FindTracklets(const Float_t *vtx)
       fSClusters[fNSingleCluster] = new Float_t[kClNPar];
       fSClusters[fNSingleCluster][kSCTh] = clPar1[kClTh];
       fSClusters[fNSingleCluster][kSCPh] = clPar1[kClPh];
+      fSClusters[fNSingleCluster][kSCLab] = clPar1[kClMC0]; 
       fSClusters[fNSingleCluster][kSCID] = iC1;
       AliDebug(1,Form(" Adding a single cluster %d (cluster %d  of layer 1)",
                 fNSingleCluster, iC1));
@@ -755,7 +748,7 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree)
   // - store them in the internal arrays
   // - count the number of cluster-fired chips
   //
-  // RS: This method was strongly modified wrt original by Jan Fiete. In order to have the same numbering
+  // RS: This method was strongly modified wrt original. In order to have the same numbering 
   // of clusters as in the ITS reco I had to introduce sorting in Z
   // Also note that now the clusters data are stored not in float[6] attached to float**, but in 1-D array
   
@@ -847,7 +840,7 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree)
 //____________________________________________________________________
 void
 AliITSMultReconstructor::LoadClusterFiredChips(TTree* itsClusterTree) {
-  // This method
+  // This method    
   // - gets the clusters from the cluster tree 
   // - counts the number of (cluster)fired chips
   
@@ -856,7 +849,7 @@ AliITSMultReconstructor::LoadClusterFiredChips(TTree* itsClusterTree) {
   fNFiredChips[0] = 0;
   fNFiredChips[1] = 0;
   
-  AliITSsegmentationSPD seg;
+  AliITSsegmentationSPD seg;   
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
   TClonesArray* itsClusters=rpcont->FetchClusters(0,itsClusterTree);
   if(!rpcont->IsSPDActive()){

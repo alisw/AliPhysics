@@ -36,7 +36,7 @@ public:
   //
   enum {kClTh,kClPh,kClZ,kClMC0,kClMC1,kClMC2,kClNPar};
   enum {kTrTheta,kTrPhi,kTrDPhi,kTrDTheta,kTrLab1,kTrLab2,kClID1,kClID2,kTrNPar};
-  enum {kSCTh,kSCPh,kSCID,kSCNPar};
+  enum {kSCTh,kSCPh,kSCLab,kSCID,kSCNPar};   
   enum {kITSTPC,kITSSAP,kITSTPCBit=BIT(kITSTPC),kITSSAPBit=BIT(kITSSAP)}; // RS
   AliITSMultReconstructor();
   virtual ~AliITSMultReconstructor();

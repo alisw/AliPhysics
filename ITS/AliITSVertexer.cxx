@@ -97,7 +97,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
     multReco.LoadClusterFiredChips(itsClusterTree);
     Short_t nfcL1 = multReco.GetNFiredChips(0);
     Short_t nfcL2 = multReco.GetNFiredChips(1);
-    fMult = new AliMultiplicity(0,0,0,0,0,0,0,0,0,0,nfcL1,nfcL2,fastOrFiredMap);
+    fMult = new AliMultiplicity(0,0,0,0,0,0,0,0,0,0,0,nfcL1,nfcL2,fastOrFiredMap);
     fMult->SetFiredChipMap(firedChipMap);
     AliITSRecPointContainer* rcont = AliITSRecPointContainer::Instance();
     fMult->SetITSClusters(0,rcont->GetNClustersInLayer(1,itsClusterTree));
@@ -135,13 +135,15 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   Int_t nosingleclus=multReco.GetNSingleClusters();
   Float_t *ths = new Float_t [nosingleclus];
   Float_t *phs = new Float_t [nosingleclus];
+  Int_t *labelss = new Int_t [nosingleclus];
   for(Int_t i=0;i<nosingleclus;i++){
     ths[i] = multReco.GetCluster(i)[0];
     phs[i] = multReco.GetCluster(i)[1];
+    labelss[i] = multReco.GetCluster(i)[2];
   }
   Short_t nfcL1 = multReco.GetNFiredChips(0);
   Short_t nfcL2 = multReco.GetNFiredChips(1);
-  fMult = new AliMultiplicity(notracks,tht,phi,dtht,dphi,labels,labelsL2,nosingleclus,ths,phs,nfcL1,nfcL2,fastOrFiredMap);
+  fMult = new AliMultiplicity(notracks,tht,phi,dtht,dphi,labels,labelsL2,nosingleclus,ths,phs,labelss,nfcL1,nfcL2,fastOrFiredMap);
   fMult->SetFiredChipMap(firedChipMap);
   AliITSRecPointContainer* rcont = AliITSRecPointContainer::Instance();
   fMult->SetITSClusters(0,rcont->GetNClustersInLayer(1,itsClusterTree));
@@ -156,6 +158,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   delete [] phs;
   delete [] labels;
   delete [] labelsL2;
+  delete [] labelss;
 
   return;
 }

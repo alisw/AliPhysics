@@ -17,6 +17,7 @@ AliMultiplicity::AliMultiplicity():
   fDeltPhi(0),
   fThsingle(0),
   fPhisingle(0),
+  fLabelssingle(0),
   fFastOrFiredChips(1200),
   fClusterFiredChips(1200)
 {
@@ -27,7 +28,7 @@ AliMultiplicity::AliMultiplicity():
 }
 
 //______________________________________________________________________
-AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *dth, Float_t *dph, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOr):
+AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *dth, Float_t *dph, Int_t *labels, Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Int_t *labelss, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOr):
   TObject(),
   fNtracks(ntr),
   fNsingle(ns),
@@ -39,6 +40,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *
   fDeltPhi(0),
   fThsingle(0),
   fPhisingle(0),
+  fLabelssingle(0),
   fFastOrFiredChips(1200),
   fClusterFiredChips(1200)
 {
@@ -62,9 +64,11 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *
   if(ns>0){
     fThsingle = new Double_t [ns];
     fPhisingle = new Double_t [ns];
+    fLabelssingle = new Int_t [ns];
     for(Int_t i=0;i<fNsingle;i++){
       fThsingle[i]=ts[i];
       fPhisingle[i]=ps[i];
+      fLabelssingle[i]=labelss[i];
     }
   }
   fFiredChips[0] = nfcL1;
@@ -86,6 +90,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfc
   fDeltPhi(0),
   fThsingle(0),
   fPhisingle(0),
+  fLabelssingle(0),
   fFastOrFiredChips(1200),
   fClusterFiredChips(1200)
 {
@@ -105,7 +110,8 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfc
   if(ns>0){
     fThsingle  = new Double_t [ns];
     fPhisingle = new Double_t [ns];
-    for(Int_t i=fNsingle;i--;) fThsingle[i] = fPhisingle[i] = 0;
+    fLabelssingle = new Int_t [ns];
+    for(Int_t i=fNsingle;i--;) fThsingle[i] = fPhisingle[i] = fLabelssingle[i] = 0;
   }
   fFiredChips[0] = nfcL1;
   fFiredChips[1] = nfcL2;
@@ -126,6 +132,7 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   fDeltPhi(0),
   fThsingle(0),
   fPhisingle(0),
+  fLabelssingle(0),
   fFastOrFiredChips(1200),
   fClusterFiredChips(1200)
 {
@@ -147,6 +154,7 @@ AliMultiplicity &AliMultiplicity::operator=(const AliMultiplicity& m){
   if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;
   if(fThsingle)delete [] fThsingle;fThsingle = 0;
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
+  if(fLabelssingle)delete [] fLabelssingle;fLabelssingle = 0;
   Duplicate(m);
 
   return *this;
@@ -190,10 +198,12 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   if(fNsingle>0){
     fThsingle = new Double_t[fNsingle];
     fPhisingle = new Double_t[fNsingle];
+    fLabelssingle = new Int_t[fNsingle];
   }
   else {
     fThsingle = 0;
     fPhisingle = 0;
+    fLabelssingle = 0;
   }
   if(m.fTh)memcpy(fTh,m.fTh,fNtracks*sizeof(Double_t));
   if(m.fPhi)memcpy(fPhi,m.fPhi,fNtracks*sizeof(Double_t));
@@ -203,7 +213,7 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   if(m.fLabelsL2)memcpy(fLabelsL2,m.fLabelsL2,fNtracks*sizeof(Int_t));
   if(m.fThsingle)memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Double_t));
   if(m.fPhisingle)memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Double_t));
-
+  if(m.fLabelssingle)memcpy(fLabelssingle,m.fLabelssingle,fNsingle*sizeof(Int_t));
   fFiredChips[0] = m.fFiredChips[0];
   fFiredChips[1] = m.fFiredChips[1];
   for(Int_t ilayer = 0; ilayer < 6; ilayer++){
@@ -230,7 +240,7 @@ AliMultiplicity::~AliMultiplicity(){
   if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;
   if(fThsingle)delete [] fThsingle;fThsingle = 0;
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
-
+  if(fLabelssingle)delete [] fLabelssingle;fLabelssingle = 0;
 }
 
 //______________________________________________________________________
@@ -246,6 +256,7 @@ void AliMultiplicity::Clear(Option_t*)
   if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;
   if(fThsingle)delete [] fThsingle;fThsingle = 0;
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
+  if(fLabelssingle)delete [] fLabelssingle;fLabelssingle = 0;
   fNtracks = fNsingle = 0;
   for (int i=6;i--;) fITSClusters[0] = 0;
   fFiredChips[0] = fFiredChips[1] = 0;
@@ -273,6 +284,18 @@ void AliMultiplicity::SetLabel(Int_t i, Int_t layer, Int_t label)
 	}
     }
     Error("SetLabel","Invalid track number %d or layer %d",i,layer);
+}
+
+//______________________________________________________________________
+void AliMultiplicity::SetLabelSingle(Int_t i, Int_t label) 
+{
+    if(i>=0 && i<fNsingle) {
+      if (fLabelssingle) {
+        fLabelssingle[i] = label;
+        return;
+      }
+    }
+    Error("SetLabelSingle","Invalid single cluster number %d",i);
 }
 
 //______________________________________________________________________
@@ -320,6 +343,7 @@ void AliMultiplicity::SetSingleClusterData(Int_t id, const Float_t* scl, UInt_t 
   if (id>=fNsingle) {AliError(Form("Number of declared singles %d < %d",fNsingle,id)); return;}
   fThsingle[id]  = scl[0];
   fPhisingle[id] = scl[1];
+  fLabelssingle[id] = scl[2]; 
   if (bits&BIT(0)) fUsedClusS[0].SetBitNumber(id);
   if (bits&BIT(1)) fUsedClusS[1].SetBitNumber(id);
   //
@@ -351,8 +375,8 @@ void AliMultiplicity::Print(Option_t *opt) const
   }
   if (opts.Contains("s")) {
     for (int i=0;i<fNsingle;i++) 
-      printf("S#%3d| Th:%+6.3f Phi:%+6.3f U0:%d U1:%d\n",
-	     i,fThsingle[i],fPhisingle[i],
+      printf("S#%3d| Th:%+6.3f Phi:%+6.3f L:%4d U0:%d U1:%d\n",
+	     i,fThsingle[i],fPhisingle[i],fLabelssingle[i], 
 	     FreeClustersTracklet(i,0),FreeClustersTracklet(i,1));
   }
   //
