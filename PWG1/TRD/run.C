@@ -13,6 +13,7 @@
 //     "ALGN" : TRD alignment
 //     "PID"  : TRD PID - pion efficiency 
 //     "PIDR" : TRD PID - reference data
+//     "V0"   : monitor V0 performance for use in TRD PID calibration
 //     "DET"  : Basic TRD Detector checks
 //      ****** SPECIAL OPTIONS **********
 //     "NOFR" : Data set does not have AliESDfriends.root 

@@ -6,7 +6,7 @@
 #define TSTBIT(n,i) ((Bool_t)(((n) & BITBIT(i)) != 0))
 #define CLRBITT(n,i) ((n) &= ~BITBIT(i))
 
-#define NTRDQATASKS 6
+#define NTRDQATASKS 7
 #define NTRDCALIBTASKS 6
 const Int_t NTRDTASKS = NTRDQATASKS+NTRDCALIBTASKS;
 
@@ -27,12 +27,13 @@ enum ETRDrecoTasks{
   ,kEfficiency    = 3
   ,kResolution    = 4
   ,kCheckPID      = 5
-  ,kCalibration   = 6
-  ,kEfficiencyMC  = 7
-  ,kAlignment     = 8
-  ,kPIDRefMaker   = 9
-  ,kClErrParam    =10
-  ,kMultiplicity  =11
+  ,kV0Monitor     = 6 
+  ,kCalibration   = 7
+  ,kEfficiencyMC  = 8
+  ,kAlignment     = 9
+  ,kPIDRefMaker   =10
+  ,kClErrParam    =11
+  ,kMultiplicity  =12
 };
 
 Char_t const* fgkTRDtaskClassName[NTRDTASKS] = {
@@ -42,6 +43,7 @@ Char_t const* fgkTRDtaskClassName[NTRDTASKS] = {
   ,"AliTRDefficiency"
   ,"AliTRDresolution"
   ,"AliTRDcheckPID"
+  ,"AliTRDv0Monitor"
   ,"AliTRDcalibration"
   ,"AliTRDefficiencyMC"
   ,"AliTRDalignmentTask"
@@ -57,6 +59,7 @@ Char_t const* fgkTRDtaskOpt[NTRDTASKS+1] = {
   ,"EFF"
   ,"RES"
   ,"PID"
+  ,"V0"
   ,"CAL"
   ,"EFFC"
   ,"ALGN"

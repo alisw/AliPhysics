@@ -69,6 +69,7 @@
 #include "PWG1/TRD/macros/AddTRDefficiency.C"
 #include "PWG1/TRD/macros/AddTRDresolution.C"
 #include "PWG1/TRD/macros/AddTRDcheckPID.C"
+#include "PWG1/TRD/macros/AddTRDv0Monitor.C"
 #endif
 
 #include "../TRD/macros/AliTRDperformanceTrain.h"
@@ -124,9 +125,14 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       break;
     case kCheckPID:
       // map slots
-      ce[1]=ci[kV0List];
       ce[0]=ci[kTracksBarrel];
-      AddTRDcheckPID(mgr, trd, ce); break;
+      ce[1]=ci[kV0List];
+      AddTRDcheckPID(mgr, trd, ce, &ce[2]); 
+      break;
+    case kV0Monitor:
+      // slots already mapped by checkPID
+      AddTRDv0Monitor(mgr, trd, ce);
+      break;
     default:
       Warning("AddTrainPerformanceTRD()", Form("No performance task registered at slot %d.", it)); 
     }
