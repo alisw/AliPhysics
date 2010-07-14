@@ -16,7 +16,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// Class describing TPC temperature sensors (including pointers to graphs/fits//
+// Class describing time dependent values read from DCS sensors               //  
+// (including pointers to graphs/fits)                                        //
 // Authors: Marian Ivanov, Haavard Helstrup and Martin Siska                  //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +82,7 @@ AliDCSSensor& AliDCSSensor::operator=(const AliDCSSensor& source){
 Double_t AliDCSSensor::GetValue(UInt_t timeSec)
 {
  //
- // Get temperature value for actual sensor
+ // Get DCS value for actual sensor
  //  timeSec given as offset from start-of-map measured in seconds
  //  *NOTE* In the current TPC setup, start-of-map is defined as the 
  //         first measured point for each sensor. This will be different
@@ -96,7 +97,7 @@ Double_t AliDCSSensor::GetValue(UInt_t timeSec)
 //_____________________________________________________________________________
 Double_t AliDCSSensor::GetValue(TTimeStamp time) 
 {
- // Get temperature value for actual sensor
+ // Get DCS value for actual sensor
  //  time given as absolute TTimeStamp
  //
  Bool_t inside=kTRUE;
@@ -105,10 +106,13 @@ Double_t AliDCSSensor::GetValue(TTimeStamp time)
 
 //_____________________________________________________________________________
 
-Double_t AliDCSSensor::Eval(const TTimeStamp& time, Bool_t inside) const
+Double_t AliDCSSensor::Eval(const TTimeStamp& time, Bool_t& inside) const
 {
   // 
-  // Return temperature at given time
+  // Return DCS value at given time
+  //  The value is calculated from the AliSplineFit, if a fit is not available 
+  //    the most recent reading from the Graph of DCS points is returned (if 
+  //    the graph is present)
   //  If time < start of map  return value at start of map, inside = false
   //  If time > end of map    return value at end of map, inside = false
   
@@ -135,6 +139,36 @@ Double_t AliDCSSensor::Eval(const TTimeStamp& time, Bool_t inside) const
        return -99;
      }
   }
+}
+//_____________________________________________________________________________
+
+Double_t AliDCSSensor::EvalGraph(const TTimeStamp& time, Bool_t& inside) const
+{
+  // 
+  // Return DCS value from graph of DCS points (i.e return last reading before
+  //  the time specified by TTimeStamp
+  //  If time < start of map  return value at start of map, inside = false
+  //  If time > end of map    return value at end of map, inside = false
+  
+  UInt_t timeSec = time.GetSec();
+  UInt_t diff = timeSec-fStartTime;
+  inside = true;
+  
+  if ( timeSec < fStartTime ) { 
+     inside=false;
+     diff=0;
+  }
+  if ( timeSec > fEndTime ) {
+     inside=false;
+     diff = fEndTime-fStartTime;
+  }
+ 
+  Double_t timeHour = diff/kSecInHour;
+  if ( fGraph ) {
+     return EvalGraph(timeHour);
+  } else {  
+     return -99;
+  }  
 }
 //_____________________________________________________________________________
 Double_t AliDCSSensor::EvalGraph(const Double_t& timeHour) const 
