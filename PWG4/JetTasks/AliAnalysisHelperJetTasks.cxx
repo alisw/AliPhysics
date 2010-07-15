@@ -17,6 +17,7 @@
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include <AliGenDPMjetEventHeader.h>
 #include "AliGenPythiaEventHeader.h"
 #include <fstream>
 #include <iostream>
@@ -27,7 +28,7 @@
 
 ClassImp(AliAnalysisHelperJetTasks)
 
-
+Int_t AliAnalysisHelperJetTasks::fgLastProcessType = -1;
 
  
 AliGenPythiaEventHeader*  AliAnalysisHelperJetTasks::GetPythiaEventHeader(AliMCEvent *mcEvent){
@@ -808,3 +809,74 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerFired(const AliVEvent* aEv, Trigger t
   }
     return kFALSE;
 }
+
+
+ AliAnalysisHelperJetTasks::MCProcessType  AliAnalysisHelperJetTasks::GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug) {
+
+  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader);
+
+  if (!pythiaGenHeader) {
+    printf(" AliAnalysisHelperJetTasks::GetProcessType : Unknown gen Header type). \n");
+    return kInvalidProcess;
+  }
+
+
+  Int_t pythiaType = pythiaGenHeader->ProcessType();
+  fgLastProcessType = pythiaType;
+  MCProcessType globalType = kInvalidProcess;  
+
+
+  if (adebug) {
+    printf(" AliAnalysisHelperJetTasks::GetProcessType : Pythia process type found: %d \n",pythiaType);
+  }
+
+
+  if(pythiaType==92||pythiaType==93){
+    globalType = kSD;
+  }
+  else if(pythiaType==94){
+    globalType = kDD;
+  }
+  //else if(pythiaType != 91){ // also exclude elastic to be sure... CKB??
+  else {
+    globalType = kND;
+  }
+  return globalType;
+}
+
+
+ AliAnalysisHelperJetTasks::MCProcessType  AliAnalysisHelperJetTasks::GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug) {
+  //
+  // get the process type of the event.
+  //
+
+  // can only read pythia headers, either directly or from cocktalil header
+  AliGenDPMjetEventHeader* dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(aHeader);
+
+  if (!dpmJetGenHeader) {
+    printf(" AliAnalysisHelperJetTasks::GetDPMjetProcessType : Unknown header type (not DPMjet or). \n");
+    return kInvalidProcess;
+  }
+
+  Int_t dpmJetType = dpmJetGenHeader->ProcessType();
+  fgLastProcessType = dpmJetType;
+  MCProcessType globalType = kInvalidProcess;  
+
+
+  if (adebug) {
+    printf(" AliAnalysisHelperJetTasks::GetDPMJetProcessType : DPMJet process type found: %d \n",dpmJetType);
+  }
+
+
+  if (dpmJetType == 1 || dpmJetType == 4) { // explicitly inelastic plus central diffraction
+    globalType = kND;
+  }  
+  else if (dpmJetType==5 || dpmJetType==6) {
+    globalType = kSD;
+  }
+  else if (dpmJetType==7) {
+    globalType = kDD;
+  }
+  return globalType;
+}
+
