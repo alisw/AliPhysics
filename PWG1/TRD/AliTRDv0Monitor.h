@@ -41,9 +41,9 @@ public:
 
   AliTRDv0Monitor();
   AliTRDv0Monitor(const char *name, const char *title);
-
   virtual ~AliTRDv0Monitor();
-  
+
+  Bool_t  GetRefFigure(Int_t ifig); 
   void    UserCreateOutputObjects();
   void    UserExec(Option_t *option);
  
