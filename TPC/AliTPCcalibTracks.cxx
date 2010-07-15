@@ -116,6 +116,7 @@ using namespace std;
 #include "TSystem.h"
 #include "TStatToolkit.h"
 #include "TCut.h"
+#include "THnSparse.h"
 
 
 
@@ -126,6 +127,12 @@ AliTPCcalibTracks::AliTPCcalibTracks():
   AliTPCcalibBase(),
   fClusterParam(0),
   fROC(0),
+  fHisDeltaY(0),    // THnSparse - delta Y 
+  fHisDeltaZ(0),    // THnSparse - delta Z 
+  fHisRMSY(0),      // THnSparse - rms Y 
+  fHisRMSZ(0),      // THnSparse - rms Z 
+  fHisQmax(0),      // THnSparse - qmax 
+  fHisQtot(0),      // THnSparse - qtot 
   fArrayAmpRow(0),
   fArrayAmp(0), 
   fArrayQDY(0), 
@@ -152,7 +159,6 @@ AliTPCcalibTracks::AliTPCcalibTracks():
    // 
    // AliTPCcalibTracks default constructor
    //    
-  SetDebugLevel(1);
   if (GetDebugLevel() > 0) cout << "AliTPCcalibTracks' default constructor called" << endl;  
 }   
 
@@ -162,6 +168,12 @@ AliTPCcalibTracks::AliTPCcalibTracks(const AliTPCcalibTracks& calibTracks):
   AliTPCcalibBase(calibTracks),
   fClusterParam(0),
   fROC(0),
+  fHisDeltaY(0),    // THnSparse - delta Y 
+  fHisDeltaZ(0),    // THnSparse - delta Z 
+  fHisRMSY(0),      // THnSparse - rms Y 
+  fHisRMSZ(0),      // THnSparse - rms Z 
+  fHisQmax(0),      // THnSparse - qmax 
+  fHisQtot(0),      // THnSparse - qtot 
   fArrayAmpRow(0),
   fArrayAmp(0), 
   fArrayQDY(0), 
@@ -268,6 +280,12 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
   AliTPCcalibBase(),
   fClusterParam(0),
   fROC(0),
+  fHisDeltaY(0),    // THnSparse - delta Y 
+  fHisDeltaZ(0),    // THnSparse - delta Z 
+  fHisRMSY(0),      // THnSparse - rms Y 
+  fHisRMSZ(0),      // THnSparse - rms Z 
+  fHisQmax(0),      // THnSparse - qmax 
+  fHisQtot(0),      // THnSparse - qtot 
   fArrayAmpRow(0),
   fArrayAmp(0), 
   fArrayQDY(0), 
@@ -317,6 +335,7 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
    } 
    fCuts = cuts;
    SetDebugLevel(logLevel);
+   MakeHistos();
    
    TH1::AddDirectory(kFALSE);
    
@@ -518,6 +537,13 @@ AliTPCcalibTracks::~AliTPCcalibTracks() {
      fcalPadRegionChargeVsDriftlength->Delete();
      delete fcalPadRegionChargeVsDriftlength;
   }
+  delete fHisDeltaY;    // THnSparse - delta Y 
+  delete fHisDeltaZ;    // THnSparse - delta Z 
+  delete fHisRMSY;      // THnSparse - rms Y 
+  delete fHisRMSZ;      // THnSparse - rms Z 
+  delete fHisQmax;      // THnSparse - qmax 
+  delete fHisQtot;      // THnSparse - qtot 
+
 }
    
   
@@ -527,13 +553,12 @@ void AliTPCcalibTracks::Process(AliTPCseed *track){
    // To be called in the selector
    // first AcceptTrack is evaluated, then calls all the following analyse functions: 
    // FillResolutionHistoLocal(track)
-   // AlignUpDown(track, esd)
+
    // 
   if (GetDebugLevel() > 5) Info("Process","Starting to process the track...");
    Int_t accpetStatus = AcceptTrack(track);
    if (accpetStatus == 0) {
       FillResolutionHistoLocal(track);
-      // AlignUpDown(track, esd);
    }
    else fRejectedTracksHisto->Fill(accpetStatus);
 }
@@ -791,9 +816,6 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       fFitterParY.Eval();
       fFitterParZ.Eval();
       Double_t chi2 = (fFitterParY.GetChisquare() + fFitterParZ.GetChisquare()) / (2. * nclFound - 6.);
-      //if (chi2 > kCutChi2) fRejectedTracksHisto->Fill(9);
-      //if (chi2 > kCutChi2) fClusterCutHisto->Fill(2, irow);
-      //if (chi2 > kCutChi2) continue;   // if chi^2 is too big goto next padrow
       TTreeSRedirector *cstream = GetDebugStreamer();
       if (cstream){
 	(*cstream)<<"Cut9"<<
@@ -840,16 +862,6 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
          TMatrixD chi2Z(difZT, TMatrixD::kMult, mulZ);
          cchi2 += chi2Z(0, 0);      
          
-         // REMOVE KINK - TO be fixed - proper chi2 calculation for curved track to be implemented
-         //if (chi2 * 0.25 > kCutChi2) fRejectedTracksHisto->Fill(8);
-         //if (chi2 * 0.25 > kCutChi2) fClusterCutHisto->Fill(3, irow);
-         //if (chi2 * 0.25 > kCutChi2) continue;   // if chi2 is too big goto next padrow
-         // fit tracklet with polynom of 2nd order and two polynoms of 1st order
-         // take both polynoms of 1st order, calculate difference of their parameters
-         // add covariance matrixes and calculate chi2 of this difference
-         // if this chi2 is bigger than a given threshold, assume that the current cluster is
-         // a kink an goto next padrow
-
 	 if (cstream){
 	   (*cstream)<<"Cut8"<<
 	     "chi2="<<cchi2<<
@@ -964,6 +976,27 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
 	if (GetDebugLevel() > 20) Info("FillResolutionHistoLocal","Filling 'TPCSelectorDebug.root', irow = %i", irow);
          FillResolutionHistoLocalDebugPart(track, cluster0, irow, angley, anglez, nclFound, kDelta);
       }  // if (useForResol && nclFound > 2 * kMinRatio * kDelta)
+      //
+      // Fill THN histograms
+      //
+      Double_t xvar[9];
+      xvar[1]=padSize;
+      xvar[2]=1.-TMath::Abs(cluster0->GetZ())/250.;
+      xvar[3]=cluster0->GetMax();
+      xvar[5]=angley;
+      xvar[6]=anglez;
+
+      xvar[4]=cluster0->GetPad()-TMath::Nint(cluster0->GetPad());      
+      xvar[0]=deltay;
+      fHisDeltaY->Fill(xvar);
+      xvar[0]=TMath::Sqrt(cluster0->GetSigmaY2());
+      fHisRMSY->Fill(xvar);
+
+      xvar[4]=cluster0->GetTimeBin()-TMath::Nint(cluster0->GetTimeBin());
+      xvar[0]=deltaz;
+      fHisDeltaZ->Fill(xvar);
+      xvar[0]=TMath::Sqrt(cluster0->GetSigmaZ2());
+      fHisRMSZ->Fill(xvar);
    
    }    // loop over all padrows along the track: for (Int_t irow = 0; irow < 159; irow++)
 }  // FillResolutionHistoLocal(...)
@@ -2221,6 +2254,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       //      fCalPadClusterPerPadRaw->Add(calibTracks->GetfCalPadClusterPerPadRaw());
       counter++;
       if (GetDebugLevel() > 5) cout << "filling lists, object " << counter << " added." << endl;
+      AddHistos(calibTracks);
    }
    
    
@@ -2642,3 +2676,85 @@ void  AliTPCcalibTracks::MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * 
 
 
 
+void AliTPCcalibTracks::MakeHistos(){
+  //
+  ////make THnSparse
+  //
+  //THnSparse  *fHisDeltaY;    // THnSparse - delta Y 
+  //THnSparse  *fHisDeltaZ;    // THnSparse - delta Z 
+  //THnSparse  *fHisRMSY;      // THnSparse - rms Y 
+  //THnSparse  *fHisRMSZ;      // THnSparse - rms Z 
+  //THnSparse  *fHisQmax;      // THnSparse - qmax 
+  //THnSparse  *fHisQtot;      // THnSparse - qtot 
+  // cluster  performance bins
+  // 0 - variable of interest
+  // 1 - pad type   - 0- short 1-medium 2-long pads
+  // 2 - drift length - drift length -0-1
+  // 3 - Qmax         - Qmax  - 2- 400
+  // 4 - cog          - COG position - 0-1
+  // 5 - tan(phi)     - local y angle
+  // 6 - tan(theta)   - local z angle
+  // 7 - sector       - sector number
+  Double_t xminTrack[8], xmaxTrack[8];
+  Int_t binsTrack[8];
+  TString axisName[8];
+  
+  //
+  binsTrack[0]=100;
+  axisName[0]  ="var";
+
+  binsTrack[1] =3;
+  xminTrack[1] =0; xmaxTrack[1]=3;
+  axisName[1]  ="pad type";
+  //
+  binsTrack[2] =10;
+  xminTrack[2] =0; xmaxTrack[2]=1;
+  axisName[2]  ="drift length";
+  //
+  binsTrack[3] =10;
+  xminTrack[3] =1; xmaxTrack[3]=400;
+  axisName[3]  ="Qmax";
+  //
+  binsTrack[4] =10;
+  xminTrack[4] =0; xmaxTrack[4]=1;
+  axisName[4]  ="cog";
+  //
+  binsTrack[5] =10;
+  xminTrack[5] =0; xmaxTrack[5]=2;
+  axisName[5]  ="tan(phi)";
+  //
+  binsTrack[6] =10;
+  xminTrack[6] =0; xmaxTrack[6]=2;
+  axisName[6]  ="tan(theta)";
+  //
+  xminTrack[0] =-0.5; xmaxTrack[0]=0.5;
+  fHisDeltaY=new THnSparseS("#Delta_{y} (cm)","#Delta_{y} (cm)", 7, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-0.5; xmaxTrack[0]=0.5;
+  fHisDeltaZ=new THnSparseS("#Delta_{z} (cm)","#Delta_{z} (cm)", 7, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =0.; xmaxTrack[0]=0.5;
+  fHisRMSY=new THnSparseS("#RMS_{y} (cm)","#RMS_{y} (cm)", 7, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =0.; xmaxTrack[0]=0.5;
+  fHisRMSZ=new THnSparseS("#RMS_{z} (cm)","#RMS_{z} (cm)", 7, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =0.; xmaxTrack[0]=100;
+  fHisQmax=new THnSparseS("Qmax (ADC)","Qmax (ADC)", 7, binsTrack,xminTrack, xmaxTrack);
+
+  xminTrack[0] =0.; xmaxTrack[0]=250;
+  fHisQtot=new THnSparseS("Qtot (ADC)","Qtot (ADC)", 7, binsTrack,xminTrack, xmaxTrack);
+  BinLogX(fHisDeltaY,3);
+  BinLogX(fHisDeltaZ,3);
+  BinLogX(fHisRMSY,3);
+  BinLogX(fHisRMSZ,3);
+  BinLogX(fHisQmax,3);
+  BinLogX(fHisQtot,3);
+
+}  
+
+void    AliTPCcalibTracks::AddHistos(AliTPCcalibTracks* calib){
+  //
+  // Add histograms
+  //
+  if (calib->fHisDeltaY) fHisDeltaY->Add(calib->fHisDeltaY);
+  if (calib->fHisDeltaZ) fHisDeltaZ->Add(calib->fHisDeltaZ);
+  if (calib->fHisRMSY)   fHisRMSY->Add(calib->fHisRMSY);
+  if (calib->fHisRMSZ)   fHisRMSZ->Add(calib->fHisRMSZ);
+}

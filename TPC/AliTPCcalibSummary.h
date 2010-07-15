@@ -31,6 +31,8 @@ public:
   void ProcessAlign(Int_t run, Int_t timeStamp);
   void ProcessGain(Int_t run, Int_t timeStamp);
 
+  void ProcessDriftCERef();
+  void ProcessPulserRef();
 protected:
   AliTPCcalibDB     *fCalibDB;      //! pointer to the TPC calib manager
   AliTPCcalibDButil *fDButil;       //! pointer to the TPC calib db utils

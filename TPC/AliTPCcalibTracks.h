@@ -58,6 +58,7 @@ public :
   void     Process(AliESDEvent *event) {AliTPCcalibBase::Process(event);};
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   virtual Long64_t Merge(TCollection *li);
+  void    AddHistos(AliTPCcalibTracks* calib);
   void     MakeResPlotsQTree(Int_t minEntries = 100, const char* pathName = "plots");
   static void MakeQPosNormAll(TTree * chain, AliTPCClusterParam * param, Int_t maxPoints=1000000);
    void     MakeReport(Int_t stat, const char* pathName = "plots");     // calls all functions that procude pictures, results are written to pathName, stat is the minimal statistic threshold
@@ -101,6 +102,7 @@ public :
   AliTPCCalPad*          GetfCalPadClusterPerPadRaw() const {return fCalPadClusterPerPadRaw;}
   AliTPCCalPadRegion*    GetCalPadRegionchargeVsDriftlength() const {return fcalPadRegionChargeVsDriftlength;}
   AliTPCcalibTracksCuts* GetCuts() {return fCuts;}
+  void MakeHistos();  //make THnSparse
 protected:         
   
 private:
@@ -112,6 +114,14 @@ private:
    void FillResolutionHistoLocalDebugPart(AliTPCseed *track, AliTPCclusterMI *cluster0, Int_t irow, Float_t  angley, Float_t  anglez, Int_t nclFound, Int_t kDelta);
    AliTPCClusterParam *fClusterParam; // pointer to cluster parameterization
    AliTPCROC *fROC;          //!
+  THnSparse  *fHisDeltaY;    // THnSparse - delta Y 
+  THnSparse  *fHisDeltaZ;    // THnSparse - delta Z 
+  THnSparse  *fHisRMSY;      // THnSparse - rms Y 
+  THnSparse  *fHisRMSZ;      // THnSparse - rms Z 
+  THnSparse  *fHisQmax;      // THnSparse - qmax 
+  THnSparse  *fHisQtot;      // THnSparse - qtot 
+
+
    TObjArray *fArrayAmpRow; // array with amplitudes versus row for given sector 
    TObjArray *fArrayAmp;    // array with amplitude for sectors
    TObjArray *fArrayQDY;    // q binned delta Y histograms
@@ -120,6 +130,7 @@ private:
    TObjArray *fArrayQRMSZ;  // q binned delta Z histograms 
    TObjArray *fArrayChargeVsDriftlength; // array of arrays of TProfiles with charge vs. driftlength for each padsize and sector
    AliTPCCalPadRegion *fcalPadRegionChargeVsDriftlength;  // CalPadRegion, one TProfile for charge vs. driftlength for each padsize and sector
+
    TH1F      *fDeltaY;      // integrated delta y histo
    TH1F      *fDeltaZ;      // integrated delta z histo
    TObjArray *fResolY;      // array of resolution histograms Y

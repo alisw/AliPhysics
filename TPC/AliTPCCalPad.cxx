@@ -858,3 +858,31 @@ void  AliTPCCalPad::Draw(Option_t* option){
 
 
 }
+
+
+AliTPCCalPad * AliTPCCalPad::MakeCalPadFromHistoRPHI(TH2 * hisA, TH2* hisC){
+  //
+  // Make cal pad from r-phi histograms
+  //
+  AliTPCROC *proc= AliTPCROC::Instance();
+  AliTPCCalPad *calPad = new AliTPCCalPad("his","his");
+  Float_t globalPos[3];
+  for (Int_t isec=0; isec<72; isec++){
+    AliTPCCalROC* calRoc  = calPad->GetCalROC(isec);
+    TH2 * his = ((isec%36<18) ? hisA:hisC);
+    for (UInt_t irow=0; irow<calRoc->GetNrows(); irow+=1){
+      Int_t jrow=irow;
+      if (isec>=36) jrow+=63;
+      Float_t xrow=proc->GetPadRowRadii(isec, irow);
+      for (UInt_t ipad=0;ipad<proc->GetNPads(isec,irow);ipad+=1){
+        proc->GetPositionGlobal(isec,irow,ipad, globalPos);
+        Double_t phi=TMath::ATan2(globalPos[1],globalPos[0]);
+        //if (phi<0) phi+=TMath::Pi()*2;
+        Int_t bin=his->FindBin(phi,jrow);
+        Float_t value= his->GetBinContent(bin);
+	calRoc->SetValue(irow,ipad,value);
+      }
+    }
+  }
+  return calPad;
+}

@@ -56,6 +56,8 @@ delete calibSummary;
 #include "TGraphErrors.h"
 #include <AliCTPTimeParams.h>
 #include <AliTPCcalibSummary.h>
+#include <TStatToolkit.h>
+#include <TCut.h>
 //
 //
 //
@@ -122,6 +124,8 @@ void AliTPCcalibSummary::Process(const char * runList, Int_t first, Int_t last){
     fDButil->UpdateFromCalibDB();
     fDButil->SetReferenceRun(irun);
     fDButil->UpdateRefDataFromOCDB();
+    fCalibDB->CreateGUITree("calPads.root");
+    fDButil->CreateGUIRefTree("calPadsRef.root");
     //
     AliDCSSensorArray *arrHV=fCalibDB->GetVoltageSensors(irun);
     if (!arrHV) continue;
@@ -151,6 +155,9 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
   fDButil->UpdateFromCalibDB();
   fDButil->SetReferenceRun(irun);
   fDButil->UpdateRefDataFromOCDB();
+  fCalibDB->CreateGUITree("calPads.root");
+  fDButil->CreateGUIRefTree("calPadsRef.root");
+
   //
   AliSplineFit *fitVdrift=0x0;
   Int_t startTimeGRP=0, stopTimeGRP=0;
@@ -369,6 +376,8 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     ProcessCTP(irun,itime);
     ProcessAlign(irun,itime);
     ProcessGain(irun,itime);
+    ProcessDriftCERef();
+    ProcessPulserRef();
 
 
     (*fPcstream)<<"dcs"<<	
@@ -738,4 +747,170 @@ void AliTPCcalibSummary::ProcessAlign(Int_t run, Int_t timeStamp){
 }
 
 
+void AliTPCcalibSummary::ProcessDriftCERef(){
+  //
+  // Get fit of residuals if CE in respect with reference
+  // data
+  //
+  static TVectorD  sec(72);
+  static TVectorD vec0(72);
+  static TVectorD vecLy(72);
+  static TVectorD vecLx(72);
+  static TVectorD vecChi2(72);
+  static TVectorD vecN(72);
+  //
+  static TVectorD vecA0(72);
+  static TVectorD vecALy(72);
+  static TVectorD vecALx(72);
+  static TVectorD vecAChi2(72);
+  //
+  static TVectorD vecQ(72);
+  static TVectorD vecQRef(72);
+  static Bool_t isCalc=kFALSE;
+  
+  TFile f("calPads.root");
+  TFile fref("calPadsRef.root");
+  TTree * tree = (TTree*)f.Get("calPads");
+  TTree * treeRef = (TTree*)fref.Get("calPads");
+  tree->AddFriend(treeRef,"R");
+  tree->SetAlias("inCE","((CEQmean.fElements>35)&&abs(CETmean.fElements)<1.5&&abs(CETrms.fElements/1.2-1)<0.2)");  // outlyerTrms
+  tree->SetAlias("inCER","((R.CEQmean.fElements>35)&&abs(R.CETmean.fElements)<1.5&&abs(R.CETrms.fElements/1.2-1)<0.2)");  // outlyerTrms
+  //
+  if (!isCalc){
+    // make fits only once
+    TStatToolkit toolkit;
+    Double_t chi2=0;
+    Int_t    npoints=0;
+    TVectorD param;
+    TMatrixD covar;
+    tree->SetAlias("dt","CETmean.fElements-R.CETmean.fElements");
+    TCut cutAll ="inCE&&inCER&&abs(CETmean.fElements-R.CETmean.fElements)<0.5"; 
+    TString  fstringG="";              // global part
+    fstringG+="ly.fElements++";
+    fstringG+="(lx.fElements-134.)++";  
+    for (Int_t isec=0; isec<72; isec++){
+      TStatToolkit::FitPlane(tree,"2.64*dt", fstringG.Data(),Form("sector==%d",isec)+cutAll, chi2,npoints,param,covar,-1,0, 10000000, kFALSE);
+      if (npoints<3) continue;
+      printf("Sector=%d\n",isec);
+      vec0[isec]=param[0];
+      vecLy[isec]=param[1];
+      vecLx[isec]=param[2];
+      sec[isec]=isec;
+      vecN[isec]=npoints;
 
+      TStatToolkit::FitPlane(tree,"2.64*CETmean.fElements", fstringG.Data(),Form("sector==%d",isec)+cutAll, chi2,npoints,param,covar,-1,0, 10000000, kFALSE);
+      if (npoints<3) continue;
+      printf("Sector=%d\n",isec);
+      vecA0[isec]=param[0];
+      vecALy[isec]=param[1];
+      vecALx[isec]=param[2];
+      vecAChi2[isec]=TMath::Sqrt(chi2/npoints);
+      tree->Draw("CETmean.fElements",Form("sector==%d",isec)+cutAll);
+      tree->Draw("CETmean.fElements/R.CETmean.fElements",Form("sector==%d",isec)+cutAll);
+    }
+    isCalc=kTRUE;
+  }
+  (*fPcstream)<<"dcs"<<     // CE information
+    "CETSector.="<<&sec<<    // sector numbers
+    //                      // fit in respect to reference
+    "CETRef0.="<<&vec0<<    // offset change
+    "CETRefY.="<<&vecLy<<   // slope y change - rad
+    "CETRefX.="<<&vecLx<<   // slope x change - rad
+    "CETRefChi2.="<<&vecChi2<<    // chi2 (rms in cm)
+    "CETRefN.="<<&vecN<<     //number of accepted points
+    //                       // fit in respect per mean per side
+    "CET0.="<<&vecA0<<       // offset change
+    "CETY.="<<&vecALy<<      // slope y change - rad
+    "CETX.="<<&vecALx<<      // slope x change - rad
+    "CETChi2.="<<&vecAChi2;  // chi2 (rms in cm)
+}
+
+void AliTPCcalibSummary::ProcessPulserRef(){
+  //
+  // Get fit of residuals if Pulser in respect with reference
+  // data
+  //
+  static TVectorD  sec(72);
+  static TVectorD vec0(72);
+  static TVectorD vecLy(72);
+  static TVectorD vecLx(72);
+  static TVectorD vecChi2(72);
+  static TVectorD vecN(72);
+  //
+  static TVectorD vecA0(72);
+  static TVectorD vecALy(72);
+  static TVectorD vecALx(72);
+  static TVectorD vecAChi2(72);
+  static Bool_t isCalc=kFALSE;
+  
+  TFile f("calPads.root");
+  TFile fref("calPadsRef.root");
+  TTree * tree = (TTree*)f.Get("calPads");
+  TTree * treeRef = (TTree*)fref.Get("calPads");
+  tree->AddFriend(treeRef,"R");
+  
+  tree->SetAlias("inPulser","(abs(PulserTmean.fElements-PulserTmean_Median)<1.5&&abs(PulserTrms.fElements-PulserTrms_Median)<0.2)");  // outlyerTrms
+  tree->SetAlias("inPulserR","(abs(R.PulserTmean.fElements-R.PulserTmean_Median)<1.5&&abs(R.PulserTrms.fElements-R.PulserTrms_Median)<0.2)");  // outlyerTrms
+  //
+  if (!isCalc){
+    // make fits only once
+    TStatToolkit toolkit;
+    Double_t chi2=0;
+    Int_t    npoints=0;
+    TVectorD param;
+    TMatrixD covar;
+    tree->SetAlias("dt","PulserTmean.fElements-R.PulserTmean.fElements");
+    TCut cutAll ="inPulser&&inPulserR"; 
+    TString  fstringG="";              // global part
+    fstringG+="ly.fElements++";
+    fstringG+="(lx.fElements-134.)++";  
+    for (Int_t isec=0; isec<72; isec++){
+      TStatToolkit::FitPlane(tree,"dt", fstringG.Data(),Form("sector==%d",isec)+cutAll, chi2,npoints,param,covar,-1,0, 10000000, kFALSE);
+      if (npoints<3) continue;
+      printf("Setor=%d\n",isec);
+      vec0[isec]=param[0];
+      vecLy[isec]=param[1];
+      vecLx[isec]=param[2];
+      sec[isec]=isec;
+      vecN[isec]=npoints;
+
+      TStatToolkit::FitPlane(tree,"PulserTmean.fElements", fstringG.Data(),Form("sector==%d",isec)+cutAll, chi2,npoints,param,covar,-1,0, 10000000, kFALSE);
+      if (npoints<3) continue;
+      printf("Setor=%d\n",isec);
+      vecA0[isec]=param[0];
+      vecALy[isec]=param[1];
+      vecALx[isec]=param[2];
+      vecAChi2[isec]=TMath::Sqrt(chi2/npoints);
+    }
+    isCalc=kTRUE;
+  }
+  (*fPcstream)<<"dcs"<<     // Pulser information
+    "PulserTSector.="<<&sec<<    // sector numbers
+    //                      // fit in respect to reference
+    "PulserTRef0.="<<&vec0<<    // offset change
+    "PulserTRefY.="<<&vecLy<<   // slope y change - rad
+    "PulserTRefX.="<<&vecLx<<   // slope x change - rad
+    "PulserTRefChi2.="<<&vecChi2<<    // chi2 (rms in cm)
+    "PulserTRefN.="<<&vecN<<     //number of accepted points
+    //                       // fit in respect per mean per side
+    "PulserT0.="<<&vecA0<<       // offset change
+    "PulserTY.="<<&vecALy<<      // slope y change - rad
+    "PulserTX.="<<&vecALx<<      // slope x change - rad
+    "PulserTChi2.="<<&vecAChi2;  // chi2 (rms in cm)
+}
+
+
+
+
+
+// TCanvas * DrawCEDiff(TTree * tree){
+  
+//   TCanvas *canvasIO = new TCanvas("canvasCEIO","canvasCEIO");
+//   canvasIO->Divide(6,6);
+//   for (Int_t isec=0; isec<36; isec++){
+//     canvasIO->cd(isec+1);
+//     dcs->Draw(Form("CET0.fElements[%d]-CET0.fElements[%d]",isec+36,isec),Form("abs(CETRef0.fElements[%d])<0.3",isec),"");
+//     printf("%d\t%f\t%f\n",isec,dcs->GetHistogram()->GetMean(),dcs->GetHistogram()->GetRMS());
+//   }
+
+// }
