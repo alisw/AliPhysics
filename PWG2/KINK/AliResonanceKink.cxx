@@ -799,7 +799,7 @@ Bool_t AliResonanceKink::IsAcceptedForTrack(AliESDEvent *localesd,              
   } 
 
   if(nClustersTPC < fMinTPCclusters) {
-      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of nclusters (TPC) of %ld (min. requested: %ld)", nClustersTPC, fMinTPCclusters);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of nclusters (TPC) of %d (min. requested: %d)", nClustersTPC, fMinTPCclusters);
       return kFALSE;
   } 
   
