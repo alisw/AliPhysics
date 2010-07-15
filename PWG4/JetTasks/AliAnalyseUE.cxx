@@ -37,11 +37,13 @@
 
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliAODJet.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
+#include "AliESDtrack.h"
 #include "AliKFVertex.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
@@ -69,8 +71,11 @@ AliAnalyseUE::AliAnalyseUE() :
   TObject(),
   //fTaskUE(0),
   fkAOD(0x0),            
+  fkMC(0x0), 
+  fkESD(0x0),
   fDebug(0),
   fSimulateChJetPt(kFALSE),
+  fStack(0x0), 
   fAnaType(1),         
   fAreaReg(1.5393), // Pi*0.7*0.7
   fConeRadius(0.7),
@@ -97,8 +102,9 @@ AliAnalyseUE::AliAnalyseUE() :
   fNTrackRegionNegat(0),
   fNTrackRegionForward(0),
   fNTrackRegionBackward(0),
-  fSettingsTree(0x0)
-
+  fSettingsTree(0x0),
+  fLtLabel(-999),
+  fLtMCLabel(-999)
 {
   // constructor
 }
@@ -109,8 +115,11 @@ AliAnalyseUE::AliAnalyseUE(const AliAnalyseUE & original) :
   TObject(original),
   //fTaskUE(original.fTaskUE),
   fkAOD(original.fkAOD),            
+  fkMC(original.fkMC),            
+  fkESD(original.fkESD),            
   fDebug(original.fDebug),
   fSimulateChJetPt(original.fSimulateChJetPt),
+  fStack(original.fStack),
   fAnaType(original.fAnaType),
   fAreaReg(original.fAreaReg),
   fConeRadius(original.fConeRadius),
@@ -137,7 +146,9 @@ AliAnalyseUE::AliAnalyseUE(const AliAnalyseUE & original) :
   fNTrackRegionNegat(original.fNTrackRegionNegat),
   fNTrackRegionForward(original.fNTrackRegionForward),
   fNTrackRegionBackward(original.fNTrackRegionBackward),
-  fSettingsTree(original.fSettingsTree)
+  fSettingsTree(original.fSettingsTree),
+  fLtLabel(original.fLtLabel),
+  fLtMCLabel(original.fLtMCLabel)
 {
   //copy constructor	
 }
@@ -480,8 +491,11 @@ void AliAnalyseUE::FillRegions(Bool_t isNorm2Area,  TVector3 *jetVect){
 
 
 //-------------------------------------------------------------------
-void AliAnalyseUE::FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition){
-  
+void AliAnalyseUE::FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition, Int_t mctrue=0, Int_t eff=0){
+ 
+  // If mctrue = 1 consider branch AliAODMCParticles  
+  // If    eff = 1 track cuts for efficiency studies 
+
   // Identify the different topological zones
   fSumPtRegionPosit = 0.;
   fSumPtRegionNegat = 0.;
@@ -497,53 +511,188 @@ void AliAnalyseUE::FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition){
   static Double_t const  k270rad = 270.*kPI/180.;
   Double_t const kMyTolerance = 0.0000001;
 
-    Int_t nTracks = fkAOD->GetNTracks();
-    if (fDebug > 1) AliInfo(Form(" ==== AOD tracks = %d \n ",nTracks));
+    Int_t nTracks=0;
+    TClonesArray *tca = 0;
+    if (!mctrue) {
+	nTracks = fkAOD->GetNTracks();
+    	if (fDebug > 1) AliInfo(Form(" ==== AOD tracks = %d \n ",nTracks));
+    }else{
+  	tca = dynamic_cast<TClonesArray*>(fkAOD->FindListObject(AliAODMCParticle::StdBranchName())); 
+  	if(!tca){
+		Printf("No branch!!!");
+		return;
+		}
+	nTracks = tca->GetEntriesFast();
+    	if (fDebug > 1) AliInfo(Form(" ==== AOD MC particles = %d \n ",nTracks));
+  	}
     
+    //If UE task d0 distribution is not filled
+    Int_t flag_tmp=0;
+    if (fHistos->GetHistograms()->FindObject("hDCAxy")) flag_tmp = 1;
+
     for (Int_t ipart=0; ipart<nTracks; ++ipart) {
+    AliVParticle *part; 
+    AliAODTrack *partRECO=0;
+    AliAODMCParticle *partMC=0;
+    Double_t charge=-999.;
+    Double_t pt=-999.;
+    Double_t eta=-999.;
+    Int_t pdgcode=-999; 
+    TString suffix("");
+
+    // get track reco or true
+    if (!mctrue){
+	 partRECO = dynamic_cast<AliAODTrack*>(fkAOD->GetTrack(ipart));
+	 part = partRECO;
+	 }
+    else {
+	partMC = dynamic_cast<AliAODMCParticle*>(tca->At(ipart)); 
+        part = partMC;
+        charge = partMC->Charge();
+	pt = partMC->Pt();
+        eta = partMC->Eta();
+	pdgcode = partMC->GetPdgCode();
+        suffix.Append("MC"); 
+	} 
+
       
-    AliAODTrack* part = fkAOD->GetTrack( ipart );
     if (fDebug > 1) AliInfo(Form(" ==== AOD track = %d pt = %f charge = %d \n ",ipart,part->Pt(),part->Charge()));
+    
     // track selection
-    if (! TrackSelected(part)) continue;
-      
+    if (!mctrue && !eff ){
+	if( !TrackSelected(partRECO)) continue; //track selection for data and MC reconstructed
+        if (flag_tmp){
+		if (fkESD && fkESD->GetNumberOfTracks() ){
+		        AliInfo("READING ESD *************************************************");
+			Int_t id = partRECO->GetID();
+			AliESDtrack *trackESD;
+			trackESD = (AliESDtrack*)fkESD->GetTrack(id);
+			Float_t d0;
+			Float_t z;
+			trackESD->GetImpactParameters(d0,z);
+			fHistos->FillHistogram("hDCAxy", d0, jetVect[0].Pt());
+			}else AliInfo("NO TRACKS ************************************************") 
+		}
+	}
+    
+    if (!mctrue && eff){
+	if (!TrackSelectedEfficiency(partRECO )) continue; //track selection for MC reconstructed for efficiency studies
+		if(fkESD && fkESD->GetNumberOfTracks()){
+			Int_t id = partRECO->GetID();
+			AliESDtrack * trackESD = (AliESDtrack*) fkESD->GetTrack(id);
+			Float_t d0;
+			Float_t z;
+			trackESD->GetImpactParameters(d0,z);
+			fHistos->FillHistogram("hDCAxyPrimary", d0, jetVect[0].Pt()); 
+			}
+	}
+
+    if (mctrue){
+	 if ( !(TrackMCSelected(charge, pt, eta, pdgcode) && partMC->IsPhysicalPrimary())) continue; //track selection for MC true
+      }
       
     TVector3 partVect(part->Px(), part->Py(), part->Pz());
     Bool_t isFlagPart = kTRUE;
     Double_t deltaPhi = jetVect[0].DeltaPhi(partVect)+k270rad;
     if( deltaPhi > kTWOPI )  deltaPhi-= kTWOPI;
-    if (fAnaType != 4 ) fHistos->FillHistogram("hdNdEtaPhiDist",deltaPhi, jetVect[0].Pt());
+    if (fAnaType != 4 ) fHistos->FillHistogram(Form("hdNdEtaPhiDist%s",suffix.Data()),deltaPhi, jetVect[0].Pt());
     else if (TMath::Abs(deltaPhi-k270rad) >= kMyTolerance && TMath::Abs(jetVect[0].Eta()-partVect.Eta()) >= kMyTolerance){
-    	fHistos->FillHistogram("hdNdEtaPhiDist",deltaPhi, jetVect[0].Pt());
+    	fHistos->FillHistogram(Form("hdNdEtaPhiDist%s",suffix.Data()),deltaPhi, jetVect[0].Pt());
     	isFlagPart = kFALSE;
     	}
       
-    fHistos->FillHistogram("hFullRegPartPtDistVsEt", part->Pt(), jetVect[0].Pt());  
+    fHistos->FillHistogram(Form("hFullRegPartPtDistVsEt%s",suffix.Data()), part->Pt(), jetVect[0].Pt());  
     
     Int_t region = IsTrackInsideRegion( jetVect, &partVect, conePosition );  
     if (region == 1) {
     	if( fMaxPartPtRegion < part->Pt() ) fMaxPartPtRegion = part->Pt();
         fSumPtRegionPosit += part->Pt();
         fNTrackRegionPosit++;
-      	fHistos->FillHistogram("hTransRegPartPtDistVsEt",part->Pt(), jetVect[0].Pt());
+      	fHistos->FillHistogram(Form("hTransRegPartPtDistVsEt%s",suffix.Data()),part->Pt(), jetVect[0].Pt());
 	}
     if (region == -1) {
     	if( fMaxPartPtRegion < part->Pt() ) fMaxPartPtRegion = part->Pt();
         fSumPtRegionNegat += part->Pt();
         fNTrackRegionNegat++;
-      	fHistos->FillHistogram("hTransRegPartPtDistVsEt",part->Pt(), jetVect[0].Pt());
+      	fHistos->FillHistogram(Form("hTransRegPartPtDistVsEt%s",suffix.Data()),part->Pt(), jetVect[0].Pt());
       	}
     if (region == 2){ //forward
     	fSumPtRegionForward += part->Pt();
         fNTrackRegionForward++;
-      	fHistos->FillHistogram("hRegForwardPartPtDistVsEt",part->Pt(), jetVect[0].Pt());
+      	fHistos->FillHistogram(Form("hRegForwardPartPtDistVsEt%s",suffix.Data()),part->Pt(), jetVect[0].Pt());
       	}
     if (region == -2){ //backward
     	fSumPtRegionBackward += part->Pt();
         fNTrackRegionBackward++;
-      	fHistos->FillHistogram("hRegBackwardPartPtDistVsEt",part->Pt(), jetVect[0].Pt());
+      	fHistos->FillHistogram(Form("hRegBackwardPartPtDistVsEt%s",suffix.Data()),part->Pt(), jetVect[0].Pt());
       	}
     }//end loop AOD tracks
+
+}
+
+//-------------------------------------------------------------------
+/*TVector3 AliAnalyseUE::GetLeadingTracksMC(AliMCEvent *mcEvent){
+   
+  fkMC = mcEvent; 
+
+  Double_t maxPtJet1 = 0.; 
+  Int_t    index1 = -1;
+  
+  TVector3 jetVect[3];
+  
+  jetVect[0].SetPtEtaPhi(-1.,-1.,-1.);
+  jetVect[1].SetPtEtaPhi(-1.,-1.,-1.);
+  jetVect[2].SetPtEtaPhi(-1.,-1.,-1.);
+  
+  Int_t nJets = 0;
+  
+  TObjArray* tracks = SortChargedParticlesMC();
+    if( tracks ) {
+      	nJets = tracks->GetEntriesFast();
+      	if( nJets > 0 ) {
+        	index1 = 0;
+        	TParticle* jet = (TParticle*)tracks->At(0);
+		maxPtJet1 = jet->Pt();
+        	jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+      		}
+      	tracks->Clear();
+      	delete tracks; 
+  }
+  return *jetVect;
+
+}
+*/
+
+//-------------------------------------------------------------------
+TVector3 AliAnalyseUE::GetLeadingTracksMC(AliMCEvent *mcEvent){
+   
+  fkMC = mcEvent; 
+
+  Double_t maxPtJet1 = 0.; 
+  Int_t    index1 = -1;
+  
+  TVector3 jetVect[3];
+  
+  jetVect[0].SetPtEtaPhi(-1.,-1.,-1.);
+  jetVect[1].SetPtEtaPhi(-1.,-1.,-1.);
+  jetVect[2].SetPtEtaPhi(-1.,-1.,-1.);
+  
+  Int_t nJets = 0;
+  
+  TObjArray* tracks = SortChargedParticlesMC();
+    if( tracks ) {
+      	nJets = tracks->GetEntriesFast();
+      	if( nJets > 0 ) {
+        	index1 = 0;
+        	AliAODMCParticle* jet = (AliAODMCParticle*)tracks->At(0);
+		fLtMCLabel = jet->GetLabel();
+		maxPtJet1 = jet->Pt();
+        	jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
+      		}
+      	tracks->Clear();
+      	delete tracks; 
+  }
+  return *jetVect;
 
 }
 
@@ -649,7 +798,8 @@ TVector3 AliAnalyseUE::GetOrderedClusters(TString aodBranch, Bool_t chargedJets,
       		if( nJets > 0 ) {
         		index1 = 0;
         		AliAODTrack* jet = (AliAODTrack*)tracks->At(0);
-        		maxPtJet1 = jet->Pt();
+			fLtLabel = jet->GetLabel();	
+			maxPtJet1 = jet->Pt();
         		jetVect[0].SetXYZ(jet->Px(), jet->Py(), jet->Pz());
       			}
       		tracks->Clear();
@@ -666,7 +816,15 @@ TVector3 AliAnalyseUE::GetOrderedClusters(TString aodBranch, Bool_t chargedJets,
 
 //-------------------------------------------------------------------
 void AliAnalyseUE::Initialize(AliAnalysisTaskUE& taskUE){
-   
+/*void AliAnalyseUE::Initialize(AliAnalysisTask& task){// when correction task is in trunk
+   if (task->InheritsFrom("AliAnalysisTaskUE")){
+        AliAnalysisTaskUE *taskUE = dynamic_cast<AliAnalysisTaskUE*> task; 
+   	}
+   else if (task->InheritsFrom("AliAnalysisTaskCorrectionsUE")){
+        AliAnalysisTaskCorrectionsUE *taskUE = dynamic_cast<AliAnalysisTaskCorrectionsUE*> task; 
+   	}
+
+*/	
   //Get principal settings from current instance of UE analysis-task
   fAnaType = taskUE.GetAnaTopology();         
   fkAOD = taskUE.GetAOD();           
@@ -689,6 +847,49 @@ void AliAnalyseUE::Initialize(AliAnalysisTaskUE& taskUE){
   fUseSingleCharge = taskUE.GetUseSingleCharge();
   
 }
+
+//-------------------------------------------------------------------
+void  AliAnalyseUE::Initialize(Int_t anaType, AliAODEvent* aod,Double_t coneRadius, Int_t debug, Int_t filterBit, Double_t jet1EtaCut, Double_t jet2DeltaPhiCut, Double_t jet2RatioPtCut, Double_t jet3PtCut, Int_t ordering, Int_t regionType,Bool_t simulateChJetPt, Double_t trackEtaCut, Double_t trackPtCut, Bool_t useChargeHadrons, Bool_t useChPartJet, Bool_t usePositiveCharge, Bool_t useSingleCharge, AliHistogramsUE* histos){
+   
+   fAnaType = anaType;
+   fkAOD = aod;
+   fConeRadius = coneRadius;
+   fDebug = debug;
+   fFilterBit = filterBit;
+   fJet1EtaCut = jet1EtaCut;
+   fJet2DeltaPhiCut = jet2DeltaPhiCut;
+   fJet2RatioPtCut = jet2RatioPtCut;
+   fJet3PtCut = jet3PtCut;
+   fOrdering = ordering;
+   fRegionType = regionType;
+   fSimulateChJetPt = simulateChJetPt;
+   fTrackEtaCut = trackEtaCut;
+   fTrackPtCut = trackPtCut;
+   fUseChargeHadrons = useChargeHadrons;
+   fUseChPartJet = useChPartJet;
+   fUsePositiveCharge = usePositiveCharge;
+   fUseSingleCharge = useSingleCharge; 
+   fHistos = histos; 
+}
+
+
+//-------------------------------------------------------------------
+Bool_t  AliAnalyseUE::TriggerSelection(AliInputEventHandler* inputHandler){
+
+  //Use AliPhysicsSelection to select good events
+  if( !inputHandler->InheritsFrom("AliAODInputHandler") ) { // input AOD
+  	if (inputHandler->IsEventSelected()) {
+  		if (fDebug > 1) AliInfo(" Trigger Selection: event ACCEPTED ... ");
+  	} else {
+  		if (fDebug > 1) AliInfo(" Trigger Selection: event REJECTED ... ");
+  		return kFALSE;
+  		}
+        }                                
+
+  return kTRUE;
+
+}
+
 
 //-------------------------------------------------------------------
 Bool_t  AliAnalyseUE::VertexSelection(AliAODEvent *aod, Int_t tracks, Double_t zed ){
@@ -992,6 +1193,49 @@ void  AliAnalyseUE::QSortTracks(TObjArray &a, Int_t first, Int_t last)
 }
 
 
+//-------------------------------------------------------------------
+void  AliAnalyseUE::QSortTracksMC(TObjArray &a, Int_t first, Int_t last)
+{
+  // Sort array of TObjArray of tracks by Pt using a quicksort algorithm.
+  
+  static TObject *tmp;
+  static int i;           // "static" to save stack space
+  int j;
+  
+  while (last - first > 1) {
+    i = first;
+    j = last;
+    for (;;) {
+      while (++i < last && ((AliAODMCParticle*)a[i])->Pt() > ((AliAODMCParticle*)a[first])->Pt() )
+        ;
+      while (--j > first && ((AliAODMCParticle*)a[j])->Pt() < ((AliAODMCParticle*)a[first])->Pt() )
+        ;
+      if (i >= j)
+        break;
+      
+      tmp  = a[i];
+      a[i] = a[j];
+      a[j] = tmp;
+    }
+    if (j == first) {
+      ++first;
+      continue;
+    }
+    tmp = a[first];
+    a[first] = a[j];
+    a[j] = tmp;
+    if (j - first < last - (j + 1)) {
+      QSortTracksMC(a, first, j);
+      first = j + 1;   // QSortTracks(j + 1, last);
+    } else {
+      QSortTracksMC(a, j + 1, last);
+      last = j;        // QSortTracks(first, j);
+    }
+  }
+}
+
+
+
 
 
 //-------------------------------------------------------------------
@@ -1030,6 +1274,60 @@ TObjArray*  AliAnalyseUE::SortChargedParticles()
   	tracks->AddLast( part );
   	}
   QSortTracks( *tracks, 0, tracks->GetEntriesFast() );
+
+  nTracks = tracks->GetEntriesFast();
+  if( !nTracks ) return 0;
+
+  return tracks;
+  }
+
+//____________________________________________________________________
+/*TObjArray*  AliAnalyseUE::SortChargedParticlesMC()
+{
+  //  return an array with all charged particles ordered according to their pT .
+  AliStack *mcStack = fkMC->Stack();
+  Int_t nTracks = mcStack->GetNtrack();
+  if( !nTracks ) return 0;
+  TObjArray* tracks = new TObjArray(nTracks);
+
+  for (Int_t ipart=0; ipart<nTracks; ++ipart) {
+  	if (!(mcStack->IsPhysicalPrimary(ipart))) continue;
+  	TParticle *part = mcStack->Particle(ipart);
+	
+  	if( !part->GetPDG()->Charge() ) continue;
+  	if( part->Pt() < fTrackPtCut ) continue;
+  	tracks->AddLast( part );
+  	}
+  QSortTracksMC( *tracks, 0, tracks->GetEntriesFast() );
+
+  nTracks = tracks->GetEntriesFast();
+  if( !nTracks ) return 0;
+
+  return tracks;
+  }
+*/
+
+//____________________________________________________________________
+TObjArray*  AliAnalyseUE::SortChargedParticlesMC()
+{
+  //  return an array with all charged particles ordered according to their pT .
+  TClonesArray *tca = dynamic_cast<TClonesArray*>(fkAOD->FindListObject(AliAODMCParticle::StdBranchName())); 
+  if(!tca){
+	Printf("No branch!!!");
+	return 0;
+  } 
+  Int_t nTracks = tca->GetEntriesFast();
+  if( !nTracks ) return 0;
+  TObjArray* tracks = new TObjArray(nTracks);
+
+  for (Int_t ipart=0; ipart<nTracks; ++ipart) {
+        AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(ipart));	
+  	if(!part->IsPhysicalPrimary())continue;
+        if( part->Pt() < fTrackPtCut ) continue;
+  	if(!part->Charge()) continue;
+        tracks->AddLast( part );
+  	}
+  QSortTracksMC( *tracks, 0, tracks->GetEntriesFast() );
 
   nTracks = tracks->GetEntriesFast();
   if( !nTracks ) return 0;
@@ -1085,6 +1383,50 @@ Bool_t AliAnalyseUE::TrackSelected(AliAODTrack* part)const{
   if ( part->Pt() < fTrackPtCut ) return kFALSE;
   if( TMath::Abs(part->Eta()) > fTrackEtaCut ) return kFALSE;
 
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t AliAnalyseUE::TrackSelectedEfficiency(AliAODTrack* part)const{
+  
+  if (!fStack) AliWarning("Attention: stack not set from mother task");  
+  // Real track selection
+  if ( !part->TestFilterBit(fFilterBit) ) return kFALSE; // track cut selection
+  if ( !part->IsPrimaryCandidate()) return kFALSE; // reject whatever is not linked to collision point
+  // PID Selection: Reject everything but hadrons
+  Bool_t isHadron = part->GetMostProbablePID()==AliAODTrack::kPion || 
+  	part->GetMostProbablePID()==AliAODTrack::kKaon || 
+  	part->GetMostProbablePID()==AliAODTrack::kProton;
+  if ( fUseChargeHadrons && !isHadron ) return kFALSE;
+      
+  if ( !part->Charge() ) return kFALSE; //Only charged
+  if ( fUseSingleCharge ) { // Charge selection
+  	if ( fUsePositiveCharge && part->Charge() < 0.) return kFALSE; // keep Positives
+  	if ( !fUsePositiveCharge && part->Charge() > 0.) return kFALSE; // keep Negatives
+ 	} 
+    
+  /*if ( part->Pt() < fTrackPtCut ) return kFALSE;
+  if( TMath::Abs(part->Eta()) > fTrackEtaCut ) return kFALSE;*/
+
+  //Check if there was a primary fulfilling the required cuts 
+  Double_t charge=-999.;
+  Double_t pt=-999.;
+  Double_t eta=-999.;
+  Int_t pdgcode=-999; 
+  
+  Int_t label = part->GetLabel();
+  TClonesArray *tca=0;
+  tca = dynamic_cast<TClonesArray*>(fkAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+  //TParticle *partMC = fStack->ParticleFromTreeK(label);
+  AliAODMCParticle *partMC=dynamic_cast<AliAODMCParticle*>(tca->At(TMath::Abs(label)));
+  if (!partMC->IsPhysicalPrimary())return kFALSE;
+  //charge = ((TParticlePDG*)partMC->GetPDG())->Charge();
+  charge = partMC->Charge();  
+  pt = partMC->Pt();
+  eta = partMC->Eta();
+  pdgcode = partMC->GetPdgCode();
+  
+  if (!TrackMCSelected(charge, pt, eta, pdgcode)) return kFALSE;
   return kTRUE;
 }
 

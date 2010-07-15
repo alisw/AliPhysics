@@ -41,6 +41,8 @@
 #include "AliHistogramsUE.h"
 #include "AliAnalysisTaskUE.h"
 #include "AliAnalyseUE.h"
+#include "AliCFContainer.h"
+#include "AliCFManager.h"
 #include "AliLog.h"
 
 ClassImp( AliHistogramsUE)
@@ -52,6 +54,7 @@ fBinsPtInHist(0),
 fMinJetPtInHist(0.),
 fMaxJetPtInHist(0.),
 fTrackEtaCut(0.),
+fJet1EtaCut(0.),
 fListOfHistos(0x0),  
 fhNJets(0x0),
 fhEleadingPt(0x0),
@@ -62,8 +65,11 @@ fhMinRegSumPt(0x0),
 fhMinRegMaxPtPart(0x0),
 fhMinRegSumPtvsMult(0x0),
 fhdNdEtaPhiDist(0x0),        
+fhdNdEtaPhiDistMC(0x0),        
 fhFullRegPartPtDistVsEt(0x0), 
+fhFullRegPartPtDistVsEtMC(0x0), 
 fhTransRegPartPtDistVsEt(0x0),
+fhTransRegPartPtDistVsEtMC(0x0),
 fhRegionSumPtMaxVsEt(0x0),
 fhRegionMultMax(0x0),         
 fhRegionMultMaxVsEt(0x0),     
@@ -79,14 +85,19 @@ fhRegForwardSumPtvsMult(0x0),
 fhRegBackwardMult(0x0),
 fhRegBackwardSumPtvsMult(0x0),
 fhRegForwardPartPtDistVsEt(0x0),
+fhRegForwardPartPtDistVsEtMC(0x0),
 fhRegBackwardPartPtDistVsEt(0x0),
+fhRegBackwardPartPtDistVsEtMC(0x0),
 fhRegTransMult(0x0),
 fhRegTransSumPtVsMult(0x0),
 fhMinRegSumPtJetPtBin(0x0),
 fhMaxRegSumPtJetPtBin(0x0),
 fhVertexMult(0x0),
 fh1Xsec(0x0),
-fh1Trials(0x0)
+fh1Trials(0x0),
+fhDCAxy(0x0),
+fhDCAxyPrimary(0x0)
+//For Corrections
 {
   // Default constructor
 
@@ -99,6 +110,7 @@ fBinsPtInHist(0),
 fMinJetPtInHist(0.),
 fMaxJetPtInHist(0.),
 fTrackEtaCut(0.),
+fJet1EtaCut(0.),
 fListOfHistos(0x0),  
 fhNJets(0x0),
 fhEleadingPt(0x0),
@@ -109,8 +121,11 @@ fhMinRegSumPt(0x0),
 fhMinRegMaxPtPart(0x0),
 fhMinRegSumPtvsMult(0x0),
 fhdNdEtaPhiDist(0x0),        
+fhdNdEtaPhiDistMC(0x0),        
 fhFullRegPartPtDistVsEt(0x0), 
+fhFullRegPartPtDistVsEtMC(0x0), 
 fhTransRegPartPtDistVsEt(0x0),
+fhTransRegPartPtDistVsEtMC(0x0),
 fhRegionSumPtMaxVsEt(0x0),
 fhRegionMultMax(0x0),         
 fhRegionMultMaxVsEt(0x0),     
@@ -126,14 +141,19 @@ fhRegForwardSumPtvsMult(0x0),
 fhRegBackwardMult(0x0),
 fhRegBackwardSumPtvsMult(0x0),
 fhRegForwardPartPtDistVsEt(0x0),
+fhRegForwardPartPtDistVsEtMC(0x0),
 fhRegBackwardPartPtDistVsEt(0x0),
+fhRegBackwardPartPtDistVsEtMC(0x0),
 fhRegTransMult(0x0),
 fhRegTransSumPtVsMult(0x0),
 fhMinRegSumPtJetPtBin(0x0),
 fhMaxRegSumPtJetPtBin(0x0),
 fhVertexMult(0x0),
 fh1Xsec(0x0),
-fh1Trials(0x0)
+fh1Trials(0x0),
+fhDCAxy(0x0),
+fhDCAxyPrimary(0x0)
+//For Corrections
 {
   // Constructor, initialize members from list
 	fhNJets = (TH1F*)list->FindObject("hNJets"); 
@@ -145,8 +165,11 @@ fh1Trials(0x0)
 	fhMinRegMaxPtPart = (TH1F*)list->FindObject("hMinRegMaxPtPart");
 	fhMinRegSumPtvsMult = (TH1F*)list->FindObject("hMinRegSumPtvsMult");
 	fhdNdEtaPhiDist = (TH2F*)list->FindObject("hdNdEtaPhiDist");  
+	fhdNdEtaPhiDistMC = (TH2F*)list->FindObject("hdNdEtaPhiDistMC");  
 	fhFullRegPartPtDistVsEt = (TH2F*)list->FindObject("hFullRegPartPtDistVsEt");
+	fhFullRegPartPtDistVsEtMC = (TH2F*)list->FindObject("hFullRegPartPtDistVsEtMC");
 	fhTransRegPartPtDistVsEt = (TH2F*)list->FindObject("hTransRegPartPtDistVsEt");
+	fhTransRegPartPtDistVsEtMC = (TH2F*)list->FindObject("hTransRegPartPtDistVsEtMC");
 	fhRegionSumPtMaxVsEt = (TH1F*)list->FindObject("hRegionSumPtMaxVsEt"); 
 	fhRegionMultMax = (TH1I*)list->FindObject("hRegionMultMax");
 	fhRegionMultMaxVsEt = (TH1F*)list->FindObject("hRegionMultMaxVsEt");
@@ -162,7 +185,9 @@ fh1Trials(0x0)
 	fhRegBackwardMult = (TH2F*)list->FindObject("hRegBackwardMult");
 	fhRegBackwardSumPtvsMult = (TH2F*)list->FindObject("hRegBackwardSumPtvsMult");
 	fhRegForwardPartPtDistVsEt = (TH2F*)list->FindObject("hRegForwardPartPtDistVsEt");
+	fhRegForwardPartPtDistVsEtMC = (TH2F*)list->FindObject("hRegForwardPartPtDistVsEtMC");
 	fhRegBackwardPartPtDistVsEt = (TH2F*)list->FindObject("hRegBackwardPartPtDistVsEt");
+	fhRegBackwardPartPtDistVsEtMC = (TH2F*)list->FindObject("hRegBackwardPartPtDistVsEtMC");
 	fhRegTransMult = (TH2F*)list->FindObject("hRegTransMult");
 	fhRegTransSumPtVsMult = (TH2F*)list->FindObject("hRegTransSumPtVsMult");
 	fhMinRegSumPtJetPtBin = (TH2F*)list->FindObject("hMinRegSumPtJetPtBin");
@@ -170,7 +195,8 @@ fh1Trials(0x0)
 	fhVertexMult = (TH1F*)list->FindObject("hVertexMult");
 	fh1Xsec = (TProfile*)list->FindObject("h1Xsec");
 	fh1Trials = (TH1F*)list->FindObject("h1Trials"); 
-
+	fhDCAxy = (TH2F*)list->FindObject("hDCAxy");
+	fhDCAxyPrimary = (TH2F*)list->FindObject("hDCAxyPrimary");
 }
 //____________________________________________________________________
 AliHistogramsUE:: AliHistogramsUE(const AliHistogramsUE & original):
@@ -179,6 +205,7 @@ fBinsPtInHist(original.fBinsPtInHist),
 fMinJetPtInHist(original.fMinJetPtInHist),
 fMaxJetPtInHist(original.fMaxJetPtInHist),
 fTrackEtaCut(original.fTrackEtaCut),
+fJet1EtaCut(original.fJet1EtaCut),
 fListOfHistos(original.fListOfHistos),  
 fhNJets(original.fhNJets),
 fhEleadingPt(original.fhEleadingPt),
@@ -189,8 +216,11 @@ fhMinRegSumPt(original.fhMinRegSumPt),
 fhMinRegMaxPtPart(original.fhMinRegMaxPtPart),
 fhMinRegSumPtvsMult(original.fhMinRegSumPtvsMult),
 fhdNdEtaPhiDist(original.fhdNdEtaPhiDist),        
+fhdNdEtaPhiDistMC(original.fhdNdEtaPhiDistMC),        
 fhFullRegPartPtDistVsEt(original.fhFullRegPartPtDistVsEt), 
+fhFullRegPartPtDistVsEtMC(original.fhFullRegPartPtDistVsEtMC), 
 fhTransRegPartPtDistVsEt(original.fhTransRegPartPtDistVsEt),
+fhTransRegPartPtDistVsEtMC(original.fhTransRegPartPtDistVsEtMC),
 fhRegionSumPtMaxVsEt(original.fhRegionSumPtMaxVsEt),
 fhRegionMultMax(original.fhRegionMultMax),         
 fhRegionMultMaxVsEt(original.fhRegionMultMaxVsEt),     
@@ -206,14 +236,19 @@ fhRegForwardSumPtvsMult(original.fhRegForwardSumPtvsMult),
 fhRegBackwardMult(original.fhRegBackwardMult),
 fhRegBackwardSumPtvsMult(original.fhRegBackwardSumPtvsMult),
 fhRegForwardPartPtDistVsEt(original.fhRegForwardPartPtDistVsEt),
+fhRegForwardPartPtDistVsEtMC(original.fhRegForwardPartPtDistVsEtMC),
 fhRegBackwardPartPtDistVsEt(original.fhRegBackwardPartPtDistVsEt),
+fhRegBackwardPartPtDistVsEtMC(original.fhRegBackwardPartPtDistVsEtMC),
 fhRegTransMult(original.fhRegTransMult),
 fhRegTransSumPtVsMult(original.fhRegTransSumPtVsMult),
 fhMinRegSumPtJetPtBin(original.fhMinRegSumPtJetPtBin),
 fhMaxRegSumPtJetPtBin(original.fhMaxRegSumPtJetPtBin),
 fhVertexMult(original.fhVertexMult),
 fh1Xsec(original.fh1Xsec),
-fh1Trials(original.fh1Trials)
+fh1Trials(original.fh1Trials),
+fhDCAxy(original.fhDCAxy),
+fhDCAxyPrimary(original.fhDCAxyPrimary)
+//For Corrections
 {
 
   // Copy constructor
@@ -245,7 +280,9 @@ TObjArray* AliHistogramsUE::CreateCanvas(const Int_t ncanv){
 	gStyle->SetOptTitle(0);
 	arr->Add(c);
         }
+
 return arr;
+
 }
 
 //____________________________________________________________________
@@ -479,6 +516,232 @@ void  AliHistogramsUE::CreateHistograms(TList *list,Int_t bins, Double_t min, Do
   fListOfHistos=list; 
 }
 
+//____________________________________________________________________
+void AliHistogramsUE::CreateCorrectionsContainer(AliCFManager* cfman,Int_t bins, Double_t min, Double_t max, Double_t etacut, Double_t jetetacut){
+  
+  fBinsPtInHist = bins;
+  fMinJetPtInHist = min;
+  fMaxJetPtInHist = max;
+  fTrackEtaCut= etacut;
+  fJet1EtaCut = jetetacut;
+  //Define some constant
+  const Double_t minpT=fMinJetPtInHist; 
+  const Double_t maxpT=fMaxJetPtInHist;
+
+  const Double_t mineta=(-1.*fJet1EtaCut);
+  const Double_t maxeta=fJet1EtaCut;
+  	
+  const Double_t minprocess=-0.5; 
+  const Double_t maxprocess=9.5;
+
+  const Double_t mindeltaeta=-5.; 
+  const Double_t maxdeltaeta=5.;
+
+  const Double_t mindeltaphi=0.;
+  const Double_t maxdeltaphi=7.;
+  
+  const Double_t  minradius=0.; 
+  const Double_t  maxradius=10.;
+
+  //Define sensitive variables
+  UInt_t ipT       = 0;     //leading track pT
+  UInt_t ieta      = 1;     //leading track eta 
+  UInt_t iprocess  = 2;     //process type (ND,DD,SD)  
+  UInt_t ipTMC     = 3;     //MC leading track pT  
+  UInt_t ietaMC    = 4;     //MC leading track eta 
+  UInt_t ideltaeta = 5;     //leading track eta  reco-MC
+  UInt_t ideltaphi = 6;     //leading track phi  reco-MC 
+  UInt_t iradius   = 7;     //leading track radius reco-MC 
+  
+  //Set-up grid
+  UInt_t nstep = 6;
+  const Int_t nvar = 8;
+  const Int_t nbinspT = fBinsPtInHist;
+  const Int_t nbinseta = 10;
+  const Int_t nbinsprocess = 10;
+  const Int_t nbinsdeltaeta = 20;
+  const Int_t nbinsdeltaphi = 20; 
+  const Int_t nbinsradius = 20; 
+ 
+
+  Int_t iBin[nvar];
+  iBin[0] = nbinspT;
+  iBin[1] = nbinseta;
+  iBin[2] = nbinsprocess;
+  iBin[3] = nbinspT;
+  iBin[4] = nbinseta;
+  iBin[5] = nbinsdeltaeta;
+  iBin[6] = nbinsdeltaphi;
+  iBin[7] = nbinsradius;
+  
+  //lower bounds
+  Double_t *binLimpT=new Double_t[nbinspT+1];
+  for (Int_t i=0; i<=nbinspT; i++) binLimpT[i]=(Double_t)minpT + (maxpT-minpT)/nbinspT*(Double_t)i ;
+  
+  Double_t *binLimeta=new Double_t[nbinseta+1];
+  for (Int_t i=0; i<=nbinseta; i++) binLimeta[i]=(Double_t)mineta + (maxeta-mineta)/nbinseta*(Double_t)i ;
+  
+  Double_t *binLimprocess=new Double_t[nbinsprocess+1];
+  for (Int_t i=0; i<=nbinsprocess; i++) binLimprocess[i]=(Double_t)minprocess + (maxprocess-minprocess)/nbinsprocess*(Double_t)i ;
+  
+  Double_t *binLimdeltaeta=new Double_t[nbinsdeltaeta+1];
+  for (Int_t i=0; i<=nbinsdeltaeta; i++) binLimdeltaeta[i]=(Double_t)mindeltaeta + (maxdeltaeta-mindeltaeta)/nbinsdeltaeta*(Double_t)i ;
+  
+  Double_t *binLimdeltaphi=new Double_t[nbinsdeltaphi+1];
+  for (Int_t i=0; i<=nbinsdeltaphi; i++) binLimdeltaphi[i]=(Double_t)mindeltaphi + (maxdeltaphi-mindeltaphi)/nbinsdeltaphi*(Double_t)i ;
+  
+  Double_t *binLimradius=new Double_t[nbinsradius+1];
+  for (Int_t i=0; i<=nbinsradius; i++) binLimradius[i]=(Double_t)minradius + (maxradius-minradius)/nbinsradius*(Double_t)i ;
+  
+
+  //Container
+  AliCFContainer * container = new AliCFContainer("container1", "EventSelection",nstep,nvar,iBin);
+  container->SetBinLimits(ipT,binLimpT);
+  container->SetBinLimits(ieta,binLimeta);
+  container->SetBinLimits(iprocess,binLimprocess);
+  container->SetBinLimits(ipTMC,binLimpT);
+  container->SetBinLimits(ietaMC,binLimeta);
+  container->SetBinLimits(ideltaeta,binLimdeltaeta);
+  container->SetBinLimits(ideltaphi,binLimdeltaphi);
+  container->SetBinLimits(iradius,binLimradius);
+
+  container->SetVarTitle(ipT,"Leading track p_{T} (reco.)");
+  container->SetVarTitle(ieta,"Leading track #eta (reco.)");
+  container->SetVarTitle(iprocess,"Process");
+  container->SetVarTitle(ipTMC,"Leading track p_{T} (true)");
+  container->SetVarTitle(ietaMC,"Leading track #eta (true)");
+  container->SetVarTitle(ideltaeta,"Leading track #Delta #eta (reco.-true)");
+  container->SetVarTitle(ideltaphi,"Leading track #Delta #phi (reco.-true)");
+  container->SetVarTitle(iradius,"Leading track R (reco.-true)");
+
+  //set steps
+  container->SetStepTitle(0,"Triggered");
+  container->SetStepTitle(1,"Pass physics selection");
+  container->SetStepTitle(2,"Pass primary vertex cuts");
+  container->SetStepTitle(3,"Required analysis topology ");
+  container->SetStepTitle(4,"Leading track p_{T} > 1 GeV/c");
+  container->SetStepTitle(5,"Leading track correctly identified");
+  
+  cfman->SetEventContainer(container);
+  
+}
+
+
+
+//____________________________________________________________________
+void  AliHistogramsUE::CreateHistogramsCorrections(TList *list,Int_t bins, Double_t min, Double_t max, Double_t etacut)
+{
+
+  // Create all histograms necessary for UE corrections
+  fBinsPtInHist = bins;
+  fMinJetPtInHist = min;
+  fMaxJetPtInHist = max;
+  fTrackEtaCut= etacut;
+
+  //Number of reconstructed clusters  
+  fhNJets = new TH1F("hNJets", "Number of clusters",  20, 0, 20);
+  fhNJets->SetXTitle("Number of reconstructed clusters");
+  fhNJets->SetYTitle("#");
+  fhNJets->Sumw2();
+  list->Add( fhNJets );                  
+  
+  //Cross-section from MC
+  fh1Xsec = new TProfile("h1Xsec","xsec from pyxsec.root",1,0,1); 
+  fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+  fh1Xsec->Sumw2();
+  list->Add( fh1Xsec );   
+
+  //Number of trials from MC
+  fh1Trials = new TH1F("h1Trials","trials from pyxsec.root",1,0,1);
+  fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+  fh1Trials->Sumw2();
+  list->Add( fh1Trials ); 
+
+  //FOR TRACK EFFICIENCY 
+  //Phi correlation track-cluster vs. leading cluster pT 
+  fhdNdEtaPhiDist  = new TH2F("hdNdEtaPhiDist", Form("Charge particle density |#eta|<%3.1f vs #Delta#phi", fTrackEtaCut),62, 0.,   2.*TMath::Pi(), bins, min, max);
+  fhdNdEtaPhiDist->SetXTitle("#Delta#phi");
+  fhdNdEtaPhiDist->SetYTitle("Leading cluster p_{T}");
+  fhdNdEtaPhiDist->Sumw2();
+  list->Add( fhdNdEtaPhiDist );        
+  //idem for MC true 
+  fhdNdEtaPhiDistMC  = new TH2F("hdNdEtaPhiDistMC", Form("Charge particle density |#eta|<%3.1f vs #Delta#phi", fTrackEtaCut),62, 0.,   2.*TMath::Pi(), bins, min, max);
+  fhdNdEtaPhiDistMC->SetXTitle("#Delta#phi");
+  fhdNdEtaPhiDistMC->SetYTitle("Leading cluster p_{T}");
+  fhdNdEtaPhiDistMC->Sumw2();
+  list->Add( fhdNdEtaPhiDistMC );      
+  
+
+  //Can be used to get track pT distribution for different cluster pT bins (full region)
+  fhFullRegPartPtDistVsEt = new TH2F("hFullRegPartPtDistVsEt", Form( "dN/dp_{T} |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut),100,0.,50., bins, min, max);
+  fhFullRegPartPtDistVsEt->SetYTitle("Leading cluster p_{T}");
+  fhFullRegPartPtDistVsEt->SetXTitle("p_{T}");
+  fhFullRegPartPtDistVsEt->Sumw2();
+  list->Add( fhFullRegPartPtDistVsEt );   
+  //idem for MC true
+  fhFullRegPartPtDistVsEtMC = new TH2F("hFullRegPartPtDistVsEtMC", Form( "dN/dp_{T} |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut),100,0.,50., bins, min, max);
+  fhFullRegPartPtDistVsEtMC->SetYTitle("Leading cluster p_{T}");
+  fhFullRegPartPtDistVsEtMC->SetXTitle("p_{T}");
+  fhFullRegPartPtDistVsEtMC->Sumw2();
+  list->Add( fhFullRegPartPtDistVsEtMC );   
+
+
+  //Can be used to get part pT distribution for different cluster pT bins (transverse region)
+  fhTransRegPartPtDistVsEt = new TH2F("hTransRegPartPtDistVsEt", Form( "dN/dp_{T} in tranvese regions |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut),100,0.,50., bins, min,   max);
+  fhTransRegPartPtDistVsEt->SetYTitle("Leading cluster p_{T}");
+  fhTransRegPartPtDistVsEt->SetXTitle("p_{T}");
+  fhTransRegPartPtDistVsEt->Sumw2();
+  list->Add( fhTransRegPartPtDistVsEt );  
+  //idem for MC true
+  fhTransRegPartPtDistVsEtMC = new TH2F("hTransRegPartPtDistVsEtMC", Form( "dN/dp_{T} in tranvese regions |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut),100,0.,50., bins, min,   max);
+  fhTransRegPartPtDistVsEtMC->SetYTitle("Leading cluster p_{T}");
+  fhTransRegPartPtDistVsEtMC->SetXTitle("p_{T}");
+  fhTransRegPartPtDistVsEtMC->Sumw2();
+  list->Add( fhTransRegPartPtDistVsEtMC ); 
+
+
+  //Track pT distribution in FORWARD region vs. leading-cluster pT 
+  fhRegForwardPartPtDistVsEt = new TH2F("hRegForwardPartPtDistVsEt", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut), 100,0.,50., bins, min, max);
+  fhRegForwardPartPtDistVsEt->SetYTitle("Leading cluster p_{T}");
+  fhRegForwardPartPtDistVsEt->SetXTitle("p_{T} (GeV/c)");
+  fhRegForwardPartPtDistVsEt->Sumw2();
+  list->Add( fhRegForwardPartPtDistVsEt );   
+  //idem for MC true 
+  fhRegForwardPartPtDistVsEtMC = new TH2F("hRegForwardPartPtDistVsEtMC", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut), 100,0.,50., bins, min, max);
+  fhRegForwardPartPtDistVsEtMC->SetYTitle("Leading cluster p_{T}");
+  fhRegForwardPartPtDistVsEtMC->SetXTitle("p_{T} (GeV/c)");
+  fhRegForwardPartPtDistVsEtMC->Sumw2();
+  list->Add( fhRegForwardPartPtDistVsEtMC );   
+  
+  //Track pT distribution in BACKWARD region vs. leading-cluster pT 
+  fhRegBackwardPartPtDistVsEt = new TH2F("hRegBackwardPartPtDistVsEt", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut), 100,0.,50., bins, min, max);
+  fhRegBackwardPartPtDistVsEt->SetYTitle("Leading cluster p_{T}");
+  fhRegBackwardPartPtDistVsEt->SetXTitle("p_{T}");
+  fhRegBackwardPartPtDistVsEt->Sumw2();
+  list->Add( fhRegBackwardPartPtDistVsEt );   
+  //idem for MC true 
+  fhRegBackwardPartPtDistVsEtMC = new TH2F("hRegBackwardPartPtDistVsEtMC", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut), 100,0.,50., bins, min, max);
+  fhRegBackwardPartPtDistVsEtMC->SetYTitle("Leading cluster p_{T}");
+  fhRegBackwardPartPtDistVsEtMC->SetXTitle("p_{T}");
+  fhRegBackwardPartPtDistVsEtMC->Sumw2();
+  list->Add( fhRegBackwardPartPtDistVsEtMC );  
+
+  //FOR DCA DISTRIBUTION 
+  fhDCAxy = new TH2F("hDCAxy","Transverse DCA vs. leading track p_{T} ",50,-5.,5.,bins,min,max); 
+  fhDCAxy->SetYTitle("Leading cluster p_{T}");
+  fhDCAxy->SetXTitle("d_{0}");
+  fhDCAxy->Sumw2();
+  list->Add( fhDCAxy );
+  
+  //Fill only if reconstructed points back to a true primary  
+  fhDCAxyPrimary = new TH2F("hDCAxyPrimary","Transverse DCA vs. leading track p_{T} (primaries)",50,-5.,5.,bins,min,max);
+  fhDCAxyPrimary->SetYTitle("Leading cluster p_{T}");
+  fhDCAxyPrimary->SetXTitle("d_{0}");
+  fhDCAxyPrimary->Sumw2();
+  list->Add( fhDCAxyPrimary );  
+ 
+  fListOfHistos=list; 
+}
 
 //____________________________________________________________________
 void AliHistogramsUE::DrawUE(Int_t debug){
