@@ -1311,9 +1311,9 @@ Float_t AliTPCcalibDB::GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char 
     }
   }
   if (sigDigits>=0){
-    val/=10;
+    // val/=10;
     val=(Float_t)TMath::Floor(val * TMath::Power(10., sigDigits) + .5) / TMath::Power(10., sigDigits);
-    val*=10;
+    //    val*=10;
   }
   return val;
 }
@@ -1697,7 +1697,7 @@ Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
   
   //
   TString file(filename);
-  if (file.IsNull()) file=Form("guiTreeRun_%d.root",fRun);
+  if (file.IsNull()) file=Form("guiTreeRun_%lld.root",fRun);
   prep.DumpToFile(file.Data());
   return kTRUE;
 }

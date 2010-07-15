@@ -132,15 +132,21 @@ public:
   //
   //
   void MakeResidualHistos();
+  void MakeResidualHistosTracklet();
   THnSparse * GetClusterDelta(Int_t index) const  { return fClusterDelta[index];}
+  THnSparse * GetTrackletDelta(Int_t index) const  { return fTrackletDelta[index];}
 public:
   
   void FillHisto(const Double_t *t1,
 		 const Double_t *t2,
 		 Int_t s1,Int_t s2);
+  void FillHisto(const AliExternalTrackParam *tp1,
+		 const AliExternalTrackParam *tp2,
+		 Int_t s1,Int_t s2);
 
 protected:
   THnSparse *fClusterDelta[6];  //clusters residuals
+  THnSparse *fTrackletDelta[4]; //track residuals
 
   TObjArray fDphiHistArray;    // array of residual histograms  phi      -kPhi
   TObjArray fDthetaHistArray;  // array of residual histograms  theta    -kTheta
@@ -169,7 +175,6 @@ protected:
   //
   TObjArray fCombinedMatrixArray6;      // array  combeined transformation matrix
   //
-  AliExternalComparison  *fCompTracklet;  //tracklet comparison
   //
   Int_t fPoints[72*72];        // number of points in the fitter 
   Bool_t fNoField;             // flag - no field data
@@ -198,7 +203,7 @@ protected:
 private:
   AliTPCcalibAlign&  operator=(const AliTPCcalibAlign&);// not implemented
 
-  ClassDef(AliTPCcalibAlign,3)
+  ClassDef(AliTPCcalibAlign,4)
 };
 
 

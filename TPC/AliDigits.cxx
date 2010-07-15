@@ -126,8 +126,8 @@ AliDigits::~AliDigits()
 Bool_t AliDigits::OutOfBoundsError(const char *where, Int_t row, Int_t column) 
 {
    // Generate an out-of-bounds error. Always returns false.
-   ::Error(where, "row %d  col %d out of bounds (size: %d x %d, this: 0x%08x)", 
-	   row, column, fNrows, fNcols, this);
+   ::Error(where, "row %d  col %d out of bounds (size: %d x %d, this: 0x%08lx)", 
+	   row, column, fNrows, fNcols, (ULong_t) this);
    return kFALSE;
 }
 

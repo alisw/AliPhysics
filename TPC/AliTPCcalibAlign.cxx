@@ -181,7 +181,6 @@ AliTPCcalibAlign::AliTPCcalibAlign()
      fMatrixArray9(72*72),
      fMatrixArray6(72*72),
      fCombinedMatrixArray6(72),
-     fCompTracklet(0),             // tracklet comparison
      fNoField(kFALSE),
      fXIO(0),
      fXmiddle(0),
@@ -213,6 +212,12 @@ AliTPCcalibAlign::AliTPCcalibAlign()
   fClusterDelta[3]=0;   // cluster residuals
   fClusterDelta[4]=0;   // cluster residuals - ITS constrained
   fClusterDelta[5]=0;   // cluster residuals
+  
+  
+  fTrackletDelta[0]=0;   // tracklet residuals
+  fTrackletDelta[1]=0;   // tracklet residuals
+  fTrackletDelta[2]=0;   // tracklet residuals 
+  fTrackletDelta[3]=0;   // tracklet residuals
 }
 
 AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
@@ -234,7 +239,6 @@ AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
    fMatrixArray9(72*72),
    fMatrixArray6(72*72),
    fCombinedMatrixArray6(72),
-   fCompTracklet(0),             // tracklet comparison
    fNoField(kFALSE),
    fXIO(0),
    fXmiddle(0),
@@ -270,8 +274,10 @@ AliTPCcalibAlign::AliTPCcalibAlign(const Text_t *name, const Text_t *title)
   fClusterDelta[4]=0;   // cluster residuals - ITS constrained
   fClusterDelta[5]=0;   // cluster residuals
 
-
-
+  fTrackletDelta[0]=0;   // tracklet residuals
+  fTrackletDelta[1]=0;   // tracklet residuals
+  fTrackletDelta[2]=0;   // tracklet residuals 
+  fTrackletDelta[3]=0;   // tracklet residuals
 }
 
 
@@ -296,7 +302,6 @@ AliTPCcalibAlign::AliTPCcalibAlign(const AliTPCcalibAlign &align)
    fMatrixArray9(align.fMatrixArray9),
    fMatrixArray6(align.fMatrixArray6),
    fCombinedMatrixArray6(align.fCombinedMatrixArray6),
-   fCompTracklet(align.fCompTracklet),             // tracklet comparison
    fNoField(align.fNoField),
    fXIO(align.fXIO),   
    fXmiddle(align.fXmiddle),   
@@ -383,6 +388,10 @@ AliTPCcalibAlign::AliTPCcalibAlign(const AliTPCcalibAlign &align)
   fClusterDelta[4]=0;   // cluster residuals - ITS constrained
   fClusterDelta[5]=0;   // cluster residuals
 
+  fTrackletDelta[0]=0;   // tracklet residuals
+  fTrackletDelta[1]=0;   // tracklet residuals
+  fTrackletDelta[2]=0;   // tracklet residuals 
+  fTrackletDelta[3]=0;   // tracklet residuals
 }
 
 
@@ -432,7 +441,6 @@ AliTPCcalibAlign::~AliTPCcalibAlign() {
   fMatrixArray9.Delete();     // array of transnformtation matrix
   fMatrixArray6.Delete();     // array of transnformtation matrix 
 
-  if (fCompTracklet) delete fCompTracklet;
 
   fArraySectorIntParam.SetOwner(kTRUE); // array of sector alignment parameters
   fArraySectorIntCovar.SetOwner(kTRUE); // array of sector alignment covariances 
@@ -441,6 +449,12 @@ AliTPCcalibAlign::~AliTPCcalibAlign() {
   for (Int_t i=0; i<6; i++){
     delete fClusterDelta[i];   // cluster residuals
   }
+
+  for (Int_t i=0; i<4; i++){
+    delete fTrackletDelta[i];   // tracklet residuals
+  }
+
+
 }
 
 void AliTPCcalibAlign::Process(AliESDEvent *event) {
@@ -448,6 +462,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   // Process pairs of cosmic tracks
   //
   if (!fClusterDelta[0])  MakeResidualHistos();
+  if (!fTrackletDelta[0])  MakeResidualHistosTracklet();
   //
   fCurrentEvent=event;
   ExportTrackPoints(event);  // export track points for external calibration 
@@ -906,7 +921,12 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   //
   Int_t accept       =   AcceptTracklet(tp1,tp2);  
   Int_t acceptLinear =   AcceptTracklet(parLine1,parLine2);
- 
+  if (accept==0){
+    FillHisto(&tp1,&tp2, s1,s2);
+    FillHisto(&tp2,&tp1, s2,s1);
+  }
+
+
   if (fStreamLevel>1 && seed){
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
@@ -1693,6 +1713,67 @@ void AliTPCcalibAlign::MakeResidualHistos(){
 
 }
 
+
+void AliTPCcalibAlign::MakeResidualHistosTracklet(){
+  //
+  // Make tracklet residual histograms
+  //
+  Double_t xminTrack[9], xmaxTrack[9];
+  Int_t    binsTrack[9];
+  TString  axisName[9],axisTitle[9];
+  //
+  // 0 - delta   of interest
+  // 1 - global  phi in sector number  as float
+  // 2 - local   x
+  // 3 - local   ky
+  // 4 - local   kz
+  // 5 - sector  1
+  // 5 - sector  0
+
+  axisName[0]="delta";   axisTitle[0]="#Delta (cm)"; 
+  binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
+  //
+  axisName[1]="phi";   axisTitle[1]="#phi"; 
+  binsTrack[1]=180;       xminTrack[1]=-TMath::Pi();        xmaxTrack[1]=TMath::Pi(); 
+  //
+  axisName[2]="localX";   axisTitle[2]="x (cm)"; 
+  binsTrack[2]=10;       xminTrack[2]=120.;        xmaxTrack[2]=200.; 
+  //
+  axisName[3]="kY";      axisTitle[3]="dy/dx"; 
+  binsTrack[3]=10;       xminTrack[3]=-0.5;        xmaxTrack[3]=0.5; 
+  //
+  axisName[4]="kZ";      axisTitle[4]="dz/dx"; 
+  binsTrack[4]=22;       xminTrack[4]=-1.1;        xmaxTrack[4]=1.1; 
+  //
+  axisName[5]="is1";      axisTitle[5]="is1"; 
+  binsTrack[5]=72;       xminTrack[5]=0;        xmaxTrack[5]=72;
+  //
+  axisName[6]="is0";      axisTitle[6]="is0"; 
+  binsTrack[6]=72;       xminTrack[6]=0;        xmaxTrack[6]=72;
+ 
+  //
+  xminTrack[0]=-0.3;        xmaxTrack[0]=0.3; 
+  fTrackletDelta[0] = new THnSparseF("#Delta_{Y} (cm)","#Delta_{Y} (cm)", 7, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0]=-0.5;        xmaxTrack[0]=0.5; 
+  fTrackletDelta[1] = new THnSparseF("#Delta_{Z} (cm)","#Delta_{Z} (cm)", 7, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0]=-0.005;        xmaxTrack[0]=0.005; 
+  fTrackletDelta[2] = new THnSparseF("#Delta_{kY}","#Delta_{kY}", 7, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0]=-0.005;        xmaxTrack[0]=0.005; 
+  fTrackletDelta[3] = new THnSparseF("#Delta_{kZ}","#Delta_{kZ}", 7, binsTrack,xminTrack, xmaxTrack);
+  //
+  //
+  //
+  for (Int_t ivar=0;ivar<4;ivar++){
+    for (Int_t ivar2=0;ivar2<7;ivar2++){
+      fTrackletDelta[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+      fTrackletDelta[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
+    }
+  }
+
+}
+
+
+
 void AliTPCcalibAlign::FillHisto(const Double_t *t1,
 				 const Double_t *t2,
 				 Int_t s1,Int_t s2) {
@@ -1722,6 +1803,42 @@ void AliTPCcalibAlign::FillHisto(const Double_t *t1,
     GetHisto(kYPhi,s1,s2,kTRUE)->Fill(t2[2],dy);
     GetHisto(kZTheta,s1,s2,kTRUE)->Fill(t2[4],dz);
   }     
+}
+
+
+void AliTPCcalibAlign::FillHisto(const AliExternalTrackParam *tp1,
+				 const AliExternalTrackParam *tp2,
+				 Int_t s1,Int_t s2) {
+  //
+  // Fill residual histograms
+  // Track2-Track1
+  Double_t x[8]={0,0,0,0,0,0,0,0};
+  AliExternalTrackParam p1(*tp1);
+  AliExternalTrackParam p2(*tp2);
+  if (s1%18==s2%18) {
+    // inner outer - match at the IROC-OROC boundary
+    p1.PropagateTo(fXIO, AliTrackerBase::GetBz());
+  }
+  p2.Rotate(p1.GetAlpha());
+  p2.PropagateTo(p1.GetX(),AliTrackerBase::GetBz());
+  Double_t xyz[3];
+  p1.GetXYZ(xyz);
+  x[1]=TMath::ATan2(xyz[1],xyz[0]);
+  x[2]=p1.GetX();
+  x[3]=0.5*(p1.GetSnp()+p2.GetSnp());  // mean snp
+  x[4]=0.5*(p1.GetTgl()+p2.GetTgl());  // mean tgl
+  x[5]=s2;
+  x[6]=s1;
+  
+  x[0]=p2.GetY()-p1.GetY();
+  fTrackletDelta[0]->Fill(x);
+  x[0]=p2.GetZ()-p1.GetZ();
+  fTrackletDelta[1]->Fill(x);
+  x[0]=p2.GetSnp()-p1.GetSnp();
+  fTrackletDelta[2]->Fill(x);
+  x[0]=p2.GetTgl()-p1.GetTgl();
+  fTrackletDelta[3]->Fill(x);
+
 }
 
 
@@ -2112,6 +2229,15 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
     if (i==0) continue;  // skip non constrained histo y
     if (align->fClusterDelta[i]) fClusterDelta[i]->Add(align->fClusterDelta[i]);
   }
+
+  for (Int_t i=0; i<4; i++){
+    if (!fTrackletDelta[i] && align->fTrackletDelta[i]) {
+      fTrackletDelta[i]= (THnSparse*)(align->fTrackletDelta[i]->Clone());
+      continue;
+    }
+    if (align->fTrackletDelta[i]) fTrackletDelta[i]->Add(align->fTrackletDelta[i]);
+  }
+
 }
 
 Double_t AliTPCcalibAlign::Correct(Int_t type, Int_t value, Int_t s1, Int_t s2, Double_t x1, Double_t y1, Double_t z1, Double_t dydx1,Double_t dzdx1){

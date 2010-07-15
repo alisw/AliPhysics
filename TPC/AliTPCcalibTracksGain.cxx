@@ -420,7 +420,7 @@ AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
    // Destructor.
    //
 
-   Info("Destructor","");
+   Info("Destructor",":");
    if (fSimpleFitter) delete fSimpleFitter;
    if (fSqrtFitter) delete fSqrtFitter;
    if (fLogFitter) delete fLogFitter;

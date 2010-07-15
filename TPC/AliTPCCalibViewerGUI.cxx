@@ -1841,7 +1841,7 @@ void AliTPCCalibViewerGUI::DoExport() {
    // create calPad according to drawCommand and cuts
    AliTPCCalPad *calPad = fViewer->GetCalPad(desiredData.Data(), (char*)cutsStr.Data(), (char*)calPadName);
    // finally export calPad to Cint:
-   gROOT->ProcessLine(Form("AliTPCCalPad* %s = (AliTPCCalPad*)0x%lx;", calPadName, calPad));
+   gROOT->ProcessLine(Form("AliTPCCalPad* %s = (AliTPCCalPad*)0x%lx;", calPadName, (ULong_t)calPad));
    fPreprocessor->AddComponent(calPad);
    Info("ExportCalPad", "Current 2D view has been exported to an AliTPCCalPad* with name '%s'", calPadName);
 }
@@ -1872,7 +1872,7 @@ void AliTPCCalibViewerGUI::DoExportNorm() {
    // create calPad according to drawCommand and cuts
    AliTPCCalPad *calPad = fViewer->GetCalPad(desiredData.Data(), (char*)cutsStr.Data(), (char*)fComboExportName->GetTextEntry()->GetText());
    // finally export calPad to Cint:
-   gROOT->ProcessLine(Form("AliTPCCalPad* %s = (AliTPCCalPad*)0x%lx;", calPadName, calPad));
+   gROOT->ProcessLine(Form("AliTPCCalPad* %s = (AliTPCCalPad*)0x%lx;", calPadName, (ULong_t) calPad));
    Info("ExportCalPad", "Current 2D view has been exported to an AliTPCCalPad* with name '%s'", calPadName);
 }
 
