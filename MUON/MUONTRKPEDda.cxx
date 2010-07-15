@@ -29,7 +29,7 @@
 
 /*
 	-------------------------------------------------------------------------
-        2010-04-18 New version: MUONTRKPEDda.cxx,v 1.6
+        2010-07-09 New version: MUONTRKPEDda.cxx,v 1.7
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -142,7 +142,8 @@ int main(Int_t argc, const char **argv)
   Int_t nEvents = 0;
   UInt_t runNumber   = 0;
   Int_t nConfig = 1;
-  Int_t nEvthreshold = 10; //below this nb_evt pedestal are not calculated and forced to 4085 (sigma)
+  Int_t nEvthreshold = 100; //below this nb_evt pedestal are not calculated and forced to 4085 (sigma)
+  Int_t nSorting = 0 ; // pedestal sorting (OFF by default)
   ofstream filcout;
 
   // decode the input line
@@ -224,16 +225,20 @@ int main(Int_t argc, const char **argv)
   // nConfig=1 : Reading configuration (or not) status via "mutrkpedvalues" file located in DetDB
   if(nConfig)
     { 
+//      Int_t maxEvts;
       sprintf(dbfile,"mutrkpedvalues");
       status=daqDA_DB_getFile(dbfile,dbfile);
       if(status) {printf(" !!! Failed  : input file %s is missing, status = %d\n",dbfile,status); return -1; } 
       ifstream filein(dbfile,ios::in);
       filein >> nConfig;
-      //      filein >> nEvthreshold;
+      filein >> nSorting;
+      //      filein >> maxEvts;
+//      if(maxEvts!=0)maxEvents=maxEvts;
     }
   else  printf(" ***  Config= %d: no configuration ascii file is used \n",nConfig); 
   muonPedestal->SetconfigDA(nConfig);
   muonPedestal->SetnEvthreshold(nEvthreshold);
+  muonPedestal->SetnSorting(nSorting);
 
   // nConfig=1: configuration ascii file config_$DATE_ROLE_NAME read from DetDB
   if(nConfig)

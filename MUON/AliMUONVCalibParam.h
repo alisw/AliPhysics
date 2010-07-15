@@ -25,12 +25,18 @@ public:
   virtual ~AliMUONVCalibParam();
 
   virtual const char* GetName() const;
+
+  /// Advertise that we can be sorted in TCollections
+  virtual Bool_t IsSortable() const { return kTRUE; }
   
   /// First id of this object
   virtual Int_t ID0() const;
   
   /// Second id of this object (might not be required)
   virtual Int_t ID1() const;
+
+  /// method for sorting pedestal values ordered by ID0 and ID1
+  virtual Int_t Compare(const TObject* object) const;
   
   /// whether or not the value we store are packed, e.g. as v = a*cste + b
   virtual Bool_t IsPacked() const { return kFALSE; }

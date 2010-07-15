@@ -152,3 +152,26 @@ AliMUONVCalibParam::ValueAsDoubleFast(Int_t , Int_t ) const
   return 0;
 }
 
+//_____________________________________________________________________________
+Int_t 
+AliMUONVCalibParam::Compare(const TObject* object) const
+{
+  /// Compare AliMUONVCalibParam objects, trying to get as complete an order as possible.
+  /// We sort by ID0, then by ID1
+  ///
+  const AliMUONVCalibParam* param = static_cast<const AliMUONVCalibParam*>(object);
+  
+  if ( ID0() == param->ID0() )
+  {
+    if ( ID1() == param->ID1() )
+    {
+      return 0;
+    }
+    else
+      return (ID1() >= param->ID1()) ? 1 : -1;
+  }
+  else
+    return ( ID0() >= param->ID0()) ? 1 : -1;
+}
+
+

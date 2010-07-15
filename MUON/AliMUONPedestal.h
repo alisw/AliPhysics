@@ -54,6 +54,8 @@ class AliMUONPedestal : public TObject
     void SetconfigDA(Int_t ind) {fConfig = ind;}
     /// set Nb of evt threshold to calculate pedestal
     void SetnEvthreshold(Int_t ind) {fNEvthreshold = ind;}
+    /// sorting flag
+    void SetnSorting(Int_t ind) {fSorting = ind;}
     /// set specific  DA prefixname
     void SetprefixDA(const char* folder) { fPrefixDA=folder;}
     /// set the index of calibration runs
@@ -71,6 +73,7 @@ protected:
     //    Int_t fN; ///<
     Int_t fNCurrentEvents; ///< Number of current events
     Int_t fNEvthreshold; ///< Nbevt threshold (pedestal calculation)
+    Int_t fSorting; ///< sorting flag (pedestal values)
     Int_t fNEvents; ///< Number of events
     Int_t fRunNumber; ///< run number
     Int_t fNChannel; ///< Nb of channels (pads)

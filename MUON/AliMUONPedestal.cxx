@@ -27,6 +27,7 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <THashList.h>
 #include <Riostream.h>
 
 #include <sstream>
@@ -52,6 +53,7 @@ AliMUONPedestal::AliMUONPedestal()
 //fN(0),
 fNCurrentEvents(0),
 fNEvthreshold(0),
+fSorting(0),
 fNEvents(0),
 fRunNumber(0),
 fNChannel(0),
@@ -347,21 +349,45 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
   out<<"//      BP     MANU     CH.      MEAN    SIGMA"<<endl;
   out<<"//---------------------------------------------------------------------------" << endl;
 
-  // iterator over pedestal
-  TIter next(fPedestalStore ->CreateIterator());
-  AliMUONVCalibParam* ped;
-  
-  while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
+  TIter next(fPedestalStore->CreateIterator());
+  AliMUONVCalibParam* ped;  
+
+  // Sorting 
+  if  (fSorting)
     {
-      Int_t busPatchId = ped->ID0();
-      Int_t manuId = ped->ID1();
-
-      for ( Int_t channelId = 0; channelId < ped->Size(); ++channelId ) 
+      cout << " ..... sorting pedestal values ....."  << endl;
+      THashList pedtable(100,2);
+      while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
+      {
+        pedtable.Add(ped);
+      }
+      pedtable.Sort();
+      //      iterator over sorted pedestal
+      TIter nextSorted(&pedtable);
+      while ( (ped = (AliMUONVCalibParam*)(nextSorted()) ) )
+      {
+        Int_t busPatchId = ped->ID0();
+        Int_t manuId = ped->ID1();
+        for ( Int_t channelId = 0; channelId < ped->Size(); ++channelId ) 
+        {
+          Double_t pedMean  = ped->ValueAsDouble(channelId, 0);
+          Double_t pedSigma = ped->ValueAsDouble(channelId, 1);
+          out << "\t" << busPatchId << "\t" << manuId <<"\t"<< channelId << "\t" << pedMean <<"\t"<< pedSigma << endl;
+        }
+      }
+    }
+  else
+    {
+      while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
 	{
-	  Double_t pedMean  = ped->ValueAsDouble(channelId, 0);
-	  Double_t pedSigma = ped->ValueAsDouble(channelId, 1);
-
-	  out << "\t" << busPatchId << "\t" << manuId <<"\t"<< channelId << "\t" << pedMean <<"\t"<< pedSigma << endl;
+	  Int_t busPatchId = ped->ID0();
+	  Int_t manuId = ped->ID1();
+	  for ( Int_t channelId = 0; channelId < ped->Size(); ++channelId ) 
+	    {
+	      Double_t pedMean  = ped->ValueAsDouble(channelId, 0);
+	      Double_t pedSigma = ped->ValueAsDouble(channelId, 1);
+	      out << "\t" << busPatchId << "\t" << manuId <<"\t"<< channelId << "\t" << pedMean <<"\t"<< pedSigma << endl;
+	    }
 	}
     }
 }
