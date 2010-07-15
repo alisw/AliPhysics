@@ -166,6 +166,14 @@ public:
   static Double_t  GetTime0TPCITS(Double_t &dist, Int_t run, Int_t timeStamp);
   Int_t MakeRunList(Int_t startRun, Int_t stopRun); // find the list of usable runs
   Int_t FindRunTPC(Int_t    itime, Bool_t debug=kFALSE);
+
+ AliTPCCalPad* GetRefCalPad(AliCDBEntry *entry, const char* objName);
+  AliTPCCalPad* GetRefCalPad(AliCDBEntry *entry);
+  AliTPCCalPad* GetAltroMasked(const char* cdbPath, const char* name);
+  Bool_t HasRefChanged(const char *cdbPath);
+  Int_t GetCurrentReferenceRun(const char* type) const;
+  AliCDBEntry* GetRefEntry(const char* cdbPath);
+ 
 private:
   AliTPCcalibDB *fCalibDB;            //pointer to calibDB object
   AliTPCCalPad  *fPadNoise;           //noise information
@@ -232,12 +240,6 @@ private:
   AliTPCcalibDButil (const AliTPCcalibDButil& );
   AliTPCcalibDButil& operator= (const AliTPCcalibDButil& );
 
-  AliTPCCalPad* GetRefCalPad(AliCDBEntry *entry, const char* objName);
-  AliTPCCalPad* GetRefCalPad(AliCDBEntry *entry);
-  AliTPCCalPad* GetAltroMasked(const char* cdbPath, const char* name);
-  Bool_t HasRefChanged(const char *cdbPath);
-  Int_t GetCurrentReferenceRun(const char* type) const;
-  AliCDBEntry* GetRefEntry(const char* cdbPath);
   
   ClassDef(AliTPCcalibDButil,0)
 };
