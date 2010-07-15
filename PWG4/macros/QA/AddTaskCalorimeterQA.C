@@ -2,8 +2,7 @@
 // Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch
 //                 PHOS  Yuri.Kharlov@cern.ch
 //
-
-AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE,TString outputFile = "")
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
   
@@ -193,14 +192,17 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
 //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer("Calo.Performance",TList::Class(),
 //							   AliAnalysisManager::kOutputContainer, "Calo.Performance.root");
 	
-  TString outputfile = AliAnalysisManager::GetCommonFileName(); 
+
+  if(outputFile.Length()==0)outputFile = AliAnalysisManager::GetCommonFileName(); 
+
+
   AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer("CaloQA", TList::Class(), 
 															 AliAnalysisManager::kOutputContainer, 
-															 Form("%s:CaloQA",outputfile.Data()));
+															 Form("%s:CaloQA",outputFile.Data()));
 	
   AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer("CaloQACuts", TList::Class(), 
 															  AliAnalysisManager::kParamContainer, 
-															  Form("%s:CaloQACuts",outputfile.Data()));
+															  Form("%s:CaloQACuts",outputFile.Data()));
 	//Form("%s:PartCorrCuts",outputfile.Data()));	
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below

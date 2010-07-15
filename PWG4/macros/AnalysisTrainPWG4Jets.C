@@ -42,6 +42,7 @@ Int_t       iPhysicsSelection  = 1;      // ESD to AOD filter (barrel + muon tra
 Bool_t      kUseKinefilter     = kFALSE; // use Kinematics filter
 Bool_t      kUseMuonfilter     = kFALSE; // use Kinematics filter
 TString     kCommonOutputFileName = "PWG4_JetTasksOutput.root";
+TString     kCaloQAOutputFileName = "PWG4_CaloQAOutput.root";
 
 
 //== general process variables
@@ -83,6 +84,7 @@ Int_t       iPWG4JetServices   = 0;      // jet spectrum analysis
 Int_t       iPWG4JetSpectrum   = 0;      // jet spectrum analysis
 Int_t       iPWG4JCORRAN       = 0;      // JCORRAN module
 Int_t       iPWG4UE            = 0;      // Underlying Event analysis
+Int_t       iPWG4CorrectionsUE            = 0;      // Underlying Event analysis
 Int_t       iPWG4TmpSourceSara = 0;      // Underlying Event analysis not in svn
 Int_t       iPWG4TmpSourceFrag = 0;      // Bastian's Fragmentation function not in svn
 Int_t       iPWG4JetChem       = 0;      // Jet chemistry 
@@ -141,14 +143,15 @@ TString     kPluginExecutableCommand = "source /Users/kleinb/setup_32bit_aliroot
 
 // == grid plugin input and output variables
 TString     kGridDatadir      = "/alice/sim/PDC_08b/LHC09a1/AOD/";
+Int_t         kGridMaxRunsFromList = 999999999;
 TString     kGridLocalRunList = "";
 TString     kGridOutdir       = ""; // AliEn output directory. If blank will become output_<kTrainName>
 TString     kGridDataSet      = ""; // sub working directory not to confuse different run xmls 
-Int_t       kGridRunRange[2]       =  {0, -1}; // Set the run range
+Int_t         kGridRunRange[2]       =  {0, -1}; // Set the run range
 TString     kGridRunPattern        = "%03d"; // important for leading zeroes!!
 TString     kGridPassPattern       = "";
 TString     kGridExtraFiles        = ""; // files that will be added to the input list in the JDL...
-Int_t       kGridMaxMergeFiles      = 12; // Number of files merged in a chunk grid run range
+Int_t         kGridMaxMergeFiles      = 12; // Number of files merged in a chunk grid run range
 TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be merged
 TString     kGridOutputStorages      = "disk=2"; // Make replicas on the storages
 // == grid process variables
@@ -195,47 +198,50 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf("==================================================================\n");
    printf("===========    RUNNING ANALYSIS TRAIN %s IN %s MODE   ==========\n", kTrainName.Data(),smode.Data());
    printf("==================================================================\n");
-   printf("=  Configuring analysis train for:                               =\n");
+                              printf("=  Configuring analysis train for:                               =\n");
    if (iAODanalysis) printf("=  AOD analysis                                                  =\n");
-   else              printf("=  ESD analysis                                                  =\n");
-   if (iPhysicsSelection)   printf("=  Physics selection                                                    =\n");
+   else                     printf("=  ESD analysis                                                  =\n");
+   if (iPhysicsSelection)   printf("=  Physics selection                                                =\n");
    if (iESDfilter)   printf("=  ESD filter                                                    =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
    printf("==================================================================\n");
-   printf(":: use Fill AOD      %d\n", (UInt_t)kFillAOD);
-   printf(":: use Save AOD      %d\n", (UInt_t)kSaveAOD);
-   printf(":: use MC truth      %d\n", (UInt_t)kUseMC);
-   printf(":: use KINE filter   %d\n", (UInt_t)kUseKinefilter);
-   printf(":: use track refs    %d\n", (UInt_t)kUseTR);
-   printf(":: use tags          %d\n", (UInt_t)kUseESDTags);
-   printf(":: use AOD tags      %d\n", (UInt_t)kUseAODTags);
-   printf(":: use debugging     %d\n", (UInt_t)kUseDebug);
-   printf(":: use PAR files     %d\n", (UInt_t)kUsePAR);
-   printf(":: use AliEn plugin  %d\n", (UInt_t)kPluginUse);
-   printf(":: use PWG1 QA sym         %d\n", iPWG1QASym);
-   printf(":: use PWG4 Source Sara    %d\n",iPWG4TmpSourceSara);
-   printf(":: use PWG4 Source BB      %d\n",iPWG4TmpSourceFrag);
-   printf(":: use PWG4 Jet Chem       %d\n",iPWG4JetChem);
-   printf(":: use PWG4 Jet tasks      %d\n",iPWG4JetTasks);
-   printf(":: use PWG4 Jet Services   %d\n",iPWG4JetServices);     
-   printf(":: use PWG4 Jet Spectrum   %d\n",iPWG4JetSpectrum);
-   printf(":: use PWG4 JCORRAN        %d\n",iPWG4JCORRAN);
-   printf(":: use PWG4 UE             %d \n",iPWG4UE); 
-   printf(":: use PWG4 Pt QA MC       %d\n",iPWG4PtQAMC);
-   printf(":: use PWG4 Pt Spectra     %d\n",iPWG4PtSpectra);
-   printf(":: use PWG4 Pt QA TPC      %d\n",iPWG4PtQATPC);     
-   printf(":: use PWG4 Cosmics        %d\n",iPWG4Cosmics);     
-   printf(":: use PWG4 Three Jets     %d\n",iPWG4ThreeJets);
-   printf(":: use PWG4 KMeans         %d\n",iPWG4KMeans);
-   printf(":: use PWG4 Cluster        %d\n",iPWG4Cluster);
-   printf(":: use PWG4 Part Corr      %d\n",iPWG4PartCorr);
-   printf(":: use PWG4 Calo QA        %d\n",iPWG4CaloQA);
-   printf(":: use PWG4 Jet Corr       %d\n",iPWG4JetCorr);
-   printf(":: use PWG4 JCORRAN        %d\n",iPWG4JCORRAN);
-   printf(":: use PWG4 Tagged         %d\n",iPWG4Tagged);
-   printf(":: use PWG4 omega to 3 pi  %d\n",iPWG4omega3pi);
-   printf(":: use PWG4 Gamma Conv     %d\n",iPWG4GammaConv);
-   printf(":: use HighPt FilterMask   %d\n",kHighPtFilterMask);    
+
+   char *printMask = ":: %20s  %10d\n";
+   printf(printMask,"Fill AOD",(UInt_t)kFillAOD);
+   printf(printMask,"Save AOD", (UInt_t)kSaveAOD);
+   printf(printMask,"MC truth", (UInt_t)kUseMC);
+   printf(printMask,"KINE filter", (UInt_t)kUseKinefilter);
+   printf(printMask,"track refs", (UInt_t)kUseTR);
+   printf(printMask,"tags", (UInt_t)kUseESDTags);
+   printf(printMask,"AOD tags", (UInt_t)kUseAODTags);
+   printf(printMask,"debugging", (UInt_t)kUseDebug);
+   printf(printMask,"PAR files", (UInt_t)kUsePAR);
+   printf(printMask,"AliEn plugin", (UInt_t)kPluginUse);
+   printf(printMask,"PWG1 QA sym", iPWG1QASym);
+   printf(printMask,"PWG4 Source Sara",iPWG4TmpSourceSara);
+   printf(printMask,"PWG4 Source BB",iPWG4TmpSourceFrag);
+   printf(printMask,"PWG4 Jet Chem",iPWG4JetChem);
+   printf(printMask,"PWG4 Jet tasks",iPWG4JetTasks);
+   printf(printMask,"PWG4 Jet Services",iPWG4JetServices);     
+   printf(printMask,"PWG4 Jet Spectrum",iPWG4JetSpectrum);
+   printf(printMask,"PWG4 JCORRAN",iPWG4JCORRAN);
+   printf(printMask,"PWG4 UE",iPWG4UE); 
+   printf(printMask,"PWG4 Corrections UE",iPWG4CorrectionsUE); 
+   printf(printMask,"PWG4 Pt QA MC",iPWG4PtQAMC);
+   printf(printMask,"PWG4 Pt Spectra",iPWG4PtSpectra);
+   printf(printMask,"PWG4 Pt QA TPC",iPWG4PtQATPC);     
+   printf(printMask,"PWG4 Cosmics",iPWG4Cosmics);     
+   printf(printMask,"PWG4 Three Jets",iPWG4ThreeJets);
+   printf(printMask,"PWG4 KMeans",iPWG4KMeans);
+   printf(printMask,"PWG4 Cluster",iPWG4Cluster);
+   printf(printMask,"PWG4 Part Corr",iPWG4PartCorr);
+   printf(printMask,"PWG4 Calo QA",iPWG4CaloQA);
+   printf(printMask,"PWG4 Jet Corr",iPWG4JetCorr);
+   printf(printMask,"PWG4 JCORRAN",iPWG4JCORRAN);
+   printf(printMask,"PWG4 Tagged",iPWG4Tagged);
+   printf(printMask,"PWG4 omega to 3 pi ",iPWG4omega3pi);
+   printf(printMask,"PWG4 Gamma Conv",iPWG4GammaConv);
+   printf(printMask,"HighPt FilterMask",kHighPtFilterMask);    
    
    //==========================================================================
    // Connect to back-end system
@@ -445,6 +451,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
 						 AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);  
 	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
+						 AliAnalysisHelperJetTasks::kIsCosmic|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);  
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
 						 AliAnalysisHelperJetTasks::kNone);  
 	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
 						 AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);  
@@ -455,6 +463,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 else{
 	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection, 
 						 AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);      
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection, 
+						 AliAnalysisHelperJetTasks::kIsCosmic|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);      
 	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,AliAnalysisHelperJetTasks::kNone);      
 	 }
        }
@@ -495,6 +505,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      }
 
      if (!taskUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskUE cannot run for this train conditions - EXCLUDED");
+   }
+   if(iPWG4CorrectionsUE){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCorrectionsUE.C");
+     AliAnalysisTaskCorrectionsUE *taskCorrectionsUE = 0;
+     if(iPWG4CorrectionsUE&1)taskCorrectionsUE = AddTaskCorrectionsUE("jetsAOD_NONE","CDF","MP_eta05","TRANSV","MSP",kFALSE);
+     if (!taskCorrectionsUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCorrectionsUE cannot run for this train conditions - EXCLUDED");
    }
 
    if(iPWG4ThreeJets){
@@ -573,8 +589,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4CaloQA){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
-     AliAnalysisTaskParticleCorrelation *taskcaloQA =  AddTaskCalorimeterQA("ESD",kFALSE,kIsMC);
+     AliAnalysisTaskParticleCorrelation *taskcaloQA =  AddTaskCalorimeterQA("ESD",kFALSE,kIsMC,kCaloQAOutputFileName.Data());
      if(!taskcaloQA)::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation QA cannot run - EXCLUDED");
+     if(kCaloQAOutputFileName.Length()>0)mgr->RegisterExtraFile(kCaloQAOutputFileName.Data());
    } 
 
    if(iPWG4JetCorr){
@@ -664,8 +681,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 gGrid->Rm(dest.Data());
        }
        TFile::Cp(Form("file:%s/STEER/LQ1dRef_v1.root",
-		      gSystem->ExpandPathName("$ALICE_ROOT")), 
-		 Form("alien://%s",dest.Data()));
+		      gSystem->ExpandPathName("$ALICE_ROOT")),Form("alien://%s",dest.Data()));
      }
      AliLog::SetGlobalLogLevel(AliLog::kError);
      if((kUseSysInfo>0&&smode=="LOCAL")||!strcmp(plugin_mode, "test")){
@@ -838,7 +854,8 @@ void CheckModuleFlags(const char *mode) {
        kUseKinefilter = kFALSE;
        if( iPWG4PtQAMC)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 PtQAMC disabled in analysis without MC");
        iPWG4PtQAMC        = 0;
-
+       if( iPWG4CorrectionsUE)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 CorrectionsUE disabled in analysis without MC");
+       iPWG4CorrectionsUE = 0;
      }
      if (!kUseTR) {
        if(iPWG4PtQAMC)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "iPWG4QATPCMC disabled if not reading track references");
@@ -852,7 +869,7 @@ void CheckModuleFlags(const char *mode) {
 	kUseMuonfilter = kFALSE;
       }
       if(!iJETAN){
-	iPWG4JetSpectrum = iPWG4UE = iPWG4ThreeJets = iDIJETAN = 0;
+	iPWG4JetSpectrum = iPWG4UE =  iPWG4CorrectionsUE = iPWG4ThreeJets = iDIJETAN = 0;
       }
    }
    iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem;
@@ -1016,7 +1033,7 @@ Bool_t LoadCommonLibraries(const char *mode)
 Bool_t LoadAnalysisLibraries(const char *mode)
 {
 // Load common analysis libraries.
-   Bool_t success = kTRUE;
+  Bool_t success = kTRUE;
    if (iESDfilter) {
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
           !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
@@ -1319,8 +1336,8 @@ Int_t SetupPar(char* pararchivename)
    if (gSystem->AccessPathName(Form("%s.par", pararchivename))) {
       if (!gSystem->AccessPathName(Form("%s/%s.par", gSystem->Getenv("ALICE_ROOT"),pararchivename))) {
          ::Info("AnalysisTrainPWG4Jets.C::SetupPar", "Getting %s.par from $ALICE_ROOT", pararchivename);
-         TFile::Cp(gSystem->ExpandPathName(Form("$ALICE_ROOT/%s.par", pararchivename)), 
-                   Form("%s.par",pararchivename));
+	TFile::Cp(gSystem->ExpandPathName(Form("$ALICE_ROOT/%s.par", pararchivename)), 
+		  Form("%s.par",pararchivename));
       } else {
          ::Error("AnalysisTrainPWG4Jets.C::SetupPar", "Cannot find %s.par", pararchivename);
          return -1;
@@ -1413,12 +1430,16 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
        }
      }
      */
+     
+     Int_t nRun = 0;
 
      // just use run numbers, negatives will be excluded
      while(in1>>iRun){
-       if(iRun>0){
+       
+       if(iRun>0&&(nRun<kGridMaxRunsFromList)){
 	   Printf("AnalysisTrainPWG4Jets Adding run number from File %s", Form(kGridRunPattern.Data(),iRun));
 	   plugin->AddRunNumber(Form(kGridRunPattern.Data(),iRun));
+	   nRun++;
        }
        else{
 	 Printf("AnalysisTrainPWG4Jets Skipping run number from File %d", iRun);
