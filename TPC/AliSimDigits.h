@@ -71,8 +71,8 @@ inline void AliSimDigits::SetTrackIDFast(Int_t value,Int_t row, Int_t column,Int
   //set ID track at given row and collumn
   //  fTracks[level][fTrIndex[level][column]+row]=value; 
   if ( (row<0) || (row>=fNrows)  || (column<0) || (column>=fNcols) ) 
-       ::Error("AliSimDigits::SetTrackIDFast", "row %d  col %d out of bounds (size: %d x %d, this: 0x%08x)", 
-	   row, column, fNrows, fNcols, this);
+       ::Error("AliSimDigits::SetTrackIDFast", "row %d  col %d out of bounds (size: %d x %d, this: 0x%08lx)", 
+	       row, column, fNrows, fNcols, (ULong_t) this);
   if ( (level<0) || (level>=fNlevel)) ::Error("AliSimDigits::SetTrackIDFast", "index %d out of bounds", level);
   (*fTracks)[level*fNrows*fNcols+fNrows*column+row]=value; 
 }

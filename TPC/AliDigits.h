@@ -118,8 +118,8 @@ inline void  AliDigits::SetDigitFast(Short_t value, Int_t row, Int_t column)
   //set  digit 
   //
   if ( (row<0) || (row>=fNrows)  || (column<0) || (column>=fNcols) ) 
-       Error("AliDigits::SetDigitFast", "row %d  col %d out of bounds (size: %d x %d, this: 0x%08x)", 
-	   row, column, fNrows, fNcols, this);
+       Error("AliDigits::SetDigitFast", "row %d  col %d out of bounds (size: %d x %d, this: 0x%08lx)", 
+	     row, column, fNrows, fNcols, (ULong_t)this);
   (*fElements)[fIndex->At(column)+row]=value; 
 }
 
