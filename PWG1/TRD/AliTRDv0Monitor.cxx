@@ -81,6 +81,14 @@ AliTRDv0Monitor::~AliTRDv0Monitor()
 {
   if(fOutput) delete fOutput;
 }
+
+//________________________________________________________________________
+Bool_t AliTRDv0Monitor::GetRefFigure(Int_t /*ifig*/)
+{
+  AliInfo("Implementation on going ...");
+  return kTRUE;
+}
+
 //________________________________________________________________________
 void AliTRDv0Monitor::UserCreateOutputObjects()
 {
