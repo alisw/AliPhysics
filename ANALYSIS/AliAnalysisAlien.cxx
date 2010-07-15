@@ -1820,8 +1820,7 @@ void AliAnalysisAlien::SetDefaultOutputs(Bool_t flag)
 // Use the output files connected to output containers from the analysis manager
 // rather than the files defined by SetOutputFiles
    if (flag && !TObject::TestBit(AliAnalysisGrid::kDefaultOutputs))
-      Info("SetDefaultOutputs", "Plugin will use the output files taken from \
-      analysis manager");
+      Info("SetDefaultOutputs", "Plugin will use the output files taken from analysis manager");
    TObject::SetBit(AliAnalysisGrid::kDefaultOutputs, flag);
 }
       
@@ -2397,7 +2396,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "         mgr = (AliAnalysisManager*)file->Get(key->GetName());" << endl;
       out << "   };" << endl;
       out << "   if (!mgr) {" << endl;
-      out << "      ::Error(\"" << func.Data() << "\", \"No analysis manager found in file" << analysisFile <<"\");" << endl;
+      out << "      ::Error(\"" << func.Data() << "\", \"No analysis manager found in file " << analysisFile <<"\");" << endl;
       out << "      return;" << endl;
       out << "   }" << endl << endl;
       out << "   mgr->PrintStatus();" << endl;
@@ -2813,7 +2812,7 @@ void AliAnalysisAlien::WriteMergingMacro()
 //______________________________________________________________________________
 Bool_t AliAnalysisAlien::SetupPar(const char *package)
 {
-// Compile the par file archive pointed by <package>. This must be present in the current durectory.
+// Compile the par file archive pointed by <package>. This must be present in the current directory.
 // Note that for loading the compiled library. The current directory should have precedence in
 // LD_LIBRARY_PATH
    TString pkgdir = package;
