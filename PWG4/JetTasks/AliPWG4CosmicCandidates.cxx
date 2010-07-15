@@ -181,6 +181,7 @@ void AliPWG4CosmicCandidates::UserCreateOutputObjects()
   Float_t fgkPtMin=0.;
   Float_t fgkPtMax=100.;
   Int_t fgkNPtBins= (int)(fgkPtMax-fgkPtMin);
+  Int_t fgkNPtBins2D= (int)((fgkPtMax-fgkPtMin)/4.);
 
   Int_t fgkNPhiBins=18;
   Float_t kMinPhi = -0.5*TMath::Pi();
@@ -190,19 +191,19 @@ void AliPWG4CosmicCandidates::UserCreateOutputObjects()
   Float_t kMinTheta = -0.5*TMath::Pi();
   Float_t kMaxTheta = 3./2.*TMath::Pi();
 
-  Int_t fgkNDCARBins=80;
+  Int_t fgkNDCARBins=40;
   Float_t fgkDCARMin = -0.2;
   Float_t fgkDCARMax = 0.2;
   Float_t *binsDCAR=new Float_t[fgkNDCARBins+1];
   for(Int_t i=0; i<=fgkNDCARBins; i++) binsDCAR[i]=(Float_t)fgkDCARMin + (fgkDCARMax-fgkDCARMin)/fgkNDCARBins*(Float_t)i ;
 
-  Int_t fgkNDCAZBins=80;
+  Int_t fgkNDCAZBins=40;
   Float_t fgkDCAZMin = -2.;
   Float_t fgkDCAZMax = 2.;
   Float_t *binsDCAZ=new Float_t[fgkNDCAZBins+1];
   for(Int_t i=0; i<=fgkNDCAZBins; i++) binsDCAZ[i]=(Float_t)fgkDCAZMin + (fgkDCAZMax-fgkDCAZMin)/fgkNDCAZBins*(Float_t)i ;
 
-  fPtSignedCosmicCandidates = new TH1F("fPtSignedCosmicCandidates","fPtSignedCosmicCandidates",2*(int)(fgkPtMax-fgkPtMin), -1.*fgkPtMax, fgkPtMax);
+  fPtSignedCosmicCandidates = new TH1F("fPtSignedCosmicCandidates","fPtSignedCosmicCandidates",2*fgkNPtBins, -1.*fgkPtMax, fgkPtMax);
   fHistListCosmics->Add(fPtSignedCosmicCandidates);  
 
   fDeltaPtCosmicCandidates = new TH1F("fDeltaPtCosmicCandidates","fDeltaPtCosmicCandidates",fgkNPtBins, -50., 50.);
@@ -223,16 +224,16 @@ void AliPWG4CosmicCandidates::UserCreateOutputObjects()
   fThetaZoom = new TH1F("fThetaZoom","fThetaZoom",100,TMath::Pi()-1.,TMath::Pi()+1.);
   fHistListCosmics->Add(fThetaZoom);
 
-  fThetaPt1Pt2 = new TH3F("fThetaPt1Pt2","fThetaPt1Pt2",fgkNThetaBins,kMinTheta,kMaxTheta,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
+  fThetaPt1Pt2 = new TH3F("fThetaPt1Pt2","fThetaPt1Pt2",fgkNThetaBins,kMinTheta,kMaxTheta,fgkNPtBins2D,fgkPtMin,fgkPtMax,fgkNPtBins2D,fgkPtMin,fgkPtMax);
   fHistListCosmics->Add(fThetaPt1Pt2);
 
-  fThetaPt1Pt2Signed = new TH3F("fThetaPt1Pt2Signed","fThetaPt1Pt2Signed",fgkNThetaBins,kMinTheta,kMaxTheta,4*(int)(fgkPtMax-fgkPtMin),-1.*fgkPtMax,fgkPtMax,4*(int)(fgkPtMax-fgkPtMin),-1.*fgkPtMax,fgkPtMax);
+  fThetaPt1Pt2Signed = new TH3F("fThetaPt1Pt2Signed","fThetaPt1Pt2Signed",fgkNThetaBins,kMinTheta,kMaxTheta,fgkNPtBins2D,-1.*fgkPtMax,fgkPtMax,fgkNPtBins2D,-1.*fgkPtMax,fgkPtMax);
   fHistListCosmics->Add(fThetaPt1Pt2Signed);
 
-  fDeltaPhiSumEtaPt1 = new TH3F("fDeltaPhiSumEtaPt1","fDeltaPhiSumEtaPt1",fgkNThetaBins,kMinTheta,kMaxTheta,80, -2.,2.,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
+  fDeltaPhiSumEtaPt1 = new TH3F("fDeltaPhiSumEtaPt1","fDeltaPhiSumEtaPt1",fgkNThetaBins,kMinTheta,kMaxTheta,80, -2.,2.,fgkNPtBins2D,fgkPtMin,fgkPtMax);
   fHistListCosmics->Add(fDeltaPhiSumEtaPt1);
 
-  fDeltaPhiSumEtaPt2 = new TH3F("fDeltaPhiSumEtaPt2","fDeltaPhiSumEtaPt2",fgkNThetaBins,kMinTheta,kMaxTheta,80, -2.,2.,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
+  fDeltaPhiSumEtaPt2 = new TH3F("fDeltaPhiSumEtaPt2","fDeltaPhiSumEtaPt2",fgkNThetaBins,kMinTheta,kMaxTheta,80, -2.,2.,fgkNPtBins2D,fgkPtMin,fgkPtMax);
   fHistListCosmics->Add(fDeltaPhiSumEtaPt2);
 
   fThetaDCAZ1DCAZ2 = new TH3F("fThetaDCAZ1DCAZ2","fThetaDCAZ1DCAZ2",fgkNThetaBins,kMinTheta,kMaxTheta,fgkNDCAZBins,-2.,2.,fgkNDCAZBins,-2.,2.);
