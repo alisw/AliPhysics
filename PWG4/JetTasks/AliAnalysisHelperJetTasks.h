@@ -8,6 +8,7 @@ class AliVEvent;
 class TString;
 class AliGenPythiaEventHeader;
 class TVector3;
+class AliGenEventHeader;
 
 // Helper Class that contains a lot of usefull static functions (i.e. for Flavor selection.
 
@@ -15,21 +16,6 @@ class AliAnalysisHelperJetTasks : public TObject {
  public:
   AliAnalysisHelperJetTasks() : TObject() {;}
   virtual ~AliAnalysisHelperJetTasks(){;}
-  
-  static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
-  static void PrintStack(AliMCEvent *mcEvent,Int_t iFirst = 0,Int_t iLast = 0,Int_t iMaxPrint = 10);
-  static void GetClosestJets(AliAODJet *genJets,
-			     const Int_t &kGenJets,
-			     AliAODJet *recJets,
-			     const Int_t &kRecJets,
-			     Int_t *iGenIndex,
-			     Int_t *iRecIndex,
-			     Int_t iDebug, Float_t maxDist = 0.5);
-
-  static void MergeOutput(char* cFiles, char* cDir = "",char *cList = "",char* cOutFile ="allpt.root",Bool_t bUpdate = false); // Merges the files in the input text file  needs the two histograms fh1PtHard_Trials, fh1Xsec and the name of the input list
-  static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
-  static Bool_t PrintDirectorySize(const char* currFile); // print the size of the output on a given file
-  static Bool_t GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes);
 
 
   enum {kMaxJets = 6}; //  needed for array size not to fragemnt memory on the heap by many new/delete 
@@ -46,6 +32,30 @@ class AliAnalysisHelperJetTasks : public TObject {
 	 kTotalSelections = (1<<8) - 1};
 
   enum Trigger {kAcceptAll = 0,kMB1,kMB2,kMB3,kSPDGFO,kTrigger}; // 
+  // same as in PWG0Helper
+  enum MCProcessType { kInvalidProcess = -1, kND = 0x1, kDD = 0x2, kSD = 0x4, kOnePart = 0x8 };
+
+
+
+  
+  static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
+  static void PrintStack(AliMCEvent *mcEvent,Int_t iFirst = 0,Int_t iLast = 0,Int_t iMaxPrint = 10);
+  static void GetClosestJets(AliAODJet *genJets,
+			     const Int_t &kGenJets,
+			     AliAODJet *recJets,
+			     const Int_t &kRecJets,
+			     Int_t *iGenIndex,
+			     Int_t *iRecIndex,
+			     Int_t iDebug, Float_t maxDist = 0.5);
+
+  static void MergeOutput(char* cFiles, char* cDir = "",char *cList = "",char* cOutFile ="allpt.root",Bool_t bUpdate = false); // Merges the files in the input text file  needs the two histograms fh1PtHard_Trials, fh1Xsec and the name of the input list
+  static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+  static Bool_t PrintDirectorySize(const char* currFile); // print the size of the output on a given file
+  static Bool_t GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes);
+
+  static MCProcessType GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
+  static MCProcessType GetDPMjetEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug = kFALSE);
+  static Int_t GetLastProcessType() { return fgLastProcessType; }
 
   static Bool_t Selected(Bool_t bSet = kFALSE,Bool_t bNew = kTRUE); // static function to store the state of selection from service task
 
@@ -60,7 +70,9 @@ class AliAnalysisHelperJetTasks : public TObject {
 
   private:
   
-  ClassDef(AliAnalysisHelperJetTasks, 2) 
+  static Int_t fgLastProcessType;    // stores the raw value of the last process type extracted
+ 
+  ClassDef(AliAnalysisHelperJetTasks, 3) 
 };
 
 #endif // ALIANALYSISHELPERJETTASKS_H
