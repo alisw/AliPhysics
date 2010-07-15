@@ -122,7 +122,7 @@ class AliAODEvent : public AliVEvent {
   // -- Vertex
   TClonesArray *GetVertices()            const { return fVertices; }
   Int_t         GetNumberOfVertices()    const { return fVertices->GetEntriesFast(); }
-  AliAODVertex *GetVertex(Int_t nVertex) const { return (AliAODVertex*)fVertices->UncheckedAt(nVertex); }
+  AliAODVertex *GetVertex(Int_t nVertex) const { return (AliAODVertex*)fVertices->At(nVertex); }
   Int_t         AddVertex(const AliAODVertex* vtx)
   {new((*fVertices)[fVertices->GetEntriesFast()]) AliAODVertex(*vtx); return fVertices->GetEntriesFast()-1;}
   
