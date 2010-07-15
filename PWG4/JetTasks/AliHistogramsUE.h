@@ -18,6 +18,7 @@ class TProfile;
 class TTree;
 class TVector3;
 class AliAnalysisTaskUE;
+class AliCFManager;
 
 class  AliHistogramsUE : public TObject
   {
@@ -31,6 +32,8 @@ class  AliHistogramsUE : public TObject
     TObjArray*     CreateCanvas(const Int_t ncanv);
     TObjArray*     GetHistosForPlotting(TString file, TString branches);
     void	   CreateHistograms(TList* list,Int_t bins, Double_t min, Double_t max, Double_t etacut);
+    void	   CreateHistogramsCorrections(TList* list,Int_t bins, Double_t min, Double_t max, Double_t etacut);
+    void           CreateCorrectionsContainer(AliCFManager* cfman,Int_t bins, Double_t min, Double_t max, Double_t etacut, Double_t jetetacut);
     void           DrawUE(Int_t debug);  //to draw final plots (normalized)
     void           FillHistogram(const char* name,Double_t fillX); //One dimensional
     void           FillHistogram(const char* name,Int_t fillX); //One dimensional
@@ -50,51 +53,61 @@ class  AliHistogramsUE : public TObject
     Double_t       fMinJetPtInHist;  // Minimum jet pT in histograms
     Double_t       fMaxJetPtInHist;  // Maximum jet pT in histograms
     Double_t       fTrackEtaCut;     // Track eta cut  
+    Double_t       fJet1EtaCut;      // Jet eta cut 
     TList*         fListOfHistos;    //  Output list of histograms
     
    
     // Histograms
-    TH1F*  fhNJets;                  //!
-    TH1F*  fhEleadingPt;             //!
+    TH1F*  fhNJets;                    //!
+    TH1F*  fhEleadingPt;               //!
     
-    TH1F*  fhMinRegPtDist;           //!
-    TH1F*  fhRegionMultMin;          //!
-    TH1F*  fhMinRegAvePt;            //!
-    TH1F*  fhMinRegSumPt;            //!
-    TH1F*  fhMinRegMaxPtPart;        //!
-    TH1F*  fhMinRegSumPtvsMult;      //!
+    TH1F*  fhMinRegPtDist;             //!
+    TH1F*  fhRegionMultMin;            //!
+    TH1F*  fhMinRegAvePt;              //!
+    TH1F*  fhMinRegSumPt;              //!
+    TH1F*  fhMinRegMaxPtPart;          //!
+    TH1F*  fhMinRegSumPtvsMult;        //!
     
-    TH2F*  fhdNdEtaPhiDist;          //!
-    TH2F*  fhFullRegPartPtDistVsEt;  //!
-    TH2F*  fhTransRegPartPtDistVsEt; //!
+    TH2F*  fhdNdEtaPhiDist;            //!
+    TH2F*  fhdNdEtaPhiDistMC;          //!
+    TH2F*  fhFullRegPartPtDistVsEt;    //!
+    TH2F*  fhFullRegPartPtDistVsEtMC;  //!
+    TH2F*  fhTransRegPartPtDistVsEt;   //!
+    TH2F*  fhTransRegPartPtDistVsEtMC; //!
     
-    TH1F*  fhRegionSumPtMaxVsEt;     //!
-    TH1I*  fhRegionMultMax;          //!
-    TH1F*  fhRegionMultMaxVsEt;      //!
-    TH1F*  fhRegionSumPtMinVsEt;     //!
-    TH1F*  fhRegionMultMinVsEt;      //!
-    TH1F*  fhRegionAveSumPtVsEt;     //!
-    TH1F*  fhRegionDiffSumPtVsEt;    //!
+    TH1F*  fhRegionSumPtMaxVsEt;       //!
+    TH1I*  fhRegionMultMax;            //!
+    TH1F*  fhRegionMultMaxVsEt;        //!
+    TH1F*  fhRegionSumPtMinVsEt;       //!
+    TH1F*  fhRegionMultMinVsEt;        //!
+    TH1F*  fhRegionAveSumPtVsEt;       //!
+    TH1F*  fhRegionDiffSumPtVsEt;      //!
     
-    TH1F*  fhRegionAvePartPtMaxVsEt; //!
-    TH1F*  fhRegionAvePartPtMinVsEt; //!
-    TH1F*  fhRegionMaxPartPtMaxVsEt; //!
+    TH1F*  fhRegionAvePartPtMaxVsEt;   //!
+    TH1F*  fhRegionAvePartPtMinVsEt;   //!
+    TH1F*  fhRegionMaxPartPtMaxVsEt;   //!
     
-    TH2F*  fhRegForwardMult;         //!
-    TH2F*  fhRegForwardSumPtvsMult;  //!
-    TH2F*  fhRegBackwardMult;        //!
-    TH2F*  fhRegBackwardSumPtvsMult; //!
-    TH2F*  fhRegForwardPartPtDistVsEt; //!
-    TH2F*  fhRegBackwardPartPtDistVsEt; //!
-    TH2F*  fhRegTransMult;         //!
-    TH2F*  fhRegTransSumPtVsMult;    //!
-    TH2F*  fhMinRegSumPtJetPtBin;    //!
-    TH2F*  fhMaxRegSumPtJetPtBin;    //!
-    TH1F*  fhVertexMult;             //!
+    TH2F*  fhRegForwardMult;              //!
+    TH2F*  fhRegForwardSumPtvsMult;       //!
+    TH2F*  fhRegBackwardMult;             //!
+    TH2F*  fhRegBackwardSumPtvsMult;      //!
+    TH2F*  fhRegForwardPartPtDistVsEt;    //!
+    TH2F*  fhRegForwardPartPtDistVsEtMC;  //!
+    TH2F*  fhRegBackwardPartPtDistVsEt;   //!
+    TH2F*  fhRegBackwardPartPtDistVsEtMC; //!
+    TH2F*  fhRegTransMult;                //!
+    TH2F*  fhRegTransSumPtVsMult;         //!
+    TH2F*  fhMinRegSumPtJetPtBin;         //!
+    TH2F*  fhMaxRegSumPtJetPtBin;         //!
+    TH1F*  fhVertexMult;                  //!
  
     TProfile*  fh1Xsec;		    //! 	
     TH1F*  fh1Trials;               //!
 
+    //For corrections
+    TH2F   *fhDCAxy;		    //!	
+    TH2F   *fhDCAxyPrimary;	    //!
+	
     ClassDef( AliHistogramsUE, 0 ); // Class to manage histograms in UE analysis
   };
 

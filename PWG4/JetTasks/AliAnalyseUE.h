@@ -15,10 +15,13 @@
 
 class AliAnalysisTaskUE;
 class AliAODEvent;
+class AliESDEvent;
 class AliAODTrack;
 class AliGenPythiaEventHeader;
 class AliHistogramsUE;
+class AliInputEventHandler;
 class AliMCEvent;
+class AliStack;
 class TVector3;
 
 class AliAnalyseUE : public TObject {
@@ -35,11 +38,21 @@ class AliAnalyseUE : public TObject {
  
   void          FillRegions(Bool_t isNorm2Area, TVector3 *jetVect);
 
-  void 		FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition);
+  void 		FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition, Int_t mctrue, Int_t eff);
   
   TVector3	GetOrderedClusters(TString aodBranch, Bool_t chargedJets, Double_t chJetPtMin);
 
+  TVector3      GetLeadingTracksMC(AliMCEvent *mcEvent);
+  //leading track label
+  virtual Int_t      GetLtLabel()      const         { return fLtLabel;   }	
+  virtual Int_t      GetLtMCLabel()    const         { return fLtMCLabel; }
+
   void          Initialize(AliAnalysisTaskUE& tmp);
+  //void          Initialize(AliAnalysisTask& tmp);
+  
+  void          Initialize(Int_t anaType, AliAODEvent* aod,Double_t coneRadius, Int_t debug, Int_t filterBit, Double_t jet1EtaCut, Double_t jet2DeltaPhiCut, Double_t jet2RatioPtCut, Double_t jet3PtCut, Int_t ordering, Int_t regionType,Bool_t simulateChJetPt, Double_t trackEtaCut, Double_t trackPtCut, Bool_t useChargeHadrons, Bool_t useChPartJet, Bool_t usePositiveCharge, Bool_t useSingleCharge, AliHistogramsUE* histos);
+
+  Bool_t	TriggerSelection(AliInputEventHandler* input);
 
   Bool_t        VertexSelection(AliAODEvent *value, Int_t tracks, Double_t zed);
 
@@ -52,6 +65,7 @@ class AliAnalyseUE : public TObject {
   void          SetAOD(AliAODEvent *value)		{ fkAOD = value; }
   void          SetConeRadius(Double_t value)		{ fConeRadius = value; }
   void          SetDebug(Int_t value)			{ fDebug = value; }
+  void          SetESDEvent(AliESDEvent *value)         { fkESD = value;  }
   void          SetFilterBit(Int_t value)		{ fFilterBit = value; }
   void          SetJet1EtaCut(Double_t value)		{ fJet1EtaCut = value; }
   void          SetJet2DeltaPhiCut(Double_t value)	{ fJet2DeltaPhiCut = value; }
@@ -66,7 +80,8 @@ class AliAnalyseUE : public TObject {
   void          SetUseChPartJet(Bool_t value)	        { fUseChPartJet = value; }
   void          SetUsePositiveCharge(Bool_t value)	{ fUsePositiveCharge = value; }
   void          SetUseSingleCharge(Bool_t value)	{ fUseSingleCharge = value; }
-
+  
+  void          SetStack(AliStack* value)		{ fStack = value; }
  private:
 
   void          FillAvePartPtRegion( Double_t leadingE, Double_t ptMax, Double_t ptMin );
@@ -75,20 +90,26 @@ class AliAnalyseUE : public TObject {
   TObjArray*  	FindChargedParticleJets( Double_t chJetPtMin);
   Int_t 	IsTrackInsideRegion(TVector3 *jetVect, TVector3 *partVect, Int_t conePosition);
   void  	QSortTracks(TObjArray &a, Int_t first, Int_t last);
+  void  	QSortTracksMC(TObjArray &a, Int_t first, Int_t last);
   void  	SetRegionArea(TVector3 *jetVect);
   TObjArray*    SortChargedParticles();     
-  virtual Bool_t   TrackSelected(AliAODTrack* part) const;
-  virtual Bool_t   TrackMCSelected(Double_t charge, Double_t pT, Double_t eta, Int_t pdgCode) const;
+  TObjArray*    SortChargedParticlesMC();     
+  virtual Bool_t TrackSelected(AliAODTrack* part) const;
+  virtual Bool_t TrackSelectedEfficiency(AliAODTrack* part) const;
+  virtual Bool_t TrackMCSelected(Double_t charge, Double_t pT, Double_t eta, Int_t pdgCode) const;
 
   
     //AliAnalysisTaskUE    fTaskUE;        //  current instance of the analysis-task
     const AliAODEvent*   fkAOD;             //! AOD Event 
-    Int_t          fDebug;           //  Debug flag
+    AliMCEvent*    fkMC;              //! MC  Event
+    AliESDEvent*   fkESD;             //! ESD Event (only needed to get track DCA) 
+    Int_t          fDebug;            //  Debug flag
 
     
     // For MC
     Bool_t         fSimulateChJetPt;      // Naive simulation of charged jet Pt from original Jet in MC Header
-    
+    AliStack*      fStack;                // Instance of MC Particle Stack
+
     // Cuts UE analysis
     Int_t          fAnaType;              // Analysis type on jet topology: 
     Double_t       fAreaReg;              // Area of the region To be used as normalization factor when filling histograms
@@ -113,7 +134,6 @@ class AliAnalyseUE : public TObject {
     // track cuts
     Double_t      fTrackEtaCut;      // Eta cut on tracks in the regions (fRegionType=1)
     Double_t      fTrackPtCut;       // Pt cut of tracks in the regions
-  
     AliHistogramsUE* fHistos;	     // Pointer to histogram class	
 
     //to fill the different regions
@@ -129,6 +149,11 @@ class AliAnalyseUE : public TObject {
 
     //Store analysis settings
     TTree* 	  fSettingsTree;	// To store analysis settings
+    
+    //Leading track labels             
+    Int_t         fLtLabel;              // Label of reconstructed leading track
+    Int_t         fLtMCLabel;            // Label of true leading track
+    
     
     ClassDef(AliAnalyseUE,0)
 };

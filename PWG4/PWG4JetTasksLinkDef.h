@@ -7,6 +7,7 @@
 #pragma link C++ class AliAnalysisTaskUE+;
 #pragma link C++ class AliAnalyseUE+;
 #pragma link C++ class AliHistogramsUE+;
+#pragma link C++ class AliAnalysisTaskCorrectionsUE+;
 #pragma link C++ class AliAnalysisTaskJetServices+;
 #pragma link C++ class AliAnalysisTaskJetSpectrum+;
 #pragma link C++ class AliAnalysisTaskJetSpectrum2+;

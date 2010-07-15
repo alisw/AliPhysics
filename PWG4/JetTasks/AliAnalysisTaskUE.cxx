@@ -15,11 +15,6 @@
 
 /* $Id:$ */
 
-//class AliAODInputHandler;
-//class AliAODHandler;
-//class AliLog;
-//class TROOT;
-
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -115,42 +110,6 @@ fTrackEtaCut(0.9),
 fTrackPtCut(0.),
 //For MC
 fAvgTrials(1)
-/*//Histograms
-fhNJets(0x0),
-fhEleadingPt(0x0),
-fhMinRegPtDist(0x0),
-fhRegionMultMin(0x0),
-fhMinRegAvePt(0x0),
-fhMinRegSumPt(0x0),
-fhMinRegMaxPtPart(0x0),
-fhMinRegSumPtvsMult(0x0),
-fhdNdEtaPhiDist(0x0),
-fhFullRegPartPtDistVsEt(0x0),
-fhTransRegPartPtDistVsEt(0x0),
-fhRegionSumPtMaxVsEt(0x0),
-fhRegionMultMax(0x0),
-fhRegionMultMaxVsEt(0x0),
-fhRegionSumPtMinVsEt(0x0),
-fhRegionMultMinVsEt(0x0),
-fhRegionAveSumPtVsEt(0x0),
-fhRegionDiffSumPtVsEt(0x0),
-fhRegionAvePartPtMaxVsEt(0x0),
-fhRegionAvePartPtMinVsEt(0x0),
-fhRegionMaxPartPtMaxVsEt(0x0),    
-fhRegForwardMult(0x0),
-fhRegForwardSumPtvsMult(0x0),
-fhRegBackwardMult(0x0),
-fhRegBackwardSumPtvsMult(0x0),
-fhRegForwardPartPtDistVsEt(0x0),
-fhRegBackwardPartPtDistVsEt(0x0),
-fhRegTransMult(0x0),
-fhRegTransSumPtVsMult(0x0),
-fhMinRegSumPtJetPtBin(0x0),
-fhMaxRegSumPtJetPtBin(0x0),
-fhVertexMult(0x0),
-fh1Xsec(0x0), 	
-fh1Trials(0x0)
-*/
 {
   // Default constructor
   // Define input and output slots here
@@ -202,42 +161,6 @@ fTrackEtaCut(original.fTrackEtaCut),
 fTrackPtCut(original.fTrackPtCut),
 //For MC
 fAvgTrials(original.fAvgTrials)
-/*//Histograms
-fhNJets(original.fhNJets),
-fhEleadingPt(original.fhEleadingPt),
-fhMinRegPtDist(original.fhMinRegPtDist),
-fhRegionMultMin(original.fhRegionMultMin),
-fhMinRegAvePt(original.fhMinRegAvePt),
-fhMinRegSumPt(original.fhMinRegSumPt),
-fhMinRegMaxPtPart(original.fhMinRegMaxPtPart),
-fhMinRegSumPtvsMult(original.fhMinRegSumPtvsMult),
-fhdNdEtaPhiDist(original.fhdNdEtaPhiDist),
-fhFullRegPartPtDistVsEt(original.fhFullRegPartPtDistVsEt),
-fhTransRegPartPtDistVsEt(original.fhTransRegPartPtDistVsEt),
-fhRegionSumPtMaxVsEt(original.fhRegionSumPtMaxVsEt),
-fhRegionMultMax(original.fhRegionMultMax),
-fhRegionMultMaxVsEt(original.fhRegionMultMaxVsEt),
-fhRegionSumPtMinVsEt(original.fhRegionSumPtMinVsEt),
-fhRegionMultMinVsEt(original.fhRegionMultMinVsEt),
-fhRegionAveSumPtVsEt(original.fhRegionAveSumPtVsEt),
-fhRegionDiffSumPtVsEt(original.fhRegionDiffSumPtVsEt),
-fhRegionAvePartPtMaxVsEt(original.fhRegionAvePartPtMaxVsEt),
-fhRegionAvePartPtMinVsEt(original.fhRegionAvePartPtMinVsEt),
-fhRegionMaxPartPtMaxVsEt(original.fhRegionMaxPartPtMaxVsEt),
-fhRegForwardMult(original.fhRegForwardMult),
-fhRegForwardSumPtvsMult(original.fhRegForwardSumPtvsMult),
-fhRegBackwardMult(original.fhRegBackwardMult),
-fhRegBackwardSumPtvsMult(original.fhRegBackwardSumPtvsMult),
-fhRegForwardPartPtDistVsEt(original.fhRegForwardPartPtDistVsEt),
-fhRegBackwardPartPtDistVsEt(original.fhRegBackwardPartPtDistVsEt),
-fhRegTransMult(original.fhRegTransMult),
-fhRegTransSumPtVsMult(original.fhRegTransSumPtVsMult),
-fhMinRegSumPtJetPtBin(original.fhMinRegSumPtJetPtBin),
-fhMaxRegSumPtJetPtBin(original.fhMaxRegSumPtJetPtBin),
-fhVertexMult(original.fhVertexMult),
-fh1Xsec(original.fh1Xsec), 	
-fh1Trials(original.fh1Trials)
-*/
 {
   // Copy constructor
 }
@@ -285,9 +208,9 @@ void AliAnalysisTaskUE::ConnectInputData(Option_t* /*option*/)
 {
   // Connect the input data  
   
-  // We need AOD with tracks and jets.
-  // Since AOD can be either connected to the InputEventHandler (input chain fron AOD files)
-  // or to the OutputEventHandler ( AOD is create by a previus task in the train )
+  // We need AODs with tracks and jets.
+  // Since AODs can either be connected to the InputEventHandler
+  // or to the OutputEventHandler ( the AOD is created by a previus task in the train )
   // we need to check where it is and get the pointer to AODEvent in the right way
   
   // Delta AODs are also accepted
@@ -356,18 +279,11 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
   // Trigger selection ************************************************
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
          ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  if( !inputHandler->InheritsFrom("AliAODInputHandler") ) { // input AOD
-  	if (inputHandler->IsEventSelected()) {
-  		if (fDebug > 1) AliInfo(" Trigger Selection: event ACCEPTED ... ");
-  	} else {
-  		if (fDebug > 1) AliInfo(" Trigger Selection: event REJECTED ... ");
-  		return;
-  		}
-        }                                
-  // Event selection (vertex) *****************************************
-   
-  //if(!fAnaUE->VertexSelection(fAOD,fnTracksVertex,fZVertex)) return;
-  if(!fAnaUE->VertexSelectionOld(fAOD)) return; // temporary to compare with old task and to have same cuts for MC !!!
+  if (!fAnaUE->TriggerSelection(inputHandler)) return;
+  
+  // Vertex selection *************************************************
+  if(!fAnaUE->VertexSelection(fAOD,fnTracksVertex,fZVertex)) return;
+  //if(!fAnaUE->VertexSelectionOld(fAOD)) return; // temporary to compare with old task and to have same cuts for MC !!!
   
   // Execute analysis for current event ******************************
   
@@ -433,7 +349,7 @@ void  AliAnalysisTaskUE::AnalyseUE()
 		if (fDebug >1 ) AliInfo(Form("\n   Pt Leading Jet = %6.1f eta=%5.3f ",  jetVect[0].Pt(), jetVect[0].Eta() ));
  		}
 
-   // Select events according to analysis type
+   // Select events according to analysis type ***********************************
    if ( ! (fAnaUE->AnaTypeSelection(jetVect))) return;
 
   // Find max and min regions with real tracks
@@ -445,7 +361,7 @@ void  AliAnalysisTaskUE::AnalyseUE()
 	// Fill leading "jet" histogram
  	fHistosUE->FillHistogram("hEleadingPt",jetVect[0].Pt());
 
-  	fAnaUE->FindMaxMinRegions( jetVect,  fConePosition );
+  	fAnaUE->FindMaxMinRegions( jetVect,  fConePosition, 0, 0 );
 
   }else { 
     
@@ -499,12 +415,12 @@ void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
   
   // Terminate analysis
 
+  if (!gROOT->IsBatch()){
   fListOfHistos = dynamic_cast<TList*> (GetOutputData(0));
   if (!fListOfHistos){
 	AliError("Histogram List is not available");
 	return;
-  }
-  if (!gROOT->IsBatch()){
+  	}
   //call class AliHistogramsUE
   AliHistogramsUE *histos=new AliHistogramsUE(fListOfHistos);
   histos->DrawUE(0);
