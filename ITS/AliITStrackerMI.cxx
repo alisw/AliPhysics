@@ -2784,9 +2784,9 @@ Float_t AliITStrackerMI::GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id
     Int_t l=(index & 0xf0000000) >> 28;
     Int_t c=(index & 0x0fffffff) >> 00;
     if (c>fgLayers[l].GetNumberOfClusters()) continue;
-    if (ny[l]<1.e-13){
-      printf("problem\n");
-    }
+    // if (ny[l]<1.e-13){
+    //   printf("problem\n");
+    // }
     AliITSRecPoint *cl = (AliITSRecPoint*)GetCluster(index);
     Float_t weight=1;
     //
@@ -2834,9 +2834,9 @@ Int_t AliITStrackerMI::GetOverlapTrack(const AliITStrackMI *track, Int_t trackID
     Int_t index = clusterlist[icluster];
     Int_t l=(index & 0xf0000000) >> 28;
     Int_t c=(index & 0x0fffffff) >> 00;
-    if (ny[l]<1.e-13){
-      printf("problem\n");
-    }
+    // if (ny[l]<1.e-13){
+    //   printf("problem\n");
+    // }
     if (c>fgLayers[l].GetNumberOfClusters()) continue;
     //if (l>3) continue;
     AliITSRecPoint *cl = (AliITSRecPoint*)GetCluster(index);
@@ -3902,9 +3902,9 @@ void AliITStrackerMI::UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const
   AliITStrackMI * oldtrack = (AliITStrackMI*)(track->GetESDtrack()->GetITStrack());
   if (oldtrack) delete oldtrack; 
   track->GetESDtrack()->SetITStrack(new AliITStrackMI(*track));
-  if (TMath::Abs(track->GetDnorm(1))<0.000000001){
-    printf("Problem\n");
-  }
+  // if (TMath::Abs(track->GetDnorm(1))<0.000000001){
+  //   printf("Problem\n");
+  // }
 }
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::GetNearestLayer(const Double_t *xr) const{
