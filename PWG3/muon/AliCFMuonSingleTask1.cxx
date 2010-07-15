@@ -58,7 +58,8 @@ AliCFMuonSingleTask1::AliCFMuonSingleTask1() :
   fCFManager(0x0),
   fQAHistList(0x0),
   fHistEventsProcessed(0x0),
-  fNevt(0)
+  fNevt(0),
+  fIsMC(kFALSE)
 {
   //
   //Default ctor
@@ -71,7 +72,8 @@ AliCFMuonSingleTask1::AliCFMuonSingleTask1(const Char_t* name) :
   fCFManager(0x0),
   fQAHistList(0x0),
   fHistEventsProcessed(0x0),
-  fNevt(0)
+  fNevt(0),
+  fIsMC(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -135,55 +137,69 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
   //  
 
   Info("UserExec","") ;
-  if (!fMCEvent) {
+  if (!fMCEvent && fIsMC) {  
     Error("UserExec","NO MC EVENT FOUND!");
     return;
   }
 
   fNevt++;
   fCFManager->SetEventInfo(fMCEvent);
-  Double_t containerInput[15] ;
+  Double_t containerInput[17] ;
 
 ////////
 //// MC
 ////////
 
 // loop on the MC part
-  for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
 
-      AliMCParticle *mcPart  = (AliMCParticle*) fMCEvent->GetTrack(ipart);
-      TParticle *part = mcPart->Particle();
+  if(fIsMC){
 
-    // Selection of mu-
-      if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
-    // rapidity and Pt cuts
-      if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcPart)) continue;
+      for (Int_t ipart=0; ipart<fMCEvent->GetNumberOfTracks(); ipart++) { 
+	  
+	  AliMCParticle *mcPart  = (AliMCParticle*) fMCEvent->GetTrack(ipart);
+	  TParticle *part = mcPart->Particle();
 
-      Float_t emc = part->Energy();
-      Float_t pzmc = part->Pz();           
-      Float_t rapmc = Rap(emc,pzmc);
-      Float_t phimc = part->Phi(); 
-      phimc = Phideg(phimc);
-      Float_t ptmc = part->Pt();
-      Float_t pmc = part->P();    
-      Float_t zmc = part->Vz();
+	  // rapidity and Pt cuts (default -4<y<-2.5 et 0<pt<20)
+	  if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcPart)) continue;
 
-      containerInput[0] = fNevt ;   
-      containerInput[1] = rapmc ;   
-      containerInput[2] = phimc ;   
-      containerInput[3] = ptmc ;   
-      containerInput[4] = pmc ;
-      containerInput[14] = zmc ;
+	  // Selection of mu
+	  Int_t pdg=part->GetPdgCode();
+	  if(TMath::Abs(pdg)==13){
 
-    // 9 var calculated only for ESD
-      for(Int_t i=5; i<=13; i++){
-	  containerInput[i] = 1;
+	      Float_t emc = part->Energy();
+	      Float_t pzmc = part->Pz();           
+	      Float_t rapmc = Rap(emc,pzmc);
+	      Float_t phimc = part->Phi(); 
+	      phimc = Phideg(phimc);
+	      Float_t ptmc = part->Pt();
+	      Float_t pmc = part->P();    
+	      Float_t zmc = part->Vz();
+	      Float_t etamc = part->Eta();
+	      Float_t chargemc;
+	      if(pdg==13) chargemc=-1;
+	      if(pdg==-13) chargemc=1;
+      
+	      containerInput[0] = etamc ;   
+	      containerInput[1] = rapmc ;   
+	      containerInput[2] = phimc ;   
+	      containerInput[3] = ptmc ;   
+	      containerInput[4] = pmc ;
+	      containerInput[14] = zmc ;
+	      containerInput[16] = chargemc ;
+
+	      // 10 var calculated only for ESD .i.e set at 1 in MC step
+	      for(Int_t i=5; i<=13; i++){
+		  containerInput[i] = 1;
+	      }
+	      containerInput[7]=3;	      
+	      containerInput[15] = 25 ; // rabsmc
+	      
+	      // fill the container at the first step
+	      fCFManager->GetParticleContainer()->Fill(containerInput,0);
+	  }
       }
-
-    // fill the container at the first step
-      fCFManager->GetParticleContainer()->Fill(containerInput,0);
-
   }
+  
 
 ////////
 //// ESD
@@ -208,13 +224,16 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
  
 // vertex 
 
-  Float_t vx = -200 , vy = -200 , vz = -200;
+  Float_t vx = -200 , vy = -200 , vz = -200, vt=-200;
   
+  Double_t Ncont = 0.;  // mmmmmmmmmodified
   AliESDVertex* vertex = (AliESDVertex*) fESD->GetVertex();
   if (vertex->GetNContributors()) {
       vz = vertex->GetZv();
       vy = vertex->GetYv();
       vx = vertex->GetXv();
+      vt=TMath::Sqrt(vx*vx+vy*vy);
+      Ncont=vertex->GetNContributors();
   }
 
 // tracks
@@ -223,51 +242,56 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 
     for (Int_t j = 0; j<mult1; j++) {
 	AliESDMuonTrack* mu1 = new AliESDMuonTrack(*(fESD->GetMuonTrack(j)));
-	Float_t zr1 = mu1->Charge();
 
-// Select mu-
-	if(zr1<0){
- 	    Float_t er = mu1->E();
-	    Float_t pzr = mu1->Pz();
-	    Float_t rapr=Rap(er,pzr);
-	    Float_t phir = mu1->Phi(); 
-	    phir = Phideg(phir);
-	    Float_t ptr = mu1->Pt();
-	    Float_t pr = mu1->P();
-	    Float_t hit = mu1->GetNHit();	
-	    Float_t chi2 = mu1->GetChi2() / (2.0 * hit - 5);
-	    Int_t matchtrig = mu1->GetMatchTrigger();
-	    Float_t chi2match = mu1->GetChi2MatchTrigger();
-	    Float_t dcar = mu1->GetDCA();
-	    Float_t zr = mu1->GetZ();
+	if (!mu1->ContainTrackerData()) { mu1=0; continue; }
 
-// rapidity and Pt cuts
-	    if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mu1)) continue;
+	Float_t charger = mu1->Charge();
+	Float_t er = mu1->E();
+	Float_t pzr = mu1->Pz();
+	Float_t rapr=Rap(er,pzr);
+	Float_t phir = mu1->Phi(); 
+	phir = Phideg(phir);
+	Float_t ptr = mu1->Pt();
+	Float_t pr = mu1->P();
+	Float_t hit = mu1->GetNHit();	
+	Float_t chi2 = mu1->GetChi2() / (2.0 * hit - 5);
+	Int_t matchtrig = mu1->GetMatchTrigger();
+	Float_t chi2match = mu1->GetChi2MatchTrigger();
+	Float_t dcar = mu1->GetDCA();
+	Float_t zr = mu1->GetZ();
+	Float_t etar = mu1->Eta();
+	Float_t rabs = mu1->GetRAtAbsorberEnd();
+  
+// rapidity and Pt cuts (default -4<y<-2.5 et 0<pt<20)
+	if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mu1)) continue;
 
-	    if(dcar<50){
+	containerInput[0] = etar ;   
+	containerInput[1] = rapr ;   
+	containerInput[2] = phir ;   
+	containerInput[3] = ptr ;
+	containerInput[4] = pr ;
+	containerInput[5] = hit ;   
+	containerInput[6] = chi2 ;   
+	containerInput[7] = matchtrig ;   
+	containerInput[8] = chi2match ;
+	containerInput[9] = Ncont ;   
+	containerInput[10] = vt ;   
+	containerInput[11] = vz ;   
+	containerInput[12] = trig ;
+	containerInput[13] = dcar ;
+	containerInput[14] = zr ;
+	containerInput[15] = rabs ;
+	containerInput[16] = charger ;
 
-		containerInput[0] = fNevt ;   
-		containerInput[1] = rapr ;   
-		containerInput[2] = phir ;   
-		containerInput[3] = ptr ;
-		containerInput[4] = pr ;
-		containerInput[5] = hit ;   
-		containerInput[6] = chi2 ;   
-		containerInput[7] = matchtrig ;   
-		containerInput[8] = chi2match ;
-		containerInput[9] = vx ;   
-		containerInput[10] = vy ;   
-		containerInput[11] = vz ;   
-		containerInput[12] = trig ;
-		containerInput[13] = dcar ;
-		containerInput[14] = zr ;
+// fill the container at the second step (for simu, first for data)
+	if(fIsMC){
+	    fCFManager->GetParticleContainer()->Fill(containerInput,1);
+	}
+	else{
+	    fCFManager->GetParticleContainer()->Fill(containerInput,0);
+	}
+	
 
-// fill the container at the second step
-		fCFManager->GetParticleContainer()->Fill(containerInput,1);
-
-	    } // Limit of histos
-	    
-	}  // mu- Selection
     }      // mu Loop
 
 //  ----------
@@ -308,14 +332,14 @@ void AliCFMuonSingleTask1::Terminate(Option_t *)
     AliCFContainer *cont = dynamic_cast<AliCFContainer*> (GetOutputData(2));
 
     TH1D *kpt = cont->ShowProjection(3,0);
-    TH1D *rpt = cont->ShowProjection(3,1);
+//    TH1D *rpt = cont->ShowProjection(3,1);
 
     TCanvas *c1 = new TCanvas("AliCFMuonSingleTask1"," MC & ESD",10,10,510,510);
     c1->Divide(1,2);
     c1->cd(1);
     kpt->Draw("HIST");
-    c1->cd(2);
-    rpt->Draw("HIST");
+//    c1->cd(2);
+//    rpt->Draw("HIST");
 
 }
 //________________________________________________________________________

@@ -14,9 +14,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-// Author : R. Vernet, Consorzio Cometa - Catania (it)
-//-----------------------------------------------------------------------
-// Modification done by X. Lopez - LPC Clermont (fr)
+// Author : X. Lopez - LPC Clermont (fr)
 //-----------------------------------------------------------------------
 
 #ifndef ALICFMUONSINGLETASK1_H
@@ -48,24 +46,26 @@ class AliCFMuonSingleTask1 : public AliAnalysisTaskSE {
    
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
   void           SetCFManager(AliCFManager* const io) {fCFManager = io;}   // global correction manager
-  AliCFManager * GetCFManager() const {return fCFManager;}           // get corr manager
+  AliCFManager * GetCFManager() const {return fCFManager;}                 // get corr manager
   void           SetQAList(TList* const list) {fQAHistList = list;}
 
   // Data types
   Bool_t IsReadAODData()   const {return fReadAODData;}
   void   SetReadAODData   (Bool_t flag=kTRUE) {fReadAODData=flag;}
+  void SetUseMC(Bool_t isMC)       { fIsMC         = isMC;}
 
  protected:
   
-  Bool_t          fReadAODData ;   // flag for AOD/ESD input files
-  AliCFManager   *fCFManager   ;   // pointer to the CF manager
-  TList          *fQAHistList  ;   // list of QA histograms
-  TH1I           *fHistEventsProcessed; // simple histo for monitoring the number of events processed
-  Int_t           fNevt        ;   // event countor
+  Bool_t          fReadAODData ;       // flag for AOD/ESD input files
+  AliCFManager   *fCFManager   ;       // pointer to the CF manager
+  TList          *fQAHistList  ;       // list of QA histograms
+  TH1I           *fHistEventsProcessed;// simple histo for monitoring the number of events processed
+  Int_t           fNevt        ;       // event countor
 
- Float_t Rap(Float_t e, Float_t pz);
- Float_t Phideg(Float_t phi);
-  
+  Float_t Rap(Float_t e, Float_t pz);
+  Float_t Phideg(Float_t phi);
+  Bool_t fIsMC;                        // flag of whether the input is MC
+
   ClassDef(AliCFMuonSingleTask1,1);
 };
 
