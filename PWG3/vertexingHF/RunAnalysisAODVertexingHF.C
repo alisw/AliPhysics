@@ -23,7 +23,7 @@ void RunAnalysisAODVertexingHF()
   Long64_t nentries=123567890,firstentry=0;
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
-  TString pluginmode="full";
+  TString pluginmode="test";
   Bool_t saveProofToAlien=kFALSE;
   TString proofOutdir = "";
   TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/macros/";
@@ -163,9 +163,9 @@ void RunAnalysisAODVertexingHF()
 
   // Input
   AliAODInputHandler *inputHandler = new AliAODInputHandler();
-  inputHandler->AddFriend("./AliAOD.VertexingHF.root");
-  //inputHandler->AddFriend("deltas/AliAOD.VertexingHF.root");
   if(analysisMode=="proof" ) {
+    inputHandler->AddFriend("./AliAOD.VertexingHF.root");
+    //inputHandler->AddFriend("deltas/AliAOD.VertexingHF.root");
     if(saveProofToAlien) mgr->SetSpecialOutputLocation(proofOutdir);
   }
   mgr->SetInputEventHandler(inputHandler);
@@ -178,23 +178,23 @@ void RunAnalysisAODVertexingHF()
   TString taskName;
   
   ////// ADD THE FULL D2H TRAIN
-  taskName="AddD2HTrain.C"; taskName.Prepend(loadMacroPath.Data());
+  /*taskName="AddD2HTrain.C"; taskName.Prepend(loadMacroPath.Data());
   gROOT->LoadMacro(taskName.Data());
   Bool_t readMC=kFALSE;
-  AddD2HTrain(readMC);//,1,0,0,0,0,0,0,0,0,0,0);
+  AddD2HTrain(readMC);//,1,0,0,0,0,0,0,0,0,0,0);*/
   
   ////// OR ADD INDIVIDUAL TASKS
   
-  /*
-    taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
+  
+  /*  taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
-    
+  */ 
     taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSED0Mass *d0massTask = AddTaskD0Mass();
     AliAnalysisTaskSED0Mass *d0massLikeSignTask = AddTaskD0Mass(1); 
-  
+    /*
     taskName="AddTaskDplus.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
     AliAnalysisTaskSEDplus *dplusTask = AddTaskDplus();
@@ -279,7 +279,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    AliAnalysisAlien *plugin = new AliAnalysisAlien();
    // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(pluginmode.Data());
-   plugin->SetUser("rbala");
+   plugin->SetUser("dainesea");
    plugin->SetNtestFiles(1);
    // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
@@ -293,12 +293,14 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    // Set data search pattern
    plugin->SetGridDataDir("/alice/data/2010/LHC10c");
    plugin->SetDataPattern("pass2/*AliAOD.root");
+   plugin->SetFriendChainName("AliAOD.VertexingHF.root");
+   //plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
    // Adds only the good runs from the Monalisa Run Condition Table
    AddGoodRuns(plugin,"LHC10c");
    // ...then add run numbers to be considered
-   plugin->SetMaxMergeFiles(100);
+   // plugin->SetMaxMergeFiles(100);
    plugin->SetNrunsPerMaster(100);
-   plugin->SetNumberOfReplicas(2);
+   //plugin->SetNumberOfReplicas(2);
    //  or
    //plugin->SetRunRange(529000,529007);
    // Method 2: Declare existing data files (raw collections, xml collections, root file)
