@@ -158,6 +158,7 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   AliMCEventHandler *mcH(NULL);
   if(fHasMCdata) mgr->SetMCtruthEventHandler(mcH = new AliMCEventHandler());
   //mgr->SetDebugLevel(10);
+  mgr->SetSkipTerminate(kTRUE);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
   if(!AddTrainPerformanceTRD(optList)) {
