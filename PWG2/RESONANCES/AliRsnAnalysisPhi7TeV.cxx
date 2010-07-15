@@ -5,6 +5,7 @@
 //
 
 #include "Riostream.h"
+#include <iomanip>
 
 #include "TH1.h"
 #include "TTree.h"
@@ -22,6 +23,7 @@
 #include "AliTOFT0maker.h"
 #include "AliTOFcalib.h"
 #include "AliCDBManager.h"
+#include "AliITSPIDResponse.h"
 
 #include "AliRsnAnalysisPhi7TeV.h"
 
@@ -30,21 +32,22 @@ AliRsnAnalysisPhi7TeV::AliRsnAnalysisPhi7TeV(const char *name) :
   AliAnalysisTaskSE(name),
   fUseMC(kFALSE),
   fPDG(0),
+  fCh(0),
   fIM(0.0),
   fPt(0.0),
   fY(0.0),
   fEta(0.0),
-  fMaxDCAr(1E6),
-  fMaxDCAz(1E6),
-  fMaxChi2(1E6),
-  fMinNTPC(0),
+  fMaxVz(1E6),
+  fMaxITSband(1E6),
+  fTPCpLimit(0.35),
   fMinTPCband(-1E6),
   fMaxTPCband( 1E6),
   fRsnTreeComp(0x0),
   fRsnTreeTrue(0x0),
   fOutList(0x0),
   fHEvents(0x0),
-  fHCuts(0x0),
+  fESDtrackCutsTPC(),
+  fESDtrackCutsITS(),
   fESDpid(0x0),
   fTOFmaker(0x0),
   fTOFcalib(0x0),
@@ -69,21 +72,22 @@ AliRsnAnalysisPhi7TeV::AliRsnAnalysisPhi7TeV(const AliRsnAnalysisPhi7TeV& copy) 
   AliAnalysisTaskSE(copy),
   fUseMC(copy.fUseMC),
   fPDG(0),
+  fCh(0),
   fIM(0.0),
   fPt(0.0),
   fY(0.0),
   fEta(0.0),
-  fMaxDCAr(copy.fMaxDCAr),
-  fMaxDCAz(copy.fMaxDCAz),
-  fMaxChi2(copy.fMaxChi2),
-  fMinNTPC(copy.fMinNTPC),
+  fMaxVz(copy.fMaxVz),
+  fMaxITSband(copy.fMaxITSband),
+  fTPCpLimit(copy.fTPCpLimit),
   fMinTPCband(copy.fMinTPCband),
   fMaxTPCband(copy.fMaxTPCband),
   fRsnTreeComp(0x0),
   fRsnTreeTrue(0x0),
   fOutList(0x0),
   fHEvents(0x0),
-  fHCuts(0x0),
+  fESDtrackCutsTPC(copy.fESDtrackCutsTPC),
+  fESDtrackCutsITS(copy.fESDtrackCutsITS),
   fESDpid(0x0),
   fTOFmaker(0x0),
   fTOFcalib(0x0),
@@ -107,13 +111,15 @@ AliRsnAnalysisPhi7TeV& AliRsnAnalysisPhi7TeV::operator=(const AliRsnAnalysisPhi7
 
   fUseMC = copy.fUseMC;
 
-  fMaxDCAr = copy.fMaxDCAr;
-  fMaxDCAz = copy.fMaxDCAz;
-  fMaxChi2 = copy.fMaxChi2;
-  fMinNTPC = copy.fMinNTPC;
-
+  fMaxVz   = copy.fMaxVz;
+  fMaxITSband = copy.fMaxITSband;
+  
+  fTPCpLimit  = copy.fTPCpLimit;
   fMinTPCband = copy.fMinTPCband;
   fMaxTPCband = copy.fMaxTPCband;
+  
+  fESDtrackCutsTPC = copy.fESDtrackCutsTPC;
+  fESDtrackCutsITS = copy.fESDtrackCutsITS;
   
   fTOFcalibrateESD = copy.fTOFcalibrateESD;
   fTOFcorrectTExp = copy.fTOFcorrectTExp;
@@ -134,7 +140,6 @@ AliRsnAnalysisPhi7TeV::~AliRsnAnalysisPhi7TeV()
   if (fRsnTreeComp) delete fRsnTreeComp;
   if (fRsnTreeTrue) delete fRsnTreeTrue;
   if (fHEvents)     delete fHEvents;
-  if (fHCuts)       delete fHCuts;
   if (fESDpid)      delete fESDpid;
 }
 
@@ -161,11 +166,13 @@ void AliRsnAnalysisPhi7TeV::UserCreateOutputObjects()
   OpenFile(1);
   fRsnTreeComp = new TTree("rsnTree", "Pairs");
 
-  fRsnTreeComp->Branch("pdg", &fPDG, "pdg/S");
-  fRsnTreeComp->Branch("im" , &fIM , "im/F" );
-  fRsnTreeComp->Branch("y"  , &fY  , "y/F"  );
-  fRsnTreeComp->Branch("pt" , &fPt , "pt/F" );
-  fRsnTreeComp->Branch("eta", &fEta, "eta/F");
+  fRsnTreeComp->Branch("pdg", &fPDG, "pdg/S"   );
+  fRsnTreeComp->Branch("ch" , &fCh , "ch/C"    );
+  fRsnTreeComp->Branch("im" , &fIM , "im/F"    );
+  fRsnTreeComp->Branch("y"  , &fY  , "y/F"     );
+  fRsnTreeComp->Branch("pt" , &fPt , "pt/F"    );
+  fRsnTreeComp->Branch("eta", &fEta, "eta/F"   );
+  fRsnTreeComp->Branch("its", &fITS, "its[2]/C");
 
   OpenFile(2);
   fRsnTreeTrue = new TTree("rsnTrue", "True pairs");
@@ -176,22 +183,28 @@ void AliRsnAnalysisPhi7TeV::UserCreateOutputObjects()
   fRsnTreeTrue->Branch("eta", &fEta, "eta/F");
 
   OpenFile(3);
-  fOutList = new TList;
-  fHEvents = new TH1I("hEvents", "Event details", 4, 0, 4);
-  fHCuts   = new TH1I("hCuts", "Cuts not passed", 11, 0, 11);
-  fHCuts->GetXaxis()->SetBinLabel( 1, "Flags");
-  fHCuts->GetXaxis()->SetBinLabel( 2, "No TPC inner");
-  fHCuts->GetXaxis()->SetBinLabel( 3, "Kink daughter");
-  fHCuts->GetXaxis()->SetBinLabel( 4, "Few clusters in TPC");
-  fHCuts->GetXaxis()->SetBinLabel( 5, "Large #chi^{2}");
-  fHCuts->GetXaxis()->SetBinLabel( 6, "No SPD clusters");
-  fHCuts->GetXaxis()->SetBinLabel( 7, "Failed revert to vertex");
-  fHCuts->GetXaxis()->SetBinLabel( 8, "Too large DCA");
-  fHCuts->GetXaxis()->SetBinLabel( 9, "Failed TPC PID");
-  fHCuts->GetXaxis()->SetBinLabel(10, "Failed TOF PID");
-  fHCuts->GetXaxis()->SetBinLabel(11, "Track OK");
+  fOutList    = new TList;
+  fHEvents    = new TH1I("hEvents", "Event details", 5, 0, 5);
+  fVertexX[0] = new TH1F("hVertexTracksX", "X position of primary vertex (tracks)", 200, -10, 10);
+  fVertexY[0] = new TH1F("hVertexTracksY", "Y position of primary vertex (tracks)", 200, -10, 10);
+  fVertexZ[0] = new TH1F("hVertexTracksZ", "Z position of primary vertex (tracks)", 400, -40, 40);
+  fVertexX[1] = new TH1F("hVertexSPDX", "X position of primary vertex (SPD)", 1000, - 2,  2);
+  fVertexY[1] = new TH1F("hVertexSPDY", "Y position of primary vertex (SPD)", 1000, - 2,  2);
+  fVertexZ[1] = new TH1F("hVertexSPDZ", "Z position of primary vertex (SPD)", 1000, -50, 50);
+  
+  fHEvents->GetXaxis()->SetBinLabel(1, "Good vertex with tracks");
+  fHEvents->GetXaxis()->SetBinLabel(2, "Good vertex with SPD");
+  fHEvents->GetXaxis()->SetBinLabel(3, "Far vertex with tracks");
+  fHEvents->GetXaxis()->SetBinLabel(4, "Far vertex with SPD");
+  fHEvents->GetXaxis()->SetBinLabel(5, "No good vertex");
+
   fOutList->Add(fHEvents);
-  fOutList->Add(fHCuts);
+  fOutList->Add(fVertexX[0]);
+  fOutList->Add(fVertexY[0]);
+  fOutList->Add(fVertexZ[0]);
+  fOutList->Add(fVertexX[1]);
+  fOutList->Add(fVertexY[1]);
+  fOutList->Add(fVertexZ[1]);
 }
 
 //__________________________________________________________________________________________________
@@ -212,46 +225,19 @@ void AliRsnAnalysisPhi7TeV::UserExec(Option_t *)
   // retrieve ESD event and related stack (if available)
   AliESDEvent *esd   = dynamic_cast<AliESDEvent*>(fInputEvent);
   AliStack    *stack = (fMCEvent ? fMCEvent->Stack() : 0x0);
-  //cout << "NTRACKS: " << esd->GetNumberOfTracks() << endl;
   
-  // get the best primary vertex:
-  // first try the one with tracks
-  Int_t type = 0;
-  const AliESDVertex *v = esd->GetPrimaryVertexTracks();
-  //cout << "[ev " << evNum << "] vertex tracks: " << v << " contrib = " << v->GetNContributors() << " -- status = " << v->GetStatus() << endl;
-  if(v->GetNContributors() < 1)
+  // check the event
+  Int_t eval = EventEval(esd);
+  fHEvents->Fill(eval);
+  
+  // if the event is good for analysis, process it
+  if (eval == kGoodTracksPrimaryVertex || eval == kGoodSPDPrimaryVertex)
   {
-    // if not good, try SPD vertex
-    type = 1;
-    v = esd->GetPrimaryVertexSPD();
-    //cout << "[ev " << evNum << "] vertex SPD: " << v << " contrib = " << v->GetNContributors() << " -- status = " << v->GetStatus() << endl;
-    
-    // if this is not good skip this event
-    if (v->GetNContributors() < 1)
-    {
-      fHEvents->Fill(3);
-      PostData(3, fOutList);
-      return;
-    }
-  }
-
-  // if the Z position is larger than 10, skip this event
-  //cout << "[ev " << evNum << "] vertex Z = " << v->GetZv() << endl;
-  if (TMath::Abs(v->GetZv()) > 10.0)
-  {
-    fHEvents->Fill(2);
-    PostData(3, fOutList);
-    return;
+    ProcessESD(esd, stack);
+    ProcessMC(stack);
   }
   
-  //cout << "EVENT " << evNum << " is OK" << endl;
-
-  // use the type to fill the histogram
-  fHEvents->Fill(type);
-
-  ProcessESD(esd, v, stack);
-  ProcessMC(stack);
-
+  // update histogram container
   PostData(3, fOutList);
 }
 
@@ -264,12 +250,98 @@ void AliRsnAnalysisPhi7TeV::Terminate(Option_t *)
 }
 
 //__________________________________________________________________________________________________
+Bool_t AliRsnAnalysisPhi7TeV::IsTPCtrack(AliESDtrack *track)
+{
+//
+// Checks if it is a TPC track or ITS standalone
+//
+
+  ULong_t status = (ULong_t)track->GetStatus();
+  
+  if ((status & AliESDtrack::kTPCin) != 0) return kTRUE;
+  
+  return kFALSE;
+}
+
+//__________________________________________________________________________________________________
+Bool_t AliRsnAnalysisPhi7TeV::IsITSSAtrack(AliESDtrack *track)
+{
+//
+// Checks if it is a TPC track or ITS standalone
+//
+
+  ULong_t status = (ULong_t)track->GetStatus();
+  
+  if ((status & AliESDtrack::kTPCin) == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0) return kTRUE;
+  
+  return kFALSE;
+}
+
+//__________________________________________________________________________________________________
+Int_t AliRsnAnalysisPhi7TeV::EventEval(AliESDEvent *esd)
+{
+//
+// Checks if the event is good for analysis.
+// Returns one of the flag values defined in the header
+//
+
+  static Int_t evNum = 0;
+  evNum++;
+
+  // debug message
+  AliDebug(AliLog::kDebug + 1, Form("Event %d -- number of tracks = %d", evNum, esd->GetNumberOfTracks()));
+  
+  // get the best primary vertex:
+  // first try the one with tracks
+  const AliESDVertex *vTrk  = esd->GetPrimaryVertexTracks();
+  const AliESDVertex *vSPD  = esd->GetPrimaryVertexSPD();
+  Double_t            vzTrk = 1000.0;
+  Double_t            vzSPD = 1000.0;
+  if (vTrk) vzTrk = TMath::Abs(vTrk->GetZv());
+  if (vSPD) vzSPD = TMath::Abs(vSPD->GetZv());
+  AliDebug(AliLog::kDebug + 1, Form("Event %d -- vertex with tracks: contributors = %d, abs(vz) = %f", evNum, vTrk->GetNContributors(), vzTrk));
+  AliDebug(AliLog::kDebug + 1, Form("Event %d -- vertex with SPD,    contributors = %d, abs(vz) = %f", evNum, vSPD->GetNContributors(), vzSPD));
+  if(vTrk->GetNContributors() > 0)
+  {
+    // fill the histograms
+    fVertexX[0]->Fill(vTrk->GetXv());
+    fVertexY[0]->Fill(vTrk->GetYv());
+    fVertexZ[0]->Fill(vTrk->GetZv());
+    
+    // check VZ position
+    if (vzTrk <= fMaxVz)
+      return kGoodTracksPrimaryVertex;
+    else
+      return kFarTracksPrimaryVertex;
+  }
+  else if (vSPD->GetNContributors() > 0)
+  {
+    // fill the histograms
+    fVertexX[1]->Fill(vSPD->GetXv());
+    fVertexY[1]->Fill(vSPD->GetYv());
+    fVertexZ[1]->Fill(vSPD->GetZv());
+    
+    // check VZ position
+    if (vzSPD <= fMaxVz)
+      return kGoodSPDPrimaryVertex;
+    else
+      return kFarSPDPrimaryVertex;
+  }
+  else
+    return kNoGoodPrimaryVertex;
+}
+
+//__________________________________________________________________________________________________
 void AliRsnAnalysisPhi7TeV::ProcessESD
-(AliESDEvent *esd, const AliESDVertex *v, AliStack *stack)
+(AliESDEvent *esd, AliStack *stack)
 {
 //
 // This function works with the ESD object
 //
+
+  // ITS stuff #1 create the response function
+  Bool_t isMC = (stack != 0x0);
+  AliITSPIDResponse itsrsp(isMC);
 
   // TOF stuff #1: init OCDB
   Int_t run = esd->GetRunNumber();
@@ -288,6 +360,11 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
     fTOFmaker->ApplyT0TOF(esd);
     fESDpid->MakePID(esd, kFALSE, 0.);
   }
+  // TOF stuff #4: define fixed function for compatibility range
+  Double_t a1 = 0.01, a2 = -0.03;
+  Double_t b1 = 0.25, b2 =  0.25;
+  Double_t c1 = 0.05, c2 = -0.03;
+  Double_t ymax, ymin;
 
   // prepare to look on all tracks to select the ones
   // which pass all the cuts
@@ -295,109 +372,85 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
   TArrayI pos(ntracks);
   TArrayI neg(ntracks);
   
-  // define fixed functions for TOF compatibility range
-  Double_t a1 = 0.01, a2 = -0.03;
-  Double_t b1 = 0.25, b2 =  0.25;
-  Double_t c1 = 0.05, c2 = -0.03;
-  Double_t ymax, ymin;
-
   // loop on all tracks
-  Int_t    i, icut, charge, nSPD, npos = 0, nneg = 0;
-  Float_t  chi2, b[2], bCov[3];
-  Double_t mom, tpcNSigma, tpcMaxNSigma, tofTime, tofSigma, tofRef, tofRel, times[10];
+  ULong_t  status;
+  Int_t    i, k, charge, npos = 0, nneg = 0, nITS;
+  Double_t times[10], tpcNSigma, tpcMaxNSigma, itsSignal, itsNSigma, mom, tofTime, tofSigma, tofRef, tofRel;
   Bool_t   okTOF;
+  UChar_t  itsCluMap;
   for (i = 0; i < ntracks; i++)
   {
     AliESDtrack *track = esd->GetTrack(i);
-    if (!track) {fHCuts->Fill(icut); continue;}
-
-    // skip if it has not the required flags
-    icut = 0;
-    if (!track->IsOn(AliESDtrack::kTPCin)) {fHCuts->Fill(icut); continue;}
-    if (!track->IsOn(AliESDtrack::kTPCrefit)) {fHCuts->Fill(icut); continue;}
-    if (!track->IsOn(AliESDtrack::kITSrefit)) {fHCuts->Fill(icut); continue;}
-
-    // skip if it has not the TPC inner wall projection
-    icut = 1;
-    if (!track->GetInnerParam()) {fHCuts->Fill(icut); continue;}
+    if (!track) continue;
     
-    // skip kink daughters
-    icut = 2;
-    if ((Int_t)track->GetKinkIndex(0) > 0) {fHCuts->Fill(icut); continue;}
-
-    // check clusters in TPC
-    icut = 3;
-    if (track->GetTPCclusters(0) < fMinNTPC) {fHCuts->Fill(icut); continue;}
-
-    // check chi2
-    icut = 4;
-    chi2  = (Float_t)track->GetTPCchi2();
-    chi2 /= (Float_t)track->GetTPCclusters(0);
-    if (chi2 > fMaxChi2) {fHCuts->Fill(icut); continue;}
-
-    // check that has at least 1 SPD cluster
-    icut = 5;
-    nSPD = 0;
-    if (track->HasPointOnITSLayer(0)) nSPD++;
-    if (track->HasPointOnITSLayer(1)) nSPD++;
-    if (nSPD < 1) {fHCuts->Fill(icut); continue;}
-
-    // check primary by reverting to vertex
-    // and checking DCA
-    icut = 6;
-    if (!track->RelateToVertex(v, esd->GetMagneticField(), kVeryBig)) {fHCuts->Fill(icut); continue;}
-    icut = 7;
-    track->GetImpactParameters(b, bCov);
-    if (b[0] > fMaxDCAr) {fHCuts->Fill(icut); continue;}
-    if (b[1] > fMaxDCAz) {fHCuts->Fill(icut); continue;}
-
-    // check TPC dE/dx
-    icut = 8;
-    //cout << "TPC SIGMA: " << fESDpid->NumberOfSigmasTPC(track, AliPID::kKaon) << endl;
-    tpcNSigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, AliPID::kKaon));
-    if (track->GetInnerParam()->P() > fTPCpLimit) tpcMaxNSigma = fMinTPCband; else tpcMaxNSigma = fMaxTPCband;
-    if (tpcNSigma > tpcMaxNSigma) {fHCuts->Fill(icut); continue;}
-
-    // if possible, check TOF
-    icut = 9;
-    okTOF = kTRUE;
-    if (track->IsOn(AliESDtrack::kTOFout | AliESDtrack::kTIME))
+    // get commonly used variables
+    status = (ULong_t)track->GetStatus();
+    mom    = track->P();
+    
+    // define selection properties depending on track type
+    // it track is standard TPC+ITS+TOF track, check standard cuts and TOF
+    // if the track is an ITS standalone, check its specific cuts only
+    
+    if (IsTPCtrack(track))
     {
-      mom = track->P();
-      if (mom <= 0.26)
-        okTOF = kTRUE;
-      else
+      // check standard ESD cuts
+      if (!fESDtrackCutsTPC.IsSelected(track)) continue;
+      
+      // check TPC dE/dx
+      tpcNSigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, AliPID::kKaon));
+      if (track->GetInnerParam()->P() > fTPCpLimit) tpcMaxNSigma = fMinTPCband; else tpcMaxNSigma = fMaxTPCband;
+      if (tpcNSigma > tpcMaxNSigma) continue;
+      
+      // check TOF (only if momentum is large than function asymptote and flags are OK)
+      okTOF = kTRUE;
+      if (((status & AliESDtrack::kTOFout) != 0) && ((status & AliESDtrack::kTIME) != 0) && mom > TMath::Max(b1, b2))
       {
         track->GetIntegratedTimes(times);
         tofTime  = (Double_t)track->GetTOFsignal();
         tofSigma = fTOFmaker->GetExpectedSigma(mom, times[AliPID::kKaon], AliPID::ParticleMass(AliPID::kKaon));
         tofRef   = times[AliPID::kKaon];
-        tofRel   = (tofTime - tofRef) / tofRef;
-        ymax     = a1 / (mom - b1) + c1;
-        ymin     = a2 / (mom - b2) + c2;
-        okTOF    = (tofRel >= ymin && tofRel <= ymax);
+        if (tofRef > 0.0)
+        {
+          tofRel   = (tofTime - tofRef) / tofRef;
+          ymax     = a1 / (mom - b1) + c1;
+          ymin     = a2 / (mom - b2) + c2;
+          okTOF    = (tofRel >= ymin && tofRel <= ymax);
+        }
       }
+      if (!okTOF) continue;
     }
-    if (!okTOF) {fHCuts->Fill(icut); continue;}
-
-    // if we arrive here, all cuts were passed
-    // and we add the track to one array depending on charge
-    icut = 10;
+    else if (IsITSSAtrack(track))
+    {
+      // check standard ESD cuts
+      if (!fESDtrackCutsITS.IsSelected(track)) continue;
+      
+      // check that PID is computed
+      if ((status & AliESDtrack::kITSpid) == 0) continue;
+      
+      // check dE/dx
+      itsSignal = track->GetITSsignal();
+      itsCluMap = track->GetITSClusterMap();
+      nITS      = 0;
+      for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITS;
+      if (nITS < 3) continue; // track not good for PID
+      itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, AliPID::kKaon, nITS, kTRUE);
+      if (TMath::Abs(itsNSigma) > fMaxITSband) continue;
+    }
+    
+    // if all checks are passed, add the track index in one of the
+    // charged tracks arrays
     charge = (Int_t)track->Charge();
     if (charge > 0)
       pos[npos++] = i;
     else if (charge < 0)
       neg[nneg++] = i;
-    
-    // fill the bin corresponding to passed cuts
-    fHCuts->Fill(icut);
   }
   
   // resize arrays accordingly
   pos.Set(npos);
   neg.Set(nneg);
 
-  // loop to compute invariant mass
+  // loop on unlike-sign pairs to compute invariant mass signal
   Int_t           ip, in, lp, ln;
   AliPID          pid;
   Double_t        kmass = pid.ParticleMass(AliPID::kKaon);
@@ -413,7 +466,11 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
 
     for (in = 0; in < nneg; in++)
     {
-      if (pos[ip] == neg[in]) continue;
+      if (pos[ip] == neg[in]) 
+      {
+        AliError("POS = NEG");
+        continue;
+      }
       tn = esd->GetTrack(neg[in]);
       ln = TMath::Abs(tn->GetLabel());
       if (stack) partn = stack->Particle(ln);
@@ -437,10 +494,71 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       vsum = vp + vn;
       vref.SetXYZM(vsum.X(), vsum.Y(), vsum.Z(), phimass);
 
-      fIM  = (Float_t)vsum.M();
-      fPt  = (Float_t)vsum.Perp();
-      fEta = (Float_t)vsum.Eta();
-      fY   = (Float_t)vref.Rapidity();
+      fCh     = '0';
+      fIM     = (Float_t)vsum.M();
+      fPt     = (Float_t)vsum.Perp();
+      fEta    = (Float_t)vsum.Eta();
+      fY      = (Float_t)vref.Rapidity();
+      fITS[0] = IsITSSAtrack(tp) ? 'y' : 'n';
+      fITS[1] = IsITSSAtrack(tn) ? 'y' : 'n';
+
+      fRsnTreeComp->Fill();
+    }
+  }
+  
+  // loop on like-sign pairs to compute invariant mass background
+  Int_t           i1, i2;
+  AliESDtrack    *t1 = 0x0, *t2 = 0x0;
+  TLorentzVector  v1, v2;
+  
+  // pos-pos
+  for (i1 = 0; i1 < npos; i1++)
+  {
+    t1 = esd->GetTrack(pos[i1]);
+
+    for (i2 = i1+1; i2 < npos; i2++)
+    {
+      t2 = esd->GetTrack(pos[i2]);
+
+      v1.SetXYZM(t1->Px(), t1->Py(), t1->Pz(), kmass);
+      v2.SetXYZM(t2->Px(), t2->Py(), t2->Pz(), kmass);
+      vsum = v1 + v2;
+      vref.SetXYZM(vsum.X(), vsum.Y(), vsum.Z(), phimass);
+
+      fPDG    = 0;
+      fCh     = '+';
+      fIM     = (Float_t)vsum.M();
+      fPt     = (Float_t)vsum.Perp();
+      fEta    = (Float_t)vsum.Eta();
+      fY      = (Float_t)vref.Rapidity();
+      fITS[0] = IsITSSAtrack(t1) ? 'y' : 'n';
+      fITS[1] = IsITSSAtrack(t2) ? 'y' : 'n';
+
+      fRsnTreeComp->Fill();
+    }
+  }
+  // neg-neg
+  for (i1 = 0; i1 < nneg; i1++)
+  {
+    t1 = esd->GetTrack(neg[i1]);
+
+    for (i2 = i1+1; i2 < nneg; i2++)
+    {
+      t2 = esd->GetTrack(neg[i2]);
+
+      v1.SetXYZM(t1->Px(), t1->Py(), t1->Pz(), kmass);
+      v2.SetXYZM(t2->Px(), t2->Py(), t2->Pz(), kmass);
+      vsum = v1 + v2;
+      vref.SetXYZM(vsum.X(), vsum.Y(), vsum.Z(), phimass);
+
+      fPDG    = 0;
+      fCh     = '-';
+      fIM     = (Float_t)vsum.M();
+      fPt     = (Float_t)vsum.Perp();
+      fEta    = (Float_t)vsum.Eta();
+      fY      = (Float_t)vref.Rapidity();
+      fITS[0] = IsITSSAtrack(t1) ? 'y' : 'n';
+      fITS[1] = IsITSSAtrack(t2) ? 'y' : 'n';
 
       fRsnTreeComp->Fill();
     }
