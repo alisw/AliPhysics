@@ -134,57 +134,59 @@ TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
   
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("MesonDecayHistos") ; 
-	if(fKeepNeutralMesonHistos) outputContainer->SetOwner(kFALSE);
-	
-  fhAnglePairNoCut  = new TH2F
-    ("AnglePairNoCut",
-     "Angle between all #gamma pair vs E_{#pi^{0}}",fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
-  fhAnglePairNoCut->SetYTitle("Angle (rad)");
-  fhAnglePairNoCut->SetXTitle("E_{ #pi^{0}} (GeV)");
-  
-  fhAnglePairOpeningAngleCut  = new TH2F
-    ("AnglePairOpeningAngleCut",
-     "Angle between all #gamma pair (opening angle + azimuth cut) vs E_{#pi^{0}}"
-     ,fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
-  fhAnglePairOpeningAngleCut->SetYTitle("Angle (rad)");
-  fhAnglePairOpeningAngleCut->SetXTitle("E_{ #pi^{0}} (GeV)");
-  
-  fhAnglePairAllCut  = new TH2F
-    ("AnglePairAllCut",
-     "Angle between all #gamma pair (opening angle + inv mass cut+azimuth) vs E_{#pi^{0}}"
-     ,fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
-  fhAnglePairAllCut->SetYTitle("Angle (rad)");
-  fhAnglePairAllCut->SetXTitle("E_{ #pi^{0}} (GeV)");    
-  
-  //
-  fhInvMassPairNoCut  = new TH2F
-    ("InvMassPairNoCut","Invariant Mass of all #gamma pair vs E_{#pi^{0}}",
-     fHistoNPtBins,fHistoPtMin,fHistoPtMax,fHistoNIMBins,fHistoIMMin,fHistoIMMax); 
-  fhInvMassPairNoCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-  fhInvMassPairNoCut->SetXTitle("E_{ #pi^{0}} (GeV)");
-  
-  fhInvMassPairOpeningAngleCut  = new TH2F
-    ("InvMassPairOpeningAngleCut",
-     "Invariant Mass of #gamma pair (angle cut) vs E_{#pi^{0}}",
-     fHistoNPtBins,fHistoPtMin,fHistoPtMax,fHistoNIMBins,fHistoIMMin,fHistoIMMax); 
-  fhInvMassPairOpeningAngleCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-  fhInvMassPairOpeningAngleCut->SetXTitle(" E_{#pi^{0}}(GeV)");
-  
-  fhInvMassPairAllCut  = new TH2F
-    ("InvMassPairAllCut",
-     "Invariant Mass of #gamma pair (opening angle+invmass cut) vs E_{#pi^{0}}",
-     fHistoNPtBins,fHistoPtMin,fHistoPtMax,fHistoNIMBins,fHistoIMMin,fHistoIMMax); 
-  fhInvMassPairAllCut->SetYTitle("Invariant Mass (GeV/c^{2})");
-  fhInvMassPairAllCut->SetXTitle("E_{#pi^{0}}(GeV)");
-  
-  outputContainer->Add(fhAnglePairNoCut) ; 
-  outputContainer->Add(fhAnglePairOpeningAngleCut) ;
-  outputContainer->Add(fhAnglePairAllCut) ; 
-  
-  outputContainer->Add(fhInvMassPairNoCut) ; 
-  outputContainer->Add(fhInvMassPairOpeningAngleCut) ; 
-  outputContainer->Add(fhInvMassPairAllCut) ; 
-  
+  if(fKeepNeutralMesonHistos){
+	  
+	  outputContainer->SetOwner(kFALSE);
+	  
+	  fhAnglePairNoCut  = new TH2F
+	  ("AnglePairNoCut",
+	   "Angle between all #gamma pair vs E_{#pi^{0}}",fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
+	  fhAnglePairNoCut->SetYTitle("Angle (rad)");
+	  fhAnglePairNoCut->SetXTitle("E_{ #pi^{0}} (GeV)");
+	  
+	  fhAnglePairOpeningAngleCut  = new TH2F
+	  ("AnglePairOpeningAngleCut",
+	   "Angle between all #gamma pair (opening angle + azimuth cut) vs E_{#pi^{0}}"
+	   ,fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
+	  fhAnglePairOpeningAngleCut->SetYTitle("Angle (rad)");
+	  fhAnglePairOpeningAngleCut->SetXTitle("E_{ #pi^{0}} (GeV)");
+	  
+	  fhAnglePairAllCut  = new TH2F
+	  ("AnglePairAllCut",
+	   "Angle between all #gamma pair (opening angle + inv mass cut+azimuth) vs E_{#pi^{0}}"
+	   ,fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
+	  fhAnglePairAllCut->SetYTitle("Angle (rad)");
+	  fhAnglePairAllCut->SetXTitle("E_{ #pi^{0}} (GeV)");    
+	  
+	  //
+	  fhInvMassPairNoCut  = new TH2F
+	  ("InvMassPairNoCut","Invariant Mass of all #gamma pair vs E_{#pi^{0}}",
+	   fHistoNPtBins,fHistoPtMin,fHistoPtMax,fHistoNIMBins,fHistoIMMin,fHistoIMMax); 
+	  fhInvMassPairNoCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+	  fhInvMassPairNoCut->SetXTitle("E_{ #pi^{0}} (GeV)");
+	  
+	  fhInvMassPairOpeningAngleCut  = new TH2F
+	  ("InvMassPairOpeningAngleCut",
+	   "Invariant Mass of #gamma pair (angle cut) vs E_{#pi^{0}}",
+	   fHistoNPtBins,fHistoPtMin,fHistoPtMax,fHistoNIMBins,fHistoIMMin,fHistoIMMax); 
+	  fhInvMassPairOpeningAngleCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+	  fhInvMassPairOpeningAngleCut->SetXTitle(" E_{#pi^{0}}(GeV)");
+	  
+	  fhInvMassPairAllCut  = new TH2F
+	  ("InvMassPairAllCut",
+	   "Invariant Mass of #gamma pair (opening angle+invmass cut) vs E_{#pi^{0}}",
+	   fHistoNPtBins,fHistoPtMin,fHistoPtMax,fHistoNIMBins,fHistoIMMin,fHistoIMMax); 
+	  fhInvMassPairAllCut->SetYTitle("Invariant Mass (GeV/c^{2})");
+	  fhInvMassPairAllCut->SetXTitle("E_{#pi^{0}}(GeV)");
+	  
+	  outputContainer->Add(fhAnglePairNoCut) ; 
+	  outputContainer->Add(fhAnglePairOpeningAngleCut) ;
+	  outputContainer->Add(fhAnglePairAllCut) ; 
+	  
+	  outputContainer->Add(fhInvMassPairNoCut) ; 
+	  outputContainer->Add(fhInvMassPairOpeningAngleCut) ; 
+	  outputContainer->Add(fhInvMassPairAllCut) ; 
+  }
   return outputContainer;
 }
 
@@ -261,19 +263,24 @@ Bool_t  AliNeutralMesonSelection::SelectPair(TLorentzVector gammai, TLorentzVect
   Double_t e       = (gammai+gammaj).E();
   
   //Fill histograms with no cuts applied.
-  fhAnglePairNoCut->Fill(e,angle);
-  fhInvMassPairNoCut->Fill(e,invmass);
-    
+  if(fKeepNeutralMesonHistos){
+	  fhAnglePairNoCut  ->Fill(e,angle);
+	  fhInvMassPairNoCut->Fill(e,invmass);
+  }
   //Cut on the aperture of the pair
   if(IsAngleInWindow(angle,e)){
-    fhAnglePairOpeningAngleCut     ->Fill(e,angle);
-    fhInvMassPairOpeningAngleCut->Fill(e,invmass);
+	if(fKeepNeutralMesonHistos){
+		fhAnglePairOpeningAngleCut  ->Fill(e,angle);
+		fhInvMassPairOpeningAngleCut->Fill(e,invmass);
+	}
     //AliDebug(2,Form("Angle cut: pt %f, phi %f",pt,phi));
     
     //Cut on the invariant mass of the pair
     if((invmass>fInvMassMinCut) && (invmass<fInvMassMaxCut)){ 
-      fhInvMassPairAllCut  ->Fill(e,invmass);
-      fhAnglePairAllCut       ->Fill(e,angle);
+	  if(fKeepNeutralMesonHistos){
+		  fhInvMassPairAllCut  ->Fill(e,invmass);
+		  fhAnglePairAllCut    ->Fill(e,angle);
+	  }
       goodpair = kTRUE;
       //AliDebug(2,Form("IM cut: pt %f, phi %f",pt,phi));
     }//(invmass>0.125) && (invmass<0.145)

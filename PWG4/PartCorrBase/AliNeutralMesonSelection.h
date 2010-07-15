@@ -109,26 +109,26 @@ class AliNeutralMesonSelection : public TObject {
   Bool_t   fKeepNeutralMesonHistos ; // Keep neutral meson selection histograms
   
   //Histograms
-  TH2F * fhAnglePairNoCut  ;  //Aperture angle of decay photons, no cuts
-  TH2F * fhAnglePairOpeningAngleCut   ;  //Aperture angle of decay photons, cut on opening angle
-  TH2F * fhAnglePairAllCut   ;  //Aperture angle of decay photons, all cuts
-  TH2F * fhInvMassPairNoCut    ;  //Invariant mass of decay photons, no cuts
-  TH2F * fhInvMassPairOpeningAngleCut  ;  //Invariant mass of decay photons, cut on opening angle
-  TH2F * fhInvMassPairAllCut   ;  //Invariant mass of decay photons, all cuts
+  TH2F * fhAnglePairNoCut  ;              //! Aperture angle of decay photons, no cuts
+  TH2F * fhAnglePairOpeningAngleCut   ;   //! Aperture angle of decay photons, cut on opening angle
+  TH2F * fhAnglePairAllCut   ;            //! Aperture angle of decay photons, all cuts
+  TH2F * fhInvMassPairNoCut    ;          //! Invariant mass of decay photons, no cuts
+  TH2F * fhInvMassPairOpeningAngleCut  ;  //! Invariant mass of decay photons, cut on opening angle
+  TH2F * fhInvMassPairAllCut   ;          //! Invariant mass of decay photons, all cuts
   
   //Histograms binning and range    
-  Int_t   fHistoNEBins ;  //Number of bins in pi0 E axis
-  Float_t fHistoEMax ;    //Maximum value of pi0 E histogram range
-  Float_t fHistoEMin ;    //Minimum value of pi0 E histogram range
-  Int_t   fHistoNPtBins ;  //Number of bins in Pt trigger axis
-  Float_t fHistoPtMax ;    //Maximum value of Pt trigger histogram range
-  Float_t fHistoPtMin ;    //Minimum value of Pt trigger histogram range		
-  Int_t   fHistoNAngleBins ; //Number of bins in angle axis
-  Float_t fHistoAngleMax ;//Maximum value of angle histogram range
-  Float_t fHistoAngleMin ;//Minimum value of angle histogram range
-  Int_t   fHistoNIMBins ; //Number of bins in Invariant Mass axis
-  Float_t fHistoIMMax ;   //Maximum value of Invariant Mass histogram range
-  Float_t fHistoIMMin ;   //Minimum value of Invariant Mass histogram range
+  Int_t   fHistoNEBins ;     // Number of bins in pi0 E axis
+  Float_t fHistoEMax ;       // Maximum value of pi0 E histogram range
+  Float_t fHistoEMin ;       // Minimum value of pi0 E histogram range
+  Int_t   fHistoNPtBins ;    // Number of bins in Pt trigger axis
+  Float_t fHistoPtMax ;      // Maximum value of Pt trigger histogram range
+  Float_t fHistoPtMin ;      // Minimum value of Pt trigger histogram range		
+  Int_t   fHistoNAngleBins ; // Number of bins in angle axis
+  Float_t fHistoAngleMax ;   // Maximum value of angle histogram range
+  Float_t fHistoAngleMin ;   // Minimum value of angle histogram range
+  Int_t   fHistoNIMBins ;    // Number of bins in Invariant Mass axis
+  Float_t fHistoIMMax ;      // Maximum value of Invariant Mass histogram range
+  Float_t fHistoIMMin ;      // Minimum value of Invariant Mass histogram range
   
   ClassDef(AliNeutralMesonSelection,3)
     
