@@ -1127,7 +1127,7 @@ Int_t  AliTPCtrackerMI::LoadClusters(const TObjArray *arr)
 {
   //
   // load clusters to the memory
-  AliTPCClustersRow *clrow = 0x0; 
+  AliTPCClustersRow *clrow = new AliTPCClustersRow("AliTPCclusterMI");
   Int_t lower   = arr->LowerBound();
   Int_t entries = arr->GetEntriesFast();
   
@@ -1167,6 +1167,7 @@ Int_t  AliTPCtrackerMI::LoadClusters(const TObjArray *arr)
       for (Int_t j=0;j<tpcrow->GetN2();++j) 
 	tpcrow->SetCluster2(j,*(AliTPCclusterMI*)(clrow->GetArray()->At(j)));
     }
+    clrow->GetArray()->Clear("C");
   }
   //
   delete clrow;
@@ -1237,10 +1238,7 @@ Int_t  AliTPCtrackerMI::LoadClusters()
 {
   //
   // load clusters to the memory
-  AliTPCClustersRow *clrow= new AliTPCClustersRow;
-  clrow->SetClass("AliTPCclusterMI");
-  clrow->SetArray(0);
-  clrow->GetArray()->ExpandCreateFast(10000);
+  AliTPCClustersRow *clrow= new AliTPCClustersRow("AliTPCclusterMI");
   //
   //  TTree * tree = fClustersArray.GetTree();
 

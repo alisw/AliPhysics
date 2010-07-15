@@ -18,6 +18,7 @@ class TObject;
 class AliTPCClustersRow : public AliClusters{
 public:
   AliTPCClustersRow();
+  AliTPCClustersRow(const char *classname); // special constructor
   virtual TObject *InsertCluster(const TObject *c);
   virtual TObject *Append();  //create new object return pointer to this object
 

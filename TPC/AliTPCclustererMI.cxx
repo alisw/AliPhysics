@@ -132,9 +132,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   }
 
   //  Int_t nPoints = fRecoParam->GetLastBin()-fRecoParam->GetFirstBin();
-  fRowCl= new AliTPCClustersRow();
-  fRowCl->SetClass("AliTPCclusterMI");
-  fRowCl->SetArray(1);
+  fRowCl= new AliTPCClustersRow("AliTPCclusterMI");
 
   // Non-persistent arrays
   //
@@ -223,6 +221,11 @@ AliTPCclustererMI::~AliTPCclustererMI(){
     delete fOutputClonesArray;
   }
 
+  if (fRowCl) {
+    fRowCl->GetArray()->Delete();
+    delete fRowCl;
+  }
+
   AliTPCROC * roc = AliTPCROC::Instance();
   Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
@@ -255,10 +258,8 @@ void AliTPCclustererMI::SetOutput(TTree * tree)
   //
   if (!tree) return;
   fOutput= tree;
-  AliTPCClustersRow clrow;
-  AliTPCClustersRow *pclrow=&clrow;  
-  clrow.SetClass("AliTPCclusterMI");
-  clrow.SetArray(1); // to make Clones array
+  AliTPCClustersRow clrow, *pclrow=&clrow;  
+  pclrow = new AliTPCClustersRow("AliTPCclusterMI");
   fOutput->Branch("Segment","AliTPCClustersRow",&pclrow,32000,200);    
 }
 
@@ -774,7 +775,7 @@ void AliTPCclustererMI::Digits2Clusters()
 
     FindClusters(noiseROC);
     FillRow();
-    fRowCl->GetArray()->Clear();    
+    fRowCl->GetArray()->Clear("C");    
     nclusters+=fNcluster;    
 
     delete[] fBins;
@@ -911,7 +912,7 @@ void AliTPCclustererMI::ProcessSectorData(){
     FindClusters(noiseROC);
     
     FillRow();
-    if(fBClonesArray == kFALSE) fRowCl->GetArray()->Clear();
+    if(fBClonesArray == kFALSE) fRowCl->GetArray()->Clear("C");
     fNclusters += fNcluster;
     
   } // End of loop to find clusters

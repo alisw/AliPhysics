@@ -48,6 +48,13 @@ AliTPCClustersRow::AliTPCClustersRow()
   fNclusters=0;
 }
 
+//____________________________________________________________________________
+AliTPCClustersRow::AliTPCClustersRow(const char *classname) : AliClusters(classname)
+{
+ // special constructor
+ fNclusters=0;
+}
+
 //_____________________________________________________________________________
 TObject *AliTPCClustersRow::InsertCluster(const TObject *c) 
 {    

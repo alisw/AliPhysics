@@ -509,11 +509,8 @@ void AliTPCQADataMakerRec::MakeDigits(TTree* digitTree)
 void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)
 {
 
-  AliTPCClustersRow clrow;
-  clrow.SetClass("AliTPCclusterMI");
-  clrow.SetArray(0);
-  clrow.GetArray()->ExpandCreateFast(10000);
-  AliTPCClustersRow * pclrow = &clrow;
+  AliTPCClustersRow clrow, *pclrow = &clrow;
+  pclrow = new AliTPCClustersRow("AliTPCclusterMI");
   TBranch* branch = recTree->GetBranch("Segment");
   
   branch->SetAddress(&pclrow);
@@ -553,7 +550,7 @@ void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)
       GetRecPointsData(kRow)->Fill(row);
     } // end loop over clusters
   } // end loop over tree
-
+  clrow.GetArray()->Clear("C");
 }
 
 //____________________________________________________________________________

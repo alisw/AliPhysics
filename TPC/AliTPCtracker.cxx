@@ -149,8 +149,7 @@ Int_t AliTPCtracker::LoadClusters(TTree *cTree) {
   }
 
   AliClusters carray, *addr=&carray;
-  carray.SetClass("AliTPCcluster");
-  carray.SetArray(0);
+  addr = new AliClusters("AliTPCcluster");
   branch->SetAddress(&addr);
 
   Int_t nentr=(Int_t)cTree->GetEntries();

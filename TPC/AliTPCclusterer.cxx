@@ -119,7 +119,7 @@ Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
   branch->SetAddress(&dummy);
   
   AliTPCClustersRow ddd,*clrow=&ddd;
-  clrow->SetClass("AliTPCcluster"); clrow->SetArray(1);
+  clrow = new AliTPCClustersRow("AliTPCcluster");
   cTree->Branch("Segment","AliTPCClustersRow",&clrow,32000,200);    
 
   const Int_t kMAXZ=fPar->GetMaxTBin()+2;
@@ -137,9 +137,6 @@ Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
        continue;
     }
 
-    clrow=new AliTPCClustersRow();
-
-    clrow->SetClass("AliTPCcluster"); clrow->SetArray(1);
     clrow->SetID(digarr.GetID());
 
     cTree->GetBranch("Segment")->SetAddress(&clrow);
@@ -253,7 +250,7 @@ Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
     }
     cTree->Fill();
 
-    delete clrow;
+    clrow->GetArray()->Clear();
 
     nclusters+=ncl;
 

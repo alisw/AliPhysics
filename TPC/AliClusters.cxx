@@ -63,6 +63,28 @@ AliClusters::AliClusters(const AliClusters &param)
   //
   fNclusters = param.fNclusters;
 }
+
+//________________________________________________________________________
+AliClusters::AliClusters(const char *classname)
+            :AliSegmentID(),
+             fClusters(0),
+             fNclusters(0),
+             fClass(0)
+{
+//
+// Special constructor
+//          
+  fClass = gROOT->GetClass(classname);
+  
+  if (!fClass)
+        Error("AliClusters", "%s is not a valid class name", classname);
+  if (!fClass->InheritsFrom(TObject::Class())) 
+	Error("AliClusters", "%s does not inherit from TObject", classname);
+                                                 
+  fClusters = new TClonesArray(fClass->GetName(),100);
+}
+
+//______________________________________________________________________                                                          
 AliClusters & AliClusters::operator =(const AliClusters & param)
 {
   //
@@ -149,7 +171,7 @@ TObject * AliClusters::InsertCluster( const TObject * c)
     Error("AliClusters", "class type not specified");
     return 0; 
   }
-  if(!fClusters) fClusters=new TClonesArray(fClass->GetName(),1000);
+  if(!fClusters) fClusters=new TClonesArray(fClass->GetName(),100);
   TClonesArray &lclusters = *fClusters;
   return new(lclusters[fNclusters++]) AliComplexCluster(*((AliComplexCluster*)c));
 }

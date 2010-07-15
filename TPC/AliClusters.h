@@ -19,6 +19,7 @@ class TObjArray;
 class AliClusters : public AliSegmentID{
 public:
   AliClusters();
+  AliClusters(const char *classname); // special constructor
   AliClusters(const AliClusters &param); // copy constructor
   AliClusters &operator = (const AliClusters & param); 
   ~AliClusters();
@@ -31,7 +32,7 @@ public:
   void DrawClusters(Float_t shiftx, Float_t shifty, Int_t color, Int_t size, Int_t style);
   Bool_t SetClass(const Text_t *classname);
 protected:
-  TClonesArray * fClusters;  
+  TClonesArray * fClusters; //->array of clusters 
   Int_t  fNclusters;  
   TClass * fClass; //!type of cluster class 
   ClassDef(AliClusters,1) // Cluster manager
