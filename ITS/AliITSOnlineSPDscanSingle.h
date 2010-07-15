@@ -30,7 +30,7 @@ class AliITSOnlineSPDscanSingle :  public AliITSOnlineSPDscan {
   void     IncrementHitEvents(UInt_t hs, UInt_t chipi) ;
   void     IncrementHitEventsTot(UInt_t hs) ;
   // GET METHODS ***********************************
-  UInt_t   GetTriggers() ;
+  UInt_t   GetTriggers() const;
   UInt_t   GetHits(UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi) ;
   Float_t  GetHitsEfficiency(UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi) ;
   Float_t  GetHitsEfficiencyError(UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi) ;

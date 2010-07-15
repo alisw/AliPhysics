@@ -88,7 +88,7 @@ void AliITSOnlineSPDscanSingle::IncrementHitEvents(UInt_t hs, UInt_t chipi)
   {AliITSOnlineSPDscan::IncrementHitEvents(0,hs,chipi);}
 void AliITSOnlineSPDscanSingle::IncrementHitEventsTot(UInt_t hs) 
   {AliITSOnlineSPDscan::IncrementHitEventsTot(0,hs);}
-UInt_t AliITSOnlineSPDscanSingle::GetTriggers() 
+UInt_t AliITSOnlineSPDscanSingle::GetTriggers() const 
   {return AliITSOnlineSPDscan::GetTriggers(0);}
 UInt_t AliITSOnlineSPDscanSingle::GetHits(UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi) 
   {return AliITSOnlineSPDscan::GetHits(0,hs,chipi,coli,rowi);}
