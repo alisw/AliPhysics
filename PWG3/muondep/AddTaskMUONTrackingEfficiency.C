@@ -1,11 +1,10 @@
-AliAnalysisTaskMuonTrackingEff *AddTaskMUONTrackingEfficiency(Bool_t isCosmicData = kFALSE) 
+AliAnalysisTaskMuonTrackingEff *AddTaskMUONTrackingEfficiency() 
 {
   //
   // Task for the determination of the MUON trigger chamber efficiency
   //
   // lenhardt@subatech.in2p3.fr
   //
-
 
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -15,14 +14,18 @@ AliAnalysisTaskMuonTrackingEff *AddTaskMUONTrackingEfficiency(Bool_t isCosmicDat
     return NULL;
   }   
 
-  
   const Char_t* fileName = "MUON.TrackerEfficiency.root";
 
 
   // Create the task
-  AliAnalysisTaskMuonTrackingEff* taskMuonTrackingEff = new AliAnalysisTaskMuonTrackingEff("MuonTrackingEfficiency", isCosmicData);
+  AliAnalysisTaskMuonTrackingEff* taskMuonTrackingEff = new AliAnalysisTaskMuonTrackingEff("MuonTrackingEfficiency");
   // Add to the manager
   mgr->AddTask(taskMuonTrackingEff);
+
+  AliESDInputHandler* esdH = new AliESDInputHandler();
+  esdH->SetReadFriends(kFALSE);
+  esdH->SetReadTags();
+  mgr->SetInputEventHandler(esdH);
 
 
   //
@@ -30,17 +33,13 @@ AliAnalysisTaskMuonTrackingEff *AddTaskMUONTrackingEfficiency(Bool_t isCosmicDat
     AliAnalysisDataContainer* cinput0  =	mgr->GetCommonInputContainer();
 
     AliAnalysisDataContainer *coutput0 =
-	mgr->CreateContainer("TracksDetectedPerDE", TClonesArray::Class(),AliAnalysisManager::kOutputContainer,  fileName);
+	mgr->CreateContainer("TracksDetectedPerDE", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
     AliAnalysisDataContainer *coutput1 =
-	mgr->CreateContainer("TotalTracksPerDE", TClonesArray::Class(),AliAnalysisManager::kOutputContainer,  fileName);
+	mgr->CreateContainer("TotalTracksPerDE", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
     AliAnalysisDataContainer *coutput2 =
-	mgr->CreateContainer("EfficiencyPerDE", TClonesArray::Class(),AliAnalysisManager::kOutputContainer,  fileName);
+	mgr->CreateContainer("TracksDetectedPerChamber", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
     AliAnalysisDataContainer *coutput3 =
-	mgr->CreateContainer("TracksDetectedPerChamber", TClonesArray::Class(),AliAnalysisManager::kOutputContainer,  fileName);
-    AliAnalysisDataContainer *coutput4 =
-	mgr->CreateContainer("TotalTracksPerChamber", TClonesArray::Class(),AliAnalysisManager::kOutputContainer,  fileName);
-    AliAnalysisDataContainer *coutput5 =
-	mgr->CreateContainer("EfficiencyPerChamber", TClonesArray::Class(),AliAnalysisManager::kOutputContainer,  fileName);
+	mgr->CreateContainer("TotalTracksPerChamber", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
 
   // Attach input
     mgr->ConnectInput (taskMuonTrackingEff, 0, cinput0 );
@@ -49,8 +48,6 @@ AliAnalysisTaskMuonTrackingEff *AddTaskMUONTrackingEfficiency(Bool_t isCosmicDat
     mgr->ConnectOutput(taskMuonTrackingEff, 1, coutput1);
     mgr->ConnectOutput(taskMuonTrackingEff, 2, coutput2);
     mgr->ConnectOutput(taskMuonTrackingEff, 3, coutput3);
-    mgr->ConnectOutput(taskMuonTrackingEff, 4, coutput4);
-    mgr->ConnectOutput(taskMuonTrackingEff, 5, coutput5);
   
     return taskMuonTrackingEff;
 }
