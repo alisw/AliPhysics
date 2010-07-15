@@ -442,3 +442,22 @@ X. M. Zhang, Clermont-Ferrand and Wuhan
     Bool_t isMC = kTRUE;     \\ get MC information
     Bool_t isTree = kFALSE;  \\ flag for tree output
     AliAnalysisTaskSEMuonsHF *taskMuonsHF = AddTaskMuonsHF(mode, isMC, isTree);
+
+
+===================================================
+ New task to mesure the spectrometer resolution
+ Philippe Pillot, Subatech
+---------------------------------------------------------------
+1) Compute the cluster resolution per chamber, half chamber and detection element by using 2 methods:
+    a) combining the cluster-track residuals obtained with and without using the cluster to reconstruct the track
+    b) subtracting the track resolution component to the cluster-track residual obtained without using the cluster to reconstruct the track
+
+- In principle, this task should be run iteratively, using the chamber resolution computed in the step n-1 to weight the clusters when refitting the tracks in the step n.
+--> The macro RunMuonResolution.C gives an example on how to do it locally or in PROOF.
+Neverthless, the convergence is quite fast so it can also be run only once provided that the starting chamber resolutions are closed to the real one (e.g. to monitor the variation of the resolution with time).
+
+- If not specified by user when initializing the task, the starting chamber resolution is taken from the recoParam. In addition, the task load several data from the OCDB (mapping, magnetic field...) so the default storage must be properly set.
+
+2) Return the momentum, transverse momentum and angular resolutions of the reconstructed tracks at first cluster and at vertex (i.e. including absorber effects). These resolutions are computed by using the chamber resolutions given as input (i.e. the ones from the step n-1 or the starting ones).
+
+3) Finally, it is possible to re-align the clusters before computing the resolution, by providing the OCDB path to the old and new alignment data (see comments in the code for more details).
