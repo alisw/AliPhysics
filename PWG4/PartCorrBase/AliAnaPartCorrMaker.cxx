@@ -174,8 +174,8 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
   }
 
   //Initialize calorimeters  geometry pointers
-  fCaloUtils->InitPHOSGeometry();
-  fCaloUtils->InitEMCALGeometry();
+  GetCaloUtils()->InitPHOSGeometry();
+  GetCaloUtils()->InitEMCALGeometry();
 
   char newname[128];
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
@@ -222,8 +222,8 @@ void AliAnaPartCorrMaker::Init()
   //GetCaloUtils()->InitEMCALGeometry();
 	
   //Initialize reader
-  fReader->Init();
-  fReader->SetCaloUtils(fCaloUtils); // pass the calo utils pointer to the reader
+  GetReader()->Init();
+  GetReader()->SetCaloUtils(GetCaloUtils()); // pass the calo utils pointer to the reader
 	
   //fCaloUtils->Init();
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
