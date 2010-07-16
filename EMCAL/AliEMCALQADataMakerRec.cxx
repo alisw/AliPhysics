@@ -765,7 +765,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     }
     GetRawsData(kLEDMonRatio)->SetBinContent(ib, binContent);
     
-    if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
+    if(GetRawsData(kLEDMonRatio)->GetBinContent(ib) != 0) {
       relativeErrorSqr += TMath::Power(GetRawsData(kSigLGLEDMon)->GetBinError(ib)/GetRawsData(kLEDMonRatio)->GetBinContent(ib), 2);
     }
 
