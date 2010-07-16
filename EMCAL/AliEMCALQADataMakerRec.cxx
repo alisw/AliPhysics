@@ -298,41 +298,42 @@ void AliEMCALQADataMakerRec::InitRecPoints()
 void AliEMCALQADataMakerRec::InitRaws()
 {
   // create Raws histograms in Raws subdir
-   const Bool_t expert   = kTRUE ; 
-   const Bool_t saveCorr = kTRUE ; 
-   const Bool_t image    = kTRUE ; 
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t saveCorr = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  const Option_t *profileOption = "s";
 
   Int_t nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
   Int_t nTot = fSuperModules * nTowersPerSM; // max number of towers in all SuperModules
   
   
-	//Defining histograms binning, each 2D histogram covers all SMs
-	Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
-	Int_t nbinsZ = 2*AliEMCALGeoParams::fgkEMCALCols;
-	Int_t nbinsPhi = nSMSectors * AliEMCALGeoParams::fgkEMCALRows;
+  //Defining histograms binning, each 2D histogram covers all SMs
+  Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
+  Int_t nbinsZ = 2*AliEMCALGeoParams::fgkEMCALCols;
+  Int_t nbinsPhi = nSMSectors * AliEMCALGeoParams::fgkEMCALRows;
    
    // counter info: number of channels per event (bins are SM index)
   TProfile * h0 = new TProfile("hLowEmcalSupermodules", "Low Gain EMC: # of towers vs SuperMod;SM Id;# of towers",
-			       fSuperModules, -0.5, fSuperModules-0.5) ;
+			       fSuperModules, -0.5, fSuperModules-0.5, profileOption) ;
   Add2RawsList(h0, kNsmodLG, expert, !image, !saveCorr) ;
   TProfile * h1 = new TProfile("hHighEmcalSupermodules", "High Gain EMC: # of towers vs SuperMod;SM Id;# of towers",  
-			       fSuperModules, -0.5, fSuperModules-0.5) ; 
+			       fSuperModules, -0.5, fSuperModules-0.5, profileOption) ; 
   Add2RawsList(h1, kNsmodHG, expert, !image, !saveCorr) ;
 
   // where did max sample occur? (bins are towers)
   TProfile * h2 = new TProfile("hLowEmcalRawtime", "Low Gain EMC: Time at Max vs towerId;Tower Id;Time [ticks]", 
-			       nTot, -0.5, nTot-0.5) ;
+			       nTot, -0.5, nTot-0.5, profileOption) ;
   Add2RawsList(h2, kTimeLG, expert, !image, !saveCorr) ;
   TProfile * h3 = new TProfile("hHighEmcalRawtime", "High Gain EMC: Time at Max vs towerId;Tower Id;Time [ticks]", 
-			       nTot, -0.5, nTot-0.5) ;
+			       nTot, -0.5, nTot-0.5, profileOption) ;
   Add2RawsList(h3, kTimeHG, expert, !image, !saveCorr) ;
 
   // how much above pedestal was the max sample?  (bins are towers)
   TProfile * h4 = new TProfile("hLowEmcalRawMaxMinusMin", "Low Gain EMC: Max - Min vs towerId;Tower Id;Max-Min [ADC counts]", 
-			       nTot, -0.5, nTot-0.5) ;
+			       nTot, -0.5, nTot-0.5, profileOption) ;
   Add2RawsList(h4, kSigLG, expert, image, !saveCorr) ;
   TProfile * h5 = new TProfile("hHighEmcalRawMaxMinusMin", "High Gain EMC: Max - Min vs towerId;Tower Id;Max-Min [ADC counts]",
-			       nTot, -0.5, nTot-0.5) ;
+			       nTot, -0.5, nTot-0.5, profileOption) ;
   Add2RawsList(h5, kSigHG, expert, image, !saveCorr) ;
 
   // total counter: channels per event
@@ -345,10 +346,10 @@ void AliEMCALQADataMakerRec::InitRaws()
 
   // pedestal (bins are towers)
   TProfile * h8 = new TProfile("hLowEmcalRawPed", "Low Gain EMC: Pedestal vs towerId;Tower Id;Pedestal [ADC counts]", 
-			       nTot, -0.5, nTot-0.5) ;
+			       nTot, -0.5, nTot-0.5, profileOption) ;
   Add2RawsList(h8, kPedLG, expert, !image, !saveCorr) ;
   TProfile * h9 = new TProfile("hHighEmcalRawPed", "High Gain EMC: Pedestal vs towerId;Tower Id;Pedestal [ADC counts]",
-			       nTot, -0.5, nTot-0.5) ;
+			       nTot, -0.5, nTot-0.5, profileOption) ;
   Add2RawsList(h9, kPedHG, expert, !image, !saveCorr) ;
 	
   //temp 2D amplitude histogram for the current run
@@ -383,17 +384,17 @@ void AliEMCALQADataMakerRec::InitRaws()
 
   // counter info: number of channels per event (bins are SM index)
   TProfile * hT0 = new TProfile("hTRUEmcalSupermodules", "TRU EMC: # of TRU channels vs SuperMod;SM Id;# of TRU channels",
-				fSuperModules, -0.5, fSuperModules-0.5) ;
+				fSuperModules, -0.5, fSuperModules-0.5, profileOption) ;
   Add2RawsList(hT0, kNsmodTRU, expert, !image, !saveCorr) ;
 
   // where did max sample occur? (bins are TRU channels)
   TProfile * hT1 = new TProfile("hTRUEmcalRawtime", "TRU EMC: Time at Max vs 2x2Id;2x2 Id;Time [ticks]", 
-				nTot2x2, -0.5, nTot2x2-0.5) ;
+				nTot2x2, -0.5, nTot2x2-0.5, profileOption) ;
   Add2RawsList(hT1, kTimeTRU, expert, !image, !saveCorr) ;
 
   // how much above pedestal was the max sample?  (bins are TRU channels)
   TProfile * hT2 = new TProfile("hTRUEmcalRawMaxMinusMin", "TRU EMC: Max - Min vs 2x2Id;2x2 Id;Max-Min [ADC counts]", 
-				nTot2x2, -0.5, nTot2x2-0.5) ;
+				nTot2x2, -0.5, nTot2x2-0.5, profileOption) ;
   Add2RawsList(hT2, kSigTRU, expert, !image, !saveCorr) ;
 
   // total counter: channels per event
@@ -403,7 +404,7 @@ void AliEMCALQADataMakerRec::InitRaws()
 
   // pedestal (bins are TRU channels)
   TProfile * hT4 = new TProfile("hTRUEmcalRawPed", "TRU EMC: Pedestal vs 2x2Id;2x2 Id;Pedestal [ADC counts]", 
-				nTot2x2, -0.5, nTot2x2-0.5) ;
+				nTot2x2, -0.5, nTot2x2-0.5, profileOption) ;
   Add2RawsList(hT4, kPedTRU, expert, !image, !saveCorr) ;
 
   // L0 trigger hits: # of hits (bins are TRU channels)
@@ -412,7 +413,7 @@ void AliEMCALQADataMakerRec::InitRaws()
   Add2RawsList(hT5, kNL0TRU, expert, !image, !saveCorr);
 
   // L0 trigger hits: average time (bins are TRU channels)
-  TProfile * hT6 = new TProfile("hTRUEmcalL0hitsAvgTime", "L0 trigger hits: average time bin", nTot2x2, -0.5, nTot2x2); 
+  TProfile * hT6 = new TProfile("hTRUEmcalL0hitsAvgTime", "L0 trigger hits: average time bin", nTot2x2, -0.5, nTot2x2, profileOption); 
   Add2RawsList(hT6, kTimeL0TRU, expert, !image, !saveCorr);
 
   // and also LED Mon..
@@ -421,26 +422,26 @@ void AliEMCALQADataMakerRec::InitRaws()
 
   // counter info: number of channels per event (bins are SM index)
   TProfile * hL0 = new TProfile("hLowLEDMonEmcalSupermodules", "LowLEDMon Gain EMC: # of strips vs SuperMod;SM Id;# of strips",
-			       fSuperModules, -0.5, fSuperModules-0.5) ;
+			       fSuperModules, -0.5, fSuperModules-0.5, profileOption) ;
   Add2RawsList(hL0, kNsmodLGLEDMon, expert, !image, !saveCorr) ;
   TProfile * hL1 = new TProfile("hHighLEDMonEmcalSupermodules", "HighLEDMon Gain EMC: # of strips vs SuperMod;SM Id;# of strips",  
-			       fSuperModules, -0.5, fSuperModules-0.5) ; 
+			       fSuperModules, -0.5, fSuperModules-0.5, profileOption) ; 
   Add2RawsList(hL1, kNsmodHGLEDMon, expert, !image, !saveCorr) ;
 
   // where did max sample occur? (bins are strips)
   TProfile * hL2 = new TProfile("hLowLEDMonEmcalRawtime", "LowLEDMon Gain EMC: Time at Max vs stripId;Strip Id;Time [ticks]", 
-			       nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
+			       nTotLEDMon, -0.5, nTotLEDMon-0.5, profileOption) ;
   Add2RawsList(hL2, kTimeLGLEDMon, expert, !image, !saveCorr) ;
   TProfile * hL3 = new TProfile("hHighLEDMonEmcalRawtime", "HighLEDMon Gain EMC: Time at Max vs stripId;Strip Id;Time [ticks]", 
-			       nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
+			       nTotLEDMon, -0.5, nTotLEDMon-0.5, profileOption) ;
   Add2RawsList(hL3, kTimeHGLEDMon, expert, !image, !saveCorr) ;
 
   // how much above pedestal was the max sample?  (bins are strips)
   TProfile * hL4 = new TProfile("hLowLEDMonEmcalRawMaxMinusMin", "LowLEDMon Gain EMC: Max - Min vs stripId;Strip Id;Max-Min [ADC counts]", 
-			       nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
+			       nTotLEDMon, -0.5, nTotLEDMon-0.5, profileOption) ;
   Add2RawsList(hL4, kSigLGLEDMon, expert, !image, !saveCorr) ;
   TProfile * hL5 = new TProfile("hHighLEDMonEmcalRawMaxMinusMin", "HighLEDMon Gain EMC: Max - Min vs stripId;Strip Id;Max-Min [ADC counts]",
-			       nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
+			       nTotLEDMon, -0.5, nTotLEDMon-0.5, profileOption) ;
   Add2RawsList(hL5, kSigHGLEDMon, expert, !image, !saveCorr) ;
   
     // total counter: channels per event
@@ -453,10 +454,10 @@ void AliEMCALQADataMakerRec::InitRaws()
 
   // pedestal (bins are strips)
   TProfile * hL8 = new TProfile("hLowLEDMonEmcalRawPed", "LowLEDMon Gain EMC: Pedestal vs stripId;Strip Id;Pedestal [ADC counts]", 
-			       nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
+			       nTotLEDMon, -0.5, nTotLEDMon-0.5, profileOption) ;
   Add2RawsList(hL8, kPedLGLEDMon, expert, !image, !saveCorr) ;
   TProfile * hL9 = new TProfile("hHighLEDMonEmcalRawPed", "HighLEDMon Gain EMC: Pedestal vs stripId;Strip Id;Pedestal [ADC counts]",
-			       nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
+			       nTotLEDMon, -0.5, nTotLEDMon-0.5, profileOption) ;
   Add2RawsList(hL9, kPedHGLEDMon, expert, !image, !saveCorr) ;
   
   //add two histograms for shifter from the LED monitor system: comapre LED monitor with the reference run
@@ -511,12 +512,6 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
 //____________________________________________________________________________
 void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
-  //Fill prepared histograms with Raw digit properties
-  GetRawsData(kSigHG)->Reset("ICE"); 
-  GetRawsData(kSigHG)->ResetStats();  
-  GetRawsData(kSigLGLEDMon)->Reset("ICE");
-  GetRawsData(kSigLGLEDMon)->ResetStats();
-  
   // make sure EMCal was readout during the event
   Int_t emcID = AliDAQ::DetectorID("EMCAL"); // bit 18..
   const UInt_t *detPattern = rawReader->GetDetectorPattern(); 
@@ -732,7 +727,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   ConvertProfile2H(dynamic_cast<TProfile *>(GetRawsData(kSigHG)), fHighEmcHistoH2F) ;  
   Double_t binContent = 0. ;
   
-  //reset histograms
+  //reset ratio histograms
   GetRawsData(k2DRatioAmp)->Reset("ICE"); 
   GetRawsData(kRatioDist)->Reset("ICE"); 
   GetRawsData(kLEDMonRatio)->Reset("ICE");	
@@ -755,20 +750,29 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
  }
   //Now for LED monitor system, to calculate the ratio as well
   Double_t binError = 0. ;
+  // for the binError, we add the relative errors, squared
+  Double_t relativeErrorSqr = 0. ;
   
   for(int ib = 1; ib <= fLEDMonRefHistoPro->GetNbinsX(); ib++) {
     
-    if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) binContent = GetRawsData(kSigLGLEDMon)->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
-    else binContent = 0;
+    if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
+      binContent = GetRawsData(kSigLGLEDMon)->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
+      relativeErrorSqr = TMath::Power(fLEDMonRefHistoPro->GetBinError(ib) / fLEDMonRefHistoPro->GetBinContent(ib), 2);
+    }
+    else {
+      binContent = 0;
+      relativeErrorSqr = 0;
+    }
     GetRawsData(kLEDMonRatio)->SetBinContent(ib, binContent);
     
-    binError = GetRawsData(kSigLGLEDMon)->GetBinError(ib)/fLEDMonRefHistoPro->GetBinContent(ib) +
-    GetRawsData(kSigLGLEDMon)->GetBinContent(ib)/TMath::Power(fLEDMonRefHistoPro->GetBinContent(ib), 2)*fLEDMonRefHistoPro->GetBinError(ib);
+    if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
+      relativeErrorSqr += TMath::Power(GetRawsData(kSigLGLEDMon)->GetBinError(ib)/GetRawsData(kLEDMonRatio)->GetBinContent(ib), 2);
+    }
+
+    binError = sqrt(relativeErrorSqr) * binContent;
     GetRawsData(kLEDMonRatio)->SetBinError(ib, binError);
     GetRawsData(kLEDMonRatioDist)->Fill(GetRawsData(kLEDMonRatio)->GetBinContent(ib));
     }
-  
-  
   
   
   // let's also fill the SM and event counter histograms
