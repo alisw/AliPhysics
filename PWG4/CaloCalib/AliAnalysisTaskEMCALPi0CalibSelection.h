@@ -24,7 +24,6 @@ class AliAnalysisTaskEMCALPi0CalibSelection : public AliAnalysisTaskSE
 {
 public:
 
-  AliAnalysisTaskEMCALPi0CalibSelection();
   AliAnalysisTaskEMCALPi0CalibSelection(const char* name);
   AliAnalysisTaskEMCALPi0CalibSelection(const AliAnalysisTaskEMCALPi0CalibSelection&); 
   AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&); 
@@ -35,6 +34,9 @@ public:
   virtual void UserExec(Option_t * opt);
   
   void SetClusterMinEnergy(Float_t emin) {fEmin=emin;}
+  void SetClusterMaxEnergy(Float_t emax) {fEmax=emax;}
+  void SetClusterMinNCells(Float_t n)    {fMinNCells=n;}
+
   void SetLogWeight(Float_t weight) {fLogWeight=weight;}
   void SetCalibCorrections(AliEMCALCalibData* const cdata);
   void CreateAODFromESD();
@@ -45,9 +47,6 @@ public:
 	
   void SetGeometryName(TString name)   { fEMCALGeoName = name ; }
   TString GeometryName() const { return fEMCALGeoName ; }
-
-  void SetOldData(Bool_t bData) {fOldData = bData;} 
-  Bool_t IsOldData() const {return fOldData;}	
  	
 private:
 
@@ -55,21 +54,22 @@ private:
 
 private:
 
-  AliEMCALGeometry * fEMCALGeo;   // EMCAL geometry
+  AliEMCALGeometry * fEMCALGeo;  //! EMCAL geometry
   AliEMCALCalibData* fCalibData; // corrections to CC from the previous iteration
 	
   Float_t fEmin;          // min. cluster energy
+  Float_t fEmax;          // max. cluster energy
+  Int_t   fMinNCells;     // min. ncells in cluster
   Float_t fLogWeight;     // log weight used in cluster recalibration
   Bool_t  fCopyAOD;       // Copy calo information only to AOD?
   TString fEMCALGeoName;  // Name of geometry to use.
-  Bool_t  fOldData ;      // calibrate digit amplitude, since not done in old ESDs
                          
   //Output histograms	
-  TList*  fOutputContainer; //histogram container
-  TH1F*   fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];// two-cluster inv. mass assigned to each cell.
-  TH1F*   fHmgg;          // two-cluster inv.mass
+  TList*  fOutputContainer; //!histogram container
+  TH1F*   fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];//! two-cluster inv. mass assigned to each cell.
+  TH1F*   fHmgg;            //! two-cluster inv.mass
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,1);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,2);
 
 };
 

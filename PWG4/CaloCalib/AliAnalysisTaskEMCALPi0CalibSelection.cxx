@@ -45,27 +45,11 @@
 
 ClassImp(AliAnalysisTaskEMCALPi0CalibSelection)
 
-//__________________________________________________
-AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection() :
-AliAnalysisTaskSE(),fEMCALGeo(0x0),fCalibData(0x0), fEmin(0.), fLogWeight(4.5), fCopyAOD(kFALSE), 
-fEMCALGeoName("EMCAL_COMPLETE"), fOldData(kFALSE),fOutputContainer(0x0),fHmgg(0x0)
-{
-  //Default constructor.
-
-  for(Int_t iMod=0; iMod < 12; iMod++) {
-    for(Int_t iX=0; iX<24; iX++) {
-      for(Int_t iZ=0; iZ<48; iZ++) {
-	fHmpi0[iMod][iX][iZ]=0;
-      }
-    } 
-  }
-		
-}
 
 //__________________________________________________
 AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
-  AliAnalysisTaskSE(name),fEMCALGeo(0x0),fCalibData(0x0), fEmin(0.), fLogWeight(4.5), fCopyAOD(kFALSE), 
-  fEMCALGeoName("EMCAL_COMPLETE"), fOldData(kFALSE), fOutputContainer(0x0),fHmgg(0x0)
+  AliAnalysisTaskSE(name),fEMCALGeo(0x0),fCalibData(0x0), fEmin(1.), fEmax(15.), fMinNCells(2), fLogWeight(4.5), fCopyAOD(kFALSE), 
+  fEMCALGeoName("EMCAL_FIRSTYEAR"), fOutputContainer(0x0),fHmgg(0x0)
 {
   //Named constructor which should be used.
   
@@ -78,6 +62,8 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
       }
     } 
   }
+	
+  DefineOutput(1, TList::Class());
 
 }
 
@@ -172,7 +158,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD()
     Float_t energy = cluster->E();
     cluster->GetPosition(posF);
     Char_t ttype   = cluster->GetType(); 
-    
+    printf("set pos1\n");
     AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) 
       AliAODCaloCluster(id,
 			0,
@@ -181,7 +167,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD()
 			posF,
 			NULL,
 			ttype);
-    
+    printf("set pos2\n");
     caloCluster->SetCaloCluster(cluster->GetDistToBadChannel(),
 				cluster->GetDispersion(),
 				cluster->GetM20(), cluster->GetM02(),
@@ -191,14 +177,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD()
     caloCluster->SetPIDFromESD(cluster->PID());
     caloCluster->SetNCells(cluster->GetNCells());
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
-	if(!fOldData){
-		caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
-	}
-	else{
-		Double_t *fraction = cluster->GetCellsAmplitudeFraction();
-		for(Int_t i = 0; i < cluster->GetNCells() ; i++) fraction[i] = 1;
-		caloCluster->SetCellsAmplitudeFraction(fraction);
-	}
+	
+	caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
+
+//	else{
+//		Double_t *fraction = cluster->GetCellsAmplitudeFraction();
+//		for(Int_t i = 0; i < cluster->GetNCells() ; i++) fraction[i] = 1;
+//		caloCluster->SetCellsAmplitudeFraction(fraction);
+//	}
     
   } 
 
@@ -215,7 +201,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD()
     aodEMcells.SetType(AliAODCaloCells::kEMCAL);
 	
 	Double_t calibFactor = 1;
-	if(fOldData) calibFactor = 0.0153;
+	//if(fOldData) calibFactor = 0.0153;
 
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
       aodEMcells.SetCell(iCell,aodinEMcells.GetCellNumber(iCell),aodinEMcells.GetAmplitude(iCell)*calibFactor);
@@ -321,14 +307,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromESD()
     caloCluster->SetPIDFromESD(cluster->GetPid());
     caloCluster->SetNCells(cluster->GetNCells());
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
-	if(!fOldData){
+//	if(!fOldData){
 		  caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
-	}
-	else{
-		  Double_t *fraction = cluster->GetCellsAmplitudeFraction();
-		  for(Int_t i = 0; i < cluster->GetNCells() ; i++) fraction[i] = 1;
-		  caloCluster->SetCellsAmplitudeFraction(fraction);
-	  }    
+//	}
+//	else{
+//		  Double_t *fraction = cluster->GetCellsAmplitudeFraction();
+//		  for(Int_t i = 0; i < cluster->GetNCells() ; i++) fraction[i] = 1;
+//		  caloCluster->SetCellsAmplitudeFraction(fraction);
+//	  }    
   } 
   caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
   // end of loop on calo clusters
@@ -344,7 +330,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromESD()
     aodEMcells.SetType(AliAODCaloCells::kEMCAL);  
 	  
 	Double_t calibFactor = 1;
-	if(fOldData) calibFactor = 0.0153;
+	//if(fOldData) calibFactor = 0.0153;
    
 	for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
       aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell)*calibFactor);
@@ -358,18 +344,22 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromESD()
 //__________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
 {
-  //Create output container
+  //Create output container, init geometry and calibration
+	
+  printf("--- Create histograms for calibration with pi0 ---\n");
+  fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
+	
   fOutputContainer = new TList();
   
   char hname[128], htitl[128];
   
-	for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++) {
-    for(Int_t iX=0; iX<AliEMCALGeoParams::fgkEMCALCols; iX++) {
-      for(Int_t iZ=0; iZ<AliEMCALGeoParams::fgkEMCALRows; iZ++) {
-	sprintf(hname,"%d_%d_%d",iMod,iX,iZ);
-	sprintf(htitl,"Two-gamma inv. mass for mod %d, cell (%d,%d)",iMod,iX,iZ);
-	fHmpi0[iMod][iX][iZ] = new TH1F(hname,htitl,100,0.,300.);
-	fOutputContainer->Add(fHmpi0[iMod][iX][iZ]);
+	for(Int_t iMod=0; iMod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); iMod++) {
+    for(Int_t iRow=0; iRow<AliEMCALGeoParams::fgkEMCALRows; iRow++) {
+      for(Int_t iCol=0; iCol<AliEMCALGeoParams::fgkEMCALCols; iCol++) {
+	sprintf(hname,"%d_%d_%d",iMod,iCol,iRow);
+	sprintf(htitl,"Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
+	fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,100,0.,300.);
+	fOutputContainer->Add(fHmpi0[iMod][iCol][iRow]);
       }
     }
   }
@@ -381,9 +371,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
 	
   if(!fCalibData)
     AliFatal("Calibration parameters not found in CDB!");
-  
-  printf("Get Geometry : %s\n", fEMCALGeoName.Data());
-  fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
+	
+  PostData(1,fOutputContainer);
 
 }
 
@@ -412,8 +401,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     abort();
   }	
   
-  Double_t v[] = {aod->GetVertex(0)->GetX(),aod->GetVertex(0)->GetY(),aod->GetVertex(0)->GetZ()}; //to check!!
-  //aod->GetVertex()->GetXYZ(v) ;
+	Double_t v[3];// = {aod->GetVertex(0)->GetX(),aod->GetVertex(0)->GetY(),aod->GetVertex(0)->GetZ()}; //to check!!
+  aod->GetPrimaryVertex()->GetXYZ(v) ;
   //TVector3 vtx(v); 
   
   //if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Vertex: (%.3f,%.3f,%.3f)\n",vtx.X(),vtx.Y(),vtx.Z());
@@ -425,21 +414,19 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   //Get the matrix with geometry information
   //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
   if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) {
-    if(DebugLevel() > 1) 
+   // if(DebugLevel() > 1) 
       printf("AliAnalysisTaskEMCALPi0CalibSelection Use ideal geometry, values geometry matrix not kept in AODs.\n");
   }
   else{	
     if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
-    for(Int_t mod=0; mod < 12; mod++){ 
+    for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
       if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
     }
   }
   
   if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
-  
-  //AliEMCALPID pid;
-  
+    
   Int_t maxId;
   Int_t iSupMod = -1;
   Int_t iTower  = -1;
@@ -452,34 +439,15 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   TLorentzVector p2;
   TLorentzVector p12;
   
-  
   TRefArray * caloClustersArr  = new TRefArray();
   aod->GetEMCALClusters(caloClustersArr);
   
   const Int_t kNumberOfEMCALClusters   = caloClustersArr->GetEntries() ;
-  if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection CaloClusters: %d\n", kNumberOfEMCALClusters);
+  if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection - N CaloClusters: %d \n", kNumberOfEMCALClusters);
   
   // EMCAL cells
   AliAODCaloCells *emCells = aod->GetEMCALCells();
 	
-  // Check if is old data not modified for calibration and change the fraction factor and calibrate amplitudes
-  // Only for aliroot older than release 17 tag 3
-  if(fOldData && !fCopyAOD){
-	  //Calibrate amplitudes
-	  AliAODCaloCells &aodEMcells = *(AODEvent()->GetEMCALCells());
-	  for (Int_t iCell = 0; iCell < aodEMcells.GetNumberOfCells(); iCell++) {      
-			aodEMcells.SetCell(iCell,aodEMcells.GetCellNumber(iCell),aodEMcells.GetAmplitude(iCell)*0.0153);
-	  }
-	  
-	  //Change fraction
-	  for(Int_t iClu=0; iClu<kNumberOfEMCALClusters; iClu++) {
-		  AliAODCaloCluster *cl = (AliAODCaloCluster *) caloClustersArr->At(iClu);
-		  if(!cl->IsEMCALCluster()) continue; // EMCAL cluster!
-		  Double_t *fraction = cl->GetCellsAmplitudeFraction();
-		  for(Int_t i = 0; i < cl->GetNCells() ; i++) fraction[i] = 1;
-		  cl->SetCellsAmplitudeFraction(fraction);	  
-	  }
-  }
 	
   // loop over EMCAL clusters
   for(Int_t iClu=0; iClu<kNumberOfEMCALClusters; iClu++) {
@@ -488,30 +456,34 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     if(!c1->IsEMCALCluster()) continue; // EMCAL cluster!
 		  
 	Float_t e1i = c1->E();   // cluster energy before correction   
-	if(e1i<fEmin) continue;
-
-	if(DebugLevel() > 2){ 
+	if(e1i < fEmin) continue;
+	else if(e1i > fEmax) continue;
+	else if (c1->GetNCells() < fMinNCells) continue; 
+	  
+	if(DebugLevel() > 2)
+	{ 
 		printf("Std  : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,e1i, c1->GetDispersion(),c1->GetM02(),c1->GetM20());
-		Double_t pos[]={0,0,0};
+		Float_t pos[]={0,0,0};
 		c1->GetPosition(pos);
 		printf("Std  : i %d, x %f, y %f, z %f\n",iClu, pos[0], pos[1], pos[2]);
 	}
 	  
     AliEMCALAodCluster clu1(*c1);
     clu1.Recalibrate(fCalibData, emCells, fEMCALGeoName);
-	  printf("recalibrated, now calculate the rest\n");
-    clu1.EvalAll(fLogWeight, fEMCALGeoName);
-    //clu1.EnergyCorrection(&pid) ;
-	  
-	if(DebugLevel() > 2){ 
+	clu1.EvalEnergy();
+    //clu1.EvalAll(fLogWeight, fEMCALGeoName);
+
+	if(DebugLevel() > 2)
+	{ 
 		printf("Recal: i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,clu1.E(), clu1.GetDispersion(),clu1.GetM02(),clu1.GetM20());    
-		Double_t pos2[]={0,0,0};
+		Float_t pos2[]={0,0,0};
 		clu1.GetPosition(pos2);
 		printf("Recal: i %d, x %f, y %f, z %f\n",iClu, pos2[0], pos2[1], pos2[2]);
 	}
 	  
 	clu1.GetMomentum(p1,v);
 
+    //Get tower with maximum energy and fill in the end the pi0 histogram for this cell.
 	MaxEnergyCellPos(emCells,&clu1,maxId);
     
     //Get from the absid the supermodule, tower and eta/phi numbers
@@ -528,14 +500,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       if(c2->IsEqual(c1)) continue;
       
       Float_t e2i = c2->E();
-      if(e2i<fEmin) continue;
-      
+//      if(e2i<fEmin) continue;
+		if(e2i > fEmax) continue;
+		else if (c2->GetNCells() < fMinNCells) continue; 
+
       AliEMCALAodCluster clu2(*c2);
-      //printf("i2 %d, E %f\n",iClu,e2i);
       clu2.Recalibrate(fCalibData, emCells,fEMCALGeoName);
-      clu2.EvalAll(fLogWeight,fEMCALGeoName);
-      //clu2.EnergyCorrection(&pid) ;
-     // printf("i2 %d, Erc %f\n",iClu,clu2.E());
+	  clu2.EvalEnergy();
+      //clu2.EvalAll(fLogWeight,fEMCALGeoName);
 
       clu2.GetMomentum(p2,v);
       Float_t e2ii = clu2.E();
@@ -545,10 +517,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
 
       fHmgg->Fill(invmass); 
 
-      //printf("iSM %d, ieta %d, iphi %d,  mass %f  \n",iSupMod, ieta, iphi, invmass);
       if(invmass < 300)
-	  fHmpi0[iSupMod][ieta][iphi]->Fill(invmass);
-      
+		  fHmpi0[iSupMod][ieta][iphi]->Fill(invmass);
       
       if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Mass in (SM%d,%d,%d): %.3f GeV  E1_i=%f E1_ii=%f  E2_i=%f E2_ii=%f\n",
 				  iSupMod,iphi,ieta,p12.M(),e1i,e1ii,e2i,e2ii);
@@ -557,7 +527,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   } // end of loop over EMCAL clusters
   
   delete caloClustersArr;
+	
   PostData(1,fOutputContainer);
+	
 }
 
 //__________________________________________________
