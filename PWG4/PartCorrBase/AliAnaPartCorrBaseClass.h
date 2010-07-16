@@ -137,7 +137,7 @@ class AliAnaPartCorrBaseClass : public TObject {
   virtual AliCaloPID * GetCaloPID() {if(!fCaloPID) fCaloPID = new AliCaloPID(); return  fCaloPID ;}
   virtual void SetCaloPID(AliCaloPID * const pid) { fCaloPID = pid ;}
   
-  virtual AliFiducialCut * GetFiducialCut() {if(fFidCut) fFidCut = new AliFiducialCut(); return  fFidCut ;}
+  virtual AliFiducialCut * GetFiducialCut() {if(!fFidCut) fFidCut = new AliFiducialCut(); return  fFidCut ;}
   virtual void SetFiducialCut(AliFiducialCut * const fc) { fFidCut = fc ;}
   
   virtual AliIsolationCut * GetIsolationCut() {if(!fIC) fIC = new AliIsolationCut();  return  fIC ;}
