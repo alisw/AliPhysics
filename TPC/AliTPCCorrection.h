@@ -81,7 +81,7 @@ public:
   void StoreInOCDB(Int_t startRun, Int_t endRun, const char *comment=0);
   static void MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step=1, Bool_t debug=0);
   static void MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray, Int_t itype);
-  void  FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTracks, AliESDVertex &aV, AliESDVertex &avOrg, AliESDVertex &cV, AliESDVertex &cvOrg, TTreeSRedirector * const pcstream);
+  void  FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTracks, AliESDVertex &aV, AliESDVertex &avOrg, AliESDVertex &cV, AliESDVertex &cvOrg, TTreeSRedirector * const pcstream, Double_t etaCuts);
 
 protected:
   TH2F* CreateTH2F(const char *name,const char *title,
