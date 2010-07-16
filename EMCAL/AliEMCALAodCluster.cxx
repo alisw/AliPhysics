@@ -87,7 +87,8 @@ void AliEMCALAodCluster::Recalibrate(AliEMCALCalibData * calibData, AliAODCaloCe
 					  iIphi, iIeta,iphi,ieta);   	
     
     Double_t energy = emcCells->GetCellAmplitude(GetCellAbsId(i)) ;
-    AliDebug(2,Form("Recalibrate: cell %f, calib %f, fraction %f\n",energy,calibData->GetADCchannel(iSupMod,ieta,iphi),cellsAmpFraction[i]));
+    //AliDebug(2,Form("Recalibrate: cell %f, calib %f, fraction %f\n",energy,calibData->GetADCchannel(iSupMod,ieta,iphi),cellsAmpFraction[i]));
+	if(cellsAmpFraction[i]< 1e-4) cellsAmpFraction[i] = 1; //Unfolding off, took all the cell energy 
 	cellsAmpFraction[i]*=energy*calibData->GetADCchannel(iSupMod,ieta,iphi);
   }
 	
@@ -179,7 +180,7 @@ void AliEMCALAodCluster::EvalPositionAndShowerShape(Float_t logWeight, TString e
   if(!emcalgeo)
     AliFatal("AliEMCALGeometry was not constructed\n") ;
 	
-  Double_t dist  = TmaxInCm(Double_t(GetCellAmplitudeFraction(0)),0);
+  Double_t dist  = TmaxInCm(E(),0);
   for(Int_t iDigit=0; iDigit < GetNCells(); iDigit++) {
 	
 	//Get from the absid the supermodule, tower and eta/phi numbers
@@ -223,9 +224,9 @@ void AliEMCALAodCluster::EvalPositionAndShowerShape(Float_t logWeight, TString e
   TVector3 gpos ;
   emcalgeo->GetGlobal(clXYZ, gpos, iSupMod);
 
-  SetPosition(0, gpos[0]) ;
-  SetPosition(1, gpos[1]) ;  
-  SetPosition(2, gpos[2]) ;
+  SetPosition(0,gpos[0]) ;
+  SetPosition(1,gpos[1]) ;  
+  SetPosition(2,gpos[2]) ;
 
   //Calculate dispersion	
   for(Int_t iDigit=0; iDigit < GetNCells(); iDigit++) {

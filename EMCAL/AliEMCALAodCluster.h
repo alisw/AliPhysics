@@ -33,12 +33,12 @@ public:
   void  Recalibrate(AliEMCALCalibData * calibData, AliAODCaloCells *phsCells, TString geoname) ; //Apply recalibration to this cluster
 //  void  EnergyCorrection(AliEMCALPID * pid) ;  //Apply non-linearity correction
   void  EvalPID() ;           //re-evaluate identification parameters
-	
+  void EvalEnergy() ; //re-calculate energy of the cluster
+  void EvalPositionAndShowerShape(Float_t logWeight, TString geoname) ;  //calculate coordinate-related parameters (position, dispersion)
+  Double_t TmaxInCm(const Double_t e , const Int_t key) const ; //Cluster max depth used in EvalPositionAndShowerShape
+
 protected:
 	
-  Double_t TmaxInCm(const Double_t e , const Int_t key) const ; //Cluster max depth used in EvalPositionAndShowerShape
-  void EvalPositionAndShowerShape(Float_t logWeight, TString geoname) ;  //calculate coordinate-related parameters (position, dispersion)
-  void EvalEnergy() ; //re-calculate energy of the cluster
 
   Bool_t fRecalibrated ;  //Has this cluster been recalibrated?
 	
