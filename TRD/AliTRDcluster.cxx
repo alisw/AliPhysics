@@ -682,32 +682,10 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd
   td -= 0.189;
 
   // apply fitted correction 
-  Float_t x = td*vd + GetXcorr(fLocalTimeBin);
+  Float_t x = td*vd + HasXcorr() ? GetXcorr(fLocalTimeBin) : 0.;
   if(x>0.&&x<.5*AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght()) SetInChamber();
 
   return x;
-
-/*
-  // calculate radial posion of clusters in the drift region
-
-  // invert drift time function
-  Double_t xM= AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght(),
-           x = vd*td + .5*AliTRDgeometry::CamHght(), 
-           t = cp->TimeStruct(vd, x, z), dx1=0.,dx2;
-  while(TMath::Abs(td-t)>1.e-4){ // convergence on 100ps
-    dx2 = vd*(td-t);
-    if(TMath::Abs(TMath::Abs(dx2)-TMath::Abs(dx1))<1.e-6){
-      x+=.5*dx2;
-      break;
-    } else x+=dx2;
-
-    if(x<0. || x>xM) return 0.;
-    t = cp->TimeStruct(vd, x, z);
-    dx1 = dx2;
-  }
-
-  return x-.5*AliTRDgeometry::CamHght();
-*/
 }
 
 //_____________________________________________________________________________

@@ -33,8 +33,9 @@ public:
     ,kHLT            = BIT(4)
     ,kProcTracklets  = BIT(5) // process online tracklets
     ,kDebug          = BIT(6)
-    ,kOwner          = BIT(7)
-    ,kNsteer         = 7       // number of tasks
+    ,kClRadialCorr   = BIT(7) // toggle radial correction in clusters
+    ,kOwner          = BIT(8)
+    ,kNsteer         = 8      // number of tasks
   };
   AliTRDReconstructor();
   virtual ~AliTRDReconstructor();
@@ -43,7 +44,7 @@ public:
 
   virtual void        ConvertDigits(AliRawReader *rawReader, TTree *digitsTree) const;
   virtual AliTracker* CreateTracker() const;
-  TTreeSRedirector*   GetDebugStream(AliTRDrecoParam::ETRDReconstructionTask task) const { return task < AliTRDrecoParam::kTRDreconstructionTasks ? fDebugStream[task] : 0x0; }
+  TTreeSRedirector*   GetDebugStream(AliTRDrecoParam::ETRDReconstructionTask task) const { return task < AliTRDrecoParam::kTRDreconstructionTasks ? fDebugStream[task] : NULL; }
 
   virtual void        FillESD(AliRawReader *, TTree *clusterTree, AliESDEvent *esd) const { FillESD((TTree * )NULL, clusterTree, esd);                    }
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
@@ -62,6 +63,7 @@ public:
   Bool_t              IsSeeding() const          { return fSteerParam&kSeeding;}
   Bool_t              IsProcessingTracklets() const { return fSteerParam&kProcTracklets;}
   Bool_t              IsDebugStreaming() const { return fSteerParam&kDebug;}
+  Bool_t              UseClusterRadialCorrection() const { return fSteerParam&kClRadialCorr;}
 
   static void         Options(UInt_t steer=0);
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;

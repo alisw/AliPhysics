@@ -1017,6 +1017,7 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
     cluster.SetPadMaskedPosition(maskPosition);
     cluster.SetPadMaskedStatus(GetPadStatus(Max.padStatus));
   }
+  cluster.SetXcorr(fReconstructor->UseClusterRadialCorrection());
 
   // Transform the local cluster coordinates into calibrated 
   // space point positions defined in the local tracking system.

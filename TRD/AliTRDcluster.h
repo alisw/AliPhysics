@@ -25,6 +25,7 @@ public:
    ,kLUT       = BIT(18)
    ,kGAUS      = BIT(19)
    ,kCOG       = BIT(20)
+   ,kXcorr     = BIT(21)  // steer efficient vd corrections
   };
   enum ETRDclusterMask { 
     kMaskedLeft   = 0
@@ -53,6 +54,7 @@ public:
           Bool_t    IsUsed() const                  { return IsClusterUsed();      }
           Bool_t    IsFivePad() const               { return TestBit(kFivePad);    }
   inline  Bool_t    IsRPhiMethod(ETRDclusterStatus m) const;
+          Bool_t    HasXcorr() const                { return TestBit(kXcorr);      }
 
           UChar_t   GetPadMaskedPosition() const    { return fClusterMasking & 7;  }
           UChar_t   GetPadMaskedStatus() const      { return fClusterMasking >> 3; }
@@ -96,6 +98,7 @@ public:
   void        SetPadMaskedStatus(UChar_t status);
   void        SetSigmaY2(Float_t s2, Float_t dt, Float_t exb, Float_t x0, Float_t z=-1., Float_t tgp=0.);
   inline void SetRPhiMethod(ETRDclusterStatus m);
+  void        SetXcorr(Bool_t xc = kTRUE)                 { SetBit(kXcorr,xc);                  }
 
   void        Use(Int_t u = 1)                            { SetBit(AliCluster::kUsed, u ? kTRUE : kFALSE); }
 
