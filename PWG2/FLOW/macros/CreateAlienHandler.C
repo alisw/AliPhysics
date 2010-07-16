@@ -6,13 +6,17 @@ AliAnalysisGrid* CreateAlienHandler() {
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-  plugin->SetRunMode("submit");
+  //plugin->SetRunMode("test");
+  //plugin->SetRunMode("offline");
+  //plugin->SetRunMode("submit");
+  plugin->SetRunMode("full");
+  //plugin->SetRunMode("terminate");
   plugin->SetNtestFiles(1); // Relevant only for run mode "test" 
 
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
   plugin->SetROOTVersion("v5-26-00b-6");
-  plugin->SetAliROOTVersion("v4-19-14-AN");
+  plugin->SetAliROOTVersion("v4-19-22-AN");
 
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
@@ -24,31 +28,13 @@ AliAnalysisGrid* CreateAlienHandler() {
   // plugin->SetOutputToRunNo();  
   // ============================================================================
   //  Example 2: Real data (set in macro runFlowTask.C: DATA = kTRUE, MCEP = kFALSE)
-  plugin->SetGridDataDir("/alice/data/2009/LHC09d");
+  plugin->SetGridDataDir("/alice/data/2010/LHC10c");
   plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
   plugin->SetRunPrefix("000");
-  //plugin->AddRunNumber(117099); 
-  plugin->AddRunNumber(104157); 
-  plugin->AddRunNumber(104159);
-  plugin->AddRunNumber(104160);
-  plugin->AddRunNumber(104316);
-  plugin->AddRunNumber(104320);
-  plugin->AddRunNumber(104321);
-  plugin->AddRunNumber(104792);
-  plugin->AddRunNumber(104793);
-  plugin->AddRunNumber(104799);
-  plugin->AddRunNumber(104800);
-  plugin->AddRunNumber(104801);
-  plugin->AddRunNumber(104802);
-  plugin->AddRunNumber(104803);
-  plugin->AddRunNumber(104824);
-  plugin->AddRunNumber(104825);
-  plugin->AddRunNumber(104845);
-  plugin->AddRunNumber(104852);
-  plugin->AddRunNumber(104867);
-  plugin->AddRunNumber(104876);
-  plugin->AddRunNumber(104892);
-  // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
+  
+  plugin->AddRunNumber(120244); 
+  plugin->AddRunNumber(119844); // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
+  
   plugin->SetOutputToRunNo();  
   // ============================================================================
  
@@ -59,9 +45,9 @@ AliAnalysisGrid* CreateAlienHandler() {
   //plugin->AddDataFile("hijingWithoutFlow10000Evts.xml");
   //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
-  plugin->SetGridWorkingDir("realData");
+  plugin->SetGridWorkingDir("data");
   // Declare alien output directory. Relative to working directory.
-  plugin->SetGridOutputDir("output900GeVpass5"); // In this case will be $HOME/work/output
+  plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime
   // using ACLiC on the worker nodes:
   // ... (if this is needed see in official tutorial example how to do it!)
@@ -72,17 +58,25 @@ AliAnalysisGrid* CreateAlienHandler() {
   // load libs via par files
   plugin->EnablePackage("PWG2flowCommon.par");
   plugin->EnablePackage("PWG2flowTasks.par");
+  // Do not specify your outputs by hand anymore:
+  plugin->SetDefaultOutputs(kTRUE);
+  // To specify your outputs by hand set plugin->SetDefaultOutputs(kFALSE); and comment in line plugin->SetOutputFiles("..."); 
+  // and plugin->SetOutputArchive("..."); bellow.
   // Declare the output file names separated by blancs.
   // (can be like: file.root or file.root@ALICE::Niham::File)
-  plugin->SetOutputFiles("AnalysisResults.root ");
+  // plugin->SetOutputFiles("AnalysisResults.root");
   // Optionally define the files to be archived.
-  //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:*.root@ALICE::NIHAM::File");
-  //plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
-  plugin->SetOutputArchive("log_archive.zip:");
+  // plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:*.root@ALICE::NIHAM::File");
+  // plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
+  // plugin->SetOutputArchive("log_archive.zip:");
   // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
   plugin->SetAnalysisMacro("flowAnalysis.C");
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
   plugin->SetSplitMaxInputFileNumber(100);
+  // Optionally set number of runs per masterjob:
+  plugin->SetNrunsPerMaster(1);
+  // Optionally set overwrite mode. Will trigger overwriting input data colections AND existing output files:
+  plugin->SetOverwriteMode(kTRUE);
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
   plugin->SetMaxInitFailed(5);
   // Optionally resubmit threshold.

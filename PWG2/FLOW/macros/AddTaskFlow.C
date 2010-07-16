@@ -8,16 +8,22 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 // Define the range for eta subevents (for SP method)
-//(FMD 1.7 - 5.0)
+//-----(FMD 1.7 - 5.0)-----
 //Double_t minA = -5.0;
 //Double_t maxA = -1.7;
 //Double_t minB = 1.7;
 //Double_t maxB = 5.0;
-//(Tracklets 0.9 - 2.0)
-Double_t minA = -2.0;
-Double_t maxA = -0.9;
-Double_t minB = 0.9;
-Double_t maxB = 2.0;
+//-----(Tracklets 0.9 - 2.0)-----
+//Double_t minA = -2.0;
+//Double_t maxA = -0.9;
+//Double_t minB = 0.9;
+//Double_t maxB = 2.0;
+//-----(Global 0.5 - 0.9)-----
+Double_t minA = -0.9;
+Double_t maxA = -0.5;
+Double_t minB = 0.5;
+Double_t maxB = 0.9;
+
 
 // use physics selection class
 Bool_t  UsePhysicsSelection = kTRUE;
@@ -310,19 +316,22 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     cout<<"LYZEP input file/list read..."<<endl;
   }
   
+  
   // Create the FMD task and add it to the manager
   //===========================================================================
-  AliFMDAnalysisTaskSE *taskfmd = NULL;
   if (rptype == "FMD") {
-    taskfmd = new AliFMDAnalysisTaskSE("TaskFMD");
-    mgr->AddTask(taskfmd);
+    AliFMDAnalysisTaskSE *taskfmd = NULL;
+    if (rptype == "FMD") {
+      taskfmd = new AliFMDAnalysisTaskSE("TaskFMD");
+      mgr->AddTask(taskfmd);
   
-    AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-    pars->Init();
-    pars->SetProcessPrimary(kTRUE);
-    pars->SetProcessHits(kFALSE);
+      AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+      pars->Init();
+      pars->SetProcessPrimary(kTRUE);
+      pars->SetProcessHits(kFALSE);
+    }
   }
-
+  
 
   // Create the task, add it to the manager.
   //===========================================================================
@@ -682,7 +691,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   //===========================================================================
   if (SP){
     AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",WEIGHTS[0]);
-    taskSP->SetRelDiffMsub(0.1);
+    taskSP->SetRelDiffMsub(1.0);
     mgr->AddTask(taskSP);
   }
   if (LYZ1SUM){
@@ -776,7 +785,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     //input into taskFE
     mgr->ConnectInput(taskFE,1,coutputFMD);
   }
-
+  
   AliAnalysisDataContainer *coutputFE = 
     mgr->CreateContainer("cobjFlowEventSimple",  AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
   mgr->ConnectInput(taskFE,0,cinput1); 

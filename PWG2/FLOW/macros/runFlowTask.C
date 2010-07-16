@@ -17,7 +17,7 @@ Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (seco
 Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
 Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
 Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
-Bool_t NL       = kTRUE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
+Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
@@ -31,7 +31,7 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1, 
+void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 2, 
 //Bool_t DATA = kTRUE, const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
                 Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
 
@@ -74,10 +74,10 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1,
   if (type == "ESD"){
     AliVEventHandler* esdH = new AliESDInputHandler;
     mgr->SetInputEventHandler(esdH);
-    //if (MCEP) { //Because of FMD task
+    if (MCEP) { 
       AliMCEventHandler *mc = new AliMCEventHandler();
       mgr->SetMCtruthEventHandler(mc); 
-      //}
+    }
   }
   
   if (type == "AOD"){
@@ -176,10 +176,8 @@ void LoadLibraries(const anaModes mode) {
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libCORRFW");
-    cerr<<"libCORRFW loaded..."<<endl;
+    gSystem->Load("libPWG2forward");
     if (mode==mLocal) {
-      gSystem->Load("libPWG2forward");
-      cerr<<"libPWG2forward loaded..."<<endl;
       gSystem->Load("libPWG2flowCommon");
       cerr<<"libPWG2flowCommon loaded..."<<endl;
       gSystem->Load("libPWG2flowTasks");
