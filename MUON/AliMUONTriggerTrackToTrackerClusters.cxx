@@ -222,7 +222,7 @@ AliMUONTriggerTrackToTrackerClusters::GenerateClusters(Int_t iChamber,
   }
   else
   {
-    AliWarning(Form("No DE found at xg=%e yg=%e",detElemId,x,y));
+    AliWarning(Form("No DE found at xg=%e yg=%e",x,y));
   }
   
   return nadded;

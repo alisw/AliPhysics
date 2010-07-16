@@ -530,7 +530,7 @@ AliMUONTriggerIO::WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateCo
   
   // Jtag
   out << globalConfig->GetJtagName() << endl;
-  out << Form("0x%08x", globalConfig->GetJtagVmeAddr()) << endl;
+  out << Form("0x%08lx", globalConfig->GetJtagVmeAddr()) << endl;
   out << Form("%d %d %d", globalConfig->GetJtagClockDiv(), 
               globalConfig->GetJtagRxPhase(), globalConfig->GetJtagRdDelay()) << endl;
  
@@ -548,7 +548,7 @@ AliMUONTriggerIO::WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateCo
   
   // first darc board
   out << globalConfig->GetFirstDarcName() << endl;
-  out << Form("0x%08x", globalConfig->GetFirstDarcVmeAddr()) << endl;
+  out << Form("0x%08lx", globalConfig->GetFirstDarcVmeAddr()) << endl;
   out << globalConfig->GetFirstDarcType() << endl;
   disable = globalConfig->GetFirstDarcDisable();
   out << Form("0x%02x", disable) << endl;
@@ -559,7 +559,7 @@ AliMUONTriggerIO::WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateCo
   
   // second darc board
   out << globalConfig->GetSecondDarcName() << endl;
-  out << Form("0x%08x", globalConfig->GetSecondDarcVmeAddr()) << endl;
+  out << Form("0x%08lx", globalConfig->GetSecondDarcVmeAddr()) << endl;
   out << globalConfig->GetSecondDarcType() << endl;
   disable = globalConfig->GetSecondDarcDisable();
   out << Form("0x%02x", disable) << endl;
@@ -570,13 +570,13 @@ AliMUONTriggerIO::WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateCo
   
   // global board
   out << globalConfig->GetGlobalName() << endl;
-  out << Form("0x%08x", globalConfig->GetGlobalVmeAddr()) << endl;
+  out << Form("0x%08lx", globalConfig->GetGlobalVmeAddr()) << endl;
   for (Int_t i = 0; i < globalConfig->GetGlobalNofRegisters(); ++i)
     out << Form("0x%x", globalConfig->GetGlobalRegister(i)) << endl;
   
   // Fet board
   out << globalConfig->GetFetName() << endl;
-  out << Form("0x%08x", globalConfig->GetFetVmeAddr()) << endl;
+  out << Form("0x%08lx", globalConfig->GetFetVmeAddr()) << endl;
   for (Int_t i = 0; i < globalConfig->GetFetNofRegisters(); ++i)
     out << Form("0x%x", globalConfig->GetFetRegister(i)) << endl;
   

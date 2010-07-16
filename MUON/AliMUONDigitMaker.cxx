@@ -237,7 +237,7 @@ AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 
     if (!de)
       {
-	fLogger->Log(Form("DE %04d does not exist !"));
+	fLogger->Log(Form("DE %04d does not exist !", detElemId));
 	continue;
       }
 

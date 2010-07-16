@@ -726,7 +726,7 @@ void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnError(
 		
 	default:
 		message = Form(
-			"%s (At byte %d in DDL.)",
+			"%s (At byte %lu in DDL.)",
 			ErrorCodeToMessage(error),
 			(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader)
 		);

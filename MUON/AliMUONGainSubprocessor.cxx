@@ -89,7 +89,7 @@ AliMUONGainSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   delete fGains;
   fGains = new AliMUON2DMap(kTRUE);
   
-  Master()->Log(Form("Reading Gain files for Run %d startTime %ld endTime %ld",
+  Master()->Log(Form("Reading Gain files for Run %d startTime %u endTime %u",
                      run,startTime,endTime));
   
   TList* sources = Master()->GetFileSources(kSystem,kId);

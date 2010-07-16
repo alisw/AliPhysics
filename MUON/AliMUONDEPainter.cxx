@@ -361,7 +361,7 @@ AliMUONDEPainter::SetResponder(Int_t depth)
     AliMUONPainterGroup* group = static_cast<AliMUONPainterGroup*>(fPainterGroups->GetValue(str));
     if ( str->String() == "BUSPATCH" ) 
     {
-      AliDebug(1,Form("group %s is indeed buspatch, using as responder",
+      AliDebug(1,Form("group %s is indeed buspatch, using as responder %d",
                       group->Type(),depth));
       group->SetResponder(kTRUE);
       fResponderGroup = group;

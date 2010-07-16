@@ -662,7 +662,7 @@ Double_t AliMUONSurveyObj::EvalFunction(const TF2 *lFunction, Int_t iP1, Int_t i
     }
   default:
     {
-      AliError(Form("Coordinate %c is not valid, options are X Y Z",lCoord));
+      AliError(Form("Coordinate %s is not valid, options are X Y Z",lCoord));
       return 0;
     }
   }

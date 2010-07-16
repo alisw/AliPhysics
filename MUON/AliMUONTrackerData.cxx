@@ -316,7 +316,7 @@ AliMUONTrackerData::Add(const AliMUONTrackerData& data)
   if ( ( !fHistogramming && data.fHistogramming ) || ( fHistogramming && !data.fHistogramming ) 
       || fXmin != data.fXmin || fXmax != data.fXmax ) 
   {
-    AliError(Form("Incompatible histogramming (%x vs %x) (xmax = %e vs %e ; xmin = %e vs %e)",
+    AliError(Form("Incompatible histogramming (%p vs %p) (xmax = %e vs %e ; xmin = %e vs %e)",
              fHistogramming,data.fHistogramming,fXmax,data.fXmax,fXmin,data.fXmin));
     return kFALSE;
   }

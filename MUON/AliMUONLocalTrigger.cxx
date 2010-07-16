@@ -281,7 +281,7 @@ void AliMUONLocalTrigger::Print(Option_t* opt) const
   cout << Form("Circuit %3d Decision %2d StripX %2d Dev %2d(%1d) StripY %2d Lpt %6s Hpt %6s",
                LoCircuit(), GetLoDecision(),
                LoStripX(), LoDev(), LoSdev(), LoStripY(),
-               AsString(LoLpt()),AsString(LoHpt()),IsNull()) << endl;
+               AsString(LoLpt()),AsString(LoHpt())) << endl;
   
   if ( sopt.Contains("FULL") ) { 
 

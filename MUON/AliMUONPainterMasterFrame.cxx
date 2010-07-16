@@ -177,7 +177,7 @@ AliMUONPainterMasterFrame::AddPainterMatrix(AliMUONPainterMatrix* painterMatrix)
 {
   /// array is adopted (by the registry)
 
-  AliDebug(1,Form("matrix=%x %s",painterMatrix,painterMatrix->GetName()));
+  AliDebug(1,Form("matrix=%p %s",painterMatrix,painterMatrix->GetName()));
   
   Int_t i = AliMUONPainterRegistry::Instance()->Register(painterMatrix);
 
@@ -191,7 +191,7 @@ AliMUONPainterMasterFrame::PainterMatrixWantToShow(AliMUONPainterMatrix* group)
   /// FIXME: should check whether we are the active window before
   /// responding to this message ?
 
-  AliDebug(1,Form("group=%x %s",group,group->GetName()));
+  AliDebug(1,Form("group=%p %s",group,group->GetName()));
   
   Int_t i = AliMUONPainterRegistry::Instance()->FindIndexOf(group);
 

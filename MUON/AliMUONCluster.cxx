@@ -665,7 +665,7 @@ AliMUONCluster::DumpMe() const
 //  cout << " " << Area() << endl;
   for (Int_t i = 0; i < fPads.GetSize(); ++i) 
   {
-    cout << Form("fPads[%d]=%x",i,fPads.At(i)) << endl;
+    cout << Form("fPads[%d]=%p",i,fPads.At(i)) << endl;
     if ( fPads.At(i) ) fPads.At(i)->Print();
   }
 }

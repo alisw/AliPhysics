@@ -424,7 +424,7 @@ Bool_t AliMUONTrackParam::CompatibleTrackParam(const AliMUONTrackParam &trackPar
   
   // check Z parameters
   if (fZ != trackParam.fZ)
-    AliWarning(Form("Parameters are given at different Z position (%le : %le): results are meaningless", fZ, trackParam.fZ));
+    AliWarning(Form("Parameters are given at different Z position (%e : %e): results are meaningless", fZ, trackParam.fZ));
   
   // compute the parameter residuals
   TMatrixD deltaParam(fParameters, TMatrixD::kMinus, trackParam.fParameters);

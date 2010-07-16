@@ -156,7 +156,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
   if (!tree) 
   {
     Error("CheckESD", "no ESD tree found");
-    AliError(Form("CheckESD", "no ESD tree found"));
+    AliError(Form("no ESD tree found"));
     return ;
   }
   fESD->ReadFromTree(tree);

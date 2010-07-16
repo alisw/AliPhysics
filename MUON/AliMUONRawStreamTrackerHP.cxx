@@ -713,7 +713,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 		// We subtract 1 from the current numbers of blocks, DSPs
 		// and bus patches to get the iBlock, iDsp and iBus indices.
 		detail = Form(
-			"At byte %d in DDL %d, event %d, iBlock %d, iDsp %d [DSP ID: %d (0x%X)],"
+			"At byte %lu in DDL %d, event %d, iBlock %d, iDsp %d [DSP ID: %d (0x%X)],"
 			" iBus %d [bus patch ID: %d (0x%X)].",
 			(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader),
 			AliDAQ::DdlID("MUONTRK", fRawStream->GetDDL()),
@@ -850,7 +850,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 			break;
 		case kMediumErrorDetail:
 			message = Form(
-				"%s (At byte %d)",
+				"%s (At byte %lu)",
 				ErrorCodeToMessage(error),
 				(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader)
 			);

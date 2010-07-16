@@ -275,7 +275,7 @@ AliMpPCBPadIterator::Print(Option_t*) const
           AliMp::PairFirst(fMinIndices),AliMp::PairSecond(fMinIndices),
           AliMp::PairFirst(fMaxIndices),AliMp::PairSecond(fMaxIndices)) << endl
   << Form("currentOffset=(%d,%d) isdone=%d currentpad=",
-          AliMp::PairFirst(fOffset),AliMp::PairSecond(fOffset)) << endl;
+          AliMp::PairFirst(fOffset),AliMp::PairSecond(fOffset),fIsDone) << endl;
   fCurrentPad.Print();
 }
 

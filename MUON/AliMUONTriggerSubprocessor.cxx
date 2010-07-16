@@ -138,7 +138,7 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   delete fGlobalConfig; fGlobalConfig = 0x0;
   delete fLUT; fLUT = 0x0;
   
-  Master()->Log(Form("Reading trigger masks for Run %d startTime %ld endTime %ld",
+  Master()->Log(Form("Reading trigger masks for Run %d startTime %u endTime %u",
                      run,startTime,endTime));
     
   Int_t check = 
@@ -180,7 +180,7 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   {
     fLUT = new AliMUONTriggerLut;
     
-    Master()->Log(Form("Reading trigger LUT for Run %d startTime %ld endTime %ld",
+    Master()->Log(Form("Reading trigger LUT for Run %d startTime %u endTime %u",
                        run,startTime,endTime));
   
     ok = tio.ReadLUT(GetFileName("LUT").Data(),*fLUT);

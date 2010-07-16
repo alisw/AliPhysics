@@ -69,7 +69,7 @@ AliMUONOccupancySubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t end
   delete fOccupancyMap;
   fOccupancyMap = new AliMUON2DMap(kTRUE);
   
-  Master()->Log(Form("Reading occupancy file for Run %d startTime %ld endTime %ld",
+  Master()->Log(Form("Reading occupancy file for Run %d startTime %u endTime %u",
                      run,startTime,endTime));
   
   TList* sources = Master()->GetFileSources(kSystem,kId);

@@ -174,7 +174,7 @@ AliMUONGeometryMisAligner::SetXYAngMisAligFactor(Double_t factor)
     fDetElemMisAlig[4][1] = fDetElemMisAlig[5][1]*factor; // compatibility 
   }
   else
-    AliError(Form("Invalid XY angular misalign factor, %d", factor));
+    AliError(Form("Invalid XY angular misalign factor, %f", factor));
 }
 
 //_________________________________________________________________________
@@ -187,7 +187,7 @@ void AliMUONGeometryMisAligner::SetZCartMisAligFactor(Double_t factor)
     fDetElemMisAlig[2][1] = fDetElemMisAlig[0][1]*factor; // keep backward compatibility
   }
   else
-    AliError(Form("Invalid Z cartesian misalign factor, %d", factor));
+    AliError(Form("Invalid Z cartesian misalign factor, %f", factor));
 }
 
 //_________________________________________________________________________

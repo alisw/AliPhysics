@@ -831,7 +831,7 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSlat* slat)
     Int_t w = Int_t(h*dimensionX/dimensionY);
     AliMpVPainter* painter = AliMpVPainter::CreatePainter(motifPosFound);
       
-    CreatePopupWindow(w,h,Form("Manu %d",fNumberEntry->GetIntNumber()),
+    CreatePopupWindow(w,h,Form("Manu %ld",fNumberEntry->GetIntNumber()),
 		      painter,"ZT");
   }
 }
@@ -889,7 +889,7 @@ void AliMpDEVisu::PopUpManuMotif(AliMpSector* sector)
 
     AliMpVPainter* painter = AliMpVPainter::CreatePainter(motifPosFound);
     
-    CreatePopupWindow(w,h,Form("Manu %d",fNumberEntry->GetIntNumber()),
+    CreatePopupWindow(w,h,Form("Manu %ld",fNumberEntry->GetIntNumber()),
                       painter,"ZT");
     
   }

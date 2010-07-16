@@ -143,7 +143,7 @@ AliMUONPainterRegistry::AddToHistory(AliMUONPainterMatrix* group)
                           "AliMUONPainterRegistry",this,
                           "HistoryMenuActivated(Int_t)");
     
-    AliDebug(1,Form("HistoryMenu create at %x",fHistoryMenu));
+    AliDebug(1,Form("HistoryMenu create at %p",fHistoryMenu));
   }
   
   if ( fHistoryMenu ) 

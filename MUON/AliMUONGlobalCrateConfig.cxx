@@ -135,7 +135,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
         ULong_t addr;
         sscanf(tmp.Data(), "%lx", &addr);
         SetJtagVmeAddr(addr);
-        AliDebug(1, Form("Jtag Vme Address: 0x%x", addr));
+        AliDebug(1, Form("Jtag Vme Address: 0x%lx", addr));
 
         // clk div, rx phase, read delay
         in.getline(line, 255);
@@ -178,7 +178,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
         sscanf(tmp.Data(), "%lx", &addr);
         if (addr) nDarc++;
         SetFirstDarcVmeAddr(addr);
-        AliDebug(1, Form("First Darc Vme Address: 0x%x", addr));
+        AliDebug(1, Form("First Darc Vme Address: 0x%lx", addr));
 
         // type
         in.getline(line, 255);
@@ -234,7 +234,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
         if (addr) nDarc++;
         sscanf(tmp.Data(), "%lx", &addr);
         SetSecondDarcVmeAddr(addr);
-        AliDebug(1, Form("Second Darc Vme Address: 0x%x", addr));
+        AliDebug(1, Form("Second Darc Vme Address: 0x%lx", addr));
         
         // type
         in.getline(line, 255);
@@ -287,7 +287,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
         ULong_t addr;
         sscanf(tmp.Data(), "%lx", &addr);
         SetGlobalVmeAddr(addr);
-        AliDebug(1, Form("Global Vme Address: 0x%x", addr));
+        AliDebug(1, Form("Global Vme Address: 0x%lx", addr));
 
         for (Int_t i = 0; i < GetGlobalNofRegisters(); ++i) {
             in.getline(line, 255);
@@ -307,7 +307,7 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
         ULong_t addr;
         sscanf(tmp.Data(), "%lx", &addr);
         SetFetVmeAddr(addr);
-        AliDebug(1, Form("Fet Vme Address: 0x%x", addr));
+        AliDebug(1, Form("Fet Vme Address: 0x%lx", addr));
 
         for (Int_t i = 0; i < GetFetNofRegisters(); ++i) {
             in.getline(line, 255);

@@ -178,7 +178,7 @@ AliMUONPainterMatrixFrame::ChangeTitle(AliMUONVPainter* painter,
     
     AliMUONPainterGroup* group = master->PlotterGroup();
 
-    AliDebug(1,Form("Painter is %s plotterGroup is %x %s",
+    AliDebug(1,Form("Painter is %s plotterGroup is %p %s",
                     painter->PathName().Data(),
                     group,
                     ( group ? group->Type() : "")));
@@ -398,7 +398,7 @@ AliMUONPainterMatrixFrame::MouseEnter(AliMUONVPainter* painter)
 {
   /// Emit a signal to notify that mouse pointer is entering a given painter
 
-  AliDebug(1,Form("painter=%x %s",painter,painter->PathName().Data()));
+  AliDebug(1,Form("painter=%p %s",painter,painter->PathName().Data()));
   
   ChangeTitle(painter);
 
