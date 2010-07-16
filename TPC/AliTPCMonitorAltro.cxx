@@ -360,11 +360,11 @@ Int_t AliTPCMonitorAltro::DecodeTrailerVbb(Int_t pos)
   fNextPos            = (pos +sign*(fTrailerNWords+4));
   
   if(       tail==fgkTrailerTailErr        ) {
-    AliError(Form("Found Altro header with error marker (2AEE)[%0x]: %i. Supp.next Trailer line (2AA)[%0x]: %i ",
+    AliError(Form("Found Altro header with error marker (2AEE)[%0llx]: %i. Supp.next Trailer line (2AA)[%0x]: %i ",
                   tail,pos,f10BitArray[fNextPos],fNextPos));
     return -fNextPos;
   } else if ( tail!=fgkTrailerTail        ) {
-    AliError(Form("Could not read Trailer. \"Write 10bit\" for this event. Last Trailer line (2AA)[%0x]: %i. Supp.next Trailer line (2AA)[%0x]: %i ",
+    AliError(Form("Could not read Trailer. \"Write 10bit\" for this event. Last Trailer line (2AA)[%0llx]: %i. Supp.next Trailer line (2AA)[%0x]: %i ",
                   tail,pos,f10BitArray[fNextPos],fNextPos));    return -1;
   } else if(     fNextPos==Get10BitArraySize()+3           ) { /* was last channel  */
     return  0;

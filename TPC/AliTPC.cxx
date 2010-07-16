@@ -783,7 +783,7 @@ void    AliTPC::SetActiveSectors(Int_t flag)
   else branch = fLoader->TreeH()->GetBranch("TPC");
   Stat_t ntracks = fLoader->TreeH()->GetEntries();
   // loop over all hits
-  AliDebug(1,Form("Got %d tracks",ntracks));
+  AliDebug(1,Form("Got %d tracks", (Int_t) ntracks));
   
   for(Int_t track=0;track<ntracks;track++) {
     ResetHits();
@@ -1338,11 +1338,11 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   //
   for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
     if (IsSectorActive(isec)) {
-      AliDebug(1,Form("Hits2Digits","Sector %d is active.",isec));
+      AliDebug(1,Form("Hits2Digits: Sector %d is active.",isec));
       Hits2DigitsSector(isec);
     }
     else {
-      AliDebug(1,Form("Hits2Digits","Sector %d is NOT active.",isec));
+      AliDebug(1,Form("Hits2Digits: Sector %d is NOT active.",isec));
     }
   
   fLoader->WriteDigits("OVERWRITE"); 

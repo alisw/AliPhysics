@@ -1263,7 +1263,7 @@ void AliTPCCorrection::StoreInOCDB(Int_t startRun, Int_t endRun, const char *com
 }
 
 
-void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTracks, AliESDVertex &aV, AliESDVertex &avOrg, AliESDVertex &cV, AliESDVertex &cvOrg, TTreeSRedirector * const pcstream){
+void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTracks, AliESDVertex &aV, AliESDVertex &avOrg, AliESDVertex &cV, AliESDVertex &cvOrg, TTreeSRedirector * const pcstream, Double_t etaCuts){
 
   AliVertexerTracks *vertexer = new AliVertexerTracks(5);// 5kGaus
 
@@ -1275,12 +1275,12 @@ void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTrac
   UShort_t    *CId = new UShort_t [nTracks];
   Int_t ID=0; 
   Double_t mass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
-  TF1 fpt("fpt",Form("x*(1+(sqrt(x*x+%f^2)-%f)/([0]*[1]))^(-[0])",mass),0.4,10);
+  TF1 fpt("fpt",Form("x*(1+(sqrt(x*x+%f^2)-%f)/([0]*[1]))^(-[0])",mass,mass),0.4,10);
   fpt.SetParameters(7.24,0.120);
   fpt.SetNpx(10000);
   for(Int_t nt=0; nt<nTracks; nt++){
     Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
-    Double_t eta = gRandom->Uniform(-0.8, 0.8);
+    Double_t eta = gRandom->Uniform(-etaCuts, etaCuts);
     Double_t pt = fpt.GetRandom();// momentum for f1
     Short_t sign=1;
     if(gRandom->Rndm() < 0.5){
@@ -1307,14 +1307,14 @@ void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTrac
       "tOrig.="<<t<<
       "td.="<<td<<
       "\n";
-    if( eta>0.07 ) { // - log(tan(0.5*theta)), theta = 0.5*pi - ATan(5.0/80.0)
+    if(( eta>0.07 )&&( eta<etaCuts )) { // - log(tan(0.5*theta)), theta = 0.5*pi - ATan(5.0/80.0)
       if (td){
 	dATrk.AddLast(td);
 	ATrk.AddLast(t);
 	Int_t nn=ATrk.GetEntriesFast();
 	AId[nn]=ID;
       }
-    }else if( eta<-0.07 ){
+    }else if(( eta<-0.07 )&&( eta>-etaCuts )){
       if (td){
 	dCTrk.AddLast(td);
 	CTrk.AddLast(t);

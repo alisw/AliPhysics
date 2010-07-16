@@ -708,7 +708,7 @@ TCanvas * AliTPCCalPad::MakeReportPadSector(TTree *chain, const char* varName, c
   strDraw+=":lX";
   legend = new TLegend(0.5,0.50,0.9,0.9, Form("%s TPC A side", varTitle));
   for (Int_t isec=-1; isec<18; isec+=1){
-    TCut cutSec=Form("sector%36==%d",isec);
+    TCut cutSec=Form("sector%%36==%d",isec);
     cutSec+=cutUser;
     if (isec==-1) cutSec="sector%36<18";
     chain->SetMarkerColor(1+(isec+2)%5);
@@ -734,7 +734,7 @@ TCanvas * AliTPCCalPad::MakeReportPadSector(TTree *chain, const char* varName, c
   //
   legend = new TLegend(0.5,0.50,0.9,0.9, Form("%s TPC C side", varTitle));
   for (Int_t isec=-1; isec<18; isec+=1){
-    TCut cutSec=Form("(sector+18)%36==%d",isec);
+    TCut cutSec=Form("(sector+18)%%36==%d",isec);
     cutSec+=cutUser;
     if (isec==-1) cutSec="sector%36>18";
     chain->SetMarkerColor(1+(isec+2)%5);
