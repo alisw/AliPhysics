@@ -165,8 +165,6 @@ AliAnalyseUE & AliAnalyseUE::operator = (const AliAnalyseUE & /*source*/)
 AliAnalyseUE::~AliAnalyseUE(){
 
   //clear memory
-  delete[] fkAOD;
-  fkAOD = NULL;
 
   
   
@@ -519,9 +517,9 @@ void AliAnalyseUE::FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition, Int_
     }else{
   	tca = dynamic_cast<TClonesArray*>(fkAOD->FindListObject(AliAODMCParticle::StdBranchName())); 
   	if(!tca){
-		Printf("No branch!!!");
-		return;
-		}
+	  Printf("%s:%d No AODMC Branch found !!!",(char*)__FILE__,__LINE__);
+	  return;
+	}
 	nTracks = tca->GetEntriesFast();
     	if (fDebug > 1) AliInfo(Form(" ==== AOD MC particles = %d \n ",nTracks));
   	}
