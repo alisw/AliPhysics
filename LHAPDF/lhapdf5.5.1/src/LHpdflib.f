@@ -103,7 +103,11 @@ subroutine InitPDFsetM(nset,setpath)
   endif
   
   call setnset(nset)
+#ifdef __GFORTRAN__
   open(unit=1,file=setpath,status='old',action='read')
+#else
+  open(unit=1,file=setpath,status='old')
+#endif
   read(1,*) s1,s2
   if ((    index(s2,'1.0').ne.1) &
      .and.(index(s2,'1.1').ne.1) &
