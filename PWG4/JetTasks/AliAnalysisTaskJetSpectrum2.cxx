@@ -282,7 +282,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   //
   //  Histogram
     
-  const Int_t nBinPt = 240;
+  const Int_t nBinPt = 320;
   Double_t binLimitsPt[nBinPt+1];
   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
     if(iPt == 0){
@@ -1092,7 +1092,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   // link it
   //
   const Int_t kNvar   = 3 ; //number of variables on the grid:pt,eta, phi
-  const Double_t kPtmin = 0.0, kPtmax = 240.; // we do not want to have empty bins at the beginning...
+  const Double_t kPtmin = 0.0, kPtmax = 320.; // we do not want to have empty bins at the beginning...
   const Double_t kEtamin = -3.0, kEtamax = 3.0;
   const Double_t kPhimin = 0., kPhimax = 2. * TMath::Pi();
   const Double_t kZmin = 0., kZmax = 1;
@@ -1104,7 +1104,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
 
   //arrays for the number of bins in each dimension
   Int_t iBin[kNvar];
-  iBin[0] = 240; //bins in pt
+  iBin[0] = 320; //bins in pt
   iBin[1] =  1; //bins in eta 
   iBin[2] = 1; // bins in phi
 

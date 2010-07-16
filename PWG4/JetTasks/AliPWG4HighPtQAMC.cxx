@@ -394,11 +394,14 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d", nTracks));
 
+  int nMCtracks = stack->GetNtrack();
+
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     
     AliESDtrack *track = fESD->GetTrack(iTrack);
     if(!track) continue;
     Int_t label = TMath::Abs(track->GetLabel());
+    if(label>=nMCtracks)continue;
     TParticle *particle = stack->Particle(label) ;
     if(!particle) continue;
 
