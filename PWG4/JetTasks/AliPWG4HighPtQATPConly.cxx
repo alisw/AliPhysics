@@ -243,11 +243,9 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   DefineOutput(0, TList::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  DefineOutput(3, TList::Class());
-  
   // Output slot #4 and #5 writes into a AliESDtrackCuts
+  DefineOutput(3, AliESDtrackCuts::Class());
   DefineOutput(4, AliESDtrackCuts::Class());
-  DefineOutput(5, AliESDtrackCuts::Class());
 
 }
 
