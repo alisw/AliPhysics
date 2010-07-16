@@ -158,7 +158,7 @@ AliMUONPainterInterfaceHelper::Dump(const TGButtonGroup& bg)
     TGTextButton* button = static_cast<TGTextButton*>(bg.GetButton(i));
     if ( button ) 
     {
-      cout << Form("i %2d button %s id %d wid %d ON %d",
+      cout << Form("i %2d button %s id %lu wid %d ON %d",
                  i,button->GetTitle(),button->GetId(),
                  button->WidgetId(),
                  button->IsOn()) << endl;
