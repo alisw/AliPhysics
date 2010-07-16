@@ -834,8 +834,7 @@ Int_t  AliPHOSPIDv1::GetHardPhotonBit(AliPHOSEmcRecPoint * emc) const
     TMath::Exp(-TMath::Power(e-GetParameterPhotonBoundary(1),2)/2.0/
 	        TMath::Power(GetParameterPhotonBoundary(2),2)) +
     GetParameterPhotonBoundary(3);
-  AliDebug(1, Form("GetHardPhotonBit","E=%f, m2x=%f, boundary=%f",
-		       e,m2x,m2xBoundary));
+  AliDebug(1, Form("E=%f, m2x=%f, boundary=%f", e,m2x,m2xBoundary));
   if (m2x < m2xBoundary)
     return 1;// A hard photon
   else
@@ -1035,7 +1034,7 @@ void  AliPHOSPIDv1::MakePID()
 ////     track = ts->GetTrackIndex() ; //TPC tracks ?
     
     if (!emc) {
-      AliFatal(Form("-> emc(%d) = %d", ts->GetEmcIndex(), emc )) ;
+      AliFatal(Form("-> emc(%d)", ts->GetEmcIndex())) ;
     }
 
 
@@ -1364,7 +1363,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
     // Choose the cluster energy range
     
     if (!emc) {
-      AliFatal(Form("-> emc(%d) = %d", ts->GetEmcIndex(), emc )) ;
+      AliFatal(Form("-> emc(%d)", ts->GetEmcIndex())) ;
     }
 
     Float_t e = emc->GetEnergy() ;   
@@ -1567,7 +1566,7 @@ void  AliPHOSPIDv1::SetParameters()
 	   &(*fParameters)(i,0), &(*fParameters)(i,1), 
 	   &(*fParameters)(i,2), &(*fParameters)(i,3));
     i++;
-    AliDebug(1, Form("SetParameters", "line %d: %s",i,string));
+    AliDebug(1, Form("Line %d: %s",i,string));
   }
   fclose(fd);
 }

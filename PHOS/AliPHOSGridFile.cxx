@@ -140,7 +140,7 @@ void AliPHOSGridFile::Help()
 {
   // Prints information on available lfn's
 
-  AliInfo(Form("")) ;
+  AliInfo(Form(" ")) ;
 
 }
 

@@ -529,7 +529,7 @@ void AliPHOSEvalRecPoint::TwoGam(Float_t* gamma1, Float_t* gamma2)
     loop20: ;
       Float_t step = st*gr;
 
-      AliInfo(Form("Iteration %d dof %d chisq/dof %f chstop/dof %f step %d stpmin %d",
+      AliInfo(Form("Iteration %d dof %d chisq/dof %f chstop/dof %f step %f stpmin %f",
 	   iter, dof, ch/dof, chstop/dof, step, stpmin)) ;
 
       
@@ -782,8 +782,8 @@ void AliPHOSEvalRecPoint::EvaluatePosition()
     loop20: ;
       Float_t step = st*gr;
 
-      AliInfo(Form(" Iteration %d dof %d chisq/dof %f chstop/dof %f step %d stpMin %d",
-	   iter, dof, chisq/dof, chisq/dof, chstop/dof, step, stpMin)) ;
+      AliInfo(Form(" Iteration %d dof %d chisq/dof %f chstop/dof %f step %f stpMin %f",
+	   iter, dof, chisq/dof, chstop/dof, step, stpMin)) ;
 	
 
       if(step<stpMin)

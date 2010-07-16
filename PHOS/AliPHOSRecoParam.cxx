@@ -127,7 +127,7 @@ void AliPHOSRecoParam::Print(Option_t * /*option*/) const
 		  "\tEMCUnfold              = %d\n"
 		  "\tEMCEnergyCorrectionOn  = %d\n"
 		  "\tEMCFitterVersion       = \"%s\"\n"
-		  "\tGlobalAltroOffset      = %d",
+		  "\tGlobalAltroOffset      = %d\n"
 		  "\tGlobalAltroThreshold   = %d",
 		  fEMCClusteringThreshold,
 		  fEMCLocMaxCut,

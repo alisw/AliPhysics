@@ -42,6 +42,7 @@
 #include "AliPHOSEmcRecPoint.h" 
 #include "AliPHOSTrackSegment.h" 
 #include "AliESDtrack.h" 
+#include "AliLog.h" 
 
 ClassImp(AliPHOSTrackSegment)
 
@@ -176,7 +177,7 @@ void AliPHOSTrackSegment::Print(const Option_t *) const
   // Print all information on this track Segment
   
 
-  Info("Print", "");
+  AliInfo("Track segment");
   printf("Stored at position %d\n", fIndexInList) ;
   printf(" Emc RecPoint #     %d\n", fEmcRecPoint) ;
   if(fCpvRecPoint >= 0)

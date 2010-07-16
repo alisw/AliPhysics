@@ -979,7 +979,7 @@ void AliPHOSClusterizerv1::Print(const Option_t *)const
   else 
     message = " AliPHOSClusterizerv1 not initialized " ;
   
-  AliInfo(Form("%s, %s %s %s %s %s %s %s %s %s %s", message.Data(),  
+  AliInfo(Form("%s, %s %s %s %s %f %f %f %f %f %f", message.Data(),  
        taskName.Data(), 
        GetTitle(),
        taskName.Data(), 

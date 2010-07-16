@@ -708,7 +708,7 @@ void AliPHOSAnalyze::Ls(){
     }
     TObjArray * emcrp = gime->EmcRecPoints() ;
     if(!emcrp){
-      AliError(Form("Event %d,  Can't find EmcRecPoints")) ; 
+      AliError(Form("Event %d,  Can't find EmcRecPoints", ievent)) ; 
       return ;
     }
       

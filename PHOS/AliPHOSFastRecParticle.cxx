@@ -505,7 +505,7 @@ void AliPHOSFastRecParticle::Print(const Option_t *)const
 {
   // Print the type, energy and momentum of the reconstructed particle
 
-  AliInfo(Form("Print", "-----------------------------")) ;  
+  AliInfo(Form("Print  -----------------------------")) ;  
   printf("PID bits are %d%d%d %d%d%d %d%d%d %d%d%d",  
 	 TestPIDBit(0),TestPIDBit(1),
 	 TestPIDBit(2),TestPIDBit(3),
