@@ -871,7 +871,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     while(fIndexes->NextRCIndex(curr.row, curr.col)){
       if(fDigits->GetData(curr.row, curr.col, curr.time) > fMaxThreshTest && IsMaximum(curr, curr.padStatus, &curr.signals[0])){
         if(last.row>-1){
-          if(curr.time==last.time && curr.row==last.row && curr.col==last.col+2) FivePadCluster(last, curr);
+          if(curr.col==last.col+2 && curr.row==last.row && curr.time==last.time) FivePadCluster(last, curr);
           CreateCluster(last);
         }
         last=curr; curr.fivePad=kFALSE;
@@ -907,10 +907,10 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
   Signals[1] = (Short_t)((fDigits->GetData(Max.row, Max.col, Max.time) - fBaseline) / gain + 0.5f);
   if(Signals[1] <= fMaxThresh) return kFALSE;
 
-  Short_t noiseMiddleThresh = (Short_t)(fMinMaxCutSigma*fCalNoiseDetValue*fCalNoiseROC->GetValue(Max.col, Max.row));
-  if (Signals[1] <= noiseMiddleThresh) return kFALSE;
+  if(Max.col < 1 || Max.col + 1 >= fColMax) return kFALSE;
 
-  if (Max.col + 1 >= fColMax || Max.col < 1) return kFALSE;
+  Short_t noiseMiddleThresh = (Short_t)(fMinMaxCutSigma*fCalNoiseDetValue*fCalNoiseROC->GetValue(Max.col, Max.row));
+  if (Signals[1] <= noiseMiddleThresh) return kFALSE;  
 
   UChar_t status[3]={
     fCalPadStatusROC->GetStatus(Max.col-1, Max.row)
@@ -1311,32 +1311,20 @@ void AliTRDclusterizer::DeConvExp(Short_t *const arr, const Int_t nTime, const I
   Double_t dt = 0.1;
 
   rates[0] = TMath::Exp(-dt/(r1));
-  rates[1] = TMath::Exp(-dt/(r2));
+  rates[1] = (nexp == 1) ? .0 : TMath::Exp(-dt/(r2));
   
-  Int_t i = 0;
-  Int_t k = 0;
-
-  Float_t reminder[2];
+  Float_t reminder[2] = { .0, .0 };
   Float_t correction = 0.0;
   Float_t result     = 0.0;
 
-  // Attention: computation order is important
-  for (k = 0; k < nexp; k++) {
-    reminder[k] = 0.0;
-  }
-
-  for (i = 0; i < nTime; i++) {
+  for (int i = 0; i < nTime; i++) {
 
     result = arr[i] - correction - fBaseline;    // No rescaling
     arr[i] = (Short_t)(result + fBaseline + 0.5f);
 
-    for (k = 0; k < nexp; k++) {
-      reminder[k] = rates[k] * (reminder[k] + coefficients[k] * result);
-    }
-
     correction = 0.0;
-    for (k = 0; k < nexp; k++) {
-      correction += reminder[k];
+    for (int k = 0; k < 2; k++) {
+      correction += reminder[k] = rates[k] * (reminder[k] + coefficients[k] * result);
     }
 
   }
