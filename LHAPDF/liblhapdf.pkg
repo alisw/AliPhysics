@@ -6,7 +6,7 @@ HDRS:= AliStructFuncType.h
 
 DHDR:=lhapdfLinkDef.h
 
-EINCLUDE:= LHAPDF/lhapdf5.5.1 LHAPDF/lhapdf5.5.1/include
+EINCLUDE:= LHAPDF/lhapdf5.5.1 LHAPDF/lhapdf5.5.1/include LHAPDF/lhapdf5.5.1/src
 
 FSRCS:= \
 lhapdf5.5.1/src/alphas.f \
