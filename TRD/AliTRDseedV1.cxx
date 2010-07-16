@@ -1318,7 +1318,7 @@ Bool_t AliTRDseedV1::Fit(UChar_t opt)
   }
   if(!IsCalibrated()) Calibrate();
   if(opt>2){
-    AliWarning(Form("Option [%d] outside range [0, 2]. Using default"));
+    AliWarning(Form("Option [%d] outside range [0, 2]. Using default",opt));
     opt=0;
   }
 
