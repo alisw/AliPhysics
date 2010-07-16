@@ -1271,7 +1271,7 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
       nPoints++;
     }
   }
-  fitter->Eval();
+  if (fitter->Eval()) return 1.e10;
   zfitter.Eval();
 
   Double_t offset = fitter->GetParameter(3);
