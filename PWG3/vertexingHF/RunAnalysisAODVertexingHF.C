@@ -291,12 +291,12 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //  plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/data_pass4_good_runCINT1B_8thfeb/");
    //plugin->SetGridDataDir("/alice/sim/PDC_09/LHC09a4/AOD3/");
    // Set data search pattern
-   plugin->SetGridDataDir("/alice/data/2010/LHC10c");
+   plugin->SetGridDataDir("/alice/data/2010/LHC10b");
    plugin->SetDataPattern("pass2/*AliAOD.root");
-   plugin->SetFriendChainName("AliAOD.VertexingHF.root");
+   plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
    //plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
    // Adds only the good runs from the Monalisa Run Condition Table
-   AddGoodRuns(plugin,"LHC10c");
+   AddGoodRuns(plugin,"LHC10b");
    // ...then add run numbers to be considered
    // plugin->SetMaxMergeFiles(100);
    plugin->SetNrunsPerMaster(100);
