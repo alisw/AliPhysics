@@ -41,6 +41,7 @@ class AliAODPidHF : public AliAODPid{
  void SetTRD(Bool_t trd){fTRD=trd;return;}
  void SetMatch(Int_t match){fMatch=match;return;}
  void SetCompat(Bool_t comp){fCompat=comp;return;}
+ void SetMC(Bool_t mc){fMC=mc;return;}
  
  //Getters
  Double_t GetSigma(Int_t idet) const{return fnSigma[idet];}
@@ -54,6 +55,7 @@ class AliAODPidHF : public AliAODPid{
  Bool_t GetTRD() const{return fTRD;}
  Int_t GetMatch() const{return fMatch;}
  Bool_t GetCompat() const{return fCompat;}
+ Bool_t GetMC() const{return fMC;}
 
  Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
  Bool_t IsKaonRaw (AliAODTrack *track, TString detector) const;
@@ -96,6 +98,7 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fTRD; // switch to include or exclude TRD
  Int_t fMatch; //switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
  Bool_t fCompat; // compatibility region : useful only if fMatch=1
+ Bool_t fMC; // MC(kTRUE) or real data (kFALSE, default option)
  
 
 
