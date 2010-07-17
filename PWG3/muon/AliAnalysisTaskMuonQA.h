@@ -22,8 +22,15 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
   
+  /// Select negative (<0), positive (>0) or all (==0) tracks to fill histograms
   void SelectCharge(Short_t charge = 0) {fSelectCharge = charge;}
+  
+  /// Select events passing the physics selection to fill histograms
   void SelectPhysics(Bool_t flag = kTRUE) {fSelectPhysics = flag;}
+  
+  /// Select events passing the trigger selection (CINT1B/CMUS1B) to fill histograms
+  /// (activated only if the physics selection is not)
+  void SelectTrigger(Bool_t flag = kTRUE) {fSelectTrigger = flag;}
   
 private:
   
@@ -77,6 +84,7 @@ private:
   
   Short_t fSelectCharge;  ///< Fill histograms only with negative/position tracks (0=all)
   Bool_t  fSelectPhysics; ///< Fill histograms only with track passing the physics selection
+  Bool_t  fSelectTrigger; ///< Fill histograms only with track passing the trigger selection
   
   static const Int_t nCh;       ///< number of tracking chambers
   static const Int_t nDE;       ///< number of DE
@@ -85,7 +93,7 @@ private:
   static const char* fgkTriggerClass[10];     ///< full trigger class name
   static const char* fgkTriggerShortName[11]; ///< short trigger class name for counters
   
-  ClassDef(AliAnalysisTaskMuonQA, 2);
+  ClassDef(AliAnalysisTaskMuonQA, 3);
 };
 
 #endif
