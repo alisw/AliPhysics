@@ -86,7 +86,8 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
   fTrackCounters(0x0),
   fEventCounters(0x0),
   fSelectCharge(0),
-  fSelectPhysics(kFALSE)
+  fSelectPhysics(kFALSE),
+  fSelectTrigger(kFALSE)
 {
 // Dummy constructor
 }
@@ -100,7 +101,8 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   fTrackCounters(0x0),
   fEventCounters(0x0),
   fSelectCharge(0),
-  fSelectPhysics(kFALSE)
+  fSelectPhysics(kFALSE),
+  fSelectTrigger(kFALSE)
 {
   /// Constructor
   
@@ -255,6 +257,9 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     return;
   }
   
+  // check trigger selection
+  Bool_t isTriggerSelected = (fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL") || fESD->IsTriggerClassFired("CMUS1B-ABCE-NOPF-MUON"));
+  
   Int_t nTracks = (Int_t) fESD->GetNumberOfMuonTracks(); 
   Int_t nTrackerTracks = 0;
   Int_t nSelectedTrackerTracks = 0;
@@ -285,6 +290,9 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     
     // select on "physics" before filling histograms
     if (fSelectPhysics && !isPhysicsSelected) continue;
+    
+    // or select on trigger before filling histograms
+    if (!fSelectPhysics && fSelectTrigger && !isTriggerSelected) continue;
     
     // select on track charge
     if (fSelectCharge*esdTrack->Charge() < 0) continue;
@@ -335,8 +343,10 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     
   }
   
-  ((TH1F*)fList->UncheckedAt(kNTracks))->Fill(nSelectedTrackerTracks);
-  ((TH1F*)fList->UncheckedAt(kMatchTrig))->Fill(nSelectedTrackMatchTrig);
+  if ((!fSelectPhysics || isPhysicsSelected) && (fSelectPhysics || !fSelectTrigger || isTriggerSelected)) {
+    ((TH1F*)fList->UncheckedAt(kNTracks))->Fill(nSelectedTrackerTracks);
+    ((TH1F*)fList->UncheckedAt(kMatchTrig))->Fill(nSelectedTrackMatchTrig);
+  }
   
   // fill event counters
   TString triggerRO = (nTriggerTracks < 10) ? "triggerRO:good" : "triggerRO:bad";
