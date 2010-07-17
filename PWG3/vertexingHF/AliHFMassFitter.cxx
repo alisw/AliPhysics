@@ -332,7 +332,8 @@ Bool_t AliHFMassFitter::SetFixThisParam(Int_t thispar,Bool_t fixpar){
   }
 
   fFixPar[thispar]=fixpar;
-  cout<<"Parameter "<<thispar<<" is now fixed"<<endl;
+  if(fixpar)cout<<"Parameter "<<thispar<<" is now fixed"<<endl;
+  else cout<<"Parameter "<<thispar<<" is now free"<<endl;
   return kTRUE;
 }
 
@@ -558,8 +559,12 @@ void AliHFMassFitter::RebinMass(Int_t bingroup){
     fNbin=nbinshisto;
     cout<<"Kept original number of bins: "<<fNbin<<endl;
   } else{
+   
+    while(nbinshisto%bingroup != 0) {
+      bingroup--;
+    }
+    cout<<"Group "<<bingroup<<" bins"<<endl;
     fhistoInvMass->Rebin(bingroup);
-    if(nbinshisto%bingroup != 0) CheckRangeFit();
     fNbin = fhistoInvMass->GetNbinsX();
     cout<<"New number of bins: "<<fNbin<<endl;
   } 
@@ -745,7 +750,6 @@ Bool_t AliHFMassFitter::SideBandsBounds(){
     fSideBandr=(Int_t)((fMass+0.5*coeff*fSigmaSgn-fminMass)/width);
     cout<<"Changed number of sigma from 4 to "<<0.5*coeff<<" for the estimation of the side bands"<<endl;
     if (coeff<3) cout<<"Side bands inside 3 sigma, may be better use ftypeOfFit4Bkg = 3 (only signal)"<<endl;
-
     if (coeff<2) {
       cout<<"Side bands inside 2 sigma. Change mode: ftypeOfFit4Bkg = 3"<<endl;
       ftypeOfFit4Bkg=3;
@@ -796,12 +800,13 @@ Bool_t AliHFMassFitter::CheckRangeFit(){
   Double_t minhisto=fhistoInvMass->GetBinLowEdge(1), maxhisto=fhistoInvMass->GetBinLowEdge(nbins)+width;
 
   //check if limits are inside histogram range
+
   if( fminMass-minhisto < 0. ) {
-    cout<<"Out of histogram left bound!"<<endl;
+    cout<<"Out of histogram left bound! Setting to "<<minhisto<<endl;
     fminMass=minhisto;
   }
   if( fmaxMass-maxhisto > 0. ) {
-    cout<<"Out of histogram right bound!"<<endl;
+    cout<<"Out of histogram right bound! Setting to"<<maxhisto<<endl;
     fmaxMass=maxhisto;
   }
 
@@ -1221,6 +1226,63 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
 
   return kTRUE;
 }
+
+//______________________________________________________________________________
+
+Bool_t AliHFMassFitter::RefitWithBkgOnly(Bool_t draw){
+
+  //perform a fit with background function only. Can be useful to try when fit fails to understand if it is because there's no signal
+  //If you want to change the backgroud function or range use SetType or SetRangeFit before
+
+  TString bkgname="funcbkgonly";
+  fSideBands = kFALSE;
+
+  TF1* funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars-3,"AliHFMassFitter","FitFunction4Bkg");
+
+  funcbkg->SetLineColor(kBlue+3); //dark blue
+
+  Double_t integral=fhistoInvMass->Integral(fhistoInvMass->FindBin(fminMass),fhistoInvMass->FindBin(fmaxMass),"width");
+
+  switch (ftypeOfFit4Bkg) {
+  case 0: //gaus+expo
+    funcbkg->SetParNames("BkgInt","Slope"); 
+    funcbkg->SetParameters(integral,-2.); 
+    break;
+  case 1:
+    funcbkg->SetParNames("BkgInt","Slope");
+    funcbkg->SetParameters(integral,-100.); 
+    break;
+  case 2:
+    funcbkg->SetParNames("BkgInt","Coef1","Coef2");
+    funcbkg->SetParameters(integral,-10.,5);
+    break;
+  case 3:
+    cout<<"Warning! This choice does not have a lot of sense..."<<endl;
+    if(ftypeOfFit4Sgn==0){
+      funcbkg->SetParNames("Const");
+      funcbkg->SetParameter(0,0.);
+      funcbkg->FixParameter(0,0.);
+    }
+    break;
+  default:
+    cout<<"Wrong choise of ftypeOfFit4Bkg ("<<ftypeOfFit4Bkg<<")"<<endl;
+    return kFALSE;
+    break;
+  }
+
+
+  Int_t status=fhistoInvMass->Fit(bkgname.Data(),"R,L,E,+,0");
+  if (status != 0){
+    cout<<"Minuit returned "<<status<<endl;
+    return kFALSE;
+  }
+  AddFunctionsToHisto();
+
+  if(draw) DrawFit();
+
+  return kTRUE;
+
+}
 //_________________________________________________________________________
 Double_t AliHFMassFitter::GetChiSquare() const{
   TF1 *funcmass=(TF1*)fhistoInvMass->GetFunction("funcmass");
@@ -1230,6 +1292,10 @@ Double_t AliHFMassFitter::GetChiSquare() const{
 //_________________________________________________________________________
 Double_t AliHFMassFitter::GetReducedChiSquare() const{
   TF1 *funcmass=(TF1*)fhistoInvMass->GetFunction("funcmass");
+  if(!funcmass) {
+    cout<<"funcmass not found"<<endl;
+    return -1;
+  }
   return funcmass->GetChisquare()/funcmass->GetNDF();
 }
 
@@ -1285,11 +1351,24 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     np+=3;
   }
 
+  Bool_t done1=kFALSE,done2=kFALSE;
+
   TString bkgnamesave=bkgname;
   TString testname=bkgname;
   testname += "FullRange";
   TF1 *testfunc=(TF1*)fhistoInvMass->FindObject(testname.Data());
   if(testfunc){
+    done1=kTRUE;
+    testfunc=0x0;
+  }
+  testname="funcbkgonly";
+  testfunc=(TF1*)fhistoInvMass->FindObject(testname.Data());
+  if(testfunc){
+    done2=kTRUE;
+    testfunc=0x0;
+  }
+
+  if(done1 && done2){
     cout<<"AddFunctionsToHisto already used: exiting...."<<endl;
     return;
   }
@@ -1297,61 +1376,80 @@ void AliHFMassFitter::AddFunctionsToHisto(){
   TList *hlist=fhistoInvMass->GetListOfFunctions();
   hlist->ls();
 
-  TF1 *b=(TF1*)hlist->FindObject(bkgname.Data());
-  if(!b){
-    cout<<bkgname<<" not found, cannot produce "<<bkgname<<"FullRange and "<<bkgname<<"Recalc"<<endl;
-    return;
+  if(!done2){
+    TF1 *bonly=(TF1*)hlist->FindObject(testname.Data());
+    if(!bonly){
+      cout<<testname.Data()<<" not found looking for complete fit"<<endl;
+    }else{
+      bonly->SetLineColor(kBlue+3);
+      hlist->Add((TF1*)bonly->Clone());
+      if(bonly) {
+	delete bonly;
+	bonly=NULL;
+      }
+    }
+
   }
 
-  bkgname += "FullRange";
-  TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
-  //cout<<bfullrange->GetName()<<endl;
-  for(Int_t i=0;i<np;i++){
-    //cout<<i<<" di "<<np<<endl;
-    bfullrange->SetParName(i,b->GetParName(i));
-    bfullrange->SetParameter(i,b->GetParameter(i));
-    bfullrange->SetParError(i,b->GetParError(i));
-  }
-  bfullrange->SetLineStyle(4);
-  bfullrange->SetLineColor(14);
+  if(!done1){
+    TF1 *b=(TF1*)hlist->FindObject(bkgname.Data());
+    if(!b){
+      cout<<bkgname<<" not found, cannot produce "<<bkgname<<"FullRange and "<<bkgname<<"Recalc"<<endl;
+      return;
+    }
 
-  bkgnamesave += "Recalc";
+    bkgname += "FullRange";
+    TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
+    //cout<<bfullrange->GetName()<<endl;
+    for(Int_t i=0;i<np;i++){
+      //cout<<i<<" di "<<np<<endl;
+      bfullrange->SetParName(i,b->GetParName(i));
+      bfullrange->SetParameter(i,b->GetParameter(i));
+      bfullrange->SetParError(i,b->GetParError(i));
+    }
+    bfullrange->SetLineStyle(4);
+    bfullrange->SetLineColor(14);
 
-  TF1 *blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
+    bkgnamesave += "Recalc";
 
-  TF1 *mass=fhistoInvMass->GetFunction("funcmass");
+    TF1 *blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
 
-  if (!mass){
-    cout<<"funcmass doesn't exist "<<endl;
-    return;
-  }
+    TF1 *mass=fhistoInvMass->GetFunction("funcmass");
 
-  blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(np));
-  blastpar->SetParError(0,mass->GetParError(np));
-  if (np>=2) {
-    blastpar->SetParameter(1,mass->GetParameter(1));
-    blastpar->SetParError(1,mass->GetParError(1));
-  }
-  if (np==3) {
-    blastpar->SetParameter(2,mass->GetParameter(2));
-    blastpar->SetParError(2,mass->GetParError(2));
-  }
+    if (!mass){
+      cout<<"funcmass doesn't exist "<<endl;
+      return;
+    }
 
-  blastpar->SetLineStyle(1);
-  blastpar->SetLineColor(2);
+    blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(np));
+    blastpar->SetParError(0,mass->GetParError(np));
+    if (np>=2) {
+      blastpar->SetParameter(1,mass->GetParameter(1));
+      blastpar->SetParError(1,mass->GetParError(1));
+    }
+    if (np==3) {
+      blastpar->SetParameter(2,mass->GetParameter(2));
+      blastpar->SetParError(2,mass->GetParError(2));
+    }
 
-  hlist->Add((TF1*)bfullrange->Clone());
-  hlist->Add((TF1*)blastpar->Clone());
-  hlist->ls();
+    blastpar->SetLineStyle(1);
+    blastpar->SetLineColor(2);
+
+    hlist->Add((TF1*)bfullrange->Clone());
+    hlist->Add((TF1*)blastpar->Clone());
+    hlist->ls();
   
-  if(bfullrange) {
-    delete bfullrange;
-    bfullrange=NULL;
+    if(bfullrange) {
+      delete bfullrange;
+      bfullrange=NULL;
+    }
+    if(blastpar) {
+      delete blastpar;
+      blastpar=NULL;
+    }
   }
-  if(blastpar) {
-    delete blastpar;
-    blastpar=NULL;
-  }
+
+
 }
 
 //_________________________________________________________________________
@@ -1484,6 +1582,42 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
   cout<<"Verbosity = "<<writeFitInfo<<endl;
 
   TH1F* hdraw=GetHistoClone();
+  
+  if(!hdraw->GetFunction("funcmass") && !hdraw->GetFunction("funcbkgFullRange") && !hdraw->GetFunction("funcbkgRecalc")&& !hdraw->GetFunction("funcbkgonly")){
+    cout<<"Probably fit failed and you didn't try to refit with background only, there's no function to be drawn"<<endl;
+    return;
+  }
+ 
+  if(hdraw->GetFunction("funcbkgonly")){ //Warning! if this function is present, no chance to draw the other!
+    cout<<"Drawing background fit only"<<endl;
+    hdraw->SetMinimum(0);
+    hdraw->GetXaxis()->SetRangeUser(fminMass,fmaxMass);
+    pd->cd();
+    hdraw->SetMarkerStyle(20);
+    hdraw->DrawClone("PE");
+    hdraw->GetFunction("funcbkgonly")->DrawClone("sames");
+
+    if(writeFitInfo > 0){
+      TPaveText *pinfo=new TPaveText(0.6,0.86,1.,1.,"NDC");     
+      pinfo->SetBorderSize(0);
+      pinfo->SetFillStyle(0);
+      TF1* f=hdraw->GetFunction("funcbkgonly");
+      for (Int_t i=0;i<fNFinalPars-3;i++){
+	pinfo->SetTextColor(kBlue+3);
+	TString str=Form("%s = %f #pm %f",f->GetParName(i),f->GetParameter(i),f->GetParError(i));
+	pinfo->AddText(str);
+      }
+
+      pinfo->AddText(Form("Reduced #chi^{2} = %.3f",f->GetChisquare()/f->GetNDF()));
+      pd->cd();
+      pinfo->DrawClone();
+
+ 
+    }
+
+    return;
+  }
+  
   hdraw->SetMinimum(0);
   hdraw->GetXaxis()->SetRangeUser(fminMass,fmaxMass);
   pd->cd();
@@ -1537,7 +1671,7 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
     if(writeFitInfo > 1){
       for (Int_t i=0;i<fNFinalPars-3;i++){
 	pinfob->SetTextColor(kRed);
-	str=Form("%s = %f #pm %f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+	TString str=Form("%s = %f #pm %f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
 	pinfob->AddText(str);
       }
       pd->cd();
@@ -1893,7 +2027,11 @@ void AliHFMassFitter::Background(Double_t min, Double_t max, Double_t &backgroun
 
 void AliHFMassFitter::Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const  {
   // Return significance in mean+- n sigma
-
+ 
+  Double_t min=fMass-nOfSigma*fSigmaSgn;
+  Double_t max=fMass+nOfSigma*fSigmaSgn;
+  Significance(min, max, significance, errsignificance);
+  /*
   Double_t signal,errsignal,background,errbackground;
   Signal(nOfSigma,signal,errsignal);
   Background(nOfSigma,background,errbackground);
@@ -1901,7 +2039,7 @@ void AliHFMassFitter::Significance(Double_t nOfSigma,Double_t &significance,Doub
   significance =  signal/TMath::Sqrt(signal+background);
   
   errsignificance = TMath::Sqrt(significance*significance/(signal+background)/(signal+background)*(1/4.*errsignal*errsignal+errbackground*errbackground)+significance*significance/signal/signal*errsignal*errsignal);
-  
+  */
   return;
 }
 
@@ -1913,6 +2051,12 @@ void AliHFMassFitter::Significance(Double_t min, Double_t max, Double_t &signifi
   Double_t signal,errsignal,background,errbackground;
   Signal(min, max,signal,errsignal);
   Background(min, max,background,errbackground);
+
+  if (signal+background <= 0.){
+    cout<<"Cannot calculate significance because of div by 0!"<<endl;
+    significance=-1;
+    errsignificance=0;
+  }
 
   significance =  signal/TMath::Sqrt(signal+background);
 
