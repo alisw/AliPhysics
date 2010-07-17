@@ -45,8 +45,8 @@ class AliHFMassFitter : public TNamed {
   void     SetFixParam(Bool_t *fixpar){fFixPar=fixpar;}
   void     SetDefaultFixParam();
   Bool_t   SetFixThisParam(Int_t thispar,Bool_t fixpar);
-  Bool_t   SetFixGaussianMean(Bool_t fixpar=kTRUE){return SetFixThisParam(fNFinalPars-2,fixpar);}
-  Bool_t   SetFixGaussianSigma(Bool_t fixpar=kTRUE){return SetFixThisParam(fNFinalPars-1,fixpar);}
+  void     SetFixGaussianMean(Double_t mean=1.85,Bool_t fixpar=kTRUE){SetInitialGaussianMean(mean); SetFixThisParam(fNFinalPars-2,fixpar);}
+  void     SetFixGaussianSigma(Double_t sigma=0.012, Bool_t fixpar=kTRUE){SetInitialGaussianMean(sigma); SetFixThisParam(fNFinalPars-1,fixpar);}
 
   //getters
   TH1F*    GetHistoClone() const; //return the histogram
@@ -93,6 +93,7 @@ class AliHFMassFitter : public TNamed {
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
   Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
   Bool_t   MassFitter(Bool_t draw=kTRUE);
+  Bool_t   RefitWithBkgOnly(Bool_t draw=kTRUE);
   void     RebinMass(Int_t bingroup=1);
   
 
