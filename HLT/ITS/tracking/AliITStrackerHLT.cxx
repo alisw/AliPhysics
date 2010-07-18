@@ -64,14 +64,29 @@
 
 ClassImp(AliITStrackerHLT)
 
+Bool_t AliITStrackerHLT::CheckTrack( const AliExternalTrackParam *t )
+{
+  // Check that the track parameters are reasonable in order to avoid floating point exeptions in AliExternalTrackParam routines
+  
+  bool ok = 1;
+  for( int i=0; i<5; i++ ) ok = ok && finite(t->GetParameter()[i]);
+  for( int i=0; i<15; i++ ) ok = ok && finite(t->GetCovariance()[i]);
+  ok = ok && ( TMath::Abs(t->GetX()) < 500. );
+  ok = ok && ( TMath::Abs(t->GetY()) < 500. );
+  ok = ok && ( TMath::Abs(t->GetZ()) < 500. );
+  ok = ok && ( TMath::Abs(t->GetSnp()) < .99 );
+  ok = ok && ( TMath::Abs(t->GetSigned1Pt()) < 1./0.01 );
+  return ok;
+}
+
 Bool_t AliITStrackerHLT::TransportToX( AliExternalTrackParam *t, double x ) const
 {
-  return t->PropagateTo( x, t->GetBz() );
+  return CheckTrack(t) && t->PropagateTo( x, t->GetBz() );
 }
 
 Bool_t AliITStrackerHLT::TransportToPhiX( AliExternalTrackParam *t, double phi, double x ) const
 {
-  return t->Propagate( phi, x, t->GetBz() );
+  return CheckTrack(t) && t->Propagate( phi, x, t->GetBz() );
 }
 
 

@@ -89,9 +89,8 @@ protected:
   Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,const AliHLTITSTrack *track,
 			  Float_t &xloc,Float_t &zloc) const;
 
+  static Bool_t CheckTrack( const AliExternalTrackParam *t );
 
-
-// method to be used for Plane Efficiency evaluation
 
   // 
 
