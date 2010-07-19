@@ -149,14 +149,15 @@ Bool_t AliZDCDigitizer::Init()
   if((beamType.CompareTo("P-P")) == 0 || (beamType.CompareTo("p-p")) == 0){
     //PTM gains rescaled to beam energy for p-p
     if(fBeamEnergy != 0){
-      for(Int_t j = 0; j < 5; j++){
-        fPMGain[0][j] = (661.444/fBeamEnergy+0.000740671)*10000000;
-        fPMGain[1][j] = (864.350/fBeamEnergy+0.002344)*10000000;
-        fPMGain[2][j] = (1.32312-0.000101515*fBeamEnergy)*10000000;
-        fPMGain[3][j] = fPMGain[0][j];
-        fPMGain[4][j] = fPMGain[1][j] ;
-      }
-      AliInfo(Form("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+    for(Int_t j = 0; j < 5; j++){
+        fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000;
+        fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;
+        fPMGain[3][j] = 1.350938*(661.444/fBeamEnergy+0.000740671)*10000000; 
+        fPMGain[4][j] = 0.678597*(864.350/fBeamEnergy+0.00234375)*10000000;
+    }
+    fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
+    fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000;
+    AliInfo(Form("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][0]));
     }
   }
@@ -167,14 +168,11 @@ Bool_t AliZDCDigitizer::Init()
     // to reproduce experimental spectra (from Grazia Jul 2010)
     Float_t scalGainFactor = fBeamEnergy/2760.;
     for(Int_t j = 0; j < 5; j++){
-        fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000;
-        fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;
-        fPMGain[2][j] = 0.; 
-        fPMGain[3][j] = 1.350938*(661.444/fBeamEnergy+0.000740671)*10000000; 
-        fPMGain[4][j] = 0.678597*(864.350/fBeamEnergy+0.00234375)*10000000;
-      }
-      fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
-      fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000;
+       fPMGain[0][j] = 50000./scalGainFactor; 	         
+       fPMGain[1][j] = 100000./scalGainFactor; 	         
+       fPMGain[3][j] = 50000./scalGainFactor; 	         
+       fPMGain[4][j] = 100000./scalGainFactor; 	         
+       fPMGain[5][j] = 100000./scalGainFactor;    
     }
     AliInfo(Form("    PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][0]));
