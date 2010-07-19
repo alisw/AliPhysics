@@ -234,7 +234,10 @@ Bool_t AliJetAODReader::FillMomentumArrayMC(){
 
     
 
-    if (mcTrack == 0) new(fRef) TRefArray(TProcessID::GetProcessWithUID(track));
+    if (mcTrack == 0){
+      fRef->Delete(); // make sure to delete before placement new...
+      new(fRef) TRefArray(TProcessID::GetProcessWithUID(track));
+    }
     new ((*fMomentumArray)[mcTrack]) TLorentzVector(p3,p3.Mag());
     sflag[mcTrack] = 1;
     cflag[mcTrack] = ( pt > ptMin ) ? 1: 0;
@@ -261,16 +264,14 @@ Bool_t AliJetAODReader::FillMomentumArray()
   fRef->Clear();
   fDebug = fReaderHeader->GetDebug();
 
-  if(((AliJetAODReaderHeader*)fReaderHeader)->GetReadAODMC()){
-    return FillMomentumArrayMC();
-  }
-  
-
-  
   if (!fAOD) {
       return kFALSE;
   }
-  
+
+  if(((AliJetAODReaderHeader*)fReaderHeader)->GetReadAODMC()){
+    return FillMomentumArrayMC();
+  }
+   
   // get number of tracks in event (for the loop)
   Int_t nt = fAOD->GetNTracks();
   if(fDebug>0)printf("AOD tracks: %5d \t", nt);
