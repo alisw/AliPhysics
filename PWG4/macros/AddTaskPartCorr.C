@@ -134,7 +134,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else {//EMCAL
     //anaphoton->SetNCellCut(0);// At least 2 cells
     anaphoton->SetMinPt(0.1); // no effect minium EMCAL cut.
-    anaphoton->SetTimeCut(525,725);// Time window of [550-750] ns
+    if(kUseKinematics) anaphoton->SetTimeCut(525,725);// Time window of [550-750] ns
     anaphoton->SetMinDistanceToBadChannel(6, 12, 18);
   }
   anaphoton->SetCalorimeter(calorimeter);
@@ -174,9 +174,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SetCalorimeter(calorimeter);
   if(kSimulation){
     anapi0->SwitchOnFiducialCut();
-	AliFiducialCut * fidCut1stYear = anapi0->GetFiducialCut();
-	fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
-	fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+    AliFiducialCut * fidCut1stYear = anapi0->GetFiducialCut();
+    fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
+    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
     fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
     fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
     fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
@@ -210,14 +210,14 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0ebe->SetCalorimeter(calorimeter);
   anapi0ebe->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   if(!data.Contains("delta")) {
-	anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
-	anapi0ebe->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+    anapi0ebe->SetOutputAODName(Form("Pi0s%s",calorimeter.Data()));
+    anapi0ebe->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
   }
   else  anapi0ebe->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
-	
+  
   if(kUseKinematics) anapi0ebe->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else  anapi0ebe->SwitchOffDataMC() ;	
-	
+  
   AliNeutralMesonSelection *nms = anapi0ebe->GetNeutralMesonSelection();
   nms->SetInvMassCutRange(0.05, 0.2)     ;
   nms->KeepNeutralMesonSelectionHistos(kTRUE);
