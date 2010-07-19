@@ -1207,7 +1207,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
       if(fDebug>0){
 	if(tr->Pt()>20){
 	  Printf("High pT track found in Event %d with p_T, %E",(int)Entry(),tr->Pt());
-	  Printf("%s read event, %ld",fInputHandler->GetTree()->GetCurrentFile()->GetName(),fInputHandler->GetTree()->GetReadEntry());
+	  Printf("%s read event, %d",fInputHandler->GetTree()->GetCurrentFile()->GetName(),(Int_t)fInputHandler->GetTree()->GetReadEntry());
 	  tr->Print();
 	  //	tr->Dump();
 	  AliESDEvent *fESD = dynamic_cast<AliESDEvent*> (InputEvent());
