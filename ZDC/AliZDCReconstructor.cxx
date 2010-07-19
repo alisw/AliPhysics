@@ -822,7 +822,21 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 	     rFlags[3] << 3 | rFlags[2] << 2 | rFlags[1] << 1 | rFlags[0];
   // --------------------------------------------------
   
-
+  
+  // CH. debug
+/*  printf("\n*************************************************\n");
+  printf(" ReconstructEventPbPb -> values after pedestal subtraction:\n");
+  printf(" ADCZN1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	corrADCZN1[0],corrADCZN1[1],corrADCZN1[2],corrADCZN1[3],corrADCZN1[4]);
+  printf(" ADCZP1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	corrADCZP1[0],corrADCZP1[1],corrADCZP1[2],corrADCZP1[3],corrADCZP1[4]);
+  printf(" ADCZN2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	corrADCZN2[0],corrADCZN2[1],corrADCZN2[2],corrADCZN2[3],corrADCZN2[4]);
+  printf(" ADCZP2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	corrADCZP2[0],corrADCZP2[1],corrADCZP2[2],corrADCZP2[3],corrADCZP2[4]);
+  printf(" ADCZEM1 [%1.2f] ADCZEM2 [%1.2f] \n",corrADCZEM1[0],corrADCZEM2[0]);
+  printf("*************************************************\n");
+*/
   // ******	Retrieving calibration data 
   // --- Equalization coefficients ---------------------------------------------
   Float_t equalCoeffZN1[5], equalCoeffZP1[5], equalCoeffZN2[5], equalCoeffZP2[5];
@@ -833,15 +847,10 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
      equalCoeffZP2[ji] = fTowCalibData->GetZP2EqualCoeff(ji); 
   }
   // --- Energy calibration factors ------------------------------------
-  Float_t valFromOCDB[6], calibEne[6];
-  for(Int_t ij=0; ij<6; ij++){
-    valFromOCDB[ij] = fEnCalibData->GetEnCalib(ij);
-    if(ij<4){
-      if(valFromOCDB[ij]!=0) calibEne[ij] = fBeamEnergy/valFromOCDB[ij];
-      else AliWarning(" Value from OCDB for E calibration = 0 !!!\n");
-    } 
-    else calibEne[ij] = valFromOCDB[ij];
-  }
+  Float_t calibEne[6];
+  // The energy calibration object already takes into account of E_beam 
+  // -> the value from the OCDB can be directly used (Jul 2010)
+  for(Int_t ij=0; ij<6; ij++) calibEne[ij] = fEnCalibData->GetEnCalib(ij);
   
   // ******	Equalization of detector responses
   Float_t equalTowZN1[10], equalTowZN2[10], equalTowZP1[10], equalTowZP2[10];
@@ -860,6 +869,19 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
      }
   }
   
+  // Ch. debug
+/*  printf("\n ------------- EQUALIZATION -------------\n");
+  printf(" ADCZN1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	equalTowZN1[0],equalTowZN1[1],equalTowZN1[2],equalTowZN1[3],equalTowZN1[4]);
+  printf(" ADCZP1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	equalTowZP1[0],equalTowZP1[1],equalTowZP1[2],equalTowZP1[3],equalTowZP1[4]);
+  printf(" ADCZN2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	equalTowZN2[0],equalTowZN2[1],equalTowZN2[2],equalTowZN2[3],equalTowZN2[4]);
+  printf(" ADCZP2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	equalTowZP2[0],equalTowZP2[1],equalTowZP2[2],equalTowZP2[3],equalTowZP2[4]);
+  printf(" ----------------------------------------\n");
+*/
+  
   // ******	Summed response for hadronic calorimeter (SUMMED and then CALIBRATED!)
   Float_t calibSumZN1[]={0,0}, calibSumZN2[]={0,0}, calibSumZP1[]={0,0}, calibSumZP2[]={0,0};
   for(Int_t gi=0; gi<5; gi++){
@@ -873,6 +895,9 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
        calibSumZN2[1] += equalTowZN2[gi+5];
        calibSumZP2[1] += equalTowZP2[gi+5];
   }
+  //
+  fEnCalibData->Print("");
+  
   // High gain chain
   calibSumZN1[0] = calibSumZN1[0]*calibEne[0]*8.;
   calibSumZP1[0] = calibSumZP1[0]*calibEne[1]*8.;
@@ -905,7 +930,20 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
      calibTowZN2[gi+5] = equalTowZN2[gi+5]*calibEne[2];
      calibTowZP2[gi+5] = equalTowZP2[gi+5]*calibEne[3];
   }
-  
+
+  // Ch. debug
+/*  printf("\n ------------- CALIBRATION -------------\n");
+  printf(" ADCZN1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	calibTowZN1[0],calibTowZN1[1],calibTowZN1[2],calibTowZN1[3],calibTowZN1[4]);
+  printf(" ADCZP1 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	calibTowZP1[0],calibTowZP1[1],calibTowZP1[2],calibTowZP1[3],calibTowZP1[4]);
+  printf(" ADCZN2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	calibTowZN2[0],calibTowZN2[1],calibTowZN2[2],calibTowZN2[3],calibTowZN2[4]);
+  printf(" ADCZP2 [%1.2f %1.2f %1.2f %1.2f %1.2f]\n",
+  	calibTowZP2[0],calibTowZP2[1],calibTowZP2[2],calibTowZP2[3],calibTowZP2[4]);
+  printf(" ADCZEM1 [%1.2f] ADCZEM2 [%1.2f] \n",calibZEM1[0],calibZEM2[0]);
+  printf(" ----------------------------------------\n");
+*/  
   //  ******	Number of detected spectator nucleons
   Int_t nDetSpecNLeft=0, nDetSpecPLeft=0, nDetSpecNRight=0, nDetSpecPRight=0;
   if(fBeamEnergy>0.01){
@@ -915,9 +953,9 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     nDetSpecPRight = (Int_t) (calibSumZP2[0]/fBeamEnergy);
   }
   else AliWarning(" ATTENTION!!! fBeamEnergy=0 -> N_spec will be ZERO!!! \n");
-  /*printf("\n\t AliZDCReconstructor -> nDetSpecNLeft %d, nDetSpecPLeft %d,"
-    " nDetSpecNRight %d, nDetSpecPRight %d\n",nDetSpecNLeft, nDetSpecPLeft, 
-    nDetSpecNRight, nDetSpecPRight);*/
+  printf("\n\t AliZDCReconstructor -> fBeamEnergy %1.0f: nDetSpecNsideA %d, nDetSpecPsideA %d,"
+    " nDetSpecNsideC %d, nDetSpecPsideC %d\n",fBeamEnergy,nDetSpecNLeft, nDetSpecPLeft, 
+    nDetSpecNRight, nDetSpecPRight);
   
   Int_t nGenSpec=0, nGenSpecA=0, nGenSpecC=0;
   Int_t nPart=0, nPartA=0, nPartC=0;
@@ -963,16 +1001,16 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
            if(yBinCenter < (line->GetParameter(0)*xBinCenter + line->GetParameter(1))){
              countPerc += hZDCvsZEM->GetBinContent(nbinx,nbiny);
              // Ch. debug
-             /*printf(" xBinCenter  %1.3f, yBinCenter %1.0f,  countPerc %1.0f\n", 
-	 	xBinCenter, yBinCenter, countPerc);*/
+             //printf(" xBinCenter  %1.3f, yBinCenter %1.0f,  countPerc %1.0f\n", 
+	 	//xBinCenter, yBinCenter, countPerc);
            }
    	 }
    	 else{
    	   if(yBinCenter > (line->GetParameter(0)*xBinCenter + line->GetParameter(1))){
    	     countPerc += hZDCvsZEM->GetBinContent(nbinx,nbiny);
              // Ch. debug
-             /*printf(" xBinCenter  %1.3f, yBinCenter %1.0f,  countPerc %1.0f\n", 
-	 	xBinCenter, yBinCenter, countPerc);*/
+             //printf(" xBinCenter  %1.3f, yBinCenter %1.0f,  countPerc %1.0f\n", 
+	 	//xBinCenter, yBinCenter, countPerc);
    	   }
    	 }
       }
@@ -1135,16 +1173,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     nGenSpecA = 416 - nPartA;
     if(nGenSpec>416) nGenSpec=416; if(nGenSpec<0) nGenSpec=0;
     if(nGenSpecC>416) nGenSpecC=416; if(nGenSpecC<0) nGenSpecC=0;
-    if(nGenSpecA>416) nGenSpecA=416; if(nGenSpecA<0) nGenSpecA=0;
-  
-    //  Ch. debug
-    /*printf("\n\t AliZDCReconstructor -> calibSumZN1[0] %1.0f, calibSumZP1[0] %1.0f,"
-        "  calibSumZN2[0] %1.0f, calibSumZP2[0] %1.0f, corrADCZEMHG %1.0f\n", 
-        calibSumZN1[0],calibSumZP1[0],calibSumZN2[0],calibSumZP2[0],corrADCZEMHG);
-    printf("\t AliZDCReconstructor -> nGenSpecLeft %d nGenSpecRight %d\n", 
-        nGenSpecLeft, nGenSpecRight);
-    printf("\t AliZDCReconstructor ->  NpartL %d,  NpartR %d,  b %1.2f fm\n\n",nPartTotLeft, nPartTotRight, impPar);
-    */
+    if(nGenSpecA>416) nGenSpecA=416; if(nGenSpecA<0) nGenSpecA=0;    
   
     delete lineC;  delete lineA;
 

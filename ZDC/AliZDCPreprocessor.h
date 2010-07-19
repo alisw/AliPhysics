@@ -32,7 +32,7 @@ class AliZDCPreprocessor : public AliPreprocessor
     UInt_t ProcessDCSData(TMap* dcsAliasMap);
     UInt_t ProcessChMap();
     UInt_t ProcessppData();
-    UInt_t ProcessCalibData();
+    UInt_t ProcessCalibData(Float_t beamEnergy);
     UInt_t ProcessPedestalData();
     UInt_t ProcessLaserData();
     UInt_t ProcessMBCalibData();

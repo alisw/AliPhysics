@@ -384,7 +384,7 @@ UInt_t AliZDCPreprocessor::ProcessppData()
 }
 
 //______________________________________________________________________________________________
-UInt_t AliZDCPreprocessor::ProcessCalibData()
+UInt_t AliZDCPreprocessor::ProcessCalibData(Float_t beamEnergy)
 {
   TList* daqSources = GetFileSources(kDAQ, "EMDENERGYCALIB");
   if(!daqSources){
@@ -423,7 +423,7 @@ UInt_t AliZDCPreprocessor::ProcessCalibData()
         if(j<6){
           int iread = fscanf(file,"%f",&fitValEMD[j]);
           if(iread==0) AliDebug(3," Failing reading daa from EMD calibration data file");
-          eCalib->SetEnCalib(j,fitValEMD[j]);
+          eCalib->SetEnCalib(j, beamEnergy/fitValEMD[j]);
         }
       }
       //
@@ -772,7 +772,9 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
 
  const char* beamType = GetRunParameter("beamType");
  TString runType = GetRunType();
- printf("\t **** AliZDCPreprocessor -> beamType %s, runType %s ****\n",beamType,runType.Data());
+ Float_t beamEnergy = (Float_t)(((TString)GetRunParameter("beamEnergy")).Atof()); 
+ printf("\t **** AliZDCPreprocessor -> runType %s, beamType %s,  beamEnergy %1.0f ****\n",
+ 	runType.Data(),beamType,beamEnergy);
 
  // ******************************************
  // ADC channel mapping
@@ -790,7 +792,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
  // CALIBRATION_EMD -> Energy calibration and equalization
  // *****************************************************
  if((strcmp(beamType,"A-A")==0) && (runType.CompareTo("CALIBRATION_EMD")==0)) 
-   resEnergyCalib =  ProcessCalibData();
+   resEnergyCalib =  ProcessCalibData(beamEnergy);
  
  // *****************************************************
  // STANDALONE_PEDESTALS -> Pedestal subtraction 
