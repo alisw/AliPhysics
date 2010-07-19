@@ -321,7 +321,9 @@ void AliMUONv1::StepManager()
   
   if( gMC->IsTrackEntering() ) {
      Float_t theta = fTrackMomentum.Theta();
-     if ((TMath::Pi()-theta)*kRaddeg>=15.) gMC->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
+     if ( fIsMaxStep && (TMath::Pi()-theta)*kRaddeg>=15. ) {
+       gMC->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
+     }  
      iEnter = 1;
      gMC->TrackPosition(xyzEnter[0], xyzEnter[1], xyzEnter[2]); // save coordinates of entrance point
   }
@@ -355,9 +357,10 @@ void AliMUONv1::StepManager()
        gMC->IsTrackDisappeared()||
        (fStepSum[idvol]>fStepMaxInActiveGas) ) {
     
-    if   ( gMC->IsTrackExiting() || 
-           gMC->IsTrackStop() || 
-           gMC->IsTrackDisappeared() ) gMC->SetMaxStep(kBig);
+    if   ( fIsMaxStep && 
+           ( gMC->IsTrackExiting() || 
+             gMC->IsTrackStop() || 
+             gMC->IsTrackDisappeared() ) ) gMC->SetMaxStep(kBig);
     if (fDestepSum[idvol] == 0) {
       // AZ - no energy release
       fStepSum[idvol] = 0; // Reset for the next event

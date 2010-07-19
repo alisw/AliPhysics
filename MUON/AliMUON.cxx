@@ -92,6 +92,7 @@ AliMUON::AliMUON()
     fMaxDestepAlu(0.),
     fMaxIterPad(0),
     fCurIterPad(0),
+    fIsMaxStep(kTRUE),
     fTriggerScalerEvent(kFALSE),
     fTriggerResponseV1(kFALSE),
     fTriggerCoinc44(0),
@@ -128,6 +129,7 @@ AliMUON::AliMUON(const char *name, const char* title)
     fMaxDestepAlu(-1), // in the calculation of the tracking parameters
     fMaxIterPad(0),
     fCurIterPad(0),
+    fIsMaxStep(kTRUE),
     fTriggerScalerEvent(kFALSE),
     fTriggerResponseV1(kFALSE),
     fTriggerCoinc44(0),

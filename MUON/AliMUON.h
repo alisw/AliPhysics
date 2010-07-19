@@ -95,7 +95,10 @@ class AliMUON : public  AliDetector
     // Set alignement option
     virtual void  SetAlign(Bool_t align = true);
     virtual void  SetAlign(const TString& fileName, Bool_t align = true);
-
+    
+                    /// Set flag to inactivate calls to gMC->SetMaxStep
+    virtual void  SetIsMaxStep(Bool_t isMaxStep) { fIsMaxStep = isMaxStep; }
+    
                    /// Set scaler event for trigger
     virtual void  SetTriggerScalerEvent(Bool_t scaler = true){fTriggerScalerEvent = scaler;}
 
@@ -165,6 +168,7 @@ class AliMUON : public  AliDetector
     Int_t fCurIterPad;        ///< Current pad index
    
     // Options
+    Bool_t fIsMaxStep;          ///< Flag to inactivate calls to gMC->SetMaxStep
     Bool_t fTriggerScalerEvent; ///< Flag to generates scaler event
     Bool_t fTriggerResponseV1;  ///< Flag to select TriggerResponseV1
     Int_t  fTriggerCoinc44;     ///< Flag to select TriggerCoinc44 
@@ -183,7 +187,7 @@ class AliMUON : public  AliDetector
     
     AliMUONCalibrationData* fCalibrationData; ///< pointer of calibration data
 
-    ClassDef(AliMUON,21)  // MUON Detector base class
+    ClassDef(AliMUON,22)  // MUON Detector base class
 };
 #endif
 

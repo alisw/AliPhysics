@@ -214,6 +214,9 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
   // activate trigger chamber efficiency by cells (0=default, 1=trigger efficiency according to AliMUONTriggerEfficiencyCells
   //  MUON->SetTriggerEffCells(0);
 
+  // Activate the following line when running with Fluka
+  // MUON->SetIsMaxStep(kFALSE);
+
   // Use SetDigitStoreClassName() to change the digitStore implementation used by (s)digitizer
   MUON->SetDigitStoreClassName(digitstore);
   
