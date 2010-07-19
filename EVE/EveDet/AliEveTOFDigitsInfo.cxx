@@ -117,7 +117,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
 
     clonesRawData = (TClonesArray*)stream.GetRawData();
 
-    if (clonesRawData->GetEntriesFast()) AliDebug(2, Form(" Number of TOF digits in the sector number %2i: 5i", indexDDL, clonesRawData->GetEntriesFast()));
+    if (clonesRawData->GetEntriesFast()) AliDebug(2, Form(" Number of TOF digits in the sector number %2i: %5i", indexDDL, clonesRawData->GetEntriesFast()));
 
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
