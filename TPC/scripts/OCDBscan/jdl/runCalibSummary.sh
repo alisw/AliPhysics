@@ -12,7 +12,6 @@ runnum=$1
 echo
 echo Run number to be processed $runnum
 echo
-export GCLIENT_SERVER_LIST="pcapiserv04.cern.ch:10000|pcapiserv05.cern.ch:10000|pcapiserv06.cern.ch:10000|pcapiserv07.cern.ch:10000"
 echo ===========================
 echo ">>>>>>>>> PATH is..."
 echo $PATH
@@ -26,7 +25,7 @@ echo
 echo ">>>>>>> Running AliRoot to extract calibration summary..."
 aliroot -l -b -q  ./runCalibSummary.C\(\"$runnum\"\)   2>&1 | tee calib.log
 
-if [ -f dcsTime.log ]
+if [ -f dcsTime.root ]
     then
     mv dcsTime.root calibSummary_run$runnum.root
 else
