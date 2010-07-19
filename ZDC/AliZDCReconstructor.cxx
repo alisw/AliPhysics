@@ -896,7 +896,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
        calibSumZP2[1] += equalTowZP2[gi+5];
   }
   //
-  fEnCalibData->Print("");
+  //fEnCalibData->Print("");
   
   // High gain chain
   calibSumZN1[0] = calibSumZN1[0]*calibEne[0]*8.;
