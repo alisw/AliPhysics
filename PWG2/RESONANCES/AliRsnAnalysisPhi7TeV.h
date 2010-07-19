@@ -76,8 +76,8 @@ class AliRsnAnalysisPhi7TeV : public AliAnalysisTaskSE
     Bool_t   fUseMC;      // use MC or data?
     
     Short_t  fPDG;        // PDG code
-    Char_t   fCh;         // control flag for like/unlike sign
-    Char_t   fITS[2];     // check flag to know if one or both candidates are ITS standalone
+    Short_t  fCh;         // control flag for like/unlike sign
+    Short_t  fITS[2];     // check flag to know if one or both candidates are ITS standalone
     Float_t  fIM;         // inv mass
     Float_t  fPt;         // transv momentum
     Float_t  fY;          // rapidity
