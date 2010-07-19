@@ -141,7 +141,7 @@ if [ ! -f $ALICE_ROOT/OCDB/GRP/CTP/Config/Run0_999999999_v0_s1.root ]; then
 
   echo "Updating GRP CTP config  ..."
 
-  aliroot -b >& $OUTDIR/updateCDBCTPConfig.out << EOF
+  aliroot -b > $OUTDIR/updateCDBCTPConfig.out 2>&1 << EOF
   .L UpdateCDBCTPConfig.C+
   UpdateCDBCTPConfig();
   .q
@@ -160,7 +160,7 @@ if [ "$SIMULATION" -eq 1 ]; then
 
   echo "Running simulation  ..."
 
-  aliroot -l -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\"\) >& $OUTDIR/testSim.out 
+  aliroot -l -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\"\) > $OUTDIR/testSim.out 2>&1
 
   mkdir $OUTDIR/$SIMDIR
 
@@ -207,11 +207,11 @@ if [ "$RECONSTRUCTION" -eq 1 ]; then
   
   if [ "$RAW" -eq 1 ]; then
   
-    aliroot -l -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\"\) >& $OUTDIR/testReco.out
+    aliroot -l -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\"\) > $OUTDIR/testReco.out 2>&1
 
   else
 
-    aliroot -l -b -q runReconstruction\.C\($SEED,\"""\",\""$RECOPTIONS"\"\) >& $OUTDIR/testReco.out
+    aliroot -l -b -q runReconstruction\.C\($SEED,\"""\",\""$RECOPTIONS"\"\) > $OUTDIR/testReco.out  2>&1
   
   fi
   
@@ -229,7 +229,7 @@ if [ "$CHECKS" -eq 1 ]; then
 
     echo "Running efficiency  ..."
 
-    aliroot -b >& $OUTDIR/testResults.out << EOF
+    aliroot -b > $OUTDIR/testResults.out 2>&1 << EOF
     .L MUONefficiency.C+
     // no argument assumes Upsilon but MUONefficiency(443) works on Jpsi
     MUONefficiency("$OUTDIR/$SIMDIR/galice.root");
@@ -239,7 +239,7 @@ EOF
   if [ -f "$OUTDIR/galice.root" ]; then
 
       echo "Running Trigger efficiency  ..."
-      aliroot -b >& $OUTDIR/testTriggerResults.out << EOF
+      aliroot -b > $OUTDIR/testTriggerResults.out 2>&1 << EOF
       .L MUONTriggerEfficiency.C+
       MUONTriggerEfficiency("$OUTDIR/$SIMDIR/galice.root", "$OUTDIR/galice.root", 1);
       .q
@@ -248,7 +248,7 @@ EOF
       if [ -f "$OUTDIR/AliESDs.root" ]; then
 
         echo "Running check ..."
-        aliroot -b >& $OUTDIR/testCheck.out << EOF
+        aliroot -b > $OUTDIR/testCheck.out 2>&1 << EOF
         gSystem->Load("libMUONevaluation");
         .L MUONCheck.C+
         MUONCheck(0, $NEVENTS-1, "$OUTDIR/$SIMDIR/galice.root", "$OUTDIR/galice.root", "$OUTDIR/AliESDs.root"); 
