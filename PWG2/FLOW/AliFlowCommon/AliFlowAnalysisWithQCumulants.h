@@ -120,6 +120,7 @@ class AliFlowAnalysisWithQCumulants{
     //virtual void CalculateCorrectionsForNUAForIntQcumulants();
     virtual void CalculateQcumulantsCorrectedForNUAIntFlow(); 
     virtual void CalculateIntFlowCorrectedForNUA(); 
+    virtual void CalculateDetectorEffectsForTrueCorrelations();
     //virtual void ApplyCorrectionForNonUniformAcceptanceToCumulantsForIntFlow(Bool_t useParticleWeights, TString eventWeights); 
     //virtual void PrintQuantifyingCorrectionsForNonUniformAcceptance(Bool_t useParticleWeights, TString eventWeights);
     virtual void PrintFinalResultsForIntegratedFlow(TString type);
@@ -216,6 +217,8 @@ class AliFlowAnalysisWithQCumulants{
   TProfile* GetIntFlowFlags() const {return this->fIntFlowFlags;};
   void SetApplyCorrectionForNUA(Bool_t const applyCorrectionForNUA) {this->fApplyCorrectionForNUA = applyCorrectionForNUA;};
   Bool_t GetApplyCorrectionForNUA() const {return this->fApplyCorrectionForNUA;};
+  void SetApplyCorrectionForNUAVsM(Bool_t const applyCorrectionForNUAVsM) {this->fApplyCorrectionForNUAVsM = applyCorrectionForNUAVsM;};
+  Bool_t GetApplyCorrectionForNUAVsM() const {return this->fApplyCorrectionForNUAVsM;};  
   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
   Int_t GetnBinsMult() const {return this->fnBinsMult;};  
   void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
@@ -240,7 +243,9 @@ class AliFlowAnalysisWithQCumulants{
   void SetIntFlowProductOfCorrectionTermsForNUAPro(TProfile* const ifpoctfNUA) {this->fIntFlowProductOfCorrectionTermsForNUAPro = ifpoctfNUA;};
   TProfile* GetIntFlowProductOfCorrectionTermsForNUAPro() const {return this->fIntFlowProductOfCorrectionTermsForNUAPro;};  
   void SetIntFlowCorrectionTermsForNUAPro(TProfile* const ifctfnp, Int_t const sc) {this->fIntFlowCorrectionTermsForNUAPro[sc] = ifctfnp;};
-  TProfile* GetIntFlowCorrectionTermsForNUAPro(Int_t sc) const {return this->fIntFlowCorrectionTermsForNUAPro[sc];};  
+  TProfile* GetIntFlowCorrectionTermsForNUAPro(Int_t sc) const {return this->fIntFlowCorrectionTermsForNUAPro[sc];};    
+  void SetIntFlowCorrectionTermsForNUAVsMPro(TProfile* const ifctfnpvm, Int_t const sc, Int_t const ci) {this->fIntFlowCorrectionTermsForNUAVsMPro[sc][ci] = ifctfnpvm;};
+  TProfile* GetIntFlowCorrectionTermsForNUAVsMPro(Int_t sc, Int_t ci) const {return this->fIntFlowCorrectionTermsForNUAVsMPro[sc][ci];};    
   // integrated flow histograms holding all results:
   void SetIntFlowCorrelationsHist(TH1D* const intFlowCorrelationsHist) {this->fIntFlowCorrelationsHist = intFlowCorrelationsHist;};
   TH1D* GetIntFlowCorrelationsHist() const {return this->fIntFlowCorrelationsHist;};
@@ -279,6 +284,10 @@ class AliFlowAnalysisWithQCumulants{
   TH1D* GetIntFlow() const {return this->fIntFlow;};
   void SetIntFlowVsM(TH1D* const intFlowVsM, Int_t co) {this->fIntFlowVsM[co] = intFlowVsM;};
   TH1D* GetIntFlowVsM(Int_t co) const {return this->fIntFlowVsM[co];};   
+  void SetIntFlowDetectorBias(TH1D* const ifdb) {this->fIntFlowDetectorBias = ifdb;};
+  TH1D* GetIntFlowDetectorBias() const {return this->fIntFlowDetectorBias;};  
+  void SetIntFlowDetectorBiasVsM(TH1D* const ifdbvm, Int_t ci) {this->fIntFlowDetectorBiasVsM[ci] = ifdbvm;};
+  TH1D* GetIntFlowDetectorBiasVsM(Int_t ci) const {return this->fIntFlowDetectorBiasVsM[ci];};  
   // 4.) differential flow:
   // flags:
   void SetDiffFlowFlags(TProfile* const diffFlowFlags) {this->fDiffFlowFlags = diffFlowFlags;};
@@ -415,6 +424,7 @@ class AliFlowAnalysisWithQCumulants{
   //  3b.) flags:
   TProfile *fIntFlowFlags; // profile to hold all flags for integrated flow
   Bool_t fApplyCorrectionForNUA; // apply correction for non-uniform acceptance 
+  Bool_t fApplyCorrectionForNUAVsM; // apply correction for non-uniform acceptance versus M  
   Int_t fnBinsMult; // number of multiplicity bins for flow analysis versus multiplicity  
   Double_t fMinMult; // minimal multiplicity for flow analysis versus multiplicity  
   Double_t fMaxMult; // maximal multiplicity for flow analysis versus multiplicity  
@@ -439,6 +449,7 @@ class AliFlowAnalysisWithQCumulants{
                                                     // [0=<<2><4>>,1=<<2><6>>,2=<<2><8>>,3=<<4><6>>,4=<<4><8>>,5=<<6><8>>]  
   TProfile *fIntFlowProductOfCorrectionTermsForNUAPro; // average product of correction terms for NUA  
   TProfile *fIntFlowCorrectionTermsForNUAPro[2]; // average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms] 
+  TProfile *fIntFlowCorrectionTermsForNUAVsMPro[2][4]; // average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms][correction term index] vs multiplicity   
   //  3e.) histograms with final results:
   TH1D *fIntFlowCorrelationsHist; // final results for average correlations <<2>>, <<4>>, <<6>> and <<8>> (with correct errors!) 
   TH1D *fIntFlowCorrelationsVsMHist[4]; // average correlations <<2>>, <<4>>, <<6>> and <<8>> versus multiplicity (error is correct here!)
@@ -460,7 +471,9 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fIntFlowQcumulants; // final results for integrated Q-cumulants QC{2}, QC{4}, QC{6} and QC{8}
   TH1D *fIntFlowQcumulantsVsM[4]; // final results for integrated Q-cumulants QC{2}, QC{4}, QC{6} and QC{8} versus multiplicity
   TH1D *fIntFlow; // final results for integrated flow estimates v_n{2,QC}, v_n{4,QC}, v_n{6,QC} and v_n{8,QC}
-  TH1D *fIntFlowVsM[4]; // final results for integrated flow estimates v_n{2,QC}, v_n{4,QC}, v_n{6,QC} and v_n{8,QC} versus multiplicity   
+  TH1D *fIntFlowVsM[4]; // final results for integrated flow estimates v_n{2,QC}, v_n{4,QC}, v_n{6,QC} and v_n{8,QC} versus multiplicity 
+  TH1D *fIntFlowDetectorBias; // bias coming from detector inefficiencies to <<2>>, <<4>>, <<6>> and <<8>> (corrected/measured)  
+  TH1D *fIntFlowDetectorBiasVsM[4]; // bias coming from detector inefficiencies to <<2>>, <<4>>, <<6>> and <<8>> vs M (corrected/measured)  
   // 4.) differential flow
   //  4a.) lists:
   TList *fDiffFlowList; // list to hold list with all histograms (fDiffFlowResults) and list with profiles (fDiffFlowProfiles) relevant for differential flow 
@@ -541,7 +554,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fDiffFlowDirectCorrelations[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
   TProfile *fDiffFlowDirectCorrectionTermsForNUA[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
                   
-  ClassDef(AliFlowAnalysisWithQCumulants, 0);
+  ClassDef(AliFlowAnalysisWithQCumulants, 1);
 };
 
 //================================================================================================================
