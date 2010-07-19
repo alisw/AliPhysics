@@ -108,7 +108,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   emcalQA->SwitchOffFiducialCut();
   emcalQA->SwitchOffPlotsMaking();
   emcalQA->SwitchOnCalorimetersCorrelation();
-  if(kUseKinematics) AddTaskPartCorr.CemcalQA->SetTimeCut(420,825);//Open for the moment
+  if(kUseKinematics)emcalQA->SetTimeCut(420,825);//Open for the moment
   //Set Histrograms bins and ranges
   emcalQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
   emcalQA->SetHistoPhiRangeAndNBins(75*TMath::DegToRad(), 125*TMath::DegToRad(), 100) ;
