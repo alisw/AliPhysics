@@ -436,7 +436,7 @@ void AliITSgeom::ReadNewFile(const char *filename){
             m = 0;
             break;
         default:
-            AliError(Form("ReadNewFile","Data line i=%d c=%s",i,c));
+            AliError(Form("Data line i=%d c=%s",i,c));
             while(fp->get(c)) if(c=='\n') break; // skip this line
             break;
         } // end switch i

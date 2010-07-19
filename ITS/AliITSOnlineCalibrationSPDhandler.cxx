@@ -1454,7 +1454,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::IsPixelNoisy(UInt_t eq, UInt_t hs, UIn
   // is the pixel noisy?
   UInt_t gloChip = GetGloChip(eq,hs,chip);
   if (gloChip>=1200 || col>=32 || row>=256) {
-    Error("AliITSOnlineCalibrationSPDhandler::IsPixelNoisy", "eq,hs,chip,col,row nrs (%d,%d,%d,%d) out of bounds.",eq,hs,chip,col,row);
+    Error("AliITSOnlineCalibrationSPDhandler::IsPixelNoisy",Form("eq,hs,chip,col,row nrs (%d,%d,%d,%d,%d) out of bounds.",eq,hs,chip,col,row));
     return kFALSE;
   }
   UInt_t key = GetKey(eq,hs,chip,col,row);

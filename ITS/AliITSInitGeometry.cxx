@@ -2104,7 +2104,7 @@ void AliITSInitGeometry::RecodeDetectorvPPRasymmFMD(Int_t mod,Int_t &cpn0,
         cpn0 = lad;
     } break;
     default:{
-      AliError(Form("RecodeDetector","Old: mod=%d lay=%d not 1-6.",mod,lay));
+      AliError(Form("Old: mod=%d lay=%d not 1-6.",mod,lay));
         return;
     } break;
     } // end switch
