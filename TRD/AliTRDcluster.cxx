@@ -682,7 +682,7 @@ Float_t AliTRDcluster::GetXloc(Double_t t0, Double_t vd
   td -= 0.189;
 
   // apply fitted correction 
-  Float_t x = td*vd + HasXcorr() ? GetXcorr(fLocalTimeBin) : 0.;
+  Float_t x = td*vd + (HasXcorr() ? GetXcorr(fLocalTimeBin) : 0.);
   if(x>0.&&x<.5*AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght()) SetInChamber();
 
   return x;

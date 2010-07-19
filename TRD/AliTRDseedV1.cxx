@@ -1405,12 +1405,13 @@ Bool_t AliTRDseedV1::Fit(UChar_t opt)
 
   // to few clusters
   if (n < kClmin){ 
+    AliDebug(1, Form("Not enough clusters to fit. Clusters: Attached[%d] Fit[%d].", GetN(), n));
     SetErrorMsg(kFitCl);
     return kFALSE; 
   }
-
   // fit XY
   if(!fitterY.Eval()){
+    AliDebug(1, "Fit Y failed.");
     SetErrorMsg(kFitFailedY);
     return kFALSE;
   }
