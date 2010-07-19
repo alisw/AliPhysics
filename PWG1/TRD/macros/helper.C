@@ -47,51 +47,37 @@ Int_t ParseOptions(Char_t *trd)
 }
 
 //______________________________________________________
-void mergeProd(const Char_t *mark, const Char_t *files, const Int_t kBatch = 20)
+void mergeProd(const Char_t *mark, const Char_t *files, const Int_t nBatch = 20)
 {
-  TFileMerger *fFM = 0x0;
-  Bool_t kSVN = kFALSE;
 
-  Int_t jbatch = 0, nbatch = 0;
+
+  // Clear first predefines
+  Char_t MERGE[8]; sprintf(MERGE, "%d.lst", gRandom->Uniform(9999.));
+  Char_t PURGE[8]; sprintf(PURGE, "%d.lst", gRandom->Uniform(9999.));
+  gSystem->Exec("mkdir -p merge; rm -rf merge/*");
+
+  // purge file list
   std::string filename;
   std::ifstream file(files);
+  Int_t iline(0);
   while(getline(file, filename)){
     if(Int_t(filename.find(mark)) < 0) continue;
-    if(!nbatch){
-      if(fFM){ 
-        delete fFM;
-        fFM = new TFileMerger(kTRUE);
-      } else fFM = new TFileMerger(kTRUE);
-      fFM->OutputFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), jbatch, mark));
-    }
-    if(!kSVN){ // download SVN info for trending
-      string base=filename.substr(0, filename.find_last_of('/'));
-      if(gSystem->Exec(Form("cp -v %s/svnInfo.log .", base.c_str())) == 0) kSVN=kTRUE;
-    }
-    fFM->AddFile(filename.c_str()); nbatch++;
-    if(nbatch==kBatch){
-      printf("MERGING BATCH %d [%d] ... \n", jbatch, nbatch);
-      fFM->Merge(); jbatch++;
-      nbatch=0;
-    }
+    gSystem->Exec(Form("echo %s >> %s", filename.c_str(), PURGE));
+    iline++;
   }
-  if(nbatch){
-    printf("MERGING INCOMPLETE BATCH %d [%d] ... \n", jbatch, nbatch);
-    fFM->Merge(); jbatch++;
-  }
-  if(!jbatch){
-    delete fFM;
-    return;
-  }
+  Int_t nBatches(iline/nBatch);
 
-  new(fFM) TFileMerger(kTRUE);
-  fFM->OutputFile(Form("%s/%s",  gSystem->ExpandPathName("$PWD"), mark));
-  for(Int_t ib=jbatch; ib--;){
-    fFM->AddFile(Form("%s/%d_%s",  gSystem->ExpandPathName("$PWD"), ib, mark));
-    gSystem->Exec(Form("rm -f %s/%d_%s", gSystem->ExpandPathName("$PWD"), ib, mark));
+  Char_t *mergedFile(NULL);
+  for(Int_t ibatch(0); ibatch<nBatches; ibatch++){
+    Int_t first(ibatch*nBatch);
+    if(!gSystem->Exec(Form("root.exe -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, PURGE, nBatch, first))) continue;
+    gSystem->Exec(Form("mv %d_%s merge/", first, mark));
+    gSystem->Exec(Form("echo %s/merge/%d_%s >> %s", gSystem->ExpandPathName("$PWD"), first, mark, MERGE));
   }
-  fFM->Merge();
-  delete fFM;
+  gSystem->Exec(Form("root.exe -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, 0, kFALSE, kTRUE)\'", mark, MERGE, nBatches));
+  gSystem->Exec(Form("mv 0_%s %s", mark, mark));
+  
+  gSystem->Exec(Form("rm -rfv %s %s merge", MERGE, PURGE));
 }
 
 #endif
