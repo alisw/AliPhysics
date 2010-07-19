@@ -72,6 +72,6 @@ private:
   Bool_t  fSpectators2Track;    // should digitizer track spectators
   Float_t fBeamEnergy;          // beam energy taken from GRP object
        
-  ClassDef(AliZDCDigitizer, 11)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 12)     // digitizer for ZDC
 };    
 #endif
