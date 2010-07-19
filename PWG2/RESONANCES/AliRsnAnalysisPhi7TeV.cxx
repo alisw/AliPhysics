@@ -167,12 +167,12 @@ void AliRsnAnalysisPhi7TeV::UserCreateOutputObjects()
   fRsnTreeComp = new TTree("rsnTree", "Pairs");
 
   fRsnTreeComp->Branch("pdg", &fPDG, "pdg/S"   );
-  fRsnTreeComp->Branch("ch" , &fCh , "ch/C"    );
+  fRsnTreeComp->Branch("ch" , &fCh , "ch/S"    );
   fRsnTreeComp->Branch("im" , &fIM , "im/F"    );
   fRsnTreeComp->Branch("y"  , &fY  , "y/F"     );
   fRsnTreeComp->Branch("pt" , &fPt , "pt/F"    );
   fRsnTreeComp->Branch("eta", &fEta, "eta/F"   );
-  fRsnTreeComp->Branch("its", &fITS, "its[2]/C");
+  fRsnTreeComp->Branch("its", &fITS, "its[2]/S");
 
   OpenFile(2);
   fRsnTreeTrue = new TTree("rsnTrue", "True pairs");
@@ -185,12 +185,12 @@ void AliRsnAnalysisPhi7TeV::UserCreateOutputObjects()
   OpenFile(3);
   fOutList    = new TList;
   fHEvents    = new TH1I("hEvents", "Event details", 5, 0, 5);
-  fVertexX[0] = new TH1F("hVertexTracksX", "X position of primary vertex (tracks)", 200, -10, 10);
-  fVertexY[0] = new TH1F("hVertexTracksY", "Y position of primary vertex (tracks)", 200, -10, 10);
+  fVertexX[0] = new TH1F("hVertexTracksX", "X position of primary vertex (tracks)", 200,  -2,  2);
+  fVertexY[0] = new TH1F("hVertexTracksY", "Y position of primary vertex (tracks)", 200,  -2,  2);
   fVertexZ[0] = new TH1F("hVertexTracksZ", "Z position of primary vertex (tracks)", 400, -40, 40);
-  fVertexX[1] = new TH1F("hVertexSPDX", "X position of primary vertex (SPD)", 1000, - 2,  2);
-  fVertexY[1] = new TH1F("hVertexSPDY", "Y position of primary vertex (SPD)", 1000, - 2,  2);
-  fVertexZ[1] = new TH1F("hVertexSPDZ", "Z position of primary vertex (SPD)", 1000, -50, 50);
+  fVertexX[1] = new TH1F("hVertexSPDX", "X position of primary vertex (SPD)", 200,  -2,  2);
+  fVertexY[1] = new TH1F("hVertexSPDY", "Y position of primary vertex (SPD)", 200,  -2,  2);
+  fVertexZ[1] = new TH1F("hVertexSPDZ", "Z position of primary vertex (SPD)", 400, -40, 40);
   
   fHEvents->GetXaxis()->SetBinLabel(1, "Good vertex with tracks");
   fHEvents->GetXaxis()->SetBinLabel(2, "Good vertex with SPD");
@@ -376,7 +376,7 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
   ULong_t  status;
   Int_t    i, k, charge, npos = 0, nneg = 0, nITS;
   Double_t times[10], tpcNSigma, tpcMaxNSigma, itsSignal, itsNSigma, mom, tofTime, tofSigma, tofRef, tofRel;
-  Bool_t   okTOF;
+  Bool_t   okTOF, okTrack;
   UChar_t  itsCluMap;
   for (i = 0; i < ntracks; i++)
   {
@@ -390,16 +390,17 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
     // define selection properties depending on track type
     // it track is standard TPC+ITS+TOF track, check standard cuts and TOF
     // if the track is an ITS standalone, check its specific cuts only
+    okTrack = kTRUE;
     
     if (IsTPCtrack(track))
     {
       // check standard ESD cuts
-      if (!fESDtrackCutsTPC.IsSelected(track)) continue;
+      if (!fESDtrackCutsTPC.IsSelected(track)) okTrack = kFALSE;
       
       // check TPC dE/dx
       tpcNSigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, AliPID::kKaon));
       if (track->GetInnerParam()->P() > fTPCpLimit) tpcMaxNSigma = fMinTPCband; else tpcMaxNSigma = fMaxTPCband;
-      if (tpcNSigma > tpcMaxNSigma) continue;
+      if (tpcNSigma > tpcMaxNSigma) okTrack = kFALSE;
       
       // check TOF (only if momentum is large than function asymptote and flags are OK)
       okTOF = kTRUE;
@@ -417,25 +418,30 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
           okTOF    = (tofRel >= ymin && tofRel <= ymax);
         }
       }
-      if (!okTOF) continue;
+      if (!okTOF) okTrack = kFALSE;
     }
     else if (IsITSSAtrack(track))
     {
       // check standard ESD cuts
-      if (!fESDtrackCutsITS.IsSelected(track)) continue;
+      if (!fESDtrackCutsITS.IsSelected(track)) okTrack = kFALSE;
       
       // check that PID is computed
-      if ((status & AliESDtrack::kITSpid) == 0) continue;
+      if ((status & AliESDtrack::kITSpid) == 0) okTrack = kFALSE;
       
       // check dE/dx
       itsSignal = track->GetITSsignal();
       itsCluMap = track->GetITSClusterMap();
       nITS      = 0;
       for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITS;
-      if (nITS < 3) continue; // track not good for PID
+      if (nITS < 3) okTrack = kFALSE;; // track not good for PID
       itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, AliPID::kKaon, nITS, kTRUE);
-      if (TMath::Abs(itsNSigma) > fMaxITSband) continue;
+      if (TMath::Abs(itsNSigma) > fMaxITSband) okTrack = kFALSE;
     }
+    else
+      okTrack = kFALSE;
+    
+    // skip tracks not passing cuts
+    if (!okTrack) continue;
     
     // if all checks are passed, add the track index in one of the
     // charged tracks arrays
@@ -494,14 +500,17 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       vsum = vp + vn;
       vref.SetXYZM(vsum.X(), vsum.Y(), vsum.Z(), phimass);
 
-      fCh     = '0';
+      fCh     = 0;
       fIM     = (Float_t)vsum.M();
       fPt     = (Float_t)vsum.Perp();
       fEta    = (Float_t)vsum.Eta();
       fY      = (Float_t)vref.Rapidity();
-      fITS[0] = IsITSSAtrack(tp) ? 'y' : 'n';
-      fITS[1] = IsITSSAtrack(tn) ? 'y' : 'n';
+      fITS[0] = IsITSSAtrack(tp) ? 1 : 0;
+      fITS[1] = IsITSSAtrack(tn) ? 1 : 0;
 
+      if (fIM < 0.9 || fIM >  1.4) continue;
+      if (fPt < 0.0 || fPt > 20.0) continue;
+      
       fRsnTreeComp->Fill();
     }
   }
@@ -526,14 +535,17 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       vref.SetXYZM(vsum.X(), vsum.Y(), vsum.Z(), phimass);
 
       fPDG    = 0;
-      fCh     = '+';
+      fCh     = 1;
       fIM     = (Float_t)vsum.M();
       fPt     = (Float_t)vsum.Perp();
       fEta    = (Float_t)vsum.Eta();
       fY      = (Float_t)vref.Rapidity();
-      fITS[0] = IsITSSAtrack(t1) ? 'y' : 'n';
-      fITS[1] = IsITSSAtrack(t2) ? 'y' : 'n';
+      fITS[0] = IsITSSAtrack(t1) ? 1 : 0;
+      fITS[1] = IsITSSAtrack(t2) ? 1 : 0;
 
+      if (fIM < 0.9 || fIM >  1.4) continue;
+      if (fPt < 0.0 || fPt > 20.0) continue;
+      
       fRsnTreeComp->Fill();
     }
   }
@@ -552,14 +564,17 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       vref.SetXYZM(vsum.X(), vsum.Y(), vsum.Z(), phimass);
 
       fPDG    = 0;
-      fCh     = '-';
+      fCh     = -1;
       fIM     = (Float_t)vsum.M();
       fPt     = (Float_t)vsum.Perp();
       fEta    = (Float_t)vsum.Eta();
       fY      = (Float_t)vref.Rapidity();
-      fITS[0] = IsITSSAtrack(t1) ? 'y' : 'n';
-      fITS[1] = IsITSSAtrack(t2) ? 'y' : 'n';
+      fITS[0] = IsITSSAtrack(t1) ? 1 : 0;
+      fITS[1] = IsITSSAtrack(t2) ? 1 : 0;
 
+      if (fIM < 0.9 || fIM >  1.4) continue;
+      if (fPt < 0.0 || fPt > 20.0) continue;
+      
       fRsnTreeComp->Fill();
     }
   }
