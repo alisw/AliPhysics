@@ -231,7 +231,7 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
     // Copy of previous histo for scaling purposes
     TH1F* histoCalibNorm = (TH1F*)histoCalib->Clone("hTriggerCalibSummary");
     histoCalibNorm->SetTitle("MTR calibration summary");
-    histoCalibNorm->SetOption("bar2");
+    histoCalibNorm->SetOption("bartext0");
     histoCalibNorm->GetYaxis()->SetTitle("Percentage per event (%)");
     // Adding both histos after cloning to avoid problems with the expert bit
     Add2RawsList(histoCalib,     AliMUONQAIndices::kTriggerCalibSummary,      expert, !image, !saveCorr);
@@ -347,7 +347,7 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   histoAlgoErr->SetFillColor(kBlue);
   // Copy of previous histo for scaling purposes
   TH1F* histoAlgoErrNorm = (TH1F*)histoAlgoErr->Clone("hTriggerAlgoErrors");
-  histoAlgoErrNorm->SetOption("bar2");
+  histoAlgoErrNorm->SetOption("bartext0");
   histoAlgoErrNorm->SetTitle("Trigger algorithm errors");
   histoAlgoErrNorm->GetYaxis()->SetTitle("% of events with errors");
   // Adding both histos after cloning to avoid problems with the expert bit
@@ -385,7 +385,7 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   // Copy of previous histo for scaling purposes
   TH1F* histoROerrNorm = (TH1F*)histoROerr->Clone("hTriggerReadoutErrors");
   histoROerrNorm->SetTitle("Trigger Read-Out errors");
-  histoROerrNorm->SetOption("bar2");
+  histoROerrNorm->SetOption("bartext0");
   histoROerrNorm->GetYaxis()->SetTitle("% of errors per event");
   // Adding both histos after cloning to avoid problems with the expert bit
   Add2RawsList(histoROerr,     AliMUONQAIndices::kTriggerReadOutErrors,      expert, !image, !saveCorr);
@@ -401,9 +401,9 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   // Copy of previous histo for scaling purposes
   TH1F* histoGlobalMultNorm = (TH1F*)histoGlobalMult->Clone("hTriggerGlobalOutMultiplicityPerEvt");
   histoGlobalMultNorm->SetTitle("Trigger global outputs multiplicity per event");
-  histoGlobalMultNorm->SetOption("bar2");
-  histoGlobalMultNorm->SetBarWidth(0.5);
-  histoGlobalMultNorm->SetBarOffset(0.25);
+  histoGlobalMultNorm->SetOption("bartext0");
+  //histoGlobalMultNorm->SetBarWidth(0.5);
+  //histoGlobalMultNorm->SetBarOffset(0.25);
   histoGlobalMultNorm->GetYaxis()->SetTitle("Triggers per event");
   // Adding both histos after cloning to avoid problems with the expert bit
   Add2RawsList(histoGlobalMult,     AliMUONQAIndices::kTriggerGlobalOutput,     expert, !image, !saveCorr);

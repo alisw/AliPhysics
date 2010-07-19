@@ -72,11 +72,7 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
 {
   /// Check raw data
 
-  AliMUONVQAChecker::ECheckCode * rv = new AliMUONVQAChecker::ECheckCode[AliRecoParam::kNSpecies] ; 
-
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    rv[specie] = AliMUONVQAChecker::kInfo; 
-  }
+  AliMUONVQAChecker::ECheckCode * rv = new AliMUONVQAChecker::ECheckCode[AliRecoParam::kNSpecies];
 
   Int_t histoRawsPercentIndex[] = {
     AliMUONQAIndices::kTriggerErrorSummaryNorm, 
@@ -85,51 +81,70 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
   };
   const Int_t kNrawsHistos = sizeof(histoRawsPercentIndex)/sizeof(histoRawsPercentIndex[0]);
 
-  // MOVE THESE TO REFERENCE HISTOS
-// START WITH THOSE COMMENTED OUT UNTIL WE GAIN CONFIDENCE...
-//  Float_t safeFactor = 5.;
-//  Float_t alarmPercentTrigAlgo[AliMUONTriggerQADataMakerRec::kNtrigAlgoErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., 100., 100., 100., 100., safeFactor*1., safeFactor*1., safeFactor*1.};
-//  Float_t alarmPercentCalib[AliMUONTriggerQADataMakerRec::kNtrigCalibSummaryBins] = {safeFactor*0.4, safeFactor*1., 6.2, 0.0001, safeFactor*0.4};
-//  Float_t alarmPercentReadout[AliMUONTriggerQADataMakerRec::kNtrigStructErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., safeFactor*1.};
-//
-//  Float_t* alarmPercent[kNrawsHistos] = {alarmPercentTrigAlgo, alarmPercentCalib, alarmPercentReadout};
-// END OF COWARD COMMENTING...
-  
+  // BEGIN OF LIMITS
+  // Fixme: Move me to reference histos
+  Float_t safeFactor = 5.;
+  Float_t alarmPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., 100., 100., 100., 100., safeFactor*1., safeFactor*1., safeFactor*1.};
+  Float_t alarmPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {safeFactor*0.4, safeFactor*1., 6.2, 0.0001, safeFactor*0.4};
+  Float_t alarmPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., safeFactor*1.};
+
+  Float_t* alarmPercent[kNrawsHistos] = {alarmPercentTrigAlgo, alarmPercentCalib, alarmPercentReadout};
+  // END OF LIMTS
+
+  TObjArray messages;
+  messages.SetOwner(kTRUE);
+
   TH1* currHisto = 0x0;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    rv[specie] = AliMUONVQAChecker::kInfo;
+    AliMUONVQAChecker::ECheckCode currRv = rv[specie];
+
     TH1* hAnalyzedEvents = AliQAv1::GetData(list,AliMUONQAIndices::kTriggerRawNAnalyzedEvents,AliRecoParam::ConvertIndex(specie));
     Int_t nAnalyzedEvents = 0;
     if ( hAnalyzedEvents ) 
       nAnalyzedEvents = TMath::Nint(hAnalyzedEvents->GetBinContent(1));
+
+    if ( nAnalyzedEvents == 0 )
+      currRv = AliMUONVQAChecker::kFatal;
+
     for(Int_t ihisto = 0; ihisto<kNrawsHistos; ihisto++){
+      messages.Clear();
       currHisto = AliQAv1::GetData(list,histoRawsPercentIndex[ihisto],AliRecoParam::ConvertIndex(specie));
-      if ( currHisto ){
-	currHisto->SetBarWidth(0.5);
-	currHisto->SetBarOffset(0.25);
-	TPaveText* text = new TPaveText(0.65,0.65,0.99,0.99,"NDC");
-	TString binName;
-	Bool_t isOk = kTRUE;
-	Int_t nbins = currHisto->GetXaxis()->GetNbins();
-	for (Int_t ibin = 1; ibin<=nbins; ibin++){
-	  binName = currHisto->GetXaxis()->GetBinLabel(ibin);
-	  binName.ReplaceAll("#splitline","");
-	  binName.ReplaceAll("{","");
-	  binName.ReplaceAll("}","");
-	  Float_t binContent = currHisto->GetBinContent(ibin);
-//	  if (binContent > alarmPercent[ihisto][ibin-1]) isOk = kFALSE;
-	  text->AddText(Form("%5.2f %% in %s", binContent, binName.Data()));
-	  //text->AddText(Form("%5.2f %% in %s (limit %5.2f %%)", binContent, binName.Data(), alarmPercent[ihisto][ibin-1]));
+      if ( ! currHisto ) continue;
+
+      Int_t nbins = currHisto->GetXaxis()->GetNbins();
+      for (Int_t ibin = 1; ibin<=nbins; ibin++){
+	Double_t binContent = currHisto->GetBinContent(ibin);
+	if (binContent > alarmPercent[ihisto][ibin-1])
+	  currRv = AliMUONVQAChecker::kWarning;
+      } // loop on bins
+      if ( currRv != AliMUONVQAChecker::kInfo ) {
+	switch ( histoRawsPercentIndex[ihisto] ) {
+	case AliMUONQAIndices::kTriggerErrorSummaryNorm:
+	case AliMUONQAIndices::kTriggerCalibSummaryNorm:
+	  messages.Add(new TObjString("Trigger algo errors"));
+	  break;
+	case AliMUONQAIndices::kTriggerReadOutErrorsNorm:
+	  messages.Add(new TObjString("Readout errors"));
 	}
-	text->AddText(Form("Total events %i", nAnalyzedEvents));
-	if ( ! isOk || nAnalyzedEvents == 0 ) {
-	  text->SetFillColor(kRed);
-	  rv[specie] = MarkHisto(*currHisto, AliMUONVQAChecker::kError);
-	}
-	else text->SetFillColor(kGreen);
-	currHisto->GetListOfFunctions()->Add(text);
-	currHisto->SetStats(kFALSE);
-	currHisto->GetYaxis()->SetRangeUser(0., 110.);
+	if ( currRv == AliMUONVQAChecker::kWarning )
+	  messages.Add(new TObjString("are a little bit high"));
+	else if ( currRv == AliMUONVQAChecker::kError || 
+		  currRv == AliMUONVQAChecker::kFatal )
+	  messages.Add(new TObjString("are too high"));
       }
+      else {
+	switch ( histoRawsPercentIndex[ihisto] ) {
+	case AliMUONQAIndices::kTriggerErrorSummaryNorm:
+	case AliMUONQAIndices::kTriggerCalibSummaryNorm:
+	case AliMUONQAIndices::kTriggerReadOutErrorsNorm:
+	  messages.Add(new TObjString("Values within limits"));
+	  break;
+	}
+      }
+      rv[specie] = MarkHisto(*currHisto, currRv);
+      currHisto->GetYaxis()->SetRangeUser(0., 110.);
+      SetupHisto(nAnalyzedEvents, messages, *currHisto, rv[specie]);
     } // loop on histos
   } // loop on species
 
@@ -150,4 +165,66 @@ AliMUONTriggerQAChecker::CheckESD(TObjArray** , const AliMUONRecoParam* )
 {
   /// Check esd
   return 0x0;
+}
+
+
+//___________________________________________________________________ 
+void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& messages, TH1& histo, AliMUONVQAChecker::ECheckCode code)
+{
+  //
+  /// Add text to histos
+  //
+
+  Double_t y1 = 0.97 - (messages.GetLast()+2)*0.075;
+  TPaveText* text = new TPaveText(0.5,y1,0.99,0.99,"NDC");
+    
+  text->AddText(Form("MTR - Total events %i", nevents));
+    
+  TIter next(&messages);
+  TObjString* str;
+    
+  while ( ( str = static_cast<TObjString*>(next()) ) ){
+    text->AddText(str->String());
+  }
+    
+  if ( nevents == 0 ) {
+    text->AddText("No event analyzed.");
+    text->AddText("Please make sure this is the MTR agent!");
+    text->AddText("(we share plots with MCH)");
+  }
+
+  TString defaultText = "";
+
+  Int_t color = 0;
+  switch ( code ) {
+  case AliMUONVQAChecker::kInfo:
+    color = kGreen;
+    defaultText = "All is fine!";
+    break;
+  case AliMUONVQAChecker::kWarning:
+    color = kYellow;
+    defaultText = "Please keep an eye on it!";
+    break;
+  case AliMUONVQAChecker::kFatal:
+    color = kRed;
+    defaultText = "This is bad: PLEASE CALL EXPERT!!!";
+    break;
+  default:
+    color = kOrange;
+    defaultText = "PLEASE NOTIFY EXPERT! (NOT at night)";
+    break;
+  }
+
+  if ( nevents == 0 )
+    defaultText = "Otherwise PLEASE CALL EXPERT!";
+
+  text->AddText(defaultText.Data());
+  text->SetFillColor(color);
+                      
+  histo.SetFillStyle(1001);
+  histo.SetFillColor(color);
+
+  histo.SetStats(kFALSE);
+    
+  histo.GetListOfFunctions()->Add(text);
 }
