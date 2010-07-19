@@ -768,6 +768,6 @@ void AliEveTRDmcm::Draw(Option_t* option)
 
 Bool_t AliEveTRDmcm::AssignPointer(const char* ptrname)
 {
-  gROOT->ProcessLine(Form("AliTRDmcmSim* %s = (AliTRDmcmSim *) 0x%x", ptrname, fMCM));
+  gROOT->ProcessLine(Form("AliTRDmcmSim* %s = (AliTRDmcmSim *)%p", ptrname, (void*)fMCM));
   return kTRUE;
 }
