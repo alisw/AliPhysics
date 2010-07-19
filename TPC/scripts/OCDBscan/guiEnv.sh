@@ -14,13 +14,13 @@
 # set your aliroot and  alien environment
 #
 #source $HOME/.balice64HEAD0108
-source $HOME/.balice
+#source $HOME/.balice
 echo YOU HAVE TO MODIFY ALIROOT SETUP
 echo IT  IS ENVIRNMENT SPECIFIC 
 #
-#output directory
+#output directory - to be set according to your setup
 #
-export GUI_OUTDIR=/lustre/alice/TPCgui
+export GUI_OUTDIR=/home/kowalski/alice/PPL
 echo YOU HAVE TO MODIFY DESTINATION DIRECTORY
 echo IT  IS ENVIRONMENT SPECIFIC 
 
