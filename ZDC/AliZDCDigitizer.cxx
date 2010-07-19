@@ -76,7 +76,7 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
 {
   // Get calibration data
   if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
-  for(Int_t i=0; i<6; i++){
+  for(Int_t i=0; i<5; i++){
     for(Int_t j=0; j<5; j++)
        fPMGain[i][j] = 0.;
   }
@@ -102,7 +102,7 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
 {
   // Copy constructor
 
-  for(Int_t i=0; i<6; i++){
+  for(Int_t i=0; i<5; i++){
      for(Int_t j=0; j<5; j++){
         fPMGain[i][j]   = digitizer.fPMGain[i][j];           
      }
@@ -170,9 +170,9 @@ Bool_t AliZDCDigitizer::Init()
     for(Int_t j = 0; j < 5; j++){
        fPMGain[0][j] = 50000./scalGainFactor; 	         
        fPMGain[1][j] = 100000./scalGainFactor; 	         
+       fPMGain[2][j] = 100000./scalGainFactor; 	         
        fPMGain[3][j] = 50000./scalGainFactor; 	         
-       fPMGain[4][j] = 100000./scalGainFactor; 	         
-       fPMGain[5][j] = 100000./scalGainFactor;    
+       fPMGain[4][j] = 100000./scalGainFactor;    
     }
     AliInfo(Form("    PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][0]));
