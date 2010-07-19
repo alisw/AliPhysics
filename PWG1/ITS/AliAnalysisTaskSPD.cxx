@@ -209,8 +209,6 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
   //
   // Main loop function
   //
-  Info("UserExec","") ;
-
   AliESDInputHandlerRP *hand = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!hand) {
     printf("No AliESDInputHandlerRP \n");  
@@ -363,7 +361,6 @@ void AliAnalysisTaskSPD::Terminate(Option_t*)
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
 
-  Info("Terminate","");
   AliAnalysisTaskSE::Terminate();
 }
 
