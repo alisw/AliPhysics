@@ -123,7 +123,6 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fIntFlowCorrelationsEBE(NULL),
  fIntFlowEventWeightsForCorrelationsEBE(NULL),
  fIntFlowCorrelationsAllEBE(NULL),
- fReferenceMultiplicityEBE(0.),
  fAvMultiplicity(NULL),
  fIntFlowCorrelationsPro(NULL),
  fIntFlowCorrelationsAllPro(NULL),
@@ -261,7 +260,6 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t wPt  = 1.; // pt weight
  Double_t wEta = 1.; // eta weight
  
- fReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of particles used to determine the reaction plane)
   
  // a) Fill the common control histograms and call the method to fill fAvMultiplicity:

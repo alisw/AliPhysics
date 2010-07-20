@@ -153,7 +153,7 @@ class AliFlowAnalysisWithMCEventPlane {
    TProfile *fPairCorrelator[2]; // profiles used to calculate <cos[n(phi_{pair}-RP)]> and <sin[n(phi_{pair}-RP)]> (0 = cos, 1 = sin), where phi_{pair} = x*phi1+(1-x)*phi2
    Double_t fXinPairAngle; // x in definition phi_{pair} = x*phi1+(1-x)*phi2
                                        
-   ClassDef(AliFlowAnalysisWithMCEventPlane,1)  // Analyse particle distribution versus MC reaction plane
+   ClassDef(AliFlowAnalysisWithMCEventPlane,0)  // Analyse particle distribution versus MC reaction plane
      };
 
      
