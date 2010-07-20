@@ -29,6 +29,7 @@
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "TDirectory.h"
 
 using namespace std;
 
@@ -139,6 +140,8 @@ void AliHLTQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   // see header file for class documentation
   TIter next(&fPlugins);
   TObject* obj=NULL;
+  TDirectory* dirBackup=gDirectory;
+  gDirectory=NULL;
   while ((obj=next())) {
     AliHLTQADataMakerBase* plugin=dynamic_cast<AliHLTQADataMakerBase*>(obj);
     if (!plugin) continue;
@@ -168,7 +171,7 @@ void AliHLTQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
       }
     }
   }
-  
+  gDirectory=dirBackup;
 }
 
 void AliHLTQADataMakerRec::MakeRaws(AliRawReader * rawReader)
