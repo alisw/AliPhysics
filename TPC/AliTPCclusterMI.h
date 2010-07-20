@@ -12,7 +12,7 @@
 
 #include "AliCluster.h"
 #include "TMath.h"
-class AliTPCclusterInfo;
+#include "AliTPCclusterInfo.h"
 //_____________________________________________________________________________
 class AliTPCclusterMI : public AliCluster {
 public:
@@ -21,7 +21,7 @@ public:
   AliTPCclusterMI &operator = (const AliTPCclusterMI & cluster); //assignment operator
   AliTPCclusterMI(Int_t *lab, Float_t *hit);
   virtual ~AliTPCclusterMI();
-  virtual void	Clear() { delete fInfo; }
+  virtual void	Clear(const Option_t*) { delete fInfo; fInfo=0;}
   virtual Bool_t IsSortable() const; 
   virtual Int_t Compare(const TObject* obj) const;
   inline  void Use(Int_t inc=10);

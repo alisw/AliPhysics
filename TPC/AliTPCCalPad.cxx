@@ -873,7 +873,6 @@ AliTPCCalPad * AliTPCCalPad::MakeCalPadFromHistoRPHI(TH2 * hisA, TH2* hisC){
     for (UInt_t irow=0; irow<calRoc->GetNrows(); irow+=1){
       Int_t jrow=irow;
       if (isec>=36) jrow+=63;
-      Float_t xrow=proc->GetPadRowRadii(isec, irow);
       for (UInt_t ipad=0;ipad<proc->GetNPads(isec,irow);ipad+=1){
         proc->GetPositionGlobal(isec,irow,ipad, globalPos);
         Double_t phi=TMath::ATan2(globalPos[1],globalPos[0]);
