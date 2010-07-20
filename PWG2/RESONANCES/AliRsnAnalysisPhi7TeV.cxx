@@ -250,34 +250,6 @@ void AliRsnAnalysisPhi7TeV::Terminate(Option_t *)
 }
 
 //__________________________________________________________________________________________________
-Bool_t AliRsnAnalysisPhi7TeV::IsTPCtrack(AliESDtrack *track)
-{
-//
-// Checks if it is a TPC track or ITS standalone
-//
-
-  ULong_t status = (ULong_t)track->GetStatus();
-  
-  if ((status & AliESDtrack::kTPCin) != 0) return kTRUE;
-  
-  return kFALSE;
-}
-
-//__________________________________________________________________________________________________
-Bool_t AliRsnAnalysisPhi7TeV::IsITSSAtrack(AliESDtrack *track)
-{
-//
-// Checks if it is a TPC track or ITS standalone
-//
-
-  ULong_t status = (ULong_t)track->GetStatus();
-  
-  if ((status & AliESDtrack::kTPCin) == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0) return kTRUE;
-  
-  return kFALSE;
-}
-
-//__________________________________________________________________________________________________
 Int_t AliRsnAnalysisPhi7TeV::EventEval(AliESDEvent *esd)
 {
 //
@@ -371,12 +343,14 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
   Int_t   ntracks = esd->GetNumberOfTracks();
   TArrayI pos(ntracks);
   TArrayI neg(ntracks);
+  TArrayI itspos(ntracks);
+  TArrayI itsneg(ntracks);
   
   // loop on all tracks
   ULong_t  status;
   Int_t    i, k, charge, npos = 0, nneg = 0, nITS;
   Double_t times[10], tpcNSigma, tpcMaxNSigma, itsSignal, itsNSigma, mom, tofTime, tofSigma, tofRef, tofRel;
-  Bool_t   okTOF, okTrack;
+  Bool_t   okTOF, okTrack, isTPC, isITSSA;
   UChar_t  itsCluMap;
   for (i = 0; i < ntracks; i++)
   {
@@ -384,15 +358,20 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
     if (!track) continue;
     
     // get commonly used variables
-    status = (ULong_t)track->GetStatus();
-    mom    = track->P();
+    status  = (ULong_t)track->GetStatus();
+    mom     = track->P();
+    isTPC   = ((status & AliESDtrack::kTPCin)  != 0);
+    isITSSA = ((status & AliESDtrack::kTPCin)  == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
+    
+    // accept only tracks which are TPC+ITS or ITS standalone
+    if (!isTPC && !isITSSA) continue;
     
     // define selection properties depending on track type
     // it track is standard TPC+ITS+TOF track, check standard cuts and TOF
     // if the track is an ITS standalone, check its specific cuts only
     okTrack = kTRUE;
     
-    if (IsTPCtrack(track))
+    if (isTPC)
     {
       // check standard ESD cuts
       if (!fESDtrackCutsTPC.IsSelected(track)) okTrack = kFALSE;
@@ -420,13 +399,10 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       }
       if (!okTOF) okTrack = kFALSE;
     }
-    else if (IsITSSAtrack(track))
+    else
     {
       // check standard ESD cuts
       if (!fESDtrackCutsITS.IsSelected(track)) okTrack = kFALSE;
-      
-      // check that PID is computed
-      if ((status & AliESDtrack::kITSpid) == 0) okTrack = kFALSE;
       
       // check dE/dx
       itsSignal = track->GetITSsignal();
@@ -437,8 +413,6 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, AliPID::kKaon, nITS, kTRUE);
       if (TMath::Abs(itsNSigma) > fMaxITSband) okTrack = kFALSE;
     }
-    else
-      okTrack = kFALSE;
     
     // skip tracks not passing cuts
     if (!okTrack) continue;
@@ -447,14 +421,24 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
     // charged tracks arrays
     charge = (Int_t)track->Charge();
     if (charge > 0)
-      pos[npos++] = i;
+    {
+      pos[npos] = i;
+      if (isITSSA) itspos[npos] = 1; else itspos[npos] = 0;
+      npos++;
+    }
     else if (charge < 0)
-      neg[nneg++] = i;
+    {
+      neg[nneg] = i;
+      if (isITSSA) itsneg[nneg] = 1; else itsneg[nneg] = 0;
+      nneg++;
+    }
   }
   
   // resize arrays accordingly
   pos.Set(npos);
   neg.Set(nneg);
+  itspos.Set(npos);
+  itsneg.Set(nneg);
 
   // loop on unlike-sign pairs to compute invariant mass signal
   Int_t           ip, in, lp, ln;
@@ -505,8 +489,8 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       fPt     = (Float_t)vsum.Perp();
       fEta    = (Float_t)vsum.Eta();
       fY      = (Float_t)vref.Rapidity();
-      fITS[0] = IsITSSAtrack(tp) ? 1 : 0;
-      fITS[1] = IsITSSAtrack(tn) ? 1 : 0;
+      fITS[0] = itspos[ip];
+      fITS[1] = itsneg[in];
 
       if (fIM < 0.9 || fIM >  1.4) continue;
       if (fPt < 0.0 || fPt > 20.0) continue;
@@ -540,8 +524,8 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       fPt     = (Float_t)vsum.Perp();
       fEta    = (Float_t)vsum.Eta();
       fY      = (Float_t)vref.Rapidity();
-      fITS[0] = IsITSSAtrack(t1) ? 1 : 0;
-      fITS[1] = IsITSSAtrack(t2) ? 1 : 0;
+      fITS[0] = itspos[i1];
+      fITS[1] = itspos[i2];
 
       if (fIM < 0.9 || fIM >  1.4) continue;
       if (fPt < 0.0 || fPt > 20.0) continue;
@@ -569,8 +553,8 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       fPt     = (Float_t)vsum.Perp();
       fEta    = (Float_t)vsum.Eta();
       fY      = (Float_t)vref.Rapidity();
-      fITS[0] = IsITSSAtrack(t1) ? 1 : 0;
-      fITS[1] = IsITSSAtrack(t2) ? 1 : 0;
+      fITS[0] = itsneg[i1];
+      fITS[1] = itsneg[i2];
 
       if (fIM < 0.9 || fIM >  1.4) continue;
       if (fPt < 0.0 || fPt > 20.0) continue;

@@ -63,8 +63,6 @@ class AliRsnAnalysisPhi7TeV : public AliAnalysisTaskSE
     virtual void     Terminate(Option_t *option = "");
     
     Int_t            EventEval(AliESDEvent *esd);
-    Bool_t           IsTPCtrack(AliESDtrack *track);
-    Bool_t           IsITSSAtrack(AliESDtrack *track);
     AliESDtrackCuts* GetCutsTPC() {return &fESDtrackCutsTPC;}
     AliESDtrackCuts* GetCutsITS() {return &fESDtrackCutsITS;}
 
@@ -100,8 +98,8 @@ class AliRsnAnalysisPhi7TeV : public AliAnalysisTaskSE
     TH1F      *fVertexY[2];     // histogram of Y coordinate of primary vertex ([0] = tracks, [1] = SPD)
     TH1F      *fVertexZ[2];     // histogram of Z coordinate of primary vertex ([0] = tracks, [1] = SPD)
     
-    AliESDtrackCuts  fESDtrackCutsTPC;  //! ESD standard defined track cuts for TPC tracks
-    AliESDtrackCuts  fESDtrackCutsITS;  //! ESD standard defined track cuts for ITS-SA tracks
+    AliESDtrackCuts  fESDtrackCutsTPC;  //  ESD standard defined track cuts for TPC tracks
+    AliESDtrackCuts  fESDtrackCutsITS;  //  ESD standard defined track cuts for ITS-SA tracks
     AliESDpid       *fESDpid;           //! PID manager
     AliTOFT0maker   *fTOFmaker;         //! TOF time0 computator
     AliTOFcalib     *fTOFcalib;         //! TOF calibration

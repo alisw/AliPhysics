@@ -45,4 +45,7 @@
 #pragma link C++ class AliRsnAnalysisPhi900GeV+;
 #pragma link C++ class AliRsnAnalysisPhi7TeV+;
 
+#pragma link C++ class AliRsnMonitorTrack+;
+#pragma link C++ class AliRsnAnalysisMonitorTask+;
+
 #endif
