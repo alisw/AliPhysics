@@ -101,7 +101,14 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
  
   //-------------- Compile the analysis tasks ---------- //
   if(bTPC)    gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
-  if(bPHOS)   gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
+  if(bPHOS) {
+    AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
+    pHLT->LoadComponentLibraries("libHLTbase");
+    pHLT->LoadComponentLibraries("libAliHLTUtil");
+    pHLT->LoadComponentLibraries("libAliHLTGlobal");
+    gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
+    gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+");  
+  }
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
 
