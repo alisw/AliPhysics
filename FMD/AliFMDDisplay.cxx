@@ -805,7 +805,7 @@ AliFMDDisplay::ProcessRawDigit(AliFMDDigit* digit)
   // Parameters: 
   //   digit Digit information 
   AliFMDDebug(50, ("Forwarding call of ProcessRaw to ProcessDigit "
-		  "for FMD%d&c[%02d,%03d] %d", 
+		  "for FMD%d%c[%02d,%03d] %d", 
 		  digit->Detector(), digit->Ring(), digit->Sector(), 
 		  digit->Strip(), digit->Counts()));
   return ProcessDigit(digit);

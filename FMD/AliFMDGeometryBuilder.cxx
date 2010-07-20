@@ -698,14 +698,14 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
   TGeoTranslation* trans = 0;
   for (size_t i = 0; i < 4; i++) { 
     trans = new TGeoTranslation(-lidH[i][0], lidH[i][1], /*6.95*/-lidHL/2);
-    trans->SetName(Form("FMD1_lid_hole_mat%d", 2*i+0));
+    trans->SetName(Form("FMD1_lid_hole_mat%d", int(2*i+0)));
     trans->RegisterYourself();
     trans = new TGeoTranslation(+lidH[i][0], lidH[i][1], /*6.95*/-lidHL/2);
-    trans->SetName(Form("FMD1_lid_hole_mat%d", 2*i+1));
+    trans->SetName(Form("FMD1_lid_hole_mat%d", int(2*i+1)));
     trans->RegisterYourself();
     lidComp.Append(Form("FMD1_lid_hole:FMD1_lid_hole_mat%d+" 
 			"FMD1_lid_hole:FMD1_lid_hole_mat%d%c", 
-			2 * i, 2 * i + 1, i == 3 ? ')' : '+'));
+			int(2 * i), int(2 * i + 1), int(i == 3 ? ')' : '+')));
   }
   TGeoCompositeShape* lidS = new TGeoCompositeShape(lidComp.Data());
   lidS->SetName("FMD1_lid");

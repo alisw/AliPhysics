@@ -424,7 +424,7 @@ AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch)
 
 
   AliFMDDebug(3, ("Size of cache: %d bytes, read %d bytes", 
-		   sizeof(fEdep), read));
+		  int(sizeof(fEdep)), read));
 }
 
 //____________________________________________________________________

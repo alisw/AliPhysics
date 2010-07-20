@@ -239,8 +239,8 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
       return;
     }
     
-    AliDebug(50, Form("Fitting FMD%d%c_%d_%d with %d entries",
-		      det,ring,sec,strip, hChannel->GetEntries()));
+    AliDebug(50, Form("Fitting FMD%d%c[%02d,%03d] with %d entries",
+		      det,ring,sec,strip, int(hChannel->GetEntries())));
     TF1 fitFunc("fitFunc","gausn",0,300);
     fitFunc.SetParameters(100,100,1);
     hChannel->Fit("fitFunc","Q0+","",10,200);

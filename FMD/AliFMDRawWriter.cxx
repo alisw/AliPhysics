@@ -309,7 +309,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     /* nBits += */ altro->WriteDataHeader(kFALSE, kFALSE);
     delete altro;
   }
-  AliFMDDebug(5, ("Wrote a total of %d words in %d bytes for %d counts", 
+  AliFMDDebug(5, ("Wrote a total of %d words in %ld bytes for %d counts", 
 		  nWords, nBits / 8, nCounts));
   return nBits;
 }

@@ -444,7 +444,7 @@ AliFMDHitDigitizer::SumContributions(TBranch* hitsBranch)
     }  // hit loop
   } // track loop
   AliFMDDebug(5, ("Size of cache: %d bytes, read %d bytes", 
-		   sizeof(fEdep), read));
+		  int(sizeof(fEdep)), read));
 }
 
 

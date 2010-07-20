@@ -128,8 +128,9 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
   AliFMDRing*     gring = gdet->GetRing(ring);
   if (!gring) {
     AliFatal(Form("Ring %c not found (volume was %s at offset %d in path %s)", 
-		  ring, fmd->GetRingOff(), 
+		  ring, 
 		  mc->CurrentVolOffName(fmd->GetRingOff()),
+		  fmd->GetRingOff(), 
 		  mc->CurrentVolPath()));
   }
   Int_t n = gring->GetNSectors();

@@ -321,7 +321,7 @@ AliFMDRing::Detector2XYZ(UShort_t sector,
     return;
   }
   if (strip >= GetNStrips()) {
-    Error("Detector2XYZ", "Invalid strip number %d (>=%d)", 
+    Error("Detector2XYZ", "Invalid strip number %d (>=%d) for ring type '%c'", 
 	  strip, GetNStrips(), fId);
     return;
   }
@@ -380,7 +380,7 @@ AliFMDRing::GetStripLength(UShort_t strip) const
   //   strip     Strip number (0-511 for inners, 0-255 for outers)
   // 
   if(strip >= GetNStrips())
-    Error("GetStripLength", "Invalid strip number %d (>=%d)", 
+    Error("GetStripLength", "Invalid strip number %d (>=%d) for ring type %c", 
 	  strip, GetNStrips(), fId);
   
   Float_t rad        = GetMaxR()-GetMinR();

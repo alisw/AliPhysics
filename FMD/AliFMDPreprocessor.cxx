@@ -115,7 +115,7 @@ Bool_t AliFMDPreprocessor::GetAndCheckFileSources(TList*&     list,
     case kDCS: sys = "DCS";     break;
     default:   sys = "unknown"; break;
     }
-    Log(Form("Failed to get file sources for %s/%s", sys.Data(), system));
+    Log(Form("Failed to get file sources for %s/%d", sys.Data(), system));
     return kFALSE;
   }
   return kTRUE;

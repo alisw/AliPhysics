@@ -537,7 +537,7 @@ AliFMD::FinishEvent()
   // 
   if (AliLog::GetDebugLevel("FMD", "AliFMD") < 10) return;
   if (fBad && fBad->GetEntries() > 0) {
-    AliWarning((Form("EndEvent", "got %d 'bad' hits", fBad->GetEntries())));
+    AliWarning(Form("got %d 'bad' hits", fBad->GetEntries()));
     TIter next(fBad);
     AliFMDHit* hit;
     while ((hit = static_cast<AliFMDHit*>(next()))) hit->Print("D");
@@ -870,7 +870,7 @@ AliFMD::AddSDigitByFields(UShort_t       detector,
   // AliFMDDebug(0, ("Adding sdigit # %d", fNsdigits));
   
   AliFMDDebug(15, ("Adding sdigit # %5d/%5d for FMD%d%c[%2d,%3d]"
-		   "=(%d,%d,%d,%d) with %d tracks %d primaries %d (%p)",
+		   "=(%d,%d,%d,%d) with %d tracks %d primaries (%p)",
 		   fNsdigits-1, a.GetEntriesFast(),
 		   detector, ring, sector, strip, 
 		   count1, count2, count3, count4, ntot, nprim, refs));
