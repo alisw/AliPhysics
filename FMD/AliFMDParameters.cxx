@@ -728,7 +728,7 @@ AliFMDParameters::GetZeroSuppression(UShort_t detector, Char_t ring,
   // Get zero suppression threshold 
   if (!fZeroSuppression) return fFixedZeroSuppression;
   // Need to map strip to ALTRO chip. 
-  AliFMDDebug(50, ("zero sup. for FMD%d%c[%2d,%3d]=%f",
+  AliFMDDebug(50, ("zero sup. for FMD%d%c[%2d,%3d]=%d",
 		    detector, ring, sector, strip,
 		    fZeroSuppression->operator()(detector, ring, 
 						 sector, strip)));
