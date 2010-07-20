@@ -6,7 +6,7 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 // RUN SETTINGS
 
 // Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t MCEP     = kFALSE;  // correlation with Monte Carlo reaction plane
+Bool_t MCEP     = kTRUE;  // correlation with Monte Carlo reaction plane
 Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
 Bool_t GFC      = kTRUE;  // cumulants based on generating function
 Bool_t QC       = kTRUE;  // cumulants using Q vectors
@@ -17,7 +17,7 @@ Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (seco
 Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
 Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
 Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
-Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
+Bool_t NL       = kTRUE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
@@ -31,16 +31,16 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 2, 
+//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 2, 
 //Bool_t DATA = kTRUE, const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
-                Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
+//              Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
 
-//void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
+void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
-		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10b_000115322_p1", Int_t offset=0) // data 7 TeV
-		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10a18_140012", Int_t offset=0) //perugia0 7 TeV
-		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10a20_140514", Int_t offset=0) //phojet 7 TeV
+		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10d2_117048", Int_t offset=0) //phojet 7 TeV		 
+		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC09d_000104792_p6", Int_t offset=0) //data 0.9 TeV
+		 Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG4/morsch/HIJING_CENT_4EV", Int_t offset=0) //hijing Pb Pb pilot
 
 //void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
 {
@@ -234,7 +234,7 @@ void LoadLibraries(const anaModes mode) {
     //gProof->ShowDataSets("/alice/data/"); //for REAL Data 
  
     // Clear the Packages
-    /*
+    
     gProof->ClearPackage("STEERBase.par");
     gProof->ClearPackage("ESD.par");
     gProof->ClearPackage("AOD.par");
@@ -244,7 +244,7 @@ void LoadLibraries(const anaModes mode) {
     
     gProof->ClearPackage("PWG2flowCommon");
     gProof->ClearPackage("PWG2flowTasks");
-    */
+    
     // Upload the Packages
     gProof->UploadPackage("STEERBase.par");
     gProof->UploadPackage("ESD.par");    
