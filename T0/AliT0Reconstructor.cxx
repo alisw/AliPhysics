@@ -161,8 +161,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       AliDebug(10,Form("  Amlitude in MIPS LED %f ,  QTC %f in channels %f\n ",ampMip,qtMip, adc[ipmt]));
       
       frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
-      frecpoints->SetAmp(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
-      frecpoints->SetAmpLED(ipmt, Float_t(qtMip));
+      frecpoints->SetAmpLED(ipmt, Float_t( ampMip)); //for cosmic &pp beam 
+      frecpoints->SetAmp(ipmt, Float_t(qtMip));
       
     }
     else {
@@ -337,13 +337,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 			    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
 	   Double_t ampMip =( (TGraph*)fAmpLED.At(ipmt))->Eval(sl);
 	   Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
-	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %i\n ",ampMip,qtMip, adc[ipmt]));
+	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]));
 	   //bad peak removing
 	   if(sl<550) {
 	     frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
 	     // frecpoints->SetTime(ipmt,Double32_t(timeCFD[ipmt]));
-	     frecpoints->SetAmpLED(ipmt, Double32_t( qtMip)); //for cosmic &pp beam 
-	     frecpoints->SetAmp(ipmt, Double32_t(ampMip));	     
+	     frecpoints->SetAmp(ipmt, Double32_t( qtMip)); //for cosmic &pp beam 
+	     frecpoints->SetAmpLED(ipmt, Double32_t(ampMip));	     
 	     noncalibtime[ipmt]= Double32_t (timeCFD[ipmt]);
 	   }
 	 }
@@ -471,8 +471,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   for ( Int_t i=0; i<24; i++) {
     time[i] =  frecpoints -> GetTime(i); // ps to ns
     if ( time[i] >1) {
-      amp[i] = frecpoints -> GetAmp(i);
-      ampQTC[i] = frecpoints -> AmpLED(i);
+      ampQTC[i] = frecpoints -> GetAmp(i);
+      amp[i] = frecpoints -> AmpLED(i);
     }
   }
   Int_t trig= frecpoints ->GetT0Trig();
@@ -483,7 +483,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   for(Int_t i=0; i<3; i++) 
     pESD->SetT0TOF(i,timeClock[i]);   // interaction time (ns) 
   pESD->SetT0time(time);         // best TOF on each PMT 
-  pESD->SetT0amplitude(amp);     // number of particles(MIPs) on each PMT
+  pESD->SetT0amplitude(ampQTC);     // number of particles(MIPs) on each PMT
   
   AliDebug(1,Form("T0: Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f T0trig %i\n",zPosition, timeStart, timeClock[0], timeClock[1], timeClock[2], trig));
   

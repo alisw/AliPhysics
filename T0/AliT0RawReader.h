@@ -27,7 +27,9 @@ class AliT0RawReader : public TTask {
     fData(NULL),
     fPosition(0),
     fParam(0),
-    fIsOnline(kFALSE)
+    fIsOnline(kFALSE),
+    fBunchID(0),
+    fPrintout(kFALSE)
     {}
   
   AliT0RawReader& operator=(const AliT0RawReader&) { return *this; }
