@@ -159,7 +159,6 @@ private:
   TH2F     * fCalibRefHistoH2F ; // H2F reference histogram from LED run
   TProfile * fLEDMonRefHistoPro ; // Profile reference histogram from LED monitor
   TH2F     * fHighEmcHistoH2F ; // H2F reference histogram from LED run
-
 //  TText **    fTextSM        ; //! Text info for each SM  
 //  TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
 //  TLine *     fLineRow       ; //! line to distinguish the different SM sector 0 and 1 

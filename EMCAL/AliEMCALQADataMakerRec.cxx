@@ -305,8 +305,7 @@ void AliEMCALQADataMakerRec::InitRaws()
 
   Int_t nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
   Int_t nTot = fSuperModules * nTowersPerSM; // max number of towers in all SuperModules
-  
-  
+    
   //Defining histograms binning, each 2D histogram covers all SMs
   Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
   Int_t nbinsZ = 2*AliEMCALGeoParams::fgkEMCALCols;
@@ -473,15 +472,14 @@ void AliEMCALQADataMakerRec::InitRaws()
 //  hL10->SetOption("E");
   Add2RawsList(hL10, kLEDMonRatio, !expert, image, !saveCorr) ;
 
-  TH1F * hL11 = new TH1F("hMaxMinusMinLEDMonRatioDist", "LEDMon amplitude, Ratio distribution", nTot, 0, 2);
+  TH1F * hL11 = new TH1F("hMaxMinusMinLEDMonRatioDist", "LEDMon amplitude, Ratio distribution", nTotLEDMon, 0, 2);
   hL11->SetMinimum(0.1) ;
-  hL11->SetMaximum(100.);
   gStyle->SetOptStat(0);
   hL11->UseCurrentStyle();
   hL11->SetDirectory(0);
   Add2RawsList(hL11, kLEDMonRatioDist, !expert, image, !saveCorr) ;
   
-  GetCalibRefFromOCDB() ;   
+  GetCalibRefFromOCDB();   
 }
 
 //____________________________________________________________________________
@@ -512,6 +510,11 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
 //____________________________________________________________________________
 void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
+ // Check that all the reference histograms exist before we try to use them - otherwise call InitRaws
+  if (!fCalibRefHistoPro || !fCalibRefHistoH2F || !fLEDMonRefHistoPro || !fHighEmcHistoH2F) {
+    InitRaws();
+  }
+
   // make sure EMCal was readout during the event
   Int_t emcID = AliDAQ::DetectorID("EMCAL"); // bit 18..
   const UInt_t *detPattern = rawReader->GetDetectorPattern(); 
@@ -757,7 +760,11 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     
     if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
       binContent = GetRawsData(kSigLGLEDMon)->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
-      relativeErrorSqr = TMath::Power(fLEDMonRefHistoPro->GetBinError(ib) / fLEDMonRefHistoPro->GetBinContent(ib), 2);
+
+      relativeErrorSqr = TMath::Power( (fLEDMonRefHistoPro->GetBinError(ib) / fLEDMonRefHistoPro->GetBinContent(ib)), 2);
+      if(GetRawsData(kSigLGLEDMon)->GetBinContent(ib) != 0) {
+	relativeErrorSqr += TMath::Power( (GetRawsData(kSigLGLEDMon)->GetBinError(ib)/GetRawsData(kSigLGLEDMon)->GetBinContent(ib)), 2);
+      }
     }
     else {
       binContent = 0;
@@ -765,10 +772,6 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     }
     GetRawsData(kLEDMonRatio)->SetBinContent(ib, binContent);
     
-    if(GetRawsData(kLEDMonRatio)->GetBinContent(ib) != 0) {
-      relativeErrorSqr += TMath::Power(GetRawsData(kSigLGLEDMon)->GetBinError(ib)/GetRawsData(kLEDMonRatio)->GetBinContent(ib), 2);
-    }
-
     binError = sqrt(relativeErrorSqr) * binContent;
     GetRawsData(kLEDMonRatio)->SetBinError(ib, binError);
     GetRawsData(kLEDMonRatioDist)->Fill(GetRawsData(kLEDMonRatio)->GetBinContent(ib));
@@ -919,9 +922,10 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
 //_____________________________________________________________________________________
 void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo) 
 {  
-  // set some histogram defaults
-  //histo->Reset() ; 
-  //histo->SetStats(kFALSE); // no statistics box shown
+  // reset histogram
+  histo->Reset("ICE") ; 
+  histo->ResetStats(); 
+
   Int_t nbinsProf = p->GetNbinsX();
   
   // loop through the TProfile p and fill the TH2F histo 
