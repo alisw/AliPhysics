@@ -309,7 +309,7 @@ Bool_t AliShuttleTrigger::Collect(Int_t run)
 
 	gSystem->GetFsInfo(fConfig->GetShuttleFileSystem(), &id, &bsize, &blocks, &bfree);
 
-	AliInfo(Form("n. of free blocks = %d, total n. of blocks = %d",bfree,blocks));
+	AliInfo(Form("n. of free blocks = %ld, total n. of blocks = %ld",bfree,blocks));
 	Int_t spaceFree = (Int_t)(((Float_t)bfree/(Float_t)blocks)*100);
 
 	if (spaceFree < fConfig->GetFreeDiskWarningThreshold()) {

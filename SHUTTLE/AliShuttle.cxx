@@ -1106,7 +1106,7 @@ Bool_t AliShuttle::ContinueProcessing()
 		if (fTestMode == kNone)
 		{
 			Log("SHUTTLE", Form("ContinueProcessing - %s requires strict run ordering"
-					" but this is not the first unprocessed run!"));
+					    " but this is not the first unprocessed run!",fCurrentDetector.Data()));
 			return kFALSE;
 		}
 		else
@@ -1114,7 +1114,7 @@ Bool_t AliShuttle::ContinueProcessing()
 			Log("SHUTTLE", Form("ContinueProcessing - In TESTMODE - "
 					"Although %s requires strict run ordering "
 					"and this is not the first unprocessed run, "
-					"the SHUTTLE continues"));
+					    "the SHUTTLE continues",fCurrentDetector.Data()));
 		}
 	}
 
@@ -1443,7 +1443,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 						// in case the pp goes in TimeOut while retrieving the DCS DPs
 						// set status to kDCSError
 						
-						logMsg.Form("Process - Process of %s timed out while retrieving the DCS DataPoints. Run time: %d seconds. Killing... and setting status to DCSError.",
+						logMsg.Form("Process - Process of %s timed out while retrieving the DCS DataPoints. Run time: %ld seconds. Killing... and setting status to DCSError.",
 								fCurrentDetector.Data(), expiredTime);
 						newStatus = AliShuttleStatus::kDCSError;
 					}
@@ -1451,7 +1451,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					{
 						// in case pp not yet done set status to kPPTimeOut
 					
-						logMsg.Form("Process - Process of %s timed out. Run time: %d seconds. Killing...",
+						logMsg.Form("Process - Process of %s timed out. Run time: %ld seconds. Killing...",
 								fCurrentDetector.Data(), expiredTime);
 						newStatus = AliShuttleStatus::kPPTimeOut;
 					}
@@ -1460,7 +1460,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 						// in case the pp goes in TimeOut while storing the objects in the OCDB
 						// set status to kStoreError
 						
-						logMsg.Form("Process - Process of %s timed out while storing the OCDB object. Run time: %d seconds. Killing... and setting status to StoreError.",
+						logMsg.Form("Process - Process of %s timed out while storing the OCDB object. Run time: %ld seconds. Killing... and setting status to StoreError.",
 								fCurrentDetector.Data(), expiredTime);
 						newStatus = AliShuttleStatus::kStoreError;
 					}
@@ -1468,7 +1468,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					{
 						// in other cases don't change the status
 						
-					       	logMsg.Form("Process - Process of %s timed out in status = %s. Run time: %d seconds. Killing... without changing the status",
+					       	logMsg.Form("Process - Process of %s timed out in status = %s. Run time: %ld seconds. Killing... without changing the status",
 								fCurrentDetector.Data(), currentStatus->GetStatusName(), expiredTime);
 					}
 				
@@ -1499,7 +1499,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					if (expiredTime % 60 == 0)
 					{
 						Log("SHUTTLE", Form("Process - %s: Checking process. "
-							"Run time: %d seconds - Memory consumption: %d KB",
+							"Run time: %ld seconds - Memory consumption: %d KB",
 							fCurrentDetector.Data(), expiredTime, mem));
 						SendAlive();
 					}
@@ -2700,8 +2700,8 @@ Bool_t AliShuttle::UpdateTable()
 
 			delete aFXSarray;
 
-			TString sqlQuery = Form("update %s set time_processed=%d %s", fConfig->GetFXSdbTable(system),
-								now.GetSec(), whereClause.Data());
+			TString sqlQuery = Form("update %s set time_processed=%ld %s", fConfig->GetFXSdbTable(system),
+						(ULong_t)now.GetSec(), whereClause.Data());
 
 			AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
 
@@ -2756,8 +2756,8 @@ Bool_t AliShuttle::UpdateTableSkippedCase(const char* detector)
 
 		//Log("SHUTTLE",Form(" whereClause = %s ",whereClause.Data()));
 
-		TString sqlQuery = Form("update %s set time_processed=%d %s", fConfig->GetFXSdbTable(system),
-					now.GetSec(), whereClause.Data());
+		TString sqlQuery = Form("update %s set time_processed=%ld %s", fConfig->GetFXSdbTable(system),
+					(ULong_t)now.GetSec(), whereClause.Data());
 
 		AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
 
@@ -2805,8 +2805,8 @@ Bool_t AliShuttle::UpdateTableFailCase()
 						GetCurrentRun(), fCurrentDetector.Data());
 
 
-		TString sqlQuery = Form("update %s set time_processed=%d %s", fConfig->GetFXSdbTable(system),
-							now.GetSec(), whereClause.Data());
+		TString sqlQuery = Form("update %s set time_processed=%ld %s", fConfig->GetFXSdbTable(system),
+					(ULong_t)now.GetSec(), whereClause.Data());
 
 		AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
 
