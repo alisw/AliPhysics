@@ -186,7 +186,7 @@ void AliQuarkoniaEfficiency::Init()
 
     if ( !fEfficiency ) {
       AliError(Form("Histo %s not found in file %s \n Efficiency data for quarkonia %s and channel %s not found",
-		    histoname,GetTitle(), GetName() ));
+		    histoname, fEfficiencyFileName.Data(), GetTitle(), GetName() ));
     }
     else {
       fEfficiency->SetDirectory(0);

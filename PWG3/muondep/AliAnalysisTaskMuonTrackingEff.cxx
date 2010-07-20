@@ -315,12 +315,12 @@ void AliAnalysisTaskMuonTrackingEff::Init()
       
       if (jj == 10)
 	{
-	  histName.Form("TD_Chambers", jj+1);
-	  histTitle.Form("Chambers", jj+1);
+	  histName.Form("TD_Chambers %d", jj+1);
+	  histTitle.Form("Chambers %d", jj+1);
 	  TH1F *histoTDchambers = new TH1F(histName, histTitle, 10, 0.5, 10.5);
 	  fChamberTDHistList->AddAt(histoTDchambers, jj);
 	  
-	  histName.Form("TT_Chambers", jj+1);
+	  histName.Form("TT_Chambers %d", jj+1);
 	  TH1F *histoTTchambers = new TH1F(histName, histTitle, 10, 0.5, 10.5);
 	  fChamberTTHistList->AddAt(histoTTchambers, jj);
 	}

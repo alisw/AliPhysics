@@ -135,7 +135,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
   // Main loop function
   // 
   
-  Info("UserExec","") ;
+  Info("UserExec"," ") ;
   if (!fMCEvent) {
     Error("UserExec","NO MC EVENT FOUND!");
     return;

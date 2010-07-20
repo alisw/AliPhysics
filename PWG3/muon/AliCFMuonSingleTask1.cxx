@@ -111,7 +111,8 @@ AliCFMuonSingleTask1::AliCFMuonSingleTask1(const AliCFMuonSingleTask1& c) :
   fCFManager(c.fCFManager),
   fQAHistList(c.fQAHistList),
   fHistEventsProcessed(c.fHistEventsProcessed),
-  fNevt(c.fNevt)
+  fNevt(c.fNevt),
+  fIsMC(kFALSE)
 {
   //
   // Copy Constructor
@@ -136,7 +137,7 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
   // Main loop function
   //  
 
-  Info("UserExec","") ;
+  Info("UserExec"," ") ;
   if (!fMCEvent && fIsMC) {  
     Error("UserExec","NO MC EVENT FOUND!");
     return;
@@ -175,7 +176,7 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 	      Float_t pmc = part->P();    
 	      Float_t zmc = part->Vz();
 	      Float_t etamc = part->Eta();
-	      Float_t chargemc;
+	      Float_t chargemc=0;
 	      if(pdg==13) chargemc=-1;
 	      if(pdg==-13) chargemc=1;
       
