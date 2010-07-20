@@ -3470,6 +3470,31 @@ void AliITSv11GeometrySPD::StavesInSector(TGeoVolume *moth, TGeoManager *mgr)
             } // end if i!=2
         } // end if i==0||i==1 else
     } // end for i
+    
+    
+    // Add a box representing the collector for cooling tubes
+    Double_t collWidth     = fgkmm * 22.0;
+    Double_t collLength    = fgkmm * 50.0;
+    Double_t collThickness = fgkmm *  7.0;
+    Double_t collInSize    = fgkmm * 10.5;
+    
+    TGeoMedium *medColl   = GetMedium("INOX$");
+    TGeoMedium *medCollIn = GetMedium("COPPER$");
+    TGeoVolume *vColl     = mgr->MakeBox("ITSSPDSectorTubeColl"  , medColl, 0.5*collWidth, 0.5*collThickness, 0.5*collLength);
+    TGeoVolume *vCollIn   = mgr->MakeBox("ITSSPDSectorTubeCollIn", medCollIn, 0.5*collInSize, 0.5*collInSize, 0.5*collInSize);
+    vColl->SetLineColor(kGreen+2);
+    vCollIn->SetLineColor(kYellow);
+    
+    TGeoTranslation *tr1 = new TGeoTranslation( 0.1, 1.2,  35.0);
+    TGeoTranslation *tr2 = new TGeoTranslation(-0.1, 1.2, -35.0);
+    TGeoTranslation *tr3 = new TGeoTranslation( 0.1, 1.2 - 0.5*(collThickness+collInSize),  35.0 + 0.5*(collLength - collInSize));
+    TGeoTranslation *tr4 = new TGeoTranslation(-0.1, 1.2 - 0.5*(collThickness+collInSize), -35.0 - 0.5*(collLength - collInSize));
+    
+    moth->AddNode(vColl, 0, tr1);
+    moth->AddNode(vColl, 1, tr2);
+    moth->AddNode(vCollIn, 0, tr3);
+    moth->AddNode(vCollIn, 1, tr4);
+    
 }
 //______________________________________________________________________
 void AliITSv11GeometrySPD::ParallelPosition(Double_t dist1, Double_t dist2,
