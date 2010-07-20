@@ -373,7 +373,7 @@ Bool_t AliRunDigitizer::InitOutputGlobal()
        AliError("Can not get Run Loader Input 0. Maybe yet not initialized?");
        return kFALSE;
      }
-    AliDebug(2, Form(" 2 %#x = ", inrl)) ; 
+    AliDebug(2, Form(" 2 %#p = ", inrl)) ; 
 
     //Copy all detector loaders from input 0 to output
     const TObjArray* inloaders = inrl->GetArrayOfLoaders();

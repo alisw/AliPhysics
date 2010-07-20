@@ -152,7 +152,7 @@ Bool_t AliSurveyObj::Connect(const char *gridUrl, const char *user) {
     // connection to the Grid
     AliInfo("\nConnecting to the Grid...");
     if (gGrid) {
-      AliInfo(Form("gGrid = %x; GridUrl = %s; gGrid->GridUrl() = %s", 
+      AliInfo(Form("gGrid = %p; GridUrl = %s; gGrid->GridUrl() = %s", 
 		   gGrid, gridUrl, gGrid->GridUrl()));
       AliInfo(Form("User = %s; gGrid->GetUser() = %s",
 		   user, gGrid->GetUser()));
@@ -196,7 +196,7 @@ Bool_t AliSurveyObj::OpenFile(TString openString) {
     AliError("Error reading file contents to buffer!");
     return kFALSE;
   }
-  AliInfo(Form("%d bytes read!\n", file->GetBytesRead()));
+  AliInfo(Form("%l bytes read!\n", file->GetBytesRead()));
   
   ParseBuffer(buf);
 
@@ -416,14 +416,12 @@ Int_t AliSurveyObj::FileNamePathToReportVersion(TString filename) const {
 //_____________________________________________________________________________
 void AliSurveyObj::ListValidDetectors() {
     // List the valid detector names
-    Printf("");
     Printf("Listing all valid detectors:\n");
     TObjArray *dets = fgkValidDetectors.Tokenize(',');
     for (int i = 0; i < dets->GetEntries(); ++i) 
 	Printf("%s", ((TObjString *) dets->At(i))->GetString().Data());
     dets->Delete();
     dets = 0;
-    Printf("");
     Printf("Some reports are stored in more general folders.\n"
 	    "These reports can be opened using either name, the original or the\n"
 	    "folder name. Example: 'SPACEFRAME' or 'GRP' are both valid when\n"
@@ -434,7 +432,6 @@ void AliSurveyObj::ListValidDetectors() {
 	Printf("%s", ((TObjString *) dets->At(i))->GetString().Data());
     dets->Delete();
     dets = 0;
-    Printf("");
     Printf("Detectors stored in 'GRP' folder:");
     dets = fgkGRPDetectors.Tokenize(',');
     for (int i = 0; i < dets->GetEntries(); ++i) 
@@ -513,7 +510,6 @@ Int_t AliSurveyObj::ListReports(TString detector, Int_t year,
   Int_t numberEntries = res->GetEntries();
 
   if (numberEntries > 0) {
-    Printf("");
     Printf(Form("%d reports found:", numberEntries));
     for (int i = 0; i < res->GetEntries(); ++i) {
       fn = res->GetFileNamePath(i);

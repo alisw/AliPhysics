@@ -291,7 +291,7 @@ void AliParamSolver::Print(Option_t*) const
 void AliParamSolver::SetNGlobal(Int_t n) 
 {
   if (n>fMaxGlobal) {
-    AliError(Form("Maximum number of globals was set to %n",fMaxGlobal));
+    AliError(Form("Maximum number of globals was set to %d",fMaxGlobal));
     return;
   }
   fNGlobal = n;

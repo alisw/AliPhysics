@@ -140,7 +140,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     // Tree K
     fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fExtension));
     if (!fFileK) {
-	AliError(Form("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName));
+	AliError(Form("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName->Data()));
 	fInitOk = kFALSE;
 	return kTRUE;
     }
@@ -284,7 +284,7 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
     }
 
     if (entry >= fNEvent) {
-	AliWarning(Form("AliMCEventHandler: Event number out of range %5d %5d\n", entry, fNEvent));
+	AliWarning(Form("AliMCEventHandler: Event number out of range %5l %5d\n", entry, fNEvent));
 	return kFALSE;
     }
     

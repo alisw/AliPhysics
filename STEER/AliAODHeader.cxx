@@ -50,7 +50,9 @@ AliAODHeader::AliAODHeader() :
   fOrbitNumber(0),
   fPeriodNumber(0),
   fBunchCrossNumber(0),
-  fTriggerCluster(0)
+  fTriggerCluster(0), 
+  fDiamondZ(0.), 
+  fDiamondSig2Z(0.)
 {
   // default constructor
 
@@ -91,7 +93,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
   fBunchCrossNumber(nBunchX),
-  fTriggerCluster(0)
+  fTriggerCluster(0), 
+  fDiamondZ(0.), 
+  fDiamondSig2Z(0.)
 {
   // constructor
 
@@ -149,7 +153,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
   fBunchCrossNumber(nBunchX),
-  fTriggerCluster(trigClus)
+  fTriggerCluster(trigClus), 
+  fDiamondZ(0.), 
+  fDiamondSig2Z(0.)
 
 {
   // constructor

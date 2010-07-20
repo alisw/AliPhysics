@@ -990,7 +990,7 @@ void AliQAManager::MergeCustom() const
                     if (  className.Contains("TH") || className.Contains("TProfile") ) {
                       TH1 * histIn = static_cast<TH1*> (key->ReadObj()) ; 
                       TH1 * histOu = static_cast<TH1*> (mergedDirectory->FindObjectAny(histIn->GetName())) ; 
-                      AliDebug(AliQAv1::GetQADebugLevel(), Form("%s %x %x\n", key->GetName(), histIn, histOu)) ; 
+                      AliDebug(AliQAv1::GetQADebugLevel(), Form("%s %p %p\n", key->GetName(), histIn, histOu)) ; 
                       mergedDirectory->cd() ; 
                       if ( ! histOu ) {
                         histIn->Write() ; 

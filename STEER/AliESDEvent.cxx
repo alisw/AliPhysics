@@ -358,7 +358,7 @@ void AliESDEvent::Reset()
 	ResetWithPlacementNew(pObject);
       }
       else{
-	AliWarning(Form("No reset for %s (%s)\n",
+	AliWarning(Form("No reset for %s \n",
 			pObject->ClassName()));
       }
     }

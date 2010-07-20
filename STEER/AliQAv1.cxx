@@ -876,7 +876,7 @@ void AliQAv1::ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::Event
 	tskStatus[kESD] = status & 0x0f000 ;
 	tskStatus[kANA] = status & 0xf0000 ;
 
-	AliInfo(Form("====> QA Status for %8s %8s raw =0x%x, sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x", GetDetName(det).Data(), AliRecoParam::GetEventSpecieName(es), 
+	AliInfo(Form("====> QA Status for %8s %8s raw =0x%lx, sim=0x%lx, rec=0x%lx, esd=0x%lx, ana=0x%lx", GetDetName(det).Data(), AliRecoParam::GetEventSpecieName(es), 
 				 tskStatus[kRAW], tskStatus[kSIM], tskStatus[kREC], tskStatus[kESD], tskStatus[kANA] )) ;
 	if (tsk == kNULLTASK) {
 		for (Int_t itsk = kRAW ; itsk < kNTASK ; itsk++) {

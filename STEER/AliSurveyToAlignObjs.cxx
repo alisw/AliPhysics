@@ -146,7 +146,7 @@ Bool_t AliSurveyToAlignObjs::StoreAlignObjToCDB(const char* cdbFolder, const cha
   cdb->SetRun(0);
 
   AliCDBMetaData* md = new AliCDBMetaData();
-  md->SetComment(Form("Misalignment for subdetector %d from survey",det));
+  md->SetComment(Form("Misalignment for subdetector %s from survey",det));
   TString path(det);
   path+="/Align/Data";
   AliCDBId id(path.Data(),0,AliCDBRunRange::Infinity());

@@ -94,7 +94,7 @@ Bool_t AliESDHandler::Init(Option_t* opt)
 		// proof
 		// Merging via files. Need to access analysis manager via interpreter.
 		gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(\"%s\", \"RECREATE\");", fFileName.Data()));
-		gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->GetCommonOutputContainer()->SetFile((TFile*)0x%lx);", gFile));
+		gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->GetCommonOutputContainer()->SetFile((TFile*)0x%p);", gFile));
 		fFileEF = gFile;
 	} else {
 		// local and grid

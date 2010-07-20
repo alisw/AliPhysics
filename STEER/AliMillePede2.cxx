@@ -239,7 +239,7 @@ Bool_t AliMillePede2::InitDataRecStorage(Bool_t read)
     fTreeData = (TTree*)fDataRecFile->Get("AliMillePedeRecords_Data");
     if (!fTreeData) {AliFatal(Form("Did not find data records tree in %s",GetDataRecFName())); return kFALSE;}
     fTreeData->SetBranchAddress("Record_Data",&fRecord);
-    AliInfo(Form("Found %d derivatives records",fTreeData->GetEntries()));
+    AliInfo(Form("Found %l derivatives records",fTreeData->GetEntries()));
   }
   else {
     fTreeData = new TTree("AliMillePedeRecords_Data","Data Records for AliMillePede2");
@@ -268,7 +268,7 @@ Bool_t AliMillePede2::InitConsRecStorage(Bool_t read)
     fTreeConstr = (TTree*)fConsRecFile->Get("AliMillePedeRecords_Constraints");
     if (!fTreeConstr) {AliInfo(Form("Did not find constraints records tree in %s",GetConsRecFName())); return kFALSE;}
     fTreeConstr->SetBranchAddress("Record_Constraints",&fRecord);
-    AliInfo(Form("Found %d constraints records",fTreeConstr->GetEntries()));
+    AliInfo(Form("Found %l constraints records",fTreeConstr->GetEntries()));
     //
   }
   else {
@@ -775,7 +775,7 @@ Int_t AliMillePede2::GlobalFitIteration()
   Long_t last  = fSelLast<1   ? ndr : (fSelLast>=ndr ? ndr : fSelLast+Long_t(1));
   ndr = last - first;
   //
-  AliInfo(Form("Building the Global matrix from data records %d : %d",first,last));
+  AliInfo(Form("Building the Global matrix from data records %l : %l",first,last));
   if (ndr<1) return 0;
   //
   TStopwatch swt; swt.Start();

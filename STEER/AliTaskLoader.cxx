@@ -53,7 +53,7 @@ void AliTaskLoader::Clean()
   // Removes tasl from parental task
   // DO NOT DELETE OBJECT contrary to BaseLoader
   //
-  AliDebug(1, Form("Clean","%s %s",GetName(),GetDataLoader()->GetName()));
+  AliDebug(1, Form("Clean %s %s",GetName(),GetDataLoader()->GetName()));
   TObject* obj = Get();
   if(obj)
     { 

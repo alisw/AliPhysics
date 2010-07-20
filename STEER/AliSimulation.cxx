@@ -1139,8 +1139,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     loaderName += "Loader";
     AliLoader* loader = runLoader->GetLoader(loaderName);
     if (!loader) {
-      AliError(Form("RunSimulation", "no loader for %s found\n"
-                    "Number of events per file not set for %s %s", 
+      AliError(Form("RunSimulation no loader for %s found\n Number of events per file not set for %s %s", 
                     detName, typeName, detName));
       continue;
     }

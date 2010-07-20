@@ -291,7 +291,7 @@ TObjArray **  AliQADataMakerRec::Init(AliQAv1::TASKINDEX_t task, Int_t cycles)
       fESDsQAList = new TObjArray *[AliRecoParam::kNSpecies] ; 
       for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
         fESDsQAList[specie] = new TObjArray(AliQAv1::GetMaxQAObj()) ;
-        fESDsQAList[specie]->SetName(Form("%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(specie))) ; 
+        fESDsQAList[specie]->SetName(Form("%s_%s", GetName(), AliQAv1::GetTaskName(task).Data())); //, AliRecoParam::GetEventSpecieName(specie))) ; 
       }
 		}
 		rv = fESDsQAList ;
