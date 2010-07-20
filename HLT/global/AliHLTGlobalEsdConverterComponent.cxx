@@ -648,6 +648,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	
 	AliESDtrack iotrack;
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTRDout);
+	iotrack.SetStatus(AliESDtrack::kTRDin);
 	iotrack.SetTRDpid(TRDpid);
 	
 	pESD->AddTrack(&iotrack);
