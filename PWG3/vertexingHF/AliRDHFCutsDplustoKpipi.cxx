@@ -226,8 +226,11 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
 }
 
 //---------------------------------------------------------------------------
-Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)const {
-  //PID 
+Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)
+{
+  //
+  // PID selection
+  // 
   if(!fUsePID || !rd) return 1;
   //if(fUsePID)printf("i am inside the pid \n");
   Int_t nkaons=0;
