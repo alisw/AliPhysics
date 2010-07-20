@@ -174,15 +174,15 @@ void AliFMDQATask::Exec(Option_t *)
   }
 
   if(nFMD1>100+10240)
-    AliWarning(Form("number of missing strips in FMD1i too high in event number %lld in file", entry, fChain->GetCurrentFile()->GetName())) ;
+    AliWarning(Form("number of missing strips in FMD1i too high in event number %lld in file %s", entry, fChain->GetCurrentFile()->GetName())) ;
   if(nFMD2i>100+10240)
-    AliWarning(Form("number of missing strips in FMD2i too high in event number %lld in file", entry, fChain->GetCurrentFile()->GetName())) ;
+    AliWarning(Form("number of missing strips in FMD2i too high in event number %lld in file %s", entry, fChain->GetCurrentFile()->GetName())) ;
   if(nFMD2o>100+10240)
-    AliWarning(Form("number of missing strips in FMD2o too high in event number %lld in file", entry, fChain->GetCurrentFile()->GetName())) ;
+    AliWarning(Form("number of missing strips in FMD2o too high in event number %lld in file %s", entry, fChain->GetCurrentFile()->GetName())) ;
   if(nFMD3i>100+10240)
-    AliWarning(Form("number of missing strips in FMD3i too high in event number %lld in file", entry, fChain->GetCurrentFile()->GetName())) ;
+    AliWarning(Form("number of missing strips in FMD3i too high in event number %lld in file %s", entry, fChain->GetCurrentFile()->GetName())) ;
   if(nFMD3o>100+10240)
-    AliWarning(Form("number of missing strips in FMD3o too high in event number %lld in file", entry, fChain->GetCurrentFile()->GetName())) ;
+    AliWarning(Form("number of missing strips in FMD3o too high in event number %lld in file %s", entry, fChain->GetCurrentFile()->GetName())) ;
   
   PostData(0, fOutputContainer);
 }

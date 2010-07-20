@@ -600,7 +600,7 @@ void AliTRDQATask::DrawGeoESD() const
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
     
     hist->Draw(opt[i]);    
-    AliInfo(Form("%s\t%d", names[i], hist->GetEntries()));
+    AliInfo(Form("%s\t%f", names[i], hist->GetEntries()));
   }
   
   cTRDGeo->Print("TRD_Geo.eps");
@@ -733,7 +733,7 @@ void AliTRDQATask::DrawPidESD() const
     if (strstr(names[i],"SigMom")) gPad->SetLogz(1);
 
     hist->Draw(opt[i]);    
-    AliInfo(Form("%s\t%d", names[i], hist->GetEntries()));
+    AliInfo(Form("%s\t%f", names[i], hist->GetEntries()));
   }
    cTRDPid->Print("TRD_Pid.eps");
 }
