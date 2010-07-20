@@ -1,20 +1,51 @@
-void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
+Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
+			    Float_t *ioValues=0,Float_t *ioErrors=0) 
+{
   //
   // Macro to plot the histos from the task AliAnalysisTaskITSTrackingCheck
   // A. Dainese 28.11.09
   // 
 
+  Bool_t plotAlignmentChecks=kFALSE;
   //gStyle->SetOptStat(0);
 
   if(fname.Contains("alien")) TGrid::Connect("alien://");
 
   TFile *f= TFile::Open(fname.Data());
+  if(!f) return kFALSE;
 
   TList *list=(TList*)f->Get("cOutputITS");
+  TList *listSPD=0;
   if(!list) {
     TDirectoryFile *dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
-    list = (TList*)dir->Get("cOutputITS");
+    if(dir) list = (TList*)dir->Get("cOutputITS");
+    // count active SPD HSs
+    dir=(TDirectoryFile*)f->GetDirectory("SPD_Performance");
+    if(dir) listSPD = (TList*)dir->Get("coutput1");
   }
+
+  if(!list || !dir) return kFALSE;
+
+  TH1F *hnHSsSPD=new TH1F("hnHSsSPD","Active HSs in SPD layers 1 and 2; layer; HSs",2,0.5,2.5);
+  if(listSPD) {
+    listSPD->Print();
+    TH1F *hFiredChip = (TH1F*)listSPD->FindObject("hFiredChip");
+    Int_t nHSsInner=0,nHSsOuter=0;
+    for(Int_t i=0;i<400;i++) if(hFiredChip->GetBinContent(i)>0) nHSsInner++;
+    for(Int_t i=400;i<1200;i++) if(hFiredChip->GetBinContent(i)>0) nHSsOuter++;
+    nHSsInner = (Int_t)(nHSsInner/10);
+    nHSsOuter = (Int_t)(nHSsOuter/10);
+    hnHSsSPD->SetBinContent(1,nHSsInner);
+    hnHSsSPD->SetBinContent(2,nHSsOuter);
+    if(ioValues) ioValues[0]=(Float_t)nHSsInner/40.;
+    if(ioValues) ioValues[1]=(Float_t)nHSsOuter/80.;
+  }
+
+  TCanvas *cSPD=new TCanvas("cSPD","cSPD");
+  hnHSsSPD->SetMaximum(90);
+  hnHSsSPD->SetMinimum(0);
+  hnHSsSPD->Draw();
+
   TH1F *fHistNclsITSSA = (TH1F*)list->FindObject("fHistNclsITSSA");
   TH1F *fHistClusterMapITSSA = (TH1F*)list->FindObject("fHistClusterMapITSSA");
   TH1F *fHistClusterMapITSSAok = (TH1F*)list->FindObject("fHistClusterMapITSSAok");
@@ -351,6 +382,57 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   fHistPtITSTPCsel->Draw("same");
   fHistPtITSMIge2InAcc->Draw("same");
   l3->Draw();
+  if(ioValues) {
+    Int_t index,ptbin;
+    ptbin=fHistPtITSMIge2InAcc->FindBin(0.201);
+    index=2;
+    ioValues[index]=fHistPtITSMIge2InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIge2InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIge2InAcc->FindBin(1.001);
+    index=3;
+    ioValues[index]=fHistPtITSMIge2InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIge2InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIge2InAcc->FindBin(10.001);
+    index=4;
+    ioValues[index]=fHistPtITSMIge2InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIge2InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMI6InAcc->FindBin(0.201);
+    index=5;
+    ioValues[index]=fHistPtITSMI6InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMI6InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMI6InAcc->FindBin(1.001);
+    index=6;
+    ioValues[index]=fHistPtITSMI6InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMI6InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMI6InAcc->FindBin(10.001);
+    index=7;
+    ioValues[index]=fHistPtITSMI6InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMI6InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMISPDInAcc->FindBin(0.201);
+    index=8;
+    ioValues[index]=fHistPtITSMISPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMISPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMISPDInAcc->FindBin(1.001);
+    index=9;
+    ioValues[index]=fHistPtITSMISPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMISPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMISPDInAcc->FindBin(10.001);
+    index=10;
+    ioValues[index]=fHistPtITSMISPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMISPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIoneSPDInAcc->FindBin(0.201);
+    index=11;
+    ioValues[index]=fHistPtITSMIoneSPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIoneSPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIoneSPDInAcc->FindBin(1.001);
+    index=12;
+    ioValues[index]=fHistPtITSMIoneSPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIoneSPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIoneSPDInAcc->FindBin(10.001);
+    index=13;
+    ioValues[index]=fHistPtITSMIoneSPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIoneSPDInAcc->GetBinError(ptbin);
+  }
   c5->cd(2);
   TH1F *fHistPtITSMIokbadoutinzge4InAcc = (TH1F*)fHistPtITSMIokbadoutinz6InAcc->Clone("fHistPtITSMIokbadoutinzge4InAcc");
   fHistPtITSMIokbadoutinzge4InAcc->Add(fHistPtITSMIokbadoutinz5InAcc);
@@ -500,7 +582,7 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   l3->Draw();
 
 
-
+  if(!plotAlignmentChecks) return kTRUE;
 
   // PLOT ALIGNMENT CHECKS
   //
@@ -599,7 +681,7 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   l6->Draw();
 
 
-  return;
+  return kTRUE;
 }
 //-----------------------------------------------------------------------------
 void PlotEffRatio() {
@@ -2559,4 +2641,208 @@ void ReweightStrange(TH1F *hPt,TH1F* hPtPfromStrange,TH1F* hPtSfromStrange) {
   }
 
   return;
+}
+//--------------------------------------------------------------------------
+void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
+			 TString pathBeforeRun="/alice/data/2010/LHC10c/000",
+			 TString pathAfterRun="/ESDs/pass2/QA13/QAresults.root") {
+  //
+  // Make ITS efficiency trending plots from QAresults.root files
+  //
+  gStyle->SetOptStat(0);
+
+  Float_t ioValues[100],ioErrors[100];
+  Int_t index;
+  Int_t nruns=lastrun-firstrun+1;
+
+
+  TH1F *hFracSPD1 = new TH1F("hFracSPD1","SPD inner; run number; Fraction of HSs",nruns,firstrun-0.5,lastrun+0.5);
+  hFracSPD1->SetLineColor(3);
+  hFracSPD1->SetMarkerColor(3);
+  TH1F *hFracSPD2 = new TH1F("hFracSPD2","SPD outer; run number; Fraction of HSs",nruns,firstrun-0.5,lastrun+0.5);
+  hFracSPD2->SetLineColor(8);
+  hFracSPD2->SetMarkerColor(8);
+
+
+  TH1F *hEffge2Pt02 = new TH1F("hEffge2Pt02","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEffge2Pt02->SetLineWidth(2);
+  hEffge2Pt02->SetLineColor(1);
+  hEffge2Pt02->SetMarkerColor(1);
+  TH1F *hEffge2Pt1 = new TH1F("hEffge2Pt1","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEffge2Pt1->SetLineWidth(2);
+  hEffge2Pt1->SetLineColor(1);
+  hEffge2Pt1->SetMarkerColor(1);
+  TH1F *hEffge2Pt10 = new TH1F("hEffge2Pt10","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEffge2Pt10->SetLineWidth(2);
+  hEffge2Pt10->SetLineColor(1);
+  hEffge2Pt10->SetMarkerColor(1);
+
+  TH1F *hEff6Pt02 = new TH1F("hEff6Pt02","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEff6Pt02->SetLineWidth(2);
+  hEff6Pt02->SetLineColor(2);
+  hEff6Pt02->SetMarkerColor(2);
+  TH1F *hEff6Pt1 = new TH1F("hEff6Pt1","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEff6Pt1->SetLineWidth(2);
+  hEff6Pt1->SetLineColor(2);
+  hEff6Pt1->SetMarkerColor(2);
+  TH1F *hEff6Pt10 = new TH1F("hEff6Pt10","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEff6Pt10->SetLineWidth(2);
+  hEff6Pt10->SetLineColor(2);
+  hEff6Pt10->SetMarkerColor(2);
+
+  TH1F *hEffSPDPt02 = new TH1F("hEffSPDPt02","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEffSPDPt02->SetLineWidth(2);
+  hEffSPDPt02->SetLineColor(9);
+  hEffSPDPt02->SetMarkerColor(9);
+  TH1F *hEffSPDPt1 = new TH1F("hEffSPDPt1","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEffSPDPt1->SetLineWidth(2);
+  hEffSPDPt1->SetLineColor(9);
+  hEffSPDPt1->SetMarkerColor(9);
+  TH1F *hEffSPDPt10 = new TH1F("hEffSPDPt10","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEffSPDPt10->SetLineWidth(2);
+  hEffSPDPt10->SetLineColor(9);
+  hEffSPDPt10->SetMarkerColor(9);
+
+  TH1F *hEffoneSPDPt02 = new TH1F("hEffoneSPDPt02","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEffoneSPDPt02->SetLineWidth(2);
+  hEffoneSPDPt02->SetLineColor(15);
+  hEffoneSPDPt02->SetMarkerColor(15);
+  TH1F *hEffoneSPDPt1 = new TH1F("hEffoneSPDPt1","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEffoneSPDPt1->SetLineWidth(2);
+  hEffoneSPDPt1->SetLineColor(15);
+  hEffoneSPDPt1->SetMarkerColor(15);
+  TH1F *hEffoneSPDPt10 = new TH1F("hEffoneSPDPt10","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
+  hEffoneSPDPt10->SetLineWidth(2);
+  hEffoneSPDPt10->SetLineColor(15);
+  hEffoneSPDPt10->SetMarkerColor(15);
+
+  // loop on runs
+  for(Int_t irun=firstrun; irun<=lastrun; irun++) {
+    if(!KeepRun(irun)) continue;
+
+    TString path=pathBeforeRun;
+    path+=irun;
+    path.Append(pathAfterRun.Data());
+    path.Prepend("alien://");
+
+    if(!PlotITSTrackingHists(path.Data(),ioValues,ioErrors)) continue;
+
+    Int_t bin=hEffge2Pt1->FindBin(irun);
+
+
+    // fill histos
+    index=0;
+    hFracSPD1->SetBinContent(bin,ioValues[index]);
+    hFracSPD1->SetBinError(bin,.01);
+    index=1;
+    hFracSPD2->SetBinContent(bin,ioValues[index]);
+    hFracSPD2->SetBinError(bin,.01);
+
+    index=2;
+    hEffge2Pt02->SetBinContent(bin,ioValues[index]);
+    hEffge2Pt02->SetBinError(bin,ioErrors[index]);
+    index=3;
+    hEffge2Pt1->SetBinContent(bin,ioValues[index]);
+    hEffge2Pt1->SetBinError(bin,ioErrors[index]);
+    index=4;
+    hEffge2Pt10->SetBinContent(bin,ioValues[index]);
+    hEffge2Pt10->SetBinError(bin,ioErrors[index]);
+
+    index=5;
+    hEff6Pt02->SetBinContent(bin,ioValues[index]);
+    hEff6Pt02->SetBinError(bin,ioErrors[index]);
+    index=6;
+    hEff6Pt1->SetBinContent(bin,ioValues[index]);
+    hEff6Pt1->SetBinError(bin,ioErrors[index]);
+    index=7;
+    hEff6Pt10->SetBinContent(bin,ioValues[index]);
+    hEff6Pt10->SetBinError(bin,ioErrors[index]);
+
+    index=8;
+    hEffSPDPt02->SetBinContent(bin,ioValues[index]);
+    hEffSPDPt02->SetBinError(bin,ioErrors[index]);
+    index=9;
+    hEffSPDPt1->SetBinContent(bin,ioValues[index]);
+    hEffSPDPt1->SetBinError(bin,ioErrors[index]);
+    index=10;
+    hEffSPDPt10->SetBinContent(bin,ioValues[index]);
+    hEffSPDPt10->SetBinError(bin,ioErrors[index]);
+
+    index=11;
+    hEffoneSPDPt02->SetBinContent(bin,ioValues[index]);
+    hEffoneSPDPt02->SetBinError(bin,ioErrors[index]);
+    index=12;
+    hEffoneSPDPt1->SetBinContent(bin,ioValues[index]);
+    hEffoneSPDPt1->SetBinError(bin,ioErrors[index]);
+    index=13;
+    hEffoneSPDPt10->SetBinContent(bin,ioValues[index]);
+    hEffoneSPDPt10->SetBinError(bin,ioErrors[index]);
+
+  }
+
+  TCanvas *cSPD = new TCanvas("cSPD","cSPD",0,0,1000,300);
+  cSPD->SetGridy();
+  hFracSPD1->SetMaximum(1.2);
+  hFracSPD1->SetMaximum(0);
+  hFracSPD1->Draw("p");
+  hFracSPD2->Draw("same,p");
+  TLegend* lSPD=new TLegend(0.9,0.8,1,1);
+  lSPD->AddEntry(hFracSPD1,"Frac. SPD1 ON","l");
+  lSPD->AddEntry(hFracSPD2,"Frac. SPD2 ON","l");
+  lSPD->Draw();
+
+  TCanvas *cPt02 = new TCanvas("cPt02","cPt02",0,0,1000,300);
+  cPt02->SetGridy();
+  hEffge2Pt02->SetMaximum(1.2);
+  hEffge2Pt02->SetMaximum(0);
+  hEffge2Pt02->Draw();
+  hEff6Pt02->Draw("same");
+  hEffSPDPt02->Draw("same");
+  hEffoneSPDPt02->Draw("same");
+  TLegend* lPt02=new TLegend(0.9,0.8,1,1);
+  lPt02->AddEntry(hEffge2Pt02,">=2 cls","l");
+  lPt02->AddEntry(hEffoneSPDPt02,">=1 SPD + any","l");
+  lPt02->AddEntry(hEffSPDPt02,"2 SPD + any","l");
+  lPt02->AddEntry(hEff6Pt02,"6 cls","l");
+  lPt02->Draw();
+
+  TCanvas *cPt1 = new TCanvas("cPt1","cPt1",0,0,1000,300);
+  cPt1->SetGridy();
+  hEffge2Pt1->SetMaximum(1.2);
+  hEffge2Pt1->SetMaximum(0);
+  hEffge2Pt1->Draw();
+  hEff6Pt1->Draw("same");
+  hEffSPDPt1->Draw("same");
+  hEffoneSPDPt1->Draw("same");
+  lPt02->Draw();
+
+  TCanvas *cPt10 = new TCanvas("cPt10","cPt10",0,0,1000,300);
+  cPt10->SetGridy();
+  hEffge2Pt10->SetMaximum(1.2);
+  hEffge2Pt10->SetMaximum(0);
+  hEffge2Pt10->Draw("p");
+  hEff6Pt10->Draw("same,p");
+  hEffSPDPt10->Draw("same,p");
+  hEffoneSPDPt10->Draw("same,p");
+  lPt02->Draw();
+
+  return;
+}
+//------------------------------------------------------------------------
+Bool_t KeepRun(Int_t irun) {
+
+
+  // LHC10c good runs
+  Int_t nruns=46;
+  Int_t goodruns[46]={121040, 121039, 120829, 120825, 120824, 120823, 120822, 120821, 120820, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120504, 120503, 120244, 120079, 120076, 120073, 120072, 120069, 120067, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 119163, 119161, 119159, 118561, 118560, 118558, 118556, 118518, 118512, 118507, 118506};
+  //
+
+
+  Bool_t found=kFALSE;
+  for(Int_t i=0; i<nruns; i++) {
+    if(irun==goodruns[i]) {found=kTRUE; break;}
+  }
+  
+  if(found) return kTRUE;
+  return kFALSE;
 }
