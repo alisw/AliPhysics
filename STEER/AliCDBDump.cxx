@@ -112,7 +112,7 @@ Bool_t AliCDBDump::IdToKeyName(const AliCDBRunRange& runRange, Int_t version,
         }
 
 	if (subVersion < 0) {
-		AliDebug(2,Form("Invalid subversion <%s>.", subVersion));
+		AliDebug(2,Form("Invalid subversion <%d>.", subVersion));
 		return kFALSE;
 	}
     

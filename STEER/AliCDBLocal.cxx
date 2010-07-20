@@ -114,7 +114,7 @@ Bool_t AliCDBLocal::IdToFilename(const AliCDBId& id, TString& filename) const {
 	}
 
 	if (id.GetSubVersion() < 0) {
-		AliDebug(2,Form("Invalid subversion <%s>.", id.GetSubVersion()));
+		AliDebug(2,Form("Invalid subversion <%d>.", id.GetSubVersion()));
 		return kFALSE;
 	}
  

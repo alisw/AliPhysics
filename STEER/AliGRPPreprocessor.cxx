@@ -696,7 +696,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 							        TString bmString0 = beamModeString->String();
 							        TString bmString1 = beamModeString1->String();
 								if (bmString0.CompareTo(bmString1.Data(),TString::kIgnoreCase) == -1){
-									AliWarning(Form("The beam mode changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",bmString0.Data(), bmString1.Data(), bmString0.Data(), timeBeamModeEnd));
+									AliWarning(Form("The beam mode changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",bmString0.Data(), bmString1.Data(), timeBeamModeEnd, bmString0.Data()));
 									flagBeamMode = kTRUE;
 								}
 							}
@@ -753,7 +753,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 							        TString mmString0 = machineModeString->String();
 							        TString mmString1 = machineModeString1->String();
 								if (mmString0.CompareTo(mmString1.Data(),TString::kIgnoreCase) == -1){
-									AliWarning(Form("The machine mode changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",mmString0.Data(),mmString1.Data(),mmString0.Data(),timeMachineModeEnd));
+									AliWarning(Form("The machine mode changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",mmString0.Data(),mmString1.Data(),timeMachineModeEnd,mmString0.Data()));
 									flagMachineMode = kTRUE;
 								}
 							}
@@ -819,7 +819,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 								TObjString* beamString1 = beam1->GetStringArray(0);
 								TString beamType1 = beamString1->String();
 								if (beamType.CompareTo(beamType1.Data(),TString::kIgnoreCase) == -1){
-									AliWarning(Form("The Beam Type changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",beamType.Data(),(beamString1->String()).Data(),beamType.Data(),timeBeamEnd));
+									AliWarning(Form("The Beam Type changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",beamType.Data(),(beamString1->String()).Data(),timeBeamEnd,beamType.Data()));
 									flagBeam = kTRUE;
 								}
 							}
