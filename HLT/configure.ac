@@ -964,6 +964,15 @@ else
                                          [have_alitrdrawstream_r39608=yes],
                                          [AC_DEFINE(HAVE_NOT_ALITRD_RAWSTREAM_r39608)])
       AC_MSG_RESULT([$have_alitrdrawstream_r39608])
+
+      have_alitrdrecoparam_r41621=no
+      AC_MSG_CHECKING([checking for AliTRDrecoParam r41621])
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDrecoParam.h>], 
+                                         [AliTRDrecoParam::GetLowFluxHLTParam()]);],
+                                         [have_alitrdrecoparam_r41621=yes
+					 AC_DEFINE(HAVE_ALITRD_RECOPARAM_r41621)],
+                                         [AC_DEFINE(HAVE_NOT_ALITRD_RECOPARAM_r41621)])
+      AC_MSG_RESULT([$have_alitrdrecoparam_r41621])
     fi
 
     AC_LANG_POP(C++)
