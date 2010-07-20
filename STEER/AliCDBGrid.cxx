@@ -122,7 +122,7 @@ fCleanupInterval(cleanupInterval)
 		// default settings are: cacheSize=1GB, cleanupInterval = 0
 		if(!TFile::ShrinkCacheFileDir(fCacheSize, fCleanupInterval)) {
 			AliError(Form("Could not set following values "
-				"to ShrinkCacheFileDir: cacheSize = %ld, cleanupInterval = %ld !",
+				"to ShrinkCacheFileDir: cacheSize = %lld, cleanupInterval = %ld !",
 				fCacheSize, fCleanupInterval));
 		}
 	}
@@ -1169,7 +1169,7 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 	AliDebug(2, Form("s.e.:	%s", se.Data()));
 	AliDebug(2, Form("local cache folder: %s", cacheFolder.Data()));
 	AliDebug(2, Form("local cache operate disconnected: %d", operateDisconnected));
-	AliDebug(2, Form("local cache size: %ld", cacheSize));
+	AliDebug(2, Form("local cache size: %lld", cacheSize));
 	AliDebug(2, Form("local cache cleanup interval: %ld", cleanupInterval));
 
 	if(dbFolder == ""){
@@ -1252,7 +1252,7 @@ AliCDBGridParam::AliCDBGridParam(const char* gridUrl, const char* user, const ch
 	SetType("alien");
 
 	TString uri = Form("%s?User=%s?DBFolder=%s?SE=%s?CacheFolder=%s"
-			"?OperateDisconnected=%d?CacheSize=%ld?CleanupInterval=%ld",
+			"?OperateDisconnected=%d?CacheSize=%lld?CleanupInterval=%ld",
 			fGridUrl.Data(), fUser.Data(),
 			fDBFolder.Data(), fSE.Data(), fCacheFolder.Data(),
 			fOperateDisconnected, fCacheSize, fCleanupInterval);
