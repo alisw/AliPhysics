@@ -480,6 +480,7 @@ void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean,
   // Used as a base method for mean and mean2
   Printf("AliBWTools::GetMoment: Error on <pt> is not correct!!! It is overestimated, fix required");
   Int_t npar = func->GetNpar();
+  Double_t integr  = func->Integral(min,max);
 
   TF1 * f = new TF1(name, var+func->GetName());	// FIXME
 //   fFuncForNormalized = func;// TMP: computing mean pt
@@ -517,8 +518,8 @@ void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean,
   //  f->Print();
 //   mean  = f->Integral     (min,max)/func->Integral(min,max);
 //   error = f->IntegralError(min,max)/func->Integral(min,max);
-  mean  = f->Integral     (min,max);
-  error = f->IntegralError(min,max);
+  mean  = f->Integral     (min,max)/integr;
+  error = f->IntegralError(min,max)/integr;
 //   cout << "Mean " << mean <<"+-"<< error<< endl;
 //   cout << "Integral Error "  << error << endl;
   
