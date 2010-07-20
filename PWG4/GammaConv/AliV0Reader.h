@@ -414,22 +414,22 @@ class AliV0Reader : public TObject {
   /*
    * Gets the Number of the TPC clusters of the negative track.
    */
-  Double_t GetNegativeTracknTPCClusters() const{return fCurrentNegativeESDTrack->GetNcls(1);}
+  Int_t GetNegativeTracknTPCClusters() const{return fCurrentNegativeESDTrack->GetNcls(1);}
 
   /*
    * Gets the Number of the TPC clusters of the positive track.
    */
-  Double_t GetPositiveTracknTPCClusters() const{return fCurrentPositiveESDTrack->GetNcls(1);}
+  Int_t GetPositiveTracknTPCClusters() const{return fCurrentPositiveESDTrack->GetNcls(1);}
 	
   /*
    * Gets the Number of the ITS clusters of the negative track.
    */
-  Double_t GetNegativeTracknITSClusters() const{return fCurrentNegativeESDTrack->GetNcls(0);}
+  Int_t GetNegativeTracknITSClusters() const{return fCurrentNegativeESDTrack->GetNcls(0);}
 
   /*
    * Gets the Number of the ITS clusters of the positive track.
    */
-  Double_t GetPositiveTracknITSClusters() const{return fCurrentPositiveESDTrack->GetNcls(0);}
+  Int_t GetPositiveTracknITSClusters() const{return fCurrentPositiveESDTrack->GetNcls(0);}
 	
   /*
    * Update data which need to be updated every event.

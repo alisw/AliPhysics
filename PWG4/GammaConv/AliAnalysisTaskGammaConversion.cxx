@@ -265,7 +265,7 @@ void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
 
   //------- To be tested-----------
   
-   Double_t minNClustersTPC = 70;
+   Int_t minNClustersTPC = 70;
    Double_t maxChi2PerClusterTPC = 4.0;
    Double_t maxDCAtoVertexXY = 2.4; // cm
    Double_t maxDCAtoVertexZ  = 3.2; // cm
