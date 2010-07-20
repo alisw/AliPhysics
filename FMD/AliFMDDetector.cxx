@@ -400,7 +400,7 @@ AliFMDDetector::SetAlignableVolumes() const
       case 'T': hasTop = true; break;
       case 'B': hasBottom = true; break;
       default:  
-	AliWarning(Form("Unknown part '%c' of FMD%d", fId));
+	AliWarning(Form("Unknown part '%c' of FMD%d", thisHalf, fId));
 	continue; // because the node is unknown. 
       }
       
