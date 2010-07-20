@@ -5,6 +5,7 @@
 #include "TObjString.h"
 #include "TObjArray.h"
 #include "TError.h"
+#include "TRandom.h"
 #include <fstream>
 #endif
 
@@ -52,8 +53,8 @@ void mergeProd(const Char_t *mark, const Char_t *files, const Int_t nBatch = 20)
 
 
   // Clear first predefines
-  Char_t MERGE[8]; sprintf(MERGE, "%d.lst", gRandom->Uniform(9999.));
-  Char_t PURGE[8]; sprintf(PURGE, "%d.lst", gRandom->Uniform(9999.));
+  Char_t MERGE[8]; sprintf(MERGE, "%d.lst", (Int_t)gRandom->Uniform(9999.));
+  Char_t PURGE[8]; sprintf(PURGE, "%d.lst", (Int_t)gRandom->Uniform(9999.));
   gSystem->Exec("mkdir -p merge; rm -rf merge/*");
 
   // purge file list
@@ -67,7 +68,6 @@ void mergeProd(const Char_t *mark, const Char_t *files, const Int_t nBatch = 20)
   }
   Int_t nBatches(iline/nBatch);
 
-  Char_t *mergedFile(NULL);
   for(Int_t ibatch(0); ibatch<nBatches; ibatch++){
     Int_t first(ibatch*nBatch);
     if(!gSystem->Exec(Form("root.exe -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, PURGE, nBatch, first))) continue;
