@@ -1771,12 +1771,12 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  fHistograms->FillHistogram("ESD_Mother_InvMass",massTwoGammaCandidate);
 
 	  /* Kenneth, just for testing*/
-	  AliGammaConversionBGHandler * bgHandler = fV0Reader->GetBGHandler();
+	  AliGammaConversionBGHandler * bgHandlerTest = fV0Reader->GetBGHandler();
 	  
-	  Int_t zbin= bgHandler->GetZBinIndex(fV0Reader->GetVertexZ());
-	  Int_t mbin= bgHandler->GetMultiplicityBinIndex(fV0Reader->CountESDTracks());
+	  Int_t zbin= bgHandlerTest->GetZBinIndex(fV0Reader->GetVertexZ());
+	  Int_t mbintest= bgHandlerTest->GetMultiplicityBinIndex(fV0Reader->CountESDTracks());
 
-	  fHistograms->FillHistogram(Form("%d%dESD_Mother_InvMass",zbin,mbin),massTwoGammaCandidate);
+	  fHistograms->FillHistogram(Form("%d%dESD_Mother_InvMass",zbin,mbintest),massTwoGammaCandidate);
 
 	  /* end Kenneth, just for testing*/
 
