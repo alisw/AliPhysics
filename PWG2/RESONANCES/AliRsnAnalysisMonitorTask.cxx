@@ -334,7 +334,6 @@ void AliRsnAnalysisMonitorTask::ProcessESD
     track->GetITSdEdxSamples(itsdedx);
     mon.ITSchi2() = track->GetITSchi2();
     mon.ITSsignal() = track->GetITSsignal();
-    mon.ITSnsigma() = itsrsp.GetNumberOfSigmas(mon.Prec(), mon.ITSsignal(), AliPID::kKaon, nITS, kTRUE);
     for (k = 0; k < 6; k++)
     {
       mon.ITSmap(k) = track->HasPointOnITSLayer(k);
@@ -342,17 +341,20 @@ void AliRsnAnalysisMonitorTask::ProcessESD
     }
     
     // get TPC info
-    mon.TPCcount()  = (Int_t)track->GetTPCclusters(0);
-    mon.TPCdedx()   = (Double_t)track->GetTPCsignal();
-    mon.TPCchi2()   = (Double_t)track->GetTPCchi2();
-    mon.TPCnsigma() = fESDpid->NumberOfSigmasTPC(track, AliPID::kKaon);
-    mon.PtpcX()     = mon.PtpcY() = mon.PtpcZ() = 1E10;
-    if (track->GetInnerParam())
+    if (isTPC)
     {
-      mon.PtpcX() = track->GetInnerParam()->Px();
-      mon.PtpcY() = track->GetInnerParam()->Py();
-      mon.PtpcZ() = track->GetInnerParam()->Pz();
-      for (k = 0; k < AliPID::kSPECIES; k++) mon.TPCref(k) = fESDpid->GetTPCResponse().GetExpectedSignal(mon.Ptpc(), (AliPID::EParticleType)k);
+      mon.TPCcount()  = (Int_t)track->GetTPCclusters(0);
+      mon.TPCdedx()   = (Double_t)track->GetTPCsignal();
+      mon.TPCchi2()   = (Double_t)track->GetTPCchi2();
+      mon.TPCnsigma() = fESDpid->NumberOfSigmasTPC(track, AliPID::kKaon);
+      mon.PtpcX()     = mon.PtpcY() = mon.PtpcZ() = 1E10;
+      if (track->GetInnerParam())
+      {
+        mon.PtpcX() = track->GetInnerParam()->Px();
+        mon.PtpcY() = track->GetInnerParam()->Py();
+        mon.PtpcZ() = track->GetInnerParam()->Pz();
+        for (k = 0; k < AliPID::kSPECIES; k++) mon.TPCref(k) = fESDpid->GetTPCResponse().GetExpectedSignal(mon.Ptpc(), (AliPID::EParticleType)k);
+      }
     }
     
     // get TOF info
@@ -409,6 +411,7 @@ void AliRsnAnalysisMonitorTask::ProcessESD
       nITS      = 0;
       for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITS;
       if (nITS < 3) okTrack = kFALSE; // track not good for PID
+      mon.ITSnsigma() = itsrsp.GetNumberOfSigmas(mon.Prec(), mon.ITSsignal(), AliPID::kKaon, nITS, kTRUE);
       if (TMath::Abs(mon.ITSnsigma()) > fMaxITSband) mon.CutsPassed() = kFALSE;
     }
     
