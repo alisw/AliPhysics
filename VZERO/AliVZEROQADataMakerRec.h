@@ -28,7 +28,7 @@ class AliVZEROQADataMakerRec: public AliQADataMakerRec {
 public:
   // Histograms for Raw data control
   enum HRawType_t {kPedestalInt0,kPedestalInt1,kPedestalCycleInt0,kPedestalCycleInt1,kPedestalTimeInt0,kPedestalTimeInt1
-  		  ,kChargeEoIInt0,kChargeEoIInt1,kChargeEoITimeInt0,kChargeEoITimeInt1,kChargeEoICycleInt0,kChargeEoICycleInt1
+  		  ,kChargeEoI,kChargeEoIInt0,kChargeEoIInt1,kChargeEoITimeInt0,kChargeEoITimeInt1,kChargeEoICycleInt0,kChargeEoICycleInt1
 		  ,kChargeEoIBBInt0,kChargeEoIBBInt1,kChargeEoIBGInt0,kChargeEoIBGInt1,kChargeVsClockInt0,kChargeVsClockInt1
 		  ,kChargeMBBB0BG0Int0,kChargeMBBB0BG1Int0,kChargeMBBB1BG0Int0,kChargeMBBB1BG1Int0
 		  ,kChargeMBBB0BG0Int1,kChargeMBBB0BG1Int1,kChargeMBBB1BG0Int1,kChargeMBBB1BG1Int1
@@ -36,7 +36,8 @@ public:
 		  ,kMultiV0A,kMultiV0C,kChargeV0A,kChargeV0C,kChargeV0 
 		  ,kV0ATime,kV0CTime,kDiffTime
 		  ,kRawMIPV0A,kRawMIPV0C,kRawMIPV0,kRawMIPChannel
-		  ,kRawMeanChargePerRing,kRawMeanFlagPerRing,kRawDQMCharge,kRawDQMFlag} ;
+		  ,kRawMeanChargePerRing,kRawMeanFlagPerRing,kRawDQMCharge,kRawDQMFlag
+		  ,kBBFlagsPerChannel} ;
 	
  enum HESDType_t {kCellMultiV0A,kCellMultiV0C,kMIPMultiV0A,kMIPMultiV0C,kMIPMultiChannel
 		  ,kBBFlag,kBGFlag,kChargeChannel,kTimeChannel

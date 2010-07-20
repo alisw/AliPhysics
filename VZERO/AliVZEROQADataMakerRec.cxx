@@ -263,12 +263,12 @@ void AliVZEROQADataMakerRec::InitESDs()
   char name[50] , title[100];
   const Int_t kNintegrator  =    2;
  
-  const Int_t kNTdcTimeBins  = 2048;
-  const Int_t kTdcTimeMin    =    0;
-  const Int_t kTdcTimeMax    = 4096;
+  const Int_t kNTdcTimeBins  = 1280;
+  const Int_t kTdcTimeMin    =    0.;
+  const Int_t kTdcTimeMax    = 125.;
   const Int_t kNTdcWidthBins =  128;
   const Int_t kTdcWidthMin   =    0;
-  const Int_t kTdcWidthMax   =  128;
+  const Int_t kTdcWidthMax   =  50.;
   const Int_t kNChargeBins   = 1024;
   const Int_t kChargeMin     =    0;
   const Int_t kChargeMax     = 1024;
@@ -317,10 +317,17 @@ void AliVZEROQADataMakerRec::InitESDs()
   Add2RawsList(h2d,kRawMIPChannel, expert, !image, !saveCorr);   iHisto++;
   
  
+
+  // Creation of Charge EoI histogram 
+   sprintf(name,"H2D_ChargeEoI");
+   sprintf(title,"Charge Event of Interest;Channel;Charge [ADC counts]");
+   h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
+   Add2RawsList(h2d,kChargeEoI, !expert, image, !saveCorr); iHisto++;
+
  for(Int_t iInt=0;iInt<kNintegrator;iInt++){
     // Creation of Pedestal histograms 
     sprintf(name,"H2I_Pedestal_Int%d",iInt);
-    sprintf(title,"Pedestal (Int%d);Pedestal [ADC counts];Counts",iInt);
+    sprintf(title,"Pedestal (Int%d);Channel;Pedestal [ADC counts]",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax,kNPedestalBins,kPedestalMin ,kPedestalMax );
     Add2RawsList(h2i,(iInt == 0 ? kPedestalInt0 : kPedestalInt1), expert, !image, !saveCorr); iHisto++;
 	
@@ -338,7 +345,7 @@ void AliVZEROQADataMakerRec::InitESDs()
 
    // Creation of Charge EoI histograms 
     sprintf(name,"H2I_ChargeEoI_Int%d",iInt);
-    sprintf(title,"Charge EoI (Int%d);Charge [ADC counts];Counts",iInt);
+    sprintf(title,"Charge EoI (Int%d);Channel;Charge [ADC counts]",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoIInt0 : kChargeEoIInt1), expert, image, !saveCorr); iHisto++;
 
@@ -350,23 +357,23 @@ void AliVZEROQADataMakerRec::InitESDs()
 		
     // Creation of Charge EoI versus time graphs
     sprintf(name,"H2D_ChargeEoI_Time_Int%d",iInt);
-    sprintf(title,"Charge EoI Versus Time (Int%d);Time [ns];Charge [ADC counts]",iInt);
+    sprintf(title,"Charge EoI Versus Time (Int%d);Channel;Time",iInt);
     h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,kTimeMax,kTimeMin ,kTimeMax );
     Add2RawsList(h2d,(iInt == 0 ? kChargeEoITimeInt0 : kChargeEoITimeInt1), expert, !image, !saveCorr); iHisto++;
     
     sprintf(name,"H2I_ChargeEoI_BB_Int%d",iInt);
-    sprintf(title,"Charge EoI w/ BB Flag (Int%d);??;Charge [ADC counts]",iInt);
+    sprintf(title,"Charge EoI w/ BB Flag (Int%d);Channel;Charge [ADC counts]",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoIBBInt0 : kChargeEoIBBInt1), expert, !image, !saveCorr); iHisto++;
     
     sprintf(name,"H2I_ChargeEoI_BG_Int%d",iInt);
-    sprintf(title,"Charge EoI w/ BG Flag (Int%d);??;Charge [ADC counts]",iInt);
+    sprintf(title,"Charge EoI w/ BG Flag (Int%d);Channel;Charge [ADC counts]",iInt);
     h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ?  kChargeEoIBGInt0: kChargeEoIBGInt1), expert, !image, !saveCorr); iHisto++;
 
     // Creation of Charge versus LHC Clock histograms 
     sprintf(name,"H2D_ChargeVsClock_Int%d",iInt);
-    sprintf(title,"Charge Versus LHC-Clock (Int%d);Tine [ns];Charge [ADC counts]",iInt);
+    sprintf(title,"Charge Versus LHC-Clock (Int%d);Channel;LHCClock;Charge [ADC counts]",iInt);
     h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
     Add2RawsList(h2d,(iInt == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), expert, !image, !saveCorr); iHisto++;
 	
@@ -374,7 +381,7 @@ void AliVZEROQADataMakerRec::InitESDs()
     for(Int_t iBB=0;iBB<2;iBB++){
 		for(Int_t iBG=0;iBG<2;iBG++){
 			sprintf(name,"H2I_ChargeMB_BB%d_BG%d_Int%d",iBB,iBG,iInt);
-			sprintf(title,"MB Charge (BB=%d, BG=%d, Int=%d);Charge [ADC counts];Counts",iBB,iBG,iInt);
+			sprintf(title,"MB Charge (BB=%d, BG=%d, Int=%d);Channel;Charge [ADC counts]",iBB,iBG,iInt);
 			h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax,kNChargeBins, kChargeMin, kChargeMax);
 			int idx;
 			if(iInt==0){
@@ -402,58 +409,64 @@ void AliVZEROQADataMakerRec::InitESDs()
  
      // Creation of Time histograms 
 	sprintf(name,"H2I_Width");
-	sprintf(title,"HPTDC Width;Width [ns];Counts");
+	sprintf(title,"HPTDC Width;Channel;Width [ns]");
 	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
  	Add2RawsList(h2i,kWidth, expert, !image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_Width_BB");
- 	sprintf(title,"HPTDC Width w/ BB Flag condition;??;Width [ns]");
+ 	sprintf(title,"HPTDC Width w/ BB Flag condition;Channel;Width [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
  	Add2RawsList(h2i,kWidthBB, expert, !image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_Width_BG");
- 	sprintf(title,"HPTDC Width w/ BG Flag condition??;Width [ns]");
+ 	sprintf(title,"HPTDC Width w/ BG Flag condition;Channel;Width [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
  	Add2RawsList(h2i,kWidthBG, expert, !image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_HPTDCTime");
- 	sprintf(title,"HPTDC Time;??;Width [ns]");
+ 	sprintf(title,"HPTDC Time;Channel;Leading Time [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h2i,kHPTDCTime, expert, image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_HPTDCTime_BB");
- 	sprintf(title,"HPTDC Time w/ BB Flag condition;??;Width [ns]");
+ 	sprintf(title,"HPTDC Time w/ BB Flag condition;Channel;Leading Time [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
- 	Add2RawsList(h2i,kHPTDCTimeBB, expert, !image, !saveCorr); iHisto++;
+ 	Add2RawsList(h2i,kHPTDCTimeBB, !expert, image, !saveCorr); iHisto++;
 
  	sprintf(name,"H2I_HPTDCTime_BG");
- 	sprintf(title,"HPTDC Time w/ BG Flag condition;??;Width [ns]");
+ 	sprintf(title,"HPTDC Time w/ BG Flag condition;Channel;Leading Time [ns]");
  	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
- 	Add2RawsList(h2i,kHPTDCTimeBG, expert, !image, !saveCorr); iHisto++;
+ 	Add2RawsList(h2i,kHPTDCTimeBG, !expert, image, !saveCorr); iHisto++;
 	
  	sprintf(name,"H1D_V0A_Time");
  	sprintf(title,"V0A Time;Time [ns];Counts");
- 	h1d = new TH1D(name, title,kNTdcTimeBins, kTdcTimeMin/10, kTdcTimeMax/10);
+ 	h1d = new TH1D(name, title,kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h1d,kV0ATime, expert, !image, saveCorr); iHisto++;
 	
  	sprintf(name,"H1D_V0C_Time");
  	sprintf(title,"V0C Time;Time [ns];Counts");
- 	h1d = new TH1D(name, title,kNTdcTimeBins, kTdcTimeMin/10, kTdcTimeMax/10);
+ 	h1d = new TH1D(name, title,kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h1d,kV0CTime, expert, !image, saveCorr); iHisto++;
 	
  	sprintf(name,"H1D_Diff_Time");
  	sprintf(title,"Diff V0A-V0C Time;Time [ns];Counts");
- 	h1d = new TH1D(name, title,2*kNTdcTimeBins, -kTdcTimeMax/10, kTdcTimeMax/10);
+ 	h1d = new TH1D(name, title,2*kNTdcTimeBins, -kTdcTimeMax, kTdcTimeMax);
  	Add2RawsList(h1d,kDiffTime, expert, !image, saveCorr); iHisto++;
 	
  	// Creation of Flag versus LHC Clock histograms 
+
+ 	sprintf(name,"H1D_BBFlagPerChannel");
+ 	sprintf(title,"BB-Flags Versus Channel;Channel;BB Flags Count");
+ 	h1d = new TH1D(name, title,kNChannelBins, kChannelMin, kChannelMax );
+ 	Add2RawsList(h1d,kBBFlagsPerChannel, !expert, image, !saveCorr); iHisto++;
+
  	sprintf(name,"H2D_BBFlagVsClock");
- 	sprintf(title,"BB-Flags Versus LHC-Clock;Time [ns];??");
+ 	sprintf(title,"BB-Flags Versus LHC-Clock;Channel;LHC Clocks");
  	h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
  	Add2RawsList(h2d,kBBFlagVsClock, expert, !image, !saveCorr); iHisto++;
 	
  	sprintf(name,"H2D_BGFlagVsClock");
- 	sprintf(title,"BG-Flags Versus LHC-Clock;Time [ns];??");
+ 	sprintf(title,"BG-Flags Versus LHC-Clock;Channel;LHC Clocks");
  	h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
  	Add2RawsList(h2d,kBGFlagVsClock, expert, !image, !saveCorr); iHisto++;
 	 
@@ -485,7 +498,7 @@ void AliVZEROQADataMakerRec::InitESDs()
 	h1d->GetXaxis()->CenterTitle();
     h1d->GetXaxis()->SetTitleOffset(0.8);
     h1d->GetXaxis()->SetNdivisions(808,kFALSE);
- 	Add2RawsList(h1d,kRawDQMFlag, !expert, image, !saveCorr); iHisto++;
+ 	Add2RawsList(h1d,kRawDQMFlag, expert, image, !saveCorr); iHisto++;
 	 
  	sprintf(name,"H1D_DQMCharge");
  	sprintf(title,"Current Charge per Event / Mean Charge per Event ");
@@ -505,7 +518,7 @@ void AliVZEROQADataMakerRec::InitESDs()
 	h1d->GetXaxis()->CenterTitle();
     h1d->GetXaxis()->SetTitleOffset(0.8);
     h1d->GetXaxis()->SetNdivisions(808,kFALSE);
- 	Add2RawsList(h1d,kRawDQMCharge, !expert, image, !saveCorr); iHisto++;
+ 	Add2RawsList(h1d,kRawDQMCharge, expert, image, !saveCorr); iHisto++;
 	 
  	AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
  }
@@ -680,6 +693,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   Float_t charge;
        Int_t  offlineCh;
        TH1D * hProj;
+       Float_t adc[64]; 
 
        for(Int_t iChannel=0; iChannel<64; iChannel++) { // BEGIN : Loop over channels
 		   
@@ -703,21 +717,57 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
 	   // Fill Charge EoI histograms
 	   
-	   // Look for the maximum in the LHC clock train
-           charge = 0;
-           Int_t iClock  = 0;
-           Float_t iCharge = 0;
-           for(Int_t iEvent=0; iEvent<21; iEvent++){
-               iCharge = rawStream->GetPedestal(iChannel,iEvent);
-               if(iCharge>charge)  {
-	 	       charge = iCharge;
-	    	       iClock = iEvent;
-	           }
-           }   // End of maximum searching procedure
+	       adc[offlineCh]    = 0.0;
+
+	       // Search for the maximum charge in the train of 21 LHC clocks 
+	       // regardless of the integrator which has been operated:
+	       Float_t maxadc = 0;
+	       Int_t imax = -1;
+	       Float_t adcPedSub[21];
+	       for(Int_t iClock=0; iClock<21; iClock++){
+			   Bool_t iIntegrator = rawStream->GetIntegratorFlag(iChannel,iClock);
+			   Int_t k = offlineCh+64*iIntegrator;
+
+			   //printf(Form("clock = %d adc = %f ped %f\n",iClock,rawStream->GetPedestal(iChannel,iClock),fPedestal[k]));
+
+			   	adcPedSub[iClock] = rawStream->GetPedestal(iChannel,iClock) - fCalibData->GetPedestal(k);
+//				if(adcPedSub[iClock] <= GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k)) {
+				if(adcPedSub[iClock] <= 2.*fCalibData->GetSigma(k)) {
+					adcPedSub[iClock] = 0;
+					continue;
+				}
+//		   		if(iClock < GetRecoParam()->GetStartClock() || iClock > GetRecoParam()->GetEndClock()) continue;
+		   		if(iClock < 8 || iClock > 12) continue;
+		   		if(adcPedSub[iClock] > maxadc) {
+					maxadc = adcPedSub[iClock];
+					imax   = iClock;
+		   		}
+	       }
+	       //printf(Form("Channel %d (online), %d (offline)\n",iChannel,j)); 
+	       if (imax != -1) {
+//		   		Int_t start = imax - GetRecoParam()->GetNPreClocks();
+		   		Int_t start = imax - 2;
+		   		if (start < 0) start = 0;
+//		   		Int_t end = imax + GetRecoParam()->GetNPostClocks();
+		   		Int_t end = imax + 1;
+		   		if (end > 20) end = 20;
+		   		for(Int_t iClock = start; iClock <= end; iClock++) {
+					adc[offlineCh] += adcPedSub[iClock];
+		   		}
+		 	}
+	
+		
+           Int_t iClock  = imax;
+    	   charge = rawStream->GetPedestal(iChannel,iClock); // Charge at the maximum 
 
            integrator    = rawStream->GetIntegratorFlag(iChannel,iClock);
            BBFlag	 = rawStream->GetBBFlag(iChannel, iClock);
            BGFlag	 = rawStream->GetBGFlag(iChannel,iClock );
+	       Int_t board = AliVZEROCalibData::GetBoardNumber(offlineCh);
+	       time = rawStream->GetTime(iChannel)*fCalibData->GetTimeResolution(board);
+	       width = rawStream->GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
+
+           GetRawsData(kChargeEoI)->Fill(offlineCh,adc[offlineCh]);
 
            GetRawsData((integrator == 0 ? kChargeEoIInt0 : kChargeEoIInt1))->Fill(offlineCh,charge);
 	   if(BBFlag) GetRawsData((integrator == 0 ? kChargeEoIBBInt0 : kChargeEoIBBInt1))->Fill(offlineCh,charge);
@@ -740,7 +790,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   		fFlagPerChannel[offlineCh] += 1;
 	   }	
 
-	   if(charge<1023 && chargeEoI > 5.*sigma){ 
+	   if((chargeEoI > 2.*sigma) && !(time <1.e-6)){ 
 		   fChargePerRing[side*4 + ring] += chargeEoI;	
 	   	   fChargePerChannel[offlineCh] += chargeEoI;
 		   ((TH2I*)GetRawsData((integrator == 0 ? kChargeEoICycleInt0 : kChargeEoICycleInt1)))->Fill(offlineCh,chargeEoI);
@@ -783,16 +833,14 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 				   }
 			   }
 			   GetRawsData(idx)->Fill(offlineCh,MBCharge);
-          }   
+       }   
 
 	  // Fill HPTDC Time Histograms
 
 	   BBFlag   = rawStream->GetBBFlag(iChannel, 10);
            BGFlag   = rawStream->GetBGFlag(iChannel, 10);
-           time     = rawStream->GetTime(iChannel);
-           width    = rawStream->GetWidth(iChannel);
 
-	   if(time>0.){
+	   if(!(time<1.e-6)){
 		      if (offlineCh<32) {
 				   itimeV0C++;
 				   timeV0C += time;
@@ -823,13 +871,14 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
                ((TH2*) GetRawsData((integrator == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 )))->Fill(offlineCh,(float)iEvent-10,(float)charge);
                ((TH2*) GetRawsData(kBBFlagVsClock))->Fill(offlineCh,(float)iEvent-10,(float)BBFlag);
                ((TH2*) GetRawsData(kBGFlagVsClock))->Fill(offlineCh,(float)iEvent-10,(float)BGFlag);
+               if(iEvent==10) ((TH1*) GetRawsData(kBBFlagsPerChannel))->Fill(offlineCh,(float)BBFlag);
            }
 
        }// END of Loop over channels
 
-	    if(itimeV0A>0) timeV0A /= (itimeV0A * 10); // itimeV0A Channels and divide by 10 to have the result in ns because 1 TDC Channel = 100 ps
+	    if(itimeV0A>0) timeV0A /= itimeV0A; 
 	    else timeV0A = -1.;
-	    if(itimeV0C>0) timeV0C /= (itimeV0C * 10);
+	    if(itimeV0C>0) timeV0C /= itimeV0C;
 	    else timeV0C = -1.;
 	    if(timeV0A<0. || timeV0C<0.) diffTime = -10000.;
 	    else diffTime = timeV0A - timeV0C;
