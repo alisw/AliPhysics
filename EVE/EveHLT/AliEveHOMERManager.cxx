@@ -216,18 +216,18 @@ Int_t AliEveHOMERManager::CreateEveSourcesList() {
 
   HLTDebug(Form("iResult %d", iResult));
   if (fSrcList) {
-    HLTInfo(Form("delete source list", iResult));
+    HLTInfo("delete source list");
     DestroyElements();
     //delete fSrcList;
     fSrcList = NULL;
     //fSrcList->Clear();
-    HLTInfo(Form("cleared source list", iResult));
+    HLTInfo("cleared source list");
   }
 
 
   // -- Create new AliEVE sources list 
   if(!fSrcList){
-    HLTInfo(Form("no source list", iResult));
+    HLTInfo("no source list");
     fSrcList = new AliEveHOMERSourceList("HLT Sources");
     fSrcList->SetManager(this);
     
@@ -393,7 +393,7 @@ void  AliEveHOMERManager::UpdateDisplay() {
 
   // -- Set EventID in Window Title  
   TString winTitle("Eve Main Window -- Event ID : ");
-  winTitle += Form("0x%016X ", GetEventID() );
+  winTitle += Form("0x%llu ", GetEventID() );
   GetEveManager()->GetBrowser()->SetWindowName(winTitle);
 
   //==============================================================================
@@ -537,9 +537,9 @@ void AliEveHOMERManager::ResetDisplay () {
 void AliEveHOMERManager::PrintScreens() {
   //See header file for documentation
 
-  fEveManager->GetDefaultGLViewer()->SavePicture(Form("0x%016X_3D.gif", GetEventID()));
-  fRhoZViewer->GetGLViewer()->SavePicture(Form("0x%016X_RhoZ.gif", GetEventID()));
-  fRPhiViewer->GetGLViewer()->SavePicture(Form("0x%016X_RPhi.gif", GetEventID()));
+  fEveManager->GetDefaultGLViewer()->SavePicture(Form("0x%llu_3D.gif", GetEventID()));
+  fRhoZViewer->GetGLViewer()->SavePicture(Form("0x%llu_RhoZ.gif", GetEventID()));
+  fRPhiViewer->GetGLViewer()->SavePicture(Form("0x%llu_RPhi.gif", GetEventID()));
 
 }
 
