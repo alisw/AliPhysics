@@ -1,26 +1,32 @@
 // add comment
  
 // Set how many output analysis files in total you want to access:
-const Int_t nFiles = 2;
+const Int_t nFiles = 1;
  
 // Set how many of those output analysis files you want to represent with a mesh (usually used to represent results of simulations):
-const Int_t nSim = 1;
+const Int_t nSim = 0;
  
 // Set paths of all output analysis files (first the ones to be represented with mesh (simulations), then the ones to be represented with markers (real data))
-TString files[nFiles] = {"sim/pythia/LHC10a18","data/mergedBC"};
+TString files[nFiles] = {"data"};
  
 // Set analysis types for all output analysis files (can be "ESD","AOD","MC",""):
-TString type[nFiles] = {"ESD","ESD"};
+TString type[nFiles] = {"ESD"};
  
 // Set mesh color:
-Int_t meshColor[nSim] = {kBlue-10};
+Int_t meshColor[nSim] = {};
 
 // Set marker styles:
 Int_t markerStyle[nFiles-nSim] = {kStar};
 
+// Set marker colors:
+Int_t markerColor[nFiles-nSim] = {kBlack};
+
 // Set legend entries:
-TString legendEntry[nFiles] = {"Pythia (LHC10a18)","7 TeV data (LHC10b, LHC10c)"};
+TString legendEntry[nFiles] = {"pp example run"};
  
+// Set if you whish to plot cumulants versus <reference multiplicity> (by default they are plotted versus # of RPs):
+Bool_t plotCumulantsVsReferenceMultiplicity = kTRUE;
+
 // Set flow values whose theoretical contribution to cumulants will be shown on the plots with the straight coloured lines: 
 Bool_t showTheoreticalLines = kFALSE;
 const Int_t nFlowValues = 2;
@@ -28,7 +34,7 @@ Double_t v[nFlowValues] = {0.1,0.05};
 Int_t lineColor[nFlowValues] = {kRed,kBlue}; 
 
 // If the statistical error of 6th and 8th order cumulant is huge you may prefer not to show them:
-Bool_t plotOnly2ndAnd4thOrderCumulant = kFALSE;
+Bool_t plotOnly2ndAnd4thOrderCumulant = kTRUE;
 
 // For comparison sake show also GFC results with dotted line:
 Bool_t showAlsoGFCResults = kFALSE;
@@ -42,6 +48,7 @@ TFile *commonOutputFiles[nFiles] = {NULL}; // common output files "AnalysisResul
 TList *lists[nFiles][nMethods] = {{NULL}}; // lists cobj<method> holding objects with results for each method
 TH1D *cumulantsVsM[nFiles][nMethods][4] = {{{NULL}}}; // histograms with results for cumulants vs multiplicity (4 stands for 4 cumulant orders)
 TLine *lines[nFlowValues][4] = {{NULL}}; // lines denoting theoretical flow contribution to cumulants
+TProfile *refMultVsNoOfRPs = NULL; // <reference multipicity> versus # of RPs
 
 // Ranges for plots:
 Double_t xMin[4]={0.};
@@ -145,7 +152,8 @@ void Plot()
    if(cumulantsVsM[f][0][co])
    {
     cumulantsVsM[f][0][co]->Draw("e1same"); 
-    cumulantsVsM[f][0][co]->SetMarkerStyle(markerStyle[f-nSim]);    
+    cumulantsVsM[f][0][co]->SetMarkerStyle(markerStyle[f-nSim]);  
+    cumulantsVsM[f][0][co]->SetMarkerColor(markerColor[f-nSim]); 
     if(co==0)
     {
      if(showAlsoGFCResults)
@@ -168,7 +176,24 @@ void Plot()
   // Draw legend:
   if(co==0){legend->Draw("same");}
  } // end of for(Int_t co=0;co<4;co++) // cumulant order
-
+ 
+ // Plot also <reference multiplicity> vs # of RPs:
+ if(plotCumulantsVsReferenceMultiplicity)
+ {
+  if(refMultVsNoOfRPs)
+  {
+   TCanvas *cRefMultVsNoOfRPs = new TCanvas("cRefMultVsNoOfRPs","#LTreference multiplicity#GT vs # of RPs");
+   refMultVsNoOfRPs->SetTitle("");
+   refMultVsNoOfRPs->GetXaxis()->SetRangeUser(0,refMultVsNoOfRPs->FindLastBinAbove());
+   refMultVsNoOfRPs->Draw();   
+  } else
+    {
+     cout<<endl;
+     cout<<"WARNING: refMultVsNoOfRPs is NULL in Plot() !!!!"<<endl;
+     cout<<endl;
+    }
+ }   
+ 
 } // end of void Plot()
  
 // =====================================================================================
@@ -293,6 +318,8 @@ void DetermineMinMax()
 void GetHistograms()
 {
  // Get histograms with results for cumulants vs multiplicity.
+ 
+ if(plotCumulantsVsReferenceMultiplicity) {GetProfileForRefMultVsNoOfRPs();}
   
  TString qcFlag[4] = {"QC{2}","QC{4}","QC{6}","QC{8}"};
  TString gfcFlag[4] = {"GFC{2}","GFC{4}","GFC{6}","GFC{8}"};
@@ -310,6 +337,10 @@ void GetHistograms()
      for(Int_t co=0;co<4;co++)
      {
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fIntFlowQcumulantsVsM, %s",qcFlag[co].Data())));
+      if(plotCumulantsVsReferenceMultiplicity)
+      {
+       Map(cumulantsVsM[f][m][co]);
+      }    
      } 
     } 
    } // end of if(!(strcmp(method[m].Data(),"QC")))
@@ -322,6 +353,10 @@ void GetHistograms()
      for(Int_t co=0;co<4;co++)
      {
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fReferenceFlowCumulantsVsM, %s",gfcFlag[co].Data())));
+      if(plotCumulantsVsReferenceMultiplicity)
+      {
+       Map(cumulantsVsM[f][m][co]);
+      }
      }
     } 
    } // end of else if(!(strcmp(method[m].Data(),"QC")))
@@ -329,6 +364,53 @@ void GetHistograms()
  } // end of for(Int_t f=0;f<nFiles;f++)
 
 } // end of void GetHistograms()
+
+// =====================================================================================
+
+void GetProfileForRefMultVsNoOfRPs()
+{
+ // Get profile holding <reference multiplicity> versus # of RPs.
+ 
+ AliFlowCommonHist *commonHist = dynamic_cast<AliFlowCommonHist*> (lists[0][0]->FindObject("AliFlowCommonHistQC"));
+ if(commonHist && commonHist->GetRefMultVsNoOfRPs())
+ {
+  refMultVsNoOfRPs = commonHist->GetRefMultVsNoOfRPs();
+ } else
+   {
+    cout<<endl;
+    cout<<"WARNING: commonHist && commonHist->GetRefMultVsNoOfRPs() is NULL in method"<<endl;
+    cout<<"         GetProfileForRefMultVsNoOfRPs() !!!! But was searching only in the file"<<endl;
+    cout<<"         "<<commonOutputFiles[0]->GetName()<<", though."<<endl;
+    cout<<"         Do you have this file available?"<<endl; 
+    cout<<endl;
+   }
+ 
+} // end of void GetProfileForRefMultVsNoOfRPs()
+
+// =====================================================================================
+
+void Map(TH1D *hist)
+{
+ // Map cumulant versus # of RPs into cumulants versus <reference multiplicity>.
+ 
+ TH1D *temp = NULL;
+ if(hist)
+ {
+  temp = (TH1D*) hist->Clone();
+  temp->Reset();
+  Int_t nBins = hist->GetNbinsX();
+  for(Int_t b=1;b<=nBins;b++)
+  {
+   temp->SetBinContent((Int_t)refMultVsNoOfRPs->GetBinContent(b),hist->GetBinContent(b));
+   temp->SetBinError((Int_t)refMultVsNoOfRPs->GetBinContent(b),hist->GetBinError(b));
+  }
+ }
+  
+ hist = temp;
+   
+ return;
+  
+} // end of Map()
 
 // =====================================================================================
 
@@ -357,7 +439,14 @@ TH1D* StyleHist(TString yAxisTitle, Int_t co)
  // y-axis:
  styleHist->GetYaxis()->SetRangeUser(yMin[co],yMax[co]);
    
- styleHist->GetXaxis()->SetTitle("M");
+ if(plotCumulantsVsReferenceMultiplicity)
+ {
+  styleHist->GetXaxis()->SetTitle("#LTreference multiplicity#GT");     
+ } else
+   {
+    styleHist->GetXaxis()->SetTitle("# of RPs");         
+   }
+ 
  styleHist->GetYaxis()->SetTitle(yAxisTitle.Data());
  
  return styleHist;

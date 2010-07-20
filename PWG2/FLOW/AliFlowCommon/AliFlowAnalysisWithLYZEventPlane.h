@@ -148,7 +148,7 @@ class AliFlowAnalysisWithLYZEventPlane {
   Double_t  fQ2sum;                           // flow vector sum squared
      
 
-  ClassDef(AliFlowAnalysisWithLYZEventPlane, 1);          // lyz analysis 
+  ClassDef(AliFlowAnalysisWithLYZEventPlane,0);          // lyz analysis 
 };
 
  #endif

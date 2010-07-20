@@ -63,6 +63,7 @@ AliFlowCommonHist::AliFlowCommonHist():
   fHistProMeanPtperBin(NULL),
   fHistQ(NULL),
   fHarmonic(NULL),
+  fRefMultVsNoOfRPs(NULL),
   fHistList(NULL)
 {
   
@@ -92,6 +93,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistProMeanPtperBin(new TProfile(*a.fHistProMeanPtperBin)),
   fHistQ(new TH1F(*a.fHistQ)),
   fHarmonic(new TProfile(*a.fHarmonic)),
+  fRefMultVsNoOfRPs(new TProfile(*a.fRefMultVsNoOfRPs)),
   fHistList(NULL)
 {
   // copy constructor
@@ -116,6 +118,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHistPhiEtaPOI);
   fHistList-> Add(fHistProMeanPtperBin); 
   fHistList-> Add(fHarmonic);  
+  fHistList-> Add(fRefMultVsNoOfRPs);
   fHistList-> Add(fHistQ);           
   //  TListIter next = TListIter(a.fHistList);
 
@@ -164,6 +167,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
     fHistProMeanPtperBin(NULL),
     fHistQ(NULL),
     fHarmonic(NULL),
+    fRefMultVsNoOfRPs(NULL),
     fHistList(NULL)
 {
 
@@ -320,6 +324,13 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   sName +=anInput;
   fHarmonic = new TProfile(sName.Data(),sName.Data(),1,0,1);
   fHarmonic ->SetYTitle("harmonic");
+  
+  //<reference multiplicity> versus # of RPs
+  sName = "Reference_Multiplicity_Vs_Number_Of_RPs_";
+  sName +=anInput;
+  fRefMultVsNoOfRPs = new TProfile(sName.Data(),sName.Data(),iNbinsMult, dMultMin, dMultMax);
+  fRefMultVsNoOfRPs->SetYTitle("<reference multiplicity>");
+  fRefMultVsNoOfRPs->SetXTitle("# of RPs");
 
   //list of histograms if added here also add in copy constructor
   fHistList = new TList();
@@ -341,7 +352,8 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHistPhiEtaRP);  
   fHistList-> Add(fHistPhiEtaPOI);
   fHistList-> Add(fHistProMeanPtperBin);
-  fHistList-> Add(fHarmonic);  
+  fHistList-> Add(fHarmonic); 
+  fHistList-> Add(fRefMultVsNoOfRPs); 
   fHistList-> Add(fHistQ);           
 
 }
@@ -372,6 +384,7 @@ AliFlowCommonHist::~AliFlowCommonHist()
   delete fHistProMeanPtperBin;
   delete fHistQ;
   delete fHarmonic;
+  delete fRefMultVsNoOfRPs;
   delete fHistList;
 }
 
@@ -464,6 +477,9 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
   
   fHistMultRP->Fill(dMultRP);
   fHistMultPOI->Fill(dMultPOI);
+  
+  //<reference multiplicity> versus # of RPs:
+  fRefMultVsNoOfRPs->Fill(dMultRP+0.5,anEvent->GetReferenceMultiplicity(),1.);
 
   return kTRUE; 
 }

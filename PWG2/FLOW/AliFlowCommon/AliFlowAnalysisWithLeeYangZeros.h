@@ -170,7 +170,7 @@ class AliFlowAnalysisWithLeeYangZeros {
   AliFlowCommonHist*        fCommonHists;     //control histograms
   AliFlowCommonHistResults* fCommonHistsRes;  //final results histograms
  
-  ClassDef(AliFlowAnalysisWithLeeYangZeros,1)  // macro for rootcint
+  ClassDef(AliFlowAnalysisWithLeeYangZeros,0)  // macro for rootcint
 };
  
      
