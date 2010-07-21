@@ -11,6 +11,7 @@
 #include <utility>
 #include <algorithm>
 #include "AliFmThreeVector.h"
+#include <TMath.h>
 #if !defined(ST_NO_NAMESPACES)
 using std::pair;
 using std::swap;
@@ -168,8 +169,8 @@ inline int AliFmHelix::Bad(double WorldSize) const
 {
 
     int ierr;
-    if (!::finite(fDipAngle    )) 	return   11;
-    if (!::finite(fCurvature   )) 	return   12;
+    if (!TMath::Finite(fDipAngle    )) 	return   11;
+    if (!TMath::Finite(fCurvature   )) 	return   12;
 
     ierr = fOrigin.Bad(WorldSize);
     if (ierr)                           return    3+ierr*100;
