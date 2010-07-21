@@ -31,6 +31,8 @@ CXX           := $(shell root-config --cxx)
 F77	      := $(shell root-config --f77)
 CC	      := $(shell root-config --cc)
 
+CXXWARN       =
+
 #-------------------------------------------------------------------------------
 # Include machine dependent macros
 
@@ -78,6 +80,13 @@ CFLAGS    += $(DATEFLAGS)
 CINTFLAGS += $(DATEFLAGS)
 DEPINC    += $(DATEFLAGS)
 DMONLIBS  :=
+endif
+
+#-------------------------------------------------------------------------------
+# Add warning flags if any
+
+ifneq ($(ALICXXWARN),no)
+CXXFLAGS  += $(CXXWARN)
 endif
 
 #-------------------------------------------------------------------------------
