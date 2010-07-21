@@ -1139,6 +1139,12 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   }
 
   fNentries->Fill(1);
+
+
+  Int_t nTrks = esd->GetNumberOfTracks();
+  Bool_t highMult=(nTrks>500 ? kTRUE : kFALSE);
+
+
   
   // diamond constraint
   Float_t diamondcovxy[3];
@@ -1157,6 +1163,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   AliVertexerTracks vertexer0(esd->GetMagneticField());
   vertexer0.SetITSMode();
   vertexer0.SetMinClusters(4);  
+  if(highMult) vertexer0.SetITSMode(0.1,0.1,0.5,5,1,3.,100.,1000.,3.,30.,1,1); 
   if(fUseDiamond) vertexer0.SetVtxStart(&diamond);
   vtxESDRec = (AliESDVertex*)vertexer0.FindPrimaryVertex(esd);
   if(vtxESDRec->GetNContributors()<1) {
@@ -1201,7 +1208,6 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     vtxESDTrue = new AliESDVertex(vtxTrue,sigmaTrue);
   }
  
-  Int_t nTrks = esd->GetNumberOfTracks();
   Double_t beampiperadius=3.;
   AliESDtrack *esdtrack = 0;
   Int_t pdgCode=0; 
@@ -1247,10 +1253,14 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     skipped[0] = (Int_t)esdtrack->GetID();
     vertexer.SetSkipTracks(1,skipped);      
     // create vertex with new!
-    vtxESDSkip = (AliESDVertex*)vertexer.FindPrimaryVertex(esd);
-    if(vtxESDSkip->GetNContributors()<1) {
-      delete vtxESDSkip; vtxESDSkip=NULL;
-      continue;
+    if(!highMult) {
+      vtxESDSkip = (AliESDVertex*)vertexer.FindPrimaryVertex(esd);
+      if(vtxESDSkip->GetNContributors()<1) {
+	delete vtxESDSkip; vtxESDSkip=NULL;
+	continue;
+      }
+    } else {
+      vtxESDSkip = new AliESDVertex(); // dummy
     }
 
     //pt= esdtrack->P();
@@ -1277,7 +1287,12 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     // wrt event vertex
     esdtrack->PropagateToDCA(vtxESDRec, esd->GetMagneticField(), beampiperadius, dzRec, covdzRec);
     // wrt event vertex without this track
-    esdtrack->PropagateToDCA(vtxESDSkip, esd->GetMagneticField(), beampiperadius, dzRecSkip, covdzRecSkip);
+    if(!highMult) {
+      esdtrack->PropagateToDCA(vtxESDSkip, esd->GetMagneticField(), beampiperadius, dzRecSkip, covdzRecSkip);
+    } else {
+      dzRecSkip[0]=0.;dzRecSkip[1]=0.;
+      covdzRecSkip[0]=1.;covdzRecSkip[1]=0.;covdzRecSkip[2]=1.;
+    }
     delete vtxESDSkip; vtxESDSkip=NULL; // not needed anymore
     // wrt MC vertex
     if(fReadMC) esdtrack->PropagateToDCA(vtxESDTrue, esd->GetMagneticField(), beampiperadius, dzTrue, covdzTrue);
