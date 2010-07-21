@@ -281,7 +281,7 @@ bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTUInt64
     if (className && strlen(className)>0) {
       //HLTDebug("checking trigger class %s", className.Data());
       if (condition.Contains(className)) {
-	TString replace; replace.Form("[%d]", par.size());
+	TString replace; replace.Form("[%d]", (int)par.size());
 	//HLTDebug("replacing %s with %s in \"%s\"", className.Data(), replace.Data(), condition.Data());
 	condition.ReplaceAll(className, replace);
 	if (triggerMask&((AliHLTUInt64_t)0x1<<(*pMap)[index])) par.push_back(1.0);
