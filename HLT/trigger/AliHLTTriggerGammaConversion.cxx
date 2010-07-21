@@ -1,4 +1,4 @@
-
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -148,7 +148,7 @@ int AliHLTTriggerGammaConversion::DoTrigger()
     ptcut.Form(" pt >= %.02f GeV/c ,", fPtMin);
   }
   maxDca.Form(" dca <= %.04fcm ,",fMaxDca);
-  maxR.Form(" r <= %.02cm");
+  maxR.Form(" r <= %.02cm", fMaxR);
   
   if(fNReconstructedGammas>0){
     description.Form("Event contains %d gamma conversions,", fNReconstructedGammas);
