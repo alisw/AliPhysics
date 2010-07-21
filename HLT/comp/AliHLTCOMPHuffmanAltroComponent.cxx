@@ -288,11 +288,11 @@ int AliHLTCOMPHuffmanAltroComponent::DoInit( int argc, const char** argv )
   if(fTablePath.IsNull())
     {
       // if no table path is explicity set, take current path as table path
-      rootfilename.Form("huffmanData_%s_%08X_%08X.root", fOrigin.Data(), fRunNumber, fDataSpec);   
+      rootfilename.Form("huffmanData_%s_%08X_%08X.root", fOrigin.Data(), (unsigned)fRunNumber, (unsigned)fDataSpec);   
     }
   else
     {
-      rootfilename.Form("%shuffmanData_%s_%08X_%08X.root", fTablePath.Data(), fOrigin.Data(), fRunNumber, fDataSpec);
+      rootfilename.Form("%shuffmanData_%s_%08X_%08X.root", fTablePath.Data(), fOrigin.Data(), (unsigned)fRunNumber, (unsigned)fDataSpec);
     }
 
   TFile* huffmancodefile = new TFile(rootfilename, "READ");

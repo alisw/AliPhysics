@@ -349,11 +349,11 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ShipDataToFXS( const AliHLTComponent
   if(fTablePath.IsNull() )
     {
       // if there is no explicit table path, take current path
-      rootfilename.Form("huffmanData_%s_%08X_%08X.root", fOrigin.Data(), fRunNumber, fSpecification);      
+      rootfilename.Form("huffmanData_%s_%08X_%08X.root", fOrigin.Data(), (unsigned)fRunNumber, (unsigned)fSpecification);      
     }
   else
     {
-      rootfilename.Form("%shuffmanData_%s_%08X_%08X.root", fTablePath.Data(), fOrigin.Data(), fRunNumber, fSpecification);
+      rootfilename.Form("%shuffmanData_%s_%08X_%08X.root", fTablePath.Data(), fOrigin.Data(), (unsigned)fRunNumber, (unsigned)fSpecification);
     }
  
   TFile* huffmanrootfile = new TFile(rootfilename, "RECREATE");
