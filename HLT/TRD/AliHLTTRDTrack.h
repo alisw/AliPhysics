@@ -25,8 +25,9 @@ class AliHLTTRDTrack
     { return ((AliHLTUInt8_t *) this + fSize); };
   AliHLTUInt32_t GetSize() const {return fSize;};
   void Print(Bool_t printTracklets = kTRUE) const;
-  // void ReadTrackletsFromMemory(void* );
-  
+  static AliHLTUInt32_t SaveAt(AliHLTUInt8_t *const block, const AliTRDtrackV1* const inTrack);
+  static AliHLTUInt32_t LoadFrom(AliTRDtrackV1 *const outTrack, const AliHLTUInt8_t *const block);
+
  private:
   AliHLTTRDTrack(const AliHLTTRDTrack& inTrack);
   AliHLTTRDTrack& operator=(const AliHLTTRDTrack& inTrack);

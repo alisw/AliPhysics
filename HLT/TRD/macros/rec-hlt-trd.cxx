@@ -238,10 +238,12 @@ int rec_hlt_trd(const TString filename, TString outPath)
   AliCDBManager * man = AliCDBManager::Instance();
   Int_t run = 0;
   if(bRealData){
-    man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB");
+    //alien://folder=/alice/data/2010/OCDB?user=username?cacheF=yourDirectory?cacheS=yourSize
+    man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB?cacheFolder=/tmp/alice/data/2010/OCDB");
     //man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB"); 
+    man->SetSpecificStorage("GRP/GRP/Data","alien://folder=/alice/data/2010/OCDB?cacheFolder=/tmp/alice/data/2010/OCDB");
     //man->SetSpecificStorage("GRP/GRP/Data","alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB");
-    man->SetSpecificStorage("HLT/*","local://$ALICE_ROOT/OCDB");
+    man->SetSpecificStorage("HLT/*","local://$ALICE_ROOT/OCDB?cacheFolder=/tmp/alice/data/2010/OCDB");
     run = ExtractRunNumber(filename);
   }else{
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); 
@@ -269,12 +271,12 @@ int rec_hlt_trd(const TString filename, TString outPath)
       
       printf("ioj[%d]\n", iobj); trg_class->Print(0x0);
 
-      // cosmic run 2009                                                                                                                                                                                       
-      // if(TString(trg_class->GetName()).Contains("TRD")){                                                                                                                                                    
-      //        triggerconfs.push_back(trg_class->GetMask());                                                                                                                                                  
-      // }                                                                                                                                                                                                     
+      // cosmic run 2009
+      // if(TString(trg_class->GetName()).Contains("TRD")){
+      //        triggerconfs.push_back(trg_class->GetMask());
+      // }
 
-      // pp run 2009                                                                                                                                                                                           
+      // pp run 2009
       if(TString(trg_class->GetName()).Contains("CINT1B-ABCE-NOPF-ALL")){
         triggerconfs.push_back(trg_class->GetMask());
       }

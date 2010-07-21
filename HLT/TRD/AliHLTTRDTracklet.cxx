@@ -1,3 +1,26 @@
+// $Id$
+
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors:                                                               *
+ *          for The ALICE HLT Project.                                    *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//  @file   AliHLTTRDTracklet.cxx
+//  @author Theodor Rascanu
+//  @date   
+//  @brief  A datacontainer for tracklets for the HLT. 
+// 
+
 #include "AliHLTTRDTracklet.h"
 
 /**
@@ -25,7 +48,7 @@ AliHLTTRDTracklet::AliHLTTRDTracklet():
   fBits(0),
   fCount(0),
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  fSize(sizeof(AliHLTTRDTracklet)-sizeof(AliHLTTRDCluster)),
+  fSize(sizeof(AliHLTTRDTracklet)-sizeof(fClusters[0])),
 #else
   fSize(sizeof(AliHLTTRDTracklet))
 #endif
@@ -58,7 +81,7 @@ AliHLTTRDTracklet::AliHLTTRDTracklet(const AliTRDseedV1* const inTracklet):
   fBits(0),
   fCount(0),
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  fSize(sizeof(AliHLTTRDTracklet)-sizeof(AliHLTTRDCluster)),
+  fSize(sizeof(AliHLTTRDTracklet)-sizeof(fClusters[0])),
 #else
   fSize(sizeof(AliHLTTRDTracklet))
 #endif
@@ -105,9 +128,9 @@ void AliHLTTRDTracklet::CopyDataMembers(const AliTRDseedV1* const inTracklet)
     AliTRDcluster* trdCluster = inTracklet->GetClusters(iTimeBin);
     if (trdCluster){
       fPos[fCount] = iTimeBin;
-      new (&fClusters[fCount]) AliHLTTRDCluster(trdCluster);
+      new (&fClusters[fCount]) AliHLTTRDExtCluster(trdCluster);
       fCount++;
-      fSize += sizeof(AliHLTTRDCluster);
+      fSize += sizeof(fClusters[0]);
     }
   }  
   //if((void*)&fClusters[fCount]!=(void*)GetEndPointer()){printf("ERRR");return;}
@@ -173,6 +196,7 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1* const outTracklet) const
   for(Int_t iCluster=0; iCluster < fCount; iCluster++){
     AliTRDcluster *trdCluster = new AliTRDcluster();
     fClusters[iCluster].ExportTRDCluster(trdCluster);
+    trdCluster->SetDetector(fDet);
     outTracklet->fClusters[fPos[iCluster]] = trdCluster;
     outTracklet->fIndexes[fPos[iCluster]] = iCluster;
   }
@@ -213,24 +237,44 @@ void AliHLTTRDTracklet::Print(Bool_t printClusters) const
 }
 
 /**
- * Read clusters to TRDtracklet from the memory
+ * Save tracklet at block position
  */
 //============================================================================
-// void AliHLTTRDTracklet::ReadClustersFromMemory(void *input)
-// {
-//   AliHLTUInt8_t *iterPtr = (AliHLTUInt8_t*) input;
-//   AliHLTTRDCluster* hltCluster = NULL;
-  
-//   for (Int_t iCluster = 0; iCluster < AliTRDseedV1::kNclusters; iCluster++){
-//     // if we had something in the fClusters[iCluster] before copying,
-//     // then this entry in the array should not be empty. Fill it.
-//     if (fClusters[iCluster]){
-//       hltCluster = (AliHLTTRDCluster*) iterPtr;
-//       fClusters[iCluster] = hltCluster;
-//       iterPtr += hltCluster->GetSize();
-//       //hltCluster->Print();
-//     }
-    
-//   }
-// }
+AliHLTUInt32_t AliHLTTRDTracklet::SaveAt(AliHLTUInt8_t *const block, const AliTRDseedV1* const inTracklet)
+{
+  AliHLTUInt32_t size=0;
 
+  memcpy(block,inTracklet,sizeof(AliTRDseedV1));
+  size+=sizeof(AliTRDseedV1);
+
+  for(int i=0; i<AliTRDseedV1::kNclusters; i++){
+    AliTRDcluster* inClust = inTracklet->GetClusters(i);
+    if(inClust) size+=AliHLTTRDCluster::SaveAt(block+size, inClust);
+  }
+
+  return size;
+}
+
+/**
+ * Read tracklet from block
+ */
+//============================================================================
+AliHLTUInt32_t AliHLTTRDTracklet::LoadFrom(AliTRDseedV1 *const outTracklet, const AliHLTUInt8_t *const block)
+{
+  AliHLTUInt32_t size=0;
+
+  memcpy(((AliHLTUInt8_t*)outTracklet)+sizeof(void*),block+sizeof(void*),sizeof(AliTRDseedV1)-sizeof(void*));
+  size+=sizeof(AliTRDseedV1);
+
+  for(int i=0; i<AliTRDseedV1::kNclusters; i++){
+    if(outTracklet->GetClusters(i)){
+      AliTRDcluster *const outClust = new AliTRDcluster;
+      outTracklet->fClusters[i]=outClust;
+      size+=AliHLTTRDCluster::LoadFrom(outClust, block+size);
+    }
+  }
+
+  outTracklet->SetBit(AliTRDseedV1::kOwner);
+
+  return size;
+}

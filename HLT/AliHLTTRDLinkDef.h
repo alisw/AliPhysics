@@ -13,10 +13,10 @@
 #pragma link C++ class AliHLTTRDCalibFitComponent;
 #pragma link C++ class AliHLTTRDCalibHistoComponent;
 #pragma link C++ class AliHLTTRDUtils;
+#pragma link C++ class AliHLTTRDOfflineClusterizerComponent;
+#pragma link C++ class AliHLTTRDOfflineTrackerV1Component;
 #pragma link C++ class AliHLTTRDClusterHistoComponent;
 #pragma link C++ class AliHLTTRDTrackHistoComponent;
 #pragma link C++ class AliHLTTRDHistoMergerComponent;
-#pragma link C++ class AliHLTTRDOfflineClusterizerComponent;
-#pragma link C++ class AliHLTTRDOfflineTrackerV1Component;
 #endif
 

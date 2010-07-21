@@ -43,9 +43,9 @@ LINK_DIRECTORIES (${ROOTLIBDIR} ${ALILIBDIR})
 MESSAGE ("[i] ALILIBDIR is ${ALILIBDIR}")
 #MESSAGE ("[i] ALIHLTLIBDIR is ${ALIHLTLIBDIR}")
 
-SET (ROOTLIBLINK dl Core Cint RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore freetype Gui VMC EG Geom Minuit XMLParser)
+SET (ROOTLIBLINK dl Core Cint RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore freetype Gui VMC EG Geom Minuit XMLParser XMLIO)
 SET (ROOTLIBLINK ${ROOTLIBLINK} MLP Proof Thread ProofPlayer TreePlayer)
-SET (ALILIBLINK STEERBase STEER CDB ESD AliHLTTRD RAWDatabase RAWDatarec TRDbase TRDsim TRDrec HLTbase AliHLTGlobal AliHLTUtil AOD TRDbase TPCrec TPCbase PHOSUtils STAT)
+SET (ALILIBLINK STEERBase STEER CDB ESD AliHLTTRD RAWDatabase RAWDatarec TRDbase TRDrec HLTbase AliHLTGlobal AliHLTUtil AOD TRDbase TPCrec TPCbase PHOSUtils STAT)
 SET (ALILIBLINK ${ALILIBLINK} MUONbase MUONmapping MUONcalib MUONtrigger MUONgeometry MUONraw MUONcore RAWDatasim)
 
 #--------------- EXECS

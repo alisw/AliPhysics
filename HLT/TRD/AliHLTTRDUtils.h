@@ -18,21 +18,23 @@
 
 class TClonesArray;
 class AliESDEvent;
+class AliTRDtransform;
 class AliHLTTRDUtils
 {
 public:
   virtual ~AliHLTTRDUtils(){}
-  static AliHLTUInt32_t AddClustersToOutput(TClonesArray* inClusterArray, AliHLTUInt8_t* outBlockPtr, Int_t nTimeBins=24);
-  static AliHLTUInt32_t AddTracksToOutput(TClonesArray* inTrackArray, AliHLTUInt8_t* output, Int_t nTimeBins=24);
-  static AliHLTUInt32_t ReadClusters(TClonesArray *outArray, void* inputPtr, AliHLTUInt32_t size, Int_t* nTimeBins=0x0);
-  static AliHLTUInt32_t ReadTracks(TClonesArray *outArray, void* inputPtr, AliHLTUInt32_t size, Int_t* nTimeBins=0x0);
+  static AliHLTUInt32_t AddClustersToOutput(const TClonesArray *const inClusterArray, AliHLTUInt8_t *const outBlockPtr, Int_t nTimeBins=24);
+  static AliHLTUInt32_t AddTracksToOutput(const TClonesArray *const inTrackArray, AliHLTUInt8_t *const output, Int_t nTimeBins=24);
+  static AliHLTUInt32_t ReadClusters(TClonesArray *const outArray, const void *const inputPtr, AliHLTUInt32_t size, Int_t* nTimeBins=0x0);
+  static AliHLTUInt32_t ReadTracks(TClonesArray *const outArray, const void *const inputPtr, AliHLTUInt32_t size, Int_t* nTimeBins=0x0);
   static AliHLTUInt32_t AddESDToOutput(const AliESDEvent* const esd, AliHLTUInt8_t* const outBlockPtr);
   static void EmulateHLTClusters(TClonesArray *clusterArray);
   static void EmulateHLTTracks(TClonesArray *trackArray);
   static AliHLTUInt32_t GetSM(AliHLTUInt32_t spec);
+  static AliHLTUInt32_t AddTracksToOutputAlt(const TClonesArray *const inTrackArray, AliHLTUInt8_t *const output, Int_t nTimeBins=24);
+  static AliHLTUInt32_t ReadTracksAlt(TClonesArray *const outArray, const void *const inputPtr, AliHLTUInt32_t size, Int_t* nTimeBins=0x0);
 
   ClassDef(AliHLTTRDUtils, 0)
-
 
 };
 

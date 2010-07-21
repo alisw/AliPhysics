@@ -24,7 +24,8 @@ class AliHLTTRDTracklet
     { return ((AliHLTUInt8_t *)this + fSize); };
   AliHLTUInt32_t GetSize() const { return fSize; };
   void Print(Bool_t printClusters = kTRUE) const;
-  // void ReadClustersFromMemory(void *input);
+  static AliHLTUInt32_t SaveAt(AliHLTUInt8_t *const block, const AliTRDseedV1* const inTracklet);
+  static AliHLTUInt32_t LoadFrom(AliTRDseedV1 *const outTracklet, const AliHLTUInt8_t *const block);
   
  private:
   AliHLTTRDTracklet(const AliHLTTRDTracklet&);
@@ -71,9 +72,9 @@ class AliHLTTRDTracklet
   AliHLTUInt32_t fSize;                  // Size of the tracklet with clusters in the memory
 
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
-  AliHLTTRDCluster fClusters[1];                         // Open array of clusters
+  AliHLTTRDExtCluster fClusters[1];                         // Open array of clusters
 #else
-  AliHLTTRDCluster fClusters[0];                         // Open array of clusters
+  AliHLTTRDExtCluster fClusters[0];                         // Open array of clusters
 #endif
 
 };

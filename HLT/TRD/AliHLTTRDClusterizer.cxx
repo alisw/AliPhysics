@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliHLTTRDClusterizer.h"
+#include "AliHLTTRDCluster.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcluster.h"
 #include "AliTRDReconstructor.h"
@@ -33,6 +34,9 @@ AliHLTTRDClusterizer::AliHLTTRDClusterizer(const AliTRDReconstructor *const rec)
   ,fClMemBlock(NULL)
   ,fTrMemBlock(NULL)
   ,fTrMemCurrPtr(NULL)
+  ,fLastDet(-1)
+  ,fClusters(NULL)
+  ,fAddedSize(0)
 {
   //
   // AliHLTTRDClusterizer default constructor
@@ -45,6 +49,9 @@ AliHLTTRDClusterizer::AliHLTTRDClusterizer(const Text_t *const name, const Text_
   ,fClMemBlock(NULL)
   ,fTrMemBlock(NULL)
   ,fTrMemCurrPtr(NULL)
+  ,fLastDet(-1)
+  ,fClusters(NULL)
+  ,fAddedSize(0)
 {
   //
   // AliHLTTRDClusterizer constructor
@@ -57,6 +64,9 @@ AliHLTTRDClusterizer::AliHLTTRDClusterizer(const AliHLTTRDClusterizer& c)
   ,fClMemBlock(NULL)
   ,fTrMemBlock(NULL)
   ,fTrMemCurrPtr(NULL)
+  ,fLastDet(-1)
+  ,fClusters(NULL)
+  ,fAddedSize(0)
 {
   //
   // AliHLTTRDClusterizer copy constructor
@@ -88,14 +98,20 @@ void AliHLTTRDClusterizer::Copy(TObject& c) const
 }
 
 //_____________________________________________________________________________
-void AliHLTTRDClusterizer::AddClusterToArray(AliTRDcluster *cluster)
+void AliHLTTRDClusterizer::AddClusterToArray(AliTRDcluster* cluster)
 {
   //
   // Add a cluster to the array
   //
 
-  AliHLTTRDCluster *ptr = &(((AliHLTTRDCluster*)GetClMemBlock())[fNoOfClusters]);
-  new(ptr) AliHLTTRDCluster(cluster);
+  if(fLastDet!=cluster->GetDetector()){
+    fLastDet = cluster->GetDetector();
+    fClusters = new(GetClMemBlock()+fAddedSize) AliHLTTRDClustersArray(fLastDet);
+    fAddedSize += sizeof(AliHLTTRDClustersArray);
+  }
+  new(&fClusters->fCluster[fClusters->fCount]) AliHLTTRDClustersArray::cluster_type(cluster);
+  fClusters->fCount++;
+  fAddedSize += sizeof(AliHLTTRDClustersArray::cluster_type);
 }
 
 //_____________________________________________________________________________

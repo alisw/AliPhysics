@@ -1,6 +1,28 @@
+// $Id$
+
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors:                                                               *
+ *          for The ALICE HLT Project.                                    *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//  @file   AliHLTTRDTracklet.cxx
+//  @author Theodor Rascanu
+//  @date   
+//  @brief  A datacontainer for tracklets for the HLT. 
+// 
+
 #include "AliHLTTRDTrack.h"
 #include "AliHLTTRDTracklet.h"
-
 
 /**
  * Default Constructor
@@ -102,7 +124,7 @@ void AliHLTTRDTrack::CopyDataMembers(const AliTRDtrackV1* const inTrack)
 void AliHLTTRDTrack::ExportTRDTrack(AliTRDtrackV1* const outTrack) const
 {
   //outTrack->Reset(); we always use a new fresh trdtrack as input, so this is useless
-  outTrack->SetBit(AliTRDtrackV1::kOwner);  
+  outTrack->SetBit(AliTRDtrackV1::kOwner);
 
   outTrack->fDE=fDE;
   outTrack->fFakeRatio=fFakeRatio;
@@ -211,23 +233,46 @@ void AliHLTTRDTrack::Print(Bool_t printTracklets) const
 }
 
 /**
- * Read tracklets from the memory. 
- * Number of tracklets should be already known
+ * Save track at block position
  */
 //============================================================================
-// void AliHLTTRDTrack::ReadTrackletsFromMemory(void* input)
-// {
-//   AliHLTUInt8_t *iterPtr = (AliHLTUInt8_t*) input;
-//   AliHLTTRDTracklet* hltTracklet = NULL;
-  
-//   for (Int_t iTracklet = 0; iTracklet < AliTRDtrackV1::kNplane; iTracklet++){
-//     if (fTracklet[iTracklet]){
-//       hltTracklet = (AliHLTTRDTracklet*) iterPtr;
-//       //hltTracklet->ReadClustersFromMemory(iterPtr+sizeof(AliHLTTRDTracklet));
-//       fTracklet[iTracklet] = hltTracklet;
-//       iterPtr += hltTracklet->GetSize();
-//       //hltTracklet->Print(kFALSE);
-//     }
-//   }
-// }
+AliHLTUInt32_t AliHLTTRDTrack::SaveAt(AliHLTUInt8_t *const block, const AliTRDtrackV1* const inTrack)
+{
+  AliHLTUInt32_t size=0;
 
+  memcpy(block,inTrack,sizeof(AliTRDtrackV1));
+  size+=sizeof(AliTRDtrackV1);
+
+  for(int i=0; i<AliTRDtrackV1::kNplane; i++){
+    AliTRDseedV1* inTracklet = inTrack->GetTracklet(i);
+    if(inTracklet) size+=AliHLTTRDTracklet::SaveAt(block+size, inTracklet);
+  }
+
+  return size;
+}
+
+/**
+ * Read track from block
+ */
+//============================================================================
+AliHLTUInt32_t AliHLTTRDTrack::LoadFrom(AliTRDtrackV1 *const outTrack, const AliHLTUInt8_t *const block)
+{
+  AliHLTUInt32_t size=0;
+
+  memcpy(((AliHLTUInt8_t*)outTrack)+sizeof(void*),block+sizeof(void*),sizeof(AliTRDtrackV1)-sizeof(void*));
+  size+=sizeof(AliTRDtrackV1);
+
+  for(int i=0; i<AliTRDtrackV1::kNplane; i++){
+    if(outTrack->GetTracklet(i)){
+      AliTRDseedV1 *const outTracklet = new AliTRDseedV1;
+      outTrack->fTracklet[i]=outTracklet;
+      size+=AliHLTTRDTracklet::LoadFrom(outTracklet, block+size);
+    }
+  }
+
+  outTrack->SetBit(AliTRDtrackV1::kOwner);
+  outTrack->fBackupTrack=NULL;
+  outTrack->fTrackLow=NULL;
+  outTrack->fTrackHigh=NULL;
+  return size;
+}

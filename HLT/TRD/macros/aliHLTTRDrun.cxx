@@ -87,7 +87,7 @@ void aliHLTTRDrun(const TString inDir)
 
   gHLT.LoadComponentLibraries("libAliHLTUtil.so libAliHLTTRD.so libAliHLTMUON.so libAliHLTGlobal.so libAliHLTTrigger.so");
 
-  InitGRP("local://$ALICE_ROOT/OCDB","local:///software/data/ppbench"/*inDir.Data()*/);
+  InitGRP("local://$ALICE_ROOT/OCDB",Form("local://%s",inDir.Data()));
   //TString sGeomPath = " -geometry "+inDir+"/geometry.root";
   TString inFolder = inDir+"/raw", inFile = "/TRD_", inExt = ".ddl";
   TString sinput = " -datatype 'DDL_RAW ' 'TRD '";

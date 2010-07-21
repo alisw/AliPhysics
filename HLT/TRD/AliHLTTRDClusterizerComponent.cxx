@@ -573,15 +573,31 @@ int AliHLTTRDClusterizerComponent::SetParams()
     HLTInfo("RecoParam already set!");
   }else{
     if(fRecoParamType == 0){
-      HLTDebug("Low flux params init.");
-      fRecoParam = AliTRDrecoParam::GetLowFluxParam();
+#ifndef HAVE_NOT_ALITRD_RECOPARAM_r41621
+      if(fHLTflag){
+	HLTInfo("Low flux HLT params init.");
+	fRecoParam = AliTRDrecoParam::GetLowFluxHLTParam();
+      }else
+#endif
+	{
+	  HLTInfo("Low flux params init.");
+	  fRecoParam = AliTRDrecoParam::GetLowFluxParam();
+	}
     }
     if(fRecoParamType == 1){
-      HLTDebug("High flux params init.");
-      fRecoParam = AliTRDrecoParam::GetHighFluxParam();
+#ifndef HAVE_NOT_ALITRD_RECOPARAM_r41621
+      if(fHLTflag){
+	HLTInfo("High flux HLT params init.");
+	fRecoParam = AliTRDrecoParam::GetHighFluxHLTParam();
+      }else
+#endif
+	{
+	  HLTInfo("High flux params init.");
+	  fRecoParam = AliTRDrecoParam::GetHighFluxParam();
+	}
     }
     if(fRecoParamType == 2){
-      HLTDebug("Cosmic Test params init.");
+      HLTInfo("Cosmic Test params init.");
       fRecoParam = AliTRDrecoParam::GetCosmicTestParam();
     }
   }
