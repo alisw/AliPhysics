@@ -1,4 +1,4 @@
-
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        *
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -325,7 +325,7 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
       
       if(fHistogramData.size()==0){       
         if(fIgnoreSpecification == kTRUE){
-	   if(histName.Contains(Form("_Slice_%.2d%.2d%_Partition_.2d%.2d", minSlice, maxSlice, minPartition, maxPartition))){
+	   if(histName.Contains(Form("_Slice_%.2d%.2d_Partition_%.2d%.2d", minSlice, maxSlice, minPartition, maxPartition))){
 	      cout << "HistogramContains the given string." << endl;
 	   } 
            histName.ReplaceAll(Form("_Slice_%.2d%.2d_Partition_%.2d%.2d", minSlice, maxSlice, minPartition, maxPartition),"");	  
