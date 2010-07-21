@@ -562,7 +562,7 @@ void AliTPCv2::CreateGeometry()
   //
   TGeoTube *ih = new TGeoTube(81.05,84.05,0.3);
   TGeoTube *oh = new TGeoTube(250.,256.,0.5);
-  TGeoTube *mem = new TGeoTube(84.05,250.,0.01);
+  TGeoTube *mem = new TGeoTube(84.05,250.,0.00115);
 
   //
   TGeoMedium *m4 = gGeoManager->GetMedium("TPC_G10");
