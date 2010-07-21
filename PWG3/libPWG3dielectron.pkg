@@ -17,7 +17,8 @@ SRCS= dielectron/AliDielectron.cxx \
       dielectron/AliDielectronSignalFunc.cxx \
       dielectron/AliDielectronSignalExt.cxx \
       dielectron/AliDielectronSpectrum.cxx \
-      dielectron/AliDielectronDebugTree.cxx 
+      dielectron/AliDielectronDebugTree.cxx \
+      dielectron/AliDielectronPID.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 

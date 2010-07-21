@@ -51,19 +51,19 @@ public:
   Double_t GetIntegralMin() const { return fIntMin; }
   Double_t GetIntegralMax() const { return fIntMax; }
   
-  Double_t GetSignal()               {return fValues(0);}
-  Double_t GetBackground()           {return fValues(1);}
-  Double_t GetSignificance()         {return fValues(2);}
-  Double_t GetSignalOverBackground() {return fValues(3);}
-  Double_t GetMass()                 {return fValues(4);}
-  Double_t GetMassWidth()            {return fValues(5);}
+  Double_t GetSignal()               const {return fValues(0);}
+  Double_t GetBackground()           const {return fValues(1);}
+  Double_t GetSignificance()         const {return fValues(2);}
+  Double_t GetSignalOverBackground() const {return fValues(3);}
+  Double_t GetMass()                 const {return fValues(4);}
+  Double_t GetMassWidth()            const {return fValues(5);}
   
-  Double_t GetSignalError()               {return fErrors(0);}
-  Double_t GetBackgroundError()           {return fErrors(1);}
-  Double_t GetSignificanceError()         {return fErrors(2);}
-  Double_t GetSignalOverBackgroundError() {return fErrors(3);}
-  Double_t GetMassError()                 {return fErrors(4);}
-  Double_t GetMassWidthError()            {return fValues(5);}
+  Double_t GetSignalError()               const {return fErrors(0);}
+  Double_t GetBackgroundError()           const {return fErrors(1);}
+  Double_t GetSignificanceError()         const {return fErrors(2);}
+  Double_t GetSignalOverBackgroundError() const {return fErrors(3);}
+  Double_t GetMassError()                 const {return fErrors(4);}
+  Double_t GetMassWidthError()            const {return fValues(5);}
   
   void GetSignal(Double_t &val, Double_t &valErr)               {val=fValues(0); valErr=fErrors(0);}
   void GetBackground(Double_t &val, Double_t &valErr)           {val=fValues(1); valErr=fErrors(1);}
@@ -90,6 +90,8 @@ public:
   */
   virtual void Process(TObjArray * const /*arrhist*/) = 0;
 
+  virtual void Print(Option_t *option="") const;
+  
 protected:
   
   void SetSignificanceAndSOB();
