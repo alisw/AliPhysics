@@ -579,7 +579,11 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexTPC(Bool_t const
   // On the fly reco of TPC vertex from ESD
   AliESDEvent* evt = (AliESDEvent*) fInputEvent;
   AliVertexerTracks vertexer(evt->GetMagneticField());
-  vertexer.SetTPCMode(); // defaults
+  if(evt->GetNumberOfTracks()<500) {
+    vertexer.SetTPCMode(); // defaults
+  } else { 
+    vertexer.SetTPCMode(0.1,1.0,5.0,10,1,3.,0.1,1.5,3.,30.,1,1);// PbPb
+  } 
   Float_t diamondcovxy[3]; evt->GetDiamondCovXY(diamondcovxy);
   Double_t pos[3]={evt->GetDiamondX(),evt->GetDiamondY(),0}; 
   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
@@ -600,8 +604,12 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t co
 
   AliESDEvent* evt = (AliESDEvent*) fInputEvent;
   AliVertexerTracks vertexer(evt->GetMagneticField());
-  vertexer.SetITSMode(); // defaults
-  vertexer.SetMinClusters(4); // default is 5
+  if(evt->GetNumberOfTracks()<500) {
+    vertexer.SetITSMode(); // defaults
+    vertexer.SetMinClusters(4); // default is 5
+  } else { 
+    vertexer.SetITSMode(0.1,0.1,0.5,5,1,3.,100.,1000.,3.,30.,1,1);// PbPb
+  } 
   //vertexer.SetITSpureSA();
   Float_t diamondcovxy[3]; evt->GetDiamondCovXY(diamondcovxy);
   Double_t pos[3]={evt->GetDiamondX(),evt->GetDiamondY(),0}; 

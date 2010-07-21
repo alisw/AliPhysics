@@ -150,6 +150,13 @@ fHistPtITSMI5InAcc(0),
 fHistPtITSMI6InAcc(0),
 fHistPtITSMISPDInAcc(0),
 fHistPtITSMIoneSPDInAcc(0),
+fHistPtITSMI2InAccFake(0),
+fHistPtITSMI3InAccFake(0),
+fHistPtITSMI4InAccFake(0),
+fHistPtITSMI5InAccFake(0),
+fHistPtITSMI6InAccFake(0),
+fHistPtITSMISPDInAccFake(0),
+fHistPtITSMIoneSPDInAccFake(0),
 fHistPtITSMIoneSPDthreeSDDSSDInAcc(0),
 fHistPtITSTPCsel(0),
 fHistPtITSTPCselP(0),
@@ -333,6 +340,13 @@ fHistPtITSMI5InAcc(0),
 fHistPtITSMI6InAcc(0),
 fHistPtITSMISPDInAcc(0),
 fHistPtITSMIoneSPDInAcc(0),
+fHistPtITSMI2InAccFake(0),
+fHistPtITSMI3InAccFake(0),
+fHistPtITSMI4InAccFake(0),
+fHistPtITSMI5InAccFake(0),
+fHistPtITSMI6InAccFake(0),
+fHistPtITSMISPDInAccFake(0),
+fHistPtITSMIoneSPDInAccFake(0),
 fHistPtITSMIoneSPDthreeSDDSSDInAcc(0),
 fHistPtITSTPCsel(0),
 fHistPtITSTPCselP(0),
@@ -833,6 +847,41 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistPtITSMIoneSPDInAcc->Sumw2();
   fHistPtITSMIoneSPDInAcc->SetMinimum(0);
   fOutput->Add(fHistPtITSMIoneSPDInAcc);
+
+  fHistPtITSMI6InAccFake = new TH1F("fHistPtITSMI6InAccFake","pt distribution of ITSMI6 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI6InAccFake->Sumw2();
+  fHistPtITSMI6InAccFake->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI6InAccFake);
+  
+  fHistPtITSMI5InAccFake = new TH1F("fHistPtITSMI5InAccFake","pt distribution of ITSMI5 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI5InAccFake->Sumw2();
+  fHistPtITSMI5InAccFake->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI5InAccFake);
+  
+  fHistPtITSMI4InAccFake = new TH1F("fHistPtITSMI4InAccFake","pt distribution of ITSMI4 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI4InAccFake->Sumw2();
+  fHistPtITSMI4InAccFake->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI4InAccFake);
+  
+  fHistPtITSMI3InAccFake = new TH1F("fHistPtITSMI3InAccFake","pt distribution of ITSMI3 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI3InAccFake->Sumw2();
+  fHistPtITSMI3InAccFake->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI3InAccFake);
+  
+  fHistPtITSMI2InAccFake = new TH1F("fHistPtITSMI2InAccFake","pt distribution of ITSMI2 tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMI2InAccFake->Sumw2();
+  fHistPtITSMI2InAccFake->SetMinimum(0);
+  fOutput->Add(fHistPtITSMI2InAccFake);
+  
+  fHistPtITSMISPDInAccFake = new TH1F("fHistPtITSMISPDInAccFake","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMISPDInAccFake->Sumw2();
+  fHistPtITSMISPDInAccFake->SetMinimum(0);
+  fOutput->Add(fHistPtITSMISPDInAccFake);
+  
+  fHistPtITSMIoneSPDInAccFake = new TH1F("fHistPtITSMIoneSPDInAccFake","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMIoneSPDInAccFake->Sumw2();
+  fHistPtITSMIoneSPDInAccFake->SetMinimum(0);
+  fOutput->Add(fHistPtITSMIoneSPDInAccFake);
 
   fHistPtITSMIoneSPDthreeSDDSSDInAcc = new TH1F("fHistPtITSMIoneSPDthreeSDDSSDInAcc","pt distribution of ITSMI tracks (>0 in SPD, >2 in SDD+SSD); p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSMIoneSPDthreeSDDSSDInAcc->Sumw2();
@@ -1465,6 +1514,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     Int_t nClsMCSPD=0;
   
     Int_t trkLabel = TMath::Abs(track->GetLabel());
+    Bool_t isFake=(track->GetLabel()>=0 ? kFALSE : kTRUE);
     // check if it is primary
     if(fReadMC && stack) {
       isPrimary = stack->IsPhysicalPrimary(trkLabel);
@@ -1736,30 +1786,37 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       if(itsfindableAcc) {
 	if(nclsITS==6) {
 	  fHistPtITSMI6InAcc->Fill(track->Pt());
+	  if(isFake) fHistPtITSMI6InAccFake->Fill(track->Pt());
 	  if(isPrimary) {fHistPtITSMI6InAccP->Fill(track->Pt());} else {fHistPtITSMI6InAccS->Fill(track->Pt());}  
 	}
 	if(nclsITS==5) {
 	  fHistPtITSMI5InAcc->Fill(track->Pt());
+	  if(isFake) fHistPtITSMI5InAccFake->Fill(track->Pt());
 	  if(isPrimary) {fHistPtITSMI5InAccP->Fill(track->Pt());} else {fHistPtITSMI5InAccS->Fill(track->Pt());}  
 	}
 	if(nclsITS==4) {
 	  fHistPtITSMI4InAcc->Fill(track->Pt());
+	  if(isFake) fHistPtITSMI4InAccFake->Fill(track->Pt());
 	  if(isPrimary) {fHistPtITSMI4InAccP->Fill(track->Pt());} else {fHistPtITSMI4InAccS->Fill(track->Pt());}  
 	}
 	if(nclsITS==3) {
 	  fHistPtITSMI3InAcc->Fill(track->Pt());
+	  if(isFake) fHistPtITSMI3InAccFake->Fill(track->Pt());
 	  if(isPrimary) {fHistPtITSMI3InAccP->Fill(track->Pt());} else {fHistPtITSMI3InAccS->Fill(track->Pt());}  
 	}
 	if(nclsITS==2) {
 	  fHistPtITSMI2InAcc->Fill(track->Pt());
+	  if(isFake) fHistPtITSMI2InAccFake->Fill(track->Pt());
 	  if(isPrimary) {fHistPtITSMI2InAccP->Fill(track->Pt());} else {fHistPtITSMI2InAccS->Fill(track->Pt());}  
 	}
 	if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)) {
 	  fHistPtITSMISPDInAcc->Fill(track->Pt());
+	  if(isFake) fHistPtITSMISPDInAccFake->Fill(track->Pt());
 	  if(isPrimary) {fHistPtITSMISPDInAccP->Fill(track->Pt());} else {fHistPtITSMISPDInAccS->Fill(track->Pt());}  
 	}
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) {
 	  fHistPtITSMIoneSPDInAcc->Fill(track->Pt());
+	  if(isFake) fHistPtITSMIoneSPDInAccFake->Fill(track->Pt());
 	  if(nclsSDDSSD>=3) fHistPtITSMIoneSPDthreeSDDSSDInAcc->Fill(track->Pt());
 
 	  if(isPrimary) {fHistPtITSMIoneSPDInAccP->Fill(track->Pt());} else {fHistPtITSMIoneSPDInAccS->Fill(track->Pt());}  
