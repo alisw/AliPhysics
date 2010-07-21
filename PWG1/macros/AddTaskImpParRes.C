@@ -1,4 +1,6 @@
-AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-1,Bool_t diamond=kTRUE)
+AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,
+					     Int_t selPdg=-1,
+					     Bool_t diamond=kTRUE)
 {
   //
   // Configuration for the study of the impact parameter resolution
@@ -23,9 +25,8 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
   d0ResTask->SetUseDiamond(diamond);
   mgr->AddTask(d0ResTask);
 
-  TString fname="ImpParRes.Performance";
+  TString fname=Form("%s:ImpParRes_Performance",mgr->GetCommonFileName());
   if(selPdg>0) {fname+=selPdg;}
-  fname.Append(".root");
 
  
   //
@@ -164,6 +165,10 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
 									AliAnalysisManager::kOutputContainer,
 									fname.Data());
  
+  AliAnalysisDataContainer *coutputd0PID = mgr->CreateContainer("coutputd0PID",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+ 
   AliAnalysisDataContainer *coutputd0Pt = mgr->CreateContainer("coutputd0Pt",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
 									fname.Data());
@@ -175,9 +180,10 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
   AliAnalysisDataContainer *coutputEstimVtx = mgr->CreateContainer("coutputEstimVtx",TH1F::Class(),
 								     AliAnalysisManager::kOutputContainer, 
 								   fname.Data());
-  
+
+  // Attach input  
   mgr->ConnectInput(d0ResTask,0,mgr->GetCommonInputContainer()); 
-  //mgr->ConnectOutput(d0ResTask,0,mgr->GetCommonOutputContainer());
+  // Attack output
   mgr->ConnectOutput(d0ResTask,1,coutputd0ITSpureSARec);
   mgr->ConnectOutput(d0ResTask,2,coutputd0ITSpureSASkip);
   mgr->ConnectOutput(d0ResTask,3,coutputd0allPointRec);
@@ -209,8 +215,10 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
   mgr->ConnectOutput(d0ResTask,29,coutputd0clusterTypeSPD11Skip);
   mgr->ConnectOutput(d0ResTask,30,coutputd0clusterTypeSPD12Skip);
   mgr->ConnectOutput(d0ResTask,31,coutputd0clusterTypeSPD13Skip);
-  mgr->ConnectOutput(d0ResTask,32,coutputd0Pt);
-  mgr->ConnectOutput(d0ResTask,33,coutputNentries);
-  mgr->ConnectOutput(d0ResTask,34,coutputEstimVtx);
+  mgr->ConnectOutput(d0ResTask,32,coutputd0PID);
+  mgr->ConnectOutput(d0ResTask,33,coutputd0Pt);
+  mgr->ConnectOutput(d0ResTask,34,coutputNentries);
+  mgr->ConnectOutput(d0ResTask,35,coutputEstimVtx);
+
   return d0ResTask;
 }
