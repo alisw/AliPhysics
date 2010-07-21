@@ -79,7 +79,7 @@
 #include "AliTPCCalROC.h"
 #include "AliTPCExB.h"
 #include "AliRawReader.h"
-#include "AliTPCRawStream.h"
+#include "AliTPCRawStreamV3.h"
 #include "TTreeStream.h"
 
 ClassImp(AliTPC) 
@@ -946,8 +946,17 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
   const Int_t kNOS = fTPCParam->GetNOuterSector();
   const Int_t kNS = kNIS + kNOS;
 
-  Short_t** allBins = NULL; //array which contains the data for one sector
-  
+  // Setup storage
+  AliTPCROC * roc = AliTPCROC::Instance();
+  Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
+  Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
+  Short_t** allBins = new Short_t*[nRowsMax];
+  for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+    Int_t maxBin = kmaxTime*nPadsMax;
+    allBins[iRow] = new Short_t[maxBin];
+    memset(allBins[iRow],0,sizeof(Short_t)*maxBin);
+  }
+
   for(Int_t iSector = 0; iSector < kNS; iSector++) {
     
     Int_t nRows = fTPCParam->GetNRow(iSector);
@@ -961,55 +970,65 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
       indexDDL = (iSector-kNIS) * 4 + kNIS * 2;
     }
 
-    // Loas the raw data for corresponding DDLs
+    // Load the raw data for corresponding DDLs
     rawReader->Reset();
-    AliTPCRawStream input(rawReader);
+
+    AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
+    AliTPCRawStreamV3 input(rawReader,(AliAltroMapping**)mapping);
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
 
-    // Alocate and init the array with the sector data
-    allBins = new Short_t*[nRows];
-    for (Int_t iRow = 0; iRow < nRows; iRow++) {
-      Int_t maxPad = fTPCParam->GetNPads(iSector,iRow);
-      Int_t maxBin = kmaxTime*maxPad;
-      allBins[iRow] = new Short_t[maxBin];
+    // Clean storage
+    for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
+      Int_t maxBin = kmaxTime*nPadsMax;
       memset(allBins[iRow],0,sizeof(Short_t)*maxBin);
     }
 
     // Begin loop over altro data
-    while (input.Next()) {
+    while (input.NextDDL()) {
 
       if (input.GetSector() != iSector)
 	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",iSector,input.GetSector()));
 
-      Int_t iRow = input.GetRow();
-      if (iRow < 0 || iRow >= nRows)
-	AliFatal(Form("Pad-row index (%d) outside the range (%d -> %d) !",
-		      iRow, 0, nRows -1));
-      Int_t iPad = input.GetPad();
+      //loop over pads
+      while ( input.NextChannel() ) {
 
-      Int_t maxPad = fTPCParam->GetNPads(iSector,iRow);
+        Int_t iRow = input.GetRow();
+        if (iRow < 0 || iRow >= nRows)
+          AliFatal(Form("Pad-row index (%d) outside the range (%d -> %d) !",
+                        iRow, 0, nRows -1));
+        Int_t iPad = input.GetPad();
 
-      if (iPad < 0 || iPad >= maxPad)
-	AliFatal(Form("Pad index (%d) outside the range (%d -> %d) !",
-		      iPad, 0, maxPad -1));
+        Int_t maxPad = fTPCParam->GetNPads(iSector,iRow);
 
-      Int_t iTimeBin = input.GetTime();
-      if ( iTimeBin < 0 || iTimeBin >= kmaxTime)
-	AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
-		      iTimeBin, 0, kmaxTime -1));
-      
-      Int_t maxBin = kmaxTime*maxPad;
+        if (iPad < 0 || iPad >= maxPad)
+          AliFatal(Form("Pad index (%d) outside the range (%d -> %d) !",
+                        iPad, 0, maxPad -1));
 
-      if (((iPad*kmaxTime+iTimeBin) >= maxBin) ||
-	  ((iPad*kmaxTime+iTimeBin) < 0))
-	AliFatal(Form("Index outside the allowed range"
-		      " Sector=%d Row=%d Pad=%d Timebin=%d"
-		      " (Max.index=%d)",iSector,iRow,iPad,iTimeBin,maxBin));
+        //loop over bunches
+        while ( input.NextBunch() ){
+          Int_t  startTbin    = (Int_t)input.GetStartTimeBin();
+          Int_t  bunchlength  = (Int_t)input.GetBunchLength();
+          const UShort_t *sig = input.GetSignals();
+          for (Int_t iTime = 0; iTime<bunchlength; iTime++){
+            Int_t iTimeBin=startTbin-iTime;
+            if ( iTimeBin < 0 || iTimeBin >= kmaxTime) {
+              continue;
+              //AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
+              //               iTimeBin, 0, kmaxTime -1));
+            }
 
-      allBins[iRow][iPad*kmaxTime+iTimeBin] = input.GetSignal();
+            Int_t maxBin = kmaxTime*maxPad;
+            if (((iPad*kmaxTime+iTimeBin) >= maxBin) ||
+                ((iPad*kmaxTime+iTimeBin) < 0))
+              AliFatal(Form("Index outside the allowed range"
+                            " Sector=%d Row=%d Pad=%d Timebin=%d"
+                            " (Max.index=%d)",iSector,iRow,iPad,iTimeBin,maxBin));
+            allBins[iRow][iPad*kmaxTime+iTimeBin] = sig[iTime];
+          }
+        }
+      } // End loop over altro data
+    }
 
-    } // End loop over altro data
-    
     // Now fill the digits array
     if (fDigitsArray->GetTree()==0) {
       AliFatal("Tree not set in fDigitsArray");
@@ -1017,7 +1036,6 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
 
     for (Int_t iRow = 0; iRow < nRows; iRow++) {
       AliDigits * dig = fDigitsArray->CreateRow(iSector,iRow);
-
       Int_t maxPad = fTPCParam->GetNPads(iSector,iRow);
       for(Int_t iPad = 0; iPad < maxPad; iPad++) {
 	for(Int_t iTimeBin = 0; iTimeBin < kmaxTime; iTimeBin++) {
@@ -1037,18 +1055,17 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
       fDigitsArray->ClearRow(iSector,iRow);  
 
     } // end of the sector digitization
-
-    for (Int_t iRow = 0; iRow < nRows; iRow++)
-      delete [] allBins[iRow];
-
-    delete [] allBins;
-
   }
 
   fLoader->WriteSDigits("OVERWRITE");
 
   if(GetDigitsArray()) delete GetDigitsArray();
   SetDigitsArray(0x0);
+
+  // cleanup storage
+  for (Int_t iRow = 0; iRow < nRowsMax; iRow++)
+    delete [] allBins[iRow];
+  delete [] allBins;
 
   return kTRUE;
 }
