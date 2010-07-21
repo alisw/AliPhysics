@@ -99,7 +99,7 @@ class AliFlowCommonHist: public TNamed {
 
   TList*    fHistList;            //list to hold all histograms  
 
-  ClassDef(AliFlowCommonHist,1)  // macro for rootcint
+  ClassDef(AliFlowCommonHist,2)  // macro for rootcint
 };
 #endif
 
