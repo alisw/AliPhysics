@@ -78,11 +78,12 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   TList *fOutputclusterTypeSPD11Skip;  //!
   TList *fOutputclusterTypeSPD12Skip;  //!
   TList *fOutputclusterTypeSPD13Skip;  //!
+  TList *fOutputparticlePID;  //!
   TList *fOutputPt;     //!           
   TH1F  *fNentries;   //! histogram of number of events
   TH1F  *fEstimVtx;   //! vertex resolution
 
-  ClassDef(AliAnalysisTaskSEImpParRes,2); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  ClassDef(AliAnalysisTaskSEImpParRes,3); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif

@@ -35,6 +35,8 @@
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"   
 #include "AliVertexerTracks.h"
+#include "AliVVertex.h"
+#include "AliPID.h"
 #include "AliAnalysisTaskSEImpParRes.h"
 
 ClassImp(AliAnalysisTaskSEImpParRes)
@@ -76,6 +78,7 @@ fOutputclusterTypeSPD03Skip(0),
 fOutputclusterTypeSPD11Skip(0),
 fOutputclusterTypeSPD12Skip(0),
 fOutputclusterTypeSPD13Skip(0),
+fOutputparticlePID(0),
 fOutputPt(0),
 fNentries(0),
 fEstimVtx(0)
@@ -122,6 +125,7 @@ fOutputclusterTypeSPD03Skip(0),
 fOutputclusterTypeSPD11Skip(0),
 fOutputclusterTypeSPD12Skip(0),
 fOutputclusterTypeSPD13Skip(0),
+fOutputparticlePID(0),
 fOutputPt(0),
 fNentries(0),
 fEstimVtx(0)
@@ -162,8 +166,9 @@ fEstimVtx(0)
   DefineOutput(30, TList::Class());  //My private output
   DefineOutput(31, TList::Class());
   DefineOutput(32, TList::Class());  //My private output
-  DefineOutput(33, TH1F::Class());
+  DefineOutput(33, TList::Class());  //My private output
   DefineOutput(34, TH1F::Class());
+  DefineOutput(35, TH1F::Class());
 }
 
 //________________________________________________________________________
@@ -195,7 +200,7 @@ AliAnalysisTaskSEImpParRes::~AliAnalysisTaskSEImpParRes()
   if (fOutputnegtvTracTrue)                     {delete fOutputnegtvTracTrue;fOutputnegtvTracTrue=0x0;}
   if (fOutputpullAllpointTrue)            {delete fOutputpullAllpointTrue;fOutputpullAllpointTrue=0x0;}
   if (fOutputphiAllpointSkip)               {delete fOutputphiAllpointSkip;fOutputphiAllpointSkip=0x0;}
-  if (fOutputphiPostvtracSkip)             {delete fOutputphiPostvtracSkip;fOutputphiPostvtracSkip=0x0;}
+  if (fOutputphiPostvtracSkip)            {delete fOutputphiPostvtracSkip;fOutputphiPostvtracSkip=0x0;}
   if (fOutputphiNegtvtracSkip)            {delete fOutputphiNegtvtracSkip;fOutputphiNegtvtracSkip=0x0;}
   if (fOutputclusterTypeSPD01Skip){delete fOutputclusterTypeSPD01Skip;fOutputclusterTypeSPD01Skip=0x0;}
   if (fOutputclusterTypeSPD02Skip){delete fOutputclusterTypeSPD02Skip;fOutputclusterTypeSPD02Skip=0x0;}
@@ -203,6 +208,7 @@ AliAnalysisTaskSEImpParRes::~AliAnalysisTaskSEImpParRes()
   if (fOutputclusterTypeSPD11Skip){delete fOutputclusterTypeSPD11Skip;fOutputclusterTypeSPD11Skip=0x0;}
   if (fOutputclusterTypeSPD12Skip){delete fOutputclusterTypeSPD12Skip;fOutputclusterTypeSPD12Skip=0x0;}
   if (fOutputclusterTypeSPD13Skip){delete fOutputclusterTypeSPD13Skip;fOutputclusterTypeSPD13Skip=0x0;}
+  if (fOutputparticlePID)                           {delete fOutputparticlePID;fOutputparticlePID=0x0;}
   if (fOutputPt)                                                      {delete fOutputPt;fOutputPt=0x0;}
   if (fNentries)                                           { delete fNentries;     fNentries    =0x0; }
   if (fEstimVtx)                                           { delete fEstimVtx;     fEstimVtx    =0x0; }
@@ -375,7 +381,13 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     fOutputclusterTypeSPD13Skip->SetOwner();
     fOutputclusterTypeSPD13Skip->SetName("clustertypeSPD13Skip");
   }
-
+  
+  if (!fOutputparticlePID) {
+    fOutputparticlePID = new TList();
+    fOutputparticlePID->SetOwner();
+    fOutputparticlePID->SetName("particlePID");
+  }
+ 
   if (!fOutputPt) {
     fOutputPt = new TList();
     fOutputPt->SetOwner();
@@ -414,18 +426,20 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   const TString d0clusterTypeSPD13zTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
   const TString d0rphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
   const TString d0zTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
+  const TString d0rphiParticlPID = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0zPrtilePID  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
 
-  TString  named0itspureSArphiRec,named0itspureSAzRec,named0allpointrphiRec, named0allpointzRec,named0partpointrphiRec, named0partpointzRec,named0onepointSPDrphiRec, named0onepointSPDzRec,named0postvtracrphiRec, named0postvtraczRec,named0negtvtracrphiRec, named0negtvtraczRec,named0pt,named0pullAllpointrphiRec,named0pullAllpointzRec,named0onlyRefitrphiRec,named0onlyRefitzRec;
+  TString  named0itspureSArphiRec,named0itspureSAzRec,named0allpointrphiRec, named0allpointzRec,named0partpointrphiRec, named0partpointzRec,named0onepointSPDrphiRec, named0onepointSPDzRec,named0postvtracrphiRec, named0postvtraczRec,named0negtvtracrphiRec, named0negtvtraczRec,named0pt,named0pullAllpointrphiRec,named0pullAllpointzRec,named0onlyRefitrphiRec,named0onlyRefitzRec,named0pionPIDrphiRec, named0pionPIDzRec,named0kaonPIDrphiRec, named0kaonPIDzRec,named0protonPIDrphiRec, named0protonPIDzRec;
  
   TH1F *d0ITSpureSArphiRec=0,*d0ITSpureSAzRec=0,*d0AllpointrphiRec=0, *d0AllpointzRec=0,*d0PartpointrphiRec=0, *d0PartpointzRec=0,
-    *d0OnepointSPDrphiRec=0,*d0OnepointSPDzRec=0,*d0PostvtracrphiRec=0, *d0PostvtraczRec=0,*d0NegtvtracrphiRec=0, *d0NegtvtraczRec=0,*d0Pt=0,*d0PullAllpointrphiRec=0,*d0PullAllpointzRec=0,*d0OnlyRefitrphiRec=0,*d0OnlyRefitzRec=0;
+    *d0OnepointSPDrphiRec=0,*d0OnepointSPDzRec=0,*d0PostvtracrphiRec=0, *d0PostvtraczRec=0,*d0NegtvtracrphiRec=0, *d0NegtvtraczRec=0,*d0Pt=0,*d0PullAllpointrphiRec=0,*d0PullAllpointzRec=0,*d0OnlyRefitrphiRec=0,*d0OnlyRefitzRec=0,*d0PionPIDrphiRec=0,*d0PionPIDzRec=0,*d0KaonPIDrphiRec=0,*d0KaonPIDzRec=0,*d0ProtonPIDrphiRec=0,*d0ProtonPIDzRec=0;
 
-  TString  named0itspureSArphiSkip,named0itspureSAzSkip,named0allpointrphiSkip, named0allpointzSkip,named0partpointrphiSkip, named0partpointzSkip,named0onepointSPDrphiSkip, named0onepointSPDzSkip,named0postvtracrphiSkip, named0postvtraczSkip,named0negtvtracrphiSkip, named0negtvtraczSkip,named0ptSkip,named0pullAllpointrphiSkip,named0pullAllpointzSkip,named0onlyRefitrphiSkip,named0onlyRefitzSkip,named0allpointrphiTrue, named0allpointzTrue,named0postvtracrphiTrue, named0postvtraczTrue,named0negtvtracrphiTrue, named0negtvtraczTrue,named0pullAllpointrphiTrue,named0pullAllpointzTrue,named0clusterTypeSPD01rphiSkip,named0clusterTypeSPD01zSkip,named0clusterTypeSPD02rphiSkip,named0clusterTypeSPD02zSkip,named0clusterTypeSPD03rphiSkip,named0clusterTypeSPD03zSkip,named0clusterTypeSPD11rphiSkip,named0clusterTypeSPD11zSkip,named0clusterTypeSPD12rphiSkip,named0clusterTypeSPD12zSkip,named0clusterTypeSPD13rphiSkip,named0clusterTypeSPD13zSkip;
+  TString  named0itspureSArphiSkip,named0itspureSAzSkip,named0allpointrphiSkip, named0allpointzSkip,named0partpointrphiSkip, named0partpointzSkip,named0onepointSPDrphiSkip, named0onepointSPDzSkip,named0postvtracrphiSkip, named0postvtraczSkip,named0negtvtracrphiSkip, named0negtvtraczSkip,named0ptSkip,named0pullAllpointrphiSkip,named0pullAllpointzSkip,named0onlyRefitrphiSkip,named0onlyRefitzSkip,named0allpointrphiTrue, named0allpointzTrue,named0postvtracrphiTrue, named0postvtraczTrue,named0negtvtracrphiTrue, named0negtvtraczTrue,named0pullAllpointrphiTrue,named0pullAllpointzTrue,named0clusterTypeSPD01rphiSkip,named0clusterTypeSPD01zSkip,named0clusterTypeSPD02rphiSkip,named0clusterTypeSPD02zSkip,named0clusterTypeSPD03rphiSkip,named0clusterTypeSPD03zSkip,named0clusterTypeSPD11rphiSkip,named0clusterTypeSPD11zSkip,named0clusterTypeSPD12rphiSkip,named0clusterTypeSPD12zSkip,named0clusterTypeSPD13rphiSkip,named0clusterTypeSPD13zSkip,named0pionPIDrphiSkip, named0pionPIDzSkip,named0kaonPIDrphiSkip, named0kaonPIDzSkip,named0protonPIDrphiSkip, named0protonPIDzSkip;
 
-  TH1F *d0ITSpureSArphiSkip=0,*d0ITSpureSAzSkip=0,*d0AllpointrphiSkip=0, *d0AllpointzSkip=0,*d0PartpointrphiSkip=0, *d0PartpointzSkip=0,*d0OnepointSPDrphiSkip=0,*d0OnepointSPDzSkip=0,*d0PostvtracrphiSkip=0, *d0PostvtraczSkip=0,*d0NegtvtracrphiSkip=0,*d0NegtvtraczSkip=0,*d0PullAllpointrphiSkip=0,*d0PullAllpointzSkip=0,*d0OnlyRefitrphiSkip=0,*d0OnlyRefitzSkip=0,*d0AllpointrphiTrue=0, *d0AllpointzTrue=0,*d0PostvtracrphiTrue=0, *d0PostvtraczTrue=0,*d0NegtvtracrphiTrue=0,*d0NegtvtraczTrue=0,*d0PullAllpointrphiTrue,*d0PullAllpointzTrue,*d0ClustertypeSPD01rphiSkip=0,*d0ClustertypeSPD01zSkip=0,*d0ClustertypeSPD02rphiSkip=0,*d0ClustertypeSPD02zSkip=0,*d0ClustertypeSPD03rphiSkip=0,*d0ClustertypeSPD03zSkip=0,*d0ClustertypeSPD11rphiSkip=0,*d0ClustertypeSPD11zSkip=0,*d0ClustertypeSPD12rphiSkip=0,*d0ClustertypeSPD12zSkip=0,*d0ClustertypeSPD13rphiSkip=0,*d0ClustertypeSPD13zSkip=0;
+  TH1F *d0ITSpureSArphiSkip=0,*d0ITSpureSAzSkip=0,*d0AllpointrphiSkip=0, *d0AllpointzSkip=0,*d0PartpointrphiSkip=0, *d0PartpointzSkip=0,*d0OnepointSPDrphiSkip=0,*d0OnepointSPDzSkip=0,*d0PostvtracrphiSkip=0, *d0PostvtraczSkip=0,*d0NegtvtracrphiSkip=0,*d0NegtvtraczSkip=0,*d0PullAllpointrphiSkip=0,*d0PullAllpointzSkip=0,*d0OnlyRefitrphiSkip=0,*d0OnlyRefitzSkip=0,*d0AllpointrphiTrue=0, *d0AllpointzTrue=0,*d0PostvtracrphiTrue=0, *d0PostvtraczTrue=0,*d0NegtvtracrphiTrue=0,*d0NegtvtraczTrue=0,*d0PullAllpointrphiTrue,*d0PullAllpointzTrue,*d0ClustertypeSPD01rphiSkip=0,*d0ClustertypeSPD01zSkip=0,*d0ClustertypeSPD02rphiSkip=0,*d0ClustertypeSPD02zSkip=0,*d0ClustertypeSPD03rphiSkip=0,*d0ClustertypeSPD03zSkip=0,*d0ClustertypeSPD11rphiSkip=0,*d0ClustertypeSPD11zSkip=0,*d0ClustertypeSPD12rphiSkip=0,*d0ClustertypeSPD12zSkip=0,*d0ClustertypeSPD13rphiSkip=0,*d0ClustertypeSPD13zSkip=0,*d0PionPIDrphiSkip=0,*d0PionPIDzSkip=0,*d0KaonPIDrphiSkip=0,*d0KaonPIDzSkip=0,*d0ProtonPIDrphiSkip=0,*d0ProtonPIDzSkip=0;
 
   for(Int_t i=1; i<=nhist; i++) {
-
+   
     named0itspureSArphiRec = "d0itspureSArphiRec_";
     named0itspureSArphiRec += i;
     named0itspureSAzRec = "d0itspureSAzRec_";
@@ -443,8 +457,7 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     named0itspureSArphiSkip += i;
     named0itspureSAzSkip = "d0itspureSAzSkip_";
     named0itspureSAzSkip += i;
-    d0ITSpureSArphiSkip = new TH1F(named0itspureSArphiSkip.Data(), d0ITSpureSArphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
-    d0ITSpureSArphiSkip->Sumw2();
+    d0ITSpureSArphiSkip = new TH1F(named0itspureSArphiSkip.Data(), d0ITSpureSArphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));    d0ITSpureSArphiSkip->Sumw2();
     d0ITSpureSArphiSkip->SetMinimum(0);  
     fOutputitspureSASkip->Add(d0ITSpureSArphiSkip);
     d0ITSpureSAzSkip = new TH1F(named0itspureSAzSkip.Data(), d0ITSpureSAzTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
@@ -608,7 +621,6 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     d0PullAllpointzRec->SetMinimum(0);
     fOutputpullAllpointRec->Add(d0PullAllpointzRec);
 
-
     named0onlyRefitrphiRec = "d0onlyrefitrphiRec_";
     named0onlyRefitrphiRec +=i;
     named0onlyRefitzRec = "d0onlyrefitzRec_";
@@ -621,7 +633,6 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     d0OnlyRefitzRec->Sumw2();
     d0OnlyRefitzRec->SetMinimum(0);
     fOutputOnlyRefitRec->Add(d0OnlyRefitzRec);
-
 
     named0onlyRefitrphiSkip = "d0onlyrefitrphiSkip_";
     named0onlyRefitrphiSkip +=i;
@@ -766,6 +777,84 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     d0ClustertypeSPD13zSkip->SetMinimum(0);
     fOutputclusterTypeSPD13Skip->Add(d0ClustertypeSPD13zSkip);
 
+    named0pionPIDrphiRec = "d0pionPIDrphiRec_";
+    named0pionPIDrphiRec += i;
+    named0pionPIDzRec = "d0pionPIDzRec_";
+    named0pionPIDzRec += i;
+    d0PionPIDrphiRec = new TH1F(named0pionPIDrphiRec.Data(), d0rphiParticlPID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0PionPIDrphiRec->Sumw2();
+    d0PionPIDrphiRec->SetMinimum(0);  
+    fOutputparticlePID->Add(d0PionPIDrphiRec);
+    d0PionPIDzRec = new TH1F(named0pionPIDzRec.Data(), d0zPrtilePID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0PionPIDzRec->Sumw2();
+    d0PionPIDzRec->SetMinimum(0);  
+    fOutputparticlePID->Add(d0PionPIDzRec);
+
+    named0pionPIDrphiSkip = "d0pionPIDrphiSkip_";
+    named0pionPIDrphiSkip += i;
+    named0pionPIDzSkip = "d0pionPIDzSkip_";
+    named0pionPIDzSkip += i;
+    d0PionPIDrphiSkip = new TH1F(named0pionPIDrphiSkip.Data(), d0rphiParticlPID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0PionPIDrphiSkip->Sumw2();
+    d0PionPIDrphiSkip->SetMinimum(0);  
+    fOutputparticlePID->Add(d0PionPIDrphiSkip);
+    d0PionPIDzSkip = new TH1F(named0pionPIDzSkip.Data(), d0zPrtilePID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0PionPIDzSkip->Sumw2();
+    d0PionPIDzSkip->SetMinimum(0);  
+    fOutputparticlePID->Add(d0PionPIDzSkip);
+
+    named0kaonPIDrphiRec = "d0kaonPIDrphiRec_";
+    named0kaonPIDrphiRec += i;
+    named0kaonPIDzRec = "d0kaonPIDzRec_";
+    named0kaonPIDzRec += i;
+    d0KaonPIDrphiRec = new TH1F(named0kaonPIDrphiRec.Data(), d0rphiParticlPID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0KaonPIDrphiRec->Sumw2();
+    d0KaonPIDrphiRec->SetMinimum(0);  
+    fOutputparticlePID->Add(d0KaonPIDrphiRec);
+    d0KaonPIDzRec = new TH1F(named0kaonPIDzRec.Data(), d0zPrtilePID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0KaonPIDzRec->Sumw2();
+    d0KaonPIDzRec->SetMinimum(0);  
+    fOutputparticlePID->Add(d0KaonPIDzRec);
+
+    named0kaonPIDrphiSkip = "d0kaonPIDrphiSkip_";
+    named0kaonPIDrphiSkip += i;
+    named0kaonPIDzSkip = "d0kaonPIDzSkip_";
+    named0kaonPIDzSkip += i;
+    d0KaonPIDrphiSkip = new TH1F(named0kaonPIDrphiSkip.Data(), d0rphiParticlPID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0KaonPIDrphiSkip->Sumw2();
+    d0KaonPIDrphiSkip->SetMinimum(0);  
+    fOutputparticlePID->Add(d0KaonPIDrphiSkip);
+    d0KaonPIDzSkip = new TH1F(named0kaonPIDzSkip.Data(), d0zPrtilePID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0KaonPIDzSkip->Sumw2();
+    d0KaonPIDzSkip->SetMinimum(0);  
+    fOutputparticlePID->Add(d0KaonPIDzSkip);
+
+    named0protonPIDrphiRec = "d0protonPIDrphiRec_";
+    named0protonPIDrphiRec += i;
+    named0protonPIDzRec = "d0protonPIDzRec_";
+    named0protonPIDzRec += i;
+    d0ProtonPIDrphiRec = new TH1F(named0protonPIDrphiRec.Data(), d0rphiParticlPID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0ProtonPIDrphiRec->Sumw2();
+    d0ProtonPIDrphiRec->SetMinimum(0);  
+    fOutputparticlePID->Add(d0ProtonPIDrphiRec);
+    d0ProtonPIDzRec = new TH1F(named0protonPIDzRec.Data(), d0zPrtilePID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0ProtonPIDzRec->Sumw2();
+    d0ProtonPIDzRec->SetMinimum(0);  
+    fOutputparticlePID->Add(d0ProtonPIDzRec);
+
+    named0protonPIDrphiSkip = "d0protonPIDrphiSkip_";
+    named0protonPIDrphiSkip += i;
+    named0protonPIDzSkip = "d0protonPIDzSkip_";
+    named0protonPIDzSkip += i;
+    d0ProtonPIDrphiSkip = new TH1F(named0protonPIDrphiSkip.Data(), d0rphiParticlPID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0ProtonPIDrphiSkip->Sumw2();
+    d0ProtonPIDrphiSkip->SetMinimum(0);  
+    fOutputparticlePID->Add(d0ProtonPIDrphiSkip);
+    d0ProtonPIDzSkip = new TH1F(named0protonPIDzSkip.Data(), d0zPrtilePID.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
+    d0ProtonPIDzSkip->Sumw2();
+    d0ProtonPIDzSkip->SetMinimum(0);  
+    fOutputparticlePID->Add(d0ProtonPIDzSkip);
+
     named0pt = "d0pt_";
     named0pt += i;
     d0Pt = new TH1F(named0pt.Data(), d0ptTitle.Data(), 100, 0, 35.);
@@ -774,6 +863,7 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     fOutputPt->Add(d0Pt);
   }
 
+  
   if (!fOutputSinThetaRec){
     fOutputSinThetaRec = new TList();
     fOutputSinThetaRec->SetOwner();
@@ -813,18 +903,16 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   const TString d0phiPostvtraczTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";  
   const TString  d0phiNegtvtracrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
   const TString d0phiNegtvtraczTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";   
-  TString named0sinThetaonerphiRec,named0sinThetaonezRec,named0sinThetatworphiRec,named0sinThetatwozRec,named0sinThetathreerphiRec,named0sinThetathreezRec,named0sinThetafourrphiRec,named0sinThetafourzRec;
+  TString named0sinThetaonerphiRec,named0sinThetaonezRec,named0sinThetatworphiRec,named0sinThetatwozRec,named0sinThetathreerphiRec,named0sinThetathreezRec,named0sinThetafourrphiRec,named0sinThetafourzRec,named0thetaForwardrphiRec,named0thetaForwardzRec,named0thetaBackwardrphiRec,named0thetaBackwardzRec;
   
-  TH1F *d0SinThetaonerphiRec,*d0SinThetaonezRec,*d0SinThetatworphiRec,*d0SinThetatwozRec,*d0SinThetathreerphiRec,*d0SinThetathreezRec,*d0SinThetafourrphiRec,*d0SinThetafourzRec;
+  TH1F *d0SinThetaonerphiRec,*d0SinThetaonezRec,*d0SinThetatworphiRec,*d0SinThetatwozRec,*d0SinThetathreerphiRec,*d0SinThetathreezRec,*d0SinThetafourrphiRec,*d0SinThetafourzRec,*d0ThetaforwardrphiRec,*d0ThetaforwardzRec,*d0ThetabackwardrphiRec,*d0ThetabackwardzRec;
   
-  TString  named0sinThetaonerphiSkip,named0sinThetaonezSkip,named0sinThetatworphiSkip,named0sinThetatwozSkip,named0sinThetathreerphiSkip,named0sinThetathreezSkip,named0sinThetafourrphiSkip,named0sinThetafourzSkip,named0phiAllpointrphiSkip, named0phiAllpointzSkip,named0phiPostvtracrphiSkip, named0phiPostvtraczSkip,named0phiNegtvtracrphiSkip,named0phiNegtvtraczSkip;
+  TString  named0sinThetaonerphiSkip,named0sinThetaonezSkip,named0sinThetatworphiSkip,named0sinThetatwozSkip,named0sinThetathreerphiSkip,named0sinThetathreezSkip,named0sinThetafourrphiSkip,named0sinThetafourzSkip,named0phiAllpointrphiSkip, named0phiAllpointzSkip,named0phiPostvtracrphiSkip, named0phiPostvtraczSkip,named0phiNegtvtracrphiSkip,named0phiNegtvtraczSkip,named0thetaForwardrphiSkip,named0thetaForwardzSkip,named0thetaBackwardrphiSkip,named0thetaBackwardzSkip;
   
-  TH1F*d0SinThetaonerphiSkip,*d0SinThetaonezSkip,*d0SinThetatworphiSkip,*d0SinThetatwozSkip,*d0SinThetathreerphiSkip,*d0SinThetathreezSkip,*d0SinThetafourrphiSkip,*d0SinThetafourzSkip, *d0PhiAllpointrphiSkip,*d0PhiAllpointzSkip,*d0PhiPostvtracrphiSkip,*d0PhiPostvtraczSkip,*d0PhiNegtvtracrphiSkip,*d0PhiNegtvtraczSkip;
+  TH1F*d0SinThetaonerphiSkip,*d0SinThetaonezSkip,*d0SinThetatworphiSkip,*d0SinThetatwozSkip,*d0SinThetathreerphiSkip,*d0SinThetathreezSkip,*d0SinThetafourrphiSkip,*d0SinThetafourzSkip, *d0PhiAllpointrphiSkip,*d0PhiAllpointzSkip,*d0PhiPostvtracrphiSkip,*d0PhiPostvtraczSkip,*d0PhiNegtvtracrphiSkip,*d0PhiNegtvtraczSkip,*d0ThetaforwardrphiSkip,*d0ThetaforwardzSkip,*d0ThetabackwardrphiSkip,*d0ThetabackwardzSkip;
   
   const Int_t nhistm=10;
   for(Int_t i=0; i<=nhistm; i++) {
-    
-
     named0sinThetaonerphiRec = "d0sinthetaonerphiRec_";
     named0sinThetaonerphiRec += i;
     named0sinThetaonezRec ="d0sinthetaonezRec_";
@@ -877,6 +965,32 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     d0SinThetafourzRec->Sumw2();
     d0SinThetafourzRec->SetMinimum(0);
     fOutputSinThetaRec->Add(d0SinThetafourzRec);
+
+    named0thetaForwardrphiRec = "d0thetaforwardrphiRec_";
+    named0thetaForwardrphiRec += i;
+    named0thetaForwardzRec ="d0thetaforwardzRec_";
+    named0thetaForwardzRec += i;
+    d0ThetaforwardrphiRec = new TH1F(named0thetaForwardrphiRec.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0ThetaforwardrphiRec->Sumw2();
+    d0ThetaforwardrphiRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0ThetaforwardrphiRec);
+    d0ThetaforwardzRec = new TH1F(named0thetaForwardzRec.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0ThetaforwardzRec->Sumw2();
+    d0ThetaforwardzRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0ThetaforwardzRec);
+
+    named0thetaBackwardrphiRec = "d0thetabackwardrphiRec_";
+    named0thetaBackwardrphiRec += i;
+    named0thetaBackwardzRec ="d0thetabackwardzRec_";
+    named0thetaBackwardzRec += i;
+    d0ThetabackwardrphiRec = new TH1F(named0thetaBackwardrphiRec.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0ThetabackwardrphiRec->Sumw2();
+    d0ThetabackwardrphiRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0ThetabackwardrphiRec);
+    d0ThetabackwardzRec = new TH1F(named0thetaBackwardzRec.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0ThetabackwardzRec->Sumw2();
+    d0ThetabackwardzRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0ThetabackwardzRec);
     
     named0sinThetaonerphiSkip = "d0sinthetaonerphiSkip_";
     named0sinThetaonerphiSkip += i;
@@ -930,6 +1044,33 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     d0SinThetafourzSkip->Sumw2();
     d0SinThetafourzSkip->SetMinimum(0);
     fOutputSinThetaSkip->Add(d0SinThetafourzSkip);
+
+    named0thetaForwardrphiSkip = "d0thetaforwardrphiSkip_";
+    named0thetaForwardrphiSkip += i;
+    named0thetaForwardzSkip ="d0thetaforwardzSkip_";
+    named0thetaForwardzSkip += i;
+    d0ThetaforwardrphiSkip = new TH1F(named0thetaForwardrphiSkip.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0ThetaforwardrphiSkip->Sumw2();
+    d0ThetaforwardrphiSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0ThetaforwardrphiSkip);
+    d0ThetaforwardzSkip = new TH1F(named0thetaForwardzSkip.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0ThetaforwardzSkip->Sumw2();
+    d0ThetaforwardzSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0ThetaforwardzSkip);
+
+    named0thetaBackwardrphiSkip = "d0thetabackwardrphiSkip_";
+    named0thetaBackwardrphiSkip += i;
+    named0thetaBackwardzSkip ="d0thetabackwardzSkip_";
+    named0thetaBackwardzSkip += i;
+    d0ThetabackwardrphiSkip = new TH1F(named0thetaBackwardrphiSkip.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0ThetabackwardrphiSkip->Sumw2();
+    d0ThetabackwardrphiSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0ThetabackwardrphiSkip);
+    d0ThetabackwardzSkip = new TH1F(named0thetaBackwardzSkip.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0ThetabackwardzSkip->Sumw2();
+    d0ThetabackwardzSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0ThetabackwardzSkip);
+
   }
 
   const Int_t nhistphi=20;
@@ -978,7 +1119,10 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   }
 
   if(!fNentries) fNentries = new TH1F("hNentries", "number of entries", 26, 0., 40.);
-  if(!fEstimVtx) fEstimVtx = new TH1F("vtxRes","Resolution of vertex",400,-1000.,1000);
+  if(!fEstimVtx) fEstimVtx = new TH1F("vtxRes","Resolution of vertex",1000,-5000.,5000);
+
+  PostData(34,fNentries);
+
   return;
 }
 
@@ -994,37 +1138,45 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     return;
   }
 
+  fNentries->Fill(1);
+  
+  // diamond constraint
   Float_t diamondcovxy[3];
   esd->GetDiamondCovXY(diamondcovxy);
   Double_t pos[3]={esd->GetDiamondX(),esd->GetDiamondY(),0.};
-  //diamondcovxy[0]=0.05*0.05;
-  //diamondcovxy[2]=0.05*0.05;
   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.};
-  AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-
-  AliVertexerTracks *vertexer0 = new AliVertexerTracks(esd->GetMagneticField());
-  vertexer0->SetITSMode();
-  vertexer0->SetMinClusters(4);  
-  if(fUseDiamond) vertexer0->SetVtxStart(diamond);
-  AliESDVertex *vtxESDRec = (AliESDVertex*)vertexer0->FindPrimaryVertex(esd);
-  delete vertexer0; vertexer0=0;
-  if(vtxESDRec->GetNContributors()<1) return;
-
+  AliESDVertex diamond(pos,cov,1.,1);
+  
+  Double_t vtxTrue[3];
   AliStack *stack=0;
   AliESDVertex *vtxESDTrue=0;
-   if (fReadMC) { 
+  AliESDVertex *vtxESDSkip=0;
+  AliESDVertex *vtxESDRec=0;  
+
+  // event primary vertex
+  AliVertexerTracks vertexer0(esd->GetMagneticField());
+  vertexer0.SetITSMode();
+  vertexer0.SetMinClusters(4);  
+  if(fUseDiamond) vertexer0.SetVtxStart(&diamond);
+  vtxESDRec = (AliESDVertex*)vertexer0.FindPrimaryVertex(esd);
+  if(vtxESDRec->GetNContributors()<1) {
+    delete vtxESDRec; vtxESDRec=NULL;
+    return;
+  }
+
+  if (fReadMC) { 
     AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()); 
     if (!eventHandler) { 
       Printf("ERROR: Could not retrieve MC event handler"); 
       return; 
     } 
-
+    
     AliMCEvent* mcEvent = eventHandler->MCEvent(); 
     if (!mcEvent) { 
       Printf("ERROR: Could not retrieve MC event"); 
       return; 
     } 
-
+    
     stack = mcEvent->Stack(); 
     if (!stack) { 
       AliDebug(AliLog::kError, "Stack not available"); 
@@ -1038,8 +1190,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       return;
     }
 
-    AliGenEventHeader* genHeader = mcHeader->GenEventHeader();
-    Double_t vtxTrue[3];
+    AliGenEventHeader* genHeader = mcHeader->GenEventHeader();   
     TArrayF mcVertex(3);
     mcVertex[0]=9999.; mcVertex[1]=9999.; mcVertex[2]=9999.;
     genHeader->PrimaryVertex(mcVertex);
@@ -1048,70 +1199,92 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     //mcHeader->GetVertex(vtxTrue);//note the vtxTrue is void here,so must need the next line.
     //AliESDVertex *vtxESDTrue = new AliESDVertex(vtxTrue,sigmaTrue);
     vtxESDTrue = new AliESDVertex(vtxTrue,sigmaTrue);
-    }
-
+  }
+ 
   Int_t nTrks = esd->GetNumberOfTracks();
+  Double_t beampiperadius=3.;
+  AliESDtrack *esdtrack = 0;
+  Int_t pdgCode=0; 
+  Int_t trkLabel;
+  TParticle  *part =0;
+  Int_t npointsITS=0,npointsSPD=0;
+  Int_t ilayer;
+  Int_t skipped[2];
+  Double_t dzRec[2], covdzRec[3], dzRecSkip[2], covdzRecSkip[3],dzTrue[2], covdzTrue[3];
+  Double_t pt;
+  Int_t bin;
+
   for (Int_t it=0; it<nTrks; it++) {  // loop over tracks
     // read track
-    AliESDtrack *esdtrack = esd->GetTrack(it);
+    esdtrack = esd->GetTrack(it);
 
     // ask for ITS refit
     if (!(esdtrack->GetStatus()&AliESDtrack::kITSrefit)) {
       continue;
     }
     
-    Int_t pdgCode=0; 
+    pdgCode=0;
     if(fReadMC && stack) { 
-      Int_t trkLabel = esdtrack->GetLabel(); 
-      //Int_t trkLabel = TMath::Abs(esdtrack->GetLabel()); 
+      trkLabel = esdtrack->GetLabel(); 
       if(trkLabel<0) continue;
-      TParticle  *part = (TParticle*)stack->Particle(trkLabel); 
+      part = (TParticle*)stack->Particle(trkLabel);
       pdgCode = TMath::Abs(part->GetPdgCode()); 
       //printf("pdgCode===%d\n", pdgCode);
       if(fSelectedPdg>0 && pdgCode!=fSelectedPdg) continue;
     }
 
-
-    Int_t npointsITS=0,npointsSPD=0;
-    for (Int_t i=0;i<6;i++){ 
-      if (i<2 && esdtrack->HasPointOnITSLayer(i)) npointsSPD +=1;
-      if (esdtrack->HasPointOnITSLayer(i)) npointsITS +=1;  
+    npointsITS=0; npointsSPD=0;
+    for (ilayer=0; ilayer<6; ilayer++){ 
+      if (ilayer<2 && esdtrack->HasPointOnITSLayer(ilayer)) npointsSPD++;
+      if (esdtrack->HasPointOnITSLayer(ilayer)) npointsITS++;  
     }
 
     //Get specific primary vertex--Reconstructed primary vertex do not include the track considering.
-    AliVertexerTracks *vertexer = new AliVertexerTracks(esd->GetMagneticField());
-    vertexer->SetITSMode();
-    vertexer->SetMinClusters(4);
-    if(fUseDiamond) vertexer->SetVtxStart(diamond);
-    Int_t skipped[2];
+    AliVertexerTracks vertexer(esd->GetMagneticField());
+    vertexer.SetITSMode();
+    vertexer.SetMinClusters(4);
+    if(fUseDiamond) vertexer.SetVtxStart(&diamond);
     skipped[0] = (Int_t)esdtrack->GetID();
-    vertexer->SetSkipTracks(1,skipped);      
-    AliESDVertex *vtxESDSkip = (AliESDVertex*)vertexer->FindPrimaryVertex(esd); 
-    delete vertexer; vertexer=NULL;
-    if(vtxESDSkip->GetNContributors()<1) continue;
-     
+    vertexer.SetSkipTracks(1,skipped);      
+    // create vertex with new!
+    vtxESDSkip = (AliESDVertex*)vertexer.FindPrimaryVertex(esd);
+    if(vtxESDSkip->GetNContributors()<1) {
+      delete vtxESDSkip; vtxESDSkip=NULL;
+      continue;
+    }
 
-    Double_t dzRec[2], covdzRec[3], dzRecSkip[2], covdzRecSkip[3],dzTrue[2], covdzTrue[3];
-    Double_t beampiperadius=3.;
-    Double_t pt= esdtrack->Pt();
-    Int_t bin = PtBin(pt);
+    //pt= esdtrack->P();
+    pt = esdtrack->Pt();
+    bin = PtBin(pt);
 
     if(bin==-1) {
-      delete vtxESDSkip; vtxESDSkip = 0x0;
+      delete vtxESDSkip; vtxESDSkip=NULL;
       continue;
     }
 
+   
+    // Select primary particle if MC event (for ESD event), Rprod < 1 micron 
+    if(fReadMC){
+      if((part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
+	 (part->Vy()-vtxTrue[1])*(part->Vy()-vtxTrue[1])
+	 > 0.0001*0.0001) {
+	delete vtxESDSkip; vtxESDSkip=NULL;
+	continue;
+      }
+    }
+
+    // compute impact patameters
+    // wrt event vertex
     esdtrack->PropagateToDCA(vtxESDRec, esd->GetMagneticField(), beampiperadius, dzRec, covdzRec);
+    // wrt event vertex without this track
     esdtrack->PropagateToDCA(vtxESDSkip, esd->GetMagneticField(), beampiperadius, dzRecSkip, covdzRecSkip);
+    delete vtxESDSkip; vtxESDSkip=NULL; // not needed anymore
+    // wrt MC vertex
     if(fReadMC) esdtrack->PropagateToDCA(vtxESDTrue, esd->GetMagneticField(), beampiperadius, dzTrue, covdzTrue);
-    if(covdzRec[0]<1.e-13 || covdzRec[2]<1.e-13 || covdzRecSkip[0]<1.e-13 || covdzRecSkip[2]<1.e-13) {
-      delete vtxESDSkip; vtxESDSkip = 0x0;
-      continue;
-    }
-    if(fReadMC && (covdzTrue[0]<1.e-13 || covdzTrue[2]<1.e-13)) {
-      delete vtxESDSkip; vtxESDSkip = 0x0;
-      continue;
-    }
+
+    if(covdzRec[0]<1.e-13 || covdzRec[2]<1.e-13 || covdzRecSkip[0]<1.e-13 || covdzRecSkip[2]<1.e-13) continue;
+ 
+    if(fReadMC && (covdzTrue[0]<1.e-13 || covdzTrue[2]<1.e-13)) continue;
       
     //printf("Pt: %f GeV/c; Impact parameter: rphi %f cm  z %f cm\n", pt, dzRec[0], dzRec[1]);
 
@@ -1165,7 +1338,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 
 
     // ITS standalone
-    if (!(esdtrack->GetStatus()&AliESDtrack::kTPCrefit) && (esdtrack->GetStatus()&AliESDtrack::kITSpureSA)
+    if (!(esdtrack->GetStatus()&AliESDtrack::kTPCrefit) && 
+	 (esdtrack->GetStatus()&AliESDtrack::kITSpureSA)
 	&& npointsSPD>0 && npointsITS>=4) {
       char *named0ITSpureSArphiRec = Form("d0itspureSArphiRec_%d", bin);
       char *named0ITSpureSArphiSkip = Form("d0itspureSArphiSkip_%d", bin);
@@ -1179,10 +1353,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 
     
     // ask for TPC refit
-    if (!(esdtrack->GetStatus()&AliESDtrack::kTPCrefit) || esdtrack->GetNcls(1)<70) {
-      delete vtxESDSkip; vtxESDSkip = 0x0;
-      continue;
-    }
+    if (!(esdtrack->GetStatus()&AliESDtrack::kTPCrefit) || 
+	esdtrack->GetNcls(1)<70) continue;
 
     // only ITS and TPC refit
     char *named0OnlyrefitrphiRec = Form("d0onlyrefitrphiRec_%d", bin);
@@ -1218,14 +1390,11 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     }
 
     // with 6 ITS points (including different selection)
-    printf("npointsITS %d\n",npointsITS);
     if(npointsITS==6) {
-
-      printf("HERE\n");
-       //pt 
+      //pt 
       char *named0Pt = Form("d0pt_%d",bin);
       ((TH1F*)(fOutputPt->FindObject(named0Pt)))->Fill(pt);
-
+     
       // allpoint
       char *named0AllpointrphiRec = Form("d0allpointrphiRec_%d", bin);
       char *named0AllpointrphiSkip = Form("d0allpointrphiSkip_%d", bin);
@@ -1241,7 +1410,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointrphiTrue)))->Fill(10000.*dzTrue[0]);
 	((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointzTrue)))->Fill(10000.*dzTrue[1]);
       }
-
+      
       // pulls
       char *named0PullAllpointrphiRec = Form("d0pullAllpointrphiRec_%d", bin);
       char *named0PullAllpointrphiSkip = Form("d0pullAllpointrphiSkip_%d", bin);
@@ -1258,8 +1427,10 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointzTrue)))->Fill(dzTrue[1]/TMath::Sqrt(covdzTrue[2]));
       }
       //postive and negative track
-      Short_t charge=esdtrack->Charge();
-      if(charge==1 ) {
+      //Short_t charge=esdtrack->Charge();
+      Int_t pdgcode=TMath::Abs(pdgCode);
+      Int_t charge=esdtrack->Charge();
+      if(charge==1 && pdgcode==211) {
 	char *named0PostvtracrphiRec = Form("d0postvtracrphiRec_%d", bin);
 	char *named0PostvtracrphiSkip = Form("d0postvtracrphiSkip_%d", bin);
 	char *named0PostvtracrphiTrue = Form("d0postvtracrphiTrue_%d", bin);
@@ -1276,7 +1447,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	}
       }
       
-      if(charge==-1 ) {
+      if(charge==-1 && pdgcode==211 ) {
 	char *named0NegtvtracrphiRec = Form("d0negtvtracrphiRec_%d", bin);
 	char *named0NegtvtracrphiSkip = Form("d0negtvtracrphiSkip_%d", bin);
 	char *named0NegtvtracrphiTrue = Form("d0negtvtracrphiTrue_%d", bin);
@@ -1296,8 +1467,31 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       // SinTheta 
       Double_t theta=esdtrack->Theta(); 
       Double_t Sintheta=TMath::Sin(theta);
+      Double_t pi=TMath::Pi();
+      Double_t halfpi=0.5*pi;
       Int_t thetabin = SinThetaBin(Sintheta);
-      if(thetabin<0) {delete vtxESDSkip;continue;}
+      if(thetabin<0) continue;
+      if(bin==4 && theta<halfpi){
+	char *named0ThetaforwardrphiRec = Form("d0thetaforwardrphiRec_%d", thetabin);
+	char *named0ThetaforwardzRec = Form("d0thetaforwardzRec_%d", thetabin);
+	char *named0ThetaforwardrphiSkip = Form("d0thetaforwardrphiSkip_%d", thetabin);
+	char *named0ThetaforwardzSkip = Form("d0thetaforwardzSkip_%d", thetabin);
+	((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetaforwardrphiRec)))->Fill(10000*dzRec[0]);
+	((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetaforwardzRec)))->Fill(10000*dzRec[1]);
+	((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetaforwardrphiSkip)))->Fill(10000*dzRecSkip[0]);
+	((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetaforwardzSkip)))->Fill(10000*dzRecSkip[1]);
+      }
+
+      if(bin==4 && theta>halfpi){
+	char *named0ThetabackwardrphiRec = Form("d0thetabackwardrphiRec_%d", thetabin);
+	char *named0ThetabackwardzRec = Form("d0thetabackwardzRec_%d", thetabin);
+	char *named0ThetabackwardrphiSkip = Form("d0thetabackwardrphiSkip_%d", thetabin);
+	char *named0ThetabackwardzSkip = Form("d0thetabackwardzSkip_%d", thetabin);
+	((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetabackwardrphiRec)))->Fill(10000*dzRec[0]);
+	((TH1F*)(fOutputSinThetaRec->FindObject(named0ThetabackwardzRec)))->Fill(10000*dzRec[1]);
+	((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetabackwardrphiSkip)))->Fill(10000*dzRecSkip[0]);
+	((TH1F*)(fOutputSinThetaSkip->FindObject(named0ThetabackwardzSkip)))->Fill(10000*dzRecSkip[1]);
+      }
       
       if(bin==1) {
 	char *named0SinthetaonerphiRec = Form("d0sinthetaonerphiRec_%d", thetabin);
@@ -1347,8 +1541,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       Double_t phi=esdtrack->Phi(); 
       //Double_t pi=TMath::Pi();
       Int_t phibin=PhiBin(phi);
-      if(phibin<0) {delete vtxESDSkip;continue;}
-      if(pt>0.34 && pt<0.5){
+      if(phibin<0) continue;
+      if(pt>0.34 && pt<0.5) {
 	char *named0PhiallpointrphiSkip =Form("d0phiallpointrphiSkip_%d",phibin);
 	char *named0PhiallpointzSkip = Form("d0phiallpointzSkip_%d",phibin);
 	char *named0PhipostvtracrphiSkip =Form("d0phipostvtracrphiSkip_%d",phibin);
@@ -1366,12 +1560,12 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	  ((TH1F*)(fOutputphiNegtvtracSkip->FindObject(named0PhinegtvtraczSkip)))->Fill(10000*dzRecSkip[1]);
 	}
       }
-      
+
       //cluster type
       Int_t ctypeSPD0 = ClusterTypeOnITSLayer(esdtrack,0);
-      if(ctypeSPD0==-1) {delete vtxESDSkip;continue;}
+      if(ctypeSPD0==-1) continue;
       Int_t ctypeSPD1 = ClusterTypeOnITSLayer(esdtrack,1);
-      if(ctypeSPD1==-1) {delete vtxESDSkip;continue;}
+      if(ctypeSPD1==-1) continue;
 
       if(ctypeSPD0==1) {
 	char *named0ClustertypeSPD01rphiSkip = Form("d0clustertypeSPD01rphiSkip_%d",phibin);
@@ -1394,34 +1588,100 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	((TH1F*)(fOutputclusterTypeSPD03Skip->FindObject(named0ClustertypeSPD03zSkip)))->Fill(10000*dzRecSkip[1]);
       }
       
-      if(ctypeSPD1==1){
+      if(ctypeSPD1==1) {
 	char *named0ClustertypeSPD11rphiSkip = Form("d0clustertypeSPD11rphiSkip_%d",phibin);
 	char *named0ClustertypeSPD11zSkip = Form("d0clustertypeSPD11rphiSkip_%d",phibin);
 	((TH1F*)(fOutputclusterTypeSPD11Skip->FindObject(named0ClustertypeSPD11rphiSkip)))->Fill(10000*dzRecSkip[0]);
 	((TH1F*)(fOutputclusterTypeSPD11Skip->FindObject(named0ClustertypeSPD11zSkip)))->Fill(10000*dzRecSkip[1]);
       } 
-      if(ctypeSPD1==2){
+      if(ctypeSPD1==2) {
 	char *named0ClustertypeSPD12rphiSkip = Form("d0clustertypeSPD12rphiSkip_%d",phibin);
 	char *named0ClustertypeSPD12zSkip = Form("d0clustertypeSPD12rphiSkip_%d",phibin);
 	((TH1F*)(fOutputclusterTypeSPD12Skip->FindObject(named0ClustertypeSPD12rphiSkip)))->Fill(10000*dzRecSkip[0]);
 	((TH1F*)(fOutputclusterTypeSPD12Skip->FindObject(named0ClustertypeSPD12zSkip)))->Fill(10000*dzRecSkip[1]);
       } 
       
-      if(ctypeSPD1==3){
+      if(ctypeSPD1==3) {
 	char *named0ClustertypeSPD13rphiSkip = Form("d0clustertypeSPD13rphiSkip_%d",phibin);
 	char *named0ClustertypeSPD13zSkip = Form("d0clustertypeSPD13rphiSkip_%d",phibin);
 	((TH1F*)(fOutputclusterTypeSPD13Skip->FindObject(named0ClustertypeSPD13rphiSkip)))->Fill(10000*dzRecSkip[0]);
 	((TH1F*)(fOutputclusterTypeSPD13Skip->FindObject(named0ClustertypeSPD13zSkip)))->Fill(10000*dzRecSkip[1]);
       }  
+     
+      // Bayesian PID
+      Double_t prob[AliPID::kSPECIES];
+      esdtrack->GetESDpid(prob);
+      Double_t priors[5] = {0.01, 0.01, 0.85, 0.10, 0.05};
+      
+      //Int_t charge = track->Charge();
+      //Int_t esdPid = -1;
+      
+      AliPID pid;
+      pid.SetPriors(priors);
+      pid.SetProbabilities(prob);
+      
+      // identify particle as the most probable     
+      Double_t pelectron = pid.GetProbability(AliPID::kElectron);
+      Double_t pmuon = pid.GetProbability(AliPID::kMuon);
+      Double_t ppion = pid.GetProbability(AliPID::kPion);
+      Double_t pkaon = pid.GetProbability(AliPID::kKaon);
+      Double_t pproton = pid.GetProbability(AliPID::kProton);  
+  
+      if (ppion > pelectron && 
+	  ppion >pmuon  && 
+	  ppion > pkaon && 
+	  ppion > pproton ) {
+	//esdPid =-kPDGelectron;
+	char *named0PionPIDrphiRec = Form("d0pionPIDrphiRec_%d", bin);
+	char *named0PionPIDzRec = Form("d0pionPIDzRec_%d", bin);
+	char *named0PionPIDrphiSkip = Form("d0pionPIDrphiSkip_%d", bin);
+	char *named0PionPIDzSkip = Form("d0pionPIDzSkip_%d", bin);
+	((TH1F*)(fOutputparticlePID->FindObject(named0PionPIDrphiRec)))->Fill(10000.*dzRec[0]);
+	((TH1F*)(fOutputparticlePID->FindObject(named0PionPIDzRec)))->Fill(10000.*dzRec[1]);
+	((TH1F*)(fOutputparticlePID->FindObject(named0PionPIDrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+	((TH1F*)(fOutputparticlePID->FindObject(named0PionPIDzSkip)))->Fill(10000.*dzRecSkip[1]);
+      }
+      
+      
+      if (pkaon > pelectron && 
+	  pkaon >pmuon  && 
+	  pkaon > ppion && 
+	  pkaon > pproton ) {
+	//esdPid =-kPDGelectron;
+	char *named0KaonPIDrphiRec = Form("d0kaonPIDrphiRec_%d", bin);
+	char *named0KaonPIDzRec = Form("d0kaonPIDzRec_%d", bin);
+	char *named0KaonPIDrphiSkip = Form("d0kaonPIDrphiSkip_%d", bin);
+	char *named0KaonPIDzSkip = Form("d0kaonPIDzSkip_%d", bin);
+	((TH1F*)(fOutputparticlePID->FindObject(named0KaonPIDrphiRec)))->Fill(10000.*dzRec[0]);
+	((TH1F*)(fOutputparticlePID->FindObject(named0KaonPIDzRec)))->Fill(10000.*dzRec[1]);
+	((TH1F*)(fOutputparticlePID->FindObject(named0KaonPIDrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+	((TH1F*)(fOutputparticlePID->FindObject(named0KaonPIDzSkip)))->Fill(10000.*dzRecSkip[1]);
+      }
+
+
+      if (pproton > pelectron && 
+	  pproton >pmuon  && 
+	  pproton > ppion && 
+	  pproton > pkaon ) {
+	//esdPid =-kPDGelectron;
+	//if(p<0.5 && fReadMC){fEstimVtx->Fill(pdgCode);}
+	char *named0ProtonPIDrphiRec = Form("d0protonPIDrphiRec_%d", bin);
+	char *named0ProtonPIDzRec = Form("d0protonPIDzRec_%d", bin);
+	char *named0ProtonPIDrphiSkip = Form("d0protonPIDrphiSkip_%d", bin);
+	char *named0ProtonPIDzSkip = Form("d0protonPIDzSkip_%d", bin);
+	((TH1F*)(fOutputparticlePID->FindObject(named0ProtonPIDrphiRec)))->Fill(10000.*dzRec[0]);
+	((TH1F*)(fOutputparticlePID->FindObject(named0ProtonPIDzRec)))->Fill(10000.*dzRec[1]);
+	((TH1F*)(fOutputparticlePID->FindObject(named0ProtonPIDrphiSkip)))->Fill(10000.*dzRecSkip[0]);
+	((TH1F*)(fOutputparticlePID->FindObject(named0ProtonPIDzSkip)))->Fill(10000.*dzRecSkip[1]);
+      }
+      
     }
-    
-    if(vtxESDSkip) {delete vtxESDSkip; vtxESDSkip = 0x0;}
+
+     
   }  // end loop of tracks
   
-  if(diamond) {delete diamond; diamond=NULL;}
-  if(vtxESDRec) {delete vtxESDRec; vtxESDRec = 0x0;}
-  if(vtxESDTrue) {delete vtxESDTrue;vtxESDTrue = 0x0;}
-  fNentries->Fill(1);
+  if(vtxESDRec)  {delete vtxESDRec;  vtxESDRec=NULL;}
+  if(vtxESDTrue) {delete vtxESDTrue; vtxESDTrue=NULL;}
   PostData(1, fOutputitspureSARec);
   PostData(2, fOutputitspureSASkip);
   PostData(3, fOutputallPointRec);
@@ -1453,10 +1713,11 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   PostData(29, fOutputclusterTypeSPD11Skip);
   PostData(30, fOutputclusterTypeSPD12Skip);
   PostData(31, fOutputclusterTypeSPD13Skip);
-  PostData(32, fOutputPt);
-  PostData(33, fNentries);
-  PostData(34, fEstimVtx);
-  
+  PostData(32, fOutputparticlePID);
+  PostData(33, fOutputPt);
+  PostData(34, fNentries);
+  PostData(35, fEstimVtx);  
+
   return;
 }
 
@@ -1602,7 +1863,6 @@ Int_t AliAnalysisTaskSEImpParRes::PhiBin(Double_t phi) const {
   if(phi<2.0*pi) return 20;
   return -1;
 }
-
 //___________________________________________________________________________
 void AliAnalysisTaskSEImpParRes::Terminate(Option_t */*option*/) {
   //
@@ -1611,138 +1871,35 @@ void AliAnalysisTaskSEImpParRes::Terminate(Option_t */*option*/) {
 
   if (fDebug>1) printf("AnalysisTaskSEImpParRes: Terminate() \n");
 
-  fOutputitspureSARec = dynamic_cast<TList*>(GetOutputData(1));
-  if (!fOutputitspureSARec) printf("ERROR: fOutputitspureSARec not available\n");
-
-  fOutputitspureSASkip = dynamic_cast<TList*>(GetOutputData(2));
-  if (!fOutputitspureSASkip) printf("ERROR: fOutputitspureSASkip not available\n");
-
-  fOutputallPointRec = dynamic_cast<TList*>(GetOutputData(3));
-  if (!fOutputallPointRec) printf("ERROR: fOutputallPointRec not available\n");
-
-  fOutputallPointSkip = dynamic_cast<TList*>(GetOutputData(4));
-  if (!fOutputallPointSkip) printf("ERROR: fOutputallPointSkip not available\n");
-
-  fOutputpartPointRec = dynamic_cast<TList*>(GetOutputData(5));
-  if (!fOutputpartPointRec) printf("ERROR: fOutputpartPointRec not available\n");
-
-  fOutputpartPointSkip = dynamic_cast<TList*>(GetOutputData(6));
-  if (!fOutputpartPointSkip) printf("ERROR: fOutputpartPointSkip not available\n");
-
-  fOutputonepointSPDRec = dynamic_cast<TList*>(GetOutputData(7));
-  if (!fOutputonepointSPDRec) printf("ERROR: fOutputonepointSPDSRec not available\n");
-
-  fOutputonepointSPDSkip = dynamic_cast<TList*>(GetOutputData(8));
-  if (!fOutputonepointSPDSkip) printf("ERROR: fOutputonepointSPDSkip not available\n");
-
-  fOutputpostvTracRec = dynamic_cast<TList*>(GetOutputData(9));
-  if (!fOutputpostvTracRec) printf("ERROR: fOutputpostvTracRec not available\n");
-
-  fOutputpostvTracSkip = dynamic_cast<TList*>(GetOutputData(10));
-  if (!fOutputpostvTracSkip) printf("ERROR: fOutputpostvTracSkip not available\n");
-
-  fOutputnegtvTracRec = dynamic_cast<TList*>(GetOutputData(11));
-  if (!fOutputnegtvTracRec) printf("ERROR: fOutputnegtvTracRec not available\n");
-
-  fOutputnegtvTracSkip = dynamic_cast<TList*>(GetOutputData(12));
-  if (!fOutputnegtvTracSkip) printf("ERROR: fOutputnegtvTracSkip not available\n");
-
-
-  fOutputpullAllpointRec = dynamic_cast<TList*>(GetOutputData(13));
-  if (!fOutputpullAllpointRec) printf("ERROR: fOutputpullAllpointRec not available\n");
-
-  fOutputpullAllpointSkip = dynamic_cast<TList*>(GetOutputData(14));
-  if (!fOutputpullAllpointSkip) printf("ERROR: fOutputpullAllpointSkip not available\n");
-
-  fOutputOnlyRefitRec = dynamic_cast<TList*>(GetOutputData(15));
-  if (!fOutputOnlyRefitRec) printf("ERROR: fOutputOnlyRefitRec not available\n");
-
-  fOutputOnlyRefitSkip = dynamic_cast<TList*>(GetOutputData(16));
-  if (!fOutputOnlyRefitSkip) printf("ERROR: fOutputOnlyRefitSkip not available\n");
- 
-  fOutputSinThetaRec = dynamic_cast<TList*>(GetOutputData(17));
-  if (!fOutputSinThetaRec) printf("ERROR:fOutputSinThetaRec not available\n");
-
-  fOutputSinThetaSkip = dynamic_cast<TList*>(GetOutputData(18));
-  if (!fOutputSinThetaSkip) printf("ERROR:fOutputSinThetaSkip not available\n");
-  
-  fOutputallPointTrue = dynamic_cast<TList*>(GetOutputData(19));
-  if (!fOutputallPointTrue) printf("ERROR:fOutputallPointTrue not available\n");
-  
-  fOutputpostvTracTrue = dynamic_cast<TList*>(GetOutputData(20));
-  if (!fOutputpostvTracTrue) printf("ERROR:fOutputpostvTracTrue not available\n");
-  
-  fOutputnegtvTracTrue = dynamic_cast<TList*>(GetOutputData(21));
-  if (!fOutputnegtvTracTrue) printf("ERROR:fOutputnegtvTracTrue not available\n");
-  
-  fOutputpullAllpointTrue = dynamic_cast<TList*>(GetOutputData(22));
-  if (!fOutputpullAllpointTrue) printf("ERROR:fOutputpullAllpointTrue not available\n");
-  
-  fOutputphiAllpointSkip = dynamic_cast<TList*>(GetOutputData(23));
-  if (!fOutputphiAllpointSkip) printf("ERROR:fOutputphiAllpointSkip not available\n");
-  
-  fOutputphiPostvtracSkip = dynamic_cast<TList*>(GetOutputData(24));
-  if (!fOutputphiPostvtracSkip) printf("ERROR:fOutputphiPostvtracSkip not available\n");
-  
-  fOutputphiNegtvtracSkip = dynamic_cast<TList*>(GetOutputData(25));
-  if (!fOutputphiNegtvtracSkip) printf("ERROR:fOutputphiNegtvtracSkip not available\n");
-  
-  fOutputclusterTypeSPD01Skip = dynamic_cast<TList*>(GetOutputData(26));
-  if (!fOutputclusterTypeSPD01Skip) printf("ERROR:fOutputclusterTypeSPD01Skip not available\n");
-  
-  fOutputclusterTypeSPD02Skip = dynamic_cast<TList*>(GetOutputData(27));
-  if (!fOutputclusterTypeSPD02Skip) printf("ERROR:fOutputclusterTypeSPD02Skip not available\n");
-  
-  fOutputclusterTypeSPD03Skip = dynamic_cast<TList*>(GetOutputData(28));
-  if (!fOutputclusterTypeSPD03Skip) printf("ERROR:fOutputclusterTypeSPD03Skip not available\n");
-  
-  fOutputclusterTypeSPD11Skip = dynamic_cast<TList*>(GetOutputData(29));
-  if (!fOutputclusterTypeSPD11Skip) printf("ERROR:fOutputclusterTypeSPD11Skip not available\n");
-  
-  fOutputclusterTypeSPD12Skip = dynamic_cast<TList*>(GetOutputData(30));
-  if (!fOutputclusterTypeSPD12Skip) printf("ERROR:fOutputclusterTypeSPD12Skip not available\n");
-  
-  fOutputclusterTypeSPD13Skip = dynamic_cast<TList*>(GetOutputData(31));
-  if (!fOutputclusterTypeSPD13Skip) printf("ERROR:fOutputclusterTypeSPD13Skip not available\n");
-  
-  fOutputPt = dynamic_cast<TList*>(GetOutputData(32));
-  if (!fOutputPt) printf("ERROR: fOutputPt not available\n");
-  
-  fNentries = dynamic_cast<TH1F*>(GetOutputData(33));
-  if (!fNentries) printf("ERROR: fNentries not available\n");
-  
-  fEstimVtx = dynamic_cast<TH1F*>(GetOutputData(34));
-  if (!fEstimVtx) printf("ERROR: fEstimVtx not available\n");
   return;
 }
-
-
-Int_t AliAnalysisTaskSEImpParRes::ClusterTypeOnITSLayer(AliESDtrack *track,Int_t layer) const {
+//__________________________________________________________________________
+Int_t AliAnalysisTaskSEImpParRes::ClusterTypeOnITSLayer(AliESDtrack *track,
+							Int_t layer) const {
 //
 // Returns cluster type on ITS layer. Returns -1 if no cluster on this layer
 //
-   Int_t ctype=-1;
+  Int_t ctype=-1;
 
   if(layer<0 || layer>5) return ctype;
   if(!track->HasPointOnITSLayer(layer)) return ctype;
-
+  
   const AliTrackPointArray *array = track->GetTrackPointArray();
-    if(!array) {
-      printf("No tracks points avaialble: check ESDfriends\n");
-      return ctype;
-   }
+  if(!array) {
+    printf("No tracks points avaialble: check ESDfriends\n");
+    return ctype;
+  }
   AliTrackPoint point;
   Int_t ipt,volId,modId,layerId;
-   for(ipt=0; ipt<array->GetNPoints(); ipt++) {
-      array->GetPoint(point,ipt);
-      volId = point.GetVolumeID();
-      if(volId<=0) continue;
-      layerId = AliGeomManager::VolUIDToLayer(volId,modId);
-      if(layerId==layer+1 && !point.IsExtra()) {
-           ctype = point.GetClusterType();
-           break;
-      }
+  for(ipt=0; ipt<array->GetNPoints(); ipt++) {
+    array->GetPoint(point,ipt);
+    volId = point.GetVolumeID();
+    if(volId<=0) continue;
+    layerId = AliGeomManager::VolUIDToLayer(volId,modId);
+    if(layerId==layer+1 && !point.IsExtra()) {
+      ctype = point.GetClusterType();
+      break;
+    }
   }
-   return ctype;
-} 
-
+  return ctype;
+}
