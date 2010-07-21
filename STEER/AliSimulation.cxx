@@ -1849,11 +1849,17 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     AliRunLoader* runLoader = AliRunLoader::Instance();
     //
     // Open esd file if available
-    TFile* esdFile = TFile::Open(esdFileName);
+    TFile* esdFile = 0;
     TTree* treeESD = 0;
-    AliESDEvent* esd = new AliESDEvent();
-    esdFile->GetObject("esdTree", treeESD);
-    if (treeESD) esd->ReadFromTree(treeESD);
+    AliESDEvent* esd = 0;
+    if (strlen(esdFileName)>0) {
+      esdFile = TFile::Open(esdFileName);
+      if (esdFile) {
+        esd = new AliESDEvent();
+        esdFile->GetObject("esdTree", treeESD);
+        if (treeESD) esd->ReadFromTree(treeESD);
+      }
+    }
 
     //
     // Create the RawReader
