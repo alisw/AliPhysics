@@ -98,3 +98,22 @@ TPaveText* AliDielectronSignalBase::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=
   return t;
 }
 
+//______________________________________________
+void AliDielectronSignalBase::Print(Option_t */*option*/) const
+{
+  //
+  // Print the statistics
+  //
+  printf("Signal : %.5g #pm %.5g\n",GetSignal(),GetSignalError());
+  printf("Backgnd: %.5g #pm %.5g\n",GetBackground(),GetBackgroundError());
+  printf("Signif.: %.5g #pm %.5g\n",GetSignificance(),GetSignificanceError());
+  printf("SoB    : %.5g #pm %.5g\n",GetSignalOverBackground(),GetSignalOverBackgroundError());
+  if (GetMass()>0){
+    printf("Mass: %.5g #pm %.5g\n", GetMass(), GetMassError());
+    printf("Mass res.: %.5g #pm %.5g\n", GetMassWidth(), GetMassWidthError());
+  }
+}
+
+
+
+

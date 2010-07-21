@@ -97,6 +97,11 @@ public:
     kITSsignalSSD2,	     // SSD2 dE/dx signal
     kITSsignalSDD1,	     // SDD1 dE/dx signal
     kITSsignalSDD2,	     // SDD2 dE/dx signal
+    kITSnSigmaEle,           // number of sigmas to the dE/dx electron line in the ITS
+    kITSnSigmaPio,           // number of sigmas to the dE/dx pion line in the ITS
+    kITSnSigmaMuo,           // number of sigmas to the dE/dx muon line in the ITS
+    kITSnSigmaKao,           // number of sigmas to the dE/dx kaon line in the ITS
+    kITSnSigmaPro,           // number of sigmas to the dE/dx proton line in the ITS
 
     kPIn,                    // momentum at inner wall of TPC (if available), used for PID
     kTPCsignal,              // TPC dE/dx signal
@@ -312,6 +317,12 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTPCnSigmaKao]=fgESDpid->NumberOfSigmasTPC(particle,AliPID::kKaon);
   values[AliDielectronVarManager::kTPCnSigmaPro]=fgESDpid->NumberOfSigmasTPC(particle,AliPID::kProton);
 
+  values[AliDielectronVarManager::kITSnSigmaEle]=fgESDpid->NumberOfSigmasITS(particle,AliPID::kElectron);
+  values[AliDielectronVarManager::kITSnSigmaPio]=fgESDpid->NumberOfSigmasITS(particle,AliPID::kPion);
+  values[AliDielectronVarManager::kITSnSigmaMuo]=fgESDpid->NumberOfSigmasITS(particle,AliPID::kMuon);
+  values[AliDielectronVarManager::kITSnSigmaKao]=fgESDpid->NumberOfSigmasITS(particle,AliPID::kKaon);
+  values[AliDielectronVarManager::kITSnSigmaPro]=fgESDpid->NumberOfSigmasITS(particle,AliPID::kProton);
+
   Double_t t0=fgESDpid->GetTOFResponse().GetTimeZero();
   values[AliDielectronVarManager::kTOFnSigmaEle]=fgESDpid->NumberOfSigmasTOF(particle,AliPID::kElectron,t0);
   values[AliDielectronVarManager::kTOFnSigmaPio]=fgESDpid->NumberOfSigmasTOF(particle,AliPID::kPion,t0);
@@ -367,16 +378,12 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
     Double_t tpcNsigmaEle=fgESDpid->GetTPCResponse().GetNumberOfSigmas(mom,pid->GetTPCsignal(),
       TMath::Nint(values[AliDielectronVarManager::kTPCsignalN]) ,AliPID::kElectron);
-
     Double_t tpcNsigmaPio=fgESDpid->GetTPCResponse().GetNumberOfSigmas(mom,pid->GetTPCsignal(),
       TMath::Nint(values[AliDielectronVarManager::kTPCsignalN]),AliPID::kPion);
-
     Double_t tpcNsigmaMuo=fgESDpid->GetTPCResponse().GetNumberOfSigmas(mom,pid->GetTPCsignal(),
       TMath::Nint(values[AliDielectronVarManager::kTPCsignalN]),AliPID::kMuon);
-
     Double_t tpcNsigmaKao=fgESDpid->GetTPCResponse().GetNumberOfSigmas(mom,pid->GetTPCsignal(),
       TMath::Nint(values[AliDielectronVarManager::kTPCsignalN]),AliPID::kKaon);
-
     Double_t tpcNsigmaPro=fgESDpid->GetTPCResponse().GetNumberOfSigmas(mom,pid->GetTPCsignal(),
       TMath::Nint(values[AliDielectronVarManager::kTPCsignalN]),AliPID::kProton);
     

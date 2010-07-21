@@ -66,6 +66,11 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "SSD2_signal",
   "SDD1_signal",
   "SDD2_signal",
+  "ITS_nSigma_Electrons",
+  "ITS_nSigma_Pions",
+  "ITS_nSigma_Muons",
+  "ITS_nSigma_Kaons",
+  "ITS_nSigma_Protons",
 
   "P_InnerParam",
   "TPC_signal",
@@ -74,6 +79,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "TPC_nSigma_Muons",
   "TPC_nSigma_Kaons",
   "TPC_nSigma_Protons",
+
   "TOF_nSigma_Electrons",
   "TOF_nSigma_Pions",
   "TOF_nSigma_Muons",

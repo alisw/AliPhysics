@@ -161,7 +161,12 @@ AliMCParticle* AliDielectronMC::GetMCTrack( const AliESDtrack* _track)
   //
   // return MC track
   //
+  if (!fMCEvent){ AliError("No fMCEvent"); return NULL;}
+
+  Int_t nStack = fMCEvent->GetNumberOfTracks();
   Int_t label = TMath::Abs(_track->GetLabel());
+  if(label>nStack)return NULL;
+
   AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
   return mctrack;
 }
