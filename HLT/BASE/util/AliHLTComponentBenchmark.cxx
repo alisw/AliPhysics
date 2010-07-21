@@ -1,3 +1,4 @@
+// $Id$
 // **************************************************************************
 // This file is property of and copyright by the ALICE HLT Project          *
 // ALICE Experiment at CERN, All rights reserved.                           *
@@ -105,7 +106,7 @@ const char *AliHLTComponentBenchmark::GetStatistics()
   float ratio = 1;
   if( fTotalInput >0 ) ratio = fTotalOutput / fTotalInput;
 
-  fStatistics = Form("%s, %d events: in %.1f Kb, out %.1f Kb, ratio %.1f", 
+  fStatistics = Form("%s, %ld events: in %.1f Kb, out %.1f Kb, ratio %.1f", 
 		     fComponentName.Data(), fNEvents, fTotalInput/fNEvents/1024, fTotalOutput/fNEvents/1024, ratio);
   
   if( fNTimers<=0 ) return fStatistics.Data();
