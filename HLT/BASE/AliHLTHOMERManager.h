@@ -1,6 +1,6 @@
 //-*- Mode: C++ -*-
 
-// $Id: AliHLTHOMERManager.h $
+// $Id$
 
 #ifndef ALIHLTHOMERMANAGER_H
 #define ALIHLTHOMERMANAGER_H

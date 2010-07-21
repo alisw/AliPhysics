@@ -1,3 +1,4 @@
+// $Id$
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -82,7 +83,7 @@ void AliHLTHOMERSourceDesc::SetService( TString hostname, Int_t port, TString or
   fSubDetector = 0;
   fSubSubDetector = 0;
 
-  fSourceName.Form("%s_%s_0x%08X", fDetector.Data(), fDataType.Data(), fSpecification ); 
+  fSourceName.Form("%s_%s_0x%08lX", fDetector.Data(), fDataType.Data(), fSpecification ); 
 
   return;
 }

@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTHOMERManager.cxx  $
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -588,7 +588,7 @@ void AliHLTHOMERManager::AddBlockListToBuffer() {
   ULong_t eventID = static_cast<ULong64_t>(fCurrentReader->GetEventID());  
   
   if ( fEventID[fBufferTopIdx] == eventID ) {
-    HLTInfo(Form("Event 0x%016LX (%Lu) already in buffer.", eventID, eventID));
+    HLTInfo(Form("Event 0x%016lX (%lu) already in buffer.", eventID, eventID));
     return;
   }
 
@@ -714,11 +714,11 @@ Int_t AliHLTHOMERManager::HandleBlocks() {
 
   // -- Check if blocks present
   if ( fNBlks ==  0 ) {
-    HLTWarning(Form("Event 0x%016LX (%Lu) with no blocks", eventID, eventID));
+    HLTWarning(Form("Event 0x%016lX (%lu) with no blocks", eventID, eventID));
     return -1;
   }
 
-  HLTInfo(Form("Event 0x%016LX (%Lu) with %lu blocks", eventID, eventID, fNBlks));
+  HLTInfo(Form("Event 0x%016lX (%lu) with %lu blocks", eventID, eventID, fNBlks));
 
 #if EVE_DEBUG
   // Loop for Debug only

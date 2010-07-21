@@ -1,4 +1,5 @@
 //-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTHOMERBLOCKDESC_H
 #define ALIHLTHOMERBLOCKDESC_H
 

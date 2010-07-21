@@ -1,4 +1,5 @@
 //-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTHOMERSOURCEDESC_H
 #define ALIHLTHOMERSOURCEDESC_H
 
