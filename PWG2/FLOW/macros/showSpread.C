@@ -452,17 +452,13 @@ void LoadLibrariesSS(const libModes mode) {
     // Constants  
     gROOT->LoadMacro("AliFlowCommon/AliFlowCommonConstants.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowLYZConstants.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowCumuConstants.cxx+");
-    
+        
     // Flow event
     gROOT->LoadMacro("AliFlowCommon/AliFlowVector.cxx+"); 
-    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowEvent.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimple.cxx+");
-    
-    // Cuts
+    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");    
     gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimpleCuts.cxx+");    
-    
+    gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimple.cxx+");
+        
     // Output histograms
     gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHist.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHistResults.cxx+");
