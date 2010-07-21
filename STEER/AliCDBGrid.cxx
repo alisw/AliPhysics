@@ -1043,7 +1043,7 @@ Int_t AliCDBGrid::GetLatestVersion(const char* path, Int_t run){
 	}
 
 	delete res;
-
+	return -1;
 
 }
 

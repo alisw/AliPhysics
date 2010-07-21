@@ -202,7 +202,9 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fOrbitNumber(hdr.fOrbitNumber),
   fPeriodNumber(hdr.fPeriodNumber),
   fBunchCrossNumber(hdr.fBunchCrossNumber),
-  fTriggerCluster(hdr.fTriggerCluster)
+  fTriggerCluster(hdr.fTriggerCluster), 
+  fDiamondZ(hdr.fDiamondZ), 
+  fDiamondSig2Z(hdr.fDiamondSig2Z)
 
 {
   // Copy constructor.
