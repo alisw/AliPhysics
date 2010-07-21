@@ -23,21 +23,23 @@ CLIBCXXOPTS   =
 CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
+CXXWARN	      = -Wall -Wno-long-long -W -Weffc++ -Wshadow -Woverloaded-virtual -ansi 
+
 # Compiler flags
 ifeq ($(CCMAJORV),2)
-CXXFLAGS       = $(OPT) -W -Wall -fPIC -pipe
-CXXFLAGSNO     = $(NOOPT) -W -Wall -fPIC -pipe
+CXXFLAGS       = $(OPT) -fPIC -pipe
+CXXFLAGSNO     = $(NOOPT) -fPIC -pipe
 else
 ifeq ($(CCMAJORV),3)
-CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux
-CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
+CXXFLAGS       = $(OPT)   -fPIC -pipe -fmessage-length=0 -Dlinux
+CXXFLAGSNO     = $(NOOPT) -fPIC -pipe -fmessage-length=0 
 else
 ifeq ($(CCMAJORV),4)
-CXXFLAGS       = $(OPT) -W -Wall -Weffc++ -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux
-CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
+CXXFLAGS       = $(OPT)   -fPIC -pipe -fmessage-length=0 -Dlinux
+CXXFLAGSNO     = $(NOOPT) -fPIC -pipe -fmessage-length=0
 else
-CXXFLAGS       = $(OPT) -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi -Dlinux
-CXXFLAGSNO     = $(NOOPT) -W -Wall -Weffc++ -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi
+CXXFLAGS       = $(OPT)   -fPIC -pipe -fmessage-length=0 -Dlinux
+CXXFLAGSNO     = $(NOOPT) -fPIC -pipe -fmessage-length=0 
 endif
 endif
 endif
