@@ -33,6 +33,7 @@
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpExMap.h"
+#include "AliMpExMapIterator.h"
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
@@ -81,6 +82,8 @@ AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder* cl
     fPads[0] = new AliMpExMap;
     fPads[1] = new AliMpExMap;
     
+    fPadsIterator[0] = fPads[0]->CreateIterator();
+    fPadsIterator[1] = fPads[1]->CreateIterator();
 }
 
 //_____________________________________________________________________________
@@ -90,6 +93,8 @@ AliMUONSimpleClusterServer::~AliMUONSimpleClusterServer()
   delete fClusterFinder;
   delete fPads[0];
   delete fPads[1];
+  delete fPadsIterator[0];
+  delete fPadsIterator[1];
   delete fBypass;
 }
 
@@ -316,9 +321,16 @@ AliMUONSimpleClusterServer::UseDigits(TIter& next, AliMUONVDigitStore* digitStor
   
   fDigitStore = digitStore;
   
-  fPads[0]->Clear();
-  fPads[1]->Clear();
-  
+  // Clear pads arrays in the maps
+  for ( Int_t i=0; i<2; i++ ) {
+    fPadsIterator[i]->Reset();
+    Int_t key; TObject* obj;
+    while ( ( obj = fPadsIterator[i]->Next(key) ) ) {
+      //cout << "clearing array for detElemId " << key <<  "  ";
+      obj->Clear();
+    }  
+  }   
+
   AliMUONVDigit* d;
   while ( ( d = static_cast<AliMUONVDigit*>(next()) ) )
   {

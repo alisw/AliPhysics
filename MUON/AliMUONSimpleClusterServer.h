@@ -23,6 +23,7 @@ class AliMUONVClusterFinder;
 class AliMUONCluster;
 class AliMpVSegmentation;
 class AliMpExMap;
+class AliMpExMapIterator;
 class TClonesArray;
 
 class AliMUONSimpleClusterServer : public AliMUONVClusterServer
@@ -64,6 +65,7 @@ private:
   AliMUONVClusterFinder* fClusterFinder; //!< the cluster finder (owner)
   const AliMUONGeometryTransformer& fkTransformer; //!< the geometry transformer (not owner)
   AliMpExMap* fPads[2]; ///< map of TClonesArray of AliMUONPads
+  AliMpExMapIterator* fPadsIterator[2]; ///< iterator for the map of TClonesArray of AliMUONPads
   AliMUONVTriggerTrackStore* fTriggerTrackStore; ///< trigger track store (if bypassing of St45 was requested) (not owner)
   AliMUONTriggerTrackToTrackerClusters* fBypass; ///< to convert trigger track into tracker clusters (owner)
   
