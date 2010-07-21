@@ -665,7 +665,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		  ypad = vol2;
 		}
 
-	      AliDebug(2,Form("ZPosition = %f Edeposition = %d",zPos,edep));
+	      AliDebug(2,Form("ZPosition = %f Edeposition = %f",zPos,edep));
 
 	      if (vol7 < 24)
 		{
