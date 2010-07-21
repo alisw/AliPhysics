@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -266,7 +266,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	memcpy(outputPtr+offset, pHeader, sizeof(AliRawDataHeader));
 	if (readSize>sizeof(AliRawDataHeader)) {
 	  if (!pRawReader->ReadNext(outputPtr+offset+sizeof(AliRawDataHeader), readSize-sizeof(AliRawDataHeader))) {
-	    AliError(Form("error reading %d bytes from RawReader %p", readSize-sizeof(AliRawDataHeader), pRawReader));
+	    AliError(Form("error reading %ld bytes from RawReader %p", readSize-sizeof(AliRawDataHeader), pRawReader));
 	    iResult=-ENODATA;
 	    break;
 	  }
