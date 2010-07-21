@@ -13,6 +13,7 @@
 class TEvePointSetArray;
 class TEvePointSet;
 class TH1F;
+class TClonesArray;
 
 class AliHLTEveTRD : public AliHLTEveBase {
 
@@ -53,6 +54,7 @@ private:
   TEvePointSet * fEveClusters;         //clusters pointset
   TEvePointSetArray * fEveColClusters; //Color coded clusters pointset
   const Int_t fNColorBins;    //Number of colorbins for the colored clusters
+  TClonesArray* fClusterArray;
 
   ClassDef(AliHLTEveTRD, 0);
 };

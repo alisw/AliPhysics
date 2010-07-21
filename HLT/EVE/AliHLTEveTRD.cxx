@@ -28,7 +28,7 @@
 #include "TColor.h"
 #include "TMath.h"
 #include "TH1F.h"
-#include "AliHLTTRDCluster.h"
+#include "AliHLTTRDUtils.h"
 #include "AliTRDcluster.h"
 
 ClassImp(AliHLTEveTRD)
@@ -37,9 +37,11 @@ AliHLTEveTRD::AliHLTEveTRD() :
   AliHLTEveBase(), 
   fEveClusters(NULL),
   fEveColClusters(NULL),
-  fNColorBins(15)
+  fNColorBins(15),
+  fClusterArray(NULL)
 {
   // Constructor.
+  fClusterArray = new TClonesArray("AliTRDcluster");
 }
 
 AliHLTEveTRD::~AliHLTEveTRD()
@@ -52,6 +54,10 @@ AliHLTEveTRD::~AliHLTEveTRD()
   if(fEveClusters)
     delete fEveClusters;
   fEveClusters = NULL;
+
+  fClusterArray->Delete();
+  delete fClusterArray;
+  fClusterArray = NULL;
 }
 
 
@@ -183,32 +189,19 @@ Int_t AliHLTEveTRD::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSetA
   
   Byte_t* ptrData = reinterpret_cast<Byte_t*>(block->GetData());
   UInt_t ptrSize = block->GetSize();
+  Int_t unused;
 
-  for (UInt_t size = 0; size+sizeof(AliHLTTRDCluster) <= ptrSize; size+=sizeof(AliHLTTRDCluster) ) {
-    AliHLTTRDCluster *cluster = reinterpret_cast<AliHLTTRDCluster*>(&(ptrData[size]));
-   
-    AliTRDcluster *trdCluster = new AliTRDcluster;
-    cluster->ExportTRDCluster( trdCluster );
-   
+  AliHLTTRDUtils::ReadClusters(fClusterArray, ptrData, ptrSize, &unused);
+
+  for(int num=fClusterArray->GetEntriesFast(); num--;){
+    AliTRDcluster* trdCluster = (AliTRDcluster*)fClusterArray->At(num);
     contCol->Fill(cos*trdCluster->GetX() - sin*trdCluster->GetY(), 
-		   sin*trdCluster->GetX() + cos*trdCluster->GetY(), 
-		   trdCluster->GetZ(),
-		   trdCluster->GetQ() );    
-    
-    //cont->SetNextPoint(cos*trdCluster->GetX() - sin*trdCluster->GetY(), 
-    //	       sin*trdCluster->GetX() + cos*trdCluster->GetY(), trdCluster->GetZ());
+		  sin*trdCluster->GetX() + cos*trdCluster->GetY(), 
+		  trdCluster->GetZ(),
+		  trdCluster->GetQ() );  
   }
   
   return iResult;
-
-
-
-
-
- 
-  return 0;  
-
-
 }
 
 
