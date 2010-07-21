@@ -29,6 +29,7 @@ class TObjArray;
 class AliDCSSensorArray;
 class AliGRPObject;
 class AliSplineFit;
+class AliLHCClockPhase;
 
 class AliGRPPreprocessor: public AliPreprocessor {
  public:
@@ -105,6 +106,8 @@ class AliGRPPreprocessor: public AliPreprocessor {
 
    Double_t CalculateMean(TObjArray* lhcObjArray);
    Float_t ProcessEnergy(TObjArray* array, Double_t timeStart);
+   AliLHCClockPhase* ProcessLHCClockPhase(TObjArray *beam1phase,TObjArray *beam2phase,
+					  Double_t timeStart, Double_t timeEnd);
 
  private:
  

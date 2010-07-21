@@ -173,10 +173,11 @@
 #pragma link C++ class AliLHCDipValT<Char_t>+;
 #pragma link C++ class AliLHCData+;
 
+#pragma link C++ class AliLHCClockPhase+;
+
 #pragma link C++ typedef AliLHCDipValD;
 #pragma link C++ typedef AliLHCDipValI;
 #pragma link C++ typedef AliLHCDipValF;
 #pragma link C++ typedef AliLHCDipValC;
-
 
 #endif

@@ -64,6 +64,7 @@ class AliShuttleInterface;
 #include <AliCDBId.h>
 #include <AliTriggerConfiguration.h>
 #include <AliCTPTimeParams.h>
+#include <AliLHCClockPhase.h>
 
 const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fits required
 
@@ -2788,4 +2789,69 @@ Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* const array, Double_t timeS
 	}
 
 	return energy;
+}
+//------------------------------------------------------------------------------------------------------
+AliLHCClockPhase* AliGRPPreprocessor::ProcessLHCClockPhase(TObjArray *beam1phase,TObjArray *beam2phase, Double_t timeStart, Double_t timeEnd)
+{
+  //
+  // Method to process LHC-Clock Phase data
+  // Only the values between DAQ_time_start and DAQ_time_end are kept
+  //
+  AliLHCClockPhase *phaseObj = new AliLHCClockPhase;
+
+  Bool_t foundBeam1Phase = kFALSE, foundBeam2Phase = kFALSE;
+
+  Int_t nCounts = beam1phase->GetEntries();
+  AliDebug(2,Form("Beam1 phase measurements = %d\n",nCounts));
+  if (nCounts ==0){
+    AliWarning("No beam1 LHC clock phase values found!");
+    delete phaseObj;
+    return NULL;
+  }
+  else{
+    for (Int_t i = 0; i < nCounts; i++){
+      AliDCSArray *dcs = (AliDCSArray*)beam1phase->At(i);
+      if (dcs){
+	if (dcs->GetTimeStamp()>=timeStart && dcs->GetTimeStamp()<=timeEnd) {
+	  foundBeam1Phase = kTRUE;
+	  AliInfo(Form("Beam1 Clock Phase = %f at timestamp = %u",
+		       (Float_t)dcs->GetDouble(0),dcs->GetTimeStamp()));  
+	  phaseObj->AddPhaseB1DP((UInt_t)dcs->GetTimeStamp(),(Float_t)dcs->GetDouble(0));
+	}
+      }
+    }
+    if (!foundBeam1Phase){
+      AliError("No beam1 LHC clock phase values found within the run!");
+      delete phaseObj;
+      return NULL;
+    }
+  }
+
+  nCounts = beam2phase->GetEntries();
+  AliDebug(2,Form("Beam2 phase measurements = %d\n",nCounts));
+  if (nCounts ==0){
+    AliWarning("No beam2 LHC clock phase values found!");
+    delete phaseObj;
+    return NULL;
+  }
+  else{
+    for (Int_t i = 0; i < nCounts; i++){
+      AliDCSArray *dcs = (AliDCSArray*)beam2phase->At(i);
+      if (dcs){
+	if (dcs->GetTimeStamp()>=timeStart && dcs->GetTimeStamp()<=timeEnd) {
+	  foundBeam2Phase = kTRUE;
+	  AliInfo(Form("Beam2 Clock Phase = %f at timestamp = %u",
+		       (Float_t)dcs->GetDouble(0),dcs->GetTimeStamp()));  
+	  phaseObj->AddPhaseB2DP((UInt_t)dcs->GetTimeStamp(),(Float_t)dcs->GetDouble(0));
+	}
+      }
+    }
+    if (!foundBeam2Phase){
+      AliError("No beam2 LHC clock phase values found within the run!");
+      delete phaseObj;
+      return NULL;
+    }
+  }
+
+  return phaseObj;
 }
