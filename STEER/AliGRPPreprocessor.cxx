@@ -75,7 +75,7 @@ ClassImp(AliGRPPreprocessor)
   const Int_t AliGRPPreprocessor::fgknDAQLbPar = 6; // num parameters in the logbook used to fill the GRP object
   const Int_t AliGRPPreprocessor::fgknDCSDP = 48;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
-  const Int_t AliGRPPreprocessor::fgknLHCDP = 4;   // number of dcs dps from LHC data
+  const Int_t AliGRPPreprocessor::fgknLHCDP = 6;   // number of dcs dps from LHC data
   const Int_t AliGRPPreprocessor::fgkDCSDPHallTopShift = 4;   // shift from the top to get tp the Hall Probes names in the list of DCS DPs
   const Int_t AliGRPPreprocessor::fgkDCSDPNonWorking = 5; // number of non working DCS DPs
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
@@ -180,7 +180,9 @@ ClassImp(AliGRPPreprocessor)
 	  "LHC_Beam_Energy",
 	  "LHC_MachineMode",
 	  "LHC_BeamMode",
-          "LHC_Beams_Particle_Type"
+          "LHC_Beams_Particle_Type",
+	  "BPTX_Phase_Shift_B1",
+	  "BPTX_Phase_Shift_B2"
   };
 
   const char* kppError[] = {
@@ -194,7 +196,8 @@ ClassImp(AliGRPPreprocessor)
                    "(CTP timing ERROR)",
 		   "(SPD Mean Vertex ERROR)",
 		   "(DCS FXS Error for LHC Data)",
-		   "(LHC Data Error)"
+		   "(LHC Data Error)",
+		   "(LHC Clock Phase Error (from LHC Data))"
   };
 
 //_______________________________________________________________
@@ -530,10 +533,15 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		} else  if (iLHCData == 1) {
 			Log(Form("LHC Data, problems with DCS FXS!"));
 			error |= 256;
+		} else  if (iLHCData == 2) {
+			Log(Form("LHC Data, problems with DAQ_time_start/DAQ_time_end!"));
+			error |= 512;
 		} else if (iLHCData ==3){
-			Log(Form("Problems in storing LHC Data - but not going into Error"));
+			Log(Form("Problems in storing LHC Phase - going into Error"));
+			error |= 1024;
 		} else if (iLHCData ==4){
-			Log(Form("Problems with LHC Data to be put in /GRP/GRP/LHCData - but not going into Error"));
+			Log(Form("Problems with LHC Phase - going into Error"));
+			error |= 1024;
 		} else{
 			Log(Form("LHC Data problems"));
 			error |= 512;
@@ -574,7 +582,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log("GRP Preprocessor Success");
 		return 0;
 	} else {
-		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s%s%s",
+		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s%s%s%s",
 			  kppError[(error&1)?1:0],
 			  kppError[(error&2)?2:0],
 			  kppError[(error&4)?3:0],
@@ -584,7 +592,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 			  kppError[(error&64)?7:0],
 			  kppError[(error&128)?8:0],
 			  kppError[(error&256)?9:0],
-			  kppError[(error&512)?10:0]
+			  kppError[(error&512)?10:0],
+			  kppError[(error&1024)?11:0]
 			  ));
 		return error;
 	}
@@ -877,9 +886,31 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		  Bool_t result = kTRUE;
 		  result = Store("GRP", "LHCData", dt, &md); 
 		  delete dt;
-		  if (result) return 0;
-		  else return 3;
+		  if (!result){
+			Log(Form("Problems in storing LHC Data - but not going into Error"));
+		  }
 		}
+
+		// processing LHC Phase
+
+		TObjArray *beam1phase = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[4]);
+		TObjArray *beam2phase = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[5]);
+		if (beam1phase == 0x0 || beam2phase == 0x0){
+			Log(Form("Problems in retrieving LHC Clock data from LHC file"));
+			return 4;
+		}			
+		AliLHCClockPhase *phaseObj = ProcessLHCClockPhase(beam1phase,beam2phase,timeStart,timeEnd);
+		if (phaseObj){
+			AliInfo(Form("LHC Phase found"));
+			AliCDBMetaData mdPhase;
+			mdPhase.SetResponsible("Cvetan Cheshkov");
+			mdPhase.SetComment("LHC Clock Phase");
+			Bool_t result = kTRUE;
+			result = Store("Calib", "LHCClockPhase", phaseObj, &mdPhase); 
+			delete phaseObj;
+			if (!result) return 3;
+		}
+		else return 4;
 	}
 	
 	else {
@@ -2814,7 +2845,7 @@ AliLHCClockPhase* AliGRPPreprocessor::ProcessLHCClockPhase(TObjArray *beam1phase
       if (dcs){
 	if (dcs->GetTimeStamp()>=timeStart && dcs->GetTimeStamp()<=timeEnd) {
 	  foundBeam1Phase = kTRUE;
-	  AliInfo(Form("Beam1 Clock Phase = %f at timestamp = %u",
+	  AliInfo(Form("Beam1 Clock Phase = %f at timestamp = %f",
 		       (Float_t)dcs->GetDouble(0),dcs->GetTimeStamp()));  
 	  phaseObj->AddPhaseB1DP((UInt_t)dcs->GetTimeStamp(),(Float_t)dcs->GetDouble(0));
 	}
@@ -2840,7 +2871,7 @@ AliLHCClockPhase* AliGRPPreprocessor::ProcessLHCClockPhase(TObjArray *beam1phase
       if (dcs){
 	if (dcs->GetTimeStamp()>=timeStart && dcs->GetTimeStamp()<=timeEnd) {
 	  foundBeam2Phase = kTRUE;
-	  AliInfo(Form("Beam2 Clock Phase = %f at timestamp = %u",
+	  AliInfo(Form("Beam2 Clock Phase = %f at timestamp = %f",
 		       (Float_t)dcs->GetDouble(0),dcs->GetTimeStamp()));  
 	  phaseObj->AddPhaseB2DP((UInt_t)dcs->GetTimeStamp(),(Float_t)dcs->GetDouble(0));
 	}
