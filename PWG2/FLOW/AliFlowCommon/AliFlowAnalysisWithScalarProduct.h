@@ -43,6 +43,8 @@ class AliFlowAnalysisWithScalarProduct {
    void    WriteHistograms(TString outputFileName);         //writes histograms locally
    void    WriteHistograms(TDirectoryFile *outputFileName); //writes histograms locally
     
+   virtual void StoreFlags(); //store all booleans needed in Finish()
+   virtual void AccessFlags(); //access all booleans needed in Finish()
    Double_t CalculateStatisticalError(Int_t bin, 
 				      Double_t aStatErrorQaQb,
 				      TProfile* aHistProUQ, 
@@ -61,16 +63,24 @@ class AliFlowAnalysisWithScalarProduct {
    TList*  GetWeightsList() const                     {return this->fWeightsList;}  
    void    SetUsePhiWeights(Bool_t const aPhiW)       {this->fUsePhiWeights = aPhiW;}
    Bool_t  GetUsePhiWeights() const                   {return this->fUsePhiWeights;}
+   
+   // correction for non-uniforma acceptance:
+   void SetApplyCorrectionForNUA(Bool_t const acfNUA) {this->fApplyCorrectionForNUA = acfNUA;}
+   Bool_t GetApplyCorrectionForNUA() const {return this->fApplyCorrectionForNUA;}        
 
    // Output 
    TList*    GetHistList() const    { return this->fHistList ; } // Gets output histogram list
    //histogram getters
+   TProfile* GetHistProFlags() const    {return this->fHistProFlags;};   
    TProfile* GetHistProUQetaRP() const  {return this->fHistProUQetaRP;} 
    TProfile* GetHistProUQetaPOI() const {return this->fHistProUQetaPOI;}
    TProfile* GetHistProUQPtRP() const   {return this->fHistProUQPtRP;} 
    TProfile* GetHistProUQPtPOI() const  {return this->fHistProUQPtPOI;}
    TProfile* GetHistProQaQb() const     {return this->fHistProQaQb;}
    TProfile* GetHistProQaQbNorm() const {return this->fHistProQaQbNorm;}
+   TProfile* GetHistProQaQbReImNorm() const {return this->fHistProQaQbReImNorm;} 
+   TProfile* GetHistProNonIsotropicTermsQ() const {return this->fHistProNonIsotropicTermsQ;} 
+   TProfile* GetHistProNonIsotropicTermsU(Int_t rp, Int_t pe, Int_t sc) const {return this->fHistProNonIsotropicTermsU[rp][pe][sc];} 
    TH1D*     GetHistSumOfLinearWeights() const    {return this->fHistSumOfLinearWeights;}
    TH1D*     GetHistSumOfQuadraticWeights() const {return this->fHistSumOfQuadraticWeights;}
 
@@ -96,7 +106,9 @@ class AliFlowAnalysisWithScalarProduct {
    TH2D* GetHistQbNormvsMb() const {return this->fHistQbNormvsMb;}
    TH2D* GetMavsMb() const         {return this->fHistMavsMb;}
 
-   //histogram setters
+   //histogram setters   
+   void SetHistProFlags(TProfile* const aHistProFlags) 
+     {this->fHistProFlags = aHistProFlags;};  
    void SetHistProUQetaRP(TProfile* const aHistProUQetaRP)   
      {this->fHistProUQetaRP = aHistProUQetaRP;}
    void SetHistProUQetaPOI(TProfile* const aHistProUQetaPOI) 
@@ -108,12 +120,17 @@ class AliFlowAnalysisWithScalarProduct {
    void SetHistProQaQb(TProfile* const aHistProQaQb)         
      {this->fHistProQaQb = aHistProQaQb;}
    void SetHistProQaQbNorm(TProfile* const aHistProQaQbNorm)         
-     {this->fHistProQaQbNorm = aHistProQaQbNorm;}
+     {this->fHistProQaQbNorm = aHistProQaQbNorm;}     
+   void SetHistProQaQbReImNorm(TProfile* const aHistProQaQbReImNorm)         
+     {this->fHistProQaQbReImNorm = aHistProQaQbReImNorm;} 
+   void SetHistProNonIsotropicTermsQ(TProfile* const aHistProNonIsotropicTermsQ)         
+     {this->fHistProNonIsotropicTermsQ = aHistProNonIsotropicTermsQ;}           
+   void SetHistProNonIsotropicTermsU(TProfile* const aHistProNonIsotropicTermsU, Int_t const rp, Int_t const pe, Int_t const sc)         
+     {this->fHistProNonIsotropicTermsU[rp][pe][sc] = aHistProNonIsotropicTermsU;}          
    void SetHistSumOfLinearWeights(TH1D* const aHistSumOfLinearWeights) 
      {this->fHistSumOfLinearWeights = aHistSumOfLinearWeights;}
    void SetHistSumOfQuadraticWeights(TH1D* const aHistSumOfQuadraticWeights) 
      {this->fHistSumOfQuadraticWeights = aHistSumOfQuadraticWeights;}
-
    void SetHistProUQQaQbPtRP(TProfile* const aHistProUQQaQbPtRP)     
      {this->fHistProUQQaQbPtRP = aHistProUQQaQbPtRP;}   
    void SetHistProUQQaQbEtaRP(TProfile* const aHistProUQQaQbEtaRP)   
@@ -171,12 +188,17 @@ class AliFlowAnalysisWithScalarProduct {
 
    TList*     fHistList;         //list to hold all output histograms  
 
+   TProfile*  fHistProFlags;     //profile to hold all boolean flags needed in Finish()
    TProfile*  fHistProUQetaRP;   //uQ(eta) for RP
    TProfile*  fHistProUQetaPOI;  //uQ(eta) for POI
    TProfile*  fHistProUQPtRP;    //uQ(pt) for RP
    TProfile*  fHistProUQPtPOI;   //uQ(pt) for POI
    TProfile*  fHistProQaQb;      //average of QaQb 
    TProfile*  fHistProQaQbNorm;  //average of QaQb/MaMb
+   Bool_t     fApplyCorrectionForNUA; //apply correction for non-uniform acceptance
+   TProfile*  fHistProQaQbReImNorm; //average of Im[Qa/Ma], Re[Qa/Ma], Im[Qb/Mb], Re[Qb/Mb] 
+   TProfile*  fHistProNonIsotropicTermsQ; //1st bin: sin, 2nd bin: cos 
+   TProfile*  fHistProNonIsotropicTermsU[2][2][2]; //[RP/POI][pt/eta][sin/cos]  
    TH1D*      fHistSumOfLinearWeights;     //holds sum of Ma*Mb
    TH1D*      fHistSumOfQuadraticWeights;  //holds sum of (Ma*Mb)^2
    
