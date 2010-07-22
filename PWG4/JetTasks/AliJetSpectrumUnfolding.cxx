@@ -23,6 +23,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THnSparse.h>
 #include <TDirectory.h>
 #include <TVirtualFitter.h>
 #include <TCanvas.h>
@@ -573,23 +574,6 @@ void AliJetSpectrumUnfolding::DrawComparison(const char* name, TH2* const genHis
 
 
 //____________________________________________________________________
-void AliJetSpectrumUnfolding::GetComparisonResults(Float_t* const gen, Int_t*  const genLimit, Float_t* const residuals, Float_t* const ratioAverage) const
-{
-  // Returns the chi2 between the Generated and the unfolded Reconstructed spectrum as well as between the Reconstructed and the folded unfolded
-  // These values are computed during DrawComparison, thus this function picks up the
-  // last calculation
-
-  if (gen)
-    *gen = fLastChi2MC;
-  if (genLimit)
-    *genLimit = fLastChi2MCLimit;
-  if (residuals)
-    *residuals = fLastChi2Residuals;
-  if (ratioAverage)
-    *ratioAverage = fRatioAverage;
-}
-
-//____________________________________________________________________
 void AliJetSpectrumUnfolding::ApplyBayesianMethod(Float_t regPar, Int_t nIterations, TH2* const initialConditions, Bool_t determineError)
 {
   //
@@ -955,7 +939,7 @@ Int_t AliJetSpectrumUnfolding::UnfoldWithBayesian(THnSparseF* const correlation,
 }
 
 //____________________________________________________________________
-Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF* const M, THnSparseF* const C, Int_t* const binTM, Int_t* const binTM1, Double_t nt)
+Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF* const M, THnSparseF* const C,const  Int_t* const binTM, const Int_t* const binTM1, Double_t nt)
 {
   //
   // helper function for the covariance matrix of the bayesian method
@@ -965,7 +949,7 @@ Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF* const M, THn
   Float_t term[9];
   Int_t tmpBin[4], tmpBin1[4];
   const Int_t nFilledBins = C->GetNbins();
-  if (nt==0)
+  if (!(nt>0&&nt<0))
     return 0;
     
   Float_t corrContent;
@@ -1053,7 +1037,7 @@ Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF* const M, THn
 }
 
 //____________________________________________________________________
-Double_t AliJetSpectrumUnfolding::BayesCov(THnSparseF* const M, THnSparseF* const correlation, Int_t* const binTM, Int_t* const bin1)
+Double_t AliJetSpectrumUnfolding::BayesCov(THnSparseF* const M, THnSparseF* const correlation,const Int_t* const binTM,const Int_t* const bin1)
 {
 
   //
@@ -1176,7 +1160,7 @@ TH2F* AliJetSpectrumUnfolding::CalculateRecSpectrum(TH2* const inputGen)
 }
 
 //__________________________________________________________________________________________________
-void AliJetSpectrumUnfolding::SetGenRecFromFunc(TF2* const inputGen)
+void AliJetSpectrumUnfolding::SetGenRecFromFunc(const TF2* const inputGen)
 {
   // uses the given function to fill the input Generated histogram and generates from that
   // the reconstructed histogram by applying the response histogram
