@@ -80,21 +80,21 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   }
   
   //PID 1
-  if (cutDefinition==0){
+  if (cutDefinition==1){
     AliDielectronPID *pid=new AliDielectronPID("pid1","pid1");
     pid->SetDefaults(1);
     die->GetTrackFilter().AddCuts(pid);
   }
 
   //PID 6
-  if (cutDefinition==1){
+  if (cutDefinition==2){
     AliDielectronPID *pid=new AliDielectronPID("pid6","pid6");
     pid->SetDefaults(6);
     die->GetTrackFilter().AddCuts(pid);
   }
   
   //PID 7
-  if (cutDefinition==2){
+  if (cutDefinition==3){
     AliDielectronPID *pid=new AliDielectronPID("pid7","pid7");
     pid->SetDefaults(7);
     die->GetTrackFilter().AddCuts(pid);
