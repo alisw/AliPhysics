@@ -13,14 +13,15 @@ class TH1;
 class TH2;
 class TH3;
 class TH1F;
+class TH2F;
 class TH3F;
 class TF1;
 class TF2;
 class TCollection;
 
 #include "TNamed.h"
-#include <TH2F.h>
 #include <THnSparse.h>
+
 
 class AliJetSpectrumUnfolding : public TNamed {
   public:
@@ -52,30 +53,29 @@ class AliJetSpectrumUnfolding : public TNamed {
     void SetCorrelation(THnSparseF* const hist){ if(fCorrelation)delete fCorrelation;
       fCorrelation  = hist; }
 
-    void SetGenRecFromFunc(TF2* inputGen);
+    void SetGenRecFromFunc(const TF2* const inputGen);
     TH2F* CalculateRecSpectrum(TH2* inputGen);
 
     static void NormalizeToBinWidth(TH2* const hist);
 
-    void GetComparisonResults(Float_t* const gen = 0, Int_t* const genLimit = 0, Float_t* const residuals = 0, Float_t* const ratioAverage = 0) const;
 
   protected:
     void SetupCurrentHists(Bool_t createBigBin);
 
-    static Double_t BayesCov(THnSparseF* const M, THnSparseF* const correlation, Int_t* const binTM, Int_t* const binTM1);
-    static Double_t BayesUncertaintyTerms(THnSparseF* const M, THnSparseF *const C, Int_t* const binTM, Int_t* const binTM1, Double_t nt);
+    static Double_t BayesCov(THnSparseF* const M, THnSparseF* const correlation,const  Int_t* const binTM,const Int_t* const binTM1);
+    static Double_t BayesUncertaintyTerms(THnSparseF* const M, THnSparseF *const C,const Int_t* const binTM,const Int_t* const binTM1, Double_t nt);
     static Int_t UnfoldWithBayesian(THnSparseF* const correlation, TH2* const measured, TH2* const initialConditions, TH2* const aResult, Float_t regPar, Int_t nIterations, Bool_t calculateErrors = kFALSE);
 
     static Float_t fgBayesianSmoothing;             //! smoothing parameter (0 = no smoothing)
     static Int_t   fgBayesianIterations;            //! number of iterations in Bayesian method
 
-    TH2F* fCurrentRec;
-    THnSparseF* fCurrentCorrelation;
+    TH2F* fCurrentRec;   // current rec
+    THnSparseF* fCurrentCorrelation; // current correlat
 
-    TH2F* fRecSpectrum;
-    TH2F* fGenSpectrum;
-    TH2F* fUnfSpectrum;
-    THnSparseF* fCorrelation;
+    TH2F* fRecSpectrum; // rec spectrum
+    TH2F* fGenSpectrum; // gen spectrum
+    TH2F* fUnfSpectrum; // Unfolded spectrum
+    THnSparseF* fCorrelation; // corealtion matrix
 
     Float_t fLastChi2MC;        //! last Chi2 between MC and unfolded ESD (calculated in DrawComparison)
     Int_t   fLastChi2MCLimit;   //! bin where the last chi2 breached a certain threshold
@@ -84,13 +84,13 @@ class AliJetSpectrumUnfolding : public TNamed {
 
  private:
 
-    static const Int_t fgkNBINSE;
-    static const Int_t fgkNBINSZ;
-    static const Int_t fgkNEVENTS;
-    static const Double_t fgkaxisLowerLimitE;
-    static const Double_t fgkaxisLowerLimitZ;
-    static const Double_t fgkaxisUpperLimitE;
-    static const Double_t fgkaxisUpperLimitZ;
+    static const Int_t fgkNBINSE; // bins energy
+    static const Int_t fgkNBINSZ; // bins Z
+    static const Int_t fgkNEVENTS; // bins events 
+    static const Double_t fgkaxisLowerLimitE; // lower limit e
+    static const Double_t fgkaxisLowerLimitZ; // lower limit Z
+    static const Double_t fgkaxisUpperLimitE; // upper limit E
+    static const Double_t fgkaxisUpperLimitZ; // upper limit Z
 
 
 
