@@ -414,8 +414,8 @@ Int_t AliMagWrapCheb::FindTPCSegment(const Double_t *rpz) const
     rid +=  rsegBeg;
     //
     // to make sure that due to the precision problems we did not pick the next Zbin    
-    if (!reCheck && (rpz[2] - fSegZSol[zid] < 3.e-5) && zid &&
-	!GetParamSol(fSegIDSol[rid])->IsInside(rpz)) {  // check the previous Z bin
+    if (!reCheck && (rpz[2] - fSegZTPC[zid] < 3.e-5) && zid &&
+	!GetParamTPCInt(fSegIDTPC[rid])->IsInside(rpz)) {  // check the previous Z bin
       zid--;
       reCheck = kTRUE;
       continue;
@@ -446,8 +446,8 @@ Int_t AliMagWrapCheb::FindTPCRatSegment(const Double_t *rpz) const
     rid +=  rsegBeg;
     //
     // to make sure that due to the precision problems we did not pick the next Zbin    
-    if (!reCheck && (rpz[2] - fSegZSol[zid] < 3.e-5) && zid &&
-	!GetParamSol(fSegIDSol[rid])->IsInside(rpz)) {  // check the previous Z bin
+    if (!reCheck && (rpz[2] - fSegZTPCRat[zid] < 3.e-5) && zid &&
+	!GetParamTPCRatInt(fSegIDTPCRat[rid])->IsInside(rpz)) {  // check the previous Z bin
       zid--;
       reCheck = kTRUE;
       continue;
@@ -465,10 +465,6 @@ void AliMagWrapCheb::GetTPCInt(const Double_t *xyz, Double_t *b) const
   // If point is outside of the parameterized region get it at closeset valid point
   static Double_t rphiz[3];
   //
-  if (!xyz || !b) {
-    AliError(Form("Wrong pointers: xyz:%p b:%p",xyz,b));
-    return;
-  }
   // TPCInt region
   // convert coordinates to cyl system
   CartToCyl(xyz,rphiz);
@@ -491,10 +487,6 @@ void AliMagWrapCheb::GetTPCRatInt(const Double_t *xyz, Double_t *b) const
   // If point is outside of the parameterized region get it at closeset valid point
   static Double_t rphiz[3];
   //
-  if (!xyz || !b) {
-    AliError(Form("Wrong pointers: xyz:%p b:%p",xyz,b));
-    return;
-  }
   // TPCRatInt region
   // convert coordinates to cyl system
   CartToCyl(xyz,rphiz);
