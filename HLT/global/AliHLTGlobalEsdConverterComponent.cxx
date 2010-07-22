@@ -424,7 +424,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     fBenchmark.AddInput(pBlock->fSize);
     dEdxTPC = reinterpret_cast<AliHLTFloat32_t*>( pBlock->fPtr );
-    ndEdxTPC = pBlock->fSize / sizeof(AliHLTFloat32_t);
+    ndEdxTPC = pBlock->fSize / (3*sizeof(AliHLTFloat32_t));
     break;
   }
 
@@ -492,11 +492,12 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCrefit);
 	iotrack.SetTPCPoints(points);
 	if( element->TrackID()<ndEdxTPC ){
-	  iotrack.SetTPCsignal( dEdxTPC[element->TrackID()], 0, 0 ); 
+	  AliHLTFloat32_t *val = &(dEdxTPC[3*element->TrackID()]);
+	  iotrack.SetTPCsignal( val[0], val[1], val[2] ); 
 	  //AliTPCseed s;
 	  //s.Set( element->GetX(), element->GetAlpha(),
 	  //element->GetParameter(), element->GetCovariance() );
-	  //s.SetdEdx( dEdxTPC[element->TrackID()] );
+	  //s.SetdEdx( val[0] );
 	  //s.CookPID();
 	  //iotrack.SetTPCpid(s.TPCrPIDs() );
 	} else {

@@ -463,15 +463,19 @@ int AliHLTTPCdEdxComponent::DoEvent
 
       // Cook dEdx
 
-      if( outSize+sizeof( AliHLTFloat32_t ) > maxBufferSize ){
+      if( outSize+3*sizeof( AliHLTFloat32_t ) > maxBufferSize ){
         HLTWarning( "Output buffer size %d exceed", maxBufferSize );
         iResult = -ENOSPC;
         break;
       }
-     *outPtr = tTPC.CookdEdx( 0.02, 0.6 );      
-      outPtr++;
-      outSize+=sizeof( AliHLTFloat32_t );    
-      outBlock.fSize+=sizeof( AliHLTFloat32_t );  
+
+      tTPC.CookdEdx( 0.02, 0.6 );      
+      outPtr[0] = tTPC.GetdEdx();
+      outPtr[1] = tTPC.GetSDEDX(0);
+      outPtr[2] = tTPC.GetNCDEDX(0);
+      outPtr+=3;
+      outSize+=3*sizeof( AliHLTFloat32_t );    
+      outBlock.fSize+=3*sizeof( AliHLTFloat32_t );  
 
       unsigned int step = sizeof( AliHLTExternalTrackParam ) + currTrack->fNPoints * sizeof( unsigned int );
       currTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currTrack) + step );  
