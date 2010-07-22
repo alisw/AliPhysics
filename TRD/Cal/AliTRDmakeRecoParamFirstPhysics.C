@@ -26,7 +26,7 @@ TObjArray* CreateRecoParamObject()
   TObjArray *recos = new TObjArray(5);
 
   AliTRDrecoParam *rec = 0x0;
-
+  Double_t cov[]={1., 1., 0., 0., 0.};
   recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
   rec->SetEventSpecie(AliRecoParam::kLowMult);
   rec->SetNameTitle("Default", "TRD Default Reco Param");
