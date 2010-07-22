@@ -355,8 +355,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        fESDTZEROfriend->SetT0timeCorr(noncalibtime) ;     
        for (Int_t ipmt=0; ipmt<12; ipmt++){
-	 if(time[ipmt] > 1 
-	    && (timeLED[ipmt] - timeCFD[ipmt])<540 )
+	 if(time[ipmt] > 1 )
 	   {
 	     if(time[ipmt]<besttimeC){
 	       besttimeC=time[ipmt]; //timeC
@@ -366,8 +365,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        for ( Int_t ipmt=12; ipmt<24; ipmt++)
 	 {
-	   if(time[ipmt] > 1 
-	      && (timeLED[ipmt] - timeCFD[ipmt])<540 )
+	   if(time[ipmt] > 1 )
 	     {
 	       if(time[ipmt]<besttimeA) {
 		 besttimeA=time[ipmt]; //timeA
