@@ -4,24 +4,23 @@
 void SETUP()
 {
   // Load some ROOT libraries
+  CheckLoadLibrary("libCore");
   CheckLoadLibrary("libTree");
   CheckLoadLibrary("libGeom");
   CheckLoadLibrary("libVMC");
   CheckLoadLibrary("libMinuit");
-  CheckLoadLibrary("libRooFit");
   
   // Load the AliROOT library
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libSTEERBase");
   CheckLoadLibrary("libESD");
-  CheckLoadLibrary("libCDB");
   CheckLoadLibrary("libAOD");
-  CheckLoadLibrary("libCORRFW");
   CheckLoadLibrary("libANALYSISalice");
+  CheckLoadLibrary("libCORRFW");
   CheckLoadLibrary("libPWG3dielectron");
   
   // Set the include paths
-  gROOT->ProcessLine(".include PWG3dielectron");
+  gROOT->ProcessLine(".include PWG3dielectron/dielectron");
     
   // Set our location, so that other packages can find us
   gSystem->Setenv("PWG3dielectron_INCLUDE", "PWG3dielectron");
