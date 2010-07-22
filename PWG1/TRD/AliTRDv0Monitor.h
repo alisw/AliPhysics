@@ -46,25 +46,29 @@ public:
   Bool_t  GetRefFigure(Int_t ifig); 
   void    UserCreateOutputObjects();
   void    UserExec(Option_t *option);
+  void    MakeSummary();
  
-  TList *fOutput;         //! Container for output histos
-  
-  TH1I *hCutReductions[AliPID::kSPECIES];
-  TH1I *hQualityReductions;
-  TH2F *hV0Chi2ndf[AliTRDv0Info::kNDecays][kNCutSteps];
-  TH2F *hInvMass[AliTRDv0Info::kNDecays];
-  TH2F *hPsiPair[AliTRDv0Info::kNDecays][kNCutSteps];
-  TH2F *hPointAngle[AliTRDv0Info::kNDecays][kNCutSteps];
-  TH2F *hDCA[AliTRDv0Info::kNDecays][kNCutSteps];
-  TH2F *hOpenAngle[AliTRDv0Info::kNDecays][kNCutSteps];
-  TH2F *hDetPID[kNDets][AliPID::kSPECIES];
-  TH2F *hComPID[AliPID::kSPECIES];
-  TH2F *hRadius[AliTRDv0Info::kNDecays][kNCutSteps];
-  TH2F *hTPCdEdx[AliPID::kSPECIES][kNCutSteps];
  
 
 
 protected:
+
+ TList *fOutput;         //! Container for output histos
+  
+  TH1I *fhCutReductions[AliPID::kSPECIES];//histo for sample reductions by each ID cut
+  TH1I *fhQualityReductions;//histo for sample reductions by each quality cut
+  TH2F *fhV0Chi2ndf[AliTRDv0Info::kNDecays][kNCutSteps];//Chi2/ndf distributions before cuts, after inv. mass cut, after all cuts (same for all arrays below!!!)
+  TH2F *fhInvMass[AliTRDv0Info::kNDecays];//invariant mass distributions
+  TH2F *fhPsiPair[AliTRDv0Info::kNDecays][kNCutSteps];//Psi_pair angle distributions
+  TH2F *fhPointAngle[AliTRDv0Info::kNDecays][kNCutSteps];//pointing angle
+  TH2F *fhDCA[AliTRDv0Info::kNDecays][kNCutSteps];//Distance of closest approach between daughters
+  TH2F *fhOpenAngle[AliTRDv0Info::kNDecays][kNCutSteps];//opening angle between daughters
+  TH2F *fhDetPID[kNDets][AliPID::kSPECIES];//likelihood outputs from different detectors
+  TH2F *fhComPID[AliPID::kSPECIES];//combined PID from TPC and TOF
+  TH2F *fhRadius[AliTRDv0Info::kNDecays][kNCutSteps];//radial distance of secondary vertex to primary vertex
+  TH2F *fhTPCdEdx[AliPID::kSPECIES][kNCutSteps];//energy deposition in TPC
+ 
+
  
   TObjArray     *fV0s;                  //! v0 array
   TTree         *fData;                 //! dEdx-P data
