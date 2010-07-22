@@ -327,7 +327,11 @@ void AliAODPidHF::BayesianProbabilityITS(AliAODTrack *track,Double_t *prob) cons
  Double_t itspid[AliPID::kSPECIES];
  pid.MakeITSPID(track,itspid);
  for(Int_t ind=0;ind<AliPID::kSPECIES;ind++){
-  prob[ind]=itspid[ind]*fPriors[ind]/(itspid[0]*fPriors[0]+itspid[1]*fPriors[1]+itspid[2]*fPriors[2]+itspid[3]*fPriors[3]+itspid[4]*fPriors[4]);
+  if(fTOF || fTPC || fTRD){
+   prob[ind]=itspid[ind];
+  }else{
+   prob[ind]=itspid[ind]*fPriors[ind]/(itspid[0]*fPriors[0]+itspid[1]*fPriors[1]+itspid[2]*fPriors[2]+itspid[3]*fPriors[3]+itspid[4]*fPriors[4]);
+  }
  }
  return;
 
@@ -340,12 +344,12 @@ void AliAODPidHF::BayesianProbabilityTPC(AliAODTrack *track,Double_t *prob) cons
  Double_t tpcpid[AliPID::kSPECIES];
  pid.MakeTPCPID(track,tpcpid);
  for(Int_t ind=0;ind<AliPID::kSPECIES;ind++){
-  if(tpcpid[ind]>0.) {
-   prob[ind]=tpcpid[ind]*fPriors[ind]/(tpcpid[0]*fPriors[0]+tpcpid[1]*fPriors[1]+tpcpid[2]*fPriors[2]+tpcpid[3]*fPriors[3]+tpcpid[4]*fPriors[4]);
+  if(fTOF || fITS || fTRD){
+   prob[ind]=tpcpid[ind];
   }else{
-   prob[ind]=0.;
-  }
+   prob[ind]=tpcpid[ind]*fPriors[ind]/(tpcpid[0]*fPriors[0]+tpcpid[1]*fPriors[1]+tpcpid[2]*fPriors[2]+tpcpid[3]*fPriors[3]+tpcpid[4]*fPriors[4]);
  }
+}
  return;
 
 }
@@ -357,8 +361,12 @@ void AliAODPidHF::BayesianProbabilityTOF(AliAODTrack *track,Double_t *prob) cons
  Double_t tofpid[AliPID::kSPECIES];
  pid.MakeTOFPID(track,tofpid);
  for(Int_t ind=0;ind<AliPID::kSPECIES;ind++){
+  if(fTPC || fITS || fTRD){
+   prob[ind]=tofpid[ind];
+  }else{
   prob[ind]=tofpid[ind]*fPriors[ind]/(tofpid[0]*fPriors[0]+tofpid[1]*fPriors[1]+tofpid[2]*fPriors[2]+tofpid[3]*fPriors[3]+tofpid[4]*fPriors[4]);
  }
+}
  return;
 
 }
@@ -370,12 +378,12 @@ void AliAODPidHF::BayesianProbabilityTRD(AliAODTrack *track,Double_t *prob) cons
  Double_t trdpid[AliPID::kSPECIES];
  pid.MakeTRDPID(track,trdpid);
  for(Int_t ind=0;ind<AliPID::kSPECIES;ind++){
-  if(trdpid[ind]>0.) {
-   prob[ind]=trdpid[ind]*fPriors[ind]/(trdpid[0]*fPriors[0]+trdpid[1]*fPriors[1]+trdpid[2]*fPriors[2]+trdpid[3]*fPriors[3]+trdpid[4]*fPriors[4]);
+  if(fTPC || fITS || fTOF){
+   prob[ind]=trdpid[ind];
   }else{
-   prob[ind]=0.;
-  }
+   prob[ind]=trdpid[ind]*fPriors[ind]/(trdpid[0]*fPriors[0]+trdpid[1]*fPriors[1]+trdpid[2]*fPriors[2]+trdpid[3]*fPriors[3]+trdpid[4]*fPriors[4]);
  }
+}
   return;
 
  }
