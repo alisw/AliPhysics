@@ -2,7 +2,9 @@ void SETUP()
 {
 
    // Load the ESD library
-   gSystem->Load("libPWG4CaloCalib");
+   //gSystem->Load("libPWG4CaloCalib");
+   TString ocwd = gSystem->WorkingDirectory();
+   gSystem->Load(ocwd+"/libPWG4CaloCalib.so");
 
    // Set the Include paths
    gSystem->SetIncludePath("-I$ROOTSYS/include -IPWG4CaloCalib");

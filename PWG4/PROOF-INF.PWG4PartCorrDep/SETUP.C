@@ -2,7 +2,9 @@ void SETUP()
 {
 
    // Load the ESD library
-   gSystem->Load("libPWG4PartCorrDep");
+   //gSystem->Load("libPWG4PartCorrDep");
+   TString ocwd = gSystem->WorkingDirectory();
+   gSystem->Load(ocwd+"/libPWG4PartCorrDep.so");
 
    // Set the Include paths
    gSystem->SetIncludePath("-I$ROOTSYS/include -IPWG4PartCorrDep");
