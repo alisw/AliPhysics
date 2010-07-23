@@ -26,7 +26,7 @@ void AddTRDv0Monitor(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContai
   mgr->ConnectInput( v0Mon, 2, ci[1]);
   mgr->ConnectInput( v0Mon, 3, ci[2]);
 
-  mgr->ConnectOutput(v0Mon, 1, mgr->CreateContainer(v0Mon->GetName(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
+  mgr->ConnectOutput(v0Mon, 1, mgr->CreateContainer(v0Mon->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
   //mgr->ConnectOutput(v0Mon, 2, mgr->CreateContainer(v0Mon->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
 }
 
