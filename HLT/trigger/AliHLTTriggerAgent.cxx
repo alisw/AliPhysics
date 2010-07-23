@@ -97,8 +97,8 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
 }
 
 int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler,
-					    AliRawReader* /*rawReader*/,
-					    AliRunLoader* /*runloader*/) const
+					    AliRawReader* rawReader,
+					    AliRunLoader* runloader) const
 {
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
@@ -185,6 +185,48 @@ int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandle
     triggerOutputs += configurationId;
   } else {
     HLTWarning("No inputs for %s found, skipping component.", configurationId.Data());
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  // D0 trigger
+  configurationId = "TRIGGER-D0";
+  if(runloader && !rawReader){
+    // simulation without simulated raw data
+    // use ESD as input and add in addition the MC information for trigger evaluation
+    triggerInputs="GLOBAL-esd-converter ";
+    
+    const char* mcpublisherId="TRIGGER-mc-publisher";
+    pHandler->CreateConfiguration(mcpublisherId, "ESDMCEventPublisher", NULL, "-entrytype MC -datapath ./");
+    triggerInputs+=mcpublisherId;
+  }
+  else{
+    // simulation with simulated raw data, or raw data reconstruction
+    // use input from ITS tracker and vertexer directly
+    triggerInputs="ITS-tracker GLOBAL-vertexer";
+  }
+
+  // check for the availibility of inputs
+  pTokens=triggerInputs.Tokenize(" ");
+  triggerInputs="";
+  if (pTokens) {
+    for (int n=0; n<pTokens->GetEntriesFast(); n++) {
+      TString module=((TObjString*)pTokens->At(n))->GetString();
+      if (pHandler->FindConfiguration(module.Data())) {
+	triggerInputs+=module;
+	triggerInputs+=" ";
+      }
+    }
+    delete pTokens;
+  }
+
+  TString argD0 = "";
+  if (triggerInputs.Length()>0) {
+    HLTInfo("Configuring inputs for %s: %s", configurationId.Data(), triggerInputs.Data());
+    pHandler->CreateConfiguration(configurationId.Data(), "D0Trigger", triggerInputs.Data(), argD0.Data());
+    if (triggerOutputs.Length()>0) triggerOutputs+=" ";
+    triggerOutputs+=configurationId;
+  } else {
+    HLTWarning("No inputs for %s found, skipping component", configurationId.Data());
   }
 
   /////////////////////////////////////////////////////////////////////////////////////
