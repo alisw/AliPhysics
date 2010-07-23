@@ -160,7 +160,16 @@ class AliFlowEventSimpleMakerOnTheFly {
   Double_t GetNonflowSectorMax() const {return this->fNonflowSectorMax;} 
   void SetSubeventEtaRange(Double_t minA,Double_t maxA,Double_t minB,Double_t maxB) 
   {this->fEtaMinA = minA; this->fEtaMaxA = maxA;this->fEtaMinB = minB; this->fEtaMaxB = maxB;};
-
+  // jets:
+  void SetCreateJets(Bool_t const cj) {this->fCreateJets = cj;};
+  Bool_t GetCreateJets() const {return this->fCreateJets;};
+  void SetJetProbability(Double_t jp) {this->fJetProbability = jp;}
+  Double_t GetJetProbability() const {return this->fJetProbability;}  
+  void SetJetTracksFraction(Double_t jtf) {this->fJetTracksFraction = jtf;}
+  Double_t GetJetTracksFraction() const {return this->fJetTracksFraction;}    
+  void SetJetCone(Double_t jc) {this->fJetCone = jc;}
+  Double_t GetJetCone() const {return this->fJetCone;}   
+     
  private:
  
   AliFlowEventSimpleMakerOnTheFly(const AliFlowEventSimpleMakerOnTheFly& anAnalysis);            // copy constructor
@@ -222,18 +231,22 @@ class AliFlowEventSimpleMakerOnTheFly {
   TF1*      fPhiDistribution; // azimuthal distribution
   //................................................................................................
   
-  TRandom3* fMyTRandom3;       // our TRandom3 generator
-  Int_t     fCount;            // count number of events 
-  Int_t     fNoOfLoops;        // number of times to use the same particle (nonflow)
-  Double_t  fPhiRange;         // splitted track phi range (+/- from original track's phi) for uniform sampling
-  Double_t  fPtRange;          // splitted track pt range (+/- from original track's pt) for uniform sampling
-  Double_t  fEtaRange;         // splitted track eta range (+/- from original track's eta) for uniform sampling
-  Double_t  fNonflowSectorMin; // detector's sector in which tracks are splitted starts at angle fNonflowSectorMin
-  Double_t  fNonflowSectorMax; // detector's sector in which tracks are splitted ends at angle fNonflowSectorMin
-  Double_t  fEtaMinA;          // minimum eta of subevent A eta range
-  Double_t  fEtaMaxA;          // maximum eta of subevent A eta range
-  Double_t  fEtaMinB;          // minimum eta of subevent B eta range
-  Double_t  fEtaMaxB;          // maximum eta of subevent B eta range  
+  TRandom3* fMyTRandom3;        // our TRandom3 generator
+  Int_t     fCount;             // count number of events 
+  Int_t     fNoOfLoops;         // number of times to use the same particle (nonflow)
+  Double_t  fPhiRange;          // splitted track phi range (+/- from original track's phi) for uniform sampling
+  Double_t  fPtRange;           // splitted track pt range (+/- from original track's pt) for uniform sampling
+  Double_t  fEtaRange;          // splitted track eta range (+/- from original track's eta) for uniform sampling
+  Double_t  fNonflowSectorMin;  // detector's sector in which tracks are splitted starts at angle fNonflowSectorMin
+  Double_t  fNonflowSectorMax;  // detector's sector in which tracks are splitted ends at angle fNonflowSectorMin
+  Double_t  fEtaMinA;           // minimum eta of subevent A eta range
+  Double_t  fEtaMaxA;           // maximum eta of subevent A eta range
+  Double_t  fEtaMinB;           // minimum eta of subevent B eta range
+  Double_t  fEtaMaxB;           // maximum eta of subevent B eta range  
+  Bool_t    fCreateJets;        // enable to study nonflow fluctuations via jet creation
+  Double_t  fJetProbability;    // probability than event will have a jet
+  Double_t  fJetTracksFraction; // percentage of total tracks in an event belonging to the jet
+  Double_t  fJetCone;           // angular size of jet cone (in degrees)                   
 
   ClassDef(AliFlowEventSimpleMakerOnTheFly,0) // macro for rootcint
 };

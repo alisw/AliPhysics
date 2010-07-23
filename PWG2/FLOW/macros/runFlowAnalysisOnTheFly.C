@@ -81,7 +81,12 @@ Double_t etaRange = 0.0; // If the original track with pseudorapidity eta is spl
 // ranging from nonflowSectorMin to nonflowSectorMax. Outside this sector the
 // tracks will not be splitted. Use the following two settings only if iLoops>1:                         
 Double_t nonflowSectorMin = 0.0; // detector's sector in which tracks will be splitted starts at this angle (in degrees)                         
-Double_t nonflowSectorMax = 360.0; // detector's sector in which tracks will be splitted ends at this angle (in degrees)                        
+Double_t nonflowSectorMax = 360.0; // detector's sector in which tracks will be splitted ends at this angle (in degrees)    
+// to study nonflow fluctuations event-by-event one can create the jet-like structure in the following way:
+Bool_t bCreateJets = kFALSE; // set kTRUE if you want to study nonflow fluctuations via jet creation
+Double_t jetProbability = 0.2; // probability than event will have a jet
+Double_t jetTracksFraction = 0.1; // percentage of total tracks in an event belonging to the jet
+Double_t jetCone = 20; // angular size of jet cone (in degrees)                   
 
 //===GLAUBER MODEL================================================================
 Bool_t bUseGlauberModel = kFALSE; // 1.) if kTRUE = multiplicity and constant flow harmonics are 
@@ -433,6 +438,10 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  eventMakerOnTheFly->SetNonflowSectorMin(nonflowSectorMin*TMath::Pi()/180.);
  eventMakerOnTheFly->SetNonflowSectorMax(nonflowSectorMax*TMath::Pi()/180.);
  eventMakerOnTheFly->SetUseGlauberModel(bUseGlauberModel);
+ eventMakerOnTheFly->SetCreateJets(bCreateJets);
+ eventMakerOnTheFly->SetJetProbability(jetProbability);
+ eventMakerOnTheFly->SetJetTracksFraction(jetTracksFraction);
+ eventMakerOnTheFly->SetJetCone(jetCone);
  
  if(!bUseGlauberModel)
  {
@@ -734,6 +743,12 @@ void CheckUserSettings()
  {
   cout<<"WARNING: V4(pt,eta) is determined as pow(V2(pt,eta),2.) !!!!"<<endl;
   cout<<"         You must also have bPtDependentHarmonicV2 = bPtDependentHarmonicV4 in the macro."<<endl;
+  exit(0); 
+ }
+ 
+ if(!uniformAcceptance && bCreateJets)
+ {
+  cout<<"WARNING: Jet creation is supported only for uniform acceptance !!!!"<<endl;
   exit(0); 
  }
   
