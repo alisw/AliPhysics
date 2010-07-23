@@ -2378,7 +2378,7 @@ void AliFlowAnalysisWithCumulants::BookAndFillWeightsHistograms()
     cout<<endl;
     cout<<"WARNING (GFC): Inconsistent binning in histograms for phi-weights throughout the code."<<endl;
     cout<<endl;
-    exit(0);
+    //exit(0);
    }
   } else 
     {
@@ -2399,7 +2399,7 @@ void AliFlowAnalysisWithCumulants::BookAndFillWeightsHistograms()
     cout<<endl;
     cout<<"WARNING (GFC): Inconsistent binning in histograms for pt-weights throughout the code."<<endl;
     cout<<endl;
-    exit(0);
+    //exit(0);
    }
   } else 
     {
@@ -2420,7 +2420,7 @@ void AliFlowAnalysisWithCumulants::BookAndFillWeightsHistograms()
     cout<<endl;
     cout<<"WARNING (GFC): Inconsistent binning in histograms for eta-weights throughout the code."<<endl;
     cout<<endl;
-    exit(0);
+    //exit(0);
    }
   } else 
     {

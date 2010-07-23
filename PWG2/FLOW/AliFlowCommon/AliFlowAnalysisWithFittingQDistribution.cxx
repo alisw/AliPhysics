@@ -659,7 +659,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookAndFillWeightsHistograms()
     cout<<endl;
     cout<<"WARNING (FQD): Inconsistent binning in histograms for phi-weights throughout the code."<<endl;
     cout<<endl;
-    exit(0);
+    //exit(0);
    }
   } else 
     {
@@ -678,7 +678,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookAndFillWeightsHistograms()
     cout<<endl;
     cout<<"WARNING (FQD): Inconsistent binning in histograms for pt-weights throughout the code."<<endl;
     cout<<endl;
-    exit(0);
+    //exit(0);
    }
   } else 
     {
@@ -697,7 +697,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookAndFillWeightsHistograms()
     cout<<endl;
     cout<<"WARNING (FQD): Inconsistent binning in histograms for eta-weights throughout the code."<<endl;
     cout<<endl;
-    exit(0);
+    //exit(0);
    }
   } else 
     {
