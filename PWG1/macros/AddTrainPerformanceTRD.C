@@ -131,7 +131,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       break;
     case kV0Monitor:
       // slots already mapped by checkPID
-      AddTRDv0Monitor(mgr, trd, ce);
+      //AddTRDv0Monitor(mgr, trd, ce);
       break;
     default:
       Warning("AddTrainPerformanceTRD()", Form("No performance task registered at slot %d.", it)); 

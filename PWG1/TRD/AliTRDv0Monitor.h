@@ -23,12 +23,9 @@
 #endif
 
 class TTree;
-class TList;
 class TH2F;
 class TH1I;
 class TObjArray;
-
-
 class AliTRDv0Monitor : public AliTRDrecoTask
 {
 public:
@@ -41,47 +38,37 @@ public:
 
   AliTRDv0Monitor();
   AliTRDv0Monitor(const char *name, const char *title);
-  virtual ~AliTRDv0Monitor();
+  virtual ~AliTRDv0Monitor(){};
 
   Bool_t  GetRefFigure(Int_t ifig); 
   void    UserCreateOutputObjects();
   void    UserExec(Option_t *option);
   void    MakeSummary();
- 
- 
 
+private:
+  AliTRDv0Monitor(const AliTRDv0Monitor&);              // not implemented
+  AliTRDv0Monitor& operator=(const AliTRDv0Monitor&);   // not implemented
 
-protected:
-
- TList *fOutput;         //! Container for output histos
-  
-  TH1I *fhCutReductions[AliPID::kSPECIES];//histo for sample reductions by each ID cut
-  TH1I *fhQualityReductions;//histo for sample reductions by each quality cut
-  TH2F *fhV0Chi2ndf[AliTRDv0Info::kNDecays][kNCutSteps];//Chi2/ndf distributions before cuts, after inv. mass cut, after all cuts (same for all arrays below!!!)
-  TH2F *fhInvMass[AliTRDv0Info::kNDecays];//invariant mass distributions
-  TH2F *fhPsiPair[AliTRDv0Info::kNDecays][kNCutSteps];//Psi_pair angle distributions
-  TH2F *fhPointAngle[AliTRDv0Info::kNDecays][kNCutSteps];//pointing angle
-  TH2F *fhDCA[AliTRDv0Info::kNDecays][kNCutSteps];//Distance of closest approach between daughters
-  TH2F *fhOpenAngle[AliTRDv0Info::kNDecays][kNCutSteps];//opening angle between daughters
-  TH2F *fhDetPID[kNDets][AliPID::kSPECIES];//likelihood outputs from different detectors
-  TH2F *fhComPID[AliPID::kSPECIES];//combined PID from TPC and TOF
-  TH2F *fhRadius[AliTRDv0Info::kNDecays][kNCutSteps];//radial distance of secondary vertex to primary vertex
-  TH2F *fhTPCdEdx[AliPID::kSPECIES][kNCutSteps];//energy deposition in TPC
+  TH1I *fhCutReductions[AliPID::kSPECIES];//!histo for sample reductions by each ID cut
+  TH1I *fhQualityReductions;//!histo for sample reductions by each quality cut
+  TH2F *fhV0Chi2ndf[AliTRDv0Info::kNDecays][kNCutSteps];//!Chi2/ndf distributions before cuts, after inv. mass cut, after all cuts (same for all arrays below!!!)
+  TH2F *fhInvMass[AliTRDv0Info::kNDecays];//!invariant mass distributions
+  TH2F *fhPsiPair[AliTRDv0Info::kNDecays][kNCutSteps];//!Psi_pair angle distributions
+  TH2F *fhPointAngle[AliTRDv0Info::kNDecays][kNCutSteps];//!pointing angle
+  TH2F *fhDCA[AliTRDv0Info::kNDecays][kNCutSteps];//!Distance of closest approach between daughters
+  TH2F *fhOpenAngle[AliTRDv0Info::kNDecays][kNCutSteps];//!opening angle between daughters
+  TH2F *fhDetPID[kNDets][AliPID::kSPECIES];//!likelihood outputs from different detectors
+  TH2F *fhComPID[AliPID::kSPECIES];//!combined PID from TPC and TOF
+  TH2F *fhRadius[AliTRDv0Info::kNDecays][kNCutSteps];//!radial distance of secondary vertex to primary vertex
+  TH2F *fhTPCdEdx[AliPID::kSPECIES][kNCutSteps];//!energy deposition in TPC
  
 
  
   TObjArray     *fV0s;                  //! v0 array
   TTree         *fData;                 //! dEdx-P data
   TObjArray     *fInfo;                 //! list of PID info
-  
-  Float_t       fP;                     // momentum
- 
-  Float_t       fPID[AliPID::kSPECIES]; // pid from v0s
-  //Int_t GetPDG(Int_t index);            // PDG information from MC
-
-private:
-  AliTRDv0Monitor(const AliTRDv0Monitor&);              // not implemented
-  AliTRDv0Monitor& operator=(const AliTRDv0Monitor&);   // not implemented
+  Float_t       fP;                     //! momentum
+  Float_t       fPID[AliPID::kSPECIES]; //! pid from v0s
 
   ClassDef(AliTRDv0Monitor, 3); // V0 Monitor
 };
