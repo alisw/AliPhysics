@@ -162,8 +162,8 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
                          fhRecDiff[icase]->GetName(), icase, idet, mean,rms)); 
 	  	  
             if(TMath::Abs(mean) >1.5 || rms >1){
-              AliDebug(AliQAv1::GetQADebugLevel(), Form(" calibration is nor perfect; test=%f", test)) ;
               test[specie]=0.25;
+              AliDebug(AliQAv1::GetQADebugLevel(), Form(" calibration is nor perfect; test=%f", test[specie])) ;
             }
             if(mean>3 || rms >5) {
               test[specie] = 0.1;
@@ -178,7 +178,7 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
           Double_t rmsVertex = fhESD[icase]->GetRMS();
           Double_t meanVertex = fhESD[icase]->GetMean();
           test[specie]=1;
-          AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %d meanVertex %f rmsVertex %f", fhESD[icase]->GetEntries(), meanVertex, rmsVertex));
+          AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %f meanVertex %f rmsVertex %f", fhESD[icase]->GetEntries(), meanVertex, rmsVertex));
           if (TMath::Abs(rmsVertex)>3) {
             test[specie]=0.25;
             AliDebug(AliQAv1::GetQADebugLevel(), Form("Vertex position resolution not good  , rms= %f test=%f",
@@ -259,7 +259,7 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec , TObjArray *listref) const
        checkr = 0.25;
        //   printf(" Big problems :laser calibration signal shifted by  %f ps (%f channels) for PMT %s %i : check = %f\n",  diffmean*24.4, diffmean, nameDev[icase-208].Data(),idet, checkr);
        AliDebug(AliQAv1::GetQADebugLevel(),
-		Form(" Big problems :laser calibration signal shifted by  %f ps (%f channels) for PMT %s %i : check = %i\n",  diffmean*24.4, diffmean, nameDev[icase-208].Data(),idet, checkr)) ; 
+		Form(" Big problems :laser calibration signal shifted by  %f ps (%f channels) for PMT %s %i : check = %f\n",  diffmean*24.4, diffmean, nameDev[icase-208].Data(),idet, checkr)) ; 
        
      }
      
