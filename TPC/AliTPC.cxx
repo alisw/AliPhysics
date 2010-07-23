@@ -836,6 +836,7 @@ void AliTPC::Digits2Raw()
     return;
   }
 
+  //
   AliSimDigits digarr;
   AliSimDigits* digrow = &digarr;
   digits->GetBranch("Segment")->SetAddress(&digrow);
@@ -1056,8 +1057,15 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
 
     } // end of the sector digitization
   }
-
-  fLoader->WriteSDigits("OVERWRITE");
+  // get LHC clock phase from the digits tree
+  TParameter<float> *ph; 
+    ph = (TParameter<float>*)fLoader->TreeD()->GetUserInfo()->FindObject("lhcphase0");
+    //
+    // store lhc clock phase in S-digits tree
+    //
+    fLoader->TreeS()->GetUserInfo()->Add(new TParameter<float>("lhcphase0",ph->GetVal()));
+   //
+   fLoader->WriteSDigits("OVERWRITE");
 
   if(GetDigitsArray()) delete GetDigitsArray();
   SetDigitsArray(0x0);
