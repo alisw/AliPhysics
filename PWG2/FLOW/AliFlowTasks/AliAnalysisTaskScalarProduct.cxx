@@ -47,7 +47,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
   fListHistos(NULL),
   fUsePhiWeights(usePhiWeights),
   fListWeights(NULL),
-  fRelDiffMsub(1.0)
+  fRelDiffMsub(1.0),
+  fApplyCorrectionForNUA(kFALSE)
 {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name)"<<endl;
@@ -70,7 +71,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fListHistos(NULL),
   fUsePhiWeights(kFALSE),
   fListWeights(NULL),
-  fRelDiffMsub(1.0)
+  fRelDiffMsub(1.0),
+  fApplyCorrectionForNUA(kFALSE)
   {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct()"<<endl;
@@ -103,6 +105,19 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
 
   //set the allowed relative difference in the subevent multiplicities
   fSP->SetRelDiffMsub(fRelDiffMsub); 
+  
+  cout<<endl;
+  cout<<endl;
+  cout<<endl;
+  cout<<endl;
+  cout<<"TASK SP: "<<fApplyCorrectionForNUA<<endl;
+  cout<<endl;
+  cout<<endl;
+  cout<<endl;
+  cout<<endl;
+  
+  //apply automatic correction for non-uniform acceptance:
+  fSP->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
     
   //for using phi weights:
   if(fUsePhiWeights) {

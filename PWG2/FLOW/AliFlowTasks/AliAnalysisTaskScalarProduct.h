@@ -35,7 +35,9 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
 
   void     SetRelDiffMsub(Double_t diff) { this->fRelDiffMsub = diff; }
   Double_t GetRelDiffMsub() const        { return this->fRelDiffMsub; }
-
+  
+  void SetApplyCorrectionForNUA(Bool_t const applyCorrectionForNUA) {this->fApplyCorrectionForNUA = applyCorrectionForNUA;};
+  Bool_t GetApplyCorrectionForNUA() const {return this->fApplyCorrectionForNUA;};
 
  private:
 
@@ -50,6 +52,8 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   TList*    fListWeights;   // list with weights
 
   Double_t  fRelDiffMsub;   // the relative difference the two subevent multiplicities can have
+  
+  Bool_t fApplyCorrectionForNUA; // apply automatic correction for non-uniform acceptance 
   
   ClassDef(AliAnalysisTaskScalarProduct, 1); // example of analysis
 };

@@ -692,6 +692,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   if (SP){
     AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",WEIGHTS[0]);
     taskSP->SetRelDiffMsub(1.0);
+    taskSP->SetApplyCorrectionForNUA(kFALSE);
     mgr->AddTask(taskSP);
   }
   if (LYZ1SUM){
