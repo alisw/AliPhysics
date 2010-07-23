@@ -401,7 +401,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
       Double_t dRelDiff = TMath::Abs((dMa - dMb)/(dMa + dMb));
       if (dRelDiff < fRelDiffMsub) {
 
-	//fill control histograms     
+	//fill control histograms 	   
 	fCommonHists->FillControlHistograms(anEvent);
 
 	//fill some SP control histograms
@@ -736,14 +736,6 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   //access all boolean flags needed in Finish():
   this->AccessFlags();
 
-  cout<<endl;
-  cout<<"SP"<<endl;
-  for(Int_t b=1;b<=10;b++)
-  {
-   cout<<"b = "<<b<<": "<<fHistProUQPtRP->GetBinContent(b)<<endl;
-  }
-
-
   cout<<"*************************************"<<endl;
   cout<<"*************************************"<<endl;
   cout<<"      Integrated flow from           "<<endl;
@@ -771,7 +763,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   Double_t dReQa = fHistProQaQbReImNorm->GetBinContent(2);
   Double_t dImQb = fHistProQaQbReImNorm->GetBinContent(3);
   Double_t dReQb = fHistProQaQbReImNorm->GetBinContent(4);
-  
+
   if(fApplyCorrectionForNUA) 
   {
    dQaQb = dQaQb - dImQa*dImQb - dReQa*dReQb; 

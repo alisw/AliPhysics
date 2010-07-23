@@ -731,20 +731,6 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 void AliFlowAnalysisWithQCumulants::Finish()
 {
-
-
-  cout<<endl;
-  cout<<"QC"<<endl;
-  for(Int_t b=1;b<=10;b++)
-  {
-   cout<<"b = "<<b<<": "<<fDiffFlowCorrelationsPro[1][0][0]
-->GetBinContent(b)<<endl;
-  }
-
-
-
-
-
  // Calculate the final results.
  //  a) acces the constants;
  //  b) access the flags;
@@ -7879,20 +7865,23 @@ void AliFlowAnalysisWithQCumulants::GetPointersForIntFlowHistograms()
       cout<<"WARNING: intFlowDetectorBias is NULL in AFAWQC::GPFIFH() !!!!"<<endl; 
      } 
    // quantifying detector effects effects to correlations vs multiplicity:
-   TString intFlowDetectorBiasVsMName = "fIntFlowDetectorBiasVsM";
-   intFlowDetectorBiasVsMName += fAnalysisLabel->Data();
-   for(Int_t ci=0;ci<4;ci++) // correlation index
+   if(fApplyCorrectionForNUAVsM)
    {
-    TH1D *intFlowDetectorBiasVsM = dynamic_cast<TH1D*>
-                                   (intFlowResults->FindObject(Form("%s for %s",intFlowDetectorBiasVsMName.Data(),cumulantFlag[ci].Data())));
-    if(intFlowDetectorBiasVsM)
+    TString intFlowDetectorBiasVsMName = "fIntFlowDetectorBiasVsM";
+    intFlowDetectorBiasVsMName += fAnalysisLabel->Data();
+    for(Int_t ci=0;ci<4;ci++) // correlation index
     {
-     this->SetIntFlowDetectorBiasVsM(intFlowDetectorBiasVsM,ci);
-    } else
-      {
-       cout<<"WARNING: "<<Form("intFlowDetectorBiasVsM[%d]",ci)<<" is NULL in AFAWQC::GPFIFH() !!!!"<<endl;      
-      }
-   } // end of for(Int_t ci=0;ci<4;ci++) // correlation index   
+     TH1D *intFlowDetectorBiasVsM = dynamic_cast<TH1D*>
+                                    (intFlowResults->FindObject(Form("%s for %s",intFlowDetectorBiasVsMName.Data(),cumulantFlag[ci].Data())));
+     if(intFlowDetectorBiasVsM)
+     {
+      this->SetIntFlowDetectorBiasVsM(intFlowDetectorBiasVsM,ci);
+     } else
+       {
+        cout<<"WARNING: "<<Form("intFlowDetectorBiasVsM[%d]",ci)<<" is NULL in AFAWQC::GPFIFH() !!!!"<<endl;      
+       }
+    } // end of for(Int_t ci=0;ci<4;ci++) // correlation index   
+   } // end of if(ApplyCorrectionForNUAVsM)
   } else // to if(intFlowResults)
     {
      cout<<"WARNING: intFlowResults is NULL in AFAWQC::GPFIFH() !!!!"<<endl;
