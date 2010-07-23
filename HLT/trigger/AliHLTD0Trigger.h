@@ -36,6 +36,7 @@ class AliHLTMCEvent;
  *
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * TODO: code audit 2010-07-23 describe component arguments
  *
  * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -106,6 +107,8 @@ class AliHLTD0Trigger : public AliHLTTrigger
   /// inherited from AliHLTTrigger: calculate the trigger
   virtual int DoTrigger();
   
+  // TODO: code audit 2010-07-23 describe functions, add a short description
+  // also in the cxx file
   void SingleTrackSelect(AliExternalTrackParam*);
   Int_t RecV0(const TObject* iter);
   void RecD0(Int_t&,Int_t&,Int_t&);
@@ -126,6 +129,7 @@ class AliHLTD0Trigger : public AliHLTTrigger
   /// Pionting angle
   float fcosPoint;                                         //! transient 
 
+  // TODO: code audit 2010-07-23 member variable description missing
   bool fplothisto;                                         //! transient 
   bool fUseV0;                                             //! transient 
 
