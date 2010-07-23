@@ -22,6 +22,7 @@
 // --- ROOT system ---
 #include <TClonesArray.h>
 #include <TFile.h> 
+#include <TF1.h> 
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2I.h> 
@@ -43,11 +44,25 @@
 #include "AliRawReader.h"
 #include "AliVZERORawStream.h"
 #include "AliVZEROdigit.h"
+#include "AliVZEROConst.h"
 #include "AliVZEROReconstructor.h"
 #include "AliVZEROTrending.h"
 #include "AliVZEROCalibData.h"
+#include "AliCTPTimeParams.h"
 #include "event.h"
 
+ const Float_t kMinBBA = 68. ;
+ const Float_t kMaxBBA = 100. ;
+ const Float_t kMinBBC = 75.5 ;
+ const Float_t kMaxBBC = 100. ;
+ const Float_t kMinBGA = 54. ;
+ const Float_t kMaxBGA = 58. ;
+ const Float_t kMinBGC = 69.5 ;
+ const Float_t kMaxBGC = 74. ;
+
+ 
+ 
+ 
 
 ClassImp(AliVZEROQADataMakerRec)
            
@@ -62,24 +77,17 @@ ClassImp(AliVZEROQADataMakerRec)
         fNTrendingUpdates(0), 
         fTrendingUpdateTime(0), 
         fCycleStartTime(0), 
-        fCycleStopTime(0), 
-        fMonitorRate(0.)
+        fCycleStopTime(0),
+		fTimeSlewing(0)
     
 {
    // Constructor
    
       AliDebug(AliQAv1::GetQADebugLevel(), "Construct VZERO QA Object");
-  for(Int_t i=0;i<8;i++){
-  	fChargePerRing[i] = 0.;
-  	fFlagPerRing[i] = 0.;
-  }
+
    for(Int_t i=0; i<64; i++){  
        fEven[i] = 0;   
        fOdd[i]  = 0;
-	   fChargePerChannel[i] = 0.;  
-	   fFlagPerChannel[i] = 0.;  
-	   fMeanChargePerChannel[i] = 0.;  
-	   fMeanFlagPerChannel[i] = 0.;  
   }
   
    for(Int_t i=0; i<128; i++){  
@@ -97,8 +105,8 @@ ClassImp(AliVZEROQADataMakerRec)
         fNTrendingUpdates(0), 
         fTrendingUpdateTime(0), 
         fCycleStartTime(0), 
-        fCycleStopTime(0), 
-        fMonitorRate(0.)
+        fCycleStopTime(0),
+		fTimeSlewing(0)
   
 {
   // Copy constructor 
@@ -156,17 +164,6 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
   if(task == AliQAv1::kRAWS){
 	TTimeStamp currentTime;
 	fCycleStopTime = currentTime.GetSec();
-	if(fCycleStopTime-fCycleStartTime>0.) fMonitorRate = fNTotEvents/(fCycleStopTime-fCycleStartTime);
-	//printf("%d event have been monitored -> Monitoring Rate = %f Hz\n",fNTotEvents,fMonitorRate); 
-	Bool_t update = kFALSE;
-	if(!fTrendingUpdateEvent) {
-		update = kTRUE;
-	} else if ((TMath::Abs(fTrendingUpdateTime * fMonitorRate - fTrendingUpdateEvent) / fTrendingUpdateEvent) > 0.1){
-		update = kTRUE;
-	}
-	if(update) fTrendingUpdateEvent = (size_t)(fTrendingUpdateTime * fMonitorRate);
-	//printf("Update trending information every %d events\n",fTrendingUpdateEvent); 
-
   }
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
@@ -174,28 +171,6 @@ void AliVZEROQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
       continue ;
     SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
     if(task == AliQAv1::kRAWS){
-  	  int nMaxBin = GetRawsData(kPedestalTimeInt0)->GetNbinsY();
-      if(fCurrentCycle%nMaxBin==0) {
-        GetRawsData(kPedestalTimeInt0)->Reset();
-        GetRawsData(kPedestalTimeInt1)->Reset();
-        GetRawsData(kChargeEoITimeInt0)->Reset();
-        GetRawsData(kChargeEoITimeInt1)->Reset();
-      }
-      TH1D* hProj;
-      char name[50];
-      for(Int_t iChannel=0; iChannel<64; iChannel++) {
-        for(Int_t integrator=0;integrator<2;integrator++){
-          sprintf(name,"Ped_%d_%d",iChannel,integrator);
-          hProj = ((TH2I*)GetRawsData((integrator == 0 ? kPedestalCycleInt0 : kPedestalCycleInt1)))->ProjectionY(name,iChannel+1,iChannel+1);
-          ((TH2D*)GetRawsData((integrator == 0 ? kPedestalTimeInt0 : kPedestalTimeInt1)))->Fill((double)iChannel,(double)(fCurrentCycle%nMaxBin),(double)hProj->GetMean());
-          delete hProj;
-
-          sprintf(name,"Charge_%d_%d",iChannel,integrator);
-          hProj = ((TH2I*)GetRawsData((integrator == 0 ? kChargeEoICycleInt0 : kChargeEoICycleInt1)))->ProjectionY(name,iChannel+1,iChannel+1);
-          ((TH2D*)GetRawsData((integrator == 0 ? kChargeEoITimeInt0 : kChargeEoITimeInt1)))->Fill((double)iChannel,(double)(fCurrentCycle%nMaxBin),hProj->GetMean());
-          delete hProj;
-        }
-      }
     } else if (task == AliQAv1::kESDS) {
     }
   }
@@ -260,38 +235,47 @@ void AliVZEROQADataMakerRec::InitESDs()
    const Bool_t saveCorr = kTRUE ; 
    const Bool_t image    = kTRUE ; 
 
-  char name[50] , title[100];
   const Int_t kNintegrator  =    2;
  
   const Int_t kNTdcTimeBins  = 1280;
-  const Int_t kTdcTimeMin    =    0.;
-  const Int_t kTdcTimeMax    = 125.;
+  const Float_t kTdcTimeMin    =    0.;
+  const Float_t kTdcTimeMax    = 125.;
   const Int_t kNTdcWidthBins =  128;
-  const Int_t kTdcWidthMin   =    0;
-  const Int_t kTdcWidthMax   =  50.;
+  const Float_t kTdcWidthMin   =    0;
+  const Float_t kTdcWidthMax   =  50.;
   const Int_t kNChargeBins   = 1024;
-  const Int_t kChargeMin     =    0;
-  const Int_t kChargeMax     = 1024;
+  const Float_t kChargeMin     =    0;
+  const Float_t kChargeMax     = 1024;
   const Int_t kNChannelBins  =   64;
-  const Int_t kChannelMin    =    0;
-  const Int_t kChannelMax    =   64;
+  const Float_t kChannelMin    =    0;
+  const Float_t kChannelMax    =   64;
   const Int_t kNPedestalBins =  200;
-  const Int_t kPedestalMin   =    0;
-  const Int_t kPedestalMax   =  200;
-  const Int_t kTimeMin       =   0;
-  const Int_t kTimeMax       = 100;
-  const Int_t kNMIPBins      = 200;
-  const Int_t kMIPMin        =   0;
-  const Int_t kMIPMax        = 200;
+  const Float_t kPedestalMin   =    0;
+  const Float_t kPedestalMax   =  200;
+  const Float_t kTimeMin       =   0;
+  const Float_t kTimeMax       = 100;
+  const Int_t kNMIPBins      = 512;
+  const Float_t kMIPMin        =   0;
+  const Float_t kMIPMax        = 16;
 
   TH2I * h2i;
   TH2D * h2d;
   TH1I * h1i;
   TH1D * h1d;
-  AliVZEROTrending * trend;
 
   int iHisto =0;
- 
+    // Creation of Trigger Histogram
+  h1d = new TH1D("H1D_Trigger_Type", "V0 Trigger Type;;Counts", 4,0 ,4) ;  
+  Add2RawsList(h1d,kTriggers, !expert, image, saveCorr);   iHisto++;
+ 	h1d->SetFillColor(29);
+	h1d->SetLineWidth(2);
+	h1d->GetXaxis()->SetLabelSize(0.06);
+    h1d->GetXaxis()->SetNdivisions(808,kFALSE);
+	h1d->GetXaxis()->SetBinLabel(1, "V0-AND");
+	h1d->GetXaxis()->SetBinLabel(2, "V0-OR");
+   	h1d->GetXaxis()->SetBinLabel(3, "V0-BGA");
+	h1d->GetXaxis()->SetBinLabel(4, "V0-BGC");
+
    // Creation of Cell Multiplicity Histograms
   h1i = new TH1I("H1I_Multiplicity_V0A", "Cell Multiplicity in V0A;# of Cells;Entries", 35, 0, 35) ;  
   Add2RawsList(h1i,kMultiV0A, expert, image, saveCorr);   iHisto++;
@@ -299,90 +283,60 @@ void AliVZEROQADataMakerRec::InitESDs()
   Add2RawsList(h1i,kMultiV0C, expert, image, saveCorr);   iHisto++;
  
   // Creation of Total Charge Histograms
-  h1d = new TH1D("H1D_Charge_V0A", "Total Charge in V0A;Charge [ADC counts];Counts", 2048, 0, 32768) ;  
-  Add2RawsList(h1d,kChargeV0A, expert, image, saveCorr);   iHisto++;
-  h1d = new TH1D("H1D_Charge_V0C", "Total Charge in V0C;Charge [ADC counts];Counts", 2048, 0, 32768) ;  
-  Add2RawsList(h1d,kChargeV0C, expert, image, saveCorr);   iHisto++;
-  h1d = new TH1D("H1D_Charge_V0", "Total Charge in V0;Charge [ADC counts];Counts", 2048, 0, 65536) ;  
-  Add2RawsList(h1d,kChargeV0, expert, image, saveCorr);   iHisto++;
+  h1d = new TH1D("H1D_Charge_V0A", "Total Charge in V0A;Charge [ADC counts];Counts", 2000, 0, 10000) ;  
+  Add2RawsList(h1d,kChargeV0A, expert, !image, saveCorr);   iHisto++;
+  h1d = new TH1D("H1D_Charge_V0C", "Total Charge in V0C;Charge [ADC counts];Counts", 2000, 0, 10000) ;  
+  Add2RawsList(h1d,kChargeV0C, expert, !image, saveCorr);   iHisto++;
+  h1d = new TH1D("H1D_Charge_V0", "Total Charge in V0;Charge [ADC counts];Counts", 2000, 0, 20000) ;  
+  Add2RawsList(h1d,kChargeV0, expert, !image, saveCorr);   iHisto++;
   
   // Creation of MIP Histograms
-  h1d = new TH1D("H1D_MIP_V0A", "Total MIP in V0A;Charge [MIP];Counts", 2*kNMIPBins,kMIPMin ,32*kMIPMax) ;  
-  Add2RawsList(h1d,kRawMIPV0A, expert, image, saveCorr);   iHisto++;
-  h1d = new TH1D("H1D_MIP_V0C", "Total MIP in V0C;Charge [MIP];Counts", 2*kNMIPBins,kMIPMin ,32*kMIPMax) ;  
-  Add2RawsList(h1d,kRawMIPV0C, expert, image, saveCorr);   iHisto++;
-  h1d = new TH1D("H1D_MIP_V0", "Total MIP in V0;Charge [MIP];Counts", 2*kNMIPBins,kMIPMin ,32*kMIPMax) ;  
-  Add2RawsList(h1d,kRawMIPV0, expert, image, saveCorr);   iHisto++;
+  h1d = new TH1D("H1D_MIP_V0A", "Total MIP in V0A;Multiplicity [MIP];Counts", kNMIPBins,kMIPMin ,32*kMIPMax) ;  
+  Add2RawsList(h1d,kRawMIPV0A, expert, !image, saveCorr);   iHisto++;
+  h1d = new TH1D("H1D_MIP_V0C", "Total MIP in V0C;Multiplicity [MIP];Counts", kNMIPBins,kMIPMin ,32*kMIPMax) ;  
+  Add2RawsList(h1d,kRawMIPV0C, expert, !image, saveCorr);   iHisto++;
+  h1d = new TH1D("H1D_MIP_V0", "Total MIP in V0;Multiplicity [MIP];Counts", 2*kNMIPBins,kMIPMin ,64*kMIPMax) ;  
+  Add2RawsList(h1d,kRawMIPV0, expert, !image, saveCorr);   iHisto++;
   h2d = new TH2D("H2D_MIP_Channel", "Nb of MIP per channel;Channel;# of Mips", kNChannelBins, kChannelMin, kChannelMax,kNMIPBins,kMIPMin ,kMIPMax) ;  
   Add2RawsList(h2d,kRawMIPChannel, expert, !image, !saveCorr);   iHisto++;
   
  
 
   // Creation of Charge EoI histogram 
-   sprintf(name,"H2D_ChargeEoI");
-   sprintf(title,"Charge Event of Interest;Channel;Charge [ADC counts]");
-   h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
+   h2d = new TH2D("H2D_ChargeEoI", "Charge Event of Interest;Channel Number;Charge [ADC counts]"
+   		,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
    Add2RawsList(h2d,kChargeEoI, !expert, image, !saveCorr); iHisto++;
 
  for(Int_t iInt=0;iInt<kNintegrator;iInt++){
     // Creation of Pedestal histograms 
-    sprintf(name,"H2I_Pedestal_Int%d",iInt);
-    sprintf(title,"Pedestal (Int%d);Channel;Pedestal [ADC counts]",iInt);
-    h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax,kNPedestalBins,kPedestalMin ,kPedestalMax );
+    h2i = new TH2I(Form("H2I_Pedestal_Int%d",iInt), Form("Pedestal (Int%d);Channel;Pedestal [ADC counts]",iInt)
+		,kNChannelBins, kChannelMin, kChannelMax,kNPedestalBins,kPedestalMin ,kPedestalMax );
     Add2RawsList(h2i,(iInt == 0 ? kPedestalInt0 : kPedestalInt1), expert, !image, !saveCorr); iHisto++;
 	
-    // Creation of temporary Pedestal histo used for the mean versus time histogram. This histogram will be reset at the end of each cycle
-    sprintf(name,"H2I_Pedestal_CycleInt%d",iInt);
-    sprintf(title,"One Cycle Pedestal (Int%d);Pedestal [ADC counts];Counts",iInt);
-    h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax,kNPedestalBins,kPedestalMin ,kPedestalMax );
-    Add2RawsList(h2i,(iInt == 0 ? kPedestalCycleInt0 : kPedestalCycleInt1), expert, !image, !saveCorr); iHisto++;
-		
-    // Creation of Pedestal versus time graph.
-    sprintf(name,"H2D_Pedestal_Time_Int%d",iInt);
-    sprintf(title,"Pedestal Versus Time (Int%d);Time [ns];Pedestal [ADC counts]",iInt);
-    h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,kTimeMax,kTimeMin ,kTimeMax );
-    Add2RawsList(h2d,(iInt == 0 ? kPedestalTimeInt0 : kPedestalTimeInt1), expert, !image, !saveCorr); iHisto++;
 
    // Creation of Charge EoI histograms 
-    sprintf(name,"H2I_ChargeEoI_Int%d",iInt);
-    sprintf(title,"Charge EoI (Int%d);Channel;Charge [ADC counts]",iInt);
-    h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
+    h2i = new TH2I(Form("H2I_ChargeEoI_Int%d",iInt), Form("Charge EoI (Int%d);Channel;Charge [ADC counts]",iInt)
+		,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoIInt0 : kChargeEoIInt1), expert, image, !saveCorr); iHisto++;
-
-   // Creation of temporary Charge EoI histograms used for the mean versus time histogram. This histogram will be reset at the end of each cycle
-    sprintf(name,"H2I_ChargeEoI_CycleInt%d",iInt);
-    sprintf(title,"One Cycle Charge EoI (Int%d);Charge [ADC counts];Counts",iInt);
-    h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
-    Add2RawsList(h2i,(iInt == 0 ? kChargeEoICycleInt0 : kChargeEoICycleInt1), expert, !image, !saveCorr); iHisto++;
-		
-    // Creation of Charge EoI versus time graphs
-    sprintf(name,"H2D_ChargeEoI_Time_Int%d",iInt);
-    sprintf(title,"Charge EoI Versus Time (Int%d);Channel;Time",iInt);
-    h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,kTimeMax,kTimeMin ,kTimeMax );
-    Add2RawsList(h2d,(iInt == 0 ? kChargeEoITimeInt0 : kChargeEoITimeInt1), expert, !image, !saveCorr); iHisto++;
     
-    sprintf(name,"H2I_ChargeEoI_BB_Int%d",iInt);
-    sprintf(title,"Charge EoI w/ BB Flag (Int%d);Channel;Charge [ADC counts]",iInt);
-    h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
+    h2i = new TH2I(Form("H2I_ChargeEoI_BB_Int%d",iInt), Form("Charge EoI w/ BB Flag (Int%d);Channel;Charge [ADC counts]",iInt)
+		,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoIBBInt0 : kChargeEoIBBInt1), expert, !image, !saveCorr); iHisto++;
     
-    sprintf(name,"H2I_ChargeEoI_BG_Int%d",iInt);
-    sprintf(title,"Charge EoI w/ BG Flag (Int%d);Channel;Charge [ADC counts]",iInt);
-    h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
+    h2i = new TH2I(Form("H2I_ChargeEoI_BG_Int%d",iInt), Form("Charge EoI w/ BG Flag (Int%d);Channel;Charge [ADC counts]",iInt)
+		,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
     Add2RawsList(h2i,(iInt == 0 ?  kChargeEoIBGInt0: kChargeEoIBGInt1), expert, !image, !saveCorr); iHisto++;
 
     // Creation of Charge versus LHC Clock histograms 
-    sprintf(name,"H2D_ChargeVsClock_Int%d",iInt);
-    sprintf(title,"Charge Versus LHC-Clock (Int%d);Channel;LHCClock;Charge [ADC counts]",iInt);
-    h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+    h2d = new TH2D(Form("H2D_ChargeVsClock_Int%d",iInt), Form("Charge Versus LHC-Clock (Int%d);Channel;LHCClock;Charge [ADC counts]",iInt)
+		,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
     Add2RawsList(h2d,(iInt == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 ), expert, !image, !saveCorr); iHisto++;
 	
     // Creation of Minimum Bias Charge histograms 
     for(Int_t iBB=0;iBB<2;iBB++){
 		for(Int_t iBG=0;iBG<2;iBG++){
-			sprintf(name,"H2I_ChargeMB_BB%d_BG%d_Int%d",iBB,iBG,iInt);
-			sprintf(title,"MB Charge (BB=%d, BG=%d, Int=%d);Channel;Charge [ADC counts]",iBB,iBG,iInt);
-			h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax,kNChargeBins, kChargeMin, kChargeMax);
+			h2i = new TH2I(Form("H2I_ChargeMB_BB%d_BG%d_Int%d",iBB,iBG,iInt), Form("MB Charge (BB=%d, BG=%d, Int=%d);Channel;Charge [ADC counts]",iBB,iBG,iInt)
+				,kNChannelBins, kChannelMin, kChannelMax,kNChargeBins, kChargeMin, kChargeMax);
 			int idx;
 			if(iInt==0){
 				if(iBB==0){
@@ -408,117 +362,49 @@ void AliVZEROQADataMakerRec::InitESDs()
  }
  
      // Creation of Time histograms 
-	sprintf(name,"H2I_Width");
-	sprintf(title,"HPTDC Width;Channel;Width [ns]");
-	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
+	h2i = new TH2I("H2I_Width", "HPTDC Width;Channel;Width [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
  	Add2RawsList(h2i,kWidth, expert, !image, !saveCorr); iHisto++;
 
- 	sprintf(name,"H2I_Width_BB");
- 	sprintf(title,"HPTDC Width w/ BB Flag condition;Channel;Width [ns]");
- 	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
+ 	h2i = new TH2I("H2I_Width_BB", "HPTDC Width w/ BB Flag condition;Channel;Width [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
  	Add2RawsList(h2i,kWidthBB, expert, !image, !saveCorr); iHisto++;
 
- 	sprintf(name,"H2I_Width_BG");
- 	sprintf(title,"HPTDC Width w/ BG Flag condition;Channel;Width [ns]");
- 	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
+ 	h2i = new TH2I("H2I_Width_BG", "HPTDC Width w/ BG Flag condition;Channel;Width [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
  	Add2RawsList(h2i,kWidthBG, expert, !image, !saveCorr); iHisto++;
 
- 	sprintf(name,"H2I_HPTDCTime");
- 	sprintf(title,"HPTDC Time;Channel;Leading Time [ns]");
- 	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+ 	h2i = new TH2I("H2I_HPTDCTime", "HPTDC Time;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h2i,kHPTDCTime, expert, image, !saveCorr); iHisto++;
 
- 	sprintf(name,"H2I_HPTDCTime_BB");
- 	sprintf(title,"HPTDC Time w/ BB Flag condition;Channel;Leading Time [ns]");
- 	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+ 	h2i = new TH2I("H2I_HPTDCTime_BB", "HPTDC Time w/ BB Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h2i,kHPTDCTimeBB, !expert, image, !saveCorr); iHisto++;
 
- 	sprintf(name,"H2I_HPTDCTime_BG");
- 	sprintf(title,"HPTDC Time w/ BG Flag condition;Channel;Leading Time [ns]");
- 	h2i = new TH2I(name, title,kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+ 	h2i = new TH2I("H2I_HPTDCTime_BG", "HPTDC Time w/ BG Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h2i,kHPTDCTimeBG, !expert, image, !saveCorr); iHisto++;
 	
- 	sprintf(name,"H1D_V0A_Time");
- 	sprintf(title,"V0A Time;Time [ns];Counts");
- 	h1d = new TH1D(name, title,kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+ 	h1d = new TH1D("H1D_V0A_Time", "V0A Time;Time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h1d,kV0ATime, expert, !image, saveCorr); iHisto++;
 	
- 	sprintf(name,"H1D_V0C_Time");
- 	sprintf(title,"V0C Time;Time [ns];Counts");
- 	h1d = new TH1D(name, title,kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
+ 	h1d = new TH1D("H1D_V0C_Time", "V0C Time;Time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h1d,kV0CTime, expert, !image, saveCorr); iHisto++;
 	
- 	sprintf(name,"H1D_Diff_Time");
- 	sprintf(title,"Diff V0A-V0C Time;Time [ns];Counts");
- 	h1d = new TH1D(name, title,2*kNTdcTimeBins, -kTdcTimeMax, kTdcTimeMax);
+ 	h1d = new TH1D("H1D_Diff_Time","Diff V0A-V0C Time;Time [ns];Counts",2*kNTdcTimeBins, -50., 50.);
  	Add2RawsList(h1d,kDiffTime, expert, !image, saveCorr); iHisto++;
+
+    h2d = new TH2D("H2D_TimeV0A_V0C", "Mean Time in V0C versus V0A;Time V0A [ns];Time V0C [ns]", 
+  		150, kTimeMin,kTimeMax,150,kTimeMin,kTimeMax) ;  
+    Add2RawsList(h2d,kTimeV0AV0C, expert, image, !saveCorr);   iHisto++;
 	
  	// Creation of Flag versus LHC Clock histograms 
 
- 	sprintf(name,"H1D_BBFlagPerChannel");
- 	sprintf(title,"BB-Flags Versus Channel;Channel;BB Flags Count");
- 	h1d = new TH1D(name, title,kNChannelBins, kChannelMin, kChannelMax );
+ 	h1d = new TH1D("H1D_BBFlagPerChannel", "BB-Flags Versus Channel;Channel;BB Flags Count",kNChannelBins, kChannelMin, kChannelMax );
+	h1d->SetMinimum(0);
  	Add2RawsList(h1d,kBBFlagsPerChannel, !expert, image, !saveCorr); iHisto++;
 
- 	sprintf(name,"H2D_BBFlagVsClock");
- 	sprintf(title,"BB-Flags Versus LHC-Clock;Channel;LHC Clocks");
- 	h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+ 	h2d = new TH2D("H2D_BBFlagVsClock", "BB-Flags Versus LHC-Clock;Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
  	Add2RawsList(h2d,kBBFlagVsClock, expert, !image, !saveCorr); iHisto++;
 	
- 	sprintf(name,"H2D_BGFlagVsClock");
- 	sprintf(title,"BG-Flags Versus LHC-Clock;Channel;LHC Clocks");
- 	h2d = new TH2D(name, title,kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+ 	h2d = new TH2D("H2D_BGFlagVsClock", "BG-Flags Versus LHC-Clock;Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
  	Add2RawsList(h2d,kBGFlagVsClock, expert, !image, !saveCorr); iHisto++;
 	 
- 	sprintf(name,"TREND_MeanChargePerRing");
- 	sprintf(title,"Mean Charge per Event and per Ring versus time ");
- 	trend = new AliVZEROTrending(name, title);
- 	Add2RawsList(trend,kRawMeanChargePerRing, expert, !image, !saveCorr); iHisto++;
-	 
- 	sprintf(name,"TREND_MeanFlagPerRing");
- 	sprintf(title,"Mean Flag per Event and per Ring versus time ");
- 	trend = new AliVZEROTrending(name, title);
- 	Add2RawsList(trend,kRawMeanFlagPerRing, expert, !image, !saveCorr); iHisto++;
-	 
- 	sprintf(name,"H1D_DQMFlag");
- 	sprintf(title,"Current Flag per Event / Mean Flag per Event ");
- 	h1d = new TH1D(name, title, kNChannelBins, kChannelMin, kChannelMax);
-	h1d->SetFillColor(29);
-	h1d->SetLineWidth(2);
-	h1d->GetXaxis()->SetLabelSize(0.06);
-    h1d->GetXaxis()->SetNdivisions(808,kFALSE);
-	h1d->GetXaxis()->SetBinLabel(4, "V0C");h1d->GetXaxis()->SetBinLabel(5, "R0");
-	h1d->GetXaxis()->SetBinLabel(12, "V0C");h1d->GetXaxis()->SetBinLabel(13, "R1");
-	h1d->GetXaxis()->SetBinLabel(20, "V0C");h1d->GetXaxis()->SetBinLabel(21, "R2");
-	h1d->GetXaxis()->SetBinLabel(28, "V0C");h1d->GetXaxis()->SetBinLabel(29, "R3");
-	h1d->GetXaxis()->SetBinLabel(36, "V0A");h1d->GetXaxis()->SetBinLabel(37, "R0");
-	h1d->GetXaxis()->SetBinLabel(44, "V0A");h1d->GetXaxis()->SetBinLabel(45, "R1");
-	h1d->GetXaxis()->SetBinLabel(52, "V0A");h1d->GetXaxis()->SetBinLabel(53, "R2");
-	h1d->GetXaxis()->SetBinLabel(60, "V0A");h1d->GetXaxis()->SetBinLabel(61, "R3");
-	h1d->GetXaxis()->CenterTitle();
-    h1d->GetXaxis()->SetTitleOffset(0.8);
-    h1d->GetXaxis()->SetNdivisions(808,kFALSE);
- 	Add2RawsList(h1d,kRawDQMFlag, expert, image, !saveCorr); iHisto++;
-	 
- 	sprintf(name,"H1D_DQMCharge");
- 	sprintf(title,"Current Charge per Event / Mean Charge per Event ");
- 	h1d = new TH1D(name, title, kNChannelBins, kChannelMin, kChannelMax);
-	h1d->SetFillColor(29);
-	h1d->SetLineWidth(2);
-	h1d->GetXaxis()->SetLabelSize(0.06);
-    h1d->GetXaxis()->SetNdivisions(808,kFALSE);
-	h1d->GetXaxis()->SetBinLabel(4, "V0C");h1d->GetXaxis()->SetBinLabel(5, "R0");
-	h1d->GetXaxis()->SetBinLabel(12, "V0C");h1d->GetXaxis()->SetBinLabel(13, "R1");
-	h1d->GetXaxis()->SetBinLabel(20, "V0C");h1d->GetXaxis()->SetBinLabel(21, "R2");
-	h1d->GetXaxis()->SetBinLabel(28, "V0C");h1d->GetXaxis()->SetBinLabel(29, "R3");
-	h1d->GetXaxis()->SetBinLabel(36, "V0A");h1d->GetXaxis()->SetBinLabel(37, "R0");
-	h1d->GetXaxis()->SetBinLabel(44, "V0A");h1d->GetXaxis()->SetBinLabel(45, "R1");
-	h1d->GetXaxis()->SetBinLabel(52, "V0A");h1d->GetXaxis()->SetBinLabel(53, "R2");
-	h1d->GetXaxis()->SetBinLabel(60, "V0A");h1d->GetXaxis()->SetBinLabel(61, "R3");
-	h1d->GetXaxis()->CenterTitle();
-    h1d->GetXaxis()->SetTitleOffset(0.8);
-    h1d->GetXaxis()->SetNdivisions(808,kFALSE);
- 	Add2RawsList(h1d,kRawDQMCharge, expert, image, !saveCorr); iHisto++;
 	 
  	AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
  }
@@ -530,11 +416,8 @@ void AliVZEROQADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  char tDCname[100];
-  char aDCname[100];
   TH1I *fhDigTDC[64]; 
   TH1I *fhDigADC[64]; 
-  char texte[100];
   
   // create Digits histograms in Digits subdir
   TH1I * h0 = new TH1I("hDigitMultiplicity", "Digits multiplicity distribution in VZERO;# of Digits;Entries", 100, 0, 99) ; 
@@ -543,13 +426,9 @@ void AliVZEROQADataMakerRec::InitDigits()
   
   for (Int_t i=0; i<64; i++)
     {
-    sprintf(tDCname, "hDigitTDC%d", i);
-    sprintf(texte,"Digit TDC in cell %d; TDC value;Entries",i);    
-    fhDigTDC[i] = new TH1I(tDCname,texte,300,0.,149.);
+    fhDigTDC[i] = new TH1I(Form("hDigitTDC%d", i),Form("Digit TDC in cell %d; TDC value;Entries",i),300,0.,149.);
     
-    sprintf(aDCname,"hDigitADC%d",i);
-    sprintf(texte,"Digit ADC in cell %d;ADC value;Entries",i);
-    fhDigADC[i]= new TH1I(aDCname,texte,1024,0.,1023.);
+    fhDigADC[i]= new TH1I(Form("hDigitADC%d",i),Form("Digit ADC in cell %d;ADC value;Entries",i),1024,0.,1023.);
     
     Add2DigitsList(fhDigTDC[i],i+1, !expert, image);
     Add2DigitsList(fhDigADC[i],i+1+64, !expert, image);  
@@ -654,6 +533,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
  {
   // Fills histograms with Raws, computes average ADC values dynamically (pedestal subtracted)
                   
+					  
    // Check id histograms already created for this Event Specie
    if ( ! GetRawsData(kPedestalInt0) )
      InitRaws() ;
@@ -667,6 +547,7 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
   Int_t    mulV0A = 0 ; 
   Int_t    mulV0C = 0 ; 
   Double_t timeV0A =0., timeV0C = 0.;
+  Double_t weightV0A =0., weightV0C = 0.;
   UInt_t   itimeV0A=0, itimeV0C=0;
   Double_t chargeV0A=0., chargeV0C=0.;
   Double_t mipV0A=0., mipV0C=0.;
@@ -679,21 +560,15 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
   
   		fNTotEvents++;
 
-		if(fNSubEvents++>=fTrendingUpdateEvent && fTrendingUpdateEvent>0) {
-			fNSubEvents=0;
-			AddTrendingEntry();
-		}
        Int_t  iFlag=0;
        Int_t  pedestal;
        Int_t  integrator;
-       Bool_t BBFlag;	 
-       Bool_t BGFlag;	 
-       Float_t time, width;
-       Int_t  MBCharge;
+       Bool_t flagBB[64];	 
+       Bool_t flagBG[64];	 
+       Int_t  mbCharge;
 	   Float_t charge;
        Int_t  offlineCh;
-       TH1D * hProj;
-       Float_t adc[64]; 
+       Float_t adc[64], time[64], width[64], timeCorr[64]; 
 
        for(Int_t iChannel=0; iChannel<64; iChannel++) { // BEGIN : Loop over channels
 		   
@@ -711,7 +586,6 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   		       integrator = rawStream->GetIntegratorFlag(iChannel, j);
 
 	   		       GetRawsData((integrator == 0 ? kPedestalInt0 : kPedestalInt1))->Fill(offlineCh,pedestal);
-	   		       GetRawsData((integrator == 0 ? kPedestalCycleInt0 : kPedestalCycleInt1))->Fill(offlineCh,pedestal);
 		       }
             }
 
@@ -761,47 +635,33 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
     	   charge = rawStream->GetPedestal(iChannel,iClock); // Charge at the maximum 
 
            integrator    = rawStream->GetIntegratorFlag(iChannel,iClock);
-           BBFlag	 = rawStream->GetBBFlag(iChannel, iClock);
-           BGFlag	 = rawStream->GetBGFlag(iChannel,iClock );
+           flagBB[offlineCh]	 = rawStream->GetBBFlag(iChannel, iClock);
+           flagBG[offlineCh]	 = rawStream->GetBGFlag(iChannel,iClock );
 	       Int_t board = AliVZEROCalibData::GetBoardNumber(offlineCh);
-	       time = rawStream->GetTime(iChannel)*fCalibData->GetTimeResolution(board);
-	       width = rawStream->GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
+	       time[offlineCh] = rawStream->GetTime(iChannel)*fCalibData->GetTimeResolution(board);
+	       width[offlineCh] = rawStream->GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
 
-           GetRawsData(kChargeEoI)->Fill(offlineCh,adc[offlineCh]);
+	       if (time[offlineCh] >= 1e-6) GetRawsData(kChargeEoI)->Fill(offlineCh,adc[offlineCh]);
 
            GetRawsData((integrator == 0 ? kChargeEoIInt0 : kChargeEoIInt1))->Fill(offlineCh,charge);
-	   if(BBFlag) GetRawsData((integrator == 0 ? kChargeEoIBBInt0 : kChargeEoIBBInt1))->Fill(offlineCh,charge);
-           if(BGFlag) GetRawsData((integrator == 0 ? kChargeEoIBGInt0 : kChargeEoIBGInt1))->Fill(offlineCh,charge);
+	   	   if(flagBB[offlineCh]) GetRawsData((integrator == 0 ? kChargeEoIBBInt0 : kChargeEoIBBInt1))->Fill(offlineCh,charge);
+           if(flagBG[offlineCh]) GetRawsData((integrator == 0 ? kChargeEoIBGInt0 : kChargeEoIBGInt1))->Fill(offlineCh,charge);
 
-	   hProj = ((TH2I*)GetRawsData((integrator == 0 ? kPedestalInt0 : kPedestalInt1)))->ProjectionY("",offlineCh+1,offlineCh+1);
-	   Double_t ped   = hProj->GetMean();
-	   Double_t sigma = hProj->GetRMS();
-	   delete hProj;
+			Float_t sigma = fCalibData->GetSigma(offlineCh+64*integrator);
 
-	   Double_t chargeEoI = charge - ped;
 		   
 	   // Calculation of the number of MIP
-	   Double_t mipEoI = chargeEoI * fCalibData->GetMIPperADC(offlineCh);
+	   Double_t mipEoI = adc[offlineCh] * fCalibData->GetMIPperADC(offlineCh);
 
-	   int side = offlineCh/32;
-	   int ring = (offlineCh - 32*side) / 8;
-	   if(BBFlag) {
-	   		fFlagPerRing[side*4 + ring] += 1;
-	   		fFlagPerChannel[offlineCh] += 1;
-	   }	
-
-	   if((chargeEoI > 2.*sigma) && !(time <1.e-6)){ 
-		   fChargePerRing[side*4 + ring] += chargeEoI;	
-	   	   fChargePerChannel[offlineCh] += chargeEoI;
-		   ((TH2I*)GetRawsData((integrator == 0 ? kChargeEoICycleInt0 : kChargeEoICycleInt1)))->Fill(offlineCh,chargeEoI);
+	   if((adc[offlineCh] > 2.*sigma) && !(time[offlineCh] <1.e-6)){ 
 		   ((TH2D*)GetRawsData(kRawMIPChannel))->Fill(offlineCh,mipEoI);
         	   if(offlineCh<32) {
 				   mulV0C++;
-				   chargeV0C += chargeEoI;
+				   chargeV0C += adc[offlineCh];
 				   mipV0C += mipEoI;
 		   } else {
 				   mulV0A++;
-				   chargeV0A += chargeEoI;
+				   chargeV0A += adc[offlineCh];
 				   mipV0A += mipEoI;
 		   }
 	   }
@@ -811,93 +671,127 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   int idx;
 	   for(Int_t iBunch=0; iBunch<10; iBunch++){
 			   integrator = rawStream->GetIntMBFlag(iChannel, iBunch);
-			   BBFlag     = rawStream->GetBBMBFlag(iChannel, iBunch);
-			   BGFlag     = rawStream->GetBGMBFlag(iChannel, iBunch);
-			   MBCharge   = rawStream->GetChargeMB(iChannel, iBunch);
+			   bool bbFlag     = rawStream->GetBBMBFlag(iChannel, iBunch);
+			   bool bgFlag     = rawStream->GetBGMBFlag(iChannel, iBunch);
+			   mbCharge   = rawStream->GetChargeMB(iChannel, iBunch);
 
 			   if(integrator==0){
-				   if(BBFlag==0){
-					   if(BGFlag==0) idx = kChargeMBBB0BG0Int0;
+				   if(bbFlag==0){
+					   if(bgFlag==0) idx = kChargeMBBB0BG0Int0;
 					   else idx = kChargeMBBB0BG1Int0;
 				   } else {
-					   if(BGFlag==0) idx = kChargeMBBB1BG0Int0;
+					   if(bgFlag==0) idx = kChargeMBBB1BG0Int0;
 					   else idx = kChargeMBBB1BG1Int0;
 				   }
 			   } else {
-				   if(BBFlag==0){
-					   if(BGFlag==0) idx = kChargeMBBB0BG0Int1;
+				   if(bbFlag==0){
+					   if(bgFlag==0) idx = kChargeMBBB0BG0Int1;
 					   else idx = kChargeMBBB0BG1Int1;
 				   } else {
-					   if(BGFlag==0) idx = kChargeMBBB1BG0Int1;
+					   if(bgFlag==0) idx = kChargeMBBB1BG0Int1;
 					   else idx = kChargeMBBB1BG1Int1;
 				   }
 			   }
-			   GetRawsData(idx)->Fill(offlineCh,MBCharge);
+			   GetRawsData(idx)->Fill(offlineCh,mbCharge);
        }   
 
 	  // Fill HPTDC Time Histograms
+	   timeCorr[offlineCh] = CorrectLeadingTime(offlineCh,time[offlineCh],adc[offlineCh]);
 
-	   BBFlag   = rawStream->GetBBFlag(iChannel, 10);
-           BGFlag   = rawStream->GetBGFlag(iChannel, 10);
+  	   const Float_t p1 = 2.50; // photostatistics term in the time resolution
+ 	   const Float_t p2 = 3.00; // slewing related term in the time resolution
+	   if(timeCorr[offlineCh]>-1024 + 1.e-6){
+			Float_t nphe = adc[offlineCh]*kChargePerADC/(fCalibData->GetGain(offlineCh)*TMath::Qe());
+			Float_t timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
+				      p1*p1/nphe+
+				      p2*p2*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*
+				      TMath::Power(adc[offlineCh]/fCalibData->GetDiscriThr(offlineCh),2.*(fTimeSlewing->GetParameter(1)-1.))/
+				      (fCalibData->GetDiscriThr(offlineCh)*fCalibData->GetDiscriThr(offlineCh)));
 
-	   if(!(time<1.e-6)){
-		      if (offlineCh<32) {
-				   itimeV0C++;
-				   timeV0C += time;
-		      }else{
-				   itimeV0A++;
-				   timeV0A += time;
-		      }
+
+			if (offlineCh<32) {
+			   itimeV0C++;
+			   timeV0C += timeCorr[offlineCh]/(timeErr*timeErr);
+			   weightV0C += 1./(timeErr*timeErr);
+			}else{
+			   itimeV0A++;
+			   timeV0A += timeCorr[offlineCh]/(timeErr*timeErr);
+			   weightV0A += 1./(timeErr*timeErr);
+			}
 	   }
-           GetRawsData(kHPTDCTime)->Fill(offlineCh,time);
-           GetRawsData(kWidth)->Fill(offlineCh,width);
-           if(BBFlag) {
-		  GetRawsData(kHPTDCTimeBB)->Fill(offlineCh,time);
-  	          GetRawsData(kWidthBB)->Fill(offlineCh,width);
-           }
-	   if(BGFlag) {
-	          GetRawsData(kHPTDCTimeBG)->Fill(offlineCh,time);
-	          GetRawsData(kWidthBG)->Fill(offlineCh,width);
-           }
+		GetRawsData(kHPTDCTime)->Fill(offlineCh,timeCorr[offlineCh]);
+		GetRawsData(kWidth)->Fill(offlineCh,width[offlineCh]);
+        if(flagBB[offlineCh]) {
+			GetRawsData(kHPTDCTimeBB)->Fill(offlineCh,timeCorr[offlineCh]);
+			GetRawsData(kWidthBB)->Fill(offlineCh,width[offlineCh]);
+		}
+		if(flagBG[offlineCh]) {
+			GetRawsData(kHPTDCTimeBG)->Fill(offlineCh,timeCorr[offlineCh]);
+			GetRawsData(kWidthBG)->Fill(offlineCh,width[offlineCh]);
+		}
 
 	   // Fill Flag and Charge Versus LHC-Clock histograms
 	   
 	   for(Int_t iEvent=0; iEvent<21; iEvent++){
                charge = rawStream->GetPedestal(iChannel,iEvent);
                integrator = rawStream->GetIntegratorFlag(iChannel,iEvent);
-               BBFlag	  = rawStream->GetBBFlag(iChannel, iEvent);
-               BGFlag	  = rawStream->GetBGFlag(iChannel,iEvent );
+               bool bbFlag	  = rawStream->GetBBFlag(iChannel, iEvent);
+               bool bgFlag	  = rawStream->GetBGFlag(iChannel,iEvent );
 
                ((TH2*) GetRawsData((integrator == 0 ? kChargeVsClockInt0 : kChargeVsClockInt1 )))->Fill(offlineCh,(float)iEvent-10,(float)charge);
-               ((TH2*) GetRawsData(kBBFlagVsClock))->Fill(offlineCh,(float)iEvent-10,(float)BBFlag);
-               ((TH2*) GetRawsData(kBGFlagVsClock))->Fill(offlineCh,(float)iEvent-10,(float)BGFlag);
-               if(iEvent==10) ((TH1*) GetRawsData(kBBFlagsPerChannel))->Fill(offlineCh,(float)BBFlag);
+               ((TH2*) GetRawsData(kBBFlagVsClock))->Fill(offlineCh,(float)iEvent-10,(float)bbFlag);
+               ((TH2*) GetRawsData(kBGFlagVsClock))->Fill(offlineCh,(float)iEvent-10,(float)bgFlag);
+               if(iEvent==10) ((TH1*) GetRawsData(kBBFlagsPerChannel))->Fill(offlineCh,(float)bbFlag);
            }
 
        }// END of Loop over channels
 
-	    if(itimeV0A>0) timeV0A /= itimeV0A; 
-	    else timeV0A = -1.;
-	    if(itimeV0C>0) timeV0C /= itimeV0C;
-	    else timeV0C = -1.;
-	    if(timeV0A<0. || timeV0C<0.) diffTime = -10000.;
-	    else diffTime = timeV0A - timeV0C;
-		
-	    GetRawsData(kV0ATime)->Fill(timeV0A);
-	    GetRawsData(kV0CTime)->Fill(timeV0C);
-	    GetRawsData(kDiffTime)->Fill(diffTime);
-		
-	    GetRawsData(kMultiV0A)->Fill(mulV0A);
-	    GetRawsData(kMultiV0C)->Fill(mulV0C);
+		if(weightV0A>0) timeV0A /= weightV0A; 
+		else timeV0A = -1024.;
+		if(weightV0C>0) timeV0C /= weightV0C;
+		else timeV0C = -1024.;
+		if(timeV0A<-1024.+1.e-6 || timeV0C<-1024.+1.e-6) diffTime = -1024.;
+		else diffTime = timeV0A - timeV0C;
 
-	    GetRawsData(kChargeV0A)->Fill(chargeV0A);
-	    GetRawsData(kChargeV0C)->Fill(chargeV0C);
-	    GetRawsData(kChargeV0)->Fill(chargeV0A + chargeV0C);
+		Bool_t v0ABB = kFALSE;
+		Bool_t v0CBB = kFALSE;
+		Bool_t v0ABG = kFALSE;
+		Bool_t v0CBG = kFALSE;
 		
-	    GetRawsData(kRawMIPV0A)->Fill(mipV0A);
-	    GetRawsData(kRawMIPV0C)->Fill(mipV0C);
-	    GetRawsData(kRawMIPV0)->Fill(mipV0A + mipV0C);
-	    break;
+		if(timeV0A>kMinBBA && timeV0A<kMaxBBA) {
+			v0ABB = kTRUE;
+		} else if(timeV0A>kMinBGA && timeV0A<kMaxBGA) {
+			v0ABG = kTRUE;
+		}
+		if(timeV0C>kMinBBC && timeV0C<kMaxBBC) {
+			v0CBB = kTRUE;
+		} else if(timeV0C>kMinBGC && timeV0C<kMaxBGC) {
+			v0CBG = kTRUE;
+		}
+
+// Fill Trigger output histogram
+		if(v0ABB && v0CBB) GetRawsData(kTriggers)->Fill(0);
+		if((v0ABB || v0CBB) && !(v0ABG || v0CBG)) GetRawsData(kTriggers)->Fill(1);
+		if(v0ABG && v0CBB) GetRawsData(kTriggers)->Fill(2);
+		if(v0ABB && v0CBG) GetRawsData(kTriggers)->Fill(3);
+		
+
+		GetRawsData(kV0ATime)->Fill(timeV0A);
+		GetRawsData(kV0CTime)->Fill(timeV0C);
+		GetRawsData(kDiffTime)->Fill(diffTime);
+		GetRawsData(kTimeV0AV0C)->Fill(timeV0A,timeV0C);
+
+		GetRawsData(kMultiV0A)->Fill(mulV0A);
+		GetRawsData(kMultiV0C)->Fill(mulV0C);
+
+		GetRawsData(kChargeV0A)->Fill(chargeV0A);
+		GetRawsData(kChargeV0C)->Fill(chargeV0C);
+		GetRawsData(kChargeV0)->Fill(chargeV0A + chargeV0C);
+
+		GetRawsData(kRawMIPV0A)->Fill(mipV0A);
+		GetRawsData(kRawMIPV0C)->Fill(mipV0C);
+		GetRawsData(kRawMIPV0)->Fill(mipV0A + mipV0C);
+		break;
 	    
 	} // END of SWITCH : EVENT TYPE 
 	
@@ -948,68 +842,70 @@ void AliVZEROQADataMakerRec::StartOfDetectorCycle()
   // Reset of the histogram used - to have the trend versus time -
  
   fCalibData = GetCalibData();
+ 
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
+  if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
+  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
+  Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
+
+  AliCDBEntry *entry1 = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
+  if (!entry1) AliFatal("CTP time-alignment is not found in OCDB !");
+  AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
+  l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
+
+  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("VZERO/Calib/TimeDelays");
+  if (!entry2) AliFatal("VZERO time delays are not found in OCDB !");
+  TH1F *delays = (TH1F*)entry2->GetObject();
+
+  AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("VZERO/Calib/TimeSlewing");
+  if (!entry3) AliFatal("VZERO time slewing function is not found in OCDB !");
+  fTimeSlewing = (TF1*)entry3->GetObject();
+
+  for(Int_t i = 0 ; i < 64; ++i) {
+    //Int_t board = AliVZEROCalibData::GetBoardNumber(i);
+    fTimeOffset[i] = (
+    		//	((Float_t)fCalibData->GetTriggerCountOffset(board) -
+		//	(Float_t)fCalibData->GetRollOver(board))*25.0 +
+		 //     fCalibData->GetTimeOffset(i) -
+		  //     l1Delay+
+		       delays->GetBinContent(i+1)//+
+		 //      kV0Offset
+		       );
+//		      AliInfo(Form(" fTimeOffset[%d] = %f  kV0offset %f",i,fTimeOffset[i],kV0Offset));
+  }
+
+ 
+ 
   
-  TH1* h;
-  h = GetRawsData(kPedestalCycleInt0);
-  if(h) h->Reset();
-  h = GetRawsData(kPedestalCycleInt1); 
-  if(h) h->Reset();
-  h = GetRawsData(kChargeEoICycleInt0);
-  if(h) h->Reset();
-  h = GetRawsData(kChargeEoICycleInt1);
-  if(h) h->Reset();
-	
+ 	
   TTimeStamp currentTime;
   fCycleStartTime = currentTime.GetSec();
  
   fNTotEvents = 0;
 }
 
-//-------------------------------------------------------------------------------------------------
-void AliVZEROQADataMakerRec::AddTrendingEntry(){   
-     //printf("AddTrendingEntry\n");
-	fNTrendingUpdates++;
-	
-	// Normalize to the number of events
-	for(int i=0; i<8;i++){
-//		fChargePerRing[i] *= TMath::Power(10.,i)/fTrendingUpdateEvent;
-//		fFlagPerRing[i] *= TMath::Power(10.,i)/fTrendingUpdateEvent;
-		fChargePerRing[i] /= fTrendingUpdateEvent;
-		fFlagPerRing[i] /= fTrendingUpdateEvent;
-	}
-	
-	GetRawsData(kRawDQMCharge)->Reset();
-	GetRawsData(kRawDQMFlag)->Reset();
 
-	for(int i=0; i<64;i++){
-		fChargePerChannel[i] /= fTrendingUpdateEvent;
-		fFlagPerChannel[i] /= fTrendingUpdateEvent;
-		
-		if(fMeanChargePerChannel[i]) GetRawsData(kRawDQMCharge)->Fill(i,fChargePerChannel[i]/fMeanChargePerChannel[i]);
-		else GetRawsData(kRawDQMCharge)->Fill(i,0.);
-		
-		if(fMeanFlagPerChannel[i]) GetRawsData(kRawDQMFlag)->Fill(i,fFlagPerChannel[i]/fMeanFlagPerChannel[i]);
-		else GetRawsData(kRawDQMFlag)->Fill(i,0.);
-		
-		fMeanChargePerChannel[i] = (fMeanChargePerChannel[i] * (fNTrendingUpdates-1) + fChargePerChannel[i]) / fNTrendingUpdates;
-		fMeanFlagPerChannel[i] = (fMeanFlagPerChannel[i] * (fNTrendingUpdates-1) + fFlagPerChannel[i]) / fNTrendingUpdates;
-		
-	}
-	
-	TTimeStamp currentTime;
-	((AliVZEROTrending*)GetRawsData(kRawMeanChargePerRing))->AddEntry(fChargePerRing,  currentTime.GetSec());
-	((AliVZEROTrending*)GetRawsData(kRawMeanFlagPerRing))->AddEntry(fFlagPerRing,  currentTime.GetSec());
-	//moMeanFlagPerRing->AddEntry(fFlagPerRing,  currentTime.GetSec());
-	
-	// Put back counters to zero
-	for(int i=0; i<8;i++){
-		fChargePerRing[i] = 0.;
-		fFlagPerRing[i] = 0.;
-	}
-	for(int i=0; i<64;i++){
-		fChargePerChannel[i] = 0.;
-		fFlagPerChannel[i] = 0.;
-	}
-	
+//-------------------------------------------------------------------------------------------------
+Float_t AliVZEROQADataMakerRec::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const
+{
+  // Correct the leading time
+  // for slewing effect and
+  // misalignment of the channels
+  if (time < 1e-6) return -1024;
+
+  // Channel alignment and general offset subtraction
+//  if (i < 32) time -= kV0CDelayCables;
+//  time -= fTimeOffset[i];
+  //AliInfo(Form("time-offset %f", time));
+
+  // In case of pathological signals
+  if (adc < 1e-6) return time;
+
+  // Slewing correction
+  Float_t thr = fCalibData->GetDiscriThr(i);
+  //AliInfo(Form("adc %f thr %f dtime %f ", adc,thr,fTimeSlewing->Eval(adc/thr)));
+  time -= fTimeSlewing->Eval(adc/thr);
+
+  return time;
 }
 
