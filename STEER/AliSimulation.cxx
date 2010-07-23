@@ -1880,14 +1880,21 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     //
     // Get Header
     AliHeader* header = runLoader->GetHeader();
-    //
-    TString detStr = fMakeSDigits;
     // Event loop
     Int_t nev = 0;
     while(kTRUE) {
 	if (!(rawReader->NextEvent())) break;
+
+	runLoader->SetEventNumber(nev);
+        runLoader->GetHeader()->Reset(rawReader->GetRunNumber(), 
+                                      nev, nev);
+	runLoader->TreeE()->Fill();
+        runLoader->GetEvent(nev);
+        AliInfo(Form("We are at event %d\n",nev));
+
 	//
 	// Detector loop
+        TString detStr = fMakeSDigits;
 	for (iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
 	    AliModule* det = (AliModule*) detArray->At(iDet);
 	    if (!det || !det->IsActive()) continue;
@@ -1897,7 +1904,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
 	      rawReader->Reset();
 	    }
 	} // detectors
-
+        
 
 	//
 	//  If ESD information available obtain reconstructed vertex and store in header.
@@ -1915,11 +1922,10 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
 	    header->SetGenEventHeader(mcHeader);
 	    printf("***** Saved vertex %f %f %f \n", position[0], position[1], position[2]);
 	}
-	nev++;
 //
 //      Finish the event
-	runLoader->TreeE()->Fill();
-	runLoader->SetNextEvent();
+        AliInfo(Form("Finished event %d\n",nev));
+	nev++;
     } // events
  
     delete rawReader;
