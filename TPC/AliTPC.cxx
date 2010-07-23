@@ -1058,12 +1058,22 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
     } // end of the sector digitization
   }
   // get LHC clock phase from the digits tree
+
   TParameter<float> *ph; 
-    ph = (TParameter<float>*)fLoader->TreeD()->GetUserInfo()->FindObject("lhcphase0");
+  Float_t phase;
+  TTree *digtree = fLoader->TreeD();
+  //
+  if(digtree){ // if TreeD exists
+    ph = (TParameter<float>*)digtree->GetUserInfo()->FindObject("lhcphase0");
+    phase = ph->GetVal();
+  }
+  else{ //TreeD does not exist
+    phase = 0.; 
+  }
     //
     // store lhc clock phase in S-digits tree
     //
-    fLoader->TreeS()->GetUserInfo()->Add(new TParameter<float>("lhcphase0",ph->GetVal()));
+    fLoader->TreeS()->GetUserInfo()->Add(new TParameter<float>("lhcphase0",phase));
    //
    fLoader->WriteSDigits("OVERWRITE");
 
