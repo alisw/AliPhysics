@@ -84,6 +84,7 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fLibStateAtLoad(),
 	fBits(0),
 	fDataEventsOnly(true)
+	, fMonitorPeriod(-1)
 {
   // Default constructor.
   
@@ -290,6 +291,28 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
     if (strcmp(argv[i], "-process-all-events") == 0)
     {
       fDataEventsOnly = false;
+      continue;
+    }
+
+    if (strstr(argv[i], "-monitoring") == argv[i])
+    {
+      TString param=argv[i];
+      param.ReplaceAll("-monitoring", "");
+      if (param.IsNull()) 
+      {
+	// -monitoring
+	// enable monitoring trigger for all events
+	fMonitorPeriod=0;
+      } else {
+	// -monitoring=n
+	// enable monitoring trigger once every n seconds
+	param.ReplaceAll("=", "");
+	if (param.IsDigit()) {
+	  fMonitorPeriod=param.Atoi();
+	} else {
+	  HLTError("expecting number as parameter for argument '-monitoring=', got %s, skipping monitoring trigger", param.Data());
+	}
+      }
       continue;
     }
     
@@ -530,12 +553,28 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
 
   // add readout filter to event done data
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
-  // add monitoring filter to event done data
-  CreateEventDoneReadoutFilter(decision.TriggerDomain(), 4);
-  if (decision.Result()) {
-    // add monitoring event command for triggered events
-    CreateEventDoneReadoutFilter(decision.TriggerDomain(), 5);
+
+  // add monitoring filter to event done data if enabled by setting
+  // a monitoring period >=0: -1 means off, 0 means for every event
+  // configured by argument '-monitoring[=n]'
+  if (fMonitorPeriod>=0) {
+    static UInt_t lastMonitorEvent=0;
+
+    AliHLTTriggerDomain monitoringFilter(decision.TriggerDomain());
+    if (decision.Result() &&
+	time.Get()-lastMonitorEvent>fMonitorPeriod) {
+      lastMonitorEvent=time.Get();
+      // add monitoring event command for triggered events
+      CreateEventDoneReadoutFilter(decision.TriggerDomain(), 5);
+    } else {
+      // empty filter list if events are not triggered
+      // or within the monitoring interval
+      monitoringFilter.Clear();
+    }
+    // add monitoring filter list
+    CreateEventDoneReadoutFilter(monitoringFilter, 4);
   }
+
   if (TriggerEvent(&decision) == -ENOSPC)
   {
     // Increase the estimated buffer space required if the PushBack methods in TriggerEvent

@@ -71,6 +71,9 @@ class AliHLTGlobalTrigger;
  * \li -process-all-events <br>
  *      Indicates that all events should be processed with the global trigger logic and
  *      not just the data events. The default is not to process just the data events.
+ * \li -monitoring[=n] <br>
+ *      enable monitoring trigger once every n seconds, enable for every event if
+ *      parameter n is omitted
  *
  * <h2>Configuration:</h2>
  * Configured from CDB but can be overridden with the -config argument.
@@ -304,6 +307,7 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   TString fLibStateAtLoad; //! This stores the loaded libraries just before we tell CINT to load the interpreted file.
   AliHLTUInt32_t fBits; //! Status bits
   bool fDataEventsOnly; //! Flag indicating if only data events are processed with trigger logic.
+  int fMonitorPeriod; //! Period of the monitoring trigger in s, -1 means monitoring trigger off
 
   static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   
