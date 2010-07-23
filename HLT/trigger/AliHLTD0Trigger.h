@@ -108,8 +108,8 @@ class AliHLTD0Trigger : public AliHLTTrigger
   
   void SingleTrackSelect(AliExternalTrackParam*);
   Int_t RecV0(const TObject* iter);
-  void RecD0(Int_t&,Int_t&);
-  bool CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackParam* pn);
+  void RecD0(Int_t&,Int_t&,Int_t&);
+  int CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackParam* pn);
 
   /// pt cut for decay, minimum [GeV/c]
   float fPtMin;                                            //! transient
@@ -142,6 +142,7 @@ class AliHLTD0Trigger : public AliHLTTrigger
   TObjArray *ftwoTrackArray;                                //! transient
 
   Int_t fTotalD0;                                           //! transient
+  Int_t fTotalD0Onetrue;                                       //! transient
   Int_t fTotalD0true;                                       //! transient
   AliESDVertex *fVertex;                                    //! transient
   Double_t fField;                                          //!transient
