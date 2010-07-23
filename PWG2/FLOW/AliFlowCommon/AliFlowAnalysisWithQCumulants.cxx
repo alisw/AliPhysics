@@ -731,6 +731,20 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
 
 void AliFlowAnalysisWithQCumulants::Finish()
 {
+
+
+  cout<<endl;
+  cout<<"QC"<<endl;
+  for(Int_t b=1;b<=10;b++)
+  {
+   cout<<"b = "<<b<<": "<<fDiffFlowCorrelationsPro[1][0][0]
+->GetBinContent(b)<<endl;
+  }
+
+
+
+
+
  // Calculate the final results.
  //  a) acces the constants;
  //  b) access the flags;
@@ -1408,7 +1422,7 @@ void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
     cout<<endl;
     cout<<"WARNING (QC): Inconsistent binning in histograms for phi-weights throughout the code."<<endl;
     cout<<endl;
-    exit(0);
+    //exit(0);
    }
   } else 
     {
@@ -1427,7 +1441,7 @@ void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
     cout<<endl;
     cout<<"WARNING (QC): Inconsistent binning in histograms for pt-weights throughout the code."<<endl;
     cout<<endl;
-    exit(0);
+    //exit(0);
    }
   } else 
     {
@@ -1446,7 +1460,7 @@ void AliFlowAnalysisWithQCumulants::BookAndFillWeightsHistograms()
     cout<<endl;
     cout<<"WARNING (QC): Inconsistent binning in histograms for eta-weights throughout the code."<<endl;
     cout<<endl;
-    exit(0);
+    //exit(0);
    }
   } else 
     {

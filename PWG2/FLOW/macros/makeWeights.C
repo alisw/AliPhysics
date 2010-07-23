@@ -1,20 +1,20 @@
-//=======================================================================//
-// Macro makeWeights.C is used to make phi, pt and eta weights. 
-// Before using the macro makeWeights.C you should already have 
-// available the output .root files from various methods stored 
-// in the common output file "AnalysisResults.root". 
-// When calling this macro you must specify the analysis type 
-// and the method whose output file you would like to use 
-// to make the weights for the subsequent runs (for cumulants, GFC and QC,
-// you must also specify the cumulant order).
-//=======================================================================//
+//============================================================================//
+// Macro makeWeights.C is used to make phi, pt and eta weights. Before using  //
+// this macro you should already have available output file "AnalysisResults" //
+// with results from various flow analysis methods. When calling this macro   //
+// you must specify the analysis type and flow analysis method whose output   //
+// file will be used to make the weights for the subsequent runs. See bellow  //
+// for available options for analysis type and flow analysis method. Remark:  //
+// for cumulants, GFC and QC, you must also specify the cumulant order.       //
+//============================================================================//
 
-//========================= phi-weights ========================
-// Phi-weights are obtained by inverting and normalizing the
-// azimuthal acceptance profile. This procedure isn't applicable 
-// if the detector has a gap in azimuthal acceptance (i.e. if 
-// there exists a phi bin with no entries in the histogram for
-// detector's azimuthal acceptance profile).
+//========================= phi-weights ===================================//
+// Phi-weights are obtained by inverting the azimuthal acceptance profile. //
+// This procedure fails if there is a phi bin with no entries. In order to //
+// avoid this one can attempt to rebin original histogram and make binning //
+// in phi coarser:                                                         //
+Bool_t rebinOriginalPhiHistogram = kFALSE;
+Int_t nMerge = 18; // indicates how many original bins will be merged into one new bin 
 //========================= pt-weights =========================
 // You can make pt-weights in three different ways:
 // 1.) pt-weights are growing linearly as a function of pt for 
@@ -137,6 +137,10 @@ void makeWeights(TString type="ESD", TString method="", TString cumulantOrder=""
  phiWeights->SetTitle("#phi-weights: correcting for non-uniform acceptance");
  phiWeights->SetYTitle("w_{#phi}");
  phiWeights->SetXTitle("#phi"); 
+ if(rebinOriginalPhiHistogram)
+ {
+  phiWeights->Rebin(nMerge);
+ } 
  Int_t nBinsPhi = 0; // number of phi bins
  Int_t counterOfEmptyBinsPhi = 0; // number of empty phi bins
  Double_t nParticlesInBin = 0.; // number of particles in particular phi bin
@@ -158,6 +162,7 @@ void makeWeights(TString type="ESD", TString method="", TString cumulantOrder=""
      counterOfEmptyBinsPhi++;
     }
   phiWeights->SetBinContent(b,wPhi);
+  phiWeights->SetBinError(b,0.);
  }
  if(!counterOfEmptyBinsPhi)
  {
@@ -209,7 +214,7 @@ if (method=="SP"){
   }
   if(!counterOfEmptyBinsPhiSub0) {
     weightsList->Add(phiWeightsSub0);
-    cout<<"Phi weights created."<<endl;
+    cout<<"Phi weights created for subevent 0."<<endl;
   } else {
     cout<<"WARNING: Couldn't create phi weights for subevent 0 because "<<counterOfEmptyBinsPhiSub0<<" phi bins were empty !!!!"<<endl;
   }
@@ -230,7 +235,7 @@ if (method=="SP"){
   }
   if(!counterOfEmptyBinsPhiSub1) {
     weightsList->Add(phiWeightsSub1);
-    cout<<"Phi weights created."<<endl;
+    cout<<"Phi weights created for subevent 1."<<endl;
   } else {
     cout<<"WARNING: Couldn't create phi weights for subevent 1 because "<<counterOfEmptyBinsPhiSub1<<" phi bins were empty !!!!"<<endl;
   }
