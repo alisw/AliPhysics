@@ -227,18 +227,6 @@ public:
   void Init(const char* options);
 
   /**
-   * Init streamer infos for the relevent classes to be extracted from HLT raw
-   * data payload. Reads the info from HLT/Calib/StreamerInfo
-   */
-  int InitStreamerInfos();
-
-  /**
-   * Init streamer infos for the relevant classes to be extracted from HLT raw
-   * data payload.
-   */
-  int InitStreamerInfos(TObjArray* pSchemas) const;
-
-  /**
    * Build the CTP_TRIGGER_CLASSES string from CTP trigger configuration
    */
   int BuildCTPTriggerClassString(TString& triggerclasses) const;

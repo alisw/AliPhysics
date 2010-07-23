@@ -191,90 +191,10 @@ void AliHLTReconstructor::Init()
   fpEsdManager=AliHLTEsdManager::New();
   fpEsdManager->SetOption(esdManagerOptions.Data());
 
-  InitStreamerInfos();
+  AliHLTMisc::Instance().InitStreamerInfos(fgkCalibStreamerInfoEntry);
 }
 
 const char* AliHLTReconstructor::fgkCalibStreamerInfoEntry="HLT/Calib/StreamerInfo";
-
-int AliHLTReconstructor::InitStreamerInfos()
-{
-  // init streamer infos for HLT reconstruction
-  // Root schema evolution is not enabled for AliHLTMessage and all streamed objects.
-  // Objects in the raw data payload rely on the availability of the correct stream info.
-  // The relevant streamer info for a specific run is stored in the OCDB.
-  // The method evaluates the following entries:
-  // - HLT/Calib/StreamerInfo
-  int iResult=0;
-
-  // to be activated later, this is supposed to go as patch into the v4-17-Release branch
-  // which doe snot have the AliHLTMisc implementation
-  //AliCDBEntry* pEntry=AliHLTMisc::Instance().LoadOCDBEntry(fgkCalibStreamerInfoEntry);
-  AliCDBEntry* pEntry=AliCDBManager::Instance()->Get(fgkCalibStreamerInfoEntry);
-  TObject* pObject=NULL;
-  //if (pEntry && (pObject=AliHLTMisc::Instance().ExtractObject(pEntry))!=NULL)
-  if (pEntry && (pObject=pEntry->GetObject())!=NULL)
-    {
-    TObjArray* pSchemas=dynamic_cast<TObjArray*>(pObject);
-    if (pSchemas) {
-      iResult=InitStreamerInfos(pSchemas);
-    } else {
-      AliError(Form("internal mismatch in OCDB entry %s: wrong class type", fgkCalibStreamerInfoEntry));
-    }
-  } else {
-    AliWarning(Form("missing HLT reco data (%s), skipping initialization of streamer info for TObjects in HLT raw data payload", fgkCalibStreamerInfoEntry));
-  }
-  return iResult;
-}
-
-int AliHLTReconstructor::InitStreamerInfos(TObjArray* pSchemas) const
-{
-  // init streamer infos for HLT reconstruction from an array of TStreamerInfo objects
-
-  for (int i=0; i<pSchemas->GetEntriesFast(); i++) {
-    if (pSchemas->At(i)) {
-      TStreamerInfo* pSchema=dynamic_cast<TStreamerInfo*>(pSchemas->At(i));
-      if (pSchema) {
-	int version=pSchema->GetClassVersion();
-	TClass* pClass=TClass::GetClass(pSchema->GetName());
-	if (pClass) {
-	  if (pClass->GetClassVersion()==version) {
-	    AliDebug(0,Form("skipping schema definition %d version %d to class %s as this is the native version", i, version, pSchema->GetName()));
-	    continue;
-	  }
-	  TObjArray* pInfos=pClass->GetStreamerInfos();
-	  if (pInfos /*&& version<pInfos->GetEntriesFast()*/) {
-	    if (pInfos->At(version)==NULL) {
-	      TStreamerInfo* pClone=(TStreamerInfo*)pSchema->Clone();
-	      if (pClone) {
-		pClone->SetClass(pClass);
-		pClone->BuildOld();
-		pInfos->AddAtAndExpand(pClone, version);
-		AliDebug(0,Form("adding schema definition %d version %d to class %s", i, version, pSchema->GetName()));
-	      } else {
-		AliError(Form("skipping schema definition %d (%s), unable to create clone object", i, pSchema->GetName()));
-	      }
-	    } else {
-	      TStreamerInfo* pInfo=dynamic_cast<TStreamerInfo*>(pInfos->At(version));
-	      if (pInfo && pInfo->GetClassVersion()==version) {
-		AliDebug(0,Form("schema definition %d version %d already available in class %s, skipping ...", i, version, pSchema->GetName()));
-	      } else {
-		AliError(Form("can not verify version for already existing schema definition %d (%s) version %d: version of existing definition is %d", i, pSchema->GetName(), version, pInfo?pInfo->GetClassVersion():-1));
-	      }
-	    }
-	  } else {
-	    AliError(Form("skipping schema definition %d (%s), unable to set version %d in info array of size %d", i, pSchema->GetName(), version, pInfos?pInfos->GetEntriesFast():-1));
-	  }
-	} else {
-	  AliError(Form("skipping schema definition %d (%s), unable to find class", i, pSchema->GetName()));
-	}
-      } else {
-	AliError(Form("skipping schema definition %d, not of TStreamerInfo", i));
-      }
-    }
-  }
-
-  return 0;
-}
 
 void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clustersTree*/) const 
 {
@@ -436,7 +356,7 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd, bo
       if (pObject) {
 	TObjArray* pArray=dynamic_cast<TObjArray*>(pObject);
 	if (pArray) {
-	  InitStreamerInfos(pArray);
+	  AliHLTMisc::Instance().InitStreamerInfos(pArray);
 	} else {
 	  AliError(Form("wrong class type of streamer info list: expected TObjArray, but object is of type %s", pObject->Class()->GetName()));
 	}
@@ -584,7 +504,7 @@ int AliHLTReconstructor::BuildCTPTriggerClassString(TString& triggerclasses) con
 	    delete pTokens;
 	  }
 	} else {
-	  AliError(Form("can not find trigger cluster %s in config", trclass->GetCluster()));
+	  AliError(Form("can not find trigger cluster %s in config", trclass->GetCluster()?trclass->GetCluster()->GetName():"NULL"));
 	  iResult=-EPROTO;
 	  break;
 	}
