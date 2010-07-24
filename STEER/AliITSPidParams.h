@@ -27,80 +27,80 @@ class AliITSPidParams : public TNamed {
   Double_t GetLandauGausNorm(Double_t dedx, Int_t partType, Double_t mom, Int_t lay) const;
 
   // pion setters
-  void SetSDDPionMPV(TFormula* form){
+  void SetSDDPionMPV(const TFormula* form){
     if(fSDDPionMPV) delete fSDDPionMPV;
     fSDDPionMPV=new TFormula(*form);
   }
-  void SetSDDPionLandauWidth(TFormula* form){
+  void SetSDDPionLandauWidth(const TFormula* form){
     if(fSDDPionLandauWidth) delete fSDDPionLandauWidth;
     fSDDPionLandauWidth=new TFormula(*form);
   }
-  void SetSDDPionGaussWidth(TFormula* form){
+  void SetSDDPionGaussWidth(const TFormula* form){
     if(fSDDPionGaussWidth) delete fSDDPionGaussWidth;
     fSDDPionGaussWidth=new TFormula(*form);
   }
-  void SetSSDPionMPV(TFormula* form){
+  void SetSSDPionMPV(const TFormula* form){
     if(fSSDPionMPV) delete fSSDPionMPV;
     fSSDPionMPV=new TFormula(*form);
   }
-  void SetSSDPionLandauWidth(TFormula* form){
+  void SetSSDPionLandauWidth(const TFormula* form){
     if(fSSDPionLandauWidth) delete fSSDPionLandauWidth;
     fSSDPionLandauWidth=new TFormula(*form);
   }
-  void SetSSDPionGaussWidth(TFormula* form){
+  void SetSSDPionGaussWidth(const TFormula* form){
     if(fSSDPionGaussWidth) delete fSSDPionGaussWidth;
     fSSDPionGaussWidth=new TFormula(*form);
   }
 
   // kaon setters
-  void SetSDDKaonMPV(TFormula* form){
+  void SetSDDKaonMPV(const TFormula* form){
     if(fSDDKaonMPV) delete fSDDKaonMPV;
     fSDDKaonMPV=new TFormula(*form);
   }
-  void SetSDDKaonLandauWidth(TFormula* form){
+  void SetSDDKaonLandauWidth(const TFormula* form){
     if(fSDDKaonLandauWidth) delete fSDDKaonLandauWidth;
     fSDDKaonLandauWidth=new TFormula(*form);
   }
-  void SetSDDKaonGaussWidth(TFormula* form){
+  void SetSDDKaonGaussWidth(const TFormula* form){
     if(fSDDKaonGaussWidth) delete fSDDKaonGaussWidth;
     fSDDKaonGaussWidth=new TFormula(*form);
   }
-  void SetSSDKaonMPV(TFormula* form){
+  void SetSSDKaonMPV(const TFormula* form){
     if(fSSDKaonMPV) delete fSSDKaonMPV;
     fSSDKaonMPV=new TFormula(*form);
   }
-  void SetSSDKaonLandauWidth(TFormula* form){
+  void SetSSDKaonLandauWidth(const TFormula* form){
     if(fSSDKaonLandauWidth) delete fSSDKaonLandauWidth;
     fSSDKaonLandauWidth=new TFormula(*form);
   }
-  void SetSSDKaonGaussWidth(TFormula* form){
+  void SetSSDKaonGaussWidth(const TFormula* form){
     if(fSSDKaonGaussWidth) delete fSSDKaonGaussWidth;
     fSSDKaonGaussWidth=new TFormula(*form);
   }
 
 
   // proton setters
-  void SetSDDProtMPV(TFormula* form){
+  void SetSDDProtMPV(const TFormula* form){
     if(fSDDProtMPV) delete fSDDProtMPV;
     fSDDProtMPV=new TFormula(*form);
   }
-  void SetSDDProtLandauWidth(TFormula* form){
+  void SetSDDProtLandauWidth(const TFormula* form){
     if(fSDDProtLandauWidth) delete fSDDProtLandauWidth;
     fSDDProtLandauWidth=new TFormula(*form);
   }
-  void SetSDDProtGaussWidth(TFormula* form){
+  void SetSDDProtGaussWidth(const TFormula* form){
     if(fSDDProtGaussWidth) delete fSDDProtGaussWidth;
     fSDDProtGaussWidth=new TFormula(*form);
   }
-  void SetSSDProtMPV(TFormula* form){
+  void SetSSDProtMPV(const TFormula* form){
     if(fSSDProtMPV) delete fSSDProtMPV;
     fSSDProtMPV=new TFormula(*form);
   }
-  void SetSSDProtLandauWidth(TFormula* form){
+  void SetSSDProtLandauWidth(const TFormula* form){
     if(fSSDProtLandauWidth) delete fSSDProtLandauWidth;
     fSSDProtLandauWidth=new TFormula(*form);
   }
-  void SetSSDProtGaussWidth(TFormula* form){
+  void SetSSDProtGaussWidth(const TFormula* form){
     if(fSSDProtGaussWidth) delete fSSDProtGaussWidth;
     fSSDProtGaussWidth=new TFormula(*form);
   }
