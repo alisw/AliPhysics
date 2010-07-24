@@ -35,37 +35,41 @@ const Int_t    minITSClusters = 5;
 
 //----------------------------------------------------
 
-AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* cutFile = "../cut_files/D0toKpiCutsTGH.root",Bool_t isKeepD0fromB=kFALSE)
+AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* cutFile = "./D0toKpiCuts.root",Bool_t isKeepD0fromB=kFALSE, Bool_t isKeepD0fromBOnly=kFALSE)
 {
-	printf("Addig CF task using cuts from file %s\n",cutFile);
+  printf("Adding CF task using cuts from file %s\n",cutFile);
+  
+  TFile* fileCuts = new TFile(cutFile);
+  AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCuts");
 
-	TFile* fileCuts = new TFile(cutFile);
-	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCuts");
+  // check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
+  //  for now the binning is the same than for all D's
+  if(isKeepD0fromBOnly) isKeepD0fromB = true;
 
-	/*
-	  Double_t ptmin_0_4;
-	  Double_t ptmax_0_4;
-	  Double_t ptmin_4_8;
-	  Double_t ptmax_4_8;
-	  Double_t ptmin_8_10;
-	  Double_t ptmax_8_10;
-	  
-	  if(!isKeepD0fromB){
-	  ptmin_0_4 =  0.0 ;
-	  ptmax_0_4 =  4.0 ;
-	  ptmin_4_8 =  4.0 ;
-	  ptmax_4_8 =  8.0 ;
-	  ptmin_8_10 =  8.0 ;
-	  ptmax_8_10 =  10.0 ;
-	  } else{
-	  ptmin_0_4 =  0.0 ;
-	  ptmax_0_4 =  3.0 ;
-	  ptmin_4_8 =  3.0 ;
-	  ptmax_4_8 =  5.0 ;
-	  ptmin_8_10 =  5.0 ;
-	  ptmax_8_10 =  10.0 ;
-	  }
-	*/
+  /*
+    Double_t ptmin_0_4;
+    Double_t ptmax_0_4;
+    Double_t ptmin_4_8;
+    Double_t ptmax_4_8;
+    Double_t ptmin_8_10;
+    Double_t ptmax_8_10;
+    
+    if(!isKeepD0fromB){
+    ptmin_0_4 =  0.0 ;
+    ptmax_0_4 =  4.0 ;
+    ptmin_4_8 =  4.0 ;
+    ptmax_4_8 =  8.0 ;
+    ptmin_8_10 =  8.0 ;
+    ptmax_8_10 =  10.0 ;
+    } else{
+    ptmin_0_4 =  0.0 ;
+    ptmax_0_4 =  3.0 ;
+    ptmin_4_8 =  3.0 ;
+    ptmax_4_8 =  5.0 ;
+    ptmin_8_10 =  5.0 ;
+    ptmax_8_10 =  10.0 ;
+    }
+  */
 
 	//CONTAINER DEFINITION
 	Info("AliCFHeavyFlavourTaskMultiVarMultiStep","SETUP CONTAINER");
@@ -266,6 +270,9 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	if(!isKeepD0fromB) {
 	  nameContainer="CFHFccontainer0";
 	}
+	else if(isKeepD0fromBOnly){
+	  nameContainer="CFHFccontainer0D0fromB";
+	}
 	else  {
 	  nameContainer="CFHFccontainer0allD0";
 
@@ -309,7 +316,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
         container -> SetStepTitle(6, "RecoAcc");
 	container -> SetStepTitle(7, "RecoITSCluster");
 	container -> SetStepTitle(8, "RecoCuts");
-	container -> SetStepTitle(8, "RecoPID");
+	container -> SetStepTitle(9, "RecoPID");
 
         container -> SetVarTitle(ipt,"pt");
 	container -> SetVarTitle(iy,"y");
@@ -396,6 +403,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	task->SetMinITSClusters(minITSClusters);
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetKeepD0fromB(isKeepD0fromB);
+	task->SetKeepD0fromBOnly(isKeepD0fromBOnly);
 	
         //-----------------------------------------------------------//
         //   create correlation matrix for unfolding - only eta-pt   //
@@ -416,6 +424,9 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	TString nameCorr="";
 	if(!isKeepD0fromB) {
 	  nameCorr="CFHFcorr0";
+	}
+	else if(isKeepD0fromBOnly){
+	  nameCorr= "CFHFcorr0KeepD0fromBOnly";
 	}
 	else  {
 	  nameCorr="CFHFcorr0allD0";
@@ -457,6 +468,10 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	if(!isKeepD0fromB) {
 	  outputfile += ":PWG3_D2H_CFtaskD0toKpi";
 	  output1name="CFHFchist0";
+	}
+	else if(isKeepD0fromBOnly){
+	  outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepD0fromBOnly";
+	  output1name="CFHFchist0D0fromB";
 	}
 	else  {
 	  outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepD0fromB";

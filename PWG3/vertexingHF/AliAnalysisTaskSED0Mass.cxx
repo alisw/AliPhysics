@@ -604,6 +604,10 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  if(!vtx1) { 
+    AliError("There is no primary vertex !"); 
+    return; 
+  }
 
   Bool_t isGoodVtx=kFALSE;
 

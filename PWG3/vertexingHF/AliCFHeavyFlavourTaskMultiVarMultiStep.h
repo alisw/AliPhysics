@@ -83,6 +83,7 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Int_t    CheckOrigin(AliAODMCParticle* mcPart, TClonesArray* mcArray) const;
 
   void SetKeepD0fromB(Bool_t keepD0fromB){fKeepD0fromB=keepD0fromB;}
+  void SetKeepD0fromBOnly(Bool_t keepD0fromBOnly){ fKeepD0fromBOnly=keepD0fromBOnly; }
 
  protected:
   Int_t           fPDG;         //  PDG code of searched V0's
@@ -105,9 +106,10 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Bool_t fAcceptanceUnf;        //  flag for unfolding before or after cuts.
 
   Bool_t fKeepD0fromB;          // flag to consider also D0 coming from B
+  Bool_t fKeepD0fromBOnly;      // flag to consider _only_ D0 coming from B
   AliRDHFCutsD0toKpi* fCuts;    // cuts
   
-  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,4); // class for HF corrections as a function of many variables
+  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,5); // class for HF corrections as a function of many variables
 };
 
 #endif
