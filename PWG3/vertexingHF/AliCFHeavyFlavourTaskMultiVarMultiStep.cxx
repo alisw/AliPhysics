@@ -76,6 +76,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep()
 	fMinITSClusters(5),
         fAcceptanceUnf(kTRUE),
 	fKeepD0fromB(kFALSE),
+	fKeepD0fromBOnly(kFALSE),
 	fCuts(0)
 {
 	//
@@ -103,6 +104,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
 	fMinITSClusters(5),
         fAcceptanceUnf(kTRUE),
 	fKeepD0fromB(kFALSE),
+        fKeepD0fromBOnly(kFALSE),
 	fCuts(cuts)
 {
 	//
@@ -157,6 +159,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
 	fMinITSClusters(c.fMinITSClusters),
         fAcceptanceUnf(c.fAcceptanceUnf),
 	fKeepD0fromB(c.fKeepD0fromB),
+        fKeepD0fromBOnly(c.fKeepD0fromBOnly),
 	fCuts(c.fCuts)
 {
 	//
@@ -172,7 +175,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::~AliCFHeavyFlavourTaskMultiVarMultiStep(
 	if (fCFManager)           delete fCFManager ;
 	if (fHistEventsProcessed) delete fHistEventsProcessed ;
         if (fCorrelation) delete fCorrelation ;
-        if (fCuts) delete fCuts ;
+	//        if (fCuts) delete fCuts ;
 }
 
 //_________________________________________________
@@ -197,6 +200,12 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 		return;
 	}
 	
+	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
+	if(fKeepD0fromBOnly) { 
+	  fKeepD0fromB=true;   
+	  if(fEvents<2) AliInfo(Form("Both fKeepD0fromB and fKeepD0fromBOnly flags are true, looking _ONLY_ at D0 FROM B"));
+	}
+
 	fEvents++;
 	if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
 	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
@@ -261,6 +270,10 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 		
 	// AOD primary vertex
 	AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
+	if(!vtx1) { 
+	  AliError("There is no primary vertex !"); 
+	  return; 
+	}
 	Double_t zPrimVertex = vtx1->GetZ();
 	Double_t zMCVertex = mcHeader->GetVtxZ();
 	Bool_t vtxFlag = kTRUE;
@@ -285,6 +298,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			AliDebug(2,Form("Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
 			if (!fKeepD0fromB) continue;  // skipping particles that don't come from c quark
 		}
+		else { if(fKeepD0fromBOnly) continue; } // skipping particles that don't come from b quark
 		
 		//		if (TMath::Abs(pdgGranma)!=4) {
 
@@ -304,6 +318,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			containerInputMC[10] = 1.01;    // dummy value, meaningless in MC
 			containerInputMC[11] = vectorMC[6];    // dummy value, meaningless in MC
 			containerInputMC[12] = zMCVertex;    // z of reconstructed of primary vertex
+			if (!fCuts->IsInFiducialAcceptance(vectorMC[0],vectorMC[1])) continue;
 			if (TMath::Abs(vectorMC[1]) < 0.5) {
 				fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGeneratedLimAcc);
 			}
@@ -326,6 +341,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter1));
 			if (!mcPartDaughter0 || !mcPartDaughter1) {
 				AliWarning("At least one Daughter Particle not found in tree, but it should be, this check was already done..."); 
+				continue;
 			}
 			Double_t eta0 = mcPartDaughter0->Eta();
 			Double_t eta1 = mcPartDaughter1->Eta();
@@ -422,6 +438,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	for (Int_t iD0toKpi = 0; iD0toKpi<arrayD0toKpi->GetEntriesFast(); iD0toKpi++) {
 		
 		AliAODRecoDecayHF2Prong* d0tokpi = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->At(iD0toKpi);
+		if(!d0tokpi) continue;
 		Bool_t unsetvtx=kFALSE;
 		if(!d0tokpi->GetOwnPrimaryVtx()) {
 		  d0tokpi->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
@@ -433,6 +450,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 		if (mcLabel == -1) 
 			{
 				AliDebug(2,"No MC particle found");
+				continue;
 			}
 		else {
 			AliAODMCParticle* mcVtxHF = (AliAODMCParticle*)mcArray->At(mcLabel);
@@ -443,6 +461,10 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 			// check whether the daughters have kTPCrefit and kITSrefit set
 			AliAODTrack *track0 = (AliAODTrack*)d0tokpi->GetDaughter(0);
 			AliAODTrack *track1 = (AliAODTrack*)d0tokpi->GetDaughter(1);
+			if( !track0 || !track1 ) {
+			  AliWarning("Could not find associated MC daughter tracks in AOD MC tree");
+			  continue;
+			}
 			if ((trackCuts->GetRequireTPCRefit() && (!(track0->GetStatus()&AliESDtrack::kTPCrefit) || !(track1->GetStatus()&AliESDtrack::kTPCrefit))) || 
 			    (trackCuts->GetRequireITSRefit() && (!(track0->GetStatus()&AliESDtrack::kITSrefit) || !(track1->GetStatus()&AliESDtrack::kITSrefit)))){
 				// skipping if at least one daughter does not have kTPCrefit or kITSrefit, if they were required
@@ -473,6 +495,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				AliDebug(2,Form("At Reco level, from MC info: Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
 				if (!fKeepD0fromB) continue;  // skipping particles that don't come from c quark
 			}
+			else { if(fKeepD0fromBOnly) continue; } // skipping particles that don't come from b quark
 
 			// fill the container...
 			Double_t pt = d0tokpi->Pt();
@@ -546,6 +569,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					continue;
 				}
 			}
+
+			if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])) continue; // fiducial region
 
 			AliDebug(2, Form("Filling the container with pt = %f, rapidity = %f, cosThetaStar = %f, pTpi = %f, pTK = %f, cT = %f", containerInput[0], containerInput[1], containerInput[2], containerInput[3], containerInput[4], containerInput[5]));
 			icountReco++;
@@ -1053,7 +1078,11 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
         corr2->Draw("text");
       
 
-	TFile* file_projection = new TFile("CFtaskHFprojection.root","RECREATE");
+	TString projection_filename="CFtaskHFprojection";
+	if(fKeepD0fromBOnly) projection_filename+="_KeepD0fromBOnly";
+	else if(fKeepD0fromB) projection_filename+="_KeepD0fromB";
+	projection_filename+=".root";
+	TFile* file_projection = new TFile(projection_filename.Data(),"RECREATE");
 
         corr1->Write();
         corr2->Write();
