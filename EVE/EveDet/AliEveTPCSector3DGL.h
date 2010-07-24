@@ -30,7 +30,6 @@ public:
   AliEveTPCSector3DGL();
   virtual ~AliEveTPCSector3DGL();
 
-  virtual Bool_t   ShouldDLCache(const TGLRnrCtx&) const { return kFALSE; }
   virtual ELODAxes SupportedLODAxes()              const { return kLODAxesAll; }
   virtual Short_t  QuantizeShapeLOD(Short_t shapeLOD, Short_t combiLOD) const;
 

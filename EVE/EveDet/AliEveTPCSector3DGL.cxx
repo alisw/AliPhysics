@@ -29,7 +29,7 @@ AliEveTPCSector3DGL::AliEveTPCSector3DGL() :
 {
   // Constructor.
 
-  // fDLCache = false; // Disable display list.
+  fDLCache = false; // Disable display list.
 }
 
 AliEveTPCSector3DGL::~AliEveTPCSector3DGL()
