@@ -680,52 +680,47 @@ Bool_t AliZDC::Raw2SDigits(AliRawReader* rawReader)
     return kFALSE;
   }
 
-//  // Event loop
-  Int_t iEvent = 0;
-  while(rawReader->NextEvent()){
-    (AliRunLoader::Instance())->GetEvent(iEvent++);
-    // Create the output digit tree
-    TTree* treeS = loader->TreeS();
-    if(!treeS){
-      loader->MakeTree("S");
-      treeS = loader->TreeS();
-    }
-    //
-    AliZDCSDigit sdigit;
-    AliZDCSDigit* psdigit = &sdigit;
-    const Int_t kBufferSize = 4000;
-    treeS->Branch("ZDC", "AliZDCSDigit",  &psdigit, kBufferSize);
-    //
-    AliZDCRawStream rawStream(rawReader);
-    Int_t sector[2], resADC, rawADC, corrADC, nPheVal;
-    Int_t jcount = 0;
-    while(rawStream.Next()){
-      if(rawStream.IsADCDataWord()){
-        //For the moment only in-time SDigits are foreseen (1st 48 raw values)
-        if(jcount < kNch){ 
-          for(Int_t j=0; j<2; j++) sector[j] = rawStream.GetSector(j);
-	  rawADC = rawStream.GetADCValue();
-	  resADC = rawStream.GetADCGain();
-	  //printf("\t RAw2SDigits raw%d ->  RawADC[%d, %d, %d] read\n",
-	  //	jcount, sector[0], sector[1], rawADC);
-	  //
-	  corrADC = rawADC - Pedestal(sector[0], sector[1], resADC);
-	  if(corrADC<0) corrADC=0;
-	  nPheVal = ADCch2Phe(sector[0], sector[1], corrADC, resADC);
-          //
-	  //printf("\t \t ->  SDigit[%d, %d, %d] created\n",
-	  //	sector[0], sector[1], nPheVal);
-	  //
-          new(psdigit) AliZDCSDigit(sector, (Float_t) nPheVal, 0.);
-          treeS->Fill();
-          jcount++;
-        }
-      }//IsADCDataWord
-    }//rawStream.Next
-    // write the output tree
-    fLoader->WriteSDigits("OVERWRITE");
-    fLoader->UnloadSDigits();
-  }//Event loop 
+  // Create the output digit tree
+  TTree* treeS = loader->TreeS();
+  if(!treeS){
+    loader->MakeTree("S");
+    treeS = loader->TreeS();
+  }
+  //
+  AliZDCSDigit sdigit;
+  AliZDCSDigit* psdigit = &sdigit;
+  const Int_t kBufferSize = 4000;
+  treeS->Branch("ZDC", "AliZDCSDigit",  &psdigit, kBufferSize);
+  //
+  AliZDCRawStream rawStream(rawReader);
+  Int_t sector[2], resADC, rawADC, corrADC, nPheVal;
+  Int_t jcount = 0;
+  while(rawStream.Next()){
+    if(rawStream.IsADCDataWord()){
+      //For the moment only in-time SDigits are foreseen (1st 48 raw values)
+      if(jcount < kNch){ 
+  	for(Int_t j=0; j<2; j++) sector[j] = rawStream.GetSector(j);
+        rawADC = rawStream.GetADCValue();
+        resADC = rawStream.GetADCGain();
+        //printf("\t RAw2SDigits raw%d ->  RawADC[%d, %d, %d] read\n",
+        //    jcount, sector[0], sector[1], rawADC);
+        //
+        corrADC = rawADC - Pedestal(sector[0], sector[1], resADC);
+        if(corrADC<0) corrADC=0;
+        nPheVal = ADCch2Phe(sector[0], sector[1], corrADC, resADC);
+  	//
+        //printf("\t \t ->  SDigit[%d, %d, %d] created\n",
+        //    sector[0], sector[1], nPheVal);
+        //
+  	new(psdigit) AliZDCSDigit(sector, (Float_t) nPheVal, 0.);
+  	treeS->Fill();
+  	jcount++;
+      }
+    }//IsADCDataWord
+  }//rawStream.Next
+  // write the output tree
+  fLoader->WriteSDigits("OVERWRITE");
+  fLoader->UnloadSDigits();
    
   return kTRUE;
 }
