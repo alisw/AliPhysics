@@ -1022,7 +1022,8 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
   // Transform the local cluster coordinates into calibrated 
   // space point positions defined in the local tracking system.
   // Here the calibration for T0, Vdrift and ExB is applied as well.
-  if(!fTransform->Transform(&cluster)) return;
+  if(!TestBit(kHLT)) if(!fTransform->Transform(&cluster)) return;
+
   // Temporarily store the Max.Row, column and time bin of the center pad
   // Used to later on assign the track indices
   cluster.SetLabel(Max.row, 0);

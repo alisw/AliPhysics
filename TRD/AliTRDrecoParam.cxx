@@ -171,8 +171,7 @@ AliTRDrecoParam *AliTRDrecoParam::GetLowFluxHLTParam()
   //
 
   AliTRDrecoParam *rec = GetLowFluxParam();
-  rec->fNumberOfConfigs = 3;
-  rec->fRecEveryNTB = 1;
+  rec->fNumberOfConfigs = 2;
   return rec;
 
 }
@@ -202,6 +201,7 @@ AliTRDrecoParam *AliTRDrecoParam::GetHighFluxHLTParam()
   AliTRDrecoParam *rec = GetHighFluxParam();
   rec->fNumberOfConfigs = 1;
   rec->fRecEveryNTB = 2;
+  rec->fkNMeanClusters = 10;
   return rec;
 
 }
