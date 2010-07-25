@@ -58,15 +58,11 @@ public:
 
    // Get analysis folder
    virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
-   
-   Bool_t AddTPCcuts(const AliESDtrack *esdTrack);// applies TPC cuts
-   Bool_t AddITScuts(const AliESDtrack *esdTrack);// applies ITS cuts
-   Bool_t AddDCAcuts(const AliESDtrack *esdTrack);// applies DCA cuts
  
    void SetReadTPCTracks(const Bool_t readTPC)        {fOptTPC   = readTPC;}//read only ESD tracks
    void SetEtaRange(const Double_t eta)               {fEtaAcceptance =  eta ;}//sets eta window
   
-   void SetAliESDtrackCuts( AliESDtrackCuts* esdTrackCuts) { fESDTrackCuts = esdTrackCuts;fESDcuts=kTRUE;}//neu
+   void SetAliESDtrackCuts( AliESDtrackCuts* esdTrackCuts) { fESDTrackCuts = esdTrackCuts;fESDcuts=kTRUE;}//esd track cuts
 
 
    void SetPtShift(const Double_t shiftVal); // set user defined shift in charge/pt

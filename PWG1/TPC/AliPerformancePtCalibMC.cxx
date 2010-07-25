@@ -319,7 +319,7 @@ void AliPerformancePtCalibMC::Init()
  
    // init folder
    fAnalysisFolder = CreateFolder("folderPt_TPC","Analysis Pt Resolution Folder");
-   fList->Add(fAnalysisFolder);
+  
    // Primary Vertex:
    fHistPrimaryVertexPosX       = new TH1F("fHistPrimaryVertexPosX", "Primary Vertex Position X;Primary Vertex Position X (cm);Events",100,-0.5,0.5);
    fList->Add(fHistPrimaryVertexPosX);
@@ -338,13 +338,13 @@ void AliPerformancePtCalibMC::Init()
    fHistPtShift0   = new TH1F("fHistPtShift0","1/pt dN/pt vs. pt of ESD track  ",800,-20.0,20.0);
    fList->Add(fHistPtShift0);
    const   Int_t invPtDims = 4;
-   fMaxPhi=6.5;
+   fMaxPhi=6.52;
    fMinPhi=0.0;
    fMaxTheta=3.0;
    fMinTheta=0.0;
    Double_t xminInvPt[invPtDims] = {-4.5,-20.0,fMinTheta,fMinPhi};
    Double_t xmaxInvPt[invPtDims] = {4.5,20.0,fMaxTheta,fMaxPhi};
-   Int_t  binsInvPt[invPtDims] = {900,800,300,325};
+   Int_t  binsInvPt[invPtDims] = {450,400,150,163};
    
    fHistInvPtPtThetaPhi = new THnSparseF("fHistInvPtPtThetaPhi","1/pt vs pt vs #theta vs #phi ",invPtDims,binsInvPt,xminInvPt,xmaxInvPt);
    fList->Add(fHistInvPtPtThetaPhi);
@@ -360,21 +360,21 @@ void AliPerformancePtCalibMC::Init()
    fList->Add(fHistTPCMomentaNegPt);
    
    // momentum test histos MC
-   fHistTPCMomentaPosInvPtMC = new TH2F("fHistTPCMomentaPosInvPtMC","TPC-MC of 1/pt vs global ESD-MC of 1/pt pos",500, -10.0, 10.0,500, -10.0,10.0);
+   fHistTPCMomentaPosInvPtMC = new TH2F("fHistTPCMomentaPosInvPtMC","TPC-MC of 1/pt vs global ESD-MC of 1/pt pos",250, -5.0, 5.0,250, -5.0,5.0);
    fList->Add(fHistTPCMomentaPosInvPtMC);
-   fHistTPCMomentaNegInvPtMC = new TH2F("fHistTPCMomentaNegInvPtMC","TPC-MC of 1/pt vs global ESD-MC 1/pt neg",500, -10.0, 10.0,500, -10.0, 10.0);
+   fHistTPCMomentaNegInvPtMC = new TH2F("fHistTPCMomentaNegInvPtMC","TPC-MC of 1/pt vs global ESD-MC 1/pt neg",250, -5.0, 5.0,250, -5.0, 5.0);
    fList->Add(fHistTPCMomentaNegInvPtMC);
-   fHistTPCMomentaPosPtMC    = new TH2F("fHistTPCMomentaPosPtMC","TPC-MC of pt vs global ESD-MC of pt pos",600,-4.0,44.0,600,-4.0,44.0);
+   fHistTPCMomentaPosPtMC    = new TH2F("fHistTPCMomentaPosPtMC","(TPC-MC)/MC^2  of pt vs global (ESD-MC)/MC^2 of pt pos",200,-2.0,2.0,200,-2.0,2.0);
    fList->Add(fHistTPCMomentaPosPtMC);
-   fHistTPCMomentaNegPtMC    = new TH2F("fHistTPCMomentaNegPtMC","TPC-MC of pt vs global ESD-MC of pt neg",600,-4.0,44.0,600,-4.0,44.0);
+   fHistTPCMomentaNegPtMC    = new TH2F("fHistTPCMomentaNegPtMC","(TPC-MC/)MC^2  of pt vs global (ESD-MC)/MC^2  of pt neg",200,-2.0,2.0,200,-2.0,2.0);
    fList->Add(fHistTPCMomentaNegPtMC);
-   fHistESDMomentaPosInvPtMC = new TH1F("fHistESDMomentaPosInvPtMC","ESD-MC of 1/pt ",500, -10.0, 10.0);
+   fHistESDMomentaPosInvPtMC = new TH1F("fHistESDMomentaPosInvPtMC","ESD-MC of 1/pt pos ",200, -2.0, 2.0);
    fList->Add(fHistESDMomentaPosInvPtMC);
-   fHistESDMomentaNegInvPtMC = new TH1F("fHistESDMomentaNegInvPtMC","ESD-MC of 1/pt",500, -10.0, 10.0);
+   fHistESDMomentaNegInvPtMC = new TH1F("fHistESDMomentaNegInvPtMC","ESD-MC of 1/pt neg",200, -2.0, 2.0);
    fList->Add(fHistESDMomentaNegInvPtMC);
-   fHistESDMomentaPosPtMC    = new TH1F("fHistESDMomentaPosPtMC","ESD-MC of pt ",600,-4.0,44.0);
+   fHistESDMomentaPosPtMC    = new TH1F("fHistESDMomentaPosPtMC","(ESD-MC)/MC^2 of pt pos",200,-2.0,2.0);
    fList->Add(fHistESDMomentaPosPtMC);
-   fHistESDMomentaNegPtMC    = new TH1F("fHistESDMomentaNegPtMC","ESD-MC of pt ",600,-4.0,44.0);
+   fHistESDMomentaNegPtMC    = new TH1F("fHistESDMomentaNegPtMC","(ESD-MC)/MC^2 of pt neg",200,-2.0,2.0);
    fList->Add(fHistESDMomentaNegPtMC);
 
    // MC only info
@@ -383,17 +383,17 @@ void AliPerformancePtCalibMC::Init()
 
  
    //correlation histos MC ESD or TPC
-   fHistInvPtMCESD  = new TH2F("fHistInvPtMCESD","inv pt ESD vs MC",900, 0.0, 9.0,900, 0.0, 9.0);
+   fHistInvPtMCESD  = new TH2F("fHistInvPtMCESD","inv pt ESD vs MC",450, -4.5, 4.5,450, -4.5, 4.5);
    fList->Add(fHistInvPtMCESD);
-   fHistPtMCESD     = new TH2F("fHistPtMCESD"," pt ESD vs MC",300, 0.0, 15.0,300, 0.0, 15.0);
+   fHistPtMCESD     = new TH2F("fHistPtMCESD"," pt ESD vs MC",500, 0.0, 50.0,500, 0.0, 50.0);
    fList->Add(fHistPtMCESD);
-   fHistInvPtMCTPC  = new TH2F("fHistInvPtMCTPC","inv pt TPC vs MC",900, 0.0, 9.0,900, 0.0, 9.0);
+   fHistInvPtMCTPC  = new TH2F("fHistInvPtMCTPC","inv pt TPC vs MC",450, -4.5, 4.5,450, -4.5, 4.5);
    fList->Add(fHistInvPtMCTPC);
-   fHistPtMCTPC     = new TH2F("fHistPtMCTPC"," pt TPC vs MC",300, 0.0, 15.0,300, 0.0, 15.0);
+   fHistPtMCTPC     = new TH2F("fHistPtMCTPC"," pt TPC vs MC",500, 0.0, 50.0,500, 0.0,50.0);
    fList->Add(fHistPtMCTPC);
-   fHistMomresMCESD = new TH2F("fHistMomresMCESD"," (pt ESD - pt MC)/ptMC vs pt MC",300, 0.0, 15.0,400, -2.0, 2.0);
-   fList->Add(fHistMomresMCESD);
-   fHistMomresMCTPC = new TH2F("fHistMomresMCTPC"," (pt TPC - pt MC)/ptMC vs pt MC",300, 0.0, 15.0,400, -2.0, 2.0);
+   fHistMomresMCESD = new TH2F("fHistMomresMCESD"," (pt ESD - pt MC)/ptMC vs pt MC",500, 0.0, 50.0,200, -2.0, 2.0);
+   fList->Add(fHistMomresMCESD); 
+   fHistMomresMCTPC = new TH2F("fHistMomresMCTPC"," (pt TPC - pt MC)/ptMC vs pt MC",500, 0.0, 50.0,200, -2.0, 2.0);
    fList->Add(fHistMomresMCTPC);
 
 
@@ -402,7 +402,7 @@ void AliPerformancePtCalibMC::Init()
    fList->Add(fHistUserPtShift);
    
    // esd track cuts  
-   fESDTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+   fESDTrackCuts =NULL;
    
   
 }
@@ -427,10 +427,7 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
       return;
    }
 
-   if (!(esdEvent->GetNumberOfTracks())) {
-      Printf(" PtCalibMC task: There is no track in this event");
-      return;
-   }
+ 
    fHistTrackMultiplicity->Fill(esdEvent->GetNumberOfTracks());
 
    if (!mcEvent) {
@@ -501,20 +498,20 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
       Double_t momAngMC[4] = {signMC*(fabs(invPtMC)),signMC*(fabs(mcPt)),thetaMC,phiMC};
 
       // fill only if MC track is in eta acceptance of TPC in order to be compareable to TPC tracks
-      if(fabs( partMC->Eta())<= fEtaAcceptance) {
+      if(fabs( partMC->Eta())< fEtaAcceptance) {
 	 fHistInvPtPtThetaPhiMC->Fill(momAngMC);
 	 
 	 //correlation histos MC ESD
-	 fHistInvPtMCESD->Fill(fabs(invPtMC),fabs(1.0/ptESD));
+	 fHistInvPtMCESD->Fill(signMC*(fabs(invPtMC)),1.0/ptESD);
 	 fHistPtMCESD->Fill(fabs(mcPt),fabs(ptESD));
       }
-
+      
       // fill histos TPC or ESD
       if(fOptTPC){
 	 //TPC tracks and MC tracks
 	 const AliExternalTrackParam *tpcTrack = esdTrack->GetTPCInnerParam(); 
 	 if(!tpcTrack) continue;
-	 if(fabs(tpcTrack->Eta())>  fEtaAcceptance) continue;
+	 if(fabs(tpcTrack->Eta())>=  fEtaAcceptance) continue;
       
 	 Double_t signedPt = tpcTrack->GetSignedPt();
 	 Double_t invPt = 0.0;
@@ -530,14 +527,14 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
 	    }
 
 
-            Double_t theta = tpcTrack->Theta();
-            Double_t phi = tpcTrack->Phi();
+	    Double_t theta = tpcTrack->Theta();
+	    Double_t phi = tpcTrack->Phi();
 
 	    Double_t momAng[4] = {invPt,signedPt,theta,phi};
 	    fHistInvPtPtThetaPhi->Fill(momAng);
 
 	    //correlation histos MC TPC
-	    fHistInvPtMCTPC->Fill(fabs(invPtMC),fabs(invPt));
+	    fHistInvPtMCTPC->Fill(signMC*(fabs(invPtMC)),invPt);
 	    fHistPtMCTPC->Fill(fabs(mcPt),fabs(signedPt));
 	
 	    //compare to MC info
@@ -546,7 +543,7 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
 	    Double_t  invPtDiffESD = fabs(1.0/ptESD)-1.0/fabs(mcPt);
 	    Double_t  invPtDiffTPC = fabs(invPt)-1.0/fabs(mcPt);
 	    Double_t  pTPC  = tpcTrack->GetP();
-	
+		  
 	    if(esdTrack->GetSign()>0){//compare momenta ESD track and TPC track
 	       fHistTPCMomentaPosP->Fill(fabs(pESD),fabs(pTPC));
 	       fHistTPCMomentaPosPt->Fill(fabs(ptESD),fabs(signedPt));
@@ -559,53 +556,53 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
 	       fHistTPCMomentaNegInvPtMC->Fill(invPtDiffESD,invPtDiffTPC);
 	       fHistTPCMomentaNegPtMC->Fill(ptDiffESD,ptDiffTPC);
 	    }
-	    fHistMomresMCESD->Fill((fabs(mcPt)-fabs(ptESD))/fabs(mcPt),fabs(mcPt));
-	    fHistMomresMCTPC->Fill((fabs(mcPt)-fabs(signedPt))/fabs(mcPt),fabs(mcPt));
+	    fHistMomresMCESD->Fill(fabs(mcPt),(fabs(mcPt)-fabs(ptESD))/fabs(mcPt));
+	    fHistMomresMCTPC->Fill(fabs(mcPt),(fabs(mcPt)-fabs(signedPt))/fabs(mcPt));
 	    count++;
 	 }
 	 else continue;
       }
    
-      else{
-	 // ESD tracks and MC tracks
-	 if(fabs(esdTrack->Eta())> fEtaAcceptance) continue;
-	 Double_t invPt = 0.0;
+ else{
+    // ESD tracks and MC tracks
+    if(fabs(esdTrack->Eta())>= fEtaAcceptance) continue;
+    Double_t invPt = 0.0;
       
-	 if(ptESD) {
-	    invPt = 1.0/ptESD; 
-	    fHistPtShift0->Fill(ptESD);//changed
+    if(ptESD) {
+       invPt = 1.0/ptESD; 
+       fHistPtShift0->Fill(ptESD);
 	
-	    if(fShift){Printf("user shift of momentum SET to non zero value!");
-	       invPt += fDeltaInvP; //shift momentum for tests
-	       if(invPt) ptESD = 1.0/invPt; 
-	       else continue;
-	    }
+       if(fShift){Printf("user shift of momentum SET to non zero value!");
+	  invPt += fDeltaInvP; //shift momentum for tests
+	  if(invPt) ptESD = 1.0/invPt; 
+	  else continue;
+       }
 
-	    Double_t theta = esdTrack->Theta();
-	    Double_t phi = esdTrack->Phi();
+       Double_t theta = esdTrack->Theta();
+       Double_t phi = esdTrack->Phi();
 
-	    Double_t momAng[4] = {invPt,ptESD,theta,phi};
-	    fHistInvPtPtThetaPhi->Fill(momAng);
+       Double_t momAng[4] = {invPt,ptESD,theta,phi};
+       fHistInvPtPtThetaPhi->Fill(momAng);
 
-	    //differences MC ESD tracks
-	    Double_t ptDiffESD = (fabs(ptESD)-fabs(mcPt))/pow(mcPt,2);
-	    Double_t invPtdiffESD = fabs(1.0/ptESD)-1.0/fabs(mcPt);
-	    if(esdTrack->GetSign()>0){   
-	       fHistESDMomentaPosInvPtMC->Fill(invPtdiffESD);
-	       fHistESDMomentaPosPtMC->Fill(ptDiffESD);
-	    }
-	    else{
-	       fHistESDMomentaNegInvPtMC->Fill(invPtdiffESD);
-	       fHistESDMomentaNegPtMC->Fill(ptDiffESD);
-	    }	
+       //differences MC ESD tracks
+       Double_t ptDiffESD = (fabs(ptESD)-fabs(mcPt))/pow(mcPt,2);
+       Double_t invPtdiffESD = fabs(1.0/ptESD)-1.0/fabs(mcPt);
+       if(esdTrack->GetSign()>0){   
+	  fHistESDMomentaPosInvPtMC->Fill(invPtdiffESD);
+	  fHistESDMomentaPosPtMC->Fill(ptDiffESD);
+       }
+       else{
+	  fHistESDMomentaNegInvPtMC->Fill(invPtdiffESD);
+	  fHistESDMomentaNegPtMC->Fill(ptDiffESD);
+       }	
 	
-	    fHistMomresMCESD->Fill((fabs(mcPt)-fabs(ptESD))/fabs(mcPt),fabs(mcPt));
-	    count++;
-	 }
-      }
-   }
+       fHistMomresMCESD->Fill(fabs(mcPt),(fabs(mcPt)-fabs(ptESD))/fabs(mcPt));
+       count++;
+    }
+ }
+}
     
-   fHistTrackMultiplicityCuts->Fill(count);
+fHistTrackMultiplicityCuts->Fill(count);
   
 }    
 

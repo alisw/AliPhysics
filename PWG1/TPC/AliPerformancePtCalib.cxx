@@ -264,7 +264,7 @@ void AliPerformancePtCalib::Init()
    fList = new TList();
    // init folder
    fAnalysisFolder = CreateFolder("folderPt_TPC","Analysis Pt Resolution Folder");
-   fList->Add(fAnalysisFolder);
+   
    // Primary Vertex:
    fHistPrimaryVertexPosX       = new TH1F("fHistPrimaryVertexPosX", "Primary Vertex Position X;Primary Vertex Position X (cm);Events",100,-0.5,0.5);
    fList->Add(fHistPrimaryVertexPosX);
@@ -280,19 +280,19 @@ void AliPerformancePtCalib::Init()
  
    // momentum histos
    //pt shift 0 only needed if shift in 1/pt is applied
-   fHistPtShift0 = new TH1F("fHistPtShift0","1/pt dN/pt vs. pt of ESD track  ",800,-20.0,20.0);
+   fHistPtShift0 = new TH1F("fHistPtShift0","1/pt dN/pt vs. pt of ESD track  ",800,-40.0,40.0);
    fList->Add(fHistPtShift0);
  
    // THnSparse for 1/pt and pt spectra vs angles
    const   Int_t invPtDims = 4;
-   fMaxPhi = 6.5;
+   fMaxPhi = 6.52;
    fMinPhi = 0.0;
    fMaxTheta = 3.0;
    fMinTheta = 0.0;
    
-   Double_t xminInvPt[invPtDims] = {-4.5,-20.0,fMinTheta,fMinPhi};
-   Double_t xmaxInvPt[invPtDims] = {4.5,20.0,fMaxTheta,fMaxPhi};
-   Int_t  binsInvPt[invPtDims] = {900,800,300,325};
+   Double_t xminInvPt[invPtDims] = {-4.5,-40.0,fMinTheta,fMinPhi};
+   Double_t xmaxInvPt[invPtDims] = {4.5,40.0,fMaxTheta,fMaxPhi};
+   Int_t  binsInvPt[invPtDims] = {450,400,150,163};
 
   
    fHistInvPtPtThetaPhi = new THnSparseF("fHistInvPtPtThetaPhi","1/pt vs pt vs #theta vs #phi ",invPtDims,binsInvPt,xminInvPt,xmaxInvPt);
@@ -314,7 +314,7 @@ void AliPerformancePtCalib::Init()
 
   
    // esd track cuts  
-   fESDTrackCuts =NULL;//neu
+   fESDTrackCuts =NULL;
 }
 
 //________________________________________________________________________
@@ -327,7 +327,7 @@ void AliPerformancePtCalib::SetPtShift(const Double_t shiftVal ) {
 //________________________________________________________________________
 void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *const esdEvent, AliESDfriend * const /*esdFriend*/, const Bool_t /*bUseMC*/, const Bool_t /*bUseESDfriend*/)
 {
-   //exec: read esd or tpc tracksGetRunNumber
+   //exec: read esd or tpc
 
    if(!fESDTrackCuts) Printf("no esd track cut");
    
@@ -380,7 +380,7 @@ void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *con
       if(fOptTPC){ //TPC tracks
 	 const AliExternalTrackParam *tpcTrack = esdTrack->GetTPCInnerParam(); 
 	 if(!tpcTrack) continue;
-	 if(fabs(tpcTrack->Eta())> fEtaAcceptance) continue;
+	 if(fabs(tpcTrack->Eta())>= fEtaAcceptance) continue;
       
 	 Double_t signedPt = tpcTrack->GetSignedPt();
 	 Double_t invPt = 0.0;
