@@ -1,3 +1,10 @@
+/*************************************************************************
+ *                                                                       *
+ * Task for Fragmentation Function Analysis in PWG4 Jet Task Force Train *
+ *                                                                       *
+ *************************************************************************/
+
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -13,1339 +20,1483 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <Riostream.h>
+/* $Id: */
 
-#include <TFile.h>
-#include <TClonesArray.h>
-#include <TLorentzVector.h>
-#include <TProfile.h>
-#include <TList.h>
-#include <TH1.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TH3F.h>
+
+#include "TList.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TString.h"
+
+#include "AliAODInputHandler.h" 
+#include "AliAODHandler.h" 
+#include "AliESDEvent.h"
+#include "AliAODMCParticle.h"
+#include "AliAODJet.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliInputEventHandler.h"
+
+#include "AliAnalysisHelperJetTasks.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskSE.h"
 
 #include "AliAnalysisTaskFragmentationFunction.h"
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliAODHandler.h"
-#include "AliAODTrack.h"
-#include "AliJetHeader.h"
-#include "AliAODEvent.h"
-#include "AliAODJet.h"
-#include "AliAODDiJet.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliAnalysisHelperJetTasks.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "AliAODMCParticle.h"
+
 
 ClassImp(AliAnalysisTaskFragmentationFunction)
 
-//#######################################################################
-AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction():
-  AliAnalysisTaskSE(),
-  fJetHeaderRec(0x0),
-  fJetHeaderGen(0x0),
-  fAOD(0x0),
-  fBranchRec(""),
-  fBranchGen(""),
-  fUseAODInput(kFALSE),
-  fUseAODJetInput(kFALSE),
-  fUseAODTrackInput(kFALSE),
-  fUseAODMCInput(kFALSE),
-  fUseGlobalSelection(kFALSE),
-  fUseExternalWeightOnly(kFALSE),
-  fLimitGenJetEta(kFALSE),
-  fFilterMask(0),
-  fAnalysisType(0),
-  fTrackTypeRec(kTrackUndef),  
-  fTrackTypeGen(kTrackUndef),
-  fAvgTrials(1.),
-  fExternalWeight(1.),    
-  fRecEtaWindow(0.5),
-  fR(0.),
-  fdRdNdxi(0.7),
-  fPartPtCut(0.),
-  fEfactor(1.),
-  fNff(5),
-  fNim(5),
-  fList(0x0),
-  fGlobVar(1),
-  // Number of energy bins
-  fnEBin(6),         
-  fEmin(10.),
-  fEmax(70.),
-  fnEInterval(6),
-  // Number of radius bins
-  fnRBin(10),        
-  fRmin(0.1),
-  fRmax(1.),	
-  fnRInterval(9),
-  // eta histograms
-  fnEtaHBin(50),
-  fEtaHBinMin(-0.9),
-  fEtaHBinMax(0.9),
-  // phi histograms
-  fnPhiHBin(60),
-  fPhiHBinMin(0.),
-  fPhiHBinMax(2*TMath::Pi()),
-  // pt histograms
-  fnPtHBin(300),
-  fPtHBinMin(0.),
-  fPtHBinMax(300.),
-  // E histograms
-  fnEHBin(300),
-  fEHBinMin(0.),
-  fEHBinMax(300.),
-  // Xi histograms
-  fnXiHBin(27),
-  fXiHBinMin(0.),
-  fXiHBinMax(9.),
-  // Pthad histograms
-  fnPthadHBin(60),
-  fPthadHBinMin(0.),
-  fPthadHBinMax(30.),
-  // z histograms
-  fnZHBin(30), 
-  fZHBinMin(0.),
-  fZHBinMax(1.),
-  // theta histograms
-  fnThetaHBin(200),
-  fThetaHBinMin(-0.5),
-  fThetaHBinMax(1.5),
-  fnCosThetaHBin(100),
-  fcosThetaHBinMin(0.),
-  fcosThetaHBinMax(1.),
-  // kT histograms
-  fnkTHBin(25), 
-  fkTHBinMin(0.),
-  fkTHBinMax(5.),
-  // kT histograms
-  fnRHBin(10),
-  fRHBinMin(0),
-  fRHBinMax(1),
-  // pt trig
-  fnPtTrigBin(10),
-  //Histograms
-  fEtaMonoJet1H(0x0),
-  fPhiMonoJet1H(0x0),
-  fPtMonoJet1H(0x0),
-  fEMonoJet1H(0x0),
-  fdNdXiMonoJet1H(0x0),
-  fdNdPtMonoJet1H(0x0),
-  fdNdZMonoJet1H(0x0),
-  fdNdThetaMonoJet1H(0x0),
-  fdNdcosThetaMonoJet1H(0x0),
-  fdNdkTMonoJet1H(0x0),
-  fdNdpTvsZMonoJet1H(0x0),
-  fShapeMonoJet1H(0x0),
-  fNMonoJet1sH(0x0),
-  fThetaPtPartMonoJet1H(0x0),
-  fcosThetaPtPartMonoJet1H(0x0),
-  fkTPtPartMonoJet1H(0x0),
-  fThetaPtJetMonoJet1H(0x0),
-  fcosThetaPtJetMonoJet1H(0x0),
-  fkTPtJetMonoJet1H(0x0),
-  fpTPtJetMonoJet1H(0x0),
-  farrayEmin(0x0),
-  farrayEmax(0x0),
-  farrayRadii(0x0),
-  farrayPtTrigmin(0x0),
-  farrayPtTrigmax(0x0),
-  // Track control plots
-  fptAllTracks(0x0),
-  fetaAllTracks(0x0),
-  fphiAllTracks(0x0),
-  fetaphiptAllTracks(0x0),
-  fetaphiAllTracks(0x0),
-  fptAllTracksCut(0x0),
-  fetaAllTracksCut(0x0),
-  fphiAllTracksCut(0x0),
-  fetaphiptAllTracksCut(0x0),
-  fetaphiAllTracksCut(0x0),
-  fptTracks(0x0),
-  fetaTracks(0x0),
-  fphiTracks(0x0),
-  fdetaTracks(0x0),
-  fdphiTracks(0x0),
-  fetaphiptTracks(0x0),
-  fetaphiTracks(0x0),
-  fdetadphiTracks(0x0),
-  fptTracksCut(0x0),
-  fetaTracksCut(0x0),
-  fphiTracksCut(0x0),
-  fdetaTracksCut(0x0),
-  fdphiTracksCut(0x0),
-  fetaphiptTracksCut(0x0),
-  fetaphiTracksCut(0x0),
-  fdetadphiTracksCut(0x0),
-  fNPtTrig(0x0),
-  fNPtTrigCut(0x0),
-  fvertexXY(0x0),
-  fvertexZ(0x0),
-  fEvtMult(0x0),
-  fEvtMultvsJetPt(0x0),
-  fPtvsEtaJet(0x0),
-  fNpvsEtaJet(0x0),
-  fNpevtvsEtaJet(0x0),
-  fPtvsPtJet(0x0),
-  fNpvsPtJet(0x0),
-  fNpevtvsPtJet(0x0),
-  fPtvsPtJet1D(0x0),
-  fNpvsPtJet1D(0x0),
-  fNpevtvsPtJet1D(0x0),
-  fptLeadingJet(0x0),
-  fetaLeadingJet(0x0),
-  fphiLeadingJet(0x0),
-  fptJet(0x0),
-  fetaJet(0x0),
-  fphiJet(0x0),
-  fHistList(0x0),
-  fNBadRuns(0),
-  fNBadRunsH(0x0)
- {
-  //
-  // Default constructor
-  //
-  /*
-  for(int i = 0;i < kMaxStep*2;++i){
-    fhnJetContainer[i] = 0;
-  }
-  */
-//   for(int ij  = 0;ij<kMaxJets;++ij){
-//     fh1E[ij] = fh1PtRecIn[ij] = fh1PtRecOut[ij] = fh1PtGenIn[ij] = fh1PtGenOut[ij] = 0;
-//     fh1Eta[ij] = fh1Phi[ij] = 0;
-//   }
+//____________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
+   : AliAnalysisTaskSE()
+   ,fESD(0)
+   ,fAOD(0)
+   ,fMCEvent(0)
+   ,fBranchRecJets("jets")
+   ,fBranchGenJets("")
+   ,fTrackTypeGen(0)
+   ,fJetTypeGen(0)
+   ,fFilterMask(0)
+   ,fTrackPtCut(0)
+   ,fTrackEtaMin(0)
+   ,fTrackEtaMax(0)
+   ,fTrackPhiMin(0)
+   ,fTrackPhiMax(0)
+   ,fJetPtCut(0)
+   ,fJetEtaMin(0)
+   ,fJetEtaMax(0)
+   ,fJetPhiMin(0)
+   ,fJetPhiMax(0)
+   ,fFFRadius(0)
+   ,fDijetDeltaPhiCut(0)
+   ,fDijetInvMassMin(0)
+   ,fDijetInvMassMax(0)
+   ,fDijetCDFcut(0)
+   ,fDijetEMeanMin(0)
+   ,fDijetEMeanMax(0)
+   ,fDijetEFractionCut(0)
+   ,fDijetEFraction(0)
+   ,fTracksRec(0)
+   ,fTracksRecCuts(0)
+   ,fTracksGen(0)
+   ,fJetsRec(0)
+   ,fJetsRecCuts(0)
+   ,fJetsGen(0)
+   ,fQATrackHistosRec(0)
+   ,fQATrackHistosRecCuts(0)
+   ,fQATrackHistosGen(0)
+   ,fQAJetHistosRec(0)
+   ,fQAJetHistosRecCuts(0)
+   ,fQAJetHistosRecCutsLeading(0)
+   ,fQAJetHistosGen(0)
+   ,fQAJetHistosGenLeading(0)
+   ,fFFHistosRecCuts(0)
+   ,fFFHistosRecLeading(0)
+   ,fFFHistosRecLeadingTrack(0)
+   ,fFFHistosGen(0)
+   ,fFFHistosGenLeading(0)
+   ,fFFHistosGenLeadingTrack(0)
+   ,fQATrackHighPtThreshold(0)
+   ,fFFNBinsJetPt(0)    
+   ,fFFJetPtMin(0) 
+   ,fFFJetPtMax(0)
+   ,fFFNBinsPt(0)      
+   ,fFFPtMin(0)        
+   ,fFFPtMax(0)        
+   ,fFFNBinsXi(0)      
+   ,fFFXiMin(0)        
+   ,fFFXiMax(0)        
+   ,fFFNBinsZ(0)       
+   ,fFFZMin(0)         
+   ,fFFZMax(0)         
+   ,fQAJetNBinsPt(0)   
+   ,fQAJetPtMin(0)     
+   ,fQAJetPtMax(0)     
+   ,fQAJetNBinsEta(0)  
+   ,fQAJetEtaMin(0)    
+   ,fQAJetEtaMax(0)    
+   ,fQAJetNBinsPhi(0)  
+   ,fQAJetPhiMin(0)    
+   ,fQAJetPhiMax(0)    
+   ,fQATrackNBinsPt(0) 
+   ,fQATrackPtMin(0)   
+   ,fQATrackPtMax(0)   
+   ,fQATrackNBinsEta(0)
+   ,fQATrackEtaMin(0)  
+   ,fQATrackEtaMax(0)  
+   ,fQATrackNBinsPhi(0)
+   ,fQATrackPhiMin(0)  
+   ,fQATrackPhiMax(0)  
+   ,fCommonHistList(0)
+   ,fh1EvtSelection(0)
+   ,fh1VertexNContributors(0)
+   ,fh1VertexZ(0)
+   ,fh1EvtMult(0)
+   ,fh1nRecJetsCuts(0)
+   ,fh1nGenJets(0)
+{
+   // default constructor
 }
 
-
-//#######################################################################
-AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const char* name):
-  AliAnalysisTaskSE(name),
-  fJetHeaderRec(0x0),
-  fJetHeaderGen(0x0),
-  fAOD(0x0),
-  fBranchRec(""),
-  fBranchGen(""),
-  fUseAODInput(kFALSE),
-  fUseAODJetInput(kFALSE),
-  fUseAODTrackInput(kFALSE),
-  fUseAODMCInput(kFALSE),
-  fUseGlobalSelection(kFALSE),
-  fUseExternalWeightOnly(kFALSE),
-  fLimitGenJetEta(kFALSE),
-  fFilterMask(0),
-  fAnalysisType(0),
-  fTrackTypeRec(kTrackUndef), 
-  fTrackTypeGen(kTrackUndef),
-  fAvgTrials(1.),
-  fExternalWeight(1.),    
-  fRecEtaWindow(0.5),
-  fR(0.),
-  fdRdNdxi(0.7),
-  fPartPtCut(0.),
-  fEfactor(1.),
-  fNff(5),
-  fNim(5),
-  fList(0x0),
-  fGlobVar(1),
-  fCDFCut(1),
-  // Number of energy bins
-  fnEBin(6),         
-  fEmin(10.),
-  fEmax(70.),
-  fnEInterval(6),
-  // Number of radius bins
-  fnRBin(10),        
-  fRmin(0.1),
-  fRmax(1.),	
-  fnRInterval(9),
-  // eta histograms
-  fnEtaHBin(50),
-  fEtaHBinMin(-0.9),
-  fEtaHBinMax(0.9),
-  // phi histograms
-  fnPhiHBin(60),
-  fPhiHBinMin(0.),
-  fPhiHBinMax(2*TMath::Pi()),
-  // pt histograms
-  fnPtHBin(300),
-  fPtHBinMin(0.),
-  fPtHBinMax(300.),
-  // E histograms
-  fnEHBin(300),
-  fEHBinMin(0.),
-  fEHBinMax(300.),
-  // Xi histograms
-  fnXiHBin(27),
-  fXiHBinMin(0.),
-  fXiHBinMax(9.),
-  // Pthad histograms
-  fnPthadHBin(60),
-  fPthadHBinMin(0.),
-  fPthadHBinMax(30.),
-  // z histograms
-  fnZHBin(30),
-  fZHBinMin(0.),
-  fZHBinMax(1.),
-  fnPtTrigBin(10),
-  // theta histograms
-  fnThetaHBin(200),
-  fThetaHBinMin(-0.5),
-  fThetaHBinMax(1.5),
-  fnCosThetaHBin(100),
-  fcosThetaHBinMin(0.),
-  fcosThetaHBinMax(1.),
-  // kT histograms
-  fnkTHBin(25),
-  fkTHBinMin(0.),
-  fkTHBinMax(5.),
-  // kT histograms
-  fnRHBin(10),
-  fRHBinMin(0.),
-  fRHBinMax(1.),
-  //Histograms
-  fEtaMonoJet1H(0x0),
-  fPhiMonoJet1H(0x0),
-  fPtMonoJet1H(0x0),
-  fEMonoJet1H(0x0),
-  fdNdXiMonoJet1H(0x0),
-  fdNdPtMonoJet1H(0x0),
-  fdNdZMonoJet1H(0x0),
-  fdNdThetaMonoJet1H(0x0),
-  fdNdcosThetaMonoJet1H(0x0),
-  fdNdkTMonoJet1H(0x0),
-  fdNdpTvsZMonoJet1H(0x0),
-  fShapeMonoJet1H(0x0),
-  fNMonoJet1sH(0x0),
-  fThetaPtPartMonoJet1H(0x0),
-  fcosThetaPtPartMonoJet1H(0x0),
-  fkTPtPartMonoJet1H(0x0),
-  fThetaPtJetMonoJet1H(0x0),
-  fcosThetaPtJetMonoJet1H(0x0),
-  fkTPtJetMonoJet1H(0x0),
-  fpTPtJetMonoJet1H(0x0),
-  farrayEmin(0x0),
-  farrayEmax(0x0),
-  farrayRadii(0x0),
-  farrayPtTrigmin(0x0),
-  farrayPtTrigmax(0x0),
-  // Track control plots
-  fptAllTracks(0x0),
-  fetaAllTracks(0x0),
-  fphiAllTracks(0x0),
-  fetaphiptAllTracks(0x0),
-  fetaphiAllTracks(0x0),
-  fptAllTracksCut(0x0),
-  fetaAllTracksCut(0x0),
-  fphiAllTracksCut(0x0),
-  fetaphiptAllTracksCut(0x0),
-  fetaphiAllTracksCut(0x0),
-  fptTracks(0x0),
-  fetaTracks(0x0),
-  fphiTracks(0x0),
-  fdetaTracks(0x0),
-  fdphiTracks(0x0),
-  fetaphiptTracks(0x0),
-  fetaphiTracks(0x0),
-  fdetadphiTracks(0x0),
-  fptTracksCut(0x0),
-  fetaTracksCut(0x0),
-  fphiTracksCut(0x0),
-  fdetaTracksCut(0x0),
-  fdphiTracksCut(0x0),
-  fetaphiptTracksCut(0x0),
-  fetaphiTracksCut(0x0),
-  fdetadphiTracksCut(0x0),
-  fNPtTrig(0x0),
-  fNPtTrigCut(0x0),
-  fvertexXY(0x0),
-  fvertexZ(0x0),
-  fEvtMult(0x0),
-  fEvtMultvsJetPt(0x0),
-  fPtvsEtaJet(0x0),
-  fNpvsEtaJet(0x0),
-  fNpevtvsEtaJet(0x0),
-  fPtvsPtJet(0x0),
-  fNpvsPtJet(0x0),
-  fNpevtvsPtJet(0x0),
-  fPtvsPtJet1D(0x0),
-  fNpvsPtJet1D(0x0),
-  fNpevtvsPtJet1D(0x0),
-  fptLeadingJet(0x0),
-  fetaLeadingJet(0x0),
-  fphiLeadingJet(0x0),
-  fptJet(0x0),
-  fetaJet(0x0),
-  fphiJet(0x0),
-  fHistList(0x0),
-  fNBadRuns(0),
-  fNBadRunsH(0x0)
+//__________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const char *name) 
+  : AliAnalysisTaskSE(name)
+  ,fESD(0)
+  ,fAOD(0)
+  ,fMCEvent(0)
+  ,fBranchRecJets("jets")
+  ,fBranchGenJets("")
+  ,fTrackTypeGen(0)
+  ,fJetTypeGen(0)
+  ,fFilterMask(0)
+  ,fTrackPtCut(0)
+  ,fTrackEtaMin(0)
+  ,fTrackEtaMax(0)
+  ,fTrackPhiMin(0)
+  ,fTrackPhiMax(0)
+  ,fJetPtCut(0)
+  ,fJetEtaMin(0)
+  ,fJetEtaMax(0)
+  ,fJetPhiMin(0)
+  ,fJetPhiMax(0)
+  ,fFFRadius(0)
+  ,fDijetDeltaPhiCut(0)
+  ,fDijetInvMassMin(0)
+  ,fDijetInvMassMax(0)
+  ,fDijetCDFcut(0)
+  ,fDijetEMeanMin(0)
+  ,fDijetEMeanMax(0)
+  ,fDijetEFractionCut(0)
+  ,fDijetEFraction(0)
+  ,fTracksRec(0)
+  ,fTracksRecCuts(0)
+  ,fTracksGen(0)
+  ,fJetsRec(0)
+  ,fJetsRecCuts(0)
+  ,fJetsGen(0)
+  ,fQATrackHistosRec(0)
+  ,fQATrackHistosRecCuts(0)
+  ,fQATrackHistosGen(0)
+  ,fQAJetHistosRec(0)
+  ,fQAJetHistosRecCuts(0)
+  ,fQAJetHistosRecCutsLeading(0)
+  ,fQAJetHistosGen(0)
+  ,fQAJetHistosGenLeading(0)
+  ,fFFHistosRecCuts(0)
+  ,fFFHistosRecLeading(0)
+  ,fFFHistosRecLeadingTrack(0)
+  ,fFFHistosGen(0)
+  ,fFFHistosGenLeading(0)
+  ,fFFHistosGenLeadingTrack(0)
+  ,fQATrackHighPtThreshold(0) 
+  ,fFFNBinsJetPt(0)    
+  ,fFFJetPtMin(0) 
+  ,fFFJetPtMax(0)
+  ,fFFNBinsPt(0)      
+  ,fFFPtMin(0)        
+  ,fFFPtMax(0)        
+  ,fFFNBinsXi(0)      
+  ,fFFXiMin(0)        
+  ,fFFXiMax(0)        
+  ,fFFNBinsZ(0)       
+  ,fFFZMin(0)         
+  ,fFFZMax(0)         
+  ,fQAJetNBinsPt(0)   
+  ,fQAJetPtMin(0)     
+  ,fQAJetPtMax(0)     
+  ,fQAJetNBinsEta(0)  
+  ,fQAJetEtaMin(0)    
+  ,fQAJetEtaMax(0)    
+  ,fQAJetNBinsPhi(0)  
+  ,fQAJetPhiMin(0)    
+  ,fQAJetPhiMax(0)    
+  ,fQATrackNBinsPt(0) 
+  ,fQATrackPtMin(0)   
+  ,fQATrackPtMax(0)   
+  ,fQATrackNBinsEta(0)
+  ,fQATrackEtaMin(0)  
+  ,fQATrackEtaMax(0)  
+  ,fQATrackNBinsPhi(0)
+  ,fQATrackPhiMin(0)  
+  ,fQATrackPhiMax(0)  
+  ,fCommonHistList(0)
+  ,fh1EvtSelection(0)
+  ,fh1VertexNContributors(0)
+  ,fh1VertexZ(0)
+  ,fh1EvtMult(0)
+  ,fh1nRecJetsCuts(0)
+  ,fh1nGenJets(0)
 {
-  //
-  // Default constructor
-  //
-  /*
-  for(int i = 0;i < kMaxStep*2;++i){
-    fhnJetContainer[i] = 0;
-  } 
-  */
-//   for(int ij  = 0;ij<kMaxJets;++ij){
-//     fh1E[ij] = fh1PtRecIn[ij] = fh1PtRecOut[ij] = fh1PtGenIn[ij] = fh1PtGenOut[ij] = 0;
-//     fh1Eta[ij] = fh1Phi[ij] = 0;
-//   }
+  // constructor
   
-  DefineOutput(1, TList::Class());  
+  DefineOutput(1,TList::Class());
+  
+
 }
 
-//////////////////////////////////////////////////////////////////////////////
-
-Bool_t AliAnalysisTaskFragmentationFunction::Notify()
+//__________________________________________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const  AliAnalysisTaskFragmentationFunction &copy)
+  : AliAnalysisTaskSE()
+  ,fESD(copy.fESD)
+  ,fAOD(copy.fAOD)
+  ,fMCEvent(copy.fMCEvent)
+  ,fBranchRecJets(copy.fBranchRecJets)
+  ,fBranchGenJets(copy.fBranchGenJets)
+  ,fTrackTypeGen(copy.fTrackTypeGen)
+  ,fJetTypeGen(copy.fJetTypeGen)
+  ,fFilterMask(copy.fFilterMask)
+  ,fTrackPtCut(copy.fTrackPtCut)
+  ,fTrackEtaMin(copy.fTrackEtaMin)
+  ,fTrackEtaMax(copy.fTrackEtaMax)
+  ,fTrackPhiMin(copy.fTrackPhiMin)
+  ,fTrackPhiMax(copy.fTrackPhiMax)
+  ,fJetPtCut(copy.fJetPtCut)
+  ,fJetEtaMin(copy.fJetEtaMin)
+  ,fJetEtaMax(copy.fJetEtaMax)
+  ,fJetPhiMin(copy.fJetPhiMin)
+  ,fJetPhiMax(copy.fJetPhiMax)
+  ,fFFRadius(copy.fFFRadius)
+  ,fDijetDeltaPhiCut(copy.fDijetDeltaPhiCut)
+  ,fDijetInvMassMin(copy.fDijetInvMassMin)
+  ,fDijetInvMassMax(copy.fDijetInvMassMax)
+  ,fDijetCDFcut(copy.fDijetCDFcut)
+  ,fDijetEMeanMin(copy.fDijetEMeanMin)
+  ,fDijetEMeanMax(copy.fDijetEMeanMax)
+  ,fDijetEFractionCut(copy.fDijetEFractionCut)
+  ,fDijetEFraction(copy.fDijetEFraction)
+  ,fTracksRec(copy.fTracksRec)
+  ,fTracksRecCuts(copy.fTracksRecCuts)
+  ,fTracksGen(copy.fTracksGen)
+  ,fJetsRec(copy.fJetsRec)
+  ,fJetsRecCuts(copy.fJetsRecCuts)
+  ,fJetsGen(copy.fJetsGen)
+  ,fQATrackHistosRec(copy.fQATrackHistosRec)
+  ,fQATrackHistosRecCuts(copy.fQATrackHistosRecCuts)
+  ,fQATrackHistosGen(copy.fQATrackHistosGen)
+  ,fQAJetHistosRec(copy.fQAJetHistosRec)
+  ,fQAJetHistosRecCuts(copy.fQAJetHistosRecCuts)
+  ,fQAJetHistosRecCutsLeading(copy.fQAJetHistosRecCutsLeading)
+  ,fQAJetHistosGen(copy.fQAJetHistosGen)
+  ,fQAJetHistosGenLeading(copy.fQAJetHistosGenLeading)
+  ,fFFHistosRecCuts(copy.fFFHistosRecCuts)
+  ,fFFHistosRecLeading(copy.fFFHistosRecLeading)
+  ,fFFHistosRecLeadingTrack(copy.fFFHistosRecLeadingTrack)
+  ,fFFHistosGen(copy.fFFHistosGen)
+  ,fFFHistosGenLeading(copy.fFFHistosGenLeading)
+  ,fFFHistosGenLeadingTrack(copy.fFFHistosGenLeadingTrack)
+  ,fQATrackHighPtThreshold(copy.fQATrackHighPtThreshold) 
+  ,fFFNBinsJetPt(copy.fFFNBinsJetPt)    
+  ,fFFJetPtMin(copy.fFFJetPtMin) 
+  ,fFFJetPtMax(copy.fFFJetPtMax)
+  ,fFFNBinsPt(copy.fFFNBinsPt)      
+  ,fFFPtMin(copy.fFFPtMin)        
+  ,fFFPtMax(copy.fFFPtMax)        
+  ,fFFNBinsXi(copy.fFFNBinsXi)      
+  ,fFFXiMin(copy.fFFXiMin)        
+  ,fFFXiMax(copy.fFFXiMax)        
+  ,fFFNBinsZ(copy.fFFNBinsZ)       
+  ,fFFZMin(copy.fFFZMin)         
+  ,fFFZMax(copy.fFFZMax)         
+  ,fQAJetNBinsPt(copy.fQAJetNBinsPt)   
+  ,fQAJetPtMin(copy.fQAJetPtMin)     
+  ,fQAJetPtMax(copy.fQAJetPtMax)     
+  ,fQAJetNBinsEta(copy.fQAJetNBinsEta)  
+  ,fQAJetEtaMin(copy.fQAJetEtaMin)    
+  ,fQAJetEtaMax(copy.fQAJetEtaMax)    
+  ,fQAJetNBinsPhi(copy.fQAJetNBinsPhi)  
+  ,fQAJetPhiMin(copy.fQAJetPhiMin)    
+  ,fQAJetPhiMax(copy.fQAJetPhiMax)    
+  ,fQATrackNBinsPt(copy.fQATrackNBinsPt) 
+  ,fQATrackPtMin(copy.fQATrackPtMin)   
+  ,fQATrackPtMax(copy.fQATrackPtMax)   
+  ,fQATrackNBinsEta(copy.fQATrackNBinsEta)
+  ,fQATrackEtaMin(copy.fQATrackEtaMin)  
+  ,fQATrackEtaMax(copy.fQATrackEtaMax)  
+  ,fQATrackNBinsPhi(copy.fQATrackNBinsPhi)
+  ,fQATrackPhiMin(copy.fQATrackPhiMin)  
+  ,fQATrackPhiMax(copy.fQATrackPhiMax)  
+  ,fCommonHistList(copy.fCommonHistList)
+  ,fh1EvtSelection(copy.fh1EvtSelection)
+  ,fh1VertexNContributors(copy.fh1VertexNContributors)
+  ,fh1VertexZ(copy.fh1VertexZ)
+  ,fh1EvtMult(copy.fh1EvtMult)
+  ,fh1nRecJetsCuts(copy.fh1nRecJetsCuts)
+  ,fh1nGenJets(copy.fh1nGenJets)
 {
-  //
-  // Implemented Notify() to read the cross sections
-  // and number of trials from pyxsec.root
-  // 
-
-//   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-//   UInt_t ntrials  = 0;
-//   Float_t ftrials  = 0;
-//   if(tree){
-//     TFile *curfile = tree->GetCurrentFile();
-//     if (!curfile) {
-//       Error("Notify","No current file");
-//       return kFALSE;
-//     }
-
-//     if(!fh1Xsec||!fh1Trials){
-//       Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
-//       return kFALSE;
-//     }
-
-//     TString fileName(curfile->GetName());
-//     if(fileName.Contains("AliESDs.root")){
-//         fileName.ReplaceAll("AliESDs.root", "pyxsec.root");
-//     }
-//     else if(fileName.Contains("AliAOD.root")){
-//         fileName.ReplaceAll("AliAOD.root", "pyxsec.root");
-//     }
-//     else if(fileName.Contains("AliAODs.root")){
-//         fileName.ReplaceAll("AliAODs.root", "");
-//     }
-//     else if(fileName.Contains("galice.root")){
-//         // for running with galice and kinematics alone...                      
-//         fileName.ReplaceAll("galice.root", "pyxsec.root");
-//     }
-//     TFile *fxsec = TFile::Open(fileName.Data());
-//     if(!fxsec){
-//       Printf("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,fileName.Data());
-//       // no a severe condition
-//       return kTRUE;
-//     }
-//     TTree *xtree = (TTree*)fxsec->Get("Xsection");
-//     if(!xtree){
-//       Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
-//     }
-//     xtree->SetBranchAddress("xsection",&fXsection);
-//     xtree->SetBranchAddress("ntrials",&ntrials);
-//     ftrials = ntrials;
-//     xtree->GetEntry(0);
-
-//     fh1Xsec->Fill("<#sigma>",fXsection);
-//     fh1Trials->Fill("#sum{ntrials}",ftrials);
-
-//   }
-
-  return kTRUE;
+  // copy constructor
 
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::operator=(const AliAnalysisTaskFragmentationFunction& o)
+{
+  // assignment
+  
+  if(this!=&o){
 
+    AliAnalysisTaskSE::operator=(o);
+    fESD                       = o.fESD;
+    fAOD                       = o.fAOD;
+    fMCEvent                   = o.fMCEvent;
+    fBranchRecJets             = o.fBranchRecJets;
+    fBranchGenJets             = o.fBranchGenJets;
+    fTrackTypeGen              = o.fTrackTypeGen;
+    fJetTypeGen                = o.fJetTypeGen;
+    fFilterMask                = o.fFilterMask;
+    fTrackPtCut                = o.fTrackPtCut;
+    fTrackEtaMin               = o.fTrackEtaMin;
+    fTrackEtaMax               = o.fTrackEtaMax;
+    fTrackPhiMin               = o.fTrackPhiMin;
+    fTrackPhiMax               = o.fTrackPhiMax;
+    fJetPtCut                  = o.fJetPtCut;
+    fJetEtaMin                 = o.fJetEtaMin;
+    fJetEtaMax                 = o.fJetEtaMax;
+    fJetPhiMin                 = o.fJetPhiMin;
+    fJetPhiMax                 = o.fJetPhiMax;
+    fFFRadius                  = o.fFFRadius;
+    fDijetDeltaPhiCut          = o.fDijetDeltaPhiCut;
+    fDijetInvMassMin           = o.fDijetInvMassMin;
+    fDijetInvMassMax           = o.fDijetInvMassMax;
+    fDijetCDFcut               = o.fDijetCDFcut;
+    fDijetEMeanMin             = o.fDijetEMeanMin;
+    fDijetEMeanMax             = o.fDijetEMeanMax;
+    fDijetEFractionCut         = o.fDijetEFractionCut;
+    fDijetEFraction            = o.fDijetEFraction;
+    fTracksRec                 = o.fTracksRec;
+    fTracksRecCuts             = o.fTracksRecCuts;
+    fTracksGen                 = o.fTracksGen;
+    fJetsRec                   = o.fJetsRec;
+    fJetsRecCuts               = o.fJetsRecCuts;
+    fJetsGen                   = o.fJetsGen;
+    fQATrackHistosRec          = o.fQATrackHistosRec;
+    fQATrackHistosRecCuts      = o.fQATrackHistosRecCuts;
+    fQATrackHistosGen          = o.fQATrackHistosGen;
+    fQAJetHistosRec            = o.fQAJetHistosRec;
+    fQAJetHistosRecCuts        = o.fQAJetHistosRecCuts;
+    fQAJetHistosRecCutsLeading = o.fQAJetHistosRecCutsLeading;
+    fQAJetHistosGen            = o.fQAJetHistosGen;
+    fQAJetHistosGenLeading     = o.fQAJetHistosGenLeading;
+    fFFHistosRecCuts           = o.fFFHistosRecCuts;
+    fFFHistosRecLeading        = o.fFFHistosRecLeading;
+    fFFHistosRecLeadingTrack   = o.fFFHistosRecLeadingTrack;
+    fFFHistosGen               = o.fFFHistosGen;
+    fFFHistosGenLeading        = o.fFFHistosGenLeading;
+    fFFHistosGenLeadingTrack   = o.fFFHistosGenLeadingTrack;
+    fQATrackHighPtThreshold    = o.fQATrackHighPtThreshold; 
+    fFFNBinsJetPt              = o.fFFNBinsJetPt;    
+    fFFJetPtMin                = o.fFFJetPtMin; 
+    fFFJetPtMax                = o.fFFJetPtMax;
+    fFFNBinsPt                 = o.fFFNBinsPt;      
+    fFFPtMin                   = o.fFFPtMin;        
+    fFFPtMax                   = o.fFFPtMax;        
+    fFFNBinsXi                 = o.fFFNBinsXi;      
+    fFFXiMin                   = o.fFFXiMin;        
+    fFFXiMax                   = o.fFFXiMax;        
+    fFFNBinsZ                  = o.fFFNBinsZ;       
+    fFFZMin                    = o.fFFZMin;         
+    fFFZMax                    = o.fFFZMax;         
+    fQAJetNBinsPt              = o.fQAJetNBinsPt;   
+    fQAJetPtMin                = o.fQAJetPtMin;     
+    fQAJetPtMax                = o.fQAJetPtMax;     
+    fQAJetNBinsEta             = o.fQAJetNBinsEta;  
+    fQAJetEtaMin               = o.fQAJetEtaMin;    
+    fQAJetEtaMax               = o.fQAJetEtaMax;    
+    fQAJetNBinsPhi             = o.fQAJetNBinsPhi;  
+    fQAJetPhiMin               = o.fQAJetPhiMin;    
+    fQAJetPhiMax               = o.fQAJetPhiMax;    
+    fQATrackNBinsPt            = o.fQATrackNBinsPt; 
+    fQATrackPtMin              = o.fQATrackPtMin;   
+    fQATrackPtMax              = o.fQATrackPtMax;   
+    fQATrackNBinsEta           = o.fQATrackNBinsEta;
+    fQATrackEtaMin             = o.fQATrackEtaMin;  
+    fQATrackEtaMax             = o.fQATrackEtaMax;  
+    fQATrackNBinsPhi           = o.fQATrackNBinsPhi;
+    fQATrackPhiMin             = o.fQATrackPhiMin;  
+    fQATrackPhiMax             = o.fQATrackPhiMax;  
+    fCommonHistList            = o.fCommonHistList;
+    fh1EvtSelection            = o.fh1EvtSelection;
+    fh1VertexNContributors     = o.fh1VertexNContributors;
+    fh1VertexZ                 = o.fh1VertexZ;
+    fh1EvtMult                 = o.fh1EvtMult;
+    fh1nRecJetsCuts            = o.fh1nRecJetsCuts;
+    fh1nGenJets                = o.fh1nGenJets; 
+  }
+    
+  return *this;
+}
+
+//___________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::~AliAnalysisTaskFragmentationFunction()
+{
+  // destructor
+  
+}
+
+
+
+//______________________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::AliFragFuncHistos(const char* name, 
+							 Int_t nJetPt, Float_t jetPtMin, Float_t jetPtMax,  
+							 Int_t nPt, Float_t ptMin, Float_t ptMax,
+							 Int_t nXi, Float_t xiMin, Float_t xiMax,
+							 Int_t nZ , Float_t zMin , Float_t zMax )
+  : TObject()
+  ,fNBinsJetPt(nJetPt)
+  ,fJetPtMin(jetPtMin)
+  ,fJetPtMax(jetPtMax)
+  ,fNBinsPt(nPt) 
+  ,fPtMin(ptMin)   
+  ,fPtMax(ptMax)   
+  ,fNBinsXi(nXi) 
+  ,fXiMin(xiMin)   
+  ,fXiMax(xiMax)   
+  ,fNBinsZ(nZ)  
+  ,fZMin(zMin)    
+  ,fZMax(zMax)    
+  ,fh2TrackPt(0)
+  ,fh2Xi(0)
+  ,fh2Z(0)
+  ,fh1JetPt(0)
+  ,fName(name)
+{
+  // default constructor
+
+}
+
+//___________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::AliFragFuncHistos(const AliFragFuncHistos& copy)
+  : TObject()
+  ,fNBinsJetPt(copy.fNBinsJetPt)
+  ,fJetPtMin(copy.fJetPtMin)
+  ,fJetPtMax(copy.fJetPtMax)
+  ,fNBinsPt(copy.fNBinsPt) 
+  ,fPtMin(copy.fPtMin)   
+  ,fPtMax(copy.fPtMax)   
+  ,fNBinsXi(copy.fNBinsXi) 
+  ,fXiMin(copy.fXiMin)   
+  ,fXiMax(copy.fXiMax)   
+  ,fNBinsZ(copy.fNBinsZ)  
+  ,fZMin(copy.fZMin)    
+  ,fZMax(copy.fZMax)    
+  ,fh2TrackPt(copy.fh2TrackPt)
+  ,fh2Xi(copy.fh2Xi)
+  ,fh2Z(copy.fh2Z)
+  ,fh1JetPt(copy.fh1JetPt)
+  ,fName(copy.fName)
+{
+  // copy constructor
+}
+
+//_______________________________________________________________________________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncHistos& AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::operator=(const AliAnalysisTaskFragmentationFunction::AliFragFuncHistos& o)
+{
+  // assignment
+  
+  if(this!=&o){
+    TObject::operator=(o);
+    fNBinsJetPt = o.fNBinsJetPt;
+    fJetPtMin   = o.fJetPtMin;
+    fJetPtMax   = o.fJetPtMax;
+    fNBinsPt    = o.fNBinsPt; 
+    fPtMin      = o.fPtMin;   
+    fPtMax      = o.fPtMax;   
+    fNBinsXi    = o.fNBinsXi; 
+    fXiMin      = o.fXiMin;   
+    fXiMax      = o.fXiMax;   
+    fNBinsZ     = o.fNBinsZ;  
+    fZMin       = o.fZMin;    
+    fZMax       = o.fZMax;    
+    fh2TrackPt  = o.fh2TrackPt;
+    fh2Xi       = o.fh2Xi;
+    fh2Z        = o.fh2Z;
+    fh1JetPt    = o.fh1JetPt;
+    fName       = o.fName;
+  }
+    
+  return *this;
+}
+
+//_________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::~AliFragFuncHistos()
+{
+  // destructor 
+
+  if(fh1JetPt)   delete fh1JetPt;
+  if(fh2TrackPt) delete fh2TrackPt;
+  if(fh2Xi)      delete fh2Xi;
+  if(fh2Z)       delete fh2Z;
+}
+
+//_________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::DefineHistos()
+{
+  // book FF histos
+
+  fh1JetPt   = new TH1F(Form("fh1FFJetPt%s", fName.Data()),"",fNBinsJetPt,fJetPtMin,fJetPtMax);
+  fh2TrackPt = new TH2F(Form("fh2FFTrackPt%s",fName.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,fNBinsPt, fPtMin, fPtMax);
+  fh2Xi      = new TH2F(Form("fh2FFXi%s",fName.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsXi, fXiMin, fXiMax);
+  fh2Z       = new TH2F(Form("fh2FFZ%s",fName.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsZ, fZMin, fZMax);
+
+  AliAnalysisTaskFragmentationFunction::SetProperties(fh1JetPt, "p_{T} [GeV/c]", "entries"); 
+  AliAnalysisTaskFragmentationFunction::SetProperties(fh2TrackPt,"jet p_{T} [GeV/c]","p_{T} [GeV/c]","entries");
+  AliAnalysisTaskFragmentationFunction::SetProperties(fh2Xi,"jet p_{T} [GeV/c]","#xi", "entries");
+  AliAnalysisTaskFragmentationFunction::SetProperties(fh2Z,"jet p_{T} [GeV/c]","z","entries");
+}
+
+//_______________________________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::FillFF(Float_t trackPt, Float_t jetPt, Bool_t incrementJetPt)
+{
+  // fill FF
+ 
+  if(incrementJetPt) fh1JetPt->Fill(jetPt);    
+  fh2TrackPt->Fill(jetPt,trackPt);
+  
+  Double_t z = trackPt / jetPt;
+  Double_t xi = 0;
+  if(z>0) xi = TMath::Log(1/z);
+  
+  fh2Xi->Fill(jetPt,xi);
+  fh2Z->Fill(jetPt,z);
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::AddToOutput(TList* list) const
+{
+  // add histos to list
+
+  list->Add(fh1JetPt);
+  
+  list->Add(fh2TrackPt);
+  list->Add(fh2Xi);
+  list->Add(fh2Z);
+}
+
+
+//_________________________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::AliFragFuncQAJetHistos(const char* name,
+							       Int_t nPt,   Float_t ptMin,   Float_t ptMax,
+							       Int_t nEta,  Float_t etaMin,  Float_t etaMax,
+							       Int_t nPhi,  Float_t phiMin,  Float_t phiMax)
+  : TObject()
+  ,fNBinsPt(nPt)
+  ,fPtMin(ptMin)
+  ,fPtMax(ptMax)
+  ,fNBinsEta(nEta)
+  ,fEtaMin(etaMin)
+  ,fEtaMax(etaMax)
+  ,fNBinsPhi(nPhi)
+  ,fPhiMin(phiMin)
+  ,fPhiMax(phiMax)
+  ,fh2EtaPhi(0)
+  ,fh1Pt(0)
+  ,fName(name)
+{
+  // default constructor
+}
+
+//____________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::AliFragFuncQAJetHistos(const AliFragFuncQAJetHistos& copy)
+  : TObject()
+  ,fNBinsPt(copy.fNBinsPt)
+  ,fPtMin(copy.fPtMin)
+  ,fPtMax(copy.fPtMax)
+  ,fNBinsEta(copy.fNBinsEta)
+  ,fEtaMin(copy.fEtaMin)
+  ,fEtaMax(copy.fEtaMax)
+  ,fNBinsPhi(copy.fNBinsPhi)
+  ,fPhiMin(copy.fPhiMin)
+  ,fPhiMax(copy.fPhiMax)
+  ,fh2EtaPhi(copy.fh2EtaPhi)
+  ,fh1Pt(copy.fh1Pt)
+  ,fName(copy.fName)
+{
+  // copy constructor
+}
+
+//________________________________________________________________________________________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos& AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::operator=(const AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos& o)
+{
+  // assignment
+  
+  if(this!=&o){
+    TObject::operator=(o);
+    fNBinsPt  = o.fNBinsPt;
+    fPtMin    = o.fPtMin;
+    fPtMax    = o.fPtMax;
+    fNBinsEta = o.fNBinsEta;
+    fEtaMin   = o.fEtaMin;
+    fEtaMax   = o.fEtaMax;
+    fNBinsPhi = o.fNBinsPhi;
+    fPhiMin   = o.fPhiMin;
+    fPhiMax   = o.fPhiMax;
+    fh2EtaPhi = o.fh2EtaPhi;
+    fh1Pt     = o.fh1Pt;
+    fName     = o.fName;
+  }
+  
+  return *this;
+}
+
+//______________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::~AliFragFuncQAJetHistos()
+{
+  // destructor 
+  
+  if(fh2EtaPhi) delete fh2EtaPhi;
+  if(fh1Pt)     delete fh1Pt;
+}
+
+//____________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::DefineHistos()
+{
+  // book jet QA histos
+
+  fh2EtaPhi  = new TH2F(Form("fh2JetQAEtaPhi%s", fName.Data()), Form("%s: #eta - #phi distribution", fName.Data()), fNBinsEta, fEtaMin, fEtaMax, fNBinsPhi, fPhiMin, fPhiMax);
+  fh1Pt      = new TH1F(Form("fh1JetQAPt%s", fName.Data()), Form("%s: p_{T} distribution", fName.Data()), fNBinsPt, fPtMin, fPtMax);
+	
+  AliAnalysisTaskFragmentationFunction::SetProperties(fh2EtaPhi, "#eta", "#phi"); 
+  AliAnalysisTaskFragmentationFunction::SetProperties(fh1Pt, "p_{T} [GeV/c]", "entries");
+}
+
+//____________________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::FillJetQA(Float_t eta, Float_t phi, Float_t pt)
+{
+  // fill jet QA histos 
+
+  fh2EtaPhi->Fill( eta, phi);
+  fh1Pt->Fill( pt );
+}
+
+//____________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos::AddToOutput(TList* list) const 
+{
+  // add histos to list
+
+  list->Add(fh2EtaPhi);
+  list->Add(fh1Pt);
+}
+
+
+//___________________________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::AliFragFuncQATrackHistos(const char* name,
+								   Int_t nPt, Float_t ptMin, Float_t ptMax,
+								   Int_t nEta, Float_t etaMin, Float_t etaMax,
+								   Int_t nPhi, Float_t phiMin, Float_t phiMax,
+								   Float_t ptThresh) 
+  : TObject()
+  ,fNBinsPt(nPt)
+  ,fPtMin(ptMin)
+  ,fPtMax(ptMax)
+  ,fNBinsEta(nEta)
+  ,fEtaMin(etaMin)
+  ,fEtaMax(etaMax)
+  ,fNBinsPhi(nPhi)
+  ,fPhiMin(phiMin)
+  ,fPhiMax(phiMax)
+  ,fHighPtThreshold(ptThresh)
+  ,fh2EtaPhi(0)
+  ,fh1Pt(0)
+  ,fh2HighPtEtaPhi(0)
+  ,fName(name)
+{
+  // default constructor
+}
+
+//__________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::AliFragFuncQATrackHistos(const AliFragFuncQATrackHistos& copy)
+  : TObject()
+  ,fNBinsPt(copy.fNBinsPt)
+  ,fPtMin(copy.fPtMin)
+  ,fPtMax(copy.fPtMax)
+  ,fNBinsEta(copy.fNBinsEta)
+  ,fEtaMin(copy.fEtaMin)
+  ,fEtaMax(copy.fEtaMax)
+  ,fNBinsPhi(copy.fNBinsPhi)
+  ,fPhiMin(copy.fPhiMin)
+  ,fPhiMax(copy.fPhiMax)
+  ,fHighPtThreshold(copy.fHighPtThreshold)
+  ,fh2EtaPhi(copy.fh2EtaPhi)
+  ,fh1Pt(copy.fh1Pt)
+  ,fh2HighPtEtaPhi(copy.fh2HighPtEtaPhi)
+  ,fName(copy.fName)
+{
+  // copy constructor
+}
+
+// _____________________________________________________________________________________________________________________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos& AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::operator=(const AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos& o)
+{
+  // assignment
+  
+  if(this!=&o){
+    TObject::operator=(o);
+    fNBinsPt         = o.fNBinsPt;
+    fPtMin           = o.fPtMin;
+    fPtMax           = o.fPtMax;
+    fNBinsEta        = o.fNBinsEta;
+    fEtaMin          = o.fEtaMin;
+    fEtaMax          = o.fEtaMax;
+    fNBinsPhi        = o.fNBinsPhi;
+    fPhiMin          = o.fPhiMin;
+    fPhiMax          = o.fPhiMax;
+    fHighPtThreshold = o.fHighPtThreshold;
+    fh2EtaPhi        = o.fh2EtaPhi;
+    fh1Pt            = o.fh1Pt;
+    fh2HighPtEtaPhi  = o.fh2HighPtEtaPhi;
+    fName            = o.fName;
+  }
+  
+  return *this;
+}
+
+//___________________________________________________________________
+AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::~AliFragFuncQATrackHistos()
+{
+  // destructor 
+  
+  if(fh2EtaPhi)       delete fh2EtaPhi;
+  if(fh2HighPtEtaPhi) delete fh2HighPtEtaPhi;
+  if(fh1Pt)           delete fh1Pt;
+}
+
+//______________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::DefineHistos()
+{
+  // book track QA histos
+
+  fh2EtaPhi       = new TH2F(Form("fh2TrackQAEtaPhi%s", fName.Data()), Form("%s: #eta - #phi distribution", fName.Data()), fNBinsEta, fEtaMin, fEtaMax, fNBinsPhi, fPhiMin, fPhiMax);
+  fh2HighPtEtaPhi = new TH2F(Form("fh2TrackQAHighPtEtaPhi%s", fName.Data()), Form("%s: #eta - #phi distribution for high-p_{T}", fName.Data()), fNBinsEta, fEtaMin, fEtaMax, fNBinsPhi, fPhiMin, fPhiMax);
+  fh1Pt           = new TH1F(Form("fh1TrackQAPt%s", fName.Data()), Form("%s: p_{T} distribution", fName.Data()), fNBinsPt, fPtMin, fPtMax);
+  
+  AliAnalysisTaskFragmentationFunction::SetProperties(fh2EtaPhi, "#eta", "#phi"); 
+  AliAnalysisTaskFragmentationFunction::SetProperties(fh2HighPtEtaPhi, "#eta", "#phi");
+  AliAnalysisTaskFragmentationFunction::SetProperties(fh1Pt, "p_{T} [GeV/c]", "entries");
+}
+
+//________________________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::FillTrackQA(Float_t eta, Float_t phi, Float_t pt)
+{
+  // fill track QA histos
+    
+  fh2EtaPhi->Fill( eta, phi);
+  if(pt > fHighPtThreshold) fh2HighPtEtaPhi->Fill( eta, phi);
+  fh1Pt->Fill( pt );	
+}
+
+//______________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos::AddToOutput(TList* list) const
+{
+  // add histos to list
+
+  list->Add(fh2EtaPhi);
+  list->Add(fh2HighPtEtaPhi);
+  list->Add(fh1Pt);
+}
+
+//__________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
 {
+  // create output objects
+  
+  if(fDebug > 1) Printf("AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()");
+ 
+  // create list of tracks and jets 
+  
+  fTracksRec = new TList();
+  fTracksRec->SetOwner(kFALSE);  
+
+  fTracksRecCuts = new TList();
+  fTracksRecCuts->SetOwner(kFALSE);  
+
+  fTracksGen = new TList();
+  fTracksGen->SetOwner(kFALSE);
+
+  fJetsRec = new TList();
+  fJetsRec->SetOwner(kFALSE);
+
+  fJetsRecCuts = new TList();
+  fJetsRecCuts->SetOwner(kFALSE);
+
+  fJetsGen = new TList();
+  fJetsGen->SetOwner(kFALSE);
+
+  // fJetsKine = new TList();
+  // fJetsKine->SetOwner(kTRUE); // delete AOD jets using mom from Kine Tree via TList::Clear()
+
+
   //
-  // Create the output container
+  // Create histograms / output container
   //
-
-  //**** Connect the AOD
-  if(fUseAODInput) // Use AODs as input not ESDs
-  { 
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD)
-    {
-      Printf("%s:%d AODEvent not found in Input Manager %d",(char*)__FILE__,__LINE__,fUseAODInput);
-      return;
-    }
-
-    // fetch the header
-    fJetHeaderRec = dynamic_cast<AliJetHeader*>(fInputHandler->GetTree()->GetUserInfo()->FindObject(Form("AliJetHeader_%s",fBranchRec.Data())));
-    if(!fJetHeaderRec)
-    {
-      Printf("%s:%d Jet Header not found in the Input",(char*)__FILE__,__LINE__);
-    }
-  }
-
-
-  else // Use the AOD on the flight 
-  {
-    //  assume that the AOD is in the general output...
-    fAOD  = AODEvent();
-    if(!fAOD)
-    {
-      Printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
-      return;
-    }
-
-    //    ((TList*)OutputTree()->GetUserInfo())->Dump();
-    fJetHeaderRec = dynamic_cast<AliJetHeader*>(OutputTree()->GetUserInfo()->FindObject(Form("AliJetHeader_%s",fBranchRec.Data())));    
-    if(!fJetHeaderRec)
-    {
-      Printf("%s:%d Jet Header not found in the Output",(char*)__FILE__,__LINE__);
-    }
-    else
-    {
-      if(fDebug>10)fJetHeaderRec->Dump();
-    }
-  }
-
-////////////////////////////
-
-  if (fDebug > 1) printf("AnalysisTaskJetSpectrum::UserCreateOutputObjects() \n");
 
   OpenFile(1);
-  if(!fHistList)fHistList = new TList();
-  fHistList->SetOwner(kTRUE);
+  fCommonHistList = new TList();
+  
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
+  
+  
+  // Histograms	
+  fh1EvtSelection            = new TH1F("fh1EvtSelection", "Event Selection", 6, -0.5, 5.5);
+  fh1VertexNContributors     = new TH1F("fh1VertexNContributors", "Vertex N contributors", 11,-.5, 10.5);
+  fh1VertexZ                 = new TH1F("fh1VertexZ", "Vertex z distribution", 30, -15., 15.);
+  fh1EvtMult 	             = new TH1F("fh1EvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",100,0.,100.);
+  fh1nRecJetsCuts            = new TH1F("fh1nRecJetsCuts","reconstructed jets per event",10,-0.5,9.5);
+  fh1nGenJets                = new TH1F("fh1nGenJets","generated jets per event",10,-0.5,9.5);
 
-//////////////////////////////////////////////////
-//////////// HISTOGRAM DECLARATION ///////////////
-//////////////////////////////////////////////////
 
-  DefineJetH();
+  fQATrackHistosRec          = new AliFragFuncQATrackHistos("Rec", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+						 fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, fQATrackHighPtThreshold);
+  fQATrackHistosRecCuts      = new AliFragFuncQATrackHistos("RecCuts", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+						 fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, fQATrackHighPtThreshold);
+  fQATrackHistosGen          = new AliFragFuncQATrackHistos("Gen", fQATrackNBinsPt, fQATrackPtMin, fQATrackPtMax, fQATrackNBinsEta, fQATrackEtaMin, fQATrackEtaMax,
+						 fQATrackNBinsPhi, fQATrackPhiMin, fQATrackPhiMax, fQATrackHighPtThreshold);
+  
 
-//////////////////////////////////////////////////
-////////////// HISTOGRAM SAVING //////////////////
-//////////////////////////////////////////////////
+  fQAJetHistosRec            = new AliFragFuncQAJetHistos("Rec", fQAJetNBinsPt, fQAJetPtMin, fQAJetPtMax, fQAJetNBinsEta, fQAJetEtaMin, fQAJetEtaMax,
+					       fQAJetNBinsPhi, fQAJetPhiMin, fQAJetPhiMax);
+  fQAJetHistosRecCuts        = new AliFragFuncQAJetHistos("RecCuts", fQAJetNBinsPt, fQAJetPtMin, fQAJetPtMax, fQAJetNBinsEta, fQAJetEtaMin, fQAJetEtaMax,
+					       fQAJetNBinsPhi, fQAJetPhiMin, fQAJetPhiMax);
+  fQAJetHistosRecCutsLeading = new AliFragFuncQAJetHistos("RecCutsLeading", fQAJetNBinsPt, fQAJetPtMin, fQAJetPtMax, fQAJetNBinsEta, fQAJetEtaMin, fQAJetEtaMax,
+					       fQAJetNBinsPhi, fQAJetPhiMin, fQAJetPhiMax);
+  fQAJetHistosGen            = new AliFragFuncQAJetHistos("Gen", fQAJetNBinsPt, fQAJetPtMin, fQAJetPtMax, fQAJetNBinsEta, fQAJetEtaMin, fQAJetEtaMax,
+					       fQAJetNBinsPhi, fQAJetPhiMin, fQAJetPhiMax);
+  fQAJetHistosGenLeading     = new AliFragFuncQAJetHistos("GenLeading", fQAJetNBinsPt, fQAJetPtMin, fQAJetPtMax, fQAJetNBinsEta, fQAJetEtaMin, fQAJetEtaMax,
+					       fQAJetNBinsPhi, fQAJetPhiMin, fQAJetPhiMax);
+  
 
-  for (Int_t i3 = 0; i3 < fnEBin; i3++)
-  {
-    fHistList->Add(fEtaMonoJet1H[i3]);
-    fHistList->Add(fPhiMonoJet1H[i3]);
-    fHistList->Add(fPtMonoJet1H[i3]);
-    fHistList->Add(fEMonoJet1H[i3]);
-   
-    for(Int_t i4 = 0; i4 < fnRBin; i4++)
-    {
-      fHistList->Add(fdNdXiMonoJet1H[i3][i4]);
-      fHistList->Add(fdNdPtMonoJet1H[i3][i4]);
-      fHistList->Add(fdNdZMonoJet1H[i3][i4]);
-      fHistList->Add(fNMonoJet1sH[i3][i4]);
-    }
+  fFFHistosRecCuts   	     = new AliFragFuncHistos("RecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, fFFNBinsPt, fFFPtMin, fFFPtMax, fFFNBinsXi, fFFXiMin, fFFXiMax,  
+					    fFFNBinsZ , fFFZMin , fFFZMax);
+  fFFHistosRecLeading        = new AliFragFuncHistos("RecLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, fFFNBinsPt, fFFPtMin, fFFPtMax, fFFNBinsXi, fFFXiMin, fFFXiMax,  
+					    fFFNBinsZ , fFFZMin , fFFZMax);
+  fFFHistosRecLeadingTrack   = new AliFragFuncHistos("RecLeadingTrack", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, fFFNBinsPt, fFFPtMin, fFFPtMax, fFFNBinsXi, fFFXiMin, fFFXiMax,  
+					    fFFNBinsZ , fFFZMin , fFFZMax);
+  fFFHistosGen   	     = new AliFragFuncHistos("Gen", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, fFFNBinsPt, fFFPtMin, fFFPtMax, fFFNBinsXi, fFFXiMin, fFFXiMax,  
+					    fFFNBinsZ , fFFZMin , fFFZMax);
+  fFFHistosGenLeading        = new AliFragFuncHistos("GenLeading", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, fFFNBinsPt, fFFPtMin, fFFPtMax, fFFNBinsXi, fFFXiMin, fFFXiMax,  
+					    fFFNBinsZ , fFFZMin , fFFZMax);
+  fFFHistosGenLeadingTrack   = new AliFragFuncHistos("GenLeadingTrack", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, fFFNBinsPt, fFFPtMin, fFFPtMax, fFFNBinsXi, fFFXiMin, fFFXiMax,  
+					    fFFNBinsZ , fFFZMin , fFFZMax);
+
+
+  fQATrackHistosRec->DefineHistos();
+  fQATrackHistosRecCuts->DefineHistos();
+  fQATrackHistosGen->DefineHistos();
+
+  fQAJetHistosRec->DefineHistos();
+  fQAJetHistosRecCuts->DefineHistos();
+  fQAJetHistosRecCutsLeading->DefineHistos();
+  fQAJetHistosGen->DefineHistos();
+  fQAJetHistosGenLeading->DefineHistos();
+
+  fFFHistosRecCuts->DefineHistos();
+  fFFHistosRecLeading->DefineHistos();
+  fFFHistosRecLeadingTrack->DefineHistos();
+  fFFHistosGen->DefineHistos();
+  fFFHistosGenLeading->DefineHistos();
+  fFFHistosGenLeadingTrack->DefineHistos();
+  
+  
+  const Int_t saveLevel = 4;
+  if(saveLevel>0){
+    fCommonHistList->Add(fh1EvtSelection);
+    fFFHistosRecCuts->AddToOutput(fCommonHistList);
+    fFFHistosRecLeading->AddToOutput(fCommonHistList);
+    fFFHistosRecLeadingTrack->AddToOutput(fCommonHistList);
+    fFFHistosGen->AddToOutput(fCommonHistList);
+    fFFHistosGenLeading->AddToOutput(fCommonHistList);
+    fFFHistosGenLeadingTrack->AddToOutput(fCommonHistList);
   }
- 
-  // Theta, kT particles/jet
-  for (Int_t i3 = 0; i3 < fnEBin; i3++)
-  {
-    for(Int_t i4 = 0; i4 < fnRBin; i4++)
-    {
-      fHistList->Add(fdNdThetaMonoJet1H[i3][i4]);
-      fHistList->Add(fdNdcosThetaMonoJet1H[i3][i4]);
-      fHistList->Add(fdNdkTMonoJet1H[i3][i4]);
-      fHistList->Add(fdNdpTvsZMonoJet1H[i3][i4]);
-      fHistList->Add(fShapeMonoJet1H[i3][i4]);
-	  
-      fHistList->Add(fThetaPtPartMonoJet1H[i3][i4]);
-      fHistList->Add(fcosThetaPtPartMonoJet1H[i3][i4]);
-      fHistList->Add(fkTPtPartMonoJet1H[i3][i4]);
-      fHistList->Add(fThetaPtJetMonoJet1H[i3][i4]);
-      fHistList->Add(fcosThetaPtJetMonoJet1H[i3][i4]);
-      fHistList->Add(fkTPtJetMonoJet1H[i3][i4]);
-      fHistList->Add(fpTPtJetMonoJet1H[i3][i4]);
-    }
+  if(saveLevel>1){
+    fQATrackHistosRec->AddToOutput(fCommonHistList);
+    fQATrackHistosRecCuts->AddToOutput(fCommonHistList);
+    fQATrackHistosGen->AddToOutput(fCommonHistList);
+    
+    fQAJetHistosRec->AddToOutput(fCommonHistList);
+    fQAJetHistosRecCuts->AddToOutput(fCommonHistList);
+    fQAJetHistosRecCutsLeading->AddToOutput(fCommonHistList);
+    fQAJetHistosGen->AddToOutput(fCommonHistList);
+    fQAJetHistosGenLeading->AddToOutput(fCommonHistList);
+    
+    fCommonHistList->Add(fh1EvtMult);
+    fCommonHistList->Add(fh1nRecJetsCuts);
+    fCommonHistList->Add(fh1nGenJets);
+  }
+  if(saveLevel>2){
+    fCommonHistList->Add(fh1VertexNContributors);
+    fCommonHistList->Add(fh1VertexZ);    
+  }
+  if(saveLevel>3){
+    
   }
   
-  // Track QA - Correlations
-  for (Int_t iPtBin=0; iPtBin<fnPtTrigBin; iPtBin++)
-    {
-      fHistList->Add(fptTracks[iPtBin]);
-      fHistList->Add(fetaTracks[iPtBin]);
-      fHistList->Add(fphiTracks[iPtBin]);
-      fHistList->Add(fdetaTracks[iPtBin]);
-      fHistList->Add(fdphiTracks[iPtBin]);
-      fHistList->Add(fetaphiptTracks[iPtBin]);
-      fHistList->Add(fetaphiTracks[iPtBin]);
-      fHistList->Add(fdetadphiTracks[iPtBin]);
-      fHistList->Add(fptTracksCut[iPtBin]);
-      fHistList->Add(fetaTracksCut[iPtBin]);
-      fHistList->Add(fphiTracksCut[iPtBin]);
-      fHistList->Add(fdetaTracksCut[iPtBin]);
-      fHistList->Add(fdphiTracksCut[iPtBin]);
-      fHistList->Add(fetaphiptTracksCut[iPtBin]);
-      fHistList->Add(fetaphiTracksCut[iPtBin]);
-      fHistList->Add(fdetadphiTracksCut[iPtBin]);
-      fHistList->Add(fNPtTrig[iPtBin]);
-      fHistList->Add(fNPtTrigCut[iPtBin]);
-    }
-
-  // Track QA 
-  fHistList->Add(fptAllTracks);
-  fHistList->Add(fetaAllTracks);
-  fHistList->Add(fphiAllTracks);
-  fHistList->Add(fetaphiptAllTracks);
-  fHistList->Add(fetaphiAllTracks);
-  fHistList->Add(fptAllTracksCut);
-  fHistList->Add(fetaAllTracksCut);
-  fHistList->Add(fphiAllTracksCut);
-  fHistList->Add(fetaphiptAllTracksCut);
-  fHistList->Add(fetaphiAllTracksCut);
-
-  // Event caracterisation QA
-  fHistList->Add(fvertexXY);
-  fHistList->Add(fvertexZ);
-  fHistList->Add(fEvtMult);
-  fHistList->Add(fEvtMultvsJetPt);
-  fHistList->Add(fPtvsEtaJet);
-  fHistList->Add(fNpvsEtaJet);
-  fHistList->Add(fNpevtvsEtaJet);
-  fHistList->Add(fPtvsPtJet);
-  fHistList->Add(fNpvsPtJet);
-  fHistList->Add(fNpevtvsPtJet);
-  fHistList->Add(fPtvsPtJet1D);
-  fHistList->Add(fNpvsPtJet1D);
-  fHistList->Add(fNpevtvsPtJet1D);
-  fHistList->Add(fptLeadingJet);
-  fHistList->Add(fetaLeadingJet);
-  fHistList->Add(fphiLeadingJet);
-  fHistList->Add(fptJet);
-  fHistList->Add(fetaJet);
-  fHistList->Add(fphiJet);
-  fHistList->Add(fNBadRunsH);
-
-//////////////////////////////////////////////////
-///////// END OF HISTOGRAM DECLARATION ///////////
-//////////////////////////////////////////////////
-
   // =========== Switch on Sumw2 for all histos ===========
-  for (Int_t i=0; i<fHistList->GetEntries(); ++i) 
-  {
-    TH1 *h1 = dynamic_cast<TH1*>(fHistList->At(i));
-    if (h1)
-    {
-      // Printf("%s ",h1->GetName());
-      h1->Sumw2();
-      continue;
-    }
+  for (Int_t i=0; i<fCommonHistList->GetEntries(); ++i) {
+    TH1 *h1 = dynamic_cast<TH1*>(fCommonHistList->At(i));
+    if (h1) h1->Sumw2();	
   }
   
   TH1::AddDirectory(oldStatus);
-  
-  /*
-    if (fDebug > 1) printf("AnalysisTaskDiJets::CreateOutPutData() \n");
-    fDiJets = new TClonesArray("AliAODDiJet", 0);
-    fDiJets->SetName("Dijets");
-    AddAODBranch("TClonesArray", &fDiJets);
-  */
-  
-  
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-
+//_______________________________________________
 void AliAnalysisTaskFragmentationFunction::Init()
 {
-  //
   // Initialization
-  //
+  if(fDebug > 1) Printf("AliAnalysisTaskFragmentationFunction::Init()");
 
-  Printf(">>> AnalysisTaskFragmentationFunction::Init() debug level %d\n",fDebug);
-  if (fDebug > 1) printf("AnalysisTaskDiJets::Init() \n");
 }
 
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-
-void AliAnalysisTaskFragmentationFunction::UserExec(Option_t */*option*/) 
+//_____________________________________________________________
+void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *) 
 {
-  //
-  // Execute analysis for current event
-  //
+  // Main loop
+  // Called for each event
+  if(fDebug > 1) Printf("AliAnalysisTaskFragmentationFunction::UserExec()");
+	
 
-  //****
-  //**** Check of input data
-  //****
-
-  printf("Analysing event # %5d\n", (Int_t) fEntry);
-  if (fDebug > 1)printf("Analysing event # %5d\n", (Int_t) fEntry);
+  if(fDebug > 1) Printf("Analysis event #%5d", (Int_t) fEntry);
+  // Trigger selection
   
-  AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-  if(!aodH)
-  {
-    Printf("%s:%d no output aodHandler found Jet",(char*)__FILE__,__LINE__);
-    return;
-  }
-  
-  TClonesArray *aodRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchRec.Data()));
-  if(!aodRecJets)
-  {
-    Printf("%s:%d no reconstructed Jet array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchRec.Data());
-    return;
-  }
-  if (fDebug > 10) Printf("%s:%d",(char*)__FILE__,__LINE__);
-  
-  //****
-  //**** Check of primary vertex
-  //****
-  AliAODVertex * pvtx = dynamic_cast<AliAODVertex*>(fAOD->GetPrimaryVertex());
-  if( (!pvtx) ||
-      (pvtx->GetZ()<-10. || pvtx->GetZ()>10.) ||
-      (pvtx->GetNContributors()<0) )
-    { 
-	fNBadRuns++;
-	fNBadRunsH->Fill(0.5);
- 	return;
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*)
+    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+  if(inputHandler->IsEventSelected()){
+    if(fDebug > 1)  Printf(" Trigger Selection: event ACCEPTED ... ");
+    fh1EvtSelection->Fill(1.);
+  } else {
+    fh1EvtSelection->Fill(0.);
+    if(inputHandler->InheritsFrom("AliESDInputHandler")){ // PhysicsSelection only with ESD input
+       if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
+       PostData(1, fCommonHistList);
+       return;
     }
-
-  //****
-  //**** Check number of tracks 
-  //****
-  TClonesArray* tracks = dynamic_cast<TClonesArray*>(fAOD->GetTracks());
-
-  //****
-  //**** Declaration of arrays and variables 
-  //****
-  // We use static array, not to fragment the memory
-  AliAODJet recJets[kMaxJets];
-  Int_t nRecJets       = 0;
-  Int_t nTracks = 0;
-
-//////////////////////////////////////////////////
-///////// Get the reconstructed jets /////////////
-//////////////////////////////////////////////////
-
-  nRecJets = aodRecJets->GetEntries();
-  nRecJets = TMath::Min(nRecJets,kMaxJets);
-  nTracks  = fAOD->GetNumberOfTracks();
+  }
     
-  for(int ir = 0;ir < nRecJets;++ir)
-  {
-    AliAODJet *tmp = dynamic_cast<AliAODJet*>(aodRecJets->At(ir));
-    if(!tmp)continue;
-    recJets[ir] = *tmp;
-    cout << "recJets[" << ir << "].Eta(): " << recJets[ir].Eta() << ", recJets[" << ir <<"].Phi(): " << recJets[ir].Phi() << ", recJets[" << ir << "].E(): " << recJets[ir].E() << endl;
+  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+  if(!fESD){
+    if(fDebug>3) Printf("%s:%d ESDEvent not found in the input", (char*)__FILE__,__LINE__);
   }
-  if(nRecJets>1) {
-    Float_t detaJ = recJets[0].Eta() - recJets[1].Eta();
-    Float_t dphiJ = recJets[0].Phi() - recJets[1].Phi();
-    Float_t detJ = recJets[0].Pt() - recJets[1].Pt();
-    cout << "detaJ: " << detaJ << ", dphiJ: " << dphiJ << ", detJ: " << detJ << endl;
+  
+  fMCEvent = MCEvent();
+  if(!fMCEvent){
+    if(fDebug>3) Printf("%s:%d MCEvent not found in the input", (char*)__FILE__,__LINE__);
+  }
+  
+  // get AOD event from input/ouput
+  TObject* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if( handler && handler->InheritsFrom("AliAODInputHandler") ) {
+    fAOD  =  ((AliAODInputHandler*)handler)->GetEvent();
+    if (fDebug > 1)  Printf("%s:%d AOD event from input", (char*)__FILE__,__LINE__);
+  }
+  else {
+    handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+    if( handler && handler->InheritsFrom("AliAODHandler") ) {
+      fAOD  = ((AliAODHandler*)handler)->GetAOD();
+      if (fDebug > 1)  Printf("%s:%d AOD event from output", (char*)__FILE__,__LINE__);
+    }
+  }
+  
+  if(!fAOD){
+    Printf("%s:%d AODEvent not found", (char*)__FILE__,__LINE__);
+    return;
+  }
+  
+  
+  // event selection (vertex) *****************************************
+  
+  AliAODVertex* primVtx = fAOD->GetPrimaryVertex();
+  Int_t nTracksPrim = primVtx->GetNContributors();
+  fh1VertexNContributors->Fill(nTracksPrim);
+  
+  if (fDebug > 1) Printf("%s:%d primary vertex selection: %d", (char*)__FILE__,__LINE__,nTracksPrim);
+  if(!nTracksPrim){
+    if (fDebug > 1) Printf("%s:%d primary vertex selection: event REJECTED...",(char*)__FILE__,__LINE__); 
+    fh1EvtSelection->Fill(2.);
+    PostData(1, fCommonHistList);
+    return;
   }
 
-  // Get vertex information
-  fvertexXY->Fill(pvtx->GetX(),pvtx->GetY());
-  fvertexZ->Fill(pvtx->GetZ());
+  fh1VertexZ->Fill(primVtx->GetZ());
+  
+  if(TMath::Abs(primVtx->GetZ())>10){
+    if (fDebug > 1) Printf("%s:%d primary vertex z = %f: event REJECTED...",(char*)__FILE__,__LINE__,primVtx->GetZ()); 
+    fh1EvtSelection->Fill(3.);
+    PostData(1, fCommonHistList);
+    return; 
+  }
 
-  //////////////////////////////////////////////////
-  ////////////// TRACK QUALITY ASSURANCE ///////////           TO BE OPTIMISED!!
-  //////////////////////////////////////////////////
-  Int_t evtMult = 0;
-  for(Int_t it=0; it<nTracks; it++)
-  {
-    AliAODTrack* aodTrack = (AliAODTrack*)tracks->At(it);
-    Float_t etaT = aodTrack->Eta();
-    Float_t phiT = aodTrack->Phi();
-    Float_t ptT = aodTrack->Pt(); 
-    phiT = ((phiT < 0) ? phiT + 2 * TMath::Pi() : phiT);
-    //    cout << "etaT: " << etaT << ", phiT: " << phiT << endl;
-    fptAllTracks->Fill(ptT);
-    fetaAllTracks->Fill(etaT);
-    fphiAllTracks->Fill(phiT);
-    fetaphiptAllTracks->Fill(etaT,phiT,ptT);
-    fetaphiAllTracks->Fill(etaT,phiT,1);
-    UInt_t status = aodTrack->GetStatus();
+  TString primVtxName(primVtx->GetName());
 
-    for(Int_t i=0; i<fnPtTrigBin; i++)
-    {
-      if(ptT>=farrayPtTrigmin[i] && ptT<farrayPtTrigmax[i])
-      {
-	fptTracks[i]->Fill(ptT);
-	fetaTracks[i]->Fill(etaT);
-	fphiTracks[i]->Fill(phiT);
-	fNPtTrig[i]->Fill(0.5);
-	// Compute deta/dphi
-	Float_t etaT2 = 0.; 
-	Float_t phiT2 = 0.;
-	Float_t ptT2 = 0.;
-	Float_t detaT = 0.;
-	Float_t dphiT = 0.;
-	for(Int_t it2 = 0; it2< nTracks; it2++)
-	{
-	   AliAODTrack* aodTrack2 = (AliAODTrack*)tracks->At(it2);
-	   etaT2 = aodTrack2->Eta(); phiT2 = aodTrack2->Phi(); ptT2 = aodTrack2->Pt();
-	   phiT2 = ((phiT2 < 0) ? phiT2 + 2 * TMath::Pi() : phiT2);
-	   //	      cout << "etaT2: " << etaT2 << ", phiT2: " << phiT2 << endl;
-	   if(ptT2 > 2.*i+4.) continue;
-	   if(it2==it) continue;
-	   detaT = etaT - etaT2; 
-	   dphiT = phiT - phiT2; 
-	   if (dphiT  >   TMath::Pi()) dphiT = (-TMath::Pi() +TMath::Abs(dphiT - TMath::Pi()));
-	   if (dphiT  < -1.0*TMath::Pi())  dphiT = (TMath::Pi() -  TMath::Abs(dphiT + TMath::Pi()));
-	      
-	   fdetaTracks[i]->Fill(detaT);
-	   fdphiTracks[i]->Fill(dphiT);
-	   fdetadphiTracks[i]->Fill(detaT,dphiT,1);
+  if(primVtxName.CompareTo("TPCVertex",TString::kIgnoreCase) == 1){
+    if (fDebug > 1) Printf("%s:%d primary vertex selection: TPC vertex, event REJECTED...",(char*)__FILE__,__LINE__);
+    fh1EvtSelection->Fill(4.);
+    PostData(1, fCommonHistList);
+    return;
+  }
+  if (fDebug > 1) Printf("%s:%d primary vertex selection: event ACCEPTED ...",(char*)__FILE__,__LINE__); 
+  fh1EvtSelection->Fill(5.);
+  
+  
+  //___ fetch jets __________________________________________________________________________
+  
+  Int_t nJ = GetListOfJets(fJetsRec, kJetsRec);
+  Int_t nRecJets = 0;
+  if(nJ>=0) nRecJets = fJetsRec->GetEntries();
+  if(fDebug>2)Printf("%s:%d Selected Rec jets: %d %d",(char*)__FILE__,__LINE__,nJ,nRecJets);
+  if(nJ != nRecJets) Printf("%s:%d Mismatch Selected Rec Jets: %d %d",(char*)__FILE__,__LINE__,nJ,nRecJets);
+
+  Int_t nJCuts = GetListOfJets(fJetsRecCuts, kJetsRecAcceptance);
+  Int_t nRecJetsCuts = 0;
+  if(nJCuts>=0) nRecJetsCuts = fJetsRecCuts->GetEntries();
+  if(fDebug>2)Printf("%s:%d Selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
+  if(nRecJetsCuts != nJCuts) Printf("%s:%d Mismatch selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
+  fh1nRecJetsCuts->Fill(nRecJetsCuts);
+
+  
+  if(fJetTypeGen==kJetsKine || fJetTypeGen == kJetsKineAcceptance) fJetsGen->SetOwner(kTRUE); // kine aod jets allocated on heap, delete them with TList::Clear() 
+  Int_t nJGen  = GetListOfJets(fJetsGen, fJetTypeGen);
+  Int_t nGenJets = 0;
+  if(nJGen>=0) nGenJets = fJetsGen->GetEntries();
+  if(fDebug>2)Printf("%s:%d Selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
+  if(nJGen != nGenJets) Printf("%s:%d Mismatch selected Gen jets: %d %d",(char*)__FILE__,__LINE__,nJGen,nGenJets);
+  fh1nGenJets->Fill(nGenJets);
+
+
+  //____ fetch particles __________________________________________________________
+  
+  Int_t nT = GetListOfTracks(fTracksRec, kTrackAOD);
+  Int_t nRecPart = 0;
+  if(nT>=0) nRecPart = fTracksRec->GetEntries();
+  if(fDebug>2)Printf("%s:%d Selected Rec tracks: %d %d",(char*)__FILE__,__LINE__,nT,nRecPart);
+  if(nRecPart != nT) Printf("%s:%d Mismatch selected Rec tracks: %d %d",(char*)__FILE__,__LINE__,nT,nRecPart);
+  
+
+  Int_t nTCuts = GetListOfTracks(fTracksRecCuts, kTrackAODCuts);
+  Int_t nRecPartCuts = 0;
+  if(nTCuts>=0) nRecPartCuts = fTracksRecCuts->GetEntries();
+  if(fDebug>2)Printf("%s:%d Selected Rec tracks after cuts: %d %d",(char*)__FILE__,__LINE__,nTCuts,nRecPartCuts);
+  if(nRecPartCuts != nTCuts) Printf("%s:%d Mismatch selected Rec tracks after cuts: %d %d",(char*)__FILE__,__LINE__,nTCuts,nRecPartCuts);
+  fh1EvtMult->Fill(nRecPartCuts);
+
+
+  Int_t nTGen = GetListOfTracks(fTracksGen,fTrackTypeGen);
+  Int_t nGenPart = 0;
+  if(nTGen>=0) nGenPart = fTracksGen->GetEntries();
+  if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
+  if(nGenPart != nTGen) Printf("%s:%d Mismatch selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
+  
+  
+  //____ analysis, fill histos ___________________________________________________
+  
+  // loop over tracks
+
+  for(Int_t it=0; it<nRecPart; ++it){
+    AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksRec->At(it));
+    fQATrackHistosRec->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
+  }
+  for(Int_t it=0; it<nRecPartCuts; ++it){
+    AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksRecCuts->At(it));
+    fQATrackHistosRecCuts->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
+  }
+  for(Int_t it=0; it<nGenPart; ++it){
+    AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksGen->At(it));
+    fQATrackHistosGen->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
+  }
+  
+  // loop over jets
+
+  for(Int_t ij=0; ij<nRecJets; ++ij){
+
+    AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsRec->At(ij));
+    fQAJetHistosRec->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
+  }
+  
+
+  for(Int_t ij=0; ij<nRecJetsCuts; ++ij){
+
+    AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(ij));
+    fQAJetHistosRecCuts->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
+
+    if(ij==0){ // leading jet
+      
+      fQAJetHistosRecCutsLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt() );
+      
+      TList* jettracklist = new TList();
+      Double_t sumPt = 0.;
+      Float_t leadTrackPt = 0.;
+      
+      if(GetFFRadius()<=0){
+ 	GetJetTracksTrackrefs(jettracklist, jet);
+       } else {
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt);
+      }
+      
+      for(Int_t it=0; it<jettracklist->GetSize(); ++it){
+	Float_t trackPt = (dynamic_cast<AliVParticle*> (jettracklist->At(it)))->Pt();
+	Float_t jetPt = jet->Pt();
+	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+	
+	fFFHistosRecCuts->FillFF( trackPt, jetPt, incrementJetPt);
+	
+	if(it==0){ 
+	  leadTrackPt = trackPt;
+	  fFFHistosRecLeadingTrack->FillFF( leadTrackPt, jetPt, kTRUE);
 	}
-        fetaphiptTracks[i]->Fill(etaT,phiT,ptT);
-	fetaphiTracks[i]->Fill(etaT,phiT,1);
+	fFFHistosRecLeading->FillFF( trackPt, leadTrackPt , incrementJetPt);
       }
-    } // End loop over trigger ranges 
-
-    if (status == 0) continue;
-    if((fFilterMask>0)&&!(aodTrack->TestFilterBit(fFilterMask))) continue;
-    fptAllTracksCut->Fill(ptT);
-    fetaAllTracksCut->Fill(etaT);
-    fphiAllTracksCut->Fill(phiT);
-    fetaphiptAllTracksCut->Fill(etaT,phiT,ptT);
-    fetaphiAllTracksCut->Fill(etaT,phiT,1);
-    if(ptT > 0.150 && TMath::Abs(etaT) < 0.9) evtMult++;
-  } // end loop over tracks
-  fEvtMult->Fill(evtMult);   
-
-//////////////////////////////////////////////////
-///////////////// MONOJET PART ///////////////////
-//////////////////////////////////////////////////
-
-  if (nRecJets == 0) return;
-
-  Double_t jetEnergy = recJets[0].E();
-  Int_t    goodBin   = 999;
-
-  for (Int_t i1 = 0; i1 < fnEBin; i1++)
-  {
-    if (jetEnergy < farrayEmax[i1] && jetEnergy >= farrayEmin[i1]) 
-    {
-      goodBin = i1;
-      continue;
+      
+      delete jettracklist;
     }
   }
+	
 
-  fptLeadingJet->Fill(recJets[0].Pt());
-  fetaLeadingJet->Fill(recJets[0].Eta());
-  fphiLeadingJet->Fill(recJets[0].Phi());
+  for(Int_t ij=0; ij<nGenJets; ++ij){
 
-  for(Int_t ij=0; ij<nRecJets; ij++)
-  {  
-    fptJet->Fill(recJets[ij].Pt());
-    fetaJet->Fill(recJets[ij].Eta());
-    fphiJet->Fill(recJets[ij].Phi());
-  }
-
-  // Get track ref 
-  TRefArray* ref = recJets[0].GetRefTracks();
-  for(Int_t it=0; it<ref->GetEntries(); it++)
-  {
-    Float_t ptTrack = ((AliVTrack*)ref->At(it))->Pt();
-    fPtvsEtaJet->Fill(recJets[0].Eta(),ptTrack);
-    fNpvsEtaJet->Fill(recJets[0].Eta(),ref->GetEntries());
-    fNpevtvsEtaJet->Fill(recJets[0].Eta(),evtMult);
-    fPtvsPtJet->Fill(recJets[0].Pt(),ptTrack);
-    fNpvsPtJet->Fill(recJets[0].Pt(),ref->GetEntries());
-    fNpevtvsPtJet->Fill(recJets[0].Pt(),evtMult);
-    fPtvsPtJet1D->Fill(recJets[0].Pt(),ptTrack);
-    fNpvsPtJet1D->Fill(recJets[0].Pt(),ref->GetEntries());
-    fNpevtvsPtJet1D->Fill(recJets[0].Pt(),evtMult);
-  }
-
-  FillMonoJetH(goodBin, recJets, tracks);
-
-  //////////////////////////////////////////////////
-  ////////////////// DIJET PART ////////////////////       
-  //////////////////////////////////////////////////
-
-  // UNDER CONSTRUCTION
-
-  PostData(1, fHistList);
-}
-
-//#######################################################################
-void AliAnalysisTaskFragmentationFunction::Terminate(Option_t */*option*/)
-{
-// Terminate analysis
-//
-    if (fDebug > 1) printf("AnalysisDiJets: Terminate() \n");
-    printf("Number of events with vertex out of bound: %d", fNBadRuns);
-}
-
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-
-void AliAnalysisTaskFragmentationFunction::DefineJetH()
-{
-
-  /////////////////////////////////////// HISTOGRAMS FIRST JET
-  fEtaMonoJet1H   = new TH1F*[fnEBin+1];
-  fPhiMonoJet1H   = new TH1F*[fnEBin+1];
-  fPtMonoJet1H    = new TH1F*[fnEBin+1];
-  fEMonoJet1H     = new TH1F*[fnEBin+1];
-
-  fdNdXiMonoJet1H = new TH1F**[fnEBin+1];
-  fdNdPtMonoJet1H = new TH1F**[fnEBin+1];
-  fdNdZMonoJet1H  = new TH1F**[fnEBin+1];
-  fdNdThetaMonoJet1H    = new TH1F**[fnEBin+1];
-  fdNdcosThetaMonoJet1H    = new TH1F**[fnEBin+1];
-  fdNdkTMonoJet1H       = new TH1F**[fnEBin+1];
-  fdNdpTvsZMonoJet1H    = new TH1F**[fnEBin+1];
-  fShapeMonoJet1H       = new TH1F**[fnEBin+1];
-  fNMonoJet1sH          = new TH1F**[fnEBin+1];
-
-  fThetaPtPartMonoJet1H = new TH2F**[fnEBin+1];
-  fcosThetaPtPartMonoJet1H = new TH2F**[fnEBin+1];
-  fkTPtPartMonoJet1H    = new TH2F**[fnEBin+1];
-  fThetaPtJetMonoJet1H = new TH2F**[fnEBin+1];
-  fcosThetaPtJetMonoJet1H = new TH2F**[fnEBin+1];
-  fkTPtJetMonoJet1H    = new TH2F**[fnEBin+1];
-  fpTPtJetMonoJet1H    = new TH2F**[fnEBin+1];
-
-  for (Int_t iEbin=0;iEbin<fnEBin+1;iEbin++)
-  {
-    fdNdXiMonoJet1H[iEbin]       = new TH1F*[fnRBin+1];
-    fdNdPtMonoJet1H[iEbin]       = new TH1F*[fnRBin+1];
-    fdNdZMonoJet1H[iEbin]        = new TH1F*[fnRBin+1];
-    fdNdThetaMonoJet1H[iEbin]    = new TH1F*[fnRBin+1];
-    fdNdcosThetaMonoJet1H[iEbin] = new TH1F*[fnRBin+1];
-    fdNdkTMonoJet1H[iEbin]       = new TH1F*[fnRBin+1];
-    fdNdpTvsZMonoJet1H[iEbin]    = new TH1F*[fnRBin+1];
-    fShapeMonoJet1H[iEbin]       = new TH1F*[fnRBin+1];
-    fNMonoJet1sH[iEbin]          = new TH1F*[fnRBin+1];
-
-    fThetaPtPartMonoJet1H[iEbin]    = new TH2F*[fnRBin+1];
-    fcosThetaPtPartMonoJet1H[iEbin] = new TH2F*[fnRBin+1];
-    fkTPtPartMonoJet1H[iEbin]       = new TH2F*[fnRBin+1];
-    fThetaPtJetMonoJet1H[iEbin]     = new TH2F*[fnRBin+1];
-    fcosThetaPtJetMonoJet1H[iEbin]  = new TH2F*[fnRBin+1];
-    fkTPtJetMonoJet1H[iEbin]        = new TH2F*[fnRBin+1];
-    fpTPtJetMonoJet1H[iEbin]        = new TH2F*[fnRBin+1];
-  }
-
-  for (Int_t iEbin=0;iEbin<fnEBin+1;iEbin++)
-  {
-    fEtaMonoJet1H[iEbin]    = 0;
-    fPhiMonoJet1H[iEbin]    = 0;
-    fPtMonoJet1H[iEbin]     = 0;
-    fEMonoJet1H[iEbin]      = 0;
-
-    for (Int_t iRbin=0;iRbin<fnRBin+1;iRbin++)
-    {
-      fdNdXiMonoJet1H[iEbin][iRbin]       = 0;
-      fdNdPtMonoJet1H[iEbin][iRbin]       = 0;
-      fdNdZMonoJet1H[iEbin][iRbin]        = 0;
-      fdNdThetaMonoJet1H[iEbin][iRbin]    = 0;
-      fdNdcosThetaMonoJet1H[iEbin][iRbin] = 0;
-      fdNdkTMonoJet1H[iEbin][iRbin]       = 0;
-      fdNdpTvsZMonoJet1H[iEbin][iRbin]    = 0;
-      fShapeMonoJet1H[iEbin][iRbin]       = 0;
-      fNMonoJet1sH[iEbin][iRbin]          = 0;
-
-      fThetaPtPartMonoJet1H[iEbin][iRbin]    = 0;
-      fcosThetaPtPartMonoJet1H[iEbin][iRbin] = 0;
-      fkTPtPartMonoJet1H[iEbin][iRbin]       = 0;
-      fThetaPtJetMonoJet1H[iEbin][iRbin]     = 0;
-      fcosThetaPtJetMonoJet1H[iEbin][iRbin]  = 0;
-      fkTPtJetMonoJet1H[iEbin][iRbin]        = 0;
-      fpTPtJetMonoJet1H[iEbin][iRbin]        = 0;
-    }
-  }
-
-  fptTracks          = new TH1F*[fnPtTrigBin+1];
-  fetaTracks         = new TH1F*[fnPtTrigBin+1];
-  fphiTracks         = new TH1F*[fnPtTrigBin+1];
-  fdetaTracks        = new TH1F*[fnPtTrigBin+1];
-  fdphiTracks        = new TH1F*[fnPtTrigBin+1];
-  fetaphiptTracks    = new TH2F*[fnPtTrigBin+1];
-  fetaphiTracks      = new TH2F*[fnPtTrigBin+1];
-  fdetadphiTracks    = new TH2F*[fnPtTrigBin+1];
-  fptTracksCut       = new TH1F*[fnPtTrigBin+1];
-  fetaTracksCut      = new TH1F*[fnPtTrigBin+1];
-  fphiTracksCut      = new TH1F*[fnPtTrigBin+1];
-  fdetaTracksCut     = new TH1F*[fnPtTrigBin+1];
-  fdphiTracksCut     = new TH1F*[fnPtTrigBin+1];
-  fetaphiptTracksCut = new TH2F*[fnPtTrigBin+1];
-  fetaphiTracksCut   = new TH2F*[fnPtTrigBin+1];
-  fdetadphiTracksCut = new TH2F*[fnPtTrigBin+1];
-  fNPtTrig           = new TH1F*[fnPtTrigBin+1];
-  fNPtTrigCut        = new TH1F*[fnPtTrigBin+1];
-
-  for(Int_t iPtTrigBin=0; iPtTrigBin<fnPtTrigBin; iPtTrigBin++)
-  {
-    fptTracks[iPtTrigBin]          = 0;
-    fetaTracks[iPtTrigBin]         = 0;
-    fphiTracks[iPtTrigBin]         = 0;
-    fdetaTracks[iPtTrigBin]        = 0;
-    fdphiTracks[iPtTrigBin]        = 0;
-    fetaphiptTracks[iPtTrigBin]    = 0;
-    fetaphiTracks[iPtTrigBin]      = 0;
-    fdetadphiTracks[iPtTrigBin]    = 0;
-    fptTracksCut[iPtTrigBin]       = 0;
-    fetaTracksCut[iPtTrigBin]      = 0;
-    fphiTracksCut[iPtTrigBin]      = 0;
-    fdetaTracksCut[iPtTrigBin]     = 0;
-    fdphiTracksCut[iPtTrigBin]     = 0;
-    fetaphiptTracksCut[iPtTrigBin] = 0;
-    fetaphiTracksCut[iPtTrigBin]   = 0;
-    fdetadphiTracksCut[iPtTrigBin] = 0;
-    fNPtTrig[iPtTrigBin]           = 0;
-    fNPtTrigCut[iPtTrigBin]        = 0;
-  }
-
-  farrayEmin = new Double_t[fnEBin];
-  farrayEmax = new Double_t[fnEBin];
-
-  farrayPtTrigmin = new Double_t[fnPtTrigBin];
-  farrayPtTrigmax = new Double_t[fnPtTrigBin];
-
-  farrayRadii = new Double_t[fnRBin];
-
-  Double_t eMin    = 0;
-  Double_t eMax    = 0;
-  Double_t pasE    = (Double_t)((fEmax-fEmin)/fnEInterval);
-  TString energy;
-  TString energy2;
-
-  Double_t r    = 0.;
-  Double_t pasR = (Double_t)((fRmax-fRmin)/fnRInterval);
-  TString radius;
-
-  for (Int_t i = 0; i < fnEBin; i++)
-  {
-    eMin       = 0;
-    eMax       = 0;
-
-    if (i==0) eMin = fEmin;
-    if (i!=0) eMin = fEmin + pasE*i;
-    eMax = eMin+pasE;
-    energy2 = "E_{jet1} : ";
-    energy = "E_{jet} : ";
-    energy += eMin;
-    energy2 += eMin;
-    energy += "-";
-    energy2 += "-";
-    energy +=eMax;
-    energy2 += eMax;
-    energy += "GeV";
-    energy2 += "GeV";
-
-    farrayEmin[i]      = eMin;
-    farrayEmax[i]      = eMax;
-
-    for (Int_t j = 0; j < fnRBin; j++)
-    {
- 
-      if (j==0) r = fRmin;
-      if (j!=0) r = fRmin + pasR*j;
-      radius = ", R = ";
-      radius += r;    
-
-      farrayRadii[j] = r;
-
-      fEtaMonoJet1H[i]   = new TH1F("fEtaMonoJet1H,"+energy, "#eta_{jet1},"+energy, fnEtaHBin, fEtaHBinMin, fEtaHBinMax);
-      fPhiMonoJet1H[i]   = new TH1F("fPhiMonoJet1H,"+energy, "#phi_{jet1},"+energy, fnPhiHBin, fPhiHBinMin, fPhiHBinMax);
-      fPtMonoJet1H[i]    = new TH1F("fPtMonoJet1H,"+energy, "pT_{jet1},"+energy, fnPtHBin, fPtHBinMin, fPtHBinMax);
-      fEMonoJet1H[i]     = new TH1F("fEMonoJet1H,"+energy, "E_{jet1},"+energy, fnEHBin, fEHBinMin, fEHBinMax);
-
-      fdNdXiMonoJet1H[i][j] = new TH1F("fdNdXiMonoJet1H,"+energy+radius, "dN_{ch}/d#xi,"+energy+radius, fnXiHBin, fXiHBinMin, fXiHBinMax);
-      fdNdPtMonoJet1H[i][j] = new TH1F("fdNdPtMonoJet1H,"+energy+radius, "dN_{ch}/dPt_{had},"+energy+radius, fnPthadHBin, fPthadHBinMin, fPthadHBinMax);
-      fdNdZMonoJet1H[i][j]  = new TH1F("fdNdZMonoJet1H,"+energy+radius, "dN_{ch}/dz,"+energy+radius, fnZHBin, fZHBinMin, fZHBinMax);
-
-      fdNdThetaMonoJet1H[i][j]    = new TH1F("fdNdThetaMonoJet1H,"+energy+radius, "dN_{ch}/d#Theta,"+energy+radius, fnThetaHBin, fThetaHBinMin, fThetaHBinMax);
-      fdNdcosThetaMonoJet1H[i][j] = new TH1F("fdNdcosThetaMonoJet1H,"+energy+radius, "dN_{ch}/dcos(#Theta),"+energy+radius, fnCosThetaHBin, fcosThetaHBinMin, fcosThetaHBinMax);
-      fdNdkTMonoJet1H[i][j]   = new TH1F("fdNdkTMonoJet1H,"+energy+radius, "dN_{ch}/dk_{T},"+energy+radius, fnkTHBin, fkTHBinMin, fkTHBinMax);
-      fdNdpTvsZMonoJet1H[i][j]= new TH1F("fdNdpTvsZMonoJet1H,"+energy+radius, "dN_{ch}/dk_{T} vs Z,"+energy+radius, fnZHBin, fZHBinMin, fZHBinMax);
-      fShapeMonoJet1H[i][j]   = new TH1F("fShapeMonoJet1H,"+energy+radius, "E(R=x)/E(R=1)"+energy+radius, fnRHBin, fRHBinMin, fRHBinMax);
-
-      fThetaPtPartMonoJet1H[i][j] = new TH2F("fThetaPtPartMonoJet1H,"+energy+radius, "#Theta vs Pt particle,"+energy+radius, fnPthadHBin, fPthadHBinMin, fPthadHBinMax, fnThetaHBin, fThetaHBinMin, fThetaHBinMax);
-      fcosThetaPtPartMonoJet1H[i][j] = new TH2F("fcosThetaPtPartMonoJet1H,"+energy+radius, "cos(#Theta) vs Pt particle,"+energy+radius, fnPthadHBin, fPthadHBinMin, fPthadHBinMax, fnCosThetaHBin, fcosThetaHBinMin, fcosThetaHBinMax);
-      fkTPtPartMonoJet1H[i][j] = new TH2F("fkTPtPartMonoJet1H,"+energy+radius, "kT vs Pt particle,"+energy+radius, fnPthadHBin, fPthadHBinMin, fPthadHBinMax, fnkTHBin, fkTHBinMin, fkTHBinMax);
-      fThetaPtJetMonoJet1H[i][j] = new TH2F("fThetaPtJetMonoJet1H,"+energy+radius, "#Theta vs Pt jet,"+energy+radius, fnPtHBin, fPtHBinMin, fPtHBinMax, fnThetaHBin, fThetaHBinMin, fThetaHBinMax);
-      fcosThetaPtJetMonoJet1H[i][j] = new TH2F("fcosThetaPtJetMonoJet1H,"+energy+radius, "cos(#Theta) vs Pt jet,"+energy+radius, fnPtHBin, fPtHBinMin, fPtHBinMax, fnCosThetaHBin, fcosThetaHBinMin, fcosThetaHBinMax);
-      fkTPtJetMonoJet1H[i][j] = new TH2F("fkTPtJetMonoJet1H,"+energy+radius, "kT vs Pt jet,"+energy+radius, fnPtHBin, fPtHBinMin, fPtHBinMax, fnkTHBin, fkTHBinMin, fkTHBinMax);
-      fpTPtJetMonoJet1H[i][j] = new TH2F("fpTPtJetMonoJet1H,"+energy+radius, "pT vs Pt jet,"+energy+radius, fnPtHBin, fPtHBinMin, fPtHBinMax, fnkTHBin, fkTHBinMin, fkTHBinMax);
-
-      fNMonoJet1sH[i][j]    = new TH1F("fNMonoJet1sH,"+energy+radius, "N_{jets1},"+energy+radius, 1, 0., 1.);
-      fNBadRunsH = new TH1F("fNBadRunsH","Number of events with Z vertex out of range", 1, 0., 1.);
-
-      SetProperties(fEtaMonoJet1H[i], "#eta_{jet1}", "Entries");
-      SetProperties(fPhiMonoJet1H[i], "#phi_{jet1}", "Entries");
-      SetProperties(fPtMonoJet1H[i], "p_{Tjet1} (GeV/c)", "Entries");
-      SetProperties(fEMonoJet1H[i], "E_{jet1} (GeV)", "Entries");
-
-      SetProperties(fdNdXiMonoJet1H[i][j], "#xi = ln(E_{jet1}/p_{Thad})", "dN_{had}/d#xi");
-      SetProperties(fdNdPtMonoJet1H[i][j], "p_{Thad} (GeV/c)", "dN_{had}/dp_{Thad}");
-      SetProperties(fdNdZMonoJet1H[i][j], "z = (p_{Thad}/E_{jet1})", "dN_{had}/dz");
-      SetProperties(fdNdThetaMonoJet1H[i][j], "#Theta", "dN_{had}/d#Theta");
-      SetProperties(fdNdcosThetaMonoJet1H[i][j], "cos(#Theta)", "dN_{had}/dcos(#Theta)");
-      SetProperties(fdNdkTMonoJet1H[i][j], "k_{Thad}", "dN_{had}/dk_{Thad}");
-      SetProperties(fdNdpTvsZMonoJet1H[i][j], "z = (p_{Thad}/E_{jet1})", "dN_{had}/dp_{T}");
-      SetProperties(fShapeMonoJet1H[i][j], "R", "#Psi(R)");
-      SetProperties(fNMonoJet1sH[i][j], "Bin", "N_{jets1}");
-
-      SetProperties(fThetaPtPartMonoJet1H[i][j],"p_{Thad} [GeV/c]","#Theta");
-      SetProperties(fcosThetaPtPartMonoJet1H[i][j],"p_{Thad} [GeV/c]","cos(#Theta)");
-      SetProperties(fkTPtPartMonoJet1H[i][j],"p_{Thad} [GeV/c]","k_{Thad}");
-      SetProperties(fThetaPtJetMonoJet1H[i][j], "p_{Tjet} [GeV/c]", "#Theta");
-      SetProperties(fcosThetaPtJetMonoJet1H[i][j], "p_{Tjet} [GeV/c]", "cos(#Theta)");
-      SetProperties(fkTPtJetMonoJet1H[i][j], "p_{Tjet} [GeV/c]", "k_{Thad} [GeV/c]");
-      SetProperties(fpTPtJetMonoJet1H[i][j], "p_{Tjet} [GeV/c]", "p_{Thad} [GeV/c]");
-    }
-  }
-
-  for(Int_t i=0; i<fnPtTrigBin; i++)
-  {
-    if(i==0) farrayPtTrigmin[i] = 1.; 
-    else farrayPtTrigmin[i] = i*5.;
-    farrayPtTrigmax[i] = i*5+5.;
+    AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsGen->At(ij));
+    fQAJetHistosGen->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
     
-    TString ptTrigRange;
-    ptTrigRange = "; p_{T} trig range: ";
-    ptTrigRange += farrayPtTrigmin[i];
-    ptTrigRange += "-";
-    ptTrigRange += farrayPtTrigmax[i];
-    ptTrigRange += " [GeV]";
-
-    fptTracks[i] = new TH1F("fptTracks"+ptTrigRange, "Track transverse momentum [GeV]"+ptTrigRange,300,0.,150.);
-    fetaTracks[i] = new TH1F("fetaTracks"+ptTrigRange, "#eta tracks"+ptTrigRange, 36, -0.9, 0.9);
-    fphiTracks[i] = new TH1F("fphiTracks"+ptTrigRange, "#phi tracks"+ptTrigRange, 60, 0., 2*TMath::Pi());
-    fdetaTracks[i] = new TH1F("fdetaTracks"+ptTrigRange, "#Delta #eta tracks"+ptTrigRange,80, -2., 2.);
-    fdphiTracks[i] = new TH1F("fdphiTracks"+ptTrigRange, "#Delta #phi tracks"+ptTrigRange, 120, -TMath::Pi(), TMath::Pi());
-    fetaphiptTracks[i] = new TH2F("fetaphiptTracks"+ptTrigRange,"#eta/#phi track p_{T} mapping"+ptTrigRange,36, -0.9, 0.9,60, 0., 2*TMath::Pi());
-    fetaphiTracks[i] = new TH2F("fetaphiTracks"+ptTrigRange,"#eta/#phi track mapping"+ptTrigRange,36, -0.9, 0.9,60, 0., 2*TMath::Pi());
-    fdetadphiTracks[i] = new TH2F("fdetadphiTracks"+ptTrigRange,"#Delta #eta/#Delta #phi track mapping"+ptTrigRange,80, -2., 2., 120, -TMath::Pi(), TMath::Pi());
-    fptTracksCut[i] = new TH1F("fptTracksCut"+ptTrigRange, "Track transverse momentum after cuts [GeV]"+ptTrigRange,300,0.,150.);
-    fetaTracksCut[i] = new TH1F("fetaTracksCut"+ptTrigRange, "#eta tracks after cuts"+ptTrigRange, 36, -0.9, 0.9);
-    fphiTracksCut[i] = new TH1F("fphiTracksCuts"+ptTrigRange, "#phi tracks after cuts"+ptTrigRange, 60, 0., 2*TMath::Pi());
-    fdetaTracksCut[i] = new TH1F("fdetaTracksCuts"+ptTrigRange, "#Delta #eta tracks after cuts"+ptTrigRange,80, -2., 2.);
-    fdphiTracksCut[i] = new TH1F("fdphiTracksCuts"+ptTrigRange, "#Delta #phi tracks after cuts"+ptTrigRange, 120, -TMath::Pi(), TMath::Pi());
-    fetaphiptTracksCut[i] = new TH2F("fetaphiptTracksCuts"+ptTrigRange,"#eta/#phi track p_{T} mapping after cuts"+ptTrigRange,36, -0.9, 0.9,60, 0., 2*TMath::Pi());
-    fetaphiTracksCut[i] = new TH2F("fetaphiTracksCuts"+ptTrigRange,"#eta/#phi track mapping after cuts"+ptTrigRange,36, -0.9, 0.9,60, 0., 2*TMath::Pi());
-    fdetadphiTracksCut[i] = new TH2F("fdetadphiTracksCuts"+ptTrigRange,"#Delta #eta/#Delta #phi track mapping after cuts"+ptTrigRange,80, -2., 2., 120, -TMath::Pi(), TMath::Pi());
-    fNPtTrig[i] = new TH1F("fNPtTrig"+ptTrigRange,"Number of triggers"+ptTrigRange,1,0.,1.);
-    fNPtTrigCut[i] = new TH1F("fNPtTrigCut"+ptTrigRange,"Number of triggers after cut"+ptTrigRange,1,0.,1.);
-
-    SetProperties(fptTracks[i], "Track p_{T} [GeV]", "dN/dp_{T}"); 
-    SetProperties(fetaTracks[i], "Track #eta", "dN/d#eta"); 
-    SetProperties(fphiTracks[i], "Track #phi", "dN/d#phi");
-    SetProperties(fdetaTracks[i], "#eta_{track} - #eta_{trig}", "dN/d#Delta#eta");
-    SetProperties(fdphiTracks[i], "#phi_{track} - #phi_{trig}", "dN/d#Delta#phi");
-    SetProperties(fetaphiptTracks[i], "#eta_{track}", "#phi_{track}"); 
-    SetProperties(fetaphiTracks[i], "#eta_{track}", "#phi_{track}");
-    SetProperties(fdetadphiTracks[i], "#Delta #eta_{track}", "#Delta #phi_{track}");
-    SetProperties(fptTracksCut[i], "p_{T}track [GeV]", "dN/dp_{T}");
-    SetProperties(fetaTracksCut[i], "#eta_{track}", "dN/d#eta"); 
-    SetProperties(fphiTracksCut[i], "#phi_{track}", "dN/d#phi"); 
-    SetProperties(fdetaTracksCut[i], "#eta_{track} - #eta_{trig}", "dN/d#Delta#eta");
-    SetProperties(fdphiTracksCut[i], "#phi_{track} - #phi_{trig}", "dN/d#Delta#phi");
-    SetProperties(fetaphiptTracksCut[i], "#eta_{track}", "#phi_{track}");
-    SetProperties(fetaphiTracksCut[i], "#eta_{track}", "#phi_{track}");
-    SetProperties(fdetadphiTracksCut[i], "#Delta #eta_{track}", "#Delta #phi_{track}");
-    SetProperties(fNPtTrig[i], "", "Number of triggers");
-    SetProperties(fNPtTrigCut[i], "", "Number of triggers");
-
-  }
-
-  fptAllTracks = new TH1F("fptAllTracks", "Track transverse momentum [GeV]",300,0.,150.);
-  fetaAllTracks = new TH1F("fetaAllTracks", "#eta tracks", 36, -0.9, 0.9);
-  fphiAllTracks = new TH1F("fphiAllTracks", "#phi tracks", 60, 0., 2*TMath::Pi());
-  fetaphiptAllTracks = new TH2F("fetaphiptAllTracks","#eta/#phi track p_{T} mapping",36, -0.9, 0.9,60, 0., 2*TMath::Pi());
-  fetaphiAllTracks = new TH2F("fetaphiAllTracks","#eta/#phi track mapping",36, -0.9, 0.9,60, 0., 2*TMath::Pi());
-  fptAllTracksCut = new TH1F("fptAllTracksCut", "Track transverse momentum after cuts [GeV]",300,0.,150.);
-  fetaAllTracksCut = new TH1F("fetaAllTracksCut", "#eta tracks after cuts", 36, -0.9, 0.9);
-  fphiAllTracksCut = new TH1F("fphiAllTracksCuts", "#phi tracks after cuts", 60, 0., 2*TMath::Pi());
-  fetaphiptAllTracksCut = new TH2F("fetaphiptAllTracksCuts","#eta/#phi track p_{T} mapping after cuts",36, -0.9, 0.9,60, 0., 2*TMath::Pi());
-  fetaphiAllTracksCut = new TH2F("fetaphiAllTracksCuts","#eta/#phi track mapping after cuts",36, -0.9, 0.9,60, 0., 2*TMath::Pi());
-
-  SetProperties(fptAllTracks, "Track p_{T} [GeV]", "dN/dp_{T}"); 
-  SetProperties(fetaAllTracks, "Track #eta", "dN/d#eta");
-  SetProperties(fphiAllTracks, "Track #phi", "dN/d#phi");
-  SetProperties(fetaphiptAllTracks, "#eta_{track}", "#phi_{track}");
-  SetProperties(fetaphiAllTracks, "#eta_{track}", "#phi_{track}");
-  SetProperties(fptAllTracksCut, "p_{T}track [GeV]", "dN/dp_{T}"); 
-  SetProperties(fetaAllTracksCut, "#eta_{track}", "dN/d#eta"); 
-  SetProperties(fphiAllTracksCut, "#phi_{track}", "dN/d#phi"); 
-  SetProperties(fetaphiptAllTracksCut, "#eta_{track}", "#phi_{track}");
-  SetProperties(fetaphiAllTracksCut, "#eta_{track}", "#phi_{track}");
-
-  fvertexXY = new TH2F("fvertexXY","X-Y vertex position",30,0.,10.,30,0.,10.);
-  fvertexZ = new TH1F("fvertexZ","Z vertex position",60,-30.,30.);
-  fEvtMult = new TH1F("fEvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",100,0.,100.);
-  fEvtMultvsJetPt = new TH2F("fEvtMultvsJetPt","Event multiplicity vs pT_{jet}",60,0.,60.,100,0.,100.);
-  fPtvsEtaJet = new TH2F("fPtvsEtaJet","Pt vs #eta_{jet}",20,-1.,1.,60,0.,60.);
-  fNpvsEtaJet = new TH2F("fNpvsEtaJet","N_{part} inside jet vs #eta_{jet}",20,-1.,1.,20,0,20); 
-  fNpevtvsEtaJet = new TH2F("fNpevtvsEtaJet","N_{part} in evt vs #eta_{jet}",20,-1.,1.,90,0,90); 
-  fPtvsPtJet = new TH2F("fPtvsPtJet","Pt vs #p_{Tjet}",60,0.,60.,60,0.,60.);
-  fNpvsPtJet = new TH2F("fNpvsPtJet","N_{part} inside jet vs #pt_{Tjet}",60,0.,60.,20,0,20); 
-  fNpevtvsPtJet = new TH2F("fNpevtvsPtJet","N_{part} in evt vs #pt_{Tjet}",60,0.,60.,90,0,90); 
-  fPtvsPtJet1D = new TH1F("fPtvsPtJet1D","Pt vs #p_{Tjet}",60,0.,60.);
-  fNpvsPtJet1D = new TH1F("fNpvsPtJet1D","N_{part} inside jet vs #pt_{Tjet}",60,0.,60.); 
-  fNpevtvsPtJet1D = new TH1F("fNpevtvsPtJet1D","N_{part} in evt vs #pt_{Tjet}",60,0.,60.); 
-  fptLeadingJet = new TH1F("fptLeadingJet","Pt leading Jet [GeV/c]",60,0.,60.); 
-  fetaLeadingJet = new TH1F("fetaLeadingJet","#eta leading jet",20,-1.,1.);
-  fphiLeadingJet = new TH1F("fphiLeadingJet","#phi leading jet",12,0.,2*TMath::Pi());
-  fptJet = new TH1F("fptJet","Pt Jets [GeV/c]",60,0.,60.); 
-  fetaJet = new TH1F("fetaJet","#eta jet",20,-1.,1.);
-  fphiJet = new TH1F("fphiJet","#phi jet",12,0.,2*TMath::Pi());
-  fNBadRunsH = new TH1F("fNBadRunsH","Number of events with Z vertex out of range", 1, 0., 1.);
-
-  SetProperties(fvertexXY, "vtx X", "vtx Y");
-  SetProperties(fvertexZ, "vtx Z", "Count");
-  SetProperties(fEvtMult, "N_{part} / event", "Count");
-  SetProperties(fEvtMultvsJetPt, "p_{T jet}", "Event multiplicity");
-  SetProperties(fPtvsEtaJet, "#eta_{leading jet}", "p_{T} part [GeV/c]");
-  SetProperties(fNpvsEtaJet, "#eta_{leading jet}", "N_{part} in leading jet");
-  SetProperties(fNpevtvsEtaJet, "#eta_{leading jet}", "N_{part} in event");
-  SetProperties(fPtvsPtJet, "#p_{T leading jet}", "p_{T} part [GeV/c]");
-  SetProperties(fNpvsPtJet, "#p_{T leading jet}", "N_{part} in leading jet");
-  SetProperties(fNpevtvsPtJet, "#p_{T leading jet}", "N_{part} in event");
-  SetProperties(fPtvsPtJet1D, "#p_{T leading jet}", "<p_{T}> part [GeV/c]");
-  SetProperties(fNpvsPtJet1D, "#p_{T leading jet}", "<N_{part}> in leading jet");
-  SetProperties(fNpevtvsPtJet1D, "#p_{T leading jet}", "<N_{part}> in event");
-  SetProperties(fptLeadingJet, "p_{T} leading jet", "dN/dp_{T} leading jet");
-  SetProperties(fetaLeadingJet, "#eta leading jet", "dN/d#eta leading jet");
-  SetProperties(fphiLeadingJet, "#phi leading jet", "dN/d#phi leading jet");
-  SetProperties(fptJet, "p_{T} jet [GeV/c]", "dN/dp_{T}");
-  SetProperties(fetaJet, "#eta jet", "dN/d#eta");
-  SetProperties(fphiJet, "#phi jet", "dN/d#phi");
-
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-
-void AliAnalysisTaskFragmentationFunction::FillMonoJetH(Int_t goodBin, AliAODJet* recJets, TClonesArray* tracks)
-{
-  if (goodBin == 999) return;
-
-  Int_t nTracks = tracks->GetEntries();
-  Float_t xi,t1,ene,dr2,deta2,dphi2, z, cosTheta, theta, kt;
-  Bool_t jetOk1 = 0;
-  Bool_t jetOk2 = 0;
-  Bool_t jetOk3 = 0;
-  Bool_t jetOk4 = 0;
-  Bool_t jetOk5 = 0;
-  Bool_t jetOk6 = 0;
-  Bool_t jetOk7 = 0;
-  Bool_t jetOk8 = 0;
-  Bool_t jetOk9 = 0;
-  Bool_t jetOk10 = 0;
-
-  fEtaMonoJet1H[goodBin]->Fill(recJets[0].Eta());
-  fPhiMonoJet1H[goodBin]->Fill(recJets[0].Phi());
-  fPtMonoJet1H[goodBin]->Fill(recJets[0].Pt());
-  fEMonoJet1H[goodBin]->Fill(recJets[0].E());
-
-  Int_t mult = 0;
-  for(Int_t it=0; it<nTracks; it++)
-  {
-    AliAODTrack* aodTrack = (AliAODTrack*)tracks->At(it);
-    // Apply track cuts
-    UInt_t status = aodTrack->GetStatus();
-    if (status == 0) continue;
-    if((fFilterMask>0)&&!(aodTrack->TestFilterBit(fFilterMask)))continue;
-    mult++;
-    Float_t etaT = aodTrack->Eta();
-    Float_t phiT = aodTrack->Phi();
-    Float_t ptT = aodTrack->Pt();
-    // For Theta distribution
-    Float_t pxT = aodTrack->Px();
-    Float_t pyT = aodTrack->Py();
-    Float_t pzT = aodTrack->Pz();
-    Float_t pT = aodTrack->P();
-    // Compute theta
-    cosTheta = (pxT*recJets[0].Px()+pyT*recJets[0].Py()+pzT*recJets[0].Pz())/(pT*recJets[0].P());
-    theta = TMath::ACos(cosTheta);
-    // Compute xi
-    deta2 = etaT - recJets[0].Eta();
-    dphi2 = phiT - recJets[0].Phi();
-    if (dphi2 < -TMath::Pi()) dphi2= -dphi2 - 2.0 * TMath::Pi();
-    if (dphi2 > TMath::Pi()) dphi2 = 2.0 * TMath::Pi() - dphi2;
-    dr2 = TMath::Sqrt(deta2 * deta2 + dphi2 * dphi2);
-    t1  = TMath::Tan(2.0*TMath::ATan(TMath::Exp(-etaT)));
-    ene = ptT*TMath::Sqrt(1.+1./(t1*t1));
-    xi  = (Float_t) TMath::Log(recJets[0].E()/ptT);
-    // Compute z
-    z   = (Double_t)(ptT/recJets[0].E());
-    // Compute kT/jT
-    TVector3 partP; TVector3 jetP;
-    jetP[0] = recJets[0].Px();
-    jetP[1] = recJets[0].Py();
-    jetP[2] = recJets[0].Pz();
-    partP.SetPtEtaPhi(ptT,etaT,phiT);
-    kt = TMath::Sin(partP.Angle(jetP))*partP.Mag();
-    // Compute Jet shape
-
-    for(Int_t i2 = 0; i2 < fnRBin; i2++)
-    {
-      if ((dr2<farrayRadii[i2]) && (ptT > fPartPtCut)) 
-      {
-        if (i2 == 0) jetOk1 = 1;
-        if (i2 == 1) jetOk2 = 1;
-        if (i2 == 2) jetOk3 = 1;
-        if (i2 == 3) jetOk4 = 1;
-        if (i2 == 4) jetOk5 = 1;
-        if (i2 == 5) jetOk6 = 1;
-        if (i2 == 6) jetOk7 = 1;
-        if (i2 == 7) jetOk8 = 1;
-        if (i2 == 8) jetOk9 = 1;
-        if (i2 == 9) jetOk10 = 1;
-
-        fdNdXiMonoJet1H[goodBin][i2]->Fill(xi);
-        fdNdPtMonoJet1H[goodBin][i2]->Fill(ptT);
-        fdNdZMonoJet1H[goodBin][i2]->Fill(z);
-	fdNdThetaMonoJet1H[goodBin][i2]->Fill(theta);
-	fdNdcosThetaMonoJet1H[goodBin][i2]->Fill(cosTheta);
-	fdNdkTMonoJet1H[goodBin][i2]->Fill(kt);
-	fdNdpTvsZMonoJet1H[goodBin][i2]->Fill(z,1/((fPthadHBinMax-fPthadHBinMin)/fnPthadHBin));
-
-	fThetaPtPartMonoJet1H[goodBin][i2]->Fill(ptT,theta);
-	fcosThetaPtPartMonoJet1H[goodBin][i2]->Fill(ptT,cosTheta);
-	fkTPtPartMonoJet1H[goodBin][i2]->Fill(ptT,kt);
-	fThetaPtJetMonoJet1H[goodBin][i2]->Fill(recJets[0].Pt(),theta);
-	fcosThetaPtJetMonoJet1H[goodBin][i2]->Fill(recJets[0].Pt(),cosTheta);
-	fkTPtJetMonoJet1H[goodBin][i2]->Fill(recJets[0].Pt(),kt);
-	fpTPtJetMonoJet1H[goodBin][i2]->Fill(recJets[0].Pt(),ptT);
+    if(ij==0){ // leading jet
+    
+      fQAJetHistosGenLeading->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
+      
+      TList* jettracklist = new TList();
+      Double_t sumPt = 0.;
+      Float_t leadTrackPt = 0.;
+      
+      if(GetFFRadius()<=0){
+	GetJetTracksTrackrefs(jettracklist, jet);
+      } else {
+	GetJetTracksPointing(fTracksGen, jettracklist, jet, GetFFRadius(), sumPt);
       }
+      
+      for(Int_t it=0; it<jettracklist->GetSize(); ++it){
+	Float_t trackPt = (dynamic_cast<AliVParticle*>(jettracklist->At(it)))->Pt();
+	Float_t jetPt = jet->Pt();
+	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
+
+	fFFHistosGen->FillFF( trackPt, jetPt, incrementJetPt);
+	
+	if(it==0){ 
+	  leadTrackPt = trackPt;
+	  fFFHistosGenLeadingTrack->FillFF( leadTrackPt, jetPt, kTRUE);
+	}
+	fFFHistosGenLeading->FillFF( trackPt, leadTrackPt, incrementJetPt);
+      }
+      
+      delete jettracklist;
     }
   }
-  fEvtMultvsJetPt->Fill(recJets[0].Pt(),mult);
+  
+  fTracksRec->Clear();
+  fTracksRecCuts->Clear();
+  fTracksGen->Clear();
+  fJetsRec->Clear();
+  fJetsRecCuts->Clear();
+  fJetsGen->Clear();
 
-  if (jetOk1)  fNMonoJet1sH[goodBin][0]->Fill(0.5);
-  if (jetOk2)  fNMonoJet1sH[goodBin][1]->Fill(0.5);
-  if (jetOk3)  fNMonoJet1sH[goodBin][2]->Fill(0.5);
-  if (jetOk4)  fNMonoJet1sH[goodBin][3]->Fill(0.5);
-  if (jetOk5)  fNMonoJet1sH[goodBin][4]->Fill(0.5);
-  if (jetOk6)  fNMonoJet1sH[goodBin][5]->Fill(0.5);
-  if (jetOk7)  fNMonoJet1sH[goodBin][6]->Fill(0.5);
-  if (jetOk8)  fNMonoJet1sH[goodBin][7]->Fill(0.5);
-  if (jetOk9)  fNMonoJet1sH[goodBin][8]->Fill(0.5);
-  if (jetOk10) fNMonoJet1sH[goodBin][9]->Fill(0.5);
-
+  //Post output data.
+  PostData(1, fCommonHistList);
+  
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
+//______________________________________________________________
+void AliAnalysisTaskFragmentationFunction::Terminate(Option_t *) 
+{
+  // terminated
 
+  if(fDebug > 1) printf("AliAnalysisTaskFragmentationFunction::Terminate() \n");
+}  
+
+//_________________________________________________________________________________
+Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t type)
+{
+  // fill list of tracks selected according to type
+
+  if(fDebug > 2) Printf("%s:%d Selecting tracks with %d", (char*)__FILE__,__LINE__,type);
+  
+  if(!list){
+    if(fDebug>1) Printf("%s:%d no input list", (char*)__FILE__,__LINE__);
+    return -1;
+  }
+
+  if(type==kTrackUndef) return -1;
+  
+  Int_t iCount = 0;
+  if(type==kTrackAODCuts || type==kTrackAOD){
+
+    // all rec. tracks, esd filter mask, eta range
+    if(!fAOD) return -1;
+    
+    for(Int_t it=0; it<fAOD->GetNumberOfTracks(); ++it){
+      AliAODTrack *tr = fAOD->GetTrack(it);
+      
+      if(type == kTrackAODCuts){
+	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))   continue;
+	if(tr->Eta() < fTrackEtaMin || tr->Eta() > fTrackEtaMax) continue;
+	if(tr->Phi() < fTrackPhiMin || tr->Phi() > fTrackPhiMax) continue;
+	if(tr->Pt()  < fTrackPtCut) continue;
+      }
+      list->Add(tr);
+      iCount++;
+    }
+  }
+  else if (type==kTrackKineAll || type==kTrackKineCharged || type==kTrackKineChargedAcceptance){
+    // kine particles, all or rather charged
+    if(!fMCEvent) return iCount;
+    
+    for(Int_t it=0; it<fMCEvent->GetNumberOfTracks(); ++it){
+      AliMCParticle* part = (AliMCParticle*) fMCEvent->GetTrack(it);
+      
+      if(type == kTrackKineCharged || type == kTrackKineChargedAcceptance){
+	if(part->Charge()==0) continue;
+	
+	if(type == kTrackKineChargedAcceptance && 
+	   (       part->Eta() < fTrackEtaMin
+		|| part->Eta() > fTrackEtaMax
+		|| part->Phi() < fTrackPhiMin
+		|| part->Phi() > fTrackPhiMax 
+		|| part->Pt()  < fTrackPtCut)) continue;
+      }
+      
+      list->Add(part);
+      iCount++;
+    }
+  }
+  else if (type==kTrackAODMCCharged || type==kTrackAODMCAll || type==kTrackAODMCChargedAcceptance) {
+    // MC particles (from AOD), physical primaries, all or rather charged or rather charged within acceptance
+    if(!fAOD) return -1;
+    
+    TClonesArray *tca = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(!tca)return iCount;
+    
+    for(int it=0; it<tca->GetEntriesFast(); ++it){
+      AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(it));
+      if(!part->IsPhysicalPrimary())continue;
+      
+      if (type==kTrackAODMCCharged || type==kTrackAODMCChargedAcceptance){
+	if(part->Charge()==0) continue;
+	if(type==kTrackAODMCChargedAcceptance && 
+	   (     part->Eta() > fTrackEtaMax
+	      || part->Eta() < fTrackEtaMin
+	      || part->Phi() > fTrackPhiMax
+	      || part->Phi() < fTrackPhiMin
+	      || part->Pt()  < fTrackPtCut)) continue;
+      }
+      
+      list->Add(part);
+      iCount++;
+    }
+  }
+  
+  list->Sort();
+  return iCount;
+  
+}
+// _______________________________________________________________________________
+Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t type)
+{
+  // fill list of jets selected according to type
+  
+  if(!list){
+    if(fDebug>1) Printf("%s:%d no input list", (char*)__FILE__,__LINE__);
+    return -1;
+  }
+
+  if(type == kJetsRec || type == kJetsRecAcceptance){ // reconstructed jets
+
+    if(fBranchRecJets.Length()==0){
+      Printf("%s:%d no rec jet branch specified", (char*)__FILE__,__LINE__);
+      if(fDebug>1)fAOD->Print();
+      return 0;
+    }
+
+    TClonesArray *aodRecJets = 0x0;
+    if(fBranchRecJets.Length()) aodRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchRecJets.Data()));
+    if(!aodRecJets)             aodRecJets = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fBranchRecJets.Data()));
+
+    if(!aodRecJets){
+      if(fBranchRecJets.Length()) Printf("%s:%d no reconstructed jet array with name %s found", (char*)__FILE__,__LINE__,fBranchRecJets.Data());
+
+      if(fDebug>1)fAOD->Print();
+      return 0;
+    }
+
+    Int_t nRecJets = 0;
+    
+    for(Int_t ij=0; ij<aodRecJets->GetEntries(); ++ij){
+
+      AliAODJet *tmp = dynamic_cast<AliAODJet*>(aodRecJets->At(ij));
+      if(!tmp) continue;
+	
+      if( tmp->Pt() < fJetPtCut ) continue;
+      if( type == kJetsRecAcceptance &&
+	  (    tmp->Eta() < fJetEtaMin
+	    || tmp->Eta() > fJetEtaMax
+	    || tmp->Phi() < fJetPhiMin
+	    || tmp->Phi() > fJetPhiMax )) continue;
+      
+      list->Add(tmp);
+	  
+      nRecJets++;
+    }
+
+    list->Sort();
+    return nRecJets;
+  }
+  else if(type == kJetsKine || type == kJetsKineAcceptance){
+    
+    // generated jets
+    Int_t nGenJets = 0;
+    
+    if(!fMCEvent){
+      if(fDebug>1) Printf("%s:%d no mcEvent",(char*)__FILE__,__LINE__);
+      return 0;
+    }
+    
+    AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMCEvent);
+    if(!pythiaGenHeader){
+      Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
+      return 0;
+    }
+    
+    // fetch the pythia generated jets
+    for(int ip=0; ip<pythiaGenHeader->NTriggerJets(); ++ip){
+      
+      Float_t p[4];
+      AliAODJet *jet = new AliAODJet();
+      pythiaGenHeader->TriggerJet(ip, p);
+      jet->SetPxPyPzE(p[0], p[1], p[2], p[3]);
+
+      if( type == kJetsKineAcceptance &&
+          (    jet->Eta() < fJetEtaMin
+            || jet->Eta() > fJetEtaMax
+            || jet->Phi() < fJetPhiMin
+            || jet->Phi() > fJetPhiMax )) continue;
+      
+      list->Add(jet);
+      nGenJets++;
+    }
+    list->Sort();
+    return nGenJets;
+  }
+  else if(type == kJetsGen || type == kJetsGenAcceptance ){
+
+    if(fBranchGenJets.Length()==0){
+      if(fDebug>1) Printf("%s:%d no gen jet branch specified", (char*)__FILE__,__LINE__);
+      return 0;
+    }
+    
+    TClonesArray *aodGenJets = 0x0;
+    if(fBranchGenJets.Length()) aodGenJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchGenJets.Data()));
+    if(!aodGenJets)             aodGenJets = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fBranchGenJets.Data()));
+
+    if(!aodGenJets){
+      if(fDebug>0){
+	if(fBranchGenJets.Length())         Printf("%s:%d Generated jet branch %s not found",(char*)__FILE__,__LINE__,fBranchGenJets.Data());
+      }
+      if(fDebug>1)fAOD->Print();
+      return 0;
+    }
+
+    Int_t nGenJets = 0;
+    
+    for(Int_t ig=0; ig<aodGenJets->GetEntries(); ++ig){
+	  
+      AliAODJet *tmp = dynamic_cast<AliAODJet*>(aodGenJets->At(ig));
+      if(!tmp) continue;
+	  
+      if( tmp->Pt() < fJetPtCut ) continue;
+      if( type == kJetsGenAcceptance &&
+	  (    tmp->Eta() < fJetEtaMin
+	    || tmp->Eta() > fJetEtaMax
+	    || tmp->Phi() < fJetPhiMin
+	    || tmp->Phi() > fJetPhiMax )) continue;
+      
+      list->Add(tmp);
+      
+      nGenJets++;
+    }
+    list->Sort();
+    return nGenJets;
+  } 
+  else{
+    if(fDebug>0)Printf("%s:%d no such type %d",(char*)__FILE__,__LINE__,type);
+    return 0;
+  }
+}
+
+
+// __________________________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::SetProperties(TH1* h,const char* x, const char* y)
 {
-  //Set properties of histos (x and y title and error propagation)
+  //Set properties of histos (x and y title)
+
   h->SetXTitle(x);
   h->SetYTitle(y);
   h->GetXaxis()->SetTitleColor(1);
   h->GetYaxis()->SetTitleColor(1);
-  h->Sumw2();
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
+// _________________________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::SetProperties(TH2* h,const char* x, const char* y, const char* z)
+{
+  //Set properties of histos (x,y and z title)
+
+  h->SetXTitle(x);
+  h->SetYTitle(y);
+  h->SetZTitle(z);
+  h->GetXaxis()->SetTitleColor(1);
+  h->GetYaxis()->SetTitleColor(1);
+  h->GetZaxis()->SetTitleColor(1);
+}
+
+// ________________________________________________________________________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist, TList* outputlist, AliAODJet* jet, const Double_t radius,Double_t& sumPt)
+{
+  // fill list of tracks in cone around jet axis  
+
+  sumPt = 0;
+
+  Double_t jetMom[3];
+  jet->PxPyPz(jetMom);
+  TVector3 jet3mom(jetMom);
+
+  for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){
+
+    AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
+
+    Double_t trackMom[3];
+    track->PxPyPz(trackMom);
+    TVector3 track3mom(trackMom);
+
+    Double_t dR = jet3mom.DeltaR(track3mom);
+
+    if(dR<radius){
+
+      outputlist->Add(track);
+      
+      sumPt += track->Pt();
+    }
+  }
+  
+  outputlist->Sort();
+}
+
+// ___________________________________________________________________________________________
+void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, AliAODJet* jet)
+{
+  // list of jet tracks from trackrefs
+  
+  Int_t nTracks = jet->GetRefTracks()->GetEntriesFast();
+
+  for (Int_t itrack=0; itrack<nTracks; itrack++) {
+    
+    AliVParticle* track = dynamic_cast<AliVParticle*>(jet->GetRefTracks()->At(itrack));
+    if(!track){
+      AliError("expected ref track not found ");
+      continue;
+    }
+        
+    list->Add(track);
+  }
+  
+  list->Sort();
+}
