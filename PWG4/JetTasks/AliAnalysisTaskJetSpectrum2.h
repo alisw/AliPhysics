@@ -153,6 +153,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2TracksLeadingJetPhiPt; // track correlation with leading track
     TH2F*         fh2JetPtJetPhi;           // Phi distribution of accepted jets 
     TH2F*         fh2TrackPtTrackPhi;       // phi distribution of accepted tracks
+    TH2F*         fh2RelPtFGen;             // relative difference between generated and found 
     TH2F*         fh2PhiPt[kMaxJets];    // delta phi correlation of tracks with the jet      
     TH2F*         fh2PhiEta[kMaxJets];   // eta   phi correlation of tracks with the jet      
     TH2F*         fh2RhoPtRec[kMaxJets];    // jet shape variable rho
@@ -163,6 +164,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2FragLnRec[kMaxJets];   // fragmetation in xi
     TH2F*         fh2FragGen[kMaxJets];     // fragmentation function
     TH2F*         fh2FragLnGen[kMaxJets];   // fragmetation in xi
+
+
 
     // Dijet histos
     TH2F*   fh2DijetDeltaPhiPt;      // dijet delta phi vs pt
@@ -178,7 +181,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 5) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 6) // Analysis task for standard jet analysis
 };
  
 #endif

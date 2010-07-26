@@ -112,6 +112,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh2TracksLeadingJetPhiPt(0x0),
   fh2JetPtJetPhi(0x0),
   fh2TrackPtTrackPhi(0x0),
+  fh2RelPtFGen(0x0),
   fh2DijetDeltaPhiPt(0x0),      
   fh2DijetAsymPt(0x0),          
   fh2DijetAsymPtCut(0x0),       
@@ -193,6 +194,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2TracksLeadingJetPhiPt(0x0),
   fh2JetPtJetPhi(0x0),
   fh2TrackPtTrackPhi(0x0),
+  fh2RelPtFGen(0x0),
   fh2DijetDeltaPhiPt(0x0),      
   fh2DijetAsymPt(0x0),          
   fh2DijetAsymPtCut(0x0),       
@@ -371,7 +373,8 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh2JetPtJetPhi = new TH2F("fh2JetPtJetPhi","Reconstructed jet phi vs. pt",nBinPt,binLimitsPt,nBinPhi2,binLimitsPhi2);
   fh2TrackPtTrackPhi = new TH2F("fh2TrackPtTrackPhi","Reconstructed track phi vs. pt",nBinPt,binLimitsPt,nBinPhi2,binLimitsPhi2);
 
-
+  fh2RelPtFGen = new TH2F("fh2RelPtFGen",";p_{T,gen};#Delta p_{T}/p_{T,Gen}",nBinPt,binLimitsPt,120,-1.2,1.2);
+  
   for(int ij = 0;ij < kMaxJets;++ij){
     fh1PtRecIn[ij] = new TH1F(Form("fh1PtRecIn_j%d",ij),"rec p_T input ;p_{T,rec}",nBinPt,binLimitsPt);
     fh1PtGenIn[ij] = new TH1F(Form("fh1PtGenIn_j%d",ij),"found p_T input ;p_{T,gen}",nBinPt,binLimitsPt);
@@ -466,6 +469,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fhnCorrelationPhiZRec);
     fHistList->Add(fh2JetPtJetPhi);
     fHistList->Add(fh2TrackPtTrackPhi);
+    fHistList->Add(fh2RelPtFGen);
 
     fHistList->Add(fh2DijetDeltaPhiPt);       
     fHistList->Add(fh2DijetAsymPt);       
@@ -1068,6 +1072,10 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       if(TMath::Abs(etaRec)<fRecEtaWindow){
 	fhnJetContainer[kStep3+kMaxStep]->Fill(container,eventW);
 	fhnCorrelation->Fill(container);
+	if(ptGen>0){
+	  Float_t delta = (ptRec-ptGen)/ptGen;
+	  fh2RelPtFGen->Fill(ptGen,delta,eventW);
+	}
 	if(fhnCorrelationPhiZRec)fhnCorrelationPhiZRec->Fill(containerPhiZ);
 
       }// if etarec in window
