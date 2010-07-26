@@ -7,7 +7,6 @@
 #pragma link C++ class AliAnalysisTaskUE+;
 #pragma link C++ class AliAnalyseUE+;
 #pragma link C++ class AliHistogramsUE+;
-#pragma link C++ class AliAnalysisTaskCorrectionsUE+;
 #pragma link C++ class AliAnalysisTaskJetServices+;
 #pragma link C++ class AliAnalysisTaskJetSpectrum+;
 #pragma link C++ class AliAnalysisTaskJetSpectrum2+;
@@ -22,5 +21,9 @@
 #pragma link C++ class AliAnalysisTaskPWG4PidDetEx+;
 #pragma link C++ class AliJetSpectrumUnfolding+;
 #pragma link C++ class AliAnalysisTaskJetChem+;
+#pragma link C++ class AliAnalysisTaskFragmentationFunction+;
+#pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncHistos+;
+#pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos+;
+#pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos+;
 
 #endif
