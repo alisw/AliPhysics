@@ -13,7 +13,7 @@ class TH1;
 class TH2;
 class TH3;
 class TH1F;
-class TH2F;
+
 class TH3F;
 class TF1;
 class TF2;
@@ -21,6 +21,7 @@ class TCollection;
 
 #include "TNamed.h"
 #include <THnSparse.h>
+#include <TH2F.h> // need to included for delete
 
 
 class AliJetSpectrumUnfolding : public TNamed {
