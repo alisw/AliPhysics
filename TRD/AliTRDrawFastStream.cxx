@@ -339,7 +339,7 @@ Bool_t AliTRDrawFastStream::SkipWords(UInt_t iw)
     return kTRUE;
   }
   else {
-    if (fWarnWarning) AliWarning(Form("Skip %u words failed. %u available", iw, fpEnd - fpPos - 1));
+    if (fWarnWarning) AliWarning(Form("Skip %u words failed. %ld available", iw, fpEnd - fpPos - 1));
     return kFALSE;
   }
 

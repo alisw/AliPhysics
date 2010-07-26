@@ -533,7 +533,7 @@ Int_t AliTRDdigitsManager::GetTrack(Int_t track
 
   if ((track < 0) || (track >= kNDict)) 
     {
-      AliError(Form("track %d out of bounds (size: %d, this: %08x)",track,kNDict,this));
+      AliError(Form("track %d out of bounds (size: %d, this: 0x%p)",track,kNDict,this));
       return -1;
     }
 

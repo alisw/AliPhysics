@@ -254,7 +254,7 @@ void AliTRDqaRecPoints::Init()
   
   // chamber by chamber
   for(Int_t i=0; i<18; i++) {
-    hist[14+i] = new TH2D(Form("qaTRD_recPoints_sigTime_sm%d",i), Form("sm%d;det;time bin"), 
+    hist[14+i] = new TH2D(Form("qaTRD_recPoints_sigTime_sm%d",i), Form("sm%d;det;time bin",i), 
 			30, -0.5, 29.5, 35, -0.5, 34.5);
     hist[14+i]->SetMinimum(20);
     hist[14+i]->SetMaximum(40);
@@ -263,7 +263,7 @@ void AliTRDqaRecPoints::Init()
   // time bin by time bin sm-by-sm
   for(Int_t i=0; i<18; i++) {
     hist[14+18+i] = new TH1D(Form("qaTRD_recPoints_sigTimeShape_sm%d", i), 
-			     Form("sm%d;time bin;signal"),
+			     Form("sm%d;time bin;signal",i),
 			     35, -0.5, 34.5);
 
     hist[14+18+i]->SetMaximum(120);    
