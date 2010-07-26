@@ -56,6 +56,7 @@
 #include "AliMUONRawStreamTriggerHP.h"
 #include "AliMUONRegHeader.h"
 #include "AliMUONVTriggerStore.h"
+#include "AliMpCDB.h"
 #include "AliMpDetElement.h"
 #include "AliMpTriggerCrate.h"
 #include "AliMpLocalBoard.h"
@@ -103,6 +104,10 @@ fLogger(new AliMUONLogger(10000)){
   
   SetMakeTriggerDigits();
   
+  // Load mapping
+  if ( ! AliMpCDB::LoadDDLStore() ) {
+    AliFatal("Could not access mapping from OCDB !");
+  }
 }
 
 //__________________________________________________________________________
@@ -133,6 +138,10 @@ TObject(),
 
   SetMakeTriggerDigits();
 
+  // Load mapping
+  if ( ! AliMpCDB::LoadDDLStore() ) {
+    AliFatal("Could not access mapping from OCDB !");
+  }
 }
 
 //__________________________________________________________________________
