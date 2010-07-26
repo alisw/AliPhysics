@@ -50,8 +50,8 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual Long64_t     GetReadEntry()    const;
     virtual Bool_t       NewEvent()
 	{Bool_t ne = fNewEvent; fNewEvent = kFALSE; return ne;}
-    virtual Bool_t       IsEventSelected() 
-        {return fIsSelected;}
+    virtual UInt_t       IsEventSelected() 
+        {return fIsSelectedResult;}
  protected:
     void SwitchOffBranches() const;
     void SwitchOnBranches()  const;
@@ -64,8 +64,8 @@ class AliInputEventHandler : public AliVEventHandler {
     TString         fBranchesOn;   //  List of branches to be switched on  (separated by space)
     Bool_t          fNewEvent;     //  New event flag 
     AliVCuts*       fEventCuts;    //  Cuts on the event level
-    Bool_t          fIsSelected;   //  Selection result
-    ClassDef(AliInputEventHandler, 3);
+    UInt_t          fIsSelectedResult; //  Selection result
+    ClassDef(AliInputEventHandler, 4);
 };
 
 #endif

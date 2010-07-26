@@ -129,6 +129,8 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
     if (mcParticles) fMCEvent->SetParticleArray(mcParticles);
     if (fTreeToMerge) fTreeToMerge->GetEntry(entry + fMergeOffset);
     
+    fIsSelectedResult = fEvent->GetHeader()->GetOfflineTrigger();
+    
     return kTRUE;
 }
 

@@ -43,8 +43,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
    mgr->AddTask(esdmuonfilter);
    if(usePhysicsSelection){
-     esdfilter->SelectCollisionCandidates();
-     esdmuonfilter->SelectCollisionCandidates();
+     esdfilter->SelectCollisionCandidates(AliVEvent::kAny);
+     esdmuonfilter->SelectCollisionCandidates(AliVEvent::kAny);
    }  
 
    // Filtering of MC particles (decays conversions etc)

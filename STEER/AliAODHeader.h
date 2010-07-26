@@ -134,6 +134,9 @@ class AliAODHeader : public AliVHeader {
       return ((i >= 0) && (i < kNEMCALMatrix)) ? fEMCALMatrix[i] : NULL;
   }
   
+  UInt_t GetOfflineTrigger() { return fOfflineTrigger; }
+  void SetOfflineTrigger(UInt_t trigger) { fOfflineTrigger = trigger; }
+  
   enum {kNPHOSMatrix = 5};
   enum {kNEMCALMatrix = 12};
   
@@ -168,8 +171,9 @@ class AliAODHeader : public AliVHeader {
   Double32_t      fDiamondSig2Z;    // Interaction diamond sigma^2 (z) in RUN
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix];   //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
+  UInt_t      fOfflineTrigger;      // fired offline triggers for this event
 
-  ClassDef(AliAODHeader,11);
+  ClassDef(AliAODHeader,12);
 };
 
 #endif

@@ -52,7 +52,8 @@ AliAODHeader::AliAODHeader() :
   fBunchCrossNumber(0),
   fTriggerCluster(0), 
   fDiamondZ(0.), 
-  fDiamondSig2Z(0.)
+  fDiamondSig2Z(0.),
+  fOfflineTrigger(0)
 {
   // default constructor
 
@@ -95,7 +96,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fBunchCrossNumber(nBunchX),
   fTriggerCluster(0), 
   fDiamondZ(0.), 
-  fDiamondSig2Z(0.)
+  fDiamondSig2Z(0.),
+  fOfflineTrigger(0)
 {
   // constructor
 
@@ -153,10 +155,10 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
   fBunchCrossNumber(nBunchX),
-  fTriggerCluster(trigClus), 
+  fTriggerCluster(trigClus),
   fDiamondZ(0.), 
-  fDiamondSig2Z(0.)
-
+  fDiamondSig2Z(0.),
+  fOfflineTrigger(0)
 {
   // constructor
 
@@ -204,8 +206,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fBunchCrossNumber(hdr.fBunchCrossNumber),
   fTriggerCluster(hdr.fTriggerCluster), 
   fDiamondZ(hdr.fDiamondZ), 
-  fDiamondSig2Z(hdr.fDiamondSig2Z)
-
+  fDiamondSig2Z(hdr.fDiamondSig2Z),
+  fOfflineTrigger(hdr.fOfflineTrigger)
 {
   // Copy constructor.
   
@@ -261,6 +263,9 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fTriggerCluster   = hdr.fTriggerCluster;
     fNMuons           = hdr.fNMuons;
     fNDimuons         = hdr.fNDimuons;
+    fDiamondZ         = hdr.fDiamondZ;
+    fDiamondSig2Z     = hdr.fDiamondSig2Z;
+    fOfflineTrigger   = hdr.fOfflineTrigger;
 
 
     SetName(hdr.fName);
@@ -357,6 +362,7 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("ref. Multiplicity (neg) : %d\n", fRefMultNeg);
   printf("number of muons         : %d\n", fNMuons);
   printf("number of dimuons       : %d\n", fNDimuons);
+  printf("offline trigger         : %u\n", fOfflineTrigger);
 
   if (fQTheta) {
     for (UInt_t i = 0; i<(UInt_t)fNQTheta; i++) {

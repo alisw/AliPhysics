@@ -7,7 +7,8 @@
 /* $Id$ */
 
 #include "AliAnalysisTask.h"
-class AliVEvent;
+#include "AliVEvent.h"
+
 class AliAODEvent;
 class AliAODHeader;
 class AliAODTracklets;
@@ -45,7 +46,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     // Helpers for adding branches to the AOD
     virtual void   AddAODBranch(const char* cname, void* addobj, const char *fname="");
     // Event Selection
-    virtual void   SelectCollisionCandidates() {fSelectCollisions = kTRUE;}
+    virtual void   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
  // Getters
     virtual Int_t         DebugLevel()  {return fDebug;     }
     virtual AliVEvent*    InputEvent()  {return fInputEvent;}
@@ -87,9 +88,9 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static AliAODCaloCells* fgAODPhosCells;     //! Phos  Cell replication
     static TClonesArray*    fgAODDimuons;       //! Dimuons replication
     // Event Selection
-    Bool_t                  fSelectCollisions;   //  Task processes collision candidates only
+    UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
      
-    ClassDef(AliAnalysisTaskSE, 3); // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskSE, 4); // Analysis task for standard jet analysis
 };
  
 #endif

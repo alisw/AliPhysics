@@ -155,6 +155,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     AliAODHeader* header = AODEvent()->GetHeader();
     
     header->SetRunNumber(esd->GetRunNumber());
+    header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
     if (old) {
 	header->SetBunchCrossNumber(0);
 	header->SetOrbitNumber(0);
@@ -1262,7 +1263,7 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
   // Save PID object for candidate electrons
     Bool_t pidSave = kFALSE;
     if (fTrackFilter) {
-	Bool_t selectInfo = fTrackFilter->IsSelected("Electrons");
+	Bool_t selectInfo = fTrackFilter->IsSelected((char*) "Electrons");
 	if (selectInfo)  pidSave = kTRUE;
     }
 

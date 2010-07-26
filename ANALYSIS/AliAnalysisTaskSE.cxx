@@ -76,7 +76,7 @@ AliAnalysisTaskSE::AliAnalysisTaskSE():
     fTreeA(0x0),
     fCurrentRunNumber(-1),
     fHistosQA(0x0),
-    fSelectCollisions(0)
+    fOfflineTriggerMask(0)
 {
   // Default constructor
 }
@@ -93,7 +93,7 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
     fTreeA(0x0),
     fCurrentRunNumber(-1),
     fHistosQA(0x0),
-    fSelectCollisions(0)
+    fOfflineTriggerMask(0)
 {
   // Default constructor
     DefineInput (0, TChain::Class());
@@ -112,7 +112,7 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     fTreeA(0x0),
     fCurrentRunNumber(-1),
     fHistosQA(0x0),
-    fSelectCollisions(0)
+    fOfflineTriggerMask(0)
 {
 // Copy constructor
     fDebug            = obj.fDebug;
@@ -143,7 +143,7 @@ AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
     fTreeA            = other.fTreeA;    
     fCurrentRunNumber = other.fCurrentRunNumber;
     fHistosQA         = other.fHistosQA;
-    fSelectCollisions = other.fSelectCollisions;
+    fOfflineTriggerMask = other.fOfflineTriggerMask;
     return *this;
 }
 
@@ -310,9 +310,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
 //
 // Was event selected ?
-    Bool_t isSelected = kTRUE;
-    if( fInputHandler && fInputHandler->GetEventSelection() && fSelectCollisions) {
-      isSelected = fInputHandler->IsEventSelected();
+    UInt_t isSelected = 0;
+    if( fInputHandler && fInputHandler->GetEventSelection() && fOfflineTriggerMask) {
+      isSelected = fInputHandler->IsEventSelected() & fOfflineTriggerMask;
     }
 
     if (handler) handler->SetFillAOD(isSelected);
@@ -494,10 +494,10 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
 
     if (!mcH) {
-	if (!fSelectCollisions || isSelected) 
+	if (!fOfflineTriggerMask || isSelected) 
 	    UserExec(option);
     } else {
-	if ((!fSelectCollisions || isSelected) && (mcH->InitOk())) 
+	if ((!fOfflineTriggerMask || isSelected) && (mcH->InitOk())) 
 	    UserExec(option);
     }
     

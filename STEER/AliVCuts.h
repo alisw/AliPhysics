@@ -21,6 +21,7 @@ class AliVCuts : public TNamed {
   AliVCuts(const AliVCuts& evt); 
   AliVCuts& operator=(const AliVCuts& evt);
   virtual Bool_t IsSelected(TObject* /* obj  */)  = 0;
+  virtual UInt_t GetSelectionMask(const TObject* /* obj */) { return 0; }
   ClassDef(AliVCuts,1);
 };
 

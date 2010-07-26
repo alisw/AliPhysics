@@ -37,7 +37,7 @@ AliInputEventHandler::AliInputEventHandler() :
     fBranchesOn(""),
     fNewEvent(kTRUE),
     fEventCuts(0),
-    fIsSelected(kFALSE)
+    fIsSelectedResult(0)
 {
   // default constructor
 }
@@ -56,7 +56,7 @@ AliInputEventHandler::AliInputEventHandler(const char* name, const char* title):
   fBranchesOn(""),
   fNewEvent(kTRUE),
   fEventCuts(0),
-  fIsSelected(kFALSE)
+  fIsSelectedResult(0)
 {
 }
 

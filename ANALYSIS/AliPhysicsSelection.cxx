@@ -180,14 +180,18 @@ AliPhysicsSelection::~AliPhysicsSelection()
 
 }
 
-Bool_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const
+UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const
 {
   // checks if the given trigger class(es) are found for the current event
-  // format of trigger: +TRIGGER1 -TRIGGER2
+  // format of trigger: +TRIGGER1 -TRIGGER2 [#XXX] [&YY]
   //   requires TRIGGER1 and rejects TRIGGER2
+  //   in bunch crossing XXX
+  //   if successful, a word with bit YY set is returned (for association between entry in fCollTrigClasses and AliVEvent::EOfflineTriggerTypes)
   
   Bool_t foundBCRequirement = kFALSE;
   Bool_t foundCorrectBC = kFALSE;
+  
+  UInt_t returnCode = AliVEvent::kUserDefined;
   
   TString str(trigger);
   TObjArray* tokens = str.Tokenize(" ");
@@ -230,6 +234,12 @@ Bool_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
         AliDebug(AliLog::kDebug, Form("Found correct bunch crossing %d", bcNumber));
       }
     }
+    else if (str2[0] == '&' && !fUsingCustomClasses)
+    {
+      str2.Remove(0, 1);
+      
+      returnCode = 1 << str2.Atoi();
+    }
     else
       AliFatal(Form("Invalid trigger syntax: %s", trigger));
   }
@@ -239,12 +249,14 @@ Bool_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
   if (foundBCRequirement && !foundCorrectBC)
     return kFALSE;
   
-  return kTRUE;
+  return returnCode;
 }
     
-Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
+UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 {
   // checks if the given event is a collision candidate
+  //
+  // returns a bit word describing the fired offline triggers (see AliVEvent::EOfflineTriggerTypes)
   
   if (fCurrentRun != aEsd->GetRunNumber())
     if (!Initialize(aEsd->GetRunNumber()))
@@ -269,7 +281,7 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       AliFatal(Form("Invalid event type for MC: %d", esdHeader->GetEventType()));
   }
   
-  Bool_t accept = kFALSE;
+  UInt_t accept = 0;
     
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
   for (Int_t i=0; i < count; i++)
@@ -286,7 +298,8 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   
     triggerAnalysis->FillTriggerClasses(aEsd);
     
-    if (CheckTriggerClass(aEsd, triggerClass))
+    UInt_t singleTriggerResult = CheckTriggerClass(aEsd, triggerClass);
+    if (singleTriggerResult)
     {
       triggerAnalysis->FillHistograms(aEsd);
   
@@ -434,7 +447,7 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 		    fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
 		    if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
 		    if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
-		      accept = kTRUE; // only set for "all" (should not really matter)
+		      accept |= singleTriggerResult; // only set for "all" (should not really matter)
 		  }
 	      }
 	    else
@@ -447,7 +460,7 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   }
  
   if (accept)
-    AliDebug(AliLog::kDebug, "Accepted event as collision candidate");
+    AliDebug(AliLog::kDebug, Form("Accepted event as collision candidate with bit mask %d", accept));
   
   return accept;
 }
@@ -636,7 +649,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     AliError("Bin0 Callback not set: will not fill the statistics for the bin 0");
 
   if (fMC) {
-    // ovverride BX and bg options in case of MC
+    // override BX and bg options in case of MC
     fComputeBG    = kFALSE;
     fUseBXNumbers = kFALSE;
   }
@@ -669,36 +682,30 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
       switch (triggerScheme)
       {
       case 0:
-        fCollTrigClasses.Add(new TObjString(""));
+        fCollTrigClasses.Add(new TObjString("&0"));
         break;
         
       case 1:
-	{ // need a new scope to avoid cross-initialization errors
+        fCollTrigClasses.Add(new TObjString(Form("%s%s &0","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"))));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &0","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"))));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &0","+CINT1C-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"))));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &0","+CINT1-E-NOPF-ALL",      GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"))));
 
-	  if (fUseMuonTriggers) {
-	    // Muon trigger have the same BXIDs of the corresponding CINT triggers
-	    fCollTrigClasses.Add(new TObjString(Form("%s%s ","+CMUS1B-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"))));
-	    fBGTrigClasses.Add  (new TObjString(Form("%s%s ","+CMUS1A-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"))));
-	    fBGTrigClasses.Add  (new TObjString(Form("%s%s ","+CMUS1C-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"))));	    
-	    fBGTrigClasses.Add  (new TObjString(Form("%s%s ","+CMUS1-E-NOPF-MUON"    ,  GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"))));
-	  }
-	  TObjString * cint1b = new TObjString(Form("%s%s","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL")));
-	  TObjString * cint1a = new TObjString(Form("%s%s","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL")));
-	  TObjString * cint1c = new TObjString(Form("%s%s","+CINT1C-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL")));
-	  TObjString * cint1e = new TObjString(Form("%s%s","+CINT1-E-NOPF-ALL",      GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"))    );
-	  //
-	  fCollTrigClasses.Add(cint1b);
-	  fBGTrigClasses.Add(cint1a);
-	  fBGTrigClasses.Add(cint1c);
-	  fBGTrigClasses.Add(cint1e);
-
-	}
+        // Muon trigger have the same BXIDs of the corresponding CINT triggers
+        fCollTrigClasses.Add(new TObjString(Form("%s%s &2","+CMUS1B-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"))));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &2","+CMUS1A-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"))));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &2","+CMUS1C-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"))));	    
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &2","+CMUS1-E-NOPF-MUON"    ,  GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"))));
         break;
         
       case 2:
-        fCollTrigClasses.Add(new TObjString("+CSMBB-ABCE-NOPF-ALL"));
-        fBGTrigClasses.Add(new TObjString("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL"));
-        fBGTrigClasses.Add(new TObjString("+CSMBC-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL"));
+        fCollTrigClasses.Add(new TObjString("+CSMBB-ABCE-NOPF-ALL &0"));
+        fBGTrigClasses.Add(new TObjString("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &0"));
+        fBGTrigClasses.Add(new TObjString("+CSMBC-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &0"));
+        break;
+        
+      case 3:
+        // 
         break;
         
       default:
@@ -879,12 +886,15 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
     triggerAnalysis->PrintTriggerClasses();
   }
   
-  if (fHistStatistics[kStatIdxAll] && fCollTrigClasses.GetEntries() > 0)
+  if (fHistStatistics[kStatIdxAll])
   {
-    Printf("\nSelection statistics for first collision trigger (%s):", ((TObjString*) fCollTrigClasses.First())->String().Data());
-    
-    Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(1, 1));
-    Printf("Selected collision candidates: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(fHistStatistics[kStatIdxAll]->GetXaxis()->FindBin("Accepted"), 1));
+    for (Int_t i=0; i<fCollTrigClasses.GetEntries(); i++)
+    {
+      Printf("\nSelection statistics for collision trigger %s:", ((TObjString*) fCollTrigClasses.At(i))->String().Data());
+      
+      Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(1, i+1));
+      Printf("Selected collision candidates: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(fHistStatistics[kStatIdxAll]->GetXaxis()->FindBin("Accepted"), i+1));
+    }
   }
   
   if (fHistBunchCrossing)
@@ -905,14 +915,20 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
     
     for (Int_t j=1; j<=fHistBunchCrossing->GetNbinsX(); j++)
     {
-      Int_t count = 0;
+      Int_t countColl = 0;
+      Int_t countBG = 0;
       for (Int_t i=1; i<=fHistBunchCrossing->GetNbinsY(); i++)
       {
         if (fHistBunchCrossing->GetBinContent(j, i) > 0)
-          count++;
+        {
+          if (fCollTrigClasses.FindObject(fHistBunchCrossing->GetYaxis()->GetBinLabel(i)))
+            countColl++;
+          if (fBGTrigClasses.FindObject(fHistBunchCrossing->GetYaxis()->GetBinLabel(i)))
+            countBG++;
+        }
       }
-      if (count > 1)
-        Printf("WARNING: Bunch crossing %d has more than one trigger class active. Check BPTX functioning for this run!", (Int_t) fHistBunchCrossing->GetXaxis()->GetBinCenter(j));
+      if (countColl > 0 && countBG > 0)
+        Printf("WARNING: Bunch crossing %d has collision and BG trigger classes active. Check BPTX functioning for this run!", (Int_t) fHistBunchCrossing->GetXaxis()->GetBinCenter(j));
     }
   }
 

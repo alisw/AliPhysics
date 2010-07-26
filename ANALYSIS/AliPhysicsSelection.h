@@ -51,10 +51,11 @@ public:
   virtual ~AliPhysicsSelection();
     
   // AliAnalysisCuts interface
-  virtual Bool_t IsSelected(TObject* obj) { return IsCollisionCandidate((const AliESDEvent*) obj); }
+  virtual UInt_t GetSelectionMask(const TObject* obj) { return IsCollisionCandidate((const AliESDEvent*) obj); }
   virtual Bool_t IsSelected(TList*) { return kFALSE; }
+  virtual Bool_t IsSelected(TObject*)  {return kFALSE;}
     
-  Bool_t IsCollisionCandidate(const AliESDEvent* aEsd);
+  UInt_t IsCollisionCandidate(const AliESDEvent* aEsd);
   Bool_t Initialize(Int_t runNumber);
     
   void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
@@ -87,13 +88,12 @@ public:
   
 
 protected:
-  Bool_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
+  UInt_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
   Int_t GetTriggerScheme(UInt_t runNumber) const;
   const char * GetBXIDs(UInt_t runNumber, const char * trigger ) ;
   const char * GetFillingScheme(UInt_t runNumber) ;
   TH2F * BookHistStatistics(const char * tag) ;
 
-    
   Int_t fCurrentRun;      // run number for which the object is initialized
   Bool_t fMC;             // flag if MC is analyzed
   TList fCollTrigClasses; // trigger class identifying collision candidates

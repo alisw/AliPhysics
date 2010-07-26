@@ -117,7 +117,7 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   // Event selection
   // 
   if (fEventCuts)
-    fIsSelected = fEventCuts->IsSelected((AliESDEvent*)fEvent); 
+    fIsSelectedResult = fEventCuts->GetSelectionMask((AliESDEvent*)fEvent); 
   //
   // Friends
   ((AliESDEvent*)fEvent)->SetESDfriend(fFriend);

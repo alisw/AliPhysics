@@ -382,7 +382,7 @@ Long64_t AliBackgroundSelection::Merge(TCollection* const list)
   // the same order. We thus also have to sort the list (sorting is
   // done by name in TList).
 
-  AliInfo("Merging");
+  //AliInfo("Merging");
 
   if (!list)
     return 0;
@@ -442,7 +442,7 @@ Long64_t AliBackgroundSelection::Merge(TCollection* const list)
 
       while ((hist= iterlist->Next())){ 
 	if(!otherlist->FindObject(hist->GetName())){
-	  AliInfo(Form("Adding object %s",hist->GetName()));
+	  //AliInfo(Form("Adding object %s",hist->GetName()));
 	  foundDiffinThisIterStep = kTRUE;
 	  TH1 * hclone =  (TH1*) hist->Clone();
 	  hclone->Reset();
