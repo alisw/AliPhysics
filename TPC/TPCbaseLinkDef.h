@@ -101,6 +101,7 @@
 #pragma link C++ class AliTPCBoundaryVoltError+;
 #pragma link C++ class AliTPCCalibGlobalMisalignment+;
 #pragma link C++ class AliTPCExBEffective+;
+#pragma link C++ class AliTPCExBEffectiveSector+;
 
 #endif
 
