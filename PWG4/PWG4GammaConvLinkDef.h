@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskGammaConversion+;
+#pragma link C++ class AliAnalysisTaskCaloConv+;
 #pragma link C++ class AliV0Reader+;
 #pragma link C++ class AliGammaConversionHistograms+;
 #pragma link C++ class AliGammaConversionAODObject+;
