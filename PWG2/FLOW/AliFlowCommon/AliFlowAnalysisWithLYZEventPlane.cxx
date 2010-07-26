@@ -377,7 +377,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
   //set the event number
   if (fCommonHists) {
-  SetEventNumber((int)fCommonHists->GetHistMultOrig()->GetEntries());
+  SetEventNumber((int)fCommonHists->GetHistQ()->GetEntries());
   //cout<<"number of events processed is "<<fEventNumber<<endl;
   }
 

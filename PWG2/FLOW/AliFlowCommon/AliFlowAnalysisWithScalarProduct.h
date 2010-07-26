@@ -43,8 +43,6 @@ class AliFlowAnalysisWithScalarProduct {
    void    WriteHistograms(TString outputFileName);         //writes histograms locally
    void    WriteHistograms(TDirectoryFile *outputFileName); //writes histograms locally
     
-   virtual void StoreFlags(); //store all booleans needed in Finish()
-   virtual void AccessFlags(); //access all booleans needed in Finish()
    Double_t CalculateStatisticalError(Int_t bin, 
 				      Double_t aStatErrorQaQb,
 				      TProfile* aHistProUQ, 
@@ -54,6 +52,8 @@ class AliFlowAnalysisWithScalarProduct {
    void    SetDebug(Bool_t kt)   { this->fDebug = kt ; }
    Bool_t  GetDebug() const      { return this->fDebug ; }
 
+   virtual void StoreFlags(); //store all booleans needed in Finish()
+   virtual void AccessFlags(); //access all booleans needed in Finish()
 
    void     SetRelDiffMsub(Double_t diff) { this->fRelDiffMsub = diff; }
    Double_t GetRelDiffMsub() const        { return this->fRelDiffMsub; }
@@ -65,8 +65,8 @@ class AliFlowAnalysisWithScalarProduct {
    Bool_t  GetUsePhiWeights() const                   {return this->fUsePhiWeights;}
    
    // correction for non-uniforma acceptance:
-   void SetApplyCorrectionForNUA(Bool_t const acfNUA) {this->fApplyCorrectionForNUA = acfNUA;}
-   Bool_t GetApplyCorrectionForNUA() const {return this->fApplyCorrectionForNUA;}        
+   void   SetApplyCorrectionForNUA(Bool_t const acfNUA) {this->fApplyCorrectionForNUA = acfNUA;}
+   Bool_t GetApplyCorrectionForNUA() const              {return this->fApplyCorrectionForNUA;}        
 
    // Output 
    TList*    GetHistList() const    { return this->fHistList ; } // Gets output histogram list
@@ -176,8 +176,9 @@ class AliFlowAnalysisWithScalarProduct {
    AliFlowAnalysisWithScalarProduct(const AliFlowAnalysisWithScalarProduct& anAnalysis);            //copy constructor
    AliFlowAnalysisWithScalarProduct& operator=(const AliFlowAnalysisWithScalarProduct& anAnalysis); //assignment operator 
       
-   Int_t      fEventNumber;      // event counter
-   Bool_t     fDebug ;           // flag for analysis: more print statements
+   Int_t      fEventNumber;           // event counter
+   Bool_t     fDebug ;                // flag for analysis: more print statements
+   Bool_t     fApplyCorrectionForNUA; // apply correction for non-uniform acceptance
 
    Double_t   fRelDiffMsub;      // the relative difference the two subevent multiplicities can have
 
@@ -186,21 +187,18 @@ class AliFlowAnalysisWithScalarProduct {
    TH1F*      fPhiWeightsSub0;   // histogram holding phi weights for subevent 0
    TH1F*      fPhiWeightsSub1;   // histogram holding phi weights for subevent 1
 
-   TList*     fHistList;         //list to hold all output histograms  
-
-   TProfile*  fHistProFlags;     //profile to hold all boolean flags needed in Finish()
-   TProfile*  fHistProUQetaRP;   //uQ(eta) for RP
-   TProfile*  fHistProUQetaPOI;  //uQ(eta) for POI
-   TProfile*  fHistProUQPtRP;    //uQ(pt) for RP
-   TProfile*  fHistProUQPtPOI;   //uQ(pt) for POI
-   TProfile*  fHistProQaQb;      //average of QaQb 
-   TProfile*  fHistProQaQbNorm;  //average of QaQb/MaMb
-   Bool_t     fApplyCorrectionForNUA; //apply correction for non-uniform acceptance
-   TProfile*  fHistProQaQbReImNorm; //average of Im[Qa/Ma], Re[Qa/Ma], Im[Qb/Mb], Re[Qb/Mb] 
-   TProfile*  fHistProNonIsotropicTermsQ; //1st bin: sin, 2nd bin: cos 
-   TProfile*  fHistProNonIsotropicTermsU[2][2][2]; //[RP/POI][pt/eta][sin/cos]  
-   TH1D*      fHistSumOfLinearWeights;     //holds sum of Ma*Mb
-   TH1D*      fHistSumOfQuadraticWeights;  //holds sum of (Ma*Mb)^2
+   TProfile*  fHistProFlags;        // profile to hold all boolean flags needed in Finish()
+   TProfile*  fHistProUQetaRP;      // uQ(eta) for RP
+   TProfile*  fHistProUQetaPOI;     // uQ(eta) for POI
+   TProfile*  fHistProUQPtRP;       // uQ(pt) for RP
+   TProfile*  fHistProUQPtPOI;      // uQ(pt) for POI
+   TProfile*  fHistProQaQb;         // average of QaQb 
+   TProfile*  fHistProQaQbNorm;     // average of QaQb/MaMb
+   TProfile*  fHistProQaQbReImNorm; // average of Im[Qa/Ma], Re[Qa/Ma], Im[Qb/Mb], Re[Qb/Mb] 
+   TProfile*  fHistProNonIsotropicTermsQ;          // 1st bin: sin, 2nd bin: cos 
+   TProfile*  fHistProNonIsotropicTermsU[2][2][2]; // [RP/POI][pt/eta][sin/cos]  
+   TH1D*      fHistSumOfLinearWeights;             // holds sum of Ma*Mb
+   TH1D*      fHistSumOfQuadraticWeights;          // holds sum of (Ma*Mb)^2
    
    TProfile*  fHistProUQQaQbPtRP;         //holds weighted average of <QuQaQb>
    TProfile*  fHistProUQQaQbEtaRP;        //holds weighted average of <QuQaQb>
@@ -210,9 +208,9 @@ class AliFlowAnalysisWithScalarProduct {
    TH1D*      fHistSumOfWeightsEtaRP[3];  //holds sums of 0: Mq-1, 1: (Mq-1)^2, 2: (Mq-1)*Ma*Mb for each bin
    TH1D*      fHistSumOfWeightsPtPOI[3];  //holds sums of 0: Mq-1, 1: (Mq-1)^2, 2: (Mq-1)*Ma*Mb for each bin
    TH1D*      fHistSumOfWeightsEtaPOI[3]; //holds sums of 0: Mq-1, 1: (Mq-1)^2, 2: (Mq-1)*Ma*Mb for each bin
-   
-   AliFlowCommonHist*        fCommonHists;    //control histograms
-   AliFlowCommonHistResults* fCommonHistsRes; //results histograms
+    
+   AliFlowCommonHist*        fCommonHists;    // control histograms
+   AliFlowCommonHistResults* fCommonHistsRes; // results histograms
    
    TH1D*      fHistQaQb;         // distribution of QaQb
    TH1D*      fHistQaQbNorm;     // distribution of QaQb/MaMb
@@ -224,6 +222,8 @@ class AliFlowAnalysisWithScalarProduct {
    TH2D*      fHistQbNormvsMb;   // distribution of Qb/Mb vs Mb
    TH2D*      fHistMavsMb;       // Ma vs Mb
       
+   TList*     fHistList;         // list to hold all output histograms  
+
    ClassDef(AliFlowAnalysisWithScalarProduct,0)  // macro for rootcint
      };
  

@@ -41,7 +41,6 @@ class AliFlowCommonHist: public TNamed {
   Double_t GetEntriesInEtaBinPOI(Int_t iBin); //gets entries from fHistEtaPOI
   Double_t GetMeanPt(Int_t iBin);             //gets the mean pt for this bin from fHistProMeanPtperBin   
 
-  TH1F*     GetHistMultOrig()        {return fHistMultOrig;  } ;  
   TH1F*     GetHistMultRP()          {return fHistMultRP; } ;  
   TH1F*     GetHistMultPOI()         {return fHistMultPOI; } ;  
   TH1F*     GetHistPtRP()            {return fHistPtRP; } ;  
@@ -59,7 +58,10 @@ class AliFlowCommonHist: public TNamed {
   TH2F*     GetHistPhiEtaRP()        {return fHistPhiEtaRP;  } ; 
   TH2F*     GetHistPhiEtaPOI()       {return fHistPhiEtaPOI;  } ; 
   TProfile* GetHistProMeanPtperBin() {return fHistProMeanPtperBin; } ;
-  TH1F*     GetHistQ()               {return fHistQ; } ;    
+  TH1F*     GetHistQ()               {return fHistQ; } ;  
+  TH1F*     GetHistAngleQ()          {return fHistAngleQ; }
+  TH1F*     GetHistAngleQSub0()      {return fHistAngleQSub0; }
+  TH1F*     GetHistAngleQSub1()      {return fHistAngleQSub1; }
   TProfile* GetHarmonic()            {return fHarmonic; } ; 
   TProfile* GetRefMultVsNoOfRPs()    {return fRefMultVsNoOfRPs; } ;
   TList*    GetHistList()            {return fHistList;} ;  
@@ -75,7 +77,6 @@ class AliFlowCommonHist: public TNamed {
 
   //define histograms here
   //control histograms
-  TH1F*     fHistMultOrig;        //multiplicity before selection
   TH1F*     fHistMultRP;          //multiplicity for RP selection
   TH1F*     fHistMultPOI;         //multiplicity for POI selection
   TH1F*     fHistPtRP;            //pt distribution for RP selection
@@ -94,6 +95,9 @@ class AliFlowCommonHist: public TNamed {
   TH2F*     fHistPhiEtaPOI;       //eta vs phi for POI selection
   TProfile* fHistProMeanPtperBin; //mean pt for each pt bin (for POI selection)
   TH1F*     fHistQ;               //Qvector distribution
+  TH1F*     fHistAngleQ;          //distribution of angle of Q vector
+  TH1F*     fHistAngleQSub0;      //distribution of angle of subevent 0 Q vector
+  TH1F*     fHistAngleQSub1;      //distribution of angle of subevent 1 Q vector
   TProfile* fHarmonic;            //harmonic 
   TProfile* fRefMultVsNoOfRPs;    //<reference multiplicity> versus # of RPs
 

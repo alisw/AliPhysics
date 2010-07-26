@@ -33,7 +33,7 @@ class TH1D;
 // AliFlowCommonHist:
 //
 // Description: Class to organise common histograms for Flow Analysis
-
+//
 // authors: N. van der Kolk (kolk@nikhef.nl), A. Bilandzic (anteb@nikhef.nl), RS
 
 
@@ -43,7 +43,6 @@ ClassImp(AliFlowCommonHist)
 
 AliFlowCommonHist::AliFlowCommonHist():
   TNamed(),
-  fHistMultOrig(NULL),
   fHistMultRP(NULL),
   fHistMultPOI(NULL),
   fHistPtRP(NULL),
@@ -62,6 +61,9 @@ AliFlowCommonHist::AliFlowCommonHist():
   fHistPhiEtaPOI(NULL),
   fHistProMeanPtperBin(NULL),
   fHistQ(NULL),
+  fHistAngleQ(NULL),
+  fHistAngleQSub0(NULL),
+  fHistAngleQSub1(NULL), 
   fHarmonic(NULL),
   fRefMultVsNoOfRPs(NULL),
   fHistList(NULL)
@@ -73,7 +75,6 @@ AliFlowCommonHist::AliFlowCommonHist():
 
 AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   TNamed(),
-  fHistMultOrig(new TH1F(*a.fHistMultOrig)),
   fHistMultRP(new TH1F(*a.fHistMultRP)),
   fHistMultPOI(new TH1F(*a.fHistMultPOI)),
   fHistPtRP(new TH1F(*a.fHistPtRP)),
@@ -92,6 +93,9 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistPhiEtaPOI(new TH2F(*a.fHistPhiEtaPOI)),
   fHistProMeanPtperBin(new TProfile(*a.fHistProMeanPtperBin)),
   fHistQ(new TH1F(*a.fHistQ)),
+  fHistAngleQ(new TH1F(*a.fHistAngleQ)),
+  fHistAngleQSub0(new TH1F(*a.fHistAngleQSub0)),
+  fHistAngleQSub1(new TH1F(*a.fHistAngleQSub1)), 
   fHarmonic(new TProfile(*a.fHarmonic)),
   fRefMultVsNoOfRPs(new TProfile(*a.fRefMultVsNoOfRPs)),
   fHistList(NULL)
@@ -99,7 +103,6 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   // copy constructor
 
   fHistList = new TList();
-  fHistList-> Add(fHistMultOrig);        
   fHistList-> Add(fHistMultRP);        
   fHistList-> Add(fHistMultPOI);       
   fHistList-> Add(fHistPtRP);          
@@ -119,35 +122,19 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHistProMeanPtperBin); 
   fHistList-> Add(fHarmonic);  
   fHistList-> Add(fRefMultVsNoOfRPs);
-  fHistList-> Add(fHistQ);           
+  fHistList-> Add(fHistQ); 
+  fHistList-> Add(fHistAngleQ);
+  fHistList-> Add(fHistAngleQSub0);
+  fHistList-> Add(fHistAngleQSub1);
   //  TListIter next = TListIter(a.fHistList);
 
 }
 
-// AliFlowCommonHist& AliFlowCommonHist::operator=(const AliFlowCommonHist& a) 
-// {
-//   *fHistMultOrig = *a.fHistMultOrig;
-//   *fHistMultInt = *a.fHistMultInt;
-//   *fHistMultDiff = *a.fHistMultDiff;
-//   *fHistPtInt = *a.fHistPtInt;
-//   *fHistPtDiff = *a.fHistPtDiff;
-//   *fHistPhiInt = *a.fHistPhiInt;
-//   *fHistPhiDiff = *a.fHistPhiDiff;
-//   *fHistEtaInt = *a.fHistEtaInt;
-//   *fHistEtaDiff = *a.fHistEtaDiff;
-//   *fHistProMeanPtperBin = *a.fHistProMeanPtperBin;
-//   *fHistQ = *a.fHistQ;
-//   //  *fHistList = *a.fHistList;
-//   fHistList = NULL;
- 
-//   return *this;
-// }
 
 //-----------------------------------------------------------------------
 
   AliFlowCommonHist::AliFlowCommonHist(const char *anInput,const char *title):
     TNamed(anInput,title),
-    fHistMultOrig(NULL),
     fHistMultRP(NULL),
     fHistMultPOI(NULL),
     fHistPtRP(NULL),
@@ -166,6 +153,9 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
     fHistPhiEtaPOI(NULL),
     fHistProMeanPtperBin(NULL),
     fHistQ(NULL),
+    fHistAngleQ(NULL),
+    fHistAngleQSub0(NULL),
+    fHistAngleQSub1(NULL), 
     fHarmonic(NULL),
     fRefMultVsNoOfRPs(NULL),
     fHistList(NULL)
@@ -198,12 +188,6 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   cout<<"Q: "<<iNbinsQ<<" bins between "<<dQMin<<" and "<<dQMax<<endl;
 
   //Multiplicity
-  sName = "Control_Flow_OrigMult_";
-  sName +=anInput;
-  fHistMultOrig = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
-  fHistMultOrig ->SetXTitle("Original Multiplicity");
-  fHistMultOrig ->SetYTitle("Counts");
-
   sName = "Control_Flow_MultRP_";
   sName +=anInput;
   fHistMultRP = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
@@ -319,6 +303,25 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistQ ->SetXTitle("Q_{vector}/Mult");
   fHistQ ->SetYTitle("Counts");  
   
+  //Angle of Q vector
+  sName = "Control_Flow_AngleQ_";
+  sName +=anInput;
+  fHistAngleQ = new TH1F(sName.Data(), sName.Data(),72, 0., TMath::Pi());
+  fHistAngleQ ->SetXTitle("Angle of Q_{vector}");
+  fHistAngleQ ->SetYTitle("Counts"); 
+ 
+  sName = "Control_Flow_AngleQSub0_";
+  sName +=anInput;
+  fHistAngleQSub0 = new TH1F(sName.Data(), sName.Data(),72, 0., TMath::Pi());
+  fHistAngleQSub0 ->SetXTitle("Angle of Q_{vector} for Subevent 0");
+  fHistAngleQSub0 ->SetYTitle("Counts"); 
+
+  sName = "Control_Flow_AngleQSub1_";
+  sName +=anInput;
+  fHistAngleQSub1 = new TH1F(sName.Data(), sName.Data(),72, 0., TMath::Pi());
+  fHistAngleQSub1 ->SetXTitle("Angle of Q_{vector} for Subevent 1");
+  fHistAngleQSub1 ->SetYTitle("Counts"); 
+
   //harmonic
   sName = "Control_Flow_Harmonic_";
   sName +=anInput;
@@ -334,7 +337,6 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
 
   //list of histograms if added here also add in copy constructor
   fHistList = new TList();
-  fHistList-> Add(fHistMultOrig);        
   fHistList-> Add(fHistMultRP);        
   fHistList-> Add(fHistMultPOI);       
   fHistList-> Add(fHistPtRP);          
@@ -355,6 +357,9 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHarmonic); 
   fHistList-> Add(fRefMultVsNoOfRPs); 
   fHistList-> Add(fHistQ);           
+  fHistList-> Add(fHistAngleQ);
+  fHistList-> Add(fHistAngleQSub0);
+  fHistList-> Add(fHistAngleQSub1); 
 
 }
 
@@ -364,7 +369,6 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
 AliFlowCommonHist::~AliFlowCommonHist()
 {
   //deletes histograms
-  delete fHistMultOrig;      
   delete fHistMultRP;       
   delete fHistMultPOI;      
   delete fHistPtRP;         
@@ -383,6 +387,9 @@ AliFlowCommonHist::~AliFlowCommonHist()
   delete fHistPhiEtaPOI;
   delete fHistProMeanPtperBin;
   delete fHistQ;
+  delete fHistAngleQ;
+  delete fHistAngleQSub0;
+  delete fHistAngleQSub1;
   delete fHarmonic;
   delete fRefMultVsNoOfRPs;
   delete fHistList;
@@ -401,11 +408,7 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
 
   Double_t dPt, dPhi, dEta, dWeight;
 
-
   //fill the histograms
-  Int_t iNumberOfTracks = anEvent->NumberOfTracks();
-  fHistMultOrig->Fill(iNumberOfTracks);
-
   AliFlowVector vQ = anEvent->GetQ(); 
   //weight by the Multiplicity
   Double_t dQX = 0.;
@@ -416,10 +419,19 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
   }
   vQ.Set(dQX,dQY);
   fHistQ->Fill(vQ.Mod());
+  fHistAngleQ->Fill(vQ.Phi()/2);
+
+  AliFlowVector* vQSub = new AliFlowVector[2];
+  anEvent->Get2Qsub(vQSub);
+  AliFlowVector vQa = vQSub[0];
+  AliFlowVector vQb = vQSub[1];
+  fHistAngleQSub0->Fill(vQa.Phi()/2);
+  fHistAngleQSub1->Fill(vQb.Phi()/2);
 
   Double_t dMultRP = 0.;
   Double_t dMultPOI = 0.;
   
+  Int_t iNumberOfTracks = anEvent->NumberOfTracks();
   AliFlowTrackSimple* pTrack = NULL;     
 
   for (Int_t i=0;i<iNumberOfTracks;i++) {

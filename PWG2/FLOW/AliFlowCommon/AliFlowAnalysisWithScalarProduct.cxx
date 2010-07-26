@@ -26,11 +26,11 @@
 
 #include "AliFlowCommonConstants.h"
 #include "AliFlowEventSimple.h"
+#include "AliFlowVector.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 #include "AliFlowAnalysisWithScalarProduct.h"
-#include "AliFlowVector.h"
 
 //////////////////////////////////////////////////////////////////////////////
 // AliFlowAnalysisWithScalarProduct:
@@ -46,12 +46,12 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
   AliFlowAnalysisWithScalarProduct::AliFlowAnalysisWithScalarProduct():
    fEventNumber(0),
    fDebug(kFALSE),
+   fApplyCorrectionForNUA(kFALSE),
    fRelDiffMsub(1.),
    fWeightsList(NULL),
    fUsePhiWeights(kFALSE),
    fPhiWeightsSub0(NULL),
    fPhiWeightsSub1(NULL),
-   fHistList(NULL),
    fHistProFlags(NULL),
    fHistProUQetaRP(NULL),
    fHistProUQetaPOI(NULL),
@@ -59,7 +59,6 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
    fHistProUQPtPOI(NULL),
    fHistProQaQb(NULL),
    fHistProQaQbNorm(NULL),
-   fApplyCorrectionForNUA(kFALSE),
    fHistProQaQbReImNorm(NULL),
    fHistProNonIsotropicTermsQ(NULL),
    fHistSumOfLinearWeights(NULL),
@@ -78,8 +77,8 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
    fHistQaNormvsMa(NULL),
    fHistQbNorm(NULL),
    fHistQbNormvsMb(NULL),
-   fHistMavsMb(NULL)
-
+   fHistMavsMb(NULL),
+   fHistList(NULL)
 {
   // Constructor.
   fWeightsList = new TList();
@@ -157,6 +156,7 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   //save old value and prevent histograms from being added to directory
   //to avoid name clashes in case multiple analaysis objects are used
   //in an analysis
+
   Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
  
@@ -394,9 +394,8 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     //check that the subevents are not empty:
     Double_t dMa = vQa.GetMult();
     Double_t dMb = vQb.GetMult();
-    if (dMa != 0 && dMb != 0) {
+    if (dMa > 0. && dMb > 0.) {
       
-
       //request that the subevent multiplicities are not too different
       Double_t dRelDiff = TMath::Abs((dMa - dMb)/(dMa + dMb));
       if (dRelDiff < fRelDiffMsub) {
@@ -413,14 +412,16 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 
 	//get total Q vector = the sum of subevent a and subevent b
 	AliFlowVector vQ = vQa + vQb;
+
 	//needed to correct for non-uniform acceptance:
-	if(dMa+dMb>0.)
-	{
-	 fHistProNonIsotropicTermsQ->Fill(1.,vQ.Y()/(dMa+dMb),dMa+dMb);
-	 fHistProNonIsotropicTermsQ->Fill(2.,vQ.X()/(dMa+dMb),dMa+dMb);
+	if(dMa+dMb > 0.) {
+	  fHistProNonIsotropicTermsQ->Fill(1.,vQ.Y()/(dMa+dMb),dMa+dMb);
+	  fHistProNonIsotropicTermsQ->Fill(2.,vQ.X()/(dMa+dMb),dMa+dMb);
 	}
+
 	//weight the Q vectors for the subevents by the multiplicity
-	//Note: Weight Q only in the particle loop when it is clear if it should be (m-1) or M
+	//Note: Weight Q only in the particle loop when it is clear 
+	//if it should be (m-1) or M
 	Double_t dQXa = vQa.X()/dMa; 
 	Double_t dQYa = vQa.Y()/dMa;
 	vQa.Set(dQXa,dQYa);
@@ -435,12 +436,12 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	//needed for the error calculation:
 	fHistSumOfLinearWeights -> Fill(0.,dMa*dMb);
 	fHistSumOfQuadraticWeights -> Fill(0.,pow(dMa*dMb,2.));
-            //needed for correcting non-uniform acceptance: 
-            fHistProQaQbReImNorm->Fill(1.,dQYa,dMa); // to get <<sin(phi_a)>>
-            fHistProQaQbReImNorm->Fill(2.,dQXa,dMa); // to get <<cos(phi_a)>>
-            fHistProQaQbReImNorm->Fill(3.,dQYb,dMb); // to get <<sin(phi_b)>>
-            fHistProQaQbReImNorm->Fill(4.,dQXb,dMb); // to get <<cos(phi_b)>>
-
+	//needed for correcting non-uniform acceptance: 
+	fHistProQaQbReImNorm->Fill(1.,dQYa,dMa); // to get <<sin(phi_a)>>
+	fHistProQaQbReImNorm->Fill(2.,dQXa,dMa); // to get <<cos(phi_a)>>
+	fHistProQaQbReImNorm->Fill(3.,dQYb,dMb); // to get <<sin(phi_b)>>
+	fHistProQaQbReImNorm->Fill(4.,dQXb,dMb); // to get <<cos(phi_b)>>
+	
 	//fill some SP control histograms
 	fHistQaQbNorm ->Fill(vQa*vQb);
 	fHistQaNorm ->Fill(vQa.Mod());
@@ -452,7 +453,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	AliFlowTrackSimple*   pTrack = NULL; 
 	Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
 	Double_t dMq =  vQ.GetMult();
-      
+	
 	for (Int_t i=0;i<iNumberOfTracks;i++) 
 	  {
 	    pTrack = anEvent->GetTrack(i) ; 
@@ -480,7 +481,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 	      Double_t dUY = TMath::Sin(2*dPhi);
 	      vU.Set(dUX,dUY);
 	      Double_t dModulus = vU.Mod();
-	      if (dModulus!=0.) vU.Set(dUX/dModulus,dUY/dModulus);  // make length 1
+	      if (dModulus > 0.) vU.Set(dUX/dModulus,dUY/dModulus);  // make length 1
 	      else cerr<<"dModulus is zero!"<<endl;
 	    
 	      //redefine the Q vector and devide by its multiplicity
@@ -497,6 +498,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 		Double_t dUQ = (vU * vQm);
 		Double_t dPt = pTrack->Pt();
 		Double_t dEta = pTrack->Eta();
+		
 		//fill the profile histograms
 		if (pTrack->InRPSelection()) {
 		  fHistProUQetaRP -> Fill(dEta,dUQ,(dMq-1)); //Fill (Qu/(Mq-1)) with weight (Mq-1) 
@@ -546,6 +548,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 		Double_t dUQ = (vU * vQm);
 		Double_t dPt = pTrack->Pt();
 		Double_t dEta = pTrack->Eta();
+		
 		//fill the profile histograms
 		if (pTrack->InRPSelection()) {
 		  fHistProUQetaRP -> Fill(dEta,dUQ,dMq);                   //Fill (Qu/Mq) with weight Mq 
@@ -633,27 +636,25 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
     TH1D* pHistSumOfWeightsPtRP[3] = {NULL};                    
     TH1D* pHistSumOfWeightsEtaRP[3] = {NULL};                    
     TH1D* pHistSumOfWeightsPtPOI[3] = {NULL};                    
-    TH1D* pHistSumOfWeightsEtaPOI[3] = {NULL};                    
-    for(Int_t i=0;i<3;i++)
-    {
-     pHistSumOfWeightsPtRP[i]   = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sPtRP_SP",weightFlag[i].Data())));
-     pHistSumOfWeightsEtaRP[i]  = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sEtaRP_SP",weightFlag[i].Data())));
-     pHistSumOfWeightsPtPOI[i]  = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sPtPOI_SP",weightFlag[i].Data())));
-     pHistSumOfWeightsEtaPOI[i] = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sEtaPOI_SP",weightFlag[i].Data())));
-    }     
+    TH1D* pHistSumOfWeightsEtaPOI[3] = {NULL}; 
+    
+    for(Int_t i=0;i<3;i++) {
+      pHistSumOfWeightsPtRP[i]   = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sPtRP_SP",weightFlag[i].Data())));
+      pHistSumOfWeightsEtaRP[i]  = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sEtaRP_SP",weightFlag[i].Data())));
+      pHistSumOfWeightsPtPOI[i]  = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sPtPOI_SP",weightFlag[i].Data())));
+      pHistSumOfWeightsEtaPOI[i] = dynamic_cast<TH1D*>(outputListHistos->FindObject(Form("Flow_SumOfWeights%sEtaPOI_SP",weightFlag[i].Data())));
+    }   
+    
     TString rpPoi[2] = {"RP","POI"};
     TString ptEta[2] = {"Pt","Eta"};
     TString sinCos[2] = {"sin","cos"};
     TProfile *pHistProNonIsotropicTermsU[2][2][2] = {{{NULL}}};
-    for(Int_t rp=0;rp<2;rp++)
-    {
-     for(Int_t pe=0;pe<2;pe++)
-     {
-      for(Int_t sc=0;sc<2;sc++)
-      {      
-       pHistProNonIsotropicTermsU[rp][pe][sc] = dynamic_cast<TProfile*>(outputListHistos->FindObject(Form("Flow_NonIsotropicTerms_%s_%s_%s_SP",rpPoi[rp].Data(),ptEta[pe].Data(),sinCos[sc].Data())));   
-      } 
-     }
+    for(Int_t rp=0;rp<2;rp++) {
+      for(Int_t pe=0;pe<2;pe++)	{
+	for(Int_t sc=0;sc<2;sc++) {      
+	  pHistProNonIsotropicTermsU[rp][pe][sc] = dynamic_cast<TProfile*>(outputListHistos->FindObject(Form("Flow_NonIsotropicTerms_%s_%s_%s_SP",rpPoi[rp].Data(),ptEta[pe].Data(),sinCos[sc].Data())));   
+	} 
+      }
     }   
  
     TH1D*     pHistQaQb     = dynamic_cast<TH1D*>(outputListHistos->FindObject("Flow_QaQb_SP"));
@@ -668,7 +669,7 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
 
     //pass the pointers to the task
     if (pCommonHist && pCommonHistResults && pHistProQaQb && pHistProQaQbNorm &&
-            pHistProQaQbReImNorm && pHistProNonIsotropicTermsQ &&
+	pHistProQaQbReImNorm && pHistProNonIsotropicTermsQ &&
 	pHistSumOfLinearWeights && pHistSumOfQuadraticWeights && 
 	pHistQaQb && pHistQaQbNorm && pHistQaQbCos && pHistResolution &&
 	pHistQaNorm && pHistQaNormvsMa && pHistQbNorm && pHistQbNormvsMb && 
@@ -710,15 +711,14 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
 	if(pHistSumOfWeightsPtPOI[i]) this -> SetHistSumOfWeightsPtPOI(pHistSumOfWeightsPtPOI[i],i);      
 	if(pHistSumOfWeightsEtaPOI[i]) this -> SetHistSumOfWeightsEtaPOI(pHistSumOfWeightsEtaPOI[i],i);      
       } 
-      for(Int_t rp=0;rp<2;rp++)
-      {
-       for(Int_t pe=0;pe<2;pe++)
-       {
-        for(Int_t sc=0;sc<2;sc++)
-        {
-         if(pHistProNonIsotropicTermsU[rp][pe][sc]) this->SetHistProNonIsotropicTermsU(pHistProNonIsotropicTermsU[rp][pe][sc],rp,pe,sc);
-        }
-       }
+      for(Int_t rp=0;rp<2;rp++)  {
+	for(Int_t pe=0;pe<2;pe++) {
+	  for(Int_t sc=0;sc<2;sc++) {
+	    if(pHistProNonIsotropicTermsU[rp][pe][sc]) {
+	      this->SetHistProNonIsotropicTermsU(pHistProNonIsotropicTermsU[rp][pe][sc],rp,pe,sc);
+	    }
+	  }
+	}
       }        
 
     } else {
@@ -758,6 +758,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   //----------------------------------
   //weighted average over (QaQb/MaMb) with weight (MaMb)
   Double_t dQaQb  = fHistProQaQbNorm->GetBinContent(1);
+  Double_t dSpreadQaQb = fHistProQaQbNorm->GetBinError(1);
+  Double_t dEntriesQaQb = fHistProQaQbNorm->GetEntries();
+  
   //non-isotropic terms:  
   Double_t dImQa = fHistProQaQbReImNorm->GetBinContent(1);
   Double_t dReQa = fHistProQaQbReImNorm->GetBinContent(2);
@@ -769,6 +772,11 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
    dQaQb = dQaQb - dImQa*dImQb - dReQa*dReQb; 
   }
   
+  if (dEntriesQaQb > 0.) {
+    cout<<"QaQb = "<<dQaQb<<" +- "<<(dSpreadQaQb/TMath::Sqrt(dEntriesQaQb))<<endl;
+    cout<<endl;
+  }
+
   Double_t dV = -999.; 
   if(dQaQb>=0.)
   {
@@ -778,7 +786,6 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   //  statistical error = term1 * spread * term2:
   //  term1 = sqrt{sum_{i=1}^{N} w^2}/(sum_{i=1}^{N} w)
   //  term2 = 1/sqrt(1-term1^2) 
-  Double_t dSpreadQaQb = fHistProQaQbNorm->GetBinError(1);
   Double_t dSumOfLinearWeights = fHistSumOfLinearWeights->GetBinContent(1);
   Double_t dSumOfQuadraticWeights = fHistSumOfQuadraticWeights->GetBinContent(1);
   Double_t dTerm1 = 0.;
@@ -796,18 +803,17 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     dVerr = (1./(2.*pow(dQaQb,0.5)))*dStatErrorQaQb;
   } 
   fCommonHistsRes->FillIntegratedFlow(dV,dVerr);
-  cout<<"dV = "<<dV<<" +- "<<dVerr<<endl;
+  cout<<"v2(subevents) = "<<dV<<" +- "<<dVerr<<endl;
 	
   //Calculate differential flow and integrated flow (RP, POI)
   //---------------------------------------------------------
   //v as a function of eta for RP selection
   for(Int_t b=1;b<iNbinsEta+1;b++) {
     Double_t duQpro = fHistProUQetaRP->GetBinContent(b);
-    if(fApplyCorrectionForNUA)
-    {
-     duQpro = duQpro 
-            - fHistProNonIsotropicTermsU[0][1][1]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(2)
-            - fHistProNonIsotropicTermsU[0][1][0]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(1);  
+    if(fApplyCorrectionForNUA) {
+      duQpro = duQpro 
+	- fHistProNonIsotropicTermsU[0][1][1]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(2)
+	- fHistProNonIsotropicTermsU[0][1][0]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(1);  
     }
     Double_t dv2pro = -999.;
     if (dV!=0.) { dv2pro = duQpro/dV; }
@@ -821,11 +827,10 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   //v as a function of eta for POI selection
   for(Int_t b=1;b<iNbinsEta+1;b++) {
     Double_t duQpro = fHistProUQetaPOI->GetBinContent(b);
-    if(fApplyCorrectionForNUA)
-    {
-     duQpro = duQpro 
-            - fHistProNonIsotropicTermsU[1][1][1]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(2)
-            - fHistProNonIsotropicTermsU[1][1][0]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(1); 
+    if(fApplyCorrectionForNUA)  {
+      duQpro = duQpro 
+	- fHistProNonIsotropicTermsU[1][1][1]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(2)
+	- fHistProNonIsotropicTermsU[1][1][0]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(1); 
     }    
     Double_t dv2pro = -999.;
     if (dV!=0.) { dv2pro = duQpro/dV; }
@@ -845,11 +850,10 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   
   for(Int_t b=1;b<iNbinsPt+1;b++) {
     Double_t duQpro = fHistProUQPtRP->GetBinContent(b);
-    if(fApplyCorrectionForNUA)
-    {
-     duQpro = duQpro 
-            - fHistProNonIsotropicTermsU[0][0][1]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(2)
-            - fHistProNonIsotropicTermsU[0][0][0]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(1);  
+    if(fApplyCorrectionForNUA) {
+      duQpro = duQpro 
+	- fHistProNonIsotropicTermsU[0][0][1]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(2)
+	- fHistProNonIsotropicTermsU[0][0][0]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(1);  
     }
     Double_t dv2pro = -999.;
     if (dV!=0.) { dv2pro = duQpro/dV; }
@@ -874,7 +878,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     dErrVRP = TMath::Sqrt(dErrVRP);
   }
   fCommonHistsRes->FillIntegratedFlowRP(dVRP,dErrVRP);
-  cout<<"dV(RP) = "<<dVRP<<" +- "<<dErrVRP<<endl;
+  cout<<"v2(RP) = "<<dVRP<<" +- "<<dErrVRP<<endl;
   
 
   //v as a function of Pt for POI selection 
@@ -885,11 +889,10 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   
   for(Int_t b=1;b<iNbinsPt+1;b++) {
     Double_t duQpro = fHistProUQPtPOI->GetBinContent(b);
-    if(fApplyCorrectionForNUA)
-    {
-     duQpro = duQpro 
-            - fHistProNonIsotropicTermsU[1][0][1]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(2)
-            - fHistProNonIsotropicTermsU[1][0][0]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(1);  
+    if(fApplyCorrectionForNUA)  {
+     duQpro = duQpro  
+       - fHistProNonIsotropicTermsU[1][0][1]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(2)
+       - fHistProNonIsotropicTermsU[1][0][0]->GetBinContent(b)*fHistProNonIsotropicTermsQ->GetBinContent(1);  
     }    
     Double_t dv2pro = -999.;
     if (dV!=0.) { dv2pro = duQpro/dV; }
@@ -908,13 +911,13 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     } else { cout<<"fHistPtPOI is NULL"<<endl; }
   } //loop over bins b
   
-  if (dSumPOI != 0.) {
+  if (dSumPOI > 0.) {
     dVPOI /= dSumPOI; //the pt distribution should be normalised
     dErrVPOI /= (dSumPOI*dSumPOI);
     dErrVPOI = TMath::Sqrt(dErrVPOI);
   }
   fCommonHistsRes->FillIntegratedFlowPOI(dVPOI,dErrVPOI);
-  cout<<"dV(POI) = "<<dVPOI<<" +- "<<dErrVPOI<<endl;
+  cout<<"v2(POI) = "<<dVPOI<<" +- "<<dErrVPOI<<endl;
 
   cout<<endl;
   cout<<"*************************************"<<endl;
