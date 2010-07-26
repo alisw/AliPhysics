@@ -574,8 +574,6 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
     {
       det = input.NextChamber(digitsManager,fTrackletContainer);
 
-      if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
-
       if (det >= 0)
 	{
 	  // get...
