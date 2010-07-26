@@ -71,6 +71,7 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kFALSE, Bool_t bUseE
   }
   task->SetUseMCInfo(bUseMCInfo);
   task->SetUseESDfriend(bUseESDfriend);
+  task->SelectCollisionCandidates();
 
   //
   // Add task to analysis manager
