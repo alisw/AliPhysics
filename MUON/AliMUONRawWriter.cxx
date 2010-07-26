@@ -63,6 +63,7 @@
 #include "AliMUONVTriggerStore.h"
 #include "AliCodeTimer.h"
 
+#include "AliMpCDB.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDDL.h"
 #include "AliMpRegionalTrigger.h"
@@ -113,6 +114,13 @@ AliMUONRawWriter::AliMUONRawWriter()
   fBlockHeader->SetDataKey(fBlockHeader->GetDefaultDataKey());
   fDspHeader->SetDataKey(fDspHeader->GetDefaultDataKey());
 
+  // Load mapping
+  if ( ! fDDLStore ) {
+    if ( ! AliMpCDB::LoadDDLStore() ) {
+      AliFatal("Could not access mapping from OCDB !");
+    }
+    fDDLStore = AliMpDDLStore::Instance();
+  }  
 }
 
 //__________________________________________________________________________
