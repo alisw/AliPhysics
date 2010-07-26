@@ -160,11 +160,13 @@ class AliITS : public AliDetector {
     TObjArray    *fITSmodules; //! Pointer to ITS modules
     Bool_t        fTiming;     // flag to turn on/off timers.
     AliITSSimuParam* fSimuParam; //simulation parameters
+    TClonesArray** fModA;      //! Used by Raw2SDigits (one TC per module)
+    TClonesArray* fpSDigits;   //! Branch address to build SD from raw data 
 
  private:
     AliITS(const AliITS &source); // copy constructor. Not to be used!
     AliITS& operator=(const AliITS &source); // = operator. Not to be used!
-    ClassDef(AliITS,8) // Base class for ITS
+    ClassDef(AliITS,9) // Base class for ITS
 
 };
 

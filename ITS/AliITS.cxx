@@ -112,7 +112,9 @@ fIdSens(0),
 fIdName(0),
 fITSmodules(0),
 fTiming(kFALSE),
-fSimuParam(0)
+fSimuParam(0),
+fModA(0),
+fpSDigits(0)
 {
   // Default initializer for ITS
   //      The default constructor of the AliITS class. In addition to
@@ -135,7 +137,9 @@ AliITS::AliITS(const Char_t *title):
   fIdName(0),
   fITSmodules(0),
   fTiming(kFALSE),
-  fSimuParam(0)
+  fSimuParam(0),
+  fModA(0),
+  fpSDigits(0)
 {
     //     The standard Constructor for the ITS class. 
     // It also zeros the variables
@@ -173,7 +177,9 @@ AliITS::AliITS(const char *name, const char *title):
   fIdName(0),
   fITSmodules(0),
   fTiming(kFALSE),
-  fSimuParam(0)
+  fSimuParam(0),
+  fModA(0),
+  fpSDigits(0)
 {
   //     The standard Constructor for the ITS class. 
   // It also zeros the variables
@@ -223,14 +229,28 @@ AliITS::~AliITS(){
 
     delete[] fIdName;  // Array of TStrings
     delete[] fIdSens;
-
+    Int_t size   = 0;
     if (fDetTypeSim){
+      size = GetITSgeom()->GetIndexMax();
       delete fDetTypeSim;
       fDetTypeSim = 0;
     }
     if(fSimuParam){
       delete fSimuParam;
       fSimuParam=0;
+    }
+    if(fModA){
+      if(size>0){
+	for(Int_t j=0; j<size; j++){
+	  fModA[j]->Delete();
+	  delete fModA[j];
+	}
+      }
+      delete []fModA;
+    }
+    if(fpSDigits){
+      fpSDigits->Delete();
+      delete fpSDigits;
     }
 }
 //______________________________________________________________________
@@ -1196,164 +1216,165 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
   //
   // Get TreeS
   //
-    Int_t last   = -1;
-    Int_t size   = GetITSgeom()->GetIndexMax();
-    TClonesArray** modA = new TClonesArray*[size];
-    for (Int_t mod = 0; mod < size; mod++) modA[mod] = new TClonesArray("AliITSpListItem", 10000);
-    
-    AliLoader* loader =  (AliRunLoader::Instance())->GetLoader("ITSLoader");
-    if (!loader){
-	Error("Open","Can not get ITS loader from Run Loader");
-	return kFALSE;
-    }
+  Int_t last   = -1;
+  Int_t size   = GetITSgeom()->GetIndexMax();
+  if(!fModA) {
+    fModA = new TClonesArray*[size];
+    for (Int_t mod = 0; mod < size; mod++) fModA[mod] = new TClonesArray("AliITSpListItem", 10000);
+  }
+  AliLoader* loader =  (AliRunLoader::Instance())->GetLoader("ITSLoader");
+  if (!loader){
+    Error("Open","Can not get ITS loader from Run Loader");
+    return kFALSE;
+  }
 
-    TTree* tree = 0;
+  TTree* tree = 0;
+  tree = loader->TreeS();
+  if (!tree){
+    loader->MakeTree("S");
     tree = loader->TreeS();
-    if (!tree){
-	loader->MakeTree("S");
-	tree = loader->TreeS();
-    }
-    //
-    // Array for SDigits
-    // 
-    TClonesArray aSDigits("AliITSpListItem",10000), *itsSDigits=&aSDigits;
-    Int_t bufsize = 32000;
-    tree->Branch("ITS", &itsSDigits, bufsize);
-    Int_t npx = 0;
-    //
-    // SPD
-    //
-    AliITSsegmentationSPD* segSPD = (AliITSsegmentationSPD*) fDetTypeSim->GetSegmentationModel(0);
-    if(!segSPD){
-      AliWarning("Set AliITS defaults");
-      SetDefaults();
-      segSPD = (AliITSsegmentationSPD*) fDetTypeSim->GetSegmentationModel(0);
-    }
-    npx = segSPD->Npx();
-    Double_t thr, sigma; 
+  }
+  //
+  // Array for SDigits
+  // 
+  if(!fpSDigits){
+    fpSDigits = new TClonesArray("AliITSpListItem",10000);
+  }
+  TClonesArray& aSDigits = *fpSDigits;
+  Int_t bufsize = 32000;
+  tree->Branch("ITS", &fpSDigits, bufsize);
+  Int_t npx = 0;
+  //
+  // SPD
+  //
+  AliITSsegmentationSPD* segSPD = (AliITSsegmentationSPD*) fDetTypeSim->GetSegmentationModel(0);
+  if(!segSPD){
+    AliWarning("Set AliITS defaults");
+    SetDefaults();
+    segSPD = (AliITSsegmentationSPD*) fDetTypeSim->GetSegmentationModel(0);
+  }
+  npx = segSPD->Npx();
+  Double_t thr, sigma; 
     
-    AliITSRawStreamSPD inputSPD(rawReader);
-    while(1){
-	Bool_t next  = inputSPD.Next();
-	if (!next) break;
+  AliITSRawStreamSPD inputSPD(rawReader);
+  while(1){
+    Bool_t next  = inputSPD.Next();
+    if (!next) break;
 
-	Int_t module = inputSPD.GetModuleID();
-	Int_t column = inputSPD.GetColumn();
-	Int_t row    = inputSPD.GetRow();
-	Int_t index  = npx * column + row;
+    Int_t module = inputSPD.GetModuleID();
+    Int_t column = inputSPD.GetColumn();
+    Int_t row    = inputSPD.GetRow();
+    Int_t index  = npx * column + row;
 
-	if (module >= size) continue;
+    if (module >= size) continue;
  
-	last = (modA[module])->GetEntries();
-	TClonesArray& dum = *modA[module];
-	fDetTypeSim->GetSimuParam()->SPDThresholds(module,thr,sigma);
-	thr += 1.;
-	new (dum[last]) AliITSpListItem(-1, -1, module, index, thr);
+    last = (fModA[module])->GetEntries();
+    TClonesArray& dum = *fModA[module];
+    fDetTypeSim->GetSimuParam()->SPDThresholds(module,thr,sigma);
+    thr += 1.;
+    new (dum[last]) AliITSpListItem(-1, -1, module, index, thr);
+  }
+  rawReader->Reset();
+
+  //
+  // SDD
+  // 
+  AliITSsegmentationSDD* segSDD = (AliITSsegmentationSDD*) fDetTypeSim->GetSegmentationModel(1);
+  npx = segSDD->Npx();
+  Int_t scalef=AliITSsimulationSDD::ScaleFourier(segSDD);
+  Int_t firstSDD=AliITSgeomTGeo::GetModuleIndex(3,1,1);
+  Int_t firstSSD=AliITSgeomTGeo::GetModuleIndex(5,1,1);
+
+  AliITSRawStream* inputSDD=AliITSRawStreamSDD::CreateRawStreamSDD(rawReader);
+  for(Int_t iMod=firstSDD; iMod<firstSSD; iMod++){
+    AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(iMod);
+    Bool_t isZeroSupp=cal->GetZeroSupp();
+    if(isZeroSupp){ 
+      for(Int_t iSid=0; iSid<2; iSid++) inputSDD->SetZeroSuppLowThreshold(iMod-firstSDD,iSid,cal->GetZSLowThreshold(iSid));
+    }else{
+      for(Int_t iSid=0; iSid<2; iSid++) inputSDD->SetZeroSuppLowThreshold(iMod-firstSDD,iSid,0);
     }
-    rawReader->Reset();
+  }
 
-    //
-    // SDD
-    // 
-    AliITSsegmentationSDD* segSDD = (AliITSsegmentationSDD*) fDetTypeSim->GetSegmentationModel(1);
-    npx = segSDD->Npx();
-    Int_t scalef=AliITSsimulationSDD::ScaleFourier(segSDD);
-    Int_t firstSDD=AliITSgeomTGeo::GetModuleIndex(3,1,1);
-    Int_t firstSSD=AliITSgeomTGeo::GetModuleIndex(5,1,1);
+  AliITSDDLModuleMapSDD* ddlmap=fDetTypeSim->GetDDLModuleMapSDD();
+  inputSDD->SetDDLModuleMap(ddlmap);
+  while(inputSDD->Next()){
+    if(inputSDD->IsCompletedModule()==kFALSE && 
+       inputSDD->IsCompletedDDL()==kFALSE){
 
-    AliITSRawStream* inputSDD=AliITSRawStreamSDD::CreateRawStreamSDD(rawReader);
-    for(Int_t iMod=firstSDD; iMod<firstSSD; iMod++){
-      AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(iMod);
-      Bool_t isZeroSupp=cal->GetZeroSupp();
-      if(isZeroSupp){ 
-	for(Int_t iSid=0; iSid<2; iSid++) inputSDD->SetZeroSuppLowThreshold(iMod-firstSDD,iSid,cal->GetZSLowThreshold(iSid));
-     }else{
-	for(Int_t iSid=0; iSid<2; iSid++) inputSDD->SetZeroSuppLowThreshold(iMod-firstSDD,iSid,0);
-      }
+      Int_t module = inputSDD->GetModuleID();
+      Int_t anode  = inputSDD->GetCoord1()+segSDD->NpzHalf()*inputSDD->GetChannel();
+      Int_t time   = inputSDD->GetCoord2();
+      Int_t signal10 = inputSDD->GetSignal();
+      Int_t index = AliITSpList::GetIndex(anode,time,scalef*npx);
+
+      if (module >= size) continue;
+      last = fModA[module]->GetEntries();
+      TClonesArray& dum = *fModA[module];
+      new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal10));
+      ((AliITSpListItem*) dum.At(last))->AddSignalAfterElect(module, index, Double_t(signal10));
     }
-
-    AliITSDDLModuleMapSDD* ddlmap=fDetTypeSim->GetDDLModuleMapSDD();
-    inputSDD->SetDDLModuleMap(ddlmap);
-    while(inputSDD->Next()){
-	if(inputSDD->IsCompletedModule()==kFALSE && 
-	   inputSDD->IsCompletedDDL()==kFALSE){
-
-	  Int_t module = inputSDD->GetModuleID();
-	  Int_t anode  = inputSDD->GetCoord1()+segSDD->NpzHalf()*inputSDD->GetChannel();
-	  Int_t time   = inputSDD->GetCoord2();
-	  Int_t signal10 = inputSDD->GetSignal();
-	  Int_t index = AliITSpList::GetIndex(anode,time,scalef*npx);
-
-	  if (module >= size) continue;
-	  last = modA[module]->GetEntries();
-	  TClonesArray& dum = *modA[module];
-	  new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal10));
-	  ((AliITSpListItem*) dum.At(last))->AddSignalAfterElect(module, index, Double_t(signal10));
-	}
-    }
-    delete inputSDD;
-    rawReader->Reset();
+  }
+  delete inputSDD;
+  rawReader->Reset();
     
-    //
-    // SSD
-    // 
-    AliITSsegmentationSSD* segSSD = (AliITSsegmentationSSD*) fDetTypeSim->GetSegmentationModel(2);
-    npx = segSSD->Npx();
-    AliITSRawStreamSSD inputSSD(rawReader);
-    while(1){
-	Bool_t next  = inputSSD.Next();
-	if (!next) break;
+  //
+  // SSD
+  // 
+  AliITSsegmentationSSD* segSSD = (AliITSsegmentationSSD*) fDetTypeSim->GetSegmentationModel(2);
+  npx = segSSD->Npx();
+  AliITSRawStreamSSD inputSSD(rawReader);
+  while(1){
+    Bool_t next  = inputSSD.Next();
+    if (!next) break;
 
-	Int_t module  = inputSSD.GetModuleID();
-	Int_t side    = inputSSD.GetSideFlag();
-	Int_t strip   = inputSSD.GetStrip();
-	Int_t signal  = inputSSD.GetSignal();
-	Int_t index  = npx * side + strip;
+    Int_t module  = inputSSD.GetModuleID();
+    Int_t side    = inputSSD.GetSideFlag();
+    Int_t strip   = inputSSD.GetStrip();
+    Int_t signal  = inputSSD.GetSignal();
+    Int_t index  = npx * side + strip;
 
-	if (module >= size) continue;
+    if (module >= size) continue;
 	
-	last = modA[module]->GetEntries();
-	TClonesArray& dum = *modA[module];
-	new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal));
-    }
-    rawReader->Reset();
-    AliITSpListItem* sdig = 0;
+    last = fModA[module]->GetEntries();
+    TClonesArray& dum = *fModA[module];
+    new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal));
+  }
+  rawReader->Reset();
+  AliITSpListItem* sdig = 0;
     
-    Int_t firstssd = GetITSgeom()->GetStartDet(kSSD);
-    Double_t adcToEv = 1.;
-    for (Int_t mod = 0; mod < size; mod++)
-      {
+  Int_t firstssd = GetITSgeom()->GetStartDet(kSSD);
+  Double_t adcToEv = 1.;
+  for (Int_t mod = 0; mod < size; mod++)
+    {
       if(mod>=firstssd) {
 	AliITSCalibrationSSD* calssd = (AliITSCalibrationSSD*)fDetTypeSim->GetCalibrationModel(mod);
 	adcToEv = 1./calssd->GetSSDDEvToADC(1.);
       }
-      Int_t nsdig =  modA[mod]->GetEntries();
+      Int_t nsdig =  fModA[mod]->GetEntries();
       for (Int_t ie = 0; ie < nsdig; ie++) {
-	sdig = (AliITSpListItem*) (modA[mod]->At(ie));
+	sdig = (AliITSpListItem*) (fModA[mod]->At(ie));
 	Int_t digsig = sdig->GetSignal();
 	if(mod>=firstssd) digsig*=adcToEv; // for SSD: convert back charge from ADC to electron
 	new (aSDigits[ie]) AliITSpListItem(-1, -1, mod, sdig->GetIndex(), digsig);
-	    Float_t sig = sdig->GetSignalAfterElect();
-	    if(mod>=firstssd) sig*=adcToEv;
-	    if (sig > 0.) {
-		sdig = (AliITSpListItem*)aSDigits[ie];
-		sdig->AddSignalAfterElect(mod, sdig->GetIndex(), Double_t(sig));
-	    }
+	Float_t sig = sdig->GetSignalAfterElect();
+	if(mod>=firstssd) sig*=adcToEv;
+	if (sig > 0.) {
+	  sdig = (AliITSpListItem*)aSDigits[ie];
+	  sdig->AddSignalAfterElect(mod, sdig->GetIndex(), Double_t(sig));
 	}
+      }
 	
-	tree->Fill();
-	aSDigits.Clear();
-	modA[mod]->Clear();
+      tree->Fill();
+      aSDigits.Clear();
+      fModA[mod]->Clear();
     }
-    loader->WriteSDigits("OVERWRITE");    
-    delete modA;
-    return kTRUE;
+  loader->WriteSDigits("OVERWRITE");    
+  return kTRUE;
 }
-
 
 //______________________________________________________________________
 void AliITS::UpdateInternalGeometry(){
-
   //reads new geometry from TGeo 
 //   AliDebug(1,"Delete ITSgeom and create a new one reading TGeo");
 
