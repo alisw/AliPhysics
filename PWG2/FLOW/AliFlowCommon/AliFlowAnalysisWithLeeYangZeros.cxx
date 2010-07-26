@@ -630,7 +630,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   Double_t  dJ01 = 2.405; 
   Int_t iNtheta = AliFlowLYZConstants::GetMaster()->GetNtheta();
   //set the event number
-  SetEventNumber((int)fCommonHists->GetHistMultOrig()->GetEntries());
+  SetEventNumber((int)fCommonHists->GetHistQ()->GetEntries());
   //cout<<"number of events processed is "<<fEventNumber<<endl; 
 
   //Get multiplicity for RP selection
