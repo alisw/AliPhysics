@@ -439,7 +439,7 @@ Bool_t AliTRDgtuSim::WriteTracksToLoader()
   if (!trackTree->GetBranch("TRDtrackGTU"))
     trackTree->Branch("TRDtrackGTU", "AliTRDtrackGTU", &trk, 32000);
   
-  AliDebug(1,Form("Found %d tracks", fTrackTree->GetEntries()));
+  AliDebug(1,Form("Found %lld tracks", fTrackTree->GetEntries()));
 
   for (Int_t iTrack = 0; iTrack < fTrackTree->GetEntries(); iTrack++) {
     fTrackTree->SetBranchAddress("TRDgtuTrack", &trk);
