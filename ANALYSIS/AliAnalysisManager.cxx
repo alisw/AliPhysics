@@ -67,6 +67,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fNSysInfo(0),
                     fMode(kLocalAnalysis),
                     fInitOK(kFALSE),
+                    fIsRemote(kFALSE),
                     fDebug(0),
                     fSpecialOutputLocation(""), 
                     fTasks(NULL),
@@ -108,6 +109,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fNSysInfo(0),
                     fMode(other.fMode),
                     fInitOK(other.fInitOK),
+                    fIsRemote(other.fIsRemote),
                     fDebug(other.fDebug),
                     fSpecialOutputLocation(""), 
                     fTasks(NULL),
@@ -151,6 +153,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fNSysInfo   = other.fNSysInfo;
       fMode       = other.fMode;
       fInitOK     = other.fInitOK;
+      fIsRemote   = other.fIsRemote;
       fDebug      = other.fDebug;
       fTasks      = new TObjArray(*other.fTasks);
       fTopTasks   = new TObjArray(*other.fTopTasks);
@@ -357,6 +360,7 @@ Bool_t AliAnalysisManager::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
    if (!fTree) return kFALSE;
+   if (fMode == kProofAnalysis) fIsRemote = kTRUE;
 
    TFile *curfile = fTree->GetCurrentFile();
    if (!curfile) {
@@ -761,7 +765,7 @@ void AliAnalysisManager::Terminate()
       itask++;   
       if (TObject::TestBit(kSaveCanvases)) {
          if (!gROOT->IsBatch()) {
-            if (fDebug>1) printf("Waiting 5 sec for %s::Terminate() to finish drawing ...", task->ClassName());
+            if (fDebug>1) printf("Waiting 5 sec for %s::Terminate() to finish drawing ...\n", task->ClassName());
             timer.Start();
             while (timer.CpuTime()<5) {
                timer.Continue();
@@ -1301,18 +1305,21 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
       return -1;
    }
    if (fDebug > 1) printf("StartAnalysis %s\n",GetName());
+   fIsRemote = kFALSE;
    TString anaType = type;
    anaType.ToLower();
    fMode = kLocalAnalysis;
    Bool_t runlocalinit = kTRUE;
    if (anaType.Contains("file")) {
       runlocalinit = kFALSE;
+      fIsRemote = kTRUE;
    }   
    if (anaType.Contains("proof"))     fMode = kProofAnalysis;
    else if (anaType.Contains("grid")) fMode = kGridAnalysis;
    else if (anaType.Contains("mix"))  fMode = kMixingAnalysis;
 
    if (fMode == kGridAnalysis) {
+      fIsRemote = kTRUE;
       if (!anaType.Contains("terminate")) {
          if (!fGridHandler) {
             Error("StartAnalysis", "Cannot start grid analysis without a grid handler.");
@@ -1409,6 +1416,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          retv = tree->Process(fSelector, "", nentries, firstentry);
          break;
       case kProofAnalysis:
+         fIsRemote = kTRUE;
          if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
             Error("StartAnalysis", "No PROOF!!! Exiting.");
             cdir->cd();
@@ -1466,6 +1474,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
       Error("StartAnalysis","Analysis manager was not initialized !");
       return -1;
    }
+   fIsRemote = kTRUE;
    if (fDebug > 1) printf("StartAnalysis %s\n",GetName());
    TString anaType = type;
    anaType.ToLower();
@@ -1667,7 +1676,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          lastTree = fTree;
       }   
       if (!ncalls) timer->Start();
-      ProgressBar("Processing event", ncalls, nentries, timer, kFALSE);
+      if (!fIsRemote) ProgressBar("Processing event", ncalls, nentries, timer, kFALSE);
    }
    gROOT->cd();
    TDirectory *cdir = gDirectory;

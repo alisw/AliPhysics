@@ -105,6 +105,7 @@ enum EAliAnalysisFlags {
    TObjArray          *GetTopTasks() const        {return fTopTasks;}
    TTree              *GetTree() const            {return fTree;}
    TObjArray          *GetZombieTasks() const     {return fZombies;}
+   Bool_t              IsRemote() const           {return fIsRemote;}
    Bool_t              IsUsingDataSet() const     {return TObject::TestBit(kUseDataSet);}
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
    void                SetCurrentEntry(Long64_t entry)            {fCurrentEntry = entry;}
@@ -169,6 +170,7 @@ private:
    Long64_t                fNSysInfo;            // Event frequency for collecting system information
    EAliAnalysisExecMode    fMode;                // Execution mode
    Bool_t                  fInitOK;              // Initialisation done
+   Bool_t                  fIsRemote;            //! Flag is set for remote analysis
    UInt_t                  fDebug;               // Debug level
    TString                 fSpecialOutputLocation; // URL/path where the special outputs will be copied
    TObjArray              *fTasks;               // List of analysis tasks
@@ -186,6 +188,6 @@ private:
 
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,7)  // Analysis manager class
+   ClassDef(AliAnalysisManager,8)  // Analysis manager class
 };   
 #endif
