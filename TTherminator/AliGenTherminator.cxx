@@ -474,6 +474,54 @@ void AliGenTherminator::SetLhyquidSet(const char *set)
     fFOHSlocation.Append(aroot);
     fFOHSlocation.Append("/TTherminator/data/LHC500C4050");
   }
+  else if (strstr(set, "LHC276TC0005")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, 2.76TeV, centrality 00-05 percent"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC276TC0005/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC276TC0005");
+  }
+  else if (strstr(set, "LHC276TC0510")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, 2.76TeV, centrality 05-10 percent"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC276TC0510/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC276TC0510");
+  }
+  else if (strstr(set, "LHC276TC1020")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, 2.76TeV, centrality 10-20 percent"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC276TC1020/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC276TC1020");
+  }
+  else if (strstr(set, "LHC276TC2030")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, 2.76TeV, centrality 20-30 percent"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC276TC2030/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC276TC2030");
+  }
+  else if (strstr(set, "LHC276TC3040")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, 2.76TeV, centrality 30-40 percent"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC276TC3040/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC276TC3040");
+  }
+  else if (strstr(set, "LHC276TC4050")) {
+    AliWarning(Form("AliGenTherminator: Selected default Lhyquid hypersurface"));
+    AliWarning(Form("  Pb-Pb collisions, 2.76TeV, centrality 40-50 percent"));
+    AliWarning(Form("  freeze-out criteria Tf=145 MeV"));
+    AliWarning(Form("  for details see $(ALICE_ROOT)/TTherminator/data/LHC276TC4050/FO.txt"));
+    fFOHSlocation.Append(aroot);
+    fFOHSlocation.Append("/TTherminator/data/LHC276TC4050");
+  }
   else {
     AliWarning(Form("Did not find Lhyquid set %s", set));
     AliWarning(Form("Reverting to default: current directory"));
