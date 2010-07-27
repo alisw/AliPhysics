@@ -40,8 +40,8 @@
 ///
 /// \author Diego Stocco, Subatech, Nantes
 
-void MUONTriggerChamberEfficiency(const Char_t* inputFile="./MUON.TriggerEfficiencyMap.root",
-				  const Char_t* outputCDB = "",
+void MUONTriggerChamberEfficiency(TString inputFile = "./MUON.TriggerEfficiencyMap.root",
+				  TString outputCDB = "",
 				  Int_t firstRun=0, Int_t lastRun = AliCDBRunRange::Infinity()
 )
 {
@@ -57,10 +57,9 @@ void MUONTriggerChamberEfficiency(const Char_t* inputFile="./MUON.TriggerEfficie
 
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
-  AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(inputFile);
-  TString outCDB(outputCDB);
+  AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(inputFile.Data());
 
-  if ( outCDB.IsNull() ){
+  if ( outputCDB.IsNull() ){
     // Draw the efficiency and exit
     AliCDBManager::Instance()->SetRun(firstRun);
     AliMUONTriggerChamberEfficiency* trigChEff = new AliMUONTriggerChamberEfficiency(effMap);
@@ -72,7 +71,7 @@ void MUONTriggerChamberEfficiency(const Char_t* inputFile="./MUON.TriggerEfficie
 
   // Write efficiency on OCDB
 
-  AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/TriggerEfficiency", outputCDB);
+  AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/TriggerEfficiency", outputCDB.Data());
   
   AliMUONCDB::WriteToCDB(effMap, "MUON/Calib/TriggerEfficiency", firstRun, lastRun, "Measured efficiencies");
 }
