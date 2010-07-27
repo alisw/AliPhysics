@@ -1445,7 +1445,7 @@ void AliTOFGeometry::DetToSectorRF(Int_t vol[5], Double_t **coord)
 
   for (Int_t jj=0; jj<4; jj++) padToSector.MasterToLocal(&cornerPad[jj][0], &coord[jj][0]);
 
-  delete cornerPad;
+  delete [] cornerPad;
 
   //sectorToPad.LocalToMaster(cornerPad, coord);
 

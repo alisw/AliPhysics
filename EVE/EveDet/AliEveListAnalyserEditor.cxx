@@ -771,7 +771,7 @@ void AliEveListAnalyserEditor::HandleMacroPathSet()
         fteField->SetText(pathname);
 
         AddMacro(name);  
-        if (name != 0)  delete name;
+        if (name != 0)  delete [] name;
         name = 0;
       }
       // Different path

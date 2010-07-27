@@ -303,8 +303,8 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
   }
   Log ("*********** End of DCS **********");
   
-  delete results;
-  delete nGraph;
+  delete [] results;
+  delete [] nGraph;
 
   return error;
 

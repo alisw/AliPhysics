@@ -964,7 +964,7 @@ void AliTPCCalibViewerGUItime::DoDumpRuns()
     if (run!=prevRun) std::cout << Form("%d",run) << std::endl;
     prevRun=run;
   }
-  delete sortIndex;
+  delete [] sortIndex;
 }
 //______________________________________________________________________________
 void AliTPCCalibViewerGUItime::DoParLimitChange()

@@ -884,7 +884,7 @@ void AliTPCcalibCosmic::BinLogX(THnSparse *const h, Int_t axisDim) {
    newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete [] newBins;
 
 }
 
@@ -907,7 +907,7 @@ void AliTPCcalibCosmic::BinLogX(TH1 *const h) {
    newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete [] newBins;
   
 }
 

@@ -778,7 +778,7 @@ void AliTPCcalibV0::BinLogX(TH2F *h) {
      new_bins[i] = factor * new_bins[i-1];
    }
    axis->Set(bins, new_bins);
-   delete new_bins;
+   delete [] new_bins;
    
 }
 

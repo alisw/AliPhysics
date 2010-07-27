@@ -1727,9 +1727,9 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
 
 
   if ( xVariable == 2 ) delete xVar;
-  delete x;
-  delete y;
-  delete sortIndex;
+  delete [] x;
+  delete [] y;
+  delete [] sortIndex;
   return gr;
 }
 //_____________________________________________________________________

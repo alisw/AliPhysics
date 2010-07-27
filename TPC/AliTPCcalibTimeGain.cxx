@@ -583,7 +583,7 @@ void AliTPCcalibTimeGain::BinLogX(THnSparse *h, Int_t axisDim) {
    newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete[] newBins;
   
 }
 
@@ -606,7 +606,7 @@ void AliTPCcalibTimeGain::BinLogX(TH1 *h) {
    newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete[] newBins;
   
 }
 

@@ -467,7 +467,7 @@ void AliGenUHKM::Generate()
   AddHeader(header);
   fCollisionGeometry = (AliGenHijingEventHeader*)  header;
 
-  delete idsOnStack;
+  delete [] idsOnStack;
 
 }
 

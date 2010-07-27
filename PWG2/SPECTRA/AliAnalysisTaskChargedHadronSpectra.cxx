@@ -686,7 +686,7 @@ void AliAnalysisTaskChargedHadronSpectra::BinLogX(const TH1 *h) {
    newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete [] newBins;
   
 }
 

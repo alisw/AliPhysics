@@ -231,7 +231,7 @@ AliITS::~AliITS(){
     delete[] fIdSens;
     Int_t size   = 0;
     if (fDetTypeSim){
-      size = GetITSgeom()->GetIndexMax();
+      if (GetITSgeom()) size = GetITSgeom()->GetIndexMax();
       delete fDetTypeSim;
       fDetTypeSim = 0;
     }

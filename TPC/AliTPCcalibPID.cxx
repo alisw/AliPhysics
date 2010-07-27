@@ -499,7 +499,7 @@ void AliTPCcalibPID::BinLogX(THnSparse *h, Int_t axisDim) {
    newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete [] newBins;
   
 }
 

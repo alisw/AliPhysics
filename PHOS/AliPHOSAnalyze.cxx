@@ -636,7 +636,7 @@ void AliPHOSAnalyze::Ls(){
   mfile->Write();
   mfile->Close();
   delete mfile ;
-  delete nRecParticles;
+  delete [] nRecParticles;
 
 }
 

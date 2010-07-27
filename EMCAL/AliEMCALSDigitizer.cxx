@@ -465,7 +465,7 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
 	printf("%s",tempo); 
       }  	 
     }
-    delete tempo ;
+    delete [] tempo ;
     printf("\n** Sum %2.3f : %10.3f GeV/c **\n ", isum, Calibrate(isum));
   } else printf("\n");
 }

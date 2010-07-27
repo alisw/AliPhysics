@@ -96,7 +96,7 @@ AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Dou
     id[0]=(UShort_t) t1->GetID();
     id[1]=(UShort_t) t2->GetID();
     vertexESD = (AliESDVertex*)vertexer->VertexForSelectedTracks(trkArray,id);
-    delete id;
+    delete [] id;
     delete vertexer; vertexer=NULL;
     
     if(!vertexESD) return vertexAOD;

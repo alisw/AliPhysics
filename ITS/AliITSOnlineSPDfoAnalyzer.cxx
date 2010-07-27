@@ -441,7 +441,7 @@ Bool_t AliITSOnlineSPDfoAnalyzer::IsExisting(TArrayI dacs,Int_t hs, Int_t chip) 
   for(Int_t i=0; i<size; i++) entry[i] = dacs.At(i);
   Int_t checkbin = fNh[dacs.At(dacs.GetSize()-1)][hs][chip]->GetBin(entry,kFALSE); // kFALSE does not allocate another bin
   if(checkbin > -1) isOk = kTRUE;
-  delete entry;
+  delete [] entry;
   return isOk; 
 }
 //-----------------------------------------------------------
@@ -490,10 +490,10 @@ TArrayI AliITSOnlineSPDfoAnalyzer::GetCentralDACS(Int_t qualityflag, Int_t hs, I
   dacs.AddAt(qualityflag,fNdims);
   
   
-  delete mean;
-  delete goodbins;
-  delete bins;
-  delete val;
+  delete [] mean;
+  delete [] goodbins;
+  delete [] bins;
+  delete [] val;
   return dacs;
 }
 //-------------------------------------------------------

@@ -385,8 +385,8 @@ void AliTMinuitToolkit::Fit() {
    if (fMaxCalls != 500 || fPrecision != 1) minuit->ExecuteCommand(fFitAlgorithm, argList, 2);
    fUseRobust = true;
    
-   delete sortList; 
-   delete indexList;    
+   delete [] sortList; 
+   delete [] indexList;    
   }
   
   // fill parameter vector

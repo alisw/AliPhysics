@@ -1626,8 +1626,8 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *c
 
   signalIn->~Double_t();
   signalOut->~Double_t();
-  delete signalIn;
-  delete signalOut;
+  delete [] signalIn;
+  delete [] signalOut;
 
   return pulseTuple;
 

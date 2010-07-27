@@ -302,7 +302,7 @@ Bool_t AliTOFLvHvDataPoints::MergeMaps() {
 
   }
 
-  delete controller;
+  delete [] controller;
 
   for (Int_t ii=0; ii<fNumberOfHVandLVmaps; ii++)
     AliDebug(1,Form(" fMap[%d]->GetTime() = %d ",ii,fMap[ii]->GetTime()));

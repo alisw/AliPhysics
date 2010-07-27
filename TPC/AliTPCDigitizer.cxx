@@ -535,6 +535,6 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
     
   delete digrow;     
   for (Int_t i1=0;i1<nInputs; i1++) delete digarr[i1];
-  delete []masks;
-  delete digarr;  
+  delete [] masks;
+  delete [] digarr;  
 }

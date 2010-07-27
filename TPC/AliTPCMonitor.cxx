@@ -1874,7 +1874,7 @@ void AliTPCMonitor::ExecTransform()
   htransmag->Draw();
   ctrans2->Update();
   delete four;
-  delete data;
+  delete [] data;
 }
 
 //__________________________________________________________________

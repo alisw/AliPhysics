@@ -860,7 +860,7 @@ Bool_t AliHMPIDReconHTA::UniformDistrib()
      chi2+= (iPhiBin[i] - theo)*(iPhiBin[i] - theo)/theo;
    }
    
-    delete iPhiBin;
+    delete [] iPhiBin;
     
     Double_t prob = TMath::Prob(chi2, nPhiBins-1);
     AliDebug(1,Form(" Probability for uniform distrib: %6f.3 %s",prob,(prob<0.05) ? "rejected" : "accepted"));

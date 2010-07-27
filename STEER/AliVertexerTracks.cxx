@@ -212,7 +212,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
   FindPrimaryVertex(&trkArrayOrig,idOrig);
 
   if(fMode==0) trkArrayOrig.Delete();
-  delete idOrig; idOrig=NULL;
+  delete[] idOrig; idOrig=NULL;
 
   if(f) {
     f->Close(); delete f; f = NULL;
@@ -265,7 +265,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const TObjArray *trkArrayOrig
     // fill fTrkArraySel, for VertexFinder()
     fIdSel = new UShort_t[nTrksOrig];
     PrepareTracks(*trkArrayOrig,idOrig,0);
-    if(fIdSel) { delete fIdSel; fIdSel=NULL; }
+    if(fIdSel) { delete[] fIdSel; fIdSel=NULL; }
     Double_t cutsave = fDCAcut;  
     fDCAcut = fDCAcutIter0;
     // vertex finder
@@ -832,7 +832,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
     }
   }
   outVtx->SetIndices(nIndices,outindices);
-  if (outindices) delete outindices;
+  if (outindices) delete [] outindices;
 
   /*
     printf("Vertex before removing tracks:");
@@ -1203,8 +1203,8 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(AliStrLine **lines, const I
   }
   AliESDVertex theVert(initPos,covmatrix,99999.,knacc);
   theVert.SetDispersion(sigma);
-  delete vectP0;
-  delete vectP1;
+  delete [] vectP0;
+  delete [] vectP1;
   return theVert;
 }
 
@@ -1706,7 +1706,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(const TObjArray *trkArr
   }
 
   // clean up
-  if (indices) {delete indices; indices=NULL;}
+  if (indices) {delete [] indices; indices=NULL;}
   delete fIdSel; fIdSel=NULL;
   fTrkArraySel.Delete();
   
@@ -1734,7 +1734,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedESDTracks(TObjArray *trkArray,
     
   VertexForSelectedTracks(trkArray,id,optUseFitter,optPropagate,optUseDiamondConstraint);
 
-  delete id; id=NULL;
+  delete [] id; id=NULL;
 
   return fCurrentVertex;
 }

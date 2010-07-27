@@ -116,7 +116,7 @@ void AliITSBeamTestDigSSD::Exec(Option_t* /*opt*/) {
   }
   
   delete [] newdigits;
-  delete idig;
+  delete [] idig;
 }
 
   

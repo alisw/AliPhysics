@@ -383,7 +383,7 @@ void AliTPCcalibBase::BinLogX(THnSparse *h, Int_t axisDim) {
    new_bins[i] = factor * new_bins[i-1];
   }
   axis->Set(bins, new_bins);
-  delete new_bins;
+  delete [] new_bins;
 
 }
 void AliTPCcalibBase::BinLogX(TH1 *h) {
@@ -404,6 +404,6 @@ void AliTPCcalibBase::BinLogX(TH1 *h) {
    new_bins[i] = factor * new_bins[i-1];
   }
   axis->Set(bins, new_bins);
-  delete new_bins;
+  delete [] new_bins;
 
 }

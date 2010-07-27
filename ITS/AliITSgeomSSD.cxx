@@ -289,8 +289,8 @@ AliITSgeomSSD175::AliITSgeomSSD175() : AliITSgeomSSD(){
     leC[kNstrips] = -kDxyz[0];
     AliITSgeomSSD::ResetSSD(kDxyz,kangle,-kangle,
 				 kNstrips+1,leA,kNstrips+1,leC);
-    delete leA;
-    delete leC;
+    delete [] leA;
+    delete [] leC;
 }
 //________________________________________________________________________
 ostream &operator<<(ostream &os,AliITSgeomSSD175 &p){
@@ -444,8 +444,8 @@ AliITSgeomSSD75and275::AliITSgeomSSD75and275(Int_t npar,Float_t *par) :
     leC[kNstrips] = -kDxyz[0];
     AliITSgeomSSD::ResetSSD(par,kangleA,kangleC,
 				 kNstrips+1,leA,kNstrips+1,leC);
-    delete leA;
-    delete leC;
+    delete [] leA;
+    delete [] leC;
 }
 //________________________________________________________________________
 ostream &operator<<(ostream &os,AliITSgeomSSD75and275 &p){
