@@ -13,8 +13,9 @@
 // This procedure fails if there is a phi bin with no entries. In order to //
 // avoid this one can attempt to rebin original histogram and make binning //
 // in phi coarser:                                                         //
-Bool_t rebinOriginalPhiHistogram = kFALSE;
-Int_t nMerge = 18; // indicates how many original bins will be merged into one new bin 
+Bool_t rebinOriginalPhiHistogram = kTRUE;
+Int_t nMerge = 4; // indicates how many original bins will be merged into one new bin 
+
 //========================= pt-weights =========================
 // You can make pt-weights in three different ways:
 // 1.) pt-weights are growing linearly as a function of pt for 
@@ -40,7 +41,7 @@ Bool_t useQuadraticPtWeights = kFALSE;
 enum libModes {mLocal,mLocalSource};
 
 //void makeWeights(TString type="", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocalSource)
-void makeWeights(TString type="ESD", TString method="", TString cumulantOrder="", Int_t mode=mLocal)
+void makeWeights(TString type="ESD", TString method="SP", TString cumulantOrder="", Int_t mode=mLocal)
 { 
  // 1. type: "ESD", "AOD", "ESDMCkineESD", "ESDMCkineMC", for Monte Carlo and 'on the fly' use simply "", ;
  // 2. method: MCEP, LYZ1, LYZ2, LYZEP, SP, FQD, GFC or QC; 
@@ -138,9 +139,9 @@ void makeWeights(TString type="ESD", TString method="", TString cumulantOrder=""
  phiWeights->SetYTitle("w_{#phi}");
  phiWeights->SetXTitle("#phi"); 
  if(rebinOriginalPhiHistogram)
- {
-  phiWeights->Rebin(nMerge);
- } 
+   {
+     phiWeights->Rebin(nMerge);
+   } 
  Int_t nBinsPhi = 0; // number of phi bins
  Int_t counterOfEmptyBinsPhi = 0; // number of empty phi bins
  Double_t nParticlesInBin = 0.; // number of particles in particular phi bin
@@ -181,6 +182,11 @@ if (method=="SP"){
   phiWeightsSub0->SetTitle("#phi-weights for subevent 0");
   phiWeightsSub0->SetYTitle("w_{#phi}");
   phiWeightsSub0->SetXTitle("#phi"); 
+  if(rebinOriginalPhiHistogram) 
+    {
+      phiWeightsSub0->Rebin(nMerge);
+    } 
+
   Int_t nBinsPhiSub0 = 0; // number of phi bins
   Int_t counterOfEmptyBinsPhiSub0 = 0; // number of empty phi bins
   Double_t nParticlesInBinSub0 = 0.; // number of particles in this phi bin
@@ -191,7 +197,12 @@ if (method=="SP"){
     GetHistPhiSub1()->Clone("phi_weights_sub1"); 
   phiWeightsSub1->SetTitle("#phi-weights for subevent 0");
   phiWeightsSub1->SetYTitle("w_{#phi}");
-  phiWeightsSub1->SetXTitle("#phi"); 
+  phiWeightsSub1->SetXTitle("#phi");
+  if(rebinOriginalPhiHistogram) 
+    {
+      phiWeightsSub1->Rebin(nMerge);
+    } 
+ 
   Int_t nBinsPhiSub1 = 0; // number of phi bins
   Int_t counterOfEmptyBinsPhiSub1 = 0; // number of empty phi bins
   Double_t nParticlesInBinSub1 = 0.; // number of particles in this phi bin
@@ -211,6 +222,7 @@ if (method=="SP"){
       counterOfEmptyBinsPhiSub0++;
     }
     phiWeightsSub0->SetBinContent(b,wPhiSub0);
+    phiWeightsSub0->SetBinError(b,0.);
   }
   if(!counterOfEmptyBinsPhiSub0) {
     weightsList->Add(phiWeightsSub0);
@@ -232,6 +244,7 @@ if (method=="SP"){
       counterOfEmptyBinsPhiSub1++;
     }
     phiWeightsSub1->SetBinContent(b,wPhiSub1);
+    phiWeightsSub1->SetBinError(b,0.);
   }
   if(!counterOfEmptyBinsPhiSub1) {
     weightsList->Add(phiWeightsSub1);
