@@ -126,7 +126,8 @@ void rec_hlt_offline_vertexer(const char *filename,
   //  - chains=Offline-Vertexer : chains to be run
   rec.SetOption("HLT",
 		"ignore-hltout " 
-		"libAliHLTUtil.so libAliHLTGlobal.so "
+		"libAliHLTUtil.so libAliHLTTPC.so "
+		"libAliHLTITS.so libAliHLTGlobal.so "
 		"loglevel=0x79 "
 		"chains=Offline-Writer,Global-Writer "
 		);
