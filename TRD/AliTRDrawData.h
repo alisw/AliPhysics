@@ -24,6 +24,7 @@ class AliTRDgeometry;
 class AliTRDfeeParam;
 class AliTRDarrayADC;
 class AliTRDdigitsParam;
+class AliTRDmcmSim;
 
 class AliTRDrawData : public TObject {
 
@@ -67,6 +68,7 @@ class AliTRDrawData : public TObject {
   Int_t   fSMindexPos;                // Position of SM index word
   Int_t   fStackindexPos;             // Position of SM index word
   UInt_t  fEventCounter;              // Event counter(starting from 1)
+  AliTRDmcmSim      *fMcmSim;         //! MCM simulation for raw data output
   AliTRDdigitsParam *fDigitsParam;    // Digits parameter
 
   ClassDef(AliTRDrawData,7)             //  TRD raw data class

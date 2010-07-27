@@ -82,6 +82,7 @@ AliTRDdigitizer::AliTRDdigitizer()
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fMcmSim(new AliTRDmcmSim)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -103,6 +104,7 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fMcmSim(new AliTRDmcmSim)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -125,6 +127,7 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fMcmSim(new AliTRDmcmSim)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -146,6 +149,7 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager)
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fMcmSim(new AliTRDmcmSim)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -167,6 +171,7 @@ AliTRDdigitizer::AliTRDdigitizer(const AliTRDdigitizer &d)
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fMcmSim(new AliTRDmcmSim)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(d.fCompress)
@@ -205,6 +210,11 @@ AliTRDdigitizer::~AliTRDdigitizer()
   if (fMasks) {
     delete [] fMasks;
     fMasks       = 0;
+  }
+
+  if (fMcmSim) {
+    delete fMcmSim;
+    fMcmSim = 0;
   }
 
   if (fGeo) {
@@ -1926,9 +1936,6 @@ void AliTRDdigitizer::RunDigitalProcessing(Int_t det)
 
   AliTRDfeeParam *feeParam = AliTRDfeeParam::Instance();
 
-  //Create and initialize the mcm object 
-  AliTRDmcmSim* mcmfast = new AliTRDmcmSim(); 
-
   AliTRDarrayADC *digits = fDigitsManager->GetDigits(det);
   if (!digits)
     return;
@@ -1938,19 +1945,16 @@ void AliTRDdigitizer::RunDigitalProcessing(Int_t det)
   {
     for(Int_t mcm = 0; mcm < 16; mcm++)
     {
-      mcmfast->Init(det, rob, mcm); 
-      mcmfast->SetDataByPad(digits, fDigitsManager);
-      mcmfast->Filter();
+      fMcmSim->Init(det, rob, mcm); 
+      fMcmSim->SetDataByPad(digits, fDigitsManager);
+      fMcmSim->Filter();
       if (feeParam->GetTracklet()) {
-        mcmfast->Tracklet();
-        mcmfast->StoreTracklets();
+        fMcmSim->Tracklet();
+        fMcmSim->StoreTracklets();
       }
-      mcmfast->ZSMapping();
-      mcmfast->WriteData(digits);
+      fMcmSim->ZSMapping();
+      fMcmSim->WriteData(digits);
     }
   }
-
-  delete mcmfast;
-
 }
 

@@ -24,6 +24,7 @@ class AliTRDdigitsManager;
 class AliTRDgeometry;
 class AliTRDarraySignal;
 class AliTRDarrayADC;
+class AliTRDmcmSim;
 
 class AliTRDdigitizer : public AliDigitizer {
 
@@ -92,6 +93,8 @@ class AliTRDdigitizer : public AliDigitizer {
   TList               *fSDigitsManagerList; //! List of managers of input s-digits
   AliTRD              *fTRD;                //! TRD detector class
   AliTRDgeometry      *fGeo;                //! TRD geometry
+
+  AliTRDmcmSim        *fMcmSim;             //! MCM simulation for digital processing
 
           Int_t        fEvent;              //! Event number
           Int_t       *fMasks;              //! Masks for the merging

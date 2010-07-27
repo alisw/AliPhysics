@@ -61,6 +61,7 @@ AliTRDrawData::AliTRDrawData()
   ,fSMindexPos(0)
   ,fStackindexPos(0)
   ,fEventCounter(0)
+  ,fMcmSim(new AliTRDmcmSim)
   ,fDigitsParam(NULL)
 {
   //
@@ -84,6 +85,7 @@ AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   ,fSMindexPos(0)
   ,fStackindexPos(0)
   ,fEventCounter(0)
+  ,fMcmSim(new AliTRDmcmSim)
   ,fDigitsParam(NULL)
 {
   //
@@ -106,6 +108,8 @@ AliTRDrawData::~AliTRDrawData()
     delete fTrackletContainer;
     fTrackletContainer = NULL;
   }
+
+  delete fMcmSim;
 
 }
 
@@ -433,8 +437,6 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 
   	AliDebug(1,Form("Producing raw data for sect=%d layer=%d stack=%d side=%d",sect,layer,stack,side));
         
-  	AliTRDmcmSim* mcm = new AliTRDmcmSim();
-
 	UInt_t *tempBuffer = buf; // tempBuffer used to write ADC data
 	                          // different in case of tracklet writing
 	
@@ -456,11 +458,11 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 	    for (Int_t iMcmRB = 0; iMcmRB < fGeo->MCMmax(); iMcmRB++ ) {
 	      Int_t iMcm = 16 - 4*(iMcmRB/4 + 1) + (iMcmRB%4);
 	      
-	      mcm->Init(det, iRob, iMcm);
-	      mcm->SetData(digits);     // no filtering done here (already done in digitizer)
+	      fMcmSim->Init(det, iRob, iMcm);
+	      fMcmSim->SetData(digits);     // no filtering done here (already done in digitizer)
 	      if (trackletOn) {
-		mcm->Tracklet();
-		Int_t tempNw = mcm->ProduceTrackletStream(&buf[nw], maxSize - nw);
+		fMcmSim->Tracklet();
+		Int_t tempNw = fMcmSim->ProduceTrackletStream(&buf[nw], maxSize - nw);
 		if(  tempNw < 0 ) {
 		  of += tempNw;
 		  nw += maxSize - nw;
@@ -469,10 +471,10 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 		  nw += tempNw;
 		}
 	      }
-	      mcm->ZSMapping();  // Calculate zero suppression mapping
+	      fMcmSim->ZSMapping();  // Calculate zero suppression mapping
 	      // at the moment it has to be rerun here
 	      // Write MCM data to temp. buffer
-	      Int_t tempNw = mcm->ProduceRawStream( &tempBuffer[*tempnw], maxSize - *tempnw, fEventCounter );
+	      Int_t tempNw = fMcmSim->ProduceRawStream( &tempBuffer[*tempnw], maxSize - *tempnw, fEventCounter );
 	      if ( tempNw < 0 ) {
 		*tempof += tempNw;
 		*tempnw += maxSize - nw;
@@ -483,8 +485,6 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 	    }
 	  }
 	  
-	  delete mcm;
-
 	  // in case of tracklet writing copy temp data to final buffer
 	  if (trackletOn) {
 	    if (nw + *tempnw < maxSize) {
@@ -573,6 +573,8 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   while (det >= 0)
     {
       det = input.NextChamber(digitsManager,fTrackletContainer);
+
+      if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
 
       if (det >= 0)
 	{
