@@ -229,9 +229,8 @@ AliITS::~AliITS(){
 
     delete[] fIdName;  // Array of TStrings
     delete[] fIdSens;
-    Int_t size   = 0;
+    Int_t size   = AliITSgeomTGeo::GetNModules();
     if (fDetTypeSim){
-      if (GetITSgeom()) size = GetITSgeom()->GetIndexMax();
       delete fDetTypeSim;
       fDetTypeSim = 0;
     }
@@ -1217,7 +1216,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
   // Get TreeS
   //
   Int_t last   = -1;
-  Int_t size   = GetITSgeom()->GetIndexMax();
+  Int_t size   = AliITSgeomTGeo::GetNModules();
   if(!fModA) {
     fModA = new TClonesArray*[size];
     for (Int_t mod = 0; mod < size; mod++) fModA[mod] = new TClonesArray("AliITSpListItem", 10000);
@@ -1329,6 +1328,8 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
     if (!next) break;
 
     Int_t module  = inputSSD.GetModuleID();
+    if(module<0)AliError(Form("Invalid SSD  module %d \n",module));
+    if(module<0)continue;
     Int_t side    = inputSSD.GetSideFlag();
     Int_t strip   = inputSSD.GetStrip();
     Int_t signal  = inputSSD.GetSignal();
