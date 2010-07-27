@@ -1,0 +1,45 @@
+Generated on PCx86 Linux x86 (32-bit)
+   Mathematica 6.0 for Linux x86 (32-bit) (June 2, 2008), MathID: 7105-78965-34419
+   by chojnacki@nz41-25. on 15 July 2010 at 15:38:00
+
+- LHYQUID ver                 : 2.79
+------------------------------------------------------------------
+- HydroID                     : 7B61B67D
+------------------------------------------------------------------
+THERMODYNAMICS
+- Hadron Gas                  : massive hadron gas (SHARE particles.data)
+- Quark-Gluon Plasma          : lattice QCD P(T) fit
+NUCLEAR PROFILE
+- centrality class            : c  = 10 - 20 [%]
+- nuclear profile model       : optical Glauber
+  - nuclear density           :   rho0 = 0.17 [fm^-3]
+  - atomic mass               :   A = 208
+  - radius                    :   r0 = 6.49084 [fm]
+  - profile steepness         :   epsilon = 0.54 [fm]
+  - impact parameter          :   b = 5.75 [fm]
+  - p-p cross-section         :   sigma = 63. [mb]
+  - total cross-section       :   sigmaTOT = 7062.47 [mb]
+  - binary coll. admixture    :   wf = 16. [%]
+PRE-HYDRO EVOLUTION
+- pre-hydro evolution type    : none
+HYDRO INITIAL CONDITIONS
+- central temperature         : Ti = 735. [MeV]
+- rho(T) Ansatz               : entropy density, rho ~ S
+- transverse flow             : Hubble-like flow, Hi = 0.001 [c/fm]
+HYDRO EQUATIONS
+- equations type              : 3D boost invariant, z=0
+- integration ranges          : r = <0., 11.> [fm],  phi = <0., 360.> [deg],  t = <0.25, 13.> [fm/c]
+- grid points                 : r = 112, phi = 91, t = 52
+------------------------------------------------------------------
+- FreezeID                    : 45DED3E0
+------------------------------------------------------------------
+FREEZE-OUT PARAMITERS
+- temperature                 : Tf = 150. MeV
+- parametrization             : phi = <0., 360.>, zeta = <0., 90.>
+- grid points                 : phiN = 91, zetaN = 91
+
+HOW TO IMPORT FREEZE-OUT
+{LhyquidVer,HydroID,ChoiceDevice,ChoiceTherm,ChoicePreHyd,ChoiceNucl,ChoiceAnsatz,ChoiceFlow,ChoiceEqn,
+tau0,cmax,cmin,Ti,Hi,rmin,rmax,\[Phi]min,\[Phi]max,tmin,tmax,rPts,\[Phi]Pts,tPts,
+FreezeID,Tf,\[Phi]minFO,\[Phi]maxFO,\[Zeta]minFO,\[Zeta]maxFO,\[Phi]N,\[Zeta]N,\[Phi]FOGrid,\[Zeta]FOGrid,
+\[Alpha]HSArr,vHSArr,dHSArr,DpdHSArr,DzdHSArr}=Import[PathFreeze<>"fo.mx","MX"];
