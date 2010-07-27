@@ -86,6 +86,11 @@
 
 ClassImp(AliTPCCorrection)
 
+
+TObjArray *AliTPCCorrection::fgVisualCorrection=0;
+// instance of correction for visualization
+
+
 // FIXME: the following values should come from the database
 const Double_t AliTPCCorrection::fgkTPCZ0    =249.7;     // nominal gating grid position 
 const Double_t AliTPCCorrection::fgkIFCRadius= 83.06;    // Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
@@ -93,6 +98,7 @@ const Double_t AliTPCCorrection::fgkOFCRadius=254.5;     // Mean Radius of the O
 const Double_t AliTPCCorrection::fgkZOffSet  = 0.2;      // Offset from CE: calculate all distortions closer to CE as if at this point
 const Double_t AliTPCCorrection::fgkCathodeV =-100000.0; // Cathode Voltage (volts)
 const Double_t AliTPCCorrection::fgkGG       =-70.0;     // Gating Grid voltage (volts)
+
 
 
 // FIXME: List of interpolation points (course grid in the middle, fine grid on the borders)
@@ -145,6 +151,7 @@ AliTPCCorrection::AliTPCCorrection()
   //
   // default constructor
   //
+  if (!fgVisualCorrection) fgVisualCorrection= new TObjArray;
 }
 
 AliTPCCorrection::AliTPCCorrection(const char *name,const char *title)
@@ -153,6 +160,7 @@ AliTPCCorrection::AliTPCCorrection(const char *name,const char *title)
   //
   // default constructor, that set the name and title
   //
+  if (!fgVisualCorrection) fgVisualCorrection= new TObjArray;
 }
 
 AliTPCCorrection::~AliTPCCorrection() {
@@ -1343,4 +1351,66 @@ void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTrac
     "\n";
   delete []AId;
   delete []CId;
+}
+
+void AliTPCCorrection::AddVisualCorrection(AliTPCCorrection* corr, Int_t position){
+  //
+  // make correction available for visualization using 
+  // TFormula, TFX and TTree::Draw 
+  // important in order to check corrections and also compute dervied variables 
+  // e.g correction partial derivatives
+  //
+  // NOTE - class is not owner of correction
+  //     
+  if (!fgVisualCorrection) fgVisualCorrection=new TObjArray;
+  fgVisualCorrection->AddAt(corr, position);
+}
+
+
+
+Double_t AliTPCCorrection::GetCorrSector(Double_t sector, Double_t localX, Double_t kZ, Int_t axisType, Int_t corrType){
+  //
+  // calculate the correction at given position - check the geffCorr
+  //
+  if (!fgVisualCorrection) return 0;
+  AliTPCCorrection *corr = (AliTPCCorrection*)fgVisualCorrection->At(corrType);
+  if (!corr) return 0;
+  Double_t phi=sector*TMath::Pi()/9.;
+  Double_t gx = localX*TMath::Cos(phi);
+  Double_t gy = localX*TMath::Sin(phi);
+  Double_t gz = localX*kZ;
+  Int_t nsector=(gz>0) ? 0:18; 
+  //
+  //
+  //
+  Float_t distPoint[3]={gx,gy,gz};
+  corr->DistortPoint(distPoint, nsector);
+  Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
+  Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
+  Double_t phi0=TMath::ATan2(gy,gx);
+  Double_t phi1=TMath::ATan2(distPoint[1],distPoint[0]);
+  if (axisType==0) return r1-r0;
+  if (axisType==1) return (phi1-phi0)*r0;
+  if (axisType==2) return distPoint[2]-gz;
+  return phi1-phi0;
+}
+
+Double_t AliTPCCorrection::GetCorrXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType){
+  //
+  // return correction at given x,y,z
+  // 
+  if (!fgVisualCorrection) return 0;
+  AliTPCCorrection *corr = (AliTPCCorrection*)fgVisualCorrection->At(corrType);
+  if (!corr) return 0;
+  Double_t phi0= TMath::ATan2(gy,gx);
+  Int_t nsector=(gz>0) ? 0:18; 
+  Float_t distPoint[3]={gx,gy,gz};
+  corr->DistortPoint(distPoint, nsector);
+  Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
+  Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
+  Double_t phi1=TMath::ATan2(distPoint[1],distPoint[0]);
+  if (axisType==0) return r1-r0;
+  if (axisType==1) return (phi1-phi0)*r0;
+  if (axisType==2) return distPoint[2]-gz;
+  return phi1-phi0;
 }
