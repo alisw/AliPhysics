@@ -45,6 +45,7 @@ AliFlowCommonHist::AliFlowCommonHist():
   TNamed(),
   fHistMultRP(NULL),
   fHistMultPOI(NULL),
+  fHistMultPOIvsRP(NULL),
   fHistPtRP(NULL),
   fHistPtPOI(NULL),
   fHistPtSub0(NULL),
@@ -77,6 +78,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   TNamed(),
   fHistMultRP(new TH1F(*a.fHistMultRP)),
   fHistMultPOI(new TH1F(*a.fHistMultPOI)),
+  fHistMultPOIvsRP(new TH2F(*a.fHistMultPOIvsRP)),
   fHistPtRP(new TH1F(*a.fHistPtRP)),
   fHistPtPOI(new TH1F(*a.fHistPtPOI)),
   fHistPtSub0(new TH1F(*a.fHistPtSub0)),
@@ -104,7 +106,8 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
 
   fHistList = new TList();
   fHistList-> Add(fHistMultRP);        
-  fHistList-> Add(fHistMultPOI);       
+  fHistList-> Add(fHistMultPOI);
+  fHistList-> Add(fHistMultPOIvsRP);
   fHistList-> Add(fHistPtRP);          
   fHistList-> Add(fHistPtPOI);
   fHistList-> Add(fHistPtSub0);
@@ -137,6 +140,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
     TNamed(anInput,title),
     fHistMultRP(NULL),
     fHistMultPOI(NULL),
+    fHistMultPOIvsRP(NULL),
     fHistPtRP(NULL),
     fHistPtPOI(NULL),
     fHistPtSub0(NULL),
@@ -199,6 +203,12 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistMultPOI = new TH1F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax);
   fHistMultPOI ->SetXTitle("Multiplicity for POI selection");
   fHistMultPOI ->SetYTitle("Counts");
+
+  sName = "Control_Flow_MultPOIvsRP_";
+  sName +=anInput;
+  fHistMultPOIvsRP = new TH2F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax,iNbinsMult, dMultMin, dMultMax);
+  fHistMultPOIvsRP->SetXTitle("Multiplicity for RP selection");
+  fHistMultPOIvsRP->SetYTitle("Multiplicity for POI selection");
 
   //Pt
   sName = "Control_Flow_PtRP_";
@@ -338,7 +348,8 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   //list of histograms if added here also add in copy constructor
   fHistList = new TList();
   fHistList-> Add(fHistMultRP);        
-  fHistList-> Add(fHistMultPOI);       
+  fHistList-> Add(fHistMultPOI); 
+  fHistList-> Add(fHistMultPOIvsRP);
   fHistList-> Add(fHistPtRP);          
   fHistList-> Add(fHistPtPOI); 
   fHistList-> Add(fHistPtSub0);
@@ -370,7 +381,8 @@ AliFlowCommonHist::~AliFlowCommonHist()
 {
   //deletes histograms
   delete fHistMultRP;       
-  delete fHistMultPOI;      
+  delete fHistMultPOI; 
+  delete fHistMultPOIvsRP;
   delete fHistPtRP;         
   delete fHistPtPOI;
   delete fHistPtSub0;
@@ -489,6 +501,7 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent)
   
   fHistMultRP->Fill(dMultRP);
   fHistMultPOI->Fill(dMultPOI);
+  fHistMultPOIvsRP->Fill(dMultRP,dMultPOI);
   
   //<reference multiplicity> versus # of RPs:
   fRefMultVsNoOfRPs->Fill(dMultRP+0.5,anEvent->GetReferenceMultiplicity(),1.);

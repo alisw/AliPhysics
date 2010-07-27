@@ -105,18 +105,11 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
 
   //set the allowed relative difference in the subevent multiplicities
   fSP->SetRelDiffMsub(fRelDiffMsub); 
-  
-  cout<<endl;
-  cout<<endl;
-  cout<<endl;
-  cout<<endl;
-  cout<<"TASK SP: "<<fApplyCorrectionForNUA<<endl;
-  cout<<endl;
-  cout<<endl;
-  cout<<endl;
-  cout<<endl;
-  
+    
   //apply automatic correction for non-uniform acceptance:
+  if (fApplyCorrectionForNUA) {
+    cout<<"Corrections for non-uniform acceptance applied in the Scalar Product method"<<endl;
+  }
   fSP->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
     
   //for using phi weights:
