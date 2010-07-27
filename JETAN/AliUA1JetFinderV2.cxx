@@ -279,13 +279,13 @@ void AliUA1JetFinderV2::FindJetsC()
   delete[] ncells;
   delete[] mult;
   //--- Added for jet reordering
-  delete etaJetOk;
-  delete phiJetOk;
-  delete etJetOk;
-  delete etsigJetOk;
-  delete etallJetOk;
-  delete ncellsJetOk;
-  delete multJetOk;
+  delete [] etaJetOk;
+  delete [] phiJetOk;
+  delete [] etJetOk;
+  delete [] etsigJetOk;
+  delete [] etallJetOk;
+  delete [] ncellsJetOk;
+  delete [] multJetOk;
   //--------------------------
 
 }
@@ -713,21 +713,21 @@ void AliUA1JetFinderV2::FindJets()
   delete etaCell2;
   delete phiCell2;
   delete flagCell2;
-  delete etaJet;
-  delete phiJet;
-  delete etJet;
-  delete etsigJet;
-  delete etallJet;
-  delete ncellsJet;
-  delete multJet;
+  delete [] etaJet;
+  delete [] phiJet;
+  delete [] etJet;
+  delete [] etsigJet;
+  delete [] etallJet;
+  delete [] ncellsJet;
+  delete [] multJet;
   //--- Added for jet reordering
-  delete etaJetOk;
-  delete phiJetOk;
-  delete etJetOk;
-  delete etsigJetOk;
-  delete etallJetOk;
-  delete ncellsJetOk;
-  delete multJetOk;
+  delete [] etaJetOk;
+  delete [] phiJetOk;
+  delete [] etJetOk;
+  delete [] etsigJetOk;
+  delete [] etallJetOk;
+  delete [] ncellsJetOk;
+  delete [] multJetOk;
   //--------------------------
   delete trackinjet;
   delete idxjets;
@@ -930,7 +930,7 @@ void AliUA1JetFinderV2::RunAlgoritm(Int_t nIn, Float_t* etCell, Float_t* const e
     }
 
   //delete
-  delete index;
+  delete[] index;
 
 }
 
@@ -1134,8 +1134,8 @@ void AliUA1JetFinderV2::RunAlgoritmC(Float_t etbgTotal, Double_t dEtTotal, Int_t
     }
   
   //delete
-  delete index;
-  delete idx;
+  delete [] index;
+  delete [] idx;
 
 }
 

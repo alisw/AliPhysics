@@ -469,7 +469,7 @@ Bool_t AliHFEcollection::BinLogAxis(const char* name, Int_t dim){
     newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete [] newBins;
 
   return kTRUE;
 

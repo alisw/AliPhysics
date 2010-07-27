@@ -529,7 +529,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 		
     }
 
-  delete motherids;
+  delete [] motherids;
   
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   fCurEvent++;	

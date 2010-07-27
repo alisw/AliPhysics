@@ -520,7 +520,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
   tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
 
-  if (mcP) delete motherids;
+  if (mcP) delete [] motherids;
 
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
 }

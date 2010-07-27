@@ -463,7 +463,7 @@ void AliCFContainer::Print(const Option_t*) const {
     Double_t *binLimits = new Double_t[GetNBins(iVar)+1];
     GetBinLimits(iVar,binLimits);
     AliInfo(Form("variable %d \t -> %s : %d bins in [%f,%f]",iVar,GetVarTitle(iVar),GetNBins(iVar),binLimits[0],binLimits[GetNBins(iVar)]));
-    delete binLimits;
+    delete[] binLimits;
   }
   AliInfo("====================================================================================");
 }

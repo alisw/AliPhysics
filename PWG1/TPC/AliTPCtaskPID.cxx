@@ -406,5 +406,5 @@ void AliTPCtaskPID::BinLogX(TAxis *axis) {
     new_bins[i] = factor * new_bins[i-1];
   }
   axis->Set(bins, new_bins);
-  delete new_bins;
+  delete [] new_bins;
 }
