@@ -44,6 +44,7 @@ SRCS= AliTRDarraySignal.cxx \
       AliTRDCalibChamberStatus.cxx \
       AliTRDCalibViewer.cxx \
       AliTRDCalibViewerGUI.cxx \
+      AliTRDAnalysisTaskTP.cxx \
       AliTRDEntriesInfo.cxx \
       AliTRDPhInfo.cxx \
       AliTRDPrfInfo.cxx \
