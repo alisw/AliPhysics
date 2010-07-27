@@ -42,7 +42,8 @@ class AliFlowCommonHist: public TNamed {
   Double_t GetMeanPt(Int_t iBin);             //gets the mean pt for this bin from fHistProMeanPtperBin   
 
   TH1F*     GetHistMultRP()          {return fHistMultRP; } ;  
-  TH1F*     GetHistMultPOI()         {return fHistMultPOI; } ;  
+  TH1F*     GetHistMultPOI()         {return fHistMultPOI; } ; 
+  TH2F*     GetHistMultPOIvsRP()     {return fHistMultPOIvsRP; } ;
   TH1F*     GetHistPtRP()            {return fHistPtRP; } ;  
   TH1F*     GetHistPtPOI()           {return fHistPtPOI; } ;
   TH1F*     GetHistPtSub0()          {return fHistPtSub0; } ;
@@ -77,33 +78,34 @@ class AliFlowCommonHist: public TNamed {
 
   //define histograms here
   //control histograms
-  TH1F*     fHistMultRP;          //multiplicity for RP selection
-  TH1F*     fHistMultPOI;         //multiplicity for POI selection
-  TH1F*     fHistPtRP;            //pt distribution for RP selection
-  TH1F*     fHistPtPOI;           //pt distribution for POI selection
-  TH1F*     fHistPtSub0;          //pt distribution for subevent 0
-  TH1F*     fHistPtSub1;          //pt distribution for subevent 1
-  TH1F*     fHistPhiRP;           //phi distribution for RP selection
-  TH1F*     fHistPhiPOI;          //phi distribution for POI selection
-  TH1F*     fHistPhiSub0;         //phi distribution for subevent 0
-  TH1F*     fHistPhiSub1;         //phi distribution for subevent 1
-  TH1F*     fHistEtaRP;           //eta distribution for RP selection
-  TH1F*     fHistEtaPOI;          //eta distribution for POI selection
-  TH1F*     fHistEtaSub0;         //eta distribution for subevent 0
-  TH1F*     fHistEtaSub1;         //eta distribution for subevent 1
-  TH2F*     fHistPhiEtaRP;        //eta vs phi for RP selection
-  TH2F*     fHistPhiEtaPOI;       //eta vs phi for POI selection
-  TProfile* fHistProMeanPtperBin; //mean pt for each pt bin (for POI selection)
-  TH1F*     fHistQ;               //Qvector distribution
-  TH1F*     fHistAngleQ;          //distribution of angle of Q vector
-  TH1F*     fHistAngleQSub0;      //distribution of angle of subevent 0 Q vector
-  TH1F*     fHistAngleQSub1;      //distribution of angle of subevent 1 Q vector
-  TProfile* fHarmonic;            //harmonic 
-  TProfile* fRefMultVsNoOfRPs;    //<reference multiplicity> versus # of RPs
+  TH1F*     fHistMultRP;          // multiplicity for RP selection
+  TH1F*     fHistMultPOI;         // multiplicity for POI selection
+  TH2F*     fHistMultPOIvsRP;     // multiplicity for POI versus RP
+  TH1F*     fHistPtRP;            // pt distribution for RP selection
+  TH1F*     fHistPtPOI;           // pt distribution for POI selection
+  TH1F*     fHistPtSub0;          // pt distribution for subevent 0
+  TH1F*     fHistPtSub1;          // pt distribution for subevent 1
+  TH1F*     fHistPhiRP;           // phi distribution for RP selection
+  TH1F*     fHistPhiPOI;          // phi distribution for POI selection
+  TH1F*     fHistPhiSub0;         // phi distribution for subevent 0
+  TH1F*     fHistPhiSub1;         // phi distribution for subevent 1
+  TH1F*     fHistEtaRP;           // eta distribution for RP selection
+  TH1F*     fHistEtaPOI;          // eta distribution for POI selection
+  TH1F*     fHistEtaSub0;         // eta distribution for subevent 0
+  TH1F*     fHistEtaSub1;         // eta distribution for subevent 1
+  TH2F*     fHistPhiEtaRP;        // eta vs phi for RP selection
+  TH2F*     fHistPhiEtaPOI;       // eta vs phi for POI selection
+  TProfile* fHistProMeanPtperBin; // mean pt for each pt bin (for POI selection)
+  TH1F*     fHistQ;               // Qvector distribution
+  TH1F*     fHistAngleQ;          // distribution of angle of Q vector
+  TH1F*     fHistAngleQSub0;      // distribution of angle of subevent 0 Q vector
+  TH1F*     fHistAngleQSub1;      // distribution of angle of subevent 1 Q vector
+  TProfile* fHarmonic;            // harmonic 
+  TProfile* fRefMultVsNoOfRPs;    // <reference multiplicity> versus # of RPs
 
-  TList*    fHistList;            //list to hold all histograms  
+  TList*    fHistList;            // list to hold all histograms  
 
-  ClassDef(AliFlowCommonHist,2)  // macro for rootcint
+  ClassDef(AliFlowCommonHist,2)   // macro for rootcint
 };
 #endif
 
