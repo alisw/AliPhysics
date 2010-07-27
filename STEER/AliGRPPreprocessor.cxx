@@ -2831,6 +2831,7 @@ AliLHCClockPhase* AliGRPPreprocessor::ProcessLHCClockPhase(TObjArray *beam1phase
   AliLHCClockPhase *phaseObj = new AliLHCClockPhase;
 
   Bool_t foundBeam1Phase = kFALSE, foundBeam2Phase = kFALSE;
+  const Float_t threshold = 0.050; // we store the measurement only in case they differ with more 50ps from the previous one 
 
   Int_t nCounts = beam1phase->GetEntries();
   AliDebug(2,Form("Beam1 phase measurements = %d\n",nCounts));
@@ -2840,14 +2841,20 @@ AliLHCClockPhase* AliGRPPreprocessor::ProcessLHCClockPhase(TObjArray *beam1phase
     return NULL;
   }
   else{
+    Double_t prevPhase = 0;
     for (Int_t i = 0; i < nCounts; i++){
       AliDCSArray *dcs = (AliDCSArray*)beam1phase->At(i);
       if (dcs){
 	if (dcs->GetTimeStamp()>=timeStart && dcs->GetTimeStamp()<=timeEnd) {
-	  foundBeam1Phase = kTRUE;
-	  AliInfo(Form("Beam1 Clock Phase = %f at timestamp = %f",
-		       (Float_t)dcs->GetDouble(0),dcs->GetTimeStamp()));  
-	  phaseObj->AddPhaseB1DP((UInt_t)dcs->GetTimeStamp(),(Float_t)dcs->GetDouble(0));
+	  if ((i == 0) || (i == (nCounts-1)) ||
+	      !foundBeam1Phase ||
+	      (TMath::Abs(dcs->GetDouble(0)-prevPhase) > threshold)) {
+	    prevPhase = dcs->GetDouble(0);
+	    foundBeam1Phase = kTRUE;
+	    AliInfo(Form("B1 Clk Phase = %f at TS = %f",
+			 (Float_t)dcs->GetDouble(0),dcs->GetTimeStamp()));  
+	    phaseObj->AddPhaseB1DP((UInt_t)dcs->GetTimeStamp(),(Float_t)dcs->GetDouble(0));
+	  }
 	}
       }
     }
@@ -2866,14 +2873,20 @@ AliLHCClockPhase* AliGRPPreprocessor::ProcessLHCClockPhase(TObjArray *beam1phase
     return NULL;
   }
   else{
+    Double_t prevPhase = 0;
     for (Int_t i = 0; i < nCounts; i++){
       AliDCSArray *dcs = (AliDCSArray*)beam2phase->At(i);
       if (dcs){
 	if (dcs->GetTimeStamp()>=timeStart && dcs->GetTimeStamp()<=timeEnd) {
-	  foundBeam2Phase = kTRUE;
-	  AliInfo(Form("Beam2 Clock Phase = %f at timestamp = %f",
-		       (Float_t)dcs->GetDouble(0),dcs->GetTimeStamp()));  
-	  phaseObj->AddPhaseB2DP((UInt_t)dcs->GetTimeStamp(),(Float_t)dcs->GetDouble(0));
+	  if ((i == 0) || (i == (nCounts-1)) ||
+	      !foundBeam2Phase ||
+	      (TMath::Abs(dcs->GetDouble(0)-prevPhase) > threshold)) {
+	    prevPhase = dcs->GetDouble(0);
+	    foundBeam2Phase = kTRUE;
+	    AliInfo(Form("B2 Clk Phase = %f at TS = %f",
+			 (Float_t)dcs->GetDouble(0),dcs->GetTimeStamp()));  
+	    phaseObj->AddPhaseB2DP((UInt_t)dcs->GetTimeStamp(),(Float_t)dcs->GetDouble(0));
+	  }
 	}
       }
     }
