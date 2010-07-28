@@ -23,6 +23,7 @@
 // are stored in the output file (details in description of these classes).
 // 
 // Author: J.Otwinowski 01/04/2009 
+// Changes by M.Knichel and H.Erdal 27/07/2010
 //------------------------------------------------------------------------------
 
 #include "iostream"
@@ -69,6 +70,7 @@ AliPerformanceTask::AliPerformanceTask()
   , fCompList(0)
   , fUseMCInfo(kFALSE)
   , fUseESDfriend(kFALSE)
+  , fUseHLT(kFALSE)
 {
   // Dummy Constructor
   // should not be used
@@ -85,6 +87,7 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
   , fCompList(0)
   , fUseMCInfo(kFALSE)
   , fUseESDfriend(kFALSE)
+  , fUseHLT(kFALSE)
 {
   // Constructor
 
@@ -145,7 +148,22 @@ void AliPerformanceTask::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-  fESD = (AliESDEvent*) (InputEvent());
+
+  // Decide whether to use HLT or Offline ESD
+  if(fUseHLT){
+
+    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> 
+      (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    
+    if (!esdH) {
+      printf("ERROR: Could not get ESDInputHandler");
+      return;
+    } 
+    fESD = esdH->GetHLTEvent();
+  }// end if fUseHLT
+  else  
+    fESD = (AliESDEvent*) (InputEvent());
+
   if(fUseESDfriend)
     {
       fESDfriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
@@ -199,6 +217,14 @@ void AliPerformanceTask::Terminate(Option_t *)
     Printf("ERROR: AliPerformanceTask::Terminate(): fOutput data not avaiable  ..." );
     return;
   }
+
+  AliPerformanceObject* pObj=0;
+  TIterator* itOut = fOutput->MakeIterator();  
+  itOut->Reset();
+  while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) {
+    pObj->Analyse();
+  }
+
 }
 
 //_____________________________________________________________________________
