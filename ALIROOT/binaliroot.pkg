@@ -17,10 +17,10 @@ ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONc
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALUtils EMCALbase EMCALsim EMCALrec BCM \
         STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER \
-        THijing hijing \
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
 	HLTbase MUONevaluation TRIGGERbase STAT
+#       THijing hijing \
 #       THbtp TEPEMGEN \
 #	THerwig herwig TPHIC
 
