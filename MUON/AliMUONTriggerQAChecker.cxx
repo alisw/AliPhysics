@@ -97,7 +97,6 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
   TH1* currHisto = 0x0;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     rv[specie] = AliMUONVQAChecker::kInfo;
-    AliMUONVQAChecker::ECheckCode currRv = rv[specie];
 
     TH1* hAnalyzedEvents = AliQAv1::GetData(list,AliMUONQAIndices::kTriggerRawNAnalyzedEvents,AliRecoParam::ConvertIndex(specie));
     Int_t nAnalyzedEvents = 0;
@@ -105,9 +104,10 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
       nAnalyzedEvents = TMath::Nint(hAnalyzedEvents->GetBinContent(1));
 
     if ( nAnalyzedEvents == 0 )
-      currRv = AliMUONVQAChecker::kFatal;
+      rv[specie] = AliMUONVQAChecker::kFatal;
 
     for(Int_t ihisto = 0; ihisto<kNrawsHistos; ihisto++){
+      AliMUONVQAChecker::ECheckCode currRv = AliMUONVQAChecker::kInfo;
       messages.Clear();
       currHisto = AliQAv1::GetData(list,histoRawsPercentIndex[ihisto],AliRecoParam::ConvertIndex(specie));
       if ( ! currHisto ) continue;
@@ -115,8 +115,12 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
       Int_t nbins = currHisto->GetXaxis()->GetNbins();
       for (Int_t ibin = 1; ibin<=nbins; ibin++){
 	Double_t binContent = currHisto->GetBinContent(ibin);
-	if (binContent > alarmPercent[ihisto][ibin-1])
+	if ( binContent > alarmPercent[ihisto][ibin-1] )
 	  currRv = AliMUONVQAChecker::kWarning;
+	else if ( ibin == 4 && binContent > 50. ) {
+	  messages.Add(new TObjString("Do not panic:")); 
+	  messages.Add(new TObjString("copy errors do not affect data"));
+	}
       } // loop on bins
       if ( currRv != AliMUONVQAChecker::kInfo ) {
 	switch ( histoRawsPercentIndex[ihisto] ) {
@@ -126,6 +130,7 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
 	  break;
 	case AliMUONQAIndices::kTriggerReadOutErrorsNorm:
 	  messages.Add(new TObjString("Readout errors"));
+	  break;
 	}
 	if ( currRv == AliMUONVQAChecker::kWarning )
 	  messages.Add(new TObjString("are a little bit high"));
@@ -142,9 +147,10 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
 	  break;
 	}
       }
-      rv[specie] = MarkHisto(*currHisto, currRv);
+      if ( MarkHisto(*currHisto, currRv) < rv[specie] )
+	rv[specie] = currRv;
       currHisto->GetYaxis()->SetRangeUser(0., 110.);
-      SetupHisto(nAnalyzedEvents, messages, *currHisto, rv[specie]);
+      SetupHisto(nAnalyzedEvents, messages, *currHisto, currRv);
     } // loop on histos
   } // loop on species
 
