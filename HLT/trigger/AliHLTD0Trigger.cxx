@@ -541,10 +541,10 @@ int AliHLTD0Trigger::CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackPar
     if(imP>=0 && imN>=0){
       TParticle * mP = fEvent->Particle(imP);
       TParticle * mN = fEvent->Particle(imN);
-      if(fabs(mP->GetPdgCode())==421 && fabs(mN->GetPdgCode())==421 && imP == imN){
+      if((fabs(mP->GetPdgCode())==421 && fabs(mN->GetPdgCode())==421) && imP == imN){
 	return 2;
       }
-      if(fabs(mP->GetPdgCode())==421 || fabs(mN->GetPdgCode())==421 && imP == imN){
+      if((fabs(mP->GetPdgCode())==421 || fabs(mN->GetPdgCode())==421) && imP == imN){
 	return 1;
       }
     }

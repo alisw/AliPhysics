@@ -562,7 +562,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
 
     AliHLTTriggerDomain monitoringFilter(decision.TriggerDomain());
     if (decision.Result() &&
-	time.Get()-lastMonitorEvent>fMonitorPeriod) {
+	int(time.Get()-lastMonitorEvent)>fMonitorPeriod) {
       lastMonitorEvent=time.Get();
       // add monitoring event command for triggered events
       CreateEventDoneReadoutFilter(decision.TriggerDomain(), 5);
