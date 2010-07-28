@@ -69,7 +69,6 @@
 #pragma link C++ class  AliTRDCalibChamberStatus+;
 #pragma link C++ class  AliTRDCalibViewer+;
 #pragma link C++ class  AliTRDCalibViewerGUI+;
-#pragma link C++ class  AliTRDAnalysisTaskTP+;
 
 #pragma link C++ class  AliTRDEntriesInfo+;
 #pragma link C++ class  AliTRDPhInfo+;
