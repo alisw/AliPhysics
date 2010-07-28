@@ -62,7 +62,7 @@
 
 // Interface to make the Flow Event Simple used in the flow analysis methods
 #include "AliFlowEvent.h"
-
+#include "AliFlowCommonConstants.h"
 #include "AliAnalysisTaskFlowEvent.h"
 
 #include "AliLog.h"
@@ -86,6 +86,21 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fMinB(0.01),
   fMaxB(1.0),
   fQA(kFALSE),
+  fNbinsMult(10000),
+  fNbinsPt(100),   
+  fNbinsPhi(100),
+  fNbinsEta(200),
+  fNbinsQ(500),
+  fMultMin(0.),            
+  fMultMax(10000.),
+  fPtMin(0.),	     
+  fPtMax(10.),
+  fPhiMin(0.),	     
+  fPhiMax(TMath::TwoPi()),
+  fEtaMin(-5.),	     
+  fEtaMax(5.),	     
+  fQMin(0.),	     
+  fQMax(3.),
   fMCReactionPlaneAngle(0.),
   fCount(0),
   fNoOfLoops(1),
@@ -117,6 +132,21 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fMinB(0.01),
   fMaxB(1.0),
   fQA(on),
+  fNbinsMult(10000),
+  fNbinsPt(100),   
+  fNbinsPhi(100),
+  fNbinsEta(200),
+  fNbinsQ(500),
+  fMultMin(0.),            
+  fMultMax(10000.),
+  fPtMin(0.),	     
+  fPtMax(10.),
+  fPhiMin(0.),	     
+  fPhiMax(TMath::TwoPi()),
+  fEtaMin(-5.),	     
+  fEtaMax(5.),	     
+  fQMin(0.),	     
+  fQMax(3.),
   fMCReactionPlaneAngle(0.),
   fCount(0),
   fNoOfLoops(1),
@@ -173,6 +203,25 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     AliError("WRONG ANALYSIS TYPE! only ESD, ESDMCkineESD, ESDMCkineMC, AOD and MC are allowed.");
     exit(1);
   }
+
+  //set the common constants
+  AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
+  cc->SetNbinsMult(fNbinsMult);
+  cc->SetNbinsPt(fNbinsPt);
+  cc->SetNbinsPhi(fNbinsPhi); 
+  cc->SetNbinsEta(fNbinsEta);
+  cc->SetNbinsQ(fNbinsQ);
+  cc->SetMultMin(fMultMin);
+  cc->SetMultMax(fMultMax);
+  cc->SetPtMin(fPtMin);
+  cc->SetPtMax(fPtMax);
+  cc->SetPhiMin(fPhiMin);
+  cc->SetPhiMax(fPhiMax);
+  cc->SetEtaMin(fEtaMin);
+  cc->SetEtaMax(fEtaMax);
+  cc->SetQMin(fQMin);
+  cc->SetQMax(fQMax);
+
 }
 
 //________________________________________________________________________
