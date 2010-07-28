@@ -4,7 +4,7 @@ void AddAnalysisTasks();
 class AliAnalysisAlien;                                                                                                                    
 AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
-Int_t runNumbers[5] = {121040};
+Int_t runNumbers[5] = {117222};
 
 Bool_t doAOD          = 0;   
 Bool_t doQAsym        = 1;   // output ok
@@ -13,11 +13,11 @@ Bool_t doVertex       = 1;   // output ok
 Bool_t doSPD          = 1;   // output ok, needs RP   
 Bool_t doFMD          = 1;   // output ok
 Bool_t doTPC          = 1;   // output ok
-Bool_t doEventStat    = 1;   // output ok
+Bool_t doEventStat    = 0;   // output ok
 Bool_t doSDD          = 1;   // outout ok needs RP
 Bool_t doSSDdEdx      = 1;   // testing
 // new 
-Bool_t doTRD          = 0;   // TRD 
+Bool_t doTRD          = 1;   // TRD 
 Bool_t doITS          = 1;   // ITS
 Bool_t doCALO         = 1;   // Calorimeter
 Bool_t doMUONTrig     = 1;   // MUON trigger
@@ -29,14 +29,14 @@ Bool_t doV0           = 0;   // V0 recosntruction performance NEEDS MCtruth
 
 TString     train_name         = "QA";
 //TString     train_name         = "TR019_PASS6";
-TString     job_tag            = "QA15_LHC10d: PWG1 QA train";
+TString     job_tag            = "QA16sim_LHC10d: PWG1 QA train";
 //TString     job_tag            = "TR019: LHC09d-Pass6 ESD filtering w. PhysSelection -> AOD (including muon deltas)";
 TString     root_version       = "v5-26-00b-6";
 TString     aliroot_version    = "v4-20-01-AN";
-TString     grid_datadir       = "/alice/data/2010/LHC10c";
+TString     grid_datadir       = " /alice/sim/LHC10c9";
 //TString     grid_datadir       = "/alice/data/2009/LHC09d";
-TString     data_pattern       = "*ESDs/pass2/*ESDs.root";
-//TString     data_pattern       = "*ESDs.root";
+//TString     data_pattern       = "*ESDs/pass2/*ESDs.root";
+TString     data_pattern       = "*ESDs.root";
 TString     alien_outdir       = "";
 //TString     alien_outdir       = "/alice/cern.ch/user/m/mgheata/analysisDATA/output_QA007_PASS1_7TeV/000114917";
 //TString     alien_outdir       = "/alice/data/2009/LHC09d/analysis/PASS6/AOD";
@@ -296,7 +296,7 @@ void AddAnalysisTasks()
   //
   if (doMUON) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/AddTaskMuonQA.C");
-    AliAnalysisTaskSE* taskmuonqa= AddTaskMuonQA();
+    AliAnalysisTaskSE* taskmuonqa= AddTaskMuonQA(kFALSE, kFALSE);
   }  
 }
 
@@ -325,7 +325,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetDataPattern(data_pattern);
 // ...then add run numbers to be considered
 //   if (!iAODanalysis) plugin->SetRunRange(run_range[0], run_range[1]);
-   plugin->SetRunPrefix("000");
+   //plugin->SetRunPrefix("000");
 //   plugin->SetOutputSingleFolder("output");
    plugin->SetOutputToRunNo();
 //   Int_t run_numbers[30] = {104065, 104155, 104157, 104159, 104160, 104315, 104316, 104320, 104321, 104439, 
@@ -418,7 +418,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro(Form("%s.C", train_name.Data()));
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(20);
+   plugin->SetSplitMaxInputFileNumber(10);
 // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
 //   plugin->SetMaxInitFailed(5);
 // Optionally resubmit threshold.
