@@ -1355,7 +1355,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
       Int_t nsdig =  fModA[mod]->GetEntries();
       for (Int_t ie = 0; ie < nsdig; ie++) {
 	sdig = (AliITSpListItem*) (fModA[mod]->At(ie));
-	Int_t digsig = sdig->GetSignal();
+      	Double_t digsig = sdig->GetSignal();
 	if(mod>=firstssd) digsig*=adcToEv; // for SSD: convert back charge from ADC to electron
 	new (aSDigits[ie]) AliITSpListItem(-1, -1, mod, sdig->GetIndex(), digsig);
 	Float_t sig = sdig->GetSignalAfterElect();
