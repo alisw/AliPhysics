@@ -5,6 +5,7 @@
 // Task to run reconstruction performance. 
 // 
 // Author: J.Otwinowski 01/04/2009 
+// Changes by M.Knichel and H.Erdal 27/07/2010
 //------------------------------------------------------------------------------
 
 class AliESDEvent;
@@ -36,6 +37,9 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   // Use ESD friend
   void SetUseESDfriend(Bool_t useESDFriend = kFALSE) {fUseESDfriend = useESDFriend;}
 
+  // Use HLT ESD
+  void SetUseHLT(Bool_t useHLT = kFALSE) {fUseHLT = useHLT;}
+
  private:
   AliESDEvent *fESD;   //! ESD event
   AliESDfriend *fESDfriend; //! ESD friend event
@@ -47,11 +51,12 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
 
   Bool_t fUseMCInfo;          // use MC information
   Bool_t fUseESDfriend;       // use ESD friend
+  Bool_t fUseHLT;             // use HLT ESD
 
   AliPerformanceTask(const AliPerformanceTask&); // not implemented
   AliPerformanceTask& operator=(const AliPerformanceTask&); // not implemented
   
-  ClassDef(AliPerformanceTask, 1); // example of analysis
+  ClassDef(AliPerformanceTask, 2); // example of analysis
 };
 
 #endif

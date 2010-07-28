@@ -8,6 +8,7 @@
 // a data member of AliPerformanceTPC.
 //
 // Author: J.Otwinowski 04/02/2008 
+// Changes by M.Knichel 27/07/2010
 //------------------------------------------------------------------------------
 
 /*
@@ -63,14 +64,15 @@ using namespace std;
 
 ClassImp(AliPerformanceTPC)
 
+Bool_t AliPerformanceTPC::fgMergeTHnSparse = kTRUE;
+
 //_____________________________________________________________________________
 AliPerformanceTPC::AliPerformanceTPC():
   AliPerformanceObject("AliPerformanceTPC"),
-  //fTPCClustHisto1(0),
-  //fTPCClustHisto2(0),
   fTPCClustHisto(0),
   fTPCEventHisto(0),
   fTPCTrackHisto(0),
+  fFolderObj(0),
 
   // Cuts 
   fCutsRC(0),  
@@ -86,11 +88,10 @@ AliPerformanceTPC::AliPerformanceTPC():
 //_____________________________________________________________________________
 AliPerformanceTPC::AliPerformanceTPC(Char_t* name="AliPerformanceTPC", Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE):
   AliPerformanceObject(name,title),
-  //fTPCClustHisto1(0),
-  //fTPCClustHisto2(0),
   fTPCClustHisto(0),
   fTPCEventHisto(0),
   fTPCTrackHisto(0),
+  fFolderObj(0),
 
   // Cuts 
   fCutsRC(0),  
@@ -113,12 +114,11 @@ AliPerformanceTPC::~AliPerformanceTPC()
 {
   // destructor
    
-  //if(fTPCClustHisto1) delete fTPCClustHisto1; fTPCClustHisto1=0;     
-  //if(fTPCClustHisto2) delete fTPCClustHisto2; fTPCClustHisto2=0;     
   if(fTPCClustHisto) delete fTPCClustHisto; fTPCClustHisto=0;     
   if(fTPCEventHisto) delete fTPCEventHisto; fTPCEventHisto=0;     
-  if(fTPCTrackHisto) delete fTPCTrackHisto; fTPCTrackHisto=0;     
+  if(fTPCTrackHisto) delete fTPCTrackHisto; fTPCTrackHisto=0;   
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+  if(fFolderObj) delete fFolderObj; fFolderObj=0;
 }
 
 //_____________________________________________________________________________
@@ -150,32 +150,7 @@ void AliPerformanceTPC::Init(){
   }
   */
   // 
-
-  /*
-  //gclX:gclY:TPCSide
-  Int_t binsTPCClustHisto1[3]=  { 500,   500,  2 };
-  Double_t minTPCClustHisto1[3]={-250., -250., 0.};
-  Double_t maxTPCClustHisto1[3]={ 250.,  250., 2.};
-
-  fTPCClustHisto1 = new THnSparseF("fTPCClustHisto1","gclX:gclY:TPCSide",3,binsTPCClustHisto1,minTPCClustHisto1,maxTPCClustHisto1);
-  fTPCClustHisto1->GetAxis(0)->SetTitle("gclX (cm)");
-  fTPCClustHisto1->GetAxis(1)->SetTitle("gclY (cm)");
-  fTPCClustHisto1->GetAxis(2)->SetTitle("TPCSide");
-  fTPCClustHisto1->Sumw2();
  
-  // 
-  //padRow:phi:TPCSide
-  Int_t binsTPCClustHisto2[3] =   {160,  144,  2 };
-  Double_t minTPCClustHisto2[3] = {0.,   0.,   0.};
-  Double_t maxTPCClustHisto2[3] = {160., 2.*TMath::Pi(), 2.};
-
-  fTPCClustHisto2 = new THnSparseF("fTPCClustHisto2","padRow:phi:TPCSide",3,binsTPCClustHisto2,minTPCClustHisto2,maxTPCClustHisto2);
-  fTPCClustHisto2->GetAxis(0)->SetTitle("padRow");
-  fTPCClustHisto2->GetAxis(1)->SetTitle("phi (rad)");
-  fTPCClustHisto2->GetAxis(2)->SetTitle("TPCSide");
-  fTPCClustHisto2->Sumw2();
-  */
-
   // 
   //padRow:phi:TPCSide
   Int_t binsTPCClustHisto[3] =   {160,  180,  2 };
@@ -204,12 +179,19 @@ void AliPerformanceTPC::Init(){
   fTPCEventHisto->Sumw2();
 
 
-  // nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge
-  Int_t binsTPCTrackHisto[9]=  { 160,  50,  60,  100, 100,  30,   144,             nPtBins,  3 };
-  Double_t minTPCTrackHisto[9]={ 0.,   0.,  0., -10,  -10., -1.5, 0.,             ptMin,   -1.5};
-  Double_t maxTPCTrackHisto[9]={ 160., 10., 1.2, 10,   10.,  1.5, 2.*TMath::Pi(), ptMax,    1.5};
+  // nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge:vertStatus
+   Int_t binsTPCTrackHisto[10]=  { 160,  20,  60,  30, 30,  15,   144,             nPtBins,   3, 2 };
+   Double_t minTPCTrackHisto[10]={ 0.,   0.,  0., -3,  -3., -1.5, 0.,             ptMin,   -1.5, -0.5 };
+   Double_t maxTPCTrackHisto[10]={ 160., 5., 1.2, 3,   3.,  1.5, 2.*TMath::Pi(), ptMax,    1.5,  1.5 };
+  
+  // nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge:vertStatus
+//   Int_t binsTPCTrackHisto[10]=  { 160,  50,  60,  100, 100,  30,   144,            nPtBins,    3, 2 };
+//   Double_t minTPCTrackHisto[10]={ 0.,   0.,  0., -10,  -10., -1.5, 0.,             ptMin,   -1.5, 0 };
+//   Double_t maxTPCTrackHisto[10]={ 160., 10., 1.2, 10,   10.,  1.5, 2.*TMath::Pi(), ptMax,    1.5, 2 };
 
-  fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge",9,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
+
+
+  fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
   fTPCTrackHisto->SetBinEdges(7,binsPt);
 
   fTPCTrackHisto->GetAxis(0)->SetTitle("nClust");
@@ -221,6 +203,7 @@ void AliPerformanceTPC::Init(){
   fTPCTrackHisto->GetAxis(6)->SetTitle("#phi (rad)");
   fTPCTrackHisto->GetAxis(7)->SetTitle("p_{T} (GeV/c)");
   fTPCTrackHisto->GetAxis(8)->SetTitle("charge");
+  fTPCTrackHisto->GetAxis(9)->SetTitle("vertStatus");
   fTPCTrackHisto->Sumw2();
 
   // Init cuts 
@@ -231,10 +214,11 @@ void AliPerformanceTPC::Init(){
 
   // init folder
   fAnalysisFolder = CreateFolder("folderTPC","Analysis Resolution Folder");
+  
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent)
+void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus)
 {
 //
 // fill TPC QA info
@@ -291,7 +275,7 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
 
-  Double_t vTPCTrackHisto[9] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,q};
+  Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,q,vertStatus};
   fTPCTrackHisto->Fill(vTPCTrackHisto); 
  
   //
@@ -302,7 +286,7 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent, Bool_t vertStatus)
 {
   // Fill comparison information (TPC+ITS) 
   if(!esdTrack) return;
@@ -357,7 +341,7 @@ void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
 
-  Double_t vTPCTrackHisto[9] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,q};
+  Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,q,vertStatus};
   fTPCTrackHisto->Fill(vTPCTrackHisto); 
  
   //
@@ -432,8 +416,12 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
 
   //  events with rec. vertex
   Int_t mult=0; Int_t multP=0; Int_t multN=0;
-  if(vtxESD->GetStatus() >0)
-  {
+  
+  // changed to take all events but store vertex status
+//  if(vtxESD->GetStatus() >0)
+//  {
+  // store vertex status
+  Bool_t vertStatus = vtxESD->GetStatus();
   //  Process ESD events
   for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
   { 
@@ -488,8 +476,8 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
       }
     }
 
-    if(GetAnalysisMode() == 0) ProcessTPC(stack,track,esdEvent);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent);
+    if(GetAnalysisMode() == 0) ProcessTPC(stack,track,esdEvent,vertStatus);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent,vertStatus);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track,esdEvent);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
@@ -509,7 +497,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
 
    if(tpcTrack) delete tpcTrack;
   }
-  }
+//  }
   //
   
   Double_t vTPCEvent[7] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),mult,multP,multN,vtxESD->GetStatus()};
@@ -532,6 +520,7 @@ void AliPerformanceTPC::Analyse() {
   //
   // Cluster histograms
   //
+  printf("TPCClustHisto: %f\n",fTPCClustHisto->GetEntries());
   fTPCClustHisto->GetAxis(2)->SetRange(1,1); // A-side
   h2D = fTPCClustHisto->Projection(1,0);
   h2D->SetName("h_clust_A_side");
@@ -547,6 +536,7 @@ void AliPerformanceTPC::Analyse() {
   //
   // event histograms
   //
+  printf("TPCEventHisto: %f\n",fTPCEventHisto->GetEntries());  
   for(Int_t i=0; i<6; i++) 
   {
       h = (TH1F*)fTPCEventHisto->Projection(i);
@@ -576,10 +566,13 @@ void AliPerformanceTPC::Analyse() {
   }
 
   //
-  // Track histograms
-  //
-  for(Int_t i=0; i<9; i++) 
+  // Track histograms 
+  // 
+  /*
+  printf("TPCTrackHisto: %f\n",fTPCTrackHisto->GetEntries());
+  for(Int_t i=0; i<10; i++) 
   {
+      printf("start: h_tpc_track_%d\n",i);      
       h = (TH1F*)fTPCTrackHisto->Projection(i);
       sprintf(name,"h_tpc_track_%d",i);
       h->SetName(name);
@@ -590,13 +583,15 @@ void AliPerformanceTPC::Analyse() {
 
       if(i==7) h->Scale(1,"width");
       aFolderObj->Add(h);
+      printf("end:   h_tpc_track_%d\n",i);
   }
 
   //
-  for(Int_t i=0; i<8; i++) 
+  for(Int_t i=0; i<9; i++) 
   {
-    for(Int_t j=i+1; j<9; j++) 
+    for(Int_t j=i+1; j<10; j++) 
     {
+      printf("start: h_tpc_track_%d_vs_%d\n",i,j);
       h2D = fTPCTrackHisto->Projection(i,j);
       sprintf(name,"h_tpc_track_%d_vs_%d",i,j);
       h2D->SetName(name);
@@ -607,14 +602,64 @@ void AliPerformanceTPC::Analyse() {
 
       if(j==7) h2D->SetBit(TH1::kLogX);
       aFolderObj->Add(h2D);
+      printf("end:   h_tpc_track_%d_vs_%d\n",i,j);
     }  
   }
+  */
+  
+  //
+  // Track histograms (all tracks)
+  AddTrackHistos(aFolderObj, "all_all");
 
+  // Track histograms (pos,all)
+  fTPCTrackHisto->GetAxis(8)->SetRangeUser(0,1.5);
+  AddTrackHistos(aFolderObj, "pos_all");
+
+  // Track histograms (neg, all)
+  fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,0);
+  AddTrackHistos(aFolderObj, "neg_all");
+
+  // Track histograms (all with vertex)
+  fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
+  fTPCTrackHisto->GetAxis(9)->SetRangeUser(0.5,1.5);
+  AddTrackHistos(aFolderObj, "all_vertOK");  
+
+  // Track histograms (pos with vertex)
+  fTPCTrackHisto->GetAxis(8)->SetRangeUser(0,1.5);
+  AddTrackHistos(aFolderObj, "pos_vertOK");
+  
+  // Track histograms (neg with vertex)
+  fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,0);
+  AddTrackHistos(aFolderObj, "neg_vertOK");
+  
+  // Track histograms (all without vertex)
+  fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
+  fTPCTrackHisto->GetAxis(9)->SetRangeUser(-0.5,0.5);
+  AddTrackHistos(aFolderObj, "all_noVert");
+  
+  // Track histograms (pos without vertex)
+  fTPCTrackHisto->GetAxis(8)->SetRangeUser(0,1.5);
+  AddTrackHistos(aFolderObj, "pos_noVert");
+  
+  // Track histograms (neg without vertex)
+  fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,0);
+  AddTrackHistos(aFolderObj, "neg_noVert");  
+  
+  //restore cuts
+  fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
+  fTPCTrackHisto->GetAxis(9)->SetRangeUser(-0.5,1.5);
+  
+  
+    printf("exportToFolder\n");
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
+  fFolderObj = aFolderObj;
+  
 
   // delete only TObjArray
-  if(aFolderObj) delete aFolderObj;
+ // printf("delete array\n");
+  //if(aFolderObj) delete aFolderObj;
+  //printf("analyse done!\n");
 }
 
 //_____________________________________________________________________________
@@ -665,6 +710,8 @@ Long64_t AliPerformanceTPC::Merge(TCollection* const list)
 
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
+  TObjArray* objArrayList = 0;
+  objArrayList = new TObjArray();
 
   // collection of generated histograms
   Int_t count=0;
@@ -673,15 +720,20 @@ Long64_t AliPerformanceTPC::Merge(TCollection* const list)
     AliPerformanceTPC* entry = dynamic_cast<AliPerformanceTPC*>(obj);
     if (entry == 0) continue; 
 
-    //fTPCClustHisto1->Add(entry->fTPCClustHisto1);
-    //fTPCClustHisto2->Add(entry->fTPCClustHisto2);
-    fTPCClustHisto->Add(entry->fTPCClustHisto);
-    fTPCEventHisto->Add(entry->fTPCEventHisto);
-    fTPCTrackHisto->Add(entry->fTPCTrackHisto);
+    if ((fTPCClustHisto) && (entry->fTPCClustHisto)) { fTPCClustHisto->Add(entry->fTPCClustHisto); }
+    if ((fTPCEventHisto) && (entry->fTPCEventHisto)) { fTPCEventHisto->Add(entry->fTPCEventHisto); }
+    // the track histos are NOT merged!
+    if (fgMergeTHnSparse) { fTPCTrackHisto->Add(entry->fTPCTrackHisto); }
+    // the analysisfolder is only merged if present
+    if (entry->fFolderObj) { objArrayList->Add(entry->fFolderObj); }
 
     count++;
   }
-
+  if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
+  // to signal that track histos were not merged: reset
+  if (!fgMergeTHnSparse) { fTPCTrackHisto->Reset(); }
+  // delete
+  //if (objArrayList)  delete objArrayList;  objArrayList=0;
 return count;
 }
 
@@ -693,4 +745,48 @@ TFolder *folder = 0;
   folder = new TFolder(name.Data(),title.Data());
 
   return folder;
+}
+
+
+//_____________________________________________________________________________
+void AliPerformanceTPC::AddTrackHistos(TObjArray* aFolderObj, Char_t* selString) 
+{
+  TH1::AddDirectory(kFALSE);
+  TH1F *h=0;
+  TH2D *h2D=0;
+  char name[256];
+  char title[256];
+  
+  for(Int_t i=0; i<10; i++) 
+  {
+      h = (TH1F*)fTPCTrackHisto->Projection(i);
+      sprintf(name,"h_tpc_track_%s_%d",selString,i);
+      h->SetName(name);
+      h->GetXaxis()->SetTitle(fTPCTrackHisto->GetAxis(i)->GetTitle());
+      h->GetYaxis()->SetTitle("tracks");
+      sprintf(title,"%s",fTPCTrackHisto->GetAxis(i)->GetTitle());
+      h->SetTitle(title);
+
+      if(i==7) h->Scale(1,"width");
+      aFolderObj->Add(h);
+  }
+
+  //
+  for(Int_t i=0; i<9; i++) 
+  {
+    for(Int_t j=i+1; j<10; j++) 
+    {
+      h2D = fTPCTrackHisto->Projection(i,j);
+      
+      sprintf(name,"h_tpc_track_%s_%d_vs_%d",selString,i,j);
+      h2D->SetName(name);
+      h2D->GetXaxis()->SetTitle(fTPCTrackHisto->GetAxis(j)->GetTitle());
+      h2D->GetYaxis()->SetTitle(fTPCTrackHisto->GetAxis(i)->GetTitle());
+      sprintf(title,"%s vs %s",fTPCTrackHisto->GetAxis(j)->GetTitle(),fTPCTrackHisto->GetAxis(i)->GetTitle());
+      h2D->SetTitle(title);
+
+      if(j==7) h2D->SetBit(TH1::kLogX);
+      aFolderObj->Add(h2D);
+    }  
+  }
 }

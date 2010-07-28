@@ -6,6 +6,7 @@
 // reconstructed and MC particle tracks (TPC resolution).   
 // 
 // Author: J.Otwinowski 04/02/2008 
+// Changes by M.Knichel 27/07/2010
 //------------------------------------------------------------------------------
 
 class TString;
@@ -48,8 +49,8 @@ public :
 
   // Process events
   void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
-  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
+  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus);
+  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus);
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderTPC",TString title = "Analysed TPC performance histograms");
@@ -66,21 +67,24 @@ public :
 
   // getters
   //
-  //THnSparse *GetTPCClustHisto1() const  { return fTPCClustHisto1; }
-  //THnSparse *GetTPCClustHisto2() const  { return fTPCClustHisto2; }
   THnSparse *GetTPCClustHisto() const  { return fTPCClustHisto; }
   THnSparse *GetTPCEventHisto() const  { return fTPCEventHisto; }
   THnSparse *GetTPCTrackHisto() const  { return fTPCTrackHisto; }
+  TObjArray* GetTPCHistos() const { return fFolderObj; }
+  static Bool_t GetMergeTHnSparse() { return fgMergeTHnSparse; }
+  static void SetMergeTHnSparse(Bool_t mergeTHnSparse) { fgMergeTHnSparse = mergeTHnSparse; }
 
 
 private:
 
+  static Bool_t fgMergeTHnSparse;
+  void AddTrackHistos(TObjArray* aFolderObj, Char_t* selString);
+
   // TPC histogram
-  //THnSparseF *fTPCClustHisto1; //-> gclX:gclY:TPCSide
-  //THnSparseF *fTPCClustHisto2; //-> padRow:phi:TPCSide
   THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCSide
   THnSparseF *fTPCEventHisto;  //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
-  THnSparseF *fTPCTrackHisto;  //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge
+  THnSparseF *fTPCTrackHisto;  //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
+  TObjArray* fFolderObj; // array of analysed histograms
 
   // Global cuts objects
   AliRecInfoCuts* fCutsRC;  // selection cuts for reconstructed tracks
@@ -93,7 +97,7 @@ private:
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,4);
+  ClassDef(AliPerformanceTPC,5);
 };
 
 #endif
