@@ -60,6 +60,7 @@ public:
 			const AliTPCseed * seed,
 			Int_t s1,Int_t s2);
   
+  void UpdateClusterDeltaField(const AliTPCseed * seed);
   void UpdateAlignSector(const AliTPCseed * seed,Int_t isec); 
   Int_t GetIndex(Int_t s1,Int_t s2) const {return 72*s1+s2;}
   //
@@ -140,12 +141,12 @@ public:
   void FillHisto(const Double_t *t1,
 		 const Double_t *t2,
 		 Int_t s1,Int_t s2);
-  void FillHisto(const AliExternalTrackParam *tp1,
-		 const AliExternalTrackParam *tp2,
+  void FillHisto(AliExternalTrackParam *tp1,
+		 AliExternalTrackParam *tp2,
 		 Int_t s1,Int_t s2);
 
 protected:
-  THnSparse *fClusterDelta[6];  //clusters residuals
+  THnSparse *fClusterDelta[2];  //clusters residuals
   THnSparse *fTrackletDelta[4]; //track residuals
 
   TObjArray fDphiHistArray;    // array of residual histograms  phi      -kPhi
@@ -203,7 +204,7 @@ protected:
 private:
   AliTPCcalibAlign&  operator=(const AliTPCcalibAlign&);// not implemented
 
-  ClassDef(AliTPCcalibAlign,4)
+  ClassDef(AliTPCcalibAlign,6)
 };
 
 
