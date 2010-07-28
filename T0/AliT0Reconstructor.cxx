@@ -94,7 +94,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
 {
   // T0 digits reconstruction
-  Int_t refAmp = GetRecoParam()->GetRefAmp();
+  Int_t refAmp = Int_t (GetRecoParam()->GetRefAmp());
   
   TArrayI * timeCFD = new TArrayI(24); 
   TArrayI * timeLED = new TArrayI(24); 
@@ -149,7 +149,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       else
 	adc[ipmt] = 0;
       
-      time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt],  timeCFD->At(ipmt)) ;
+     time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, Int_t(adc[ipmt]),  timeCFD->At(ipmt)) ;
 	     
       Double_t sl = Double_t(timeLED->At(ipmt) - timeCFD->At(ipmt));
       //    time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl),  timeCFD->At(ipmt) ) ;
@@ -235,8 +235,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   //
   // reference amplitude and time ref. point from reco param
 
-  Int_t refAmp = GetRecoParam()->GetRefAmp();
-  Int_t refPoint = GetRecoParam()->GetRefPoint();
+  Float_t refAmp = GetRecoParam()->GetRefAmp();
+  Int_t refPoint = 0;
+  //Bad channel
+  Int_t badpmt = GetRecoParam()->GetRefPoint();
+  
+  Int_t low[110], high[110];
 
   Int_t allData[110][5];
   
@@ -249,7 +253,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t meanVertex = 0;
   for (Int_t i0=0; i0<105; i0++)
     {
-      for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 	
+      for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 
+      low[i0] = Int_t (GetRecoParam()->GetLow(i0));	
+      high[i0] = Int_t (GetRecoParam()->GetHigh(i0));
     }
    
   Double32_t besttimeA=9999999;
@@ -270,9 +276,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     AliDebug(1,Form(" no raw data found!!"));
   else
     {  
-      Int_t fBCID=Int_t (rawReader->GetBCID());
+   for (Int_t i=0; i<24; i++)
+    {
+      timeCFD[i]=0; timeLED[i]=0; chargeQT0[i]=0; chargeQT1[i]=0;
+    }
+     Int_t fBCID=Int_t (rawReader->GetBCID());
       Int_t trmbunch= myrawreader.GetTRMBunchID();
-      if(type == 7 &&( trmbunch -fBCID )==37 ) {  //only physics 
+      if(type == 7  ) {  //only physics 
 	for (Int_t i=0; i<105; i++) {
 	for (Int_t iHit=0; iHit<5; iHit++) 
 	  {
@@ -287,39 +297,90 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	
 	//       Int_t meanT0 = fParam->GetMeanT0();
 	
-	
-	for (Int_t in=0; in<12; in++)  
+	    for (Int_t in=0; in<12; in++)  
+	      {
+		for (Int_t iHit=0; iHit<5; iHit++) 
+		  {
+		    if(allData[in+1][iHit] > low[in+1] && 
+		       allData[in+1][iHit] < high[in+1])
+		      {
+			timeCFD[in] = allData[in+1][iHit] ; 
+			break;
+		      }
+		  }
+		for (Int_t iHit=0; iHit<5; iHit++) 
+		  {
+		    if(allData[in+12+1][iHit] > low[in+12+1] && 
+		       allData[in+1+12][iHit] < high[in+12+1])
+		      {
+			timeLED[in] = allData[in+12+1][iHit] ;
+			break;
+		      }
+		  }
+		for (Int_t iHit=0; iHit<5; iHit++) 
+		  {
+		    if(allData[in+1+56][iHit] > low[in+1+56] && 
+		       allData[in+1+56][iHit] < high[in+1+56])
+		      {
+			timeCFD[in+12] = allData[in+56+1][iHit] ;
+			break;
+		      }
+		  }
+		
+		for (Int_t iHit=0; iHit<5; iHit++) 
+		  {
+		    if(allData[in+1+68][iHit] > low[in+1+68] && 
+		       allData[in+1+68][iHit] < high[in+1+68])
+		      {
+			timeLED[in+12] = allData[in+68+1][iHit] ;
+			break;
+		      }
+		  }
+		AliDebug(10, Form(" readed i %i cfdC %i cfdA %i ledC %i ledA%i ",
+				  in, timeCFD[in],timeCFD[in+12],timeLED[in], 
+				  timeLED[in+12]));   
+		
+	      }
+	    
+	  
+	for (Int_t iHit=0; iHit<5; iHit++) 
 	  {
-	    timeCFD[in] = allData[in+1][0] ;
-	    timeCFD[in+12] = allData[in+56+1][0] ;
-	    timeLED[in] = allData[in+12+1][0] ;
-	    timeLED[in+12] = allData[in+68+1][0] ;
-	    AliDebug(10, Form(" readed i %i cfdC %i cfdA %i ledC %i ledA%i ",
-			      in, timeCFD[in],timeCFD[in+12],timeLED[in], 
-			      timeLED[in+12]));   
+	    for (Int_t in=0; in<12;  in++)
+	      {
+		if(allData[2*in+25][iHit] > low[2*in+25] && 
+		   allData[2*in+25][iHit] < high[2*in+25])
+		  chargeQT0[in]=allData[2*in+25][iHit];
+		if(allData[2*in+26][iHit] > low[2*in+26] && 
+		   allData[2*in+26][iHit] < high[2*in+26])
+		  chargeQT1[in]=allData[2*in+26][iHit];
+		
+	      }
+	    
+	    for (Int_t in=12; in<24;  in++)
+	      {
+		if(allData[2*in+57][iHit] > low[2*in+57] && 
+		   allData[2*in+57][iHit] < high[2*in+57])		  
+		  chargeQT0[in]=allData[2*in+57][iHit];
+		if(allData[2*in+58][iHit] > low[2*in+58] && 
+		   allData[2*in+58][iHit] < high[2*in+58])		  
+		  chargeQT1[in]=allData[2*in+58][iHit];
+		
+	      }
 	  }
 	
-	for (Int_t in=0; in<12;  in++)
-	  {
-	    chargeQT0[in]=allData[2*in+25][0];
-	    chargeQT1[in]=allData[2*in+26][0];
-	  }
 	
-	for (Int_t in=12; in<24;  in++)
-	  {
-	    chargeQT0[in]=allData[2*in+57][0];
-	    chargeQT1[in]=allData[2*in+58][0];
-	  }
-	
-
 	for (Int_t in=0; in<24; in++)  
 	  AliDebug(10, Form(" readed Raw %i %i %i %i %i",
 			    in, timeLED[in],timeCFD[in],chargeQT0[in],chargeQT1[in]));
-        onlineMean = allData[49][0];       
-	
+   	for (Int_t iHit=0; iHit<5; iHit++) 
+	  {
+		if(allData[49][iHit] > low[49] && 
+		   allData[49][iHit] < high[49])
+		  onlineMean = allData[49][iHit];       
+	  }
 	Double32_t time[24], adc[24],  noncalibtime[24];
 	for (Int_t ipmt=0; ipmt<24; ipmt++) {
-	 if(timeCFD[ipmt]>0 && timeLED[ipmt]>0){
+	  if(timeCFD[ipmt]>0 ){
 	   //for simulated data
 	     //for physics  data
 	   if(( chargeQT0[ipmt] - chargeQT1[ipmt])>0)  {
@@ -327,9 +388,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   }
 	   else
 	     adc[ipmt] = 0;
-	   
-
-	   time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, adc[ipmt], timeCFD[ipmt] ) ;
+	   time[ipmt] = fCalib-> WalkCorrection(Int_t (refAmp), ipmt, Int_t(adc[ipmt]), timeCFD[ipmt] ) ;
 	   
       	   Double_t sl = timeLED[ipmt] - timeCFD[ipmt];
 	   // time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl), timeCFD[ipmt] ) ;
@@ -355,7 +414,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        fESDTZEROfriend->SetT0timeCorr(noncalibtime) ;     
        for (Int_t ipmt=0; ipmt<12; ipmt++){
-	 if(time[ipmt] > 1 )
+	 if(time[ipmt] > 1 && ipmt != badpmt )
 	   {
 	     if(time[ipmt]<besttimeC){
 	       besttimeC=time[ipmt]; //timeC
@@ -365,7 +424,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        for ( Int_t ipmt=12; ipmt<24; ipmt++)
 	 {
-	   if(time[ipmt] > 1 )
+	   if(time[ipmt] > 1 && ipmt != badpmt)
 	     {
 	       if(time[ipmt]<besttimeA) {
 		 besttimeA=time[ipmt]; //timeA
@@ -397,10 +456,16 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       Int_t trchan[5]= {50,51,52,55,56};
       for (Int_t i=0; i<5; i++) tr[i]=false; 
       for (Int_t itr=0; itr<5; itr++) {
-	if(allData[trchan[itr]][0]>0) tr[itr]=true;
-	frecpoints->SetT0Trig(tr);
+ 	for (Int_t iHit=0; iHit<5; iHit++) 
+	  {
+	    Int_t trr=trchan[itr];
+	    if(allData[trr][iHit] > low[trr] &&
+	       allData[trr][iHit] < high[trr]&&
+	       allData[trr][iHit] > 0) tr[itr]=true;
+	  }
       }
-    } // if (else )raw data
+      frecpoints->SetT0Trig(tr);
+     } // if (else )raw data
   recTree->Fill();
   if(frecpoints) delete frecpoints;
 }
