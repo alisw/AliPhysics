@@ -282,6 +282,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     }
      Int_t fBCID=Int_t (rawReader->GetBCID());
       Int_t trmbunch= myrawreader.GetTRMBunchID();
+      AliDebug(10,Form(" CDH BC ID %i, TRM BC ID %i \n", fBCID, trmbunch ));
+ 
       if(type == 7  ) {  //only physics 
 	for (Int_t i=0; i<105; i++) {
 	for (Int_t iHit=0; iHit<5; iHit++) 
