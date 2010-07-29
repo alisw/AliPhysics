@@ -130,7 +130,7 @@ static TString  comment;
 // Functions
 Float_t EtaToTheta(Float_t arg);
 AliGenerator* GeneratorFactory(PprRun_t srun);
-AliGenHijing* HijingStandard();
+AliGenerator* HijingStandard();
 AliGenGeVSim* GeVSimStandard(Float_t, Float_t);
 void ProcessEnvironmentVars();
 
@@ -154,6 +154,12 @@ void Config()
     gSystem->Load("libpythia6");
     gSystem->Load("libAliPythia6");
     gSystem->Load("libgeant321");
+    
+    if (srun >= kHijing_cent1 && srun <= kHijing_pA) 
+      {
+	gSystem->Load("libhijing");
+	gSystem->Load("libTHijing");
+      }
 #endif
 
     new     TGeant3TGeo("C++ Interface to Geant3");
@@ -1465,8 +1471,9 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
   return gGener;
 }
 
-AliGenHijing* HijingStandard()
+AliGenerator* HijingStandard()
 {
+  
     AliGenHijing *gener = new AliGenHijing(-1);
 // centre of mass energy 
     gener->SetEnergyCMS(5500.);
