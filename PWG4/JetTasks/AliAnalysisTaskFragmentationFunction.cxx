@@ -958,7 +958,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  if(inputHandler->IsEventSelected()){
+  if(inputHandler->IsEventSelected()&AliVEvent::kMB){
     if(fDebug > 1)  Printf(" Trigger Selection: event ACCEPTED ... ");
     fh1EvtSelection->Fill(1.);
   } else {
