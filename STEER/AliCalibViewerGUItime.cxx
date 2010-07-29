@@ -676,7 +676,7 @@ const char* AliCalibViewerGUItime::GetDrawString(){
   return branchName.Data();
 }
 //______________________________________________________________________________
-const char* AliCalibViewerGUItime::GetDrawOption(){
+const char* AliCalibViewerGUItime::GetDrawOption() const {
   //
   // get user selected draw options
   //

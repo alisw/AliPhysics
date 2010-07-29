@@ -106,7 +106,7 @@ Bool_t AliESDTagCreator::ReadGridCollection(TGridResult *fresult) {
   
   if (fChain->GetEntries() > 0) {
     AliInfo(Form("ESD chain created......."));	
-    AliInfo(Form("Chain entries: %l",fChain->GetEntries()));	
+    AliInfo(Form("Chain entries: %lld",fChain->GetEntries()));	
   } else {
     AliWarning(Form("No ESD files found !"));
     return kFALSE;
@@ -154,7 +154,7 @@ Bool_t AliESDTagCreator::ReadLocalCollection(const char *localpath) {
   }//parent directory's entry loop
 
   AliInfo(Form("ESD chain created......."));	
-  AliInfo(Form("Chain entries: %l",fChain->GetEntries()));	
+  AliInfo(Form("Chain entries: %lld",fChain->GetEntries()));	
   // Switch of branches on user request
   SwitchOffBranches();
   CreateTag(fChain,"local");
@@ -189,7 +189,7 @@ Bool_t AliESDTagCreator::ReadCAFCollection(const char *filename) {
   }
 
   AliInfo(Form("ESD chain created......."));	
-  AliInfo(Form("Chain entries: %l",fChain->GetEntries()));	
+  AliInfo(Form("Chain entries: %lld",fChain->GetEntries()));	
   // Switch of branches on user request
   SwitchOffBranches();
   CreateTag(fChain,"proof");

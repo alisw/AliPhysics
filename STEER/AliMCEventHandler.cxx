@@ -284,7 +284,7 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
     }
 
     if (entry >= fNEvent) {
-	AliWarning(Form("AliMCEventHandler: Event number out of range %5l %5d\n", entry, fNEvent));
+	AliWarning(Form("AliMCEventHandler: Event number out of range %5lld %5d\n", entry, fNEvent));
 	return kFALSE;
     }
     

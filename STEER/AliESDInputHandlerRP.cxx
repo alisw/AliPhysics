@@ -133,7 +133,7 @@ Bool_t AliESDInputHandlerRP::BeginEvent(Long64_t entry)
     }
     
     if (entry >= fNEvents) {
-	AliWarning(Form("AliESDInputHandlerRP: Event number out of range %5l %5d\n", entry, fNEvents));
+	AliWarning(Form("AliESDInputHandlerRP: Event number out of range %5lld %5d\n", entry, fNEvents));
 	return kFALSE;
     }
     

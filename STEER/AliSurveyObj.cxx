@@ -196,7 +196,7 @@ Bool_t AliSurveyObj::OpenFile(TString openString) {
     AliError("Error reading file contents to buffer!");
     return kFALSE;
   }
-  AliInfo(Form("%l bytes read!\n", file->GetBytesRead()));
+  AliInfo(Form("%lld bytes read!\n", file->GetBytesRead()));
   
   ParseBuffer(buf);
 

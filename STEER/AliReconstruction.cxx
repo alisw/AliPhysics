@@ -1612,7 +1612,7 @@ void AliReconstruction::SlaveBegin(TTree*)
 
   ProcInfo_t procInfo;
   gSystem->GetProcInfo(&procInfo);
-  AliInfo(Form("Current memory usage %l %l", procInfo.fMemResident, procInfo.fMemVirtual));
+  AliInfo(Form("Current memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
   
   //QA
   //Initialize the QA and start of cycle 
@@ -2103,7 +2103,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     aveDMres+=(dMres-aveDMres)/(iEvent-fFirstEvent+1);
     aveDMvir+=(dMvir-aveDMvir)/(iEvent-fFirstEvent+1);
     aveDCPU+=(dCPU-aveDCPU)/(iEvent-fFirstEvent+1);
-    AliInfo(Form("======================= End Event %d: Res %d(%3l <%3l>) Vir %l(%3l <%3l>) CPU %5.2f <%5.2f> ===================",
+    AliInfo(Form("======================= End Event %d: Res %ld(%3ld <%3ld>) Vir %ld(%3ld <%3ld>) CPU %5.2f <%5.2f> ===================",
 		 iEvent, procInfo.fMemResident/1024, dMres, aveDMres, procInfo.fMemVirtual/1024, dMvir, aveDMvir, dCPU, aveDCPU));
     oldMres=procInfo.fMemResident;
     oldMvir=procInfo.fMemVirtual;

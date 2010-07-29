@@ -295,7 +295,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
 
       // Save trigger mask
       tree->Fill();
-      AliDebug(1, Form("Event:%d  Class Mask:0x%X", iEvent,fClassMask ) );
+      AliDebug(1, Form("Event:%d  Class Mask:0x%llX", iEvent,fClassMask ) );
    } // end event loop
 
    Reset();

@@ -63,7 +63,7 @@ public:
   void SetCacheDir(const char* cachedir) {fOutputCacheDir=cachedir;}
   
   const char* GetDrawString();
-  const char* GetDrawOption();
+  const char* GetDrawOption() const;
   void GetCutString(TString &cutStr);
   TChain* GetChain() const {return fTree;}
   //Slots

@@ -93,7 +93,7 @@ Bool_t AliAODTagCreator::ReadGridCollection(TGridResult *fresult) {
   }//grid result loop
   
   AliInfo(Form("AOD chain created......."));	
-  AliInfo(Form("Chain entries: %l",fChain->GetEntries()));	
+  AliInfo(Form("Chain entries: %lld",fChain->GetEntries()));	
 
   CreateTag(fChain, "grid");
   
@@ -129,7 +129,7 @@ Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath, const char* 
   } //parent directory's entry loop
   
   AliInfo(Form("AOD chain created......."));	
-  AliInfo(Form("Chain entries: %l",fChain->GetEntries()));	
+  AliInfo(Form("Chain entries: %lld",fChain->GetEntries()));	
 
   CreateTag(fChain, "local");
 
@@ -157,7 +157,7 @@ Bool_t AliAODTagCreator::ReadCAFCollection(const char *filename) {
   }
 
   AliInfo(Form("AOD chain created......."));	
-  AliInfo(Form("Chain entries: %l",fChain->GetEntries()));	
+  AliInfo(Form("Chain entries: %lld",fChain->GetEntries()));	
 
   CreateTag(fChain, "proof");
 
@@ -227,7 +227,7 @@ void AliAODTagCreator::CreateTag(TChain* chain, const char *type) {
     while((name = gSystem->GetDirEntry(dirp))) {
 	if (strstr(name,tagPattern)) fTreeTEsd->Add(name);
     }//directory loop
-    AliInfo(Form("Chained tag files: %l", fTreeTEsd->GetEntries()));
+    AliInfo(Form("Chained tag files: %lld", fTreeTEsd->GetEntries()));
       
     fChain = chain;
     

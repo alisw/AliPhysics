@@ -89,7 +89,7 @@ Bool_t AliTagCreator::MergeTags(const char *type) {
     while((name = gSystem->GetDirEntry(dirp))) {
       if (strstr(name,tagPattern)) fgChain->Add(name);  
     }//directory loop
-    AliInfo(Form("Chained tag files: %l",fgChain->GetEntries()));
+    AliInfo(Form("Chained tag files: %lld",fgChain->GetEntries()));
   }//local mode
 
   else if(fStorage == 1) {
@@ -103,7 +103,7 @@ Bool_t AliTagCreator::MergeTags(const char *type) {
       TString alienUrl = tagresult->GetKey(i,"turl");
       fgChain->Add(alienUrl);
     }//grid result loop      
-    AliInfo(Form("Chained tag files: %l",fgChain->GetEntries()));
+    AliInfo(Form("Chained tag files: %lld",fgChain->GetEntries()));
   }//grid mode
  
   AliRunTag *tag = new AliRunTag;
@@ -177,7 +177,7 @@ Bool_t AliTagCreator::MergeTags(const char *type, const char *inflist) {
       (*istr) >> fname;
       if (strstr(fname, tagPattern)) fgChain->Add(fname);
     }
-    AliInfo(Form("Chained tag files: %l",fgChain->GetEntries()));
+    AliInfo(Form("Chained tag files: %lld",fgChain->GetEntries()));
   }
  
   AliRunTag *tag = new AliRunTag;
@@ -224,7 +224,7 @@ Bool_t AliTagCreator::MergeTags(const char *type, TGridResult *result) {
     alienUrl = result->GetKey(i,"turl");
     fgChain->Add(alienUrl);  
   }
-  AliInfo(Form("Chained tag files: %l",fgChain->GetEntries()));
+  AliInfo(Form("Chained tag files: %lld",fgChain->GetEntries()));
   AliRunTag *tag = new AliRunTag;
   fgChain->SetBranchAddress("AliTAG",&tag);
   fgChain->GetEntry(0);
@@ -270,7 +270,7 @@ Bool_t AliTagCreator::MergeTagsForRun(const char* type) {
     while((name = gSystem->GetDirEntry(dirp))) {
       if (strstr(name,tagPattern)) fgChain->Add(name);  
     }//directory loop
-    AliInfo(Form("Chained tag files: %l",fgChain->GetEntries()));
+    AliInfo(Form("Chained tag files: %lld",fgChain->GetEntries()));
   }//local mode
 
   else if(fStorage == 1) {
@@ -284,7 +284,7 @@ Bool_t AliTagCreator::MergeTagsForRun(const char* type) {
       TString alienUrl = tagresult->GetKey(i,"turl");
       fgChain->Add(alienUrl);
     }//grid result loop      
-    AliInfo(Form("Chained tag files: %l",fgChain->GetEntries()));
+    AliInfo(Form("Chained tag files: %lld",fgChain->GetEntries()));
   }//grid mode
  
   AliRunTag *tag = new AliRunTag;
@@ -332,7 +332,7 @@ Bool_t AliTagCreator::MergeTagsForRun(const char* type, TGridResult *result) {
     alienUrl = result->GetKey(i,"turl");
     fgChain->Add(alienUrl);  
   }
-  AliInfo(Form("Chained tag files: %l",fgChain->GetEntries()));
+  AliInfo(Form("Chained tag files: %lld",fgChain->GetEntries()));
   AliRunTag *tag = new AliRunTag;
   fgChain->SetBranchAddress("AliTAG",&tag);
   fgChain->GetEntry(0);
@@ -403,7 +403,7 @@ Bool_t AliTagCreator::MergeTagsForRun(const char* type, const char *inflist) {
       (*istr) >> fname;
       if (strstr(fname, tagPattern)) fgChain->Add(fname);
     }
-    AliInfo(Form("Chained tag files: %l",fgChain->GetEntries()));
+    AliInfo(Form("Chained tag files: %lld",fgChain->GetEntries()));
   }
  
   AliRunTag *tag = new AliRunTag;
