@@ -148,7 +148,7 @@ int AliHLTTriggerGammaConversion::DoTrigger()
     ptcut.Form(" pt >= %.02f GeV/c ,", fPtMin);
   }
   maxDca.Form(" dca <= %.04fcm ,",fMaxDca);
-  maxR.Form(" r <= %.02cm", fMaxR);
+  maxR.Form(" r <= %.02fcm", fMaxR);
   
   if(fNReconstructedGammas>0){
     description.Form("Event contains %d gamma conversions,", fNReconstructedGammas);
