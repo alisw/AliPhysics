@@ -1690,7 +1690,10 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
    delete res;
    // Compute number of jobs that were submitted for the current stage
    Int_t ntotstage = countOrig;
-   for (i=1; i<=stage; i++) ntotstage = (ntotstage/nperchunk)+1;
+   for (i=1; i<=stage; i++) {
+      if (ntotstage%nperchunk) ntotstage = (ntotstage/nperchunk)+1;
+      else                     ntotstage = (ntotstage/nperchunk);
+   }   
    // Now compare with the number of set bits in the chunksDone array
    Int_t nmissing = (stage>0)?(ntotstage - countStage):0;
    // Print the info
@@ -1713,7 +1716,8 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
    }
    // Submit next stage of merging
    if (stage==0) countStage = countOrig;
-   Int_t nchunks = (countStage/nperchunk)+1;
+   Int_t nchunks = (countStage/nperchunk);
+   if (countStage%nperchunk) nchunks += 1;
    for (i=0; i<nchunks; i++) {
       Int_t jobId = SubmitSingleJob(Form("%s %d %d", query.Data(), stage+1, i));
       if (!jobId) return kFALSE;
