@@ -121,9 +121,9 @@ AliITSSortTrkl::~AliITSSortTrkl(){
   }
   DeleteClustersTmp();
   if(fClusters){
-    for(Int_t i=0;i<fNoClus;i++)delete []fClusters[i];
-    delete fClusters;
-    delete []fSize;
+    for(Int_t i=0;i<fNoClus;i++)delete [] fClusters[i];
+    delete [] fClusters;
+    delete [] fSize;
   } 
 }
 
@@ -136,7 +136,7 @@ void AliITSSortTrkl::DeleteClustersTmp(){
 	delete []fClustersTmp[i];
       }
     }
-    delete fClustersTmp;
+    delete [] fClustersTmp;
     fClustersTmp = NULL;
   }
 }

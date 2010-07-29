@@ -35,7 +35,7 @@ AliVectorSparse* AliMatrixSparse::GetRowAdd(Int_t ir)
   if (ir>=fNrows) {
     AliVectorSparse** arrv = new AliVectorSparse*[ir+1];
     for (int i=GetSize();i--;) arrv[i] = fVecs[i];
-    delete fVecs;
+    delete [] fVecs;
     fVecs = arrv;    
     for (int i=GetSize();i<=ir;i++) fVecs[i] = new AliVectorSparse();
     fNrows = ir+1;
@@ -61,7 +61,7 @@ AliMatrixSparse& AliMatrixSparse::operator=(const AliMatrixSparse& src)
 void AliMatrixSparse::Clear(Option_t*) 
 {
   for (int i=fNrows;i--;) delete GetRow(i);
-  delete[] fVecs;
+  delete [] fVecs;
   fNcols = fNrows = 0;
 }
 

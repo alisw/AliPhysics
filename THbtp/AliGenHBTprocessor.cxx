@@ -264,7 +264,7 @@ void AliGenHBTprocessor::CleanStatusCodes()
   {
     for (Int_t i =0; i<GetGenerator()->GetNumberOfEvents(); i++)
       delete [] fHbtPStatCodes[i];  
-    delete fHbtPStatCodes;
+    delete [] fHbtPStatCodes;
     fHbtPStatCodes = 0;
   }
 

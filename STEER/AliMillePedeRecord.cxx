@@ -108,12 +108,12 @@ void AliMillePedeRecord::ExpandDtBuffer(Int_t bfsize)
   bfsize = TMath::Max(bfsize,GetDtBufferSize());
   Int_t *tmpI = new Int_t[bfsize];
   memcpy(tmpI,fIndex, fSize*sizeof(Int_t));
-  delete fIndex;
+  delete [] fIndex;
   fIndex = tmpI;
   //
   Double_t *tmpD = new Double_t[bfsize];
   memcpy(tmpD,fValue, fSize*sizeof(Double_t));
-  delete fValue;
+  delete [] fValue;
   fValue = tmpD;
   //
   SetDtBufferSize(bfsize);
@@ -126,7 +126,7 @@ void AliMillePedeRecord::ExpandGrBuffer(Int_t bfsize)
   bfsize = TMath::Max(bfsize,GetGrBufferSize());
   UShort_t *tmpI = new UShort_t[bfsize];
   memcpy(tmpI,fGroupID, fNGroups*sizeof(UShort_t));
-  delete[] fGroupID;
+  delete [] fGroupID;
   fGroupID = tmpI;
   for (int i=fNGroups;i<bfsize;i++) fGroupID[i] = 0;
   //

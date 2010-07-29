@@ -1570,8 +1570,8 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *c
   }
 
   // transform TCF parameters into ALTRO readable format (Integer)
-  Int_t* valK = new Int_t[3];
-  Int_t* valL = new Int_t[3];
+  Int_t valK[3];
+  Int_t valL[3];
   for (Int_t i=0; i<3; i++) {
     valK[i] = (Int_t)(coefP[i]*(TMath::Power(2,16)-1));
     valL[i] = (Int_t)(coefZ[i]*(TMath::Power(2,16)-1));
@@ -1621,11 +1621,6 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *c
     // pulseTuple->Draw("sigAfterTCF:timebin","","Lsame");
   }
   
-  valK->~Int_t();
-  valL->~Int_t();
-
-  signalIn->~Double_t();
-  signalOut->~Double_t();
   delete [] signalIn;
   delete [] signalOut;
 

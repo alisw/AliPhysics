@@ -91,11 +91,11 @@ void AliHMPIDReconHTA::DeleteVars()const
 //..
 //Delete variables
 //..
-  if(fXClu) delete fXClu;
-  if(fYClu) delete fYClu;
-  if(fPhiPhot) delete fPhiPhot;
-  if(fThetaPhot) delete fThetaPhot;
-  if(fClCk) delete fClCk;
+  if(fXClu) delete [] fXClu;
+  if(fYClu) delete [] fYClu;
+  if(fPhiPhot) delete [] fPhiPhot;
+  if(fThetaPhot) delete [] fThetaPhot;
+  if(fClCk) delete [] fClCk;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDReconHTA::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t index, Double_t nmean)
