@@ -702,21 +702,24 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
  	   const Float_t p2 = 3.00; // slewing related term in the time resolution
 	   if(timeCorr[offlineCh]>-1024 + 1.e-6){
 			Float_t nphe = adc[offlineCh]*kChargePerADC/(fCalibData->GetGain(offlineCh)*TMath::Qe());
-			Float_t timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
+			Float_t timeErr = 0;
+			if (nphe) timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
 				      p1*p1/nphe+
 				      p2*p2*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*
 				      TMath::Power(adc[offlineCh]/fCalibData->GetDiscriThr(offlineCh),2.*(fTimeSlewing->GetParameter(1)-1.))/
 				      (fCalibData->GetDiscriThr(offlineCh)*fCalibData->GetDiscriThr(offlineCh)));
 
 
-			if (offlineCh<32) {
-			   itimeV0C++;
-			   timeV0C += timeCorr[offlineCh]/(timeErr*timeErr);
-			   weightV0C += 1./(timeErr*timeErr);
-			}else{
-			   itimeV0A++;
-			   timeV0A += timeCorr[offlineCh]/(timeErr*timeErr);
-			   weightV0A += 1./(timeErr*timeErr);
+			if (timeErr) {
+			  if (offlineCh<32) {
+			    itimeV0C++;
+			    timeV0C += timeCorr[offlineCh]/(timeErr*timeErr);
+			    weightV0C += 1./(timeErr*timeErr);
+			  }else{
+			    itimeV0A++;
+			    timeV0A += timeCorr[offlineCh]/(timeErr*timeErr);
+			    weightV0A += 1./(timeErr*timeErr);
+			  }
 			}
 	   }
 		GetRawsData(kHPTDCTime)->Fill(offlineCh,timeCorr[offlineCh]);
