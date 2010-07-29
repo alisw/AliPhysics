@@ -106,7 +106,10 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
       if (fHighPthreshold == 0) AliInfo("detector PID signals are stored in each track");
       if (!fPtshape) AliInfo("detector PID signals are not stored below the pt threshold");
   }
-  
+  // Filters must explicitely enable AOD filling in their UserExec (AG)
+  if (!AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()) AliFatal("Cannot run ESD filter without an output event handler");
+  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+
   ConvertESDtoAOD();
 }
 

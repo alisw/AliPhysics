@@ -309,13 +309,16 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
     AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
 //
-// Was event selected ?
-    UInt_t isSelected = 0;
-    if( fInputHandler && fInputHandler->GetEventSelection() && fOfflineTriggerMask) {
-      isSelected = fInputHandler->IsEventSelected() & fOfflineTriggerMask;
+// Was event selected ? If no event selection mechanism, the event SHOULD be selected (AG)
+    UInt_t isSelected = AliVEvent::kAny;
+    if( fInputHandler && fInputHandler->GetEventSelection()) {
+      // Get the actual offline trigger mask for the event
+      isSelected = fInputHandler->IsEventSelected();
+      // If the task had a selection AND it with the event mask (i.e. event interesting for the task if at least one matching trigger)
+      if (fOfflineTriggerMask) isSelected &= fOfflineTriggerMask;
     }
-
-    if (handler) handler->SetFillAOD(isSelected);
+//  Functionality below moved in the filter tasks (AG)
+//    if (handler) handler->SetFillAOD(isSelected);
 
     if( fInputHandler ) {
 	fEntry = fInputHandler->GetReadEntry();
@@ -494,10 +497,10 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
 
     if (!mcH) {
-	if (!fOfflineTriggerMask || isSelected) 
+	if (isSelected) 
 	    UserExec(option);
     } else {
-	if ((!fOfflineTriggerMask || isSelected) && (mcH->InitOk())) 
+	if (isSelected && (mcH->InitOk())) 
 	    UserExec(option);
     }
     
