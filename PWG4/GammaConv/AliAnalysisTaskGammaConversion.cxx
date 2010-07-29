@@ -1644,12 +1644,14 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
       for(Int_t iCh=0;iCh<fChargedParticles->GetEntriesFast();iCh++){
 	AliESDtrack* posTrack = (AliESDtrack*)(fChargedParticles->At(iCh));
 	if (posTrack->GetSign()<0) continue;
+	if(TMath::Abs(fV0Reader->GetESDpid()->NumberOfSigmasTPC(posTrack,AliPID::kPion))>2.) continue;
 	if (posPiKF) delete posPiKF; posPiKF=NULL;
 	posPiKF = new AliKFParticle( *(posTrack) ,211);
 	
 	for(Int_t jCh=0;jCh<fChargedParticles->GetEntriesFast();jCh++){
 	  AliESDtrack* negTrack = (AliESDtrack*)(fChargedParticles->At(jCh));
 	  if( negTrack->GetSign()>0) continue;
+	  if(TMath::Abs(fV0Reader->GetESDpid()->NumberOfSigmasTPC(negTrack,AliPID::kPion))>2.) continue;
 	  if (negPiKF) delete negPiKF; negPiKF=NULL;
 	  negPiKF = new AliKFParticle( *(negTrack) ,-211);
 	  AliKFParticle omegaCandidatePipPinPi0(*omegaCandidatePi0Daughter,*posPiKF,*negPiKF);
