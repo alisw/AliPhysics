@@ -125,21 +125,21 @@ void AliUA1JetFinderV2::FindJetsC()
   Double_t dEtTotal = (TMath::Sqrt(npart))*TMath::Sqrt(meanpt * meanpt + ptRMS*ptRMS);
   
   // arrays to hold jets
-  Float_t* etaJet    = new Float_t[30];  // eta jet
-  Float_t* phiJet    = new Float_t[30];  // phi jet
-  Float_t* etJet     = new Float_t[30];  // et jet
-  Float_t* etsigJet  = new Float_t[30];  // signal et in jet
-  Float_t* etallJet  = new Float_t[30];  // total et in jet (tmp variable)
-  Int_t*   ncellsJet = new Int_t[30];
-  Int_t*   multJet   = new Int_t[30];
+  Float_t etaJet[30];  // eta jet
+  Float_t phiJet[30];  // phi jet
+  Float_t etJet[30];  // et jet
+  Float_t etsigJet[30];  // signal et in jet
+  Float_t etallJet[30];  // total et in jet (tmp variable)
+  Int_t   ncellsJet[30];
+  Int_t   multJet[30];
   //--- Added for jet reordering at the end of the jet finding procedure
-  Float_t* etaJetOk    = new Float_t[30];
-  Float_t* phiJetOk    = new Float_t[30];
-  Float_t* etJetOk     = new Float_t[30];
-  Float_t* etsigJetOk  = new Float_t[30];  // signal et in jet
-  Float_t* etallJetOk  = new Float_t[30];  // total et in jet (tmp variable)
-  Int_t*   ncellsJetOk = new Int_t[30];
-  Int_t*   multJetOk   = new Int_t[30];
+  Float_t etaJetOk[30];
+  Float_t phiJetOk[30];
+  Float_t etJetOk[30];
+  Float_t etsigJetOk[30];  // signal et in jet
+  Float_t etallJetOk[30];  // total et in jet (tmp variable)
+  Int_t   ncellsJetOk[30];
+  Int_t   multJetOk[30];
   //--------------------------
   Int_t nJets; // to hold number of jets found by algorithm
   Int_t nj;    // number of jets accepted
@@ -266,26 +266,13 @@ void AliUA1JetFinderV2::FindJetsC()
   delete[] cFlagT;
   delete[] sFlagT;
   delete[] injet;
-  delete[] hPtTotal;
-  delete[] etaJet;
-  delete[] phiJet;
-  delete[] etJet;
-  delete[] etsigJet;
-  delete[] etallJet;
-  delete[] ncellsJet;
-  delete[] multJet;
+  delete hPtTotal;
   delete[] idxjets;
+  delete[] idx;
+
   delete[] percentage;
   delete[] ncells;
   delete[] mult;
-  //--- Added for jet reordering
-  delete [] etaJetOk;
-  delete [] phiJetOk;
-  delete [] etJetOk;
-  delete [] etsigJetOk;
-  delete [] etallJetOk;
-  delete [] ncellsJetOk;
-  delete [] multJetOk;
   //--------------------------
 
 }
@@ -516,21 +503,21 @@ void AliUA1JetFinderV2::FindJets()
   Double_t dEtTotal = (TMath::Sqrt(npart))*TMath::Sqrt(meanpt * meanpt + ptRMS*ptRMS);
 
   // arrays to hold jets
-  Float_t* etaJet    = new Float_t[30];
-  Float_t* phiJet    = new Float_t[30];
-  Float_t* etJet     = new Float_t[30];
-  Float_t* etsigJet  = new Float_t[30]; //signal et in jet
-  Float_t* etallJet  = new Float_t[30];  // total et in jet (tmp variable)
-  Int_t*   ncellsJet = new Int_t[30];
-  Int_t*   multJet   = new Int_t[30];
+  Float_t etaJet[30];
+  Float_t phiJet[30];
+  Float_t etJet[30];
+  Float_t etsigJet[30]; //signal et in jet
+  Float_t etallJet[30];  // total et in jet (tmp variable)
+  Int_t   ncellsJet[30];
+  Int_t   multJet[30];
   //--- Added by me for jet reordering at the end of the jet finding procedure
-  Float_t* etaJetOk    = new Float_t[30];
-  Float_t* phiJetOk    = new Float_t[30];
-  Float_t* etJetOk     = new Float_t[30];
-  Float_t* etsigJetOk  = new Float_t[30]; //signal et in jet
-  Float_t* etallJetOk  = new Float_t[30];  // total et in jet (tmp variable)
-  Int_t*   ncellsJetOk = new Int_t[30];
-  Int_t*   multJetOk   = new Int_t[30];
+  Float_t etaJetOk[30];
+  Float_t phiJetOk[30];
+  Float_t etJetOk[30];
+  Float_t etsigJetOk[30]; //signal et in jet
+  Float_t etallJetOk[30];  // total et in jet (tmp variable)
+  Int_t   ncellsJetOk[30];
+  Int_t   multJetOk[30];
   //--------------------------
   Int_t    nJets; // to hold number of jets found by algorithm
   Int_t    nj;    // number of jets accepted
@@ -689,51 +676,39 @@ void AliUA1JetFinderV2::FindJets()
 
 
   //delete
-  delete ptT;
-  delete en2T;
-  delete pt2T;
-  delete etaT;
-  delete phiT;
+  delete [] ptT;
+  delete [] en2T;
+  delete [] pt2T;
+  delete [] etaT;
+  delete [] phiT;
+  delete [] detT;
+  delete [] cFlagT;
+  delete [] cFlag2T;
+  delete [] sFlagT;
+  delete [] cClusterT;
+  delete [] vectT;
+  delete [] injet;
+  delete [] sflag;
   trackRef->Delete();
   delete trackRef;
-  delete detT;
-  delete cFlagT;
-  delete cFlag2T;
-  delete sFlagT;
-  delete cClusterT;
-  delete vectT;
-  delete injet;
-  delete sflag;
+
   delete hPtTotal;
-  delete etCell;
-  delete etaCell;
-  delete phiCell;
-  delete flagCell;
-  delete etCell2;
-  delete etaCell2;
-  delete phiCell2;
-  delete flagCell2;
-  delete [] etaJet;
-  delete [] phiJet;
-  delete [] etJet;
-  delete [] etsigJet;
-  delete [] etallJet;
-  delete [] ncellsJet;
-  delete [] multJet;
-  //--- Added for jet reordering
-  delete [] etaJetOk;
-  delete [] phiJetOk;
-  delete [] etJetOk;
-  delete [] etsigJetOk;
-  delete [] etallJetOk;
-  delete [] ncellsJetOk;
-  delete [] multJetOk;
+  delete [] etCell;
+  delete [] etaCell;
+  delete [] phiCell;
+  delete [] flagCell;
+  delete [] etCell2;
+  delete [] etaCell2;
+  delete [] phiCell2;
+  delete [] flagCell2;
   //--------------------------
-  delete trackinjet;
-  delete idxjets;
-  delete percentage;
-  delete ncells;
-  delete mult;
+  delete [] idxjets;
+  delete [] idx;
+  delete [] trackinjet;
+
+  delete [] percentage;
+  delete [] ncells;
+  delete [] mult;
 
 }
 

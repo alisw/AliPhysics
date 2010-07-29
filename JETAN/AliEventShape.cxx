@@ -185,7 +185,6 @@ TArrayD * AliEventShape::GetThrustParamMC(AliMCEvent* mcEvent, Int_t  nstudymin,
   evsh->AddAt(recoil, 2);
 
 
-  delete evsh;
   delete [] ptT;
   delete [] pxT;
   delete [] pyT;
