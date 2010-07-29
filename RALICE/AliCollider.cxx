@@ -145,7 +145,8 @@ AliCollider::AliCollider() : TPythia6()
 
  fSpecpmin=0;
 
- fFrame="none";
+ fFrame=new char[5];
+ strcpy(fFrame,"none");
  fWin=0;
 
  fNucl=0;
