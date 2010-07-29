@@ -94,13 +94,15 @@ public:
    static Bool_t       DirectoryExists(const char *lfn);
    static Bool_t       FileExists(const char *lfn);
    static const char  *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
-   static Bool_t       MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge);
+   static Bool_t       CheckMergedFiles(const char *filename, const char *aliendir, Int_t nperchunk, Bool_t submit=kTRUE, const char *jdl="");
+   static Bool_t       MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge, Int_t stage=0, Int_t ichunk=0);
    virtual Bool_t      MergeOutputs();
    virtual void        Print(Option_t *option="") const;
    virtual Bool_t      StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
    static Bool_t       SetupPar(const char *package);
    virtual Bool_t      Submit();
    virtual Bool_t      SubmitMerging();
+   static Int_t        SubmitSingleJob(const char *query);
    virtual void        WriteAnalysisFile();
    virtual void        WriteAnalysisMacro();
    virtual void        WriteMergingMacro();
