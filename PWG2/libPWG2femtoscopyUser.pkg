@@ -30,6 +30,9 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnTPCNcls.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnDEtaDPhi.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnGammaMonitor.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoQinvCorrFctnEMCIC.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctn3DSphericalEMCIC.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoBPLCMS3DCorrFctnEMCIC.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoPairCutAntiGamma.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticleEtCorr.cxx
 
