@@ -281,8 +281,15 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   hbtEvent->SetPrimVertPos(vertex);
   hbtEvent->SetPrimVertCov(fVCov);
-	
-  hbtEvent->SetSPDMult(fEvent->GetMultiplicity()->GetNumberOfTracklets());
+  
+  Int_t spdetaonecount = 0;
+  
+  for (int iter=0; iter<fEvent->GetMultiplicity()->GetNumberOfTracklets(); iter++) 
+    if (fabs(fEvent->GetMultiplicity()->GetEta(iter)) < 1.0)
+      spdetaonecount++;
+
+  //  hbtEvent->SetSPDMult(fEvent->GetMultiplicity()->GetNumberOfTracklets());
+  hbtEvent->SetSPDMult(spdetaonecount);
 
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
@@ -320,18 +327,61 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 //   }
 
   int tNormMult = 0;
+  int tNormMultPos = 0;
+  int tNormMultNeg = 0;
+
+  Float_t tTotalPt = 0.0;
+
+  Float_t b[2];
+  Float_t bCov[3];
+
   for (int i=0;i<nofTracks;i++)
+
+
     {
       bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
 
       const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
       //      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
-      if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit)
-	if (esdtrack->GetTPCNcls() > 80) 
-	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 6.0) 
-	    if (esdtrack->GetConstrainedParam())
-	      if (esdtrack->GetConstrainedParam()->Eta() < 0.9)
+
+      if ((esdtrack->GetStatus() & AliESDtrack::kTPCrefit) &&
+	  (esdtrack->GetStatus() & AliESDtrack::kITSrefit)) {
+	if (esdtrack->GetTPCNcls() > 70) 
+	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 4.0) {
+	    if (TMath::Abs(esdtrack->Eta()) < 0.8) {
+	      esdtrack->GetImpactParameters(b,bCov);
+	      if ((b[0]<0.2) && (b[1] < 0.25)) {
 		tNormMult++;
+		tTotalPt += esdtrack->Pt();
+	      }
+	    }
+	  }
+      }
+      else if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit) {
+	if (esdtrack->GetTPCNcls() > 100) 
+	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 4.0) {
+	    if (TMath::Abs(esdtrack->Eta()) < 0.8) {
+	      esdtrack->GetImpactParameters(b,bCov);
+	      if ((b[0]<2.4) && (b[1] < 3.2)) {
+		tNormMult++;
+		tTotalPt += esdtrack->Pt();
+	      }
+	    }
+	  }
+      }
+      
+      hbtEvent->SetZDCEMEnergy(tTotalPt);
+//       if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit)
+// 	if (esdtrack->GetTPCNcls() > 80) 
+// 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 6.0) 
+// 	    if (esdtrack->GetConstrainedParam())
+// 	      if (fabs(esdtrack->GetConstrainedParam()->Eta()) < 0.5)
+// 		if (esdtrack->GetConstrainedParam()->Pt() < 1.0) {
+// 		  if (esdtrack->GetSign() > 0)
+// 		    tNormMultPos++;
+// 		  else if (esdtrack->GetSign() < 0)
+// 		    tNormMultNeg--;
+// 		}
 
       // If reading ITS-only tracks, reject all with TPC
       if (fTrackType == kITSOnly) {
@@ -481,6 +531,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
       trackCopy->SetTPCncls(esdtrack->GetTPCNcls());       
       trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
+      trackCopy->SetTPCsignal(esdtrack->GetTPCsignal());
       trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
       trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
 
@@ -519,6 +570,11 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   hbtEvent->SetNormalizedMult(tNormMult);
+  if (tNormMultPos > tNormMultNeg)
+    hbtEvent->SetZDCParticipants(tNormMultPos);
+  else
+    hbtEvent->SetZDCParticipants(tNormMultNeg);
+
   fCurEvent++;	
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
   return hbtEvent; 
