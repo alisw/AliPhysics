@@ -46,10 +46,11 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
      (mult <= fEventMult[1]) && 
      (vertexZPos > fVertZPos[0]) &&
      (vertexZPos < fVertZPos[1]) &&
-     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
+     ((!fAcceptBadVertex) || (event->ZDCParticipants() > 1.0)) &&
      ((!fAcceptOnlyPhysics) || (event->IsCollisionCandidate())));
   goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
 //   cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
+//     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
   return (goodEvent);
 }
 //------------------------------
