@@ -354,7 +354,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   Bool_t aodEventSelected = IsEventSelectedAOD(aod);
 
-  Bool_t physicsSelection = fInputHandler->IsEventSelected();
+  Bool_t physicsSelection = ((fInputHandler->IsEventSelected())&AliVEvent::kMB);
 
   if(esdEventSelected) fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kVertexIn;
   if(esdEventPileUp)   fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kIsPileUp;
