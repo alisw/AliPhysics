@@ -95,7 +95,7 @@ void AliACORDEQADataMakerSim::InitHits()
 	fHitsACORDE = new TH1F("ACORDEBitPatternfromHits","Distribution of ACORDE fired modules from HITS",60,1,60);
 	Add2HitsList(fHitsACORDE,0,!expert,image);
 
-      	char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
+      const char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
                         "1_0","1_1","1_2","1_3","1_4","1_5","1_6","1_7","1_8","1_9",
                         "2_0","2_1","2_2","2_3","2_4","2_5","2_6","2_7","2_8","2_9",
                         "3_0","3_1","3_2","3_3","3_4","3_5","3_6","3_7","3_8","3_9",
@@ -124,7 +124,7 @@ void AliACORDEQADataMakerSim::InitDigits()
   TH1F *    fhDigitsModule;
   fhDigitsModule = new TH1F("ACORDEBitPatternfromDigits","Distribution of ACORDE fired modules from DIGITS",60,1,60);
   Add2DigitsList(fhDigitsModule,0,!expert,image);
-  char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
+  const char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
                         "1_0","1_1","1_2","1_3","1_4","1_5","1_6","1_7","1_8","1_9",
                         "2_0","2_1","2_2","2_3","2_4","2_5","2_6","2_7","2_8","2_9",
                         "3_0","3_1","3_2","3_3","3_4","3_5","3_6","3_7","3_8","3_9",
