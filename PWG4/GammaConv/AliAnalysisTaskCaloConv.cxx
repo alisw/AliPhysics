@@ -2110,7 +2110,7 @@ void AliAnalysisTaskCaloConv::FillHistogram(const char * key,Double_t x,Double_t
     ((TH2F*)tmp)->Fill(x,y) ;
     return ;
   }
-  AliError(Form("Calling FillHistogram with 2 parameters for histo <%s> of type %s",key,tmp->IsA())) ;
+  AliError(Form("Calling FillHistogram with 2 parameters for histo <%s> of type %s",key,tmp->IsA()->GetName())) ;
 }
 
 
