@@ -89,6 +89,7 @@ private:
   unsigned long int fNumRealsNorm; // pairs in numerator in Qinv normalization range
   unsigned long int fNumMixedNorm; // pairs in denominator in Qinv normalization range
 
+ protected:
   unsigned short fUseRPSelection;  // The pair cut uses RP selection
 
   //  AliFemtoCoulomb* fCorrection; //!
