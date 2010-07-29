@@ -278,7 +278,7 @@ Bool_t AliTriggerConfiguration::AddMask( AliTriggerBCMask* mask )
 {
   // Add a trigger bunch-crossing mask object to
   // the list of the trigger bunch-crossing masks
-  if (fMasks.GetEntries() < kNMaxMasks) {
+  if (fMasks.GetEntries() < (kNMaxMasks+1)) {  //+1 to account for NONE
       fMasks.AddLast( mask );
       return kTRUE;
   }
@@ -586,6 +586,7 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
        // Read logical functions and descriptors
        if (ntokens < 2) {
 	 if ((((TObjString*)tokens->At(0))->String().CompareTo("EMPTY") == 0) ||
+	     (((TObjString*)tokens->At(0))->String().CompareTo("DTRUE") == 0) ||
 	     (((TObjString*)tokens->At(0))->String().CompareTo("DEMPTY") == 0)) {
 	   AddDescriptor(((TObjString*)tokens->At(0))->String(),
 			 strLine.ReplaceAll(((TObjString*)tokens->At(0))->String(),""));
@@ -658,7 +659,9 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
 	   return kFALSE;
          }
        if (((TObjString*)tokens->At(0))->String().CompareTo("NONE") == 0)
-	 AddMask(new AliTriggerBCMask(((TObjString*)tokens->At(0))->String()));
+       {	 
+         AddMask(new AliTriggerBCMask(((TObjString*)tokens->At(0))->String()));
+       }
        else {
 	 AddMask(((TObjString*)tokens->At(0))->String(),
 		      ((TObjString*)tokens->At(1))->String());
