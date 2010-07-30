@@ -161,13 +161,13 @@ int main(int argc, char **argv) {
     
     switch (event->eventType){
       
-      case START_OF_RUN:
-	break;
+    case START_OF_RUN:
+      break;
 	
     case END_OF_RUN:
       break;
       
-        case PHYSICS_EVENT:
+    case PHYSICS_EVENT:
 	  //    case CALIBRATION_EVENT:
       iev++;
       
@@ -243,8 +243,9 @@ int main(int argc, char **argv) {
 	}
 	   
      delete start;
-      start = 0x0;
-      reader->Reset();
+     start = 0x0;
+     delete reader;
+     reader= 0x0;
       // End of fill histograms
       
     }
@@ -262,14 +263,15 @@ int main(int argc, char **argv) {
   printf("After loop, before writing histos\n");
   // write a file with the histograms
 
-  TFile *hist = new TFile(FILE_OUT,"RECREATE");
+  TFile hist(FILE_OUT,"RECREATE");
 
   for(Int_t j=0;j<24;j++){
-     hCFD1minCFD[j]->Write();
-    }
+    hCFD1minCFD[j]->SetDirectory(&hist);
+    hCFD1minCFD[j]->Write();
+  }
   hVertex->Write();
-  hist->Close();
-  delete hist;
+  hist.Close();
+  //delete hist;
 
   status=0;
 
