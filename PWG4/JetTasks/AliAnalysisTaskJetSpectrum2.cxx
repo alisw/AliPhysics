@@ -124,12 +124,12 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh2DijetDifvsSum(0x0),        
   fh1DijetMinv(0x0),            
   fh1DijetMinvCut(0x0),         
-  fh1kg1(0x0),
-  fh1kg2(0x0),
+  fh1Bkg1(0x0),
+  fh1Bkg2(0x0),
   fh1Sigma1(0x0),
   fh1Sigma2(0x0),
-  fhArea1(0x0),
-  fhArea2(0x0),
+  fh1Area1(0x0),
+  fh1Area2(0x0),
   fh1Ptjet(0x0),
   fh1Ptjetsub1(0x0),
   fh1Ptjetsub2(0x0),
@@ -224,12 +224,12 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2DijetDifvsSum(0x0),        
   fh1DijetMinv(0x0),            
   fh1DijetMinvCut(0x0),         
-  fh1kg1(0x0),
-  fh1kg2(0x0),
+  fh1Bkg1(0x0),
+  fh1Bkg2(0x0),
   fh1Sigma1(0x0),
   fh1Sigma2(0x0),
-  fhArea1(0x0),
-  fhArea2(0x0),
+  fh1Area1(0x0),
+  fh1Area2(0x0),
   fh1Ptjet(0x0),
   fh1Ptjetsub1(0x0),
   fh1Ptjetsub2(0x0),
@@ -457,12 +457,12 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1DijetMinvCut           = new TH1F("fh1DijetMinvCut","Dijet invariant mass;m_{JJ}",nBinPt,binLimitsPt);
   //background histograms
   if(fBkgSubtraction){
-    fh1kg1 = new TH1F("fh1kg1","Background estimate 1",100,0.,10.);
-    fh1kg2 = new TH1F("fh1kg2","Background estimate 2",100,0.,10.);
+    fh1Bkg1 = new TH1F("fh1Bkg1","Background estimate 1",100,0.,10.);
+    fh1Bkg2 = new TH1F("fh1Bkg2","Background estimate 2",100,0.,10.);
     fh1Sigma1 = new TH1F("fh1Sigma1","Background fluctuations 1",100,0.,10.);
     fh1Sigma2 = new TH1F("fh1Sigma2","Background fluctuations 2",100,0.,10.);
-    fhArea1 = new TH1F("fhArea1","Background mean area 1",50,0.,5.);
-    fhArea2 = new TH1F("fhArea2","Background mean area 2",50,0.,5.);
+    fh1Area1 = new TH1F("fh1Area1","Background mean area 1",50,0.,5.);
+    fh1Area2 = new TH1F("fh1Area2","Background mean area 2",50,0.,5.);
     
     fh1Ptjet = new TH1F("fh1Ptjet","Jet spectrum",100,0.,200.);
     fh1Ptjetsub1 = new TH1F("fh1Ptjetsub1","Subtracted spectrum 1",50,0.,200.);
@@ -537,12 +537,12 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh1DijetMinv);                    
     fHistList->Add(fh1DijetMinvCut);                 
     if(fBkgSubtraction){
-      fHistList->Add(fh1kg1);
-      fHistList->Add(fh1kg2);
+      fHistList->Add(fh1Bkg1);
+      fHistList->Add(fh1Bkg2);
       fHistList->Add(fh1Sigma1);
       fHistList->Add(fh1Sigma2);
-      fHistList->Add(fhArea1);
-      fHistList->Add(fhArea2);
+      fHistList->Add(fh1Area1);
+      fHistList->Add(fh1Area2);
       fHistList->Add(fh1Ptjet);
       fHistList->Add(fh1Ptjethardest);
       fHistList->Add(fh1Ptjetsub1);
@@ -668,12 +668,12 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
        Float_t sigma2=evBkg->GetSigma(1);
        Float_t area1=evBkg->GetMeanarea(0);
        Float_t area2=evBkg->GetMeanarea(1);  
-       fh1kg1->Fill(bkg1); //rho computed with all background jets.
-       fh1kg2->Fill(bkg2); //rho computed with all background jets but the hardest. 
+       fh1Bkg1->Fill(bkg1); //rho computed with all background jets.
+       fh1Bkg2->Fill(bkg2); //rho computed with all background jets but the hardest. 
        fh1Sigma1->Fill(sigma1); 
        fh1Sigma2->Fill(sigma2);
-       fhArea1->Fill(area1);
-       fhArea2->Fill(area2);
+       fh1Area1->Fill(area1);
+       fh1Area2->Fill(area2);
        
        
        
