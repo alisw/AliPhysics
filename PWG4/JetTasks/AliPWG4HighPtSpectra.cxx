@@ -156,8 +156,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     return;
   }
 
-  Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(!isSelected) { //Select collison candidates
+  UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if(!(isSelected&AliVEvent::kMB)) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
     PostData(0,fHistList);
     PostData(1,fCFManagerPos->GetParticleContainer());
