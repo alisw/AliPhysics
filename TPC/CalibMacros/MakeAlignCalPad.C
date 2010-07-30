@@ -39,7 +39,8 @@
   //2
   InitTPCalign(); 
   MakeFits();      // this is logn proceure 30 minutes
-  UpdateOCDB(0,AliCDBRunRange::Infinity());
+
+  //UpdateOCDB(0,AliCDBRunRange::Infinity());
   //
    gROOT->Macro("~/NimStyle.C")
 
@@ -337,6 +338,7 @@ void UpdateEffSectorOCDB(){
   effSector->fCorrectionR=(TH3F*)hisR->Clone();
   effSector->fCorrectionZ=(TH3F*)his3DZ->Clone();
   geffCorr=effSector;
+  AliTPCCorrection::AddVisualCorrection(geffCorr,0);
   //
   //
   //
@@ -356,6 +358,7 @@ void UpdateEffSectorOCDB(){
       if (corrSec->fCorrectionZ) corrSec->fCorrectionR->Add(effSector->fCorrectionZ);
       else corrSec->fCorrectionZ=(TH3F*)effSector->fCorrectionZ->Clone();
     }
+    if (i==0) AliTPCCorrection::AddVisualCorrection(corrSec,1);
     }}
 // make OCDB entries
   TString userName=gSystem->GetFromPipe("echo $USER");
@@ -463,7 +466,7 @@ void MakePlotDeltaZ(){
   for (Int_t isec=0; isec<18; isec++){
     cCRef->cd(isec+1);
     TCut cutS=Form("abs(sector-0.5-%d)<0.1",isec);
-    tree0->Draw("(PZ.mean-MZ.mean)*10.:localX:abs(kZ)",cutS+cut+"kZ0<0&&abs(kZ)<1","colz");
+    tree0->Draw("(PZ.mean-MZ.mean)*10.:localX:abs(kZ)",cutS+cut+"kZ<0&&abs(kZ)<1","colz");
     his=(TH1*)tree0->GetHistogram()->Clone();
     his->GetXaxis()->SetTitle("r (cm)");
     his->GetYaxis()->SetTitle("#Delta_{z} (mm)");
@@ -489,47 +492,39 @@ void MakePlotDeltaZ(){
 
 
 void MakeAlign(){
+  //
+  // make  sector alignment - using Kalman filter method -AliTPCkalmanAlign
+  // Combined information is used, mean residuals are minimized:
+  //
+  // 1. TPC-TPC sector alignment
+  // 2. TPC-ITS alignment
+  // 3. TPC vertex alignment 
+  //
   TFile fcalib("../mergeField0/TPCAlignObjects.root");
   AliTPCcalibAlign * align = ( AliTPCcalibAlign *)fcalib.Get("alignTPC");
   TFile f0("../mergeField0/mean.root");
-  TFile fP("../mergePlus/mean.root");
-  TFile fM("../mergeMinus/mean.root");
 
   //
-  TTree *itsdy0=(TTree*)f0.Get("ITSdy");
-  TTree *itsdyP=(TTree*)fP.Get("ITSdy");
-  TTree *itsdyM=(TTree*)fM.Get("ITSdy");
-  TTree *itsdp0=(TTree*)f0.Get("ITSdsnp");
-  TTree *itsdpP=(TTree*)fP.Get("ITSdsnp");
-  TTree *itsdpM=(TTree*)fM.Get("ITSdsnp");
-  TTree *itsdz0=(TTree*)f0.Get("ITSdz");
-  TTree *itsdzP=(TTree*)fP.Get("ITSdz");
-  TTree *itsdzM=(TTree*)fM.Get("ITSdz");
-  TTree *vdy0=(TTree*)f0.Get("Vertexdy");
-  TTree *vdyP=(TTree*)fP.Get("Vertexdy");
-  TTree *vdyM=(TTree*)fM.Get("Vertexdy");
-  TTree *vds0=(TTree*)f0.Get("Vertexdsnp");
-  TTree *vdsP=(TTree*)fP.Get("Vertexdsnp");
-  TTree *vdsM=(TTree*)fM.Get("Vertexdsnp");
-  itsdy0->SetMarkerStyle(25);
-  itsdy0->SetMarkerSize(0.3);
-  itsdy0->AddFriend(itsdyP,"P");
-  itsdy0->AddFriend(itsdyM,"M");
-  itsdy0->AddFriend(vdy0,"V");
-  itsdy0->AddFriend(vdyP,"VP");
-  itsdy0->AddFriend(vdyM,"VM");
-  itsdy0->AddFriend(itsdz0,"Z");
-  itsdy0->AddFriend(itsdzP,"ZM");
-  itsdy0->AddFriend(itsdzM,"ZP");
-  itsdy0->AddFriend(itsdp0,"Snp");
-  itsdy0->AddFriend(itsdpP,"SnpM");
-  itsdy0->AddFriend(itsdpM,"SnpP");
-  itsdy0->AddFriend(vds0,"VSnp");
-  itsdy0->AddFriend(vdsP,"VSnpM");
-  itsdy0->AddFriend(vdsM,"VSnpP");
+  TTree *itsdy=(TTree*)f0.Get("ITSdy");
+  TTree *itsdp=(TTree*)f0.Get("ITSdsnp");
+  TTree *itsdz=(TTree*)f0.Get("ITSdz");
+  TTree *itsdt=(TTree*)f0.Get("ITSdtheta");
+  //
+  TTree *vdy=(TTree*)f0.Get("Vertexdy");
+  TTree *vds=(TTree*)f0.Get("Vertexdsnp");
+  TTree *vdz=(TTree*)f0.Get("Vertexdz");
+  TTree *vdt=(TTree*)f0.Get("Vertexdtheta");
 
-  itsdy0->SetMarkerStyle(25);
-  itsdy0->SetMarkerSize(0.4);
+  itsdy->AddFriend(itsdp,"Snp");
+  itsdy->AddFriend(itsdz,"Z");
+  itsdy->AddFriend(itsdt,"T");
+  //
+  itsdy->AddFriend(vdy,"V");
+  itsdy->AddFriend(vds,"VSnp");
+  itsdy->AddFriend(vdz,"VZ");
+  itsdy->AddFriend(vdt,"VT");
+  itsdy->SetMarkerStyle(25);
+  itsdy->SetMarkerSize(0.4);
 
   TCut cutQ="entries>500&&abs(theta)<0.8&&abs(snp)<0.2";
   TH1F his1("hdeltaY1","hdeltaY1",100,-0.5,0.5);
@@ -539,22 +534,24 @@ void MakeAlign(){
   TVectorD vecITSY(72);
   TVectorD vecITSS(72);
   TVectorD vecVS(72);
+  TVectorD vecITSTan(72);
+  TVectorD vecVTan(72);
   {for (Int_t isec0=0; isec0<36; isec0++){
       Double_t phi0=(isec0%18+0.5)*TMath::Pi()/9.;
       if (phi0>TMath::Pi()) phi0-=TMath::TwoPi();
       Int_t iside0=(isec0%36<18)? 0:1;
       TCut cutSector=Form("abs(%f-phi)<0.14",phi0);
       TCut cutSide = (iside0==0)? "theta>0":"theta<0";
-      itsdy0->Draw("mean",cutQ+cutSector+cutSide);
-      Double_t meanITSY=itsdy0->GetHistogram()->GetMean()/83.6;
+      itsdy->Draw("mean",cutQ+cutSector+cutSide);
+      Double_t meanITSY=itsdy->GetHistogram()->GetMean()/83.6;
       vecITSY[isec0]=meanITSY;
       vecITSY[isec0+36]=meanITSY;
-      itsdy0->Draw("Snp.mean",cutQ+cutSector+cutSide);
-      Double_t meanITSS=itsdy0->GetHistogram()->GetMean();
+      itsdy->Draw("Snp.mean",cutQ+cutSector+cutSide);
+      Double_t meanITSS=itsdy->GetHistogram()->GetMean();
       vecITSS[isec0]=meanITSS;
       vecITSS[isec0+36]=meanITSS;
-      itsdy0->Draw("VSnp.mean",cutQ+cutSector+cutSide);
-      Double_t meanVS=itsdy0->GetHistogram()->GetMean();
+      itsdy->Draw("VSnp.mean",cutQ+cutSector+cutSide);
+      Double_t meanVS=itsdy->GetHistogram()->GetMean();
       vecVS[isec0]=meanVS;
       vecVS[isec0+36]=meanVS;
     }
@@ -614,6 +611,9 @@ void MakeAlign(){
     }
     }
   }
+  pcstream->GetFile()->cd();
+  vecAlign.Write("alignPhiMean");
+  covAlign.Write("alingPhiCovar");
   delete pcstream;
   TFile f("combAlign.root");
   TTree * treeA = (TTree*)f.Get("align"); 
