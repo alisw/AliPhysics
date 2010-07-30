@@ -26,6 +26,7 @@
 #pragma link C++ class AliAnalysisCentralCutEvtESD+;
 #pragma link C++ class AliAnalysisCentralExtrapolate+;
 #pragma link C++ class AliAnalysisTaskCentral+;
+#pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 #pragma link C++ class AliBWTools+;
 #pragma link C++ class AliBWFunc+;
 #pragma link C++ class AliLatexTable+;
