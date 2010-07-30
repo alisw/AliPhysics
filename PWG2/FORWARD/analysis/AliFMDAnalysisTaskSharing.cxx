@@ -87,6 +87,17 @@ AliFMDAnalysisTaskSharing::AliFMDAnalysisTaskSharing(const char* name, Bool_t SE
   }
 }
 //_____________________________________________________________________
+Float_t AliFMDAnalysisTaskSharing::GetVtxEfficiencyFromData(){
+  
+  TH1F* hEventsVtx = (TH1F*)fDiagList->FindObject("hEventsVtx");
+  TH1F* hEventsTr  = (TH1F*)fDiagList->FindObject("hEventsTr");
+  
+  if(hEventsTr->GetEntries() != 0 && hEventsVtx->GetEntries() !=0 && hEventsTr->GetEntries() != hEventsVtx->GetEntries())
+    return hEventsVtx->GetEntries() / hEventsTr->GetEntries();
+  else return -1;
+  
+}
+//_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::CreateOutputObjects()
 {
   // Create the output objects
@@ -244,9 +255,13 @@ fDiagList->Add(hCorrelationFMDSPDhits);
   TH1F*  nMCevents = new TH1F("nMCEventsNoCuts","nMCEventsNoCuts",pars->GetNvtxBins(),0,pars->GetNvtxBins());
   
   fDiagList->Add(nMCevents);
- 
-    
-    
+  
+  TH1F*  hEventsVtx = new TH1F("hEventsVtx","hEventsVtx",pars->GetNvtxBins(),0,pars->GetNvtxBins());
+  TH1F*  hEventsTr  = new TH1F("hEventsTr","hEventsTr",pars->GetNvtxBins(),0,pars->GetNvtxBins());
+  fDiagList->Add(hEventsVtx);
+  fDiagList->Add(hEventsTr);
+  
+  
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::ConnectInputData(Option_t */*option*/)
@@ -286,6 +301,13 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   
   
   Bool_t isTriggered = pars->IsEventTriggered(fESD);
+  Double_t delta2 = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
+  Double_t vertexBinDouble = (vertex[2] + pars->GetVtxCutZ()) / delta2;
+  Int_t vtxbin = (Int_t)vertexBinDouble;
+  TH1F* hEventsVtx = (TH1F*)fDiagList->FindObject("hEventsVtx");
+  TH1F* hEventsTr  = (TH1F*)fDiagList->FindObject("hEventsTr");
+  if(vtxStatus) hEventsVtx->Fill(vtxbin);
+  if(isTriggered) hEventsTr->Fill(vtxbin);
   
   if(!isTriggered || !vtxStatus ) {
     fStatus = kFALSE;
@@ -525,6 +547,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
     PostData(3, fDiagList); 
   }
 }
+
 //_____________________________________________________________________
 Float_t AliFMDAnalysisTaskSharing::GetMultiplicityOfStrip(Float_t mult,
 							  Float_t eta,
@@ -674,7 +697,9 @@ void AliFMDAnalysisTaskSharing::Terminate(Option_t* /* option*/) {
     hTrEtaDistribution2->Scale(1./(Float_t)hZvtx->GetEntries());
   }
   
-
+  TH1F* hEventsVtx = (TH1F*)fDiagList->FindObject("hEventsVtx");
+  TH1F* hEventsTr  = (TH1F*)fDiagList->FindObject("hEventsTr");
+  //hEventsVtx->Divide(hEventsTr);
   
   
 }
@@ -733,7 +758,7 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
     return;
   }
   */
-  std::cout<<pythiaType<<"   "<<stack->GetNprimary()<<std::endl;
+  //std::cout<<pythiaType<<std::endl;
   
   
   TArrayF vertex;

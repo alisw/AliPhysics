@@ -57,6 +57,7 @@ class AliFMDAnalysisTaskSharing : public AliAnalysisTask
     void SetVertex(AliESDVertex* vertex) {fEsdVertex = vertex;}
     void SetInputESD(AliESDEvent* esd) {fESD = esd;}
     Bool_t GetEventStatus() const {return fStatus;}
+    Float_t GetVtxEfficiencyFromData() ;
  private:
     Float_t Eta2Theta(Float_t eta) const ;
     Double_t EtaFromStrip(UShort_t det, Char_t ring, UShort_t sector, UShort_t strip, Double_t zvtx);

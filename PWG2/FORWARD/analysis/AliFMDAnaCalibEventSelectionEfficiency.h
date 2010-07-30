@@ -26,13 +26,15 @@ class AliFMDAnaCalibEventSelectionEfficiency : public TObject
   Float_t GetCorrection(Int_t vtxbin);
   void    SetCorrection(Int_t vtxbin, Char_t ring, TH2F* hCorrection);
   TH2F*   GetCorrection(Int_t vtxbin, Char_t ring);
-
+  Float_t GetVtxToTriggerRatio() {return fVtxEff; }
+  void    SetVtxToTriggerRatio(Float_t vtxEff) {fVtxEff = vtxEff;}
  protected:
   
   TH1F fCorrection;
   TList fCorrectionList;
   Bool_t fIsInit;
-  ClassDef(AliFMDAnaCalibEventSelectionEfficiency,2);
+  Float_t fVtxEff;
+  ClassDef(AliFMDAnaCalibEventSelectionEfficiency,3);
 };
 
 #endif

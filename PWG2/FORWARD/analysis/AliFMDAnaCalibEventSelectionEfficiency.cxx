@@ -11,8 +11,9 @@ ClassImp(AliFMDAnaCalibEventSelectionEfficiency)
 
 //____________________________________________________________________
 AliFMDAnaCalibEventSelectionEfficiency::AliFMDAnaCalibEventSelectionEfficiency() : TObject(),
-								     fCorrection(),
-								     fIsInit(kFALSE)
+										   fCorrection(),
+										   fIsInit(kFALSE),
+										   fVtxEff(1)
 {
   
   

@@ -176,7 +176,7 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
     if(TMath::Abs(vertex[2]) > pars->GetVtxCutZ())
       physics = kFALSE;
   }
-  std::cout<<"Bananer "<<vtxStatus<<"    "<<physics<<std::endl;
+  //std::cout<<"Bananer "<<vtxStatus<<"    "<<physics<<std::endl;
   AliESDFMD* fmd = esd->GetFMDData();
   if (!fmd) return;
   if(physics)
@@ -209,7 +209,8 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
 	  Float_t eta = pars->GetEtaFromStrip(det,ring,sec,strip,vertex[2]);
 	  
 	  Int_t nEta  = pars->GetEtaBin(eta);
-	  //	  std::cout<<det<<"  "<<ring<<"   "<<sec<<"    "<<strip<<"   "<<vertex[2]<<"   "<<eta<<"   "<<nEta<<std::endl;
+	  
+      	  //	  std::cout<<det<<"  "<<ring<<"   "<<sec<<"    "<<strip<<"   "<<vertex[2]<<"   "<<eta<<"   "<<nEta<<std::endl;
 	  if(physics) {
 	    Edist = (TH1F*)fOutputList->FindObject(Form("FMD%d%c_etabin%d",det,ring,nEta));	  
 	    Edist->Fill(mult);
@@ -281,7 +282,7 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
   
   EnergyDist->SetNetaBins(pars->GetNetaBins());
   EnergyDist->SetEtaLimits(pars->GetEtaMin(),pars->GetEtaMax());
-    
+  
   TF1* fitFunc = 0;
   
   for(Int_t det = 1; det<=3; det++) {

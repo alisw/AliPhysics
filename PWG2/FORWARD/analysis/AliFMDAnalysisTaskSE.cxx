@@ -124,16 +124,22 @@ void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
 {
   
   TList* outputList = (TList*)GetOutputData(1);
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   if(outputList) {
     fSharing.SetOutputList(outputList);
     fBackground.SetHitList(outputList);
     fDndeta.SetOutputList(outputList); 
-    fBFCorrelation.SetOutputList(outputList); 
+    //fBFCorrelation.SetOutputList(outputList); 
     fSharing.Terminate("");
     fBackground.Terminate("");
+    if(fSharing.GetVtxEfficiencyFromData() > 0)
+      fDndeta.SetVtxEfficiency(fSharing.GetVtxEfficiencyFromData());
+    else
+      fDndeta.SetVtxEfficiency(pars->GetVtxSelectionEffFromMC());
+    
     fDndeta.Terminate("");
-    fBFCorrelation.Terminate("");
+    //fBFCorrelation.Terminate("");
     
     AliFMDDndeta t;
     t.SetNbinsToCut(2);

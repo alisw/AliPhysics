@@ -92,7 +92,7 @@ TH1F* AliFMDAnaCalibEnergyDistribution::GetRingEnergyDistribution(Int_t det, Cha
   return hEdist;
 }
 //____________________________________________________________________
-void  AliFMDAnaCalibEnergyDistribution::SetEnergyDistribution(Int_t det, Char_t ring, Float_t eta, TH1F* edist) {
+void  AliFMDAnaCalibEnergyDistribution::SetEnergyDistributionUser(Int_t det, Char_t ring, Float_t eta, TH1F* edist) {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   Int_t binnumber = pars->GetEtaBin(eta);
   //std::cout<<binnumber<<std::endl;
