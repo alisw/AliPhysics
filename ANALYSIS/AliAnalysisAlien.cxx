@@ -1234,11 +1234,13 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    sjdl.Prepend(Form("Jobtag = {\n   \"comment:%s\"\n};\n", fJobTag.Data()));
    index = sjdl.Index("JDLVariables");
    if (index >= 0) sjdl.Insert(index, "\n# JDL variables\n");
+   sjdl += "Workdirectorysize = {\"5000MB\"};";
    sjdl1 += "JDLVariables = \n{\n   \"Packages\",\n   \"OutputDir\"\n};\n";
    sjdl1.Prepend(Form("Jobtag = {\n   \"comment:%s_Merging\"\n};\n", fJobTag.Data()));
    sjdl1.Prepend("# Generated merging jdl\n# $1 = full alien path to output directory to be merged\n# $2 = merging stage\n# $3 = merged chunk\n");
    index = sjdl1.Index("JDLVariables");
    if (index >= 0) sjdl1.Insert(index, "\n# JDL variables\n");
+   sjdl1 += "Workdirectorysize = {\"5000MB\"};";
    // Write jdl to file
    ofstream out;
    out.open(fJDLName.Data(), ios::out);
