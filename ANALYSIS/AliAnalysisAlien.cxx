@@ -1042,10 +1042,13 @@ Bool_t AliAnalysisAlien::CreateJDL()
          first = kTRUE;
          while ((os=(TObjString*)next2())) {
             if (!first) comment = NULL;
-            if (!os->GetString().Contains("@") && fCloseSE.Length())
-               fMergingJDL->AddToOutputArchive(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
+            TString currentfile = os->GetString();
+            currentfile.ReplaceAll(".root", "*.root");
+            currentfile.ReplaceAll(".zip", "-Stage$2_$3.zip");
+            if (!currentfile.Contains("@") && fCloseSE.Length())
+               fMergingJDL->AddToOutputArchive(Form("%s@%s",currentfile.Data(), fCloseSE.Data()), comment); 
             else
-               fMergingJDL->AddToOutputArchive(os->GetString(), comment);
+               fMergingJDL->AddToOutputArchive(currentfile, comment);
             first = kFALSE;   
          }      
          delete arr;         
@@ -1202,7 +1205,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
          else fGridJDL->SetOutputDirectory(Form("%s/$2",fGridOutputDir.Data()), "Output directory");
       } else {   
          fGridJDL->SetOutputDirectory(Form("%s/$2/#alien_counter_03i#", fGridOutputDir.Data()), "Output directory");
-         fMergingJDL->SetOutputDirectory(Form("%s/$1", fGridOutputDir.Data()), "Output directory");
+         fMergingJDL->SetOutputDirectory(Form("$1", fGridOutputDir.Data()), "Output directory");
       }   
    }
       
@@ -1636,8 +1639,10 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
       ::Error("GetNregisteredFiles", "You need to be connected to AliEn.");
       return kFALSE;
    }
-   printf("Checking directory <%s> for merged files <%s*> ...\n", aliendir, filename);
-   TString command = Form("find %s/ *%s", saliendir.Data(), filename);
+   sfilename = filename;
+   sfilename.ReplaceAll(".root", "*.root");
+   printf("Checking directory <%s> for merged files <%s> ...\n", aliendir, sfilename.Data());
+   TString command = Form("find %s/ *%s", saliendir.Data(), sfilename.Data());
    TGridResult *res = gGrid->Command(command);
    if (!res) {
       ::Error("GetNregisteredFiles","Error: No result for the find command\n");
@@ -1655,6 +1660,7 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
       turl.ReplaceAll("alien://", "");
       turl.ReplaceAll(saliendir, "");
       sfilename = gSystem->BaseName(turl);
+      turl = turl.Strip(TString::kLeading, '/');
       // Now check to what the file corresponds to: 
       //    original output           - aliendir/%03d/filename
       //    merged file (which stage) - aliendir/filename-Stage%02d_%04d
@@ -1684,6 +1690,8 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
       }
       if (doneFinal) {
          delete res;
+         printf("=> Removing files from previous stages...\n");
+         gGrid->Rm(Form("%s/*Stage*.root", aliendir));
          return kTRUE;
       }               
    }
@@ -1701,7 +1709,6 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
    if (stage==0) printf("*** No merging completed so far.\n");
    else          printf("*** Found %d out of %d files merged for stage %d\n", countStage, ntotstage, stage);
    if (nmissing) printf("*** Number of merged files missing for this stage: %d -> check merging job completion\n", nmissing);
-
    if (!submit) return doneFinal;
    // Sumbit merging jobs for all missing chunks for the current stage.
    TString query = Form("submit %s %s", jdl, aliendir);
@@ -2878,7 +2885,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
       out << "// Connect to AliEn" << endl;
       out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
-      out << "   Bool_t laststage = kTRUE;" << endl;
+      out << "   Bool_t laststage = kFALSE;" << endl;
       out << "   TString outputDir = dir;" << endl;  
       out << "   TString outputFiles = \"" << fOutputFiles << "\";" << endl;
       out << "   TString mergeExcludes = \"" << fMergeExcludes << "\";" << endl;
