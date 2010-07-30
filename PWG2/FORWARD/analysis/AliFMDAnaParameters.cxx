@@ -376,12 +376,13 @@ Float_t AliFMDAnaParameters::GetMPV(Int_t det, Char_t ring, Float_t eta) {
   //AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   TH1F* hEnergyDist     = GetEnergyDistribution(det,ring,eta);
   TF1*  fitFunc         = hEnergyDist->GetFunction("FMDfitFunc");
+  
   if(!fitFunc) {
     AliWarning(Form("No function for FMD%d%c, eta %f",det,ring,eta));
     std::cout<<hEnergyDist->GetEntries()<<"    "<<GetEtaBin(eta)<<std::endl;
     return 1024;
   }
-    
+  
   Float_t mpv           = fitFunc->GetParameter(1);
   return mpv;
 }
@@ -448,22 +449,23 @@ Float_t AliFMDAnaParameters::Get3MIPWeight(Int_t det, Char_t ring, Float_t eta) 
 }
 //____________________________________________________________________
 Int_t AliFMDAnaParameters::GetNetaBins() {
-  return GetBackgroundCorrection(1,'I',0)->GetNbinsX();
+  return GetBackgroundCorrection(1,'I',5)->GetNbinsX();
   
 }
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetEtaMin() {
 
-  return GetBackgroundCorrection(1,'I',0)->GetXaxis()->GetXmin();
+  return GetBackgroundCorrection(1,'I',5)->GetXaxis()->GetXmin();
 } 
 //____________________________________________________________________
 Float_t AliFMDAnaParameters::GetEtaMax() {
 
-return GetBackgroundCorrection(1,'I',0)->GetXaxis()->GetXmax();
+return GetBackgroundCorrection(1,'I',5)->GetXaxis()->GetXmax();
 
 }
 //____________________________________________________________________
 Int_t AliFMDAnaParameters::GetEtaBin(Float_t eta) {
+  
   TAxis testaxis(GetNetaBins(),GetEtaMin(),GetEtaMax());
   Int_t binnumber = testaxis.FindBin(eta) ;
   
@@ -521,6 +523,17 @@ Float_t AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin) {
     return 0;
   }
   return fEventSelectionEfficiency->GetCorrection(vtxbin);
+
+}
+//_____________________________________________________________________
+Float_t AliFMDAnaParameters::GetVtxSelectionEffFromMC() {
+
+   if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+   }
+   return fEventSelectionEfficiency->GetVtxToTriggerRatio();
+
 
 }
 //_____________________________________________________________________

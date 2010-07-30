@@ -20,7 +20,7 @@ class AliFMDAnaCalibEnergyDistribution : public TObject
   void  SetNetaBins(Int_t nbins) {fNetaBins = nbins;}
   Int_t GetNetaBins() { return fNetaBins;}
   void  SetEtaLimits(Float_t eta_min, Float_t eta_max) {fEtaMin = eta_min; fEtaMax = eta_max;}
-  void  SetEnergyDistribution(Int_t det, Char_t ring, Float_t eta, TH1F* edist);
+  void  SetEnergyDistributionUser(Int_t det, Char_t ring, Float_t eta, TH1F* edist);
   void  SetEnergyDistribution(Int_t det, Char_t ring, Int_t etabin, TH1F* edist);
   
   TH1F* GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);

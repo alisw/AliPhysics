@@ -39,7 +39,8 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta()
   fNevents(),
   fNMCevents(),
   fStandalone(kTRUE),
-  fLastTrackByStrip(0)
+  fLastTrackByStrip(0),
+  fVtxEff(1)
 {
   // Default constructor
   DefineInput (0, TList::Class());
@@ -55,7 +56,8 @@ AliFMDAnalysisTaskDndeta::AliFMDAnalysisTaskDndeta(const char* name, Bool_t SE):
     fNevents(),
     fNMCevents(),
     fStandalone(kTRUE),
-    fLastTrackByStrip(0)
+    fLastTrackByStrip(0),
+    fVtxEff(1)
 {
   fStandalone = SE;
   if(fStandalone) {
@@ -156,6 +158,14 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
     fOutputList->Add(hSPDMultTrVtx);
   }
   
+  //AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  
+  TH2F* dNdetadphiHistogramTotal = new TH2F("dNdetadphiHistogramTotal","dNdetadphiHistogram;#eta;#Phi",pars->GetNetaBins(),-6,6,20,0,2*TMath::Pi());
+  //dNdetadphiHistogramTotal->SetErrorOption("g");
+  fOutputList->Add(dNdetadphiHistogramTotal);
+  
+  
+  
   fNevents.SetBins(nVtxbins,0,nVtxbins);
   fNevents.SetName("nEvents");
   fNMCevents.SetBins(nVtxbins,0,nVtxbins);
@@ -210,6 +220,16 @@ void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
   if(pars->GetProcessPrimary())
     ProcessPrimary();
   
+  TH2F* dNdetadphiHistogram = (TH2F*)fOutputList->FindObject("dNdetadphiHistogramSPDTrVtx");
+  
+  TH2F* dNdetadphiHistogramTotal = (TH2F*)fOutputList->FindObject("dNdetadphiHistogramTotal");
+  
+  if(vtxbin == 4)
+    dNdetadphiHistogramTotal->Add(dNdetadphiHistogram);
+  
+  
+  
+  
   if(fStandalone) {
     PostData(0, fOutputList); 
   }
@@ -229,6 +249,9 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
       for(Int_t i =0; i<nVtxbins; i++) {
 	
 	TH2F* hMultTotal = (TH2F*)fOutputList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,i));
+	if(fVtxEff)
+	  hMultTotal->Scale(fVtxEff);
+	
 	//TH2F* hMultTrVtx = (TH2F*)hMultTotal->Clone(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d",det,ringChar,i));
 	TH2F* hMultTrVtx = (TH2F*)fOutputList->FindObject(Form("dNdetaTrVtx_FMD%d%c_vtxbin%d",det,ringChar,i));
 	
@@ -245,6 +268,10 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
     
     TH2F* hSPDMult = (TH2F*)fOutputList->FindObject(Form("dNdeta_SPD_vtxbin%d",i));
     TH2F* hSPDMultTrVtx = (TH2F*)fOutputList->FindObject(Form("dNdetaTrVtx_SPD_vtxbin%d",i));
+    
+    if(fVtxEff)
+      hSPDMult->Scale(fVtxEff);
+	
     
     TH1D* hMultProj   = hSPDMult->ProjectionX(Form("dNdeta_SPD_vtxbin%d_proj",i),1,hSPDMult->GetNbinsY());
     TH1D* hMultProjTrVtx   = hSPDMultTrVtx->ProjectionX(Form("dNdetaTrVtx_SPD_vtxbin%d_proj",i),1,hSPDMultTrVtx->GetNbinsY());

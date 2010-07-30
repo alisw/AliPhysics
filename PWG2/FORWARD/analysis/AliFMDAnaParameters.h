@@ -149,6 +149,7 @@ public:
 
   void     SetNumberOfEtaBinsToCut(Int_t nbins) {fNumberOfEtaBinsToCut = nbins;}
   Int_t    GetNumberOfEtaBinsToCut() const {return fNumberOfEtaBinsToCut;}
+  Float_t  GetVtxSelectionEffFromMC() ;
   
 protected:
   

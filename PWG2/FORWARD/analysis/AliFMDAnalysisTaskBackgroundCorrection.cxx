@@ -303,8 +303,8 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
   hSPDMult->Divide(pars->GetEventSelectionEfficiency(vtxbin,'I'));
   
   //if(pars->GetEventSelectionEfficiency(vtxbin) > 0)
-  // hSPDMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
-    //else
+     // hSPDMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
+  //else
   //  hSPDMult->Scale(0);
   
   }
