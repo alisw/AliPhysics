@@ -48,6 +48,7 @@
 #include "AliAODHandler.h"
 #include "AliAODTrack.h"
 #include "AliAODJet.h"
+#include "AliAODJetEventBackground.h"
 #include "AliAODMCParticle.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -71,12 +72,14 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   f1PtScale(0x0),
 							    fBranchRec("jets"),
 							    fBranchGen(""),
+                                                            fBranchBkg(""), 
 							    fUseAODJetInput(kFALSE),
 							    fUseAODTrackInput(kFALSE),
 							    fUseAODMCInput(kFALSE),
 							    fUseGlobalSelection(kFALSE),
 							    fUseExternalWeightOnly(kFALSE),
 							    fLimitGenJetEta(kFALSE),
+                                                            fBkgSubtraction(kFALSE),
 							    fFilterMask(0),
   fEventSelectionMask(0),
 							    fAnalysisType(0),
@@ -121,6 +124,22 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh2DijetDifvsSum(0x0),        
   fh1DijetMinv(0x0),            
   fh1DijetMinvCut(0x0),         
+  fh1kg1(0x0),
+  fh1kg2(0x0),
+  fh1Sigma1(0x0),
+  fh1Sigma2(0x0),
+  fhArea1(0x0),
+  fhArea2(0x0),
+  fh1Ptjet(0x0),
+  fh1Ptjetsub1(0x0),
+  fh1Ptjetsub2(0x0),
+  fh1Ptjethardest(0x0),
+  fh1Ptjetsubhardest1(0x0),
+  fh1Ptjetsubhardest2(0x0),
+  fh1Rhovspthardest1(0x0), 
+  fh1Rhovspthardest2(0x0),
+  fh1Errorvspthardest1(0x0), 
+  fh1Errorvspthardest2(0x0),
   fHistList(0x0)  
 {
   for(int i = 0;i < kMaxStep*2;++i){
@@ -153,12 +172,14 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   f1PtScale(0x0),
   fBranchRec("jets"),
   fBranchGen(""),
+  fBranchBkg(""),
   fUseAODJetInput(kFALSE),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fUseGlobalSelection(kFALSE),
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
+  fBkgSubtraction(kFALSE),
   fFilterMask(0),
   fEventSelectionMask(0),
   fAnalysisType(0),
@@ -203,6 +224,22 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2DijetDifvsSum(0x0),        
   fh1DijetMinv(0x0),            
   fh1DijetMinvCut(0x0),         
+  fh1kg1(0x0),
+  fh1kg2(0x0),
+  fh1Sigma1(0x0),
+  fh1Sigma2(0x0),
+  fhArea1(0x0),
+  fhArea2(0x0),
+  fh1Ptjet(0x0),
+  fh1Ptjetsub1(0x0),
+  fh1Ptjetsub2(0x0),
+  fh1Ptjethardest(0x0),
+  fh1Ptjetsubhardest1(0x0),
+  fh1Ptjetsubhardest2(0x0),
+  fh1Rhovspthardest1(0x0), 
+  fh1Rhovspthardest2(0x0),
+  fh1Errorvspthardest1(0x0), 
+  fh1Errorvspthardest2(0x0),
   fHistList(0x0)
 {
 
@@ -418,7 +455,27 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh2DijetDifvsSum          = new TH2F("fh2DijetDifvsSum","Pt difference vs Pt sum;p_{T,1}+p_{T,2} (GeV/c);#Deltap_{T} (GeV/c)",400,0.,400.,150,0.,150.);
   fh1DijetMinv               = new TH1F("fh1DijetMinv","Dijet invariant mass;m_{JJ}",nBinPt,binLimitsPt);
   fh1DijetMinvCut           = new TH1F("fh1DijetMinvCut","Dijet invariant mass;m_{JJ}",nBinPt,binLimitsPt);
-
+  //background histograms
+  if(fBkgSubtraction){
+    fh1kg1 = new TH1F("fh1kg1","Background estimate 1",100,0.,10.);
+    fh1kg2 = new TH1F("fh1kg2","Background estimate 2",100,0.,10.);
+    fh1Sigma1 = new TH1F("fh1Sigma1","Background fluctuations 1",100,0.,10.);
+    fh1Sigma2 = new TH1F("fh1Sigma2","Background fluctuations 2",100,0.,10.);
+    fhArea1 = new TH1F("fhArea1","Background mean area 1",50,0.,5.);
+    fhArea2 = new TH1F("fhArea2","Background mean area 2",50,0.,5.);
+    
+    fh1Ptjet = new TH1F("fh1Ptjet","Jet spectrum",100,0.,200.);
+    fh1Ptjetsub1 = new TH1F("fh1Ptjetsub1","Subtracted spectrum 1",50,0.,200.);
+    fh1Ptjetsub2 = new TH1F("fh1Ptjetsub2","Subtracted spectrum 2",50,0.,200.);
+    fh1Ptjethardest = new TH1F("fh1Ptjethardest","Hardest jet spectrum",50,0.,200.);
+    fh1Ptjetsubhardest1 = new TH1F("fh1Pthardestsub1","Subtracted hardest jet spectrum 1",100,0.,200.);
+    fh1Ptjetsubhardest2 = new TH1F("fh1Pthardestsub2","Subtracted hardest jet spectrum 2",100,0.,200.);
+    fh1Rhovspthardest1 = new TH2F("fh1Rhovspthardest1","Background vs pTjet 1",100,0.,200.,50,0.,5.);
+    fh1Rhovspthardest2 = new TH2F("fh1Rhovspthardest2","Background vs pTjet 2",100,0.,200.,50,0.,5.);
+    fh1Errorvspthardest1 = new TH2F("fhErorvspthardest1","Relative error 1",100,0.,200.,50,0.,5.);
+    fh1Errorvspthardest2 = new TH2F("fh1Errorvspthardest2","Relative error 2",100,0.,200.,50,0.,5.);
+  }
+  
 
 
 
@@ -479,6 +536,26 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh2DijetDifvsSum);                
     fHistList->Add(fh1DijetMinv);                    
     fHistList->Add(fh1DijetMinvCut);                 
+    if(fBkgSubtraction){
+      fHistList->Add(fh1kg1);
+      fHistList->Add(fh1kg2);
+      fHistList->Add(fh1Sigma1);
+      fHistList->Add(fh1Sigma2);
+      fHistList->Add(fhArea1);
+      fHistList->Add(fhArea2);
+      fHistList->Add(fh1Ptjet);
+      fHistList->Add(fh1Ptjethardest);
+      fHistList->Add(fh1Ptjetsub1);
+      fHistList->Add(fh1Ptjetsub2);
+      
+      fHistList->Add(fh1Ptjetsubhardest1);
+      fHistList->Add(fh1Ptjetsubhardest2);
+      fHistList->Add(fh1Rhovspthardest1);
+      fHistList->Add(fh1Rhovspthardest2);
+      
+      fHistList->Add(fh1Errorvspthardest1);
+      fHistList->Add(fh1Errorvspthardest2);
+    }
   }
 
   // =========== Switch on Sumw2 for all histos ===========
@@ -568,9 +645,67 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     return;
   }
 
+  if(fBkgSubtraction){
+     AliAODJetEventBackground* evBkg=(AliAODJetEventBackground*)fAOD->FindListObject(fBranchBkg.Data()); 
+
+
+     if(!evBkg){
+       Printf("%s:%d no reconstructed background array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchBkg.Data());
+       return;
+     }
+
+
+     ///just to start: some very simple plots containing rho, sigma and area of the background. 
+     
+     Int_t nJets = aodRecJets->GetEntriesFast();
+     Float_t pthardest=0;
+     if(nJets!=0){
+ 
+
+       Float_t bkg1=evBkg->GetBackground(0);
+       Float_t bkg2=evBkg->GetBackground(1);
+       Float_t sigma1=evBkg->GetSigma(0);
+       Float_t sigma2=evBkg->GetSigma(1);
+       Float_t area1=evBkg->GetMeanarea(0);
+       Float_t area2=evBkg->GetMeanarea(1);  
+       fh1kg1->Fill(bkg1); //rho computed with all background jets.
+       fh1kg2->Fill(bkg2); //rho computed with all background jets but the hardest. 
+       fh1Sigma1->Fill(sigma1); 
+       fh1Sigma2->Fill(sigma2);
+       fhArea1->Fill(area1);
+       fhArea2->Fill(area2);
+       
+       
+       
+       for(Int_t k=0;k<nJets;k++){
+	 AliAODJet *jet = dynamic_cast<AliAODJet*>(aodRecJets->At(k));
+	 fh1Ptjet->Fill(jet->Pt());
+	 Float_t ptsub1=jet->Pt()-bkg1*jet->EffectiveAreaCharged();
+	 Float_t ptsub2=jet->Pt()-bkg2*jet->EffectiveAreaCharged();
+	 Float_t err1=sigma1*sqrt(area1);
+	 Float_t err2=sigma2*sqrt(area2);
+	 
+	 fh1Ptjetsub1->Fill(ptsub1);
+	 fh1Ptjetsub2->Fill(ptsub2);
+	 
+	 if(k==0) {
+	   pthardest=jet->Pt();
+	   fh1Ptjethardest->Fill(pthardest);
+	   fh1Ptjetsubhardest1->Fill(ptsub1);
+	   fh1Ptjetsubhardest2->Fill(ptsub2);
+	   fh1Errorvspthardest1->Fill(ptsub1,err1/ptsub1);
+	   fh1Errorvspthardest2->Fill(ptsub2,err2/ptsub2);
+	 }
+       }
+       fh1Rhovspthardest1->Fill(pthardest,bkg1);
+       fh1Rhovspthardest2->Fill(pthardest,bkg2);
+     }
+  }// background subtraction
+  
+
   // ==== General variables needed
-
-
+  
+  
   // We use statice array, not to fragment the memory
   AliAODJet genJets[kMaxJets];
   Int_t nGenJets = 0;

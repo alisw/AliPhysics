@@ -17,11 +17,13 @@ class AliJetHeader;
 class AliESDEvent;
 class AliAODEvent;
 class AliAODJet;
+class AliAODJetEventBackground;
 class AliGenPythiaEventHeader;
 class AliCFManager;
 
 class TList;
 class TChain;
+class TH1F;
 class TH2F;
 class TH3F;
 class TProfile;
@@ -49,12 +51,14 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetAODTrackInput(Bool_t b){fUseAODTrackInput = b;}
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
     virtual void SetLimitGenJetEta(Bool_t b){fLimitGenJetEta = b;}
+    virtual void SetBkgSubtraction(Bool_t b){fBkgSubtraction = b;}
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
     virtual void SetMinJetPt(Float_t f){fMinJetPt = f;}
     virtual void SetDeltaPhiWindow(Float_t f){fDeltaPhiWindow = f;}
     virtual void SetAnalysisType(Int_t i){fAnalysisType = i;}
     virtual void SetBranchGen(const char* c){fBranchGen = c;}
     virtual void SetBranchRec(const char* c){fBranchRec = c;}
+    virtual void SetBranchBkg(const char* c){fBranchBkg = c;}  
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
@@ -102,6 +106,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
 
     TString       fBranchRec;  // AOD branch name for reconstructed
     TString       fBranchGen;  // AOD brnach for genereated
+    TString       fBranchBkg;  //AOD branch for background 
 
     Bool_t        fUseAODJetInput;        // take jet from input AOD not from ouptu AOD
     Bool_t        fUseAODTrackInput;      // take track from input AOD not from ouptu AOD
@@ -109,6 +114,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Bool_t        fUseGlobalSelection;    // Limit the eta of the generated jets
     Bool_t        fUseExternalWeightOnly; // use only external weight
     Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
+    Bool_t        fBkgSubtraction;        //flag for bckg subtraction
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fEventSelectionMask;    // Selection information used to filter events
     Int_t         fAnalysisType;          // Analysis type 
@@ -172,16 +178,34 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*   fh2DijetAsymPt;          // dijet asym vs pt
     TH2F*   fh2DijetAsymPtCut;       // dijet asym vs pt after delta phi cut
     TH2F*   fh2DijetDeltaPhiDeltaEta; // dijet delta phi delta eta
-    TH2F*   fh2DijetPt2vsPt1;          // dijet pt2 vs pt1 
+    TH2F*   fh2DijetPt2vsPt1;          // dijet pt2 vs pt1
     TH2F*   fh2DijetDifvsSum;          // dijet dif vs sum
     TH1F*   fh1DijetMinv;            // dijet inv mass
     TH1F*   fh1DijetMinvCut;         // dijet inv after delta phi cut
+    //background histos
+    
+    TH1F*         fh1Bkg1;
+    TH1F*         fh1Bkg2;
+    TH1F*         fh1Sigma1;
+    TH1F*         fh1Sigma2;
+    TH1F*         fh1Area1;
+    TH1F*         fh1Area2;
 
+    TH1F*         fh1Ptjet;
+    TH1F*         fh1Ptjetsub1;
+    TH1F*         fh1Ptjetsub2;
+    TH1F*         fh1Ptjethardest;
+    TH1F*         fh1Ptjetsubhardest1;
+    TH1F*         fh1Ptjetsubhardest2;
+    TH2F*         fh1Rhovspthardest1;
+    TH2F*         fh1Rhovspthardest2;
+    TH2F*         fh1Errorvspthardest1;
+    TH2F*         fh1Errorvspthardest2;
 
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 6) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 7) // Analysis task for standard jet analysis
 };
  
 #endif
