@@ -56,7 +56,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fV0Filter(0x0),
     fCascadeFilter(0x0),
     fHighPthreshold(0),
-    fPtshape(0x0)
+    fPtshape(0x0),
+    fEnableFillAOD(kTRUE)
 {
   // Default constructor
 }
@@ -68,7 +69,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fV0Filter(0x0),
     fCascadeFilter(0x0),
     fHighPthreshold(0),
-    fPtshape(0x0)
+    fPtshape(0x0),
+    fEnableFillAOD(kTRUE)
 {
   // Constructor
 }
@@ -108,7 +110,7 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
   }
   // Filters must explicitely enable AOD filling in their UserExec (AG)
   if (!AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()) AliFatal("Cannot run ESD filter without an output event handler");
-  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+  if(fEnableFillAOD) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
 
   ConvertESDtoAOD();
 }
