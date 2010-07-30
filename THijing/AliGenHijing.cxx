@@ -74,7 +74,8 @@ AliGenHijing::AliGenHijing()
      fLHC(kFALSE),
      fRandomPz(kFALSE),
      fNoHeavyQuarks(kFALSE),
-     fEventTime(0.)
+     fEventTime(0.),
+     fHeader(0)
 {
   // Constructor
   fEnergyCMS = 5500.;
@@ -118,7 +119,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fLHC(kFALSE),
      fRandomPz(kFALSE),
      fNoHeavyQuarks(kFALSE),
-     fEventTime(0.)
+     fEventTime(0.),
+     fHeader(0)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -555,19 +557,21 @@ Bool_t AliGenHijing::Stable(TParticle*  particle) const
 void AliGenHijing::MakeHeader()
 {
 // Builds the event header, to be called after each event
-    AliGenEventHeader* header = new AliGenHijingEventHeader("Hijing");
-    ((AliGenHijingEventHeader*) header)->SetNProduced(fNprimaries);
-    ((AliGenHijingEventHeader*) header)->SetImpactParameter(fHijing->GetHINT1(19));
-    ((AliGenHijingEventHeader*) header)->SetTotalEnergy(fHijing->GetEATT());
-    ((AliGenHijingEventHeader*) header)->SetHardScatters(fHijing->GetJATT());
-    ((AliGenHijingEventHeader*) header)->SetParticipants(fHijing->GetNP(), fHijing->GetNT());
-    ((AliGenHijingEventHeader*) header)->SetCollisions(fHijing->GetN0(),
+    if (fHeader) delete fHeader;
+    fHeader = new AliGenHijingEventHeader("Hijing");
+
+    ((AliGenHijingEventHeader*) fHeader)->SetNProduced(fNprimaries);
+    ((AliGenHijingEventHeader*) fHeader)->SetImpactParameter(fHijing->GetHINT1(19));
+    ((AliGenHijingEventHeader*) fHeader)->SetTotalEnergy(fHijing->GetEATT());
+    ((AliGenHijingEventHeader*) fHeader)->SetHardScatters(fHijing->GetJATT());
+    ((AliGenHijingEventHeader*) fHeader)->SetParticipants(fHijing->GetNP(), fHijing->GetNT());
+    ((AliGenHijingEventHeader*) fHeader)->SetCollisions(fHijing->GetN0(),
 						       fHijing->GetN01(),
 						       fHijing->GetN10(),
 						       fHijing->GetN11());
-    ((AliGenHijingEventHeader*) header)->SetSpectators(fProjectileSpecn, fProjectileSpecp,
+    ((AliGenHijingEventHeader*) fHeader)->SetSpectators(fProjectileSpecn, fProjectileSpecp,
     						       fTargetSpecn,fTargetSpecp);
-    ((AliGenHijingEventHeader*) header)->SetReactionPlaneAngle(fHijing->GetHINT1(20));
+    ((AliGenHijingEventHeader*) fHeader)->SetReactionPlaneAngle(fHijing->GetHINT1(20));
 //    printf("Impact Parameter %13.3f \n", fHijing->GetHINT1(19));
     
 
@@ -594,14 +598,14 @@ void AliGenHijing::MakeHeader()
 					      fHijing->GetHINT1(37),
 					      fHijing->GetHINT1(38),
 					      fHijing->GetHINT1(39));
-    ((AliGenHijingEventHeader*) header)->SetJets(jet1, jet2, jet3, jet4);
+    ((AliGenHijingEventHeader*) fHeader)->SetJets(jet1, jet2, jet3, jet4);
 // Bookkeeping for kinematic bias
-    ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
+    ((AliGenHijingEventHeader*) fHeader)->SetTrials(fTrials);
 // Event Vertex
-    header->SetPrimaryVertex(fVertex);
-    header->SetInteractionTime(fEventTime);
-    AddHeader(header);
-    fCollisionGeometry = (AliGenHijingEventHeader*)  header;
+    fHeader->SetPrimaryVertex(fVertex);
+    fHeader->SetInteractionTime(fEventTime);
+    AddHeader(fHeader);
+    fCollisionGeometry = (AliGenHijingEventHeader*)  fHeader;
 }
 
 

@@ -16,6 +16,7 @@ class THijing;
 class TParticle;
 class TClonesArray;
 class TGraph;
+class AliGenHijingEventHeader;
 
 class AliGenHijing : public AliGenMC
 {
@@ -126,6 +127,7 @@ class AliGenHijing : public AliGenMC
     Bool_t      fRandomPz;       // Randomise sign of pz  event by event
     Bool_t      fNoHeavyQuarks;  // If true no heavy quarks are produced
     Float_t     fEventTime;      // The event time
+    AliGenHijingEventHeader*   fHeader; // MC Header
     
  private:
     AliGenHijing(const AliGenHijing &Hijing);
