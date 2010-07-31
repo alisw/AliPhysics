@@ -13,8 +13,8 @@
 #include "AliMCEvent.h"
 
 #include "AliCFContainer.h"
-#include "AliRsnCutMgr.h"
-#include "AliRsnFunctionAxis.h"
+#include "AliRsnCutManager.h"
+#include "AliRsnValue.h"
 #include "AliRsnAnalysisEffSE.h"
 #include "AliRsnPairDef.h"
 #include "AliRsnCutSet.h"
@@ -94,7 +94,7 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   Int_t   *nBins     = new Int_t[nAxes];
   TArrayD *binLimits = new TArrayD[nAxes];
   for (iaxis = 0; iaxis < nAxes; iaxis++) {
-    AliRsnFunctionAxis *fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(iaxis);
+    AliRsnValue *fcnAxis = (AliRsnValue*)fAxisList.At(iaxis);
     binLimits[iaxis] = fcnAxis->GetArray();
     nBins[iaxis] = binLimits[iaxis].GetSize() - 1;
   }
@@ -121,6 +121,8 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   }
 
   fOutList[1]->Add(fContainerList);
+
+  PostData(2, fOutList[1]);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -245,7 +247,7 @@ void AliRsnAnalysisEffSE::ProcessEventMC(AliRsnPairDef *pairDef)
     if (fDaughter[0].PerfectPID() != pairDef->GetType(0)) continue;
     if (fDaughter[1].PerfectPID() != pairDef->GetType(1)) continue;
 
-    fPair.SetPair(&fDaughter[0], &fDaughter[1]);
+    fPair.SetDaughters(&fDaughter[0], &fDaughter[1]);
 
     // create pair
     FillContainer(cont, &fStepListMC, pairDef, 0);
@@ -265,10 +267,6 @@ void AliRsnAnalysisEffSE::ProcessEventESD(AliRsnPairDef *pairDef)
   if (!pairDef) return;
   AliCFContainer *cont = (AliCFContainer*)fContainerList->FindObject(pairDef->GetPairName().Data());
   if (!cont) return;
-
-  // get arrays of all charged tracks
-  TArrayI *a0 = fRsnPIDIndex.GetTracksArray(AliRsnDaughter::kPerfect, pairDef->GetCharge(0), pairDef->GetType(0));
-  TArrayI *a1 = fRsnPIDIndex.GetTracksArray(AliRsnDaughter::kPerfect, pairDef->GetCharge(1), pairDef->GetType(1));
 
   // external loop on tracks
   for (i0 = 0; i0 < a0->GetSize(); i0++) {
@@ -304,12 +302,12 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
 
   // compute values for all axes
   for (iaxis = 0; iaxis < nAxes; iaxis++) {
-    AliRsnFunctionAxis *fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(iaxis);
+    AliRsnValue *fcnAxis = (AliRsnValue*)fAxisList.At(iaxis);
     switch (fcnAxis->GetAxisObject()) {
-    case AliRsnFunctionAxis::kPair:
+    case AliRsnValue::kPair:
       fVar[iaxis] = (Double_t)fcnAxis->Eval(&fPair, pd);
       break;
-    case AliRsnFunctionAxis::kEvent:
+    case AliRsnValue::kEvent:
       fVar[iaxis] = (Double_t)fcnAxis->Eval(&fRsnEvent);
       break;
     default:
@@ -319,7 +317,7 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
 
   // fill all steps
   for (istep = 0; istep < nSteps; istep++) {
-    AliRsnCutMgr *cutMgr = (AliRsnCutMgr*)stepList->At(istep);
+    AliRsnCutManager *cutMgr = (AliRsnCutManager*)stepList->At(istep);
     if (!cutMgr->IsSelected(AliRsnCut::kParticle, &fDaughter[0])) break;
     if (!cutMgr->IsSelected(AliRsnCut::kParticle, &fDaughter[1])) break;
     if (!cutMgr->IsSelected(AliRsnCut::kPair,     &fPair)) break;
@@ -347,3 +345,4 @@ void AliRsnAnalysisEffSE::AddPairDef(AliRsnPairDef* pairDef)
 //
   fPairDefList.AddLast(pairDef);
 }
+

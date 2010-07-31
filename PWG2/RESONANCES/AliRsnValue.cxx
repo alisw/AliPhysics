@@ -1,3 +1,4 @@
+
 //
 // Class AliRsnValue
 //
@@ -8,7 +9,7 @@
 
 #include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
-#include "AliRsnPairParticle.h"
+#include "AliRsnMother.h"
 #include "AliRsnPairDef.h"
 
 #include "AliRsnValue.h"
@@ -16,11 +17,50 @@
 ClassImp(AliRsnValue)
 
 //_____________________________________________________________________________
-AliRsnValue::AliRsnValue(EAxisType type) : fType(type)
+AliRsnValue::AliRsnValue() :
+  fType(kValueTypes),
+  fNBins(0),
+  fMin(0.0),
+  fMax(0.0),
+  fValue(0.0)
 {
 //
-// Constructor
+// Main constructor (version 1)
+// This can also be created without any argument.
 //
+}
+
+//_____________________________________________________________________________
+AliRsnValue::AliRsnValue
+(EValueType type, Int_t nbins, Double_t min, Double_t max) :
+  fType(type),
+  fNBins(0),
+  fMin(0.0),
+  fMax(0.0),
+  fValue(0.0)
+{
+//
+// Main constructor (version 1)
+// This can also be created without any argument.
+//
+
+  SetBins(nbins, min, max);
+}
+
+//_____________________________________________________________________________
+AliRsnValue::AliRsnValue
+(EValueType type, Double_t min, Double_t max, Double_t step) :
+  fType(type),
+  fNBins(0),
+  fMin(0.0),
+  fMax(0.0),
+  fValue(0.0)
+{
+//
+// Main constructor (version 2)
+//
+
+  SetBins(min, max, step);
 }
 
 //_____________________________________________________________________________
@@ -32,8 +72,6 @@ const char* AliRsnValue::GetName() const
 
   switch (fType)
   {
-    case kTrackPt:        return "PT";
-    case kTrackEta:       return "ETA";
     case kTrack1P:        return "P1";
     case kTrack2P:        return "P2";
     case kTrack1Pt:       return "PT1";
@@ -51,41 +89,66 @@ const char* AliRsnValue::GetName() const
 }
 
 //_____________________________________________________________________________
-AliRsnValue::EAxisObject AliRsnValue::GetAxisObject() const
+TArrayD AliRsnValue::GetArray() const
 {
 //
-// Tells what kind of object must be evaluated for this axis
+// Creates an array with all bin edges
 //
 
-  switch (fType)
+  TArrayD out(fNBins + 1);
+
+  Int_t i;
+  Double_t step = (fMax - fMin) / (Double_t)fNBins;
+
+  for (i = 0; i <= fNBins; i++) out[i] = fMin + step * (Double_t)i;
+
+  return out;
+}
+
+//_____________________________________________________________________________
+void AliRsnValue::SetBins(Int_t n, Double_t min, Double_t max)
+{
+//
+// Set binning for histogram.
+//
+
+  fNBins = n;
+
+  if (min < max) 
   {
-    // values coming from single track
-    case kTrackPt:
-    case kTrackEta:
-      return kParticle;
-    // values coming from pair
-    case kTrack1P:
-    case kTrack2P:
-    case kTrack1Pt:
-    case kTrack2Pt:
-    case kPairInvMass:
-    case kPairInvMassMC:
-    case kPairInvMassRes:
-    case kPairPt:
-    case kPairEta:
-    case kPairMt:
-    case kPairY:
-      return kPair;
-    // values coming from event
-    case kEventMult:
-      return kEvent;
-    default:
-      return kNone;
+    fMin = min;
+    fMax = max;
+  } 
+  else 
+  {
+    fMin = max;
+    fMax = min;
   }
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnValue::Eval(TObject * const obj, const AliRsnPairDef *pairDef) const
+void AliRsnValue::SetBins(Double_t min, Double_t max, Double_t step)
+{
+//
+// Binning for histogram.
+//
+
+  if (min < max) 
+  {
+    fMin = min;
+    fMax = max;
+  } 
+  else 
+  {
+    fMin = max;
+    fMax = min;
+  }
+
+  fNBins = (Int_t)((fMax - fMin) / (step)) + 1;
+}
+
+//_____________________________________________________________________________
+Bool_t AliRsnValue::Eval(AliRsnMother *mother, const AliRsnPairDef *pairDef, AliRsnEvent *event)
 {
 //
 // Evaluation of the required value.
@@ -95,82 +158,58 @@ Double_t AliRsnValue::Eval(TObject * const obj, const AliRsnPairDef *pairDef) co
 // and the values must be taken with GetValue().
 //
 
-  // dynamic casting
-  AliRsnDaughter     *track = dynamic_cast<AliRsnDaughter*>(obj);
-  AliRsnPairParticle *pair  = dynamic_cast<AliRsnPairParticle*>(obj);
-  AliRsnEvent        *event = dynamic_cast<AliRsnEvent*>(obj);
+  // avoid segfaults
+  if (!mother) return kFALSE;
+  if (!pairDef) return kFALSE;
 
-  // check that the object type and required input match
-  EAxisObject requiredInput = GetAxisObject();
-  Double_t    mass          = pairDef->GetMotherMass();
-  if (requiredInput == kParticle && !track)
-    return 0.0;
-  else if (requiredInput == kPair)
-  {
-    if (!pair)
-      return 0.0;
-    else
-    {
-      // if we are filling a pair, we need the pair def
-      if (pairDef)
-        mass = pairDef->GetMotherMass();
-      else
-      {
-        AliError("Cannot compute a 'pair' value if I don't have a vaild PairDef");
-        return 0.0;
-      }
-    }
-  }
-  else if (requiredInput == kEvent && !event)
-  {
-    return 0.0;
-  }
-  else
-  {
-    AliError(Form("Failed computation: expected type %d, passed a '%s'", (Int_t)requiredInput, obj->ClassName()));
-    return 0.0;
-  }
+  Double_t mass = pairDef->GetMotherMass();
 
   switch (fType)
   {
-    case kTrackPt:
-      return track->Pt();
-    case kTrackEta:
-      return track->Eta();
     case kTrack1P:
-      return pair->GetDaughter(0)->P();
+      fValue = mother->GetDaughter(0)->P().Mag();
+      break;
     case kTrack2P:
-      return pair->GetDaughter(1)->P();
+      fValue = mother->GetDaughter(1)->P().Mag();
+      break;
     case kTrack1Pt:
-      return pair->GetDaughter(0)->Pt();
+      fValue = mother->GetDaughter(0)->P().Perp();
+      break;
     case kTrack2Pt:
-      return pair->GetDaughter(1)->Pt();
+      fValue = mother->GetDaughter(1)->P().Perp();
+      break;
     case kPairInvMass:
-      return pair->GetInvMass(pairDef->GetMass(0), pairDef->GetMass(1));
+      fValue = mother->Sum().M();
+      break;
     case kPairInvMassMC:
-      return pair->GetInvMassMC(pairDef->GetMass(0), pairDef->GetMass(1));
+      fValue = mother->SumMC().M();
+      break;
     case kPairInvMassRes:
-      {
-        Double_t value;
-        value  = pair->GetInvMass  (pairDef->GetMass(0), pairDef->GetMass(1));
-        value -= pair->GetInvMassMC(pairDef->GetMass(0), pairDef->GetMass(1));
-        value /= pair->GetInvMassMC(pairDef->GetMass(0), pairDef->GetMass(1));
-        return value;
-      }
+      fValue = (mother->SumMC().M() - mother->Sum().M()) / mother->SumMC().M();
+      break;
     case kPairPt:
-      return pair->GetPt();
+      fValue = mother->Sum().Perp();
+      break;
     case kPairEta:
-      return pair->GetEta();
+      fValue = mother->Sum().Eta();
+      break;
     case kPairMt:
       if (TMath::Abs(mass) < 1E-5) AliWarning(Form("Suspicious mass value specified: %f", mass));
-      return (TMath::Sqrt(pair->GetPt()*pair->GetPt() + mass*mass) - mass);
+      fValue = (TMath::Sqrt(mother->Sum().Perp2() + mass*mass) - mass);
+      break;
     case kPairY:
       if (TMath::Abs(mass) < 1E-5) AliWarning(Form("Suspicious mass value specified: %f", mass));
-      return pair->GetY(mass);
+      mother->SetDefaultMass(mass);
+      fValue = mother->Ref().Rapidity();
+      break;
     case kEventMult:
-      return (Double_t)event->GetMultiplicity();
+      if (!event) fValue = 0.0;
+      fValue = (Double_t)event->GetMultiplicity();
+      break;
     default:
       AliWarning("Invalid value type");
-      return 0.0;
+      return kFALSE;
   }
+  
+  return kTRUE;
 }

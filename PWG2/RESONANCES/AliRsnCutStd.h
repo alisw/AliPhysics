@@ -14,58 +14,46 @@
 
 #include "AliRsnCut.h"
 
+class AliRsnDaughter;
+class AliRsnMother;
+class AliRsnEvent;
+
 class AliRsnCutStd : public AliRsnCut
 {
   public:
 
     // available cut types
     // some ones work both for pairs and single tracks
-    enum EType {
+    enum EType 
+    {
       kP = 0,
       kPt,
       kEta,
       kY,
       kThetaDeg,
-      kDr,
-      kDz,
-      kTPCsignal,
       kMult,
-      kMultDiff,
-      kMultDiffRel,
-      kVzDiff,
-      // value cuts
-      kStatus,
-      kKink,
-      kKinkMother,
-      kAssignedPID,
-      kTruePID,
-      kRequiredPID,
-      kRealisticPID,
-      kPairIndex,
       // cut without reference values
       kCharge,
       kSameLabel,
-      kTruePair,
-      kTruePIDMatch,
-      kRealisticPIDMatch,
       // last
       kLastType
     };
 
     AliRsnCutStd();
-    AliRsnCutStd(const char *name, EType type, Int_t val1, Int_t val2 = 0, Bool_t useMC = kFALSE);
-    AliRsnCutStd(const char *name, EType type, ULong_t val1, ULong_t val2 = 0, Bool_t useMC = kFALSE);
-    AliRsnCutStd(const char *name, EType type, Double_t val1, Double_t val2 = 0.0, Bool_t useMC = kFALSE);
+    AliRsnCutStd(const char *name, ETarget target, EType type, Int_t    val1, Int_t    val2 = 0 , Bool_t useMC = kFALSE);
+    AliRsnCutStd(const char *name, ETarget target, EType type, Double_t val1, Double_t val2 = 0., Bool_t useMC = kFALSE);
     virtual ~AliRsnCutStd() { }
-
-    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnDaughter*const daughter);
-    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnPairParticle*const pair);
-    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnEvent*const event);
-    virtual Bool_t IsSelected(AliRsnCut::ETarget tgt, AliRsnEvent*const ev1, AliRsnEvent*const ev2);
     
-    void SetMass(Double_t mass) {fMass = mass;}
+    void           SetMass(Double_t mass) {fMass = mass;}
+    EVarType       CheckType();
+    
+    virtual Bool_t IsSelected(TObject *obj1, TObject *obj2 = 0x0);
 
   protected:
+  
+    virtual Bool_t IsDaughterSelected(AliRsnDaughter *daughter);
+    virtual Bool_t IsMotherSelected(AliRsnMother *mother);
+    virtual Bool_t IsEventSelected(AliRsnEvent *event);
 
     EType     fType;       // cut type
     Bool_t    fUseMC;      // use or not MC values (when applicable)

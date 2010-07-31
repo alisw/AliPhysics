@@ -14,8 +14,8 @@ ClassImp(AliRsnCutPrimaryVertex)
 
 //_________________________________________________________________________________________________
 AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex() :
-    AliRsnCut(),
-    fAcceptTPC(kFALSE)
+  AliRsnCut(AliRsnCut::kEvent),
+  fAcceptTPC(kFALSE)
 {
 //
 // Default constructor.
@@ -25,8 +25,8 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex() :
 //_________________________________________________________________________________________________
 AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 (const char *name, Int_t nContributors, Bool_t acceptTPC) :
-    AliRsnCut(name, 0, nContributors - 1),
-    fAcceptTPC(acceptTPC)
+  AliRsnCut(name, AliRsnCut::kEvent, 0, nContributors - 1),
+  fAcceptTPC(acceptTPC)
 {
 //
 // Main constructor.
@@ -45,36 +45,16 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget /*tgt*/, AliRsnDaughter*/*const track*/)
-{
-//
-// Cut checker.
-//
-
-  AliWarning("Cannot apply this cut to particles");
-  return kTRUE;
-}
-
-//_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnPairParticle*/*const pair*/)
-{
-//
-// Cut checker
-//
-
-  AliWarning("Cannot apply this cut to pairs");
-  return kTRUE;
-}
-
-//_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnEvent*event)
+Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
 {
 //
 // Cut checker
 //
 
   // retrieve ESD event
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event->GetRef());
+  AliRsnEvent *rsn = dynamic_cast<AliRsnEvent*>(obj1);
+  if (!rsn) return kFALSE;
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(rsn->GetRef());
   if (!esd) {
     AliDebug(AliLog::kDebug+2, "NO ESD");
     return kFALSE;
@@ -114,13 +94,3 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnEvent*event)
   return /*there is a NOT operator */!/*here*/OkRange();
 }
 
-//_________________________________________________________________________________________________
-Bool_t AliRsnCutPrimaryVertex::IsSelected(AliRsnCut::ETarget, AliRsnEvent*/*ev1*/, AliRsnEvent*/*ev2*/)
-{
-//
-// Cut checker
-//
-
-  AliWarning("Cannot apply this cut to event mixing");
-  return kTRUE;
-}

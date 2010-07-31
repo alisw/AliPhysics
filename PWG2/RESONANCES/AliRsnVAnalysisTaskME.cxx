@@ -20,27 +20,20 @@
 ClassImp(AliRsnVAnalysisTaskME)
 
 //_____________________________________________________________________________
-AliRsnVAnalysisTaskME::AliRsnVAnalysisTaskME(const char *name, Int_t numOfOutputs) :
+AliRsnVAnalysisTaskME::AliRsnVAnalysisTaskME(const char *name) :
     AliAnalysisTaskME(name),
     fLogType(AliLog::kInfo),
     fLogClassesString(""),
     fESDEvent(0x0),
     fMCEvent(0x0),
     fAODEvent(0x0),
-    fNumberOfOutputs(numOfOutputs),
+    fInfoList(0x0),
     fTaskInfo(name)
 {
 //
 // Default constructor
 //
   AliDebug(AliLog::kDebug+2,"<-");
-
-  if (fNumberOfOutputs < 0) fNumberOfOutputs = 0;
-  if (fNumberOfOutputs > kMaxNumberOfOutputs) {
-    AliWarning(Form("We support only %d outputs. If you need more ask for it.", kMaxNumberOfOutputs));
-    AliWarning(Form("For now we are setting it to %d.", kMaxNumberOfOutputs));
-    fNumberOfOutputs = kMaxNumberOfOutputs;
-  }
 
   DefineOutput(1, TList::Class());
 
@@ -53,7 +46,7 @@ AliRsnVAnalysisTaskME::AliRsnVAnalysisTaskME(const AliRsnVAnalysisTaskME& copy) 
     fESDEvent(copy.fESDEvent),
     fMCEvent(copy.fMCEvent),
     fAODEvent(copy.fAODEvent),
-    fNumberOfOutputs(copy.fNumberOfOutputs),
+    fInfoList(0x0),
     fTaskInfo(copy.fTaskInfo)
 {
   AliDebug(AliLog::kDebug+2,"<-");
@@ -128,10 +121,12 @@ void AliRsnVAnalysisTaskME::UserCreateOutputObjects()
 
   AliDebug(AliLog::kDebug+2,"<-");
 
-  fOutList[0] = new TList();
-  fOutList[0]->SetOwner();
-  fTaskInfo.GenerateInfoList(fOutList[0]);
+  fInfoList = new TList();
+  fInfoList->SetOwner();
+  fTaskInfo.GenerateInfoList(fInfoList);
   RsnUserCreateOutputObjects();
+
+  PostData(1, fInfoList);
 
   AliDebug(AliLog::kDebug+2,"<-");
 }
@@ -151,7 +146,7 @@ void AliRsnVAnalysisTaskME::UserExec(Option_t* opt)
 
   fTaskInfo.PrintInfo(fEntry);
 
-  PostData(1, fOutList[0]);
+  PostData(1, fInfoList);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -179,7 +174,7 @@ Bool_t AliRsnVAnalysisTaskME::CheckAndPrintEvents()
 // or number of events is less or equal 1
 //
 
-  AliInfo(Form("Current Entry %d", (Int_t)Entry()));
+  AliInfo(Form("Current Entry %d", Entry()));
   Int_t nEvents = fInputHandler->GetBufferSize();
   if (nEvents <= 1) return kFALSE;
   fESDEvent = dynamic_cast<AliESDEvent*>(GetEvent(0));
@@ -223,24 +218,24 @@ void AliRsnVAnalysisTaskME::Terminate(Option_t* opt)
   AliDebug(AliLog::kDebug+2,"<-");
   AliAnalysisTask::Terminate();
 
-  fOutList[0] = dynamic_cast<TList*>(GetOutputData(1));
-  if (!fOutList[0]) {
-    AliError(Form("At end of analysis, fOutList is %p", fOutList));
+  fInfoList = dynamic_cast<TList*>(GetOutputData(1));
+  if (!fInfoList) {
+    AliError(Form("At end of analysis, fOutList is %p", fInfoList));
     return;
   }
 
   RsnTerminate(opt);
 
-  TH1I *hEventInfo = (TH1I*) fOutList[0]->FindObject(fTaskInfo.GetEventHistogramName());
+  TH1I *hEventInfo = (TH1I*) fInfoList->FindObject(fTaskInfo.GetEventHistogramName());
   if (!hEventInfo) {
     AliError(Form("hEventInfo is %p", hEventInfo));
     return;
   }
 
   AliInfo(Form("=== %s ==================", GetName()));
-  AliInfo(Form("Number Of Events Processed : %10d", (Int_t)hEventInfo->Integral()));
-  AliInfo(Form("Number Of Events Accepted  : %10d", (Int_t)hEventInfo->GetBinContent(2)));
-  AliInfo(Form("Number Of Events Skipped   : %10d", (Int_t)hEventInfo->GetBinContent(1)));
+  AliInfo(Form("Number Of Events Processed : %10d", (Long64_t)hEventInfo->Integral()));
+  AliInfo(Form("Number Of Events Accepted  : %10d", (Long64_t)hEventInfo->GetBinContent(2)));
+  AliInfo(Form("Number Of Events Skipped   : %10d", (Long64_t)hEventInfo->GetBinContent(1)));
   AliInfo(Form("=== end %s ==============", GetName()));
 
   AliDebug(AliLog::kDebug+2,"->");
@@ -298,3 +293,4 @@ void AliRsnVAnalysisTaskME::SetDebugForAllClasses()
   }
   AliDebug(AliLog::kDebug+2,"->");
 }
+

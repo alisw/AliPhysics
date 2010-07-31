@@ -29,10 +29,7 @@ class AliRsnCutBetheBloch : public AliRsnCut
     Double_t       BetheBloch(AliRsnDaughter*const track);
     Double_t       RelDiff(AliRsnDaughter *track);
 
-    virtual Bool_t IsSelected(ETarget tgt, AliRsnDaughter *daughter);
-    virtual Bool_t IsSelected(ETarget tgt, AliRsnPairParticle *pair);
-    virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *event);
-    virtual Bool_t IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2);
+    virtual Bool_t IsSelected(TObject *obj1, TObject *obj2 = 0x0);
 
   protected:
 

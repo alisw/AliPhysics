@@ -17,25 +17,27 @@
 //
 #include "AliLog.h"
 
+#include "AliRsnDaughter.h"
+#include "AliRsnMother.h"
+#include "AliRsnEvent.h"
+
 #include "AliRsnCut.h"
 
 ClassImp(AliRsnCut)
 
 //_________________________________________________________________________________________________
-AliRsnCut::AliRsnCut() :
-    TNamed(),
-    fVarType(kInt),
-    fMinI(0),
-    fMaxI(0),
-    fMinU(0),
-    fMaxU(0),
-    fMinD(0.0),
-    fMaxD(0.0),
-    fCutValueI(0),
-    fCutValueU(0),
-    fCutValueD(0.0),
-    fCutResult(kTRUE),
-    fEvent(0x0)
+AliRsnCut::AliRsnCut(ETarget target) :
+  TNamed(),
+  fVarType(kInt),
+  fTarget(target),
+  fMinI(0),
+  fMaxI(0),
+  fMinD(0.0),
+  fMaxD(0.0),
+  fCutValueI(0),
+  fCutValueD(0.0),
+  fCutResult(kTRUE),
+  fEvent(0x0)
 {
 //
 // Default constructor.
@@ -44,19 +46,17 @@ AliRsnCut::AliRsnCut() :
 
 //_________________________________________________________________________________________________
 AliRsnCut::AliRsnCut(const AliRsnCut& copy) :
-    TNamed(copy),
-    fVarType(copy.fVarType),
-    fMinI(copy.fMinI),
-    fMaxI(copy.fMaxI),
-    fMinU(copy.fMinU),
-    fMaxU(copy.fMaxU),
-    fMinD(copy.fMinD),
-    fMaxD(copy.fMaxD),
-    fCutValueI(copy.fCutValueI),
-    fCutValueU(copy.fCutValueU),
-    fCutValueD(copy.fCutValueD),
-    fCutResult(copy.fCutResult),
-    fEvent(copy.fEvent)
+  TNamed(copy),
+  fVarType(copy.fVarType),
+  fTarget(copy.fTarget),
+  fMinI(copy.fMinI),
+  fMaxI(copy.fMaxI),
+  fMinD(copy.fMinD),
+  fMaxD(copy.fMaxD),
+  fCutValueI(copy.fCutValueI),
+  fCutValueD(copy.fCutValueD),
+  fCutResult(copy.fCutResult),
+  fEvent(copy.fEvent)
 {
 //
 // Copy constructor.
@@ -65,23 +65,21 @@ AliRsnCut::AliRsnCut(const AliRsnCut& copy) :
 
 //_________________________________________________________________________________________________
 AliRsnCut::AliRsnCut
-(const char *name, Int_t min, Int_t max) :
-    TNamed(name, ""),
-    fVarType(kInt),
-    fMinI(min),
-    fMaxI(max),
-    fMinU(0),
-    fMaxU(0),
-    fMinD(0.0),
-    fMaxD(0.0),
-    fCutValueI(0),
-    fCutValueU(0),
-    fCutValueD(0.0),
-    fCutResult(kTRUE),
-    fEvent(0x0)
+(const char *name, ETarget target, Int_t min, Int_t max) :
+  TNamed(name, ""),
+  fVarType(kInt),
+  fTarget(target),
+  fMinI(min),
+  fMaxI(max),
+  fMinD(0.0),
+  fMaxD(0.0),
+  fCutValueI(0),
+  fCutValueD(0.0),
+  fCutResult(kTRUE),
+  fEvent(0x0)
 {
 //
-// Constructor.
+// Constructor with integer values.
 // If the cut must check values inside a range,
 // both 'value' arguments must be used, and they are, in the order,
 // the minimum and maximum of the allowed range.
@@ -91,49 +89,21 @@ AliRsnCut::AliRsnCut
 
 //_________________________________________________________________________________________________
 AliRsnCut::AliRsnCut
-(const char *name, ULong_t min, ULong_t max) :
-    TNamed(name, ""),
-    fVarType(kULong),
-    fMinI(0),
-    fMaxI(0),
-    fMinU(min),
-    fMaxU(max),
-    fMinD(0.0),
-    fMaxD(0.0),
-    fCutValueI(0),
-    fCutValueU(0),
-    fCutValueD(0.0),
-    fCutResult(kTRUE),
-    fEvent(0x0)
+(const char *name, ETarget target, Double_t min, Double_t max) :
+  TNamed(name, ""),
+  fVarType(kDouble),
+  fTarget(target),
+  fMinI(0),
+  fMaxI(0),
+  fMinD(min),
+  fMaxD(max),
+  fCutValueI(0),
+  fCutValueD(0.0),
+  fCutResult(kTRUE),
+  fEvent(0x0)
 {
 //
-// Constructor.
-// If the cut must check values inside a range,
-// both 'value' arguments must be used, and they are, in the order,
-// the minimum and maximum of the allowed range.
-// If the cut must check a value, the second 'value' argument will never be used.
-//
-}
-
-//_________________________________________________________________________________________________
-AliRsnCut::AliRsnCut
-(const char *name, Double_t min, Double_t max) :
-    TNamed(name, ""),
-    fVarType(kDouble),
-    fMinI(0),
-    fMaxI(0),
-    fMinU(0),
-    fMaxU(0),
-    fMinD(min),
-    fMaxD(max),
-    fCutValueI(0),
-    fCutValueU(0),
-    fCutValueD(0.0),
-    fCutResult(kTRUE),
-    fEvent(0x0)
-{
-//
-// Constructor.
+// Constructor with double values.
 // If the cut must check values inside a range,
 // both 'value' arguments must be used, and they are, in the order,
 // the minimum and maximum of the allowed range.
@@ -150,15 +120,13 @@ AliRsnCut& AliRsnCut::operator=(const AliRsnCut& copy)
 //
 
   fVarType   = copy.fVarType;
+  fTarget    = copy.fTarget;
   fMinI      = copy.fMinI;
   fMaxI      = copy.fMaxI;
   fMinD      = copy.fMinD;
   fMaxD      = copy.fMaxD;
-  fMinU      = copy.fMinU;
-  fMaxU      = copy.fMaxU;
   fCutValueI = copy.fCutValueI;
   fCutValueD = copy.fCutValueD;
-  fCutValueU = copy.fCutValueU;
   fCutResult = copy.fCutResult;
   fEvent     = copy.fEvent;
 
@@ -166,54 +134,83 @@ AliRsnCut& AliRsnCut::operator=(const AliRsnCut& copy)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnDaughter* /*track*/)
+Bool_t AliRsnCut::TargetOK(TObject *obj1, TObject *obj2)
 {
 //
-// Virtual cut-checking method.
-// In base class, these methods compare the argument type
-// with the defined target, in order to detect a mismatch
+// This method checks if the expected target and the passed object match.
 //
 
-  AliWarning("This cut does not provide checks on AliRsnDaughter. This function will return kTRUE");
+  if (!obj1)
+  {
+    AliError("Cannot cut on a NULL object!");
+    return kFALSE;
+  }
+
+  switch (fTarget)
+  {
+    case kDaughter:
+      if (dynamic_cast<AliRsnDaughter*>(obj1) == 0x0)
+      {
+        AliError(Form("[%s] Target mismatch (obj #1): expected  'AliRsnDaughter', passed '%s'", GetName(), obj1->ClassName()));
+        Print();
+        return kFALSE;
+      }
+      break;
+    case kMother:
+      if (dynamic_cast<AliRsnMother*>(obj1) == 0x0)
+      {
+        AliError(Form("[%s] Target mismatch (obj #1): expected  'AliRsnMother', passed '%s'", GetName(), obj1->ClassName()));
+        Print();
+        return kFALSE;
+      }
+      break;
+    case kEvent:
+      if (dynamic_cast<AliRsnEvent*>(obj1) == 0x0)
+      {
+        AliError(Form("[%s] Target mismatch (obj #1): expected  'AliRsnEvent', passed '%s'", GetName(), obj1->ClassName()));
+        Print();
+        return kFALSE;
+      }
+      break;
+    case kMixEvent:
+      if (dynamic_cast<AliRsnEvent*>(obj1) == 0x0)
+      {
+        AliError(Form("[%s] Target mismatch (obj #1): expected  'AliRsnEvent', passed '%s' an", GetName(), obj1->ClassName()));
+        Print();
+        return kFALSE;
+      }
+      if (obj2)
+      {
+        if (dynamic_cast<AliRsnEvent*>(obj2) == 0x0)
+        {
+          AliError(Form("[%s] Target mismatch (obj #2): expected  'AliRsnEvent', passed '%s' an", GetName(), obj2->ClassName()));
+          Print();
+          return kFALSE;
+        }
+      }
+      else
+      {
+        AliError("Mix-event cuts require 2 not NULL objects");
+        Print();
+        return kFALSE;
+      }
+      break;
+    default:
+      return kTRUE;
+  }
+  
   return kTRUE;
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnPairParticle* /*pair*/)
+Bool_t AliRsnCut::IsSelected(TObject* /*obj1*/, TObject* /*obj2*/)
 {
 //
-// Virtual cut-checking method.
-// In base class, these methods compare the argument type
-// with the defined target, in order to detect a mismatch
+// Virtual cut-checking method for event mixing.
+// This method checks only that the target is the oner for mixing.
 //
 
-  AliWarning("This cut does not provide checks on AliRsnPairParticle. This function will return kTRUE");
-  return kTRUE;
-}
-
-//_________________________________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*event*/)
-{
-//
-// Virtual cut-checking method.
-// In base class, these methods compare the argument type
-// with the defined target, in order to detect a mismatch
-//
-
-  AliWarning("This cut does not provide checks on AliRsnEvent. This function will return kTRUE");
-  return kTRUE;
-}
-
-//_________________________________________________________________________________________________
-Bool_t AliRsnCut::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*ev1*/, AliRsnEvent* /*ev2*/)
-{
-//
-// Virtual cut-checking method.
-// In base class, these methods compare the argument type
-// with the defined target, in order to detect a mismatch
-//
-
-  AliWarning("This cut does not provide checks on two AliRsnEvent's. This function will return kTRUE");
+  AliWarning("Single-object cuts are not implemented here.");
   return kTRUE;
 }
 
@@ -226,46 +223,16 @@ Bool_t AliRsnCut::OkValue()
 // Then, the cut result is kTRUE if the cut value is equal to this reference value.
 //
 
-  switch (fVarType) {
-  case kInt:
-    // eval result
-    fCutResult = (fCutValueI == fMinI);
-    // print debug message
-    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-    AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
-    AliDebug(AliLog::kDebug + 3, Form("Checked value: %d", fCutValueI));
-    AliDebug(AliLog::kDebug + 3, Form("Cut value    : %d", fMinI));
-    AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-    break;
-  case kULong:
-    // eval result
-    fCutResult = (fCutValueU == fMinU);
-    // print debug message
-    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-    AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s" , GetName()));
-    AliDebug(AliLog::kDebug + 3, Form("Checked value: %lu", fCutValueU));
-    AliDebug(AliLog::kDebug + 3, Form("Cut value    : %lu", fMinU));
-    AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s" , (fCutResult ? "PASSED" : "NOT PASSED")));
-    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-    break;
-  case kDouble:
-    // eval result
-    fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
-    // print debug message
-    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-    AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
-    AliDebug(AliLog::kDebug + 3, Form("Checked value: %f", fCutValueD));
-    AliDebug(AliLog::kDebug + 3, Form("Cut value    : %f", fMinD));
-    AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-    break;
-  default:
-    AliError(Form("fVarType = %d --> not allowed", fVarType));
-    return kFALSE;
+  switch (fVarType) 
+  {
+    case kInt:
+      return OkValueI();
+    case kDouble:
+      return OkValueD();
+    default:
+      AliError(Form("fVarType = %d --> not allowed", fVarType));
+      return kFALSE;
   }
-
-  return fCutResult;
 }
 
 //_________________________________________________________________________________________________
@@ -277,45 +244,139 @@ Bool_t AliRsnCut::OkRange()
 // Then, the cut result is kTRUE if the cut value is inside this range.
 //
 
-  switch (fVarType) {
-  case kInt:
-    // eval result
-    fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
-    // print debug message
-    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
-    AliDebug(AliLog::kDebug + 2, Form("Checked value: %d", fCutValueI));
-    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %d , %d", fMinI, fMaxI));
-    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-    break;
-  case kULong:
-    // eval result
-    fCutResult = ((fCutValueU >= fMinU) && (fCutValueU <= fMaxU));
-    // print debug message
-    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s"       , GetName()));
-    AliDebug(AliLog::kDebug + 2, Form("Checked value: %lu"      , fCutValueU));
-    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %lu , %lu", fMinU, fMaxU));
-    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s"       , (fCutResult ? "PASSED" : "NOT PASSED")));
-    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-    break;
-  case kDouble:
-    // eval result
-    fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
-    // print debug message
-    AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
-    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
-    AliDebug(AliLog::kDebug + 2, Form("Checked value: %f", fCutValueD));
-    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %f , %f", fMinD, fMaxD));
-    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-    AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
-    break;
-  default:
-    AliError(Form("fVarType = %d --> not allowed", fVarType));
-    return kFALSE;
+  switch (fVarType) 
+  {
+    case kInt:
+      return OkRangeI();
+    case kDouble:
+      return OkRangeD();
+    default:
+      AliError(Form("fVarType = %d --> not allowed", fVarType));
+      return kFALSE;
   }
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCut::OkValueI()
+{
+//
+// This method is used when the cut consists in comparing the cut value
+// with a reference integer value to which it must be equal.
+//
+
+  // eval result
+  fCutResult = (fCutValueI == fMinI);
+  
+  // print debug message
+  AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+  AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
+  AliDebug(AliLog::kDebug + 3, Form("Checked value: %d", fCutValueI));
+  AliDebug(AliLog::kDebug + 3, Form("Cut value    : %d", fMinI));
+  AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+  AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
+  
+  return fCutResult;
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCut::OkValueD()
+{
+//
+// This method is used when the cut consists in comparing the cut value
+// with a reference double value to which it must be equal (or at least, almost).
+//
+
+  // eval result
+  fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
+  
+  // print debug message
+  AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+  AliDebug(AliLog::kDebug + 3, Form("Cut name     : %s", GetName()));
+  AliDebug(AliLog::kDebug + 3, Form("Checked value: %f", fCutValueD));
+  AliDebug(AliLog::kDebug + 3, Form("Cut value    : %f", fMinD));
+  AliDebug(AliLog::kDebug + 3, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+  AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
+  
+  return fCutResult;
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCut::OkRangeI()
+{
+//
+// This method is used when the cut consists in an allowed range
+// where the cut value must be included to pass the cut.
+// Then, the cut result is kTRUE if the cut value is inside this range.
+//
+
+  // eval result
+  fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
+  
+  // print debug message
+  AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+  AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
+  AliDebug(AliLog::kDebug + 2, Form("Checked value: %d", fCutValueI));
+  AliDebug(AliLog::kDebug + 2, Form("Cut range    : %d , %d", fMinI, fMaxI));
+  AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+  AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
+  
+  return fCutResult;
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCut::OkRangeD()
+{
+//
+// This method is used when the cut consists in an allowed range
+// where the cut value must be included to pass the cut.
+// Then, the cut result is kTRUE if the cut value is inside this range.
+//
+
+  // eval result
+  fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
+   
+  // print debug message
+  AliDebug(AliLog::kDebug + 3, "=== CUT DEBUG ====================================");
+  AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
+  AliDebug(AliLog::kDebug + 2, Form("Checked value: %f", fCutValueD));
+  AliDebug(AliLog::kDebug + 2, Form("Cut range    : %f , %f", fMinD, fMaxD));
+  AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
+  AliDebug(AliLog::kDebug + 3, "=== END CUT DEBUG ================================");
 
   return fCutResult;
 }
 
+//_________________________________________________________________________________________________
+void AliRsnCut::Print(Option_t*) const
+{
+//
+// Override TObject::Print() method
+//
+
+  Char_t target[100];
+  switch (fTarget)
+  {
+    case kDaughter: sprintf(target, "DAUGHTER"); break;
+    case kMother  : sprintf(target, "MOTHER"); break;
+    case kEvent   : sprintf(target, "EVENT"); break;
+    case kMixEvent: sprintf(target, "MIX EVENT"); break;
+    default       : sprintf(target, "UNDEFINED"); break;
+  }
+
+  AliInfo("=== CUT DETAILS ====================================");
+  AliInfo(Form("Cut name     : [%s]", GetName()));
+  AliInfo(Form("Cut target   : [%s]", target));
+  AliInfo(Form("Cut edges [D]: [%f - %f]", fMinD, fMaxD));
+  AliInfo(Form("Cut edges [I]: [%d - %d]", fMinI, fMaxI));
+  AliInfo("====================================================");
+}
+
+//_________________________________________________________________________________________________
+void AliRsnCut::SetEvent(AliRsnEvent *event)
+{
+//
+// Sets the reference event
+//
+
+  fEvent = event;
+}

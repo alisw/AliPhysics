@@ -15,11 +15,10 @@
 
 #include "AliLog.h"
 #include "AliVEvent.h"
-#include "AliESDEvent.h"
-#include "AliAODEvent.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
+#include "AliRsnCutPID.h"
 
 #include "AliRsnEvent.h"
 
@@ -27,28 +26,21 @@ ClassImp(AliRsnEvent)
 
 //_____________________________________________________________________________
 AliRsnEvent::AliRsnEvent(AliVEvent *ref, AliMCEvent *refMC) :
-    fRef(ref),
-    fRefMC(refMC),
-    fPIDDefESD()
+  fRef(ref),
+  fRefMC(refMC),
+  fLeading(-1)
 {
 //
 // Default constructor.
-// Set the prior probabilities to some default values
 //
-
-  fPrior[0] = 0.02;
-  fPrior[1] = 0.02;
-  fPrior[2] = 0.83;
-  fPrior[3] = 0.07;
-  fPrior[4] = 0.06;
 }
 
 //_____________________________________________________________________________
 AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
-    TObject(event),
-    fRef(event.fRef),
-    fRefMC(event.fRefMC),
-    fPIDDefESD(event.fPIDDefESD)
+  TObject(event),
+  fRef(event.fRef),
+  fRefMC(event.fRefMC),
+  fLeading(event.fLeading)
 {
 //
 // Copy constructor.
@@ -63,9 +55,9 @@ AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent & event)
 //
 
   (TObject)(*this) = (TObject)event;
-  fRef = event.fRef;
-  fRefMC = event.fRefMC;
-  fPIDDefESD = event.fPIDDefESD;
+  fRef             = event.fRef;
+  fRefMC           = event.fRefMC;
+  fLeading         = event.fLeading;
 
   return (*this);
 }
@@ -79,75 +71,134 @@ AliRsnEvent::~AliRsnEvent()
 }
 
 //_____________________________________________________________________________
-void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i)
+Bool_t AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i, AliRsnDaughter::ERefType type)
 {
 //
-// Return a track stored here in format of AliRsnDaughter.
-// and finds in the reference event the informations to set
-// the proprietary data members of AliRsnDaughter
+// Using the second and third arguments, retrieves the i-th object in the
+// appropriate sample (tracks or V0s) and sets the firs reference object
+// in order to point to that.
+// If a MonteCarlo information is provided, sets the useful informations from there,
+// and in case of a V0, sets the 'label' data member only when the two daughters
+// of the V0 point to the same mother.
+// Returns kFALSE whenever the operation fails (out of range, NULL references).
 //
+
+  Int_t label;
 
   // retrieve reference particle from reference event
   // if it is found, by defaul track can be used (good)
-  AliVParticle *ref = (AliVParticle*)fRef->GetTrack(i);
-  if (!ref) return;
-  out.SetRef(ref);
-  out.SetGood();
-
-  // if MC info is present, retrieve from it
-  TParticle *refMC = 0;
-  if (fRefMC) {
-    Int_t label = TMath::Abs(ref->GetLabel());
-    refMC = fRefMC->Stack()->Particle(label);
-    out.SetParticle(refMC);
-    out.FindMotherPDG(fRefMC->Stack());
-  }
-
-  // if fRef is MC event return
-  AliMCEvent *mc = dynamic_cast<AliMCEvent *>(fRef);
-  if (mc) return;
-
-  // dynamic reference to true nature of referenced event
-  // to get kink index
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fRef);
-  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fRef);
-
-  if (esd) {
-    // retrieve vertex and set impact parameters
-    Double_t dx = out.Xv(), dy = out.Yv(), dz = out.Zv();
-    const AliVVertex *v = fRef->GetPrimaryVertex();
-    if (v) {
-      dx -= v->GetX();
-      dy -= v->GetY();
-      dz -= v->GetZ();
-    } else if (fRefMC) {
-      // if reference is an MC event, no primary vertex is supplied
-      // but it is possible to retrieve it from header
-      TArrayF fvertex(3);
-      fRefMC->GenEventHeader()->PrimaryVertex(fvertex);
-      dx -= fvertex[0];
-      dy -= fvertex[1];
-      dz -= fvertex[2];
+  if (type == AliRsnDaughter::kTrack)
+  {
+    if (i >= fRef->GetNumberOfTracks())
+    {
+      out.SetBad();
+      return kFALSE;
     }
-    out.SetDr(TMath::Sqrt(dx*dx + dy*dy));
-    out.SetDz(dz);
+    AliVTrack *track = (AliVTrack*)fRef->GetTrack(i);
+    label = TMath::Abs(track->GetLabel());
+    if (!track)
+    {
+      out.SetBad();
+      return kFALSE;
+    }
+    else
+    {
+      out.SetRef(track);
+      out.SetLabel(label);
+      if (fRefMC)
+      {
+        if (label < fRefMC->GetNumberOfTracks()) 
+        {
+          AliMCParticle *part = (AliMCParticle*)fRefMC->GetTrack(label);
+          out.SetRefMC(part);
+        }
+      }
+      out.SetGood();
+    }
   }
-  // compute PID probabilities by combining
-  // the PID weights in the source with priors
-  // and eventually using the PIDDefESD
-  // (the AliRsnDaughter objec knows how to manage the latter)
-  out.CombineWithPriors(fPrior, &fPIDDefESD);
+  else if (type == AliRsnDaughter::kV0)
+  {
+    if (i > fRef->GetNumberOfV0s())
+    {
+      out.SetBad();
+      return kFALSE;
+    }
+    AliESDv0     *esdV = 0x0;
+    AliAODv0     *aodV = 0x0;
+    Int_t         lp, ln;
+    AliVTrack    *tp = 0x0, *tn = 0x0;
+    if (IsESD()) esdV = GetRefESD()->GetV0(i);
+    if (IsAOD()) aodV = GetRefAOD()->GetV0(i);
+    if (!esdV && !aodV)
+    {
+      out.SetBad();
+      return kFALSE;
+    }
+    else
+    {
+      if (esdV) out.SetRef(esdV); else out.SetRef(aodV);
+      // retrieve the V0 daughters, which must be done differently with ESD and AOD v0s
+      if (esdV)
+      {
+        // get the 2 daughters of the V0
+        AliESDEvent *ev = dynamic_cast<AliESDEvent*>(fRef);
+        tp = ev->GetTrack(esdV->GetPindex());
+        tn = ev->GetTrack(esdV->GetNindex());
+      }
+      else if (aodV)
+      {
+        // get the 2 daughters of the V0
+        AliAODEvent *ev = dynamic_cast<AliAODEvent*>(fRef);
+        tp = ev->GetTrack(aodV->GetPosID());
+        tn = ev->GetTrack(aodV->GetNegID());
+      }
 
-  if (esd) {
-    AliESDtrack *esdTrack = esd->GetTrack(i);
-    out.FindKinkIndex(esdTrack);
-  } else if (aod) {
-    out.FindKinkIndex(aod);
+      // now, if we have a MC, use the two track objects
+      // to retrieve the true particle which generated the V0
+      // using their labels; by default they are a false V0 with label -1
+      label = -1;
+      if (tp && tn && fRefMC)
+      {
+        lp = TMath::Abs(tp->GetLabel());
+        ln = TMath::Abs(tn->GetLabel());
+        // if labels are meaningful, retrieve corresponding particles
+        TParticle *pp = fRefMC->Stack()->Particle(lp);
+        TParticle *pn = fRefMC->Stack()->Particle(ln);
+        // if their first mothers are the same, the V0 is true
+        // otherwise no label can be assigned
+        if (pp->GetFirstMother() == pn->GetFirstMother()) label = pp->GetFirstMother();
+      }
+      out.SetLabel(label);
+      out.SetGood();
+    }
   }
+  
+  // finally, in case we have a MC, searches for the mother, in order to store
+  // its PDG code into the output AliRsnDaughter
+  if (fRefMC)
+  {
+    label = out.GetLabel();
+    AliStack *stack = fRefMC->Stack();
+    if (label >= 0 && label < stack->GetNtrack())
+    {
+      TParticle *part = stack->Particle(label);
+      if (part)
+      {
+        Int_t imum = part->GetFirstMother();
+        if (imum >= 0 && imum <= stack->GetNtrack())
+        {
+          TParticle *mum = stack->Particle(imum);
+          if (mum) out.SetMotherPDG(TMath::Abs(mum->GetPdgCode()));
+        }
+      }
+    }
+  }
+  
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
-AliRsnDaughter AliRsnEvent::GetDaughter(Int_t i)
+AliRsnDaughter AliRsnEvent::GetDaughter(Int_t i, AliRsnDaughter::ERefType type)
 {
 //
 // Return an AliRsnDaughter taken from this event,
@@ -155,7 +206,7 @@ AliRsnDaughter AliRsnEvent::GetDaughter(Int_t i)
 //
 
   AliRsnDaughter out;
-  SetDaughter(out, i);
+  SetDaughter(out, i, type);
 
   return out;
 }
@@ -178,14 +229,15 @@ Double_t AliRsnEvent::GetVz()
 //
 // Return Z coord of primary vertex
 //
+
   AliDebug(AliLog::kDebug+2,"<-");
   return fRef->GetPrimaryVertex()->GetZ();
   AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
-AliRsnDaughter AliRsnEvent::GetLeadingParticle
-(Double_t ptMin, AliPID::EParticleType type)
+Int_t AliRsnEvent::SelectLeadingParticle
+(Double_t ptMin, AliRsnCutPID *cutPID)
 {
 //
 // Searches the collection of all particles with given PID type and charge,
@@ -197,23 +249,26 @@ AliRsnDaughter AliRsnEvent::GetLeadingParticle
 //
 
   Int_t i, nTracks = fRef->GetNumberOfTracks();
-  AliRsnDaughter output;
+  fLeading = -1;
+  AliRsnDaughter leading;
+  leading.SetBad();
 
   for (i = 0; i < nTracks; i++) {
     AliRsnDaughter track = GetDaughter(i);
-    if (!AcceptTrackPID(&track, type)) continue;
-    if (track.Pt() < ptMin) continue;
-    if (!output.IsOK() || track.Pt() > output.Pt()) {
-      output = track;
-      output.SetGood();
+    if (cutPID) if (!cutPID->IsSelected(&track)) continue;
+    if (track.P().Perp() < ptMin) continue;
+    if (!leading.IsOK() || track.P().Perp() > leading.P().Perp())
+    {
+      fLeading = i;
+      leading = track;
     }
   }
 
-  return output;
+  return fLeading;
 }
 
 //_________________________________________________________________________________________________
-Double_t AliRsnEvent::GetAverageMomentum(Int_t &count, AliPID::EParticleType type)
+Double_t AliRsnEvent::GetAverageMomentum(Int_t &count, AliRsnCutPID *cutPID)
 {
 //
 // Loops on the list of tracks and computes average total momentum.
@@ -224,8 +279,8 @@ Double_t AliRsnEvent::GetAverageMomentum(Int_t &count, AliPID::EParticleType typ
 
   for (i = 0, count = 0; i < nTracks; i++) {
     AliRsnDaughter track = GetDaughter(i);
-    if (!AcceptTrackPID(&track, type)) continue;
-    pmean += track.P();
+    if (cutPID) if (!cutPID->IsSelected(&track)) continue;
+    pmean += track.P().Mag();
     count++;
   }
 
@@ -256,7 +311,7 @@ Bool_t AliRsnEvent::GetAngleDistr
     AliRsnDaughter trk = GetDaughter(i);
     if (trk.GetID() == leading.GetID()) continue;
 
-    angle = leading.AngleTo(trk);
+    angle = leading.P().Angle(trk.P().Vect());
 
     angleMean += angle;
     angle2Mean += angle * angle;
@@ -270,64 +325,4 @@ Bool_t AliRsnEvent::GetAngleDistr
   angleRMS = TMath::Sqrt(angle2Mean - angleMean * angleMean);
 
   return kTRUE;
-}
-
-//_____________________________________________________________________________
-void AliRsnEvent::SetPriorProbability(Double_t *const out)
-{
-//
-// Set all prior probabilities at once, using an assayr of values.
-//
-
-  Int_t i;
-
-  for (i = 0; i < AliPID::kSPECIES; i++) {
-    fPrior[i] = out[i];
-  }
-}
-
-//_____________________________________________________________________________
-void AliRsnEvent::DumpPriors()
-{
-//
-// Print all prior probabilities.
-// Printout is done using AliInfo, so this will not appear when
-// the GlobalLogLevel is set to higher level errors.
-//
-
-  Int_t i;
-
-  for (i = 0; i < AliPID::kSPECIES; i++) {
-    AliInfo(Form("Prior probability for %10s = %3.5f", AliPID::ParticleName((AliPID::EParticleType)i), fPrior[i]));
-  }
-}
-
-//_____________________________________________________________________________
-void AliRsnEvent::GetPriorProbability(Double_t *out) const
-{
-//
-// Stores in the passed argument all the values.
-//
-
-  Int_t i;
-
-  for (i = 0; i < AliPID::kSPECIES; i++) {
-    out[i] = fPrior[i];
-  }
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliRsnEvent::AcceptTrackPID(AliRsnDaughter * const d, AliPID::EParticleType type)
-{
-//
-// [PRIVATE]
-// Checks if the track PID (according to method in use) corresponds
-// to the required identification species.
-// If the second argument is "kUnknown", answer of this method is always YES.
-//
-
-  if (type == AliPID::kUnknown) return kTRUE;
-
-  return (d->AssignedPID() == type);
 }

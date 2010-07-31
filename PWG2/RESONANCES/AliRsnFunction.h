@@ -31,8 +31,8 @@
 
 #include "AliRsnCut.h"
 
-class AliRsnFunctionAxis;
-class AliRsnPairParticle;
+class AliRsnValue;
+class AliRsnMother;
 class AliRsnPairDef;
 
 class AliRsnFunction : public TNamed
@@ -46,20 +46,18 @@ class AliRsnFunction : public TNamed
     const AliRsnFunction& operator=(const AliRsnFunction &copy);
 
     void                 SetPairDef(AliRsnPairDef * const def) {fPairDef = def;}
-    void                 SetTrack(AliRsnDaughter * const track) {fTrack = track;}
-    void                 SetPair(AliRsnPairParticle * const pair) {fPair = pair;}
+    void                 SetPair(AliRsnMother * const pair) {fPair = pair;}
     void                 SetEvent(AliRsnEvent *const event) {fEvent = event;}
 
     AliRsnPairDef*       GetPairDef() const {return fPairDef;}
-    AliRsnDaughter*      GetTrack() const {return fTrack;}
-    AliRsnPairParticle*  GetPair() const {return fPair;}
+    AliRsnMother*        GetPair() const {return fPair;}
     AliRsnEvent*         GetEvent() const {return fEvent;}
     virtual const char*  GetName() const;
 
     Bool_t               IsUsingTH1() {return fUseTH1;}
     void                 UseTH1() {fUseTH1 = kTRUE;}
     void                 UseSparse() {fUseTH1 = kFALSE;}
-    void                 AddAxis(AliRsnFunctionAxis*const axis);
+    void                 AddAxis(AliRsnValue* const axis);
     Int_t                GetNumberOfAxes() {return fAxisList.GetEntries();}
     TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
     THnSparseD*          CreateHistogramSparse(const char *histoName, const char *histoTitle);
@@ -71,8 +69,7 @@ class AliRsnFunction : public TNamed
     AliRsnPairDef      *fPairDef;     // reference to used pair definition
     TClonesArray        fAxisList;    // list of axis
 
-    AliRsnDaughter     *fTrack;       // processed track
-    AliRsnPairParticle *fPair;        // processed pair
+    AliRsnMother       *fPair;        // processed pair
     AliRsnEvent        *fEvent;       // processed event
 
     Bool_t              fUseTH1;      // use TH1 or not?

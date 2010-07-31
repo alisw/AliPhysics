@@ -19,31 +19,28 @@
 #ifndef ALIRSNANALYSISMANAGER_H
 #define ALIRSNANALYSISMANAGER_H
 
-// #include <TROOT.h>
-
-#include "AliRsnVManager.h"
-// #include "AliRsnPairManager.h"
 class TROOT;
-class AliRsnPIDIndex;
+
 class AliRsnEvent;
-class AliRsnPairManager;
-class AliRsnAnalysisManager : public AliRsnVManager
+class AliRsnPair;
+
+class AliRsnAnalysisManager : public TNamed
 {
   public:
 
     AliRsnAnalysisManager(const char*name = "defaultAnalysisMgr");
     virtual ~AliRsnAnalysisManager() {;};
 
-    //virtual void   Add(AliRsnPairManager *pair);
-    virtual void   Add(TObject *pair);
-    virtual void   AddConfig(TString config, TString prefix, TString functionName = "");
+    virtual void   Add(AliRsnPair *pair);
     virtual void   PrintArray() const;
     virtual void   Print(Option_t *option = "") const;
 
-    void           InitAllPairMgrs(TList*list);
-    void           ProcessAllPairMgrs(AliRsnPIDIndex *pidIndexes1, AliRsnEvent *ev1, AliRsnPIDIndex *pidIndexes2 = 0, AliRsnEvent *ev2 = 0);
+    void           InitAllPairs(TList*list);
+    void           ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1);
 
   private:
+  
+    TObjArray   fPairs;
 
     ClassDef(AliRsnAnalysisManager, 1)
 };

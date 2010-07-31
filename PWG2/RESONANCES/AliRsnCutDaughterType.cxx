@@ -1,5 +1,5 @@
 //
-// Class AliRsnCutESDPrimary
+// Class AliRsnCutDaughterType
 //
 // General implementation of a single cut strategy, which can be:
 // - a value contained in a given interval  [--> IsBetween()   ]
@@ -17,14 +17,14 @@
 //
 
 #include "AliRsnDaughter.h"
-#include "AliRsnCutESDPrimary.h"
+#include "AliRsnCutDaughterType.h"
 
-ClassImp(AliRsnCutESDPrimary)
+ClassImp(AliRsnCutDaughterType)
 
 //_________________________________________________________________________________________________
-AliRsnCutESDPrimary::AliRsnCutESDPrimary() :
+AliRsnCutDaughterType::AliRsnCutDaughterType() :
   AliRsnCut(AliRsnCut::kDaughter),
-  fCuts()
+  fRefType(kTypes)
 {
 //
 // Default constructor.
@@ -32,10 +32,10 @@ AliRsnCutESDPrimary::AliRsnCutESDPrimary() :
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutESDPrimary::AliRsnCutESDPrimary
-(const char *name) :
+AliRsnCutDaughterType::AliRsnCutDaughterType
+(const char *name, EType type) :
   AliRsnCut(name, AliRsnCut::kDaughter, 0.0, 0.0),
-  fCuts()
+  fRefType(type)
 {
 //
 // Main constructor.
@@ -43,7 +43,7 @@ AliRsnCutESDPrimary::AliRsnCutESDPrimary
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutESDPrimary::IsSelected(TObject *obj1, TObject* /*obj2*/)
+Bool_t AliRsnCutDaughterType::IsSelected(TObject *obj1, TObject* /*obj2*/)
 {
 //
 // Cut checker.
@@ -53,14 +53,30 @@ Bool_t AliRsnCutESDPrimary::IsSelected(TObject *obj1, TObject* /*obj2*/)
   AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(obj1);
   if (!daughter) return kFALSE;
   
-  // retrieve the TPC signal
-  AliESDtrack *esdTrack = daughter->GetRefESDtrack();
-  if (!esdTrack) 
+  // check the daughter according to the selected type
+  // in some cases this means to retrieve the track status
+  AliVTrack   *track  = dynamic_cast<AliVTrack*>(daughter->GetRef());
+  AliESDtrack *esdT   = dynamic_cast<AliESDtrack*>(daughter->GetRef());
+  ULong_t      status = 0x0;
+  if (track) status = (ULong_t)track->GetStatus();
+  
+  switch (fRefType)
   {
-    AliError("ESD information unavailable");
-    return kTRUE;
+    case kTrackTPC:
+      return ((status & AliESDtrack::kTPCin)  != 0);
+    case kTrackITSSA:
+      if (esdT)
+      {
+        UChar_t itsCluMap = track->GetITSClusterMap();
+        Int_t   k, nITS   = 0;
+        for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITS;
+        if (nITS < 3) return kFALSE;
+      }
+      return ((status & AliESDtrack::kTPCin)  == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
+    case kV0:
+      return daughter->IsV0();
+    default:
+      AliError("No good reference type is chosen. Cut skipped");
+      return kTRUE;
   }
-
-  // check cut
-  return fCuts.IsSelected(esdTrack);
 }

@@ -10,11 +10,13 @@
 #ifndef ALIRSNPAIR_H
 #define ALIRSNPAIR_H
 
+#include "TNamed.h"
 #include "TClonesArray.h"
 
 #include "AliRsnDaughter.h"
 #include "AliRsnPairDef.h"
-#include "AliRsnPairParticle.h"
+#include "AliRsnMother.h"
+#include "AliRsnCutManager.h"
 
 class TH1;
 class TH2;
@@ -22,22 +24,15 @@ class TList;
 class TArrayI;
 
 class AliRsnEvent;
-class AliRsnCutMgr;
-class AliRsnPIDIndex;
+class AliRsnCutSet;
 class AliRsnFunction;
+class AliRsnValue;
 
-class AliRsnPair : public TObject
+class AliRsnPair : public TNamed
 {
   public:
 
-    enum EPairType {
-      kNoPID = 0,    kNoPIDMix,
-      kRealisticPID, kRealisticPIDMix,
-      kPerfectPID,   kPerfectPIDMix,
-      kPairTypes
-    };
-
-    AliRsnPair(EPairType type = kRealisticPID, AliRsnPairDef *def = 0);
+    AliRsnPair(const char *name = "default", AliRsnPairDef *def = 0);
     AliRsnPair(const AliRsnPair &copy);
     AliRsnPair& operator=(const AliRsnPair&);
     ~AliRsnPair();
@@ -45,45 +40,30 @@ class AliRsnPair : public TObject
     void    SetOnlyTrue(Bool_t onlyTrue = kTRUE) {fOnlyTrue = onlyTrue;}
 
     void    Print(Option_t *option = "") const;
-    void    LoopPair(AliRsnPIDIndex*const pidIndex1, AliRsnEvent*const ev1, AliRsnPIDIndex*const pidIndex2 = 0, AliRsnEvent* ev2 = 0);
-    void    LoopPair(TArrayI *a1, TArrayI *a2, AliRsnEvent *ev1, AliRsnEvent *ev2 = 0);
-    void    SetCutMgr(AliRsnCutMgr* const mgr) { fCutMgr = mgr; }
-    void    AddFunction(AliRsnFunction*const fcn);
-    TList*  GenerateHistograms(TString prefix = "", TList *list=0);
-
+    void    SetMixed(Bool_t doit = kTRUE) {fIsMixed = doit;}
     Bool_t  IsMixed() const {return fIsMixed;}
-    Bool_t  IsPairEqual() const {
-      if (fPIDMethod == AliRsnDaughter::kNoPID) return (fPairDef->IsLikeSign());
-      else return (fPairDef->IsLikeSign() && fPairDef->HasEqualTypes());
-    }
+    
+    AliRsnCutManager* GetCutManager() {return &fCutManager;}
+    AliRsnMother*     GetMother() {return &fMother;}
+    AliRsnPairDef*    GetPairDef() {return fPairDef;}
+    Bool_t            Fill(AliRsnDaughter *d0, AliRsnDaughter *d1, AliRsnEvent *ev1, AliRsnEvent *ev2);
+    virtual void      Compute();
+    virtual void      Init(const char *prefix, TList *list);
 
-    TString GetPairTypeName(EPairType type) const;
-    TString GetPairName() const;
-    TString GetPairHistName(AliRsnFunction *const fcn, TString text = "") const;
-    TString GetPairHistTitle(AliRsnFunction *const fcn, TString text = "") const;
+  protected:
 
+    Bool_t            fOnlyTrue;        //  select true pairs only?
+    Bool_t            fIsMixed;         //  is this an event-mixing?
+
+    AliRsnPairDef    *fPairDef;         //  pair definition (particles, charges)
+    AliRsnCutManager  fCutManager;      //  collection of all cuts
+    AliRsnMother      fMother;          //  mother candidate (to avoid creating it continuously)
+    AliRsnEvent      *fEvent;           //  pointer to current event
+    
   private:
-
-    void     SetUp(EPairType type);
-    void     SetAllFlags(AliRsnDaughter::EPIDMethod pid, Bool_t mix) {fPIDMethod = pid; fIsMixed = mix;}
-
-    Bool_t   CutPass(AliRsnDaughter *d);
-    Bool_t   CutPass(AliRsnPairParticle *p);
-    Bool_t   CutPass(AliRsnEvent *e);
-
-    Bool_t                      fOnlyTrue;       // select true pairs only?
-    Bool_t                      fIsMixed;        // doing event-mixing ?
-    EPairType                   fPairType;       // pair type (PID + mixing or not)
-    AliRsnDaughter::EPIDMethod  fPIDMethod;      // pid type variable for single track
-
-    AliRsnPairDef              *fPairDef;        // pair definition (particles, charges)
-    AliRsnCutMgr               *fCutMgr;         // cut manager
-    TClonesArray                fFunctions;      // functions
-    AliRsnDaughter              fTrack1;         // track #1 (external loop)
-    AliRsnDaughter              fTrack2;         // track #2 (internal loop)
-    AliRsnPairParticle          fPairParticle;   // track pair
 
     ClassDef(AliRsnPair, 2)
 };
 
 #endif
+

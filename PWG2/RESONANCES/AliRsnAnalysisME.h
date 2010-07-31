@@ -15,7 +15,6 @@
 #include "AliRsnVAnalysisTaskME.h"
 #include "AliRsnAnalysisManager.h"
 #include "AliRsnEvent.h"
-#include "AliRsnPIDIndex.h"
 
 class AliPID;
 class AliESDtrackCuts;
@@ -23,7 +22,7 @@ class AliRsnAnalysisME : public AliRsnVAnalysisTaskME
 {
 
   public:
-    AliRsnAnalysisME(const char *name = "AliRsnAnalysisME", Int_t numOfOutputs = 1);
+    AliRsnAnalysisME(const char *name = "AliRsnAnalysisME");
     AliRsnAnalysisME(const AliRsnAnalysisME& copy);
     virtual ~AliRsnAnalysisME() { ; };
 
@@ -32,8 +31,8 @@ class AliRsnAnalysisME : public AliRsnVAnalysisTaskME
     virtual void    RsnUserExec(Option_t*);
     virtual void    RsnTerminate(Option_t*);
 
-    AliRsnAnalysisManager *GetAnalysisManager(Int_t index = 0, TString name = "");
-    void SetAnalysisManagerName(const char *name, Int_t index = 0) { fRsnAnalysisManager[index].SetName(name); };
+    AliRsnAnalysisManager *GetAnalysisManager() {return &fRsnAnalysisManager;}
+    void SetAnalysisManagerName(const char *name) {fRsnAnalysisManager.SetName(name); };
 
     // Prior probs
     void            SetPriorProbability(AliPID::EParticleType type, Double_t p);
@@ -44,11 +43,10 @@ class AliRsnAnalysisME : public AliRsnVAnalysisTaskME
 
     AliRsnAnalysisME& operator=(const AliRsnAnalysisME& /*copy*/) { return *this; }
 
-    AliRsnAnalysisManager fRsnAnalysisManager[kMaxNumberOfOutputs];      // analysis main engine
-    AliRsnPIDIndex        fPIDIndex;                // utility --> PID sorter
-    AliRsnPIDIndex        fPIDIndexMix;             // utility --> PID sorter (mixed event)
+    AliRsnAnalysisManager fRsnAnalysisManager;      // analysis main engine
     AliRsnEvent           fEvent;                   // utility --> event interface
     AliRsnEvent           fEventMix;                // utility --> event interface (mixed event)
+    TList                *fOutList;                 // outputs
 
     Double_t              fPrior[AliPID::kSPECIES]; // prior probabilities
 
