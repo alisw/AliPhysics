@@ -104,6 +104,9 @@ AliHMPIDRawStream::AliHMPIDRawStream() :
   for(Int_t iddl=0;iddl<kNDDL;iddl++) 
     for(Int_t ierr=0; ierr < kSumErr; ierr++) fNumOfErr[iddl][ierr]=0;               //reset errors  
 
+  fRawReader->Reset();
+  fRawReader->Select("HMPID");
+  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRawStream::~AliHMPIDRawStream()
@@ -221,7 +224,7 @@ Bool_t AliHMPIDRawStream::Next()
    
     if(status) AliDebug(1,Form("Event DDL %i successfully decoded!.",fDDLNumber));
     else AliDebug(1,Form("Event DDL %i ERROR in decoding!.",fDDLNumber));
-//      DumpData(fRawReader->GetDataSize());
+    //DumpData(fRawReader->GetDataSize());
   
    
     }
@@ -241,6 +244,7 @@ void AliHMPIDRawStream::InitVars(Int_t n)
   fPad = new Int_t[n];
   //for debug purpose
   fPos = new Int_t[4*n+4];                     //reset debug
+  for(Int_t ie = 0 ; ie < 4*n+4; ie++) fPos[ie] = 0; //initialize for 0, otherwise the position is considered filled and will not be updated for the dump
   fiPos = 0;
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -277,8 +281,7 @@ Bool_t AliHMPIDRawStream::ReadHMPIDRawData()
   cnt--;
 
   
-  while (cnt>0) {
-    
+  while (cnt>20) { //counter limit is changed from 0 to 20 to take into account (skipp) the 5 extra words in the equipment header
     nwSeg = (fWord >> kbit8) & 0xfff;
     if(!CheckSegment()) return kFALSE;
     if(!ReadSegment(cntSegment)) return kFALSE;
