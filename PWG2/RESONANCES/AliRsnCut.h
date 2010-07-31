@@ -20,8 +20,6 @@
 
 #include "TNamed.h"
 
-class AliRsnDaughter;
-class AliRsnPairParticle;
 class AliRsnEvent;
 
 class AliRsnCut : public TNamed
@@ -29,61 +27,64 @@ class AliRsnCut : public TNamed
   public:
 
     // possible targets for a cut
-    enum ETarget {
-      kParticle = 0,
-      kPair,
+    enum ETarget 
+    {
+      kDaughter = 0,
+      kMother,
       kEvent,
       kMixEvent,
       kLastCutTarget
     };
 
     // data type for check
-    enum EVarType {
-      kInt = 0,
-      kULong,
+    enum EVarType 
+    {
+      kNoVar = 0,
+      kInt,
       kDouble
     };
 
-    AliRsnCut();
+    AliRsnCut(ETarget target = kLastCutTarget);
     AliRsnCut(const AliRsnCut& copy);
     AliRsnCut& operator=(const AliRsnCut& copy);
-    AliRsnCut(const char *name, Int_t    min, Int_t    max = 0);
-    AliRsnCut(const char *name, ULong_t  min, ULong_t  max = 0);
-    AliRsnCut(const char *name, Double_t min, Double_t max = 0);
-    virtual ~AliRsnCut() {;};
+    AliRsnCut(const char *name, ETarget target, Int_t    min, Int_t    max = 0 );
+    AliRsnCut(const char *name, ETarget target, Double_t min, Double_t max = 0.);
+    virtual ~AliRsnCut() { /*nothing*/ };
 
     void             SetRange(Int_t    min, Int_t    max) {fMinI = min; fMaxI = max; fVarType = kInt;}
-    void             SetRange(ULong_t  min, ULong_t  max) {fMinU = min; fMaxU = max; fVarType = kULong;}
     void             SetRange(Double_t min, Double_t max) {fMinD = min; fMaxD = max; fVarType = kDouble;}
 
     void             SetValue(Int_t value)    {fMinI = value; fVarType = kInt;}
-    void             SetValue(ULong_t value)  {fMinU = value; fVarType = kULong;}
     void             SetValue(Double_t value) {fMinD = value; fVarType = kDouble;}
 
-    void             SetEvent(AliRsnEvent *event) {fEvent = event;}
-
-    virtual Bool_t   IsSelected(ETarget tgt, AliRsnDaughter *daughter);
-    virtual Bool_t   IsSelected(ETarget tgt, AliRsnPairParticle *pair);
-    virtual Bool_t   IsSelected(ETarget tgt, AliRsnEvent *event);
-    virtual Bool_t   IsSelected(ETarget tgt, AliRsnEvent *ev1, AliRsnEvent *ev2);
+    virtual void     SetEvent(AliRsnEvent *event);
+    
+    ETarget          GetTarget() {return fTarget;}
+    Bool_t           IsTarget(ETarget target) {return (fTarget == target);}
+    Bool_t           TargetOK  (TObject *obj1, TObject *obj2 = 0x0);
+    virtual Bool_t   IsSelected(TObject *obj1, TObject *obj2 = 0x0);
+    virtual void     Print(Option_t *opt = "") const;
 
   protected:
 
     Bool_t  OkValue();
     Bool_t  OkRange();
+    Bool_t  OkValueI();
+    Bool_t  OkRangeI();
+    Bool_t  OkValueD();
+    Bool_t  OkRangeD();
 
     EVarType  fVarType;    // type of checked variable
+    ETarget   fTarget;     // type of object on which the cut is checked
 
     Int_t     fMinI;       // lower edge of INT range or ref. value for INT CUT
     Int_t     fMaxI;       // upper edge of INT range (not used for value cuts)
-    ULong_t   fMinU;       // lower edge of ULONG range or ref. value for INT CUT
-    ULong_t   fMaxU;       // upper edge of ULONG range (not used for value cuts)
     Double_t  fMinD;       // lower edge of DOUBLE range or ref. value for INT CUT
     Double_t  fMaxD;       // upper edge of DOUBLE range (not used for value cuts)
 
-    Int_t     fCutValueI;  // cut value
-    ULong_t   fCutValueU;  // cut value
-    Double_t  fCutValueD;  // cut value
+    Int_t     fCutValueI;  // cut value INT
+    Double_t  fCutValueD;  // cut value DOUBLE
+    
     Bool_t    fCutResult;  // tells if the cut is passed or not
 
     AliRsnEvent *fEvent;   //! pointer to current event (can be needed sometimes)

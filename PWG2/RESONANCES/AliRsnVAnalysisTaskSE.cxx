@@ -18,19 +18,18 @@ ClassImp(AliRsnVAnalysisTaskSE)
 
 //_____________________________________________________________________________
 AliRsnVAnalysisTaskSE::AliRsnVAnalysisTaskSE
-(const char *name, Int_t numOfOutputs, Bool_t mcOnly) :
-    AliAnalysisTaskSE(name),
-    fLogType(AliLog::kInfo),
-    fLogClassesString(""),
-    fESDEvent(0x0),
-    fMCEvent(0x0),
-    fAODEventIn(0x0),
-    fAODEventOut(0x0),
-    fMCOnly(mcOnly),
-    fRsnEvent(),
-    fRsnPIDIndex(),
-    fNumberOfOutputs(numOfOutputs),
-    fTaskInfo(name)
+(const char *name, Bool_t mcOnly) :
+  AliAnalysisTaskSE(name),
+  fLogType(AliLog::kInfo),
+  fLogClassesString(""),
+  fESDEvent(0x0),
+  fMCEvent(0x0),
+  fAODEventIn(0x0),
+  fAODEventOut(0x0),
+  fMCOnly(mcOnly),
+  fRsnEvent(),
+  fInfoList(0x0),
+  fTaskInfo(name)
 {
 //
 // Default constructor.
@@ -39,32 +38,25 @@ AliRsnVAnalysisTaskSE::AliRsnVAnalysisTaskSE
 
   AliDebug(AliLog::kDebug+2,"<-");
 
-  if (fNumberOfOutputs<0) fNumberOfOutputs = 0;
-  if (fNumberOfOutputs>kMaxNumberOfOutputs) {
-    AliWarning(Form("We support only %d outputs. If you need more ask for it.",kMaxNumberOfOutputs));
-    AliWarning(Form("For now we are setting it to %d.",kMaxNumberOfOutputs));
-    fNumberOfOutputs = kMaxNumberOfOutputs;
-  }
-
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 
   AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
 AliRsnVAnalysisTaskSE::AliRsnVAnalysisTaskSE(const AliRsnVAnalysisTaskSE& copy) :
-    AliAnalysisTaskSE(copy),
-    fLogType(copy.fLogType),
-    fLogClassesString(copy.fLogClassesString),
-    fESDEvent(copy.fESDEvent),
-    fMCEvent(copy.fMCEvent),
-    fAODEventIn(copy.fAODEventIn),
-    fAODEventOut(copy.fAODEventOut),
-    fMCOnly(copy.fMCOnly),
-    fRsnEvent(),
-    fRsnPIDIndex(),
-    fNumberOfOutputs(copy.fNumberOfOutputs),
-    fTaskInfo(copy.fTaskInfo)
+  AliAnalysisTaskSE(copy),
+  fLogType(copy.fLogType),
+  fLogClassesString(copy.fLogClassesString),
+  fESDEvent(copy.fESDEvent),
+  fMCEvent(copy.fMCEvent),
+  fAODEventIn(copy.fAODEventIn),
+  fAODEventOut(copy.fAODEventOut),
+  fMCOnly(copy.fMCOnly),
+  fRsnEvent(),
+  fInfoList(0x0),
+  fTaskInfo(copy.fTaskInfo)
 {
 //
 // Copy constructor.
@@ -167,10 +159,12 @@ void AliRsnVAnalysisTaskSE::UserCreateOutputObjects()
 
   AliDebug(AliLog::kDebug+2, "<-");
 
-  fOutList[0] = new TList();
-  fOutList[0]->SetOwner();
-  fTaskInfo.GenerateInfoList(fOutList[0]);
+  fInfoList = new TList();
+  fInfoList->SetOwner();
+  fTaskInfo.GenerateInfoList(fInfoList);
   RsnUserCreateOutputObjects();
+
+  PostData(1, fInfoList);
 
   AliDebug(AliLog::kDebug+2,"<-");
 }
@@ -201,16 +195,13 @@ void AliRsnVAnalysisTaskSE::UserExec(Option_t* opt)
     return;
   }
 
-  // sort tracks w.r. to PID...
-  fRsnPIDIndex.FillFromEvent(&fRsnEvent);
-
   RsnUserExec(opt);
 
   FillInfo();
 
   fTaskInfo.PrintInfo(fTaskInfo.GetNumerOfEventsProcessed());
 
-  PostData(1, fOutList[0]);
+  PostData(1, fInfoList);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -268,9 +259,9 @@ void AliRsnVAnalysisTaskSE::Terminate(Option_t* opt)
   }
 
   AliInfo(Form("=== %s ==================",GetName()));
-  AliInfo(Form("Number Of Events Processed : %10d",(Int_t)hEventInfo->Integral()));
-  AliInfo(Form("Number Of Events Accepted  : %10d",(Int_t)hEventInfo->GetBinContent(2)));
-  AliInfo(Form("Number Of Events Skipped   : %10d",(Int_t)hEventInfo->GetBinContent(1)));
+  AliInfo(Form("Number Of Events Processed : %10d",(Long64_t)hEventInfo->Integral()));
+  AliInfo(Form("Number Of Events Accepted  : %10d",(Long64_t)hEventInfo->GetBinContent(2)));
+  AliInfo(Form("Number Of Events Skipped   : %10d",(Long64_t)hEventInfo->GetBinContent(1)));
   AliInfo(Form("=== end %s ==============",GetName()));
 
   AliDebug(AliLog::kDebug+2, "->");
@@ -333,3 +324,4 @@ void AliRsnVAnalysisTaskSE::SetDebugForAllClasses()
   }
   AliDebug(AliLog::kDebug+2,"->");
 }
+

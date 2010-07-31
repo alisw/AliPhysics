@@ -1,41 +1,39 @@
 #-*- Mode: Makefile -*-
 
 SRCS= RESONANCES/AliRsnDaughter.cxx \
-      RESONANCES/AliRsnPairParticle.cxx \
+      RESONANCES/AliRsnMother.cxx \
+      RESONANCES/AliRsnEvent.cxx \
       RESONANCES/AliRsnExpression.cxx \
       RESONANCES/AliRsnVariableExpression.cxx \
       RESONANCES/AliRsnCut.cxx \
       RESONANCES/AliRsnCutStd.cxx \
+      RESONANCES/AliRsnCutPID.cxx \
       RESONANCES/AliRsnCutBetheBloch.cxx \
       RESONANCES/AliRsnCutPrimaryVertex.cxx \
       RESONANCES/AliRsnCutESDPrimary.cxx \
-      RESONANCES/AliRsnCutESDTrigger.cxx \
+      RESONANCES/AliRsnCutDaughterType.cxx \
+      RESONANCES/AliRsnCutESD2010.cxx \
       RESONANCES/AliRsnCutSet.cxx \
-      RESONANCES/AliRsnCutMgr.cxx \
-      RESONANCES/AliRsnPIDIndex.cxx \
-      RESONANCES/AliRsnPIDDefESD.cxx \
-      RESONANCES/AliRsnEvent.cxx \
-      RESONANCES/AliRsnPairDef.cxx \
+      RESONANCES/AliRsnCutManager.cxx \
       RESONANCES/AliRsnValue.cxx \
-      RESONANCES/AliRsnValueList.cxx \
       RESONANCES/AliRsnFunction.cxx \
-      RESONANCES/AliRsnFunctionAxis.cxx \
+      RESONANCES/AliRsnPairDef.cxx \
       RESONANCES/AliRsnPair.cxx \
+      RESONANCES/AliRsnPairFunctions.cxx \
+      RESONANCES/AliRsnPairNtuple.cxx \
+      RESONANCES/AliRsnAnalysisManager.cxx \
       RESONANCES/AliRsnVATProcessInfo.cxx \
       RESONANCES/AliRsnVAnalysisTaskSE.cxx \
       RESONANCES/AliRsnVAnalysisTaskME.cxx \
-      RESONANCES/AliRsnVManager.cxx \
-      RESONANCES/AliRsnPairManager.cxx \
-      RESONANCES/AliRsnAnalysisManager.cxx \
       RESONANCES/AliRsnAnalysisSE.cxx \
       RESONANCES/AliRsnAnalysisME.cxx \
-      RESONANCES/AliRsnAnalysisEffSE.cxx \
-      RESONANCES/AliRsnAnalysisTrackEffSE.cxx \
       RESONANCES/AliRsnTOFT0maker.cxx \
       RESONANCES/AliRsnAnalysisPhi900GeV.cxx \
       RESONANCES/AliRsnAnalysisPhi7TeV.cxx \
+      RESONANCES/AliRsnAnalysisPhi7TeVNoPID.cxx \
       RESONANCES/AliRsnMonitorTrack.cxx \
       RESONANCES/AliRsnAnalysisMonitorTask.cxx \
+#     RESONANCES/AliRsnAnalysisEffSE.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 

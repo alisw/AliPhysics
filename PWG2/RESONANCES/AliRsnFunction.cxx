@@ -26,8 +26,8 @@
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
 #include "AliRsnPairDef.h"
-#include "AliRsnPairParticle.h"
-#include "AliRsnFunctionAxis.h"
+#include "AliRsnMother.h"
+#include "AliRsnValue.h"
 
 #include "AliRsnFunction.h"
 
@@ -37,8 +37,7 @@ ClassImp(AliRsnFunction)
 AliRsnFunction::AliRsnFunction(Bool_t useTH1) :
     TNamed(),
     fPairDef(0x0),
-    fAxisList("AliRsnFunctionAxis", 0),
-    fTrack(0x0),
+    fAxisList("AliRsnValue", 0),
     fPair(0x0),
     fEvent(0x0),
     fUseTH1(useTH1),
@@ -56,7 +55,6 @@ AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
     TNamed(copy),
     fPairDef(copy.fPairDef),
     fAxisList(copy.fAxisList),
-    fTrack(copy.fTrack),
     fPair(copy.fPair),
     fEvent(copy.fEvent),
     fUseTH1(copy.fUseTH1),
@@ -80,7 +78,6 @@ const AliRsnFunction& AliRsnFunction::operator=(const AliRsnFunction& copy)
   SetTitle(copy.GetTitle());
 
   fPairDef = copy.fPairDef;
-  fTrack = copy.fTrack;
   fPair = copy.fPair;
   fEvent = copy.fEvent;
   fUseTH1 = copy.fUseTH1;
@@ -106,9 +103,9 @@ const char* AliRsnFunction::GetName() const
   TString name("");
 
   TObjArrayIter next(&fAxisList);
-  AliRsnFunctionAxis *axis = 0;
+  AliRsnValue *axis = 0;
 
-  while ((axis = (AliRsnFunctionAxis*)next())) {
+  while ((axis = (AliRsnValue*)next())) {
     if (name.Length() > 1) name += '_';
     name += axis->GetName();
   }
@@ -117,15 +114,18 @@ const char* AliRsnFunction::GetName() const
 }
 
 //________________________________________________________________________________________
-void AliRsnFunction::AddAxis(AliRsnFunctionAxis *const axis)
+void AliRsnFunction::AddAxis(AliRsnValue *const axis)
 {
+  AliDebug(AliLog::kDebug+2,"<-");
   Int_t size = fAxisList.GetEntries();
-  if (size >= 3 && fUseTH1)
+  new(fAxisList[size]) AliRsnValue(*axis);
+  AliDebug(AliLog::kDebug+2,"->");
+  
+  if (fAxisList.GetEntries() > 3)
   {
     AliWarning("A TH1-type output cannot add more than 3 axes: switching to THnSparse -- THIS COULD CAUSE VERY LARGE FILES!!!");
     fUseTH1 = kFALSE;
   }
-  new(fAxisList[size]) AliRsnFunctionAxis(*axis);
 }
 
 //________________________________________________________________________________________
@@ -157,9 +157,9 @@ TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTit
   Double_t *max   = new Double_t[fSize];
 
   // retrieve binnings for main and secondary axes
-  AliRsnFunctionAxis *fcnAxis = 0;
+  AliRsnValue *fcnAxis = 0;
   for (Int_t i = 0; i < fSize; i++) {
-    fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
+    fcnAxis = (AliRsnValue*)fAxisList.At(i);
     if (!fcnAxis) {
       nbins[i] = 0;
       min[i]   = 0.0;
@@ -214,9 +214,9 @@ THnSparseD* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
   Double_t *max   = new Double_t[fSize];
 
   // retrieve binnings for main and secondary axes
-  AliRsnFunctionAxis *fcnAxis = 0;
+  AliRsnValue *fcnAxis = 0;
   for (Int_t i = 0; i < fSize; i++) {
-    fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
+    fcnAxis = (AliRsnValue*)fAxisList.At(i);
     if (!fcnAxis) {
       nbins[i] = 0;
       min[i]   = 0.0;
@@ -260,26 +260,14 @@ Bool_t AliRsnFunction::Fill()
   Int_t  i;
   Double_t *values = new Double_t[fSize];
 
-  AliRsnFunctionAxis *fcnAxis = 0;
+  AliRsnValue *fcnAxis = 0;
   for (i = 0; i < fSize; i++) {
-    fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
+    fcnAxis = (AliRsnValue*)fAxisList.At(i);
     if (!fcnAxis) {
       values[i] = 0.0;
       continue;
     }
-    switch (fcnAxis->GetAxisObject()) {
-    case AliRsnFunctionAxis::kParticle:
-      values[i] = fcnAxis->Eval(fTrack);
-      break;
-    case AliRsnFunctionAxis::kPair:
-      values[i] = fcnAxis->Eval(fPair, fPairDef);
-      break;
-    case AliRsnFunctionAxis::kEvent:
-      values[i] = fcnAxis->Eval(fEvent);
-      break;
-    default:
-      values[i] = 0.0;
-    }
+    if (fcnAxis->Eval(fPair, fPairDef, fEvent)) values[i] = fcnAxis->GetValue();
   }
   
   // fill histogram

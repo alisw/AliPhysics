@@ -14,12 +14,13 @@
 #ifndef ALIRSNEVENT_H
 #define ALIRSNEVENT_H
 
-#include "AliPID.h"
-#include "AliRsnPIDDefESD.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliRsnDaughter.h"
 
 class AliVEvent;
 class AliMCEvent;
+class AliRsnCutPID;
 
 class AliRsnEvent : public TObject
 {
@@ -30,33 +31,31 @@ class AliRsnEvent : public TObject
     AliRsnEvent& operator= (const AliRsnEvent& copy);
     virtual ~AliRsnEvent();
 
-    void             SetRef(AliVEvent *const event, AliMCEvent *const mc = 0) {fRef = event; fRefMC = mc;}
-    void             SetRefMC(AliMCEvent * const mc) {fRefMC = mc;}
+    void             SetRef(AliVEvent * const event, AliMCEvent * const mc = 0) {fRef = event; fRefMC = mc;}
     AliVEvent*       GetRef() const {return fRef;}
     AliMCEvent*      GetRefMC() const {return fRefMC;}
-    AliRsnPIDDefESD* GetPIDDefESD() {return &fPIDDefESD;}
-
-    void             SetDaughter(AliRsnDaughter &daughter, Int_t index);
-    AliRsnDaughter   GetDaughter(Int_t i);
-    Int_t            GetMultiplicity();
+    AliESDEvent*     GetRefESD() const {return dynamic_cast<AliESDEvent*>(fRef);}
+    AliAODEvent*     GetRefAOD() const {return dynamic_cast<AliAODEvent*>(fRef);}
+    Bool_t           IsESD() const {return (GetRefESD() != 0x0);}
+    Bool_t           IsAOD() const {return (GetRefAOD() != 0x0);}
+    
     Double_t         GetVz();
-    AliRsnDaughter   GetLeadingParticle(Double_t ptMin = 0.0, AliPID::EParticleType type = AliPID::kUnknown);
-    Double_t         GetAverageMomentum(Int_t &count, AliPID::EParticleType type = AliPID::kUnknown);
-    Bool_t           GetAngleDistr(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter d);
-
-    void             SetPriorProbability(AliPID::EParticleType type, Double_t p) {if (type>=0&&type<(Int_t)AliPID::kSPECIES)fPrior[type]=p;}
-    void             SetPriorProbability(Double_t* const out);
-    void             DumpPriors();
-    void             GetPriorProbability(Double_t *out) const;
+    Int_t            GetMultiplicity();
+    
+    Bool_t           SetDaughter(AliRsnDaughter &daughter, Int_t index, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
+    AliRsnDaughter   GetDaughter(Int_t i, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
+    
+    Int_t            SelectLeadingParticle(Double_t ptMin = 0.0, AliRsnCutPID *cutPID = 0x0);
+    Int_t            GetLeadingParticleID() {return fLeading;}
+    void             SetLeadingParticle(AliRsnDaughter &leading) {if (fLeading >= 0) SetDaughter(leading, fLeading);}
+    Double_t         GetAverageMomentum(Int_t &count, AliRsnCutPID *cutPID = 0x0);
+    Bool_t           GetAngleDistr(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter reference);
 
   private:
 
-    Bool_t AcceptTrackPID(AliRsnDaughter*const d, AliPID::EParticleType type = AliPID::kUnknown);
-
-    Double_t         fPrior[AliPID::kSPECIES]; // prior probabilities 
-    AliVEvent       *fRef;                     // pointer to input event
-    AliMCEvent      *fRefMC;                   // pointer to reference MC event (if any)
-    AliRsnPIDDefESD  fPIDDefESD;               // (optional) customization of PID weights for ESD
+    AliVEvent       *fRef;         // pointer to input event
+    AliMCEvent      *fRefMC;       // pointer to reference MC event (if any)
+    Int_t            fLeading;     // index of leading track
 
     ClassDef(AliRsnEvent, 3);
 };

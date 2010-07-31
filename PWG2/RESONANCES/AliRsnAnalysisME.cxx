@@ -18,31 +18,27 @@
 ClassImp(AliRsnAnalysisME)
 
 //_____________________________________________________________________________
-AliRsnAnalysisME::AliRsnAnalysisME(const char *name, Int_t numOfOutputs) :
-    AliRsnVAnalysisTaskME(name, numOfOutputs),
+AliRsnAnalysisME::AliRsnAnalysisME(const char *name) :
+    AliRsnVAnalysisTaskME(name),
     fRsnAnalysisManager(),
-    fPIDIndex(0),
-    fPIDIndexMix(0),
     fEvent(),
-    fEventMix()
+    fEventMix(),
+    fOutList(0x0)
 {
 //
 // Default constructor
 //
   AliDebug(AliLog::kDebug+2, "<-");
-  Int_t i = 0;
-  for (i = 0;i < fNumberOfOutputs;i++) {
-    DefineOutput(i + 2, TList::Class());
-  }
+
+  DefineOutput(2, TList::Class());
   AliDebug(AliLog::kDebug+2,"->");
 }
 
 AliRsnAnalysisME::AliRsnAnalysisME(const AliRsnAnalysisME& copy) : AliRsnVAnalysisTaskME(copy),
     fRsnAnalysisManager(copy.fRsnAnalysisManager),
-    fPIDIndex(copy.fPIDIndex),
-    fPIDIndexMix(copy.fPIDIndexMix),
     fEvent(copy.fEvent),
-    fEventMix(copy.fEvent)
+    fEventMix(copy.fEvent),
+    fOutList(0x0)
 {
   AliDebug(AliLog::kDebug+2, "<-");
   AliDebug(AliLog::kDebug+2,"->");
@@ -60,16 +56,12 @@ void AliRsnAnalysisME::RsnUserCreateOutputObjects()
 
   AliDebug(AliLog::kDebug+2, "<-");
 
-  Int_t i;
-  for (i = 1; i < kMaxNumberOfOutputs + 1; i++) {
-    if (i <= fNumberOfOutputs + 1) OpenFile(i/* + 1*/);
-    fOutList[i] = new TList();
-    fOutList[i]->SetOwner();
-  }
+  fOutList = new TList();
+  fOutList->SetOwner();
 
-  for (i = 0; i < fNumberOfOutputs; i++) {
-    fRsnAnalysisManager[i].InitAllPairMgrs(fOutList[i+1]);
-  }
+  fRsnAnalysisManager.InitAllPairs(fOutList);
+
+  PostData(2, fOutList);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -92,12 +84,7 @@ void AliRsnAnalysisME::RsnUserExec(Option_t*)
   // update the task info...
   fTaskInfo.SetEventUsed(kTRUE);
 
-  // the virtual class has already sorted tracks in the PID index
-  // so we need here just to call the execution of analysis
-  for (Int_t i = 0; i < fNumberOfOutputs; i++) {
-//     fRsnAnalysisManager[i].ProcessAllPairMgrs(&fRsnPIDIndex, &fRsnEvent);
-    PostData(i + 2, fOutList[i+1]);
-  }
+  PostData(2, fOutList);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -154,21 +141,9 @@ void AliRsnAnalysisME::DoAODMixing(AliAODEvent* aod1, AliAODEvent* aod2)
   if (fEvent.GetMultiplicity() < 2) return;
   if (fEventMix.GetMultiplicity() < 2) return;
 
-  // sort tracks w.r. to PID
-  fPIDIndex.ResetAll(fEvent.GetMultiplicity());
-  fEvent.SetPriorProbability(fPrior);
-  fPIDIndex.FillFromEvent(&fEvent);
-  fPIDIndex.SetCorrectIndexSize();
+  fRsnAnalysisManager.ProcessAllPairs(&fEvent, &fEventMix);
+  PostData(2, fOutList);
 
-  fPIDIndexMix.ResetAll(fEventMix.GetMultiplicity());
-  fEventMix.SetPriorProbability(fPrior);
-  fPIDIndexMix.FillFromEvent(&fEventMix);
-  fPIDIndexMix.SetCorrectIndexSize();
-
-  for (Int_t i = 0; i < fNumberOfOutputs; i++) {
-    fRsnAnalysisManager[i].ProcessAllPairMgrs(&fPIDIndex, &fEvent, &fPIDIndexMix, &fEventMix);
-    PostData(i + 2, fOutList[i+1]);
-  }
   AliDebug(AliLog::kDebug, Form("AOD tracks %d", aod1->GetNumberOfTracks()));
   AliDebug(AliLog::kDebug, Form("AOD tracks %d", aod2->GetNumberOfTracks()));
 
@@ -198,21 +173,6 @@ void AliRsnAnalysisME::RsnTerminate(Option_t*)
   AliDebug(AliLog::kDebug+2, "<-");
   AliDebug(AliLog::kDebug+2,"->");
 }
-
-//_____________________________________________________________________________
-AliRsnAnalysisManager* AliRsnAnalysisME::GetAnalysisManager(Int_t index, TString name)
-{
-//
-// Recovery the analysis manager
-//
-
-  if (!name.IsNull()) {
-    SetAnalysisManagerName(name.Data(), index);
-  }
-
-  return &fRsnAnalysisManager[index];
-}
-
 
 //_____________________________________________________________________________
 void AliRsnAnalysisME::SetPriorProbability(AliPID::EParticleType type, Double_t p)
@@ -253,3 +213,5 @@ void AliRsnAnalysisME::GetPriorProbability(Double_t *out) const
     out[i] = fPrior[i];
   }
 }
+
+

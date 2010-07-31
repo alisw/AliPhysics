@@ -9,16 +9,17 @@
 #ifndef ALIRSNVALUE_H
 #define ALIRSNVALUE_H
 
+#include "TArrayD.h"
+
 class AliRsnPairDef;
+class AliRsnMother;
 
 class AliRsnValue : public TObject
 {
   public:
 
-    enum EAxisType
+    enum EValueType
     {
-      kTrackPt,
-      kTrackEta,
       kTrack1P,
       kTrack2P,
       kTrack1Pt,
@@ -31,30 +32,38 @@ class AliRsnValue : public TObject
       kPairMt,
       kPairY,
       kEventMult,
-      kAxisTypes
+      kValueTypes
     };
 
-    enum EAxisObject
-    {
-      kParticle,
-      kPair,
-      kEvent,
-      kNone
-    };
-
-    AliRsnValue(EAxisType type = kAxisTypes);
+    AliRsnValue();
+    AliRsnValue(EValueType type, Int_t n, Double_t min, Double_t max);
+    AliRsnValue(EValueType type, Double_t min, Double_t max, Double_t step);
+    AliRsnValue(const AliRsnValue& copy) : TObject(copy),fType(copy.fType),fNBins(copy.fNBins),fMin(copy.fMin),fMax(copy.fMax),fValue(copy.fValue) {}
+    AliRsnValue& operator=(const AliRsnValue& copy) {fType=copy.fType;fNBins=copy.fNBins;fMin=copy.fMin;fMax=copy.fMax;fValue=copy.fValue;return (*this);}
     virtual ~AliRsnValue() { }
+    
+    const char* GetName() const;
+    Int_t       GetNBins() const {return fNBins;}
+    Double_t    GetMin() const {return fMin;}
+    Double_t    GetMax() const {return fMax;}
+    TArrayD     GetArray() const;
+    Double_t    GetValue() const {return fValue;}
+    EValueType  GetValueType() {return fType;}
 
-    virtual const char* GetName() const;
-    EAxisObject         GetAxisObject() const;
-    void                SetType(EAxisType type) {fType = type;}
-    EAxisType           GetAxisType() {return fType;}
-    Double_t            Eval(TObject * const obj, const AliRsnPairDef *pairDef = 0x0) const;
+    void        SetValueType(EValueType type) {fType = type;}
+    void        SetBins(Int_t n, Double_t min, Double_t max);
+    void        SetBins(Double_t min, Double_t max, Double_t step);
+    
+    Bool_t      Eval(AliRsnMother *mother, const AliRsnPairDef *pairDef, AliRsnEvent *event);
 
   private:
 
-    EAxisType fType;    // value type
-
+    EValueType fType;    // value type
+    Int_t      fNBins;   // number of bins (when applicable)
+    Double_t   fMin;     // lower edge
+    Double_t   fMax;     // upper edge
+    Double_t   fValue;   // computed value
+    
     // ROOT dictionary
     ClassDef(AliRsnValue, 1)
 };

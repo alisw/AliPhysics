@@ -17,7 +17,6 @@
 #include "AliAnalysisTaskSE.h"
 
 #include "AliRsnEvent.h"
-#include "AliRsnPIDIndex.h"
 #include "AliRsnVATProcessInfo.h"
 
 class AliESDEvent;
@@ -31,7 +30,7 @@ class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE
       kMaxNumberOfOutputs=10
     };
 
-    AliRsnVAnalysisTaskSE(const char *name = "AliRsnVAnalysisTaskSE", Int_t numOfOutputs = 1, Bool_t mcOnly = kFALSE);
+    AliRsnVAnalysisTaskSE(const char *name = "AliRsnVAnalysisTaskSE", Bool_t mcOnly = kFALSE);
     AliRsnVAnalysisTaskSE(const AliRsnVAnalysisTaskSE& copy);
     AliRsnVAnalysisTaskSE& operator= (const AliRsnVAnalysisTaskSE& /*copy*/) { return *this; }
     virtual ~AliRsnVAnalysisTaskSE() {/* Does nothing*/;}
@@ -52,11 +51,7 @@ class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE
     virtual void    FillInfo();
 
     // Prior probs
-    AliRsnPIDIndex* GetPIDIndex() {return &fRsnPIDIndex;}
     AliRsnEvent*    GetRsnEvent() {return &fRsnEvent;}
-    void            SetPriorProbability(AliPID::EParticleType type, Double_t p) {fRsnEvent.SetPriorProbability(type, p);}
-    void            DumpPriors() {fRsnEvent.DumpPriors();}
-    void            GetPriorProbability(Double_t *out) const {fRsnEvent.GetPriorProbability(out);}
 
     void SetMCOnly(Bool_t mcOnly = kTRUE) {fMCOnly = mcOnly;}
     void SetLogType(AliLog::EType_t type, TString allClasses = "");
@@ -74,10 +69,8 @@ class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE
 
     Bool_t                  fMCOnly;          // use only MC information
     AliRsnEvent             fRsnEvent;        // interface to event for RSN package
-    AliRsnPIDIndex          fRsnPIDIndex;     // PID method sorter
 
-    Int_t                   fNumberOfOutputs; // number of outputs
-    TList                  *fOutList[kMaxNumberOfOutputs+1]; //!
+    TList                  *fInfoList;        //! output list for informations
     AliRsnVATProcessInfo    fTaskInfo;        // task info
 
     void                    SetDebugForAllClasses();

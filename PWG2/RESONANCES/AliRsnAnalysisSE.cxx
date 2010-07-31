@@ -9,6 +9,7 @@
 //
 
 #include <Riostream.h>
+#include <TList.h>
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
@@ -20,21 +21,19 @@
 ClassImp(AliRsnAnalysisSE)
 
 //_____________________________________________________________________________
-AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name,Int_t numOfOutputs,Bool_t useKine) :
-    AliRsnVAnalysisTaskSE(name,numOfOutputs,useKine),
-    fRsnAnalysisManager(),
-    fEventCuts(0x0),
-    fZeroEventPercentWarning(50),
-    fUseZeroEventWarning(kTRUE)
+AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name, Bool_t useKine) :
+  AliRsnVAnalysisTaskSE(name, useKine),
+  fRsnAnalysisManager(),
+  fEventCuts(0x0),
+  fOutList(0x0),
+  fZeroEventPercentWarning(50),
+  fUseZeroEventWarning(kTRUE)
 {
 //
 // Default constructor.
 //
 
-  AliDebug(AliLog::kDebug+2,"<-");
-  for (Int_t i=0;i<fNumberOfOutputs;i++) {
-    DefineOutput(i+2, TList::Class());
-  }
+  DefineOutput(2, TList::Class());
   AliDebug(AliLog::kDebug+2,"->");
 }
 
@@ -43,6 +42,7 @@ AliRsnAnalysisSE::AliRsnAnalysisSE(const AliRsnAnalysisSE& copy) :
   AliRsnVAnalysisTaskSE(copy),
   fRsnAnalysisManager(copy.fRsnAnalysisManager),
   fEventCuts(copy.fEventCuts),
+  fOutList(0x0),
   fZeroEventPercentWarning(copy.fZeroEventPercentWarning),
   fUseZeroEventWarning(copy.fUseZeroEventWarning)
 {
@@ -66,18 +66,13 @@ void AliRsnAnalysisSE::RsnUserCreateOutputObjects()
 
   AliDebug(AliLog::kDebug+2,"<-");
 
-  Int_t i;
-  for (i = 1; i < kMaxNumberOfOutputs + 1; i++)
-  {
-    // this line makes trouble with PROOF ---> if (i <= fNumberOfOutputs + 1) OpenFile(i);
-    fOutList[i] = new TList();
-    fOutList[i]->SetOwner();
-  }
+  fOutList = new TList;
+  fRsnAnalysisManager.InitAllPairs(fOutList);
+  
+  AliError("\n\n***LIST***\n\n");
+  fOutList->Print();
 
-  for (i = 0; i < fNumberOfOutputs; i++)
-  {
-    fRsnAnalysisManager[i].InitAllPairMgrs(fOutList[i+1]);
-  }
+  PostData(2, fOutList);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -117,7 +112,7 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
     fTaskInfo.SetEventUsed(kFALSE);
     if (fUseZeroEventWarning)
     {
-      TH1I *hist = (TH1I*)fOutList[0]->FindObject(fTaskInfo.GetEventHistogramName());
+      TH1I *hist = (TH1I*)fInfoList->FindObject(fTaskInfo.GetEventHistogramName());
       if (!hist) return;
       Double_t zeroEventPercent = 0.0;
       if (hist->Integral() > 1) zeroEventPercent = (Double_t)hist->GetBinContent(1) / hist->Integral() * 100;
@@ -132,7 +127,7 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
   // if the event does not pass them, it is skipped and ProcessInfo
   // is updated accordingly
   if (fEventCuts) {
-    if (!fEventCuts->IsSelected(AliRsnCut::kEvent, &fRsnEvent)) {
+    if (!fEventCuts->IsSelected(&fRsnEvent)) {
       fTaskInfo.SetEventUsed(kFALSE);
       return;
     }
@@ -144,11 +139,9 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
 
   // the virtual class has already sorted tracks in the PID index
   // so we need here just to call the execution of analysis
-  for (Int_t i = 0; i < fNumberOfOutputs; i++)
-  {
-    fRsnAnalysisManager[i].ProcessAllPairMgrs(&fRsnPIDIndex, &fRsnEvent);
-    PostData(i+2, fOutList[i+1]);
-  }
+  fRsnAnalysisManager.ProcessAllPairs(&fRsnEvent, &fRsnEvent);
+  PostData(2, fOutList);
+
   AliDebug(AliLog::kDebug+2,"->");
 }
 
@@ -165,17 +158,3 @@ void AliRsnAnalysisSE::RsnTerminate(Option_t*)
   AliDebug(AliLog::kDebug+2,"->");
 }
 
-//_____________________________________________________________________________
-AliRsnAnalysisManager* AliRsnAnalysisSE::GetAnalysisManager(Int_t index, TString name)
-{
-//
-// Recovery the analysis manager
-//
-
-  if (!name.IsNull())
-  {
-    SetAnalysisManagerName(name.Data(), index);
-  }
-
-  return &fRsnAnalysisManager[index];
-}

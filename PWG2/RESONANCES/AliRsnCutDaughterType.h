@@ -9,28 +9,34 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
-#ifndef ALIRSNCUTESDPRIMARY_H
-#define ALIRSNCUTESDPRIMARY_H
+#ifndef ALIRSNCUTDAUGHTERTYPE_H
+#define ALIRSNCUTDAUGHTERTYPE_H
 
-#include "AliESDtrackCuts.h"
 #include "AliRsnCut.h"
 
-class AliRsnCutESDPrimary : public AliRsnCut
+class AliRsnCutDaughterType : public AliRsnCut
 {
   public:
+  
+    enum EType
+    {
+      kTrackTPC,
+      kTrackITSSA,
+      kV0,
+      kTypes
+    };
 
-    AliRsnCutESDPrimary();
-    AliRsnCutESDPrimary(const char *name);
-    virtual ~AliRsnCutESDPrimary() {;};
+    AliRsnCutDaughterType();
+    AliRsnCutDaughterType(const char *name, EType type);
+    virtual ~AliRsnCutDaughterType() {;};
 
-    AliESDtrackCuts* GetCuts() {return &fCuts;}
     virtual Bool_t   IsSelected(TObject *obj1, TObject *obj2 = 0x0);
 
   protected:
+  
+    EType fRefType;   // type to which the track format is compared
 
-    AliESDtrackCuts fCuts;  // set of ESD track cuts
-
-    ClassDef(AliRsnCutESDPrimary, 1)
+    ClassDef(AliRsnCutDaughterType, 1)
 };
 
 #endif

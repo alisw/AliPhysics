@@ -23,11 +23,7 @@ class AliRsnVAnalysisTaskME : public AliAnalysisTaskME
 {
   public:
 
-    enum {
-      kMaxNumberOfOutputs = 10
-    };
-
-    AliRsnVAnalysisTaskME(const char *name = "AliRsnVAnalysisTaskME", Int_t numOfOutputs = 1);
+    AliRsnVAnalysisTaskME(const char *name = "AliRsnVAnalysisTaskME");
     AliRsnVAnalysisTaskME(const AliRsnVAnalysisTaskME& copy);
     AliRsnVAnalysisTaskME& operator= (const AliRsnVAnalysisTaskME& /*copy*/) { return *this; }
     virtual ~AliRsnVAnalysisTaskME() {/* Does nothing*/}
@@ -60,8 +56,7 @@ class AliRsnVAnalysisTaskME : public AliAnalysisTaskME
     AliMCEvent             *fMCEvent;         // ESD event
     AliAODEvent            *fAODEvent;        // AOD event
 
-    Int_t                   fNumberOfOutputs; // number of outputs
-    TList                  *fOutList[kMaxNumberOfOutputs+1]; //!
+    TList                  *fInfoList;        //! output list for info
     AliRsnVATProcessInfo    fTaskInfo;        // task info
 
     void                    SetDebugForAllClasses();

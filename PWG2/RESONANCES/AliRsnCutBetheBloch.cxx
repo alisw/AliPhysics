@@ -26,10 +26,10 @@ ClassImp(AliRsnCutBetheBloch)
 
 //_________________________________________________________________________________________________
 AliRsnCutBetheBloch::AliRsnCutBetheBloch() :
-    AliRsnCut(),
-    fCorrect(kTRUE),
-    fMIP(50.0),
-    fType(AliPID::kUnknown)
+  AliRsnCut(AliRsnCut::kDaughter),
+  fCorrect(kTRUE),
+  fMIP(50.0),
+  fType(AliPID::kUnknown)
 {
 //
 // Default constructor.
@@ -41,10 +41,10 @@ AliRsnCutBetheBloch::AliRsnCutBetheBloch() :
 //_________________________________________________________________________________________________
 AliRsnCutBetheBloch::AliRsnCutBetheBloch
 (const char *name, Double_t fractionRange, AliPID::EParticleType type, Double_t mip, Bool_t correct) :
-    AliRsnCut(name, 0.0, fractionRange),
-    fCorrect(correct),
-    fMIP(mip),
-    fType(type)
+  AliRsnCut(name, AliRsnCut::kDaughter, 0.0, fractionRange),
+  fCorrect(correct),
+  fMIP(mip),
+  fType(type)
 {
 //
 // Main constructor.
@@ -75,7 +75,7 @@ Double_t AliRsnCutBetheBloch::BetheBloch(AliRsnDaughter * const trackRef)
   Double_t mass = pid.ParticleMass(fType);
 
   // get the track momentum at the inner wall of TPC: if absent cut is not passed
-  AliExternalTrackParam track(*trackRef->GetRefESD()->GetInnerParam());
+  AliExternalTrackParam track(*trackRef->GetRefESDtrack()->GetInnerParam());
 
   Double_t betaGamma = track.P() / mass;
   Double_t beta = betaGamma / TMath::Sqrt(1.0 + betaGamma * betaGamma);
@@ -102,37 +102,37 @@ Double_t AliRsnCutBetheBloch::RelDiff(AliRsnDaughter *track)
 // Relative difference between BB value and TPC signal
 //
 
-  if (!track->GetRefESD()) return -99999.9;
+  if (!track->GetRefESDtrack()) return -99999.9;
 
   // compute Bethe-Bloch with the given mass hypothesis
   Double_t bb = BetheBloch(track);
-  return TMath::Abs((track->GetRefESD()->GetTPCsignal() - bb) / bb);
+  return TMath::Abs((track->GetRefESDtrack()->GetTPCsignal() - bb) / bb);
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
+Bool_t AliRsnCutBetheBloch::IsSelected(TObject *obj1, TObject* /*obj2*/)
 {
 //
 // Cut checker.
 //
 
   // coherence check
-  if (tgt != AliRsnCut::kParticle) {
-    AliError(Form("[%s] Wrong target. Skipping cut", GetName()));
+  if (!AliRsnCut::TargetOK(obj1))
+  {
+    AliError(Form("Wrong target. Skipping cut", GetName()));
     return kTRUE;
   }
-
-  // if the required PID of the track is not the same as the
-  // reference of the cut, the cut is automatically skipped
-  if (track->RequiredPID() != fType) return kTRUE;
+  
+  // dynamic cast the object into AliRsnDaughter
+  AliRsnDaughter *track = dynamic_cast<AliRsnDaughter*>(obj1);
 
   // retrieve the TPC signal
-  AliESDtrack *esd = track->GetRefESD();
+  AliESDtrack *esd = track->GetRefESDtrack();
   if (!esd) {
     AliError("ESD information unavailable");
     return kTRUE;
   }
-  if (!track->GetRefESD()->GetInnerParam()) {
+  if (!track->GetRefESDtrack()->GetInnerParam()) {
     AliDebug(AliLog::kDebug+2, "Rejecting a track with no info at the TPC inner wall");
     return kFALSE;
   }
@@ -146,37 +146,4 @@ Bool_t AliRsnCutBetheBloch::IsSelected(ETarget tgt, AliRsnDaughter *track)
 
   // then, this cut is checked inside the range
   return OkRange();
-}
-
-//_________________________________________________________________________________________________
-Bool_t AliRsnCutBetheBloch::IsSelected(ETarget /*tgt*/, AliRsnPairParticle* /*pair*/)
-{
-//
-// Cut checker
-//
-
-  AliWarning("Cannot apply this cut to pairs");
-  return kTRUE;
-}
-
-//_________________________________________________________________________________________________
-Bool_t AliRsnCutBetheBloch::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*event*/)
-{
-//
-// Cut checker
-//
-
-  AliWarning("Cannot apply this cut to events");
-  return kTRUE;
-}
-
-//_________________________________________________________________________________________________
-Bool_t AliRsnCutBetheBloch::IsSelected(ETarget /*tgt*/, AliRsnEvent* /*ev1*/, AliRsnEvent* /*ev2*/)
-{
-//
-// Cut checker
-//
-
-  AliWarning("Cannot apply this cut to event mixing");
-  return kTRUE;
 }
