@@ -102,7 +102,9 @@ Int_t       iPWG4CaloQA        = 0;      // Gustavo's part corr analysis
 Int_t       iPWG4JetCorr       = 0;     // Paul's jet corr analysis
 Int_t       iPWG4Tagged        = 0;      // Gustavo's part corr analysis
 Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4) 
+Int_t       iPWG4GammaConvLib     = 0;      // Gamma Conversio
 Int_t       iPWG4GammaConv     = 0;      // Gamma Conversio
+Int_t       iPWG4CaloConv     = 0;      // Gamma Conversio
 Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Filter
 TString     kDeltaAODJetName   = "AliAOD.Jets.root";     
 TString     kDeltaAODJCORRANName   = "AliAOD.JCORRAN.root";     
@@ -241,6 +243,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(printMask,"PWG4 Tagged",iPWG4Tagged);
    printf(printMask,"PWG4 omega to 3 pi ",iPWG4omega3pi);
    printf(printMask,"PWG4 Gamma Conv",iPWG4GammaConv);
+   printf(printMask,"PWG4 Calo Conv",iPWG4CaloConv);
    printf(printMask,"HighPt FilterMask",kHighPtFilterMask);    
    
    //==========================================================================
@@ -350,6 +353,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter,kUseMuonfilter);
+      taskesdfilter->SetEnableFillAOD(kFALSE);
       if(kIsMC){
 	mgr->RegisterExtraFile("pyxsec_hists.root");
 	if(kGridMergeExclude.Length())kGridMergeExclude += " ";
@@ -375,8 +379,14 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       if(iJETAN&1)taskjets = AddTaskJets(kHighPtFilterMask); 
       if(iJETAN&2){
 	UInt_t selection = 0;
-	if(!kFillAOD) selection = 0xffffff&~(1<<13)&~(1<<5)&~(1<<6);
-	else selection = 0xffffff&~(1<<13);  // selection = 1<<0|1<<1|1<<2|1<<5|1<<6|1<<7|1<<8|1<<9|1<<10|1<<11|1<<12; (DA takes quite long....)
+	if(!kFillAOD){
+	  selection = 0xffffff&~(1<<13)&~(1<<5)&~(1<<6); // switch OFF DA and all R = 0.7 to save processing time
+	  selection &= ~(1<<1)&~(1<<2)&~(1<<4)&~(1<<6)&~(1<<8)&~(1<<10)&~(1<<12);
+	}
+	else {
+	  selection = 0xffffff&~(1<<13)&~(1<<5)&~(1<<6); // switch OFF DA and all R = 0.7 to save processing time;
+	  selection &= ~(1<<1)&~(1<<2)&~(1<<4)&~(1<<6)&~(1<<8)&~(1<<10)&~(1<<12);
+	}
 	AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC,selection); 
       }
       if (!taskjets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
@@ -442,39 +452,48 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetSpectrum2.C");
      AliAnalysisTaskJetSpectrum2 *taskjetSpectrum = 0;
      if(iPWG4JetSpectrum&1){
-       taskjetSpectrum = AddTaskJetSpectrum2("jets","",kHighPtFilterMask,iPhysicsSelection);      
+       taskjetSpectrum = AddTaskJetSpectrum2("jets","","",kHighPtFilterMask,iPhysicsSelection);      
        if(!iAODanalysis){
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
 
 	 if(kIsMC){
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
-						 AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);  
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
-						 AliAnalysisHelperJetTasks::kIsCosmic|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);  
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
-						 AliAnalysisHelperJetTasks::kNone);  
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
-						 AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);  
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",kHighPtFilterMask,iPhysicsSelection,
-						 AliAnalysisHelperJetTasks::kNone);  
+
+	   UInt_t eventSelection =  AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kVertexIn;
+	   if(iPhysicsSelection)eventSelection |=  AliAnalysisHelperJetTasks::kPhysicsSelection;
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,eventSelection);  
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,eventSelection);
+
+	   eventSelection =  AliAnalysisHelperJetTasks::kIsCosmic|AliAnalysisHelperJetTasks::kVertexIn;
+	   if(iPhysicsSelection)eventSelection |= AliAnalysisHelperJetTasks::kPhysicsSelection;
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,eventSelection);
+
+	   eventSelection =  AliAnalysisHelperJetTasks::kNone;
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,eventSelection);
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,eventSelection);
 
 	 }
 	 else{
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection, 
-						 AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);      
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection, 
-						 AliAnalysisHelperJetTasks::kIsCosmic|AliAnalysisHelperJetTasks::kPhysicsSelection|AliAnalysisHelperJetTasks::kVertexIn);      
-	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",kHighPtFilterMask,iPhysicsSelection,AliAnalysisHelperJetTasks::kNone);      
+	   UInt_t eventSelection =  AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kVertexIn;
+	   if(iPhysicsSelection)eventSelection |= AliAnalysisHelperJetTasks::kPhysicsSelection;
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","","",kHighPtFilterMask,iPhysicsSelection,eventSelection);
+
+	   eventSelection =  AliAnalysisHelperJetTasks::kIsCosmic|AliAnalysisHelperJetTasks::kVertexIn;
+	   if(iPhysicsSelection)eventSelection |= AliAnalysisHelperJetTasks::kPhysicsSelection;
+	   taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","","",kHighPtFilterMask,iPhysicsSelection,eventSelection); 
 	 }
        }
        if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
-       taskjetSpectrum->SetDebugLevel(1);
+       //       taskjetSpectrum->SetDebugLevel(1);
      }
 
      if(iPWG4JetSpectrum&2){
        UInt_t selection = 0;
-       if(!iAODanalysis) selection = 0xffffff;
+       if(!iAODanalysis){
+	 selection = 0xffffff;
+	 // switch off 07 radii
+	 selection &= ~(1<<6)&~(1<<11)&~(1<<12)&~(1<<13)&~(1<<14);
+       }
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
        AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,selection);
      }
@@ -494,12 +513,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(iPWG4UE&1)taskUE = AddTaskUE(); 
      if(iPWG4UE&2){
        taskUE  =AddTaskUE("jetsAOD_CDF04","CDF", "LJ", "TRANSV","MSP"); //finder not yet in train
-       taskUE  =AddTaskUE("jetsAOD_CDF07","CDF", "LJ", "TRANSV","MSP");
+       //       taskUE  =AddTaskUE("jetsAOD_CDF07","CDF", "LJ", "TRANSV","MSP");
        taskUE  =AddTaskUE("jetsAOD_SISCONE04","CDF", "LJ", "TRANSV","MSP");
-       taskUE  =AddTaskUE("jetsAOD_SISCONE07","CDF", "LJ", "TRANSV","MSP"); //finder not yet in train
+       //       taskUE  =AddTaskUE("jetsAOD_SISCONE07","CDF", "LJ", "TRANSV","MSP"); //finder not yet in train
        taskUE  =AddTaskUE("jetsAOD_ICDF","CDF","LJ","TRANSV","MSP");
        taskUE  =AddTaskUE("jetsAOD_FASTKT04","CDF", "LJ", "TRANSV","MSP");
-       taskUE  =AddTaskUE("jetsAOD_FASTKT07","CDF", "LJ", "TRANSV","MSP"); //finder not yet in train
+       //       taskUE  =AddTaskUE("jetsAOD_FASTKT07","CDF", "LJ", "TRANSV","MSP"); //finder not yet in train
        taskUE  =AddTaskUE("jetsAOD_NONE","CDF", "MP_eta05", "TRANSV","MSP");
        taskUE  =AddTaskUE("jetsAOD_NONE","CDF", "MP_eta09", "TRANSV","MSP");
      }
@@ -564,13 +583,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        UInt_t selection = 0;
        if(!iAODanalysis) selection = 0xffffff;
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
+       selection&=~(1<<4); // exluded R = .04 already the dafault
        AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"KT",selection);
      }
      if(iPWG4Cluster&4){
        UInt_t selection = 0;
-       if(!iAODanalysis) selection = 0xffffff;
+       if(!iAODanalysis){
+	 selection = 0xffffff;
+	 selection &= ~(1<<1)&~(1<<3)&~(1<<5)&~(1<<7)&~(1<<9);
+       }
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"ANTIKT");
        AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"ANTIKT",selection);
      }
 
@@ -634,6 +656,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       taskGammaConversion->SelectCollisionCandidates();
       if (!taskGammaConversion) ::Warning("AnalysisTrainNew", "AliAnalysisTaskGammaConversion cannot run for these train conditions - EXCLUDED");
    }   
+
+   if (iPWG4CaloConv) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCaloConv.C");
+      AliAnalysisTaskCaloConv * taskCaloConv = AddTaskCaloConv();
+      if (!taskCaloConv) ::Warning("AnalysisTrainNew", "AliAnalysisTaskCaloConv cannot run for these train conditions - EXCLUDED");
+   }   
+
 
 
    //==========================================================================
@@ -874,8 +903,12 @@ void CheckModuleFlags(const char *mode) {
    }
    iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem;
    iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
-   iEMCUtilLibs = iPWG4PartCorrLibs||iPWG4JCORRAN;
+   iPWG4GammaConvLib = iPWG4GammaConv||iPWG4CaloConv;
+
+
+   iEMCUtilLibs = iPWG4PartCorrLibs||iPWG4JCORRAN||iPWG4GammaConvLib;
    iJETANLib = iPWG4JetTasks||iJETAN||iDIJETAN;
+
    if (iESDfilter) {iAODhandler=1;}
    if (kUseKinefilter && !kUseMC) kUseKinefilter = kFALSE;
    if (kUseAODTags && !iAODhandler) kUseAODTags = kFALSE;
@@ -1108,7 +1141,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    if (iPWG4omega3pi) {
      if (!LoadLibrary("PWG4omega3pi", mode, kTRUE)) return kFALSE;
    }
-   if (iPWG4GammaConv) {
+   if (iPWG4GammaConvLib) {
       if (!LoadLibrary("PWG4GammaConv", mode, kTRUE)) return kFALSE;
    }      
 
@@ -1596,8 +1629,9 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       outputArchive += " ";
       outputArchive += listhists;
    }   
+   plugin->SetDefaultOutputs(kFALSE);
    plugin->SetOutputArchive(outputArchive);
-   
+
 
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro(Form("%s.C", kTrainName.Data()));
@@ -1608,7 +1642,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Optionally resubmit threshold.
 //   plugin->SetMasterResubmitThreshold(90);
 // Optionally set time to live (default 30000 sec)
-   plugin->SetTTL(36000); // 10h...
+   plugin->SetTTL(50400); // 14h...
 // Optionally set input format (default xml-single)
    plugin->SetInputFormat("xml-single");
 // Optionally modify the name of the generated JDL (default analysis.jdl)
