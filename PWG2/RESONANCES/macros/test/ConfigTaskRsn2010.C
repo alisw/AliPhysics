@@ -52,10 +52,14 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   AliRsnPairDef         *pairDefMM = new AliRsnPairDef(AliPID::kKaon, '-', AliPID::kKaon, '-', 333, 1.019455);
 
   // computation objects
-  AliRsnPairNtuple      *pairPM = new AliRsnPairNtuple("PairPM" , pairDefPM);
-  AliRsnPairNtuple      *truePM = new AliRsnPairNtuple("TruePM" , pairDefPM);
-  AliRsnPairNtuple      *pairPP = new AliRsnPairNtuple("PairPP" , pairDefPP);
-  AliRsnPairNtuple      *pairMM = new AliRsnPairNtuple("PairMM" , pairDefMM);
+  //AliRsnPairNtuple      *pairPM = new AliRsnPairNtuple("PairPM" , pairDefPM);
+  //AliRsnPairNtuple      *truePM = new AliRsnPairNtuple("TruePM" , pairDefPM);
+  //AliRsnPairNtuple      *pairPP = new AliRsnPairNtuple("PairPP" , pairDefPP);
+  //AliRsnPairNtuple      *pairMM = new AliRsnPairNtuple("PairMM" , pairDefMM);
+  AliRsnPairFunctions    *pairPM = new AliRsnPairNtuple("PairPM" , pairDefPM);
+  AliRsnPairFunctions    *truePM = new AliRsnPairNtuple("TruePM" , pairDefPM);
+  AliRsnPairFunctions    *pairPP = new AliRsnPairNtuple("PairPP" , pairDefPP);
+  AliRsnPairFunctions    *pairMM = new AliRsnPairNtuple("PairMM" , pairDefMM);
 
   //
   // -- Setup cuts ----------------------------------------------------------------------------------
@@ -138,24 +142,37 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   //
   
   // function axes
-  AliRsnValue *axisIM   = new AliRsnValue(AliRsnValue::kPairInvMass,   50,  0.9,  1.4);
-  AliRsnValue *axisPt   = new AliRsnValue(AliRsnValue::kPairPt,        50,  0.0, 10.0);
-  AliRsnValue *axisEta  = new AliRsnValue(AliRsnValue::kPairEta,       30, -1.5,  1.5);
+  AliRsnValue *axisIM = new AliRsnValue(AliRsnValue::kPairInvMass,   4000,  0.9,  4.9);
+  AliRsnValue *axisPt = new AliRsnValue(AliRsnValue::kPairPt,         100,  0.0, 10.0);
+  AliRsnValue *axisY  = new AliRsnValue(AliRsnValue::kPairY,           30, -1.5,  1.5);
   
   // the ntuple output requires to get directly the values
-  pairPM->AddValue(axisIM);
-  pairPM->AddValue(axisPt);
-  pairPM->AddValue(axisEta);
-  truePM->AddValue(axisIM);
-  truePM->AddValue(axisPt);
-  truePM->AddValue(axisEta);
-  pairPP->AddValue(axisIM);
-  pairPP->AddValue(axisPt);
-  pairPP->AddValue(axisEta);
-  pairMM->AddValue(axisIM);
-  pairMM->AddValue(axisPt);
-  pairMM->AddValue(axisEta);
-
+  //pairPM->AddValue(axisIM);
+  //pairPM->AddValue(axisPt);
+  //pairPM->AddValue(axisEta);
+  //truePM->AddValue(axisIM);
+  //truePM->AddValue(axisPt);
+  //truePM->AddValue(axisEta);
+  //pairPP->AddValue(axisIM);
+  //pairPP->AddValue(axisPt);
+  //pairPP->AddValue(axisEta);
+  //pairMM->AddValue(axisIM);
+  //pairMM->AddValue(axisPt);
+  //pairMM->AddValue(axisEta);
+  
+  // functions
+  AliRsnFunction *fcnImPtY = new AliRsnFunction;
+  // --> add axes
+  fcnImPtY->AddAxis(axisIM);
+  fcnImPtY->AddAxis(axisPt);
+  fcnImPtY->AddAxis(axisEta);
+  
+  // add functions to pairs
+  pairPM->AddFunction(fcnImPtY);
+  truePM->AddFunction(fcnImPtY);
+  pairPP->AddFunction(fcnImPtY);
+  pairMM->AddFunction(fcnImPtY);
+  
   //
   // -- Conclusion ----------------------------------------------------------------------------------
   //
