@@ -427,8 +427,9 @@ Bool_t AliFastJetFinder::ProcessEvent()
 
   fJetBkg->SetHeader(fHeader);
   fJetBkg->SetReader(fReader);
-  Double_t sigma1,meanarea1,sigma2,meanarea2;
-  Double_t bkg1,bkg2;
+  Double_t sigma1 = 0,meanarea1= 0,sigma2 = 0,meanarea2 = 0;
+  Double_t bkg1 = 0,bkg2 = 0;
+  
   fJetBkg->SetFastJetInput(fInputFJ);
   fJetBkg->BkgFastJetb(bkg1,sigma1,meanarea1);
   fJetBkg->BkgFastJetWoHardest(bkg2,sigma2,meanarea2);
