@@ -5,21 +5,21 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
   AliAnalysisTaskJetCluster *js = 0;
   if(kUseAODMC&&false){// do not use the MC info yet
     if(iFlag&(1<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.00001);
-    if(iFlag&(2<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.1);
-    if(iFlag&(3<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.2);
-    if(iFlag&(4<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.4);
-    if(iFlag&(5<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.6);
-    if(iFlag&(6<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.8);
-    if(iFlag&(7<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,1.0);
+    if(iFlag&(1<<1))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.1);
+    if(iFlag&(1<<2))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.2);
+    if(iFlag&(1<<4))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.4);
+    if(iFlag&(1<<6))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.6);
+    if(iFlag&(1<<8))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.8);
+    if(iFlag&(1<<10))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,1.0);
   }
   else{
     if(iFlag&(1<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.00001);
-    if(iFlag&(2<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.1);
-    if(iFlag&(3<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.2);
-    //    if(iFlag&(4<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.4);
-    if(iFlag&(5<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.6);
-    if(iFlag&(6<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.8);
-    if(iFlag&(7<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,1.0);
+    if(iFlag&(1<<1))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.1);
+    if(iFlag&(1<<2))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.2);
+    if(iFlag&(1<<4))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.4);
+    if(iFlag&(1<<6))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.6);
+    if(iFlag&(1<<8))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.8);
+    if(iFlag&(1<<10))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,1.0);
   }
   
   return js;
