@@ -56,7 +56,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
   fListOfHistos(0x0),
   fChain(0x0),
   fOpt(0),
-  fReadAODFromOutput(0)
+  fReadAODFromOutput(0),
+  fFilterPt(0.)
 {
   // Default constructor
 }
@@ -72,7 +73,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
   fListOfHistos(0x0),
   fChain(0x0),
   fOpt(0),
-  fReadAODFromOutput(0)
+  fReadAODFromOutput(0),
+  fFilterPt(0.)
 {
   // Default constructor
   DefineOutput(1, TList::Class());
@@ -89,7 +91,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name, TChain* chain):
   fListOfHistos(0x0),
   fChain(chain),
   fOpt(0),
-  fReadAODFromOutput(0)
+  fReadAODFromOutput(0),
+  fFilterPt(0.)
 {
   // Default constructor
   DefineOutput(1, TList::Class());
@@ -219,6 +222,9 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
   TClonesArray* jarray = 0;
   AliAODJetEventBackground*  evBkg = 0;
 
+  // only need this once
+  static AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+
   if(fNonStdBranch.Length()==0) {
     jarray = AODEvent()->GetJets();
     evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(AliAODJetEventBackground::StdBranchName()));
@@ -248,6 +254,17 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
  
   // Fill control histos
   if(jarray)fHistos->FillHistos(jarray);
+
+
+  if(aodH&&fFilterPt>0){
+    if(jarray->GetEntries()>0){
+      AliAODJet *jet = (AliAODJet*)jarray->At(0);
+      if(jet->Pt()>fFilterPt){
+	//	aodH->EnableFillAODforEvent();
+	aodH->SetFillAOD(kTRUE);
+      }
+    }
+  }
 
   // Post the data
   PostData(1, fListOfHistos);

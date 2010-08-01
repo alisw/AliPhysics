@@ -36,7 +36,7 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
     virtual void SetNonStdOutputFile(const char *c){fNonStdFile = c;}
     virtual void Terminate(Option_t *option);
     virtual void ReadAODFromOutput() {fReadAODFromOutput = kTRUE;}
-
+    virtual void SetFilterPt(Float_t f){fFilterPt = f;}
     
  private:
   AliAnalysisTaskJets(const AliAnalysisTaskJets &det);
@@ -53,8 +53,8 @@ class AliAnalysisTaskJets : public AliAnalysisTaskSE
   TChain*       fChain;             //  Chain 
   Int_t         fOpt;               //  Detector configuration used
   Bool_t        fReadAODFromOutput; //  Force reading of the AOD from the output
-  
-  ClassDef(AliAnalysisTaskJets, 4); // Analysis task for standard jet analysis
+  Float_t       fFilterPt;          // use this as a switch for writing the AOD, minium p_T of leading jet   
+  ClassDef(AliAnalysisTaskJets, 5); // Analysis task for standard jet analysis
 };
  
 #endif
