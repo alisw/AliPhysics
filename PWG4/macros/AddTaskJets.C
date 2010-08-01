@@ -160,7 +160,13 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    jetana->SetJetFinder(jetFinder);
    jetana->SetConfigFile("");
    jetana->SetDebugLevel(2);
+   if(TMath::Abs((radius-0.4))< 0.02&&c_jf.Contains("fastjet")){
+     jetana->SetFilterPt(10.);
+   }
+
+
    mgr->AddTask(jetana);
+
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
