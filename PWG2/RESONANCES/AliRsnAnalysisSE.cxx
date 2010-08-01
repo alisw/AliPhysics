@@ -68,9 +68,6 @@ void AliRsnAnalysisSE::RsnUserCreateOutputObjects()
 
   fOutList = new TList;
   fRsnAnalysisManager.InitAllPairs(fOutList);
-  
-  AliError("\n\n***LIST***\n\n");
-  fOutList->Print();
 
   PostData(2, fOutList);
 

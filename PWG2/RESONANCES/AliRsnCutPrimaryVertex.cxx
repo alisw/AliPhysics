@@ -24,7 +24,7 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex() :
 
 //_________________________________________________________________________________________________
 AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
-(const char *name, Int_t nContributors, Bool_t acceptTPC) :
+(const char *name, Double_t maxVz, Int_t nContributors, Bool_t acceptTPC) :
   AliRsnCut(name, AliRsnCut::kEvent, 0, nContributors - 1),
   fAcceptTPC(acceptTPC)
 {
@@ -42,6 +42,9 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 // Since the range check uses the '>=' and '<=', the high edge
 // must be decreased by 1 to get the right behaviour, since this is integer.
 //
+
+  fMinD = 0.0;
+  fMaxD = maxVz;
 }
 
 //_________________________________________________________________________________________________
@@ -55,42 +58,44 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
   AliRsnEvent *rsn = dynamic_cast<AliRsnEvent*>(obj1);
   if (!rsn) return kFALSE;
   AliESDEvent *esd = dynamic_cast<AliESDEvent*>(rsn->GetRef());
-  if (!esd) {
+  if (!esd) 
+  {
     AliDebug(AliLog::kDebug+2, "NO ESD");
     return kFALSE;
   }
 
-  // get the three possible primary vertexes of the event:
-  // 0 = default one
-  // 1 = SPD
-  // 2 = TPC
-  // then, if the default vertex is TPC, the event is rejected,
-  // otherwise, the event is rejected only if its vertex status is 'false'
-  // get primary vertexes
-  const AliESDVertex *vert[3];
-  vert[0] = esd->GetPrimaryVertex();
-  vert[1] = esd->GetPrimaryVertexSPD();
-  vert[2] = esd->GetPrimaryVertexTPC();
-
-  // if TPC vertexes are rejected by default do this now
-  if (!fAcceptTPC && (vert[0] == vert[2])) {
-    AliDebug(AliLog::kDebug+2, "Rejecting TPC vertex");
-    return kFALSE;
+  // get the best primary vertex:
+  // first try the one with tracks
+  const AliESDVertex *vTrk  = esd->GetPrimaryVertexTracks();
+  const AliESDVertex *vSPD  = esd->GetPrimaryVertexSPD();
+  const AliESDVertex *vTPC  = esd->GetPrimaryVertexTPC();
+  Double_t            vzTrk = 2.0 * fMaxD;
+  Double_t            vzSPD = 2.0 * fMaxD;
+  Double_t            vzTPC = 2.0 * fMaxD;
+  if (vTrk) vzTrk = TMath::Abs(vTrk->GetZv());
+  if (vSPD) vzSPD = TMath::Abs(vSPD->GetZv());
+  if (vTPC) vzTPC = TMath::Abs(vTPC->GetZv());
+  AliDebug(AliLog::kDebug + 1, Form("Vertex with tracks: contributors = %d, abs(vz) = %f", vTrk->GetNContributors(), vzTrk));
+  AliDebug(AliLog::kDebug + 1, Form("Vertex with SPD,    contributors = %d, abs(vz) = %f", vSPD->GetNContributors(), vzSPD));
+  AliDebug(AliLog::kDebug + 1, Form("Vertex with TPC,    contributors = %d, abs(vz) = %f", vTPC->GetNContributors(), vzTPC));
+  if(vTrk->GetStatus())
+  {
+    fCutValueI = vTrk->GetNContributors();
+    fCutValueD = vzTrk;
   }
-
-  // if we are here, vert[0] contains the default primary vertex
-  // in case it is with tracks or SPD, its status must be OK
-  // because otherwise the ESD event returns the lower level vertex
-  // then, we can check just the first element in the array
-  if (!vert[0]->GetStatus()) {
-    AliDebug(AliLog::kDebug+2, "Bad vertex status");
-    return kFALSE;
+  else if (vSPD->GetStatus())
+  {
+    fCutValueI = vSPD->GetNContributors();
+    fCutValueD = vzSPD;
   }
-
-  // if we are here, the status of default vertex is OK
-  // and then we check the number of contributors:
-  // it must be *outside* the 'allowed' range
-  fCutValueI = vert[0]->GetNContributors();
-  return /*there is a NOT operator */!/*here*/OkRange();
+  else if (vTPC->GetStatus() && fAcceptTPC)
+  {
+    fCutValueI = vTPC->GetNContributors();
+    fCutValueD = vzTPC;
+  }
+  else
+    return kFALSE;
+  
+  return OkRangeI() && OkRangeD();
 }
 
