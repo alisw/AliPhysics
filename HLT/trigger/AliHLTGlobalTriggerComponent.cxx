@@ -729,6 +729,7 @@ void AliHLTGlobalTriggerComponent::GenerateFileName(TString& name, TString& file
   uuid.GetUUID(buf);
   TMD5 md5;
   md5.Update(buf, sizeof(buf));
+  TMD5 md52 = md5;
   md5.Final(buf);
   dword[0] += gSystem->GetUid();
   dword[1] += gSystem->GetGid();
@@ -738,8 +739,8 @@ void AliHLTGlobalTriggerComponent::GenerateFileName(TString& name, TString& file
     gRandom->SetSeed(dword[i]);
     dword[i] = gRandom->Integer(0xFFFFFFFF);
   }
-  md5.Update(buf, sizeof(buf));
-  md5.Final(buf);
+  md52.Update(buf, sizeof(buf));
+  md52.Final(buf);
   // To keep to the standard we need to set the version and reserved bits.
   word[3] = (word[3] & 0x0FFF) | 0x4000;
   buf[8] = (buf[8] & 0x3F) | 0x80;
