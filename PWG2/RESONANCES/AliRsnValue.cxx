@@ -18,6 +18,7 @@ ClassImp(AliRsnValue)
 
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue() :
+  TNamed(),
   fType(kValueTypes),
   fNBins(0),
   fMin(0.0),
@@ -32,7 +33,8 @@ AliRsnValue::AliRsnValue() :
 
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue
-(EValueType type, Int_t nbins, Double_t min, Double_t max) :
+(const char *name, EValueType type, Int_t nbins, Double_t min, Double_t max) :
+  TNamed(name, ""),
   fType(type),
   fNBins(0),
   fMin(0.0),
@@ -49,7 +51,8 @@ AliRsnValue::AliRsnValue
 
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue
-(EValueType type, Double_t min, Double_t max, Double_t step) :
+(const char *name, EValueType type, Double_t min, Double_t max, Double_t step) :
+  TNamed(name, ""),
   fType(type),
   fNBins(0),
   fMin(0.0),
@@ -63,6 +66,7 @@ AliRsnValue::AliRsnValue
   SetBins(min, max, step);
 }
 
+/*
 //_____________________________________________________________________________
 const char* AliRsnValue::GetName() const
 {
@@ -87,6 +91,7 @@ const char* AliRsnValue::GetName() const
     default:              return "UNDEF";
   }
 }
+*/
 
 //_____________________________________________________________________________
 TArrayD AliRsnValue::GetArray() const

@@ -1,10 +1,12 @@
 //
 // This is an example steering macro for running RSN analysis task
-// locally with a collection of files specified in a text file:
+// with the AliEn plugin to launch a multiple analysis.
 //
 // Inputs:
-//   - nReadFiles  = number of files to process from the list
-//   - nSkipFiles  = how many lines to be skipped when reading the list
+//   - runList     = list of runs to be processed
+//   - runPath     = path containing the runs
+//   - runMode     = AliEn plugin run mode
+//   - pluginMacro = macro which loads and initializes the plugin
 //   - addTaskName = name of the macro to add the RSN analysis task
 //                   (assumed to have inside it a function named like the file)
 //   - inputSource = name of the file containing all the inputs
@@ -16,6 +18,7 @@
 //   - dataLabel   = a label which is used to know what kind of data are being read
 //                   (it is propagated to the 'addTask' macro for eventual setting up of something
 //   - outName     = name for the file with RSN package outputs (without ROOT extension)
+//                   in this case it is fundamental to define the names of all plugin objects
 //
 // Notes:
 //   - in case the source is an ESD, and if inputs are a MC production
@@ -24,13 +27,13 @@
 //
 // In principle, the user should never modify this macro. 
 //
-void runLocal
+void runAlienPlugin
 (
-  Int_t       nReadFiles  = 1,
-  Int_t       nSkipFiles  = 1,
+  const char *runList     = "117112-117116-117099-117220-117048-117109-117060-117054-117065",
+  const char *runPath     = "/alice/data/2010/LHC10b",
+  const char *runMode     = "terminate",
+  const char *pluginMacro = "PluginDataByRun.C",
   const char *addTaskName = "AddAnalysisTaskRsnTest.C",
-  //const char *inputSource = "000117065.xml",
-  const char *inputSource = "local.txt",
   const char *dataLabel   = "7TeV_pass2_data_ESD",
   const char *outName     = "rsnTest"
 )
@@ -42,13 +45,7 @@ void runLocal
   Bool_t isAOD = strDataLabel.Contains("AOD");
   Bool_t isSim = strDataLabel.Contains("sim");   
   
-  //AliLog::SetGlobalDebugLevel(AliLog::kDebug+1);
-
-  // check extension of input to distinguish between XML and TXT
-  TString sInput(inputSource);
-  sInput.ToLower();
-  Bool_t isTXT = (!strcmp(sInput(sInput.Length() - 3, 3).Data(), "txt"));
-  cout << "Input = " << (isTXT ? "TXT" : "XML") << endl;
+  //AliLog::SetGlobalDebugLevel(AliLog::kDebug+2);
 
   // load compiled libraries (for aliroot session)
   gSystem->Load("libANALYSIS.so");
@@ -56,11 +53,32 @@ void runLocal
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG2resonances.so");
   
-  // if input is XML, connect to AliEn
-  if (!isTXT) TGrid::Connect("alien://");
+  //
+  // === PLUGIN CONFIGURATION =====================================================================
+  //
+  
+  // check token
+  if (!AliAnalysisGrid::CreateToken()) return;
+  
+  // load and execute plugin configuration macro
+  // pass to the macro, as FIRST argument, the common name
+  // which is used for the output, since it must be equal
+  // to the one defined here for the common output (for merging)
+  TString splugin(pluginMacro);
+  gROOT->LoadMacro(pluginMacro);
+  splugin.ReplaceAll(".C", Form("(\"%s\",\"%s\",\"%s\")", outName, runList, runPath));
+  AliAnalysisAlien *plugin = (AliAnalysisAlien*)gROOT->ProcessLine(splugin);
+  
+  // set run mode
+  plugin->SetRunMode(runMode);
+  
+  //
+  // === ANALYSIS MANAGER CONFIGURATION ===========================================================
+  //
 
   // create analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("taskRsnTest");
+  mgr->SetGridHandler(plugin);
   mgr->SetCommonFileName(Form("%s.root", outName));
   
   // create input handler
@@ -86,32 +104,21 @@ void runLocal
     return;
   }
   
+  //
+  // === ANALYSIS TASK CREATION AND INCLUSION =====================================================
+  //
+  
   // add event selection for data
   gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isSim);
   
-  // add event selection for data
-  gROOT->LoadMacro("AddTaskAnalysisPhi7TeV.C");
-  AddTaskAnalysisPhi7TeV(dataLabel);
-  
   // add task macro
   gROOT->ProcessLine(Form(".x %s(\"%s\")", addTaskName, dataLabel));
 
-  // create TChain of input events
-  TChain *analysisChain = 0x0;
-  if (isTXT) analysisChain = CreateChainFromText(inputSource, "esdTree", nReadFiles, nSkipFiles);
-  else       analysisChain = CreateChainFromXML (inputSource, "esdTree", nReadFiles, nSkipFiles);
-
-  // start analysis
-  if (!analysisChain)
-  {
-    Error("runLocal", "Analysis chain not properly initialized");
-    return;
-  }
-  mgr->InitAnalysis();
+  // initialize and start analysis
+  if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  if (isTXT) mgr->StartAnalysis("local", analysisChain);
-  else       mgr->StartAnalysis("alien", analysisChain);
+  mgr->StartAnalysis("grid");
 }
 
 //_________________________________________________________________________________________________
@@ -181,100 +188,4 @@ Bool_t LoadPars(const char *parList, const char *path)
 
   gSystem->ChangeDirectory(ocwd);
   return kTRUE;
-}
-
-//_________________________________________________________________________________________________
-TChain* CreateChainFromXML
-(const char *xmlFileName, const char *treeName, Int_t nread, Int_t nskip)
-{
-//
-// Create a TChain with all required files listed into an XML collection.
-// Necessary to run analysis in AliEn jobs.
-// ---
-// Arguments:
-//  - xmlFileName = input list
-//  - treeName    = "esdTree" or "aodTree"
-//  - nread       = how many files to read (0 = all)
-//  - nskip       = how many files to skip from beginning
-//
-
-  // if nread argument is 0, it is disabled
-  if (nread == 0) nread = 1000000000;
-
-  // initialize output object
-  TChain *chain = new TChain(treeName);
-
-  // initialize the AliEn collection
-  TAlienCollection *myCollection = TAlienCollection::Open(xmlFileName);
-  if (!myCollection)
-  {
-    Error("CreateChainFromXML", "Cannot create an AliEn collection from %s", xmlFileName);
-    return 0x0;
-  }
-
-  // loop on collection
-  myCollection->Reset();
-  while (myCollection->Next())
-  {
-    // skip until reached required number of offset
-    if (nskip > 0) {--nskip; continue;}
-
-    // stop if required number of read files is reached
-    // otherwise update the counter
-    if (nread <= 0) break;
-    nread--;
-
-    // recovery file and add it
-    Info("CreateChainFromXML", Form("Adding: %s", myCollection->GetTURL("")));
-    chain->Add(myCollection->GetTURL(""));
-  }
-
-  return chain;
-}
-
-//_________________________________________________________________________________________________
-TChain* CreateChainFromText(const char *fileName, const char *treeName, Int_t nread, Int_t nskip)
-{
-//
-// Create a TChain with all required files listed into a text file.
-// Necessary to run analysis in local jobs.
-// ---
-// Arguments:
-//  - xmlFileName = input file list
-//  - treeName    = "esdTree" or "aodTree"
-//  - nread       = how many files to read (0 = all)
-//  - nskip       = how many files to skip from beginning
-//
-
-  // if third argument is 0, it is interpreted
-  // as "read all lines"
-  Bool_t readAll = (nread <= 0);
-  
-  // initialize output object
-  TChain* target = new TChain(treeName);
-  
-  // open text file
-  ifstream fileIn(fileName);
-  
-  // loop on collection
-  TString line;
-  while (fileIn.good())
-  {
-    fileIn >> line;
-    if (line.IsNull()) continue;
-    
-    // skip until reached required number of offset
-    if (nskip > 0) {--nskip; continue;}
-    
-    // stop if required number of read files is reached
-    // otherwise update the counter
-    if (!readAll && nread <= 0) break;
-    nread--;
-    
-    // add file
-    Info("CreateChainFromText", "Adding '%s'", line.Data());
-    target->Add(line.Data());
-  }
-  
-  return target;
 }

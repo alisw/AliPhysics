@@ -11,7 +11,7 @@
 //                   arguments must have to be the task and the 'dataLabel' argument.
 // 
 Bool_t AddAnalysisTaskRsnTest
-(const char *dataLabel, const char *configMacro = "ConfigTaskRsn2010.C")
+(const char *dataLabel, const char *configMacro = "ConfigTaskRsnTest.C")
 {
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -19,6 +19,7 @@ Bool_t AddAnalysisTaskRsnTest
   // initialize task with all available slots, even if not all of them will be used:
   AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis");
   task->SetZeroEventPercentWarning(100.0);
+  task->SelectCollisionCandidates();
 
   // load and execute configuration macro
   gROOT->LoadMacro(configMacro);

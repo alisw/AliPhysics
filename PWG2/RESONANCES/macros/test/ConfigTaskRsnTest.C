@@ -24,19 +24,19 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   
   // interpret the useful information from second argument
   TString strDataLabel(dataLabel);
-  Bool_t isESD   = strDataLabel->Contains("ESD");
-  Bool_t isAOD   = strDataLabel->Contains("AOD");
-  Bool_t isSim   = strDataLabel->Contains("sim");
-  Bool_t isData  = strDataLabel->Contains("data");
-  Bool_t isPass1 = strDataLabel->Contains("pass1");
-  Bool_t isPass2 = strDataLabel->Contains("pass2");
+  Bool_t isESD   = strDataLabel.Contains("ESD");
+  Bool_t isAOD   = strDataLabel.Contains("AOD");
+  Bool_t isSim   = strDataLabel.Contains("sim");
+  Bool_t isData  = strDataLabel.Contains("data");
+  Bool_t isPass1 = strDataLabel.Contains("pass1");
+  Bool_t isPass2 = strDataLabel.Contains("pass2");
 
   //
   // -- Set cuts for events (applied to all analyses) -----------------------------------------------
   //
   
   // primary vertex range
-  AliRsnCutPrimaryVertex *cutVertex   = new AliRsnCutPrimaryVertex("cutVertex", 3);
+  AliRsnCutPrimaryVertex *cutVertex   = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
   AliRsnCutSet           *cutSetEvent = new AliRsnCutSet("eventCuts", AliRsnCut::kEvent);
   cutSetEvent->AddCut(cutVertex);
   cutSetEvent->SetCutScheme("cutVertex");
@@ -47,11 +47,17 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   //
 
   // decay channels
-  AliRsnPairDef         *pairDef = new AliRsnPairDef(AliPID::kKaon, '+', AliPID::kKaon, '-', 333, 1.019455);
+  AliRsnPairDef         *pairDefpp = new AliRsnPairDef(AliPID::kKaon, '+', AliPID::kKaon, '+', 333, 1.019455);
+  AliRsnPairDef         *pairDefpm = new AliRsnPairDef(AliPID::kKaon, '+', AliPID::kKaon, '-', 333, 1.019455);
+  AliRsnPairDef         *pairDefmm = new AliRsnPairDef(AliPID::kKaon, '-', AliPID::kKaon, '-', 333, 1.019455);
 
   // computation objects
-  AliRsnPairFunctions   *pairPMhist = new AliRsnPairFunctions("pairHist", pairDef);
-  AliRsnPairNtuple      *pairPMntp  = new AliRsnPairNtuple   ("pairNtp" , pairDef);
+  AliRsnPairFunctions   *pairPMhist = new AliRsnPairFunctions("pairPMHist", pairDefpm);
+  AliRsnPairFunctions   *pairPPhist = new AliRsnPairFunctions("pairPPHist", pairDefpp);
+  AliRsnPairFunctions   *pairMMhist = new AliRsnPairFunctions("pairMMHist", pairDefmm);
+  AliRsnPairNtuple      *pairPMntp  = new AliRsnPairNtuple   ("pairPMNtp" , pairDefpm);
+  AliRsnPairNtuple      *pairPPntp  = new AliRsnPairNtuple   ("pairPPNtp" , pairDefpp);
+  AliRsnPairNtuple      *pairMMntp  = new AliRsnPairNtuple   ("pairMMNtp" , pairDefmm);
 
   //
   // -- Setup cuts ----------------------------------------------------------------------------------
@@ -63,17 +69,17 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   // ----> set the flag for sim/data management
   cuts2010->SetMC(isSim);
   // ----> require to check PID
-  cuts2010->SetCheckITS(1);
-  cuts2010->SetCheckTPC(1);
-  cuts2010->SetCheckTOF(1);
+  cuts2010->SetCheckITS(kTRUE);
+  cuts2010->SetCheckTPC(kTRUE);
+  cuts2010->SetCheckTOF(kTRUE);
   // ----> set TPC ranges and calibration
   cuts2010->SetTPCrange(5.0, 3.0);
   cuts2010->SetTPCpLimit(0.35);
   cuts2010->SetITSband(4.0);
-  if (isMC) cuts2010->SetTPCpar(2.15898 / 50.0, 1.75295E1, 3.40030E-9, 1.96178, 3.91720);
-  else      cuts2010->SetTPCpar(1.41543 / 50.0, 2.63394E1, 5.0411E-11, 2.12543, 4.88663);
+  if (isSim) cuts2010->SetTPCpar(2.15898 / 50.0, 1.75295E1, 3.40030E-9, 1.96178, 3.91720);
+  else       cuts2010->SetTPCpar(1.41543 / 50.0, 2.63394E1, 5.0411E-11, 2.12543, 4.88663);
   // ----> set standard quality cuts for TPC global tracks
-  cuts2010->GetCutsTPC()->SetRequireTPCStandAlone(kTRUE); // require to have the projection at inner TPC wall
+  //cuts2010->GetCutsTPC()->SetRequireTPCStandAlone(kTRUE); // require to have the projection at inner TPC wall
   cuts2010->GetCutsTPC()->SetMinNClustersTPC(70);
   cuts2010->GetCutsTPC()->SetMaxChi2PerClusterTPC(4);
   cuts2010->GetCutsTPC()->SetAcceptKinkDaughters(kFALSE);
@@ -85,8 +91,7 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   cuts2010->GetCutsTPC()->SetDCAToVertex2D(kFALSE); // each DCA is checked separately
   cuts2010->GetCutsTPC()->SetRequireSigmaToVertex(kFALSE);
   // ----> set standard quality cuts for ITS standalone tracks
-  cuts2010->GetCutsITS()->SetRequireITSStandAlone(kTRUE);
-  cuts2010->GetCutsITS()->SetRequireITSPureStandAlone(kFALSE);
+  cuts2010->GetCutsITS()->SetRequireITSStandAlone(kTRUE, kTRUE);
   cuts2010->GetCutsITS()->SetRequireITSRefit(kTRUE);
   cuts2010->GetCutsITS()->SetMinNClustersITS(4);
   cuts2010->GetCutsITS()->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
@@ -94,7 +99,6 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   cuts2010->GetCutsITS()->SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55"); // DCA pt dependent
   cuts2010->GetCutsITS()->SetMaxDCAToVertexZ(1e6); // disabled
   cuts2010->GetCutsITS()->SetDCAToVertex2D(kFALSE); // each DCA is checked separately
-  cuts2010->GetCutsITS()->SetRequireITSPid(kTRUE);
   // ----> set the configuration for TOF PID checks
   if (isData && (isPass1 || isPass2))
   {
@@ -175,38 +179,42 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   // cut managers
   // define a proper name for each mult bin, to avoid omonyme output histos
   pairPMhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
+  pairPPhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
+  pairMMhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
   //pairPMhist->GetCutManager()->SetMotherCuts        (cutSetMother);
   pairPMntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
+  pairPPntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
+  pairMMntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
   //pairPMntp ->GetCutManager()->SetMotherCuts        (cutSetMother);
 
   // function axes
-  AliRsnValue *axisIM   = new AliRsnValue(AliRsnValue::kPairInvMass,   50,  0.9,  1.4);
-  AliRsnValue *axisPt   = new AliRsnValue(AliRsnValue::kPairPt,        50,  0.0, 10.0);
-  AliRsnValue *axisEta  = new AliRsnValue(AliRsnValue::kPairEta,       30, -1.5,  1.5);
+  AliRsnValue *axisIM   = new AliRsnValue("IM", AliRsnValue::kPairInvMass,   50,  0.9,  1.4);
+  AliRsnValue *axisPt   = new AliRsnValue("PT", AliRsnValue::kPairPt,        50,  0.0, 20.0);
   
   pairPMntp->AddValue(axisIM);
   pairPMntp->AddValue(axisPt);
-  pairPMntp->AddValue(axisEta);
+  pairPPntp->AddValue(axisIM);
+  pairPPntp->AddValue(axisPt);
+  pairMMntp->AddValue(axisIM);
+  pairMMntp->AddValue(axisPt);
 
   // functions
-  AliRsnFunction *fcn      = new AliRsnFunction;
   AliRsnFunction *fcnPt    = new AliRsnFunction;
-  AliRsnFunction *fcnPtEta = new AliRsnFunction;
   // --> add axes
-  fcn     ->AddAxis(axisIM);
   fcnPt   ->AddAxis(axisIM);
   fcnPt   ->AddAxis(axisPt);
-  fcnPtEta->AddAxis(axisIM);
-  fcnPtEta->AddAxis(axisPt);
-  fcnPtEta->AddAxis(axisEta);
   
-  pairPMhist->AddFunction(fcn);
   pairPMhist->AddFunction(fcnPt);
-  pairPMhist->AddFunction(fcnPtEta);
+  pairPPhist->AddFunction(fcnPt);
+  pairMMhist->AddFunction(fcnPt);
   
   // add everything to pair manager
   task->GetAnalysisManager()->Add(pairPMhist);
+  task->GetAnalysisManager()->Add(pairPPhist);
+  task->GetAnalysisManager()->Add(pairMMhist);
   task->GetAnalysisManager()->Add(pairPMntp);
+  task->GetAnalysisManager()->Add(pairPPntp);
+  task->GetAnalysisManager()->Add(pairMMntp);
 
   return kTRUE;
 }

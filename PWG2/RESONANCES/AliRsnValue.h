@@ -9,12 +9,13 @@
 #ifndef ALIRSNVALUE_H
 #define ALIRSNVALUE_H
 
+#include "TNamed.h"
 #include "TArrayD.h"
 
 class AliRsnPairDef;
 class AliRsnMother;
 
-class AliRsnValue : public TObject
+class AliRsnValue : public TNamed
 {
   public:
 
@@ -36,13 +37,13 @@ class AliRsnValue : public TObject
     };
 
     AliRsnValue();
-    AliRsnValue(EValueType type, Int_t n, Double_t min, Double_t max);
-    AliRsnValue(EValueType type, Double_t min, Double_t max, Double_t step);
-    AliRsnValue(const AliRsnValue& copy) : TObject(copy),fType(copy.fType),fNBins(copy.fNBins),fMin(copy.fMin),fMax(copy.fMax),fValue(copy.fValue) {}
-    AliRsnValue& operator=(const AliRsnValue& copy) {fType=copy.fType;fNBins=copy.fNBins;fMin=copy.fMin;fMax=copy.fMax;fValue=copy.fValue;return (*this);}
+    AliRsnValue(const char *name, EValueType type, Int_t n, Double_t min, Double_t max);
+    AliRsnValue(const char *name, EValueType type, Double_t min, Double_t max, Double_t step);
+    AliRsnValue(const AliRsnValue& copy) : TNamed(copy),fType(copy.fType),fNBins(copy.fNBins),fMin(copy.fMin),fMax(copy.fMax),fValue(copy.fValue) {}
+    AliRsnValue& operator=(const AliRsnValue& copy) {SetName(copy.GetName());fType=copy.fType;fNBins=copy.fNBins;fMin=copy.fMin;fMax=copy.fMax;fValue=copy.fValue;return (*this);}
     virtual ~AliRsnValue() { }
     
-    const char* GetName() const;
+    //const char* GetName() const;
     Int_t       GetNBins() const {return fNBins;}
     Double_t    GetMin() const {return fMin;}
     Double_t    GetMax() const {return fMax;}

@@ -42,6 +42,9 @@ class AliRsnAnalysisPhi7TeV : public AliAnalysisTaskSE
     virtual ~AliRsnAnalysisPhi7TeV();
 
     void             SetUseMC(Bool_t yn = kTRUE) {fUseMC = yn;}
+    void             SetCheckITS(Bool_t yn = kTRUE) {fCheckITS = yn;}
+    void             SetCheckTPC(Bool_t yn = kTRUE) {fCheckTPC = yn;}
+    void             SetCheckTOF(Bool_t yn = kTRUE) {fCheckTOF = yn;}
     
     void             SetMaxVz(Double_t v)   {fMaxVz = v;}
     
@@ -70,8 +73,12 @@ class AliRsnAnalysisPhi7TeV : public AliAnalysisTaskSE
 
     void     ProcessESD(AliESDEvent *esd, AliStack *stack);
     void     ProcessMC(AliStack *stack);
+    void     AddEntryFromESD(AliESDEvent *esd, Int_t i1, Int_t i2, Int_t its1, Int_t its2, Short_t charge, AliStack *stack = 0x0);
 
     Bool_t   fUseMC;      // use MC or data?
+    Bool_t   fCheckITS;   // chec ITS PID?
+    Bool_t   fCheckTPC;   // chec TPC PID?
+    Bool_t   fCheckTOF;   // chec TOF PID?
     
     Short_t  fPDG;        // PDG code
     Short_t  fCh;         // control flag for like/unlike sign

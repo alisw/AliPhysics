@@ -30,13 +30,14 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   Bool_t isData  = strDataLabel.Contains("data");
   Bool_t isPass1 = strDataLabel.Contains("pass1");
   Bool_t isPass2 = strDataLabel.Contains("pass2");
+  Bool_t isPID   = strDataLabel.Contains("PID");
 
   //
   // -- Set cuts for events (applied to all analyses) -----------------------------------------------
   //
   
   // primary vertex range
-  AliRsnCutPrimaryVertex *cutVertex   = new AliRsnCutPrimaryVertex("cutVertex", 3);
+  AliRsnCutPrimaryVertex *cutVertex   = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
   AliRsnCutSet           *cutSetEvent = new AliRsnCutSet("eventCuts", AliRsnCut::kEvent);
   cutSetEvent->AddCut(cutVertex);
   cutSetEvent->SetCutScheme("cutVertex");
@@ -56,10 +57,10 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   //AliRsnPairNtuple      *truePM = new AliRsnPairNtuple("TruePM" , pairDefPM);
   //AliRsnPairNtuple      *pairPP = new AliRsnPairNtuple("PairPP" , pairDefPP);
   //AliRsnPairNtuple      *pairMM = new AliRsnPairNtuple("PairMM" , pairDefMM);
-  AliRsnPairFunctions    *pairPM = new AliRsnPairNtuple("PairPM" , pairDefPM);
-  AliRsnPairFunctions    *truePM = new AliRsnPairNtuple("TruePM" , pairDefPM);
-  AliRsnPairFunctions    *pairPP = new AliRsnPairNtuple("PairPP" , pairDefPP);
-  AliRsnPairFunctions    *pairMM = new AliRsnPairNtuple("PairMM" , pairDefMM);
+  AliRsnPairFunctions    *pairPM = new AliRsnPairFunctions(Form("PairPM%s", (isPID ? "pid" : "nopid")), pairDefPM);
+  AliRsnPairFunctions    *truePM = new AliRsnPairFunctions(Form("TruePM%s", (isPID ? "pid" : "nopid")), pairDefPM);
+  AliRsnPairFunctions    *pairPP = new AliRsnPairFunctions(Form("PairPP%s", (isPID ? "pid" : "nopid")), pairDefPP);
+  AliRsnPairFunctions    *pairMM = new AliRsnPairFunctions(Form("PairMM%s", (isPID ? "pid" : "nopid")), pairDefMM);
 
   //
   // -- Setup cuts ----------------------------------------------------------------------------------
@@ -67,14 +68,14 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   
   // track cut -----------------------
   // --> global cuts for 2010 analysis
-  AliRsnCutESD2010 *cuts2010 = new AliRsnCutESD2010("cuts2010");
+  AliRsnCutESD2010 *cuts2010 = new AliRsnCutESD2010(Form("cutESD2010%s", (isPID ? "pid" : "nopid")));
   // ----> set the flag for sim/data management
   cuts2010->SetMC(isSim);
-  // ----> require to check PID
-  cuts2010->SetCheckITS(1);
-  cuts2010->SetCheckTPC(1);
-  cuts2010->SetCheckTOF(1);
-  // ----> set TPC ranges and calibration
+  // ----> require to check PID or not, depending on the label
+  cuts2010->SetCheckITS(isPID);
+  cuts2010->SetCheckTPC(isPID);
+  cuts2010->SetCheckTOF(isPID);
+  // ----> set TPC rangeisPID and calibration
   cuts2010->SetTPCrange(5.0, 3.0);
   cuts2010->SetTPCpLimit(0.35);
   cuts2010->SetITSband(4.0);
@@ -126,7 +127,7 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   // --> only common cuts for tracks are needed
   AliRsnCutSet *cutSetDaughterCommon = new AliRsnCutSet("commonDaughterCuts", AliRsnCut::kDaughter);
   cutSetDaughterCommon->AddCut(cuts2010);
-  cutSetDaughterCommon->SetCutScheme("cuts2010");
+  cutSetDaughterCommon->SetCutScheme(cuts2010->GetName());
    
   // configure cut managers -------------------
   pairPM->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
@@ -142,9 +143,13 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   //
   
   // function axes
-  AliRsnValue *axisIM = new AliRsnValue(AliRsnValue::kPairInvMass,   4000,  0.9,  4.9);
-  AliRsnValue *axisPt = new AliRsnValue(AliRsnValue::kPairPt,         100,  0.0, 10.0);
-  AliRsnValue *axisY  = new AliRsnValue(AliRsnValue::kPairY,           30, -1.5,  1.5);
+  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass,   4000,  0.9,  4.9);
+  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt,         100,  0.0, 10.0);
+  AliRsnValue *axisY[4];
+  axisY[0] = new AliRsnValue("Y1", AliRsnValue::kPairY, 1, -0.5,  0.5);
+  axisY[1] = new AliRsnValue("Y2", AliRsnValue::kPairY, 1, -0.6,  0.6);
+  axisY[2] = new AliRsnValue("Y3", AliRsnValue::kPairY, 1, -0.7,  0.7);
+  axisY[3] = new AliRsnValue("Y4", AliRsnValue::kPairY, 1, -0.8,  0.8);
   
   // the ntuple output requires to get directly the values
   //pairPM->AddValue(axisIM);
@@ -161,17 +166,22 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   //pairMM->AddValue(axisEta);
   
   // functions
-  AliRsnFunction *fcnImPtY = new AliRsnFunction;
-  // --> add axes
-  fcnImPtY->AddAxis(axisIM);
-  fcnImPtY->AddAxis(axisPt);
-  fcnImPtY->AddAxis(axisEta);
+  AliRsnFunction *fcnImPtY[4];
+  for (Int_t i = 0; i < 4; i++)
+  {
+    fcnImPtY[i] = new AliRsnFunction;
+    //fcnImPtY->UseSparse();
+    // --> add axes
+    fcnImPtY[i]->AddAxis(axisIM);
+    fcnImPtY[i]->AddAxis(axisPt);
+    fcnImPtY[i]->AddAxis(axisY[i]);
   
-  // add functions to pairs
-  pairPM->AddFunction(fcnImPtY);
-  truePM->AddFunction(fcnImPtY);
-  pairPP->AddFunction(fcnImPtY);
-  pairMM->AddFunction(fcnImPtY);
+    // add functions to pairs
+    pairPM->AddFunction(fcnImPtY[i]);
+    truePM->AddFunction(fcnImPtY[i]);
+    pairPP->AddFunction(fcnImPtY[i]);
+    pairMM->AddFunction(fcnImPtY[i]);
+  }
   
   //
   // -- Conclusion ----------------------------------------------------------------------------------
