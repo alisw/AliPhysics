@@ -686,6 +686,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
         break;
         
       case 1:
+      	// trigger classes used before August 2010
         fCollTrigClasses.Add(new TObjString(Form("%s%s &0","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"))));
         fBGTrigClasses.Add  (new TObjString(Form("%s%s &0","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"))));
         fBGTrigClasses.Add  (new TObjString(Form("%s%s &0","+CINT1C-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"))));
@@ -696,6 +697,36 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
         fBGTrigClasses.Add  (new TObjString(Form("%s%s &2","+CMUS1A-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"))));
         fBGTrigClasses.Add  (new TObjString(Form("%s%s &2","+CMUS1C-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"))));	    
         fBGTrigClasses.Add  (new TObjString(Form("%s%s &2","+CMUS1-E-NOPF-MUON"    ,  GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"))));
+        
+        // triggers classes used from August 2010
+        // MB
+        fCollTrigClasses.Add(new TObjString("+CINT1WU-B-NOPF-ALL &0"));
+        fBGTrigClasses.Add  (new TObjString("+CINT1WU-AC-NOPF-ALL &0"));
+        fBGTrigClasses.Add  (new TObjString("+CINT1WU-E-NOPF-ALL &0"));
+        
+        // MB no TRD
+        fCollTrigClasses.Add(new TObjString("+CINT1-B-NOPF-ALLNOTRD &1"));
+        fBGTrigClasses.Add  (new TObjString("+CINT1-AC-NOPF-ALLNOTRD &1"));
+        fBGTrigClasses.Add  (new TObjString("+CINT1-E-NOPF-ALLNOTRD &1"));
+
+	// MUON
+        fCollTrigClasses.Add(new TObjString("+CMUS1WU-B-NOPF-ALL &2"));
+        fBGTrigClasses.Add  (new TObjString("+CMUS1WU-AC-NOPF-ALL &2"));
+        fBGTrigClasses.Add  (new TObjString("+CMUS1WU-E-NOPF-ALL &2"));
+
+        fCollTrigClasses.Add(new TObjString("+CMUS1-B-NOPF-ALLNOTRD &2"));
+        fBGTrigClasses.Add  (new TObjString("+CMUS1-AC-NOPF-ALLNOTRD &2"));
+        fBGTrigClasses.Add  (new TObjString("+CMUS1-E-NOPF-ALLNOTRD &2"));
+
+	// High Multiplicity
+        fCollTrigClasses.Add(new TObjString("+CSH1WU-B-NOPF-ALL &3"));
+        fBGTrigClasses.Add  (new TObjString("+CSH1WU-AC-NOPF-ALL &3"));
+        fBGTrigClasses.Add  (new TObjString("+CSH1WU-E-NOPF-ALL &3"));
+
+        fCollTrigClasses.Add(new TObjString("+CSH1-B-NOPF-ALLNOTRD &3"));
+        fBGTrigClasses.Add  (new TObjString("+CSH1-AC-NOPF-ALLNOTRD &3"));
+        fBGTrigClasses.Add  (new TObjString("+CSH1-E-NOPF-ALLNOTRD &3"));
+
         break;
         
       case 2:
