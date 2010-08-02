@@ -7753,7 +7753,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   TGeoVolume* ssdcablepatchpanel3RB26pcon = new TGeoVolume("SSDCablePatchPanel3RB26",
 												ssdcablepatchpanel3RB26pconshape,fSSDCopper);
   ssdcablepatchpanel3RB26pcon->SetLineColor(9);
-  TGeoRotation* ssdcablepatchpanel3B26rot[3];
+  TGeoRotation* ssdcablepatchpanel3B26rot[4];
   for(Int_t i=0; i<4; i++) ssdcablepatchpanel3B26rot[i] = new TGeoRotation();
   ssdcablepatchpanel3B26rot[0]->SetAngles(0.0,0.0,0.0);
   ssdcablepatchpanel3B26rot[1]->SetAngles(fgkSSDCablesPatchPanel2RB26Angle[0]
@@ -7845,7 +7845,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 												ssdcablepatchpanel3RB24pconshape,
 												fSSDCopper);
   ssdcablepatchpanel3RB24pcon->SetLineColor(9);
-  TGeoRotation* ssdcablepatchpanel3B24rot[3];
+  TGeoRotation* ssdcablepatchpanel3B24rot[4];
   for(Int_t i=0; i<4; i++) ssdcablepatchpanel3B24rot[i] = new TGeoRotation();
   ssdcablepatchpanel3B24rot[0]->SetAngles(-6.0,0.0,0.0);
   ssdcablepatchpanel3B24rot[1]->SetAngles(fgkSSDCablesPatchPanel2RB24Angle[0]
