@@ -2267,9 +2267,17 @@ Bool_t AliAnalysisAlien::SubmitMerging()
          runOutDir = Form("%s/%03d",fGridOutputDir.Data(), i);
       }
       // Check now the number of merging stages.
-      TString outputFile = fOutputFiles;
-      Int_t index = outputFile.Index(",");
-      if (index>0) outputFile.Remove(index);
+      TObjArray *list = fOutputFiles.Tokenize(",");
+      TIter next(list);
+      TObjString *str;
+      TString outputFile;
+      while((str=(TObjString*)next())) {
+         outputFile = str->GetString();
+         Int_t index = outputFile.Index("@");
+         if (index > 0) outputFile.Remove(index);
+         if (!fMergeExcludes.Contains(outputFile)) break;
+      }
+      delete list;
       Bool_t done = CheckMergedFiles(outputFile, runOutDir, fMaxMergeFiles, kTRUE, mergeJDLName);
       if (!done) return kFALSE;
    }
