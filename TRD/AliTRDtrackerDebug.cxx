@@ -34,6 +34,7 @@
 #include "TMath.h"
 
 #include "AliLog.h"
+#include "AliRieman.h"
 
 #include "AliTRDgeometry.h"
 #include "AliTRDtrackV1.h"

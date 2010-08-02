@@ -40,9 +40,10 @@
 
 #include "AliLog.h"
 #include "AliMathBase.h"
+#include "AliRieman.h"
 #include "AliCDBManager.h"
-#include "AliTracker.h"
 
+#include "AliTRDReconstructor.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
@@ -57,6 +58,8 @@
 #include "Cal/AliTRDCalPID.h"
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalDet.h"
+
+class AliTracker;
 
 ClassImp(AliTRDseedV1)
 
@@ -225,6 +228,28 @@ void AliTRDseedV1::Copy(TObject &ref) const
   memcpy(target.fCov, fCov, 3*sizeof(Double_t)); 
   
   TObject::Copy(ref);
+}
+
+
+//____________________________________________________________
+void AliTRDseedV1::Init(const AliRieman *rieman)
+{
+// Initialize this tracklet using the riemann fit information
+
+
+  fZref[0] = rieman->GetZat(fX0);
+  fZref[1] = rieman->GetDZat(fX0);
+  fYref[0] = rieman->GetYat(fX0);
+  fYref[1] = rieman->GetDYat(fX0);
+  if(fkReconstructor && fkReconstructor->IsHLT()){
+    fRefCov[0] = 1;
+    fRefCov[2] = 10;
+  }else{
+    fRefCov[0] = rieman->GetErrY(fX0);
+    fRefCov[2] = rieman->GetErrZ(fX0);
+  }
+  fC[0]    = rieman->GetC(); 
+  fChi2    = rieman->GetChi2();
 }
 
 
@@ -444,6 +469,8 @@ void AliTRDseedV1::CookLabels()
 //____________________________________________________________
 Float_t AliTRDseedV1::GetAnodeWireOffset(Float_t zt)
 {
+// Find position inside the amplification cell for reading drift velocity map
+
   Float_t d = fPad[3] - zt;
   if(d<0.){
     AliError(Form("Fail AnodeWireOffset calculation z0[%+7.2f] zt[%+7.2f] d[%+7.2f].", fPad[3], zt, d));
@@ -791,6 +818,8 @@ Double_t AliTRDseedV1::GetCovInv(const Double_t * const c, Double_t *d)
 //____________________________________________________________________
 UShort_t AliTRDseedV1::GetVolumeId() const
 {
+// Returns geometry volume id by delegation 
+
   for(Int_t ic(0);ic<kNclusters; ic++){
     if(fClusters[ic]) return fClusters[ic]->GetVolumeId();
   }
@@ -868,7 +897,7 @@ void AliTRDseedV1::SetOwner()
 }
 
 //____________________________________________________________
-void AliTRDseedV1::SetPadPlane(AliTRDpadPlane *p)
+void AliTRDseedV1::SetPadPlane(AliTRDpadPlane * const p)
 {
 // Shortcut method to initialize pad geometry.
   fPad[0] = p->GetLengthIPad();
@@ -1454,7 +1483,7 @@ Bool_t AliTRDseedV1::Fit(UChar_t opt)
   // fit QZ
   if(opt!=1 && IsRowCross()){
     if(!fitterZ.Eval()) SetErrorMsg(kFitFailedZ);
-    if(!HasError(kFitFailedZ) && fitterZ.GetFunctionParameter(1)!=0.){ 
+    if(!HasError(kFitFailedZ) && TMath::Abs(fitterZ.GetFunctionParameter(1))>1.e-10){ 
       // TODO - one has to recalculate xy fit based on
       // better knowledge of z position
 //       Double_t x = -fitterZ.GetFunctionParameter(0)/fitterZ.GetFunctionParameter(1);
@@ -1774,9 +1803,9 @@ Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
     if ( fZref[i] != inTracklet->fZref[i] ) return kFALSE;
   }
   
-  if ( fS2Y != inTracklet->fS2Y ) return kFALSE;
-  if ( GetTilt() != inTracklet->GetTilt() ) return kFALSE;
-  if ( GetPadLength() != inTracklet->GetPadLength() ) return kFALSE;
+  if ( TMath::Abs(fS2Y - inTracklet->fS2Y)>1.e-10 ) return kFALSE;
+  if ( TMath::Abs(GetTilt() - inTracklet->GetTilt())>1.e-10 ) return kFALSE;
+  if ( TMath::Abs(GetPadLength() - inTracklet->GetPadLength())>1.e-10 ) return kFALSE;
   
   for (Int_t i = 0; i < kNclusters; i++){
 //     if ( fX[i] != inTracklet->GetX(i) ) return kFALSE;
@@ -1799,14 +1828,14 @@ Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
   //if ( fFreq != inTracklet->GetFreq() ) return kFALSE;
   //if ( fNChange != inTracklet->GetNChange() ) return kFALSE;
    
-  if ( fC != inTracklet->fC ) return kFALSE;
+  if ( TMath::Abs(fC[0] - inTracklet->fC[0])>1.e-10 ) return kFALSE;
   //if ( fCC != inTracklet->GetCC() ) return kFALSE;
-  if ( fChi2 != inTracklet->fChi2 ) return kFALSE;
+  if ( TMath::Abs(fChi2 - inTracklet->fChi2)>1.e-10 ) return kFALSE;
   //  if ( fChi2Z != inTracklet->GetChi2Z() ) return kFALSE;
 
   if ( fDet != inTracklet->fDet ) return kFALSE;
-  if ( fPt != inTracklet->fPt ) return kFALSE;
-  if ( fdX != inTracklet->fdX ) return kFALSE;
+  if ( TMath::Abs(fPt - inTracklet->fPt)>1.e-10 ) return kFALSE;
+  if ( TMath::Abs(fdX - inTracklet->fdX)>1.e-10 ) return kFALSE;
   
   for (Int_t iCluster = 0; iCluster < kNclusters; iCluster++){
     AliTRDcluster *curCluster = fClusters[iCluster];

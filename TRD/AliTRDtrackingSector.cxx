@@ -25,6 +25,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliTRDReconstructor.h"
 #include "AliTRDtrackingSector.h"
 #include "AliTRDtrackingChamber.h"
 

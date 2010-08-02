@@ -29,27 +29,24 @@
 #include "AliPID.h"
 #endif
 
-#ifndef ALIRIEMAN_H
-#include "AliRieman.h"
-#endif
 
 #ifndef ALITRDCLUSTER_H 
 #include "AliTRDcluster.h"
 #endif
 
-#include "AliTRDReconstructor.h"
 
 class TTreeSRedirector;
 class TLinearFitter;
 
 class AliRieman;
 
+class AliTRDReconstructor;
 class AliTRDtrackingChamber;
 class AliTRDtrackV1;
 class AliTRDpadPlane;
 class AliTRDseedV1 : public AliTRDtrackletBase
 {
-  friend class AliHLTTRDTracklet;
+  friend class AliHLTTRDTracklet; // wrapper for HLT
 
 public:
   enum ETRDtrackletBuffers {    
@@ -95,7 +92,7 @@ public:
   Bool_t    CookPID();
   Bool_t    Fit(UChar_t opt=0);
   Bool_t    Init(AliTRDtrackV1 *track);
-  inline void      Init(const AliRieman *fit);
+  void      Init(const AliRieman *fit);
   Bool_t    IsEqual(const TObject *inTracklet) const;
   Bool_t    IsCalibrated() const     { return TestBit(kCalib);}
   Bool_t    IsOwner() const          { return TestBit(kOwner);}
@@ -186,7 +183,7 @@ public:
   void      SetStandAlone(Bool_t st) { SetBit(kStandAlone, st); }
   void      SetPt(Double_t pt)       { fPt = pt;}
   void      SetOwner();
-  void      SetPadPlane(AliTRDpadPlane *p);
+  void      SetPadPlane(AliTRDpadPlane * const p);
   void      SetPadLength(Float_t l)  { fPad[0] = l;}
   void      SetPadWidth(Float_t w)   { fPad[1] = w;}
   void      SetTilt(Float_t tilt)    { fPad[2] = tilt; }
@@ -208,8 +205,8 @@ private:
   inline void SetN(Int_t n);
   inline void SetNUsed(Int_t n);
   inline void SetNShared(Int_t n);
-  inline void Swap(Int_t &n1, Int_t &n2);
-  inline void Swap(Double_t &d1, Double_t &d2);
+  inline void Swap(Int_t &n1, Int_t &n2) const;
+  inline void Swap(Double_t &d1, Double_t &d2) const;
 
   const AliTRDReconstructor *fkReconstructor;//! local reconstructor
   AliTRDcluster  **fClusterIter;            //! clusters iterator
@@ -284,24 +281,6 @@ inline Double_t AliTRDseedV1::GetPID(Int_t is) const
   if(is<0) return fProb[AliPID::kElectron];
   if(is<AliPID::kSPECIES) return fProb[is];
   return 0.;
-}
-
-//____________________________________________________________
-inline void AliTRDseedV1::Init(const AliRieman *rieman)
-{
-  fZref[0] = rieman->GetZat(fX0);
-  fZref[1] = rieman->GetDZat(fX0);
-  fYref[0] = rieman->GetYat(fX0);
-  fYref[1] = rieman->GetDYat(fX0);
-  if(fkReconstructor && fkReconstructor->IsHLT()){
-    fRefCov[0] = 1;
-    fRefCov[2] = 10;
-  }else{
-    fRefCov[0] = rieman->GetErrY(fX0);
-    fRefCov[2] = rieman->GetErrZ(fX0);
-  }
-  fC[0]    = rieman->GetC(); 
-  fChi2    = rieman->GetChi2();
 }
 
 //____________________________________________________________
@@ -401,7 +380,7 @@ inline void AliTRDseedV1::SetNShared(Int_t n)
 }
 
 //____________________________________________________________
-inline void AliTRDseedV1::Swap(Int_t &n1, Int_t &n2)
+inline void AliTRDseedV1::Swap(Int_t &n1, Int_t &n2) const
 {
 // swap values of n1 with n2
   Int_t tmp(n1);
@@ -409,7 +388,7 @@ inline void AliTRDseedV1::Swap(Int_t &n1, Int_t &n2)
 }
 
 //____________________________________________________________
-inline void AliTRDseedV1::Swap(Double_t &d1, Double_t &d2)
+inline void AliTRDseedV1::Swap(Double_t &d1, Double_t &d2) const
 {
 // swap values of d1 with d2
   Double_t tmp(d1);
