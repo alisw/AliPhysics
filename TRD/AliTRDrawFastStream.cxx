@@ -1728,11 +1728,11 @@ Bool_t AliTRDrawFastStream::SeekEndOfData()
   Int_t fEndOfDataCount = 0;
   fNWordsCounter = 0;
 
-  while ( *fpPos != ENDOFRAWDATAMARKER && fpPos < fpEnd ) {
+  while ( fpPos < fpEnd && *fpPos != ENDOFRAWDATAMARKER ) {
     fpPos++;
     fNWordsCounter++;
   }
-  while (*fpPos == ENDOFRAWDATAMARKER && fpPos < fpEnd ) {
+  while ( fpPos < fpEnd && *fpPos == ENDOFRAWDATAMARKER ) {
     fEndOfDataCount++;
     fpPos++;
   }
