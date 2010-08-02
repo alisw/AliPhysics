@@ -53,8 +53,8 @@ class AliMultiplicity : public TObject {
   void  SetLabelSingle(Int_t i, Int_t label);
 
 
-  Bool_t FreeClustersTracklet(Int_t i, Int_t mode) const {return (mode>=0&&mode<2&&i>=0&&i<fNtracks) ? !fUsedClusT[mode].TestBitNumber(i):kFALSE;}
-  Bool_t FreeSingleCluster(Int_t i, Int_t mode)    const {return (mode>=0&&mode<2&&i>=0&&i<fNsingle) ? !fUsedClusS[mode].TestBitNumber(i):kFALSE;}
+  Bool_t FreeClustersTracklet(Int_t i, Int_t mode) const;
+  Bool_t FreeSingleCluster(Int_t i, Int_t mode)    const;
 
   
 // methods to access single cluster information
@@ -85,7 +85,8 @@ class AliMultiplicity : public TObject {
   const TBits & GetFiredChipMap() const {return fClusterFiredChips;}
   Bool_t TestFiredChipMap(UInt_t chipKey) const {return fClusterFiredChips.TestBitNumber(chipKey);}
 
-
+  Bool_t GetTrackletTrackIDs(Int_t i, Int_t mode, Int_t &spd1, Int_t &spd2) const;
+  Bool_t GetSingleClusterTrackID(Int_t i, Int_t mode, Int_t &tr) const;
 
   // array getters
   Double_t* GetTheta()       const {return (Double_t*)fTh;}
@@ -98,8 +99,8 @@ class AliMultiplicity : public TObject {
   Int_t*    GetLabels2()     const {return (Int_t*)fLabelsL2;}
   Int_t*    GetLabelsSingle()      const {return (Int_t*)fLabelssingle;} 
   
-  void SetTrackletData(Int_t id, const Float_t* tlet, UInt_t bits);
-  void SetSingleClusterData(Int_t id, const Float_t* scl,UInt_t bits);
+  void SetTrackletData(Int_t id, const Float_t* tlet, UInt_t trSPD1, UInt_t trSPD2);
+  void SetSingleClusterData(Int_t id, const Float_t* scl,UInt_t tr);
   void CompactBits();
 
   virtual void Print(Option_t *opt="") const;
@@ -112,6 +113,8 @@ class AliMultiplicity : public TObject {
                              // with a tracklet on SPD layer 2
   Int_t *fLabels;            //[fNtracks] array with labels of cluster in L1 used for tracklet
   Int_t *fLabelsL2;          //[fNtracks] array with labels of cluster in L2 used for tracklet
+  UInt_t* fUsedClusS;        //[fNtracks] id+1 of the tracks using cluster, coded as (TPC/ITS+ITS_SA)+(ITS_SA_PURE<<16)
+  ULong64_t* fUsedClusT;     //[fNtracks] id+1 of the tracks using clusters, coded as (TPC/ITS+ITS_SA)+(ITS_SA_PURE<<16) for SPD1 and SPD2 in low and high parts
   Double32_t *fTh;           //[fNtracks] array with theta values
   Double32_t *fPhi;          //[fNtracks] array with phi values
   Double32_t *fDeltTh;       //[fNtracks] array with delta theta values
@@ -123,10 +126,8 @@ class AliMultiplicity : public TObject {
   UInt_t fITSClusters[6];    // Number of ITS cluster per layer
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
   TBits fClusterFiredChips;  // Map of fired chips (= at least one cluster)
-  TBits fUsedClusT[2];       // flag that at least one of tracklets clusters is used by TPC/ITS+ITS_SA (0) or ITS_SA_PURE tracks (1)
-  TBits fUsedClusS[2];       // flag that the single clusters is used by TPC/ITS+ITS_SA (0) or ITS_SA_PURE tracks
 
-  ClassDef(AliMultiplicity,14);
+  ClassDef(AliMultiplicity,15);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const

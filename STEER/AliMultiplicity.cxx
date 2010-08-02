@@ -11,6 +11,8 @@ AliMultiplicity::AliMultiplicity():
   fNsingle(0),
   fLabels(0),
   fLabelsL2(0),
+  fUsedClusS(0),
+  fUsedClusT(0),
   fTh(0),
   fPhi(0),
   fDeltTh(0),
@@ -34,6 +36,8 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *
   fNsingle(ns),
   fLabels(0),
   fLabelsL2(0),
+  fUsedClusS(0),
+  fUsedClusT(0),
   fTh(0),
   fPhi(0),
   fDeltTh(0),
@@ -84,6 +88,8 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfc
   fNsingle(ns),
   fLabels(0),
   fLabelsL2(0),
+  fUsedClusS(0),
+  fUsedClusT(0),
   fTh(0),
   fPhi(0),
   fDeltTh(0),
@@ -102,6 +108,8 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfc
     fPhi      = new Double_t [ntr];
     fDeltTh   = new Double_t [ntr];
     fDeltPhi  = new Double_t [ntr];
+    fUsedClusT = new ULong64_t[ntr];
+
     for(Int_t i=fNtracks;i--;){
       fTh[i]=fPhi[i]=fDeltTh[i]=fDeltPhi[i] = 0;
       fLabels[i] = fLabelsL2[i] = 0;
@@ -111,6 +119,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfc
     fThsingle  = new Double_t [ns];
     fPhisingle = new Double_t [ns];
     fLabelssingle = new Int_t [ns];
+    fUsedClusS = new UInt_t[ns];
     for(Int_t i=fNsingle;i--;) fThsingle[i] = fPhisingle[i] = fLabelssingle[i] = 0;
   }
   fFiredChips[0] = nfcL1;
@@ -126,6 +135,8 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   fNsingle(m.fNsingle),
   fLabels(0),
   fLabelsL2(0),
+  fUsedClusS(0),
+  fUsedClusT(0),
   fTh(0),
   fPhi(0),
   fDeltTh(0),
@@ -155,6 +166,9 @@ AliMultiplicity &AliMultiplicity::operator=(const AliMultiplicity& m){
   if(fThsingle)delete [] fThsingle;fThsingle = 0;
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
   if(fLabelssingle)delete [] fLabelssingle;fLabelssingle = 0;
+  if(fUsedClusS) delete[] fUsedClusS; fUsedClusS = 0;
+  if(fUsedClusT) delete[] fUsedClusT; fUsedClusT = 0;
+
   Duplicate(m);
 
   return *this;
@@ -185,6 +199,8 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
     fDeltPhi = new Double_t[fNtracks];
     fLabels = new Int_t[fNtracks];
     fLabelsL2 = new Int_t[fNtracks];
+    if (m.fUsedClusT) fUsedClusT = new ULong64_t[fNtracks];
+    else fUsedClusT = 0;
   }
   else {
     fTh = 0;
@@ -199,6 +215,8 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
     fThsingle = new Double_t[fNsingle];
     fPhisingle = new Double_t[fNsingle];
     fLabelssingle = new Int_t[fNsingle];
+    if (m.fUsedClusS) fUsedClusS = new UInt_t[fNsingle];
+    else fUsedClusS = 0;
   }
   else {
     fThsingle = 0;
@@ -214,16 +232,13 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   if(m.fThsingle)memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Double_t));
   if(m.fPhisingle)memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Double_t));
   if(m.fLabelssingle)memcpy(fLabelssingle,m.fLabelssingle,fNsingle*sizeof(Int_t));
+  if(fUsedClusS) memcpy(fUsedClusS,m.fUsedClusS,fNsingle*sizeof(UInt_t));
+  if(fUsedClusT) memcpy(fUsedClusT,m.fUsedClusT,fNtracks*sizeof(ULong64_t));
   fFiredChips[0] = m.fFiredChips[0];
   fFiredChips[1] = m.fFiredChips[1];
   for(Int_t ilayer = 0; ilayer < 6; ilayer++){
     fITSClusters[ilayer] = m.fITSClusters[ilayer];
   }
-
-  fUsedClusT[0] = m.fUsedClusT[0];
-  fUsedClusT[1] = m.fUsedClusT[1];
-  fUsedClusS[0] = m.fUsedClusS[0];
-  fUsedClusS[1] = m.fUsedClusS[1];
   
   fFastOrFiredChips = m.fFastOrFiredChips;
   fClusterFiredChips = m.fClusterFiredChips;
@@ -241,6 +256,8 @@ AliMultiplicity::~AliMultiplicity(){
   if(fThsingle)delete [] fThsingle;fThsingle = 0;
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
   if(fLabelssingle)delete [] fLabelssingle;fLabelssingle = 0;
+  if(fUsedClusS) delete[] fUsedClusS; fUsedClusS = 0;
+  if(fUsedClusT) delete[] fUsedClusT; fUsedClusT = 0;
 }
 
 //______________________________________________________________________
@@ -257,15 +274,13 @@ void AliMultiplicity::Clear(Option_t*)
   if(fThsingle)delete [] fThsingle;fThsingle = 0;
   if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
   if(fLabelssingle)delete [] fLabelssingle;fLabelssingle = 0;
+  if(fUsedClusS) delete[] fUsedClusS; fUsedClusS = 0;
+  if(fUsedClusT) delete[] fUsedClusT; fUsedClusT = 0;
   fNtracks = fNsingle = 0;
   for (int i=6;i--;) fITSClusters[0] = 0;
   fFiredChips[0] = fFiredChips[1] = 0;
   fFastOrFiredChips.ResetAllBits(kTRUE);
   fClusterFiredChips.ResetAllBits(kTRUE);
-  fUsedClusT[0].ResetAllBits(kTRUE);
-  fUsedClusT[1].ResetAllBits(kTRUE);
-  fUsedClusS[0].ResetAllBits(kTRUE);
-  fUsedClusS[1].ResetAllBits(kTRUE);
   //
 }
 
@@ -321,7 +336,7 @@ UInt_t AliMultiplicity::GetNumberOfITSClusters(Int_t layMin, Int_t layMax) const
 }
 
 //______________________________________________________________________
-void AliMultiplicity::SetTrackletData(Int_t id, const Float_t* tlet, UInt_t bits)
+void AliMultiplicity::SetTrackletData(Int_t id, const Float_t* tlet, UInt_t trSPD1, UInt_t trSPD2)
 {
   // fill tracklet data
   if (id>=fNtracks) {AliError(Form("Number of declared tracklets %d < %d",fNtracks,id)); return;}
@@ -330,23 +345,81 @@ void AliMultiplicity::SetTrackletData(Int_t id, const Float_t* tlet, UInt_t bits
   fDeltPhi[id] = tlet[2];
   fDeltTh[id]  = tlet[3];
   fLabels[id]   = Int_t(tlet[4]);
-  fLabelsL2[id] = Int_t(tlet[5]);  
-  if (bits&BIT(0)) fUsedClusT[0].SetBitNumber(id);
-  if (bits&BIT(1)) fUsedClusT[1].SetBitNumber(id);
+  fLabelsL2[id] = Int_t(tlet[5]);
+  fUsedClusT[id] = (((ULong64_t)trSPD2)<<32) + trSPD1;
+  printf("(%d %d)(%d %d)\n",trSPD1&0xffff,trSPD1>>16, trSPD2&0xffff, trSPD2>>16);
   //
 }
 
 //______________________________________________________________________
-void AliMultiplicity::SetSingleClusterData(Int_t id, const Float_t* scl, UInt_t bits)
+void AliMultiplicity::SetSingleClusterData(Int_t id, const Float_t* scl, UInt_t tr)
 {
   // fill single cluster data
   if (id>=fNsingle) {AliError(Form("Number of declared singles %d < %d",fNsingle,id)); return;}
   fThsingle[id]  = scl[0];
   fPhisingle[id] = scl[1];
   fLabelssingle[id] = scl[2]; 
-  if (bits&BIT(0)) fUsedClusS[0].SetBitNumber(id);
-  if (bits&BIT(1)) fUsedClusS[1].SetBitNumber(id);
+  fUsedClusS[id] = tr;
   //
+}
+
+//______________________________________________________________________
+Bool_t AliMultiplicity::FreeClustersTracklet(Int_t i, Int_t mode) const
+{
+  // return kTRUE if the tracklet was not used by the track (on any of layers) of type mode: 0=TPC/ITS or ITS_SA, 1=ITS_SA_Pure
+  if (!fUsedClusT || mode<0 || mode>1 || i<0 || i>fNtracks) return kFALSE;
+  const ULong64_t kMask0 = 0x0000ffff0000ffff;
+  const ULong64_t kMask1 = 0xffff0000ffff0000;
+  return (fUsedClusT[i]&(mode ? kMask1:kMask0)) == 0;
+}
+
+//______________________________________________________________________
+Bool_t AliMultiplicity::GetTrackletTrackIDs(Int_t i, Int_t mode, Int_t &spd1, Int_t &spd2) const
+{
+  // set spd1 and spd2 to ID's of the tracks using the clusters of the tracklet (-1 if not used)
+  // Mode: 0=TPC/ITS or ITS_SA, 1=ITS_SA_Pure tracks
+  // return false if the neither of clusters is used
+  //
+  // note: stored value:  [(idSAPureSPD2+1)<<16+(idTPCITS/SA_SPD2+1)]<<32 +  [(idSAPureSPD1+1)<<16+(idTPCITS/SA_SPD1+1)]
+  if (!fUsedClusT || mode<0 || mode>1 || i<0 || i>fNtracks) {spd1 = spd2 = -1; return kFALSE;}
+  spd1 = (fUsedClusT[i]&0xffffffff);
+  spd2 = (fUsedClusT[i]>>32);
+  if (mode) {
+    spd1 >>= 16;
+    spd2 >>= 16;
+  }
+  else {
+    spd1 &= 0xffff;
+    spd2 &= 0xffff;
+  }
+  spd1--; // we are storing id+1
+  spd2--;
+  return !(spd1<0&&spd2<0);
+}
+
+//______________________________________________________________________
+Bool_t AliMultiplicity::FreeSingleCluster(Int_t i, Int_t mode) const
+{
+  // return kTRUE if the cluster was not used by the track of type mode: 0=TPC/ITS or ITS_SA, 1=ITS_SA_Pure
+  if (!fUsedClusS || mode<0 || mode>1 || i<0 || i>fNsingle) return kFALSE;
+  const UInt_t kMask0 = 0x0000ffff;
+  const UInt_t kMask1 = 0xffff0000;
+  return (fUsedClusS[i]&(mode ? kMask1:kMask0)) == 0;
+}
+
+//______________________________________________________________________
+Bool_t AliMultiplicity::GetSingleClusterTrackID(Int_t i, Int_t mode, Int_t &tr) const
+{
+  // set tr to id of the track using the single clusters  (-1 if not used)
+  // Mode: 0=TPC/ITS or ITS_SA, 1=ITS_SA_Pure tracks
+  // return false if the cluster is not used
+  //
+  // note: stored value:  [(idSAPure+1)<<16+(idTPCITS/SA+1)]
+  if (!fUsedClusS || mode<0 || mode>1 || i<0 || i>fNsingle) {tr = -1; return kFALSE;}
+  tr = fUsedClusS[i];
+  if (mode) tr >>= 16;
+  else      tr &= 0xffff;
+  return (--tr)>=0; // we are storing id+1
 }
 
 //______________________________________________________________________
@@ -355,10 +428,6 @@ void AliMultiplicity::CompactBits()
   // sqeeze bit contrainers to minimum
   fFastOrFiredChips.Compact();
   fClusterFiredChips.Compact();
-  fUsedClusT[0].Compact();
-  fUsedClusT[1].Compact();
-  fUsedClusS[0].Compact();
-  fUsedClusS[1].Compact();
 }
 
 //______________________________________________________________________
@@ -367,17 +436,23 @@ void AliMultiplicity::Print(Option_t *opt) const
   // print
   printf("N.tracklets: %4d N.singles: %4d\n",fNtracks,fNsingle);
   TString opts = opt; opts.ToLower();
+  int t0spd1=-1,t1spd1=-1,t0spd2=-1,t1spd2=-1;
+  //
   if (opts.Contains("t")) {
-    for (int i=0;i<fNtracks;i++) 
-      printf("T#%3d| Th:%+6.3f Phi:%+6.3f DTh:%+6.3f DPhi:%+6.3f L1:%4d L2:%4d U0:%d U1:%d\n",
-	     i,fTh[i],fPhi[i],fDeltTh[i],fDeltPhi[i],fLabels[i],fLabelsL2[i],
-	     FreeClustersTracklet(i,0),FreeClustersTracklet(i,1));
+    for (int i=0;i<fNtracks;i++) {
+      GetTrackletTrackIDs(i,0,t0spd1,t0spd2);
+      GetTrackletTrackIDs(i,1,t1spd1,t1spd2);
+      printf("T#%3d| Eta:%+5.2f Th:%+6.3f Phi:%+6.3f DTh:%+6.3f DPhi:%+6.3f L1:%4d L2:%4d U:L1[%5d/%5d] L2[%5d/%5d]\n",
+	     i,GetEta(i),fTh[i],fPhi[i],fDeltTh[i],fDeltPhi[i],fLabels[i],fLabelsL2[i],t0spd1,t1spd1,t0spd2,t1spd2);
+    }
   }
   if (opts.Contains("s")) {
-    for (int i=0;i<fNsingle;i++) 
-      printf("S#%3d| Th:%+6.3f Phi:%+6.3f L:%4d U0:%d U1:%d\n",
-	     i,fThsingle[i],fPhisingle[i],fLabelssingle[i], 
-	     FreeClustersTracklet(i,0),FreeClustersTracklet(i,1));
+    for (int i=0;i<fNsingle;i++) {
+      GetSingleClusterTrackID(i,0,t0spd1);
+      GetSingleClusterTrackID(i,1,t1spd1);
+      printf("S#%3d| Th:%+6.3f Phi:%+6.3f L:%4d U:[%5d/%5d]\n",
+	     i,fThsingle[i],fPhisingle[i],fLabelssingle[i], t0spd1,t1spd1);
+    }
   }
   //
 }

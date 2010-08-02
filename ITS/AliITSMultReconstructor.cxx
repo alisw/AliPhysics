@@ -727,7 +727,7 @@ void AliITSMultReconstructor::CreateMultiplicityObject()
   //
   for (int i=fNTracklets;i--;)  {
     float* tlInfo = fTracklets[i];
-    fMult->SetTrackletData(i,tlInfo, fUsedClusLay1[int(tlInfo[kClID1])]|fUsedClusLay2[int(tlInfo[kClID2])]);
+    fMult->SetTrackletData(i,tlInfo, fUsedClusLay1[int(tlInfo[kClID1])],fUsedClusLay2[int(tlInfo[kClID2])]);
   }
   //  
   for (int i=fNSingleCluster;i--;) {
@@ -796,7 +796,7 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree)
     Float_t*   clustersLay              = new Float_t[nclLayer*kClNPar];
     Int_t*     detectorIndexClustersLay = new Int_t[nclLayer];
     Bool_t*    overlapFlagClustersLay   = new Bool_t[nclLayer];
-    Char_t*    usedClusLay              = new Char_t[nclLayer];
+    UInt_t*    usedClusLay              = new UInt_t[nclLayer];
     //
     for (int ic=0;ic<nclLayer;ic++) {
       AliITSRecPoint* cluster = (AliITSRecPoint*)clArr[index[ic]];
@@ -1013,7 +1013,7 @@ void AliITSMultReconstructor::ProcessESDTracks()
   for(Int_t itr=0; itr<ntracks; itr++) {
     AliESDtrack* track = fESDEvent->GetTrack(itr);
     if (!track->IsOn(AliESDtrack::kITSin)) continue; // use only tracks propagated in ITS to vtx
-    FlagTrackClusters(track);
+    FlagTrackClusters(itr);
     FlagIfSecondary(track,vtx);
   }
   FlagV0s(vtx);
@@ -1021,15 +1021,20 @@ void AliITSMultReconstructor::ProcessESDTracks()
 }
 
 //____________________________________________________________________
-void AliITSMultReconstructor::FlagTrackClusters(const AliESDtrack* track)
+void AliITSMultReconstructor::FlagTrackClusters(Int_t id)
 {
   // RS: flag the SPD clusters of the track if it is useful for the multiplicity estimation
   //
+  const UShort_t kMaxTrID = 0xffff - 1; // max possible track id
+  if (id>kMaxTrID) return;
+  const AliESDtrack* track = fESDEvent->GetTrack(id);
   Int_t idx[12];
   if ( track->GetITSclusters(idx)<3 ) return; // at least 3 clusters must be used in the fit
+  UInt_t *uClus[2] = {fUsedClusLay1,fUsedClusLay2};
   //
-  char mark = track->IsOn(AliESDtrack::kITSpureSA) ? kITSSAPBit : kITSTPCBit;
-  char *uClus[2] = {fUsedClusLay1,fUsedClusLay2};
+  UInt_t mark = id+1;
+  if (track->IsOn(AliESDtrack::kITSpureSA)) mark <<= 16;
+  //
   for (int i=AliESDfriendTrack::kMaxITScluster;i--;) {
     // note: i>=6 is for extra clusters
     if (idx[i]<0) continue;

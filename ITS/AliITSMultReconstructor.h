@@ -46,7 +46,7 @@ public:
   void FindTracklets(const Float_t* vtx); 
   void LoadClusterFiredChips(TTree* tree);
   void FlagClustersInOverlapRegions(Int_t ic1,Int_t ic2);
-  void FlagTrackClusters(const AliESDtrack* track);
+  void FlagTrackClusters(Int_t id);
   void FlagIfSecondary(AliESDtrack* track, const AliVertex* vtx);
   void FlagV0s(const AliESDVertex *vtx);
   void ProcessESDTracks();
@@ -129,8 +129,8 @@ protected:
   AliESDEvent*      fESDEvent;              //! pointer to ESD event
   TTree*            fTreeRP;                //! ITS recpoints
 
-  Char_t*       fUsedClusLay1;               // RS: flag of clusters usage in ESD tracks: 0=unused, bit0=TPC/ITS+ITSSA, bit1=ITSSA_Pure
-  Char_t*       fUsedClusLay2;               // RS: flag of clusters usage in ESD tracks: 0=unused, bit0=TPC/ITS+ITSSA, bit1=ITSSA_Pure
+  UInt_t*       fUsedClusLay1;               // RS: flag of clusters usage in ESD tracks: 0=unused, else ID+1 in word0=TPC/ITS+ITSSA, word1=ITSSA_Pure
+  UInt_t*       fUsedClusLay2;               // RS: flag of clusters usage in ESD tracks: 0=unused, else ID+1 word0=TPC/ITS+ITSSA, word1=ITSSA_Pure
 
   Float_t*      fClustersLay1;               // clusters in the 1st layer of ITS 
   Float_t*      fClustersLay2;               // clusters in the 2nd layer of ITS 
@@ -200,7 +200,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSMultReconstructor,7)
+  ClassDef(AliITSMultReconstructor,8)
 };
 
 #endif
