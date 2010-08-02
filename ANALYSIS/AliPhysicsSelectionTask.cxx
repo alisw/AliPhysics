@@ -79,6 +79,8 @@ void AliPhysicsSelectionTask::UserCreateOutputObjects()
     fPhysicsSelection = new AliPhysicsSelection;
   
   fOutput->Add(fPhysicsSelection);
+  // All tasks must post data once for all outputs (AG)
+  PostData(1, fOutput);
 }
 
 void AliPhysicsSelectionTask::UserExec(Option_t*)
