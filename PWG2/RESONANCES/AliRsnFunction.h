@@ -60,7 +60,7 @@ class AliRsnFunction : public TNamed
     void                 AddAxis(AliRsnValue* const axis);
     Int_t                GetNumberOfAxes() {return fAxisList.GetEntries();}
     TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
-    THnSparseD*          CreateHistogramSparse(const char *histoName, const char *histoTitle);
+    THnSparseF*          CreateHistogramSparse(const char *histoName, const char *histoTitle);
 
     Bool_t               Fill();
 
@@ -75,7 +75,7 @@ class AliRsnFunction : public TNamed
     Bool_t              fUseTH1;      // use TH1 or not?
     Int_t               fSize;        // number of dim of output histogram
     TH1                *fH1;          // output histogram (standard type)
-    THnSparseD         *fHSparse;     // output histogram (sparse type)
+    THnSparseF         *fHSparse;     // output histogram (sparse type)
 
     // ROOT dictionary
     ClassDef(AliRsnFunction, 3)

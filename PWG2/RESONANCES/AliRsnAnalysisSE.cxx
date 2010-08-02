@@ -55,6 +55,16 @@ AliRsnAnalysisSE::AliRsnAnalysisSE(const AliRsnAnalysisSE& copy) :
 }
 
 //_____________________________________________________________________________
+AliRsnAnalysisSE::~AliRsnAnalysisSE()
+{
+//
+// Destructor
+//
+
+  fOutList->Clear();
+}
+
+//_____________________________________________________________________________
 void AliRsnAnalysisSE::RsnUserCreateOutputObjects()
 {
 //
@@ -116,7 +126,7 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
       if ((zeroEventPercent>fZeroEventPercentWarning)&&(fEntry>100))
         AliWarning(Form("%3.2f%% Events are with zero tracks (CurrentEvent=%d)!!!",zeroEventPercent,fEntry));
     }
-    return;
+    //return;
   }
 
   // if general event cuts are added to the task (recommended)

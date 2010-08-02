@@ -207,7 +207,7 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   ULong_t  status;
   Int_t    k, nITS;
   Double_t times[10], tpcNSigma, tpcMaxNSigma, itsSignal, itsNSigma, mom, tofTime, tofSigma, tofRef, tofRel;
-  Bool_t   okTOF, isTPC, isITSSA;
+  Bool_t   okQuality, okTOF, okTPC, okITS, okTrack, isTPC, isITSSA;
   UChar_t  itsCluMap;
   
   // get commonly used variables
@@ -222,20 +222,27 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   if (isTPC)
   {
     // check standard ESD cuts
-    if (!fESDtrackCutsTPC.IsSelected(track)) return kFALSE;
-    
+    okQuality = fESDtrackCutsTPC.IsSelected(track);
+    //cout << "GLOBAL -- quality = " << (okQuality ? "GOOD" : "BAD") << endl;
+    if (!okQuality) return kFALSE;
+  
     // check TPC dE/dx
     if (fCheckTPC)
     {
       tpcNSigma = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, AliPID::kKaon));
       if (track->GetInnerParam()->P() > fTPCpLimit) tpcMaxNSigma = fMinTPCband; else tpcMaxNSigma = fMaxTPCband;
-      if (tpcNSigma > tpcMaxNSigma) return kFALSE;
+      okTPC = (tpcNSigma <= tpcMaxNSigma);
+      //cout << "RSN -- TPC    -- nsigma = " << tpcNSigma << ", max = " << tpcMaxNSigma << " --> " << (okTPC ? "OK" : "FAILED") << endl;
+      //cout << "RSNTPC -- " << fTPCpar[0] << ' ' << fTPCpar[1] << ' ' << fTPCpar[2] << ' ' << fTPCpar[3] << ' ' << fTPCpar[4] << endl;
+    }
+    else
+    {
+      okTPC = kTRUE;
     }
     
     // check TOF (only if momentum is large than function asymptote and flags are OK)
     if (fCheckTOF)
     {
-      okTOF = kTRUE;
       if (((status & AliESDtrack::kTOFout) != 0) && ((status & AliESDtrack::kTIME) != 0) && mom > TMath::Max(b1, b2))
       {
         track->GetIntegratedTimes(times);
@@ -248,29 +255,63 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
           ymax     = a1 / (mom - b1) + c1;
           ymin     = a2 / (mom - b2) + c2;
           okTOF    = (tofRel >= ymin && tofRel <= ymax);
+          //cout << "TOF    -- diff = " << tofDiff << ", rel diff = " << tofRel << ", range = " << ymin << " to " << ymax << ", sigma = " << tofSigma << " --> " << (okTOF ? "OK" : "FAILED") << endl;
+        }
+        else
+        {
+          okTOF = kTRUE;
+          //cout << "TOF    -- not checked due to ZERO reference time" << endl;
         }
       }
-      if (!okTOF) return kFALSE;
+      else
+      {
+        okTOF = kTRUE;
+        //cout << "TOF    -- not checked because TOF pid absent" << endl;
+      }
     }
+    else
+    {
+      okTOF = kTRUE;
+    }
+    
+    // combine checks
+    okTrack = okQuality && okTPC && okTOF;
+    //cout << "GLOBAL -- overall = " << (okTrack ? "ACCEPTED" : "REJECTED") << endl;
   }
   else
   {
     // check standard ESD cuts
-    if (!fESDtrackCutsITS.IsSelected(track)) return kFALSE;
+    okQuality = fESDtrackCutsITS.IsSelected(track);
+    //cout << "ITSSA  -- quality = " << (okQuality ? "GOOD" : "BAD") << endl;
+    if (!okQuality) return kFALSE;
     
     // check dE/dx
     if (fCheckITS)
     {
-      if ((status & AliESDtrack::kITSpid)  != 0) return kFALSE;
       itsSignal = track->GetITSsignal();
       itsCluMap = track->GetITSClusterMap();
       nITS      = 0;
       for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITS;
-      if (nITS < 3) return kFALSE; // track not good for PID
-      itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, AliPID::kKaon, nITS, kTRUE);
-      if (TMath::Abs(itsNSigma) > fMaxITSband) return kFALSE;
+      if (nITS < 3) 
+      {
+        okITS = kFALSE;
+        //cout << "ITS    -- not checked due to too few PID clusters" << endl;
+      }
+      else
+      {
+        itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, AliPID::kKaon, nITS, kTRUE);
+        okITS = (TMath::Abs(itsNSigma) <= fMaxITSband);
+        //cout << "ITS    -- nsigma = " << itsNSigma << ", max = " << fMaxITSband << " --> " << (okITS ? "OK" : "FAILED") << endl;
+      }
     }
+    else
+    {
+      okITS = kTRUE;
+    }
+    
+    okTrack = okQuality && okITS;
+    //cout << "ITSSA  -- overall = " << (okTrack ? "ACCEPTED" : "REJECTED") << endl;
   }
   
-  return kTRUE;
+  return okTrack;
 }

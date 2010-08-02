@@ -44,7 +44,7 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 //
 
   fMinD = 0.0;
-  fMaxD = maxVz;
+  fMaxD = maxVz + 1E-6;
 }
 
 //_________________________________________________________________________________________________
@@ -54,6 +54,9 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
 // Cut checker
 //
 
+  static Int_t evNum = 0;
+  evNum++;
+  
   // retrieve ESD event
   AliRsnEvent *rsn = dynamic_cast<AliRsnEvent*>(obj1);
   if (!rsn) return kFALSE;
@@ -69,33 +72,42 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *obj1, TObject* /*obj2*/)
   const AliESDVertex *vTrk  = esd->GetPrimaryVertexTracks();
   const AliESDVertex *vSPD  = esd->GetPrimaryVertexSPD();
   const AliESDVertex *vTPC  = esd->GetPrimaryVertexTPC();
+  Int_t               ncTrk = -1;
+  Int_t               ncSPD = -1;
+  Int_t               ncTPC = -1;
   Double_t            vzTrk = 2.0 * fMaxD;
   Double_t            vzSPD = 2.0 * fMaxD;
   Double_t            vzTPC = 2.0 * fMaxD;
   if (vTrk) vzTrk = TMath::Abs(vTrk->GetZv());
   if (vSPD) vzSPD = TMath::Abs(vSPD->GetZv());
   if (vTPC) vzTPC = TMath::Abs(vTPC->GetZv());
-  AliDebug(AliLog::kDebug + 1, Form("Vertex with tracks: contributors = %d, abs(vz) = %f", vTrk->GetNContributors(), vzTrk));
-  AliDebug(AliLog::kDebug + 1, Form("Vertex with SPD,    contributors = %d, abs(vz) = %f", vSPD->GetNContributors(), vzSPD));
-  AliDebug(AliLog::kDebug + 1, Form("Vertex with TPC,    contributors = %d, abs(vz) = %f", vTPC->GetNContributors(), vzTPC));
-  if(vTrk->GetStatus())
+  if (vTrk) ncTrk = (Int_t)vTrk->GetNContributors();
+  if (vSPD) ncSPD = (Int_t)vSPD->GetNContributors();
+  if (vTPC) ncTPC = (Int_t)vTPC->GetNContributors();
+  if(vTrk && ncTrk > 0)
   {
-    fCutValueI = vTrk->GetNContributors();
+    fCutValueI = ncTrk;
     fCutValueD = vzTrk;
   }
-  else if (vSPD->GetStatus())
+  else if (vSPD && ncSPD > 0)
   {
-    fCutValueI = vSPD->GetNContributors();
+    fCutValueI = ncSPD;
     fCutValueD = vzSPD;
   }
-  else if (vTPC->GetStatus() && fAcceptTPC)
+  else if (vTPC && fAcceptTPC && ncTPC > 0)
   {
-    fCutValueI = vTPC->GetNContributors();
+    fCutValueI = ncTPC;
     fCutValueD = vzTPC;
   }
   else
-    return kFALSE;
+  {
+    fCutValueI = -1;
+    fCutValueD = 2.0 * fMaxD;
+  }
   
-  return OkRangeI() && OkRangeD();
+  // output
+  Bool_t result = ((!OkRangeI()) && OkRangeD());
+  
+  return result;
 }
 

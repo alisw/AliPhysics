@@ -138,7 +138,7 @@ TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTit
 // even if the bins are equal, since they are defined in this class.
 // Eventually present histoDef's in other slots of array (1, 2) are ignored.
 //
-// This version produces a THnSparseD.
+// This version produces a THnSparseF.
 //
 
   fSize = fAxisList.GetEntries();
@@ -176,13 +176,13 @@ TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTit
   switch (fSize)
   {
     case 1:
-      fH1 = new TH1D(histoName, histoTitle, nbins[0], min[0], max[0]);
+      fH1 = new TH1F(histoName, histoTitle, nbins[0], min[0], max[0]);
       break;
     case 2:
-      fH1 = new TH2D(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1]);
+      fH1 = new TH2F(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1]);
       break;
     case 3:
-      fH1 = new TH3D(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1], nbins[2], min[2], max[2]);
+      fH1 = new TH3F(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1], nbins[2], min[2], max[2]);
       break;
   }
   fH1->Sumw2();
@@ -191,7 +191,7 @@ TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTit
 }
 
 //________________________________________________________________________________________
-THnSparseD* AliRsnFunction::CreateHistogramSparse(const char *histoName, const char *histoTitle)
+THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const char *histoTitle)
 {
 //
 // Creates and returns the histogram defined using
@@ -200,7 +200,7 @@ THnSparseD* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
 // even if the bins are equal, since they are defined in this class.
 // Eventually present histoDef's in other slots of array (1, 2) are ignored.
 //
-// This version produces a THnSparseD.
+// This version produces a THnSparseF.
 //
 
   fSize = fAxisList.GetEntries();
@@ -236,7 +236,7 @@ THnSparseD* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
   }
 
   // create histogram
-  fHSparse = new THnSparseD(histoName, histoTitle, size, nbins, min, max);
+  fHSparse = new THnSparseF(histoName, histoTitle, size, nbins, min, max);
   fHSparse->Sumw2();
   
   // clean heap
@@ -284,19 +284,19 @@ Bool_t AliRsnFunction::Fill()
     {
       case 1:
         {
-          TH1D *h1 = (TH1D*)fH1;
+          TH1F *h1 = (TH1F*)fH1;
           h1->Fill(values[0]);
         }
         break;
       case 2:
         {
-          TH2D *h2 = (TH2D*)fH1;
+          TH2F *h2 = (TH2F*)fH1;
           h2->Fill(values[0], values[1]);
         }
         break;
       case 3:
         {
-          TH3D *h3 = (TH3D*)fH1;
+          TH3F *h3 = (TH3F*)fH1;
           h3->Fill(values[0], values[1], values[2]);
         }
         break;
@@ -309,7 +309,7 @@ Bool_t AliRsnFunction::Fill()
   {
     // check presence of output histogram
     if (!fHSparse) {
-      AliError("Required a THnSparseD whish is not initialized");
+      AliError("Required a THnSparseF which is not initialized");
       return kFALSE;
     }
     
