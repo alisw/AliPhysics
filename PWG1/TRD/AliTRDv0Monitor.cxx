@@ -97,33 +97,33 @@ Bool_t AliTRDv0Monitor::GetRefFigure(Int_t /*ifig*/)
 }
 
 //________________________________________________________________________
-void AliTRDv0Monitor::UserCreateOutputObjects()
+TObjArray* AliTRDv0Monitor::Histos()
 {
   // Create histograms
   // Called once
 
+  if(fContainer) return fContainer;
 
-fContainer = new TObjArray(kNPlots);
-fContainer->SetName("V0Monitoring");
-
-
-const char *samplename[AliPID::kSPECIES] = {"electrons","muons","pions","kaons","protons"};
-const char *decayname[AliTRDv0Info::kNDecays] = {"gamma","K0s","Lambda","AntiLambda"};
-const char *detectorname[kNDets] = {"ITS","TPC","TOF"};
-
-fhQualityReductions = new TH1I(Form("fhQualityReductions"),Form("Number of tracks cut out by different quality cut steps"),11,-9,2);
-fContainer->Add(fhQualityReductions);
-
-for(Int_t ipart = 0;ipart < AliPID::kSPECIES; ipart++){
-  fhCutReductions[ipart] = new TH1I(Form("fhCutReductions_%s",samplename[ipart]),Form("Number of tracks cut out by different cut steps for %s",samplename[ipart]),19,-17,2);
-  fContainer->Add(fhCutReductions[ipart]);
-  for(Int_t idetector = 0; idetector < kNDets; idetector++){
-    fhDetPID[idetector][ipart] = new TH2F(Form("fhDetector_%s_%s",detectorname[idetector],samplename[ipart]),Form("%s Likelihood for %s vs. momentum",detectorname[idetector], samplename[ipart]),100,0.,10.,100, 0., 1.);
-
-    fContainer->Add(fhDetPID[idetector][ipart]);
-  }
-  fhComPID[ipart] = new TH2F(Form("fhComPID_%s",samplename[ipart]),Form("Combined TPC/TOF PID: Likelihood for %s",samplename[ipart]),100,0.,10.,100,0.,1.);
-
+  fContainer = new TObjArray(kNPlots);
+  fContainer->SetName("V0Monitoring");
+  
+  const char *samplename[AliPID::kSPECIES] = {"electrons","muons","pions","kaons","protons"};
+  const char *decayname[AliTRDv0Info::kNDecays] = {"gamma","K0s","Lambda","AntiLambda"};
+  const char *detectorname[kNDets] = {"ITS","TPC","TOF"};
+  
+  fhQualityReductions = new TH1I(Form("fhQualityReductions"),Form("Number of tracks cut out by different quality cut steps"),11,-9,2);
+  fContainer->Add(fhQualityReductions);
+  
+  for(Int_t ipart = 0;ipart < AliPID::kSPECIES; ipart++){
+    fhCutReductions[ipart] = new TH1I(Form("fhCutReductions_%s",samplename[ipart]),Form("Number of tracks cut out by different cut steps for %s",samplename[ipart]),19,-17,2);
+    fContainer->Add(fhCutReductions[ipart]);
+    for(Int_t idetector = 0; idetector < kNDets; idetector++){
+      fhDetPID[idetector][ipart] = new TH2F(Form("fhDetector_%s_%s",detectorname[idetector],samplename[ipart]),Form("%s Likelihood for %s vs. momentum",detectorname[idetector], samplename[ipart]),100,0.,10.,100, 0., 1.);
+  
+      fContainer->Add(fhDetPID[idetector][ipart]);
+    }
+    fhComPID[ipart] = new TH2F(Form("fhComPID_%s",samplename[ipart]),Form("Combined TPC/TOF PID: Likelihood for %s",samplename[ipart]),100,0.,10.,100,0.,1.);
+  
     fContainer->Add(fhComPID[ipart]);
 
     for(Int_t cutstep = 0; cutstep < kNCutSteps; cutstep++){
@@ -131,39 +131,38 @@ for(Int_t ipart = 0;ipart < AliPID::kSPECIES; ipart++){
       
       fContainer->Add(fhTPCdEdx[ipart][cutstep]);
     }
-}
-
-for(Int_t iDecay = 0; iDecay < AliTRDv0Info::kNDecays; iDecay++){   
-  for(Int_t cutstep =0; cutstep < kNCutSteps; cutstep++){
-    fhV0Chi2ndf[iDecay][cutstep] =  new TH2F(Form("fhV0Chi2ndf_%s_[%d]",decayname[iDecay],cutstep),Form("Chi2/NDF vs. momentum"),100,0.,10.,500, 0., 500.);
-    
-    fContainer->Add(fhV0Chi2ndf[iDecay][cutstep]);
-    
-    fhPsiPair[iDecay][cutstep] =  new TH2F(Form("fhV0PsiPair_%s_[%d]",decayname[iDecay],cutstep),Form("Psi_pair vs. momentum"),100,0.,10.,200, 0., 1.6);
-    
-    fContainer->Add(fhPsiPair[iDecay][cutstep]);
-
-    fhPointAngle[iDecay][cutstep] =  new TH2F(Form("fhPointAngle_%s_[%d]",decayname[iDecay],cutstep),Form("Pointing Angle vs. momentum"),100,0.,10.,500, 0., 1.6);     
-    fContainer->Add(fhPointAngle[iDecay][cutstep]);
-
-    fhDCA[iDecay][cutstep] =  new TH2F(Form("fhDCA_%s_[%d]",decayname[iDecay],cutstep),Form("V0 Daughter DCA vs. momentum"),100,0.,10.,500, 0., 1.);
-    
-    fContainer->Add(fhDCA[iDecay][cutstep]);
-
-    fhOpenAngle[iDecay][cutstep] =  new TH2F(Form("fhOpenAngle_%s_[%d]",decayname[iDecay],cutstep),Form("Opening Angle vs. momentum"),100,0.,10.,500, 0., 1.6);
-    
-    fContainer->Add(fhOpenAngle[iDecay][cutstep]);
-
-    fhRadius[iDecay][cutstep] =  new TH2F(Form("fhRadius_%s_[%d]",decayname[iDecay],cutstep),Form("V0 Generation Radius vs. momentum"),100,0.,10.,500, 0., 150.);
-    
-    fContainer->Add(fhRadius[iDecay][cutstep]);
   }
-
-  fhInvMass[iDecay] =  new TH2F(Form("fhInvMass_%s",decayname[iDecay]),Form("Invariant Mass vs. momentum"),100,0.,10.,500, 0., 2.);
-    
-  fContainer->Add(fhInvMass[iDecay]); 
-
-} 
+  
+  for(Int_t iDecay = 0; iDecay < AliTRDv0Info::kNDecays; iDecay++){   
+    for(Int_t cutstep =0; cutstep < kNCutSteps; cutstep++){
+      fhV0Chi2ndf[iDecay][cutstep] =  new TH2F(Form("fhV0Chi2ndf_%s_[%d]",decayname[iDecay],cutstep),Form("Chi2/NDF vs. momentum"),100,0.,10.,500, 0., 500.);
+      
+      fContainer->Add(fhV0Chi2ndf[iDecay][cutstep]);
+      
+      fhPsiPair[iDecay][cutstep] =  new TH2F(Form("fhV0PsiPair_%s_[%d]",decayname[iDecay],cutstep),Form("Psi_pair vs. momentum"),100,0.,10.,200, 0., 1.6);
+      
+      fContainer->Add(fhPsiPair[iDecay][cutstep]);
+  
+      fhPointAngle[iDecay][cutstep] =  new TH2F(Form("fhPointAngle_%s_[%d]",decayname[iDecay],cutstep),Form("Pointing Angle vs. momentum"),100,0.,10.,500, 0., 1.6);     
+      fContainer->Add(fhPointAngle[iDecay][cutstep]);
+  
+      fhDCA[iDecay][cutstep] =  new TH2F(Form("fhDCA_%s_[%d]",decayname[iDecay],cutstep),Form("V0 Daughter DCA vs. momentum"),100,0.,10.,500, 0., 1.);
+      
+      fContainer->Add(fhDCA[iDecay][cutstep]);
+  
+      fhOpenAngle[iDecay][cutstep] =  new TH2F(Form("fhOpenAngle_%s_[%d]",decayname[iDecay],cutstep),Form("Opening Angle vs. momentum"),100,0.,10.,500, 0., 1.6);
+      
+      fContainer->Add(fhOpenAngle[iDecay][cutstep]);
+  
+      fhRadius[iDecay][cutstep] =  new TH2F(Form("fhRadius_%s_[%d]",decayname[iDecay],cutstep),Form("V0 Generation Radius vs. momentum"),100,0.,10.,500, 0., 150.);
+      
+      fContainer->Add(fhRadius[iDecay][cutstep]);
+    }
+  
+    fhInvMass[iDecay] =  new TH2F(Form("fhInvMass_%s",decayname[iDecay]),Form("Invariant Mass vs. momentum"),100,0.,10.,500, 0., 2.);
+      
+    fContainer->Add(fhInvMass[iDecay]); 
+  } 
 
 /*TH1F *hV0mcPID[AliPID::kSPECIES][AliPID::kSPECIES];
   Int_t nPBins = 200;
@@ -176,7 +175,11 @@ for(Int_t iDecay = 0; iDecay < AliTRDv0Info::kNDecays; iDecay++){
   fhV0mcPID[iSample][iSpecies] = new TH1F(Form("fhV0mcPID_%s_is_%s",name[iSample],name[iSpecies]),Form("%s contained in %s sample",name[iSpecies],name[iSample]), nPBins, 0.2, 13.);
   }
   }*/
+
+  return fContainer;
 }
+
+
 //________________________________________________________________________
 void AliTRDv0Monitor::UserExec(Option_t *) 
 {
@@ -203,71 +206,68 @@ void AliTRDv0Monitor::UserExec(Option_t *)
       
       fhQualityReductions->Fill(v0->fQuality);//fills integer codes for tracks cut out by track/V0 quality cuts
       
-      if(!(v0->fQuality == 1))continue;
+      if(!(v0->fQuality == 1)) continue;
 
       for(Int_t part = 0; part < AliPID::kSPECIES; part++){
-  fhCutReductions[part]->Fill(v0->GetPID(part,track));//fill in numbers of tracks eliminated by different PID cuts
+        fhCutReductions[part]->Fill(v0->GetPID(part,track));//fill in numbers of tracks eliminated by different PID cuts
       }
 
     
       for(Int_t idecay(0), part(-1); idecay <  AliTRDv0Info::kNDecays; idecay++){//loop over decay types considered for reference data
-  
-  if(idecay ==  AliTRDv0Info::kLambda){ //protons and pions from Lambda
-    part = AliPID::kProton;
-  } else if(idecay == AliTRDv0Info::kAntiLambda) { //antiprotons and pions from Anti-Lambda     
-    part = AliPID::kProton;
-  } else if(idecay ==   AliTRDv0Info::kK0s) {//pions from K0s
-    part = AliPID::kPion;
-  } else if(idecay ==  AliTRDv0Info::kGamma) {//electrons from conversions
-    part = AliPID::kElectron;
-  } 
-  
-  //fill histograms with track/V0 quality cuts only
-  fhPsiPair[idecay][0]->Fill(v0->fV0Momentum,v0->fPsiPair);//Angle between daughter momentum plane and plane perpendicular to magnetic field
-  fhInvMass[idecay]->Fill(v0->fV0Momentum,v0->fInvMass[idecay]);//Invariant mass
-  fhPointAngle[idecay][0]->Fill(v0->fV0Momentum,v0->fPointingAngle);// = TMath::ACos(esdv0->GetV0CosineOfPointingAngle()); // Cosine of pointing angle
-  fhOpenAngle[idecay][0]->Fill(v0->fV0Momentum,v0->fOpenAngle);// opening angle between daughters
-  fhDCA[idecay][0]->Fill(v0->fV0Momentum,v0->fDCA);// Distance of closest approach of daughter tracks	
-  fhV0Chi2ndf[idecay][0]->Fill(v0->fV0Momentum,v0->fChi2ndf[idecay]);//Kalman Filter Chi2/NDF
-  fhRadius[idecay][0]->Fill(v0->fV0Momentum,v0->fRadius);//distance of decay/conversion from primary vertex in x-y plane
+        if(idecay ==  AliTRDv0Info::kLambda){ //protons and pions from Lambda
+          part = AliPID::kProton;
+        } else if(idecay == AliTRDv0Info::kAntiLambda) { //antiprotons and pions from Anti-Lambda     
+          part = AliPID::kProton;
+        } else if(idecay ==   AliTRDv0Info::kK0s) {//pions from K0s
+          part = AliPID::kPion;
+        } else if(idecay ==  AliTRDv0Info::kGamma) {//electrons from conversions
+          part = AliPID::kElectron;
+        } 
+        
+        //fill histograms with track/V0 quality cuts only
+        fhPsiPair[idecay][0]->Fill(v0->fV0Momentum,v0->fPsiPair);//Angle between daughter momentum plane and plane perpendicular to magnetic field
+        fhInvMass[idecay]->Fill(v0->fV0Momentum,v0->fInvMass[idecay]);//Invariant mass
+        fhPointAngle[idecay][0]->Fill(v0->fV0Momentum,v0->fPointingAngle);// = TMath::ACos(esdv0->GetV0CosineOfPointingAngle()); // Cosine of pointing angle
+        fhOpenAngle[idecay][0]->Fill(v0->fV0Momentum,v0->fOpenAngle);// opening angle between daughters
+        fhDCA[idecay][0]->Fill(v0->fV0Momentum,v0->fDCA);// Distance of closest approach of daughter tracks	
+        fhV0Chi2ndf[idecay][0]->Fill(v0->fV0Momentum,v0->fChi2ndf[idecay]);//Kalman Filter Chi2/NDF
+        fhRadius[idecay][0]->Fill(v0->fV0Momentum,v0->fRadius);//distance of decay/conversion from primary vertex in x-y plane
+      
+        if(v0->HasTrack(track) == -1){	  
+          fhTPCdEdx[part][0]->Fill(v0->fTrackN->P(),v0->fTPCdEdx[AliTRDv0Info::kNeg]);//TPC dE/dx for negative track
+        } else if(v0->HasTrack(track) == 1){
+          fhTPCdEdx[part][0]->Fill(v0->fTrackP->P(),v0->fTPCdEdx[AliTRDv0Info::kPos]);//TPC dE/dx for positive track
+        }
+      
+        //fill histograms after invariant mass cuts
+        if((v0->fInvMass[idecay] < v0->fUpInvMass[idecay][0])&&(v0->fInvMass[idecay]> v0->fDownInvMass[idecay])){
+          fhV0Chi2ndf[idecay][1]->Fill(v0->fV0Momentum,v0->fChi2ndf[idecay]);
+          fhPsiPair[idecay][1]->Fill(v0->fV0Momentum,v0->fPsiPair);
+          fhPointAngle[idecay][1]->Fill(v0->fV0Momentum,v0->fPointingAngle);
+          fhOpenAngle[idecay][1]->Fill(v0->fV0Momentum,v0->fOpenAngle);
+          fhDCA[idecay][1]->Fill(v0->fV0Momentum,v0->fDCA);
+          fhRadius[idecay][1]->Fill(v0->fV0Momentum,v0->fRadius);
+          if(v0->HasTrack(track) == -1)
+            fhTPCdEdx[part][1]->Fill(v0->fTrackN->P(),v0->fTPCdEdx[AliTRDv0Info::kNeg]);
+          else if(v0->HasTrack(track) == 1)
+            fhTPCdEdx[part][1]->Fill(v0->fTrackP->P(),v0->fTPCdEdx[AliTRDv0Info::kPos]);
+      
+        }
 
-  if(v0->HasTrack(track) == -1){	  
-    fhTPCdEdx[part][0]->Fill(v0->fTrackN->P(),v0->fTPCdEdx[AliTRDv0Info::kNeg]);//TPC dE/dx for negative track
-  } else if(v0->HasTrack(track) == 1){
-    fhTPCdEdx[part][0]->Fill(v0->fTrackP->P(),v0->fTPCdEdx[AliTRDv0Info::kPos]);//TPC dE/dx for positive track
-  }
-
-  //fill histograms after invariant mass cuts
-  if((v0->fInvMass[idecay] < v0->fUpInvMass[idecay][0])&&(v0->fInvMass[idecay]> v0->fDownInvMass[idecay])){
-    fhV0Chi2ndf[idecay][1]->Fill(v0->fV0Momentum,v0->fChi2ndf[idecay]);
-    fhPsiPair[idecay][1]->Fill(v0->fV0Momentum,v0->fPsiPair);
-    fhPointAngle[idecay][1]->Fill(v0->fV0Momentum,v0->fPointingAngle);
-    fhOpenAngle[idecay][1]->Fill(v0->fV0Momentum,v0->fOpenAngle);
-    fhDCA[idecay][1]->Fill(v0->fV0Momentum,v0->fDCA);
-    fhRadius[idecay][1]->Fill(v0->fV0Momentum,v0->fRadius);
-    if(v0->HasTrack(track) == -1)
-      fhTPCdEdx[part][1]->Fill(v0->fTrackN->P(),v0->fTPCdEdx[AliTRDv0Info::kNeg]);
-    else if(v0->HasTrack(track) == 1)
-      fhTPCdEdx[part][1]->Fill(v0->fTrackP->P(),v0->fTPCdEdx[AliTRDv0Info::kPos]);
-
-  }
-
-  //fill histograms after all reference selection cuts
-  if(v0->GetPID(part,track)==1){
-    fhV0Chi2ndf[idecay][2]->Fill(v0->fV0Momentum,v0->fChi2ndf[idecay]);
-    fhPsiPair[idecay][2]->Fill(v0->fV0Momentum,v0->fPsiPair);
-    fhPointAngle[idecay][2]->Fill(v0->fV0Momentum,v0->fPointingAngle);
-    fhOpenAngle[idecay][2]->Fill(v0->fV0Momentum,v0->fOpenAngle);
-    fhDCA[idecay][2]->Fill(v0->fV0Momentum,v0->fDCA);
-    fhRadius[idecay][2]->Fill(v0->fV0Momentum,v0->fRadius);
-    if(v0->HasTrack(track) == -1)
-      fhTPCdEdx[part][2]->Fill(v0->fTrackN->P(),v0->fTPCdEdx[AliTRDv0Info::kNeg]);
-    else if(v0->HasTrack(track) == 1)
-      fhTPCdEdx[part][2]->Fill(v0->fTrackP->P(),v0->fTPCdEdx[AliTRDv0Info::kPos]);
-
-  }
+        //fill histograms after all reference selection cuts
+        if(v0->GetPID(part,track)==1){
+          fhV0Chi2ndf[idecay][2]->Fill(v0->fV0Momentum,v0->fChi2ndf[idecay]);
+          fhPsiPair[idecay][2]->Fill(v0->fV0Momentum,v0->fPsiPair);
+          fhPointAngle[idecay][2]->Fill(v0->fV0Momentum,v0->fPointingAngle);
+          fhOpenAngle[idecay][2]->Fill(v0->fV0Momentum,v0->fOpenAngle);
+          fhDCA[idecay][2]->Fill(v0->fV0Momentum,v0->fDCA);
+          fhRadius[idecay][2]->Fill(v0->fV0Momentum,v0->fRadius);
+          if(v0->HasTrack(track) == -1)
+            fhTPCdEdx[part][2]->Fill(v0->fTrackN->P(),v0->fTPCdEdx[AliTRDv0Info::kNeg]);
+          else if(v0->HasTrack(track) == 1)
+            fhTPCdEdx[part][2]->Fill(v0->fTrackP->P(),v0->fTPCdEdx[AliTRDv0Info::kPos]);
+        }
       }
     }
   }
-  PostData(1, fContainer);
 }

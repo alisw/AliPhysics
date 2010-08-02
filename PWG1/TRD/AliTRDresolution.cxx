@@ -72,6 +72,7 @@
 #include "AliPID.h"
 #include "AliLog.h"
 #include "AliESDtrack.h"
+#include "AliMathBase.h"
 
 #include "AliTRDresolution.h"
 #include "AliTRDgeometry.h"
@@ -203,8 +204,11 @@ void AliTRDresolution::UserCreateOutputObjects()
   }
   if(!fGeo) fGeo = new AliTRDgeometry();
 
-  if(!HasFunctorList()) InitFunctorList();
-  fContainer = Histos();
+  AliTRDrecoTask::UserCreateOutputObjects();
+  PostData(kClToTrk, fCl);
+  PostData(kClToMC, fMCcl);
+/*  PostData(kTrkltToTrk, fTrklt);
+  PostData(kTrkltToMC, fMCtrklt);*/
   InitExchangeContainers();
 }
 
@@ -233,10 +237,6 @@ void AliTRDresolution::UserExec(Option_t *opt)
 /*  fTrklt->Delete();
   fMCtrklt->Delete();*/
   AliTRDrecoTask::UserExec(opt);
-  PostData(kClToTrk, fCl);
-  PostData(kClToMC, fMCcl);
-/*  PostData(kTrkltToTrk, fTrklt);
-  PostData(kTrkltToMC, fMCtrklt);*/
 }
 
 //________________________________________________________
@@ -1763,121 +1763,208 @@ void AliTRDresolution::MakeSummary()
     return;
   }  
   Float_t xy[4] = {0., 0., 0., 0.};
-  Int_t iSumPlot(0);
-  TCanvas *cOut = new TCanvas(Form("TRDsummary%s_%d", GetName(), iSumPlot), "Cluster & Tracklet Resolution", 1024, 768);
-  TF1 fg("fg", "gaus", -500., 500.);
-
-  if(!HasMCdata()) return;
-  cOut->Divide(3,2);
-  
+  Float_t range[2];
   TH2 *h2 = new TH2I("h2SF", "", 20, -.2, .2, fgkNresYsegm[fSegmentLevel], -0.5, fgkNresYsegm[fSegmentLevel]-0.5);
   h2->GetXaxis()->CenterTitle();
   h2->GetYaxis()->CenterTitle();
-  h2->GetZaxis()->CenterTitle();
-  TH1 *h1 = new TH1F("h1SF0", "", 120, -200., 1000.);
-  TGraphErrors *g(NULL);
-  TAxis *ax(h2->GetXaxis());
-  Double_t x, y;
-  TObjArray *a(NULL);
+  h2->GetZaxis()->CenterTitle();h2->GetZaxis()->SetTitleOffset(1.4);
 
-  cOut->cd(1); 
-  h2->SetTitle(Form("Cluster R-Phi Resolution;tg(#phi);%s;Sigma [#mum]", fgkResYsegmName[fSegmentLevel]));
-  a=(TObjArray*)  ((TObjArray*)fGraphS->At(kMCcluster))->At(0);
-  for(Int_t iseg(0); iseg<fgkNresYsegm[fSegmentLevel]; iseg++){
-    g=(TGraphErrors*)a->At(iseg);
-    for(Int_t in(0); in<g->GetN(); in++){
-      g->GetPoint(in, x, y);
-      h2->SetBinContent(ax->FindBin(x), iseg+1, y);
-      h1->Fill(y);
-    }
-  }
-  Int_t jBinMin(1), jBinMax(h1->GetNbinsX());
-  for(Int_t ibin(h1->GetMaximumBin()); ibin--;){
-    if(h1->GetBinContent(ibin)==0){
-      jBinMin=ibin; break;
-    }
-  }
-  for(Int_t ibin(h1->GetMaximumBin()); ibin++;){
-    if(h1->GetBinContent(ibin)==0){
-      jBinMax=ibin; break;
-    }
-  }
-  h2->GetZaxis()->SetRangeUser(h1->GetBinCenter(jBinMin), h1->GetBinCenter(jBinMax));
-  h2->Draw("col2z");
+  Int_t ih2(0), iSumPlot(0);
+  TCanvas *cOut = new TCanvas(Form("TRDsummary%s_%d", GetName(), iSumPlot++), "Cluster & Tracklet Resolution", 1024, 768);
+  cOut->Divide(3,2, 2.e-3, 2.e-3, kYellow-7);
+  TVirtualPad *p(NULL);
 
-  cOut->cd(2); 
-  h2=(TH2I*)h2->Clone("h2SF"); h2->Reset(); h2->SetTitle(Form("Cluster R-Phi Systematics;tg(#phi);%s;Mean [#mum]", fgkResYsegmName[fSegmentLevel]));
-  h1=(TH1F*)h1->Clone("h1SF1"); h1->Reset();
-  //h2->GetZaxis()->SetRangeUser(-100., 100.);
-  a=(TObjArray*)  ((TObjArray*)fGraphM->At(kMCcluster))->At(0);
-  for(Int_t iseg(0); iseg<fgkNresYsegm[fSegmentLevel]; iseg++){
-    g=(TGraphErrors*)a->At(iseg);
-    for(Int_t in(0); in<g->GetN(); in++){
-      g->GetPoint(in, x, y);
-      h2->SetBinContent(ax->FindBin(x), iseg+1, y);
-      h1->Fill(y);
-    }
-  }
-  h1->Fit(&fg, "QN");
-  Double_t m(fg.GetParameter(1)), s(fg.GetParameter(2));
-  h2->GetZaxis()->SetRangeUser(m-2.5*s, m+2.5*s);
-  h2->Draw("col2z");
+  p=cOut->cd(1); 
+  p->SetRightMargin(0.16);p->SetTopMargin(0.06);
+  h2=(TH2I*)h2->Clone(Form("h2SF_%d", ih2++));
+  h2->SetTitle(Form("Cluster-Track R-Phi Residuals;tg(#phi);%s;Sigma [#mum]", fgkResYsegmName[fSegmentLevel]));
+  MakeSummaryPlot((TObjArray*)  ((TObjArray*)fGraphS->At(kCluster))->At(0), h2);
+  GetRange(h2, 1, range);
+  h2->GetZaxis()->SetRangeUser(range[0], range[1]);
+  h2->Draw("colz");
+  h2->SetContour(7);
 
-  cOut->cd(3); 
+  p=cOut->cd(2); 
+  p->SetRightMargin(0.16);p->SetTopMargin(0.06);
+  h2=(TH2I*)h2->Clone(Form("h2SF_%d", ih2++));
+  h2->SetTitle(Form("Cluster-Track R-Phi Systematics;tg(#phi);%s;Mean [#mum]", fgkResYsegmName[fSegmentLevel]));
+  MakeSummaryPlot((TObjArray*)  ((TObjArray*)fGraphM->At(kCluster))->At(0), h2);
+  GetRange(h2, 0, range);
+  h2->GetZaxis()->SetRangeUser(range[0], range[1]);
+  h2->Draw("colz");
+  h2->SetContour(7);
+
+  p=cOut->cd(3); 
+  p->SetRightMargin(0.06);p->SetTopMargin(0.06);
+  xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
+  GetGraphArray(xy, kCluster, 1, 1);
+
+  p=cOut->cd(4); 
+  p->SetRightMargin(0.16);p->SetTopMargin(0.06);
+  h2=(TH2I*)h2->Clone(Form("h2SF_%d", ih2++));
+  h2->SetTitle(Form("Tracklet-Track R-Phi Residuals;tg(#phi);%s;Sigma [#mum]", fgkResYsegmName[fSegmentLevel]));
+  MakeSummaryPlot((TObjArray*)  ((TObjArray*)fGraphS->At(kTrack))->At(0), h2);
+  GetRange(h2, 1, range);
+  h2->GetZaxis()->SetRangeUser(range[0], range[1]);
+  h2->Draw("colz");
+  h2->SetContour(7);
+
+  p=cOut->cd(5); 
+  p->SetRightMargin(0.16);p->SetTopMargin(0.06);
+  h2=(TH2I*)h2->Clone(Form("h2SF_%d", ih2++));
+  h2->SetTitle(Form("Tracklet-Track R-Phi Systematics;tg(#phi);%s;Mean [#mum]", fgkResYsegmName[fSegmentLevel]));
+  MakeSummaryPlot((TObjArray*)  ((TObjArray*)fGraphM->At(kTrack))->At(0), h2);
+  GetRange(h2, 0, range);
+  h2->GetZaxis()->SetRangeUser(range[0], range[1]);
+  h2->Draw("colz");
+  h2->SetContour(7);
+
+  p=cOut->cd(6); 
+  p->SetRightMargin(0.06);p->SetTopMargin(0.06);
+  xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
+  GetGraphArray(xy, kTrack, 1, 1);
+
+  cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+
+  if(!HasMCdata()){
+    delete cOut;
+    return;
+  }
+  cOut->Clear(); cOut->SetName(Form("TRDsummary%s_%d", GetName(), iSumPlot++));
+  cOut->Divide(3, 2, 2.e-3, 2.e-3, kBlue-10);
+
+  p=cOut->cd(1);  
+  p->SetRightMargin(0.16);p->SetTopMargin(0.06);
+  h2=(TH2I*)h2->Clone(Form("h2SF_%d", ih2++));
+  h2->SetTitle(Form("Cluster-MC R-Phi Resolution;tg(#phi);%s;Sigma [#mum]", fgkResYsegmName[fSegmentLevel]));
+  MakeSummaryPlot((TObjArray*)  ((TObjArray*)fGraphS->At(kMCcluster))->At(0), h2);
+  GetRange(h2, 1, range);
+  h2->GetZaxis()->SetRangeUser(range[0], range[1]);
+  h2->Draw("colz");
+  h2->SetContour(7);
+
+  p=cOut->cd(2);  
+  p->SetRightMargin(0.16);p->SetTopMargin(0.06);
+  h2=(TH2I*)h2->Clone(Form("h2SF_%d", ih2++));
+  h2->SetContour(7);
+  h2->SetTitle(Form("Cluster-MC R-Phi Systematics;tg(#phi);%s;Mean [#mum]", fgkResYsegmName[fSegmentLevel]));
+  MakeSummaryPlot((TObjArray*)  ((TObjArray*)fGraphM->At(kMCcluster))->At(0), h2);
+  GetRange(h2, 0, range);
+  h2->GetZaxis()->SetRangeUser(range[0], range[1]);
+  h2->Draw("colz");
+  h2->SetContour(7);
+
+  p=cOut->cd(3); 
+  p->SetRightMargin(0.06);p->SetTopMargin(0.06);
   xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
   GetGraphArray(xy, kMCcluster, 1, 1);
 
-  cOut->cd(4); 
-  h2=(TH2I*)h2->Clone("h2SF"); h2->Reset();
-  h2->SetTitle(Form("Tracklet R-Phi Resolution;tg(#phi);%s;Sigma [#mum]", fgkResYsegmName[fSegmentLevel]));
-  //h2->GetZaxis()->SetRangeUser(100., 500.);
-  h1=(TH1F*)h1->Clone("h1SF2"); h1->Reset();
-  a=(TObjArray*)  ((TObjArray*)fGraphS->At(kMCtracklet))->At(0);
-  for(Int_t iseg(0); iseg<fgkNresYsegm[fSegmentLevel]; iseg++){
-    g=(TGraphErrors*)a->At(iseg);
-    for(Int_t in(0); in<g->GetN(); in++){
-      g->GetPoint(in, x, y);
-      h2->SetBinContent(ax->FindBin(x), iseg+1, y);
-      h1->Fill(y);
-    }
-  }
-  jBinMin=1; jBinMax=h1->GetNbinsX();
-  for(Int_t ibin(h1->GetMaximumBin()); ibin--;){
-    if(h1->GetBinContent(ibin)==0){
-      jBinMin=ibin; break;
-    }
-  }
-  for(Int_t ibin(h1->GetMaximumBin()); ibin++;){
-    if(h1->GetBinContent(ibin)==0){
-      jBinMax=ibin; break;
-    }
-  }
-  h2->GetZaxis()->SetRangeUser(h1->GetBinCenter(jBinMin), h1->GetBinCenter(jBinMax));
-  h2->Draw("col2z");
+  p=cOut->cd(4); 
+  p->SetRightMargin(0.16);p->SetTopMargin(0.06);
+  h2=(TH2I*)h2->Clone(Form("h2SF_%d", ih2++));
+  h2->SetContour(7);
+  h2->SetTitle(Form("Tracklet-MC R-Phi Resolution;tg(#phi);%s;Sigma [#mum]", fgkResYsegmName[fSegmentLevel]));
+  MakeSummaryPlot((TObjArray*)  ((TObjArray*)fGraphS->At(kMCtracklet))->At(0), h2);
+  GetRange(h2, 1, range);
+  h2->GetZaxis()->SetRangeUser(range[0], range[1]);
+  h2->Draw("colz");
+  h2->SetContour(7);
 
-  cOut->cd(5); 
-  h2=(TH2I*)h2->Clone("h2SF"); h2->Reset(); h2->SetTitle(Form("Tracklet R-Phi Systematics;tg(#phi);%s;Mean [#mum]", fgkResYsegmName[fSegmentLevel]));
-  h1=(TH1F*)h1->Clone("h1SF3"); h1->Reset();
-  a=(TObjArray*)  ((TObjArray*)fGraphM->At(kMCtracklet))->At(0);
-  for(Int_t iseg(0); iseg<fgkNresYsegm[fSegmentLevel]; iseg++){
-    g=(TGraphErrors*)a->At(iseg);
-    for(Int_t in(0); in<g->GetN(); in++){
-      g->GetPoint(in, x, y);
-      h2->SetBinContent(ax->FindBin(x), iseg+1, y);
-      h1->Fill(y);
-    }
-  }
-  h1->Fit(&fg, "QN");
-  m=fg.GetParameter(1); s=fg.GetParameter(2);
-  h2->GetZaxis()->SetRangeUser(m-2.5*s, m+2.5*s);
-  h2->Draw("col2z");
+  p=cOut->cd(5); 
+  p->SetRightMargin(0.16);p->SetTopMargin(0.06);
+  h2=(TH2I*)h2->Clone(Form("h2SF_%d", ih2++));
+  h2->SetContour(7);
+  h2->SetTitle(Form("Tracklet-MC R-Phi Systematics;tg(#phi);%s;Mean [#mum]", fgkResYsegmName[fSegmentLevel]));
+  MakeSummaryPlot((TObjArray*)  ((TObjArray*)fGraphM->At(kMCtracklet))->At(0), h2);
+  GetRange(h2, 0, range);
+  h2->GetZaxis()->SetRangeUser(range[0], range[1]);
+  h2->Draw("colz");
+  h2->SetContour(7);
 
-  cOut->cd(6); 
+  p=cOut->cd(6); 
+  p->SetRightMargin(0.06);p->SetTopMargin(0.06);
   xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fSegmentLevel]-.5; xy[3]=2.5;
   GetGraphArray(xy, kMCtracklet, 1, 1);
 
   cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+  delete cOut;
 }
+
+//________________________________________________________
+void AliTRDresolution::GetRange(TH2 *h2, Char_t mod, Float_t *range)
+{
+// Returns the range of the bulk of data in histogram h2. Removes outliers. 
+// The "range" vector should be initialized with 2 elements
+// Option "mod" can be any of
+//   - 0 : gaussian like distribution 
+//   - 1 : tailed distribution 
+
+  Int_t nx(h2->GetNbinsX())
+      , ny(h2->GetNbinsY())
+      , n(nx*ny);
+  Double_t *data=new Double_t[n];
+  for(Int_t ix(1), in(0); ix<=nx; ix++){
+    for(Int_t iy(1); iy<=ny; iy++)
+      data[in++] = h2->GetBinContent(ix, iy);
+  }
+  Double_t mean, sigm;
+  AliMathBase::EvaluateUni(n, data, mean, sigm, Int_t(n*.8));
+
+  range[0]=mean-3.*sigm; range[1]=mean+3.*sigm;
+  if(mod==1) range[0]=TMath::Max(Float_t(1.e-3), range[0]); 
+  AliDebug(2, Form("h[%s] range0[%f %f]", h2->GetName(), range[0], range[1]));
+  TH1S h1("h1SF0", "", 100, range[0], range[1]);
+  h1.FillN(n,data,0);
+  delete [] data;
+ 
+  switch(mod){
+  case 0:// gaussian distribution  
+  {
+    TF1 fg("fg", "gaus", mean-3.*sigm, mean+3.*sigm);
+    h1.Fit(&fg, "QN");
+    mean=fg.GetParameter(1); sigm=fg.GetParameter(2);
+    range[0] = mean-2.5*sigm;range[1] = mean+2.5*sigm;
+    AliDebug(2, Form("     rangeG[%f %f]", range[0], range[1]));
+    break;
+  }
+  case 1:// tailed distribution  
+  {  
+    Int_t bmax(h1.GetMaximumBin());
+    Int_t jBinMin(1), jBinMax(100);
+    for(Int_t ibin(bmax); ibin--;){
+      if(h1.GetBinContent(ibin)==0){
+        jBinMin=ibin; break;
+      }
+    }
+    for(Int_t ibin(bmax); ibin++;){
+      if(h1.GetBinContent(ibin)==0){
+        jBinMax=ibin; break;
+      }
+    }
+    range[0]=h1.GetBinCenter(jBinMin); range[1]=h1.GetBinCenter(jBinMax);
+    AliDebug(2, Form("     rangeT[%f %f]", range[0], range[1]));
+    break;
+  }
+  }
+
+  return;
+}
+
+//________________________________________________________
+void AliTRDresolution::MakeSummaryPlot(TObjArray *a, TH2 *h2)
+{
+  h2->Reset();  
+  Double_t x,y;
+  TGraphErrors *g(NULL); TAxis *ax(h2->GetXaxis());
+  for(Int_t iseg(0); iseg<fgkNresYsegm[fSegmentLevel]; iseg++){
+    g=(TGraphErrors*)a->At(iseg);
+    for(Int_t in(0); in<g->GetN(); in++){
+      g->GetPoint(in, x, y);
+      h2->SetBinContent(ax->FindBin(x), iseg+1, y);
+    }
+  }
+}
+
 
 //________________________________________________________
 Char_t const *fgParticle[11]={
@@ -2381,7 +2468,7 @@ Bool_t AliTRDresolution::Process(TH2 * const h2, TF1 *f, Float_t k, TGraphErrors
     Int_t abin(ibin*kINTEGRAL+1),bbin(abin+kINTEGRAL-1),mbin(abin+Int_t(kINTEGRAL/2));
     Double_t x = h2->GetXaxis()->GetBinCenter(mbin);
     TH1D *h = h2->ProjectionY(pn, abin, bbin);
-    if((n=(Int_t)h->GetEntries())<100){ 
+    if((n=(Int_t)h->GetEntries())<150){ 
       AliDebug(4, Form("  x[%f] range[%d %d] stat[%d] low statistics !", x, abin, bbin, n));
       continue;
     }

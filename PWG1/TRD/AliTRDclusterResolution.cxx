@@ -267,6 +267,7 @@ AliTRDclusterResolution::~AliTRDclusterResolution()
 void AliTRDclusterResolution::UserCreateOutputObjects()
 {
   fContainer = Histos();
+  PostData(1, fContainer);
 }
 
 //_______________________________________________________
@@ -546,7 +547,6 @@ void AliTRDclusterResolution::UserExec(Option_t *)
     // fill histo for systematic (mean)
     ((TH3S*)arr2->At(it-1))->Fill(10.*cli->GetAnisochronity(), dydx-cli->GetTilt()*dzdx, dy);  
   }
-  PostData(1, fContainer);
 }
 
 

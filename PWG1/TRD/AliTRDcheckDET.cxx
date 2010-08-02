@@ -126,8 +126,7 @@ void AliTRDcheckDET::UserCreateOutputObjects(){
   //
   // Create Output Objects
   //
-  if(!HasFunctorList()) InitFunctorList();
-  fContainer = Histos();
+  AliTRDrecoTask::UserCreateOutputObjects();
   if(!fTriggerNames) fTriggerNames = new TMap();
 }
 
@@ -166,7 +165,6 @@ void AliTRDcheckDET::UserExec(Option_t *opt){
     histo = dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTrigger));
     histo->GetXaxis()->SetBinLabel(histo->FindBin(triggermask), triggername);
   }
-  PostData(1, fContainer);
 }
 
 

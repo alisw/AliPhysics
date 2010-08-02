@@ -109,6 +109,14 @@ Int_t AliTRDrecoTask::GetNRefFigures() const
 } 
 
 //_______________________________________________________
+void AliTRDrecoTask::UserCreateOutputObjects()
+{
+  if(!HasFunctorList()) InitFunctorList();
+  fContainer = Histos();
+  PostData(1, fContainer);
+}
+
+//_______________________________________________________
 void AliTRDrecoTask::UserExec(Option_t *)
 {
 // Loop over Plot functors published by particular tasks
@@ -136,7 +144,6 @@ void AliTRDrecoTask::UserExec(Option_t *)
       plot->Execute(this);
     }
   }
-  PostData(1, fContainer);
 }
 
 //_______________________________________________________

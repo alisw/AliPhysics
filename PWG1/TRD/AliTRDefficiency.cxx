@@ -95,6 +95,7 @@ void  AliTRDefficiency::UserCreateOutputObjects()
   }
   fContainer->Add(h = new TProfile("h", "", nbins, xbins));
   h->SetMarkerStyle(7);
+  PostData(1, fContainer);
 } 
 
 //____________________________________________________________________
@@ -266,7 +267,6 @@ void AliTRDefficiency::UserExec(Option_t *)
 	for(Int_t itk = 0; itk < nTRD - 1; itk++)
 		if(labelsacc[indices[itk]] ==labelsacc[indices[itk + 1]]) printf("Double counted MC track: %d\n", labelsacc[indices[itk]]);
 	}
-  PostData(1, fContainer);
 }
 
 

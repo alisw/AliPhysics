@@ -43,6 +43,7 @@
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDtrackV1.h"
+#include "AliTRDpidUtil.h"
 #include "Cal/AliTRDCalPID.h"
 #include "info/AliTRDtrackInfo.h"
 #include "AliTRDinfoGen.h"
@@ -76,6 +77,7 @@ void AliTRDefficiencyMC::UserCreateOutputObjects(){
   //
 
   fContainer = Histos();
+  PostData(1, fContainer);
 }
 
 //_____________________________________________________________________________
@@ -197,8 +199,6 @@ void AliTRDefficiencyMC::UserExec(Option_t *){
     (nall ? 1.E2*Float_t(naccept)/Float_t(nall) : 0.), 
     ncontam, 
     (nall ? 1.E2*Float_t(ncontam)/Float_t(nall) : 0.)));
-
-  PostData(1, fContainer);
 }
 
 
