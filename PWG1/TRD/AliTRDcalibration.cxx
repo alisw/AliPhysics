@@ -344,7 +344,8 @@ void AliTRDcalibration::UserCreateOutputObjects()
     fContainer->Add(fCHSum);
 
   }
-
+  // Post output data
+  PostData(1, fContainer);
 }
 
 //________________________________________________________________________
@@ -465,15 +466,8 @@ void AliTRDcalibration::UserExec(Option_t *)
     fNbTRDTrackOffline->Fill(nbTrdTracksOffline);
     
   }
-
-  //printf("Nbof tracks %d\n",nbTrdTracks);
-  
-  // Post output data
-  PostData(1, fContainer);
-
-  //printf("post container\n");
-  
-}      
+}  
+    
 //________________________________________________________________________
 void AliTRDcalibration::Terminate(Option_t *) 
 {

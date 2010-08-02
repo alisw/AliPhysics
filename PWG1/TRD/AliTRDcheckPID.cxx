@@ -135,11 +135,10 @@ void AliTRDcheckPID::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  if(!HasFunctorList()) InitFunctorList();
-  fContainer = Histos();
-
+  AliTRDrecoTask::UserCreateOutputObjects();
   fPID = new TObjArray();
   fPID->SetOwner(kTRUE);
+  PostData(2, fPID);
 }
 
 //________________________________________________________
@@ -153,8 +152,6 @@ void AliTRDcheckPID::UserExec(Option_t *opt)
   fPID->Delete();
 
   AliTRDrecoTask::UserExec(opt);
-
-  PostData(2, fPID);
 }
 
 

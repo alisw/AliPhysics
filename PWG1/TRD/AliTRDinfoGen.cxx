@@ -229,6 +229,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(11, "Kink");
   ax->SetBinLabel(12, "KinkMC");
   fContainer->AddAt(h, 0);
+  PostData(kMonitor, fContainer);
 }
 
 //____________________________________________________________________
@@ -629,7 +630,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
   PostData(kTracksKink, fTracksKink);
   PostData(kEventInfo, fEventInfo);
   PostData(kV0List, fV0List);
-  PostData(kMonitor, fContainer);
 }
 
 //____________________________________________________________________

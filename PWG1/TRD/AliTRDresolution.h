@@ -104,6 +104,8 @@ private:
   TObjArray*  BuildMonitorContainerTracklet(const char* name, Bool_t expand=kFALSE);
   TObjArray*  BuildMonitorContainerTrack(const char* name);
   void    GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
+  void    GetRange(TH2 *h2, Char_t mod, Float_t *range);
+  void    MakeSummaryPlot(TObjArray *a, TH2 *h2);
   Bool_t  Process(TH2* const h2, TF1 *f, Float_t k, TGraphErrors **g);
   Bool_t  Process2D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=NULL,  Float_t scale=1., Int_t gidx=-1);
   Bool_t  Process2Darray(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=NULL,  Float_t scale=1.);

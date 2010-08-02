@@ -92,10 +92,12 @@ void AliTRDpidRefMakerLQ::UserCreateOutputObjects()
   // Called once
 
   fContainer = Histos();
+  PostData(1, fContainer);
 
   //OpenFile(2, "RECREATE");
   fPDF = new TObjArray(AliTRDCalPIDLQ::GetNrefs());
   fPDF->SetOwner();fPDF->SetName("PDF_LQ");
+  PostData(3, fPDF);
 }
 
 
@@ -262,9 +264,6 @@ void AliTRDpidRefMakerLQ::UserExec(Option_t */*opt*/)
       ((TH1*)((TObjArray*)fContainer->At(ip))->At(s))->Fill(dedx[0]+dedx[1]);
     }
   }
-
-  PostData(1, fContainer);
-  PostData(3, fPDF);
 }
 
 

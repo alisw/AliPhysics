@@ -38,7 +38,7 @@ public:
   virtual ~AliTRDrecoTask();
   
   
-  virtual void   UserCreateOutputObjects() = 0;
+  virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *opt);
   virtual void   SetDebugLevel(Int_t level);
   

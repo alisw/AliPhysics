@@ -8,6 +8,7 @@
 #include "AliLog.h"
 #include "AliESDtrack.h"
 #include "AliTrackReference.h"
+#include "AliAnalysisManager.h"
 
 #include "AliTRDReconstructor.h"
 #include "AliTRDtrackV1.h"
@@ -122,10 +123,12 @@ void AliTRDpidRefMaker::UserCreateOutputObjects()
   h2->GetYaxis()->SetTitle("P bins");
   h2->GetYaxis()->SetNdivisions(511);
   fContainer->AddAt(h2, 0);
+  PostData(1, fContainer);
 
   OpenFile(2);
   fData = new TTree("RefPID", "Reference data for PID");
   fData->Branch("data", &fPIDdataArray);
+  PostData(2, fData);
 }
 
 //________________________________________________________________________
@@ -133,10 +136,19 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-
-  if(!(fTracks = dynamic_cast<TObjArray*>(GetInputData(1)))) return;
-  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))) return;
-  if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))) return;
+  Int_t ev((Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry());
+  if(!(fTracks = dynamic_cast<TObjArray*>(GetInputData(1)))){
+    AliDebug(3, Form("Missing tracks container in ev %d", ev)); 
+    return;
+  }
+  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))){ 
+    AliDebug(3, Form("Missing v0 container in ev %d", ev)); 
+    return;
+  }
+  if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))){ 
+    AliDebug(3, Form("Missing pid info container in ev %d", ev)); 
+    return;
+  }
 
   AliDebug(1, Form("Entries: Tracks[%d] V0[%d] PID[%d]", fTracks->GetEntriesFast(), fV0s->GetEntriesFast(), fInfo->GetEntriesFast()));
   AliTRDtrackInfo     *track = NULL;
@@ -221,9 +233,6 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
 
     Fill();
   }
-
-  PostData(1, fContainer);
-  PostData(2, fData);
 }
 
 

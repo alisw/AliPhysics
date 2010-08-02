@@ -138,6 +138,7 @@ void AliTRDcheckESD::UserCreateOutputObjects()
   // Create Output Containers (TObjectArray containing 1D histograms)
   //
   Histos();
+  PostData(1, fHistos);
 }
 
 //____________________________________________________________________
@@ -1004,8 +1005,6 @@ void AliTRDcheckESD::UserExec(Option_t *){
   h->Fill(nTracksAcc);
   h = (TH1I*)fHistos->At(kNTracksTPC);
   h->Fill(nTracksTPC);
-  
-  PostData(1, fHistos);
 }
 
 //____________________________________________________________________

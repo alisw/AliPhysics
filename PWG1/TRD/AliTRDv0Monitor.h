@@ -40,10 +40,10 @@ public:
   AliTRDv0Monitor(const char *name, const char *title);
   virtual ~AliTRDv0Monitor(){};
 
-  Bool_t  GetRefFigure(Int_t ifig); 
-  void    UserCreateOutputObjects();
-  void    UserExec(Option_t *option);
-  void    MakeSummary();
+  Bool_t      GetRefFigure(Int_t ifig); 
+  TObjArray*  Histos();
+  void        UserExec(Option_t *option);
+  void        MakeSummary();
 
 private:
   AliTRDv0Monitor(const AliTRDv0Monitor&);              // not implemented
