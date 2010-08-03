@@ -188,15 +188,19 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   //pairPMntp ->GetCutManager()->SetMotherCuts        (cutSetMother);
 
   // function axes
-  AliRsnValue *axisIM   = new AliRsnValue("IM", AliRsnValue::kPairInvMass,   50,  0.9,  1.4);
-  AliRsnValue *axisPt   = new AliRsnValue("PT", AliRsnValue::kPairPt,        50,  0.0, 20.0);
+  AliRsnValue *axisIM        = new AliRsnValue("IM", AliRsnValue::kPairInvMass,        50,  0.9,  1.4);
+  AliRsnValue *axisPt        = new AliRsnValue("PT", AliRsnValue::kPairPt,             50,  0.0, 20.0);
+  AliRsnValue *axisThetaStar = new AliRsnValue("TS", AliRsnValue::kPairCosThetaStar1, 200, -1.0, 1.0);
   
   pairPMntp->AddValue(axisIM);
   pairPMntp->AddValue(axisPt);
+  pairPMntp->AddValue(axisThetaStar);
   pairPPntp->AddValue(axisIM);
   pairPPntp->AddValue(axisPt);
+  pairPPntp->AddValue(axisThetaStar);
   pairMMntp->AddValue(axisIM);
   pairMMntp->AddValue(axisPt);
+  pairMMntp->AddValue(axisThetaStar);
 
   // functions
   AliRsnFunction *fcnPt    = new AliRsnFunction;

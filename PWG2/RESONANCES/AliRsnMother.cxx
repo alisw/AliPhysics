@@ -153,6 +153,28 @@ void AliRsnMother::ResetPair()
 }
 
 //_____________________________________________________________________________
+Double_t AliRsnMother::ThetaStar(Bool_t first, Bool_t useMC)
+{
+//
+// Returns the theta* as the angle of the first daughter
+// w.r. to the mother momentum, in its rest frame
+//
+
+  TLorentzVector &mother   = (useMC ? fSumMC : fSum);
+  TLorentzVector &daughter = (first ? fDaughter[0]->P() : fDaughter[1]->P());
+
+  Double_t beta  = mother.Beta();
+  Double_t gamma = 1.0 / TMath::Sqrt(1.0 - beta*beta);
+  Double_t angle = daughter.Angle(mother.Vect());
+  Double_t pproj = daughter.Mag() * TMath::Cos(angle);
+  
+  Double_t plstar = gamma * (pproj - beta*daughter.E());
+  Double_t ptstar = daughter.Mag() * TMath::Sin(angle);
+  
+  return TMath::ATan(ptstar / plstar);
+}
+
+//_____________________________________________________________________________
 void AliRsnMother::PrintInfo(const Option_t * /*option*/) const
 {
 //
