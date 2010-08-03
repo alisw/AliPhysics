@@ -208,6 +208,7 @@ fPlaneEff(0) {
   // store positions of centre of SPD modules (in z)
   //  The convetion is that fSPDdetzcentre is ordered from -z to +z
   Double_t tr[3];
+  AliITSgeomTGeo::GetTranslation(1,1,1,tr);
   if (tr[2]<0) { // old geom (up to v5asymmPPR)
     AliITSgeomTGeo::GetTranslation(1,1,1,tr);
     fSPDdetzcentre[0] = tr[2];
