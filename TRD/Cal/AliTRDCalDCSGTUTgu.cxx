@@ -77,6 +77,27 @@ AliTRDCalDCSGTUTgu::AliTRDCalDCSGTUTgu(const AliTRDCalDCSGTUTgu&)
   //
   // AliTRDCalDCSGTU constructor
   //
+
+}
+
+//_____________________________________________________________________________
+AliTRDCalDCSGTUTgu::~AliTRDCalDCSGTUTgu()
+{
+  //
+  // AliTRDCalDCSGTU destructor
+  //
+
+  if (fBoardInfo) {
+    delete fBoardInfo;
+    fBoardInfo = 0x0;
+  }
+
+  if (fCtpOpcArr) {
+    fCtpOpcArr->Delete();
+    delete fCtpOpcArr;
+    fCtpOpcArr = 0x0;
+  }
+
 }
 
 //_____________________________________________________________________________

@@ -74,6 +74,26 @@ AliTRDCalDCSGTU::AliTRDCalDCSGTU(const AliTRDCalDCSGTU&)
 }
 
 //_____________________________________________________________________________
+AliTRDCalDCSGTU::~AliTRDCalDCSGTU()
+{
+  //
+  // AliTRDCalDCSGTU destructor
+  //
+
+  if (fSegmentsArr) {
+    fSegmentsArr->Delete();
+    delete fSegmentsArr;
+    fSegmentsArr = 0x0;
+  }
+
+  if (fTgu) {
+    delete fTgu;
+    fTgu = 0x0;
+  }
+
+}
+
+//_____________________________________________________________________________
 AliTRDCalDCSGTU& AliTRDCalDCSGTU::operator=(const AliTRDCalDCSGTU& sh)
 {
   //

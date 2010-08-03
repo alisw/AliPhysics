@@ -25,7 +25,7 @@ class AliTRDCalDCSGTUTgu : public TNamed {
   AliTRDCalDCSGTUTgu(const char *name, const char *title);
   AliTRDCalDCSGTUTgu(const AliTRDCalDCSGTUTgu&);
   AliTRDCalDCSGTUTgu &operator=(const AliTRDCalDCSGTUTgu &sh);
-  virtual ~AliTRDCalDCSGTUTgu() { };
+  virtual ~AliTRDCalDCSGTUTgu();
 
   Int_t   GetFromRunNumber() const                    { return fFromRunNum;                   }
   Int_t   GetFromSORFlag() const                      { return fFromSORFlag;                  }
@@ -55,7 +55,7 @@ class AliTRDCalDCSGTUTgu : public TNamed {
   TString fBusyMask; // value of the attribute named value within the busymask tag
   TString fContribMask; // value of the attribute named value within the contribmask tag
 
-  AliTRDCalDCSGTUBoardInfo *fBoardInfo; // BoarrdInfo Object holding the information about the tgu
+  AliTRDCalDCSGTUBoardInfo *fBoardInfo; // BoardInfo Object holding the information about the tgu
 
   TObjArray *fCtpOpcArr; // an array of AliTRDCalDCSGTUCtpOpc objects holding their configuration data
   

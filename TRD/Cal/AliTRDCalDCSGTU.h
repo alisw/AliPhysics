@@ -25,7 +25,7 @@ class AliTRDCalDCSGTU : public TNamed {
   AliTRDCalDCSGTU(const char *name, const char *title);
   AliTRDCalDCSGTU(const AliTRDCalDCSGTU &);
   AliTRDCalDCSGTU& operator=(const AliTRDCalDCSGTU& sh);
-  virtual ~AliTRDCalDCSGTU() { };
+  virtual ~AliTRDCalDCSGTU();
 
   Int_t   GetRunNumber() const                        { return fRunNumber;                    }
   Int_t   GetSORFlag() const                          { return fSORFlag;                      }
