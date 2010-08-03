@@ -86,7 +86,7 @@ Int_t       iPWG4JCORRAN       = 0;      // JCORRAN module
 Int_t       iPWG4UE            = 0;      // Underlying Event analysis
 Int_t       iPWG4CorrectionsUE            = 0;      // Underlying Event analysis
 Int_t       iPWG4TmpSourceSara = 0;      // Underlying Event analysis not in svn
-Int_t       iPWG4TmpSourceFrag = 0;      // Bastian's Fragmentation function not in svn
+Int_t       iPWG4Fragmentation = 0;      // Official Fragmentation
 Int_t       iPWG4JetChem       = 0;      // Jet chemistry 
 Int_t       iPWG4PtQAMC        = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks 
@@ -221,7 +221,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(printMask,"AliEn plugin", (UInt_t)kPluginUse);
    printf(printMask,"PWG1 QA sym", iPWG1QASym);
    printf(printMask,"PWG4 Source Sara",iPWG4TmpSourceSara);
-   printf(printMask,"PWG4 Source BB",iPWG4TmpSourceFrag);
+   printf(printMask,"PWG4 Fragmentation",iPWG4Fragmentation);
    printf(printMask,"PWG4 Jet Chem",iPWG4JetChem);
    printf(printMask,"PWG4 Jet tasks",iPWG4JetTasks);
    printf(printMask,"PWG4 Jet Services",iPWG4JetServices);     
@@ -421,11 +421,10 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskEta) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskEta cannot run for this train conditions - EXCLUDED");
    }
 
-   if(iPWG4TmpSourceFrag){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFragFunc.C");
-     UInt_t selection = 1<<2;
-     AliAnalysisTaskFragFunc *taskFrag = AddTaskFragFunc(kHighPtFilterMask, kUseAODMC,iPhysicsSelection, selection);
-     if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragFunc cannot run for this train conditions - EXCLUDED");
+   if(iPWG4Fragmentation){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFragmentationFunction.C");
+     AliAnalysisTaskFragmentationFunction *taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask);
+     if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragmentationFunction cannot run for this train conditions - EXCLUDED");
    }
 
 
@@ -613,7 +612,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
      AliAnalysisTaskParticleCorrelation *taskcaloQA =  AddTaskCalorimeterQA("ESD",kFALSE,kIsMC,kCaloQAOutputFileName.Data());
      if(!taskcaloQA)::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation QA cannot run - EXCLUDED");
-     if(kCaloQAOutputFileName.Length()>0)mgr->RegisterExtraFile(kCaloQAOutputFileName.Data());
+     //  if(kCaloQAOutputFileName.Length()>0)mgr->RegisterExtraFile(kCaloQAOutputFileName.Data());
    } 
 
    if(iPWG4JetCorr){
@@ -901,7 +900,7 @@ void CheckModuleFlags(const char *mode) {
 	iPWG4JetSpectrum = iPWG4UE =  iPWG4CorrectionsUE = iPWG4ThreeJets = iDIJETAN = 0;
       }
    }
-   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem;
+   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem||iPWG4Fragmentation;
    iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
    iPWG4GammaConvLib = iPWG4GammaConv||iPWG4CaloConv;
 
@@ -1109,11 +1108,6 @@ Bool_t LoadAnalysisLibraries(const char *mode)
      if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
      if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskEta.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
-   if(iPWG4TmpSourceFrag){
-     if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
-     if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskFragFunc.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
-   }
-
 
    /*
    if(iPWG4JetChem){
