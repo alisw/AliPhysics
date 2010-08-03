@@ -26,11 +26,11 @@
 //
 void runLocal
 (
-  Int_t       nReadFiles  = 1,
-  Int_t       nSkipFiles  = 1,
+  Int_t       nReadFiles  = 0,
+  Int_t       nSkipFiles  = 0,
   const char *addTaskName = "AddAnalysisTaskRsnTest.C",
   //const char *inputSource = "000117065.xml",
-  const char *inputSource = "local.txt",
+  const char *inputSource = "/home/pulvir/analysis/resonances/LHC2010-7TeV-phi/test/data.txt",
   const char *dataLabel   = "7TeV_pass2_data_ESD",
   const char *outName     = "rsnTest"
 )
@@ -91,8 +91,8 @@ void runLocal
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isSim);
   
   // add event selection for data
-  gROOT->LoadMacro("AddTaskAnalysisPhi7TeV.C");
-  AddTaskAnalysisPhi7TeV(dataLabel);
+  //gROOT->LoadMacro("AddTaskAnalysisPhi7TeV.C");
+  //AddTaskAnalysisPhi7TeV(dataLabel);
   
   // add task macro
   gROOT->ProcessLine(Form(".x %s(\"%s\")", addTaskName, dataLabel));

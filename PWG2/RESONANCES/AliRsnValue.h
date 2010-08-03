@@ -32,6 +32,10 @@ class AliRsnValue : public TNamed
       kPairEta,
       kPairMt,
       kPairY,
+      kPairCosThetaStar1,
+      kPairCosThetaStar2,
+      kPairCosThetaStarMC1,
+      kPairCosThetaStarMC2,
       kEventMult,
       kValueTypes
     };

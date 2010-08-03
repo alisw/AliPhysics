@@ -207,6 +207,18 @@ Bool_t AliRsnValue::Eval(AliRsnMother *mother, const AliRsnPairDef *pairDef, Ali
       mother->SetDefaultMass(mass);
       fValue = mother->Ref().Rapidity();
       break;
+    case kPairCosThetaStar1:
+      fValue = TMath::Cos(mother->ThetaStar(kTRUE, kFALSE));
+      break;
+    case kPairCosThetaStar2:
+      fValue = TMath::Cos(mother->ThetaStar(kFALSE, kFALSE));
+      break;
+    case kPairCosThetaStarMC1:
+      fValue = TMath::Cos(mother->ThetaStar(kTRUE, kTRUE));
+      break;
+    case kPairCosThetaStarMC2:
+      fValue = TMath::Cos(mother->ThetaStar(kFALSE, kTRUE));
+      break;
     case kEventMult:
       if (!event) fValue = 0.0;
       fValue = (Double_t)event->GetMultiplicity();
