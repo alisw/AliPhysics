@@ -447,7 +447,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
   // Dijet histograms
 
-  fh2DijetDeltaPhiPt       = new TH2F("fh2DeltaPhiPt","Difference in the azimuthal angle;#Delta#phi;p_{T,1};Entries",180,0.,TMath::Pi(),nBinPt,binLimitsPt);
+  fh2DijetDeltaPhiPt       = new TH2F("fh2DijetDeltaPhiPt","Difference in the azimuthal angle;#Delta#phi;p_{T,1};Entries",180,0.,TMath::Pi(),nBinPt,binLimitsPt);
   fh2DijetAsymPt            = new TH2F("fh2DijetAsym","Pt asymmetry;#Deltap_{T}/(p_{T,1}+p_{T,2});p_{T,1};Entries",50,0.,1.,nBinPt,binLimitsPt);
   fh2DijetAsymPtCut         = new TH2F("fh2DijetAsymCut","Pt asymmetry after delta phi cut;#Deltap_{T}/(p_{T,1}+p_{T,2});p_{T,1};Entries",50,0.,1.,nBinPt,binLimitsPt);
   fh2DijetDeltaPhiDeltaEta = new TH2F("fh2DijetDeltaPhiDeltaEta","Difference in the azimuthal angle;#Delta#phi;Entries",180,0.,TMath::Pi(),20,-2.,2.);
