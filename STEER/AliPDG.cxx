@@ -48,12 +48,14 @@ void AliPDG::AddParticlesToPdgDataBase()
   // 1000010020
   const Int_t kion=1000000000;
 
+/*
   const Double_t kAu2Gev=0.9314943228;
+*/
+
   const Double_t khSlash = 1.0545726663e-27;
   const Double_t kErg2Gev = 1/1.6021773349e-3;
   const Double_t khShGev = khSlash*kErg2Gev;
   const Double_t kYear2Sec = 3600*24*365.25;
-
 
 //
 // Bottom mesons
@@ -82,30 +84,30 @@ void AliPDG::AddParticlesToPdgDataBase()
   pdgDB->AddParticle("PSID    ", " ", 3.7699, kFALSE, 0.0, 0, "meson",   30443);
   
   pdgDB->AddParticle("A_00    ", " ", 0.9960, kFALSE, 0.0, 0, "meson",  9000111); 
-  pdgDB->AddParticle("A_0+    ", " ", 0.9960, kFALSE, 0.0,+1, "meson",  9000211);  
-  pdgDB->AddParticle("A_0-    ", " ", 0.9960, kFALSE, 0.0,-1, "meson", -9000211);  
+  pdgDB->AddParticle("A_0+    ", " ", 0.9960, kFALSE, 0.0,+3, "meson",  9000211);  
+  pdgDB->AddParticle("A_0-    ", " ", 0.9960, kFALSE, 0.0,-3, "meson", -9000211);  
 
   pdgDB->AddParticle("F0P0    ", " ", 0.9960, kFALSE, 0.0, 0, "meson",  9010221); 
   
-  pdgDB->AddParticle("KDL_2+  ", " ", 1.773,  kFALSE, 0.0,+1, "meson",   10325); 
-  pdgDB->AddParticle("KDL_2-  ", " ", 1.773,  kFALSE, 0.0,-1, "meson",  -10325); 
+  pdgDB->AddParticle("KDL_2+  ", " ", 1.773,  kFALSE, 0.0,+3, "meson",   10325); 
+  pdgDB->AddParticle("KDL_2-  ", " ", 1.773,  kFALSE, 0.0,-3, "meson",  -10325); 
 
   pdgDB->AddParticle("KDL_20  ", " ", 1.773,  kFALSE, 0.0, 0, "meson",   10315); 
   pdgDB->AddParticle("KDL_2BR0", " ", 1.773,  kFALSE, 0.0, 0, "meson",  -10315); 
 
-  pdgDB->AddParticle("PI_2+   ", " ", 1.670,  kFALSE, 0.0,+1, "meson",   10215);
-  pdgDB->AddParticle("PI_2-   ", " ", 1.670,  kFALSE, 0.0,-1, "meson",  -10215);
+  pdgDB->AddParticle("PI_2+   ", " ", 1.670,  kFALSE, 0.0,+3, "meson",   10215);
+  pdgDB->AddParticle("PI_2-   ", " ", 1.670,  kFALSE, 0.0,-3, "meson",  -10215);
   pdgDB->AddParticle("PI_20   ", " ", 1.670,  kFALSE, 0.0, 0, "meson",   10115);
   
   
-  pdgDB->AddParticle("KD*+    ", " ", 1.717,  kFALSE, 0.0,+1, "meson",   30323); 
-  pdgDB->AddParticle("KD*-    ", " ", 1.717,  kFALSE, 0.0,-1, "meson",  -30323); 
+  pdgDB->AddParticle("KD*+    ", " ", 1.717,  kFALSE, 0.0,+3, "meson",   30323); 
+  pdgDB->AddParticle("KD*-    ", " ", 1.717,  kFALSE, 0.0,-3, "meson",  -30323); 
 
   pdgDB->AddParticle("KD*0    ", " ", 1.717,  kFALSE, 0.0, 0, "meson",   30313); 
   pdgDB->AddParticle("KDBR*0  ", " ", 1.717,  kFALSE, 0.0, 0, "meson",  -30313); 
 
-  pdgDB->AddParticle("RHOD+   ", " ", 1.700,  kFALSE, 0.0,+1, "meson",   30213); 
-  pdgDB->AddParticle("RHOD-   ", " ", 1.700,  kFALSE, 0.0,-1, "meson",  -30213); 
+  pdgDB->AddParticle("RHOD+   ", " ", 1.700,  kFALSE, 0.0,+3, "meson",   30213); 
+  pdgDB->AddParticle("RHOD-   ", " ", 1.700,  kFALSE, 0.0,-3, "meson",  -30213); 
   pdgDB->AddParticle("RHOD0   ", " ", 1.700,  kFALSE, 0.0, 0, "meson",   30113); 
   
   pdgDB->AddParticle("ETA_2(L)", " ", 1.632,  kFALSE, 0.0, 0, "meson",   10225); 
@@ -113,21 +115,21 @@ void AliPDG::AddParticlesToPdgDataBase()
   pdgDB->AddParticle("OMEGA(H)", " ", 1.649,  kFALSE, 0.0, 0, "meson",   30223);
   
   
-  pdgDB->AddParticle("KDH_2+  ", " ", 1.816,  kFALSE, 0.0,+1, "meson",   20325);
-  pdgDB->AddParticle("KDH_2-  ", " ", 1.816,  kFALSE, 0.0,-1, "meson",  -20325);
+  pdgDB->AddParticle("KDH_2+  ", " ", 1.816,  kFALSE, 0.0,+3, "meson",   20325);
+  pdgDB->AddParticle("KDH_2-  ", " ", 1.816,  kFALSE, 0.0,-3, "meson",  -20325);
 
   pdgDB->AddParticle("KDH_20  ", " ", 1.816,  kFALSE, 0.0, 0, "meson",   20315);
   pdgDB->AddParticle("KDH_2BR0", " ", 1.816,  kFALSE, 0.0, 0, "meson",  -20315);
   
   
-  pdgDB->AddParticle("KD_3+   ", " ", 1.773,  kFALSE, 0.0,+1, "meson",     327);
-  pdgDB->AddParticle("KD_3-   ", " ", 1.773,  kFALSE, 0.0,-1, "meson",    -327);
+  pdgDB->AddParticle("KD_3+   ", " ", 1.773,  kFALSE, 0.0,+3, "meson",     327);
+  pdgDB->AddParticle("KD_3-   ", " ", 1.773,  kFALSE, 0.0,-3, "meson",    -327);
 
   pdgDB->AddParticle("KD_30   ", " ", 1.773,  kFALSE, 0.0, 0, "meson",     317);
   pdgDB->AddParticle("KD_3BR0 ", " ", 1.773,  kFALSE, 0.0, 0, "meson",    -317);
   
-  pdgDB->AddParticle("RHO_3+  ", " ", 1.691,  kFALSE, 0.0,+1, "meson",     217);
-  pdgDB->AddParticle("RHO_3-  ", " ", 1.691,  kFALSE, 0.0,-1, "meson",    -217);
+  pdgDB->AddParticle("RHO_3+  ", " ", 1.691,  kFALSE, 0.0,+3, "meson",     217);
+  pdgDB->AddParticle("RHO_3-  ", " ", 1.691,  kFALSE, 0.0,-3, "meson",    -217);
   pdgDB->AddParticle("RHO_30  ", " ", 1.691,  kFALSE, 0.0, 0, "meson",     117);
   pdgDB->AddParticle("OMEGA_3 ", " ", 1.667,  kFALSE, 0.0, 0, "meson",     227);
   pdgDB->AddParticle("PHI_3   ", " ", 1.854,  kFALSE, 0.0, 0, "meson",     337);
@@ -147,30 +149,31 @@ void AliPDG::AddParticlesToPdgDataBase()
 
   Int_t ionCode = kion+10020;
   if(!pdgDB->GetParticle(ionCode)){
-      pdgDB->AddParticle("Deuteron","Deuteron",2*kAu2Gev+8.071e-3,kTRUE,
-			 0,1,"Ion",ionCode);
+      pdgDB->AddParticle("Deuteron","Deuteron", 1.875613, kTRUE,
+			 0,3,"Ion",ionCode);
   }
-
-  pdgDB->AddAntiParticle("Anti Deuteron", - ionCode);
+  pdgDB->AddAntiParticle("AntiDeuteron", - ionCode);
 
   ionCode = kion+10030;
   if(!pdgDB->GetParticle(ionCode)){
-    pdgDB->AddParticle("Triton","Triton",3*kAu2Gev+14.931e-3,kFALSE,
-                     khShGev/(12.33*kYear2Sec),1,"Ion",ionCode);
+    pdgDB->AddParticle("Triton","Triton", 2.80925, kFALSE,
+                     khShGev/(12.33*kYear2Sec),3,"Ion",ionCode);
   }
+  pdgDB->AddAntiParticle("AntiTriton", - ionCode);
 
   ionCode = kion+20030;
   if(!pdgDB->GetParticle(ionCode)){
-    pdgDB->AddParticle("HE3","HE3",3*kAu2Gev+14.931e-3,kFALSE,
-                     0,2,"Ion",ionCode);
+    pdgDB->AddParticle("HE3","HE3", 2.80923,kFALSE,
+                     0,6,"Ion",ionCode);
   }
+  pdgDB->AddAntiParticle("AntiHE3", - ionCode);
 
   ionCode = kion+20040;
   if(!pdgDB->GetParticle(ionCode)){
-    pdgDB->AddParticle("Alpha","Alpha",4*kAu2Gev+2.424e-3,kTRUE,
-		       khShGev/(12.33*kYear2Sec),2,"Ion",ionCode);
+    pdgDB->AddParticle("Alpha","Alpha", 3.727417, kTRUE,
+		       khShGev/(12.33*kYear2Sec), 6, "Ion", ionCode);
   }
-
+  pdgDB->AddAntiParticle("AntiAlpha", - ionCode);
 
 // Special particles
 // 
