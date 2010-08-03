@@ -42,7 +42,14 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) :
   AliAnalysisTaskSE(name), 
   fEvent(NULL),
   fMc(NULL),
-  fListHistos(NULL)
+  fListHistos(NULL),
+  fEvaluateMixedHarmonics(kTRUE),
+  fnBinsMult(10000),
+  fMinMult(0.),  
+  fMaxMult(10000.),    
+  fNinCorrelator(2),
+  fMinCorrelator(2),
+  fXinPairAngle(0.5) 
 {
   // Constructor
   cout<<"AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name)"<<endl;
@@ -59,7 +66,14 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane() :
   AliAnalysisTaskSE(),
   fEvent(NULL),
   fMc(NULL),
-  fListHistos(NULL)
+  fListHistos(NULL),
+  fEvaluateMixedHarmonics(kFALSE),
+  fnBinsMult(0),
+  fMinMult(0.0),  
+  fMaxMult(0.0),     
+  fNinCorrelator(0),
+  fMinCorrelator(0),
+  fXinPairAngle(0.0) 
 {
   // Constructor
   cout<<"AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane()"<<endl;
@@ -82,7 +96,17 @@ void AliAnalysisTaskMCEventPlane::UserCreateOutputObjects()
 
   //Analyser
   fMc  = new AliFlowAnalysisWithMCEventPlane() ;
-      
+  
+  // Setters for mixed harmonics study:
+  fMc->SetEvaluateMixedHarmonics(fEvaluateMixedHarmonics);
+  fMc->SetNinCorrelator(fNinCorrelator);
+  fMc->SetMinCorrelator(fMinCorrelator);
+  fMc->SetXinPairAngle(fXinPairAngle);
+  fMc->SetnBinsMult(fnBinsMult);
+  fMc->SetMinMult(fMinMult);
+  fMc->SetMaxMult(fMaxMult);
+  
+  // Initialized:    
   fMc-> Init();
 
   if (fMc->GetHistList()) {

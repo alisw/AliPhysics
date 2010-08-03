@@ -100,19 +100,35 @@ class AliFlowAnalysisWithMCEventPlane {
    void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
    Int_t GetHarmonic() const {return this->fHarmonic;};
    
-   // flow of resonances:
+   // mixed harmonics:
    // a) methods:
-   virtual void BookObjectsForFlowOfResonances();
-   virtual void FlowOfResonances(AliFlowEventSimple* anEvent);
+   virtual void InitalizeArraysForMixedHarmonics();
+   virtual void BookObjectsForMixedHarmonics();
+   virtual void EvaluateMixedHarmonics(AliFlowEventSimple* anEvent);
+   virtual void GetOutputHistoramsForMixedHarmonics(TList *mixedHarmonicsList);
    // b) setters and getters:
-   void SetResonanceList(TList* const rl) {this->fResonanceList = rl;}
-   TList* GetResonanceList() const {return this->fResonanceList;}    
-   void SetFlowOfResonances(Bool_t const ffor) {this->fFlowOfResonances = ffor;};
-   Bool_t GetFlowOfResonances() const {return this->fFlowOfResonances;};   
-   void SetResonanceSettings(TProfile* const rs) {this->fResonanceSettings = rs;};
-   TProfile* GetResonanceSettings() const {return this->fResonanceSettings;};
+   void SetMixedHarmonicsList(TList* const mhl) {this->fMixedHarmonicsList = mhl;}
+   TList* GetMixedHarmonicsList() const {return this->fMixedHarmonicsList;}    
+   void SetEvaluateMixedHarmonics(Bool_t const emh) {this->fEvaluateMixedHarmonics = emh;};
+   Bool_t GetEvalauteMixedHarmonics() const {return this->fEvaluateMixedHarmonics;};   
+   void SetMixedHarmonicsSettings(TProfile* const mhs) {this->fMixedHarmonicsSettings = mhs;};
+   TProfile* GetMixedHarmonicsSettings() const {return this->fMixedHarmonicsSettings;};  
    void SetPairCorrelator(TProfile* const spc, Int_t const cs) {this->fPairCorrelator[cs] = spc;};
-   TProfile* GetPairCorrelator(Int_t cs) const {return this->fPairCorrelator[cs];};
+   TProfile* GetPairCorrelator(Int_t const cs) const {return this->fPairCorrelator[cs];};
+   void SetPairCorrelatorVsM(TProfile* const spcVsM, Int_t const cs) {this->fPairCorrelatorVsM[cs] = spcVsM;};
+   TProfile* GetPairCorrelatorVsM(Int_t const cs) const {return this->fPairCorrelatorVsM[cs];};   
+   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
+   Int_t GetnBinsMult() const {return this->fnBinsMult;};  
+   void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
+   Double_t GetMinMult() const {return this->fMinMult;};
+   void SetMaxMult(Double_t const maxm) {this->fMaxMult = maxm;};
+   Double_t GetMaxMult() const {return this->fMaxMult;};   
+   void SetPairCorrelatorVsPtSumDiff(TProfile* const spcVspsd, Int_t const cs, Int_t const sd) {this->fPairCorrelatorVsPtSumDiff[cs][sd] = spcVspsd;};
+   TProfile* GetPairCorrelatorVsPtSumDiff(Int_t const cs, Int_t const sd) const {return this->fPairCorrelatorVsPtSumDiff[cs][sd];};
+   void SetNinCorrelator(Int_t const n) {this->fNinCorrelator = n;};
+   Int_t GetNinCorrelator() const {return this->fNinCorrelator;};     
+   void SetMinCorrelator(Int_t const m) {this->fMinCorrelator = m;};
+   Int_t GetMinCorrelator() const {return this->fMinCorrelator;};     
    void SetXinPairAngle(Double_t const xipa) {this->fXinPairAngle = xipa;};
    Double_t GetXinPairAngle() const {return this->fXinPairAngle;};   
   
@@ -146,15 +162,23 @@ class AliFlowAnalysisWithMCEventPlane {
    TH1D*        fHistSpreadOfFlow;        // histogram filled with reference flow calculated e-b-e    
    Int_t        fHarmonic;                // harmonic 
    
-   // objects needed for a study of flow of resonances (and in addition for strong parity violation):
-   TList *fResonanceList; // list to hold all objects relevant for a study of flow of resonances 
-   Bool_t fFlowOfResonances; // evaluate and store objects relevant for study of flow of resonances
-   TProfile *fResonanceSettings; // profile used to hold all flags relevant for the flow of resonances
-   TProfile *fPairCorrelator[2]; // profiles used to calculate <cos[n(phi_{pair}-RP)]> and <sin[n(phi_{pair}-RP)]> (0 = cos, 1 = sin), where phi_{pair} = x*phi1+(1-x)*phi2
+   // mixed harmonics:
+   TList *fMixedHarmonicsList; // list to hold all objects relevant for mixed harmonics 
+   Bool_t fEvaluateMixedHarmonics; // evaluate and store objects relevant for mixed harmonics
+   TProfile *fMixedHarmonicsSettings; // profile used to hold all flags relevant for the mixed harmonics
+   TProfile *fPairCorrelator[2]; // profiles used to calculate <cos[m*phi_{pair}-n*RP]> and <sin[m*phi_{pair}-n*RP]> (0 = cos, 1 = sin), where phi_{pair} = x*phi1+(1-x)*phi2
+   TProfile *fPairCorrelatorVsM[2]; // <cos[m*phi_{pair}-n*RP]> and <sin[m*phi_{pair}-n*RP]> versus multiplicity (0 = cos, 1 = sin), where phi_{pair} = x*phi1+(1-x)*phi2
+   Int_t fnBinsMult; // number of multiplicity bins for mixed harmonics analysis versus multiplicity  
+   Double_t fMinMult; // minimal multiplicity for mixed harmonics analysis versus multiplicity  
+   Double_t fMaxMult; // maximal multiplicity for mixed harmonics analysis versus multiplicity    
+   TProfile *fPairCorrelatorVsPtSumDiff[2][2]; // <cos/sin[m*phi_{pair}-n*RP]> vs (1/2)(pt1+pt2) (0) and |pt1-pt2| (1), where phi_{pair} = x*phi1+(1-x)*phi2
+   Int_t fNinCorrelator; // n in <cos[m*phi_{pair}-n*RP]> and <sin[m*phi_{pair}-n*RP]>, where phi_{pair} = x*phi1+(1-x)*phi2
+   Int_t fMinCorrelator; // m in <cos[m*phi_{pair}-n*RP]> and <sin[m*phi_{pair}-n*RP]>, where phi_{pair} = x*phi1+(1-x)*phi2   
    Double_t fXinPairAngle; // x in definition phi_{pair} = x*phi1+(1-x)*phi2
                                        
    ClassDef(AliFlowAnalysisWithMCEventPlane,0)  // Analyse particle distribution versus MC reaction plane
-     };
+  
+  };
 
      
 #endif
