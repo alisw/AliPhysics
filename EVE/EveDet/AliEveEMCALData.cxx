@@ -356,34 +356,44 @@ void AliEveEMCALData::LoadHitsFromEMCALLoader(AliEMCALLoader* const emcl)
   // Get hit information from EMCAL Loader
   //
 
-  AliEMCALHit* hit;
+	AliEMCALHit* hit;
   
-  //Fill array of hits                                                                        
-  TClonesArray *hits = (TClonesArray*)emcl->Hits();
+	//Fill array of hits                                                                        
+	TClonesArray *hits = 0;//(TClonesArray*)emcl->Hits();
+	TTree *treeH = emcl->TreeH();	
+	if (treeH) {
+		Int_t nTrack = treeH->GetEntries();  // TreeH has array of hits for every primary
+		TBranch * branchH = treeH->GetBranch("EMCAL");
+		//if(fHits)fHits->Clear();
+		branchH->SetAddress(&hits);
+		for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
+			branchH->GetEntry(iTrack);
+			
+			//Get hits from the list                                                                    
+			for(Int_t ihit = 0; ihit< hits->GetEntries();ihit++){
 
-  //Get hits from the list                                                                    
-  for(Int_t ihit = 0; ihit< hits->GetEntries();ihit++){
-
-    hit = static_cast<AliEMCALHit *>(hits->At(ihit)) ;
+				hit = static_cast<AliEMCALHit *>(hits->At(ihit)) ;
     
-    if(hit != 0){
-      if(fDebug>1) cout << "Hit info " << hit->GetId() << " " << hit->GetEnergy() << endl;
+				if(hit != 0){
+					if(fDebug>1) cout << "Hit info " << hit->GetId() << " " << hit->GetEnergy() << endl;
 
-      Int_t id = hit->GetId();
-      // These are local coordinates
-      Double_t xl = 0.; Double_t yl = 0.; Double_t zl = 0.;
-      // Get global coordinates
-      Double_t x = hit->X();
-      Double_t y = hit->Y();
-      Double_t z = hit->Z();
-      Double_t amp = hit->GetEnergy();
-      Int_t iSupMod = 0;
-      // Get SM Id
-      GetGeomInfo(id,iSupMod,xl,yl,zl);
-      fSM[iSupMod]->RegisterHit(id,iSupMod,amp,x,y,z);
-    }
-  }
-  
+					Int_t id = hit->GetId();
+					// These are local coordinates
+					Double_t xl = 0.; Double_t yl = 0.; Double_t zl = 0.;
+					// Get global coordinates
+					Double_t x = hit->X();
+					Double_t y = hit->Y();
+					Double_t z = hit->Z();
+					Double_t amp = hit->GetEnergy();
+					Int_t iSupMod = 0;
+					// Get SM Id
+					GetGeomInfo(id,iSupMod,xl,yl,zl);
+					fSM[iSupMod]->RegisterHit(id,iSupMod,amp,x,y,z);
+				}//hit exists
+			}//hit loop
+			if(hits)hits->Clear();
+		}// track loop
+	}//treeH exists
 }
 
 //______________________________________________________________________________
@@ -464,7 +474,7 @@ void AliEveEMCALData::LoadDigitsFromEMCALLoader(AliEMCALLoader* const emcl)
      dig = static_cast<AliEMCALDigit *>(digits->At(idig)) ;
 
      if(dig != 0){
-       if(fDebug>1) cout << "Digit info " << dig->GetId() << " " << dig->GetAmp() << endl;
+       if(fDebug>1) cout << "Digit info " << dig->GetId() << " " << dig->GetAmplitude() << endl;
        id   = dig->GetId() ; //cell (digit) label
        // adc
        ampFlo  = dig->GetAmplitude(); //amplitude in cell (digit)

@@ -68,8 +68,9 @@ private:
   Int_t   fFirstEvent;             // first event to process
   Int_t   fLastEvent;              // last  event to process
   Float_t fSampling;               // See AliEMCALGeometry
-
-  ClassDef(AliEMCALSDigitizer,6)  // description 
+  TClonesArray* fHits;             //-> Temporal array with hits
+	
+  ClassDef(AliEMCALSDigitizer,7)  // description 
 };
 
 #endif // AliEMCALSDIGITIZER_H

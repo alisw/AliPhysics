@@ -85,7 +85,8 @@ AliEMCALSDigitizer::AliEMCALSDigitizer()
     fSDigitsInRun(0),
     fFirstEvent(0),
     fLastEvent(0),
-    fSampling(0.)
+    fSampling(0.),
+	fHits(0)
 {
   // ctor
   InitParameters();
@@ -102,7 +103,8 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName,
     fSDigitsInRun(0),
     fFirstEvent(0),
     fLastEvent(0),
-    fSampling(0.)
+    fSampling(0.),
+    fHits(0)
 {
   // ctor
   Init();
@@ -123,7 +125,8 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd)
     fSDigitsInRun(sd.fSDigitsInRun),
     fFirstEvent(sd.fFirstEvent),
     fLastEvent(sd.fLastEvent),
-    fSampling(sd.fSampling)
+    fSampling(sd.fSampling),
+    fHits(0)
 {
   //cpy ctor 
 }
@@ -135,6 +138,11 @@ AliEMCALSDigitizer::~AliEMCALSDigitizer() {
   AliLoader *emcalLoader=0;
   if ((emcalLoader = AliRunLoader::Instance()->GetDetectorLoader("EMCAL")))
       emcalLoader->CleanSDigitizer();
+	
+  if(fHits){
+	  fHits->Clear();
+	  delete fHits;
+  }
 }
 
 //____________________________________________________________________________ 
@@ -214,146 +222,160 @@ void AliEMCALSDigitizer::InitParameters()
 //____________________________________________________________________________
 void AliEMCALSDigitizer::Exec(Option_t *option) 
 { 
-  // Collects all hit of the same tower into digits
-  TString o(option); o.ToUpper();
-  if (strstr(option, "print") ) {
-
-    AliDebug(2,Form("Print: \n------------------- %s -------------\n",GetName()));
-    AliDebug(2,Form("   fInit                                 %i\n", int(fInit)));
-    AliDebug(2,Form("   fFirstEvent                           %i\n", fFirstEvent));
-    AliDebug(2,Form("   fLastEvent                            %i\n", fLastEvent));
-    AliDebug(2,Form("   Writing SDigits to branch with title  %s\n", fEventFolderName.Data()));
-    AliDebug(2,Form("   with digitization parameters       A = %f\n", fA));
-    AliDebug(2,Form("                                      B = %f\n", fB));
-    AliDebug(2,Form("   Threshold for EC Primary assignment  = %f\n", fECPrimThreshold));
-    AliDebug(2,Form("   Sampling                             = %f\n", fSampling));
-    AliDebug(2,Form("---------------------------------------------------\n"));
-
-    return ; 
-  }
- 
-
-  if(strstr(option,"tim"))
-    gBenchmark->Start("EMCALSDigitizer");
-
-  AliRunLoader *rl = AliRunLoader::Instance();
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
-
-  //switch off reloading of this task while getting event
-  if (!fInit) { // to prevent overwrite existing file
-    AliError( Form("Give a version name different from %s", fEventFolderName.Data()) ) ;
-    return ;
-    }
-
-  if (fLastEvent == -1) 
-    fLastEvent = rl->GetNumberOfEvents() - 1 ;
-  else {
-    fLastEvent = TMath::Min(fLastEvent, rl->GetNumberOfEvents()-1);
-  }
-  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
-
-  Int_t ievent;
-  Float_t energy=0.; // de * fSampling - 23-nov-04
-  rl->LoadKinematics();
-  rl->LoadHits("EMCAL");
-
-  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    rl->GetEvent(ievent);
-    TTree * treeS = emcalLoader->TreeS();
-    if ( !treeS ) { 
-      emcalLoader->MakeSDigitsContainer();
-      treeS = emcalLoader->TreeS();
-    }
-    TClonesArray * hits = emcalLoader->Hits() ; 
-    TClonesArray * sdigits = emcalLoader->SDigits() ;
-    sdigits->Clear();
-
-    Int_t nSdigits = 0 ;
-    Int_t i;
-
-	AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(); 
-    for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
-      AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(hits->At(i)) ;
-      AliEMCALDigit * curSDigit = 0 ;
-      AliEMCALDigit * sdigit = 0 ;
-      Bool_t newsdigit = kTRUE; 
-      
-      // hit->GetId() - Absolute Id number EMCAL segment
-      if(geom->CheckAbsCellId(hit->GetId())) { // was IsInECA(hit->GetId())
-	energy = hit->GetEnergy() * fSampling; // 23-nov-04
-	if(energy >  fECPrimThreshold )
-	  // Assign primary number only if deposited energy is significant
-	  curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
-					  hit->GetIparent(), hit->GetId(), 
-					  Digitize(energy), hit->GetTime(),kFALSE,
-					  -1, energy ) ;
-	  else
-	    curSDigit =  new AliEMCALDigit( -1, 
-					    -1,
-					    hit->GetId(), 
-					    Digitize(energy), hit->GetTime(),kFALSE,
-					    -1, energy ) ;
-      } else {
-	Warning("Exec"," abs id %i is bad \n", hit->GetId());
-	newsdigit = kFALSE;
-	curSDigit = 0;
-      }
-      
-      if(curSDigit != 0){
-	for(Int_t check= 0; check < nSdigits ; check++) {
-	  sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(check)) ;
-	  
-	  if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL tower ?              
-	    *sdigit = *sdigit + *curSDigit;
-	    newsdigit = kFALSE;
-	  }
+	// Collects all hit of the same tower into digits
+	TString o(option); o.ToUpper();
+	if (strstr(option, "print") ) {
+		
+		AliDebug(2,Form("Print: \n------------------- %s -------------\n",GetName()));
+		AliDebug(2,Form("   fInit                                 %i\n", int(fInit)));
+		AliDebug(2,Form("   fFirstEvent                           %i\n", fFirstEvent));
+		AliDebug(2,Form("   fLastEvent                            %i\n", fLastEvent));
+		AliDebug(2,Form("   Writing SDigits to branch with title  %s\n", fEventFolderName.Data()));
+		AliDebug(2,Form("   with digitization parameters       A = %f\n", fA));
+		AliDebug(2,Form("                                      B = %f\n", fB));
+		AliDebug(2,Form("   Threshold for EC Primary assignment  = %f\n", fECPrimThreshold));
+		AliDebug(2,Form("   Sampling                             = %f\n", fSampling));
+		AliDebug(2,Form("---------------------------------------------------\n"));
+		
+		return ; 
 	}
-      }
-      if (newsdigit) {
-	new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
-	nSdigits++ ;  
-      }
-      delete curSDigit ; 
-    }  // loop over all hits (hit = deposited energy/entering particle)
-    sdigits->Sort() ;
-    
-    nSdigits = sdigits->GetEntriesFast() ;
-    fSDigitsInRun += nSdigits ;  
-
-    for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
-      AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
-      sdigit->SetIndexInList(i) ;
+	
+	
+	if(strstr(option,"tim"))
+		gBenchmark->Start("EMCALSDigitizer");
+	
+	AliRunLoader *rl = AliRunLoader::Instance();
+	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+	
+	//switch off reloading of this task while getting event
+	if (!fInit) { // to prevent overwrite existing file
+		AliError( Form("Give a version name different from %s", fEventFolderName.Data()) ) ;
+		return ;
     }
-    
-    // Now write SDigits    
-    
-    Int_t bufferSize = 32000 ;    
-    TBranch * sdigitsBranch = treeS->GetBranch("EMCAL");
-    if (sdigitsBranch)
-      sdigitsBranch->SetAddress(&sdigits);
-    else
-      treeS->Branch("EMCAL",&sdigits,bufferSize);
-    
-    treeS->Fill();
-    
-    emcalLoader->WriteSDigits("OVERWRITE");
-    
-    //NEXT - SDigitizer
-    emcalLoader->WriteSDigitizer("OVERWRITE");  // why in event cycle ?
-    
-    if(strstr(option,"deb"))
-      PrintSDigits(option) ;  
-  }
-  
-  Unload();
-  
-  emcalLoader->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
-  
-  if(strstr(option,"tim")){
-    gBenchmark->Stop("EMCALSDigitizer"); 
-    printf("\n Exec: took %f seconds for SDigitizing %f seconds per event\n", 
-	   gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer")/nEvents ) ; 
-  }
+	
+	if (fLastEvent == -1) 
+		fLastEvent = rl->GetNumberOfEvents() - 1 ;
+	else {
+		fLastEvent = TMath::Min(fLastEvent, rl->GetNumberOfEvents()-1);
+	}
+	Int_t nEvents   = fLastEvent - fFirstEvent + 1;
+	
+	Int_t ievent;
+	Float_t energy=0.; // de * fSampling - 23-nov-04
+	rl->LoadKinematics();
+	rl->LoadHits("EMCAL");
+	
+	for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
+		rl->GetEvent(ievent);
+		TTree * treeS = emcalLoader->TreeS();
+		if ( !treeS ) { 
+			emcalLoader->MakeSDigitsContainer();
+			treeS = emcalLoader->TreeS();
+		}
+		//TClonesArray * hits = emcalLoader->Hits() ; 
+		TClonesArray * sdigits = emcalLoader->SDigits() ;
+		sdigits->Clear();
+		
+		Int_t nSdigits = 0 ;
+		Int_t iHit, iTrack, iSDigit;
+		
+		AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(); 
+		
+		TTree *treeH = emcalLoader->TreeH();	
+		if (treeH) {
+			Int_t nTrack = treeH->GetEntries();  // TreeH has array of hits for every primary
+			TBranch * branchH = treeH->GetBranch("EMCAL");
+			//if(fHits)fHits->Clear();
+			branchH->SetAddress(&fHits);
+			for (iTrack = 0; iTrack < nTrack; iTrack++) {
+				branchH->GetEntry(iTrack);
+				Int_t nHit = fHits->GetEntriesFast();
+				for(iHit = 0; iHit< nHit;iHit++){
+					
+					AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(fHits->At(iHit)) ;
+					AliEMCALDigit * curSDigit = 0 ;
+					AliEMCALDigit * sdigit = 0 ;
+					Bool_t newsdigit = kTRUE; 
+					
+					// hit->GetId() - Absolute Id number EMCAL segment
+					if(geom->CheckAbsCellId(hit->GetId())) { // was IsInECA(hit->GetId())
+						energy = hit->GetEnergy() * fSampling; // 23-nov-04
+						if(energy >  fECPrimThreshold )
+							// Assign primary number only if deposited energy is significant
+							curSDigit =  new AliEMCALDigit(hit->GetPrimary(),
+														   hit->GetIparent(), hit->GetId(), 
+														   Digitize(energy), hit->GetTime(),kFALSE,
+														   -1, 0,0,energy ) ;
+						else
+							curSDigit =  new AliEMCALDigit(-1, 
+														   -1,
+														   hit->GetId(), 
+														   Digitize(energy), hit->GetTime(),kFALSE,
+														   -1, 0,0,energy ) ;
+					} else {
+						Warning("Exec"," abs id %i is bad \n", hit->GetId());
+						newsdigit = kFALSE;
+						curSDigit = 0;
+					}
+					
+					if(curSDigit != 0){
+						for(Int_t check= 0; check < nSdigits ; check++) {
+							sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(check)) ;
+							
+							if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL tower ?              
+								*sdigit = *sdigit + *curSDigit;
+								newsdigit = kFALSE;
+							}
+						}
+					}
+					if (newsdigit) {
+						new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
+						nSdigits++ ;  
+					}
+					delete curSDigit ; 
+				}  // loop over all hits (hit = deposited energy/entering particle)
+				sdigits->Sort() ;
+				
+				nSdigits = sdigits->GetEntriesFast() ;
+				fSDigitsInRun += nSdigits ;  
+				
+				for (iSDigit = 0 ; iSDigit < sdigits->GetEntriesFast() ; iSDigit++) { 
+					AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(iSDigit)) ;
+					sdigit->SetIndexInList(iSDigit) ;
+				}	
+				if(fHits)fHits->Clear();
+			}//track loop
+		}// tree exists
+		
+		// Now write SDigits    
+		
+		Int_t bufferSize = 32000 ;    
+		TBranch * sdigitsBranch = treeS->GetBranch("EMCAL");
+		if (sdigitsBranch)
+			sdigitsBranch->SetAddress(&sdigits);
+		else
+			treeS->Branch("EMCAL",&sdigits,bufferSize);
+		
+		treeS->Fill();
+		
+		emcalLoader->WriteSDigits("OVERWRITE");
+		
+		//NEXT - SDigitizer
+		emcalLoader->WriteSDigitizer("OVERWRITE");  // why in event cycle ?
+		
+		if(strstr(option,"deb"))
+			PrintSDigits(option) ;  
+	}
+	
+	Unload();
+	
+	emcalLoader->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
+	
+	if(strstr(option,"tim")){
+		gBenchmark->Stop("EMCALSDigitizer"); 
+		printf("\n Exec: took %f seconds for SDigitizing %f seconds per event\n", 
+			   gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer")/nEvents ) ; 
+	}
 }
 
 //__________________________________________________________________
@@ -465,7 +487,7 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
 	printf("%s",tempo); 
       }  	 
     }
-    delete [] tempo ;
+    delete tempo ;
     printf("\n** Sum %2.3f : %10.3f GeV/c **\n ", isum, Calibrate(isum));
   } else printf("\n");
 }

@@ -33,7 +33,6 @@ class TTask ;
 
 class AliLoader ;
 class AliEMCAL ; 
-class AliEMCALHit ;
 class AliEMCALDigit ;
 class AliEMCALSDigit ;
 class AliEMCALRecPoint ; 
@@ -58,17 +57,10 @@ class AliEMCALLoader : public AliLoader {
   
   // Initialize arrays methods
   void MakeSDigitsArray() ;
-  void MakeHitsArray() ;
   void MakeDigitsArray() ;
   void MakeRecPointsArray() ;
   
   // ************    TClonesArrays Access functions
-  
-  TClonesArray*  Hits(void) {return (TClonesArray*)GetDetectorData(fgkECAHitsBranchName);}  //{ return fHits;}
-  const AliEMCALHit*    Hit(Int_t index) {
-    if (Hits()) return (const AliEMCALHit*) Hits()->At(index);
-    return 0x0; 
-  }
   
   TClonesArray*  SDigits() {return (TClonesArray*)GetDetectorData(fgkECASDigitsBranchName);} //const { return fSDigits;}
   const AliEMCALDigit*  SDigit(Int_t index)  {
@@ -108,19 +100,17 @@ class AliEMCALLoader : public AliLoader {
   AliEMCALLoader(const AliEMCALLoader &); //Not implemented
   const AliEMCALLoader & operator = (const AliEMCALLoader &); //Not implemented
   
-  static const TString fgkECAHitsBranchName;      //! Name of branch with ECA Hits
   static const TString fgkECASDigitsBranchName;   //! Name of branch with ECA SDigits
   static const TString fgkECADigitsBranchName;    //! Name of branch with ECA Digits
   static const TString fgkECARecPointsBranchName; //! Name of branch with ECA Reconstructed Points
   
   Int_t  fDebug ;             // Debug level
-  TClonesArray *fTempArr;      //! Temporary array for hits
 	
   static AliEMCALCalibData    * fgCalibData;  //  calibration data 
   //  static AliCaloCalibPedestal * fgCaloPed;    //  dead map
   static AliEMCALSimParam     * fgSimParam;   //  sim param 
   
-  ClassDef(AliEMCALLoader,6)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALLoader,7)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
     
 };
 
