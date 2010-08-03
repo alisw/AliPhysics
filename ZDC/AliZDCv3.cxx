@@ -32,8 +32,10 @@
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
+#include <TGeoTube.h>
 #include <TGeoCone.h>
 #include <TGeoShape.h>
+#include <TGeoScaledShape.h>
 #include <TGeoCompositeShape.h>
 #include <TParticle.h>
 
@@ -311,12 +313,23 @@ void AliZDCv3::CreateBeamLine()
   tubpar[0] = 18.6/2.;
   tubpar[1] = 7.6/2.;
   tubpar[2] = totLength1/2.;
-  gMC->Gsvolu("QE01", "ELTU", idtmed[7], tubpar, 3);  
+//  gMC->Gsvolu("QE01", "ELTU", idtmed[7], tubpar, 3);  
+  // temporary replace with a scaled tube (AG)
+  TGeoTube *tubeQE01 = new TGeoTube(0.,tubpar[0],tubpar[2]);
+  TGeoScale *scaleQE01 = new TGeoScale(1., tubpar[1]/tubpar[0], 1.);
+  TGeoScaledShape *sshapeQE01 = new TGeoScaledShape(tubeQE01, scaleQE01);
+  new TGeoVolume("QE01", sshapeQE01, gGeoManager->GetMedium(idtmed[7]));
 
   tubpar[0] = 18.0/2.;
   tubpar[1] = 7.0/2.;
   tubpar[2] = totLength1/2.;
-  gMC->Gsvolu("QE02", "ELTU", idtmed[10], tubpar, 3);  
+//  gMC->Gsvolu("QE02", "ELTU", idtmed[10], tubpar, 3);  
+  // temporary replace with a scaled tube (AG)
+  TGeoTube *tubeQE02 = new TGeoTube(0.,tubpar[0],tubpar[2]);
+  TGeoScale *scaleQE02 = new TGeoScale(1., tubpar[1]/tubpar[0], 1.);
+  TGeoScaledShape *sshapeQE02 = new TGeoScaledShape(tubeQE02, scaleQE02);
+  new TGeoVolume("QE02", sshapeQE02, gGeoManager->GetMedium(idtmed[10]));
+
   gMC->Gspos("QE01", 1, "ZDCC", 0., 0., -tubpar[2]-zd1, 0, "ONLY"); 
   gMC->Gspos("QE02", 1, "QE01", 0., 0., 0., 0, "ONLY");  
   // Ch.debug
@@ -936,13 +949,23 @@ void AliZDCv3::CreateBeamLine()
   tubpar[0] = 18.4/2.;
   tubpar[1] = 7.4/2.;
   tubpar[2] = 313.3/2.;
-  gMC->Gsvolu("QA06", "ELTU", idtmed[7], tubpar, 3);  
+//  gMC->Gsvolu("QA06", "ELTU", idtmed[7], tubpar, 3);  
+  // temporary replace with a scaled tube (AG)
+  TGeoTube *tubeQA06 = new TGeoTube(0.,tubpar[0],tubpar[2]);
+  TGeoScale *scaleQA06 = new TGeoScale(1., tubpar[1]/tubpar[0], 1.);
+  TGeoScaledShape *sshapeQA06 = new TGeoScaledShape(tubeQA06, scaleQA06);
+  new TGeoVolume("QA06", sshapeQA06, gGeoManager->GetMedium(idtmed[7]));
   //printf("	QA06 TUBE from z = %1.2f to z= %1.2f\n",zd2,2*tubpar[2]+zd2);
 
   tubpar[0] = 18.0/2.;
   tubpar[1] = 7.0/2.;
   tubpar[2] = 313.3/2.;
-  gMC->Gsvolu("QA07", "ELTU", idtmed[10], tubpar, 3);  
+//  gMC->Gsvolu("QA07", "ELTU", idtmed[10], tubpar, 3);  
+  // temporary replace with a scaled tube (AG)
+  TGeoTube *tubeQA07 = new TGeoTube(0.,tubpar[0],tubpar[2]);
+  TGeoScale *scaleQA07 = new TGeoScale(1., tubpar[1]/tubpar[0], 1.);
+  TGeoScaledShape *sshapeQA07 = new TGeoScaledShape(tubeQA07, scaleQA07);
+  new TGeoVolume("QA07", sshapeQA07, gGeoManager->GetMedium(idtmed[7]));
   //printf("	QA07 TUBE from z = %1.2f to z= %1.2f\n",zd2,2*tubpar[2]+zd2);
   gMC->Gspos("QA06", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY"); 
   gMC->Gspos("QA07", 1, "QA06", 0., 0., 0., 0, "ONLY");  
