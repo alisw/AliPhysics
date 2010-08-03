@@ -288,8 +288,10 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
     return kTRUE;
   case kFigNtrackletsTrack:
     h=MakePlotNTracklets();
-    PutTrendValue("NTrackletsTrack", h->GetMean());
-    PutTrendValue("NTrackletsTrackRMS", h->GetRMS());
+    if(h){
+      PutTrendValue("NTrackletsTrack", h->GetMean());
+      PutTrendValue("NTrackletsTrackRMS", h->GetRMS());
+    }
     return kTRUE;
   case kFigNTrackletsP:
     MakePlotnTrackletsVsP();
@@ -1309,7 +1311,7 @@ TH1* AliTRDcheckDET::MakePlotNTracklets(){
   leg->SetFillColor(0);
 
   Float_t scale = hCON->Integral();
-  hCON->Scale(100./scale);
+  if(scale) hCON->Scale(100./scale);
   hCON->SetFillColor(kRed);hCON->SetLineColor(kRed);
   hCON->SetBarWidth(0.2);
   hCON->SetBarOffset(0.6);
@@ -1319,7 +1321,7 @@ TH1* AliTRDcheckDET::MakePlotNTracklets(){
   hCON->Draw("bar1"); leg->AddEntry(hCON, "Total", "f");
   hCON->SetMaximum(55.);
 
-  hBAR->Scale(100./scale);
+  if(scale) hBAR->Scale(100./scale);
   hBAR->SetFillColor(kGreen);hBAR->SetLineColor(kGreen);
   hBAR->SetBarWidth(0.2);
   hBAR->SetBarOffset(0.2);
@@ -1329,7 +1331,7 @@ TH1* AliTRDcheckDET::MakePlotNTracklets(){
   hBAR->GetYaxis()->SetTitleOffset(1.2);
   hBAR->Draw("bar1same"); leg->AddEntry(hBAR, "Barrel", "f");
 
-  hSTA->Scale(100./scale);
+  if(scale) hSTA->Scale(100./scale);
   hSTA->SetFillColor(kBlue);hSTA->SetLineColor(kBlue);
   hSTA->SetBarWidth(0.2);
   hSTA->SetBarOffset(0.4);
