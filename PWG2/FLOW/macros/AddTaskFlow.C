@@ -750,6 +750,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   }
   if (MCEP){
     AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane");
+    taskMCEP->SetEvaluateMixedHarmonics(kFALSE);
     mgr->AddTask(taskMCEP);
   }
   if (MH){

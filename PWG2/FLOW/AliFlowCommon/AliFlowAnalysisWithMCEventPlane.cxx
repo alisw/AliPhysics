@@ -61,9 +61,14 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fHistProDiffFlowEtaPOI(NULL),
    fHistSpreadOfFlow(NULL),
    fHarmonic(2),
-   fResonanceList(NULL),
-   fFlowOfResonances(kFALSE),
-   fResonanceSettings(NULL),
+   fMixedHarmonicsList(NULL),
+   fEvaluateMixedHarmonics(kTRUE),
+   fMixedHarmonicsSettings(NULL),
+   fnBinsMult(10000),
+   fMinMult(0.),  
+   fMaxMult(10000.),   
+   fNinCorrelator(2),
+   fMinCorrelator(2),
    fXinPairAngle(0.5)
 {
 
@@ -72,25 +77,19 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
 
   fQsum = new TVector2;        // flow vector sum
   
-  fResonanceList = new TList();
-  // Initialize arrays needed for the flow of resonances:
-  for(Int_t cs=0;cs<2;cs++) // cos/sin
-  {
-   fPairCorrelator[cs] = NULL;
-  }
-  
+  fMixedHarmonicsList = new TList();
+  this->InitalizeArraysForMixedHarmonics();  
+
 }
-
  
- //-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
-
- AliFlowAnalysisWithMCEventPlane::~AliFlowAnalysisWithMCEventPlane() 
- {
-   //destructor
-   delete fHistList;
-   delete fQsum;
- }
+AliFlowAnalysisWithMCEventPlane::~AliFlowAnalysisWithMCEventPlane() 
+{
+ //destructor
+  delete fHistList;
+  delete fQsum; 
+}
  
 //-----------------------------------------------------------------------
 
@@ -205,7 +204,7 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
  
   fEventNumber = 0;  //set number of events to zero
   
-  if(fFlowOfResonances) this->BookObjectsForFlowOfResonances();
+  if(fEvaluateMixedHarmonics) this->BookObjectsForMixedHarmonics();
         
   TH1::AddDirectory(oldHistAddStatus);
 } 
@@ -289,7 +288,7 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
     fHistSpreadOfFlow->Fill(flowEBE->GetBinContent(1),flowEBE->GetBinEntries(1));
     delete flowEBE; 
   
-    if(fFlowOfResonances) FlowOfResonances(anEvent);
+    if(fEvaluateMixedHarmonics) EvaluateMixedHarmonics(anEvent);
   }    
 }
   //--------------------------------------------------------------------    
@@ -341,11 +340,35 @@ void AliFlowAnalysisWithMCEventPlane::GetOutputHistograms(TList *outputListHisto
       cout<<"WARNING: Histograms needed to run Finish() are not accessible!"<<endl;  }
     
     //fListHistos->Print();
+  
+   TList *pMixedHarmonicsList = dynamic_cast<TList*> 
+     (outputListHistos->FindObject("Mixed Harmonics"));
+   if(pMixedHarmonicsList) {this->GetOutputHistoramsForMixedHarmonics(pMixedHarmonicsList);} 
+  
   } else { cout << "histogram list pointer is empty" << endl;}
 
 }
 
-  //--------------------------------------------------------------------    
+//--------------------------------------------------------------------    
+
+void AliFlowAnalysisWithMCEventPlane::GetOutputHistoramsForMixedHarmonics(TList *mixedHarmonicsList)
+{
+ // Get pointers to all objects relevant for mixed harmonics study.
+ 
+ if(mixedHarmonicsList)
+ {
+  // ...
+ } else
+   {
+    cout<<endl;
+    cout<<"WARNING (MCEP): mixedHarmonicsList in NULL in MCEP::GetOutputHistoramsForMixedHarmonics() !!!! "<<endl;
+    cout<<endl;
+   } 
+  
+} // end of void AliFlowAnalysisWithMCEventPlane::GetOutputHistoramsForMixedHarmonics(TList *mixedHarmonicsList)
+
+//--------------------------------------------------------------------    
+
 void AliFlowAnalysisWithMCEventPlane::Finish() {
    
   //*************make histograms etc. 
@@ -463,72 +486,136 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   //cout<<".....finished"<<endl;
 }
 
-void AliFlowAnalysisWithMCEventPlane::BookObjectsForFlowOfResonances()
+//-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithMCEventPlane::InitalizeArraysForMixedHarmonics()
 {
- // Book all objecsts needed to study flow of resonances.
+ // Iinitialize all arrays for mixed harmonics.
+
+ for(Int_t cs=0;cs<2;cs++) // cos/sin
+ {
+  fPairCorrelator[cs] = NULL;
+  fPairCorrelatorVsM[cs] = NULL;
+  for(Int_t sd=0;sd<2;sd++) // pt sum/difference
+  {
+   fPairCorrelatorVsPtSumDiff[cs][sd] = NULL;
+  }
+ }
+
+} // end of void InitalizeArraysForMixedHarmonics()
+
+//-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithMCEventPlane::BookObjectsForMixedHarmonics()
+{
+ // Book all objects needed for mixed harmonics.
  
- // List:
- fResonanceList->SetName("Resonances");
- fResonanceList->SetOwner(kTRUE);   
- fHistList->Add(fResonanceList); 
+ // List holding all objects relevant for mixed harmonics:
+ fMixedHarmonicsList->SetName("Mixed Harmonics");
+ fMixedHarmonicsList->SetOwner(kTRUE);   
+ fHistList->Add(fMixedHarmonicsList); 
  
- // Profile holding settings for flow of resoances:
- TString resonanceSettingsName = "fResonanceSettings";
- fResonanceSettings = new TProfile(resonanceSettingsName.Data(),"Settings for flow of resonances",2,0,2);
- //fResonanceSettings->GetXaxis()->SetLabelSize(0.025);
- fResonanceSettings->GetXaxis()->SetBinLabel(1,"fFlowOfResonances");
- fResonanceSettings->Fill(0.5,(Int_t)fFlowOfResonances);
- fResonanceSettings->GetXaxis()->SetBinLabel(2,"x in #phi_{pair}"); // phi_{pair} = x*phi1+(1-x)*phi2
- fResonanceSettings->Fill(1.5,fXinPairAngle); 
- fResonanceList->Add(fResonanceSettings);
+ // Profile holding settings relevant for mixed harmonics:
+ TString mixedHarmonicsSettingsName = "fMixedHarmonicsSettings";
+ fMixedHarmonicsSettings = new TProfile(mixedHarmonicsSettingsName.Data(),"Settings for Mixed Harmonics",4,0,4);
+ //fMixedHarmonicsSettings->GetXaxis()->SetLabelSize(0.025);
+ fMixedHarmonicsSettings->GetXaxis()->SetBinLabel(1,"fEvaluateMixedHarmonics");
+ fMixedHarmonicsSettings->Fill(0.5,(Int_t)fEvaluateMixedHarmonics); 
+ fMixedHarmonicsSettings->GetXaxis()->SetBinLabel(2,"fNinCorrelator");
+ fMixedHarmonicsSettings->Fill(1.5,(Int_t)fNinCorrelator);
+ fMixedHarmonicsSettings->GetXaxis()->SetBinLabel(3,"fMinCorrelator");
+ fMixedHarmonicsSettings->Fill(2.5,(Int_t)fMinCorrelator);
+ fMixedHarmonicsSettings->GetXaxis()->SetBinLabel(4,"x in #phi_{pair}"); // phi_{pair} = x*phi1+(1-x)*phi2
+ fMixedHarmonicsSettings->Fill(3.5,fXinPairAngle); 
+ fMixedHarmonicsList->Add(fMixedHarmonicsSettings);
  
- // Profiles used to calculate <cos[n(phi_{pair}-RP)]> and <sin[n(phi_{pair}-RP)]> (0 = cos, 1 = sin), where phi_{pair} = x*phi1+(1-x)*phi2:
+ // Profiles used to calculate <cos[m*phi_{pair}-n*RP]> and <sin[m*phi_{pair}-n*RP]>, where phi_{pair} = x*phi1+(1-x)*phi2:
  TString cosSinFlag[2] = {"Cos","Sin"};
- TString cosSinTitleFlag[2] = {"cos[n(#phi_{pair}-#psi_{RP})]","sin[n(#phi_{pair}-#psi_{RP})]"};
+ TString cosSinTitleFlag[2] = {"cos[m#phi_{pair}-n#psi_{RP}]","sin[m#phi_{pair}-n#psi_{RP}]"};
+ if(fNinCorrelator == 2 && fMinCorrelator == 2 && TMath::Abs(fXinPairAngle-0.5)<1.e-44) // default values
+ {
+  cosSinTitleFlag[0] = "cos[#phi_{1}+#phi_{2}-2#psi_{RP})]";
+  cosSinTitleFlag[1] = "sin[#phi_{1}+#phi_{2}-2#psi_{RP})]";   
+ }
+ TString psdFlag[2] = {"Sum","Diff"};
+ TString psdTitleFlag[2] = {"(p_{t,1}+p_{t,2})/2","#left|p_{t,1}-p_{t,2}#right|"}; 
  TString pairCorrelatorName = "fPairCorrelator";
+ TString pairCorrelatorVsMName = "fPairCorrelatorVsM";
+ TString pairCorrelatorVsPtSumDiffName = "fPairCorrelatorVsPt";
+ Int_t iNbinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+ Double_t dPtMin = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
+ Double_t dPtMax = AliFlowCommonConstants::GetMaster()->GetPtMax(); 
  for(Int_t cs=0;cs<2;cs++)
  { 
-  fPairCorrelator[cs] = new TProfile(Form("%s%s",pairCorrelatorName.Data(),cosSinFlag[cs].Data()),cosSinTitleFlag[cs].Data(),1,0.,1.);
+  fPairCorrelator[cs] = new TProfile(Form("%s, %s",pairCorrelatorName.Data(),cosSinFlag[cs].Data()),cosSinTitleFlag[cs].Data(),1,0.,1.);
   fPairCorrelator[cs]->GetXaxis()->SetBinLabel(1,cosSinTitleFlag[cs].Data());
-  fResonanceList->Add(fPairCorrelator[cs]); 
- } 
+  fMixedHarmonicsList->Add(fPairCorrelator[cs]); 
+  
+  fPairCorrelatorVsM[cs] = new TProfile(Form("%s, %s",pairCorrelatorVsMName.Data(),cosSinFlag[cs].Data()),cosSinTitleFlag[cs].Data(),fnBinsMult,fMinMult,fMaxMult);
+  fPairCorrelatorVsM[cs]->GetXaxis()->SetTitle("# of RPs");
+  fMixedHarmonicsList->Add(fPairCorrelatorVsM[cs]); 
+  
+  for(Int_t sd=0;sd<2;sd++)
+  {
+   fPairCorrelatorVsPtSumDiff[cs][sd] = new TProfile(Form("%s%s, %s",pairCorrelatorVsPtSumDiffName.Data(),psdFlag[sd].Data(),cosSinFlag[cs].Data()),cosSinTitleFlag[cs].Data(),iNbinsPt,dPtMin,dPtMax);
+   fPairCorrelatorVsPtSumDiff[cs][sd]->GetXaxis()->SetTitle(psdTitleFlag[sd].Data());
+   fMixedHarmonicsList->Add(fPairCorrelatorVsPtSumDiff[cs][sd]); 
+  } // end of for(Int_t sd=0;sd<2;sd++)
+ } // end of for(Int_t cs=0;cs<2;cs++)
 
-} // end of void AliFlowAnalysisWithMCEventPlane::BookObjectsForFlowOfResonances()
+} // end of void AliFlowAnalysisWithMCEventPlane::BookObjectsForMixedHarmonics()
 
-void AliFlowAnalysisWithMCEventPlane::FlowOfResonances(AliFlowEventSimple* anEvent)
+//-----------------------------------------------------------------------
+
+void AliFlowAnalysisWithMCEventPlane::EvaluateMixedHarmonics(AliFlowEventSimple* anEvent)
 {
- // Evaluate correlators relevant for the flow of resonances.
+ // Evaluate correlators relevant for the mixed harmonics.
  
  // Get the MC reaction plane angle:
- Double_t RP = anEvent->GetMCReactionPlaneAngle();  
+ Double_t dReactionPlane = anEvent->GetMCReactionPlaneAngle();  
  // Get the number of tracks:
  Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
+ Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of Reference Particles
  AliFlowTrackSimple *pTrack = NULL;
  Double_t dPhi1 = 0.;
  Double_t dPhi2 = 0.;
+ Double_t dPt1 = 0.;
+ Double_t dPt2 = 0.;
+ Double_t n = fNinCorrelator; // shortcut
+ Double_t m = fMinCorrelator; // shortcut
  Double_t x = fXinPairAngle; // shortcut
- Double_t n = fHarmonic; // shortcut
  for(Int_t i=0;i<iNumberOfTracks;i++) 
  {
   pTrack = anEvent->GetTrack(i); 
   if(pTrack && pTrack->InRPSelection())
   {
    dPhi1 = pTrack->Phi();
+   dPt1 = pTrack->Pt();
   }
   for(Int_t j=0;j<iNumberOfTracks;j++) 
   {
    if(j==i) continue;
    pTrack = anEvent->GetTrack(j); 
-   if(pTrack && pTrack->InRPSelection())
+   if(pTrack && pTrack->InPOISelection())
    {
     dPhi2 = pTrack->Phi();
+    dPt2 = pTrack->Pt();
    }  
    Double_t dPhiPair = x*dPhi1+(1.-x)*dPhi2;
-   fPairCorrelator[0]->Fill(0.5,TMath::Cos(n*(dPhiPair-RP)),1.); 
-   fPairCorrelator[1]->Fill(0.5,TMath::Sin(n*(dPhiPair-RP)),1.); 
+   Double_t dPtSum = 0.5*(dPt1+dPt2);
+   Double_t dPtDiff = TMath::Abs(dPt1-dPt2);
+   fPairCorrelator[0]->Fill(0.5,TMath::Cos(m*dPhiPair-n*dReactionPlane),1.); 
+   fPairCorrelator[1]->Fill(0.5,TMath::Sin(m*dPhiPair-n*dReactionPlane),1.); 
+   fPairCorrelatorVsM[0]->Fill(nRP+0.5,TMath::Cos(m*dPhiPair-n*dReactionPlane),1.);
+   fPairCorrelatorVsM[1]->Fill(nRP+0.5,TMath::Sin(m*dPhiPair-n*dReactionPlane),1.);
+   fPairCorrelatorVsPtSumDiff[0][0]->Fill(dPtSum,TMath::Cos(m*dPhiPair-n*dReactionPlane),1.);
+   fPairCorrelatorVsPtSumDiff[1][0]->Fill(dPtSum,TMath::Sin(m*dPhiPair-n*dReactionPlane),1.);
+   fPairCorrelatorVsPtSumDiff[0][1]->Fill(dPtDiff,TMath::Cos(m*dPhiPair-n*dReactionPlane),1.);
+   fPairCorrelatorVsPtSumDiff[1][1]->Fill(dPtDiff,TMath::Sin(m*dPhiPair-n*dReactionPlane),1.);
   } // end of for(Int_t j=i+1;j<iNumberOfTracks;j++) 
  } // end of for(Int_t i=0;i<iNumberOfTracks;i++) 
  
-} // end of void AliFlowAnalysisWithMCEventPlane::FlowOfResonances()
+} // end of void AliFlowAnalysisWithMCEventPlane::EvaluateMixedHarmonics()
+
 
 
