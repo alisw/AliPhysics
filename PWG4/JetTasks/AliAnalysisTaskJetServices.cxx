@@ -390,7 +390,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       Bool_t esdTrig = kFALSE;
       esdTrig = AliAnalysisHelperJetTasks::IsTriggerFired(esd,(AliAnalysisHelperJetTasks::Trigger)it);
       if(esdTrig)fh2ESDTriggerCount->Fill(it,kAllTriggered);
-      Bool_t cand = fInputHandler->IsEventSelected();
+      Bool_t cand = physicsSelection;
       if(cand){
 	fh2ESDTriggerCount->Fill(it,kSelectedALICE); 
       }
@@ -418,6 +418,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     for(int it = AliAnalysisHelperJetTasks::kAcceptAll;it < AliAnalysisHelperJetTasks::kTrigger;it++){
       Bool_t aodTrig = kFALSE;
       aodTrig = AliAnalysisHelperJetTasks::IsTriggerFired(aod,(AliAnalysisHelperJetTasks::Trigger)it);
+      Bool_t cand = (aod->GetHeader()->GetOfflineTrigger())&(AliVEvent::kMB);
       if(aodTrig)fh2TriggerCount->Fill(it,kAllTriggered);
       if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
 	if(aodTrig)fh2TriggerCount->Fill(it,kTriggeredVertex);
