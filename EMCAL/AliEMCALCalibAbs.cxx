@@ -39,6 +39,7 @@ AliEMCALCalibAbs::AliEMCALCalibAbs(const int nSM) :
     fSuperModuleData.Add(new AliEMCALSuperModuleCalibAbs(i));
   }
   fSuperModuleData.Compress(); // compress the TObjArray
+  fSuperModuleData.SetOwner(kTRUE); 
 }
 
 //____________________________________________________________________________

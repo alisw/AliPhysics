@@ -211,6 +211,28 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fPeakMinusPedHighGainHisto.Compress();
   fDeadMap.Compress();
 
+  // set owner ship for everyone
+  fPedestalLowGain.SetOwner(kTRUE);
+  fPedestalHighGain.SetOwner(kTRUE);
+  fPedestalLEDRefLowGain.SetOwner(kTRUE);
+  fPedestalLEDRefHighGain.SetOwner(kTRUE);
+  fPeakMinusPedLowGain.SetOwner(kTRUE);
+  fPeakMinusPedHighGain.SetOwner(kTRUE);
+  fPeakMinusPedHighGainHisto.SetOwner(kTRUE);
+  fPedestalLowGainDiff.SetOwner(kTRUE);
+  fPedestalHighGainDiff.SetOwner(kTRUE);
+  fPedestalLEDRefLowGainDiff.SetOwner(kTRUE);
+  fPedestalLEDRefHighGainDiff.SetOwner(kTRUE);
+  fPeakMinusPedLowGainDiff.SetOwner(kTRUE);
+  fPeakMinusPedHighGainDiff.SetOwner(kTRUE);
+  fPedestalLowGainRatio.SetOwner(kTRUE);
+  fPedestalHighGainRatio.SetOwner(kTRUE);
+  fPedestalLEDRefLowGainRatio.SetOwner(kTRUE);
+  fPedestalLEDRefHighGainRatio.SetOwner(kTRUE);
+  fPeakMinusPedLowGainRatio.SetOwner(kTRUE);
+  fPeakMinusPedHighGainRatio.SetOwner(kTRUE);
+  fDeadMap.SetOwner(kTRUE);
+
 }
 
 // dtor
@@ -218,7 +240,29 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
 AliCaloCalibPedestal::~AliCaloCalibPedestal()
 {
   if (fReference) delete fReference;//Delete the reference object, if it has been loaded
-  //TObjArray will delete the histos/profiles when it is deleted.
+
+  // delete also TObjArray's 
+  fPedestalLowGain.Delete();
+  fPedestalHighGain.Delete();
+  fPedestalLEDRefLowGain.Delete();
+  fPedestalLEDRefHighGain.Delete();
+  fPeakMinusPedLowGain.Delete();
+  fPeakMinusPedHighGain.Delete();
+  fPeakMinusPedHighGainHisto.Delete();
+  fPedestalLowGainDiff.Delete();
+  fPedestalHighGainDiff.Delete();
+  fPedestalLEDRefLowGainDiff.Delete();
+  fPedestalLEDRefHighGainDiff.Delete();
+  fPeakMinusPedLowGainDiff.Delete();
+  fPeakMinusPedHighGainDiff.Delete();
+  fPedestalLowGainRatio.Delete();
+  fPedestalHighGainRatio.Delete();
+  fPedestalLEDRefLowGainRatio.Delete();
+  fPedestalLEDRefHighGainRatio.Delete();
+  fPeakMinusPedLowGainRatio.Delete();
+  fPeakMinusPedHighGainRatio.Delete();
+  fDeadMap.Delete();
+
 }
 
 // copy ctor
@@ -292,8 +336,30 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   fPeakMinusPedLowGain.Compress();
   fPeakMinusPedHighGain.Compress();
   fPeakMinusPedHighGainHisto.Compress();
-
   fDeadMap.Compress();
+
+  // set owner ship for everyone
+  fPedestalLowGain.SetOwner(kTRUE);
+  fPedestalHighGain.SetOwner(kTRUE);
+  fPedestalLEDRefLowGain.SetOwner(kTRUE);
+  fPedestalLEDRefHighGain.SetOwner(kTRUE);
+  fPeakMinusPedLowGain.SetOwner(kTRUE);
+  fPeakMinusPedHighGain.SetOwner(kTRUE);
+  fPeakMinusPedHighGainHisto.SetOwner(kTRUE);
+  fPedestalLowGainDiff.SetOwner(kTRUE);
+  fPedestalHighGainDiff.SetOwner(kTRUE);
+  fPedestalLEDRefLowGainDiff.SetOwner(kTRUE);
+  fPedestalLEDRefHighGainDiff.SetOwner(kTRUE);
+  fPeakMinusPedLowGainDiff.SetOwner(kTRUE);
+  fPeakMinusPedHighGainDiff.SetOwner(kTRUE);
+  fPedestalLowGainRatio.SetOwner(kTRUE);
+  fPedestalHighGainRatio.SetOwner(kTRUE);
+  fPedestalLEDRefLowGainRatio.SetOwner(kTRUE);
+  fPedestalLEDRefHighGainRatio.SetOwner(kTRUE);
+  fPeakMinusPedLowGainRatio.SetOwner(kTRUE);
+  fPeakMinusPedHighGainRatio.SetOwner(kTRUE);
+  fDeadMap.SetOwner(kTRUE);
+
 }
 
 // assignment operator; use copy ctor to make life easy..

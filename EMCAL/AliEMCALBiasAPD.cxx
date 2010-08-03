@@ -39,6 +39,7 @@ AliEMCALBiasAPD::AliEMCALBiasAPD(const int nSM) :
     fSuperModuleData.Add(new AliEMCALSuperModuleBiasAPD(i));
   }
   fSuperModuleData.Compress(); // compress the TObjArray
+  fSuperModuleData.SetOwner(kTRUE); 
 }
 
 //____________________________________________________________________________
