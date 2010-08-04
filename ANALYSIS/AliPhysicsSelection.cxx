@@ -705,9 +705,9 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
         fBGTrigClasses.Add  (new TObjString("+CINT1WU-E-NOPF-ALL &0"));
         
         // MB no TRD
-        fCollTrigClasses.Add(new TObjString("+CINT1-B-NOPF-ALLNOTRD &1"));
-        fBGTrigClasses.Add  (new TObjString("+CINT1-AC-NOPF-ALLNOTRD &1"));
-        fBGTrigClasses.Add  (new TObjString("+CINT1-E-NOPF-ALLNOTRD &1"));
+        fCollTrigClasses.Add(new TObjString("+CINT1-B-NOPF-ALLNOTRD -CINT1WU-B-NOPF-ALL &1"));
+        fBGTrigClasses.Add  (new TObjString("+CINT1-AC-NOPF-ALLNOTRD -CINT1WU-AC-NOPF-ALL &1"));
+        fBGTrigClasses.Add  (new TObjString("+CINT1-E-NOPF-ALLNOTRD -CINT1WU-E-NOPF-ALL &1"));
 
 	// MUON
         fCollTrigClasses.Add(new TObjString("+CMUS1WU-B-NOPF-ALL &2"));
