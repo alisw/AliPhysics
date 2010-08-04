@@ -17,7 +17,7 @@
 #ifndef ALIHLTCALOCLUSTERIZERNBYN_H
 #define ALIHLTCALOCLUSTERIZERNBYN_H
 
-#include <AliHLTCaloClusterizer.h>
+#include "AliHLTCaloClusterizer.h"
 
 
 /**

@@ -17,7 +17,7 @@
 #ifndef ALIHLTPHOSCLUSTERIZERCOMPONENTNBYN_H
 #define ALIHLTPHOSCLUSTERIZERCOMPONENTNBYN_H
 
-#include <AliHLTPHOSClusterizerComponent.h>
+#include "AliHLTPHOSClusterizerComponent.h"
 
 
 class AliHLTPHOSClusterizerComponentNbyN : public AliHLTPHOSClusterizerComponent

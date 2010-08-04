@@ -34,7 +34,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include <AliHLTCaloRawAnalyzerComponentv3.h>
+#include "AliHLTCaloRawAnalyzerComponentv3.h"
 
 class AliHLTPHOSRawAnalyzer;
 
