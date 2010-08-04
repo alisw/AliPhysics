@@ -287,7 +287,7 @@ int AliHLTMuonSpectroTriggerComponent::DoTrigger()
 			{
 				HLTWarning("Received a reconstructed hit which indicates"
 					" an invalid chamber number of %d. The expected"
-					" range is [0..9]. The data blockis probably corrupt.",
+					" range is [0..9]. The data block is probably corrupt.",
 					int(chamber)
 				);
 			}
