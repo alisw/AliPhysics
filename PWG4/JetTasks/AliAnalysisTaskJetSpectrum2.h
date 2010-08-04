@@ -184,23 +184,23 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*   fh1DijetMinvCut;         // dijet inv after delta phi cut
     //background histos
     
-    TH1F*         fh1Bkg1;
-    TH1F*         fh1Bkg2;
-    TH1F*         fh1Sigma1;
-    TH1F*         fh1Sigma2;
-    TH1F*         fh1Area1;
-    TH1F*         fh1Area2;
+    TH1F*         fh1Bkg1; //background estimate, all jets
+    TH1F*         fh1Bkg2; //background estimate, wo hardest jet 
+    TH1F*         fh1Sigma1; //background fluctuations, all jets
+    TH1F*         fh1Sigma2; //background fluctuations, wo hardest jet
+    TH1F*         fh1Area1; //average background jet area, all jets 
+    TH1F*         fh1Area2; //average background jet area, wo hardest jet 
 
-    TH1F*         fh1Ptjet;
-    TH1F*         fh1Ptjetsub1;
-    TH1F*         fh1Ptjetsub2;
-    TH1F*         fh1Ptjethardest;
-    TH1F*         fh1Ptjetsubhardest1;
-    TH1F*         fh1Ptjetsubhardest2;
-    TH2F*         fh1Rhovspthardest1;
-    TH2F*         fh1Rhovspthardest2;
-    TH2F*         fh1Errorvspthardest1;
-    TH2F*         fh1Errorvspthardest2;
+    TH1F*         fh1Ptjet; //rec jet spectrum
+    TH1F*         fh1Ptjetsub1;//subtracted jet spectrum (Bkg1) 
+    TH1F*         fh1Ptjetsub2; //subtracted jet spectrum (Bkg2)
+    TH1F*         fh1Ptjethardest; //rec hardest jet spectrum
+    TH1F*         fh1Ptjetsubhardest1;//subtracted hardest jet spectrum (Bkg1)
+    TH1F*         fh1Ptjetsubhardest2;//subtracted hardest jet spectrum (Bkg2)
+    TH2F*         fh1Rhovspthardest1;//rho vs hardest subtracted jet pt (Bkg1)
+    TH2F*         fh1Rhovspthardest2;//rho vs hardest subtracted jet pt (Bkg2)
+    TH2F*         fh1Errorvspthardest1;//relative error vs hardest subtracted jet pt (Bkg1)
+    TH2F*         fh1Errorvspthardest2;//relative error vs hardest subtracted jet pt (Bkg2)
 
     TList *fHistList; // Output list
    
