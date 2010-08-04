@@ -73,4 +73,24 @@ AliHLTTPCDefinitions::~AliHLTTPCDefinitions()
   // see header file for class documentation
 }
 
+bool AliHLTTPCDefinitions::DDLIdToSlicePatch(AliHLTInt32_t ddlid, AliHLTUInt8_t& slice, AliHLTUInt8_t& patch)
+{
+	// Convert DDL ID to patch and slice numbers.
+	
+	if ((AliHLTUInt32_t(ddlid) >> 8) != 0x3) return false;  // Check that detector is TPC.
+	AliHLTUInt32_t ddl = (AliHLTUInt32_t(ddlid) & 0xFF);
+	if (ddl > 215) return false;
+	if (ddl < 72)
+	{
+		slice = ddl / 2;
+		patch = ddl % 2;
+	}
+	else
+	{
+		ddl -= 72;
+		slice = ddl / 4;
+		patch = ddl % 4 + 2;
+	}
+	return true;
+}
     

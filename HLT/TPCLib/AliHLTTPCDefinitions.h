@@ -19,8 +19,6 @@
 class AliHLTTPCDefinitions
 {
 public:
-      AliHLTTPCDefinitions();
-      virtual ~AliHLTTPCDefinitions();
 
 	static AliHLTUInt8_t GetMinSliceNr( const AliHLTComponentBlockData& block )
 		{
@@ -62,6 +60,30 @@ public:
 		{
 		return ((maxSliceNr & 0xFF) << 24) | ((minSliceNr & 0xFF) << 16) | ((maxPatchNr & 0xFF) << 8) | ((minPatchNr & 0xFF));
 		}
+	
+	/**
+	 * Converts a slice and patch number to a DDL ID number for TPC.
+	 * \param slice  The slice number in the range [0..35] (0..17 for A side and 18..35 for C side).
+	 * \param patch  The patch number in the range [0..5].
+	 * \returns the DDL ID number of TPC or -1 if the slice or patch was invalid.
+	 * \note A side is in the -z axis direction (same side as the muon spectrometer)
+	 *       and C side is in the +z axis direction.
+	 */
+	static AliHLTInt32_t SlicePatchToDDLId(AliHLTUInt8_t slice, AliHLTUInt8_t patch)
+		{
+		if (slice > 35 or patch > 5) return -1;
+		return 768 + (patch > 1 ? 72 + 4*slice + patch - 2 : 2*slice + patch);
+		}
+		
+	/**
+	 * Converts a DDL ID number for the TPC to a slice and patch number.
+	 * [in] \param ddlid  The DDL ID number to convert.
+	 * [out] \param slice  The resultant slice number in the range [0..35].
+	 * [out] \param patch  The resultant patch number in the range [0..5].
+	 * \returns true if the DDL ID number was valid and slice and patch were set,
+	 *     otherwise false for an invalid DDL ID.
+	 */
+	static bool DDLIdToSlicePatch(AliHLTInt32_t ddlid, AliHLTUInt8_t& slice, AliHLTUInt8_t& patch);
 
   /** DDL packed RAW data */
   static const AliHLTComponentDataType fgkDDLPackedRawDataType;         // see above
@@ -113,7 +135,13 @@ public:
   /** cluster monte carlo information */
   static const AliHLTComponentDataType fgkAliHLTDataTypeClusterMCInfo;    // see above
 
-  ClassDef(AliHLTTPCDefinitions, 4)
+private:
+
+  /// Do not allow creation of this class since everything is static.
+  AliHLTTPCDefinitions();
+  virtual ~AliHLTTPCDefinitions();
+
+  ClassDef(AliHLTTPCDefinitions, 0)  // Useful static definitions and methods for TPC
 };
 
 #endif
