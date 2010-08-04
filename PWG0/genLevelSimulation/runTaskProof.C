@@ -1,6 +1,6 @@
-void runTaskProof(const char * dataset, const char * datasetpath="/COMMON/COMMON/", const char * outdir="NchDistributions") {
+void runTaskProof(const char * dataset, const char * datasetpath="/COMMON/COMMON/", const char * outdir="") {
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  TProof::Open("alicecaf");
+  TProof::Open("alice-caf","workers=50");
   
   //  gSystem->AddIncludePath("-I${ALICE_ROOT}/include/ -I${ALICE_ROOT}/PWG0/ -I${ALICE_ROOT}/PWG0/dNdEta/");
   gSystem->AddIncludePath("-I${ALICE_ROOT}/include/");
@@ -28,7 +28,7 @@ void runTaskProof(const char * dataset, const char * datasetpath="/COMMON/COMMON
   mgr->SetMCtruthEventHandler(mc);
 
   // assign simple task
-  gProof->Load("AliAnalysisTaskdNdetaMC.cxx+g");
+  gProof->Load(gSystem->ExpandPathName("$(ALICE_ROOT)/PWG0/genLevelSimulation/AliAnalysisTaskdNdetaMC.cxx+g"));
   AliAnalysisTask *task = new AliAnalysisTaskdNdetaMC("TaskdNdeta");
   mgr->AddTask(task);
 
@@ -47,7 +47,7 @@ void runTaskProof(const char * dataset, const char * datasetpath="/COMMON/COMMON
   if (!mgr->InitAnalysis()) return;
 	
   mgr->PrintStatus();
-  mgr->StartAnalysis("proof",Form("%s%s#esdTree",datasetpath,dataset));
+  mgr->StartAnalysis("proof",Form("%s%s#TE",datasetpath,dataset),5000);
   //  mgr->StartAnalysis("proof","/COMMON/COMMON/LHC09b14_7TeV_0.5T_Phojet#esdTree");
 
   if (!strcmp(outdir,"")){

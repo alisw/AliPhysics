@@ -12,8 +12,8 @@ class TGraphErrors;
 
 enum {kHistINEL,kHistNSD,kHistND,kHistSiD,kHistHL,kNHist};
 enum {kEta05,kEta10,kEta14,kNEtaHist};// 
-enum {kPionPos, kProtonPos, kKaonPos,
-      kPionNeg, kProtonNeg, kKaonNeg,
+enum {kPionPos, kProtonPos, kKaonPos, kElectronPos, kMuonPos,
+      kPionNeg, kProtonNeg, kKaonNeg, kElectronNeg, kMuonNeg,
       kNPart}; //Particles used for identified particles pt spectra
 #include "AliAnalysisTaskSE.h"
 
@@ -37,8 +37,8 @@ class AliAnalysisTaskdNdetaMC : public AliAnalysisTaskSE {
   TList * GetList() const { return fMyOut;} 
  private:
   TH1F         *fHistEta[kNHist]; //Eta spectrum 
-  TH1F         *fHistPt[kNHist]; // Pt spectrum  , |eta| < 0.8
-  TH1F         *fHistPtID[kNHist][kNPart]; //Pt identified particles, |y| < 0.5 
+  TH1F         *fHistPt[kNHist+1]; // Pt spectrum  , |eta| < 0.8
+  TH1F         *fHistPtID[kNHist][kNPart+1]; //Pt identified particles, |y| < 0.5 
   
   TGraphErrors *fNchDens; // <dN/deta>
   TList * fMyOut; // list of output histos
@@ -53,8 +53,10 @@ class AliAnalysisTaskdNdetaMC : public AliAnalysisTaskSE {
   AliAnalysisTaskdNdetaMC(const AliAnalysisTaskdNdetaMC&); // not implemented
   AliAnalysisTaskdNdetaMC& operator=(const AliAnalysisTaskdNdetaMC&); // not implemented
   
-  static Int_t fPDGCodes[kNPart]; // array of PDG codes of particles for ID Spectra plots
-  static const char *  fPartNames[kNPart]; // array of particles names for ID Spectra plots
+  static Int_t fPDGCodes[kNPart+1]; // array of PDG codes of particles for ID Spectra plots
+  static const char *  fPartNames[kNPart+1]; // array of particles names for ID Spectra plots
+
+  TH1F * fHistSpecies; // Histogram of particle species contributing to primaries
 
   ClassDef(AliAnalysisTaskdNdetaMC, 2); 
 };
