@@ -40,6 +40,7 @@
 
 #include "AliHLTCaloDefinitions.h"
 #include "AliHLTEMCALDefinitions.h"
+#include "AliHLTCaloClusterizer.h"
 
 
 AliHLTEMCALClusterizerComponent gAliHLTEMCALClusterizerComponent;
@@ -103,7 +104,9 @@ AliHLTEMCALClusterizerComponent::Spawn()
 }
 int AliHLTEMCALClusterizerComponent::DoInit(int argc, const char** argv)
 {
-    fRecoParamsPtr = new AliHLTEMCALRecoParamHandler();
+   fClusterizerPtr = new AliHLTCaloClusterizer("EMCAL");
+   
+   fRecoParamsPtr = new AliHLTEMCALRecoParamHandler();
 
     return AliHLTCaloClusterizerComponent::DoInit(argc, argv);
 }
