@@ -39,6 +39,7 @@
 #include "AliHLTCaloDefinitions.h"
 #include "AliHLTPHOSGeometry.h"
 #include "AliHLTPHOSRecoParamHandler.h"
+#include "AliHLTCaloClusterizer.h"
 
 AliHLTPHOSClusterizerComponent gAliHLTPHOSClusterizerComponent;
 
@@ -99,6 +100,8 @@ AliHLTPHOSClusterizerComponent::Spawn()
 
 int AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv)
 {
+   
+   fClusterizerPtr = new AliHLTCaloClusterizer("PHOS");
    
    fRecoParamsPtr = new AliHLTPHOSRecoParamHandler(); 
     
