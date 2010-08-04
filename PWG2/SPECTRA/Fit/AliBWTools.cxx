@@ -21,7 +21,7 @@
 
 using namespace std;
 
-TF1 * AliBWTools::fFuncForNormalized = 0;
+TF1 * AliBWTools::fgFuncForNormalized = 0;
 
 ClassImp(AliBWTools)
 
@@ -80,7 +80,7 @@ TH1 * AliBWTools::GetdNdPtFromOneOverPt(TH1 * h1Pt) {
     
     Double_t pt   = h1Pt->GetBinCenter(ibinx);
     
-    if(pt != 0) {
+    if(pt > 0) {
       cont *= pt;
       err  *= pt;
     } else {
@@ -119,7 +119,7 @@ TH1 * AliBWTools::GetOneOverPtdNdPt(TH1 * hPt) {
     
     Double_t pt   = hPt->GetBinCenter(ibinx);
     
-    if(pt != 0) {
+    if(pt > 0) {
       cont /= pt;
       err  /= pt;
     } else {
@@ -398,16 +398,16 @@ void AliBWTools::GetFromHistoGraphDifferentX(TH1F * h, TF1 * f, TGraphErrors ** 
     Float_t max = h->GetBinLowEdge(ibin+1);
     Double_t xerr = 0;
     Double_t xbar = f->Mean(min,max);
-    // compute x_LW
+    // compute xLW
     Double_t temp = 1./(max-min) * f->Integral(min,max);
     Double_t epsilon   = 0.000000001;
     Double_t increment = 0.0000000001;
-    Double_t x_lw = min;
+    Double_t xLW = min;
 
-    while ((f->Eval(x_lw)- temp) > epsilon) {
-      x_lw += increment;
-      if(x_lw > max) {
-	Printf("Cannot find x_lw");
+    while ((f->Eval(xLW)- temp) > epsilon) {
+      xLW += increment;
+      if(xLW > max) {
+	Printf("Cannot find xLW");
 	break;
       }
     }
@@ -415,7 +415,7 @@ void AliBWTools::GetFromHistoGraphDifferentX(TH1F * h, TF1 * f, TGraphErrors ** 
     if (h->GetBinContent(ibin)!=0) {
       (*gBarycentre)->SetPoint     (ipoint,   xbar, h->GetBinContent(ibin));
       (*gBarycentre)->SetPointError(ipoint,   xerr, h->GetBinError(ibin));
-      (*gXlw)       ->SetPoint     (ipoint,   x_lw, h->GetBinContent(ibin));
+      (*gXlw)       ->SetPoint     (ipoint,   xLW,  h->GetBinContent(ibin));
       (*gXlw)       ->SetPointError(ipoint,   xerr, h->GetBinError(ibin));
       ipoint++;
     }
@@ -483,7 +483,7 @@ void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean,
   Double_t integr  = func->Integral(min,max);
 
   TF1 * f = new TF1(name, var+func->GetName());	// FIXME
-//   fFuncForNormalized = func;// TMP: computing mean pt
+//   fgFuncForNormalized = func;// TMP: computing mean pt
 //   TF1 * f = new TF1(name,GetNormalizedFunc,0,10,npar);// FIXME
 //   for(Int_t ipar = 0; ipar < npar; ipar++){ // FIXME
 //     f->SetParameter(ipar,func->GetParameter(ipar)); // FIXME
@@ -529,12 +529,12 @@ Double_t AliBWTools::GetNormalizedFunc(double * x, double* p){
 
   // Static function used to provide normalized pointer to a function
 
-  Int_t npar = fFuncForNormalized->GetNpar();
+  Int_t npar = fgFuncForNormalized->GetNpar();
   for(Int_t ipar = 0; ipar < npar; ipar++){ // FIXME
-    fFuncForNormalized->SetParameter(ipar,p[ipar]); // FIXME
+    fgFuncForNormalized->SetParameter(ipar,p[ipar]); // FIXME
   }
 
-  return x[0]*fFuncForNormalized->Eval(x[0])/fFuncForNormalized->Integral(0,100);
+  return x[0]*fgFuncForNormalized->Eval(x[0])/fgFuncForNormalized->Integral(0,100);
   
 }
 
@@ -888,6 +888,7 @@ TH1F * AliBWTools::DivideHistoByFunc(TH1F * h, TF1 * f, Bool_t invert){
 
 void AliBWTools::WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr){
 
+  // Performs the weighted mean of npoints number in x with errors in xerr
 
   mean = 0;
   meanerr = 0;
