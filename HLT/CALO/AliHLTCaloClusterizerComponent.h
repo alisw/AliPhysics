@@ -157,7 +157,10 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     
     /** Pointer to reconstruction parameters handler */
     AliHLTCaloRecoParamHandler *fRecoParamsPtr; //! transient
-
+    
+    /** Pointer to the clusterizer it self */
+    AliHLTCaloClusterizer* fClusterizerPtr;                       //! transient
+    
   private:
 
     /** Array of pointers to our digits */
@@ -166,9 +169,6 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     /** Array of pointers to our digits */
     AliHLTCaloDigitDataStruct *fOutputDigitsArray;              //! transient
     
-    /** Pointer to the clusterizer it self */
-    AliHLTCaloClusterizer* fClusterizerPtr;                       //! transient
-
     /** Number of digits in event */
     Int_t fDigitCount;                                            //COMMENT
     

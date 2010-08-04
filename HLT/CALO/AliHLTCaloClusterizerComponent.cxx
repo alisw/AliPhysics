@@ -46,9 +46,9 @@ AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det):
         fDataOrigin('\0'),
         fAnalyserPtr(0),
         fRecoParamsPtr(0),
+        fClusterizerPtr(0),
         fDigitsPointerArray(0),
         fOutputDigitsArray(0),
-        fClusterizerPtr(0),
         fDigitCount(0),
         fCopyDigitsToOuput(kTRUE)
 {
@@ -61,11 +61,10 @@ AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det):
 AliHLTCaloClusterizerComponent::~AliHLTCaloClusterizerComponent()
 {
     //See headerfile for documentation
-    delete fAnalyserPtr;
-    if (fClusterizerPtr)
+    if(fAnalyserPtr)
     {
-        delete fClusterizerPtr;
-        fClusterizerPtr = 0;
+      delete fAnalyserPtr;
+      fAnalyserPtr = 0;
     }
 }
 
@@ -256,8 +255,6 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
     //See headerfile for documentation
 
     fDigitsPointerArray = new AliHLTCaloDigitDataStruct*[fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD()];
-
-    fClusterizerPtr = new AliHLTCaloClusterizer(fCaloConstants->GetDETNAME());
 
     fClusterizerPtr->SetDigitArray(fDigitsPointerArray);
 
