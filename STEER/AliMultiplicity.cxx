@@ -347,7 +347,7 @@ void AliMultiplicity::SetTrackletData(Int_t id, const Float_t* tlet, UInt_t trSP
   fLabels[id]   = Int_t(tlet[4]);
   fLabelsL2[id] = Int_t(tlet[5]);
   fUsedClusT[id] = (((ULong64_t)trSPD2)<<32) + trSPD1;
-  printf("(%d %d)(%d %d)\n",trSPD1&0xffff,trSPD1>>16, trSPD2&0xffff, trSPD2>>16);
+  //  printf("(%d %d)(%d %d)\n",trSPD1&0xffff,trSPD1>>16, trSPD2&0xffff, trSPD2>>16);
   //
 }
 
@@ -358,7 +358,7 @@ void AliMultiplicity::SetSingleClusterData(Int_t id, const Float_t* scl, UInt_t 
   if (id>=fNsingle) {AliError(Form("Number of declared singles %d < %d",fNsingle,id)); return;}
   fThsingle[id]  = scl[0];
   fPhisingle[id] = scl[1];
-  fLabelssingle[id] = scl[2]; 
+  fLabelssingle[id] = Int_t(scl[2]); 
   fUsedClusS[id] = tr;
   //
 }
@@ -368,8 +368,8 @@ Bool_t AliMultiplicity::FreeClustersTracklet(Int_t i, Int_t mode) const
 {
   // return kTRUE if the tracklet was not used by the track (on any of layers) of type mode: 0=TPC/ITS or ITS_SA, 1=ITS_SA_Pure
   if (!fUsedClusT || mode<0 || mode>1 || i<0 || i>fNtracks) return kFALSE;
-  const ULong64_t kMask0 = 0x0000ffff0000ffff;
-  const ULong64_t kMask1 = 0xffff0000ffff0000;
+  const ULong64_t kMask0 = 0x0000ffff0000ffffLL;
+  const ULong64_t kMask1 = 0xffff0000ffff0000LL;
   return (fUsedClusT[i]&(mode ? kMask1:kMask0)) == 0;
 }
 
@@ -382,7 +382,7 @@ Bool_t AliMultiplicity::GetTrackletTrackIDs(Int_t i, Int_t mode, Int_t &spd1, In
   //
   // note: stored value:  [(idSAPureSPD2+1)<<16+(idTPCITS/SA_SPD2+1)]<<32 +  [(idSAPureSPD1+1)<<16+(idTPCITS/SA_SPD1+1)]
   if (!fUsedClusT || mode<0 || mode>1 || i<0 || i>fNtracks) {spd1 = spd2 = -1; return kFALSE;}
-  spd1 = (fUsedClusT[i]&0xffffffff);
+  spd1 = (fUsedClusT[i]&0xffffffffLL);
   spd2 = (fUsedClusT[i]>>32);
   if (mode) {
     spd1 >>= 16;
