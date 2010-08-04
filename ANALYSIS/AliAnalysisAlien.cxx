@@ -392,7 +392,7 @@ void AliAnalysisAlien::CdWork()
    }   
    // Work directory not existing - create it
    gGrid->Cd(homedir);
-   if (gGrid->Mkdir(workdir)) {
+   if (gGrid->Mkdir(workdir, "-p")) {
       gGrid->Cd(fGridWorkingDir);
       Info("CreateJDL", "\n#####   Created alien working directory %s", fGridWorkingDir.Data());
    } else {
@@ -917,7 +917,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
       } else {
          if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s", workdir.Data(), fGridOutputDir.Data());
          if (!DirectoryExists(fGridOutputDir)) {
-            if (gGrid->Mkdir(fGridOutputDir)) {
+            if (gGrid->Mkdir(fGridOutputDir,"-p")) {
                Info("CreateJDL", "\n#####   Created alien output directory %s", fGridOutputDir.Data());
             } else {
                Error("CreateJDL", "Could not create alien output directory %s", fGridOutputDir.Data());
@@ -1123,7 +1123,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
       } else {
          if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s", workdir.Data(), fGridOutputDir.Data());
          if (!fProductionMode && !DirectoryExists(fGridOutputDir)) {
-            if (gGrid->Mkdir(fGridOutputDir)) {
+            if (gGrid->Mkdir(fGridOutputDir,"-p")) {
                Info("CreateJDL", "\n#####   Created alien output directory %s", fGridOutputDir.Data());
             } else {
                Error("CreateJDL", "Could not create alien output directory %s", fGridOutputDir.Data());
@@ -3096,7 +3096,7 @@ void AliAnalysisAlien::WriteExecutable()
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
       TString bindir = Form("%s/bin", workdir.Data());
-      if (!DirectoryExists(bindir)) gGrid->Mkdir(bindir);
+      if (!DirectoryExists(bindir)) gGrid->Mkdir(bindir,"-p");
       workdir += fGridWorkingDir;
       TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), fExecutable.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
@@ -3154,7 +3154,7 @@ void AliAnalysisAlien::WriteMergeExecutable()
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
       TString bindir = Form("%s/bin", workdir.Data());
-      if (!DirectoryExists(bindir)) gGrid->Mkdir(bindir);
+      if (!DirectoryExists(bindir)) gGrid->Mkdir(bindir,"-p");
       workdir += fGridWorkingDir;
       TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), mergeExec.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
