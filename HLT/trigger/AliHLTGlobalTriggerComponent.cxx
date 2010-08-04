@@ -20,7 +20,7 @@
 /// @date   26 Nov 2008
 /// @brief  Implementation of the AliHLTGlobalTriggerComponent component class.
 ///
-/// The AliHLTGlobalTriggerComponentComponent class applies the global HLT trigger to all
+/// The AliHLTGlobalTriggerComponent class applies the global HLT trigger to all
 /// trigger information produced by components deriving from AliHLTTrigger.
 
 #include "AliHLTGlobalTriggerComponent.h"
