@@ -191,11 +191,11 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   ResetVertex();
   TClonesArray *itsRec  = 0;
   // lc1 and gc1 are local and global coordinates for layer 1
-  Float_t lc1[3]; for(Int_t ii=0; ii<3; ii++) lc1[ii]=0.;
-  Float_t gc1[3]; for(Int_t ii=0; ii<3; ii++) gc1[ii]=0.;
+  Float_t lc1[3]={0.,0.,0.}; // for(Int_t ii=0; ii<3; ii++) lc1[ii]=0.;
+  Float_t gc1[3]={0.,0.,0.}; // ; for(Int_t ii=0; ii<3; ii++) gc1[ii]=0.;
   // lc2 and gc2 are local and global coordinates for layer 2
-  Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
-  Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
+  Float_t lc2[3]={0.,0.,0.}; // ; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
+  Float_t gc2[3]={0.,0.,0.}; //; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
   itsRec=rpcont->FetchClusters(0,itsClusterTree);
   if(!rpcont->IsSPDActive()){
@@ -235,54 +235,66 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   Float_t theta2BP=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(dBP);
   Float_t theta2L1=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(dL1);
 */
+  Int_t nEntriesMod[kNSPDMod];
+  TClonesArray* recpArr[kNSPDMod];
+  for(Int_t modul=0; modul<kNSPDMod; ++modul) {
+    if(!fUseModule[modul]) {
+      nEntriesMod[modul]=0;
+      recpArr[modul]=0;
+    } else {
+      recpArr[modul]=rpcont->UncheckedGetClusters(modul);
+      nEntriesMod[modul]=recpArr[modul]->GetEntriesFast();
+    }
+  }
+      
   Int_t maxdim=TMath::Min(nrpL1*nrpL2,50000);  // temporary; to limit the size in PbPb
   static TClonesArray points("AliITSZPoint",maxdim);
   Int_t nopoints =0;
   for(Int_t modul1= fFirstL1; modul1<=fLastL1;modul1++){   // Loop on modules of layer 1
     if(!fUseModule[modul1]) continue;
     UShort_t ladder=int(modul1/4)+1;  // ladders are numbered starting from 1
-    TClonesArray *prpl1=rpcont->UncheckedGetClusters(modul1);
-    Int_t nrecp1 = prpl1->GetEntries();
+    TClonesArray *prpl1=recpArr[modul1]; //rpcont->UncheckedGetClusters(modul1);
+    Int_t nrecp1 = nEntriesMod[modul1]; //prpl1->GetEntries();
     for(Int_t j1=0;j1<nrecp1;j1++){
-      AliITSRecPoint *recp = (AliITSRecPoint*)prpl1->At(j1);
-      recp->GetGlobalXYZ(gc1);
+      AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1->At(j1);
+      recp1->GetGlobalXYZ(gc1);
       gc1[0]-=GetNominalPos()[0]; // Possible beam offset in the bending plane
       gc1[1]-=GetNominalPos()[1]; //   "               "
-      Float_t r1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
       Float_t phi1 = TMath::ATan2(gc1[1],gc1[0]);
-      if(phi1<0)phi1+=2*TMath::Pi();
-      Float_t zc1=gc1[2];
-      Float_t erz1=recp->GetSigmaZ2();
+      if(phi1<0)phi1+=TMath::TwoPi();
       for(Int_t ladl2=0 ; ladl2<fLadOnLay2*2+1;ladl2++){
 	for(Int_t k=0;k<4;k++){
  	  Int_t ladmod=fLadders[ladder-1]+ladl2;
 	  if(ladmod>AliITSgeomTGeo::GetNLadders(2)) ladmod=ladmod-AliITSgeomTGeo::GetNLadders(2);
 	  Int_t modul2=AliITSgeomTGeo::GetModuleIndex(2,ladmod,k+1);
 	  if(!fUseModule[modul2]) continue;
-	  itsRec=rpcont->UncheckedGetClusters(modul2);
-	  Int_t nrecp2 = itsRec->GetEntries();
+	  itsRec=recpArr[modul2]; // rpcont->UncheckedGetClusters(modul2);
+	  Int_t nrecp2 = nEntriesMod[modul2]; // itsRec->GetEntries();
 	  for(Int_t j2=0;j2<nrecp2;j2++){
-	    recp = (AliITSRecPoint*)itsRec->At(j2);
-	    recp->GetGlobalXYZ(gc2);
+	    AliITSRecPoint *recp2 = (AliITSRecPoint*)itsRec->At(j2);
+	    recp2->GetGlobalXYZ(gc2);
 	    gc2[0]-=GetNominalPos()[0];
 	    gc2[1]-=GetNominalPos()[1];
-	    Float_t r2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
 	    Float_t phi2 = TMath::ATan2(gc2[1],gc2[0]);
-	    if(phi2<0)phi2+=2*TMath::Pi();
-	    Float_t zc2=gc2[2];
-	    Float_t erz2=recp->GetSigmaZ2();
+	    if(phi2<0)phi2+=TMath::TwoPi();
 
 	    Float_t diff = TMath::Abs(phi2-phi1); 
-	    if(diff>TMath::Pi())diff=2.*TMath::Pi()-diff;
+	    if(diff>TMath::Pi())diff=TMath::TwoPi()-diff;
 	    if(diff<fDiffPhiMax){
+	      Float_t r1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
+	      Float_t zc1=gc1[2];
+	      Float_t erz1=recp1->GetSigmaZ2();
+	      Float_t r2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
+	      Float_t zc2=gc2[2];
+	      Float_t erz2=recp2->GetSigmaZ2();
 	      //	Float_t tgth=(zc2[j]-zc1[i])/(r2-r1); // slope (used for multiple scattering)
 	      Float_t zr0=(r2*zc1-r1*zc2)/(r2-r1); //Z @ null radius
-	      Float_t ezr0q=(r2*r2*erz1+r1*r1*erz2)/(r2-r1)/(r2-r1); //error on Z @ null radius
-	 /*
-         // Multiple scattering
-        ezr0q+=r1*r1*(1+tgth*tgth)*theta2L1/2; // multiple scattering in layer 1
-        ezr0q+=rBP*rBP*(1+tgth*tgth)*theta2BP/2; // multiple scattering in beam pipe
-	*/
+	      Float_t ezr0q=(r2*r2*erz1+r1*r1*erz2)/((r2-r1)*(r2-r1)); //error on Z @ null radius
+	      /*
+	      // Multiple scattering
+	      ezr0q+=r1*r1*(1+tgth*tgth)*theta2L1/2; // multiple scattering in layer 1
+	      ezr0q+=rBP*rBP*(1+tgth*tgth)*theta2BP/2; // multiple scattering in beam pipe
+	      */
 	      if(nopoints<maxdim) new(points[nopoints++])AliITSZPoint(zr0,ezr0q);	      
 	      fZCombc->Fill(zr0);
 	    }
