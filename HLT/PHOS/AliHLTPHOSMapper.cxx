@@ -28,14 +28,17 @@
 #include "unistd.h"
 #include <iostream>
 #include "AliHLTPHOSCoordinate.h"
+#include "AliPHOSRecoParam.h"
+#include "AliAltroMapping.h"
+
 
 AliHLTPHOSMapper::AliHLTPHOSMapper():  
    AliHLTCaloMapper(0,"PHOS") 
    ,fIsInitializedMapping(false)
+   ,fDDLMapInitialised(false)
    ,fModuleId(-1)
    ,fDDLId(-1)
 {
-  InitDDLSpecificationMapping();
   sprintf(fFilepath, "./");
 }
 
@@ -53,10 +56,21 @@ AliHLTPHOSMapper::InitAltroMapping(const unsigned long specification)
   // Loads mapping between Altro addresses and geometrical addresses from file
 
   //  HLTError("Initialising ALTRO map");
+  
+  if(!fDDLMapInitialised) InitDDLSpecificationMapping();
 
   fDDLId = GetDDLFromSpec(specification);
   Int_t modId = GetModuleFromSpec(specification);
 
+  const TObjArray* maps = AliPHOSRecoParam::GetMappings();
+  if(!maps) 
+  {
+     HLTError("Cannot retrieve ALTRO mappings!!");
+     return false;
+  }
+
+  AliAltroMapping *map = 
+  
   char *base =  getenv("ALICE_ROOT");
 
   if ( base )
@@ -171,6 +185,7 @@ AliHLTPHOSMapper::GetIsInitializedMapping()
 Int_t
 AliHLTPHOSMapper::GetChannelID(Int_t hwAddress)
 {
+  if(!fDDLMapInitialised) InitDDLSpecificationMapping();
 
   //  HLTError("HW add: %d -> x: %d, z: %d, gain: %d", fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[fDDLId].fRcuXOffset,
   //	   fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[fDDLId].fRcuZOffset,
@@ -185,7 +200,9 @@ AliHLTPHOSMapper::GetChannelID(Int_t hwAddress)
 Int_t
 AliHLTPHOSMapper::GetChannelID(AliHLTUInt32_t specification, Int_t hwAddress)
 {
-  
+
+   if(!fDDLMapInitialised) InitDDLSpecificationMapping();
+
   Short_t index = 0;
 
   if(specification == 0x00001) index = 0;

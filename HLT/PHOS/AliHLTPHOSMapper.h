@@ -69,6 +69,9 @@ class AliHLTPHOSMapper : public AliHLTCaloMapper
 
  private:
   bool fIsInitializedMapping;
+  
+  /** Flag for initialised DDL map */
+  bool fDDLMapInitialised;
 
   AliHLTPHOSMapper(const AliHLTPHOSMapper & );
   AliHLTPHOSMapper & operator = (const AliHLTPHOSMapper &);
