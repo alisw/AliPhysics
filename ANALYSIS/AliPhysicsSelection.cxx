@@ -186,7 +186,7 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
   // format of trigger: +TRIGGER1 -TRIGGER2 [#XXX] [&YY]
   //   requires TRIGGER1 and rejects TRIGGER2
   //   in bunch crossing XXX
-  //   if successful, a word with bit YY set is returned (for association between entry in fCollTrigClasses and AliVEvent::EOfflineTriggerTypes)
+  //   if successful, YY is returned (for association between entry in fCollTrigClasses and AliVEvent::EOfflineTriggerTypes)
   
   Bool_t foundBCRequirement = kFALSE;
   Bool_t foundCorrectBC = kFALSE;
@@ -238,7 +238,7 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
     {
       str2.Remove(0, 1);
       
-      returnCode = 1 << str2.Atoi();
+      returnCode = str2.Atoll();
     }
     else
       AliFatal(Form("Invalid trigger syntax: %s", trigger));
@@ -687,52 +687,39 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
         
       case 1:
       	// trigger classes used before August 2010
-        fCollTrigClasses.Add(new TObjString(Form("%s%s &0","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"))));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &0","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"))));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &0","+CINT1C-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"))));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &0","+CINT1-E-NOPF-ALL",      GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"))));
+        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1C-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CINT1-E-NOPF-ALL",      GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"), (UInt_t) AliVEvent::kMB)));
 
         // Muon trigger have the same BXIDs of the corresponding CINT triggers
-        fCollTrigClasses.Add(new TObjString(Form("%s%s &2","+CMUS1B-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"))));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &2","+CMUS1A-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"))));
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &2","+CMUS1C-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"))));	    
-        fBGTrigClasses.Add  (new TObjString(Form("%s%s &2","+CMUS1-E-NOPF-MUON"    ,  GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"))));
+        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u","+CMUS1B-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CMUS1A-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CMUS1C-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u","+CMUS1-E-NOPF-MUON"    ,  GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"), (UInt_t) AliVEvent::kMUON)));
         
         // triggers classes used from August 2010
         // MB
-        fCollTrigClasses.Add(new TObjString("+CINT1WU-B-NOPF-ALL &0"));
-        fBGTrigClasses.Add  (new TObjString("+CINT1WU-AC-NOPF-ALL &0"));
-        fBGTrigClasses.Add  (new TObjString("+CINT1WU-E-NOPF-ALL &0"));
+        fCollTrigClasses.Add(new TObjString(Form("+CINT1-B-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMB)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CINT1-AC-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMB)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CINT1-E-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMB)));
         
-        // MB no TRD
-        fCollTrigClasses.Add(new TObjString("+CINT1-B-NOPF-ALLNOTRD -CINT1WU-B-NOPF-ALL &1"));
-        fBGTrigClasses.Add  (new TObjString("+CINT1-AC-NOPF-ALLNOTRD -CINT1WU-AC-NOPF-ALL &1"));
-        fBGTrigClasses.Add  (new TObjString("+CINT1-E-NOPF-ALLNOTRD -CINT1WU-E-NOPF-ALL &1"));
-
 	// MUON
-        fCollTrigClasses.Add(new TObjString("+CMUS1WU-B-NOPF-ALL &2"));
-        fBGTrigClasses.Add  (new TObjString("+CMUS1WU-AC-NOPF-ALL &2"));
-        fBGTrigClasses.Add  (new TObjString("+CMUS1WU-E-NOPF-ALL &2"));
-
-        fCollTrigClasses.Add(new TObjString("+CMUS1-B-NOPF-ALLNOTRD &2"));
-        fBGTrigClasses.Add  (new TObjString("+CMUS1-AC-NOPF-ALLNOTRD &2"));
-        fBGTrigClasses.Add  (new TObjString("+CMUS1-E-NOPF-ALLNOTRD &2"));
+        fCollTrigClasses.Add(new TObjString(Form("+CMUS1-B-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMUON)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMUS1-AC-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMUON)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CMUS1-E-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMUON)));
 
 	// High Multiplicity
-        fCollTrigClasses.Add(new TObjString("+CSH1WU-B-NOPF-ALL &3"));
-        fBGTrigClasses.Add  (new TObjString("+CSH1WU-AC-NOPF-ALL &3"));
-        fBGTrigClasses.Add  (new TObjString("+CSH1WU-E-NOPF-ALL &3"));
-
-        fCollTrigClasses.Add(new TObjString("+CSH1-B-NOPF-ALLNOTRD &3"));
-        fBGTrigClasses.Add  (new TObjString("+CSH1-AC-NOPF-ALLNOTRD &3"));
-        fBGTrigClasses.Add  (new TObjString("+CSH1-E-NOPF-ALLNOTRD &3"));
+        fCollTrigClasses.Add(new TObjString(Form("+CSH1-B-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kHighMult)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CSH1-AC-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kHighMult)));
+        fBGTrigClasses.Add  (new TObjString(Form("+CSH1-E-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kHighMult)));
 
         break;
         
       case 2:
-        fCollTrigClasses.Add(new TObjString("+CSMBB-ABCE-NOPF-ALL &0"));
-        fBGTrigClasses.Add(new TObjString("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &0"));
-        fBGTrigClasses.Add(new TObjString("+CSMBC-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &0"));
+        fCollTrigClasses.Add(new TObjString(Form("+CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
+        fBGTrigClasses.Add(new TObjString(Form("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
+        fBGTrigClasses.Add(new TObjString(Form("+CSMBC-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL &%u", (UInt_t) AliVEvent::kMB)));
         break;
         
       case 3:

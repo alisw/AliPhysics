@@ -23,8 +23,8 @@ class AliVEvent : public TObject {
 
 public:
   enum EOfflineTriggerTypes { 
-      kMB           = BIT(0), // Minimum bias trigger (interaction trigger, offline SPD or V0 selection, all detectors read out)
-      kMBNoTRD      = BIT(1), // Same as kMB, but TRD not read out (i.e. no TRD pretrigger)
+      kMB           = BIT(0), // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
+                              // empty slot
       kMUON         = BIT(2), // Muon trigger, offline SPD or V0 selection
       kHighMult     = BIT(3), // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
       kUserDefined  = BIT(31), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection

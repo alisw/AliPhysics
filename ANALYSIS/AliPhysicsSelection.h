@@ -82,7 +82,7 @@ public:
   
   void SetUseBXNumbers(Bool_t flag = kTRUE) {fUseBXNumbers = flag;}
   void SetComputeBG   (Bool_t flag = kTRUE) {fComputeBG    = flag; if(flag) fUseBXNumbers = flag;}
-  void SetUseMuonTriggers(Bool_t flag = kTRUE) {fUseMuonTriggers = flag;}
+  void SetUseMuonTriggers(Bool_t flag = kTRUE) { Printf("ERROR: Use of AliPhysicsSelection::SetUseMuonTriggers is deprecated. Use AliVEvent::kMUON selection instead.", flag); }
   void SetBin0Callback( const char * cb) {fBin0CallBack = cb;} 
   void SetBin0CallbackViaPointer( Bin0Callback_t cb) {fBin0CallBackPointer = cb;}// WARNING: THIS SHOULD NOT BE USED, WILL BE REMOVED SOON
   
