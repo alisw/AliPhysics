@@ -101,6 +101,17 @@ bool CheckDDLToSlicePatchConversion()
 					<< endl;
 				return false;
 			}
+			if (AliHLTTPCDefinitions::SlicePatchToDDLId(slice2, patch2) != ddlid2)
+			{
+				cerr << "ERROR: AliHLTTPCDefinitions::DDLIdToSlicePatch("
+					<< ddlid2 << ") generated a slice value of "
+					<< int(slice2) << " and patch value of "
+					<< int(patch2) << ", which gives a different DDL ID with the"
+					<< " inverse map given by AliHLTTPCDefinitions::SlicePatchToDDLId("
+					<< int(slice2) << ", " << int(patch2) << ")."
+					<< endl;
+				return false;
+			}
 		}
 		else
 		{
