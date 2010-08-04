@@ -9,6 +9,7 @@ include $(MODDIR)/hlt.conf
 #CLASS_HDRS:=	  AliHLTPHOSAgent.h 
 
 CLASS_HDRS:=  AliHLTPHOSClusterizerComponent.h \
+		  AliHLTPHOSClusterizerComponentNbyN.h \
 		  AliHLTPHOSDefinitions.h \
 		  AliHLTPHOSRawAnalyzer.h \
 		  AliHLTPHOSRawAnalyzerComponentv3.h \
