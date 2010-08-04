@@ -30,7 +30,7 @@ class AliParamSolver: public TObject
   AliParamSolver& operator=(const AliParamSolver& src);
   ~AliParamSolver();
   //
-  void    AddEquation(const Double_t* dGl,const Double_t *dLc,const Double_t *res,const Double_t *covI);
+  void    AddEquation(const Double_t* dGl,const Double_t *dLc,const Double_t *res,const Double_t *covI,Double_t sclErrI=-1.);
   void    AddConstraint(Int_t parID, Double_t val, Double_t err2inv);
   Bool_t  Solve(Bool_t obtainCov=kFALSE);
   Bool_t  SolveGlobals(Bool_t obtainCov=kFALSE);
