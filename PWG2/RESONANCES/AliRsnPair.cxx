@@ -146,7 +146,31 @@ Bool_t AliRsnPair::Fill
   if (!fCutManager.PassMotherCuts(&fMother)) return kFALSE;
   
   // if required a true pair, check this here and eventually return a fail message
-  if (fOnlyTrue && !fMother.MatchesDef(fPairDef)) return kFALSE;
+  if (fOnlyTrue)
+  {
+    // are we in a MonteCarlo?
+    if (!daughter0->GetParticle() || !daughter1->GetParticle()) return kFALSE;
+    
+    // are the daughters really secondaries (in MC)?
+    Int_t m0 = daughter0->GetParticle()->GetFirstMother();
+    Int_t m1 = daughter1->GetParticle()->GetFirstMother();
+    if (m0 < 0 || m1 < 0) return kFALSE;
+    
+    // if they are, do they come from the same mother?
+    if (m0 != m1) return kFALSE;
+    
+    // if they do, is this mother the correct type?
+    if (daughter0->GetMotherPDG() != fPairDef->GetMotherPDG()) return kFALSE;
+    if (daughter1->GetMotherPDG() != fPairDef->GetMotherPDG()) return kFALSE;
+    
+    // do they match the expected decay channel (that is, are they the expected types)?
+    Int_t pdg0 = TMath::Abs(daughter0->GetParticle()->GetPdgCode());
+    Int_t pdg1 = TMath::Abs(daughter1->GetParticle()->GetPdgCode());
+    if (AliPID::ParticleCode(fPairDef->GetPID(0)) != pdg0) return kFALSE;
+    if (AliPID::ParticleCode(fPairDef->GetPID(1)) != pdg1) return kFALSE;
+    
+    // ok... if we arrive here that must really be a true pair! :-)
+  }
 
   AliDebug(AliLog::kDebug+2,"->");
   

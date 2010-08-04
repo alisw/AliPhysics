@@ -124,17 +124,6 @@ void AliRsnCutESD2010::Initialize()
 //
 // Main constructor.
 //
-
-  // setup TPC response
-  fESDpid = new AliESDpid;
-  fESDpid->GetTPCResponse().SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
-  
-  // setup TOF maker & calibration
-  fTOFcalib = new AliTOFcalib;
-  fTOFcalib->SetCorrectTExp(fTOFcorrectTExp);
-  fTOFmaker = new AliTOFT0maker(fESDpid, fTOFcalib);
-  fTOFmaker->SetTimeResolution(fTOFresolution);
-  fLastRun = -1;
 }
 
 //_________________________________________________________________________________________________
@@ -155,12 +144,26 @@ void AliRsnCutESD2010::SetEvent(AliRsnEvent *event)
     fEvent = event;
   }
   
+  // if absent, initialize ESD pid responst
+  if (!fESDpid)
+  {
+    fESDpid = new AliESDpid;
+    fESDpid->GetTPCResponse().SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
+  }
+  
   // initialize DB to current run
   Int_t run = esd->GetRunNumber();
   if (run != fLastRun)
   {
     cout << "Run = " << run << " -- LAST = " << fLastRun << endl;
     fLastRun = run;
+    
+    // setup TOF maker & calibration
+    if (!fTOFcalib) fTOFcalib = new AliTOFcalib;
+    fTOFcalib->SetCorrectTExp(fTOFcorrectTExp);
+    if (!fTOFmaker) fTOFmaker = new AliTOFT0maker(fESDpid, fTOFcalib);
+    fTOFmaker->SetTimeResolution(fTOFresolution);
+      
     AliCDBManager *cdb = AliCDBManager::Instance();
     cdb->SetDefaultStorage("raw://");
     cdb->SetRun(run);

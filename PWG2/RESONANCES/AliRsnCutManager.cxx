@@ -18,40 +18,40 @@ ClassImp(AliRsnCutManager)
 //_____________________________________________________________________________
 AliRsnCutManager::AliRsnCutManager() :
   TNamed("defaultName", "defaultTitle"),
+  fDaughterCutsCommon(0x0),
+  fDaughterCuts1(0x0),
+  fDaughterCuts2(0x0),
   fMotherCuts(0x0)
 {
 //
 // Constructor without arguments.
 //
-
-  Int_t i;
-  for (i = 0; i < 3; i++) fDaughterCuts[i] = 0x0;
 }
 
 //_____________________________________________________________________________
 AliRsnCutManager::AliRsnCutManager(const char *name, const char *title) :
   TNamed(name, title),
+  fDaughterCutsCommon(0x0),
+  fDaughterCuts1(0x0),
+  fDaughterCuts2(0x0),
   fMotherCuts(0x0)
 {
 //
 // Constructor with name and title.
 //
-
-  Int_t i;
-  for (i = 0; i < 3; i++) fDaughterCuts[i] = 0x0;
 }
 
 //_____________________________________________________________________________
 AliRsnCutManager::AliRsnCutManager(const AliRsnCutManager &cut) :
   TNamed(cut),
+  fDaughterCutsCommon(cut.fDaughterCutsCommon),
+  fDaughterCuts1(cut.fDaughterCuts1),
+  fDaughterCuts2(cut.fDaughterCuts2),
   fMotherCuts(cut.fMotherCuts)
 {
 //
 // Constructor with name and title.
 //
-
-  Int_t i;
-  for (i = 0; i < 3; i++) fDaughterCuts[i] = cut.fDaughterCuts[i];
 }
 
 AliRsnCutManager& AliRsnCutManager::operator=(const AliRsnCutManager &cut)
@@ -63,10 +63,10 @@ AliRsnCutManager& AliRsnCutManager::operator=(const AliRsnCutManager &cut)
   SetName(cut.GetName());
   SetTitle(cut.GetTitle());
   
-  Int_t i;
-  for (i = 0; i < 3; i++) fDaughterCuts[i] = cut.fDaughterCuts[i];
-  
-  fMotherCuts = cut.fMotherCuts;
+  fDaughterCuts2      = cut.fDaughterCuts2;
+  fDaughterCuts1      = cut.fDaughterCuts1;
+  fDaughterCutsCommon = cut.fDaughterCutsCommon;
+  fMotherCuts         = cut.fMotherCuts;
   
   return (*this);
 }
@@ -79,9 +79,9 @@ AliRsnCutManager::~AliRsnCutManager()
 // Deletes all cut definitions.
 //
 
-  Int_t i;
-  for (i = 0; i < 3; i++) delete fDaughterCuts[i];
-  
+  delete fDaughterCuts2;
+  delete fDaughterCuts1;
+  delete fDaughterCutsCommon;
   delete fMotherCuts;
 }
 
@@ -92,8 +92,8 @@ void AliRsnCutManager::SetEvent(AliRsnEvent *event)
 // Sets reference event in all cut sets
 //
 
-  Int_t i;
-  for (i = 0; i < 3; i++) if (fDaughterCuts[i]) fDaughterCuts[i]->SetEvent(event);
-  
-  if (fMotherCuts) fMotherCuts->SetEvent(event);
+  if (fDaughterCuts2     ) fDaughterCuts2      ->SetEvent(event);
+  if (fDaughterCuts1     ) fDaughterCuts1      ->SetEvent(event);
+  if (fDaughterCutsCommon) fDaughterCutsCommon ->SetEvent(event);
+  if (fMotherCuts        ) fMotherCuts         ->SetEvent(event);
 }
