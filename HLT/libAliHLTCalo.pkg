@@ -18,6 +18,7 @@ AliHLTCaloSharedMemoryInterfacev2.h \
 AliHLTCaloFourier.h \
 AliHLTCaloConstantsHandler.h \
 AliHLTCaloClusterizer.h \
+AliHLTCaloClusterizerNbyN.h \
 AliHLTCaloClusterizerComponent.h \
 AliHLTCaloDigitMaker.h \
 AliHLTCaloClusterAnalyser.h \
