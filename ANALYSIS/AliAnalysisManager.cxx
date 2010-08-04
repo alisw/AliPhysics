@@ -81,7 +81,9 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fCommonOutput(NULL),
                     fSelector(NULL),
                     fGridHandler(NULL),
-                    fExtraFiles("")
+                    fExtraFiles(""),
+                    fAutoBranchHandling(kTRUE), 
+                    fTable()
 {
 // Default constructor.
    fgAnalysisManager = this;
@@ -123,7 +125,9 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fCommonOutput(NULL),
                     fSelector(NULL),
                     fGridHandler(NULL),
-                    fExtraFiles()
+                    fExtraFiles(),
+                    fAutoBranchHandling(other.fAutoBranchHandling), 
+                    fTable()
 {
 // Copy constructor.
    fTasks      = new TObjArray(*other.fTasks);
@@ -169,6 +173,8 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fExtraFiles = other.fExtraFiles;
       fgCommonFileName = "AnalysisResults.root";
       fgAnalysisManager = this;
+      fAutoBranchHandling = other.fAutoBranchHandling;
+      fTable.Clear("nodelete"); 
    }
    return *this;
 }
@@ -198,6 +204,8 @@ Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 {
 // Read one entry of the tree or a whole branch.
    fCurrentEntry = entry;
+   if (!fAutoBranchHandling)
+     return entry;
    return fTree ? fTree->GetTree()->GetEntry(entry, getall) : 0;
 }
    
@@ -264,6 +272,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
    if (!fInitOK) InitAnalysis();
    if (!fInitOK) return kFALSE;
    fTree = tree;
+   fTable.Rehash(100);
    AliAnalysisDataContainer *top = fCommonInput;
    if (!top) top = (AliAnalysisDataContainer*)fInputs->At(0);
    if (!top) {
@@ -360,6 +369,8 @@ Bool_t AliAnalysisManager::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
    if (!fTree) return kFALSE;
+
+   fTable.Clear("nodelete"); // clearing the hash table may not be needed -> C.L.
    if (fMode == kProofAnalysis) fIsRemote = kTRUE;
 
    TFile *curfile = fTree->GetCurrentFile();
@@ -387,6 +398,7 @@ Bool_t AliAnalysisManager::Notify()
    if (fMCtruthEventHandler) {
        fMCtruthEventHandler->Notify(curfile->GetName());
    }
+
    if (fDebug > 1) printf("<-AliAnalysisManager::Notify()\n");
    return kTRUE;
 }    
@@ -1976,4 +1988,26 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
       nrefresh = 0;
       fprintf(stderr, "\n");
    }   
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::DoLoadBranch(const char *name) 
+{
+  // Get tree and load branch if needed.
+
+  if (!fTree)
+    return;
+
+  TBranch *br = dynamic_cast<TBranch*>(fTable.FindObject(name));
+  if (!br) {
+    br = fTree->GetBranch(name);
+    if (!br) {
+      Error("DoLoadBranch",Form("Could not find branch %s",name));
+      return;
+    }
+    fTable.Add(br);
+  }
+  if (br->GetReadEntry()==GetCurrentEntry())
+    return;
+  br->GetEntry(GetCurrentEntry());
 }

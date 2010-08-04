@@ -16,6 +16,9 @@
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif
+#ifndef ROOT_THashTable
+#include <THashTable.h>
+#endif
 
 class TClass;
 class TTree;
@@ -83,6 +86,7 @@ enum EAliAnalysisFlags {
    EAliAnalysisExecMode 
                        GetAnalysisType() const    {return fMode;}
    void                GetAnalysisTypeString(TString &type) const;                    
+   Bool_t              GetAutoBranchLoading() const {return fAutoBranchHandling;} 
    static const char  *GetCommonFileName()        {return fgCommonFileName.Data();}
    AliAnalysisDataContainer *
                        GetCommonInputContainer() const  {return fCommonInput;}
@@ -107,7 +111,9 @@ enum EAliAnalysisFlags {
    TObjArray          *GetZombieTasks() const     {return fZombies;}
    Bool_t              IsRemote() const           {return fIsRemote;}
    Bool_t              IsUsingDataSet() const     {return TObject::TestBit(kUseDataSet);}
+   void                LoadBranch(const char *n)  { if(fAutoBranchHandling) return; DoLoadBranch(n); }
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
+   void                SetAutoBranchLoading(Bool_t b) { fAutoBranchHandling = b; }
    void                SetCurrentEntry(Long64_t entry)            {fCurrentEntry = entry;}
    void                SetCollectSysInfoEach(Int_t nevents=0)     {fNSysInfo = nevents;}
    static void         SetCommonFileName(const char *name)        {fgCommonFileName = name;}
@@ -159,6 +165,7 @@ enum EAliAnalysisFlags {
 protected:
    void                 ImportWrappers(TList *source);
    void                 SetEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kEventLoop,flag);}
+   void                 DoLoadBranch(const char *name);
 
 private:
    TTree                  *fTree;                //! Input tree in case of TSelector model
@@ -185,6 +192,8 @@ private:
    AliAnalysisSelector    *fSelector;            //! Current selector
    AliAnalysisGrid        *fGridHandler;         //! Grid handler plugin
    TString                 fExtraFiles;          // List of extra files to be merged
+   Bool_t                  fAutoBranchHandling;  // def=kTRUE, turn off if you use LoadBranch
+   THashTable              fTable;               // keep branch ptrs in case of manual branch loading
 
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
