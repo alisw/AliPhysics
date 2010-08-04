@@ -74,7 +74,7 @@ private:
   static void GetMoment(TString name, TString var, TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max) ;
   static Double_t GetNormalizedFunc(double * x, double* p);
 
-  static TF1 * fFuncForNormalized; // Function used in GetNormalizedFunc
+  static TF1 * fgFuncForNormalized; // Function used in GetNormalizedFunc
 
   AliBWTools(const AliBWTools&);            // not implemented
   AliBWTools& operator=(const AliBWTools&); // not implemented
