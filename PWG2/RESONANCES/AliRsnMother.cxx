@@ -10,6 +10,7 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 #include <Riostream.h>
+#include <TVector3.h>
 #include "AliRsnDaughter.h"
 #include "AliRsnPairDef.h"
 #include "AliRsnMother.h"
@@ -162,16 +163,28 @@ Double_t AliRsnMother::ThetaStar(Bool_t first, Bool_t useMC)
 
   TLorentzVector &mother   = (useMC ? fSumMC : fSum);
   TLorentzVector &daughter = (first ? fDaughter[0]->P() : fDaughter[1]->P());
-
+  
+  Double_t theta = mother.Vect().Theta();
+  Double_t phi   = mother.Vect().Phi();
   Double_t beta  = mother.Beta();
-  Double_t gamma = 1.0 / TMath::Sqrt(1.0 - beta*beta);
-  Double_t angle = daughter.Angle(mother.Vect());
-  Double_t pproj = daughter.Mag() * TMath::Cos(angle);
   
-  Double_t plstar = gamma * (pproj - beta*daughter.E());
-  Double_t ptstar = daughter.Mag() * TMath::Sin(angle);
+  Double_t betax = beta * TMath::Sin(theta) * TMath::Cos(phi);
+  Double_t betay = beta * TMath::Sin(theta) * TMath::Sin(phi);
+  Double_t betaz = beta * TMath::Cos(theta);
+  Double_t gamx  = 1.0 / TMath::Sqrt(1.0 - betax*betax);
+  Double_t gamy  = 1.0 / TMath::Sqrt(1.0 - betay*betay);
+  Double_t gamz  = 1.0 / TMath::Sqrt(1.0 - betaz*betaz);
   
-  return TMath::ATan(ptstar / plstar);
+  Double_t pstarx = gamx * (daughter.Vect().X() - betax * daughter.E());
+  Double_t pstary = gamy * (daughter.Vect().Y() - betay * daughter.E());
+  Double_t pstarz = gamz * (daughter.Vect().Z() - betaz * daughter.E());
+  
+  TVector3 dstar(pstarx, pstary, pstarz);
+  TVector3 vnorm(mother.Vect().Y() / mother.Perp(), mother.Vect().X() / mother.Perp(), 0.0);
+  
+  Double_t cosThetaStar = dstar.Dot(vnorm) / dstar.Mag();
+  
+  return cosThetaStar;
 }
 
 //_____________________________________________________________________________
