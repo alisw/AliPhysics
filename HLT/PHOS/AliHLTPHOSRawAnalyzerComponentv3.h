@@ -98,6 +98,11 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTCaloRawAnalyzerComponentv3
   virtual AliHLTComponent* Spawn() = 0; /** interface function, see @ref AliHLTComponent for description */
  
  protected:
+    
+  /** interface function, see @ref AliHLTComponent for description */
+  virtual int DoInit(int argc, const char** argv);
+
+    
   virtual void InitMapping(const int specification);
   
  private:

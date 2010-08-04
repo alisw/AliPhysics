@@ -23,7 +23,7 @@ AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3() :
    AliHLTCaloRawAnalyzerComponentv3("PHOS")
 {
   // See header file for class documentation
-   InitMapping(0x1); //using 0x1 to avoid error message
+//   InitMapping(0x1); //using 0x1 to avoid error message
 }
 
 
@@ -53,8 +53,12 @@ AliHLTPHOSRawAnalyzerComponentv3::GetOutputDataType()
 void AliHLTPHOSRawAnalyzerComponentv3::InitMapping ( const int specification )
 {
    // See header file for class documentation
-   fMapperPtr = new AliHLTPHOSMapper;
    fMapperPtr->InitDDLSpecificationMapping();
    fMapperPtr->InitAltroMapping(specification);
 }
 
+int AliHLTPHOSRawAnalyzerComponentv3::DoInit(int argc, const char** argv)
+{
+    fMapperPtr = new AliHLTPHOSMapper;
+    return AliHLTCaloRawAnalyzerComponentv3::DoInit(argc, argv);
+}
