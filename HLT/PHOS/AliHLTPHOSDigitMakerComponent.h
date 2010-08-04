@@ -164,6 +164,7 @@ private:
    /** Are the gains initialised? */
   Bool_t fGainsInitialised; //! transient
   
+  ClassDef(AliHLTPHOSDigitMakerComponent, 0);
 
 };
 #endif

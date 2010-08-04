@@ -44,6 +44,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+ClassImp(AliHLTPHOSDigitMakerComponent);
 
 AliHLTPHOSDigitMakerComponent gAliHLTPHOSDigitMakerComponent;
 
@@ -177,7 +178,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       ret = fDigitMakerPtr->MakeDigits(tmpChannelData, size-(digitCount*sizeof(AliHLTCaloDigitDataStruct)));
       if(ret == -1) 
 	{
-//	  HLTError("Trying to write over buffer size");
+	  HLTError("Trying to write over buffer size");
 	  return -ENOBUFS;
 	}
       digitCount += ret; 
@@ -185,7 +186,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   
   mysize += digitCount*sizeof(AliHLTCaloDigitDataStruct);
 
-  //HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
+  HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
 
   if(mysize > 0) 
     {
@@ -266,7 +267,7 @@ int AliHLTPHOSDigitMakerComponent::GetBCMFromCDB()
 	}
       else
 	{
-//	    HLTError("can not fetch object \"%s\" from CDB", path);
+	    HLTError("can not fetch object \"%s\" from CDB", path.GetPath());
 	    return -1;
 	}
     }
@@ -291,7 +292,7 @@ int AliHLTPHOSDigitMakerComponent::GetGainsFromCDB()
 	}
       else	
 	{
-//	    HLTError("can not fetch object \"%s\" from CDB", path);
+	    HLTError("can not fetch object \"%s\" from CDB", path.GetPath());
 	    return -1;
 	}
     }
