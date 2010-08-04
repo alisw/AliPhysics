@@ -148,9 +148,9 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
     fOutputList->Add(hSPDMultTrVtx);
     
   }
-  
-  TH2F* dNdetadphiHistogram = new TH2F("dNdetadphiHistogramTrVtx","dNdetadphiHistogramTrVtx;#eta;#Phi",pars->GetNetaBins(),-6,6,20,0,2*TMath::Pi());
-  TH2F* dNdetadphiHistogramSPD = new TH2F("dNdetadphiHistogramSPDTrVtx","dNdetadphiHistogramSPDTrVtx;#eta;#Phi",pars->GetNetaBins(),-6,6,20,0,2*TMath::Pi());
+  TH2F* hBg = pars->GetBackgroundCorrection(1, 'I', 5);
+  TH2F* dNdetadphiHistogram = new TH2F("dNdetadphiHistogramTrVtx","dNdetadphiHistogramTrVtx;#eta;#Phi",pars->GetNetaBins(),hBg->GetXaxis()->GetXmin(),hBg->GetXaxis()->GetXmax(),20,0,2*TMath::Pi());
+  TH2F* dNdetadphiHistogramSPD = new TH2F("dNdetadphiHistogramSPDTrVtx","dNdetadphiHistogramSPDTrVtx;#eta;#Phi",pars->GetNetaBins(),hBg->GetXaxis()->GetXmin(),hBg->GetXaxis()->GetXmax(),20,0,2*TMath::Pi());
   //dNdetadphiHistogram->SetErrorOption("g");
   
   fHitList->Add(dNdetadphiHistogram);
