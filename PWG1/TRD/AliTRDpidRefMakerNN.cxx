@@ -69,7 +69,7 @@ ClassImp(AliTRDpidRefMakerNN)
   //
   // Default constructor
   //
-  SetNameTitle("refMakerNN", "PID(NN) Reference Maker");
+  SetNameTitle("TRDrefMakerNN", "PID(NN) Reference Maker");
 }
 
 //________________________________________________________________________

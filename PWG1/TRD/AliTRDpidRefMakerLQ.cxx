@@ -58,7 +58,7 @@ AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ()
   //
   // AliTRDpidRefMakerLQ default constructor
   //
-  SetNameTitle("refMakerLQ", "PID(LQ) Reference Maker");
+  SetNameTitle("TRDrefMakerLQ", "PID(LQ) Reference Maker");
 }
 
 //__________________________________________________________________

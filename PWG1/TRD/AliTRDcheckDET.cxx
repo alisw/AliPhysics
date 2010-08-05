@@ -87,7 +87,7 @@ AliTRDcheckDET::AliTRDcheckDET():
   //
   // Default constructor
   //
-  SetNameTitle("checkDET", "Basic TRD data checker");
+  SetNameTitle("TRDcheckDET", "Basic TRD data checker");
 }
 
 //_______________________________________________________

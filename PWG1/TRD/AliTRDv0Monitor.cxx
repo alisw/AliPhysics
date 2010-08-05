@@ -54,12 +54,12 @@ AliTRDv0Monitor::AliTRDv0Monitor()
   //
   // Default constructor
   //
-  SetNameTitle("v0Monitor", "Reference V0 Monitor");
+  SetNameTitle("TRDv0Monitor", "V0 Monitor for TRD PID");
 }
 
 //________________________________________________________________________
-AliTRDv0Monitor::AliTRDv0Monitor(const char *name, const char *title) 
-  :AliTRDrecoTask(name, title)
+AliTRDv0Monitor::AliTRDv0Monitor(const char *name) 
+  :AliTRDrecoTask(name, "V0 Monitor for TRD PID")
   ,fhQualityReductions(NULL)
   ,fV0s(NULL)
   ,fData(NULL)

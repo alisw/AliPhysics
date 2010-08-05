@@ -14,7 +14,7 @@ void AddTRDv0Monitor(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContai
   if(!TSTBIT(map, kV0Monitor)) return;
   printf("AddTRDv0Monitor <- [0]=\"%s\" [1]=\"%s\" [2]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName());
 
-  AliTRDv0Monitor *v0Mon = new AliTRDv0Monitor("v0Monitor", "v0Monitor");
+  AliTRDv0Monitor *v0Mon = new AliTRDv0Monitor((char*()"TRDv0Monitor"));
   mgr->AddTask(v0Mon);
   v0Mon->SetDebugLevel(0);
   //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);

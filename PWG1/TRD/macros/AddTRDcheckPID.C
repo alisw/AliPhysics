@@ -18,7 +18,7 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   printf("AddTRDcheckPID <- [0]=\"%s\" [1]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName());
 
   AliTRDcheckPID *pid(NULL);
-  mgr->AddTask(pid = new AliTRDcheckPID((char*)"checkPID"));
+  mgr->AddTask(pid = new AliTRDcheckPID((char*)"TRDcheckPID"));
   //AliLog::SetClassDebugLevel("AliTRDcheckPID", 5);  
   pid->SetDebugLevel(0);
   pid->SetMCdata(mgr->GetMCtruthEventHandler());
@@ -39,7 +39,7 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   
     // TRD pid reference maker NN
     AliTRDpidRefMaker *ref(NULL);
-    mgr->AddTask(ref = new AliTRDpidRefMakerNN((char*)"refMakerNN"));
+    mgr->AddTask(ref = new AliTRDpidRefMakerNN((char*)"TRDrefMakerNN"));
     ref->SetDebugLevel(3);
     ref->SetMCdata(mgr->GetMCtruthEventHandler());
     ref->SetFriends(kTRUE);
@@ -51,7 +51,7 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
     mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
   
     // TRD pid reference maker LQ 
-    mgr->AddTask(ref = new AliTRDpidRefMakerLQ((char*)"refMakerLQ"));
+    mgr->AddTask(ref = new AliTRDpidRefMakerLQ((char*)"TRDrefMakerLQ"));
     ref->SetDebugLevel(3);
     ref->SetMCdata(mgr->GetMCtruthEventHandler());
     ref->SetFriends(kTRUE);
