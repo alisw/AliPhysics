@@ -73,7 +73,7 @@ AliTRDcheckPID::AliTRDcheckPID()
   //
   // Default constructor
   //
-  SetNameTitle("checkPID", "Check TRD PID");
+  SetNameTitle("TRDcheckPID", "Check TRD PID");
   LocalInit();
 }
 

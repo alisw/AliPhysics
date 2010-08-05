@@ -16,7 +16,7 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
 
   //AliLog::SetClassDebugLevel("AliTRDcheckDET", 5);
   AliTRDcheckDET *task(NULL);
-  mgr->AddTask(task = new AliTRDcheckDET((char*)"checkDET"));
+  mgr->AddTask(task = new AliTRDcheckDET((char*)"TRDcheckDET"));
   task->UseClustersOutsideChamber();
   task->SetDebugLevel(0);
   task->SetMCdata(mgr->GetMCtruthEventHandler());
