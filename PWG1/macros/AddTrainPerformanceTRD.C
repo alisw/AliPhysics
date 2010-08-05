@@ -40,6 +40,7 @@
 #include "TROOT.h"
 #include "TClass.h"
 #include "TSystem.h"
+#include "TString.h"
 #include "TError.h"
 #include "TChain.h"
 #include "TGrid.h"
@@ -73,7 +74,7 @@
 #endif
 
 #include "../TRD/macros/AliTRDperformanceTrain.h"
-
+const Char_t* Translate(Bool_t doCheckESD=kTRUE, Bool_t doCheckDET=kTRUE, Bool_t doEffic=kTRUE, Bool_t doResolution=kTRUE, Bool_t doCheckPID=kTRUE, Bool_t doV0Monitor=kTRUE);
 Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$ALICE_ROOT/PWG1/TRD/macros")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -90,6 +91,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
   AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBinsDCS());
   Info("AddTrainPerformanceTRD", Form("Add Macros taken from %s", addMacroPath));
+  Info("AddTrainPerformanceTRD", Form("TRD wagons \"%s\"", trd));
   for(Int_t it=0; it<NTRDQATASKS; it++){
     if(gROOT->LoadMacro(Form("%s/Add%s.C+", addMacroPath, TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
       Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
@@ -131,7 +133,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       break;
     case kV0Monitor:
       // slots already mapped by checkPID
-      //AddTRDv0Monitor(mgr, trd, ce);
+      AddTRDv0Monitor(mgr, trd, ce);
       break;
     default:
       Warning("AddTrainPerformanceTRD()", Form("No performance task registered at slot %d.", it)); 
@@ -139,4 +141,50 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
   }
   return kTRUE;
 }
+
+const Char_t* Translate(Bool_t doCheckESD, Bool_t doCheckDET, Bool_t doEffic, Bool_t doResolution, Bool_t doCheckPID, Bool_t doCheckV0)
+{
+  TString opt("");
+  if( doCheckESD==kTRUE &&
+      doCheckDET==kTRUE &&
+      doEffic==kTRUE &&
+      doResolution==kTRUE &&
+      doCheckPID==kTRUE
+  ) opt="ALL";
+  else{
+    Bool_t kINDENT(kFALSE);
+    if(doCheckESD){ 
+      opt.Append("ESD");
+      kINDENT=kTRUE;
+    }
+    if(doCheckDET){ 
+      if(kINDENT) opt.Append(" ");
+      opt.Append("DET"); 
+      kINDENT = kTRUE;
+    }
+    if(doEffic){ 
+      if(kINDENT) opt.Append(" ");
+      opt.Append("EFF");
+      kINDENT=kTRUE;
+    }
+    if(doResolution){ 
+      if(kINDENT) opt.Append(" ");
+      opt.Append("RES");
+      kINDENT=kTRUE;
+    }
+    if(doCheckPID){ 
+      if(kINDENT) opt.Append(" ");
+      opt.Append("PID");
+      kINDENT=kTRUE;
+    }
+    if(doCheckV0){ 
+      if(kINDENT) opt.Append(" ");
+      opt.Append("V0");
+      kINDENT=kTRUE;
+    }
+  }
+
+  return (const Char_t*)opt.Data();
+}
+
 
