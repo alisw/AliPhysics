@@ -150,7 +150,7 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
     return;
   }
 
-  AliDebug(1, Form("Entries: Tracks[%d] V0[%d] PID[%d]", fTracks->GetEntriesFast(), fV0s->GetEntriesFast(), fInfo->GetEntriesFast()));
+  AliDebug(1, Form("Entries: Ev[%d] Tracks[%d] V0[%d] PID[%d]", ev, fTracks->GetEntriesFast(), fV0s->GetEntriesFast(), fInfo->GetEntriesFast()));
   AliTRDtrackInfo     *track = NULL;
   AliTRDtrackV1    *trackTRD = NULL;
   AliTrackReference     *ref = NULL;

@@ -242,8 +242,6 @@ void AliTRDpidRefMakerLQ::UserExec(Option_t */*opt*/)
 {
 // Load PID data into local data storage
 
-/*  if(!(fTracks = dynamic_cast<TObjArray*>(GetInputData(1)))) return;
-  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))) return;*/
   if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))) return;
 
   AliDebug(2, Form("ENTRIES pid[%d]\n", fInfo->GetEntriesFast()));

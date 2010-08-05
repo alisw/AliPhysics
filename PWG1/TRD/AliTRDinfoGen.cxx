@@ -115,7 +115,7 @@ AliTRDinfoGen::AliTRDinfoGen()
   //
   // Default constructor
   //
-  SetNameTitle("infoGen", "MC-REC TRD-track list generator");
+  SetNameTitle("TRDinfoGen", "MC-REC TRD-track list generator");
 }
 
 //____________________________________________________________________
