@@ -15,7 +15,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   Bool_t mc(mgr->GetMCtruthEventHandler()?kTRUE:kFALSE);
   //AliLog::SetClassDebugLevel("AliTRDinfoGen", 2);
   AliTRDinfoGen *info(NULL);
-  mgr->AddTask(info = new AliTRDinfoGen((char*)"genInfo"));
+  mgr->AddTask(info = new AliTRDinfoGen((char*)"TRDinfoGen"));
   info->SetDebugLevel(0);
   info->SetMCdata(mc);
   info->SetLocalTrkSelection();
@@ -40,7 +40,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   for(Int_t ios(1);ios<kNOutSlots-1;ios++) mgr->ConnectOutput(info, ios, co[ios]);
   
   // add last monitor container
-  AliAnalysisDataContainer *mon=mgr->CreateContainer("infoGen", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName()));
+  AliAnalysisDataContainer *mon=mgr->CreateContainer(info->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName()));
   mgr->ConnectOutput(info, kNOutSlots-1, mon);
 }
 

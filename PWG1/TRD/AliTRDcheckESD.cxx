@@ -95,7 +95,7 @@ AliTRDcheckESD::AliTRDcheckESD():
   //
   // Default constructor
   //
-  SetNameTitle("checkESD", "Check TRD @ ESD level");
+  SetNameTitle("TRDcheckESD", "Check TRD @ ESD level");
   SetMC(kTRUE);
 }
 
