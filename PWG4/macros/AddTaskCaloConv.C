@@ -21,6 +21,35 @@ AliAnalysisTaskCaloConv * AddTaskCaloConv(){
   AliAnalysisTaskCaloConv *task = new AliAnalysisTaskCaloConv("CaloConv");
   mgr->AddTask(task);
 
+  TDirectory* saveDir = gDirectory;
+  TGrid a;
+  if(a.IsConnected()){
+    TFile *fBadMap = TFile::Open("alien:///alice/cern.ch/user/p/prsnko/BadMaps/BadMap_LHC10b.root") ;
+    if(fBadMap->IsOpen()){
+      if (saveDir) saveDir->cd(); else gROOT->cd();
+
+      printf("Adding PHOS and EMCAL bad maps \n") ;
+      char key[55] ;
+      for(Int_t mod=1;mod<4; mod++){
+        sprintf(key,"PHOS_BadMap_mod%d",mod) ;
+        TH2I * h = (TH2I*)fBadMap->Get(key) ;
+        if(h)
+          task->SetPHOSBadMap(mod,h) ;
+      }
+      for(Int_t sm=0; sm<5; sm++){
+        sprintf(key,"EMCAL_BadMap_mod%d",sm) ;
+        TH2I * h = (TH2I*)fBadMap->Get(key) ;
+        if(h)
+          task->SetEMCALBadMap(mod,h) ;
+      }
+      fBadMap->Close() ;
+    }
+  }
+  else{
+    printf("Can not open Bad Map file \n") ;
+  }
+
+
   // Create containers for input/output
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);

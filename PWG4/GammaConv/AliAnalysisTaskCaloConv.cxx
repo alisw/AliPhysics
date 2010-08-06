@@ -24,9 +24,11 @@
 #include "TChain.h"
 #include "TH3.h"
 #include "TH2.h"
+#include "TDirectory.h"
 
 // analysis
 #include "AliAnalysisManager.h"
+#include "AliESDInputHandler.h"
 #include "AliAnalysisTaskCaloConv.h"
 #include "AliStack.h"
 #include "AliLog.h"
@@ -44,7 +46,6 @@
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 
-class AliESDInputHandler;
 class Riostream;
 class TFile;
 
@@ -63,6 +64,7 @@ AliAnalysisTaskSE(),
   fEMCALCFCont(0x0),
   fPi0CFCont(0x0),
   fTriggerCINT1B(kFALSE),
+  fToUseCF(kFALSE),
   fMinOpeningAngleGhostCut(0.),
   fPHOSgeom(0x0),
   fEMCALgeom(0x0),
@@ -89,6 +91,15 @@ AliAnalysisTaskSE(),
     fEMCALEvents[i]=0;
     fConvEvents[i]=0;
   }
+  char key[55] ;
+  for(Int_t i=0; i<6; i++){
+    sprintf(key,"PHOS_BadMap_mod%d",i) ;
+    fPHOSBadMap[i]=new TH2I(key,"Bad Modules map",64,0.,64.,56,0.,56.) ;
+  }
+  for(Int_t i=0; i<10; i++){
+    sprintf(key,"EMCAL_BadMap_mod%d",i) ;
+    fEMCALBadMap[i] = new TH2I(key,"Bad Modules map",24,0.,24.,48,0.,48.) ;
+  }
 }
 AliAnalysisTaskCaloConv::AliAnalysisTaskCaloConv(const char* name):
   AliAnalysisTaskSE(name),
@@ -102,6 +113,7 @@ AliAnalysisTaskCaloConv::AliAnalysisTaskCaloConv(const char* name):
   fEMCALCFCont(0x0),
   fPi0CFCont(0x0),
   fTriggerCINT1B(kFALSE),
+  fToUseCF(kFALSE),
   fMinOpeningAngleGhostCut(0.),
   fPHOSgeom(0x0),
   fEMCALgeom(0x0),
@@ -135,7 +147,16 @@ AliAnalysisTaskCaloConv::AliAnalysisTaskCaloConv(const char* name):
     fEMCALEvents[i]=0;
     fConvEvents[i]=0;
   }
-  fESDpid = new AliESDpid;
+  char key[55] ;
+  for(Int_t i=0; i<6; i++){
+    sprintf(key,"PHOS_BadMap_mod%d",i) ;
+    fPHOSBadMap[i]=new TH2I(key,"Bad Modules map",64,0.,64.,56,0.,56.) ;
+  }
+  for(Int_t i=0; i<10; i++){
+    sprintf(key,"EMCAL_BadMap_mod%d",i) ;
+    fEMCALBadMap[i] = new TH2I(key,"Bad Modules map",24,0.,24.,48,0.,48.) ;
+  }
+//  fESDpid = new AliESDpid;
 }
 //_____________________________________________________
 AliAnalysisTaskCaloConv::~AliAnalysisTaskCaloConv() 
@@ -175,6 +196,16 @@ AliAnalysisTaskCaloConv::~AliAnalysisTaskCaloConv()
       fConvEvents[ivtx]=0x0 ;
     }
   }
+  for(Int_t i=0; i<6; i++)
+    if(fPHOSBadMap[i]){
+      delete fPHOSBadMap[i] ;
+      fPHOSBadMap[i]=0 ;
+    }
+  for(Int_t i=0; i<10; i++)
+    if(fEMCALBadMap[i]){
+     delete fEMCALBadMap[i];
+     fEMCALBadMap[i]=0 ;
+    }
 
 }
 //_____________________________________________________
@@ -195,13 +226,50 @@ void AliAnalysisTaskCaloConv::UserExec(Option_t */*option*/)
     if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
       fStack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
   }
+
+
+  if(!fESDpid){
+    AliESDInputHandler *esdHandler=dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if( esdHandler && esdHandler->GetESDpid()){
+      fESDpid=new AliESDpid(*(esdHandler->GetESDpid())) ;
+    } 
+    else {
+      fESDpid=new AliESDpid;
+      Double_t alephParameters[5];
+      if(fStack){// simulation
+        alephParameters[0] = 2.15898e+00/50.;
+        alephParameters[1] = 1.75295e+01;
+        alephParameters[2] = 3.40030e-09;
+        alephParameters[3] = 1.96178e+00;
+        alephParameters[4] = 3.91720e+00;
+        fESDpid->GetTOFResponse().SetTimeResolution(80.);
+      }
+      else{// data
+        alephParameters[0] = 0.0283086;
+        alephParameters[1] = 2.63394e+01;
+        alephParameters[2] = 5.04114e-11;
+        alephParameters[3] = 2.12543e+00;
+        alephParameters[4] = 4.88663e+00;
+        fESDpid->GetTOFResponse().SetTimeResolution(130.);
+        fESDpid->GetTPCResponse().SetMip(47.9);
+      }
+
+      fESDpid->GetTPCResponse().SetBetheBlochParameters(
+        alephParameters[0],alephParameters[1],alephParameters[2],
+        alephParameters[3],alephParameters[4]);
+      fESDpid->GetTPCResponse().SetSigma(3.79301e-03, 2.21280e+04);
+    }
+  }
+
+
  
 
   fESDEvent=(AliESDEvent*)InputEvent();
-//  //Take Only events with proper trigger
-//  if(fTriggerCINT1B){
-//    if(!fESDEvent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
-//  }
+  //Take Only events with proper trigger
+  //No trigger in MC data => no check
+  if(!fStack && !fESDEvent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")){
+    return ;
+  } 
 	
   //Init geometry if not done yet
   InitGeometry();
@@ -211,11 +279,15 @@ void AliAnalysisTaskCaloConv::UserExec(Option_t */*option*/)
   SelectConvPhotons() ;
   SelectPHOSPhotons() ;
   SelectEMCALPhotons() ;
-  FillRealMixed() ;
   //Fill MC histograms if MC is present
   ProcessMC();
+  FillRealMixed() ;
 
   PostData(1, fOutputContainer);
+  if(fToUseCF)
+    PostData(2, fCFOutputContainer);  // for CF
+
+
 }
 //____________________________________________________________
 void AliAnalysisTaskCaloConv::ConnectInputData(Option_t *option){
@@ -227,6 +299,7 @@ void AliAnalysisTaskCaloConv::ConnectInputData(Option_t *option){
 //____________________________________________________________
 void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
 {
+  gDirectory->Print() ;
   // Create the output container
   if(fOutputContainer != NULL){
     delete fOutputContainer;
@@ -239,35 +312,36 @@ void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
     delete fCFOutputContainer;
     fCFOutputContainer = NULL;
   }
-  fCFOutputContainer = new TList();
-  fCFOutputContainer->SetOwner(kTRUE);
-
   //===========Correction Framework ======================
-  //bins: pt,eta,mass
-  Int_t iBin[3]={500,40,100};
-  fConvCFCont = new AliCFContainer("ConvContainer","container for converted photons", 23,3,iBin);
-  fConvCFCont->SetBinLimits(0,0.,50.);
-  fConvCFCont->SetBinLimits(1,-2.,2.) ;
-  fConvCFCont->SetBinLimits(2,0.,1.);
-  fCFOutputContainer->Add(fConvCFCont) ;
+  if(fToUseCF){
+    fCFOutputContainer = new TList();
+    fCFOutputContainer->SetOwner(kTRUE);
 
-  fPHOSCFCont = new AliCFContainer("PHOSContainer","container for PHOS photons", 10,2,iBin);
-  fPHOSCFCont->SetBinLimits(0,0.,50.);
-  fPHOSCFCont->SetBinLimits(1,-2.,2.) ;
-  fCFOutputContainer->Add(fPHOSCFCont) ;
-
-  fEMCALCFCont = new AliCFContainer("EMCALContainer","container for EMCAL photons", 10,2,iBin);
-  fEMCALCFCont->SetBinLimits(0,0.,50.);
-  fEMCALCFCont->SetBinLimits(1,-2.,2.) ;
-  fCFOutputContainer->Add(fEMCALCFCont) ;
-
-  fPi0CFCont = new AliCFContainer("Pi0Container","container for EMCAL photons", 10,2,iBin);
-  fPi0CFCont->SetBinLimits(0,0.,50.);
-  fPi0CFCont->SetBinLimits(1,-2.,2.) ;
-  fCFOutputContainer->Add(fPi0CFCont) ;
-
+    //bins: pt,eta,mass
+    Int_t iBin[3]={500,40,100};
+    fConvCFCont = new AliCFContainer("ConvContainer","container for converted photons", 23,3,iBin);
+    fConvCFCont->SetBinLimits(0,0.,50.);
+    fConvCFCont->SetBinLimits(1,-2.,2.) ;
+    fConvCFCont->SetBinLimits(2,0.,1.);
+    fCFOutputContainer->Add(fConvCFCont) ;
+  
+    fPHOSCFCont = new AliCFContainer("PHOSContainer","container for PHOS photons", 10,2,iBin);
+    fPHOSCFCont->SetBinLimits(0,0.,50.);
+    fPHOSCFCont->SetBinLimits(1,-2.,2.) ;
+    fCFOutputContainer->Add(fPHOSCFCont) ;
+  
+    fEMCALCFCont = new AliCFContainer("EMCALContainer","container for EMCAL photons", 10,2,iBin);
+    fEMCALCFCont->SetBinLimits(0,0.,50.);
+    fEMCALCFCont->SetBinLimits(1,-2.,2.) ;
+    fCFOutputContainer->Add(fEMCALCFCont) ;
+  
+    fPi0CFCont = new AliCFContainer("Pi0Container","container for EMCAL photons", 10,2,iBin);
+    fPi0CFCont->SetBinLimits(0,0.,50.);
+    fPi0CFCont->SetBinLimits(1,-2.,2.) ;
+    fCFOutputContainer->Add(fPi0CFCont) ;
+  
+  }
   //========================================================
-
 
   //Adding the histograms to the output container
   Int_t firstRun= 114700 ;
@@ -283,8 +357,43 @@ void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1F("hVtxBin","Vtx distribution",10,0.,10.)) ;
   fOutputContainer->Add(new TH1F("hEvents","Events processed",1,0.,1.)) ;
 
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod1_soft","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod2_soft","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod3_soft","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod4_soft","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod5_soft","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod1_hard","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod2_hard","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod3_hard","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod4_hard","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+  fOutputContainer->Add(new TH2F("hQA_PHOS_mod5_hard","number of clusters per cell",64,0.,64.,56,0.,56.)) ;
+
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM0_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM1_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM2_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM3_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM4_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM5_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM6_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM7_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM8_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM9_soft","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM0_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM1_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM2_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM3_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM4_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM5_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM6_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM7_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM8_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+  fOutputContainer->Add(new TH2F("hQA_EMCAL_SM9_hard","number of clusters per cell",24,0.,24,48,0.,48.)) ;
+
+
   //Check of geometry
   fOutputContainer->Add(new TH3F("PHOS_beyond","PHOS clusters not in PHOS",200,-300.,300.,200,-500.,0.,200,-100.,100.)) ;
+
+  fOutputContainer->Add(new TH2F("hdEdx","dEdx of acceptaed electrons",1000,0.,10.,150,0.,150.)) ;
 
   Int_t npt=200 ;
   Double_t ptmax=20. ;
@@ -380,6 +489,8 @@ void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("EMCAL_Mi_mvsPt_Off_Wcut","Mass vs pt",400,0.,1.,npt,0.,ptmax)) ;
 
   //PHOS PID variations
+  fOutputContainer->Add(new TH3F("PHOS_Re_mvsPt_alpha","Mass vs pt vs PHOS E",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("PHOS_Re_mvsPt_E","Mass vs pt vs PHOS E",400,0.,1.,npt,0.,ptmax,100,0.,10.)) ;
   fOutputContainer->Add(new TH2F("PHOS_Re_mvsPt_all","Mass vs pt",400,0.,1.,npt,0.,ptmax)) ;
   fOutputContainer->Add(new TH2F("PHOS_Re_mvsPt_Disp","Mass vs pt, disp cut",400,0.,1.,npt,0.,ptmax)) ;
   fOutputContainer->Add(new TH2F("PHOS_Re_mvsPt_TOF","Mass vs pt, TOF cut",400,0.,1.,npt,0.,ptmax)) ;
@@ -613,6 +724,23 @@ void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hMC_CaloConv_pi0_v0_PHOSclu_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax)) ;
   fOutputContainer->Add(new TH2F("hMC_CaloConv_pi0_v0_EMCALclu_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax)) ;
 
+
+  fOutputContainer->Add(new TH3F("hMC_Resid_PHOS_Phot_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_PHOS_Pi0_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_PHOS_eta_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_PHOS_K_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_PHOS_pi_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_PHOS_pbar_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_PHOS_other_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_EMCAL_Phot_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_EMCAL_Pi0_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_EMCAL_eta_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_EMCAL_K_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_EMCAL_pi_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_EMCAL_pbar_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+  fOutputContainer->Add(new TH3F("hMC_Resid_EMCAL_other_mvsPt","m vs pt for rec pi0s",400,0.,1.,npt,0.,ptmax,10,0.,1.)) ;
+
+
   fOutputContainer->Add(new TH1F("hMC_CaloConv_phot","Primary photons",npt,0.,ptmax)) ;
   fOutputContainer->Add(new TH1F("hMC_CaloConv_gammaPHOSacc","Photons in PHOS acc",npt,0.,ptmax)) ;
   fOutputContainer->Add(new TH1F("hMC_CaloConv_gammaEMCALacc","Photons in EMCAL acc",npt,0.,ptmax)) ;
@@ -693,6 +821,11 @@ void AliAnalysisTaskCaloConv::SelectPHOSPhotons(){
       continue ;
     TLorentzVector p ;
     clu ->GetMomentum(p ,vtx);
+    if(p.Energy()<0.25)
+      continue ;
+    if(clu->GetNCells()<=2)
+      continue ;
+
     Bool_t isNeutral = kTRUE ;
     Bool_t isDispOK = kTRUE ;
     Bool_t isTOFOK = kTRUE ;
@@ -724,12 +857,15 @@ void AliAnalysisTaskCaloConv::SelectPHOSPhotons(){
     iMod=relid[0] ;
     iX=relid[2];
     iZ=relid[3] ;
+    if(!IsGoodChannel("PHOS",iMod,iX,iZ))
+      continue ;
 
     p.SetBit(kCaloPIDdisp,isDispOK) ;
     p.SetBit(kCaloPIDtof,isTOFOK) ;
     p.SetBit(kCaloPIDneutral,isNeutral) ;
     p.SetBit(BIT(16+iMod),kTRUE) ;
     new((*fPHOSEvent)[inPHOS]) TLorentzVector(p) ;
+    fGammaPHOS[inPHOS] = i ;
     inPHOS++ ;
 
 
@@ -757,6 +893,16 @@ void AliAnalysisTaskCaloConv::SelectPHOSPhotons(){
     if(clu->GetDistanceToBadChannel()>4.4){
       skey="PHOS_single_"; skey+="mod" ; skey+=iMod ; skey+="_dist2" ;
       FillHistogram(skey,pt) ;
+    }
+ 
+    //Fill QA
+    if(clu->E()>0.5){
+      skey="hQA_PHOS_mod"; skey+=iMod; skey+="_soft" ; 
+      FillHistogram(skey,iX-0.5, iZ-0.5,1.) ;
+      if(clu->E()>1.5){
+        skey="hQA_PHOS_mod"; skey+=iMod; skey+="_hard" ;
+        FillHistogram(skey,iX-0.5, iZ-0.5,1.) ;
+      }
     }
 
     //Fill histogams for calibration
@@ -825,13 +971,27 @@ void AliAnalysisTaskCaloConv::SelectEMCALPhotons(){
    
       iX=iphi+1 ;
       iZ=ieta+1 ;
+      if(!IsGoodChannel("EMCAL",iMod,iX,iZ))
+        continue ;
       p.SetBit(kCaloPIDdisp,isDispOK) ;
       p.SetBit(kCaloPIDtof,isTOFOK) ;
       p.SetBit(kCaloPIDneutral,isNeutral) ;
       p.SetBit(BIT(17+imod),kTRUE) ;
       new((*fEMCALEvent)[inEMCAL]) TLorentzVector(p) ;
+      fGammaPHOS[inEMCAL] = i ;
       inEMCAL++ ;
  
+
+      //Fill QA histograms
+      if(clu->E()>0.5 && iMod>=0){ //Sometimes modules is negative not found??
+        TString skey="hQA_EMCAL_SM";skey+=iMod ; skey+="_soft" ;
+        FillHistogram(skey,iX-0.5, iZ-0.5,1.) ;
+        if(clu->E()>1.5){
+          skey="hQA_EMCAL_SM";skey+=iMod ; skey+="_hard" ;
+          FillHistogram(skey,iX-0.5, iZ-0.5,1.) ;
+        }
+      }
+
       //Fill histograms for recalibration
       if(clu->E()<fPi0Thresh1) continue ;
       for(Int_t iconv=0;iconv<fConvEvent->GetEntriesFast();iconv++){
@@ -856,7 +1016,8 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
   const Double_t cutSigmaMass=0.0001;  //Constraint on photon mass
   const Bool_t useImprovedVertex=kTRUE ; //Use verted with converted photon?
 //  const Double_t zrSlope = TMath::Tan(2*TMath::ATan(TMath::Exp(-fetaCut)));
-  const Double_t zrSlope = TMath::Tan(2*TMath::ATan(TMath::Exp(-1.2)));
+  const Double_t zrSlope12 = TMath::Tan(2*TMath::ATan(TMath::Exp(-1.2)));
+  const Double_t zrSlope09 = TMath::Tan(2*TMath::ATan(TMath::Exp(-0.9)));
   const Double_t zOffset = 7.;
 
   if(!fConvEvent)
@@ -886,63 +1047,89 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
     AliKFParticle negKF(*paramNeg,11);
     AliKFParticle posKF(*paramPos,-11);
     AliKFParticle photKF(negKF,posKF) ;
+//printf("st 1: px=%f, py=%f, pz=%f, E=%f \n",photKF.GetPx(),photKF.GetPy(),photKF.GetPz(),photKF.GetE()) ;
     photKF.SetMassConstraint(0,cutSigmaMass);
-    TLorentzVector photLV;
-    photLV.SetXYZM(negKF.Px()+posKF.Px(),negKF.Py()+posKF.Py(),negKF.Pz()+negKF.Pz(),0.) ;
+//printf("st 2: px=%f, py=%f, pz=%f, E=%f \n",photKF.GetPx(),photKF.GetPy(),photKF.GetPz(),photKF.GetE()) ;
 
     if(useImprovedVertex){
       AliKFVertex primaryVertexImproved(*(fESDEvent->GetPrimaryVertex()));
       primaryVertexImproved+=photKF;
       photKF.SetProductionVertex(primaryVertexImproved);
     }
-
+//printf("st 3: px=%f, py=%f, pz=%f, E=%f \n",photKF.GetPx(),photKF.GetPy(),photKF.GetPz(),photKF.GetE()) ;
     Double_t m, width ;
     photKF.GetMass(m,width);
 
+    TLorentzVector photLV;
+//    photLV.SetXYZM(negKF.Px()+posKF.Px(),negKF.Py()+posKF.Py(),negKF.Pz()+negKF.Pz(),0.) ;
+//    photLV.SetXYZT(photKF.GetPx(),photKF.GetPy(),photKF.GetPz(),photKF.GetE()) ;
+    photLV.SetXYZM(photKF.GetPx(),photKF.GetPy(),photKF.GetPz(),0.) ;  //Produces slightly better pi0 width
+
     //Parameters for correction function
     Double_t a[3]={photLV.Pt(),photLV.Eta(),m} ;
-    fConvCFCont->Fill(a,0) ;
+    if(fToUseCF)
+      fConvCFCont->Fill(a,0) ;
 
     //select V0 finder
     Bool_t isOnFly=kTRUE ;
     //select V0Finder
     if (v0->GetOnFlyStatus()){
-      fConvCFCont->Fill(a,1) ;
+      if(fToUseCF)
+        fConvCFCont->Fill(a,1) ;
     }
     else{
       isOnFly=kFALSE ;
-      fConvCFCont->Fill(a,2) ;
+      if(fToUseCF)
+        fConvCFCont->Fill(a,2) ;
+    }
+
+    //Number of TPC clusters
+    if(neg->GetNcls(1) <2 || pos->GetNcls(1) <2){
+      continue ; 
     }
 
     //remove like sign pairs 
     if(pos->GetSign() == neg->GetSign()){ 
+//printf("... likesign \n") ;
       continue ;
     }
-    if(isOnFly)
-      fConvCFCont->Fill(a,3) ;
-    else
-      fConvCFCont->Fill(a,4) ;
-
+    if(fToUseCF){
+      if(isOnFly)
+        fConvCFCont->Fill(a,3) ;
+      else
+        fConvCFCont->Fill(a,4) ;
+    }
 
     if( !(pos->GetStatus() & AliESDtrack::kTPCrefit) ||
         !(neg->GetStatus() & AliESDtrack::kTPCrefit) ){
+//printf("... status \n") ;
       continue;
     }
-    if(isOnFly)
-      fConvCFCont->Fill(a,5) ;
-    else
-      fConvCFCont->Fill(a,6) ;
+    if(fToUseCF){
+      if(isOnFly)
+        fConvCFCont->Fill(a,5) ;
+      else
+        fConvCFCont->Fill(a,6) ;
+    }
  
     Bool_t isKink=kFALSE ;
     if( neg->GetKinkIndex(0) > 0 ||
         pos->GetKinkIndex(0) > 0) {
       isKink=kTRUE;
     }
-    if(!isKink){
+    if(!isKink && fToUseCF){
       if(isOnFly)
         fConvCFCont->Fill(a,7) ;
       else
         fConvCFCont->Fill(a,8) ;
+    }
+
+    //First rough PID
+    if( fESDpid->NumberOfSigmasTPC(pos,AliPID::kElectron)<-4. ||
+        fESDpid->NumberOfSigmasTPC(pos,AliPID::kElectron)>6. ||
+        fESDpid->NumberOfSigmasTPC(neg,AliPID::kElectron)<-4. ||
+        fESDpid->NumberOfSigmasTPC(neg,AliPID::kElectron)>6. ){
+        continue ;
     }
 
     Bool_t isdEdx=kTRUE;
@@ -950,22 +1137,76 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
         fESDpid->NumberOfSigmasTPC(pos,AliPID::kElectron)>fnSigmaAboveElectronLine ||
         fESDpid->NumberOfSigmasTPC(neg,AliPID::kElectron)<fnSigmaBelowElectronLine ||
         fESDpid->NumberOfSigmasTPC(neg,AliPID::kElectron)>fnSigmaAboveElectronLine ){
+//printf("... dEdx 1 \n") ;
          isdEdx=kFALSE;
     }
-    if( pos->P()>fpnSigmaAbovePionLine){
-      if(fESDpid->NumberOfSigmasTPC(pos,AliPID::kElectron)>fnSigmaBelowElectronLine &&
-         fESDpid->NumberOfSigmasTPC(pos,AliPID::kElectron)<fnSigmaAboveElectronLine&&
-         fESDpid->NumberOfSigmasTPC(pos,AliPID::kPion)<fnSigmaAbovePionLine){
+    const Double_t minPnSigmaAbovePionLine = 0.5 ;
+    const Double_t maxPnSigmaAbovePionLine = 100. ;
+    const Double_t nSigmaAbovePionLine = 0 ;
+    if(pos->P()>minPnSigmaAbovePionLine && pos->P()<maxPnSigmaAbovePionLine ){
+      if(fESDpid->NumberOfSigmasTPC(pos,AliPID::kPion)<nSigmaAbovePionLine){
+//printf("... dEdx 2 \n") ;
+          isdEdx=kFALSE;
+        }
+    }
+    if(neg->P()>minPnSigmaAbovePionLine && neg->P()<maxPnSigmaAbovePionLine){
+      if(fESDpid->NumberOfSigmasTPC(neg,AliPID::kPion)<nSigmaAbovePionLine){
+//printf("... dEdx 3 \n") ;
           isdEdx=kFALSE;
       }
     }
-    if( neg->P()>fpnSigmaAbovePionLine){
-      if(fESDpid->NumberOfSigmasTPC(neg,AliPID::kElectron)>fnSigmaBelowElectronLine &&
-         fESDpid->NumberOfSigmasTPC(neg,AliPID::kElectron)<fnSigmaAboveElectronLine&&
-         fESDpid->NumberOfSigmasTPC(neg,AliPID::kPion)<fnSigmaAbovePionLine){
-          isdEdx=kFALSE;
+
+    //Kaon rejection
+    const Double_t minPKaonRejection=1.5 ;
+    const Double_t sigmaAroundLine=1. ;
+    if(neg->P()<minPKaonRejection ){
+      if(TMath::Abs(fESDpid->NumberOfSigmasTPC(neg,AliPID::kKaon))<sigmaAroundLine){
+//printf("... dEdx 4 \n") ;
+        isdEdx=kFALSE;
       }
     }
+    if(pos->P()<minPKaonRejection ){
+      if(TMath::Abs(fESDpid->NumberOfSigmasTPC(pos,AliPID::kKaon))<sigmaAroundLine){
+//printf("... dEdx 5 \n") ;
+        isdEdx=kFALSE;
+      }
+    }
+
+    //Proton rejection
+    const Double_t minPProtonRejection=2. ;
+    if(neg->P()<minPProtonRejection){
+      if(TMath::Abs(fESDpid->NumberOfSigmasTPC(neg,AliPID::kProton))<sigmaAroundLine){
+//printf("... dEdx 6 \n") ;
+        isdEdx=kFALSE;
+      }
+    }
+    if(pos->P()<minPProtonRejection ){
+      if(TMath::Abs(fESDpid->NumberOfSigmasTPC(pos,AliPID::kProton))<sigmaAroundLine){
+//printf("... dEdx 7 \n") ;
+        isdEdx=kFALSE;
+      }
+    }
+
+    const Double_t minPPionRejection=0.5 ;
+    if(neg->P()<minPPionRejection ){
+      if(TMath::Abs(fESDpid->NumberOfSigmasTPC(neg,AliPID::kPion))<sigmaAroundLine){
+//printf("... dEdx 8 \n") ;
+        isdEdx=kFALSE;
+      }
+    }
+    if(pos->P()<minPPionRejection ){
+      if( TMath::Abs(fESDpid->NumberOfSigmasTPC(pos,AliPID::kPion))<sigmaAroundLine){
+//printf("... dEdx 9 \n") ;
+        isdEdx=kFALSE;
+      }
+    }
+
+
+    if(isdEdx){
+      FillHistogram("hdEdx",paramPos->GetP(),pos->GetTPCsignal()) ;
+      FillHistogram("hdEdx",paramNeg->GetP(),neg->GetTPCsignal()) ;
+    }
+
 
     //Check the pid probability
     Bool_t isProb=kTRUE ;
@@ -976,7 +1217,7 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
     if(negProbArray[AliPID::kElectron]<fprobCut || posProbArray[AliPID::kElectron]<fprobCut){
       isProb=kFALSE ;
     }
-    if(!isKink && isProb){
+    if(!isKink && isProb && fToUseCF){
       if(isOnFly)
         fConvCFCont->Fill(a,9) ;
       else
@@ -987,51 +1228,62 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
     v0->GetXYZ(v0x,v0y,v0z) ;
     Double_t r=TMath::Sqrt(v0x*v0x + v0y*v0y) ;
     if(r>fmaxR){ // cuts on distance from collision point
+//printf("... maxR \n") ;
       continue;
     }
     Bool_t isStrictR=kFALSE ;
     if(r<120.)
       isStrictR=kTRUE ;
-    if(isOnFly)
-      fConvCFCont->Fill(a,11) ;
-    else
-      fConvCFCont->Fill(a,12) ;
+    if(fToUseCF){
+      if(isOnFly)
+        fConvCFCont->Fill(a,11) ;
+      else
+        fConvCFCont->Fill(a,12) ;
+    }
 
 
-    if((TMath::Abs(v0z)*zrSlope)-zOffset > r ){ // cuts out regions where we do not reconstruct
+    if((TMath::Abs(v0z)*zrSlope12)-zOffset > r ){ // cuts out regions where we do not reconstruct
+//printf("... ZR slope=%f, offset=%f, z=%f, zs=%f, r=%f \n",zrSlope,zOffset,v0z,TMath::Abs(v0z)*zrSlope-zOffset,r) ;
       continue;
     }
-    if(isOnFly)
-      fConvCFCont->Fill(a,13) ;
-    else
-      fConvCFCont->Fill(a,14) ;
+    if(fToUseCF){
+      if(isOnFly)
+        fConvCFCont->Fill(a,13) ;
+      else
+        fConvCFCont->Fill(a,14) ;
+    }
 
     if(TMath::Abs(v0z) > fmaxZ ){ // cuts out regions where we do not reconstruct
+//printf("... maxZ \n") ;
       continue;
     }
     Bool_t isStrictZ=kFALSE ;
-    const Double_t strictZcut=0.9 ;
-    if((TMath::Abs(v0z)*zrSlope)-zOffset < strictZcut*r || TMath::Abs(v0z) < strictZcut*fmaxZ)
+    if((TMath::Abs(v0z)*zrSlope09)-zOffset < r )
       isStrictZ=kTRUE ;
 
-    if(isOnFly)
-      fConvCFCont->Fill(a,15) ;
-    else
-      fConvCFCont->Fill(a,16) ;
-
+    if(fToUseCF){
+      if(isOnFly)
+        fConvCFCont->Fill(a,15) ;
+      else
+        fConvCFCont->Fill(a,16) ;
+    }
  
     if(photKF.GetNDF()<=0){
+//printf("... NDF \n") ;
       continue;
     }
-    if(isOnFly)
-      fConvCFCont->Fill(a,17) ;
-    else
-      fConvCFCont->Fill(a,18) ;
+    if(fToUseCF){
+      if(isOnFly)
+        fConvCFCont->Fill(a,17) ;
+      else
+        fConvCFCont->Fill(a,18) ;
+    }
 
     Double_t chi2V0 = photKF.GetChi2()/photKF.GetNDF();
     FillHistogram("All_chi2_eta_pt",chi2V0,photLV.Eta(),photLV.Pt()) ;
 
     if(chi2V0 > fchi2CutConversion || chi2V0 <=0){
+//printf("... chi2 \n") ;
       continue;
     }
     Bool_t isStrictChi=kFALSE ;
@@ -1039,29 +1291,53 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
       isStrictChi=kTRUE;
     }
  
-    if(isOnFly)
-      fConvCFCont->Fill(a,19) ;
-    else
-      fConvCFCont->Fill(a,20) ;
+    if(fToUseCF){
+      if(isOnFly)
+        fConvCFCont->Fill(a,19) ;
+      else
+        fConvCFCont->Fill(a,20) ;
+    }
 
     const Double_t wideEtaCut=1.2 ;
     if(TMath::Abs(photLV.Eta())> wideEtaCut){
+//printf("... ETA \n") ;
       continue;
     }
+    if(TMath::Abs(paramPos->Eta())> wideEtaCut ||  
+       TMath::Abs(paramNeg->Eta())> wideEtaCut ){
+//printf("... ETA pls mns \n") ;
+      continue ;
+    }
+
     Bool_t isWideEta=kTRUE ;
-    if(TMath::Abs(photLV.Eta())< fetaCut){
+    if(TMath::Abs(photLV.Eta())< fetaCut && 
+       TMath::Abs(paramPos->Eta())<fetaCut  && 
+       TMath::Abs(paramNeg->Eta()) < fetaCut){
       isWideEta=kFALSE;
     }
     
 
     if(photLV.Pt()<fptCut){
+//printf("... pt \n") ;
       continue;
     }
-    if(isOnFly)
-      fConvCFCont->Fill(a,21) ;
-    else
-      fConvCFCont->Fill(a,22) ;
+    if(fToUseCF){
+      if(isOnFly)
+        fConvCFCont->Fill(a,21) ;
+      else
+        fConvCFCont->Fill(a,22) ;
+    }
 
+
+    //Just QA plot
+/*
+    if(photLV.Pt()>0.5){
+       Double_t phi=photLV.Phi() ;
+       while(phi<0.)phi+=TMath::TwoPi() ;
+       while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+       FillHistogram("ConvPhiEta",phi,photLV.Eta()) ; 
+    }
+*/
     
     Double_t w=PlanarityAngle(paramPos,paramNeg) ;
     Bool_t isPlanarityCut = (0.08-0.22*w > m || 0.15*(w-2.4)>m) ;
@@ -1078,7 +1354,13 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
     photLV.SetBit(kConvPlan,isPlanarityCut) ;
 
     new((*fConvEvent)[inConv]) TLorentzVector(photLV) ;
+    fGammaV0s[inConv] = iv0 ;
     inConv++ ;
+
+//    if(isOnFly)
+//      printf("CaloConv: v0(%d): onFly \n",inConv) ;
+//    else
+//      printf("CaloConv: v0(%d): Offline \n",inConv) ;
 
     //Single photon spectrum
     Double_t pt=photLV.Pt() ;
@@ -1191,9 +1473,18 @@ void AliAnalysisTaskCaloConv::FillRealMixed(){
   Int_t nEMCAL=fEMCALEvent->GetEntriesFast() ;
   Int_t nConv = fConvEvent->GetEntriesFast() ;
   //Some QA histograms
-  FillHistogram("hRunConvs",run,double(nConv)) ;
+  //Calculate number of good converion photons
+  Int_t nConvGood=0 ;
+  for(Int_t iConv = 0; iConv<nConv; iConv++){
+    TLorentzVector * cnv = static_cast<TLorentzVector*>(fConvEvent->At(iConv)) ;
+    if(cnv->TestBit(kConvOnFly) && !cnv->TestBit(kConvKink) && cnv->TestBit(kConvdEdx) && cnv->TestBit(kConvProb) && !cnv->TestBit(kConvEta)){
+      nConvGood++ ;
+    }
+  }
+  FillHistogram("hRunConvs",run,double(nConvGood)) ;
   FillHistogram("hRunPHOS", run,double(nPHOS)) ;
   FillHistogram("hRunEMCAL",run,double(nEMCAL)) ;
+//printf("CaloConv::FillRe:  nConv=%d \n",nConvGood) ;
 
   //Fill Real distributions
   for(Int_t iPHOS=0; iPHOS<nPHOS;iPHOS++){
@@ -1201,9 +1492,12 @@ void AliAnalysisTaskCaloConv::FillRealMixed(){
     for(Int_t iConv = 0; iConv<nConv; iConv++){
       TLorentzVector * cnv = static_cast<TLorentzVector*>(fConvEvent->At(iConv)) ;
       TLorentzVector pi=*cal + *cnv ;
+      Double_t alpha=TMath::Abs(cal->Energy()-cnv->Energy())/(cal->Energy()+cnv->Energy()) ;
       if(cnv->TestBit(kConvOnFly) && !cnv->TestBit(kConvKink) && cnv->TestBit(kConvdEdx) && cnv->TestBit(kConvProb) && !cnv->TestBit(kConvEta)){
         //Non-linearity check
         FillHistogram("PHOS_Re_mvsPt_all",pi.M(),pi.Pt()) ;
+        FillHistogram("PHOS_Re_mvsPt_E",pi.M(),pi.Pt(),cal->Energy()) ;
+        FillHistogram("PHOS_Re_mvsPt_alpha",pi.M(),pi.Pt(),alpha) ;
         if(cal->TestBit(kCaloPIDdisp))
           FillHistogram("PHOS_Re_mvsPt_Disp",pi.M(),pi.Pt()) ;
         if(cal->TestBit(kCaloPIDtof))
@@ -1301,6 +1595,7 @@ void AliAnalysisTaskCaloConv::FillRealMixed(){
     for(Int_t iConv = 0; iConv<nConv; iConv++){
       TLorentzVector * cnv = static_cast<TLorentzVector*>(fConvEvent->At(iConv)) ;
       TLorentzVector pi=*cal + *cnv ;
+//      Double_t alpha=TMath::Abs(cal->Energy()-cnv->Energy())/(cal->Energy()+cnv->Energy()) ;
       full=base+"_single" ;
       if(cnv->TestBit(kConvOnFly) && !cnv->TestBit(kConvKink) && cnv->TestBit(kConvdEdx) && cnv->TestBit(kConvProb) && !cnv->TestBit(kConvEta)){
         FillHistogram(full,pi.M(),cal->Pt()) ;
@@ -1775,109 +2070,110 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
     if(particle->GetPdgCode() != 111)
       continue ;
      
+    //Primary particle
     if(particle->R() >rcut)
       continue ;
 
-   Double_t pt = particle->Pt() ;
-   //Total number of pi0 with creation radius <1 cm
-   FillHistogram("hMC_CaloConv_allPi0",pt) ;
-   if(TMath::Abs(particle->Eta())<1.)
-     FillHistogram("hMC_CaloConv_pi0_unitEta",pt) ;
+    Double_t pt = particle->Pt() ;
+    //Total number of pi0 with creation radius <1 cm
+    FillHistogram("hMC_CaloConv_allPi0",pt) ;
+    if(TMath::Abs(particle->Y())<1.)
+      FillHistogram("hMC_CaloConv_pi0_unitEta",pt) ;
 
-   //Check if one of photons converted
-   if(particle->GetNDaughters()!=2)
+    //Check if one of photons converted
+    if(particle->GetNDaughters()!=2)
      continue ; //Do not account Dalitz decays
 
-   TParticle * gamma1 = fStack->Particle(particle->GetFirstDaughter());
-   TParticle * gamma2 = fStack->Particle(particle->GetLastDaughter());
-   //Number of pi0s decayed into acceptance
-   Bool_t inAcc1 = (TMath::Abs(gamma1->Eta())<0.9) ;
-   Bool_t inAcc2 = (TMath::Abs(gamma2->Eta())<0.9) ;
-   Int_t mod ;
-   Double_t x,z ;
-   Bool_t hitPHOS1 = fPHOSgeom->ImpactOnEmc(gamma1, mod, z,x) ;
-   Bool_t hitPHOS2 = fPHOSgeom->ImpactOnEmc(gamma2, mod, z,x) ;
-   Bool_t hitEMCAL1= fEMCALgeom->Impact(gamma1) ;
-   Bool_t hitEMCAL2= fEMCALgeom->Impact(gamma2) ;
-
-   Bool_t goodPair=kFALSE ;
-   if((inAcc1 && hitPHOS2) || (inAcc2 && hitPHOS1)){
-     FillHistogram("hMC_CaloConv_pi0PHOSacc",pt) ;
-     goodPair=kTRUE ;
-   } 
-   if((inAcc1 && hitEMCAL2) || (inAcc2 && hitEMCAL1)){
-     FillHistogram("hMC_CaloConv_pi0EMCALacc",pt) ;
-     goodPair=kTRUE ;
-   }
-   if(!goodPair){
-     continue ;
-   }
-
-   Bool_t converted1 = kFALSE ;
-   if(gamma1->GetNDaughters()==2){
-     TParticle * e1=fStack->Particle(gamma1->GetFirstDaughter()) ;
-     TParticle * e2=fStack->Particle(gamma1->GetLastDaughter()) ;
-     if(TMath::Abs(e1->GetPdgCode())==11 && TMath::Abs(e2->GetPdgCode())==11){ //conversion
-       if(e1->R()<180.)
-         converted1 = kTRUE ;
-     }
-   }
-   Bool_t converted2 = kFALSE ;
-   if(gamma2->GetNDaughters()==2){
-     TParticle * e1=fStack->Particle(gamma2->GetFirstDaughter()) ;
-     TParticle * e2=fStack->Particle(gamma2->GetLastDaughter()) ;
-     if(TMath::Abs(e1->GetPdgCode())==11 && TMath::Abs(e2->GetPdgCode())==11){ //conversion
-       if(e1->R()<180.)
-         converted2 = kTRUE ;
-     }
-   }
+    TParticle * gamma1 = fStack->Particle(particle->GetFirstDaughter());
+    TParticle * gamma2 = fStack->Particle(particle->GetLastDaughter());
+    //Number of pi0s decayed into acceptance
+    Bool_t inAcc1 = (TMath::Abs(gamma1->Eta())<0.9) ;
+    Bool_t inAcc2 = (TMath::Abs(gamma2->Eta())<0.9) ;
+    Int_t mod ;
+    Double_t x,z ;
+    Bool_t hitPHOS1 = fPHOSgeom->ImpactOnEmc(gamma1, mod, z,x) ;
+    Bool_t hitPHOS2 = fPHOSgeom->ImpactOnEmc(gamma2, mod, z,x) ;
+    Bool_t hitEMCAL1= fEMCALgeom->Impact(gamma1) ;
+    Bool_t hitEMCAL2= fEMCALgeom->Impact(gamma2) ;
  
-   //Number of pi0s with one photon converted
-   if((converted1 && !converted2 && hitPHOS2) || (!converted1 && hitPHOS1 && converted2)) 
-     FillHistogram("hMC_CaloConv_pi0_PHOS_conv",pt) ;
-
-   if((converted1 && !converted2 && hitEMCAL2) || (!converted1 && hitEMCAL1 && converted2)) 
-     FillHistogram("hMC_CaloConv_pi0_EMCAL_conv",pt) ;
-
-   //Both converted
-   if(converted1 && converted2) {
-     FillHistogram("hMC_CaloConv_pi0_bothphot_conv",pt) ;
-     continue ;
-   }
-
-   //photon pointing calorimeter converted
-   if((converted1 && hitPHOS1 && !hitEMCAL2) || (converted2 && hitPHOS2 && !hitEMCAL1) || 
-      (converted1 && hitEMCAL1 && !hitPHOS2) || (converted2 && hitEMCAL2 && !hitPHOS1)){
-     FillHistogram("hMC_CaloConv_pi0__convPhotInCalo",pt) ;
+    Bool_t goodPair=kFALSE ;
+    if((inAcc1 && hitPHOS2) || (inAcc2 && hitPHOS1)){
+      FillHistogram("hMC_CaloConv_pi0PHOSacc",pt) ;
+      goodPair=kTRUE ;
+    } 
+    if((inAcc1 && hitEMCAL2) || (inAcc2 && hitEMCAL1)){
+      FillHistogram("hMC_CaloConv_pi0EMCALacc",pt) ;
+       goodPair=kTRUE ;
+    }
+    if(!goodPair){
       continue ;
-   }
+    }
  
-   //Converted pi0 with v0 and photon PHOS or EMCAL
-   Bool_t foundV01=kFALSE, foundV02=kFALSE ;
-   TLorentzVector pConv ;
-   for(Int_t iv0=0; iv0<fESDEvent->GetNumberOfV0s();iv0++){
-     AliESDv0 * v0 = fESDEvent->GetV0(iv0) ;
-
-     TParticle * negativeMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetNindex())->GetLabel()));
-     TParticle * positiveMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetPindex())->GetLabel()));
-
-     if(negativeMC && positiveMC){
-       if(negativeMC->GetMother(0) != positiveMC->GetMother(0))
-         continue ;
-     }
-
-     if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
-       continue;
-     }
-     if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
-       continue;
-     }
+    Bool_t converted1 = kFALSE ;
+    if(gamma1->GetNDaughters()==2){
+      TParticle * e1=fStack->Particle(gamma1->GetFirstDaughter()) ;
+      TParticle * e2=fStack->Particle(gamma1->GetLastDaughter()) ;
+      if(TMath::Abs(e1->GetPdgCode())==11 && TMath::Abs(e2->GetPdgCode())==11){ //conversion
+        if(e1->R()<180.)
+          converted1 = kTRUE ;
+      }
+    }
+    Bool_t converted2 = kFALSE ;
+    if(gamma2->GetNDaughters()==2){
+      TParticle * e1=fStack->Particle(gamma2->GetFirstDaughter()) ;
+      TParticle * e2=fStack->Particle(gamma2->GetLastDaughter()) ;
+      if(TMath::Abs(e1->GetPdgCode())==11 && TMath::Abs(e2->GetPdgCode())==11){ //conversion
+        if(e1->R()<180.)
+          converted2 = kTRUE ;
+      }
+    }
+  
+    //Number of pi0s with one photon converted
+    if((converted1 && !converted2 && hitPHOS2) || (!converted1 && hitPHOS1 && converted2)) 
+       FillHistogram("hMC_CaloConv_pi0_PHOS_conv",pt) ;
  
-     TParticle * v0Gamma = fStack->Particle(negativeMC->GetMother(0));
-     Bool_t same = (v0Gamma == gamma1) ;
-     TParticle * tmp = v0Gamma ;
-     while(!same && tmp->GetFirstMother()>=0){
-       tmp = fStack->Particle(tmp->GetFirstMother());
+    if((converted1 && !converted2 && hitEMCAL2) || (!converted1 && hitEMCAL1 && converted2)) 
+       FillHistogram("hMC_CaloConv_pi0_EMCAL_conv",pt) ;
+ 
+    //Both converted
+    if(converted1 && converted2) {
+      FillHistogram("hMC_CaloConv_pi0_bothphot_conv",pt) ;
+        continue ;
+    }
+ 
+    //photon pointing calorimeter converted
+    if((converted1 && hitPHOS1 && !hitEMCAL2) || (converted2 && hitPHOS2 && !hitEMCAL1) || 
+       (converted1 && hitEMCAL1 && !hitPHOS2) || (converted2 && hitEMCAL2 && !hitPHOS1)){
+       FillHistogram("hMC_CaloConv_pi0__convPhotInCalo",pt) ;
+       continue ;
+    }
+   
+    //Converted pi0 with v0 and photon PHOS or EMCAL
+    Bool_t foundV01=kFALSE, foundV02=kFALSE ;
+    TLorentzVector pConv ;
+    for(Int_t iv0=0; iv0<fESDEvent->GetNumberOfV0s();iv0++){
+      AliESDv0 * v0 = fESDEvent->GetV0(iv0) ;
+ 
+      TParticle * negativeMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetNindex())->GetLabel()));
+      TParticle * positiveMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetPindex())->GetLabel()));
+ 
+      if(negativeMC && positiveMC){
+        if(negativeMC->GetMother(0) != positiveMC->GetMother(0))
+          continue ;
+      }
+ 
+      if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
+        continue;
+       }
+      if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
+        continue;
+      }
+  
+      TParticle * v0Gamma = fStack->Particle(negativeMC->GetMother(0));
+      Bool_t same = (v0Gamma == gamma1) ;
+      TParticle * tmp = v0Gamma ;
+      while(!same && tmp->GetFirstMother()>=0){
+        tmp = fStack->Particle(tmp->GetFirstMother());
        same = (tmp == gamma1) ;
      }
      if(same){
@@ -1965,7 +2261,196 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
    }
   }
 
+  //Construct Inv mass distributions for residual correlations
+  if(fPHOSEvent && fConvEvent){
+    for(Int_t iPHOS=0; iPHOS<fPHOSEvent->GetEntriesFast();iPHOS++){
+      TLorentzVector * cal = static_cast<TLorentzVector*>(fPHOSEvent->At(iPHOS)) ;
+      Int_t iclu=fGammaPHOS[iPHOS] ;
+      AliESDCaloCluster * clu = fESDEvent->GetCaloCluster(iclu);
+      Int_t iprimPHOS = clu->GetLabel() ; //# of particle hit PHOS/EMCAL
+      for(Int_t iConv = 0; iConv<fConvEvent->GetEntriesFast(); iConv++){
+        TLorentzVector * cnv = static_cast<TLorentzVector*>(fConvEvent->At(iConv)) ;
+        if(!cnv->TestBit(kConvOnFly) || cnv->TestBit(kConvKink) || !cnv->TestBit(kConvdEdx) || !cnv->TestBit(kConvProb) || cnv->TestBit(kConvEta)) 
+          continue;
 
+        Int_t iv0=fGammaV0s[iConv] ;
+        AliESDv0 * v0 = fESDEvent->GetV0(iv0) ;
+        Int_t iprimNeg = TMath::Abs(fESDEvent->GetTrack(v0->GetNindex())->GetLabel()) ;
+        Int_t iprimPos = TMath::Abs(fESDEvent->GetTrack(v0->GetPindex())->GetLabel()) ;
+
+        //Check if there was a common ancistor
+        Bool_t found = kFALSE ;
+        Int_t curPHOS=iprimPHOS ;
+        Int_t commonA=-1 ; 
+        while(!found && curPHOS>-1){
+          Int_t curNeg=iprimNeg ;
+          while(!found && curNeg>-1){
+            if(curNeg==curPHOS){
+              found=kTRUE ;
+              commonA=curPHOS ;
+            }
+            else{
+              curNeg=fStack->Particle(curNeg)->GetFirstMother() ;
+            }
+          }
+          curPHOS=fStack->Particle(curPHOS)->GetFirstMother() ;
+        }
+        found = kFALSE ;
+        curPHOS=iprimPHOS ;
+        Int_t commonB=-1 ;
+        while(!found && curPHOS>-1){
+          Int_t curPos=iprimPos ;
+          while(!found && curPos>-1){
+            if(curPos==curPHOS){
+              found=kTRUE ;
+              commonB=curPHOS ;
+            }
+            else{
+              curPos=fStack->Particle(curPos)->GetFirstMother() ;
+            }
+          }
+          curPHOS=fStack->Particle(curPHOS)->GetFirstMother() ;
+        }
+        if(commonA != commonB){
+           //Strange
+           AliInfo(Form("CommonA=%d, commonB=%d",commonA,commonB)) ; 
+        }
+        if(commonA>-1){//There was common particles
+          Int_t pdg = fStack->Particle(commonA)->GetPdgCode() ;
+          TLorentzVector pi=*cal + *cnv ;
+          Double_t m=pi.M() ;
+          Double_t pt=pi.Pt() ;
+          Double_t alpha=TMath::Abs(cal->Energy()-cnv->Energy())/(cal->Energy()+cnv->Energy()) ;
+          switch(pdg){
+          case 11:
+          case -11:
+          case 22: //conversion
+            FillHistogram("hMC_Resid_PHOS_Phot_mvsPt",m,pt,alpha) ;
+            break ;
+          case 111: //pi0
+            FillHistogram("hMC_Resid_PHOS_Pi0_mvsPt",m,pt,alpha) ;
+            break ;
+          case 221: //eta
+              FillHistogram("hMC_Resid_PHOS_eta_mvsPt",m,pt,alpha) ;
+            break ;
+          case 321: //K+
+          case -321: //K-
+          case 310:  //K0s
+          case 130:  //K0L
+            FillHistogram("hMC_Resid_PHOS_K_mvsPt",m,pt,alpha) ;
+            break ;
+          case 211:
+          case -211: 
+            FillHistogram("hMC_Resid_PHOS_pi_mvsPt",m,pt,alpha) ;
+            break ;
+          case -2212:  //pbar
+          case -2112:  //nbar
+            FillHistogram("hMC_Resid_PHOS_pbar_mvsPt",m,pt,alpha) ;
+            break ;
+          default: //else
+            FillHistogram("hMC_Resid_PHOS_other_mvsPt",m,pt,alpha) ;
+            break ;
+          }
+        }
+       }
+     }
+   }
+  
+
+  if(fEMCALEvent && fConvEvent){
+    for(Int_t iEMCAL=0; iEMCAL<fEMCALEvent->GetEntriesFast();iEMCAL++){
+      TLorentzVector * cal = static_cast<TLorentzVector*>(fEMCALEvent->At(iEMCAL)) ;
+      Int_t iclu=fGammaEMCAL[iEMCAL] ;
+      AliESDCaloCluster * clu = fESDEvent->GetCaloCluster(iclu);
+      Int_t iprimEMCAL = clu->GetLabel() ; //# of particle hit EMCAL
+      for(Int_t iConv = 0; iConv<fConvEvent->GetEntriesFast(); iConv++){
+        TLorentzVector * cnv = static_cast<TLorentzVector*>(fConvEvent->At(iConv)) ;
+        if(!cnv->TestBit(kConvOnFly) || cnv->TestBit(kConvKink) || !cnv->TestBit(kConvdEdx) || !cnv->TestBit(kConvProb) || cnv->TestBit(kConvEta)) 
+          continue;
+        Int_t iv0=fGammaV0s[iConv] ;
+        AliESDv0 * v0 = fESDEvent->GetV0(iv0) ;
+        Int_t iprimNeg = TMath::Abs(fESDEvent->GetTrack(v0->GetNindex())->GetLabel()) ;
+        Int_t iprimPos = TMath::Abs(fESDEvent->GetTrack(v0->GetPindex())->GetLabel()) ;
+  
+        //Check if there was a common ancistor
+        Bool_t found = kFALSE ;
+        Int_t curEMCAL=iprimEMCAL ;
+        Int_t commonA=-1 ;
+        while(!found && curEMCAL>-1){
+          Int_t curNeg=iprimNeg ;
+          while(!found && curNeg>-1){
+            if(curNeg==curEMCAL){
+              found=kTRUE ;
+              commonA=curEMCAL ;
+            }
+            else{
+              curNeg=fStack->Particle(curNeg)->GetFirstMother() ;
+            }
+          }
+          curEMCAL=fStack->Particle(curEMCAL)->GetFirstMother() ;
+        }
+        found = kFALSE ;
+        curEMCAL=iprimEMCAL ;
+        Int_t commonB=-1 ;
+        while(!found && curEMCAL>-1){
+          Int_t curPos=iprimPos ;
+          while(!found && curPos>-1){
+            if(curPos==curEMCAL){
+              found=kTRUE ;
+              commonB=curEMCAL ;
+            }
+            else{
+              curPos=fStack->Particle(curPos)->GetFirstMother() ;
+            }
+          }
+          curEMCAL=fStack->Particle(curEMCAL)->GetFirstMother() ;
+        }
+  
+        if(commonA != commonB){
+           //Strange
+           AliInfo(Form("CommonA=%d, commonB=%d",commonA,commonB)) ;
+        }
+        if(commonA>-1){//There was common particles
+          Int_t pdg = fStack->Particle(commonA)->GetPdgCode() ;
+          TLorentzVector pi=*cal + *cnv ;
+          Double_t m=pi.M() ;
+          Double_t pt=pi.Pt() ;
+          Double_t alpha=TMath::Abs(cal->Energy()-cnv->Energy())/(cal->Energy()+cnv->Energy()) ;
+          switch(pdg){
+          case 11:
+          case -11:
+          case 22: //conversion
+            FillHistogram("hMC_Resid_EMCAL_Phot_mvsPt",m,pt,alpha) ;
+            break ;
+          case 111: //pi0
+            FillHistogram("hMC_Resid_EMCAL_Pi0_mvsPt",m,pt,alpha) ;
+            break ;
+          case 221: //eta
+            FillHistogram("hMC_Resid_EMCAL_eta_mvsPt",m,pt,alpha) ;
+            break ;
+          case 321: //K+
+          case -321: //K-
+          case 310:  //K0s
+          case 130:  //K0L
+            FillHistogram("hMC_Resid_EMCAL_K_mvsPt",m,pt,alpha) ;
+            break ;
+          case 211:
+          case -211:
+            FillHistogram("hMC_Resid_EMCAL_pi_mvsPt",m,pt,alpha) ;
+            break ;
+          case -2212:  //pbar
+          case -2112:  //nbar
+            FillHistogram("hMC_Resid_EMCAL_pbar_mvsPt",m,pt,alpha) ;
+            break ;
+          default: //else
+            FillHistogram("hMC_Resid_EMCAL_other_mvsPt",m,pt,alpha) ;
+            break ;
+          }
+        }
+       }
+     }
+   } 
+   
 
    //------------- now photons ----------------
    for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
@@ -2102,6 +2587,8 @@ void AliAnalysisTaskCaloConv::FillHistogram(const char * key,Double_t x)const{
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloConv::FillHistogram(const char * key,Double_t x,Double_t y)const{
   TObject * tmp = fOutputContainer->FindObject(key) ;
+  if(!tmp)
+    AliError(Form("can not find histogram <%s> ",key)) ;
   if(tmp->IsA() == TClass::GetClass("TH1F")){
     ((TH1F*)tmp)->Fill(x,y) ;
     return ;
@@ -2118,6 +2605,8 @@ void AliAnalysisTaskCaloConv::FillHistogram(const char * key,Double_t x,Double_t
 void AliAnalysisTaskCaloConv::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const{
   //Fills 1D histograms with key
   TObject * tmp = fOutputContainer->FindObject(key) ;
+  if(!tmp)
+    AliError(Form("can not find histogram <%s> ",key)) ;
   if(tmp->IsA() == TClass::GetClass("TH2F")){
     ((TH2F*)tmp)->Fill(x,y,z) ;
     return ;
@@ -2147,6 +2636,46 @@ Double_t AliAnalysisTaskCaloConv::PlanarityAngle(const AliExternalTrackParam * p
   else
     return TMath::Pi()-wa ; //reverse field
 
+}
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskCaloConv::IsGoodChannel(const char * det, Int_t mod, Int_t ix, Int_t iz){
+//Check if this channel belogs to the good ones
+
+  if(strcmp(det,"PHOS")==0){
+    if(mod>5 || mod<1){
+      AliError(Form("No bad map for PHOS module %d ",mod)) ;
+      return kTRUE ;
+    } 
+    if(!fPHOSBadMap[mod]){
+      AliError(Form("No Bad map for PHOS module %d",mod)) ;
+      return kTRUE ;
+    }
+    if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0)
+      return kFALSE ;
+    else
+      return kTRUE ;
+  }
+  else{
+    if(strcmp(det,"EMCAL")==0){
+      if(mod>9 || mod<0){
+        AliError(Form("No bad map for EMCAL module %d ",mod)) ;
+        return kTRUE ;
+      }
+      if(!fEMCALBadMap[mod]){
+        AliError(Form("No bad map for EMCAL module %d ",mod)) ;
+        return kTRUE ;
+      }
+      if(fEMCALBadMap[mod]->GetBinContent(ix,iz)>0)
+        return kFALSE ;
+      else
+        return kTRUE ;
+    }
+    else{
+      AliError(Form("Can not find bad channels for detector %s ",det)) ;
+    }
+  } 
+   
+  return kTRUE ;
 }
 
  
