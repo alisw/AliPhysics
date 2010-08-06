@@ -45,6 +45,7 @@
 
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
+#include "AliCDBManager.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliESDInputHandler.h"
@@ -59,11 +60,7 @@
 #include "AliMCParticle.h"
 #include "AliPID.h"
 #include "AliStack.h"
-#include "AliTRDtrackV1.h"
 #include "AliTrackReference.h"
-#include "AliTRDgeometry.h"
-#include "AliTRDcluster.h"
-#include "AliTRDseedV1.h"
 #include "TTreeStream.h"
 
 #include <cstdio>
@@ -71,6 +68,12 @@
 #include <cstring>
 #include <iostream>
 
+#include "AliTRDcalibDB.h"
+#include "AliTRDtrackerV1.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDtrackV1.h"
+#include "AliTRDseedV1.h"
+#include "AliTRDcluster.h"
 #include "AliTRDinfoGen.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDeventInfo.h"
@@ -102,6 +105,7 @@ AliTRDinfoGen::AliTRDinfoGen()
   ,fEventCut(NULL)
   ,fTrackCut(NULL)
   ,fV0Cut(NULL)
+  ,fOCDB("local://$ALICE_ROOT/OCDB")
   ,fTrackInfo(NULL)
   ,fEventInfo(NULL)
   ,fV0Info(NULL)
@@ -127,6 +131,7 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   ,fEventCut(NULL)
   ,fTrackCut(NULL)
   ,fV0Cut(NULL)
+  ,fOCDB("local://$ALICE_ROOT/OCDB")
   ,fTrackInfo(NULL)
   ,fEventInfo(NULL)
   ,fV0Info(NULL)
@@ -265,12 +270,22 @@ void AliTRDinfoGen::UserExec(Option_t *){
   //
 
   fESDev = dynamic_cast<AliESDEvent*>(InputEvent());
-  fMCev = MCEvent();
-
   if(!fESDev){
     AliError("Failed retrieving ESD event");
     return;
   }
+  if(!IsInitOCDB()){
+    // prepare OCDB access
+    AliCDBManager* ocdb = AliCDBManager::Instance();
+    ocdb->SetDefaultStorage(fOCDB.Data());
+    ocdb->SetRun(fESDev->GetRunNumber());
+    AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS());
+    AliInfo(Form("OCDB :  Loc[%s] Run[%d] TB[%d]", fOCDB.Data(), ocdb->GetRun(), AliTRDtrackerV1::GetNTimeBins()));
+    SetInitOCDB();
+  }
+
+  // link MC if available
+  fMCev = MCEvent();
 
   // event selection : trigger cut
   if(UseLocalEvSelection() && fEvTrigger){ 

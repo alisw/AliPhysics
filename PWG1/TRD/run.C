@@ -117,22 +117,22 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   
   // INITIALIZATION OF RUNNING ENVIRONMENT
   // initialize OCDB manager
-  AliCDBManager *cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage(ocdb_uri);
-  if(!cdbManager->IsDefaultStorageSet()){
-    Error("run.C", "Error setting OCDB.");
-    return;
-  }
-  cdbManager->SetRun(runNo);
-  cdbManager->SetSpecificStorage("GRP/GRP/Data", grp_uri);
-  cdbManager->SetCacheFlag(kFALSE);
-  cdbManager->Print();
-  // initialize magnetic field from the GRP manager.
-  AliGRPManager grpMan;
-  if(!grpMan.ReadGRPEntry()) return;
-  if(!grpMan.SetMagField()) return;
-  //AliRunInfo *runInfo = grpMan.GetRunInfo();
-  AliGeomManager::LoadGeometry();
+//   AliCDBManager *cdbManager = AliCDBManager::Instance();
+//   cdbManager->SetDefaultStorage(ocdb_uri);
+//   if(!cdbManager->IsDefaultStorageSet()){
+//     Error("run.C", "Error setting OCDB.");
+//     return;
+//   }
+//   cdbManager->SetRun(runNo);
+//   cdbManager->SetSpecificStorage("GRP/GRP/Data", grp_uri);
+//   cdbManager->SetCacheFlag(kFALSE);
+//   cdbManager->Print();
+//   // initialize magnetic field from the GRP manager.
+//   AliGRPManager grpMan;
+//   if(!grpMan.ReadGRPEntry()) return;
+//   if(!grpMan.SetMagField()) return;
+//   //AliRunInfo *runInfo = grpMan.GetRunInfo();
+//   AliGeomManager::LoadGeometry();
 
   // DEFINE DATA CHAIN
   TChain *chain = 0x0;
@@ -176,11 +176,8 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   }
   //mgr->PrintStatus();
   mgr->StartAnalysis("local", chain, nev, first);
-
   timer.Stop();
   timer.Print();  
-
-  delete cdbManager;
 
   // verbosity
   printf("\tCLEANING TASK LIST:\n");

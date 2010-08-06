@@ -48,8 +48,9 @@ public:
     ,kNprojs     = 70 // total number of projections for all views
   };
   enum ETRDresolutionSteer {
-    kVerbose  = 0
-    ,kVisual  = 1
+    kVerbose  = BIT(18)
+    ,kVisual  = BIT(19)
+    ,kGeom    = BIT(20)
   };
   enum ETRDresolutionOutSlots {
      kClToTrk    = 2
@@ -74,8 +75,9 @@ public:
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
   void    UserExec(Option_t * opt);
   void    InitExchangeContainers();
-  Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
-  Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
+  Bool_t  IsInitGeom() const {return TestBit(kGeom);}
+  Bool_t  IsVerbose() const {return TestBit(kVerbose);}
+  Bool_t  IsVisual() const {return TestBit(kVisual);}
   Bool_t  PostProcess();
 
   TH1*    PlotCharge(const AliTRDtrackV1 *t=NULL);
@@ -88,8 +90,9 @@ public:
   void    SetSegmentationLevel(Int_t l=0);
   void    SetPtThreshold(Float_t pt) {fPtThreshold = pt;}
   void    SetRecoParam(AliTRDrecoParam *r);
-  void    SetVerbose(Bool_t v = kTRUE) {v ? SETBIT(fStatus ,kVerbose): CLRBIT(fStatus ,kVerbose);}
-  void    SetVisual(Bool_t v = kTRUE) {v ? SETBIT(fStatus, kVisual) : CLRBIT(fStatus, kVisual);}
+  void    SetInitGeom(Bool_t set = kTRUE) {SetBit(kGeom, set);}
+  void    SetVerbose(Bool_t v = kTRUE) {SetBit(kVerbose, v);}
+  void    SetVisual(Bool_t v = kTRUE) {SetBit(kVisual, v);}
 
   void    Terminate(Option_t * opt);
   Bool_t  GetGraph(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1, Bool_t kLEG=kTRUE, const Char_t *explain=NULL);
@@ -116,8 +119,7 @@ private:
   Bool_t  Process3DlinkedArray(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=NULL,  Float_t scale=1.);
   Bool_t  Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt);
 
-  UChar_t             fStatus;          // steer parameter of the task
-  UChar_t             fSegmentLevel;    // steer parameter of the task
+  UChar_t             fSegmentLevel;    // segmentation level [sector/stack/chamber]
   UShort_t            fIdxPlot;         // plot counter (internal)
   UShort_t            fIdxFrame;        // frame counter (internal)
   UShort_t            fNcomp[kNprojs];  // number of projections per task

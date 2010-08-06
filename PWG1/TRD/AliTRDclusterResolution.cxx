@@ -170,6 +170,7 @@
 #include "AliTRDclusterResolution.h"
 #include "info/AliTRDclusterInfo.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDcalibDB.h"
@@ -178,7 +179,7 @@
 #include "Cal/AliTRDCalDet.h"
 
 #include "AliLog.h"
-#include "AliTracker.h"
+#include "AliESDEvent.h"
 #include "AliCDBManager.h"
 
 #include "TROOT.h"
@@ -208,6 +209,8 @@ AliTRDclusterResolution::AliTRDclusterResolution()
   ,fResults(NULL)
   ,fStatus(0)
   ,fDet(-1)
+  ,fCol(-1)
+  ,fRow(-1)
   ,fExB(0.)
   ,fVdrift(0.)
   ,fT0(0.)
@@ -229,6 +232,8 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
   ,fResults(NULL)
   ,fStatus(0)
   ,fDet(-1)
+  ,fCol(-1)
+  ,fRow(-1)
   ,fExB(0.)
   ,fVdrift(0.)
   ,fT0(0.)
@@ -492,7 +497,13 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 // Fill container histograms
 
   fInfo = dynamic_cast<TObjArray *>(GetInputData(1));
-  if(!HasExB()) AliWarning("ExB was not set. Call SetExB() before running the task.");
+  if(!HasExB()){ 
+    SetExB();
+    if(!HasExB()){ 
+      AliWarning("Magnetic field settings failed. Check OCDB access.");
+      return;
+    }
+  }
 
   Int_t det, t;
   Float_t x, y, z, q, dy, dydx, dzdx, cov[3], covcl[3];
@@ -509,10 +520,18 @@ void AliTRDclusterResolution::UserExec(Option_t *)
   TIterator *iter=fInfo->MakeIterator();
   while((cli=dynamic_cast<AliTRDclusterInfo*>((*iter)()))){
     cli->GetCluster(det, x, y, z, q, t, covcl);
+
+    // select cluster according to detector region if specified
+    if(fDet>=0 && fDet!=det) continue;
+    if(fCol>=0 && fRow>=0){
+      Int_t c,r;
+      cli->GetCenterPad(c, r);
+      if(TMath::Abs(fCol-c) > 5) continue;
+      if(TMath::Abs(fRow-r) > 2) continue;
+    }
+
     dy = cli->GetResolution();
     AliDebug(4, Form("det[%d] tb[%2d] q[%4.0f Log[%6.4f]] dy[%7.2f][um] ypull[%5.2f]", det, t, q, TMath::Log(q), 1.e4*dy, dy/TMath::Sqrt(covcl[0])));
-
-    if(fDet>=0 && fDet!=det) continue;
     
     cli->GetGlobalPosition(y, z, dydx, dzdx, &cov[0]);
 
@@ -629,39 +648,72 @@ Bool_t AliTRDclusterResolution::PostProcess()
 }
 
 //_______________________________________________________
-Bool_t AliTRDclusterResolution::SetExB(Int_t det, Int_t col, Int_t row)
+Bool_t AliTRDclusterResolution::SetExB()
 {
-  // check OCDB
-  AliCDBManager *cdb = AliCDBManager::Instance();
+// Retrieve calibration parameters from OCDB, drift velocity and t0 for the detector region specified by
+// a previous call to AliTRDclusterResolution::SetCalibrationRegion().
+
+  AliCDBManager *cdb = AliCDBManager::Instance(); // init OCDB
   if(cdb->GetRun() < 0){
     AliError("OCDB manager not properly initialized");
     return kFALSE;
   }
 
   // check magnetic field
-  if(TMath::Abs(AliTracker::GetBz()) < 1.e-10){
-    AliWarning("B=0. Magnetic field may not be initialized. Continue if you know what you are doing !");
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  if(!esd){
+    AliError("Failed retrieving ESD event");
+    return kFALSE;
+  }
+  if(esd->InitMagneticField()){
+    AliError("Magnetic field failed initialization.");
+    return kFALSE;
   }
 
-  // set reference detector if any
-  fDet = -1;
-  if(det>=0 && det<AliTRDgeometry::kNdet) fDet = det;
-  else det=0;
+  // check pad for detector
+  if(fCol>=0 && fRow>=0){
+    AliTRDgeometry geo;
+    AliTRDpadPlane *pp(geo.GetPadPlane(fDet));
+    if(fCol>=pp->GetNcols() ||
+       fRow>=pp->GetNrows()){
+      AliWarning(Form("Pad coordinates col[%d] or row[%d] incorrect for det[%d].\nLimits are max col[%d] max row[%d]. Reset to default", fCol, fRow, fDet, pp->GetNcols(), pp->GetNrows()));
+      fCol = -1; fRow=-1;
+    }
+  }
 
   AliTRDcalibDB *fCalibration  = AliTRDcalibDB::Instance();
-  AliTRDCalROC  *fCalVdriftROC(fCalibration->GetVdriftROC(det))
-               ,*fCalT0ROC(fCalibration->GetT0ROC(det));
+  AliTRDCalROC  *fCalVdriftROC(fCalibration->GetVdriftROC(fDet>=0?fDet:0))
+               ,*fCalT0ROC(fCalibration->GetT0ROC(fDet>=0?fDet:0));
   const AliTRDCalDet  *fCalVdriftDet = fCalibration->GetVdriftDet();
   const AliTRDCalDet  *fCalT0Det = fCalibration->GetT0Det();
 
-  fVdrift = fCalVdriftDet->GetValue(det) * fCalVdriftROC->GetValue(col, row);
+  fVdrift = fCalVdriftDet->GetValue(fDet>=0?fDet:0);
+  if(fCol>=0 && fRow>=0) fVdrift*= fCalVdriftROC->GetValue(fCol, fRow);
   fExB    = AliTRDCommonParam::Instance()->GetOmegaTau(fVdrift);
-  fT0     = fCalT0Det->GetValue(det) * fCalT0ROC->GetValue(col, row);
+  fT0     = fCalT0Det->GetValue(fDet>=0?fDet:0);
+  if(fCol>=0 && fRow>=0) fT0 *= fCalT0ROC->GetValue(fCol, fRow);
   SetBit(kExB);
 
   AliDebug(1, Form("Calibrate for Det[%3d] t0[%5.3f] vd[%5.3f] ExB[%f]", fDet, fT0, fVdrift, fExB));
 
   return kTRUE;
+}
+
+//_______________________________________________________
+void AliTRDclusterResolution::SetCalibrationRegion(Int_t det, Int_t col, Int_t row)
+{
+// Set calibration region in terms of detector and pad. 
+// By default detector 0 mean values are considered.
+
+  if(det>=0 && det<AliTRDgeometry::kNdet){ 
+    fDet = det;
+    if(col>=0 && row>=0){
+      fCol = col;
+      fRow = row;
+    }
+    return;
+  }
+  AliError(Form("Detector index outside range [0 %d].", AliTRDgeometry::kNdet));
 }
 
 //_______________________________________________________
