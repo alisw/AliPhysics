@@ -38,8 +38,10 @@ public:
   void          UserCreateOutputObjects();
   void          UserExec(Option_t *);
   Int_t         GetDetector() const { return fDet; }
+  void          GetPad(Int_t &c, Int_t &r) const { c=fCol, r=fRow; return;}
   inline Float_t GetExB() const;
   inline Float_t GetVdrift() const;
+  inline Float_t GetT0() const;
   Bool_t        GetRefFigure(Int_t ifig);
   Bool_t        HasProcess(EResultContainer bit) const {return TESTBIT(fStatus, bit);}
   Bool_t        HasExB() const { return TestBit(kExB);}
@@ -51,7 +53,7 @@ public:
   Bool_t        IsSaveAs() const {return TestBit(kSaveAs);}
 
   Bool_t        PostProcess();
-  Bool_t        SetExB(Int_t det=-1, Int_t c = 70, Int_t r = 7);
+  void          SetCalibrationRegion(Int_t det, Int_t col=-1, Int_t row=-1);
   void          SetVisual();
   void          SetProcess(EResultContainer bit, Bool_t v = kTRUE) {v ? SETBIT(fStatus, bit) : CLRBIT(fStatus, bit);}
   void          SetSaveAs(Bool_t v = kTRUE) {SetBit(kSaveAs, v);}
@@ -66,12 +68,15 @@ protected:
 private:
   AliTRDclusterResolution(const AliTRDclusterResolution&);  
   AliTRDclusterResolution& operator=(const AliTRDclusterResolution&);
+  Bool_t        SetExB();
 
   TCanvas    *fCanvas; //! visualization canvas 
   TObjArray  *fInfo;   //! list of cluster info
   TObjArray  *fResults;// list of result graphs/histos/trees
   UChar_t    fStatus;  // steer parameter of the task
   Short_t    fDet;     // detector (-1 for all)
+  Char_t     fCol;     // pad column (-1 for all)
+  Char_t     fRow;     // pad row (-1 for all)
   Float_t    fExB;     // tg of the Lorentz angle
   Float_t    fVdrift;  // mean drift velocity
   Float_t    fT0;      // time 0
@@ -105,6 +110,15 @@ inline Float_t AliTRDclusterResolution::GetVdrift() const
     printf("WARNING :: ExB was not set. Use B=0.\n");
   }
   return fVdrift;
+}
+
+//___________________________________________________
+inline Float_t AliTRDclusterResolution::GetT0() const
+{ 
+  if(!HasExB()){
+    printf("WARNING :: ExB was not set. Use B=0.\n");
+  }
+  return fT0;
 }
 
 //___________________________________________________

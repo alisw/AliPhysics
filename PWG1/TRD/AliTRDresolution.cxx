@@ -72,6 +72,10 @@
 #include "AliPID.h"
 #include "AliLog.h"
 #include "AliESDtrack.h"
+#include "AliCDBManager.h"
+#include "AliCDBPath.h"
+#include "AliCDBEntry.h"
+#include "AliGeomManager.h"
 #include "AliMathBase.h"
 
 #include "AliTRDresolution.h"
@@ -117,7 +121,6 @@ Char_t const *AliTRDresolution::fgkResYsegmName[3] = {
 //________________________________________________________
 AliTRDresolution::AliTRDresolution()
   :AliTRDrecoTask()
-  ,fStatus(0)
   ,fSegmentLevel(0)
   ,fIdxPlot(0)
   ,fIdxFrame(0)
@@ -142,7 +145,6 @@ AliTRDresolution::AliTRDresolution()
 //________________________________________________________
 AliTRDresolution::AliTRDresolution(char* name)
   :AliTRDrecoTask(name, "TRD spatial and momentum resolution")
-  ,fStatus(0)
   ,fSegmentLevel(0)
   ,fIdxPlot(0)
   ,fIdxFrame(0)
@@ -202,7 +204,6 @@ void AliTRDresolution::UserCreateOutputObjects()
     fReconstructor = new AliTRDReconstructor();
     fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
   }
-  if(!fGeo) fGeo = new AliTRDgeometry();
 
   AliTRDrecoTask::UserCreateOutputObjects();
   PostData(kClToTrk, fCl);
@@ -231,6 +232,17 @@ void AliTRDresolution::UserExec(Option_t *opt)
   //
   // Execution part
   //
+
+  if(!IsInitGeom()){
+    // create geometry
+    AliCDBManager* ocdb = AliCDBManager::Instance();
+    AliCDBEntry* obj = ocdb->Get(AliCDBPath("GRP", "Geometry", "Data"));
+    AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
+    AliGeomManager::GetNalignable("TRD");
+    AliGeomManager::ApplyAlignObjsFromCDB("TRD"); 
+    fGeo = new AliTRDgeometry();
+    SetInitGeom();
+  }
 
   fCl->Delete();
   fMCcl->Delete();

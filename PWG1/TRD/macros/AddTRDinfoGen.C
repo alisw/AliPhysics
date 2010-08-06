@@ -19,7 +19,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   info->SetDebugLevel(0);
   info->SetMCdata(mc);
   info->SetLocalTrkSelection();
-
+  info->SetOCDB("alien://folder=/alice/data/2010/OCDB");
   // settings for collisions
   info->SetCollision(/*kFALSE*/);
   if(info->IsCollision()){
