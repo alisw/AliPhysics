@@ -113,23 +113,18 @@ Bool_t AliRsnCutPID::ComputeWeights(AliRsnDaughter *daughter)
   Int_t  i, j;
   Bool_t useDefault = fUseDefault;
   Bool_t perfectPID = fPerfect;
-  if (perfectPID && !daughter->GetRefMC()) perfectPID = kFALSE;
+  if (perfectPID && !daughter->GetRefMC()) return kFALSE;
   if (!daughter->GetRefESDtrack()) useDefault = kTRUE;
   if (!daughter->GetRefESDtrack() && !daughter->GetRefAODtrack()) return kFALSE;
   
-  // if perfect PID ise required, this overcomes all
-  // in this case the weight of the correct species is set to 1
-  // and the others to 0
-  // of course this happens only if there is a reference MC
+  // if perfect PID ise required, 
+  // compare the PDG code of the type stored in 'fMinI' of the cut
+  // and that of the particle which is checked, looking at its MC
   if (perfectPID)
   {
+    i = TMath::Abs(AliPID::ParticleCode(fMinI));
     j = TMath::Abs(daughter->GetRefMC()->Particle()->GetPdgCode());
-    for (i = 0; i < AliPID::kSPECIES; i++)
-    {
-      if (AliPID::ParticleCode((AliPID::EParticleType)i) == j) fWeight[i] = 1.0;
-      else fWeight[i] = 0.0;
-    }
-    return kTRUE;
+    return (i == j);
   }
   
   // if default weights are (or need to be) used,

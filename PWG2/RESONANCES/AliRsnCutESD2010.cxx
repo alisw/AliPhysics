@@ -37,6 +37,8 @@ AliRsnCutESD2010::AliRsnCutESD2010() :
   fCheckITS(kTRUE),
   fCheckTPC(kTRUE),
   fCheckTOF(kTRUE),
+  fUseGlobal(kTRUE),
+  fUseITSSA(kTRUE),
   fMaxITSband(1E6),
   fTPCpLimit(0.35),
   fMinTPCband(-1E6),
@@ -66,6 +68,8 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fCheckITS(kTRUE),
   fCheckTPC(kTRUE),
   fCheckTOF(kTRUE),
+  fUseGlobal(kTRUE),
+  fUseITSSA(kTRUE),
   fMaxITSband(1E6),
   fTPCpLimit(0.35),
   fMinTPCband(-1E6),
@@ -95,6 +99,8 @@ AliRsnCutESD2010::AliRsnCutESD2010
   fCheckITS(copy.fCheckITS),
   fCheckTPC(copy.fCheckTPC),
   fCheckTOF(copy.fCheckTOF),
+  fUseGlobal(copy.fUseGlobal),
+  fUseITSSA(copy.fUseITSSA),
   fMaxITSband(copy.fMaxITSband),
   fTPCpLimit(copy.fTPCpLimit),
   fMinTPCband(copy.fMinTPCband),
@@ -220,7 +226,9 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   isITSSA = ((status & AliESDtrack::kTPCin)  == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
   
   // accept only tracks which are TPC+ITS or ITS standalone
-  if (!isTPC && !isITSSA) return kFALSE;
+  if (!isTPC   && !isITSSA) return kFALSE;
+  if ( isTPC   && !fUseGlobal) return kFALSE;
+  if ( isITSSA && !fUseITSSA) return kFALSE;
   
   if (isTPC)
   {

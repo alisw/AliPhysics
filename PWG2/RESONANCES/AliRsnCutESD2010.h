@@ -32,10 +32,12 @@ class AliRsnCutESD2010 : public AliRsnCut
     AliESDtrackCuts* GetCutsITS() {return &fESDtrackCutsITS;}
     virtual Bool_t   IsSelected(TObject *obj1, TObject *obj2 = 0x0);
     
-    void             SetMC      (Bool_t yn = kTRUE) {fIsMC = yn;}
-    void             SetCheckITS(Bool_t yn = kTRUE) {fCheckITS = yn;}
-    void             SetCheckTPC(Bool_t yn = kTRUE) {fCheckTPC = yn;}
-    void             SetCheckTOF(Bool_t yn = kTRUE) {fCheckTOF = yn;}
+    void             SetMC       (Bool_t yn = kTRUE) {fIsMC = yn;}
+    void             SetCheckITS (Bool_t yn = kTRUE) {fCheckITS = yn;}
+    void             SetCheckTPC (Bool_t yn = kTRUE) {fCheckTPC = yn;}
+    void             SetCheckTOF (Bool_t yn = kTRUE) {fCheckTOF = yn;}
+    void             SetUseGlobal(Bool_t yn = kTRUE) {fUseGlobal = yn;}
+    void             SetUseITSSA (Bool_t yn = kTRUE) {fUseITSSA = yn;}
     
     void             SetITSband(Double_t v) {fMaxITSband = v;}
     
@@ -57,10 +59,12 @@ class AliRsnCutESD2010 : public AliRsnCut
     AliRsnCutESD2010(const AliRsnCutESD2010& copy);
     AliRsnCutESD2010& operator=(const AliRsnCutESD2010& /*copy*/) {return (*this);}
   
-    Bool_t           fIsMC;             // swithc for MC analysis
+    Bool_t           fIsMC;             //  switch for MC analysis
     Bool_t           fCheckITS;         //  switch for ITS dE/dx check
     Bool_t           fCheckTPC;         //  switch for TPC dE/dx check
     Bool_t           fCheckTOF;         //  switch for TOF time check
+    Bool_t           fUseGlobal;        //  switch to use TPC global tracks
+    Bool_t           fUseITSSA;         //  switch to use ITS standalone tracks
 
     Double_t         fMaxITSband;       //  range for ITS de/dx band
 
