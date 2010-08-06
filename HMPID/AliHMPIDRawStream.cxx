@@ -104,8 +104,6 @@ AliHMPIDRawStream::AliHMPIDRawStream() :
   for(Int_t iddl=0;iddl<kNDDL;iddl++) 
     for(Int_t ierr=0; ierr < kSumErr; ierr++) fNumOfErr[iddl][ierr]=0;               //reset errors  
 
-  fRawReader->Reset();
-  fRawReader->Select("HMPID");
   
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
