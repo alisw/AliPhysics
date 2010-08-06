@@ -13,7 +13,7 @@
 #include "TObject.h" 
 class AliStack;
 class AliESDEvent;
-
+#include "TMath.h"
 class AliGammaConversionAODObject : public TObject {
 
  public: 
@@ -37,6 +37,9 @@ class AliGammaConversionAODObject : public TObject {
    * This function sets the Pz
    */
   void SetPz(Float_t pz){fPz = pz;}
+
+  ///Set the Chi2 of reconstructed conversion gamma
+  void SetChi2(Float_t chi2) {fChi2 = chi2;}
 
   /*
    * This function sets the esd label of the first electron
@@ -62,6 +65,17 @@ class AliGammaConversionAODObject : public TObject {
    * This function returns the Pz
    */
   Float_t GetGammaPz() const{return fPz;}
+
+  //Get the Chi2 of gamma
+  Float_t Chi2() const {return fChi2;}
+
+  //Get Pt of gamma
+  Float_t Pt() const {return TMath::Sqrt(fPx* fPx + fPy*fPy);}
+
+  ///Get Energy of gamma
+  Float_t E() const {return TMath::Sqrt(fPx*fPx + fPy*fPy + fPz*fPz);}
+
+
 
   /*
    * This function returns the esd label of the first electron
@@ -111,10 +125,12 @@ class AliGammaConversionAODObject : public TObject {
   Float_t fPz; // Pz of reconstructed gamma
   Int_t fLabel1; //mc label of the first track
   Int_t fLabel2; //mc label of the second track
-  AliStack* fMCStack; // pointer to the mc stack
-  AliESDEvent * fESDEvent; // pointer to the esdevent
+  Float_t fChi2; // Chi sq of mother candidate?
+  
+  AliStack* fMCStack; //!transient pointer to the mc stack
+  AliESDEvent * fESDEvent; //!transient pointer to the esdevent
 
-  ClassDef(AliGammaConversionAODObject,0)
+  ClassDef(AliGammaConversionAODObject,1)
 };
 
 

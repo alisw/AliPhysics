@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Author: Ana Marin, Kathrin Koch, Kenneth Aamodt                        *
+ * Author: Ana Marin, Kathrin Koch, Kenneth Aamodt, Svein Lindal          *
  * Version 1.0                                                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -42,10 +42,11 @@ AliGammaConversionAODObject::AliGammaConversionAODObject() :
   fPz(0),
   fLabel1(-1),
   fLabel2(-1),
+  fChi2(0),
   fMCStack(NULL),
   fESDEvent(NULL)
 {
-	
+  //Default constructor
 }
 
 
@@ -56,10 +57,11 @@ AliGammaConversionAODObject::AliGammaConversionAODObject(const AliGammaConversio
   fPz(original.fPz),
   fLabel1(original.fLabel1),
   fLabel2(original.fLabel2),
+  fChi2(original.fChi2),
   fMCStack(original.fMCStack),
   fESDEvent(original.fESDEvent)
 {
-	
+  //Copy constructor
 }
 
 

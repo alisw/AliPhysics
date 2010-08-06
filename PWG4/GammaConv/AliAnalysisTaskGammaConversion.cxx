@@ -114,6 +114,7 @@ AliAnalysisTaskSE(),
   fDoCF(kFALSE),
   fAODBranch(NULL),
   fAODBranchName("GammaConv"),
+  fKFDeltaAODFileName(""),
   fDoNeutralMesonV0MCCheck(kFALSE),
   fKFReconstructedGammasV0Index()
 {
@@ -191,6 +192,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fDoCF(kFALSE),
   fAODBranch(NULL),
   fAODBranchName("GammaConv"),
+  fKFDeltaAODFileName(""),
   fDoNeutralMesonV0MCCheck(kFALSE),
   fKFReconstructedGammasV0Index()
 {
@@ -1582,23 +1584,22 @@ void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
   for(Int_t gammaIndex=0;gammaIndex<fKFReconstructedGammasTClone->GetEntriesFast();gammaIndex++){
     //  for(UInt_t gammaIndex=0;gammaIndex<fKFReconstructedGammas.size();gammaIndex++){
     //Create AOD particle object from AliKFParticle
-		
-    /*    AliKFParticle * gammakf = &fKFReconstructedGammas[gammaIndex];
     //You could add directly AliKFParticle objects to the AOD, avoiding dependences with PartCorr
     //but this means that I have to work a little bit more in my side.
     //AODPWG4Particle objects are simpler and lighter, I think
+    /*
+    AliKFParticle * gammakf = dynamic_cast<AliKFParticle*>(fKFReconstructedGammasTClone->At(gammaIndex));
     AliAODPWG4Particle gamma = AliAODPWG4Particle(gammakf->Px(),gammakf->Py(),gammakf->Pz(), gammakf->E());
-    gamma.SetLabel(-1);//How to get the MC label of the reconstructed gamma?
-    gamma.SetCaloLabel(-1,-1); //How to get the MC label of the 2 electrons that form the gamma?
+    //gamma.SetLabel(-1);//How to get the MC label of the reconstructed gamma?
+    gamma.SetTrackLabel( fElectronv1[gammaIndex], fElectronv2[gammaIndex] ); //How to get the MC label of the 2 electrons that form the gamma?
     gamma.SetDetector("CTS"); //tag the gamma as reconstructed in the central barrel
-    gamma.SetPdg(AliCaloPID::kPhotonConv); //photon id
+    gamma.SetPdg(AliPID::kEleCon); //photon id
     gamma.SetTag(-1); //Here I usually put a flag saying that montecarlo says it is prompt, decay fragmentation photon, or hadrons or whatever
-		 
-    //Add it to the aod list
+    gamma.SetChi2(gammakf->Chi2());
     Int_t i = fAODBranch->GetEntriesFast();
     new((*fAODBranch)[i])  AliAODPWG4Particle(gamma);
     */
-    //    AliKFParticle * gammakf = &fKFReconstructedGammas[gammaIndex];
+
     AliKFParticle * gammakf = (AliKFParticle *)fKFReconstructedGammasTClone->At(gammaIndex);
     AliGammaConversionAODObject aodObject;
     aodObject.SetPx(gammakf->GetPx());
@@ -1606,6 +1607,7 @@ void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
     aodObject.SetPz(gammakf->GetPz());
     aodObject.SetLabel1(fElectronv1[gammaIndex]);
     aodObject.SetLabel2(fElectronv2[gammaIndex]);
+    aodObject.SetChi2(gammakf->Chi2());
     Int_t i = fAODBranch->GetEntriesFast();
     new((*fAODBranch)[i])  AliGammaConversionAODObject(aodObject);
   }
@@ -2571,8 +2573,14 @@ void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
   }
   fAODBranch->Delete();
   fAODBranch->SetName(fAODBranchName); 
-  AddAODBranch("TClonesArray", &fAODBranch);
-	
+  
+  //If delta AOD file name set, add in separate file. Else add in standard aod file. 
+  if(fKFDeltaAODFileName.Length() > 0) {
+    AddAODBranch("TClonesArray", &fAODBranch, fKFDeltaAODFileName.Data());
+    AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(fKFDeltaAODFileName.Data());
+  } else  {
+    AddAODBranch("TClonesArray", &fAODBranch);
+  }
   // Create the output container
   if(fOutputContainer != NULL){
     delete fOutputContainer;
