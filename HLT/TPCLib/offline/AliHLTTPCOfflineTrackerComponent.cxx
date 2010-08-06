@@ -314,10 +314,14 @@ int AliHLTTPCOfflineTrackerComponent::Reconfigure(const char* cdbEntry, const ch
   // see header file for class documentation
   int iResult=0;
   const char* path=kAliHLTCDBSolenoidBz;
+#ifdef __DEBUG
   const char* defaultNotify="";
+#endif
   if (cdbEntry) {
     path=cdbEntry;
+#ifdef __DEBUG
     defaultNotify=" (default)";
+#endif
   }
   if (path) {
     if (chainId) {} // just to get rid of warning, can not comment argument due to debug message

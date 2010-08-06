@@ -430,10 +430,12 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     unsigned long ndx;
     AliHLTTPCClusterData* inPtrSP;
     AliHLTTPCVertexData* inPtrV = NULL;
+#ifdef FORWARD_VERTEX_BLOCK
     const AliHLTComponentBlockData* vertexIter=NULL;
+#endif
     AliHLTTPCTrackletData* outPtr;
     AliHLTUInt8_t* outBPtr;
-    AliHLTUInt32_t vSize = 0;
+    //AliHLTUInt32_t vSize = 0;
     UInt_t offset=0, mysize, tSize = 0;
     outBPtr = outputPtr;
     Int_t slice=-1, patch=-1, row[2];
@@ -502,8 +504,10 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	if (bIsVertexDataBlock)
 	    {
 	    inPtrV = (AliHLTTPCVertexData*)(iter->fPtr);
+#ifdef FORWARD_VERTEX_BLOCK
 	    vertexIter = iter;
-	    vSize = iter->fSize;
+#endif
+	    //vSize = iter->fSize;
 	    fVertex->Read( inPtrV );
 	    vertexSlice = slice;
 	    }
@@ -571,8 +575,10 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	    if ( iter->fDataType == AliHLTTPCDefinitions::fgkVertexDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
 		{
 		inPtrV = (AliHLTTPCVertexData*)(iter->fPtr);
+#ifdef FORWARD_VERTEX_BLOCK
 		vertexIter = iter;
-		vSize = iter->fSize;
+#endif
+		//vSize = iter->fSize;
 		fVertex->Read( inPtrV );
 		break;
 		}

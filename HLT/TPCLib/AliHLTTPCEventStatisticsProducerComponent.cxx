@@ -296,20 +296,21 @@ void AliHLTTPCEventStatisticsProducerComponent::InitializeEvent() {
 }
 
 // -- **********************************************************************************************
-void AliHLTTPCEventStatisticsProducerComponent::AddClusters( void* ptr, Int_t slice, Int_t patch ) {
+void AliHLTTPCEventStatisticsProducerComponent::AddClusters(
+    void* ptr,
+#ifdef __DEBUG
+    Int_t slice, Int_t patch
+#else
+    Int_t, Int_t
+#endif
+  )
+{
   // see header file for class documentation
 
   const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) ptr;
 
-  // these 2 variables have been introduced to avoid warning: unused variable in production compile
-  Int_t sliceAntiWarning = slice;
-  Int_t patchAntiWarning = patch;
-
   Int_t nSpacepoint = (Int_t) clusterData->fSpacePointCnt;
-  HLTDebug( "%d Clusters found for slice %u - patch %u\n", nSpacepoint, sliceAntiWarning, patchAntiWarning );
-
-  sliceAntiWarning = 0;
-  patchAntiWarning = 0;
+  HLTDebug( "%d Clusters found for slice %u - patch %u\n", nSpacepoint, slice, patch );
 
   // ** Add to event statistics
   fEvStat->AddNTotalCluster( nSpacepoint );
