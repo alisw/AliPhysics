@@ -1,5 +1,6 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include "TTree.h"
+#include "TError.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
@@ -7,12 +8,9 @@
 #include "PWG1/TRD/AliTRDv0Monitor.h"
 #endif
 
-#include "PWG1/TRD/macros/helper.C"
-void AddTRDv0Monitor(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
+void AddTRDv0Monitor(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
-  Int_t map = ParseOptions(trd);
-  if(!TSTBIT(map, kV0Monitor)) return;
-  printf("AddTRDv0Monitor <- [0]=\"%s\" [1]=\"%s\" [2]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName());
+  Info("AddTRDv0Monitor", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName()));
 
   AliTRDv0Monitor *v0Mon(NULL);;
   mgr->AddTask(v0Mon = new AliTRDv0Monitor((char*)"TRDv0Monitor"));

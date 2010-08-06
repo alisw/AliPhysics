@@ -1,5 +1,6 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include "TTree.h"
+#include "TError.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
@@ -10,12 +11,9 @@
 #include "PWG1/TRD/AliTRDpidRefMakerLQ.h"
 #endif
 
-#include "PWG1/TRD/macros/helper.C"
-void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci, AliAnalysisDataContainer **co)
+void AddTRDcheckPID(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci, AliAnalysisDataContainer **co)
 {
-  Int_t map = ParseOptions(trd);
-  if(!TSTBIT(map, kCheckPID)) return;
-  printf("AddTRDcheckPID <- [0]=\"%s\" [1]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName());
+  Info("AddTRDcheckPID", Form("[0]=\"%s\" [1]=\"%s\"", ci[0]->GetName(), ci[1]->GetName()));
 
   AliTRDcheckPID *pid(NULL);
   mgr->AddTask(pid = new AliTRDcheckPID((char*)"TRDcheckPID"));

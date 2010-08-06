@@ -1,4 +1,5 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
+#include "TError.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
@@ -7,12 +8,9 @@
 #include "PWG1/TRD/AliTRDmultiplicity.h"
 #endif
 
-#include "PWG1/TRD/macros/helper.C"
-void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
+void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
-  Int_t map = ParseOptions(trd);
-  if(!(TSTBIT(map, kEfficiency))) return;
-  printf("AddTRDefficiency <- [0]=\"%s\" [1]=\"%s\" [2]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName());
+  Info("AddTRDefficiency", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName()));
 
   AliTRDrecoTask *eff(NULL);
   mgr->AddTask(eff = new AliTRDefficiency((char*)"TRDefficiency"));

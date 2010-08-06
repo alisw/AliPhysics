@@ -26,9 +26,10 @@ Int_t ParseOptions(Char_t *trd)
       continue; // taken care by special functions
     } else { 
       Bool_t foundOpt = kFALSE;  
-      for(Int_t itask = 2; itask < NTRDTASKS; itask++){
+      for(Int_t itask = 0; itask < NTRDTASKS; itask++){
         if(s.CompareTo(fgkTRDtaskOpt[itask]) != 0) continue;
-        SETBITT(fSteerTask, itask); SETBITT(fSteerTask, kInfoGen);
+        SETBITT(fSteerTask, itask); 
+        if(itask>1) SETBITT(fSteerTask, kInfoGen);
         foundOpt = kTRUE;
         break;
       }
