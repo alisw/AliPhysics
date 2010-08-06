@@ -1,5 +1,6 @@
 #if ! defined (__CINT__) || defined (__MAKECINT__)
 #include "TTree.h"
+#include "TError.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
@@ -10,12 +11,9 @@
 #include "PWG1/TRD/AliTRDalignmentTask.h"
 #endif
 
-#include "PWG1/TRD/macros/helper.C"
-void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **ci)
+void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci)
 {
-  Int_t map = ParseOptions(trd);
-  if(!TSTBIT(map, kResolution)) return;
-  printf("AddTRDresolution <- [0]=\"%s\" [1]=\"%s\" [2]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName());
+  Info("AddTRDresolution", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName()));
 
   AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
   AliLog::SetClassDebugLevel("AliTRDresolution", 2);

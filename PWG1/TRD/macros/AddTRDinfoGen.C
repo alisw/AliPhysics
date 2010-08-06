@@ -7,11 +7,8 @@
 #include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
 #endif
 
-#include "PWG1/TRD/macros/helper.C"
-void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
+void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
 {
-  Int_t map = ParseOptions(trd);
-  if(!(TSTBIT(map, kInfoGen))) return;
   Bool_t mc(mgr->GetMCtruthEventHandler()?kTRUE:kFALSE);
   //AliLog::SetClassDebugLevel("AliTRDinfoGen", 2);
   AliTRDinfoGen *info(NULL);

@@ -53,7 +53,7 @@ Char_t const* fgkTRDtaskClassName[NTRDTASKS] = {
 };
 
 Char_t const* fgkTRDtaskOpt[NTRDTASKS+1] = {
-  ""
+  "ESD"
   ,"GEN"
   ,"DET"
   ,"EFF"
