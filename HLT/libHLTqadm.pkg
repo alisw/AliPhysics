@@ -16,7 +16,7 @@ MODULE_DHDR:=
 
 EINCLUDE := HLT/QA HLT/BASE STEER
 
-LIBRARY_DEP := -lHLTbase -lCDB -lESD -lSTEERbase -lSTEER -lRAWDatarec -lRAWDatabase
+LIBRARY_DEP := -lHLTbase -lCDB -lESD -lSTEERBase -lSTEER -lRAWDatarec -lRAWDatabase
 
 include $(MODDIR)/hlt.conf
 
