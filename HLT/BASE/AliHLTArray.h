@@ -282,15 +282,16 @@ namespace AliHLTInternal
       ArrayBase() : fData( 0 ), fSize( 0 ), fStrideX( 0 ), fStrideY( 0 ) {} // XXX really shouldn't be done. But -Weffc++ wants it so
       ArrayBase( const ArrayBase &rhs ) : ArrayBoundsCheck( rhs ), fData( rhs.fData ), fSize( rhs.fSize ), fStrideX( rhs.fStrideX ), fStrideY( rhs.fStrideY ) {} // XXX
       ArrayBase &operator=( const ArrayBase &rhs ) { ArrayBoundsCheck::operator=( rhs ); fData = rhs.fData; fSize = rhs.fSize; fStrideX = rhs.fStrideX; fStrideY = rhs.fStrideY; return *this; } // XXX
-      typedef typename ReturnTypeHelper<T>::Type R;
+      // Stopped working on GCC 4.5.0
+      //typedef typename ReturnTypeHelper<T>::Type R;
       /**
        * return a reference to the value at the given indexes
        */
-      inline R &operator()( int x, int y, int z );
+      inline typename ReturnTypeHelper<T>::Type &operator()( int x, int y, int z );
       /**
        * return a const reference to the value at the given indexes
        */
-      inline const R &operator()( int x, int y, int z ) const;
+      inline const typename ReturnTypeHelper<T>::Type &operator()( int x, int y, int z ) const;
       /**
        * return a 2-dim array at the given index. This makes it behave like a 3-dim C-Array.
        */
