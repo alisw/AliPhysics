@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS = GammaConv/AliV0Reader.cxx GammaConv/AliAnalysisTaskGammaConversion.cxx GammaConv/AliGammaConversionHistograms.cxx GammaConv/AliGammaConversionAODObject.cxx GammaConv/AliGammaConversionBGHandler.cxx GammaConv/AliAnalysisTaskCaloConv.cxx
+SRCS = GammaConv/AliV0Reader.cxx GammaConv/AliAnalysisTaskGammaConversion.cxx GammaConv/AliGammaConversionHistograms.cxx GammaConv/AliGammaConversionAODObject.cxx GammaConv/AliGammaConversionBGHandler.cxx GammaConv/AliAnalysisTaskCaloConv.cxx GammaConv/AliAnalysisTaskGammaJet.cxx
       
 HDRS:= $(SRCS:.cxx=.h) 
 

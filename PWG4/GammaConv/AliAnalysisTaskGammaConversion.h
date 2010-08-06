@@ -113,7 +113,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void FillNtuple();
   Double_t GetMCOpeningAngle(TParticle* const daughter0, TParticle* const daughter1) const;
   void CheckV0Efficiency();
-
+  void SetDeltaAODFileName(TString fn) { fKFDeltaAODFileName = fn; };
 		
   //////////////////Chi_c Analysis////////////////////////////
   void GetPID(AliESDtrack *track, Stat_t &pid, Stat_t &weight);	
@@ -246,12 +246,12 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 		
   TClonesArray* fAODBranch ;        //! selected particles branch
   TString fAODBranchName; // New AOD branch name
-
+  TString fKFDeltaAODFileName; //! File name for delta AOD (if any)
   Bool_t fDoNeutralMesonV0MCCheck; //flag
 
   vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
 
-  ClassDef(AliAnalysisTaskGammaConversion, 8); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 9); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

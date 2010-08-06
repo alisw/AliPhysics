@@ -20,6 +20,7 @@ const int c_array_size = 14;
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
 class AliAnalysisTaskGammaConversion;
+class AliAnalysisTaskGammaJet;
 
 // set this to a number if you want to analyze a set number of files
 // if it is 0 it will analyze the files listed in the data list
@@ -34,8 +35,9 @@ Bool_t kGCdoNeutralMesonV0MCCheck =kFALSE;
 Bool_t kGCrunOmegaMeson = kFALSE;
 Bool_t kGCrunRES = kFALSE;
 Bool_t kGCRecalculateV0ForGamma = kFALSE;
+//Svein 
+Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-
 TString kGCAnalysisCutSelectionId="90001110001004"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=10;
@@ -99,8 +101,9 @@ Double_t kGCmaxPhi      = TMath::Pi();
 
 Bool_t kGCdoOwnXYZCalculation = kFALSE;
 
-Bool_t kGCWriteStandardAOD =kFALSE; // need to be true for train running? CKB
-
+/** -------------AOD stuff ---------------------------------------------------------------*/
+TString kGCDeltaAODFilename = "AliAODGammaConversion.root";  //If empty, writes to standard common aod file.
+Bool_t kGCWriteAOD =kTRUE; 
 /** ------------------- define which histograms to plot here --------------------------------*/
 /**   NB: to change the bin numbers, see below the histogram flags                           */
 
@@ -864,17 +867,22 @@ Bool_t scanArguments(TString arguments){
       }
       else if (argument.CompareTo("-run-on-train") == 0){
 	cout<<"Running on train"<<endl;
-	kGCWriteStandardAOD=kTRUE;
+	//kGCWriteStandardAOD=kTRUE;
+	kGCDeltaAODFilename"";
 	kGCrunOnTrain = kTRUE;
       }
       else if (argument.CompareTo("-run-on-gsi-train") == 0){
 	cout<<"Running on gsi train"<<endl;
-	kGCWriteStandardAOD=kFALSE;
+	//kGCWriteStandardAOD=kFALSE;
 	kGCrunOnTrain = kTRUE;
       }
       else if (argument.CompareTo("-run-jet") == 0){
 	cout<<"Running jet analysis"<<endl;
 	kGCrunJet = kTRUE;
+      }
+      else if (argument.CompareTo("-run-gamma-jet-task") == 0){
+	cout<<"Running gamma jet task"<<endl;
+	kGCRunGammaJetTask= kTRUE;
       }
       else if (argument.CompareTo("-run-neutralmeson") == 0){
 	cout<<"Running neutral meson analysis"<<endl;
@@ -932,6 +940,14 @@ Bool_t scanArguments(TString arguments){
 	cout<<"Switching on use own xyz calculation"<<endl;
 	kGCdoOwnXYZCalculation = kTRUE;
       }
+      else if (argument.CompareTo("-no-aod") == 0){
+	cout<<"Turning off AOD"<<endl;
+	kGCWriteAOD = kFALSE;
+      }
+      else if (argument.CompareTo("-standard-aod") == 0){
+	cout<<"Writing to standard AOD, will only work on train"<<endl;
+	kGCDeltaAODFilename = "";
+      }
       else if(argument.CompareTo("-append-to-output-file") == 0){
 	if((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	kGCoutputFileAppendix = TString("_")+((TObjString*)pTokens->At(i))->GetString();
@@ -979,8 +995,8 @@ void SetVersionLibrary(){
 }
 
 
+AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnalysisDataContainer *cin_esd=NULL){
 
-AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnalysisDataContainer *cin_esd=NULL){ 
 						      
 	
   
@@ -1143,15 +1159,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     }
   }
 	
-  // Define Output Event Handler and ad
-  if(kGCrunOnTrain == kFALSE){
-    if(kGCWriteStandardAOD == kTRUE){
-      AliAODHandler* aodHandler = new AliAODHandler();
-      TString fileOutAOD = "AOD_"+ kGCoutputFileName + kGCoutputFileAppendix + ".root";
-      aodHandler->SetOutputFileName(fileOutAOD);
-      mgr->SetOutputEventHandler (aodHandler);
-    }
-  }
+
 	
   if(kGCrunOnTrain == kFALSE){
     mgr->SetInputEventHandler  (inpHandler);
@@ -1162,12 +1170,15 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 	
   // Declare Common Input Tchain
   AliAnalysisDataContainer *cinput1 = NULL;
+  
   if(kGCusePWG4PartCorr){
+  
     if(kGCrunOnTrain == kFALSE){
       cinput1 = mgr->CreateContainer("GammaConvChain",TChain::Class(),AliAnalysisManager::kInputContainer);
-    }
-    else{
+    
+    } else{
       cinput1 = cin_esd;
+    
     }
   }
   else{
@@ -1177,14 +1188,11 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   // Common Output Tree in common ??????default?????? output file
   // CKB kGCusePWG4PartCorr and writestandard are not mutually exclusive?
   AliAnalysisDataContainer *coutput1 = NULL;
-  if(kGCusePWG4PartCorr){
-    //    coutput1 = mgr->CreateContainer("GammaConvTree",TTree::Class(),AliAnalysisManager::kOutputContainer, "default");
-    coutput1 = mgr->CreateContainer("GammaConvTree",TTree::Class(),AliAnalysisManager::kOutputContainer, "default");
-  }
-  else{
-    if(kGCWriteStandardAOD){
-      coutput1 = mgr->GetCommonOutputContainer();
-    }
+
+  if(kGCrunOnTrain && kGCWriteAOD){
+    coutput1 = mgr->GetCommonOutputContainer();
+  } else {
+    coutput1 = mgr->CreateContainer("GammaConvTree",TTree::Class(),AliAnalysisManager::kOutputContainer, "default");  
   }
 	
   // Private output objects
@@ -1354,6 +1362,30 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetCFManager(man);
   gammaconversion->SetDoCF(kGCrunCF);
   v0Reader->SetDoCF(kGCrunCF);
+
+  // Define Output Event Handler and add
+  if(kGCWriteAOD){
+
+    if( kGCrunOnTrain ) {
+      AliAODHandler * aodHandler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
+      gammaconversion->SetDeltaAODFileName(kGCDeltaAODFilename);
+      
+      if(kGCDeltaAODFilename.Length > 0) {
+	mgr->RegisterExtraFile(kGCDeltaAODFilename.Data());
+      }
+      
+    } else {
+      if(kGCDeltaAODFilename.Length() == 0 ) {
+	cout << "Error:: Need a file name for the AOD"<<endl;
+	return;
+      }
+      AliAODHandler* aodHandler = new AliAODHandler();
+      aodHandler->SetOutputFileName(kGCDeltaAODFilename);
+      aodHandler->SetCreateNonStandardAOD();
+      mgr->SetOutputEventHandler(aodHandler);	
+    }
+  }
+
 	
   // Add task to the manager 
   mgr->AddTask(gammaconversion);
@@ -1363,11 +1395,24 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   
 
   // CKB Output slot 0 is NOT connected if WriteStandardAOD is false?
-  if(kGCWriteStandardAOD){
+  if( kGCWriteAOD ){
     mgr->ConnectOutput(gammaconversion, 0, coutput1);
   }
   mgr->ConnectOutput(gammaconversion, 1, coutput2);
   mgr->ConnectOutput(gammaconversion, 2, coutput3);
+
+  if(kGCRunGammaJetTask) {
+    AliAnalysisTaskGammaJet * gammaJetTask = new AliAnalysisTaskGammaJet("GammaJetTask");
+    if(kGCrunOnTrain) {
+      gammaJetTask->SetDeltaAODFileName(kGCDeltaAODFileName);
+    }
+    
+    mgr->ConnectInput(gammaJetTask, 0, cinput1);
+    AliAnalysisDataContainer *coutputgj = mgr->CreateContainer("chistpt", TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResultsConvJets.root");
+    mgr->ConnectOutput(gammaJetTask, 1, coutputgj);
+  }
+
+
 
   if(kGCrunOnTrain == kFALSE){
     if(kGCdataList.IsNull()){
