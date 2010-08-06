@@ -74,6 +74,9 @@
 #endif
 
 #include "../TRD/macros/AliTRDperformanceTrain.h"
+#include "../TRD/macros/helper.C"
+
+TString opt("");
 const Char_t* Translate(Bool_t doCheckESD=kTRUE, Bool_t doCheckDET=kTRUE, Bool_t doEffic=kTRUE, Bool_t doResolution=kTRUE, Bool_t doCheckPID=kTRUE, Bool_t doV0Monitor=kTRUE);
 Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$ALICE_ROOT/PWG1/TRD/macros")
 {
@@ -89,7 +92,9 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
 
   Info("AddTrainPerformanceTRD", Form("Add Macros taken from %s", addMacroPath));
   Info("AddTrainPerformanceTRD", Form("TRD wagons \"%s\"", trd));
+  Int_t bitmap = ParseOptions(trd);
   for(Int_t it=0; it<NTRDQATASKS; it++){
+    if(!TSTBIT(bitmap, it)) continue;
     if(gROOT->LoadMacro(Form("%s/Add%s.C+", addMacroPath, TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
       Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
       return kFALSE;
@@ -99,38 +104,38 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
     case kCheckESD:
       AddTRDcheckESD(mgr); break;
     case kInfoGen:
-      AddTRDinfoGen(mgr, trd, NULL, ci); break;
+      AddTRDinfoGen(mgr, 0, NULL, ci); break;
     case kCheckDET:
       // map slots
       ce[0]=ci[kEventInfo];
       ce[1]=ci[kTracksBarrel];
       ce[2]=ci[kTracksSA];
       ce[3]=ci[kTracksKink];
-      AddTRDcheckDET(mgr, trd, ce);
+      AddTRDcheckDET(mgr, bitmap, ce);
        break;
     case kEfficiency:
       // map slots
       ce[0]=ci[kTracksBarrel];
       ce[1]=ci[kTracksSA];
       ce[2]=ci[kTracksKink];
-      AddTRDefficiency(mgr, trd, ce);
+      AddTRDefficiency(mgr, bitmap, ce);
       break;
     case kResolution:
       // map slots
       ce[0]=ci[kTracksBarrel];
       ce[1]=ci[kTracksSA];
       ce[2]=ci[kTracksKink];
-      AddTRDresolution(mgr, trd, ce); 
+      AddTRDresolution(mgr, bitmap, ce); 
       break;
     case kCheckPID:
       // map slots
       ce[0]=ci[kTracksBarrel];
       ce[1]=ci[kV0List];
-      AddTRDcheckPID(mgr, trd, ce, &ce[2]); 
+      AddTRDcheckPID(mgr, bitmap, ce, &ce[2]); 
       break;
     case kV0Monitor:
       // slots already mapped by checkPID
-      AddTRDv0Monitor(mgr, trd, ce);
+      AddTRDv0Monitor(mgr, 0, ce);
       break;
     default:
       Warning("AddTrainPerformanceTRD()", Form("No performance task registered at slot %d.", it)); 
@@ -141,7 +146,6 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
 
 const Char_t* Translate(Bool_t doCheckESD, Bool_t doCheckDET, Bool_t doEffic, Bool_t doResolution, Bool_t doCheckPID, Bool_t doCheckV0)
 {
-  TString opt("");
   if( doCheckESD==kTRUE &&
       doCheckDET==kTRUE &&
       doEffic==kTRUE &&
