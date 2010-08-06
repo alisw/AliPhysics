@@ -92,7 +92,7 @@ Bool_t MEM = kFALSE;
 
 TChain* MakeChainLST(const char* filename = 0x0);
 TChain* MakeChainXML(const char* filename = 0x0);
-void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Long64_t first = 0, Int_t runNo=0, const Char_t *ocdb_uri="local://$ALICE_ROOT/OCDB", const Char_t *grp_uri=Form("local://%s", gSystem->pwd()))
+void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890, Long64_t first = 0)
 {
   TMemStat *mem = 0x0;
   if(MEM){ 
@@ -115,25 +115,6 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   Bool_t fHasMCdata =  HasReadMCData(optList);
   Bool_t fHasFriends = HasReadFriendData(optList);
   
-  // INITIALIZATION OF RUNNING ENVIRONMENT
-  // initialize OCDB manager
-//   AliCDBManager *cdbManager = AliCDBManager::Instance();
-//   cdbManager->SetDefaultStorage(ocdb_uri);
-//   if(!cdbManager->IsDefaultStorageSet()){
-//     Error("run.C", "Error setting OCDB.");
-//     return;
-//   }
-//   cdbManager->SetRun(runNo);
-//   cdbManager->SetSpecificStorage("GRP/GRP/Data", grp_uri);
-//   cdbManager->SetCacheFlag(kFALSE);
-//   cdbManager->Print();
-//   // initialize magnetic field from the GRP manager.
-//   AliGRPManager grpMan;
-//   if(!grpMan.ReadGRPEntry()) return;
-//   if(!grpMan.SetMagField()) return;
-//   //AliRunInfo *runInfo = grpMan.GetRunInfo();
-//   AliGeomManager::LoadGeometry();
-
   // DEFINE DATA CHAIN
   TChain *chain = 0x0;
   if(!files) chain = MakeChainLST();
