@@ -146,7 +146,8 @@ const Char_t* Translate(Bool_t doCheckESD, Bool_t doCheckDET, Bool_t doEffic, Bo
       doCheckDET==kTRUE &&
       doEffic==kTRUE &&
       doResolution==kTRUE &&
-      doCheckPID==kTRUE
+      doCheckPID==kTRUE &&
+      doCheckV0==kTRUE
   ) opt="ALL";
   else{
     Bool_t kINDENT(kFALSE);
