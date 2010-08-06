@@ -272,6 +272,7 @@ void AliCheb3D::Clear(const Option_t*)
   if (fResTmp)        { delete[] fResTmp; fResTmp = 0; }
   if (fGrid)          { delete[] fGrid;   fGrid   = 0; }
   if (fUsrMacro)      { delete fUsrMacro; fUsrMacro = 0;}
+  fChebCalc.SetOwner(kTRUE);
   fChebCalc.Delete();
   //
 }
