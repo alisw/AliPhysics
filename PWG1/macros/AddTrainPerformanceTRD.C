@@ -87,9 +87,6 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
   AliAnalysisDataContainer *ci[kNOutSlots];
   AliAnalysisDataContainer *ce[5];
 
-  // initialize TRD settings
-  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-  AliTRDtrackerV1::SetNTimeBins(cal->GetNumberOfTimeBinsDCS());
   Info("AddTrainPerformanceTRD", Form("Add Macros taken from %s", addMacroPath));
   Info("AddTrainPerformanceTRD", Form("TRD wagons \"%s\"", trd));
   for(Int_t it=0; it<NTRDQATASKS; it++){
