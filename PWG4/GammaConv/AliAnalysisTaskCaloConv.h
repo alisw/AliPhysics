@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////
 
 #include "AliAnalysisTaskSE.h"
+#include "TH2.h"
 
 class AliESDInputHandler;
 class AliESDEvent;
@@ -57,6 +58,12 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
   void SetConvMinPtCut(Double_t minPt=0.02){fptCut=minPt ;}
   void SetConvMaxChi2Cut(Double_t chi2=30.){fchi2CutConversion=chi2 ;}
 
+  void SetPHOSBadMap(Int_t mod,TH2I * h){if(fPHOSBadMap[mod]) delete fPHOSBadMap[mod] ;
+                                         fPHOSBadMap[mod]=new TH2I(*h) ; printf("Set %s \n",fPHOSBadMap[mod]->GetName()); }
+  void SetEMCALBadMap(Int_t mod,TH2I * h){if(fEMCALBadMap[mod]) delete fEMCALBadMap[mod] ;
+                                         fEMCALBadMap[mod]=new TH2I(*h) ; printf("Set %s \n",fEMCALBadMap[mod]->GetName()); }
+  void UseCF(Bool_t use=kTRUE){fToUseCF=use ;}
+
  protected:
    void InitGeometry() ; //Create PHOS/EMCAL geometry
    void ProcessMC();
@@ -68,7 +75,7 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
    void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
    void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
    Double_t PlanarityAngle(const AliExternalTrackParam * pos, const AliExternalTrackParam * neg)const ;
-
+   Bool_t IsGoodChannel(const char * det="PHOS", Int_t mod=1, Int_t ix=1,Int_t iz=1) ; //Checks bad map
 
  private:
   AliAnalysisTaskCaloConv(const AliAnalysisTaskCaloConv&); // Not implemented
@@ -104,13 +111,16 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
   AliCFContainer * fPi0CFCont ;   //Container for Conv. photons correction calculation
 		
   Bool_t fTriggerCINT1B; //Flag to select trigger CINT1B
+  Bool_t fToUseCF ;      //Switch on/off CF histogram filling
 		
   Double_t fMinOpeningAngleGhostCut; // minimum angle cut
 		
   AliPHOSGeoUtils  *fPHOSgeom;      //!PHOS geometry
   AliEMCALGeoUtils *fEMCALgeom;     //!EMCAL geometry
-  Double_t fPi0Thresh1 ; //Threshold 1 for pi0 calibration
-  Double_t fPi0Thresh2 ; //Threshold 2 for pi0 calibration
+  Double_t fPi0Thresh1 ;    //Threshold 1 for pi0 calibration
+  Double_t fPi0Thresh2 ;    //Threshold 2 for pi0 calibration
+  TH2I * fPHOSBadMap[6] ;   //Container for PHOS bad channels map
+  TH2I * fEMCALBadMap[10] ; //Container for EMCAL Bad channels map
 
   //Containers for storing previous events
   // 10 bins for vtx class 
@@ -118,6 +128,9 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
   TList * fEMCALEvents[10] ;     //Container for EMCAL photons
   TList * fConvEvents[10] ;      //Container for conversion photons
 
+  Int_t fGammaV0s[100] ;         //correspondence between final conv photon and V0
+  Int_t fGammaPHOS[100] ;        //correspondence between final conv photon and V0
+  Int_t fGammaEMCAL[100] ;       //correspondence between final conv photon and V0
   TClonesArray * fConvEvent ;    //Conversion photons in current event
   TClonesArray * fPHOSEvent ;    //PHOS photons in current event
   TClonesArray * fEMCALEvent ;   //EMCAL  photons in current event
