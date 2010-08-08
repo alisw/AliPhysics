@@ -281,7 +281,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	  else
 	    {
 	      ++ cnt;
-	      UShort_t* firstBunchPtr = 0;
+	      //UShort_t* firstBunchPtr = 0;
 	      int chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
 	    
 	      if( fDoPushRawData == true)
@@ -302,7 +302,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), 
 						      nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
 		    }
-		  firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
+		  //firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
 		}
 	    
 	      totSize += sizeof( AliHLTCaloChannelDataStruct );
