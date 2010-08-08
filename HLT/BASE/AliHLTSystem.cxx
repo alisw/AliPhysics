@@ -1032,7 +1032,7 @@ int AliHLTSystem::ProcessHLTOUTkChain(AliHLTOUT* pHLTOUT)
     pHandler->ProcessData(pHLTOUT);
     if ((size=pHandler->GetProcessedData(pBuffer))>0) {
       AliHLTModuleAgent::AliHLTOUTHandlerDesc desc=*chainHandler;
-      AliHLTComponentDataType dt=desc;
+      //AliHLTComponentDataType dt=desc;
 
       pHandler->ReleaseProcessedData(pBuffer, size);
     }
