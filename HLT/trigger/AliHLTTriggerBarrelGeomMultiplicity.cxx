@@ -396,7 +396,7 @@ int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, con
       if (++i>=argc) return -EPROTO;
       
       fTriggerName = new char[128];
-      sprintf(fTriggerName, argv[i]);
+      sprintf(fTriggerName, "%s", argv[i]);
       
       fOCDBEntry = fTriggerName;
 
