@@ -96,49 +96,49 @@ UInt_t AliHLTPredictionProcessorGRP::Process(TMap* dcsAliasMap)
   Float_t cavernAtmosPressure2=0.0;
   Float_t surfaceAtmosPressure=0.0;
   
-  Bool_t bRet = kTRUE;
+  //Bool_t bRet = kTRUE;
   const char* key="";
 
   key="L3Current";
   if (!GetSensorValue(dcsAliasMap, key, &l3Current)) {
     Log(Form("failed to extract %s from alias map", key));
-    bRet=kFALSE;
+    //bRet=kFALSE;
   }
 
   key="L3Polarity";
   if (!GetSensorValue(dcsAliasMap, key, &l3Polarity)) {
     Log(Form("failed to extract %s from alias map", key));
-    bRet=kFALSE;
+    //bRet=kFALSE;
   }
 
   key="DipoleCurrent";
   if (!GetSensorValue(dcsAliasMap, key, &dipoleCurrent)) {
     Log(Form("failed to extract %s from alias map", key));
-    bRet=kFALSE;
+    //bRet=kFALSE;
   }
 
   key="DipolePolarity";
   if (!GetSensorValue(dcsAliasMap, key, &dipolePolarity)) {
     Log(Form("failed to extract %s from alias map", key));
-    bRet=kFALSE;
+    //bRet=kFALSE;
   }
 
   key="CavernAtmosPressure";
   if (!GetSensorValue(dcsAliasMap, key, &cavernAtmosPressure)) {
     Log(Form("failed to extract %s from alias map", key));
-    bRet=kFALSE;
+    //bRet=kFALSE;
   }
 
   key="CavernAtmosPressure2";
   if (!GetSensorValue(dcsAliasMap, key, &cavernAtmosPressure2)) {
     Log(Form("failed to extract %s from alias map", key));
-    bRet=kFALSE;
+    //bRet=kFALSE;
   }
 
   key="SurfaceAtmosPressure2";
   if (!GetSensorValue(dcsAliasMap, key, &surfaceAtmosPressure)) {
     Log(Form("failed to extract %s from alias map", key));
-    bRet=kFALSE;
+    //bRet=kFALSE;
   }
 
   AliGRPObject* grpObj=NULL;
