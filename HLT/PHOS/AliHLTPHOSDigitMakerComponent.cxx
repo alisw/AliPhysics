@@ -122,8 +122,6 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   Int_t digitCount        = 0;
   Int_t ret               = 0;
 
-  AliHLTUInt8_t* outBPtr;
-  outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = 0; 
   unsigned long ndx; 
 
