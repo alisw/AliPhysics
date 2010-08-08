@@ -1630,7 +1630,8 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
 
   
   Float_t meanX1,meanX2,meanY1,meanY2,meanZ1,meanZ2;
-  Float_t expectSt3X,expectSt3Y,inclinationFront;
+  Float_t expectSt3X,expectSt3Y;
+  //Float_t inclinationFront;
 
   AliHLTMUONRecHitStruct pSeg1,pSeg2,pSeg3;
   Double_t anglediff;///,anglediff1,anglediff2;
@@ -1782,7 +1783,7 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       
       expectSt3X = meanX2 + (fgkTrackDetCoordinate[2]-meanZ2)*(meanX2-meanX1)/(meanZ2-meanZ1);
       expectSt3Y = meanY2 + (fgkTrackDetCoordinate[2]-meanZ2)*(meanY2-meanY1)/(meanZ2-meanZ1);
-      inclinationFront = (meanX2-meanX1)/(meanZ2-meanZ1) ;
+      //inclinationFront = (meanX2-meanX1)/(meanZ2-meanZ1) ;
       
       for( Int_t ibacktrackseg=0;ibacktrackseg<fNofbackTrackSeg;ibacktrackseg++){  
 	
@@ -1867,8 +1868,8 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       expectSt3Y = fChPoint[3][ibackpoint]->fY + (fgkTrackDetCoordinate[2] - fChPoint[3][ibackpoint]->fZ)*
 	(fChPoint[3][ibackpoint]->fY - fChPoint[1][ch1CellPoint[itrackletfront]]->fY)/
 	(fChPoint[3][ibackpoint]->fZ - fChPoint[1][ch1CellPoint[itrackletfront]]->fZ);
-      inclinationFront = (fChPoint[3][ibackpoint]->fX - fChPoint[1][ch1CellPoint[itrackletfront]]->fX)/
-	(fChPoint[3][ibackpoint]->fZ - fChPoint[1][ch1CellPoint[itrackletfront]]->fZ) ;
+//      inclinationFront = (fChPoint[3][ibackpoint]->fX - fChPoint[1][ch1CellPoint[itrackletfront]]->fX)/
+//	(fChPoint[3][ibackpoint]->fZ - fChPoint[1][ch1CellPoint[itrackletfront]]->fZ) ;
       
       for( Int_t ibacktrackseg=0;ibacktrackseg<nofNCfBackTrackSeg;ibacktrackseg++){  
 	
@@ -1908,8 +1909,8 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       expectSt3Y = fChPoint[2][ifrontpoint]->fY + (fgkTrackDetCoordinate[2] - fChPoint[2][ifrontpoint]->fZ)*
 	(fChPoint[2][ifrontpoint]->fY - fChPoint[1][ch1CellPoint[itrackletfront]]->fY)/
 	(fChPoint[2][ifrontpoint]->fZ - fChPoint[1][ch1CellPoint[itrackletfront]]->fZ);
-      inclinationFront = (fChPoint[2][ifrontpoint]->fX - fChPoint[1][ch1CellPoint[itrackletfront]]->fX)/
-	(fChPoint[2][ifrontpoint]->fZ - fChPoint[1][ch1CellPoint[itrackletfront]]->fZ) ;
+//      inclinationFront = (fChPoint[2][ifrontpoint]->fX - fChPoint[1][ch1CellPoint[itrackletfront]]->fX)/
+//	(fChPoint[2][ifrontpoint]->fZ - fChPoint[1][ch1CellPoint[itrackletfront]]->fZ) ;
       // #ifdef PRINT_FRONT
       //       HLTImportant("\t\texpectSt3X : %f, expectSt3Y : %f, inclinationFront : %f\n",expectSt3X,expectSt3Y,inclinationFront);
       // #endif      
@@ -1998,8 +1999,8 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       expectSt3Y = fChPoint[2][ch2CellPoint[itrackletback]]->fY + (fgkTrackDetCoordinate[2] - fChPoint[2][ch2CellPoint[itrackletback]]->fZ)*
 	(fChPoint[2][ch2CellPoint[itrackletback]]->fY - fChPoint[1][ibackpoint]->fY)/
 	(fChPoint[2][ch2CellPoint[itrackletback]]->fZ - fChPoint[1][ibackpoint]->fZ);
-      inclinationFront = (fChPoint[2][ch2CellPoint[itrackletback]]->fX - fChPoint[1][ibackpoint]->fX)/
-	(fChPoint[2][ch2CellPoint[itrackletback]]->fZ - fChPoint[1][ibackpoint]->fZ) ;
+//      inclinationFront = (fChPoint[2][ch2CellPoint[itrackletback]]->fX - fChPoint[1][ibackpoint]->fX)/
+//	(fChPoint[2][ch2CellPoint[itrackletback]]->fZ - fChPoint[1][ibackpoint]->fZ) ;
       
       for( Int_t ibacktrackseg=0;ibacktrackseg<nofSNCfBackTrackSeg;ibacktrackseg++){  
 	
@@ -2036,8 +2037,8 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       expectSt3Y = fChPoint[2][ch2CellPoint[itrackletback]]->fY + (fgkTrackDetCoordinate[2] - fChPoint[2][ch2CellPoint[itrackletback]]->fZ)*
 	(fChPoint[2][ch2CellPoint[itrackletback]]->fY - fChPoint[0][ifrontpoint]->fY)/
 	(fChPoint[2][ch2CellPoint[itrackletback]]->fZ - fChPoint[0][ifrontpoint]->fZ);
-      inclinationFront = (fChPoint[2][ch2CellPoint[itrackletback]]->fX - fChPoint[0][ifrontpoint]->fX)/
-	(fChPoint[2][ch2CellPoint[itrackletback]]->fZ - fChPoint[0][ifrontpoint]->fZ) ;
+//      inclinationFront = (fChPoint[2][ch2CellPoint[itrackletback]]->fX - fChPoint[0][ifrontpoint]->fX)/
+//	(fChPoint[2][ch2CellPoint[itrackletback]]->fZ - fChPoint[0][ifrontpoint]->fZ) ;
       
       for( Int_t ibacktrackseg=0;ibacktrackseg<nofSNCfBackTrackSeg;ibacktrackseg++){  
 
@@ -2863,8 +2864,8 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
 #endif      
 
     AliMUONTrackParam extrapTrackParamAtCluster2,minChi2Param;
-    Double_t chi2OfCluster;
-    Bool_t tryonefast;
+    //Double_t chi2OfCluster;
+    //Bool_t tryonefast;
     Double_t minChi2=1000000.0;
     Int_t frontsegIndex = -1;
     extrapTrackParamAtCluster2 = trackParam ;
@@ -2889,11 +2890,11 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
       trackParam.ResetPropagator();
       AliMUONTrackExtrap::ExtrapToZCov(&trackParam,clus1.fZ, kTRUE);
       
-      tryonefast = TryOneClusterFast(trackParam, &clus1);
+      //tryonefast = TryOneClusterFast(trackParam, &clus1);
       ///if (!tryonefast) continue;
       
       /// try to add the current cluster accuratly
-      chi2OfCluster = TryOneCluster(trackParam, &clus1 , extrapTrackParam,kTRUE);
+      //chi2OfCluster = TryOneCluster(trackParam, &clus1 , extrapTrackParam,kTRUE);
       
       extrapTrackParam.SetExtrapParameters(extrapTrackParam.GetParameters());
       extrapTrackParam.SetExtrapCovariances(extrapTrackParam.GetCovariances());
@@ -2941,10 +2942,10 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
     ///AliMUONTrackExtrap::ExtrapToZCov(&trackParam,clus1.fZ, kTRUE);
     LinearExtrapToZ(&trackParam, clus1.fZ);
 
-    tryonefast = TryOneClusterFast(trackParam, &clus1);
+    //tryonefast = TryOneClusterFast(trackParam, &clus1);
     ///if (!tryonefast) continue;
 	  
-    chi2OfCluster = TryOneCluster(trackParam, &clus1 , extrapTrackParamAtCluster2,kTRUE);
+    //chi2OfCluster = TryOneCluster(trackParam, &clus1 , extrapTrackParamAtCluster2,kTRUE);
 	  
     extrapTrackParamAtCluster2.SetExtrapParameters(extrapTrackParamAtCluster2.GetParameters());
     extrapTrackParamAtCluster2.SetExtrapCovariances(extrapTrackParamAtCluster2.GetCovariances());

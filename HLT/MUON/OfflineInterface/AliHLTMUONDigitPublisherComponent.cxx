@@ -1162,7 +1162,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTriggerDDL(
   UInt_t word;
   Int_t* buffer = reinterpret_cast<Int_t*>(header+1);
   Int_t index;
-  Int_t locCard;
+  //Int_t locCard;
   UChar_t locDec, trigY, posY, posX, regOut;
   UInt_t regInpLpt;
   UInt_t regInpHpt;
@@ -1335,7 +1335,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTriggerDDL(
 	  if (localBoard->IsNotified()) {// if notified board 
 	    AliMUONLocalTrigger* locTrg = triggerStore->FindLocal(localBoardId);
 
-	    locCard = locTrg->LoCircuit();
+	    //locCard = locTrg->LoCircuit();
 	    locDec  = locTrg->GetLoDecision();
 	    trigY   = locTrg->LoTrigY();
 	    posY    = locTrg->LoStripY();
@@ -1395,7 +1395,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTriggerDDL(
       } // local card 
       // fill regional header with local output
       regHeader.SetInput(regInpHpt, 0);
-      regHeader.SetInput(regInpHpt, 1);
+      regHeader.SetInput(regInpLpt, 1);
       memcpy(&buffer[indexReg],regHeader.GetHeader(),kRegHeaderLength*4);
       
     } // Regional card
