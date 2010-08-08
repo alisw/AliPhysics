@@ -65,8 +65,8 @@ AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom *geom,TTr
 
   Float_t lc[3]; for(Int_t ii=0; ii<3; ii++) lc[ii]=0.;
   Float_t gc[3]; for(Int_t ii=0; ii<3; ii++) gc[ii]=0.;
-  Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
-  Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
+  //Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
+  //Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
 
   TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
   TBranch *branch;

@@ -166,7 +166,7 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("ITS-tracker","ITSTracker",trackerInput.Data(),"");
   }
 
-  return 0;
+  return iResult;
 }
 
 const char* AliHLTITSAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,

@@ -181,7 +181,7 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
   Int_t runNo = GetRunNo();
   AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
   if (!store) {
-    return NULL;
+    return -ENOENT;
   }
 
   bool cdbOK = true;
@@ -240,7 +240,7 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
     HLTError("Scalers is not found in GRP/CTP/");
     cdbOK = false;
   }
-  if(!cdbOK){return NULL;}
+  if(!cdbOK){return -EIO;}
 
   if(fModeSwitch==kClusterFinderSPD) {
     HLTDebug("using ClusterFinder for SPD");

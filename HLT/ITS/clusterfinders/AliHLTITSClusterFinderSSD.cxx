@@ -848,7 +848,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       //
       if ( (cnegative[ip]==2) && cpositive[negativepair[10*ip]]==2){ 
 	Float_t minchargediff =4.;
-	Float_t minchargeratio =0.2;
+	//Float_t minchargeratio =0.2;
 
 	Int_t j=-1;
 	for (Int_t di=0;di<cnegative[ip];di++){
@@ -859,7 +859,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  if (TMath::Abs(ratio)<0.2){
 	    j =jc;
 	    minchargediff = TMath::Abs(chargedif);
-	    minchargeratio = TMath::Abs(ratio);
+	    //minchargeratio = TMath::Abs(ratio);
 	  }
 	}
 	if (j<0) continue;  // not proper cluster      
