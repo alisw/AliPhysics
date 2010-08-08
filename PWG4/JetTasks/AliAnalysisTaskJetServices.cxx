@@ -423,6 +423,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
 	if(aodTrig)fh2TriggerCount->Fill(it,kTriggeredVertex);
 	Float_t zvtx = vtxAOD->GetZ();
+	if(cand&&aodEventSelected){
+	  fh2TriggerCount->Fill(it,kSelected);
+	}
 	if(aodTrig&&aodEventSelected){
 	  fh2TriggerVtx->Fill(it,zvtx);
 	  fh2TriggerCount->Fill(it,kTriggeredVertexIn);
