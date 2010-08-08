@@ -134,8 +134,6 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   Int_t digitCount        = 0;
   Int_t ret               = 0;
 
-  AliHLTUInt8_t* outBPtr;
-  outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = 0; 
   unsigned long ndx; 
 
@@ -155,10 +153,11 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	  continue;
 	}
       
+      Int_t module = 0;
       if(!fBCMInitialised)
       {
 	 AliHLTEMCALMapper mapper(iter->fSpecification);
-	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
+	 module = mapper.GetModuleFromSpec(iter->fSpecification);
 	 //	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
 	 for(Int_t x = 0; x < NXCOLUMNSMOD ; x++) // PTH  
 	 {
@@ -174,7 +173,7 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       if(!fGainsInitialised)
       {
 	 AliHLTEMCALMapper mapper(iter->fSpecification);;
-	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
+	 module = mapper.GetModuleFromSpec(iter->fSpecification);
 	 //	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
 	 for(Int_t x = 0; x < NXCOLUMNSMOD; x++)   //PTH
 	   {
