@@ -347,6 +347,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 
 void AliHLTTRDClusterizerComponent::PrintObject( TClonesArray* inClustersArray)
 {
+#ifdef __DEBUG
   AliTRDcluster* cluster=0x0;
   
   for (Int_t i=0; i < inClustersArray->GetEntriesFast(); i++){
@@ -356,7 +357,7 @@ void AliHLTTRDClusterizerComponent::PrintObject( TClonesArray* inClustersArray)
     HLTDebug("  Detector = %i, Amplitude = %f, Center = %f", cluster->GetDetector(), cluster->GetQ(), cluster->GetCenter());
     HLTDebug("  LocalTimeBin =  %i; NPads = %i; maskedPosition: %s, status: %s", cluster->GetLocalTimeBin(), cluster->GetNPads(),cluster->GetPadMaskedPosition(),cluster->GetPadMaskedPosition());
   }
-  
+#endif
 }
 
 int AliHLTTRDClusterizerComponent::Configure(const char* arguments){

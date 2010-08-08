@@ -484,10 +484,10 @@ Int_t AliHLTTRDCalibrationComponent::EORCalibration()
   //Gain
   calibra->SetMinEntries(100);
   calibra->AnalyseCH(hCH2d);
-  Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(0))
-    + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(0));
-  Int_t nbfit       = calibra->GetNumberFit();
-  Int_t nbE         = calibra->GetNumberEnt();
+  //Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(0))
+  //  + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(0));
+  //Int_t nbfit       = calibra->GetNumberFit();
+  //Int_t nbE         = calibra->GetNumberEnt();
   TH1F *coefgain = 0x0;
   // enough statistics
   //if ((nbtg >                  0) && 
@@ -504,9 +504,9 @@ Int_t AliHLTTRDCalibrationComponent::EORCalibration()
   calibra->SetMinEntries(100); // If there is less than 100
   hVdriftLinearFit->FillPEArray();
   calibra->AnalyseLinearFitters(hVdriftLinearFit);
-  nbtg = 540;
-  nbfit = calibra->GetNumberFit();
-  nbE   = calibra->GetNumberEnt();
+  //nbtg = 540;
+  //nbfit = calibra->GetNumberFit();
+  //nbE   = calibra->GetNumberEnt();
   TH1F *coefdriftsecond = 0x0;
   // enough statistics
   //if ((nbtg >                  0) && 
@@ -523,10 +523,10 @@ Int_t AliHLTTRDCalibrationComponent::EORCalibration()
   // vdrift first method
   calibra->SetMinEntries(100*20); // If there is less than 20000
   calibra->AnalysePH(hPH2d);
-  nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(1))
-    + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(1));
-  nbfit        = calibra->GetNumberFit();
-  nbE          = calibra->GetNumberEnt();
+  //nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(1))
+  //  + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(1));
+  //nbfit        = calibra->GetNumberFit();
+  //nbE          = calibra->GetNumberEnt();
   TH1F *coefdrift = 0x0;
   TH1F *coeft0 = 0x0;
   // enough statistics
@@ -548,10 +548,10 @@ Int_t AliHLTTRDCalibrationComponent::EORCalibration()
   //PRF
   calibra->SetMinEntries(200); 
   calibra->AnalysePRFMarianFit(hPRF2d);
-  nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(2))
-    + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(2));
-  nbfit        = calibra->GetNumberFit();
-  nbE          = calibra->GetNumberEnt();
+  //nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(2))
+  //  + 6*  18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb2(2));
+  //nbfit        = calibra->GetNumberFit();
+  //nbE          = calibra->GetNumberEnt();
   TH1F *coefprf = 0x0;
   // enough statistics
   //if ((nbtg >                  0) && 
