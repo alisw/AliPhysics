@@ -124,7 +124,7 @@ void AliHLTHOMERBlockDesc::SetBlock( void * data, ULong_t size, TString origin,
 void AliHLTHOMERBlockDesc::SetBlockParameters() {
   // see header file for class documentation
 
-  Int_t iResult = 0;
+  //Int_t iResult = 0;
 
   // ---- SET SPECIFICATIONS ----
   // ----------------------------
@@ -180,10 +180,10 @@ void AliHLTHOMERBlockDesc::SetBlockParameters() {
     
     if ( ! fDataType.CompareTo("CLUSTERS") )
       fClassName = "AliHLTTPCSpacePoints";
-    else 
-      iResult = -1;
+    //else 
+    //  iResult = -1;
   }
-
+  /*
   // **** TRD ****
   else if ( ! fDetector.CompareTo("TRD") ) {
     iResult = -1;
@@ -203,6 +203,7 @@ void AliHLTHOMERBlockDesc::SetBlockParameters() {
   else {
     iResult = -1;
   }
+  */
   
   // -- Check if classname has been defined
   //  if ( iResult < 0 ) {
