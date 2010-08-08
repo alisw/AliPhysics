@@ -231,10 +231,14 @@ int AliHLTSampleMonitoringComponent::Reconfigure(const char* cdbEntry, const cha
   // see header file for class documentation
   int iResult=0;
   const char* path=NULL;
+#ifdef __DEBUG
   const char* defaultNotify="";
+#endif
   if (cdbEntry) {
     path=cdbEntry;
+#ifdef __DEBUG
     defaultNotify=" (default)";
+#endif
   }
   if (path) {
     AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
