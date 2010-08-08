@@ -201,9 +201,6 @@ int AliHLTFMDReconstructionComponent::DoEvent( const AliHLTComponentEventData& e
   
   iResult=PushBack(&esd, kAliHLTDataTypeESDObject|kAliHLTDataOriginFMD, 0);
   
-  
-  
-  
-  return 0;
+  return iResult;
 }
 
