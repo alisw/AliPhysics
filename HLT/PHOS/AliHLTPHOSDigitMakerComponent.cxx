@@ -265,7 +265,7 @@ int AliHLTPHOSDigitMakerComponent::GetBCMFromCDB()
 	}
       else
 	{
-	    HLTError("can not fetch object \"%s\" from CDB", path.GetPath());
+	    HLTError("can not fetch object \"%s\" from CDB", path.GetPath().Data());
 	    return -1;
 	}
     }
@@ -290,7 +290,7 @@ int AliHLTPHOSDigitMakerComponent::GetGainsFromCDB()
 	}
       else	
 	{
-	    HLTError("can not fetch object \"%s\" from CDB", path.GetPath());
+	    HLTError("can not fetch object \"%s\" from CDB", path.GetPath().Data());
 	    return -1;
 	}
     }
