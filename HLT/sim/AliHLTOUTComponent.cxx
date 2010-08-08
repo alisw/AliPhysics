@@ -543,11 +543,17 @@ int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/
       }
     }
     if (fpDigitTree) {
+#ifdef __DEBUG
       int res=fpDigitTree->Fill();
       HLTDebug("writing digit tree: %d", res);
       fpDigitFile->cd();
       res=fpDigitTree->Write("",TObject::kOverwrite);
       HLTDebug("writing digit tree: %d", res);
+#else
+      fpDigitTree->Fill();
+      fpDigitFile->cd();
+      fpDigitTree->Write("",TObject::kOverwrite);
+#endif
       if (fppDigitArrays) for (int i=0; i<fNofDDLs; i++) {
 	if (fppDigitArrays[i]) fppDigitArrays[i]->Set(0);
       }
