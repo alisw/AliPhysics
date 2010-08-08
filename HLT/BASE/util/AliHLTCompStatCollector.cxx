@@ -375,9 +375,9 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
 	  TFolder* parentFolder=dynamic_cast<TFolder*>((*consumer)->FindObject(HLTSTAT_ENTRY_PARENT_FOLDER_NAME));
 	  assert(parentFolder);
 	  if (parentFolder) {
+#ifdef __DEBUG
 	    TIter entries(parentFolder->GetListOfFolders());
 	    while (TObject* entry=entries.Next())
-#ifdef __DEBUG
 	      if (entry) {
 		HLTDebug("   searching %s in %s: %s", idstr.Data(), (*consumer)->GetName(), entry->GetName());
 	      }
