@@ -345,7 +345,13 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
   return 0;
 }
 
-void AliHLTTRDClusterizerComponent::PrintObject( TClonesArray* inClustersArray)
+void AliHLTTRDClusterizerComponent::PrintObject(
+#ifdef __DEBUG
+		TClonesArray* inClustersArray
+#else
+		TClonesArray*
+#endif
+	)
 {
 #ifdef __DEBUG
   AliTRDcluster* cluster=0x0;
