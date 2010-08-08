@@ -254,8 +254,8 @@ int AliHLTTPCCompModelInflater::DecompressTracks( AliHLTUInt8_t* inData, UInt_t 
       
       AliHLTTPCClusterModel *cluster;
       
-      Int_t pado,chargeo,padshapeo,timeshapeo;
-      pado=chargeo=padshapeo=timeshapeo=0;
+      Int_t chargeo,padshapeo,timeshapeo;
+      chargeo=padshapeo=timeshapeo=0;
       unsigned trackCnt=0;
       while( !EndOfBitInput() )
 	{
