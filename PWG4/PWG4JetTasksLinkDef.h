@@ -23,6 +23,9 @@
 #pragma link C++ class AliAnalysisTaskJetChem+;
 #pragma link C++ class AliAnalysisTaskFragmentationFunction+;
 #pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncHistos+;
+#pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncDiJetHistos+;
+#pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncQADiJetHistos+;
+#pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos+;
 #pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncQATrackHistos+;
 #pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos+;
 
