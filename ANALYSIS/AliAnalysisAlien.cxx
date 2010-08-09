@@ -2467,6 +2467,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       if (fIncludePath.Length()) out << "   gSystem->AddIncludePath(\"" << fIncludePath.Data() << "\");" << endl;
       out << "   gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");" << endl << endl;
       out << "// Load analysis framework libraries" << endl;
+      TString setupPar = "AliAnalysisAlien::SetupPar";
       if (!fPackages) {
          out << "   gSystem->Load(\"libSTEERBase\");" << endl;
          out << "   gSystem->Load(\"libESD\");" << endl;
@@ -2478,7 +2479,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          TIter next(fPackages);
          TObject *obj;
          TString pkgname;
-         TString setupPar = "AliAnalysisAlien::SetupPar";
          while ((obj=next())) {
             pkgname = obj->GetName();
             if (pkgname == "STEERBase" ||
@@ -2534,6 +2534,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          while((str=(TObjString*)next())) {
             if (str->GetString().Contains(".so"))
                out << "   gSystem->Load(\"" << str->GetString().Data() << "\");" << endl;
+            if (str->GetString().Contains(".par"))
+               out << "   if (!" << setupPar << "(\"" << str->GetString() << "\")) return;" << endl;
          }
          if (list) delete list;
       }
