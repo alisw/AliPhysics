@@ -207,8 +207,13 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 {
   // Process an event
 
+#ifdef HAVE_VALGRIND_CALLGRIND_H
   if (evtData.fEventID == 10)
     CALLGRIND_START_INSTRUMENTATION;
+
+  if(GetFirstInputBlock(kAliHLTDataTypeEOR))
+    CALLGRIND_STOP_INSTRUMENTATION;
+#endif
 
   if(!IsDataEvent())return 0;
 
@@ -238,8 +243,6 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
 		    evtData.fEventID, evtData.fEventID, 
 		    DataType2Text(inputDataType).c_str(), 
 		    DataType2Text(expectedDataType).c_str());
-	  if(block.fDataType == kAliHLTDataTypeEOR)
-	    CALLGRIND_STOP_INSTRUMENTATION;
 	  continue;
 	}
       else 
