@@ -135,7 +135,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    // set default parameter 
    task->SetTrackCuts();       // default : pt > 0.150 GeV, |eta|<0.9, full phi acc
    task->SetJetCuts();         // default: jet pt > 5 GeV, |eta|<0.5, full phi acc
-   task->SetDijetCuts();       // default: to be defined
+   task->SetDiJetCuts();       // default: to be defined
    task->SetFFRadius();        // default: R = 0.4
    
    task->SetHighPtThreshold(); // default: pt > 5 Gev
