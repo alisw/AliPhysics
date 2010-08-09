@@ -30,6 +30,7 @@ using namespace std;
 #include "AliHLTTRDDefinitions.h"
 #include "AliHLTTRDTrack.h"
 #include "AliHLTTRDUtils.h"
+#include "AliHLTTRDCluster.h"
 
 #include "TFile.h"
 #include "TChain.h"
@@ -125,6 +126,7 @@ void AliHLTTRDTrackerV1Component::GetOutputDataSize( unsigned long& constBase, d
   // Get the output data size
   constBase = 0;
   inputMultiplier = fOutputV1Tracks ? 2*((double)fOutputPercentage)/100.0 : 0.5*((double)fOutputPercentage)/100.0;
+  if(sizeof(AliHLTTRDClustersArray::cluster_type) == sizeof(AliHLTTRDCluster)) inputMultiplier *= 28.0/8;
 }
 
 // Spawn function, return new instance of this class
@@ -234,9 +236,9 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
       double inputMultiplier;
       GetOutputDataSize(constBase,inputMultiplier);
       if(size<(constBase+block.fSize*inputMultiplier)){
-	HLTWarning("Memory Block given might be too small: %i < %i; Event %Lu", size, constBase+block.fSize*inputMultiplier, evtData.fEventID);
+	HLTWarning("Memory Block given might be too small: %i < %f; Event %Lu", size, constBase+block.fSize*inputMultiplier, evtData.fEventID);
       }
-#endif      
+#endif
 
       fESD->Reset();
       //fESD->SetMagneticField(GetBz());
