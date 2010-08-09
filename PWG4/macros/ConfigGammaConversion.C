@@ -1370,7 +1370,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
       AliAODHandler * aodHandler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
       gammaconversion->SetDeltaAODFileName(kGCDeltaAODFilename);
       
-      if(kGCDeltaAODFilename.Length > 0) {
+      if(kGCDeltaAODFilename.Length() > 0) {
 	mgr->RegisterExtraFile(kGCDeltaAODFilename.Data());
       }
       
