@@ -682,7 +682,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
       switch (triggerScheme)
       {
       case 0:
-        fCollTrigClasses.Add(new TObjString("&0"));
+        fCollTrigClasses.Add(new TObjString(Form("&%u", (UInt_t) AliVEvent::kMB)));
         break;
         
       case 1:
