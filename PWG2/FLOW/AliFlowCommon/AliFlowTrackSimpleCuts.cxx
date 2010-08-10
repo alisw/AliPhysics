@@ -24,6 +24,7 @@
 
 #include "TNamed.h"
 #include "TParticle.h"
+#include "TParticlePDG.h"
 #include "AliFlowTrackSimpleCuts.h"
 #include "AliFlowTrackSimple.h"
 
@@ -37,7 +38,8 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
   fEtaMin(0.),
   fPhiMax(0.),
   fPhiMin(0.),
-  fPID(0) 
+  fPID(0),
+  fCharge(fgkIgnoreCharge)
 {
   //constructor 
   
@@ -52,7 +54,8 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts& som
   fEtaMin(someCuts.fEtaMin),
   fPhiMax(someCuts.fPhiMax),
   fPhiMin(someCuts.fPhiMin),
-  fPID(someCuts.fPID)
+  fPID(someCuts.fPID),
+  fCharge(someCuts.fCharge)
 {
   //copy constructor 
 }
@@ -67,6 +70,7 @@ AliFlowTrackSimpleCuts& AliFlowTrackSimpleCuts::operator=(const AliFlowTrackSimp
   fPhiMax = someCuts.fPhiMax;
   fPhiMin = someCuts.fPhiMin;
   fPID    = someCuts.fPID;
+  fCharge = someCuts.fCharge;
 
   return *this;
 
@@ -85,20 +89,28 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
   //simple method to check if the simple track passes the simple cuts
   if(track->Pt() >= fPtMin && track->Pt() < fPtMax &&
      track->Eta() >= fEtaMin && track->Eta() < fEtaMax &&
-     track->Phi() >= fPhiMin && track->Phi() < fPhiMax)
+     track->Phi() >= fPhiMin && track->Phi() < fPhiMax &&
+     (track->Charge()==fCharge || fCharge==fgkIgnoreCharge))
     { return kTRUE; } 
   else
     { return kFALSE; }  
 }
 
 //----------------------------------------------------------------------- 
-Bool_t AliFlowTrackSimpleCuts::PassesCuts(const TParticle* track) const
+Bool_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
 {
   //simple method to check if the simple track passes the simple cuts
-  if(track->Pt() >= fPtMin && track->Pt() < fPtMax &&
-     track->Eta() >= fEtaMin && track->Eta() < fEtaMax &&
-     track->Phi() >= fPhiMin && track->Phi() < fPhiMax)
-    return kTRUE; 
-  else
-    return kFALSE; 
+  Bool_t result = (track->Pt() >= fPtMin && track->Pt() < fPtMax &&
+                   track->Eta() >= fEtaMin && track->Eta() < fEtaMax &&
+                   track->Phi() >= fPhiMin && track->Phi() < fPhiMax);
+
+  //getting the charge from a tparticle is expensive
+  //only do it if neccesary
+  if (fCharge!=fgkIgnoreCharge) 
+  {
+    TParticlePDG* ppdg = track->GetPDG();
+    Int_t charge = TMath::Nint(ppdg->Charge()/3.0);
+    result = (charge==fCharge) && result;
+  }
+  return result;
 }

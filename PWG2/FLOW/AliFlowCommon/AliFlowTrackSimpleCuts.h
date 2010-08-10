@@ -32,6 +32,7 @@ class AliFlowTrackSimpleCuts : public TNamed {
   void SetPhiMax(Double_t max)  {this->fPhiMax = max; }
   void SetPhiMin(Double_t min)  {this->fPhiMin = min; }
   void SetPID(Int_t pid)        {this->fPID = pid; }
+  void SetCharge(Int_t c)       {this->fCharge = c; }
   
   //getters
   Double_t GetPtMax() const     {return this->fPtMax; }
@@ -41,10 +42,11 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Double_t GetPhiMax() const    {return this->fPhiMax; }
   Double_t GetPhiMin() const    {return this->fPhiMin; }
   Int_t    GetPID() const       {return this->fPID; }
+  Int_t    GetCharge() const    {return this->fCharge; }
   
   //simple method to check if the simple track passes the simple cuts:
   Bool_t PassesCuts(const AliFlowTrackSimple *track) const;
-  Bool_t PassesCuts(const TParticle* p) const;
+  Bool_t PassesCuts(TParticle* p) const;
 
  private:
   Double_t fPtMax;
@@ -54,6 +56,9 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Double_t fPhiMax;
   Double_t fPhiMin;
   Int_t    fPID;
+  Int_t    fCharge;
+
+  static const Int_t fgkIgnoreCharge=999;
 
   ClassDef(AliFlowTrackSimpleCuts,1)
 };

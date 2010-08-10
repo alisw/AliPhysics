@@ -21,6 +21,7 @@
 
 #include "AliVParticle.h"
 #include "AliFlowTrack.h"
+#include "AliFlowTrackSimple.h"
 
 ClassImp(AliFlowTrack)
 
@@ -34,10 +35,14 @@ AliFlowTrack::AliFlowTrack():
 
 //-----------------------------------------------------------------------
 AliFlowTrack::AliFlowTrack(AliVParticle* p):
-  AliFlowTrackSimple(p->Phi(),p->Eta(),p->Pt(),1.),
+  AliFlowTrackSimple(),
   fTrackSourceBits()
 {
   //constructor 
+  SetPhi(p->Phi());
+  SetEta(p->Eta());
+  SetPt(p->Pt());
+  SetCharge(p->Charge());
 }
 
 //-----------------------------------------------------------------------

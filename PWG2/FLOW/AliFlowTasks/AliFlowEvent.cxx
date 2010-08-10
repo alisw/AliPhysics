@@ -337,18 +337,14 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     if (!(rpOK || poiOK)) continue;
 
     //make new AliFlowTrack
-    AliFlowTrack* pTrack = new AliFlowTrack();
+    AliFlowTrack* pTrack = NULL;
     if(anOption == kESDkine)   //take the PID from the MC & the kinematics from the ESD
     {
-      pTrack->SetPt(pParticle->Pt() );
-      pTrack->SetEta(pParticle->Eta() );
-      pTrack->SetPhi(pParticle->Phi() );
+      pTrack = new AliFlowTrack(pParticle);
     }
     else if (anOption == kMCkine)   //take the PID and kinematics from the MC
     {
-      pTrack->SetPt(pMcParticle->Pt() );
-      pTrack->SetEta(pMcParticle->Eta() );
-      pTrack->SetPhi(pMcParticle->Phi() );
+      pTrack = new AliFlowTrack(pMcParticle);
     }
 
     if (rpOK && rpCFManager)
@@ -388,10 +384,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       if (!poiOK) continue;
       
       //make new AliFLowTrack
-      AliFlowTrack* pTrack = new AliFlowTrack();
-      pTrack->SetPt(pParticle->Pt() );
-      pTrack->SetEta(pParticle->Eta() );
-      pTrack->SetPhi(pParticle->Phi() );
+      AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
           
       //marking the particles used for the particle of interest (POI) selection:
       if(poiOK && poiCFManager)
@@ -456,10 +449,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       if (!poiOK) continue;
  
       //make new AliFLowTrack
-      AliFlowTrack* pTrack = new AliFlowTrack();
-      pTrack->SetPt(pParticle->Pt() );
-      pTrack->SetEta(pParticle->Eta() );
-      pTrack->SetPhi(pParticle->Phi() );
+      AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
           
       //marking the particles used for the particle of interest (POI) selection:
       if(poiOK && poiCFManager)

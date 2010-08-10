@@ -24,8 +24,10 @@
 
 #include "TObject.h"
 #include "TParticle.h"
+#include "TParticlePDG.h"
 #include "AliFlowTrackSimple.h"
 #include "TRandom.h"
+#include "TMath.h"
 
 ClassImp(AliFlowTrackSimple)
 
@@ -36,6 +38,7 @@ AliFlowTrackSimple::AliFlowTrackSimple():
   fPt(0),
   fPhi(0),
   fTrackWeight(1.),
+  fCharge(0),
   fFlowBits(0),
   fSubEventBits(0)
 {
@@ -43,12 +46,13 @@ AliFlowTrackSimple::AliFlowTrackSimple():
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight):
+AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight, Int_t charge):
   TObject(),
   fEta(eta),
   fPt(pt),
   fPhi(phi),
   fTrackWeight(weight),
+  fCharge(charge),
   fFlowBits(0),
   fSubEventBits(0)
 {
@@ -56,16 +60,19 @@ AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, 
 }
 
 //-----------------------------------------------------------------------
-AliFlowTrackSimple::AliFlowTrackSimple(const TParticle* p):
+AliFlowTrackSimple::AliFlowTrackSimple( TParticle* p ):
   TObject(),
   fEta(p->Eta()),
   fPt(p->Pt()),
   fPhi(p->Phi()),
   fTrackWeight(1.),
+  fCharge(0),
   fFlowBits(0),
   fSubEventBits(0)
 {
   //ctor
+  TParticlePDG* ppdg = p->GetPDG();
+  fCharge = TMath::Nint(ppdg->Charge()/3.0);
 }
 
 //-----------------------------------------------------------------------
@@ -75,6 +82,7 @@ AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
   fPt(aTrack.fPt),
   fPhi(aTrack.fPhi),
   fTrackWeight(aTrack.fTrackWeight),
+  fCharge(aTrack.fCharge),
   fFlowBits(aTrack.fFlowBits),
   fSubEventBits(aTrack.fSubEventBits)
 {
@@ -95,6 +103,7 @@ AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTra
   fPt = aTrack.fPt;
   fPhi = aTrack.fPhi;
   fTrackWeight = aTrack.fTrackWeight;
+  fCharge = aTrack.fCharge;
   fFlowBits = aTrack.fFlowBits;
   fSubEventBits = aTrack.fSubEventBits;
 
