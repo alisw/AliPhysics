@@ -1,3 +1,6 @@
+// Analysis task for basic QA exploiting symmetries
+//of global, TPC, and ITS tracks
+
 #ifndef ALIANALYSISTASKQASYM_H
 #define ALIANALYSISTASKQASYM_H
  
@@ -49,7 +52,7 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH1F        *fQPt;            // charge over pt 
   TH1F        *fDca;            // distance of closest approach
   TH1F        *fqRec;           // reconstrcuted charge
-  TH1F        *fsigmaPt;        // sigma_pT
+  TH1F        *fSigmaPtHist;    // sigma_pT
 
    //positive und negative tracks
   TH1F        *fRecPtPos;      // pt of pos tracks
@@ -102,12 +105,15 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH1F * fPhiRec;              //phi
   TH1F * fThetaRec;            //theta
   TH1F * fNumber;              //Number of tracks per event
+  TH1F * fNumberAfterCut;      //Number of tracks per event after cuts
   TH1F * fVx;                  // x of first track point
   TH1F * fVy;                  // y of first track point
   TH1F * fVz;                  // z of first track point
   TH1F * fVertexX;             // x of vertex
   TH1F * fVertexY;             // y of vertex
   TH1F * fVertexZ;             // z of vertex
+  TH1F * fNVertexSPD;          //number of vertices SPD
+  TH1F * fNVertexTracks;       //number of vertices of Tracks
 
   //new
   TH2F        *fRecDcaPosPhi;     //dca-phi for pos.
@@ -156,8 +162,13 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   //  TH3F        *fRecDcaPhiPtNegEtaNeg; //dca-pt-phi for neg tracks and neg eta
 
   TH2F        *fEtavPt;                 // eta vs pt 
+  TH2F        *fPhivPt;                 // phi vs pt 
+
   TH2F        *fCompareTPCparam;        // TPC param
+
   TH1F        *fITSlayer;               // ITS layer
+  TH2F        *fITSlayerEta;            // ITS layer vs eta
+  TH2F        *fITSlayerPhi;            // ITS layer vs phi
 
   AliESDtrackCuts* fCuts;               // List of cuts
 
