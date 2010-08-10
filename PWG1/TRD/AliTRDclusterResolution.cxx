@@ -178,7 +178,6 @@
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalDet.h"
 
-#include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliCDBManager.h"
 
@@ -212,8 +211,9 @@ AliTRDclusterResolution::AliTRDclusterResolution()
   ,fCol(-1)
   ,fRow(-1)
   ,fExB(0.)
-  ,fVdrift(0.)
+  ,fVdrift(1.5)
   ,fT0(0.)
+  ,fGain(1.)
   ,fLy(0)
   ,fT(0.)
   ,fX(0.)
@@ -235,8 +235,9 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
   ,fCol(-1)
   ,fRow(-1)
   ,fExB(0.)
-  ,fVdrift(0.)
+  ,fVdrift(1.5)
   ,fT0(0.)
+  ,fGain(1.)
   ,fLy(0)
   ,fT(0.)
   ,fX(0.)
@@ -436,8 +437,8 @@ TObjArray* AliTRDclusterResolution::Histos()
         Form("hCenResLy%d", il), 
         Form(" ly [%d];t [bin];y [pw];#Delta y[cm]", il), 
         AliTRDseedV1::kNtb, -.5, AliTRDseedV1::kNtb-0.5,   // x
-        51, -.51, .51, // y 
-        60, -.3, .3); // dy
+        51, -.51, .51, // y
+        60, -1.3, 1.3); // dy
     } h3->Reset();
     arr->AddAt(h3, il);
     // add Pull plot for each layer
@@ -453,7 +454,7 @@ TObjArray* AliTRDclusterResolution::Histos()
   }
 
   if(!(h3 = (TH3S*)gROOT->FindObject("Charge"))){
-    h3 = new TH3S("Charge", "dy=f(q)", 50, 2.2, 7.5, 60, -.3, .3, 60, -4., 4.);
+    h3 = new TH3S("Charge", "dy=f(q)", 50, 2.2, 7.5, 60, -1.3, 1.3, 60, -4., 4.);
     h3->SetXTitle("log(q) [a.u.]");
     h3->SetYTitle("#Delta y[cm]");
     h3->SetZTitle("#Delta y/#sigma_{y}");
@@ -469,7 +470,7 @@ TObjArray* AliTRDclusterResolution::Histos()
         Form(" t_{drift}(%2d)[bin];z [mm];tg#phi;#Delta y[cm]", ix), 
         kND, 0., 2.5,   // z 
         35, -.35, .35, // tgp 
-        60, -.3, .3); // dy
+        60, -1.3, 1.3); // dy
     }
     arr->AddAt(h3, ix);
   }
@@ -483,7 +484,7 @@ TObjArray* AliTRDclusterResolution::Histos()
         Form(" t_{drift}(%2d)[bin];z [mm];tg#phi - h*tg(#theta);#Delta y[cm]", ix), 
         kND, 0., 2.5,   // z 
         35, -.35, .35, // tgp-h tgt 
-        60, -.3, .3); // dy
+        60, -1.3, 1.3); // dy
     }
     arr->AddAt(h3, ix);
   }
@@ -496,11 +497,13 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 {
 // Fill container histograms
 
+  
   fInfo = dynamic_cast<TObjArray *>(GetInputData(1));
-  if(!HasExB()){ 
-    SetExB();
-    if(!HasExB()){ 
-      AliWarning("Magnetic field settings failed. Check OCDB access.");
+  AliDebug(2, Form("Clusters[%d]", fInfo->GetEntriesFast(), fDet, fCol, fRow));
+  if(!IsCalibrated()){
+    LoadCalibration();
+    if(!IsCalibrated()){
+      AliWarning("Loading the calibration settings failed. Check OCDB access.");
       return;
     }
   }
@@ -529,7 +532,6 @@ void AliTRDclusterResolution::UserExec(Option_t *)
       if(TMath::Abs(fCol-c) > 5) continue;
       if(TMath::Abs(fRow-r) > 2) continue;
     }
-
     dy = cli->GetResolution();
     AliDebug(4, Form("det[%d] tb[%2d] q[%4.0f Log[%6.4f]] dy[%7.2f][um] ypull[%5.2f]", det, t, q, TMath::Log(q), 1.e4*dy, dy/TMath::Sqrt(covcl[0])));
     
@@ -544,7 +546,7 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 
     // do not use problematic clusters in resolution analysis
     // TODO define limits as calibration aware (gain) !!
-    if(q<20. || q>250.) continue;
+    if(q<20.*fGain || q>250.*fGain) continue;
 
     //x = (t+.5)*fgkTimeBinLength; // conservative approach !!
 
@@ -573,8 +575,10 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 Bool_t AliTRDclusterResolution::PostProcess()
 {
   if(!fContainer) return kFALSE;
-  if(!HasExB()) AliWarning("ExB was not set. Call SetExB() before running the post processing.");
-  
+  if(!IsCalibrated()){
+    AliWarning("Not calibrated.");
+    return kFALSE;
+  }
   TObjArray *arr = NULL;
   TTree *t=NULL;
   if(!fResults){
@@ -648,7 +652,7 @@ Bool_t AliTRDclusterResolution::PostProcess()
 }
 
 //_______________________________________________________
-Bool_t AliTRDclusterResolution::SetExB()
+Bool_t AliTRDclusterResolution::LoadCalibration()
 {
 // Retrieve calibration parameters from OCDB, drift velocity and t0 for the detector region specified by
 // a previous call to AliTRDclusterResolution::SetCalibrationRegion().
@@ -665,7 +669,7 @@ Bool_t AliTRDclusterResolution::SetExB()
     AliError("Failed retrieving ESD event");
     return kFALSE;
   }
-  if(esd->InitMagneticField()){
+  if(!esd->InitMagneticField()){
     AliError("Magnetic field failed initialization.");
     return kFALSE;
   }
@@ -692,9 +696,10 @@ Bool_t AliTRDclusterResolution::SetExB()
   fExB    = AliTRDCommonParam::Instance()->GetOmegaTau(fVdrift);
   fT0     = fCalT0Det->GetValue(fDet>=0?fDet:0);
   if(fCol>=0 && fRow>=0) fT0 *= fCalT0ROC->GetValue(fCol, fRow);
-  SetBit(kExB);
+  fGain = (fCol>=0 && fRow>=0)?fCalibration-> GetGainFactor(fDet, fCol, fRow):fCalibration-> GetGainFactorAverage(fDet);
+  SetBit(kCalibrated);
 
-  AliDebug(1, Form("Calibrate for Det[%3d] t0[%5.3f] vd[%5.3f] ExB[%f]", fDet, fT0, fVdrift, fExB));
+  AliDebug(1, Form("Calibrate for Det[%3d] Col[%3d] Row[%2d] : \n   t0[%5.3f] vd[%5.3f] gain[%5.3f] ExB[%f]", fDet, fCol, fRow, fT0, fVdrift, fGain, fExB));
 
   return kTRUE;
 }

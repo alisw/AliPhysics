@@ -11,6 +11,7 @@
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
 #endif
+#include "AliLog.h"
 
 class TCanvas;
 class TObjArray;
@@ -27,9 +28,9 @@ public:
    ,kMean   = 3   // shift cluster as func of x and z
    ,kNtasks = 4   // total number os sub tasks
   };
-  enum ECheckBits { // force setting the ExB
-    kSaveAs    = BIT(22)
-   ,kExB       = BIT(23)
+  enum ECheckBits { 
+    kSaveAs     = BIT(22) // save intermediary results
+   ,kCalibrated = BIT(23) // load calibration
   };
   AliTRDclusterResolution();
   AliTRDclusterResolution(const char *name);
@@ -42,9 +43,10 @@ public:
   inline Float_t GetExB() const;
   inline Float_t GetVdrift() const;
   inline Float_t GetT0() const;
+  inline Float_t GetGain() const;
   Bool_t        GetRefFigure(Int_t ifig);
   Bool_t        HasProcess(EResultContainer bit) const {return TESTBIT(fStatus, bit);}
-  Bool_t        HasExB() const { return TestBit(kExB);}
+  Bool_t        IsCalibrated() const { return TestBit(kCalibrated);}
 
   TObjArray*    Histos(); 
   TObjArray*    Results() const {return fResults;}; 
@@ -68,7 +70,7 @@ protected:
 private:
   AliTRDclusterResolution(const AliTRDclusterResolution&);  
   AliTRDclusterResolution& operator=(const AliTRDclusterResolution&);
-  Bool_t        SetExB();
+  Bool_t        LoadCalibration();
 
   TCanvas    *fCanvas; //! visualization canvas 
   TObjArray  *fInfo;   //! list of cluster info
@@ -80,6 +82,7 @@ private:
   Float_t    fExB;     // tg of the Lorentz angle
   Float_t    fVdrift;  // mean drift velocity
   Float_t    fT0;      // time 0
+  Float_t    fGain;    // gain
   static const Float_t fgkTimeBinLength;// time bin length (invers of sampling frequency)
 
   // working named variables
@@ -97,28 +100,29 @@ private:
 //___________________________________________________
 inline Float_t AliTRDclusterResolution::GetExB() const
 { 
-  if(!HasExB()){
-    printf("WARNING :: ExB was not set. Use B=0.\n");
-  }
+  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
   return fExB;
 }
 
 //___________________________________________________
 inline Float_t AliTRDclusterResolution::GetVdrift() const
 { 
-  if(!HasExB()){
-    printf("WARNING :: ExB was not set. Use B=0.\n");
-  }
+  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
   return fVdrift;
 }
 
 //___________________________________________________
 inline Float_t AliTRDclusterResolution::GetT0() const
-{ 
-  if(!HasExB()){
-    printf("WARNING :: ExB was not set. Use B=0.\n");
-  }
+{
+  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
   return fT0;
+}
+
+//___________________________________________________
+inline Float_t AliTRDclusterResolution::GetGain() const
+{
+  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
+  return fGain;
 }
 
 //___________________________________________________
