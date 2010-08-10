@@ -2331,6 +2331,12 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 5:
     kGCchi2CutConversion = 1000.;
     break;
+  case 6:
+    kGCchi2CutConversion = 5.;
+    break;
+  case 7:
+    kGCchi2CutConversion = 10.;
+    break;
   default:
     return iResult;
   }
@@ -2431,6 +2437,22 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     kGCPIDnSigmaAtLowPAroundProtonLine=2.;
     kGCPIDnSigmaAtLowPAroundPionLine=2.;
     break;
+  case 4:  // 
+    kGCPIDnSigmaAtLowPAroundKaonLine=0.;
+    kGCPIDnSigmaAtLowPAroundProtonLine=0.;
+    kGCPIDnSigmaAtLowPAroundPionLine=1;
+    break;
+  case 5:  // 
+    kGCPIDnSigmaAtLowPAroundKaonLine=0.;
+    kGCPIDnSigmaAtLowPAroundProtonLine=0.;
+    kGCPIDnSigmaAtLowPAroundPionLine=1.5;
+    break;
+  case 6:  // 
+    kGCPIDnSigmaAtLowPAroundKaonLine=0.;
+    kGCPIDnSigmaAtLowPAroundProtonLine=0.;
+    kGCPIDnSigmaAtLowPAroundPionLine=2.;
+    break;
+
   default:
     return iResult;
   }
