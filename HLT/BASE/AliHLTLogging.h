@@ -344,7 +344,7 @@ private:
   /** groups of classes not to print debug messages */
   static TString fgWhiteList;                                      //! transient
   
-  ClassDef(AliHLTLogging, 3)
+  ClassDef(AliHLTLogging, 0)
 };
 
 /* the class AliHLTKeyword is a simple helper class used by the HLTLogKeyword macro

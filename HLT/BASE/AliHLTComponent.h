@@ -1783,6 +1783,6 @@ class AliHLTComponent : public AliHLTLogging {
   /// time of last executed PushBack
   int fLastPushBackTime;                                           //! transient
 
-  ClassDef(AliHLTComponent, 14)
+  ClassDef(AliHLTComponent, 0)
 };
 #endif
