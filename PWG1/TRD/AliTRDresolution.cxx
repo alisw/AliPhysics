@@ -206,10 +206,6 @@ void AliTRDresolution::UserCreateOutputObjects()
   }
 
   AliTRDrecoTask::UserCreateOutputObjects();
-  PostData(kClToTrk, fCl);
-  PostData(kClToMC, fMCcl);
-/*  PostData(kTrkltToTrk, fTrklt);
-  PostData(kTrkltToMC, fMCtrklt);*/
   InitExchangeContainers();
 }
 
@@ -224,6 +220,10 @@ void AliTRDresolution::InitExchangeContainers()
   fTrklt->SetOwner(kTRUE);
   fMCtrklt = new TObjArray();
   fMCtrklt->SetOwner(kTRUE);*/
+  PostData(kClToTrk, fCl);
+  PostData(kClToMC, fMCcl);
+/*  PostData(kTrkltToTrk, fTrklt);
+  PostData(kTrkltToMC, fMCtrklt);*/
 }
 
 //________________________________________________________
@@ -2231,7 +2231,7 @@ TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool
     Int_t nybins=fgkNresYsegm[fSegmentLevel];
     if(expand) nybins*=2;
     h = new TH3S(hname, htitle, 
-                 48, -.48, .48, 60, -.15, .15, nybins, -0.5, nybins-0.5);
+                 48, -.48, .48, 60, -1.5, 1.5, nybins, -0.5, nybins-0.5);
   } else h->Reset();
   arr->AddAt(h, 0);
   sprintf(hname, "%s_%s_YZpull", GetNameId(), name);
