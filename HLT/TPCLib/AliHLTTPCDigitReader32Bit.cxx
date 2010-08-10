@@ -42,7 +42,6 @@ ClassImp(AliHLTTPCDigitReader32Bit)
 AliHLTTPCDigitReader32Bit::AliHLTTPCDigitReader32Bit()
   :
   AliHLTTPCDigitReader(),
-  fRawReader(NULL),
   fRawReaderMemory(NULL),
   fAltroRawStreamV3(NULL),
   fMapping(NULL),
@@ -163,7 +162,7 @@ int AliHLTTPCDigitReader32Bit::NextBunch()
 #ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return fAltroRawStreamV3->NextBunch();
 #else
-  return false;
+  return -1;
 #endif //HAVE_NOT_ALTRORAWSTREAMV3
 }
 
@@ -186,7 +185,7 @@ const UShort_t* AliHLTTPCDigitReader32Bit::GetSignalsShort()
 #ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return fAltroRawStreamV3->GetSignals();
 #else
-  return false;
+  return NULL;
 #endif //HAVE_NOT_ALTRORAWSTREAMV3
 }
 
