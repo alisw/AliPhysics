@@ -248,7 +248,8 @@ int main(int argc, char **argv) {
       
       delete start;
       start = 0x0;
-      reader->Reset();
+      delete reader;
+      reader= 0x0;
       // End of fill histograms
 
     }
