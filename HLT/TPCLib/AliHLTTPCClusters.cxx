@@ -82,3 +82,9 @@ AliHLTTPCClusters& AliHLTTPCClusters::operator=(const AliHLTTPCClusters& src)
   fQMax = src.fQMax;
   return (*this);
 }
+
+AliHLTTPCClusters::~AliHLTTPCClusters()
+{
+  // Default destructor.
+}
+
