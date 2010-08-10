@@ -39,9 +39,9 @@ class AliEMCALDigit : public AliDigitNew {
   AliEMCALDigit operator+(const AliEMCALDigit &rValue) ;
   AliEMCALDigit operator*(Float_t factor) ; 
   const AliEMCALDigit& operator = (const AliEMCALDigit &) {return *this;}
-
   enum digitType{kUnknown=-1, kHG=0, kLG=1, kLGnoHG=2, kTrigger=3};
-	
+
+  void    Clear(const Option_t*) ;	
   Int_t   Compare(const TObject * obj) const ;
   Float_t GetAmplitude()   const { if(!fAmp)return fAmpFloat ; else return fAmp ;}//Keep backward compatibility.
   Float_t GetEta()         const ; 

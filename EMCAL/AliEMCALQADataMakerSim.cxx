@@ -176,7 +176,7 @@ void AliEMCALQADataMakerSim::MakeDigits(TTree * digitTree)
 {
   // makes data from Digit Tree
   if (fDigitsArray) 
-    fDigitsArray->Clear() ; 
+    fDigitsArray->Clear("C") ; 
   else
     fDigitsArray = new TClonesArray("AliEMCALDigit", 1000) ; 
   
@@ -215,7 +215,7 @@ void AliEMCALQADataMakerSim::MakeSDigits(TTree * sdigitTree)
 {
   // makes data from SDigit Tree
   if (fSDigitsArray) 
-    fSDigitsArray->Clear() ; 
+    fSDigitsArray->Clear("C") ; 
   else 
     fSDigitsArray = new TClonesArray("AliEMCALDigit", 1000) ; 
   

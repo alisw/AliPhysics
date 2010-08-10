@@ -149,17 +149,17 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   : AliDigitNew(digit),
     fAmpFloat(digit.fAmpFloat),	
     fNSamples(digit.fNSamples),
-    fSamples(0x0),
+    fSamples(),
     fNSamplesHG(digit.fNSamplesHG),
-    fSamplesHG(0x0),
+    fSamplesHG(),
     fNprimary(digit.fNprimary),
     fNMaxPrimary(digit.fNMaxPrimary),
-    fPrimary(0x0),
-    fDEPrimary(0x0),
+    fPrimary(),
+    fDEPrimary(),
     fNiparent(digit.fNiparent),
     fNMaxiparent(digit.fNMaxiparent),
-    fIparent(0x0),
-    fDEParent(0x0),
+    fIparent(),
+    fDEParent(),
     fMaxIter(digit.fMaxIter),
     fTime(digit.fTime),
     fTimeR(digit.fTimeR), 
@@ -168,26 +168,31 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
     fDigitType(digit.fDigitType)
 {
   // copy ctor
-  
   // data memebrs of the base class (AliNewDigit)
   fAmp         = digit.fAmp ;
   fId          = digit.fId;
   fIndexInList = digit.fIndexInList ; 
 
   // data members  
-  if(fNSamples){
+  if (fSamples )   delete [] fSamples ;   fSamples   = NULL ;
+  if (fSamplesHG ) delete [] fSamplesHG ; fSamplesHG = NULL ;
+  if (fPrimary  )  delete [] fPrimary ;   fPrimary   = NULL ;
+  if (fDEPrimary)  delete [] fDEPrimary ; fDEPrimary = NULL ;
+  if (fIparent )   delete [] fIparent ;   fIparent   = NULL ;
+  if (fDEParent)   delete [] fDEParent ;  fDEParent  = NULL ;
+
+  if (fNSamples){
     fSamples     = new Int_t[fNSamples]; 
     for (Int_t i=0; i < digit.fNSamples; i++) fSamples[i] = digit.fSamples[i];
   }
-  else fNSamples = 0;
-
-  if(fNSamplesHG){
+  
+  if (fNSamplesHG){
     fSamplesHG   = new Int_t[fNSamplesHG]; 
     for (Int_t i=0; i < digit.fNSamplesHG; i++) fSamplesHG[i] = digit.fSamplesHG[i];
   }
-  else fNSamplesHG = 0;
-
-  if(fNMaxPrimary){
+  
+ 
+  if (fNMaxPrimary){
     fPrimary   = new Int_t  [fNMaxPrimary] ;  
     fDEPrimary = new Float_t[fNMaxPrimary] ;
     for ( Int_t i = 0; i < fNMaxPrimary ; i++) {
@@ -195,35 +200,43 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
       fDEPrimary[i] = digit.fDEPrimary[i] ;
     }
   }
-  else{
-    fPrimary   = 0 ;
-    fDEPrimary = 0 ;
-
-  }
-  if(fNMaxiparent){
+  
+  if (fNMaxiparent){
     fIparent  = new Int_t  [fNMaxiparent] ;
     fDEParent = new Float_t[fNMaxiparent] ;
     for (Int_t j = 0; j< fNMaxiparent ; j++) {
     fIparent[j]  = digit.fIparent[j] ;
     fDEParent[j] = digit.fDEParent[j] ;
     }
-  }
-  else {
-    fIparent  = 0 ;
-    fDEParent = 0 ;
-  }
+  }  
+ 
 }
 
 //____________________________________________________________________________
 AliEMCALDigit::~AliEMCALDigit() 
 {
-  // Delete array of primiries if any
-    delete [] fPrimary ;
-    delete [] fDEPrimary ;
-    delete [] fIparent ; 
-    delete [] fDEParent ;
-    delete [] fSamples;
-    delete [] fSamplesHG;
+  // Delete array of primaries if any
+
+  if (fSamples )   delete [] fSamples ;   fSamples   = NULL ;
+  if (fSamplesHG ) delete [] fSamplesHG ; fSamplesHG = NULL ;
+  if (fPrimary  )  delete [] fPrimary ;   fPrimary   = NULL ;
+  if (fDEPrimary)  delete [] fDEPrimary ; fDEPrimary = NULL ;
+  if (fIparent )   delete [] fIparent ;   fIparent   = NULL ;
+  if (fDEParent)   delete [] fDEParent ;  fDEParent  = NULL ;
+
+}
+
+
+//____________________________________________________________________________
+void AliEMCALDigit::Clear(const Option_t*) 
+{
+  // Delete array of primaries if any
+  if (fSamples )   delete [] fSamples ;   fSamples   = NULL ;
+  if (fSamplesHG ) delete [] fSamplesHG ; fSamplesHG = NULL ;
+  if (fPrimary  )  delete [] fPrimary ;   fPrimary   = NULL ;
+  if (fDEPrimary)  delete [] fDEPrimary ; fDEPrimary = NULL ;
+  if (fIparent )   delete [] fIparent ;   fIparent   = NULL ;
+  if (fDEParent)   delete [] fDEParent ;  fDEParent  = NULL ;
 
 }
 

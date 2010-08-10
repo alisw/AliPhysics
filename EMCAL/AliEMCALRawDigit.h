@@ -25,7 +25,7 @@ public:
 	AliEMCALRawDigit(const AliEMCALRawDigit& digit);
 	
 	virtual ~AliEMCALRawDigit();
-
+        void Clear(Option_t *);
 	Bool_t operator==(const AliEMCALRawDigit &rValue) const;
 	const AliEMCALRawDigit& operator = (const AliEMCALRawDigit&) {return *this;}
 

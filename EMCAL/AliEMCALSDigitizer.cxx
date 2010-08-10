@@ -272,9 +272,9 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 			emcalLoader->MakeSDigitsContainer();
 			treeS = emcalLoader->TreeS();
 		}
-		//TClonesArray * hits = emcalLoader->Hits() ; 
+
 		TClonesArray * sdigits = emcalLoader->SDigits() ;
-		sdigits->Clear();
+		sdigits->Clear("C");
 		
 		Int_t nSdigits = 0 ;
 		Int_t iHit, iTrack, iSDigit;
@@ -487,7 +487,7 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
 	printf("%s",tempo); 
       }  	 
     }
-    delete tempo ;
+    delete [] tempo ;
     printf("\n** Sum %2.3f : %10.3f GeV/c **\n ", isum, Calibrate(isum));
   } else printf("\n");
 }

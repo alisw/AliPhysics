@@ -324,7 +324,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 {
   // convert raw data of the current event to digits                                                                                     
 
-  digitsArr->Clear(); 
+  digitsArr->Clear("C"); 
 
   if (!digitsArr) {
     Error("Raw2Digits", "no digits found !");

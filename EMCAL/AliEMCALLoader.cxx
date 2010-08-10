@@ -187,7 +187,7 @@ Int_t AliEMCALLoader::GetEvent()
     // Reset SDigits array and branch
     branchS->ResetAddress();
     TClonesArray* sdigits = const_cast<AliEMCALLoader *>(this)->SDigits();
-    if (sdigits) sdigits->Clear();
+    if (sdigits) sdigits->Clear("C");
     
     branchS->SetAddress(&sdigits);
     branchS->GetEntry(0);
@@ -204,7 +204,7 @@ Int_t AliEMCALLoader::GetEvent()
     // Reset Digits array and branch
     branchD->ResetAddress();
     TClonesArray* digits = const_cast<AliEMCALLoader *>(this)->Digits();
-    if (digits) digits->Clear();
+    if (digits) digits->Clear("C");
     
     branchD->SetAddress(&digits);
     branchD->GetEntry(0);

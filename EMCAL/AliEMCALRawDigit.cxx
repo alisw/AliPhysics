@@ -64,9 +64,17 @@ fSamples(0x0)
 //____________________________________________________________________________
 AliEMCALRawDigit::~AliEMCALRawDigit() 
 {
-	// Delete array of time samples
-    delete [] fSamples;
+  // Delete array of time samples
+  delete [] fSamples;
 }
+
+//____________________________________________________________________________
+void AliEMCALRawDigit::Clear(Option_t *) 
+{
+  // Delete array of time samples
+  delete [] fSamples;
+}
+
 
 //____________________________________________________________________________
 Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& timeBin, Int_t& amp) const

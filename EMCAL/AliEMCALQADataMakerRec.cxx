@@ -830,7 +830,7 @@ void AliEMCALQADataMakerRec::MakeDigits(TTree * digitTree)
 {
   // makes data from Digit Tree
   if (fDigitsArray) 
-    fDigitsArray->Clear() ; 
+    fDigitsArray->Clear("C") ; 
   else
     fDigitsArray = new TClonesArray("AliEMCALDigit", 1000) ; 
   

@@ -611,8 +611,8 @@ void AliEMCALDigitizer::Exec(Option_t *option)
 	  
 	Unload();
 	  
-	digitsTRG->Clear();
-	digitsTMP->Clear();
+	digitsTRG->Clear("C");
+	digitsTMP->Clear("C");
 	//-------------------------------------
 
     if(strstr(option,"deb"))
