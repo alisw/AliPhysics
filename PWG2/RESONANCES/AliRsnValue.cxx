@@ -153,7 +153,7 @@ void AliRsnValue::SetBins(Double_t min, Double_t max, Double_t step)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnValue::Eval(AliRsnMother *mother, const AliRsnPairDef *pairDef, AliRsnEvent *event)
+Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pairDef, AliRsnEvent * const event)
 {
 //
 // Evaluation of the required value.
@@ -207,17 +207,20 @@ Bool_t AliRsnValue::Eval(AliRsnMother *mother, const AliRsnPairDef *pairDef, Ali
       mother->SetDefaultMass(mass);
       fValue = mother->Ref().Rapidity();
       break;
+    case kPairCosThetaStar:
+      fValue = mother->CosThetaStar();
+      break;
     case kPairCosThetaStar1:
-      fValue = TMath::Cos(mother->ThetaStar(kTRUE, kFALSE));
+      //fValue = TMath::Cos(mother->ThetaStar(kTRUE, kFALSE));
       break;
     case kPairCosThetaStar2:
-      fValue = TMath::Cos(mother->ThetaStar(kFALSE, kFALSE));
+      //fValue = TMath::Cos(mother->ThetaStar(kFALSE, kFALSE));
       break;
     case kPairCosThetaStarMC1:
-      fValue = TMath::Cos(mother->ThetaStar(kTRUE, kTRUE));
+      //fValue = TMath::Cos(mother->ThetaStar(kTRUE, kTRUE));
       break;
     case kPairCosThetaStarMC2:
-      fValue = TMath::Cos(mother->ThetaStar(kFALSE, kTRUE));
+      //fValue = TMath::Cos(mother->ThetaStar(kFALSE, kTRUE));
       break;
     case kEventMult:
       if (!event) fValue = 0.0;

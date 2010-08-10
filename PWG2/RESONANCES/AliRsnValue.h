@@ -32,6 +32,7 @@ class AliRsnValue : public TNamed
       kPairEta,
       kPairMt,
       kPairY,
+      kPairCosThetaStar,
       kPairCosThetaStar1,
       kPairCosThetaStar2,
       kPairCosThetaStarMC1,
@@ -59,7 +60,7 @@ class AliRsnValue : public TNamed
     void        SetBins(Int_t n, Double_t min, Double_t max);
     void        SetBins(Double_t min, Double_t max, Double_t step);
     
-    Bool_t      Eval(AliRsnMother *mother, const AliRsnPairDef *pairDef, AliRsnEvent *event);
+    Bool_t      Eval(AliRsnMother * const mother, AliRsnPairDef * const pairDef, AliRsnEvent * const event);
 
   private:
 

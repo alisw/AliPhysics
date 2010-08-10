@@ -37,6 +37,7 @@ class AliRsnAnalysisManager : public TNamed
 
     void           InitAllPairs(TList*list);
     void           ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1);
+    void           ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1);
 
   private:
   

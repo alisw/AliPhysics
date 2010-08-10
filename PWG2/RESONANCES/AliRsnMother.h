@@ -35,7 +35,7 @@ class AliRsnMother : public TObject
     TLorentzVector&   RefMC() {return fRefMC;}
     Double_t          OpeningAngle(Bool_t mc = kFALSE) const {if (fDaughter[0] && fDaughter[1]) return fDaughter[0]->P(mc).Angle(fDaughter[1]->P(mc).Vect()); return 1E6;}
     Double_t          AngleTo(AliRsnDaughter track, Bool_t mc = kFALSE) const {return fSum.Angle(track.P(mc).Vect());}
-    Double_t          ThetaStar(Bool_t first = kTRUE, Bool_t useMC = kFALSE);
+    Double_t          CosThetaStar(Bool_t first = kTRUE, Bool_t useMC = kFALSE);
 
     AliRsnDaughter*   GetDaughter(const Int_t &index) const {if (index==0||index==1) return fDaughter[index]; return 0x0;}
 

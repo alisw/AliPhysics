@@ -35,7 +35,7 @@ class AliRsnValue;
 class AliRsnMother;
 class AliRsnPairDef;
 
-class AliRsnFunction : public TNamed
+class AliRsnFunction : public TObject
 {
 
   public:
