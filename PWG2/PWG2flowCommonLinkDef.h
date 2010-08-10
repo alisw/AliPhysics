@@ -11,6 +11,11 @@
 #pragma link C++ class AliFlowTrackSimple+;
 #pragma link C++ class AliFlowEventSimple+;
 
+#pragma link C++ class AliStarTrack+;
+#pragma link C++ class AliStarEvent+;
+#pragma link C++ class AliStarEventReader+;
+#pragma link C++ class AliFlowEventStar+;
+
 #pragma link C++ class AliFlowTrackSimpleCuts+;
 
 #pragma link C++ class AliFlowEventSimpleMakerOnTheFly+;

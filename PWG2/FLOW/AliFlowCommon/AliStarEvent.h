@@ -1,0 +1,65 @@
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+* See cxx source for full Copyright notice */
+/* $Id$ */
+
+/*****************************************************************
+  AliStarEvent: Track container for a star track
+                                     
+  origin:   Mikolaj Krzewicki  (mikolaj.krzewicki@cern.ch)
+*****************************************************************/
+
+#ifndef ALISTAREVENT_H
+#define ALISTAREVENT_H
+
+class TObjArray;
+class AliStarTrack;
+
+class AliStarEvent : public TObject {
+
+ private:
+  static const Int_t fgkNparams = 10; //number of params
+  Float_t fParams[fgkNparams]; //params
+  TObjArray* fTracks; //track collection
+
+ public:
+  AliStarEvent();
+  AliStarEvent( Int_t n );
+  AliStarEvent( const AliStarEvent& track );  
+  AliStarEvent& operator=( const AliStarEvent& track );
+  virtual ~AliStarEvent();
+  virtual void Print( Option_t* option="" ) const;
+
+  const Int_t GetRunID() const {return (Int_t)fParams[0];}
+  const Int_t GetEventNumber() const {return (Int_t)fParams[1];}
+  const Float_t GetVtxX() const {return fParams[2];}
+  const Float_t GetVtxY() const {return fParams[3];}
+  const Float_t GetVtxZ() const {return fParams[4];}
+  const Float_t GetBField() const {return fParams[5];}
+  const Int_t GetRefMult() const {return (Int_t)fParams[6];}
+  const Int_t GetCentralityID() const {return (Int_t)fParams[7];}
+  const Int_t GetNumberOfPrimaryTracks() const {return (Int_t)fParams[8];}
+  const Int_t GetNumberOfTracks() const {return (Int_t)fParams[9];}
+  const Float_t* GetParams() const {return fParams; }
+
+  const AliStarTrack* GetTrack( const Int_t i ) const;
+  void AddTrack( AliStarTrack* track );
+  void Reset();
+
+  void SetRunID( const Int_t p )  { fParams[0]=(Float_t)p;}
+  void SetEventNumber( const Int_t p )  { fParams[1]=(Float_t)p;}
+  void SetVtxX( const Float_t p )  { fParams[2]=p;}
+  void SetVtxY( const Float_t p )  { fParams[3]=p;}
+  void SetVtxZ( const Float_t p )  { fParams[4]=p;}
+  void SetBField( const Float_t p )  { fParams[5]=p;}
+  void SetRefMult( const Int_t p )  { fParams[6]=(Float_t)p;}
+  void SetCentralityID( const Int_t p )  { fParams[7]=(Float_t)p;}
+  void SetNumberOfPrimaryTracks( const Int_t p )  { fParams[8]=(Float_t)p;}
+  void SetNumberOfTracks( const Int_t p )  { fParams[9]=(Float_t)p;}
+  void SetParams( const Float_t* params );
+
+  ClassDef(AliStarEvent,1)         // Base class
+
+};
+
+#endif
+
