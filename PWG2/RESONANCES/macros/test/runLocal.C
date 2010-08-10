@@ -26,13 +26,12 @@
 //
 void runLocal
 (
-  Int_t       nReadFiles  = 0,
+  Int_t       nReadFiles  = 1,
   Int_t       nSkipFiles  = 0,
   const char *addTaskName = "AddAnalysisTaskRsnTest.C",
-  //const char *inputSource = "000117065.xml",
-  const char *inputSource = "/home/pulvir/analysis/resonances/LHC2010-7TeV-phi/test/data.txt",
-  const char *dataLabel   = "7TeV_pass2_data_ESD",
-  const char *outName     = "rsnTest"
+  const char *inputSource = "/home/pulvir/analysis/resonances/LHC2010-7TeV-phi/test/sim.txt",
+  const char *dataLabel   = "7TeV_pass2_sim_ESD",
+  const char *outName     = "rsn-test"
 )
 {
   
@@ -43,6 +42,9 @@ void runLocal
   Bool_t isSim = strDataLabel.Contains("sim");   
   
   //AliLog::SetGlobalDebugLevel(AliLog::kDebug+1);
+  //AliLog::SetClassDebugLevel("AliRsnCutPID", AliLog::kDebug+2);
+  //AliLog::SetClassDebugLevel("AliRsnPair", AliLog::kDebug+2);
+  //AliLog::SetClassDebugLevel("AliRsnPairFunctions", AliLog::kDebug+2);
 
   // check extension of input to distinguish between XML and TXT
   TString sInput(inputSource);
