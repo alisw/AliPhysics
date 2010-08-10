@@ -38,8 +38,8 @@
 #include "TBrowser.h"
 #include "AliFlowVector.h"
 #include "AliFlowTrackSimple.h"
-#include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimpleCuts.h"
+#include "AliFlowEventSimple.h"
 #include "TRandom.h"
 
 ClassImp(AliFlowEventSimple)
@@ -120,6 +120,7 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
 AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEvent)
 {
   //assignment operator
+  if (fTrackCollection) fTrackCollection->Delete();
   delete fTrackCollection;
   fTrackCollection = (TObjArray*)(anEvent.fTrackCollection)->Clone(); //deep copy
   fReferenceMultiplicity = anEvent.fReferenceMultiplicity;
@@ -157,9 +158,12 @@ void AliFlowEventSimple::Generate(Int_t nParticles,
   //according to the specified pt distribution
   for (Int_t i=0; i<nParticles; i++)
   {
-    AddTrack(new AliFlowTrackSimple( gRandom->Uniform(phiMin,phiMax),
-                                     gRandom->Uniform(etaMin,etaMax),
-                                     ptDist->GetRandom(),1.));
+    AliFlowTrackSimple* track = new AliFlowTrackSimple();
+    track->SetPhi( gRandom->Uniform(phiMin,phiMax) );
+    track->SetEta( gRandom->Uniform(etaMin,etaMax) );
+    track->SetPt( ptDist->GetRandom() );
+    track->SetCharge( (gRandom->Uniform()-0.5<0)?-1:1 );
+    AddTrack(track);
   }
 }
 
@@ -250,7 +254,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
         dPhi = pTrack->Phi();
         dPt  = pTrack->Pt();
         dEta = pTrack->Eta();
-	dWeight = pTrack->Weight();
+	      dWeight = pTrack->Weight();
 
         // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
         if(phiWeights && nBinsPhi)
@@ -620,11 +624,12 @@ void AliFlowEventSimple::TagRP( AliFlowTrackSimpleCuts* cuts )
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (!track) continue;
-    if (cuts->PassesCuts(track)) 
-    {
-      track->SetForRPSelection();
+    Bool_t pass=cuts->PassesCuts(track);
+    track->SetForRPSelection(pass);
+    if (pass) 
       fNumberOfRPs++;
-    }
+    else
+      fNumberOfRPs--;
   }
 }
 
@@ -636,7 +641,8 @@ void AliFlowEventSimple::TagPOI( AliFlowTrackSimpleCuts* cuts )
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (!track) continue;
-    if (cuts->PassesCuts(track)) track->SetForPOISelection();
+    Bool_t pass=cuts->PassesCuts(track);
+    track->SetForPOISelection(pass);
   }
 }
 
