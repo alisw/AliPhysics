@@ -47,17 +47,11 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   //
 
   // decay channels
-  AliRsnPairDef         *pairDefpp = new AliRsnPairDef(AliPID::kKaon, '+', AliPID::kKaon, '+', 333, 1.019455);
   AliRsnPairDef         *pairDefpm = new AliRsnPairDef(AliPID::kKaon, '+', AliPID::kKaon, '-', 333, 1.019455);
-  AliRsnPairDef         *pairDefmm = new AliRsnPairDef(AliPID::kKaon, '-', AliPID::kKaon, '-', 333, 1.019455);
 
   // computation objects
   AliRsnPairFunctions   *pairPMhist = new AliRsnPairFunctions("pairPMHist", pairDefpm);
-  AliRsnPairFunctions   *pairPPhist = new AliRsnPairFunctions("pairPPHist", pairDefpp);
-  AliRsnPairFunctions   *pairMMhist = new AliRsnPairFunctions("pairMMHist", pairDefmm);
   AliRsnPairNtuple      *pairPMntp  = new AliRsnPairNtuple   ("pairPMNtp" , pairDefpm);
-  AliRsnPairNtuple      *pairPPntp  = new AliRsnPairNtuple   ("pairPPNtp" , pairDefpp);
-  AliRsnPairNtuple      *pairMMntp  = new AliRsnPairNtuple   ("pairMMNtp" , pairDefmm);
 
   //
   // -- Setup cuts ----------------------------------------------------------------------------------
@@ -69,9 +63,9 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   // ----> set the flag for sim/data management
   cuts2010->SetMC(isSim);
   // ----> require to check PID
-  cuts2010->SetCheckITS(kTRUE);
-  cuts2010->SetCheckTPC(kTRUE);
-  cuts2010->SetCheckTOF(kTRUE);
+  cuts2010->SetCheckITS(kFALSE);
+  cuts2010->SetCheckTPC(kFALSE);
+  cuts2010->SetCheckTOF(kFALSE);
   // ----> set TPC ranges and calibration
   cuts2010->SetTPCrange(5.0, 3.0);
   cuts2010->SetTPCpLimit(0.35);
@@ -119,106 +113,44 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   }
   cuts2010->Initialize();
   
-  // -- tracks --> TPC global tracks selection
-  AliRsnCutDaughterType *cutTypeTPC = new AliRsnCutDaughterType("cutTypeTPC", AliRsnCutDaughterType::kTrackTPC);
+  // -- tracks --> PID
+  AliRsnCutPID *cutPID = new AliRsnCutPID("cutPID", AliPID::kKaon, 0.0, kTRUE);
   
-  // -- tracks --> ITS standalone tracks selection
-  AliRsnCutDaughterType *cutTypeITS = new AliRsnCutDaughterType("cutTypeITS", AliRsnCutDaughterType::kTrackITSSA);
-  
-  // -- tracks --> primarity/quality (global tracks)
-  AliRsnCutESDPrimary *cutQualityTPC = new AliRsnCutESDPrimary("cutQualityTPC");
-  cutQualityTPC->GetCuts()->SetRequireTPCStandAlone(kTRUE);
-  cutQualityTPC->GetCuts()->SetMinNClustersTPC(70);
-  cutQualityTPC->GetCuts()->SetAcceptKinkDaughters(kFALSE);
-  cutQualityTPC->GetCuts()->SetRequireTPCRefit(kTRUE);
-  cutQualityTPC->GetCuts()->SetRequireITSRefit(kTRUE);
-  cutQualityTPC->GetCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  cutQualityTPC->GetCuts()->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9"); // DCA pt dependent: 7*(0.0050+0.0060/pt0.9)
-  cutQualityTPC->GetCuts()->SetMaxDCAToVertexZ(1e6);
-  cutQualityTPC->GetCuts()->SetDCAToVertex2D(kFALSE);
-  cutQualityTPC->GetCuts()->SetRequireSigmaToVertex(kFALSE);
-  
-  // -- tracks --> primary/quality (ITS standalone)
-  AliRsnCutESDPrimary *cutQualityITS = new AliRsnCutESDPrimary("cutQualityITS");
-  cutQualityITS->GetCuts()->SetRequireITSStandAlone(kTRUE);
-  //cutQualityITS->GetCuts()->SetRequireITSPureStandAlone(kFALSE);
-  cutQualityITS->GetCuts()->SetRequireITSRefit(kTRUE); 
-  cutQualityITS->GetCuts()->SetMinNClustersITS(4);
-  cutQualityITS->GetCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  cutQualityITS->GetCuts()->SetMaxChi2PerClusterITS(1.);
-  cutQualityITS->GetCuts()->SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55");
-  //cutQualityITS->GetCuts()->SetRequireITSPid(kTRUE);
-  
-  // -- tracks --> realistic PID
-  AliRsnCutPID *cutPID = new AliRsnCutPID("cutPIDKaon", AliPID::kKaon, 0.9);
-  cutPID->SetPrior(AliPID::kElectron, 0.02);
-  cutPID->SetPrior(AliPID::kMuon,     0.02);
-  cutPID->SetPrior(AliPID::kPion,     0.83);
-  cutPID->SetPrior(AliPID::kKaon,     0.07);
-  cutPID->SetPrior(AliPID::kProton,   0.06);
-  
-  // -- pairs --> window in eta
-  AliRsnCutStd *cutEtaPair = new AliRsnCutStd("cutEtaPair", AliRsnCut::kMother, AliRsnCutStd::kEta, -0.9,  0.9);
-   
   // cut sets
   AliRsnCutSet *cutSetDaughterCommon = new AliRsnCutSet("commonDaughterCuts", AliRsnCut::kDaughter);
-  AliRsnCutSet *cutSetMother         = new AliRsnCutSet("motherCuts"        , AliRsnCut::kMother);
 
   // --> add related cuts
   cutSetDaughterCommon->AddCut(cuts2010);
-  cutSetDaughterCommon->AddCut(cutTypeITS);
-  cutSetDaughterCommon->AddCut(cutTypeTPC);
-  cutSetDaughterCommon->AddCut(cutQualityITS);
-  cutSetDaughterCommon->AddCut(cutQualityTPC);
   cutSetDaughterCommon->AddCut(cutPID);
-  cutSetMother        ->AddCut(cutEtaPair);
+
   // --> define schemes
-  cutSetDaughterCommon->SetCutScheme("cuts2010");
-  cutSetMother        ->SetCutScheme("");
+  cutSetDaughterCommon->SetCutScheme("cuts2010&cutPID");
    
   // cut managers
   // define a proper name for each mult bin, to avoid omonyme output histos
   pairPMhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  pairPPhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  pairMMhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  //pairPMhist->GetCutManager()->SetMotherCuts        (cutSetMother);
   pairPMntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  pairPPntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  pairMMntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  //pairPMntp ->GetCutManager()->SetMotherCuts        (cutSetMother);
 
   // function axes
-  AliRsnValue *axisIM        = new AliRsnValue("IM", AliRsnValue::kPairInvMass,        50,  0.9,  1.4);
-  AliRsnValue *axisPt        = new AliRsnValue("PT", AliRsnValue::kPairPt,             50,  0.0, 20.0);
-  AliRsnValue *axisThetaStar = new AliRsnValue("TS", AliRsnValue::kPairCosThetaStar1, 200, -1.0, 1.0);
-  
-  pairPMntp->AddValue(axisIM);
-  pairPMntp->AddValue(axisPt);
-  pairPMntp->AddValue(axisThetaStar);
-  pairPPntp->AddValue(axisIM);
-  pairPPntp->AddValue(axisPt);
-  pairPPntp->AddValue(axisThetaStar);
-  pairMMntp->AddValue(axisIM);
-  pairMMntp->AddValue(axisPt);
-  pairMMntp->AddValue(axisThetaStar);
+  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass,        50,  0.9,  1.4);
+  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt,             50,  0.0, 20.0);
 
-  // functions
+  // functions for TH1-like output
   AliRsnFunction *fcnPt    = new AliRsnFunction;
   // --> add axes
   fcnPt   ->AddAxis(axisIM);
   fcnPt   ->AddAxis(axisPt);
   
+  // add functions to TH1-like output
   pairPMhist->AddFunction(fcnPt);
-  pairPPhist->AddFunction(fcnPt);
-  pairMMhist->AddFunction(fcnPt);
   
-  // add everything to pair manager
+  // add values to TNtuple-like output
+  pairPMntp->AddValue(axisIM);
+  pairPMntp->AddValue(axisPt);
+  
+  // add everything to analysis manager
   task->GetAnalysisManager()->Add(pairPMhist);
-  task->GetAnalysisManager()->Add(pairPPhist);
-  task->GetAnalysisManager()->Add(pairMMhist);
-  task->GetAnalysisManager()->Add(pairPMntp);
-  task->GetAnalysisManager()->Add(pairPPntp);
-  task->GetAnalysisManager()->Add(pairMMntp);
+  //task->GetAnalysisManager()->Add(pairPMntp);
 
   return kTRUE;
 }

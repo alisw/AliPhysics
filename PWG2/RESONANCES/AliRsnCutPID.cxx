@@ -239,7 +239,7 @@ Int_t AliRsnCutPID::PerfectPID(AliRsnDaughter * const daughter)
   
   // get the PDG code of the particle
   TParticle *part = daughter->GetRefMC()->Particle();
-  Int_t      pdg  = part->GetPdgCode();
+  Int_t      pdg  = TMath::Abs(part->GetPdgCode());
   
   // loop over all species listed in AliPID to find the match
   Int_t i;

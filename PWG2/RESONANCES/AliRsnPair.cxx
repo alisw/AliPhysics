@@ -129,13 +129,29 @@ Bool_t AliRsnPair::Fill
     
   // cuts on track #1 & common
   fCutManager.SetEvent(ev0);
-  if (!fCutManager.PassDaughter1Cuts(daughter0)) return kFALSE;
-  if (!fCutManager.PassCommonDaughterCuts(daughter0)) return kFALSE;
+  if (!fCutManager.PassDaughter1Cuts(daughter0)) 
+  {
+    AliDebug(AliLog::kDebug+2, "Specific cuts for track #1 not passed");
+    return kFALSE;
+  }
+  if (!fCutManager.PassCommonDaughterCuts(daughter0))
+  {
+    AliDebug(AliLog::kDebug+2, "Common cuts for track #1 not passed");
+    return kFALSE;
+  }
   
   // cuts on track #2 & common
   fCutManager.SetEvent(ev1);
-  if (!fCutManager.PassDaughter2Cuts(daughter1)) return kFALSE;
-  if (!fCutManager.PassCommonDaughterCuts(daughter1)) return kFALSE;
+  if (!fCutManager.PassDaughter2Cuts(daughter1))
+  {
+    AliDebug(AliLog::kDebug+2, "Specific cuts for track #2 not passed");
+    return kFALSE;
+  }
+  if (!fCutManager.PassCommonDaughterCuts(daughter1))
+  {
+    AliDebug(AliLog::kDebug+2, "Common cuts for track #2 not passed");
+    return kFALSE;
+  }
   
   // point to first event as reference
   fEvent = ev0;
