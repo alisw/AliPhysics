@@ -43,7 +43,9 @@ class AliRsnEvent : public TObject
     Int_t            GetMultiplicity();
     
     Bool_t           SetDaughter(AliRsnDaughter &daughter, Int_t index, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
+    Bool_t           SetDaughterMC(AliRsnDaughter &daughter, Int_t index);
     AliRsnDaughter   GetDaughter(Int_t i, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
+    AliRsnDaughter   GetDaughterMC(Int_t i);
     
     Int_t            SelectLeadingParticle(Double_t ptMin = 0.0, AliRsnCutPID *cutPID = 0x0);
     Int_t            GetLeadingParticleID() {return fLeading;}

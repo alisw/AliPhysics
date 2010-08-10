@@ -146,7 +146,8 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
 
   // the virtual class has already sorted tracks in the PID index
   // so we need here just to call the execution of analysis
-  fRsnAnalysisManager.ProcessAllPairs(&fRsnEvent, &fRsnEvent);
+  if (!fMCOnly) fRsnAnalysisManager.ProcessAllPairs(&fRsnEvent, &fRsnEvent);
+  else fRsnAnalysisManager.ProcessAllPairsMC(&fRsnEvent, &fRsnEvent);
   PostData(2, fOutList);
 
   AliDebug(AliLog::kDebug+2,"->");

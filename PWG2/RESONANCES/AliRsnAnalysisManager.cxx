@@ -21,6 +21,7 @@
 
 #include "AliLog.h"
 #include "AliVEvent.h"
+#include "AliMCEvent.h"
 #include "AliRsnEvent.h"
 #include "AliRsnPair.h"
 #include "AliRsnAnalysisManager.h"
@@ -179,3 +180,65 @@ void AliRsnAnalysisManager::ProcessAllPairs(AliRsnEvent *ev0, AliRsnEvent *ev1)
 
   AliDebug(AliLog::kDebug+2,"->");
 }
+
+//_____________________________________________________________________________
+void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1)
+{
+//
+// Process one or two events for all pair managers.
+//
+
+  AliDebug(AliLog::kDebug+2,"<-");
+  
+  if (!ev1) ev1 = ev0;
+  
+  Int_t nTracks[2];
+  nTracks[0] = ev0->GetRefMC()->GetNumberOfTracks();
+  nTracks[1] = ev1->GetRefMC()->GetNumberOfTracks();
+  
+  // external loop
+  // joins the loop on tracks and v0s, by looping the indexes from 0
+  // to the sum of them, and checking what to take depending of its value
+  Int_t          i0, i1, i;
+  AliRsnDaughter daughter0, daughter1;
+  AliRsnPair    *pair = 0x0;
+  TObjArrayIter  next(&fPairs);
+  
+  for (i0 = 0; i0 < nTracks[0]; i0++)
+  {
+    // assign first track
+    if (i0 < nTracks[0]) ev0->SetDaughter(daughter0, i0, AliRsnDaughter::kTrack);
+    else ev0->SetDaughter(daughter0, i0 - nTracks[0], AliRsnDaughter::kV0);
+        
+    // internal loop (same criterion)
+    for (i1 = 0; i1 < nTracks[1]; i1++)
+    {
+      // if looking same event, skip the case when the two indexes are equal
+      if (ev0 == ev1 && i0 == i1) continue;
+      
+      // assign second track
+      if (i1 < nTracks[1]) ev1->SetDaughter(daughter1, i1, AliRsnDaughter::kTrack);
+      else ev1->SetDaughter(daughter1, i1 - nTracks[1], AliRsnDaughter::kV0);
+      
+      // loop over all pairs and make computations
+      next.Reset();
+      i = 0;
+      while ((pair = (AliRsnPair*)next())) 
+      {
+        AliDebug(AliLog::kDebug+1, Form("ProcessAllPairs of the AnalysisManager(%s) [%d] ...", pair->GetName(), i++));
+        
+        // if the pair is a like-sign, skip the case when i1 < i0,
+        // in order not to double count each like-sign pair
+        // (equivalent to looping from i0+1 to ntracks)
+        if (pair->GetPairDef()->IsLikeSign() && i1 < i0) continue;
+                
+        // process the two tracks
+        if (!pair->Fill(&daughter0, &daughter1, ev0, ev1)) continue;
+        pair->Compute();
+      }
+    }
+  }
+
+  AliDebug(AliLog::kDebug+2,"->");
+}
+

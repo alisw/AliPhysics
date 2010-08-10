@@ -35,7 +35,7 @@ ClassImp(AliRsnFunction)
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction(Bool_t useTH1) :
-    TNamed(),
+    TObject(),
     fPairDef(0x0),
     fAxisList("AliRsnValue", 0),
     fPair(0x0),
@@ -52,7 +52,7 @@ AliRsnFunction::AliRsnFunction(Bool_t useTH1) :
 
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
-    TNamed(copy),
+    TObject(copy),
     fPairDef(copy.fPairDef),
     fAxisList(copy.fAxisList),
     fPair(copy.fPair),
@@ -74,8 +74,8 @@ const AliRsnFunction& AliRsnFunction::operator=(const AliRsnFunction& copy)
 // Assignment operator.
 //
 
-  SetName(copy.GetName());
-  SetTitle(copy.GetTitle());
+  //SetName(copy.GetName());
+  //SetTitle(copy.GetTitle());
 
   fPairDef = copy.fPairDef;
   fPair = copy.fPair;

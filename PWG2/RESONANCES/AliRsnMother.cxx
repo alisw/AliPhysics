@@ -154,37 +154,44 @@ void AliRsnMother::ResetPair()
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnMother::ThetaStar(Bool_t first, Bool_t useMC)
+Double_t AliRsnMother::CosThetaStar(Bool_t first, Bool_t useMC)
 {
-//
-// Returns the theta* as the angle of the first daughter
-// w.r. to the mother momentum, in its rest frame
-//
+  TLorentzVector mother    = (useMC ? fSumMC : fSum);
+  TLorentzVector daughter0 = (first ? fDaughter[0]->P() : fDaughter[1]->P());
+  TLorentzVector daughter1 = (first ? fDaughter[1]->P() : fDaughter[0]->P());
+  TVector3 momentumM          (mother.Vect());
+  //cout << mother.Vect().X() << ' ' << mother.Vect().Y() << ' ' << mother.Vect().Z() << endl;
+  TVector3 normal             (mother.Y()/momentumM.Mag(), -mother.X()/momentumM.Mag(), 0.0);
+  //cout << momentumM.Mag() << ' ' << normal.X() << ' ' << normal.Y() << ' ' << normal.Z() << endl;
 
-  TLorentzVector &mother   = (useMC ? fSumMC : fSum);
-  TLorentzVector &daughter = (first ? fDaughter[0]->P() : fDaughter[1]->P());
-  
-  Double_t theta = mother.Vect().Theta();
-  Double_t phi   = mother.Vect().Phi();
-  Double_t beta  = mother.Beta();
-  
-  Double_t betax = beta * TMath::Sin(theta) * TMath::Cos(phi);
-  Double_t betay = beta * TMath::Sin(theta) * TMath::Sin(phi);
-  Double_t betaz = beta * TMath::Cos(theta);
-  Double_t gamx  = 1.0 / TMath::Sqrt(1.0 - betax*betax);
-  Double_t gamy  = 1.0 / TMath::Sqrt(1.0 - betay*betay);
-  Double_t gamz  = 1.0 / TMath::Sqrt(1.0 - betaz*betaz);
-  
-  Double_t pstarx = gamx * (daughter.Vect().X() - betax * daughter.E());
-  Double_t pstary = gamy * (daughter.Vect().Y() - betay * daughter.E());
-  Double_t pstarz = gamz * (daughter.Vect().Z() - betaz * daughter.E());
-  
-  TVector3 dstar(pstarx, pstary, pstarz);
-  TVector3 vnorm(mother.Vect().Y() / mother.Perp(), mother.Vect().X() / mother.Perp(), 0.0);
-  
-  Double_t cosThetaStar = dstar.Dot(vnorm) / dstar.Mag();
-  
+// Computes first the invariant mass of the mother
+
+  Double_t mass0            = fDaughter[0]->P().M();
+  Double_t mass1            = fDaughter[1]->P().M();
+  Double_t p0               = daughter0.Vect().Mag();
+  Double_t p1               = daughter1.Vect().Mag();
+  Double_t E0               = TMath::Sqrt(mass0*mass0+p0*p0);
+  Double_t E1               = TMath::Sqrt(mass1*mass1+p1*p1);
+  Double_t MotherMass       = TMath::Sqrt((E0+E1)*(E0+E1)-(p0*p0+2.0*daughter0.Vect().Dot(daughter1.Vect())+p1*p1));
+  MotherMass = fSum.M();
+
+// Computes components of beta
+
+  Double_t betaX = -mother.X()/mother.E(); //TMath::Sqrt(momentumM.Mag()*momentumM.Mag()+MotherMass*MotherMass);
+  Double_t betaY = -mother.Y()/mother.E(); //TMath::Sqrt(momentumM.Mag()*momentumM.Mag()+MotherMass*MotherMass);
+  Double_t betaZ = -mother.Z()/mother.E(); //TMath::Sqrt(momentumM.Mag()*momentumM.Mag()+MotherMass*MotherMass);
+
+// Computes Lorentz transformation of the momentum of the first daughter
+// into the rest frame of the mother and theta*
+  //cout << "Beta = " << betaX << ' ' << betaY << ' ' << betaZ << endl;
+
+  daughter0.Boost(betaX,betaY,betaZ);
+  TVector3 momentumD = daughter0.Vect();
+
+  Double_t cosThetaStar = normal.Dot(momentumD)/momentumD.Mag();
+
   return cosThetaStar;
+
 }
 
 //_____________________________________________________________________________
