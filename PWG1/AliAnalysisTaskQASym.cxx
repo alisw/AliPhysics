@@ -8,8 +8,6 @@
 #include "TParticle.h"
 #include "TParticlePDG.h"
 #include "TProfile.h"
-#include "TNtuple.h"
-#include "TFile.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -49,7 +47,7 @@ ClassImp(AliAnalysisTaskQASym)
     ,fQPt(0)
     ,fDca(0)
     ,fqRec(0)
-    ,fsigmaPt(0)
+    ,fSigmaPtHist(0)
     
     ,fRecPtPos(0)
     ,fRecPtNeg(0)
@@ -98,12 +96,15 @@ ClassImp(AliAnalysisTaskQASym)
     ,fPhiRec(0)
     ,fThetaRec(0)
     ,fNumber(0)
+    ,fNumberAfterCut(0)
     ,fVx(0)
     ,fVy(0)
     ,fVz(0)
     ,fVertexX(0)
     ,fVertexY(0)
     ,fVertexZ(0)
+    ,fNVertexSPD(0)
+    ,fNVertexTracks(0)
     ,fRecDcaPosPhi(0)
     ,fRecDcaNegPhi(0)
     ,fRecPtPosPhi(0)
@@ -151,8 +152,14 @@ ClassImp(AliAnalysisTaskQASym)
 //    ,fRecDcaPhiPtNegEtaNeg(0)  
 
     ,fEtavPt(0)  
+    ,fPhivPt(0) 
+ 
     ,fCompareTPCparam(0)
+
     ,fITSlayer(0)
+    ,fITSlayerEta(0)
+    ,fITSlayerPhi(0)
+
     ,fCuts(0)
 
 {
@@ -212,14 +219,24 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fEtavPt   = new TH2F("fEtavPt", 
 		       " #eta -p_{T}",
 		       200, -2., 2.,
-		       100, 0, 1.5);
+		       100, -3, 4);
+  fPhivPt   = new TH2F("fPhivPt", 
+		       " #phi -p_{T}",
+		       200, 0, 2*TMath::Pi(),
+		       100, -3, 5);
   fCompareTPCparam   = new TH2F("fCompareTPCparam", 
 				"fCompareTPCparam",
 				100, -1., 1.,100,-5, 5);
 
-  fITSlayer   = new TH1F("fITslayer", 
-			 "fITslayer",
+  fITSlayer   = new TH1F("fITSlayer", 
+			 "fITSlayer",
 			 8, -1.5, 6.5);
+  fITSlayerEta   = new TH2F("fITSlayerEta", 
+			 "fITSlayerEta",
+			    8, -1.5, 6.5, 200, -2.,2.);
+  fITSlayerPhi   = new TH2F("fITSlayerPhi", 
+			    "fITSlayerPhi",
+			    8, -1.5, 6.5, 200, 0,2*TMath::Pi());
   
   fEtaPhi   = new TH2F("fEtaPhi", 
 		       " #eta - #phi",
@@ -233,7 +250,10 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 		       180, 0., 2*TMath::Pi());
   fNumber   = new TH1F("fNumber", 
 		       "number of tracks per event",
-		       200, -0.5, 199.5);
+		       300, -0.5, 299.5);
+  fNumberAfterCut   = new TH1F("fNumberAfterCut", 
+			       "number of tracks per event after cuts",
+			       300, -0.5, 299.5);
   fVx   = new TH1F("fVx", 
 		   "X of first track point",
 		   100, -1., 1.);
@@ -252,6 +272,12 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fVertexZ   = new TH1F("fVertexZ", 
 			"Z of vertex",
 			200, -50., 50.);
+  fNVertexSPD   = new TH1F("fNVertexSPD", 
+			"Number of SPD vertices",
+			10, -0.5, 9.5);
+  fNVertexTracks   = new TH1F("fNVertexTracks", 
+			      "Number of track vertices",
+			      10, -0.5, 9.5);
   
   fEtaPt   = new TH1F("fEtaPt", 
 		      " #eta/p_{T} ",
@@ -270,7 +296,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 		      " charge all reconstructed particle",
 		      21, -9.5, 10.5);
   
-  fsigmaPt    = new TH1F("fsigmaPt",   
+  fSigmaPtHist    = new TH1F("fSigmaPtHist",   
 			 "Log_{10}(#sigma_{p_{T}})",
 			 200, -4., 8.);
 
@@ -830,18 +856,24 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fHists->Add(fHistRECpt);
   fHists->Add(fEta);
   fHists->Add(fEtavPt);
+  fHists->Add(fPhivPt);
   fHists->Add(fCompareTPCparam);
   fHists->Add(fITSlayer);
+  fHists->Add(fITSlayerEta);
+  fHists->Add(fITSlayerPhi);
   fHists->Add(fEtaPhi);
   fHists->Add(fThetaRec);
   fHists->Add(fPhiRec);
   fHists->Add(fNumber);
+  fHists->Add(fNumberAfterCut);
   fHists->Add(fVx);
   fHists->Add(fVy);
   fHists->Add(fVz);
   fHists->Add(fVertexX);
   fHists->Add(fVertexY);
   fHists->Add(fVertexZ);
+  fHists->Add(fNVertexSPD);
+  fHists->Add(fNVertexTracks);
 
   fHists->Add(fEtaPt);
   fHists->Add(fQPt);
@@ -852,7 +884,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fHists->Add(fDiffDcaD);
 
   fHists->Add(fqRec);
-  fHists->Add(fsigmaPt);
+  fHists->Add(fSigmaPtHist);
 
   fHists->Add(fRecPtPos);
   fHists->Add(fRecPtNeg);
@@ -983,7 +1015,6 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 //       h1->Sumw2();
 //     }
 //   }
-  // BKC
 
   TH1::AddDirectory(oldStatus);
 }
@@ -992,6 +1023,9 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
 void AliAnalysisTaskQASym::UserExec(Option_t *) 
 {
+  // QA of global, TPC, ITS and ITS stand alone tracks
+  // exploiting basic symmetries
+
   AliVEvent *event = InputEvent();
   if (!event) {
     Printf("ERROR: Could not retrieve event");
@@ -1017,8 +1051,15 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   Float_t leadingPhi    =   0;//TMath::Pi();
 
 
-  if(event->GetNumberOfTracks()!=0) fNumber->Fill(event->GetNumberOfTracks());
+  //check vertices
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+  Int_t nPileSPDVertices=1+esd->GetNumberOfPileupVerticesSPD(); // also SPD main vertex
+  Int_t nPileTrkVertices=esd->GetNumberOfPileupVerticesTracks();
+  fNVertexSPD->Fill(nPileSPDVertices);
+  fNVertexTracks->Fill(nPileTrkVertices);
 
+  
+  //check primary vertex
   const AliVVertex* vertex = event->GetPrimaryVertex();
   if(vertex->GetNContributors()==0) return;
   Float_t vx = vertex->GetX();
@@ -1031,7 +1072,10 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
   if (TMath::Abs(vz) > 10.) return;
 
+  fNumber->Fill(event->GetNumberOfTracks());
+
   AliESDtrack *tpcP = 0x0;
+  Int_t fNTracksAccepted=0;
 
   for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
     
@@ -1091,6 +1135,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     //___________
     //
   
+
+    fNTracksAccepted++;
  
     if(tpcP->E()>leadingEnergy){
       leadingTrack=iTrack;
@@ -1102,13 +1148,13 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     fqRec->Fill(tpcP->Charge());
   
 
-    Double_t sigmapt = tpcP->GetSigma1Pt2();
-    sigmapt= sqrt(sigmapt);
-    sigmapt= sigmapt *(tpcP->Pt()*tpcP->Pt()); 
+    Double_t fSigmaPt = tpcP->GetSigma1Pt2();
+    fSigmaPt= sqrt(fSigmaPt);
+    fSigmaPt= fSigmaPt *(tpcP->Pt()*tpcP->Pt()); 
 
-    if(TMath::Abs(sigmapt) < 1.e-10) continue;
+    if(TMath::Abs(fSigmaPt) < 1.e-10) continue;
 
-    fsigmaPt->Fill(TMath::Log10(sigmapt));
+    fSigmaPtHist->Fill(TMath::Log10(fSigmaPt));
  
 
     // hits in ITS layer
@@ -1146,12 +1192,12 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
    
    
     //------------------- 
-    Float_t xvertexcor = 0.;
-    Float_t yvertexcor = 0.;
+    Float_t fXVertexCor = 0.;
+    Float_t fYVertexCor = 0.;
 
-    xvertexcor = tpcP->Xv() - vertex->GetX(); // coordinate corrected for vertex position
-    yvertexcor = tpcP->Yv() - vertex->GetY(); // "
-    Double_t sdca = (tpcP->Py()*xvertexcor - tpcP->Px()*yvertexcor)/tpcP->Pt();
+    fXVertexCor = tpcP->Xv() - vertex->GetX(); // coordinate corrected for vertex position
+    fYVertexCor = tpcP->Yv() - vertex->GetY(); // "
+    Double_t fSignedDca = (tpcP->Py()*fXVertexCor - tpcP->Px()*fYVertexCor)/tpcP->Pt();
 
 
     fqPtRec[cas]->Fill(tpcP->Charge()/tpcP->Pt());
@@ -1160,7 +1206,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
     fHistRECpt->Fill(tpcP->Pt());
     fEta->Fill(tpcP->Eta());
-    fEtavPt->Fill(tpcP->Eta(), tpcP->Pt());
+    fEtavPt->Fill(tpcP->Eta(), TMath::Log(tpcP->Pt()));
+    fPhivPt->Fill(tpcP->Phi(), TMath::Log(tpcP->Pt()));
     fEtaPhi->Fill(tpcP->Eta(), phiIn);
     fThetaRec->Fill(tpcP->Theta());
     fPhiRec->Fill(phiIn);
@@ -1171,21 +1218,23 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
     fEtaPt->Fill(tpcP->Eta()/tpcP->Pt());
     fQPt->Fill(tpcP->Charge()/tpcP->Pt());
-    fDca->Fill(sdca);
+    fDca->Fill(fSignedDca);
     fRecQPtPhi->Fill(tpcP->Charge()/tpcP->Pt(), phiIn);
 
-    Float_t xy = 0.;
-    Float_t  z = 0.;
+    Float_t fXY = 0.;
+    Float_t  fZ = 0.;
 
-    tpcP->GetImpactParameters(xy,z);
-    fDiffDcaD->Fill(sdca+xy);
+    tpcP->GetImpactParameters(fXY,fZ);
+    fDiffDcaD->Fill(fSignedDca+fXY);
 
-    if(fTrackType==2) fCompareTPCparam->Fill(z,tpcPin->GetTgl());
+    if(fTrackType==2) fCompareTPCparam->Fill(fZ,tpcPin->GetTgl());
 
     if(fTrackType!=2){//for global and ITS tracks
       for(Int_t itsLayer=0;itsLayer<6;itsLayer++){
 	if(tpcP->HasPointOnITSLayer(itsLayer)){
 	  fITSlayer->Fill(itsLayer);
+	  fITSlayerEta->Fill(itsLayer, tpcP->Eta());
+	  fITSlayerPhi->Fill(itsLayer, tpcP->Phi());
 	}
       }    
     }
@@ -1201,7 +1250,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       
       fRecPhiPosLadder[cas]->Fill(TMath::RadToDeg()*phiIn);
       fRecPhiPosVz->Fill(TMath::RadToDeg()*phiIn,tpcP->Zv());
-      fSignedDcaPosVz->Fill(sdca,tpcP->Zv());
+      fSignedDcaPosVz->Fill(fSignedDca,tpcP->Zv());
 
       fRecEtaPos->Fill(tpcP->Eta());
       fRecEtaPosLadder[cas]->Fill(tpcP->Eta());
@@ -1209,37 +1258,37 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecEtaPosVz->Fill(tpcP->Eta(),tpcP->Zv());
       fRecEtaPtPosVz->Fill(tpcP->Eta()/tpcP->Pt(),tpcP->Zv());
      
-      fRecDcaPos->Fill(sdca);
-      fRecDcaPosPhi->Fill(sdca, phiIn);
+      fRecDcaPos->Fill(fSignedDca);
+      fRecDcaPosPhi->Fill(fSignedDca, phiIn);
       fRecPtPosPhi->Fill(TMath::Log10(tpcP->Pt()), phiIn);
       fRecEtaPtPosPhi->Fill(tpcP->Eta()/tpcP->Pt(), phiIn);
       fRecEtaPosPhi->Fill(tpcP->Eta(), phiIn);
-      fRecDPos->Fill(xy);
-      fSignDcaPos[cas]->Fill(sdca);
+      fRecDPos->Fill(fXY);
+      fSignDcaPos[cas]->Fill(fSignedDca);
     
      
-      fDcaSigmaPos[cas]->Fill(sdca, TMath::Log10(sigmapt));
+      fDcaSigmaPos[cas]->Fill(fSignedDca, TMath::Log10(fSigmaPt));
     
-      fPtSigmaPos[cas]->Fill(TMath::Log10(sigmapt));
+      fPtSigmaPos[cas]->Fill(TMath::Log10(fSigmaPt));
       //pos eta
       if(tpcP->Eta()>0){
 	fRecPtPosEtaPos->Fill(tpcP->Pt());
 	fRec1PtPosEtaPos->Fill(1/tpcP->Pt());
 	fRecPhiPosEtaPos->Fill(phiIn);
-	fRecDcaPosPhiEtaPos->Fill(sdca, phiIn);
-	fRecDcaPosPtEtaPos->Fill(sdca, TMath::Log10(tpcP->Pt()));
+	fRecDcaPosPhiEtaPos->Fill(fSignedDca, phiIn);
+	fRecDcaPosPtEtaPos->Fill(fSignedDca, TMath::Log10(tpcP->Pt()));
 	fRecPtPosPhiEtaPos->Fill(TMath::Log10(tpcP->Pt()), phiIn);
-	//fRecDcaPhiPtPosEtaPos->Fill(phiIn, tpcP->Pt(), sdca);
+	//fRecDcaPhiPtPosEtaPos->Fill(phiIn, tpcP->Pt(), fSignedDca);
       }
       //neg eta
       else{
 	fRecPtPosEtaNeg->Fill(tpcP->Pt());
 	fRec1PtPosEtaNeg->Fill(1/tpcP->Pt());
 	fRecPhiPosEtaNeg->Fill(phiIn);
-	fRecDcaPosPhiEtaNeg->Fill(sdca, phiIn);
-	fRecDcaPosPtEtaNeg->Fill(sdca, TMath::Log10(tpcP->Pt()));
+	fRecDcaPosPhiEtaNeg->Fill(fSignedDca, phiIn);
+	fRecDcaPosPtEtaNeg->Fill(fSignedDca, TMath::Log10(tpcP->Pt()));
 	fRecPtPosPhiEtaNeg->Fill(TMath::Log10(tpcP->Pt()), phiIn);
-	//fRecDcaPhiPtPosEtaNeg->Fill(phiIn, tpcP->Pt(), sdca);
+	//fRecDcaPhiPtPosEtaNeg->Fill(phiIn, tpcP->Pt(), fSignedDca);
       }
       
     }
@@ -1252,7 +1301,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecPhiNeg->Fill(TMath::RadToDeg()*phiIn);
       fRecPhiNegLadder[cas]->Fill(TMath::RadToDeg()*phiIn);
       fRecPhiNegVz->Fill(TMath::RadToDeg()*phiIn,tpcP->Zv());
-      fSignedDcaNegVz->Fill(sdca,tpcP->Zv());
+      fSignedDcaNegVz->Fill(fSignedDca,tpcP->Zv());
       fRecEtaPtNegVz->Fill(tpcP->Eta()/tpcP->Pt(),tpcP->Zv());
 
       fRecEtaNeg->Fill(tpcP->Eta());
@@ -1260,40 +1309,40 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecEtaPtNeg->Fill(tpcP->Eta()/tpcP->Pt());
       fRecEtaNegVz->Fill(tpcP->Eta(),tpcP->Zv());
      
-      fRecDcaNeg->Fill(sdca);
-      fRecDcaNegInv->Fill(-sdca);
-      fRecDcaNegPhi->Fill(sdca, phiIn);
+      fRecDcaNeg->Fill(fSignedDca);
+      fRecDcaNegInv->Fill(-fSignedDca);
+      fRecDcaNegPhi->Fill(fSignedDca, phiIn);
       fRecPtNegPhi->Fill(TMath::Log10(tpcP->Pt()), phiIn);
       fRecEtaNegPhi->Fill(tpcP->Eta(), phiIn);
       fRecEtaPtNegPhi->Fill(tpcP->Eta()/tpcP->Pt(), phiIn);
-      fRecDNeg->Fill(xy);
-      fSignDcaNeg[cas]->Fill(sdca);
-      fSignDcaNegInv[cas]->Fill(-sdca);
+      fRecDNeg->Fill(fXY);
+      fSignDcaNeg[cas]->Fill(fSignedDca);
+      fSignDcaNegInv[cas]->Fill(-fSignedDca);
      
      
-      fDcaSigmaNeg[cas]->Fill(sdca,TMath::Log10(sigmapt));
+      fDcaSigmaNeg[cas]->Fill(fSignedDca,TMath::Log10(fSigmaPt));
    
-      fPtSigmaNeg[cas]->Fill(TMath::Log10(sigmapt));
+      fPtSigmaNeg[cas]->Fill(TMath::Log10(fSigmaPt));
       
       //pos eta
       if(tpcP->Eta()>0){
 	fRecPtNegEtaPos->Fill(tpcP->Pt());
 	fRec1PtNegEtaPos->Fill(1/tpcP->Pt());
 	fRecPhiNegEtaPos->Fill(phiIn);
-	fRecDcaNegPhiEtaPos->Fill(sdca, phiIn);
-	fRecDcaNegPtEtaPos->Fill(sdca, TMath::Log10(tpcP->Pt()));
+	fRecDcaNegPhiEtaPos->Fill(fSignedDca, phiIn);
+	fRecDcaNegPtEtaPos->Fill(fSignedDca, TMath::Log10(tpcP->Pt()));
 	fRecPtNegPhiEtaPos->Fill(TMath::Log10(tpcP->Pt()), phiIn);
-	//fRecDcaPhiPtNegEtaPos->Fill(phiIn, tpcP->Pt(), sdca);
+	//fRecDcaPhiPtNegEtaPos->Fill(phiIn, tpcP->Pt(), fSignedDca);
       }
       //neg eta
       else{
 	fRecPtNegEtaNeg->Fill(tpcP->Pt());
 	fRec1PtNegEtaNeg->Fill(1/tpcP->Pt());
 	fRecPhiNegEtaNeg->Fill(phiIn);
-	fRecDcaNegPhiEtaNeg->Fill(sdca, phiIn);
-	fRecDcaNegPtEtaNeg->Fill(sdca, TMath::Log10(tpcP->Pt()));
+	fRecDcaNegPhiEtaNeg->Fill(fSignedDca, phiIn);
+	fRecDcaNegPtEtaNeg->Fill(fSignedDca, TMath::Log10(tpcP->Pt()));
 	fRecPtNegPhiEtaNeg->Fill(TMath::Log10(tpcP->Pt()), phiIn);
-	//fRecDcaPhiPtNegEtaNeg->Fill(phiIn, tpcP->Pt(), sdca);
+	//fRecDcaPhiPtNegEtaNeg->Fill(phiIn, tpcP->Pt(), fSignedDca);
       }
 
     }
@@ -1306,8 +1355,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecPtPosEta->Fill(tpcP->Pt());
       fRecPhiPosEta->Fill(TMath::RadToDeg()*phiIn);
       fRecQPtPosEtaVz->Fill(tpcP->Charge()/tpcP->Pt(),tpcP->Zv());
-      fRecDcaPosEta->Fill(sdca);
-      fRecDPosEta->Fill(xy);
+      fRecDcaPosEta->Fill(fSignedDca);
+      fRecDPosEta->Fill(fXY);
     }
     //all particles with negative eta (and eta==0)
     else{
@@ -1315,8 +1364,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       fRecPtNegEta->Fill(tpcP->Pt());
       fRecPhiNegEta->Fill(TMath::RadToDeg()*phiIn);
       fRecQPtNegEtaVz->Fill(tpcP->Charge()/tpcP->Pt(),tpcP->Zv());
-      fRecDcaNegEta->Fill(sdca);
-      fRecDNegEta->Fill(xy);
+      fRecDcaNegEta->Fill(fSignedDca);
+      fRecDNegEta->Fill(fXY);
 
     }
 
@@ -1326,7 +1375,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     fRecEtaTpcSector[Int_t(phiIn*
 			   TMath::RadToDeg()/20)]->Fill(tpcP->Eta());
     fSignedDcaTpcSector[Int_t(phiIn*
-			      TMath::RadToDeg()/20)]->Fill(sdca); 
+			      TMath::RadToDeg()/20)]->Fill(fSignedDca); 
     fRecQPtTpcSector[Int_t(phiIn*
 			   TMath::RadToDeg()/20)]->Fill(tpcP->Charge()/tpcP->Pt());
     fRecEtaPtTpcSector[Int_t(phiIn*
@@ -1360,6 +1409,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     // if(fTrackType==2) delete tpcP; // delete in case of TPCOnlyTrack
 
   }//first track loop
+
+  fNumberAfterCut->Fill(fNTracksAccepted);
 
   //prevent mem leak for TPConly track
   if(fTrackType==2&&tpcP){
