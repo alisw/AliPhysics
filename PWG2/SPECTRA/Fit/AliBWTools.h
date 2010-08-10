@@ -31,19 +31,19 @@ public:
   AliBWTools();
   ~AliBWTools();
 
-  static TH1 * GetOneOverPtdNdPt(TH1 * hPt) ;
-  static TH1 * GetdNdmtFromdNdpt(TH1 * hpt, Double_t mass);
-  static TH1 * GetdNdPtFromOneOverPt(TH1 * h1Pt) ;
+  static TH1 * GetOneOverPtdNdPt(const TH1 * hPt) ;
+  static TH1 * GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass);
+  static TH1 * GetdNdPtFromOneOverPt(const TH1 * h1Pt) ;
 
-  static TGraphErrors * ConcatenateGraphs(TGraphErrors * g1,TGraphErrors * g2); 
-  static TH1F *         GetHistoFromGraph(TGraphErrors * g, TH1F* hTemplate) ;  
-  static TGraphErrors * GetGraphFromHisto(TH1F * h, Bool_t binWidth = kTRUE) ; 
-  static TH1F *         CombineHistos(TH1 * h1, TH1 * h2, TH1* htemplate, Float_t renorm1=1.);
-  static TH1F *         Combine3HistosWithErrors(TH1 * h1,  TH1 * h2,  TH1* h3, 
-						 TH1 * he1, TH1 * he2, TH1 * he3, 
-						 TH1* htemplate, Int_t statFrom = 0, 
+  static TGraphErrors * ConcatenateGraphs(const TGraphErrors * g1,const TGraphErrors * g2); 
+  static TH1F *         GetHistoFromGraph(const TGraphErrors * g, const TH1F* hTemplate) ;  
+  static TGraphErrors * GetGraphFromHisto(const TH1F * h, Bool_t binWidth = kTRUE) ; 
+  static TH1F *         CombineHistos(const TH1 * h1, TH1 * h2, const TH1* htemplate, Float_t renorm1=1.);
+  static TH1F *         Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  const TH1* h3, 
+						 const TH1 * he1, const TH1 * he2, const TH1 * he3, 
+						 const TH1* htemplate, Int_t statFrom = 0, 
 						 Float_t renorm1=1., Float_t renorm2=1., Float_t renorm3=1.);
-  static void GetFromHistoGraphDifferentX(TH1F * h, TF1 * f, TGraphErrors ** gBarycentre, TGraphErrors ** gXlw); 
+  static void GetFromHistoGraphDifferentX(const TH1F * h, TF1 * f, TGraphErrors ** gBarycentre, TGraphErrors ** gXlw); 
   static Float_t GetMean(TH1F * h, Float_t min, Float_t max) ; 
 
   static void GetMean(TF1 * func, Float_t &mean, Float_t &error, Float_t min=0, Float_t max=100);
@@ -51,19 +51,19 @@ public:
 
   static Bool_t Fit (TH1 * h, TF1* f, Float_t min, Float_t max) ;
 
-  static Int_t GetLowestNotEmptyBin(TH1*h);
-  static Int_t GetHighestNotEmptyBin(TH1*h);
-  static Float_t GetLowestNotEmptyBinEdge(TH1*h) { return h->GetBinLowEdge(GetLowestNotEmptyBin(h));}
-  static Float_t GetHighestNotEmptyBinEdge(TH1*h) { return h->GetBinLowEdge(GetHighestNotEmptyBin(h)+1);}
+  static Int_t GetLowestNotEmptyBin(const TH1*h);
+  static Int_t GetHighestNotEmptyBin(const TH1*h);
+  static Float_t GetLowestNotEmptyBinEdge(const TH1*h) { return h->GetBinLowEdge(GetLowestNotEmptyBin(h));}
+  static Float_t GetHighestNotEmptyBinEdge(const TH1*h) { return h->GetBinLowEdge(GetHighestNotEmptyBin(h)+1);}
 
-  static void GetResiduals(TGraphErrors * gdata, TF1 * func, TH1F ** hres, TGraphErrors ** gres) ;
-  static void GetResiduals(TH1F* hdata, TF1 * func, TH1F ** hres, TH1F ** hresVsBin) ;
+  static void GetResiduals(const TGraphErrors * gdata, const TF1 * func, TH1F ** hres, TGraphErrors ** gres) ;
+  static void GetResiduals(const TH1F* hdata, const TF1 * func, TH1F ** hres, TH1F ** hresVsBin) ;
 
   static void GetYield(TH1* h, TF1 * f, Double_t &yield, Double_t &yieldError, Float_t min = 0, 
 		       Float_t max = 100,  Double_t *partialYields=0, Double_t *partialYieldsErrors=0);
 
-  static TGraphErrors * DivideGraphByFunc (TGraphErrors * g, TF1 * f, Bool_t invert = kFALSE);
-  static TGraphErrors * DivideGraphByHisto(TGraphErrors * g, TH1 * h, Bool_t invert = kFALSE);
+  static TGraphErrors * DivideGraphByFunc (const TGraphErrors * g, const TF1 * f, Bool_t invert = kFALSE);
+  static TGraphErrors * DivideGraphByHisto(const TGraphErrors * g, TH1 * h, Bool_t invert = kFALSE);
   static TH1F         * DivideHistoByFunc (TH1F * h, TF1 * f, Bool_t invert = kFALSE);
 
   static void WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr);
@@ -72,7 +72,7 @@ public:
 private:
 
   static void GetMoment(TString name, TString var, TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max) ;
-  static Double_t GetNormalizedFunc(double * x, double* p);
+  static Double_t GetNormalizedFunc(const double * x, const double* p);
 
   static TF1 * fgFuncForNormalized; // Function used in GetNormalizedFunc
 
