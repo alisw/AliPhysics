@@ -181,7 +181,7 @@ private:
   /** Average of ( number of clusters per track ), floored */
   ULong64_t fAvgClusterPerTrack;                                   // see above
 
-  ClassDef(AliHLTTPCRunStatistics, 0);
+  ClassDef(AliHLTTPCRunStatistics, 1);  // Run statistics specific for TPC.
 
 };
 #endif

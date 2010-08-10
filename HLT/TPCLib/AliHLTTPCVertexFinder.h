@@ -52,6 +52,6 @@ class AliHLTTPCVertexFinder:public AliHLTTPCVertexArray {
 
   void SetXYWeight(Double_t f) {fMWxy = f;}
  
-  ClassDef(AliHLTTPCVertexFinder,1)  // Vertex finder class
+  ClassDef(AliHLTTPCVertexFinder,0)  // Vertex finder class
 };
 #endif

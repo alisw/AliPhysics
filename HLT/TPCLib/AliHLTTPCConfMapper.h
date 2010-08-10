@@ -177,7 +177,7 @@ class AliHLTTPCConfMapper {
 
   Int_t fClusterCutZ;      //Cut for taking out clusters with large Z
 
-  ClassDef(AliHLTTPCConfMapper,2) //Base class for conformal mapping tracking
+  ClassDef(AliHLTTPCConfMapper,0) //Base class for conformal mapping tracking
 };
 
 #endif

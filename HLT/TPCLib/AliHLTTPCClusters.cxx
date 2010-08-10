@@ -20,11 +20,9 @@ using namespace std;
 #include "AliHLTTPCClusters.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-//ClassImp(AliHLTTPCClusters)
+ClassImp(AliHLTTPCClusters)
 
-AliHLTTPCClusters::AliHLTTPCClusters()
-  :
-  AliHLTLogging(),
+AliHLTTPCClusters::AliHLTTPCClusters() :
   fTotalCharge(0),
   fPad(0),
   fTime(0),
@@ -47,9 +45,7 @@ AliHLTTPCClusters::AliHLTTPCClusters()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTTPCClusters::AliHLTTPCClusters(const AliHLTTPCClusters& src)
-  :
-  AliHLTLogging(),
+AliHLTTPCClusters::AliHLTTPCClusters(const AliHLTTPCClusters& src) :
   fTotalCharge(src.fTotalCharge),
   fPad(src.fPad),
   fTime(src.fTime),
@@ -66,7 +62,6 @@ AliHLTTPCClusters::AliHLTTPCClusters(const AliHLTTPCClusters& src)
   fQMax(src.fQMax)
 {
   // see header file for class documentation
-  //HLTInfo("Copy constructor called");
 }
 
 AliHLTTPCClusters& AliHLTTPCClusters::operator=(const AliHLTTPCClusters& src)

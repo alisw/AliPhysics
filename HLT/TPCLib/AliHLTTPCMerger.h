@@ -90,7 +90,7 @@ class AliHLTTPCMerger {
 
   AliHLTTPCTrackArray *fOutTrack;//!
 
-  ClassDef(AliHLTTPCMerger,1) //Merging base class
+  ClassDef(AliHLTTPCMerger,0) //Merging base class
 };
 
 #endif

@@ -63,7 +63,6 @@ private:
   /** assignment operator prohibited */
   AliHLTTPCDigitReader32Bit& operator=(const AliHLTTPCDigitReader32Bit&);
 
-  AliRawReader* fRawReader;                                  //! transient
   AliRawReaderMemory* fRawReaderMemory;                      //! transient
 
   AliAltroRawStreamV3 * fAltroRawStreamV3;                   //! transient
@@ -72,7 +71,7 @@ private:
 
   Bool_t fSkipDataReadingFlag;                                       //! transient
   
-  ClassDef(AliHLTTPCDigitReader32Bit, 1)
+  ClassDef(AliHLTTPCDigitReader32Bit, 0)
     
 };
 #endif

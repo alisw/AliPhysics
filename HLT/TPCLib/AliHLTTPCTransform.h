@@ -238,6 +238,6 @@ class AliHLTTPCTransform {
 
   static void PrintCompileOptions();
   
-  ClassDef(AliHLTTPCTransform,1)
+  ClassDef(AliHLTTPCTransform,0)
 };
 #endif

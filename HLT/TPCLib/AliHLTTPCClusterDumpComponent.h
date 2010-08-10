@@ -67,7 +67,7 @@ class AliHLTTPCClusterDumpComponent : public AliHLTFileWriter {
   /** slice */
   //Int_t fSlice;                                                    //! transient
 
-  ClassDef(AliHLTTPCClusterDumpComponent, 1);
+  ClassDef(AliHLTTPCClusterDumpComponent, 0);
 };
 
 #endif

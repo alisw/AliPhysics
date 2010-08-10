@@ -119,6 +119,6 @@ class AliHLTTPCHWCFDataReverterComponent : public AliHLTProcessor
       /** Flag to check if one should interleave the data */
       Bool_t fInterleave;
 
-      ClassDef(AliHLTTPCHWCFDataReverterComponent, 1)
+      ClassDef(AliHLTTPCHWCFDataReverterComponent, 0)
 };
 #endif

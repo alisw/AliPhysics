@@ -235,7 +235,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	static const char* fgkOCDBEntryDecoder; //!transient
 	static const char* fgkOCDBEntry32Bit; //!transient
 
-	ClassDef(AliHLTTPCClusterFinderComponent, 8)
+	ClassDef(AliHLTTPCClusterFinderComponent, 0)
 
 };
 #endif

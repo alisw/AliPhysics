@@ -197,6 +197,6 @@ public:
   /** row offset according to scheme A (see class description) */
   Int_t fRowOffset;                                                  //!transient
 
-  ClassDef(AliHLTTPCMapping, 2)
+  ClassDef(AliHLTTPCMapping, 0)
 };
 #endif // ALIHLTTPCMAPPING_H

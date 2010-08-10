@@ -53,7 +53,7 @@ class AliHLTTPCConfMapFit {
   AliHLTTPCConfMapTrack *fTrack; //!
   AliHLTTPCVertex *fVertex; //!
   
-  ClassDef(AliHLTTPCConfMapFit,1) //Conformal mapping fit class
+  ClassDef(AliHLTTPCConfMapFit,0) //Conformal mapping fit class
 };
 
 #endif // ALIHLTTPCCONFMAPFIT_H

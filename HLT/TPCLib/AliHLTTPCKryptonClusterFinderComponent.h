@@ -80,6 +80,6 @@ class AliHLTTPCKryptonClusterFinderComponent : public AliHLTProcessor
 
 	AliHLTUInt32_t fSpecification;
 
-	ClassDef(AliHLTTPCKryptonClusterFinderComponent, 1)
+	ClassDef(AliHLTTPCKryptonClusterFinderComponent, 0)
 };
 #endif

@@ -295,6 +295,6 @@ class AliHLTTPCMemHandler {
                       UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
 
 
-  ClassDef(AliHLTTPCMemHandler,1) // Memory handler class
+  ClassDef(AliHLTTPCMemHandler,0) // Memory handler class
 };
 #endif

@@ -158,7 +158,7 @@ private:
 
   Int_t fPatch;
 
-  ClassDef(AliHLTTPCDigitReaderUnpacked, 1)
+  ClassDef(AliHLTTPCDigitReaderUnpacked, 0)
 };
 #endif
 

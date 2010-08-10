@@ -42,7 +42,7 @@ class AliHLTTPCInterMerger : public AliHLTTPCMerger {
   Int_t fRowMin; // min row
   Int_t fRowMax; // max row
 
-  ClassDef(AliHLTTPCInterMerger,1) //Intermerging class
+  ClassDef(AliHLTTPCInterMerger,0) //Intermerging class
 };
 
 #endif

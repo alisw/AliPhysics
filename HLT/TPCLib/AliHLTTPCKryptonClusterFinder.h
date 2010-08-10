@@ -83,6 +83,6 @@ class AliHLTTPCKryptonClusterFinder : public AliHLTTPCClusterFinder {
 
   AliHLTUInt32_t fMaxOutputSize;                                   //! transient
   
-  ClassDef(AliHLTTPCKryptonClusterFinder,2) //TPC Krypton cluster finder
+  ClassDef(AliHLTTPCKryptonClusterFinder,0) //TPC Krypton cluster finder
 };
 #endif

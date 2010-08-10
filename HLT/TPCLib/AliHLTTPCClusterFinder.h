@@ -300,6 +300,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID) const;
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,11) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder, 0) //Fast cluster finder
 };
 #endif

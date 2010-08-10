@@ -90,7 +90,7 @@ private:
   static AliAltroDecoder* fgpFreeInstance;                         //! transient
   static AliAltroDecoder* fgpIssuedInstance;                       //! transient
   
-  ClassDef(AliHLTTPCDigitReaderDecoder, 3)
+  ClassDef(AliHLTTPCDigitReaderDecoder, 0)
     
 };
 #endif

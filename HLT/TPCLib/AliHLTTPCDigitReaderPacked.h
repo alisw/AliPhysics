@@ -168,7 +168,7 @@ private:
   /** counter for instances of the reader */
   static Int_t fgObjectCount;                            //! transient
 
-  ClassDef(AliHLTTPCDigitReaderPacked, 4)
+  ClassDef(AliHLTTPCDigitReaderPacked, 0)
 	
 };
 

@@ -49,7 +49,7 @@ class AliHLTTPCFitter {
   AliHLTTPCSpacePointData *fClusters[36][6]; //! clusters
   UInt_t fNcl[36][6]; //                     cluster numbers
  
-  ClassDef(AliHLTTPCFitter,1) //HLT fit class
+  ClassDef(AliHLTTPCFitter,0) //HLT fit class
 };
 
 #endif

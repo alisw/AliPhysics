@@ -141,7 +141,7 @@ private:
   /** the default configuration entry for this component */
   static const char* fgkOCDBEntry; //!transient
 
-  ClassDef(AliHLTTPCTrackHistoComponent, 5);
+  ClassDef(AliHLTTPCTrackHistoComponent, 0);
 
 };
 #endif

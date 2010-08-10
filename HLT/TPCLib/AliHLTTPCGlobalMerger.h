@@ -44,7 +44,7 @@ class AliHLTTPCGlobalMerger : public AliHLTTPCMerger{
   Int_t fFirst;   // first slice?
   Int_t fLast;    // last slice?
 
-  ClassDef(AliHLTTPCGlobalMerger,1) //Slice merger
+  ClassDef(AliHLTTPCGlobalMerger,0) //Slice merger
 };
 
 #endif

@@ -58,7 +58,7 @@ class AliHLTTPCTrackMerger : public AliHLTTPCMerger {
   void SlowMerge(AliHLTTPCTrackArray *mergedtrack,AliHLTTPCTrackArray *tracksin,AliHLTTPCTrackArray *tracksout,Double_t xval);
   Int_t Merge(AliHLTTPCTrackArray *mergedtrack,AliHLTTPCTrackArray *tracksin,AliHLTTPCTrackArray *tracksout);
   
-  ClassDef(AliHLTTPCTrackMerger,1) //Track merging class 
+  ClassDef(AliHLTTPCTrackMerger,0) //Track merging class 
 };
 
 #endif

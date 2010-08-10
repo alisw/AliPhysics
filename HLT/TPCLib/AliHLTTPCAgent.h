@@ -138,7 +138,7 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
   /// handler for {'CLUSTERS':'TPC '}
   AliHLTOUTHandlerChain* fClustersDataHandler; //! transient
 
-  ClassDef(AliHLTTPCAgent, 3);
+  ClassDef(AliHLTTPCAgent, 0);
 };
 
 #endif

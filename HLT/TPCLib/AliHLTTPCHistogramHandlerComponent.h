@@ -134,7 +134,7 @@ private:
   vector<AliHLTHistogramData> fHistogramData;
 
   
-  ClassDef(AliHLTTPCHistogramHandlerComponent, 4)
+  ClassDef(AliHLTTPCHistogramHandlerComponent, 0)
 };
 
 #endif

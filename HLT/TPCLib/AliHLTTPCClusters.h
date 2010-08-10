@@ -7,14 +7,15 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTLogging.h"
+#include "Rtypes.h"
 
-class AliHLTTPCClusters : public AliHLTLogging {
+class AliHLTTPCClusters {
 
  public:
   AliHLTTPCClusters();
   AliHLTTPCClusters(const AliHLTTPCClusters& src);
   AliHLTTPCClusters& operator=(const AliHLTTPCClusters& src);
+  virtual ~AliHLTTPCClusters();
 
   UInt_t fTotalCharge;   //tot charge of cluster
   UInt_t fPad;           //pad value
@@ -30,6 +31,6 @@ class AliHLTTPCClusters : public AliHLTLogging {
   Int_t fFirstPad;       //first pad
   UInt_t fLastPad;       //last pad (aha!!!)
   UInt_t fQMax;          //Max signal in cluster (not the total charge)
-  ClassDef(AliHLTTPCClusters,0) //Fast cluster finder
-    };
+  ClassDef(AliHLTTPCClusters,1) //Fast cluster finder data point.
+};
 #endif //ALIHLTTPCCLUSTERS_H

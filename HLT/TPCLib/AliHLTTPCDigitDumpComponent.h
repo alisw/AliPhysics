@@ -117,7 +117,7 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
   /** flag if 32 bit format is used */
   Bool_t f32BitFormat;
 
-  ClassDef(AliHLTTPCDigitDumpComponent, 3);
+  ClassDef(AliHLTTPCDigitDumpComponent, 0);
 };
 
 #endif

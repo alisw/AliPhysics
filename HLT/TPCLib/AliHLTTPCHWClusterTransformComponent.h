@@ -153,7 +153,7 @@ private:
   AliTPCRecoParam fOfflineTPCRecoParam;       //! transient
   static const char* fgkOCDBEntryHWTransform; //!transient
   
-  ClassDef(AliHLTTPCHWClusterTransformComponent, 4)
+  ClassDef(AliHLTTPCHWClusterTransformComponent, 0)
 };
 
 #endif

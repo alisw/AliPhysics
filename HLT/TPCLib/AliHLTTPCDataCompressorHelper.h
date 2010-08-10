@@ -63,7 +63,7 @@ class AliHLTTPCDataCompressorHelper {
   static Int_t fgClusterCharge; // Cluster charge
 
 
-  ClassDef(AliHLTTPCDataCompressorHelper,1) 
+  ClassDef(AliHLTTPCDataCompressorHelper,0) 
 
 };
 

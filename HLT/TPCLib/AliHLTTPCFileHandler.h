@@ -167,7 +167,7 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
   /** assignment operator prohibited */
   AliHLTTPCFileHandler& operator=(const AliHLTTPCFileHandler&);
 
-  ClassDef(AliHLTTPCFileHandler,2)   //HLT TPC Filehandler IO class
+  ClassDef(AliHLTTPCFileHandler,0)   //HLT TPC Filehandler IO class
 };
 
 #endif

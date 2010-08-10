@@ -257,6 +257,6 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
   /** solenoid b field */
   Double_t fSolenoidBz; //! transient
 
-  ClassDef(AliHLTTPCEsdWriterComponent, 3)
+  ClassDef(AliHLTTPCEsdWriterComponent, 0)
 };
 #endif

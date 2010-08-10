@@ -217,7 +217,7 @@ private:
   /** Average of ( number of clusters per track ), floored */
   Int_t fAvgClusterPerTrack;                                   // see above
 
-  ClassDef(AliHLTTPCEventStatistics, 0);
+  ClassDef(AliHLTTPCEventStatistics, 1);
 
 };
 #endif

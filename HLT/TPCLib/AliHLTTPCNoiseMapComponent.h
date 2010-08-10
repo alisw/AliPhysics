@@ -150,7 +150,7 @@ class AliHLTTPCNoiseMapComponent : public AliHLTProcessor {
      
       TH2 *fHistCDBMap;     //!transient 
            
-      ClassDef(AliHLTTPCNoiseMapComponent, 4)
+      ClassDef(AliHLTTPCNoiseMapComponent, 0)  // HLT component for reading the TPC noise map from HCDB.
     };
 
 #endif
