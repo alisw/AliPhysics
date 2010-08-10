@@ -1,11 +1,10 @@
 /*
 T0 DA for online calibration
  
-Contact: Michal.Oledzki@cern.ch
-Link: http://users.jyu.fi/~mioledzk/
-Run Type: STANDALONE
+Contact: Alla.Maevskaya@cern.ch
+Run Type: AMPLITUDE_CALIBRATION
 DA Type: MON
-Number of events needed: 400000 
+Number of events needed: 5000 
 Input Files: inLaser.dat, external parameters
 Output Files: daLaser.root, to be exported to the DAQ FXS
 Trigger types used: CALIBRATION_EVENT
