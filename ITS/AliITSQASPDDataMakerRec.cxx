@@ -262,7 +262,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   rv = fAliITSQADataMakerRec->Add2RawsList(herrorsAll, kAmoreFoOffset+shift, !expert, image, !saveCorr);
   fSPDhRawsTask++;
 //11-30
-  TH1F **herrors = new TH1F*[20];
+  TH1F * herrors[20];
   for (Int_t iEq=0; iEq<20; iEq++) {
     sprintf(name,"SPDErrors_Eq%d_OnlineSPD",iEq+1);
     sprintf(title,"Error codes - SPD Eq %d",iEq+1);
@@ -285,8 +285,8 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   rv = fAliITSQADataMakerRec->Add2RawsList(hlayer, 0+offset, expert, !image, !saveCorr);
   fSPDhRawsTask++;
 
-  TH1F **hmod = new TH1F*[2];
-  TH2F **hhitMap = new TH2F*[20];
+  TH1F * hmod[2];
+  TH2F * hhitMap[20];
 
   
 // 1-2
@@ -324,7 +324,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
     fSPDhRawsTask++;
     }
 // 25-26
-  TH1F** hMultSPDhits = new TH1F*[2];
+  TH1F * hMultSPDhits[2];
   for (Int_t iLay=0; iLay<2; iLay++) {
     sprintf(name,"SPDHitsMultiplicity_SPD%d",iLay+1);
     sprintf(title,"Hit multiplicity - SPD Layer %d",iLay+1);
@@ -597,7 +597,7 @@ Int_t AliITSQASPDDataMakerRec::InitDigits()
   rv = fAliITSQADataMakerRec->Add2DigitsList(hlayer,fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
   fSPDhDigitsTask++;
   
-  TH1F **hmod = new TH1F*[2];
+  TH1F * hmod[2];
   for (Int_t iLay=0; iLay<2; iLay++) {
     sprintf(name,"SPDModPattern_SPD%d",iLay+1);
     sprintf(title,"Module map - SPD Layer %d",iLay+1);
@@ -620,7 +620,7 @@ Int_t AliITSQASPDDataMakerRec::InitDigits()
   rv = fAliITSQADataMakerRec->Add2DigitsList(hrows,4+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);
   fSPDhDigitsTask++;
   
-  TH1F** hMultSPDdigits = new TH1F*[2];
+  TH1F * hMultSPDdigits[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
     sprintf(name,"SPDDigitMultiplicity_SPD%d",iLay+1);
     sprintf(title,"Digit multiplicity - SPD Layer %d",iLay+1);
@@ -705,19 +705,19 @@ Int_t AliITSQASPDDataMakerRec::InitRecPoints()
   rv = fAliITSQADataMakerRec->Add2RecPointsList(hlayer, 0+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image); 
   fSPDhRecPointsTask++;
 
-  TH1F** hmod = new TH1F*[2];
-  TH1F** hxl  = new TH1F*[2];
-  TH1F** hzl  = new TH1F*[2];
-  TH1F** hxg  = new TH1F*[2];
-  TH1F** hyg  = new TH1F*[2];
-  TH1F** hzg  = new TH1F*[2];
-  TH1F** hr   = new TH1F*[2];
-  TH1F** hphi = new TH1F*[2];
-  TH1F** hMultSPDcl = new TH1F*[2];
-  TH2F** hNyNz    = new TH2F*[2];  // y and z cluster length
-  TH1F** hNpixels = new TH1F*[2];  // cluster size in number of pixels
-  TH1F** hType    = new TH1F*[2];  // cluster type according to conventional table
-  TH2F** hPhiZ    = new TH2F*[2];
+  TH1F * hmod[2];
+  TH1F * hxl[2];
+  TH1F * hzl[2];
+  TH1F * hxg[2];
+  TH1F * hyg[2];
+  TH1F * hzg[2];
+  TH1F * hr[2];
+  TH1F * hphi[2];
+  TH1F * hMultSPDcl[2];
+  TH2F * hNyNz[2];  // y and z cluster length
+  TH1F * hNpixels[2];  // cluster size in number of pixels
+  TH1F * hType[2];  // cluster type according to conventional table
+  TH2F * hPhiZ[2];
 
   Float_t xlim[2]={4.5,8.};
   Float_t zlim[2]={15.,15.};
