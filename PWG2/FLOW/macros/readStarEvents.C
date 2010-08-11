@@ -12,9 +12,10 @@
 
 void  readStarEvents()
 {
-  gROOT->LoadMacro("AliStarTrack.cxx++");
-  gROOT->LoadMacro("AliStarEvent.cxx++");
-  gROOT->LoadMacro("AliStarEventReader.cxx++");
+  gSystem->Load("libTree.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libPhysics.so");
+  gSystem->Load("libPWG2flowCommon");
 
   Long64_t EventCounter = 0 ;
   Int_t    TrackCounter = 0 ;

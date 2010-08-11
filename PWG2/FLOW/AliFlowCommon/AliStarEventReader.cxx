@@ -103,7 +103,7 @@ Bool_t AliStarEventReader::GetNextEvent( )
   {
     while ( NextEntry < entries )
     {
-      Float_t* header ;
+      Float_t* header = NULL;
       Int_t numberOfParticles =  0 ;                   // Number of particle tracks in the next event
       Long64_t HeaderEntry    =  0 ;                   // Store position of Header and Set Flag in case of EOF or error
       Long64_t SkipEvent      =  0 ;                   // Flag in case of wrong number of tracks in this event
@@ -242,10 +242,9 @@ Bool_t AliStarEventReader::AcceptEvent( AliStarEvent* event )
   if ( NumberOfPrimaryTracks <= 0 || NumberOfPrimaryTracks > BlackEvent )  return false ;
 
   // Cut on Vertex location
-  Float_t vertex[3] ;
-  vertex[0] = event->GetVtxX() ;
-  vertex[1] = event->GetVtxY() ;
-  vertex[2] = event->GetVtxZ() ;
+  Float_t vertex[3] = { event->GetVtxX(),
+                        event->GetVtxY(),
+                        event->GetVtxZ() };
 
   if ( vertex[0] < VertexXMin || vertex[0] > VertexXMax )    return false ;  // Skip events that fall outside Vtx cuts
   if ( vertex[1] < VertexYMin || vertex[1] > VertexYMax )    return false ;
@@ -396,14 +395,13 @@ void AliStarEventReader::PrintEventHeader ( )
   //   "runId:eventNumber:VtxX:VtxY:VtxZ:BField:refMult:centralityId:numberOfPrimaryTracks:numberOfParticles:h0:h1:h2:h3:h4" ) ;
   //
   Float_t  *eventhd ;
-  Float_t   primaryVertexPosition[3] ;
   eventhd = fEventHeader->GetArgs() ;
 
   Int_t   runId                  = (int)   eventhd[0]  ;
   Int_t   eventNumber            = (int)   eventhd[1]  ;
-  primaryVertexPosition[0]       = (float) eventhd[2]  ;  // (cm)
-  primaryVertexPosition[1]       = (float) eventhd[3]  ;  // (cm)
-  primaryVertexPosition[2]       = (float) eventhd[4]  ;  // (cm)
+  Float_t   primaryVertexPosition[3] = { (float) eventhd[2],  // (cm)
+                                         (float) eventhd[3],  // (cm)
+                                         (float) eventhd[4] };  // (cm)
   Float_t magneticField          = (float) eventhd[5]  ;  // kilogauss
   Int_t   refMult                = (int)   eventhd[6]  ;  // Raw Mult into 0.5 unit: a relative number, not total Mult.
   Int_t   centralityId           = (int)   eventhd[7]  ;  // STAR centrality bin # based on refMult
@@ -427,13 +425,12 @@ void AliStarEventReader::PrintTrack ( Int_t counter )
   // tracks = new TNtuple("tracks","tracks",
   //   "ID:Charge:Eta:Phi:Pt:Dca:nHits:nHitsFit:nHitsPoss:nHitsDedx:dEdx:nSigElect:nSigPi:nSigK:nSigProton" ) ;
   //
-  Float_t* data ;
   if ( counter == 0 )
   {
     printf(
       "    id charge     eta     phi      pt     dca  nHits  nFit nPoss ndEdx   dEdx nSigElec nSigPi  nSigK nSigPr\n") ;
   }
-  data =  fTracks -> GetArgs()                ;  // Extract data from the track
+  Float_t* data = fTracks -> GetArgs()       ;  // Extract data from the track
   Int_t   id             = (int)   data[0]   ;  // id - a unique integer for each track in this event
   Int_t   charge         = (int)   data[1]   ;  // +1 or -1
   Float_t eta            = (float) data[2]   ;  // Pseudo-rapidity at the vertex
