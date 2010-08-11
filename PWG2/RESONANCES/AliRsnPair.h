@@ -58,7 +58,7 @@ class AliRsnPair : public TNamed
     AliRsnPairDef    *fPairDef;         //  pair definition (particles, charges)
     AliRsnCutManager  fCutManager;      //  collection of all cuts
     AliRsnMother      fMother;          //  mother candidate (to avoid creating it continuously)
-    AliRsnEvent      *fEvent;           //  pointer to current event
+    AliRsnEvent      *fEvent;           //! pointer to current event
     
   private:
 

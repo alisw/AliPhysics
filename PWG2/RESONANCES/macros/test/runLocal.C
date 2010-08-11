@@ -29,7 +29,7 @@ void runLocal
   Int_t       nReadFiles  = 1,
   Int_t       nSkipFiles  = 0,
   const char *addTaskName = "AddAnalysisTaskRsnTest.C",
-  const char *inputSource = "/home/pulvir/analysis/resonances/LHC2010-7TeV-phi/test/sim.txt",
+  const char *inputSource = "/home/pulvir/analysis/resonances/LHC2010-7TeV-phi/rsn-package/sim.txt",
   const char *dataLabel   = "7TeV_pass2_sim_ESD",
   const char *outName     = "rsn-test"
 )
@@ -89,8 +89,8 @@ void runLocal
   }
   
   // add event selection for data
-  gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isSim);
+  //gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  //AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isSim);
   
   // add event selection for data
   //gROOT->LoadMacro("AddTaskAnalysisPhi7TeV.C");
