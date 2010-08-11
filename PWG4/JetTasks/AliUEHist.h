@@ -63,6 +63,7 @@ class AliUEHist : public TObject
   void SetEtaRange(Float_t etaMin, Float_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; }
   void SetPtRange(Float_t ptMin, Float_t ptMax)    { fPtMin = ptMin; fPtMax = ptMax; }
   
+  AliUEHist(const AliUEHist &c);
   AliUEHist& operator=(const AliUEHist& corr);
   virtual void Copy(TObject& c) const;
 

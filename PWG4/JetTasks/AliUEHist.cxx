@@ -39,6 +39,7 @@ ClassImp(AliUEHist)
 const Int_t AliUEHist::fgkCFSteps = 10;
 
 AliUEHist::AliUEHist(const char* reqHist) : 
+  TObject(),
   fkRegions(4),
   fEventHist(0),
   fEtaMin(0),
@@ -173,6 +174,25 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fEventHist->SetVarTitle(1, trackAxisTitle[3]);
   
   SetStepNames(fEventHist);
+}
+
+//_____________________________________________________________________________
+AliUEHist::AliUEHist(const AliUEHist &c) :
+  TObject(),
+  fkRegions(4),
+  fEventHist(0),
+  fEtaMin(0),
+  fEtaMax(0),
+  fPtMin(0),
+  fPtMax(0),
+  fCombineMinMax(0),
+  fCache(0)
+{
+  //
+  // AliUEHist copy constructor
+  //
+
+  ((AliUEHist &) c).Copy(*this);
 }
 
 //____________________________________________________________________
