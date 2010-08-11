@@ -25,6 +25,7 @@
 #include "TPaveText.h"
 #include "StarPPSpectra.C"
 #include "GetE735Ratios.C"
+#include "TString.h"
 #endif
 
 using namespace std;
@@ -143,7 +144,7 @@ Bool_t scaleKaons =  kFALSE;
 Bool_t correctSecondaries  = 1;
 Bool_t correctGeantFlukaXS = 1;
 Int_t iCombInStudy = kCombAll; //kCombTOFTPC
-Int_t analysisType=kDoSuperposition; //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
+Int_t analysisType=kDoFits; //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
 Bool_t showMC=kTRUE;
 Bool_t showE735=kTRUE;
 
@@ -254,7 +255,9 @@ void FitCombined() {
 
       // Get functions
       TF1 * func = 0;
+      Int_t normPar = -1;
       if(fitFuncID == kFitLevi)          {
+	normPar = 0; // The levi is normalized by parameter 0
 	if (ipart == kPion)
 	  func = fm->GetLevi(mass[ipart], 0.12, 7, 1.5);
 	if (ipart == kKaon)
@@ -347,8 +350,8 @@ void FitCombined() {
       table.SetNextCol(yieldAbove/yield,-2);
       Float_t mean, meane;
       Float_t mean2, mean2e;
-      AliBWTools::GetMean      (func, mean,  meane ,0.,100.);
-      AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100.);
+      AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
+      AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
       table.SetNextCol(mean,  meane ,-4);
       table.SetNextCol(mean2, mean2e,-4);
       
@@ -389,7 +392,7 @@ void FitCombined() {
   }
 
   
-  table.PrintTable("");
+  table.PrintTable("ASCII");
   
   cout << "" << endl;
   tempTable.PrintTable("ASCII");
