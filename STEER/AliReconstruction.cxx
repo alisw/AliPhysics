@@ -2032,11 +2032,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // tracks interpreted as primary, this step should be done in the very end, when full 
     // ESD info is available (particulalry, V0s)
     // vertex finder
-    if (fRunMultFinder) {
-      if (!RunMultFinder(fesd)) {
-	if (fStopOnError) {CleanUp(); return kFALSE;}
-      }
-    }
+    if (fRunMultFinder) RunMultFinder(fesd);
 
     // write ESD
     if (fCleanESD) CleanESD(fesd);
@@ -3140,8 +3136,9 @@ AliTrackleter* AliReconstruction::CreateMultFinder()
   if (itsReconstructor && ((fRunLocalReconstruction.Contains("ITS")) || fRunTracking.Contains("ITS"))) {
     trackleter = itsReconstructor->CreateMultFinder();
   }
-  if (!trackleter) {
-    AliWarning("couldn't create a trackleter for ITS");
+  else {
+    AliWarning("ITS is not in reconstruction, switching off RunMultFinder");
+    fRunMultFinder = kFALSE;
   }
 
   return trackleter;
