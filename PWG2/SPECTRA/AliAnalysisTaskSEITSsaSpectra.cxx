@@ -94,7 +94,7 @@ AliAnalysisTaskSEITSsaSpectra::~AliAnalysisTaskSEITSsaSpectra(){
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskSEITSsaSpectra::CookdEdx(Double_t *s){
+Double_t AliAnalysisTaskSEITSsaSpectra::CookdEdx(Double_t *s) const {
   // truncated mean for the dEdx
   Int_t nc=0; 
   Double_t dedx[4]={0.,0.,0.,0.};
@@ -132,7 +132,7 @@ Double_t AliAnalysisTaskSEITSsaSpectra::CookdEdx(Double_t *s){
 
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskSEITSsaSpectra::DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt, Bool_t optMC){
+Bool_t AliAnalysisTaskSEITSsaSpectra::DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt, Bool_t optMC) const {
   // cut on transverse impact parameter updaated on 20-5-2010
   // from the study of L. Milano, F. Prino on the ITS standalone tracks
   // using the common binning of the TPC tracks
@@ -166,14 +166,15 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::DCAcut(Double_t impactXY, Double_t impactZ
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskSEITSsaSpectra::Eta2y(Double_t pt, Double_t m, Double_t eta){
+Double_t AliAnalysisTaskSEITSsaSpectra::Eta2y(Double_t pt, Double_t m, Double_t eta) const {
+  // convert eta to y
   Double_t mt = TMath::Sqrt(m*m + pt*pt);
   return TMath::ASinH(pt/mt*TMath::SinH(eta));
 }
 
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskSEITSsaSpectra::BetheBloch(Double_t bg,Bool_t optMC) {
+Double_t AliAnalysisTaskSEITSsaSpectra::BetheBloch(Double_t bg,Bool_t optMC) const{
   // BB PHOBOS parametrization tuned by G. Ortona on 900 GeV pp data of 2009
   Double_t par[5];
   if(optMC){//Double_t par[5]={139.1,23.36,0.06052,0.2043,-0.0004999};
@@ -201,8 +202,8 @@ Double_t AliAnalysisTaskSEITSsaSpectra::BetheBloch(Double_t bg,Bool_t optMC) {
 
 //________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
-	// Create a TList with histograms and a TNtuple
-	// Called once
+  // Create a TList with histograms and a TNtuple
+  // Called once
 
   fOutput = new TList();
   fOutput->SetOwner();
@@ -334,8 +335,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
 
 //________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
-	// Main loop
-	// Called for each event
+  // Main loop
+  // Called for each event
   
   fESD=(AliESDEvent*)InputEvent();
   if(!fESD) {
@@ -663,8 +664,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 
 //________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
-	// Merge output
-	// Called once at the end of the query
+  // Merge output
+  // Called once at the end of the query
   
   fOutput = dynamic_cast<TList*>(GetOutputData(1));
   if (!fOutput) {
