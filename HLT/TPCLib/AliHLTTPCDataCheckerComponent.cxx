@@ -363,16 +363,18 @@ bool AliHLTTPCDataCheckerComponent::CheckRawDataBlock(
 			{
 				while (fRawStream->NextBunch())
 				{
-					UInt_t startTimeBin = fRawStream->GetStartTimeBin();
-					UInt_t endTimeBin = fRawStream->GetEndTimeBin();
 					Int_t bunchLength = fRawStream->GetBunchLength();
 					const UShort_t* bunchData = fRawStream->GetSignals();
-					cout << "startTimeBin = " << startTimeBin << endl;
-					cout << "endTimeBin = " << endTimeBin << endl;
-					cout << "bunchLength = " << bunchLength << endl;
 					for (Int_t i = 0; i < bunchLength; ++i)
 					{
-						cout << "bunchData[" << i << "] = " << bunchData[i] << endl;
+						if (bunchData[i] <= 0)
+						{
+							HLTWarning("Data signal %d in sector %d row %d pad %d is a strange value %d,"
+								" for data block %d (DDL ID = %d) in event %lld.",
+								i, fRawStream->GetSector(), fRawStream->GetRow(),
+								fRawStream->GetPad(), bunchData[i], index, ddlid, event
+							);
+						}
 					}
 				}
 			}
