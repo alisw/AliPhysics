@@ -42,6 +42,7 @@
 #include "AliVZEROCalibData.h"
 #include "AliRunInfo.h"
 #include "AliCTPTimeParams.h"
+#include "AliLHCClockPhase.h"
 
 ClassImp(AliVZEROReconstructor)
 
@@ -79,12 +80,17 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
   if (!entry3) AliFatal("VZERO time slewing function is not found in OCDB !");
   fTimeSlewing = (TF1*)entry3->GetObject();
 
+  AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
+  if (!entry4) AliFatal("LHC clock-phase shift is not found in OCDB !");
+  AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
+
   for(Int_t i = 0 ; i < 64; ++i) {
     Int_t board = AliVZEROCalibData::GetBoardNumber(i);
     fTimeOffset[i] = (((Float_t)fCalibData->GetTriggerCountOffset(board)-
 			(Float_t)fCalibData->GetRollOver(board))*25.0+
 		       fCalibData->GetTimeOffset(i)-
-		       l1Delay+
+		       l1Delay-
+		       phase->GetMeanPhase()+
 		       delays->GetBinContent(i+1)+
 		       kV0Offset);
   }

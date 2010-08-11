@@ -1171,6 +1171,8 @@ Bool_t AliReconstruction::LoadCDB()
 
   AliCDBManager::Instance()->Get("GRP/CTP/Config");
 
+  AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
+
   TString detStr = fLoadCDB;
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;

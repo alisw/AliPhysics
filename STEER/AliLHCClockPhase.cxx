@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <Riostream.h>
 
 #include "AliLHCClockPhase.h"
 #include "AliDCSValue.h"
@@ -76,4 +77,145 @@ const AliDCSValue* AliLHCClockPhase::GetPhaseB2DP(Int_t index) const
     return NULL;
   }
   return value;
+}
+
+//______________________________________________________________________________
+Float_t AliLHCClockPhase::GetMeanPhaseB1() const
+{
+  // Get mean beam1 phase shift.
+  // The mean is calculated using all the data-points.
+  Int_t n = 0;
+  Float_t phase = 0;
+  for(Int_t i = 0; i < fPhaseB1.GetEntries(); ++i) {
+    AliDCSValue *value = (AliDCSValue*)fPhaseB1.At(i);
+    if (value) {
+      phase += value->GetFloat();
+      ++n;
+    }
+  }
+  if (n == 0) {
+    AliError("No beam1 measurements found! Assuming 0 phase shift!");
+    return 0;
+  }
+  phase /= n;
+  return phase;
+}
+
+//______________________________________________________________________________
+Float_t AliLHCClockPhase::GetMeanPhaseB2() const
+{
+  // Get mean beam2 phase shift.
+  // The mean is calculated using all the data-points.
+  Int_t n = 0;
+  Float_t phase = 0;
+  for(Int_t i = 0; i < fPhaseB2.GetEntries(); ++i) {
+    AliDCSValue *value = (AliDCSValue*)fPhaseB2.At(i);
+    if (value) {
+      phase += value->GetFloat();
+      ++n;
+    }
+  }
+  if (n == 0) {
+    AliError("No beam2 measurements found! Assuming 0 phase shift!");
+    return 0;
+  }
+  phase /= n;
+  return phase;
+}
+
+//______________________________________________________________________________
+Float_t AliLHCClockPhase::GetMeanPhase() const
+{
+  // Get mean phase shift.
+  // Beam1 and beam2 phases are calculated using
+  // all beam1 and beam2 data-points. The two phases are
+  // then averaged in order to get the mean value.
+  return (GetMeanPhaseB1() + GetMeanPhaseB2())/2;
+}
+
+//______________________________________________________________________________
+Float_t AliLHCClockPhase::GetPhaseB1(UInt_t timestamp) const
+{
+  // Get beam1 phase shift using the
+  // event time-stamp as an argument.
+  // This methods loops over data-points and
+  // returns the value of the closest (in time)
+  // measurement found.
+  Long64_t deltat = 0xffffffff;
+  Float_t phase = 0;
+  for(Int_t i = 0; i < fPhaseB1.GetEntries(); ++i) {
+    AliDCSValue *value = (AliDCSValue*)fPhaseB1.At(i);
+    if (value) {
+      if (TMath::Abs((Long64_t)timestamp-(Long64_t)value->GetTimeStamp()) <= deltat) {
+	phase = value->GetFloat();
+	deltat = TMath::Abs((Long64_t)timestamp-(Long64_t)value->GetTimeStamp());
+      }
+    }
+  }
+  if (deltat == 0xffffffff) {
+    AliError(Form("Can't get the beam1 phase shift at time-stamp = %u",timestamp));
+    return 0;
+  }
+  return phase;
+}
+
+//______________________________________________________________________________
+Float_t AliLHCClockPhase::GetPhaseB2(UInt_t timestamp) const
+{
+  // Get beam2 phase shift using the
+  // event time-stamp as an argument.
+  // This methods loops over data-points and
+  // returns the value of the closest (in time)
+  // measurement found.
+  Long64_t deltat = 0xffffffff;
+  Float_t phase = 0;
+  for(Int_t i = 0; i < fPhaseB2.GetEntries(); ++i) {
+    AliDCSValue *value = (AliDCSValue*)fPhaseB2.At(i);
+    if (value) {
+      if (TMath::Abs((Long64_t)timestamp-(Long64_t)value->GetTimeStamp()) <= deltat) {
+	phase = value->GetFloat();
+	deltat = TMath::Abs((Long64_t)timestamp-(Long64_t)value->GetTimeStamp());
+      }
+    }
+  }
+  if (deltat == 0xffffffff) {
+    AliError(Form("Can't get the beam2 phase shift at time-stamp = %u",timestamp));
+    return 0;
+  }
+  return phase;
+}
+
+//______________________________________________________________________________
+Float_t AliLHCClockPhase::GetPhase(UInt_t timestamp) const
+{
+  // Get mean phase shift using the event time-stamp as
+  // an argument.
+  // Beam1 and beam2 phases are calculated using
+  // the closest beam1 and beam2 data-points. The two phases are
+  // then averaged in order to get the mean value.
+  return (GetPhaseB1(timestamp) + GetPhaseB2(timestamp))/2;
+}
+
+//______________________________________________________________________________
+void AliLHCClockPhase::Print( const Option_t* ) const
+{
+  // Print all the data-points for beam1 and beam2
+  // as well as the mean phases
+  cout << "AliLHCClockPhase object:" << endl;
+
+  cout << "Beam1:" << endl;
+  for(Int_t i = 0; i < fPhaseB1.GetEntries(); ++i) {
+    AliDCSValue *value = (AliDCSValue*)fPhaseB1.At(i);
+    if (value) cout << "TS=" << value->GetTimeStamp() << "  " << value->GetFloat() << endl;
+  }
+  cout << "Beam1 mean phase=" << GetMeanPhaseB1() << " ns" << endl;
+
+  cout << "Beam2:" << endl;
+  for(Int_t i = 0; i < fPhaseB2.GetEntries(); ++i) {
+    AliDCSValue *value = (AliDCSValue*)fPhaseB2.At(i);
+    if (value) cout << "TS=" << value->GetTimeStamp() << "  " << value->GetFloat() << endl;
+  }
+  cout << "Beam2 mean phase=" << GetMeanPhaseB2() << " ns" << endl;
+
+  cout << "Mean phase (beam1 & beam2) =" << GetMeanPhase() << " ns" << endl;
 }

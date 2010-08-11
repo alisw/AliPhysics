@@ -47,6 +47,7 @@
 #include "AliCDBEntry.h"
 #include "AliVZEROCalibData.h"
 #include "AliCTPTimeParams.h"
+#include "AliLHCClockPhase.h"
 #include "AliVZEROdigit.h"
 #include "AliVZERODigitizer.h"
 #include "AliVZEROSDigit.h"
@@ -174,6 +175,10 @@ Bool_t AliVZERODigitizer::Init()
   if (!entry2) AliFatal("VZERO time delays are not found in OCDB !");
   TH1F *delays = (TH1F*)entry2->GetObject();
 
+  AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
+  if (!entry3) AliFatal("LHC clock-phase shift is not found in OCDB !");
+  AliLHCClockPhase *phase = (AliLHCClockPhase*)entry3->GetObject();
+
   for(Int_t i = 0 ; i < 64; ++i) {
 
     for(Int_t j = 0; j < kNClocks; ++j) fAdc[i][j] = 0;
@@ -196,7 +201,8 @@ Bool_t AliVZERODigitizer::Init()
     fHptdcOffset[i] = (((Float_t)fCalibData->GetTriggerCountOffset(board)-
 			(Float_t)fCalibData->GetRollOver(board))*25.0+
 		       fCalibData->GetTimeOffset(i)-
-		       l1Delay+
+		       l1Delay-
+		       phase->GetMeanPhase()+
 		       delays->GetBinContent(i+1)+
 		       kV0Offset);
 

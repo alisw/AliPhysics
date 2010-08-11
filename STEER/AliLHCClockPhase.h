@@ -30,8 +30,17 @@ class AliLHCClockPhase : public TObject {
   const AliDCSValue* GetPhaseB1DP(Int_t index) const;
   const AliDCSValue* GetPhaseB2DP(Int_t index) const;
 
+  Float_t  GetMeanPhaseB1() const;
+  Float_t  GetMeanPhaseB2() const;
+  Float_t  GetMeanPhase()   const;
+  Float_t  GetPhaseB1(UInt_t timestamp) const;
+  Float_t  GetPhaseB2(UInt_t timestamp) const;
+  Float_t  GetPhase(UInt_t timestamp)   const;
+
   void     AddPhaseB1DP(UInt_t timestamp, Float_t phase);
   void     AddPhaseB2DP(UInt_t timestamp, Float_t phase);
+
+  virtual void Print( const Option_t* opt ="" ) const;
 
  private:
   AliLHCClockPhase(const AliLHCClockPhase &phase);
