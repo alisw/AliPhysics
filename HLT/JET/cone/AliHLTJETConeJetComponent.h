@@ -37,7 +37,7 @@
  * Library: \b libAliHLTJET.so     <br>
  * Input Data Types: <br>
  *  -  kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT --> class AliHLTMCEvent<br>
- *  -  kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline --> class AliHLTESDEvent <br>
+ *  -  kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline --> class AliHLTESDEvent<br>
  *  -  kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT --> class AliHLTESDEvent<br>
  * Output Data Types: <br>
  *  - kAliHLTDataTypeJet|kAliHLTDataOriginHLT --> class AliHLTJets<br>
@@ -55,17 +55,17 @@
  *       - Possible values : 0, 1 <br>
  *       - Default : 0 <br>
  *
- * \li -coneRadius    <i> Cone radius for cone finder </i> <br>
- *      - Default : 0.4 <br>
+ * \li  -coneRadius    <i> Cone radius for cone finder </i> <br>
+ *       - Default : 0.4 <br>
  *
- * \li -trackCutMinPt <i> min pt for cut on tracks, in GeV/c </i> <br>
- *      - Default : 1.0 <br>
+ * \li  -trackCutMinPt <i> min pt for cut on tracks, in GeV/c </i> <br>
+ *       - Default : 1.0 <br>
  *
- * \li -seedCutMinPt  <i> min pt for cut on cone seeds, in GeV/c </i> <br>
- *      - Default : 5.0 <br>
+ * \li  -seedCutMinPt  <i> min pt for cut on cone seeds, in GeV/c </i> <br>
+ *       - Default : 5.0 <br>
  *
- * \li -jetCutMinPt   <i> min Et for cut on found jets, in GeV/c </i> <br>
- *      - Default : 15.0 <br>
+ * \li  -jetCutMinPt   <i> min Et for cut on found jets, in GeV/c </i> <br>
+ *       - Default : 15.0 <br>
  *
  * @ingroup alihlt_jet
  * @ingroup alihlt_jet_cone

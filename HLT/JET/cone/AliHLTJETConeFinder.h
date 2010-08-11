@@ -52,7 +52,7 @@
  *           Where XXX is has to be replaced by MC, ESD or AOD, 
  *           depending, on the input object 
  *      * Process one event (contains reset per event)
- *          <pre>jetFinder->ProcessConeEvent();</pre>
+ *          <pre>jetFinder->ProcessHLTEvent();</pre>
  *   
  * @ingroup alihlt_jet_cone
  */
