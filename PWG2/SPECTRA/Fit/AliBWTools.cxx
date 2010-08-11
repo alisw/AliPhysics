@@ -21,7 +21,6 @@
 
 using namespace std;
 
-TF1 * AliBWTools::fgFuncForNormalized = 0;
 
 ClassImp(AliBWTools)
 
@@ -440,8 +439,8 @@ void AliBWTools::GetFromHistoGraphDifferentX(const TH1F * h, TF1 * f, TGraphErro
 
 Float_t AliBWTools::GetMean(TH1F * h, Float_t min, Float_t max) {
 
-  // Get the mean of histo in a range; root is not reliable in sub ranges with variable binning.
-
+  // Get the mean of histo in a range; root is not reliable in sub
+  // ranges with variable binning.  
   Int_t minBin = h->FindBin(min);
   Int_t maxBin = h->FindBin(max);
 
@@ -457,38 +456,59 @@ Float_t AliBWTools::GetMean(TH1F * h, Float_t min, Float_t max) {
 
 }
 
-void AliBWTools::GetMean(TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max) {
+void AliBWTools::GetMean(TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar) {
 
-  // Get the mean of function in a range; 
+  // Get the mean of function in a range; If normPar is >= 0, it means
+  // that the function is defined such that par[normPar] is its
+  // integral.  In this case the error on meanpt can be calculated
+  // correctly. Otherwise, the function is normalized in get moment,
+  // but the error is not computed correctly.
 
-  return GetMoment("fMean", "x*", func, mean, error, min,max);
-
-}
-
-void AliBWTools::GetMeanSquare(TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max) {
-
-  // Get the mean2 of function in a range; 
-
-  return GetMoment("fMean2", "x*x*", func, mean, error, min,max);
-
+  return GetMoment("fMean", TString("x*")+func->GetExpFormula(), func, mean, error, min, max, normPar);
 
 }
 
-void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max) {
+void AliBWTools::GetMeanSquare(TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar) {
+
+  // Get the mean2 of function in a range;  If normPar is >= 0, it means
+  // that the function is defined such that par[normPar] is its
+  // integral.  In this case the error on meanpt can be calculated
+  // correctly. Otherwise, the function is normalized in get moment,
+  // but the error is not computed correctly.
+
+  return GetMoment("fMean2", TString("x*x*")+func->GetExpFormula(), func, mean, error, min, max, normPar);
+
+
+}
+
+void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar) {
 
   // returns the integral of a function derived from func by prefixing some operation.
+  // the derived function MUST have the same parameter in the same order
   // Used as a base method for mean and mean2
-  Printf("AliBWTools::GetMoment: Error on <pt> is not correct!!! It is overestimated, fix required");
-  Int_t npar = func->GetNpar();
-  Double_t integr  = func->Integral(min,max);
+  //  If normPar is >= 0, it means that the function is defined such
+  // that par[normPar] is its integral.  In this case the error on
+  // meanpt can be calculated correctly. Otherwise, the function is
+  // normalized using its numerical integral, but the error is not computed
+  // correctly. 
 
-  TF1 * f = new TF1(name, var+func->GetName());	// FIXME
-//   fgFuncForNormalized = func;// TMP: computing mean pt
-//   TF1 * f = new TF1(name,GetNormalizedFunc,0,10,npar);// FIXME
-//   for(Int_t ipar = 0; ipar < npar; ipar++){ // FIXME
-//     f->SetParameter(ipar,func->GetParameter(ipar)); // FIXME
-//   }
-  
+  // TODO:
+  // - improve to propagate error also in the case you need the
+  //   numerical integrals (will be rather slow)
+  // - this version assumes that func is defined using a
+  //   TFormula. Generalize to the case of a C++ function
+
+  if (normPar<0) Printf("AliBWTools::GetMoment: Warning: If normalization is required, the error may bot be correct");
+  if (!strcmp(func->GetExpFormula(),"")) Printf("AliBWTools::GetMoment: Warning: Empty formula in the base function");
+  Int_t npar = func->GetNpar();
+
+  // Definition changes according to the value of normPar
+  TF1 * f = normPar < 0 ? 
+    new TF1(name, var) :	              // not normalized
+    new TF1(name, var+Form("/[%d]",normPar)); // normalized with par normPar
+
+  // integr is used to normalize if no parameter is provided
+  Double_t integr  = normPar < 0 ? func->Integral(min,max) : 1;
   
   // The parameter of the function used to compute the mean should be
   // the same as the parent function: fixed if needed and they should
@@ -499,6 +519,7 @@ void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean,
   for(Int_t ipar = 0; ipar < npar; ipar++){
     Double_t parmin, parmax;
     Double_t value = func->GetParameter(ipar);
+    f->SetParameter(ipar,value);
     func->GetParLimits(ipar, parmin, parmax);
     if ( parmin == parmax )   {
       //      if ( parmin || (parmin == 1 && !value) ) { // not sure we I check parmin == 1 here. 
@@ -516,28 +537,18 @@ void AliBWTools::GetMoment(TString name, TString var, TF1 * func, Float_t &mean,
       //      cout << "Setting Err" << ipar << "("<<func->GetParError(ipar)<<")"<<endl;      
     }
   }
-  //  f->Print();
-//   mean  = f->Integral     (min,max)/func->Integral(min,max);
-//   error = f->IntegralError(min,max)/func->Integral(min,max);
-  mean  = f->Integral     (min,max)/integr;
-  error = f->IntegralError(min,max)/integr;
+
+//   f->Print();
+//   cout << "----" << endl;
+//   func->Print();
+
+  mean  = normPar < 0 ? f->Integral     (min,max)/integr : f->Integral     (min,max);
+  error = normPar < 0 ? f->IntegralError(min,max)/integr : f->IntegralError(min,max);
 //   cout << "Mean " << mean <<"+-"<< error<< endl;
 //   cout << "Integral Error "  << error << endl;
   
 }
 
-Double_t AliBWTools::GetNormalizedFunc(const double * x, const double* p){
-
-  // Static function used to provide normalized pointer to a function
-
-  Int_t npar = fgFuncForNormalized->GetNpar();
-  for(Int_t ipar = 0; ipar < npar; ipar++){ // FIXME
-    fgFuncForNormalized->SetParameter(ipar,p[ipar]); // FIXME
-  }
-
-  return x[0]*fgFuncForNormalized->Eval(x[0])/fgFuncForNormalized->Integral(0,100);
-  
-}
 
 
 Bool_t AliBWTools::Fit (TH1 * h1, TF1* func, Float_t min, Float_t max) { 

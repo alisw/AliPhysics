@@ -46,8 +46,8 @@ public:
   static void GetFromHistoGraphDifferentX(const TH1F * h, TF1 * f, TGraphErrors ** gBarycentre, TGraphErrors ** gXlw); 
   static Float_t GetMean(TH1F * h, Float_t min, Float_t max) ; 
 
-  static void GetMean(TF1 * func, Float_t &mean, Float_t &error, Float_t min=0, Float_t max=100);
-  static void GetMeanSquare(TF1 * func, Float_t &mean, Float_t &error, Float_t min=0, Float_t max=100) ;
+  static void GetMean(TF1 * func, Float_t &mean, Float_t &error, Float_t min=0, Float_t max=100, Int_t normPar = -1);
+  static void GetMeanSquare(TF1 * func, Float_t &mean, Float_t &error, Float_t min=0, Float_t max=100, Int_t normPar = -1) ;
 
   static Bool_t Fit (TH1 * h, TF1* f, Float_t min, Float_t max) ;
 
@@ -68,16 +68,11 @@ public:
 
   static void WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr);
 
-
 private:
-
-  static void GetMoment(TString name, TString var, TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max) ;
-  static Double_t GetNormalizedFunc(const double * x, const double* p);
-
-  static TF1 * fgFuncForNormalized; // Function used in GetNormalizedFunc
 
   AliBWTools(const AliBWTools&);            // not implemented
   AliBWTools& operator=(const AliBWTools&); // not implemented
+  static void GetMoment(TString name, TString var, TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar = -1) ;
 
   ClassDef(AliBWTools,1);
 
