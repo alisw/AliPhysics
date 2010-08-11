@@ -49,6 +49,7 @@ class AliUEHistograms : public TObject
   void SetPtRange(Float_t ptMin, Float_t ptMax);
   void SetCombineMinMax(Bool_t flag);
   
+  AliUEHistograms(const AliUEHistograms &c);
   AliUEHistograms& operator=(const AliUEHistograms& c);
   virtual void Copy(TObject& c) const;
 

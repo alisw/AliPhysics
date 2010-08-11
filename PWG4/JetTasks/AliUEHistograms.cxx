@@ -36,6 +36,7 @@
 ClassImp(AliUEHistograms)
 
 AliUEHistograms::AliUEHistograms() : 
+  TObject(),
   fNumberDensitypT(0),
   fSumpT(0),
   fNumberDensityPhi(0),
@@ -79,6 +80,29 @@ AliUEHistograms::AliUEHistograms() :
   fVertexContributors = new TH1F("fVertexContributors", ";contributors;count", 100, -0.5, 99.5);
   
   TH1::AddDirectory(oldStatus);
+}
+
+//_____________________________________________________________________________
+AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
+  TObject(),
+  fNumberDensitypT(0),
+  fSumpT(0),
+  fNumberDensityPhi(0),
+  fCorrelationpT(0),
+  fCorrelationEta(0),
+  fCorrelationPhi(0),
+  fCorrelationR(0),
+  fCorrelationLeading2Phi(0),
+  fCorrelationMultiplicity(0),
+  fEventCount(0),
+  fEventCountDifferential(0),
+  fVertexContributors(0)
+{
+  //
+  // AliUEHistograms copy constructor
+  //
+
+  ((AliUEHistograms &) c).Copy(*this);
 }
 
 //____________________________________________________________________
