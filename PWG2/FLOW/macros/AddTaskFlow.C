@@ -750,26 +750,26 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   }
   if (MCEP){
     AliAnalysisTaskMCEventPlane *taskMCEP = new AliAnalysisTaskMCEventPlane("TaskMCEventPlane");
-    taskMCEP->SetEvaluateMixedHarmonics(kFALSE);
     mgr->AddTask(taskMCEP);
   }
   if (MH){
     AliAnalysisTaskMixedHarmonics *taskMH = new AliAnalysisTaskMixedHarmonics("TaskMixedHarmonics",useWeights);
-    taskMH->SetCorrelatorInteger(1);
+    taskMH->SetHarmonic(1); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
     taskMH->SetNoOfMultipicityBins(10);
     taskMH->SetMultipicityBinWidth(2);
     taskMH->SetMinMultiplicity(3);
     taskMH->SetCorrectForDetectorEffects(kTRUE);
-    //taskMH->SetUsePhiWeights(WEIGHTS[0]); 
-    //taskMH->SetUsePtWeights(WEIGHTS[1]);
-    //taskMH->SetUseEtaWeights(WEIGHTS[2]); 
+    taskMH->SetEvaluateDifferential3pCorrelator(kFALSE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)    
+    taskMH->SetOppositeChargesPOI(kFALSE); // POIs psi1 and psi2 in cos[n(psi1+psi2-2phi3)] will have opposite charges  
     mgr->AddTask(taskMH);
   }  
   if (NL){
     AliAnalysisTaskNestedLoops *taskNL = new AliAnalysisTaskNestedLoops("TaskNestedLoops",useWeights);
-    //taskNL->SetUsePhiWeights(WEIGHTS[0]); 
-    //taskNL->SetUsePtWeights(WEIGHTS[1]);
-    //taskNL->SetUseEtaWeights(WEIGHTS[2]); 
+    taskNL->SetHarmonic(1); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]
+    taskNL->SetEvaluateNestedLoopsForRAD(kTRUE); // RAD = Relative Angle Distribution
+    taskNL->SetEvaluateNestedLoopsForMH(kTRUE); // evalaute <<cos[n(phi1+phi2-2phi3)]>> (Remark: three nested loops)   
+    taskNL->SetEvaluateDifferential3pCorrelator(kFALSE); // evaluate <<cos[n(psi1+psi2-2phi3)]>>  (Remark: three nested loops)   
+    taskNL->SetOppositeChargesPOI(kFALSE); // POIs psi1 and psi2 in cos[n(psi1+psi2-2phi3)] will have opposite charges  
     mgr->AddTask(taskNL);
   }
   

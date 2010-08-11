@@ -38,14 +38,18 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   virtual void   Terminate(Option_t *);
   
   // common:
-  void SetCorrelatorInteger(Int_t const ci) {this->fCorrelatorInteger = ci;};
-  Int_t GetCorrelatorInteger() const {return this->fCorrelatorInteger;}; 
+  void SetHarmonic(Int_t const h) {this->fHarmonic = h;};
+  Int_t GetHarmonic() const {return this->fHarmonic;}; 
   void SetNoOfMultipicityBins(Int_t const nomb) {this->fNoOfMultipicityBins = nomb;};
   Int_t GetNoOfMultipicityBins() const {return this->fNoOfMultipicityBins;};   
   void SetMultipicityBinWidth(Double_t const mbw) {this->fMultipicityBinWidth = mbw;};
   Double_t GetMultipicityBinWidth() const {return this->fMultipicityBinWidth;};   
   void SetMinMultiplicity(Double_t const mm) {this->fMinMultiplicity = mm;};
   Double_t GetMinMultiplicity() const {return this->fMinMultiplicity;}; 
+  void SetOppositeChargesPOI(Bool_t const ocp) {this->fOppositeChargesPOI = ocp;};
+  Bool_t GetOppositeChargesPOI() const {return this->fOppositeChargesPOI;}; 
+  void SetEvaluateDifferential3pCorrelator(Bool_t const ed3pc) {this->fEvaluateDifferential3pCorrelator = ed3pc;};
+  Bool_t GetEvaluateDifferential3pCorrelator() const {return this->fEvaluateDifferential3pCorrelator;};       
   void SetCorrectForDetectorEffects(Bool_t const cfde) {this->fCorrectForDetectorEffects = cfde;};
   Bool_t GetCorrectForDetectorEffects() const {return this->fCorrectForDetectorEffects;}; 
   // particle weights:
@@ -64,10 +68,12 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   AliFlowAnalysisWithMixedHarmonics *fMH; // mixed harmonics object
   TList *fListHistos; // collection of output 
   // common:  
-  Int_t fCorrelatorInteger; // integer n in cos[n(2phi1-phi2-phi3)]
+  Int_t fHarmonic; // integer n in cos[n(phi1+phi2-2phi3)]
   Int_t fNoOfMultipicityBins; // number of multiplicity bins
   Double_t fMultipicityBinWidth; // width of multiplicity bin
   Double_t fMinMultiplicity; // minimal multiplicity
+  Bool_t fOppositeChargesPOI; // two POIs, psi1 and psi2, in correlator <<cos[psi1+psi2-2phi3)]>> will be taken with opposite charges 
+  Bool_t fEvaluateDifferential3pCorrelator; // evaluate <<cos[psi1+psi2-2phi3)]>>, where psi1 and psi2 are two POIs      
   Bool_t fCorrectForDetectorEffects; // correct 3-p correlator for detector effects
   // particle weights:
   Bool_t fUseParticleWeights; // use any particle weights

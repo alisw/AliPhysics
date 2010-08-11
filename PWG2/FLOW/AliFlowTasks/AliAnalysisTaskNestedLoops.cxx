@@ -42,11 +42,17 @@ AliAnalysisTaskSE(name),
 fEvent(NULL),
 fNL(NULL), 
 fListHistos(NULL),
+fHarmonic(0),
+fOppositeChargesPOI(kFALSE),
+fEvaluateDifferential3pCorrelator(kFALSE),
 fUseParticleWeights(useParticleWeights),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
-fWeightsList(NULL)
+fWeightsList(NULL),
+fEvaluateNestedLoopsForRAD(kTRUE),
+fEvaluateNestedLoopsForQC(kFALSE),
+fEvaluateNestedLoopsForMH(kFALSE)
 {
  // constructor
  cout<<"AliAnalysisTaskNestedLoops::AliAnalysisTaskNestedLoops(const char *name, Bool_t useParticleWeights)"<<endl;
@@ -69,11 +75,17 @@ AliAnalysisTaskSE(),
 fEvent(NULL),
 fNL(NULL),
 fListHistos(NULL),
+fHarmonic(0),
+fOppositeChargesPOI(kFALSE),
+fEvaluateDifferential3pCorrelator(kFALSE),
 fUseParticleWeights(kFALSE),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
-fWeightsList(NULL)
+fWeightsList(NULL),
+fEvaluateNestedLoopsForRAD(kFALSE),
+fEvaluateNestedLoopsForQC(kFALSE),
+fEvaluateNestedLoopsForMH(kFALSE)
 {
  // Dummy constructor
  cout<<"AliAnalysisTaskNestedLoops::AliAnalysisTaskNestedLoops()"<<endl;
@@ -89,6 +101,10 @@ void AliAnalysisTaskNestedLoops::UserCreateOutputObjects()
  // Analyser:
  fNL = new AliFlowAnalysisWithNestedLoops();
 
+ fNL->SetHarmonic(fHarmonic);
+ fNL->SetOppositeChargesPOI(fOppositeChargesPOI);
+ fNL->SetEvaluateDifferential3pCorrelator(fEvaluateDifferential3pCorrelator);
+
  if(fUseParticleWeights)
  {
   // Pass the flags to class:
@@ -103,6 +119,10 @@ void AliAnalysisTaskNestedLoops::UserCreateOutputObjects()
   // Pass the list with weights to class:
   if(fWeightsList) fNL->SetWeightsList(fWeightsList);
  }
+ 
+ fNL->SetEvaluateNestedLoopsForRAD(fEvaluateNestedLoopsForRAD);
+ fNL->SetEvaluateNestedLoopsForQC(fEvaluateNestedLoopsForQC);
+ fNL->SetEvaluateNestedLoopsForMH(fEvaluateNestedLoopsForMH);
  
  fNL->Init();
  
