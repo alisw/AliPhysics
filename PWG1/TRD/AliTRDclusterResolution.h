@@ -44,6 +44,7 @@ public:
   inline Float_t GetVdrift() const;
   inline Float_t GetT0() const;
   inline Float_t GetGain() const;
+  Float_t       GetDyRange() const {return fDyRange;}
   Bool_t        GetRefFigure(Int_t ifig);
   Bool_t        HasProcess(EResultContainer bit) const {return TESTBIT(fStatus, bit);}
   Bool_t        IsCalibrated() const { return TestBit(kCalibrated);}
@@ -57,6 +58,7 @@ public:
   Bool_t        PostProcess();
   void          SetCalibrationRegion(Int_t det, Int_t col=-1, Int_t row=-1);
   void          SetVisual();
+  void          SetDyRange(Float_t dy) {if(dy>0) fDyRange = dy;}
   void          SetProcess(EResultContainer bit, Bool_t v = kTRUE) {v ? SETBIT(fStatus, bit) : CLRBIT(fStatus, bit);}
   void          SetSaveAs(Bool_t v = kTRUE) {SetBit(kSaveAs, v);}
   inline void   ResetProcesses();
@@ -86,6 +88,7 @@ private:
   static const Float_t fgkTimeBinLength;// time bin length (invers of sampling frequency)
 
   // working named variables
+  Float_t    fDyRange; // min/max dy
   UChar_t    fLy;      // TRD plane 
   Float_t    fT;       // calibrated time 
   Float_t    fX;       // local drift length 
@@ -94,7 +97,7 @@ private:
   Float_t    fR[4];    // mean/sgm resolution
   Float_t    fP[4];    // mean/sgm pulls
   
-  ClassDef(AliTRDclusterResolution, 3)  // cluster resolution
+  ClassDef(AliTRDclusterResolution, 4)  // cluster resolution
 };
 
 //___________________________________________________

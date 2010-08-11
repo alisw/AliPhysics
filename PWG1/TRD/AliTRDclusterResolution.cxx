@@ -214,6 +214,7 @@ AliTRDclusterResolution::AliTRDclusterResolution()
   ,fVdrift(1.5)
   ,fT0(0.)
   ,fGain(1.)
+  ,fDyRange(1.3)
   ,fLy(0)
   ,fT(0.)
   ,fX(0.)
@@ -222,6 +223,8 @@ AliTRDclusterResolution::AliTRDclusterResolution()
 {
 // Constructor
   SetNameTitle("ClErrCalib", "Cluster Error Parameterization");
+  memset(fR, 0, 4*sizeof(Float_t));
+  memset(fP, 0, 4*sizeof(Float_t));
 }
 
 //_______________________________________________________
@@ -238,6 +241,7 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
   ,fVdrift(1.5)
   ,fT0(0.)
   ,fGain(1.)
+  ,fDyRange(1.3)
   ,fLy(0)
   ,fT(0.)
   ,fX(0.)
@@ -438,7 +442,7 @@ TObjArray* AliTRDclusterResolution::Histos()
         Form(" ly [%d];t [bin];y [pw];#Delta y[cm]", il), 
         AliTRDseedV1::kNtb, -.5, AliTRDseedV1::kNtb-0.5,   // x
         51, -.51, .51, // y
-        60, -1.3, 1.3); // dy
+        60, -fDyRange, fDyRange); // dy
     } h3->Reset();
     arr->AddAt(h3, il);
     // add Pull plot for each layer
@@ -448,13 +452,13 @@ TObjArray* AliTRDclusterResolution::Histos()
         Form(" ly [%d];t [bin];y [pw];#Delta y[cm]/#sigma_{y}", il), 
         AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb-0.5,   // x
         51, -.51, .51, // y 
-        60, -4., 4.); // dy
+        60, -4., 4.); // dy/sy
     } h3->Reset();
     arr->AddAt(h3, AliTRDgeometry::kNlayer+il);
   }
 
   if(!(h3 = (TH3S*)gROOT->FindObject("Charge"))){
-    h3 = new TH3S("Charge", "dy=f(q)", 50, 2.2, 7.5, 60, -1.3, 1.3, 60, -4., 4.);
+    h3 = new TH3S("Charge", "dy=f(q)", 50, 2.2, 7.5, 60, -fDyRange, fDyRange, 60, -4., 4.);
     h3->SetXTitle("log(q) [a.u.]");
     h3->SetYTitle("#Delta y[cm]");
     h3->SetZTitle("#Delta y/#sigma_{y}");
@@ -470,7 +474,7 @@ TObjArray* AliTRDclusterResolution::Histos()
         Form(" t_{drift}(%2d)[bin];z [mm];tg#phi;#Delta y[cm]", ix), 
         kND, 0., 2.5,   // z 
         35, -.35, .35, // tgp 
-        60, -1.3, 1.3); // dy
+        60, -fDyRange, fDyRange); // dy
     }
     arr->AddAt(h3, ix);
   }
@@ -484,7 +488,7 @@ TObjArray* AliTRDclusterResolution::Histos()
         Form(" t_{drift}(%2d)[bin];z [mm];tg#phi - h*tg(#theta);#Delta y[cm]", ix), 
         kND, 0., 2.5,   // z 
         35, -.35, .35, // tgp-h tgt 
-        60, -1.3, 1.3); // dy
+        60, -fDyRange, fDyRange); // dy
     }
     arr->AddAt(h3, ix);
   }
