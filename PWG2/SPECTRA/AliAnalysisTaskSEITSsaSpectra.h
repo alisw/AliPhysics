@@ -61,10 +61,10 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
     fSmearP=smearp;
     fSmeardEdx=smeardedx;
   }
-  Double_t BetheBloch(Double_t bg,Bool_t optMC);
-  Double_t CookdEdx(Double_t *s); 
-  Double_t Eta2y(Double_t pt, Double_t m, Double_t eta);
-  Bool_t DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt, Bool_t optMC);
+  Double_t BetheBloch(Double_t bg,Bool_t optMC) const;
+  Double_t CookdEdx(Double_t *s) const; 
+  Double_t Eta2y(Double_t pt, Double_t m, Double_t eta) const;
+  Bool_t DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt, Bool_t optMC) const;
 
  private:
   AliAnalysisTaskSEITSsaSpectra(const AliAnalysisTaskSEITSsaSpectra &source); 
