@@ -24,9 +24,6 @@
 // F. Prino, prino@to.infn.it
 ///////////////////////////////////////////////////////////////////////////
 
-#include <TStyle.h>
-#include <TSystem.h>
-#include <TTree.h>
 #include <TH1F.h>
 #include <TRandom3.h>
 #include <TH2F.h>
@@ -204,6 +201,9 @@ Double_t AliAnalysisTaskSEITSsaSpectra::BetheBloch(Double_t bg,Bool_t optMC) {
 
 //________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
+	// Create a TList with histograms and a TNtuple
+	// Called once
+
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("Spiderman");
@@ -334,6 +334,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
 
 //________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
+	// Main loop
+	// Called for each event
   
   fESD=(AliESDEvent*)InputEvent();
   if(!fESD) {
@@ -481,7 +483,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     fHistNTracks->Fill(2);
     if((status&AliESDtrack::kITSrefit)==0) continue; //its refit
     fHistNTracks->Fill(3);
-    if(track->GetSign()==0.) continue; //no neutral particles
+    if(TMath::Abs(track->GetSign())<0.0001) continue; //no neutral particles
     fHistNTracks->Fill(4);
 
 	  
@@ -661,6 +663,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 
 //________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
+	// Merge output
+	// Called once at the end of the query
   
   fOutput = dynamic_cast<TList*>(GetOutputData(1));
   if (!fOutput) {
