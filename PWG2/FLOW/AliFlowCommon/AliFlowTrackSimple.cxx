@@ -132,7 +132,9 @@ void AliFlowTrackSimple::AddV1( Double_t v1,
 {
   //afterburner, adds v1, uses Newton-Raphson iteration
   Double_t phi0=fPhi;
-  Double_t f,fp,phiprev;
+  Double_t f=0.;
+  Double_t fp=0.;
+  Double_t phiprev=0.;
 
   for (Int_t i=0; i<maxNumberOfIterations; i++)
   {
@@ -152,7 +154,9 @@ void AliFlowTrackSimple::AddV2( Double_t v2,
 {
   //afterburner, adds v2, uses Newton-Raphson iteration
   Double_t phi0=fPhi;
-  Double_t f,fp,phiprev;
+  Double_t f=0.;
+  Double_t fp=0.;
+  Double_t phiprev=0.;
 
   for (Int_t i=0; i<maxNumberOfIterations; i++)
   {
@@ -172,7 +176,9 @@ void AliFlowTrackSimple::AddV4( Double_t v4,
 {
   //afterburner, adds v4, uses Newton-Raphson iteration
   Double_t phi0=fPhi;
-  Double_t f,fp,phiprev;
+  Double_t f=0.;
+  Double_t fp=0.;
+  Double_t phiprev=0.;
 
   for (Int_t i=0; i<maxNumberOfIterations; i++)
   {
@@ -194,7 +200,9 @@ void AliFlowTrackSimple::AddFlow( Double_t v1,
 {
   //afterburner, adds v1,v2,v4 uses Newton-Raphson iteration
   Double_t phi0=fPhi;
-  Double_t f,fp,phiprev;
+  Double_t f=0.;
+  Double_t fp=0.;
+  Double_t phiprev=0.;
 
   for (Int_t i=0; i<maxNumberOfIterations; i++)
   {

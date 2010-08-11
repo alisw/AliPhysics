@@ -120,13 +120,12 @@ void AliStarEvent::Print( Option_t* option ) const
   // event  = new TNtuple("event","event",
   //   "runId:eventNumber:VtxX:VtxY:VtxZ:BField:refMult:centralityId:numberOfPrimaryTracks:numberOfParticles:h0:h1:h2:h3:h4" ) ;
   //
-  Float_t   primaryVertexPosition[3] ;
 
   Int_t   runId                  = (Int_t)   fParams[0]  ;
   Int_t   eventNumber            = (Int_t)   fParams[1]  ;     
-  primaryVertexPosition[0]       = (Float_t) fParams[2]  ;  // (cm)
-  primaryVertexPosition[1]       = (Float_t) fParams[3]  ;  // (cm)
-  primaryVertexPosition[2]       = (Float_t) fParams[4]  ;  // (cm)
+  Float_t   primaryVertexPosition[3]={ (Float_t) fParams[2],
+                                       (Float_t) fParams[3],
+                                       (Float_t) fParams[4] };
   Float_t magneticField          = (Float_t) fParams[5]  ;  // kilogauss
   Int_t   refMult                = (Int_t)   fParams[6]  ;  // Raw Mult into 0.5 unit: a relative number, not total Mult.
   Int_t   centralityId           = (Int_t)   fParams[7]  ;  // STAR centrality bin # based on refMult
