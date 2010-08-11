@@ -1172,7 +1172,7 @@ int AliHLTComponent::Forward(const AliHLTComponentBlockData* pBlock)
   int iResult=0;
   int idx=fCurrentInputBlock;
   if (pBlock) {
-    if (fpInputObjects==NULL || (idx=FindInputBlock(pBlock))>=0) {
+    if ((idx=FindInputBlock(pBlock))>=0) {
     } else {
       HLTError("unknown Block %p", pBlock);
       iResult=-ENOENT;      
