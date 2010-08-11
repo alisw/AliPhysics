@@ -5,12 +5,11 @@
 
 /* $Id: $ */
 
-// This class extracts the PHOS "digits" of current event
-// (amplitude,time, position,gain) from the raw stream 
-// provided by AliRawReader. See cxx source for use case.
+// This class extracts amplitude, t0 and quality of the PHOS "samples" 
+// ising FastFit and two-exponent parameterization
 
 #include "AliPHOSRawFitterv0.h"
-class TList;
+class TArrayD ;
 
 class AliPHOSRawFitterv2 : public AliPHOSRawFitterv0 {
 
@@ -22,19 +21,18 @@ public:
   virtual ~AliPHOSRawFitterv2();
 
   virtual Bool_t Eval(const UShort_t *signal, Int_t sigStart, Int_t sigLength);
+  void SetRawParams(Double_t alpha, Double_t beta){fAlpha=alpha; fBeta=beta;}
 
-  void SetNTimeSamples(Short_t n=25)     { fNtimeSamples=n ;}
-  void SetLowGainTParams (Double_t *pars){ for(Int_t i=0;i<3;i++) fLGpar[i]=pars[i] ;}
-  void SetHighGainTParams(Double_t *pars){ for(Int_t i=0;i<3;i++) fHGpar[i]=pars[i] ;}
-  void SetRMScut(Double_t cut=2.)        { fRMScut = cut ;}
+private: 
+  Bool_t FindAmpT(TArrayD samples, TArrayD times) ;
+  void FindMax() ;
 
 private:
-  Short_t  fNtimeSamples ; //Number of samples (after start) used to extract time
-  Double_t fLGpar[3] ;     //parameters for shape parameterization
-  Double_t fHGpar[3] ;     //parameters for shape parameterization
-  Double_t fRMScut ;       //cut to estmate goodness of sample
+  Double_t fAlpha ; //Parameter of sample shape
+  Double_t fBeta ;  //Parameter of sample shape
+  Double_t fMax ;   //Maximum of parameterization
   
-  ClassDef(AliPHOSRawFitterv2,1)
+  ClassDef(AliPHOSRawFitterv2,2)
 };
 
 #endif
