@@ -244,10 +244,15 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
 	continue ;
       
       energy = CalibrateE(energy,relId,!caloFlag) ;
-//       time   = CalibrateT(time,relId,lowGainFlag) ;
 
       //convert time from sample bin units to s
       time*=fSampleToSec ;
+//CalibrateT moved to Clusterizer
+//      time = CalibrateT(time,relId,!caloFlag) ;
+      // subtract RCU L1 phase (L1Phase is in seconds) w.r.t. L0:
+      time -= fRawStream->GetL1Phase();
+
+
       
       if(energy <= 0.) 
 	continue;
@@ -327,7 +332,6 @@ Double_t AliPHOSRawDigiProducer::CalibrateE(Double_t amp, Int_t* relId, Bool_t i
 Double_t AliPHOSRawDigiProducer::CalibrateT(Double_t time, Int_t * relId, Bool_t /* isLowGain */)
 {
   //Calibrate time
-  time*=fPulseGenerator->GetRawFormatTimeTrigger() ;
   if(fgCalibData){
     Int_t   module = relId[0];
     Int_t   column = relId[3];
