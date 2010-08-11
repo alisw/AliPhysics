@@ -12,12 +12,14 @@ EXTRA_DIST			=
 check_PROGRAMS			= testAliHLTTPCDigitReaderDecoder \
 				  testAliHLTTPCDigitReaderPacked \
 				  testAliHLTTPCMapping \
-				  testAliHLTTPCDefinitions
+				  testAliHLTTPCDefinitions \
+			          testAliHLTTPCDataCheckerComponent
 
 testAliHLTTPCDigitReaderDecoder_SOURCES = testAliHLTTPCDigitReaderDecoder.C
 testAliHLTTPCDigitReaderPacked_SOURCES	= testAliHLTTPCDigitReaderPacked.C
 testAliHLTTPCMapping_SOURCES		= testAliHLTTPCMapping.C
 testAliHLTTPCDefinitions_SOURCES	= testAliHLTTPCDefinitions.C
+testAliHLTTPCDataCheckerComponent_SOURCES	= testAliHLTTPCDataCheckerComponent.C
 
 
 # linker flags
@@ -32,13 +34,16 @@ testAliHLTTPCDigitReaderDecoder_LDADD 	= $(LDADD_COMMON)
 testAliHLTTPCDigitReaderPacked_LDADD 	= $(LDADD_COMMON)
 testAliHLTTPCMapping_LDADD 		= $(LDADD_COMMON)
 testAliHLTTPCDefinitions_LDADD		= $(LDADD_COMMON)
+testAliHLTTPCDataCheckerComponent_LDADD	= $(LDADD_COMMON)
 testAliHLTTPCDigitReaderDecoder_LDFLAGS	= $(LDFLAGS_COMMON)
 testAliHLTTPCDigitReaderPacked_LDFLAGS	= $(LDFLAGS_COMMON)
 testAliHLTTPCMapping_LDFLAGS		= $(LDFLAGS_COMMON)
 testAliHLTTPCDefinitions_LDFLAGS	= $(LDFLAGS_COMMON)
+testAliHLTTPCDataCheckerComponent_LDFLAGS	= $(LDFLAGS_COMMON)
 
 # set back to all as sson as DigitReaderPacked is fixed
 #TESTS				= $(check_PROGRAMS)
 TESTS				= testAliHLTTPCDigitReaderDecoder \
 				  testAliHLTTPCMapping \
-				  testAliHLTTPCDefinitions
+				  testAliHLTTPCDefinitions \
+				  testAliHLTTPCDataCheckerComponent

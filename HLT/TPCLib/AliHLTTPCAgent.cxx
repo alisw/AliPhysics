@@ -78,6 +78,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 // #include "AliHLTTPCCalibTimeComponent.h"
 // #include "AliHLTTPCCalibTimeGainComponent.h"
 // #include "AliHLTTPCCalibrationComponent.h"
+#include "AliHLTTPCDataCheckerComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -303,6 +304,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 //   pHandler->AddComponent(new AliHLTTPCCalibTimeComponent);
 //   pHandler->AddComponent(new AliHLTTPCCalibTimeGainComponent);
 //   pHandler->AddComponent(new AliHLTTPCCalibrationComponent);
+  pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
 
   return 0;
 }
