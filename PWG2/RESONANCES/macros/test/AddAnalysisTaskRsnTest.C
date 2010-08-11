@@ -11,7 +11,7 @@
 //                   arguments must have to be the task and the 'dataLabel' argument.
 // 
 Bool_t AddAnalysisTaskRsnTest
-(const char *dataLabel, const char *configMacro = "ConfigTaskRsnTest.C")
+(const char *dataLabel, const char *configMacro = "ConfigTaskRsnTest2010.C")
 {
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -23,7 +23,13 @@ Bool_t AddAnalysisTaskRsnTest
 
   // load and execute configuration macro
   gROOT->LoadMacro(configMacro);
-  if (!RsnConfigTask(task, dataLabel)) return kFALSE;
+  //                                  perf    its     expPID
+  if (!RsnConfigTask(task, dataLabel, kTRUE , kTRUE , kFALSE)) return kFALSE;
+  if (!RsnConfigTask(task, dataLabel, kTRUE , kFALSE, kFALSE)) return kFALSE;
+  if (!RsnConfigTask(task, dataLabel, kFALSE, kTRUE , kFALSE)) return kFALSE;
+  if (!RsnConfigTask(task, dataLabel, kFALSE, kFALSE, kFALSE)) return kFALSE;
+  if (!RsnConfigTask(task, dataLabel, kFALSE, kTRUE , kTRUE )) return kFALSE;
+  if (!RsnConfigTask(task, dataLabel, kFALSE, kFALSE, kTRUE )) return kFALSE;
 
   // add the task to manager
   mgr->AddTask(task);
