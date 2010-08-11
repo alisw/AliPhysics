@@ -48,6 +48,7 @@ class AliFlowAnalysisWithNestedLoops
     virtual void BookEverythingForRAD(); // RAD = relative angle distribution phi1-phi2
     virtual void BookEverythingForMH(); // MH = Mixed Harmonics
     virtual void BookAndFillWeightsHistograms();
+    virtual void StoreHarmonic();        
   // 2.) Method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
     virtual void CheckPointersUsedInMake();
@@ -74,10 +75,16 @@ class AliFlowAnalysisWithNestedLoops
   TList* GetHistList() const {return this->fHistList;}  
   void SetHistListName(const char *hln) {this->fHistListName->Append(*hln);}; 
   TString *GetHistListName() const {return this->fHistListName;};
+  void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
+  Int_t GetHarmonic() const {return this->fHarmonic;};    
   void SetAnalysisLabel(const char *al) {this->fAnalysisLabel->Append(*al);}; 
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   void SetAnalysisSettings(TProfile* const as) {this->fAnalysisSettings = as;};
   TProfile* GetAnalysisSettings() const {return this->fAnalysisSettings;};
+  void SetOppositeChargesPOI(Bool_t const ocp) {this->fOppositeChargesPOI = ocp;};
+  Bool_t GetOppositeChargesPOI() const {return this->fOppositeChargesPOI;};
+  void SetEvaluateDifferential3pCorrelator(Bool_t const ed3pc) {this->fEvaluateDifferential3pCorrelator = ed3pc;};
+  Bool_t GetEvaluateDifferential3pCorrelator() const {return this->fEvaluateDifferential3pCorrelator;};      
   void SetPrintOnTheScreen(Bool_t const pots) {this->fPrintOnTheScreen = pots;};
   Bool_t GetPrintOnTheScreen() const {return this->fPrintOnTheScreen;};   
   void SetCommonHists(AliFlowCommonHist* const ch) {this->fCommonHists = ch;};
@@ -104,21 +111,22 @@ class AliFlowAnalysisWithNestedLoops
   Bool_t GetEvaluateNestedLoopsForRAD() const {return this->fEvaluateNestedLoopsForRAD;};
   void SetRelativeAngleDistribution(TH1D* const rad) {this->fRelativeAngleDistribution = rad;};
   TH1D* GetRelativeAngleDistribution() const {return this->fRelativeAngleDistribution;}; 
+  void SetCharge(TH1D* const rad) {this->fCharge = rad;};
+  TH1D* GetCharge() const {return this->fCharge;}; 
   // QC:
-  // ...
+  void SetListQC(TList* const lQC) {this->fListQC = lQC;}
+  TList* GetListQC() const {return this->fListQC;}  
+  void SetEvaluateNestedLoopsForQC(Bool_t const enlfQC) {this->fEvaluateNestedLoopsForQC = enlfQC;};
+  Bool_t GetEvaluateNestedLoopsForQC() const {return this->fEvaluateNestedLoopsForQC;};
   // MH:
   void SetListMH(TList* const lMH) {this->fListMH = lMH;}
   TList* GetListMH() const {return this->fListMH;}  
   void SetEvaluateNestedLoopsForMH(Bool_t const enlfMH) {this->fEvaluateNestedLoopsForMH = enlfMH;};
   Bool_t GetEvaluateNestedLoopsForMH() const {return this->fEvaluateNestedLoopsForMH;};
-  void SetCorrelatorIntegerMH(Int_t const ciMH) {this->fCorrelatorIntegerMH = ciMH;};
-  Int_t GetCorrelatorIntegerMH() const {return this->fCorrelatorIntegerMH;}; 
+  void Set3pCorrelatorPro(TProfile* const s3pPro) {this->f3pCorrelatorPro = s3pPro;};
+  TProfile* Get3pCorrelatorPro() const {return this->f3pCorrelatorPro;};  
   void Set3pCorrelatorVsPtSumDiffDirectPro(TProfile* const s3pcvpsdd, Int_t const sd) {this->f3pCorrelatorVsPtSumDiffDirectPro[sd] = s3pcvpsdd;};
   TProfile* Get3pCorrelatorVsPtSumDiffDirectPro(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffDirectPro[sd];};
-  void SetCrossCheckInPtSumBinNo(Int_t const ccipsbn) {this->fCrossCheckInPtSumBinNo = ccipsbn;};
-  Int_t GetCrossCheckInPtSumBinNo() const {return this->fCrossCheckInPtSumBinNo;}; 
-  void SetCrossCheckInPtDiffBinNo(Int_t const ccipdbn) {this->fCrossCheckInPtDiffBinNo = ccipdbn;};
-  Int_t GetCrossCheckInPtDiffBinNo() const {return this->fCrossCheckInPtDiffBinNo;};  
   
  private:
   AliFlowAnalysisWithNestedLoops(const AliFlowAnalysisWithNestedLoops& afawQc);
@@ -126,8 +134,11 @@ class AliFlowAnalysisWithNestedLoops
   // 0.) Base:
   TList *fHistList; // base list to hold all output objects
   TString *fHistListName; // name of base list
+  Int_t fHarmonic; // harmonic     
   TString *fAnalysisLabel; // analysis label 
   TProfile *fAnalysisSettings; // profile to hold analysis settings
+  Bool_t fOppositeChargesPOI; // two POIs, psi1 and psi2, in correlator <<cos[psi1+psi2-2phi3)]>> will be taken with opposite charges  
+  Bool_t fEvaluateDifferential3pCorrelator; // evaluate <<cos[psi1+psi2-2phi3)]>>, where psi1 and psi2 are two POIs   
   Bool_t fPrintOnTheScreen; // print or not on the screen
   // 1.) Common:
   AliFlowCommonHist *fCommonHists; // common control histograms (filled only with events with 3 or more tracks for 3-p correlators) 
@@ -156,15 +167,15 @@ class AliFlowAnalysisWithNestedLoops
   TList *fListRAD; // list holding objects for calculation of relative angle distribution phi1-phi2 
   Bool_t fEvaluateNestedLoopsForRAD; // evaluate nested loops for relative angle distribution
   TH1D *fRelativeAngleDistribution; // distribution of phi1-phi2 for all distinct pairs of particles
+  TH1D *fCharge; // distribution of phi1-phi2 for all distinct pairs of particles
   // 4.) Debugging and cross-checking QC:
-  // ...
+  TList *fListQC; // list holding objects relevant for debugging and cross-checking of Q-cumulants class
+  Bool_t fEvaluateNestedLoopsForQC; // evaluate nested loops for Q-cumulants
   // 5.) Debugging and cross-checking MH:
   TList *fListMH; // list holding objects relevant for debugging and cross-checking of MH class
   Bool_t fEvaluateNestedLoopsForMH; // evaluate nested loops for mixed harmonics
-  Int_t fCorrelatorIntegerMH; // integer n in cos[n(2phi1-psi2-psi3)]
+  TProfile *f3pCorrelatorPro; // 3-p correlator <<cos[phi1+phi2-2phi3]>>  
   TProfile *f3pCorrelatorVsPtSumDiffDirectPro[2]; // differential 3-p correlator cos[n(2phi1-psi2-psi3)] vs [(p1+p2)/2,|p1-p2|]
-  Int_t fCrossCheckInPtSumBinNo; // print on the screen result of cos[n(2phi1-psi2-psi3)] vs (p1+p2)/2 in this bin number 
-  Int_t fCrossCheckInPtDiffBinNo; // print on the screen result of cos[n(2phi1-psi2-psi3)] vs |p1-p2| in this bin number 
   
   ClassDef(AliFlowAnalysisWithNestedLoops, 0);
 };

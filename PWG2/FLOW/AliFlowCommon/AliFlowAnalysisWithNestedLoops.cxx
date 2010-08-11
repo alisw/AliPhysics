@@ -50,8 +50,11 @@ ClassImp(AliFlowAnalysisWithNestedLoops)
 AliFlowAnalysisWithNestedLoops::AliFlowAnalysisWithNestedLoops(): 
 fHistList(NULL),
 fHistListName(NULL),
+fHarmonic(0),
 fAnalysisLabel(NULL),
 fAnalysisSettings(NULL),
+fOppositeChargesPOI(kFALSE),
+fEvaluateDifferential3pCorrelator(kFALSE), 
 fPrintOnTheScreen(kTRUE),
 fCommonHists(NULL),
 fnBinsPhi(0),
@@ -77,11 +80,12 @@ fEtaWeights(NULL),
 fListRAD(NULL),
 fEvaluateNestedLoopsForRAD(kTRUE),
 fRelativeAngleDistribution(NULL),
+fCharge(NULL),
+fListQC(NULL),
+fEvaluateNestedLoopsForQC(kFALSE),
 fListMH(NULL),
 fEvaluateNestedLoopsForMH(kFALSE),
-fCorrelatorIntegerMH(1),
-fCrossCheckInPtSumBinNo(4),  
-fCrossCheckInPtDiffBinNo(5) 
+f3pCorrelatorPro(NULL) 
 {
  // Constructor. 
  
@@ -97,6 +101,9 @@ fCrossCheckInPtDiffBinNo(5)
  // List to hold objects relevant for relative angle distributions:      
  fListRAD = new TList();
  
+ // List holding objects relevant for debugging and cross-checking of Q-cumulants class: 
+ fListQC = new TList();
+
  // List holding objects relevant for debugging and cross-checking of MH class: 
  fListMH = new TList();
  
@@ -127,7 +134,9 @@ void AliFlowAnalysisWithNestedLoops::Init()
  // d) Book profile holding seetings for analysis with nested loops;
  // e) Book common control histograms;
  // f) Book all objects relevant for distributions;
- // g) Book and fill histograms to hold phi, pt and eta weights.
+ // g) Book and fill histograms to hold phi, pt and eta weights;
+ // h) Store harmonic n.
+
 
  //save old value and prevent histograms from being added to directory
  //to avoid name clashes in case multiple analaysis objects are used
@@ -145,6 +154,7 @@ void AliFlowAnalysisWithNestedLoops::Init()
  this->BookEverythingForRAD();
  this->BookEverythingForMH();
  this->BookAndFillWeightsHistograms();
+ this->StoreHarmonic(); 
 
  //restore old status
  TH1::AddDirectory(oldHistAddStatus);
@@ -174,12 +184,12 @@ void AliFlowAnalysisWithNestedLoops::Finish()
 {
  // Calculate the final results.
  
- // a) Check all pointers used in this method;
- // b) Access settings for analysis with mixed harmonics;
+ // a) Access settings for analysis with mixed harmonics;
+ // b) Check all pointers used in this method;
  // c) Print on the screen.
  
- this->CheckPointersUsedInFinish();
  this->AccessSettings();
+ this->CheckPointersUsedInFinish();
  if(fPrintOnTheScreen) this->PrintOnTheScreen();
                                                                                                                                                                                                                                                                                                                
 } // end of AliFlowAnalysisWithNestedLoops::Finish()
@@ -203,10 +213,9 @@ void AliFlowAnalysisWithNestedLoops::GetOutputHistograms(TList *outputListHistos
   }
   this->GetPointersForBaseHistograms();
   this->GetPointersForCommonHistograms();
-  Bool_t bEvaluateNestedLoopsForRAD = (Bool_t) fAnalysisSettings->GetBinContent(1); // to be improved (not needed here?)
-  Bool_t bEvaluateNestedLoopsForMH = (Bool_t) fAnalysisSettings->GetBinContent(2); // to be improved (not needed here?)
-  if(bEvaluateNestedLoopsForRAD) this->GetPointersForRAD();
-  if(bEvaluateNestedLoopsForMH) this->GetPointersForMH();
+  this->AccessSettings();
+  if(fEvaluateNestedLoopsForRAD) this->GetPointersForRAD();
+  if(fEvaluateNestedLoopsForMH) this->GetPointersForMH();
  } else 
    {
     cout<<endl;
@@ -280,6 +289,13 @@ void AliFlowAnalysisWithNestedLoops::GetPointersForRAD()
   this->SetRelativeAngleDistribution(relativeAngleDistribution);  
  }
   
+ TString chargeName = "fCharge";
+ TH1D *charge = dynamic_cast<TH1D*>(listRAD->FindObject(chargeName.Data()));
+ if(charge)
+ {
+  this->SetCharge(charge);  
+ }
+
 } // end of void AliFlowAnalysisWithNestedLoops::GetPointersForRAD()
 
 //================================================================================================================
@@ -296,6 +312,13 @@ void AliFlowAnalysisWithNestedLoops::GetPointersForMH()
   exit(0); 
  }  
   
+ TString s3pCorrelatorProName = "f3pCorrelatorPro";
+ TProfile *p3pCorrelatorPro = dynamic_cast<TProfile*>(listMH->FindObject(s3pCorrelatorProName.Data()));
+ if(p3pCorrelatorPro)
+ {
+  this->Set3pCorrelatorPro(p3pCorrelatorPro);  
+ } 
+ if(!fEvaluateDifferential3pCorrelator){return;} 
  TString psdFlag[2] = {"PtSum","PtDiff"};
  for(Int_t sd=0;sd<2;sd++)
  {
@@ -331,6 +354,16 @@ void AliFlowAnalysisWithNestedLoops::WriteHistograms(TDirectoryFile *outputFileN
 
 //================================================================================================================
 
+void AliFlowAnalysisWithNestedLoops::StoreHarmonic()
+{
+ // Store harmonic n used in cos[n*(phi1+phi2-2phi3)] and cos[n*(psi1+psi2-2phi3)].
+
+ (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic);
+
+} // end of void AliFlowAnalysisWithNestedLoops::StoreHarmonic()
+
+//================================================================================================================
+
 void AliFlowAnalysisWithNestedLoops::BookAndNestAllLists()
 {
  // Book and nest all list in base list fHistList.
@@ -343,6 +376,10 @@ void AliFlowAnalysisWithNestedLoops::BookAndNestAllLists()
  fListRAD->SetName("Relative Angle Distribution");
  fListRAD->SetOwner(kTRUE);   
  if(fEvaluateNestedLoopsForRAD) fHistList->Add(fListRAD); 
+ // List for Q-cumulants:
+ fListQC->SetName("Q-cumulants");
+ fListQC->SetOwner(kTRUE);   
+ if(fEvaluateNestedLoopsForQC) fHistList->Add(fListQC); 
  // List for Mixed Harmonics:
  fListMH->SetName("Mixed Harmonics");
  fListMH->SetOwner(kTRUE);   
@@ -357,20 +394,22 @@ void AliFlowAnalysisWithNestedLoops::BookAndFillProfileHoldingSettings()
  // Book profile to hold all analysis settings.
 
  TString analysisSettingsName = "fAnalysisSettings";
- fAnalysisSettings = new TProfile(analysisSettingsName.Data(),"Settings for analysis with nested loops",6,0,6);
+ fAnalysisSettings = new TProfile(analysisSettingsName.Data(),"Settings for analysis with nested loops",7,0,7);
  fAnalysisSettings->GetXaxis()->SetLabelSize(0.035);
  fAnalysisSettings->GetXaxis()->SetBinLabel(1,"Nested loops for RAD?");
  fAnalysisSettings->Fill(0.5,(Int_t)fEvaluateNestedLoopsForRAD);
- fAnalysisSettings->GetXaxis()->SetBinLabel(2,"Nested loops for MH?");
- fAnalysisSettings->Fill(1.5,(Int_t)fEvaluateNestedLoopsForMH);
- fAnalysisSettings->GetXaxis()->SetBinLabel(3,"Integer n in cos(n(2#phi_{1}-#psi_{2}-#psi_{3}))");
- fAnalysisSettings->Fill(2.5,(Int_t)fCorrelatorIntegerMH);
- fAnalysisSettings->GetXaxis()->SetBinLabel(4,"Print on the screen?");
- fAnalysisSettings->Fill(3.5,(Int_t)fPrintOnTheScreen); 
- fAnalysisSettings->GetXaxis()->SetBinLabel(5,"fCrossCheckInPtSumBinNo");
- fAnalysisSettings->Fill(4.5,fCrossCheckInPtSumBinNo);
- fAnalysisSettings->GetXaxis()->SetBinLabel(6,"fCrossCheckInPtDiffBinNo");
- fAnalysisSettings->Fill(5.5,fCrossCheckInPtDiffBinNo);
+ fAnalysisSettings->GetXaxis()->SetBinLabel(2,"Nested loops for QC?");
+ fAnalysisSettings->Fill(1.5,(Int_t)fEvaluateNestedLoopsForQC);
+ fAnalysisSettings->GetXaxis()->SetBinLabel(3,"Nested loops for MH?");
+ fAnalysisSettings->Fill(2.5,(Int_t)fEvaluateNestedLoopsForMH);
+ fAnalysisSettings->GetXaxis()->SetBinLabel(4,"fHarmonic");
+ fAnalysisSettings->Fill(3.5,(Int_t)fHarmonic);
+ fAnalysisSettings->GetXaxis()->SetBinLabel(5,"Print on the screen?");
+ fAnalysisSettings->Fill(4.5,(Int_t)fPrintOnTheScreen); 
+ fAnalysisSettings->GetXaxis()->SetBinLabel(6,"fOppositeChargesPOI");
+ fAnalysisSettings->Fill(5.5,fOppositeChargesPOI);  
+ fAnalysisSettings->GetXaxis()->SetBinLabel(7,"fEvaluateDifferential3pCorrelator");
+ fAnalysisSettings->Fill(6.5,fEvaluateDifferential3pCorrelator);  
  fHistList->Add(fAnalysisSettings);
  
 } // end of void AliFlowAnalysisWithNestedLoops::BookAndFillProfileHoldingSettings()
@@ -398,6 +437,14 @@ void AliFlowAnalysisWithNestedLoops::BookEverythingForRAD()
  fRelativeAngleDistribution->GetYaxis()->SetTitle("#frac{dN}{#Delta #phi}"); 
  fRelativeAngleDistribution->GetXaxis()->SetTitle("#Delta #phi");
  fListRAD->Add(fRelativeAngleDistribution);
+
+ TString chargeName = "fCharge";
+ fCharge = new TH1D(chargeName.Data(),"Charges",3,0,3);
+ 
+ fCharge->GetXaxis()->SetBinLabel(1,"+"); 
+ fCharge->GetXaxis()->SetBinLabel(2,"-"); 
+ fCharge->GetXaxis()->SetBinLabel(3,"rest"); 
+ fListRAD->Add(fCharge);
 
 } // end fo void AliFlowAnalysisWithNestedLoops::BookEverythingForRAD()
 
@@ -427,6 +474,8 @@ void AliFlowAnalysisWithNestedLoops::AccessConstants()
 void AliFlowAnalysisWithNestedLoops::CrossCheckSettings()
 {
  // Cross-check if the user settings make sense. 
+ 
+ // ...
  
 } // end of void AliFlowAnalysisWithNestedLoops::CrossCheckSettings()
 
@@ -543,7 +592,7 @@ void AliFlowAnalysisWithNestedLoops::CheckPointersForRAD(TString where)
  if(!fRelativeAngleDistribution)
  {
   cout<<endl;
-  cout<<" WARNING (NL): !fRelativeAngleDistribution is NULL in "<<where.Data()<<"() !!!!"<<endl;
+  cout<<" WARNING (NL): fRelativeAngleDistribution is NULL in "<<where.Data()<<"() !!!!"<<endl;
   cout<<endl;
   exit(0); 
  }
@@ -567,27 +616,39 @@ void AliFlowAnalysisWithNestedLoops::CheckPointersForMH(TString where)
 {
  // Check pointers relevant for calculation of mixed harmonics.
  
- for(Int_t sd=0;sd<2;sd++)
- {
-  if(!(f3pCorrelatorVsPtSumDiffDirectPro[sd]))
-  {
-   cout<<endl;
-   cout<<" WARNING (NL): !"<<Form("f3pCorrelatorVsPtSumDiffDirectPro[%d]",sd)<<" is NULL in "<<where.Data()<<"() !!!!"<<endl;
-   cout<<endl;
-   exit(0);   
-  } 
- }
-
  if(strcmp(where.Data(),"Make") == 0)
  {
   // Check pointers used only in method Make():
-  // ...
- }
+  if(!f3pCorrelatorPro)
+  {
+   cout<<endl;
+   cout<<" WARNING (NL): f3pCorrelatorPro is NULL in Make() !!!!"<<endl;
+   cout<<endl;
+   exit(0); 
+  }
+  if(!fEvaluateDifferential3pCorrelator){return;}
+  for(Int_t sd=0;sd<2;sd++)
+  {
+   if(!(f3pCorrelatorVsPtSumDiffDirectPro[sd]))
+   {
+    cout<<endl;
+    cout<<" WARNING (NL): "<<Form("f3pCorrelatorVsPtSumDiffDirectPro[%d]",sd)<<" is NULL in Make() !!!!"<<endl;
+    cout<<endl;
+    exit(0);   
+   } 
+  } // end of for(Int_t sd=0;sd<2;sd++)
+ } // if(strcmp(where.Data(),"Make") == 0)
  else if(strcmp(where.Data(),"Finish") == 0)
  {
   // Check pointers used only in method Finish():
-  // ...
- }
+  if(!f3pCorrelatorPro)
+  {
+   cout<<endl;
+   cout<<" WARNING (NL): f3pCorrelatorPro is NULL in Finish() !!!!"<<endl;
+   cout<<endl;
+   exit(0); 
+  }
+ } // else if(strcmp(where.Data(),"Finish") == 0)
 
 } // end of void AliFlowAnalysisWithNestedLoops::CheckPointersForMH(TString where)
 
@@ -596,13 +657,14 @@ void AliFlowAnalysisWithNestedLoops::CheckPointersForMH(TString where)
 void AliFlowAnalysisWithNestedLoops::AccessSettings()
 {
  // Access the settings for analysis.
- 
+  
  fEvaluateNestedLoopsForRAD = (Bool_t)fAnalysisSettings->GetBinContent(1);
- fEvaluateNestedLoopsForMH = (Bool_t)fAnalysisSettings->GetBinContent(2);
- fCorrelatorIntegerMH = (Int_t)fAnalysisSettings->GetBinContent(3);
- fPrintOnTheScreen = (Bool_t)fAnalysisSettings->GetBinContent(4);
- fCrossCheckInPtSumBinNo = (Int_t)fAnalysisSettings->GetBinContent(5);
- fCrossCheckInPtDiffBinNo = (Int_t)fAnalysisSettings->GetBinContent(6);
+ fEvaluateNestedLoopsForQC = (Bool_t)fAnalysisSettings->GetBinContent(2);
+ fEvaluateNestedLoopsForMH = (Bool_t)fAnalysisSettings->GetBinContent(3);
+ fHarmonic = (Int_t)fAnalysisSettings->GetBinContent(4);
+ fPrintOnTheScreen = (Bool_t)fAnalysisSettings->GetBinContent(5);
+ fOppositeChargesPOI = (Bool_t)fAnalysisSettings->GetBinContent(6);
+ fEvaluateDifferential3pCorrelator = (Bool_t)fAnalysisSettings->GetBinContent(7);
                                                                                                                                                                                                                                                                                                                                    
 } // end of AliFlowAnalysisWithNestedLoops::AccessSettings()
 
@@ -626,19 +688,36 @@ void AliFlowAnalysisWithNestedLoops::BookEverythingForMH()
  // Book all objects relevant for mixed harmonics.
  
  if(fEvaluateNestedLoopsForMH)
- {
-  TString psdFlag[2] = {"PtSum","PtDiff"};
-  TString psdTitleFlag[2] = {"(p_{t,1}+p_{t,2})/2","#left|p_{t,1}-p_{t,2}#right|"};
-  //TString s3pCorrelatorVsPtSumDiffDirectProName = "f3pCorrelatorVsPtSumDiffDirectPro";
-  for(Int_t sd=0;sd<2;sd++)
+ {  
+  TString s3pCorrelatorProName = "f3pCorrelatorPro";
+  f3pCorrelatorPro = new TProfile(s3pCorrelatorProName.Data(),"",1,0,1);
+  f3pCorrelatorPro->SetStats(kFALSE);
+  f3pCorrelatorPro->GetXaxis()->SetLabelOffset(0.01);
+  f3pCorrelatorPro->GetXaxis()->SetLabelSize(0.05);
+  if(fHarmonic == 1)
   {
-   // to be improved: hardwired ,fnBinsPt,0.,fPtMax):
-   f3pCorrelatorVsPtSumDiffDirectPro[sd] = new TProfile(Form("f3pCorrelatorDirectVs%s",psdFlag[sd].Data()),"",fnBinsPt,0.,fPtMax);
-   //f3pCorrelatorVsPtSumDiffDirectPro[sd]->SetLabelSize(0.05);
-   //f3pCorrelatorVsPtSumDiffDirectPro[sd]->SetMarkerStyle(25);
-   f3pCorrelatorVsPtSumDiffDirectPro[sd]->GetXaxis()->SetTitle(psdTitleFlag[sd].Data());
-   fListMH->Add(f3pCorrelatorVsPtSumDiffDirectPro[sd]);
-  }  
+   f3pCorrelatorPro->GetXaxis()->SetBinLabel(1,"#LT#LTcos(#phi_{1}+#phi_{2}-2#phi_{3})#GT#GT");
+  } else
+    {
+     f3pCorrelatorPro->GetXaxis()->SetBinLabel(1,Form("#LT#LTcos[%i(#phi_{1}+#phi_{2}-2#phi_{3})]#GT#GT",fHarmonic));
+    }
+  fListMH->Add(f3pCorrelatorPro);  
+  
+  if(fEvaluateDifferential3pCorrelator)
+  {
+   TString psdFlag[2] = {"PtSum","PtDiff"};
+   TString psdTitleFlag[2] = {"(p_{t,1}+p_{t,2})/2","#left|p_{t,1}-p_{t,2}#right|"};
+   //TString s3pCorrelatorVsPtSumDiffDirectProName = "f3pCorrelatorVsPtSumDiffDirectPro";
+   for(Int_t sd=0;sd<2;sd++)
+   {
+    // to be improved: hardwired ,fnBinsPt,0.,fPtMax):
+    f3pCorrelatorVsPtSumDiffDirectPro[sd] = new TProfile(Form("f3pCorrelatorDirectVs%s",psdFlag[sd].Data()),"",fnBinsPt,0.,fPtMax);
+    //f3pCorrelatorVsPtSumDiffDirectPro[sd]->SetLabelSize(0.05);
+    //f3pCorrelatorVsPtSumDiffDirectPro[sd]->SetMarkerStyle(25);
+    f3pCorrelatorVsPtSumDiffDirectPro[sd]->GetXaxis()->SetTitle(psdTitleFlag[sd].Data());
+    fListMH->Add(f3pCorrelatorVsPtSumDiffDirectPro[sd]);
+   }
+  } // end of if(fEvaluateDifferential3pCorrelator)
  } // end of if(fEvaluateNestedLoopsForMH)
 
 } // end of AliFlowAnalysisWithNestedLoops::BookEverythingForMH()
@@ -691,41 +770,72 @@ void AliFlowAnalysisWithNestedLoops::EvaluateNestedLoopsForRAD(AliFlowEventSimpl
 
 void AliFlowAnalysisWithNestedLoops::EvaluateNestedLoopsForMH(AliFlowEventSimple *anEvent)
 {
- // Evaluate nested loops needed for calculation of mixed harmonics.
- // Remark: phi label azimuthal angle of RP particle and psi label azimuthal angle of POI particle.
- 
+ // Evaluate nested loops needed for mixed harmonics.
+ // Remark: phi labels the azimuthal angle of RP particle and psi labels azimuthal angle of POI particle.
+  
  Int_t nPrim = anEvent->NumberOfTracks(); 
+ Int_t nRP = anEvent->GetEventNSelTracksRP(); 
  AliFlowTrackSimple *aftsTrack = NULL;
- Double_t phi1=0.,psi2=0.,psi3=0.; // angles in the correlator cos[n(2phi1-psi2-psi3)] 
- Double_t pt2=0.,pt3=0.; // transverse momenta of psi2 and psi3
- Int_t n = fCorrelatorIntegerMH; 
- // Evaluting differential correlator cos[n(2phi1-psi2-psi3)] with three nested loops:
+ Double_t phi1=0.,phi2=0.,phi3=0.; // azimuthal angles of RPs
+ Double_t psi1=0.,psi2=0.; // azimuthal angles of POIs
+ Int_t charge1=0,charge2=0; // charge of POIs
+ Double_t pt1=0.,pt2=0.; // transverse momenta of POIs
+ Int_t n = fHarmonic; 
+ 
+ // Evaluting correlator cos[n(phi1+phi2-2*phi3)] with three nested loops:
+ if(nRP>=3)
+ {
+  for(Int_t i1=0;i1<nPrim;i1++)
+  {
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;
+   phi1 = aftsTrack->Phi();  
+   for(Int_t i2=0;i2<nPrim;i2++)
+   {
+    if(i2==i1) continue;
+    aftsTrack = anEvent->GetTrack(i2);
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi2 = aftsTrack->Phi();
+    for(Int_t i3=0;i3<nPrim;i3++)
+    {
+     if(i3==i1||i3==i2) continue;
+     aftsTrack=anEvent->GetTrack(i3);
+     if(!(aftsTrack->InRPSelection())) continue;
+     phi3 = aftsTrack->Phi();
+     f3pCorrelatorPro->Fill(0.5,cos(n*(phi1+phi2-2.*phi3)),1.);
+    } // end of for(Int_t i3=0;i3<nPrim;i3++)  
+   } // end of for(Int_t i2=0;i2<nPrim;i2++)  
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ }
+
+ // Evaluting correlator cos[n(psi1+psi2-2*phi3)] with three nested loops:
+ if(!fEvaluateDifferential3pCorrelator){return;}
  for(Int_t i1=0;i1<nPrim;i1++)
  {
   aftsTrack=anEvent->GetTrack(i1);
-  // RP condition (first particle in the correlator must be RP): 
-  if(!(aftsTrack->InRPSelection())) continue;
-  phi1 = aftsTrack->Phi();  
+  if(!(aftsTrack->InPOISelection())){continue;}
+  psi1 = aftsTrack->Phi();  
+  pt1 = aftsTrack->Pt();     
+  charge1 = aftsTrack->Charge();     
   for(Int_t i2=0;i2<nPrim;i2++)
   {
-   if(i2==i1) continue;
+   if(i2==i1){continue;}
    aftsTrack = anEvent->GetTrack(i2);
-   // POI condition (second particle in the correlator must be POI):
-   if(!(aftsTrack->InPOISelection())) continue;
+   if(!(aftsTrack->InPOISelection())){continue;}
    psi2 = aftsTrack->Phi();
    pt2 = aftsTrack->Pt();
+   charge2 = aftsTrack->Charge();     
+   if(fOppositeChargesPOI && charge1 == charge2){continue;}
    for(Int_t i3=0;i3<nPrim;i3++)
    {
-    if(i3==i1||i3==i2) continue;
+    if(i3==i1||i3==i2){continue;}
     aftsTrack=anEvent->GetTrack(i3);
-    // POI condition (third particle in the correlator must be POI):
-    if(!(aftsTrack->InPOISelection())) continue;
-    psi3 = aftsTrack->Phi();
-    pt3 = aftsTrack->Pt();   
-    // Evaluate and store differential correlator cos[n(2phi1-psi2-psi3)]:
-    Double_t ptSum = (pt2+pt3)/2.;
-    Double_t ptDiff = TMath::Abs(pt2-pt3);
-    Double_t diff3pCorrelator = TMath::Cos(n*(2.*phi1-psi2-psi3));
+    if(!(aftsTrack->InRPSelection())){continue;}
+    phi3 = aftsTrack->Phi();
+    // Evaluate and store differential correlator cos[n(psi1+psi2-2*phi3)]:
+    Double_t ptSum = (pt1+pt2)/2.;
+    Double_t ptDiff = TMath::Abs(pt1-pt2);
+    Double_t diff3pCorrelator = TMath::Cos(n*(psi1+psi2-2.*phi3));
     f3pCorrelatorVsPtSumDiffDirectPro[0]->Fill(ptSum,diff3pCorrelator,1.);
     f3pCorrelatorVsPtSumDiffDirectPro[1]->Fill(ptDiff,diff3pCorrelator,1.);
    } // end of for(Int_t i3=0;i3<nPrim;i3++)  
@@ -753,21 +863,26 @@ void AliFlowAnalysisWithNestedLoops::PrintOnTheScreen()
  
  if(fEvaluateNestedLoopsForMH) 
  {
-  cout<<"  Evaluated for mixed harmonics."<<endl;
-  if(fCorrelatorIntegerMH!=1)
+  cout<<"  Evaluated for mixed harmonics:"<<endl;
+  if(fHarmonic != 1)
   {
-   cout<< "  cos["<<fCorrelatorIntegerMH<<"(2phi1-psi2-psi3)] = "<<endl;
+   cout<<"   cos["<<fHarmonic<<"(phi1+phi2-2phi3)] = "<<f3pCorrelatorPro->GetBinContent(1)<<" +/- " <<f3pCorrelatorPro->GetBinError(1)<<endl;
   } else
     {
-     cout<< "  cos(2phi1-psi2-psi3) = "<<endl;
-    } 
-  cout<< "  a) in pt sum bin "<<fCrossCheckInPtSumBinNo<<": "<<
-  f3pCorrelatorVsPtSumDiffDirectPro[0]->GetBinContent(fCrossCheckInPtSumBinNo)<<
-  " +/- "<<f3pCorrelatorVsPtSumDiffDirectPro[0]->GetBinError(fCrossCheckInPtSumBinNo)<<endl;
-  cout<< "  b) in pt diff bin "<<fCrossCheckInPtDiffBinNo<<": "<<
-  f3pCorrelatorVsPtSumDiffDirectPro[1]->GetBinContent(fCrossCheckInPtDiffBinNo)<<
-  " +/- "<<f3pCorrelatorVsPtSumDiffDirectPro[1]->GetBinError(fCrossCheckInPtDiffBinNo)<<endl;
- }
+     cout<<"   cos(phi1+phi2-2phi3) = "<<f3pCorrelatorPro->GetBinContent(1)<<" +/- " <<f3pCorrelatorPro->GetBinError(1)<<endl;
+    }  
+  if(fEvaluateDifferential3pCorrelator)
+  {
+   cout<<"  Evaluated also for differential 3p correlator "<<endl;
+   if(fHarmonic != 1)
+   {
+    cout<<"   cos["<<fHarmonic<<"(psi1+psi2-2phi3)]. "<<endl;
+   } else
+     {  
+      cout<<"   cos(psi1+psi2-2phi3). "<<endl; 
+     }  
+  } // end of if(fEvaluateDifferential3pCorrelator)
+ } // end of if(fEvaluateNestedLoopsForMH) 
  
  if(!fEvaluateNestedLoopsForRAD && !fEvaluateNestedLoopsForMH)
  {
