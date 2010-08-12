@@ -4,7 +4,7 @@
 // Author: Gustavo Conesa (INFN-LNF)
 
 
-void PrintEMCALRecParam(char * file = "Run0_999999999_v0_s0.root"){
+void PrintEMCALRecParam(char * file = "$ALICE_ROOT/OCDB/EMCAL/Calib/RecoParam/Run0_999999999_v0_s0.root"){
 
 
 TFile * f = new TFile(file,"READ");
@@ -24,9 +24,10 @@ cout<<"============== "<<rparam->GetName()<<" ==============="<<endl;
 
 cout<<"================================================"<<endl;
 
-
-rparam->Print("");
-
+//rparam->Print("reco");//Print only clusterizer parameters
+//rparam->Print("pid");//Print only pid parameters
+//rparam->Print("raw");//Print only raw digitization parameters
+rparam->Print("");// Print all
 
 
 }

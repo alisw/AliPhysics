@@ -34,7 +34,7 @@
 
 ClassImp(AliEMCALRecParam)
   
-  TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings 
+TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings 
 
 AliEMCALRecParam::AliEMCALRecParam() :
   AliDetectorRecoParam(),
@@ -46,6 +46,7 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fTimeCut(1.),// high value, accept all
   fTimeMin(-1.),// small value, accept all
   fTimeMax(1.),// high value, accept all//clustering
+  fClusterizerFlag(AliEMCALRecParam::kClusterizerv1),
   fTrkCutX(6.0), 
   fTrkCutY(6.0), 
   fTrkCutZ(6.0),  
@@ -86,7 +87,7 @@ AliEMCALRecParam::AliEMCALRecParam() :
   // Pb Pb
   
   // as a first step, all array elements are initialized to 0.0
-  Int_t i, j;
+  Int_t i=0, j=0;
   for (i = 0; i < 6; i++) {
     for (j = 0; j < 6; j++) {      
       fGamma[i][j] =  fPiZero[i][j] = fHadron[i][j] = 0.; 
@@ -234,6 +235,7 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   fTimeCut(rp.fTimeCut), 
   fTimeMin(rp.fTimeMin),
   fTimeMax(rp.fTimeMax),//clustering
+  fClusterizerFlag(rp.fClusterizerFlag),
   fTrkCutX(rp.fTrkCutX), 
   fTrkCutY(rp.fTrkCutY), 
   fTrkCutZ(rp.fTrkCutZ),  
@@ -256,7 +258,7 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   //copy constructor
   
   //PID values
-  Int_t i, j;
+  Int_t i=0, j=0;
   for (i = 0; i < 6; i++) {
     for (j = 0; j < 6; j++) {
       fGamma[i][j]       = rp.fGamma[i][j];
@@ -287,6 +289,7 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fTimeCut   = rp.fTimeCut;
     fTimeMax   = rp.fTimeMax;
     fTimeMin   = rp.fTimeMin;//clustering
+    fClusterizerFlag = rp.fClusterizerFlag;
     fTrkCutX   = rp.fTrkCutX;
     fTrkCutY   = rp.fTrkCutY;
     fTrkCutZ   = rp.fTrkCutZ;
@@ -307,7 +310,7 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fFitLEDEvents      = rp.fFitLEDEvents;//raw signal
 	  
     //PID values
-    Int_t i, j;
+    Int_t i=0, j=0;
     for (i = 0; i < 6; i++) {
       for (j = 0; j < 6; j++) {
 	fGamma[i][j]       = rp.fGamma[i][j];
@@ -383,7 +386,7 @@ AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
   
   //PID parameters for pp  implemented 
   // as a first step, all array elements are initialized to 0.0
-  Int_t i, j;
+  Int_t i=0, j=0;
   for (i = 0; i < 6; i++) {
     for (j = 0; j < 6; j++) {
       params->SetGamma(i,j,0.);
@@ -554,6 +557,7 @@ void AliEMCALRecParam::Print(Option_t * opt) const
   // if nothing is specified print all, if "reco" just clusterization/track matching
   // if "pid", just PID parameters, if "raw", just raw utils parameters.
   if(!strcmp("",opt) || !strcmp("reco",opt)){
+    AliInfo(Form("Clusterizer selected: %d", fClusterizerFlag));
     AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%2.1f ns\n fTimeMin=%2.1f ns\n fTimeMax=%2.1f ns\n",
 		 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9));
     

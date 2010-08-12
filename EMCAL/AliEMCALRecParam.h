@@ -23,6 +23,12 @@
 class AliEMCALRecParam : public AliDetectorRecoParam
 {
  public:
+
+  enum AliEMCALClusterizerFlag
+  {
+    kClusterizerv1  = 0,
+    kClusterizerNxN = 1   
+  };
   
   AliEMCALRecParam() ;
   AliEMCALRecParam(const AliEMCALRecParam& recParam);
@@ -113,15 +119,18 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Bool_t   UseFALTRO()            const {return fUseFALTRO; }
   Bool_t   FitLEDEvents()         const {return fFitLEDEvents; }
 
-	virtual void Print(Option_t * option="") const ;
+  virtual void Print(Option_t * option="") const ;
   
   static AliEMCALRecParam* GetDefaultParameters();
   static AliEMCALRecParam* GetLowFluxParam();
   static AliEMCALRecParam* GetHighFluxParam();
   static AliEMCALRecParam* GetCalibParam();
   static AliEMCALRecParam* GetCosmicParam();
-  
+
   static const  TObjArray* GetMappings();
+  
+  void    SetClusterizerFlag(Short_t val) { fClusterizerFlag = val;  }
+  Short_t GetClusterizerFlag() const      { return fClusterizerFlag; }
   
  private:
   //Clustering
@@ -133,6 +142,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Float_t fTimeCut ;             // Maximum time of digits with respect to EMC cluster max.
   Float_t fTimeMin ;             // Minimum time of digits
   Float_t fTimeMax ;             // Maximum time of digits
+  Short_t fClusterizerFlag ;     // Choice of the clusterizer; Default selection (v1) is zero
 
   //PID (Guenole)
   Double_t fGamma[6][6];         // Parameter to Compute PID for photons     
@@ -169,7 +179,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
 	
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,12)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,13)     // Reconstruction parameters
     
     } ;
 

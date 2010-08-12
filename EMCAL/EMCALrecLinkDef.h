@@ -6,6 +6,7 @@
 #pragma link C++ class AliEMCALReconstructor+;
 #pragma link C++ class AliEMCALClusterizer+;
 #pragma link C++ class AliEMCALClusterizerv1+;
+#pragma link C++ class AliEMCALClusterizerNxN+;
 #pragma link C++ class AliEMCALTrack+;
 #pragma link C++ class AliEMCALTracker+;
 #pragma link C++ class AliEMCALPID+;

@@ -45,6 +45,7 @@
 #include "AliEMCALRawUtils.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALClusterizerv1.h"
+#include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALPID.h"
 #include "AliEMCALTrigger.h"
@@ -106,13 +107,11 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 		if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
     }
 	
-	if(!fPedestalData)
-		AliFatal("Dead map not found in CDB!");
+  if(!fPedestalData)
+    AliFatal("Dead map not found in CDB!");
 	
-	
-  //Init the clusterizer with geometry and calibration pointers, avoid doing it twice.
-  fgClusterizer = new AliEMCALClusterizerv1(fGeom, fCalibData,fPedestalData); 
-	
+  InitClusterizer();
+		
   if(!fGeom) AliFatal(Form("Could not get geometry!"));
 
   AliEMCALTriggerDCSConfigDB* dcsConfigDB = AliEMCALTriggerDCSConfigDB::Instance();
@@ -143,6 +142,32 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
 // }
 
 //____________________________________________________________________________
+void AliEMCALReconstructor::InitClusterizer() 
+{
+  //Init the clusterizer with geometry and calibration pointers, avoid doing it twice.
+  
+  AliEMCALRecParam *recParam = NULL;
+  AliCDBEntry *entry = (AliCDBEntry*) 
+  AliCDBManager::Instance()->Get("EMCAL/Calib/RecoParam");
+  //Get The reco param for the default event specie
+  if (entry) 
+   recParam = (AliEMCALRecParam*)((TObjArray *) entry->GetObject())->At(0);
+    
+  if(!recParam)  
+    AliFatal("RecoParam not found in CDB!");
+    
+  if (recParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
+  {
+    fgClusterizer = new AliEMCALClusterizerv1(fGeom, fCalibData,fPedestalData); 
+  }
+  else
+  {
+    fgClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData,fPedestalData); 
+  }
+  
+}
+
+//____________________________________________________________________________
 void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
 {
   // method called by AliReconstruction; 
@@ -154,6 +179,7 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   AliCodeTimerAuto("",0)
 
   ReadDigitsArrayFromTree(digitsTree);
+  
   fgClusterizer->InitParameters();
   fgClusterizer->SetOutput(clustersTree);
  
@@ -287,7 +313,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
     const AliEMCALDigit * dig = (const AliEMCALDigit*)digits->At(idig);
     if(dig->GetAmplitude() > 0 ){
-	  energy = (static_cast<AliEMCALClusterizerv1*> (fgClusterizer))->Calibrate(dig->GetAmplitude(),dig->GetTime(),dig->GetId()); //TimeR or Time?
+	  energy = fgClusterizer->Calibrate(dig->GetAmplitude(),dig->GetTime(),dig->GetId()); //TimeR or Time?
 	  if(energy > 0){ //Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them	
 		  emcCells.SetCell(idignew,dig->GetId(),energy, dig->GetTime());   
 		  idignew++;
@@ -381,13 +407,13 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       ec->SetPosition(xyz);
       ec->SetE(clust->GetEnergy());
 		
-	  //Distance to the nearest bad crystal
-	  ec->SetDistanceToBadChannel(clust->GetDistanceToBadTower()); 
+      //Distance to the nearest bad crystal
+      ec->SetDistanceToBadChannel(clust->GetDistanceToBadTower()); 
 
       ec->SetNCells(newCellMult);
       //Change type of list from short to ushort
       UShort_t *newAbsIdList  = new UShort_t[newCellMult];
-      Double_t *newFracList  = new Double_t[newCellMult];
+      Double_t *newFracList   = new Double_t[newCellMult];
       for(Int_t i = 0; i < newCellMult ; i++) {
         newAbsIdList[i]=absIdList[i];
         newFracList[i]=fracList[i];

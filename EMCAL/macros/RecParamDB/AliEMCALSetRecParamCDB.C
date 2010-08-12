@@ -127,6 +127,8 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   //AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetDefaultParameters();
   
   AliEMCALRecParam* params =  AliEMCALRecParam::GetDefaultParameters();
+  //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
+  params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
   
   //Clusterization
   params->SetClusteringThreshold(0.5);
@@ -306,6 +308,9 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   //AliEMCALRecParam *recParamDB = AliEMCALRecParam::GetLowFluxParam();
   
   AliEMCALRecParam* params =  AliEMCALRecParam::GetDefaultParameters();
+  //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
+  params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
+  
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
   params->SetMinECut(0.01);  //10 MeV       	
   params->SetTimeCut(250e-9);//250 ns

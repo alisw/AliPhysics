@@ -54,7 +54,8 @@ public:
   virtual ~AliEMCALReconstructor() ; //dtor
 
   virtual  void Init() {;}
-
+  virtual  void InitClusterizer();
+  
   Bool_t       Debug() const { return fDebug ; }
 
   using AliReconstructor::FillESD;
@@ -63,7 +64,7 @@ public:
   AliTracker*  CreateTracker () const 
   {return new AliEMCALTracker;} 
   using AliReconstructor::Reconstruct;
-  virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
+  virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const ;
 
   virtual Bool_t             HasDigitConversion() const {return kTRUE;};
   virtual void               ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
