@@ -24,7 +24,7 @@ class AliRsnAnalysisSE : public AliRsnVAnalysisTaskSE
   public:
     AliRsnAnalysisSE(const char *name = "AliRsnAnalysisSE", Bool_t useKine = kFALSE);
     AliRsnAnalysisSE(const AliRsnAnalysisSE& copy);
-    virtual ~AliRsnAnalysisSE();
+//     virtual ~AliRsnAnalysisSE();
 
     // Implement this
     virtual void    RsnUserCreateOutputObjects();
