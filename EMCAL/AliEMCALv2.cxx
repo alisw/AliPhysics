@@ -89,7 +89,7 @@ void AliEMCALv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
     // Add a hit to the hit list.
     // An EMCAL hit is the sum of all hits in a tower section
     //   originating from the same entering particle 
-    static Int_t hitCounter=0.;
+    static Int_t hitCounter=0;
     static AliEMCALHit *newHit=0, *curHit=0;
     static Bool_t deja=kFALSE;
 
