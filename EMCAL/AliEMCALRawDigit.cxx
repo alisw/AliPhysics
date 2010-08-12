@@ -93,7 +93,7 @@ void AliEMCALRawDigit::Print(const Option_t* /*opt*/) const
 	printf("===\nDigit id: %4d / %d Time Samples: \n",fId,fNSamples);
 	for (Int_t i=0; i < fNSamples; i++) 
 	{
-		Int_t timeBin, amp;
+		Int_t timeBin=-1, amp=0;
 		GetTimeSample(i, timeBin, amp);
 		printf("(%d,%d) ",timeBin,amp);
 	}
@@ -107,7 +107,7 @@ Int_t AliEMCALRawDigit::Compare(const TObject* obj) const
 	// Compares two digits with respect to its Id
 	// to sort according increasing Id
 
-	Int_t rv;
+	Int_t rv=2;
 
 	AliEMCALRawDigit* digit = (AliEMCALRawDigit *)obj; 
 

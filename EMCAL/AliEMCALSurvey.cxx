@@ -287,7 +287,7 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
   //Center of supermodules
   Float_t *pars = geom->GetSuperModulesPars();
   Double_t rpos = (geom->GetEnvelop(0) + geom->GetEnvelop(1))/2.;
-  Double_t phi, phiRad, xpos, ypos, zpos;
+  Double_t phi=0, phiRad=0, xpos=0, ypos=0, zpos=0;
 
   AliEMCALSuperModuleCoords *idealSM = new AliEMCALSuperModuleCoords[fNSuperModule];
   for (Int_t smodnum = 0; smodnum < geom->GetNumberOfSuperModules(); ++smodnum) {
@@ -475,7 +475,7 @@ void AliEMCALSurvey::InitSuperModuleData(const Double_t *xReal, const Double_t *
   //Center of supermodules
   Float_t *pars = geom->GetSuperModulesPars();
   Double_t rpos = (geom->GetEnvelop(0) + geom->GetEnvelop(1))/2.;
-  Double_t phi, phiRad, xpos, ypos, zpos;
+  Double_t phi=0, phiRad=0, xpos=0, ypos=0, zpos=0;
 
   zpos = pars[2];
 

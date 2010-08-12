@@ -164,8 +164,8 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Doub
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
   const  Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
-  static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
-  static Int_t iphim, ietam;
+  static Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
+  static Int_t iphim=-1, ietam=-1;
   static AliEMCALShishKebabTrd1Module *mod = 0;
   static TVector2 v;
   if(!CheckAbsCellId(absId)) return kFALSE;

@@ -93,15 +93,13 @@ void AliEMCALv3::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
     // Add a hit to the hit list.
     // An EMCAL hit is the sum of all hits in a tower section
     //   originating from the same entering particle 
-    static Int_t hitCounter;
-    static AliEMCALHitv1 *newHit, *curHit;
-    static Bool_t deja;
-
-    deja = kFALSE;
+    static Int_t hitCounter=0;
+    static AliEMCALHitv1 *newHit=0, *curHit=0;
+    static Bool_t deja = kFALSE;
 
     newHit = new AliEMCALHitv1(shunt, primary, tracknumber, iparent, ienergy, id, hits, p);
     for ( hitCounter = fNhits-1; hitCounter >= 0 && !deja; hitCounter-- ) {
-	curHit = (AliEMCALHitv1*) (*fHits)[hitCounter];
+      curHit = (AliEMCALHitv1*) (*fHits)[hitCounter];
 	// We add hits with the same tracknumber, while GEANT treats
 	// primaries succesively
 	if(curHit->GetPrimary() != primary) 
@@ -130,8 +128,8 @@ void AliEMCALv3::StepManager(void){
   static TLorentzVector pos; // Lorentz vector of the track current position.
   static TLorentzVector mom; // Lorentz vector of the track current momentum.
   static Float_t ienergy = 0;
-  static TString curVolName;
-  static int supModuleNumber, moduleNumber, yNumber, xNumber, absid;
+  static TString curVolName="";
+  static int supModuleNumber=-1, moduleNumber=-1, yNumber=-1, xNumber=-1, absid=-1;
   static int keyGeom=0;
   static char *vn = "SX"; // 15-mar-05
   static int nSMOP[7]={1,3,5,7,9,11}; // 30-mar-05
@@ -234,7 +232,7 @@ void AliEMCALv3::StepManager(void){
 	  else                                    BirkC1_mod=fBirkC1;
 	}
 
-	Float_t dedxcm;
+	Float_t dedxcm=0;
 	if (gMC->TrackStep()>0)  dedxcm=1000.*gMC->Edep()/gMC->TrackStep();
 	else                     dedxcm=0;
 	lightYield=lightYield/(1.+BirkC1_mod*dedxcm+fBirkC2*dedxcm*dedxcm);

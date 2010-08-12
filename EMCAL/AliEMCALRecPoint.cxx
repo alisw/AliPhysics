@@ -308,7 +308,7 @@ Int_t AliEMCALRecPoint::Compare(const TObject * obj) const
 
   Float_t delta = 1 ; //Width of "Sorting row". 
 	
-  Int_t rv ; 
+  Int_t rv = 2 ; 
 
   AliEMCALRecPoint * clu = (AliEMCALRecPoint *)obj ; 
 
@@ -476,7 +476,7 @@ void  AliEMCALRecPoint::EvalDispersion(Float_t logWeight, TClonesArray * digits)
 
   Double_t d = 0., wtot = 0., w = 0.;
   Int_t iDigit=0, nstat=0;
-  AliEMCALDigit * digit ;
+  AliEMCALDigit * digit=0;
 	
   // Calculates the dispersion in cell units 
   Double_t etai, phii, etaMean=0.0, phiMean=0.0; 
@@ -633,7 +633,7 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
 	// Calculates the center of gravity in the local EMCAL-module coordinates 
 	//  Info("Print", " logWeight %f : cluster energy %f ", logWeight, fAmp); // for testing
 		
-	AliEMCALDigit * digit;
+	AliEMCALDigit * digit=0;
 	Int_t i=0, nstat=0;
 	
 	static Double_t dist  = TmaxInCm(Double_t(fAmp));
@@ -711,7 +711,7 @@ void AliEMCALRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray * digi
   // Calculates the center of gravity in the global ALICE coordinates 
   //  Info("Print", " logWeight %f : cluster energy %f ", logWeight, fAmp); // for testing
   
-  AliEMCALDigit * digit;
+  AliEMCALDigit * digit=0;
   Int_t i=0, nstat=0;
 	
   static Double_t dist  = TmaxInCm(Double_t(fAmp));
@@ -789,8 +789,8 @@ Double_t phiSlope, TClonesArray * digits)
 {
   // Aug 14-16, 2007 - for fit 
   // Aug 31 - should be static ??
-  static Double_t ycorr;
-  static AliEMCALDigit *digit;
+  static Double_t ycorr=0;
+  static AliEMCALDigit *digit=0;
   Int_t i=0, nstat=0;
   Double_t clXYZ[3]={0.,0.,0.}, clRmsXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.; 
 
@@ -864,8 +864,8 @@ Bool_t AliEMCALRecPoint::EvalLocalPosition2(TClonesArray * digits, TArrayD &ed)
 Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
 {
   // Used when digits should be recalibrated
-  static Double_t deff, w0, esum;
-  static Int_t iDigit;
+  static Double_t deff=0, w0=0, esum=0;
+  static Int_t iDigit=0;
   //  static AliEMCALDigit *digit;
 
   if(ed.GetSize() && (digits->GetEntries()!=ed.GetSize())) return kFALSE;
@@ -883,7 +883,7 @@ Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(TClonesArray *digits, TArra
 Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(const Double_t esum, const Double_t deff, const Double_t w0, TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
 {
   //Evaluate position of digits in supermodule.
-  static AliEMCALDigit *digit;
+  static AliEMCALDigit *digit=0;
 
   Int_t i=0, nstat=0;
   Double_t clXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.; 
@@ -958,9 +958,9 @@ void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
   // Unfinished - Nov 15,2006
   // Distance is calculate in (phi,eta) units
 
-  AliEMCALDigit * digit ;
+  AliEMCALDigit * digit = 0 ;
 
-  Int_t iDigit;
+  Int_t iDigit=0;
 
   if (!fLocPos.Mag()) {
     EvalLocalPosition(logWeight, digits);
@@ -998,7 +998,7 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 
   AliEMCALDigit * digit = 0;
 	
-  Double_t etai , phii, w; 
+  Double_t etai =0, phii=0, w=0; 
   int nSupMod=0, nModule=0, nIphi=0, nIeta=0;
   int iphi=0, ieta=0;
   for(Int_t iDigit=0; iDigit<fMulDigit; iDigit++) {
@@ -1072,7 +1072,7 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
   // have contributed to this RecPoint and calculate deposited energy 
   // for each track
   
-  AliEMCALDigit * digit ;
+  AliEMCALDigit * digit =0;
   Int_t * primArray = new Int_t[fMaxTrack] ;
   Float_t * dEPrimArray = new Float_t[fMaxTrack] ;
 
@@ -1124,7 +1124,7 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
 {
   // Constructs the list of parent particles (tracks) which have contributed to this RecPoint
  
-  AliEMCALDigit * digit ;
+  AliEMCALDigit * digit=0 ;
   Int_t * parentArray = new Int_t[fMaxTrack] ;
   Float_t * dEParentArray = new Float_t[fMaxTrack] ;
 
@@ -1253,7 +1253,6 @@ Float_t AliEMCALRecPoint::GetMaximalEnergy(void) const
   Float_t menergy = 0. ;
 
   Int_t iDigit;
-
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
  
     if(fEnergyList[iDigit] > menergy) 
@@ -1305,11 +1304,11 @@ Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * 
   // Calculates the number of local maxima in the cluster using fLocalMaxCut as the minimum
   // energy difference between two local maxima
 
-  AliEMCALDigit * digit ;
-  AliEMCALDigit * digitN ;
+  AliEMCALDigit * digit  = 0;
+  AliEMCALDigit * digitN = 0;
   
-  Int_t iDigitN ;
-  Int_t iDigit ;
+  Int_t iDigitN = 0 ;
+  Int_t iDigit  = 0 ;
 
   for(iDigit = 0; iDigit < fMulDigit; iDigit++)
     maxAt[iDigit] = (AliEMCALDigit*) digits->At(fDigitsList[iDigit])  ;
@@ -1319,7 +1318,7 @@ Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * 
       digit = maxAt[iDigit] ;
           
       for(iDigitN = 0; iDigitN < fMulDigit; iDigitN++) {	
-	digitN = (AliEMCALDigit *) digits->At(fDigitsList[iDigitN]) ; 
+        digitN = (AliEMCALDigit *) digits->At(fDigitsList[iDigitN]) ; 
 	
 	if ( AreNeighbours(digit, digitN) ) {
 	  if (fEnergyList[iDigit] > fEnergyList[iDigitN] ) {    
@@ -1365,11 +1364,11 @@ Int_t AliEMCALRecPoint::GetPrimaryIndex() const
 void AliEMCALRecPoint::EvalTime(TClonesArray * digits){
   // time is set to the time of the digit with the maximum energy
 
-  Float_t maxE = 0;
-  Int_t maxAt = 0;
+  Float_t maxE  = 0;
+  Int_t   maxAt = 0;
   for(Int_t idig=0; idig < fMulDigit; idig++){
     if(fEnergyList[idig] > maxE){
-      maxE = fEnergyList[idig] ;
+      maxE  = fEnergyList[idig] ;
       maxAt = idig;
     }
   }
@@ -1387,7 +1386,7 @@ void AliEMCALRecPoint::Paint(Option_t *)
   Coord_t x = pos.X()     ;
   Coord_t y = pos.Z()     ;
   Color_t markercolor = 1 ;
-  Size_t  markersize = 1. ;
+  Size_t  markersize  = 1.;
   Style_t markerstyle = 5 ;
   
   if (!gPad->IsBatch()) {
@@ -1405,11 +1404,10 @@ Double_t AliEMCALRecPoint::TmaxInCm(const Double_t e , const Int_t key)
   // e energy in GeV)
   // key  =  0(gamma, default)
   //     !=  0(electron)
-  static Double_t ca = 4.82;  // shower max parameter - first guess; ca=TMath::Log(1000./8.07)
-  static Double_t x0 = 1.23;  // radiation lenght (cm)
-  static Double_t tmax = 0.;   // position of electromagnetic shower max in cm
+  static Double_t ca   = 4.82;  // shower max parameter - first guess; ca=TMath::Log(1000./8.07)
+  static Double_t x0   = 1.23;  // radiation lenght (cm)
+  static Double_t tmax = 0.;    // position of electromagnetic shower max in cm
 
-  tmax = 0.0;
   if(e>0.1) {
     tmax = TMath::Log(e) + ca;
     if      (key==0) tmax += 0.5; 
@@ -1478,8 +1476,7 @@ void AliEMCALRecPoint::Print(Option_t *opt) const
 Double_t  AliEMCALRecPoint::GetPointEnergy() const
 {
   //Returns energy ....
-  static double e;
-  e=0.0;
+  static double e=0.0;
   for(int ic=0; ic<GetMultiplicity(); ic++) e += double(fEnergyList[ic]);
   return e;
 }

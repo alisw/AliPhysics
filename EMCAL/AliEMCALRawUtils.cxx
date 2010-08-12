@@ -477,7 +477,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 		
 		AliDebug(1,Form("Found TRG digit in TRU: %2d ADC: %2d",itru,in.GetColumn()));
 		
-		Int_t idtrg;
+		Int_t idtrg=0;
 		
 		Bool_t isOK = fGeom->GetAbsFastORIndexFromTRU(itru, in.GetColumn(), idtrg);
 		
@@ -790,11 +790,11 @@ Double_t AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
   // N:   par[3]
   // ped: par[4]
   //
-  Double_t signal ;
-  Double_t tau =par[2];
-  Double_t n =par[3];
+  Double_t signal = 0. ;
+  Double_t tau = par[2];
+  Double_t n   = par[3];
   Double_t ped = par[4];
-  Double_t xx = ( x[0] - par[1] + tau ) / tau ;
+  Double_t xx  = ( x[0] - par[1] + tau ) / tau ;
 
   if (xx <= 0) 
     signal = ped ;  
@@ -823,9 +823,9 @@ Double_t AliEMCALRawUtils::RawResponseFunctionLog(Double_t *x, Double_t *par)
   // N:   par[3]
   // ped: par[4]
   //
-  Double_t signal ;
-  Double_t tau =par[2];
-  Double_t n =par[3];
+  Double_t signal = 0. ;
+  Double_t tau = par[2];
+  Double_t n   = par[3];
   //Double_t ped = par[4]; // not used
   Double_t xx = ( x[0] - par[1] + tau ) / tau ;
 

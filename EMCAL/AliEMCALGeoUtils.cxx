@@ -124,7 +124,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const Text_t* name, const Text_t* title)
   fNETAdiv = fEMCGeometry->GetNETAdiv();
   fNPHIdiv = fEMCGeometry->GetNPHIdiv();
   fNCellsInModule = fNPHIdiv*fNETAdiv;
-  static int i;
+  static int i=0;
   Int_t nSMod = fEMCGeometry->GetNumberOfSuperModules();
   fPhiBoundariesOfSM.Set(nSMod);
   fPhiCentersOfSM.Set(nSMod/2);
@@ -137,7 +137,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const Text_t* name, const Text_t* title)
   Double_t phiMax =  0.;
   for(Int_t sm=0; sm<nSMod; sm++) {
     fEMCGeometry->GetPhiBoundariesOfSM(sm,phiMin,phiMax);
-	i=sm/2;
+    i=sm/2;
     fPhiCentersOfSM[i] = fEMCGeometry->GetPhiCenterOfSM(sm);
   }
   fNCells = fEMCGeometry->GetNCells();
@@ -244,7 +244,7 @@ void AliEMCALGeoUtils::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind)
 void AliEMCALGeoUtils::GetGlobal(Int_t absId , double glob[3]) const
 {
   // Alice numbering scheme - Jun 03, 2006
-  static Int_t nSupMod, nModule, nIphi, nIeta;
+  static Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1;
   static double loc[3];
 
   glob[0]=glob[1]=glob[2]=0.0; // bad case
@@ -276,8 +276,8 @@ void AliEMCALGeoUtils::GetGlobal(Int_t absId , TVector3 &vglob) const
 void AliEMCALGeoUtils::PrintCellIndexes(Int_t absId, int pri, const char *tit) const
 {
   // Service methods
-  Int_t nSupMod, nModule, nIphi, nIeta;
-  Int_t iphi, ieta;
+  Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1;
+  Int_t iphi=-1, ieta=-1;
   TVector3 vg;
 
   GetCellIndex(absId,  nSupMod, nModule, nIphi, nIeta);
@@ -354,7 +354,7 @@ void  AliEMCALGeoUtils::GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, 
 			Int_t &iphim, Int_t &ietam, Int_t &nModule) const
 {
   // Transition from cell indexes (ieta,iphi) to module indexes (ietam,iphim, nModule)
-  static Int_t nphi;
+  static Int_t nphi=0;
   nphi  = GetNumberOfModuleInPhiDirection(nSupMod);  
 
   ietam  = ieta/fNETAdiv;
@@ -366,8 +366,8 @@ void  AliEMCALGeoUtils::GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, 
 Int_t  AliEMCALGeoUtils::GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, Int_t ieta) const
 {
   // Transition from super module number(nSupMod) and cell indexes (ieta,iphi) to absId
-  static Int_t ietam, iphim, nModule;
-  static Int_t nIeta, nIphi; // cell indexes in module
+  static Int_t ietam=-1, iphim=-1, nModule=-1;
+  static Int_t nIeta=-1, nIphi=-1; // cell indexes in module
 
   GetModuleIndexesFromCellIndexesInSModule(nSupMod, iphi, ieta, ietam, iphim, nModule);
 
@@ -383,7 +383,7 @@ Bool_t AliEMCALGeoUtils::SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi,
 { 
   // Return false if phi belongs a phi cracks between SM
  
-  static Int_t i;
+  static Int_t i=0;
 
   if(TMath::Abs(eta) > fEtaMaxOfTRD1) return kFALSE;
 
@@ -409,8 +409,8 @@ Bool_t AliEMCALGeoUtils::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
 {
   // Nov 17,2006
   // stay here - phi problem as usual 
-  static Int_t nSupMod, i, ieta, iphi, etaShift, nphi;
-  static Double_t absEta=0.0, d=0.0, dmin=0.0, phiLoc;
+  static Int_t nSupMod=0, i=0, ieta=-1, iphi=-1, etaShift=0, nphi=0;
+  static Double_t absEta=0.0, d=0.0, dmin=0.0, phiLoc=0.;
   absId = nSupMod = - 1;
   if(SuperModuleNumberFromEtaPhi(eta, phi, nSupMod)) {
     // phi index first
@@ -515,7 +515,7 @@ Int_t  AliEMCALGeoUtils::GetSuperModuleNumber(Int_t absId)  const
   // Return the number of the  supermodule given the absolute
   // ALICE numbering id
 
-  static Int_t nSupMod, nModule, nIphi, nIeta;
+  static Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1;
   GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
   return nSupMod;
 } 
@@ -528,7 +528,7 @@ void AliEMCALGeoUtils::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModul
   // ietam, iphi - indexes of module in two dimensional grid of SM
   // ietam - have to change from 0 to fNZ-1
   // iphim - have to change from 0 to nphi-1 (fNPhi-1 or fNPhi/2-1)
-  static Int_t nphi;
+  static Int_t nphi = 0;
 
   if(fKey110DEG == 1 && nSupMod>=10) nphi = fNPhi/2;
   else                               nphi = fNPhi;
@@ -555,7 +555,7 @@ int &iphi, int &ieta) const
   // ieta - have to change from 0 to (fNZ*fNETAdiv-1)
   // iphi - have to change from 0 to (fNPhi*fNPHIdiv-1 or fNPhi*fNPHIdiv/2-1)
   //
-  static Int_t iphim, ietam;
+  static Int_t iphim=-1, ietam=-1;
 
   GetModulePhiEtaIndexInSModule(nSupMod,nModule, iphim, ietam); 
   //  ieta  = ietam*fNETAdiv + (1-nIeta); // x(module) = -z(SM) 
@@ -584,7 +584,7 @@ Bool_t AliEMCALGeoUtils::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
   const Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
-  static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
+  static Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
   GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
@@ -842,7 +842,7 @@ void AliEMCALGeoUtils::ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi,
   GetAbsCellIdFromEtaPhi(direction.Eta(),direction.Phi(),absId);
   
   //tower absID hitted -> tower/module plane (evaluated at the center of the tower)
-  Int_t nSupMod, nModule, nIphi, nIeta;
+  Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1;
   Double_t loc[3],loc2[3],loc3[3];
   Double_t glob[3]={},glob2[3]={},glob3[3]={};
   
@@ -852,7 +852,7 @@ void AliEMCALGeoUtils::ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi,
   GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
 
   //look at 2 neighbours-s cell using nIphi={0,1} and nIeta={0,1}
-  Int_t nIphi2,nIeta2,absId2,absId3;
+  Int_t nIphi2=-1,nIeta2=-1,absId2=-1,absId3=-1;
   if(nIeta==0) nIeta2=1;
   else nIeta2=0;
   absId2=GetAbsCellId(nSupMod,nModule,nIphi,nIeta2);  
@@ -927,10 +927,9 @@ Bool_t AliEMCALGeoUtils::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
   Double_t r=sqrt(x*x+y*y);
 
   if ( r > fEnvelop[0] ) {
-     Double_t theta;
-     theta  =    TMath::ATan2(r,z);
-     Double_t eta;
-     if(theta == 0) 
+     Double_t theta  = TMath::ATan2(r,z);
+     Double_t eta    = 9999;
+     if(theta < 1e-5) // before theta == 0, not allowed by coding convention 
        eta = 9999;
      else 
        eta    =   -TMath::Log(TMath::Tan(theta/2.));
@@ -993,7 +992,7 @@ Bool_t AliEMCALGeoUtils::GetPositionInTRUFromAbsFastORIndex(const Int_t id, Int_
 {
 	//Trigger mapping method, get position in TRU from FasOr Index
 	
-	Int_t iADC;
+	Int_t iADC = 0;
 	
 	Bool_t isOK = GetTRUFromAbsFastORIndex(id, iTRU, iADC);
 	
@@ -1021,7 +1020,7 @@ Bool_t AliEMCALGeoUtils::GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t
 {
 	//Trigger mapping method, get position in Super Module from FasOr Index
 
-	Int_t iTRU;
+	Int_t iTRU = 0;
 	Bool_t isOK = GetPositionInTRUFromAbsFastORIndex(id, iTRU, iEta, iPhi);
 	
 	if (!isOK) return kFALSE;

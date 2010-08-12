@@ -73,7 +73,7 @@ AliEMCALTrack::AliEMCALTrack(const AliESDtrack& t)
 	//
 
 	// parameters are chosen according to static variable fUseOuterParams
-	Double_t alpha, x, params[5], cov[15];
+	Double_t alpha=0., x=0., params[5], cov[15];
 	if (fgUseOuterParams) {
 	  if(t.GetOuterParam()){
 	    t.GetOuterExternalParameters(alpha, x, params);
@@ -144,7 +144,7 @@ Int_t AliEMCALTrack::Compare(const TObject *obj) const
 	
 	AliEMCALTrack *that = (AliEMCALTrack*)obj;
 	
-	Double_t thisP[3], thisVal, thatP[3], thatVal;
+	Double_t thisP[3], thisVal=0., thatP[3], thatVal=0.;
 	
 	if (fgSortByPt) {
 		this->GetPxPyPz(thisP);
@@ -179,7 +179,7 @@ Bool_t AliEMCALTrack::PropagateTo(Double_t xk, Double_t d, Double_t x0)
 	// the local track reference frame is adjusted accordingly.
 	//
 		
-	Double_t y;
+	Double_t y=0.;
 	Double_t field = GetBz();
 	Double_t width = TMath::Pi() / 9.0; // width of TPC/TRD/EMCAL sector (= 20 deg)
 	Double_t ymax  = TMath::Abs(xk * TMath::Tan(0.5 * width)); // max allowed Y in local coords at distance xk
@@ -192,7 +192,7 @@ Bool_t AliEMCALTrack::PropagateTo(Double_t xk, Double_t d, Double_t x0)
 	if (TMath::Abs(y) <= ymax) return SimplePropagation(xk, d, x0);
 	
 	// otherwise, try change a sector to find one where the propagation is ok
-	Int_t    i, incr, istart, nloops;
+	Int_t    i=0, incr=0, istart=0, nloops=0;
 	Double_t alpha = GetAlpha();
 	incr = (y > ymax) ? 1 : -1;
 	if (alpha < 0.0) alpha += TMath::TwoPi();

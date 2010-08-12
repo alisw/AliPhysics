@@ -92,10 +92,10 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
     // Add a hit to the hit list.
     // An EMCAL hit is the sum of all hits in a tower section
     //   originating from the same entering particle 
-    Int_t hitCounter;
+    Int_t hitCounter=0;
     
-    AliEMCALHit *newHit;
-    AliEMCALHit *curHit;
+    AliEMCALHit *newHit=0;
+    AliEMCALHit *curHit=0;
     Bool_t deja = kFALSE;
 
     newHit = new AliEMCALHit(shunt, primary, tracknumber, iparent, ienergy, id, hits, p);
@@ -122,7 +122,7 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
 void AliEMCALv1::StepManager(void){
   // Accumulates hits as long as the track stays in a tower
 
-  Int_t          id[2];           // (phi, Eta) indices
+  Int_t          id[2]={0,0};           // (phi, Eta) indices
   // position wrt MRS and energy deposited
   Float_t        xyzte[5]={0.,0.,0.,0.,0.};// position wrt MRS, time and energy deposited
   Float_t        pmom[4]={0.,0.,0.,0.};
@@ -134,8 +134,8 @@ void AliEMCALv1::StepManager(void){
   
   AliEMCALGeometry * geom = GetGeometry() ; 
 
-  TParticle *part;
-  Int_t parent;
+  TParticle *part=0;
+  Int_t parent=-1;
 
   static Int_t idXPHI = gMC->VolId("XPHI");
   if(gMC->CurrentVolID(copy) == idXPHI ) { // We are in a Scintillator Layer 
@@ -215,7 +215,7 @@ void AliEMCALv1::StepManager(void){
 	  else
 	    birkC1Mod=fBirkC1;
 	}
-	Float_t dedxcm;
+	Float_t dedxcm=0.;
 	if (gMC->TrackStep()>0) 
 	  dedxcm=1000.*gMC->Edep()/gMC->TrackStep();
 	else

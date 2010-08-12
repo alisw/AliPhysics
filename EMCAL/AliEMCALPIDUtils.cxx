@@ -35,11 +35,11 @@
 //
 //	kElectron :  fPIDFinal[0]
 //	kMuon     :  fPIDFinal[1]
-//	kPion	  :  fPIDFinal[2]
-//	kKaon	  :  fPIDFinal[3]
+//	kPion	    :  fPIDFinal[2]
+//	kKaon	    :  fPIDFinal[3]
 //	kProton   :  fPIDFinal[4]
 //	kPhoton   :  fPIDFinal[5]
-//	kPi0	  :  fPIDFinal[6]
+//	kPi0	    :  fPIDFinal[6]
 //	kNeutron  :  fPIDFinal[7]
 //	kKaon0	  :  fPIDFinal[8]
 //	kEleCon   :  fPIDFinal[9]
@@ -243,7 +243,6 @@ Double_t AliEMCALPIDUtils::DistEnergy(const Double_t energy, const Int_t type)
   // Compute the values of the weigh for a given energy the parametrised distribution using the data initialised before.
   //
   Double_t constante = 0.;
-  Double_t  energyParam;
   
   switch (type) {
     
@@ -251,18 +250,16 @@ Double_t AliEMCALPIDUtils::DistEnergy(const Double_t energy, const Int_t type)
     constante  = 1.;    
     break;
   case 2:
-      constante  = 1.;
+    constante  = 1.;
     break;
   case 3:
     constante  = PowerExp(energy, fHadronEnergyProb);
     break;
   }
   
-  energyParam = constante;
+  //   cout << "Weight   " << constante << " for energy  "<< energy<< " GeV "<<  endl;
   
-  // //   cout << "Weight   " << constante << " for energy  "<< energy<< " GeV "<<  endl;
-  
-  return energyParam;
+  return constante;
 }
 
 
@@ -274,8 +271,7 @@ Double_t AliEMCALPIDUtils::Polynomial(const Double_t x, const Double_t *params) 
   // with the array of parameters passed as the second arg
   //
   
-  Double_t y;
-  y  = params[0];
+  Double_t y  = params[0];
   y += params[1] * x;
   y += params[2] * x * x;
   y += params[3] * x * x * x;
@@ -292,8 +288,7 @@ Double_t AliEMCALPIDUtils::Polynomial0(const Double_t *params) const
   // with the array of parameters passed as the second arg
   //
   
-  Double_t y;
-  y  = params[0];
+  Double_t y  = params[0];
   return y;
 }
 
@@ -305,17 +300,17 @@ Double_t AliEMCALPIDUtils::Polynomialinv(const Double_t x, const Double_t *param
   // with the array of parameters passed as the second arg
   //
   
-  Double_t y;
+  Double_t y=0.;
+  
   if(x>0){
-  y  = params[0];
-  y += params[1] / x;
-  y += params[2] / (x * x);
-  y += params[3] / (x * x * x);
-  y += params[4] / (x * x * x * x);
-  y += params[5] / (x * x * x * x * x);
+    y  = params[0];
+    y += params[1] / x;
+    y += params[2] / (x * x);
+    y += params[3] / (x * x * x);
+    y += params[4] / (x * x * x * x);
+    y += params[5] / (x * x * x * x * x);
   }  
-  else
-    y=0.;
+  
   return y;
   
 }
@@ -327,7 +322,7 @@ Double_t AliEMCALPIDUtils::PolynomialMixed1(const Double_t x, const Double_t *pa
   // with the array of parameters passed as the second arg
   //
   
-  Double_t y;
+  Double_t y=0.;
   if(x>0){
     y  = params[0] / x;
     y += params[1] ;
@@ -336,8 +331,7 @@ Double_t AliEMCALPIDUtils::PolynomialMixed1(const Double_t x, const Double_t *pa
     //   y += params[4] * 0.;
     //   y += params[5] * 0.;
   }  
-  else
-    y=0.;
+
   
   return y;
   
@@ -351,7 +345,7 @@ Double_t AliEMCALPIDUtils::PolynomialMixed2(const Double_t x, const Double_t *pa
   // with the array of parameters passed as the second arg
   //
   
-  Double_t y;
+  Double_t y=0.;
   if(x>0){
     y  = params[0] / ( x * x);
     y += params[1] / x;
@@ -360,8 +354,6 @@ Double_t AliEMCALPIDUtils::PolynomialMixed2(const Double_t x, const Double_t *pa
     y += params[4] * x * x ;
     //   y += params[5] * 0.;
   }  
-  else
-    y=0.;
 
   return y;
   
@@ -376,10 +368,8 @@ Double_t AliEMCALPIDUtils::PowerExp(const Double_t x, const Double_t *params) co
   // par[0]*TMath::Power(x[0],par[1])
   // par[0]*TMath::Exp((x[0]-par[1])*par[2]);
   
-  Double_t y;
-  
-  y  = params[0] *TMath::Power( x,params[1]);
-  y += params[2] *TMath::Exp((x-params[3])*params[4]);
+  Double_t y = params[0] *TMath::Power( x,params[1]);
+  y         += params[2] *TMath::Exp((x-params[3])*params[4]);
   
   return y;
   
@@ -414,7 +404,7 @@ void AliEMCALPIDUtils::SetLowFluxParam()
 {
   
   // as a first step, all array elements are initialized to 0.0
-  Int_t i, j;
+  Int_t i=0, j=0;
   
   for (i = 0; i < 6; i++) {
     for (j = 0; j < 6; j++) {
@@ -565,7 +555,7 @@ void AliEMCALPIDUtils::SetHighFluxParam()
 {
   
   // as a first step, all array elements are initialized to 0.0
-  Int_t i, j;
+  Int_t i=0, j=0;
   for (i = 0; i < 6; i++) {
     for (j = 0; j < 6; j++) {
       fGamma[i][j]      = fHadron[i][j] = fPiZero[i][j] = 0.;

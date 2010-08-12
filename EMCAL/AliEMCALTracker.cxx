@@ -194,7 +194,7 @@ TTree* AliEMCALTracker::SearchTrueMatches()
 	outTree->Branch("indexT", &indexT, "indexT/I");
 	outTree->Branch("label",  &label , "label/I");
 	
-	Double_t dist;
+	Double_t dist=0.;
 	Int_t ic, nClusters = (Int_t)fClusters->GetEntries();
 	Int_t it, nTracks = fTracks->GetEntries();
 	
@@ -347,9 +347,9 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
 	Int_t nTracks = esd->GetNumberOfTracks();
 	fTracks = new TObjArray(0);
 	
-	Int_t i, j;
-	Bool_t isKink;
-	Double_t alpha; 
+	Int_t i=0, j=0;
+	Bool_t isKink=kFALSE;
+	Double_t alpha=0.; 
 	for (i = 0; i < nTracks; i++) {
 		AliESDtrack *esdTrack = esd->GetTrack(i);
 		// set by default the value corresponding to "no match"
@@ -601,8 +601,8 @@ Double_t AliEMCALTracker::CheckPair
 		x0 = 0.0;
 	}
 	if (fNPropSteps) {
-		Int_t i;
-		Double_t r;
+		Int_t i=0;
+		Double_t r=0.;
 		cout.setf(ios::fixed);
 		cout.precision(5);
 		if (isTrue) cout << "Init : " << rt << ' ' << x << ' ' << y << ' ' << z << endl;
@@ -651,10 +651,9 @@ Double_t AliEMCALTracker::CheckPair
 	TVector3 vt(x, y, z);
 	Double_t angle = TMath::Abs(vc.Angle(vt)) * TMath::RadToDeg();
 	// check: where is the track?
-	Double_t r, phiT, phiC;
-	r = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
-	phiT = TMath::ATan2(pos[1], pos[0]) * TMath::RadToDeg();
-	phiC = vc.Phi() * TMath::RadToDeg();
+//	Double_t r    = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
+//	Double_t phiT = TMath::ATan2(pos[1], pos[0]) * TMath::RadToDeg();
+//	Double_t phiC = vc.Phi() * TMath::RadToDeg();
 	//cout << "Propagated R, phiT, phiC = " << r << ' ' << phiT << ' ' << phiC << endl;
 	
 	if (angle > fCutAngle) {
@@ -717,7 +716,7 @@ Double_t AliEMCALTracker::CheckPairV2
 	
 	Double_t distance = 2.0 * fMaxDist;
 	
-	Double_t x0, rho;
+	Double_t x0=0., rho=0.;
 	if (fTrackCorrMode == kTrackCorrMMB) {
 		Double_t pos1[3], pos2[3], param[6];
 		tr->GetXYZ(pos1);
@@ -749,7 +748,7 @@ Double_t AliEMCALTracker::CheckPairV2
 	TVector3 vc(cl->X(), cl->Y(), cl->Z());
 	// rotate the vector in order to put all clusters on a plane intersecting 
 	// vertically the X axis; the angle depends on the sector
-	Double_t clusterRot, clusterPhi = vc.Phi() * TMath::RadToDeg();
+	Double_t clusterRot=0., clusterPhi = vc.Phi() * TMath::RadToDeg();
 	if (clusterPhi < 0.0) clusterPhi += 360.0;
 	if (clusterPhi < 100.0) {
 		clusterRot = -90.0;
@@ -775,7 +774,7 @@ Double_t AliEMCALTracker::CheckPairV2
 	// compute the 'phi' coordinate of the intersection point to 
 	// the EMCAL surface
 	Double_t x = vc.X();
-	Double_t y;
+	Double_t y = 0.;
 	track->GetYAt(vc.X(), track->GetBz(), y);
 	Double_t tmp = x*TMath::Cos(track->GetAlpha()) - y*TMath::Sin(track->GetAlpha());
 	y = x*TMath::Sin(track->GetAlpha()) + y*TMath::Cos(track->GetAlpha());
@@ -821,12 +820,12 @@ Double_t AliEMCALTracker::CheckPairV3
 	
 	AliEMCALTrack tr(*track);
 	
-	Int_t    sector;
+	Int_t    sector=-1;
 	Double_t distance = 2.0 * fMaxDist;
-	Double_t dx, dy, dz;
-	Double_t phi, alpha, slope, tgtXnum, tgtXden, sectorWidth = 20.0 * TMath::DegToRad();
-	Double_t xcurr, xprop, param[6] = {0., 0., 0., 0., 0., 0.}, x0, rho, bz;
-	Double_t x[3], x1[3], x2[3];
+	Double_t dx=0., dy=0., dz=0.;
+	Double_t phi=0., alpha=0., slope=0., tgtXnum=0., tgtXden=0., sectorWidth = 20.0 * TMath::DegToRad();
+	Double_t xcurr=0., xprop=0., param[6] = {0., 0., 0., 0., 0., 0.}, x0=0., rho=0., bz=0.;
+	Double_t x[3]= {0., 0., 0.}, x1[3]= {0., 0., 0.}, x2[3]= {0., 0., 0.};
 	
 	// get initial track position
 	xcurr = tr.GetX();
@@ -848,7 +847,7 @@ Double_t AliEMCALTracker::CheckPairV3
 	if (!tr.GetXYZAt(xprop, bz, x2)) return distance;
 	//AliKalmanTrack::MeanMaterialBudget(x1, x2, param);
 	rho = param[0]*param[4];
-	x0 = param[1];
+	x0  = param[1];
 	if (!tr.PropagateTo(xprop, x0, rho)) return distance;
 	//if (!tr.PropagateTo(xprop, 0.0, 0.0)) return distance;
 	
@@ -872,8 +871,8 @@ Bool_t AliEMCALTracker::PropagateToEMCAL(AliEMCALTrack *tr)
 	// Propagates the track to the proximity of the EMCAL surface
 	//
 	
-	Double_t xcurr, xtemp, xprop = 438.0, step = 10.0, param[6], x0, rho, bz;
-	Double_t x1[3], x2[3];
+	Double_t xcurr=0., xtemp=0., xprop = 438.0, step = 10.0, param[6]= {0., 0., 0., 0., 0., 0.}, x0=0., rho=0., bz=0.;
+	Double_t x1[3]= {0., 0., 0.}, x2[3]= {0., 0., 0.};
 	
 	// get initial track position
 	xcurr = tr->GetX();
@@ -917,11 +916,11 @@ Int_t AliEMCALTracker::CreateMatches()
 	
 	// initialize counters and indexes
 	Int_t count = 0;
-	Int_t ic, nClusters = (Int_t)fClusters->GetEntries();
-	Int_t it, nTracks = fTracks->GetEntries();
+	Int_t ic=0, nClusters = (Int_t)fClusters->GetEntries();
+	Int_t it=0, nTracks = fTracks->GetEntries();
 	
 	// external loop on clusters, internal loop on tracks
-	Double_t dist;
+	Double_t dist=0.;
 	for (ic = 0; ic < nClusters; ic++) {
 		AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
 		for (it = 0; it < nTracks; it++) {
@@ -964,8 +963,8 @@ Int_t AliEMCALTracker::SolveCompetitions()
 	Int_t count = 0;
 	
 	// initialize flags to check repetitions
-	Int_t ic, nClusters = (Int_t)fClusters->GetEntries();
-	Int_t it, nTracks = fTracks->GetEntries();
+	Int_t ic=0, nClusters = (Int_t)fClusters->GetEntries();
+	Int_t it=0, nTracks = fTracks->GetEntries();
 	Bool_t *usedC = new Bool_t[nClusters];
 	Bool_t *usedT = new Bool_t[nTracks];
 	for (ic = 0; ic < nClusters; ic++) usedC[ic] = kFALSE;
@@ -1016,7 +1015,7 @@ TVector3 AliEMCALTracker::FindExtrapolationPoint(Double_t x,Double_t y,Double_t 
   if (!tr->PropagateToGlobal(x,y,z, 0.0, 0.0)) {
     return error;
   }
-  Double_t pos[3];
+  Double_t pos[3]= {0., 0., 0.};
   tr->GetXYZ(pos);
   TVector3 ExTrPos(pos[0],pos[1],pos[2]);
   return ExTrPos;
@@ -1068,7 +1067,7 @@ AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliESDC
 	// Translates an AliESDCaloCluster object into the internal format.
 	// Index of passed cluster in its native array must be specified.
 	//
-	Float_t clpos[3];
+	Float_t clpos[3]= {0., 0., 0.};
 	caloCluster->GetPosition(clpos);
 	
 	fX = (Double_t)clpos[0];

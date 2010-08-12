@@ -311,7 +311,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   nEMC = geom->GetNCells();
   AliDebug(1,Form("nEMC %i (number cells in EMCAL) | %s \n", nEMC, geom->GetName()));
   
-  Int_t absID ;
+  Int_t absID = -1 ;
 
   digits->Expand(nEMC) ;
 
@@ -326,8 +326,8 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   //take all the inputs to add together and load the SDigits
   TObjArray * sdigArray = new TObjArray(fInput) ;
   sdigArray->AddAt(emcalLoader->SDigits(), 0) ;
+  
   Int_t i ;
-
   for(i = 1 ; i < fInput ; i++){
     TString tempo(fEventNames[i]) ; 
     tempo += i ;
@@ -444,12 +444,12 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       //Find next signal module
       nextSig = nEMC + 1 ;
       for(i = 0 ; i < fInput ; i++){
-	sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
-	Int_t curNext = nextSig ;
-	if(sdigits->GetEntriesFast() > index[i] ){
-	  curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]))->GetId() ;	  
-	}
-	if(curNext < nextSig) nextSig = curNext ;
+        sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
+        Int_t curNext = nextSig ;
+        if(sdigits->GetEntriesFast() > index[i] ){
+          curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]))->GetId() ;	  
+        }
+        if(curNext < nextSig) nextSig = curNext ;
       }
     }
     // add the noise now
@@ -584,8 +584,8 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   else if (fManager) 
     fLastEvent = fFirstEvent ; // what is this ??
 
-  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
-  Int_t ievent;
+  Int_t nEvents = fLastEvent - fFirstEvent + 1;
+  Int_t ievent  = -1;
 
   TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", 32 * 96);
   TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    32 * 96);
@@ -686,7 +686,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
 		// to be compliant with %4 per TRU
 		if (itru == 31) iphim -= 2;
 		
-		Int_t trgid;
+		Int_t trgid = 0;
 		Bool_t isOK = geom->GetAbsFastORIndexFromPositionInTRU(itru, ietam, iphim % 4, trgid);
 		
 		AliDebug(2,Form("trigger digit id: %d itru: %d isOK: %d\n",trgid,itru,isOK));
@@ -945,11 +945,10 @@ void AliEMCALDigitizer::Print(Option_t*)const
       nStreams =  GetNInputStreams() ;
     else 
       nStreams = fInput ; 
+  
+    AliRunLoader *rl=0;
     
     Int_t index = 0 ;  
-
-    AliRunLoader *rl=0;
-
     for (index = 0 ; index < nStreams ; index++) {  
       TString tempo(fEventNames[index]) ; 
       tempo += index ;

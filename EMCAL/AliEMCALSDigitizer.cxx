@@ -260,11 +260,11 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 	}
 	Int_t nEvents   = fLastEvent - fFirstEvent + 1;
 	
-	Int_t ievent;
 	Float_t energy=0.; // de * fSampling - 23-nov-04
 	rl->LoadKinematics();
 	rl->LoadHits("EMCAL");
-	
+  
+  Int_t ievent;
 	for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
 		rl->GetEvent(ievent);
 		TTree * treeS = emcalLoader->TreeS();

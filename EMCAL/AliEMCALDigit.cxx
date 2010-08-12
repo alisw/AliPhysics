@@ -246,7 +246,7 @@ Int_t AliEMCALDigit::Compare(const TObject * obj) const
   // Compares two digits with respect to its Id
   // to sort according increasing Id
 
-  Int_t rv ;
+  Int_t rv = 2 ;
 
   AliEMCALDigit * digit = (AliEMCALDigit *)obj ; 
 
@@ -513,12 +513,11 @@ ostream& operator << ( ostream& out , const AliEMCALDigit & digit)
   // Prints the data of the digit
   
   out << "ID " << digit.fId << " Energy = " << digit.fAmp <<  " Time = " << digit.fTime << endl ; 
-  Int_t i,j ;
-  for(i=0;i<digit.fNprimary;i++) 
+  for(Int_t i=0;i<digit.fNprimary;i++) 
     out << "Primary " << i+1 << " = " << digit.fPrimary[i] 
 	<< " : DE " << digit.fDEPrimary[i] << endl ;
    
-  for(j=0;j<digit.fNiparent;j++)
+  for(Int_t j=0;j<digit.fNiparent;j++)
     out << "Iparent " << j+1 << " = " << digit.fIparent[j] 
 	<< " : DE " << digit.fDEParent[j] << endl ;
   out << "Position in list = " << digit.fIndexInList << endl ; 
