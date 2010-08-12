@@ -62,11 +62,11 @@ void AliEMCALCalibAbs::ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileNam
 
   // list of values to be read
   // first: overall values for the whole SuperModule
-  Int_t iCalibMethod; 
-  Int_t iCalibPass; 
-  Float_t absoluteCalib; 
+  Int_t iCalibMethod = 0; 
+  Int_t iCalibPass = 0; 
+  Float_t absoluteCalib = 0; 
   // third: info for each tower
-  Float_t relativeCalib; // (ADC>GeV relative gain/conversion), value around 1
+  Float_t relativeCalib = 0; // (ADC>GeV relative gain/conversion), value around 1
   // end - all values
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
@@ -185,7 +185,7 @@ void AliEMCALCalibAbs::ReadTreeCalibAbsInfo(TTree *tree,
   Int_t iSM = 0; // SuperModule index
   // list of values to be read
   // first: overall values for the whole SuperModule
-  Int_t iCalibMethod; 
+  Int_t iCalibMethod = 0; 
   Int_t iCalibPass = 0; 
   Float_t absoluteCalib = 0; 
   // third: info for each tower

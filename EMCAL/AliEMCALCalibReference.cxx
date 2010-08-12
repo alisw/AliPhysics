@@ -63,17 +63,17 @@ void AliEMCALCalibReference::ReadTextCalibReferenceInfo(Int_t nSM, const TString
 
   // list of values to be read
   // first: overall values for the whole SuperModule
-  Int_t iReferenceTime; 
+  Int_t iReferenceTime = 0; 
   // second: additional info for LED Reference and SM temperature
-  Float_t rLEDRefAmp;
-  Float_t rLEDRefAmpRMS;
-  Int_t iLEDRefHighLow;
-  Float_t temperature;
-  Float_t temperatureRMS;
+  Float_t rLEDRefAmp = 0;
+  Float_t rLEDRefAmpRMS = 0;
+  Int_t iLEDRefHighLow = 0;
+  Float_t temperature = 0;
+  Float_t temperatureRMS = 0;
   // third: info for each tower
-  Int_t iHighLow; // 
-  Float_t rLEDAmp; // low gain eq. amplitude
-  Float_t rLEDAmpRMS; //
+  Int_t iHighLow = 0; // 
+  Float_t rLEDAmp = 0; // low gain eq. amplitude
+  Float_t rLEDAmpRMS = 0; //
   // end - all values
 
   Int_t nAPDPerSM = AliEMCALGeoParams::fgkEMCALCols * AliEMCALGeoParams::fgkEMCALRows;
@@ -217,7 +217,7 @@ void AliEMCALCalibReference::ReadTreeCalibReferenceInfo(TTree *tree,
   Int_t iSM = 0; // SuperModule index
   // list of values to be read
   // first: overall values for the whole SuperModule
-  Int_t iReferenceTime= {0}; 
+  Int_t iReferenceTime= 0; 
   // second: additional info for LED Reference and SM temperature
   Float_t rLEDRefAmp[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};
   Float_t rLEDRefAmpRMS[AliEMCALGeoParams::fgkEMCALLEDRefs]= {0};

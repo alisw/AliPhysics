@@ -48,11 +48,11 @@ ClassImp(AliCaloCalibSignal)
 using namespace std;
 
 // variables for TTree filling; not sure if they should be static or not
-static int fChannelNum; // for regular towers
-static int fRefNum; // for LED
-static double fAmp;
-static double fAvgAmp;
-static double fRMS;
+static int fChannelNum = 0; // for regular towers
+static int fRefNum = 0; // for LED
+static double fAmp = 0;
+static double fAvgAmp = 0;
+static double fRMS = 0;
 
 // ctor; initialize everything in order to avoid compiler warnings
 // put some reasonable defaults
@@ -494,7 +494,7 @@ Bool_t AliCaloCalibSignal::ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp
   int iLEDAmpVal[fgkMaxRefs * 2]; // factor 2 is for the two gain values
   memset(iLEDAmpVal, 0, sizeof(iLEDAmpVal));
 
-  int sample; // temporary value
+  int sample = 0; // temporary value
   int gain = 0; // high or low gain
   
   // Number of Low and High gain, and LED Ref, channels for this event:

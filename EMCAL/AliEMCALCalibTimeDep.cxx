@@ -618,10 +618,10 @@ Int_t AliEMCALCalibTimeDep::CalcLEDCorrection(Int_t nSM, Int_t nBins)
   TTree *treeAvg = fCalibSignal->GetTreeAvgAmpVsTime();
   TTree *treeLEDRefAvg = fCalibSignal->GetTreeAvgAmpVsTime();
 
-  int iChannelNum; // for regular towers
-  int iRefNum; // for LED
-  double dHour;
-  double dAvgAmp;
+  int iChannelNum = 0; // for regular towers
+  int iRefNum = 0; // for LED
+  double dHour = 0;
+  double dAvgAmp = 0;
 
   treeAvg->SetBranchAddress("fChannelNum", &iChannelNum);
   treeAvg->SetBranchAddress("fHour", &dHour);
