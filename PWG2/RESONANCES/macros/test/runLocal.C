@@ -26,7 +26,7 @@
 //
 void runLocal
 (
-  Int_t       nReadFiles  = 1,
+  Int_t       nReadFiles  = 10,
   Int_t       nSkipFiles  = 0,
   const char *addTaskName = "AddAnalysisTaskRsnTest.C",
   const char *inputSource = "/home/pulvir/analysis/resonances/LHC2010-7TeV-phi/rsn-package/sim.txt",
@@ -45,6 +45,7 @@ void runLocal
   //AliLog::SetClassDebugLevel("AliRsnCutPID", AliLog::kDebug+2);
   //AliLog::SetClassDebugLevel("AliRsnPair", AliLog::kDebug+2);
   //AliLog::SetClassDebugLevel("AliRsnPairFunctions", AliLog::kDebug+2);
+  //AliLog::SetClassDebugLevel("AliRsnValue", AliLog::kDebug+4);
 
   // check extension of input to distinguish between XML and TXT
   TString sInput(inputSource);

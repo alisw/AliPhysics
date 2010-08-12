@@ -219,7 +219,7 @@ void AliRsnFitResult::SetHistogram(TH1F *histogram)
 
   if (fHistogram) delete fHistogram;
   
-  fHistogram = (TH1F*)histogram->Clone();
+  fHistogram = (TH1D*)histogram->Clone();
   fHistogram->SetName(Form("h_%s_%s", GetName(), histogram->GetName()));
   fHistogram->SetTitle(histogram->GetTitle());
 }

@@ -20,6 +20,7 @@
 //
 
 #include <TString.h>
+#include <TAxis.h>
 
 #include "AliLog.h"
 
@@ -152,37 +153,37 @@ TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTit
     return 0x0;
   }
 
-  Int_t    *nbins = new Int_t   [fSize];
-  Double_t *min   = new Double_t[fSize];
-  Double_t *max   = new Double_t[fSize];
-
   // retrieve binnings for main and secondary axes
-  AliRsnValue *fcnAxis = 0;
-  for (Int_t i = 0; i < fSize; i++) {
+  AliRsnValue *fcnAxis;
+  TArrayD      array[3];
+  for (Int_t i = 0; i < fSize; i++) 
+  {
     fcnAxis = (AliRsnValue*)fAxisList.At(i);
-    if (!fcnAxis) {
-      nbins[i] = 0;
-      min[i]   = 0.0;
-      max[i]   = 0.0;
+    if (!fcnAxis) 
+    {
       AliError("Empty axis");
+      array[i].Set(2);
+      array[i][0] = -1E5;
+      array[i][1] = -1E5;
       continue;
     }
-    nbins[i] = fcnAxis->GetNBins();
-    min[i]   = fcnAxis->GetMin();
-    max[i]   = fcnAxis->GetMax();
+    else
+    {
+      array[i] = fcnAxis->GetArray();
+    }
   }
 
   // create histogram depending on the number of axes
   switch (fSize)
   {
     case 1:
-      fH1 = new TH1F(histoName, histoTitle, nbins[0], min[0], max[0]);
+      fH1 = new TH1F(histoName, histoTitle, array[0].GetSize() - 1, array[0].GetArray());
       break;
     case 2:
-      fH1 = new TH2F(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1]);
+      fH1 = new TH2F(histoName, histoTitle, array[0].GetSize() - 1, array[0].GetArray(), array[1].GetSize() - 1, array[1].GetArray());
       break;
     case 3:
-      fH1 = new TH3F(histoName, histoTitle, nbins[0], min[0], max[0], nbins[1], min[1], max[1], nbins[2], min[2], max[2]);
+      fH1 = new TH3F(histoName, histoTitle, array[0].GetSize() - 1, array[0].GetArray(), array[1].GetSize() - 1, array[1].GetArray(), array[2].GetSize() - 1, array[2].GetArray());
       break;
   }
   fH1->Sumw2();
@@ -208,41 +209,29 @@ THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
     AliError("No axes defined");
     return 0x0;
   }
-
-  Int_t    *nbins = new Int_t   [fSize];
-  Double_t *min   = new Double_t[fSize];
-  Double_t *max   = new Double_t[fSize];
-
-  // retrieve binnings for main and secondary axes
-  AliRsnValue *fcnAxis = 0;
-  for (Int_t i = 0; i < fSize; i++) {
-    fcnAxis = (AliRsnValue*)fAxisList.At(i);
-    if (!fcnAxis) {
-      nbins[i] = 0;
-      min[i]   = 0.0;
-      max[i]   = 0.0;
-      AliError("Empty axis");
-      continue;
-    }
-    nbins[i] = fcnAxis->GetNBins();
-    min[i]   = fcnAxis->GetMin();
-    max[i]   = fcnAxis->GetMax();
-  }
-
-  Int_t size = fAxisList.GetEntries();
-  if (!size) {
-    AliError("No axes defined");
-    return 0x0;
-  }
+  
+  // create dummy variables to initialize the histogram
+  Int_t    dummyI;
+  Double_t dummyD;
 
   // create histogram
-  fHSparse = new THnSparseF(histoName, histoTitle, size, nbins, min, max);
+  fHSparse = new THnSparseF(histoName, histoTitle, fSize, &dummyI, &dummyD, &dummyD);
   fHSparse->Sumw2();
   
-  // clean heap
-  delete [] nbins;
-  delete [] min;
-  delete [] max;
+  // update the various axes using the definitions given in the array of axes here
+  AliRsnValue *fcnAxis = 0;
+  TAxis       *axis = 0;
+  for (Int_t i = 0; i < fSize; i++) 
+  {
+    fcnAxis = (AliRsnValue*)fAxisList.At(i);
+    axis    = fHSparse->GetAxis(i);
+    if (!fcnAxis) {
+      axis->Set(1, -1E5, 1E5);
+      AliError("Empty axis: doing unique bin betweeen -100000 and 100000");
+      continue;
+    }
+    axis->Set(fcnAxis->GetArray().GetSize() - 1, fcnAxis->GetArray().GetArray());
+  }
 
   return fHSparse;
 }

@@ -42,33 +42,29 @@ class AliRsnValue : public TNamed
     };
 
     AliRsnValue();
-    AliRsnValue(const char *name, EValueType type, Int_t n, Double_t min, Double_t max);
+    AliRsnValue(const char *name, EValueType type, Int_t n = 0, Double_t min = 0.0, Double_t max = 0.0);
     AliRsnValue(const char *name, EValueType type, Double_t min, Double_t max, Double_t step);
-    AliRsnValue(const AliRsnValue& copy) : TNamed(copy),fType(copy.fType),fNBins(copy.fNBins),fMin(copy.fMin),fMax(copy.fMax),fValue(copy.fValue) {}
-    AliRsnValue& operator=(const AliRsnValue& copy) {SetName(copy.GetName());fType=copy.fType;fNBins=copy.fNBins;fMin=copy.fMin;fMax=copy.fMax;fValue=copy.fValue;return (*this);}
+    AliRsnValue(const char *name, EValueType type, Int_t n, Double_t *array);
+    AliRsnValue(const AliRsnValue& copy) : TNamed(copy),fType(copy.fType),fValue(copy.fValue),fArray(copy.fArray) {}
+    AliRsnValue& operator=(const AliRsnValue& copy) {SetName(copy.GetName());fType=copy.fType;fValue=copy.fValue;fArray=copy.fArray;return (*this);}
     virtual ~AliRsnValue() { }
     
-    //const char* GetName() const;
-    Int_t       GetNBins() const {return fNBins;}
-    Double_t    GetMin() const {return fMin;}
-    Double_t    GetMax() const {return fMax;}
-    TArrayD     GetArray() const;
+    TArrayD     GetArray() const {return fArray;}
     Double_t    GetValue() const {return fValue;}
     EValueType  GetValueType() {return fType;}
 
     void        SetValueType(EValueType type) {fType = type;}
     void        SetBins(Int_t n, Double_t min, Double_t max);
     void        SetBins(Double_t min, Double_t max, Double_t step);
+    void        SetBins(Int_t n, Double_t *array);
     
     Bool_t      Eval(AliRsnMother * const mother, AliRsnPairDef * const pairDef, AliRsnEvent * const event);
 
   private:
 
     EValueType fType;    // value type
-    Int_t      fNBins;   // number of bins (when applicable)
-    Double_t   fMin;     // lower edge
-    Double_t   fMax;     // upper edge
     Double_t   fValue;   // computed value
+    TArrayD    fArray;   // array of bins (when necessary)
     
     // ROOT dictionary
     ClassDef(AliRsnValue, 1)
