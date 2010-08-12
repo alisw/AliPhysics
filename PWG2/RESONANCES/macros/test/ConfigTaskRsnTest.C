@@ -132,14 +132,17 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   pairPMntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
 
   // function axes
-  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass,        50,  0.9,  1.4);
-  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt,             50,  0.0, 20.0);
+  Double_t ybins[] = {-0.8, -0.7, -0.6, -0.5, 0.5, 0.6, 0.7, 0.8};
+  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass, 50,  0.9,  1.4);
+  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt,      0.0, 20.0, 0.1);
+  AliRsnValue *axisY  = new AliRsnValue("Y" , AliRsnValue::kPairY,       sizeof(ybins)/sizeof(ybins[0]), ybins);
 
   // functions for TH1-like output
   AliRsnFunction *fcnPt    = new AliRsnFunction;
   // --> add axes
   fcnPt   ->AddAxis(axisIM);
   fcnPt   ->AddAxis(axisPt);
+  fcnPt   ->AddAxis(axisY);
   
   // add functions to TH1-like output
   pairPMhist->AddFunction(fcnPt);

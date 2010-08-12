@@ -93,7 +93,8 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   // retrieve number of bins for each axis
   Int_t   *nBins     = new Int_t[nAxes];
   TArrayD *binLimits = new TArrayD[nAxes];
-  for (iaxis = 0; iaxis < nAxes; iaxis++) {
+  for (iaxis = 0; iaxis < nAxes; iaxis++) 
+  {
     AliRsnValue *fcnAxis = (AliRsnValue*)fAxisList.At(iaxis);
     binLimits[iaxis] = fcnAxis->GetArray();
     nBins[iaxis] = binLimits[iaxis].GetSize() - 1;

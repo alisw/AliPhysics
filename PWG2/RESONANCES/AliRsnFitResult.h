@@ -52,6 +52,7 @@ class AliRsnFitResult : public TNamed
     Double_t NormLinear(Double_t *x, Double_t *par);
     Double_t NormBreitWigner(Double_t *x, Double_t *par);
     Double_t NormGaus(Double_t *x, Double_t *par);
+    
     Double_t Signal(Double_t *x, Double_t *par);
     Double_t Background(Double_t *x, Double_t *par);
     Double_t Sum(Double_t *x, Double_t *par);
@@ -73,7 +74,7 @@ class AliRsnFitResult : public TNamed
     Double_t         fPeakRange[2];        // peak fit range
     Double_t         fFitResult[kValues];  // array of fit results
     
-    TH1F            *fHistogram;           // histogram to be fitted
+    TH1D            *fHistogram;           // histogram to be fitted
     TF1             *fSignalFcn;           // function for signal
     TF1             *fBackgroundFcn;       // function for background
     TF1             *fSumFcn;              // total function

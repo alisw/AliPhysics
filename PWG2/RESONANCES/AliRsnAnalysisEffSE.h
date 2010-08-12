@@ -15,7 +15,6 @@
 #include "AliRsnVAnalysisTaskSE.h"
 #include "AliRsnEvent.h"
 #include "AliRsnMother.h"
-#include "AliRsnPIDIndex.h"
 
 class AliPID;
 
@@ -45,7 +44,7 @@ class AliRsnAnalysisEffSE : public AliRsnVAnalysisTaskSE
     // settings
     void            SetEventCuts(AliRsnCutSet *const cuts) {fEventCuts = cuts;}
     void            AddPairDef(AliRsnPairDef *pairDef);
-    void            AddStepMC(AliRsnCutManager *mgr) {fStepListMC.AddLast(mgr);}
+    void            AddStepMC(AliRsnCutManager *mgr)  {fStepListMC.AddLast(mgr);}
     void            AddStepESD(AliRsnCutManager *mgr) {fStepListESD.AddLast(mgr);}
     void            AddAxis(AliRsnValue *axis) {fAxisList.AddLast(axis);}
 
