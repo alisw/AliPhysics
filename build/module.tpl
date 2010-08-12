@@ -185,7 +185,7 @@ $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
 endif
-	  \rm -f "$(CURDIR)"/$@ ;\
+	  ${MUTE}\rm -f "$(CURDIR)"/$@ ;\
 	  cd $(@MODULE@DIRO) ;\
 	  $(SHLD) $(@PACKAGE@SOFLAGS) -o "$(CURDIR)"/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
 	  chmod a-w "$(CURDIR)"/$@ ;\
@@ -364,7 +364,7 @@ $(@PACKAGE@SML) : $(MODDIRZ)/%.smell : $(MODDIRZ)/%_cxx.ml $(MODDIRZ)/%_h.ml
 # targets to create .par archives (jgrosseo)
 @PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) $(FSRCS) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
 	@echo "Creating archive" $@ ...
-	@cd @MODULE@; (tar cfzh ../$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in" $(PWD)/$@) || (tar cfzh /tmp/$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in /tmp/"$@)
+	@cd @MODULE@; (tar --exclude-vcs -czhf ../$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in" $(PWD)/$@) || (tar --exclude-vcs -czhf /tmp/$@ @PACKAGE@ 2> /dev/null && echo "package" $@ "created in /tmp/"$@)
 	@rm -rf @MODULE@/@PACKAGE@
 
 @MODULE@/@PACKAGE@/Makefile: @MODULE@/Makefile
