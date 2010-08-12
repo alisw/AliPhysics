@@ -65,22 +65,18 @@ endif
 #-------------------------------------------------------------------------------
 # Check if DATE is installed
 
-ifneq ($(shell which date-config | grep "^/"),)
-DATEFLAGS := -DALI_DATE $(shell date-config --cflags | tr \" \')
-CXXFLAGS  += $(DATEFLAGS)
-CFLAGS    += $(DATEFLAGS)
-CINTFLAGS += $(DATEFLAGS)
-DEPINC    += $(DATEFLAGS)
-DMONLIBS  := $(shell date-config --monitorlibs)
-else
+ifeq ($(shell which date-config 2>/dev/null),)
 DATEFLAGS := -D`uname` -DDATE_SYS=`uname` -Dlong32='int' \
              -Dlong64='long long' -DdatePointer='long'
+DMONLIBS  :=
+else 
+DATEFLAGS := -DALI_DATE $(shell date-config --cflags | tr \" \')
+DMONLIBS  := $(shell date-config --monitorlibs)
+endif
 CXXFLAGS  += $(DATEFLAGS)
 CFLAGS    += $(DATEFLAGS)
 CINTFLAGS += $(DATEFLAGS)
 DEPINC    += $(DATEFLAGS)
-DMONLIBS  :=
-endif
 
 #-------------------------------------------------------------------------------
 # Add warning flags if any
@@ -171,11 +167,11 @@ MODDIRS := $(MODULES)
 # Default include dirs for C++, Fortran, Cint, and dependencies
 # The module directory will be added by each module
 
-GENINC     := -I$(ALICE_ROOT)/include -I$(shell root-config --incdir)
-RCFLAGS    := $(shell root-config --cflags)
+GENINC     := -Iinclude -isystem$(shell root-config --incdir)
+RCFLAGS    := $(shell root-config --auxcflags) 
 RLFLAGS    := $(shell root-config --ldflags)
 CXXFLAGS   += $(GENINC) $(RCFLAGS)
-CXXFLAGSNO += $(GENINC) $(RCFLAGS)
+CXXFLAGSNO += $(GENINC) $(RCFLAGS) -Wno-write-strings
 CFLAGS     += $(GENINC) $(RCFLAGS)
 CINTFLAGS  += $(GENINC) $(RCFLAGS)
 FFLAGS	   += $(RCFLAGS)

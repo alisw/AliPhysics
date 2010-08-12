@@ -2,13 +2,12 @@
 
 SRCS =  AliFastJetFinder.cxx AliFastJetHeaderV1.cxx AliFastJetInput.cxx AliJetBkg.cxx\
         AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx AliAnalysisTaskJetCluster.cxx
-ifneq ($(FASTJET_ROOT),)
-        EINCLUDE += $(FASTJET_ROOT)/include		
-else	
-	FASTJET_ROOT=$(ALICE_ROOT)/JETAN
-        EINCLUDE += $(FASTJET_ROOT)/fastjet		
-endif
 
+ifneq ($(FASTJET_ROOT),)
+	EDEFINE =-isystem$(FASTJET_ROOT)/include
+else	
+	EDEFINE = -isystem$(ALICE_ROOT)/JETAN/fastjet
+endif
 
 HDRS:= $(SRCS:.cxx=.h) 
 DHDR= FASTJETANLinkDef.h
@@ -20,4 +19,3 @@ PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) \
                          -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lJETAN \
                          -L$(ROOTLIBDIR) -lEG -lGeom
 endif
-

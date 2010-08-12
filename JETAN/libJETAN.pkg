@@ -33,6 +33,12 @@ SRCS = 	AliJetHeader.cxx \
 HDRS:= $(SRCS:.cxx=.h) 
 DHDR= JETANLinkDef.h
 
+ifneq ($(FASTJET_ROOT),)
+	EDEFINE =-isystem$(FASTJET_ROOT)/include
+else	
+	EDEFINE = -isystem$(ALICE_ROOT)/JETAN/fastjet
+endif
+
 EINCLUDE:= ANALYSIS
 
 ifeq (win32gcc,$(ALICE_TARGET))
