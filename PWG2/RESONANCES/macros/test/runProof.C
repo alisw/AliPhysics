@@ -34,30 +34,60 @@ enum ERsnData
 //
 // When 'isMC' is true, the MC handler is created by default.
 //
-void rsnProof
+void runProof
 (
-  Int_t       nRead       = 10,
+  Int_t       nRead       = 1e5,
   Int_t       nSkip       = 0,
   const char *addMacro    = "AddAnalysisTaskRsnTest.C",
   //const char *inputSource = "/ALICE/pp000900/MC_LHC09d10_104821",
-  const char *inputSource = "/COMMON/COMMON/LHC09d10_run10406X",
+//   const char *inputSource = "/alice/sim/LHC10a12_104157",
+    const char *inputSource = "/alice/data/LHC10b_000117112_p2",
   const char *outName     = "rsn_proof.root",
   ERsnData    dataType    = kRsnESD,
-  Bool_t      isMC        = kTRUE,
+  Bool_t      isMC        = kFALSE,
   const char *pathStd     = "/home/pulvir/ALICE/ALIROOT/head",
-  const char *pathRsn     = "/home/pulvir/ALICE/ALIROOT/head"
+  const char *pathRsn     = "/home/pulvir/ALICE/ALIROOT/head",
+  const char *datalabel   = "7TeV_pass2_data_ESD"
 )
 {
+
   // connect to PROOF
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  TProof::Open("pulvir@skaf.saske.sk");
+  TProof::Open("skaf.saske.sk");
   //TProof::Open("pulvir@localhost");
 
+  // this i will do that AAF will load (needed for TOF)
+  gProof->Exec("gSystem->Load(\"libXMLParser.so\");");
+  
+  // needed for tof too
+  gProof->Exec("TGrid::Connect(\"alien:\/\/\");");
+  
   // setup PARs
-  gProof->ClearPackages();
-  LoadPars("STEERBase:ESD:AOD:ANALYSIS:ANALYSISalice:CORRFW", pathStd);
-  LoadPars("PWG2resonances", pathRsn);return;
+//   gProof->ClearPackages();
 
+  // setup aliroot mode in AAF (for now using SIM mode since ALIROOT mode doesn't load correctly (this is tmp))
+  TList *listAliroot = new TList();
+  listAliroot->Add(new TNamed("ALIROOT_MODE", "SIM"));
+  
+  Bool_t usePWG2resonancesPAR = kTRUE;
+  TString alirootVer = "VO_ALICE@AliRoot::v4-20-03-AN-proof";
+  
+  if (usePWG2resonancesPAR) {
+    listAliroot->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:CORRFW"));
+    listAliroot->Add(new TNamed("ALIROOT_EXTRA_INCLUDES", "TOF"));
+    gProof->EnablePackage(alirootVer.Data(),listAliroot);
+    gProof->UploadPackage("PWG2resonances.par");
+    if (gProof->EnablePackage("PWG2resonances")) {
+      Error("runAAF.C","Error in PWG2resonances !!!");
+      return;
+    }
+  }
+  else {
+    listAliroot->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:CORRFW:PWG2resonances"));
+    listAliroot->Add(new TNamed("ALIROOT_EXTRA_INCLUDES", "PWG2/RESONANCES:TOF"));
+    gProof->EnablePackage(alirootVer.Data(),listAliroot);
+  }
+  
   // create analysis manager and set filename
   AliAnalysisManager *mgr = new AliAnalysisManager("RsnAnalysis");
   mgr->SetCommonFileName(outName);
@@ -87,9 +117,9 @@ void rsnProof
       return;
   }
   
-  // add event selection for data
-  gROOT->LoadMacro("AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
+//   // add event selection for data
+//   gROOT->LoadMacro("AddTaskPhysicsSelection.C");
+//   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
 
   // scan list of macros
   TString        macro, taskList(addMacro);
@@ -103,7 +133,7 @@ void rsnProof
     Info("rsnLocal.C", "Adding macro: %s", macro.Data());
     // load the macro and execute it
     gROOT->LoadMacro(macro.Data());
-    macro.ReplaceAll(".C","();");
+    macro.ReplaceAll(".C",Form("(\"%s\");",datalabel));
     gROOT->ProcessLine(macro.Data());
   }
 

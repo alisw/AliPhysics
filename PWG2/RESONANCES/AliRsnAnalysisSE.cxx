@@ -54,15 +54,16 @@ AliRsnAnalysisSE::AliRsnAnalysisSE(const AliRsnAnalysisSE& copy) :
   AliDebug(AliLog::kDebug+2,"->");
 }
 
-//_____________________________________________________________________________
-AliRsnAnalysisSE::~AliRsnAnalysisSE()
-{
-//
-// Destructor
-//
-
-  fOutList->Clear();
-}
+// //_____________________________________________________________________________
+// AliRsnAnalysisSE::~AliRsnAnalysisSE()
+// {
+// //
+// // Destructor
+// //
+// 
+//   fOutList->Clear();
+//   
+// }
 
 //_____________________________________________________________________________
 void AliRsnAnalysisSE::RsnUserCreateOutputObjects()

@@ -306,6 +306,9 @@ void AliRsnAnalysisMonitorTask::ProcessESD
     // 'usable' flag will need to be set to 'ok'
     mon.Reset();
     
+    // get MC info if possible
+    if (stack) mon.AdoptMC(TMath::Abs(track->GetLabel()), stack);
+    
     // copy general info
     mon.Status() = (UInt_t)track->GetStatus();
     mon.Length() = (Double_t)track->GetIntegratedLength();
