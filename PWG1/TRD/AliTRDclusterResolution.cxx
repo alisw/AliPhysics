@@ -467,7 +467,7 @@ TObjArray* AliTRDclusterResolution::Histos()
   for(Int_t it=0; it<AliTRDseedV1::kNtb; it++){
     if(!(h3=(TH3S*)gROOT->FindObject(Form("hr%03d_t%02d", fDet, it)))){
       h3 = new TH3S(
-        Form("hr%03d_t%02d", it),
+        Form("hr%03d_t%02d", fDet, it),
         Form(" Det[%d] t_{drift}(%2d)[bin];z [mm];tg#phi;#Delta y[cm]", fDet, it), 
         kND, 0., 2.5,   // z 
         35, -.35, .35, // tgp 
