@@ -511,7 +511,8 @@ Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
   if(fClusters[ic] && fClusters[ic]->IsInChamber()){
     hasClusterInChamber = kTRUE;
     dq += TMath::Abs(fClusters[ic]->GetQ());
-  }else if(fClusters[ic+kNtb] && fClusters[ic+kNtb]->IsInChamber()){
+  }
+  if(fClusters[ic+kNtb] && fClusters[ic+kNtb]->IsInChamber()){
     hasClusterInChamber = kTRUE;
     dq += TMath::Abs(fClusters[ic+kNtb]->GetQ());
   }

@@ -60,7 +60,7 @@ Char_t const * AliTRDReconstructor::fgSteerFlags[kNsteer] = {
  ,"hlt"// HLT reconstruction [false]
  ,"tp"// also use online tracklets for reconstruction [false]
  ,"deb"// Write debug stream [false]
- ,"cc" // Cluster radial correction during reconstruction [true]
+ ,"cc" // Cluster radial correction during reconstruction [false]
 };
 Char_t const * AliTRDReconstructor::fgTaskNames[AliTRDrecoParam::kTRDreconstructionTasks] = {
   "Clusterizer"
@@ -88,7 +88,7 @@ AliTRDReconstructor::AliTRDReconstructor()
   // track seeding (stand alone tracking) [sa]
   SETFLG(fSteerParam, kSeeding);
   // Cluster radial correction during reconstruction [cc]
-  SETFLG(fSteerParam, kClRadialCorr);
+  //SETFLG(fSteerParam, kClRadialCorr);
   memset(fDebugStream, 0, sizeof(TTreeSRedirector *) * AliTRDrecoParam::kTRDreconstructionTasks);
 }
 
