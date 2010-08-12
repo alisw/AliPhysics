@@ -87,19 +87,15 @@ void alieve_init_import_macros()
     std::list<string> names; // This form understood by cint (fails with std::string).
     while ((filename = gSystem->GetDirEntry(dirhandle)) != 0)
     {
+      std::string sFilename(filename);
       if (re.Match(filename))
-	names.push_back(filename);
+	names.push_back(sFilename);
     }
     names.sort();
-    //PH The line below is replaced waiting for a fix in Root
-    //PH which permits to use variable siza arguments in CINT
-    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-    // f->Add(new TEveMacro(Form("%s/%s", macdir.Data(), filename)));
-    char fullName[1000];
+
     for (std::list<string>::iterator si=names.begin(); si!=names.end(); ++si)
     {
-      sprintf(fullName,"%s/%s", macdir.Data(), si->c_str());
-      f->Add(new TEveMacro(fullName));
+      f->Add(new TEveMacro(Form("%s/%s", macdir.Data(), si->c_str())));
     }
   }
   gSystem->FreeDirectory(dirhandle);
