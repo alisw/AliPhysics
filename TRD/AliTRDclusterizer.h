@@ -45,7 +45,7 @@ class AliTRDclusterizer : public TNamed
     kTrOwner = BIT(14)  //  toggle online tracklets ownership
     ,kClOwner= BIT(15)  //  toggle cluster ownership
     ,kLabels = BIT(16)  //  toggle MC labels for clusters
-    ,kHLT    = BIT(17)  //  HLT mode
+    ,kSkipTrafo = BIT(17)  //  skip the coordinate transformation of clusters?
     ,kLUT    = BIT(18)  //  using look up table for cluster's r-phi position
     ,kGAUS   = BIT(19)  //  using gauss approx. for cluster's r-phi position
     ,knewDM  = BIT(20)  //  was the digitsmanger created by raw2clusters?
@@ -105,6 +105,7 @@ class AliTRDclusterizer : public TNamed
   Bool_t           IsClustersOwner() const {return TestBit(kClOwner);}
   virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kClOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
   void             SetTrackletsOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fTracklets = 0x0; } }
+  void             SetSkipTransform(Bool_t b=kTRUE) {SetBit(kSkipTrafo, b); }
 
 protected:
 

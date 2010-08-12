@@ -648,9 +648,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   else
     fRawStream->SetReader(rawReader);
 
-  SetBit(kHLT, fReconstructor->IsHLT());
-
-  if(TestBit(kHLT)){
+  if(fReconstructor->IsHLT()){
     fRawStream->SetSharedPadReadout(kFALSE);
     fRawStream->SetNoErrorWarning();
   }
@@ -814,7 +812,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   // Check consistency between OCDB and raw data
   Int_t nTimeOCDB = calibration->GetNumberOfTimeBinsDCS();
-  if(TestBit(kHLT)){
+  if(fReconstructor->IsHLT()){
     if((nTimeOCDB > -1) && (fTimeTotal != nTimeOCDB)){
       AliWarning(Form("Number of timebins does not match OCDB value (RAW[%d] OCDB[%d]), using raw value"
 		      ,fTimeTotal,nTimeOCDB));
@@ -1002,7 +1000,7 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
 
   Int_t nPadCount = 1;
   Short_t signals[7] = { 0, 0, Max.signals[0], Max.signals[1], Max.signals[2], 0, 0 };
-  if(!TestBit(kHLT)) CalcAdditionalInfo(Max, signals, nPadCount);
+  if(!fReconstructor->IsHLT()) CalcAdditionalInfo(Max, signals, nPadCount);
 
   AliTRDcluster cluster(fDet, ((UChar_t) Max.col), ((UChar_t) Max.row), ((UChar_t) Max.time), signals, fVolid);
   cluster.SetNPads(nPadCount);
@@ -1022,7 +1020,7 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
   // Transform the local cluster coordinates into calibrated 
   // space point positions defined in the local tracking system.
   // Here the calibration for T0, Vdrift and ExB is applied as well.
-  if(!TestBit(kHLT)) if(!fTransform->Transform(&cluster)) return;
+  if(!TestBit(kSkipTrafo)) if(!fTransform->Transform(&cluster)) return;
 
   // Temporarily store the Max.Row, column and time bin of the center pad
   // Used to later on assign the track indices
