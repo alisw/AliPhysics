@@ -432,65 +432,62 @@ TObjArray* AliTRDclusterResolution::Histos()
   TH3S *h3 = NULL;
   TObjArray *arr = NULL;
 
-  fContainer->AddAt(arr = new TObjArray(2*AliTRDgeometry::kNlayer), kCenter);
+  // add resolution/pulls plots for dydx=ExB
+  fContainer->AddAt(arr = new TObjArray(2), kCenter);
   arr->SetName("Center");
-  for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++){
-    // add resolution plot for each layer
-    if(!(h3=(TH3S*)gROOT->FindObject(Form("hCenResLy%d", il)))){ 
-      h3 = new TH3S(
-        Form("hCenResLy%d", il), 
-        Form(" ly [%d];t [bin];y [pw];#Delta y[cm]", il), 
-        AliTRDseedV1::kNtb, -.5, AliTRDseedV1::kNtb-0.5,   // x
-        51, -.51, .51, // y
-        60, -fDyRange, fDyRange); // dy
-    } h3->Reset();
-    arr->AddAt(h3, il);
-    // add Pull plot for each layer
-    if(!(h3=(TH3S*)gROOT->FindObject(Form("hCenPullLy%d", il)))){ 
-      h3 = new TH3S(
-        Form("hCenPullLy%d", il), 
-        Form(" ly [%d];t [bin];y [pw];#Delta y[cm]/#sigma_{y}", il), 
-        AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb-0.5,   // x
-        51, -.51, .51, // y 
-        60, -4., 4.); // dy/sy
-    } h3->Reset();
-    arr->AddAt(h3, AliTRDgeometry::kNlayer+il);
-  }
+  if(!(h3=(TH3S*)gROOT->FindObject(Form("hCenRes%03d",fDet)))) {
+    h3 = new TH3S(
+      Form("hCenRes%03d",fDet),
+      Form(" Det[%d] Col[%d] Row[%d];t [bin];y [pw];#Delta y[cm]", fDet, fCol, fRow),
+      AliTRDseedV1::kNtb, -.5, AliTRDseedV1::kNtb-0.5,   // x
+      51, -.51, .51, // y
+      60, -fDyRange, fDyRange); // dy
+  } h3->Reset();
+  arr->AddAt(h3, 0);
+  // add Pull plot for each layer
+  if(!(h3=(TH3S*)gROOT->FindObject(Form("hCenPull%03d", fDet)))){
+    h3 = new TH3S(
+      Form("hCenPull%03d", fDet),
+      Form(" Det[%d] Col[%d] Row[%d];t [bin];y [pw];#Delta y[cm]/#sigma_{y}", fDet, fCol, fRow),
+      AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb-0.5,   // x
+      51, -.51, .51, // y
+      60, -4., 4.); // dy/sy
+  } h3->Reset();
+  arr->AddAt(h3, 1);
 
-  if(!(h3 = (TH3S*)gROOT->FindObject("Charge"))){
-    h3 = new TH3S("Charge", "dy=f(q)", 50, 2.2, 7.5, 60, -fDyRange, fDyRange, 60, -4., 4.);
-    h3->SetXTitle("log(q) [a.u.]");
-    h3->SetYTitle("#Delta y[cm]");
-    h3->SetZTitle("#Delta y/#sigma_{y}");
+  if(!(h3 = (TH3S*)gROOT->FindObject(Form("Charge%03d", fDet)))){
+    h3 = new TH3S(Form("Charge%03d", fDet),
+    "dy=f(q);log(q) [a.u.];#Delta y[cm];#Delta y/#sigma_{y}",
+    50, 2.2, 7.5, 60, -fDyRange, fDyRange, 60, -4., 4.);
   }
   fContainer->AddAt(h3, kQRes);
 
   fContainer->AddAt(arr = new TObjArray(AliTRDseedV1::kNtb), kSigm);
   arr->SetName("Resolution");
-  for(Int_t ix=0; ix<AliTRDseedV1::kNtb; ix++){
-    if(!(h3=(TH3S*)gROOT->FindObject(Form("hr_x%02d", ix)))){
+  for(Int_t it=0; it<AliTRDseedV1::kNtb; it++){
+    if(!(h3=(TH3S*)gROOT->FindObject(Form("hr%03d_t%02d", fDet, it)))){
       h3 = new TH3S(
-        Form("hr_x%02d", ix), 
-        Form(" t_{drift}(%2d)[bin];z [mm];tg#phi;#Delta y[cm]", ix), 
+        Form("hr%03d_t%02d", it),
+        Form(" Det[%d] t_{drift}(%2d)[bin];z [mm];tg#phi;#Delta y[cm]", fDet, it), 
         kND, 0., 2.5,   // z 
         35, -.35, .35, // tgp 
         60, -fDyRange, fDyRange); // dy
     }
-    arr->AddAt(h3, ix);
+    arr->AddAt(h3, it);
   }
 
   fContainer->AddAt(arr = new TObjArray(AliTRDseedV1::kNtb), kMean);
   arr->SetName("Systematics");
-  for(Int_t ix=0; ix<AliTRDseedV1::kNtb; ix++){
-    if(!(h3=(TH3S*)gROOT->FindObject(Form("hs_x%02d", ix)))){
+  for(Int_t it=0; it<AliTRDseedV1::kNtb; it++){
+    if(!(h3=(TH3S*)gROOT->FindObject(Form("hs%03d_t%02d", fDet, it)))){
       h3 = new TH3S(
-        Form("hs_x%02d", ix), 
-        Form(" t_{drift}(%2d)[bin];z [mm];tg#phi - h*tg(#theta);#Delta y[cm]", ix), 
+        Form("hs%03d_t%02d", fDet, it),
+        Form(" Det[%d] t_{drift}(%2d)[bin];z [mm];tg#phi - h*tg(#theta);#Delta y[cm]", fDet, it), 
         kND, 0., 2.5,   // z 
         35, -.35, .35, // tgp-h tgt 
         60, -fDyRange, fDyRange); // dy
     }
-    arr->AddAt(h3, ix);
+    arr->AddAt(h3, it);
   }
 
   return fContainer;
@@ -557,10 +554,9 @@ void AliTRDclusterResolution::UserExec(Option_t *)
     // resolution as a function of y displacement from pad center
     // only for phi equal exB
     if(TMath::Abs(dydx-fExB) < kDtgPhi){
-      Int_t ly(AliTRDgeometry::GetLayer(det));
-      h3 = (TH3S*)arr0->At(ly);
+      h3 = (TH3S*)arr0->At(0);
       h3->Fill(t, cli->GetYDisplacement(), dy);
-      h3 = (TH3S*)arr0->At(AliTRDgeometry::kNlayer+ly);
+      h3 = (TH3S*)arr0->At(1);
       h3->Fill(t, cli->GetYDisplacement(), dy/TMath::Sqrt(covcl[0]));
     }
 
