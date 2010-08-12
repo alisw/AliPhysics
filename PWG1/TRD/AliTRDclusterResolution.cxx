@@ -193,6 +193,7 @@
 #include "TTree.h"
 #include "TMath.h"
 #include "TLinearFitter.h"
+#include "TGeoGlobalMagField.h"
 
 #include "TCanvas.h"
 #include "TSystem.h"
@@ -669,7 +670,7 @@ Bool_t AliTRDclusterResolution::LoadCalibration()
     AliError("Failed retrieving ESD event");
     return kFALSE;
   }
-  if(!esd->InitMagneticField()){
+  if(!TGeoGlobalMagField::Instance()->IsLocked() && !esd->InitMagneticField()){
     AliError("Magnetic field failed initialization.");
     return kFALSE;
   }
