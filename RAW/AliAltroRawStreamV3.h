@@ -94,6 +94,8 @@ class AliAltroRawStreamV3: public TObject {
 
     void  SetCheckAltroPayload(Bool_t check) { fCheckAltroPayload = check; }
 
+    void HexDumpChannel() const;
+
     enum EAltroRawStreamV3Error {
       kRCUTrailerErr = 1,
       kRCUVerErr = 2,

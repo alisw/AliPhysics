@@ -287,9 +287,10 @@ Bool_t AliAltroRawStreamV3::NextChannel()
     word = Get32bitWord(fPosition++);
     if ((word >> 30) != 0) {
       // Unexpected end of altro channel payload
-      AliWarning(Form("Unexpected end of payload in altro channel payload! Address=0x%x, word=0x%x",
-		      fHWAddress,word));
+      AliWarning(Form("Unexpected end of payload in altro channel payload! DDL=%03d, Address=0x%x, word=0x%x",
+		      fDDLNumber,fHWAddress,word));
       fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
+      if (AliDebugLevel() > 0) HexDumpChannel();
       fCount = -1;
       fPosition--;
       return kFALSE;
@@ -325,17 +326,19 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   fBunchLength = fBunchData[fBunchDataIndex];
   if (fBunchLength <= 2) {
     // Invalid bunch size
-    AliWarning(Form("Too short bunch length (%d) in Address=0x%x !",
-		    fBunchLength,fHWAddress));
+    AliWarning(Form("Too short bunch length (%d) in Address=0x%x (DDL=%03d)!",
+		    fBunchLength,fDDLNumber,fHWAddress));
     fRawReader->AddMinorErrorLog(kAltroBunchHeadErr,Form("hw=0x%x",fHWAddress));
+    if (AliDebugLevel() > 0) HexDumpChannel();
     fCount = fBunchLength = -1;
     return kFALSE;
   }
   if ((fBunchDataIndex + fBunchLength) > fCount) {
     // Too long bunch detected
-    AliWarning(Form("Too long bunch detected in Address=0x%x ! Expected <= %d 10-bit words, found %d !",
-		    fHWAddress,fCount-fBunchDataIndex,fBunchLength));
+    AliWarning(Form("Too long bunch detected in Address=0x%x (DDL=%03d) ! Expected <= %d 10-bit words, found %d !",
+		    fHWAddress,fDDLNumber,fCount-fBunchDataIndex,fBunchLength));
     fRawReader->AddMinorErrorLog(kAltroBunchHeadErr,Form("hw=0x%x",fHWAddress));
+    if (AliDebugLevel() > 0) HexDumpChannel();
     fCount = fBunchLength = -1;
     return kFALSE;
   }
@@ -345,16 +348,18 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   fStartTimeBin = fBunchData[fBunchDataIndex++];
   if (fCheckAltroPayload) {
     if ((fStartTimeBin-fBunchLength+1) < 0) {
-      AliWarning(Form("Invalid start time-bin in Address=0x%x ! (%d-%d+1) < 0",
-		      fHWAddress,fStartTimeBin,fBunchLength));
+      AliWarning(Form("Invalid start time-bin in Address=0x%x (DDL=%03d)! (%d-%d+1) < 0",
+		      fHWAddress,fDDLNumber,fStartTimeBin,fBunchLength));
       fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
+      if (AliDebugLevel() > 0) HexDumpChannel();
       fCount = fBunchLength = -1;
       return kFALSE;
     }
     if (fStartTimeBin >= prevTimeBin) {
-      AliWarning(Form("Invalid start time-bin in Address=0x%x ! (%d>=%d)",
-		      fHWAddress,fStartTimeBin,prevTimeBin));
+      AliWarning(Form("Invalid start time-bin in Address=0x%x (DDL=%03d)! (%d>=%d)",
+		      fHWAddress,fDDLNumber,fStartTimeBin,prevTimeBin));
       fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
+      if (AliDebugLevel() > 0) HexDumpChannel();
       fCount = fBunchLength = -1;
       return kFALSE;
     }
@@ -714,4 +719,28 @@ Int_t AliAltroRawStreamV3::GetRCUPayloadSizeInSOD() const
     }
   }
   return -1;
+}
+
+//_____________________________________________________________________________
+
+void AliAltroRawStreamV3::HexDumpChannel() const
+{
+  // Print of the Hex Data of the current channel
+  // to decipher read-out warnings and errors
+  if (fCount>0 && fPosition>0) {
+    printf("Hex-Dump of DDL: %3d, RCU ID: %d, HWADDR: 0x%03x\n",
+           fDDLNumber,fRCUId,fHWAddress);
+    printf("32-bit     - 2bit 10bit 10bit 10bit\n");
+    printf("**********   **** ***** ***** *****\n");
+    Int_t nwords = (fCount+2)/3+1;
+    for (Int_t iword = 0; iword < nwords; iword++) {
+      UInt_t word32 = Get32bitWord(fPosition-nwords+iword);
+      UInt_t marker  = word32 >> 30 & 0x3;
+      UInt_t word101 = word32 >> 20 & 0x3FF;
+      UInt_t word102 = word32 >> 10 & 0x3FF;
+      UInt_t word103 = word32 >> 00 & 0x3FF; // nice octal number
+      printf("0x%08x - 0b%1d%1d 0x%03x 0x%03x 0x%03x\n",
+	     word32,marker>>1,marker&0x1,word101,word102,word103);
+    }
+  }
 }
