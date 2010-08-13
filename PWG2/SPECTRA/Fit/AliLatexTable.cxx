@@ -31,10 +31,25 @@
 #include "TPRegexp.h"
 #include "TMath.h"
 #include <iostream>
+#include <fstream>
+#include "AliLog.h"
 
 using namespace std;
 
 ClassImp(AliLatexTable)
+
+AliLatexTable::AliLatexTable() : fNcol(0), fFormat(""), fRows(0), fCols(0), fNcolReady(0){
+  // default constructor
+  fNcol = 1;
+  fFormat = "c";
+  fNcolReady = 0;
+  fRows = new TObjArray;
+  fCols = new TObjArray;
+
+  fRows->SetOwner();
+  fCols->SetOwner();
+
+}
 
 AliLatexTable::AliLatexTable(Int_t ncol, TString format) : fNcol(0), fFormat(""), fRows(0), fCols(0), fNcolReady(0){
   // constructor, specify number of cols 
@@ -460,4 +475,44 @@ void AliLatexTable::StripLatex(TString &text, TString format) {
   text.ReplaceAll("\\", "");
   text.Strip(TString::EStripType(1), ' ');
 
+}
+
+void AliLatexTable::LoadTeXFromFileAndPrintASCII(const char * filename) {
+
+  // opens a file containing only a latex table and prints it on screen as ASCII
+
+  ifstream file (filename);
+  if (!file.is_open()) {
+    AliError(Form("Cannot open file %s", filename));
+  }
+  TString line;
+  while (line.ReadLine(file)) {
+    if (line.Contains("begin") && line.Contains("tabular")) {
+      // We need to get and parse the format
+      //      TPRegexp re("\\begin\\{tabular\\}\\{([^\\}]*)\\}");
+      TPRegexp re(".*begin{tabular}{(.*)}");
+      TObjArray * arr = re.MatchS(line);
+      if (arr->GetLast() > 0){ 
+	//	cout << "Size: " << arr->GetSize() << " " << arr->GetLast() << endl;
+	
+	TString subStr = ((TObjString *)arr->At(1))->GetString();
+	subStr.ReplaceAll("|","");
+	subStr.ReplaceAll(" ","");
+	subStr.ReplaceAll("\t","");
+	//	subStr.ReplaceAll(" ","");	
+	//	cout << subStr.Data() << " " << subStr.Length()<< endl;
+	fNcol = subStr.Length();
+	delete arr;
+      }
+    }
+
+    // Skip stuff we don't parse
+    if (line.Contains("begin")) continue;
+    if (line.Contains("end")) continue;
+    if (line.Contains("tabular")) continue;
+    // add line
+    InsertCustomRow(line.Data());
+    
+  }
+  PrintTable("ASCII");
 }

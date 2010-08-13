@@ -18,10 +18,12 @@ using namespace std;
 class AliLatexTable : public TObject {
 
 public:
-  AliLatexTable() : fNcol(1), fFormat("c"), fRows(0), fCols(0), fNcolReady(0) {;}
+  AliLatexTable() ;
   AliLatexTable(Int_t ncol, TString format);
   ~AliLatexTable();
 
+
+  void LoadTeXFromFileAndPrintASCII(const char * filename);
   // first you set the value of each column
   void SetNextCol(Int_t val); 
   void SetNextCol(Int_t val, Int_t err); 
