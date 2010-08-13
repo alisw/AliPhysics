@@ -35,6 +35,9 @@ class AliHLTMiscImplementation : public AliHLTMisc
 
   AliHLTUInt64_t GetTriggerMask(AliRawReader* rawReader) const;
 
+  AliHLTUInt32_t GetTimeStamp(AliRawReader* rawReader) const;
+  AliHLTUInt32_t GetEventType(AliRawReader* rawReader) const;
+
   Double_t GetBz();
   Double_t GetBz(const Double_t *r);
   void GetBxByBz(const Double_t r[3], Double_t b[3]);

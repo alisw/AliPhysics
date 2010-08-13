@@ -29,6 +29,7 @@
 #include "AliCDBEntry.h"
 #include "AliGRPManager.h"
 #include "AliRawReader.h"
+#include "AliRawEventHeaderBase.h"
 #include "AliTracker.h"
 #ifndef HAVE_NOT_ALIESDHLTDECISION
 #include "AliESDHLTDecision.h"
@@ -201,6 +202,24 @@ AliHLTUInt64_t AliHLTMiscImplementation::GetTriggerMask(AliRawReader* rawReader)
     trgMask|=pattern[0]; // 32 lower bits of the mask
   }
   return trgMask;
+}
+
+AliHLTUInt32_t AliHLTMiscImplementation::GetTimeStamp(AliRawReader* rawReader) const
+{
+  // extract time stamp of the event from the event header
+  if (!rawReader) return 0;
+  const AliRawEventHeaderBase* eventHeader = rawReader->GetEventHeader();
+  if (!eventHeader) return 0;
+  return eventHeader->Get("Timestamp");
+}
+
+AliHLTUInt32_t AliHLTMiscImplementation::GetEventType(AliRawReader* rawReader) const
+{
+  // extract event type from the event header
+  if (!rawReader) return 0;
+  const AliRawEventHeaderBase* eventHeader = rawReader->GetEventHeader();
+  if (!eventHeader) return 0;
+  return eventHeader->Get("Type");
 }
 
 Double_t AliHLTMiscImplementation::GetBz()
