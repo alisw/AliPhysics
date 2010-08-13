@@ -386,7 +386,7 @@ TH1D* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Flo
     tracks->Scale(1.0 / normalization);
     
     TH1D* events = fEventHist->ShowProjection(0, step);
-    Int_t nEvents = events->Integral(events->FindBin(ptLeadMin), events->FindBin(ptLeadMax));
+    Int_t nEvents = (Int_t) events->Integral(events->FindBin(ptLeadMin), events->FindBin(ptLeadMax));
     if (nEvents > 0)
       tracks->Scale(1.0 / nEvents);
   }
@@ -531,7 +531,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
   vertexCorrectionObs->Reset();
   
   for (Int_t i=1; i<=vertexCorrectionObs->GetNbinsX(); i++)
-    vertexCorrectionObs->SetBinContent(i, vertexCorrection->Interpolate(1.0 / 0.7 * vertexCorrectionObs->GetXaxis()->GetBinCenter(i)));
+    vertexCorrectionObs->SetBinContent(i, vertexCorrection->Interpolate(1.0 / 0.77 * vertexCorrectionObs->GetXaxis()->GetBinCenter(i)));
  
 /*  new TCanvas;
   vertexCorrection->DrawCopy();
