@@ -101,6 +101,18 @@ AliHLTUInt64_t AliHLTMisc::GetTriggerMask(AliRawReader* /*rawReader*/) const
   return 0;
 }
 
+AliHLTUInt32_t AliHLTMisc::GetTimeStamp(AliRawReader* /*rawReader*/) const
+{
+  // default method, functionality is implemented in the child class
+  return 0;
+}
+
+AliHLTUInt32_t AliHLTMisc::GetEventType(AliRawReader* /*rawReader*/) const
+{
+  // default method, functionality is implemented in the child class
+  return 0;
+}
+
 Double_t AliHLTMisc::GetBz()
 {
   // default method, functionality is implemented in the child class
