@@ -40,7 +40,7 @@ enum {kPhojet=0,kPyTuneAtlasCSC, kPyTuneCMS6D6T, kPyTunePerugia0, kNTunes} ;
 enum {kFitLevi=0, kFitUA1, kFitPowerLaw,
       kFitPhojet, kFitAtlasCSC, kFitCMS6D6T, kFitPerugia0,
       kNFit};
-enum {kDoFits=0, kDoRatios, kDoSuperposition, kDoDrawWithModels};
+enum {kDoFits=0, kDoRatios, kDoSuperposition, kDoDrawWithModels, kDoCompareToStar, kDoHelp};
 
 // flags, labels and names
 const char * partFlag[] = {"Pion", "Kaon", "Proton"};
@@ -95,6 +95,7 @@ void DrawWithJacek();
 void DrawRatioToStar();
 void DrawRatios();
 void FitCombined();
+void Help();
 
 // External stuff
 void ALICEWorkInProgress(TCanvas *c,TString today="11/05/2010", TString label = "ALICE performance"){
@@ -139,18 +140,24 @@ TString today = "";
 // Switches
 Bool_t convertToMT = 0;
 Bool_t doPrint = 1;
-Int_t  fitFuncID = kFitLevi;
 Bool_t scaleKaons =  kFALSE;
+Bool_t drawStar =  kTRUE; // Overlay star when doing fits
 Bool_t correctSecondaries  = 1;
 Bool_t correctGeantFlukaXS = 1;
 Int_t iCombInStudy = kCombAll; //kCombTOFTPC
-Int_t analysisType=kDoFits; //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
+Int_t fitFuncID = kFitLevi;
 Bool_t showMC=kTRUE;
 Bool_t showE735=kTRUE;
 
-void CombineSpectra() {
+void CombineSpectra(Int_t analysisType=kDoFits, Int_t  locfitFuncID = kFitLevi) {  //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
 
   // This macro is used to combine the 900 GeV spectra from 2009
+
+  if (analysisType == kDoHelp) {
+    Help();
+    return;
+  }
+  fitFuncID=locfitFuncID;
 
   // Load stuff
   gSystem->Load("libTree.so");
@@ -185,7 +192,7 @@ void CombineSpectra() {
   if(analysisType==kDoSuperposition) DrawAllAndKaons();  
   else if(analysisType==kDoDrawWithModels)  DrawWithModels() ;
   //DrawWithJacek();
-  //DrawRatioToStar();
+  else if(analysisType==kDoCompareToStar) DrawRatioToStar();
   else if(analysisType==kDoRatios) DrawRatios();
   else if(analysisType==kDoFits) FitCombined();
   return;
@@ -222,7 +229,6 @@ void FitCombined() {
     c2->SetTicky();
     c2->SetLeftMargin(0.14);
     TCanvas * c2r = new TCanvas(TString("cCombinedRatio")+chargeFlag[icharge]+"_"+funcName[fitFuncID], TString("cCombinedRatio")+chargeFlag[icharge],700,700);
-    //    DrawStar(icharge);
     c2->cd();
     gPad->SetLogy();
     TH2F * hempty = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,2.9, 100, 0.0005,5);
@@ -298,7 +304,8 @@ void FitCombined() {
       fitfunc->Draw("same");
       fitfunc->SetRange(0,4);
       fitfunc->SetLineColor(hSpectra[iCombInStudy][ipart][icharge]->GetLineColor());
-      hRatiosToFit[ipart][icharge]=(TH1F*)hSpectra[iCombInStudy][ipart][icharge]->Clone(Form("hRatio%s%s",chargeFlag[icharge],partFlag[icharge]));
+      if(drawStar)    DrawStar(icharge);
+      hRatiosToFit[ipart][icharge]=(TH1F*)hSpectra[iCombInStudy][ipart][icharge]->Clone(Form("hRatio%s%s",chargeFlag[icharge],partFlag[icharge])); // Ratio data/fit
       for(Int_t iBin=1; iBin<hSpectra[iCombInStudy][ipart][icharge]->GetNbinsX(); iBin++){
 	Double_t lowLim=hSpectra[iCombInStudy][ipart][icharge]->GetBinLowEdge(iBin);
 	Double_t highLim=hSpectra[iCombInStudy][ipart][icharge]->GetBinLowEdge(iBin+1);
@@ -492,7 +499,6 @@ void LoadSpectra() {
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
     for(Int_t icharge = 0; icharge < kNCharge; icharge++){
       Int_t nbin = hSpectra[kITS][ipart][icharge]->GetNbinsX();
-      //      hSpectra[kITS][ipart][icharge]->Scale(276004.);// Emanule divided his spectra...
       for(Int_t ibin = 1; ibin <= nbin; ibin++){
 	if(hSpectra[kITS][ipart][icharge]->GetBinContent(ibin) < 0 ) {
 	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
@@ -597,7 +603,7 @@ void LoadSpectra() {
 	    Float_t correction    = hCorrSecondaries->GetBinContent(binCorrection);
 	    //	    cout << pt << " " << correction << endl;
 	    
-	    if (correction != 0) {// If the bin is empty this is a  0
+	    if (correction) {// If the bin is empty this is a  0
 	      h->SetBinContent(ibin,h->GetBinContent(ibin)/correction);
 	      h->SetBinError  (ibin,h->GetBinError  (ibin)/correction);
 	    } else if (h->GetBinContent(ibin) > 0) { // If we are skipping a non-empty bin, we notify the user
@@ -1268,6 +1274,12 @@ void DrawRatioToStar() {
   // Star data
   //  gROOT->LoadMacro("StarPPSpectra.C");
   TGraphErrors ** gStar = StarPPSpectra();
+  gStar[0]->SetMarkerStyle(kOpenStar);
+  gStar[1]->SetMarkerStyle(kFullStar);
+  gStar[2]->SetMarkerStyle(kOpenStar);
+  gStar[3]->SetMarkerStyle(kFullStar);
+  gStar[4]->SetMarkerStyle(kOpenStar);
+  gStar[5]->SetMarkerStyle(kFullStar);
 
   // ALICE, INEL -> NSD
   Double_t scaleYield = 3.58/3.02; // from paper 2
@@ -1282,6 +1294,14 @@ void DrawRatioToStar() {
   TH2F * hempty = new TH2F(TString("hemptyNeg"),"hemptyNeg",100,0.,1.5, 100, 0.001,1.8);
   hempty->SetXTitle("p_{t} (GeV/c)");
   hempty->SetYTitle("ALICE/STAR (NSD)");
+  hempty->Draw();
+
+  TCanvas * c1Comp = new TCanvas("cCompToStarNeg","cCompToStarNeg");
+  c1Comp->SetLogy();
+  TH2F * hempty2 = new TH2F(TString("hemptyCompNeg"),"hemptyCompNeg",100,0.,1.5, 100, 0.001,10);
+  hempty2->SetXTitle("p_{t} (GeV/c)");
+  hempty2->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1} [NSD]");
+  hempty2->Draw();
   
   TLegend *leg = new TLegend(0.6510067,0.1853147,0.8892617,0.4178322,"Negative","brNDC");
   leg->SetBorderSize(0);
@@ -1292,7 +1312,8 @@ void DrawRatioToStar() {
   leg->SetFillStyle(1001);
 
 
-  hempty->Draw();
+
+  c1->cd();
   TGraphErrors * g ;
   g = AliBWTools::DivideGraphByHisto(gStar[0],hSpectra[iCombInStudy][kPion][kNeg],1);
   g->SetMarkerStyle(kFullCircle);
@@ -1311,6 +1332,13 @@ void DrawRatioToStar() {
   leg->AddEntry(g,"#bar{p}","lp");  
   leg->Draw();
 
+  c1Comp->cd();
+  gStar[0]->Draw("p");
+  hSpectra[iCombInStudy][kPion][kNeg]->Draw("same");
+  gStar[2]->Draw("p");
+  hSpectra[iCombInStudy][kKaon][kNeg]->Draw("same");
+  gStar[4]->Draw("p");
+  hSpectra[iCombInStudy][kProton][kNeg]->Draw("same");
 
 
 
@@ -1323,6 +1351,12 @@ void DrawRatioToStar() {
   leg->SetLineWidth(1);
   leg->SetFillColor(0);
   leg->SetFillStyle(1001);
+
+  TCanvas * c2Comp = new TCanvas("cCompToStarPos","cCompToStarPos");
+  c2Comp->SetLogy();
+  hempty2->Draw();
+
+  c2->cd();
  //  TGraphErrors * g ;
   g = AliBWTools::DivideGraphByHisto(gStar[1],hSpectra[iCombInStudy][kPion][kPos],1);
   g->SetMarkerStyle(kFullCircle);
@@ -1339,9 +1373,17 @@ void DrawRatioToStar() {
   g->SetMarkerColor(kBlue);
   g->Draw("p");
   leg->AddEntry(g,"p","lp");
-
-
   leg->Draw();
+
+
+  c2Comp->cd();
+  gStar[1]->Draw("p");
+  hSpectra[iCombInStudy][kPion][kPos]->Draw("same");
+  gStar[3]->Draw("p");
+  hSpectra[iCombInStudy][kKaon][kPos]->Draw("same");
+  gStar[5]->Draw("p");
+  hSpectra[iCombInStudy][kProton][kPos]->Draw("same");
+
 
   c1->Update();
   c2->Update();
@@ -1528,3 +1570,19 @@ void DrawRatios() {
 
 }
 
+
+void Help() {
+
+  cout << "Macro: void CombineSpectra(Int_t analysisType=kDoFits, Int_t  fitFuncID = kFitLevi) " << endl;
+  cout << "" << endl;
+
+  cout << "Possible Arguments" << endl;
+  cout << "- analysisType:" << endl;  
+  cout << "    enum {kDoFits=0, kDoRatios, kDoSuperposition, kDoDrawWithModels, kDoCompareToStar, kDoHelp};" << endl;
+  cout << "- fitFuncID" << endl;
+  cout << "    enum {kFitLevi=0, kFitUA1, kFitPowerLaw," << endl;
+  cout << "          kFitPhojet, kFitAtlasCSC, kFitCMS6D6T, kFitPerugia0," << endl;
+  cout << "          kNFit};" << endl;
+
+
+}

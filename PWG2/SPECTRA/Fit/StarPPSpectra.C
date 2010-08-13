@@ -254,12 +254,18 @@ TGraphErrors ** StarPPSpectra() {
 
   gStar[5] = new TGraphErrors(ipoint,pt,pp,errpt,ppe);
 
-  gStar[0]->SetMarkerStyle(kOpenTriangleUp);
-  gStar[1]->SetMarkerStyle(kFullTriangleUp);
-  gStar[2]->SetMarkerStyle(kOpenCircle);
-  gStar[3]->SetMarkerStyle(kFullCircle);
-  gStar[4]->SetMarkerStyle(kOpenSquare);
-  gStar[5]->SetMarkerStyle(kFullSquare);
+//   gStar[0]->SetMarkerStyle(kOpenTriangleUp);
+//   gStar[1]->SetMarkerStyle(kFullTriangleUp);
+//   gStar[2]->SetMarkerStyle(kOpenCircle);
+//   gStar[3]->SetMarkerStyle(kFullCircle);
+//   gStar[4]->SetMarkerStyle(kOpenSquare);
+//   gStar[5]->SetMarkerStyle(kFullSquare);
+  gStar[0]->SetMarkerStyle(kOpenStar);
+  gStar[1]->SetMarkerStyle(kFullStar);
+  gStar[2]->SetMarkerStyle(kOpenStar);
+  gStar[3]->SetMarkerStyle(kFullStar);
+  gStar[4]->SetMarkerStyle(kOpenStar);
+  gStar[5]->SetMarkerStyle(kFullStar);
 
   gStar[0]->SetMarkerColor(kBlack);
   gStar[1]->SetMarkerColor(kBlack);
