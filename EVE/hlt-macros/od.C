@@ -190,9 +190,6 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
   if(showMuon)
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1, AliMagF::k5kG));
 
-  AliHLTReconstructor * rec = new AliHLTReconstructor();
-  rec->InitStreamerInfos();
-
   // Get the pointer to gGeoManager before it's broken (bug in alieve)
   fGeoManager = gGeoManager;
 
