@@ -151,7 +151,7 @@ int AliHLTLogging::InitAliLogFunc(AliHLTComponentHandler* pHandler)
     fgAliLoggingFunc=(AliHLTLogging::AliHLTDynamicMessage)pHandler->FindSymbol(ALILOG_WRAPPER_LIBRARY, "AliDynamicMessage");
     if (fgAliLoggingFunc==NULL) {
       Message(NULL, kHLTLogError, "AliHLTLogging::InitAliLogFunc", "init logging",
-	      "symbol lookp failure: can not find AliDynamicMessage, switching to HLT logging system");
+	      "symbol lookup failure: can not find AliDynamicMessage, switching to HLT logging system");
       iResult=-ENOSYS;
     }
   } else {
