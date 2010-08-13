@@ -45,6 +45,8 @@ public:
     Double32_t* GetSliceIter() const {return fTRDslices;}
     const Double32_t* GetResponseIter() const {return &fTRDr[0];}
     AliExternalTrackParam* GetOuterParam() const { return fOP;}
+    const Int_t* GetV0pid() const {return &fTRDv0pid[0];}
+    Int_t       GetV0pid(Int_t i) const {return fTRDv0pid[i];}
 
   protected:
     UChar_t     fHasV0;         // v0 bit
@@ -57,8 +59,9 @@ public:
     Int_t       fTRDnSlices;    // number of slices used for PID
     Double32_t *fTRDslices;     //[fTRDnSlices] 
     AliExternalTrackParam *fOP; // outer param
+    Int_t  fTRDv0pid[AliPID::kSPECIES]; // PID from v0s
 
-    ClassDef(AliESDinfo, 2)     // ESD info related to TRD
+    ClassDef(AliESDinfo, 3)     // ESD info related to TRD
   };
 
   class AliMCinfo{
@@ -135,6 +138,7 @@ public:
   void               SetESDpidQuality(UChar_t q) { fESD.fTRDpidQuality = q;}
   void               SetSlices(Int_t n, Double32_t *s);
   inline void        SetESDpid(Double_t *);
+  inline void        SetV0pid(Int_t *);
   void               SetV0(Bool_t v0=kTRUE) {fESD.fHasV0 = v0;}
   
 private:
@@ -148,7 +152,7 @@ private:
   AliMCinfo          *fMC;            // MC extract for TRD
   AliESDinfo         fESD;            // ESD extract for TRD
 
-  ClassDef(AliTRDtrackInfo, 3)        // TRD track info
+  ClassDef(AliTRDtrackInfo, 4)        // TRD track info
 };
 
 
@@ -162,6 +166,12 @@ inline void AliTRDtrackInfo::SetMC()
 inline void AliTRDtrackInfo::SetESDpid(Double_t * const r)
 { 
   for(Int_t is = AliPID::kSPECIES; is--;) fESD.fTRDr[is] = r[is];
+}
+
+//________________________________________________________
+inline void AliTRDtrackInfo::SetV0pid(Int_t * const r)
+{ 
+  for(Int_t is = AliPID::kSPECIES; is--;) fESD.fTRDv0pid[is] = r[is];
 }
 
 #endif
