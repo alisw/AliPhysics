@@ -68,6 +68,10 @@ class AliFlowAnalysisWithMCEventPlane {
    void      SetHistProIntFlow(TProfile* const aHistProIntFlow) 
      {this->fHistProIntFlow = aHistProIntFlow; }
      
+   TProfile* GetHistProIntFlowVsM() const    {return this->fHistProIntFlowVsM; } 
+   void      SetHistProIntFlowVsM(TProfile* const aHistProIntFlowVsM) 
+     {this->fHistProIntFlowVsM = aHistProIntFlowVsM; }
+
    TProfile2D* GetHistProDiffFlowPtEtaRP() const    {return this->fHistProDiffFlowPtEtaRP; } 
    void      SetHistProDiffFlowPtEtaRP(TProfile2D* const aHistProDiffFlowPtEtaRP) 
      {this->fHistProDiffFlowPtEtaRP = aHistProDiffFlowPtEtaRP; }   
@@ -153,6 +157,7 @@ class AliFlowAnalysisWithMCEventPlane {
    
    TH1F*        fHistRP;                  // reaction plane
    TProfile*    fHistProIntFlow;          // profile used to calculate the integrated flow of RP particles
+   TProfile*    fHistProIntFlowVsM;       // profile used to calculate the integrated flow of RP particles vs multiplicity
    TProfile2D*  fHistProDiffFlowPtEtaRP;  // profile used to calculate the differential flow (Pt,Eta) of RP particles
    TProfile*    fHistProDiffFlowPtRP;     // profile used to calculate the differential flow (Pt) of RP particles 
    TProfile*    fHistProDiffFlowEtaRP;    // profile used to calculate the differential flow (Eta) of RP particles 

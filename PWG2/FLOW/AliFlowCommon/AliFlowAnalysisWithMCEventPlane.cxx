@@ -53,6 +53,7 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fCommonHistsRes(NULL),
    fHistRP(NULL),
    fHistProIntFlow(NULL),
+   fHistProIntFlowVsM(NULL),
    fHistProDiffFlowPtEtaRP(NULL),
    fHistProDiffFlowPtRP(NULL),
    fHistProDiffFlowEtaRP(NULL),
@@ -163,9 +164,15 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   
   fHistProIntFlow = new TProfile("FlowPro_V_MCEP","FlowPro_V_MCEP",1,0.,1.);
   fHistProIntFlow->SetLabelSize(0.06);
-  (fHistProIntFlow->GetXaxis())->SetBinLabel(1,"v_{n}{2}");
+  (fHistProIntFlow->GetXaxis())->SetBinLabel(1,"v_{n}{MCEP}");
   fHistProIntFlow->SetYTitle("");
   fHistList->Add(fHistProIntFlow);
+  
+  fHistProIntFlowVsM = new TProfile("FlowPro_VsM_MCEP","FlowPro_VsM_MCEP",10000,0.,10000.); // to be improved - hardwired 10000
+  //fHistProIntFlowVsM->SetLabelSize(0.06);
+  (fHistProIntFlowVsM->GetXaxis())->SetTitle("M");
+  fHistProIntFlowVsM->SetYTitle("");
+  fHistList->Add(fHistProIntFlowVsM);
   
   fHistProDiffFlowPtEtaRP = new TProfile2D("FlowPro_VPtEtaRP_MCEP","FlowPro_VPtEtaRP_MCEP",iNbinsPt,dPtMin,dPtMax,iNbinsEta,dEtaMin,dEtaMax);
   fHistProDiffFlowPtEtaRP->SetXTitle("P_{t}");
@@ -244,6 +251,7 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
     //calculate flow
     //loop over the tracks of the event
     Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
+    Int_t iNumberOfRPs = anEvent->GetEventNSelTracksRP(); 
     for (Int_t i=0;i<iNumberOfTracks;i++) 
       {
 	AliFlowTrackSimple* pTrack = anEvent->GetTrack(i) ; 
@@ -253,9 +261,11 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
             dv  = TMath::Cos(fHarmonic*(dPhi-aRP));
 	         dPt  = pTrack->Pt();
 	         dEta = pTrack->Eta();
-            //no-name int. flow (to be improved = name needed!):
+            //reference flow:
             fHistProIntFlow->Fill(0.,dv);
-            //no-name int. flow e-b-e (to be improved = name needed!):
+            //reference flow versus multiplicity:
+            fHistProIntFlowVsM->Fill(iNumberOfRPs+0.5,dv);
+            //reference flow e-b-e:
             flowEBE->Fill(0.,dv);
             //differential flow (Pt, Eta, RP):
             fHistProDiffFlowPtEtaRP->Fill(dPt,dEta,dv,1.);
@@ -383,10 +393,10 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
    fHarmonic = (Int_t)(fCommonHists->GetHarmonic())->GetBinContent(1); // to be improved (moved somewhere else?)
   } 
          
-  // no-name int. flow (to be improved):
+  //reference flow :
   Double_t dV = fHistProIntFlow->GetBinContent(1);  
   Double_t dErrV = fHistProIntFlow->GetBinError(1); // to be improved (treatment of errors for non-Gaussian distribution needed!)  
-  // fill no-name int. flow (to be improved):
+  //fill reference flow:
   fCommonHistsRes->FillIntegratedFlow(dV,dErrV);
   cout<<"dV"<<fHarmonic<<"{MC} is       "<<dV<<" +- "<<dErrV<<endl;
   
