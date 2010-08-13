@@ -63,7 +63,7 @@ Int_t         kErrorIgnoreLevel = -1; // takes the errror print level from .root
 // const Int_t kSysError =   5000;
 // const Int_t kFatal    =   6000; 
 Int_t         kUseSysInfo         = 0; // activate debugging
-Long_t     kNumberOfEvents     = 1234567890; // number of events to process from the chain
+Long64_t kNumberOfEvents     = 1234567890; // number of events to process from the chain
 Bool_t      kUseMC              = kTRUE;  // use MC info
 Bool_t      kIsMC               = kTRUE;  // is MC info, if false it overwrites Use(AOD)MC
 Bool_t      kUseAODMC           = kTRUE;  // use MC infA
@@ -195,7 +195,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (kSaveTrain)WriteConfig();
    // Check compatibility of selected modules
    CheckModuleFlags(smode);
-   //   gROOT->ProcessLine(".trace");
+   //     gROOT->ProcessLine(".trace");
 
    printf("==================================================================\n");
    printf("===========    RUNNING ANALYSIS TRAIN %s IN %s MODE   ==========\n", kTrainName.Data(),smode.Data());
@@ -351,7 +351,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if (iESDfilter && !iAODanalysis) {
       //  ESD filter task configuration.
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskESDFilterPWG4Train.C");
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter,kUseMuonfilter);
       taskesdfilter->SetEnableFillAOD(kFALSE);
       if(kIsMC){
@@ -779,13 +779,14 @@ void StartAnalysis(const char *mode, TChain *chain) {
                ::Error("AnalysisTrainPWG4Jets.C::StartAnalysis", "Grid plugin not initialized");
                return;
             }   
-            mgr->StartAnalysis("grid");
+            mgr->StartAnalysis("grid",chain,kNumberOfEvents);
          } else {
             if (!chain) {
                ::Error("AnalysisTrainPWG4Jets.C::StartAnalysis", "Cannot create the chain");
                return;
             }   
             mgr->StartAnalysis(mode, chain);
+            mgr->StartAnalysis(mode, chain,kNumberOfEvents);
          }   
          return;
    }      
@@ -999,7 +1000,7 @@ Bool_t LoadCommonLibraries(const char *mode)
    if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    if (!gSystem->Getenv("ALICE_ROOT")) {
-      ::Error("AnalysisTrainPWG4Jets.C::LoadCommonLibraries", "Analysis train requires that analysis libraries are compiled with a local AliRoot"); 
+      ::Error("AnalysisTrainPWG4Jets.C::LoadCommonLibraries", "Analysis train requires that ALICE_ROOT is set to pick up Configurations"); 
       return kFALSE;
    }   
    Bool_t success = kTRUE;
