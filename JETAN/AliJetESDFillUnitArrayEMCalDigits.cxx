@@ -266,7 +266,7 @@ void AliJetESDFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
       Int_t     digMult = fClus->GetNCells() ;
       UShort_t *digID   = fClus->GetCellsAbsId() ;
 //(not used ?)      Double_t *digAmpFrac = fClus->GetCellsAmplitudeFraction() ;
-      Int_t     trackIndex = fClus->GetTrackMatched();
+      Int_t     trackIndex = fClus->GetTrackMatchedIndex();
 
       // Do double-counted electron correction 
       if (fApplyElectronCorrection != 0 && trackIndex !=-1 )

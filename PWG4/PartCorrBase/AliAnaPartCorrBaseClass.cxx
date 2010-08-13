@@ -37,6 +37,8 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliMixedEvent.h"
+#include "AliAODPWG4Particle.h"
 
 ClassImp(AliAnaPartCorrBaseClass)
   
@@ -57,7 +59,7 @@ ClassImp(AliAnaPartCorrBaseClass)
     fHistoPhiBins(0),  fHistoPhiMax(0.),  fHistoPhiMin(0.),
     fHistoEtaBins(0),  fHistoEtaMax(0.),  fHistoEtaMin(0.),
     fHistoMassBins(0), fHistoMassMax(0.), fHistoMassMin(0.),
-    fHistoAsymBins(0), fHistoAsymMax(0.), fHistoAsymMin(0.)
+    fHistoAsymBins(0), fHistoAsymMax(0.), fHistoAsymMin(0.), fMixedEvent(NULL), fNMixedEvent(1), fVertex(NULL)
 {
   //Default Ctor
     
@@ -180,6 +182,14 @@ AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass()
   if(fIC)        delete fIC ;
   if(fMCUtils)   delete fMCUtils ;
   if(fNMS)       delete fNMS ;
+  
+  if (fMixedEvent) {
+    for (Int_t i = 0; i < fNMixedEvent; i++) {
+      delete [] fVertex[i] ; 
+    }
+  }
+  delete [] fVertex ;  
+  
 //   printf("--- analysis deleted \n");
 }
 
@@ -517,7 +527,7 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fHistoAsymBins  = 10 ;
   fHistoAsymMax   = 1. ;
   fHistoAsymMin   = 0. ;
-	
+  	
 }
 
 //__________________________________________________________________
@@ -550,3 +560,26 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   printf("    \n") ;
   
 } 
+
+//__________________________________________________________________
+AliMixedEvent * AliAnaPartCorrBaseClass::GetMixedEvent() 
+{ 
+    //gets the mixed event objects and does some setting
+  if (!fMixedEvent) {
+    fMixedEvent = dynamic_cast<AliMixedEvent*>(GetReader()->GetInputEvent()) ; 
+    if (fMixedEvent) {
+      fNMixedEvent = fMixedEvent->GetNumberOfEvents() ; 
+    }
+    fVertex = new Double_t*[fNMixedEvent] ; 
+    for (Int_t i = 0; i < fNMixedEvent; i++) {
+      fVertex[i] = new Double_t[3] ; 
+      fVertex[i][0] = 0.0 ; 
+      fVertex[i][1] = 0.0 ; 
+      fVertex[i][2] = 0.0 ; 
+    }          
+  }  
+  return fMixedEvent ; 
+}
+
+
+

@@ -14,16 +14,16 @@
  **************************************************************************/
 /* $Id: $ */
 
-//_________________________________________________________________________
-// Class to check results from simulations or reconstructed real data. 
-// Fill few histograms and do some checking plots
-//
-//-- Author: Gustavo Conesa (INFN-LNF)
-//_________________________________________________________________________
+  //_________________________________________________________________________
+  // Class to check results from simulations or reconstructed real data. 
+  // Fill few histograms and do some checking plots
+  //
+  //-- Author: Gustavo Conesa (INFN-LNF)
+  //_________________________________________________________________________
 
 
-// --- ROOT system ---
-//#include "Riostream.h"
+  // --- ROOT system ---
+  //#include "Riostream.h"
 #include "TObjArray.h"
 #include "TParticle.h"
 #include "TDatabasePDG.h"
@@ -36,184 +36,181 @@
 #include "TStyle.h"
 #include <TObjString.h>
 
-//---- AliRoot system ----
+  //---- AliRoot system ----
 #include "AliAnaCalorimeterQA.h"
 #include "AliCaloTrackReader.h"
 #include "AliStack.h"
-#include "AliAODCaloCells.h"
-#include "AliESDCaloCells.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCaloCells.h"
 #include "AliFiducialCut.h"
-#include "AliESDtrack.h"
-#include "AliAODTrack.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDEvent.h"
-#include "AliAODEvent.h"
+#include "AliVTrack.h"
+#include "AliVCluster.h"
+#include "AliVEvent.h"
 #include "AliVEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliAODMCParticle.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliAODPid.h"
+#include "AliExternalTrackParam.h"
 
 ClassImp(AliAnaCalorimeterQA)
-  
-//____________________________________________________________________________
-  AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
-    AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), 
-    fMakePlots(kFALSE), fCorrelateCalos(kFALSE), fNModules(12), fNRCU(2),
-    fTimeCutMin(-1), fTimeCutMax(9999999),
-    fHistoPOverEBins(100),     fHistoPOverEMax(100.),     fHistoPOverEMin(0.),
-    fHistodEdxBins(100),       fHistodEdxMax(100.),       fHistodEdxMin(0.),
-    fHistodRBins(100),         fHistodRMax(100.),         fHistodRMin(0.),
-    fHistoTimeBins(100),       fHistoTimeMax(100.),       fHistoTimeMin(0.),
-    fHistoNBins(100),          fHistoNMax(100),           fHistoNMin(0),
-    fHistoRatioBins(100),      fHistoRatioMax(100.),      fHistoRatioMin(0.),
-    fHistoVertexDistBins(100), fHistoVertexDistMax(100.), fHistoVertexDistMin(0.),
-    fHistoRBins(100),          fHistoRMax(1000),           fHistoRMin(-1000),
-    fHistoXBins(100),          fHistoXMax(1000),           fHistoXMin(-1000),
-    fHistoYBins(100),          fHistoYMax(1000),           fHistoYMin(-1000),
-    fHistoZBins(100),          fHistoZMax(1000),           fHistoZMin(-1000),
-    fHistoSSBins(40),          fHistoSSMax(10),            fHistoSSMin(0),
-    fhE(0),fhPt(0),fhPhi(0),fhEta(0),   fhEtaPhiE(0),
-    fhECharged(0),fhPtCharged(0),fhPhiCharged(0),fhEtaCharged(0), fhEtaPhiECharged(0), 
-    //fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
-    fhDeltaE(0), fhDeltaPt(0),fhDeltaPhi(0),fhDeltaEta(0), fhRatioE(0), fhRatioPt(0),fhRatioPhi(0),fhRatioEta(0),
-    fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0),
-    fhLambda(0), fhDispersion(0), 
-    fhIM(0), fhIMCellCut(0),fhAsym(0), 
-    fhNCellsPerCluster(0),fhNCellsPerClusterMIP(0), fhNCellsPerClusterMIPCharged(0), fhNClusters(0), 
-    fhClusterTimeEnergy(0),fhCellTimeSpreadRespectToCellMax(0),fhCellIdCellLargeTimeSpread(0),
-    fhRNCells(0),fhXNCells(0),fhYNCells(0),fhZNCells(0),
-    fhRE(0),     fhXE(0),     fhYE(0),     fhZE(0),    fhXYZ(0),
-    fhRCellE(0), fhXCellE(0), fhYCellE(0), fhZCellE(0),fhXYZCell(0),
-    fhDeltaCellClusterRNCells(0),fhDeltaCellClusterXNCells(0),fhDeltaCellClusterYNCells(0),fhDeltaCellClusterZNCells(0),
-    fhDeltaCellClusterRE(0),     fhDeltaCellClusterXE(0),     fhDeltaCellClusterYE(0),     fhDeltaCellClusterZE(0),
-    fhNCells(0), fhAmplitude(0), fhAmpId(0), fhEtaPhiAmp(0), 
-    fhTime(0), fhTimeId(0), fhTimeAmp(0), //fhT0Time(0), fhT0TimeId(0), fhT0TimeAmp(0), 
-    fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
-    fhEMod(0), fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
-    fhGridCellsMod(0), fhGridCellsEMod(0), fhGridCellsTimeMod(0), 
-    fhAmplitudeMod(0), fhAmplitudeModFraction(0),fhTimeAmpPerRCU(0), //fhT0TimeAmpPerRCU(0), 
-    //fhTimeCorrRCU(0),
-    fhIMMod(0),  fhIMCellCutMod(0),
-    fhGenGamPt(0),fhGenGamEta(0),fhGenGamPhi(0),fhGenPi0Pt(0),fhGenPi0Eta(0),fhGenPi0Phi(0),
-    fhGenEtaPt(0),fhGenEtaEta(0),fhGenEtaPhi(0),fhGenOmegaPt(0),fhGenOmegaEta(0),fhGenOmegaPhi(0),
-    fhGenElePt(0),fhGenEleEta(0),fhGenElePhi(0), fhEMVxyz(0),  fhEMR(0), fhHaVxyz(0),  fhHaR(0),
-    fhGamE(0),fhGamPt(0),fhGamPhi(0),fhGamEta(0), 
-    fhGamDeltaE(0), fhGamDeltaPt(0),fhGamDeltaPhi(0),fhGamDeltaEta(0), 
-    fhGamRatioE(0), fhGamRatioPt(0),fhGamRatioPhi(0),fhGamRatioEta(0),
-    fhEleE(0),fhElePt(0),fhElePhi(0),fhEleEta(0),
-    fhPi0E(0),fhPi0Pt(0),fhPi0Phi(0),fhPi0Eta(0), 
-    fhNeHadE(0),fhNeHadPt(0),fhNeHadPhi(0),fhNeHadEta(0), 
-    fhChHadE(0),fhChHadPt(0),fhChHadPhi(0),fhChHadEta(0),
-    fhGamECharged(0),fhGamPtCharged(0),fhGamPhiCharged(0),fhGamEtaCharged(0), 
-    fhEleECharged(0),fhElePtCharged(0),fhElePhiCharged(0),fhEleEtaCharged(0),
-    fhPi0ECharged(0),fhPi0PtCharged(0),fhPi0PhiCharged(0),fhPi0EtaCharged(0), 
-    fhNeHadECharged(0),fhNeHadPtCharged(0),fhNeHadPhiCharged(0),fhNeHadEtaCharged(0), 
-    fhChHadECharged(0),fhChHadPtCharged(0),fhChHadPhiCharged(0),fhChHadEtaCharged(0),
-    fhGenGamAccE(0),fhGenGamAccPt(0),fhGenGamAccEta(0),fhGenGamAccPhi(0),
-    fhGenPi0AccE(0),fhGenPi0AccPt(0),fhGenPi0AccEta(0),fhGenPi0AccPhi(0),
-    fh1pOverE(0),fh1dR(0),fh2EledEdx(0), fh2MatchdEdx(0),fhMCEle1pOverE(0),fhMCEle1dR(0),fhMCEle2MatchdEdx(0),
-    fhMCChHad1pOverE(0),  fhMCChHad1dR(0),  fhMCChHad2MatchdEdx(0),
-    fhMCNeutral1pOverE(0),fhMCNeutral1dR(0),fhMCNeutral2MatchdEdx(0),
-    fh1pOverER02(0), fhMCEle1pOverER02(0), fhMCChHad1pOverER02(0), fhMCNeutral1pOverER02(0)
+
+  //____________________________________________________________________________
+AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
+AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), 
+fMakePlots(kFALSE), fCorrelateCalos(kFALSE), fNModules(12), fNRCU(2),
+fTimeCutMin(-1), fTimeCutMax(9999999),
+fHistoPOverEBins(100),     fHistoPOverEMax(100.),     fHistoPOverEMin(0.),
+fHistodEdxBins(100),       fHistodEdxMax(100.),       fHistodEdxMin(0.),
+fHistodRBins(100),         fHistodRMax(100.),         fHistodRMin(0.),
+fHistoTimeBins(100),       fHistoTimeMax(100.),       fHistoTimeMin(0.),
+fHistoNBins(100),          fHistoNMax(100),           fHistoNMin(0),
+fHistoRatioBins(100),      fHistoRatioMax(100.),      fHistoRatioMin(0.),
+fHistoVertexDistBins(100), fHistoVertexDistMax(100.), fHistoVertexDistMin(0.),
+fHistoRBins(100),          fHistoRMax(1000),           fHistoRMin(-1000),
+fHistoXBins(100),          fHistoXMax(1000),           fHistoXMin(-1000),
+fHistoYBins(100),          fHistoYMax(1000),           fHistoYMin(-1000),
+fHistoZBins(100),          fHistoZMax(1000),           fHistoZMin(-1000),
+fHistoSSBins(40),          fHistoSSMax(10),            fHistoSSMin(0),
+fhE(0),fhPt(0),fhPhi(0),fhEta(0),   fhEtaPhiE(0),
+fhECharged(0),fhPtCharged(0),fhPhiCharged(0),fhEtaCharged(0), fhEtaPhiECharged(0), 
+  //fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
+fhDeltaE(0), fhDeltaPt(0),fhDeltaPhi(0),fhDeltaEta(0), fhRatioE(0), fhRatioPt(0),fhRatioPhi(0),fhRatioEta(0),
+fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0),
+fhLambda(0), fhDispersion(0), 
+fhIM(0), fhIMCellCut(0),fhAsym(0), 
+fhNCellsPerCluster(0),fhNCellsPerClusterMIP(0), fhNCellsPerClusterMIPCharged(0), fhNClusters(0), 
+fhClusterTimeEnergy(0),fhCellTimeSpreadRespectToCellMax(0),fhCellIdCellLargeTimeSpread(0),
+fhRNCells(0),fhXNCells(0),fhYNCells(0),fhZNCells(0),
+fhRE(0),     fhXE(0),     fhYE(0),     fhZE(0),    fhXYZ(0),
+fhRCellE(0), fhXCellE(0), fhYCellE(0), fhZCellE(0),fhXYZCell(0),
+fhDeltaCellClusterRNCells(0),fhDeltaCellClusterXNCells(0),fhDeltaCellClusterYNCells(0),fhDeltaCellClusterZNCells(0),
+fhDeltaCellClusterRE(0),     fhDeltaCellClusterXE(0),     fhDeltaCellClusterYE(0),     fhDeltaCellClusterZE(0),
+fhNCells(0), fhAmplitude(0), fhAmpId(0), fhEtaPhiAmp(0), 
+fhTime(0), fhTimeId(0), fhTimeAmp(0), //fhT0Time(0), fhT0TimeId(0), fhT0TimeAmp(0), 
+fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
+fhEMod(0), fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
+fhGridCellsMod(0), fhGridCellsEMod(0), fhGridCellsTimeMod(0), 
+fhAmplitudeMod(0), fhAmplitudeModFraction(0),fhTimeAmpPerRCU(0), //fhT0TimeAmpPerRCU(0), 
+                                                                 //fhTimeCorrRCU(0),
+fhIMMod(0),  fhIMCellCutMod(0),
+fhGenGamPt(0),fhGenGamEta(0),fhGenGamPhi(0),fhGenPi0Pt(0),fhGenPi0Eta(0),fhGenPi0Phi(0),
+fhGenEtaPt(0),fhGenEtaEta(0),fhGenEtaPhi(0),fhGenOmegaPt(0),fhGenOmegaEta(0),fhGenOmegaPhi(0),
+fhGenElePt(0),fhGenEleEta(0),fhGenElePhi(0), fhEMVxyz(0),  fhEMR(0), fhHaVxyz(0),  fhHaR(0),
+fhGamE(0),fhGamPt(0),fhGamPhi(0),fhGamEta(0), 
+fhGamDeltaE(0), fhGamDeltaPt(0),fhGamDeltaPhi(0),fhGamDeltaEta(0), 
+fhGamRatioE(0), fhGamRatioPt(0),fhGamRatioPhi(0),fhGamRatioEta(0),
+fhEleE(0),fhElePt(0),fhElePhi(0),fhEleEta(0),
+fhPi0E(0),fhPi0Pt(0),fhPi0Phi(0),fhPi0Eta(0), 
+fhNeHadE(0),fhNeHadPt(0),fhNeHadPhi(0),fhNeHadEta(0), 
+fhChHadE(0),fhChHadPt(0),fhChHadPhi(0),fhChHadEta(0),
+fhGamECharged(0),fhGamPtCharged(0),fhGamPhiCharged(0),fhGamEtaCharged(0), 
+fhEleECharged(0),fhElePtCharged(0),fhElePhiCharged(0),fhEleEtaCharged(0),
+fhPi0ECharged(0),fhPi0PtCharged(0),fhPi0PhiCharged(0),fhPi0EtaCharged(0), 
+fhNeHadECharged(0),fhNeHadPtCharged(0),fhNeHadPhiCharged(0),fhNeHadEtaCharged(0), 
+fhChHadECharged(0),fhChHadPtCharged(0),fhChHadPhiCharged(0),fhChHadEtaCharged(0),
+fhGenGamAccE(0),fhGenGamAccPt(0),fhGenGamAccEta(0),fhGenGamAccPhi(0),
+fhGenPi0AccE(0),fhGenPi0AccPt(0),fhGenPi0AccEta(0),fhGenPi0AccPhi(0),
+fh1pOverE(0),fh1dR(0),fh2EledEdx(0), fh2MatchdEdx(0),fhMCEle1pOverE(0),fhMCEle1dR(0),fhMCEle2MatchdEdx(0),
+fhMCChHad1pOverE(0),  fhMCChHad1dR(0),  fhMCChHad2MatchdEdx(0),
+fhMCNeutral1pOverE(0),fhMCNeutral1dR(0),fhMCNeutral2MatchdEdx(0),
+fh1pOverER02(0), fhMCEle1pOverER02(0), fhMCChHad1pOverER02(0), fhMCNeutral1pOverER02(0)
 {
-  //Default Ctor
+    //Default Ctor
   
-  //Initialize parameters
+    //Initialize parameters
   InitParameters();
 }
 /*
-//____________________________________________________________________________
-AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :   
-  AliAnaPartCorrBaseClass(qa), fCalorimeter(qa.fCalorimeter), fStyleMacro(qa.fStyleMacro), 
-  fMakePlots(qa.fMakePlots), fCorrelateCalos(qa.fCorrelateCalos), fNModules(qa.fNModules), fNRCU(qa.fNRCU),
-  fTimeCutMin(qa.fTimeCutMin), fTimeCutMax(qa.fTimeCutMax),	
-  fHistoPOverEBins(qa.fHistoPOverEBins), fHistoPOverEMax(qa.fHistoPOverEMax), fHistoPOverEMin(qa.fHistoPOverEMin),
-  fHistodEdxBins(qa.fHistodEdxBins), fHistodEdxMax(qa.fHistodEdxMax), fHistodEdxMin(qa.fHistodEdxMin), 
-  fHistodRBins(qa.fHistodRBins), fHistodRMax(qa.fHistodRMax), fHistodRMin(qa.fHistodRMin),
-  fHistoTimeBins(qa.fHistoTimeBins), fHistoTimeMax(qa.fHistoTimeMax), fHistoTimeMin(qa.fHistoTimeMin),
-  fHistoNBins(qa.fHistoNBins), fHistoNMax(qa.fHistoNMax), fHistoNMin(qa.fHistoNMin),
-  fHistoRatioBins(qa.fHistoRatioBins), fHistoRatioMax(qa.fHistoRatioMax), fHistoRatioMin(qa.fHistoRatioMin),
-  fHistoVertexDistBins(qa.fHistoVertexDistBins), fHistoVertexDistMax(qa.fHistoVertexDistMax), fHistoVertexDistMin(qa.fHistoVertexDistMin),
-  fHistoRBins(qa.fHistoRBins), fHistoRMax(qa.fHistoRMax),  fHistoRMin(qa.fHistoRMin),
-  fHistoXBins(qa.fHistoXBins), fHistoXMax(qa.fHistoXMax),  fHistoXMin(qa.fHistoXMin),
-  fHistoYBins(qa.fHistoYBins), fHistoYMax(qa.fHistoYMax),  fHistoYMin(qa.fHistoYMin),
-  fHistoZBins(qa.fHistoZBins), fHistoZMax(qa.fHistoZMax),  fHistoZMin(qa.fHistoZMin),
-  fHistoSSBins(qa.fHistoSSBins),fHistoSSMax(qa.fHistoSSMax), fHistoSSMin(qa.fHistoSSMin),
-  fhE(qa.fhE),fhPt(qa.fhPt), fhPhi(qa.fhPhi), fhEta(qa.fhEta), fhEtaPhiE(qa.fhEtaPhiE), 
-  fhECharged(qa.fhECharged),fhPtCharged(qa.fhPtCharged),fhPhiCharged(qa.fhPhiCharged),
-  fhEtaCharged(qa.fhEtaCharged), fhEtaPhiECharged(qa.fhEtaPhiECharged), 
-  //fhEChargedNoOut(qa.fhEChargedNoOut),fhPtChargedNoOut(qa.fhPtChargedNoOut),fhPhiChargedNoOut(qa.fhPhiChargedNoOut),
-  //fhEtaChargedNoOut(qa.fhEtaChargedNoOut), fhEtaPhiChargedNoOut(qa.fhEtaPhiChargedNoOut), 
-  fhDeltaE(qa.fhDeltaE), fhDeltaPt(qa.fhDeltaPt), fhDeltaPhi(qa.fhDeltaPhi), fhDeltaEta(qa.fhDeltaEta),
-  fhRatioE(qa.fhRatioE), fhRatioPt(qa.fhRatioPt), fhRatioPhi(qa.fhRatioPhi), fhRatioEta(qa.fhRatioEta),
-  fh2E(qa.fh2E), fh2Pt(qa.fh2Pt), fh2Phi(qa.fh2Phi),fh2Eta(qa.fh2Eta), 
-  fhLambda(qa.fhLambda), fhDispersion(qa.fhDispersion), 
-  fhIM(qa.fhIM), fhIMCellCut(qa.fhIMCellCut), fhAsym(qa.fhAsym), 
-  fhNCellsPerCluster(qa.fhNCellsPerCluster), fhNCellsPerClusterMIP(qa.fhNCellsPerClusterMIP),
-  fhNCellsPerClusterMIPCharged(qa.fhNCellsPerClusterMIPCharged),fhNClusters(qa.fhNClusters),
-  fhClusterTimeEnergy(qa.fhClusterTimeEnergy),	
-  fhCellTimeSpreadRespectToCellMax(qa.fhCellTimeSpreadRespectToCellMax),
-  fhCellIdCellLargeTimeSpread(qa.fhCellIdCellLargeTimeSpread),
-  fhRNCells(qa.fhRNCells),fhXNCells(qa.fhXNCells),fhYNCells(qa.fhYNCells),fhZNCells(qa.fhZNCells),
-  fhRE(qa.fhRE),          fhXE(qa.fhXE),          fhYE(qa.fhYE),          fhZE(qa.fhZE),        fhXYZ(qa.fhXYZ),
-  fhRCellE(qa.fhXCellE),  fhXCellE(qa.fhXCellE),  fhYCellE(qa.fhYCellE),  fhZCellE(qa.fhZCellE),fhXYZCell(qa.fhXYZCell),
-  fhDeltaCellClusterRNCells(qa.fhDeltaCellClusterRNCells),fhDeltaCellClusterXNCells(qa.fhDeltaCellClusterXNCells),
-  fhDeltaCellClusterYNCells(qa.fhDeltaCellClusterYNCells),fhDeltaCellClusterZNCells(qa.fhDeltaCellClusterZNCells),
-  fhDeltaCellClusterRE(qa.fhDeltaCellClusterRE),          fhDeltaCellClusterXE(qa.fhDeltaCellClusterXE),
-  fhDeltaCellClusterYE(qa.fhDeltaCellClusterYE),          fhDeltaCellClusterZE(qa.fhDeltaCellClusterZE),
-  fhNCells(qa.fhNCells), fhAmplitude(qa.fhAmplitude), fhAmpId(fhAmpId), fhEtaPhiAmp(qa.fhEtaPhiAmp),
-  fhTime(qa.fhTime), fhTimeId(qa.fhTimeId),fhTimeAmp(qa.fhTimeAmp),
-  //fhT0Time(qa.fhT0Time),fhT0TimeId(qa.fhT0TimeId), fhT0TimeAmp(qa.fhT0TimeAmp), 
-  fhCaloCorrNClusters(qa.fhCaloCorrNClusters), fhCaloCorrEClusters(qa.fhCaloCorrEClusters),
-  fhCaloCorrNCells(qa.fhCaloCorrNCells), fhCaloCorrECells(qa.fhCaloCorrECells),
-  fhEMod(qa.fhEMod), fhNClustersMod(qa.fhNClustersMod), 
-  fhNCellsPerClusterMod(qa.fhNCellsPerClusterMod), fhNCellsMod(qa.fhNCellsMod),  
-  fhGridCellsMod(qa.fhGridCellsMod),  fhGridCellsEMod(qa.fhGridCellsEMod), fhGridCellsTimeMod(qa.fhGridCellsTimeMod), 
-  fhAmplitudeMod(qa.fhAmplitudeMod), fhAmplitudeModFraction(qa.fhAmplitudeModFraction),
-  fhTimeAmpPerRCU(qa.fhTimeAmpPerRCU), //fhT0TimeAmpPerRCU(qa.fhT0TimeAmpPerRCU), fhTimeCorrRCU(qa.fhTimeCorrRCU),
-  fhIMMod(qa.fhIMMod),fhIMCellCutMod(qa.fhIMCellCutMod),
-  fhGenGamPt(qa.fhGenGamPt), fhGenGamEta(qa.fhGenGamEta), fhGenGamPhi(qa.fhGenGamPhi),
-  fhGenPi0Pt(qa.fhGenPi0Pt), fhGenPi0Eta(qa.fhGenPi0Eta), fhGenPi0Phi(qa.fhGenPi0Phi),
-  fhGenEtaPt(qa.fhGenEtaPt), fhGenEtaEta(qa.fhGenEtaEta), fhGenEtaPhi(qa.fhGenEtaPhi),
-  fhGenOmegaPt(qa.fhGenOmegaPt), fhGenOmegaEta(qa.fhGenOmegaEta), fhGenOmegaPhi(qa.fhGenOmegaPhi),
-  fhGenElePt(qa.fhGenElePt), fhGenEleEta(qa.fhGenEleEta), fhGenElePhi(qa.fhGenElePhi), 
-  fhEMVxyz(qa.fhEMVxyz),  fhEMR(qa.fhEMR), fhHaVxyz(qa.fhHaVxyz),  fhHaR(qa.fhHaR),
-  fhGamE(qa.fhGamE),fhGamPt(qa.fhGamPt),fhGamPhi(qa.fhGamPhi),fhGamEta(qa.fhGamEta), 
-  fhGamDeltaE(qa.fhGamDeltaE), fhGamDeltaPt(qa.fhGamDeltaPt), fhGamDeltaPhi(qa.fhGamDeltaPhi), fhGamDeltaEta(qa.fhGamDeltaEta),
-  fhGamRatioE(qa.fhGamRatioE), fhGamRatioPt(qa.fhGamRatioPt), fhGamRatioPhi(qa.fhGamRatioPhi), fhGamRatioEta(qa.fhGamRatioEta),
-  fhEleE(qa.fhEleE),fhElePt(qa.fhElePt),fhElePhi(qa.fhElePhi),fhEleEta(qa.fhEleEta),
-  fhPi0E(qa.fhPi0E),fhPi0Pt(qa.fhPi0Pt),fhPi0Phi(qa.fhPi0Phi),fhPi0Eta(qa.fhPi0Eta), 
-  fhNeHadE(qa.fhNeHadE),fhNeHadPt(qa.fhNeHadPt),fhNeHadPhi(qa.fhNeHadPhi),fhNeHadEta(qa.fhNeHadEta), 
-  fhChHadE(qa.fhChHadE),fhChHadPt(qa.fhChHadPt),fhChHadPhi(qa.fhChHadPhi),fhChHadEta(qa.fhChHadEta),
-  fhGamECharged(qa.fhGamECharged),fhGamPtCharged(qa.fhGamPtCharged),fhGamPhiCharged(qa.fhGamPhiCharged),fhGamEtaCharged(qa.fhGamEtaCharged), 
-  fhEleECharged(qa.fhEleECharged),fhElePtCharged(qa.fhElePtCharged),fhElePhiCharged(qa.fhElePhiCharged),fhEleEtaCharged(qa.fhEleEtaCharged),
-  fhPi0ECharged(qa.fhPi0ECharged),fhPi0PtCharged(qa.fhPi0PtCharged),fhPi0PhiCharged(qa.fhPi0PhiCharged),fhPi0EtaCharged(qa.fhPi0EtaCharged), 
-  fhNeHadECharged(qa.fhNeHadECharged),fhNeHadPtCharged(qa.fhNeHadPtCharged),fhNeHadPhiCharged(qa.fhNeHadPhiCharged),fhNeHadEtaCharged(qa.fhNeHadEtaCharged), 
-  fhChHadECharged(qa.fhChHadECharged),fhChHadPtCharged(qa.fhChHadPtCharged),fhChHadPhiCharged(qa.fhChHadPhiCharged),fhChHadEtaCharged(qa.fhChHadEtaCharged),
-  fhGenGamAccE(qa.fhGenGamAccE),fhGenGamAccPt(qa.fhGenGamAccPt),fhGenGamAccEta(qa.fhGenGamAccEta),fhGenGamAccPhi(qa.fhGenGamAccPhi),
-  fhGenPi0AccE(qa.fhGenPi0AccE),fhGenPi0AccPt(qa.fhGenPi0AccPt),fhGenPi0AccEta(qa.fhGenPi0AccEta),fhGenPi0AccPhi(qa.fhGenPi0AccPhi),
-  fh1pOverE(qa.fh1pOverE),fh1dR(qa.fh1dR),fh2EledEdx(qa.fh2EledEdx), fh2MatchdEdx(qa.fh2MatchdEdx),
-  fhMCEle1pOverE(qa.fhMCEle1pOverE),fhMCEle1dR(qa.fhMCEle1dR), fhMCEle2MatchdEdx(qa.fhMCEle2MatchdEdx),
-  fhMCChHad1pOverE(qa.fhMCChHad1pOverE),fhMCChHad1dR(qa.fhMCChHad1dR), fhMCChHad2MatchdEdx(qa.fhMCChHad2MatchdEdx),
-  fhMCNeutral1pOverE(qa.fhMCNeutral1pOverE),fhMCNeutral1dR(qa.fhMCNeutral1dR), fhMCNeutral2MatchdEdx(qa.fhMCNeutral2MatchdEdx),
-  fh1pOverER02(qa.fh1pOverER02), fhMCEle1pOverER02(qa.fhMCEle1pOverER02),fhMCChHad1pOverER02(qa.fhMCChHad1pOverER02), fhMCNeutral1pOverER02(qa.fhMCNeutral1pOverER02)
-{
-  // cpy ctor
-  
-}
-*/
-//________________________________________________________________________________________________________________________________________________
-//AliAnaCalorimeterQA::~AliAnaCalorimeterQA() {
+ //____________________________________________________________________________
+ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :   
+ AliAnaPartCorrBaseClass(qa), fCalorimeter(qa.fCalorimeter), fStyleMacro(qa.fStyleMacro), 
+ fMakePlots(qa.fMakePlots), fCorrelateCalos(qa.fCorrelateCalos), fNModules(qa.fNModules), fNRCU(qa.fNRCU),
+ fTimeCutMin(qa.fTimeCutMin), fTimeCutMax(qa.fTimeCutMax),	
+ fHistoPOverEBins(qa.fHistoPOverEBins), fHistoPOverEMax(qa.fHistoPOverEMax), fHistoPOverEMin(qa.fHistoPOverEMin),
+ fHistodEdxBins(qa.fHistodEdxBins), fHistodEdxMax(qa.fHistodEdxMax), fHistodEdxMin(qa.fHistodEdxMin), 
+ fHistodRBins(qa.fHistodRBins), fHistodRMax(qa.fHistodRMax), fHistodRMin(qa.fHistodRMin),
+ fHistoTimeBins(qa.fHistoTimeBins), fHistoTimeMax(qa.fHistoTimeMax), fHistoTimeMin(qa.fHistoTimeMin),
+ fHistoNBins(qa.fHistoNBins), fHistoNMax(qa.fHistoNMax), fHistoNMin(qa.fHistoNMin),
+ fHistoRatioBins(qa.fHistoRatioBins), fHistoRatioMax(qa.fHistoRatioMax), fHistoRatioMin(qa.fHistoRatioMin),
+ fHistoVertexDistBins(qa.fHistoVertexDistBins), fHistoVertexDistMax(qa.fHistoVertexDistMax), fHistoVertexDistMin(qa.fHistoVertexDistMin),
+ fHistoRBins(qa.fHistoRBins), fHistoRMax(qa.fHistoRMax),  fHistoRMin(qa.fHistoRMin),
+ fHistoXBins(qa.fHistoXBins), fHistoXMax(qa.fHistoXMax),  fHistoXMin(qa.fHistoXMin),
+ fHistoYBins(qa.fHistoYBins), fHistoYMax(qa.fHistoYMax),  fHistoYMin(qa.fHistoYMin),
+ fHistoZBins(qa.fHistoZBins), fHistoZMax(qa.fHistoZMax),  fHistoZMin(qa.fHistoZMin),
+ fHistoSSBins(qa.fHistoSSBins),fHistoSSMax(qa.fHistoSSMax), fHistoSSMin(qa.fHistoSSMin),
+ fhE(qa.fhE),fhPt(qa.fhPt), fhPhi(qa.fhPhi), fhEta(qa.fhEta), fhEtaPhiE(qa.fhEtaPhiE), 
+ fhECharged(qa.fhECharged),fhPtCharged(qa.fhPtCharged),fhPhiCharged(qa.fhPhiCharged),
+ fhEtaCharged(qa.fhEtaCharged), fhEtaPhiECharged(qa.fhEtaPhiECharged), 
+ //fhEChargedNoOut(qa.fhEChargedNoOut),fhPtChargedNoOut(qa.fhPtChargedNoOut),fhPhiChargedNoOut(qa.fhPhiChargedNoOut),
+ //fhEtaChargedNoOut(qa.fhEtaChargedNoOut), fhEtaPhiChargedNoOut(qa.fhEtaPhiChargedNoOut), 
+ fhDeltaE(qa.fhDeltaE), fhDeltaPt(qa.fhDeltaPt), fhDeltaPhi(qa.fhDeltaPhi), fhDeltaEta(qa.fhDeltaEta),
+ fhRatioE(qa.fhRatioE), fhRatioPt(qa.fhRatioPt), fhRatioPhi(qa.fhRatioPhi), fhRatioEta(qa.fhRatioEta),
+ fh2E(qa.fh2E), fh2Pt(qa.fh2Pt), fh2Phi(qa.fh2Phi),fh2Eta(qa.fh2Eta), 
+ fhLambda(qa.fhLambda), fhDispersion(qa.fhDispersion), 
+ fhIM(qa.fhIM), fhIMCellCut(qa.fhIMCellCut), fhAsym(qa.fhAsym), 
+ fhNCellsPerCluster(qa.fhNCellsPerCluster), fhNCellsPerClusterMIP(qa.fhNCellsPerClusterMIP),
+ fhNCellsPerClusterMIPCharged(qa.fhNCellsPerClusterMIPCharged),fhNClusters(qa.fhNClusters),
+ fhClusterTimeEnergy(qa.fhClusterTimeEnergy),	
+ fhCellTimeSpreadRespectToCellMax(qa.fhCellTimeSpreadRespectToCellMax),
+ fhCellIdCellLargeTimeSpread(qa.fhCellIdCellLargeTimeSpread),
+ fhRNCells(qa.fhRNCells),fhXNCells(qa.fhXNCells),fhYNCells(qa.fhYNCells),fhZNCells(qa.fhZNCells),
+ fhRE(qa.fhRE),          fhXE(qa.fhXE),          fhYE(qa.fhYE),          fhZE(qa.fhZE),        fhXYZ(qa.fhXYZ),
+ fhRCellE(qa.fhXCellE),  fhXCellE(qa.fhXCellE),  fhYCellE(qa.fhYCellE),  fhZCellE(qa.fhZCellE),fhXYZCell(qa.fhXYZCell),
+ fhDeltaCellClusterRNCells(qa.fhDeltaCellClusterRNCells),fhDeltaCellClusterXNCells(qa.fhDeltaCellClusterXNCells),
+ fhDeltaCellClusterYNCells(qa.fhDeltaCellClusterYNCells),fhDeltaCellClusterZNCells(qa.fhDeltaCellClusterZNCells),
+ fhDeltaCellClusterRE(qa.fhDeltaCellClusterRE),          fhDeltaCellClusterXE(qa.fhDeltaCellClusterXE),
+ fhDeltaCellClusterYE(qa.fhDeltaCellClusterYE),          fhDeltaCellClusterZE(qa.fhDeltaCellClusterZE),
+ fhNCells(qa.fhNCells), fhAmplitude(qa.fhAmplitude), fhAmpId(fhAmpId), fhEtaPhiAmp(qa.fhEtaPhiAmp),
+ fhTime(qa.fhTime), fhTimeId(qa.fhTimeId),fhTimeAmp(qa.fhTimeAmp),
+ //fhT0Time(qa.fhT0Time),fhT0TimeId(qa.fhT0TimeId), fhT0TimeAmp(qa.fhT0TimeAmp), 
+ fhCaloCorrNClusters(qa.fhCaloCorrNClusters), fhCaloCorrEClusters(qa.fhCaloCorrEClusters),
+ fhCaloCorrNCells(qa.fhCaloCorrNCells), fhCaloCorrECells(qa.fhCaloCorrECells),
+ fhEMod(qa.fhEMod), fhNClustersMod(qa.fhNClustersMod), 
+ fhNCellsPerClusterMod(qa.fhNCellsPerClusterMod), fhNCellsMod(qa.fhNCellsMod),  
+ fhGridCellsMod(qa.fhGridCellsMod),  fhGridCellsEMod(qa.fhGridCellsEMod), fhGridCellsTimeMod(qa.fhGridCellsTimeMod), 
+ fhAmplitudeMod(qa.fhAmplitudeMod), fhAmplitudeModFraction(qa.fhAmplitudeModFraction),
+ fhTimeAmpPerRCU(qa.fhTimeAmpPerRCU), //fhT0TimeAmpPerRCU(qa.fhT0TimeAmpPerRCU), fhTimeCorrRCU(qa.fhTimeCorrRCU),
+ fhIMMod(qa.fhIMMod),fhIMCellCutMod(qa.fhIMCellCutMod),
+ fhGenGamPt(qa.fhGenGamPt), fhGenGamEta(qa.fhGenGamEta), fhGenGamPhi(qa.fhGenGamPhi),
+ fhGenPi0Pt(qa.fhGenPi0Pt), fhGenPi0Eta(qa.fhGenPi0Eta), fhGenPi0Phi(qa.fhGenPi0Phi),
+ fhGenEtaPt(qa.fhGenEtaPt), fhGenEtaEta(qa.fhGenEtaEta), fhGenEtaPhi(qa.fhGenEtaPhi),
+ fhGenOmegaPt(qa.fhGenOmegaPt), fhGenOmegaEta(qa.fhGenOmegaEta), fhGenOmegaPhi(qa.fhGenOmegaPhi),
+ fhGenElePt(qa.fhGenElePt), fhGenEleEta(qa.fhGenEleEta), fhGenElePhi(qa.fhGenElePhi), 
+ fhEMVxyz(qa.fhEMVxyz),  fhEMR(qa.fhEMR), fhHaVxyz(qa.fhHaVxyz),  fhHaR(qa.fhHaR),
+ fhGamE(qa.fhGamE),fhGamPt(qa.fhGamPt),fhGamPhi(qa.fhGamPhi),fhGamEta(qa.fhGamEta), 
+ fhGamDeltaE(qa.fhGamDeltaE), fhGamDeltaPt(qa.fhGamDeltaPt), fhGamDeltaPhi(qa.fhGamDeltaPhi), fhGamDeltaEta(qa.fhGamDeltaEta),
+ fhGamRatioE(qa.fhGamRatioE), fhGamRatioPt(qa.fhGamRatioPt), fhGamRatioPhi(qa.fhGamRatioPhi), fhGamRatioEta(qa.fhGamRatioEta),
+ fhEleE(qa.fhEleE),fhElePt(qa.fhElePt),fhElePhi(qa.fhElePhi),fhEleEta(qa.fhEleEta),
+ fhPi0E(qa.fhPi0E),fhPi0Pt(qa.fhPi0Pt),fhPi0Phi(qa.fhPi0Phi),fhPi0Eta(qa.fhPi0Eta), 
+ fhNeHadE(qa.fhNeHadE),fhNeHadPt(qa.fhNeHadPt),fhNeHadPhi(qa.fhNeHadPhi),fhNeHadEta(qa.fhNeHadEta), 
+ fhChHadE(qa.fhChHadE),fhChHadPt(qa.fhChHadPt),fhChHadPhi(qa.fhChHadPhi),fhChHadEta(qa.fhChHadEta),
+ fhGamECharged(qa.fhGamECharged),fhGamPtCharged(qa.fhGamPtCharged),fhGamPhiCharged(qa.fhGamPhiCharged),fhGamEtaCharged(qa.fhGamEtaCharged), 
+ fhEleECharged(qa.fhEleECharged),fhElePtCharged(qa.fhElePtCharged),fhElePhiCharged(qa.fhElePhiCharged),fhEleEtaCharged(qa.fhEleEtaCharged),
+ fhPi0ECharged(qa.fhPi0ECharged),fhPi0PtCharged(qa.fhPi0PtCharged),fhPi0PhiCharged(qa.fhPi0PhiCharged),fhPi0EtaCharged(qa.fhPi0EtaCharged), 
+ fhNeHadECharged(qa.fhNeHadECharged),fhNeHadPtCharged(qa.fhNeHadPtCharged),fhNeHadPhiCharged(qa.fhNeHadPhiCharged),fhNeHadEtaCharged(qa.fhNeHadEtaCharged), 
+ fhChHadECharged(qa.fhChHadECharged),fhChHadPtCharged(qa.fhChHadPtCharged),fhChHadPhiCharged(qa.fhChHadPhiCharged),fhChHadEtaCharged(qa.fhChHadEtaCharged),
+ fhGenGamAccE(qa.fhGenGamAccE),fhGenGamAccPt(qa.fhGenGamAccPt),fhGenGamAccEta(qa.fhGenGamAccEta),fhGenGamAccPhi(qa.fhGenGamAccPhi),
+ fhGenPi0AccE(qa.fhGenPi0AccE),fhGenPi0AccPt(qa.fhGenPi0AccPt),fhGenPi0AccEta(qa.fhGenPi0AccEta),fhGenPi0AccPhi(qa.fhGenPi0AccPhi),
+ fh1pOverE(qa.fh1pOverE),fh1dR(qa.fh1dR),fh2EledEdx(qa.fh2EledEdx), fh2MatchdEdx(qa.fh2MatchdEdx),
+ fhMCEle1pOverE(qa.fhMCEle1pOverE),fhMCEle1dR(qa.fhMCEle1dR), fhMCEle2MatchdEdx(qa.fhMCEle2MatchdEdx),
+ fhMCChHad1pOverE(qa.fhMCChHad1pOverE),fhMCChHad1dR(qa.fhMCChHad1dR), fhMCChHad2MatchdEdx(qa.fhMCChHad2MatchdEdx),
+ fhMCNeutral1pOverE(qa.fhMCNeutral1pOverE),fhMCNeutral1dR(qa.fhMCNeutral1dR), fhMCNeutral2MatchdEdx(qa.fhMCNeutral2MatchdEdx),
+ fh1pOverER02(qa.fh1pOverER02), fhMCEle1pOverER02(qa.fhMCEle1pOverER02),fhMCChHad1pOverER02(qa.fhMCChHad1pOverER02), fhMCNeutral1pOverER02(qa.fhMCNeutral1pOverER02)
+ {
+ // cpy ctor
+ 
+ }
+ */
+  //________________________________________________________________________________________________________________________________________________
+  //AliAnaCalorimeterQA::~AliAnaCalorimeterQA() {
 	// dtor
-	
-//}
 
-//________________________________________________________________________
+  //}
+
+  //________________________________________________________________________
 TObjString *  AliAnaCalorimeterQA::GetAnalysisCuts()
 {  	
-	//Save parameters used for analysis
+    //Save parameters used for analysis
 	TString parList ; //this will be list of parameters used for this analysis.
 	char onePar[255] ;
 	
@@ -223,27 +220,27 @@ TObjString *  AliAnaCalorimeterQA::GetAnalysisCuts()
 	parList+=onePar ;
 	sprintf(onePar,"Time Cut : %2.2f < T < %2.2f ns  \n",fTimeCutMin, fTimeCutMax) ;
 	parList+=onePar ;
-		
-	//Get parameters set in base class.
-	//parList += GetBaseParametersList() ;
+  
+    //Get parameters set in base class.
+    //parList += GetBaseParametersList() ;
 	
-	//Get parameters set in FiducialCut class (not available yet)
-	//parlist += GetFidCut()->GetFidCutParametersList() 
+    //Get parameters set in FiducialCut class (not available yet)
+    //parlist += GetFidCut()->GetFidCutParametersList() 
 	
 	return new TObjString(parList) ;
 }
 
 
-//________________________________________________________________________
+  //________________________________________________________________________
 TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 {  
-	// Create histograms to be saved in output file and 
-	// store them in outputContainer
-    	
+    // Create histograms to be saved in output file and 
+    // store them in outputContainer
+  
 	TList * outputContainer = new TList() ; 
 	outputContainer->SetName("QAHistos") ; 
 	
-	//Histograms
+    //Histograms
 	Int_t nptbins     = GetHistoPtBins(); 	        Float_t ptmax     = GetHistoPtMax();           Float_t ptmin     = GetHistoPtMin();
 	Int_t nphibins    = GetHistoPhiBins();     	    Float_t phimax    = GetHistoPhiMax();          Float_t phimin    = GetHistoPhiMin();
 	Int_t netabins    = GetHistoEtaBins();          Float_t etamax    = GetHistoEtaMax();          Float_t etamin    = GetHistoEtaMin();	
@@ -262,11 +259,11 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	Int_t zbins       = GetHistoZBins();            Float_t zmax      = GetHistoZMax();            Float_t zmin      = GetHistoZMin(); 
 	Int_t ssbins      = GetHistoShowerShapeBins();  Float_t ssmax     = GetHistoShowerShapeMax();  Float_t ssmin     = GetHistoShowerShapeMin();
 	
-	//EMCAL
+    //EMCAL
 	Int_t colmax = 48;
 	Int_t rowmax = 24;
 	fNRCU   = 2 ;
-	//PHOS
+    //PHOS
 	if(fCalorimeter=="PHOS"){
 		colmax = 56;
 		rowmax = 64;
@@ -291,35 +288,35 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	outputContainer->Add(fhEta);
 	
 	fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #phi vs energy, reconstructed clusters",
-						   netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
+                         netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
 	fhEtaPhiE->SetXTitle("#eta ");
 	fhEtaPhiE->SetYTitle("#phi (rad)");
 	fhEtaPhiE->SetZTitle("E (GeV) ");
 	outputContainer->Add(fhEtaPhiE);
 	
 	fhClusterTimeEnergy  = new TH2F ("hClusterTimeEnergy","energy vs TOF, reconstructed clusters",
-						   nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+                                   nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
 	fhClusterTimeEnergy->SetXTitle("E (GeV) ");
 	fhClusterTimeEnergy->SetYTitle("TOF (ns)");
 	outputContainer->Add(fhClusterTimeEnergy);
 	
 	
-	//Shower shape
+    //Shower shape
 	fhLambda  = new TH3F ("hLambda","#lambda_{0}^{2} vs #lambda_{1}^{2} vs energy, reconstructed clusters",
-						   ssbins,ssmin,ssmax,ssbins,ssmin,ssmax,nptbins,ptmin,ptmax); 
+                        ssbins,ssmin,ssmax,ssbins,ssmin,ssmax,nptbins,ptmin,ptmax); 
 	fhLambda->SetXTitle("#lambda_{0}^{2}  ");
 	fhLambda->SetYTitle("#lambda_{1}^{2}  ");
 	fhLambda->SetZTitle("E (GeV) ");
 	outputContainer->Add(fhLambda);
 	
 	fhDispersion  = new TH2F ("hDispersion"," dispersion vs energy, reconstructed clusters",
-						  ssbins,ssmin,ssmax,nptbins,ptmin,ptmax); 
+                            ssbins,ssmin,ssmax,nptbins,ptmin,ptmax); 
 	fhDispersion->SetXTitle("Dispersion  ");
 	fhDispersion->SetYTitle("E (GeV) ");
 	outputContainer->Add(fhDispersion);
 	
-	//Track Matching
-
+    //Track Matching
+  
 	fhECharged  = new TH1F ("hECharged","E reconstructed clusters, matched with track", nptbins,ptmin,ptmax); 
 	fhECharged->SetXTitle("E (GeV)");
 	outputContainer->Add(fhECharged);
@@ -337,34 +334,34 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	outputContainer->Add(fhEtaCharged);
 	
 	fhEtaPhiECharged  = new TH3F ("hEtaPhiECharged","#eta vs #phi, reconstructed clusters, matched with track",
-								  netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
+                                netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
 	fhEtaPhiECharged->SetXTitle("#eta ");
 	fhEtaPhiECharged->SetYTitle("#phi ");
 	fhEtaPhiECharged->SetZTitle("E (GeV) ");
 	outputContainer->Add(fhEtaPhiECharged);	
-
-
-//	fhEChargedNoOut  = new TH1F ("hEChargedNoOut","E reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                                     
-//	fhEChargedNoOut->SetXTitle("E (GeV)");                                                                                                                                          
-//	outputContainer->Add(fhEChargedNoOut);                                                                                                                                         
-//	                                                                                                                                                                
-//	fhPtChargedNoOut  = new TH1F ("hPtChargedNoOut","p_{T} reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                               
-//	fhPtChargedNoOut->SetXTitle("p_{T} (GeV/c)");                                                                                                                               
-//	outputContainer->Add(fhPtChargedNoOut);                                                                                                                                       
-//	                                                                                                                                                                        
-//	fhPhiChargedNoOut  = new TH1F ("hPhiChargedNoOut","#phi reconstructed clusters, matched with track, no output track params",nphibins,phimin,phimax);                    
-//	fhPhiChargedNoOut->SetXTitle("#phi (rad)");                                                                                                                               
-//	outputContainer->Add(fhPhiChargedNoOut);                                                                                                                        
-//	                                                                                                                                                                  
-//	fhEtaChargedNoOut  = new TH1F ("hEtaChargedNoOut","#eta reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax);               
-//	fhEtaChargedNoOut->SetXTitle("#eta ");                                                                                                                           
-//	outputContainer->Add(fhEtaChargedNoOut);                                                                                                                             
-//	                                                                                                                                                                      
-//	fhEtaPhiChargedNoOut  = new TH2F ("hEtaPhiChargedNoOut","#eta vs #phi, reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax,nphibins,phimin,phimax); 
-//	fhEtaPhiChargedNoOut->SetXTitle("#eta ");                                                                                                    
-//	fhEtaPhiChargedNoOut->SetYTitle("#phi ");                                                                                                                       
-//	outputContainer->Add(fhEtaPhiChargedNoOut);	
-
+  
+  
+    //	fhEChargedNoOut  = new TH1F ("hEChargedNoOut","E reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                                     
+    //	fhEChargedNoOut->SetXTitle("E (GeV)");                                                                                                                                          
+    //	outputContainer->Add(fhEChargedNoOut);                                                                                                                                         
+    //	                                                                                                                                                                
+    //	fhPtChargedNoOut  = new TH1F ("hPtChargedNoOut","p_{T} reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                               
+    //	fhPtChargedNoOut->SetXTitle("p_{T} (GeV/c)");                                                                                                                               
+    //	outputContainer->Add(fhPtChargedNoOut);                                                                                                                                       
+    //	                                                                                                                                                                        
+    //	fhPhiChargedNoOut  = new TH1F ("hPhiChargedNoOut","#phi reconstructed clusters, matched with track, no output track params",nphibins,phimin,phimax);                    
+    //	fhPhiChargedNoOut->SetXTitle("#phi (rad)");                                                                                                                               
+    //	outputContainer->Add(fhPhiChargedNoOut);                                                                                                                        
+    //	                                                                                                                                                                  
+    //	fhEtaChargedNoOut  = new TH1F ("hEtaChargedNoOut","#eta reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax);               
+    //	fhEtaChargedNoOut->SetXTitle("#eta ");                                                                                                                           
+    //	outputContainer->Add(fhEtaChargedNoOut);                                                                                                                             
+    //	                                                                                                                                                                      
+    //	fhEtaPhiChargedNoOut  = new TH2F ("hEtaPhiChargedNoOut","#eta vs #phi, reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax,nphibins,phimin,phimax); 
+    //	fhEtaPhiChargedNoOut->SetXTitle("#eta ");                                                                                                    
+    //	fhEtaPhiChargedNoOut->SetYTitle("#phi ");                                                                                                                       
+    //	outputContainer->Add(fhEtaPhiChargedNoOut);	
+  
 	fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
 	fh1pOverE->SetYTitle("p/E");
 	fh1pOverE->SetXTitle("p_{T} (GeV/c)");
@@ -412,7 +409,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	
 	
 	fhNCellsPerClusterMIP  = new TH3F ("hNCellsPerClusterMIP","# cells per cluster vs energy vs #eta, smaller bin for MIP search", 
-										100,0.,1., 6,0,5,netabins,etamin,etamax); 
+                                     100,0.,1., 6,0,5,netabins,etamin,etamax); 
 	fhNCellsPerClusterMIP->SetXTitle("E (GeV)");
 	fhNCellsPerClusterMIP->SetYTitle("n cells");
 	fhNCellsPerClusterMIP->SetZTitle("#eta");
@@ -420,7 +417,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	
 	
 	fhNCellsPerClusterMIPCharged  = new TH3F ("hNCellsPerClusterMIPCharged","# cells per track-matched cluster vs energy vs #eta, smaller bin for MIP search", 
-												100,0.,1., 6,0,5,netabins,etamin,etamax); 
+                                            100,0.,1., 6,0,5,netabins,etamin,etamax); 
 	fhNCellsPerClusterMIPCharged->SetXTitle("E (GeV)");
 	fhNCellsPerClusterMIPCharged->SetYTitle("n cells");
 	fhNCellsPerClusterMIPCharged->SetZTitle("#eta");
@@ -460,7 +457,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhXE->SetXTitle("x (cm)");
 	fhXE->SetYTitle("E (GeV)");
 	outputContainer->Add(fhXE);
-
+  
 	fhYE  = new TH2F ("hYE","Cluster Y position vs cluster energy",ybins,ymin,ymax,nptbins,ptmin,ptmax); 
 	fhYE->SetXTitle("y (cm)");
 	fhYE->SetYTitle("E (GeV)");
@@ -476,7 +473,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhXYZ->SetYTitle("y (cm)");
 	fhXYZ->SetZTitle("z (cm) ");
 	outputContainer->Add(fhXYZ);
-		
+  
 	fhRCellE  = new TH2F ("hRCellE","Cell R position vs cell energy",rbins,rmin,rmax,nptbins,ptmin,ptmax); 
 	fhRCellE->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
 	fhRCellE->SetYTitle("E (GeV)");
@@ -486,7 +483,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhXCellE->SetXTitle("x (cm)");
 	fhXCellE->SetYTitle("E (GeV)");
 	outputContainer->Add(fhXCellE);
-
+  
 	fhYCellE  = new TH2F ("hYCellE","Cell Y position vs cell energy",ybins,ymin,ymax,nptbins,ptmin,ptmax); 
 	fhYCellE->SetXTitle("y (cm)");
 	fhYCellE->SetYTitle("E (GeV)");
@@ -502,13 +499,13 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhXYZCell->SetYTitle("y (cm)");
 	fhXYZCell->SetZTitle("z (cm)");
 	outputContainer->Add(fhXYZCell);
-
-
+  
+  
 	Float_t dx = TMath::Abs(xmin)+TMath::Abs(xmax);
 	Float_t dy = TMath::Abs(ymin)+TMath::Abs(ymax);
 	Float_t dz = TMath::Abs(zmin)+TMath::Abs(zmax);
 	Float_t dr = TMath::Abs(rmin)+TMath::Abs(rmax);
-
+  
 	fhDeltaCellClusterRNCells  = new TH2F ("hDeltaCellClusterRNCells","Cluster-Cell R position vs N Clusters per Cell",rbins*2,-dr,dr,nbins,nmin,nmax); 
 	fhDeltaCellClusterRNCells->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
 	fhDeltaCellClusterRNCells->SetYTitle("N cells per cluster");
@@ -554,13 +551,13 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhEtaPhiAmp->SetYTitle("#phi (rad)");
 	fhEtaPhiAmp->SetZTitle("E (GeV) ");
 	outputContainer->Add(fhEtaPhiAmp);		
-
-
-	//Calo cells
+  
+  
+    //Calo cells
 	fhNCells  = new TH1F ("hNCells","# cells", colmax*rowmax*fNModules,0,colmax*rowmax*fNModules); 
 	fhNCells->SetXTitle("n cells");
 	outputContainer->Add(fhNCells);
-    
+  
 	fhAmplitude  = new TH1F ("hAmplitude","Cell Energy", nptbins*2,ptmin,ptmax); 
 	fhAmplitude->SetXTitle("Cell Energy (GeV)");
 	outputContainer->Add(fhAmplitude);
@@ -572,7 +569,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	outputContainer->Add(fhAmpId);
 	
 	
-	//Cell Time histograms, time only available in ESDs
+    //Cell Time histograms, time only available in ESDs
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
 		
 		fhCellTimeSpreadRespectToCellMax = new TH1F ("hCellTimeSpreadRespectToCellMax","t_{cell max}-t_{cell i} per cluster", 100,-200,200); 
@@ -586,30 +583,30 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhTime  = new TH1F ("hTime","Cell Time",ntimebins,timemin,timemax); 
 		fhTime->SetXTitle("Cell Time (ns)");
 		outputContainer->Add(fhTime);
-
+    
 		fhTimeId  = new TH2F ("hTimeId","Cell Time vs Absolute Id",ntimebins,timemin,timemax,rowmax*colmax*fNModules,0,rowmax*colmax*fNModules); 
 		fhTimeId->SetXTitle("Cell Time (ns)");
 		fhTimeId->SetYTitle("Cell Absolute Id");
 		outputContainer->Add(fhTimeId);
-	
+    
 		fhTimeAmp  = new TH2F ("hTimeAmp","Cell Time vs Cell Energy",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
 		fhTimeAmp->SetYTitle("Cell Time (ns)");
 		fhTimeAmp->SetXTitle("Cell Energy (GeV)");
 		outputContainer->Add(fhTimeAmp);
 		
-//		fhT0Time  = new TH1F ("hT0Time","Cell Time",ntimebins,timemin,timemax); 
-//		fhT0Time->SetXTitle("T_{0} - T_{EMCal} (ns)");
-//		outputContainer->Add(fhT0Time);
-//		
-//		fhT0TimeId  = new TH2F ("hT0TimeId","Cell Time vs Absolute Id",ntimebins,timemin,timemax,rowmax*colmax*fNModules,0,rowmax*colmax*fNModules); 
-//		fhT0TimeId->SetXTitle("T_{0} - T_{EMCal} (ns)");
-//		fhT0TimeId->SetYTitle("Cell Absolute Id");
-//		outputContainer->Add(fhT0TimeId);
-//		
-//		fhT0TimeAmp  = new TH2F ("hT0TimeAmp","Cell Time vs Cell Energy",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
-//		fhT0TimeAmp->SetYTitle("T_{0} - T_{EMCal} (ns)");
-//		fhT0TimeAmp->SetXTitle("Cell Energy (GeV)");
-//		outputContainer->Add(fhT0TimeAmp);
+      //		fhT0Time  = new TH1F ("hT0Time","Cell Time",ntimebins,timemin,timemax); 
+      //		fhT0Time->SetXTitle("T_{0} - T_{EMCal} (ns)");
+      //		outputContainer->Add(fhT0Time);
+      //		
+      //		fhT0TimeId  = new TH2F ("hT0TimeId","Cell Time vs Absolute Id",ntimebins,timemin,timemax,rowmax*colmax*fNModules,0,rowmax*colmax*fNModules); 
+      //		fhT0TimeId->SetXTitle("T_{0} - T_{EMCal} (ns)");
+      //		fhT0TimeId->SetYTitle("Cell Absolute Id");
+      //		outputContainer->Add(fhT0TimeId);
+      //		
+      //		fhT0TimeAmp  = new TH2F ("hT0TimeAmp","Cell Time vs Cell Energy",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
+      //		fhT0TimeAmp->SetYTitle("T_{0} - T_{EMCal} (ns)");
+      //		fhT0TimeAmp->SetXTitle("Cell Energy (GeV)");
+      //		outputContainer->Add(fhT0TimeAmp);
 	}
 	
 	
@@ -619,24 +616,24 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhCaloCorrNClusters->SetXTitle("number of clusters in EMCAL");
 		fhCaloCorrNClusters->SetYTitle("number of clusters in PHOS");
 		outputContainer->Add(fhCaloCorrNClusters);
-	
+    
 		fhCaloCorrEClusters  = new TH2F ("hCaloCorrEClusters","summed energy of clusters in EMCAL vs PHOS", nptbins*2,ptmin,ptmax*2,nptbins,ptmin,ptmax*2); 
 		fhCaloCorrEClusters->SetXTitle("#Sigma E of clusters in EMCAL (GeV)");
 		fhCaloCorrEClusters->SetYTitle("#Sigma E of clusters in PHOS (GeV)");
 		outputContainer->Add(fhCaloCorrEClusters);
-	
+    
 		fhCaloCorrNCells  = new TH2F ("hCaloCorrNCells","# Cells in EMCAL vs PHOS", nbins,nmin,nmax, nbins,nmin,nmax); 
 		fhCaloCorrNCells->SetXTitle("number of Cells in EMCAL");
 		fhCaloCorrNCells->SetYTitle("number of Cells in PHOS");
 		outputContainer->Add(fhCaloCorrNCells);
-	
+    
 		fhCaloCorrECells  = new TH2F ("hCaloCorrECells","summed energy of Cells in EMCAL vs PHOS", nptbins*2,ptmin,ptmax*2,nptbins,ptmin,ptmax*2); 
 		fhCaloCorrECells->SetXTitle("#Sigma E of Cells in EMCAL (GeV)");
 		fhCaloCorrECells->SetYTitle("#Sigma E of Cells in PHOS (GeV)");
 		outputContainer->Add(fhCaloCorrECells);
 	}//correlate calorimeters
 	
-	//Module histograms
+    //Module histograms
 	fhEMod                 = new TH1F*[fNModules];
 	fhNClustersMod         = new TH1F*[fNModules];
 	fhNCellsPerClusterMod  = new TH2F*[fNModules];
@@ -647,14 +644,14 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhAmplitudeMod         = new TH1F*[fNModules];
 	if(fCalorimeter=="EMCAL")
 		fhAmplitudeModFraction = new TH1F*[fNModules*3];
-
+  
 	fhTimeAmpPerRCU        = new TH2F*[fNModules*fNRCU];
-	//fhT0TimeAmpPerRCU      = new TH2F*[fNModules*fNRCU];
-	//fhTimeCorrRCU          = new TH2F*[fNModules*fNRCU*fNModules*fNRCU];
+    //fhT0TimeAmpPerRCU      = new TH2F*[fNModules*fNRCU];
+    //fhTimeCorrRCU          = new TH2F*[fNModules*fNRCU*fNModules*fNRCU];
 	
 	fhIMMod                = new TH2F*[fNModules];
 	fhIMCellCutMod         = new TH2F*[fNModules];
-
+  
 	for(Int_t imod = 0; imod < fNModules; imod++){
 		
 		fhEMod[imod]  = new TH1F (Form("hE_Mod%d",imod),Form("Cluster reconstructed Energy in Module %d ",imod), nptbins,ptmin,ptmax); 
@@ -666,8 +663,8 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		outputContainer->Add(fhNClustersMod[imod]);
 		
 		fhNCellsPerClusterMod[imod]  = new TH2F (Form("hNCellsPerCluster_Mod%d",imod),
-												 Form("# cells per cluster vs cluster energy in Module %d",imod), 
-												 nptbins,ptmin,ptmax, nbins,nmin,nmax); 
+                                             Form("# cells per cluster vs cluster energy in Module %d",imod), 
+                                             nptbins,ptmin,ptmax, nbins,nmin,nmax); 
 		fhNCellsPerClusterMod[imod]->SetXTitle("E (GeV)");
 		fhNCellsPerClusterMod[imod]->SetYTitle("n cells");
 		outputContainer->Add(fhNCellsPerClusterMod[imod]);
@@ -676,19 +673,19 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhNCellsMod[imod]->SetXTitle("n cells");
 		outputContainer->Add(fhNCellsMod[imod]);
 		fhGridCellsMod[imod]  = new TH2F (Form("hGridCells_Mod%d",imod),Form("Entries in grid of cells in Module %d",imod), 
-										  colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+                                      colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
 		fhGridCellsMod[imod]->SetYTitle("row (phi direction)");
 		fhGridCellsMod[imod]->SetXTitle("column (eta direction)");
 		outputContainer->Add(fhGridCellsMod[imod]);
-
+    
 		fhGridCellsEMod[imod]  = new TH2F (Form("hGridCellsE_Mod%d",imod),Form("Accumulated energy in grid of cells in Module %d",imod), 
-										   colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+                                       colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
 		fhGridCellsEMod[imod]->SetYTitle("row (phi direction)");
 		fhGridCellsEMod[imod]->SetXTitle("column (eta direction)");
 		outputContainer->Add(fhGridCellsEMod[imod]);
 		
 		fhGridCellsTimeMod[imod]  = new TH2F (Form("hGridCellsTime_Mod%d",imod),Form("Accumulated time in grid of cells in Module %d, with E > 0.5 GeV",imod), 
-										   colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
+                                          colmax+2,-1.5,colmax+0.5, rowmax+2,-1.5,rowmax+0.5); 
 		fhGridCellsTimeMod[imod]->SetYTitle("row (phi direction)");
 		fhGridCellsTimeMod[imod]->SetXTitle("column (eta direction)");
 		outputContainer->Add(fhGridCellsTimeMod[imod]);
@@ -707,45 +704,45 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		}
 		
 		for(Int_t ircu = 0; ircu < fNRCU; ircu++){
-				fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
-														   Form("Cell Energy vs Cell Time in Module %d, RCU %d ",imod,ircu), 
-														   nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-				fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
-				fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("time (ns)");
-				outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
+      fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
+                                                    Form("Cell Energy vs Cell Time in Module %d, RCU %d ",imod,ircu), 
+                                                    nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+      fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
+      fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("time (ns)");
+      outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
 			
-//				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hT0TimeAmp_Mod%d_RCU%d",imod,ircu),
-//															  Form("Cell Energy vs T0-Cell Time in Module %d, RCU %d ",imod,ircu), 
-//															  nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-//				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
-//				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("T_{0} - T_{EMCal} (ns)");
-//				outputContainer->Add(fhT0TimeAmpPerRCU[imod*fNRCU+ircu]);
-//			
+        //				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hT0TimeAmp_Mod%d_RCU%d",imod,ircu),
+        //															  Form("Cell Energy vs T0-Cell Time in Module %d, RCU %d ",imod,ircu), 
+        //															  nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+        //				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
+        //				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("T_{0} - T_{EMCal} (ns)");
+        //				outputContainer->Add(fhT0TimeAmpPerRCU[imod*fNRCU+ircu]);
+        //			
 			
-//				for(Int_t imod2 = 0; imod2 < fNModules; imod2++){
-//						for(Int_t ircu2 = 0; ircu2 < fNModules; ircu2++){
-//							Int_t index =  (imod2*fNRCU+ircu2)+(fNModules*fNRCU)*(ircu+imod)+fNRCU*fNModules*imod; 
-//							fhTimeCorrRCU[index]  = new TH2F (Form("hTimeCorrRCU_Mod%d_RCU%d_CompareTo_Mod%d_RCU%d",imod, ircu,imod2, ircu2),
-//																			Form("Cell Energy > 0.3, Correlate cell Time in Module %d, RCU %d to Module %d, RCU %d",imod,ircu,imod2, ircu2),
-//																			ntimebins,timemin,timemax,ntimebins,timemin,timemax); 
-//							fhTimeCorrRCU[index]->SetXTitle("Trigger Cell Time (ns)");
-//							fhTimeCorrRCU[index]->SetYTitle("Cell Time (ns)");
-//							outputContainer->Add(fhTimeCorrRCU[index]);
-//						}
-//				}
+        //				for(Int_t imod2 = 0; imod2 < fNModules; imod2++){
+        //						for(Int_t ircu2 = 0; ircu2 < fNModules; ircu2++){
+        //							Int_t index =  (imod2*fNRCU+ircu2)+(fNModules*fNRCU)*(ircu+imod)+fNRCU*fNModules*imod; 
+        //							fhTimeCorrRCU[index]  = new TH2F (Form("hTimeCorrRCU_Mod%d_RCU%d_CompareTo_Mod%d_RCU%d",imod, ircu,imod2, ircu2),
+        //																			Form("Cell Energy > 0.3, Correlate cell Time in Module %d, RCU %d to Module %d, RCU %d",imod,ircu,imod2, ircu2),
+        //																			ntimebins,timemin,timemax,ntimebins,timemin,timemax); 
+        //							fhTimeCorrRCU[index]->SetXTitle("Trigger Cell Time (ns)");
+        //							fhTimeCorrRCU[index]->SetYTitle("Cell Time (ns)");
+        //							outputContainer->Add(fhTimeCorrRCU[index]);
+        //						}
+        //				}
 		}
 		
 		
 		fhIMMod[imod]  = new TH2F (Form("hIM_Mod%d",imod),
-								   Form("Cluster pairs Invariant mass vs reconstructed pair energy in Module %d",imod),
-								   nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+                               Form("Cluster pairs Invariant mass vs reconstructed pair energy in Module %d",imod),
+                               nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
 		fhIMMod[imod]->SetXTitle("p_{T, cluster pairs} (GeV) ");
 		fhIMMod[imod]->SetYTitle("M_{cluster pairs} (GeV/c^{2})");
 		outputContainer->Add(fhIMMod[imod]);
-				
+    
 		fhIMCellCutMod[imod]  = new TH2F (Form("hIMCellCut_Mod%d",imod),
-								   Form("Cluster (n cells > 1) pairs Invariant mass vs reconstructed pair energy in Module %d",imod),
-								   nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
+                                      Form("Cluster (n cells > 1) pairs Invariant mass vs reconstructed pair energy in Module %d",imod),
+                                      nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
 		fhIMCellCutMod[imod]->SetXTitle("p_{T, cluster pairs} (GeV) ");
 		fhIMCellCutMod[imod]->SetYTitle("M_{cluster pairs} (GeV/c^{2})");
 		outputContainer->Add(fhIMCellCutMod[imod]);
@@ -753,7 +750,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	}
 	
 	
-	//Monte Carlo Histograms
+    //Monte Carlo Histograms
 	if(IsDataMC()){
 		
 		fhDeltaE  = new TH1F ("hDeltaE","MC - Reco E ", nptbins*2,-ptmax,ptmax); 
@@ -808,7 +805,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fh2Eta->SetYTitle("#eta_{gen} ");
 		outputContainer->Add(fh2Eta);
 		
-		//Fill histos depending on origin of cluster
+      //Fill histos depending on origin of cluster
 		fhGamE  = new TH2F ("hGamE","E reconstructed vs E generated from #gamma", nptbins,ptmin,ptmax, nptbins,ptmin,ptmax); 
 		fhGamE->SetXTitle("E_{rec} (GeV)");
 		fhGamE->SetXTitle("E_{gen} (GeV)");
@@ -860,7 +857,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhGamRatioEta  = new TH1F ("hGamRatioEta","#gamma Reco/MC #eta",nratiobins,ratiomin,ratiomax); 
 		fhGamRatioEta->SetXTitle("#eta_{reco}/#eta_{gen} ");
 		outputContainer->Add(fhGamRatioEta);
-
+    
 		fhPi0E  = new TH2F ("hPi0E","E reconstructed vs E generated from #pi^{0}", nptbins,ptmin,ptmax, nptbins,ptmin,ptmax); 
 		fhPi0E->SetXTitle("E_{rec} (GeV)");
 		fhPi0E->SetYTitle("E_{gen} (GeV)");
@@ -941,7 +938,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhChHadEta->SetYTitle("#eta_{gen} ");
 		outputContainer->Add(fhChHadEta);
 		
-		//Charged clusters
+      //Charged clusters
 		
 		fhGamECharged  = new TH2F ("hGamECharged","E reconstructed vs E generated from #gamma, track matched cluster", nptbins,ptmin,ptmax, nptbins,ptmin,ptmax); 
 		fhGamECharged->SetXTitle("E_{rec} (GeV)");
@@ -1044,18 +1041,18 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhChHadEtaCharged->SetYTitle("#eta_{gen} ");
 		outputContainer->Add(fhChHadEtaCharged);
 		
-		//Vertex of generated particles 
+      //Vertex of generated particles 
 		
 		fhEMVxyz  = new TH2F ("hEMVxyz","Production vertex of reconstructed ElectroMagnetic particles",nvdistbins,vdistmin,vdistmax,nvdistbins,vdistmin,vdistmax);//,100,0,500); 
 		fhEMVxyz->SetXTitle("v_{x}");
 		fhEMVxyz->SetYTitle("v_{y}");
-		//fhEMVxyz->SetZTitle("v_{z}");
+      //fhEMVxyz->SetZTitle("v_{z}");
 		outputContainer->Add(fhEMVxyz);
 		
 		fhHaVxyz  = new TH2F ("hHaVxyz","Production vertex of reconstructed hadrons",nvdistbins,vdistmin,vdistmax,nvdistbins,vdistmin,vdistmax);//,100,0,500); 
 		fhHaVxyz->SetXTitle("v_{x}");
 		fhHaVxyz->SetYTitle("v_{y}");
-		//fhHaVxyz->SetZTitle("v_{z}");
+      //fhHaVxyz->SetZTitle("v_{z}");
 		outputContainer->Add(fhHaVxyz);
 		
 		fhEMR  = new TH2F ("hEMR","Distance to production vertex of reconstructed ElectroMagnetic particles vs E rec",nptbins,ptmin,ptmax,nvdistbins,vdistmin,vdistmax); 
@@ -1068,9 +1065,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhHaR->SetYTitle("TMath::Sqrt(v_{x}^{2}+v_{y}^{2})");
 		outputContainer->Add(fhHaR);
 		
-
+    
 		
-		//Pure MC
+      //Pure MC
 		fhGenGamPt  = new TH1F("hGenGamPt" ,"p_{T} of generated #gamma",nptbins,ptmin,ptmax);
 		fhGenGamEta = new TH1F("hGenGamEta","Y of generated #gamma",netabins,etamin,etamax);
 		fhGenGamPhi = new TH1F("hGenGamPhi","#phi of generated #gamma",nphibins,phimin,phimax);
@@ -1097,7 +1094,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		outputContainer->Add(fhGenGamPt);
 		outputContainer->Add(fhGenGamEta);
 		outputContainer->Add(fhGenGamPhi);
-
+    
 		fhGenPi0Pt->SetXTitle("p_{T} (GeV/c)");
 		fhGenPi0Eta->SetXTitle("#eta");
 		fhGenPi0Phi->SetXTitle("#phi (rad)");
@@ -1111,7 +1108,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		outputContainer->Add(fhGenEtaPt);
 		outputContainer->Add(fhGenEtaEta);
 		outputContainer->Add(fhGenEtaPhi);
-				
+    
 		fhGenOmegaPt->SetXTitle("p_{T} (GeV/c)");
 		fhGenOmegaEta->SetXTitle("#eta");
 		fhGenOmegaPhi->SetXTitle("#phi (rad)");
@@ -1154,7 +1151,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		outputContainer->Add(fhGenPi0AccEta);
 		outputContainer->Add(fhGenPi0AccPhi);
 		
-		//Track Matching 
+      //Track Matching 
 		
 	  fhMCEle1pOverE = new TH2F("hMCEle1pOverE","TRACK matches p/E, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
 	  fhMCEle1pOverE->SetYTitle("p/E");
@@ -1197,7 +1194,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	  fhMCNeutral2MatchdEdx->SetXTitle("p (GeV/c)");
 	  fhMCNeutral2MatchdEdx->SetYTitle("<dE/dx>");
 	  outputContainer->Add(fhMCNeutral2MatchdEdx);
-	  	  
+    
 	  fhMCEle1pOverER02 = new TH2F("hMCEle1pOverER02","TRACK matches p/E, MC electrons",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
 	  fhMCEle1pOverER02->SetYTitle("p/E");
 	  fhMCEle1pOverER02->SetXTitle("p_{T} (GeV/c)");
@@ -1213,25 +1210,25 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	  fhMCNeutral1pOverER02->SetXTitle("p_{T} (GeV/c)");
 	  outputContainer->Add(fhMCNeutral1pOverER02);
 	}
-
+  
 	return outputContainer;
 }
 
-//_______________________________________________________________________________________________________________________________________
+  //_______________________________________________________________________________________________________________________________________
 Int_t AliAnaCalorimeterQA::GetNewRebinForRePlotting(TH1D* histo, const Float_t newXmin, const Float_t newXmax,const Int_t newXnbins) const
 {
-  //Calculate the rebinning for the new requested bin size, only used when replotting executing the Terminte
+    //Calculate the rebinning for the new requested bin size, only used when replotting executing the Terminte
   Float_t oldbinsize =  histo->GetBinWidth(0);
   Float_t newbinsize = TMath::Abs(newXmax-newXmin) / newXnbins;
-  //printf("bin size, old %f, new %f\n",oldbinsize,newbinsize);
+    //printf("bin size, old %f, new %f\n",oldbinsize,newbinsize);
   if(newbinsize > oldbinsize) return (Int_t) (newbinsize/oldbinsize);
   else  return 1;
 }
 
-//__________________________________________________
+  //__________________________________________________
 void AliAnaCalorimeterQA::Init()
 { 
-	//Check if the data or settings are ok
+    //Check if the data or settings are ok
 	if(fCalorimeter != "PHOS" && fCalorimeter !="EMCAL"){
 		printf("AliAnaCalorimeterQA::Init() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data());
 		abort();
@@ -1245,12 +1242,12 @@ void AliAnaCalorimeterQA::Init()
 }
 
 
-//__________________________________________________
+  //__________________________________________________
 void AliAnaCalorimeterQA::InitParameters()
 { 
-  //Initialize the parameters of the analysis.
+    //Initialize the parameters of the analysis.
   AddToHistogramsName("AnaCaloQA_");
-
+  
   fCalorimeter = "EMCAL"; //or PHOS
   fStyleMacro  = "" ;
   fNModules    = 12; // set maximum to maximum number of EMCAL modules
@@ -1273,16 +1270,16 @@ void AliAnaCalorimeterQA::InitParameters()
 	
 }
 
-//__________________________________________________________________
+  //__________________________________________________________________
 void AliAnaCalorimeterQA::Print(const Option_t * opt) const
 {
-  //Print some relevant parameters set for the analysis
+    //Print some relevant parameters set for the analysis
   if(! opt)
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaPartCorrBaseClass::Print(" ");
-
+  
   printf("Select Calorimeter %s \n",fCalorimeter.Data());
   printf("Make plots?        %d \n",fMakePlots); 	
   printf("Plots style macro  %s \n",fStyleMacro.Data()); 
@@ -1298,13 +1295,13 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
   printf("Histograms: %d < N    < %d, Nbin = %d\n"      , fHistoNMin,      fHistoNMax,      fHistoNBins);
   printf("Histograms: %3.1f < Ratio< %3.1f, Nbin = %d\n", fHistoRatioMin,  fHistoRatioMax,  fHistoRatioBins);
   printf("Histograms: %3.1f < Vertex Distance < %3.1f, Nbin = %d\n", fHistoVertexDistMin, fHistoVertexDistMax, fHistoVertexDistBins);
-
+  
 } 
 
-//__________________________________________________________________
+  //__________________________________________________________________
 void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms() 
 {
-	//Fill Calorimeter QA histograms
+    //Fill Calorimeter QA histograms
 	TLorentzVector mom ;
 	TLorentzVector mom2 ;
 	TRefArray * caloClusters = new TRefArray();
@@ -1315,39 +1312,39 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	Int_t nTracksMatched = 0;
 	Int_t trackIndex = 0;
 	Int_t nModule = -1;
-
-	//Play with the MC stack if available	
-	//Get the MC arrays and do some checks
+  
+    //Play with the MC stack if available	
+    //Get the MC arrays and do some checks
 	if(IsDataMC()){
 		if(GetReader()->ReadStack()){
-
+      
 			if(!GetMCStack()) {
 				printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
 				abort();
 			}
-			//Fill some pure MC histograms, only primaries.
+        //Fill some pure MC histograms, only primaries.
 			for(Int_t i=0 ; i<GetMCStack()->GetNprimary(); i++){//Only primary particles, for all MC transport put GetNtrack()
 				TParticle *primary = GetMCStack()->Particle(i) ;
-				//printf("i %d, %s: status = %d, primary? %d\n",i, primary->GetName(), primary->GetStatusCode(), primary->IsPrimary());
+          //printf("i %d, %s: status = %d, primary? %d\n",i, primary->GetName(), primary->GetStatusCode(), primary->IsPrimary());
 				if (primary->GetStatusCode() > 11) continue; //Working for PYTHIA and simple generators, check for HERWIG 
 				primary->Momentum(mom);
 				MCHistograms(mom,TMath::Abs(primary->GetPdgCode()));
 			} //primary loop
 		}
 		else if(GetReader()->ReadAODMCParticles()){
-
+      
 			if(!GetReader()->GetAODMCParticles(0)) 	{
 				printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  AODMCParticles not available!\n");
 				abort();
 			}
-			//Fill some pure MC histograms, only primaries.
+        //Fill some pure MC histograms, only primaries.
 			for(Int_t i=0 ; i < (GetReader()->GetAODMCParticles(0))->GetEntriesFast(); i++){
 				AliAODMCParticle *aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(i) ;
-				//printf("i %d, %s: primary? %d physical primary? %d, flag %d\n",
-				//	   i,(TDatabasePDG::Instance()->GetParticle(aodprimary->GetPdgCode()))->GetName(), 
-				//	   aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), aodprimary->GetFlag());
+          //printf("i %d, %s: primary? %d physical primary? %d, flag %d\n",
+          //	   i,(TDatabasePDG::Instance()->GetParticle(aodprimary->GetPdgCode()))->GetName(), 
+          //	   aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), aodprimary->GetFlag());
 				if (!aodprimary->IsPrimary()) continue; //accept all which is not MC transport generated. Don't know how to avoid partons
-				//aodprimary->Momentum(mom);
+                                                //aodprimary->Momentum(mom);
 				mom.SetPxPyPzE(aodprimary->Px(),aodprimary->Py(),aodprimary->Pz(),aodprimary->E());
 				MCHistograms(mom,TMath::Abs(aodprimary->GetPdgCode()));
 			} //primary loop
@@ -1356,39 +1353,25 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	}// is data and MC	
 	
 	
-	//Get List with CaloClusters  
+    //Get List with CaloClusters  
 	
-	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-		if     (fCalorimeter == "EMCAL") ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALClusters(caloClusters);//GetAODEMCAL();
-		else if(fCalorimeter == "PHOS")  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSClusters (caloClusters);//GetAODPHOS();
-		else {
-			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data());
-			abort();
-		}
-	}
-	else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) {
-		if     (fCalorimeter == "EMCAL") ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALClusters(caloClusters);//GetAODEMCAL();
-		else if(fCalorimeter == "PHOS")  ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSClusters (caloClusters);//GetAODPHOS();
-		else {
-			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data());
-			abort();
-		}
-	}
+  if     (fCalorimeter == "EMCAL") GetReader()->GetInputEvent()->GetEMCALClusters(caloClusters);//GetAODEMCAL();
+  else if(fCalorimeter == "PHOS") GetReader()->GetInputEvent()->GetPHOSClusters (caloClusters);//GetAODPHOS();
+  else 
+    AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data()));
 	
-	if(!caloClusters) {
-		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters available\n");
-		abort();
-	}
+	if(!caloClusters) 
+		AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters available\n"));
 	
-	//----------------------------------------------------------
-	//Correlate Calorimeters
-	//----------------------------------------------------------
+    //----------------------------------------------------------
+    //Correlate Calorimeters
+    //----------------------------------------------------------
 	if(fCorrelateCalos)	CorrelateCalorimeters(caloClusters);
-		
+  
 	
-	//----------------------------------------------------------
-	// CALOCLUSTERS
-	//----------------------------------------------------------
+    //----------------------------------------------------------
+    // CALOCLUSTERS
+    //----------------------------------------------------------
 	
 	nCaloClusters = caloClusters->GetEntriesFast() ; 
 	fhNClusters->Fill(nCaloClusters);
@@ -1398,92 +1381,90 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	if(GetDebug() > 0)
 		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In %s there are %d clusters \n", fCalorimeter.Data(), nCaloClusters);
 	
-	//Get vertex for photon momentum calculation
+    //Get vertex for photon momentum calculation
 	Double_t v[3] = {0,0,0}; //vertex ;
 	GetReader()->GetVertex(v);
-	TObject * track = 0x0;
+	AliVTrack * track = 0x0;
 	
 	Float_t pos[3] ;
 	Float_t showerShape[3] ;
 	Double_t tof = 0;
-	//Loop over CaloClusters
-	//if(nCaloClusters > 0)printf("QA  : Vertex Cut passed %f, cut %f, entries %d, %s\n",v[2], 40., nCaloClusters, fCalorimeter.Data());
+    //Loop over CaloClusters
+    //if(nCaloClusters > 0)printf("QA  : Vertex Cut passed %f, cut %f, entries %d, %s\n",v[2], 40., nCaloClusters, fCalorimeter.Data());
 	for(Int_t iclus = 0; iclus < nCaloClusters; iclus++){
 		
 		if(GetDebug() > 0) printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - cluster: %d/%d, data %d \n",
-									iclus+1,nCaloClusters,GetReader()->GetDataType());
+                               iclus+1,nCaloClusters,GetReader()->GetDataType());
 		
 		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
-			AliESDCaloCluster* clus =  (AliESDCaloCluster*) (caloClusters->At(iclus));
-			AliESDCaloCells * cell = 0x0; 
-			if(fCalorimeter == "PHOS") cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-			else			           cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
+			AliVCluster* clus =  (AliVCluster*)caloClusters->At(iclus);
+			AliVCaloCells * cell = 0x0; 
+			if(fCalorimeter == "PHOS") cell =  GetReader()->GetInputEvent()->GetPHOSCells();
+			else			           cell =  GetReader()->GetInputEvent()->GetEMCALCells();
 			
-			//Check if the cluster contains any bad channel or it is close to the calorimeter borders
+        //Check if the cluster contains any bad channel or it is close to the calorimeter borders
 			if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;	
-			if(!GetCaloUtils()->CheckCellFiducialRegion(clus, cell)) continue;
-			//Recalibrate the cluster energy 
+			if(!GetCaloUtils()->CheckCellFiducialRegion(clus, cell, GetReader()->GetInputEvent(), 0)) continue;
+        //Recalibrate the cluster energy 
 			if( GetCaloUtils()->IsRecalibrationOn())	{
 				Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, cell);
 				clus->SetE(energy);
 			}
 			
-			//Get cluster kinematics
+        //Get cluster kinematics
 			clus->GetPosition(pos);
 			clus->GetMomentum(mom,v);
 			tof = clus->GetTOF()*1e9;
 			if(tof < fTimeCutMin || tof > fTimeCutMax) continue;
 			
-			//Check only certain regions
+        //Check only certain regions
 			Bool_t in = kTRUE;
 			if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
 			if(!in) continue;
-			//Get module of cluster
+        //Get module of cluster
 			nModule = GetModuleNumber(clus);
 			if(nModule < fNModules) nClustersInModule[nModule]++;
-			//MC labels
+        //MC labels
 			nLabel = clus->GetNLabels();
-			//labels = clus->GetLabels();
-			if(clus->GetLabels()) labels =  (clus->GetLabels())->GetArray();
-			//Cells per cluster
+			labels = clus->GetLabels();
+        //Cells per cluster
 			nCaloCellsPerCluster =  clus->GetNCells();
-			//if(mom.E() > 10 && nCaloCellsPerCluster == 1 ) printf("%s:************** E = %f ********** ncells = %d\n",fCalorimeter.Data(), mom.E(),nCaloCellsPerCluster);
-			//matched cluster with tracks
+        //if(mom.E() > 10 && nCaloCellsPerCluster == 1 ) printf("%s:************** E = %f ********** ncells = %d\n",fCalorimeter.Data(), mom.E(),nCaloCellsPerCluster);
+        //matched cluster with tracks
 			nTracksMatched = clus->GetNTracksMatched();
-			trackIndex     = clus->GetTrackMatched();
+			trackIndex     = clus->GetTrackMatchedIndex();
 			if(trackIndex >= 0){
-				track = (AliESDtrack*) ((AliESDEvent*)GetReader()->GetInputEvent())->GetTrack(trackIndex);
+				track = (AliVTrack*)GetReader()->GetInputEvent()->GetTrack(trackIndex);
 			}
 			else{
 				if(nTracksMatched == 1) nTracksMatched = 0;
 				track = 0;
 			}
 			
-			//Shower shape parameters
+        //Shower shape parameters
 			showerShape[0] = clus->GetM20();
 			showerShape[1] = clus->GetM02();
-			//showerShape[2] = clus->GetDispersion();
-			showerShape[2] = clus->GetClusterDisp();
-
-			//======================
-			//Cells in cluster
-			//======================
-
-			//Get list of contributors
+			showerShape[2] = clus->GetDispersion();
+      
+        //======================
+        //Cells in cluster
+        //======================
+      
+        //Get list of contributors
 			UShort_t * indexList = clus->GetCellsAbsId() ;
-			// check time of cells respect to max energy cell
-			//Get maximum energy cell
+        // check time of cells respect to max energy cell
+        //Get maximum energy cell
 			Float_t emax  = -1;
 			Double_t tmax = -1;
 			Int_t imax    = -1;
 			Int_t absId   = -1 ;
-			//printf("nCaloCellsPerCluster %d\n",nCaloCellsPerCluster);
-			//Loop on cluster cells
+        //printf("nCaloCellsPerCluster %d\n",nCaloCellsPerCluster);
+        //Loop on cluster cells
 			for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-			  //	printf("Index %d\n",ipos);
+          //	printf("Index %d\n",ipos);
 			  absId  = indexList[ipos]; 
 			  
-			  //Get position of cell compare to cluster
+          //Get position of cell compare to cluster
 			  if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
 			    
 			    Double_t cellpos[] = {0, 0, 0};
@@ -1501,21 +1482,21 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			    Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
 			    fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
 			    fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
-			
-//					Float_t celleta = 0, cellphi = 0;
-//					GetEMCALGeometry()->EtaPhiFromIndex(absId, celleta, cellphi); 
-//					Int_t imod = -1, iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1;
-//					GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-//					GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
-//																				 iIphi, iIeta,iphi,ieta);
-//					printf("AbsId %d, SM %d, Index eta %d, phi %d\n", absId, imod, ieta, iphi);
-//					printf("Cluster E %f, eta %f, phi %f; Cell: Amp %f, eta %f, phi%f\n", mom.E(),mom.Eta(), mom.Phi()*TMath::RadToDeg(), cell->GetCellAmplitude(absId),celleta, cellphi*TMath::RadToDeg());
-//					printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
-//					printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
-//					printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
-//					printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
-//					
-
+          
+            //					Float_t celleta = 0, cellphi = 0;
+            //					GetEMCALGeometry()->EtaPhiFromIndex(absId, celleta, cellphi); 
+            //					Int_t imod = -1, iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1;
+            //					GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
+            //					GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
+            //																				 iIphi, iIeta,iphi,ieta);
+            //					printf("AbsId %d, SM %d, Index eta %d, phi %d\n", absId, imod, ieta, iphi);
+            //					printf("Cluster E %f, eta %f, phi %f; Cell: Amp %f, eta %f, phi%f\n", mom.E(),mom.Eta(), mom.Phi()*TMath::RadToDeg(), cell->GetCellAmplitude(absId),celleta, cellphi*TMath::RadToDeg());
+            //					printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
+            //					printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
+            //					printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
+            //					printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
+            //					
+          
 			  }//EMCAL and its matrices are available
 			  else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
 			    TVector3 xyz;
@@ -1540,22 +1521,22 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			    fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
 			    fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
 			    
-//		    	    	printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
-//		       		printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
-//	       			printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
-//     				printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
+            //		    	    	printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
+            //		       		printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
+            //	       			printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
+            //     				printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
 			  }//PHOS and its matrices are available
-
-			  //Find maximum energy cluster
+        
+          //Find maximum energy cluster
 			  if(cell->GetCellAmplitude(absId) > emax) {
 			    imax = ipos;
 			    emax = cell->GetCellAmplitude(absId);
 			    tmax = cell->GetCellTime(absId);
 			  } 
-
+        
 			}// cluster cell loop
 			
-			// check time of cells respect to max energy cell
+        // check time of cells respect to max energy cell
 			if(nCaloCellsPerCluster > 1){
 			  for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
 			    if(imax == ipos) continue;
@@ -1566,212 +1547,72 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			  }// fill cell-cluster histogram loop
 			  
 			}//check time of cells respect to max energy cell
-			
-			
-		}//ESDs
-		else{
-			AliAODCaloCluster* clus =  (AliAODCaloCluster*) (caloClusters->At(iclus));
-			AliAODCaloCells * cell = 0x0; 
-			if(fCalorimeter == "PHOS") cell =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-			else					   cell =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
-			
-			//Check if the cluster contains any bad channel or it is close to calorimeter borders
-			if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;
-			if(!GetCaloUtils()->CheckCellFiducialRegion(clus, cell)) continue;
-			//Recalibrate the cluster energy 
-			if( GetCaloUtils()->IsRecalibrationOn())	{
-				Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, cell);
-				clus->SetE(energy);
-			}
-			
-			//Get cluster kinematics
-			clus->GetPosition(pos);
-			clus->GetMomentum(mom,v);
-			tof = clus->GetTOF()*1e9;
-			if(tof < fTimeCutMin || tof > fTimeCutMax) continue;
-
-			//Check only certain regions
-			Bool_t in = kTRUE;
-			if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
-			if(!in) continue;			
-			//Get module of cluster
-			nModule = GetModuleNumber(clus);
-			if(nModule < fNModules)  nClustersInModule[nModule]++;
-			//MC labels
-			nLabel = clus->GetNLabel();
-			//labels = clus->GetLabels();
-			if(clus->GetLabels()) labels =  clus->GetLabels();
-			//Cells per cluster
-			nCaloCellsPerCluster = clus->GetNCells();
-			//matched cluster with tracks
-			nTracksMatched = clus->GetNTracksMatched();
-			if(nTracksMatched > 0)
-				track  = (AliAODTrack*)clus->GetTrackMatched(0);
-			
-		    //Shower shape parameters
-			showerShape[0] = clus->GetM20();
-			showerShape[1] = clus->GetM02();
-			showerShape[2] = clus->GetDispersion();
-			
-			//======================
-			//Cells in cluster
-			//======================
-						
-			//Get list of contributors
-			UShort_t * indexList = clus->GetCellsAbsId() ;
-			Int_t absId   = -1 ;
-			//printf("nCaloCellsPerCluster %d\n",nCaloCellsPerCluster);
-			//Loop on cluster cells
-			for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-				//	printf("Index %d\n",ipos);
-				absId  = indexList[ipos]; 
-				
-				//Get position of cell compare to cluster
-				if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
-					
-					Double_t cellpos[] = {0, 0, 0};
-					GetEMCALGeometry()->GetGlobal(absId, cellpos);
-					
-					fhDeltaCellClusterXNCells->Fill(pos[0]-cellpos[0],nCaloCellsPerCluster) ; 
-					fhDeltaCellClusterYNCells->Fill(pos[1]-cellpos[1],nCaloCellsPerCluster) ; 
-					fhDeltaCellClusterZNCells->Fill(pos[2]-cellpos[2],nCaloCellsPerCluster) ;
-					
-					fhDeltaCellClusterXE->Fill(pos[0]-cellpos[0],mom.E())  ; 
-					fhDeltaCellClusterYE->Fill(pos[1]-cellpos[1],mom.E())  ; 
-					fhDeltaCellClusterZE->Fill(pos[2]-cellpos[2],mom.E())  ; 
-					
-					Float_t r     = TMath::Sqrt(pos[0]*pos[0]        +pos[1]*pos[1]);//        +pos[2]*pos[2]);
-					Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
-					fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
-					fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
-					
-//						printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
-//						printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
-//						printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
-//						printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);					
-					
-				}// EMCAL and its matrices are available
-				else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
-				  TVector3 xyz;
-				  Int_t relId[4], module;
-				  Float_t xCell, zCell;
-				  
-				  GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
-				  module = relId[0];
-				  GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
-				  GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
-				  
-				  fhDeltaCellClusterXNCells->Fill(pos[0]-xyz.X(),nCaloCellsPerCluster) ; 
-				  fhDeltaCellClusterYNCells->Fill(pos[1]-xyz.Y(),nCaloCellsPerCluster) ; 
-				  fhDeltaCellClusterZNCells->Fill(pos[2]-xyz.Z(),nCaloCellsPerCluster) ;
-				  
-				  fhDeltaCellClusterXE->Fill(pos[0]-xyz.X(),mom.E())  ; 
-				  fhDeltaCellClusterYE->Fill(pos[1]-xyz.Y(),mom.E())  ; 
-				  fhDeltaCellClusterZE->Fill(pos[2]-xyz.Z(),mom.E())  ; 
-				  
-				  Float_t r     = TMath::Sqrt(pos[0]*pos[0]  +pos[1]*pos[1]);//     +pos[2]*pos[2]);
-				  Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());//+xyz.Z()*xyz.Z());
-				  fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
-				  fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
-				  
-//		    	    	printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
-//		       		printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
-//	       			printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
-//     				printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
-
-				}   //PHOS and its matrices are available
-			}// cluster cell loop
-			
-		}//AODs
-		
-		//-----------------------------------------------------------
-		//Fill histograms related to single cluster or track matching
-		//-----------------------------------------------------------
-
-		ClusterHistograms(mom, tof, pos, showerShape, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
-		
-			 
-		//-----------------------------------------------------------
-		//Invariant mass
-		//-----------------------------------------------------------
-		if(GetDebug()>1) printf("Invariant mass \n");
-
-		//do not do for bad vertex
-		Float_t fZvtxCut = 40. ;	
-		if(v[2]<-fZvtxCut || v[2]> fZvtxCut) continue ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
-		
-		Int_t nModule2 = -1;
-		Int_t nCaloCellsPerCluster2=0;
-		if (nCaloClusters > 1 ) {
-			for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
-				if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
-					AliESDCaloCluster* clus2 =  (AliESDCaloCluster*) (caloClusters->At(jclus));
-					AliESDCaloCells  * cell2 = 0x0; 
-					if(fCalorimeter == "PHOS") cell2 =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-					else			           cell2 =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
-					//Check if the cluster contains any bad channel or it is close to calorimeter borders
+      
+        //-----------------------------------------------------------
+        //Fill histograms related to single cluster or track matching
+        //-----------------------------------------------------------
+      
+      ClusterHistograms(mom, tof, pos, showerShape, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
+      
+      
+        //-----------------------------------------------------------
+        //Invariant mass
+        //-----------------------------------------------------------
+      if(GetDebug()>1) printf("Invariant mass \n");
+      
+        //do not do for bad vertex
+      Float_t fZvtxCut = 40. ;	
+      if(v[2]<-fZvtxCut || v[2]> fZvtxCut) continue ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
+      
+      Int_t nModule2 = -1;
+      Int_t nCaloCellsPerCluster2=0;
+      if (nCaloClusters > 1 ) {
+        for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
+					AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(jclus);
+					AliVCaloCells  * cell2 = 0x0; 
+					if(fCalorimeter == "PHOS") cell2 =  GetReader()->GetInputEvent()->GetPHOSCells();
+					else			           cell2 =  GetReader()->GetInputEvent()->GetEMCALCells();
+            //Check if the cluster contains any bad channel or it is close to calorimeter borders
 					if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus2->GetCellsAbsId(), clus2->GetNCells())) continue;
-					if(!GetCaloUtils()->CheckCellFiducialRegion(clus2, cell2)) continue;
-
-					//Get cluster kinematics
+					if(!GetCaloUtils()->CheckCellFiducialRegion(clus2, cell2, GetReader()->GetInputEvent(), 0)) continue;
+          
+            //Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
-					//Check only certain regions
+            //Check only certain regions
 					Bool_t in2 = kTRUE;
 					if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
 					if(!in2) continue;	
-					//Get module of cluster
+            //Get module of cluster
 					nModule2 = GetModuleNumber(clus2);
-					//Cells per cluster
+            //Cells per cluster
 					nCaloCellsPerCluster2 = clus2->GetNCells();
-
-				}
-				else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD){
-					AliAODCaloCluster* clus2 =  (AliAODCaloCluster*) (caloClusters->At(jclus));
-					AliAODCaloCells  * cell2 = 0x0; 
-					if(fCalorimeter == "PHOS") cell2 =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-					else			           cell2 =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
-					//Check if the cluster contains any bad channel or it is close to calorimeter borders 
-					if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus2->GetCellsAbsId(), clus2->GetNCells())) continue;
-					if(!GetCaloUtils()->CheckCellFiducialRegion(clus2, cell2)) continue;
-
-					//Get cluster kinematics
-					clus2->GetMomentum(mom2,v);
-					//Check only certain regions
-					Bool_t in2 = kTRUE;
-					if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
-					if(!in2) continue;						
-					//Get module of cluster
-					nModule2 = GetModuleNumber(clus2);
-					//Cells per cluster
-					nCaloCellsPerCluster2 = clus2->GetNCells();
-				}
-
-				//Fill invariant mass histograms
-				//All modules
-
-				//printf("QA : Fill inv mass histo: pt1 %f, pt2 %f, pt12 %f, mass %f, calo %s \n",mom.Pt(),mom2.Pt(),(mom+mom2).Pt(),(mom+mom2).M(), fCalorimeter.Data());
+        }
+          //Fill invariant mass histograms
+          //All modules
+        
+          //printf("QA : Fill inv mass histo: pt1 %f, pt2 %f, pt12 %f, mass %f, calo %s \n",mom.Pt(),mom2.Pt(),(mom+mom2).Pt(),(mom+mom2).M(), fCalorimeter.Data());
 				fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
-				//Single module
+          //Single module
 				if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
 				  fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
-
-				//Select only clusters with at least 2 cells
+        
+          //Select only clusters with at least 2 cells
 				if(nCaloCellsPerCluster > 1 && nCaloCellsPerCluster2 > 1) {
-				  //All modules
+            //All modules
 				  fhIMCellCut  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
-				  //Single modules
+            //Single modules
 				  if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
 				    fhIMCellCutMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
 				}
-
-				//Asymetry histograms
+        
+          //Asymetry histograms
 				fhAsym->Fill((mom+mom2).Pt(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
-					
+        
 			}// 2nd cluster loop
 		}////more than 1 cluster in calorimeter  	
 	}//cluster loop
 	
-	//Number of clusters per module
+    //Number of clusters per module
 	for(Int_t imod = 0; imod < fNModules; imod++ ){ 
 		if(GetDebug() > 1) 
 			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - module %d calo %s clusters %d\n", imod, fCalorimeter.Data(), nClustersInModule[imod]); 
@@ -1779,10 +1620,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	}
 	delete [] nClustersInModule;
 	delete caloClusters;
-
-	//----------------------------------------------------------
-	// CALOCELLS
-	//----------------------------------------------------------
+  
+    //----------------------------------------------------------
+    // CALOCELLS
+    //----------------------------------------------------------
 	
 	Int_t *nCellsInModule = new Int_t[fNModules];
 	for(Int_t imod = 0; imod < fNModules; imod++ ) nCellsInModule[imod] = 0;
@@ -1794,251 +1635,155 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	Int_t id       = -1;
 	Float_t recalF = 1.;
 	
-	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
-		AliESDCaloCells * cell = 0x0; 
-		Int_t ncells = 0;
-		if(fCalorimeter == "PHOS") cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-		else		               cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
-				
-		if(!cell) {
-			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s ESD CELLS available for analysis\n",fCalorimeter.Data());
-			abort();
-		}
-		
-		ncells = cell->GetNumberOfCells() ;
-		fhNCells->Fill(ncells) ;
-		if(GetDebug() > 0) 
-			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In ESD %s cell entries %d\n", fCalorimeter.Data(), ncells);    
-		
-		for (Int_t iCell = 0; iCell < ncells; iCell++) {      
-			if(GetDebug() > 2)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
-			nModule = GetModuleNumberCellIndexes(cell->GetCellNumber(iCell),fCalorimeter, icol, irow, iRCU);
-			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
-			
-			if(nModule < fNModules) {	
+  AliVCaloCells * cell = 0x0; 
+  Int_t ncells = 0;
+  if(fCalorimeter == "PHOS") 
+    cell =  GetReader()->GetInputEvent()->GetPHOSCells();
+  else		              
+    cell = GetReader()->GetInputEvent()->GetEMCALCells();
+  
+  if(!cell) {
+    printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s ESD CELLS available for analysis\n",fCalorimeter.Data());
+    abort();
+  }
+  
+  ncells = cell->GetNumberOfCells() ;
+  fhNCells->Fill(ncells) ;
+  if(GetDebug() > 0) 
+    printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In ESD %s cell entries %d\n", fCalorimeter.Data(), ncells);    
+  
+  for (Int_t iCell = 0; iCell < ncells; iCell++) {      
+    if(GetDebug() > 2)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
+    nModule = GetModuleNumberCellIndexes(cell->GetCellNumber(iCell),fCalorimeter, icol, irow, iRCU);
+    if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
+    
+    if(nModule < fNModules) {	
 				//Check if the cell is a bad channel
-				if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn()){
-					if(fCalorimeter=="EMCAL"){
-						if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
-					}
-					else {
-						if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow)) {
-							printf("PHOS bad channel\n");
-							continue;
-						}
-					}
-				}
-				
+      if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn()){
+        if(fCalorimeter=="EMCAL"){
+          if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+        }
+        else {
+          if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow)) {
+            printf("PHOS bad channel\n");
+            continue;
+          }
+        }
+      }
+      
 				//Get Recalibration factor if set
-				if (GetCaloUtils()->IsRecalibrationOn()) {
-					if(fCalorimeter == "PHOS") recalF = GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
-					else		               recalF = GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
-				    if(fCalorimeter == "PHOS")printf("Recalibration factor (sm,row,col)=(%d,%d,%d) -  %f\n",nModule,icol,irow,recalF);
-				}
-				
-				amp     = cell->GetAmplitude(iCell)*recalF;
-				time    = cell->GetTime(iCell)*1e9;//transform time to ns
-
+      if (GetCaloUtils()->IsRecalibrationOn()) {
+        if(fCalorimeter == "PHOS") recalF = GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
+        else		               recalF = GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
+        if(fCalorimeter == "PHOS")printf("Recalibration factor (sm,row,col)=(%d,%d,%d) -  %f\n",nModule,icol,irow,recalF);
+      }
+      
+      amp     = cell->GetAmplitude(iCell)*recalF;
+      time    = cell->GetTime(iCell)*1e9;//transform time to ns
+      
 				//if(amp > 3 && fCalorimeter=="EMCAL") printf("Amp = %f, time = %f, (mod, col, row)= (%d,%d,%d)\n",
 				//										   amp,time,nModule,icol,irow);
-				
-				if(time < fTimeCutMin || time > fTimeCutMax) continue;
-
+      
+      if(time < fTimeCutMin || time > fTimeCutMax) continue;
+      
 				//printf("%s: time %g\n",fCalorimeter.Data(), time);
-				id      = cell->GetCellNumber(iCell);
-				fhAmplitude->Fill(amp);
-				fhAmpId    ->Fill(amp,id);
-				fhTime     ->Fill(time);
-				fhTimeId   ->Fill(time,id);
-				fhTimeAmp  ->Fill(amp,time);
-				//Double_t t0 = ((AliESDEvent*)GetReader()->GetInputEvent())->GetT0();
+      id      = cell->GetCellNumber(iCell);
+      fhAmplitude->Fill(amp);
+      fhAmpId    ->Fill(amp,id);
+      fhTime     ->Fill(time);
+      fhTimeId   ->Fill(time,id);
+      fhTimeAmp  ->Fill(amp,time);
+				//Double_t t0 = GetReader()->GetInputEvent()->GetT0();
 				//printf("---->>> Time EMCal %e, T0 %e, T0 vertex %e, T0 clock %e, T0 trig %d \n",time,t0, 
-				//	   ((AliESDEvent*)GetReader()->GetInputEvent())->GetT0zVertex(),
-				//	   ((AliESDEvent*)GetReader()->GetInputEvent())->GetT0clock(),
-				//	   ((AliESDEvent*)GetReader()->GetInputEvent())->GetT0Trig());
+				//	   GetReader()->GetInputEvent()->GetT0zVertex(),
+				//	   GetReader()->GetInputEvent()->GetT0clock(),
+				//	   GetReader()->GetInputEvent()->GetT0Trig());
 				//fhT0Time     ->Fill(time-t0);
 				//fhT0TimeId   ->Fill(time-t0,id);
 				//fhT0TimeAmp  ->Fill(amp,time-t0);
-				
-				fhAmplitudeMod[nModule]->Fill(amp);
-				if(fCalorimeter=="EMCAL"){
-					Int_t ifrac = 0;
-					if(icol > 15 && icol < 32) ifrac = 1;
-					else if(icol > 31) ifrac = 2;
-					fhAmplitudeModFraction[nModule*3+ifrac]->Fill(amp);
-					
-										
-				}
-				
-				fhTimeAmpPerRCU  [nModule*fNRCU+iRCU]->Fill(amp, time);
+      
+      fhAmplitudeMod[nModule]->Fill(amp);
+      if(fCalorimeter=="EMCAL"){
+        Int_t ifrac = 0;
+        if(icol > 15 && icol < 32) ifrac = 1;
+        else if(icol > 31) ifrac = 2;
+        fhAmplitudeModFraction[nModule*3+ifrac]->Fill(amp);
+        
+        
+      }
+      
+      fhTimeAmpPerRCU  [nModule*fNRCU+iRCU]->Fill(amp, time);
 				//printf("id %d, nModule %d, iRCU %d: Histo Name %s\n",id, nModule,iRCU, fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->GetName());
 				//fhT0TimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time-t0);
-				nCellsInModule[nModule]++;
-				fhGridCellsMod[nModule]    ->Fill(icol,irow);
-				fhGridCellsEMod[nModule]   ->Fill(icol,irow,amp);
-				if(amp > 0.3){
-					fhGridCellsTimeMod[nModule]->Fill(icol,irow,time);
-					
-//					AliESDCaloCells * cell2 = 0x0; 
-//					if(fCalorimeter == "PHOS") cell2 =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-//					else		           cell2 =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
-//					Int_t icol2    = -1;
-//					Int_t irow2    = -1;
-//					Int_t iRCU2    = -1;
-//					Float_t amp2   =  0.;
-//					Float_t time2  =  0.;
-//					Int_t id2      = -1;
-//					Int_t nModule2 = -1;
-//					for (Int_t iCell2 = 0; iCell2 < ncells; iCell2++) {  
-//						amp2    = cell2->GetAmplitude(iCell2);
-//						if(amp2 < 0.3) continue;
-//						if(iCell2 == iCell) continue;
-//						time2    = cell2->GetTime(iCell2)*1e9;//transform time to ns
-//						//printf("%s: time %g\n",fCalorimeter.Data(), time);
-//						id2      = cell2->GetCellNumber(iCell2);
-//						nModule2 = GetModuleNumberCellIndexes(cell2->GetCellNumber(iCell2), fCalorimeter, icol2, irow2, iRCU2);
-//						Int_t index = (nModule2*fNRCU+iRCU2)+(fNModules*fNRCU)*(iRCU+fNRCU*nModule); 
-//						//printf("id %d, nModule %d, iRCU %d, id2 %d, nModule2 %d, iRCU2 %d, index %d: Histo Name %s\n",id, nModule,iRCU,cell2->GetCellNumber(iCell2),nModule2,iRCU2,index, fhTimeCorrRCU[index]->GetName());
-//						fhTimeCorrRCU[index]->Fill(time,time2);	
-//						
-//					}// second cell loop
-				}// amplitude cut
-			}//nmodules
-			
+      nCellsInModule[nModule]++;
+      fhGridCellsMod[nModule]    ->Fill(icol,irow);
+      fhGridCellsEMod[nModule]   ->Fill(icol,irow,amp);
+      if(amp > 0.3){
+        fhGridCellsTimeMod[nModule]->Fill(icol,irow,time);
+        
+          //					AliESDCaloCells * cell2 = 0x0; 
+          //					if(fCalorimeter == "PHOS") cell2 =  GetReader()->GetInputEvent()->GetPHOSCells();
+          //					else		           cell2 = GetReader()->GetInputEvent()->GetEMCALCells();
+          //					Int_t icol2    = -1;
+          //					Int_t irow2    = -1;
+          //					Int_t iRCU2    = -1;
+          //					Float_t amp2   =  0.;
+          //					Float_t time2  =  0.;
+          //					Int_t id2      = -1;
+          //					Int_t nModule2 = -1;
+          //					for (Int_t iCell2 = 0; iCell2 < ncells; iCell2++) {  
+          //						amp2    = cell2->GetAmplitude(iCell2);
+          //						if(amp2 < 0.3) continue;
+          //						if(iCell2 == iCell) continue;
+          //						time2    = cell2->GetTime(iCell2)*1e9;//transform time to ns
+          //						//printf("%s: time %g\n",fCalorimeter.Data(), time);
+          //						id2      = cell2->GetCellNumber(iCell2);
+          //						nModule2 = GetModuleNumberCellIndexes(cell2->GetCellNumber(iCell2), fCalorimeter, icol2, irow2, iRCU2);
+          //						Int_t index = (nModule2*fNRCU+iRCU2)+(fNModules*fNRCU)*(iRCU+fNRCU*nModule); 
+          //						//printf("id %d, nModule %d, iRCU %d, id2 %d, nModule2 %d, iRCU2 %d, index %d: Histo Name %s\n",id, nModule,iRCU,cell2->GetCellNumber(iCell2),nModule2,iRCU2,index, fhTimeCorrRCU[index]->GetName());
+          //						fhTimeCorrRCU[index]->Fill(time,time2);	
+          //						
+          //					}// second cell loop
+      }// amplitude cut
+    }//nmodules
+    
 			//Get Eta-Phi position of Cell
-			if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
-			  Float_t celleta = 0.;
-			  Float_t cellphi = 0.;
-			  GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
-			  fhEtaPhiAmp->Fill(celleta,cellphi,amp);
-			  
-			  Double_t cellpos[] = {0, 0, 0};
-			  GetEMCALGeometry()->GetGlobal(id, cellpos);
-			  fhXCellE->Fill(cellpos[0],amp)  ; 
-			  fhYCellE->Fill(cellpos[1],amp)  ; 
-			  fhZCellE->Fill(cellpos[2],amp)  ;
-			  Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
-			  fhRCellE->Fill(rcell,amp)  ;
-			  
-			  fhXYZCell->Fill(cellpos[0],cellpos[1],cellpos[2])  ;
-			}//EMCAL Cells
-			else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
-			  TVector3 xyz;
-			  Int_t relId[4], module;
-			  Float_t xCell, zCell;
-			  
-			  GetPHOSGeometry()->AbsToRelNumbering(id,relId);
-			  module = relId[0];
-			  GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
-			  GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
-			  Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());
-			  fhXCellE ->Fill(xyz.X(),amp)  ; 
-			  fhYCellE ->Fill(xyz.Y(),amp)  ; 
-			  fhZCellE ->Fill(xyz.Z(),amp)  ;
-			  fhRCellE ->Fill(rcell  ,amp)  ;
-			  fhXYZCell->Fill(xyz.X(),xyz.Y(),xyz.Z())  ;
-			}//PHOS cells
-			
-		}//cell loop
-	}//ESD
-	else{//AOD
-		AliAODCaloCells * cell = 0x0; 
-		Int_t ncells = 0;
-		
-		if(fCalorimeter == "PHOS") cell = ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-		else		               cell = ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();	
-		
-		if(!cell) {
-			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s AOD CELLS available for analysis\n",fCalorimeter.Data());
-			//abort();
-			return;
-		}
-		
-		ncells = cell->GetNumberOfCells() ;
-		fhNCells->Fill(ncells) ;
-		if(GetDebug() > 0) 
-			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In AOD %s cell entries %d\n", fCalorimeter.Data(), ncells); 
-	
-		for (Int_t iCell = 0; iCell < ncells; iCell++) {  
-			id      = cell->GetCellNumber(iCell);
-			if(GetDebug() > 2 )  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), id);
-			nModule = GetModuleNumberCellIndexes(id, fCalorimeter, icol, irow, iRCU);
-			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
-			
-			if(nModule < fNModules) {	
-				//Check if the cell is a bad channel
-				if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn()){
-					if(fCalorimeter=="EMCAL"){
-						if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
-					}
-					else{
-						if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
-					}	
-				}
-				
-				//Get Recalibration factor if set
-				if (GetCaloUtils()->IsRecalibrationOn()) {
-					if(fCalorimeter == "PHOS") recalF = GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
-					else		               recalF = GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
-					//printf("Recalibration factor (sm,row,col)=(%d,%d,%d) -  %f\n",nModule,icol,irow,recalF);
-				}				
-				
-				amp     = cell->GetAmplitude(iCell)*recalF;
-				fhAmplitude->Fill(amp);
-				fhAmpId    ->Fill(amp,id);
-				fhAmplitudeMod[nModule]->Fill(amp);
-				if(fCalorimeter=="EMCAL"){
-					Int_t ifrac = 0;
-					if(icol > 15 && icol < 32) ifrac = 1;
-					else if(icol > 31) ifrac = 2;
-					fhAmplitudeModFraction[nModule*3+ifrac]->Fill(amp);
-				}
-				
-				fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, -1);
-				
-				nCellsInModule[nModule]++;
-				fhGridCellsMod[nModule] ->Fill(icol,irow);
-				fhGridCellsEMod[nModule]->Fill(icol,irow,amp);
-				
-			}//nmodules
-			
-			//Get Eta-Phi position of Cell
-			if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
-			  Float_t celleta = 0.;
-			  Float_t cellphi = 0.;
-			  GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
-			  fhEtaPhiAmp->Fill(celleta,cellphi,amp);
-			  
-			  Double_t cellpos[] = {0, 0, 0};
-			  GetEMCALGeometry()->GetGlobal(id, cellpos);
-			  fhXCellE->Fill(cellpos[0],amp)  ; 
-			  fhYCellE->Fill(cellpos[1],amp)  ; 
-			  fhZCellE->Fill(cellpos[2],amp)  ;
-			  Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
-			  fhRCellE->Fill(rcell,amp)  ;
-			  
-			  fhXYZCell->Fill(cellpos[0],cellpos[1],cellpos[2])  ;
-			}//EMCAL Cells
-			else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
-			  TVector3 xyz;
-			  Int_t relId[4], module;
-			  Float_t xCell, zCell;
-			  
-			  GetPHOSGeometry()->AbsToRelNumbering(id,relId);
-			  module = relId[0];
-			  GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
-			  GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
-			  Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());
-			  fhXCellE ->Fill(xyz.X(),amp)  ; 
-			  fhYCellE ->Fill(xyz.Y(),amp)  ; 
-			  fhZCellE ->Fill(xyz.Z(),amp)  ;
-			  fhRCellE ->Fill(rcell  ,amp)  ;
-			  fhXYZCell->Fill(xyz.X(),xyz.Y(),xyz.Z())  ;
-			}//PHOS Cells
-		}//cell loop
-	}//AOD
-
-	//Number of cells per module
+    if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
+      Float_t celleta = 0.;
+      Float_t cellphi = 0.;
+      GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
+      fhEtaPhiAmp->Fill(celleta,cellphi,amp);
+      
+      Double_t cellpos[] = {0, 0, 0};
+      GetEMCALGeometry()->GetGlobal(id, cellpos);
+      fhXCellE->Fill(cellpos[0],amp)  ; 
+      fhYCellE->Fill(cellpos[1],amp)  ; 
+      fhZCellE->Fill(cellpos[2],amp)  ;
+      Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
+      fhRCellE->Fill(rcell,amp)  ;
+      
+      fhXYZCell->Fill(cellpos[0],cellpos[1],cellpos[2])  ;
+    }//EMCAL Cells
+    else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
+      TVector3 xyz;
+      Int_t relId[4], module;
+      Float_t xCell, zCell;
+      
+      GetPHOSGeometry()->AbsToRelNumbering(id,relId);
+      module = relId[0];
+      GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
+      GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
+      Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());
+      fhXCellE ->Fill(xyz.X(),amp)  ; 
+      fhYCellE ->Fill(xyz.Y(),amp)  ; 
+      fhZCellE ->Fill(xyz.Z(),amp)  ;
+      fhRCellE ->Fill(rcell  ,amp)  ;
+      fhXYZCell->Fill(xyz.X(),xyz.Y(),xyz.Z())  ;
+    }//PHOS cells
+    
+  }//cell loop
+  
+    //Number of cells per module
 	for(Int_t imod = 0; imod < fNModules; imod++ ) {
 		if(GetDebug() > 1) 
 			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - module %d calo %s cells %d\n", imod, fCalorimeter.Data(), nCellsInModule[imod]); 
@@ -2051,16 +1796,16 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 }
 
 
-//__________________________________
+  //__________________________________
 void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Double_t tof, Float_t *pos, Float_t *showerShape,
-					    const Int_t nCaloCellsPerCluster,const Int_t nModule,
-					    const Int_t nTracksMatched,  const TObject * track,  
-					    const Int_t * labels, const Int_t nLabels){
-	//Fill CaloCluster related histograms
+                                            const Int_t nCaloCellsPerCluster,const Int_t nModule,
+                                            const Int_t nTracksMatched,  const AliVTrack * track,  
+                                            const Int_t * labels, const Int_t nLabels){
+    //Fill CaloCluster related histograms
 	
 	AliAODMCParticle * aodprimary  = 0x0;
 	TParticle * primary = 0x0;
-    Int_t tag = 0;	
+  Int_t tag = 0;	
 	
 	Float_t e   = mom.E();
 	Float_t pt  = mom.Pt();
@@ -2070,12 +1815,12 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 	if(GetDebug() > 0) {
 		printf("AliAnaCalorimeterQA::ClusterHistograms() - cluster: E %2.3f, pT %2.3f, eta %2.3f, phi %2.3f \n",e,pt,eta,phi*TMath::RadToDeg());
 		if(IsDataMC()) {
-			//printf("\t Primaries: nlabels %d, labels pointer %p\n",nLabels,labels);
+        //printf("\t Primaries: nlabels %d, labels pointer %p\n",nLabels,labels);
 			printf("\t Primaries: nlabels %d\n",nLabels);
 			if(!nLabels || !labels) printf("\t Strange, no labels!!!\n");
 		}
 	}
-
+  
 	fhE     ->Fill(e);	
 	if(nModule < fNModules) fhEMod[nModule]->Fill(e);
 	fhPt     ->Fill(pt);
@@ -2090,11 +1835,11 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 	fhRE     ->Fill(rxyz,e);
 	fhClusterTimeEnergy->Fill(e,tof);
 	
-	//Shower shape parameters
+    //Shower shape parameters
 	fhLambda->Fill(showerShape[0], showerShape[1], e);
 	fhDispersion->Fill(showerShape[2],e);
-
-	//Cells per cluster
+  
+    //Cells per cluster
 	fhNCellsPerCluster   ->Fill(e, nCaloCellsPerCluster,eta);
 	fhNCellsPerClusterMIP->Fill(e, nCaloCellsPerCluster,eta);
 	fhXNCells->Fill(pos[0],nCaloCellsPerCluster);
@@ -2104,27 +1849,27 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 	
 	if(nModule < fNModules) fhNCellsPerClusterMod[nModule]->Fill(e, nCaloCellsPerCluster);
 	
-	//Fill histograms only possible when simulation
+    //Fill histograms only possible when simulation
 	if(IsDataMC() && nLabels > 0 && labels){
-
-		//Play with the MC stack if available
+    
+      //Play with the MC stack if available
 		Int_t label = labels[0];
-
+    
 		if(label < 0) {
 			if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() *** bad label ***:  label %d \n", label);
 			return;
 		}
-
+    
 		Int_t pdg  =-1; Int_t pdg0  =-1;Int_t status = -1; Int_t iMother = -1; Int_t iParent = -1;
 		Float_t vxMC= 0; Float_t vyMC = 0;	
 		Float_t eMC = 0; Float_t ptMC= 0; Float_t phiMC =0; Float_t etaMC = 0;
 		Int_t charge = 0;	
 		
-		//Check the origin.
+      //Check the origin.
 		tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabels, GetReader(),0);
-
+    
 		if(GetReader()->ReadStack() && !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown)){ //it MC stack and known tag
-
+      
 			if( label >= GetMCStack()->GetNtrack()) {
 				if(GetDebug() >= 0) printf("AliAnaCalorimeterQA::ClusterHistograms() *** large label ***:  label %d, n tracks %d \n", label, GetMCStack()->GetNtrack());
 				return ;
@@ -2138,15 +1883,15 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 			vxMC    = primary->Vx();
 			vyMC    = primary->Vy();
 			iParent = primary->GetFirstMother();
-				
+      
 			if(GetDebug() > 1 ) {
 				printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
 				printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg0, primary->GetName(),status, iParent);
 			}
-				
-			//Get final particle, no conversion products
+      
+        //Get final particle, no conversion products
 			if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)){
-				//Get the parent
+          //Get the parent
 				primary = GetMCStack()->Particle(iParent);
 				pdg = TMath::Abs(primary->GetPdgCode());
 				if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
@@ -2158,17 +1903,17 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 					pdg     = TMath::Abs(primary->GetPdgCode());
 					if(GetDebug() > 1 )printf("\t pdg %d, index %d, %s, status %d \n",pdg, iMother,  primary->GetName(),status);	
 				}	
-					
+        
 				if(GetDebug() > 1 ) {
 					printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
 					printf("\t Mother label %d, pdg %d, %s, status %d, parent %d \n",iMother, pdg, primary->GetName(), status, iParent);
 				}
-					
+        
 			}
-				
-			//Overlapped pi0 (or eta, there will be very few), get the meson
+      
+        //Overlapped pi0 (or eta, there will be very few), get the meson
 			if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
-				GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
+         GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
 				if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: \n");
 				while(pdg != 111 && pdg != 221){
 					iMother = iParent;
@@ -2179,24 +1924,24 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 					if(GetDebug() > 1 ) printf("\t pdg %d, %s, index %d\n",pdg,  primary->GetName(),iMother);
 					if(iMother==-1) {
 						printf("AliAnaCalorimeterQA::ClusterHistograms() - Tagged as Overlapped photon but meson not found, why?\n");
-						//break;
+              //break;
 					}
 				}
-
+        
 				if(GetDebug() > 2 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped %s decay, label %d \n", 
-										primary->GetName(),iMother);
+                                    primary->GetName(),iMother);
 			}
-				
+      
 			eMC    = primary->Energy();
 			ptMC   = primary->Pt();
 			phiMC  = primary->Phi();
 			etaMC  = primary->Eta();
 			pdg    = TMath::Abs(primary->GetPdgCode());
 			charge = (Int_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-
+      
 		}
 		else if(GetReader()->ReadAODMCParticles() && !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown)){//it MC AOD and known tag
-			//Get the list of MC particles
+                                                                                                                          //Get the list of MC particles
 			if(!GetReader()->GetAODMCParticles(0)) 	{
 				printf("AliAnaCalorimeterQA::ClusterHistograms() -  MCParticles not available!\n");
 				abort();
@@ -2210,18 +1955,18 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 			vxMC    = aodprimary->Xv();
 			vyMC    = aodprimary->Yv();
 			iParent = aodprimary->GetMother();
-				
+      
 			if(GetDebug() > 1 ) {
 				printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
 				printf("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d, parent %d \n",
-					   iMother, pdg0, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), iParent);
+                iMother, pdg0, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary(), iParent);
 			}
 			
-			//Get final particle, no conversion products
+        //Get final particle, no conversion products
 			if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)){
 				if(GetDebug() > 1 ) 
 					printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
-				//Get the parent
+          //Get the parent
 				aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles(0))->At(iParent);
 				pdg = TMath::Abs(aodprimary->GetPdgCode());
 				while ((pdg == 22 || pdg == 11) && !aodprimary->IsPhysicalPrimary()) {
@@ -2232,20 +1977,20 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 					pdg        = TMath::Abs(aodprimary->GetPdgCode());
 					if(GetDebug() > 1 )
 						printf("\t pdg %d, index %d, Primary? %d, Physical Primary? %d \n",
-								pdg, iMother, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());	
+                    pdg, iMother, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());	
 				}	
 				
 				if(GetDebug() > 1 ) {
 					printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
 					printf("\t Mother label %d, pdg %d, parent %d, Primary? %d, Physical Primary? %d \n",
-						   iMother, pdg, iParent, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());
+                  iMother, pdg, iParent, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());
 				}
 				
 			}
-				
-			//Overlapped pi0 (or eta, there will be very few), get the meson
+      
+        //Overlapped pi0 (or eta, there will be very few), get the meson
 			if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
-				GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
+         GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
 				if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: PDG %d, mom %d \n",pdg, iMother);
 				while(pdg != 111 && pdg != 221){
 					
@@ -2254,19 +1999,19 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 					status     = aodprimary->IsPrimary();
 					iParent    = aodprimary->GetMother();
 					pdg        = TMath::Abs(aodprimary->GetPdgCode());
-
+          
 					if(GetDebug() > 1 ) printf("\t pdg %d, index %d\n",pdg, iMother);
 					
 					if(iMother==-1) {
 						printf("AliAnaCalorimeterQA::ClusterHistograms() - Tagged as Overlapped photon but meson not found, why?\n");
-						//break;
+              //break;
 					}
 				}	
 				
 				if(GetDebug() > 2 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped %s decay, label %d \n", 
-										   aodprimary->GetName(),iMother);
+                                    aodprimary->GetName(),iMother);
 			}	
-						
+      
 			status = aodprimary->IsPrimary();
 			eMC    = aodprimary->E();
 			ptMC   = aodprimary->Pt();
@@ -2274,21 +2019,21 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 			etaMC  = aodprimary->Eta();
 			pdg    = TMath::Abs(aodprimary->GetPdgCode());
 			charge = aodprimary->Charge();
-				
+      
 		}
-	
-		//Float_t vz = primary->Vz();
+    
+      //Float_t vz = primary->Vz();
 		Float_t rVMC = TMath::Sqrt(vxMC*vxMC + vyMC*vyMC);
 		if((pdg == 22 || TMath::Abs(pdg)==11) && status!=1) {
 			fhEMVxyz   ->Fill(vxMC,vyMC);//,vz);
 			fhEMR      ->Fill(e,rVMC);
 		}
-		    
-		//printf("reco e %f, pt %f, phi %f, eta %f \n", e, pt, phi, eta);
-		//printf("prim e %f, pt %f, phi %f, eta %f \n", eMC,ptMC,phiMC ,etaMC );
-		//printf("vertex: vx %f, vy %f, vz %f, r %f \n", vxMC, vyMC, vz, r);
-			
-
+    
+      //printf("reco e %f, pt %f, phi %f, eta %f \n", e, pt, phi, eta);
+      //printf("prim e %f, pt %f, phi %f, eta %f \n", eMC,ptMC,phiMC ,etaMC );
+      //printf("vertex: vx %f, vy %f, vz %f, r %f \n", vxMC, vyMC, vz, r);
+    
+    
 		fh2E      ->Fill(e, eMC);
 		fh2Pt     ->Fill(pt, ptMC);
 		fh2Phi    ->Fill(phi, phiMC);
@@ -2301,41 +2046,41 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 		if(ptMC  > 0) fhRatioPt ->Fill(pt/ptMC);
 		if(phiMC > 0) fhRatioPhi->Fill(phi/phiMC);
 		if(etaMC > 0) fhRatioEta->Fill(eta/etaMC);			
-			
-			
-		//Overlapped pi0 (or eta, there will be very few)
+    
+    
+      //Overlapped pi0 (or eta, there will be very few)
 		if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0) || 
-			GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
-				fhPi0E     ->Fill(e,eMC);	
-				fhPi0Pt    ->Fill(pt,ptMC);
-				fhPi0Eta   ->Fill(eta,etaMC);	
-				fhPi0Phi   ->Fill(phi,phiMC);
-				if( nTracksMatched > 0){
-					fhPi0ECharged     ->Fill(e,eMC);		
-					fhPi0PtCharged    ->Fill(pt,ptMC);
-					fhPi0PhiCharged   ->Fill(phi,phiMC);
-					fhPi0EtaCharged   ->Fill(eta,etaMC);
-				}
+       GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
+      fhPi0E     ->Fill(e,eMC);	
+      fhPi0Pt    ->Fill(pt,ptMC);
+      fhPi0Eta   ->Fill(eta,etaMC);	
+      fhPi0Phi   ->Fill(phi,phiMC);
+      if( nTracksMatched > 0){
+        fhPi0ECharged     ->Fill(e,eMC);		
+        fhPi0PtCharged    ->Fill(pt,ptMC);
+        fhPi0PhiCharged   ->Fill(phi,phiMC);
+        fhPi0EtaCharged   ->Fill(eta,etaMC);
+      }
 		}//Overlapped pizero decay
 		else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)){
-				fhGamE     ->Fill(e,eMC);	
-				fhGamPt    ->Fill(pt,ptMC);
-				fhGamEta   ->Fill(eta,etaMC);	
-				fhGamPhi   ->Fill(phi,phiMC);
-				fhGamDeltaE  ->Fill(eMC-e);
-				fhGamDeltaPt ->Fill(ptMC-pt);	
-				fhGamDeltaPhi->Fill(phiMC-phi);
-				fhGamDeltaEta->Fill(etaMC-eta);
-				if(eMC > 0) fhGamRatioE  ->Fill(e/eMC);
-				if(ptMC     > 0) fhGamRatioPt ->Fill(pt/ptMC);
-				if(phiMC    > 0) fhGamRatioPhi->Fill(phi/phiMC);
-				if(etaMC    > 0) fhGamRatioEta->Fill(eta/etaMC);
-				if( nTracksMatched > 0){
-					fhGamECharged     ->Fill(e,eMC);		
-					fhGamPtCharged    ->Fill(pt,ptMC);
-					fhGamPhiCharged   ->Fill(phi,phiMC);
-					fhGamEtaCharged   ->Fill(eta,etaMC);
-				}
+      fhGamE     ->Fill(e,eMC);	
+      fhGamPt    ->Fill(pt,ptMC);
+      fhGamEta   ->Fill(eta,etaMC);	
+      fhGamPhi   ->Fill(phi,phiMC);
+      fhGamDeltaE  ->Fill(eMC-e);
+      fhGamDeltaPt ->Fill(ptMC-pt);	
+      fhGamDeltaPhi->Fill(phiMC-phi);
+      fhGamDeltaEta->Fill(etaMC-eta);
+      if(eMC > 0) fhGamRatioE  ->Fill(e/eMC);
+      if(ptMC     > 0) fhGamRatioPt ->Fill(pt/ptMC);
+      if(phiMC    > 0) fhGamRatioPhi->Fill(phi/phiMC);
+      if(etaMC    > 0) fhGamRatioEta->Fill(eta/etaMC);
+      if( nTracksMatched > 0){
+        fhGamECharged     ->Fill(e,eMC);		
+        fhGamPtCharged    ->Fill(pt,ptMC);
+        fhGamPhiCharged   ->Fill(phi,phiMC);
+        fhGamEtaCharged   ->Fill(eta,etaMC);
+      }
 		}//photon
 		else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron)){
 			fhEleE     ->Fill(e,eMC);	
@@ -2380,12 +2125,12 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 			}
 		}
 	}//Work with MC
-		
+  
 	
-	//Match tracks and clusters
-	//To be Modified in case of AODs
+    //Match tracks and clusters
+    //To be Modified in case of AODs
 	
-	//if(ntracksmatched==1 && trackIndex==-1) ntracksmatched=0;
+    //if(ntracksmatched==1 && trackIndex==-1) ntracksmatched=0;
 	
 	if( nTracksMatched > 0){
 		fhECharged      ->Fill(e);		
@@ -2395,8 +2140,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 		fhEtaPhiECharged->Fill(eta,phi,e);		
 		fhNCellsPerClusterMIPCharged->Fill(e, nCaloCellsPerCluster,eta);
 		
-		//printf("track index %d ntracks %d\n", esd->GetNumberOfTracks());	
-		//Study the track and matched cluster if track exists.
+      //printf("track index %d ntracks %d\n", esd->GetNumberOfTracks());	
+      //Study the track and matched cluster if track exists.
 		if(!track) return;
 		Double_t emcpos[3] = {0.,0.,0.};
 		Double_t emcmom[3] = {0.,0.,0.};
@@ -2414,223 +2159,177 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 		Int_t nITS   = 0;
 		Int_t nTPC   = 0;
 		
-		//In case of ESDs get the parameters in this way
-		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-			if (((AliESDtrack*)track)->GetOuterParam() ) {
-				okout = kTRUE;
-				
-				bfield = ((AliESDEvent*)GetReader()->GetInputEvent())->GetMagneticField();
-				okpos = ((AliESDtrack*)track)->GetOuterParam()->GetXYZAt(radius,bfield,emcpos);
-				okmom = ((AliESDtrack*)track)->GetOuterParam()->GetPxPyPzAt(radius,bfield,emcmom);
-				if(!(okpos && okmom)) return;
-
-				TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
-				TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
-				tphi = position.Phi();
-				teta = position.Eta();
-				tmom = momentum.Mag();
-				
-				//Double_t tphi  = ((AliESDtrack*)track)->GetOuterParam()->Phi();
-				//Double_t teta  = ((AliESDtrack*)track)->GetOuterParam()->Eta();
-				//Double_t tmom  = ((AliESDtrack*)track)->GetOuterParam()->P();
-				tpt       = ((AliESDtrack*)track)->Pt();
-				tmom2     = ((AliESDtrack*)track)->P();
-				tpcSignal = ((AliESDtrack*)track)->GetTPCsignal();
-				
-				nITS = ((AliESDtrack*)track)->GetNcls(0);
-				nTPC = ((AliESDtrack*)track)->GetNcls(1);
-				}//Outer param available 
-			}// ESDs
-			else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) {
-				AliAODPid* pid = (AliAODPid*) ((AliAODTrack *) track)->GetDetPid();
-				if (pid) {
-					okout = kTRUE;
-					pid->GetEMCALPosition(emcpos);
-					pid->GetEMCALMomentum(emcmom);	
-					
-					TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
-					TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
-					tphi = position.Phi();
-					teta = position.Eta();
-					tmom = momentum.Mag();
-					
-					tpt       = ((AliAODTrack*)track)->Pt();
-					tmom2     = ((AliAODTrack*)track)->P();
-					tpcSignal = pid->GetTPCsignal();
-				
-					//nITS = ((AliAODTrack*)track)->GetNcls(0);
-					//nTPC = ((AliAODTrack*)track)->GetNcls(1);
-				}//Outer param available 
-			}//AODs
-			else return; //Do nothing case not implemented.
+      //In case of ESDs get the parameters in this way
+      //		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+    if (track->GetOuterParam() ) {
+      okout = kTRUE;
+      
+      bfield = GetReader()->GetInputEvent()->GetMagneticField();
+      okpos = track->GetOuterParam()->GetXYZAt(radius,bfield,emcpos);
+      okmom = track->GetOuterParam()->GetPxPyPzAt(radius,bfield,emcmom);
+      if(!(okpos && okmom)) return;
+      
+      TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
+      TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
+      tphi = position.Phi();
+      teta = position.Eta();
+      tmom = momentum.Mag();
+      
+				//Double_t tphi  = track->GetOuterParam()->Phi();
+				//Double_t teta  = track->GetOuterParam()->Eta();
+				//Double_t tmom  = track->GetOuterParam()->P();
+      tpt       = track->Pt();
+      tmom2     = track->P();
+      tpcSignal = track->GetTPCsignal();
+      
+      nITS = track->GetNcls(0);
+      nTPC = track->GetNcls(1);
+    }//Outer param available 
+     //}// ESDs
+     //			else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) {
+     //				AliAODPid* pid = (AliAODPid*) ((AliAODTrack *) track)->GetDetPid();
+     //				if (pid) {
+     //					okout = kTRUE;
+     //					pid->GetEMCALPosition(emcpos);
+     //					pid->GetEMCALMomentum(emcmom);	
+     //					
+     //					TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
+     //					TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
+     //					tphi = position.Phi();
+     //					teta = position.Eta();
+     //					tmom = momentum.Mag();
+     //					
+     //					tpt       = ((AliAODTrack*)track)->Pt();
+     //					tmom2     = ((AliAODTrack*)track)->P();
+     //					tpcSignal = pid->GetTPCsignal();
+     //				
+     //					//nITS = ((AliAODTrack*)track)->GetNcls(0);
+     //					//nTPC = ((AliAODTrack*)track)->GetNcls(1);
+     //				}//Outer param available 
+     //			}//AODs
+     //			else return; //Do nothing case not implemented.
 		
-			if(okout){
-				Double_t deta = teta - eta;
-				Double_t dphi = tphi - phi;
-				if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
-				if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
-				Double_t dR = sqrt(dphi*dphi + deta*deta);
+    if(okout){
+      Double_t deta = teta - eta;
+      Double_t dphi = tphi - phi;
+      if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
+      if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+      Double_t dR = sqrt(dphi*dphi + deta*deta);
 			
-				Double_t pOverE = tmom/e;
+      Double_t pOverE = tmom/e;
 			
-				fh1pOverE->Fill(tpt, pOverE);
-				if(dR < 0.02) fh1pOverER02->Fill(tpt,pOverE);
+      fh1pOverE->Fill(tpt, pOverE);
+      if(dR < 0.02) fh1pOverER02->Fill(tpt,pOverE);
 			
-				fh1dR->Fill(dR);
-				fh2MatchdEdx->Fill(tmom2,tpcSignal);
+      fh1dR->Fill(dR);
+      fh2MatchdEdx->Fill(tmom2,tpcSignal);
 			
-				if(IsDataMC() && primary){ 
-					Int_t pdg = primary->GetPdgCode();
-					Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+      if(IsDataMC() && primary){ 
+        Int_t pdg = primary->GetPdgCode();
+        Double_t  charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
 				
-					if(TMath::Abs(pdg) == 11){
-						fhMCEle1pOverE->Fill(tpt,pOverE);
-						fhMCEle1dR->Fill(dR);
-						fhMCEle2MatchdEdx->Fill(tmom2,tpcSignal);		
-						if(dR < 0.02) fhMCEle1pOverER02->Fill(tpt,pOverE);
-					}
-					else if(charge!=0){
-						fhMCChHad1pOverE->Fill(tpt,pOverE);
-						fhMCChHad1dR->Fill(dR);
-						fhMCChHad2MatchdEdx->Fill(tmom2,tpcSignal);	
-						if(dR < 0.02) fhMCChHad1pOverER02->Fill(tpt,pOverE);
-					}
-					else if(charge == 0){
-						fhMCNeutral1pOverE->Fill(tpt,pOverE);
-						fhMCNeutral1dR->Fill(dR);
-						fhMCNeutral2MatchdEdx->Fill(tmom2,tpcSignal);	
-						if(dR < 0.02) fhMCNeutral1pOverER02->Fill(tpt,pOverE);
-					}
-				}//DataMC
-
-				if(dR < 0.02 && pOverE > 0.5 && pOverE < 1.5
-				   && nCaloCellsPerCluster > 1 && nITS > 3 && nTPC > 20) {
-					fh2EledEdx->Fill(tmom2,tpcSignal);
-				}
-			}
-			else{//no ESD external param or AODPid
-//					ULong_t status=AliESDtrack::kTPCrefit;
-//				status|=AliESDtrack::kITSrefit;
-				//printf("track status %d\n", track->GetStatus() );
-//				fhEChargedNoOut      ->Fill(e);		
-//				fhPtChargedNoOut     ->Fill(pt);
-//				fhPhiChargedNoOut    ->Fill(phi);
-//				fhEtaChargedNoOut    ->Fill(eta);
-//				fhEtaPhiChargedNoOut ->Fill(eta,phi);
-//				if(GetDebug() >= 0 && ((((AliESDtrack*)track)->GetStatus() & status) == status)) printf("ITS+TPC\n");
-				if(GetDebug() >= 0) printf("No ESD external param or AliAODPid \n");
-
-			}//No out params
+        if(TMath::Abs(pdg) == 11){
+          fhMCEle1pOverE->Fill(tpt,pOverE);
+          fhMCEle1dR->Fill(dR);
+          fhMCEle2MatchdEdx->Fill(tmom2,tpcSignal);		
+          if(dR < 0.02) fhMCEle1pOverER02->Fill(tpt,pOverE);
+        }
+        else if(charge!=0){
+          fhMCChHad1pOverE->Fill(tpt,pOverE);
+          fhMCChHad1dR->Fill(dR);
+          fhMCChHad2MatchdEdx->Fill(tmom2,tpcSignal);	
+          if(dR < 0.02) fhMCChHad1pOverER02->Fill(tpt,pOverE);
+        }
+        else if(charge == 0){
+          fhMCNeutral1pOverE->Fill(tpt,pOverE);
+          fhMCNeutral1dR->Fill(dR);
+          fhMCNeutral2MatchdEdx->Fill(tmom2,tpcSignal);	
+          if(dR < 0.02) fhMCNeutral1pOverER02->Fill(tpt,pOverE);
+        }
+      }//DataMC
+      
+      if(dR < 0.02 && pOverE > 0.5 && pOverE < 1.5
+         && nCaloCellsPerCluster > 1 && nITS > 3 && nTPC > 20) {
+        fh2EledEdx->Fill(tmom2,tpcSignal);
+      }
+    }
+    else{//no ESD external param or AODPid
+         //					ULong_t status=AliESDtrack::kTPCrefit;
+         //				status|=AliESDtrack::kITSrefit;
+         //printf("track status %d\n", track->GetStatus() );
+         //				fhEChargedNoOut      ->Fill(e);		
+         //				fhPtChargedNoOut     ->Fill(pt);
+         //				fhPhiChargedNoOut    ->Fill(phi);
+         //				fhEtaChargedNoOut    ->Fill(eta);
+         //				fhEtaPhiChargedNoOut ->Fill(eta,phi);
+         //				if(GetDebug() >= 0 && ((track->GetStatus() & status) == status)) printf("ITS+TPC\n");
+      if(GetDebug() >= 0) printf("No ESD external param or AliAODPid \n");
+      
+    }//No out params
 	}//matched clusters with tracks
-		
+  
 }// Clusters
-	
-//__________________________________
+
+  //__________________________________
 void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
-	// Correlate information from PHOS and EMCAL
+    // Correlate information from PHOS and EMCAL
 	TRefArray * caloClustersEMCAL = 0;
 	TRefArray * caloClustersPHOS  = 0;
 	
-	// Get once the array of clusters per calorimeter, avoid an extra loop.
-	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-		if(fCalorimeter == "EMCAL"){ 
-			caloClustersPHOS = new TRefArray();
-			((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSClusters(caloClustersPHOS);
-			caloClustersEMCAL = new TRefArray(*refArray);
-		}
-		else if(fCalorimeter == "PHOS") { 
-			caloClustersEMCAL = new TRefArray();
-			((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALClusters (caloClustersEMCAL);
-			caloClustersPHOS = new TRefArray(*refArray);
-		}
-		
+    // Get once the array of clusters per calorimeter, avoid an extra loop.
+  if(fCalorimeter == "EMCAL"){ 
+    caloClustersPHOS = new TRefArray();
+    GetReader()->GetInputEvent()->GetPHOSClusters(caloClustersPHOS);
+    caloClustersEMCAL = new TRefArray(*refArray);
+  }
+  else if(fCalorimeter == "PHOS") { 
+    caloClustersEMCAL = new TRefArray();
+    GetReader()->GetInputEvent()->GetEMCALClusters (caloClustersEMCAL);
+    caloClustersPHOS = new TRefArray(*refArray);
+  }
+  
 		//Fill histograms with clusters
-		
-		fhCaloCorrNClusters->Fill(caloClustersEMCAL->GetEntriesFast(),caloClustersPHOS->GetEntriesFast());
-		Float_t sumClusterEnergyEMCAL = 0;
-		Float_t sumClusterEnergyPHOS  = 0;
-		Int_t iclus = 0;
-		for(iclus = 0 ; iclus <  caloClustersEMCAL->GetEntriesFast() ; iclus++) 
-				sumClusterEnergyEMCAL += ((AliESDCaloCluster*) (caloClustersEMCAL->At(iclus)))->E();
-		for(iclus = 0 ; iclus <  caloClustersPHOS->GetEntriesFast(); iclus++) 
-			sumClusterEnergyPHOS += ((AliESDCaloCluster*) (caloClustersPHOS->At(iclus)))->E();
-		fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
-		
+  
+  fhCaloCorrNClusters->Fill(caloClustersEMCAL->GetEntriesFast(),caloClustersPHOS->GetEntriesFast());
+  Float_t sumClusterEnergyEMCAL = 0;
+  Float_t sumClusterEnergyPHOS  = 0;
+  Int_t iclus = 0;
+  for(iclus = 0 ; iclus <  caloClustersEMCAL->GetEntriesFast() ; iclus++) 
+    sumClusterEnergyEMCAL += ((AliVCluster*)caloClustersEMCAL->At(iclus))->E();
+  for(iclus = 0 ; iclus <  caloClustersPHOS->GetEntriesFast(); iclus++) 
+    sumClusterEnergyPHOS += ((AliVCluster*)caloClustersPHOS->At(iclus))->E();
+  fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
+  
 		//Fill histograms with cells
-		
-		AliESDCaloCells * cellsEMCAL = ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
-		AliESDCaloCells * cellsPHOS  = ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-		fhCaloCorrNCells   ->Fill(cellsEMCAL->GetNumberOfCells(),cellsPHOS->GetNumberOfCells());
-		
-		Int_t icell = 0;
-		Float_t sumCellEnergyEMCAL = 0;
-		Float_t sumCellEnergyPHOS  = 0;
-		for(icell = 0 ; icell < cellsEMCAL->GetNumberOfCells()  ; icell++) 
-			sumCellEnergyEMCAL += cellsEMCAL->GetAmplitude(icell);
-		for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
-			sumCellEnergyPHOS += cellsPHOS->GetAmplitude(icell);
-		fhCaloCorrECells->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);
-		if(GetDebug() > 0 ){
-			printf("AliAnaCalorimeterQA::CorrelateCalorimeters() - ESD: \n");
-			printf("\t EMCAL: N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
-				   cellsEMCAL->GetNumberOfCells(),caloClustersEMCAL->GetEntriesFast(),sumCellEnergyEMCAL,sumClusterEnergyEMCAL);
-			printf("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
-				   cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
-		}
-	}//ESD
-	else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) {
-		if(fCalorimeter == "EMCAL"){ 
-			((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSClusters(caloClustersPHOS);
-			caloClustersEMCAL = refArray;
-		}
-		else if(fCalorimeter == "PHOS") { 
-			((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALClusters (caloClustersEMCAL);
-			caloClustersEMCAL = refArray;
-		}
-		
-		//Fill histograms with clusters
-		
-		fhCaloCorrNClusters->Fill(caloClustersEMCAL->GetEntriesFast(),caloClustersPHOS->GetEntriesFast());
-		Float_t sumClusterEnergyEMCAL = 0;
-		Float_t sumClusterEnergyPHOS  = 0;
-		Int_t iclus = 0;
-		for(iclus = 0 ; iclus <  caloClustersEMCAL->GetEntriesFast() ; iclus++) 
-			sumClusterEnergyEMCAL += ((AliAODCaloCluster*) (caloClustersEMCAL->At(iclus)))->E();
-		for(iclus = 0 ; iclus <  caloClustersPHOS->GetEntriesFast(); iclus++) 
-			sumClusterEnergyPHOS += ((AliAODCaloCluster*) (caloClustersPHOS->At(iclus)))->E();
-		fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
-		
-		//Fill histograms with cells
-		
-		AliAODCaloCells * cellsEMCAL = ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
-		AliAODCaloCells * cellsPHOS  = ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-		fhCaloCorrNCells   ->Fill(cellsEMCAL->GetNumberOfCells(),cellsPHOS->GetNumberOfCells());
-		
-		Int_t icell = 0;
-		Float_t sumCellEnergyEMCAL = 0;
-		Float_t sumCellEnergyPHOS  = 0;
-		for(icell = 0 ; icell < cellsEMCAL->GetNumberOfCells()  ; icell++) 
-			sumCellEnergyEMCAL += cellsEMCAL->GetAmplitude(icell);
-		for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
-			sumCellEnergyPHOS += cellsPHOS->GetAmplitude(icell);
-		fhCaloCorrECells->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);		
-		if(GetDebug() > 0 ){
-			printf("AliAnaCalorimeterQA::CorrelateCalorimeters() - ESD: \n");
-			printf("\t EMCAL: N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
-				   cellsEMCAL->GetNumberOfCells(),caloClustersEMCAL->GetEntriesFast(),sumCellEnergyEMCAL,sumClusterEnergyEMCAL);
-			printf("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
-				   cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
-		}
-	}//AOD	
+  
+  AliVCaloCells * cellsEMCAL = GetReader()->GetInputEvent()->GetEMCALCells();
+  AliVCaloCells * cellsPHOS  = GetReader()->GetInputEvent()->GetPHOSCells();
+  fhCaloCorrNCells   ->Fill(cellsEMCAL->GetNumberOfCells(),cellsPHOS->GetNumberOfCells());
+  
+  Int_t icell = 0;
+  Float_t sumCellEnergyEMCAL = 0;
+  Float_t sumCellEnergyPHOS  = 0;
+  for(icell = 0 ; icell < cellsEMCAL->GetNumberOfCells()  ; icell++) 
+    sumCellEnergyEMCAL += cellsEMCAL->GetAmplitude(icell);
+  for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
+    sumCellEnergyPHOS += cellsPHOS->GetAmplitude(icell);
+  fhCaloCorrECells->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);
+  if(GetDebug() > 0 ){
+    printf("AliAnaCalorimeterQA::CorrelateCalorimeters() - ESD: \n");
+    printf("\t EMCAL: N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
+            cellsEMCAL->GetNumberOfCells(),caloClustersEMCAL->GetEntriesFast(),sumCellEnergyEMCAL,sumClusterEnergyEMCAL);
+    printf("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
+            cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
+  }
 	
 	delete caloClustersEMCAL;
 	delete caloClustersPHOS;
 	
 }
 
-//______________________________________________________________________________
+  //______________________________________________________________________________
 void AliAnaCalorimeterQA::MCHistograms(const TLorentzVector mom, const Int_t pdg){
-	//Fill pure monte carlo related histograms
+    //Fill pure monte carlo related histograms
 	
 	Float_t eMC    = mom.E();
 	Float_t ptMC   = mom.Pt();
@@ -2640,7 +2339,7 @@ void AliAnaCalorimeterQA::MCHistograms(const TLorentzVector mom, const Int_t pdg
 	Float_t etaMC  = mom.Eta();
 	
 	if (TMath::Abs(etaMC) > 1) return;
-
+  
 	Bool_t in = kTRUE;
 	if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
 	
@@ -2683,19 +2382,19 @@ void AliAnaCalorimeterQA::MCHistograms(const TLorentzVector mom, const Int_t pdg
 	}	
 	
 }
-	
-//________________________________________________________________________
+
+  //________________________________________________________________________
 void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 {
-	// Needed when Terminate is executed in distributed environment
-	// Refill analysis histograms of this class with corresponding histograms in output list. 
+    // Needed when Terminate is executed in distributed environment
+    // Refill analysis histograms of this class with corresponding histograms in output list. 
 	
-	// Histograms of this analsys are kept in the same list as other analysis, recover the position of
-	// the first one and then add the next 
+    // Histograms of this analsys are kept in the same list as other analysis, recover the position of
+    // the first one and then add the next 
 	Int_t index = outputList->IndexOf(outputList->FindObject(GetAddedHistogramsStringToName()+"hE"));
-	//printf("Calo: %s, index: %d, nmodules %d\n",fCalorimeter.Data(),index,fNModules);
+    //printf("Calo: %s, index: %d, nmodules %d\n",fCalorimeter.Data(),index,fNModules);
 	
-	//Read histograms, must be in the same order as in GetCreateOutputObject.
+    //Read histograms, must be in the same order as in GetCreateOutputObject.
 	fhE       = (TH1F *) outputList->At(index++); 	
 	fhPt      = (TH1F *) outputList->At(index++); 
 	fhPhi     = (TH1F *) outputList->At(index++); 
@@ -2713,12 +2412,12 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	fhEtaCharged     = (TH1F *) outputList->At(index++);
 	fhEtaPhiECharged = (TH3F *) outputList->At(index++);
 	
-//	fhEChargedNoOut      = (TH1F *) outputList->At(index++); 	
-//	fhPtChargedNoOut     = (TH1F *) outputList->At(index++); 
-//	fhPhiChargedNoOut    = (TH1F *) outputList->At(index++); 
-//	fhEtaChargedNoOut    = (TH1F *) outputList->At(index++);
-//	fhEtaPhiChargedNoOut = (TH2F *) outputList->At(index++);
-
+    //	fhEChargedNoOut      = (TH1F *) outputList->At(index++); 	
+    //	fhPtChargedNoOut     = (TH1F *) outputList->At(index++); 
+    //	fhPhiChargedNoOut    = (TH1F *) outputList->At(index++); 
+    //	fhEtaChargedNoOut    = (TH1F *) outputList->At(index++);
+    //	fhEtaPhiChargedNoOut = (TH2F *) outputList->At(index++);
+  
 	fh1pOverE =    (TH2F *) outputList->At(index++);
 	fh1dR =        (TH1F *) outputList->At(index++);
 	fh2MatchdEdx = (TH2F *) outputList->At(index++);
@@ -2762,19 +2461,19 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	fhNCells     = (TH1F *) outputList->At(index++); 
 	fhAmplitude  = (TH1F *) outputList->At(index++); 
 	fhAmpId      = (TH2F *) outputList->At(index++); 
-
+  
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
 		
 		fhCellTimeSpreadRespectToCellMax = (TH1F *) outputList->At(index++);
 		fhCellIdCellLargeTimeSpread      = (TH1F *) outputList->At(index++);
-
+    
 		fhTime       = (TH1F *) outputList->At(index++); 
 		fhTimeId     = (TH2F *) outputList->At(index++); 
 		fhTimeAmp    = (TH2F *) outputList->At(index++); 
 		
-//		fhT0Time       = (TH1F *) outputList->At(index++); 
-//		fhT0TimeId     = (TH2F *) outputList->At(index++); 
-//		fhT0TimeAmp    = (TH2F *) outputList->At(index++); 
+      //		fhT0Time       = (TH1F *) outputList->At(index++); 
+      //		fhT0TimeId     = (TH2F *) outputList->At(index++); 
+      //		fhT0TimeAmp    = (TH2F *) outputList->At(index++); 
 		
 	}
 	
@@ -2786,7 +2485,7 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhCaloCorrECells    = (TH2F *) outputList->At(index++); 
 	}
 	
-	//Module histograms
+    //Module histograms
 	fhEMod                 = new TH1F*[fNModules];
 	fhNClustersMod         = new TH1F*[fNModules];
 	fhNCellsPerClusterMod  = new TH2F*[fNModules];
@@ -2799,12 +2498,12 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	if(fCalorimeter=="EMCAL")
 		fhAmplitudeModFraction = new TH1F*[fNModules*3];
 	
-	//EMCAL
+    //EMCAL
 	fhTimeAmpPerRCU        = new TH2F*[fNModules*fNRCU];
 	
 	fhIMMod                = new TH2F*[fNModules];
 	fhIMCellCutMod         = new TH2F*[fNModules];
-		
+  
 	for(Int_t imod = 0 ; imod < fNModules; imod++){
 		fhEMod[imod]                 = (TH1F *) outputList->At(index++);
 		fhNClustersMod[imod]         = (TH1F *) outputList->At(index++); 
@@ -2824,16 +2523,16 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		
 		for(Int_t ircu = 0; ircu < fNRCU; ircu++){
 			fhTimeAmpPerRCU[imod*fNRCU+ircu] = (TH2F *) outputList->At(index++); 
-			//fhT0TimeAmpPerRCU[imod*fNRCU+ircu] = (TH2F *) outputList->At(index++); 
-//			for(Int_t imod2 = 0; imod2 < fNModules; imod2++){
-//				for(Int_t ircu2 = 0; ircu2 < fNModules; ircu2++){
-//					fhTimeCorrRCU[imod*fNRCU+ircu+imod2*fNRCU+ircu2]  = (TH2F *) outputList->At(index++);
-//				}
-//			}
+        //fhT0TimeAmpPerRCU[imod*fNRCU+ircu] = (TH2F *) outputList->At(index++); 
+        //			for(Int_t imod2 = 0; imod2 < fNModules; imod2++){
+        //				for(Int_t ircu2 = 0; ircu2 < fNModules; ircu2++){
+        //					fhTimeCorrRCU[imod*fNRCU+ircu+imod2*fNRCU+ircu2]  = (TH2F *) outputList->At(index++);
+        //				}
+        //			}
 		}
 		fhIMMod[imod]                = (TH2F *) outputList->At(index++); 
 		fhIMCellCutMod[imod]         = (TH2F *) outputList->At(index++); 	
-
+    
 	}
 	
 	if(IsDataMC()){
@@ -2866,7 +2565,7 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhGamRatioPt  = (TH1F *) outputList->At(index++); 
 		fhGamRatioPhi = (TH1F *) outputList->At(index++); 
 		fhGamRatioEta = (TH1F *) outputList->At(index++); 
-
+    
 		fhPi0E     = (TH2F *) outputList->At(index++); 
 		fhPi0Pt    = (TH2F *) outputList->At(index++); 
 		fhPi0Phi   = (TH2F *) outputList->At(index++); 
@@ -2891,7 +2590,7 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhGamPtCharged    = (TH2F *) outputList->At(index++); 
 		fhGamPhiCharged   = (TH2F *) outputList->At(index++); 
 		fhGamEtaCharged   = (TH2F *) outputList->At(index++); 
-				
+    
 		fhPi0ECharged     = (TH2F *) outputList->At(index++); 
 		fhPi0PtCharged    = (TH2F *) outputList->At(index++); 
 		fhPi0PhiCharged   = (TH2F *) outputList->At(index++); 
@@ -2912,8 +2611,8 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhChHadPhiCharged   = (TH2F *) outputList->At(index++); 
 		fhChHadEtaCharged   = (TH2F *) outputList->At(index++); 				
 		
-//		fhEMVxyz     = (TH3F *) outputList->At(index++); 
-//		fhHaVxyz     = (TH3F *) outputList->At(index++); 
+      //		fhEMVxyz     = (TH3F *) outputList->At(index++); 
+      //		fhHaVxyz     = (TH3F *) outputList->At(index++); 
 		
 		fhEMVxyz     = (TH2F *) outputList->At(index++); 
 		fhHaVxyz     = (TH2F *) outputList->At(index++); 
@@ -2968,54 +2667,54 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	}
 }
 
-//__________________________________________________________________
+  //__________________________________________________________________
 void  AliAnaCalorimeterQA::Terminate(TList* outputList) 
 {
-	//Do plots if requested	
-
+    //Do plots if requested	
+  
 	if(GetDebug() > 0) printf("AliAnaCalorimeterQA::Terminate() - Make plots for %s? %d\n",fCalorimeter.Data(), fMakePlots);
 	if(!fMakePlots) return;
 	
-	//Do some plots to end
-	 if(fStyleMacro!="")gROOT->Macro(fStyleMacro); 
-	//Recover histograms from output histograms list, needed for distributed analysis.	
+    //Do some plots to end
+  if(fStyleMacro!="")gROOT->Macro(fStyleMacro); 
+    //Recover histograms from output histograms list, needed for distributed analysis.	
 	ReadHistograms(outputList);
 	
-	//printf(" AliAnaCalorimeterQA::Terminate()  *** %s Report:", GetName()) ; 
-	//printf(" AliAnaCalorimeterQA::Terminate()        pt         : %5.3f , RMS : %5.3f \n", fhPt->GetMean(),   fhPt->GetRMS() ) ;
-
+    //printf(" AliAnaCalorimeterQA::Terminate()  *** %s Report:", GetName()) ; 
+    //printf(" AliAnaCalorimeterQA::Terminate()        pt         : %5.3f , RMS : %5.3f \n", fhPt->GetMean(),   fhPt->GetRMS() ) ;
+  
 	char name[128];
 	char cname[128];
 	
-	//In case terminate is executed after the analysis, in a second step, and we want to rebin or to change the range of the histograms for plotting
+    //In case terminate is executed after the analysis, in a second step, and we want to rebin or to change the range of the histograms for plotting
 	Int_t nptbins     = GetHistoPtBins(); 	        Float_t ptmax     = GetHistoPtMax();           Float_t ptmin     = GetHistoPtMin();
 	Int_t nphibins    = GetHistoPhiBins();          Float_t phimax    = GetHistoPhiMax();          Float_t phimin    = GetHistoPhiMin();
 	Int_t netabins    = GetHistoEtaBins();          Float_t etamax    = GetHistoEtaMax();          Float_t etamin    = GetHistoEtaMin();	
-//	Int_t nmassbins   = GetHistoMassBins();         Float_t massmax   = GetHistoMassMax(); 	       Float_t massmin   = GetHistoMassMin();
-//	Int_t nasymbins   = GetHistoAsymmetryBins();    Float_t asymmax   = GetHistoAsymmetryMax();    Float_t asymmin   = GetHistoAsymmetryMin();
-//	Int_t nPoverEbins = GetHistoPOverEBins();       Float_t pOverEmax = GetHistoPOverEMax();       Float_t pOverEmin = GetHistoPOverEMin();
-//	Int_t ndedxbins   = GetHistodEdxBins();         Float_t dedxmax   = GetHistodEdxMax();         Float_t dedxmin   = GetHistodEdxMin();
-//	Int_t ndRbins     = GetHistodRBins();           Float_t dRmax     = GetHistodRMax();           Float_t dRmin     = GetHistodRMin();
+    //	Int_t nmassbins   = GetHistoMassBins();         Float_t massmax   = GetHistoMassMax(); 	       Float_t massmin   = GetHistoMassMin();
+    //	Int_t nasymbins   = GetHistoAsymmetryBins();    Float_t asymmax   = GetHistoAsymmetryMax();    Float_t asymmin   = GetHistoAsymmetryMin();
+    //	Int_t nPoverEbins = GetHistoPOverEBins();       Float_t pOverEmax = GetHistoPOverEMax();       Float_t pOverEmin = GetHistoPOverEMin();
+    //	Int_t ndedxbins   = GetHistodEdxBins();         Float_t dedxmax   = GetHistodEdxMax();         Float_t dedxmin   = GetHistodEdxMin();
+    //	Int_t ndRbins     = GetHistodRBins();           Float_t dRmax     = GetHistodRMax();           Float_t dRmin     = GetHistodRMin();
 	Int_t ntimebins   = GetHistoTimeBins();         Float_t timemax   = GetHistoTimeMax();         Float_t timemin   = GetHistoTimeMin();       
 	Int_t nbins       = GetHistoNClusterCellBins(); Int_t nmax        = GetHistoNClusterCellMax(); Int_t nmin        = GetHistoNClusterCellMin(); 
-//	Int_t nratiobins  = GetHistoRatioBins();        Float_t ratiomax  = GetHistoRatioMax();        Float_t ratiomin  = GetHistoRatioMin();
-//	Int_t nvdistbins  = GetHistoVertexDistBins();   Float_t vdistmax  = GetHistoVertexDistMax();   Float_t vdistmin  = GetHistoVertexDistMin();
+    //	Int_t nratiobins  = GetHistoRatioBins();        Float_t ratiomax  = GetHistoRatioMax();        Float_t ratiomin  = GetHistoRatioMin();
+    //	Int_t nvdistbins  = GetHistoVertexDistBins();   Float_t vdistmax  = GetHistoVertexDistMax();   Float_t vdistmin  = GetHistoVertexDistMin();
 	Int_t rbins       = GetHistoRBins();            Float_t rmax        = GetHistoRMax();          Float_t rmin      = GetHistoRMin(); 
 	Int_t xbins       = GetHistoXBins();            Float_t xmax        = GetHistoXMax();          Float_t xmin      = GetHistoXMin(); 
 	Int_t ybins       = GetHistoYBins();            Float_t ymax        = GetHistoYMax();          Float_t ymin      = GetHistoYMin(); 
 	Int_t zbins       = GetHistoZBins();            Float_t zmax        = GetHistoZMax();          Float_t zmin      = GetHistoZMin(); 
 	
-	//Color code for the different modules
+    //Color code for the different modules
 	Int_t modColorIndex[]={2,4,6,8};
 	
-	//--------------------------------------------------
-	// Cluster energy distributions, module dependence
-	//--------------------------------------------------
+    //--------------------------------------------------
+    // Cluster energy distributions, module dependence
+    //--------------------------------------------------
 	sprintf(cname,"QA_%s_ClusterEnergy",fCalorimeter.Data());
 	TCanvas  * c = new TCanvas(cname, "Energy distributions", 800, 400) ;
 	c->Divide(2, 1);
 	Int_t rbE = GetNewRebinForRePlotting((TH1D*)fhE, ptmin, ptmax,nptbins) ;
-	//printf("new E rb %d\n",rbE);
+    //printf("new E rb %d\n",rbE);
 	fhE->Rebin(rbE);
 	fhE->SetAxisRange(ptmin,ptmax,"X");
 	c->cd(1) ; 
@@ -3037,13 +2736,13 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendE.Draw();
 	
-	//Ratio of modules
+    //Ratio of modules
 	c->cd(2) ; 
 	TLegend pLegendER(0.55,0.8,0.9,0.9);
 	pLegendER.SetTextSize(0.03);
 	pLegendER.SetFillColor(10);
 	pLegendER.SetBorderSize(1);
-
+  
 	for(Int_t imod = 1; imod < fNModules; imod++){
 		TH1D * htmp = (TH1D*)fhEMod[imod]->Clone(Form("hERat%d",imod));
 		htmp->Divide(fhEMod[0]);
@@ -3066,15 +2765,15 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	sprintf(name,"QA_%s_ClusterEnergy.eps",fCalorimeter.Data());
 	c->Print(name); printf("Plot: %s\n",name);
 	
-	//--------------------------------------------------
-	// Cell energy distributions, module dependence
-	//--------------------------------------------------
+    //--------------------------------------------------
+    // Cell energy distributions, module dependence
+    //--------------------------------------------------
 	sprintf(cname,"%s_QA_CellEnergy",fCalorimeter.Data());
 	TCanvas  * ca = new TCanvas(cname, "Cell Energy distributions", 800, 400) ;
 	ca->Divide(2, 1);
 	
 	Int_t rbAmp = GetNewRebinForRePlotting((TH1D*)fhAmplitude, ptmin, ptmax,nptbins*2) ;
-	//printf("new Amp rb %d\n",rbAmp);
+    //printf("new Amp rb %d\n",rbAmp);
 	fhAmplitude->Rebin(rbAmp);
 	fhAmplitude->SetAxisRange(ptmin,ptmax,"X");
 	
@@ -3123,13 +2822,13 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	pLegendAR.Draw();
 	sprintf(name,"QA_%s_CellEnergy.eps",fCalorimeter.Data());
 	ca->Print(name); printf("Plot: %s\n",name);	
-
-	//----------------------------------------------------------
-	// Cell energy distributions, FRACTION of module dependence
-	// See Super Module calibration difference
-	//---------------------------------------------------------	
+  
+    //----------------------------------------------------------
+    // Cell energy distributions, FRACTION of module dependence
+    // See Super Module calibration difference
+    //---------------------------------------------------------	
 	if(fCalorimeter=="EMCAL"){
-		//Close To Eta 0 
+      //Close To Eta 0 
 		sprintf(cname,"%s_QA_SMThirds",fCalorimeter.Data());
 		TCanvas  * cfrac = new TCanvas(cname, "SM Thirds ratios", 800, 1200) ;
 		cfrac->Divide(2, 3);
@@ -3155,7 +2854,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		}
 		hAverageThird1 ->Scale(1./fNModules);
 		pLegend1.Draw();
-		//Ratio
+      //Ratio
 		cfrac->cd(2) ; 
 		for(Int_t imod = 0; imod < fNModules; imod++){
 			Int_t ifrac = 0;
@@ -3172,9 +2871,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 			}
 			else htmp -> Draw("same HE");
 		}
-		//pLegend1.Draw();
+      //pLegend1.Draw();
 		
-		//Middle Eta
+      //Middle Eta
 		cfrac->cd(3) ; 
 		if(fhAmplitude->GetEntries() > 0) 
 			gPad->SetLogy();
@@ -3199,7 +2898,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		hAverageThird2->Scale(1./fNModules);
 		pLegend2.Draw();
 		
-		//Ratio
+      //Ratio
 		cfrac->cd(4) ; 
 		
 		for(Int_t imod = 0; imod < fNModules; imod++){
@@ -3216,9 +2915,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 			}
 			else htmp -> Draw("same HE");
 		}
-		//pLegend2.Draw();
+      //pLegend2.Draw();
 		
-		//Close To Eta 0.7 
+      //Close To Eta 0.7 
 		cfrac->cd(5) ; 
 		if(fhAmplitude->GetEntries() > 0) 
 			gPad->SetLogy();
@@ -3261,16 +2960,16 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 			}
 			else htmp ->Draw("same HE");
 		}
-		//pLegend3.Draw();
+      //pLegend3.Draw();
 		
 		sprintf(name,"QA_%s_CellEnergyModuleFraction.eps",fCalorimeter.Data());
 		cfrac->Print(name); printf("Create plot %s\n",name);
 	}//EMCAL	
 	
 	
-	//----------------------------------------------------------
-	// Cluster eta and phi distributions, energy cut dependence
-	//---------------------------------------------------------	
+    //----------------------------------------------------------
+    // Cluster eta and phi distributions, energy cut dependence
+    //---------------------------------------------------------	
 	
 	sprintf(cname,"%s_QA_EtaPhiCluster",fCalorimeter.Data());
 	TCanvas  * cetaphic = new TCanvas(cname, "Eta-Phi Reconstructed distributions", 1200, 400) ;
@@ -3283,7 +2982,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	Int_t   ecutcolor[]= {2, 4, 6, 7, 8, 9, 12};
 	TH1D * hE = fhEtaPhiE->ProjectionZ();
 	
-	//PHI
+    //PHI
 	cetaphic->cd(1) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3297,16 +2996,16 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	if(htmp){
 	  htmp->SetMinimum(1);
 	  rbPhi =  GetNewRebinForRePlotting(htmp, phimin, phimax,nphibins) ;
-	  //printf("new Phi rb %d\n",rbPhi);
+      //printf("new Phi rb %d\n",rbPhi);
 	  htmp->Rebin(rbPhi);
 	  htmp->SetTitle("#phi of clusters for energy in cluster > threshold");
 	  htmp->SetAxisRange(phimin,phimax,"X");
 	  htmp->Draw("HE");
 	  pLegendPhiCl.AddEntry(htmp,"No cut","L");
-
+    
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhEtaPhiE->ProjectionY(Form("hphi_cluster_cut%d",i),0,-1,binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbPhi);
@@ -3317,7 +3016,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendPhiCl.Draw();
 	
-	//ETA
+    //ETA
 	cetaphic->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3325,7 +3024,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	htmp = fhEtaPhiE->ProjectionX("heta_cluster_nocut",0,-1,0,-1);
 	htmp ->SetLineColor(1);
 	rbEta =  GetNewRebinForRePlotting(htmp,etamin, etamax,netabins) ;
-	//printf("new Eta rb %d\n",rbEta);
+    //printf("new Eta rb %d\n",rbEta);
 	if(htmp){
 	  htmp->Rebin(rbEta);
 	  htmp->SetMinimum(1);
@@ -3335,32 +3034,32 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhEtaPhiE->ProjectionX(Form("heta_cluster_cut%d",i),0,-1,binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbEta);
 	    htmp->Draw("same HE");	
 	  }
 	}
-	//ETA vs PHI	
+    //ETA vs PHI	
 	cetaphic->cd(3) ;
 	TH2D* hEtaPhiCl = (TH2D*) fhEtaPhiE->Project3D("xy");
 	hEtaPhiCl->SetAxisRange(etamin,etamax,"X");
 	hEtaPhiCl->SetAxisRange(phimin,phimax,"Y");
 	hEtaPhiCl->Draw("colz");
-		
+  
 	sprintf(name,"QA_%s_ClusterEtaPhi.eps",fCalorimeter.Data());
 	cetaphic->Print(name); printf("Create plot %s\n",name);
-
-	//----------------------------------------------------------
-	// Cell eta and phi distributions, energy cut dependence
-	//---------------------------------------------------------	
+  
+    //----------------------------------------------------------
+    // Cell eta and phi distributions, energy cut dependence
+    //---------------------------------------------------------	
 	
 	sprintf(cname,"%s_QA_EtaPhiCell",fCalorimeter.Data());
 	TCanvas  * cetaphicell = new TCanvas(cname, "Eta-Phi Cells distributions", 1200, 400) ;
 	cetaphicell->Divide(3, 1);
 	
-	//PHI
+    //PHI
 	cetaphicell->cd(1) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3381,7 +3080,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhEtaPhiAmp->ProjectionY(Form("hphi_cell_cut%d",i),0,-1,binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbPhi);
@@ -3392,7 +3091,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendPhiCell.Draw();
 	
-	//ETA
+    //ETA
 	cetaphicell->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3408,7 +3107,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhEtaPhiAmp->ProjectionX(Form("heta_cell_cut%d",i),0,-1,binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbEta);
@@ -3416,7 +3115,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	    
 	  }
 	}
-	//ETA vs PHI	
+    //ETA vs PHI	
 	cetaphicell->cd(3) ;
 	TH2D* hEtaPhiCell = (TH2D*) fhEtaPhiAmp->Project3D("xy");
 	hEtaPhiCell->SetAxisRange(etamin,etamax,"X");
@@ -3426,11 +3125,11 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	sprintf(name,"QA_%s_CellEtaPhi.eps",fCalorimeter.Data());
 	cetaphicell->Print(name); printf("Create plot %s\n",name);
 	
-	////////////////////////////////////////        
-	///////// Global Positions /////////////       
-	////////////////////////////////////////       
+    ////////////////////////////////////////        
+    ///////// Global Positions /////////////       
+    ////////////////////////////////////////       
 	
-	//CLUSTERS
+    //CLUSTERS
 	sprintf(cname,"%s_QA_ClusterXY",fCalorimeter.Data());
 	TCanvas  * cxyz = new TCanvas(cname, "Cluster XY distributions", 1200, 400) ;
 	cxyz->Divide(3, 1);
@@ -3461,25 +3160,25 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	sprintf(cname,"QA_%s_ClusterX",fCalorimeter.Data());
 	TCanvas  * cx = new TCanvas(cname, "Cluster X distributions", 1200, 400) ;
 	cx->Divide(3, 1);
-		
+  
 	cx->cd(1) ; 
 	TH1D * hX = (TH1D*) fhXYZ->Project3D("xe" );
-	//gPad->SetLogy();
+    //gPad->SetLogy();
 	gPad->SetGridy();
 	hX->SetTitle("Cluster X ");
 	hX->Draw("HE");
 	rbX =  GetNewRebinForRePlotting(hX, xmin, xmax,xbins) ;
-	//printf("new X rb %d\n",rbX);
+    //printf("new X rb %d\n",rbX);
 	hX->Rebin(rbX);
 	hX->SetMinimum(hX->GetMaximum()/2);
 	hX->SetAxisRange(xmin,xmax);
-
+  
 	cx->cd(2) ; 
 	TH1D * hY = (TH1D*) fhXYZ->Project3D("ye" );
-	//gPad->SetLogy();
+    //gPad->SetLogy();
 	hY->SetTitle("Cluster Y ");
 	rbY =  GetNewRebinForRePlotting(hY, ymin, ymax, ybins) ;
-	//printf("new Y rb %d\n",rbY);
+    //printf("new Y rb %d\n",rbY);
 	hY->Rebin(rbY);
 	hY->SetMinimum(1);
 	hY->SetAxisRange(ymin,ymax);
@@ -3487,10 +3186,10 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 	cx->cd(3) ; 
 	TH1D * hZ = (TH1D*) fhXYZ->Project3D("ze" );
-	//gPad->SetLogy();
+    //gPad->SetLogy();
 	gPad->SetGridy();
 	rbZ =  GetNewRebinForRePlotting(hZ,zmin, zmax,zbins) ;
-	//printf("new Z rb %d\n",rbZ);
+    //printf("new Z rb %d\n",rbZ);
 	hZ->Rebin(rbZ);	
 	hZ->SetMinimum(hZ->GetMaximum()/2);
 	hZ->SetAxisRange(zmin,zmax);
@@ -3498,8 +3197,8 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 	sprintf(name,"QA_%s_ClusterX_Y_Z.eps",fCalorimeter.Data());
 	cx->Print(name); printf("Create plot %s\n",name);
-
-	//CELLS
+  
+    //CELLS
 	
 	sprintf(cname,"%s_QA_CellXY",fCalorimeter.Data());
 	TCanvas  * cellxyz = new TCanvas(cname, "Cell XY distributions", 1200, 400) ;
@@ -3520,7 +3219,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	hXZCell->SetTitle("Cell X vs Z");
 	hXZCell->GetYaxis()->SetTitleOffset(1.6);
 	hXZCell->Draw("colz");
-
+  
 	sprintf(name,"QA_%s_CellXY_YZ_XZ.eps",fCalorimeter.Data());
 	cellxyz->Print(name); printf("Create plot %s\n",name);
 	
@@ -3531,17 +3230,17 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 	cellx->cd(1) ; 
 	TH1D * hXCell = (TH1D*) fhXYZCell->Project3D("xe" );
-	//gPad->SetLogy();
+    //gPad->SetLogy();
 	gPad->SetGridy();
 	hXCell->SetTitle("Cell X ");
 	hXCell->Rebin(rbX);
 	hXCell->SetMinimum(hXCell->GetMaximum()/2);
 	hXCell->SetAxisRange(xmin,xmax);
 	hXCell->Draw("HE");
-
+  
 	cellx->cd(2) ; 
 	TH1D * hYCell = (TH1D*) fhXYZCell->Project3D("ye" );
-	//gPad->SetLogy();
+    //gPad->SetLogy();
 	hYCell->SetTitle("Cell Y ");
 	hYCell->Rebin(rbY);
 	hYCell->SetAxisRange(ymin,ymax);
@@ -3550,7 +3249,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 	cellx->cd(3) ; 
 	TH1D * hZCell = (TH1D*) fhXYZCell->Project3D("ze" );
-	//gPad->SetLogy();
+    //gPad->SetLogy();
 	gPad->SetGridy();
 	hZCell->SetAxisRange(zmin,zmax);
 	hZCell->SetTitle("Cell Z ");
@@ -3560,16 +3259,16 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 	sprintf(name,"QA_%s_CellX_Y_Z.eps",fCalorimeter.Data());
 	cellx->Print(name); printf("Create plot %s\n",name);
-		
+  
 	
-	//----------------------------------------------------------
-	// Cluster X, Y, Z, R, energy cut dependence
-	//---------------------------------------------------------	
+    //----------------------------------------------------------
+    // Cluster X, Y, Z, R, energy cut dependence
+    //---------------------------------------------------------	
 	
 	sprintf(cname,"%s_QA_ClusterX_Y_Z_R_ECut",fCalorimeter.Data());
 	TCanvas  * cxe = new TCanvas(cname, "Cluster X Y Z R, E cut", 800, 800) ;
 	cxe->Divide(2, 2);		
-	//R
+    //R
 	cxe->cd(1) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3584,7 +3283,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	if(htmp){
 	  htmp->SetMinimum(1);
 	  rbR =  GetNewRebinForRePlotting(htmp, rmin, rmax,rbins) ;
-	  //printf("new R rb %d\n",rbR);
+      //printf("new R rb %d\n",rbR);
 	  htmp->Rebin(rbR);
 	  htmp->SetTitle("r of clusters for energy in cluster > threshold");
 	  htmp->SetAxisRange(rmin,rmax,"X");
@@ -3593,7 +3292,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhRE->ProjectionX(Form("hre_cluster_cut%d",i),binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbR);
@@ -3603,7 +3302,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendXCl.Draw();
 	
-	//X
+    //X
 	cxe->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3617,14 +3316,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhXE->ProjectionX(Form("hxe_cluster_cut%d",i),binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbX);
 	    htmp->Draw("same HE");
 	  }
 	}
-	//Y
+    //Y
 	cxe->cd(3) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3638,14 +3337,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhYE->ProjectionX(Form("hye_cluster_cut%d",i),binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbY);
 	    htmp->Draw("same HE");
 	  }
 	}
-	//Z
+    //Z
 	cxe->cd(4) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3660,7 +3359,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhZE->ProjectionX(Form("hze_cluster_cut%d",i),binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbZ);
@@ -3672,15 +3371,15 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cxe->Print(name); printf("Create plot %s\n",name);
 	
 	
-	//----------------------------------------------------------
-	// Cluster X, Y, Z, R, NCells in cluster dependence
-	//---------------------------------------------------------	
+    //----------------------------------------------------------
+    // Cluster X, Y, Z, R, NCells in cluster dependence
+    //---------------------------------------------------------	
 	Int_t ncellcut[]={2, 3, 4};
 	Int_t ncellcuts = 3;
 	sprintf(cname,"%s_QA_ClusterX_Y_Z_R_NCellsCut",fCalorimeter.Data());
 	TCanvas  * cxn = new TCanvas(cname, "Cluster X Y Z R, NCells cut", 800, 800) ;
 	cxn->Divide(2, 2);		
-	//R
+    //R
 	cxn->cd(1) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3712,7 +3411,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendXClN.Draw();
 	
-	//X
+    //X
 	cxn->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3732,7 +3431,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	    htmp->Draw("same HE");   
 	  }
 	}
-	//Y
+    //Y
 	cxn->cd(3) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3752,7 +3451,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	    htmp->Draw("same HE");  
 	  }
 	}
-	//Z
+    //Z
 	cxn->cd(4) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3778,14 +3477,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cxn->Print(name); printf("Create plot %s\n",name);
 	
 	
-	//----------------------------------------------------------
-	// Cell X, Y, Z, R, energy cut dependence
-	//---------------------------------------------------------	
+    //----------------------------------------------------------
+    // Cell X, Y, Z, R, energy cut dependence
+    //---------------------------------------------------------	
 	
 	sprintf(cname,"%s_QA_CellX_Y_Z_R_ECut",fCalorimeter.Data());
 	TCanvas  * cxecell = new TCanvas(cname, "Cell X Y Z R, E cut", 800, 800) ;
 	cxecell->Divide(2, 2);		
-	//R
+    //R
 	cxecell->cd(1) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3806,7 +3505,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhRCellE->ProjectionX(Form("hre_celr_cut%d",i),binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbR);
@@ -3816,7 +3515,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendXCell.Draw();
 	
-	//X
+    //X
 	cxecell->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3831,14 +3530,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhXCellE->ProjectionX(Form("hxe_cells_cut%d",i),binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbX);
 	    htmp->Draw("same HE");
 	  }
 	}
-	//Y
+    //Y
 	cxecell->cd(3) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3852,14 +3551,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhYCellE->ProjectionX(Form("hye_cells_cut%d",i),binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbY);
 	    htmp->Draw("same HE");
 	  }
 	}
-	//Z
+    //Z
 	cxecell->cd(4) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3873,7 +3572,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	  
 	  for (Int_t i = 0; i < ncuts; i++) {
 	    binmin =  hE->FindBin(ecut[i]);
-	    //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 	    htmp = fhZCellE->ProjectionX(Form("hze_cells_cut%d",i),binmin,-1);
 	    htmp->SetLineColor(ecutcolor[i]);
 	    htmp->Rebin(rbZ);
@@ -3884,18 +3583,18 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cxecell->Print(name); printf("Create plot %s\n",name);
 	
 	
-	//----------------------------------------------------------
-	// Cluster-Cell X, Y, Z, R, cluster energy cut dependence
-	//---------------------------------------------------------	
+    //----------------------------------------------------------
+    // Cluster-Cell X, Y, Z, R, cluster energy cut dependence
+    //---------------------------------------------------------	
 	Int_t rbDR= 1;//rbR;
 	Int_t rbDX= 1;//rbX;
 	Int_t rbDY= 1;//rbY;
 	Int_t rbDZ= 1;//rbZ;
-
+  
 	sprintf(cname,"%s_QA_DeltaClusterCellX_Y_Z_R_ECut",fCalorimeter.Data());
 	TCanvas  * cxde = new TCanvas(cname, "Cluster-Cell X, Y, Z, R, E cut", 800, 800) ;
 	cxde->Divide(2, 2);		
-	//R
+    //R
 	cxde->cd(1) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3916,7 +3615,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		
 		for (Int_t i = 0; i < ncuts; i++) {
 			binmin =  hE->FindBin(ecut[i]);
-			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 			htmp = fhDeltaCellClusterRE->ProjectionX(Form("hrde_cut%d",i),binmin,-1);
 			htmp->SetLineColor(ecutcolor[i]);
 			htmp->Rebin(rbDR);
@@ -3926,7 +3625,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendXClD.Draw();
 	
-	//X
+    //X
 	cxde->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3940,7 +3639,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		
 		for (Int_t i = 0; i < ncuts; i++) {
 			binmin =  hE->FindBin(ecut[i]);
-			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 			htmp = fhDeltaCellClusterXE->ProjectionX(Form("hxde_cut%d",i),binmin,-1);
 			htmp->SetLineColor(ecutcolor[i]);
 			htmp->Rebin(rbDX);
@@ -3948,7 +3647,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 			
 		}
 	}
-	//Y
+    //Y
 	cxde->cd(3) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3962,7 +3661,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		
 		for (Int_t i = 0; i < ncuts; i++) {
 			binmin =  hE->FindBin(ecut[i]);
-			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 			htmp = fhDeltaCellClusterYE->ProjectionX(Form("hyde_cut%d",i),binmin,-1);
 			htmp->SetLineColor(ecutcolor[i]);
 			htmp->Rebin(rbDY);
@@ -3970,7 +3669,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 			
 		}
 	}
-	//Z
+    //Z
 	cxde->cd(4) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -3985,7 +3684,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		
 		for (Int_t i = 0; i < ncuts; i++) {
 			binmin =  hE->FindBin(ecut[i]);
-			//printf(" bins %d for e %f\n",binmin[i],ecut[i]);
+        //printf(" bins %d for e %f\n",binmin[i],ecut[i]);
 			htmp = fhDeltaCellClusterZE->ProjectionX(Form("hzde_cut%d",i),binmin,-1);
 			htmp->SetLineColor(ecutcolor[i]);
 			htmp->Rebin(rbZ);
@@ -3998,13 +3697,13 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cxde->Print(name); printf("Create plot %s\n",name);
 	
 	
-	//----------------------------------------------------------
-	// Cluster-Cell X, Y, Z, R, NCells in cluster dependence
-	//---------------------------------------------------------	
+    //----------------------------------------------------------
+    // Cluster-Cell X, Y, Z, R, NCells in cluster dependence
+    //---------------------------------------------------------	
 	sprintf(cname,"%s_QA_DeltaClusterCellX_Y_Z_R_NCellsCut",fCalorimeter.Data());
 	TCanvas  * cxdn = new TCanvas(cname, "Cluster-Cell X Y Z R, NCells cut", 800, 800) ;
 	cxdn->Divide(2, 2);		
-	//R
+    //R
 	cxdn->cd(1) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -4036,7 +3735,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendXClDN.Draw();
 	
-	//X
+    //X
 	cxdn->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -4057,7 +3756,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 			
 		}
 	}
-	//Y
+    //Y
 	cxdn->cd(3) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -4078,7 +3777,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 			
 		}
 	}
-	//Z
+    //Z
 	cxdn->cd(4) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
@@ -4103,17 +3802,17 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 	sprintf(name,"QA_%s_DeltaClusterCellX_Y_Z_R_NCellsCut.eps",fCalorimeter.Data());
 	cxdn->Print(name); printf("Create plot %s\n",name);
-
+  
 	
-	//----------------------------------------------------------
-	//Reconstructed clusters energy-eta-phi distributions, matched with tracks
-	//----------------------------------------------------------
+    //----------------------------------------------------------
+    //Reconstructed clusters energy-eta-phi distributions, matched with tracks
+    //----------------------------------------------------------
 	
 	TH1F *	hEChargedClone   = (TH1F*)   fhECharged->Clone(Form("%sClone",fhECharged->GetName()));
 	TH1F *	hPtChargedClone  = (TH1F*)   fhPtCharged->Clone(Form("%sClone",fhPtCharged->GetName()));
 	TH1F *	hEtaChargedClone = (TH1F*)   fhEtaCharged->Clone(Form("%sClone",fhEtaCharged->GetName()));
 	TH1F *	hPhiChargedClone = (TH1F*)   fhPhiCharged->Clone(Form("%sClone",fhPhiCharged->GetName()));
-
+  
 	
 	sprintf(cname,"QA_%s_rectrackmatch",fCalorimeter.Data());
 	TCanvas  * ccltm = new TCanvas(cname, "Reconstructed clusters E-Phi-Eta, matched with tracks", 1200, 400) ;
@@ -4125,7 +3824,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	fhECharged->SetAxisRange(ptmin,ptmax,"X");
 	fhECharged->SetMinimum(1);
 	fhECharged->Draw();
-		
+  
 	ccltm->cd(2) ; 
 	if(fhPhiCharged->GetEntries() > 0) gPad->SetLogy();
 	fhPhiCharged->Rebin(rbPhi);
@@ -4143,9 +3842,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	sprintf(name,"QA_%s_ClusterEnergyPhiEta_TrackMatched.eps",fCalorimeter.Data());
 	ccltm->Print(name); printf("Plot: %s\n",name);
 	
-	//----------------------------------------------------------
-	// Ratio  of reconstructed clusters energy-eta-phi distributions, matched with tracks over all
-	//----------------------------------------------------------
+    //----------------------------------------------------------
+    // Ratio  of reconstructed clusters energy-eta-phi distributions, matched with tracks over all
+    //----------------------------------------------------------
 	
 	sprintf(cname,"%s_QA_ChargedRatio",fCalorimeter.Data());
 	TCanvas  * ccharge = new TCanvas(cname, "Charged clusters over all clusters", 1200, 400) ;
@@ -4159,7 +3858,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	fhECharged->SetMaximum(0.5);
 	fhECharged->SetYTitle("track-matched clusters / all clusters");
 	fhECharged->Draw("HE");
-		
+  
 	ccharge->cd(2) ; 
 	fhPhiCharged->Sumw2();
 	fhPhi->Rebin(rbPhi);
@@ -4183,9 +3882,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	sprintf(name,"QA_%s_ClustersMatchedToAllRatios.eps",fCalorimeter.Data());
 	ccharge->Print(name); printf("Create plot %s\n",name);
 	
-	//-------------------------------------------	
-	// N Cells - N Clusters - N Cells per cluster
-	//-------------------------------------------
+    //-------------------------------------------	
+    // N Cells - N Clusters - N Cells per cluster
+    //-------------------------------------------
 	sprintf(cname,"QA_%s_nclustercells",fCalorimeter.Data());
 	TCanvas  * cN = new TCanvas(cname, " Number of CaloClusters and CaloCells", 800, 1200) ;
 	cN->Divide(2, 3);
@@ -4286,7 +3985,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		htmp->SetLineColor(modColorIndex[imod]);
 		if(imod==1){
 			htmp->SetTitle("Ratio # cells per cluster in  module X / module 0");
-			//htmp->SetAxisRange(ptmin,ptmax,"X");
+        //htmp->SetAxisRange(ptmin,ptmax,"X");
 			htmp->SetMaximum(3.5);
 			htmp->SetMinimum(0);
 			htmp->Draw("HE");
@@ -4298,11 +3997,11 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	sprintf(name,"QA_%s_NumberCaloClustersAndCaloCells.eps",fCalorimeter.Data());
 	cN->Print(name); printf("Print plot %s\n",name);
 	
-	//----------------------------------------------------	
-	// Cell Time histograms, time only available in ESDs
-	//----------------------------------------------------
+    //----------------------------------------------------	
+    // Cell Time histograms, time only available in ESDs
+    //----------------------------------------------------
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-	
+    
 		sprintf(cname,"QA_%s_cellstime",fCalorimeter.Data());
 		TCanvas  * ctime = new TCanvas(cname, " Cells time", 1200, 400) ;
 		ctime->Divide(3, 1);
@@ -4315,156 +4014,156 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		fhTime->Rebin(rbTime);
 		fhTime->SetAxisRange(timemin,timemax,"X");
 		fhTime->Draw();
-	
+    
 		ctime->cd(2) ; 
 		fhTimeId->SetTitleOffset(1.8,"Y");
 		fhTimeId->SetAxisRange(timemin,timemax,"X");
 		fhTimeId->Draw("colz");
-	
+    
 		ctime->cd(3) ; 
 		fhTimeAmp->SetTitle("Cell Energy vs Cell Time");
 		fhTimeAmp->SetTitleOffset(1.8,"Y");
 		fhTimeAmp->SetAxisRange(timemin,timemax,"Y");
 		fhTimeAmp->SetAxisRange(ptmin,ptmax,"X");		
 		fhTimeAmp->Draw("colz");
-	
+    
 		sprintf(name,"QA_%s_CellsTime.eps",fCalorimeter.Data());
 		ctime->Print(name); printf("Plot: %s\n",name);
 	}
 	
 	
-	//---------------------------------
-	//Grid of cell per module plots 
-	//---------------------------------
+    //---------------------------------
+    //Grid of cell per module plots 
+    //---------------------------------
 	{
-	//Number of entries per cell
-	gStyle->SetPadRightMargin(0.15);
-	sprintf(cname,"%s_QA_GridCellEntries",fCalorimeter.Data());
-	TCanvas *cgrid   = new TCanvas("cgrid","Number of entries per cell", 12,12,800,400);
-	if(fNModules%2 == 0)
-		cgrid->Divide(fNModules/2,2); 
-	else
-		cgrid->Divide(fNModules/2+1,2); 
+      //Number of entries per cell
+    gStyle->SetPadRightMargin(0.15);
+    sprintf(cname,"%s_QA_GridCellEntries",fCalorimeter.Data());
+    TCanvas *cgrid   = new TCanvas("cgrid","Number of entries per cell", 12,12,800,400);
+    if(fNModules%2 == 0)
+      cgrid->Divide(fNModules/2,2); 
+    else
+      cgrid->Divide(fNModules/2+1,2); 
 		
-	for(Int_t imod = 0; imod < fNModules ; imod++){
-		cgrid->cd(imod+1);
-		gPad->SetLogz();
-		gPad->SetGridy();
-		gPad->SetGridx();
-		//fhGridCellsMod[imod]->GetYAxis()->SetTitleColor(1);
-		fhGridCellsMod[imod]->SetZTitle("Counts    ");
-		fhGridCellsMod[imod]->SetYTitle("row (phi direction)    ");
-		//fhGridCellsMod[imod]->SetLabelSize(0.025,"z");
-		fhGridCellsMod[imod]->Draw("colz");
-	}
-	sprintf(name,"QA_%s_GridCellsEntries.eps",fCalorimeter.Data());
-	cgrid->Print(name); printf("Create plot %s\n",name);
-			
-	sprintf(cname,"%s_QA_GridCellAccumEnergy",fCalorimeter.Data());
-	TCanvas *cgridE   = new TCanvas("cgridE","Summed energy per cell", 12,12,800,400);
-	if(fNModules%2 == 0)
-		cgridE->Divide(fNModules/2,2); 
-	else
-		cgridE->Divide(fNModules/2+1,2); 
-	for(Int_t imod = 0; imod < fNModules ; imod++){
-		cgridE->cd(imod+1);
-		gPad->SetLogz();
-		gPad->SetGridy();
-		gPad->SetGridx();
-		//fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
-		fhGridCellsEMod[imod]->SetZTitle("Accumulated Energy (GeV)    ");
-		fhGridCellsEMod[imod]->SetYTitle("row (phi direction)    ");
-		fhGridCellsEMod[imod]->Draw("colz");
-	}
-	sprintf(name,"QA_%s_GridCellsAccumEnergy.eps",fCalorimeter.Data());
-	cgridE->Print(name); printf("Create plot %s\n",name);
-
-	//Accumulated energy per cell
-	sprintf(cname,"%s_QA_GridCellAverageEnergy",fCalorimeter.Data());
-	TCanvas *cgridEA   = new TCanvas("cgridEA","Average energy per cell", 12,12,800,400);
-	if(fNModules%2 == 0)	  
-		cgridEA->Divide(fNModules/2,2);
-	else
-		cgridEA->Divide(fNModules/2+1,2);  
-	for(Int_t imod = 0; imod < fNModules ; imod++){
-		cgridEA->cd(imod+1);
-		gPad->SetLogz();
-		gPad->SetGridy();
-		gPad->SetGridx();
-		//fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
-		fhGridCellsEMod[imod]->SetZTitle("Average Energy (GeV)    ");
-		fhGridCellsEMod[imod]->Divide(fhGridCellsMod[imod]);
-		fhGridCellsEMod[imod]->Draw("colz");
-	}
-	sprintf(name,"QA_%s_GridCellsAverageEnergy.eps",fCalorimeter.Data());
-	cgridEA->Print(name); printf("Create plot %s\n",name);
+    for(Int_t imod = 0; imod < fNModules ; imod++){
+      cgrid->cd(imod+1);
+      gPad->SetLogz();
+      gPad->SetGridy();
+      gPad->SetGridx();
+        //fhGridCellsMod[imod]->GetYAxis()->SetTitleColor(1);
+      fhGridCellsMod[imod]->SetZTitle("Counts    ");
+      fhGridCellsMod[imod]->SetYTitle("row (phi direction)    ");
+        //fhGridCellsMod[imod]->SetLabelSize(0.025,"z");
+      fhGridCellsMod[imod]->Draw("colz");
+    }
+    sprintf(name,"QA_%s_GridCellsEntries.eps",fCalorimeter.Data());
+    cgrid->Print(name); printf("Create plot %s\n",name);
+    
+    sprintf(cname,"%s_QA_GridCellAccumEnergy",fCalorimeter.Data());
+    TCanvas *cgridE   = new TCanvas("cgridE","Summed energy per cell", 12,12,800,400);
+    if(fNModules%2 == 0)
+      cgridE->Divide(fNModules/2,2); 
+    else
+      cgridE->Divide(fNModules/2+1,2); 
+    for(Int_t imod = 0; imod < fNModules ; imod++){
+      cgridE->cd(imod+1);
+      gPad->SetLogz();
+      gPad->SetGridy();
+      gPad->SetGridx();
+        //fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
+      fhGridCellsEMod[imod]->SetZTitle("Accumulated Energy (GeV)    ");
+      fhGridCellsEMod[imod]->SetYTitle("row (phi direction)    ");
+      fhGridCellsEMod[imod]->Draw("colz");
+    }
+    sprintf(name,"QA_%s_GridCellsAccumEnergy.eps",fCalorimeter.Data());
+    cgridE->Print(name); printf("Create plot %s\n",name);
+    
+      //Accumulated energy per cell
+    sprintf(cname,"%s_QA_GridCellAverageEnergy",fCalorimeter.Data());
+    TCanvas *cgridEA   = new TCanvas("cgridEA","Average energy per cell", 12,12,800,400);
+    if(fNModules%2 == 0)	  
+      cgridEA->Divide(fNModules/2,2);
+    else
+      cgridEA->Divide(fNModules/2+1,2);  
+    for(Int_t imod = 0; imod < fNModules ; imod++){
+      cgridEA->cd(imod+1);
+      gPad->SetLogz();
+      gPad->SetGridy();
+      gPad->SetGridx();
+        //fhGridCellsEMod[imod]->SetLabelSize(0.025,"z");
+      fhGridCellsEMod[imod]->SetZTitle("Average Energy (GeV)    ");
+      fhGridCellsEMod[imod]->Divide(fhGridCellsMod[imod]);
+      fhGridCellsEMod[imod]->Draw("colz");
+    }
+    sprintf(name,"QA_%s_GridCellsAverageEnergy.eps",fCalorimeter.Data());
+    cgridEA->Print(name); printf("Create plot %s\n",name);
 		
-	//Accumulated Time per cell, E > 0.5 GeV
+      //Accumulated Time per cell, E > 0.5 GeV
 		
-	sprintf(cname,"%s_QA_GridCellAccumTime",fCalorimeter.Data());
-	TCanvas *cgridT   = new TCanvas("cgridT","Summed time per cell", 12,12,800,400);
-	if(fNModules%2 == 0)
-		cgridT->Divide(fNModules/2,2); 
-	else
-		cgridE->Divide(fNModules/2+1,2); 
-	for(Int_t imod = 0; imod < fNModules ; imod++){
-		cgridT->cd(imod+1);
-		gPad->SetLogz();
-		gPad->SetGridy();
-		gPad->SetGridx();
-		//fhGridCellsTimeMod[imod]->SetLabelSize(0.025,"z");
-		fhGridCellsTimeMod[imod]->SetZTitle("Accumulated Time (ns)    ");
-		fhGridCellsTimeMod[imod]->SetYTitle("row (phi direction)    ");
-		fhGridCellsTimeMod[imod]->Draw("colz");
-	}
-	sprintf(name,"QA_%s_GridCellsAccumTime.eps",fCalorimeter.Data());
-	cgridT->Print(name); printf("Create plot %s\n",name);
+    sprintf(cname,"%s_QA_GridCellAccumTime",fCalorimeter.Data());
+    TCanvas *cgridT   = new TCanvas("cgridT","Summed time per cell", 12,12,800,400);
+    if(fNModules%2 == 0)
+      cgridT->Divide(fNModules/2,2); 
+    else
+      cgridE->Divide(fNModules/2+1,2); 
+    for(Int_t imod = 0; imod < fNModules ; imod++){
+      cgridT->cd(imod+1);
+      gPad->SetLogz();
+      gPad->SetGridy();
+      gPad->SetGridx();
+        //fhGridCellsTimeMod[imod]->SetLabelSize(0.025,"z");
+      fhGridCellsTimeMod[imod]->SetZTitle("Accumulated Time (ns)    ");
+      fhGridCellsTimeMod[imod]->SetYTitle("row (phi direction)    ");
+      fhGridCellsTimeMod[imod]->Draw("colz");
+    }
+    sprintf(name,"QA_%s_GridCellsAccumTime.eps",fCalorimeter.Data());
+    cgridT->Print(name); printf("Create plot %s\n",name);
 		
 	}
 	
-	//---------------------------------------------
-	//Calorimeter Correlation, PHOS vs EMCAL
-	//---------------------------------------------
+    //---------------------------------------------
+    //Calorimeter Correlation, PHOS vs EMCAL
+    //---------------------------------------------
 	if(fCorrelateCalos){
 		
 		sprintf(cname,"QA_%s_CaloCorr_EMCALvsPHOS",fCalorimeter.Data());
 		TCanvas  * ccorr = new TCanvas(cname, " EMCAL vs PHOS", 400, 400) ;
 		ccorr->Divide(2, 2);
-	
+    
 		ccorr->cd(1) ; 
-		//gPad->SetLogy();
-		//gPad->SetLogx();
+      //gPad->SetLogy();
+      //gPad->SetLogx();
 		fhCaloCorrNClusters->SetAxisRange(nmin,nmax,"X");
 		fhCaloCorrNClusters->SetAxisRange(nmin,nmax,"Y");		
 		fhCaloCorrNClusters ->Draw();
-	
+    
 		ccorr->cd(2) ; 
-		//gPad->SetLogy();
-		//gPad->SetLogx();
+      //gPad->SetLogy();
+      //gPad->SetLogx();
 		fhCaloCorrNCells->SetAxisRange(nmin,nmax,"X");
 		fhCaloCorrNCells->SetAxisRange(nmin,nmax,"Y");		
 		fhCaloCorrNCells->Draw();
-	
-		//gPad->SetLogy();
-		//gPad->SetLogx();
+    
+      //gPad->SetLogy();
+      //gPad->SetLogx();
 		fhCaloCorrEClusters->SetAxisRange(ptmin,ptmax,"X");
 		fhCaloCorrEClusters->SetAxisRange(ptmin,ptmax,"Y");		
 		fhCaloCorrEClusters->Draw();
-	
+    
 		ccorr->cd(4) ; 
-		//gPad->SetLogy();
-		//gPad->SetLogx();
+      //gPad->SetLogy();
+      //gPad->SetLogx();
 		fhCaloCorrECells->SetAxisRange(ptmin,ptmax,"X");
 		fhCaloCorrECells->SetAxisRange(ptmin,ptmax,"Y");		
 		fhCaloCorrECells->Draw();
-	
+    
 		sprintf(name,"QA_%s_CaloCorr_EMCALvsPHOS.eps",fCalorimeter.Data());
 		ccorr->Print(name); printf("Plot: %s\n",name);
 	}
-		
-	//----------------------------
-	//Invariant mass
-	//-----------------------------
+  
+    //----------------------------
+    //Invariant mass
+    //-----------------------------
 	
 	Int_t imbinmin = -1;
 	Int_t imbinmax = -1;
@@ -4474,16 +4173,16 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		Int_t emax = (Int_t) fhIM->GetXaxis()->GetXmax();
 		Int_t emin = (Int_t) fhIM->GetXaxis()->GetXmin();
 		if (emin != 0 ) printf("emin != 0 \n");
-		//printf("IM: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
+      //printf("IM: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
 		
 		sprintf(cname,"QA_%s_IM",fCalorimeter.Data());
-		//	printf("c5\n");
+      //	printf("c5\n");
 		TCanvas  * c5 = new TCanvas(cname, "Invariant mass", 600, 400) ;
 		c5->Divide(2, 3);
 		
 		c5->cd(1) ; 
-		//fhIM->SetLineColor(4);
-		//fhIM->Draw();
+      //fhIM->SetLineColor(4);
+      //fhIM->Draw();
 		imbinmin = 0;
 		imbinmax =  (Int_t) (1-emin)*nebins/emax;
 		TH1D *pyim1 = fhIM->ProjectionY(Form("%s_py1",fhIM->GetName()),imbinmin,imbinmax);
@@ -4495,7 +4194,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		pLegendIM.AddEntry(pyim1,"all modules","L");
 		pLegendIM.SetFillColor(10);
 		pLegendIM.SetBorderSize(1);
-		//FIXME
+      //FIXME
 		for(Int_t imod = 0; imod < fNModules; imod++){
 			pyim1 = fhIMMod[imod]->ProjectionY(Form("%s_py1",fhIMMod[imod]->GetName()),imbinmin,imbinmax);
 			pLegendIM.AddEntry(pyim1,Form("module %d",imod),"L");
@@ -4573,24 +4272,24 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		c5->Print(name); printf("Plot: %s\n",name);
 	}
 	
-	//--------------------------------------------------
-	//Invariant mass, clusters with more than one cell
-	//-------------------------------------------------
+    //--------------------------------------------------
+    //Invariant mass, clusters with more than one cell
+    //-------------------------------------------------
 	if(fhIMCellCut->GetEntries() > 1){
 		Int_t nebins  = fhIMCellCut->GetNbinsX();
 		Int_t emax = (Int_t) fhIMCellCut->GetXaxis()->GetXmax();
 		Int_t emin = (Int_t) fhIMCellCut->GetXaxis()->GetXmin();
 		if (emin != 0 ) printf("emin != 0 \n");
-		//printf("IMCellCut: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
+      //printf("IMCellCut: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
 		
 		sprintf(cname,"QA_%s_IMCellCut",fCalorimeter.Data());
-		//	printf("c5cc\n");
+      //	printf("c5cc\n");
 		TCanvas  * c5cc = new TCanvas(cname, "Invariant mass, Cell Cut", 600, 400) ;
 		c5cc->Divide(2, 3);
 		
 		c5cc->cd(1) ; 
-		//fhIMCellCut->SetLineColor(4);
-		//fhIMCellCut->Draw();
+      //fhIMCellCut->SetLineColor(4);
+      //fhIMCellCut->Draw();
 		imbinmin = 0;
 		imbinmax =  (Int_t) (1-emin)*nebins/emax;
 		TH1D *pyimcc1 = fhIMCellCut->ProjectionY(Form("%s_py1",fhIMCellCut->GetName()),imbinmin,imbinmax);
@@ -4681,16 +4380,16 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	
 	
-	//Asymmetry
+    //Asymmetry
 	if(fhAsym->GetEntries() > 1){
 		Int_t nebins  = fhAsym->GetNbinsX();
 		Int_t emax = (Int_t) fhAsym->GetXaxis()->GetXmax();
 		Int_t emin = (Int_t) fhAsym->GetXaxis()->GetXmin();
 		if (emin != 0 ) printf("emin != 0 \n");
-		//printf("Asym: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
+      //printf("Asym: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
 		
 		sprintf(cname,"QA_%s_Asym",fCalorimeter.Data());
-		//	printf("c5\n");
+      //	printf("c5\n");
 		TCanvas  * c5b = new TCanvas(cname, "Asymmetry", 400, 400) ;
 		c5b->Divide(2, 2);
 		
@@ -4729,798 +4428,798 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	
 	
 	if(IsDataMC()){
-	//Reconstructed vs MC distributions
-	//printf("c6\n");
-	sprintf(cname,"QA_%s_recvsmc",fCalorimeter.Data());
-	TCanvas  * c6 = new TCanvas(cname, "Reconstructed vs MC distributions", 400, 400) ;
-	c6->Divide(2, 2);
-	
-	c6->cd(1) ; 
-	fh2E->SetTitleOffset(1.6,"Y");
-	fh2E->SetLineColor(4);
-	fh2E->Draw();
-	
-	c6->cd(2) ; 
-	fh2Pt->SetTitleOffset(1.6,"Y");
-	fh2Pt->SetLineColor(4);
-	fh2Pt->Draw();
-	
-	c6->cd(3) ; 
-	fh2Phi->SetTitleOffset(1.6,"Y");
-	fh2Phi->SetLineColor(4);
-	fh2Phi->Draw();
-	
-	c6->cd(4) ; 
-	fh2Eta->SetTitleOffset(1.6,"Y");
-	fh2Eta->SetLineColor(4);
-	fh2Eta->Draw();
-	
-	sprintf(name,"QA_%s_ReconstructedVSMCDistributions.eps",fCalorimeter.Data());
-	c6->Print(name); printf("Plot: %s\n",name);	
-	
-	//Reconstructed vs MC distributions
-	//printf("c6\n");
-	sprintf(cname,"QA_%s_gamrecvsmc",fCalorimeter.Data());
-	TCanvas  * c6Gam = new TCanvas(cname, "Reconstructed vs MC distributions", 400, 400) ;
-	c6Gam->Divide(2, 2);
-	
-	c6Gam->cd(1) ; 
-	fhGamE->Draw();
-	
-	c6Gam->cd(2) ; 
-	fhGamPt->Draw();
-	
-	c6Gam->cd(3) ; 
-	fhGamPhi->Draw();
-	
-	c6Gam->cd(4) ; 
-	fhGamEta->Draw();
-	
-	sprintf(name,"QA_%s_GammaReconstructedVSMCDistributions.eps",fCalorimeter.Data());
-	c6->Print(name); printf("Plot: %s\n",name);	
-	
-	//Generated - reconstructed  
-	//printf("c7\n");
-	sprintf(cname,"QA_%s_diffgenrec",fCalorimeter.Data());
-	TCanvas  * c7 = new TCanvas(cname, "generated - reconstructed", 400, 400) ;
-	c7->Divide(2, 2);
-	
-	c7->cd(1) ; 
-	if(fhDeltaE->GetEntries() > 0) gPad->SetLogy();
-	fhGamDeltaE->SetLineColor(4);
-	fhDeltaE->Draw();
-	fhGamDeltaE->Draw("same");
-	
-	TLegend pLegendd(0.65,0.55,0.9,0.8);
-	pLegendd.SetTextSize(0.06);
-	pLegendd.AddEntry(fhDeltaE,"all","L");
-	pLegendd.AddEntry(fhGamDeltaE,"from  #gamma","L");
-	pLegendd.SetFillColor(10);
-	pLegendd.SetBorderSize(1);
-	pLegendd.Draw();
-	
-	c7->cd(2) ; 
-	if(fhDeltaPt->GetEntries() > 0) gPad->SetLogy();
-	fhGamDeltaPt->SetLineColor(4);
-	fhDeltaPt->Draw();
-	fhGamDeltaPt->Draw("same");
-	
-	c7->cd(3) ; 
-	fhGamDeltaPhi->SetLineColor(4);
-	fhDeltaPhi->Draw();
-	fhGamDeltaPhi->Draw("same");
-	
-	c7->cd(4) ; 
-	fhGamDeltaEta->SetLineColor(4);
-	fhDeltaEta->Draw();
-	fhGamDeltaEta->Draw("same");
-	
-	sprintf(name,"QA_%s_DiffGeneratedReconstructed.eps",fCalorimeter.Data());
-	c7->Print(name); printf("Plot: %s\n",name);
-	
-	// Reconstructed / Generated 
-	//printf("c8\n");
-	sprintf(cname,"QA_%s_ratiorecgen",fCalorimeter.Data());
-	TCanvas  * c8 = new TCanvas(cname, " reconstructed / generated", 400, 400) ;
-	c8->Divide(2, 2);
-	
-	c8->cd(1) ; 
-	if(fhRatioE->GetEntries() > 0) gPad->SetLogy();
-	fhGamRatioE->SetLineColor(4);
-	fhRatioE->Draw();
-	fhGamRatioE->Draw("same");
-	
-	TLegend pLegendr(0.65,0.55,0.9,0.8);
-	pLegendr.SetTextSize(0.06);
-	pLegendr.AddEntry(fhRatioE,"all","L");
-	pLegendr.AddEntry(fhGamRatioE,"from  #gamma","L");
-	pLegendr.SetFillColor(10);
-	pLegendr.SetBorderSize(1);
-	pLegendr.Draw();
-	
-	c8->cd(2) ; 
-	if(fhRatioPt->GetEntries() > 0) gPad->SetLogy();
-	fhGamRatioPt->SetLineColor(4);
-	fhRatioPt->Draw();
-	fhGamRatioPt->Draw("same");
-	
-	c8->cd(3) ; 
-	fhGamRatioPhi->SetLineColor(4);
-	fhRatioPhi->Draw();
-	fhGamRatioPhi->Draw("same");
-	
-	c8->cd(4) ; 
-	fhGamRatioEta->SetLineColor(4);
-	fhRatioEta->Draw();
-	fhGamRatioEta->Draw("same");
-	
-	sprintf(name,"QA_%s_ReconstructedDivGenerated.eps",fCalorimeter.Data());
-	c8->Print(name); printf("Plot: %s\n",name);
-	
-	//MC
-	
-	//Generated distributions
-	//printf("c1\n");
-	sprintf(cname,"QA_%s_gen",fCalorimeter.Data());
-	TCanvas  * c10 = new TCanvas(cname, "Generated distributions", 600, 200) ;
-	c10->Divide(3, 1);
-	
-	c10->cd(1) ; 
-	gPad->SetLogy();
-	TH1F * haxispt  = (TH1F*) fhGenPi0Pt->Clone(Form("%s_axispt",fhGenPi0Pt->GetName()));  
-	haxispt->SetTitle("Generated Particles p_{T}, |#eta| < 1");
-	fhGenPi0Pt->SetLineColor(1);
-	fhGenGamPt->SetLineColor(4);
-	fhGenEtaPt->SetLineColor(2);
-	fhGenOmegaPt->SetLineColor(7);
-	fhGenElePt->SetLineColor(6);
-	
-	//Select the maximum of the histogram to show all lines.
-	if(fhGenPi0Pt->GetMaximum() >= fhGenGamPt->GetMaximum() && fhGenPi0Pt->GetMaximum() >= fhGenEtaPt->GetMaximum() && 
-	   fhGenPi0Pt->GetMaximum() >= fhGenOmegaPt->GetMaximum() && fhGenPi0Pt->GetMaximum() >= fhGenElePt->GetMaximum())
-		haxispt->SetMaximum(fhGenPi0Pt->GetMaximum());
-	else if(fhGenGamPt->GetMaximum() >= fhGenPi0Pt->GetMaximum() && fhGenGamPt->GetMaximum() >= fhGenEtaPt->GetMaximum() && 
-			fhGenGamPt->GetMaximum() >= fhGenOmegaPt->GetMaximum() && fhGenGamPt->GetMaximum() >= fhGenElePt->GetMaximum())
-		haxispt->SetMaximum(fhGenGamPt->GetMaximum());
-	else if(fhGenEtaPt->GetMaximum() >= fhGenPi0Pt->GetMaximum() && fhGenEtaPt->GetMaximum() >= fhGenGamPt->GetMaximum() && 
-			fhGenEtaPt->GetMaximum() >= fhGenOmegaPt->GetMaximum() && fhGenEtaPt->GetMaximum() >= fhGenElePt->GetMaximum())
-		haxispt->SetMaximum(fhGenEtaPt->GetMaximum());	
-	else if(fhGenOmegaPt->GetMaximum() >= fhGenPi0Pt->GetMaximum() && fhGenOmegaPt->GetMaximum() >= fhGenEtaPt->GetMaximum() && 
-			fhGenOmegaPt->GetMaximum() >= fhGenGamPt->GetMaximum() && fhGenOmegaPt->GetMaximum() >= fhGenElePt->GetMaximum())
-		haxispt->SetMaximum(fhGenOmegaPt->GetMaximum());
-	else if(fhGenElePt->GetMaximum() >= fhGenPi0Pt->GetMaximum() && fhGenElePt->GetMaximum() >= fhGenEtaPt->GetMaximum() && 
-			fhGenElePt->GetMaximum() >= fhGenOmegaPt->GetMaximum() && fhGenElePt->GetMaximum() >= fhGenGamPt->GetMaximum())
-		haxispt->SetMaximum(fhGenElePt->GetMaximum());
-	haxispt->SetMinimum(1);
-	haxispt->Draw("axis");
-	fhGenPi0Pt->Draw("same");
-	fhGenGamPt->Draw("same");
-	fhGenEtaPt->Draw("same");
-	fhGenOmegaPt->Draw("same");
-	fhGenElePt->Draw("same");
-	
-	TLegend pLegend(0.85,0.65,0.95,0.93);
-	pLegend.SetTextSize(0.06);
-	pLegend.AddEntry(fhGenPi0Pt,"  #pi^{0}","L");
-	pLegend.AddEntry(fhGenGamPt,"  #gamma","L");
-	pLegend.AddEntry(fhGenEtaPt,"  #eta","L");
-	pLegend.AddEntry(fhGenOmegaPt,"  #omega","L");
-	pLegend.AddEntry(fhGenElePt,"  e^{#pm}","L");
-	pLegend.SetFillColor(10);
-	pLegend.SetBorderSize(1);
-	pLegend.Draw();
-	
-	c10->cd(2) ;
-	gPad->SetLogy();
-	TH1F * haxiseta  = (TH1F*) fhGenPi0Eta->Clone(Form("%s_axiseta",fhGenPi0Eta->GetName()));  
-	haxiseta->SetTitle("Generated Particles #eta, |#eta| < 1");
-	fhGenPi0Eta->SetLineColor(1);
-	fhGenGamEta->SetLineColor(4);
-	fhGenEtaEta->SetLineColor(2);
-	fhGenOmegaEta->SetLineColor(7);
-	fhGenEleEta->SetLineColor(6);
-	//Select the maximum of the histogram to show all lines.
-	if(fhGenPi0Eta->GetMaximum() >= fhGenGamEta->GetMaximum() && fhGenPi0Eta->GetMaximum() >= fhGenEtaEta->GetMaximum() && 
-	   fhGenPi0Eta->GetMaximum() >= fhGenOmegaEta->GetMaximum() && fhGenPi0Eta->GetMaximum() >= fhGenEleEta->GetMaximum())
-		haxiseta->SetMaximum(fhGenPi0Eta->GetMaximum());
-	else if(fhGenGamEta->GetMaximum() >= fhGenPi0Eta->GetMaximum() && fhGenGamEta->GetMaximum() >= fhGenEtaEta->GetMaximum() && 
-			fhGenGamEta->GetMaximum() >= fhGenOmegaEta->GetMaximum() && fhGenGamEta->GetMaximum() >= fhGenEleEta->GetMaximum())
-		haxiseta->SetMaximum(fhGenGamEta->GetMaximum());
-	else if(fhGenEtaEta->GetMaximum() >= fhGenPi0Eta->GetMaximum() && fhGenEtaEta->GetMaximum() >= fhGenGamEta->GetMaximum() && 
-			fhGenEtaEta->GetMaximum() >= fhGenOmegaEta->GetMaximum() && fhGenEtaEta->GetMaximum() >= fhGenEleEta->GetMaximum())
-		haxiseta->SetMaximum(fhGenEtaEta->GetMaximum());	
-	else if(fhGenOmegaEta->GetMaximum() >= fhGenPi0Eta->GetMaximum() && fhGenOmegaEta->GetMaximum() >= fhGenEtaEta->GetMaximum() && 
-			fhGenOmegaEta->GetMaximum() >= fhGenGamEta->GetMaximum() && fhGenOmegaEta->GetMaximum() >= fhGenEleEta->GetMaximum())
-		haxiseta->SetMaximum(fhGenOmegaEta->GetMaximum());
-	else if(fhGenEleEta->GetMaximum() >= fhGenPi0Eta->GetMaximum() && fhGenEleEta->GetMaximum() >= fhGenEtaEta->GetMaximum() && 
-			fhGenEleEta->GetMaximum() >= fhGenOmegaEta->GetMaximum() && fhGenEleEta->GetMaximum() >= fhGenGamEta->GetMaximum())
-		haxiseta->SetMaximum(fhGenEleEta->GetMaximum());
-	haxiseta->SetMinimum(100);
-	haxiseta->Draw("axis");
-	fhGenPi0Eta->Draw("same");
-	fhGenGamEta->Draw("same");
-	fhGenEtaEta->Draw("same");
-	fhGenOmegaEta->Draw("same");
-	fhGenEleEta->Draw("same");
-	
-	
-	c10->cd(3) ; 
-	gPad->SetLogy();
-	TH1F * haxisphi  = (TH1F*) fhGenPi0Phi->Clone(Form("%s_axisphi",fhGenPi0Phi->GetName()));  
-	haxisphi->SetTitle("Generated Particles #phi, |#eta| < 1");
-	fhGenPi0Phi->SetLineColor(1);
-	fhGenGamPhi->SetLineColor(4);
-	fhGenEtaPhi->SetLineColor(2);
-	fhGenOmegaPhi->SetLineColor(7);
-	fhGenElePhi->SetLineColor(6);
-	//Select the maximum of the histogram to show all lines.
-	if(fhGenPi0Phi->GetMaximum() >= fhGenGamPhi->GetMaximum() && fhGenPi0Phi->GetMaximum() >= fhGenEtaPhi->GetMaximum() && 
-	   fhGenPi0Phi->GetMaximum() >= fhGenOmegaPhi->GetMaximum() && fhGenPi0Phi->GetMaximum() >= fhGenElePhi->GetMaximum())
-		haxisphi->SetMaximum(fhGenPi0Phi->GetMaximum());
-	else if(fhGenGamPhi->GetMaximum() >= fhGenPi0Phi->GetMaximum() && fhGenGamPhi->GetMaximum() >= fhGenEtaPhi->GetMaximum() && 
-			fhGenGamPhi->GetMaximum() >= fhGenOmegaPhi->GetMaximum() && fhGenGamPhi->GetMaximum() >= fhGenElePhi->GetMaximum())
-		haxisphi->SetMaximum(fhGenGamPhi->GetMaximum());
-	else if(fhGenEtaPhi->GetMaximum() >= fhGenPi0Phi->GetMaximum() && fhGenEtaPhi->GetMaximum() >= fhGenGamPhi->GetMaximum() && 
-			fhGenEtaPhi->GetMaximum() >= fhGenOmegaPhi->GetMaximum() && fhGenEtaPhi->GetMaximum() >= fhGenElePhi->GetMaximum())
-		haxisphi->SetMaximum(fhGenEtaPhi->GetMaximum());	
-	else if(fhGenOmegaPhi->GetMaximum() >= fhGenPi0Phi->GetMaximum() && fhGenOmegaPhi->GetMaximum() >= fhGenEtaPhi->GetMaximum() && 
-			fhGenOmegaPhi->GetMaximum() >= fhGenGamPhi->GetMaximum() && fhGenOmegaPhi->GetMaximum() >= fhGenElePhi->GetMaximum())
-		haxisphi->SetMaximum(fhGenOmegaPhi->GetMaximum());
-	else if(fhGenElePhi->GetMaximum() >= fhGenPi0Phi->GetMaximum() && fhGenElePhi->GetMaximum() >= fhGenEtaPhi->GetMaximum() && 
-			fhGenElePhi->GetMaximum() >= fhGenOmegaPhi->GetMaximum() && fhGenElePhi->GetMaximum() >= fhGenGamPhi->GetMaximum())
-		haxisphi->SetMaximum(fhGenElePhi->GetMaximum());
-	haxisphi->SetMinimum(100);
-	haxisphi->Draw("axis");
-	fhGenPi0Phi->Draw("same");
-	fhGenGamPhi->Draw("same");
-	fhGenEtaPhi->Draw("same");
-	fhGenOmegaPhi->Draw("same");
-	fhGenElePhi->Draw("same");
-	
-	sprintf(name,"QA_%s_GeneratedDistributions.eps",fCalorimeter.Data());
-	c10->Print(name); printf("Plot: %s\n",name);
-	
-	
-	//Reconstructed clusters depending on its original particle.
-	//printf("c1\n");
-	sprintf(cname,"QA_%s_recgenid",fCalorimeter.Data());
-	TCanvas  * c11 = new TCanvas(cname, "Reconstructed particles, function of their original particle ID", 400, 400) ;
-	c11->Divide(2, 2);
-	
-	
-	c11->cd(1) ; 
-	gPad->SetLogy();
-	TH1F * hGamE   = (TH1F*) fhGamE->ProjectionX(Form("%s_px",fhGamE->GetName()),-1,-1);
-	TH1F * hPi0E   = (TH1F*) fhPi0E->ProjectionX(Form("%s_px",fhPi0E->GetName()),-1,-1);
-	TH1F * hEleE   = (TH1F*) fhEleE->ProjectionX(Form("%s_px",fhEleE->GetName()),-1,-1);
-	TH1F * hNeHadE = (TH1F*) fhNeHadE->ProjectionX(Form("%s_px",fhNeHadE->GetName()),-1,-1);
-	TH1F * hChHadE = (TH1F*) fhChHadE->ProjectionX(Form("%s_px",fhChHadE->GetName()),-1,-1);
-	TH1F * haxisE  = (TH1F*) hPi0E->Clone(Form("%s_axisE",fhPi0E->GetName()));  
-	haxisE->SetTitle("Reconstructed particles E, function of their original particle ID");
-	hPi0E->SetLineColor(1);
-	hGamE->SetLineColor(4);
-	hNeHadE->SetLineColor(2);
-	hChHadE->SetLineColor(7);
-	hEleE->SetLineColor(6);
-	
-	//Select the maximum of the histogram to show all lines.
-	if(hPi0E->GetMaximum() >= hGamE->GetMaximum() && hPi0E->GetMaximum() >= hNeHadE->GetMaximum() && 
-	   hPi0E->GetMaximum() >= hChHadE->GetMaximum() && hPi0E->GetMaximum() >= hEleE->GetMaximum())
-		haxisE->SetMaximum(hPi0E->GetMaximum());
-	else if(hGamE->GetMaximum() >= hPi0E->GetMaximum() && hGamE->GetMaximum() >= hNeHadE->GetMaximum() && 
-			hGamE->GetMaximum() >= hChHadE->GetMaximum() && hGamE->GetMaximum() >= hEleE->GetMaximum())
-		haxisE->SetMaximum(hGamE->GetMaximum());
-	else if(hNeHadE->GetMaximum() >= hPi0E->GetMaximum() && hNeHadE->GetMaximum() >= hGamE->GetMaximum() && 
-			hNeHadE->GetMaximum() >= hChHadE->GetMaximum() && hNeHadE->GetMaximum() >= hEleE->GetMaximum())
-		haxisE->SetMaximum(hNeHadE->GetMaximum());	
-	else if(hChHadE->GetMaximum() >= hPi0E->GetMaximum() && hChHadE->GetMaximum() >= hNeHadE->GetMaximum() && 
-			hChHadE->GetMaximum() >= hGamE->GetMaximum() && hChHadE->GetMaximum() >= hEleE->GetMaximum())
-		haxisE->SetMaximum(hChHadE->GetMaximum());
-	else if(hEleE->GetMaximum() >= hPi0E->GetMaximum() && hEleE->GetMaximum() >= hNeHadE->GetMaximum() && 
-			hEleE->GetMaximum() >= hChHadE->GetMaximum() && hEleE->GetMaximum() >= hGamE->GetMaximum())
-		haxisE->SetMaximum(hEleE->GetMaximum());
-	haxisE->SetXTitle("E (GeV)");
-	haxisE->SetMinimum(1);
-	haxisE->Draw("axis");
-	hPi0E->Draw("same");
-	hGamE->Draw("same");
-	hNeHadE->Draw("same");
-	hChHadE->Draw("same");
-	hEleE->Draw("same");
-	
-	TLegend pLegend2(0.8,0.65,0.95,0.93);
-	pLegend2.SetTextSize(0.06);
-	pLegend2.AddEntry(hPi0E,"  #pi^{0}","L");
-	pLegend2.AddEntry(hGamE,"  #gamma","L");
-	pLegend2.AddEntry(hEleE,"  e^{#pm}","L");
-	pLegend2.AddEntry(hChHadE,"  h^{#pm}","L");
-	pLegend2.AddEntry(hNeHadE,"  h^{0}","L");
-	pLegend2.SetFillColor(10);
-	pLegend2.SetBorderSize(1);
-	pLegend2.Draw();
-	
-	
-	c11->cd(2) ; 
-	gPad->SetLogy();
-	//printf("%s, %s, %s, %s, %s\n",fhGamPt->GetName(),fhPi0Pt->GetName(),fhElePt->GetName(),fhNeHadPt->GetName(), fhChHadPt->GetName());
-	TH1F * hGamPt   = (TH1F*) fhGamPt->ProjectionX(Form("%s_px",fhGamPt->GetName()),-1,-1);
-	TH1F * hPi0Pt   = (TH1F*) fhPi0Pt->ProjectionX(Form("%s_px",fhPi0Pt->GetName()),-1,-1);
-	TH1F * hElePt   = (TH1F*) fhElePt->ProjectionX(Form("%s_px",fhElePt->GetName()),-1,-1);
-	TH1F * hNeHadPt = (TH1F*) fhNeHadPt->ProjectionX(Form("%s_px",fhNeHadPt->GetName()),-1,-1);
-	TH1F * hChHadPt = (TH1F*) fhChHadPt->ProjectionX(Form("%s_px",fhChHadPt->GetName()),-1,-1);
-	haxispt  = (TH1F*) hPi0Pt->Clone(Form("%s_axisPt",fhPi0Pt->GetName()));  
-	haxispt->SetTitle("Reconstructed particles p_{T}, function of their original particle ID");
-	hPi0Pt->SetLineColor(1);
-	hGamPt->SetLineColor(4);
-	hNeHadPt->SetLineColor(2);
-	hChHadPt->SetLineColor(7);
-	hElePt->SetLineColor(6);
-	
-	//Select the maximum of the histogram to show all lines.
-	if(hPi0Pt->GetMaximum() >= hGamPt->GetMaximum() && hPi0Pt->GetMaximum() >= hNeHadPt->GetMaximum() && 
-	   hPi0Pt->GetMaximum() >= hChHadPt->GetMaximum() && hPi0Pt->GetMaximum() >= hElePt->GetMaximum())
-		haxispt->SetMaximum(hPi0Pt->GetMaximum());
-	else if(hGamPt->GetMaximum() >= hPi0Pt->GetMaximum() && hGamPt->GetMaximum() >= hNeHadPt->GetMaximum() && 
-			hGamPt->GetMaximum() >= hChHadPt->GetMaximum() && hGamPt->GetMaximum() >= hElePt->GetMaximum())
-		haxispt->SetMaximum(hGamPt->GetMaximum());
-	else if(hNeHadPt->GetMaximum() >= hPi0Pt->GetMaximum() && hNeHadPt->GetMaximum() >= hGamPt->GetMaximum() && 
-			hNeHadPt->GetMaximum() >= hChHadPt->GetMaximum() && hNeHadPt->GetMaximum() >= hElePt->GetMaximum())
-		haxispt->SetMaximum(hNeHadPt->GetMaximum());	
-	else if(hChHadPt->GetMaximum() >= hPi0Pt->GetMaximum() && hChHadPt->GetMaximum() >= hNeHadPt->GetMaximum() && 
-			hChHadPt->GetMaximum() >= hGamPt->GetMaximum() && hChHadPt->GetMaximum() >= hElePt->GetMaximum())
-		haxispt->SetMaximum(hChHadPt->GetMaximum());
-	else if(hElePt->GetMaximum() >= hPi0Pt->GetMaximum() && hElePt->GetMaximum() >= hNeHadPt->GetMaximum() && 
-			hElePt->GetMaximum() >= hChHadPt->GetMaximum() && hElePt->GetMaximum() >= hGamPt->GetMaximum())
-		haxispt->SetMaximum(hElePt->GetMaximum());
-	haxispt->SetXTitle("p_{T} (GeV/c)");
-	haxispt->SetMinimum(1);
-	haxispt->Draw("axis");
-	hPi0Pt->Draw("same");
-	hGamPt->Draw("same");
-	hNeHadPt->Draw("same");
-	hChHadPt->Draw("same");
-	hElePt->Draw("same");
-	
-	c11->cd(3) ;
-	gPad->SetLogy();
-	
-	TH1F * hGamEta   = (TH1F*) fhGamEta->ProjectionX(Form("%s_px",fhGamEta->GetName()),-1,-1);
-	TH1F * hPi0Eta   = (TH1F*) fhPi0Eta->ProjectionX(Form("%s_px",fhPi0Eta->GetName()),-1,-1);
-	TH1F * hEleEta   = (TH1F*) fhEleEta->ProjectionX(Form("%s_px",fhEleEta->GetName()),-1,-1);
-	TH1F * hNeHadEta = (TH1F*) fhNeHadEta->ProjectionX(Form("%s_px",fhNeHadEta->GetName()),-1,-1);
-	TH1F * hChHadEta = (TH1F*) fhChHadEta->ProjectionX(Form("%s_px",fhChHadEta->GetName()),-1,-1);
-	haxiseta  = (TH1F*) hPi0Eta->Clone(Form("%s_axisEta",fhPi0Eta->GetName()));  
-	haxiseta->SetTitle("Reconstructed particles #eta, function of their original particle ID");
-	hPi0Eta->SetLineColor(1);
-	hGamEta->SetLineColor(4);
-	hNeHadEta->SetLineColor(2);
-	hChHadEta->SetLineColor(7);
-	hEleEta->SetLineColor(6);
-	//Select the maximum of the histogram to show all lines.
-	if(hPi0Eta->GetMaximum() >= hGamEta->GetMaximum() && hPi0Eta->GetMaximum() >= hNeHadEta->GetMaximum() && 
-	   hPi0Eta->GetMaximum() >= hChHadEta->GetMaximum() && hPi0Eta->GetMaximum() >= hEleEta->GetMaximum())
-		haxiseta->SetMaximum(hPi0Eta->GetMaximum());
-	else if(hGamEta->GetMaximum() >= hPi0Eta->GetMaximum() && hGamEta->GetMaximum() >= hNeHadEta->GetMaximum() && 
-			hGamEta->GetMaximum() >= hChHadEta->GetMaximum() && hGamEta->GetMaximum() >= hEleEta->GetMaximum())
-		haxiseta->SetMaximum(hGamEta->GetMaximum());
-	else if(hNeHadEta->GetMaximum() >= hPi0Eta->GetMaximum() && hNeHadEta->GetMaximum() >= hGamEta->GetMaximum() && 
-			hNeHadEta->GetMaximum() >= hChHadEta->GetMaximum() && hNeHadEta->GetMaximum() >= hEleEta->GetMaximum())
-		haxiseta->SetMaximum(hNeHadEta->GetMaximum());	
-	else if(hChHadEta->GetMaximum() >= hPi0Eta->GetMaximum() && hChHadEta->GetMaximum() >= hNeHadEta->GetMaximum() && 
-			hChHadEta->GetMaximum() >= hGamEta->GetMaximum() && hChHadEta->GetMaximum() >= hEleEta->GetMaximum())
-		haxiseta->SetMaximum(hChHadEta->GetMaximum());
-	else if(hEleEta->GetMaximum() >= hPi0Eta->GetMaximum() && hEleEta->GetMaximum() >= hNeHadEta->GetMaximum() && 
-			hEleEta->GetMaximum() >= hChHadEta->GetMaximum() && hEleEta->GetMaximum() >= hGamEta->GetMaximum())
-		haxiseta->SetMaximum(hEleEta->GetMaximum());
-	
-	haxiseta->SetXTitle("#eta");
-	haxiseta->Draw("axis");
-	hPi0Eta->Draw("same");
-	hGamEta->Draw("same");
-	hNeHadEta->Draw("same");
-	hChHadEta->Draw("same");
-	hEleEta->Draw("same");
-	
-	
-	c11->cd(4) ; 
-	gPad->SetLogy();
-	TH1F * hGamPhi   = (TH1F*) fhGamPhi->ProjectionX(Form("%s_px",fhGamPhi->GetName()),-1,-1);
-	TH1F * hPi0Phi   = (TH1F*) fhPi0Phi->ProjectionX(Form("%s_px",fhPi0Phi->GetName()),-1,-1);
-	TH1F * hElePhi   = (TH1F*) fhElePhi->ProjectionX(Form("%s_px",fhElePhi->GetName()),-1,-1);
-	TH1F * hNeHadPhi = (TH1F*) fhNeHadPhi->ProjectionX(Form("%s_px",fhNeHadPhi->GetName()),-1,-1);
-	TH1F * hChHadPhi = (TH1F*) fhChHadPhi->ProjectionX(Form("%s_px",fhChHadPhi->GetName()),-1,-1);
-	haxisphi  = (TH1F*) hPi0Phi->Clone(Form("%s_axisPhi",fhPi0Phi->GetName()));  
-	haxisphi->SetTitle("Reconstructed particles #phi, function of their original particle ID");
-	
-	hPi0Phi->SetLineColor(1);
-	hGamPhi->SetLineColor(4);
-	hNeHadPhi->SetLineColor(2);
-	hChHadPhi->SetLineColor(7);
-	hElePhi->SetLineColor(6);
-	//Select the maximum of the histogram to show all lines.
-	if(hPi0Phi->GetMaximum() >= hGamPhi->GetMaximum() && hPi0Phi->GetMaximum() >= hNeHadPhi->GetMaximum() && 
-	   hPi0Phi->GetMaximum() >= hChHadPhi->GetMaximum() && hPi0Phi->GetMaximum() >= hElePhi->GetMaximum())
-		haxisphi->SetMaximum(hPi0Phi->GetMaximum());
-	else if(hGamPhi->GetMaximum() >= hPi0Phi->GetMaximum() && hGamPhi->GetMaximum() >= hNeHadPhi->GetMaximum() && 
-			hGamPhi->GetMaximum() >= hChHadPhi->GetMaximum() && hGamPhi->GetMaximum() >= hElePhi->GetMaximum())
-		haxisphi->SetMaximum(hGamPhi->GetMaximum());
-	else if(hNeHadPhi->GetMaximum() >= hPi0Phi->GetMaximum() && hNeHadPhi->GetMaximum() >= hGamPhi->GetMaximum() && 
-			hNeHadPhi->GetMaximum() >= hChHadPhi->GetMaximum() && hNeHadPhi->GetMaximum() >= hElePhi->GetMaximum())
-		haxisphi->SetMaximum(hNeHadPhi->GetMaximum());	
-	else if(hChHadPhi->GetMaximum() >= hPi0Phi->GetMaximum() && hChHadPhi->GetMaximum() >= hNeHadPhi->GetMaximum() && 
-			hChHadPhi->GetMaximum() >= hGamPhi->GetMaximum() && hChHadPhi->GetMaximum() >= hElePhi->GetMaximum())
-		haxisphi->SetMaximum(hChHadPhi->GetMaximum());
-	else if(hElePhi->GetMaximum() >= hPi0Phi->GetMaximum() && hElePhi->GetMaximum() >= hNeHadPhi->GetMaximum() && 
-			hElePhi->GetMaximum() >= hChHadPhi->GetMaximum() && hElePhi->GetMaximum() >= hGamPhi->GetMaximum())
-	haxisphi->SetMaximum(hElePhi->GetMaximum());
-	haxisphi->SetXTitle("#phi (rad)");
-	haxisphi->Draw("axis");
-	hPi0Phi->Draw("same");
-	hGamPhi->Draw("same");
-	hNeHadPhi->Draw("same");
-	hChHadPhi->Draw("same");
-	hElePhi->Draw("same");
-	
-	sprintf(name,"QA_%s_RecDistributionsGenID.eps",fCalorimeter.Data());
-	c11->Print(name); printf("Plot: %s\n",name);
-	
-	
-	//Ratio reconstructed clusters / generated particles in acceptance, for different particle ID
-	//printf("c1\n");
-	
-	TH1F *	hPi0EClone   = (TH1F*)   hPi0E  ->Clone(Form("%s_Clone",fhPi0E->GetName()));
-	TH1F *	hGamEClone   = (TH1F*)   hGamE  ->Clone(Form("%s_Clone",fhGamE->GetName()));
-	TH1F *	hPi0PtClone  = (TH1F*)   hPi0Pt ->Clone(Form("%s_Clone",fhPi0Pt->GetName()));
-	TH1F *	hGamPtClone  = (TH1F*)   hGamPt ->Clone(Form("%s_Clone",fhGamPt->GetName()));	
-	TH1F *	hPi0EtaClone = (TH1F*)   hPi0Eta->Clone(Form("%s_Clone",fhPi0Eta->GetName()));
-	TH1F *	hGamEtaClone = (TH1F*)   hGamEta->Clone(Form("%s_Clone",fhGamEta->GetName()));	
-	TH1F *	hPi0PhiClone = (TH1F*)   hPi0Phi->Clone(Form("%s_Clone",fhPi0Phi->GetName()));
-	TH1F *	hGamPhiClone = (TH1F*)   hGamPhi->Clone(Form("%s_Clone",fhGamPhi->GetName()));	
-	
-	sprintf(cname,"QA_%s_recgenidratio",fCalorimeter.Data());
-	TCanvas  * c12 = new TCanvas(cname, "Ratio reconstructed clusters / generated particles in acceptance, for different particle ID", 400, 400) ;
-	c12->Divide(2, 2);
-	
-	c12->cd(1) ; 
-	gPad->SetLogy();
-	haxisE->SetTitle("Ratio reconstructed clusters / generated particles in acceptance, for different particle ID");
-	hPi0EClone->Divide(fhGenPi0AccE);
-	hGamEClone->Divide(fhGenGamAccE);
-	haxisE->SetMaximum(5);
-	haxisE->SetMinimum(1e-2);
-	haxisE->SetXTitle("E (GeV)");
-	haxisE->SetYTitle("ratio = rec/gen");
-	haxisE->Draw("axis");
-	hPi0E->Draw("same");
-	hGamE->Draw("same");
-	
-	TLegend pLegend3(0.75,0.2,0.9,0.4);
-	pLegend3.SetTextSize(0.06);
-	pLegend3.AddEntry(hPi0EClone,"  #pi^{0}","L");
-	pLegend3.AddEntry(hGamEClone,"  #gamma","L");
-	pLegend3.SetFillColor(10);
-	pLegend3.SetBorderSize(1);
-	pLegend3.Draw();
-	
-	c12->cd(2) ; 
-	gPad->SetLogy();
-	haxispt->SetTitle("Ratio reconstructed clusters / generated particles in acceptance, for different particle ID");
-	hPi0PtClone->Divide(fhGenPi0AccPt);
-	hGamPtClone->Divide(fhGenGamAccPt);
-	haxispt->SetMaximum(5);
-	haxispt->SetMinimum(1e-2);
-	haxispt->SetXTitle("p_{T} (GeV/c)");
-	haxispt->SetYTitle("ratio = rec/gen");
-	haxispt->Draw("axis");
-	hPi0PtClone->Draw("same");
-	hGamPtClone->Draw("same");
-	
-	c12->cd(3) ;
-	gPad->SetLogy();
-	
-	haxiseta->SetTitle("Ratio reconstructed clusters / generated particles in acceptance, for different particle ID");
-	hPi0EtaClone->Divide(fhGenPi0AccEta);
-	hGamEtaClone->Divide(fhGenGamAccEta);
-	haxiseta->SetMaximum(1.2);
-	haxiseta->SetMinimum(1e-2);
-	haxiseta->SetYTitle("ratio = rec/gen");
-	haxiseta->SetXTitle("#eta");
-	haxiseta->Draw("axis");
-	hPi0EtaClone->Draw("same");
-	hGamEtaClone->Draw("same");
-	
-	
-	c12->cd(4) ; 
-	gPad->SetLogy();
-	haxisphi->SetTitle("Ratio reconstructed clusters / generated particles in acceptance, for different particle ID");
-	hPi0PhiClone->Divide(fhGenPi0AccPhi);
-	hGamPhiClone->Divide(fhGenGamAccPhi);
-	haxisphi->SetYTitle("ratio = rec/gen");
-	haxisphi->SetXTitle("#phi (rad)");
-	haxisphi->SetMaximum(1.2);
-	haxisphi->SetMinimum(1e-2);
-	haxisphi->Draw("axis");
-	hPi0PhiClone->Draw("same");
-	hGamPhiClone->Draw("same");
-	
-	sprintf(name,"QA_%s_EfficiencyGenID.eps",fCalorimeter.Data());
-	c12->Print(name); printf("Plot: %s\n",name);
-	
-	
-	
-	//Reconstructed distributions
-	//printf("c1\n");
-	sprintf(cname,"QA_%s_vertex",fCalorimeter.Data());
-	TCanvas  * c13 = new TCanvas(cname, "Particle vertex", 400, 400) ;
-	c13->Divide(2, 2);
-	
-	c13->cd(1) ; 
-	//gPad->SetLogy();
-	fhEMVxyz->SetTitleOffset(1.6,"Y");
-	fhEMVxyz->Draw();
-	
-	c13->cd(2) ; 
-	//gPad->SetLogy();
-	fhHaVxyz->SetTitleOffset(1.6,"Y");
-	fhHaVxyz->Draw();
-	
-	c13->cd(3) ;
-	gPad->SetLogy();
-	TH1F * hEMR = (TH1F*) fhEMR->ProjectionY(Form("%s_py",fhEMR->GetName()),-1,-1); 
-	hEMR->SetLineColor(4);
-	hEMR->Draw();
-	
-	c13->cd(4) ; 
-	gPad->SetLogy();
-	TH1F * hHaR = (TH1F*) fhHaR->ProjectionY(Form("%s_py",fhHaR->GetName()),-1,-1); 
-	hHaR->SetLineColor(4);
-	hHaR->Draw();
-	
-	
-	sprintf(name,"QA_%s_ParticleVertex.eps",fCalorimeter.Data());
-	c13->Print(name); printf("Plot: %s\n",name);
-	
-	
-	//Track-matching distributions
-
-	//Reconstructed distributions, matched with tracks, generated particle dependence
-	//printf("c2\n");
-	sprintf(cname,"QA_%s_rectrackmatchGenID",fCalorimeter.Data());
-	TCanvas  * c22ch = new TCanvas(cname, "Reconstructed distributions, matched with tracks, for different particle ID", 400, 400) ;
-	c22ch->Divide(2, 2);
-	
-	c22ch->cd(1) ; 
-	
-	TH1F * hGamECharged   = (TH1F*) fhGamECharged->ProjectionX(Form("%s_px",fhGamECharged->GetName()),-1,-1);
-	TH1F * hPi0ECharged   = (TH1F*) fhPi0ECharged->ProjectionX(Form("%s_px",fhPi0ECharged->GetName()),-1,-1);
-	TH1F * hEleECharged   = (TH1F*) fhEleECharged->ProjectionX(Form("%s_px",fhEleECharged->GetName()),-1,-1);
-	TH1F * hNeHadECharged = (TH1F*) fhNeHadECharged->ProjectionX(Form("%s_px",fhNeHadECharged->GetName()),-1,-1);
-	TH1F * hChHadECharged = (TH1F*) fhChHadECharged->ProjectionX(Form("%s_px",fhChHadECharged->GetName()),-1,-1);
-	hPi0ECharged->SetLineColor(1);
-	hGamECharged->SetLineColor(4);
-	hNeHadECharged->SetLineColor(2);
-	hChHadECharged->SetLineColor(7);
-	hEleECharged->SetLineColor(6);	
-	gPad->SetLogy();
-	fhECharged->SetLineColor(3);
-	fhECharged->SetMinimum(0.5);
-	fhECharged->Draw();
-	hPi0ECharged->Draw("same");
-	hGamECharged->Draw("same");
-	hNeHadECharged->Draw("same");
-	hChHadECharged->Draw("same");
-	hEleECharged->Draw("same");
-	TLegend pLegend22(0.75,0.45,0.9,0.8);
-	pLegend22.SetTextSize(0.06);
-	pLegend22.AddEntry(fhECharged,"all","L");
-	pLegend22.AddEntry(hPi0ECharged,"#pi^{0}","L");
-	pLegend22.AddEntry(hGamECharged,"#gamma","L");
-	pLegend22.AddEntry(hEleECharged,"e^{#pm}","L");
-	pLegend22.AddEntry(hChHadECharged,"h^{#pm}","L");
-	pLegend22.AddEntry(hNeHadECharged,"h^{0}","L");
-	pLegend22.SetFillColor(10);
-	pLegend22.SetBorderSize(1);
-	pLegend22.Draw();
-	
-	c22ch->cd(2) ; 
-	
-	TH1F * hGamPtCharged   = (TH1F*) fhGamPtCharged->ProjectionX(Form("%s_px",fhGamPtCharged->GetName()),-1,-1);
-	TH1F * hPi0PtCharged   = (TH1F*) fhPi0PtCharged->ProjectionX(Form("%s_px",fhPi0PtCharged->GetName()),-1,-1);
-	TH1F * hElePtCharged   = (TH1F*) fhElePtCharged->ProjectionX(Form("%s_px",fhElePtCharged->GetName()),-1,-1);
-	TH1F * hNeHadPtCharged = (TH1F*) fhNeHadPtCharged->ProjectionX(Form("%s_px",fhNeHadPtCharged->GetName()),-1,-1);
-	TH1F * hChHadPtCharged = (TH1F*) fhChHadPtCharged->ProjectionX(Form("%s_px",fhChHadPtCharged->GetName()),-1,-1);
-	hPi0PtCharged->SetLineColor(1);
-	hGamPtCharged->SetLineColor(4);
-	hNeHadPtCharged->SetLineColor(2);
-	hChHadPtCharged->SetLineColor(7);
-	hElePtCharged->SetLineColor(6);	
-	gPad->SetLogy();
-	fhPtCharged->SetLineColor(3);
-	fhPtCharged->SetMinimum(0.5);
-	fhPtCharged->Draw();
-	hPi0PtCharged->Draw("same");
-	hGamPtCharged->Draw("same");
-	hNeHadPtCharged->Draw("same");
-	hChHadPtCharged->Draw("same");
-	hElePtCharged->Draw("same");	
-	
-	c22ch->cd(4) ; 
-	
-	TH1F * hGamEtaCharged   = (TH1F*) fhGamEtaCharged->ProjectionX(Form("%s_px",fhGamEtaCharged->GetName()),-1,-1);
-	TH1F * hPi0EtaCharged   = (TH1F*) fhPi0EtaCharged->ProjectionX(Form("%s_px",fhPi0EtaCharged->GetName()),-1,-1);
-	TH1F * hEleEtaCharged   = (TH1F*) fhEleEtaCharged->ProjectionX(Form("%s_px",fhEleEtaCharged->GetName()),-1,-1);
-	TH1F * hNeHadEtaCharged = (TH1F*) fhNeHadEtaCharged->ProjectionX(Form("%s_px",fhNeHadEtaCharged->GetName()),-1,-1);
-	TH1F * hChHadEtaCharged = (TH1F*) fhChHadEtaCharged->ProjectionX(Form("%s_px",fhChHadEtaCharged->GetName()),-1,-1);
-	hPi0EtaCharged->SetLineColor(1);
-	hGamEtaCharged->SetLineColor(4);
-	hNeHadEtaCharged->SetLineColor(2);
-	hChHadEtaCharged->SetLineColor(7);
-	hEleEtaCharged->SetLineColor(6);	
-	gPad->SetLogy();
-	fhEtaCharged->SetLineColor(3);
-	fhEtaCharged->SetMinimum(0.5);
-	fhEtaCharged->Draw();
-	hPi0EtaCharged->Draw("same");
-	hGamEtaCharged->Draw("same");
-	hNeHadEtaCharged->Draw("same");
-	hChHadEtaCharged->Draw("same");
-	hEleEtaCharged->Draw("same");
-	
-	c22ch->cd(3) ; 
-	
-	TH1F * hGamPhiCharged   = (TH1F*) fhGamPhiCharged->ProjectionX(Form("%s_px",fhGamPhiCharged->GetName()),-1,-1);
-	TH1F * hPi0PhiCharged   = (TH1F*) fhPi0PhiCharged->ProjectionX(Form("%s_px",fhPi0PhiCharged->GetName()),-1,-1);
-	TH1F * hElePhiCharged   = (TH1F*) fhElePhiCharged->ProjectionX(Form("%s_px",fhElePhiCharged->GetName()),-1,-1);
-	TH1F * hNeHadPhiCharged = (TH1F*) fhNeHadPhiCharged->ProjectionX(Form("%s_px",fhNeHadPhiCharged->GetName()),-1,-1);
-	TH1F * hChHadPhiCharged = (TH1F*) fhChHadPhiCharged->ProjectionX(Form("%s_px",fhChHadPhiCharged->GetName()),-1,-1);
-	hPi0PhiCharged->SetLineColor(1);
-	hGamPhiCharged->SetLineColor(4);
-	hNeHadPhiCharged->SetLineColor(2);
-	hChHadPhiCharged->SetLineColor(7);
-	hElePhiCharged->SetLineColor(6);	
-	gPad->SetLogy();
-	fhPhiCharged->SetLineColor(3);
-	fhPhiCharged->SetMinimum(0.5);
-	fhPhiCharged->Draw();
-	hPi0PhiCharged->Draw("same");
-	hGamPhiCharged->Draw("same");
-	hNeHadPhiCharged->Draw("same");
-	hChHadPhiCharged->Draw("same");
-	hElePhiCharged->Draw("same");
-	
-	
-	sprintf(name,"QA_%s_ReconstructedDistributions_TrackMatchedGenID.eps",fCalorimeter.Data());
-	c22ch->Print(name); printf("Plot: %s\n",name);
-	
-	TH1F *	hGamEChargedClone   = (TH1F*)   hGamECharged->Clone(Form("%s_Clone",fhGamECharged->GetName()));
-	TH1F *	hGamPtChargedClone  = (TH1F*)   hGamPtCharged->Clone(Form("%s_Clone",fhGamPtCharged->GetName()));
-	TH1F *	hGamEtaChargedClone = (TH1F*)   hGamEtaCharged->Clone(Form("%s_Clone",fhGamEtaCharged->GetName()));
-	TH1F *	hGamPhiChargedClone = (TH1F*)   hGamPhiCharged->Clone(Form("%s_Clone",fhGamPhiCharged->GetName()));
-	
-	TH1F *	hPi0EChargedClone   = (TH1F*)   hPi0ECharged->Clone(Form("%s_Clone",fhPi0ECharged->GetName()));
-	TH1F *	hPi0PtChargedClone  = (TH1F*)   hPi0PtCharged->Clone(Form("%s_Clone",fhPi0PtCharged->GetName()));
-	TH1F *	hPi0EtaChargedClone = (TH1F*)   hPi0EtaCharged->Clone(Form("%s_Clone",fhPi0EtaCharged->GetName()));
-	TH1F *	hPi0PhiChargedClone = (TH1F*)   hPi0PhiCharged->Clone(Form("%s_Clone",fhPi0PhiCharged->GetName()));
-	
-	TH1F *	hEleEChargedClone   = (TH1F*)   hEleECharged->Clone(Form("%s_Clone",fhEleECharged->GetName()));
-	TH1F *	hElePtChargedClone  = (TH1F*)   hElePtCharged->Clone(Form("%s_Clone",fhElePtCharged->GetName()));
-	TH1F *	hEleEtaChargedClone = (TH1F*)   hEleEtaCharged->Clone(Form("%s_Clone",fhEleEtaCharged->GetName()));
-	TH1F *	hElePhiChargedClone = (TH1F*)   hElePhiCharged->Clone(Form("%s_Clone",fhElePhiCharged->GetName()));	
-	
-	TH1F *	hNeHadEChargedClone   = (TH1F*)   hNeHadECharged->Clone(Form("%s_Clone",fhNeHadECharged->GetName()));
-	TH1F *	hNeHadPtChargedClone  = (TH1F*)   hNeHadPtCharged->Clone(Form("%s_Clone",fhNeHadPtCharged->GetName()));
-	TH1F *	hNeHadEtaChargedClone = (TH1F*)   hNeHadEtaCharged->Clone(Form("%s_Clone",fhNeHadEtaCharged->GetName()));
-	TH1F *	hNeHadPhiChargedClone = (TH1F*)   hNeHadPhiCharged->Clone(Form("%s_Clone",fhNeHadPhiCharged->GetName()));
-	
-	TH1F *	hChHadEChargedClone   = (TH1F*)   hChHadECharged->Clone(Form("%s_Clone",fhChHadECharged->GetName()));
-	TH1F *	hChHadPtChargedClone  = (TH1F*)   hChHadPtCharged->Clone(Form("%s_Clone",fhChHadPtCharged->GetName()));
-	TH1F *	hChHadEtaChargedClone = (TH1F*)   hChHadEtaCharged->Clone(Form("%s_Clone",fhChHadEtaCharged->GetName()));
-	TH1F *	hChHadPhiChargedClone = (TH1F*)   hChHadPhiCharged->Clone(Form("%s_Clone",fhChHadPhiCharged->GetName()));	
-	
-	//Ratio: reconstructed track matched/ all reconstructed
-	//printf("c3\n");
-	sprintf(cname,"QA_%s_rectrackmatchratGenID",fCalorimeter.Data());
-	TCanvas  * c3ch = new TCanvas(cname, "Ratio: reconstructed track matched/ all reconstructed, for different particle ID", 400, 400) ;
-	c3ch->Divide(2, 2);
-	
-	c3ch->cd(1) ;
-	hEChargedClone->SetMaximum(1.2);
-	hEChargedClone->SetMinimum(0.001);	
-	hEChargedClone->SetLineColor(3);
-	hEChargedClone->SetYTitle("track matched / all");
-	hPi0EChargedClone->Divide(hPi0E);
-	hGamEChargedClone->Divide(hGamE);
-	hEleEChargedClone->Divide(hEleE);
-	hNeHadEChargedClone->Divide(hNeHadE);
-	hChHadEChargedClone->Divide(hChHadE);
-	hEChargedClone->Draw();
-	hPi0EChargedClone->Draw("same");
-	hGamEChargedClone->Draw("same");
-	hEleEChargedClone->Draw("same");
-	hNeHadEChargedClone->Draw("same");
-	hChHadEChargedClone->Draw("same");
-	
-	TLegend pLegend3ch(0.75,0.45,0.9,0.8);
-	pLegend3ch.SetTextSize(0.06);
-	pLegend3ch.AddEntry(hEChargedClone,"all","L");
-	pLegend3ch.AddEntry(hPi0EChargedClone,"#pi^{0}","L");
-	pLegend3ch.AddEntry(hGamEChargedClone,"#gamma","L");
-	pLegend3ch.AddEntry(hEleEChargedClone,"e^{#pm}","L");
-	pLegend3ch.AddEntry(hChHadEChargedClone,"h^{#pm}","L");
-	pLegend3ch.AddEntry(hNeHadEChargedClone,"h^{0}","L");
-	pLegend3ch.SetFillColor(10);
-	pLegend3ch.SetBorderSize(1);
-	pLegend3ch.Draw();
-	
-	c3ch->cd(2) ;
-	hPtChargedClone->SetMaximum(1.2);
-	hPtChargedClone->SetMinimum(0.001);	
-	hPtChargedClone->SetLineColor(3);
-	hPtChargedClone->SetYTitle("track matched / all");
-	hPi0PtChargedClone->Divide(hPi0Pt);
-	hGamPtChargedClone->Divide(hGamPt);
-	hElePtChargedClone->Divide(hElePt);
-	hNeHadPtChargedClone->Divide(hNeHadPt);
-	hChHadPtChargedClone->Divide(hChHadPt);
-	hPtChargedClone->Draw();
-	hPi0PtChargedClone->Draw("same");
-	hGamPtChargedClone->Draw("same");
-	hElePtChargedClone->Draw("same");
-	hNeHadPtChargedClone->Draw("same");
-	hChHadPtChargedClone->Draw("same");
-	
-	c3ch->cd(4) ;
-	hEtaChargedClone->SetMaximum(1.2);
-	hEtaChargedClone->SetMinimum(0.001);	
-	hEtaChargedClone->SetLineColor(3);
-	hEtaChargedClone->SetYTitle("track matched / all");
-	hPi0EtaChargedClone->Divide(hPi0Eta);
-	hGamEtaChargedClone->Divide(hGamEta);
-	hEleEtaChargedClone->Divide(hEleEta);
-	hNeHadEtaChargedClone->Divide(hNeHadEta);
-	hChHadEtaChargedClone->Divide(hChHadEta);
-	hEtaChargedClone->Draw();
-	hPi0EtaChargedClone->Draw("same");
-	hGamEtaChargedClone->Draw("same");
-	hEleEtaChargedClone->Draw("same");
-	hNeHadEtaChargedClone->Draw("same");
-	hChHadEtaChargedClone->Draw("same");
-	
-	c3ch->cd(3) ;
-	hPhiChargedClone->SetMaximum(1.2);
-	hPhiChargedClone->SetMinimum(0.001);
-	hPhiChargedClone->SetLineColor(3);
-	hPhiChargedClone->SetYTitle("track matched / all");
-	hPi0PhiChargedClone->Divide(hPi0Phi);
-	hGamPhiChargedClone->Divide(hGamPhi);
-	hElePhiChargedClone->Divide(hElePhi);
-	hNeHadPhiChargedClone->Divide(hNeHadPhi);
-	hChHadPhiChargedClone->Divide(hChHadPhi);
-	hPhiChargedClone->Draw();
-	hPi0PhiChargedClone->Draw("same");
-	hGamPhiChargedClone->Draw("same");
-	hElePhiChargedClone->Draw("same");
-	hNeHadPhiChargedClone->Draw("same");
-	hChHadPhiChargedClone->Draw("same");
-	
-	sprintf(name,"QA_%s_RatioReconstructedMatchedDistributionsGenID.eps",fCalorimeter.Data());
-	c3ch->Print(name); printf("Plot: %s\n",name);
-	
+      //Reconstructed vs MC distributions
+      //printf("c6\n");
+    sprintf(cname,"QA_%s_recvsmc",fCalorimeter.Data());
+    TCanvas  * c6 = new TCanvas(cname, "Reconstructed vs MC distributions", 400, 400) ;
+    c6->Divide(2, 2);
+    
+    c6->cd(1) ; 
+    fh2E->SetTitleOffset(1.6,"Y");
+    fh2E->SetLineColor(4);
+    fh2E->Draw();
+    
+    c6->cd(2) ; 
+    fh2Pt->SetTitleOffset(1.6,"Y");
+    fh2Pt->SetLineColor(4);
+    fh2Pt->Draw();
+    
+    c6->cd(3) ; 
+    fh2Phi->SetTitleOffset(1.6,"Y");
+    fh2Phi->SetLineColor(4);
+    fh2Phi->Draw();
+    
+    c6->cd(4) ; 
+    fh2Eta->SetTitleOffset(1.6,"Y");
+    fh2Eta->SetLineColor(4);
+    fh2Eta->Draw();
+    
+    sprintf(name,"QA_%s_ReconstructedVSMCDistributions.eps",fCalorimeter.Data());
+    c6->Print(name); printf("Plot: %s\n",name);	
+    
+      //Reconstructed vs MC distributions
+      //printf("c6\n");
+    sprintf(cname,"QA_%s_gamrecvsmc",fCalorimeter.Data());
+    TCanvas  * c6Gam = new TCanvas(cname, "Reconstructed vs MC distributions", 400, 400) ;
+    c6Gam->Divide(2, 2);
+    
+    c6Gam->cd(1) ; 
+    fhGamE->Draw();
+    
+    c6Gam->cd(2) ; 
+    fhGamPt->Draw();
+    
+    c6Gam->cd(3) ; 
+    fhGamPhi->Draw();
+    
+    c6Gam->cd(4) ; 
+    fhGamEta->Draw();
+    
+    sprintf(name,"QA_%s_GammaReconstructedVSMCDistributions.eps",fCalorimeter.Data());
+    c6->Print(name); printf("Plot: %s\n",name);	
+    
+      //Generated - reconstructed  
+      //printf("c7\n");
+    sprintf(cname,"QA_%s_diffgenrec",fCalorimeter.Data());
+    TCanvas  * c7 = new TCanvas(cname, "generated - reconstructed", 400, 400) ;
+    c7->Divide(2, 2);
+    
+    c7->cd(1) ; 
+    if(fhDeltaE->GetEntries() > 0) gPad->SetLogy();
+    fhGamDeltaE->SetLineColor(4);
+    fhDeltaE->Draw();
+    fhGamDeltaE->Draw("same");
+    
+    TLegend pLegendd(0.65,0.55,0.9,0.8);
+    pLegendd.SetTextSize(0.06);
+    pLegendd.AddEntry(fhDeltaE,"all","L");
+    pLegendd.AddEntry(fhGamDeltaE,"from  #gamma","L");
+    pLegendd.SetFillColor(10);
+    pLegendd.SetBorderSize(1);
+    pLegendd.Draw();
+    
+    c7->cd(2) ; 
+    if(fhDeltaPt->GetEntries() > 0) gPad->SetLogy();
+    fhGamDeltaPt->SetLineColor(4);
+    fhDeltaPt->Draw();
+    fhGamDeltaPt->Draw("same");
+    
+    c7->cd(3) ; 
+    fhGamDeltaPhi->SetLineColor(4);
+    fhDeltaPhi->Draw();
+    fhGamDeltaPhi->Draw("same");
+    
+    c7->cd(4) ; 
+    fhGamDeltaEta->SetLineColor(4);
+    fhDeltaEta->Draw();
+    fhGamDeltaEta->Draw("same");
+    
+    sprintf(name,"QA_%s_DiffGeneratedReconstructed.eps",fCalorimeter.Data());
+    c7->Print(name); printf("Plot: %s\n",name);
+    
+      // Reconstructed / Generated 
+      //printf("c8\n");
+    sprintf(cname,"QA_%s_ratiorecgen",fCalorimeter.Data());
+    TCanvas  * c8 = new TCanvas(cname, " reconstructed / generated", 400, 400) ;
+    c8->Divide(2, 2);
+    
+    c8->cd(1) ; 
+    if(fhRatioE->GetEntries() > 0) gPad->SetLogy();
+    fhGamRatioE->SetLineColor(4);
+    fhRatioE->Draw();
+    fhGamRatioE->Draw("same");
+    
+    TLegend pLegendr(0.65,0.55,0.9,0.8);
+    pLegendr.SetTextSize(0.06);
+    pLegendr.AddEntry(fhRatioE,"all","L");
+    pLegendr.AddEntry(fhGamRatioE,"from  #gamma","L");
+    pLegendr.SetFillColor(10);
+    pLegendr.SetBorderSize(1);
+    pLegendr.Draw();
+    
+    c8->cd(2) ; 
+    if(fhRatioPt->GetEntries() > 0) gPad->SetLogy();
+    fhGamRatioPt->SetLineColor(4);
+    fhRatioPt->Draw();
+    fhGamRatioPt->Draw("same");
+    
+    c8->cd(3) ; 
+    fhGamRatioPhi->SetLineColor(4);
+    fhRatioPhi->Draw();
+    fhGamRatioPhi->Draw("same");
+    
+    c8->cd(4) ; 
+    fhGamRatioEta->SetLineColor(4);
+    fhRatioEta->Draw();
+    fhGamRatioEta->Draw("same");
+    
+    sprintf(name,"QA_%s_ReconstructedDivGenerated.eps",fCalorimeter.Data());
+    c8->Print(name); printf("Plot: %s\n",name);
+    
+      //MC
+    
+      //Generated distributions
+      //printf("c1\n");
+    sprintf(cname,"QA_%s_gen",fCalorimeter.Data());
+    TCanvas  * c10 = new TCanvas(cname, "Generated distributions", 600, 200) ;
+    c10->Divide(3, 1);
+    
+    c10->cd(1) ; 
+    gPad->SetLogy();
+    TH1F * haxispt  = (TH1F*) fhGenPi0Pt->Clone(Form("%s_axispt",fhGenPi0Pt->GetName()));  
+    haxispt->SetTitle("Generated Particles p_{T}, |#eta| < 1");
+    fhGenPi0Pt->SetLineColor(1);
+    fhGenGamPt->SetLineColor(4);
+    fhGenEtaPt->SetLineColor(2);
+    fhGenOmegaPt->SetLineColor(7);
+    fhGenElePt->SetLineColor(6);
+    
+      //Select the maximum of the histogram to show all lines.
+    if(fhGenPi0Pt->GetMaximum() >= fhGenGamPt->GetMaximum() && fhGenPi0Pt->GetMaximum() >= fhGenEtaPt->GetMaximum() && 
+       fhGenPi0Pt->GetMaximum() >= fhGenOmegaPt->GetMaximum() && fhGenPi0Pt->GetMaximum() >= fhGenElePt->GetMaximum())
+      haxispt->SetMaximum(fhGenPi0Pt->GetMaximum());
+    else if(fhGenGamPt->GetMaximum() >= fhGenPi0Pt->GetMaximum() && fhGenGamPt->GetMaximum() >= fhGenEtaPt->GetMaximum() && 
+            fhGenGamPt->GetMaximum() >= fhGenOmegaPt->GetMaximum() && fhGenGamPt->GetMaximum() >= fhGenElePt->GetMaximum())
+      haxispt->SetMaximum(fhGenGamPt->GetMaximum());
+    else if(fhGenEtaPt->GetMaximum() >= fhGenPi0Pt->GetMaximum() && fhGenEtaPt->GetMaximum() >= fhGenGamPt->GetMaximum() && 
+            fhGenEtaPt->GetMaximum() >= fhGenOmegaPt->GetMaximum() && fhGenEtaPt->GetMaximum() >= fhGenElePt->GetMaximum())
+      haxispt->SetMaximum(fhGenEtaPt->GetMaximum());	
+    else if(fhGenOmegaPt->GetMaximum() >= fhGenPi0Pt->GetMaximum() && fhGenOmegaPt->GetMaximum() >= fhGenEtaPt->GetMaximum() && 
+            fhGenOmegaPt->GetMaximum() >= fhGenGamPt->GetMaximum() && fhGenOmegaPt->GetMaximum() >= fhGenElePt->GetMaximum())
+      haxispt->SetMaximum(fhGenOmegaPt->GetMaximum());
+    else if(fhGenElePt->GetMaximum() >= fhGenPi0Pt->GetMaximum() && fhGenElePt->GetMaximum() >= fhGenEtaPt->GetMaximum() && 
+            fhGenElePt->GetMaximum() >= fhGenOmegaPt->GetMaximum() && fhGenElePt->GetMaximum() >= fhGenGamPt->GetMaximum())
+      haxispt->SetMaximum(fhGenElePt->GetMaximum());
+    haxispt->SetMinimum(1);
+    haxispt->Draw("axis");
+    fhGenPi0Pt->Draw("same");
+    fhGenGamPt->Draw("same");
+    fhGenEtaPt->Draw("same");
+    fhGenOmegaPt->Draw("same");
+    fhGenElePt->Draw("same");
+    
+    TLegend pLegend(0.85,0.65,0.95,0.93);
+    pLegend.SetTextSize(0.06);
+    pLegend.AddEntry(fhGenPi0Pt,"  #pi^{0}","L");
+    pLegend.AddEntry(fhGenGamPt,"  #gamma","L");
+    pLegend.AddEntry(fhGenEtaPt,"  #eta","L");
+    pLegend.AddEntry(fhGenOmegaPt,"  #omega","L");
+    pLegend.AddEntry(fhGenElePt,"  e^{#pm}","L");
+    pLegend.SetFillColor(10);
+    pLegend.SetBorderSize(1);
+    pLegend.Draw();
+    
+    c10->cd(2) ;
+    gPad->SetLogy();
+    TH1F * haxiseta  = (TH1F*) fhGenPi0Eta->Clone(Form("%s_axiseta",fhGenPi0Eta->GetName()));  
+    haxiseta->SetTitle("Generated Particles #eta, |#eta| < 1");
+    fhGenPi0Eta->SetLineColor(1);
+    fhGenGamEta->SetLineColor(4);
+    fhGenEtaEta->SetLineColor(2);
+    fhGenOmegaEta->SetLineColor(7);
+    fhGenEleEta->SetLineColor(6);
+      //Select the maximum of the histogram to show all lines.
+    if(fhGenPi0Eta->GetMaximum() >= fhGenGamEta->GetMaximum() && fhGenPi0Eta->GetMaximum() >= fhGenEtaEta->GetMaximum() && 
+       fhGenPi0Eta->GetMaximum() >= fhGenOmegaEta->GetMaximum() && fhGenPi0Eta->GetMaximum() >= fhGenEleEta->GetMaximum())
+      haxiseta->SetMaximum(fhGenPi0Eta->GetMaximum());
+    else if(fhGenGamEta->GetMaximum() >= fhGenPi0Eta->GetMaximum() && fhGenGamEta->GetMaximum() >= fhGenEtaEta->GetMaximum() && 
+            fhGenGamEta->GetMaximum() >= fhGenOmegaEta->GetMaximum() && fhGenGamEta->GetMaximum() >= fhGenEleEta->GetMaximum())
+      haxiseta->SetMaximum(fhGenGamEta->GetMaximum());
+    else if(fhGenEtaEta->GetMaximum() >= fhGenPi0Eta->GetMaximum() && fhGenEtaEta->GetMaximum() >= fhGenGamEta->GetMaximum() && 
+            fhGenEtaEta->GetMaximum() >= fhGenOmegaEta->GetMaximum() && fhGenEtaEta->GetMaximum() >= fhGenEleEta->GetMaximum())
+      haxiseta->SetMaximum(fhGenEtaEta->GetMaximum());	
+    else if(fhGenOmegaEta->GetMaximum() >= fhGenPi0Eta->GetMaximum() && fhGenOmegaEta->GetMaximum() >= fhGenEtaEta->GetMaximum() && 
+            fhGenOmegaEta->GetMaximum() >= fhGenGamEta->GetMaximum() && fhGenOmegaEta->GetMaximum() >= fhGenEleEta->GetMaximum())
+      haxiseta->SetMaximum(fhGenOmegaEta->GetMaximum());
+    else if(fhGenEleEta->GetMaximum() >= fhGenPi0Eta->GetMaximum() && fhGenEleEta->GetMaximum() >= fhGenEtaEta->GetMaximum() && 
+            fhGenEleEta->GetMaximum() >= fhGenOmegaEta->GetMaximum() && fhGenEleEta->GetMaximum() >= fhGenGamEta->GetMaximum())
+      haxiseta->SetMaximum(fhGenEleEta->GetMaximum());
+    haxiseta->SetMinimum(100);
+    haxiseta->Draw("axis");
+    fhGenPi0Eta->Draw("same");
+    fhGenGamEta->Draw("same");
+    fhGenEtaEta->Draw("same");
+    fhGenOmegaEta->Draw("same");
+    fhGenEleEta->Draw("same");
+    
+    
+    c10->cd(3) ; 
+    gPad->SetLogy();
+    TH1F * haxisphi  = (TH1F*) fhGenPi0Phi->Clone(Form("%s_axisphi",fhGenPi0Phi->GetName()));  
+    haxisphi->SetTitle("Generated Particles #phi, |#eta| < 1");
+    fhGenPi0Phi->SetLineColor(1);
+    fhGenGamPhi->SetLineColor(4);
+    fhGenEtaPhi->SetLineColor(2);
+    fhGenOmegaPhi->SetLineColor(7);
+    fhGenElePhi->SetLineColor(6);
+      //Select the maximum of the histogram to show all lines.
+    if(fhGenPi0Phi->GetMaximum() >= fhGenGamPhi->GetMaximum() && fhGenPi0Phi->GetMaximum() >= fhGenEtaPhi->GetMaximum() && 
+       fhGenPi0Phi->GetMaximum() >= fhGenOmegaPhi->GetMaximum() && fhGenPi0Phi->GetMaximum() >= fhGenElePhi->GetMaximum())
+      haxisphi->SetMaximum(fhGenPi0Phi->GetMaximum());
+    else if(fhGenGamPhi->GetMaximum() >= fhGenPi0Phi->GetMaximum() && fhGenGamPhi->GetMaximum() >= fhGenEtaPhi->GetMaximum() && 
+            fhGenGamPhi->GetMaximum() >= fhGenOmegaPhi->GetMaximum() && fhGenGamPhi->GetMaximum() >= fhGenElePhi->GetMaximum())
+      haxisphi->SetMaximum(fhGenGamPhi->GetMaximum());
+    else if(fhGenEtaPhi->GetMaximum() >= fhGenPi0Phi->GetMaximum() && fhGenEtaPhi->GetMaximum() >= fhGenGamPhi->GetMaximum() && 
+            fhGenEtaPhi->GetMaximum() >= fhGenOmegaPhi->GetMaximum() && fhGenEtaPhi->GetMaximum() >= fhGenElePhi->GetMaximum())
+      haxisphi->SetMaximum(fhGenEtaPhi->GetMaximum());	
+    else if(fhGenOmegaPhi->GetMaximum() >= fhGenPi0Phi->GetMaximum() && fhGenOmegaPhi->GetMaximum() >= fhGenEtaPhi->GetMaximum() && 
+            fhGenOmegaPhi->GetMaximum() >= fhGenGamPhi->GetMaximum() && fhGenOmegaPhi->GetMaximum() >= fhGenElePhi->GetMaximum())
+      haxisphi->SetMaximum(fhGenOmegaPhi->GetMaximum());
+    else if(fhGenElePhi->GetMaximum() >= fhGenPi0Phi->GetMaximum() && fhGenElePhi->GetMaximum() >= fhGenEtaPhi->GetMaximum() && 
+            fhGenElePhi->GetMaximum() >= fhGenOmegaPhi->GetMaximum() && fhGenElePhi->GetMaximum() >= fhGenGamPhi->GetMaximum())
+      haxisphi->SetMaximum(fhGenElePhi->GetMaximum());
+    haxisphi->SetMinimum(100);
+    haxisphi->Draw("axis");
+    fhGenPi0Phi->Draw("same");
+    fhGenGamPhi->Draw("same");
+    fhGenEtaPhi->Draw("same");
+    fhGenOmegaPhi->Draw("same");
+    fhGenElePhi->Draw("same");
+    
+    sprintf(name,"QA_%s_GeneratedDistributions.eps",fCalorimeter.Data());
+    c10->Print(name); printf("Plot: %s\n",name);
+    
+    
+      //Reconstructed clusters depending on its original particle.
+      //printf("c1\n");
+    sprintf(cname,"QA_%s_recgenid",fCalorimeter.Data());
+    TCanvas  * c11 = new TCanvas(cname, "Reconstructed particles, function of their original particle ID", 400, 400) ;
+    c11->Divide(2, 2);
+    
+    
+    c11->cd(1) ; 
+    gPad->SetLogy();
+    TH1F * hGamE   = (TH1F*) fhGamE->ProjectionX(Form("%s_px",fhGamE->GetName()),-1,-1);
+    TH1F * hPi0E   = (TH1F*) fhPi0E->ProjectionX(Form("%s_px",fhPi0E->GetName()),-1,-1);
+    TH1F * hEleE   = (TH1F*) fhEleE->ProjectionX(Form("%s_px",fhEleE->GetName()),-1,-1);
+    TH1F * hNeHadE = (TH1F*) fhNeHadE->ProjectionX(Form("%s_px",fhNeHadE->GetName()),-1,-1);
+    TH1F * hChHadE = (TH1F*) fhChHadE->ProjectionX(Form("%s_px",fhChHadE->GetName()),-1,-1);
+    TH1F * haxisE  = (TH1F*) hPi0E->Clone(Form("%s_axisE",fhPi0E->GetName()));  
+    haxisE->SetTitle("Reconstructed particles E, function of their original particle ID");
+    hPi0E->SetLineColor(1);
+    hGamE->SetLineColor(4);
+    hNeHadE->SetLineColor(2);
+    hChHadE->SetLineColor(7);
+    hEleE->SetLineColor(6);
+    
+      //Select the maximum of the histogram to show all lines.
+    if(hPi0E->GetMaximum() >= hGamE->GetMaximum() && hPi0E->GetMaximum() >= hNeHadE->GetMaximum() && 
+       hPi0E->GetMaximum() >= hChHadE->GetMaximum() && hPi0E->GetMaximum() >= hEleE->GetMaximum())
+      haxisE->SetMaximum(hPi0E->GetMaximum());
+    else if(hGamE->GetMaximum() >= hPi0E->GetMaximum() && hGamE->GetMaximum() >= hNeHadE->GetMaximum() && 
+            hGamE->GetMaximum() >= hChHadE->GetMaximum() && hGamE->GetMaximum() >= hEleE->GetMaximum())
+      haxisE->SetMaximum(hGamE->GetMaximum());
+    else if(hNeHadE->GetMaximum() >= hPi0E->GetMaximum() && hNeHadE->GetMaximum() >= hGamE->GetMaximum() && 
+            hNeHadE->GetMaximum() >= hChHadE->GetMaximum() && hNeHadE->GetMaximum() >= hEleE->GetMaximum())
+      haxisE->SetMaximum(hNeHadE->GetMaximum());	
+    else if(hChHadE->GetMaximum() >= hPi0E->GetMaximum() && hChHadE->GetMaximum() >= hNeHadE->GetMaximum() && 
+            hChHadE->GetMaximum() >= hGamE->GetMaximum() && hChHadE->GetMaximum() >= hEleE->GetMaximum())
+      haxisE->SetMaximum(hChHadE->GetMaximum());
+    else if(hEleE->GetMaximum() >= hPi0E->GetMaximum() && hEleE->GetMaximum() >= hNeHadE->GetMaximum() && 
+            hEleE->GetMaximum() >= hChHadE->GetMaximum() && hEleE->GetMaximum() >= hGamE->GetMaximum())
+      haxisE->SetMaximum(hEleE->GetMaximum());
+    haxisE->SetXTitle("E (GeV)");
+    haxisE->SetMinimum(1);
+    haxisE->Draw("axis");
+    hPi0E->Draw("same");
+    hGamE->Draw("same");
+    hNeHadE->Draw("same");
+    hChHadE->Draw("same");
+    hEleE->Draw("same");
+    
+    TLegend pLegend2(0.8,0.65,0.95,0.93);
+    pLegend2.SetTextSize(0.06);
+    pLegend2.AddEntry(hPi0E,"  #pi^{0}","L");
+    pLegend2.AddEntry(hGamE,"  #gamma","L");
+    pLegend2.AddEntry(hEleE,"  e^{#pm}","L");
+    pLegend2.AddEntry(hChHadE,"  h^{#pm}","L");
+    pLegend2.AddEntry(hNeHadE,"  h^{0}","L");
+    pLegend2.SetFillColor(10);
+    pLegend2.SetBorderSize(1);
+    pLegend2.Draw();
+    
+    
+    c11->cd(2) ; 
+    gPad->SetLogy();
+      //printf("%s, %s, %s, %s, %s\n",fhGamPt->GetName(),fhPi0Pt->GetName(),fhElePt->GetName(),fhNeHadPt->GetName(), fhChHadPt->GetName());
+    TH1F * hGamPt   = (TH1F*) fhGamPt->ProjectionX(Form("%s_px",fhGamPt->GetName()),-1,-1);
+    TH1F * hPi0Pt   = (TH1F*) fhPi0Pt->ProjectionX(Form("%s_px",fhPi0Pt->GetName()),-1,-1);
+    TH1F * hElePt   = (TH1F*) fhElePt->ProjectionX(Form("%s_px",fhElePt->GetName()),-1,-1);
+    TH1F * hNeHadPt = (TH1F*) fhNeHadPt->ProjectionX(Form("%s_px",fhNeHadPt->GetName()),-1,-1);
+    TH1F * hChHadPt = (TH1F*) fhChHadPt->ProjectionX(Form("%s_px",fhChHadPt->GetName()),-1,-1);
+    haxispt  = (TH1F*) hPi0Pt->Clone(Form("%s_axisPt",fhPi0Pt->GetName()));  
+    haxispt->SetTitle("Reconstructed particles p_{T}, function of their original particle ID");
+    hPi0Pt->SetLineColor(1);
+    hGamPt->SetLineColor(4);
+    hNeHadPt->SetLineColor(2);
+    hChHadPt->SetLineColor(7);
+    hElePt->SetLineColor(6);
+    
+      //Select the maximum of the histogram to show all lines.
+    if(hPi0Pt->GetMaximum() >= hGamPt->GetMaximum() && hPi0Pt->GetMaximum() >= hNeHadPt->GetMaximum() && 
+       hPi0Pt->GetMaximum() >= hChHadPt->GetMaximum() && hPi0Pt->GetMaximum() >= hElePt->GetMaximum())
+      haxispt->SetMaximum(hPi0Pt->GetMaximum());
+    else if(hGamPt->GetMaximum() >= hPi0Pt->GetMaximum() && hGamPt->GetMaximum() >= hNeHadPt->GetMaximum() && 
+            hGamPt->GetMaximum() >= hChHadPt->GetMaximum() && hGamPt->GetMaximum() >= hElePt->GetMaximum())
+      haxispt->SetMaximum(hGamPt->GetMaximum());
+    else if(hNeHadPt->GetMaximum() >= hPi0Pt->GetMaximum() && hNeHadPt->GetMaximum() >= hGamPt->GetMaximum() && 
+            hNeHadPt->GetMaximum() >= hChHadPt->GetMaximum() && hNeHadPt->GetMaximum() >= hElePt->GetMaximum())
+      haxispt->SetMaximum(hNeHadPt->GetMaximum());	
+    else if(hChHadPt->GetMaximum() >= hPi0Pt->GetMaximum() && hChHadPt->GetMaximum() >= hNeHadPt->GetMaximum() && 
+            hChHadPt->GetMaximum() >= hGamPt->GetMaximum() && hChHadPt->GetMaximum() >= hElePt->GetMaximum())
+      haxispt->SetMaximum(hChHadPt->GetMaximum());
+    else if(hElePt->GetMaximum() >= hPi0Pt->GetMaximum() && hElePt->GetMaximum() >= hNeHadPt->GetMaximum() && 
+            hElePt->GetMaximum() >= hChHadPt->GetMaximum() && hElePt->GetMaximum() >= hGamPt->GetMaximum())
+      haxispt->SetMaximum(hElePt->GetMaximum());
+    haxispt->SetXTitle("p_{T} (GeV/c)");
+    haxispt->SetMinimum(1);
+    haxispt->Draw("axis");
+    hPi0Pt->Draw("same");
+    hGamPt->Draw("same");
+    hNeHadPt->Draw("same");
+    hChHadPt->Draw("same");
+    hElePt->Draw("same");
+    
+    c11->cd(3) ;
+    gPad->SetLogy();
+    
+    TH1F * hGamEta   = (TH1F*) fhGamEta->ProjectionX(Form("%s_px",fhGamEta->GetName()),-1,-1);
+    TH1F * hPi0Eta   = (TH1F*) fhPi0Eta->ProjectionX(Form("%s_px",fhPi0Eta->GetName()),-1,-1);
+    TH1F * hEleEta   = (TH1F*) fhEleEta->ProjectionX(Form("%s_px",fhEleEta->GetName()),-1,-1);
+    TH1F * hNeHadEta = (TH1F*) fhNeHadEta->ProjectionX(Form("%s_px",fhNeHadEta->GetName()),-1,-1);
+    TH1F * hChHadEta = (TH1F*) fhChHadEta->ProjectionX(Form("%s_px",fhChHadEta->GetName()),-1,-1);
+    haxiseta  = (TH1F*) hPi0Eta->Clone(Form("%s_axisEta",fhPi0Eta->GetName()));  
+    haxiseta->SetTitle("Reconstructed particles #eta, function of their original particle ID");
+    hPi0Eta->SetLineColor(1);
+    hGamEta->SetLineColor(4);
+    hNeHadEta->SetLineColor(2);
+    hChHadEta->SetLineColor(7);
+    hEleEta->SetLineColor(6);
+      //Select the maximum of the histogram to show all lines.
+    if(hPi0Eta->GetMaximum() >= hGamEta->GetMaximum() && hPi0Eta->GetMaximum() >= hNeHadEta->GetMaximum() && 
+       hPi0Eta->GetMaximum() >= hChHadEta->GetMaximum() && hPi0Eta->GetMaximum() >= hEleEta->GetMaximum())
+      haxiseta->SetMaximum(hPi0Eta->GetMaximum());
+    else if(hGamEta->GetMaximum() >= hPi0Eta->GetMaximum() && hGamEta->GetMaximum() >= hNeHadEta->GetMaximum() && 
+            hGamEta->GetMaximum() >= hChHadEta->GetMaximum() && hGamEta->GetMaximum() >= hEleEta->GetMaximum())
+      haxiseta->SetMaximum(hGamEta->GetMaximum());
+    else if(hNeHadEta->GetMaximum() >= hPi0Eta->GetMaximum() && hNeHadEta->GetMaximum() >= hGamEta->GetMaximum() && 
+            hNeHadEta->GetMaximum() >= hChHadEta->GetMaximum() && hNeHadEta->GetMaximum() >= hEleEta->GetMaximum())
+      haxiseta->SetMaximum(hNeHadEta->GetMaximum());	
+    else if(hChHadEta->GetMaximum() >= hPi0Eta->GetMaximum() && hChHadEta->GetMaximum() >= hNeHadEta->GetMaximum() && 
+            hChHadEta->GetMaximum() >= hGamEta->GetMaximum() && hChHadEta->GetMaximum() >= hEleEta->GetMaximum())
+      haxiseta->SetMaximum(hChHadEta->GetMaximum());
+    else if(hEleEta->GetMaximum() >= hPi0Eta->GetMaximum() && hEleEta->GetMaximum() >= hNeHadEta->GetMaximum() && 
+            hEleEta->GetMaximum() >= hChHadEta->GetMaximum() && hEleEta->GetMaximum() >= hGamEta->GetMaximum())
+      haxiseta->SetMaximum(hEleEta->GetMaximum());
+    
+    haxiseta->SetXTitle("#eta");
+    haxiseta->Draw("axis");
+    hPi0Eta->Draw("same");
+    hGamEta->Draw("same");
+    hNeHadEta->Draw("same");
+    hChHadEta->Draw("same");
+    hEleEta->Draw("same");
+    
+    
+    c11->cd(4) ; 
+    gPad->SetLogy();
+    TH1F * hGamPhi   = (TH1F*) fhGamPhi->ProjectionX(Form("%s_px",fhGamPhi->GetName()),-1,-1);
+    TH1F * hPi0Phi   = (TH1F*) fhPi0Phi->ProjectionX(Form("%s_px",fhPi0Phi->GetName()),-1,-1);
+    TH1F * hElePhi   = (TH1F*) fhElePhi->ProjectionX(Form("%s_px",fhElePhi->GetName()),-1,-1);
+    TH1F * hNeHadPhi = (TH1F*) fhNeHadPhi->ProjectionX(Form("%s_px",fhNeHadPhi->GetName()),-1,-1);
+    TH1F * hChHadPhi = (TH1F*) fhChHadPhi->ProjectionX(Form("%s_px",fhChHadPhi->GetName()),-1,-1);
+    haxisphi  = (TH1F*) hPi0Phi->Clone(Form("%s_axisPhi",fhPi0Phi->GetName()));  
+    haxisphi->SetTitle("Reconstructed particles #phi, function of their original particle ID");
+    
+    hPi0Phi->SetLineColor(1);
+    hGamPhi->SetLineColor(4);
+    hNeHadPhi->SetLineColor(2);
+    hChHadPhi->SetLineColor(7);
+    hElePhi->SetLineColor(6);
+      //Select the maximum of the histogram to show all lines.
+    if(hPi0Phi->GetMaximum() >= hGamPhi->GetMaximum() && hPi0Phi->GetMaximum() >= hNeHadPhi->GetMaximum() && 
+       hPi0Phi->GetMaximum() >= hChHadPhi->GetMaximum() && hPi0Phi->GetMaximum() >= hElePhi->GetMaximum())
+      haxisphi->SetMaximum(hPi0Phi->GetMaximum());
+    else if(hGamPhi->GetMaximum() >= hPi0Phi->GetMaximum() && hGamPhi->GetMaximum() >= hNeHadPhi->GetMaximum() && 
+            hGamPhi->GetMaximum() >= hChHadPhi->GetMaximum() && hGamPhi->GetMaximum() >= hElePhi->GetMaximum())
+      haxisphi->SetMaximum(hGamPhi->GetMaximum());
+    else if(hNeHadPhi->GetMaximum() >= hPi0Phi->GetMaximum() && hNeHadPhi->GetMaximum() >= hGamPhi->GetMaximum() && 
+            hNeHadPhi->GetMaximum() >= hChHadPhi->GetMaximum() && hNeHadPhi->GetMaximum() >= hElePhi->GetMaximum())
+      haxisphi->SetMaximum(hNeHadPhi->GetMaximum());	
+    else if(hChHadPhi->GetMaximum() >= hPi0Phi->GetMaximum() && hChHadPhi->GetMaximum() >= hNeHadPhi->GetMaximum() && 
+            hChHadPhi->GetMaximum() >= hGamPhi->GetMaximum() && hChHadPhi->GetMaximum() >= hElePhi->GetMaximum())
+      haxisphi->SetMaximum(hChHadPhi->GetMaximum());
+    else if(hElePhi->GetMaximum() >= hPi0Phi->GetMaximum() && hElePhi->GetMaximum() >= hNeHadPhi->GetMaximum() && 
+            hElePhi->GetMaximum() >= hChHadPhi->GetMaximum() && hElePhi->GetMaximum() >= hGamPhi->GetMaximum())
+      haxisphi->SetMaximum(hElePhi->GetMaximum());
+    haxisphi->SetXTitle("#phi (rad)");
+    haxisphi->Draw("axis");
+    hPi0Phi->Draw("same");
+    hGamPhi->Draw("same");
+    hNeHadPhi->Draw("same");
+    hChHadPhi->Draw("same");
+    hElePhi->Draw("same");
+    
+    sprintf(name,"QA_%s_RecDistributionsGenID.eps",fCalorimeter.Data());
+    c11->Print(name); printf("Plot: %s\n",name);
+    
+    
+      //Ratio reconstructed clusters / generated particles in acceptance, for different particle ID
+      //printf("c1\n");
+    
+    TH1F *	hPi0EClone   = (TH1F*)   hPi0E  ->Clone(Form("%s_Clone",fhPi0E->GetName()));
+    TH1F *	hGamEClone   = (TH1F*)   hGamE  ->Clone(Form("%s_Clone",fhGamE->GetName()));
+    TH1F *	hPi0PtClone  = (TH1F*)   hPi0Pt ->Clone(Form("%s_Clone",fhPi0Pt->GetName()));
+    TH1F *	hGamPtClone  = (TH1F*)   hGamPt ->Clone(Form("%s_Clone",fhGamPt->GetName()));	
+    TH1F *	hPi0EtaClone = (TH1F*)   hPi0Eta->Clone(Form("%s_Clone",fhPi0Eta->GetName()));
+    TH1F *	hGamEtaClone = (TH1F*)   hGamEta->Clone(Form("%s_Clone",fhGamEta->GetName()));	
+    TH1F *	hPi0PhiClone = (TH1F*)   hPi0Phi->Clone(Form("%s_Clone",fhPi0Phi->GetName()));
+    TH1F *	hGamPhiClone = (TH1F*)   hGamPhi->Clone(Form("%s_Clone",fhGamPhi->GetName()));	
+    
+    sprintf(cname,"QA_%s_recgenidratio",fCalorimeter.Data());
+    TCanvas  * c12 = new TCanvas(cname, "Ratio reconstructed clusters / generated particles in acceptance, for different particle ID", 400, 400) ;
+    c12->Divide(2, 2);
+    
+    c12->cd(1) ; 
+    gPad->SetLogy();
+    haxisE->SetTitle("Ratio reconstructed clusters / generated particles in acceptance, for different particle ID");
+    hPi0EClone->Divide(fhGenPi0AccE);
+    hGamEClone->Divide(fhGenGamAccE);
+    haxisE->SetMaximum(5);
+    haxisE->SetMinimum(1e-2);
+    haxisE->SetXTitle("E (GeV)");
+    haxisE->SetYTitle("ratio = rec/gen");
+    haxisE->Draw("axis");
+    hPi0E->Draw("same");
+    hGamE->Draw("same");
+    
+    TLegend pLegend3(0.75,0.2,0.9,0.4);
+    pLegend3.SetTextSize(0.06);
+    pLegend3.AddEntry(hPi0EClone,"  #pi^{0}","L");
+    pLegend3.AddEntry(hGamEClone,"  #gamma","L");
+    pLegend3.SetFillColor(10);
+    pLegend3.SetBorderSize(1);
+    pLegend3.Draw();
+    
+    c12->cd(2) ; 
+    gPad->SetLogy();
+    haxispt->SetTitle("Ratio reconstructed clusters / generated particles in acceptance, for different particle ID");
+    hPi0PtClone->Divide(fhGenPi0AccPt);
+    hGamPtClone->Divide(fhGenGamAccPt);
+    haxispt->SetMaximum(5);
+    haxispt->SetMinimum(1e-2);
+    haxispt->SetXTitle("p_{T} (GeV/c)");
+    haxispt->SetYTitle("ratio = rec/gen");
+    haxispt->Draw("axis");
+    hPi0PtClone->Draw("same");
+    hGamPtClone->Draw("same");
+    
+    c12->cd(3) ;
+    gPad->SetLogy();
+    
+    haxiseta->SetTitle("Ratio reconstructed clusters / generated particles in acceptance, for different particle ID");
+    hPi0EtaClone->Divide(fhGenPi0AccEta);
+    hGamEtaClone->Divide(fhGenGamAccEta);
+    haxiseta->SetMaximum(1.2);
+    haxiseta->SetMinimum(1e-2);
+    haxiseta->SetYTitle("ratio = rec/gen");
+    haxiseta->SetXTitle("#eta");
+    haxiseta->Draw("axis");
+    hPi0EtaClone->Draw("same");
+    hGamEtaClone->Draw("same");
+    
+    
+    c12->cd(4) ; 
+    gPad->SetLogy();
+    haxisphi->SetTitle("Ratio reconstructed clusters / generated particles in acceptance, for different particle ID");
+    hPi0PhiClone->Divide(fhGenPi0AccPhi);
+    hGamPhiClone->Divide(fhGenGamAccPhi);
+    haxisphi->SetYTitle("ratio = rec/gen");
+    haxisphi->SetXTitle("#phi (rad)");
+    haxisphi->SetMaximum(1.2);
+    haxisphi->SetMinimum(1e-2);
+    haxisphi->Draw("axis");
+    hPi0PhiClone->Draw("same");
+    hGamPhiClone->Draw("same");
+    
+    sprintf(name,"QA_%s_EfficiencyGenID.eps",fCalorimeter.Data());
+    c12->Print(name); printf("Plot: %s\n",name);
+    
+    
+    
+      //Reconstructed distributions
+      //printf("c1\n");
+    sprintf(cname,"QA_%s_vertex",fCalorimeter.Data());
+    TCanvas  * c13 = new TCanvas(cname, "Particle vertex", 400, 400) ;
+    c13->Divide(2, 2);
+    
+    c13->cd(1) ; 
+      //gPad->SetLogy();
+    fhEMVxyz->SetTitleOffset(1.6,"Y");
+    fhEMVxyz->Draw();
+    
+    c13->cd(2) ; 
+      //gPad->SetLogy();
+    fhHaVxyz->SetTitleOffset(1.6,"Y");
+    fhHaVxyz->Draw();
+    
+    c13->cd(3) ;
+    gPad->SetLogy();
+    TH1F * hEMR = (TH1F*) fhEMR->ProjectionY(Form("%s_py",fhEMR->GetName()),-1,-1); 
+    hEMR->SetLineColor(4);
+    hEMR->Draw();
+    
+    c13->cd(4) ; 
+    gPad->SetLogy();
+    TH1F * hHaR = (TH1F*) fhHaR->ProjectionY(Form("%s_py",fhHaR->GetName()),-1,-1); 
+    hHaR->SetLineColor(4);
+    hHaR->Draw();
+    
+    
+    sprintf(name,"QA_%s_ParticleVertex.eps",fCalorimeter.Data());
+    c13->Print(name); printf("Plot: %s\n",name);
+    
+    
+      //Track-matching distributions
+    
+      //Reconstructed distributions, matched with tracks, generated particle dependence
+      //printf("c2\n");
+    sprintf(cname,"QA_%s_rectrackmatchGenID",fCalorimeter.Data());
+    TCanvas  * c22ch = new TCanvas(cname, "Reconstructed distributions, matched with tracks, for different particle ID", 400, 400) ;
+    c22ch->Divide(2, 2);
+    
+    c22ch->cd(1) ; 
+    
+    TH1F * hGamECharged   = (TH1F*) fhGamECharged->ProjectionX(Form("%s_px",fhGamECharged->GetName()),-1,-1);
+    TH1F * hPi0ECharged   = (TH1F*) fhPi0ECharged->ProjectionX(Form("%s_px",fhPi0ECharged->GetName()),-1,-1);
+    TH1F * hEleECharged   = (TH1F*) fhEleECharged->ProjectionX(Form("%s_px",fhEleECharged->GetName()),-1,-1);
+    TH1F * hNeHadECharged = (TH1F*) fhNeHadECharged->ProjectionX(Form("%s_px",fhNeHadECharged->GetName()),-1,-1);
+    TH1F * hChHadECharged = (TH1F*) fhChHadECharged->ProjectionX(Form("%s_px",fhChHadECharged->GetName()),-1,-1);
+    hPi0ECharged->SetLineColor(1);
+    hGamECharged->SetLineColor(4);
+    hNeHadECharged->SetLineColor(2);
+    hChHadECharged->SetLineColor(7);
+    hEleECharged->SetLineColor(6);	
+    gPad->SetLogy();
+    fhECharged->SetLineColor(3);
+    fhECharged->SetMinimum(0.5);
+    fhECharged->Draw();
+    hPi0ECharged->Draw("same");
+    hGamECharged->Draw("same");
+    hNeHadECharged->Draw("same");
+    hChHadECharged->Draw("same");
+    hEleECharged->Draw("same");
+    TLegend pLegend22(0.75,0.45,0.9,0.8);
+    pLegend22.SetTextSize(0.06);
+    pLegend22.AddEntry(fhECharged,"all","L");
+    pLegend22.AddEntry(hPi0ECharged,"#pi^{0}","L");
+    pLegend22.AddEntry(hGamECharged,"#gamma","L");
+    pLegend22.AddEntry(hEleECharged,"e^{#pm}","L");
+    pLegend22.AddEntry(hChHadECharged,"h^{#pm}","L");
+    pLegend22.AddEntry(hNeHadECharged,"h^{0}","L");
+    pLegend22.SetFillColor(10);
+    pLegend22.SetBorderSize(1);
+    pLegend22.Draw();
+    
+    c22ch->cd(2) ; 
+    
+    TH1F * hGamPtCharged   = (TH1F*) fhGamPtCharged->ProjectionX(Form("%s_px",fhGamPtCharged->GetName()),-1,-1);
+    TH1F * hPi0PtCharged   = (TH1F*) fhPi0PtCharged->ProjectionX(Form("%s_px",fhPi0PtCharged->GetName()),-1,-1);
+    TH1F * hElePtCharged   = (TH1F*) fhElePtCharged->ProjectionX(Form("%s_px",fhElePtCharged->GetName()),-1,-1);
+    TH1F * hNeHadPtCharged = (TH1F*) fhNeHadPtCharged->ProjectionX(Form("%s_px",fhNeHadPtCharged->GetName()),-1,-1);
+    TH1F * hChHadPtCharged = (TH1F*) fhChHadPtCharged->ProjectionX(Form("%s_px",fhChHadPtCharged->GetName()),-1,-1);
+    hPi0PtCharged->SetLineColor(1);
+    hGamPtCharged->SetLineColor(4);
+    hNeHadPtCharged->SetLineColor(2);
+    hChHadPtCharged->SetLineColor(7);
+    hElePtCharged->SetLineColor(6);	
+    gPad->SetLogy();
+    fhPtCharged->SetLineColor(3);
+    fhPtCharged->SetMinimum(0.5);
+    fhPtCharged->Draw();
+    hPi0PtCharged->Draw("same");
+    hGamPtCharged->Draw("same");
+    hNeHadPtCharged->Draw("same");
+    hChHadPtCharged->Draw("same");
+    hElePtCharged->Draw("same");	
+    
+    c22ch->cd(4) ; 
+    
+    TH1F * hGamEtaCharged   = (TH1F*) fhGamEtaCharged->ProjectionX(Form("%s_px",fhGamEtaCharged->GetName()),-1,-1);
+    TH1F * hPi0EtaCharged   = (TH1F*) fhPi0EtaCharged->ProjectionX(Form("%s_px",fhPi0EtaCharged->GetName()),-1,-1);
+    TH1F * hEleEtaCharged   = (TH1F*) fhEleEtaCharged->ProjectionX(Form("%s_px",fhEleEtaCharged->GetName()),-1,-1);
+    TH1F * hNeHadEtaCharged = (TH1F*) fhNeHadEtaCharged->ProjectionX(Form("%s_px",fhNeHadEtaCharged->GetName()),-1,-1);
+    TH1F * hChHadEtaCharged = (TH1F*) fhChHadEtaCharged->ProjectionX(Form("%s_px",fhChHadEtaCharged->GetName()),-1,-1);
+    hPi0EtaCharged->SetLineColor(1);
+    hGamEtaCharged->SetLineColor(4);
+    hNeHadEtaCharged->SetLineColor(2);
+    hChHadEtaCharged->SetLineColor(7);
+    hEleEtaCharged->SetLineColor(6);	
+    gPad->SetLogy();
+    fhEtaCharged->SetLineColor(3);
+    fhEtaCharged->SetMinimum(0.5);
+    fhEtaCharged->Draw();
+    hPi0EtaCharged->Draw("same");
+    hGamEtaCharged->Draw("same");
+    hNeHadEtaCharged->Draw("same");
+    hChHadEtaCharged->Draw("same");
+    hEleEtaCharged->Draw("same");
+    
+    c22ch->cd(3) ; 
+    
+    TH1F * hGamPhiCharged   = (TH1F*) fhGamPhiCharged->ProjectionX(Form("%s_px",fhGamPhiCharged->GetName()),-1,-1);
+    TH1F * hPi0PhiCharged   = (TH1F*) fhPi0PhiCharged->ProjectionX(Form("%s_px",fhPi0PhiCharged->GetName()),-1,-1);
+    TH1F * hElePhiCharged   = (TH1F*) fhElePhiCharged->ProjectionX(Form("%s_px",fhElePhiCharged->GetName()),-1,-1);
+    TH1F * hNeHadPhiCharged = (TH1F*) fhNeHadPhiCharged->ProjectionX(Form("%s_px",fhNeHadPhiCharged->GetName()),-1,-1);
+    TH1F * hChHadPhiCharged = (TH1F*) fhChHadPhiCharged->ProjectionX(Form("%s_px",fhChHadPhiCharged->GetName()),-1,-1);
+    hPi0PhiCharged->SetLineColor(1);
+    hGamPhiCharged->SetLineColor(4);
+    hNeHadPhiCharged->SetLineColor(2);
+    hChHadPhiCharged->SetLineColor(7);
+    hElePhiCharged->SetLineColor(6);	
+    gPad->SetLogy();
+    fhPhiCharged->SetLineColor(3);
+    fhPhiCharged->SetMinimum(0.5);
+    fhPhiCharged->Draw();
+    hPi0PhiCharged->Draw("same");
+    hGamPhiCharged->Draw("same");
+    hNeHadPhiCharged->Draw("same");
+    hChHadPhiCharged->Draw("same");
+    hElePhiCharged->Draw("same");
+    
+    
+    sprintf(name,"QA_%s_ReconstructedDistributions_TrackMatchedGenID.eps",fCalorimeter.Data());
+    c22ch->Print(name); printf("Plot: %s\n",name);
+    
+    TH1F *	hGamEChargedClone   = (TH1F*)   hGamECharged->Clone(Form("%s_Clone",fhGamECharged->GetName()));
+    TH1F *	hGamPtChargedClone  = (TH1F*)   hGamPtCharged->Clone(Form("%s_Clone",fhGamPtCharged->GetName()));
+    TH1F *	hGamEtaChargedClone = (TH1F*)   hGamEtaCharged->Clone(Form("%s_Clone",fhGamEtaCharged->GetName()));
+    TH1F *	hGamPhiChargedClone = (TH1F*)   hGamPhiCharged->Clone(Form("%s_Clone",fhGamPhiCharged->GetName()));
+    
+    TH1F *	hPi0EChargedClone   = (TH1F*)   hPi0ECharged->Clone(Form("%s_Clone",fhPi0ECharged->GetName()));
+    TH1F *	hPi0PtChargedClone  = (TH1F*)   hPi0PtCharged->Clone(Form("%s_Clone",fhPi0PtCharged->GetName()));
+    TH1F *	hPi0EtaChargedClone = (TH1F*)   hPi0EtaCharged->Clone(Form("%s_Clone",fhPi0EtaCharged->GetName()));
+    TH1F *	hPi0PhiChargedClone = (TH1F*)   hPi0PhiCharged->Clone(Form("%s_Clone",fhPi0PhiCharged->GetName()));
+    
+    TH1F *	hEleEChargedClone   = (TH1F*)   hEleECharged->Clone(Form("%s_Clone",fhEleECharged->GetName()));
+    TH1F *	hElePtChargedClone  = (TH1F*)   hElePtCharged->Clone(Form("%s_Clone",fhElePtCharged->GetName()));
+    TH1F *	hEleEtaChargedClone = (TH1F*)   hEleEtaCharged->Clone(Form("%s_Clone",fhEleEtaCharged->GetName()));
+    TH1F *	hElePhiChargedClone = (TH1F*)   hElePhiCharged->Clone(Form("%s_Clone",fhElePhiCharged->GetName()));	
+    
+    TH1F *	hNeHadEChargedClone   = (TH1F*)   hNeHadECharged->Clone(Form("%s_Clone",fhNeHadECharged->GetName()));
+    TH1F *	hNeHadPtChargedClone  = (TH1F*)   hNeHadPtCharged->Clone(Form("%s_Clone",fhNeHadPtCharged->GetName()));
+    TH1F *	hNeHadEtaChargedClone = (TH1F*)   hNeHadEtaCharged->Clone(Form("%s_Clone",fhNeHadEtaCharged->GetName()));
+    TH1F *	hNeHadPhiChargedClone = (TH1F*)   hNeHadPhiCharged->Clone(Form("%s_Clone",fhNeHadPhiCharged->GetName()));
+    
+    TH1F *	hChHadEChargedClone   = (TH1F*)   hChHadECharged->Clone(Form("%s_Clone",fhChHadECharged->GetName()));
+    TH1F *	hChHadPtChargedClone  = (TH1F*)   hChHadPtCharged->Clone(Form("%s_Clone",fhChHadPtCharged->GetName()));
+    TH1F *	hChHadEtaChargedClone = (TH1F*)   hChHadEtaCharged->Clone(Form("%s_Clone",fhChHadEtaCharged->GetName()));
+    TH1F *	hChHadPhiChargedClone = (TH1F*)   hChHadPhiCharged->Clone(Form("%s_Clone",fhChHadPhiCharged->GetName()));	
+    
+      //Ratio: reconstructed track matched/ all reconstructed
+      //printf("c3\n");
+    sprintf(cname,"QA_%s_rectrackmatchratGenID",fCalorimeter.Data());
+    TCanvas  * c3ch = new TCanvas(cname, "Ratio: reconstructed track matched/ all reconstructed, for different particle ID", 400, 400) ;
+    c3ch->Divide(2, 2);
+    
+    c3ch->cd(1) ;
+    hEChargedClone->SetMaximum(1.2);
+    hEChargedClone->SetMinimum(0.001);	
+    hEChargedClone->SetLineColor(3);
+    hEChargedClone->SetYTitle("track matched / all");
+    hPi0EChargedClone->Divide(hPi0E);
+    hGamEChargedClone->Divide(hGamE);
+    hEleEChargedClone->Divide(hEleE);
+    hNeHadEChargedClone->Divide(hNeHadE);
+    hChHadEChargedClone->Divide(hChHadE);
+    hEChargedClone->Draw();
+    hPi0EChargedClone->Draw("same");
+    hGamEChargedClone->Draw("same");
+    hEleEChargedClone->Draw("same");
+    hNeHadEChargedClone->Draw("same");
+    hChHadEChargedClone->Draw("same");
+    
+    TLegend pLegend3ch(0.75,0.45,0.9,0.8);
+    pLegend3ch.SetTextSize(0.06);
+    pLegend3ch.AddEntry(hEChargedClone,"all","L");
+    pLegend3ch.AddEntry(hPi0EChargedClone,"#pi^{0}","L");
+    pLegend3ch.AddEntry(hGamEChargedClone,"#gamma","L");
+    pLegend3ch.AddEntry(hEleEChargedClone,"e^{#pm}","L");
+    pLegend3ch.AddEntry(hChHadEChargedClone,"h^{#pm}","L");
+    pLegend3ch.AddEntry(hNeHadEChargedClone,"h^{0}","L");
+    pLegend3ch.SetFillColor(10);
+    pLegend3ch.SetBorderSize(1);
+    pLegend3ch.Draw();
+    
+    c3ch->cd(2) ;
+    hPtChargedClone->SetMaximum(1.2);
+    hPtChargedClone->SetMinimum(0.001);	
+    hPtChargedClone->SetLineColor(3);
+    hPtChargedClone->SetYTitle("track matched / all");
+    hPi0PtChargedClone->Divide(hPi0Pt);
+    hGamPtChargedClone->Divide(hGamPt);
+    hElePtChargedClone->Divide(hElePt);
+    hNeHadPtChargedClone->Divide(hNeHadPt);
+    hChHadPtChargedClone->Divide(hChHadPt);
+    hPtChargedClone->Draw();
+    hPi0PtChargedClone->Draw("same");
+    hGamPtChargedClone->Draw("same");
+    hElePtChargedClone->Draw("same");
+    hNeHadPtChargedClone->Draw("same");
+    hChHadPtChargedClone->Draw("same");
+    
+    c3ch->cd(4) ;
+    hEtaChargedClone->SetMaximum(1.2);
+    hEtaChargedClone->SetMinimum(0.001);	
+    hEtaChargedClone->SetLineColor(3);
+    hEtaChargedClone->SetYTitle("track matched / all");
+    hPi0EtaChargedClone->Divide(hPi0Eta);
+    hGamEtaChargedClone->Divide(hGamEta);
+    hEleEtaChargedClone->Divide(hEleEta);
+    hNeHadEtaChargedClone->Divide(hNeHadEta);
+    hChHadEtaChargedClone->Divide(hChHadEta);
+    hEtaChargedClone->Draw();
+    hPi0EtaChargedClone->Draw("same");
+    hGamEtaChargedClone->Draw("same");
+    hEleEtaChargedClone->Draw("same");
+    hNeHadEtaChargedClone->Draw("same");
+    hChHadEtaChargedClone->Draw("same");
+    
+    c3ch->cd(3) ;
+    hPhiChargedClone->SetMaximum(1.2);
+    hPhiChargedClone->SetMinimum(0.001);
+    hPhiChargedClone->SetLineColor(3);
+    hPhiChargedClone->SetYTitle("track matched / all");
+    hPi0PhiChargedClone->Divide(hPi0Phi);
+    hGamPhiChargedClone->Divide(hGamPhi);
+    hElePhiChargedClone->Divide(hElePhi);
+    hNeHadPhiChargedClone->Divide(hNeHadPhi);
+    hChHadPhiChargedClone->Divide(hChHadPhi);
+    hPhiChargedClone->Draw();
+    hPi0PhiChargedClone->Draw("same");
+    hGamPhiChargedClone->Draw("same");
+    hElePhiChargedClone->Draw("same");
+    hNeHadPhiChargedClone->Draw("same");
+    hChHadPhiChargedClone->Draw("same");
+    
+    sprintf(name,"QA_%s_RatioReconstructedMatchedDistributionsGenID.eps",fCalorimeter.Data());
+    c3ch->Print(name); printf("Plot: %s\n",name);
+    
 	}	
-	//Track-matching distributions
-		
+    //Track-matching distributions
+  
 	sprintf(cname,"QA_%s_trkmatch",fCalorimeter.Data());
 	TCanvas *cme = new TCanvas(cname,"Track-matching distributions", 400, 400);
 	cme->Divide(2,2);
-		
+  
 	TLegend pLegendpE0(0.6,0.55,0.9,0.8);
 	pLegendpE0.SetTextSize(0.04);
 	pLegendpE0.AddEntry(fh1pOverE,"all","L");
 	pLegendpE0.AddEntry(fh1pOverER02,"dR < 0.02","L");		
 	pLegendpE0.SetFillColor(10);
 	pLegendpE0.SetBorderSize(1);
-	//pLegendpE0.Draw();
-		
+    //pLegendpE0.Draw();
+  
 	cme->cd(1);
 	if(fh1pOverE->GetEntries() > 0) gPad->SetLogy();
 	fh1pOverE->SetTitle("Track matches p/E");
@@ -5528,7 +5227,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	fh1pOverER02->SetLineColor(4);
 	fh1pOverER02->Draw("same");
 	pLegendpE0.Draw();
-		
+  
 	cme->cd(2);
 	if(fh1dR->GetEntries() > 0) gPad->SetLogy();
 	fh1dR->Draw();
@@ -5543,121 +5242,121 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cme->Print(name); printf("Plot: %s\n",name);       
 	
 	if(IsDataMC()){
-	sprintf(cname,"QA_%s_trkmatchMCEle",fCalorimeter.Data());
-	TCanvas *cmemc = new TCanvas(cname,"Track-matching distributions from MC electrons", 600, 200);
-	cmemc->Divide(3,1);
-	
-	cmemc->cd(1);
-	gPad->SetLogy();
-	fhMCEle1pOverE->Draw();
-	fhMCEle1pOverER02->SetLineColor(4);
-	fhMCEle1pOverE->SetLineColor(1);
-	fhMCEle1pOverER02->Draw("same");
-	pLegendpE0.Draw();
+    sprintf(cname,"QA_%s_trkmatchMCEle",fCalorimeter.Data());
+    TCanvas *cmemc = new TCanvas(cname,"Track-matching distributions from MC electrons", 600, 200);
+    cmemc->Divide(3,1);
+    
+    cmemc->cd(1);
+    gPad->SetLogy();
+    fhMCEle1pOverE->Draw();
+    fhMCEle1pOverER02->SetLineColor(4);
+    fhMCEle1pOverE->SetLineColor(1);
+    fhMCEle1pOverER02->Draw("same");
+    pLegendpE0.Draw();
 		
-	cmemc->cd(2);
-	gPad->SetLogy();
-	fhMCEle1dR->Draw();
+    cmemc->cd(2);
+    gPad->SetLogy();
+    fhMCEle1dR->Draw();
 		
-	cmemc->cd(3);
-	fhMCEle2MatchdEdx->Draw();
+    cmemc->cd(3);
+    fhMCEle2MatchdEdx->Draw();
 		
-	sprintf(name,"QA_%s_TrackMatchingDistMCEle.eps",fCalorimeter.Data());
-	cmemc->Print(name); printf("Plot: %s\n",name);  
-	
+    sprintf(name,"QA_%s_TrackMatchingDistMCEle.eps",fCalorimeter.Data());
+    cmemc->Print(name); printf("Plot: %s\n",name);  
+    
 		
-	sprintf(cname,"QA_%s_trkmatchMCChHad",fCalorimeter.Data());
-	TCanvas *cmemchad = new TCanvas(cname,"Track-matching distributions from MC charged hadrons", 600, 200);
-	cmemchad->Divide(3,1);
+    sprintf(cname,"QA_%s_trkmatchMCChHad",fCalorimeter.Data());
+    TCanvas *cmemchad = new TCanvas(cname,"Track-matching distributions from MC charged hadrons", 600, 200);
+    cmemchad->Divide(3,1);
 		
-	cmemchad->cd(1);
-	gPad->SetLogy();
-	fhMCChHad1pOverE->Draw();
-	fhMCChHad1pOverER02->SetLineColor(4);
-	fhMCChHad1pOverE->SetLineColor(1);
-	fhMCChHad1pOverER02->Draw("same");
-	pLegendpE0.Draw();
+    cmemchad->cd(1);
+    gPad->SetLogy();
+    fhMCChHad1pOverE->Draw();
+    fhMCChHad1pOverER02->SetLineColor(4);
+    fhMCChHad1pOverE->SetLineColor(1);
+    fhMCChHad1pOverER02->Draw("same");
+    pLegendpE0.Draw();
 		
-	cmemchad->cd(2);
-	gPad->SetLogy();
-	fhMCChHad1dR->Draw();
-
-	cmemchad->cd(3);
-	fhMCChHad2MatchdEdx->Draw();
+    cmemchad->cd(2);
+    gPad->SetLogy();
+    fhMCChHad1dR->Draw();
+    
+    cmemchad->cd(3);
+    fhMCChHad2MatchdEdx->Draw();
 		
-	sprintf(name,"QA_%s_TrackMatchingDistMCChHad.eps",fCalorimeter.Data());
-	cmemchad->Print(name); printf("Plot: %s\n",name);       
-	
-	sprintf(cname,"QA_%s_trkmatchMCNeutral",fCalorimeter.Data());
-	TCanvas *cmemcn = new TCanvas(cname,"Track-matching distributions from MC neutrals", 600, 200);
-	cmemcn->Divide(3,1);
+    sprintf(name,"QA_%s_TrackMatchingDistMCChHad.eps",fCalorimeter.Data());
+    cmemchad->Print(name); printf("Plot: %s\n",name);       
+    
+    sprintf(cname,"QA_%s_trkmatchMCNeutral",fCalorimeter.Data());
+    TCanvas *cmemcn = new TCanvas(cname,"Track-matching distributions from MC neutrals", 600, 200);
+    cmemcn->Divide(3,1);
 		
-	cmemcn->cd(1);
-	gPad->SetLogy();
-	fhMCNeutral1pOverE->Draw();
-	fhMCNeutral1pOverE->SetLineColor(1);
-	fhMCNeutral1pOverER02->SetLineColor(4);
-	fhMCNeutral1pOverER02->Draw("same");
-	pLegendpE0.Draw();
+    cmemcn->cd(1);
+    gPad->SetLogy();
+    fhMCNeutral1pOverE->Draw();
+    fhMCNeutral1pOverE->SetLineColor(1);
+    fhMCNeutral1pOverER02->SetLineColor(4);
+    fhMCNeutral1pOverER02->Draw("same");
+    pLegendpE0.Draw();
 		
-	cmemcn->cd(2);
-	gPad->SetLogy();
-	fhMCNeutral1dR->Draw();
+    cmemcn->cd(2);
+    gPad->SetLogy();
+    fhMCNeutral1dR->Draw();
 		
-	cmemcn->cd(3);
-	fhMCNeutral2MatchdEdx->Draw();
+    cmemcn->cd(3);
+    fhMCNeutral2MatchdEdx->Draw();
 		
-	sprintf(name,"QA_%s_TrackMatchingDistMCNeutral.eps",fCalorimeter.Data());
-	cmemcn->Print(name); printf("Plot: %s\n",name);       
-	
-	sprintf(cname,"QA_%s_trkmatchpE",fCalorimeter.Data());
-	TCanvas *cmpoe = new TCanvas(cname,"Track-matching distributions, p/E", 400, 200);
-	cmpoe->Divide(2,1);
+    sprintf(name,"QA_%s_TrackMatchingDistMCNeutral.eps",fCalorimeter.Data());
+    cmemcn->Print(name); printf("Plot: %s\n",name);       
+    
+    sprintf(cname,"QA_%s_trkmatchpE",fCalorimeter.Data());
+    TCanvas *cmpoe = new TCanvas(cname,"Track-matching distributions, p/E", 400, 200);
+    cmpoe->Divide(2,1);
 		
-	cmpoe->cd(1);
-	gPad->SetLogy();
-	fh1pOverE->SetLineColor(1);
-	fhMCEle1pOverE->SetLineColor(4);
-	fhMCChHad1pOverE->SetLineColor(2);
-	fhMCNeutral1pOverE->SetLineColor(7);
-	fh1pOverER02->SetMinimum(0.5);
-	fh1pOverE->Draw();
-	fhMCEle1pOverE->Draw("same");
-	fhMCChHad1pOverE->Draw("same");
-	fhMCNeutral1pOverE->Draw("same");
-	TLegend pLegendpE(0.65,0.55,0.9,0.8);
-	pLegendpE.SetTextSize(0.06);
-	pLegendpE.AddEntry(fh1pOverE,"all","L");
-	pLegendpE.AddEntry(fhMCEle1pOverE,"e^{#pm}","L");
-	pLegendpE.AddEntry(fhMCChHad1pOverE,"h^{#pm}","L");
-	pLegendpE.AddEntry(fhMCNeutral1pOverE,"neutrals","L");
-	pLegendpE.SetFillColor(10);
-	pLegendpE.SetBorderSize(1);
-	pLegendpE.Draw();
-	
-	cmpoe->cd(2);
-	gPad->SetLogy();
-	fh1pOverER02->SetTitle("Track matches p/E, dR<0.2");
-	fh1pOverER02->SetLineColor(1);
-	fhMCEle1pOverER02->SetLineColor(4);
-	fhMCChHad1pOverER02->SetLineColor(2);
-	fhMCNeutral1pOverER02->SetLineColor(7);
-	fh1pOverER02->SetMaximum(fh1pOverE->GetMaximum());
-	fh1pOverER02->SetMinimum(0.5);
-	fh1pOverER02->Draw();
-	fhMCEle1pOverER02->Draw("same");
-	fhMCChHad1pOverER02->Draw("same");
-	fhMCNeutral1pOverER02->Draw("same");
-	
-	//		TLegend pLegendpE2(0.65,0.55,0.9,0.8);
-	//		pLegendpE2.SetTextSize(0.06);
-	//		pLegendpE2.SetHeader("dR < 0.02");
-	//		pLegendpE2.SetFillColor(10);
-	//		pLegendpE2.SetBorderSize(1);
-	//		pLegendpE2.Draw();
-	
-	sprintf(name,"QA_%s_TrackMatchingPOverE.eps",fCalorimeter.Data());
-	cmpoe->Print(name); printf("Plot: %s\n",name);       			
+    cmpoe->cd(1);
+    gPad->SetLogy();
+    fh1pOverE->SetLineColor(1);
+    fhMCEle1pOverE->SetLineColor(4);
+    fhMCChHad1pOverE->SetLineColor(2);
+    fhMCNeutral1pOverE->SetLineColor(7);
+    fh1pOverER02->SetMinimum(0.5);
+    fh1pOverE->Draw();
+    fhMCEle1pOverE->Draw("same");
+    fhMCChHad1pOverE->Draw("same");
+    fhMCNeutral1pOverE->Draw("same");
+    TLegend pLegendpE(0.65,0.55,0.9,0.8);
+    pLegendpE.SetTextSize(0.06);
+    pLegendpE.AddEntry(fh1pOverE,"all","L");
+    pLegendpE.AddEntry(fhMCEle1pOverE,"e^{#pm}","L");
+    pLegendpE.AddEntry(fhMCChHad1pOverE,"h^{#pm}","L");
+    pLegendpE.AddEntry(fhMCNeutral1pOverE,"neutrals","L");
+    pLegendpE.SetFillColor(10);
+    pLegendpE.SetBorderSize(1);
+    pLegendpE.Draw();
+    
+    cmpoe->cd(2);
+    gPad->SetLogy();
+    fh1pOverER02->SetTitle("Track matches p/E, dR<0.2");
+    fh1pOverER02->SetLineColor(1);
+    fhMCEle1pOverER02->SetLineColor(4);
+    fhMCChHad1pOverER02->SetLineColor(2);
+    fhMCNeutral1pOverER02->SetLineColor(7);
+    fh1pOverER02->SetMaximum(fh1pOverE->GetMaximum());
+    fh1pOverER02->SetMinimum(0.5);
+    fh1pOverER02->Draw();
+    fhMCEle1pOverER02->Draw("same");
+    fhMCChHad1pOverER02->Draw("same");
+    fhMCNeutral1pOverER02->Draw("same");
+    
+      //		TLegend pLegendpE2(0.65,0.55,0.9,0.8);
+      //		pLegendpE2.SetTextSize(0.06);
+      //		pLegendpE2.SetHeader("dR < 0.02");
+      //		pLegendpE2.SetFillColor(10);
+      //		pLegendpE2.SetBorderSize(1);
+      //		pLegendpE2.Draw();
+    
+    sprintf(name,"QA_%s_TrackMatchingPOverE.eps",fCalorimeter.Data());
+    cmpoe->Print(name); printf("Plot: %s\n",name);       			
 	}
 	
 	char line[1024] ; 

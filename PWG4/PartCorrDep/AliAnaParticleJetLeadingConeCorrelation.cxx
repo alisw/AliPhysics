@@ -1695,7 +1695,7 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster
     //Get most probable PID, 2 options check PID weights (in MC this option is mandatory)
     //or redo PID, recommended option for EMCal.
     if(!IsCaloPIDRecalculationOn() || GetReader()->GetDataType() == AliCaloTrackReader::kMC )
-      pdg = GetCaloPID()->GetPdg("EMCAL",calo->PID(),mom.E());//PID with weights
+      pdg = GetCaloPID()->GetPdg("EMCAL",calo->GetPID(),mom.E());//PID with weights
     else
       pdg = GetCaloPID()->GetPdg("EMCAL",mom,calo);//PID recalculated
     

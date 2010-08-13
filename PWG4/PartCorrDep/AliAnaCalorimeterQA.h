@@ -17,8 +17,8 @@ class TH1F;
 class TObjString;
 
 // --- Analysis system --- 
-class AliESDCaloCluster;
-class AliAODCaloCluster;
+class AliVCaloCluster;
+class AliVTrack;
 
 #include "AliAnaPartCorrBaseClass.h"
  
@@ -35,7 +35,7 @@ public:
   
   void ClusterHistograms(const TLorentzVector mom, const Double_t tof, Float_t *pos, Float_t * showerShape, 
 						 const Int_t nCaloCellsPerCluster, const Int_t nModule,
-						 const Int_t nTracksMatched, const TObject* track, 
+						 const Int_t nTracksMatched, const AliVTrack* track, 
 						 const Int_t * labels, const Int_t nLabels);
 	
   TObjString * GetAnalysisCuts();

@@ -21,6 +21,7 @@ class TObjString;
 //Analysis
 class AliAODEvent ;
 class AliESDEvent ;
+class AliAODPWG4Particle ;
 #include "AliAnaPartCorrBaseClass.h"
 
 class AliAnaPi0 : public AliAnaPartCorrBaseClass {
@@ -72,6 +73,10 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
 	
   void SwitchOnAngleSelection()    {fUseAngleCut = kTRUE ; }
   void SwitchOffAngleSelection()   {fUseAngleCut = kFALSE ; }
+  
+  virtual Int_t GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  ;
+
+  
 
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list

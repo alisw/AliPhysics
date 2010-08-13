@@ -4,6 +4,7 @@ SRCS = PartCorrBase/AliNeutralMesonSelection.cxx PartCorrBase/AliFiducialCut.cxx
        PartCorrBase/AliCaloPID.cxx PartCorrBase/AliMCAnalysisUtils.cxx PartCorrBase/AliIsolationCut.cxx\
        PartCorrBase/AliAnaScale.cxx PartCorrBase/AliAnaPartCorrMaker.cxx \
        PartCorrBase/AliAnaPartCorrBaseClass.cxx PartCorrBase/AliAnalysisTaskParticleCorrelation.cxx \
+       PartCorrBase/AliAnalysisTaskParticleCorrelationM.cxx \
        PartCorrBase/AliCaloTrackReader.cxx PartCorrBase/AliCaloTrackESDReader.cxx \
        PartCorrBase/AliCaloTrackAODReader.cxx PartCorrBase/AliCaloTrackMCReader.cxx PartCorrBase/AliCalorimeterUtils.cxx
       

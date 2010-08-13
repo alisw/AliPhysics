@@ -31,13 +31,13 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
   //AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & g) ;//cpy assignment
   virtual ~AliCaloTrackESDReader() {;} //virtual dtor
   
-  void FillInputCTS  () ;
-  void FillInputEMCAL() ;
-  void FillInputPHOS () ;  
-  void FillInputEMCALCells() ;
-  void FillInputPHOSCells() ;
+//  void FillInputCTS  () ;
+//  void FillInputEMCAL() ;
+//  void FillInputPHOS () ;  
+//  void FillInputEMCALCells() ;
+//  void FillInputPHOSCells() ;
   
-  void GetVertex(Double_t v[3]) const ;
+//  void GetVertex(Double_t v[3]) const ;
   Double_t GetBField() const;
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
 	
