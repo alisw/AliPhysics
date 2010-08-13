@@ -140,6 +140,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   //
 
   memset(fTRDr, 0, AliPID::kSPECIES*sizeof(Double32_t));
+  memset(fTRDv0pid, 0, AliPID::kSPECIES*sizeof(Int_t));
 }
 
 //___________________________________________________
@@ -159,6 +160,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   //
 
   memcpy(fTRDr, esd.fTRDr, AliPID::kSPECIES*sizeof(Double32_t));
+  memcpy(fTRDv0pid, esd.fTRDv0pid, AliPID::kSPECIES*sizeof(Int_t));
 
   if(fTRDnSlices){
     fTRDslices = new Double32_t[fTRDnSlices];

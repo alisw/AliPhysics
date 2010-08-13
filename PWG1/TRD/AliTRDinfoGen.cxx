@@ -269,6 +269,12 @@ void AliTRDinfoGen::UserExec(Option_t *){
   // Run the Analysis
   //
 
+  fTracksBarrel->Delete();
+  fTracksSA->Delete();
+  fTracksKink->Delete();
+  fV0List->Delete();
+  fEventInfo->Delete("");
+
   fESDev = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fESDev){
     AliError("Failed retrieving ESD event");
@@ -332,11 +338,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
     return;
   }
 
-  fTracksBarrel->Delete();
-  fTracksSA->Delete();
-  fTracksKink->Delete();
-  fV0List->Delete();
-  fEventInfo->Delete("");
   new(fEventInfo)AliTRDeventInfo(fESDev->GetHeader(), const_cast<AliESDRun *>(fESDev->GetESDRun()));
   
   Bool_t *trackMap(NULL);
@@ -363,7 +364,25 @@ void AliTRDinfoGen::UserExec(Option_t *){
   AliTRDtrackV1 *track = NULL;
   AliTRDseedV1 *tracklet = NULL;
   AliTRDcluster *cl = NULL;
-  // LOOP 0 - over ESD tracks
+
+
+  // LOOP 0 - over ESD v0s
+  Float_t bField(fESDev->GetMagneticField());
+  AliESDv0 *v0(NULL);
+  Int_t v0pid[AliPID::kSPECIES];
+  for(Int_t iv0(0); iv0<fESDev->GetNumberOfV0s(); iv0++){
+    if(!(v0 = fESDev->GetV0(iv0))) continue;
+    // register v0
+    if(fV0Cut) new(fV0Info) AliTRDv0Info(*fV0Cut);
+    else new(fV0Info) AliTRDv0Info();
+    fV0Info->SetMagField(bField);
+    fV0Info->SetV0tracks(fESDev->GetTrack(v0->GetPindex()), fESDev->GetTrack(v0->GetNindex()));
+    fV0Info->SetV0Info(v0);
+    fV0List->Add(new AliTRDv0Info(*fV0Info));//  kFOUND=kFALSE;
+  }
+
+
+  // LOOP 1 - over ESD tracks
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
     new(fTrackInfo) AliTRDtrackInfo();
     esdTrack = fESDev->GetTrack(itrk);
@@ -444,6 +463,20 @@ void AliTRDinfoGen::UserExec(Option_t *){
     fTrackInfo->SetTPCncls(static_cast<UShort_t>(esdTrack->GetNcls(1)));
     nclsTrklt = 0;
   
+    // set V0pid info
+    AliTRDv0Info *v0info = new AliTRDv0Info();
+    for(Int_t iv(0); iv<fV0List->GetEntriesFast(); iv++){
+      if(!(v0info = (AliTRDv0Info*)fV0List->At(iv))) continue;
+      if(!v0info->fTrackP && !v0info->fTrackN) continue;
+      if(!v0info->HasTrack(fTrackInfo)) continue;
+      memset(v0pid, 0, AliPID::kSPECIES*sizeof(Int_t));
+      fTrackInfo->SetV0();
+      for(Int_t is=AliPID::kSPECIES; is--;){v0pid[is] = v0info->GetPID(is, fTrackInfo);}
+      fTrackInfo->SetV0pid(v0pid);
+      fTrackInfo->SetV0();
+      //const AliTRDtrackInfo::AliESDinfo *ei = fTrackInfo->GetESDinfo();
+      break;
+    }
 
     // read REC info
     esdFriendTrack = fESDfriend->GetTrack(itrk);
@@ -521,41 +554,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
       nSA++;
     }
     fTrackInfo->Delete("");
-  }
-
-  // LOOP 1 - over ESD v0s
-  Bool_t kFOUND(kFALSE);
-  Float_t bField(fESDev->GetMagneticField());
-  AliESDv0 *v0(NULL);
-  for(Int_t iv0(0); iv0<fESDev->GetNumberOfV0s(); iv0++){
-    if(!(v0 = fESDev->GetV0(iv0))) continue;
-
-    // purge V0 irelevant for TRD
-    Int_t jb(0); AliTRDtrackInfo *ti(NULL);
-    for(Int_t ib(0); ib<nBarrel; ib++){ 
-      ti =   (AliTRDtrackInfo*)fTracksBarrel->At(ib);
-      Int_t id(ti->GetTrackId());
-      if(id!=v0->GetPindex() && id!=v0->GetNindex()) continue; 
-      kFOUND=kTRUE; ti->SetV0(); jb=ib+1;
-      break;
-    }
-    if(!kFOUND) continue;
-
-    // register v0
-    if(fV0Cut) new(fV0Info) AliTRDv0Info(*fV0Cut);
-    else new(fV0Info) AliTRDv0Info();
-    fV0Info->SetMagField(bField);
-    fV0Info->SetV0tracks(fESDev->GetTrack(v0->GetPindex()), fESDev->GetTrack(v0->GetNindex()));
-    fV0Info->SetV0Info(v0);
-    // mark the other leg too 
-    for(Int_t ib(jb); ib<nBarrel; ib++){ 
-      ti =   (AliTRDtrackInfo*)fTracksBarrel->At(ib);
-      if(!fV0Info->HasTrack(ti)) continue;
-      ti->SetV0();
-      break;
-    }
-    //fV0Info->Print("a");
-    fV0List->Add(new AliTRDv0Info(*fV0Info)); kFOUND=kFALSE;
   }
 
   // LOOP 2 - over MC tracks which are passing TRD where the track is not reconstructed

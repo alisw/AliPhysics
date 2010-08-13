@@ -510,6 +510,10 @@ Int_t AliTRDv0Info::HasTrack(AliTRDtrackInfo * const track)
 {
 //Checks if track is a secondary vertex daughter (due to V0 finder)
   
+  if(!track) return 0;
+  if(!fTrackP->GetID()) return 0;
+  if(!fTrackN->GetID()) return 0;
+
   Int_t trackID(track->GetTrackId());//index of the track
   return HasTrack(trackID);
 }
@@ -586,15 +590,22 @@ void AliTRDv0Info::CombinePID()
     }
 }
 //_________________________________________________
-void AliTRDv0Info::GetTPCdEdx()
+Bool_t AliTRDv0Info::GetTPCdEdx()
 {
+  if(!fTrackP->GetID()) return 0;
+  if(!fTrackN->GetID()) return 0;
+
   fTPCdEdx[kNeg] = fTrackN->GetTPCsignal();
   fTPCdEdx[kPos] = fTrackP->GetTPCsignal();
+  return 1;
 
 }
 //_________________________________________________
 Bool_t AliTRDv0Info::TPCdEdxCuts(Int_t part, AliTRDtrackInfo * const track)
 {
+  if(!fTrackP->GetID()) return 0;
+  if(!fTrackN->GetID()) return 0;
+
   //Bethe-Bloch lines
   Double_t alephParameters[5];
   

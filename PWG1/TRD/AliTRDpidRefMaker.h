@@ -66,7 +66,7 @@ public:
 
   void    SetAbundance(Float_t train);
   void    SetPthreshold(Float_t t) { fPthreshold = t;}
-  void    SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo *t, Float_t *pid);
+  void    SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo *t, const AliTRDtrackInfo::AliESDinfo *infoESD, Float_t *pid);
   void    SetSource(ETRDpidRefMakerSource pid, ETRDpidRefMakerSource momentum) {fRefPID = pid; fRefP = momentum;}
 
 

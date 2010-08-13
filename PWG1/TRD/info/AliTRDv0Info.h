@@ -148,7 +148,7 @@ private:
   void CombinePID();//Bayesian combination of TPC and TOF likelihoods
   Bool_t TPCdEdxCuts(Int_t part, AliTRDtrackInfo * const track);//direct cuts on TPC dE/dx
 
-  void GetTPCdEdx();//TPC dE/dx values from both tracks
+  Bool_t GetTPCdEdx();//TPC dE/dx values from both tracks
   Int_t Quality(AliESDv0 * const esdv0);//checks for track/vertex quality criteria
   Double_t InvMass(Int_t part1, Int_t part2, AliESDv0 *esdv0) const;//invariant mass of mother
   Float_t PsiPair(AliESDv0 *esdv0);//angle between daughters in plane perpendicular to magnetic field (characteristically around zero for conversions)
