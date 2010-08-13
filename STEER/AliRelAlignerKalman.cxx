@@ -279,7 +279,7 @@ Bool_t AliRelAlignerKalman::AddESDevent( const AliESDEvent* pEvent )
   
   Bool_t success=kFALSE;
   SetMagField( pEvent->GetMagneticField() );
-  AliESDtrack* track;
+  AliESDtrack* track=NULL;
   
   for (Int_t i=0; i<pEvent->GetNumberOfTracks(); i++)
   {
@@ -342,7 +342,7 @@ Bool_t AliRelAlignerKalman::AddCosmicEvent( const AliESDEvent* pEvent )
   TArrayI trackTArrTPC(1);
   if (!FindCosmicTrackletNumbersInEvent( trackTArrITS, trackTArrTPC, pEvent )) return kFALSE;
   SetMagField( pEvent->GetMagneticField() );
-  AliESDtrack* ptrack;
+  AliESDtrack* ptrack=NULL;
   const AliExternalTrackParam* pconstparams1;
   const AliExternalTrackParam* pconstparams2;
   AliExternalTrackParam params1;
@@ -681,7 +681,7 @@ Bool_t AliRelAlignerKalman::UpdateEstimateKalman()
 //  }
 //  else
 //  {
-    Double_t det;
+    Double_t det=0.0;
     hpht.InvertFast(&det); //since the matrix is small...
     if (det < 2e-55) return kFALSE; //we need some sort of protection even in this case....
 //  }
