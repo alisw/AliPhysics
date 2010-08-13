@@ -86,18 +86,17 @@ AliHLTComponent* AliHLTTRDOfflineTrackerV1Component::Spawn()
   return new AliHLTTRDOfflineTrackerV1Component;
 };
 
-int AliHLTTRDOfflineTrackerV1Component::DoInit( int argc, const char** argv )
-{
-  int iResult = 0;
-  iResult=AliHLTTRDTrackerV1Component::DoInit(argc, argv);
-  fRecoParam->SetStreamLevel(AliTRDrecoParam::kTracker, 1); // in order to have the friends written
-  return iResult;
-}
-
 const char* AliHLTTRDOfflineTrackerV1Component::GetComponentID()
 {
   // Return the component ID const char *
   return "TRDOfflineTrackerV1"; // The ID of this component
+}
+
+int AliHLTTRDOfflineTrackerV1Component::SetParams()
+{
+  int iResult = AliHLTTRDTrackerV1Component::SetParams();
+  fRecoParam->SetStreamLevel(AliTRDrecoParam::kTracker, 1); // in order to have the friends written
+  return iResult;
 }
 
 int AliHLTTRDOfflineTrackerV1Component::DoEvent(const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 

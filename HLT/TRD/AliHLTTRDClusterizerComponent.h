@@ -64,7 +64,7 @@ protected:
   using AliHLTProcessor::DoEvent;
 
   int Configure(const char* arguments);
-  int SetParams();
+  virtual int SetParams();
 	
 protected:
   /** copy constructor prohibited */

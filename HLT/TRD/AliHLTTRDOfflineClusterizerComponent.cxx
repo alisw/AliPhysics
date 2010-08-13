@@ -41,7 +41,6 @@ ClassImp(AliHLTTRDOfflineClusterizerComponent)
    
 AliHLTTRDOfflineClusterizerComponent::AliHLTTRDOfflineClusterizerComponent()
   :AliHLTTRDClusterizerComponent()
-  ,fOffClusterizer(NULL)
 {
   // Default constructor
 }
@@ -95,13 +94,14 @@ void AliHLTTRDOfflineClusterizerComponent::GetOutputDataSize( unsigned long& con
   inputMultiplier *= 10;
 }
 
-int AliHLTTRDOfflineClusterizerComponent::DoInit( int argc, const char** argv )
+int AliHLTTRDOfflineClusterizerComponent::SetParams()
 {
-  int iResult = 0;
-  iResult=AliHLTTRDClusterizerComponent::DoInit(argc, argv);
+  int iResult =  AliHLTTRDClusterizerComponent::SetParams();
 
-  return iResult;
+  // here we need the coordinate transformation as we want to ship full flavoured clusters
+  fClusterizer->SetSkipTransform(kFALSE);
 }
+
 
 int AliHLTTRDOfflineClusterizerComponent::DoEvent(const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
 						  AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 

@@ -630,9 +630,19 @@ int AliHLTTRDClusterizerComponent::SetParams()
   fRecoParam->SetStreamLevel(AliTRDrecoParam::kClusterizer, 0);
   fReconstructor->SetRecoParam(fRecoParam);
 
+  if(!fClusterizer){
+    fClusterizer = new AliHLTTRDClusterizer("TRDCclusterizer", "TRDCclusterizer");  
+    HLTDebug("TRDClusterizer at 0x%x", fClusterizer);
+  }
+
   TString recoOptions="!cw";
-  if(fHLTflag)
+  if(fHLTflag){
     recoOptions += ",hlt";
+    
+    // we transfer clusters that do no contain the XYZ coodrinates (AliHLTTRDCluster),
+    // thus this coordinate transformation ist useless
+    fClusterizer->SetSkipTransform();
+  }
   if(fProcessTracklets) recoOptions += ",tp";
   else  recoOptions += ",!tp";
 
@@ -671,11 +681,6 @@ int AliHLTTRDClusterizerComponent::SetParams()
       HLTDebug("fast rawstreamer used");  
     }
 #endif
-
-  if(!fClusterizer){
-    fClusterizer = new AliHLTTRDClusterizer("TRDCclusterizer", "TRDCclusterizer");  
-    HLTDebug("TRDClusterizer at 0x%x", fClusterizer);
-  }
 
   fClusterizer->SetRawVersion(fRawDataVersion);
 
