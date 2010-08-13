@@ -24,12 +24,15 @@ ClassImp(AliRsnAnalysisEffSE)
 //_____________________________________________________________________________
 AliRsnAnalysisEffSE::AliRsnAnalysisEffSE(const char *name) :
   AliRsnVAnalysisTaskSE(name),
+  fUseITSSA(kTRUE),
+  fUseGlobal(kTRUE),
   fEventCuts(0x0),
   fStepListMC(0),
   fStepListESD(0),
   fAxisList(0),
   fPairDefList(0),
   fContainerList(0x0),
+  fOutList(0x0),
   fVar(0),
   fPair()
 {
@@ -47,12 +50,15 @@ AliRsnAnalysisEffSE::AliRsnAnalysisEffSE(const char *name) :
 //_____________________________________________________________________________
 AliRsnAnalysisEffSE::AliRsnAnalysisEffSE(const AliRsnAnalysisEffSE& copy) :
   AliRsnVAnalysisTaskSE(copy),
+  fUseITSSA(copy.fUseITSSA),
+  fUseGlobal(copy.fUseGlobal),
   fEventCuts(copy.fEventCuts),
   fStepListMC(copy.fStepListMC),
   fStepListESD(copy.fStepListESD),
   fAxisList(copy.fAxisList),
   fPairDefList(copy.fPairDefList),
   fContainerList(copy.fContainerList),
+  fOutList(0x0),
   fVar(0),
   fPair()
 {
@@ -91,13 +97,13 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   fVar.Set(nAxes);
 
   // retrieve number of bins for each axis
-  Int_t   *nBins     = new Int_t[nAxes];
-  TArrayD *binLimits = new TArrayD[nAxes];
+  Int_t   *nBins = new Int_t[nAxes];
+  TArrayD *array = new TArrayD[nAxes];
   for (iaxis = 0; iaxis < nAxes; iaxis++) 
   {
     AliRsnValue *fcnAxis = (AliRsnValue*)fAxisList.At(iaxis);
-    binLimits[iaxis] = fcnAxis->GetArray();
-    nBins[iaxis] = binLimits[iaxis].GetSize() - 1;
+    array[iaxis] = fcnAxis->GetArray();
+    nBins[iaxis] = array[iaxis].GetSize() - 1;
   }
 
   // create ouput list of containers
@@ -107,23 +113,24 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
 
   // initialize output list
   OpenFile(2);
-  fOutList[1] = new TList();
-  fOutList[1]->SetOwner();
+  fOutList = new TList();
+  fOutList->SetOwner();
 
   // create the containers
   Int_t i, nDef = (Int_t)fPairDefList.GetEntries();
-  for (i = 0; i < nDef; i++) {
+  for (i = 0; i < nDef; i++) 
+  {
     AliRsnPairDef *def = (AliRsnPairDef*)fPairDefList[i];
-    AliCFContainer *cont = new AliCFContainer(Form("%s", def->GetPairName().Data()), "", nSteps, nAxes, nBins);
+    AliCFContainer *cont = new AliCFContainer(Form("%s", def->GetPairName()), "", nSteps, nAxes, nBins);
     // set the bin limits for each axis
-    for (iaxis = 0; iaxis < nAxes; iaxis++) cont->SetBinLimits(iaxis, binLimits[iaxis].GetArray());
+    for (iaxis = 0; iaxis < nAxes; iaxis++) cont->SetBinLimits(iaxis, array[iaxis].GetArray());
     // add the container to output list
     fContainerList->Add(cont);
   }
 
-  fOutList[1]->Add(fContainerList);
+  fOutList->Add(fContainerList);
 
-  PostData(2, fOutList[1]);
+  PostData(2, fOutList);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -183,8 +190,9 @@ void AliRsnAnalysisEffSE::RsnUserExec(Option_t*)
   // they are checked here on the RSN event interface and,
   // if the event does not pass them, it is skipped and ProcessInfo
   // is updated accordingly
-  if (fEventCuts) {
-    if (!fEventCuts->IsSelected(AliRsnCut::kEvent, &fRsnEvent)) {
+  if (fEventCuts) 
+  {
+    if (!fEventCuts->IsSelected(&fRsnEvent)) {
       fTaskInfo.SetEventUsed(kFALSE);
       return;
     }
@@ -199,24 +207,160 @@ void AliRsnAnalysisEffSE::RsnUserExec(Option_t*)
   TObjArrayIter iter(&fPairDefList);
   while ( (pairDef = (AliRsnPairDef*)iter.Next()) )
   {
-    ProcessEventMC(pairDef);
-    ProcessEventESD(pairDef);
+    //ProcessEventMC(pairDef);
+    //ProcessEventESD(pairDef);
+    ProcessEvent(pairDef);
   }
 
   // Post the data
-  PostData(2, fOutList[1]);
+  PostData(2, fOutList);
 
   AliDebug(AliLog::kDebug+2,"->");
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisEffSE::ProcessEventMC(AliRsnPairDef *pairDef)
+void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
+{
+//
+// Process current event with the definitions of the specified step in MC list
+// and store results in the container slot defined in second argument.
+// It is associated with the AliCFContainer with the name of the pair.
+//
+
+  AliStack      *stack = fRsnEvent.GetRefMC()->Stack();
+  AliESDEvent   *esd   = fRsnEvent.GetRefESD();
+  AliMCEvent    *mc    = fRsnEvent.GetRefMC();
+  AliMCParticle *mother;
+
+  if (!pairDef) return;
+  AliCFContainer *cont = (AliCFContainer*)fContainerList->FindObject(pairDef->GetPairName());
+  if (!cont) return;
+  
+  // get informations from pairDef
+  Int_t pdgM = 0, pdgD[2] = {0, 0};
+  Short_t chargeD[2] = {0, 0};
+  pdgM    = pairDef->GetMotherPDG();
+  pdgD[0] = AliPID::ParticleCode(pairDef->GetPID(0));
+  pdgD[1] = AliPID::ParticleCode(pairDef->GetPID(1));
+  chargeD[0] = pairDef->GetChargeShort(0);
+  chargeD[1] = pairDef->GetChargeShort(1);
+
+  // other utility variables
+  Int_t   label[2] = {-1, -1}, first, j, ipart;
+  Short_t charge[2] = {0, 0};
+  Short_t pairDefMatch[2] = {-1, -1};
+  Int_t   esdIndex[2];
+  TParticle *part[2] = {0, 0};
+
+  // in this case, we first take the resonance from MC
+  // and then we find its daughters and compute cuts on them
+  for (ipart = 0; ipart < stack->GetNprimary(); ipart++) 
+  {
+    // take a track from the MC event
+    mother = (AliMCParticle*) fMCEvent->GetTrack(ipart);
+    
+    // check that it is a binary decay and the PDG code matches
+    if (mother->Particle()->GetNDaughters() != 2) continue;
+    if (mother->Particle()->GetPdgCode() != pdgM) continue;
+
+    // store the labels of the two daughters
+    label[0] = mother->Particle()->GetFirstDaughter();
+    label[1] = mother->Particle()->GetLastDaughter();
+    
+    // retrieve the particles and other stuff
+    // check if they match the order in the pairDef
+    for (j = 0; j < 2; j++)
+    {
+      if (label[j] < 0) continue;
+      part[j]   = stack->Particle(label[j]);
+      pdgD[j]    = TMath::Abs(part[j]->GetPdgCode());
+      charge[j] = (Short_t)(part[j]->GetPDG()->Charge() / 3);
+      if (pdgD[j] == pairDef->GetPID(0) && charge[j] == pairDef->GetChargeShort(0))
+        pairDefMatch[j] = 0;
+      else if (pdgD[j] == pairDef->GetPID(1) && charge[j] == pairDef->GetChargeShort(1))
+        pairDefMatch[j] = 1;
+      else
+        pairDefMatch[j] = -1;
+        
+      // find corresponding ESD particle: first try rejecting fakes,
+      // and in case of failure, try accepting fakes
+      esdIndex[j] = FindESDtrack(label[j], esd, kTRUE);
+      if (esdIndex[j] < 0) esdIndex[j] = FindESDtrack(label[j], esd, kFALSE);
+    }
+    
+    // since each candidate good resonance is taken once, we must check
+    // that it matches the pair definition in any order, and reject in case
+    // in none of them the pair is OK
+    // anyway, we must associate the correct daughter to the correct data member
+    if (pairDefMatch[0] == 0 && pairDefMatch[1] == 1)
+    {
+      // 1st track --> 1st member of PairDef
+      fDaughter[0].SetRef(mc->GetTrack(label[0]));
+      fDaughter[0].SetRefMC((AliMCParticle*)mc->GetTrack(label[0]));
+      fDaughter[0].SetGood();
+      // 2nd track --> 2nd member of PairDef
+      fDaughter[1].SetRef(mc->GetTrack(label[1]));
+      fDaughter[1].SetRefMC((AliMCParticle*)mc->GetTrack(label[1]));
+      fDaughter[1].SetGood();
+    }
+    else if ((pairDefMatch[0] == 1 && pairDefMatch[1] == 0))
+    {
+      // 1st track --> 2nd member of PairDef
+      fDaughter[0].SetRef(mc->GetTrack(label[1]));
+      fDaughter[0].SetRefMC((AliMCParticle*)mc->GetTrack(label[1]));
+      fDaughter[0].SetGood();
+      // 2nd track --> 1st member of PairDef
+      fDaughter[1].SetRef(mc->GetTrack(label[0]));
+      fDaughter[1].SetRefMC((AliMCParticle*)mc->GetTrack(label[0]));
+      fDaughter[0].SetGood();
+    }
+    else
+    {
+      fDaughter[0].SetBad();
+      fDaughter[1].SetBad();
+    }
+    
+    // reject the pair if the matching was unsuccessful
+    if (!fDaughter[0].IsOK() || !fDaughter[1].IsOK()) continue;
+    
+    // first, we set the internal AliRsnMother object to
+    // the MC particles and then operate the selections on MC
+    fPair.SetDaughters(&fDaughter[0], pairDef->GetMass(0), &fDaughter[1], pairDef->GetMass(1));
+    FillContainer(cont, &fStepListMC, pairDef, 0);
+    
+    // then, if both particles found a good match in the ESD
+    // reassociate the ESD tracks to the pair and fill ESD containers
+    if (esdIndex[0] < 0 || esdIndex[1] < 0) continue;
+    if (pairDefMatch[0] == 0 && pairDefMatch[1] == 1)
+    {
+      // 1st track --> 1st member of PairDef
+      fDaughter[0].SetRef(esd->GetTrack(esdIndex[0]));
+      // 2nd track --> 2nd member of PairDef
+      fDaughter[1].SetRef(mc->GetTrack(esdIndex[1]));
+    }
+    else if ((pairDefMatch[0] == 1 && pairDefMatch[1] == 0))
+    {
+      // 1st track --> 2nd member of PairDef
+      fDaughter[0].SetRef(esd->GetTrack(esdIndex[1]));
+      // 2nd track --> 1st member of PairDef
+      fDaughter[1].SetRef(esd->GetTrack(esdIndex[0]));
+    }
+    fPair.SetDaughters(&fDaughter[0], pairDef->GetMass(0), &fDaughter[1], pairDef->GetMass(1));
+    // here we must remember how many steps were already filled
+    first = (Int_t)fStepListMC.GetEntries();
+    FillContainer(cont, &fStepListESD, pairDef, first);
+  }
+}
+
+//_____________________________________________________________________________
+void AliRsnAnalysisEffSE::ProcessEventMC(AliRsnPairDef */*pairDef*/)
 {
 //
 // Process current event with the definitions of the specified step in MC list
 // and store results in the container slot defined in second argument
 //
 
+  /*
   AliStack      *stack = fMCEvent->Stack();
   AliMCParticle *mother, *daughter;
 
@@ -229,17 +373,19 @@ void AliRsnAnalysisEffSE::ProcessEventMC(AliRsnPairDef *pairDef)
 
   // in this case, we first take the resonance from MC
   // and then we find its daughters and compute cuts on them
-  for (ipart = 0; ipart < stack->GetNprimary(); ipart++) {
+  for (ipart = 0; ipart < stack->GetNprimary(); ipart++) 
+  {
     mother = (AliMCParticle*) fMCEvent->GetTrack(ipart);
     if (mother->Particle()->GetNDaughters() != 2) continue;
 
     i[0] = mother->Particle()->GetFirstDaughter();
     i[1] = mother->Particle()->GetLastDaughter();
 
-    for (j = 0; j < 2; j++) {
+    for (j = 0; j < 2; j++) 
+    {
       daughter = (AliMCParticle*) fMCEvent->GetTrack(i[j]);
       fDaughter[j].SetRef(daughter);
-      fDaughter[j].SetParticle(daughter->Particle());
+      fDaughter[j].SetRefMC(daughter);
       fDaughter[j].FindMotherPDG(stack);
     }
 
@@ -253,16 +399,18 @@ void AliRsnAnalysisEffSE::ProcessEventMC(AliRsnPairDef *pairDef)
     // create pair
     FillContainer(cont, &fStepListMC, pairDef, 0);
   }
+  */
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisEffSE::ProcessEventESD(AliRsnPairDef *pairDef)
+void AliRsnAnalysisEffSE::ProcessEventESD(AliRsnPairDef */*pairDef*/)
 {
 //
 // Process current event with the definitions of the specified step in ESD list
 // and store results in the container slot defined in second argument
 //
 
+  /*
   Int_t i0, i1, first = (Int_t)fStepListMC.GetEntries();
 
   if (!pairDef) return;
@@ -289,6 +437,7 @@ void AliRsnAnalysisEffSE::ProcessEventESD(AliRsnPairDef *pairDef)
       FillContainer(cont, &fStepListESD, pairDef, first);
     }
   }
+  */
 }
 
 //_____________________________________________________________________________
@@ -302,26 +451,22 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
   Int_t istep, nSteps = stepList->GetEntries();
 
   // compute values for all axes
-  for (iaxis = 0; iaxis < nAxes; iaxis++) {
+  for (iaxis = 0; iaxis < nAxes; iaxis++) 
+  {
     AliRsnValue *fcnAxis = (AliRsnValue*)fAxisList.At(iaxis);
-    switch (fcnAxis->GetAxisObject()) {
-    case AliRsnValue::kPair:
-      fVar[iaxis] = (Double_t)fcnAxis->Eval(&fPair, pd);
-      break;
-    case AliRsnValue::kEvent:
-      fVar[iaxis] = (Double_t)fcnAxis->Eval(&fRsnEvent);
-      break;
-    default:
-      fVar[iaxis] = 0.0;
-    }
+    fVar[iaxis] = -1E10;
+    if (fcnAxis->Eval(&fPair, pd, &fRsnEvent)) fVar[iaxis] = (Float_t)fcnAxis->GetValue();
   }
 
   // fill all steps
-  for (istep = 0; istep < nSteps; istep++) {
+  for (istep = 0; istep < nSteps; istep++) 
+  {
     AliRsnCutManager *cutMgr = (AliRsnCutManager*)stepList->At(istep);
-    if (!cutMgr->IsSelected(AliRsnCut::kParticle, &fDaughter[0])) break;
-    if (!cutMgr->IsSelected(AliRsnCut::kParticle, &fDaughter[1])) break;
-    if (!cutMgr->IsSelected(AliRsnCut::kPair,     &fPair)) break;
+    if (!cutMgr->PassCommonDaughterCuts(fPair.GetDaughter(0))) break;
+    if (!cutMgr->PassCommonDaughterCuts(fPair.GetDaughter(1))) break;
+    if (!cutMgr->PassDaughter1Cuts(fPair.GetDaughter(0))) break;
+    if (!cutMgr->PassDaughter2Cuts(fPair.GetDaughter(1))) break;
+    if (!cutMgr->PassMotherCuts(&fPair)) break;
     cont->Fill(fVar.GetArray(), istep + firstOutStep);
   }
 }
@@ -347,3 +492,70 @@ void AliRsnAnalysisEffSE::AddPairDef(AliRsnPairDef* pairDef)
   fPairDefList.AddLast(pairDef);
 }
 
+//_____________________________________________________________________________
+Int_t AliRsnAnalysisEffSE::FindESDtrack(Int_t label, AliESDEvent *esd, Bool_t rejectFakes)
+{
+//
+// Finds in the ESD a track whose label corresponds to that in argument.
+// When global tracks are enabled, tries first to find a global track 
+// satisfying that requirement.
+// If no global tracks are found, if ITS-SA are enable, tries to search among them
+// otherwise return a negative number.
+// If global tracks are disabled, search only among ITS SA
+//
+
+  Int_t i = 0;
+  Int_t ntracks = esd->GetNumberOfTracks();
+  
+  // loop for global tracks
+  if (fUseGlobal)
+  {
+    for (i = 0; i < ntracks; i++)
+    {
+      AliESDtrack *track = esd->GetTrack(i);
+      
+      // check that label match
+      if (TMath::Abs(track->GetLabel()) != label) continue;
+      
+      // check global flags
+      if (!track->IsOn(AliESDtrack::kTPCin)) continue;
+      
+      // if required, reject fakes
+      if (rejectFakes && track->GetLabel() < 0) continue;
+      
+      // if all checks are passed and we are searching among global
+      // this means that thie track is a global one with the right label
+      // then, the return value is set to this, and returned
+      return i;
+    }
+  }
+  
+  // loop for ITS-SA tracks (this happens only if no global tracks were found
+  // or searching among globals is disabled)
+  if (fUseITSSA)
+  {
+    for (i = 0; i < ntracks; i++)
+    {
+      AliESDtrack *track = esd->GetTrack(i);
+      
+      // check that label match
+      if (TMath::Abs(track->GetLabel()) != label) continue;
+      
+      // check global flags
+      if (!fUseGlobal && !track->IsOn(AliESDtrack::kITSpureSA)) continue;
+      if (track->IsOn(AliESDtrack::kTPCin)) continue;
+      if (!track->IsOn(AliESDtrack::kITSrefit)) continue;
+      
+      // if required, reject fakes
+      if (rejectFakes && track->GetLabel() < 0) continue;
+      
+      // if all checks are passed and we are searching among global
+      // this means that thie track is a global one with the right label
+      // then, the return value is set to this, and returned
+      return i;
+    }
+  }
+  
+  // if we reach this point, no match were found
+  return -1;
+}
