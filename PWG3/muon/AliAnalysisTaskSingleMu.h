@@ -6,58 +6,87 @@
 
 class TList;
 class AliMCParticle;
-class AliMCEvent;
 class TTree;
+class TMap;
+//class TAxis;
+class AliCFManager;
 
 class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskSingleMu(const char *name = "AliAnalysisTaskSingleMu", Bool_t fillTree = kFALSE, Bool_t keepAll = kFALSE);
+  AliAnalysisTaskSingleMu(const char *name = "AliAnalysisTaskSingleMu", Int_t fillTreeScaleDown = 0, Bool_t keepAll = kFALSE);
   virtual ~AliAnalysisTaskSingleMu();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *option);
   virtual void   NotifyRun();
+  virtual void   FinishTaskOutput();
+
+  void SetRefTrigName(const Char_t* trigClassMB = "CINT1B",
+		      const Char_t* trigClassMU = "CMUS1B");
+
+  /// Get CORRFW manager
+  AliCFManager * GetCFManager() const { return fCFManager; }
+
+  enum {
+    kHvarPt,         ///< Pt at vertex
+    kHvarEta,        ///< Pseudo-rapidity
+    kHvarPhi,        ///< Phi
+    kHvarDCA,        ///< DCA
+    kHvarVz,         ///< Z vertex position
+    kHvarThetaZones, ///< Theta at absorber end (4 zones)
+    kHvarCharge,     ///< Particle charge
+    kHvarMatchTrig,  ///< Matching trigger
+    kHvarTrigClass,  ///< Trigger classes
+    kHvarIsGoodVtx,  ///< IP vertex correctly reconstructed
+    kHvarMotherType, ///< Mother type (MC only)
+    kNvars      ///< THnSparse dimensions
+  };  
+
+  enum {
+    kStepReconstructed,  ///< Reconstructed tracks
+    kStepAcceptance,     ///< Track in acceptance
+    kStepMuonRef,        ///< Reference muon
+    kStepGeneratedMC,    ///< Generated tracks (MC)
+    kStepAcceptanceMC,   ///< Track in acceptance (MC)
+    kStepMuonRefMC,      ///< Reference muon) (MC)
+    kNsteps              ///< Number of steps
+  };
   
  private:
 
   AliAnalysisTaskSingleMu(const AliAnalysisTaskSingleMu&);
   AliAnalysisTaskSingleMu& operator=(const AliAnalysisTaskSingleMu&);
 
+
   enum {
-    kNoMatchTrig,  // No match with trigger
-    kAllPtTrig,    // Match All Pt
-    kLowPtTrig,    // Match Low Pt
-    kHighPtTrig,   // Match High Pt
-    kNtrigCuts     // Total number of trigger types
-  };
-  
-  // Histograms for data
-  enum {
-    // 1D histos
-    kHistoPt,         ///< Pt distribution
-    kHistoDCA,        ///< DCA distribution
-    kHistoVz,         ///< Interaction vertex distribution
-    kHistoEta,        ///< Eta distribution
-    kHistoRapidity,   ///< Rapidity distribution
-    // 2D histos
-    kHistoPtDCA,      ///< DCA vs Pt distribution
-    kHistoPtVz,       ///< Interaction vertex vs Pt distribution
-    kHistoPtRapidity, ///< Rapidity vs Pt distribution
-    kNhistoTypes
+    kHistoNeventsPerTrig,    ///< Number of events per trigger
+    kHistoMuonMultiplicity,  ///< Number of muons per event
+    kHistoEventVz,           ///< Vertex z distribution for all events
+    kHistoEventVzNorm,       ///< Vertex z distribution normalized to the muon events
+    kHistoNeventsPerRun,     ///< Number of triggers per run (for check)
+    kHistoNmuonsPerRun,      ///< Number of muons per run (for check)
+    kNsummaryHistos          ///< Number of summary histograms
   };
 
   enum {
-    kHistoMuonMultiplicity,   ///< Number of muons per event
-    kNsummaryHistos
+    kNoMatchTrig,  ///< No match with trigger
+    kAllPtTrig,    ///< Match All Pt
+    kLowPtTrig,    ///< Match Low Pt
+    kHighPtTrig,   ///< Match High Pt
+    kNtrigCuts     ///< Total number of trigger types
   };
+
 
   // Histograms for MC
   enum {
+    kHistoCheckVzMC,    ///< Check vertex distribution
+    kNsummaryHistosMC ///< Summary histograms for MC
+  };
+
+  enum {
     kHistoPtResolutionMC, ///< Pt resolution
-    kHistoPtDCAMC,        ///< DCA vs Pt distribution
-    kHistoPtVzMC,         ///< Interaction vertex vs Pt distribution
-    kNhistoTypesMC
+    kNhistoTypesMC        ///< Number of MC histograms
   };
 
   enum {
@@ -93,6 +122,7 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kVarEta, ///< Eta
     kVarRapidity, ///< Rapidity
     kVarCharge, ///< Charge
+    kVarRAtAbsEnd, ///< R at absorber end
     // Global event info
     kVarIPVx, ///< IP x position
     kVarIPVy, ///< IP y position
@@ -104,8 +134,12 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kVarMatchTrig, ///< Match trigger
     kVarIsMuon, ///< Is muon
     kVarIsGhost, ///< Is Ghost (trigger track not matching tracker)
+    kVarLocalCircuit, ///< Fired local circuit
     // Global event info
     kVarPassPhysicsSelection, ///< Pass physics selection (Requires ESD)
+    kVarNVtxContrib, ///< Vertex contributors
+    kVarNspdTracklets, ///< SPD tracklets
+    kVarIsPileup, ///< Pileup vertices
     kNvarInt
   };
 
@@ -115,7 +149,7 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kNvarChar
   };
 
-    // Event ID
+  // Event ID
   enum {
     // Global event info
     kVarBunchCrossNumber, ///< Bunch crossing number
@@ -136,9 +170,6 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kVarVxMC, ///< Particle production x vertex from Kine
     kVarVyMC, ///< Particle production y vertex from Kine
     kVarVzMC, ///< Particle production z vertex from Kine
-    //kVarIPVxMC, ///< IP x position from Kine
-    //kVarIPVyMC, ///< IP y position from Kine
-    //kVarIPVzMC, ///< IP z position from Kine
     kNvarFloatMC
   };
 
@@ -148,20 +179,26 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kNvarIntMC
   };
 
-  Int_t GetHistoIndex(Int_t histoTypeIndex, Int_t trigIndex, Int_t srcIndex = -1);
+  Int_t GetHistoIndex(Int_t histoTypeIndex, Int_t trigIndex = -1, Int_t srcIndex = -1);
+  Float_t GetBinThetaAbsEnd(Float_t RAtAbsEnd, Bool_t isTheta = kFALSE);
+  Float_t GetBinTrigClass(const Char_t* trigClass);
 
   void FillTriggerHistos(Int_t histoIndex, Int_t matchTrig, Int_t motherType,
 			 Float_t var1, Float_t var2 = 0. , Float_t var3 = 0.);
   
-  Int_t RecoTrackMother(AliMCParticle* mcTrack, AliMCEvent* mcEvent);
+  Int_t RecoTrackMother(AliMCParticle* mcParticle);
 
   void Reset(Bool_t keepGlobal = kTRUE);
 
-  Bool_t fUseMC;  ///< Flag indicating that Monte Carlo information is available
-  Bool_t fFillTree; ///< Flag indicating that ntuple must be filled
+  void SetAxisLabel(TAxis* axis);
+
+  Int_t fFillTreeScaleDown; ///< Ntuple must be filled each fFillTreeScaleDown events
   Bool_t fKeepAll; ///< Flag indicating to keep all info in tree
+  Int_t  fkNvtxContribCut; ///< Number of cuts in vertex contributors
+  AliCFManager* fCFManager; //!< Pointer to the CF manager
   TList* fHistoList;   //!< List of histograms for data
   TList* fHistoListMC; //!< List of histograms for MC
+  TList* fHistoListQA; //!< List of QA histos
   TTree* fTreeSingleMu; //!< Optional output Tree
   TTree* fTreeSingleMuMC; //!< Optional output Tree for MC
   Float_t* fVarFloat; //!< Reconstructed parameters float
@@ -170,6 +207,8 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
   UInt_t* fVarUInt; //!< Reconstructed parameters Uint
   Float_t* fVarFloatMC; //!< MC parameters float
   Int_t* fVarIntMC; //!< MC parameters int
+  TMap* fVertexPerRun; //!< Map of vertex distribution per run
+  TString* fRefTrigName; //!< reference trigger class name for MB and muon events
 
   ClassDef(AliAnalysisTaskSingleMu, 2); // Single muon analysis
 };
