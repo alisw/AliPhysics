@@ -436,9 +436,9 @@ Int_t AliAODEvent::GetPHOSClusters(TRefArray *clusters) const
   
   AliAODCaloCluster *cl = 0;
   Bool_t first = kTRUE;
-  for (Int_t i = 0; i < GetNCaloClusters() ; i++) {
+  for (Int_t i = 0; i < GetNumberOfCaloClusters() ; i++) {
     if ( (cl = GetCaloCluster(i)) ) {
-      if (cl->IsPHOSCluster()){
+      if (cl->IsPHOS()){
 	if(first) {
 	  new (clusters) TRefArray(TProcessID::GetProcessWithUID(cl)); 
 	  first=kFALSE;
@@ -459,9 +459,9 @@ Int_t AliAODEvent::GetEMCALClusters(TRefArray *clusters) const
   clusters->Clear();
   AliAODCaloCluster *cl = 0;
   Bool_t first = kTRUE;
-  for (Int_t i = 0; i < GetNCaloClusters(); i++) {
+  for (Int_t i = 0; i < GetNumberOfCaloClusters(); i++) {
     if ( (cl = GetCaloCluster(i)) ) {
-      if (cl->IsEMCALCluster()){
+      if (cl->IsEMCAL()){
 	if(first) {
 	  new (clusters) TRefArray(TProcessID::GetProcessWithUID(cl)); 
 	  first=kFALSE;
@@ -510,101 +510,101 @@ Int_t AliAODEvent::GetNumberOfMuonTracks() const
 
 void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
 {
-  // Connects aod event to tree
+    // Connects aod event to tree
   
   if(!tree){
     Printf("%s %d AliAODEvent::ReadFromTree() Zero Pointer to Tree \n",(char*)__FILE__,__LINE__);
     return;
   }
-  // load the TTree
+    // load the TTree
   if(!tree->GetTree())tree->LoadTree(0);
-
-  // Try to find AliAODEvent
+  
+    // Try to find AliAODEvent
   AliAODEvent *aodEvent = 0;
   aodEvent = (AliAODEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliAODEvent");
   if(aodEvent){
-    // Check if already connected to tree
+      // Check if already connected to tree
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));
     if (connectedList && (strcmp(opt, "reconnect"))) {
-	// If connected use the connected list of objects
-	fAODObjects->Delete();
-	fAODObjects = connectedList;
-	GetStdContent(); 
-	fConnected = kTRUE;
-	return;
+        // If connected use the connected list of objects
+      fAODObjects->Delete();
+      fAODObjects = connectedList;
+      GetStdContent(); 
+      fConnected = kTRUE;
+      return;
     } 
-    // Connect to tree
-    // prevent a memory leak when reading back the TList
-    // if (!(strcmp(opt, "reconnect"))) fAODObjects->Delete();
-
-    // create a new TList from the UserInfo TList... 
-    // copy constructor does not work...
+      // Connect to tree
+      // prevent a memory leak when reading back the TList
+      // if (!(strcmp(opt, "reconnect"))) fAODObjects->Delete();
+    
+      // create a new TList from the UserInfo TList... 
+      // copy constructor does not work...
     fAODObjects = (TList*)(aodEvent->GetList()->Clone());
     fAODObjects->SetOwner(kTRUE);
     if(fAODObjects->GetEntries()<kAODListN){
       printf("%s %d AliAODEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
-	     (char*)__FILE__,__LINE__,fAODObjects->GetEntries(),kAODListN);
+             (char*)__FILE__,__LINE__,fAODObjects->GetEntries(),kAODListN);
     }
-    //
-    // Let's find out whether we have friends
+      //
+      // Let's find out whether we have friends
     TList* friendL = tree->GetTree()->GetListOfFriends();
     if (friendL) 
     {
-	TIter next(friendL);
-	TFriendElement* fe;
-	while ((fe = (TFriendElement*)next())){
-	    aodEvent = (AliAODEvent*)(fe->GetTree()->GetUserInfo()->FindObject("AliAODEvent"));
-	    if (!aodEvent) {
-		printf("No UserInfo on tree \n");
-	    } else {
-
-		TList* objL = (TList*)(aodEvent->GetList()->Clone());
-		printf("Get list of object from tree %d !!\n", objL->GetEntries());
-		TIter nextobject(objL);
-		TObject* obj =  0;
-		while((obj = nextobject()))
-		{
-		    printf("Adding object from friend %s !\n", obj->GetName());
-		    fAODObjects->Add(obj);
-		} // object "branch" loop
-	    } // has userinfo  
-	} // friend loop
+      TIter next(friendL);
+      TFriendElement* fe;
+      while ((fe = (TFriendElement*)next())){
+        aodEvent = (AliAODEvent*)(fe->GetTree()->GetUserInfo()->FindObject("AliAODEvent"));
+        if (!aodEvent) {
+          printf("No UserInfo on tree \n");
+        } else {
+          
+          TList* objL = (TList*)(aodEvent->GetList()->Clone());
+          printf("Get list of object from tree %d !!\n", objL->GetEntries());
+          TIter nextobject(objL);
+          TObject* obj =  0;
+          while((obj = nextobject()))
+          {
+            printf("Adding object from friend %s !\n", obj->GetName());
+            fAODObjects->Add(obj);
+          } // object "branch" loop
+        } // has userinfo  
+      } // friend loop
     } // has friends	
-	    
-
-// set the branch addresses
+    
+    
+      // set the branch addresses
     TIter next(fAODObjects);
     TNamed *el;
     while((el=(TNamed*)next())){
       TString bname(el->GetName());
-      // check if branch exists under this Name
+        // check if branch exists under this Name
       TBranch *br = tree->GetTree()->GetBranch(bname.Data());
       if(br){
-	tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
+        tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
       } else {
-	  br = tree->GetBranch(Form("%s.",bname.Data()));
-	  if(br){
-	      tree->SetBranchAddress(Form("%s.",bname.Data()),fAODObjects->GetObjectRef(el));
-	  }
-	  else{
-	      printf("%s %d AliAODEvent::ReadFromTree() No Branch found with Name %s. \n",
-		     (char*)__FILE__,__LINE__,bname.Data());
-	  }	
+        br = tree->GetBranch(Form("%s.",bname.Data()));
+        if(br){
+          tree->SetBranchAddress(Form("%s.",bname.Data()),fAODObjects->GetObjectRef(el));
+        }
+        else{
+          printf("%s %d AliAODEvent::ReadFromTree() No Branch found with Name %s. \n",
+                 (char*)__FILE__,__LINE__,bname.Data());
+        }	
       }
     }
     GetStdContent();
-    // when reading back we are not owner of the list 
-    // must not delete it
+      // when reading back we are not owner of the list 
+      // must not delete it
     fAODObjects->SetOwner(kTRUE);
     fAODObjects->SetName("AODObjectsConnectedToTree");
-    // we are not owner of the list objects 
-    // must not delete it
+      // we are not owner of the list objects 
+      // must not delete it
     tree->GetUserInfo()->Add(fAODObjects);
     fConnected = kTRUE;
   }// no aodEvent
   else {
-    // we can't get the list from the user data, create standard content
-    // and set it by hand
+      // we can't get the list from the user data, create standard content
+      // and set it by hand
     CreateStdContent();
     TIter next(fAODObjects);
     TNamed *el;
@@ -613,12 +613,12 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
       tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
     }
     GetStdContent();
-    // when reading back we are not owner of the list 
-    // must not delete it
+      // when reading back we are not owner of the list 
+      // must not delete it
     fAODObjects->SetOwner(kTRUE);
   }
 }
-//______________________________________________________________________________
+  //______________________________________________________________________________
 Int_t  AliAODEvent::GetNumberOfPileupVerticesSPD() const{
   // count number of SPD pileup vertices
   Int_t nVertices=GetNumberOfVertices();

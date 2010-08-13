@@ -13,6 +13,7 @@
 #pragma link C++ class AliAnaPartCorrMaker+;
 #pragma link C++ class AliAnaPartCorrBaseClass+;
 #pragma link C++ class AliAnalysisTaskParticleCorrelation+;
+#pragma link C++ class AliAnalysisTaskParticleCorrelationM+;
 #pragma link C++ class AliCaloTrackReader+;
 #pragma link C++ class AliCaloTrackESDReader+;
 #pragma link C++ class AliCaloTrackAODReader+;

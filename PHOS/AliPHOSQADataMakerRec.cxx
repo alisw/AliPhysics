@@ -344,7 +344,7 @@ void AliPHOSQADataMakerRec::MakeESDs(AliESDEvent * esd)
     AliESDCaloCluster * clu = esd->GetCaloCluster(index) ;
     if( clu->IsPHOS() ) {
       GetESDsData(kESDSpec)->Fill(clu->E()) ;
-      Double_t *pid=clu->GetPid() ;
+      const Double_t * pid = clu->GetPID() ;
       GetESDsData(kESDpid)->Fill(pid[AliPID::kPhoton]) ;
       eTot+=clu->E() ;
       nTot++ ;

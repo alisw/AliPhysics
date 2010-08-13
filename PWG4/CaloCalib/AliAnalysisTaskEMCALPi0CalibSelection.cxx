@@ -35,11 +35,9 @@
 #include "AliAnalysisTaskEMCALPi0CalibSelection.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDCaloCells.h"
 #include "AliEMCALGeometry.h"
-#include "AliAODCaloCluster.h"
-#include "AliAODCaloCells.h"
+#include "AliVCluster.h"
+#include "AliVCaloCells.h"
 //#include "AliEMCALAodCluster.h"
 //#include "AliEMCALCalibData.h"
 
@@ -126,7 +124,6 @@ void AliAnalysisTaskEMCALPi0CalibSelection::LocalInit()
 void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD()
 {
   // Copy AOD header, vertex, CaloClusters and CaloCells to output AOD
-  
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
   
   // set arrays and pointers
@@ -162,7 +159,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD()
   //
   //
   Int_t nVertices = 1 ;/* = prim. vtx*/;
-  Int_t nCaloClus = aod->GetNCaloClusters();
+  Int_t nCaloClus = aod->GetNumberOfCaloClusters();
   
   AODEvent()->ResetStd(0, nVertices, 0, 0, 0, nCaloClus, 0, 0);
   
@@ -178,64 +175,64 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD()
   vtx->GetCovMatrix(covVtx); //covariance matrix
   
   AliAODVertex * primary = new(vertices[jVertices++])
-    AliAODVertex(pos, covVtx, vtx->GetChi2perNDF(), NULL, -1, AliAODVertex::kPrimary);
+  AliAODVertex(pos, covVtx, vtx->GetChi2perNDF(), NULL, -1, AliAODVertex::kPrimary);
   primary->SetName(vtx->GetName());
   primary->SetTitle(vtx->GetTitle());
   
   // Access to the AOD container of clusters
   TClonesArray &caloClusters = *(AODEvent()->GetCaloClusters());
   Int_t jClusters=0;
+  printf("nCaloClus %d\n",nCaloClus);
   
   for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
     
     AliAODCaloCluster * cluster = aod->GetCaloCluster(iClust);
     
     //Check if it is a EMCAL cluster
-    if(!cluster->IsEMCALCluster())  continue ;
-    
-	if(ClusterContainsBadChannel(cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
-
-	  
+    if(!cluster->IsEMCAL())  continue ;
+    printf("EMCAL cluster %d, ncells %d\n",iClust, cluster->GetNCells());
+    if(ClusterContainsBadChannel(cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
+    printf("copy\n");
     Int_t id       = cluster->GetID();
     Float_t energy = cluster->E();
     cluster->GetPosition(posF);
     Char_t ttype   = cluster->GetType(); 
     AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) 
-      AliAODCaloCluster(id,
-			0,
-			0x0,
-			energy,
-			posF,
-			NULL,
-			ttype);
-
-    caloCluster->SetCaloCluster(cluster->GetDistToBadChannel(),
-				cluster->GetDispersion(),
-				cluster->GetM20(), cluster->GetM02(),
-				cluster->GetEmcCpvDistance(),  
-				cluster->GetNExMax(),cluster->GetTOF()) ;
+    AliAODCaloCluster(id,
+                      0,
+                      0x0,
+                      energy,
+                      posF,
+                      NULL,
+                      ttype);
     
-    caloCluster->SetPIDFromESD(cluster->PID());
+    caloCluster->SetCaloCluster(cluster->GetDistanceToBadChannel(),
+                                cluster->GetDispersion(),
+                                cluster->GetM20(), cluster->GetM02(),
+                                cluster->GetEmcCpvDistance(),  
+                                cluster->GetNExMax(),cluster->GetTOF()) ;
+    
+    caloCluster->SetPIDFromESD(cluster->GetPID());
     caloCluster->SetNCells(cluster->GetNCells());
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
-	
+    
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
     
   } 
-
+  
   caloClusters.Expand(jClusters); // resize TObjArray	 
   // end of loop on calo clusters
   
   // fill EMCAL cell info
   if (aod->GetEMCALCells()) { // protection against missing AOD information
-	    AliAODCaloCells &aodinEMcells = *(aod->GetEMCALCells());
+    AliAODCaloCells &aodinEMcells = *(aod->GetEMCALCells());
     Int_t nEMcell = aodinEMcells.GetNumberOfCells() ;
     
     AliAODCaloCells &aodEMcells = *(AODEvent()->GetEMCALCells());
     aodEMcells.CreateContainer(nEMcell);
-    aodEMcells.SetType(AliAODCaloCells::kEMCAL);
-	
-	Double_t calibFactor = 1;
+    aodEMcells.SetType(AliAODCaloCells::kEMCALCell);
+    
+    Double_t calibFactor = 1;
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
       aodEMcells.SetCell(iCell,aodinEMcells.GetCellNumber(iCell),aodinEMcells.GetAmplitude(iCell)*calibFactor);
     }
@@ -250,7 +247,6 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromESD()
 {
   
   // Copy Header, Vertex, CaloClusters and CaloCells from ESDs to AODs
-  
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   
   // set arrays and pointers
@@ -303,13 +299,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromESD()
   vtx->GetCovMatrix(covVtx); //covariance matrix
   
   AliAODVertex * primary = new(vertices[jVertices++])
-    AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
+  AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
   primary->SetName(vtx->GetName());
   primary->SetTitle(vtx->GetTitle());
   
   // Access to the AOD container of clusters
   TClonesArray &caloClusters = *(AODEvent()->GetCaloClusters());
   Int_t jClusters=0;
+  printf("nCaloClus %d\n",nCaloClus);
   
   for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
     
@@ -317,49 +314,52 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromESD()
     
     //Check which calorimeter information we want to keep.
     if(!cluster->IsEMCAL())  continue ;
-	if(ClusterContainsBadChannel(cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
-	  
+    printf("EMCAL cluster %d, ncells %d\n",iClust, cluster->GetNCells());
+    
+    if(ClusterContainsBadChannel(cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
+    printf("copy\n");
+    
     Int_t id       = cluster->GetID();
     Float_t energy = cluster->E();
     cluster->GetPosition(posF);
     
     AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) 
-      AliAODCaloCluster(id,
-			0,
-			0x0,
-			energy,
-			posF,
-			NULL,
-			AliAODCluster::kEMCALClusterv1);
+    AliAODCaloCluster(id,
+                      0,
+                      0x0,
+                      energy,
+                      posF,
+                      NULL,
+                      AliVCluster::kEMCALClusterv1);
     
     caloCluster->SetCaloCluster(cluster->GetDistanceToBadChannel(),
-				cluster->GetClusterDisp(),
-				cluster->GetM20(), cluster->GetM02(),
-				cluster->GetEmcCpvDistance(),  
-				cluster->GetNExMax(),cluster->GetTOF()) ;
+                                cluster->GetDispersion(),
+                                cluster->GetM20(), cluster->GetM02(),
+                                cluster->GetEmcCpvDistance(),  
+                                cluster->GetNExMax(),cluster->GetTOF()) ;
     
-    caloCluster->SetPIDFromESD(cluster->GetPid());
+    caloCluster->SetPIDFromESD(cluster->GetPID());
     caloCluster->SetNCells(cluster->GetNCells());
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
-
+    
   } 
-
+  
   caloClusters.Expand(jClusters); // resize TObjArray
   // end of loop on calo clusters
   
   // fill EMCAL cell info
-
+  
   if( esd->GetEMCALCells()) { // protection against missing ESD information
     AliESDCaloCells &esdEMcells = *(esd->GetEMCALCells());
-	Int_t nEMcell = esdEMcells.GetNumberOfCells() ;
+    Int_t nEMcell = esdEMcells.GetNumberOfCells() ;
     
     AliAODCaloCells &aodEMcells = *(AODEvent()->GetEMCALCells());
     aodEMcells.CreateContainer(nEMcell);
-    aodEMcells.SetType(AliAODCaloCells::kEMCAL);  
+    aodEMcells.SetType(AliAODCaloCells::kEMCALCell);  
 	  
-	Double_t calibFactor = 1;   
-	for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
+    Double_t calibFactor = 1;   
+    for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
       aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell)*calibFactor);
     }
     aodEMcells.Sort();
@@ -485,7 +485,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   for(Int_t iClu=0; iClu<kNumberOfEMCALClusters; iClu++) {
     
     AliAODCaloCluster *c1 = (AliAODCaloCluster *) caloClustersArr->At(iClu);
-    if(!fCopyAOD && kESD && ClusterContainsBadChannel(c1->GetCellsAbsId(), c1->GetNCells())) continue;	
+    if(!fCopyAOD && ClusterContainsBadChannel(c1->GetCellsAbsId(), c1->GetNCells())) continue;	
     
     Float_t e1i = c1->E();   // cluster energy before correction   
     if(e1i < fEmin) continue;
@@ -533,7 +533,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     for (Int_t jClu=iClu; jClu<kNumberOfEMCALClusters; jClu++) {
       AliAODCaloCluster *c2 = (AliAODCaloCluster *) caloClustersArr->At(jClu);
       if(c2->IsEqual(c1)) continue;
-      if(!fCopyAOD && kESD && ClusterContainsBadChannel(c2->GetCellsAbsId(), c2->GetNCells())) continue;	
+      if(!fCopyAOD && ClusterContainsBadChannel(c2->GetCellsAbsId(), c2->GetNCells())) continue;	
       
       Float_t e2i = c2->E();
       if(e2i < fEmin) continue;

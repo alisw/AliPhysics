@@ -35,6 +35,10 @@
 #include "AliESDtrack.h"
 // same for AliESDVertex (which is a AliVVertex)
 #include "AliESDVertex.h"
+// same for CaloCells and CaloClusters (which is a AliVCaloCells, AliVCluster)
+#include "AliESDCaloCluster.h"
+#include "AliESDCaloCells.h"
+
 
 class AliESDfriend;
 class AliESDVZERO;
@@ -43,8 +47,6 @@ class AliESDVertex;
 class AliESDPmdTrack;
 class AliESDFMD;
 class AliESDkink;
-class AliESDCaloCluster;
-class AliESDCaloCells;
 class AliESDv0;
 class AliMultiplicity;
 class AliRawDataErrorLog;
@@ -399,6 +401,13 @@ public:
   void SetStdNames();
   void CopyFromOldESD();
   TList* GetList() const {return fESDObjects;}
+  
+    //Following needed only for mixed event
+  virtual Int_t        EventIndex(Int_t)       const {return 0;}
+  virtual Int_t        EventIndexForCaloCluster(Int_t) const {return 0;}
+  virtual Int_t        EventIndexForPHOSCell(Int_t)    const {return 0;}
+  virtual Int_t        EventIndexForEMCALCell(Int_t)   const {return 0;} 
+  
 
 protected:
   AliESDEvent(const AliESDEvent&);

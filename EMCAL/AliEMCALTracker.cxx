@@ -284,7 +284,7 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
 	for (Int_t i = 0; i < nClusters; i++) {
 		AliEMCALRecPoint *cluster = (AliEMCALRecPoint*)clusters->At(i);
 		if (!cluster) continue;
-		if (cluster->GetClusterType() != AliESDCaloCluster::kEMCALClusterv1) continue;
+		if (cluster->GetClusterType() != AliVCluster::kEMCALClusterv1) continue;
 		AliEMCALMatchCluster *matchCluster = new AliEMCALMatchCluster(i, cluster);
 		fClusters->AddLast(matchCluster);
 	}

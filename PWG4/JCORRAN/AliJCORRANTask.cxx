@@ -401,7 +401,7 @@ void AliJCORRANTask::ReadESDTracks(const AliESDEvent * esd)
         ctrack->SetPhi(p3.Phi());
         ctrack->SetPID(pid);
         ctrack->SetFlavor(kNone);//kHadron);
-	ctrack->SetCharge(track->Charge());
+        ctrack->SetCharge(track->Charge());
         ctrack->ConvertAliPID();
         ctrack->SetEta(eta);
 
@@ -478,15 +478,15 @@ void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
   for(Int_t icluster = 0 ; icluster < numberOfCaloClusters ; icluster++) {
     AliESDCaloCluster *caloCluster = esd->GetCaloCluster(icluster) ;
     if(!caloCluster) continue;
-    if(caloCluster->GetTrackMatched()==-1){
+    if(caloCluster->GetTrackMatchedIndex()==-1){
       if(caloCluster->E()<fLowerCutOnCaloClusterE) continue;                  //FK//
       // we will not implement any PID cut here      
       fPhotonList->AddAliJPhoton(nPhotons);
       AliJPhoton *pht = fPhotonList->GetAliJPhoton(nPhotons);
       pht->SetFlavor(kPhoton);
       pht->SetE(caloCluster->E());
-      pht->SetChi2(caloCluster->GetClusterChi2());
-      pht->SetPID(caloCluster->GetPid());
+      pht->SetChi2(caloCluster->Chi2());
+      pht->SetPID(caloCluster->GetPID());
       Float_t pos[3]; caloCluster->GetPosition(pos) ;
       pht->SetX(pos[0]);
       pht->SetY(pos[1]);
@@ -498,7 +498,7 @@ void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
       if(caloCluster->IsEMCAL()) pht->SetCaloType(AliJPhoton::kEMCALCalo);
       if(caloCluster->IsPHOS())  pht->SetCaloType(AliJPhoton::kPHOSCalo);
       pht->SetDistToBadChannel(caloCluster->GetDistanceToBadChannel());
-      pht->SetDispersion(caloCluster->GetClusterDisp());
+      pht->SetDispersion(caloCluster->GetDispersion());
       pht->SetM20(caloCluster->GetM20());
       pht->SetM02(caloCluster->GetM02());
       pht->SetEmcCpvDist(caloCluster->GetEmcCpvDistance());
@@ -517,7 +517,7 @@ void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
 void AliJCORRANTask::ReadAODCaloClusters(const AliAODEvent* aod)
 {
   // Read the AliAODCaloClusters and fill the list of AliJPhoton containers
-  Int_t numberOfCaloClusters = aod->GetNCaloClusters() ;
+  Int_t numberOfCaloClusters = aod->GetNumberOfCaloClusters() ;
   if(fDebug < 5) cout << "AOD::number of ESD caloclusters " << numberOfCaloClusters << endl;
   Short_t nPhotons = 0;
   for(Int_t icluster = 0 ; icluster < numberOfCaloClusters ; icluster++) {
@@ -531,7 +531,7 @@ void AliJCORRANTask::ReadAODCaloClusters(const AliAODEvent* aod)
       pht->SetE(caloCluster->E());
       pht->SetFlavor(kPhoton);
       pht->SetChi2(caloCluster->Chi2());
-      pht->SetPID((Double_t*)caloCluster->PID());
+      pht->SetPID((Double_t*)caloCluster->GetPID());
       Float_t pos[3]; caloCluster->GetPosition(pos) ;
       pht->SetX(pos[0]);
       pht->SetY(pos[1]);
@@ -540,16 +540,16 @@ void AliJCORRANTask::ReadAODCaloClusters(const AliAODEvent* aod)
       pht->SetTheta(atan2(sqrt(pos[0]*pos[1]+pos[1]*pos[1]),pos[2]));
       pht->SetPt(caloCluster->E()*sin(atan2(sqrt(pos[0]*pos[0]+pos[1]*pos[1]),pos[2])));
       pht->SetCharge(0);
-      if(caloCluster->IsEMCALCluster()) pht->SetCaloType(AliJPhoton::kEMCALCalo);
-      if(caloCluster->IsPHOSCluster())  pht->SetCaloType(AliJPhoton::kPHOSCalo);
-      pht->SetDistToBadChannel(caloCluster->GetDistToBadChannel());
+      if(caloCluster->IsEMCAL()) pht->SetCaloType(AliJPhoton::kEMCALCalo);
+      if(caloCluster->IsPHOS())  pht->SetCaloType(AliJPhoton::kPHOSCalo);
+      pht->SetDistToBadChannel(caloCluster->GetDistanceToBadChannel());
       pht->SetDispersion(caloCluster->GetDispersion());
       pht->SetM20(caloCluster->GetM20());
       pht->SetM02(caloCluster->GetM02());
       pht->SetEmcCpvDist(caloCluster->GetEmcCpvDistance());
       pht->SetNCells(int(caloCluster->GetNCells()));
       pht->SetCellsAbsId(caloCluster->GetCellsAbsId());
-      Int_t imoduleID = GetSuperModuleNumber(caloCluster->IsEMCALCluster(), caloCluster->GetCellAbsId(0));
+      Int_t imoduleID = GetSuperModuleNumber(caloCluster->IsEMCAL(), caloCluster->GetCellAbsId(0));
       pht->SetSuperModuleID(imoduleID);
       
       fPhotonList->SetNPhotons(++nPhotons);
@@ -709,7 +709,7 @@ bool AliJCORRANTask::ContainsESDHighECaloClusters(){
     for(Int_t icluster = 0 ; icluster < numberOfCaloClusters ; icluster++) {
       AliESDCaloCluster *caloCluster = esd->GetCaloCluster(icluster) ;
       if(!caloCluster) continue;
-      if(caloCluster->GetTrackMatched()==-1){
+      if(caloCluster->GetTrackMatchedIndex()==-1){
         //sotre calo clusters above 1 GeV
         if( caloCluster->E() > fLowerCutOnLeadingCaloClusterE){
           isThisEventToBeStored = kTRUE;
@@ -726,7 +726,7 @@ bool AliJCORRANTask::ContainsESDHighECaloClusters(){
       aod = (AliAODEvent*)InputEvent();
     }
 
-    Int_t numberOfCaloClusters = aod->GetNCaloClusters() ;
+    Int_t numberOfCaloClusters = aod->GetNumberOfCaloClusters() ;
     // loop over all the Calo Clusters
     for(Int_t icluster = 0 ; icluster < numberOfCaloClusters ; icluster++) {
       AliAODCaloCluster *caloCluster = aod->GetCaloCluster(icluster) ;

@@ -652,7 +652,7 @@ void AliEveEMCALData::LoadRecPointsFromESD()
       // adc
       //      Int_t   eneInt = (Int_t)energy*500+0.5;
       Double_t eneInt = energy/0.0153; // To be modified with correct OCDB conversion
-      Double_t disp   = clus->GetClusterDisp() ;
+      Double_t disp   = clus->GetDispersion() ;
       
       clus->GetPosition(pos) ; // Global position
       TVector3 vpos(pos[0],pos[1],pos[2]) ;

@@ -224,9 +224,9 @@ void AliEMCALAodCluster::EvalPositionAndShowerShape(Float_t logWeight, TString e
   TVector3 gpos ;
   emcalgeo->GetGlobal(clXYZ, gpos, iSupMod);
 
-  SetPosition(0,gpos[0]) ;
-  SetPosition(1,gpos[1]) ;  
-  SetPosition(2,gpos[2]) ;
+  SetPositionAt(gpos[0],0) ;
+  SetPositionAt(gpos[1],1) ;  
+  SetPositionAt(gpos[2],2) ;
 
   //Calculate dispersion	
   for(Int_t iDigit=0; iDigit < GetNCells(); iDigit++) {

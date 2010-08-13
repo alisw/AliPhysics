@@ -15,9 +15,13 @@
 
 #include <TObject.h>
 #include <TTree.h>
+#include <TGeoMatrix.h>
 #include "AliVHeader.h"
 #include "AliVParticle.h"
 #include "AliVVertex.h"
+#include "AliVCluster.h"
+#include "AliVCaloCells.h"
+#include "TRefArray.h"
 
 class AliVEvent : public TObject {
 
@@ -97,6 +101,17 @@ public:
   virtual Int_t        GetNumberOfV0s() const = 0;
   virtual Int_t        GetNumberOfCascades() const = 0;
 
+  // Calorimeter Clusters/Cells
+  virtual AliVCluster *GetCaloCluster(Int_t)   const {return 0;}
+  virtual Int_t GetNumberOfCaloClusters()      const {return 0;}
+  virtual Int_t GetEMCALClusters(TRefArray *)  const {return 0;}
+  virtual Int_t GetPHOSClusters (TRefArray *)  const {return 0;}
+  virtual AliVCaloCells *GetEMCALCells()       const {return 0;}
+  virtual AliVCaloCells *GetPHOSCells()        const {return 0;}
+  const TGeoHMatrix* GetPHOSMatrix(Int_t /*i*/)    const {return NULL;}
+  const TGeoHMatrix* GetEMCALMatrix(Int_t /*i*/)   const {return NULL;}
+
+	
   // Primary vertex
   virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}
   virtual Bool_t IsPileupFromSPD(Int_t /*minContributors*/, 
@@ -107,6 +122,12 @@ public:
 				 const{
     return kFALSE;
   }
+  
+  virtual Int_t        EventIndex(Int_t itrack) const = 0;
+  virtual Int_t        EventIndexForCaloCluster(Int_t iclu) const= 0;
+  virtual Int_t        EventIndexForPHOSCell(Int_t icell) const= 0;
+  virtual Int_t        EventIndexForEMCALCell(Int_t icell) const= 0;  
+
   //---------- end of new stuff
 
 

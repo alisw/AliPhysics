@@ -1145,50 +1145,39 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
       AliESDCaloCluster * cluster = esd->GetCaloCluster(iClust);
 
-      Int_t id        = cluster->GetID();
-      Int_t nLabel    = cluster->GetNLabels();
-      TArrayI* labels = cluster->GetLabels();
-      Int_t *label = 0;
-      if (labels){
-	label = (cluster->GetLabels())->GetArray();
-	for(int i = 0;i < labels->GetSize();++i){
-	  if(mcH)mcH->SelectParticle(label[i]);
-	}
-      }     
+      Int_t  id        = cluster->GetID();
+      Int_t  nLabel    = cluster->GetNLabels();
+      Int_t *labels    = cluster->GetLabels();
+      if(labels){ 
+		  for(int i = 0;i < nLabel;++i){
+			  if(mcH)mcH->SelectParticle(labels[i]);
+		  }
+	  }		
 
       Float_t energy = cluster->E();
       cluster->GetPosition(posF);
-      Char_t ttype = AliAODCluster::kUndef; 
 
-      if (cluster->GetClusterType() == AliESDCaloCluster::kPHOSCluster) {
-	ttype=AliAODCluster::kPHOSNeutral;
-      } 
-      else if (cluster->GetClusterType() == AliESDCaloCluster::kEMCALClusterv1) {
-	ttype = AliAODCluster::kEMCALClusterv1;
-      }
-
-      
       AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) AliAODCaloCluster(id,
 											nLabel,
-											label,
+											labels,
 											energy,
 											posF,
 											NULL,
-											ttype);
+											cluster->GetType(),0);
       
       caloCluster->SetCaloCluster(cluster->GetDistanceToBadChannel(),
-				  cluster->GetClusterDisp(),
+				  cluster->GetDispersion(),
 				  cluster->GetM20(), cluster->GetM02(),
 				  cluster->GetEmcCpvDistance(),  
 				  cluster->GetNExMax(),cluster->GetTOF()) ;
 
-      caloCluster->SetPIDFromESD(cluster->GetPid());
+      caloCluster->SetPIDFromESD(cluster->GetPID());
       caloCluster->SetNCells(cluster->GetNCells());
       caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
       caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
 
       TArrayI* matchedT = 	cluster->GetTracksMatched();
-      if (nTracks>0 && matchedT && cluster->GetTrackMatched() >= 0) {	
+      if (nTracks>0 && matchedT && cluster->GetTrackMatchedIndex() >= 0) {	
 	for (Int_t im = 0; im < matchedT->GetSize(); im++) {
 	    Int_t iESDtrack = matchedT->At(im);;
 	    if (aodTrackRefs->At(iESDtrack) != 0) {
@@ -1208,7 +1197,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       
       AliAODCaloCells &aodEMcells = *(AODEvent()->GetEMCALCells());
       aodEMcells.CreateContainer(nEMcell);
-      aodEMcells.SetType(AliAODCaloCells::kEMCAL);
+      aodEMcells.SetType(AliAODCaloCells::kEMCALCell);
       for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
 	aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell));
       }
@@ -1222,7 +1211,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       
       AliAODCaloCells &aodPHcells = *(AODEvent()->GetPHOSCells());
       aodPHcells.CreateContainer(nPHcell);
-      aodPHcells.SetType(AliAODCaloCells::kPHOS);
+      aodPHcells.SetType(AliAODCaloCells::kPHOSCell);
       for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
 	aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell));
       }

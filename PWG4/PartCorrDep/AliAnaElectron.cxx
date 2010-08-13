@@ -797,7 +797,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
           if (clus->GetM20()          < 0.03 ) continue;
           if (clus->GetM02()          < 0.03 ) continue;
 	  
-	  Double_t x[3];
+	  Float_t x[3];
 	  clus->GetPosition(x);
 	  TVector3 cluspos(x[0],x[1],x[2]);
 	  Double_t deta = teta - cluspos.Eta();
@@ -838,7 +838,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	      //Do you want the cluster or the track label?
 	      Int_t input = 0;
 	      if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
-	      cmctag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(0),GetReader(),input);
+	      cmctag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(),GetReader(),input);
 	    }
 	    
 	    if(fWriteNtuple) {

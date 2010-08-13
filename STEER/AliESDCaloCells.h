@@ -13,28 +13,24 @@
 //-------------------------------------------------------------------------
 
 
-#include <TNamed.h>
+#include <AliVCaloCells.h>
 #include <TMath.h>
 
-class AliESDCaloCells : public TNamed
+class AliESDCaloCells : public AliVCaloCells
 {
  public:
 
-  enum ESDCells_t {kUndef = -1, 
-		   kPHOSCell, 
-		   kEMCALCell};
-
   AliESDCaloCells();
-  AliESDCaloCells(const char* name, const char* title, ESDCells_t ttype=kUndef);
+  AliESDCaloCells(const char* name, const char* title, VCells_t ttype=kUndef);
   AliESDCaloCells(const AliESDCaloCells & cells);
   AliESDCaloCells & operator=(const AliESDCaloCells& source);
   virtual ~AliESDCaloCells();
   virtual void Copy(TObject &obj) const;
   
-  Bool_t IsEMCAL() const {return (fType == kEMCALCell);}
-  Bool_t IsPHOS() const {return (fType == kPHOSCell);}
-  Char_t  GetType() const { return fType;}
-  void    SetType(ESDCells_t ttype) { fType=ttype; }
+  Bool_t IsEMCAL()  const { return (fType == kEMCALCell);}
+  Bool_t IsPHOS()   const { return (fType == kPHOSCell) ;}
+  Char_t  GetType() const { return  fType;}
+  void    SetType(Char_t ttype) { fType = ttype; }
 
   void CreateContainer(Short_t nCells);
   void DeleteContainer();
@@ -52,15 +48,16 @@ class AliESDCaloCells : public TNamed
   inline Short_t  GetCellNumber(Short_t pos) const;
 
 
+
  protected:
   Int_t       fNCells;       // Number of cells
   Short_t    *fCellNumber;   //[fNCells] array of cell numbers
   Double32_t *fAmplitude;    //[fNCells][0.,0.,16] array with cell amplitudes (= energy!)
-  Double32_t *fTime;    //[fNCells][0.,0.,16] array with cell times
+  Double32_t *fTime;         //[fNCells][0.,0.,16] array with cell times
   Bool_t      fIsSorted;     //! true if cell arrays are sorted by index
   Char_t      fType;         // Cell type
 
-  ClassDef(AliESDCaloCells, 1);
+  ClassDef(AliESDCaloCells, 2);
 };
 
 
@@ -139,6 +136,5 @@ Short_t AliESDCaloCells::GetCellNumber(Short_t pos) const
     return fNCells;
   }
 }
-
 
 #endif

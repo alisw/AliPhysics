@@ -319,7 +319,7 @@ void AliEMCALClusterizerNxN::MakeClusters()
 	  fRecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
 	  recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
 	  fNumberOfECAClusters++ ;       
-	  recPoint->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
+	  recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
 
 	  AliDebug(9, Form("Number of cells per cluster (max is 9!): %d", clusterDigitList.GetEntries()));
 	  for (Int_t idig = 0; idig < clusterDigitList.GetEntries(); idig++)

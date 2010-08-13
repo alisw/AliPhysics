@@ -557,3 +557,12 @@ Bool_t AliAODTrack::PropagateToDCA(const AliVVertex *vtx,
   return kTRUE;
 }
 
+//______________________________________________________________________________
+Bool_t AliAODTrack::GetPxPyPz(Double_t p[3]) const 
+{
+    //---------------------------------------------------------------------
+    // This function returns the global track momentum components
+    //---------------------------------------------------------------------
+  p[0]=Px(); p[1]=Py(); p[2]=Pz();
+  return kTRUE;
+}

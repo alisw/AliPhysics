@@ -31,7 +31,7 @@ ClassImp(AliESDCaloCluster)
 
 //_______________________________________________________________________
 AliESDCaloCluster::AliESDCaloCluster() : 
-  TObject(),
+  AliVCluster(),
   fTracksMatched(0x0),
   fLabels(0x0),
   fNCells(0),
@@ -58,7 +58,7 @@ AliESDCaloCluster::AliESDCaloCluster() :
 
 //_______________________________________________________________________
 AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) : 
-  TObject(clus),
+  AliVCluster(clus),
   fTracksMatched(clus.fTracksMatched?new TArrayI(*clus.fTracksMatched):0x0),
   fLabels(clus.fLabels?new TArrayI(*clus.fLabels):0x0),
   fNCells(clus.fNCells),
@@ -111,7 +111,7 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   // assignment operator
 
   if(&source == this) return *this;
-  TObject::operator=(source);
+  AliVCluster::operator=(source);
   fGlobalPos[0] = source.fGlobalPos[0];
   fGlobalPos[1] = source.fGlobalPos[1];
   fGlobalPos[2] = source.fGlobalPos[2];
@@ -211,7 +211,7 @@ AliESDCaloCluster::~AliESDCaloCluster(){
 }
 
 //_______________________________________________________________________
-void AliESDCaloCluster::SetPid(const Float_t *p) {
+void AliESDCaloCluster::SetPID(const Float_t *p) {
   // Sets the probability of each particle type
   // Copied from AliESDtrack SetPIDValues
   // This function copies "n" PID weights from "scr" to "dest"
@@ -249,34 +249,53 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
   //Vertex can be recovered with esd pointer doing:  
   //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
 
-	Double32_t pos[3]={ fGlobalPos[0], fGlobalPos[1], fGlobalPos[2]};
-	if(vertex){//calculate direction from vertex
-		pos[0]-=vertex[0];
-		pos[1]-=vertex[1];
-		pos[2]-=vertex[2];
-	}
-	
-	Double_t r = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]   ) ; 
-	
-	p.SetPxPyPzE( fEnergy*pos[0]/r,  fEnergy*pos[1]/r,  fEnergy*pos[2]/r,  fEnergy) ;   
+  Double32_t pos[3]={ fGlobalPos[0], fGlobalPos[1], fGlobalPos[2]};
+  if(vertex){//calculate direction from vertex
+    pos[0]-=vertex[0];
+    pos[1]-=vertex[1];
+    pos[2]-=vertex[2];
+  }
+  
+  Double_t r = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]   ) ; 
+  
+  p.SetPxPyPzE( fEnergy*pos[0]/r,  fEnergy*pos[1]/r,  fEnergy*pos[2]/r,  fEnergy) ;   
 }
 
 //_______________________________________________________________________
 void  AliESDCaloCluster::SetCellsAbsId(UShort_t *array)
 {
     //  Set the array of cell absId numbers 
-    if (fNCells) {
-	fCellsAbsId = new  UShort_t[fNCells];
-	for (Int_t i = 0; i < fNCells; i++) fCellsAbsId[i] = array[i];
-    }
+  if (fNCells) {
+    fCellsAbsId = new  UShort_t[fNCells];
+    for (Int_t i = 0; i < fNCells; i++) fCellsAbsId[i] = array[i];
+  }
 }
 
 //_______________________________________________________________________
 void  AliESDCaloCluster::SetCellsAmplitudeFraction(Double32_t *array)
 {
-    //  Set the array of cell amplitude fraction
-    if (fNCells) {
-	fCellsAmpFraction = new  Double32_t[fNCells];
-	for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];
-    }
+  //  Set the array of cell amplitude fraction
+  if (fNCells) {
+    fCellsAmpFraction = new  Double32_t[fNCells];
+    for (Int_t i = 0; i < fNCells; i++) fCellsAmpFraction[i] = array[i];
+  }
 }
+
+//______________________________________________________________________________
+void AliESDCaloCluster::SetPosition(Float_t *x) 
+{
+  // set the position
+  
+  if (x) {
+    fGlobalPos[0] = x[0];
+    fGlobalPos[1] = x[1];
+    fGlobalPos[2] = x[2];
+  } else {
+    
+    fGlobalPos[0] = -999.;
+    fGlobalPos[1] = -999.;
+    fGlobalPos[2] = -999.;
+  }
+}
+
+

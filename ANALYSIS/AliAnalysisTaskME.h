@@ -34,14 +34,15 @@ class AliAnalysisTaskME : public AliAnalysisTask
     virtual void UserCreateOutputObjects()  {;}
     virtual void UserExec(Option_t* /*option*/) {;}
     // Helpers for adding branches to the AOD
-   virtual void AddAODBranch(const char* cname, void* addobj);
-// Getters
+    virtual void   AddAODBranch(const char* cname, void* addobj, const char *fname="");
+    // Getters
     virtual Int_t          DebugLevel()              {return fDebug;     }
     virtual AliVEvent*     GetEvent(Int_t iev);
     virtual AliAODEvent*   AODEvent()                {return fOutputAOD; }
     virtual TTree*         OutputTree()              {return fTreeA;     }
     virtual Long64_t       Entry()                   {return fEntry;     }
     virtual const char*    CurrentFileName();
+    
   protected:
     Int_t                      fDebug;           //  Debug flag
     Int_t                      fEntry;           //  Current entry in the chain

@@ -45,6 +45,7 @@
 #include "TParticle.h"
 #include "AliStack.h"
 #include "AliAODMCParticle.h"
+#include "AliMixedEvent.h"
 
 ClassImp(AliAnaParticleHadronCorrelation)
 
@@ -209,12 +210,12 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   //Correlation with charged hadrons
   if(GetReader()->IsCTSSwitchedOn()) {
-  	fhDeltaPhiDeltaEtaCharged  = new TH2F
-	   ("DeltaPhiDeltaEtaCharged","#phi_{trigger} - #phi_{h^{#pm}} vs #eta_{trigger} - #eta_{h^{#pm}}",
-	   140,-2.,5.,200,-2,2); 
-	  fhDeltaPhiDeltaEtaCharged->SetXTitle("#Delta #phi");
-	  fhDeltaPhiDeltaEtaCharged->SetYTitle("#Delta #eta");    
-	  
+    fhDeltaPhiDeltaEtaCharged  = new TH2F
+      ("DeltaPhiDeltaEtaCharged","#phi_{trigger} - #phi_{h^{#pm}} vs #eta_{trigger} - #eta_{h^{#pm}}",
+       140,-2.,5.,200,-2,2); 
+    fhDeltaPhiDeltaEtaCharged->SetXTitle("#Delta #phi");
+    fhDeltaPhiDeltaEtaCharged->SetYTitle("#Delta #eta");    
+    
     fhPhiCharged  = new TH2F
       ("PhiCharged","#phi_{h^{#pm}}  vs p_{T #pm}",
        nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
@@ -275,7 +276,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhPtHbpUeCharged->SetYTitle("ln(1/x_{E})");
     fhPtHbpUeCharged->SetXTitle("p_{T trigger}");
 	  
-	  outputContainer->Add(fhDeltaPhiDeltaEtaCharged);
+    outputContainer->Add(fhDeltaPhiDeltaEtaCharged);
     outputContainer->Add(fhPhiCharged) ;
     outputContainer->Add(fhEtaCharged) ;
     outputContainer->Add(fhDeltaPhiCharged) ; 
@@ -335,11 +336,11 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   //Correlation with neutral hadrons
   if(GetReader()->IsEMCALSwitchedOn() || GetReader()->IsPHOSSwitchedOn()){
     
-	fhDeltaPhiDeltaEtaNeutral  = new TH2F
-	("DeltaPhiDeltaEtaNeutral","#phi_{trigger} - #phi_{h^{0}} vs #eta_{trigger} - #eta_{h^{0}}",
-	140,-2.,5.,200,-2,2); 
-	fhDeltaPhiDeltaEtaNeutral->SetXTitle("#Delta #phi");
-	fhDeltaPhiDeltaEtaNeutral->SetYTitle("#Delta #eta");   
+    fhDeltaPhiDeltaEtaNeutral  = new TH2F
+      ("DeltaPhiDeltaEtaNeutral","#phi_{trigger} - #phi_{h^{0}} vs #eta_{trigger} - #eta_{h^{0}}",
+       140,-2.,5.,200,-2,2); 
+    fhDeltaPhiDeltaEtaNeutral->SetXTitle("#Delta #phi");
+    fhDeltaPhiDeltaEtaNeutral->SetYTitle("#Delta #eta");   
 	  
     fhPhiNeutral  = new TH2F
       ("PhiNeutral","#phi_{#pi^{0}}  vs p_{T #pi^{0}}",
@@ -388,21 +389,21 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
 	       nptbins,ptmin,ptmax,200,0.,2.); 
     fhPtImbalanceUeNeutral->SetYTitle("z_{trigger #pi^{0}}");
     fhPtImbalanceUeNeutral->SetXTitle("p_{T trigger}");
-	  
-	fhPtHbpNeutral  = 
+    
+    fhPtHbpNeutral  = 
       new TH2F("HbpNeutral","#xi = ln(1/x_{E}) with neutral particles",
-			   nptbins,ptmin,ptmax,200,0.,10.); 
-	fhPtHbpNeutral->SetYTitle("ln(1/x_{E})");
-	fhPtHbpNeutral->SetXTitle("p_{T trigger}");
-	  
-	fhPtHbpUeNeutral  = 
+	       nptbins,ptmin,ptmax,200,0.,10.); 
+    fhPtHbpNeutral->SetYTitle("ln(1/x_{E})");
+    fhPtHbpNeutral->SetXTitle("p_{T trigger}");
+    
+    fhPtHbpUeNeutral  = 
       new TH2F("HbpUeNeutral","#xi = ln(1/x_{E}) with neutral particles",
-			   nptbins,ptmin,ptmax,200,0.,10.); 
-	fhPtHbpUeNeutral->SetYTitle("ln(1/x_{E})");
-	fhPtHbpUeNeutral->SetXTitle("p_{T trigger}");
-	  
-	  
-	  outputContainer->Add(fhDeltaPhiDeltaEtaNeutral); 
+	       nptbins,ptmin,ptmax,200,0.,10.); 
+    fhPtHbpUeNeutral->SetYTitle("ln(1/x_{E})");
+    fhPtHbpUeNeutral->SetXTitle("p_{T trigger}");
+    
+    
+    outputContainer->Add(fhDeltaPhiDeltaEtaNeutral); 
     outputContainer->Add(fhPhiNeutral) ;  
     outputContainer->Add(fhEtaNeutral) ;   
     outputContainer->Add(fhDeltaPhiNeutral) ; 
@@ -411,8 +412,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhDeltaEtaNeutral) ; 
     outputContainer->Add(fhPtImbalanceNeutral) ;
     outputContainer->Add(fhPtImbalanceUeNeutral) ;  
-	outputContainer->Add(fhPtHbpNeutral) ;
-	outputContainer->Add(fhPtHbpUeNeutral) ;    
+    outputContainer->Add(fhPtHbpNeutral) ;
+    outputContainer->Add(fhPtHbpUeNeutral) ;    
  
     if(fMakeSeveralUE){ 
       fhDeltaPhiUeLeftNeutral  = new TH2F
@@ -443,20 +444,20 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhPtImbalanceUeRightNeutral->SetXTitle("p_{T trigger}");
       outputContainer->Add(fhPtImbalanceUeRightNeutral) ;
 		
-	fhPtHbpUeLeftNeutral  = 
+      fhPtHbpUeLeftNeutral  = 
 	new TH2F("HbpUeNeutralLeft","#xi = ln(1/x_{E}) with neutral UE left side of trigger",
-			nptbins,ptmin,ptmax,200,0.,10.); 
-	fhPtHbpUeLeftNeutral->SetYTitle("ln(1/x_{E})");
-	fhPtHbpUeLeftNeutral->SetXTitle("p_{T trigger}");
-	outputContainer->Add(fhPtHbpUeLeftNeutral) ;
-		
-	fhPtHbpUeRightNeutral  = 
+		 nptbins,ptmin,ptmax,200,0.,10.); 
+      fhPtHbpUeLeftNeutral->SetYTitle("ln(1/x_{E})");
+      fhPtHbpUeLeftNeutral->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhPtHbpUeLeftNeutral) ;
+      
+      fhPtHbpUeRightNeutral  = 
 	new TH2F("HbpUeNeutralRight","#xi = ln(1/x_{E}) with neutral UE right side of trigger",
-			nptbins,ptmin,ptmax,200,0.,10.); 
-	fhPtHbpUeRightNeutral->SetYTitle("ln(1/x_{E})");
-	fhPtHbpUeRightNeutral->SetXTitle("p_{T trigger}");
-	outputContainer->Add(fhPtHbpUeRightNeutral) ;
-		
+		 nptbins,ptmin,ptmax,200,0.,10.); 
+      fhPtHbpUeRightNeutral->SetYTitle("ln(1/x_{E})");
+      fhPtHbpUeRightNeutral->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhPtHbpUeRightNeutral) ;
+      
     }  
    
     //Keep neutral meson selection histograms if requiered
@@ -518,7 +519,7 @@ void AliAnaParticleHadronCorrelation::Print(const Option_t * opt) const
 //____________________________________________________________________________
 void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()  
 {  
-  //Particle-Hadron Correlation Analysis, fill AODs
+    //Particle-Hadron Correlation Analysis, fill AODs
   
   if(!GetInputAODBranch()){
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s >, STOP \n",GetInputAODName().Data());
@@ -526,8 +527,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   }
 	
   if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation")){
-	printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
-	abort();
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
+    abort();
   }
 	
   if(GetDebug() > 1){
@@ -538,45 +539,45 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In PHOS aod entries %d\n", GetAODPHOS()->GetEntriesFast());
   }
   
-  //Loop on stored AOD particles, trigger
+    //Loop on stored AOD particles, trigger
   Double_t ptTrig    = 0.;
   Int_t    trigIndex = -1;
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-	//find the leading particles with highest momentum
-	if (particle->Pt()>ptTrig) {
-		ptTrig = particle->Pt() ;
-		trigIndex = iaod ;
-	}
+      //find the leading particles with highest momentum
+    if (particle->Pt()>ptTrig) {
+      ptTrig = particle->Pt() ;
+      trigIndex = iaod ;
+    }
   }//Aod branch loop
 	
-  //Do correlation with leading particle
+    //Do correlation with leading particle
   if(trigIndex!=-1){
 	  
-   AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(trigIndex));
-  //Make correlation with charged hadrons
-  if(GetReader()->IsCTSSwitchedOn() )
-	MakeChargedCorrelation(particle, GetAODCTS(),kFALSE);
+    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(trigIndex));
+      //Make correlation with charged hadrons
+    if(GetReader()->IsCTSSwitchedOn() )
+      MakeChargedCorrelation(particle, GetAODCTS(),kFALSE);
     
-    //Make correlation with neutral pions
-    //Trigger particle in PHOS, correlation with EMCAL
+      //Make correlation with neutral pions
+      //Trigger particle in PHOS, correlation with EMCAL
     if(particle->GetDetector()=="PHOS" && GetReader()->IsEMCALSwitchedOn() && GetAODEMCAL()->GetEntriesFast() > 0)
       MakeNeutralCorrelationFillAOD(particle, GetAODEMCAL(),"EMCAL");
-    //Trigger particle in EMCAL, correlation with PHOS
+      //Trigger particle in EMCAL, correlation with PHOS
     else if(particle->GetDetector()=="EMCAL" && GetReader()->IsPHOSSwitchedOn() && GetAODPHOS()->GetEntriesFast() > 0)
       MakeNeutralCorrelationFillAOD(particle, GetAODPHOS(),"PHOS");
-    //Trigger particle in CTS, correlation with PHOS, EMCAL and CTS
+      //Trigger particle in CTS, correlation with PHOS, EMCAL and CTS
     else if(particle->GetDetector()=="CTS" ){
       if(GetReader()->IsPHOSSwitchedOn() && GetAODPHOS()->GetEntriesFast() > 0) 
-	       MakeNeutralCorrelationFillAOD(particle, GetAODPHOS(),"PHOS");
+        MakeNeutralCorrelationFillAOD(particle, GetAODPHOS(),"PHOS");
       if(GetReader()->IsEMCALSwitchedOn() && GetAODEMCAL()->GetEntriesFast() > 0) 
-	       MakeNeutralCorrelationFillAOD(particle, GetAODEMCAL(),"EMCAL");
+        MakeNeutralCorrelationFillAOD(particle, GetAODEMCAL(),"EMCAL");
     }
-  
-	
+    
+    
   }//Correlate leading
-
+  
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - End fill AODs \n");
   
 }
@@ -615,13 +616,13 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   if(trigIndex!=-1){ //using trigger partilce to do correlations
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(trigIndex));
 	  
-	  //Fill leading particle histogram   
-	  fhPtLeading->Fill(particle->Pt());
-	  Float_t phi = particle->Phi();
-	  if(phi<0)phi+=TMath::TwoPi();
-	  fhPhiLeading->Fill(particle->Pt(), phi);
-	  fhEtaLeading->Fill(particle->Pt(), particle->Eta());
-	  
+    //Fill leading particle histogram   
+    fhPtLeading->Fill(particle->Pt());
+    Float_t phi = particle->Phi();
+    if(phi<0)phi+=TMath::TwoPi();
+    fhPhiLeading->Fill(particle->Pt(), phi);
+    fhEtaLeading->Fill(particle->Pt(), particle->Eta());
+    
     //Make correlation with charged hadrons
     TObjArray * reftracks   = particle->GetObjArray(GetAODObjArrayName()+"Tracks");
     if(reftracks){
@@ -644,126 +645,145 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
 //____________________________________________________________________________
 void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, TObjArray* const pl, const Bool_t bFillHisto)
 {  
-   // Charged Hadron Correlation Analysis
-   if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Make trigger particle - charged hadron correlation \n");
+    // Charged Hadron Correlation Analysis
+  if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Make trigger particle - charged hadron correlation \n");
   
-   Double_t ptTrig  = aodParticle->Pt();
-   Double_t pxTrig  = aodParticle->Px();
-   Double_t pyTrig  = aodParticle->Py();
-
-   Double_t phiTrig = aodParticle->Phi();
-
-   Double_t pt   = -100.;
-   Double_t px   = -100.;
-   Double_t py   = -100.;
-   Double_t rat  = -100.; 
-   Double_t xE   = -100.; 
-   Double_t cosi = -100.; 
-   Double_t phi  = -100. ;
-   Double_t eta  = -100. ;
-   TVector3 p3;  
+  Int_t evtIndex11 = 0 ; 
+  Int_t evtIndex12 = 0 ; 
+  if (GetMixedEvent()) {
+    evtIndex11 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(0)) ;
+    evtIndex12 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(1)) ;    
+  }
+  
+  Double_t ptTrig  = aodParticle->Pt();
+  Double_t pxTrig  = aodParticle->Px();
+  Double_t pyTrig  = aodParticle->Py();
+  
+  Double_t phiTrig = aodParticle->Phi();
+  
+  Double_t pt   = -100.;
+  Double_t px   = -100.;
+  Double_t py   = -100.;
+  Double_t rat  = -100.; 
+  Double_t xE   = -100.; 
+  Double_t cosi = -100.; 
+  Double_t phi  = -100. ;
+  Double_t eta  = -100. ;
+  TVector3 p3;  
 	
-   TObjArray * reftracks    =0x0;
-   Int_t nrefs = 0;
+  TObjArray * reftracks    =0x0;
+  Int_t nrefs = 0;
 	
-   //Track loop, select tracks with good pt, phi and fill AODs or histograms
-   for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ ){
-     AliAODTrack * track = (AliAODTrack *) (pl->At(ipr)) ;
-	   if(track->GetID()==aodParticle->GetTrackLabel(0)) continue ;
-	   if(track->Pt()>ptTrig) continue ;
-	   Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
-	   p3.SetXYZ(mom[0],mom[1],mom[2]);
-	   pt   = p3.Pt();
-	   px   = p3.Px();
-	   py   = p3.Py();
-	   eta  = p3.Eta();
-	   phi  = p3.Phi() ;
-	   if(phi < 0) phi+=TMath::TwoPi();
-     rat   = pt/ptTrig ;
-     xE    = -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
-     if(xE <0.)xE =-xE;
-     cosi = TMath::Log(1/xE);
-    // printf("rat = %f, xE = %f, cosi =%f \n", rat, xE, cosi);
-     // printf("phi = %f \n", phi);
+    //Track loop, select tracks with good pt, phi and fill AODs or histograms
+  //Int_t currentIndex = -1 ; 
+  for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ ){
+    AliAODTrack * track = (AliAODTrack *) (pl->At(ipr)) ;
+    Int_t evtIndex2 = 0 ; 
+    if (GetMixedEvent()) {
+      evtIndex2 = GetMixedEvent()->EventIndex(track->GetID()) ;
+      if (evtIndex11 == evtIndex2 || evtIndex12 == evtIndex2) // photon and track from different events
+        continue ; 
+//      if(currentIndex == evtIndex2) // tracks from different event 
+//        continue ;
+//      currentIndex = evtIndex2 ;
+    }
+    if(track->GetID()==aodParticle->GetTrackLabel(0)) 
+      continue ;
+    if(track->Pt()>ptTrig) 
+      continue ;
+    Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
+    p3.SetXYZ(mom[0],mom[1],mom[2]);
+    pt   = p3.Pt();
+    px   = p3.Px();
+    py   = p3.Py();
+    eta  = p3.Eta();
+    phi  = p3.Phi() ;
+    if(phi < 0) phi+=TMath::TwoPi();
+    rat   = pt/ptTrig ;
+    xE    = -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
+    if(xE <0.)xE =-xE;
+    cosi = TMath::Log(1/xE);
+      // printf("rat = %f, xE = %f, cosi =%f \n", rat, xE, cosi);
+      // printf("phi = %f \n", phi);
     
-     if(IsFiducialCutOn()){
-       Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
-       if(! in ) continue ;
-     }    
-
-     //Select only hadrons in pt range
-     if(pt < GetMinPt() || pt > GetMaxPt()) continue ;
+    if(IsFiducialCutOn()){
+      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+      if(! in ) continue ;
+    }    
     
-     //Selection within angular range
-     Float_t deltaphi = phiTrig-phi;
-     if(deltaphi< -TMath::PiOver2()) deltaphi+=TMath::TwoPi();
-     if(deltaphi>3*TMath::PiOver2()) deltaphi-=TMath::TwoPi();
+      //Select only hadrons in pt range
+    if(pt < GetMinPt() || pt > GetMaxPt()) continue ;
     
-     if(GetDebug() > 2)
-       printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Charged hadron: pt %f, phi %f, phi trigger %f. Cuts:  delta phi  %2.2f < %2.2f < %2.2f, pT min %2.2f \n",
- 	     pt,phi, phiTrig,fDeltaPhiMinCut, deltaphi, fDeltaPhiMaxCut, GetMinPt());
+      //Selection within angular range
+    Float_t deltaphi = phiTrig-phi;
+    if(deltaphi< -TMath::PiOver2()) deltaphi+=TMath::TwoPi();
+    if(deltaphi>3*TMath::PiOver2()) deltaphi-=TMath::TwoPi();
     
-     if(bFillHisto){
-       // Fill Histograms
-       fhEtaCharged->Fill(pt,eta);
-       fhPhiCharged->Fill(pt,phi);
-       fhDeltaEtaCharged->Fill(ptTrig,aodParticle->Eta()-eta);
-       fhDeltaPhiCharged->Fill(ptTrig, deltaphi);
-       fhDeltaPhiDeltaEtaCharged->Fill(deltaphi,aodParticle->Eta()-eta);
-		 
-       if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
-       
-       //delta phi cut for correlation
-       if( (deltaphi > fDeltaPhiMinCut) && ( deltaphi < fDeltaPhiMaxCut) ) {
-	 fhDeltaPhiChargedPt->Fill(pt,deltaphi);
-	 fhPtImbalanceCharged->Fill(ptTrig,rat); 
-	 fhPtHbpCharged->Fill(ptTrig,cosi);
-       }
-      else {
-		fhDeltaPhiUeChargedPt->Fill(pt,deltaphi);
-		fhPtImbalanceUeCharged->Fill(ptTrig,rat);
-		fhPtHbpUeCharged->Fill(ptTrig,cosi);
+    if(GetDebug() > 2)
+      printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Charged hadron: pt %f, phi %f, phi trigger %f. Cuts:  delta phi  %2.2f < %2.2f < %2.2f, pT min %2.2f \n",
+             pt,phi, phiTrig,fDeltaPhiMinCut, deltaphi, fDeltaPhiMaxCut, GetMinPt());
+    
+    if(bFillHisto){
+        // Fill Histograms
+      fhEtaCharged->Fill(pt,eta);
+      fhPhiCharged->Fill(pt,phi);
+      fhDeltaEtaCharged->Fill(ptTrig,aodParticle->Eta()-eta);
+      fhDeltaPhiCharged->Fill(ptTrig, deltaphi);
+      fhDeltaPhiDeltaEtaCharged->Fill(deltaphi,aodParticle->Eta()-eta);
+      
+      if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
+      
+        //delta phi cut for correlation
+      if( (deltaphi > fDeltaPhiMinCut) && ( deltaphi < fDeltaPhiMaxCut) ) {
+        fhDeltaPhiChargedPt->Fill(pt,deltaphi);
+        fhPtImbalanceCharged->Fill(ptTrig,rat); 
+        fhPtHbpCharged->Fill(ptTrig,cosi);
       }
-       //several UE calculation 
+      else {
+        fhDeltaPhiUeChargedPt->Fill(pt,deltaphi);
+        fhPtImbalanceUeCharged->Fill(ptTrig,rat);
+        fhPtHbpUeCharged->Fill(ptTrig,cosi);
+      }
+        //several UE calculation 
       if(fMakeSeveralUE){
-	 if((deltaphi<-fUeDeltaPhiMinCut) && (deltaphi >-fUeDeltaPhiMaxCut)){  
-	   fhDeltaPhiUeLeftCharged->Fill(pt,deltaphi);
-	   fhPtImbalanceUeLeftCharged->Fill(ptTrig,rat);
-	   fhPtHbpUeLeftCharged->Fill(ptTrig,cosi);
-	}
-	 if((deltaphi>fUeDeltaPhiMinCut) && (deltaphi <fUeDeltaPhiMaxCut)){  
-	   fhDeltaPhiUeRightCharged->Fill(pt,deltaphi);
-	   fhPtImbalanceUeRightCharged->Fill(ptTrig,rat);
-	   fhPtHbpUeRightCharged->Fill(ptTrig,cosi);
-
-	 }
+        if((deltaphi<-fUeDeltaPhiMinCut) && (deltaphi >-fUeDeltaPhiMaxCut)){  
+          fhDeltaPhiUeLeftCharged->Fill(pt,deltaphi);
+          fhPtImbalanceUeLeftCharged->Fill(ptTrig,rat);
+          fhPtHbpUeLeftCharged->Fill(ptTrig,cosi);
+        }
+        if((deltaphi>fUeDeltaPhiMinCut) && (deltaphi <fUeDeltaPhiMaxCut)){  
+          fhDeltaPhiUeRightCharged->Fill(pt,deltaphi);
+          fhPtImbalanceUeRightCharged->Fill(ptTrig,rat);
+          fhPtHbpUeRightCharged->Fill(ptTrig,cosi);
+          
+        }
       } //several UE calculation
-
-     }
-     else{
-	   nrefs++;
-	   if(nrefs==1){
-		reftracks = new TObjArray(0);
-		reftracks->SetName(GetAODObjArrayName()+"Tracks");
-		reftracks->SetOwner(kFALSE);
-	   }
-       reftracks->Add(track);
-     }//aod particle loop
-   }// track loop
+      
+    }
+    else{
+      nrefs++;
+      if(nrefs==1){
+        reftracks = new TObjArray(0);
+        reftracks->SetName(GetAODObjArrayName()+"Tracks");
+        reftracks->SetOwner(kFALSE);
+      }
+      reftracks->Add(track);
+    }//aod particle loop
+  }// track loop
   
-   //Fill AOD with reference tracks, if not filling histograms
-   if(!bFillHisto && reftracks) {
-     aodParticle->AddObjArray(reftracks);
-   }
-	
-	//delete reftracks;
+    //Fill AOD with reference tracks, if not filling histograms
+  if(!bFillHisto && reftracks) {
+    aodParticle->AddObjArray(reftracks);
+  }
+  
+    //delete reftracks;
   
 }  
 
-//____________________________________________________________________________
+  //____________________________________________________________________________
 void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4ParticleCorrelation* const aodParticle,TObjArray* const pl, TString detector)  
 {  
-  // Neutral Pion Correlation Analysis, find pi0, put them in new output aod, if correlation cuts passed
+    // Neutral Pion Correlation Analysis, find pi0, put them in new output aod, if correlation cuts passed
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Make trigger particle - neutral hadron correlation \n");
   
   if(!NewOutputAOD()){
@@ -776,148 +796,180 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
   TLorentzVector gammai;
   TLorentzVector gammaj;
   
-  //Get vertex for photon momentum calculation
-  Double_t vertex[]  = {0,0,0} ; //vertex 
-  Double_t vertex2[] = {0,0,0} ; //vertex of second input aod
+    //Get vertex for photon momentum calculation
+  
   if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
   {
-	 GetReader()->GetVertex(vertex);
-	 if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+    for (Int_t iev = 0; iev < GetNMixedEvent(); iev++) {
+      if (!GetMixedEvent()) 
+        GetReader()->GetVertex(GetVertex(iev));
+      else 
+        GetMixedEvent()->GetVertexOfEvent(iev)->GetXYZ(GetVertex(iev)); 
+    }
+  }
+  Double_t vertex2[] = {0.0,0.0,0.0} ; //vertex of second input aod
+  if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
+  {
+     if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
   }
 	
-  //Cluster loop, select pairs with good pt, phi and fill AODs or histograms
-  //Int_t iEvent= GetReader()->GetEventNumber() ;
+    //Cluster loop, select pairs with good pt, phi and fill AODs or histograms
+    //Int_t iEvent= GetReader()->GetEventNumber() ;
   Int_t nclus = pl->GetEntriesFast();
   for(Int_t iclus = 0;iclus < nclus ; iclus ++ ){
     AliAODCaloCluster * calo = (AliAODCaloCluster *) (pl->At(iclus)) ;
     
-	//Input from second AOD?
-	Int_t inputi = 0;
-	if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) inputi = 1 ;
-	else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) inputi = 1;
-	  
-	//Cluster selection, not charged, with photon or pi0 id and in fiducial cut
-    Int_t pdg=0;
-	if     (inputi == 0 && !SelectCluster(calo, vertex,  gammai, pdg))  continue ;
-	else if(inputi == 1 && !SelectCluster(calo, vertex2, gammai, pdg))  continue ;
-
-	if(GetDebug() > 2)
-      printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Neutral cluster in %s: pt %f, phi %f, phi trigger %f. Cuts:  delta phi min %2.2f,  max %2.2f, pT min %2.2f \n",
-	     detector.Data(), gammai.Pt(),gammai.Phi(),phiTrig,fDeltaPhiMinCut, fDeltaPhiMaxCut, GetMinPt());
+    Int_t evtIndex1 = 0 ; 
+    if (GetMixedEvent()) {
+      evtIndex1=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
+    }
     
-    //2 gamma overlapped, found with PID
+
+      //Input from second AOD?
+    Int_t inputi = 0;
+    if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) 
+      inputi = 1 ;
+    else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) 
+      inputi = 1;
+    
+      //Cluster selection, not charged, with photon or pi0 id and in fiducial cut
+    Int_t pdg=0;
+    if     (inputi == 0 && !SelectCluster(calo, GetVertex(evtIndex1),  gammai, pdg))  
+      continue ;
+    else if(inputi == 1 && !SelectCluster(calo, vertex2, gammai, pdg))  
+      continue ;
+    
+    if(GetDebug() > 2)
+      printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Neutral cluster in %s: pt %f, phi %f, phi trigger %f. Cuts:  delta phi min %2.2f,  max %2.2f, pT min %2.2f \n",
+             detector.Data(), gammai.Pt(),gammai.Phi(),phiTrig,fDeltaPhiMinCut, fDeltaPhiMaxCut, GetMinPt());
+    
+      //2 gamma overlapped, found with PID
     if(pdg == AliCaloPID::kPi0){ 
       
-      //Select only hadrons in pt range
-      if(gammai.Pt() < GetMinPt() || gammai.Pt() > GetMaxPt()) continue ;
+        //Select only hadrons in pt range
+      if(gammai.Pt() < GetMinPt() || gammai.Pt() > GetMaxPt()) 
+        continue ;
       
-      //Selection within angular range
+        //Selection within angular range
       Float_t phi = gammai.Phi();
       if(phi < 0) phi+=TMath::TwoPi();
-      //Float_t deltaphi = TMath::Abs(phiTrig-phi);
-      //if( (deltaphi < fDeltaPhiMinCut) || ( deltaphi > fDeltaPhiMaxCut) ) continue ;
+        //Float_t deltaphi = TMath::Abs(phiTrig-phi);
+        //if( (deltaphi < fDeltaPhiMinCut) || ( deltaphi > fDeltaPhiMaxCut) ) continue ;
       
       AliAODPWG4Particle pi0 = AliAODPWG4Particle(gammai);
-      //pi0.SetLabel(calo->GetLabel(0));
+        //pi0.SetLabel(calo->GetLabel());
       pi0.SetPdg(AliCaloPID::kPi0);
       pi0.SetDetector(detector);
       
       if(IsDataMC()){
-	    pi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(),inputi));
-	    if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Origin of candidate %d\n",pi0.GetTag());
-	  }//Work with stack also 
-      //Set the indeces of the original caloclusters  
+        pi0.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(),GetReader(),inputi));
+        if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Origin of candidate %d\n",pi0.GetTag());
+      }//Work with stack also 
+       //Set the indeces of the original caloclusters  
       pi0.SetCaloLabel(calo->GetID(),-1);
       AddAODParticle(pi0);
       
       if(GetDebug() > 2) 
-	printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Correlated with selected pi0 (pid): pt %f, phi %f\n",pi0.Pt(),pi0.Phi());
+        printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Correlated with selected pi0 (pid): pt %f, phi %f\n",pi0.Pt(),pi0.Phi());
       
     }// pdg = 111
     
-    //Make invariant mass analysis
+      //Make invariant mass analysis
     else if(pdg == AliCaloPID::kPhoton){	
-      //Search the photon companion in case it comes from  a Pi0 decay
-      //Apply several cuts to select the good pair;
+        //Search the photon companion in case it comes from  a Pi0 decay
+        //Apply several cuts to select the good pair;
       for(Int_t jclus = iclus+1; jclus < pl->GetEntries() ; jclus ++ ){
-	AliAODCaloCluster * calo2 = (AliAODCaloCluster *) (pl->At(jclus)) ;
-	
-	//Input from second AOD?
-	Int_t inputj = 0;
-	if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= jclus) inputj = 1;
-	else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= jclus) inputj = 1;
-		  
-	//Cluster selection, not charged with photon or pi0 id and in fiducial cut
-	Int_t pdgj=0;
-	if     (inputj == 0 && !SelectCluster(calo2, vertex,  gammaj, pdgj))  continue ;
-	else if(inputj == 1 && !SelectCluster(calo2, vertex2, gammaj, pdgj))  continue ;
-	  
-	if(!SelectCluster(calo2,vertex, gammaj, pdgj)) continue ;
-	
-	if(pdgj == AliCaloPID::kPhoton ){
-	  
-	  if((gammai+gammaj).Pt() < GetMinPt() || (gammai+gammaj).Pt() > GetMaxPt()) continue ;
-	  
-	  //Selection within angular range
-	  Float_t phi = (gammai+gammaj).Phi();
-	  if(phi < 0) phi+=TMath::TwoPi();
-	  //Float_t deltaphi = TMath::Abs(phiTrig-phi);
-	  //if( (deltaphi < fDeltaPhiMinCut) || ( deltaphi > fDeltaPhiMaxCut) ) continue ;
-	  
-	  //Select good pair (aperture and invariant mass)
-	  if(GetNeutralMesonSelection()->SelectPair(gammai, gammaj)){
-	    
-	    if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Neutral Hadron Correlation: AOD Selected gamma pair: pt %2.2f, phi %2.2f, eta %2.2f, M %2.3f\n",
-				       (gammai+gammaj).Pt(),(gammai+gammaj).Phi(),(gammai+gammaj).Eta(), (gammai+gammaj).M());
-	    
-	    TLorentzVector pi0mom = gammai+gammaj;
-	    AliAODPWG4Particle pi0 = AliAODPWG4Particle(pi0mom);
-	    //pi0.SetLabel(calo->GetLabel(0));
-	    pi0.SetPdg(AliCaloPID::kPi0);
-	    pi0.SetDetector(detector);	
-	    if(IsDataMC()){
-	      //Check origin of the candidates
-			
-		  Int_t label1 = calo->GetLabel(0);
-		  Int_t label2 = calo2->GetLabel(0);
-	      Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), inputi);
-	      Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), inputj);
-
-	      if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
-	      if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)){
-		
-			  //Check if pi0 mother is the same
-			  if(GetReader()->ReadStack()){ 
-					TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
-					label1 = mother1->GetFirstMother();
-					//mother1 = GetMCStack()->Particle(label1);//pi0
-				  
-					TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
-					label2 = mother2->GetFirstMother();
-					//mother2 = GetMCStack()->Particle(label2);//pi0
-			  }
-			  else if(GetReader()->ReadAODMCParticles()){
-					AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(inputi))->At(label1);//photon in kine tree
-					label1 = mother1->GetMother();
-					//mother1 = GetMCStack()->Particle(label1);//pi0
-					AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(inputj))->At(label2);//photon in kine tree
-					label2 = mother2->GetMother();
-					//mother2 = GetMCStack()->Particle(label2);//pi0
-			  }
-		
-			  //printf("mother1 %d, mother2 %d\n",label1,label2);
-			  if(label1 == label2)
-				  GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
-	      }
-	    }//Work with mc information also   
-	    pi0.SetTag(tag);
-	    //Set the indeces of the original caloclusters  
-	    pi0.SetCaloLabel(calo->GetID(), calo2->GetID());
-	    AddAODParticle(pi0);
-	    
-	    
-	  }//Pair selected
-	}//if pair of gammas
+        AliAODCaloCluster * calo2 = (AliAODCaloCluster *) (pl->At(jclus)) ;
+        Int_t evtIndex2 = 0 ; 
+        if (GetMixedEvent()) {
+          evtIndex2=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
+        }
+        if (GetMixedEvent() && (evtIndex1 == evtIndex2))
+          continue ;
+        
+          //Input from second AOD?
+        Int_t inputj = 0;
+        if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= jclus) 
+          inputj = 1;
+        else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= jclus) 
+          inputj = 1;
+        
+          //Cluster selection, not charged with photon or pi0 id and in fiducial cut
+        Int_t pdgj=0;
+        if     (inputj == 0 && !SelectCluster(calo2, GetVertex(evtIndex2),  gammaj, pdgj))  
+          continue ;
+        else if(inputj == 1 && !SelectCluster(calo2, vertex2, gammaj, pdgj))  
+          continue ;
+        
+        if(!SelectCluster(calo2,GetVertex(evtIndex2), gammaj, pdgj)) 
+          continue ;
+        
+        if(pdgj == AliCaloPID::kPhoton ){
+          
+          if((gammai+gammaj).Pt() < GetMinPt() || (gammai+gammaj).Pt() > GetMaxPt()) 
+            continue ;
+          
+            //Selection within angular range
+          Float_t phi = (gammai+gammaj).Phi();
+          if(phi < 0) phi+=TMath::TwoPi();
+            //Float_t deltaphi = TMath::Abs(phiTrig-phi);
+            //if( (deltaphi < fDeltaPhiMinCut) || ( deltaphi > fDeltaPhiMaxCut) ) continue ;
+          
+            //Select good pair (aperture and invariant mass)
+          if(GetNeutralMesonSelection()->SelectPair(gammai, gammaj)){
+            
+            if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Neutral Hadron Correlation: AOD Selected gamma pair: pt %2.2f, phi %2.2f, eta %2.2f, M %2.3f\n",
+                                       (gammai+gammaj).Pt(),(gammai+gammaj).Phi(),(gammai+gammaj).Eta(), (gammai+gammaj).M());
+            
+            TLorentzVector pi0mom = gammai+gammaj;
+            AliAODPWG4Particle pi0 = AliAODPWG4Particle(pi0mom);
+              //pi0.SetLabel(calo->GetLabel());
+            pi0.SetPdg(AliCaloPID::kPi0);
+            pi0.SetDetector(detector);	
+            if(IsDataMC()){
+                //Check origin of the candidates
+              
+              Int_t label1 = calo->GetLabel();
+              Int_t label2 = calo2->GetLabel();
+              Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), inputi);
+              Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), inputj);
+              
+              if(GetDebug() > 0) 
+                printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
+              if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)){
+                
+                  //Check if pi0 mother is the same
+                if(GetReader()->ReadStack()){ 
+                  TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
+                  label1 = mother1->GetFirstMother();
+                    //mother1 = GetMCStack()->Particle(label1);//pi0
+                  
+                  TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
+                  label2 = mother2->GetFirstMother();
+                    //mother2 = GetMCStack()->Particle(label2);//pi0
+                }
+                else if(GetReader()->ReadAODMCParticles()){
+                  AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(inputi))->At(label1);//photon in kine tree
+                  label1 = mother1->GetMother();
+                    //mother1 = GetMCStack()->Particle(label1);//pi0
+                  AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(inputj))->At(label2);//photon in kine tree
+                  label2 = mother2->GetMother();
+                    //mother2 = GetMCStack()->Particle(label2);//pi0
+                }
+                
+                  //printf("mother1 %d, mother2 %d\n",label1,label2);
+                if(label1 == label2)
+                  GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
+              }
+            }//Work with mc information also   
+            pi0.SetTag(tag);
+              //Set the indeces of the original caloclusters  
+            pi0.SetCaloLabel(calo->GetID(), calo2->GetID());
+            AddAODParticle(pi0);
+            
+            
+          }//Pair selected
+        }//if pair of gammas
       }//2nd loop
     }// if pdg = 22
   }//1st loop
@@ -1027,8 +1079,8 @@ Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliAODCaloCluster * calo,
   if(calo->GetNTracksMatched() > 0) return kFALSE;
   
   TString detector = "";
-  if(calo->IsPHOSCluster()) detector= "PHOS";
-  else if(calo->IsEMCALCluster()) detector= "EMCAL";
+  if     (calo->IsPHOS())  detector= "PHOS";
+  else if(calo->IsEMCAL()) detector= "EMCAL";
 		
   //Check PID
   calo->GetMomentum(mom,vertex);//Assume that come from vertex in straight line
@@ -1038,7 +1090,7 @@ Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliAODCaloCluster * calo,
     //or redo PID, recommended option for EMCal.
     
     if(!IsCaloPIDRecalculationOn() || GetReader()->GetDataType() == AliCaloTrackReader::kMC )
-      pdg = GetCaloPID()->GetPdg(detector,calo->PID(),mom.E());//PID with weights
+      pdg = GetCaloPID()->GetPdg(detector,calo->GetPID(),mom.E());//PID with weights
     else
       pdg = GetCaloPID()->GetPdg(detector,mom,calo);//PID recalculated
     

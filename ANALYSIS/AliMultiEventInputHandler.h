@@ -32,6 +32,7 @@ class AliMultiEventInputHandler : public AliInputEventHandler {
     virtual AliVEvent       *GetEvent()          const {return GetLatestEvent();}
     virtual AliVEvent       *GetEvent(Int_t iev) const;
     AliVEvent               *GetLatestEvent()    const {return fEventBuffer[fIndex];}
+    Int_t                    GetFormat() { return fFormat ;} 
     // From the interface
     virtual Bool_t Init(Option_t* /*opt*/)    {return kTRUE;}
     virtual Bool_t Init(TTree* tree, Option_t* /*opt*/);

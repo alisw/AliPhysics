@@ -57,7 +57,7 @@ AliHLTCaloClusterAnalyser::AliHLTCaloClusterAnalyser() :
   fDoPID(false),
   fHaveDistanceToBadChannel(false),
   fGeometry(0),
-  fClusterType(AliESDCaloCluster::kPHOSCluster),
+  fClusterType(AliVCluster::kPHOSNeutral),
   fRecoParamsPtr(0),
   fCutOnSingleCellClusters(false),
   fSingleCellEnergyCut(0.5)

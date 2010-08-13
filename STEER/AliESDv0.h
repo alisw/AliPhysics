@@ -135,6 +135,10 @@ public:
   const Double_t  *GetNormDCAPrimP() const {return fNormDCAPrim;}
     // Dummy
   Int_t    PdgCode() const {return 0;}
+  
+  //virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
+  virtual void     SetID(Short_t /*id*/) {;}
+    
 
 protected:
   AliExternalTrackParam fParamN;  // external parameters of negative particle

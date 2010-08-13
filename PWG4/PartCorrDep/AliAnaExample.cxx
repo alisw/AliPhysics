@@ -230,8 +230,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       Int_t pdg = fPdg;
       
       if(IsCaloPIDOn()){
-	Double_t pid[13];
-	calo->GetPID(pid);
+	const Double_t *pid = calo->GetPID();
 	pdg = GetCaloPID()->GetPdg(fDetector,pid,mom.E());
 	//pdg = GetCaloPID()->GetPdg(fDetector,mom,
 	//		  calo->GetM02(), calo->GetM02(),
@@ -249,7 +248,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       if(mom.Pt() > GetMinPt() && pdg ==fPdg && in) {
 	AliAODPWG4Particle ph = AliAODPWG4Particle(mom);
 	//AddAODParticleCorrelation(AliAODPWG4ParticleCorrelation(mom));
-	ph.SetLabel(calo->GetLabel(0));
+	ph.SetLabel(calo->GetLabel());
 	ph.SetPdg(pdg);
 	ph.SetDetector(fDetector);
 	AddAODParticle(ph);
@@ -282,7 +281,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       Int_t ncells = esdCell->GetNumberOfCells() ;
       GetAODCaloCells()->CreateContainer(ncells);
       
-      GetAODCaloCells()->SetType((AliAODCaloCells::AODCells_t) esdCell->GetType());
+      GetAODCaloCells()->SetType(esdCell->GetType());
       
       for (Int_t iCell = 0; iCell < ncells; iCell++) {      
 	if(GetDebug() > 2)  printf("AliAnaExample::MakeAnalysisFillAOD() - Cell : amp %f, absId %d,  time %f\n", esdCell->GetAmplitude(iCell), esdCell->GetCellNumber(iCell), esdCell->GetTime(iCell));

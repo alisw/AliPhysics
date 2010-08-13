@@ -305,7 +305,7 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
           if (clus->GetM02()          < 0.06 ) continue;
 	  
 	  
-	  Double_t x[3];
+	  Float_t x[3];
 	  clus->GetPosition(x);
 	  TVector3 cluspos(x[0],x[1],x[2]);
 	  Double_t deta = teta - cluspos.Eta();

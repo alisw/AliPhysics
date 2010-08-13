@@ -24,7 +24,7 @@ class AliMixedEvent : public AliVEvent {
 public:
     
     AliMixedEvent();
-    virtual ~AliMixedEvent() {Reset();} 
+    virtual ~AliMixedEvent() ;
     AliMixedEvent(const AliMixedEvent& vEvnt); 
     AliMixedEvent& operator=(const AliMixedEvent& vEvnt);
     
@@ -44,7 +44,9 @@ public:
     virtual void Reset();
     virtual void Init();
     const AliVVertex* GetEventVertex(Int_t i) const;
-    
+    const AliVVertex* GetVertexOfEvent(Int_t i) const;
+    Int_t        GetNumberOfEvents() {return fNEvents;}      
+  
     // Header
     virtual AliVHeader* GetHeader() const {return 0;}
 
@@ -63,7 +65,7 @@ public:
     virtual Double_t GetDiamondY() const {return -999.;}
     virtual void     GetDiamondCovXY(Float_t cov[3]) const
 	{cov[0]=-999.; return;}
-
+  
   // Delegated methods for fHeader
     virtual void      SetOrbitNumber(UInt_t /*n*/)        {;} 
     virtual void      SetBunchCrossNumber(UShort_t /*n*/) {;}
@@ -88,18 +90,41 @@ public:
     virtual Int_t        GetNumberOfTracks()   const {return fNumberOfTracks;}
     virtual Int_t        GetNumberOfV0s()      const {return -999;}
     virtual Int_t        GetNumberOfCascades() const {return -999;}
-    
-    virtual Int_t        EventIndex(Int_t itrack);
+  
+    // Calo Clusters and cells
+  virtual AliVCluster *GetCaloCluster(Int_t i)     const;
+  virtual Int_t        GetNumberOfCaloClusters()   const {return fNumberOfCaloClusters;}
+  virtual AliVCaloCells *GetPHOSCells()            const {return fPHOSCells;}
+  virtual AliVCaloCells *GetEMCALCells()           const {return fEMCALCells;}
+  virtual Int_t        GetNumberOfPHOSCells()      const {return fNumberOfPHOSCells;}
+  virtual Int_t        GetNumberOfEMCALCells()     const {return fNumberOfEMCALCells;}
+  virtual Int_t*       GetPHOSCellsCumul()         const {return fNPHOSCellsCumul;} 
+  virtual Int_t*       GetEMCALCellsCumul()        const {return fNEMCALCellsCumul;} 
+  virtual Int_t        GetNCaloClustersCumul(Int_t iev) const {return fNCaloClustersCumul[iev];}
+
+
+  virtual Int_t        EventIndex(Int_t itrack) const;
+  virtual Int_t        EventIndexForCaloCluster(Int_t iclu) const;
+  virtual Int_t        EventIndexForPHOSCell(Int_t icell) const;
+  virtual Int_t        EventIndexForEMCALCell(Int_t icell) const;
 
   // Primary vertex
     virtual const AliVVertex   *GetPrimaryVertex() const {return fMeanVertex;}
     virtual Bool_t ComputeVtx(TObjArray *vertices, Double_t *pos,Double_t *sig,Int_t *nContributors);
 private:
-    TList   fEventList;         //! List of Events
-    Int_t   fNEvents;           //! Number of Events 
-    Int_t   fNumberOfTracks;    //! Total number of tracks
-    Int_t*  fNTracksCumul;      //! Cumulant
-    AliVVertex* fMeanVertex;    //! Mean vertex
+  TList   fEventList;            //! List of Events
+  Int_t   fNEvents;              //! Number of Events 
+  Int_t   fNumberOfTracks;       //! Total number of tracks
+  Int_t   fNumberOfCaloClusters; //! Total number of calo clusters
+  Int_t   fNumberOfPHOSCells;    //! Total number of PHOS Cells
+  Int_t   fNumberOfEMCALCells;   //! Total number of EMCAL Cells
+  Int_t*  fNTracksCumul;         //! Cumulant
+  Int_t*  fNCaloClustersCumul;   //! Cumulant
+  Int_t*  fNPHOSCellsCumul;      //! Cumulant
+  Int_t*  fNEMCALCellsCumul;     //! Cumulant
+  AliVCaloCells* fPHOSCells;     //! array ofPHOS cells  
+  AliVCaloCells* fEMCALCells;    //! array ofPHOS cells  
+  AliVVertex* fMeanVertex;    //! Mean vertex
     
     ClassDef(AliMixedEvent, 0)  // Container for mixed events
 };

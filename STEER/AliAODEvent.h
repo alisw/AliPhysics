@@ -154,8 +154,8 @@ class AliAODEvent : public AliVEvent {
   {new((*fCascades)[fCascades->GetEntriesFast()]) AliAODcascade(*cascade); return fCascades->GetEntriesFast()-1;}
 
   // -- EMCAL and PHOS Cluster
-  TClonesArray *GetCaloClusters()        const { return fCaloClusters; }
-  Int_t         GetNCaloClusters()       const { return fCaloClusters->GetEntriesFast(); }
+  TClonesArray *GetCaloClusters()          const { return fCaloClusters; }
+  Int_t         GetNumberOfCaloClusters()  const { return fCaloClusters->GetEntriesFast(); }
   AliAODCaloCluster *GetCaloCluster(Int_t nCluster) const { return (AliAODCaloCluster*)fCaloClusters->UncheckedAt(nCluster); }
   Int_t         AddCaloCluster(const AliAODCaloCluster* clus)
   {new((*fCaloClusters)[fCaloClusters->GetEntriesFast()]) AliAODCaloCluster(*clus); return fCaloClusters->GetEntriesFast()-1;}
@@ -191,6 +191,9 @@ class AliAODEvent : public AliVEvent {
   // -- Calorimeter Cells
   AliAODCaloCells *GetEMCALCells() const { return fEmcalCells; }
   AliAODCaloCells *GetPHOSCells() const { return fPhosCells; }
+  const TGeoHMatrix* GetPHOSMatrix(Int_t /*i*/) const { return NULL; }
+  const TGeoHMatrix* GetEMCALMatrix(Int_t /*i*/)const { return NULL; }
+
 
   // -- Dimuons
   TClonesArray *GetDimuons()              const { return fDimuons; }
@@ -223,7 +226,14 @@ class AliAODEvent : public AliVEvent {
   void  Print(Option_t *option="") const;
   void  MakeEntriesReferencable();
   static void AssignIDtoCollection(TCollection* col);
- private :
+  
+    //Following needed only for mixed event
+  virtual Int_t        EventIndex(Int_t)       const {return 0;}
+  virtual Int_t        EventIndexForCaloCluster(Int_t) const {return 0;}
+  virtual Int_t        EventIndexForPHOSCell(Int_t)    const {return 0;}
+  virtual Int_t        EventIndexForEMCALCell(Int_t)   const {return 0;} 
+  
+  private :
 
   TList   *fAODObjects; //  list of AODObjects
   TFolder *fAODFolder;  //  folder structure of branches

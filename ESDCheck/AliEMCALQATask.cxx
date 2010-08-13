@@ -192,14 +192,14 @@ void AliEMCALQATask::Exec(Option_t *)
     AliESDCaloCluster * caloCluster = fESD->GetCaloCluster(emcalCluster) ;
     if (caloCluster) {
       Float_t pos[3] ;
-      if(caloCluster->GetClusterType() == AliESDCaloCluster::kEMCALClusterv1) {  
+      if(caloCluster->IsEMCAL()) {  
 	caloCluster->GetPosition(pos) ;
 	fhEMCALPos->Fill(pos[0],pos[1],pos[2]) ;
 	fhEMCALEnergy->Fill(caloCluster->E()) ;
 	fhEMCALDigits->Fill(entry, caloCluster->GetNCells()) ;
 	numberOfEmcalClustersv1++ ;
 	numberOfDigitsInEmcal += caloCluster->GetNCells() ;    
-	// Float_t * pid = clus->GetPid() ;
+	// const Double_t * pid = clus->GetPID() ;
 	// if(pid[AliPID::kPhoton]>0.9){
 	emcalVector[numberOfPhotonsInEmcal] = new TVector3(pos[0],pos[1],pos[2]) ;
 	emcalPhotonsEnergy[numberOfPhotonsInEmcal] = caloCluster->E() ;

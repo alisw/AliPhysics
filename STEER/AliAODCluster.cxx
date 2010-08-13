@@ -25,7 +25,8 @@
 ClassImp(AliAODCluster)
 
 //______________________________________________________________________________
-AliAODCluster::AliAODCluster() : 
+AliAODCluster::AliAODCluster() :
+  AliVCluster(),
   fEnergy(0),
   fChi2(-999.),
   fID(-999),
@@ -36,8 +37,8 @@ AliAODCluster::AliAODCluster() :
 {
   // default constructor
 
-  SetPosition((Float_t*)NULL);
-  SetPID((Float_t*)NULL);
+  SetPosition(NULL);
+  SetPID(NULL);
 }
 
 //______________________________________________________________________________
@@ -49,6 +50,7 @@ AliAODCluster::AliAODCluster(Int_t id,
 			     Double_t pid[13],
 			     Char_t ttype,
 			     UInt_t selectInfo) :
+  AliVCluster(),
   fEnergy(energy),
   fChi2(-999.),
   fID(id),
@@ -59,8 +61,8 @@ AliAODCluster::AliAODCluster(Int_t id,
 {
   // constructor
  
-  SetPosition(x);
-  SetPID(pid);
+  if(x)   {for (Int_t i = 0; i < 3  ; i++) SetPositionAt(x[i]  ,i);}
+  if(pid) {for (Int_t i = 0; i < 13 ; i++) SetPIDAt     (pid[i],i);}
   SetLabel(label, nLabel);
 }
 
@@ -73,6 +75,7 @@ AliAODCluster::AliAODCluster(Int_t id,
 			     Float_t pid[13],
 			     Char_t ttype,
 			     UInt_t selectInfo) :
+  AliVCluster(),
   fEnergy(energy),
   fChi2(-999.),
   fID(id),
@@ -82,9 +85,8 @@ AliAODCluster::AliAODCluster(Int_t id,
   fType(ttype)
 {
   // constructor
- 
-  SetPosition(x);
-  SetPID(pid);
+  if(x)   {for (Int_t i = 0; i < 3  ; i++) SetPositionAt(x[i]  ,i);}
+  if(pid) {for (Int_t i = 0; i < 13 ; i++) SetPIDAt     (pid[i],i);}
   SetLabel(label, nLabel);
 }
 
@@ -100,7 +102,7 @@ AliAODCluster::~AliAODCluster()
 
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
-  TObject(clus),
+  AliVCluster(clus),
   fEnergy(clus.fEnergy),
   fChi2(clus.fChi2),
   fID(clus.fID),
@@ -111,8 +113,9 @@ AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
 {
   // Copy constructor
 
-  clus.GetPosition(fPosition);
-  SetPID(clus.fPID);
+  if(fPosition) {for(Int_t i = 0; i < 3  ; i++) fPosition[i] = clus.fPosition[i];}
+  if(fPID)      {for(Int_t i = 0; i < 13 ; i++) fPID[i]      = clus.fPID[i];}
+
   SetLabel(clus.fLabel, clus.fNLabel);
 }
 
@@ -121,10 +124,10 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
 {
   // Assignment operator
   if(this!=&clus) {
-
-    clus.GetPosition(fPosition);
-    clus.GetPID(fPID);
-
+    
+	if(fPosition) {for(Int_t i = 0; i < 3 ;  i++) fPosition[i] = clus.fPosition[i];}
+	if(fPID)      {for(Int_t i = 0; i < 13 ; i++) fPID[i]      = clus.fPID[i];}
+    
     fEnergy = clus.fEnergy;
     fChi2 = clus.fChi2;
 
@@ -139,16 +142,15 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
 }
 
 //______________________________________________________________________________
-template <class T> void AliAODCluster::SetPosition(const T *x) 
+void AliAODCluster::SetPosition(Float_t *x) 
 {
   // set the position
-
+  
   if (x) {
-      fPosition[0] = x[0];
-      fPosition[1] = x[1];
-      fPosition[2] = x[2];
+    fPosition[0] = x[0];
+    fPosition[1] = x[1];
+    fPosition[2] = x[2];
   } else {
-
     fPosition[0] = -999.;
     fPosition[1] = -999.;
     fPosition[2] = -999.;
@@ -156,31 +158,33 @@ template <class T> void AliAODCluster::SetPosition(const T *x)
 }
 
 //______________________________________________________________________________
-AliAODCluster::AODCluPID_t AliAODCluster::GetMostProbablePID() const 
+UShort_t AliAODCluster::GetMostProbablePID() const 
 {
   // Returns the most probable PID array element.
   
   Int_t nPID = 13;
+  UShort_t unknown = AliVCluster::kUnknown;
+  
   if (fPID) {
-    AODCluPID_t loc = kUnknown;
+    UShort_t loc = unknown;
     Double_t max = 0.;
     Bool_t allTheSame = kTRUE;
     
     for (Int_t iPID = 0; iPID < nPID; iPID++) {
       if (fPID[iPID] >= max) {
-	if (fPID[iPID] > max) {
-	  allTheSame = kFALSE;
-	  max = fPID[iPID];
-	  loc = (AODCluPID_t)iPID;
-	} else {
-	  allTheSame = kTRUE;
-	}
+        if (fPID[iPID] > max) {
+          allTheSame = kFALSE;
+          max = fPID[iPID];
+          loc = (UShort_t)iPID;
+        } else {
+          allTheSame = kTRUE;
+        }
       }
     }
     
-    return allTheSame ? kUnknown : loc;
+    return allTheSame ? unknown : loc;
   } else {
-    return kUnknown;
+    return unknown;
   }
 }
 
@@ -205,7 +209,7 @@ void AliAODCluster::SetLabel(Int_t *label, UInt_t size)
 }
 
 //______________________________________________________________________________
-Int_t AliAODCluster::GetLabel(UInt_t i) const
+Int_t AliAODCluster::GetLabelAt(UInt_t i) const
 {
   if (fLabel && i < (UInt_t)fNLabel) {
     return fLabel[i];
@@ -232,5 +236,10 @@ void AliAODCluster::Print(Option_t* /* option */) const
   printf("Cluster type: %d\n", GetType()); 
   printf("     energy = %f\n", E());
   printf("       chi2 = %f\n", Chi2());
-  printf("  PID object: %p\n", static_cast<const void*>(PID()));
+  const Double_t *pid = GetPID();
+  printf("PID weights: photon %0.2f, pi0 %0.2f, electron %0.2f, conversion electron %0.2f\n, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
+	 pid[AliVCluster::kPhoton],   pid[AliVCluster::kPi0],
+	 pid[AliVCluster::kElectron], pid[AliVCluster::kEleCon],
+	 pid[AliVCluster::kPion],     pid[AliVCluster::kKaon],   pid[AliVCluster::kProton],
+	 pid[AliVCluster::kNeutron],  pid[AliVCluster::kKaon0]);
 }

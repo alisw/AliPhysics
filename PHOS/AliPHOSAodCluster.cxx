@@ -230,7 +230,7 @@ void AliPHOSAodCluster::EvalCoord(Float_t logWeight, TVector3 &vtx)
   //Go to the global system
   TVector3 gps ;
   phosgeom->Local2Global(phosMod, xMean, zMean, gps) ;
-  SetPosition(0, gps[0]) ;
-  SetPosition(1, gps[1]) ;  
-  SetPosition(2, gps[2]) ;
+  SetPositionAt(gps[0],0) ;
+  SetPositionAt(gps[1],1) ;  
+  SetPositionAt(gps[2],2) ;
 }

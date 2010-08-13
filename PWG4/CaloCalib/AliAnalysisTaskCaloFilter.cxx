@@ -68,7 +68,7 @@ void AliAnalysisTaskCaloFilter::CreateAODFromAOD()
   for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
   
   // Update the header
-   AliAODHeader* headerin = aod->GetHeader();
+  AliAODHeader* headerin = aod->GetHeader();
   AliAODHeader* header = AODEvent()->GetHeader();
   header->SetRunNumber(headerin->GetRunNumber());
   header->SetBunchCrossNumber(headerin->GetBunchCrossNumber());
@@ -93,7 +93,7 @@ void AliAnalysisTaskCaloFilter::CreateAODFromAOD()
   //
   //
   Int_t nVertices = 1 ;/* = prim. vtx*/;
-  Int_t nCaloClus = aod->GetNCaloClusters();
+  Int_t nCaloClus = aod->GetNumberOfCaloClusters();
   
   AODEvent()->ResetStd(0, nVertices, 0, 0, 0, nCaloClus, 0, 0);
   
@@ -122,8 +122,8 @@ void AliAnalysisTaskCaloFilter::CreateAODFromAOD()
     AliAODCaloCluster * cluster = aod->GetCaloCluster(iClust);
     
     //Check which calorimeter information we want to keep.
-    if     (fCalorimeter.Contains("PHOS")  && !fCalorimeter.Contains("EMCAL") && cluster->IsEMCALCluster()) continue ;
-    else if(fCalorimeter.Contains("EMCAL") && !fCalorimeter.Contains("PHOS")  && cluster->IsPHOSCluster())  continue ;
+    if     (fCalorimeter.Contains("PHOS")  && !fCalorimeter.Contains("EMCAL") && cluster->IsEMCAL()) continue ;
+    else if(fCalorimeter.Contains("EMCAL") && !fCalorimeter.Contains("PHOS")  && cluster->IsPHOS())  continue ;
     
     Int_t id       = cluster->GetID();
     Float_t energy = cluster->E();
@@ -140,13 +140,13 @@ void AliAnalysisTaskCaloFilter::CreateAODFromAOD()
 			NULL,
 			ttype);
     
-    caloCluster->SetCaloCluster(cluster->GetDistToBadChannel(),
+    caloCluster->SetCaloCluster(cluster->GetDistanceToBadChannel(),
 				cluster->GetDispersion(),
 				cluster->GetM20(), cluster->GetM02(),
 				cluster->GetEmcCpvDistance(),  
 				cluster->GetNExMax(),cluster->GetTOF()) ;
     
-    caloCluster->SetPIDFromESD(cluster->PID());
+    caloCluster->SetPIDFromESD(cluster->GetPID());
     caloCluster->SetNCells(cluster->GetNCells());
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
@@ -162,7 +162,7 @@ void AliAnalysisTaskCaloFilter::CreateAODFromAOD()
     
     AliAODCaloCells &aodEMcells = *(AODEvent()->GetEMCALCells());
     aodEMcells.CreateContainer(nEMcell);
-    aodEMcells.SetType(AliAODCaloCells::kEMCAL);
+    aodEMcells.SetType(AliVCaloCells::kEMCALCell);
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
       aodEMcells.SetCell(iCell,aodinEMcells.GetCellNumber(iCell),aodinEMcells.GetAmplitude(iCell));
     }
@@ -176,7 +176,7 @@ void AliAnalysisTaskCaloFilter::CreateAODFromAOD()
     
     AliAODCaloCells &aodPHcells = *(AODEvent()->GetPHOSCells());
     aodPHcells.CreateContainer(nPHcell);
-    aodPHcells.SetType(AliAODCaloCells::kPHOS);
+    aodPHcells.SetType(AliVCaloCells::kPHOSCell);
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
       aodPHcells.SetCell(iCell,aodinPHcells.GetCellNumber(iCell),aodinPHcells.GetAmplitude(iCell));
     }
@@ -264,15 +264,6 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
     Int_t id       = cluster->GetID();
     Float_t energy = cluster->E();
     cluster->GetPosition(posF);
-    Char_t ttype   = AliAODCluster::kUndef; 
-    
-    if (cluster->GetClusterType() == AliESDCaloCluster::kPHOSCluster) {
-      ttype=AliAODCluster::kPHOSNeutral;
-    } 
-    else if (cluster->GetClusterType() == AliESDCaloCluster::kEMCALClusterv1) {
-      ttype = AliAODCluster::kEMCALClusterv1;
-    }
-    
     
     AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) 
       AliAODCaloCluster(id,
@@ -281,15 +272,15 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
 			energy,
 			posF,
 			NULL,
-			ttype);
+			cluster->GetType());
     
     caloCluster->SetCaloCluster(cluster->GetDistanceToBadChannel(),
-				cluster->GetClusterDisp(),
+				cluster->GetDispersion(),
 				cluster->GetM20(), cluster->GetM02(),
 				cluster->GetEmcCpvDistance(),  
 				cluster->GetNExMax(),cluster->GetTOF()) ;
     
-    caloCluster->SetPIDFromESD(cluster->GetPid());
+    caloCluster->SetPIDFromESD(cluster->GetPID());
     caloCluster->SetNCells(cluster->GetNCells());
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
@@ -305,7 +296,7 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
     
     AliAODCaloCells &aodEMcells = *(AODEvent()->GetEMCALCells());
     aodEMcells.CreateContainer(nEMcell);
-    aodEMcells.SetType(AliAODCaloCells::kEMCAL);
+    aodEMcells.SetType(AliVCaloCells::kEMCALCell);
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
       aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell));
     }
@@ -319,7 +310,7 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
     
     AliAODCaloCells &aodPHcells = *(AODEvent()->GetPHOSCells());
     aodPHcells.CreateContainer(nPHcell);
-    aodPHcells.SetType(AliAODCaloCells::kPHOS);
+    aodPHcells.SetType(AliVCaloCells::kPHOSCell);
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
       aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell));
     }

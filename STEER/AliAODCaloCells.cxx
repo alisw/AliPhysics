@@ -24,18 +24,19 @@
 
 ClassImp(AliAODCaloCells)
 
-AliAODCaloCells::AliAODCaloCells() : TNamed(), fNCells(0), fCellNumber(0), fAmplitude(0), fIsSorted(kTRUE), fType(kUndef)
+AliAODCaloCells::AliAODCaloCells() : AliVCaloCells(), fNCells(0), fCellNumber(0), fAmplitude(0), fIsSorted(kTRUE), fType(kUndef)
 {
   // default constructor
 }
 
-AliAODCaloCells::AliAODCaloCells(const char* name, const char* title, AODCells_t ttype) : TNamed(name, title), fNCells(0), fCellNumber(0), fAmplitude(0), fIsSorted(kTRUE), fType(ttype)
+AliAODCaloCells::AliAODCaloCells(const char* name, const char* title, VCells_t ttype) :
+    AliVCaloCells(name, title), fNCells(0), fCellNumber(0), fAmplitude(0), fIsSorted(kTRUE), fType(ttype)
 {
-  // TNamed constructor
+  //constructor
 }
 
 AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
-    TNamed(cells),
+    AliVCaloCells(cells),
     fNCells(cells.fNCells),
     fCellNumber(0),
     fAmplitude(0),
@@ -43,27 +44,27 @@ AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
     fType(cells.fType)
 {
 // Copy constructor
-
-    fCellNumber = new Short_t[fNCells];
-    fAmplitude =  new Double32_t[fNCells];
-
-    for (Int_t i = 0; i < fNCells; i++) {
-	fCellNumber[i]    = cells.fCellNumber[i];
-	fAmplitude[i]     = cells.fAmplitude[i];
-    }
+  fCellNumber = new Short_t[fNCells];
+  fAmplitude  = new Double32_t[fNCells]; 
+  
+  for (Int_t i = 0; i < fNCells; i++) {
+    fCellNumber[i]    = cells.fCellNumber[i];
+    fAmplitude[i]     = cells.fAmplitude[i];
+  }
 }
 
 AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& cells)
 {
-// Assignment operator
-    if(&cells == this) return *this;
-    TNamed::operator=(cells);
-    fNCells = cells.fNCells;
-    for (Int_t i = 0; i < fNCells; i++) {
-	fCellNumber[i]    = cells.fCellNumber[i];
-	fAmplitude[i]     = cells.fAmplitude[i];
-    }
-    return *this;
+    // Assignment operator
+  if(&cells == this) return *this;
+  fNCells = cells.fNCells;
+  for (Int_t i = 0; i < fNCells; i++) {
+    fCellNumber[i]    = cells.fCellNumber[i];
+    fAmplitude[i]     = cells.fAmplitude[i];
+  }
+  SetName(cells.GetName()) ; 
+  SetTitle(cells.GetTitle()) ; 
+  return *this;
 }
 
 AliAODCaloCells::~AliAODCaloCells()
@@ -87,10 +88,11 @@ void AliAODCaloCells::CreateContainer(Short_t nCells)
   fNCells = nCells;
 
   fCellNumber = new Short_t[fNCells];
-  fAmplitude = new Double32_t[fNCells];
+  fAmplitude  = new Double32_t[fNCells];
+
   // set to zero
   for(int i = 0;i<fNCells;++i){
-    fAmplitude[i] = fCellNumber[i] = 0;
+    fAmplitude[i] = fCellNumber[i] = 0 ;
   }
 }
 
@@ -101,15 +103,15 @@ void AliAODCaloCells::DeleteContainer()
   if (fCellNumber)
   {
     delete[] fCellNumber;
-    fCellNumber = 0;
+    fCellNumber = NULL;
   }
 
   if (fAmplitude)
   {
     delete[] fAmplitude;
-    fAmplitude = 0;
+    fAmplitude = NULL;
   }
-
+  
   fNCells = 0;
   fIsSorted = kFALSE;
 }
@@ -121,29 +123,29 @@ void AliAODCaloCells::Sort()
   Int_t *idxArray = new Int_t[fNCells];
   TMath::Sort(fNCells,fCellNumber,idxArray,kFALSE);
   
-  Short_t *newIndex = new Short_t[fNCells];
+  Short_t    *newIndex     = new Short_t[fNCells];
   Double32_t *newAmplitude = new Double32_t[fNCells];
   for (Int_t i=0; i < fNCells; i++) {
-    newIndex[i] = fCellNumber[idxArray[i]];
+    newIndex[i]     = fCellNumber[idxArray[i]];
     newAmplitude[i] = fAmplitude[idxArray[i]];
   }
   delete [] fCellNumber;
   delete [] fAmplitude;
   fCellNumber = newIndex;
-  fAmplitude = newAmplitude;
+  fAmplitude  = newAmplitude;
   
   delete [] idxArray;
   
   fIsSorted = kTRUE;
 } 
 
-Bool_t AliAODCaloCells::SetCell(Short_t pos, Short_t cellNumber, Double32_t amplitude)
+Bool_t AliAODCaloCells::SetCell(Short_t pos, Short_t cellNumber, Double32_t amplitude, Double32_t /*time*/)
 {
   // Sets a cell at the given position
 
   if (pos>=0 && pos < fNCells) {
     fCellNumber[pos] = cellNumber;
-    fAmplitude[pos] = amplitude;
+    fAmplitude[pos]  = amplitude;
     fIsSorted = kFALSE;
     return kTRUE;
   } else {

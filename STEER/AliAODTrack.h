@@ -17,6 +17,7 @@
 #include "AliAODVertex.h"
 #include "AliAODRedCov.h"
 #include "AliAODPid.h"
+ 
 
 class AliVVertex;
 
@@ -151,8 +152,9 @@ class AliAODTrack : public AliVTrack {
   template <class T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}
 
-  template <class T> void GetPxPyPz(T *p) const {
-    p[0] = Px(); p[1] = Py(); p[2] = Pz();}
+//  template <class T> void GetPxPyPz(T *p) const {
+//    p[0] = Px(); p[1] = Py(); p[2] = Pz();}
+  Bool_t GetPxPyPz(Double_t *p) const;
 
   template <class T> Bool_t GetPosition(T *x) const {
     x[0]=fPosition[0]; x[1]=fPosition[1]; x[2]=fPosition[2];

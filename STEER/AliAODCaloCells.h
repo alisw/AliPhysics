@@ -11,18 +11,14 @@
 #ifndef ALIAODCELLS_H
 #define ALIAODCELLS_H
 
-#include <TNamed.h>
+#include <AliVCaloCells.h>
 #include <TMath.h>
 
-class AliAODCaloCells : public TNamed 
+class AliAODCaloCells : public AliVCaloCells
 {
  public:
-  enum AODCells_t {kUndef = -1, 
-		  kEMCAL, 
-		  kPHOS};
-
   AliAODCaloCells();
-  AliAODCaloCells(const char* name, const char* title, AODCells_t ttype=kUndef);
+  AliAODCaloCells(const char* name, const char* title, VCells_t ttype=kUndef);
   AliAODCaloCells(const AliAODCaloCells& cells); 
   AliAODCaloCells& operator=(const AliAODCaloCells& cells);
   
@@ -32,17 +28,22 @@ class AliAODCaloCells : public TNamed
   void DeleteContainer();
   void Sort();
   
-  Bool_t SetCell(Short_t pos, Short_t cellNumber, Double_t amplitude);
+  Bool_t SetCell(Short_t pos, Short_t cellNumber, Double_t amplitude, Double_t time = -1);
   
   Short_t GetNumberOfCells() const { return fNCells; }
-  inline Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude) const;
+  void    SetNumberOfCells(Int_t n) { fNCells = n ; }
+  inline Bool_t   GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t &time) const;
   inline Double_t GetCellAmplitude(Short_t cellNumber);
   inline Short_t  GetCellPosition(Short_t cellNumber);
   inline Double_t GetAmplitude(Short_t pos) const;
+  Double_t GetCellTime(Short_t /*cellNumber*/) {return -1;}
   inline Short_t  GetCellNumber(Short_t pos) const;
-
+  Double_t GetTime(Short_t /*pos*/) const {return -1;}
+  Bool_t IsEMCAL() const {return (fType == kEMCALCell);}
+  Bool_t IsPHOS() const {return (fType == kPHOSCell);}
   Char_t  GetType() const { return fType;}
-  void    SetType(AODCells_t ttype) { fType=ttype; }
+  void    SetType(Char_t ttype) { fType=ttype; }
+
 
  protected:
   Int_t       fNCells;       // Number of cells
@@ -52,11 +53,11 @@ class AliAODCaloCells : public TNamed
   Char_t      fType;         // Cell type
   
   
-  ClassDef(AliAODCaloCells, 1);
+  ClassDef(AliAODCaloCells, 2);
 };
 
 
-Bool_t AliAODCaloCells::GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude) const 
+Bool_t AliAODCaloCells::GetCell(Short_t pos, Short_t &cellNumber, Double_t &amplitude, Double_t& /*time*/) const 
 { 
   if (pos>=0 && pos<fNCells) {
     cellNumber = fCellNumber[pos];
@@ -80,7 +81,6 @@ Double_t AliAODCaloCells::GetCellAmplitude(Short_t cellNumber)
   if (pos>=0 && fCellNumber[pos] == cellNumber) {
     return fAmplitude[pos];
   } else {
-    Warning("GetCellAmplitude","Wrong cell array index %d", pos);
     return 0.;
   }
 }

@@ -127,7 +127,12 @@ public:
     virtual void      SetParticleArray(TClonesArray* mcParticles) 
 	{fMCParticles = mcParticles; fNparticles = fMCParticles->GetEntries(); fExternal = kTRUE;}
     
-     
+    //Following needed only for mixed event
+  virtual Int_t        EventIndex(Int_t)       const {return 0;}
+  virtual Int_t        EventIndexForCaloCluster(Int_t) const {return 0;}
+  virtual Int_t        EventIndexForPHOSCell(Int_t)    const {return 0;}
+  virtual Int_t        EventIndexForEMCALCell(Int_t)   const {return 0;} 
+  
 private:
     virtual void      ReorderAndExpandTreeTR();
     virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;

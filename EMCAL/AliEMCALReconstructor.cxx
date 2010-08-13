@@ -308,7 +308,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   AliESDCaloCells &emcCells = *(esd->GetEMCALCells());
   emcCells.CreateContainer(nDigits);
-  emcCells.SetType(AliESDCaloCells::kEMCALCell);
+  emcCells.SetType(AliVCaloCells::kEMCALCell);
   Float_t energy = 0;
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
     const AliEMCALDigit * dig = (const AliEMCALDigit*)digits->At(idig);
@@ -362,7 +362,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //########################################
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = (const AliEMCALRecPoint*)clusters->At(iClust);
-    //if(clust->GetClusterType()== AliESDCaloCluster::kEMCALClusterv1) nRP++; else nPC++;
+    //if(clust->GetClusterType()== AliVCluster::kEMCALClusterv1) nRP++; else nPC++;
     if (Debug()) clust->Print();
     // Get information from EMCAL reconstruction points
     Float_t xyz[3];
@@ -403,7 +403,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       Int_t *parentList =  clust->GetParents(parentMult);
       // fills the ESDCaloCluster
       AliESDCaloCluster * ec = new AliESDCaloCluster() ;
-      ec->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
+      ec->SetType(AliVCluster::kEMCALClusterv1);
       ec->SetPosition(xyz);
       ec->SetE(clust->GetEnergy());
 		
@@ -420,8 +420,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       }
       ec->SetCellsAbsId(newAbsIdList);
       ec->SetCellsAmplitudeFraction(newFracList);
-      ec->SetClusterDisp(clust->GetDispersion());
-      ec->SetClusterChi2(-1); //not yet implemented
+      ec->SetDispersion(clust->GetDispersion());
+      ec->SetChi2(-1); //not yet implemented
       ec->SetM02(elipAxis[0]*elipAxis[0]) ;
       ec->SetM20(elipAxis[1]*elipAxis[1]) ;
       ec->SetTOF(clust->GetTime()) ; //time-of-fligh

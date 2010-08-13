@@ -338,7 +338,7 @@ void AliEMCALClusterizerv1::MakeClusters()
       recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
       fNumberOfECAClusters++ ; 
 
-      recPoint->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
+      recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
 
       recPoint->AddDigit(*digit, Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()),kFALSE) ; //Time or TimeR?
       TObjArray clusterDigits;

@@ -47,6 +47,8 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliNeutralMesonSelection.h"
+#include "AliMixedEvent.h"
+
 
 ClassImp(AliAnaPi0)
 
@@ -390,7 +392,7 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   printf("------------------------------------------------------\n") ;
 } 
 
-
+  
 //____________________________________________________________________________________________________________________________________________________
 void AliAnaPi0::MakeAnalysisFillHistograms() 
 {
@@ -401,33 +403,49 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   Int_t iRun=(GetReader()->GetInputEvent())->GetRunNumber() ;
   if(IsBadRun(iRun)) return ;	
   
-  Double_t vert[]={0,0,0} ; //vertex ;
-  GetReader()->GetVertex(vert);
-  if(vert[2]<-fZvtxCut || vert[2]> fZvtxCut) return ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
-  
-  //Get Centrality and calculate centrality bin
-  //Does not exist in ESD yet???????
-  Int_t curCentrBin=0 ;
-  
-  //Get Reaction Plain position and calculate RP bin
-  //does not exist in ESD yet????
-  Int_t curRPBin=0 ;	
-  
-  Int_t curZvertBin=(Int_t)(0.5*fNZvertBin*(vert[2]+fZvtxCut)/fZvtxCut) ;
-  
-  fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
-  
   Int_t nPhot = GetInputAODBranch()->GetEntriesFast() ;
-  if(GetDebug() > 1) printf("AliAnaPi0::MakeAnalysisFillHistograms() - Photon entries %d\n", nPhot);
+  if(GetDebug() > 1) 
+    printf("AliAnaPi0::MakeAnalysisFillHistograms() - Photon entries %d\n", nPhot);
+  if(nPhot < 2 )
+    return ; 
   Int_t module1 = -1;
   Int_t module2 = -1;
   for(Int_t i1=0; i1<nPhot-1; i1++){
     AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+      // get the event index in the mixed buffer where the photon comes from 
+    Double_t vert[] = {0.0, 0.0, 0.0} ; //vertex 
+    Int_t evtIndex1 = 0 ; 
+    Int_t currentEvtIndex = -1 ; 
+    Int_t curCentrBin = 0 ; 
+    Int_t curRPBin    = 0 ; 
+    Int_t curZvertBin = 0 ;
+    evtIndex1 = GetEventIndex(p1, vert) ; 
+    if ( evtIndex1 == -1 )
+      return ; 
+    if ( evtIndex1 == -2 )
+      continue ; 
+    if (evtIndex1 != currentEvtIndex) {
+        //Get Reaction Plan position and calculate RP bin
+        //does not exist in ESD yet????
+      curCentrBin = 0 ; 
+      curRPBin    = 0 ;
+      curZvertBin = (Int_t)(0.5*fNZvertBin*(vert[2]+fZvtxCut)/fZvtxCut) ;
+      fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
+      currentEvtIndex = evtIndex1 ; 
+    }
+  
     TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
     //Get Module number
     module1 = GetModuleNumber(p1);
     for(Int_t i2=i1+1; i2<nPhot; i2++){
       AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
+      Int_t evtIndex2 = GetEventIndex(p2, vert) ; 
+      if ( evtIndex2 == -1 )
+        return ; 
+      if ( evtIndex2 == -2 )
+        continue ;    
+      if (GetMixedEvent() && (evtIndex1 == evtIndex2))
+          continue ;
       TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
       //Get module number
       module2 = GetModuleNumber(p2);
@@ -435,181 +453,178 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       Double_t pt = (photon1 + photon2).Pt();
       Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
       if(GetDebug() > 2)
-	printf("AliAnaPi0::MakeAnalysisFillHistograms() - Current Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
-	       p1->Pt(), p2->Pt(), pt,m,a);
-				
+        printf("AliAnaPi0::MakeAnalysisFillHistograms() - Current Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
+               p1->Pt(), p2->Pt(), pt,m,a);
       //Check if opening angle is too large or too small compared to what is expected	
       Double_t angle   = photon1.Angle(photon2.Vect());
       //if(fUseAngleCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle)) continue;
       //printf("angle %f\n",angle);
-      if(fUseAngleCut && angle < 0.1) continue;
+      if(fUseAngleCut && angle < 0.1) 
+        continue;
       fhRealOpeningAngle   ->Fill(pt,angle);
       fhRealCosOpeningAngle->Fill(pt,TMath::Cos(angle));
-      
       //Fill module dependent histograms
       //if(module1==module2) printf("mod1 %d\n",module1);
       if(module1==module2 && module1 >=0 && module1<fNModules)
-	fhReMod[module1]->Fill(pt,a,m) ;
-      
-      for(Int_t ipid=0; ipid<fNPID; ipid++)
-	{
-	  if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
-	    fhRe1[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-	    if(p1->DistToBad()>0 && p2->DistToBad()>0){
-	      fhRe2[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-	      if(p1->DistToBad()>1 && p2->DistToBad()>1){
-		fhRe3[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-	      }
-	    }
-	  }
-	} 
+        fhReMod[module1]->Fill(pt,a,m) ;
+
+      for(Int_t ipid=0; ipid<fNPID; ipid++){
+        if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
+          fhRe1[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+          if(p1->DistToBad()>0 && p2->DistToBad()>0){
+            fhRe2[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+            if(p1->DistToBad()>1 && p2->DistToBad()>1){
+              fhRe3[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+            }
+          }
+        }
+      } 
     }
   }
+//  
+//  //Fill mixed
+//  
+//  TList * evMixList=fEventsList[curCentrBin*fNZvertBin*fNrpBin+curZvertBin*fNrpBin+curRPBin] ;
+//  Int_t nMixed = evMixList->GetSize() ;
+//  for(Int_t ii=0; ii<nMixed; ii++){  
+//    TClonesArray* ev2= (TClonesArray*) (evMixList->At(ii));
+//    Int_t nPhot2=ev2->GetEntriesFast() ;
+//    Double_t m = -999;
+//    if(GetDebug() > 1) printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed event %d photon entries %d\n", ii, nPhot);
+//    
+//    for(Int_t i1=0; i1<nPhot; i1++){
+//      AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
+//      TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
+//      for(Int_t i2=0; i2<nPhot2; i2++){
+//	AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
+//	
+//	TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
+//	m =           (photon1+photon2).M() ; 
+//	Double_t pt = (photon1 + photon2).Pt();
+//	Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
+//	
+//	//Check if opening angle is too large or too small compared to what is expected
+//	Double_t angle   = photon1.Angle(photon2.Vect());
+//	//if(fUseAngleCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle)) continue;
+//	if(fUseAngleCut && angle < 0.1) continue;  
+//	
+//	if(GetDebug() > 2)
+//	  printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
+//		 p1->Pt(), p2->Pt(), pt,m,a);			
+//	for(Int_t ipid=0; ipid<fNPID; ipid++){ 
+//	  if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
+//	    fhMi1[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+//	    if(p1->DistToBad()>0 && p2->DistToBad()>0){
+//	      fhMi2[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+//	      if(p1->DistToBad()>1 && p2->DistToBad()>1){
+//		fhMi3[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+//	      }
+//	      
+//	    }
+//	  }
+//	}
+//      }
+//    }
+//  }
+//  
+//  TClonesArray *currentEvent = new TClonesArray(*GetInputAODBranch());
+//  //Add current event to buffer and Remove redundant events 
+//  if(currentEvent->GetEntriesFast()>0){
+//    evMixList->AddFirst(currentEvent) ;
+//    currentEvent=0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
+//    if(evMixList->GetSize()>=fNmaxMixEv)
+//      {
+//	TClonesArray * tmp = (TClonesArray*) (evMixList->Last()) ;
+//	evMixList->RemoveLast() ;
+//	delete tmp ;
+//      }
+//  } 
+//  else{ //empty event
+//    delete currentEvent ;
+//    currentEvent=0 ; 
+//  }
   
-  //Fill mixed
-  
-  TList * evMixList=fEventsList[curCentrBin*fNZvertBin*fNrpBin+curZvertBin*fNrpBin+curRPBin] ;
-  Int_t nMixed = evMixList->GetSize() ;
-  for(Int_t ii=0; ii<nMixed; ii++){  
-    TClonesArray* ev2= (TClonesArray*) (evMixList->At(ii));
-    Int_t nPhot2=ev2->GetEntriesFast() ;
-    Double_t m = -999;
-    if(GetDebug() > 1) printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed event %d photon entries %d\n", ii, nPhot);
-    
-    for(Int_t i1=0; i1<nPhot; i1++){
-      AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
-      TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
-      for(Int_t i2=0; i2<nPhot2; i2++){
-	AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
-	
-	TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
-	m =           (photon1+photon2).M() ; 
-	Double_t pt = (photon1 + photon2).Pt();
-	Double_t a  = TMath::Abs(p1->E()-p2->E())/(p1->E()+p2->E()) ;
-	
-	//Check if opening angle is too large or too small compared to what is expected
-	Double_t angle   = photon1.Angle(photon2.Vect());
-	//if(fUseAngleCut && !GetNeutralMesonSelection()->IsAngleInWindow((photon1+photon2).E(),angle)) continue;
-	if(fUseAngleCut && angle < 0.1) continue;  
-	
-	if(GetDebug() > 2)
-	  printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed Event: pT: photon1 %2.2f, photon2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %f2.3\n",
-		 p1->Pt(), p2->Pt(), pt,m,a);			
-	for(Int_t ipid=0; ipid<fNPID; ipid++){ 
-	  if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
-	    fhMi1[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-	    if(p1->DistToBad()>0 && p2->DistToBad()>0){
-	      fhMi2[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-	      if(p1->DistToBad()>1 && p2->DistToBad()>1){
-		fhMi3[curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
-	      }
-	      
-	    }
-	  }
-	}
-      }
-    }
-  }
-  
-  TClonesArray *currentEvent = new TClonesArray(*GetInputAODBranch());
-  //Add current event to buffer and Remove redandant events 
-  if(currentEvent->GetEntriesFast()>0){
-    evMixList->AddFirst(currentEvent) ;
-    currentEvent=0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
-    if(evMixList->GetSize()>=fNmaxMixEv)
-      {
-	TClonesArray * tmp = (TClonesArray*) (evMixList->Last()) ;
-	evMixList->RemoveLast() ;
-	delete tmp ;
-      }
-  } 
-  else{ //empty event
-    delete currentEvent ;
-    currentEvent=0 ; 
-  }
-  
-  //Acceptance
+    //Acceptance
   if(IsDataMC() && GetReader()->ReadStack()){	
     AliStack * stack = GetMCStack();
     if(stack && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
       for(Int_t i=0 ; i<stack->GetNprimary(); i++){
-	TParticle * prim = stack->Particle(i) ;
-	if(prim->GetPdgCode() == 111){
-	  Double_t pi0Pt = prim->Pt() ;
-	  //printf("pi0, pt %2.2f\n",pi0Pt);
-	  if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
-	  Double_t pi0Y  = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
-	  Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
-	  if(TMath::Abs(pi0Y) < 0.5){
-	    fhPrimPt->Fill(pi0Pt) ;
-	  }
-	  fhPrimY  ->Fill(pi0Y) ;
-	  fhPrimPhi->Fill(phi) ;
-	  
-	  //Check if both photons hit Calorimeter
-	  Int_t iphot1=prim->GetFirstDaughter() ;
-	  Int_t iphot2=prim->GetLastDaughter() ;
-	  if(iphot1>-1 && iphot1<stack->GetNtrack() && iphot2>-1 && iphot2<stack->GetNtrack()){
-	    TParticle * phot1 = stack->Particle(iphot1) ;
-	    TParticle * phot2 = stack->Particle(iphot2) ;
-	    if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
-	      //printf("2 photons: photon 1: pt %2.2f, phi %3.2f, eta %1.2f; photon 2: pt %2.2f, phi %3.2f, eta %1.2f\n",
-	      //	phot1->Pt(), phot1->Phi()*180./3.1415, phot1->Eta(), phot2->Pt(), phot2->Phi()*180./3.1415, phot2->Eta());
-	      
-	      TLorentzVector lv1, lv2;
-	      phot1->Momentum(lv1);
-	      phot2->Momentum(lv2);
-	      
-	      Bool_t inacceptance = kFALSE;
-	      if(fCalorimeter == "PHOS"){
-		if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
-		  Int_t mod ;
-		  Double_t x,z ;
-		  if(GetPHOSGeometry()->ImpactOnEmc(phot1,mod,z,x) && GetPHOSGeometry()->ImpactOnEmc(phot2,mod,z,x)) 
-		    inacceptance = kTRUE;
-		  if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-		}
-		else{
-		  
-		  if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
-		    inacceptance = kTRUE ;
-		  if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-		}
-		
-	      }	   
-	      else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
-		if(GetEMCALGeometry()){
-		  if(GetEMCALGeometry()->Impact(phot1) && GetEMCALGeometry()->Impact(phot2)) 
-		    inacceptance = kTRUE;
-		  if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-		}
-		else{
-		  if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
-		    inacceptance = kTRUE ;
-		  if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
-		}
-	      }	  
-	      
-	      if(inacceptance){
-		
-		fhPrimAccPt->Fill(pi0Pt) ;
-		fhPrimAccPhi->Fill(phi) ;
-		fhPrimAccY->Fill(pi0Y) ;
-		Double_t angle  = lv1.Angle(lv2.Vect());
-		fhPrimOpeningAngle   ->Fill(pi0Pt,angle);
-		fhPrimCosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
-		
-	      }//Accepted
-	    }// 2 photons      
-	  }//Check daughters exist
-	}// Primary pi0
+        TParticle * prim = stack->Particle(i) ;
+        if(prim->GetPdgCode() == 111){
+          Double_t pi0Pt = prim->Pt() ;
+            //printf("pi0, pt %2.2f\n",pi0Pt);
+          if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
+          Double_t pi0Y  = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+          Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
+          if(TMath::Abs(pi0Y) < 0.5){
+            fhPrimPt->Fill(pi0Pt) ;
+          }
+          fhPrimY  ->Fill(pi0Y) ;
+          fhPrimPhi->Fill(phi) ;
+          
+            //Check if both photons hit Calorimeter
+          Int_t iphot1=prim->GetFirstDaughter() ;
+          Int_t iphot2=prim->GetLastDaughter() ;
+          if(iphot1>-1 && iphot1<stack->GetNtrack() && iphot2>-1 && iphot2<stack->GetNtrack()){
+            TParticle * phot1 = stack->Particle(iphot1) ;
+            TParticle * phot2 = stack->Particle(iphot2) ;
+            if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
+                //printf("2 photons: photon 1: pt %2.2f, phi %3.2f, eta %1.2f; photon 2: pt %2.2f, phi %3.2f, eta %1.2f\n",
+                //	phot1->Pt(), phot1->Phi()*180./3.1415, phot1->Eta(), phot2->Pt(), phot2->Phi()*180./3.1415, phot2->Eta());
+              
+              TLorentzVector lv1, lv2;
+              phot1->Momentum(lv1);
+              phot2->Momentum(lv2);
+              
+              Bool_t inacceptance = kFALSE;
+              if(fCalorimeter == "PHOS"){
+                if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
+                  Int_t mod ;
+                  Double_t x,z ;
+                  if(GetPHOSGeometry()->ImpactOnEmc(phot1,mod,z,x) && GetPHOSGeometry()->ImpactOnEmc(phot2,mod,z,x)) 
+                    inacceptance = kTRUE;
+                  if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+                }
+                else{
+                  
+                  if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
+                    inacceptance = kTRUE ;
+                  if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+                }
+                
+              }	   
+              else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
+                if(GetEMCALGeometry()){
+                  if(GetEMCALGeometry()->Impact(phot1) && GetEMCALGeometry()->Impact(phot2)) 
+                    inacceptance = kTRUE;
+                  if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+                }
+                else{
+                  if(GetFiducialCut()->IsInFiducialCut(lv1,fCalorimeter) && GetFiducialCut()->IsInFiducialCut(lv2,fCalorimeter)) 
+                    inacceptance = kTRUE ;
+                  if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+                }
+              }	  
+              
+              if(inacceptance){
+                
+                fhPrimAccPt->Fill(pi0Pt) ;
+                fhPrimAccPhi->Fill(phi) ;
+                fhPrimAccY->Fill(pi0Y) ;
+                Double_t angle  = lv1.Angle(lv2.Vect());
+                fhPrimOpeningAngle   ->Fill(pi0Pt,angle);
+                fhPrimCosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                
+              }//Accepted
+            }// 2 photons      
+          }//Check daughters exist
+        }// Primary pi0
       }//loop on primaries	
     }//stack exists and data is MC
   }//read stack
   else if(GetReader()->ReadAODMCParticles()){
     if(GetDebug() >= 0)  printf("AliAnaPi0::MakeAnalysisFillHistograms() - Acceptance calculation with MCParticles not implemented yet\n");
   }	
-  
 }	
 
 //________________________________________________________________________
@@ -766,8 +781,36 @@ void AliAnaPi0::Terminate(TList* outputList)
   printf(" AliAnaPi0::Terminate() - !! All the eps files are in %s_%s.tar.gz !!!\n", GetName(), fCalorimeter.Data());
 
 }
-
-
-
-
-
+  //____________________________________________________________________________________________________________________________________________________
+Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  
+{
+    // retieves the event index and checks the vertex
+    //    in the mixed buffer returns -2 if vertex NOK
+    //    for normal events   returns 0 if vertex OK and -1 if vertex NOK
+  
+  Int_t rv = -1 ; 
+  if (GetMixedEvent()){
+    TObjArray * pl = 0x0; 
+    if (part->GetDetector().Contains("PHOS")) {
+      pl = GetAODPHOS();
+    } else if (part->GetDetector().Contains("EMCAL")) {
+      pl = GetAODEMCAL();
+    } else {
+      AliFatal(Form("%s is an unknown calorimeter", part->GetDetector().Data())) ; 
+    }
+    rv = GetMixedEvent()->EventIndexForCaloCluster(part->GetCaloLabel(0)) ;
+    GetMixedEvent()->GetVertexOfEvent(rv)->GetXYZ(vert); 
+    if(vert[2] < -fZvtxCut || vert[2] > fZvtxCut)
+      rv = -2 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
+  } else {
+    Double_t * tempo = GetReader()->GetVertex() ;
+    vert[0] = tempo[0] ; 
+    vert[1] = tempo[1] ; 
+    vert[2] = tempo[2] ; 
+    if(vert[2] < -fZvtxCut || vert[2] > fZvtxCut)
+      rv = -1 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
+    else 
+      rv = 0 ;
+  }
+  return rv ; 
+}

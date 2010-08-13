@@ -77,7 +77,7 @@ public:
   void AddCalibObject(TObject * object);     // add calib object to the list
   TObject *  GetCalibObject(Int_t index);    // return calib objct at given position
   void MakeMiniESDtrack();
-  void SetID(Int_t id) { fID =id;}
+  void SetID(Short_t id) { fID =id;}
   Int_t GetID() const { return fID;}
   void SetVertexID(Char_t id) { fVertexID=id;}
   Char_t GetVertexID() const { return fVertexID;}

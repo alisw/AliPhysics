@@ -1,4 +1,4 @@
-/* $Id:  $ */
+/* $Id$ */
 //--------------------------------------------------
 // Example macro to do analysis with the 
 // analysis classes in PWG4PartCorr
@@ -10,7 +10,7 @@
 //  Author : Gustavo Conesa Balbastre (INFN-LNF)
 //
 //-------------------------------------------------
-enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
+enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID,mMix};
 //mLocal: Analyze locally files in your computer
 //mLocalCAF: Analyze locally CAF files
 //mPROOF: Analyze CAF files with PROOF
@@ -36,9 +36,9 @@ const char * kXSFileName = "pyxsec.root";
 
 const Bool_t kMC = kFALSE; //With real data kMC = kFALSE
 const TString kInputData = "AOD"; //ESD, AOD, MC
-TString kTreeName = "aodTree";
+TString kTreeName ;
 
-void ana(Int_t mode=mLocal)
+void anaM(Int_t mode=mMix)
 {
   // Main
 
@@ -86,38 +86,41 @@ void ana(Int_t mode=mLocal)
     mgr->SetOutputEventHandler(aodoutHandler);
     
     //input
-    if(kInputData == "ESD")
-	{
+    Int_t maxiterations = 1;
+    AliEventPoolLoop* pool = new AliEventPoolLoop(maxiterations);
+    pool->SetChain(chain);
+    
+    AliMultiEventInputHandler *inpHandler = NULL ; 
+    if(kInputData == "ESD"){
       // ESD handler
-      AliESDInputHandler *esdHandler = new AliESDInputHandler();
-      mgr->SetInputEventHandler(esdHandler);
-	  cout<<"ESD handler "<<mgr->GetInputEventHandler()<<endl;
-	}
+      inpHandler = new AliMultiEventInputHandler(2, 0);
+    }
     if(kInputData == "AOD"){
       // AOD handler
-      AliAODInputHandler *aodHandler = new AliAODInputHandler();
-      mgr->SetInputEventHandler(aodHandler);
-	  cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
-	   	  
+      inpHandler = new AliMultiEventInputHandler(2, 1);	   	  
     }
+    mgr->SetInputEventHandler(inpHandler);
+    cout<<"Input handler "<<mgr->GetInputEventHandler()<<endl;
+    mgr->SetEventPool(pool);
+    inpHandler->SetEventPool(pool);
 
-      // mgr->SetDebugLevel(-1); // For debugging, do not uncomment if you want no messages.
+      //mgr->SetDebugLevel(10); // For debugging, do not uncomment if you want no messages.
 
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
-    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
+    //    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+    // AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
 
-//    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
-//    AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kFALSE);
-//
-    gROOT->LoadMacro("AddTaskPartCorr.C");
+    //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
+    //AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kTRUE);
+
+    gROOT->LoadMacro("AddTaskPartCorrM.C");
    
 
-    AliAnalysisTaskParticleCorrelation *taskEMCAL = AddTaskPartCorr(kInputData,"EMCAL", kTRUE, kFALSE);	
+    AliAnalysisTaskParticleCorrelationM *taskEMCAL = AddTaskPartCorrM("AOD","EMCAL", kTRUE,kFALSE);	
     mgr->AddTask(taskEMCAL);
-    AliAnalysisTaskParticleCorrelation *taskPHOS  = AddTaskPartCorr(kInputData,"PHOS", kTRUE, kFALSE);
+    AliAnalysisTaskParticleCorrelationM *taskPHOS  = AddTaskPartCorrM("AOD","PHOS", kTRUE, kFALSE);
     mgr->AddTask(taskPHOS);
 
     //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCalorimeterQA.C");
@@ -140,10 +143,12 @@ void ana(Int_t mode=mLocal)
       smode = "proof";
     else if (mode==mGRID) 
       smode = "local";
+    else if (mode==mMix) 
+      smode = "mix";
     
     mgr->InitAnalysis();
     mgr->PrintStatus();
-    mgr->StartAnalysis(smode.Data(),chain);
+    mgr->StartAnalysis(smode.Data(),chain,1000);
 
 cout <<" Analysis ended sucessfully "<< endl ;
 
@@ -165,7 +170,7 @@ void  LoadLibraries(const anaModes mode) {
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   //----------------------------------------------------------
-  if (mode==mLocal || mode == mLocalCAF || mode == mGRID) {
+  if (mode==mLocal || mode == mLocalCAF || mode == mGRID || mode == mMix) {
     //--------------------------------------------------------
     // If you want to use already compiled libraries 
     // in the aliroot distribution
@@ -188,10 +193,10 @@ void  LoadLibraries(const anaModes mode) {
     gSystem->Load("libEMCALUtils");
     gSystem->Load("libPWG4PartCorrBase.so");
     gSystem->Load("libPWG4PartCorrDep.so");
-     gSystem->Load("libPWG4omega3pi.so");
-     gSystem->Load("libCORRFW.so");
-     gSystem->Load("libPWG3base.so");
-     gSystem->Load("libPWG3muon.so");
+//     gSystem->Load("libPWG4omega3pi.so");
+//     gSystem->Load("libCORRFW.so");
+//     gSystem->Load("libPWG3base.so");
+//     gSystem->Load("libPWG3muon.so");
  
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
@@ -321,7 +326,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
   //---------------------------------------
   //Local files analysis
   //---------------------------------------
-  else if(mode == mLocal){    
+  else if(mode == mLocal || mode == mMix){    
     //If you want to add several ESD files sitting in a common directory INDIR
     //Specify as environmental variables the directory (INDIR), the number of files 
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)

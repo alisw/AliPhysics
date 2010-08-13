@@ -27,6 +27,8 @@ class AliGenEventHeader ;
 class AliVEvent;
 class AliAODEvent;
 class AliMCEvent;
+class AliMixedEvent;
+#include "AliVCaloCells.h"
 #include "AliFiducialCut.h"
 class AliAODMCHeader;
 #include "AliCalorimeterUtils.h"
@@ -93,17 +95,17 @@ public:
   void SwitchOffPHOSCells()  {fFillPHOSCells = kFALSE ; }
 
   virtual Bool_t FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
-  virtual void FillInputCTS()   {;}
-  virtual void FillInputEMCAL() {;}
-  virtual void FillInputPHOS()  {;}
-  virtual void FillInputEMCALCells() {;}
-  virtual void FillInputPHOSCells()  {;}
+  virtual void FillInputCTS() ;
+  virtual void FillInputEMCAL() ;
+  virtual void FillInputPHOS() ;
+  virtual void FillInputEMCALCells() ;
+  virtual void FillInputPHOSCells() ;
 
   virtual TObjArray* GetAODCTS()   const {return fAODCTS ;}
   virtual TObjArray* GetAODEMCAL() const {return fAODEMCAL ;}
   virtual TObjArray* GetAODPHOS()  const {return fAODPHOS ;}
-  virtual TNamed* GetEMCALCells()  const {return fEMCALCells ;}
-  virtual TNamed* GetPHOSCells()   const {return fPHOSCells ;}
+  virtual AliVCaloCells* GetEMCALCells()  const { return fEMCALCells ;}
+  virtual AliVCaloCells* GetPHOSCells()   const { return fPHOSCells ;}
 
   //Get MC  informatio
   //Kinematics and galice.root available 
@@ -123,7 +125,8 @@ public:
 	
   virtual void Init();
 	
-  virtual void SetInputEvent(AliVEvent* const input)  {fInputEvent  = input;}
+//  virtual void SetInputEvent(AliVEvent* const input)  {fInputEvent  = input;}
+  virtual void SetInputEvent(AliVEvent* const input) ;
   virtual void SetOutputEvent(AliAODEvent* const aod) {fOutputEvent = aod;}
   virtual void SetMC(AliMCEvent* const mc)            {fMC  = mc;}
 
@@ -186,6 +189,9 @@ public:
 
   AliCalorimeterUtils * GetCaloUtils() const {return fCaloUtils ; }
   void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
+  
+  Double_t * GetVertex() ;  
+
 
  protected:
   Int_t	           fEventNumber; // Event number
@@ -205,8 +211,8 @@ public:
   TObjArray *    fAODCTS ;        //! temporal referenced array with tracks
   TObjArray *    fAODEMCAL ;      //! temporal referenced array with EMCAL CaloClusters
   TObjArray *    fAODPHOS ;       //! temporal referenced array with PHOS CaloClusters
-  TNamed *       fEMCALCells ;    //! temporal array with EMCAL CaloCells, ESD or AOD
-  TNamed *       fPHOSCells ;     //! temporal array with PHOS CaloCells, ESD or AOD
+  AliVCaloCells *fEMCALCells ;    //! temporal array with EMCAL CaloCells, ESD or AOD
+  AliVCaloCells *fPHOSCells ;     //! temporal array with PHOS CaloCells, ESD or AOD
 
   AliVEvent   *  fInputEvent;     //! pointer to esd or aod input
   AliAODEvent *  fOutputEvent;    //! pointer to aod output
@@ -229,9 +235,9 @@ public:
 	
   ULong_t        fTrackStatus        ; // Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t         fReadStack          ; // Access kine information from stack
-  Bool_t	     fReadAODMCParticles ; // Access kine information from filtered AOD MC particles
+  Bool_t	       fReadAODMCParticles ; // Access kine information from filtered AOD MC particles
 	
-  Bool_t	     fCleanOutputStdAOD;   // clean the written standard tracks and caloclusters in output AOD
+  Bool_t	       fCleanOutputStdAOD;   // clean the written standard tracks and caloclusters in output AOD
   TString        fDeltaAODFileName ;   // Delta AOD file name
   TString        fFiredTriggerClassName  ;  // Name of trigger event type used to do the analysis
 
@@ -240,8 +246,15 @@ public:
   TString fTaskName;           // Name of task that executes the analysis
 	
   AliCalorimeterUtils *  fCaloUtils ;  //  Pointer to CalorimeterUtils
+
+  AliMixedEvent* fMixedEvent ;         //! mixed event object. This class is not the owner
+  Int_t          fNMixedEvent ;        //! number of events in mixed event buffer
+  Double_t **    fVertex ;             //! vertex array 3 dim for each mixed event buffer
+  
+  Bool_t	       fWriteOutputStdAOD;   // Write selected standard tracks and caloclusters in output AOD
+
 	
-  ClassDef(AliCaloTrackReader,15)
+  ClassDef(AliCaloTrackReader,16)
 } ;
 
 

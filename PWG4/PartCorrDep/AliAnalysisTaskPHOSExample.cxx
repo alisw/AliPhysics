@@ -15,7 +15,7 @@
 
 /* $Id: */
 
-//_________________________________________________________________________∫
+//________________________________________________________________________
 // A basic analysis task to analyse photon detected by PHOS
 // A basic analysis task to analyse photon detected by PHOS
 // A basic analysis task to analyse photon detected by PHOS
@@ -184,7 +184,7 @@ void AliAnalysisTaskPHOSExample::UserExec(Option_t *)
   AliESDEvent* esd = (AliESDEvent*)InputEvent();
   
   //************************  PHOS *************************************
-      TRefArray * caloClustersArr  = new TRefArray();  
+  TRefArray * caloClustersArr  = new TRefArray();  
   esd->GetPHOSClusters(caloClustersArr);
   
   const Int_t kNumberOfPhosClusters   = caloClustersArr->GetEntries() ;  
@@ -209,7 +209,7 @@ void AliAnalysisTaskPHOSExample::UserExec(Option_t *)
       fhPHOSPos->Fill( pos[0], pos[1], pos[2] ) ;
       fhPHOSDigits->Fill(Entry(), caloCluster->GetNCells() ) ;
       numberOfDigitsInPhos += caloCluster->GetNCells() ;
-      Double_t * pid = caloCluster->GetPid() ;
+      const Double_t * pid = caloCluster->GetPID() ;
       if(pid[AliPID::kPhoton] > GetPhotonId() ) {
 	phosVector[fPhotonsInPhos] = new TVector3(pos[0],pos[1],pos[2]) ;
 	phosPhotonsEnergy[fPhotonsInPhos]=caloCluster->E() ;

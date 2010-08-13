@@ -36,11 +36,11 @@
 //
 //	kElectron :  fPIDFinal[0]
 //	kMuon     :  fPIDFinal[1]
-//	kPion	  :  fPIDFinal[2]
-//	kKaon	  :  fPIDFinal[3]
+//	kPion	    :  fPIDFinal[2]
+//	kKaon	    :  fPIDFinal[3]
 //	kProton   :  fPIDFinal[4]
 //	kPhoton   :  fPIDFinal[5]
-//	kPi0	  :  fPIDFinal[6]
+//	kPi0	    :  fPIDFinal[6]
 //	kNeutron  :  fPIDFinal[7]
 //	kKaon0	  :  fPIDFinal[8]
 //	kEleCon   :  fPIDFinal[9]
@@ -116,7 +116,7 @@ void AliEMCALPID::RunPID(AliESDEvent *esd)
   
   Int_t nClusters = esd->GetNumberOfCaloClusters();
   Int_t firstCluster = 0;
-  Double_t energy, lambda0;
+  Double_t energy=0., lambda0=0.;
   for (Int_t iCluster = firstCluster; iCluster < (nClusters + firstCluster); iCluster++) {
     
     AliESDCaloCluster *clust = esd->GetCaloCluster(iCluster);
@@ -124,9 +124,8 @@ void AliEMCALPID::RunPID(AliESDEvent *esd)
     
     energy = clust->E();
     lambda0 = clust->GetM02();
-    // verify cluster type
-    Int_t clusterType= clust->GetClusterType();
-    if (clusterType == AliESDCaloCluster::kEMCALClusterv1 && lambda0 != 0  && energy < 1000) {
+   
+    if (lambda0 != 0  && energy < 1000) {
       
       // reject clusters with lambda0 = 0
       
@@ -159,8 +158,8 @@ void AliEMCALPID::RunPID(AliESDEvent *esd)
       
       if(fReconstructor){ // In case it is called during reconstruction.
 	//	cout << "############# Fill ESDs with PIDWeight ##########" << endl;
-	clust->SetPid(fPIDFinal);}
-    } // end if (clusterType...)
+	clust->SetPID(fPIDFinal);}
+    } // end if (lambda0 != 0  && energy < 1000)
   } // end for (iCluster...)
 }
 

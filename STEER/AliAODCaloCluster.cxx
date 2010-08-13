@@ -203,7 +203,7 @@ void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
   //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
 
   Double32_t energy = E();
-  Double32_t pos[3];
+  Float_t    pos[3];
   GetPosition(pos);
   
   if(vertex){//calculate direction from vertex

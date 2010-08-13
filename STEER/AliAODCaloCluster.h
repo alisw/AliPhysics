@@ -47,12 +47,12 @@ class AliAODCaloCluster : public AliAODCluster {
 
   
   // getters
-  Double_t GetDistToBadChannel() const { return fDistToBadChannel; }
+  Double_t GetDistanceToBadChannel() const { return fDistToBadChannel; }
   Double_t GetDispersion() const { return fDispersion; }
   Double_t GetM20() const { return fM20; }
   Double_t GetM02() const { return fM02; }
   Double_t GetEmcCpvDistance() const { return fEmcCpvDistance; }
-  UShort_t GetNExMax() const { return fNExMax; }
+  UChar_t  GetNExMax() const { return fNExMax; }
   Double_t GetTOF() const { return fTOF; }
 
   Int_t    GetNTracksMatched() const { return fTracksMatched.GetEntriesFast(); }
@@ -74,15 +74,20 @@ class AliAODCaloCluster : public AliAODCluster {
   Double_t GetCellAmplitudeFraction(Int_t i) const {  
     if (fCellsAmpFraction && i >=0 && i < fNCells ) return fCellsAmpFraction[i];    
     else return -1;}
-
+	
+  //Not defined yet in AODs, put a large number the track is not matched.	
+  Double_t    GetTrackDx(void)const        {return 10000. ;}
+  Double_t    GetTrackDz(void)const        {return 10000. ;}
+	
   // setters
   void SetDistToBadChannel(Double_t dist) { fDistToBadChannel = dist; }
   void SetDispersion(Double_t disp) { fDispersion = disp; }
   void SetM20(Double_t m20) { fM20 = m20; }
   void SetM02(Double_t m02) { fM02 = m02; }
   void SetEmcCpvDistance(Double_t emcCpvDist) { fEmcCpvDistance = emcCpvDist; }
-  void SetNExMax(UShort_t nExMax) { fNExMax = nExMax; }
+  void SetNExMax(UChar_t nExMax) { fNExMax = nExMax; }
   void SetTOF(Double_t tof) { fTOF = tof; }
+  void SetTrackDistance(Double_t, Double_t ){ ; }
 
   void SetCaloCluster(Double_t dist = -999., 
 		      Double_t disp = -1., 
@@ -115,7 +120,7 @@ class AliAODCaloCluster : public AliAODCluster {
   Double32_t   fM02;              // 2-nd moment along the second eigen axis
   Double32_t   fEmcCpvDistance;   // the distance from PHOS EMC rec.point to the closest CPV rec.point
   UShort_t     fNExMax;           // number of (Ex-)maxima before unfolding
-  Double32_t fTOF;        ////[0,0,12] time-of-flight
+  Double32_t   fTOF;              ////[0,0,12] time-of-flight
 
   TRefArray    fTracksMatched;    // references to tracks close to cluster. First entry is the most likely match.
 
@@ -123,7 +128,7 @@ class AliAODCaloCluster : public AliAODCluster {
   UShort_t   *fCellsAbsId;        //[fNCells] array of cell absId numbers
   Double32_t *fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
 
-  ClassDef(AliAODCaloCluster,5);
+  ClassDef(AliAODCaloCluster,6);
 };
 
 #endif

@@ -22,10 +22,8 @@ class TArrayF;
 //--- ANALYSIS system ---
 class AliVEvent;
 class AliAODPWG4Particle;
-class AliAODCaloCluster;
-class AliAODCaloCells;
-class AliESDCaloCluster;
-class AliESDCaloCells;
+class AliVCluster;
+class AliVCaloCells;
 #include "AliPHOSGeoUtils.h"
 #include "AliEMCALGeoUtils.h"
 
@@ -97,14 +95,14 @@ class AliCalorimeterUtils : public TObject {
 	
   //Calorimeter indexes information
   Int_t GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent* inputEvent) const;
-  Int_t GetModuleNumber(AliAODCaloCluster * cluster) const;
-  Int_t GetModuleNumber(AliESDCaloCluster * cluster) const;
+  Int_t GetModuleNumber(AliVCluster * cluster) const;
+    //  Int_t GetModuleNumber(AliESDCaloCluster * cluster) const;
 
   Int_t GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
 	
   //Modules fiducial region
-  Bool_t CheckCellFiducialRegion(AliAODCaloCluster* cluster, AliAODCaloCells* cells) const ;
-  Bool_t CheckCellFiducialRegion(AliESDCaloCluster* cluster, AliESDCaloCells* cells) const ;
+  Bool_t CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent * event, Int_t iev=0) const ;
+    //  Bool_t CheckCellFiducialRegion(AliESDCaloCluster* cluster, AliESDCaloCells* cells) const ;
 	
   void   SetNumberOfCellsFromEMCALBorder(Int_t n) {fNCellsFromEMCALBorder = n; }
   Int_t  GetNumberOfCellsFromEMCALBorder() const  {return fNCellsFromEMCALBorder; }
@@ -147,8 +145,8 @@ class AliCalorimeterUtils : public TObject {
   void SetEMCALChannelRecalibrationFactors(TObjArray *map) {fEMCALRecalibrationFactors = map;}
   void SetPHOSChannelRecalibrationFactors (TObjArray *map) {fPHOSRecalibrationFactors  = map;}
 
-  Float_t RecalibrateClusterEnergy(AliESDCaloCluster* cluster, AliESDCaloCells * cells);
-  Float_t RecalibrateClusterEnergy(AliAODCaloCluster* cluster, AliAODCaloCells * cells);
+  Float_t RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
+    //Float_t RecalibrateClusterEnergy(AliAODCaloCluster* cluster, AliAODCaloCells * cells);
 
  private:
 

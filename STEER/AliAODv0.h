@@ -85,6 +85,10 @@ public:
   Int_t    GetLabel()       const {return -1;} // Dummy
   Int_t    PdgCode()        const {return  0;} // Dummy
   
+  virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
+  virtual void     SetID(Short_t /*id*/) {;}
+
+  
 protected:
   Double32_t fDcaV0ToPrimVertex;    // dca of V0 to primary vertex 
   Bool_t     fOnFlyStatus;          // if kTRUE, then this V0 is recontructed

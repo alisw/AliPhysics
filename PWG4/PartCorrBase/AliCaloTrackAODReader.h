@@ -28,16 +28,10 @@ public:
   //AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & g) ;//cpy assignment
   virtual ~AliCaloTrackAODReader() {;} //virtual dtor
   
-  void FillInputCTS()   ;
-  void FillInputEMCAL() ;
-  void FillInputPHOS()  ;
-  void FillInputEMCALCells() ;
-  void FillInputPHOSCells()  ;
-	
+ 	
   Double_t GetBField() const;
 
   void GetSecondInputAODVertex(Double_t v[3]) const ;
-  void GetVertex(Double_t v[3]) const ;
   
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   void SwitchOnWriteStdAOD()  {fWriteOutputStdAOD = kTRUE;}
@@ -47,10 +41,8 @@ public:
 
   void Print(const Option_t * opt) const;
 	
-private:
-  Bool_t	     fWriteOutputStdAOD;   // Write selected standard tracks and caloclusters in output AOD
 
-  ClassDef(AliCaloTrackAODReader,4)
+  ClassDef(AliCaloTrackAODReader,5)
 } ;
 
 #endif //ALICALOTRACKAODREADER_H

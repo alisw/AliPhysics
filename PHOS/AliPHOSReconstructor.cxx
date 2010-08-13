@@ -293,17 +293,17 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       energy = rp->Energy();
 
     // fills the ESDCaloCluster
-    ec->SetClusterType(AliESDCaloCluster::kPHOSCluster);
+    ec->SetType(AliVCluster::kPHOSNeutral);
     ec->SetPosition(xyz);                       //rec.point position in MARS
     ec->SetE(energy);                           //total or core particle energy
-    ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
-    ec->SetPid(rp->GetPID()) ;                  //array of particle identification
+    ec->SetDispersion(emcRP->GetDispersion());  //cluster dispersion
+    ec->SetPID(rp->GetPID()) ;            //array of particle identification
     ec->SetM02(emcRP->GetM2x()) ;               //second moment M2x
     ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
     ec->SetEmcCpvDistance(ts->GetCpvDistance("r")); //Only radius, what about separate x,z????
     ec->SetTrackDistance(ts->GetCpvDistance("x"),ts->GetCpvDistance("z")); 
-    ec->SetClusterChi2(-1);                     //not yet implemented
+    ec->SetChi2(-1);                     //not yet implemented
     ec->SetTOF(emcRP->GetTime());               //Time of flight - already calibrated in EMCRecPoint
 
     //Cells contributing to clusters

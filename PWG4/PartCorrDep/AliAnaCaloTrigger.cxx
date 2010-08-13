@@ -205,7 +205,7 @@ void AliAnaCaloTrigger::UserExec(Option_t *)
 	  labelmax = cluster->GetLabel();
 	}
 	
-	Double_t * pid = cluster->GetPid() ;
+	const Double_t * pid = cluster->GetPID() ;
 	
 	if(pid[AliPID::kPhoton] > 0.9) {
 	  if ( cluEnergy > phEnMax) { 
