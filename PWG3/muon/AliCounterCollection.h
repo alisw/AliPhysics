@@ -34,6 +34,9 @@ public:
   // Initialize the internal counters from the added rubrics
   void Init();
   
+  // return the list of key words for the given rubric
+  TString GetKeyWords(TString rubric) const;
+  
   // Add "value" to the counter referenced by "externalKey"
   void Count(TString externalKey, Int_t value = 1);
   

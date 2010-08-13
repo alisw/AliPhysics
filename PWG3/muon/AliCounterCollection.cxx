@@ -542,6 +542,33 @@ void AliCounterCollection::Print(const Option_t* opt) const
 }
 
 //-----------------------------------------------------------------------
+TString AliCounterCollection::GetKeyWords(TString rubric) const
+{
+  /// return the list of key words for the given rubric.
+  
+  TString keyWords = "";
+  
+  if (!fCounters) {
+    AliError("counters are not initialized");
+    return keyWords;
+  }
+  
+  rubric.ToUpper();
+  
+  // get the dimension corresponding to that rubric
+  Int_t dim = FindDim(rubric);
+  if (dim < 0) return keyWords;
+  
+  // build list of key words
+  TObjString* label = 0x0;
+  TIter nextLabel(fCounters->GetAxis(dim)->GetLabels());
+  while ((label = static_cast<TObjString*>(nextLabel()))) keyWords += Form("%s,",label->String().Data());
+  keyWords.Remove(TString::kTrailing, ',');
+  
+  return keyWords;
+}
+
+//-----------------------------------------------------------------------
 void AliCounterCollection::PrintKeyWords() const
 {
   /// Print the full list of key words.
