@@ -52,7 +52,7 @@ void ConfigTaskUE(AliAnalysisTaskLeadingTrackUE * ueana){
   
   if (1)
   {
-    file = TFile::Open("trackingefficiency.root");
+    file = TFile::Open("$ALICE_ROOT/PWG4/JetTasks/inputFiles/ue_trackingefficiency.root");
     trackingEff = (TH1D*) file->Get("trackingefficiency");
     ueana->SetTrackingEfficiency(trackingEff);
   }
