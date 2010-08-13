@@ -1,4 +1,4 @@
-AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(Bool_t fillNtuple=kFALSE, Bool_t keepAll=kFALSE){
+AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(Int_t fillNtupleScaleDown=0, Bool_t keepAll=kFALSE){
 
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -19,24 +19,26 @@ AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(Bool_t fillNtuple=kFALSE, Boo
    }
 
    TString baseOutName = "singleMuonAnalysis.root";
-   TString outputfile = AliAnalysisManager::GetCommonFileName();
+   TString outputfile = mgr->GetCommonFileName();
    if ( ! outputfile.IsNull() ) outputfile += ":PWG3_muon_SingleMu";
    else outputfile = baseOutName;
 
-   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("SingleMuon",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("SingleMuonMC",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-   AliAnalysisDataContainer *coutput3 = 0x0; 
-   
-   if ( fillNtuple ) {
-     coutput3 = mgr->CreateContainer("SingleMuonNtuple",TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-     coutput3->SetSpecialOutput();
+   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("SingleMuonContainer",AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("SingleMuon",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("SingleMuonMC",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("SingleMuonQA",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+
+   AliAnalysisDataContainer *coutput5 = 0x0;    
+   if ( fillNtupleScaleDown > 0 ) {
+     coutput5 = mgr->CreateContainer("SingleMuonNtuple",TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+     coutput5->SetSpecialOutput();
    }
 
 
    // Create the task, add it to the manager and configure it.
    //===========================================================================   
 
-   AliAnalysisTaskSingleMu *SingleMuonAnalysisTask = new AliAnalysisTaskSingleMu("SingleMuonAnalysisTask", fillNtuple, keepAll);
+   AliAnalysisTaskSingleMu *SingleMuonAnalysisTask = new AliAnalysisTaskSingleMu("SingleMuonAnalysisTask", fillNtupleScaleDown, keepAll);
    mgr->AddTask(SingleMuonAnalysisTask);
    
    // Create ONLY the output containers for the data produced by the task.
@@ -46,9 +48,11 @@ AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(Bool_t fillNtuple=kFALSE, Boo
    mgr->ConnectInput  (SingleMuonAnalysisTask,  0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (SingleMuonAnalysisTask,  1, coutput1);
    mgr->ConnectOutput (SingleMuonAnalysisTask,  2, coutput2);
+   mgr->ConnectOutput (SingleMuonAnalysisTask,  3, coutput3);
+   mgr->ConnectOutput (SingleMuonAnalysisTask,  4, coutput4);
 
-   if ( fillNtuple )     
-     mgr->ConnectOutput (SingleMuonAnalysisTask,  3, coutput3);
+   if ( fillNtupleScaleDown > 0 )     
+     mgr->ConnectOutput (SingleMuonAnalysisTask,  5, coutput5);
 
    return SingleMuonAnalysisTask;
 }   
