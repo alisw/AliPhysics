@@ -55,11 +55,17 @@ public:
   TString GetStyleMacro() const {return fStyleMacro ;}
   void SetStyleMacro( TString macro ) {fStyleMacro = macro; }
   
-  void SwitchOnPlotsMaking()  {fMakePlots = kTRUE;}
-  void SwitchOffPlotsMaking() {fMakePlots = kFALSE;}
+  void SwitchOnPlotsMaking()  {fMakePlots = kTRUE  ;}
+  void SwitchOffPlotsMaking() {fMakePlots = kFALSE ;}
 	
-  void SwitchOnCalorimetersCorrelation()  {fCorrelateCalos = kTRUE;}
-  void SwitchOffCalorimetersCorrelation() {fCorrelateCalos = kFALSE;}
+  void SwitchOnFillAllPositionHistogram()   {fFillAllPosHisto = kTRUE  ;}
+  void SwitchOffFillAllPositionHistogram()  {fFillAllPosHisto = kFALSE ;}
+  
+  void SwitchOnFillAllTH12Histogram()   {fFillAllTH12 = kTRUE  ;}
+  void SwitchOffFillAllTH12Histogram()  {fFillAllTH12 = kFALSE ;}
+  
+  void SwitchOnCalorimetersCorrelation()  {fCorrelateCalos = kTRUE  ;}
+  void SwitchOffCalorimetersCorrelation() {fCorrelateCalos = kFALSE ;}
   void CorrelateCalorimeters(TRefArray* caloClusters);
 	
   void Terminate(TList * outputList);
@@ -205,12 +211,15 @@ public:
   TString  fCalorimeter ;    // Calorimeter selection
   TString  fStyleMacro  ;    // Location of macro for plots style
   Bool_t   fMakePlots   ;    // Print plots
+  Bool_t   fFillAllPosHisto; // Fill all the position related histograms 
+  Bool_t   fFillAllTH12 ;    // Fill simple histograms which information is already in TH3 histograms
   Bool_t   fCorrelateCalos ; // Correlate PHOS/EMCAL clusters
   Int_t    fNModules    ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
   Int_t    fNRCU        ;    // Number of EMCAL/PHOS RCU, set as many histogras as RCU 
   Double_t fTimeCutMin  ;    // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;    // Remove clusters/cells with time larger than this value, in ns
-	
+
+  
   //Histograms
   //Histogram Bins
   Int_t   fHistoPOverEBins;        // p/E histogram number of bins
@@ -261,11 +270,6 @@ public:
   TH1F * fhPhiCharged; //! phi distribution, Reco, matched with track 
   TH1F * fhEtaCharged; //! eta distribution, Reco, matched with track 
   TH3F * fhEtaPhiECharged  ; //! eta vs phi vs E, Reco, matched with track 
-//  TH1F * fhEChargedNoOut  ; //! E distribution, Reco, matched with track, no outer param
-//  TH1F * fhPtChargedNoOut ; //! pT distribution, Reco, matched with track, no outer param
-//  TH1F * fhPhiChargedNoOut; //! phi distribution, Reco, matched with track, no outer param
-//  TH1F * fhEtaChargedNoOut; //! eta distribution, Reco, matched with track, no outer param
-//  TH2F * fhEtaPhiChargedNoOut  ; //! eta vs phi, Reco, matched with track, no outer param
   TH1F * fhDeltaE  ; //! MC-Reco E distribution	
   TH1F * fhDeltaPt ; //! MC-Reco pT distribution
   TH1F * fhDeltaPhi; //! MC-Reco phi distribution
@@ -296,18 +300,18 @@ public:
   TH1F * fhCellTimeSpreadRespectToCellMax; //! Difference of the time of cell with maximum dep energy and the rest of cells
   TH1F * fhCellIdCellLargeTimeSpread;      //! Cells with large time respect to max (diff > 100 ns)
 	
-  TH2F * fhRNCells ; //! R=sqrt(x^2+y^2+z^2) (cm) cluster distribution vs N cells in cluster
+  TH2F * fhRNCells ; //! R=sqrt(x^2+y^2) (cm) cluster distribution vs N cells in cluster
   TH2F * fhXNCells ; //! X (cm) cluster distribution vs N cells in cluster
   TH2F * fhYNCells ; //! Y (cm) cluster distribution vs N cells in cluster
   TH2F * fhZNCells ; //! Z (cm) cluster distribution vs N cells in cluster
 	
-  TH2F * fhRE ; //! R=sqrt(x^2+y^2+z^2) (cm) cluster distribution vs cluster energy
+  TH2F * fhRE ; //! R=sqrt(x^2+y^2) (cm) cluster distribution vs cluster energy
   TH2F * fhXE ; //! X (cm) cluster distribution vs cluster energy
   TH2F * fhYE ; //! Y (cm) cluster distribution vs cluster energy
   TH2F * fhZE ; //! Z (cm) cluster distribution vs cluster energy
   TH3F * fhXYZ; //! cluster X vs Y vs Z (cm)
 	
-  TH2F * fhRCellE ; //! R=sqrt(x^2+y^2+z^2) (cm) cell distribution vs cell energy
+  TH2F * fhRCellE ; //! R=sqrt(x^2+y^2) (cm) cell distribution vs cell energy
   TH2F * fhXCellE ; //! X (cm) cell distribution vs cell energy
   TH2F * fhYCellE ; //! Y (cm) cell distribution vs cell energy
   TH2F * fhZCellE ; //! Z (cm) cell distribution vs cell energy
@@ -466,7 +470,7 @@ public:
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,9)
+	ClassDef(AliAnaCalorimeterQA,10)
 } ;
 
 
