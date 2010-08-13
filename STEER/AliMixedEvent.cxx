@@ -31,10 +31,6 @@
 #include <TMath.h>
 #include <TMatrix.h>
 #include <TMatrixD.h>
-#include "AliESDCaloCluster.h"
-#include "AliAODCaloCluster.h"
-#include "AliAODCaloCells.h"
-#include "AliESDCaloCells.h"
 #include "AliLog.h"
 #include "AliVCaloCells.h"
 
@@ -132,49 +128,98 @@ void AliMixedEvent::Init()
       fNumberOfEMCALCells += event->GetEMCALCells()->GetNumberOfCells(); 
     iev++ ;  
   }
-  if (!fPHOSCells) {
-    AliVEvent* evt = (AliVEvent*) (fEventList.At(0));
-    if (dynamic_cast<AliESDCaloCluster*>(evt->GetCaloCluster(0))) { //it's a ESD
-      fPHOSCells = new AliESDCaloCells() ; 
-    } else if (dynamic_cast<AliAODCaloCluster*>(evt->GetCaloCluster(0))) { //it's a ESD
-      fPHOSCells = new AliAODCaloCells() ; 
-    } else {
-      AliFatal("Unrecognized CaloCluster type (not ESD nor AOD)") ; 
-    }
-  }
-  fPHOSCells->SetType(AliVCaloCells::kPHOSCell) ; 
-  fPHOSCells->CreateContainer(fNumberOfPHOSCells) ;
-
-  if (!fEMCALCells){
-    AliVEvent* evt = (AliVEvent*) (fEventList.At(0));
-    if (dynamic_cast<AliESDCaloCluster*>(evt->GetCaloCluster(0))) { //it's a ESD
-      fEMCALCells = new AliESDCaloCells() ; 
-    } else if (dynamic_cast<AliAODCaloCluster*>(evt->GetCaloCluster(0))) { //it's a ESD
-      fEMCALCells = new AliAODCaloCells() ; 
-    } else {
-      AliFatal("Unrecognized CaloCluster type (not ESD nor AOD)") ; 
-    }
-  }
-  fEMCALCells->SetType(AliVCaloCells::kEMCALCell) ; 
-  fEMCALCells->CreateContainer(fNumberOfEMCALCells) ;
 
   next.Reset() ; 
   Short_t phosPos = 0, emcalPos = 0; 
-
+  Int_t firstPHOSEvent  = kTRUE;
+  Int_t firstEMCALEvent = kTRUE;
+  
   while((event = (AliVEvent*)next())) {
     if (event->GetPHOSCells()) {
-      Int_t ncells = event->GetPHOSCells()->GetNumberOfCells() ;
-      AliVCaloCells * phosCells = event->GetPHOSCells() ; 
-      for (Int_t icell = 0; icell < ncells; icell++) {
-        fPHOSCells->SetCell(phosPos++, phosCells->GetCellNumber(icell), phosCells->GetAmplitude(icell), phosCells->GetTime(icell)) ; 
+      
+      //Create the container
+      if(firstPHOSEvent)
+      {
+        fPHOSCells = event->GetPHOSCells() ;// Just recover the pointer of the type ESD or AOD
+        
+        //Get the arrays and put them in a temporary array
+        Int_t ncells = fPHOSCells->GetNumberOfCells() ;
+        Short_t    *cellNumber = new Short_t   [ncells];  
+        Double32_t *amplitude  = new Double32_t[ncells];   
+        Double32_t *time       = new Double32_t[ncells];        
+        for (Int_t icell = 0; icell < ncells; icell++) {
+          cellNumber[icell] = fPHOSCells->GetCellNumber(icell);
+          amplitude [icell] = fPHOSCells->GetAmplitude(icell); 
+          time      [icell] = fPHOSCells->GetTime(icell) ; 
+        }
+        
+        //Now clean the event and enlarge the arrays
+        fPHOSCells->DeleteContainer();      // Delete the arrays set for the first event we need a larger array
+        fPHOSCells->SetType(AliVCaloCells::kPHOSCell) ; 
+        fPHOSCells->CreateContainer(fNumberOfPHOSCells) ;
+        
+        //Put back the contents of the first event to the enlarged array
+        for (Int_t icell = 0; icell < ncells; icell++) {
+          fPHOSCells->SetCell(phosPos++, cellNumber[icell], amplitude[icell], time[icell]) ; 
+        }
+        
+        delete [] cellNumber ;
+        delete [] amplitude ;
+        delete [] time ;
+        
+        firstPHOSEvent=kFALSE;
       }
+      else // Add the rest of the events
+      {
+        Int_t ncells = event->GetPHOSCells()->GetNumberOfCells() ;
+        AliVCaloCells * phosCells = event->GetPHOSCells() ; 
+        for (Int_t icell = 0; icell < ncells; icell++) {
+          fPHOSCells->SetCell(phosPos++, phosCells->GetCellNumber(icell), phosCells->GetAmplitude(icell), phosCells->GetTime(icell)) ; 
+        }
+      }//not first event
     }
     if (event->GetEMCALCells()) {
-      Int_t ncells = event->GetEMCALCells()->GetNumberOfCells() ;
-      AliVCaloCells * emcalCells = event->GetEMCALCells() ; 
-      for (Int_t icell = 0; icell < ncells; icell++) {
-        fEMCALCells->SetCell(emcalPos++, emcalCells->GetCellNumber(icell), emcalCells->GetAmplitude(icell), emcalCells->GetTime(icell)) ; 
+      
+      //Create the container
+      if(firstEMCALEvent)
+      {
+        fEMCALCells = event->GetEMCALCells() ; // Just recover the pointer of the type ESD or AOD
+        
+        //Get the arrays and put them in a temporary array
+        Int_t ncells = fEMCALCells->GetNumberOfCells() ;
+        Short_t    *cellNumber = new Short_t   [ncells];  
+        Double32_t *amplitude  = new Double32_t[ncells];   
+        Double32_t *time       = new Double32_t[ncells];        
+        for (Int_t icell = 0; icell < ncells; icell++) {
+          cellNumber[icell] = fEMCALCells->GetCellNumber(icell);
+          amplitude [icell] = fEMCALCells->GetAmplitude(icell); 
+          time      [icell] = fEMCALCells->GetTime(icell) ; 
+        }
+        
+        //Now clean the event and enlarge the arrays
+        fEMCALCells->DeleteContainer();        // Delete the arrays set for the first event we need a larger array
+        fEMCALCells->SetType(AliVCaloCells::kEMCALCell) ; 
+        fEMCALCells->CreateContainer(fNumberOfEMCALCells) ;
+        
+        //Put back the contents of the first event to the enlarged array
+        for (Int_t icell = 0; icell < ncells; icell++) {
+          fEMCALCells->SetCell(emcalPos++, cellNumber[icell], amplitude[icell], time[icell]) ; 
+        }        
+
+        delete [] cellNumber ;
+        delete [] amplitude ;
+        delete [] time ;
+        
+        firstEMCALEvent=kFALSE;
       }
+      else // Add the rest of the events
+      {
+        Int_t ncells = event->GetEMCALCells()->GetNumberOfCells() ;
+        AliVCaloCells * emcalCells = event->GetEMCALCells() ; 
+        for (Int_t icell = 0; icell < ncells; icell++) {
+          fEMCALCells->SetCell(emcalPos++, emcalCells->GetCellNumber(icell), emcalCells->GetAmplitude(icell), emcalCells->GetTime(icell)) ; 
+        }
+      }//not first event
     }
   }  
 }
