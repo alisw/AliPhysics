@@ -51,16 +51,21 @@ class AliRsnAnalysisEffSE : public AliRsnVAnalysisTaskSE
   private:
 
     AliRsnAnalysisEffSE& operator=(const AliRsnAnalysisEffSE& /*copy*/) {return *this;}
+    void                 ProcessEvent(AliRsnPairDef *pairDef);
     void                 ProcessEventMC(AliRsnPairDef *pairDef);
     void                 ProcessEventESD(AliRsnPairDef *pairDef);
     void                 FillContainer(AliCFContainer *cont, const TObjArray *stepList, AliRsnPairDef *pd, Int_t firstOutStep);
+    Int_t                FindESDtrack(Int_t label, AliESDEvent *esd, Bool_t rejectFakes);
 
+    Bool_t                fUseITSSA;                // switch to use ITS standalone tracks
+    Bool_t                fUseGlobal;               // switch to use global tracks
     AliRsnCutSet         *fEventCuts;               // event cuts
     TObjArray             fStepListMC;              // list of cut managers for all steps with MC
     TObjArray             fStepListESD;             // list of cut managers for all steps with ESD
     TObjArray             fAxisList;                // list of axes of efficiency plots
     TObjArray             fPairDefList;             // decay channels
     TList                *fContainerList;           // list of CF containers
+    TList                *fOutList;                 // global output list
     TArrayD               fVar;                     // list of variables of the container
     AliRsnMother          fPair;                    // interface to pair
     AliRsnDaughter        fDaughter[2];             // interface to tracks

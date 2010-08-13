@@ -13,7 +13,7 @@
 //
 // The return value is used to know if the configuration was successful
 //
-Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
+Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel, Bool_t perfectPID, Bool_t useITS, Bool_t usePID)
 {
   // for safety, return if no task is passed
   if (!task)
@@ -113,36 +113,98 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   }
   cuts2010->Initialize();
   
-  // -- tracks --> PID
+  // -- tracks --> perfect PID
   AliRsnCutPID *cutPID = new AliRsnCutPID("cutPID", AliPID::kKaon, 0.0, kTRUE);
   
   // cut sets
   AliRsnCutSet *cutSetDaughterCommon = new AliRsnCutSet("commonDaughterCuts", AliRsnCut::kDaughter);
 
   // --> add related cuts
-  //cutSetDaughterCommon->AddCut(cuts2010);
-  //cutSetDaughterCommon->AddCut(cutPID);
+  cutSetDaughterCommon->AddCut(cuts2010);
+  cutSetDaughterCommon->AddCut(cutPID);
 
   // --> define schemes
-  //cutSetDaughterCommon->SetCutScheme("cuts2010&cutPID");
-   
+  if (perfectPID)
+  {
+    if (useITS)
+    {
+      pairPMhist->SetName("pmPerfectITS");
+      cuts2010->SetUseITSSA(kTRUE);
+      cuts2010->SetCheckITS(kFALSE);
+      cuts2010->SetCheckTPC(kFALSE);
+      cuts2010->SetCheckTOF(kFALSE);
+      cutSetDaughterCommon->SetCutScheme("cuts2010&cutPID");
+    }
+    else
+    {
+      pairPMhist->SetName("pmPerfectNoITS");
+      cuts2010->SetUseITSSA(kFALSE);
+      cuts2010->SetCheckITS(kFALSE);
+      cuts2010->SetCheckTPC(kFALSE);
+      cuts2010->SetCheckTOF(kFALSE);
+      cutSetDaughterCommon->SetCutScheme("cuts2010&cutPID");
+    }
+  }
+  else
+  {
+    if (useITS)
+    {
+      if (usePID)
+      {
+        pairPMhist->SetName("pmExpITSpid");
+        cuts2010->SetUseITSSA(kTRUE);
+        cuts2010->SetCheckITS(kTRUE);
+        cuts2010->SetCheckTPC(kTRUE);
+        cuts2010->SetCheckTOF(kTRUE);
+        cutSetDaughterCommon->SetCutScheme("cuts2010");
+      }
+      else
+      {
+        pairPMhist->SetName("pmExpITSnopid");
+        cuts2010->SetUseITSSA(kTRUE);
+        cuts2010->SetCheckITS(kFALSE);
+        cuts2010->SetCheckTPC(kFALSE);
+        cuts2010->SetCheckTOF(kFALSE);
+        cutSetDaughterCommon->SetCutScheme("cuts2010");
+      }
+    }
+    else
+    {
+      if (usePID)
+      {
+        pairPMhist->SetName("pmExpNoITSpid");
+        cuts2010->SetUseITSSA(kFALSE);
+        cuts2010->SetCheckITS(kTRUE);
+        cuts2010->SetCheckTPC(kTRUE);
+        cuts2010->SetCheckTOF(kTRUE);
+        cutSetDaughterCommon->SetCutScheme("cuts2010");
+      }
+      else
+      {
+        pairPMhist->SetName("pmExpNoITSnopid");
+        cuts2010->SetUseITSSA(kFALSE);
+        cuts2010->SetCheckITS(kFALSE);
+        cuts2010->SetCheckTPC(kFALSE);
+        cuts2010->SetCheckTOF(kFALSE);
+        cutSetDaughterCommon->SetCutScheme("cuts2010");
+      }
+    }
+  }
+  
   // cut managers
   // define a proper name for each mult bin, to avoid omonyme output histos
-  //pairPMhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  //pairPMntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
+  pairPMhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
+  pairPMntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
 
   // function axes
-  Double_t ybins[] = {-0.8, -0.7, -0.6, -0.5, 0.5, 0.6, 0.7, 0.8};
-  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass, 50,  0.9,  1.4);
-  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt,      0.0, 20.0, 0.1);
-  AliRsnValue *axisY  = new AliRsnValue("Y" , AliRsnValue::kPairY,       sizeof(ybins)/sizeof(ybins[0]), ybins);
+  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass,        50,  0.9,  1.4);
+  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt,             50,  0.0, 20.0);
 
   // functions for TH1-like output
   AliRsnFunction *fcnPt    = new AliRsnFunction;
   // --> add axes
   fcnPt   ->AddAxis(axisIM);
   fcnPt   ->AddAxis(axisPt);
-  fcnPt   ->AddAxis(axisY);
   
   // add functions to TH1-like output
   pairPMhist->AddFunction(fcnPt);

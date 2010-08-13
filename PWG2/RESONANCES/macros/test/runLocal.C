@@ -26,7 +26,7 @@
 //
 void runLocal
 (
-  Int_t       nReadFiles  = 10,
+  Int_t       nReadFiles  = 1,
   Int_t       nSkipFiles  = 0,
   const char *addTaskName = "AddAnalysisTaskRsnTest.C",
   const char *inputSource = "/home/pulvir/analysis/resonances/LHC2010-7TeV-phi/rsn-package/sim.txt",
@@ -97,8 +97,11 @@ void runLocal
   //gROOT->LoadMacro("AddTaskAnalysisPhi7TeV.C");
   //AddTaskAnalysisPhi7TeV(dataLabel);
   
+  gROOT->LoadMacro("AddTaskAnalysisMonitor.C");
+  AddTaskAnalysisMonitor(dataLabel);
+  
   // add task macro
-  gROOT->ProcessLine(Form(".x %s(\"%s\")", addTaskName, dataLabel));
+  //gROOT->ProcessLine(Form(".x %s(\"%s\")", addTaskName, dataLabel));
 
   // create TChain of input events
   TChain *analysisChain = 0x0;
