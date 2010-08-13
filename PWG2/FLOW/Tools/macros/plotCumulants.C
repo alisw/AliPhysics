@@ -7,8 +7,8 @@ const Int_t nFiles = 1;
 const Int_t nSim = 0;
  
 // Set paths of all output analysis files (first the ones to be represented with mesh (simulations), then the ones to be represented with markers (real data))
-TString files[nFiles] = {"data"};
- 
+TString files[nFiles] = {"data/LHC10bcd"};
+
 // Set analysis types for all output analysis files (can be "ESD","AOD","MC",""):
 TString type[nFiles] = {"ESD"};
  
@@ -22,19 +22,23 @@ Int_t markerStyle[nFiles-nSim] = {kStar};
 Int_t markerColor[nFiles-nSim] = {kBlack};
 
 // Set legend entries:
-TString legendEntry[nFiles] = {"pp example run"};
+TString legendEntry[nFiles] = {"LHC10bcd"};
+ 
+// Set if you want to rebin the histograms into wider multiplicity bins:
+Bool_t rebin = kTRUE;
+Int_t nMergedBins = 10; // set how many original multiplicity bins will be merged into 1 new one
  
 // Set if you whish to plot cumulants versus <reference multiplicity> (by default they are plotted versus # of RPs):
-Bool_t plotCumulantsVsReferenceMultiplicity = kTRUE;
+Bool_t plotCumulantsVsReferenceMultiplicity = kFALSE;
 
 // Set flow values whose theoretical contribution to cumulants will be shown on the plots with the straight coloured lines: 
-Bool_t showTheoreticalLines = kFALSE;
-const Int_t nFlowValues = 2;
-Double_t v[nFlowValues] = {0.1,0.05};
-Int_t lineColor[nFlowValues] = {kRed,kBlue}; 
+Bool_t showTheoreticalLines = kTRUE;
+const Int_t nFlowValues = 1;
+Double_t v[nFlowValues] = {0.1,};
+Int_t lineColor[nFlowValues] = {kRed}; 
 
 // If the statistical error of 6th and 8th order cumulant is huge you may prefer not to show them:
-Bool_t plotOnly2ndAnd4thOrderCumulant = kTRUE;
+Bool_t plotOnly2ndAnd4thOrderCumulant = kFALSE;
 
 // For comparison sake show also GFC results with dotted line:
 Bool_t showAlsoGFCResults = kFALSE;
@@ -47,8 +51,8 @@ TString method[nMethods] = {"QC","GFC"};
 TFile *commonOutputFiles[nFiles] = {NULL}; // common output files "AnalysisResults.root"
 TList *lists[nFiles][nMethods] = {{NULL}}; // lists cobj<method> holding objects with results for each method
 TH1D *cumulantsVsM[nFiles][nMethods][4] = {{{NULL}}}; // histograms with results for cumulants vs multiplicity (4 stands for 4 cumulant orders)
-TLine *lines[nFlowValues][4] = {{NULL}}; // lines denoting theoretical flow contribution to cumulants
-TProfile *refMultVsNoOfRPs = NULL; // <reference multipicity> versus # of RPs
+TGraph *lines[nFlowValues][4] = {{NULL}}; // lines denoting theoretical flow contribution to cumulants
+TProfile *refMultVsNoOfRPs[nFiles] = {NULL}; // <reference multipicity> versus # of RPs
 
 // Ranges for plots:
 Double_t xMin[4]={0.};
@@ -62,7 +66,7 @@ void plotCumulants(Int_t analysisMode=mLocal)
 {
  // analysisMode: if analysisMode = mLocal -> analyze data on your computer using aliroot
  //               if analysisMode = mLocalSource -> analyze data on your computer using root + source files 
-  
+    
  // Load needed libraries:
  LoadLibrariesPC(analysisMode);
  
@@ -115,6 +119,7 @@ void Plot()
    
  TLegend *legend = new TLegend(0.1,0.7,0.33,0.9);
  legend->SetFillStyle(0);
+ //legend->SetHeader("     minClustersTpcRP");
 
  TString qcFlag[4] = {"QC{2}","QC{4}","QC{6}","QC{8}"};
  
@@ -143,7 +148,7 @@ void Plot()
     {
      for(Int_t fv=0;fv<nFlowValues;fv++)
      { 
-      lines[fv][co]->Draw("same");
+      lines[fv][co]->Draw("lsame");
       if(co==0){legend->AddEntry(lines[fv][co],Form("v_{2} = %g",v[fv]),"l");}  
      } 
     }
@@ -180,18 +185,23 @@ void Plot()
  // Plot also <reference multiplicity> vs # of RPs:
  if(plotCumulantsVsReferenceMultiplicity)
  {
-  if(refMultVsNoOfRPs)
+  TCanvas *cRefMultVsNoOfRPs = new TCanvas("cRefMultVsNoOfRPs","#LTreference multiplicity#GT vs # of RPs",1200,600);
+  cRefMultVsNoOfRPs->Divide(nFiles,1);
+  for(Int_t f=0;f<nFiles;f++)
   {
-   TCanvas *cRefMultVsNoOfRPs = new TCanvas("cRefMultVsNoOfRPs","#LTreference multiplicity#GT vs # of RPs");
-   refMultVsNoOfRPs->SetTitle("");
-   refMultVsNoOfRPs->GetXaxis()->SetRangeUser(0,refMultVsNoOfRPs->FindLastBinAbove());
-   refMultVsNoOfRPs->Draw();   
-  } else
-    {
-     cout<<endl;
-     cout<<"WARNING: refMultVsNoOfRPs is NULL in Plot() !!!!"<<endl;
-     cout<<endl;
-    }
+   cRefMultVsNoOfRPs->cd(f+1);
+   if(refMultVsNoOfRPs[f])
+   {
+    refMultVsNoOfRPs[f]->SetTitle(legendEntry[f].Data());
+    refMultVsNoOfRPs[f]->GetXaxis()->SetRangeUser(0,refMultVsNoOfRPs[f]->FindLastBinAbove());
+    refMultVsNoOfRPs[f]->Draw();   
+   } else
+     {
+      cout<<endl;
+      cout<<"WARNING: refMultVsNoOfRPs[f] is NULL in Plot(), f = "<<f<<" !!!!"<<endl;
+      cout<<endl;
+     }
+  }   
  }   
  
 } // end of void Plot()
@@ -201,22 +211,24 @@ void Plot()
 void Lines()
 {
  // Make lines denoting theoretical contribution of flow to cumulants.
-
- for(Int_t co=0;co<4;co++)
- {
-  xMin[co] = 0.;
-  //xMax[co] = 59.5;
- }
  
  for(Int_t fv=0;fv<nFlowValues;fv++)
  {
-  lines[fv][0] = new TLine(xMin[0],pow(v[fv],2),xMax[0]+0.5,pow(v[fv],2));
+  lines[fv][0] = new TGraph(2);
+  lines[fv][0]->SetPoint(0,xMin[0],pow(v[fv],2));  
+  lines[fv][0]->SetPoint(1,xMax[0]+0.5,pow(v[fv],2));  
   lines[fv][0]->SetLineColor(lineColor[fv]);
-  lines[fv][1] = new TLine(xMin[1],-pow(v[fv],4),xMax[1]+0.5,-pow(v[fv],4));
-  lines[fv][1]->SetLineColor(lineColor[fv]);
-  lines[fv][2] = new TLine(xMin[2],4.*pow(v[fv],6),xMax[2]+0.5,4.*pow(v[fv],6));
-  lines[fv][2]->SetLineColor(lineColor[fv]);
-  lines[fv][3] = new TLine(xMin[3],-33.*pow(v[fv],8),xMax[3]+0.5,-33.*pow(v[fv],8));
+  lines[fv][1] = new TGraph(2);
+  lines[fv][1]->SetPoint(0,xMin[1],-pow(v[fv],4));  
+  lines[fv][1]->SetPoint(1,xMax[1]+0.5,-pow(v[fv],4));  
+  lines[fv][1]->SetLineColor(lineColor[fv]); 
+  lines[fv][2] = new TGraph(2);
+  lines[fv][2]->SetPoint(0,xMin[2],4.*pow(v[fv],6));  
+  lines[fv][2]->SetPoint(1,xMax[2]+0.5,4.*pow(v[fv],6));  
+  lines[fv][2]->SetLineColor(lineColor[fv]);  
+  lines[fv][3] = new TGraph(2);
+  lines[fv][3]->SetPoint(0,xMin[3],-33.*pow(v[fv],8));  
+  lines[fv][3]->SetPoint(1,xMax[3]+0.5,-33.*pow(v[fv],8));  
   lines[fv][3]->SetLineColor(lineColor[fv]);
  }
 
@@ -236,9 +248,13 @@ void Print()
   cout<<commonOutputFiles[f]->GetName()<<endl;
   for(Int_t m=0;m<nMethods;m++)
   {
-   AliFlowCommonHist *commonHist = dynamic_cast<AliFlowCommonHist*> (lists[f][m]->FindObject(Form("AliFlowCommonHist%s",method[m].Data())));
-   Double_t nEvts = -1.;
-   Double_t AvM = -1.;
+   AliFlowCommonHist *commonHist = NULL;
+   if(lists[f][m])
+   {
+    commonHist = dynamic_cast<AliFlowCommonHist*> (lists[f][m]->FindObject(Form("AliFlowCommonHist%s",method[m].Data())));
+   }
+   Double_t nEvts = 0.;
+   Double_t AvM = 0.;
    if(commonHist && commonHist->GetHistMultRP())
    {
     nEvts = commonHist->GetHistMultRP()->GetEntries();
@@ -252,7 +268,7 @@ void Print()
    {
     cout<<Form("%s:",method[m].Data())<<"  <M> = "<<AvM<<", N = "<<nEvts<<endl;
    }
-  }
+  } // end of for(Int_t m=0;m<nMethods;m++)
   cout<<endl;
  } // end of for(Int_t f=0;f<nFiles;f++) 
 
@@ -287,7 +303,8 @@ void DetermineMinMax()
    { 
     if(cumulantsVsM[f][m][co]) 
     {
-     for(Int_t b=1;b<=cumulantsVsM[f][m][co]->GetXaxis()->GetNbins();b++)
+     Int_t nBins = cumulantsVsM[f][m][co]->GetXaxis()->GetNbins();
+     for(Int_t b=1;b<=nBins;b++)
      {
       Double_t result = cumulantsVsM[f][m][co]->GetBinContent(b);
       Double_t error = cumulantsVsM[f][m][co]->GetBinError(b);
@@ -297,15 +314,18 @@ void DetermineMinMax()
        if(yMin[co] > result-error){yMin[co] = result-error;} // min value
        if(yMax[co] < result+error) {yMax[co] = result+error;} // max value    
        // x-axis:
-       xMax[co] = b; 
+       xMax[co] = cumulantsVsM[f][m][co]->GetBinLowEdge(b+1); 
       }
      } // end of for(Int_t b=1;b<=cumulantsVsM[f][m][co]->GetXaxis()->GetNbins();b++) 
      // theoretical contributions:
-     for(Int_t fv=0;fv<nFlowValues;fv++)
+     if(showTheoreticalLines)
      {
-      //if(yMin[co] > tfc[fv][0]) {yMin[co] = tfc[fv][0];} // min value
-      //if(yMax[co] < tfc[fv][0]) {yMax[co] = tfc[fv][0];} // max value      
-     } // end of for(Int_t fv=0;fv<nFlowValues;fv++)
+      for(Int_t fv=0;fv<nFlowValues;fv++)
+      {
+       if(yMin[co] > tfc[fv][co]) {yMin[co] = tfc[fv][co];} // min value
+       if(yMax[co] < tfc[fv][co]) {yMax[co] = tfc[fv][co];} // max value      
+      } // end of for(Int_t fv=0;fv<nFlowValues;fv++)
+     } // end of if(showTheoreticalLines) 
     } // end of if(cumulantsVsM[f][m][co])
    } // end of for(Int_t co=0;co<4;co++)
   } // end of for(Int_t m=0;m<nMethods;m++)
@@ -328,7 +348,7 @@ void GetHistograms()
   for(Int_t m=0;m<nMethods;m++)
   { 
    TList *temp = NULL;
-   if(!(strcmp(method[m].Data(),"QC")))
+   if(!(strcmp(method[m].Data(),"QC")) && lists[f][m])
    {
     temp = dynamic_cast<TList*> (lists[f][m]->FindObject("Integrated Flow"));
     if(temp) {temp = dynamic_cast<TList*> (temp->FindObject("Results"));}
@@ -337,14 +357,18 @@ void GetHistograms()
      for(Int_t co=0;co<4;co++)
      {
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fIntFlowQcumulantsVsM, %s",qcFlag[co].Data())));
+      if(rebin)
+      {
+       cumulantsVsM[f][m][co] = Rebin(cumulantsVsM[f][m][co]);
+      }
       if(plotCumulantsVsReferenceMultiplicity)
       {
-       Map(cumulantsVsM[f][m][co]);
+       Map(cumulantsVsM[f][m][co],f);
       }    
      } 
     } 
    } // end of if(!(strcmp(method[m].Data(),"QC")))
-   else if(!(strcmp(method[m].Data(),"GFC")))
+   else if(!(strcmp(method[m].Data(),"GFC")) && lists[f][m])
    {
     temp = dynamic_cast<TList*> (lists[f][m]->FindObject("Reference Flow"));
     if(temp) {temp = dynamic_cast<TList*> (temp->FindObject("Results"));}
@@ -355,10 +379,10 @@ void GetHistograms()
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fReferenceFlowCumulantsVsM, %s",gfcFlag[co].Data())));
       if(plotCumulantsVsReferenceMultiplicity)
       {
-       Map(cumulantsVsM[f][m][co]);
+       Map(cumulantsVsM[f][m][co],f);
       }
-     }
-    } 
+     } // end of for(Int_t co=0;co<4;co++)
+    } // end of if(temp)
    } // end of else if(!(strcmp(method[m].Data(),"QC")))
   } // end of  for(Int_t m=0;m<nMethods;m++)
  } // end of for(Int_t f=0;f<nFiles;f++)
@@ -371,46 +395,119 @@ void GetProfileForRefMultVsNoOfRPs()
 {
  // Get profile holding <reference multiplicity> versus # of RPs.
  
- AliFlowCommonHist *commonHist = dynamic_cast<AliFlowCommonHist*> (lists[0][0]->FindObject("AliFlowCommonHistQC"));
- if(commonHist && commonHist->GetRefMultVsNoOfRPs())
+ for(Int_t f=0;f<nFiles;f++)
  {
-  refMultVsNoOfRPs = commonHist->GetRefMultVsNoOfRPs();
- } else
-   {
-    cout<<endl;
-    cout<<"WARNING: commonHist && commonHist->GetRefMultVsNoOfRPs() is NULL in method"<<endl;
-    cout<<"         GetProfileForRefMultVsNoOfRPs() !!!! But was searching only in the file"<<endl;
-    cout<<"         "<<commonOutputFiles[0]->GetName()<<", though."<<endl;
-    cout<<"         Do you have this file available?"<<endl; 
-    cout<<endl;
-   }
+  AliFlowCommonHist *commonHist = NULL;
+  if(lists[f][0])
+  {
+   commonHist = dynamic_cast<AliFlowCommonHist*> (lists[f][0]->FindObject("AliFlowCommonHistQC"));
+  } else
+    {
+     cout<<endl;
+     cout<<"WARNING: lists[f][0] is NULL in GetProfileForRefMultVsNoOfRPs(), f = "<<f<<" !!!!"<<endl;
+     cout<<endl;    
+    } 
+  if(commonHist && commonHist->GetRefMultVsNoOfRPs())
+  {
+   refMultVsNoOfRPs[f] = commonHist->GetRefMultVsNoOfRPs();
+  } else
+    {
+     cout<<endl;
+     cout<<"WARNING: commonHist && commonHist->GetRefMultVsNoOfRPs() is NULL in GetProfileForRefMultVsNoOfRPs() !!!!"<<endl;
+     cout<<endl;
+    }
+ }   
  
 } // end of void GetProfileForRefMultVsNoOfRPs()
 
 // =====================================================================================
 
-void Map(TH1D *hist)
+void Map(TH1D *hist, Int_t f)
 {
  // Map cumulant versus # of RPs into cumulants versus <reference multiplicity>.
  
  TH1D *temp = NULL;
+ if(!refMultVsNoOfRPs[f])
+ {
+  cout<<endl;
+  cout<<"WARNING: refMultVsNoOfRPs[f] is NULL in Map(...), f = "<<f<<" !!!!"<<endl;
+  cout<<endl;
+ }
+ 
  if(hist)
  {
   temp = (TH1D*) hist->Clone();
-  temp->Reset();
   Int_t nBins = hist->GetNbinsX();
   for(Int_t b=1;b<=nBins;b++)
   {
-   temp->SetBinContent((Int_t)refMultVsNoOfRPs->GetBinContent(b),hist->GetBinContent(b));
-   temp->SetBinError((Int_t)refMultVsNoOfRPs->GetBinContent(b),hist->GetBinError(b));
+   hist->SetBinContent((Int_t)refMultVsNoOfRPs[f]->GetBinContent(b),temp->GetBinContent(b));
+   hist->SetBinError((Int_t)refMultVsNoOfRPs[f]->GetBinContent(b),temp->GetBinError(b));
   }
  }
-  
- hist = temp;
-   
- return;
-  
+     
 } // end of Map()
+
+// =====================================================================================
+
+TH1D* Rebin(TH1D *hist)
+{
+ // Rebin original histograms.
+ 
+ if(nMergedBins == 0)
+ {
+  cout<<endl;
+  cout<<" WARNING: nMergedBins == 0 !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ } 
+ if(!hist)
+ {
+  cout<<endl;
+  cout<<" WARNING: hist is NULL in Rebin() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ } 
+ 
+ Int_t nBinsOld = hist->GetXaxis()->GetNbins(); 
+ if(nBinsOld == 0){cout<<" WARNING: nBinsOld == 0 !!!!"<<endl;exit(0);}
+ Double_t xMinOld = hist->GetXaxis()->GetXmin(); 
+ Double_t xMaxOld = hist->GetXaxis()->GetXmax(); 
+ Double_t binWidthOld = (xMaxOld-xMinOld)/nBinsOld;
+ Int_t nBinsNew = TMath::Floor(nBinsOld/nMergedBins);
+ Double_t xMinNew = xMinOld;
+ Double_t xMaxNew = xMinOld + nBinsNew*nMergedBins*binWidthOld;
+  
+ TH1D *temp = new TH1D("","",nBinsNew,xMinNew,xMaxNew); // rebinned histogram 
+ Int_t binNew = 1;
+ Double_t value = 0.;
+ Double_t error = 0.;
+ Double_t dSum1 = 0.; // sum value_i/(error_i)^2
+ Double_t dSum2 = 0.; // sum 1/(error_i)^2
+ for(Int_t b=1;b<=nBinsOld;b++)
+ {
+  value = hist->GetBinContent(b);  
+  error = hist->GetBinError(b);  
+  if(error>0.)
+  {
+   dSum1+=value/(error*error);
+   dSum2+=1./(error*error);
+  }
+  if(b%nMergedBins == 0)
+  {
+   if(dSum2>0.)
+   {
+    temp->SetBinContent(binNew,dSum1/dSum2);
+    temp->SetBinError(binNew,pow(1./dSum2,0.5));
+   }
+   binNew++;
+   dSum1 = 0.;
+   dSum2 = 0.;
+  } // end of if(b%nMergedBins == 0)
+ } // end of for(Int_t b=1;b<=nBinsOld;b++)
+  
+ return temp;
+      
+} // end of Rebin()
 
 // =====================================================================================
 
@@ -433,12 +530,10 @@ TH1D* StyleHist(TString yAxisTitle, Int_t co)
 {
  // Style histogram.
  
- TH1D *styleHist = new TH1D("","",10000,0,10000); // to be improved (hardwired 10000)
- // x-axis:
- styleHist->GetXaxis()->SetRangeUser(xMin[co],xMax[co]);
+ TH1D *styleHist = new TH1D(Form("%d",co),"",(Int_t)xMax[co],0,xMax[co]);
  // y-axis:
  styleHist->GetYaxis()->SetRangeUser(yMin[co],yMax[co]);
-   
+ 
  if(plotCumulantsVsReferenceMultiplicity)
  {
   styleHist->GetXaxis()->SetTitle("#LTreference multiplicity#GT");     
@@ -520,6 +615,7 @@ void GlobalSettings()
  
  gROOT->SetStyle("Plain"); // default color is white instead of gray
  gStyle->SetOptStat(0); // remove stat. box from all histos
+ TGaxis::SetMaxDigits(4); 
  
 } // end of void GlobalSettings()
 
@@ -550,9 +646,18 @@ void GetLists()
    if(dirFile[f][i])
    {
     dirFile[f][i]->GetObject(listName[f][i].Data(),lists[f][i]); 
+    if(!lists[f][i])
+    {
+     cout<<endl;
+     cout<<" WARNING: Couldn't find a list "<<listName[f][i].Data()<<" in "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;
+     cout<<"          Did you use method "<<method[i].Data()<<" in the analysis which produced this file?"<<endl;
+     cout<<endl;
+    }
    } else 
      {
-      cout<<"WARNING: Couldn't find a file "<<fileName[f][i].Data()<<".root in "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;exit(0);
+      cout<<endl;
+      cout<<" WARNING: Couldn't find a file "<<fileName[f][i].Data()<<".root in "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;exit(0);
+      cout<<endl;
      }
   } // end of for(Int_t i=0;i<nMethods;i++)   
  } // end of for(Int_t f=0;f<nFiles;f++)
