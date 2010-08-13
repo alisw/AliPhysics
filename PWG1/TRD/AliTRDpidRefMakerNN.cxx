@@ -69,7 +69,16 @@ ClassImp(AliTRDpidRefMakerNN)
   //
   // Default constructor
   //
-  SetNameTitle("TRDrefMakerNN", "PID(NN) Reference Maker");
+  SetNameTitle("PIDrefMakerNN", "PID(NN) Reference Maker");
+
+  memset(fTrain, 0, AliTRDCalPID::kNMom*sizeof(TEventList*));
+  memset(fTest, 0, AliTRDCalPID::kNMom*sizeof(TEventList*));
+  memset(fTrainData, 0, AliTRDCalPID::kNMom*sizeof(TTree*));
+
+  SetAbundance(.67);
+  SetScaledEdx(Float_t(AliTRDCalPIDNN::kMLPscale));
+  TDatime datime;
+  fDate = datime.GetDate();
 }
 
 //________________________________________________________________________
@@ -136,22 +145,28 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
   // Draw result to the screen
   // Called once at the end of the query
 
-  TFile *fCalib = TFile::Open(Form("TRD.CalibPIDrefMaker.root"));
+  TFile *fCalib = TFile::Open(Form("AnalysisResults.root"));
   if (!fCalib) {
     AliError("Calibration file not available");
     return kFALSE;
   }
-  fData = (TTree*)fCalib->Get("refMakerNN");
+  TDirectoryFile *dCalib = (TDirectoryFile*)fCalib->Get("TRD.CalibPIDrefMaker");
+  if (!dCalib) {
+    AliError("Calibration directory not available");
+    return kFALSE;
+  }
+  fData = (TTree*)dCalib->Get("RefPID");
   if (!fData) {
     AliError("Calibration data not available");
     return kFALSE;
   }
   TObjArray *o = NULL;
-  if(!(o = (TObjArray*)fCalib->Get("MonitorNN"))) {
+  if(!(o = (TObjArray*)dCalib->Get("MonitorNN"))) {
     AliWarning("Missing monitoring container.");
     return kFALSE;
   }
   fContainer = (TObjArray*)o->Clone("monitor");
+
 
   
   if (!fRef) {
@@ -161,42 +176,7 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
   else AliDebug(2, "file available");
 
   if (!fRef) {
-    MakeTrainTestTrees();
-  
-    // Convert the CaliPIDrefMaker tree to 11 (different momentum bin) trees for NN training
-
-    LinkPIDdata();
-    for(Int_t ip=0; ip < AliTRDCalPID::kNMom; ip++){ 
-      for(Int_t is=0; is < AliPID::kSPECIES; is++) {
-	memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
-	fPID[is] = 1;
-	Int_t n(0); // index of data
-	for(Int_t itrk = 0; itrk<fData->GetEntries() && n<kMaxStat; itrk++){
-	  if(!(fData->GetEntry(itrk))) continue;
-	  if(fPIDdataArray->GetPID()!=is) continue;
-    fNtrkl = fPIDdataArray->GetNtracklets();
-	  for(Int_t ily=fPIDdataArray->GetNtracklets(); ily--;){
-	    fLy = ily;
-	    if(fPIDdataArray->GetData(ily)->Momentum()!= ip) continue;
-	    memset(fdEdx, 0, AliTRDpidUtil::kNNslices*sizeof(Float_t));
-	    for(Int_t islice=AliTRDCalPID::kNSlicesNN; islice--;){
-	      fdEdx[islice]+=fPIDdataArray->GetData(ily)->fdEdx[islice];
-	      fdEdx[islice]/=fScale;
-	    }
-	    fTrainData[ip] -> Fill();
-	    n++;
-	  }
-	}
-	AliDebug(2, Form("%d %d %d", ip, is, n));
-      }
-    }
-
-  
-    fRef -> cd();
-    for(Int_t ip = 0; ip < AliTRDCalPID::kNMom; ip++){
-      fTrainData[ip] -> Write();
-    }
-
+    MakeTrainingSample();
   }
   else AliDebug(2, "file available");
 
@@ -237,6 +217,76 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
   return kTRUE; // testing protection
 }
 
+
+//________________________________________________________________________
+Bool_t AliTRDpidRefMakerNN::MakeTrainingSample() 
+{
+
+  TFile *fCalib = TFile::Open(Form("AnalysisResults.root"));
+  if (!fCalib) {
+    AliError("Calibration file not available");
+    return kFALSE;
+  }
+  TDirectoryFile *dCalib = (TDirectoryFile*)fCalib->Get("TRD.CalibPIDrefMaker");
+  if (!dCalib) {
+    AliError("Calibration directory not available");
+    return kFALSE;
+  }
+  fData = (TTree*)dCalib->Get("RefPID");
+  if (!fData) {
+    AliError("Calibration data not available");
+    return kFALSE;
+  }
+  TObjArray *o = NULL;
+  if(!(o = (TObjArray*)dCalib->Get("MonitorNN"))) {
+    AliWarning("Missing monitoring container.");
+    return kFALSE;
+  }
+  fContainer = (TObjArray*)o->Clone("monitor");
+
+  if (!fRef) {
+    MakeTrainTestTrees();
+  
+    // Convert the CaliPIDrefMaker tree to 11 (different momentum bin) trees for NN training
+
+    LinkPIDdata();
+    for(Int_t ip=0; ip < AliTRDCalPID::kNMom; ip++){ 
+      for(Int_t is=0; is < AliPID::kSPECIES; is++) {
+	memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
+	fPID[is] = 1;
+	Int_t n(0); // index of data
+	for(Int_t itrk = 0; itrk<fData->GetEntries() && n<kMaxStat; itrk++){
+	  if(!(fData->GetEntry(itrk))) continue;
+	  if(fPIDdataArray->GetPID()!=is) continue;
+    fNtrkl = fPIDdataArray->GetNtracklets();
+	  for(Int_t ily=fPIDdataArray->GetNtracklets(); ily--;){
+	    fLy = ily;
+	    if(fPIDdataArray->GetData(ily)->Momentum()!= ip) continue;
+	    memset(fdEdx, 0, AliTRDpidUtil::kNNslices*sizeof(Float_t));
+	    for(Int_t islice=AliTRDCalPID::kNSlicesNN; islice--;){
+	      fdEdx[islice]+=fPIDdataArray->GetData(ily)->fdEdx[islice];
+	      fdEdx[islice]/=fScale;
+	    }
+	    fTrainData[ip] -> Fill();
+	    n++;
+	  }
+	}
+	AliDebug(2, Form("%d %d %d", ip, is, n));
+      }
+    }
+
+  
+    fRef -> cd();
+    for(Int_t ip = 0; ip < AliTRDCalPID::kNMom; ip++){
+      fTrainData[ip] -> Write();
+    }
+    return kTRUE;
+
+  }
+  else AliWarning("Training file available. No conversion done!");
+  return kFALSE;
+
+}
 
 //________________________________________________________________________
 void AliTRDpidRefMakerNN::MakeTrainingLists(Int_t mombin) 
@@ -342,7 +392,7 @@ void AliTRDpidRefMakerNN::MakeRefs(Int_t mombin)
   //
   
   
-  if (!fTrainData[mombin]) LoadFile(Form("TRD.Calib%s.root", GetName()));
+  if (!fTrainData[mombin]) LoadFile(Form("TRD.CalibPIDrefMakerNN.root"));
 
   if (!fTrainData[mombin]) {
     AliError("Tree for training list not available");
@@ -407,7 +457,7 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
   // train the neural networks
   //
   
-  if (!fTrainData[mombin]) LoadFile(Form("TRD.Calib%s.root", GetName()));
+  if (!fTrainData[mombin]) LoadFile(Form("TRD.CalibPIDrefMakerNN.root"));
   if (!fTrainData[mombin]) {
     AliError("Tree for training list not available");
     return;

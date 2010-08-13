@@ -41,8 +41,8 @@ AliTRDpidRefMaker::AliTRDpidRefMaker()
   ,fData(NULL)
   ,fInfo(NULL)
   ,fPIDdataArray(NULL)
-  ,fRefPID(kMC)
-  ,fRefP(kMC)
+  ,fRefPID(kV0)
+  ,fRefP(kRec)
   ,fFreq(1.)
   ,fP(-1.)
   ,fPthreshold(0.)
@@ -61,8 +61,8 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
   ,fData(NULL)
   ,fInfo(NULL)
   ,fPIDdataArray(NULL)
-  ,fRefPID(kMC)
-  ,fRefP(kMC)
+  ,fRefPID(kV0)
+  ,fRefP(kRec)
   ,fFreq(1.)
   ,fP(-1.)
   ,fPthreshold(0.5)
@@ -173,7 +173,7 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
     if(!(status&AliESDtrack::kTRDpid)) continue;
 
     // fill the pid information
-    SetRefPID(fRefPID, track, fPID);
+    SetRefPID(fRefPID, track, infoESD, fPID);
     // get particle type
     Int_t idx(TMath::LocMax(AliPID::kSPECIES, fPID)); 
     if(fPID[idx]<1.e-5) continue;
@@ -188,42 +188,19 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
 
       // fill P & dE/dx information
-      if(HasFriends()){ // from TRD track
-        if(!trackTRD) continue;
-        AliTRDseedV1 *trackletTRD(NULL);
-        trackTRD -> SetReconstructor(fReconstructor);
-        if(!(trackletTRD = trackTRD -> GetTracklet(ily))) continue;
-        if(!CheckQuality(trackletTRD)) continue;
-        if(!CookdEdx(trackletTRD)) continue;
-
-        // fill momentum information
-        fP = 0.;
-        switch(fRefP){
-        case kMC:
-          if(!(ref = track->GetTrackRef(trackletTRD))) continue;
-          fP = ref->P();
-          break;
-        case kRec:
-          fP = trackletTRD->GetMomentum();
-          break;
-        default: continue;
-        }
-      } else { // from ESD track
-        // fill momentum information
-        switch(fRefP){
-        case kMC:
-          if(!(ref = track->GetTrackRef(ily))) continue;
-          fP = ref->P();
-          break;
-        case kRec:
-          fP = p[ily];
-          break;
-        default: continue;
-        } 
-        Double32_t *it = &infoPID[ily*AliTRDCalPID::kNSlicesNN];
-        for(Int_t is=AliTRDCalPID::kNSlicesNN; is--; it++) fdEdx[is] = (*it);
+      switch(fRefP){
+      case kMC:
+	if(!(ref = track->GetTrackRef(ily))) continue;
+	fP = ref->P();
+	break;
+      case kRec:
+	fP = p[ily];
+	break;
+      default: continue;
       }
-
+      Double32_t *it = &infoPID[ily*AliTRDCalPID::kNSlicesNN];
+      for(Int_t is=AliTRDCalPID::kNSlicesNN; is--; it++) fdEdx[is] = (*it);
+      
       // momentum threshold
       if(fP < fPthreshold) continue;
 
@@ -261,7 +238,7 @@ void AliTRDpidRefMaker::LinkPIDdata()
 }
 
 //________________________________________________________________________
-void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo *track, Float_t *pid) 
+void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo *track, const AliTRDtrackInfo::AliESDinfo *infoESD, Float_t *pid) 
 {
 // Fill the reference PID values "pid" from "source" object
 // according to the option "select". Possible options are
@@ -273,18 +250,14 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo 
     AliError("No trackInfo found");
     return;
   }
-  memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
+  memset(fPID, 0, AliPID::kSPECIES*sizeof(Int_t));
   switch(select){ 
   case kV0:
     {
-      //Get V0 PID decisions from the AliTRDv0Info for all particle species (implemented so far : electrons from conversions, pions from K0s and protons from Lambdas) :
-      AliTRDv0Info *v0(NULL);
-      for(Int_t iv(0); iv<fV0s->GetEntriesFast(); iv++){
-        if(!(v0 = (AliTRDv0Info*)fV0s->At(iv))) continue;
-        if(!v0->HasTrack(track)) continue;
-        for(Int_t is=AliPID::kSPECIES; is--;) fPID[is] = v0->GetPID(is, track);
-        break;
-      }
+      //Get V0 PID decisions for all particle species (implemented so far : electrons from conversions, pions from K0s and protons from Lambdas) :
+      if(!infoESD->HasV0()) return;
+      const Int_t *v0pid=infoESD->GetV0pid();
+      for(Int_t is=AliPID::kSPECIES; is--;) fPID[is] = (Float_t)v0pid[is];
     }
     break;
   case kMC:

@@ -58,8 +58,9 @@ public:
   Bool_t  LoadFile(const Char_t *InFileNN);
   void    SetScaledEdx(Float_t s) {fScale = s;};
 
-  void    MakeTrainingLists(Int_t mombin = 0);                                 // build the training and the test list
-  void    MonitorTraining(Int_t mombin);                       // monitor training process
+  Bool_t  MakeTrainingSample();                     // convert AnalysisResults.root to training file
+  void    MakeTrainingLists(Int_t mombin = 0);      // build the training and the test list
+  void    MonitorTraining(Int_t mombin);            // monitor training process
 
 protected:
   void MakeRefs(Int_t mombin);                         // train the neural networks for a given momentum bin
