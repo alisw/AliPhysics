@@ -113,8 +113,8 @@ class AliMultiplicity : public TObject {
                              // with a tracklet on SPD layer 2
   Int_t *fLabels;            //[fNtracks] array with labels of cluster in L1 used for tracklet
   Int_t *fLabelsL2;          //[fNtracks] array with labels of cluster in L2 used for tracklet
-  UInt_t* fUsedClusS;        //[fNtracks] id+1 of the tracks using cluster, coded as (TPC/ITS+ITS_SA)+(ITS_SA_PURE<<16)
-  ULong64_t* fUsedClusT;     //[fNsingle] id+1 of the tracks using clusters, coded as (TPC/ITS+ITS_SA)+(ITS_SA_PURE<<16) for SPD1 and SPD2 in low and high parts
+  UInt_t* fUsedClusS;        //[fNsingle] id+1 of the tracks using cluster, coded as (TPC/ITS+ITS_SA)+(ITS_SA_PURE<<16)
+  ULong64_t* fUsedClusT;     //[fNtracks] id+1 of the tracks using clusters, coded as (TPC/ITS+ITS_SA)+(ITS_SA_PURE<<16) for SPD1 and SPD2 in low and high parts
   Double32_t *fTh;           //[fNtracks] array with theta values
   Double32_t *fPhi;          //[fNtracks] array with phi values
   Double32_t *fDeltTh;       //[fNtracks] array with delta theta values
@@ -127,7 +127,7 @@ class AliMultiplicity : public TObject {
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
   TBits fClusterFiredChips;  // Map of fired chips (= at least one cluster)
 
-  ClassDef(AliMultiplicity,16);
+  ClassDef(AliMultiplicity,17);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const

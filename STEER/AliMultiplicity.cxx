@@ -442,7 +442,7 @@ void AliMultiplicity::Print(Option_t *opt) const
     for (int i=0;i<fNtracks;i++) {
       GetTrackletTrackIDs(i,0,t0spd1,t0spd2);
       GetTrackletTrackIDs(i,1,t1spd1,t1spd2);
-      printf("T#%3d| Eta:%+5.2f Th:%+6.3f Phi:%+6.3f DTh:%+6.3f DPhi:%+6.3f L1:%4d L2:%4d U:L1[%5d/%5d] L2[%5d/%5d]\n",
+      printf("T#%3d| Eta:%+5.2f Th:%+6.3f Phi:%+6.3f DTh:%+6.3f DPhi:%+6.3f L1:%6d L2:%6d U:L1[%5d/%5d] L2[%5d/%5d]\n",
 	     i,GetEta(i),fTh[i],fPhi[i],fDeltTh[i],fDeltPhi[i],fLabels[i],fLabelsL2[i],t0spd1,t1spd1,t0spd2,t1spd2);
     }
   }
@@ -450,7 +450,7 @@ void AliMultiplicity::Print(Option_t *opt) const
     for (int i=0;i<fNsingle;i++) {
       GetSingleClusterTrackID(i,0,t0spd1);
       GetSingleClusterTrackID(i,1,t1spd1);
-      printf("S#%3d| Th:%+6.3f Phi:%+6.3f L:%4d U:[%5d/%5d]\n",
+      printf("S#%3d| Th:%+6.3f Phi:%+6.3f L:%6d U:[%5d/%5d]\n",
 	     i,fThsingle[i],fPhisingle[i],fLabelssingle[i], t0spd1,t1spd1);
     }
   }

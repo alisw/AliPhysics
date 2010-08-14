@@ -2027,15 +2027,19 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
           cvtxer.V0sTracks2CascadeVertices(fesd);
        }
     }
- 
+
+    // write ESD
+    if (fCleanESD) CleanESD(fesd);
+    // 
     // RS run updated trackleter: since we want to mark the clusters used by tracks and also mark the 
     // tracks interpreted as primary, this step should be done in the very end, when full 
     // ESD info is available (particulalry, V0s)
     // vertex finder
-    if (fRunMultFinder) RunMultFinder(fesd);
-
-    // write ESD
-    if (fCleanESD) CleanESD(fesd);
+    if (fRunMultFinder) {
+      if (!RunMultFinder(fesd)) {
+	if (fStopOnError) {CleanUp(); return kFALSE;}
+      }
+    }
 
   if (fRunQA && IsInTasks(AliQAv1::kESDS)) {
     AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
