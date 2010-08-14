@@ -132,16 +132,21 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    
    task->SetFilterMask(filterMask);
   
-   // set default parameter 
+   // Set default parameters 
+   // Cut selection 
    task->SetTrackCuts();       // default : pt > 0.150 GeV, |eta|<0.9, full phi acc
    task->SetJetCuts();         // default: jet pt > 5 GeV, |eta|<0.5, full phi acc
-   task->SetDiJetCuts();       // default: to be defined
+   task->SetDiJetCuts();       // default: type of cut = 1 (cut in deltaPhi), deltaPhi = 0., cdf = 0.5, fraction of pt = 0.6
+   task->SetKindSlices();      // default: kindSlice = 1 (inv mass)
    task->SetFFRadius();        // default: R = 0.4
-   
    task->SetHighPtThreshold(); // default: pt > 5 Gev
+   // Define histo bins
    task->SetFFHistoBins();
    task->SetQAJetHistoBins();
    task->SetQATrackHistoBins();
+   task->SetIJHistoBins();
+   task->SetDiJetHistoBins();
+   task->SetQADiJetHistoBins();
 
    mgr->AddTask(task);
 
