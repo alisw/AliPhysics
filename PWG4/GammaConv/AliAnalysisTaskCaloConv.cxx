@@ -299,7 +299,7 @@ void AliAnalysisTaskCaloConv::ConnectInputData(Option_t *option){
 //____________________________________________________________
 void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
 {
-  gDirectory->Print() ;
+  if(fDebug)gDirectory->Print() ;
   // Create the output container
   if(fOutputContainer != NULL){
     delete fOutputContainer;
