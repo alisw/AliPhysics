@@ -703,14 +703,13 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	   if(timeCorr[offlineCh]>-1024 + 1.e-6){
 			Float_t nphe = adc[offlineCh]*kChargePerADC/(fCalibData->GetGain(offlineCh)*TMath::Qe());
 			Float_t timeErr = 0;
-			if (nphe) timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
+			if (nphe>1.e-6) timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
 				      p1*p1/nphe+
 				      p2*p2*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*(fTimeSlewing->GetParameter(0)*fTimeSlewing->GetParameter(1))*
 				      TMath::Power(adc[offlineCh]/fCalibData->GetDiscriThr(offlineCh),2.*(fTimeSlewing->GetParameter(1)-1.))/
 				      (fCalibData->GetDiscriThr(offlineCh)*fCalibData->GetDiscriThr(offlineCh)));
 
-
-			if (timeErr) {
+			if (timeErr>1.e-6) {
 			  if (offlineCh<32) {
 			    itimeV0C++;
 			    timeV0C += timeCorr[offlineCh]/(timeErr*timeErr);
@@ -749,9 +748,9 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
        }// END of Loop over channels
 
-		if(weightV0A>0) timeV0A /= weightV0A; 
+		if(weightV0A>1.e-6) timeV0A /= weightV0A; 
 		else timeV0A = -1024.;
-		if(weightV0C>0) timeV0C /= weightV0C;
+		if(weightV0C>1.e-6) timeV0C /= weightV0C;
 		else timeV0C = -1024.;
 		if(timeV0A<-1024.+1.e-6 || timeV0C<-1024.+1.e-6) diffTime = -1024.;
 		else diffTime = timeV0A - timeV0C;
