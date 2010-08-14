@@ -120,6 +120,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     int iMaxPart=5;
     TString mergerInput;
     TString sinkClusterInput;
+    TString dEdXInput;
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
       TString trackerInput;
       for (int part=iMinPart; part<=iMaxPart; part++) {
@@ -157,6 +158,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	}
 	if (trackerInput.Length()>0) trackerInput+=" ";
 	trackerInput+=cf;
+	if (dEdXInput.Length()>0) dEdXInput+=" ";
+	dEdXInput+=cf;
 	if (sinkClusterInput.Length()>0) sinkClusterInput+=" ";
 	sinkClusterInput+=cf;
       }
@@ -172,6 +175,11 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // GlobalMerger component
     handler->CreateConfiguration("TPC-globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
+
+    if (dEdXInput.Length()>0) dEdXInput+=" ";
+    dEdXInput+="TPC-globalmerger";
+
+    handler->CreateConfiguration("TPC-dEdx","TPCdEdx",dEdXInput.Data(),"");
 
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
