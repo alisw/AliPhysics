@@ -339,7 +339,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 			      Float_t cdfCut = 0.5, Float_t ptFractionCut = 0.6)
   {fDiJetCut = cutType; fDiJetDeltaPhiCut = deltaPhiCut;  
     fDiJetCDFCut = cdfCut; fDiJetPtFractionCut = ptFractionCut;}
-  virtual void   SetKindSlices(Int_t slice) {fDiJetKindBins = slice;}
+  virtual void   SetKindSlices(Int_t slice = 1) {fDiJetKindBins = slice;}
 
   virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }
 
