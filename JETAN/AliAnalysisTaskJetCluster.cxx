@@ -476,7 +476,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   }
   
   Bool_t selectEvent =  false;
-  Bool_t physicsSelection = true; // fInputHandler->IsEventSelected();
+  Bool_t physicsSelection = (fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
 
   if(fAOD){
     const AliAODVertex *vtxAOD = fAOD->GetPrimaryVertex();
