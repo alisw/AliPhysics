@@ -1025,8 +1025,10 @@ void AliITSMultReconstructor::FlagTrackClusters(Int_t id)
 {
   // RS: flag the SPD clusters of the track if it is useful for the multiplicity estimation
   //
-  const UShort_t kMaxTrID = 0xffff - 1; // max possible track id
-  if (id>kMaxTrID) return;
+  const UInt_t   kMaskL = 0x0000ffff;
+  const UInt_t   kMaskH = 0xffff0000;
+  const UInt_t   kMaxTrID = kMaskL - 1; // max possible track id
+  if (UInt_t(id)>kMaxTrID) return;
   const AliESDtrack* track = fESDEvent->GetTrack(id);
   Int_t idx[12];
   if ( track->GetITSclusters(idx)<3 ) return; // at least 3 clusters must be used in the fit
@@ -1041,6 +1043,17 @@ void AliITSMultReconstructor::FlagTrackClusters(Int_t id)
     int layID= (idx[i] & 0xf0000000) >> 28; 
     if (layID>1) continue; // SPD only
     int clID = (idx[i] & 0x0fffffff);
+    //
+    if ( track->IsOn(AliESDtrack::kITSpureSA) ) {
+      if (uClus[layID][clID]&kMaskH) {
+	AliWarning(Form("Tracks %5d and %5d share cluster %6d of lr%d",id,int(uClus[layID][clID]>>16)-1,clID,layID));
+	uClus[layID][clID] &= kMaskL;
+      }
+    }
+    else if (uClus[layID][clID]&kMaskL) {
+      AliWarning(Form("Tracks %5d and %5d share cluster %6d of lr%d",id,int(uClus[layID][clID]&kMaskL)-1,clID,layID));
+      uClus[layID][clID] &= kMaskH;
+    }
     uClus[layID][clID] |= mark;
   }
   //
