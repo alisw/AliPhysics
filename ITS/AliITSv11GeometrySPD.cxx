@@ -2483,7 +2483,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     const Double_t kConeTubeRmax    =   3.0  *fgkmm;
 
     const Double_t kHorizTubeLen    = 150.0  *fgkmm;
-    const Double_t kYtoHalfStave    =   7.3  *fgkmm;
+    const Double_t kYtoHalfStave    =   9.5  *fgkmm;
 
     const Double_t kWaterCoolRMax   =   2.6  *fgkmm;
     const Double_t kWaterCoolThick  =   0.04 *fgkmm;
