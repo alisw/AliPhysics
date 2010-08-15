@@ -235,6 +235,52 @@ void AliRDHFCutsDstoKKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   return;
 }
 //---------------------------------------------------------------------------
+Int_t AliRDHFCutsDstoKKpi::IsSelectedPID(AliAODRecoDecayHF *rd) {
+  // PID selection
+  // return values: 0->NOT OK, 1->OK as KKpi, 2->OK as piKK, 3->OK as both 
+  Int_t retCode=3;
+  Bool_t okKKpi=kTRUE;
+  Bool_t okpiKK=kTRUE;
+  if(!fUsePID || !rd) return retCode;
+  if(!fPidHF){
+    AliWarning("AliAODPidHF not created!");
+    return retCode;
+  }
+  Int_t nKaons=0;
+  Int_t nNotKaons=0;
+  Int_t sign= rd->GetCharge(); 
+  for(Int_t iDaught=0; iDaught<3; iDaught++){
+    AliAODTrack *track=(AliAODTrack*)rd->GetDaughter(iDaught);
+    Int_t isPion=fPidHF->MakeRawPid(track,AliPID::kPion);
+    Int_t isKaon=fPidHF->MakeRawPid(track,AliPID::kKaon);
+    Int_t isProton=fPidHF->MakeRawPid(track,AliPID::kProton);
+    
+    if(isProton>0 &&  isKaon<0  && isPion<0) return 0;
+    if(sign!=track->Charge()){// must be kaon
+      if(isKaon<0) return 0;
+    }
+    if(isKaon>0 && isPion<0) nKaons++;
+    if(isKaon<0) nNotKaons++;
+    if(iDaught==0){
+      if(isKaon<0) okKKpi=kFALSE;
+      if(isPion<0) okpiKK=kFALSE;
+    }
+    else if(iDaught==2){
+      if(isKaon<0) okpiKK=kFALSE;
+      if(isPion<0) okKKpi=kFALSE;
+    }
+  }
+  
+  if(nKaons>2)return 0;
+  if(nNotKaons>1) return 0;
+  
+  if(!okKKpi) retCode-=1;
+  if(!okpiKK) retCode-=2;
+
+  return retCode;
+}
+
+//---------------------------------------------------------------------------
 Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel) {
   //
   // Apply selection
@@ -261,6 +307,17 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel) {
 
 
 
+  // PID selection
+  Int_t returnvaluePID=3;  
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kCandidate ||     
+     selectionLevel==AliRDHFCuts::kPID) {
+    returnvaluePID = IsSelectedPID(d);
+  }
+  if(returnvaluePID==0)return 0;
+  Bool_t okPidDsKKpi=returnvaluePID&1;
+  Bool_t okPidDspiKK=returnvaluePID&2;
+ 
   Int_t returnvalue=1;
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -281,6 +338,8 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel) {
     if(TMath::Abs(mDsKKpi-mDsPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okDsKKpi = 0;
     if(TMath::Abs(mDspiKK-mDsPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okDspiKK = 0;
     if(!okDsKKpi && !okDspiKK) return 0;
+    if(okPidDsKKpi && !okDsKKpi)  return 0;
+    if(okPidDspiKK && !okDspiKK) return 0;
 
     //single track
     if(TMath::Abs(d->PtProng(1)) < fCutsRD[GetGlobalIndex(1,ptbin)] || 
