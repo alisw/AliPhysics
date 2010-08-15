@@ -26,6 +26,7 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
 
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
+  virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
   
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(11,iPtBin)] : 1.e6);}
