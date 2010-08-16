@@ -177,7 +177,7 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
     // get particle type
     Int_t idx(TMath::LocMax(AliPID::kSPECIES, fPID)); 
     if(fPID[idx]<1.e-5) continue;
-
+    
     // prepare PID data array
     if(!fPIDdataArray){ 
       fPIDdataArray = new AliTRDpidInfo();
@@ -250,14 +250,14 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo 
     AliError("No trackInfo found");
     return;
   }
-  memset(fPID, 0, AliPID::kSPECIES*sizeof(Int_t));
+  memset(pid, 0, AliPID::kSPECIES*sizeof(Float_t));
   switch(select){ 
   case kV0:
     {
       //Get V0 PID decisions for all particle species (implemented so far : electrons from conversions, pions from K0s and protons from Lambdas) :
       if(!infoESD->HasV0()) return;
       const Int_t *v0pid=infoESD->GetV0pid();
-      for(Int_t is=AliPID::kSPECIES; is--;) fPID[is] = (Float_t)v0pid[is];
+      for(Int_t is=AliPID::kSPECIES; is--;){ pid[is] = (Float_t)v0pid[is];}
     }
     break;
   case kMC:
@@ -268,23 +268,23 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo 
     switch(track->GetPDG()){
     case kElectron:
     case kPositron:
-      fPID[AliPID::kElectron] = 1.;
+      pid[AliPID::kElectron] = 1.;
       break;
     case kMuonPlus:
     case kMuonMinus:
-      fPID[AliPID::kMuon] = 1.;
+      pid[AliPID::kMuon] = 1.;
       break;
     case kPiPlus:
     case kPiMinus:
-      fPID[AliPID::kPion] = 1.;
+      pid[AliPID::kPion] = 1.;
       break;
     case kKPlus:
     case kKMinus:
-      fPID[AliPID::kKaon] = 1.;
+      pid[AliPID::kKaon] = 1.;
       break;
     case kProton:
     case kProtonBar:
-      fPID[AliPID::kProton] = 1.;
+      pid[AliPID::kProton] = 1.;
       break;
     }
     break;
@@ -305,11 +305,11 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo 
     return;
   }
   AliDebug(4, Form("Ref PID : %s[%5.2f] %s[%5.2f] %s[%5.2f] %s[%5.2f] %s[%5.2f]"
-    ,AliPID::ParticleShortName(0), 1.e2*fPID[0]
-    ,AliPID::ParticleShortName(1), 1.e2*fPID[1]
-    ,AliPID::ParticleShortName(2), 1.e2*fPID[2]
-    ,AliPID::ParticleShortName(3), 1.e2*fPID[3]
-    ,AliPID::ParticleShortName(4), 1.e2*fPID[4]
+    ,AliPID::ParticleShortName(0), 1.e2*pid[0]
+    ,AliPID::ParticleShortName(1), 1.e2*pid[1]
+    ,AliPID::ParticleShortName(2), 1.e2*pid[2]
+    ,AliPID::ParticleShortName(3), 1.e2*pid[3]
+    ,AliPID::ParticleShortName(4), 1.e2*pid[4]
   ));
 }
 
