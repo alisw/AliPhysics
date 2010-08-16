@@ -657,11 +657,11 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   
   Int_t det    = 0;
   while ((det = fRawStream->NextChamber(fDigitsManager,fTrackletContainer)) >= 0){
-    if (fDigitsManager->GetIndexes(det)->HasEntry())
+    if (fDigitsManager->GetIndexes(det)->HasEntry()){
       MakeClusters(det);
-
-    fDigitsManager->ClearArrays(det);
-
+      fDigitsManager->ClearArrays(det);
+    }
+    
     if (!fReconstructor->IsWritingTracklets()) continue;
     if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
   }
