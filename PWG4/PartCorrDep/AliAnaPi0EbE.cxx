@@ -471,7 +471,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
   {
 	  GetReader()->GetVertex(vertex);
-	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+	  //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
   }
 	
   //Select the Calorimeter of the photon
@@ -488,12 +488,12 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 	  
 	//Input from second AOD?
 	Int_t input = 0;
-	if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
-	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
+//	if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
+//	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
 	  
 	//Get Momentum vector, 
 	if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
-	else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+	//else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
 	  
 	//If too small or big pt, skip it
     if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 

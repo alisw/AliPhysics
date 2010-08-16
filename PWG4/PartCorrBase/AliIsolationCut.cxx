@@ -184,7 +184,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
 	if(!reader->GetDataType()== AliCaloTrackReader::kMC) 
 	{
 		reader->GetVertex(vertex);
-		if(reader->GetSecondInputAODTree()) reader->GetSecondInputAODVertex(vertex2);
+		//if(reader->GetSecondInputAODTree()) reader->GetSecondInputAODVertex(vertex2);
 	}
     TLorentzVector mom ;
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ ){
@@ -196,8 +196,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       if(calo->GetNTracksMatched() > 0) continue ; 
       //Input from second AOD?
       Int_t input = 0;
-      if     (pCandidate->GetDetector() == "EMCAL" && reader->GetAODEMCALNormalInputEntries() <= ipr) input = 1 ;
-      else if(pCandidate->GetDetector() == "PHOS"  && reader->GetAODPHOSNormalInputEntries()  <= ipr) input = 1;
+//      if     (pCandidate->GetDetector() == "EMCAL" && reader->GetAODEMCALNormalInputEntries() <= ipr) input = 1 ;
+//      else if(pCandidate->GetDetector() == "PHOS"  && reader->GetAODPHOSNormalInputEntries()  <= ipr) input = 1;
       
       //Get Momentum vector, 
       if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line

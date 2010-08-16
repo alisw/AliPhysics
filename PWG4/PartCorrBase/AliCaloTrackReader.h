@@ -11,7 +11,10 @@
 // Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TObjArrays (PHOS, EMCAL, CTS)
 //                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TObjArrays (PHOS, EMCAL, CTS)
 //                 : AliCaloTrackAODReader: Fills AOD data in 3 TObjArrays (PHOS, EMCAL, CTS) 
-//                          
+//  
+// This part is commented: Mixing analysis can be done, input AOD with events
+// is opened in the AliCaloTrackReader::Init()
+
 // -- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
@@ -142,24 +145,24 @@ public:
   virtual void SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) {;}
 	
   //Methods for mixing with external input file (AOD)
-  virtual TTree* GetSecondInputAODTree() const {return  fSecondInputAODTree ; } 
+  //virtual TTree* GetSecondInputAODTree() const {return  fSecondInputAODTree ; } 
   //virtual void SetSecondInputAODTree(TTree * tree) {fSecondInputAODTree = tree ;
   //												  fSecondInputAODEvent->ReadFromTree(tree);}//Connect tree and AOD event.
 					
-  virtual AliAODEvent* GetSecondInputAODEvent() const { return fSecondInputAODEvent ; } 
+  //virtual AliAODEvent* GetSecondInputAODEvent() const { return fSecondInputAODEvent ; } 
 	
-  TString GetSecondInputFileName() const    {return fSecondInputFileName ; }
-  void SetSecondInputFileName(TString name) { fSecondInputFileName = name ; }
+  //TString GetSecondInputFileName() const    {return fSecondInputFileName ; }
+  //void SetSecondInputFileName(TString name) { fSecondInputFileName = name ; }
 
-  Int_t GetSecondInputFirstEvent() const    {return fSecondInputFirstEvent ; }
-  void SetSecondInputFirstEvent(Int_t iEvent0) { fSecondInputFirstEvent = iEvent0 ; }	
+  //Int_t GetSecondInputFirstEvent() const    {return fSecondInputFirstEvent ; }
+  //void SetSecondInputFirstEvent(Int_t iEvent0) { fSecondInputFirstEvent = iEvent0 ; }	
 	
-  Int_t GetAODCTSNormalInputEntries()   {if(!fSecondInputAODTree) { fAODCTSNormalInputEntries   = fAODCTS->GetEntriesFast()  ;}
-										 return fAODCTSNormalInputEntries ; }
-  Int_t GetAODEMCALNormalInputEntries() {if(!fSecondInputAODTree) { fAODEMCALNormalInputEntries = fAODEMCAL->GetEntriesFast();}
-										 return fAODEMCALNormalInputEntries ; }
-  Int_t GetAODPHOSNormalInputEntries()  {if(!fSecondInputAODTree) { fAODPHOSNormalInputEntries  = fAODPHOS->GetEntriesFast() ;}
-										 return fAODPHOSNormalInputEntries ; }
+//  Int_t GetAODCTSNormalInputEntries()   {if(!fSecondInputAODTree) { fAODCTSNormalInputEntries   = fAODCTS->GetEntriesFast()  ;}
+//										 return fAODCTSNormalInputEntries ; }
+//  Int_t GetAODEMCALNormalInputEntries() {if(!fSecondInputAODTree) { fAODEMCALNormalInputEntries = fAODEMCAL->GetEntriesFast();}
+//										 return fAODEMCALNormalInputEntries ; }
+//  Int_t GetAODPHOSNormalInputEntries()  {if(!fSecondInputAODTree) { fAODPHOSNormalInputEntries  = fAODPHOS->GetEntriesFast() ;}
+//										 return fAODPHOSNormalInputEntries ; }
 	
   ULong_t GetTrackStatus() const    {return fTrackStatus ; }
   void SetTrackStatus(ULong_t bit) { fTrackStatus = bit ; }		
@@ -170,9 +173,6 @@ public:
   void SwitchOffAODMCParticles()    { fReadAODMCParticles = kFALSE ; }
   Bool_t ReadStack()          const { return fReadStack            ; }
   Bool_t ReadAODMCParticles() const { return fReadAODMCParticles   ; }
-	
-  void SwitchOnCleanStdAOD()  {fCleanOutputStdAOD = kTRUE;}
-  void SwitchOffCleanStdAOD() {fCleanOutputStdAOD = kFALSE;}
 	
   void SetDeltaAODFileName(TString name ) {fDeltaAODFileName = name ; }
   TString GetDeltaAODFileName() const {return fDeltaAODFileName ; }
@@ -191,7 +191,9 @@ public:
   void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
   
   Double_t * GetVertex() ;  
-
+  
+  void SwitchOnWriteStdAOD()  {fWriteOutputStdAOD = kTRUE;}
+  void SwitchOffWriteStdAOD() {fWriteOutputStdAOD = kFALSE;}
 
  protected:
   Int_t	           fEventNumber; // Event number
@@ -224,20 +226,19 @@ public:
   Bool_t         fFillEMCALCells; // use data from EMCAL
   Bool_t         fFillPHOSCells;  // use data from PHOS
 
-  TTree *        fSecondInputAODTree;    // Tree with second input AOD, for mixing analysis.	
-  AliAODEvent*   fSecondInputAODEvent;   //! pointer to second input AOD event.
-  TString        fSecondInputFileName;   // File with AOD data to mix with normal stream of data.
-  Int_t          fSecondInputFirstEvent; // First event to be considered in the mixing.
-	
-  Int_t          fAODCTSNormalInputEntries;   // Number of entries in CTS   in case of standard input, larger with mixing.
-  Int_t          fAODEMCALNormalInputEntries; // Number of entries in EMCAL in case of standard input, larger with mixing.
-  Int_t          fAODPHOSNormalInputEntries;  // Number of entries in PHOS  in case of standard input, larger with mixing.
+//  TTree *        fSecondInputAODTree;    // Tree with second input AOD, for mixing analysis.	
+//  AliAODEvent*   fSecondInputAODEvent;   //! pointer to second input AOD event.
+//  TString        fSecondInputFileName;   // File with AOD data to mix with normal stream of data.
+//  Int_t          fSecondInputFirstEvent; // First event to be considered in the mixing.
+//	
+//  Int_t          fAODCTSNormalInputEntries;   // Number of entries in CTS   in case of standard input, larger with mixing.
+//  Int_t          fAODEMCALNormalInputEntries; // Number of entries in EMCAL in case of standard input, larger with mixing.
+//  Int_t          fAODPHOSNormalInputEntries;  // Number of entries in PHOS  in case of standard input, larger with mixing.
 	
   ULong_t        fTrackStatus        ; // Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t         fReadStack          ; // Access kine information from stack
   Bool_t	       fReadAODMCParticles ; // Access kine information from filtered AOD MC particles
 	
-  Bool_t	       fCleanOutputStdAOD;   // clean the written standard tracks and caloclusters in output AOD
   TString        fDeltaAODFileName ;   // Delta AOD file name
   TString        fFiredTriggerClassName  ;  // Name of trigger event type used to do the analysis
 
@@ -254,7 +255,7 @@ public:
   Bool_t	       fWriteOutputStdAOD;   // Write selected standard tracks and caloclusters in output AOD
 
 	
-  ClassDef(AliCaloTrackReader,16)
+  ClassDef(AliCaloTrackReader,17)
 } ;
 
 

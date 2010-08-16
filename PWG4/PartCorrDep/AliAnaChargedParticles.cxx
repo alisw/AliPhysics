@@ -270,7 +270,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       tr.SetLabel(track->GetLabel());
       tr.SetTrackLabel(track->GetID(),-1);
 	  //Input from second AOD?
-	  if(GetReader()->GetAODCTSNormalInputEntries() <= i) tr.SetInputFileIndex(1);
+	  //if(GetReader()->GetAODCTSNormalInputEntries() <= i) tr.SetInputFileIndex(1);
 		
       AddAODParticle(tr);
     }//selection

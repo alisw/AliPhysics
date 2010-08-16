@@ -458,13 +458,13 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       GetMixedEvent()->GetVertexOfEvent(iev)->GetXYZ(GetVertex(iev)); 
   } 
 
-  Double_t vertex2[] = {0,0,0} ; //vertex from second input aod
-  
-  if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
-  {
-	  if(GetReader()->GetSecondInputAODTree()) 
-      GetReader()->GetSecondInputAODVertex(vertex2);
-  }
+//  Double_t vertex2[] = {0,0,0} ; //vertex from second input aod
+//  
+//  if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
+//  {
+//	  if(GetReader()->GetSecondInputAODTree()) 
+//      GetReader()->GetSecondInputAODVertex(vertex2);
+//  }
     //printf("Vertex 0: %f,%f,%f\n",vertex[0],vertex[1],vertex[2]);
     //printf("Vertex 1: %f,%f,%f\n",vertex2[0],vertex2[1],vertex2[2]);
     //Select the Calorimeter of the photon
@@ -493,16 +493,16 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 	  
       //Input from second AOD?
     Int_t input = 0;
-    if (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) 
-      input = 1 ;
-    else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) 
-      input = 1;
+//    if (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) 
+//      input = 1 ;
+//    else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) 
+//      input = 1;
 	  
       //Get Momentum vector, 
     if (input == 0) 
       calo->GetMomentum(mom,GetVertex(evtIndex)) ;//Assume that come from vertex in straight line
-    else if(input == 1) 
-      calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+//    else if(input == 1) 
+//      calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
     
       //If too small or big pt, skip it
     if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
@@ -691,12 +691,12 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 			if(!mcparticles0 && GetDebug() > 0) 	{
 				printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
 			}	
-			if(GetReader()->GetSecondInputAODTree()){
-				mcparticles1 = GetReader()->GetAODMCParticles(1);
-				if(!mcparticles1 && GetDebug() > 0) 	{
-					printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
-				}
-			}		
+//			if(GetReader()->GetSecondInputAODTree()){
+//				mcparticles1 = GetReader()->GetAODMCParticles(1);
+//				if(!mcparticles1 && GetDebug() > 0) 	{
+//					printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
+//				}
+//			}		
 			
 		}
 	}// is data and MC
