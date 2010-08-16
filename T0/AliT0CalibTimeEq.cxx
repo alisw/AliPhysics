@@ -146,7 +146,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	      mean=cfd->GetMean();
 	      rms=cfd->GetRMS();
 	      nent=cfd->GetEntries();
-	      if(nent<500 || rms>10. ) {
+	      if(nent<500 || rms>20. ) {
 		ok=false;
 		AliWarning(Form("Data is not good enouph in PMT %i - mean %f rsm %f nentries %i", i,mean, rms, nent));
 		
