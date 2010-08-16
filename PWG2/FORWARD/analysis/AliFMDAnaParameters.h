@@ -62,7 +62,7 @@ public:
     kSharingEfficiency            = 0x8  // Sharing algorithm efficiency
   };
   
-  enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kNOCTP, kEMPTY };
+  enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kNOCTP, kEMPTY , kNSD};
   
   enum Energy { k900 , k10000, k14000 , k7000, k2400, k5500};
   
@@ -102,7 +102,7 @@ public:
   TH1F* GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetSharingEfficiencyTrVtx(Int_t det, Char_t ring, Int_t vtxbin);
   Float_t  GetEventSelectionEfficiency(Int_t vtxbin);
-  TH2F*    GetEventSelectionEfficiency(Int_t vtxbin, Char_t ring);
+  TH2F*    GetEventSelectionEfficiency(Char_t* trig, Int_t vtxbin, Char_t ring);
   Float_t  GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const;
   Float_t  GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx) const;
   Float_t  GetStripLength(Char_t ring, UShort_t strip)  ;
@@ -120,8 +120,9 @@ public:
   Bool_t   GetVertex(const AliESDEvent* esd, Double_t* vertexXYZ);
   void     SetTriggerDefinition(Trigger trigger) {fTrigger = trigger;}
   Trigger  GetTriggerDefinition() const {return fTrigger;}
-  Bool_t   IsEventTriggered(const AliESDEvent *esd) const;
-  Bool_t   IsEventTriggered(const AliESDEvent *esd, Trigger trigger) ;
+  //Bool_t   IsEventTriggered(const AliESDEvent *esd) ;
+  Bool_t   IsEventTriggered(Trigger trigger) ;
+  void     SetTriggerStatus(const AliESDEvent *esd) ;
   void     SetEnergy(Energy energy) {fEnergy = energy;}
   Energy   GetEnergy() {return fEnergy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
@@ -180,7 +181,10 @@ protected:
       fSharingObjectPresent(o.fSharingObjectPresent),
       fNumberOfEtaBinsToCut(o.fNumberOfEtaBinsToCut),
       fEtaLowBinLimits(o.fEtaLowBinLimits),
-      fEtaHighBinLimits(o.fEtaHighBinLimits)
+      fEtaHighBinLimits(o.fEtaHighBinLimits),
+      fTriggerInel(o.fTriggerInel),
+      fTriggerNSD(o.fTriggerNSD),
+      fTriggerEmpty(o.fTriggerEmpty)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -197,7 +201,6 @@ protected:
   Int_t    GetFirstEtaBinFromMap(Int_t vtxbin, Int_t det, Char_t ring) ;
   Int_t    GetLastEtaBinFromMap(Int_t vtxbin, Int_t det, Char_t ring) ;
 
-  
   TObjArray* GetBackgroundArray();
   
   TAxis* GetRefAxis();
@@ -236,8 +239,12 @@ protected:
   Bool_t   fCentralSelection;         //if event selection is done centrally
   Bool_t   fSharingObjectPresent ;    //Do we have a sharing object ? 
   Int_t    fNumberOfEtaBinsToCut;     //Number of eta bins to remove from edge effects
-  TH3F     fEtaLowBinLimits;
-  TH3F     fEtaHighBinLimits;
+  TH3F     fEtaLowBinLimits;          //Histogram of low eta bin limits
+  TH3F     fEtaHighBinLimits;         //Histogram of high eta bin limits
+  Bool_t   fTriggerInel;              //If the selected INEL trigger fired
+  Bool_t   fTriggerNSD;               //If the NSD trigger fired
+  Bool_t   fTriggerEmpty;             //Event should be empty (empty bunches)
+  
   ClassDef(AliFMDAnaParameters,1) // Manager of parameters
 };
 

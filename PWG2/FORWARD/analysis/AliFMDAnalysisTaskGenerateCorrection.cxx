@@ -17,6 +17,7 @@
 #include "AliHeader.h"
 #include "AliFMDAnaCalibBackgroundCorrection.h"
 #include "AliFMDAnaCalibEventSelectionEfficiency.h"
+#include "AliGenPythiaEventHeader.h"
 //#include "AliCDBManager.h"
 //#include "AliCDBId.h"
 //#include "AliCDBMetaData.h"
@@ -123,8 +124,12 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
   
   TH1F* hEventsSelected  = new TH1F("EventsSelected","EventsSelected",fNvtxBins,0,fNvtxBins);
   TH1F* hEventsAll    = new TH1F("EventsAll","EventsAll",fNvtxBins,0,fNvtxBins);
+  TH1F* hEventsAllNSD    = new TH1F("EventsAllNSD","EventsAllNSD",fNvtxBins,0,fNvtxBins);
   TH1F* hEventsSelectedVtx  = new TH1F("EventsSelectedVtx","EventsSelectedVtx",fNvtxBins,0,fNvtxBins);  
   TH1F* hEventsSelectedTrigger  = new TH1F("EventsSelectedTrigger","EventsSelectedTrigger",fNvtxBins,0,fNvtxBins);
+  
+  TH1F* hEventsSelectedNSDVtx  = new TH1F("EventsSelectedNSDVtx","EventsSelectedNSDVtx",fNvtxBins,0,fNvtxBins);  
+  TH1F* hEventsSelectedNSD     = new TH1F("EventsSelectedNSD","EventsSelectedNSD",fNvtxBins,0,fNvtxBins);
   
   TH1F* hXvtx = new TH1F("hXvtx","x vertex distribution",100,-2,2);
   TH1F* hYvtx = new TH1F("hYvtx","y vertex distribution",100,-2,2);
@@ -136,10 +141,17 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
   
   hEventsSelected->Sumw2();
   hEventsAll->Sumw2();
+  hEventsAllNSD->Sumw2();
+  
   fListOfHits.Add(hEventsSelected);
   fListOfHits.Add(hEventsSelectedVtx);
   fListOfHits.Add(hEventsSelectedTrigger);
+  fListOfHits.Add(hEventsSelectedNSDVtx);
+  fListOfHits.Add(hEventsSelectedNSD);
+  
+  
   fListOfPrimaries.Add(hEventsAll);
+  fListOfPrimaries.Add(hEventsAllNSD);
   
   for(Int_t v=0; v<fNvtxBins;v++) {
     
@@ -153,12 +165,26 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
       hAnalysed->Sumw2();
       fListOfPrimaries.Add(hAnalysed);
       
+      TH2F* hAnalysedNSD       = new TH2F(Form("AnalysedNSD_FMD%c_vtx%d",ringChar,v),
+					  Form("AnalysedNSD_FMD%c_vtx%d",ringChar,v),
+					  fNbinsEta, -4,6, nSec, 0,2*TMath::Pi());
+      
+      hAnalysedNSD->Sumw2();
+      fListOfPrimaries.Add(hAnalysedNSD);
+      
       TH2F* hInel           = new TH2F(Form("Inel_FMD%c_vtx%d",ringChar,v),
 				       Form("Inel_FMD%c_vtx%d",ringChar,v),
 				       fNbinsEta, -4,6, nSec, 0,2*TMath::Pi());
       
       hInel->Sumw2();
       fListOfPrimaries.Add(hInel);
+      
+      TH2F* hNSD           = new TH2F(Form("NSD_FMD%c_vtx%d",ringChar,v),
+				      Form("NSD_FMD%c_vtx%d",ringChar,v),
+				      fNbinsEta, -4,6, nSec, 0,2*TMath::Pi());
+      
+      hNSD->Sumw2();
+      fListOfPrimaries.Add(hNSD);
       
     }
   }
@@ -186,6 +212,9 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   
   
   AliESDEvent* esdevent = (AliESDEvent*)InputEvent();
+  
+  pars->SetTriggerStatus(esdevent);
+  
   Double_t esdvertex[3];
   Bool_t vtxStatus =  pars->GetVertex(esdevent,esdvertex);
   
@@ -199,6 +228,22 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   AliHeader* header            = mcevent->Header();
   AliGenEventHeader* genHeader = header->GenEventHeader();
   
+  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+  if (!pythiaGenHeader) {
+    std::cout<<" no pythia header!"<<std::endl;
+    return; 
+  }
+  
+  Int_t pythiaType = pythiaGenHeader->ProcessType();
+  Bool_t nsd = kTRUE;
+  if(pythiaType==92 || pythiaType==93)
+    nsd = kFALSE;
+  
+  //if(pythiaType==94){
+  //  std::cout<<"double diffractive"<<std::endl;
+  //  return;
+  //}
+  
   TArrayF vertex;
   genHeader->PrimaryVertex(vertex);
   
@@ -210,8 +255,7 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   hZvtx->Fill(vertex.At(2));
 
   
-  if(TMath::Abs(vertex.At(2)) > fZvtxCut)
-    return;
+  
   
   Double_t delta           = 2*fZvtxCut/fNvtxBins;
   Double_t vertexBinDouble = (vertex.At(2) + fZvtxCut) / delta;
@@ -221,7 +265,10 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   TH1F* hEventsSelected           = (TH1F*)fListOfHits.FindObject("EventsSelected");
   TH1F* hEventsSelectedVtx        = (TH1F*)fListOfHits.FindObject("EventsSelectedVtx");
   TH1F* hEventsSelectedTrigger    = (TH1F*)fListOfHits.FindObject("EventsSelectedTrigger");
+  TH1F* hEventsSelectedNSDVtx     = (TH1F*)fListOfHits.FindObject("EventsSelectedNSDVtx");
+  TH1F* hEventsSelectedNSD        = (TH1F*)fListOfHits.FindObject("EventsSelectedNSD");
   TH1F* hEventsAll                = (TH1F*)fListOfPrimaries.FindObject("EventsAll");
+  TH1F* hEventsAllNSD             = (TH1F*)fListOfPrimaries.FindObject("EventsAllNSD");
   
   // TH1F* hTriggered      = (TH1F*)fListOfHits.FindObject("Triggered");
   //  TH1F* hTriggeredAll   = (TH1F*)fListOfPrimaries.FindObject("TriggeredAll");
@@ -230,14 +277,23 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   if(!vtxStatus)
     vtxFound = kFALSE;
   
-  Bool_t isTriggered = pars->IsEventTriggered(esdevent);
-  
+  if(TMath::Abs(vertex.At(2)) > fZvtxCut) {
+    vtxFound = kFALSE;
+    
+  }
+  Bool_t isTriggered    = pars->IsEventTriggered(AliFMDAnaParameters::kMB1);
+  Bool_t isTriggeredNSD = pars->IsEventTriggered(AliFMDAnaParameters::kNSD);
   if(vtxFound && isTriggered) hEventsSelected->Fill(vertexBin);
   
   if(vtxFound) hEventsSelectedVtx->Fill(vertexBin);
   if(isTriggered) hEventsSelectedTrigger->Fill(vertexBin);
-    
+
+  if(vtxFound && isTriggeredNSD) hEventsSelectedNSDVtx->Fill(vertexBin);
+  if(isTriggeredNSD) hEventsSelectedNSD->Fill(vertexBin);
+
+  
   hEventsAll->Fill(vertexBin);
+  if(nsd) hEventsAllNSD->Fill(vertexBin);
   
   //  if(!vtxFound || !isTriggered) return;
   
@@ -256,11 +312,18 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
       hPrimaryOuter->Fill(particle->Eta(),particle->Phi());
       TH2F* hAnalysedInner = (TH2F*)fListOfPrimaries.FindObject( Form("Analysed_FMD%c_vtx%d",'I',vertexBin));
       TH2F* hAnalysedOuter = (TH2F*)fListOfPrimaries.FindObject( Form("Analysed_FMD%c_vtx%d",'O',vertexBin));
+      TH2F* hAnalysedNSDInner = (TH2F*)fListOfPrimaries.FindObject( Form("AnalysedNSD_FMD%c_vtx%d",'I',vertexBin));
+      TH2F* hAnalysedNSDOuter = (TH2F*)fListOfPrimaries.FindObject( Form("AnalysedNSD_FMD%c_vtx%d",'O',vertexBin));
       TH2F* hInelInner = (TH2F*)fListOfPrimaries.FindObject( Form("Inel_FMD%c_vtx%d",'I',vertexBin));
       TH2F* hInelOuter = (TH2F*)fListOfPrimaries.FindObject( Form("Inel_FMD%c_vtx%d",'O',vertexBin));
-      
+      TH2F* hNSDInner = (TH2F*)fListOfPrimaries.FindObject( Form("NSD_FMD%c_vtx%d",'I',vertexBin));
+      TH2F* hNSDOuter = (TH2F*)fListOfPrimaries.FindObject( Form("NSD_FMD%c_vtx%d",'O',vertexBin));
       
       //if(vtxFound && isTriggered) {
+      if(isTriggeredNSD) {
+	hAnalysedNSDInner->Fill(particle->Eta(),particle->Phi());
+	hAnalysedNSDOuter->Fill(particle->Eta(),particle->Phi());
+      }
       if(isTriggered) {
 	hAnalysedInner->Fill(particle->Eta(),particle->Phi());
 	hAnalysedOuter->Fill(particle->Eta(),particle->Phi());
@@ -268,7 +331,10 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
       hInelInner->Fill(particle->Eta(),particle->Phi());
       hInelOuter->Fill(particle->Eta(),particle->Phi());
       
-      
+      if(nsd) {
+	hNSDInner->Fill(particle->Eta(),particle->Phi());
+	hNSDOuter->Fill(particle->Eta(),particle->Phi());
+      }
     }
     
     for(Int_t j=0; j<particle->GetNumberOfTrackReferences();j++) {
@@ -344,25 +410,46 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
   TH1F* hEventsSelected           = (TH1F*)fListOfHits.FindObject("EventsSelected");
   TH1F* hEventsSelectedVtx        = (TH1F*)fListOfHits.FindObject("EventsSelectedVtx");
   TH1F* hEventsSelectedTrigger    = (TH1F*)fListOfHits.FindObject("EventsSelectedTrigger");
+  TH1F* hEventsSelectedNSDVtx     = (TH1F*)fListOfHits.FindObject("EventsSelectedNSDVtx");
+  TH1F* hEventsSelectedNSD        = (TH1F*)fListOfHits.FindObject("EventsSelectedNSD");
+    
   TH1F* hEventsAll                = (TH1F*)fListOfPrimaries.FindObject("EventsAll");
+  TH1F* hEventsAllNSD             = (TH1F*)fListOfPrimaries.FindObject("EventsAllNSD");
   TH1F* hEventsSelectedVtxDivByTr = (TH1F*)hEventsSelectedVtx->Clone("hEventsSelectedVtxDivByTr");
+  TH1F* hEventsSelectedNSDVtxDivByNSD = (TH1F*)hEventsSelectedNSDVtx->Clone("hEventsSelectedNSDVtxDivByNSD");
+  
   fListOfHits.Add(hEventsSelectedVtxDivByTr);
+  fListOfHits.Add(hEventsSelectedNSDVtxDivByNSD);
+  hEventsSelectedNSDVtxDivByNSD->Divide(hEventsSelectedNSD);
   hEventsSelectedVtxDivByTr->Divide(hEventsSelectedTrigger);
-  for(Int_t v=0;v<fNvtxBins  ;v++) {
+  
+  for(Int_t v=0;v<fNvtxBins ; v++) {
     TH2F* hAnalysedInner = (TH2F*)fListOfPrimaries.FindObject(Form("Analysed_FMD%c_vtx%d",'I',v));
     TH2F* hAnalysedOuter = (TH2F*)fListOfPrimaries.FindObject(Form("Analysed_FMD%c_vtx%d",'O',v));
+    TH2F* hAnalysedNSDInner = (TH2F*)fListOfPrimaries.FindObject( Form("AnalysedNSD_FMD%c_vtx%d",'I',v));
+    TH2F* hAnalysedNSDOuter = (TH2F*)fListOfPrimaries.FindObject( Form("AnalysedNSD_FMD%c_vtx%d",'O',v));
+    
     TH2F* hInelInner = (TH2F*)fListOfPrimaries.FindObject(Form("Inel_FMD%c_vtx%d",'I',v));
     TH2F* hInelOuter = (TH2F*)fListOfPrimaries.FindObject(Form("Inel_FMD%c_vtx%d",'O',v));
-    
+    TH2F* hNSDInner  = (TH2F*)fListOfPrimaries.FindObject( Form("NSD_FMD%c_vtx%d",'I',v));
+    TH2F* hNSDOuter  = (TH2F*)fListOfPrimaries.FindObject( Form("NSD_FMD%c_vtx%d",'O',v));
     // hAnalysedInner->Scale((hEventsSelected->GetBinContent(v+1) == 0 ? 0 : 1/hEventsSelected->GetBinContent(v+1))); 
     //hAnalysedOuter->Scale((hEventsSelected->GetBinContent(v+1) == 0 ? 0 : 1/hEventsSelected->GetBinContent(v+1))); 
 
     hAnalysedInner->Scale((hEventsSelectedTrigger->GetBinContent(v+1) == 0 ? 0 : 1/hEventsSelectedTrigger->GetBinContent(v+1))); 
     
     hAnalysedOuter->Scale((hEventsSelectedTrigger->GetBinContent(v+1) == 0 ? 0 : 1/hEventsSelectedTrigger->GetBinContent(v+1))); 
+    hAnalysedNSDInner->Scale((hEventsSelectedNSD->GetBinContent(v+1) == 0 ? 0 : 1/hEventsSelectedNSD->GetBinContent(v+1))); 
     
+    hAnalysedNSDOuter->Scale((hEventsSelectedNSD->GetBinContent(v+1) == 0 ? 0 : 1/hEventsSelectedNSD->GetBinContent(v+1))); 
+    
+    
+
     hInelInner->Scale((hEventsAll->GetBinContent(v+1) == 0 ? 0 : 1/hEventsAll->GetBinContent(v+1))); 
     hInelOuter->Scale((hEventsAll->GetBinContent(v+1) == 0 ? 0 : 1/hEventsAll->GetBinContent(v+1)));
+    
+    hNSDInner->Scale((hEventsAllNSD->GetBinContent(v+1) == 0 ? 0 : 1/hEventsAllNSD->GetBinContent(v+1))); 
+    hNSDOuter->Scale((hEventsAllNSD->GetBinContent(v+1) == 0 ? 0 : 1/hEventsAllNSD->GetBinContent(v+1)));
     
 
     
@@ -371,9 +458,17 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
     hAnalysedInner->Divide(hInelInner);
     hAnalysedOuter->Divide(hInelOuter);
     
-    fEventSelectionEff->SetCorrection(v,'I',hAnalysedInner);
-    fEventSelectionEff->SetCorrection(v,'O',hAnalysedOuter);
-  }
+    hAnalysedNSDInner->Divide(hNSDInner);
+    hAnalysedNSDOuter->Divide(hNSDOuter);
+    
+    fEventSelectionEff->SetCorrection("INEL",v,'I',hAnalysedInner);
+    fEventSelectionEff->SetCorrection("INEL",v,'O',hAnalysedOuter);
+    //NSD
+    fEventSelectionEff->SetCorrection("NSD",v,'I',hAnalysedNSDInner);
+    fEventSelectionEff->SetCorrection("NSD",v,'O',hAnalysedNSDOuter);
+    
+    
+}
   
   Float_t vtxEff = 1;
   if(hEventsSelectedTrigger->GetEntries())
@@ -384,11 +479,14 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
   hEventsSelectedVtx->Divide(hEventsAll);
   hEventsSelectedTrigger->Divide(hEventsAll);
   
+  hEventsSelectedNSDVtx->Divide(hEventsAllNSD);
+  hEventsSelectedNSD->Divide(hEventsAllNSD);
+  
   for(Int_t i = 1; i<=hEventsSelected->GetNbinsX(); i++) {
     if(hEventsSelected->GetBinContent(i) == 0 )
       continue;
-     Float_t b    = hEventsSelected->GetBinContent(i);
-     // Float_t b    = hEventsSelected->GetBinContent(i)*hEventsSelectedTrigger->GetBinContent(i);
+    Float_t b    = hEventsSelected->GetBinContent(i);
+    // Float_t b    = hEventsSelected->GetBinContent(i)*hEventsSelectedTrigger->GetBinContent(i);
     Float_t db   = hEventsSelected->GetBinError(i);
     Float_t sum  = hEventsAll->GetBinContent(i);
     Float_t dsum = hEventsAll->GetBinError(i);
@@ -491,12 +589,18 @@ void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, 
   TH1F* hEventsSelected           = (TH1F*)listOfHits->FindObject("EventsSelected");
   TH1F* hEventsSelectedVtx        = (TH1F*)listOfHits->FindObject("EventsSelectedVtx");
   TH1F* hEventsSelectedTrigger    = (TH1F*)listOfHits->FindObject("EventsSelectedTrigger");
+  TH1F* hEventsSelectedNSDVtx     = (TH1F*)listOfHits->FindObject("EventsSelectedNSDVtx");
+  TH1F* hEventsSelectedNSD        = (TH1F*)listOfHits->FindObject("EventsSelectedNSD");  
   TH1F* hEventsAll                = (TH1F*)listOfPrim->FindObject("EventsAll");
+  TH1F* hEventsAllNSD             = (TH1F*)listOfPrim->FindObject("EventsAllNSD");
   
   fListOfHits.Add(hEventsSelected);
   fListOfHits.Add(hEventsSelectedVtx);
+  fListOfHits.Add(hEventsSelectedNSD);
+  fListOfHits.Add(hEventsSelectedNSDVtx);
   fListOfHits.Add(hEventsSelectedTrigger);
   fListOfPrimaries.Add(hEventsAll);
+  fListOfPrimaries.Add(hEventsAllNSD);
   
   TH1F* hXvtx = (TH1F*)listOfPrim->FindObject("hXvtx");
   TH1F* hYvtx = (TH1F*)listOfPrim->FindObject("hYvtx");
@@ -506,23 +610,23 @@ void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, 
   fListOfPrimaries.Add(hZvtx);  
 
   for(Int_t det =1; det<=3;det++)
-      {
-	Int_t nRings = (det==1 ? 1 : 2);
-	for(Int_t ring = 0;ring<nRings;ring++)
-	  {
-	    Char_t ringChar = (ring == 0 ? 'I' : 'O');
-	    TH1F* allHits = (TH1F*)listOfHits->FindObject(Form("allHits_FMD%d%c",det,ringChar));
-	    TH1F* doubleHits = (TH1F*)listOfHits->FindObject(Form("DoubleHits_FMD%d%c",det,ringChar));
-	    fListOfHits.Add(allHits);
-	    fListOfHits.Add(doubleHits);
-	    for(Int_t v=0; v<fNvtxBins;v++)
-	      {
-		
-		TH2F* hHits          = (TH2F*)listOfHits->FindObject(Form("hHits_FMD%d%c_vtx%d", det,ringChar,v));
-		fListOfHits.Add(hHits);
-	      }
-	  }
-      }
+    {
+      Int_t nRings = (det==1 ? 1 : 2);
+      for(Int_t ring = 0;ring<nRings;ring++)
+	{
+	  Char_t ringChar = (ring == 0 ? 'I' : 'O');
+	  TH1F* allHits = (TH1F*)listOfHits->FindObject(Form("allHits_FMD%d%c",det,ringChar));
+	  TH1F* doubleHits = (TH1F*)listOfHits->FindObject(Form("DoubleHits_FMD%d%c",det,ringChar));
+	  fListOfHits.Add(allHits);
+	  fListOfHits.Add(doubleHits);
+	  for(Int_t v=0; v<fNvtxBins;v++)
+	    {
+	      
+	      TH2F* hHits          = (TH2F*)listOfHits->FindObject(Form("hHits_FMD%d%c_vtx%d", det,ringChar,v));
+	      fListOfHits.Add(hHits);
+	    }
+	}
+    }
   for(Int_t v=0; v<fNvtxBins;v++) {
     TH2F* hSPDHits          = (TH2F*)listOfHits->FindObject(Form("hSPDhits_vtx%d", v));   
     fListOfHits.Add(hSPDHits);
@@ -533,11 +637,15 @@ void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, 
       
       TH2F* hPrimary       = (TH2F*)listOfPrim->FindObject( Form("hPrimary_FMD_%c_vtx%d",ringChar,v));
       TH2F* hAnalysed      = (TH2F*)listOfPrim->FindObject(Form("Analysed_FMD%c_vtx%d",ringChar,v));
+      TH2F* hAnalysedNSD   = (TH2F*)listOfPrim->FindObject(Form("AnalysedNSD_FMD%c_vtx%d",ringChar,v));
       TH2F* hInel          = (TH2F*)listOfPrim->FindObject(Form("Inel_FMD%c_vtx%d",ringChar,v));
+      TH2F* hNSD           = (TH2F*)listOfPrim->FindObject(Form("NSD_FMD%c_vtx%d",ringChar,v));
       
       fListOfPrimaries.Add(hPrimary);      
       fListOfPrimaries.Add(hAnalysed);
       fListOfPrimaries.Add(hInel);      
+      fListOfPrimaries.Add(hAnalysedNSD);
+      fListOfPrimaries.Add(hNSD);      
     }
   }
   GenerateCorrection();

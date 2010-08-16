@@ -5,7 +5,10 @@
 #include "TList.h"
 #include "TString.h"
 class TH1F;
-
+class TH3F;
+class TProfile3D;
+class TProfile2D;
+class TH3D;
 //
 // This class creates dN/deta for the FMD from the analysis objects.
 // The contents of this class should probably go into a task at some point
@@ -27,7 +30,8 @@ class AliFMDDndeta : public TObject
     fIsGenerated(),
     fPrimEvents(o.fPrimEvents),
     fEvents(o.fEvents),
-    fPrimdNdeta(fPrimdNdeta)
+    fPrimdNdeta(fPrimdNdeta),
+    fDrawAll(kFALSE)
     {}
   
   AliFMDDndeta& operator=(const AliFMDDndeta& /*o*/) 
@@ -37,7 +41,7 @@ class AliFMDDndeta : public TObject
       return (*this);
     }
   
-  enum Analysis {kHits, kHitsTrVtx, kMult, kMultTrVtx};
+  enum Analysis {kHits, kHitsTrVtx, kMult, kMultTrVtx, kMultNSD};
   
   
   
@@ -48,6 +52,7 @@ class AliFMDDndeta : public TObject
   void SetNbinsToCut(Int_t nbins) {fNbinsToCut = nbins;}
   void SetVtxCut1(Int_t vtxcut) {fVtxCut1 = vtxcut;}
   void SetVtxCut2(Int_t vtxcut) {fVtxCut2 = vtxcut;}
+  void SetDrawAll(Bool_t drawall) {fDrawAll = drawall;}
   void CreateSharingEfficiency(const Char_t* filename, Bool_t store = kFALSE);
   TList* GetMultList(Analysis what) {return fMultList[what];}
  private:
@@ -57,16 +62,20 @@ class AliFMDDndeta : public TObject
   const char* GetPrimName(Analysis what, UShort_t det, Char_t ring, Int_t vtxbin);
   void   RebinHistogram(TH1F* hist, Int_t rebin);
   TList*  fList;                         // A list of input histograms
-  TList*  fMultList[4];                  // A list of mult histograms 
+  TList*  fMultList[5];                  // A list of mult histograms 
   Int_t   fNbinsToCut;                   // The number of bins to cut
   Int_t   fVtxCut1;                      // Vtx low
   Int_t   fVtxCut2;                      // Vtx high
   Bool_t  fIsInit;                       // Are we init ? 
-  Bool_t  fIsGenerated[4];               // Have we generated ?
+  Bool_t  fIsGenerated[5];               // Have we generated ?
   TString fPrimEvents;                   // Number of prim events
   TString fEvents;                       // Number of events
   TString fPrimdNdeta;                   // the primary dNdeta from MC
-  Char_t* fAnalysisNames[4];             // Names of analysis
+  Char_t* fAnalysisNames[5];             // Names of analysis
+  // TProfile3D*   fDataObject;                  // New data object
+  Bool_t fDrawAll;                        //Draw relevant or all
+  //TH3D*   fDataObject;                  // New data object
+  
   ClassDef(AliFMDDndeta,2);
 };
 

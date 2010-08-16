@@ -91,10 +91,15 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fSharingObjectPresent(kTRUE),
   fNumberOfEtaBinsToCut(1),
   fEtaLowBinLimits(),
-  fEtaHighBinLimits()
+  fEtaHighBinLimits(),
+  fTriggerInel(kFALSE),
+  fTriggerNSD(kFALSE),
+  fTriggerEmpty(kFALSE)     
 {
   // Default constructor 
   fPhysicsSelection = new AliPhysicsSelection;
+  fPhysicsSelection->SetAnalyzeMC(kTRUE); //For the background correction. This is reset in Init if relevant
+  
   AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
   
   fPhysicsSelection->AddBackgroundIdentification(backgroundSelection);
@@ -126,7 +131,7 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
 		fTrigger,
 		fMagField,
 		fSpecies,
-		0,
+		fRealData,
 		0);
   if(species == fgkEventSelectionEffID)
     path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
@@ -168,7 +173,12 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
   if(fBackground)
     FindEtaLimits();
   
+  if(!fRealData) {
+    fPhysicsSelection->SetAnalyzeMC(kTRUE);
+  }
+  else fPhysicsSelection->SetAnalyzeMC(kFALSE);
   
+    
 }
 //____________________________________________________________________
 
@@ -301,11 +311,21 @@ void AliFMDAnaParameters::PrintStatus() const
     collsystemstring.Form("invalid collision system");   break;
   }
   
-
+  TString datastring;
+  switch(fRealData) {
+  case kTRUE:
+    datastring.Form("Nature"); break;
+  case kFALSE: 
+    datastring.Form("MC"); break;
+  default:
+    datastring.Form("Unknown"); break ;
+  }
+    
   std::cout<<"Energy      = "<<energystring.Data()<<std::endl;
   std::cout<<"Trigger     = "<<triggerstring.Data()<<std::endl;
   std::cout<<"Mag Field   = "<<magstring.Data()<<std::endl;
   std::cout<<"Coll System = "<<collsystemstring.Data()<<std::endl;
+  std::cout<<"Data origin = "<<datastring.Data()<<std::endl;
   
   
   
@@ -537,13 +557,18 @@ Float_t AliFMDAnaParameters::GetVtxSelectionEffFromMC() {
 
 }
 //_____________________________________________________________________
-TH2F* AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin, Char_t ring) {
+TH2F* AliFMDAnaParameters::GetEventSelectionEfficiency(Char_t* trig, Int_t vtxbin, Char_t ring) {
   //Get event selection efficiency object
+  
+  if(trig != "NSD" && trig != "INEL") {
+    AliWarning("Event selection efficiency only available for INEL and NSD");
+    return 0;
+  }
   if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
   }
-  return fEventSelectionEfficiency->GetCorrection(vtxbin,ring);
+  return fEventSelectionEfficiency->GetCorrection(trig,vtxbin,ring);
 
 }
 //_____________________________________________________________________
@@ -685,7 +710,7 @@ Bool_t AliFMDAnaParameters::GetVertex(const AliESDEvent* esd, Double_t* vertexXY
   
   if(vertex)
     vertex->GetXYZ(vertexXYZ);
-    
+
   //if(vertexXYZ[0] == 0 || vertexXYZ[1] == 0 )
   //  return kFALSE;
  
@@ -699,21 +724,9 @@ Bool_t AliFMDAnaParameters::GetVertex(const AliESDEvent* esd, Double_t* vertexXY
   
 }
 //____________________________________________________________________
-Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd, Trigger trig) {
-  //Did we have trig trigger ?
-  Trigger old = fTrigger;
-  fTrigger = trig;
-  Bool_t retval = IsEventTriggered(esd);
-  fTrigger = old;
-  return retval;
+void AliFMDAnaParameters::SetTriggerStatus(const AliESDEvent *esd) {
 
-}
-//____________________________________________________________________
-Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
-  // check if the event was triggered
-  
-  if (fCentralSelection) return kTRUE;
-  ULong64_t triggerMask = esd->GetTriggerMask();
+  //ULong64_t triggerMask = esd->GetTriggerMask();
   
   TString triggers = esd->GetFiredTriggerClasses();
   
@@ -725,27 +738,41 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
   // if(triggers.Contains("CINT1C-ABCE-NOPF-ALL")) return kFALSE;
   
   // definitions from p-p.cfg
-  ULong64_t spdFO = (1 << 14);
-  ULong64_t v0left = (1 << 11);
-  ULong64_t v0right = (1 << 12);
-  AliTriggerAnalysis tAna;
+  //ULong64_t spdFO = (1 << 14);
+  // ULong64_t v0left = (1 << 11);
+  // ULong64_t v0right = (1 << 12);
   
+  AliTriggerAnalysis tAna;
+    
   //REMOVE WHEN FINISHED PLAYING WITH TRIGGERS!
   //fPhysicsSelection->IsCollisionCandidate(esd);
-  if(!fRealData) {
-    fPhysicsSelection->SetAnalyzeMC(kTRUE);
+  
+  //if(!fRealData) {
+  //  fPhysicsSelection->SetAnalyzeMC(kTRUE);
+  // }
+  
+  fTriggerInel  = kFALSE;
+  fTriggerNSD   = kFALSE;
+  fTriggerEmpty = kFALSE;
+  
+  if(fPhysicsSelection->IsCollisionCandidate(esd)) {
+    fTriggerInel = kTRUE;
   }
-  switch (fTrigger) {
+  if(fTriggerInel && tAna.IsOfflineTriggerFired(esd,AliTriggerAnalysis::kNSD1)) {
+    fTriggerNSD = kTRUE;
+  }
+  if(triggers.Contains("CBEAMB-ABCE-NOPF-ALL")) {
+    fTriggerEmpty = kTRUE;
+  }
+  
+  
+  /*switch (fTrigger) {
   case kMB1: {
-    // if(fRealData) {
-      if( fPhysicsSelection->IsCollisionCandidate(esd))
-	return kTRUE;
-      //}
-      //else {
-      // if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
-      //	return kTRUE;
-      break;
-      //}
+    if( fPhysicsSelection->IsCollisionCandidate(esd)) {
+      fTriggerInel = kTRUE;
+    }
+    break;
+    
   }
   case kMB2: { 
     if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
@@ -762,35 +789,59 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
     break;
   }
   case kEMPTY: {
-    /*
-    const AliMultiplicity* testmult = esd->GetMultiplicity();
-    Int_t nTrackLets = testmult->GetNumberOfTracklets();
-    Int_t nClusters  = testmult->GetNumberOfSingleClusters();
-    Int_t fastOR = tAna.SPDFiredChips(esd, 0);
-    
-    const AliESDVertex* vertex = 0;
-    vertex = esd->GetPrimaryVertexSPD();
-    Bool_t vtxstatus = vertex->GetStatus();
-    if(vertex->GetNContributors() <= 0)
-      vtxstatus = kFALSE;
-    
-    if(vertex->GetZRes() > 0.1 ) 
-      vtxstatus = kFALSE;
-    
-    Bool_t v0ABG = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0ABG);
-    
-    Bool_t v0CBG = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0CBG);
-    Bool_t v0A = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0A);
-    Bool_t v0C = tAna.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0C);*/
-    //    if(triggers.Contains("CINT1A-ABCE-NOPF-ALL") || triggers.Contains("CINT1C-ABCE-NOPF-ALL")) 
-    if(triggers.Contains("CBEAMB-ABCE-NOPF-ALL")) 
+  if(triggers.Contains("CBEAMB-ABCE-NOPF-ALL")) 
+  return kTRUE;
+    break;
+  }
+  case kNSD: {
+    if(fPhysicsSelection->IsCollisionCandidate(esd) && tAna.IsOfflineTriggerFired(esd,AliTriggerAnalysis::kNSD1))
       return kTRUE;
     break;
   }
     
   }//switch
+  */
   
+}
+/*
+//____________________________________________________________________
+Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd, Trigger trig) {
+  //Did we have trig trigger ?
+  Trigger old = fTrigger;
+  fTrigger = trig;
+  Bool_t retval = IsEventTriggered(esd);
+  fTrigger = old;
+  return retval;
+
+}
+*/
+//____________________________________________________________________
+Bool_t AliFMDAnaParameters::IsEventTriggered(Trigger trigger) {
+  // check if the event was triggered
+  
+  if (fCentralSelection) return kTRUE;
+  switch (trigger) {
+  
+  case kMB1:
+    return fTriggerInel;
+    break;
+  case kNSD:
+    return fTriggerNSD;
+    break;
+  case kEMPTY:
+    return fTriggerEmpty;
+    break;
+  case kNOCTP:
+    return kTRUE;
+    break;
+  default:
+    AliWarning("Trigger not implemented!!!");
+    break;
+    
+    
+  }
   return kFALSE;
+  
 }
     
 //____________________________________________________________________
