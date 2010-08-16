@@ -388,7 +388,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
  AliStack * stack = 0x0;
 // TParticle * primary = 0x0;
  TClonesArray * mcparticles0 = 0x0;
- TClonesArray * mcparticles1 = 0x0;
+ //TClonesArray * mcparticles1 = 0x0;
  AliAODMCParticle * aodprimary = 0x0;
  Int_t pdg=0;
  Double_t pt=0;
@@ -415,12 +415,12 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
           if(!mcparticles0 && GetDebug() > 0)     {
              printf("AliAnaAcceptance::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
            }
-           if(GetReader()->GetSecondInputAODTree()){
-               mcparticles1 = GetReader()->GetAODMCParticles(1);
-               if(!mcparticles1 && GetDebug() > 0)     {
-                   printf("AliAnaAcceptance::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
-                }
-           }
+//           if(GetReader()->GetSecondInputAODTree()){
+//               mcparticles1 = GetReader()->GetAODMCParticles(1);
+//               if(!mcparticles1 && GetDebug() > 0)     {
+//                   printf("AliAnaAcceptance::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
+//                }
+//           }
            for(Int_t i=0;i<mcparticles0->GetEntries();i++){
                aodprimary =(AliAODMCParticle*)mcparticles0->At(i);
                pdg = aodprimary->GetPdgCode() ;

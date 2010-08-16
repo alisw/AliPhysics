@@ -763,7 +763,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	if(IsDataMC()) {
 	  //Input from second AOD?
 	  Int_t input = 0;
-	  if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) input = 1;
+	  //if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) input = 1;
 	  tmctag = GetMCAnalysisUtils()->CheckOrigin(track->GetLabel(),GetReader(),input);
 
 	  if(trkChgHad) fhPtHadron->Fill(track->Pt(),GetMCSource(tmctag));
@@ -837,7 +837,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	    if(IsDataMC()) {  
 	      //Do you want the cluster or the track label?
 	      Int_t input = 0;
-	      if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
+	      //if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
 	      cmctag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(),GetReader(),input);
 	    }
 	    
@@ -899,7 +899,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	    tr.SetDetector("CTS"); //PID determined by CTS
 	  }
 
-	  if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
+	  //if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
 	  //Make this preserve sign of particle
 	  if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
 	  else  tr.SetPdg(-11); //positron is -11
@@ -1396,7 +1396,7 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
     //FIXME:  Add a check for whether file 2 is PYTHIA or HIJING
     //If PYTHIA, then set the vertex from file 2, if not, use the
     //vertex from file 1
-    if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex);
+    //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex);
   }
   
   TVector3 primV(vertex[0],vertex[1],vertex[2]) ;
@@ -1824,12 +1824,12 @@ Int_t AliAnaElectron::GetNumAODMCParticles()
     if(!mcparticles0 && GetDebug() > 0) {
       printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
     }
-    if(GetReader()->GetSecondInputAODTree()){
-      mcparticles1 = GetReader()->GetAODMCParticles(1);
-      if(!mcparticles1 && GetDebug() > 0) {
-        printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
-      }
-    }
+//    if(GetReader()->GetSecondInputAODTree()){
+//      mcparticles1 = GetReader()->GetAODMCParticles(1);
+//      if(!mcparticles1 && GetDebug() > 0) {
+//        printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
+//      }
+//    }
 
     Int_t npart0 = mcparticles0->GetEntriesFast();
     Int_t npart1 = 0;
@@ -1856,12 +1856,12 @@ AliAODMCParticle* AliAnaElectron::GetMCParticle(Int_t ipart)
     if(!mcparticles0 && GetDebug() > 0) {
       printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
     }
-    if(GetReader()->GetSecondInputAODTree()){
-      mcparticles1 = GetReader()->GetAODMCParticles(1);
-      if(!mcparticles1 && GetDebug() > 0) {
-	printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
-      }
-    }
+//    if(GetReader()->GetSecondInputAODTree()){
+//      mcparticles1 = GetReader()->GetAODMCParticles(1);
+//      if(!mcparticles1 && GetDebug() > 0) {
+//	printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
+//      }
+//    }
 
     Int_t npart0 = mcparticles0->GetEntriesFast();
     Int_t npart1 = 0;

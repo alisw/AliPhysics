@@ -385,7 +385,7 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
 	    tr.SetDetector("CTS"); //PID determined by CTS
 	  }
 
-	  if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
+	  //if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
 	  //Make this preserve sign of particle
 	  if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
 	  else  tr.SetPdg(-11); //positron is -11
@@ -643,7 +643,7 @@ Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , float ma
     //FIXME:  Add a check for whether file 2 is PYTHIA or HIJING
     //If PYTHIA, then set the vertex from file 2, if not, use the
     //vertex from file 1
-    if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex);
+    //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex);
   }
   
   TVector3 primV(vertex[0],vertex[1],vertex[2]) ;
@@ -818,12 +818,12 @@ AliAODMCParticle* AliAnaBtag::GetMCParticle(Int_t ipart)
     if(!mcparticles0 && GetDebug() > 0) {
       printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
     }
-    if(GetReader()->GetSecondInputAODTree()){
-      mcparticles1 = GetReader()->GetAODMCParticles(1);
-      if(!mcparticles1 && GetDebug() > 0) {
-	printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
-      }
-    }
+//    if(GetReader()->GetSecondInputAODTree()){
+//      mcparticles1 = GetReader()->GetAODMCParticles(1);
+//      if(!mcparticles1 && GetDebug() > 0) {
+//	printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
+//      }
+//    }
 
     Int_t npart0 = mcparticles0->GetEntriesFast();
     Int_t npart1 = 0;

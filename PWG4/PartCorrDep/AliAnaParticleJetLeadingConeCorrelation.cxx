@@ -958,11 +958,11 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
 	  
 	//Get vertex for photon momentum calculation
 	Double_t vertex [] = {0,0,0} ; //vertex 
-	Double_t vertex2[] = {0,0,0} ; //vertex of second input AOD 
+	//Double_t vertex2[] = {0,0,0} ; //vertex of second input AOD 
 	if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
 	{
 		GetReader()->GetVertex(vertex);
-		if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+		//if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
 	}
 	  
     //Cluster loop, select pairs with good pt, phi and fill AODs or histograms
@@ -971,13 +971,13 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
       
 	  //Input from second AOD?
 	  Int_t inputi = 0;
-	  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) inputi = 1 ;
-	  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) inputi = 1;
+//	  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) inputi = 1 ;
+//	  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) inputi = 1;
 		
 	  //Cluster selection, not charged, with photon or pi0 id and in fiducial cut
 	  Int_t pdgi=0;
 	  if     (inputi == 0 && !SelectCluster(calo, vertex,  gammai, pdgi))  continue ;
-	  else if(inputi == 1 && !SelectCluster(calo, vertex2, gammai, pdgi))  continue ;	
+	  //else if(inputi == 1 && !SelectCluster(calo, vertex2, gammai, pdgi))  continue ;	
       
       if(GetDebug() > 2) printf("AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0() - Neutral cluster: pt %2.3f, phi %2.3f \n", 
 				gammai.Pt(),gammai.Phi());
@@ -1011,13 +1011,13 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
 	  
 	  //Input from second AOD?
 	  Int_t inputj = 0;
-	  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= jclus) inputj = 1;
-	  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= jclus) inputj = 1;
+//	  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= jclus) inputj = 1;
+//	  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= jclus) inputj = 1;
 		
 	  //Cluster selection, not charged with photon or pi0 id and in fiducial cut
 	  Int_t pdgj=0;
 	  if     (inputj == 0 && !SelectCluster(calo2, vertex,  gammaj, pdgj))  continue ;
-	  else if(inputj == 1 && !SelectCluster(calo2, vertex2, gammaj, pdgj))  continue ;
+	  //else if(inputj == 1 && !SelectCluster(calo2, vertex2, gammaj, pdgj))  continue ;
 	  
 	  if(pdgj == AliCaloPID::kPhoton ){
 	    
@@ -1508,11 +1508,11 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
     
 	//Get vertex for photon momentum calculation
 	Double_t vertex[]  = {0,0,0} ; //vertex 
-	Double_t vertex2[] = {0,0,0} ; //vertex of second input aod
+	//Double_t vertex2[] = {0,0,0} ; //vertex of second input aod
 	if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
 	{
 		GetReader()->GetVertex(vertex);
-		if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+		//if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
 	}
 	  
     for(Int_t iclus = 0;iclus < (GetAODEMCAL())->GetEntriesFast() ; iclus ++ ){
@@ -1523,12 +1523,12 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
       
 	  //Input from second AOD?
 	  Int_t input = 0;
-	  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1 ;
-	  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) input = 1;
-		
+//	  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1 ;
+//	  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) input = 1;
+//		
 	  //Get Momentum vector, 
 	  if     (input == 0) calo->GetMomentum(lv,vertex) ;//Assume that come from vertex in straight line
-	  else if(input == 1) calo->GetMomentum(lv,vertex2);//Assume that come from vertex in straight line  
+	  //else if(input == 1) calo->GetMomentum(lv,vertex2);//Assume that come from vertex in straight line  
 		
       //Particles in jet 
       if(IsParticleInJetCone(lv.Eta(),lv.Phi(), etal, phil)){
@@ -1626,11 +1626,11 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
     
 	//Get vertex for photon momentum calculation
 	Double_t vertex[]  = {0,0,0} ; //vertex 
-	Double_t vertex2[] = {0,0,0} ; //vertex of second input aod
+	//Double_t vertex2[] = {0,0,0} ; //vertex of second input aod
 	if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
 	{
 		GetReader()->GetVertex(vertex);
-		if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+		//if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
 	}
 	  
     //Loop on jet particles
@@ -1640,12 +1640,12 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
 		  
 		  //Input from second AOD?
 		  Int_t input = 0;
-		  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1 ;
-		  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) input = 1;
+	//	  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1 ;
+//		  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) input = 1;
 		  
 		  //Get Momentum vector, 
 		  if     (input == 0) calo->GetMomentum(lv,vertex) ;//Assume that come from vertex in straight line
-		  else if(input == 1) calo->GetMomentum(lv,vertex2);//Assume that come from vertex in straight line  
+		  //else if(input == 1) calo->GetMomentum(lv,vertex2);//Assume that come from vertex in straight line  
 		  
 		  if(lv.Pt() > ptcut && IsParticleInJetCone(lv.Eta(),lv.Phi(), etal, phil)) jet+=lv;   
       }//jet cluster loop
@@ -1658,12 +1658,12 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
 
 		  //Input from second AOD?
 		  Int_t input = 0;
-		  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1 ;
-		  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) input = 1;
+//		  if     (particle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1 ;
+//		  else if(particle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) input = 1;
 		  
 		  //Get Momentum vector, 
 		  if     (input == 0) calo->GetMomentum(lv,vertex) ;//Assume that come from vertex in straight line
-		  else if(input == 1) calo->GetMomentum(lv,vertex2);//Assume that come from vertex in straight line  
+		  //else if(input == 1) calo->GetMomentum(lv,vertex2);//Assume that come from vertex in straight line  
 		  
 		  if( lv.Pt() > ptcut && IsParticleInJetCone(lv.Eta(),lv.Phi(),etal, phiTrig)) bkg+=lv;
       }//background cluster loop 

@@ -807,11 +807,11 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
         GetMixedEvent()->GetVertexOfEvent(iev)->GetXYZ(GetVertex(iev)); 
     }
   }
-  Double_t vertex2[] = {0.0,0.0,0.0} ; //vertex of second input aod
-  if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
-  {
-     if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
-  }
+//  Double_t vertex2[] = {0.0,0.0,0.0} ; //vertex of second input aod
+//  if(GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
+//  {
+//     if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+//  }
 	
     //Cluster loop, select pairs with good pt, phi and fill AODs or histograms
     //Int_t iEvent= GetReader()->GetEventNumber() ;
@@ -827,17 +827,17 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
 
       //Input from second AOD?
     Int_t inputi = 0;
-    if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) 
-      inputi = 1 ;
-    else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) 
-      inputi = 1;
+//    if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) 
+//      inputi = 1 ;
+//    else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) 
+//      inputi = 1;
     
       //Cluster selection, not charged, with photon or pi0 id and in fiducial cut
     Int_t pdg=0;
     if     (inputi == 0 && !SelectCluster(calo, GetVertex(evtIndex1),  gammai, pdg))  
       continue ;
-    else if(inputi == 1 && !SelectCluster(calo, vertex2, gammai, pdg))  
-      continue ;
+//    else if(inputi == 1 && !SelectCluster(calo, vertex2, gammai, pdg))  
+//      continue ;
     
     if(GetDebug() > 2)
       printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD() - Neutral cluster in %s: pt %f, phi %f, phi trigger %f. Cuts:  delta phi min %2.2f,  max %2.2f, pT min %2.2f \n",
@@ -889,17 +889,17 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
         
           //Input from second AOD?
         Int_t inputj = 0;
-        if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= jclus) 
-          inputj = 1;
-        else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= jclus) 
-          inputj = 1;
+//        if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= jclus) 
+//          inputj = 1;
+//        else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= jclus) 
+//          inputj = 1;
         
           //Cluster selection, not charged with photon or pi0 id and in fiducial cut
         Int_t pdgj=0;
         if     (inputj == 0 && !SelectCluster(calo2, GetVertex(evtIndex2),  gammaj, pdgj))  
           continue ;
-        else if(inputj == 1 && !SelectCluster(calo2, vertex2, gammaj, pdgj))  
-          continue ;
+//        else if(inputj == 1 && !SelectCluster(calo2, vertex2, gammaj, pdgj))  
+//          continue ;
         
         if(!SelectCluster(calo2,GetVertex(evtIndex2), gammaj, pdgj)) 
           continue ;

@@ -745,28 +745,28 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   //Loop on stored AOD 
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Histo aod branch entries %d\n", naod);
-
+  
   //Get vertex for photon momentum calculation
   Double_t vertex[]={0,0,0} ; //vertex ;
-  Double_t vertex2[]={0,0,0} ; //vertex ;
+  //Double_t vertex2[]={0,0,0} ; //vertex ;
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
 	  GetReader()->GetVertex(vertex);
-	  if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+	  //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
   }	
 	
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* aod =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
-
+    
     Bool_t isolation   = aod->IsIsolated();              
     Float_t ptcluster  = aod->Pt();
     Float_t phicluster = aod->Phi();
     Float_t etacluster = aod->Eta();
     //Recover reference arrays with clusters and tracks
-	TObjArray * refclusters = aod->GetObjArray(GetAODObjArrayName()+"Clusters");
+    TObjArray * refclusters = aod->GetObjArray(GetAODObjArrayName()+"Clusters");
     TObjArray * reftracks   = aod->GetObjArray(GetAODObjArrayName()+"Tracks");
-  
-	//If too small or too large pt, skip
-	if(aod->Pt() < GetMinPt() || aod->Pt() > GetMaxPt() ) continue ; 
+    
+    //If too small or too large pt, skip
+    if(aod->Pt() < GetMinPt() || aod->Pt() > GetMaxPt() ) continue ; 
 	  
     if(fMakeSeveralIC) {
       //Analysis of multiple IC at same time
@@ -778,88 +778,88 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
       GetIsolationCut()->MakeIsolationCut(reftracks, refclusters, GetReader(), kFALSE, aod, "", n,nfrac,coneptsum, isolated);
       fhConeSumPt->Fill(ptcluster,coneptsum);    
-	  if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Energy Sum in Isolation Cone %2.2f\n", coneptsum);    
-	}
+      if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Energy Sum in Isolation Cone %2.2f\n", coneptsum);    
+    }
     
     //Fill pt distribution of particles in cone
     //Tracks
     coneptsum=0;
-	if(reftracks){  
-        for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++){
-            AliAODTrack* track = (AliAODTrack *) reftracks->At(itrack);
-            fhPtInCone->Fill(ptcluster,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
-            coneptsum+=track->Pt();
-        }
-	}
-	  
-    //CaloClusters
-	if(refclusters){    
-		TLorentzVector mom ;
-        for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++){
-            AliAODCaloCluster* calo = (AliAODCaloCluster *) refclusters->At(icalo);
-			Int_t input = 0;
-			if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
-			else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
-			
-			//Get Momentum vector, 
-			if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
-			else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
-			
-            fhPtInCone->Fill(ptcluster, mom.Pt());
-            coneptsum+=mom.Pt();
-       }
+    if(reftracks){  
+      for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++){
+        AliAODTrack* track = (AliAODTrack *) reftracks->At(itrack);
+        fhPtInCone->Fill(ptcluster,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
+        coneptsum+=track->Pt();
+      }
     }
 	  
-	if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d Energy Sum in Isolation Cone %2.2f\n", iaod, coneptsum);
+    //CaloClusters
+    if(refclusters){    
+      TLorentzVector mom ;
+      for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++){
+        AliAODCaloCluster* calo = (AliAODCaloCluster *) refclusters->At(icalo);
+        Int_t input = 0;
+        //			if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
+        //			else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
+        
+        //Get Momentum vector, 
+        if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+        //			else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+        
+        fhPtInCone->Fill(ptcluster, mom.Pt());
+        coneptsum+=mom.Pt();
+      }
+    }
+	  
+    if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d Energy Sum in Isolation Cone %2.2f\n", iaod, coneptsum);
     
-	if(!fReMakeIC) fhConeSumPt->Fill(ptcluster,coneptsum);
+    if(!fReMakeIC) fhConeSumPt->Fill(ptcluster,coneptsum);
     
     if(isolation){    
-		
-	  if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED, fill histograms\n", iaod);
-		
+      
+      if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED, fill histograms\n", iaod);
+      
       fhPtIso  ->Fill(ptcluster);
       fhPhiIso ->Fill(ptcluster,phicluster);
       fhEtaIso ->Fill(ptcluster,etacluster);
       
       if(IsDataMC()){
-	Int_t tag =aod->GetTag();
-	
-	if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)){
-	  fhPtIsoPrompt  ->Fill(ptcluster);
-	  fhPhiIsoPrompt ->Fill(ptcluster,phicluster);
-	  fhEtaIsoPrompt ->Fill(ptcluster,etacluster);
-	}
-	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
-	  {
-	    fhPtIsoFragmentation  ->Fill(ptcluster);
-	    fhPhiIsoFragmentation ->Fill(ptcluster,phicluster);
-	    fhEtaIsoFragmentation ->Fill(ptcluster,etacluster);
-	  }
-	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
-	  {
-	    fhPtIsoPi0Decay  ->Fill(ptcluster);
-	    fhPhiIsoPi0Decay ->Fill(ptcluster,phicluster);
-	    fhEtaIsoPi0Decay ->Fill(ptcluster,etacluster);
-	  }
-	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
-	  {
-	    fhPtIsoOtherDecay  ->Fill(ptcluster);
-	    fhPhiIsoOtherDecay ->Fill(ptcluster,phicluster);
-	    fhEtaIsoOtherDecay ->Fill(ptcluster,etacluster);
-	  }
-	else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))
-	  {
-	    fhPtIsoConversion  ->Fill(ptcluster);
-	    fhPhiIsoConversion ->Fill(ptcluster,phicluster);
-	    fhEtaIsoConversion ->Fill(ptcluster,etacluster);
-	  }
-	else
-	  {
-	    fhPtIsoUnknown  ->Fill(ptcluster);
-	    fhPhiIsoUnknown ->Fill(ptcluster,phicluster);
-	    fhEtaIsoUnknown ->Fill(ptcluster,etacluster);
-	  }
+        Int_t tag =aod->GetTag();
+        
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)){
+          fhPtIsoPrompt  ->Fill(ptcluster);
+          fhPhiIsoPrompt ->Fill(ptcluster,phicluster);
+          fhEtaIsoPrompt ->Fill(ptcluster,etacluster);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
+        {
+          fhPtIsoFragmentation  ->Fill(ptcluster);
+          fhPhiIsoFragmentation ->Fill(ptcluster,phicluster);
+          fhEtaIsoFragmentation ->Fill(ptcluster,etacluster);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+        {
+          fhPtIsoPi0Decay  ->Fill(ptcluster);
+          fhPhiIsoPi0Decay ->Fill(ptcluster,phicluster);
+          fhEtaIsoPi0Decay ->Fill(ptcluster,etacluster);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
+        {
+          fhPtIsoOtherDecay  ->Fill(ptcluster);
+          fhPhiIsoOtherDecay ->Fill(ptcluster,phicluster);
+          fhEtaIsoOtherDecay ->Fill(ptcluster,etacluster);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))
+        {
+          fhPtIsoConversion  ->Fill(ptcluster);
+          fhPhiIsoConversion ->Fill(ptcluster,phicluster);
+          fhEtaIsoConversion ->Fill(ptcluster,etacluster);
+        }
+        else
+        {
+          fhPtIsoUnknown  ->Fill(ptcluster);
+          fhPhiIsoUnknown ->Fill(ptcluster,phicluster);
+          fhEtaIsoUnknown ->Fill(ptcluster,etacluster);
+        }
       }//Histograms with MC
       
     }//Isolated histograms

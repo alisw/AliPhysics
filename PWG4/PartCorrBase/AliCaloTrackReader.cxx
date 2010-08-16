@@ -21,7 +21,10 @@
 // Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TObjArrays (PHOS, EMCAL, CTS)
 //                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TObjArrays (PHOS, EMCAL, CTS)
 //                 : AliCaloTrackAODReader: Fills AOD data in 3 TObjArrays (PHOS, EMCAL, CTS) 
-//                
+//              
+// This part is commented: Mixing analysis can be done, input AOD with events
+// is opened in the AliCaloTrackReader::Init()
+
 //-- Author: Gustavo Conesa (LNF-INFN) 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -53,12 +56,13 @@ ClassImp(AliCaloTrackReader)
     fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
     fFillEMCALCells(0),fFillPHOSCells(0), 
-    fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
-    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
-    fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
-    fAODPHOSNormalInputEntries(0), fTrackStatus(0), 
+//    fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
+//    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
+//    fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
+//    fAODPHOSNormalInputEntries(0), 
+    fTrackStatus(0), 
     fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
-    fCleanOutputStdAOD(kFALSE), fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
+    fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
     fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
     fMixedEvent(NULL), fNMixedEvent(1), fVertex(NULL), fWriteOutputStdAOD(kFALSE)
 {
@@ -93,7 +97,6 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & reader) :
   fAODPHOSNormalInputEntries(reader.fAODPHOSNormalInputEntries),
   fTrackStatus(reader.fTrackStatus),
   fReadStack(reader.fReadStack), fReadAODMCParticles(reader.fReadAODMCParticles),
-  fCleanOutputStdAOD(reader.fCleanOutputStdAOD), fDeltaAODFileName(reader.fDeltaAODFileName),
   fFiredTriggerClassName(reader.fFiredTriggerClassName),
   fAnaLED(reader.fAnaLED), 
   fTaskName(reader.fTaskName),
@@ -151,7 +154,6 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & reader) :
 //  fReadStack          = source.fReadStack;
 //  fReadAODMCParticles = source.fReadAODMCParticles;	
 //	
-//  fCleanOutputStdAOD  = source.fCleanOutputStdAOD;
 //  fDeltaAODFileName   = source.fDeltaAODFileName;
 //	
 //  fFiredTriggerClassName = source.fFiredTriggerClassName  ;
@@ -279,43 +281,52 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const {
 
 //____________________________________________________________________________
 TClonesArray* AliCaloTrackReader::GetAODMCParticles(Int_t input) const {
-    //Return list of particles in AOD. Do it for the corresponding input event.
+  //Return list of particles in AOD. Do it for the corresponding input event.
+  
   TClonesArray * rv = NULL ; 
-    //	if(fDataType == kAOD){
-    //Normal input AOD
-  AliAODEvent * evt = NULL ; 
-  if (evt) {
+  if(fDataType == kAOD){
+ 
     if(input == 0){
-      evt = dynamic_cast<AliAODEvent*> (fInputEvent) ;
-      rv = (TClonesArray*)evt->FindListObject("mcparticles");
-    } else if(input == 1 && fSecondInputAODEvent){ //Second input AOD   
-      rv = (TClonesArray*) fSecondInputAODEvent->FindListObject("mcparticles");	
-    } else {
-    printf("AliCaloTrackReader::GetAODMCParticles() - wrong AOD input index? %d, or non existing tree? \n",input); 
-    }
+      //Normal input AOD
+      AliAODEvent * evt = dynamic_cast<AliAODEvent*> (fInputEvent) ;
+      if(evt)
+        rv = (TClonesArray*)evt->FindListObject("mcparticles");
+      else  
+        printf("AliCaloTrackReader::GetAODMCParticles() - wrong AOD input index? %d, or non existing tree? \n",input); 
+      
+    } //else if(input == 1 && fSecondInputAODEvent){ //Second input AOD   
+//      rv = (TClonesArray*) fSecondInputAODEvent->FindListObject("mcparticles");	
+//    } 
+    
   } else {
-    printf("AliCaloTrackReader::GetAODMCParticles() - Input are not AODs\n"); 
+      printf("AliCaloTrackReader::GetAODMCParticles() - Input are not AODs\n"); 
   }
+  
   return rv ; 
 }
 
 //____________________________________________________________________________
 AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const {
 	//Return MC header in AOD. Do it for the corresponding input event.
+  AliAODMCHeader *mch = NULL;
 	if(fDataType == kAOD){
 		//Normal input AOD
-		if(input == 0) return (AliAODMCHeader*)((AliAODEvent*)fInputEvent)->FindListObject("mcheader");
-		//Second input AOD
-		else if(input == 1) return  (AliAODMCHeader*) fSecondInputAODEvent->FindListObject("mcheader");	
+		if(input == 0) {
+      mch = (AliAODMCHeader*)((AliAODEvent*)fInputEvent)->FindListObject("mcheader");
+    }
+//		//Second input AOD
+//		else if(input == 1){ 
+//       mch = (AliAODMCHeader*) fSecondInputAODEvent->FindListObject("mcheader");
+//  }
 		else {
 			printf("AliCaloTrackReader::GetAODMCHeader() - wrong AOD input index, %d\n",input);
-			return 0x0;
 		}
 	}
 	else {
 		printf("AliCaloTrackReader::GetAODMCHeader() - Input are not AODs\n");
-		return 0x0;
 	}
+  
+  return mch;
 }
 
 //_______________________________________________________________
@@ -332,27 +343,27 @@ void AliCaloTrackReader::Init()
 		fReadAODMCParticles = kFALSE;
 	}
 	
-	if(fSecondInputFileName!=""){
-		if(fDataType == kAOD){
-			TFile * input2   = new TFile(fSecondInputFileName,"read");
-			printf("AliCaloTrackReader::Init() - Second input file opened: %s, size %d \n", input2->GetName(), (Int_t) input2->GetSize());
-			fSecondInputAODTree = (TTree*) input2->Get("aodTree");
-			if(fSecondInputAODTree) printf("AliCaloTrackReader::Init() - Second input tree opened: %s, entries %d \n", 
-										   fSecondInputAODTree->GetName(), (Int_t) fSecondInputAODTree->GetEntries());
-			else{
-			 printf("AliCaloTrackReader::Init() - Second input tree not available, STOP \n");
-			 abort();
-			}
-			fSecondInputAODEvent = new AliAODEvent;
-			fSecondInputAODEvent->ReadFromTree(fSecondInputAODTree);
-			if(fSecondInputFirstEvent >= fSecondInputAODTree->GetEntriesFast()){
-				printf("AliCaloTrackReader::Init() - Requested first event of second input %d, is larger than number of events %d, STOP\n", 
-					   fSecondInputFirstEvent, (Int_t) fSecondInputAODTree->GetEntriesFast());
-				abort();
-			}
-		}
-		else printf("AliCaloTrackReader::Init() - Second input not added, reader is not AOD\n");
-	}
+//	if(fSecondInputFileName!=""){
+//		if(fDataType == kAOD){
+//			TFile * input2   = new TFile(fSecondInputFileName,"read");
+//			printf("AliCaloTrackReader::Init() - Second input file opened: %s, size %d \n", input2->GetName(), (Int_t) input2->GetSize());
+//			fSecondInputAODTree = (TTree*) input2->Get("aodTree");
+//			if(fSecondInputAODTree) printf("AliCaloTrackReader::Init() - Second input tree opened: %s, entries %d \n", 
+//										   fSecondInputAODTree->GetName(), (Int_t) fSecondInputAODTree->GetEntries());
+//			else{
+//			 printf("AliCaloTrackReader::Init() - Second input tree not available, STOP \n");
+//			 abort();
+//			}
+//			fSecondInputAODEvent = new AliAODEvent;
+//			fSecondInputAODEvent->ReadFromTree(fSecondInputAODTree);
+//			if(fSecondInputFirstEvent >= fSecondInputAODTree->GetEntriesFast()){
+//				printf("AliCaloTrackReader::Init() - Requested first event of second input %d, is larger than number of events %d, STOP\n", 
+//					   fSecondInputFirstEvent, (Int_t) fSecondInputAODTree->GetEntriesFast());
+//				abort();
+//			}
+//		}
+//		else printf("AliCaloTrackReader::Init() - Second input not added, reader is not AOD\n");
+//	}
 }
 
 //_______________________________________________________________
@@ -371,11 +382,10 @@ void AliCaloTrackReader::InitParameters()
   fFillEMCALCells = kFALSE;
   fFillPHOSCells  = kFALSE;
 
-  fSecondInputFileName   = "" ;
-  fSecondInputFirstEvent = 0 ;
+  //fSecondInputFileName   = "" ;
+  //fSecondInputFirstEvent = 0 ;
   fReadStack             = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
   fReadAODMCParticles    = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
-  fCleanOutputStdAOD     = kFALSE; // Clean the standard clusters/tracks?
   fDeltaAODFileName      = "deltaAODPartCorr.root";
   fFiredTriggerClassName      = "";
 	 	
@@ -402,16 +412,17 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n", fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n", fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
+  printf("Write std AOD   =     %d\n", fWriteOutputStdAOD) ;
+
   if(fComparePtHardAndJetPt)
 	  printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
 	
-  if(fSecondInputFileName!="") {
-	  printf("Second Input File Name     =     %s\n", fSecondInputFileName.Data()) ;
-	  printf("Second Input First Event   =     %d\n", fSecondInputFirstEvent) ;
-  }
+//  if(fSecondInputFileName!="") {
+//	  printf("Second Input File Name     =     %s\n", fSecondInputFileName.Data()) ;
+//	  printf("Second Input First Event   =     %d\n", fSecondInputFirstEvent) ;
+//  }
 	
   printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
-  printf("Clean std AOD       =     %d\n", fCleanOutputStdAOD) ;
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
   printf("    \n") ;
 } 
@@ -470,24 +481,24 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
   }
 
   //In case of mixing events with other AOD file	
-  if(fDataType == kAOD && fSecondInputAODTree){
-	 
-    if(fDebug > 1) 
-      printf("AliCaloTrackReader::FillInputEvent() - Get event %d from second input AOD file \n", iEntry+fSecondInputFirstEvent);
-    if(fSecondInputAODTree->GetEntriesFast() <= iEntry+fSecondInputFirstEvent) {
-      if(fSecondInputAODTree->GetEntriesFast() == iEntry+fSecondInputFirstEvent) 
-			 printf("AliCaloTrackReader::FillInputEvent() - Skip events from event %d, no more events in second AOD file \n", iEntry);
-      return kFALSE;
-    }
-    
-    //Get the Event
-    Int_t nbytes = fSecondInputAODTree->GetEvent(iEntry+fSecondInputFirstEvent);
-    if ( nbytes == 0 ) {//If nothing in AOD
-      printf("AliCaloTrackReader::FillInputEvent() - Nothing in Second AOD input, STOP\n");
-      abort() ; 
-    }
-    
-  }
+ // if(fDataType == kAOD && fSecondInputAODTree){
+//	 
+//    if(fDebug > 1) 
+//      printf("AliCaloTrackReader::FillInputEvent() - Get event %d from second input AOD file \n", iEntry+fSecondInputFirstEvent);
+//    if(fSecondInputAODTree->GetEntriesFast() <= iEntry+fSecondInputFirstEvent) {
+//      if(fSecondInputAODTree->GetEntriesFast() == iEntry+fSecondInputFirstEvent) 
+//			 printf("AliCaloTrackReader::FillInputEvent() - Skip events from event %d, no more events in second AOD file \n", iEntry);
+//      return kFALSE;
+//    }
+//    
+//    //Get the Event
+//    Int_t nbytes = fSecondInputAODTree->GetEvent(iEntry+fSecondInputFirstEvent);
+//    if ( nbytes == 0 ) {//If nothing in AOD
+//      printf("AliCaloTrackReader::FillInputEvent() - Nothing in Second AOD input, STOP\n");
+//      abort() ; 
+//    }
+//    
+//  }
 	
 
   for (Int_t iev = 0; iev < fNMixedEvent; iev++) {
@@ -523,11 +534,6 @@ void AliCaloTrackReader::ResetLists() {
   if(fAODPHOS)  fAODPHOS -> Clear();
   if(fEMCALCells) fEMCALCells -> Clear();
   if(fPHOSCells)  fPHOSCells -> Clear();
-  if(fCleanOutputStdAOD && fOutputEvent ){
-    //Only keep copied tracks and clusters if requested
-    fOutputEvent->GetTracks()      ->Clear();
-    fOutputEvent->GetCaloClusters()->Clear();
-  }
 
 }
 
@@ -606,8 +612,8 @@ void AliCaloTrackReader::FillInputCTS() {
     }//Pt and Fiducial cut passed. 
   }// track loop
 	
-  fAODCTSNormalInputEntries = fAODCTS->GetEntriesFast();
-  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputCTS()   - aod entries %d\n", fAODCTSNormalInputEntries);
+  //fAODCTSNormalInputEntries = fAODCTS->GetEntriesFast();
+  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputCTS()   - aod entries %d\n", fAODCTS->GetEntriesFast());//fAODCTSNormalInputEntries);
   
     //  //If second input event available, add the clusters.
     //  if(fSecondInputAODTree && fSecondInputAODEvent){
@@ -656,7 +662,7 @@ void AliCaloTrackReader::FillInputEMCAL() {
     if ( (clus = fInputEvent->GetCaloCluster(iclus)) ) {
       if (clus->IsEMCAL()){
         
-          //Check if the cluster contains any bad channel and if close to calorimeter borders
+        //Check if the cluster contains any bad channel and if close to calorimeter borders
         Int_t vindex = 0 ;  
         if (fMixedEvent) 
           vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
@@ -679,7 +685,7 @@ void AliCaloTrackReader::FillInputEMCAL() {
             printf("AliCaloTrackAODReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
                    momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
           
-            //Recalibrate the cluster energy 
+          //Recalibrate the cluster energy 
           if(GetCaloUtils()->IsRecalibrationOn()) {
             Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliAODCaloCells*)GetEMCALCells());
             clus->SetE(energy);
@@ -703,8 +709,8 @@ void AliCaloTrackReader::FillInputEMCAL() {
       }//EMCAL cluster
     }// cluster exists
   }// cluster loop
-  fAODEMCALNormalInputEntries = fAODEMCAL->GetEntriesFast();
-  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputEMCAL() - aod entries %d\n", fAODEMCALNormalInputEntries);
+  //fAODEMCALNormalInputEntries = fAODEMCAL->GetEntriesFast();
+  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputEMCAL() - aod entries %d\n",  fAODEMCAL->GetEntriesFast());//fAODEMCALNormalInputEntries);
   
     //If second input event available, add the clusters.
     //  if(fSecondInputAODTree && fSecondInputAODEvent){
@@ -801,8 +807,8 @@ void AliCaloTrackReader::FillInputPHOS() {
     }//cluster exists
   }//esd cluster loop
   
-  fAODPHOSNormalInputEntries = fAODPHOS->GetEntriesFast() ;
-  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputPHOS()  - aod entries %d\n", fAODPHOSNormalInputEntries);
+  //fAODPHOSNormalInputEntries = fAODPHOS->GetEntriesFast() ;
+  if(fDebug > 1) printf("AliCaloTrackAODReader::FillInputPHOS()  - aod entries %d\n",  fAODPHOS->GetEntriesFast());//fAODPHOSNormalInputEntries);
   
     //If second input event available, add the clusters.
     //  if(fSecondInputAODTree && fSecondInputAODEvent){  

@@ -18,7 +18,7 @@
 //_________________________________________________________________________
 // Class for reading data (AODs) in order to do prompt gamma
 //  or other particle identification and correlations.
-// Mixing analysis can be done, input AOD with events
+// This part is commented: Mixing analysis can be done, input AOD with events
 // is opened in the AliCaloTrackReader::Init()
 // 
 //
@@ -78,12 +78,12 @@ AliCaloTrackAODReader::AliCaloTrackAODReader(const AliCaloTrackAODReader & aodr)
 
 
 //____________________________________________________________________________
-void AliCaloTrackAODReader::GetSecondInputAODVertex(Double_t  v[3]) const {
-	//Return vertex position of second AOD input
-	
-	fSecondInputAODEvent->GetPrimaryVertex()->GetXYZ(v);
-
-}
+//void AliCaloTrackAODReader::GetSecondInputAODVertex(Double_t  v[3]) const {
+//	//Return vertex position of second AOD input
+//	
+//	fSecondInputAODEvent->GetPrimaryVertex()->GetXYZ(v);
+//
+//}
 
 //____________________________________________________________________________
 Double_t AliCaloTrackAODReader::GetBField() const {
@@ -142,16 +142,4 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent*
   SetMC(mc);
   
 }
-
-//________________________________________________________________
-void AliCaloTrackAODReader::Print(const Option_t * opt) const
-{
-	
-	//Print some relevant parameters set for the analysis
-	AliCaloTrackReader::Print(opt);
-	
-	printf("Write std AOD       =     %d\n", fWriteOutputStdAOD) ;
-	
-	printf("    \n") ;
-} 
 
