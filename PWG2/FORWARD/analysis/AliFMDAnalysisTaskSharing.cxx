@@ -98,6 +98,19 @@ Float_t AliFMDAnalysisTaskSharing::GetVtxEfficiencyFromData(){
   
 }
 //_____________________________________________________________________
+Float_t AliFMDAnalysisTaskSharing::GetNSDVtxEfficiencyFromData(){
+  
+  TH1F* hEventsNSDVtx = (TH1F*)fDiagList->FindObject("hEventsNSDVtx");
+  TH1F* hEventsNSD  = (TH1F*)fDiagList->FindObject("hEventsNSD");
+  
+  if(hEventsNSD->GetEntries() != 0 && hEventsNSDVtx->GetEntries() !=0 && hEventsNSD->GetEntries() != hEventsNSDVtx->GetEntries())
+    return hEventsNSDVtx->GetEntries() / hEventsNSD->GetEntries();
+  else return -1;
+  
+}
+
+
+//_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::CreateOutputObjects()
 {
   // Create the output objects
@@ -120,6 +133,14 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
 			    hBg->GetXaxis()->GetXmax());
   hPrimary->Sumw2();
   fDiagList->Add(hPrimary);
+  
+  TH1F* hPrimaryNSD = new TH1F("hMultvsEtaNSDNoCuts","hMultvsEtaNSDNoCuts",
+			       hBg->GetNbinsX(),
+			       hBg->GetXaxis()->GetXmin(),
+			       hBg->GetXaxis()->GetXmax());
+  hPrimaryNSD->Sumw2();
+  fDiagList->Add(hPrimaryNSD);
+  
   TH1F* hXvtx = new TH1F("hXvtx","x vertex distribution",100,-2,2);
   TH1F* hYvtx = new TH1F("hYvtx","y vertex distribution",100,-2,2);
   TH1F* hZvtx = new TH1F("hZvtx","z vertex distribution",4*pars->GetNvtxBins(),-4*pars->GetVtxCutZ(),4*pars->GetVtxCutZ());
@@ -253,14 +274,18 @@ fDiagList->Add(hCorrelationFMDSPDhits);
   fDiagList->Add(hHitDistributionFMD3I);
   fDiagList->Add(hHitDistributionFMD3O);
   TH1F*  nMCevents = new TH1F("nMCEventsNoCuts","nMCEventsNoCuts",pars->GetNvtxBins(),0,pars->GetNvtxBins());
-  
+  TH1F*  nMCeventsNSD= new TH1F("nMCEventsNSDNoCuts","nMCEventsNSDNoCuts",pars->GetNvtxBins(),0,pars->GetNvtxBins());
   fDiagList->Add(nMCevents);
+  fDiagList->Add(nMCeventsNSD);
   
-  TH1F*  hEventsVtx = new TH1F("hEventsVtx","hEventsVtx",pars->GetNvtxBins(),0,pars->GetNvtxBins());
-  TH1F*  hEventsTr  = new TH1F("hEventsTr","hEventsTr",pars->GetNvtxBins(),0,pars->GetNvtxBins());
+  TH1F*  hEventsVtx     = new TH1F("hEventsVtx","hEventsVtx",pars->GetNvtxBins(),0,pars->GetNvtxBins());
+  TH1F*  hEventsTr      = new TH1F("hEventsTr","hEventsTr",pars->GetNvtxBins(),0,pars->GetNvtxBins());
+  TH1F*  hEventsNSD     = new TH1F("hEventsNSD","hEventsNSD",pars->GetNvtxBins(),0,pars->GetNvtxBins());
+  TH1F*  hEventsNSDVtx  = new TH1F("hEventsNSDVtx","hEventsNSDVtx",pars->GetNvtxBins(),0,pars->GetNvtxBins());
   fDiagList->Add(hEventsVtx);
   fDiagList->Add(hEventsTr);
-  
+  fDiagList->Add(hEventsNSD);
+  fDiagList->Add(hEventsNSDVtx);
   
 }
 //_____________________________________________________________________
@@ -286,9 +311,11 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  Double_t vertex[3];
+  Double_t vertex[3]={0,0,0};
   Bool_t vtxStatus = pars->GetVertex(fESD,vertex);
   fEsdVertex->SetXYZ(vertex);
+  
+  // std::cout<<vtxStatus<<"  "<<vertex[0]<<"   "<<vertex[1]<<"   "<<vertex[2]<<std::endl;
   
   // Process primaries here to get true MC distribution
   if(pars->GetProcessPrimary())
@@ -300,14 +327,27 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   
   
   
-  Bool_t isTriggered = pars->IsEventTriggered(fESD);
+  Bool_t isTriggered = pars->IsEventTriggered(AliFMDAnaParameters::kMB1);
+  Bool_t nsd = pars->IsEventTriggered(AliFMDAnaParameters::kNSD);
+
   Double_t delta2 = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
   Double_t vertexBinDouble = (vertex[2] + pars->GetVtxCutZ()) / delta2;
   Int_t vtxbin = (Int_t)vertexBinDouble;
-  TH1F* hEventsVtx = (TH1F*)fDiagList->FindObject("hEventsVtx");
-  TH1F* hEventsTr  = (TH1F*)fDiagList->FindObject("hEventsTr");
+  TH1F* hEventsVtx    = (TH1F*)fDiagList->FindObject("hEventsVtx");
+  TH1F* hEventsTr     = (TH1F*)fDiagList->FindObject("hEventsTr");
+  TH1F* hEventsNSD    = (TH1F*)fDiagList->FindObject("hEventsNSD");
+  TH1F* hEventsNSDVtx = (TH1F*)fDiagList->FindObject("hEventsNSDVtx");
+  
+  if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
+    vtxStatus = kFALSE;
+  }
+  
+  
   if(vtxStatus) hEventsVtx->Fill(vtxbin);
   if(isTriggered) hEventsTr->Fill(vtxbin);
+  
+  if(vtxStatus && nsd) hEventsNSDVtx->Fill(vtxbin);
+  if(nsd) hEventsNSD->Fill(vtxbin);
   
   if(!isTriggered || !vtxStatus ) {
     fStatus = kFALSE;
@@ -317,25 +357,25 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
     fStatus = kTRUE;
   
   TH1F* hXvtx = (TH1F*)fDiagList->FindObject("hXvtx");
-  if(vertex[0] != 0) hXvtx->Fill(vertex[0]);
+  if(vtxStatus ) hXvtx->Fill(vertex[0]);
   TH1F* hYvtx = (TH1F*)fDiagList->FindObject("hYvtx");
-  if(vertex[1] != 0) hYvtx->Fill(vertex[1]);
+  if(vtxStatus ) hYvtx->Fill(vertex[1]);
   TH1F* hZvtx = (TH1F*)fDiagList->FindObject("hZvtx");
   hZvtx->Fill(vertex[2]);
   //const AliMultiplicity* testmult = fESD->GetMultiplicity();
   //std::cout<<vertex[2]<<std::endl;
   //Int_t nTrackLets = testmult->GetNumberOfTracklets();
   
-  if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
-    fStatus = kFALSE;
-    return;
-  }
+  // if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
+  //  fStatus = kFALSE;
+  //  return;
+  // }
     
   if(nTrackLets < 1000) foutputESDFMD->SetUniqueID(kTRUE);
   else foutputESDFMD->SetUniqueID(kFALSE);
   
   AliESDFMD* fmd = fESD->GetFMDData();
-  
+   
   if (!fmd) return;
   Int_t nHits[3][2] = {{0,0},{0,0},{0,0}};
 
@@ -697,8 +737,8 @@ void AliFMDAnalysisTaskSharing::Terminate(Option_t* /* option*/) {
     hTrEtaDistribution2->Scale(1./(Float_t)hZvtx->GetEntries());
   }
   
-  TH1F* hEventsVtx = (TH1F*)fDiagList->FindObject("hEventsVtx");
-  TH1F* hEventsTr  = (TH1F*)fDiagList->FindObject("hEventsTr");
+  //TH1F* hEventsVtx = (TH1F*)fDiagList->FindObject("hEventsVtx");
+  //TH1F* hEventsTr  = (TH1F*)fDiagList->FindObject("hEventsTr");
   //hEventsVtx->Divide(hEventsTr);
   
   
@@ -735,6 +775,7 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   AliStack* stack = mcEvent->Stack();
   
   TH1F* hPrimary = (TH1F*)fDiagList->FindObject("hMultvsEtaNoCuts");
+  TH1F* hPrimaryNSD = (TH1F*)fDiagList->FindObject("hMultvsEtaNSDNoCuts");
   TH1F* hEnergyOfParticles = (TH1F*)fDiagList->FindObject("hEnergyOfParticles");
   AliHeader* header            = mcEvent->Header();
   AliGenEventHeader* genHeader = header->GenEventHeader();
@@ -748,6 +789,10 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   
 	
   Int_t pythiaType = pythiaGenHeader->ProcessType();
+  Bool_t nsd = kTRUE;
+  if(pythiaType==92||pythiaType==93)
+    nsd = kFALSE;
+  
   
   /*if(pythiaType==92||pythiaType==93){
       std::cout<<"single diffractive"<<std::endl;
@@ -772,11 +817,13 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   Int_t    vertexBin       = (Int_t)vertexBinDouble;
   
   Bool_t firstTrack = kTRUE;
+  Bool_t firstTrackNSD = kTRUE;
   
   Int_t nTracks = stack->GetNprimary();
   if(pars->GetProcessHits())
     nTracks = stack->GetNtrack();
   TH1F* nMCevents = (TH1F*)fDiagList->FindObject("nMCEventsNoCuts");
+  TH1F* nMCeventsNSD = (TH1F*)fDiagList->FindObject("nMCEventsNSDNoCuts");
   for(Int_t i = 0 ;i<nTracks;i++) {
     particle = (AliMCParticle*) mcEvent->GetTrack(i);
     if(!particle)
@@ -784,7 +831,14 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
     
     if(stack->IsPhysicalPrimary(i) && particle->Charge() != 0) {
       hPrimary->Fill(particle->Eta());
-      
+      if(nsd) {
+	hPrimaryNSD->Fill(particle->Eta());
+	
+	if(firstTrackNSD) {
+	  nMCeventsNSD->Fill(vertexBin);
+	  firstTrackNSD = kFALSE;
+	}
+      }
 
       TH1F* hPrimVtxBin = (TH1F*)fDiagList->FindObject(Form("primmult_NoCuts_vtxbin%d",vertexBin));
       hPrimVtxBin->Fill(particle->Eta());

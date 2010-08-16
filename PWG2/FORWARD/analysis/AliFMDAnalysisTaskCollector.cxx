@@ -156,18 +156,20 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
     esd->CopyFromOldESD();
   }
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  pars->SetTriggerStatus(esd);
   TString triggers = esd->GetFiredTriggerClasses();
   //if(!triggers.IsNull()) return;
   //Bool_t trigger = pars->IsEventTriggered(esd);
   
-  Bool_t physics = pars->IsEventTriggered(esd);
-  Bool_t empty   = pars->IsEventTriggered(esd,AliFMDAnaParameters::kEMPTY);
+  Bool_t physics = pars->IsEventTriggered(AliFMDAnaParameters::kMB1);
+  Bool_t empty   = pars->IsEventTriggered(AliFMDAnaParameters::kEMPTY);
   //std::cout<<physics<<"   "<<empty<<std::endl;
   //if(!trigger)
   //  physics = kFALSE;
-  Double_t vertex[3];
+  Double_t vertex[3] ={0,0,0};
   
   Bool_t vtxStatus =   pars->GetVertex(esd,vertex);
+  
   if(!vtxStatus)
     physics = kFALSE;
   
@@ -186,6 +188,7 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
   
   if(!physics && !empty)
     return;
+  
   TH1F* Edist = 0;
   TH1F* emptyEdist = 0;
   TH1F* ringEdist = 0;

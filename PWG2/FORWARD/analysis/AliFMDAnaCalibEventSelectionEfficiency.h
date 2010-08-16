@@ -24,8 +24,8 @@ class AliFMDAnaCalibEventSelectionEfficiency : public TObject
   void    Browse(TBrowser* b);
   void    SetCorrection(TH1F* hCorrection);
   Float_t GetCorrection(Int_t vtxbin);
-  void    SetCorrection(Int_t vtxbin, Char_t ring, TH2F* hCorrection);
-  TH2F*   GetCorrection(Int_t vtxbin, Char_t ring);
+  void    SetCorrection(Char_t* trig, Int_t vtxbin, Char_t ring, TH2F* hCorrection);
+  TH2F*   GetCorrection(Char_t* trig, Int_t vtxbin, Char_t ring);
   Float_t GetVtxToTriggerRatio() {return fVtxEff; }
   void    SetVtxToTriggerRatio(Float_t vtxEff) {fVtxEff = vtxEff;}
  protected:

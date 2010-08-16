@@ -28,10 +28,14 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
 							       fInputList(0),
 							       fVertexString(o.fVertexString),
 							       fNevents(o.fNevents),
+							       fNNSDevents(o.fNNSDevents),
 							       fNMCevents(o.fNMCevents),
+							       fNMCNSDevents(o.fNMCNSDevents),
 							       fStandalone(o.fStandalone),
 							       fLastTrackByStrip(o.fLastTrackByStrip),
-							       fVtxEff(o.fVtxEff) {}
+							       fVtxEff(o.fVtxEff),
+							       fVtxEffNSD(o.fVtxEffNSD)
+  {}
   AliFMDAnalysisTaskDndeta& operator=(const AliFMDAnalysisTaskDndeta&) { return *this; }
   // Implementation of interface methods
   virtual void ConnectInputData(Option_t *option = "");
@@ -47,17 +51,22 @@ class AliFMDAnalysisTaskDndeta : public AliAnalysisTask
   void ProcessPrimary();
   TList* GetOutputList() {return fOutputList;}
   void SetVtxEfficiency(Float_t vtxeff) {fVtxEff = vtxeff;}
+  void SetVtxEfficiencyNSD(Float_t vtxeff) {fVtxEffNSD = vtxeff;}
   
  private:
-  Int_t         fDebug;        //  Debug flag
-  TList*        fOutputList;
-  TList*        fInputList;
-  TObjString*   fVertexString;
-  TH1I          fNevents;
-  TH1I          fNMCevents;
-  Bool_t        fStandalone;
+  Int_t          fDebug;        //  Debug flag
+  TList*         fOutputList;
+  TList*         fInputList;
+  TObjString*    fVertexString;
+  TH1I           fNevents;
+  TH1I           fNNSDevents;
+  TH1I           fNMCevents;
+  TH1I           fNMCNSDevents;
+  Bool_t         fStandalone;
   AliFMDFloatMap fLastTrackByStrip;
   Float_t        fVtxEff;             //Efficiency of vertex sel.
+  Float_t        fVtxEffNSD;          //Efficiency of vertex sel., NSD
+   
   ClassDef(AliFMDAnalysisTaskDndeta, 0); // Analysis task for FMD analysis
 };
  

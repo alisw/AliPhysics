@@ -12,9 +12,16 @@
 #include "TGraphErrors.h"
 #include "TPad.h"
 #include "iostream"
+#include "TH3.h"
 #include "TMath.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
+#include "TProfile3D.h"
 #include "TLegend.h"
+#include "TPad.h"
 #include "TLatex.h"
+#include "TStyle.h"
+#include "TF1.h"
 
 #define SMALLNUMBER 0.0001
 
@@ -32,14 +39,25 @@ AliFMDDndeta::AliFMDDndeta()
   fIsGenerated(),
   fPrimEvents(),
   fEvents(),
-  fPrimdNdeta()
+  fPrimdNdeta(),
+  fDrawAll(kFALSE)
 {
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  /* fDataObject = new TProfile3D("dataObject","dataObject",
+			       pars->GetNetaBins(),-6,6,
+			       20,0,2*TMath::Pi(),
+			       pars->GetNvtxBins(),-0.5,pars->GetNvtxBins()-0.5);
+  fDataObject->SetXTitle("#eta");
+  fDataObject->SetYTitle("#varphi [radians]");
+  fDataObject->SetZTitle("v_{z} [cm]");*/
+  
   fAnalysisNames[0] = "Hits";
   fAnalysisNames[1] = "HitsTrVtx";
   fAnalysisNames[2] = "dNdeta";
   fAnalysisNames[3] = "dNdetaTrVtx";
+  fAnalysisNames[4] = "dNdetaNSD";
   
-  for(Int_t i=0; i<4;i++) 
+  for(Int_t i=0; i<5;i++) 
     fMultList[i] = new TList();
 }
 //_____________________________________________________________________
@@ -67,6 +85,12 @@ void AliFMDDndeta::SetNames(Analysis what) {
     fEvents.Form("nEvents");
     fPrimdNdeta.Form("hMultvsEta");
     break;
+  case kMultNSD :
+    fPrimEvents.Form("nMCEventsNSDNoCuts"); 
+    fEvents.Form("nNSDEvents");
+    fPrimdNdeta.Form("hMultvsEtaNSDNoCuts");
+    break;
+    
   default:
     break;
   }
@@ -89,6 +113,10 @@ const char* AliFMDDndeta::GetAnalysisName(Analysis what, UShort_t det, Char_t ri
   case kMultTrVtx :
     name = Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d_proj",det,ring,vtxbin);
     break;
+  case kMultNSD :
+    name = Form("dNdetaNSD_FMD%d%c_vtxbin%d_proj",det,ring,vtxbin);
+    break;
+    
   default:
     break;
   }
@@ -113,6 +141,9 @@ const char* AliFMDDndeta::GetPrimName(Analysis what, UShort_t det, Char_t ring, 
   case kMultTrVtx :
     name = Form("primmult_NoCuts_vtxbin%d",vtxbin);
     break;
+  case kMultNSD :
+    name = Form("primmult_NSD_vtxbin%d",vtxbin);
+    break;
   default:
     break;
   }
@@ -128,7 +159,7 @@ void AliFMDDndeta::GenerateHits(Analysis what) {
   Float_t etaMin     =  hTmp->GetXaxis()->GetXmin(); 
   Float_t etaMax     =  hTmp->GetXaxis()->GetXmax();
 
-  for(Int_t i = 0; i<nVertexBins;i++) {
+  for(Int_t i = 0; i<nVertexBins;i++) { // 
     TH1F* hHits = new TH1F(Form("hMCHits_vtxbin%d_%s",i,fAnalysisNames[what]),Form("hHits_vtxbin%d_%s",i,fAnalysisNames[what]),nEtaBins,etaMin,etaMax);
     hHits->Sumw2();
     fMultList[what]->Add(hHits);
@@ -195,8 +226,6 @@ void AliFMDDndeta::Init(const Char_t* filename) {
   if(!list) //an old file ? Perhaps...
     list = (TList*)fin->Get("BackgroundCorrected");
   
- 
-  
   Init(list);
   
 }
@@ -215,6 +244,7 @@ void AliFMDDndeta::Init(TList* list) {
   fIsGenerated[kMult]      = kFALSE;  
   fIsGenerated[kMultTrVtx] = kFALSE;
   fIsGenerated[kHitsTrVtx] = kFALSE;
+  fIsGenerated[kMultNSD]   = kFALSE;
   
   fIsInit = kTRUE;
 }
@@ -258,11 +288,14 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
     Int_t maxRing = (det == 1 ? 0 : 1);
     for(Int_t iring = 0; iring<=maxRing; iring++) {
       Char_t ringChar = (iring == 0 ? 'I' : 'O');
+      //Int_t nsec  = (iring == 0 ? 20 : 40);
       TH1F* hRingMult= new TH1F(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]),Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]),nEtaBins,etaMin,etaMax);
       fMultList[what]->Add(hRingMult);
+      //      TProfile* phiprofile     = new TProfile(Form("dNdphiFMD%d%c",det,ringChar), Form("dNdphiFMD%d%c;#Phi",det,ringChar), nsec , 0, 2*TMath::Pi());
+      //fMultList[what]->Add(phiprofile);
     }
   }
-  TH1I* hEvents = (TH1I*)fList->FindObject(fEvents.Data());
+  TH1I*  hEvents  = (TH1I*)fList->FindObject(fEvents.Data());
   TH1F*  hPrimVtx = 0;
   
   	
@@ -298,27 +331,54 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	Float_t nEvents = (Float_t)hEvents->GetBinContent(v+1);
 	
 	//TH1F* multhistproj = (TH1F*)fList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d_proj",det,ringChar,v));
-       	TH1F* multhistproj = (TH1F*)fList->FindObject(GetAnalysisName(what,det,ringChar,v));
+       	
+
+	
+	
+	
+	
+	TH1F* multhistproj = (TH1F*)fList->FindObject(GetAnalysisName(what,det,ringChar,v));
 	if(nEvents)
 	  multhistproj->Scale(1/nEvents);
 	Float_t xnBins = multhistproj->GetNbinsX();
 	Float_t xrange = multhistproj->GetXaxis()->GetXmax() - multhistproj->GetXaxis()->GetXmin(); 
 	multhistproj->Scale(xnBins / xrange);
 	
+	TH2F* multhist = (TH2F*)fList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,v));
 
 	
-	Int_t nNonZero = 0, nNonZeroInData = 0;
-	
+	//if(nEvents)
+	//  multhist->Scale(1/nEvents);
+	/*	for(Int_t i=1;i<=multhist->GetNbinsX();i++) {
+	  for(Int_t j=1;j<=multhist->GetNbinsY();j++) {
+	    
+	    if (multhist->GetBinContent(i,j) <= 0.0001) continue;
+	    //std::cout<<multhist->GetBinContent(i,j)<<std::endl;
+	    fDataObject->Fill(multhist->GetXaxis()->GetBinCenter(i),
+			      multhist->GetYaxis()->GetBinCenter(j),
+			      v,
+			      multhist->GetBinContent(i,j), multhist->GetBinError(i,j));
+	    //fDataObject->SetBinContent(i,j,v,multhist->GetBinContent(i,j));
+	    //fDataObject->SetBinError(i,j,v,multhist->GetBinError(i,j));
+	  } 
+	}
+	*/	
+	//if(nEvents)
+	//  multhist->Scale(1/nEvents);
+	//if(ringChar == 'O')
+	//  multhist->RebinY(2);
 	//removing edges
+	
+	Int_t nNonZero = 0, nNonZeroInData = 0;
 	
 	for(Int_t i =1;i<=multhistproj->GetNbinsX();i++) {
 	  if(multhistproj->GetBinContent(i) !=0)
 	    nNonZero++;
 	}
 	Int_t nBinsOld = fNbinsToCut;
-	//	if(det == 2 && ringChar =='I') {
-	//  fNbinsToCut = 1;
-	//	}
+	if(det == 1 && ringChar =='I') {
+	  fNbinsToCut = 0;
+	}
 	TH1F* hRingMult = (TH1F*)fMultList[what]->FindObject(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]));
 	
 	for(Int_t i=1; i<=hRingMult->GetNbinsX(); i++) {
@@ -452,224 +512,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
     AliWarning("Not generated - generate first then draw!");
     return;
   }
-    
+  
   SetNames(what);
-  
-  AliFMDAnaParameters* pars =  AliFMDAnaParameters::Instance();
-  TCanvas* c1 = new TCanvas("cvertexbins","Overlaps",1400,800);
-  c1->Divide(5,2);
-  Int_t nVertexBins  =  pars->GetNvtxBins();
-  
-  TH1I* hEvents   = (TH1I*)fList->FindObject(fEvents.Data());
-  TH1I* hMCEvents = (TH1I*)fList->FindObject(fPrimEvents.Data());
-  
-  TH1F*  hPrimVtx = 0;
-  for(Int_t det = 1; det<=3; det++) {
-    Int_t maxRing = (det == 1 ? 0 : 1);
-    for(Int_t ring = 0;ring<=maxRing;ring++) {
-      for(Int_t v=0; v< nVertexBins; v++) {
-	Char_t ringChar = (ring == 0 ? 'I' : 'O');
-	Double_t delta = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
-	Float_t vtxZ1   = (delta*v) - pars->GetVtxCutZ();
-	Float_t vtxZ2   = (delta*(v+1)) - pars->GetVtxCutZ();
-	  
-	if(vtxZ1<fVtxCut1 || vtxZ2 >fVtxCut2)
-	  continue;
-	Float_t nEvents = (Float_t)hEvents->GetBinContent(v+1);
-		
-	TH1F* multhistproj = (TH1F*)fList->FindObject(GetAnalysisName(what,det,ringChar,v));
-		
-	c1->cd(v+1);
-	
-	if(det==1)  {
-	  multhistproj->SetMarkerStyle(20); 
-	  multhistproj->SetMarkerColor(1); 
-	}
-	if(det==2 && ringChar=='I') {
-	  multhistproj->SetMarkerStyle(21);
-	  multhistproj->SetMarkerColor(2); 
-	}
-	if(det==2 && ringChar=='O') {
-	  multhistproj->SetMarkerStyle(3);
-	  multhistproj->SetMarkerColor(3); 
-	}
-	if(det==3 && ringChar=='I') {
-	  multhistproj->SetMarkerStyle(22);
-	  multhistproj->SetMarkerColor(4); 
-	}
-	if(det==3 && ringChar=='O') {
-	  multhistproj->SetMarkerStyle(23);
-	  multhistproj->SetMarkerColor(6); 
-	}
-	
-	
-	
-	if(det == 1) {
-	  if(what == kHits || what == kHitsTrVtx)
-	    hPrimVtx = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,Form("primary_%s",fAnalysisNames[what])));
-	  else
-	    hPrimVtx = (TH1F*)fList->FindObject(GetPrimName(what,det,ringChar,v));
-	  
-	  hPrimVtx->SetTitle("");
-	  TLatex* l = new TLatex(0.14,0.92,Form("Vtx range [%.1f, %.1f], %d events",vtxZ1,vtxZ2,(Int_t)nEvents));
-	  l->SetNDC(kTRUE);
-	  hPrimVtx->SetFillColor(kGray);
-	  hPrimVtx->SetLabelFont(132,"xyz");
-	  hPrimVtx->SetStats(0000);
-	  hPrimVtx->GetXaxis()->SetTitle("#eta");
-	  hPrimVtx->GetYaxis()->SetRangeUser(0,15);
-	  hPrimVtx->DrawCopy("E3");
-	  l->Draw();
-	  multhistproj->DrawCopy("same");
-	  
-	}
-	else
-	  multhistproj->DrawCopy("same");
-	
-	
-      }
-    }
-  }
-  
-  for(Int_t v=0; v< nVertexBins; v++) {
-    TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMult_vtxbin%d_%s",v,fAnalysisNames[what]));
-    c1->cd(v+1);
-    sumMultHist->SetMarkerStyle(25);
-    sumMultHist->DrawCopy("same");
-    
-  }
-  TH1F* primMult = (TH1F*)fMultList[what]->FindObject(Form("primary_%s",fAnalysisNames[what]));
-  TH1F* sumMult  = (TH1F*)fMultList[what]->FindObject(Form("dNdeta_%s",fAnalysisNames[what]));
-  sumMult->SetMarkerStyle(23);
-  sumMult->SetMarkerColor(kRed);
-  for(Int_t det = 1; det<=3;det++) {
-    Int_t maxRing = (det == 1 ? 0 : 1);
-    for(Int_t iring = 0; iring<=maxRing; iring++) {
-      Char_t ringChar = (iring == 0 ? 'I' : 'O');
-      TH1F* hRingMult= (TH1F*)fMultList[what]->FindObject(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]));
-      hRingMult->Add(primMult,-1);
-      hRingMult->Divide(primMult);
-    }
-  }
-  
-  
-  //TH1F*  hPrim = (TH1F*)fList->FindObject(fPrimEvents.Data());
-  //  TFile testhit("/home/canute/ALICE/Simulations/TestOfAnalysis2/hitsdist.root");
-  // TH1F* hHitCor = (TH1F*)testhit.Get("selectedHits");
-  // hHitCor->Sumw2();
-  // sumMult->Divide(hHitCor);
-  TH1F*  hPrim = (TH1F*)fList->FindObject(fPrimdNdeta.Data());
-  Float_t nPrimevents = hMCEvents->GetEntries();
-  //std::cout<<hMCEvents->GetEntries()<<std::endl;
-  Float_t xb = hPrim->GetNbinsX();
-  Float_t xr = hPrim->GetXaxis()->GetXmax() - hPrim->GetXaxis()->GetXmin(); 
-  //std::cout<<xb/xr<<std::endl;
-  hPrim->Scale(xb / xr );
-  if(nPrimevents > 0)
-    hPrim->Scale(1/nPrimevents);
-  
-  /*
-  TFile testin("/home/canute/ALICE/FMDanalysis/GridAnalysis/fmd_dNdeta_hits.root","READ");
-    // TFile testin("/home/canute/ALICE/FMDanalysis/productionData/fmd_dNdeta_hits.root","READ");
-  TH1F* hcorrect = (TH1F*)testin.Get("hReldif");
-  hcorrect->SetName("djarnis");
-  std::cout<<hcorrect<<std::endl;
-  for(Int_t bb = 1;bb<=hcorrect->GetNbinsX();bb++) {
-    hcorrect->SetBinContent(bb,hcorrect->GetBinContent(bb)+1);
-  }
- 
-  sumMult->Divide(hcorrect);
-  //delete hcorrect;
-  */
-  
-  
-  //  primMult->Rebin(rebin);
-  // primMult->Scale(1/rebin);
-  // hPrim->Rebin(rebin);
-  // hPrim->Scale(1/rebin);
-  if(what != kHits && what != kHitsTrVtx)
-    primMult = hPrim;
-  
-  //  hReldif->Add(hPrim,-1);
-  // hReldif->Divide(hPrim);
-  
- 
- 
-  //sumMult->Rebin(rebin);
-  TH1F* hReldif = (TH1F*)sumMult->Clone("hReldif");
-  if(rebin != 1) {
-    RebinHistogram(sumMult,rebin);
-    if(!realdata) {
-      RebinHistogram(primMult,rebin);
-      RebinHistogram(hReldif,rebin);
-    }
-  }
-  hReldif->Add(primMult,-1);
-  hReldif->Divide(primMult);
-  TCanvas* c2 = new TCanvas("dN/deta","dN/deta",640,960);
-  c2->Divide(1,2);//,0,0);
-  c2->cd(2);
-  gPad->Divide(1,2);
-  gPad->cd(1);
-  gPad->SetGridy();
-  gPad->SetGridx();
-  hReldif->SetTitle("");
-  hReldif->GetYaxis()->SetTitle("Relative difference");
-  hReldif->GetYaxis()->SetRangeUser(-0.2,0.2);
-  hReldif->SetStats(0000);
-  hReldif->GetXaxis()->SetTitle("#eta");
-  
-  hReldif->DrawCopy();
-  TLine* zeroLine = new TLine(-6,0,6,0);
-  zeroLine->SetLineWidth(2);
-  zeroLine->SetLineColor(kBlack);
-  zeroLine->Draw();
-  hPrim->SetTitle("");
-  hPrim->SetLabelFont(132,"xyz");
-  hPrim->SetFillColor(kGray);
-  primMult->SetFillColor(kBlue);
-  
-  
-  c2->cd(1);
-  gPad->SetGridy();
-  gPad->SetGridx();
-  hPrim->GetYaxis()->SetRangeUser(2,10);
-  //hPrim->GetYaxis()->SetRangeUser(0,20);
-  hPrim->SetStats(0000);
-  hPrim->GetXaxis()->SetTitle("#eta");
-  sumMult->SetTitle("");
-  sumMult->SetStats(kFALSE);
-  // sumMult->GetYaxis()->SetRangeUser
-  //sumMult->Scale(1/(Float_t)rebin);
-  sumMult->DrawCopy("PE");
-  if(what != kHits && what != kHitsTrVtx && hPrim->GetEntries())
-    hPrim->DrawCopy("E3same");
-  if(what == kHits || what == kHitsTrVtx)
-    primMult->DrawCopy("E3same");
-  hPrim->GetXaxis()->SetTitle("#eta");
-  
-  TH1F* hMirror = new TH1F("hMirror","mirrored",sumMult->GetNbinsX(),sumMult->GetXaxis()->GetXmin(),sumMult->GetXaxis()->GetXmax());
-  
-  for(Int_t i=0.5*sumMult->GetNbinsX(); i<=sumMult->GetNbinsX(); i++) {
-    Float_t eta   = sumMult->GetBinCenter(i);
-    Float_t value = sumMult->GetBinContent(i);
-    Float_t error = sumMult->GetBinError(i);
-    if(value > 0) {
-      hMirror->SetBinContent(hMirror->FindBin(-1*eta),value);
-      hMirror->SetBinError(hMirror->FindBin(-1*eta),error);
-    }
-  }
-  TH1F* hReldifLR = (TH1F*)sumMult->Clone("hReldifLeftRight");
-  hReldifLR->Add(hMirror,-1);
-  hReldifLR->Divide(hMirror);
-  c2->cd(2);
-  gPad->cd(1);
-  if(realdata)
-    hReldifLR->DrawCopy("same");
-  c2->cd(1);
-  hMirror->SetMarkerStyle(25);
-  
-  hPrim->SetMarkerStyle(8);
   //UA5 data NSD
   Float_t x[19] = {0.125,0.375,0.625,0.875,1.125,1.375,1.625,1.875,2.125,2.375,
 		   2.625,2.875,3.125,3.375,3.625,3.875,4.125,4.375,4.625};
@@ -703,15 +547,478 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   //graph->Draw("P");
   graph2->SetMarkerStyle(26);
   graph2->SetMarkerColor(kBlue);
+  graphinel->GetHistogram()->SetStats(kFALSE);
+  graphinel2->GetHistogram()->SetStats(kFALSE);
+  
+  
+  //End UA5 data
+  
+  AliFMDAnaParameters* pars =  AliFMDAnaParameters::Instance();
+  TCanvas* c1 = new TCanvas("cvertexbins","Overlaps",1400,800);
+  c1->Divide(5,2);
+  TCanvas* cCorrections;
+  TCanvas* cCorrectionsPhi;
+  if(fDrawAll) {
+    cCorrections = new TCanvas("corrections","Correction vs Eta",1400,800);
+    cCorrections->Divide(5,2);
+    
+    cCorrectionsPhi = new TCanvas("correctionsPhi","Correction vs Phi",1400,800);
+    cCorrectionsPhi->Divide(5,2);
+  }
+  //TCanvas* cphi = new TCanvas("dNdphi","dNdphi",1280,1024);
+  // cphi->Divide(3,2);
+  
+  Int_t nVertexBins  =  pars->GetNvtxBins();
+  
+  TH1I* hEvents   = (TH1I*)fList->FindObject(fEvents.Data());
+  
+  TH1I* hMCEvents = (TH1I*)fList->FindObject(fPrimEvents.Data());
+  //Int_t npadphi = 0;
+  TH1F*  hPrimVtx = 0;
+  for(Int_t det = 1; det<=3; det++) {
+    Int_t maxRing = (det == 1 ? 0 : 1);
+    for(Int_t ring = 0;ring<=maxRing;ring++) {
+      //  npadphi++;
+      
+      for(Int_t v=0; v< nVertexBins; v++) {
+	Char_t ringChar = (ring == 0 ? 'I' : 'O');
+	Double_t delta = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
+	Float_t vtxZ1   = (delta*v) - pars->GetVtxCutZ();
+	Float_t vtxZ2   = (delta*(v+1)) - pars->GetVtxCutZ();
+	  
+	if(vtxZ1<fVtxCut1 || vtxZ2 >fVtxCut2)
+	  continue;
+	Float_t nEvents = (Float_t)hEvents->GetBinContent(v+1);
+	if(fDrawAll) {
+	TH2F* hBgCor  = pars->GetBackgroundCorrection(det,ringChar,v);
+	if(hBgCor)  {
+	  TH1D* hBgProj = hBgCor->ProjectionX(Form("hBgProj_FMD%d%c_vtxbin%d",det,ringChar,v));
+	  TH1D* hBgProjPhi = hBgCor->ProjectionY(Form("hBgProjPhi_FMD%d%c_vtxbin%d",det,ringChar,v));
+	  
+	  hBgProjPhi->SetName(Form("FMD%d%c",det,ringChar));
+	  hBgProjPhi->SetTitle("");//Form("FMD%d",det));
+	  hBgProj->SetTitle("");
+	  //Float_t scalefactor = (hBgProj->GetXaxis()->GetXmax() - hBgProj->GetXaxis()->GetXmin()) / (Float_t)hBgProj->GetNbinsX();
+	  Float_t scalefactor = 1/(Float_t)hBgCor->GetNbinsY();
+	  
+	  Float_t nFilledEtaBins = 0;
+	  
+	  for(Int_t jj = 1; jj<=hBgProj->GetNbinsX(); jj++) {
+	    if(hBgProj->GetBinContent(jj) > 0.01)
+	      nFilledEtaBins++;
+	  }
+	  
+	  Float_t scalefactorPhi = 1/nFilledEtaBins;
+	  
+	  
+	  hBgProj->Scale(scalefactor);
+	  cCorrections->cd(v+1);
+	  
+	  hBgProj->SetMarkerColor(det + 2*ring);
+	  hBgProj->SetMarkerStyle(19 + det + 2*ring );
+	  
+	  if((det + 2*ring) == 5)  hBgProj->SetMarkerColor(det + 2*ring+1);
+	  if((19 + det + 2*ring ) == 24)  hBgProj->SetMarkerStyle(29 );
+	  
+	  if(det == 1) {
+	    hBgProj->GetYaxis()->SetRangeUser(0,4);
+	    hBgProj->SetStats(kFALSE);
+	    hBgProj->SetXTitle("#eta");
+	    hBgProj->DrawCopy("PE");
+	    TLatex* l = new TLatex(0.14,0.92,Form("Vtx range [%.1f, %.1f]",vtxZ1,vtxZ2));
+	    l->SetNDC(kTRUE);
+	    l->Draw();
+	  }
+	  else
+	    hBgProj->DrawCopy("PEsame");
+	
+	  hBgProjPhi->Scale(scalefactorPhi);
+	  cCorrectionsPhi->cd(v+1);
+	  hBgProjPhi->SetMarkerColor(det + 2*ring);
+	  hBgProjPhi->SetMarkerStyle(19 + det + 2*ring );
+	  if((det + 2*ring) == 5)  hBgProjPhi->SetMarkerColor(det + 2*ring+1);
+	  if((19 + det + 2*ring ) == 24)  hBgProjPhi->SetMarkerStyle(29 );
+	  if(det == 1) {
+	    hBgProjPhi->GetYaxis()->SetRangeUser(1,5);
+	    hBgProjPhi->SetStats(kFALSE);
+	    
+	    hBgProjPhi->SetXTitle("#Phi");
+	    hBgProjPhi->DrawCopy("PE");
+	   
+	    
+	  }
+	  else
+	    hBgProjPhi->DrawCopy("PEsame");
+	  
+	}
+	
+	}
+	
+	TH1F* multhistproj = (TH1F*)fList->FindObject(GetAnalysisName(what,det,ringChar,v));
+		
+	c1->cd(v+1);
+	
+	if(det==1)  {
+	  multhistproj->SetMarkerStyle(20); 
+	  multhistproj->SetMarkerColor(1); 
+	}
+	if(det==2 && ringChar=='I') {
+	  multhistproj->SetMarkerStyle(21);
+	  multhistproj->SetMarkerColor(2); 
+	}
+	if(det==2 && ringChar=='O') {
+	  multhistproj->SetMarkerStyle(3);
+	  multhistproj->SetMarkerColor(3); 
+	}
+	if(det==3 && ringChar=='I') {
+	  multhistproj->SetMarkerStyle(22);
+	  multhistproj->SetMarkerColor(4); 
+	}
+	if(det==3 && ringChar=='O') {
+	  multhistproj->SetMarkerStyle(23);
+	  multhistproj->SetMarkerColor(6); 
+	}
+	
+	
+	
+	if(det == 1) {
+	  if(what == kHits || what == kHitsTrVtx)
+	    hPrimVtx = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what]));
+	  else
+	    hPrimVtx = (TH1F*)fList->FindObject(GetPrimName(what,det,ringChar,v));
+	  // std::cout<<hPrimVtx<<"   "<<kHits<<"   "<<kHitsTrVtx<<"   "<<what<<std::endl;
+	  //std::cout<<Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what])<<std::endl;
+	  hPrimVtx->SetTitle("");
+	  TLatex* l = new TLatex(0.14,0.92,Form("Vtx range [%.1f, %.1f], %d events",vtxZ1,vtxZ2,(Int_t)nEvents));
+	  l->SetNDC(kTRUE);
+	  hPrimVtx->SetFillColor(kGray);
+	  hPrimVtx->SetLabelFont(132,"xyz");
+	  hPrimVtx->SetStats(0000);
+	  hPrimVtx->GetXaxis()->SetTitle("#eta");
+	  hPrimVtx->GetYaxis()->SetRangeUser(0,6);
+	  hPrimVtx->DrawCopy("E3");
+	  l->Draw();
+	  multhistproj->DrawCopy("same");
+	  if(what != kMultNSD) {
+	    graphinel->Draw("sameP");
+	    graphinel2->Draw("sameP");
+	  }
+	  else
+	   {
+	     graph->Draw("sameP");
+	     graph2->Draw("sameP");
+	   }
+	}
+	else
+	  multhistproj->DrawCopy("same");
+	
+	
+      }
+    }
+  }
+  
+  //Legends for corrections
+  if(fDrawAll) {
+  for(Int_t v=0; v< nVertexBins; v++) {
+    TPad* pad= (TPad*)cCorrectionsPhi->cd(v+1);
+    pad->BuildLegend(0.15,0.45,0.45,0.9);
+    Double_t delta = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
+    Float_t vtxZ1   = (delta*v) - pars->GetVtxCutZ();
+    Float_t vtxZ2   = (delta*(v+1)) - pars->GetVtxCutZ();
+    TLatex* l = new TLatex(0.14,0.92,Form("Vtx range [%.1f, %.1f]",vtxZ1,vtxZ2));
+    l->SetNDC(kTRUE);
+    l->Draw();
+  }
+  }
+  for(Int_t v=0; v< nVertexBins; v++) {
+    TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMult_vtxbin%d_%s",v,fAnalysisNames[what]));
+    c1->cd(v+1);
+    sumMultHist->SetMarkerStyle(25);
+    sumMultHist->DrawCopy("same");
+    
+  }
+  TH1F* primMult = (TH1F*)fMultList[what]->FindObject(Form("primary_%s",fAnalysisNames[what]));
+  TH1F* sumMult  = (TH1F*)fMultList[what]->FindObject(Form("dNdeta_%s",fAnalysisNames[what]));
+  sumMult->SetMarkerStyle(23);
+  sumMult->SetMarkerColor(kRed);
+  for(Int_t det = 1; det<=3;det++) {
+    Int_t maxRing = (det == 1 ? 0 : 1);
+    for(Int_t iring = 0; iring<=maxRing; iring++) {
+      Char_t ringChar = (iring == 0 ? 'I' : 'O');
+      TH1F* hRingMult= (TH1F*)fMultList[what]->FindObject(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]));
+      hRingMult->Add(primMult,-1);
+      hRingMult->Divide(primMult);
+    }
+  }
+  
+  //SPD part
+  TH1D* hSPDana = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",5));
+  
+  for(Int_t nn = 0; nn < pars->GetNvtxBins() ; nn++) {
+    TH1D* hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",nn));
+    TH1D* hSPDanalysisTrVtx = (TH1D*)fList->FindObject(Form("dNdetaTrVtx_SPD_vtxbin%d_proj",nn));
+    TH1D* hSPDanalysisNSD = (TH1D*)fList->FindObject(Form("dNdetaNSD_SPD_vtxbin%d_proj",nn));
+    
+    Float_t nEventsSPD = (Float_t)hEvents->GetBinContent(nn+1);
+    
+    hSPDanalysis->Scale(1/nEventsSPD);
+    hSPDanalysisTrVtx->Scale(1/nEventsSPD);
+    hSPDanalysisNSD->Scale(1/nEventsSPD);
+  }
+  
+  TH1F* hSPDcombi = new TH1F("SPDcombi","SPDcombi",hSPDana->GetNbinsX(),hSPDana->GetXaxis()->GetXmin(),hSPDana->GetXaxis()->GetXmax());
+  TH1D* hSPDanalysis = 0;
+  for(Int_t kk = 1; kk <=hSPDana->GetNbinsX(); kk++) {
+    Float_t weight = 0, wav=0,sumofw = 0;
+    for(Int_t nn = 0; nn < pars->GetNvtxBins() ; nn++) {
+      if(what != kMultNSD)
+	hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",nn));
+      else
+	hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdetaNSD_SPD_vtxbin%d_proj",nn));
+      if(TMath::Abs(hSPDanalysis->GetBinCenter(kk)) > 2)
+	continue;
+      Float_t mult = hSPDanalysis->GetBinContent(kk);
+      Float_t error = hSPDanalysis->GetBinError(kk);
+      
+      if(mult > 0 && hSPDanalysis->GetBinContent(kk-1) < SMALLNUMBER)
+	continue;
+      if(mult > 0 && hSPDanalysis->GetBinContent(kk-2) < SMALLNUMBER)
+	continue;
+      
+      if(mult > 0 && hSPDanalysis->GetBinContent(kk+1) < SMALLNUMBER)
+	continue;
+      if(mult > 0 && hSPDanalysis->GetBinContent(kk+2) < SMALLNUMBER)
+	continue;
+      
+      if(mult > 0) {
+	weight = 1/TMath::Power(error,2);
+	wav    = wav + weight*mult;
+	sumofw = sumofw + weight;
+      }
+      
+    }
+    
+    if(sumofw && wav) {
+      Float_t errorTotal = 1/TMath::Sqrt(sumofw);
+      hSPDcombi->SetBinContent(kk,wav/sumofw);
+      hSPDcombi->SetBinError(kk,errorTotal);
+    }
+  }
+    
+  
+  Float_t xb1 = hSPDcombi->GetNbinsX();
+  Float_t xr1 = hSPDcombi->GetXaxis()->GetXmax() - hSPDcombi->GetXaxis()->GetXmin(); 
+  hSPDcombi->Scale(xb1 / xr1);
+  //hSPDcombi->Rebin(rebin);
+  //hSPDcombi->Scale(1/(Float_t)rebin);
+  //RebinHistogram(hSPDcombi,rebin);
+  hSPDcombi->SetMarkerStyle(29);
+  hSPDcombi->SetMarkerColor(kBlue);
+  hSPDcombi->DrawCopy("same");
+  // End of SPD
+
+  
+  //TH1F*  hPrim = (TH1F*)fList->FindObject(fPrimEvents.Data());
+  //  TFile testhit("/home/canute/ALICE/Simulations/TestOfAnalysis2/hitsdist.root");
+  // TH1F* hHitCor = (TH1F*)testhit.Get("selectedHits");
+  // hHitCor->Sumw2();
+  // sumMult->Divide(hHitCor);
+  TH1F*  hPrim = (TH1F*)fList->FindObject(fPrimdNdeta.Data());
+  Float_t nPrimevents = hMCEvents->GetEntries();
+  //std::cout<<hMCEvents->GetEntries()<<std::endl;
+  Float_t xb = hPrim->GetNbinsX();
+  Float_t xr = hPrim->GetXaxis()->GetXmax() - hPrim->GetXaxis()->GetXmin(); 
+  //std::cout<<xb/xr<<std::endl;
+  hPrim->Scale(xb / xr );
+  if(nPrimevents > 0)
+    hPrim->Scale(1/nPrimevents);
+  
+  
+  //  primMult->Rebin(rebin);
+  // primMult->Scale(1/rebin);
+  // hPrim->Rebin(rebin);
+  // hPrim->Scale(1/rebin);
+  if(what != kHits && what != kHitsTrVtx)
+    primMult = hPrim;
+  
+  //  hReldif->Add(hPrim,-1);
+  // hReldif->Divide(hPrim);
+  
+
+
+  /////////////*******************New thing!!!
+  
+  //TH3D* hist3d = (TH3D*)fDataObject->ProjectionXYZ("hist3d");
+  // fDataObject->Sumw2();
+  //TH2F* projeta = (TH2F*)fDataObject->Project3D("yx");
+  
+  //  TProfile2D* projeta = fDataObject->Project3DProfile("yx");
+  // projeta->SetSumw2();
+  //TProfile* etaprofile = projeta->ProfileX("dNdeta_profile");
+  //TProfile* etaprofile = projeta->ProfileX("dNdeta_profile");
+  // TH1* etaprofile = projeta->ProjectionX("dNdeta_profile");
+  //TProfile* etaprofile = fDataObject->ProfileX();
+  /*
+  TCanvas* ctest = new TCanvas("test","test",1200,600);
+  ctest->Divide(3);
+  ctest->cd(1);
+  fDataObject->DrawCopy("box");
+  ctest->cd(2);
+  projeta->DrawCopy("colz");
+  ctest->cd(3);
+  etaprofile->DrawCopy();
+  */
+  //sumMult->Rebin(rebin);
+  TH1F* hReldif = (TH1F*)sumMult->Clone("hReldif");
+  if(rebin != 1) {
+    RebinHistogram(sumMult,rebin);
+    if(!realdata) {
+      RebinHistogram(primMult,rebin);
+      RebinHistogram(hReldif,rebin);
+    }
+  }
+  hReldif->Add(primMult,-1);
+  hReldif->Divide(primMult);
+  TCanvas* c2 = new TCanvas("dN/deta","dN/deta",640,960);
+  c2->Divide(1,2);//,0,0);
+  c2->cd(2);
+  gPad->Divide(1,2);
+  gPad->cd(1);
+  gPad->SetGridy();
+  gPad->SetGridx();
+  hReldif->SetTitle("");
+  hReldif->GetYaxis()->SetTitle("Relative difference");
+  hReldif->GetYaxis()->SetRangeUser(-0.2,0.2);
+  hReldif->SetStats(0000);
+  hReldif->GetXaxis()->SetTitle("#eta");
+  
+  hReldif->DrawCopy();
+  //SPD Rel dif
+  TH1F* hReldifSPD = (TH1F*)hSPDcombi->Clone("hReldifSPD");
+  if(rebin != 1) {
+    RebinHistogram(hSPDcombi,rebin);
+    if(!realdata) {
+      RebinHistogram(hReldifSPD,rebin);
+    }
+  }
+  hReldifSPD->Add(primMult,-1);
+  hReldifSPD->Divide(primMult);
+  hReldifSPD->DrawCopy("same");
+  
+  TLine* zeroLine = new TLine(-4,0,6,0);
+  zeroLine->SetLineWidth(2);
+  zeroLine->SetLineColor(kBlack);
+  zeroLine->Draw();
+  hPrim->SetTitle("");
+  hPrim->SetLabelFont(132,"xyz");
+  hPrim->SetFillColor(kGray);
+  primMult->SetFillColor(kBlue);
+  
+  
+  c2->cd(1);
+  gPad->SetGridy();
+  gPad->SetGridx();
+  hPrim->GetYaxis()->SetRangeUser(2,10);
+  //hPrim->GetYaxis()->SetRangeUser(0,20);
+  hPrim->SetStats(0000);
+  hPrim->GetXaxis()->SetTitle("#eta");
+  sumMult->SetTitle("");
+  sumMult->SetStats(kFALSE);
+  sumMult->SetXTitle("#eta");
+  sumMult->SetYTitle("#frac{dN}{d#eta_{ch}}");
+  // sumMult->GetYaxis()->SetRangeUser
+  //sumMult->Scale(1/(Float_t)rebin);
+  sumMult->DrawCopy("PE");
+  //Syst errors
+  TH1F* sumMultSystPos = (TH1F*)sumMult->Clone("systerrorsPos");
+  TH1F* sumMultSystNeg = (TH1F*)sumMult->Clone("systerrorsNeg");
+  for(Int_t jj = 1;jj <=sumMultSystPos->GetNbinsX();jj++) {
+    if(sumMultSystPos->GetBinCenter(jj) < 0) {
+      sumMultSystPos->SetBinError(jj,0);
+      sumMultSystPos->SetBinContent(jj,0);
+      continue;
+    }
+      
+    if(sumMultSystPos->GetBinContent(jj) > 0)
+      sumMultSystPos->SetBinError(jj,TMath::Sqrt(TMath::Power(sumMultSystPos->GetBinError(jj),2)+TMath::Power(0.1*sumMultSystPos->GetBinContent(jj),2)));
+  }
+  for(Int_t jj = 1;jj <=sumMultSystNeg->GetNbinsX();jj++) {
+    if(sumMultSystNeg->GetBinCenter(jj) > 0) {
+      sumMultSystNeg->SetBinError(jj,0);
+      sumMultSystNeg->SetBinContent(jj,0);
+      continue;
+    }
+      
+    if(sumMultSystNeg->GetBinContent(jj) > 0)
+      sumMultSystNeg->SetBinError(jj,TMath::Sqrt(TMath::Power(sumMultSystNeg->GetBinError(jj),2)+TMath::Power(0.1*sumMultSystNeg->GetBinContent(jj),2)));
+  }
+  
+  
+  
+  sumMultSystPos->SetFillColor(18);
+  sumMultSystNeg->SetFillColor(18);
+  sumMultSystPos->DrawCopy("sameE5");
+  sumMultSystNeg->DrawCopy("sameE5");
+  //End syst errors
+  
+  
+  
+  if(what != kHits && what != kHitsTrVtx && hPrim->GetEntries())
+    hPrim->DrawCopy("E3same");
+  if(what == kHits || what == kHitsTrVtx)
+    primMult->DrawCopy("E3same");
+  hPrim->GetXaxis()->SetTitle("#eta");
+  
+  TH1F* hMirror = new TH1F("hMirror","mirrored",sumMult->GetNbinsX(),sumMult->GetXaxis()->GetXmin(),sumMult->GetXaxis()->GetXmax());
+  
+  for(Int_t i=0.5*sumMult->GetNbinsX(); i<=sumMult->GetNbinsX(); i++) {
+    Float_t eta   = sumMult->GetBinCenter(i);
+    Float_t value = sumMult->GetBinContent(i);
+    Float_t error = sumMult->GetBinError(i);
+    if(value > 0) {
+      hMirror->SetBinContent(hMirror->FindBin(-1*eta),value);
+      hMirror->SetBinError(hMirror->FindBin(-1*eta),error);
+    }
+  }
+  TH1F* hReldifLR = (TH1F*)sumMult->Clone("hReldifLeftRight");
+  hReldifLR->Add(hMirror,-1);
+  hReldifLR->Divide(hMirror);
+  c2->cd(2);
+  gPad->cd(1);
+  hReldifLR->GetYaxis()->SetRangeUser(-0.2,0.2);
+
+  hReldifLR->SetYTitle("Relative difference left-right");
+  hReldifLR->SetLabelSize(2*hReldifLR->GetLabelSize("X"),"X"); 
+  hReldifLR->SetLabelSize(2*hReldifLR->GetLabelSize("Y"),"Y");
+  hReldifLR->SetTitleSize(2*hReldifLR->GetTitleSize("X"),"X");
+  hReldifLR->SetTitleSize(2*hReldifLR->GetTitleSize("Y"),"Y");
+  hReldifLR->SetTitleOffset(0.7*hReldifLR->GetTitleOffset("X"),"X");
+  hReldifLR->SetTitleOffset(0.5*hReldifLR->GetTitleOffset("Y"),"Y");
+  
+  
+  if(realdata) 
+    hReldifLR->DrawCopy();
+  zeroLine->Draw();
+  c2->cd(1);
+  hMirror->SetMarkerStyle(25);
+  
+  hPrim->SetMarkerStyle(8);
+  
   //graph2->Draw("P");
   TH1F* hPythiaMB = 0;
-  TFile fpyt("/home/canute/ALICE/FMDanalysis/FirstAnalysis/pythia_study/pythiahists.root","READ");
-  if(realdata) {
-    
-    hPythiaMB = (TH1F*)fpyt.Get("hPythiaMB");
-    hPythiaMB->DrawCopy("same");
-    
-    std::cout<<hPythiaMB<<std::endl;
+  
+  TFile* fpyt;
+  if(pars->GetEnergy() == AliFMDAnaParameters::k7000)
+    fpyt = TFile::Open("/home/canute/ALICE/FMDanalysis/FirstAnalysis/pythia_study/pythiahists7000.root","READ");
+  else if(pars->GetEnergy() == AliFMDAnaParameters::k900)
+    fpyt = TFile::Open("/home/canute/ALICE/FMDanalysis/FirstAnalysis/pythia_study/pythiahists900.root","READ");
+  
+  if(realdata ) {
+    if(fpyt) {
+      hPythiaMB = (TH1F*)fpyt->Get("hPythiaMB");
+    }
+    else
+      std::cout<<"no pythia for this energy"<<std::endl;
   }
   if(what != kHits && what != kHitsTrVtx) {
     if(hPrim->GetEntries() != 0 && !realdata)
@@ -719,57 +1026,62 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
     if(realdata) {
       //graph->Draw("PEsame");
       //graph2->Draw("PEsame");
-      graphinel->Draw("PEsame");
-      graphinel2->Draw("PEsame");
+      if(what != kMultNSD) {
+	graphinel->Draw("PEsame");
+	graphinel2->Draw("PEsame");
+      }
+      else{
+	graph->Draw("PEsame");
+	graph2->Draw("PEsame");
+
+      }
+	
     }
 
   }
+  
+  
   sumMult->DrawCopy("PEsame");
+  
+  
+	
+  hSPDcombi->DrawCopy("same");
   if(realdata)
     hMirror->DrawCopy("PEsame");
-  //  std::cout<<"FMD 1 "<<sumMult->Integral(sumMult->FindBin(3),sumMult->FindBin(5),"width")<<std::endl;
-  
-  //c2->SaveAs("dNdeta_fmd.png");
-  /*TFile* itsfile = TFile::Open(itsfilename);
-  if(itsfile) {
-    //itsfile->cd();
     
-    //TList* itslist = (TList*)itsfile->Get("ITS_analysis");
-    //TH1F* itshist0 = (TH1F*)itslist->FindObject("dndeta_check_0");
-    //TH1F* itshist1 = (TH1F*)itslist->FindObject("dndeta_check_1");
-    //TH1F* itshist2 = (TH1F*)itslist->FindObject("dndeta_check_2");
-    TH1F* itshist0 = (TH1F*)itsfile->Get("dndeta/dNdEta");
-    TH1F* itshist1= (TH1F*)itsfile->Get("dndeta/dNdEta_1");
-    TH1F* itshist2 = (TH1F*)itsfile->Get("dndeta/dNdEta_2");
-    itshist0->SetMarkerStyle(27);
-    itshist1->SetMarkerStyle(28);
-    itshist2->SetMarkerStyle(30);
-    itshist0->DrawCopy("same");
-    itshist1->DrawCopy("same");
-    itshist2->DrawCopy("same");
-  
-  }
-  */
-  
-  
-  TLegend* leg = new TLegend(0.35,0.2,0.65,0.45,"");
+  TLegend* leg = new TLegend(0.3,0.2,0.7,0.45,"");
   if(!realdata) {
     if(what != kHits && what != kHitsTrVtx)
       leg->AddEntry(hPrim,"Primary","pf");
     else
       leg->AddEntry(primMult,"Hits","pf");
   }
-  //leg->AddEntry(primMult,"Analysed prim","f");
+  
+  if(what == kMult)
+    leg->AddEntry(sumMult,"FMD INEL","p");
+  else if(what == kMultTrVtx)
+    leg->AddEntry(sumMult,"FMD TrVtx","p");
+  else if(what == kMultNSD)
+    leg->AddEntry(sumMult,"FMD NSD","p");
   
   
-  leg->AddEntry(sumMult,"Analysis","p");
   if(realdata) {
-    leg->AddEntry(hMirror,"Mirror Analysis","p");
-    //leg->AddEntry(graph,"UA5 NSD","p");
-    //leg->AddEntry(graph2,"Mirror UA5 NSD","p");
+  if(what == kMult)
+    leg->AddEntry(hMirror,"FMD INEL","p");
+  else if(what == kMultTrVtx)
+    leg->AddEntry(hMirror,"FMD TrVtx","p");
+  else if(what == kMultNSD)
+    leg->AddEntry(hMirror,"FMD NSD","p");
+   
+  if(what == kMultNSD) {  
+    leg->AddEntry(graph,"UA5 NSD","p");
+    leg->AddEntry(graph2,"Mirror UA5 NSD","p"); }
+  else if(what == kMult) {
     leg->AddEntry(graphinel,"UA5 INEL","p");
     leg->AddEntry(graphinel2,"Mirror UA5 INEL","p");
-    leg->AddEntry(hPythiaMB,"Pythia MB","l");
+  }
+    //leg->AddEntry(hPythiaMB,"Pythia MB","l");
+    leg->AddEntry(hSPDcombi,"HHD SPD clusters","p");
     
   }
   leg->Draw();
@@ -794,8 +1106,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
       hPythiaMB->Scale(ratio);
     }
     
-    hRatioMultPythia->Divide(hPythiaMB);
-    
+    //hRatioMultPythia->Divide(hPythiaMB);
+    /*
     for(Int_t j=1;j<=hRatioMultUA5->GetNbinsX(); j++) {
       Float_t data = hRatioMultUA5->GetBinContent(j);
       Float_t errordata = hRatioMultUA5->GetBinError(j);
@@ -839,20 +1151,101 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
 	hRatioMultUA5->SetBinContent(j,ratio2);
 	hRatioMultUA5->SetBinError(j,errorratio);
       }
-    }
-  
-
+      
+      */
+    TGraphErrors* tmp1;
+    if(what == kMultNSD)
+      tmp1 = (TGraphErrors*)graph->Clone("UA5tmp");
+    else
+      tmp1 = (TGraphErrors*)graphinel->Clone("UA5tmp");
     
-    gPad->SetGridx();
-    gPad->SetGridy();
-    TLine* oneLine = new TLine(-6,1,6,1);
-    hRatioMultPythia->DrawCopy();
+    tmp1->Fit("pol8","Q0","Q0",1.5,6);
+      TF1* hFit = tmp1->GetFunction("pol8");
+      for(Int_t ii = hRatioMultUA5->GetNbinsX() / 2; ii<hRatioMultUA5->GetNbinsX();ii++) { 
+	if(hRatioMultUA5->GetBinContent(ii) > 0) {
+	  Float_t errorratio = hRatioMultUA5->GetBinError(ii) / hRatioMultUA5->GetBinContent(ii);
+	  hRatioMultUA5->SetBinContent(ii,
+				       hRatioMultUA5->GetBinContent(ii) / 
+				       ((hRatioMultUA5->GetBinCenter(ii) > 4.8) ? hFit->Eval(hRatioMultUA5->GetBinCenter(ii-1)) : hFit->Eval(hRatioMultUA5->GetBinCenter(ii))));
+	  hRatioMultUA5->SetBinError(ii,hRatioMultUA5->GetBinContent(ii) * TMath::Sqrt(0.02*0.02 + TMath::Power(errorratio,2)));
+	  
+	    
+	}
+	  
+      }
+      
+      TGraphErrors* tmp2;
+      if(what == kMultNSD)
+	tmp2 = (TGraphErrors*)graph2->Clone("UA5tmp2");
+      else 
+	tmp2 = (TGraphErrors*)graphinel2->Clone("UA5tmp2");
+
+      //tmp2->Fit("pol8","Q0","Q0",-3.7,-1.5);
+      tmp2->Fit("pol7","Q0","Q0",-3.7,0);
+      hFit = tmp2->GetFunction("pol7");
+      for(Int_t ii = 0; ii<hRatioMultUA5->GetNbinsX()/2;ii++) { 
+	if(hRatioMultUA5->GetBinContent(ii) > 0) {
+	  Float_t errorratio = hRatioMultUA5->GetBinError(ii) / hRatioMultUA5->GetBinContent(ii);
+	  hRatioMultUA5->SetBinContent(ii,hRatioMultUA5->GetBinContent(ii) / hFit->Eval(hRatioMultUA5->GetBinCenter(ii))  );
+	  hRatioMultUA5->SetBinError(ii,hRatioMultUA5->GetBinContent(ii) * TMath::Sqrt(0.02*0.02 + TMath::Power(errorratio,2)));
+	  
+	}
+	
+	
+	graphinel->GetHistogram()->SetStats(kFALSE);
+	graphinel2->GetHistogram()->SetStats(kFALSE);
+	
+      }
+      
+      //}
+  
+      
+  
+      gPad->SetGridx();
+      gPad->SetGridy();
+    TLine* oneLine = new TLine(-4,1,6,1);
+    oneLine->SetLineWidth(2);
+    
     hRatioMultUA5->SetMarkerColor(kGreen);
     hRatioMultUA5->SetMarkerStyle(20);
-    hRatioMultUA5->DrawCopy("same");
+    hRatioMultUA5->GetYaxis()->SetRangeUser(0.75,1.25);
+    
+    hRatioMultUA5->SetYTitle("Ratio FMD/UA5");
+    hRatioMultUA5->SetLabelSize(2*hRatioMultUA5->GetLabelSize("X"),"X"); 
+    hRatioMultUA5->SetLabelSize(2*hRatioMultUA5->GetLabelSize("Y"),"Y");
+    hRatioMultUA5->SetTitleSize(2*hRatioMultUA5->GetTitleSize("X"),"X");
+    hRatioMultUA5->SetTitleSize(2*hRatioMultUA5->GetTitleSize("Y"),"Y");
+    hRatioMultUA5->SetTitleOffset(0.7*hRatioMultUA5->GetTitleOffset("X"),"X");
+    hRatioMultUA5->SetTitleOffset(0.5*hRatioMultUA5->GetTitleOffset("Y"),"Y");
+    
+    
+    
+    hRatioMultUA5->DrawCopy();
+    //hRatioMultPythia->DrawCopy("same");
     oneLine->Draw("same");
   }
+  
+  TCanvas* cPaper = new TCanvas("FMD_SPD_UA5","FMD_SPD_UA5",800,600);
+  cPaper->cd();
+  
+  sumMult->DrawCopy();
+  sumMultSystPos->DrawCopy("sameE5");
+  sumMultSystNeg->DrawCopy("sameE5");
+  //hTestdNdeta->DrawCopy("same");
+  hSPDcombi->DrawCopy("same");
+  if(what != kMultNSD) {
+    graphinel->Draw("PEsame");
+    graphinel2->Draw("PEsame");
+  }
+  else {
+    graph->Draw("PEsame");
+    graph2->Draw("PEsame");
+  }
+    
+  sumMult->DrawCopy("PEsame");
   c2->cd(1);
+
+  c2->Print("fmdana.png");
   TString species;
   
   switch(what) {
@@ -866,8 +1259,12 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
     species.Form("hits");
     break;
   case kHitsTrVtx:
-    species.Form("hits");
+    species.Form("hits_TrVtx");
     break;
+  case kMultNSD:
+    species.Form("mult_NSD");
+    break;
+    
   default:
     AliWarning("no valid Analysis entry!");
     break;
@@ -876,10 +1273,16 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   if(hRatioMultPythia)
     hRatioMultPythia->Write();
   hPrim->Write();
+  graph->Write("UA5nsd");
+  graph2->Write("UA5mirrornsd");
+  graphinel->Write("UA5inel");
+  graphinel2->Write("UA5mirrorinel");
   sumMult->Write();
+  hSPDcombi->Write();
   hReldif->Write();
   fMultList[what]->Write();
   c2->Write();
+  //fDataObject->Write();
   fout.Close();
     
 }
@@ -913,16 +1316,22 @@ void AliFMDDndeta::CreateSharingEfficiency(const Char_t* filename, Bool_t store)
 	
 	TH1F* hCorrection  = (TH1F*)hHits->Clone(Form("hCorrection_FMD%d%c_vtx%d"));
 	TH1F* hCorrectionTrVtx  = (TH1F*)hHitsTrVtx->Clone(Form("hCorrection_FMD%d%c_vtx%d"));
+	if(hEvents->GetBinContent(v+1))
+	  hCorrection->Scale(1./(Float_t)hEvents->GetBinContent(v+1));
+	if(hPrimEvents->GetBinContent(v+1))
+	  hMCHits->Scale(1./(Float_t)hPrimEvents->GetBinContent(v+1));
+	if(hEventsTrVtx->GetBinContent(v+1))
+	  hCorrectionTrVtx->Scale(1./(Float_t)hEventsTrVtx->GetBinContent(v+1));
+	if(hPrimEventsTrVtx->GetBinContent(v+1))
+	  hMCHitsTrVtx->Scale(1./(Float_t)hPrimEventsTrVtx->GetBinContent(v+1));
 	
-	hCorrection->Scale(1./(Float_t)hEvents->GetBinContent(v+1));
-	hMCHits->Scale(1./(Float_t)hPrimEvents->GetBinContent(v+1));
-	hCorrectionTrVtx->Scale(1./(Float_t)hEventsTrVtx->GetBinContent(v+1));
-	hMCHitsTrVtx->Scale(1./(Float_t)hPrimEventsTrVtx->GetBinContent(v+1));
 	hCorrection->Divide(hMCHits);
 	hCorrectionTrVtx->Divide(hMCHitsTrVtx);
 	
+	//sharEff->SetSharingEff(det,ringChar,v,hCorrection);
 	sharEff->SetSharingEff(det,ringChar,v,hCorrection);
 	sharEff->SetSharingEffTrVtx(det,ringChar,v,hCorrectionTrVtx);
+	
 	//	std::cout<<hHits<<"  "<<hHitsTrVtx<<"   "<<hPrim<<"    "<<hPrimTrVtx<<std::endl;
 
 	}
