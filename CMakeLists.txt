@@ -1,160 +1,126 @@
 # -*- mode: cmake -*-
 
 # Check if cmake has the required version
-Cmake_Minimum_Required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
 # Set name of our project to AliRoot. To be done after check of cmake version
-Project(AliRoot NONE)
+project(AliRoot NONE)
 
 # Set AliRoot variables
-Set(ALICE_ROOT $ENV{ALICE_ROOT})
-Set(ALICE      $ENV{ALICE})
-Set(ALICE_STATIC_BUILD OFF CACHE BOOL "Build also statics libs")
+set(ALICE_ROOT $ENV{ALICE_ROOT})
+set(ALICE      $ENV{ALICE})
+set(ALICE_STATIC_BUILD OFF CACHE BOOL "Build also statics libs")
 
-MESSAGE("ALICE_ROOT: ${ALICE_ROOT}")
-Set(CMAKE_VERBOSE_MAKEFILE ON)
+message("ALICE_ROOT: ${ALICE_ROOT}")
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ 
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-Set(CMAKE_MODULE_PATH "${ALICE_ROOT}/cmake/modules")
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_MODULE_PATH "${ALICE_ROOT}/cmake/modules")
 
 # To fix a hack that has been introduced for the Mac
-If(APPLE)
-  Set(CMAKE_INSTALL_NAME_TOOL CMAKE_INSTALL_NAME_TOOL-NOTFOUND)
-Endif(APPLE)
+if(APPLE)
+  set(CMAKE_INSTALL_NAME_TOOL CMAKE_INSTALL_NAME_TOOL-NOTFOUND)
+endif(APPLE)
 
 # Setup ROOT
-Find_package(ROOT 5.0.0 REQUIRED)
+find_package(ROOT 5.0.0 REQUIRED)
 
-Set(CMAKE_C_COMPILER $ENV{CC})
-Enable_Language(C)
+set(CMAKE_C_COMPILER $ENV{CC})
+enable_language(C)
 
-Set(CMAKE_CXX_COMPILER $ENV{CXX})
-Enable_Language(CXX)
+set(CMAKE_CXX_COMPILER $ENV{CXX})
+enable_language(CXX)
 
-Set(CMAKE_Fortran_COMPILER $ENV{F77})
-Enable_Language(Fortran)
+set(CMAKE_Fortran_COMPILER $ENV{F77})
+enable_language(Fortran)
 
 # Load some basic macros which are needed later on
 #Include(WriteConfigFile)
-Include(Dart)
-Include(ALICEMacros)
+include(Dart)
+include(ALICEMacros)
 
 # Check if the user wants to build the project in the source directory
 Check_out_of_Source_Build()
 
 # searches for needed packages
 
-Set(ALIROOT_INSTALL_DIR ${ALICE_ROOT}/${ALICE_TARGET})
+Set(ALIROOT_INSTALL_DIR ${ALICE_INSTALL}/${ALICE_TARGET})
 
 # Setup GEANT3
-Find_package(GEANT3 REQUIRED)
+find_package(GEANT3 REQUIRED)
 
 # Setup RuleChecker
-Find_Package(RuleChecker)
+find_package(RuleChecker)
 
 # Check if DATE is installed
-Find_Package(DATE)
+find_package(DATE)
 
 # Setup system dependent flags 
 SetupSystem()
 
+Include(CreateSubCMakeFiles)
+CreateSubCMakeFiles()
 
-Option(GENERATE_FILES "Generate CMake input files from package files" OFF)
-if(GENERATE_FILES)
-  Include(CreateSubCMakeFiles)
-  CreateSubCMakeFiles()
-endif(GENERATE_FILES)
 
 # Set the library version in the main CMakeLists.txt
-SET(ALIROOT_MAJOR_VERSION 0)
-SET(ALIROOT_MINOR_VERSION 0)
-SET(ALIROOT_PATCH_VERSION 0)
-SET(ALIROOT_VERSION "${ALIROOT_MAJOR_VERSION}.${ALIROOT_MINOR_VERSION}.${ALIROOT_PATCH_VERSION}")
-SET(ALIROOT_LIBRARY_PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES}
+
+set(ALIROOT_MAJOR_VERSION 0)
+set(ALIROOT_MINOR_VERSION 0)
+set(ALIROOT_PATCH_VERSION 0)
+set(ALIROOT_VERSION "${ALIROOT_MAJOR_VERSION}.${ALIROOT_MINOR_VERSION}.${ALIROOT_PATCH_VERSION}")
+
+set(ALIROOT_LIBRARY_PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES}
     VERSION "${ALIROOT_VERSION}"
     SOVERSION "${ALIROOT_MAJOR_VERSION}"
     SUFFIX ".so"
 )
 
 # Set version variables
-Find_program( READLINK_PROGRAM readlink)
+find_program( READLINK_PROGRAM readlink)
 
-If(READLINK_PROGRAM) 
-  Execute_process(COMMAND readlink -f ${ALICE_ROOT} 
+if(READLINK_PROGRAM) 
+  execute_process(COMMAND readlink -f ${ALICE_ROOT} 
     COMMAND xargs svn info
     OUTPUT_VARIABLE _svn_out)
-Else(READLINK_PROGRAM)
-  Execute_process(COMMAND svn info ${ALICE_ROOT} 
+else(READLINK_PROGRAM)
+  execute_process(COMMAND svn info ${ALICE_ROOT} 
     OUTPUT_VARIABLE _svn_out)
-Endif(READLINK_PROGRAM)
+endif(READLINK_PROGRAM)
 
-String(REGEX REPLACE "^.*Revision: ([^\n]*).*$" "\\1" 
+string(REGEX REPLACE "^.*Revision: ([^\n]*).*$" "\\1" 
   ALIROOT_SVN_REVISION ${_svn_out})
-String(REGEX REPLACE "^.*URL: https://alisoft.cern.ch/AliRoot/([^\n]*).*$" "w \\1"
+string(REGEX REPLACE "^.*URL: ([^\n]*).*$" "\\1"
   ALIROOT_SVN_BRANCH ${_svn_out})
-String(REPLACE "/" "\\\\/"
-  ALIROOT_SVN_BRANCH ${ALIROOT_SVN_BRANCH})
+string(REGEX REPLACE "^.*AliRoot/([^\n]*)" "\\1" ALIROOT_SVN_BRANCH ${ALIROOT_SVN_BRANCH})
+
 
 # Additional targets
-Add_Custom_Target(check-all COMMENT "Checking coding conventions")
+add_custom_target(check-all COMMENT "Checking coding conventions")
+message(STATUS "REVISION: ${ALIROOT_SVN_REVISION}")
+message(STATUS "BRANCH: ${ALIROOT_SVN_BRANCH}")
 
-# Configure special include file
-# Only if there is  a change in the file
-If(UNIX)
-  Set(_in ${CMAKE_CURRENT_SOURCE_DIR}/STEER/ARVersion.h.in)
-  Set(_out ${CMAKE_CURRENT_BINARY_DIR}/STEER/ARVersion.h)
-  If(NOT EXISTS ${_out})
-    Add_custom_target(ARversion ALL
-      COMMAND sed < ${_in}
-                -e "s/\\@ALIROOT_SVN_REVISION\\@/${ALIROOT_SVN_REVISION}/" 
-                -e "s/\\@ALIROOT_SVN_BRANCH\\@/${ALIROOT_SVN_BRANCH}/" 
-                -e "s/\\@ALIROOT_VERSION\\@/${ALIROOT_VERSION}/" >  ${_out})
-    Install(FILES ${_out} DESTINATION ${ALIROOT_INSTALL_DIR}/include)
-  Else(NOT EXISTS ${_out})
-    FILE(READ "${_out}" contents)
-    STRING(REGEX REPLACE ";" "\\\\;" contents "${contents}")
-    STRING(REGEX REPLACE "\n" ";" contents "${contents}")
-    Foreach(line ${contents})
-      If(line MATCHES "^.*ALIROOT_SVN_REVISION.*$")
-        STRING(REGEX REPLACE "^.*ALIROOT_SVN_REVISION[ ](.*)$" "\\1" _result_svn_rev "${line}")
-      EndIf(line MATCHES "^.*ALIROOT_SVN_REVISION.*$")
-      If(line MATCHES "^.*ALIROOT_SVN_BRANCH.*$")
-        STRING(REGEX REPLACE "^.*ALIROOT_SVN_BRANCH[ ]\"(.*)\"$" "\\1" _result_svn_branch "${line}")
-      EndIf(line MATCHES "^.*ALIROOT_SVN_BRANCH.*$")
-      If(line MATCHES "^.*ALIROOT_VERSION.*$")
-        STRING(REGEX REPLACE "^.*ALIROOT_VERSION[ ](.*)$" "\\1" _result_aliroot_version "${line}")
-      EndIf(line MATCHES "^.*ALIROOT_VERSION.*$")
-    EndForeach(line ${contents})
-    If(_result_aliroot_version STREQUAL ${ALIROOT_VERSION} AND _result_svn_rev STREQUAL ${ALIROOT_SVN_REVISION} AND _result_svn_branch STREQUAL ${ALIROOT_SVN_BRANCH})
-#      MESSAGE("VERSION: ${_result_aliroot_version}")
-#      MESSAGE("VERSION: ${ALIROOT_VERSION}")
-#      MESSAGE("REVISION: ${_result_svn_rev}")
-#      MESSAGE("REVISION: ${ALIROOT_SVN_REVISION}")
-#      MESSAGE("BRANCH: ${_result_svn_branch}")
-#      MESSAGE("BRANCH: ${ALIROOT_SVN_BRANCH}")
-    Else(_result_aliroot_version STREQUAL ${ALIROOT_VERSION} AND _result_svn_rev STREQUAL ${ALIROOT_SVN_REVISION} AND _result_svn_branch STREQUAL ${ALIROOT_SVN_BRANCH})
-    Add_custom_target(ARversion ALL
-      COMMAND sed < ${_in}
-                -e "s/\\@ALIROOT_SVN_REVISION\\@/${ALIROOT_SVN_REVISION}/" 
-                -e "s/\\@ALIROOT_SVN_BRANCH\\@/${ALIROOT_SVN_BRANCH}/" 
-                -e "s/\\@ALIROOT_VERSION\\@/${ALIROOT_VERSION}/" >  ${_out})
-      Install(FILES ${_out} DESTINATION ${ALIROOT_INSTALL_DIR}/include)
-    EndIf(_result_aliroot_version STREQUAL ${ALIROOT_VERSION} AND _result_svn_rev STREQUAL ${ALIROOT_SVN_REVISION} AND _result_svn_branch STREQUAL ${ALIROOT_SVN_BRANCH})
-  EndIf(NOT EXISTS ${_out})
+# Delete and recreate header ARVersion Header file 
+execute_process(COMMAND cmake -E remove "${CMAKE_CURRENT_BINARY_DIR}/STEER/ARVersion.h")
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/STEER/ARVersion.h.in ${CMAKE_CURRENT_BINARY_DIR}/STEER/ARVersion.h @ONLY)
 
-Endif(UNIX)
-
-# This would work, but just once... we want this to happen at every make
-#  Configure_file(${CMAKE_CURRENT_SOURCE_DIR}/STEER/ARVersion.h.in 
-#${CMAKE_CURRENT_BINARY_DIR}/STEER/ARVersion.h @ONLY)
+# Get list of enabled root features
+execute_process(COMMAND root-config --features OUTPUT_VARIABLE FEATURES)
+string(REGEX MATCH "pythia6" PYTHIA6 ${FEATURES})
+string(REGEX MATCH "pythia8" PYTHIA8 ${FEATURES})
+if(PYTHIA6)
+  message(STATUS "Pythia6 enabled")
+endif(PYTHIA6)
+if(PYTHIA8)
+  message(STATUS "Pythia8 enabled")
+endif(PYTHIA8)
 
 # Recurse into the given subdirectories.  This does not actually
 # cause another cmake executable to run.  The same process will walk through
 # the project's entire directory structure.
 
-#Add_subdirectory(PYTHIA8) 
+
 #Add_subdirectory(TFluka) 
 #Add_subdirectory(THydjet) 
 
@@ -188,8 +154,14 @@ Add_subdirectory(PWG1)
 Add_subdirectory(PWG2) 
 Add_subdirectory(PWG3) 
 Add_subdirectory(PWG4)
+if(PYTHIA6)
 Add_subdirectory(PYTHIA6)
 Add_subdirectory(RALICE) 
+Add_subdirectory(TPHIC) 
+endif(PYTHIA6)
+if(PYTHIA8)
+Add_subdirectory(PYTHIA8) 
+endif(PYTHIA8)
 Add_subdirectory(RAW) 
 Add_subdirectory(STAT) 
 Add_subdirectory(STEER)
@@ -203,13 +175,11 @@ Add_subdirectory(THijing)
 #Add_subdirectory(TIsajet) 
 Add_subdirectory(TOF) 
 Add_subdirectory(TPC)
-Add_subdirectory(TPHIC) 
 Add_subdirectory(TRD) 
 Add_subdirectory(TRIGGER) 
 Add_subdirectory(TTherminator) 
 Add_subdirectory(TUHKMgen) 
 Add_subdirectory(VZERO) 
 Add_subdirectory(ZDC) 
-#
 Add_subdirectory(ALIROOT)
 

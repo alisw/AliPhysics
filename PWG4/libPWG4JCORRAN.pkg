@@ -21,6 +21,8 @@ DHDR:= PWG4JCORRANLinkDef.h
 
 EXPORT:=$(SRCS:.cxx=.h)
 
+EINCLUDE:= PWG4/JCORRAN
+
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
                          -lESD -lAOD -lANALYSIS -lANALYSISalice \

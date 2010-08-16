@@ -27,9 +27,9 @@ Macro(CreateHLTSubCMakeFiles)
 
   ParseHLTPackageFile(HLT/hlt.conf)
   set(PACKCXXFLAGS_SUBDIR ${PACKCXXFLAGS_SUBDIR} ${PACKCXXFLAGS_PACKAGE})
-#  MESSAGE("${Package}")
+# MESSAGE("${Package}")
 
-#  set(Package HLT/libHLTrec.pkg)   
+# set(Package HLT/libHLTrec.pkg)   
   Foreach(_pack ${Package})
     GenerateHLTInputFiles(${_pack})
     set(EINCLUDE_SUBDIR ${EINCLUDE_SUBDIR} ${EINCLUDE_PACKAGE})

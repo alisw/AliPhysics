@@ -24,6 +24,7 @@ MODULE_DHDR:=
 
 EINCLUDE := 	HLT/pendolino \
 		HLT/pendolino/PredictionProcessor \
+		HLT/pendolino/PredictionProcessor/GRP \
 		HLT/pendolino/PredictionProcessor/HLT \
 		HLT/pendolino/PredictionProcessor/MUON \
 		HLT/pendolino/PredictionProcessor/TPC \
