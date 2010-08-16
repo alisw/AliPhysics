@@ -575,7 +575,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     CreateEventDoneReadoutFilter(monitoringFilter, 4);
   }
 
-  if (TriggerEvent(&decision) == -ENOSPC)
+  if (TriggerEvent(&decision, kAliHLTDataTypeGlobalTrigger) == -ENOSPC)
   {
     // Increase the estimated buffer space required if the PushBack methods in TriggerEvent
     // returned the "no buffer space" error code. Also remember to set the trigger counters

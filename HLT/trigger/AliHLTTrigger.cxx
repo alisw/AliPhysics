@@ -124,7 +124,7 @@ int AliHLTTrigger::TriggerEvent(bool value)
   AliHLTTriggerDecision triggerResult(value, GetTriggerName(), fTriggerDomain, fDescription);
   // Append the readout list if it contains anything.
   triggerResult.TriggerDomain().Add(fReadoutList);
-  return TriggerEvent(&triggerResult, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
+  return TriggerEvent(&triggerResult, kAliHLTDataTypeTriggerDecision);
 }
 
 
