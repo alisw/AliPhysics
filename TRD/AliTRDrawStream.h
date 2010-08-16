@@ -199,6 +199,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   class AliTRDrawStreamError { 
   public: 
     AliTRDrawStreamError(Int_t error = 0, Int_t sector = -1, Int_t stack = -1, Int_t link = -1, Int_t rob = -1, Int_t mcm = -1); 
+    virtual ~AliTRDrawStreamError() {}
     Int_t fError;                               // error code
     Int_t fSector;				// sector
     Int_t fStack;				// stack
