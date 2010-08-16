@@ -74,6 +74,7 @@ class AliRsnDaughter : public TObject
 
     // MC info & references
     AliVParticle*  GetRef()         const {return fRef;}
+    AliMCParticle* GetRefMCtrack()  const {return dynamic_cast<AliMCParticle*>(fRef);}
     AliESDtrack*   GetRefESDtrack() const {return dynamic_cast<AliESDtrack*>(fRef);}
     AliAODTrack*   GetRefAODtrack() const {return dynamic_cast<AliAODTrack*>(fRef);}
     AliESDv0*      GetRefESDv0()    const {return dynamic_cast<AliESDv0*>(fRef);}
@@ -81,9 +82,10 @@ class AliRsnDaughter : public TObject
     AliMCParticle* GetRefMC()       const {return fRefMC;}
     TParticle*     GetParticle()    const {if (fRefMC) return fRefMC->Particle(); else return 0x0;}
     Int_t          GetMotherPDG()   const {return fMotherPDG;}
+    Bool_t         IsMC()           const {if (GetRefMCtrack()) return kTRUE; return kFALSE;}
     Bool_t         IsAOD()          const {if (GetRefAODtrack() || GetRefAODv0()) return kTRUE; return kFALSE;}
     Bool_t         IsESD()          const {if (GetRefESDtrack() || GetRefESDv0()) return kTRUE; return kFALSE;}
-    Bool_t         IsTrack()        const {if (GetRefESDtrack() || GetRefAODtrack()) return kTRUE; return kFALSE;}
+    Bool_t         IsTrack()        const {if (GetRefESDtrack() || GetRefAODtrack() || GetRefMCtrack()) return kTRUE; return kFALSE;}
     Bool_t         IsV0()           const {if (GetRefESDv0() || GetRefAODv0()) return kTRUE; return kFALSE;}
     ERefType       RefType()        const {if (IsTrack()) return kTrack; if (IsV0()) return kV0; return kNoType;}
     void           SetRef(AliVParticle *ref) {fRef = ref;}

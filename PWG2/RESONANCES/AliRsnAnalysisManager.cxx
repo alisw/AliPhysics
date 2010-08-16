@@ -200,6 +200,7 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
   // joins the loop on tracks and v0s, by looping the indexes from 0
   // to the sum of them, and checking what to take depending of its value
   Int_t          i0, i1, i;
+  Bool_t         filled;
   AliRsnDaughter daughter0, daughter1;
   AliRsnPair    *pair = 0x0;
   TObjArrayIter  next(&fPairs);
@@ -207,8 +208,7 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
   for (i0 = 0; i0 < nTracks[0]; i0++)
   {
     // assign first track
-    if (i0 < nTracks[0]) ev0->SetDaughter(daughter0, i0, AliRsnDaughter::kTrack);
-    else ev0->SetDaughter(daughter0, i0 - nTracks[0], AliRsnDaughter::kV0);
+    ev0->SetDaughterMC(daughter0, i0);
         
     // internal loop (same criterion)
     for (i1 = 0; i1 < nTracks[1]; i1++)
@@ -217,8 +217,7 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
       if (ev0 == ev1 && i0 == i1) continue;
       
       // assign second track
-      if (i1 < nTracks[1]) ev1->SetDaughter(daughter1, i1, AliRsnDaughter::kTrack);
-      else ev1->SetDaughter(daughter1, i1 - nTracks[1], AliRsnDaughter::kV0);
+      ev1->SetDaughterMC(daughter1, i1);
       
       // loop over all pairs and make computations
       next.Reset();
@@ -233,7 +232,8 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
         if (pair->GetPairDef()->IsLikeSign() && i1 < i0) continue;
                 
         // process the two tracks
-        if (!pair->Fill(&daughter0, &daughter1, ev0, ev1)) continue;
+        filled = pair->Fill(&daughter0, &daughter1, ev0, ev1);
+        if (!filled) continue;
         pair->Compute();
       }
     }

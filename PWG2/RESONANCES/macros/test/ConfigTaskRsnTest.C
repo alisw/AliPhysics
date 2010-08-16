@@ -38,9 +38,9 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   // primary vertex range
   AliRsnCutPrimaryVertex *cutVertex   = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
   AliRsnCutSet           *cutSetEvent = new AliRsnCutSet("eventCuts", AliRsnCut::kEvent);
-  cutSetEvent->AddCut(cutVertex);
-  cutSetEvent->SetCutScheme("cutVertex");
-  task->SetEventCuts(cutSetEvent);
+  //cutSetEvent->AddCut(cutVertex);
+  //cutSetEvent->SetCutScheme("cutVertex");
+  //task->SetEventCuts(cutSetEvent);
 
   //
   // -- Setup pairs ---------------------------------------------------------------------------------
@@ -121,15 +121,15 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
 
   // --> add related cuts
   //cutSetDaughterCommon->AddCut(cuts2010);
-  //cutSetDaughterCommon->AddCut(cutPID);
+  cutSetDaughterCommon->AddCut(cutPID);
 
   // --> define schemes
-  //cutSetDaughterCommon->SetCutScheme("cuts2010&cutPID");
+  cutSetDaughterCommon->SetCutScheme("cutPID");
    
   // cut managers
   // define a proper name for each mult bin, to avoid omonyme output histos
-  //pairPMhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
-  //pairPMntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
+  pairPMhist->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
+  pairPMntp ->GetCutManager()->SetCommonDaughterCuts(cutSetDaughterCommon);
 
   // function axes
   Double_t ybins[] = {-0.8, -0.7, -0.6, -0.5, 0.5, 0.6, 0.7, 0.8};
@@ -146,6 +146,7 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   
   // add functions to TH1-like output
   pairPMhist->AddFunction(fcnPt);
+  //pairPMhist->SetOnlyTrue();
   
   // add values to TNtuple-like output
   pairPMntp->AddValue(axisIM);
