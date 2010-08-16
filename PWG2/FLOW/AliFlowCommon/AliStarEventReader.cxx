@@ -205,6 +205,7 @@ Bool_t AliStarEventReader::GetNextEvent( )
     NextEntry = 0 ; // this entry goes before nextFile
     nextFile = (TFile*) fFileList->After(nextFile) ;
     if ( nextFile == 0 ) break ;
+    if (ntData) delete ntData;
     ntData        = (TNtuple*) ( nextFile->Get("NTtracks") ) ;
     entries       = ntData->GetEntriesFast() ;
     Int_t columns = ntData->GetNvar() ;
