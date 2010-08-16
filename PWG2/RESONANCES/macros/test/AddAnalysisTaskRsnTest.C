@@ -19,7 +19,8 @@ Bool_t AddAnalysisTaskRsnTest
   // initialize task with all available slots, even if not all of them will be used:
   AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis");
   task->SetZeroEventPercentWarning(100.0);
-  task->SelectCollisionCandidates();
+  //task->SelectCollisionCandidates();
+  task->SetMCOnly(kTRUE);
 
   // load and execute configuration macro
   gROOT->LoadMacro(configMacro);

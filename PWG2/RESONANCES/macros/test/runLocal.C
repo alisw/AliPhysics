@@ -97,11 +97,11 @@ void runLocal
   //gROOT->LoadMacro("AddTaskAnalysisPhi7TeV.C");
   //AddTaskAnalysisPhi7TeV(dataLabel);
   
-  gROOT->LoadMacro("AddTaskAnalysisMonitor.C");
-  AddTaskAnalysisMonitor(dataLabel);
+  //gROOT->LoadMacro("AddTaskAnalysisMonitor.C");
+  //AddTaskAnalysisMonitor(dataLabel);
   
   // add task macro
-  //gROOT->ProcessLine(Form(".x %s(\"%s\")", addTaskName, dataLabel));
+  gROOT->ProcessLine(Form(".x %s(\"%s\")", addTaskName, dataLabel));
 
   // create TChain of input events
   TChain *analysisChain = 0x0;
