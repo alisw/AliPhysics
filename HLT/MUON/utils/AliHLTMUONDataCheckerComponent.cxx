@@ -118,11 +118,11 @@ const char* AliHLTMUONDataCheckerComponent::GetComponentID()
 void AliHLTMUONDataCheckerComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
 	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
-	/// At the moment this list is "any data type" since it is not known before
-	/// hand what kind of input blocks we will get.
+	/// At the moment this list is "any data type" origin MUON since it is not known
+	/// before hand what kind of input blocks we will get.
 	
 	assert( list.empty() );
-	list.push_back( kAliHLTAnyDataType );
+	list.push_back( kAliHLTAnyDataType | kAliHLTDataOriginMUON );
 }
 
 

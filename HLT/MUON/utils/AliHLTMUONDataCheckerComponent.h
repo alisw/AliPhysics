@@ -37,6 +37,8 @@ extern "C" struct AliHLTMUONTrackStruct;
  *
  * Component ID: \b MUONDataChecker <br>
  * Library: \b libAliHLTMUON.so  <br>
+ * Input Data Types:  ::kAliHLTAnyDataType | ::kAliHLTDataOriginMUON <br>
+ * Output Data Types: ::kAliHLTAnyDataType | ::kAliHLTDataOriginMUON <br>
  *
  * Optional arguments:<br>
  * \li -ignoretype <br>
