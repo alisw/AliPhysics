@@ -12,6 +12,8 @@ class AliMagF;
 class TList;
 
 #include "AliAnalysisTask.h"
+#include "AliMCInfo.h"
+#include "AliESDRecInfo.h"
 
 class AliComparisonTask : public AliAnalysisTask {
  public:
