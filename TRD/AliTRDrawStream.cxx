@@ -122,6 +122,7 @@ AliTRDrawStream::ErrorBehav_t AliTRDrawStream::fgErrorBehav[] = {
 
 AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader) :
   fStats(), 
+  fStoreError(&AliTRDrawStream::StoreErrorTree),
   fRawReader(rawReader),
   fDigitsManager(0x0),
   fDigitsParam(0x0),
@@ -1160,7 +1161,7 @@ void AliTRDrawStream::EquipmentError(ErrorCode_t err, const char *const msg, ...
   fLastError.fRob    = -1;
   fLastError.fMcm    = -1;
   fLastError.fError  = err;
-  fErrors->Fill();
+  (this->*fStoreError)();
 
   va_list ap;
   if (fgErrorDebugLevel[err] > 10) 
@@ -1187,7 +1188,7 @@ void AliTRDrawStream::StackError(ErrorCode_t err, const char *const msg, ...)
   fLastError.fRob    = -1;
   fLastError.fMcm    = -1;
   fLastError.fError  = err;
-  fErrors->Fill();
+  (this->*fStoreError)();
 
   va_list ap;
   if (fgErrorDebugLevel[err] > 0) 
@@ -1214,7 +1215,7 @@ void AliTRDrawStream::LinkError(ErrorCode_t err, const char *const msg, ...)
   fLastError.fRob    = -1;
   fLastError.fMcm    = -1;
   fLastError.fError  = err;
-  fErrors->Fill();
+  (this->*fStoreError)();
 
   va_list ap;
   if (fgErrorDebugLevel[err] > 0)
@@ -1241,7 +1242,7 @@ void AliTRDrawStream::ROBError(ErrorCode_t err, const char *const msg, ...)
   fLastError.fRob    = fCurrRobPos;
   fLastError.fMcm    = -1;
   fLastError.fError  = err;
-  fErrors->Fill();
+  (this->*fStoreError)();
 
   va_list ap;
   if (fgErrorDebugLevel[err] > 0) 
@@ -1268,7 +1269,7 @@ void AliTRDrawStream::MCMError(ErrorCode_t err, const char *const msg, ...)
   fLastError.fRob    = fCurrRobPos;
   fLastError.fMcm    = fCurrMcmPos;
   fLastError.fError  = err;
-  fErrors->Fill();
+  (this->*fStoreError)();
 
   va_list ap;
   if (fgErrorDebugLevel[err] > 0) 
@@ -1377,4 +1378,16 @@ void AliTRDrawStream::DumpRaw(TString title, UInt_t *start, Int_t length)
     title += Form("0x%08x ", start[pos]);
   }
   AliInfo(title);
+}
+
+AliTRDrawStream::AliTRDrawStreamError::AliTRDrawStreamError(Int_t error, Int_t sector, Int_t stack, Int_t link, Int_t rob, Int_t mcm) : 
+  fError(error),
+  fSector(sector),
+  fStack(stack),
+  fLink(link), 
+  fRob(rob),
+  fMcm(mcm)
+{
+  // ctor
+
 }
