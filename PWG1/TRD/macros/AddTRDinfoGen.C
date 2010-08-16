@@ -22,6 +22,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   if(info->IsCollision()){
     if(!mc) info->SetTrigger(
       "CINT1B-ABCE-NOPF-ALL"
+      "CINT1WU-B-NOPF-ALL"
       " CSCO1-ABCE-NOPF-CENT" // cosmic SPD trigger
     );
     info->SetLocalEvSelection();
