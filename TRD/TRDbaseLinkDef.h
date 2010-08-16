@@ -9,6 +9,7 @@
 #pragma link off all functions;
 
 #pragma link C++ ioctortype TRootIoCtor;
+#pragma link C++ nestedclasses;
 
 #pragma link C++ class  AliTRDSignalIndex+;
 #pragma link C++ class  AliTRDarraySignal+;
@@ -29,6 +30,7 @@
 #pragma link C++ class  AliTRDrawStream+;
 #pragma link C++ class  AliTRDrawStreamBase+;
 #pragma link C++ class  AliTRDtestBeam+;
+#pragma link C++ class  AliTRDrawStream::AliTRDrawStreamError+;
 #pragma link C++ class  AliTRDrawStream::AliTRDrawStats+;
 #pragma link C++ class  AliTRDrawStream::AliTRDrawStats::AliTRDrawStatsSector+;
 #pragma link C++ class  AliTRDrawStream::AliTRDrawStats::AliTRDrawStatsSector::AliTRDrawStatsHC+;
