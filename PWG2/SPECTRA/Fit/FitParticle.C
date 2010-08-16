@@ -108,7 +108,7 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
 
   // Print results nicely
   AliLatexTable table(9,"c|ccccccc");
-  table.InsertCustomRow("Part & Yield & T Slope & n & $\\Chi^2$/NDF & Min X & Frac Above & \\langle p_{t} \\rangle  & \\langle p_{t}^{2} \\rangle");
+  table.InsertCustomRow("Part & Integral & T Slope & n & $\\Chi^2$/NDF & Min X & Frac Above & \\langle p_{t} \\rangle  & \\langle p_{t}^{2} \\rangle");
   // populate table
   Float_t yield  = func->Integral(0,100);
   Float_t yieldE = func->IntegralError(0,100);
