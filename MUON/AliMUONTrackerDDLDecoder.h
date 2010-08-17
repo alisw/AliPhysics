@@ -723,11 +723,15 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeBlockData(
 			}
 			
 			// Try recover by finding the very next DSP and continue
-			// decoding from there. Note: to achieve all we have to do
-			// is continue to the next iteration, because the logic
+			// decoding from there. Note: to achieve this all we have to
+			// do is continue to the next iteration, because the logic
 			// will land up calling the FindKey method within the
 			// TryRecoverStruct method above.
-			if (fTryRecover) continue;
+			if (fTryRecover)
+			{
+				fHandler.OnEndOfDSP(dspHeader, dataStart);
+				continue;
+			}
 		}
 		
 		// Check if we are padding. If we are, then the bus patch data is
