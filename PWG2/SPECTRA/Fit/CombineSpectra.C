@@ -148,15 +148,12 @@ Int_t iCombInStudy = kCombAll; //kCombTOFTPC
 Int_t fitFuncID = kFitLevi;
 Bool_t showMC=kTRUE;
 Bool_t showE735=kTRUE;
+Bool_t useSecCorrFromDCA=kFALSE;
 
-void CombineSpectra(Int_t analysisType=kDoFits, Int_t  locfitFuncID = kFitLevi) {  //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
+void CombineSpectra(Int_t analysisType=kDoHelp, Int_t  locfitFuncID = kFitLevi) {  //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
 
   // This macro is used to combine the 900 GeV spectra from 2009
 
-  if (analysisType == kDoHelp) {
-    Help();
-    return;
-  }
   fitFuncID=locfitFuncID;
 
   // Load stuff
@@ -171,6 +168,13 @@ void CombineSpectra(Int_t analysisType=kDoFits, Int_t  locfitFuncID = kFitLevi) 
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG2spectra.so");
 
+  // Print Help and quit
+  if (analysisType == kDoHelp) {
+    Help();
+    return;
+  }
+
+
   // Set date
   today = today +  long(dt.GetDay()) +"/" + long(dt.GetMonth()) +"/"+ long(dt.GetYear());
 
@@ -183,8 +187,6 @@ void CombineSpectra(Int_t analysisType=kDoFits, Int_t  locfitFuncID = kFitLevi) 
   // Load histos
   LoadSpectra();
   LoadMC();
-  gStyle->SetOptTitle(0);
-  gStyle->SetOptStat(0);
 
   // Additional tasks
   //DrawStar(icharge);
@@ -200,6 +202,9 @@ void CombineSpectra(Int_t analysisType=kDoFits, Int_t  locfitFuncID = kFitLevi) 
 
 
 void FitCombined() {
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptStat(0);
+
   // Draw combined & Fit
   AliBWFunc * fm = new AliBWFunc;
   fm->SetVarType(AliBWFunc::kdNdpt);
@@ -518,6 +523,14 @@ void LoadSpectra() {
     }
   }
 
+  if(useSecCorrFromDCA){
+    TFile* fseccorr = new TFile("./Files/CorrFac-SecProtonsFromDCA-ITSsa.root");
+    TH1F* hcorrp=(TH1F*)fseccorr->Get("hSecPCorrFromDCA");
+    TH1F* hcorrpbar=(TH1F*)fseccorr->Get("hSecPbarCorrFromDCA");
+    hSpectra[kITS][kProton][kPos]->Multiply(hcorrp);
+    hSpectra[kITS][kProton][kNeg]->Multiply(hcorrpbar);
+    fseccorr->Close();
+  }
 
   // ITS + TPC (Marek)
   f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons20100720.root");
@@ -619,6 +632,41 @@ void LoadSpectra() {
   // geant/fluka absorption
   if(correctGeantFlukaXS) {
     cout << "CORRECTING GEANT3/FLUKA" << endl;
+    // common file for Kaons
+    TFile *fFlukakaons = TFile::Open("./Files/correctionForCrossSection.321.root");
+    TH1D * hCorrFlukakaon[kNCharge];
+    hCorrFlukakaon[kPos] = (TH1D*)fFlukakaons->Get("gHistCorrectionForCrossSectionParticles");
+    hCorrFlukakaon[kNeg] = (TH1D*)fFlukakaons->Get("gHistCorrectionForCrossSectionAntiParticles");
+
+    for(Int_t idet = 0; idet < kNDet; idet++){
+      if( idet != kITS) continue; // comment to use fluka for kaons for all dets
+      if (idet == kTOF) continue; // TOF already corrected
+      for(Int_t icharge = 0; icharge < kNCharge; icharge++){
+	Int_t ipart = kKaon;
+	TH1 * h = hSpectra[kITS][ipart][icharge]; // only ITS sa
+	if (h){
+	  Int_t nbins = h->GetNbinsX();
+	  Int_t nbinsy=hCorrFlukakaon[icharge]->GetNbinsY();
+	  for(Int_t ibin = 0; ibin < nbins; ibin++){
+	    Float_t pt = h->GetBinCenter(ibin);
+	    Float_t minPtCorrection = hCorrFlukakaon[icharge]->GetXaxis()->GetBinLowEdge(1);
+	    Float_t maxPtCorrection = hCorrFlukakaon[icharge]->GetXaxis()->GetBinLowEdge(nbinsy+1);
+	    if (pt < minPtCorrection) pt = minPtCorrection+0.0001;
+	    if (pt > maxPtCorrection) pt = maxPtCorrection;
+	    Float_t correction = hCorrFlukakaon[icharge]->GetBinContent(hCorrFlukakaon[icharge]->GetXaxis()->FindBin(pt));
+	    if (correction != 0) {// If the bin is empty this is a  0
+	      h->SetBinContent(ibin,h->GetBinContent(ibin)*correction);
+	      h->SetBinError  (ibin,h->GetBinError  (ibin)*correction);
+	    } else if (h->GetBinContent(ibin) > 0) { // If we are skipping a non-empty bin, we notify the user
+	      cout << "Fluka/GEANT: Not correcting bin "<<ibin << " for protons secondaries, ITS, " << chargeFlag[icharge] << endl;
+	      cout << " Bin content: " << h->GetBinContent(ibin)  << endl;
+	    }
+	  }
+	}
+      }
+    }
+ 
+    // ITS specific file for protons/antiprotons
     TFile* fITS = new TFile ("./Files/correctionForCrossSectionITS_20100719.root");
     TH2D * hCorrFlukaITS[kNCharge];
     hCorrFlukaITS[kPos] = (TH2D*)fITS->Get("gHistCorrectionForCrossSectionProtons");
@@ -1017,7 +1065,11 @@ void DrawAllAndKaons() {
 
   //  gROOT->LoadMacro("ALICEWorkInProgress.C");
 
-  gStyle->SetOptFit(0);
+  //  gStyle->SetOptFit(0);
+  gStyle->SetStatX(0.9);
+  gStyle->SetStatY(0.88);
+  gStyle->SetStatW(0.4);
+  gStyle->SetStatH(0.1);
 
   TH1F * hKaonsAllTPCTOF = (TH1F*) hSpectra[iCombInStudy][kKaon][kPos]->Clone();
   hKaonsAllTPCTOF->Add(hSpectra[iCombInStudy][kKaon][kNeg]);
@@ -1093,8 +1145,9 @@ void DrawAllAndKaons() {
   }
  
 
-  //  Draw ratios (tmp)
+  //  Draw ratios 
 
+  // K-/K+ in the different detectors
   TCanvas * cpm=new TCanvas("cpm","Kminus/Kplus",700,700);
   cpm->Divide(2,2);
   cpm->cd(1);
@@ -1126,23 +1179,30 @@ void DrawAllAndKaons() {
   hRatioKPKM_ITSTPC->GetYaxis()->SetTitle("K-/K+ (ITS Global)");
   hRatioKPKM_ITSTPC->Draw("");
   
+
+  // ITS/TPC
   TH1F * hRatioITSTPC[kNPart][kNCharge];
-  for(Int_t icharge = 0; icharge < kNCharge; icharge++){
-    TCanvas * c1 = new TCanvas(TString("cITSTPCRatio_")+chargeFlag[icharge],TString("cITSTPCRatio_")+chargeFlag[icharge],700,700);
+  for(Int_t icharge = 0; icharge < kNCharge; icharge++){ // loop over charges
+    // Create canvas
+    TCanvas * c1 = new TCanvas(TString("cITSTPCRatio_")+chargeFlag[icharge],TString("cITSTPCRatio_")+chargeFlag[icharge],1200,500);
+    c1->Divide(3,1);
     c1->SetGridy();
     TH2F * hempty = new TH2F(TString("hemptyR")+long(icharge),"ITSsa/TPC ",100,0.,1., 100, 0.5,1.5);
     hempty->SetXTitle("p_{t} (GeV/c)");
     hempty->SetYTitle("ITSsa / TPC");
-    hempty->Draw();    
+    // Loop over particles
     for(Int_t ipart = 0; ipart < kNPart; ipart++) {
+      // Clone histo
       hRatioITSTPC[ipart][icharge]=new TH1F(*hSpectra[kITS][ipart][icharge]);
       Int_t nBinsITS=hSpectra[kITS][ipart][icharge]->GetNbinsX();
       Int_t nBinsTPC=hSpectra[kTPC][ipart][icharge]->GetNbinsX();
+      // Loop over ITS bins, 
       for(Int_t iBin=1; iBin<=nBinsITS; iBin++){
 	hRatioITSTPC[ipart][icharge]->SetBinContent(iBin,0.);
 	hRatioITSTPC[ipart][icharge]->SetBinContent(iBin,0.);
 	Float_t lowPtITS=hSpectra[kITS][ipart][icharge]->GetBinLowEdge(iBin);
 	Float_t binWidITS=hSpectra[kITS][ipart][icharge]->GetBinWidth(iBin);
+	// Loop over TPC bins and find overlapping bins to ITS
 	for(Int_t jBin=1; jBin<=nBinsTPC; jBin++){
 	  Float_t lowPtTPC=hSpectra[kTPC][ipart][icharge]->GetBinLowEdge(jBin);
 	  Float_t binWidTPC=hSpectra[kTPC][ipart][icharge]->GetBinWidth(jBin);
@@ -1163,28 +1223,41 @@ void DrawAllAndKaons() {
 	  }
 	}
       }
-       hRatioITSTPC[ipart][icharge]->Draw("same");
+      c1->cd(ipart+1);
+      // hempty->SetStats(1);
+      // hempty->Draw(); 
+      hRatioITSTPC[ipart][icharge]->SetStats(1);
+      hRatioITSTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
+      hRatioITSTPC[ipart][icharge]->Draw("");
+      hRatioITSTPC[ipart][icharge]->Fit("pol0","","same");
+       
     }
     if(doPrint) c1->Print(TString(c1->GetName())+".png");
   }
 
+  // TOF/TPC
   TH1F * hRatioTOFTPC[kNPart][kNCharge];
-  for(Int_t icharge = 0; icharge < kNCharge; icharge++){
-    TCanvas * c1t = new TCanvas(TString("cTOFTPCRatio_")+chargeFlag[icharge],TString("cTOFTPCRatio_")+chargeFlag[icharge],700,700);
+  for(Int_t icharge = 0; icharge < kNCharge; icharge++){ // loop over charges
+    // create canvas
+    TCanvas * c1t = new TCanvas(TString("cTOFTPCRatio_")+chargeFlag[icharge],TString("cTOFTPCRatio_")+chargeFlag[icharge],1200,500);
     c1t->SetGridy();
+    c1t->Divide(3,1);
     TH2F * hemptyt = new TH2F(TString("hemptyRt")+long(icharge),"TOF/TPC ",100,0.,1., 100, 0.5,1.5);
     hemptyt->SetXTitle("p_{t} (GeV/c)");
     hemptyt->SetYTitle("TOF / TPC");
-    hemptyt->Draw();    
-    for(Int_t ipart = 0; ipart < kNPart; ipart++) {
+    //    hemptyt->Draw();    
+    for(Int_t ipart = 0; ipart < kNPart; ipart++) { // loop over particles
+      // Clone histo
       hRatioTOFTPC[ipart][icharge]=new TH1F(*hSpectra[kTOF][ipart][icharge]);
       Int_t nBinsTOF=hSpectra[kTOF][ipart][icharge]->GetNbinsX();
       Int_t nBinsTPC=hSpectra[kTPC][ipart][icharge]->GetNbinsX();
+      // Loop over TOF bins
       for(Int_t iBin=1; iBin<=nBinsTOF; iBin++){
 	hRatioTOFTPC[ipart][icharge]->SetBinContent(iBin,0.);
 	hRatioTOFTPC[ipart][icharge]->SetBinContent(iBin,0.);
 	Float_t lowPtTOF=hSpectra[kTOF][ipart][icharge]->GetBinLowEdge(iBin);
 	Float_t binWidTOF=hSpectra[kTOF][ipart][icharge]->GetBinWidth(iBin);
+	// Loop over TPC bins and find overlapping bins to ITS
 	for(Int_t jBin=1; jBin<=nBinsTPC; jBin++){
 	  Float_t lowPtTPC=hSpectra[kTPC][ipart][icharge]->GetBinLowEdge(jBin);
 	  Float_t binWidTPC=hSpectra[kTPC][ipart][icharge]->GetBinWidth(jBin);
@@ -1205,12 +1278,14 @@ void DrawAllAndKaons() {
 	  }
 	}
       }
-       hRatioTOFTPC[ipart][icharge]->Draw("same");
+      c1t->cd(ipart+1);
+      hRatioITSTPC[ipart][icharge]->SetStats(1);
+      hRatioITSTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
+      hRatioITSTPC[ipart][icharge]->Draw("");
+      hRatioITSTPC[ipart][icharge]->Fit("pol0","","same");
     }
     if(doPrint) c1t->Print(TString(c1t->GetName())+".png");
   }
-
-
 
 }
 
@@ -1578,11 +1653,16 @@ void Help() {
 
   cout << "Possible Arguments" << endl;
   cout << "- analysisType:" << endl;  
-  cout << "    enum {kDoFits=0, kDoRatios, kDoSuperposition, kDoDrawWithModels, kDoCompareToStar, kDoHelp};" << endl;
-  cout << "- fitFuncID" << endl;
-  cout << "    enum {kFitLevi=0, kFitUA1, kFitPowerLaw," << endl;
-  cout << "          kFitPhojet, kFitAtlasCSC, kFitCMS6D6T, kFitPerugia0," << endl;
-  cout << "          kNFit};" << endl;
+  cout << "    kDoFits:           Fit Combined Spectra " << endl;
+  cout << "    kDoRatios:         Particle ratios K/pi and p/pi" << endl;
+  cout << "    kDoSuperposition:  Compare different detectors (superimpose and ratios)" << endl;
+  cout << "    kDoCompareStar:    Compare combined spectra to star results" << endl;
+  cout << "    kDoDrawWithModels: Compare combined spectra and models" << endl;
+  cout << "    kDoHelp:           This help" << endl;
+  cout << "- fitFuncID, function used to extrapolate and compute yields" << endl;
+  cout << "    An analitic fit function [kFitLevi, kFitUA1, kFitPowerLaw]" << endl;
+  cout << "    Or a shape from a MC moder [kFitPhojet, kFitAtlasCSC, kFitCMS6D6T, kFitPerugia0]" << endl;
+  cout << "    Which is fitted to the data at low pt and used to extrapolate at low pt"
 
 
 }
