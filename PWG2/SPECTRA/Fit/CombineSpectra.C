@@ -211,7 +211,7 @@ void FitCombined() {
   if (convertToMT) fm->SetVarType(AliBWFunc::kOneOverMtdNdmt);
 
   // table to print results
-  AliLatexTable table(10,"c|cccccccc");
+  AliLatexTable table(10,"c|ccccccccc");
   if (fitFuncID == kFitLevi) {
     table.InsertCustomRow("Part & Yield & Yield (FIT) &  T Slope & n & $\\chi^2$/NDF & Min X & Frac Above & $\\langle p_{t} \\rangle$  & $\\langle p_{t}^{2} \\rangle$ \\\\");
   }  else if (fitFuncID == kFitPowerLaw) {
@@ -220,7 +220,7 @@ void FitCombined() {
     table.InsertCustomRow("Part & Yield & Par0 & Par2  & Par1 & $\\chi^2$/NDF & Min X & Frac Above & $\\langle p_{t} \\rangle$  & $\\langle p_{t}^{2} \\rangle$ \\\\");
 
   }
-
+  table.InsertHline();
   AliLatexTable tempTable(4,"c|ccc");
   tempTable.InsertCustomRow("Part & Yield & Yield Below & Frac Above\\\\");
 
@@ -404,7 +404,7 @@ void FitCombined() {
   }
 
   
-  table.PrintTable("ASCII");
+  table.PrintTable("");
   
   cout << "" << endl;
   tempTable.PrintTable("ASCII");
@@ -643,7 +643,7 @@ void LoadSpectra() {
       if (idet == kTOF) continue; // TOF already corrected
       for(Int_t icharge = 0; icharge < kNCharge; icharge++){
 	Int_t ipart = kKaon;
-	TH1 * h = hSpectra[kITS][ipart][icharge]; // only ITS sa
+	TH1 * h = hSpectra[idet][ipart][icharge]; // only ITS sa
 	if (h){
 	  Int_t nbins = h->GetNbinsX();
 	  Int_t nbinsy=hCorrFlukakaon[icharge]->GetNbinsY();
@@ -666,6 +666,8 @@ void LoadSpectra() {
       }
     }
  
+    // PROTONS
+
     // ITS specific file for protons/antiprotons
     TFile* fITS = new TFile ("./Files/correctionForCrossSectionITS_20100719.root");
     TH2D * hCorrFlukaITS[kNCharge];
@@ -720,7 +722,8 @@ void LoadSpectra() {
 	    Float_t correction = hCorrFluka[icharge]->GetBinContent(1,hCorrFluka[icharge]->GetYaxis()->FindBin(pt));
 
 	    // already in the efficiency correction (F. Noferini)
- 	    if (idet == kTOF && icharge == kNeg) {
+	    // 	    if (idet == kTOF && icharge == kNeg) {
+	    if (idet == kTOF) {
 	      correction = 1;
 // 	      // Apply parametrized correction computed by francesco
 // 	      // Fitted panos correction and using momentum at the outer radius of the TPC
@@ -793,21 +796,28 @@ void LoadSpectra() {
     }
   }
 
-  
-
-
 
   // Create fake weights for the mean; To be update once we have syst errors
-  TH1F * hWeights[3];
-  const Double_t kWeights[3] = {0.1,0.1,0.1}; // TPC, TOF, ITS
-  for(Int_t idet = 0; idet <= kITS ; idet++){
-    hWeights[idet] = (TH1F*) hSpectra[idet][kPion][kPos]->Clone();
-    Int_t nbin = hWeights[idet]->GetNbinsX();
-    for(Int_t ibin = 0; ibin < nbin; ibin++){
-      hWeights[idet]->SetBinError(ibin, kWeights[idet]);
-    }    
+  // Using syste from table in paper. It would be better to have this as a function of pt.
+  TH1F * hWeights[3][kNPart];
+  const Double_t kWeights[3][kNPart] =  
+    {{4,  3,  10.2},  // TPC
+     {4.1,8.8,7.0 },  //TOF
+     {4.5,5.6,7.0 }}; // ITS
+    // {{0.1,0.1,0.1},  // TPC
+    //  {0.1,0.1,0.1},  //TOF
+    //  {0.1,0.1,0.1}}; // ITS
+  for(Int_t ipart = 0; ipart <= kNPart ; ipart++){
+    for(Int_t idet = 0; idet <= kITS ; idet++){
+      hWeights[idet][ipart] = (TH1F*) hSpectra[idet][ipart][kPos]->Clone();
+      Int_t nbin = hWeights[idet][ipart]->GetNbinsX();
+      for(Int_t ibin = 1; ibin <= nbin; ibin++){
+	hWeights[idet][ipart]->SetBinError(ibin, kWeights[idet][ipart]);
+      }    
+    }
   }
-  
+  const Double_t scaleDet[] = {0.98,1,0.98}; // Scaling factor for the different detectors. Estimated from ratios, it has an estimated uncertainty of ~2% 
+  //  const Double_t scaleDet[] = {0.88,1,0.88}; // Scaling factor for the different detectors. Estimated from ratios, it has an estimated uncertainty of ~2% 
 
 
   // Combine detectors
@@ -827,10 +837,14 @@ void LoadSpectra() {
 	AliBWTools::Combine3HistosWithErrors(hSpectra[kITS][ipart][icharge],
 					     hSpectra[kTPC][ipart][icharge],
 					     hSpectra[kTOF][ipart][icharge],
-					     hWeights[kITS],
-					     hWeights[kTPC],
-					     hWeights[kTOF],
-					     htemplLocal,1);;
+					     hWeights[kITS][ipart],
+					     hWeights[kTPC][ipart],
+					     hWeights[kTOF][ipart],
+					     htemplLocal,1,
+					     scaleDet[kITS],
+					     scaleDet[kTPC],
+					     scaleDet[kTOF]
+					     );
 //       if (convertToMT) {
 // 	TH1F * htmp = (TH1F*) AliBWTools::GetOneOverPtdNdPt(hSpectra[kCombTOFTPC][ipart][icharge]);
 // 	hSpectra[kCombTOFTPC][ipart][icharge] = (TH1F*)AliBWTools::GetdNdmtFromdNdpt(htmp,mass[ipart]);
@@ -1662,7 +1676,7 @@ void Help() {
   cout << "- fitFuncID, function used to extrapolate and compute yields" << endl;
   cout << "    An analitic fit function [kFitLevi, kFitUA1, kFitPowerLaw]" << endl;
   cout << "    Or a shape from a MC moder [kFitPhojet, kFitAtlasCSC, kFitCMS6D6T, kFitPerugia0]" << endl;
-  cout << "    Which is fitted to the data at low pt and used to extrapolate at low pt"
+  cout << "    Which is fitted to the data at low pt and used to extrapolate at low pt" << endl;
 
 
 }
