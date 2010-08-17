@@ -33,6 +33,7 @@ ClassImp(AliRsnPair)
 AliRsnPair::AliRsnPair(const char *name, AliRsnPairDef *def) :
   TNamed(name, ""),
   fOnlyTrue(kFALSE),
+  fCheckDecay(kFALSE),
   fIsMixed(kFALSE),
   fPairDef(def),
   fCutManager(),
@@ -51,6 +52,7 @@ AliRsnPair::AliRsnPair(const char *name, AliRsnPairDef *def) :
 AliRsnPair::AliRsnPair(const AliRsnPair& copy) :
   TNamed(copy),
   fOnlyTrue(copy.fOnlyTrue),
+  fCheckDecay(copy.fCheckDecay),
   fIsMixed(copy.fIsMixed),
   fPairDef(copy.fPairDef),
   fCutManager(copy.fCutManager),
@@ -69,6 +71,7 @@ AliRsnPair::AliRsnPair(const AliRsnPair& copy) :
 AliRsnPair& AliRsnPair::operator=(const AliRsnPair& copy)
 {
   fOnlyTrue = copy.fOnlyTrue;
+  fCheckDecay = copy.fCheckDecay;
   fIsMixed = copy.fIsMixed;
   fPairDef = copy.fPairDef;
   fMother = copy.fMother;
@@ -175,17 +178,28 @@ Bool_t AliRsnPair::Fill
     // if they are, do they come from the same mother?
     if (m0 != m1) return kFALSE;
     
+    //cout << "Checking a true pair..." << endl;
+    
     // if they do, is this mother the correct type?
-    if (daughter0->GetMotherPDG() != fPairDef->GetMotherPDG()) return kFALSE;
-    if (daughter1->GetMotherPDG() != fPairDef->GetMotherPDG()) return kFALSE;
+    Int_t mpdg0 = TMath::Abs(daughter0->GetMotherPDG());
+    Int_t mpdg1 = TMath::Abs(daughter1->GetMotherPDG());
+    Int_t mpdg  = TMath::Abs(fPairDef->GetMotherPDG());
+    if (mpdg0 != mpdg) return kFALSE; //{cout << "Mother of d0 is " << mpdg0 << " instead of " << mpdg << endl; return kFALSE;}
+    if (mpdg1 != mpdg) return kFALSE; //{cout << "Mother of d1 is " << mpdg1 << " instead of " << mpdg << endl; return kFALSE;}
     
     // do they match the expected decay channel (that is, are they the expected types)?
-    Int_t pdg0 = TMath::Abs(daughter0->GetParticle()->GetPdgCode());
-    Int_t pdg1 = TMath::Abs(daughter1->GetParticle()->GetPdgCode());
-    if (AliPID::ParticleCode(fPairDef->GetPID(0)) != pdg0) return kFALSE;
-    if (AliPID::ParticleCode(fPairDef->GetPID(1)) != pdg1) return kFALSE;
+    if (fCheckDecay)
+    {
+      //cout << "Checking decay tree..." << endl;
+      Int_t pdg0 = TMath::Abs(daughter0->GetParticle()->GetPdgCode());
+      Int_t pdg1 = TMath::Abs(daughter1->GetParticle()->GetPdgCode());
+      if (AliPID::ParticleCode(fPairDef->GetPID(0)) != pdg0) return kFALSE; // {cout << "PDG0 is " << pdg0 << " instead of " << fPairDef->GetPID(0) << endl; return kFALSE;};
+      if (AliPID::ParticleCode(fPairDef->GetPID(1)) != pdg1) return kFALSE; // {cout << "PDG1 is " << pdg1 << " instead of " << fPairDef->GetPID(1) << endl; return kFALSE;};
+      //cout << "Decay tree accepted!" << endl;
+    }
     
     // ok... if we arrive here that must really be a true pair! :-)
+    //cout << "Pair accepted!" << endl;
   }
 
   AliDebug(AliLog::kDebug+2,"->");
