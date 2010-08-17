@@ -88,18 +88,27 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
   
   //Get list of aod arrays, add each aod array to analysis frame 
   TClonesArray *array = 0;
-  TList * list = fAna->GetAODBranchList();
-  TString deltaAODName = (fAna->GetReader())->GetDeltaAODFileName();
-  for(Int_t iaod = 0; iaod < list->GetEntries(); iaod++){
-    array = (TClonesArray*) list->At(iaod);
-	if(deltaAODName!="") AddAODBranch("TClonesArray", &array, deltaAODName);//Put it in DeltaAOD file
-	else AddAODBranch("TClonesArray", &array);//Put it in standard AOD file
-  } 
-	
+  TList * list = fAna->FillAndGetAODBranchList(); //Loop the analysis and create the list of branches
+  if (DebugLevel() >= 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - n AOD branches %d\n",list->GetEntries());
+  
+  //Put the delta AODs in output file, std or delta
+  if((fAna->GetReader())->WriteDeltaAODToFile()){
+    TString deltaAODName = (fAna->GetReader())->GetDeltaAODFileName();
+    for(Int_t iaod = 0; iaod < list->GetEntries(); iaod++){
+      array = (TClonesArray*) list->At(iaod);
+      if(deltaAODName!="") AddAODBranch("TClonesArray", &array, deltaAODName);//Put it in DeltaAOD file
+      else AddAODBranch("TClonesArray", &array);//Put it in standard AOD file
+    } 
+	}
+  
   //Histograms container
   OpenFile(1);
   fOutputContainer = fAna->GetOutputContainer();
+  
+  if (DebugLevel() >= 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - n histograms %d\n",fOutputContainer->GetEntries());
+
   fOutputContainer->SetOwner(kTRUE);
+  
   if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - End\n");
  
   PostData(1,fOutputContainer);

@@ -1,4 +1,4 @@
-AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, Bool_t outputAOD=kFALSE, Bool_t oldAOD=kFALSE)
 {
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
   
@@ -75,6 +75,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   reader->SetEMCALPtMin(0.1); 
   reader->SetPHOSPtMin(0.);
   reader->SetCTSPtMin(0.);
+  if(outputAOD)  reader->SwitchOffWriteDeltaAOD()  ;
+  if(oldAOD) reader->SwitchOnOldAODs();
   if(kPrintSettings) reader->Print("");
   
   // *** Calorimeters Utils	***
@@ -536,7 +538,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //==============================================================================
   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
   // AOD output slot will be used in a different way in future
-  if(!data.Contains("delta")) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
+  if(!data.Contains("delta")   && outputAOD) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
   mgr->ConnectOutput (task, 2, cout_cuts);
 

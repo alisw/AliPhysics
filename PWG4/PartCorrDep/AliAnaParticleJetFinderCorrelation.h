@@ -59,7 +59,7 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaPartCorrBaseClass {
   
  private:
   
-  Int_t SelectJet(AliAODPWG4Particle * particle) const ;
+  Int_t SelectJet(AliAODPWG4Particle * particle, AliAODEvent * event) const ;
   
   void MakeAnalysisFillAOD() ;
   void MakeAnalysisFillHistograms() ;

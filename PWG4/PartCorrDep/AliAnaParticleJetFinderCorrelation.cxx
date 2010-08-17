@@ -199,16 +199,16 @@ void AliAnaParticleJetFinderCorrelation::InitParameters()
   }
 
 //__________________________________________________________________
-Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * particle) const 
+Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * particle, AliAODEvent *event) const 
 {
   //Returns the index of the jet that is opposite to the particle
   
-  Int_t njets = (GetReader()->GetOutputEvent())->GetNJets() ;	
+  Int_t njets = event->GetNJets() ;	
   
   AliAODJet * jet = 0 ;
   Int_t index = -1;
   for(Int_t ijet = 0; ijet < njets ; ijet++){
-    jet = (GetReader()->GetOutputEvent())->GetJet(ijet) ;	  
+    jet = event->GetJet(ijet) ;	  
     Float_t dphi  = TMath::Abs(particle->Phi()-jet->Phi());
     Float_t ratio = jet->Pt()/particle->Pt();
     if(GetDebug() > 3)
@@ -230,32 +230,49 @@ return index ;
 void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() 
 {  
   //Particle-Jet Correlation Analysis, fill AODs
+
+  //Get the event, check if there are AODs available, if not, skip this analysis
+  AliAODEvent * event = NULL;
+  if(GetReader()->GetOutputEvent()) 
+  {
+    event = dynamic_cast<AliAODEvent*>(GetReader()->GetOutputEvent()); 
+  }
+  else if(GetReader()->GetDataType() == AliCaloTrackReader::kAOD) 
+  {   
+    event = dynamic_cast<AliAODEvent*>(GetReader()->GetInputEvent()); 
+  }
+  else 
+  {
+    if(GetDebug() > 3) printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - There are no jets available for this analysis\n");
+    return;
+  }
+    
   if(!GetInputAODBranch()){
     printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
     abort();
   }
   
   if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation")){
-	printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
-	abort();
+    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
+    abort();
   }
 	
   Int_t ntrig =  GetInputAODBranch()->GetEntriesFast() ;  
   if(GetDebug() > 3){
     printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Begin jet finder  correlation analysis, fill AODs \n");
     printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - In particle branch aod entries %d\n", ntrig);
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - In jet      branch aod entries %d\n", (GetReader()->GetOutputEvent())->GetNJets());
+    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - In jet      branch aod entries %d\n", event->GetNJets());
   }
-	
+  
   //Loop on stored AOD particles, trigger
   for(Int_t iaod = 0; iaod < ntrig ; iaod++){
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
 	
     //Correlate with jets
-    Int_t ijet = SelectJet(particle);
+    Int_t ijet = SelectJet(particle,event);
     if(ijet > -1){
       if(GetDebug() > 2) printf ("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - Jet with index %d selected \n",ijet);
-      AliAODJet *jet = (GetReader()->GetOutputEvent())->GetJet(ijet);   	  
+      AliAODJet *jet = event->GetJet(ijet);   	 
       particle->SetRefJet(jet);	
     }
   } // input aod loop		  
@@ -268,15 +285,31 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
 {
   //Particle-Jet Correlation Analysis, fill histograms
   
+  //Get the event, check if there are AODs available, if not, skip this analysis
+  AliAODEvent * event = NULL;
+  if(GetReader()->GetOutputEvent()) 
+  {
+    event = dynamic_cast<AliAODEvent*>(GetReader()->GetOutputEvent()); 
+  }
+  else if(GetReader()->GetDataType() == AliCaloTrackReader::kAOD) 
+  {  
+    event = dynamic_cast<AliAODEvent*>(GetReader()->GetInputEvent()); 
+  }
+  else {
+    if(GetDebug() > 3) printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - There are no jets available for this analysis\n");
+    return;
+  }
+  
   if(!GetInputAODBranch()){
     printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
     abort();
   }
+  
   Int_t ntrig   =  GetInputAODBranch()->GetEntriesFast() ;    
   if(GetDebug() > 1){
     printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - Begin jet finder  correlation analysis, fill histograms \n");
     printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - In particle branch aod entries %d\n", ntrig);
-    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - In jet      branch aod entries %d\n", (GetReader()->GetOutputEvent())->GetNJets());
+    printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - In jet output branch aod entries %d\n", event->GetNJets());
   }
   
   //Loop on stored AOD particles, trigger
@@ -290,11 +323,11 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     //If correlation not made before, do it now.
     if(fMakeCorrelationInHistoMaker){
       //Correlate with jets
-      Int_t ijet = SelectJet(particlecorr);
+      Int_t ijet = SelectJet(particlecorr,event);
       if(ijet > -1){
-	if(GetDebug() > 2) printf ("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - Jet with index %d selected \n",ijet);
-	jet = (GetReader()->GetOutputEvent())->GetJet(ijet);
-	particlecorr->SetRefJet(jet);	
+        if(GetDebug() > 2) printf ("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - Jet with index %d selected \n",ijet);
+        jet = event->GetJet(ijet);
+        particlecorr->SetRefJet(jet);	
       }
     }
     
@@ -330,9 +363,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     
     for(Int_t ipr = 0;ipr < ntracks ; ipr ++ ){
       if(!fUseJetRefTracks)
-	track = (AliAODTrack *) (GetAODCTS()->At(ipr)) ; 
+        track = (AliAODTrack *) (GetAODCTS()->At(ipr)) ; 
       else //If you want to use jet tracks from JETAN
-	track = (AliAODTrack *) ((jet->GetRefTracks())->At(ipr));
+        track = (AliAODTrack *) ((jet->GetRefTracks())->At(ipr));
       
       p3.SetXYZ(track->Px(),track->Py(),track->Pz());
       pt    = p3.Pt();
@@ -343,11 +376,11 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
       rad = TMath::Sqrt((eta-etaJet)*(eta-etaJet)+ (phi-phiJet)*(phi-phiJet));
       if(rad < fConeSize  && pt > fPtThresholdInCone){	
-	//printf("charged in jet cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
-	npartcone++;
-	fhFFz ->Fill(ptTrig, pt/ptTrig);
-	fhFFxi->Fill(ptTrig, TMath::Log(ptTrig/pt));
-	fhFFpt->Fill(ptTrig, pt);
+        //printf("charged in jet cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
+        npartcone++;
+        fhFFz ->Fill(ptTrig, pt/ptTrig);
+        fhFFxi->Fill(ptTrig, TMath::Log(ptTrig/pt));
+        fhFFpt->Fill(ptTrig, pt);
       }
     }//Tracks
     fhNTracksInCone->Fill(ptTrig, npartcone);

@@ -467,7 +467,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   
   //Get vertex for photon momentum calculation
   Double_t vertex[]  = {0,0,0} ; //vertex 
-  Double_t vertex2[] = {0,0,0} ; //vertex from second aod input
+  //Double_t vertex2[] = {0,0,0} ; //vertex from second aod input
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
   {
 	  GetReader()->GetVertex(vertex);
@@ -536,7 +536,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     }					
     else if(IsCaloPIDOn()){
       //Skip matched clusters with tracks
-      if(calo->GetNTracksMatched() > 0) continue ;
+      if(IsTrackMatched(calo)) continue ;
       
       //Get most probable PID, 2 options check PID weights 
       //or redo PID, recommended option for EMCal.		
