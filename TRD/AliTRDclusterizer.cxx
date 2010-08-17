@@ -42,6 +42,7 @@
 #include "AliTRDtransform.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDrawStreamBase.h"
+#include "AliTRDrawStream.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDtrackletWord.h"
 
@@ -649,8 +650,12 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     fRawStream->SetReader(rawReader);
 
   if(fReconstructor->IsHLT()){
-    fRawStream->SetSharedPadReadout(kFALSE);
-    fRawStream->SetNoErrorWarning();
+    if(fRawStream->InheritsFrom(AliTRDrawStream::Class()))
+      ((AliTRDrawStream*)fRawStream)->DisableErrorStorage();
+    else{
+      fRawStream->SetSharedPadReadout(kFALSE);
+      fRawStream->SetNoErrorWarning();
+    }
   }
 
   AliDebug(1,Form("Stream version: %s", fRawStream->IsA()->GetName()));
