@@ -768,6 +768,7 @@ Bool_t kGCusePWG4PartCorr = kTRUE;
 
 /** Flag to enable running on train  */
 Bool_t kGCrunOnTrain = kFALSE;
+Bool_t kGCrunOnGsiTrain = kFALSE;
 
 /** ------------------------------ Monte Carlo flag -----------------------------------------*/
 Bool_t kGCdoMCTruth = kTRUE;
@@ -875,6 +876,7 @@ Bool_t scanArguments(TString arguments){
 	cout<<"Running on gsi train"<<endl;
 	//kGCWriteStandardAOD=kFALSE;
 	kGCrunOnTrain = kTRUE;
+	kGCrunOnGsiTrain = kTRUE;
       }
       else if (argument.CompareTo("-run-jet") == 0){
 	cout<<"Running jet analysis"<<endl;
@@ -1189,10 +1191,12 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   // CKB kGCusePWG4PartCorr and writestandard are not mutually exclusive?
   AliAnalysisDataContainer *coutput1 = NULL;
 
-  if(kGCrunOnTrain && kGCWriteAOD){
-    coutput1 = mgr->GetCommonOutputContainer();
-  } else {
-    coutput1 = mgr->CreateContainer("GammaConvTree",TTree::Class(),AliAnalysisManager::kOutputContainer, "default");  
+  if(kGCWriteAOD) {
+    if(kGCrunOnTrain && !(kGCrunOnGsiTrain)) {
+      coutput1 = mgr->GetCommonOutputContainer();
+    } else {
+      coutput1 = mgr->CreateContainer("GammaConvTree",TTree::Class(),AliAnalysisManager::kOutputContainer, "default");  
+    }
   }
 	
   // Private output objects
@@ -1366,7 +1370,10 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   // Define Output Event Handler and add
   if(kGCWriteAOD){
 
-    if( kGCrunOnTrain ) {
+    cout << "Delta AOD file name : " << kGCDeltaAODFilename << endl;
+
+    if( kGCrunOnTrain && !kGCrunOnGsiTrain ) {
+
       AliAODHandler * aodHandler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
       gammaconversion->SetDeltaAODFileName(kGCDeltaAODFilename);
       
