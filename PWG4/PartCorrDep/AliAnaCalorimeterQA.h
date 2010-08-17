@@ -66,8 +66,9 @@ public:
   
   void SwitchOnCalorimetersCorrelation()  {fCorrelateCalos = kTRUE  ;}
   void SwitchOffCalorimetersCorrelation() {fCorrelateCalos = kFALSE ;}
-  void CorrelateCalorimeters(TRefArray* caloClusters);
-	
+  //void CorrelateCalorimeters(TRefArray* caloClusters);
+	void CorrelateCalorimeters();
+  
   void Terminate(TList * outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 	

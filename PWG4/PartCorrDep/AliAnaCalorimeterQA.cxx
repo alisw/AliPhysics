@@ -1025,7 +1025,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhGenGamAccEta = new TH1F("hGenGamAccEta","Y of generated #gamma in calorimeter acceptance",netabins,etamin,etamax);
 		fhGenGamAccPhi = new TH1F("hGenGamAccPhi","#phi of generated #gamma  in calorimeter acceptance",nphibins,phimin,phimax);
 		
-		fhGenPi0AccE  = new TH1F("hGenPi0AccE" ,"E of generated #pi^{0} in calorimeter acceptance",nptbins,ptmin,ptmax);
+		fhGenPi0AccE   = new TH1F("hGenPi0AccE" ,"E of generated #pi^{0} in calorimeter acceptance",nptbins,ptmin,ptmax);
 		fhGenPi0AccPt  = new TH1F("hGenPi0AccPt" ,"p_{T} of generated #pi^{0} in calorimeter acceptance",nptbins,ptmin,ptmax);
 		fhGenPi0AccEta = new TH1F("hGenPi0AccEta","Y of generated #pi^{0} in calorimeter acceptance",netabins,etamin,etamax);
 		fhGenPi0AccPhi = new TH1F("hGenPi0AccPhi","#phi of generated #pi^{0} in calorimeter acceptance",nphibins,phimin,phimax);
@@ -1199,9 +1199,9 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
 void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms() 
 {
   //Fill Calorimeter QA histograms
-	TLorentzVector mom ;
+	TLorentzVector mom  ;
 	TLorentzVector mom2 ;
-	TRefArray * caloClusters = new TRefArray();
+	TObjArray * caloClusters = NULL;
 	Int_t nLabel = 0;
 	Int_t *labels=0x0;
 	Int_t nCaloClusters = 0;
@@ -1251,11 +1251,15 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	
 	
   //Get List with CaloClusters  
-	
-  if     (fCalorimeter == "EMCAL") GetReader()->GetInputEvent()->GetEMCALClusters(caloClusters);//GetAODEMCAL();
-  else if(fCalorimeter == "PHOS") GetReader()->GetInputEvent()->GetPHOSClusters (caloClusters);//GetAODPHOS();
-  else 
-    AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data()));
+  if      (fCalorimeter == "PHOS")  caloClusters = GetAODPHOS();
+  else if (fCalorimeter == "EMCAL") caloClusters = GetAODEMCAL();
+ else 
+      AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data()));
+  
+//  if     (fCalorimeter == "EMCAL") GetReader()->GetInputEvent()->GetEMCALClusters(caloClusters);//GetAODEMCAL();
+//  else if(fCalorimeter == "PHOS")  GetReader()->GetInputEvent()->GetPHOSClusters (caloClusters);//GetAODPHOS();
+//  else 
+//    AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data()));
 	
 	if(!caloClusters) 
 		AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters available\n"));
@@ -1263,8 +1267,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   //----------------------------------------------------------
   //Correlate Calorimeters
   //----------------------------------------------------------
-	if(fCorrelateCalos)	CorrelateCalorimeters(caloClusters);
-  
+	//if(fCorrelateCalos)	CorrelateCalorimeters(caloClusters);
+  if(fCorrelateCalos)	CorrelateCalorimeters();
+
 	
   //----------------------------------------------------------
   // CALOCLUSTERS
@@ -1296,18 +1301,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
 			AliVCluster* clus =  (AliVCluster*)caloClusters->At(iclus);
 			AliVCaloCells * cell = 0x0; 
-			if(fCalorimeter == "PHOS") cell =  GetReader()->GetInputEvent()->GetPHOSCells();
-			else			           cell =  GetReader()->GetInputEvent()->GetEMCALCells();
-			
-      //Check if the cluster contains any bad channel or it is close to the calorimeter borders
-			if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;	
-			if(!GetCaloUtils()->CheckCellFiducialRegion(clus, cell, GetReader()->GetInputEvent(), 0)) continue;
-      //Recalibrate the cluster energy 
-			if( GetCaloUtils()->IsRecalibrationOn())	{
-				Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, cell);
-				clus->SetE(energy);
-			}
-			
+			if(fCalorimeter == "PHOS") cell =  GetPHOSCells();
+			else			                 cell =  GetEMCALCells();
+						
       //Get cluster kinematics
 			clus->GetPosition(pos);
 			clus->GetMomentum(mom,v);
@@ -1419,9 +1415,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
             fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
             fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
             
-            //		    	    	printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
-            //		       		printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
-            //	       			printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
+            //		    	  printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
+            //		        printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
+            //	       		printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
             //     				printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
           }//PHOS and its matrices are available
         }//Fill all position histograms
@@ -1469,11 +1465,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
 					AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(jclus);
 					AliVCaloCells  * cell2 = 0x0; 
-					if(fCalorimeter == "PHOS") cell2 =  GetReader()->GetInputEvent()->GetPHOSCells();
-					else			           cell2 =  GetReader()->GetInputEvent()->GetEMCALCells();
-          //Check if the cluster contains any bad channel or it is close to calorimeter borders
-					if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus2->GetCellsAbsId(), clus2->GetNCells())) continue;
-					if(!GetCaloUtils()->CheckCellFiducialRegion(clus2, cell2, GetReader()->GetInputEvent(), 0)) continue;
+					if(fCalorimeter == "PHOS") cell2 =  GetPHOSCells();
+					else			                 cell2 =  GetEMCALCells();
           
           //Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
@@ -1518,7 +1511,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		fhNClustersMod[imod]->Fill(nClustersInModule[imod]);
 	}
 	delete [] nClustersInModule;
-	delete caloClusters;
+	//delete caloClusters;
   
   //----------------------------------------------------------
   // CALOCELLS
@@ -1537,9 +1530,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   AliVCaloCells * cell = 0x0; 
   Int_t ncells = 0;
   if(fCalorimeter == "PHOS") 
-    cell =  GetReader()->GetInputEvent()->GetPHOSCells();
+    cell = GetPHOSCells();
   else		              
-    cell = GetReader()->GetInputEvent()->GetEMCALCells();
+    cell = GetEMCALCells();
   
   if(!cell) {
     printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s ESD CELLS available for analysis\n",fCalorimeter.Data());
@@ -1573,7 +1566,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       //Get Recalibration factor if set
       if (GetCaloUtils()->IsRecalibrationOn()) {
         if(fCalorimeter == "PHOS") recalF = GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
-        else		               recalF = GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
+        else		                   recalF = GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
         if(fCalorimeter == "PHOS")printf("Recalibration factor (sm,row,col)=(%d,%d,%d) -  %f\n",nModule,icol,irow,recalF);
       }
       
@@ -1695,8 +1688,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 }
 
 
-//__________________________________
-void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Double_t tof, Float_t *pos, Float_t *showerShape,
+//_____________________________________________________________________________________________
+void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Double_t tof, 
+                                            Float_t *pos, Float_t *showerShape,
                                             const Int_t nCaloCellsPerCluster,const Int_t nModule,
                                             const Int_t nTracksMatched,  const AliVTrack * track,  
                                             const Int_t * labels, const Int_t nLabels){
@@ -2179,23 +2173,68 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 }// Clusters
 
 //__________________________________
-void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
+//void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
+//  // Correlate information from PHOS and EMCAL
+//	TRefArray * caloClustersEMCAL = 0;
+//	TRefArray * caloClustersPHOS  = 0;
+//	
+//  // Get once the array of clusters per calorimeter, avoid an extra loop.
+//  if(fCalorimeter == "EMCAL"){ 
+//    caloClustersPHOS = new TRefArray();
+//    GetReader()->GetInputEvent()->GetPHOSClusters(caloClustersPHOS);
+//    caloClustersEMCAL = new TRefArray(*refArray);
+//  }
+//  else if(fCalorimeter == "PHOS") { 
+//    caloClustersEMCAL = new TRefArray();
+//    GetReader()->GetInputEvent()->GetEMCALClusters (caloClustersEMCAL);
+//    caloClustersPHOS = new TRefArray(*refArray);
+//  }
+//  
+//  //Fill histograms with clusters
+//  
+//  fhCaloCorrNClusters->Fill(caloClustersEMCAL->GetEntriesFast(),caloClustersPHOS->GetEntriesFast());
+//  Float_t sumClusterEnergyEMCAL = 0;
+//  Float_t sumClusterEnergyPHOS  = 0;
+//  Int_t iclus = 0;
+//  for(iclus = 0 ; iclus <  caloClustersEMCAL->GetEntriesFast() ; iclus++) 
+//    sumClusterEnergyEMCAL += ((AliVCluster*)caloClustersEMCAL->At(iclus))->E();
+//  for(iclus = 0 ; iclus <  caloClustersPHOS->GetEntriesFast(); iclus++) 
+//    sumClusterEnergyPHOS += ((AliVCluster*)caloClustersPHOS->At(iclus))->E();
+//  fhCaloCorrEClusters->Fill(sumClusterEnergyEMCAL,sumClusterEnergyPHOS);
+//  
+//  //Fill histograms with cells
+//  
+//  AliVCaloCells * cellsEMCAL = GetReader()->GetInputEvent()->GetEMCALCells();
+//  AliVCaloCells * cellsPHOS  = GetReader()->GetInputEvent()->GetPHOSCells();
+//  fhCaloCorrNCells   ->Fill(cellsEMCAL->GetNumberOfCells(),cellsPHOS->GetNumberOfCells());
+//  
+//  Int_t icell = 0;
+//  Float_t sumCellEnergyEMCAL = 0;
+//  Float_t sumCellEnergyPHOS  = 0;
+//  for(icell = 0 ; icell < cellsEMCAL->GetNumberOfCells()  ; icell++) 
+//    sumCellEnergyEMCAL += cellsEMCAL->GetAmplitude(icell);
+//  for(icell = 0 ; icell <  cellsPHOS->GetNumberOfCells(); icell++) 
+//    sumCellEnergyPHOS += cellsPHOS->GetAmplitude(icell);
+//  fhCaloCorrECells->Fill(sumCellEnergyEMCAL,sumCellEnergyPHOS);
+//  if(GetDebug() > 0 ){
+//    printf("AliAnaCalorimeterQA::CorrelateCalorimeters() - ESD: \n");
+//    printf("\t EMCAL: N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
+//           cellsEMCAL->GetNumberOfCells(),caloClustersEMCAL->GetEntriesFast(),sumCellEnergyEMCAL,sumClusterEnergyEMCAL);
+//    printf("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
+//           cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
+//  }
+//	
+//	delete caloClustersEMCAL;
+//	delete caloClustersPHOS;
+//	
+//}
+
+//__________________________________
+void AliAnaCalorimeterQA::CorrelateCalorimeters(){
   // Correlate information from PHOS and EMCAL
-	TRefArray * caloClustersEMCAL = 0;
-	TRefArray * caloClustersPHOS  = 0;
-	
-  // Get once the array of clusters per calorimeter, avoid an extra loop.
-  if(fCalorimeter == "EMCAL"){ 
-    caloClustersPHOS = new TRefArray();
-    GetReader()->GetInputEvent()->GetPHOSClusters(caloClustersPHOS);
-    caloClustersEMCAL = new TRefArray(*refArray);
-  }
-  else if(fCalorimeter == "PHOS") { 
-    caloClustersEMCAL = new TRefArray();
-    GetReader()->GetInputEvent()->GetEMCALClusters (caloClustersEMCAL);
-    caloClustersPHOS = new TRefArray(*refArray);
-  }
-  
+	TObjArray * caloClustersEMCAL = GetAODEMCAL();
+	TObjArray * caloClustersPHOS  = GetAODPHOS();
+ 
   //Fill histograms with clusters
   
   fhCaloCorrNClusters->Fill(caloClustersEMCAL->GetEntriesFast(),caloClustersPHOS->GetEntriesFast());
@@ -2210,8 +2249,8 @@ void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
   
   //Fill histograms with cells
   
-  AliVCaloCells * cellsEMCAL = GetReader()->GetInputEvent()->GetEMCALCells();
-  AliVCaloCells * cellsPHOS  = GetReader()->GetInputEvent()->GetPHOSCells();
+  AliVCaloCells * cellsEMCAL = GetEMCALCells();
+  AliVCaloCells * cellsPHOS  = GetPHOSCells();
   fhCaloCorrNCells   ->Fill(cellsEMCAL->GetNumberOfCells(),cellsPHOS->GetNumberOfCells());
   
   Int_t icell = 0;
@@ -2229,11 +2268,8 @@ void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
     printf("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f \n",
            cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
   }
-	
-	delete caloClustersEMCAL;
-	delete caloClustersPHOS;
-	
 }
+
 
 //______________________________________________________________________________
 void AliAnaCalorimeterQA::MCHistograms(const TLorentzVector mom, const Int_t pdg){

@@ -75,7 +75,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   reader->SetEMCALPtMin(0.1); 
   reader->SetPHOSPtMin(0.);
   reader->SetCTSPtMin(0.);
-  if(outputAOD)  reader->SwitchOffWriteDeltaAOD()  ;
+  if(outputAOD)  reader->SwitchOnWriteDeltaAOD()  ;
   if(oldAOD) reader->SwitchOnOldAODs();
   if(kPrintSettings) reader->Print("");
   
@@ -336,7 +336,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   ic2->SetConeSize(0.4);
   ic2->SetPtThreshold(0.2);
   ic2->SetICMethod(AliIsolationCut::kPtThresIC);
-  if(kPrintSettings) ic->Print("");
+  if(kPrintSettings) ic2->Print("");
   //Do or not do isolation with previously produced AODs.
   //No effect if use of SwitchOnSeveralIsolation()
   anaisolpi0->SwitchOffReIsolation();
@@ -346,7 +346,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaisolpi0->SetHistoPtRangeAndNBins(0, 50, 200) ;
   //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-  if(kPrintSettings) anaisol->Print("");
+  if(kPrintSettings) anaisolpi0->Print("");
 	
   //===========================
   //Correlation analysis
@@ -488,12 +488,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   if(calorimeter=="EMCAL")maker->AddAnalysis(anaelectron,n++);   
   // Isolation analysis
   maker->AddAnalysis(anaisol,n++);
-  maker->AddAnalysis(anacorrisohadron,n++);
   maker->AddAnalysis(anaisolpi0,n++);
   // Correlation analysis
   maker->AddAnalysis(anacorrjet,n++);
   maker->AddAnalysis(anacorrhadron,n++);
   maker->AddAnalysis(anacorrhadronpi0,n++);
+  maker->AddAnalysis(anacorrisohadron,n++);
   maker->AddAnalysis(anacorrhadronisopi0,n);
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
