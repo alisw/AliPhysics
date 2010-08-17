@@ -1519,7 +1519,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
       AliAODCaloCluster * calo = (AliAODCaloCluster *) (GetAODEMCAL()->At(iclus)) ;
       
       //Cluster selection, not charged
-      if(calo->GetNTracksMatched() > 0) continue ;
+      if(IsTrackMatched(calo)) continue ;
       
 	  //Input from second AOD?
 	  Int_t input = 0;
@@ -1686,7 +1686,7 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster
   //Select cluster depending on its pid and acceptance selections
   
   //Skip matched clusters with tracks
-  if(calo->GetNTracksMatched() > 0) return kFALSE;
+  if(IsTrackMatched(calo)) return kFALSE;
   
   //Check PID
   calo->GetMomentum(mom,vertex);//Assume that come from vertex in straight line

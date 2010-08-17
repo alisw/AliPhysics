@@ -18,9 +18,7 @@ class TObjArray ;
 class TObjString;
 
   //Analysis
-class AliESDCaloCluster;
-class AliAODCaloCluster;
-class AliAODCaloCells;
+class AliVCaloCells;
 #include "AliCaloTrackReader.h"   
 #include "AliCaloPID.h"
 #include "AliFiducialCut.h"
@@ -47,16 +45,12 @@ private:
   AliAnaPartCorrBaseClass & operator = (const AliAnaPartCorrBaseClass & g) ;//cpy assignment
   
 public:
-    //	virtual void AddAODCaloCluster(AliAODCaloCluster calo) ;
+
   virtual void AddAODParticle(AliAODPWG4Particle part) ;
   
-    //	virtual void ConnectAODCaloClusters();
-  virtual void ConnectAODPHOSCells();
-  virtual void ConnectAODEMCALCells();
   virtual void ConnectInputOutputAODBranches();
   
   virtual TList * GetCreateOutputObjects()      { return (new TList) ;}
-    //virtual TList * GetAnalysisOutputContainer()  { return fAnaOutContainer ;} 
 	
   virtual void AddToHistogramsName(TString add) { fAddToHistogramsName = add; }  
   virtual TString GetAddedHistogramsStringToName() {return fAddToHistogramsName ;}
@@ -69,9 +63,7 @@ public:
   virtual void MakeAnalysisFillAOD()  {;}
   
   virtual void MakeAnalysisFillHistograms() {;}
-  
-  virtual void MakeMixingAnalysisFillHistograms() {;}
-	
+  	
   virtual TObjString * GetAnalysisCuts() {return 0x0;}
 	
   virtual Int_t GetDebug() const  { return fDebug ; }
@@ -82,7 +74,7 @@ public:
   virtual AliCaloTrackReader * GetReader() const {return fReader ; }
   virtual void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }
   
-    //Calorimeter helper class access methods
+  //Calorimeter helper class access methods
   AliEMCALGeoUtils *  GetEMCALGeometry() const { return fCaloUtils->GetEMCALGeometry(); }
   AliPHOSGeoUtils  *  GetPHOSGeometry()  const { return fCaloUtils->GetPHOSGeometry() ; }
   
@@ -92,12 +84,10 @@ public:
 	  return fCaloUtils->GetModuleNumber(part, fReader->GetInputEvent());}
   Int_t GetModuleNumber(AliVCluster * cluster) const {
 	  return fCaloUtils->GetModuleNumber(cluster);}
-    //  Int_t GetModuleNumber(AliAODCaloCluster * cluster) const {
-    //	  return fCaloUtils->GetModuleNumber(cluster);}
-	
+ 	
   virtual void Terminate(TList * /*outputList*/) {;}
 	
-    //analysis AOD branch
+  //analysis AOD branch
   virtual TClonesArray * GetCreateOutputAODBranch() ;
   virtual TString GetInputAODName() const {return fInputAODName ; }
   virtual void SetInputAODName(TString name)   { fInputAODName = name; }	
@@ -116,25 +106,22 @@ public:
   virtual TClonesArray* GetOutputAODBranch() const {if(fNewAOD) return fOutputAODBranch; else return fInputAODBranch ;}
   virtual TClonesArray* GetAODBranch(TString aodBranchName) const ;
 	
-    //	virtual TClonesArray* GetAODCaloClusters() const {return fAODCaloClusters ;}
   virtual TClonesArray* GetAODCaloClusters() const ;
   virtual TClonesArray* GetAODTracks() const ;	
-  virtual AliAODCaloCells* GetAODCaloCells() const {return fAODCaloCells ;}
-  
+  virtual AliVCaloCells* GetPHOSCells()  const {return fReader->GetPHOSCells()  ;}
+  virtual AliVCaloCells* GetEMCALCells() const {return fReader->GetEMCALCells() ;}
+
   virtual TObjArray* GetAODCTS() const ;
   virtual TObjArray* GetAODEMCAL() const ;
   virtual TObjArray* GetAODPHOS() const ;
   
   virtual TString	GetBaseParametersList();
-  
-  virtual TNamed * GetEMCALCells() const ;
-  virtual TNamed * GetPHOSCells() const ;
-  
+    
   virtual AliStack * GetMCStack() const ;
   virtual AliHeader* GetMCHeader() const ;
   virtual AliGenEventHeader* GetMCGenEventHeader() const ;
   
-    //Analysis helpers classes pointers setters and getters
+  //Analysis helpers classes pointers setters and getters
   virtual AliCaloPID * GetCaloPID() {if(!fCaloPID) fCaloPID = new AliCaloPID(); return  fCaloPID ;}
   virtual void SetCaloPID(AliCaloPID * const pid) { fCaloPID = pid ;}
   
@@ -173,8 +160,8 @@ public:
   virtual void SetPtCutRange(Double_t ptmin, Double_t ptmax)
   {  fMaxPt=ptmax;   fMinPt=ptmin;}
   
-    //Histogrammes setters and getters
-    //Pt, Energy 
+  //Histogrammes setters and getters
+  //Pt, Energy 
   virtual void SetHistoPtRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoPtBins = n ;
     fHistoPtMax = max ;
@@ -196,7 +183,7 @@ public:
   virtual Float_t GetHistoPhiMin()   const { return fHistoPhiMin ; }
   virtual Float_t GetHistoPhiMax()   const { return fHistoPhiMax ; }
   
-    //Pseudorapidity-rapidity
+  //Pseudorapidity-rapidity
   virtual void SetHistoEtaRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoEtaBins = n ;
     fHistoEtaMax  = max ;
@@ -207,7 +194,7 @@ public:
   virtual Float_t GetHistoEtaMin()   const { return fHistoEtaMin ; }
   virtual Float_t GetHistoEtaMax()   const { return fHistoEtaMax ; }
   
-    //Mass
+  //Mass
   virtual void SetHistoMassRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoMassBins = n ;
     fHistoMassMax  = max ;
@@ -218,7 +205,7 @@ public:
   virtual Float_t GetHistoMassMin()   const { return fHistoMassMin ; }
   virtual Float_t GetHistoMassMax()   const { return fHistoMassMax ; }
 	
-    //Asymetry
+  //Asymetry
   virtual void SetHistoAsymmetryRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoAsymBins = n ;
     fHistoAsymMax  = max ;
@@ -233,7 +220,8 @@ public:
   Int_t GetNMixedEvent() const { return fNMixedEvent ; } 
   Double_t *  GetVertex(Int_t i) const { return fVertex[i] ; } 
 
-	
+	virtual Bool_t IsTrackMatched(AliVCluster * cluster) const ; 
+  
 private:    
   
   Bool_t  fDataMC ;             // Flag to access MC data when using ESD or AOD     
@@ -255,10 +243,7 @@ private:
   TString       fAODObjArrayName ;   // Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track references.
   TString       fAddToHistogramsName;// Add this string to histograms name
   
-    //TClonesArray* fAODCaloClusters ;  //! selected PHOS/EMCAL CaloClusters
-  AliAODCaloCells * fAODCaloCells ; //! selected PHOS/EMCAL CaloCells
-  
-    //Analysis helper classes access pointers
+  //Analysis helper classes access pointers
   AliCaloPID               * fCaloPID; //! PID calculation
   AliFiducialCut           * fFidCut;  //! Acceptance cuts
   AliIsolationCut          * fIC;      //! Isolation cut 
@@ -266,9 +251,8 @@ private:
   AliNeutralMesonSelection * fNMS;     //! Neutral Meson Selection
   AliCalorimeterUtils      * fCaloUtils ; //  Pointer to CalorimeterUtils
   
-    //TList * fAnaOutContainer;	// Temporal histogram output container, contents to be added to the main container passed to the main analysis frame
-  
-    //Histograms binning and range    
+
+  //Histograms binning and range    
   Int_t   fHistoPtBins   ;  // Number of bins in pt axis
   Float_t fHistoPtMax    ;  // Maximum value of pt histogram range
   Float_t fHistoPtMin    ;  // Minimum value of pt histogram range
@@ -291,7 +275,7 @@ private:
 
   
 	
-  ClassDef(AliAnaPartCorrBaseClass,7)
+  ClassDef(AliAnaPartCorrBaseClass,8)
 } ;
 
 

@@ -64,11 +64,9 @@ class AliAnaExample : public AliAnaPartCorrBaseClass {
   TH2F * fh2Pt; //!pT distribution, reconstructed vs generated
   TH2F * fh2Phi; //! phi distribution, reconstructed vs generated
   TH2F * fh2Eta; //! eta distribution, reconstructed vs generated
-  //Calo Cells
-  TH1F * fhNCells; //! Number of towers/crystals with signal
-  TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
-  ClassDef(AliAnaExample,1)
-    } ;
+  
+  ClassDef(AliAnaExample,2)
+} ;
 
 
 #endif //ALIANAEXAMPLE_H

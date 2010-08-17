@@ -37,10 +37,11 @@ class AliAnaPartCorrMaker : public TObject {
  public:
 	
   //Setter and getters
-  TList * GetAODBranchList() ;
   TList * GetListOfAnalysisCuts();
   TList * GetOutputContainer() ;
 
+  TList * FillAndGetAODBranchList();
+  
   Int_t GetAnaDebug() const  { return fAnaDebug ; }
   void SetAnaDebug(Int_t d)  { fAnaDebug = d ; }
 	
@@ -51,9 +52,7 @@ class AliAnaPartCorrMaker : public TObject {
   Bool_t AreAODsMade() const { return fMakeAOD ; }
   void SwitchOnAODsMaker()   { fMakeAOD = kTRUE ; }
   void SwitchOffAODsMaker()  { fMakeAOD = kFALSE ; }
-  
-  void SwitchOnMixingAnalysis() {fMakeMixing = kTRUE;} //Called by the task, no need to be set by user.
-	
+  	
   void Terminate(TList * outputList);
 
   void AddAnalysis(TObject* ana, Int_t n) {
@@ -84,18 +83,16 @@ class AliAnaPartCorrMaker : public TObject {
   TList * fAnalysisContainer ; // List with analysis pointers
   Bool_t  fMakeHisto ;         // If true makes final analysis with histograms as output
   Bool_t  fMakeAOD ;           // If true makes analysis generating AODs
-  Bool_t  fMakeMixing;         // If true it makes mixing analysis
   Int_t   fAnaDebug;           // Debugging info.
 	
   AliCaloTrackReader  *  fReader ;     //  Pointer to reader 
   AliCalorimeterUtils *  fCaloUtils ;  //  Pointer to CalorimeterUtils
 
-  TList * fAODBranchList ;     //! List with AOD branches created and needed in analysis  
   TList * fCuts ;	           //! List with analysis cuts
 
   TH1I  * fhNEvents;           //! Number of events counter histogram
 	
-  ClassDef(AliAnaPartCorrMaker,5)
+  ClassDef(AliAnaPartCorrMaker,7)
 } ;
  
 

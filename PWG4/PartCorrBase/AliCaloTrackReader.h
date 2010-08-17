@@ -47,7 +47,7 @@ private:
 
 public:
   enum inputDataType {kESD, kAOD, kMC};
-  
+    
   //Select generated events, depending on comparison of pT hard and jets.
   virtual Bool_t ComparePtHardAndJetPt() ;
   virtual Bool_t IsPtHardAndJetPtComparisonSet() const {return  fComparePtHardAndJetPt ;}
@@ -76,25 +76,29 @@ public:
   virtual void SetCTSPtMin(Float_t  pt)   { fCTSPtMin = pt ; }
   
   //Input setters and getters
-
+  Bool_t IsEMCALCluster(AliVCluster *clus) const;
+  Bool_t IsPHOSCluster (AliVCluster *clus)  const;
+  void SwitchOnOldAODs()   {fOldAOD = kTRUE  ; }
+  void SwitchOffOldAODs()  {fOldAOD = kFALSE ; }
+  
   Bool_t IsCTSSwitchedOn()  const { return fFillCTS ; }
-  void SwitchOnCTS()    {fFillCTS = kTRUE ; }
+  void SwitchOnCTS()    {fFillCTS = kTRUE  ; }
   void SwitchOffCTS()   {fFillCTS = kFALSE ; }
 
   Bool_t IsEMCALSwitchedOn() const { return fFillEMCAL ; }
-  void SwitchOnEMCAL()  {fFillEMCAL = kTRUE ; }
+  void SwitchOnEMCAL()  {fFillEMCAL = kTRUE  ; }
   void SwitchOffEMCAL() {fFillEMCAL = kFALSE ; }
 
   Bool_t IsPHOSSwitchedOn()  const { return fFillPHOS ; }
-  void SwitchOnPHOS()   {fFillPHOS = kTRUE ; }
+  void SwitchOnPHOS()   {fFillPHOS = kTRUE  ; }
   void SwitchOffPHOS()  {fFillPHOS = kFALSE ; }
 
   Bool_t IsEMCALCellsSwitchedOn() const { return fFillEMCALCells ; }
-  void SwitchOnEMCALCells()  {fFillEMCALCells = kTRUE ; }
+  void SwitchOnEMCALCells()  {fFillEMCALCells = kTRUE  ; }
   void SwitchOffEMCALCells() {fFillEMCALCells = kFALSE ; }
 
   Bool_t IsPHOSCellsSwitchedOn()  const { return fFillPHOSCells ; }
-  void SwitchOnPHOSCells()   {fFillPHOSCells = kTRUE ; }
+  void SwitchOnPHOSCells()   {fFillPHOSCells = kTRUE  ; }
   void SwitchOffPHOSCells()  {fFillPHOSCells = kFALSE ; }
 
   virtual Bool_t FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
@@ -103,12 +107,14 @@ public:
   virtual void FillInputPHOS() ;
   virtual void FillInputEMCALCells() ;
   virtual void FillInputPHOSCells() ;
+  
+  virtual TList * GetAODBranchList() const { return fAODBranchList ; }
 
-  virtual TObjArray* GetAODCTS()   const {return fAODCTS ;}
+  virtual TObjArray* GetAODCTS()   const {return fAODCTS   ;}
   virtual TObjArray* GetAODEMCAL() const {return fAODEMCAL ;}
-  virtual TObjArray* GetAODPHOS()  const {return fAODPHOS ;}
+  virtual TObjArray* GetAODPHOS()  const {return fAODPHOS  ;}
   virtual AliVCaloCells* GetEMCALCells()  const { return fEMCALCells ;}
-  virtual AliVCaloCells* GetPHOSCells()   const { return fPHOSCells ;}
+  virtual AliVCaloCells* GetPHOSCells()   const { return fPHOSCells  ;}
 
   //Get MC  informatio
   //Kinematics and galice.root available 
@@ -191,10 +197,11 @@ public:
   void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
   
   Double_t * GetVertex() ;  
+    
+  void SwitchOnWriteDeltaAOD()  {fWriteOutputDeltaAOD = kTRUE ;  }
+  void SwitchOffWriteDeltaAOD() {fWriteOutputDeltaAOD = kFALSE ; }
+  Bool_t WriteDeltaAODToFile() const {return fWriteOutputDeltaAOD ; } 
   
-  void SwitchOnWriteStdAOD()  {fWriteOutputStdAOD = kTRUE;}
-  void SwitchOffWriteStdAOD() {fWriteOutputStdAOD = kFALSE;}
-
  protected:
   Int_t	           fEventNumber; // Event number
   TString          fCurrentFileName; // Current file name under analysis
@@ -210,6 +217,7 @@ public:
   Float_t        fEMCALPtMin;    // pT Threshold on emcal clusters
   Float_t        fPHOSPtMin;     // pT Threshold on phos clusters
 
+  TList *        fAODBranchList ; //! List with AOD branches created and needed in analysis  
   TObjArray *    fAODCTS ;        //! temporal referenced array with tracks
   TObjArray *    fAODEMCAL ;      //! temporal referenced array with EMCAL CaloClusters
   TObjArray *    fAODPHOS ;       //! temporal referenced array with PHOS CaloClusters
@@ -252,10 +260,10 @@ public:
   Int_t          fNMixedEvent ;        //! number of events in mixed event buffer
   Double_t **    fVertex ;             //! vertex array 3 dim for each mixed event buffer
   
-  Bool_t	       fWriteOutputStdAOD;   // Write selected standard tracks and caloclusters in output AOD
-
-	
-  ClassDef(AliCaloTrackReader,17)
+  Bool_t         fWriteOutputDeltaAOD; // Write the created delta AOD objects into file  
+	Bool_t         fOldAOD;              // Old AODs, before revision 4.20
+  
+  ClassDef(AliCaloTrackReader,19)
 } ;
 
 

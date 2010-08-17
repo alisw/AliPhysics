@@ -1076,7 +1076,7 @@ Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliAODCaloCluster * calo,
   //Select cluster depending on its pid and acceptance selections
   
   //Skip matched clusters with tracks
-  if(calo->GetNTracksMatched() > 0) return kFALSE;
+  if(IsTrackMatched(calo)) return kFALSE;
   
   TString detector = "";
   if     (calo->IsPHOS())  detector= "PHOS";
