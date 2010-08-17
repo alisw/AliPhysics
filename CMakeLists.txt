@@ -7,16 +7,27 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(AliRoot NONE)
 
 # Set AliRoot variables
+
+set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 set(ALICE_ROOT $ENV{ALICE_ROOT})
-set(ALICE      $ENV{ALICE})
 set(ALICE_STATIC_BUILD OFF CACHE BOOL "Build also statics libs")
+execute_process(COMMAND root-config --arch OUTPUT_VARIABLE ALICE_TARGET)
+string (REGEX REPLACE "\n" "" ALICE_TARGET ${ALICE_TARGET})
+
+if(NOT ALICE_INSTALL)
+message(FATAL_ERROR "Please set environment variable ALICE_INSTALL to the AliRoot installation directory")
+endif(NOT ALICE_INSTALL)
+if(NOT ALICE_ROOT)
+message(FATAL_ERROR "Please set environment variable ALICE_ROOT to the AliRoot source directory")
+endif(NOT ALICE_ROOT)
+
 
 message("ALICE_ROOT: ${ALICE_ROOT}")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/tgt_${ALICE_TARGET})
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/tgt_${ALICE_TARGET})
 set(CMAKE_MODULE_PATH "${ALICE_ROOT}/cmake/modules")
 
 # To fix a hack that has been introduced for the Mac
@@ -24,21 +35,19 @@ if(APPLE)
   set(CMAKE_INSTALL_NAME_TOOL CMAKE_INSTALL_NAME_TOOL-NOTFOUND)
 endif(APPLE)
 
-# Setup ROOT
+# Setup ROOT and C, C++ , Fortran Compilers
 find_package(ROOT 5.0.0 REQUIRED)
-
 set(CMAKE_C_COMPILER $ENV{CC})
 enable_language(C)
-
 set(CMAKE_CXX_COMPILER $ENV{CXX})
 enable_language(CXX)
-
 set(CMAKE_Fortran_COMPILER $ENV{F77})
 enable_language(Fortran)
 
 # Load some basic macros which are needed later on
 #Include(WriteConfigFile)
-include(Dart)
+
+include (CTest)
 include(ALICEMacros)
 
 # Check if the user wants to build the project in the source directory
@@ -182,4 +191,6 @@ Add_subdirectory(TUHKMgen)
 Add_subdirectory(VZERO) 
 Add_subdirectory(ZDC) 
 Add_subdirectory(ALIROOT)
+add_subdirectory(test)
 
+add_test ("Aliroot_executable" aliroot -q) 
