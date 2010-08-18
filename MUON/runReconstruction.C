@@ -38,6 +38,8 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
 { 
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  man->SetSpecificStorage("GRP/GRP/Data",
+			  Form("local://%s",gSystem->pwd()));
   
   gRandom->SetSeed(seed);
   

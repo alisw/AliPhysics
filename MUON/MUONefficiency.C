@@ -221,6 +221,8 @@ Bool_t MUONefficiency(char* filename = "generated/galice.root", char* esdFileNam
 
   // load necessary data from OCDB
   AliCDBManager::Instance()->SetDefaultStorage(ocdbPath);
+  AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data",
+			  Form("local://%s",gSystem->pwd()));
   AliCDBManager::Instance()->SetRun(runNumber);
   if (!AliMUONCDB::LoadField()) return kFALSE;
 
