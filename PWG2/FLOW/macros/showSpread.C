@@ -126,6 +126,7 @@ void showSpread(TString type="", Int_t mode=mLocal)
   
  cout<<Form("Accessed %d files \"AnalysisResults.root\" in total to estimate spread. ",fileCounter)<<endl;
  cout<<endl;
+ if(fileCounter==0){exit(0);}
  const Int_t nFilesFinal = fileCounter;
 
  // Make for each method graph holding results:
