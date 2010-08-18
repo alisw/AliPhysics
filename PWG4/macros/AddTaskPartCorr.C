@@ -146,12 +146,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton->SwitchOffFiducialCut();
   if(kSimulation){
     anaphoton->SwitchOnFiducialCut();
-	AliFiducialCut * fidCut1stYear = anaphoton->GetFidutialCut();
-	fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
-	fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
-	fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
-	fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
-	fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
+    AliFiducialCut * fidCut1stYear = anaphoton->GetFidutialCut();
+    fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
+    fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
+    fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
+    fidCut1stYear->SetSimpleEMCALFiducialCut(0.7,80.,120.);
+    fidCut1stYear->SetSimplePHOSFiducialCut(0.12,260.,320.);
   }
   
   if(!data.Contains("delta")) {
@@ -165,7 +165,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anaphoton->Print("");
- 
+  
   // -----------------------------------
   // --- Pi0 Invariant Mass Analysis ---
   // -----------------------------------
@@ -186,6 +186,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
 	
   anapi0->SetNPID(1); //Available from tag AliRoot::v4-18-15-AN
   //settings for pp collision
+  anapi0->SwitchOnOwnMix();
   anapi0->SetNCentrBin(1);
   anapi0->SetNZvertBin(1);
   anapi0->SetNRPBin(1);
@@ -203,8 +204,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //---------------------------  
   //Pi0, event by event
   //---------------------------  
-
-		
+  
+  
   AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
   anapi0ebe->SetDebug(-1);//10 for lots of messages
   anapi0ebe->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
@@ -245,9 +246,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaomegaToPi0Gamma->SetNVtxZ(1);
   anaomegaToPi0Gamma->SetNEventsMixed(4);
   if(calorimeter=="PHOS")
-	anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.008); // PHOS
+    anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.008); // PHOS
   else if(calorimeter=="EMCAL")
-	anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.012); // EMCAL 
+    anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.012); // EMCAL 
   anaomegaToPi0Gamma->SetHistoPtRangeAndNBins(0, 20, 100) ;
   anaomegaToPi0Gamma->SetHistoMassRangeAndNBins(0, 1, 100) ;
   anaomegaToPi0Gamma->SetPi0OverOmegaPtCut(0.8);
@@ -262,28 +263,28 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   // Electron/btag
   //---------------------------------------------------------------------
   if(calorimeter=="EMCAL"){
-	Double_t pOverEmin = 0.8;  //tight
-	Double_t pOverEmax = 1.2;  //tight
-	Double_t dRmax     = 0.02; //tight
-	
-	AliAnaBtag *anaelectron = new AliAnaBtag();
-	anaelectron->SetDebug(-1); //10 for lots of messages
-	anaelectron->SetCalorimeter("EMCAL");
-	if(kUseKinematics){
-		anaelectron->SwitchOffDataMC();
-		anaelectron->SetMinPt(1.);
-	}
-	anaelectron->SetOutputAODName("ElectronsEMCAL");
-	anaelectron->SetOutputAODClassName("AliAODPWG4Particle");
-	//Determine which cuts to use based on enum
-	anaelectron->SetpOverEmin(pOverEmin);
-	anaelectron->SetpOverEmax(pOverEmax);
-	anaelectron->SetResidualCut(dRmax);
-	//Set Histrograms bins and ranges 
-	anaelectron->SetHistoPtRangeAndNBins(0, 100, 100) ;
-	anaelectron->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-	anaelectron->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
-	if(kPrintSettings)anaelectron->Print("");
+    Double_t pOverEmin = 0.8;  //tight
+    Double_t pOverEmax = 1.2;  //tight
+    Double_t dRmax     = 0.02; //tight
+    
+    AliAnaBtag *anaelectron = new AliAnaBtag();
+    anaelectron->SetDebug(-1); //10 for lots of messages
+    anaelectron->SetCalorimeter("EMCAL");
+    if(kUseKinematics){
+      anaelectron->SwitchOffDataMC();
+      anaelectron->SetMinPt(1.);
+    }
+    anaelectron->SetOutputAODName("ElectronsEMCAL");
+    anaelectron->SetOutputAODClassName("AliAODPWG4Particle");
+    //Determine which cuts to use based on enum
+    anaelectron->SetpOverEmin(pOverEmin);
+    anaelectron->SetpOverEmax(pOverEmax);
+    anaelectron->SetResidualCut(dRmax);
+    //Set Histrograms bins and ranges 
+    anaelectron->SetHistoPtRangeAndNBins(0, 100, 100) ;
+    anaelectron->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+    anaelectron->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+    if(kPrintSettings)anaelectron->Print("");
   }
   //==================================
   // ### Isolation analysis ###	
@@ -526,12 +527,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   TString outputfile = AliAnalysisManager::GetCommonFileName(); 
   //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form("PartCorr_%s",calorimeter.Data()),  TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PartCorr_%s",outputfile.Data(),calorimeter.Data()));
   AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(calorimeter.Data(), TList::Class(), 
-															 AliAnalysisManager::kOutputContainer, 
-															 Form("%s:PartCorr",outputfile.Data()));
+                                                             AliAnalysisManager::kOutputContainer, 
+                                                             Form("%s:PartCorr",outputfile.Data()));
 	
   AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("%sCuts",calorimeter.Data()), TList::Class(), 
-															 AliAnalysisManager::kParamContainer, 
-															 Form("%s:PartCorrCuts",outputfile.Data()));
+                                                             AliAnalysisManager::kParamContainer, 
+                                                             Form("%s:PartCorrCuts",outputfile.Data()));
 	
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
@@ -541,7 +542,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   if(!data.Contains("delta")   && outputAOD) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
   mgr->ConnectOutput (task, 2, cout_cuts);
-
+  
   return task;
 }
 

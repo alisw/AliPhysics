@@ -76,18 +76,21 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   virtual Int_t GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  ;
 
-  
+  void SwitchOnOwnMix()    {fDoOwnMix = kTRUE ; }
+  void SwitchOffOwnMix()   {fDoOwnMix = kFALSE ; }
+
 
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
   
   private:
+  Bool_t   fDoOwnMix;     // Do combinatorial background not the one provided by the frame
   Int_t    fNCentrBin ;	  // Number of bins in event container for centrality
   Int_t    fNZvertBin ;	  // Number of bins in event container for vertex position
-  Int_t    fNrpBin ;	  // Number of bins in event container for reaction plain
-  Int_t    fNPID ;		  // Number of possible PID combinations
+  Int_t    fNrpBin ;	    // Number of bins in event container for reaction plain
+  Int_t    fNPID ;		    // Number of possible PID combinations
   Int_t    fNmaxMixEv ;	  // Maximal number of events stored in buffer for mixing
-  Float_t  fZvtxCut ;	  // Cut on vertex position
+  Float_t  fZvtxCut ;	    // Cut on vertex position
   TString  fCalorimeter ; // Select Calorimeter for IM
   Int_t    fNModules ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
   Bool_t   fUseAngleCut ; // Select pairs depending on their opening angle
@@ -120,7 +123,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D * fhPrimOpeningAngle ;    //! Opening angle of pair versus pair energy, primaries
   TH2D * fhPrimCosOpeningAngle ; //! Cosinus of opening angle of pair version pair energy, primaries
 	
-  ClassDef(AliAnaPi0,8)
+  ClassDef(AliAnaPi0,9)
 } ;
 
 
