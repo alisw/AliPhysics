@@ -23,7 +23,7 @@ public:
   AliFlowTrack();
   AliFlowTrack(AliVParticle* p);
   AliFlowTrack& operator=(const AliFlowTrack& aTrack);
-  virtual AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
+  //virtual AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
   AliFlowTrack(const AliFlowTrack& aTrack);
   virtual  ~AliFlowTrack();
   virtual AliFlowTrack* Clone(const char* option="") const;

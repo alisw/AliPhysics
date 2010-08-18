@@ -20,7 +20,7 @@ public:
   AliFlowTrackSimple();
   AliFlowTrackSimple(TParticle* p);
   AliFlowTrackSimple(const AliFlowTrackSimple& aTrack);
-  virtual AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
+  AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
   virtual  ~AliFlowTrackSimple();
   virtual AliFlowTrackSimple* Clone(const char* option="") const;
   
