@@ -70,6 +70,11 @@ public:
   void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBPRF(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
 
+  Bool_t ValidateGain() const;
+  Bool_t ValidateVdrift();
+  Bool_t ValidateT0();
+  Bool_t ValidatePRF() const;
+
   Int_t    GetVersionGainUsed() const                                { return fVersionGainUsed;        }
   Int_t    GetSubVersionGainUsed() const                             { return fSubVersionGainUsed;     }
   Int_t    GetVersionVdriftUsed() const                              { return fVersionVdriftUsed;      }
@@ -93,6 +98,9 @@ public:
   Int_t    fSubVersionGainUsed;           // SubVersionGainUsed
   Int_t    fVersionVdriftUsed;            // VersionVdriftUsed 
   Int_t    fSubVersionVdriftUsed;         // SubVersionVdriftUsed
+  Bool_t   fSwitchOnValidation;           // Validation
+  Bool_t   fVdriftValidated;              // Vdrift validation
+  Bool_t   fT0Validated;                  // T0 validation
 
   Int_t GetSubVersion(TString name) const;
   Int_t GetVersion(TString name) const;

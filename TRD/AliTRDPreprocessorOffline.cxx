@@ -36,6 +36,7 @@
   // default storage ""- data stored at current working directory 
  
 */
+#include "AliLog.h"
 #include "Riostream.h"
 #include <fstream>
 #include "TFile.h"
@@ -77,13 +78,16 @@ AliTRDPreprocessorOffline::AliTRDPreprocessorOffline():
   fVersionGainUsed(0),
   fSubVersionGainUsed(0),
   fVersionVdriftUsed(0), 
-  fSubVersionVdriftUsed(0)
+  fSubVersionVdriftUsed(0),
+  fSwitchOnValidation(kTRUE),
+  fVdriftValidated(kFALSE),
+  fT0Validated(kFALSE)
 {
   //
   // default constructor
   //
 }
-
+//_________________________________________________________________________________________________________________
 AliTRDPreprocessorOffline::~AliTRDPreprocessorOffline() {
   //
   // Destructor
@@ -101,6 +105,7 @@ AliTRDPreprocessorOffline::~AliTRDPreprocessorOffline() {
   if(fCalibObjects) delete fCalibObjects;
   
 }
+//___________________________________________________________________________________________________________________
 
 void AliTRDPreprocessorOffline::CalibVdriftT0(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage){
   //
@@ -125,14 +130,25 @@ void AliTRDPreprocessorOffline::CalibVdriftT0(const Char_t* file, Int_t startRun
   //MakeDefaultPlots(fVdriftArray,fVdriftArray);
   //
   //
-  // 4. update of OCDB
+  // 4. validate OCDB entries
+  //
+  if(fSwitchOnValidation==kTRUE && ValidateVdrift()==kFALSE) { 
+    AliError("TRD vdrift OCDB parameters out of range!");
+    fVdriftValidated = kFALSE;
+  }
+  if(fSwitchOnValidation==kTRUE && ValidateT0()==kFALSE) { 
+    AliError("TRD t0 OCDB parameters out of range!");
+    fT0Validated = kFALSE;
+  }
+  //
+  // 5. update of OCDB
   //
   //
-  UpdateOCDBVdrift(startRunNumber,endRunNumber,ocdbStorage);
-  UpdateOCDBT0(startRunNumber,endRunNumber,ocdbStorage);
-
+  if(fVdriftValidated) UpdateOCDBVdrift(startRunNumber,endRunNumber,ocdbStorage);
+  if(fT0Validated) UpdateOCDBT0(startRunNumber,endRunNumber,ocdbStorage);
+  
 }
-
+//_________________________________________________________________________________________________________________
 
 void AliTRDPreprocessorOffline::CalibGain(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage){
   //
@@ -159,13 +175,21 @@ void AliTRDPreprocessorOffline::CalibGain(const Char_t* file, Int_t startRunNumb
   //MakeDefaultPlots(fVdriftArray,fVdriftArray);
   //
   //
-  // 4. update of OCDB
+  // 4. validate OCDB entries
+  //
+  if(fSwitchOnValidation==kTRUE && ValidateGain()==kFALSE) { 
+    AliError("TRD gain OCDB parameters out of range!");
+    return;
+  }
+  //
+  // 5. update of OCDB
   //
   //
-  UpdateOCDBGain(startRunNumber,endRunNumber,ocdbStorage);
+  if((!fCalDetVdriftUsed) || (fCalDetVdriftUsed && fVdriftValidated)) UpdateOCDBGain(startRunNumber,endRunNumber,ocdbStorage);
+  
   
 }
-
+//________________________________________________________________________________________________________________
 
 void AliTRDPreprocessorOffline::CalibPRF(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage){
   //
@@ -190,13 +214,21 @@ void AliTRDPreprocessorOffline::CalibPRF(const Char_t* file, Int_t startRunNumbe
   //MakeDefaultPlots(fVdriftArray,fVdriftArray);
   //
   //
-  // 4. update of OCDB
+  //
+  // 4. validate OCDB entries
+  //
+  if(fSwitchOnValidation==kTRUE && ValidatePRF()==kFALSE) { 
+    AliError("TRD prf OCDB parameters out of range!");
+    return;
+  }
+  //
+  // 5. update of OCDB
   //
   //
   UpdateOCDBPRF(startRunNumber,endRunNumber,ocdbStorage);
   
 }
-
+//______________________________________________________________________________________________________
 Bool_t AliTRDPreprocessorOffline::Init(const Char_t* fileName){
   //
   // read the calibration used during the reconstruction
@@ -225,7 +257,7 @@ Bool_t AliTRDPreprocessorOffline::Init(const Char_t* fileName){
   return kTRUE;
   
 }
-
+//___________________________________________________________________________________________________________________
 
 Bool_t AliTRDPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   //
@@ -253,6 +285,7 @@ Bool_t AliTRDPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   return kTRUE;
   
 }
+//_________________________________________________________________________________________________________________
 
 Bool_t AliTRDPreprocessorOffline::ReadVdriftT0Global(const Char_t* fileName){
   //
@@ -278,6 +311,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftT0Global(const Char_t* fileName){
   return kTRUE;
   
 }
+//___________________________________________________________________________________________________________________
 
 Bool_t AliTRDPreprocessorOffline::ReadVdriftLinearFitGlobal(const Char_t* fileName){
   //
@@ -300,6 +334,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftLinearFitGlobal(const Char_t* fileNa
   return kTRUE;
   
 }
+//_____________________________________________________________________________________________________________
 
 Bool_t AliTRDPreprocessorOffline::ReadPRFGlobal(const Char_t* fileName){
   //
@@ -325,8 +360,7 @@ Bool_t AliTRDPreprocessorOffline::ReadPRFGlobal(const Char_t* fileName){
   return kTRUE;
 
 }
-
-
+//__________________________________________________________________________________________________________
 
 Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
   //
@@ -368,7 +402,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
   return ok;
   
 }
-
+//_____________________________________________________________________________________________________
 Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
   //
   // Analyze VdriftT0 - produce the calibration objects
@@ -423,7 +457,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
   return ok;
   
 }
-
+//____________________________________________________________________________________________________________________
 Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   //
   // Analyze vdrift linear fit - produce the calibration objects
@@ -468,7 +502,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   return ok;
   
 }
-
+//________________________________________________________________________________________________________________
 
 Bool_t AliTRDPreprocessorOffline::AnalyzePRF(){
   //
@@ -505,7 +539,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePRF(){
   return ok;
   
 }
-
+//________________________________________________________________________________________________
 void AliTRDPreprocessorOffline::CorrectFromDetGainUsed() {
   //
   // Correct from the gas gain used afterwards
@@ -541,7 +575,7 @@ void AliTRDPreprocessorOffline::CorrectFromDetGainUsed() {
 
 
 }
-
+//________________________________________________________________________________________________
 void AliTRDPreprocessorOffline::CorrectFromDetVdriftUsed() {
   //
   // Correct from the drift velocity
@@ -572,7 +606,7 @@ void AliTRDPreprocessorOffline::CorrectFromDetVdriftUsed() {
   }
  
 }
-
+//_________________________________________________________________________________________________________________
 void AliTRDPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
   //
   // Update OCDB entry
@@ -590,7 +624,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRu
     
 
 }
-
+//___________________________________________________________________________________________________________________
 void AliTRDPreprocessorOffline::UpdateOCDBVdrift(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
   //
   // Update OCDB entry
@@ -626,7 +660,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBVdrift(Int_t startRunNumber, Int_t end
   }
 
 }
-
+//________________________________________________________________________________________________________________________
 void AliTRDPreprocessorOffline::UpdateOCDBT0(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
   //
   // Update OCDB entry
@@ -656,7 +690,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBT0(Int_t startRunNumber, Int_t endRunN
 
 
 }
-
+//_________________________________________________________________________________________________________________
 void AliTRDPreprocessorOffline::UpdateOCDBPRF(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
   //
   // Update OCDB entry
@@ -671,6 +705,95 @@ void AliTRDPreprocessorOffline::UpdateOCDBPRF(Int_t startRunNumber, Int_t endRun
   AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
   AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kPRF);
   if(calPad) gStorage->Put(calPad, id1, metaData);
+ 
+
+}
+//__________________________________________________________________________________________________________________________
+Bool_t AliTRDPreprocessorOffline::ValidateGain() const {
+  //
+  // Validate OCDB entry
+  //
+
+  AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(kGain);
+  if(calDet) {
+    Double_t mean = calDet->GetMean();
+    Double_t rms = calDet->GetRMS();
+    if((mean > 0.2) && (mean < 1.4) && (rms < 0.5)) return kTRUE;
+    else return kFALSE;
+  }
+  else return kFALSE;
+    
+
+}
+//__________________________________________________________________________________________________________________________
+Bool_t AliTRDPreprocessorOffline::ValidateVdrift(){
+  //
+  // Update OCDB entry
+  //
+
+  Int_t detVdrift = kVdriftPHDet;
+  Bool_t ok = kTRUE;
+  
+  if(fMethodSecond) detVdrift = kVdriftLinear;
+  
+  AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(detVdrift);
+  if(calDet) {
+    Double_t mean = calDet->GetMean();
+    Double_t rms = calDet->GetRMS();
+    //printf("Vdrift::mean %f, rms %f\n",mean,rms);
+    if(!((mean > 1.0) && (mean < 2.0) && (rms < 0.5))) ok = kFALSE;
+  }
+  else return kFALSE; 
+
+  if(!fMethodSecond) {
+    AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kVdriftPHPad);
+    if(calPad) {
+      Double_t mean = calPad->GetMean();
+      Double_t rms = calPad->GetRMS();
+      //printf("Vdrift::meanpad %f, rmspad %f\n",mean,rms);
+      if(!((mean > 0.9) && (mean < 1.1) && (rms < 0.6))) ok = kFALSE;
+    }
+    else return kFALSE;
+  }
+
+  return ok;
+
+}
+//__________________________________________________________________________________________________________________________
+Bool_t AliTRDPreprocessorOffline::ValidateT0(){
+  //
+  // Update OCDB entry
+  //
+  
+  AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(kT0PHDet);
+  AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kT0PHPad);
+  if(calDet && calPad) {
+    Double_t meandet = calDet->GetMean();
+    Double_t rmsdet = calDet->GetRMS();
+    Double_t meanpad = calPad->GetMean();
+    //Double_t rmspad = calPad->GetRMS();
+    //printf("T0::minimum %f, rmsdet %f,meanpad %f, rmspad %f\n",meandet,rmsdet,meanpad,rmspad);
+    if((meandet > -1.5) && (meandet < 5.0) && (rmsdet < 4.0) && (meanpad < 5.0) && (meanpad > -0.5)) return kTRUE;
+    else return kFALSE;
+  }
+  else return kFALSE;
+ 
+}
+//__________________________________________________________________________________________________________________________
+Bool_t AliTRDPreprocessorOffline::ValidatePRF() const{
+  //
+  // Update OCDB entry
+  //
+  
+  AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kPRF);
+  if(calPad) {
+    Double_t meanpad = calPad->GetMean();
+    Double_t rmspad = calPad->GetRMS();
+    //printf("PRF::meanpad %f, rmspad %f\n",meanpad,rmspad);
+    if((meanpad < 1.0) && (rmspad < 0.8)) return kTRUE;
+    else return kFALSE;
+  }
+  else return kFALSE;
  
 
 }
