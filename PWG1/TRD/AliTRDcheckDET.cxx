@@ -136,27 +136,29 @@ void AliTRDcheckDET::UserExec(Option_t *opt){
   // Execution function
   // Filling TRD quality histos
   //
-
   fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
   AliDebug(2, Form("EventInfo[%p] Header[%p]", (void*)fEventInfo, (void*)(fEventInfo?fEventInfo->GetEventHeader():NULL)));
 
   AliTRDrecoTask::UserExec(opt);  
+
   Int_t nTracks = 0;		// Count the number of tracks per event
-  Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();
-  TString triggername =  fEventInfo->GetRunInfo()->GetFiredTriggerClasses(triggermask);
-  AliDebug(6, Form("Trigger cluster: %d, Trigger class: %s\n", triggermask, triggername.Data()));
-  dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTrigger))->Fill(triggermask);
   for(Int_t iti = 0; iti < fTracks->GetEntriesFast(); iti++){
     if(!fTracks->UncheckedAt(iti)) continue;
     AliTRDtrackInfo *fTrackInfo = dynamic_cast<AliTRDtrackInfo *>(fTracks->UncheckedAt(iti));
     if(!fTrackInfo->GetTrack()) continue;
     nTracks++;
   }
-
-  if(nTracks){
-    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTriggerTracks))->Fill(triggermask);
+  if(nTracks)
     dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNtracksEvent))->Fill(nTracks);
-  }
+
+  if(!fEventInfo->GetEventHeader()) return; // For trigger statistics event header is essential
+  Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();
+  TString triggername =  fEventInfo->GetRunInfo()->GetFiredTriggerClasses(triggermask);
+  AliDebug(6, Form("Trigger cluster: %d, Trigger class: %s\n", triggermask, triggername.Data()));
+  dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTrigger))->Fill(triggermask);
+
+  if(nTracks)
+    dynamic_cast<TH1F *>(fContainer->UncheckedAt(kNeventsTriggerTracks))->Fill(triggermask);
   if(triggermask <= 20 && !fTriggerNames->FindObject(Form("%d", triggermask))){
     fTriggerNames->Add(new TObjString(Form("%d", triggermask)), new TObjString(triggername));
     // also set the label for both histograms

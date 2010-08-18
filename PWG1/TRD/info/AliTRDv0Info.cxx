@@ -826,7 +826,7 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
   case AliPID::kPion: iDecay = kK0s; break;
   case AliPID::kProton: iDecay = kLambda; break;
   default:
-    AliWarning(Form("Hypothesis \"ipart=%d\" not handled", ipart));
+    AliDebug(1, Form("Hypothesis \"ipart=%d\" not handled", ipart));
     return -3;
   }
 
