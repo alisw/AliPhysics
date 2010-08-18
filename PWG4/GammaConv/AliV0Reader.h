@@ -490,6 +490,10 @@ class AliV0Reader : public TObject {
    */
   Double_t GetAlphaCutMeson() const{return fAlphaCutMeson;}
 
+  /*
+   * Gets the Minimum alpha cut value for the mesons.
+   */
+  Double_t GetAlphaMinCutMeson() const{return fAlphaMinCutMeson;}
 
   Double_t GetPositiveTrackLength() const{return fCurrentPositiveESDTrack->GetIntegratedLength();}
   Double_t GetNegativeTrackLength() const{return fCurrentNegativeESDTrack->GetIntegratedLength();}
@@ -554,6 +558,12 @@ class AliV0Reader : public TObject {
    */
   void SetAlphaCutMeson(Double_t alpha){fAlphaCutMeson=alpha;}
 	
+
+  /*
+   * Sets the AlphaCut for the mesons.
+   */
+  void SetAlphaMinCutMeson(Double_t alpha){fAlphaMinCutMeson=alpha;}
+
 
   /*
    * Sets the XVertexCut value.
@@ -826,6 +836,7 @@ class AliV0Reader : public TObject {
   Double_t fChi2CutConversion; //chi2cut
   Double_t fChi2CutMeson;  //chi2cut
   Double_t fAlphaCutMeson;  //alphacut
+  Double_t fAlphaMinCutMeson;  //alphacut
   Double_t fPIDProbabilityCutNegativeParticle; //pid cut
   Double_t fPIDProbabilityCutPositiveParticle; //pid cut
   Bool_t   fDodEdxSigmaCut; // flag to use the dEdxCut based on sigmas
@@ -875,7 +886,7 @@ class AliV0Reader : public TObject {
 
   Int_t nEventsForBGCalculation;
 
-  ClassDef(AliV0Reader,12)
+  ClassDef(AliV0Reader,13)
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)

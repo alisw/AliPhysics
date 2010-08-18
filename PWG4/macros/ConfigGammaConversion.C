@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 14;
+const int c_array_size = 15;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -38,7 +38,7 @@ Bool_t kGCRecalculateV0ForGamma = kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="90001110001004"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="900356200010030"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=10;
 
@@ -55,6 +55,7 @@ Double_t kGCminClsTPCCut= 0.;
 Double_t kGCchi2CutConversion   = 30.;
 Double_t kGCchi2CutMeson   = 50.;
 Double_t kGCalphaCutMeson   = 0.7;
+Double_t kGCalphaMinCutMeson   = 0.0;
 
 Double_t kGCLineCutZRSlope = tan(2*atan(exp(-kGCetaCut)));
 Double_t kGCLineCutZValue = 7.;
@@ -1277,6 +1278,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetChi2CutConversion(kGCchi2CutConversion);
   v0Reader->SetChi2CutMeson(kGCchi2CutMeson);
   v0Reader->SetAlphaCutMeson(kGCalphaCutMeson);
+  v0Reader->SetAlphaMinCutMeson(kGCalphaMinCutMeson);
   v0Reader->SetPIDProbability(kGCprobElectron);
   v0Reader->SetXVertexCut(kGCxVertexCut);
   v0Reader->SetYVertexCut(kGCyVertexCut);
@@ -2173,7 +2175,7 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   // set the cuts depending on the Cut Selection Id
   // first number is dummy always set to 9 
   //  const char* cutSelection = analysisCutSelection.Data(); 
-  if(analysisCutSelection.Length()!=14){
+  if(analysisCutSelection.Length()!=c_array_size){
     cout<<"Cut selection has the wrong length!"<<endl;
     return 0;
   }
@@ -2199,7 +2201,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t LowPRejectionSigmaCut=array[11];
   Int_t QtMaxCut=array[12];
   Int_t piMaxMomdedxSigmaCut=array[13];
+  Int_t alphaMesonCut=array[14];
 
+  cout<<"alphaMesonCut"<<alphaMesonCut<<endl;	
   cout<<"piMaxMomdedxSigmaCut::"<<piMaxMomdedxSigmaCut<<endl;
   cout<<"QtMaxCut:"<<QtMaxCut<<endl;
   cout<<"LowPRejectionSigmaCut:"<<LowPRejectionSigmaCut<<endl;
@@ -2502,6 +2506,26 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   default:
     return iResult;
   }
+
+	
+  switch(alphaMesonCut){
+  case 0:  // 0- 0.7
+    kGCalphaMinCutMeson   = 0.0;
+    kGCalphaCutMeson   = 0.7;
+    break;
+  case 1:  // 0-0.5
+    kGCalphaMinCutMeson   = 0.0;
+    kGCalphaCutMeson   = 0.5;
+    break;
+  case 2:  // 0.5-1 
+    kGCalphaMinCutMeson   = 0.5;
+    kGCalphaCutMeson   = 1.;
+    break;
+
+  default:
+    return iResult;
+  }
+  
  
   iResult=1;
   return iResult;
@@ -2526,6 +2550,7 @@ void string2array(const std::string& number, int a[c_array_size])
         ASSIGNARRAY(11);
         ASSIGNARRAY(12);
         ASSIGNARRAY(13);
+        ASSIGNARRAY(14);
   }
 }
 

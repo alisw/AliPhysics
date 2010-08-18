@@ -1769,7 +1769,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  fHistograms->FillHistogram("ESD_Mother_ZR", twoGammaCandidate->GetZ(), spaceVectorTwoGammaCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Mother_XY", twoGammaCandidate->GetX(), twoGammaCandidate->GetY());
 	  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
-	  if(alfa<fV0Reader->GetAlphaCutMeson()){
+	  if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
 	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 	  }
 	  fHistograms->FillHistogram("ESD_Mother_InvMass",massTwoGammaCandidate);
@@ -2073,7 +2073,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	    fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
 	    fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
 
-	    if(alfa<fV0Reader->GetAlphaCutMeson()){
+	    if(alfa>fV0Reader->GetAlphaMinCutMeson() &&   alfa<fV0Reader->GetAlphaCutMeson()){
 	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
 	    }
 	    if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
