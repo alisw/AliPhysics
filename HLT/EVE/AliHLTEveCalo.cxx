@@ -117,7 +117,7 @@ void AliHLTEveCalo::ProcessHistogram(AliHLTHOMERBlockDesc * block ) {
   
   if(!fCanvas) {
     fCanvas = CreateCanvas(Form("%s QA", fName.Data()), Form("%s QA", fName.Data()));
-    fCanvas->Divide(3, 2);
+    fCanvas->Divide(3, 3);
   }
 
   if(!fInvMassCanvas) {
