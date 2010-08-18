@@ -1,3 +1,4 @@
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -76,6 +77,10 @@ AliHLTCalibrationProcessor::~AliHLTCalibrationProcessor() {
 Int_t AliHLTCalibrationProcessor::DoInit( int argc, const char** argv ) {
   // see header file for class documentation
 
+  // TODO: revision of argument scan needed, adjust to the new base class
+  // methods for argument scan
+  // call the configuration from the default OCDB object before the argument
+  // scan to override in correct sequence
   Int_t iResult = 0;
   TString argument = "";
   TString parameter = "";
