@@ -21,6 +21,7 @@
 // origin: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
 #include <limits.h>
+#include <float.h>
 #include "TNamed.h"
 #include "AliStarTrack.h"
 #include "AliStarTrackCuts.h"
@@ -32,10 +33,10 @@ AliStarTrackCuts::AliStarTrackCuts():
   TNamed(),
   fCutID(kFALSE),
   fIDMax(INT_MAX),
-  fIDMin(-INT_MAX),
+  fIDMin(INT_MIN),
   fCutCharge(kFALSE),
   fChargeMax(INT_MAX),
-  fChargeMin(-INT_MAX),
+  fChargeMin(INT_MIN),
   fCutEta(kFALSE),
   fEtaMax(FLT_MAX),
   fEtaMin(-FLT_MAX),
@@ -50,16 +51,16 @@ AliStarTrackCuts::AliStarTrackCuts():
   fDCAMin(-FLT_MAX),
   fCutNHits(kFALSE),
   fNHitsMax(INT_MAX),
-  fNHitsMin(-INT_MAX),
+  fNHitsMin(INT_MIN),
   fCutNHitsFit(kFALSE),
   fNHitsFitMax(INT_MAX),
-  fNHitsFitMin(-INT_MAX),
+  fNHitsFitMin(INT_MIN),
   fCutNHitsPoss(kFALSE),
   fNHitsPossMax(INT_MAX),
-  fNHitsPossMin(-INT_MAX),
+  fNHitsPossMin(INT_MIN),
   fCutNHitsDedx(kFALSE),
   fNHitsDedxMax(INT_MAX),
-  fNHitsDedxMin(-INT_MAX),
+  fNHitsDedxMin(INT_MIN),
   fCutdEdx(kFALSE),
   fdEdxMax(FLT_MAX),
   fdEdxMin(-FLT_MAX),

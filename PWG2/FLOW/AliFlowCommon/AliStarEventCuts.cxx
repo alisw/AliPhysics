@@ -21,6 +21,7 @@
 // origin: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
 #include <limits.h>
+#include <float.h>
 #include "TNamed.h"
 #include "AliStarEvent.h"
 #include "AliStarEventCuts.h"
@@ -32,10 +33,10 @@ AliStarEventCuts::AliStarEventCuts():
   TNamed(),
   fCutRunID(kFALSE),
   fRunIDMax(INT_MAX),
-  fRunIDMin(-INT_MAX),
+  fRunIDMin(INT_MIN),
   fCutEventNumber(kFALSE),
   fEventNumberMax(INT_MAX),
-  fEventNumberMin(-INT_MAX),
+  fEventNumberMin(INT_MIN),
   fCutVtxX(kFALSE),
   fVtxXMax(FLT_MAX),
   fVtxXMin(-FLT_MAX),
@@ -50,16 +51,16 @@ AliStarEventCuts::AliStarEventCuts():
   fBFieldMin(-FLT_MAX),
   fCutRefMult(kFALSE),
   fRefMultMax(INT_MAX),
-  fRefMultMin(-INT_MAX),
+  fRefMultMin(INT_MIN),
   fCutCentralityID(kFALSE),
   fCentralityIDMax(INT_MAX),
-  fCentralityIDMin(-INT_MAX),
+  fCentralityIDMin(INT_MIN),
   fCutNumberOfPrimaryTracks(kFALSE),
   fNumberOfPrimaryTracksMax(INT_MAX),
-  fNumberOfPrimaryTracksMin(-INT_MAX),
+  fNumberOfPrimaryTracksMin(INT_MIN),
   fCutNumberOfTracks(kFALSE),
   fNumberOfTracksMax(INT_MAX),
-  fNumberOfTracksMin(-INT_MAX)
+  fNumberOfTracksMin(INT_MIN)
 {
   //constructor 
 }
