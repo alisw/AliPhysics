@@ -10,7 +10,7 @@
 //  Author : Gustavo Conesa Balbastre (INFN-LNF)
 //
 //-------------------------------------------------
-enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID,mMix};
+enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //mLocal: Analyze locally files in your computer
 //mLocalCAF: Analyze locally CAF files
 //mPROOF: Analyze CAF files with PROOF
@@ -19,7 +19,7 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID,mMix};
 //Settings to read locally several files, only for "mLocal" mode
 //The different values are default, they can be set with environmental 
 //variables: INDIR, PATTERN, NFILES, respectivelly
-char * kInDir = "/Users/schutz/group/benjamin/pi0"; 
+//char * kInDir = "/Users/Gustavo/Work/mixed/data"; 
 char * kPattern = ""; // Data are in files kInDir/kPattern+i 
 Int_t kFile = 1; // Number of files
 //---------------------------------------------------------------------------
@@ -38,7 +38,7 @@ const Bool_t kMC = kFALSE; //With real data kMC = kFALSE
 const TString kInputData = "AOD"; //ESD, AOD, MC
 TString kTreeName ;
 
-void anaM(Int_t mode=mMix)
+void anaM(Int_t mode=mLocal)
 {
   // Main
 
@@ -80,24 +80,25 @@ void anaM(Int_t mode=mMix)
     }
 
     // AOD output handler
-     AliAODHandler* aodoutHandler   = new AliAODHandler();
-    aodoutHandler->SetOutputFileName("aod.root");
-    ////aodoutHandler->SetCreateNonStandardAOD();
-    mgr->SetOutputEventHandler(aodoutHandler);
+//      AliAODHandler* aodoutHandler   = new AliAODHandler();
+//     aodoutHandler->SetOutputFileName("aod.root");
+//     ////aodoutHandler->SetCreateNonStandardAOD();
+//     mgr->SetOutputEventHandler(aodoutHandler);
     
     //input
     Int_t maxiterations = 1;
     AliEventPoolLoop* pool = new AliEventPoolLoop(maxiterations);
     pool->SetChain(chain);
-    
+    Int_t eventsInPool = 2;
     AliMultiEventInputHandler *inpHandler = NULL ; 
     if(kInputData == "ESD"){
       // ESD handler
-      inpHandler = new AliMultiEventInputHandler(2, 0);
+      printf("ESD MultiInput \n");
+      inpHandler = new AliMultiEventInputHandler(eventsInPool, 0);
     }
     if(kInputData == "AOD"){
       // AOD handler
-      inpHandler = new AliMultiEventInputHandler(2, 1);	   	  
+      inpHandler = new AliMultiEventInputHandler(eventsInPool, 1);	   	  
     }
     mgr->SetInputEventHandler(inpHandler);
     cout<<"Input handler "<<mgr->GetInputEventHandler()<<endl;
@@ -117,10 +118,9 @@ void anaM(Int_t mode=mMix)
 
     gROOT->LoadMacro("AddTaskPartCorrM.C");
    
-
-    AliAnalysisTaskParticleCorrelationM *taskEMCAL = AddTaskPartCorrM("AOD","EMCAL", kTRUE,kFALSE);	
+    AliAnalysisTaskParticleCorrelationM *taskEMCAL = AddTaskPartCorrM(kInputData,"EMCAL", kFALSE,kFALSE,kFALSE,kTRUE);	
     mgr->AddTask(taskEMCAL);
-    AliAnalysisTaskParticleCorrelationM *taskPHOS  = AddTaskPartCorrM("AOD","PHOS", kTRUE, kFALSE);
+    AliAnalysisTaskParticleCorrelationM *taskPHOS  = AddTaskPartCorrM(kInputData,"PHOS", kFALSE, kFALSE);
     mgr->AddTask(taskPHOS);
 
     //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCalorimeterQA.C");
@@ -138,12 +138,10 @@ void anaM(Int_t mode=mMix)
     //-----------------------    
     TString smode = "";
     if (mode==mLocal || mode == mLocalCAF) 
-      smode = "local";
+      smode = "mix";
     else if (mode==mPROOF) 
       smode = "proof";
     else if (mode==mGRID) 
-      smode = "local";
-    else if (mode==mMix) 
       smode = "mix";
     
     mgr->InitAnalysis();
@@ -170,7 +168,7 @@ void  LoadLibraries(const anaModes mode) {
   //----------------------------------------------------------
   // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
   //----------------------------------------------------------
-  if (mode==mLocal || mode == mLocalCAF || mode == mGRID || mode == mMix) {
+  if (mode==mLocal || mode == mLocalCAF || mode == mGRID) {
     //--------------------------------------------------------
     // If you want to use already compiled libraries 
     // in the aliroot distribution
@@ -245,13 +243,13 @@ void  LoadLibraries(const anaModes mode) {
     // Enable the Analysis Package
     gProof->UploadPackage("ANALYSIS.par");
     gProof->EnablePackage("ANALYSIS");
-	// Enable the PHOS geometry Package
+    // Enable the PHOS geometry Package
     //gProof->UploadPackage("PHOSUtils.par");
     //gProof->EnablePackage("PHOSUtils");
     // Enable PartCorr analysis
     gProof->UploadPackage("PWG4PartCorrBase.par");
     gProof->EnablePackage("PWG4PartCorrBase");
-	gProof->UploadPackage("PWG4PartCorrDep.par");
+    gProof->UploadPackage("PWG4PartCorrDep.par");
     gProof->EnablePackage("PWG4PartCorrDep");    
     gProof->ShowEnabledPackages();
   }  
@@ -326,7 +324,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs){
   //---------------------------------------
   //Local files analysis
   //---------------------------------------
-  else if(mode == mLocal || mode == mMix){    
+  else if(mode == mLocal){    
     //If you want to add several ESD files sitting in a common directory INDIR
     //Specify as environmental variables the directory (INDIR), the number of files 
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)
