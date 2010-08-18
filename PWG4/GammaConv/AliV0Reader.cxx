@@ -26,6 +26,7 @@
 #include "AliV0Reader.h"
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
+#include "AliPID.h"
 #include "AliESDtrack.h"
 #include "AliMCEvent.h"
 #include "AliKFVertex.h"
@@ -94,6 +95,7 @@ AliV0Reader::AliV0Reader() :
   fChi2CutConversion(0.),
   fChi2CutMeson(0.),
   fAlphaCutMeson(1.),
+  fAlphaMinCutMeson(0.),
   fPIDProbabilityCutNegativeParticle(0),
   fPIDProbabilityCutPositiveParticle(0),
   fDodEdxSigmaCut(kFALSE),
@@ -181,6 +183,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fChi2CutConversion(original.fChi2CutConversion),
   fChi2CutMeson(original.fChi2CutMeson),
   fAlphaCutMeson(original.fAlphaCutMeson),
+  fAlphaMinCutMeson(original.fAlphaMinCutMeson),
   fPIDProbabilityCutNegativeParticle(original.fPIDProbabilityCutNegativeParticle),
   fPIDProbabilityCutPositiveParticle(original.fPIDProbabilityCutPositiveParticle),
   fDodEdxSigmaCut(original.fDodEdxSigmaCut),
