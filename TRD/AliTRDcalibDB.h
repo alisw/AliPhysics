@@ -72,6 +72,10 @@ class AliTRDcalibDB : public TObject {
 
   Int_t                               GetNumberOfTimeBinsDCS();
   void                                GetFilterType(TString &filterType);
+  void                                GetGlobalConfiguration(TString &config);
+  Bool_t                              HasOnlineFilterPedestal();
+  Bool_t                              HasOnlineFilterGain();
+  Bool_t                              HasOnlineTailCancellation();
 
   Char_t                              GetPadStatus(Int_t det, Int_t col, Int_t row);
   AliTRDCalSingleChamberStatus       *GetPadStatusROC(Int_t det);

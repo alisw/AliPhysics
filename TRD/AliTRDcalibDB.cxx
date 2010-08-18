@@ -811,7 +811,68 @@ void AliTRDcalibDB::GetFilterType(TString &filterType)
     return;
   } 
   filterType = calDCS->GetGlobalFilterType();
+}
 
+//_____________________________________________________________________________
+void AliTRDcalibDB::GetGlobalConfiguration(TString &config){
+  //
+  // Get Configuration from the DCS
+  //
+  const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
+  if(!dcsArr){
+    config = "";
+    return;
+  }
+  const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1)); // Take EOR
+  
+  if(!calDCS){
+    config = "";
+    return;
+  } 
+  config = calDCS->GetGlobalConfigName();
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::HasOnlineFilterPedestal()
+{
+  //
+  // Checks whether pedestal filter was applied online
+  //
+  TString cname;
+  // Temporary: Get the filter config from the configuration name
+  GetGlobalConfiguration(cname);
+  TString filterconfig = cname(cname.First("_") + 1, cname.First("-") - cname.First("_") - 1);
+  // TString filterconfig;
+  //GetFilterType(filterconfig);
+  return filterconfig.Contains("p");
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::HasOnlineFilterGain(){
+  //
+  // Checks whether online gain filter was applied
+  //
+  TString cname;
+  // Temporary: Get the filter config from the configuration name
+  GetGlobalConfiguration(cname);
+  TString filterconfig = cname(cname.First("_") + 1, cname.First("-") - cname.First("_") - 1);
+  //TString filterconfig;
+  //GetFilterType(filterconfig);
+  return filterconfig.Contains("g");
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::HasOnlineTailCancellation(){
+  //
+  // Checks whether online tail cancellation was applied
+  //
+  TString cname;
+  // Temporary: Get the filter config from the configuration name
+  GetGlobalConfiguration(cname);
+  TString filterconfig = cname(cname.First("_") + 1, cname.First("-") - cname.First("_") - 1);
+  //TString filterconfig;
+  //GetFilterType(filterconfig);
+  return filterconfig.Contains("t");
 }
 
 //_____________________________________________________________________________
