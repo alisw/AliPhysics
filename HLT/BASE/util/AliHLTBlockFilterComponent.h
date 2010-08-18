@@ -48,6 +48,12 @@
  *      data specification treated as decimal number or hex number if
  *      prepended by '0x'
  *
+ * \li -prescalar  <i> scalar      </i>                                 <br>
+ *      a prescalar value, forwarding only if eventcount%scalar is zero
+ *
+ * \li -skip-events  <i> count      </i>                                <br>
+ *      skip count events in the beginning
+ *
  * \li -verbose                                                         <br>
  *      print out some more info messages, mainly for the sake of tutorials
  *
@@ -174,6 +180,8 @@ class AliHLTBlockFilterComponent : public AliHLTProcessor
 
   /** filtering rules, only the data type and specification members are use */
   AliHLTComponentBlockDataList fFilterRules;                       //! transient
+  AliHLTUInt32_t fPrescalar;                                       //! transient
+  AliHLTUInt32_t fFirstEvent;                                      //! transient
 
   ClassDef(AliHLTBlockFilterComponent, 0)
 };

@@ -30,8 +30,10 @@
 ClassImp(AliHLTBlockFilterComponent)
 
 AliHLTBlockFilterComponent::AliHLTBlockFilterComponent()
-  :
-  fFilterRules()
+  : AliHLTProcessor()
+  , fFilterRules()
+  , fPrescalar(0)
+  , fFirstEvent(0)
 {
   // see header file for class documentation
   // or
@@ -156,6 +158,16 @@ int AliHLTBlockFilterComponent::DoInit( int argc, const char** argv )
 	HLTError("invalid parameter/remnant (%s) for argument %s, number expected", pRemnant, argument.Data());
 	iResult=-EINVAL;
       }
+      // -prescalar
+    } else if (argument.CompareTo("-prescalar")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter(argv[i]);
+      fPrescalar=parameter.Atoi();
+      // -skip-events
+    } else if (argument.CompareTo("-skip-events")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter(argv[i]);
+      fFirstEvent=parameter.Atoi();
     } else {
       HLTError("unknown argument %s", argument.Data());
       iResult=-EINVAL;
@@ -186,6 +198,8 @@ int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& /*evtDa
 {
   // see header file for class documentation
   int iResult=0;
+  if ((fPrescalar==0 || ((GetEventCount())%fPrescalar)==0) &&
+      GetEventCount()>=fFirstEvent) {
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
        pBlock!=NULL; 
        pBlock=GetNextInputBlock()) {
@@ -197,6 +211,7 @@ int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& /*evtDa
     } else {
       HLTDebug("block type %s %#x discarded by filter rules", DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification);
     }
+  }
   }
   size=0;
   return iResult;
