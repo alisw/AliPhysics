@@ -132,7 +132,7 @@ Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decC
       //cout<<"Entries = "<<h->GetEntries()<<endl;
       if (h->Integral() > minentries){
 	cout<<i<<") Integral = "<<h->Integral()<<endl;
-	indexes[count]=i;
+	indexes[i]=i;
 	count++;
       }
     }
