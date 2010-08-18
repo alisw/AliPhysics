@@ -33,6 +33,7 @@ public:
   Double_t Phi() const;
   Double_t Weight() const; 
   Int_t Charge() const;
+  Int_t PID() const {return 0;}
   
 
   Bool_t InRPSelection() const; 
@@ -47,6 +48,8 @@ public:
   void SetCharge(Int_t charge);
   void SetForRPSelection(Bool_t b=kTRUE); 
   void SetForPOISelection(Bool_t b=kTRUE); 
+  void TagRP(Bool_t b=kTRUE) {SetForRPSelection(b);} 
+  void TagPOI(Bool_t b=kTRUE) {SetForPOISelection(b);} 
   void SetForSubevent(Int_t i); 
   void ResetFlowTags() {fFlowBits.ResetAllBits();}
   void ResetSubEventTags() {fSubEventBits.ResetAllBits();}

@@ -22,6 +22,8 @@
 // author: N. van der Kolk (kolk@nikhef.nl)
 // mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
+#include <limits.h>
+#include <float.h>
 #include "TNamed.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
@@ -32,85 +34,93 @@ ClassImp(AliFlowTrackSimpleCuts)
 
 //-----------------------------------------------------------------------
 AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
-  fPtMax(0.),
-  fPtMin(0.),
-  fEtaMax(0.),
-  fEtaMin(0.),
-  fPhiMax(0.),
-  fPhiMin(0.),
+  TNamed(),
+  fCutPt(kFALSE),
+  fPtMax(FLT_MAX),
+  fPtMin(FLT_MIN),
+  fCutEta(kFALSE),
+  fEtaMax(FLT_MAX),
+  fEtaMin(FLT_MIN),
+  fCutPhi(kFALSE),
+  fPhiMax(FLT_MAX),
+  fPhiMin(FLT_MIN),
+  fCutPID(kFALSE),
   fPID(0),
-  fCharge(fgkIgnoreCharge)
+  fCutCharge(kFALSE),
+  fCharge(0)
 {
   //constructor 
-  
 }
 
-//-----------------------------------------------------------------------
-AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts& someCuts):
-  TNamed(),
-  fPtMax(someCuts.fPtMax),
-  fPtMin(someCuts.fPtMin),
-  fEtaMax(someCuts.fEtaMax),
-  fEtaMin(someCuts.fEtaMin),
-  fPhiMax(someCuts.fPhiMax),
-  fPhiMin(someCuts.fPhiMin),
-  fPID(someCuts.fPID),
-  fCharge(someCuts.fCharge)
-{
-  //copy constructor 
-}
-
-//-----------------------------------------------------------------------
-AliFlowTrackSimpleCuts& AliFlowTrackSimpleCuts::operator=(const AliFlowTrackSimpleCuts& someCuts)
-{
-  fPtMax  = someCuts.fPtMax;
-  fPtMin  = someCuts.fPtMin;
-  fEtaMax = someCuts.fEtaMax;
-  fEtaMin = someCuts.fEtaMin;
-  fPhiMax = someCuts.fPhiMax;
-  fPhiMin = someCuts.fPhiMin;
-  fPID    = someCuts.fPID;
-  fCharge = someCuts.fCharge;
-
-  return *this;
-
-}
-
-//----------------------------------------------------------------------- 
-AliFlowTrackSimpleCuts::~AliFlowTrackSimpleCuts()
-{
-  //destructor
-  
-}
+////-----------------------------------------------------------------------
+//AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts& someCuts):
+//  TNamed(),
+//  fCutPt(someCuts.fCutPt),
+//  fPtMax(someCuts.fPtMax),
+//  fPtMin(someCuts.fPtMin),
+//  fCutEta(someCuts.fCutEta),
+//  fEtaMax(someCuts.fEtaMax),
+//  fEtaMin(someCuts.fEtaMin),
+//  fCutPhi(someCuts.fCutPhi),
+//  fPhiMax(someCuts.fPhiMax),
+//  fPhiMin(someCuts.fPhiMin),
+//  fCutPID(someCuts.fCutPID),
+//  fPID(someCuts.fPID),
+//  fCutCharge(someCuts.fCutCharge),
+//  fCharge(someCuts.fCharge)
+//{
+//  //copy constructor 
+//}
+//
+////-----------------------------------------------------------------------
+//AliFlowTrackSimpleCuts& AliFlowTrackSimpleCuts::operator=(const AliFlowTrackSimpleCuts& someCuts)
+//{
+//  TNamed::operator=(someCuts);
+//  fCutPt  = someCuts.fCutPt;
+//  fPtMax  = someCuts.fPtMax;
+//  fPtMin  = someCuts.fPtMin;
+//  fCutEta = someCuts.fCutEta;
+//  fEtaMax = someCuts.fEtaMax;
+//  fEtaMin = someCuts.fEtaMin;
+//  fCutPhi = someCuts.fCutPhi;
+//  fPhiMax = someCuts.fPhiMax;
+//  fPhiMin = someCuts.fPhiMin;
+//  fCutPID = someCuts.fCutPID;
+//  fPID    = someCuts.fPID;
+//  fCutCharge = someCuts.fCutCharge;
+//  fCharge = someCuts.fCharge;
+//
+//  return *this;
+//}
 
 //----------------------------------------------------------------------- 
 Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
 {
   //simple method to check if the simple track passes the simple cuts
-  if(track->Pt() >= fPtMin && track->Pt() < fPtMax &&
-     track->Eta() >= fEtaMin && track->Eta() < fEtaMax &&
-     track->Phi() >= fPhiMin && track->Phi() < fPhiMax &&
-     (track->Charge()==fCharge || fCharge==fgkIgnoreCharge))
-    { return kTRUE; } 
-  else
-    { return kFALSE; }  
+  if(fCutPt) if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;
+  if(fCutEta) if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;
+  if(fCutPhi) if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;
+  if(fCutPID) if (track->PID() != fPID) return kFALSE;
+  if(fCutCharge) if (track->Charge() != fCharge) return kFALSE;
+  return kTRUE;
 }
 
 //----------------------------------------------------------------------- 
 Bool_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
 {
   //simple method to check if the simple track passes the simple cuts
-  Bool_t result = (track->Pt() >= fPtMin && track->Pt() < fPtMax &&
-                   track->Eta() >= fEtaMin && track->Eta() < fEtaMax &&
-                   track->Phi() >= fPhiMin && track->Phi() < fPhiMax);
+  if(fCutPt) if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;
+  if(fCutEta) if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;
+  if(fCutPhi) if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;
+  if(fCutPID) if (track->GetPdgCode() != fPID) return kFALSE;
 
   //getting the charge from a tparticle is expensive
   //only do it if neccesary
-  if (fCharge!=fgkIgnoreCharge) 
+  if (fCutCharge) 
   {
     TParticlePDG* ppdg = track->GetPDG();
     Int_t charge = TMath::Nint(ppdg->Charge()/3.0);
-    result = (charge==fCharge) && result;
+    return (charge==fCharge);
   }
-  return result;
+  return kTRUE;
 }

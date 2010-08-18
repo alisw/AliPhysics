@@ -4,6 +4,8 @@ SRCS= FLOW/AliFlowCommon/AliFlowEventSimple.cxx \
       FLOW/AliFlowCommon/AliFlowTrackSimple.cxx \
       FLOW/AliFlowCommon/AliStarTrack.cxx \
       FLOW/AliFlowCommon/AliStarEvent.cxx \
+      FLOW/AliFlowCommon/AliStarTrackCuts.cxx \
+      FLOW/AliFlowCommon/AliStarEventCuts.cxx \
       FLOW/AliFlowCommon/AliFlowEventStar.cxx \
       FLOW/AliFlowCommon/AliStarEventReader.cxx \
       FLOW/AliFlowCommon/AliFlowTrackSimpleCuts.cxx \
