@@ -511,6 +511,33 @@ typedef struct {
 
 #define HISTRNG COMMON_BLOCK(HISTRNG,histrng)
 COMMON_BLOCK_DEF(HistrngCommon,HISTRNG);
+
+
+/*************************************************************************/
+/*           D E S C R I P T I O N :                                     */
+/*-----------------------------------------------------------------------*/
+/*    The following common block is added to record the number of elastic*/
+/*    (NELT, NELP) and inelastic (NINT, NINP) participants               */
+/*                                                                       */
+/*=======================================================================*/
+/*     COMMON/HIJGLBR/NELT,NINT,NELP,NINP                                */
+/*     SAVE  /HIJGLBR/                                                   */
+/*=======================================================================*/
+typedef struct {
+    Int_t    nelt;
+    Int_t    nint;
+    Int_t    nelp;
+    Int_t    ninp;
+    Int_t    npspecp;
+    Int_t    nnspecp;
+    Int_t    npspect;
+    Int_t    nnspect;
+} HijglbrCommon;
+
+#define HIJGLBR COMMON_BLOCK(HIJGLBR,hijglbr)
+COMMON_BLOCK_DEF(HijglbrCommon,HIJGLBR);    
+
+    
 /*************************************************************************/
 /*           D E S C R I P T I O N :                                     */
 /*-----------------------------------------------------------------------*/
@@ -580,5 +607,6 @@ COMMON_BLOCK_DEF(HistrngCommon,HISTRNG);
 #define LUDAT1_HIJING COMMON_BLOCK(LUDAT1_HIJING,ludat1_hijing)
 COMMON_BLOCK_DEF(Ludat1_HijingCommon,LUDAT1_HIJING);
 }
+
 
 #endif
