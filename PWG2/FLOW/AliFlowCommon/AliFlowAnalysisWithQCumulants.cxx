@@ -1575,9 +1575,9 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowCorrelationsPro->SetMarkerStyle(25);
  fIntFlowCorrelationsPro->SetLabelSize(0.06);
  fIntFlowCorrelationsPro->SetLabelOffset(0.01,"Y");
- for(Int_t b=1;b<=4;b++)
+ for(Int_t b=0;b<4;b++)
  {
-  (fIntFlowCorrelationsPro->GetXaxis())->SetBinLabel(b,correlationFlag[b].Data());
+  (fIntFlowCorrelationsPro->GetXaxis())->SetBinLabel(b+1,correlationFlag[b].Data());
  }
  fIntFlowProfiles->Add(fIntFlowCorrelationsPro);
  // average correlations <<2>>, <<4>>, <<6>> and <<8>> versus multiplicity for all events (with wrong errors):
@@ -1660,9 +1660,9 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowProductOfCorrelationsPro->SetMarkerStyle(25); 
  fIntFlowProductOfCorrelationsPro->SetLabelSize(0.05);
  fIntFlowProductOfCorrelationsPro->SetLabelOffset(0.01,"Y");
- for(Int_t b=1;b<=6;b++)
+ for(Int_t b=0;b<6;b++)
  {
-  (fIntFlowProductOfCorrelationsPro->GetXaxis())->SetBinLabel(b,productFlag[b].Data());
+  (fIntFlowProductOfCorrelationsPro->GetXaxis())->SetBinLabel(b+1,productFlag[b].Data());
  }
  fIntFlowProfiles->Add(fIntFlowProductOfCorrelationsPro); 
  // average product of correlations <2>, <4>, <6> and <8> versus multiplicity
@@ -2019,9 +2019,9 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowQcumulants = new TH1D(intFlowQcumulantsName.Data(),"Integrated Q-cumulants",4,0,4);
  fIntFlowQcumulants->SetLabelSize(0.05);
  fIntFlowQcumulants->SetMarkerStyle(25);
- for(Int_t b=1;b<=4;b++)
+ for(Int_t b=0;b<4;b++)
  {
-  (fIntFlowQcumulants->GetXaxis())->SetBinLabel(b,cumulantFlag[b].Data());
+  (fIntFlowQcumulants->GetXaxis())->SetBinLabel(b+1,cumulantFlag[b].Data());
  } 
  fIntFlowResults->Add(fIntFlowQcumulants);
  // Final results for reference Q-cumulants rebinned in M: 
@@ -2032,9 +2032,9 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
   fIntFlowQcumulantsRebinnedInM = new TH1D(intFlowQcumulantsRebinnedInMName.Data(),"Reference Q-cumulants rebinned in M",4,0,4);
   fIntFlowQcumulantsRebinnedInM->SetLabelSize(0.05);
   fIntFlowQcumulantsRebinnedInM->SetMarkerStyle(25);
-  for(Int_t b=1;b<=4;b++)
+  for(Int_t b=0;b<4;b++)
   {
-   (fIntFlowQcumulantsRebinnedInM->GetXaxis())->SetBinLabel(b,cumulantFlag[b].Data());
+   (fIntFlowQcumulantsRebinnedInM->GetXaxis())->SetBinLabel(b+1,cumulantFlag[b].Data());
   } 
   fIntFlowResults->Add(fIntFlowQcumulantsRebinnedInM);
  } // end of if(fCalculateCumulantsVsM) 
@@ -2061,9 +2061,9 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlow = new TH1D(intFlowName.Data(),"Reference flow estimates from Q-cumulants",4,0,4);
  fIntFlow->SetLabelSize(0.05);
  fIntFlow->SetMarkerStyle(25);
- for(Int_t b=1;b<=4;b++)
+ for(Int_t b=0;b<4;b++)
  {
-  (fIntFlow->GetXaxis())->SetBinLabel(b,flowFlag[b].Data()); 
+  (fIntFlow->GetXaxis())->SetBinLabel(b+1,flowFlag[b].Data()); 
  }
  fIntFlowResults->Add(fIntFlow); 
  // Reference flow vs M rebinned in one huge bin:
@@ -2074,9 +2074,9 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
   fIntFlowRebinnedInM = new TH1D(intFlowRebinnedInMName.Data(),"Reference flow estimates from Q-cumulants (rebinned in M)",4,0,4);
   fIntFlowRebinnedInM->SetLabelSize(0.05);
   fIntFlowRebinnedInM->SetMarkerStyle(25);
-  for(Int_t b=1;b<=4;b++)
+  for(Int_t b=0;b<4;b++)
   {
-   (fIntFlowRebinnedInM->GetXaxis())->SetBinLabel(b,flowFlag[b].Data()); 
+   (fIntFlowRebinnedInM->GetXaxis())->SetBinLabel(b+1,flowFlag[b].Data()); 
   }
   fIntFlowResults->Add(fIntFlowRebinnedInM); 
  } 
