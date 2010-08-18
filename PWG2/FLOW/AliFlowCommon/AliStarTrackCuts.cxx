@@ -20,6 +20,7 @@
 //
 // origin: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
+#include <limits.h>
 #include "TNamed.h"
 #include "AliStarTrack.h"
 #include "AliStarTrackCuts.h"
