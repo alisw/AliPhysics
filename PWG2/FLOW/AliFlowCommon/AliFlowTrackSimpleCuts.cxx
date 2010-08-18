@@ -37,13 +37,13 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
   TNamed(),
   fCutPt(kFALSE),
   fPtMax(FLT_MAX),
-  fPtMin(FLT_MIN),
+  fPtMin(-FLT_MAX),
   fCutEta(kFALSE),
   fEtaMax(FLT_MAX),
-  fEtaMin(FLT_MIN),
+  fEtaMin(-FLT_MAX),
   fCutPhi(kFALSE),
   fPhiMax(FLT_MAX),
-  fPhiMin(FLT_MIN),
+  fPhiMin(-FLT_MAX),
   fCutPID(kFALSE),
   fPID(0),
   fCutCharge(kFALSE),
@@ -97,11 +97,11 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
 Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
 {
   //simple method to check if the simple track passes the simple cuts
-  if(fCutPt) if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;
-  if(fCutEta) if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;
-  if(fCutPhi) if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;
-  if(fCutPID) if (track->PID() != fPID) return kFALSE;
-  if(fCutCharge) if (track->Charge() != fCharge) return kFALSE;
+  if(fCutPt) {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;}
+  if(fCutEta) {if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;}
+  if(fCutPhi) {if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;}
+  //if(fCutPID) {if (track->PID() != fPID) return kFALSE;}
+  if(fCutCharge) {if (track->Charge() != fCharge) return kFALSE;}
   return kTRUE;
 }
 
@@ -109,10 +109,10 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
 Bool_t AliFlowTrackSimpleCuts::PassesCuts(TParticle* track) const
 {
   //simple method to check if the simple track passes the simple cuts
-  if(fCutPt) if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;
-  if(fCutEta) if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;
-  if(fCutPhi) if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;
-  if(fCutPID) if (track->GetPdgCode() != fPID) return kFALSE;
+  if(fCutPt)  {if (track->Pt() < fPtMin || track->Pt() >= fPtMax ) return kFALSE;}
+  if(fCutEta) {if (track->Eta() < fEtaMin || track->Eta() >= fEtaMax ) return kFALSE;}
+  if(fCutPhi) {if (track->Phi() < fPhiMin || track->Phi() >= fPhiMax ) return kFALSE;}
+  //if(fCutPID) {if (track->GetPdgCode() != fPID) return kFALSE;}
 
   //getting the charge from a tparticle is expensive
   //only do it if neccesary

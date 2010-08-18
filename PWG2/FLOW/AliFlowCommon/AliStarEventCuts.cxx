@@ -31,34 +31,34 @@ AliStarEventCuts::AliStarEventCuts():
   TNamed(),
   fCutRunID(kFALSE),
   fRunIDMax(INT_MAX),
-  fRunIDMin(INT_MIN),
+  fRunIDMin(-INT_MAX),
   fCutEventNumber(kFALSE),
   fEventNumberMax(INT_MAX),
-  fEventNumberMin(INT_MIN),
+  fEventNumberMin(-INT_MAX),
   fCutVtxX(kFALSE),
   fVtxXMax(FLT_MAX),
-  fVtxXMin(FLT_MIN),
+  fVtxXMin(-FLT_MAX),
   fCutVtxY(kFALSE),
   fVtxYMax(FLT_MAX),
-  fVtxYMin(FLT_MIN),
+  fVtxYMin(-FLT_MAX),
   fCutVtxZ(kFALSE),
   fVtxZMax(FLT_MAX),
-  fVtxZMin(FLT_MIN),
+  fVtxZMin(-FLT_MAX),
   fCutBField(kFALSE),
   fBFieldMax(FLT_MAX),
-  fBFieldMin(FLT_MIN),
+  fBFieldMin(-FLT_MAX),
   fCutRefMult(kFALSE),
   fRefMultMax(INT_MAX),
-  fRefMultMin(INT_MIN),
+  fRefMultMin(-INT_MAX),
   fCutCentralityID(kFALSE),
   fCentralityIDMax(INT_MAX),
-  fCentralityIDMin(INT_MIN),
+  fCentralityIDMin(-INT_MAX),
   fCutNumberOfPrimaryTracks(kFALSE),
   fNumberOfPrimaryTracksMax(INT_MAX),
-  fNumberOfPrimaryTracksMin(INT_MIN),
+  fNumberOfPrimaryTracksMin(-INT_MAX),
   fCutNumberOfTracks(kFALSE),
   fNumberOfTracksMax(INT_MAX),
-  fNumberOfTracksMin(INT_MIN)
+  fNumberOfTracksMin(-INT_MAX)
 {
   //constructor 
 }
@@ -88,16 +88,16 @@ AliStarEventCuts::AliStarEventCuts():
 Bool_t AliStarEventCuts::PassesCuts(const AliStarEvent *event) const
 {
   ///check if event passes cuts
-  if(fCutRunID) if (event->GetRunID() < fRunIDMin || event->GetRunID() >= fRunIDMax ) return kFALSE;
-  if(fCutEventNumber) if (event->GetEventNumber() < fEventNumberMin || event->GetEventNumber() >= fEventNumberMax ) return kFALSE;
-  if(fCutVtxX) if (event->GetVtxX() < fVtxXMin || event->GetVtxX() >= fVtxXMax ) return kFALSE;
-  if(fCutVtxY) if (event->GetVtxY() < fVtxYMin || event->GetVtxY() >= fVtxYMax ) return kFALSE;
-  if(fCutVtxZ) if (event->GetVtxZ() < fVtxZMin || event->GetVtxZ() >= fVtxZMax ) return kFALSE;
-  if(fCutBField) if (event->GetBField() < fBFieldMin || event->GetBField() >= fBFieldMax ) return kFALSE;
-  if(fCutRefMult) if (event->GetRefMult() < fRefMultMin || event->GetRefMult() >= fRefMultMax ) return kFALSE;
-  if(fCutCentralityID) if (event->GetCentralityID() < fCentralityIDMin || event->GetCentralityID() >= fCentralityIDMax ) return kFALSE;
-  if(fCutNumberOfPrimaryTracks) if (event->GetNumberOfPrimaryTracks() < fNumberOfPrimaryTracksMin || event->GetNumberOfPrimaryTracks() >= fNumberOfPrimaryTracksMax ) return kFALSE;
-  if(fCutNumberOfTracks) if (event->GetNumberOfTracks() < fNumberOfTracksMin || event->GetNumberOfTracks() >= fNumberOfTracksMax ) return kFALSE;
+  if(fCutRunID) {if (event->GetRunID() < fRunIDMin || event->GetRunID() >= fRunIDMax ) return kFALSE;}
+  if(fCutEventNumber) {if (event->GetEventNumber() < fEventNumberMin || event->GetEventNumber() >= fEventNumberMax ) return kFALSE;}
+  if(fCutVtxX) {if (event->GetVtxX() < fVtxXMin || event->GetVtxX() >= fVtxXMax ) return kFALSE;}
+  if(fCutVtxY) {if (event->GetVtxY() < fVtxYMin || event->GetVtxY() >= fVtxYMax ) return kFALSE;}
+  if(fCutVtxZ) {if (event->GetVtxZ() < fVtxZMin || event->GetVtxZ() >= fVtxZMax ) return kFALSE;}
+  if(fCutBField) {if (event->GetBField() < fBFieldMin || event->GetBField() >= fBFieldMax ) return kFALSE;}
+  if(fCutRefMult) {if (event->GetRefMult() < fRefMultMin || event->GetRefMult() >= fRefMultMax ) return kFALSE;}
+  if(fCutCentralityID) {if (event->GetCentralityID() < fCentralityIDMin || event->GetCentralityID() >= fCentralityIDMax ) return kFALSE;}
+  if(fCutNumberOfPrimaryTracks) {if (event->GetNumberOfPrimaryTracks() < fNumberOfPrimaryTracksMin || event->GetNumberOfPrimaryTracks() >= fNumberOfPrimaryTracksMax ) return kFALSE;}
+  if(fCutNumberOfTracks) {if (event->GetNumberOfTracks() < fNumberOfTracksMin || event->GetNumberOfTracks() >= fNumberOfTracksMax ) return kFALSE;}
   return kTRUE;
 }
 

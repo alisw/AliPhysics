@@ -31,49 +31,49 @@ AliStarTrackCuts::AliStarTrackCuts():
   TNamed(),
   fCutID(kFALSE),
   fIDMax(INT_MAX),
-  fIDMin(INT_MIN),
+  fIDMin(-INT_MAX),
   fCutCharge(kFALSE),
   fChargeMax(INT_MAX),
-  fChargeMin(INT_MIN),
+  fChargeMin(-INT_MAX),
   fCutEta(kFALSE),
   fEtaMax(FLT_MAX),
-  fEtaMin(FLT_MIN),
+  fEtaMin(-FLT_MAX),
   fCutPhi(kFALSE),
   fPhiMax(FLT_MAX),
-  fPhiMin(FLT_MIN),
+  fPhiMin(-FLT_MAX),
   fCutPt(kFALSE),
   fPtMax(FLT_MAX),
-  fPtMin(FLT_MIN),
+  fPtMin(-FLT_MAX),
   fCutDCA(kFALSE),
   fDCAMax(FLT_MAX),
-  fDCAMin(FLT_MIN),
+  fDCAMin(-FLT_MAX),
   fCutNHits(kFALSE),
   fNHitsMax(INT_MAX),
-  fNHitsMin(INT_MIN),
+  fNHitsMin(-INT_MAX),
   fCutNHitsFit(kFALSE),
   fNHitsFitMax(INT_MAX),
-  fNHitsFitMin(INT_MIN),
+  fNHitsFitMin(-INT_MAX),
   fCutNHitsPoss(kFALSE),
   fNHitsPossMax(INT_MAX),
-  fNHitsPossMin(INT_MIN),
+  fNHitsPossMin(-INT_MAX),
   fCutNHitsDedx(kFALSE),
   fNHitsDedxMax(INT_MAX),
-  fNHitsDedxMin(INT_MIN),
+  fNHitsDedxMin(-INT_MAX),
   fCutdEdx(kFALSE),
   fdEdxMax(FLT_MAX),
-  fdEdxMin(FLT_MIN),
+  fdEdxMin(-FLT_MAX),
   fCutNSigElect(kFALSE),
   fNSigElectMax(FLT_MAX),
-  fNSigElectMin(FLT_MIN),
+  fNSigElectMin(-FLT_MAX),
   fCutNSigPi(kFALSE),
   fNSigPiMax(FLT_MAX),
-  fNSigPiMin(FLT_MIN),
+  fNSigPiMin(-FLT_MAX),
   fCutNSigK(kFALSE),
   fNSigKMax(FLT_MAX),
-  fNSigKMin(FLT_MIN),
+  fNSigKMin(-FLT_MAX),
   fCutNSigProton(kFALSE),
   fNSigProtonMax(FLT_MAX),
-  fNSigProtonMin(FLT_MIN),
+  fNSigProtonMin(-FLT_MAX),
   fCutFitRatio(kFALSE),
   fFitRatioMax(FLT_MAX),
   fFitRatioMin(FLT_MIN)
@@ -196,21 +196,21 @@ AliStarTrackCuts::AliStarTrackCuts():
 Bool_t AliStarTrackCuts::PassesCuts(const AliStarTrack *track) const
 {
   //check is track passes cuts
-  if(fCutID) if (track->GetID() < fIDMin || track->GetID() >= fIDMax ) return kFALSE;
-  if(fCutCharge) if (track->GetCharge() < fChargeMin || track->GetCharge() > fChargeMax ) return kFALSE;
-  if(fCutEta) if (track->GetEta() < fEtaMin || track->GetEta() > fEtaMax ) return kFALSE;
-  if(fCutPhi) if (track->GetPhi() < fPhiMin || track->GetPhi() > fPhiMax ) return kFALSE;
-  if(fCutPt) if (track->GetPt() < fPtMin || track->GetPt() > fPtMax ) return kFALSE;
-  if(fCutDCA) if (track->GetDCA() < fDCAMin || track->GetDCA() > fDCAMax ) return kFALSE;
-  if(fCutNHits) if (track->GetNHits() < fNHitsMin || track->GetNHits() > fNHitsMax ) return kFALSE;
-  if(fCutNHitsFit) if (track->GetNHitsFit() < fNHitsFitMin || track->GetNHitsFit() > fNHitsFitMax ) return kFALSE;
-  if(fCutNHitsPoss) if (track->GetNHitsPoss() < fNHitsPossMin || track->GetNHitsPoss() > fNHitsPossMax ) return kFALSE;
-  if(fCutNHitsDedx) if (track->GetNHitsDedx() < fNHitsDedxMin || track->GetNHitsDedx() > fNHitsDedxMax ) return kFALSE;
-  if(fCutdEdx) if (track->GetdEdx() < fdEdxMin || track->GetdEdx() > fdEdxMax ) return kFALSE;
-  if(fCutNSigElect) if (track->GetNSigElect() < fNSigElectMin || track->GetNSigElect() > fNSigElectMax ) return kFALSE;
-  if(fCutNSigPi) if (track->GetNSigPi() < fNSigPiMin || track->GetNSigPi() > fNSigPiMax ) return kFALSE;
-  if(fCutNSigK) if (track->GetNSigK() < fNSigKMin || track->GetNSigK() > fNSigKMax ) return kFALSE;
-  if(fCutNSigProton) if (track->GetNSigProton() < fNSigProtonMin || track->GetNSigProton() > fNSigProtonMax ) return kFALSE;
+  if(fCutID) {if (track->GetID() < fIDMin || track->GetID() >= fIDMax ) return kFALSE;}
+  if(fCutCharge) {if (track->GetCharge() < fChargeMin || track->GetCharge() > fChargeMax ) return kFALSE;}
+  if(fCutEta) {if (track->GetEta() < fEtaMin || track->GetEta() > fEtaMax ) return kFALSE;}
+  if(fCutPhi) {if (track->GetPhi() < fPhiMin || track->GetPhi() > fPhiMax ) return kFALSE;}
+  if(fCutPt) {if (track->GetPt() < fPtMin || track->GetPt() > fPtMax ) return kFALSE;}
+  if(fCutDCA) {if (track->GetDCA() < fDCAMin || track->GetDCA() > fDCAMax ) return kFALSE;}
+  if(fCutNHits) {if (track->GetNHits() < fNHitsMin || track->GetNHits() > fNHitsMax ) return kFALSE;}
+  if(fCutNHitsFit) {if (track->GetNHitsFit() < fNHitsFitMin || track->GetNHitsFit() > fNHitsFitMax ) return kFALSE;}
+  if(fCutNHitsPoss) {if (track->GetNHitsPoss() < fNHitsPossMin || track->GetNHitsPoss() > fNHitsPossMax ) return kFALSE;}
+  if(fCutNHitsDedx) {if (track->GetNHitsDedx() < fNHitsDedxMin || track->GetNHitsDedx() > fNHitsDedxMax ) return kFALSE;}
+  if(fCutdEdx) {if (track->GetdEdx() < fdEdxMin || track->GetdEdx() > fdEdxMax ) return kFALSE;}
+  if(fCutNSigElect) {if (track->GetNSigElect() < fNSigElectMin || track->GetNSigElect() > fNSigElectMax ) return kFALSE;}
+  if(fCutNSigPi) {if (track->GetNSigPi() < fNSigPiMin || track->GetNSigPi() > fNSigPiMax ) return kFALSE;}
+  if(fCutNSigK) {if (track->GetNSigK() < fNSigKMin || track->GetNSigK() > fNSigKMax ) return kFALSE;}
+  if(fCutNSigProton) {if (track->GetNSigProton() < fNSigProtonMin || track->GetNSigProton() > fNSigProtonMax ) return kFALSE;}
   if(fCutFitRatio)
   {
     Int_t nhitsposs =  track->GetNHitsPoss();
