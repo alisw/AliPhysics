@@ -1169,6 +1169,9 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	       (currenttrack->GetY()-cl->GetY())*(currenttrack->GetY()-cl->GetY())*msy > 1. ) 
 	    {  // cluster not associated to track
 	      AliDebug(2,"not associated");
+	      // MvL: added here as well
+	      // bring track back to ideal detector plane
+	      currenttrack->Propagate(xTrOrig);
 	      continue;
 	    }
 	  // bring track back to ideal detector plane
