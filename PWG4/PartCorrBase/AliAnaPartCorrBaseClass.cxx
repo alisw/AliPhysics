@@ -157,10 +157,8 @@ AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass()
   if(fMCUtils)   delete fMCUtils ;
   if(fNMS)       delete fNMS ;
   
-  if (fMixedEvent) {
-    for (Int_t i = 0; i < fNMixedEvent; i++) {
-      delete [] fVertex[i] ; 
-    }
+  for (Int_t i = 0; i < fNMixedEvent; i++) {
+     delete [] fVertex[i] ; 
   }
   delete [] fVertex ;  
   
@@ -532,12 +530,21 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
 //__________________________________________________________________
 AliMixedEvent * AliAnaPartCorrBaseClass::GetMixedEvent() 
 { 
-    //gets the mixed event objects and does some setting
+  //gets the mixed event objects and does some setting
   if (!fMixedEvent) {
     fMixedEvent = dynamic_cast<AliMixedEvent*>(GetReader()->GetInputEvent()) ; 
     if (fMixedEvent) {
       fNMixedEvent = fMixedEvent->GetNumberOfEvents() ; 
     }
+    
+    //Delete previous vertex
+    if(fVertex){
+      for (Int_t i = 0; i < fNMixedEvent; i++) {
+	delete [] fVertex[i] ; 
+      }
+      delete [] fVertex ;  
+    }
+    
     fVertex = new Double_t*[fNMixedEvent] ; 
     for (Int_t i = 0; i < fNMixedEvent; i++) {
       fVertex[i] = new Double_t[3] ; 

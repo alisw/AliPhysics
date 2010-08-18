@@ -199,10 +199,9 @@ AliCaloTrackReader::~AliCaloTrackReader() {
     fPHOSCells->Clear() ; 
     delete fPHOSCells ;
   }
-  if (fMixedEvent) {
-    for (Int_t i = 0; i < fNMixedEvent; i++) {
-      delete [] fVertex[i] ; 
-    }
+
+  for (Int_t i = 0; i < fNMixedEvent; i++) {
+     delete [] fVertex[i] ; 
   }
   delete [] fVertex ;
 	
@@ -534,7 +533,6 @@ void AliCaloTrackReader::ResetLists() {
   if(fAODPHOS)  fAODPHOS -> Clear();
   if(fEMCALCells) fEMCALCells -> Clear();
   if(fPHOSCells)  fPHOSCells -> Clear();
-
 }
 
 //____________________________________________________________________________
@@ -545,6 +543,15 @@ void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
   if (fMixedEvent) {
     fNMixedEvent = fMixedEvent->GetNumberOfEvents() ; 
   }
+
+  //Delete previous vertex
+  if(fVertex){
+    for (Int_t i = 0; i < fNMixedEvent; i++) {
+      delete [] fVertex[i] ; 
+    }
+    delete [] fVertex ;
+  }
+  
   fVertex = new Double_t*[fNMixedEvent] ; 
   for (Int_t i = 0; i < fNMixedEvent; i++) {
     fVertex[i] = new Double_t[3] ; 
