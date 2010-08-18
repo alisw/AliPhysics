@@ -436,6 +436,8 @@ void AliFlowEventSimple::Print(Option_t *option) const
   printf( "Class.Print Name = %s, #tracks= %d, Number of RPs= %d, MC EventPlaneAngle= %f\n",
           GetName(),fNumberOfTracks, fNumberOfRPs, fMCReactionPlaneAngle );
 
+  TString optionstr(option);
+  if (!optionstr.Contains("all")) return;
   if (fTrackCollection)
   {
     fTrackCollection->Print(option);

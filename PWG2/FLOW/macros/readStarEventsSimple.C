@@ -9,14 +9,26 @@ void  readStarEventsSimple()
   gSystem->Load("libPhysics.so");
   gSystem->Load("libPWG2flowCommon");
 
-  AliStarEventReader*  starReader = new AliStarEventReader( "/data/alice3/jthomas/testData/") ;
+  Int_t maxNumberOfEvents = 1000;
 
-  while ( starReader->GetNextEvent() )                                // Get next event
+  //define reference particles
+  AliStarTrackCuts* rpCuts = AliStarTrackCuts::StandardCuts();
+
+  //define particles of interest
+  AliStarTrackCuts* poiCuts = AliStarTrackCuts::StandardCuts();
+  poiCuts->SetPtMin(1.0);
+
+  //define event cuts
+  AliStarEventCuts* starEventCuts = AliStarEventCuts::StandardCuts();
+
+  Int_t i=0;
+  AliStarEventReader starReader("/data/alice3/jthomas/testData/") ;
+  while ( starReader.GetNextEvent() )                                // Get next event
   {
-    AliStarEvent* starEvent = starReader->GetEvent();
-    if ( !starReader->AcceptEvent(starEvent) ) continue;              // Test if the event is good
+    AliStarEvent* starEvent = starReader.GetEvent();
+    if ( !starEventCuts->PassesCuts(starEvent) ) continue;              // Test if the event is good
 
-    AliFlowEventSimple* flowEvent = new AliFlowEventStar(starEvent);  // make a flow event from a star event (aka "the magic")
+    AliFlowEventSimple* flowEvent = new AliFlowEventStar(starEvent,rpCuts,poiCuts);  // make a flow event from a star event (aka "the magic")
 
     /////analysis here////////////////
 
@@ -24,12 +36,15 @@ void  readStarEventsSimple()
 
     //////////////////////////////////
 
-    starEvent->Print("all");
-    flowEvent->Print("all");
+    //starEvent->Print("all");
+    flowEvent->Print();
 
     delete flowEvent;
-    break;
-  }
 
-  delete starReader ;
+    i++;
+    if (i>maxNumberOfEvents) break;
+  }
+  delete rpCuts;
+  delete poiCuts;
+  delete starEventCuts;
 }

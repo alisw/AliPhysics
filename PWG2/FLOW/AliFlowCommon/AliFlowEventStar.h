@@ -14,14 +14,17 @@
 #include "AliFlowEventSimple.h"
 
 class AliStarEvent;
+class AliStarTrackCuts;
 
 class AliFlowEventStar: public AliFlowEventSimple {
 
  public:
   AliFlowEventStar();
   AliFlowEventStar( const AliFlowEventStar& event );
-  AliFlowEventStar( const AliStarEvent* event );
-  AliFlowEventStar& operator=(const AliFlowEventStar& event);
+  AliFlowEventStar( const AliStarEvent* event,
+                    const AliStarTrackCuts* rpCuts=NULL,
+                    const AliStarTrackCuts* poiCuts=NULL);
+  AliFlowEventStar& operator=( const AliFlowEventStar& event );
   virtual  ~AliFlowEventStar() {}
 
   ClassDef(AliFlowEventStar,1)

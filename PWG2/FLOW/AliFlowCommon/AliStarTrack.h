@@ -33,6 +33,10 @@ class AliStarTrack : public TObject {
   const Float_t GetEta() const {return fParams[2];}
   const Float_t GetPhi() const {return fParams[3];}
   const Float_t GetPt() const {return fParams[4];}
+  const Int_t Charge() const {return (Int_t)fParams[1];}
+  const Float_t Eta() const {return fParams[2];}
+  const Float_t Phi() const {return fParams[3];}
+  const Float_t Pt() const {return fParams[4];}
   const Float_t GetDCA() const {return fParams[5];}
   const Int_t GetNHits() const {return (Int_t)fParams[6];}
   const Int_t GetNHitsFit() const {return (Int_t)fParams[7];}

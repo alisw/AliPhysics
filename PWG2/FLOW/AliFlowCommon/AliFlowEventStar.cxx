@@ -23,6 +23,7 @@
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliStarTrack.h"
+#include "AliStarTrackCuts.h"
 #include "AliStarEvent.h"
 #include "AliFlowEventStar.h"
 
@@ -45,14 +46,17 @@ AliFlowEventStar::AliFlowEventStar(const AliFlowEventStar& event):
 }
 
 //-----------------------------------------------------------------------
-AliFlowEventStar& AliFlowEventStar::operator=(const AliFlowEventStar& event)
+AliFlowEventStar& AliFlowEventStar::operator=( const AliFlowEventStar& event )
 {
   //assignment operator
   AliFlowEventSimple::operator=(event);
   return *this;
 }
 
-AliFlowEventStar::AliFlowEventStar( const AliStarEvent* starevent ):
+//-----------------------------------------------------------------------
+AliFlowEventStar::AliFlowEventStar( const AliStarEvent* starevent,
+                                    const AliStarTrackCuts* rpCuts,
+                                    const AliStarTrackCuts* poiCuts ):
   AliFlowEventSimple(starevent->GetNumberOfTracks())
 {
   //construct from a star event
@@ -66,6 +70,16 @@ AliFlowEventStar::AliFlowEventStar( const AliStarEvent* starevent ):
     flowtrack->SetEta(startrack->GetEta());
     flowtrack->SetPt(startrack->GetPt());
     flowtrack->SetCharge(startrack->GetCharge());
+    if (rpCuts)
+    {
+      Bool_t pass = rpCuts->PassesCuts(startrack);
+      flowtrack->TagRP(pass); //tag RPs
+      if (pass) fNumberOfRPs++;
+    }
+    if (poiCuts)
+    {
+      flowtrack->TagPOI(poiCuts->PassesCuts(startrack)); //tag POIs
+    }
     AddTrack(flowtrack);
   }
 }

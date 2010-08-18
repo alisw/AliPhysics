@@ -20,19 +20,19 @@ class AliFlowTrackSimpleCuts : public TNamed {
 
  public:
   AliFlowTrackSimpleCuts();
-  AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts& someCuts);
-  AliFlowTrackSimpleCuts& operator=(const AliFlowTrackSimpleCuts& someCuts);
-  virtual  ~AliFlowTrackSimpleCuts();
+  //AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts& someCuts);
+  //AliFlowTrackSimpleCuts& operator=(const AliFlowTrackSimpleCuts& someCuts);
+  virtual  ~AliFlowTrackSimpleCuts() {}
   
   //setters
-  void SetPtMax(Double_t max)   {this->fPtMax = max; }
-  void SetPtMin(Double_t min)   {this->fPtMin = min; }
-  void SetEtaMax(Double_t max)  {this->fEtaMax = max; }
-  void SetEtaMin(Double_t min)  {this->fEtaMin = min; }
-  void SetPhiMax(Double_t max)  {this->fPhiMax = max; }
-  void SetPhiMin(Double_t min)  {this->fPhiMin = min; }
-  void SetPID(Int_t pid)        {this->fPID = pid; }
-  void SetCharge(Int_t c)       {this->fCharge = c; }
+  void SetPtMax(Double_t max)   {this->fPtMax = max; fCutPt=kTRUE; }
+  void SetPtMin(Double_t min)   {this->fPtMin = min; fCutPt=kTRUE;  }
+  void SetEtaMax(Double_t max)  {this->fEtaMax = max; fCutEta=kTRUE; }
+  void SetEtaMin(Double_t min)  {this->fEtaMin = min; fCutEta=kTRUE; }
+  void SetPhiMax(Double_t max)  {this->fPhiMax = max; fCutPhi=kTRUE; }
+  void SetPhiMin(Double_t min)  {this->fPhiMin = min; fCutPhi=kTRUE; }
+  void SetPID(Int_t pid)        {this->fPID = pid; fCutPID=kTRUE; }
+  void SetCharge(Int_t c)       {this->fCharge = c; fCutCharge=kTRUE; }
   
   //getters
   Double_t GetPtMax() const     {return this->fPtMax; }
@@ -49,16 +49,19 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Bool_t PassesCuts(TParticle* p) const;
 
  private:
+  Bool_t   fCutPt;
   Double_t fPtMax;
   Double_t fPtMin;
+  Bool_t   fCutEta;
   Double_t fEtaMax;
   Double_t fEtaMin;
+  Bool_t   fCutPhi;
   Double_t fPhiMax;
   Double_t fPhiMin;
+  Bool_t   fCutPID;
   Int_t    fPID;
+  Bool_t   fCutCharge;
   Int_t    fCharge;
-
-  static const Int_t fgkIgnoreCharge=999;
 
   ClassDef(AliFlowTrackSimpleCuts,1)
 };
