@@ -24,6 +24,7 @@
 
 #include "AliHLTRootSchemaEvolutionComponent.h"
 #include "AliHLTMessage.h"
+#include "AliHLTReadoutList.h"
 #include "TObjArray.h"
 #include "TStreamerInfo.h"
 #include "TList.h"
@@ -46,9 +47,9 @@ using std::accumulate;
 ClassImp(AliHLTRootSchemaEvolutionComponent)
 
 AliHLTRootSchemaEvolutionComponent::AliHLTRootSchemaEvolutionComponent()
-  : AliHLTProcessor()
+  : AliHLTCalibrationProcessor()
   , fList()
-  , fFlags(0)
+  , fFlags(kFXS)
   , fpStreamerInfos(NULL)
   , fpEventTimer(NULL)
   , fpCycleTimer(NULL)
@@ -63,6 +64,8 @@ AliHLTRootSchemaEvolutionComponent::AliHLTRootSchemaEvolutionComponent()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 }
+
+// FIXME: read below when defining an OCDB object here
 const char* AliHLTRootSchemaEvolutionComponent::fgkConfigurationObject=NULL;
 const AliHLTUInt32_t AliHLTRootSchemaEvolutionComponent::fgkTimeScale=1000000;
 
@@ -98,17 +101,17 @@ void AliHLTRootSchemaEvolutionComponent::GetOutputDataSize(unsigned long& constB
   inputMultiplier=3;
 }
 
-int AliHLTRootSchemaEvolutionComponent::DoInit(int argc, const char** argv)
+int AliHLTRootSchemaEvolutionComponent::InitCalibration()
 {
   // see header file for class documentation
 
   int iResult=0;
 
   // default configuration from CDB
+  // FIXME: has to be called from AliHLTCalibrationProcessor::DoInit in order to set
+  // the default parameters from OCDB before the custom argument scan
+  // not valid at the moment because fgkConfigurationObject==NULL
   if (iResult>=0 && fgkConfigurationObject!=NULL) iResult=ConfigureFromCDBTObjString(fgkConfigurationObject);
-
-  // custom configuration from command line arguments
-  if (iResult>=0 && argc>0) iResult=ConfigureFromArgumentString(argc, argv);
 
   if (iResult>=0) {
     fpStreamerInfos=new TObjArray();
@@ -127,7 +130,7 @@ int AliHLTRootSchemaEvolutionComponent::DoInit(int argc, const char** argv)
   return 0;
 }
 
-int AliHLTRootSchemaEvolutionComponent::DoDeinit()
+int AliHLTRootSchemaEvolutionComponent::DeinitCalibration()
 {
   // see header file for class documentation
   if (fFileName.IsNull()==0) {
@@ -152,8 +155,8 @@ int AliHLTRootSchemaEvolutionComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTRootSchemaEvolutionComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
-						 AliHLTComponentTriggerData& /*trigData*/ )
+int AliHLTRootSchemaEvolutionComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/,
+							    AliHLTComponentTriggerData& /*trigData*/ )
 {
   // see header file for class documentation
   int iResult=0;
@@ -230,22 +233,39 @@ int AliHLTRootSchemaEvolutionComponent::DoEvent( const AliHLTComponentEventData&
 
   if (iResult>=0) {
     if ((TestBits(kHLTOUTatFirstEvent) && GetEventCount()==0) ||
-	(TestBits(kHLTOUTatAllEvents)) || 
-	(TestBits(kHLTOUTatEOR) && eventType==gkAliEventTypeEndOfRun)) {
+	(TestBits(kHLTOUTatAllEvents))) {
       PushBack(fpStreamerInfos, kAliHLTDataTypeStreamerInfo);
     }
   }
 
-  if (TestBits(kFXS) && eventType==gkAliEventTypeEndOfRun) {
-    // push to FXS, needs to be implemented in the base class
+  if (TestBits(kFXS) && fFXSPrescaler>0 && (GetEventCount()%fFXSPrescaler)==0) {
+    // push to FXS
+    AliHLTReadoutList rdList(AliHLTReadoutList::kHLT);
+    PushToFXS((TObject*)fpStreamerInfos, "HLT", "StreamerInfo", &rdList );
   }
 
-  if (fFileName.IsNull()==0 && eventType==gkAliEventTypeEndOfRun) {
+  return iResult;
+}
+
+int AliHLTRootSchemaEvolutionComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/,
+						       AliHLTComponentTriggerData& /*trigData*/)
+{
+  // see header file for class documentation
+  if (TestBits(kFXS)) {
+    // push to FXS
+    AliHLTReadoutList rdList(AliHLTReadoutList::kHLT);
+    PushToFXS((TObject*)fpStreamerInfos, "HLT", "StreamerInfo", &rdList );
+  }
+
+  if (fFileName.IsNull()==0) {
     WriteToFile(fFileName, fpStreamerInfos);
     fFileName.Clear();
   }
 
-  if (eventType==gkAliEventTypeEndOfRun) {
+    if (TestBits(kHLTOUTatEOR)) {
+      PushBack(fpStreamerInfos, kAliHLTDataTypeStreamerInfo);
+    }
+
     for (unsigned i=0; i<fList.size(); i++) {
       if (CheckFilter(kHLTLogDebug)) fList[i].Print("short");
       else if (fList[i].IsObject()) {
@@ -258,9 +278,8 @@ int AliHLTRootSchemaEvolutionComponent::DoEvent( const AliHLTComponentEventData&
 		, fList[i].GetStreamingTime());
       }
     }
-  }
 
-  return iResult;
+  return 0;
 }
 
 int AliHLTRootSchemaEvolutionComponent::UpdateStreamerInfos(const TList* list, TObjArray* infos) const
@@ -308,13 +327,13 @@ int AliHLTRootSchemaEvolutionComponent::ScanConfigurationArgument(int argc, cons
   if (argument.Contains("-hltout")) {
     argument.ReplaceAll("-hltout", "");
     argument.ReplaceAll("=", "");
-    if (argument.IsNull() || argument.CompareTo("all")) {
-      SetBits(kHLTOUTatAllEvents);
-    } else if (argument.CompareTo("first")) {
+    if (argument.IsNull() || argument.CompareTo("all")==0) {
+      SetBits(kHLTOUTatAllEvents|kHLTOUTatEOR);
+    } else if (argument.CompareTo("first")==0) {
       SetBits(kHLTOUTatFirstEvent);
-    } else if (argument.CompareTo("eor")) {
+    } else if (argument.CompareTo("eor")==0) {
       SetBits(kHLTOUTatEOR);
-    } else if (argument.CompareTo("off")) {
+    } else if (argument.CompareTo("off")==0) {
       ClearBits(kHLTOUTatAllEvents | kHLTOUTatFirstEvent | kHLTOUTatEOR);
     } else {
       HLTError("invalid parameter for argument -hltout= : %s", argument.Data());
@@ -329,7 +348,7 @@ int AliHLTRootSchemaEvolutionComponent::ScanConfigurationArgument(int argc, cons
     argument.ReplaceAll("=", "");
     SetBits(kFXS);
     if (argument.IsNull()) {
-    } else if (argument.CompareTo("off")) {
+    } else if (argument.CompareTo("off")==0) {
       ClearBits(kFXS);
     } else if (argument.IsDigit()) {
       fFXSPrescaler=argument.Atoi();
@@ -363,7 +382,7 @@ int AliHLTRootSchemaEvolutionComponent::ScanConfigurationArgument(int argc, cons
     }
     return 1;
   }
-  
+
   return iResult;
 }
 

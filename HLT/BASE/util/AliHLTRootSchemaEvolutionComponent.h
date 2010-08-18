@@ -13,7 +13,7 @@
     @brief  Handler component for ROOT schema evolution of streamed objects
 */
 
-#include "AliHLTProcessor.h"
+#include "AliHLTCalibrationProcessor.h"
 #include "TString.h"
 #include <vector>
 
@@ -42,10 +42,12 @@ class AliHLTMessage;
  *      
  * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * \li -fxs<=off> <br>
+ * \li -fxs<=[n,off]> <br>
  *      push streamer info to FXS, fetched by Shuttle and store in the entry
- *      HLT/Calib/StreamerInfo
- *      default off
+ *      HLT/Calib/StreamerInfo                                          <br>
+ *      if a scalar greather then 0 is specified the calibration object is
+ *      pushed during the event processing with the specified scale down<br>
+ *      always pushed on EOR, default on
  * \li -hltout<=[all,first,eor,off]> <br>
  *      push streamer info to output, the streamer info is stored in the
  *      events in all, the first, and/or the EOR.
@@ -72,7 +74,7 @@ class AliHLTMessage;
  *
  * @ingroup alihlt_util_components
  */
-class AliHLTRootSchemaEvolutionComponent : public AliHLTProcessor
+class AliHLTRootSchemaEvolutionComponent : public AliHLTCalibrationProcessor
 {
  public:
   /// standard constructor
@@ -176,16 +178,28 @@ class AliHLTRootSchemaEvolutionComponent : public AliHLTProcessor
 				AliHLTUInt32_t spec);
 
  protected:
-  /// inherited from AliHLTComponent: custom initialization
-  int DoInit( int argc, const char** argv );
-  /// inherited from AliHLTComponent: cleanup
-  int DoDeinit();
+  /// inherited from AliHLTCalibrationProcessor: custom initialization
+  int InitCalibration();
+  /// inherited from AliHLTCalibrationProcessor: custom argument scan
+  /// the AliHLTCalibrationProcessor so far does not use the base class
+  /// methods for argument scan.
+  int ScanArgument( int argc, const char** argv ) {
+    int result=ScanConfigurationArgument(argc, argv); return result>0?result-1:result;
+  }
+  /// inherited from AliHLTCalibrationProcessor: cleanup
+  int DeinitCalibration();
 
-  /// inherited from AliHLTProcessor processing
-  virtual int DoEvent( const AliHLTComponentEventData& evtData,
-		       AliHLTComponentTriggerData& trigData );
+  /// inherited from AliHLTCalibrationProcessor processing
+  virtual int ProcessCalibration( const AliHLTComponentEventData& evtData,
+				  AliHLTComponentTriggerData& trigData );
   
-  using AliHLTProcessor::DoEvent;
+  using AliHLTCalibrationProcessor::ProcessCalibration;
+
+  /// inherited from AliHLTCalibrationProcessor processing
+  int ShipDataToFXS( const AliHLTComponentEventData& evtData,
+		     AliHLTComponentTriggerData& trigData);
+
+  using AliHLTCalibrationProcessor::ShipDataToFXS;
 
   /**
    * Inherited from AliHLTComponent
