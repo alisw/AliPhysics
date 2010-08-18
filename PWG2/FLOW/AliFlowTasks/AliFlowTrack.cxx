@@ -69,23 +69,22 @@ AliFlowTrack& AliFlowTrack::operator=(const AliFlowTrack& aTrack)
   return *this;
 }
 
-//-----------------------------------------------------------------------
-AliFlowTrackSimple& AliFlowTrack::operator=(const AliFlowTrackSimple& aTrack)
-{
-  //polymorphic assignment
-  AliFlowTrackSimple::operator=(aTrack);
-  const AliFlowTrack* pft = dynamic_cast<const AliFlowTrack*>(&aTrack);
-  if (pft)
-  {
-    fTrackSourceBits = pft->fTrackSourceBits;
-  }
-  else
-  {
-    fTrackSourceBits.ResetAllBits();
-  }
-  return *this;
-}
-
+////-----------------------------------------------------------------------
+//AliFlowTrackSimple& AliFlowTrack::operator=(const AliFlowTrackSimple& aTrack)
+//{
+//  //polymorphic assignment
+//  AliFlowTrackSimple::operator=(aTrack);
+//  const AliFlowTrack* pft = dynamic_cast<const AliFlowTrack*>(&aTrack);
+//  if (pft)
+//  {
+//    fTrackSourceBits = pft->fTrackSourceBits;
+//  }
+//  else
+//  {
+//    fTrackSourceBits.ResetAllBits();
+//  }
+//  return *this;
+//}
 
 //----------------------------------------------------------------------- 
 AliFlowTrack::~AliFlowTrack()
