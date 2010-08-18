@@ -376,9 +376,9 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	    nNonZero++;
 	}
 	Int_t nBinsOld = fNbinsToCut;
-	if(det == 1 && ringChar =='I') {
-	  fNbinsToCut = 0;
-	}
+	//if(det == 1 && ringChar =='I') {
+	//  fNbinsToCut = 0;
+	//	}
 	TH1F* hRingMult = (TH1F*)fMultList[what]->FindObject(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]));
 	
 	for(Int_t i=1; i<=hRingMult->GetNbinsX(); i++) {
@@ -1012,6 +1012,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
     fpyt = TFile::Open("/home/canute/ALICE/FMDanalysis/FirstAnalysis/pythia_study/pythiahists7000.root","READ");
   else if(pars->GetEnergy() == AliFMDAnaParameters::k900)
     fpyt = TFile::Open("/home/canute/ALICE/FMDanalysis/FirstAnalysis/pythia_study/pythiahists900.root","READ");
+  
+  
   
   if(realdata ) {
     if(fpyt) {

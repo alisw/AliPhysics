@@ -99,6 +99,8 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   // Default constructor 
   fPhysicsSelection = new AliPhysicsSelection;
   fPhysicsSelection->SetAnalyzeMC(kTRUE); //For the background correction. This is reset in Init if relevant
+  // fPhysicsSelection->SetUseBXNumbers(kFALSE);
+  
   
   AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
   
