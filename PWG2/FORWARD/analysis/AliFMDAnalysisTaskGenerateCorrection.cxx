@@ -277,10 +277,10 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   if(!vtxStatus)
     vtxFound = kFALSE;
   
-  if(TMath::Abs(vertex.At(2)) > fZvtxCut) {
-    vtxFound = kFALSE;
+  //if(TMath::Abs(vertex.At(2)) > fZvtxCut) {
+  //  vtxFound = kFALSE;
     
-  }
+  //}
   Bool_t isTriggered    = pars->IsEventTriggered(AliFMDAnaParameters::kMB1);
   Bool_t isTriggeredNSD = pars->IsEventTriggered(AliFMDAnaParameters::kNSD);
   if(vtxFound && isTriggered) hEventsSelected->Fill(vertexBin);
@@ -296,6 +296,10 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   if(nsd) hEventsAllNSD->Fill(vertexBin);
   
   //  if(!vtxFound || !isTriggered) return;
+  
+  if(TMath::Abs(vertex.At(2)) > fZvtxCut) {
+    return;
+  }
   
   for(Int_t i = 0 ;i<nTracks;i++) {
     particle = (AliMCParticle*) mcevent->GetTrack(i);
