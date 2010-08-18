@@ -243,12 +243,18 @@ int AliHLTTPCDataCheckerComponent::DoEvent(
 	}
 	
 	AliHLTEventID_t event = evtData.fEventID;
+	AliHLTComponentDataType anyPrivateType = AliHLTComponentDataTypeInitializer(
+			kAliHLTAnyDataType, kAliHLTDataOriginPrivate
+		);
 	
 	// Setup the markers indicating the bad blocks.
 	std::vector<bool> badBlock(evtData.fBlockCnt, false);
 	
 	for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; ++n)
 	{
+		// Skip private data blocks from the framework.
+		if (blocks[n].fDataType == anyPrivateType) continue;
+		
 		char ddltype[kAliHLTComponentDataTypefIDsize] = kAliHLTDDLRawDataTypeID;
 		if (memcmp(&(blocks[n].fDataType.fID), &ddltype, sizeof(ddltype)) == 0)
 		{
@@ -367,7 +373,8 @@ bool AliHLTTPCDataCheckerComponent::CheckRawDataBlock(
 					const UShort_t* bunchData = fRawStream->GetSignals();
 					for (Int_t i = 0; i < bunchLength; ++i)
 					{
-						if (bunchData[i] <= 0)
+						// Check that the 10 bit signal is within range.
+						if (bunchData[i] >= 1024)
 						{
 							HLTWarning("Data signal %d in sector %d row %d pad %d is a strange value %d,"
 								" for data block %d (DDL ID = %d) in event %lld.",
@@ -390,10 +397,11 @@ bool AliHLTTPCDataCheckerComponent::CheckRawDataBlock(
 	}
 	catch (...)
 	{
-		HLTError("Caught an exception when processing raw DDL data (DDL ID = %d)"
+		HLTFatal("Caught an exception when processing raw DDL data (DDL ID = %d)"
 			" from data block %d in event %lld.",
 			ddlid, index, event
 		);
+		throw;
 	}
 	return result;
 }
