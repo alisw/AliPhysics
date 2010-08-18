@@ -67,6 +67,7 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
       if (blocks[block].fDataType==kAliHLTDataTypeSOR ||
 	  blocks[block].fDataType==kAliHLTDataTypeEOR ||
 	  blocks[block].fDataType==kAliHLTDataTypeEvent ||
+	  blocks[block].fDataType==kAliHLTDataTypeRunType ||
 	  blocks[block].fDataType==kAliHLTDataTypeComponentStatistics ||
 	  blocks[block].fDataType==kAliHLTDataTypeComponentTable ||
 	  blocks[block].fDataType==kAliHLTDataTypeECSParam) {
@@ -75,7 +76,8 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
       unknown=block;
       break;
     }
-    if (unknown>=0) {
+    static int warningCount=0;
+    if (unknown>=0 && warningCount++<5) {
       HLTWarning("Data source component skips input data blocks: first unknown block %s",
 		 DataType2Text(blocks[unknown].fDataType).c_str());
     }
