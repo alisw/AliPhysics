@@ -30,11 +30,11 @@ int testAliHLTRootSchemaEvolutionComponent(const char* rawfile, int firstevent=0
   }
 
   AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
-  pHLT->SetGlobalLoggingLevel(kHLTLogDebug);
+  pHLT->SetGlobalLoggingLevel(kHLTLogAll);
   pHLT->LoadComponentLibraries("libAliHLTUtil.so");
 
   AliHLTConfiguration publisher("hltout-publisher", "AliHLTOUTPublisher" , NULL, "");
-  AliHLTConfiguration esdfilter("esdfilter", "BlockFilter" , "hltout-publisher", "-datatype ALIESDV0 'HLT ' -prescalar 2");  
+  AliHLTConfiguration esdfilter("esdfilter", "BlockFilter" , "hltout-publisher", "-datatype ALIESDV0 'HLT ' -prescalar 2 -skip-events 3");  
   AliHLTConfiguration objfilter("objfilter", "BlockFilter" , "hltout-publisher", "-datatype ROOTTOBJ 'HLT '");  
   AliHLTConfiguration streamerinfo("streamerinfo", "ROOTSchemaEvolutionComponent" , "esdfilter objfilter", "");
 
