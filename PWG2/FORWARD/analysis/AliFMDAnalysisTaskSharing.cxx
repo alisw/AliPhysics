@@ -338,9 +338,9 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   TH1F* hEventsNSD    = (TH1F*)fDiagList->FindObject("hEventsNSD");
   TH1F* hEventsNSDVtx = (TH1F*)fDiagList->FindObject("hEventsNSDVtx");
   
-  if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
-    vtxStatus = kFALSE;
-  }
+  // if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
+  //  vtxStatus = kFALSE;
+  // }
   
   
   if(vtxStatus) hEventsVtx->Fill(vtxbin);
@@ -366,10 +366,10 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   //std::cout<<vertex[2]<<std::endl;
   //Int_t nTrackLets = testmult->GetNumberOfTracklets();
   
-  // if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
-  //  fStatus = kFALSE;
-  //  return;
-  // }
+  if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
+    fStatus = kFALSE;
+    return;
+  }
     
   if(nTrackLets < 1000) foutputESDFMD->SetUniqueID(kTRUE);
   else foutputESDFMD->SetUniqueID(kFALSE);
