@@ -28,6 +28,9 @@
 #include "TStreamerInfo.h"
 #include "TList.h"
 #include "TFile.h"
+#include "TStopwatch.h"
+#include "TTimeStamp.h"
+#include "TDatime.h"
 
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
@@ -36,13 +39,20 @@
 #include "AliCDBMetaData.h"
 #include "AliCDBEntry.h"
 
+#include <numeric>
+using std::accumulate;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRootSchemaEvolutionComponent)
 
 AliHLTRootSchemaEvolutionComponent::AliHLTRootSchemaEvolutionComponent()
   : AliHLTProcessor()
+  , fList()
   , fFlags(0)
   , fpStreamerInfos(NULL)
+  , fpEventTimer(NULL)
+  , fpCycleTimer(NULL)
+  , fMaxEventTime(500)
   , fFXSPrescaler(0)
   , fFileName()
 {
@@ -54,6 +64,7 @@ AliHLTRootSchemaEvolutionComponent::AliHLTRootSchemaEvolutionComponent()
 
 }
 const char* AliHLTRootSchemaEvolutionComponent::fgkConfigurationObject=NULL;
+const AliHLTUInt32_t AliHLTRootSchemaEvolutionComponent::fgkTimeScale=1000000;
 
 AliHLTRootSchemaEvolutionComponent::~AliHLTRootSchemaEvolutionComponent()
 {
@@ -102,7 +113,17 @@ int AliHLTRootSchemaEvolutionComponent::DoInit(int argc, const char** argv)
   if (iResult>=0) {
     fpStreamerInfos=new TObjArray();
     if (!fpStreamerInfos) iResult=-ENOMEM;
+
+    fpEventTimer=new TStopwatch;
+    if (fpEventTimer) {
+      fpEventTimer->Reset();
+    }
+    fpCycleTimer=new TStopwatch;
+    if (fpCycleTimer) {
+      fpCycleTimer->Reset();
+    }
   }
+
   return 0;
 }
 
@@ -120,6 +141,14 @@ int AliHLTRootSchemaEvolutionComponent::DoDeinit()
   }
   fpStreamerInfos=NULL;
 
+  if (fpEventTimer) {
+    delete fpEventTimer;
+    fpEventTimer=NULL;
+  }
+  if (fpCycleTimer) {
+    delete fpCycleTimer;
+    fpCycleTimer=NULL;
+  }
   return 0;
 }
 
@@ -134,13 +163,69 @@ int AliHLTRootSchemaEvolutionComponent::DoEvent( const AliHLTComponentEventData&
     return 0;
   }
 
+  AliHLTUInt32_t listtime=accumulate(fList.begin(), fList.end(), int(0), AliHLTDataBlockItem::TimeSum());
+  AliHLTUInt32_t averageEventTime=0;
+  AliHLTUInt32_t averageCycleTime=0;
+
+  AliHLTUInt32_t proctime=0;
+  if (fpEventTimer) {
+    averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+    proctime=fpEventTimer->RealTime()*fgkTimeScale;
+    fpEventTimer->Start(kFALSE);
+  }
+  if (fpCycleTimer) {
+    fpCycleTimer->Stop();
+    averageCycleTime=(fpCycleTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+  }
+
+  // scale down the event processing according to the required rate
+  // and average processing time.
   AliHLTMessage msg(kMESS_OBJECT);
   msg.EnableSchemaEvolution();
-  for (const TObject* pObj=GetFirstInputObject();
-       pObj && iResult>=0;
-       pObj=GetNextInputObject()) {
-    msg.WriteObject(pObj);
-    iResult=UpdateStreamerInfos(msg.GetStreamerInfos(), fpStreamerInfos);
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
+       pBlock && iResult>=0;
+       pBlock=GetNextInputBlock()) {
+    bool processBlock=true;
+    AliHLTDataBlockItem* item=FindItem(pBlock->fDataType, pBlock->fSpecification);
+    if (item) {
+      // TODO: do a selection of blocks on basis of the time spent in its processing
+      // for now only the global processing time is checked
+      // process if the average event time is smaller then the cycle time, i.e.
+      // the time is spent outside the component
+      // apply a factor 4 margin
+      processBlock=4*averageEventTime<fMaxEventTime || 2*averageEventTime<averageCycleTime;
+    } else {
+      // always process new incoming blocks
+      processBlock=true;
+      fList.push_back(AliHLTDataBlockItem(pBlock->fDataType, pBlock->fSpecification));
+      item=&fList[fList.size()-1];
+    }
+    if (processBlock) {
+      TObject* pObj=item->Extract(pBlock);
+      if (pObj) {
+	if ((iResult=item->Stream(pObj, msg))>=0)
+	  iResult=UpdateStreamerInfos(msg.GetStreamerInfos(), fpStreamerInfos);
+	delete pObj;
+	pObj=NULL;
+      }
+    }
+  }
+
+  if (fpEventTimer) {
+    fpEventTimer->Stop();
+    proctime=fpEventTimer->RealTime()*fgkTimeScale-proctime;
+    averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+
+    // info output once every 2 seconds
+    static UInt_t lastTime=0;
+    TDatime time;
+    if (time.Get()-lastTime>2) {
+      lastTime=time.Get();
+      HLTInfo("event time %d, average time %d, list time %d, cycle time %d", proctime, averageEventTime, listtime, averageCycleTime);
+    }
+  }
+  if (fpCycleTimer) {
+    fpCycleTimer->Start(kFALSE);
   }
 
   if (iResult>=0) {
@@ -158,6 +243,21 @@ int AliHLTRootSchemaEvolutionComponent::DoEvent( const AliHLTComponentEventData&
   if (fFileName.IsNull()==0 && eventType==gkAliEventTypeEndOfRun) {
     WriteToFile(fFileName, fpStreamerInfos);
     fFileName.Clear();
+  }
+
+  if (eventType==gkAliEventTypeEndOfRun) {
+    for (unsigned i=0; i<fList.size(); i++) {
+      if (CheckFilter(kHLTLogDebug)) fList[i].Print("short");
+      else if (fList[i].IsObject()) {
+	HLTInfo("AliHLTDataBlockItem %s %08x\n"
+		"   average extraction time: %d usec\n"
+		"   average streaming time: %d usec"
+		, AliHLTComponent::DataType2Text(fList[i]).c_str()
+		, fList[i].GetSpecification()
+		, fList[i].GetExtractionTime()
+		, fList[i].GetStreamingTime());
+      }
+    }
   }
 
   return iResult;
@@ -251,6 +351,18 @@ int AliHLTRootSchemaEvolutionComponent::ScanConfigurationArgument(int argc, cons
     }
     return 1;
   }
+
+  if (argument.Contains("-rate=")) {
+    argument.ReplaceAll("-rate=", "");
+    AliHLTUInt32_t rate=argument.Atoi();
+    if (rate>0 && rate<fgkTimeScale) {
+      fMaxEventTime=fgkTimeScale/rate;
+    } else {
+      HLTError("argument -file= expects number [Hz]");
+      return -EINVAL;
+    }
+    return 1;
+  }
   
   return iResult;
 }
@@ -291,4 +403,93 @@ int AliHLTRootSchemaEvolutionComponent::WriteToFile(const char* filename, const 
   out.Close();
 
   return 0;
+}
+
+AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem*
+AliHLTRootSchemaEvolutionComponent::FindItem(AliHLTComponentDataType dt,
+					     AliHLTUInt32_t spec)
+{
+  /// find item in the list
+  // vector<AliHLTDataBlockItem>::iterator element=std::find(fList.begin(), fList.end(), AliHLTDataBlockItem(dt,spec));
+  // if (element!=fList.end()) return &(*element);
+  for (unsigned i=0; i<fList.size(); i++) {
+    if (fList[i]==dt && fList[i]==spec) return &fList[i];
+  }
+  return NULL;
+}
+
+AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::AliHLTDataBlockItem(AliHLTComponentDataType dt,
+									     AliHLTUInt32_t spec)
+  : fDt(dt)
+  , fSpecification(spec)
+  , fIsObject(false)
+  , fNofExtractions(0)
+  , fExtractionTimeUsec(0)
+  , fLastExtraction(0)
+  , fNofStreamings(0)
+  , fStreamingTimeUsec(0)
+  , fLastStreaming(0)
+{
+  // helper class to keep track of input data blocks
+  // in the AliHLTRootSchemaEvolutionComponent
+  //
+}
+
+AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::~AliHLTDataBlockItem()
+{
+  // destructor
+}
+
+TObject* AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::Extract(const AliHLTComponentBlockData* bd)
+{
+  /// extract data block to root object, and update performance parameters
+  /// object needs to be deleted externally
+  if (!bd || !bd->fPtr || bd->fSize<8) return NULL;
+
+  AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)bd->fPtr);
+  if (!(fIsObject=(firstWord==bd->fSize-sizeof(AliHLTUInt32_t)))) return NULL;
+
+  TStopwatch sw;
+  sw.Start();
+  AliHLTMessage msg(bd->fPtr, bd->fSize);
+  TClass* objclass=msg.GetClass();
+  if (!(fIsObject=(objclass!=NULL))) return NULL;
+  TObject* pObj=msg.ReadObject(objclass);
+  if (!(fIsObject=(pObj!=NULL))) return NULL;
+  sw.Stop();
+  AliHLTUInt32_t usec=sw.RealTime()*fgkTimeScale;
+  fNofExtractions++;
+  fExtractionTimeUsec+=usec;
+  TTimeStamp ts;
+  fLastExtraction=(ts.GetSec()%1000)*fgkTimeScale + ts.GetNanoSec()/1000;
+  return pObj;
+}
+
+int AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::Stream(TObject* obj, AliHLTMessage& msg)
+{
+  /// stream object and update performance parameters
+  if (!obj) return -EINVAL;
+  TStopwatch sw;
+  sw.Start();
+  msg.WriteObject(obj);
+
+  AliHLTUInt32_t usec=sw.RealTime()*fgkTimeScale;
+  fNofStreamings++;
+  fStreamingTimeUsec+=usec;
+  TTimeStamp ts;
+  fLastStreaming=(ts.GetSec()%1000)*fgkTimeScale + ts.GetNanoSec()/1000;
+  return 0;
+}
+
+void AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::Print(const char* option) const
+{
+  /// print status
+  if (fIsObject || !(strcmp(option, "short")==0))
+    cout << "AliHLTDataBlockItem: " << AliHLTComponent::DataType2Text(fDt).c_str() << " " << hex << fSpecification << dec << endl;
+  if (fIsObject) {
+    if (fNofExtractions>0) cout << "   average extraction time: " << fExtractionTimeUsec/fNofExtractions << " usec" << endl;
+    else cout << "   never extracted" << endl;
+    if (fNofStreamings>0) cout << "   average streaming time: " << fStreamingTimeUsec/fNofStreamings << " usec" << endl;
+    else cout << "   never streamed" << endl;
+  }
 }
