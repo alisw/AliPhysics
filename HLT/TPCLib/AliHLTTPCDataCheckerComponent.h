@@ -56,7 +56,7 @@ class AliRawReaderMemory;
  * None.
  *
  * <h2>Performance:</h2>
- * TODO
+ * Can run over 3kHz in HLT online system.
  *
  * <h2>Memory consumption:</h2>
  * Negligible.
