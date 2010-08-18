@@ -357,11 +357,11 @@ void GetHistograms()
      for(Int_t co=0;co<4;co++)
      {
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fIntFlowQcumulantsVsM, %s",qcFlag[co].Data())));
-      if(rebin)
+      if(rebin && cumulantsVsM[f][m][co])
       {
        cumulantsVsM[f][m][co] = Rebin(cumulantsVsM[f][m][co]);
       }
-      if(plotCumulantsVsReferenceMultiplicity)
+      if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
       {
        Map(cumulantsVsM[f][m][co],f);
       }    
@@ -377,7 +377,7 @@ void GetHistograms()
      for(Int_t co=0;co<4;co++)
      {
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fReferenceFlowCumulantsVsM, %s",gfcFlag[co].Data())));
-      if(plotCumulantsVsReferenceMultiplicity)
+      if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
       {
        Map(cumulantsVsM[f][m][co],f);
       }
@@ -386,6 +386,27 @@ void GetHistograms()
    } // end of else if(!(strcmp(method[m].Data(),"QC")))
   } // end of  for(Int_t m=0;m<nMethods;m++)
  } // end of for(Int_t f=0;f<nFiles;f++)
+
+ Int_t counter = 0;
+ for(Int_t f=0;f<nFiles;f++)
+ {
+  for(Int_t m=0;m<nMethods;m++)
+  { 
+   for(Int_t co=0;co<4;co++)
+   {
+    if(cumulantsVsM[f][m][co]){counter++;}
+   }
+  }
+ }
+ 
+ if(counter == 0)
+ {
+  cout<<endl;
+  cout<<" WARNING: Couldn't access a single histogram with results vs multiplicity !!!!"<<endl;
+  cout<<"          Did you enable this calculation before running over data?"<<endl;
+  cout<<endl;
+  exit(0);
+ }   
 
 } // end of void GetHistograms()
 
