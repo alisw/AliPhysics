@@ -608,13 +608,13 @@ void AliFlowEventSimple::AddV4( Double_t v4 )
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::AddFlow( Double_t v1, Double_t v2, Double_t v4 )
+void AliFlowEventSimple::AddFlow( Double_t v1, Double_t v2, Double_t v3, Double_t v4 )
 {
   //add flow to all tracks wrt the reaction plane angle
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track) track->AddFlow(v1,v2,v4,fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    if (track) track->AddFlow(v1,v2,v3,v4,fMCReactionPlaneAngle, fAfterBurnerPrecision);
   }
 }
 
