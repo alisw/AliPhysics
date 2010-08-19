@@ -259,7 +259,7 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  AliFlowAnalysisWithMixedHarmonics *mh = NULL;
  AliFlowAnalysisWithNestedLoops *nl = NULL;
  AliFlowAnalysisWithMCEventPlane *mcep = NULL;   
- AliFlowAnalysisWithMCEventPlane *mcep_AH = NULL;   
+ AliFlowAnalysisWithMCEventPlane *mcep_ah = NULL;   
 
  // MCEP = monte carlo event plane
  if (MCEP) {

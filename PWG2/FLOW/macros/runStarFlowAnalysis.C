@@ -1,30 +1,33 @@
 //example script on what to do with the star events
 //run e.g. like this:
 //                    root runStarFlowAnalysis.C
-
-//--------------------------------------------------------------------------------------
-// Run flow analysis on local data with custom FlowEvent maker
-// RUN SETTINGS
-//flow analysis method can be: (set to kTRUE or kFALSE)
+// flow analysis method can be: (set to kTRUE or kFALSE)
+Bool_t MCEP     = kTRUE;
 Bool_t SP       = kTRUE;
-Bool_t LYZ1SUM  = kTRUE;
-Bool_t LYZ1PROD = kTRUE;
-Bool_t LYZ2SUM  = kFALSE; 
-Bool_t LYZ2PROD = kFALSE;
-Bool_t LYZEP    = kFALSE; 
 Bool_t GFC      = kTRUE;
 Bool_t QC       = kTRUE;
 Bool_t FQD      = kTRUE;
-Bool_t MH       = kTRUE; 
-Bool_t NL       = kFALSE; 
-Bool_t MCEP     = kFALSE; //does not work yet 24/12/08
+Bool_t LYZ1SUM  = kTRUE;
+Bool_t LYZ1PROD = kTRUE;
+Bool_t LYZ2SUM  = kFALSE;
+Bool_t LYZ2PROD = kFALSE;
+Bool_t LYZEP    = kFALSE;
+Bool_t MH       = kFALSE; // mixed harmonics 
+Bool_t NL       = kFALSE; // nested loops
+Bool_t MCEP_AH  = kFALSE; // MCEP in another harmonic 
 //--------------------------------------------------------------------------------------
 
 // Weights 
-// Use weights for Q vector
-Bool_t usePhiWeights = kFALSE; //Phi (correction for non-uniform azimuthal acceptance)
-Bool_t usePtWeights  = kFALSE; //v'(pt) (differential flow in pt)
-Bool_t useEtaWeights = kFALSE; //v'(eta) (differential flow in eta)
+// use weights for Q-vector:
+Bool_t usePhiWeights = kFALSE; // phi weights (correction for non-uniform azimuthal acceptance)
+Bool_t usePtWeights  = kFALSE; // pt weights 
+Bool_t useEtaWeights = kFALSE; // eta weights
+
+// Define the range for eta subevents
+Double_t minA = -0.9;
+Double_t maxA = -0.01;
+Double_t minB = 0.01;
+Double_t maxB = 0.9;
 
 
 void  runStarFlowAnalysis()
@@ -55,8 +58,8 @@ void  runStarFlowAnalysis()
 
   //define event cuts
   AliStarEventCuts* starEventCuts = AliStarEventCuts::StandardCuts();
-  starEventCuts-> SetCentralityIDMax(8);
-  starEventCuts-> SetCentralityIDMin(8);
+  starEventCuts-> SetCentralityIDMax(5);
+  starEventCuts-> SetCentralityIDMin(5);
 
   //if the weights are used: 
   TFile *fileWithWeights = NULL;
@@ -73,160 +76,190 @@ void  runStarFlowAnalysis()
       }    
   }
 
-  //flow methods:  
+  //---------------------------------------------------------------------------------------
+  // Initialize all the flow methods for default analysis:  
   AliFlowAnalysisWithQCumulants *qc = NULL;
   AliFlowAnalysisWithCumulants *gfc = NULL;
   AliFlowAnalysisWithFittingQDistribution *fqd = NULL;
-  AliFlowAnalysisWithLeeYangZeros *lyz1sum = NULL;
+  AliFlowAnalysisWithLeeYangZeros *lyz1sum  = NULL;
   AliFlowAnalysisWithLeeYangZeros *lyz1prod = NULL;
-  AliFlowAnalysisWithLeeYangZeros *lyz2sum = NULL;
+  AliFlowAnalysisWithLeeYangZeros *lyz2sum  = NULL;
   AliFlowAnalysisWithLeeYangZeros *lyz2prod = NULL;
   AliFlowAnalysisWithLYZEventPlane *lyzep = NULL;
   AliFlowAnalysisWithScalarProduct *sp = NULL;
-  AliFlowAnalysisWithMCEventPlane *mcep = NULL;     
   AliFlowAnalysisWithMixedHarmonics *mh = NULL;
   AliFlowAnalysisWithNestedLoops *nl = NULL;
+  AliFlowAnalysisWithMCEventPlane *mcep = NULL;   
+  AliFlowAnalysisWithMCEventPlane *mcep_ah = NULL;   
 
-  //MCEP = monte carlo event plane
-  if (MCEP) {
-    AliFlowAnalysisWithMCEventPlane *mcep = new AliFlowAnalysisWithMCEventPlane();
-    mcep->Init();
-  }
+// MCEP = monte carlo event plane
+ if (MCEP) {
+   AliFlowAnalysisWithMCEventPlane *mcep = new AliFlowAnalysisWithMCEventPlane();
+   //mcep->SetHarmonic(2); // default is v2
+   //mcep->SetFlowOfResonances(kTRUE);
+   mcep->Init();
+ }
 
-  //QC = Q-cumulants  
-  if(QC) { 
-    AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
-    if(listWithWeights) qc->SetWeightsList(listWithWeights);
-    if(usePhiWeights) qc->SetUsePhiWeights(usePhiWeights);
-    if(usePtWeights) qc->SetUsePtWeights(usePtWeights);
-    if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
-    qc->Init();
-  }
+ // MCEP = monte carlo event plane in another harmonic: 
+ if(MCEP_AH)
+ {
+  AliFlowAnalysisWithMCEventPlane *mcep_ah = new AliFlowAnalysisWithMCEventPlane();
+  mcep_ah->SetHarmonic(1);
+  mcep_ah->Init();
+ }
+ 
+ // Mixed harmonics:
+ if(MH) 
+ {
+  AliFlowAnalysisWithMixedHarmonics *mh = new AliFlowAnalysisWithMixedHarmonics();
+  mh->SetHarmonic(1); // integer n in expression cos[n(2phi1-phi2-phi3)] = v2n*vn^2
+  mh->SetMinMultiplicity(100); 
+  mh->SetNoOfMultipicityBins(5);  
+  mh->SetMultipicityBinWidth(200);   
+  mh->Init(); 
+ }
+ 
+ // NL = nested loops:
+ if(NL) {
+   AliFlowAnalysisWithNestedLoops *nl = new AliFlowAnalysisWithNestedLoops();
+   nl->Init();
+ }
+
+ // QC = Q-cumulants  
+ if(QC) { 
+   AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
+   if(listWithWeights) qc->SetWeightsList(listWithWeights);
+   if(usePhiWeights) qc->SetUsePhiWeights(usePhiWeights);
+   if(usePtWeights) qc->SetUsePtWeights(usePtWeights);
+   if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
+   // qc->SetHarmonic(2); // default is v2
+   // qc->SetApplyCorrectionForNUA(kTRUE); // default
+   // qc->SetCalculate2DFlow(kFALSE); // default
+   // qc->SetMultiplicityWeight("combinations"); // default
+   // qc->SetMultiplicityWeight("unit");
+   // qc->SetMultiplicityWeight("multiplicity");  
+   qc->SetnBinsMult(10000);
+   qc->SetMinMult(0);
+   qc->SetMaxMult(10000);      
+   qc->Init();  
+ }
   
-  //GFC = Generating Function Cumulants 
-  if(GFC) {
-    AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
-    if(listWithWeights) gfc->SetWeightsList(listWithWeights);
-    if(usePhiWeights) gfc->SetUsePhiWeights(usePhiWeights);
-    if(usePtWeights) gfc->SetUsePtWeights(usePtWeights);
-    if(useEtaWeights) gfc->SetUseEtaWeights(useEtaWeights);
-    gfc->Init();
-  }
-  
-  //FQD = Fitting q-distribution 
-  if(FQD) {
-    AliFlowAnalysisWithFittingQDistribution* fqd = new AliFlowAnalysisWithFittingQDistribution();
-    if(listWithWeights) fqd->SetWeightsList(listWithWeights);
-    if(usePhiWeights) fqd->SetUsePhiWeights(usePhiWeights);
-    fqd->Init();
-  }
+ // GFC = Generating Function Cumulants 
+ if(GFC) {
+   AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
+   if(listWithWeights) gfc->SetWeightsList(listWithWeights);
+   if(usePhiWeights) gfc->SetUsePhiWeights(usePhiWeights);
+   if(usePtWeights) gfc->SetUsePtWeights(usePtWeights);
+   if(useEtaWeights) gfc->SetUseEtaWeights(useEtaWeights);
+   // calculation vs multiplicity:
+   gfc->SetCalculateVsMultiplicity(kFALSE);   
+   gfc->SetnBinsMult(10000);
+   gfc->SetMinMult(0);
+   gfc->SetMaxMult(10000);   
+   // tuning of interpolating parameters:
+   gfc->SetTuneParameters(kFALSE);
+   Double_t r0[10] = {1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7}; // up to 10 values allowed
+   for(Int_t r=0;r<10;r++) {gfc->SetTuningR0(r0[r],r);}
+   gfc->Init();
+ }
+ 
+ // FQD = Fitting q-distribution 
+ if(FQD) {
+   AliFlowAnalysisWithFittingQDistribution* fqd = new AliFlowAnalysisWithFittingQDistribution();
+   if(listWithWeights) fqd->SetWeightsList(listWithWeights);
+   if(usePhiWeights) fqd->SetUsePhiWeights(usePhiWeights);  
+   fqd->Init();
+ }
+ 
+ // SP = Scalar Product 
+ if(SP) {
+   AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
+   if(listWithWeights) sp->SetWeightsList(listWithWeights);
+   sp->SetUsePhiWeights(usePhiWeights);  
+   sp->Init();
+ }
 
-  //SP = Scalar Product 
-  if(SP) {
-    AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
-    if(usePhiWeights) sp->SetUsePhiWeights(usePhiWeights);
-    sp->Init();
-  }
+ // LYZ1 = Lee-Yang Zeroes first run
+ if(LYZ1SUM) {
+   AliFlowAnalysisWithLeeYangZeros* lyz1sum = new AliFlowAnalysisWithLeeYangZeros();
+   lyz1sum->SetFirstRun(kTRUE);
+   lyz1sum->SetUseSum(kTRUE);
+   lyz1sum->Init();
+ }
+ if(LYZ1PROD) {
+   AliFlowAnalysisWithLeeYangZeros* lyz1prod = new AliFlowAnalysisWithLeeYangZeros();
+   lyz1prod->SetFirstRun(kTRUE);
+   lyz1prod->SetUseSum(kFALSE);
+   lyz1prod->Init();
+ }
+ // LYZ2 = Lee-Yang Zeroes second run
+ if(LYZ2SUM) {
+   AliFlowAnalysisWithLeeYangZeros* lyz2sum = new AliFlowAnalysisWithLeeYangZeros();
+   // read the input file from the first run 
+   TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis.root" ;
+   TFile* inputFileLYZ2SUM = new TFile(inputFileNameLYZ2SUM.Data(),"READ");
+   if(!inputFileLYZ2SUM || inputFileLYZ2SUM->IsZombie()) { 
+     cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ;
+     break; 
+   }
+   else { 
+     TList* inputListLYZ2SUM = (TList*)inputFileLYZ2SUM->Get("cobjLYZ1SUM");  
+     if (!inputListLYZ2SUM) {cout<<"Input list LYZ2SUM is NULL pointer!"<<endl; break;}
+     else {
+       cout<<"LYZ2SUM input file/list read..."<<endl;
+       lyz2sum->SetFirstRunList(inputListLYZ2SUM);
+       lyz2sum->SetFirstRun(kFALSE);
+       lyz2sum->SetUseSum(kTRUE);
+       lyz2sum->Init();
+     }
+   }
+ }
+ if(LYZ2PROD) {
+   AliFlowAnalysisWithLeeYangZeros* lyz2prod = new AliFlowAnalysisWithLeeYangZeros();
+   // read the input file from the first run 
+   TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis.root" ;
+   TFile* inputFileLYZ2PROD = new TFile(inputFileNameLYZ2PROD.Data(),"READ");
+   if(!inputFileLYZ2PROD || inputFileLYZ2PROD->IsZombie()) { 
+     cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ;
+     break; 
+   }
+   else { 
+     TList* inputListLYZ2PROD = (TList*)inputFileLYZ2PROD->Get("cobjLYZ1PROD");  
+     if (!inputListLYZ2PROD) {cout<<"Input list LYZ2PROD is NULL pointer!"<<endl; break;}
+     else {
+       cout<<"LYZ2PROD input file/list read..."<<endl;
+       lyz2prod->SetFirstRunList(inputListLYZ2PROD);
+       lyz2prod->SetFirstRun(kFALSE);
+       lyz2prod->SetUseSum(kFALSE);
+       lyz2prod->Init();
+     }
+   }
+ }
 
-  //LYZ1 = Lee-Yang Zeroes first run
-  if(LYZ1SUM) {
-    AliFlowAnalysisWithLeeYangZeros* lyz1sum = new AliFlowAnalysisWithLeeYangZeros();
-    lyz1sum->SetFirstRun(kTRUE);
-    lyz1sum->SetUseSum(kTRUE);
-    lyz1sum->Init();
-  }
-  if(LYZ1PROD) {
-    AliFlowAnalysisWithLeeYangZeros* lyz1prod = new AliFlowAnalysisWithLeeYangZeros();
-    lyz1prod->SetFirstRun(kTRUE);
-    lyz1prod->SetUseSum(kFALSE);
-    lyz1prod->Init();
-  }
-  //LYZ2 = Lee-Yang Zeroes second run
-  if(LYZ2SUM) {
-    AliFlowAnalysisWithLeeYangZeros* lyz2sum = new AliFlowAnalysisWithLeeYangZeros();
-    // read the input file from the first run 
-    TString inputFileNameLYZ2SUM = "outputLYZ1SUManalysis.root" ;
-    TFile* inputFileLYZ2SUM = new TFile(inputFileNameLYZ2SUM.Data(),"READ");
-    if(!inputFileLYZ2SUM || inputFileLYZ2SUM->IsZombie()) { 
-      cerr << " ERROR: To run LYZ2SUM you need the output file from LYZ1SUM. This file is not there! Please run LYZ1SUM first." << endl ;
-      break; 
-    }
-    else { 
-      TList* inputListLYZ2SUM = (TList*)inputFileLYZ2SUM->Get("cobjLYZ1SUM");  
-      if (!inputListLYZ2SUM) {cout<<"SUM Input list is NULL pointer!"<<endl; break;}
-      else {
-	cout<<"LYZ2SUM input file/list read..."<<endl;
-	lyz2sum->SetFirstRunList(inputListLYZ2SUM);
-	lyz2sum->SetFirstRun(kFALSE);
-	lyz2sum->SetUseSum(kTRUE);
-	lyz2sum->Init();
-      }
-    }
-  }
-  if(LYZ2PROD) {
-    AliFlowAnalysisWithLeeYangZeros* lyz2prod = new AliFlowAnalysisWithLeeYangZeros();
-    // read the input file from the first run 
-    TString inputFileNameLYZ2PROD = "outputLYZ1PRODanalysis.root" ;
-    TFile* inputFileLYZ2PROD = new TFile(inputFileNameLYZ2PROD.Data(),"READ");
-    if(!inputFileLYZ2PROD || inputFileLYZ2PROD->IsZombie()) { 
-      cerr << " ERROR: To run LYZ2PROD you need the output file from LYZ1PROD. This file is not there! Please run LYZ1PROD first." << endl ;
-      break; 
-    }
-    else { 
-      TList* inputListLYZ2PROD = (TList*)inputFileLYZ2PROD->Get("cobjLYZ1PROD");  
-      if (!inputListLYZ2PROD) {cout<<"PROD Input list is NULL pointer!"<<endl; break;}
-      else {
-	cout<<"LYZ2PROD input file/list read..."<<endl;
-	lyz2prod->SetFirstRunList(inputListLYZ2PROD);
-	lyz2prod->SetFirstRun(kFALSE);
-	lyz2prod->SetUseSum(kTRUE);
-	lyz2prod->Init();
-      }
-    }
-  }
- //LYZEP = Lee-Yang Zeroes event plane
-  if(LYZEP) {
-    AliFlowLYZEventPlane* ep = new AliFlowLYZEventPlane() ;
-    AliFlowAnalysisWithLYZEventPlane* lyzep = new AliFlowAnalysisWithLYZEventPlane();
-    // read the input file from the second lyz run 
-    TString inputFileNameLYZEP = "outputLYZ2SUManalysis.root" ;
-    TFile* inputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
-    if(!inputFileLYZEP || inputFileLYZEP->IsZombie()) { 
-      cerr << " ERROR: To run LYZEP you need the output file from LYZ2SUM. This file is not there! Please run LYZ2SUM first." << endl ; 
-      break;
-    }
-    else { 
-      TList* inputListLYZEP = (TList*)inputFileLYZEP->Get("cobjLYZ2SUM");  
-      if (!inputListLYZEP) {cout<<"Input list is NULL pointer!"<<endl; break;}
-      else {
-	cout<<"LYZEP input file/list read..."<<endl;
-	ep   ->SetSecondRunList(inputListLYZEP);
-	lyzep->SetSecondRunList(inputListLYZEP);
-	ep   ->Init();
-	lyzep->Init();
-      }
-    }
-  }
-  // MH = Mixed Harmonics:  
-  if(MH) { 
-    AliFlowAnalysisWithMixedHarmonics* mh = new AliFlowAnalysisWithMixedHarmonics();
-    if(listWithWeights) mh->SetWeightsList(listWithWeights);
-    //if(usePhiWeights) mh->SetUsePhiWeights(usePhiWeights); // to be improved (enabled)
-    //if(usePtWeights) mh->SetUsePtWeights(usePtWeights); // to be improved (enabled)
-    //if(useEtaWeights) mh->SetUseEtaWeights(useEtaWeights); // to be improved (enabled)
-    mh->Init();
-  }
-  // NL = Nested Loops:  
-  if(NL) { 
-    AliFlowAnalysisWithNestedLoops* nl = new AliFlowAnalysisWithNestedLoops();
-    if(listWithWeights) nl->SetWeightsList(listWithWeights);
-    //if(usePhiWeights) nl->SetUsePhiWeights(usePhiWeights); // to be improved (enabled)
-    //if(usePtWeights) nl->SetUsePtWeights(usePtWeights); // to be improved (enabled)
-    //if(useEtaWeights) nl->SetUseEtaWeights(useEtaWeights); // to be improved (enabled)
-    nl->Init();
-  }
-
-  //------------------------------------------------------------------------
+ // LYZEP = Lee-Yang Zeroes event plane
+ if(LYZEP) {
+   AliFlowLYZEventPlane* ep = new AliFlowLYZEventPlane() ;
+   AliFlowAnalysisWithLYZEventPlane* lyzep = new AliFlowAnalysisWithLYZEventPlane();
+   // read the input file from the second lyz run 
+   TString inputFileNameLYZEP = "outputLYZ2SUManalysis.root" ;
+   TFile* inputFileLYZEP = new TFile(inputFileNameLYZEP.Data(),"READ");
+   if(!inputFileLYZEP || inputFileLYZEP->IsZombie()) { 
+     cerr << " ERROR: To run LYZEP you need the output file from LYZ2SUM. This file is not there! Please run LYZ2SUM first." << endl ; 
+     break;
+   }
+   else { 
+     TList* inputListLYZEP = (TList*)inputFileLYZEP->Get("cobjLYZ2SUM");  
+     if (!inputListLYZEP) {cout<<"Input list LYZEP is NULL pointer!"<<endl; break;}
+     else {
+       cout<<"LYZEP input file/list read..."<<endl;
+       ep   ->SetSecondRunList(inputListLYZEP);
+       lyzep->SetSecondRunList(inputListLYZEP);
+       ep   ->Init();
+       lyzep->Init();
+     }
+   }
+ }
+ //---------------------------------------------------------------------------------------
 
 
   Int_t i=0;
@@ -237,6 +270,7 @@ void  runStarFlowAnalysis()
     if ( !starEventCuts->PassesCuts(starEvent) ) continue;              // Test if the event is good
 
     AliFlowEventSimple* flowEvent = new AliFlowEventStar(starEvent,rpCuts,poiCuts);  // make a flow event from a star event (aka "the magic")
+    flowEvent->TagSubeventsInEta(minA, maxA, minB, maxB );
 
     /////analysis here////////////////
 
@@ -253,11 +287,11 @@ void  runStarFlowAnalysis()
     if(SP)      sp->Make(flowEvent);	      
     if(MH)      mh->Make(flowEvent);
     if(NL)      nl->Make(flowEvent);
+    if(MCEP_AH) mcep_ah->Make(flowEvent);
 
     //////////////////////////////////
 
-    //starEvent->Print("all");
-    //flowEvent->Print();
+    flowEvent->Print();
 
     delete flowEvent;
 
@@ -265,21 +299,22 @@ void  runStarFlowAnalysis()
     if (i>maxNumberOfEvents) break;
   }
 
+  //---------------------------------------------------------------------------------------  
   // create a new file which will hold the final results of all methods:
   TString outputFileName = "AnalysisResults.root";  
   TFile *outputFile = new TFile(outputFileName.Data(),"RECREATE");
   // create a new file for each method wich will hold list with final results:
-  const Int_t nMethods = 12;
-  TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL"};
+  const Int_t nMethods = 13;
+  TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL","MCEP_AH"};
   TDirectoryFile *dirFileFinal[nMethods] = {NULL};
-  TString fileNameMethod[nMethods]; 
+  TString fileName[nMethods]; 
   for(Int_t i=0;i<nMethods;i++)
     {
       // form a file name for each method:
-      fileNameMethod[i]+="output";
-      fileNameMethod[i]+=method[i].Data();
-      fileNameMethod[i]+="analysis";
-      dirFileFinal[i] = new TDirectoryFile(fileNameMethod[i].Data(),fileNameMethod[i].Data());
+      fileName[i]+="output";
+      fileName[i]+=method[i].Data();
+      fileName[i]+="analysis";
+      dirFileFinal[i] = new TDirectoryFile(fileName[i].Data(),fileName[i].Data());
     } 
   
   // calculating and storing the final results of default flow analysis:
@@ -295,14 +330,16 @@ void  runStarFlowAnalysis()
   if(LYZEP)   {lyzep->Finish();   lyzep->WriteHistograms(dirFileFinal[9]);}
   if(MH)      {mh->Finish();      mh->WriteHistograms(dirFileFinal[10]);}
   if(NL)      {nl->Finish();      nl->WriteHistograms(dirFileFinal[11]);}
+  if(MCEP_AH) {mcep_ah->Finish(); mcep_ah->WriteHistograms(dirFileFinal[12]);}
   //---------------------------------------------------------------------------------------  
   
   outputFile->Close();
   delete outputFile;
   
-  cout << endl;
-  cout << " Fini ... " << endl;
-  cout << endl;
+  cout<<endl;
+  cout<<endl;
+  cout<<" ---- LANDED SUCCESSFULLY ---- "<<endl;
+  cout<<endl; 
   
   timer.Stop();
   cout << endl;
