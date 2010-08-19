@@ -141,7 +141,7 @@ TString today = "";
 Bool_t convertToMT = 0;
 Bool_t doPrint = 1;
 Bool_t scaleKaons =  kFALSE;
-Bool_t drawStar =  kTRUE; // Overlay star when doing fits
+Bool_t drawStar =  kFALSE; // Overlay star when doing fits
 Bool_t correctSecondaries  = 1;
 Bool_t correctGeantFlukaXS = 1;
 Int_t iCombInStudy = kCombAll; //kCombTOFTPC
@@ -1293,10 +1293,10 @@ void DrawAllAndKaons() {
 	}
       }
       c1t->cd(ipart+1);
-      hRatioITSTPC[ipart][icharge]->SetStats(1);
-      hRatioITSTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
-      hRatioITSTPC[ipart][icharge]->Draw("");
-      hRatioITSTPC[ipart][icharge]->Fit("pol0","","same");
+      hRatioTOFTPC[ipart][icharge]->SetStats(1);
+      hRatioTOFTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
+      hRatioTOFTPC[ipart][icharge]->Draw("");
+      hRatioTOFTPC[ipart][icharge]->Fit("pol0","","same");
     }
     if(doPrint) c1t->Print(TString(c1t->GetName())+".png");
   }
