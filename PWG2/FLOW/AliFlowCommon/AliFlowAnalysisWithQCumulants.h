@@ -213,8 +213,8 @@ class AliFlowAnalysisWithQCumulants{
   // 2b.) event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
   
-  // 3.) integrated flow:
-  // flags:
+  // 3.) Reference flow:
+  // Flags:
   void SetIntFlowFlags(TProfile* const intFlowFlags) {this->fIntFlowFlags = intFlowFlags;};
   TProfile* GetIntFlowFlags() const {return this->fIntFlowFlags;};
   void SetApplyCorrectionForNUA(Bool_t const applyCorrectionForNUA) {this->fApplyCorrectionForNUA = applyCorrectionForNUA;};
@@ -230,8 +230,10 @@ class AliFlowAnalysisWithQCumulants{
   void SetPropagateErrorFromCorrelations(Bool_t const pefc) {this->fPropagateErrorFromCorrelations = pefc;};
   Bool_t GetPropagateErrorFromCorrelations() const {return this->fPropagateErrorFromCorrelations;};  
   void SetCalculateCumulantsVsM(Bool_t const ccvm) {this->fCalculateCumulantsVsM = ccvm;};
-  Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};  
-  // integrated flow profiles:
+  Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};   
+  void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
+  Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};  
+  // Reference flow profiles:
   void SetAvMultiplicity(TProfile* const avMultiplicity) {this->fAvMultiplicity = avMultiplicity;};
   TProfile* GetAvMultiplicity() const {return this->fAvMultiplicity;};
   void SetIntFlowCorrelationsPro(TProfile* const intFlowCorrelationsPro) {this->fIntFlowCorrelationsPro = intFlowCorrelationsPro;};
@@ -440,6 +442,7 @@ class AliFlowAnalysisWithQCumulants{
   Double_t fMaxMult; // maximal multiplicity for flow analysis versus multiplicity  
   Bool_t fPropagateErrorFromCorrelations; // propagate error for v_n from correlations (kTRUE) or from cumulants (kFALSE) (used only for debugging/cross-checking) 
   Bool_t fCalculateCumulantsVsM; // calculate cumulants versus multiplicity  
+  Bool_t fMinimumBiasReferenceFlow; // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)   
   //  3c.) event-by-event quantities:
   TMatrixD *fReQ; // fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
