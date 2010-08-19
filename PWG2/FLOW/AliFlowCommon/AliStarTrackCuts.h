@@ -58,38 +58,38 @@ class AliStarTrackCuts : public TNamed {
   void SetFitRatioMax(const Float_t value) {fFitRatioMax=value;fCutFitRatio=kTRUE;};
   void SetFitRatioMin(const Float_t value) {fFitRatioMin=value;fCutFitRatio=kTRUE;};
 
-  const Int_t GetIDMax() const {return fIDMax;}
-  const Int_t GetIDMin() const {return fIDMin;}
-  const Int_t GetChargeMax() const {return fChargeMax;}
-  const Int_t GetChargeMin() const {return fChargeMin;}
-  const Float_t GetEtaMax() const {return fEtaMax;}
-  const Float_t GetEtaMin() const {return fEtaMin;}
-  const Float_t GetPhiMax() const {return fPhiMax;}
-  const Float_t GetPhiMin() const {return fPhiMin;}
-  const Float_t GetPtMax() const {return fPtMax;}
-  const Float_t GetPtMin() const {return fPtMin;}
-  const Float_t GetDCAMax() const {return fDCAMax;}
-  const Float_t GetDCAMin() const {return fDCAMin;}
-  const Int_t GetNHitsMax() const {return fNHitsMax;}
-  const Int_t GetNHitsMin() const {return fNHitsMin;}
-  const Int_t GetNHitsFitMax() const {return fNHitsFitMax;}
-  const Int_t GetNHitsFitMin() const {return fNHitsFitMin;}
-  const Int_t GetNHitsPossMax() const {return fNHitsPossMax;}
-  const Int_t GetNHitsPossMin() const {return fNHitsPossMin;}
-  const Int_t GetNHitsDedxMax() const {return fNHitsDedxMax;}
-  const Int_t GetNHitsDedxMin() const {return fNHitsDedxMin;}
-  const Float_t GetdEdxMax() const {return fdEdxMax;}
-  const Float_t GetdEdxMin() const {return fdEdxMin;}
-  const Float_t GetNSigElectMax() const {return fNSigElectMax;}
-  const Float_t GetNSigElectMin() const {return fNSigElectMin;}
-  const Float_t GetNSigPiMax() const {return fNSigPiMax;}
-  const Float_t GetNSigPiMin() const {return fNSigPiMin;}
-  const Float_t GetNSigKMax() const {return fNSigKMax;}
-  const Float_t GetNSigKMin() const {return fNSigKMin;}
-  const Float_t GetNSigProtonMax() const {return fNSigProtonMax;}
-  const Float_t GetNSigProtonMin() const {return fNSigProtonMin;}
-  const Float_t GetFitRatioMax() const {return fFitRatioMax;};
-  const Float_t GetFitRatioMin() const {return fFitRatioMin;};
+  Int_t GetIDMax() const {return fIDMax;}
+  Int_t GetIDMin() const {return fIDMin;}
+  Int_t GetChargeMax() const {return fChargeMax;}
+  Int_t GetChargeMin() const {return fChargeMin;}
+  Float_t GetEtaMax() const {return fEtaMax;}
+  Float_t GetEtaMin() const {return fEtaMin;}
+  Float_t GetPhiMax() const {return fPhiMax;}
+  Float_t GetPhiMin() const {return fPhiMin;}
+  Float_t GetPtMax() const {return fPtMax;}
+  Float_t GetPtMin() const {return fPtMin;}
+  Float_t GetDCAMax() const {return fDCAMax;}
+  Float_t GetDCAMin() const {return fDCAMin;}
+  Int_t GetNHitsMax() const {return fNHitsMax;}
+  Int_t GetNHitsMin() const {return fNHitsMin;}
+  Int_t GetNHitsFitMax() const {return fNHitsFitMax;}
+  Int_t GetNHitsFitMin() const {return fNHitsFitMin;}
+  Int_t GetNHitsPossMax() const {return fNHitsPossMax;}
+  Int_t GetNHitsPossMin() const {return fNHitsPossMin;}
+  Int_t GetNHitsDedxMax() const {return fNHitsDedxMax;}
+  Int_t GetNHitsDedxMin() const {return fNHitsDedxMin;}
+  Float_t GetdEdxMax() const {return fdEdxMax;}
+  Float_t GetdEdxMin() const {return fdEdxMin;}
+  Float_t GetNSigElectMax() const {return fNSigElectMax;}
+  Float_t GetNSigElectMin() const {return fNSigElectMin;}
+  Float_t GetNSigPiMax() const {return fNSigPiMax;}
+  Float_t GetNSigPiMin() const {return fNSigPiMin;}
+  Float_t GetNSigKMax() const {return fNSigKMax;}
+  Float_t GetNSigKMin() const {return fNSigKMin;}
+  Float_t GetNSigProtonMax() const {return fNSigProtonMax;}
+  Float_t GetNSigProtonMin() const {return fNSigProtonMin;}
+  Float_t GetFitRatioMax() const {return fFitRatioMax;};
+  Float_t GetFitRatioMin() const {return fFitRatioMin;};
 
  private:
   Bool_t   fCutID;

@@ -29,16 +29,16 @@ class AliStarEvent : public TObject {
   virtual ~AliStarEvent();
   virtual void Print( Option_t* option="" ) const;
 
-  const Int_t GetRunID() const {return (Int_t)fParams[0];}
-  const Int_t GetEventNumber() const {return (Int_t)fParams[1];}
-  const Float_t GetVtxX() const {return fParams[2];}
-  const Float_t GetVtxY() const {return fParams[3];}
-  const Float_t GetVtxZ() const {return fParams[4];}
-  const Float_t GetBField() const {return fParams[5];}
-  const Int_t GetRefMult() const {return (Int_t)fParams[6];}
-  const Int_t GetCentralityID() const {return (Int_t)fParams[7];}
-  const Int_t GetNumberOfPrimaryTracks() const {return (Int_t)fParams[8];}
-  const Int_t GetNumberOfTracks() const {return (Int_t)fParams[9];}
+  Int_t GetRunID() const {return (Int_t)fParams[0];}
+  Int_t GetEventNumber() const {return (Int_t)fParams[1];}
+  Float_t GetVtxX() const {return fParams[2];}
+  Float_t GetVtxY() const {return fParams[3];}
+  Float_t GetVtxZ() const {return fParams[4];}
+  Float_t GetBField() const {return fParams[5];}
+  Int_t GetRefMult() const {return (Int_t)fParams[6];}
+  Int_t GetCentralityID() const {return (Int_t)fParams[7];}
+  Int_t GetNumberOfPrimaryTracks() const {return (Int_t)fParams[8];}
+  Int_t GetNumberOfTracks() const {return (Int_t)fParams[9];}
   const Float_t* GetParams() const {return fParams; }
 
   const AliStarTrack* GetTrack( const Int_t i ) const;
