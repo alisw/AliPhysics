@@ -47,25 +47,25 @@ class AliStarEventCuts : public TNamed {
   void SetNumberOfTracksMin(const Int_t value) {fNumberOfTracksMin=value;fCutNumberOfTracks=kTRUE;}
 
   const Int_t GetRunIDMax() const {return fRunIDMax;}
-  const Int_t GetRunIDMin() const {return fRunIDMin;}
-  const Int_t GetEventNumberMax() const {return fEventNumberMax;}
-  const Int_t GetEventNumberMin() const {return fEventNumberMin;}
-  const Float_t GetVtxXMax() const {return fVtxXMax;}
-  const Float_t GetVtxXMin() const {return fVtxXMin;}
-  const Float_t GetVtxYMax() const {return fVtxYMax;}
-  const Float_t GetVtxYMin() const {return fVtxYMin;}
-  const Float_t GetVtxZMax() const {return fVtxZMax;}
-  const Float_t GetVtxZMin() const {return fVtxZMin;}
-  const Float_t GetBFieldMax() const {return fBFieldMax;}
-  const Float_t GetBFieldMin() const {return fBFieldMin;}
-  const Int_t GetRefMultMax() const {return fRefMultMax;}
-  const Int_t GetRefMultMin() const {return fRefMultMin;}
-  const Int_t GetCentralityIDMax() const {return fCentralityIDMax;}
-  const Int_t GetCentralityIDMin() const {return fCentralityIDMin;}
-  const Int_t GetNumberOfPrimaryTracksMax() const {return fNumberOfPrimaryTracksMax;}
-  const Int_t GetNumberOfPrimaryTracksMin() const {return fNumberOfPrimaryTracksMin;}
-  const Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
-  const Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
+  Int_t GetRunIDMin() const {return fRunIDMin;}
+  Int_t GetEventNumberMax() const {return fEventNumberMax;}
+  Int_t GetEventNumberMin() const {return fEventNumberMin;}
+  Float_t GetVtxXMax() const {return fVtxXMax;}
+  Float_t GetVtxXMin() const {return fVtxXMin;}
+  Float_t GetVtxYMax() const {return fVtxYMax;}
+  Float_t GetVtxYMin() const {return fVtxYMin;}
+  Float_t GetVtxZMax() const {return fVtxZMax;}
+  Float_t GetVtxZMin() const {return fVtxZMin;}
+  Float_t GetBFieldMax() const {return fBFieldMax;}
+  Float_t GetBFieldMin() const {return fBFieldMin;}
+  Int_t GetRefMultMax() const {return fRefMultMax;}
+  Int_t GetRefMultMin() const {return fRefMultMin;}
+  Int_t GetCentralityIDMax() const {return fCentralityIDMax;}
+  Int_t GetCentralityIDMin() const {return fCentralityIDMin;}
+  Int_t GetNumberOfPrimaryTracksMax() const {return fNumberOfPrimaryTracksMax;}
+  Int_t GetNumberOfPrimaryTracksMin() const {return fNumberOfPrimaryTracksMin;}
+  Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
+  Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
 
  private:
   Bool_t   fCutRunID; //cut on run id

@@ -28,25 +28,25 @@ class AliStarTrack : public TObject {
   virtual AliStarTrack* Clone( const char* option="" ) const;
   virtual void Print( Option_t* option = "" ) const;
 
-  const Int_t GetID() const {return (Int_t)fParams[0];}
-  const Int_t GetCharge() const {return (Int_t)fParams[1];}
-  const Float_t GetEta() const {return fParams[2];}
-  const Float_t GetPhi() const {return fParams[3];}
-  const Float_t GetPt() const {return fParams[4];}
-  const Int_t Charge() const {return (Int_t)fParams[1];}
-  const Float_t Eta() const {return fParams[2];}
-  const Float_t Phi() const {return fParams[3];}
-  const Float_t Pt() const {return fParams[4];}
-  const Float_t GetDCA() const {return fParams[5];}
-  const Int_t GetNHits() const {return (Int_t)fParams[6];}
-  const Int_t GetNHitsFit() const {return (Int_t)fParams[7];}
-  const Int_t GetNHitsPoss() const {return (Int_t)fParams[8];}
-  const Int_t GetNHitsDedx() const {return (Int_t)fParams[9];}
-  const Float_t GetdEdx() const {return fParams[10];}
-  const Float_t GetNSigElect() const {return fParams[11];}
-  const Float_t GetNSigPi() const {return fParams[12];}
-  const Float_t GetNSigK() const {return fParams[13];}
-  const Float_t GetNSigProton() const {return fParams[14];}
+  Int_t GetID() const {return (Int_t)fParams[0];}
+  Int_t GetCharge() const {return (Int_t)fParams[1];}
+  Float_t GetEta() const {return fParams[2];}
+  Float_t GetPhi() const {return fParams[3];}
+  Float_t GetPt() const {return fParams[4];}
+  Int_t Charge() const {return (Int_t)fParams[1];}
+  Float_t Eta() const {return fParams[2];}
+  Float_t Phi() const {return fParams[3];}
+  Float_t Pt() const {return fParams[4];}
+  Float_t GetDCA() const {return fParams[5];}
+  Int_t GetNHits() const {return (Int_t)fParams[6];}
+  Int_t GetNHitsFit() const {return (Int_t)fParams[7];}
+  Int_t GetNHitsPoss() const {return (Int_t)fParams[8];}
+  Int_t GetNHitsDedx() const {return (Int_t)fParams[9];}
+  Float_t GetdEdx() const {return fParams[10];}
+  Float_t GetNSigElect() const {return fParams[11];}
+  Float_t GetNSigPi() const {return fParams[12];}
+  Float_t GetNSigK() const {return fParams[13];}
+  Float_t GetNSigProton() const {return fParams[14];}
   const Float_t* GetParams() const {return fParams;}
 
   void SetID( const Int_t p)  { fParams[0]=(Float_t)p;}
