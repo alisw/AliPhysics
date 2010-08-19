@@ -90,16 +90,16 @@ AliStarEventCuts::AliStarEventCuts():
 Bool_t AliStarEventCuts::PassesCuts(const AliStarEvent *event) const
 {
   ///check if event passes cuts
-  if(fCutRunID) {if (event->GetRunID() < fRunIDMin || event->GetRunID() >= fRunIDMax ) return kFALSE;}
-  if(fCutEventNumber) {if (event->GetEventNumber() < fEventNumberMin || event->GetEventNumber() >= fEventNumberMax ) return kFALSE;}
+  if(fCutRunID) {if (event->GetRunID() < fRunIDMin || event->GetRunID() > fRunIDMax ) return kFALSE;} //integer value: non inclusive bounds!
+  if(fCutEventNumber) {if (event->GetEventNumber() < fEventNumberMin || event->GetEventNumber() > fEventNumberMax ) return kFALSE;}
   if(fCutVtxX) {if (event->GetVtxX() < fVtxXMin || event->GetVtxX() >= fVtxXMax ) return kFALSE;}
   if(fCutVtxY) {if (event->GetVtxY() < fVtxYMin || event->GetVtxY() >= fVtxYMax ) return kFALSE;}
   if(fCutVtxZ) {if (event->GetVtxZ() < fVtxZMin || event->GetVtxZ() >= fVtxZMax ) return kFALSE;}
   if(fCutBField) {if (event->GetBField() < fBFieldMin || event->GetBField() >= fBFieldMax ) return kFALSE;}
-  if(fCutRefMult) {if (event->GetRefMult() < fRefMultMin || event->GetRefMult() >= fRefMultMax ) return kFALSE;}
-  if(fCutCentralityID) {if (event->GetCentralityID() < fCentralityIDMin || event->GetCentralityID() >= fCentralityIDMax ) return kFALSE;}
-  if(fCutNumberOfPrimaryTracks) {if (event->GetNumberOfPrimaryTracks() < fNumberOfPrimaryTracksMin || event->GetNumberOfPrimaryTracks() >= fNumberOfPrimaryTracksMax ) return kFALSE;}
-  if(fCutNumberOfTracks) {if (event->GetNumberOfTracks() < fNumberOfTracksMin || event->GetNumberOfTracks() >= fNumberOfTracksMax ) return kFALSE;}
+  if(fCutRefMult) {if (event->GetRefMult() < fRefMultMin || event->GetRefMult() > fRefMultMax ) return kFALSE;}
+  if(fCutCentralityID) {if (event->GetCentralityID() < fCentralityIDMin || event->GetCentralityID() > fCentralityIDMax ) return kFALSE;}
+  if(fCutNumberOfPrimaryTracks) {if (event->GetNumberOfPrimaryTracks() < fNumberOfPrimaryTracksMin || event->GetNumberOfPrimaryTracks() > fNumberOfPrimaryTracksMax ) return kFALSE;}
+  if(fCutNumberOfTracks) {if (event->GetNumberOfTracks() < fNumberOfTracksMin || event->GetNumberOfTracks() > fNumberOfTracksMax ) return kFALSE;}
   return kTRUE;
 }
 
