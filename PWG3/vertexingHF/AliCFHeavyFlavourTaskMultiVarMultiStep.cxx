@@ -206,8 +206,6 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	  if(fEvents<2) AliInfo(Form("Both fKeepD0fromB and fKeepD0fromBOnly flags are true, looking _ONLY_ at D0 FROM B"));
 	}
 
-	fEvents++;
-	if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
 	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
 
 	TClonesArray *arrayD0toKpi=0;
@@ -235,6 +233,12 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	  return;
 	}
 
+	// fix for temporary bug in ESDfilter 
+	// the AODs with null vertex pointer didn't pass the PhysSel
+	if(!aodEvent->GetPrimaryVertex()) return;
+
+	fEvents++;
+	if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
 
 	fCFManager->SetRecEventInfo(aodEvent);
 	fCFManager->SetMCEventInfo(aodEvent);

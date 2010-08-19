@@ -453,11 +453,7 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
 
-   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-   //tmp!
- fHistNEvents->Fill(0); // count event
-  // Post the data already here
-  PostData(1,fOutput);
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
   TClonesArray *array3Prong = 0;
   TClonesArray *arrayLikeSign =0;
@@ -489,7 +485,14 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   //  return;
   }
 
- 
+  // fix for temporary bug in ESDfilter 
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if(!aod->GetPrimaryVertex()) return;
+  
+  fHistNEvents->Fill(0); // count event
+  // Post the data already here
+  PostData(1,fOutput);
+
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
 

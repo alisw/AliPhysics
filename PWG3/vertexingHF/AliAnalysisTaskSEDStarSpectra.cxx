@@ -192,11 +192,6 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     return;
   }
   
-  fCEvents->Fill(1);
-  // Load the event
-  fEvents++;
-  AliInfo(Form("Event %d",fEvents));
-  if (fEvents%10000 ==0) AliInfo(Form("Event %d",fEvents));
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   TClonesArray *arrayDStartoD0pi=0;
  
@@ -216,7 +211,19 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
   } else {
     arrayDStartoD0pi=(TClonesArray*)aodEvent->GetList()->FindObject("Dstar");
   }
+
+
+  // fix for temporary bug in ESDfilter 
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if(!aodEvent->GetPrimaryVertex()) return;
  
+
+  fCEvents->Fill(1);
+  // Load the event
+  fEvents++;
+  AliInfo(Form("Event %d",fEvents));
+  if (fEvents%10000 ==0) AliInfo(Form("Event %d",fEvents));
+
   // counters for efficiencies
   Int_t icountReco = 0;
   

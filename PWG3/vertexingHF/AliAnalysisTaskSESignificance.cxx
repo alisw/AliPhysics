@@ -361,6 +361,10 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     return;
   }
   
+  // fix for temporary bug in ESDfilter 
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if(!aod->GetPrimaryVertex()) return;
+
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
 
