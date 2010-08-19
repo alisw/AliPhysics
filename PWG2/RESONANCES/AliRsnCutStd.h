@@ -32,6 +32,7 @@ class AliRsnCutStd : public AliRsnCut
       kY,
       kThetaDeg,
       kMult,
+      kPtLeading,
       // cut without reference values
       kCharge,
       kSameLabel,

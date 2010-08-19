@@ -324,14 +324,17 @@ Int_t AliRsnEvent::SelectLeadingParticle
   for (i = 0; i < nTracks; i++) {
     AliRsnDaughter track = GetDaughter(i);
     if (cutPID) if (!cutPID->IsSelected(&track)) continue;
-    if (track.P().Perp() < ptMin) continue;
-    if (!leading.IsOK() || track.P().Perp() > leading.P().Perp())
+    AliVParticle *ref = track.GetRef();
+    if (ref->Pt() < ptMin) continue;
+    //double pt = track.P().Perp();
+    //Printf("track %d %g", i, pt);
+    if (!leading.IsOK() || ref->Pt() > ptMin)
     {
       fLeading = i;
-      leading = track;
+      //leading = track;
+      ptMin = ref->Pt();
     }
   }
-
   return fLeading;
 }
 

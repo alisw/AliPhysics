@@ -43,6 +43,8 @@ class AliRsnValue : public TNamed
       kPairCosThetaStar2,
       kPairCosThetaStarMC1,
       kPairCosThetaStarMC2,
+      kAngleToLeading,
+      kLeadingPt,
       kEventMult,
       kValueTypes
     };
