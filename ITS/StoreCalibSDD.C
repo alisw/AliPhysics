@@ -11,7 +11,7 @@
 #include <TRandom3.h>
 #endif
 
-void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity()){
+void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity(), Bool_t isIdeal=kFALSE){
   ///////////////////////////////////////////////////////////////////////
   // Macro to generate and store the calibration files for SDD         //
   // Generates:                                                        //
@@ -97,115 +97,116 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity()){
     }
 
     // bad channels
-    Int_t count=0;
-    do {
-      Int_t ranMod = Int_t(nData*gran->Uniform());
-      nBadUp   = anodeUp[ranMod];
-      nBadDown = anodeDown[ranMod];
-    }while (nBadUp+nBadDown>25);
+    if(!isIdeal){
+      Int_t count=0;
+      do {
+	Int_t ranMod = Int_t(nData*gran->Uniform());
+	nBadUp   = anodeUp[ranMod];
+	nBadDown = anodeDown[ranMod];
+      }while (nBadUp+nBadDown>25);
 
-    resd->SetDeadChannels(nBadDown+nBadUp);
-    Int_t remainingBad = nBadDown;
-    while (remainingBad>0) {
-      Int_t nBadChannel;
-      if (remainingBad<5) {
-	nBadChannel = remainingBad;
-      } else {
-	Int_t width = remainingBad-(5-1);
-	if (width>4) width = 4;
-	nBadChannel = 5 + Int_t(width*gran->Uniform());
-      }
+      resd->SetDeadChannels(nBadDown+nBadUp);
+      Int_t remainingBad = nBadDown;
+      while (remainingBad>0) {
+	Int_t nBadChannel;
+	if (remainingBad<5) {
+	  nBadChannel = remainingBad;
+	} else {
+	  Int_t width = remainingBad-(5-1);
+	  if (width>4) width = 4;
+	  nBadChannel = 5 + Int_t(width*gran->Uniform());
+	}
 	
 
-      Int_t iChannelPos = Int_t( (4*64-nBadChannel)*gran->Uniform() );
-      //      Int_t iChip = iChannelPos/64;
-      //      Int_t iChan = iChannelPos - iChip*64;
-      if(resd->IsBadChannel(iChannelPos)) continue;	
-      Int_t *clus = new Int_t[nBadChannel];
-      Int_t ich = iChannelPos;
-      for(Int_t i=0;i<nBadChannel;i++){
-	clus[i]=ich;
-	ich++;
+	Int_t iChannelPos = Int_t( (4*64-nBadChannel)*gran->Uniform() );
+	//      Int_t iChip = iChannelPos/64;
+	//      Int_t iChan = iChannelPos - iChip*64;
+	if(resd->IsBadChannel(iChannelPos)) continue;	
+	Int_t *clus = new Int_t[nBadChannel];
+	Int_t ich = iChannelPos;
+	for(Int_t i=0;i<nBadChannel;i++){
+	  clus[i]=ich;
+	  ich++;
+	}
+	
+	for(Int_t i=0;i<nBadChannel;i++){
+	  if(resd->IsBadChannel(clus[i])) break;
+	  resd->SetBadChannel(count,clus[i]);
+	  count++;	  
+	}
+	remainingBad -= nBadChannel;
+	delete [] clus;
       }
 
-      for(Int_t i=0;i<nBadChannel;i++){
-	if(resd->IsBadChannel(clus[i])) break;
-	resd->SetBadChannel(count,clus[i]);
-	count++;	  
+      // May happen that, due to overlapping clusters, we
+      // have less bad channels than requested
+      // Let's put the remaining one per one ...
+      Int_t nSeToBad = 0;
+      for (Int_t i=0; i<4; i++){
+	for(Int_t j=0;j<64;j++){
+	  Int_t ian=resd->GetAnodeNumber(0,i,j);
+	  if (resd->GetChannelGain(ian)<0.0001) nSeToBad++;
+	}
       }
-      remainingBad -= nBadChannel;
-      delete [] clus;
-    }
-
-    // May happen that, due to overlapping clusters, we
-    // have less bad channels than requested
-    // Let's put the remaining one per one ...
-    Int_t nSeToBad = 0;
-    for (Int_t i=0; i<4; i++){
-      for(Int_t j=0;j<64;j++){
-	Int_t ian=resd->GetAnodeNumber(0,i,j);
-	if (resd->GetChannelGain(ian)<0.0001) nSeToBad++;
+      while (nSeToBad<nBadDown) {
+	Int_t i = Int_t(4*64*gran->Uniform());
+	if(resd->IsBadChannel(i)==kFALSE){
+	  resd->SetBadChannel(count,i);
+	  count++;
+	  nSeToBad++;
+	}
       }
-    }
-    while (nSeToBad<nBadDown) {
-      Int_t i = Int_t(4*64*gran->Uniform());
-      if(resd->IsBadChannel(i)==kFALSE){
-	resd->SetBadChannel(count,i);
-	count++;
-	nSeToBad++;
-      }
-    }
       
-    remainingBad = nBadUp;
-    while (remainingBad>0) {
-      Int_t nBadChannel;
-      if (remainingBad<5) {
-	nBadChannel = remainingBad;
-      } else {
-	Int_t width = remainingBad-(5-1);
-	if (width>4) width = 4;
-	nBadChannel = 5 + Int_t(width*gran->Uniform());
-      }
-
-      Int_t iChannelPos = Int_t( (4*64-nBadChannel)*gran->Uniform() );
-      //      Int_t iChip = iChannelPos/64;
-      //      Int_t iChan = iChannelPos - iChip*64;
-      if(resd->IsBadChannel(iChannelPos)) continue;
+      remainingBad = nBadUp;
+      while (remainingBad>0) {
+	Int_t nBadChannel;
+	if (remainingBad<5) {
+	  nBadChannel = remainingBad;
+	} else {
+	  Int_t width = remainingBad-(5-1);
+	  if (width>4) width = 4;
+	  nBadChannel = 5 + Int_t(width*gran->Uniform());
+	}
 	
-      Int_t *clus = new Int_t[nBadChannel];
-      Int_t ich = iChannelPos;
-      for(Int_t i=0;i<nBadChannel;i++){
-	clus[i]=ich+256;
-	ich++;
-      }
-      for(Int_t i=0;i<nBadChannel;i++){
+	Int_t iChannelPos = Int_t( (4*64-nBadChannel)*gran->Uniform() );
+	//      Int_t iChip = iChannelPos/64;
+	//      Int_t iChan = iChannelPos - iChip*64;
+	if(resd->IsBadChannel(iChannelPos)) continue;
 	
-	if(resd->IsBadChannel(clus[i])) break;  
-	resd->SetBadChannel(count,clus[i]);
-	count++;
+	Int_t *clus = new Int_t[nBadChannel];
+	Int_t ich = iChannelPos;
+	for(Int_t i=0;i<nBadChannel;i++){
+	  clus[i]=ich+256;
+	  ich++;
+	}
+	for(Int_t i=0;i<nBadChannel;i++){
+	
+	  if(resd->IsBadChannel(clus[i])) break;  
+	  resd->SetBadChannel(count,clus[i]);
+	  count++;
 	  
+	}
+	remainingBad -= nBadChannel;
+	delete [] clus;
       }
-      remainingBad -= nBadChannel;
-      delete [] clus;
-    }
       
-    nSeToBad = 0;
-    for (Int_t i=0; i<4; i++){
-      for(Int_t j=0;j<64;j++){
-	Int_t ian=resd->GetAnodeNumber(1,i,j);
-	if (resd->GetChannelGain(ian)<0.0001) nSeToBad++;
+      nSeToBad = 0;
+      for (Int_t i=0; i<4; i++){
+	for(Int_t j=0;j<64;j++){
+	  Int_t ian=resd->GetAnodeNumber(1,i,j);
+	  if (resd->GetChannelGain(ian)<0.0001) nSeToBad++;
+	}
       }
-    }
 
-    while (nSeToBad<nBadUp) {
-      Int_t i = Int_t(4*64*gran->Uniform());
-      if(resd->IsBadChannel(i+256)==kFALSE){
-	resd->SetBadChannel(count,i+256);
-	count++;
-	nSeToBad++;
+      while (nSeToBad<nBadUp) {
+	Int_t i = Int_t(4*64*gran->Uniform());
+	if(resd->IsBadChannel(i+256)==kFALSE){
+	  resd->SetBadChannel(count,i+256);
+	  count++;
+	  nSeToBad++;
+	}
       }
     }
-      
     //baselines
     /*
       for(Int_t nan=0;nan<512;nan++){
@@ -220,23 +221,24 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity()){
 
     Int_t modId=mod+240;
     // Bad modules
-    for(Int_t ibadm=0; ibadm<nbadmod; ibadm++){
-      if(modId==idBadMod[ibadm]) resd->SetBad();
-    }
-    // Modules with bad left side
-    for(Int_t ibadl=0; ibadl<nbadleft; ibadl++){
-      if(modId==idBadLeft[ibadl]) for(Int_t ichip=0;ichip<4;ichip++) resd->SetChipBad(ichip);
-    }
+    if(!isIdeal){
+      for(Int_t ibadm=0; ibadm<nbadmod; ibadm++){
+	if(modId==idBadMod[ibadm]) resd->SetBad();
+      }
+      // Modules with bad left side
+      for(Int_t ibadl=0; ibadl<nbadleft; ibadl++){
+	if(modId==idBadLeft[ibadl]) for(Int_t ichip=0;ichip<4;ichip++) resd->SetChipBad(ichip);
+      }
 
-    // Modules with bad pascal chips
-    if( modId==AliITSgeomTGeo::GetModuleIndex(4,4,2) ){
-      resd->SetChipBad(0);
-      resd->SetChipBad(3);
+      // Modules with bad pascal chips
+      if( modId==AliITSgeomTGeo::GetModuleIndex(4,4,2) ){
+	resd->SetChipBad(0);
+	resd->SetChipBad(3);
+      }
     }
-
     calSDD.Add(resd);
     printf("Added module %d\n",mod);
-	}
+  }
     
   FILE* out = fopen("deadchannels.dat","w");
   for(Int_t i=0;i<260;i++){
