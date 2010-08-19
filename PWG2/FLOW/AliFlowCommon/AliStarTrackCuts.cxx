@@ -232,7 +232,7 @@ AliStarTrackCuts* AliStarTrackCuts::StandardCuts()
   cuts->SetDCAMin(0.0);     // cm
   cuts->SetDCAMax(3.0);      
   cuts->SetPtMin(0.15);      // GeV
-  cuts->SetPtMax(2.0);
+  cuts->SetPtMax(8.0);
   cuts->SetEtaMin(-1.1);
   cuts->SetEtaMax(1.1);
   cuts->SetFitRatioMin(0.52);  // Number of hits over number of hits possible

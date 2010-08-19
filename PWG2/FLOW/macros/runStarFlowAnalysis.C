@@ -51,15 +51,18 @@ void  runStarFlowAnalysis()
 
   //define reference particles
   AliStarTrackCuts* rpCuts = AliStarTrackCuts::StandardCuts();
+  rpCuts->SetPtMin(0.05);
+  rpCuts->SetPtMax(10.);
 
   //define particles of interest
   AliStarTrackCuts* poiCuts = AliStarTrackCuts::StandardCuts();
   poiCuts->SetPtMin(0.05);
+  poiCuts->SetPtMax(10.);
 
   //define event cuts
   AliStarEventCuts* starEventCuts = AliStarEventCuts::StandardCuts();
-  starEventCuts-> SetCentralityIDMax(5);
-  starEventCuts-> SetCentralityIDMin(5);
+  starEventCuts-> SetCentralityIDMax(3);
+  starEventCuts-> SetCentralityIDMin(3);
 
   //if the weights are used: 
   TFile *fileWithWeights = NULL;
