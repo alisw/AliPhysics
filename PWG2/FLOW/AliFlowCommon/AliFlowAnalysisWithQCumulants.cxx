@@ -119,6 +119,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fMaxMult(10000.), 
  fPropagateErrorFromCorrelations(kFALSE), 
  fCalculateCumulantsVsM(kTRUE), 
+ fMinimumBiasReferenceFlow(kTRUE), 
  fReQ(NULL),
  fImQ(NULL),
  fSMpk(NULL),
@@ -773,7 +774,8 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fPrintFinalResults[3] = (Bool_t)fIntFlowFlags->GetBinContent(7);
  fApplyCorrectionForNUAVsM = (Bool_t)fIntFlowFlags->GetBinContent(8);  
  fPropagateErrorFromCorrelations = (Bool_t)fIntFlowFlags->GetBinContent(9);  
- fCalculateCumulantsVsM = (Bool_t)fIntFlowFlags->GetBinContent(10);  
+ fCalculateCumulantsVsM = (Bool_t)fIntFlowFlags->GetBinContent(10); 
+ fMinimumBiasReferenceFlow = (Bool_t)fIntFlowFlags->GetBinContent(11); 
  fEvaluateIntFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(1);
  fEvaluateDiffFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(2); 
  fCrossCheckInPtBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(3);
@@ -1199,28 +1201,16 @@ void AliFlowAnalysisWithQCumulants::PrintFinalResultsForIntegratedFlow(TString t
  
  Int_t n = fHarmonic; 
  
- if(type == "RF" || type == "RP" || type == "POI")
- {
-  if(!(fCommonHists && fCommonHistsResults2nd && fCommonHistsResults4th && fCommonHistsResults6th && fCommonHistsResults8th))
-  {
-   cout<<"WARNING: fCommonHistsResults && fCommonHistsResults2nd && fCommonHistsResults4th && fCommonHistsResults6th && fCommonHistsResults8th"<<endl;
-   cout<<"         is NULL in AFAWQC::PFRFIF() !!!!"<<endl;
-  }
- }
- 
  Double_t dVn[4] = {0.}; // array to hold Vn{2}, Vn{4}, Vn{6} and Vn{8}   
  Double_t dVnErr[4] = {0.}; // array to hold errors of Vn{2}, Vn{4}, Vn{6} and Vn{8}   
  
  if(type == "RF")
  {
-  dVn[0] = (fCommonHistsResults2nd->GetHistIntFlow())->GetBinContent(1); 
-  dVnErr[0] = (fCommonHistsResults2nd->GetHistIntFlow())->GetBinError(1); 
-  dVn[1] = (fCommonHistsResults4th->GetHistIntFlow())->GetBinContent(1); 
-  dVnErr[1] = (fCommonHistsResults4th->GetHistIntFlow())->GetBinError(1); 
-  dVn[2] = (fCommonHistsResults6th->GetHistIntFlow())->GetBinContent(1); 
-  dVnErr[2] = (fCommonHistsResults6th->GetHistIntFlow())->GetBinError(1); 
-  dVn[3] = (fCommonHistsResults8th->GetHistIntFlow())->GetBinContent(1); 
-  dVnErr[3] = (fCommonHistsResults8th->GetHistIntFlow())->GetBinError(1); 
+  for(Int_t b=0;b<4;b++)
+  {
+   dVn[b] = fIntFlow->GetBinContent(b+1); 
+   dVnErr[b] = fIntFlow->GetBinError(b+1);
+  }  
  } else if(type == "RP")
    {
     dVn[0] = (fCommonHistsResults2nd->GetHistIntFlowRP())->GetBinContent(1); 
@@ -1243,14 +1233,11 @@ void AliFlowAnalysisWithQCumulants::PrintFinalResultsForIntegratedFlow(TString t
       dVnErr[3] = (fCommonHistsResults8th->GetHistIntFlowPOI())->GetBinError(1); 
      } else if(type == "RF, rebinned in M")
        {
-        dVn[0] = fIntFlowRebinnedInM->GetBinContent(1); 
-        dVnErr[0] = fIntFlowRebinnedInM->GetBinError(1); 
-        dVn[1] = fIntFlowRebinnedInM->GetBinContent(2); 
-        dVnErr[1] = fIntFlowRebinnedInM->GetBinError(2); 
-        dVn[2] = fIntFlowRebinnedInM->GetBinContent(3); 
-        dVnErr[2] = fIntFlowRebinnedInM->GetBinError(3); 
-        dVn[3] = fIntFlowRebinnedInM->GetBinContent(4); 
-        dVnErr[3] = fIntFlowRebinnedInM->GetBinError(4); 
+        for(Int_t b=0;b<4;b++)
+        {
+         dVn[b] = fIntFlowRebinnedInM->GetBinContent(b+1); 
+         dVnErr[b] = fIntFlowRebinnedInM->GetBinError(b+1);
+        }  
        }
  
  TString title = " flow estimates from Q-cumulants"; 
@@ -1497,7 +1484,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // a) Book profile to hold all flags for integrated flow:
  TString intFlowFlagsName = "fIntFlowFlags";
  intFlowFlagsName += fAnalysisLabel->Data();
- fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",10,0,10);
+ fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",11,0,11);
  fIntFlowFlags->SetTickLength(-0.01,"Y");
  fIntFlowFlags->SetMarkerStyle(25);
  fIntFlowFlags->SetLabelSize(0.05);
@@ -1512,6 +1499,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowFlags->GetXaxis()->SetBinLabel(8,"Corrected for NUA vs M?");
  fIntFlowFlags->GetXaxis()->SetBinLabel(9,"Propagate errors to v_{n} from correlations?");
  fIntFlowFlags->GetXaxis()->SetBinLabel(10,"Calculate cumulants vs M");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(11,"fMinimumBiasReferenceFlow");
  fIntFlowList->Add(fIntFlowFlags);
 
  // b) Book event-by-event quantities:
@@ -4415,44 +4403,46 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlow()
 
 void AliFlowAnalysisWithQCumulants::FillCommonHistResultsIntFlow()
 {
- // Fill in AliFlowCommonHistResults histograms relevant for 'NONAME' integrated flow (to be improved (name))
+ // Fill in AliFlowCommonHistResults histograms relevant for reference flow.
  
- if(!fIntFlow)
- {
-  cout<<"WARNING: fIntFlow is NULL in AFAWQC::FCHRIF() !!!!"<<endl;
-  exit(0); 
- }  
-    
- if(!(fCommonHistsResults2nd && fCommonHistsResults4th && fCommonHistsResults6th && fCommonHistsResults8th))
- {
-  cout<<"WARNING: fCommonHistsResults2nd && fCommonHistsResults4th && fCommonHistsResults6th && fCommonHistsResults8th"<<endl; 
-  cout<<"         is NULL in AFAWQC::FCHRIF() !!!!"<<endl;
-  exit(0);
- }
+ // There are two possibilities here:
+ // a) Store minimum bias reference flow - use SetMinimumBiasReferenceFlow(kTRUE). This result is 
+ //    biased by the interplay between nonflow correlations and multiplicity fluctuations and is 
+ //    also stored in local histogram fIntFlow; 
+ // b) Store reference flow obtained from flow analysis performed at fixed multiplicity and 
+ //    rebinned only at the end of the day - use SetMinimumBiasReferenceFlow(kFALSE). This result
+ //    is also stored in local histogram fIntFlowRebinnedInM.
  
- Double_t v2 = fIntFlowRebinnedInM->GetBinContent(1);
- Double_t v4 = fIntFlowRebinnedInM->GetBinContent(2);
- Double_t v6 = fIntFlowRebinnedInM->GetBinContent(3);
- Double_t v8 = fIntFlowRebinnedInM->GetBinContent(4);
+ // Reference flow estimates:
+ Double_t v[4] = {0.};
+ // Statistical errors of reference flow estimates:
+ Double_t vError[4] = {0.};
   
- Double_t v2Error = fIntFlowRebinnedInM->GetBinError(1);
- Double_t v4Error = fIntFlowRebinnedInM->GetBinError(2);
- Double_t v6Error = fIntFlowRebinnedInM->GetBinError(3);
- Double_t v8Error = fIntFlowRebinnedInM->GetBinError(4);
- 
- fCommonHistsResults2nd->FillIntegratedFlow(v2,v2Error); // to be improved (hardwired 2nd in the name)  
- fCommonHistsResults4th->FillIntegratedFlow(v4,v4Error); // to be improved (hardwired 4th in the name)
+ for(Int_t b=0;b<4;b++)
+ {
+  if(fMinimumBiasReferenceFlow)
+  { 
+   v[b] = fIntFlow->GetBinContent(b+1);
+   vError[b] = fIntFlow->GetBinError(b+1);
+  } else
+    {
+     v[b] = fIntFlowRebinnedInM->GetBinContent(b+1);
+     vError[b] = fIntFlowRebinnedInM->GetBinError(b+1);
+    }
+ } // end of for(Int_t b=0;b<4;b++)
+  
+ // Fill AliFlowCommonHistResults histogram:
+ fCommonHistsResults2nd->FillIntegratedFlow(v[0],vError[0]); // to be improved (hardwired 2nd in the name)  
+ fCommonHistsResults4th->FillIntegratedFlow(v[1],vError[1]); // to be improved (hardwired 4th in the name)
  if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)) // to be improved (calculate also 6th and 8th order)
  {
-  fCommonHistsResults6th->FillIntegratedFlow(v6,v6Error); // to be improved (hardwired 6th in the name)
-  fCommonHistsResults8th->FillIntegratedFlow(v8,v8Error); // to be improved (hardwired 8th in the name) 
+  fCommonHistsResults6th->FillIntegratedFlow(v[2],vError[2]); // to be improved (hardwired 6th in the name)
+  fCommonHistsResults8th->FillIntegratedFlow(v[3],vError[3]); // to be improved (hardwired 8th in the name) 
  }
  
 } // end of AliFlowAnalysisWithQCumulants::FillCommonHistResultsIntFlow()
 
-
 //================================================================================================================================ 
-
 
 /*
 void AliFlowAnalysisWithQCumulants::ApplyCorrectionForNonUniformAcceptanceToCumulantsForIntFlow(Bool_t useParticleWeights, TString eventWeights)
@@ -7386,9 +7376,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, TString ptOr
 
 } // end of AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, Bool_t useParticleWeights)
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 {
@@ -7422,6 +7410,7 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  fIntFlowFlags->Fill(7.5,(Int_t)fApplyCorrectionForNUAVsM);
  fIntFlowFlags->Fill(8.5,(Int_t)fPropagateErrorFromCorrelations);
  fIntFlowFlags->Fill(9.5,(Int_t)fCalculateCumulantsVsM);
+ fIntFlowFlags->Fill(10.5,(Int_t)fMinimumBiasReferenceFlow);
  
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
@@ -12667,6 +12656,28 @@ void AliFlowAnalysisWithQCumulants::CheckPointersUsedInFinish()
   cout<<endl;
   exit(0); 
  }  
+ if(!fIntFlow)
+ {
+  cout<<endl;
+  cout<<" WARNING (QC): fIntFlow is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ }
+ if(!fCommonHists)
+ {
+  cout<<endl;
+  cout<<" WARNING (QC): fCommonHists is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ }
+ if(!(fCommonHistsResults2nd && fCommonHistsResults4th && fCommonHistsResults6th && fCommonHistsResults8th))
+ {
+  cout<<endl;
+  cout<<" WARNING (QC): fCommonHistsResults2nd && fCommonHistsResults4th && fCommonHistsResults6th"<<endl; 
+  cout<<"               && fCommonHistsResults8th is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ } 
  
  // Versus multiplicity:
  if(!fCalculateCumulantsVsM){return;}

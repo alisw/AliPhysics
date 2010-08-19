@@ -217,20 +217,22 @@ void AliFlowAnalysisWithCumulants::Finish()
  // Calculate the final results.
  
  // a) Check all pointers used in this method;
- // b) Access settings for analysis with Generating Function Cumulants;
- // c) From relevant common control histogram get average multiplicity of RPs and number of events;
- // d) Calculate cumulants for reference flow;
- // e) Calculate from isotropic cumulants reference flow;
- // f) Calculate error for reference flow estimates;
- // g) Store the final results for reference flow in common hist results;
- // h) Print on the screen the final results for reference flow;
- // i) Calculate cumulants for differential flow;
- // j) Calculate differential flow for RPs/POIs vs pt/eta from cumulants;
- // k) Calculate integrated flow of RPs and POIs;
- // l) Print on the screen the final results for integrated flow of RPs and POIs;
- // m) If tuning enabled, calculate results for different tuning parameters.
+ // b) Access all common constants;
+ // c) Access settings for analysis with Generating Function Cumulants;
+ // d) From relevant common control histogram get average multiplicity of RPs and number of events;
+ // e) Calculate cumulants for reference flow;
+ // f) Calculate from isotropic cumulants reference flow;
+ // g) Calculate error for reference flow estimates;
+ // h) Store the final results for reference flow in common hist results;
+ // i) Print on the screen the final results for reference flow;
+ // j) Calculate cumulants for differential flow;
+ // k) Calculate differential flow for RPs/POIs vs pt/eta from cumulants;
+ // l) Calculate integrated flow of RPs and POIs;
+ // m) Print on the screen the final results for integrated flow of RPs and POIs;
+ // n) If tuning enabled, calculate results for different tuning parameters.
  
  this->CheckPointersUsedInFinish();
+ this->AccessConstants(); 
  this->AccessSettings();
  this->GetAvMultAndNoOfEvts();
  this->CalculateCumulantsForReferenceFlow(); 
@@ -1569,7 +1571,7 @@ void AliFlowAnalysisWithCumulants::FillCommonHistResultsForDifferentialFlow(TStr
    {
     rp = 1;
    } 
-  
+   
  // pt:
  for(Int_t p=1;p<=fnBinsPt;p++)
  {
