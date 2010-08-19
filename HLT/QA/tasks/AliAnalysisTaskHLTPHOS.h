@@ -28,6 +28,7 @@ class TObjArray;
 class AliAnalysisTaskHLTPHOS : public AliAnalysisTaskHLTCalo {
  
 public:  
+  AliAnalysisTaskHLTPHOS();
   AliAnalysisTaskHLTPHOS(const char *name);
   virtual ~AliAnalysisTaskHLTPHOS() {}
   

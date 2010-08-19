@@ -51,6 +51,23 @@ ClassImp(AliAnalysisTaskHLTPHOS)
 
 //===========================================================================================
 
+AliAnalysisTaskHLTPHOS::AliAnalysisTaskHLTPHOS() : AliAnalysisTaskHLTCalo()
+  ,fHistOnlTrk2PHOS(0)
+  ,fHistOfflTrk2PHOS(0)
+  ,fHistOfflTrk2PHOSTrig(0)
+  ,fHistOfflTrk2PHOSNoTrig(0)
+{
+  // Constructor
+
+  // Define input and output slots here
+  // Input slot #0 works with a TChain
+  // DefineInput(0, TChain::Class());
+  // Output slot #0 writes into a TH1 container
+
+  // DefineOutput(1, TList::Class());
+}
+
+
 AliAnalysisTaskHLTPHOS::AliAnalysisTaskHLTPHOS(const char *name) : AliAnalysisTaskHLTCalo(name)
   ,fHistOnlTrk2PHOS(0)
   ,fHistOfflTrk2PHOS(0)

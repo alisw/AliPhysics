@@ -30,6 +30,7 @@ class AliAnalysisTaskHLTCalo : public AliAnalysisTaskSE {
  
 public:  
 
+  AliAnalysisTaskHLTCalo();
   AliAnalysisTaskHLTCalo(const char *name);
   virtual ~AliAnalysisTaskHLTCalo() {}
   virtual void   UserCreateOutputObjects();
@@ -38,24 +39,42 @@ public:
   //virtual Bool_t Notify();
   virtual void NotifyRun();
 
-  virtual void DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD) = 0;
-  virtual void CreateSpecificStuff(TList  * fOutputList) = 0;
-  virtual Bool_t IsThisDetector(AliESDCaloCluster * cluster) = 0;
-  virtual Int_t GetClusters(AliESDEvent * event, TRefArray * clusters) = 0;
+  virtual void DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD) {return;}
+  virtual void CreateSpecificStuff(TList  * fOutputList) {return;}
+  virtual Bool_t IsThisDetector(AliESDCaloCluster * cluster) { return cluster->IsPHOS(); }
+  virtual Int_t GetClusters(AliESDEvent * event, TRefArray * clusters) { return event->GetPHOSClusters(clusters); }
 
 private:
   
   AliESDRun *fESDRun;  //!
   TList *fOutputList;
   
-  TH1F *fHistOfflResiduals; //!
-  TH1F *fHistOnlResiduals; //!
+  TH1F *fHistOfflResiduals; 
+  TH1F *fHistOnlResiduals; 
+  TH1F *fHistOfflDz; 
+  TH1F *fHistOnlDz; 
+  TH1F *fHistOfflDxy; 
+  TH1F *fHistOnlDxy; 
 
-  TH1F *fHistOfflDz; //!
-  TH1F *fHistOnlDz; //!
 
-  TH1F *fHistOfflDxy; //!
-  TH1F *fHistOnlDxy; //!
+  TH1F *fHistOfflResidualsPos; 
+  TH1F *fHistOnlResidualsPos; 
+  TH1F *fHistOfflDzPos; 
+  TH1F *fHistOnlDzPos; 
+  TH1F *fHistOfflDxyPos; 
+  TH1F *fHistOnlDxyPos; 
+
+
+  TH1F *fHistOfflResidualsNeg; 
+  TH1F *fHistOnlResidualsNeg; 
+  TH1F *fHistOfflDzNeg; 
+  TH1F *fHistOnlDzNeg; 
+  TH1F *fHistOfflDxyNeg; 
+  TH1F *fHistOnlDxyNeg; 
+
+  TH2F * fHistNclvsNcl; 
+  TH2F * fHistTotEVsTotE;
+
   
   Int_t fNevt;
   TObjArray *fTrgClsArray;
@@ -72,7 +91,7 @@ private:
   /** assignment operator */
   AliAnalysisTaskHLTCalo& operator=(const AliAnalysisTaskHLTCalo&); 
 
-  ClassDef(AliAnalysisTaskHLTCalo, 0);
+  ClassDef(AliAnalysisTaskHLTCalo, 1);
 };
 
 #endif

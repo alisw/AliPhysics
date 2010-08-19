@@ -41,7 +41,7 @@
 #include "AliESDRun.h"
 #include "AliESDInputHandler.h"
 #include "AliESDCaloCluster.h"
-
+#include "AliESDtrack.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskHLTCalo.h"
@@ -55,6 +55,32 @@ ClassImp(AliAnalysisTaskHLTCalo)
 
 //===========================================================================================
 
+AliAnalysisTaskHLTCalo::AliAnalysisTaskHLTCalo() : AliAnalysisTaskSE()
+  ,fESDRun(0)
+  ,fOutputList(0)
+  ,fHistOfflResiduals(NULL)
+  ,fHistOnlResiduals(NULL)
+  ,fHistOfflDz(NULL)
+  ,fHistOnlDz(NULL)
+  ,fHistOfflDxy(NULL)
+  ,fHistOnlDxy(NULL)
+  ,fNevt(0)
+  ,fTrgClsArray(0)
+  ,fGlobalHistoProdArrOff(NULL)
+  ,fGlobalHistoProdArrOn(NULL)
+  ,fClustersArray(NULL)
+  ,fName("")
+{
+  // Constructor
+
+  // Define input and output slots here
+  // Input slot #0 works with a TChain
+  // DefineInput(0, TChain::Class());
+  // Output slot #0 writes into a TH1 container
+
+  //DefineOutput(1, TList::Class());
+}
+
 AliAnalysisTaskHLTCalo::AliAnalysisTaskHLTCalo(const char *name)
 : 
 AliAnalysisTaskSE(name)
@@ -66,6 +92,20 @@ AliAnalysisTaskSE(name)
   ,fHistOnlDz(NULL)
   ,fHistOfflDxy(NULL)
   ,fHistOnlDxy(NULL)
+  ,fHistOfflResidualsPos(NULL)
+  ,fHistOnlResidualsPos(NULL)
+  ,fHistOfflDzPos(NULL)
+  ,fHistOnlDzPos(NULL)
+  ,fHistOfflDxyPos(NULL)
+  ,fHistOnlDxyPos(NULL)
+  ,fHistOfflResidualsNeg(NULL)
+  ,fHistOnlResidualsNeg(NULL)
+  ,fHistOfflDzNeg(NULL)
+  ,fHistOnlDzNeg(NULL)
+  ,fHistOfflDxyNeg(NULL)
+  ,fHistOnlDxyNeg(NULL)
+  ,fHistNclvsNcl(NULL)
+  ,fHistTotEVsTotE(NULL)
   ,fNevt(0)
   ,fTrgClsArray(0)
   ,fGlobalHistoProdArrOff(NULL)
@@ -100,27 +140,41 @@ void AliAnalysisTaskHLTCalo::UserCreateOutputObjects(){
 
   fHistOfflResiduals = new TH1F("fHistOfflResiduals", "Residuals between cluster and nearest track in cm (offline)", 50, 0, 50);
   fHistOnlResiduals = new TH1F("fHistOnlResiduals", "Residuals between cluster and nearest track in cm (online)", 50, 0, 50);
+  fHistOfflDxy = new TH1F("fHistOfflDxy", "Dxy between cluster and nearest track in cm (offline)", 80, -40, 40);
+  fHistOnlDxy = new TH1F("fHistOnlDxy", "Dxy between cluster and nearest track in cm (online)", 80, -40, 40);
+  fHistOfflDz = new TH1F("fHistOfflDz", "Dz between cluster and nearest track in cm (offline)", 80, -40, 40);
+  fHistOnlDz = new TH1F("fHistOnlDz", "Dz between cluster and nearest track in cm (online)", 80, -40, 40);
 
-  fHistOfflDxy = new TH1F("fHistOfflDxy", "Dxy between cluster and nearest track in cm (offline)", 50, 0, 50);
-  fHistOnlDxy = new TH1F("fHistOnlDxy", "Dxy between cluster and nearest track in cm (online)", 50, 0, 50);
+  fHistOfflResidualsPos = new TH1F("fHistOfflResidualsPos", "Residuals between cluster and nearest track in cm (offline)Pos", 50, 0, 50);
+  fHistOnlResidualsPos = new TH1F("fHistOnlResidualsPos", "Residuals between cluster and nearest track in cm (online)Pos", 50, 0, 50);
+  fHistOfflDxyPos = new TH1F("fHistOfflDxyPos", "Dxy between cluster and nearest track in cm (offline)Pos", 80, -40, 40);
+  fHistOnlDxyPos = new TH1F("fHistOnlDxyPos", "Dxy between cluster and nearest track in cm (online)Pos", 80, -40, 40);
+  fHistOfflDzPos = new TH1F("fHistOfflDzPos", "Dz between cluster and nearest track in cm (offline)Pos", 80, -40, 40);
+  fHistOnlDzPos = new TH1F("fHistOnlDzPos", "Dz between cluster and nearest track in cm (online)Pos", 80, -40, 40);
 
-  fHistOfflDz = new TH1F("fHistOfflDz", "Dz between cluster and nearest track in cm (offline)", 50, 0, 50);
-  fHistOnlDz = new TH1F("fHistOnlDz", "Dz between cluster and nearest track in cm (online)", 50, 0, 50);
+  fHistOfflResidualsNeg = new TH1F("fHistOfflResidualsNeg", "Residuals between cluster and nearest track in cm (offline)Neg", 50, 0, 50);
+  fHistOnlResidualsNeg = new TH1F("fHistOnlResidualsNeg", "Residuals between cluster and nearest track in cm (online)Neg", 50, 0, 50);
+  fHistOfflDxyNeg = new TH1F("fHistOfflDxyNeg", "Dxy between cluster and nearest track in cm (offline)Neg", 80, -40, 40);
+  fHistOnlDxyNeg = new TH1F("fHistOnlDxyNeg", "Dxy between cluster and nearest track in cm (online)Neg", 80, -40, 40);
+  fHistOfflDzNeg = new TH1F("fHistOfflDzNeg", "Dz between cluster and nearest track in cm (offline)Neg", 80, -40, 40);
+  fHistOnlDzNeg = new TH1F("fHistOnlDzNeg", "Dz between cluster and nearest track in cm (online)Neg", 80, -40, 40);
 
-
+  fHistNclvsNcl = new TH2F("fHistNclvsNcl", "Number of offline cl vs online cl", 100, 0, 10, 100, 0, 10);
+  fHistTotEVsTotE = new TH2F("fHistTotEVsTotE", "Total energy in online cl vs total energy in offline cl", 300, 0, 150, 300, 0, 150);
+  fHistTotEVsTotE->SetXTitle("Offline energy sum");
+  fHistTotEVsTotE->SetYTitle("Online energy sum");
   // HLT histogram producers
   fGlobalHistoProdArrOff = new TObjArray();
   fGlobalHistoProdArrOn = new TObjArray();
 
-  //  AliHLTCaloHistoClusterEnergy * histo = new AliHLTCaloHistoClusterEnergy("EMCAL");
   
-  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoClusterEnergy(Form("%s OFF", fName.Data()))));
-  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoInvMass(Form("%s OFF", fName.Data() ))));
-  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoMatchedTracks(Form("%s OFF", fName.Data() ))));
+  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoClusterEnergy(Form("%s_OFF", fName.Data()))));
+  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoInvMass(Form("%s_OFF", fName.Data() ))));
+  fGlobalHistoProdArrOff->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoMatchedTracks(Form("%s_OFF", fName.Data() ))));
 
-  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoClusterEnergy(Form("%s ON", fName.Data() ))));
-  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoInvMass(Form("%s ON", fName.Data() ))));
-  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoMatchedTracks(Form("%s ON", fName.Data() ))));
+  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoClusterEnergy(Form("%s_ON", fName.Data() ))));
+  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoInvMass(Form("%s_ON", fName.Data() ))));
+  fGlobalHistoProdArrOn->AddLast(dynamic_cast<TObject*>(new AliHLTCaloHistoMatchedTracks(Form("%s_ON", fName.Data() ))));
 
   fClustersArray = new TRefArray();
 
@@ -128,12 +182,30 @@ void AliAnalysisTaskHLTCalo::UserCreateOutputObjects(){
   
   fOutputList->Add(fHistOfflResiduals);
   fOutputList->Add(fHistOnlResiduals);
-
   fOutputList->Add(fHistOfflDz);
   fOutputList->Add(fHistOnlDz);
-
   fOutputList->Add(fHistOfflDxy);
   fOutputList->Add(fHistOnlDxy);
+
+
+  fOutputList->Add(fHistOfflResidualsPos);
+  fOutputList->Add(fHistOnlResidualsPos);
+  fOutputList->Add(fHistOfflDzPos);
+  fOutputList->Add(fHistOnlDzPos);
+  fOutputList->Add(fHistOfflDxyPos);
+  fOutputList->Add(fHistOnlDxyPos);
+
+
+  fOutputList->Add(fHistOfflResidualsNeg);
+  fOutputList->Add(fHistOnlResidualsNeg);
+  fOutputList->Add(fHistOfflDzNeg);
+  fOutputList->Add(fHistOnlDzNeg);
+  fOutputList->Add(fHistOfflDxyNeg);
+  fOutputList->Add(fHistOnlDxyNeg);
+
+
+  fOutputList->Add(fHistTotEVsTotE);
+  fOutputList->Add(fHistNclvsNcl);
 
   for(int ip = 0; ip < fGlobalHistoProdArrOff->GetEntriesFast(); ip++) {
     AliHLTCaloHistoProducer *prod = dynamic_cast<AliHLTCaloHistoProducer*>(fGlobalHistoProdArrOff->At(ip));
@@ -171,6 +243,7 @@ void AliAnalysisTaskHLTCalo::NotifyRun(){
 
 void AliAnalysisTaskHLTCalo::UserExec(Option_t *){
 
+
   AliESDEvent* evESD = dynamic_cast<AliESDEvent*>(InputEvent());
   
   if (!evESD) {
@@ -188,23 +261,111 @@ void AliAnalysisTaskHLTCalo::UserExec(Option_t *){
       return;
   }
 
+  
+  
+
+
   DoSpecificStuff(evESD, evHLTESD);
+
+  
+  Double_t offE = 0.0;
+  Double_t onE = 0.0;
+
 
   for(int icl = 0; icl < evESD->GetNumberOfCaloClusters(); icl++) {
     AliESDCaloCluster * cluster = evESD->GetCaloCluster(icl);
-    if(cluster && IsThisDetector(cluster)) {
-      fHistOfflResiduals->Fill(evESD->GetCaloCluster(icl)->GetEmcCpvDistance());
-      fHistOfflDz->Fill(evESD->GetCaloCluster(icl)->GetTrackDz());
-      fHistOfflDxy->Fill(evESD->GetCaloCluster(icl)->GetTrackDx());
+    if(IsThisDetector(cluster)) {
+     
+      offE += cluster->E();
+      fHistOfflResiduals->Fill(cluster->GetEmcCpvDistance());
+      fHistOfflDz->Fill(cluster->GetTrackDz());
+      fHistOfflDxy->Fill(cluster->GetTrackDx());
+      
+     
+      TArrayI* matchedTracks = cluster->GetTracksMatched();
+     
+      if (matchedTracks) {
+	if (matchedTracks->At(0) > -1) {
+	  
+	  Int_t trackID = matchedTracks->At(0);
+	  
+	  AliESDtrack * track = evESD->GetTrack(trackID);
+
+	  if(track) {
+	    if (track->Charge() > 0) {
+	  
+	      fHistOfflResidualsPos->Fill(cluster->GetEmcCpvDistance());;
+	      fHistOfflDzPos->Fill(cluster->GetTrackDz());
+	      fHistOfflDxyPos->Fill(cluster->GetTrackDx());
+	      
+	    } else if (track->Charge() < 0) {
+	  
+	      fHistOfflResidualsNeg->Fill(cluster->GetEmcCpvDistance());;
+	      fHistOfflDzNeg->Fill(cluster->GetTrackDz());
+	      fHistOfflDxyNeg->Fill(cluster->GetTrackDx());
+	      
+	    } else {
+	      cout <<"BALLE wtf!!"<<endl;
+	    }
+	    
+	  } else {
+	    cout << "BALLE no track!"<<endl;
+	  }
+	}
+      } else {
+	cout << "BALLE no array"<<endl;
+      }
     }
   }
 
+  
+
   for(int icl = 0; icl < evHLTESD->GetNumberOfCaloClusters(); icl++) {
     AliESDCaloCluster * cluster = evHLTESD->GetCaloCluster(icl);
-    if(cluster && IsThisDetector(cluster)) {
+    if(IsThisDetector(cluster)) {
+      onE += cluster->E();
       fHistOnlResiduals->Fill(evHLTESD->GetCaloCluster(icl)->GetEmcCpvDistance());
       fHistOnlDxy->Fill(evHLTESD->GetCaloCluster(icl)->GetTrackDx());
       fHistOnlDz->Fill(evHLTESD->GetCaloCluster(icl)->GetTrackDz());
+
+      TArrayI* matchedTracks = cluster->GetTracksMatched();
+     
+      if (matchedTracks) {
+	if (matchedTracks->At(0) > -1) {
+	  
+	  Int_t trackID = matchedTracks->At(0);
+	  
+	  AliESDtrack * track = evHLTESD->GetTrack(trackID);
+
+	  if(track) {
+	    if (track->Charge() > 0) {
+	  
+	      fHistOnlResidualsPos->Fill(cluster->GetEmcCpvDistance());;
+	      fHistOnlDzPos->Fill(cluster->GetTrackDz());
+	      fHistOnlDxyPos->Fill(cluster->GetTrackDx());
+	      
+	    } else if (track->Charge() < 0) {
+	  
+	      fHistOnlResidualsNeg->Fill(cluster->GetEmcCpvDistance());;
+	      fHistOnlDzNeg->Fill(cluster->GetTrackDz());
+	      fHistOnlDxyNeg->Fill(cluster->GetTrackDx());
+	      
+	    } else {
+	      cout <<"BALLE wtf!!"<<endl;
+	    }
+	    
+	  } else {
+	    cout << "BALLE no track!"<<endl;
+	  }
+	}
+      } else {
+	//cout << "BALLE no array"<<endl;
+      }
+
+
+
+
+
     }
   }
 
@@ -214,12 +375,15 @@ void AliAnalysisTaskHLTCalo::UserExec(Option_t *){
     prod->FillHistograms(nc, fClustersArray);
   }
  
-  nc = GetClusters(evHLTESD, fClustersArray);
+  Int_t nOnc = GetClusters(evHLTESD, fClustersArray);
   for(int ip = 0; ip < fGlobalHistoProdArrOn->GetEntriesFast(); ip++) {
     AliHLTCaloHistoProducer *prod = dynamic_cast<AliHLTCaloHistoProducer*>(fGlobalHistoProdArrOn->At(ip));
-    prod->FillHistograms(nc, fClustersArray);
+    prod->FillHistograms(nOnc, fClustersArray);
   }
   
+  fHistNclvsNcl->Fill(nc, nOnc);
+  fHistTotEVsTotE->Fill(offE, onE);
+
 
   fNevt++;
 
@@ -230,6 +394,7 @@ void AliAnalysisTaskHLTCalo::UserExec(Option_t *){
 
 void AliAnalysisTaskHLTCalo::Terminate(Option_t *){
 
+  
   
   // Printf("Number of tracks thru CE: %d", fNtracksThruZ0);
   // Printf("Number of tracks thru CE from triggered events: %d", 
@@ -243,4 +408,3 @@ void AliAnalysisTaskHLTCalo::Terminate(Option_t *){
   //fHistTrigger->DrawCopy("E");
   
 }
-
