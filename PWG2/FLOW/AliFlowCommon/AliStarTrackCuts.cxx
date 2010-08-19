@@ -198,17 +198,17 @@ AliStarTrackCuts::AliStarTrackCuts():
 Bool_t AliStarTrackCuts::PassesCuts(const AliStarTrack *track) const
 {
   //check is track passes cuts
-  if(fCutID) {if (track->GetID() < fIDMin || track->GetID() >= fIDMax ) return kFALSE;}
+  if(fCutID) {if (track->GetID() < fIDMin || track->GetID() > fIDMax ) return kFALSE;} //integer values: non inclusive bound!
   if(fCutCharge) {if (track->GetCharge() < fChargeMin || track->GetCharge() > fChargeMax ) return kFALSE;}
-  if(fCutEta) {if (track->GetEta() < fEtaMin || track->GetEta() > fEtaMax ) return kFALSE;}
-  if(fCutPhi) {if (track->GetPhi() < fPhiMin || track->GetPhi() > fPhiMax ) return kFALSE;}
-  if(fCutPt) {if (track->GetPt() < fPtMin || track->GetPt() > fPtMax ) return kFALSE;}
-  if(fCutDCA) {if (track->GetDCA() < fDCAMin || track->GetDCA() > fDCAMax ) return kFALSE;}
+  if(fCutEta) {if (track->GetEta() < fEtaMin || track->GetEta() >= fEtaMax ) return kFALSE;}
+  if(fCutPhi) {if (track->GetPhi() < fPhiMin || track->GetPhi() >= fPhiMax ) return kFALSE;}
+  if(fCutPt) {if (track->GetPt() < fPtMin || track->GetPt() >= fPtMax ) return kFALSE;}
+  if(fCutDCA) {if (track->GetDCA() < fDCAMin || track->GetDCA() >= fDCAMax ) return kFALSE;}
   if(fCutNHits) {if (track->GetNHits() < fNHitsMin || track->GetNHits() > fNHitsMax ) return kFALSE;}
   if(fCutNHitsFit) {if (track->GetNHitsFit() < fNHitsFitMin || track->GetNHitsFit() > fNHitsFitMax ) return kFALSE;}
   if(fCutNHitsPoss) {if (track->GetNHitsPoss() < fNHitsPossMin || track->GetNHitsPoss() > fNHitsPossMax ) return kFALSE;}
   if(fCutNHitsDedx) {if (track->GetNHitsDedx() < fNHitsDedxMin || track->GetNHitsDedx() > fNHitsDedxMax ) return kFALSE;}
-  if(fCutdEdx) {if (track->GetdEdx() < fdEdxMin || track->GetdEdx() > fdEdxMax ) return kFALSE;}
+  if(fCutdEdx) {if (track->GetdEdx() < fdEdxMin || track->GetdEdx() >= fdEdxMax ) return kFALSE;}
   if(fCutNSigElect) {if (track->GetNSigElect() < fNSigElectMin || track->GetNSigElect() > fNSigElectMax ) return kFALSE;}
   if(fCutNSigPi) {if (track->GetNSigPi() < fNSigPiMin || track->GetNSigPi() > fNSigPiMax ) return kFALSE;}
   if(fCutNSigK) {if (track->GetNSigK() < fNSigKMin || track->GetNSigK() > fNSigKMax ) return kFALSE;}
