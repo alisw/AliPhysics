@@ -64,12 +64,17 @@ public:
               Double_t reactionPlaneAngle,
               Double_t precision,
               Int_t maxNumberOfIterations=100 );
+  void AddV3( Double_t v3,
+              Double_t reactionPlaneAngle,
+              Double_t precision,
+              Int_t maxNumberOfIterations=100 );
   void AddV4( Double_t v4,
               Double_t reactionPlaneAngle,
               Double_t precision,
               Int_t maxNumberOfIterations=100 );
   void AddFlow( Double_t v1,
                 Double_t v2,
+                Double_t v3,
                 Double_t v4,
                 Double_t reactionPlaneAngle,
                 Double_t precision,
