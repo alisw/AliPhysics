@@ -6,14 +6,15 @@
 // reconstructed and MC particle tracks (TPC resolution).   
 // 
 // Author: J.Otwinowski 04/02/2008 
-// Changes by M.Knichel 27/07/2010
+// Changes by M.Knichel 16/08/2010
 //------------------------------------------------------------------------------
 
 class TString;
 class TNamed;
 class TCanvas;
-class TH1F;
-class TH2F;
+class TH1;
+class TH2;
+class TH3;
 
 class AliESDVertex;
 class AliESDtrack;
@@ -78,8 +79,9 @@ public :
 private:
 
   static Bool_t fgMergeTHnSparse;
-  void AddTrackHistos(TObjArray* aFolderObj, Char_t* selString);
-
+  void AddProjection(TObjArray* aFolderObj, THnSparse *hSparse, Int_t xDim, TString* selString = 0);
+  void AddProjection(TObjArray* aFolderObj, THnSparse *hSparse, Int_t xDim, Int_t yDim, TString* selString = 0);
+  void AddProjection(TObjArray* aFolderObj, THnSparse *hSparse, Int_t xDim, Int_t yDim, Int_t zDim, TString* selString = 0);
   // TPC histogram
   THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCSide
   THnSparseF *fTPCEventHisto;  //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
