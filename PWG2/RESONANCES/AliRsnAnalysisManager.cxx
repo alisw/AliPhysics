@@ -20,6 +20,7 @@
 #include <TROOT.h>
 
 #include "AliLog.h"
+#include "AliStack.h"
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "AliRsnEvent.h"
@@ -207,6 +208,9 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
   
   for (i0 = 0; i0 < nTracks[0]; i0++)
   {
+    // skip not physical primaries
+    if (!ev0->GetRefMC()->Stack()->IsPhysicalPrimary(i0)) continue;
+    
     // assign first track
     ev0->SetDaughterMC(daughter0, i0);
         
@@ -215,6 +219,9 @@ void AliRsnAnalysisManager::ProcessAllPairsMC(AliRsnEvent *ev0, AliRsnEvent *ev1
     {
       // if looking same event, skip the case when the two indexes are equal
       if (ev0 == ev1 && i0 == i1) continue;
+      
+      // skip not physical primaries
+      if (!ev1->GetRefMC()->Stack()->IsPhysicalPrimary(i1)) continue;
       
       // assign second track
       ev1->SetDaughterMC(daughter1, i1);

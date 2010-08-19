@@ -153,6 +153,24 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
     case kTrack2Pt:
       fValue = mother->GetDaughter(1)->P().Perp();
       break;
+    case kTrack1Px:
+      fValue = mother->GetDaughter(0)->P().X();
+      break;
+    case kTrack1Py:
+      fValue = mother->GetDaughter(0)->P().Y();
+      break;
+    case kTrack1Pz:
+      fValue = mother->GetDaughter(0)->P().Z();
+      break;
+    case kTrack2Px:
+      fValue = mother->GetDaughter(1)->P().X();
+      break;
+    case kTrack2Py:
+      fValue = mother->GetDaughter(1)->P().Y();
+      break;
+    case kTrack2Pz:
+      fValue = mother->GetDaughter(1)->P().Z();
+      break;
     case kPairInvMass:
       fValue = mother->Sum().M();
       break;
