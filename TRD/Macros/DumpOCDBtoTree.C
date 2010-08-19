@@ -6,13 +6,17 @@
 //
 // Usage:
 //
-//DumpOCDBtoTree(const Char_t* runListFilename, const Char_t* outFilename,
-//    	         Int_t firstRun = -1, Int_t lastRun = -1,
-//		 Bool_t getMonitoringInfo = kTRUE,
-//               Bool_t getCalibrationInfo = kTRUE,
-// 	         Bool_t getGoofieInfo = kTRUE,
-//		 Bool_t getDCSInfo = kFALSE,
-//		 const Char_t* storage = "local:///lustre/alice/alien/alice/data/2010/OCDB/")
+// void DumpOCDBtoTree(const Char_t* outFilename,
+// 		       const Char_t* runListFilename,
+//		       Int_t firstRun = -1, Int_t lastRun = -1,
+//		       const Char_t* storage = "alien://folder=/alice/data/2010/OCDB/",
+//		       Bool_t getHVInfo = kTRUE,
+//		       Bool_t getCalibrationInfo = kFALSE,
+//                     Bool_t getGasInfo = kFALSE,
+//		       Bool_t getStatusInfo = kFALSE,
+//		       Bool_t getGoofieInfo = kFALSE,
+//		       Bool_t getDCSInfo = kFALSE,
+//		       Bool_t getGRPInfo = kTRUE)
 //
 //    * runListFilename   - name of an ascii file containing run numbers
 //    * outFilename       - name of the root file where the TRD OCDB information tree to be stored
@@ -20,12 +24,14 @@
 //                          if these numbers are not specified (-1) all run numbers in the input ascii file will
 //                          be used. If the run list file is not specified then all runs in this interval
 //                          will be queried
-//    * getMonitoringInfo - flag to switch on/off monitoring information (HV, temperatures, gas pressure,
-//                          gas composition, ADC clock phase, chamber status)
+//    * getHVInfo         - flag to switch on/off HV information (HV anode and drift currents/voltages)
 //    * getCalibrationInfo- flag to switch on/off calibration information (gain, pedestal, T0, vdrift, pad status)
+//    * getGasInfo        - flag to switch on/off gas related information (gas composition, overpressure, temperature)
+//    * getStatusInfo     - flag to switch on/off status information (trd_chamberStatus)
 //    * getGoofieInfo     - flag to switch on/off goofie information (gain, HV, pressure, temperature, drift velocity,
 //                          gas composition)
-//    * getDCSInfo        - flag to switch on/off DCS information ()
+//    * getDCSInfo        - flag to switch on/off DCS information
+//    * getGRPInfo        - flag to switch on/off GRP information --> there will be no time information in the output tree
 //    * storage           - path of the OCDB database (if it is on alien, be sure to have a valid/active token)
 
 
@@ -78,14 +84,17 @@ void ProcessTRDCalDCSFEE(AliTRDCalDCS*, AliTRDCalDCS*, Int_t&, Int_t&, Int_t&, I
 			 TVectorD&, TVectorD&);
 
 //__________________________________________________________________________________________
-void DumpOCDBtoTree(const Char_t* runListFilename,
-		    const Char_t* outFilename,
+void DumpOCDBtoTree(const Char_t* outFilename,
+		    const Char_t* runListFilename,
 		    Int_t firstRun = -1, Int_t lastRun = -1,
-		    Bool_t getMonitoringInfo = kTRUE,
-                    Bool_t getCalibrationInfo = kTRUE,
-		    Bool_t getGoofieInfo = kTRUE,
+		    const Char_t* storage = "alien://folder=/alice/data/2010/OCDB/",
+		    Bool_t getHVInfo = kTRUE,
+		    Bool_t getCalibrationInfo = kFALSE,
+                    Bool_t getGasInfo = kFALSE,
+		    Bool_t getStatusInfo = kFALSE,
+		    Bool_t getGoofieInfo = kFALSE,
 		    Bool_t getDCSInfo = kFALSE,
-		    const Char_t* storage = "alien://folder=/alice/data/2010/OCDB/") {
+		    Bool_t getGRPInfo = kTRUE) {
   //
   // Main function to steer the extraction of TRD OCDB information
   //
@@ -156,10 +165,10 @@ void DumpOCDBtoTree(const Char_t* runListFilename,
     time_t startTime = 0;
     time_t endTime = 0;
     TObjString runType("UNKNOWN");
-    AliDCSSensor *cavern_pressure;
-    AliDCSSensor *surface_pressure;
+    AliDCSSensor *cavern_pressure = 0x0;
+    AliDCSSensor *surface_pressure = 0x0;
     UInt_t detectorMask = 0;
-    AliCDBEntry *entry = manager->Get("GRP/GRP/Data");
+    AliCDBEntry *entry = (getGRPInfo ? manager->Get("GRP/GRP/Data") : 0);
     if(entry) {
       entry->SetOwner(kFALSE);
     }
@@ -167,10 +176,12 @@ void DumpOCDBtoTree(const Char_t* runListFilename,
     if(entry) 
       grpObject = dynamic_cast<AliGRPObject*>(entry->GetObject());
     else {
-      // add the run number to the list of rejected runs
-      rejectedRuns.ResizeTo(rejectedRuns.GetNoElements()+1);
-      rejectedRuns[rejectedRuns.GetNoElements()-1] = currRun;
-      continue;
+      if(getGRPInfo) {
+	// add the run number to the list of rejected runs
+	rejectedRuns.ResizeTo(rejectedRuns.GetNoElements()+1);
+	rejectedRuns[rejectedRuns.GetNoElements()-1] = currRun;
+	continue;
+      }
     }
     if(grpObject) {
       startTime = grpObject->GetTimeStart();
@@ -196,14 +207,17 @@ void DumpOCDBtoTree(const Char_t* runListFilename,
       cout << "Run type = " << grpObject->GetRunType().Data() << endl;
     }
     else {
-      // add the run number to the list of rejected runs
-      rejectedRuns.ResizeTo(rejectedRuns.GetNoElements()+1);
-      rejectedRuns[rejectedRuns.GetNoElements()-1] = currRun;
-      continue;
+      if(getGRPInfo) {
+	cout << "No GRP info available --> skiping this run!" << endl;
+	// add the run number to the list of rejected runs
+	rejectedRuns.ResizeTo(rejectedRuns.GetNoElements()+1);
+	rejectedRuns[rejectedRuns.GetNoElements()-1] = currRun;
+	continue;
+      }
     }
 
     // remove runs with zero time duration
-    if(startTime==endTime) {
+    if(getGRPInfo && startTime==endTime) {
       if(grpObject) delete grpObject;
       // add the run number to the list of rejected runs
       rejectedRuns.ResizeTo(rejectedRuns.GetNoElements()+1);
@@ -225,9 +239,9 @@ void DumpOCDBtoTree(const Char_t* runListFilename,
     AliTRDSensorArray *gasCO2Sensors = 0;
     AliTRDSensorArray *gasH2OSensors = 0;
     AliTRDSensorArray *gasO2Sensors = 0;
-  //  AliTRDSensorArray *adcClkPhaseSensors = 0;
+    //  AliTRDSensorArray *adcClkPhaseSensors = 0;
 
-    if(getMonitoringInfo) {
+    if(getHVInfo) {
       // anode hv currents (per chamber)
       entry = manager->Get("TRD/Calib/trd_hvAnodeImon");
       if(entry) {
@@ -255,19 +269,23 @@ void DumpOCDBtoTree(const Char_t* runListFilename,
 	entry->SetOwner(kTRUE);
 	driftUSensors = (AliTRDSensorArray*)entry->GetObject();
       }
-    
-      // temperatures from chamber sensors (per chamber)
-      entry = manager->Get("TRD/Calib/trd_envTemp");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	temperatureSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
-    
+    }  // end if(getHVInfo)
+
+    if(getStatusInfo) {
       // chamber status (from sensors)
       entry = manager->Get("TRD/Calib/trd_chamberStatus");
       if(entry) {
 	entry->SetOwner(kTRUE);
 	chamberStatusSensors = (AliTRDSensorArray*)entry->GetObject();
+      }
+    }   // end if(getStatusInfo)
+
+    if(getGasInfo) {
+      // temperatures from chamber sensors (per chamber)
+      entry = manager->Get("TRD/Calib/trd_envTemp");
+      if(entry) {
+	entry->SetOwner(kTRUE);
+	temperatureSensors = (AliTRDSensorArray*)entry->GetObject();
       }
     
       // gas overpressure (per whole TRD)
@@ -306,7 +324,7 @@ void DumpOCDBtoTree(const Char_t* runListFilename,
 	adcClkPhaseSensors = (AliTRDSensorArray*)entry->GetObject();
       }
 */
-    }  // end if getMonitoringInfo
+    }  // end if getGasInfo
 
 
     // get calibration information
@@ -564,7 +582,7 @@ void DumpOCDBtoTree(const Char_t* runListFilename,
        
 
     // loop over time steps
-    for(UInt_t iTime = startTime; iTime<=endTime; iTime += dTime) {
+    for(UInt_t iTime = (getGRPInfo ? startTime : 0); iTime<=(getGRPInfo ? endTime : 0); iTime += (getGRPInfo ? dTime : 1)) {
       // time stamp
       TTimeStamp iStamp(iTime);
       cout << "time step  " << iStamp.GetDate()/10000 << "/" 
@@ -576,13 +594,14 @@ void DumpOCDBtoTree(const Char_t* runListFilename,
       
       // cavern pressure
       Float_t pressure = -99.;
+      Bool_t inside=kFALSE;
       if(cavern_pressure) 
-	pressure = cavern_pressure->Eval(iStamp);
+	pressure = cavern_pressure->Eval(iStamp,inside);
             
       // surface pressure
       Float_t surfacePressure = -99.;
       if(surface_pressure) 
-	surfacePressure = surface_pressure->Eval(iStamp);
+	surfacePressure = surface_pressure->Eval(iStamp,inside);
             
       // anode I sensors
       TVectorD anodeIValues(AliTRDcalibDB::kNdet);
@@ -679,20 +698,29 @@ void DumpOCDBtoTree(const Char_t* runListFilename,
       (*treeStreamer)<< "trdTree"
 		     << "run=" << currRun
 		     << "time=" << iTime
-		     << "startTimeGRP=" << startTime
-		     << "endTimeGRP=" << endTime
-		     << "runType.=" << &runType
-		     << "cavernPressure=" << pressure
-		     << "surfacePressure=" << surfacePressure
-		     << "detectorMask=" << detectorMask;
-      if(getMonitoringInfo) {
+		     << "runType.=" << &runType;
+      if(getGRPInfo) {
+	(*treeStreamer)<< "trdTree"
+		       << "startTimeGRP=" << startTime
+		       << "endTimeGRP=" << endTime
+		       << "cavernPressure=" << pressure
+		       << "surfacePressure=" << surfacePressure
+		       << "detectorMask=" << detectorMask;
+      }
+      if(getHVInfo) {
 	(*treeStreamer)<< "trdTree"
 		       << "hvAnodeI.=" << &anodeIValues
 		       << "hvAnodeU.=" << &anodeUValues
 		       << "hvDriftI.=" << &driftIValues
-		       << "hvDriftU.=" << &driftUValues
+		       << "hvDriftU.=" << &driftUValues;
+      }
+      if(getStatusInfo) {
+	(*treeStreamer)<< "trdTree"
+		       << "sensorStatusValues.=" << &statusValues;
+      }
+      if(getGasInfo) {
+	(*treeStreamer)<< "trdTree"
 		       << "envTemp.=" << &envTempValues
-		       << "sensorStatusValues.=" << &statusValues
 		       << "gasOverPressure.=" << &overpressureValues
 		       << "gasCO2.=" << &gasCO2Values
 		       << "gasH2O.=" << &gasH2OValues
@@ -851,10 +879,11 @@ void ProcessTRDSensorArray(AliTRDSensorArray *sensorArray, TTimeStamp timeStamp,
   // The sensor->Eval() method makes interpolation inside the covered time interval
   // and returns the value at the closest time limit (start or end) outside the covered time range
   AliDCSSensor *sensor;
+  Bool_t inside=kFALSE;
   for(Int_t i=0; i<sensorArray->NumSensors(); i++) {
     sensor = sensorArray->GetSensorNum(i);
     if(sensor && sensor->GetGraph()) 
-      values[i] = sensor->Eval(timeStamp);
+      values[i] = sensor->Eval(timeStamp,inside);
     else
       values[i] = -99.;
   }
