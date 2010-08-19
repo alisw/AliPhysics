@@ -234,9 +234,6 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
   }
   
   // Load the event
-  fEvents++;
-  AliDebug(2,Form("Event %d",fEvents));
-  if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   
   TClonesArray *arrayVerticesHF=0;
@@ -262,6 +259,15 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
     AliInfo("Could not find array of HF vertices, skipping the event");
     return;
   }else AliDebug(2, Form("Found %d vertices",arrayVerticesHF->GetEntriesFast()));   
+
+  // fix for temporary bug in ESDfilter 
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if(!aodEvent->GetPrimaryVertex()) return;
+
+  fEvents++;
+  AliDebug(2,Form("Event %d",fEvents));
+  if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
+
 
   // Simulate a jet triggered sample
   TClonesArray *arrayofJets = (TClonesArray*)aodEvent->GetJets();

@@ -194,6 +194,11 @@ void AliAnalysisTaskSEBtoJPSItoEle::UserExec(Option_t */*option*/)
     return;
   } 
 
+  // fix for temporary bug in ESDfilter 
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if(!aod->GetPrimaryVertex()) return;
+
+
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
   

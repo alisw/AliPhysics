@@ -626,9 +626,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   // heavy flavor candidates association to MC truth
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-  fHistNEvents->Fill(0); // count event
-  // Post the data already here
-  PostData(1,fOutput);
   
   TClonesArray *array3Prong = 0;
   TClonesArray *arrayLikeSign =0;
@@ -660,6 +657,14 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     return;
   }
 
+
+  // fix for temporary bug in ESDfilter 
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if(!aod->GetPrimaryVertex()) return;
+
+  fHistNEvents->Fill(0); // count event
+  // Post the data already here
+  PostData(1,fOutput);
  
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
