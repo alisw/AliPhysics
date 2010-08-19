@@ -108,6 +108,7 @@ public:
 
   Float_t   GetAnodeWireOffset(Float_t zt);
   Float_t   GetC(Int_t typ=0) const    { return fC[typ]; }
+  Float_t   GetCharge(Bool_t useOutliers=kFALSE);
   Float_t   GetChi2() const          { return fChi2; }
   inline Float_t   GetChi2Z() const;
   inline Float_t   GetChi2Y() const;
