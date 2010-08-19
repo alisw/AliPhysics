@@ -36,7 +36,7 @@ Function(CheckViols LIB SRCS)
 
     String(REGEX MATCHALL "[^ ]*.cxx" CXXSRCS "${SRCS}")
 
-    Set(_checkDir "${CMAKE_CURRENT_BINARY_DIR}/check_new")
+    Set(_checkDir "${CMAKE_CURRENT_BINARY_DIR}/check")
     
     If(NOT EXISTS ${_checkDir})
       File(MAKE_DIRECTORY ${_checkDir})
@@ -57,18 +57,44 @@ Function(CheckViols LIB SRCS)
       String(REGEX REPLACE "([^;]*).cxx" "${_checkDir}/\\1.h.xml"   _hdrxml "${_checkFile}")
       String(REGEX REPLACE "([^;]*).cxx" "${_checkDir}/\\1.viol"    _violFile "${_checkFile}")
       String(REGEX REPLACE "([^;]*).cxx" "\\1.h" _checkHead "${_checkFile}")
-      Add_Custom_Command(
-	OUTPUT ${_violFile}
-	COMMAND src2srcml 
-        ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkFile} ${_srcxml}
-	COMMAND src2srcml 
-        ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkHead} ${_hdrxml}
-	COMMAND java -jar
-	ARGS ${_FactExt} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
-	COMMAND java -Xmx500m -jar ${RULE_CHECKER_JAR} 
-        ARGS ${_srcxml} ${_hdrxml} ${CMAKE_CURRENT_SOURCE_DIR}/factFile.xml ${RULE_CHECKER_RULES} > ${_violFile}
-	DEPENDS ${_checkFile}
-	WORKING_DIRECTORY ${_checkDir})
+      get_filename_component(_cxxFile ${_checkFile} ABSOLUTE)
+      string(REGEX REPLACE "([^;]*).cxx" "\\1.h" _hFile "${_cxxFile}")
+      if(EXISTS ${_cxxFile} AND NOT EXISTS ${_hFile})
+	Add_Custom_Command(
+	  OUTPUT ${_violFile}
+	  COMMAND src2srcml 
+          ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkFile} ${_srcxml}
+	  COMMAND java -jar
+	  ARGS ${_FactExt} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
+	  COMMAND java -Xmx500m -jar ${RULE_CHECKER_JAR} 
+          ARGS ${_srcxml} ${_hdrxml} ${CMAKE_CURRENT_SOURCE_DIR}/factFile.xml ${RULE_CHECKER_RULES} > ${_violFile}
+	  DEPENDS ${_checkFile}
+	  WORKING_DIRECTORY ${_checkDir})
+      elseif(EXISTS ${_hFile} AND NOT EXISTS ${_cxxFile})
+	Add_Custom_Command(
+	  OUTPUT ${_violFile}
+	  COMMAND src2srcml 
+          ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkHead} ${_hdrxml}
+	  COMMAND java -jar
+	  ARGS ${_FactExt} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
+	  COMMAND java -Xmx500m -jar ${RULE_CHECKER_JAR} 
+          ARGS ${_srcxml} ${_hdrxml} ${CMAKE_CURRENT_SOURCE_DIR}/factFile.xml ${RULE_CHECKER_RULES} > ${_violFile}
+	  DEPENDS ${_checkHead}
+	  WORKING_DIRECTORY ${_checkDir})
+      else()
+	Add_Custom_Command(
+	  OUTPUT ${_violFile}
+	  COMMAND src2srcml 
+          ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkFile} ${_srcxml}
+	  COMMAND src2srcml 
+          ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkHead} ${_hdrxml}
+	  COMMAND java -jar
+	  ARGS ${_FactExt} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
+	  COMMAND java -Xmx500m -jar ${RULE_CHECKER_JAR} 
+          ARGS ${_srcxml} ${_hdrxml} ${CMAKE_CURRENT_SOURCE_DIR}/factFile.xml ${RULE_CHECKER_RULES} > ${_violFile}
+	  DEPENDS ${_checkFile} ${_checkHead}
+	  WORKING_DIRECTORY ${_checkDir})
+      endif(EXISTS ${_cxxFile} AND NOT EXISTS ${_hFile})
       Set(VIOLS ${VIOLS} ${_violFile})
     EndForeach(_checkFile ${CXXSRCS})
     

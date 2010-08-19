@@ -29,29 +29,29 @@ function (wcl _nLinesVar fileName)
   endif()
 endfunction()
 
-file(GLOB_RECURSE violExc "$ENV{ALICE_ROOT}/*THerwig6.viol"                     
-  "$ENV{ALICE_ROOT}/*AliRawReaderDateV3.viol"            
-  "$ENV{ALICE_ROOT}/*dateStream.viol"                      
-  "$ENV{ALICE_ROOT}/TTherminator/*.viol"                         
-  "$ENV{ALICE_ROOT}/*esdAna.viol"                         
-  "$ENV{ALICE_ROOT}/*TIsajet*.viol"                              
-  "$ENV{ALICE_ROOT}/*RecAna.viol"                         
-  "$ENV{ALICE_ROOT}/*LHAPDFWrap.viol"                     
-  "$ENV{ALICE_ROOT}/RAW/check/event.viol"                
-  "$ENV{ALICE_ROOT}/THerwig/check/HCommon.viol"          
-  "$ENV{ALICE_ROOT}/*HBTprocCOMMON.viol"                  
-  "$ENV{ALICE_ROOT}/*EPOScommon.viol"                     
-  "$ENV{ALICE_ROOT}/*DPMcommon.viol"                      
-  "$ENV{ALICE_ROOT}/*Hcommon.viol"                        
-  "$ENV{ALICE_ROOT}/*TPHICcommon.viol"                    
-  "$ENV{ALICE_ROOT}/JETAN/check/fastjet/*.viol"                            
-  "$ENV{ALICE_ROOT}/HLT/check/JET/fastjet/*.viol"                            
-  "$ENV{ALICE_ROOT}/PYTHIA8/*.viol"                              
-  "$ENV{ALICE_ROOT}/TEvtGen/*.viol"                              
-  "$ENV{ALICE_ROOT}/LHAPDF/*.viol"                         
-  "$ENV{ALICE_ROOT}/*HydCommon.viol"                      
-  "$ENV{ALICE_ROOT}/*AliHLTDataBuffer.viol")
-file(GLOB_RECURSE violFiles "$ENV{ALICE_ROOT}/*.viol")  
+file(GLOB_RECURSE violExc "$ENV{ALICE_INSTALL}/*THerwig6.viol"                     
+  "$ENV{ALICE_INSTALL}/*AliRawReaderDateV3.viol"            
+  "$ENV{ALICE_INSTALL}/*dateStream.viol"                      
+  "$ENV{ALICE_INSTALL}/TTherminator/*.viol"                         
+  "$ENV{ALICE_INSTALL}/*esdAna.viol"                         
+  "$ENV{ALICE_INSTALL}/*TIsajet*.viol"                              
+  "$ENV{ALICE_INSTALL}/*RecAna.viol"                         
+  "$ENV{ALICE_INSTALL}/*LHAPDFWrap.viol"                     
+  "$ENV{ALICE_INSTALL}/RAW/check/event.viol"                
+  "$ENV{ALICE_INSTALL}/THerwig/check/HCommon.viol"          
+  "$ENV{ALICE_INSTALL}/*HBTprocCOMMON.viol"                  
+  "$ENV{ALICE_INSTALL}/*EPOScommon.viol"                     
+  "$ENV{ALICE_INSTALL}/*DPMcommon.viol"                      
+  "$ENV{ALICE_INSTALL}/*Hcommon.viol"                        
+  "$ENV{ALICE_INSTALL}/*TPHICcommon.viol"                    
+  "$ENV{ALICE_INSTALL}/JETAN/check/fastjet/*.viol"                            
+  "$ENV{ALICE_INSTALL}/HLT/check/JET/fastjet/*.viol"                            
+  "$ENV{ALICE_INSTALL}/PYTHIA8/*.viol"                              
+  "$ENV{ALICE_INSTALL}/TEvtGen/*.viol"                              
+  "$ENV{ALICE_INSTALL}/LHAPDF/*.viol"                         
+  "$ENV{ALICE_INSTALL}/*HydCommon.viol"                      
+  "$ENV{ALICE_INSTALL}/*AliHLTDataBuffer.viol")
+file(GLOB_RECURSE violFiles "$ENV{ALICE_INSTALL}/*.viol")  
 list(REMOVE_ITEM violFiles ${violExc})
 
 #Total list of files
@@ -87,12 +87,13 @@ foreach(i RANGE ${max})
 
   string(REPLACE "check/" "" args ${lineLen})
   string(REPLACE "viol" "*" args ${args})
+  string(REPLACE "$ENV{ALICE_INSTALL}" "$ENV{ALICE_ROOT}" args ${args})
   file(GLOB args "${args}")
   foreach(arg ${args})
    list(APPEND argList "${arg}")
   endforeach(arg)
 
-  string(REPLACE "$ENV{ALICE_ROOT}/" "" module ${lineLen}) 
+  string(REPLACE "$ENV{ALICE_INSTALL}/" "" module ${lineLen}) 
   math(EXPR count "999999 - ${count}")
   string(LENGTH ${count} digit)
   if(${digit} EQUAL 1)
@@ -114,13 +115,13 @@ foreach( blameFile ${argList} )
   string(REPLACE "$ENV{ALICE_ROOT}/" "" mainFile ${blameFile})
   set(anlys "${anlys}   |\n")
   execute_process(COMMAND "${svn_command}" "blame" "${blameFile}"
-    WORKING_DIRECTORY "$ENV{ALICE_ROOT}"
+    WORKING_DIRECTORY "$ENV{ALICE_INSTALL}"
     OUTPUT_FILE tmpViols
     OUTPUT_VARIABLE tmpVio)
-  wcl(fileLen "$ENV{ALICE_ROOT}/tmpViols")
+  wcl(fileLen "$ENV{ALICE_INSTALL}/tmpViols")
   set(anlys "${anlys}   |--| ${mainFile} |-- ${fileLen} lines\n")  
   set(nameList "")
-  file(STRINGS "$ENV{ALICE_ROOT}/tmpViols" violData)
+  file(STRINGS "$ENV{ALICE_INSTALL}/tmpViols" violData)
   # file(READ "tmpViols" violData)
   # string(REGEX REPLACE "\n" ";" "violData" "${violData}")
   foreach(violLine ${violData})
