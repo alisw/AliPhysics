@@ -210,9 +210,37 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
     case kPairCosThetaStarMC2:
       //fValue = TMath::Cos(mother->ThetaStar(kFALSE, kTRUE));
       break;
+    case kAngleToLeading:
+      {
+    	  int ID1 = (mother->GetDaughter(0))->GetID();
+    	  int ID2 = (mother->GetDaughter(1))->GetID();
+    	  int leadingID = event->SelectLeadingParticle(0);
+    	  if(leadingID == ID1 || leadingID == ID2) return kFALSE;
+    	  AliRsnDaughter  leadingPart = event->GetDaughter(leadingID);
+    	  AliVParticle *ref = leadingPart.GetRef();
+
+    	  fValue = ref->Phi() - mother->Sum().Phi();
+    	  //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
+    	  while(fValue >= TMath::Pi()) fValue -= 2*TMath::Pi();
+    	  while(fValue < -0.5*TMath::Pi()) fValue += 2*TMath::Pi();
+    	  //Printf("%g", fValue);
+
+      }
+      break;
     case kEventMult:
       if (!event) fValue = 0.0;
       fValue = (Double_t)event->GetMultiplicity();
+      break;
+    case kLeadingPt:
+      {
+    	  int leadingID = event->SelectLeadingParticle(0);
+    	  if(leadingID >= 0) {
+    		  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
+    		  AliVParticle *ref = leadingPart.GetRef();
+    		  fValue = ref->Pt();
+    	  }
+    	  else fValue = 0;
+      }
       break;
     default:
       AliWarning("Invalid value type");

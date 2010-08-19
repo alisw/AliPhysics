@@ -63,6 +63,7 @@ AliRsnCutStd::AliRsnCutStd
     // double
     case kP:
     case kPt:
+    case kPtLeading:
     case kEta:
     case kY:
     case kThetaDeg:
@@ -109,6 +110,7 @@ AliRsnCutStd::AliRsnCutStd
     // double
     case kP:
     case kPt:
+    case kPtLeading:
     case kEta:
     case kY:
     case kThetaDeg:
@@ -135,6 +137,7 @@ AliRsnCut::EVarType AliRsnCutStd::CheckType()
     // double couts
     case kP:
     case kPt:
+    case kPtLeading:
     case kEta:
     case kY:
     case kThetaDeg:
@@ -249,6 +252,17 @@ Bool_t AliRsnCutStd::IsEventSelected(AliRsnEvent * const event)
     case kMult:
       fCutValueI = event->GetMultiplicity();
       return OkRange();
+    case kPtLeading:
+    {
+      int leadingID = event->SelectLeadingParticle(0);
+      if(leadingID >= 0) {
+    	  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
+    	  AliVParticle *ref = fUseMC ? leadingPart.GetRefMC() : leadingPart.GetRef();
+    	  fCutValueD = ref->Pt();
+      }
+      else fCutValueD = 0;
+      return OkRange();
+    }
     default:
       AliWarning(Form("Value %d is not included in available cuts for EVENT. Cut skipped.", fType));
       return kTRUE;
