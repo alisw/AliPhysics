@@ -25,7 +25,8 @@
 
 // This is the path one needs to change if the year is no longer 2009 
 // and the runnumber cannot be found
-TString alienOcdbPath("alien://folder=/alice/data/2009/OCDB/");
+//TString alienOcdbPath("alien://folder=/alice/data/2009/OCDB/");
+TString alienOcdbPath("alien://folder=/alice/data/2010/OCDB/");
 
 // Do not make changes below here unless you know what your doing
 
