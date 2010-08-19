@@ -17,7 +17,7 @@ Bool_t doEventStat    = 1;   // output ok
 Bool_t doSDD          = 1;   // outout ok needs RP
 Bool_t doSSDdEdx      = 1;   // testing
 // new 
-Bool_t doTRD          = 0;   // TRD 
+Bool_t doTRD          = 1;   // TRD 
 Bool_t doITS          = 1;   // ITS
 Bool_t doCALO         = 1;   // Calorimeter
 Bool_t doMUONTrig     = 1;   // MUON trigger
@@ -239,7 +239,15 @@ void AddAnalysisTasks()
   //
   if(doTRD) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
-      AddTrainPerformanceTRD("ALL");
+      // steer individual TRD tasks
+      Bool_t 
+      doCheckESD(kTRUE),  // AliTRDcheckESD
+      doCheckDET(kTRUE),  // AliTRDcheckDET
+      doEffic(kTRUE),     // AliTRDefficiency
+      doResolution(kTRUE),// AliTRDresolution
+      doCheckPID(kTRUE),  // AliTRDcheckPID
+      doV0Monitor(kFALSE);// AliTRDv0Monitor
+      AddTrainPerformanceTRD(Translate(doCheckESD, doCheckDET, doEffic, doResolution, doCheckPID, doV0Monitor));
   }
 
   //
