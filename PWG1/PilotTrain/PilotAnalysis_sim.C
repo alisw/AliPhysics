@@ -239,7 +239,15 @@ void AddAnalysisTasks()
   //
   if(doTRD) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
-      AddTrainPerformanceTRD("ALL");
+      // steer individual TRD tasks
+      Bool_t 
+      doCheckESD(kTRUE),  // AliTRDcheckESD
+      doCheckDET(kTRUE),  // AliTRDcheckDET
+      doEffic(kTRUE),     // AliTRDefficiency
+      doResolution(kTRUE),// AliTRDresolution
+      doCheckPID(kTRUE),  // AliTRDcheckPID
+      doV0Monitor(kFALSE);// AliTRDv0Monitor
+      AddTrainPerformanceTRD(Translate(doCheckESD, doCheckDET, doEffic, doResolution, doCheckPID, doV0Monitor));
   }
 
   //
