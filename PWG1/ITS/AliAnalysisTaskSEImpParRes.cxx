@@ -1442,10 +1442,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointzTrue)))->Fill(dzTrue[1]/TMath::Sqrt(covdzTrue[2]));
       }
       //postive and negative track
-      //Short_t charge=esdtrack->Charge();
-      Int_t pdgcode=TMath::Abs(pdgCode);
       Int_t charge=esdtrack->Charge();
-      if(charge==1 && pdgcode==211) {
+      if(charge==1) {
 	char *named0PostvtracrphiRec = Form("d0postvtracrphiRec_%d", bin);
 	char *named0PostvtracrphiSkip = Form("d0postvtracrphiSkip_%d", bin);
 	char *named0PostvtracrphiTrue = Form("d0postvtracrphiTrue_%d", bin);
@@ -1462,7 +1460,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	}
       }
       
-      if(charge==-1 && pdgcode==211 ) {
+      if(charge==-1) {
 	char *named0NegtvtracrphiRec = Form("d0negtvtracrphiRec_%d", bin);
 	char *named0NegtvtracrphiSkip = Form("d0negtvtracrphiSkip_%d", bin);
 	char *named0NegtvtracrphiTrue = Form("d0negtvtracrphiTrue_%d", bin);
