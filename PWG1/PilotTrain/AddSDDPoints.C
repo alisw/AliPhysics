@@ -8,7 +8,7 @@ AliAnalysisTaskSE* AddSDDPoints() {
 
     AliAnalysisTaskSDDRP *task= new AliAnalysisTaskSDDRP();
     mgr->AddTask(task);
-    mgr->SetDebugLevel(2);
+//    mgr->SetDebugLevel(2); // *NOT ALLOWED*
     
     
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
