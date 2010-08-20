@@ -30,7 +30,7 @@ Double_t minB = 0.01;
 Double_t maxB = 0.9;
 
 
-void  runStarFlowAnalysis()
+void  runStarFlowAnalysis(const char* inputDataFiles="/Users/snelling/alice_data/jthomas/testData/")
 {
   gSystem->Load("libTree.so");
   gSystem->Load("libVMC.so");
@@ -266,7 +266,7 @@ void  runStarFlowAnalysis()
 
 
   Int_t i=0;
-  AliStarEventReader starReader("/Users/snelling/alice_data/jthomas/testData/") ;
+  AliStarEventReader starReader(inputDataFiles) ;
   while ( starReader.GetNextEvent() )                                // Get next event
   {
     AliStarEvent* starEvent = starReader.GetEvent();
