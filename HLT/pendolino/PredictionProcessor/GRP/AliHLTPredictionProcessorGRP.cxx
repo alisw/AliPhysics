@@ -4,7 +4,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Gaute Ovrebekk                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no         *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *

@@ -71,15 +71,18 @@ Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
   // extracts the sensor value
   // return last value read from sensor specified by stringId
   
-  TObjArray* valueSet;
-  TPair* pair = (TPair*)dcsAliasMap->FindObject(stringId);
-  if (pair) {
-    valueSet = (TObjArray*)pair->Value();
+  TObject* object=dcsAliasMap->FindObject(stringId);
+  if (!object) return kFALSE;
+  TPair* pair = dynamic_cast<TPair*>(object);
+  if (pair && pair->Value()) {
+    TObjArray* valueSet = dynamic_cast<TObjArray*>(pair->Value());
     Int_t nentriesDCS = valueSet->GetEntriesFast() - 1;
-    if(nentriesDCS>=0){
-      AliDCSValue *val = (AliDCSValue *)valueSet->At(nentriesDCS);
-      *value=val->GetFloat();
-      return kTRUE;
+    if(nentriesDCS>=0 && valueSet->At(nentriesDCS)){
+      AliDCSValue *val = dynamic_cast<AliDCSValue *>(valueSet->At(nentriesDCS));
+      if (val) {
+	*value=val->GetFloat();
+	return kTRUE;
+      }
     }
   }
   return kFALSE;
