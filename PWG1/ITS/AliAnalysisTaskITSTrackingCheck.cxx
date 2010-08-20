@@ -466,7 +466,8 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   gStyle->SetHistLineWidth(2);
 
   Int_t nPtBins=34;
-  Float_t xPtBins[35]={0,0.025,0.05,0.075,0.1,0.125,0.15,0.175,0.2,0.225,0.25,0.275,0.3,0.325,0.35,0.375,0.4,0.5,0.6,0.7,0.8,1.0,1.5,2.,2.5,3,4,5,6,8,10,15,20,25,30};
+  Float_t xPtBins[35]={0,0.025,0.05,0.075,0.08,0.125,0.15,0.175,0.2,0.225,0.25,0.275,0.280,0.325,0.35,0.375,0.4,0.45,0.55,0.7,0.75,0.9,1.2,1.7,2.5,3.5,4.5,5,6,8,13,15,23,28,35};
+  //Float_t xPtBins[35]={0,0.025,0.05,0.075,0.1,0.125,0.15,0.175,0.2,0.225,0.25,0.275,0.3,0.325,0.35,0.375,0.4,0.5,0.6,0.7,0.8,1.0,1.5,2.,2.5,3,4,5,6,8,10,15,20,25,30};
 
   for(Int_t i=0; i<11; i++) fCountsPerPtBin[i]=0;
 
@@ -1488,7 +1489,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
   }
 
   Int_t ntracks = fESD->GetNumberOfTracks();
-  printf("Tracks # = %d\n",fESD->GetNumberOfTracks());
+  //printf("Tracks # = %d\n",fESD->GetNumberOfTracks());
 
   fHistNtracks->Fill(ntracks);
   // Post the data already here
