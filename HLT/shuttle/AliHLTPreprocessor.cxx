@@ -16,12 +16,12 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/**
- * @file   AliHLTPreprocessor.cxx
- * @author Matthias Richter
- * @brief  Container for HLT module preprocessors, acts to the outside as
- *         HLT preprocessor used by the Offline Shuttle 
- */
+
+// @file   AliHLTPreprocessor.cxx
+// @author Matthias Richter
+// @brief  Container for HLT module preprocessors, acts to the outside as
+//         HLT preprocessor used by the Offline Shuttle 
+// 
 
 #include "AliHLTPreprocessor.h"
 #include "AliHLTModulePreprocessor.h"
@@ -76,6 +76,8 @@ const char* AliHLTPreprocessor::fgkHLTDefaultShuttleLibs[]= {
   //"libAliHLTPHOS.so",
   //"libAliHLTMUON.so",
   "libAliHLTTRD.so",
+  "libAliHLTGlobal.so",
+  "libAliHLTTrigger.so",
   NULL
 };
 
@@ -91,6 +93,10 @@ void AliHLTPreprocessor::Initialize(Int_t run, UInt_t startTime,
   fRun = run;
   fStartTime = startTime;
   fEndTime = endTime;
+
+  // TODO: read a configuration object from OCDB
+  // configure
+  // - component libraries
 
   // retrieve list of active detectors from previous run.
   fActiveDetectors = atoi(AliPreprocessor::GetRunParameter("detectorMask"));

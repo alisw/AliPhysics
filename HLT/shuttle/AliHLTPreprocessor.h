@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// @(#) $Id: AliHLTPreprocessor.h 23318 2008-01-14 12:43:28Z hristov $
+// $Id: AliHLTPreprocessor.h 23318 2008-01-14 12:43:28Z hristov $
 
 #ifndef ALIHLTPREPROCESSOR_H
 #define ALIHLTPREPROCESSOR_H
@@ -86,7 +86,8 @@ class AliHLTPreprocessor : public AliPreprocessor , public AliHLTShuttleInterfac
   UInt_t PreprocessorGetEndTime() {return fEndTime;}
 
   // AliPreprocessor methods made publicly available
-  //
+  // the subsequent functions map the AliPreprocessor interface functions in order
+  // to be used by the module proprocessors.
   Bool_t PreprocessorStore(const char* pathLevel2, const char* pathLevel3, TObject* object,
 	       AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE) {
     return AliPreprocessor::Store(pathLevel2, pathLevel3, object, metaData, validityStart, validityInfinite);
