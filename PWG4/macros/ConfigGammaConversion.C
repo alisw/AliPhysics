@@ -1369,14 +1369,21 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetDoCF(kGCrunCF);
   v0Reader->SetDoCF(kGCrunCF);
 
+  // Add task to the manager 
+  mgr->AddTask(gammaconversion);
+
+
   // Define Output Event Handler and add
   if(kGCWriteAOD){
 
-    cout << "Delta AOD file name : " << kGCDeltaAODFilename << endl;
-
-    if( kGCrunOnTrain && !kGCrunOnGsiTrain ) {
+    if( kGCrunOnTrain ) {
 
       AliAODHandler * aodHandler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
+      if(!aodHandler) {
+	::Error("This task requires an AOD handler");
+	return -1;
+      }
+
       gammaconversion->SetDeltaAODFileName(kGCDeltaAODFilename);
       
       if(kGCDeltaAODFilename.Length() > 0) {
@@ -1395,18 +1402,11 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     }
   }
 
-	
-  // Add task to the manager 
-  mgr->AddTask(gammaconversion);
-	
   // Connect I/O to the task
   mgr->ConnectInput (gammaconversion, 0, cinput1);
-  
+  if(mgr->GetCommonOutputContainer())
+    mgr->ConnectOutput(gammaconversion, 0, mgr->GetCommonOutputContainer());
 
-  // CKB Output slot 0 is NOT connected if WriteStandardAOD is false?
-  if( kGCWriteAOD ){
-    mgr->ConnectOutput(gammaconversion, 0, coutput1);
-  }
   mgr->ConnectOutput(gammaconversion, 1, coutput2);
   mgr->ConnectOutput(gammaconversion, 2, coutput3);
 
