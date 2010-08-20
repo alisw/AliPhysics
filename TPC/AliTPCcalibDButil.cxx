@@ -1685,7 +1685,7 @@ Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Dou
   }
   Double_t median = TMath::Median(nused,tdelta);
   Double_t mean  = TMath::Mean(nused,tdelta);
-  delete tdelta;
+  delete [] tdelta;
   return (valType==0) ? median:mean;
 }
 
@@ -2031,11 +2031,12 @@ TGraph* AliTPCcalibDButil::FilterGraphMedian(TGraph * graph, Float_t sigmaCut,Do
   Int_t npoints0 = graph->GetN();
   Int_t npoints=0;
   Float_t  rmsY=0;
-  Double_t *outx=new Double_t[npoints0];
-  Double_t *outy=new Double_t[npoints0];
   //
   //
   if (npoints0<kMinPoints) return 0;
+
+  Double_t *outx=new Double_t[npoints0];
+  Double_t *outy=new Double_t[npoints0];
   for (Int_t iter=0; iter<3; iter++){
     npoints=0;
     for (Int_t ipoint=0; ipoint<npoints0; ipoint++){
@@ -2051,6 +2052,8 @@ TGraph* AliTPCcalibDButil::FilterGraphMedian(TGraph * graph, Float_t sigmaCut,Do
   }
   TGraph *graphOut=0;
   if (npoints>1) graphOut= new TGraph(npoints,outx,outy); 
+  delete [] outx;
+  delete [] outy;
   return graphOut;
 }
 
@@ -2064,11 +2067,12 @@ TGraph* AliTPCcalibDButil::FilterGraphMedianAbs(TGraph * graph, Float_t cut,Doub
   Int_t npoints0 = graph->GetN();
   Int_t npoints=0;
   Float_t  rmsY=0;
-  Double_t *outx=new Double_t[npoints0];
-  Double_t *outy=new Double_t[npoints0];
   //
   //
   if (npoints0<kMinPoints) return 0;
+
+  Double_t *outx=new Double_t[npoints0];
+  Double_t *outy=new Double_t[npoints0];
   for (Int_t iter=0; iter<3; iter++){
     npoints=0;
     for (Int_t ipoint=0; ipoint<npoints0; ipoint++){
@@ -2084,6 +2088,8 @@ TGraph* AliTPCcalibDButil::FilterGraphMedianAbs(TGraph * graph, Float_t cut,Doub
   }
   TGraph *graphOut=0;
   if (npoints>1) graphOut= new TGraph(npoints,outx,outy); 
+  delete [] outx;
+  delete [] outy;
   return graphOut;
 }
 
@@ -2098,14 +2104,16 @@ TGraphErrors* AliTPCcalibDButil::FilterGraphMedianErr(TGraphErrors * const graph
   Int_t npoints0 = graph->GetN();
   Int_t npoints=0;
   Float_t  medianErr=0, rmsErr=0;
+  //
+  //
+  if (npoints0<kMinPoints) return 0;
+
   Double_t *outx=new Double_t[npoints0];
   Double_t *outy=new Double_t[npoints0];
   Double_t *erry=new Double_t[npoints0];
   Double_t *nerry=new Double_t[npoints0];
   Double_t *errx=new Double_t[npoints0];
-  //
-  //
-  if (npoints0<kMinPoints) return 0;
+
   for (Int_t iter=0; iter<3; iter++){
     npoints=0;
     for (Int_t ipoint=0; ipoint<npoints0; ipoint++){
@@ -2126,8 +2134,9 @@ TGraphErrors* AliTPCcalibDButil::FilterGraphMedianErr(TGraphErrors * const graph
   if (npoints>1) graphOut= new TGraphErrors(npoints,outx,outy,errx,erry); 
   delete []outx;
   delete []outy;
-  delete []errx;
   delete []erry;
+  delete []nerry;
+  delete []errx;
   return graphOut;
 }
 
@@ -2146,6 +2155,9 @@ void AliTPCcalibDButil::Sort(TGraph *graph){
   for (Int_t i=0;i<npoints;i++) graph->GetX()[i]=outx[i];
   for (Int_t i=0;i<npoints;i++) graph->GetY()[i]=outy[i];
  
+  delete [] indexes;
+  delete [] outx;
+  delete [] outy;
 }
 void AliTPCcalibDButil::SmoothGraph(TGraph *graph, Double_t delta){
   //
@@ -2247,6 +2259,8 @@ Float_t AliTPCcalibDButil::FilterSensor(AliDCSSensor * sensor, Double_t ymin, Do
   if (naccept<1) {
     delete fit;
     sensor->SetFit(0);
+    delete [] yin0;
+    delete [] yin1;
     return 0.;
   }
 
