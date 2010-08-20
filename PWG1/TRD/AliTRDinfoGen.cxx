@@ -67,6 +67,7 @@
 #include <climits>
 #include <cstring>
 #include <iostream>
+#include <memory>
 
 #include "AliTRDcalibDB.h"
 #include "AliTRDtrackerV1.h"
@@ -296,7 +297,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   // event selection : trigger cut
   if(UseLocalEvSelection() && fEvTrigger){ 
     Bool_t kTRIGGERED(kFALSE);
-    const TObjArray *trig = fEvTrigger->Tokenize(" ");
+    std::auto_ptr<TObjArray> trig(fEvTrigger->Tokenize(" "));
     for(Int_t itrig=trig->GetEntriesFast(); itrig--;){
       const Char_t *trigClass(((TObjString*)(*trig)[itrig])->GetName());
       if(fESDev->IsTriggerClassFired(trigClass)) {
