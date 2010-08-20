@@ -25,10 +25,10 @@
 //   Markus Fasel <M.Fasel@gsi.de> 
 //   Markus Heide <mheide@uni-muenster.de> 
 //  
-#include <TH2I.h>
+#include <TF1.h>
 #include <TList.h>
 #include <TMath.h>
-//#include <TParticle.h>
+#include <THnSparse.h>
 
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
@@ -38,12 +38,11 @@
 #include "AliMCParticle.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
-//#include "AliVParticle.h"
 
 #include "AliHFEcollection.h"
 #include "AliHFEpidTPC.h"
 
-
+ClassImp(AliHFEpidTPC)
 
 //___________________________________________________________________
 AliHFEpidTPC::AliHFEpidTPC(const char* name) :
@@ -51,10 +50,11 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   AliHFEpidBase(name)
   , fLineCrossingType(0)
   , fLineCrossingsEnabled(0)
+  , fUpperSigmaCut(NULL)
+  , fLowerSigmaCut(NULL)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
   , fPID(NULL)
-  , fESDpid(NULL)
   , fQAList(NULL)
 {
   //
@@ -64,7 +64,6 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   memset(fPAsigCut, 0, sizeof(Float_t) * 2);
   memset(fNAsigmaTPC, 0, sizeof(Float_t) * 2);
   fPID = new AliPID;
-  fESDpid = new AliESDpid;
 }
 
 //___________________________________________________________________
@@ -72,10 +71,11 @@ AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   AliHFEpidBase("")
   , fLineCrossingType(0)
   , fLineCrossingsEnabled(0)
+  , fUpperSigmaCut(NULL)
+  , fLowerSigmaCut(NULL)
   , fNsigmaTPC(2)
   , fRejectionEnabled(0)
   , fPID(NULL)
-  , fESDpid(NULL)
   , fQAList(NULL)
 {
   //
@@ -94,7 +94,6 @@ AliHFEpidTPC &AliHFEpidTPC::operator=(const AliHFEpidTPC &ref){
   } 
   return *this;
 }
-
 //___________________________________________________________________
 void AliHFEpidTPC::Copy(TObject &o) const{
   //
@@ -104,10 +103,11 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   AliHFEpidTPC &target = dynamic_cast<AliHFEpidTPC &>(o);
 
   target.fLineCrossingsEnabled = fLineCrossingsEnabled;
+  target.fUpperSigmaCut = fUpperSigmaCut;
+  target.fLowerSigmaCut = fLowerSigmaCut;
   target.fNsigmaTPC = fNsigmaTPC;
   target.fRejectionEnabled = fRejectionEnabled;
   target.fPID = new AliPID(*fPID);
-  target.fESDpid = new AliESDpid(*fESDpid);
   target.fQAList = new AliHFEcollection(*fQAList);
   memcpy(target.fLineCrossingSigma, fLineCrossingSigma, sizeof(Double_t) * AliPID::kSPECIES);
   memcpy(target.fPAsigCut, fPAsigCut, sizeof(Float_t) * 2);
@@ -122,7 +122,6 @@ AliHFEpidTPC::~AliHFEpidTPC(){
   // Destructor
   //
   if(fPID) delete fPID;
-  if(fESDpid) delete fESDpid;
   if(fQAList){
     delete fQAList;
   }
@@ -163,11 +162,12 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
   //
   //  Doing TPC PID as explained in IsSelected for ESD tracks
   //
-  Float_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack, AliPID::kElectron);
-  if(IsQAon()){
-    FillTPChistograms(esdTrack, mctrack);
-    fQAList->Fill("fHistSigmaElectronAll",  esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P(), nsigma);
+  if(!fESDpid){
+    AliError("No ESD PID object available");
+    return kFALSE;
   }
+  Float_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack, AliPID::kElectron);
+  if(IsQAon()) FillTPChistograms(esdTrack, mctrack, kFALSE);
   // exclude crossing points:
   // Determine the bethe values for each particle species
   Bool_t isLineCrossing = kFALSE;
@@ -189,21 +189,21 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
     Int_t reject = Reject(esdTrack);
     if(reject != 0) return reject;
   }
-  // Check whether distance from the electron line is smaller than n-sigma
 
-  // Perform Asymmetric n-sigma cut if required, else perform symmetric TPC sigma cut
-  Float_t p = 0.;
+  // Check if we have an asymmetric sigma model set
   Int_t pdg = 0;
-  if(HasAsymmetricSigmaCut() && (p = esdTrack->P()) >= fPAsigCut[0] && p <= fPAsigCut[1]){ 
-    if(nsigma >= fNAsigmaTPC[0] && nsigma <= fNAsigmaTPC[1]) pdg = 11; 
-  } else {
-    if(TMath::Abs(nsigma) < fNsigmaTPC ) pdg = 11;
+  if(fUpperSigmaCut || fLowerSigmaCut){
+    pdg = CutSigmaModel(esdTrack) ? 11 : 0;
+  } else { 
+    // Perform Asymmetric n-sigma cut if required, else perform symmetric TPC sigma cut
+    Float_t p = 0.;
+    if(HasAsymmetricSigmaCut() && (p = esdTrack->P()) >= fPAsigCut[0] && p <= fPAsigCut[1]){ 
+      if(nsigma >= fNAsigmaTPC[0] && nsigma <= fNAsigmaTPC[1]) pdg = 11; 
+    } else {
+      if(TMath::Abs(nsigma) < fNsigmaTPC ) pdg = 11;
+    }
   }
-  if(IsQAon() && pdg != 0){ 
-    fQAList->Fill("fHistTPCselected", esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P(), esdTrack->GetTPCsignal());
-    fQAList->Fill("fHistSigmaElectronSelected",  esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P(), nsigma);
-  }
-
+  if(IsQAon() && pdg != 0) FillTPChistograms(esdTrack, mctrack, kTRUE);
   return pdg;
 }
 
@@ -211,6 +211,19 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
 Int_t AliHFEpidTPC::MakePIDaod(AliAODTrack * /*aodTrack*/, AliAODMCParticle * /*mctrack*/){
   AliError("AOD PID not yet implemented");
   return 0;
+}
+
+//___________________________________________________________________
+Bool_t AliHFEpidTPC::CutSigmaModel(AliESDtrack *track){
+  //
+  // N SigmaCut using parametrization of the cuts
+  //
+  Bool_t isSelected = kTRUE;
+  Float_t nsigma = fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron);
+  Double_t p =  track->GetInnerParam() ? track->GetInnerParam()->P() : track->P();
+  if(fUpperSigmaCut && nsigma > fUpperSigmaCut->Eval(p)) isSelected = kFALSE;
+  if(fLowerSigmaCut && nsigma < fLowerSigmaCut->Eval(p)) isSelected = kFALSE;
+  return isSelected;
 }
 
 //___________________________________________________________________
@@ -294,7 +307,7 @@ Double_t  AliHFEpidTPC::Suppression(const AliESDtrack *track, Int_t species)
 }
 
 //___________________________________________________________________
-void AliHFEpidTPC::FillTPChistograms(const AliESDtrack *track, const AliMCParticle *mctrack){
+void AliHFEpidTPC::FillTPChistograms(const AliESDtrack *track, const AliMCParticle *mctrack, Bool_t stepSelected){
   // 
   // Fill the QA histogtrams
   //
@@ -303,51 +316,48 @@ void AliHFEpidTPC::FillTPChistograms(const AliESDtrack *track, const AliMCPartic
  
   Double_t tpcSignal = track->GetTPCsignal();
   Double_t p = track->GetInnerParam() ? track->GetInnerParam()->P() : track->P();
-  if(HasMCData()){
+  Int_t species = -1;
+  THnSparse *hptr = NULL;
+  if(HasMCData() && mctrack){
     switch(TMath::Abs(mctrack->Particle()->GetPdgCode())){
-      case 11:    fQAList->Fill("fHistTPCelectron", p, tpcSignal);
-	                fQAList->Fill("fHistTPCprobEl", p, Likelihood(track, 0));
-	                //histograms with ratio of likelihood to be electron/to be other species (a check for quality of likelihood PID);
-	                fQAList->Fill("fHistTPCenhanceElPi", p, -Suppression(track, 2));
-	                fQAList->Fill("fHistTPCenhanceElMu", p, -Suppression(track, 1));
-	                fQAList->Fill("fHistTPCenhanceElKa", p, -Suppression(track, 3));
-	                fQAList->Fill("fHistTPCenhanceElPro", p, -Suppression(track, 4));
-	                //___________________________________________________________________________________________
-	                //Likelihoods for electrons to be other particle species
-	                fQAList->Fill("fHistTPCElprobPi", p, Likelihood(track, 2));
-	                fQAList->Fill("fHistTPCElprobMu", p, Likelihood(track, 1));
-	                fQAList->Fill("fHistTPCElprobKa", p, Likelihood(track, 3));
-	                fQAList->Fill("fHistTPCElprobPro", p, Likelihood(track, 4));
-	                break;
-	    //___________________________________________________________________________________________
-      case 13:    fQAList->Fill("fHistTPCmuon", p, tpcSignal);
-                  //Likelihood of muon to be an electron
-                  fQAList->Fill("fHistTPCprobMu", p, Likelihood(track, 0));
-                  //ratio of likelihood for muon to be a muon/an electron -> indicator for quality of muon suppression
-                  //below functions are the same for other species
-	                fQAList->Fill("fHistTPCsuppressMu", p, Suppression(track, 1));
-                  break;
-      case 211:   fQAList->Fill("fHistTPCpion", p, tpcSignal);
-	                fQAList->Fill("fHistTPCprobPi", p, Likelihood(track, 0));
-	                fQAList->Fill("fHistTPCsuppressPi", p, Suppression(track, 2));
-                  break;
-      case 321:   fQAList->Fill("fHistTPCkaon", p, tpcSignal);
-	                fQAList->Fill("fHistTPCprobKa", p, Likelihood(track, 0));
-	                fQAList->Fill("fHistTPCsuppressKa", p, Suppression(track, 3));
-                  break;
-      case 2212:  fQAList->Fill("fHistTPCproton", p, tpcSignal);
-	                fQAList->Fill("fHistTPCprobPro", p, Likelihood(track, 0));
-	                fQAList->Fill("fHistTPCsuppressPro", p, Suppression(track, 4));
-                  break;
-      default:    fQAList->Fill("fHistTPCothers", p, tpcSignal);
-	                fQAList->Fill("fHistTPCprobOth", p, Likelihood(track, 0));
-
-	                break;
+      case 11:   
+        species = AliPID::kElectron;
+        if(!stepSelected){
+          Double_t contentElHist[4];
+          for(Int_t ispec = AliPID::kMuon; ispec < AliPID::kSPECIES; ispec++){
+            contentElHist[0] = ispec;
+            contentElHist[1] = p;
+            contentElHist[2] = -Suppression(track, ispec);
+            contentElHist[3] = Likelihood(track, ispec);
+            hptr = dynamic_cast<THnSparseF *>(fQAList->Get("fHistTPCel"));
+            hptr->Fill(contentElHist);
+          }
+        }
+	      break;
+      case 13:    species = AliPID::kMuon; break;
+      case 211:   species = AliPID::kPion; break;
+      case 321:   species = AliPID::kKaon; break;
+      case 2212:  species = AliPID::kProton; break; 
+      default:    species = -1; break;
+    }
+    if(!stepSelected){
+      // Fill Probability Histogram
+      Double_t contentProb[3] = {species , p, Likelihood(track, 0)};
+      hptr = dynamic_cast<THnSparseF *>(fQAList->Get("fHistTPCprob"));
+      hptr->Fill(contentProb);
+      // Fill suppression Histogram
+      if(species > 0 && species < AliPID::kSPECIES){
+        Double_t contentSup[3] = {species, p, Suppression(track, species)};
+        hptr = dynamic_cast<THnSparseF *>(fQAList->Get("fHistTPCsuppression"));
+        hptr->Fill(contentSup);
+      }
     }
   }
-  //TPC signal and Likelihood to be electron for all tracks (independent of MC information)
-  fQAList->Fill("fHistTPCall", p, tpcSignal);
-  fQAList->Fill("kHistTPCprobAll", p, Likelihood(track, 0));
+  
+  // Fill signal histogram
+  Double_t contentSignal[5] = {species, p, tpcSignal, fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron), stepSelected ? 1 : 0};
+  hptr = dynamic_cast<THnSparseF *>(fQAList->Get("fHistTPCsignal"));
+  hptr->Fill(contentSignal);
 }
 
 //___________________________________________________________________
@@ -355,50 +365,33 @@ void AliHFEpidTPC::AddQAhistograms(TList *qaList){
   //
   // Create QA histograms for TPC PID
   //
-  fQAList = new AliHFEcollection;
+  fQAList = new AliHFEcollection("fQAhistosTPC", "TPC QA histos");
+  
+  // First THnSparse we fill with the signal
+  const Int_t kNdimSignal  = 5;
+  Int_t nBins[kNdimSignal];
+  Double_t binMin[kNdimSignal], binMax[kNdimSignal];
+  nBins[0] = AliPID::kSPECIES + 1; binMin[0] = -1.; binMax[0] = AliPID::kSPECIES; // MC Species;
+  nBins[1] = 1000; binMin[1] = 0.; binMax[1] = 20.; 
+  nBins[2] = 6000; binMin[2] = 0.; binMax[2] = 600.;
+  nBins[3] = 1400; binMin[3] = -12.; binMax[3] = 12.;
+  nBins[4] = 2; binMin[4] = 0.; binMax[4] = nBins[4];  // Selected or not
+  fQAList->CreateTHnSparse("fHistTPCsignal", "TPC signal; Species; p [GeV/c]; TPC Signal [a.u.]; Normalized TPC distance to the electron Line [#sigma]; Selection Status", kNdimSignal, nBins, binMin, binMax);
 
-  fQAList->CreateTH2F("fHistTPCelectron","TPC signal for Electrons", 200, 0, 20, 60, 0, 600); 
-  fQAList->CreateTH2F("fHistTPCmuon","TPC signal for Muons", 200, 0, 20, 60, 0, 600);
-  fQAList->CreateTH2F("fHistTPCpion","TPC signal for Pions", 200, 0, 20, 60, 0, 600);
-  fQAList->CreateTH2F("fHistTPCkaon","TPC signal for Kaons", 200, 0, 20, 60, 0, 600);
-  fQAList->CreateTH2F("fHistTPCproton","TPC signal for Protons", 200, 0, 20, 60, 0, 600);
-  fQAList->CreateTH2F("fHistTPCothers","TPC signal for other species", 200, 0, 20, 60, 0, 600);
-  fQAList->CreateTH2F("fHistTPCall","TPC signal for all species", 200, 0, 20, 60, 0, 600);
-  fQAList->CreateTH2F("fHistTPCselected","TPC signal for all selected particles", 200, 0, 20, 60, 0, 600);
+  const Int_t kNdimProbEl = 3;
+  nBins[2] = 200; binMin[2] = 0.; binMax[2] = 1.;
+  fQAList->CreateTHnSparse("fHistTPCprob", "TPC Likelihood to be an electron; Species; p [GeV/c]; TPC Likelihood [a.u.]", kNdimProbEl, nBins, binMin, binMax);
 
-  fQAList->CreateTH2F("fHistTPCprobEl","TPC likelihood for electrons to be an electron vs. p", 200, 0.,20.,200,0.,1.);
-  fQAList->CreateTH2F("fHistTPCprobPi","TPC likelihood for pions to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
-  fQAList->CreateTH2F("fHistTPCprobMu","TPC likelihood for muons to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
-  fQAList->CreateTH2F("fHistTPCprobKa","TPC likelihood for kaons to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
-  fQAList->CreateTH2F("fHistTPCprobPro","TPC likelihood for protons to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
-  fQAList->CreateTH2F("fHistTPCprobOth","TPC likelihood for other particles to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
-  fQAList->CreateTH2F("fHistTPCprobAll","TPC likelihood for all particles to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
+  const Int_t kNdimSuppression = 3;
+  nBins[2] = 200; binMin[2] = -1.; binMax[2] = 5.8;  // log10 of TPC Likelihood(species)/Likelihood(elec) for species i neq electron
+  fQAList->CreateTHnSparse("fHistTPCsuppression", "TPC non-electron Suppression; Species; p [GeV/c]; Suppression [a.u.]", kNdimSuppression, nBins, binMin, binMax);
 
-  fQAList->CreateTH2F("fHistTPCsuppressPi","log10 of TPC Likelihood(pion)/Likelihood(elec) for pions vs. p", 200, 0.,20.,200,-1.,5.8);
-  fQAList->CreateTH2F("fHistTPCsuppressMu","log10 of TPC Likelihood(muon)/Likelihood(elec) for muons vs. p", 200, 0.,20.,200,-1.,5.8);
-  fQAList->CreateTH2F("fHistTPCsuppressKa","log10 of TPC Likelihood(kaon)/Likelihood(elec) for kaons vs. p", 200, 0.,20.,200,-1.,5.8);
-  fQAList->CreateTH2F("fHistTPCsuppressPro","log10 of TPC Likelihood(proton)/Likelihood(elec)for protons vs. p", 200, 0.,20.,200,-1.,5.8);
-
-  fQAList->CreateTH2F("fHistTPCenhanceElPi","log10 of TPC Likelihood(elec)/Likelihood(pion) for electrons vs. p", 200, 0.,20.,200,-1.,5.8);
-  fQAList->CreateTH2F("fHistTPCenhanceElMu","log10 of TPC Likelihood(elec)/Likelihood(muon) for electrons vs. p", 200, 0.,20.,200,-1.,5.8);
-  fQAList->CreateTH2F("fHistTPCenhanceElKa","log10 of TPC Likelihood(elec)/Likelihood(kaon) for electrons vs. p", 200, 0.,20.,200,-1.,5.8);
-  fQAList->CreateTH2F("fHistTPCenhanceElPro","log10 of TPC Likelihood(elec)/Likelihood(proton) for electrons vs. p", 200, 0.,20.,200,-1.,5.8);
-
-  fQAList->CreateTH2F("fHistTPCElprobPi","TPC likelihood for electrons to be a pion vs. p", 200, 0.,20.,200,0.,1.);
-  fQAList->CreateTH2F("fHistTPCElprobMu","TPC likelihood for electrons to be a muon vs. p", 200, 0.,20.,200,0.,1.);
-  fQAList->CreateTH2F("fHistTPCElprobKa","TPC likelihood for electrons to be a kaon vs. p", 200, 0.,20.,200,0.,1.);
-  fQAList->CreateTH2F("fHistTPCElprobPro","TPC likelihood for electrons to be a proton vs. p", 200, 0.,20.,200,0.,1.);
-
-  fQAList->CreateTH2F("fHistSigmaElectronAll", "TPC NSigma around the Electron Line", 200, 0, 20, 40, -10, 10);
-  fQAList->CreateTH2F("fHistSigmaElectronSelected", "TPC NSigma around the Electron Line for selected Tracks", 200, 0, 20, 40, -10, 10);
+  const Int_t kNdimEle = 4;
+  nBins[0] = AliPID::kSPECIES - 1; binMin[0] = 1.; binMax[0] = AliPID::kSPECIES;
+  nBins[2] = 100; binMin[2] = -1.; binMax[2] = 5.8;
+  nBins[3] = 200; binMin[3] = 0.; binMax[3] = 1.; 
+  fQAList->CreateTHnSparse("fHistTPCel", "TPC electron Histogram; Species; p [GeV/c]; Electron Enhancement:Electron Likelihood", kNdimEle, nBins, binMin, binMax);
 
   qaList->AddLast(fQAList->GetList());
 }
 
-//___________________________________________________________________
-void AliHFEpidTPC::SetBetheBlochParameters(Double_t *pars){
-  //
-  // Set non-default Bethe-Bloch Parameters
-  //
-  fESDpid->GetTPCResponse().SetBetheBlochParameters(pars[0], pars[1], pars[2], pars[3], pars[4]);
-}

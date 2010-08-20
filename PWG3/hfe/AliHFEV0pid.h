@@ -24,12 +24,9 @@
 #include <TObject.h>
 #endif
 
-#ifndef ALIHFECOLLECTION_H
-#include "AliHFEcollection.h"
-#endif
-
 class TObjArray;
 class TList;
+class TString;
 
 class AliESDv0;
 class AliESDtrack;
@@ -37,6 +34,9 @@ class AliKFParticle;
 class AliKFVertex;
 class AliVEvent;
 class AliVTrack;
+
+class AliHFEV0cuts;
+class AliHFEcollection;
 
 class AliHFEV0pid : public TObject{
   public:
@@ -50,22 +50,20 @@ class AliHFEV0pid : public TObject{
     };
     enum{ // Identified Daughter particles
       kRecoElectron = 0,
-	    kRecoPionK0 = 1,
-	    kRecoPionL = 2,
-	    kRecoKaon = 3,
-	    kRecoProton = 4
-    };
+	kRecoPionK0 = 1,
+	kRecoPionL = 2,
+	kRecoKaon = 3,
+	kRecoProton = 4
+	};
     AliHFEV0pid();
     ~AliHFEV0pid();
 
-    Double_t  GetEffMass(AliESDv0 *v0, UInt_t p1, UInt_t p2) const;
-
-    void Process(AliVEvent * const inputEvent);
+    void  Process(AliVEvent * const inputEvent);
     Int_t ProcessV0(TObject *v0);
-    void Flush();
+    void  Flush();
 
-    void InitQA();
-    inline TList *GetListOfQAhistograms();
+    void  InitQA();
+    TList *GetListOfQAhistograms();
 
     TObjArray *GetListOfElectrons() const { return fElectrons; }
     TObjArray *GetListOfPionsK0() const { return fPionsK0; }
@@ -73,82 +71,55 @@ class AliHFEV0pid : public TObject{
     TObjArray *GetListOfKaons() const { return fKaons; }
     TObjArray *GetListOfProtons() const { return fProtons; }
 
-    Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); }
-    Bool_t IsESDanalysis() const { return !TestBit(kAODanalysis); }
-    void SetAODanalysis(Bool_t isAOD = kTRUE) { SetBit(kAODanalysis, isAOD); };
-    void SetESDanalysis(Bool_t isESD = kTRUE) { SetBit(kAODanalysis, !isESD); }; 
- private:
-    Float_t PsiPair(AliESDv0 *esdv0);//angle between daughters in plane perpendicular to magnetic field (characteristically around zero for conversions)
-    Float_t OpenAngle(AliESDv0 *esdv0) const;//opening angle between V0 daughters; close to zero for conversions
-   
+    Bool_t   IsAODanalysis() const { return TestBit(kAODanalysis); }
+    Bool_t   IsESDanalysis() const { return !TestBit(kAODanalysis); }
+    void     SetAODanalysis(Bool_t isAOD = kTRUE) { SetBit(kAODanalysis, isAOD); };
+    void     SetESDanalysis(Bool_t isESD = kTRUE) { SetBit(kAODanalysis, !isESD); }; 
 
-  protected:
+ protected:
     enum{
       kAODanalysis = BIT(14)
-    };
-    AliKFParticle *CreateMotherParticle(AliVTrack *pdaughter, AliVTrack *ndaughter, Int_t pspec, Int_t nspec);
-    void AddTrackToKFVertex(AliVTrack *track, Int_t species);
-
+	};
+    
     Bool_t IsGammaConv(TObject *v0);
     Bool_t IsK0s(TObject *v0);
     Bool_t IsPhi(TObject *v0);
-    Bool_t IsLambda(TObject *v0);
+    Bool_t IsLambda(TObject *v0);        
+    TList *GetV0pidQA(); 
 
-    Bool_t CutESDtrack(AliESDtrack *track);
-    Bool_t CutV0(AliESDv0 *v0, Int_t species);
-
-    Bool_t LooseRejectK0(AliESDv0 * const v0) const;
-    Bool_t LooseRejectLambda(AliESDv0 * const v0) const;
-    Bool_t LooseRejectGamma(AliESDv0 * const v0) const;
-
-  private:
+ private:
     class AliHFEV0pidTrackIndex{
-      public:
-        AliHFEV0pidTrackIndex();
-        ~AliHFEV0pidTrackIndex();
-        void Init(Int_t capacity);
-        void Add(Int_t index, Int_t species);
-        Bool_t Find(Int_t index) const;
-        Bool_t Find(Int_t index, Int_t species) const;
-        Int_t GetNumberOfElectrons() const { return fNElectrons; };
-        Int_t GetNumberOfPionsK0() const { return fNPionsK0; };
-        Int_t GetNumberOfPionsL() const { return fNPionsL; };
-	      Int_t GetNumberOfKaons() const { return fNKaons; };
-        Int_t GetNumberOfProtons() const { return fNProtons; };
-        void Flush();
-
-      private:
-        AliHFEV0pidTrackIndex(const AliHFEV0pidTrackIndex &ref);
-        AliHFEV0pidTrackIndex &operator=(const AliHFEV0pidTrackIndex &ref);
-        Int_t fNElectrons;        // Number of identified electrons
-        Int_t fNPionsK0;          // Number of identified pions from K0s
-        Int_t fNPionsL;           // Lumber of identified pions from Lambda
-	      Int_t fNKaons;            // Number of identified kaons
-        Int_t fNProtons;          // Number of identified protons
-        Int_t *fIndexElectron;    // Indices of identified electrons
-        Int_t *fIndexPionK0;      // Indices of identified pions from K0s
-        Int_t *fIndexPionL;       // Indices of identified pions from Lambda
-	      Int_t *fIndexKaon;        // Indices of identified kaons
-        Int_t *fIndexProton;      // Indices of identified protons
+    public:
+      AliHFEV0pidTrackIndex();
+      ~AliHFEV0pidTrackIndex();
+      void Init(Int_t capacity);
+      void Add(Int_t index, Int_t species);
+      Bool_t Find(Int_t index) const;
+      Bool_t Find(Int_t index, Int_t species) const;
+      Int_t GetNumberOfElectrons() const { return fNElectrons; };
+      Int_t GetNumberOfPionsK0() const { return fNPionsK0; };
+      Int_t GetNumberOfPionsL() const { return fNPionsL; };
+      Int_t GetNumberOfKaons() const { return fNKaons; };
+      Int_t GetNumberOfProtons() const { return fNProtons; };
+      void Flush();
+      
+    private:
+      AliHFEV0pidTrackIndex(const AliHFEV0pidTrackIndex &ref);
+      AliHFEV0pidTrackIndex &operator=(const AliHFEV0pidTrackIndex &ref);
+      Int_t fNElectrons;        // Number of identified electrons
+      Int_t fNPionsK0;          // Number of identified pions from K0s
+      Int_t fNPionsL;           // Lumber of identified pions from Lambda
+      Int_t fNKaons;            // Number of identified kaons
+      Int_t fNProtons;          // Number of identified protons
+      Int_t *fIndexElectron;    // Indices of identified electrons
+      Int_t *fIndexPionK0;      // Indices of identified pions from K0s
+      Int_t *fIndexPionL;       // Indices of identified pions from Lambda
+      Int_t *fIndexKaon;        // Indices of identified kaons
+      Int_t *fIndexProton;      // Indices of identified protons
     };
-
-    class AliHFELambdaInf{
-      public:
-        AliHFELambdaInf(AliKFParticle *track, AliKFVertex * const primaryVertex);
-        ~AliHFELambdaInf();
-
-        Double_t GetInvariantMass() const { return fInvariantMass; };
-        Double_t GetChi2NDF() const { return fChi2NDF; };
-        Double_t GetDistanceFromPrimaryVertex() const { return fDistVtx; };
-      private:
-        Double_t fInvariantMass;    // invariant mass before constraint
-        Double_t fChi2NDF;          // chi2/ndf after constraints
-        Double_t fDistVtx;          // Distance to primary Vertex
-    };
-
     AliHFEV0pid(const AliHFEV0pid &ref);
     AliHFEV0pid&operator=(const AliHFEV0pid &ref);
-
+    
     AliVEvent   *fInputEvent;        // Input Event
     AliKFVertex *fPrimaryVertex;     // Primary Vertex
     TObjArray   *fElectrons;         // List of Electron tracks coming from Conversions
@@ -156,20 +127,19 @@ class AliHFEV0pid : public TObject{
     TObjArray   *fPionsL;            // List of Pion tracks coming from L
     TObjArray   *fKaons;             // List of Kaon tracks from Phi decay
     TObjArray   *fProtons;           // List of Proton Tracks coming from Lambdas
+
+    TObjArray   *fGammas;            // for MC purposes - list of found gammas
+    TObjArray   *fK0s;               // for MC purposes - list of found K0s
+    TObjArray   *fLambdas;           // for MC purposes - list of found lambdas
+    TObjArray   *fAntiLambdas;       // for MC purposes - list of found anti lambdas
+
     AliHFEV0pidTrackIndex *fIndices; // Container for Track indices
     AliHFEcollection *fQA;           // Collection of QA histograms
+    AliHFEV0cuts     *fV0cuts;       // separate class for studying and applying the V0 cuts
+    TList       *fOutput;            // collection list
 
     ClassDef(AliHFEV0pid, 1)          // V0 PID Class
 
 };
 
-//____________________________________________________________
-TList *AliHFEV0pid::GetListOfQAhistograms(){
-  //
-  // Get QA histograms
-  //
-  if(fQA)
-    return fQA->GetList();
-  return NULL;
-}
 #endif

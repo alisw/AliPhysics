@@ -23,39 +23,44 @@
 //
 #include <TH1I.h>
 #include <TList.h>
+#include <TFile.h>
 
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
-#include "AliLog.h"
-#include "AliAnalysisTaskHFEpidQA.h"
 #include "AliHFEpidQA.h"
-#include "AliESDEvent.h"
-#include "AliMCEvent.h"
+#include "AliHFEtools.h"
+#include "AliESDInputHandler.h"
+
+#include "AliHFEtrdPIDqa.h"
+
+#include "AliAnalysisTaskHFEpidQA.h"
 
 ClassImp(AliAnalysisTaskHFEpidQA)
 
 AliAnalysisTaskHFEpidQA::AliAnalysisTaskHFEpidQA():
-    AliAnalysisTaskSE("pidQAtask")
+  AliAnalysisTaskSE("pidQAtask")
   , fPIDqa(NULL)
   , fOutput(NULL)
   , fEvents(NULL)
+  , fNNref(NULL)
 {
   //
   // Default Constructor
   //
-  DefineOutput(1, TList::Class());
 }
 
 AliAnalysisTaskHFEpidQA::AliAnalysisTaskHFEpidQA(const Char_t *name):
-    AliAnalysisTaskSE(name)
+  AliAnalysisTaskSE(name)
   , fPIDqa(NULL)
   , fOutput(NULL)
   , fEvents(NULL)
+  , fNNref(NULL)
 {
   //
   // Default Constructor
   //
   DefineOutput(1, TList::Class());
+
 }
 
 AliAnalysisTaskHFEpidQA::~AliAnalysisTaskHFEpidQA(){
@@ -79,6 +84,7 @@ void AliAnalysisTaskHFEpidQA::UserCreateOutputObjects(){
   fPIDqa = new AliHFEpidQA;
   if(HasV0pidQA()) fPIDqa->SetV0pidQA();
   if(HasRecalculateTRDpid()) fPIDqa->SetRecalculateTRDpid();
+  if(fNNref) fPIDqa->SetNNref(fNNref);
   fPIDqa->Init();
 
   TList *tmp = fPIDqa->GetOutput();
@@ -96,14 +102,15 @@ void AliAnalysisTaskHFEpidQA::UserCreateOutputObjects(){
     fOutput->Add(tmp);
   }
 
-  
+  // Add TRD PID QA object to the output
+  fOutput->Add(fPIDqa->GetTRDQA());
 }
+
 Bool_t AliAnalysisTaskHFEpidQA::UserNotify(){
-   // DEBUG
+  // DEBUG
   //printf("*****\n");
   //printf(" -D Current File Name: %s \n", CurrentFileName());
   return AliAnalysisTask::Notify();
-
 }
 
 void AliAnalysisTaskHFEpidQA::UserExec(Option_t *){
@@ -111,15 +118,21 @@ void AliAnalysisTaskHFEpidQA::UserExec(Option_t *){
   // Event Loop
   // 
   AliMCEventHandler* mcHandler = (dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()));
+  AliESDInputHandler *inh = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  AliESDpid *workingPID = NULL;
+  if(inh && (workingPID = inh->GetESDpid()))
+    fPIDqa->SetESDpid(workingPID);
+  else fPIDqa->SetESDpid(AliHFEtools::GetDefaultPID(mcHandler ? kTRUE : kFALSE));
+  
   // check the MC data
   if(fMCEvent && !mcHandler ) return;
   if(fMCEvent &&  !mcHandler->InitOk() ) return;
   if(fMCEvent &&  !mcHandler->TreeK() ) return;
   if(fMCEvent &&  !mcHandler->TreeTR() ) return;
   if(fMCEvent) fPIDqa->SetMCEvent(fMCEvent);
-  fPIDqa->SetRun((dynamic_cast<AliESDEvent*>(fInputEvent))->GetRunNumber());
-  fPIDqa->SetT0((dynamic_cast<AliESDEvent*>(fInputEvent))->GetT0());
-  fPIDqa->Process(fInputEvent);
+  
+  fPIDqa->SetEvent(fInputEvent);
+  fPIDqa->Process();
   fEvents->Fill(1.1);
   PostData(1, fOutput);
 }

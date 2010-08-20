@@ -23,10 +23,12 @@
 
 #include "TIterator.h"
 
-#include "AliMCEvent.h"
 #include "AliVParticle.h"
 #include "AliESDtrack.h"
 #include "AliMCParticle.h"
+#include "AliMCEvent.h"
+
+#include "AliHFEcollection.h"
 
 #include "AliHFEV0pidMC.h"
 ClassImp(AliHFEV0pidMC)
@@ -34,64 +36,51 @@ ClassImp(AliHFEV0pidMC)
 //____________________________________________________________
   AliHFEV0pidMC::AliHFEV0pidMC():
     fMC(0x0)
-    , fColl(0x0)
+    , fColl(NULL)
+    , fV0cuts(NULL)
 {
   //
   // default constructor
   //
+
 }
 //____________________________________________________________
 AliHFEV0pidMC::~AliHFEV0pidMC(){
   //
   // destructor
   //
-  if(fColl) delete fColl;
+  if (fColl) delete fColl;
+  //if (fV0cuts) delete fV0cuts;
 }
 //____________________________________________________________
 void AliHFEV0pidMC::Init(){
   //
   // initialize objects
   //
+
   fColl = new AliHFEcollection("V0pidMC", "MC based V0 benchmarking");
   // QA
   fColl->CreateTH1F("h_QA_nParticles", "QA on track processing", 10, -0.5, 9.5);
 
   // before PID
-  fColl->CreateTH1F("h_Electron", "all electron candidates (no MC)", 100, 0.1, 10);
-  fColl->CreateTH1F("h_PionK0", "all K0 pion candidates (no MC)", 100, 0.1, 10);
-  fColl->CreateTH1F("h_PionL", "all Lambda pion candidates (no MC)", 100, 0.1, 10);
-  fColl->CreateTH1F("h_Kaon", "all Kaon candidates (no MC)", 100, 0.1, 10);
-  fColl->CreateTH1F("h_Proton", "all Lambda proton candidates (no MC)", 100, 0.1, 10);
+  fColl->CreateTH1F("h_Electron", "all electron candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1F("h_PionK0", "all K0 pion candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1F("h_PionL", "all Lambda pion candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1F("h_Kaon", "all Kaon candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1F("h_Proton", "all Lambda proton candidates (no MC); p (GeV/c); counts", 100, 0.1, 10, 0);
   
-  fColl->CreateTH1F("h_mis_Electron", "all NON electron candidates (no MC)", 100, 0.1, 10);
-  fColl->CreateTH1F("h_mis_PionK0", "all NON K0 pion candidates (no MC)", 100, 0.1, 10);
-  fColl->CreateTH1F("h_mis_PionL", "all NON Lambda pion candidates (no MC)", 100, 0.1, 10);
-  fColl->CreateTH1F("h_mis_Kaon", "all NON Kaon candidates (no MC)", 100, 0.1, 10);
-  fColl->CreateTH1F("h_mis_Proton", "all NON Lambda proton candidates (no MC)", 100, 0.1, 10);  
+  fColl->CreateTH1F("h_mis_Electron", "all NON electron candidates MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1F("h_mis_PionK0", "all NON K0 pion candidates MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1F("h_mis_PionL", "all NON Lambda pion candidates MC tagged ; p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1F("h_mis_Kaon", "all NON Kaon candidates MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1F("h_mis_Proton", "all NON Lambda proton candidates MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);  
 
-  fColl->CreateTH1Fvector1(5, "h_tag_Electron", "electron candidate MC tagged", 100, 0.1, 10);
-  fColl->CreateTH1Fvector1(5, "h_tag_PionK0", "K0 pion candidate MC tagged", 100, 0.1, 10);
-  fColl->CreateTH1Fvector1(5, "h_tag_PionL", "Lambda pion candidate MC tagged", 100, 0.1, 10);
-  fColl->CreateTH1Fvector1(5, "h_tag_Kaon", "kaon candidate MC tagged", 100, 0.1, 10);
-  fColl->CreateTH1Fvector1(5, "h_tag_Proton", "Lambda proton candidate MC tagged", 100, 0.1, 10);
+  fColl->CreateTH1Fvector1(5, "h_tag_Electron", "electron candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1Fvector1(5, "h_tag_PionK0", "K0 pion candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1Fvector1(5, "h_tag_PionL", "Lambda pion candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1Fvector1(5, "h_tag_Kaon", "kaon candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
+  fColl->CreateTH1Fvector1(5, "h_tag_Proton", "Lambda proton candidate MC tagged; p (GeV/c); counts", 100, 0.1, 10, 0);
 
-  
-  fColl->BinLogAxis("h_Electron", 0);
-  fColl->BinLogAxis("h_PionK0", 0);
-  fColl->BinLogAxis("h_PionL", 0);
-  fColl->BinLogAxis("h_Kaon", 0);
-  fColl->BinLogAxis("h_Proton", 0);
-  fColl->BinLogAxis("h_mis_Electron", 0);
-  fColl->BinLogAxis("h_mis_PionK0", 0);
-  fColl->BinLogAxis("h_mis_PionL", 0);
-  fColl->BinLogAxis("h_mis_Kaon", 0);
-  fColl->BinLogAxis("h_mis_Proton", 0);
-//   fColl->BinLogAxis(, 0);
-//   fColl->BinLogAxis(, 0);
-//   fColl->BinLogAxis(, 0);
-//   fColl->BinLogAxis(, 0);
-//   fColl->BinLogAxis(, 0);
-  
 }
 //____________________________________________________________
 Bool_t  AliHFEV0pidMC::Process(TObjArray * const particles, Int_t type){
@@ -135,22 +124,22 @@ Bool_t  AliHFEV0pidMC::Process(TObjArray * const particles, Int_t type){
       continue;
     }
     //Int_t pdgM = mcpM->PdgCode();
+
     // all candidates
     sprintf(hname, "h_%s", typeName[type]);
     fColl->Fill(hname, p);
     Int_t pidD = PDGtoPIDdaughter(pdgD);
     
-   // all misidentified candidates
+    // all misidentified candidates
     sprintf(hname, "h_mis_%s", typeName[type]);
     if(typePID[type] != pidD){
       fColl->Fill(hname, p);
     }
-    sprintf(hname, "h_tag_%s", typeName[type]);
-    if(pidD >=0){
-      fColl->Fill(hname, pidD, p);
-    }
-       
 
+    // for every particle fill detailed information about the missidentified particles
+    sprintf(hname, "h_tag_%s", typeName[type]);       
+    Int_t aliPID = PDGtoAliPID(pdgD);
+    fColl->Fill(hname, aliPID, p);
     
   }// .. loop over array
   
@@ -197,3 +186,26 @@ Int_t AliHFEV0pidMC::PDGtoPIDmother(Int_t pdg) const {
   
   return -1;
 }
+//____________________________________________________________
+Int_t AliHFEV0pidMC::PDGtoAliPID(Int_t pdg) const {
+  //
+  // convert PDG to AliPID
+  //
+  
+  switch (TMath::Abs(pdg)){
+  case 11:
+    return 0; // electron 
+  case 13:
+    return 1; // muon
+  case 211:
+    return 2; // pion 
+  case 321:
+    return 3; // kaon 
+  case 2212:
+    return 4; // proton 
+  default:
+    return -1;
+  };
+  return -1;
+}
+

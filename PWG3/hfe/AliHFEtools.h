@@ -24,6 +24,7 @@
 
 class TParticle;
 class AliAODMCParticle;
+class AliESDpid;
 
 class AliHFEtools : public TObject{
   public:
@@ -35,6 +36,13 @@ class AliHFEtools : public TObject{
     Bool_t    BinLogAxis(TObject *o, Int_t dim);
     static Float_t GetRapidity(TParticle *part);
     static Float_t GetRapidity(AliAODMCParticle *part); // return rapidity
+    static AliESDpid *GetDefaultPID(Bool_t isMC = kTRUE);
+    static void DestroyDefaultPID();
+    static void SetLogLevel(Int_t loglevel) { fgLogLevel = loglevel ;}
+
+  private:
+      static AliESDpid *fgDefaultPID;   // Default PID object
+      static Int_t fgLogLevel;          // Log Level
 
     ClassDef(AliHFEtools, 0)
 };

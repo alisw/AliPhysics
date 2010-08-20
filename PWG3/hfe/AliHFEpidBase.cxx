@@ -20,13 +20,26 @@
 // Authors: 
 //   Markus Fasel <M.Fasel@gsi.de> 
 // 
+#include "AliESDpid.h"
 #include "AliHFEpidBase.h"
 
 ClassImp(AliHFEpidBase)
 
 //___________________________________________________________________
+AliHFEpidBase::AliHFEpidBase():
+  TNamed(),
+  fESDpid(NULL),
+  fDebugLevel(0)
+{
+  //
+  // Default constructor
+  //
+}
+
+//___________________________________________________________________
 AliHFEpidBase::AliHFEpidBase(const Char_t *name):
   TNamed(name, ""),
+  fESDpid(NULL),
   fDebugLevel(0)
 {
   //
@@ -37,6 +50,7 @@ AliHFEpidBase::AliHFEpidBase(const Char_t *name):
 //___________________________________________________________________
 AliHFEpidBase::AliHFEpidBase(const AliHFEpidBase &c):
   TNamed(),
+  fESDpid(NULL),
   fDebugLevel(0)
 {
   //
@@ -64,6 +78,7 @@ void AliHFEpidBase::Copy(TObject &ref) const {
   //
   AliHFEpidBase &target = dynamic_cast<AliHFEpidBase &>(ref);
 
+  target.fESDpid = fESDpid;
   target.fDebugLevel = fDebugLevel;
 
   TNamed::Copy(ref);

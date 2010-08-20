@@ -1,17 +1,17 @@
 /**************************************************************************
-* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
-*                                                                        *
-* Author: The ALICE Off-line Project.                                    *
-* Contributors are mentioned in the code where appropriate.              *
-*                                                                        *
-* Permission to use, copy, modify and distribute this software and its   *
-* documentation strictly for non-commercial purposes is hereby granted   *
-* without fee, provided that the above copyright notice appears in all   *
-* copies and that both the copyright notice and this permission notice   *
-* appear in the supporting documentation. The authors make no claims     *
-* about the suitability of this software for any purpose. It is          *
-* provided "as is" without express or implied warranty.                  *
-**************************************************************************/
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 //
 // Class for PID QA
 // Several studies done on clean samples of electrons, pions and kaons
@@ -23,52 +23,85 @@
 //    Markus Heide <mheide@uni-muenster.de>
 //    Markus Fasel <M.Fasel@gsi.de>
 //
-#include <TClass.h>
-#include <TIterator.h>
-#include <TList.h>
+
+
 #include <TMath.h>
 #include <TObjArray.h>
-#include <TParticle.h>
 #include <TPDGCode.h>
 #include <TString.h>
+#include <TMultiLayerPerceptron.h>
+#include <TFile.h>
 
 #include "AliAODMCParticle.h"
-#include "AliAODPid.h"
+#include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
-#include "AliLog.h"
+#include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
-//#include "AliTRDPIDResponseLQ1D.h"
-#include "AliVEvent.h"
 #include "AliVParticle.h"
-#include "AliExternalTrackParam.h"
 
 
 #include "AliHFEcollection.h"
 #include "AliHFEpidQA.h"
+#include "AliHFEV0info.h"
 #include "AliHFEV0pid.h"
 #include "AliHFEV0pidMC.h"
-#include "AliHFEpidTRD.h"
+#include "AliHFEtrdPIDqa.h"
+
 
 ClassImp(AliHFEpidQA)
 
-//__________________________________________
-AliHFEpidQA::AliHFEpidQA():
-  fMC(NULL)
-  , fV0pid(NULL)
-  , fV0pidMC(NULL)
-  , fOutput(NULL)
-  , fT0(0)
-  , fRun(0)
-  , fESDpid(NULL)
+  //__________________________________________
+  AliHFEpidQA::AliHFEpidQA():
+    fEvent(NULL),
+    fMC(NULL), 
+    fV0pid(NULL), 
+    fV0pidMC(NULL), 
+    fTRDpidQA(NULL), 
+    fOutput(NULL), 
+    fESDpid(NULL),
+    fNNref(NULL)
 {
   //
   // Default constructor
   //
-  fESDpid = new AliESDpid;
+  for(Int_t mom = 0; mom < 11; mom++){
+    fNet[mom] = NULL;
+  }
+}
+
+//__________________________________________
+AliHFEpidQA::AliHFEpidQA(const AliHFEpidQA &ref):
+  TObject(ref),
+  fEvent(NULL), 
+  fMC(NULL),
+  fV0pid(NULL),
+  fV0pidMC(NULL), 
+  fTRDpidQA(NULL),
+  fOutput(NULL), 
+  fESDpid(NULL),
+  fNNref(NULL)
+{
+  //
+  // Copy constructor
+  //
+  for(Int_t mom = 0; mom < 11; mom++){
+    fNet[mom] = NULL;
+  }
+  ref.Copy(*this);
+}
+
+//__________________________________________
+AliHFEpidQA &AliHFEpidQA::operator=(const AliHFEpidQA &ref){
+  //
+  // Assignment operator
+  //
+  if(this != &ref)
+    ref.Copy(*this);
+  return *this;
 }
 
 //__________________________________________
@@ -78,9 +111,42 @@ AliHFEpidQA::~AliHFEpidQA(){
   //
   if(fV0pid) delete fV0pid;
   if(fV0pidMC) delete fV0pidMC;
+  if(fTRDpidQA) delete fTRDpidQA;
   if(fOutput) delete fOutput;
-  if(fESDpid) delete fESDpid;
-//  if(fTRDpidResponse) delete fTRDpidResponse; 
+  //  if(fTRDpidResponse) delete fTRDpidResponse; 
+}
+
+//__________________________________________
+void AliHFEpidQA::Copy(TObject &o) const {
+  //
+  // Copy function
+  //
+  
+  TObject::Copy(o);
+
+  AliHFEpidQA &target = dynamic_cast<AliHFEpidQA &>(o);
+  target.fMC = fMC;
+
+  if(target.fESDpid) delete target.fESDpid;
+  target.fESDpid = new AliESDpid;
+  if(target.fV0pid) delete target.fV0pid;
+  if(fV0pid)
+    target.fV0pid = dynamic_cast<AliHFEV0pid *>(fV0pid->Clone());
+  else
+    target.fV0pid = NULL;
+  if(target.fV0pidMC) delete target.fV0pidMC;
+  if(fV0pidMC) 
+    target.fV0pidMC = dynamic_cast<AliHFEV0pidMC *>(fV0pidMC->Clone());
+  else
+    target.fV0pidMC = NULL;
+  if(target.fTRDpidQA) delete target.fTRDpidQA;
+  if(fTRDpidQA)
+    target.fTRDpidQA = dynamic_cast<AliHFEtrdPIDqa *>(fTRDpidQA->Clone());
+  else
+    target.fTRDpidQA = NULL;
+  if(target.fOutput) delete target.fOutput;
+  if(fOutput)
+    target.fOutput = dynamic_cast<AliHFEcollection *>(fOutput->Clone());
 }
 
 //__________________________________________
@@ -89,131 +155,172 @@ void AliHFEpidQA::Init(){
   // Prepare task output
   //
 
+  if(fNNref){
+    for(Int_t mom = 0; mom < 11; mom++){                      // load networks
+      fNet[mom] = (TMultiLayerPerceptron*) fNNref->Get(Form("NN_Mom%d", mom));
+      if(!fNet[mom]){
+	AliError(Form("No reference network for momentum bin %d!", mom));
+      }
+    }
+  }
+  
   fV0pid = new AliHFEV0pid;
   if(HasV0pidQA()) fV0pid->InitQA();
   fV0pidMC = new AliHFEV0pidMC();
   fV0pidMC->Init();
 
+  fTRDpidQA = new AliHFEtrdPIDqa;
+  fTRDpidQA->Init();
+
   fOutput = new AliHFEcollection("pidQA", "PID QA output");
 
-  // 1st: Histos for purity studies 
-  fOutput->CreateTH2F("purityElectron", "Electron Putrity", 2, -0.5, 1.5, 20, 0.1, 10);
-  fOutput->BinLogAxis("purityElectron" ,1);
-  fOutput->CreateTH2F("purityPionK0", "K0 Pion Putrity", 2, -0.5, 1.5, 20, 0.1, 10);
-  fOutput->BinLogAxis("purityPionK0" ,1);
-  fOutput->CreateTH2F("purityPionL", "Lambda Pion Putrity", 2, -0.5, 1.5, 20, 0.1, 10);
-  fOutput->BinLogAxis("purityPionL" ,1);
-  fOutput->CreateTH2F("purityProton", "Proton Putrity", 2, -0.5, 1.5, 20, 0.1, 10);
-  fOutput->BinLogAxis("purityProton" ,1);
+  const char *name[4] = {"Electron", "PionK0", "PionL", "Proton"};
+  const char *title[4] = {"Electron", "K0 Pion", "Lambda Pion", "Proton"};
+  const char *det[4] = {"ITS", "TPC", "TRD", "TOF"};
+  for(Int_t i = 0; i < 4; i++){
+    fOutput->CreateTH2F(Form("purity%s", name[i]), Form("%s Purity", title[i]), 2, -0.5, 1.5, 20, 0.1, 10, 1);
 
-  // Histograms for TRD Electron Likelihood
-  fOutput->CreateTH2F("hTRDelLikeElectron", "TRD Electron Likelihoods for Electrons; p (GeV/c); likelihood", 20, 0.1, 10, 100, 0., 1.);
-  fOutput->BinLogAxis("hTRDelLikeElectron", 0);
-  fOutput->CreateTH2F("hTRDelLikePionK0", "TRD Electron Likelihoods for K0 Pions; p (GeV/c); likelihood", 20, 0.1, 10, 100, 0., 1.);
-  fOutput->BinLogAxis("hTRDelLikePionK0", 0);
-  fOutput->CreateTH2F("hTRDelLikePionL", "TRD Electron Likelihoods for Lambda Pions; p (GeV/c); likelihood", 20, 0.1, 10, 100, 0., 1.);
-  fOutput->BinLogAxis("hTRDelLikePionL", 0);
-  fOutput->CreateTH2F("hTRDelLikeProton", "TRD Electron Likelihoods for Protons; p (GeV/c); likelihood", 20, 0.1, 10, 100, 0., 1.);
-  fOutput->BinLogAxis("hTRDelLikeProton", 0);
+    for(Int_t idet = 0; idet < 4; idet++){
+      // create all the histograms which all the detectors have in common
+      if(idet != 2){ // no nSigma histogram for TRD
+        fOutput->CreateTH2F(Form("h%s_nSigma_%s", det[idet], name[i]), Form("%s number of sigmas for %ss; p (GeV/c); number of sigmas", det[idet], title[i]), 20, 0.1, 10, 100, -7, 7, 0);
+      }
+      fOutput->CreateTH2F(Form("h%s_PID_p_%s", det[idet], name[i]), Form("%s PID for %ss; p (GeV/c); ITS PID", det[idet], title[i]), 100, 0.1, 10, 5, -0.5, 4.5, 0);
+      fOutput->CreateTH2F(Form("h%s_El_like_%s", det[idet], name[i]), Form("%s Electron Likelihoods for %ss; p (GeV/c); likelihood", det[idet], title[i]), 25, 0.1, 10, 1000, 0., 1., 0);
+      fOutput->CreateTH2F(Form("h%s_El_like_MC_%s", det[idet], name[i]), Form("%s Electron Likelihoods for MC %ss; p (GeV/c); likelihood", det[idet], title[i]), 25, 0.1, 10, 1000, 0., 1., 0);
+    }
 
-  // TPC pid response
-  fOutput->CreateTH2F("hTPC_dEdx_Electron", "TPC dEdx for conversion electrons; p (GeV/c); dEdx (a.u.)", 20, 0.1, 10, 200, 0, 200);
-  fOutput->BinLogAxis("hTPC_dEdx_Electron", 0);
-  fOutput->CreateTH2F("hTPC_dEdx_PionK0", "TPC dEdx for K0 pions; p (GeV/c); dEdx (a.u.)", 20, 0.1, 10, 200, 0, 200);
-  fOutput->BinLogAxis("hTPC_dEdx_PionK0", 0);
-  fOutput->CreateTH2F("hTPC_dEdx_PionL", "TPC dEdx for Lambda pions; p (GeV/c); dEdx (a.u.)", 20, 0.1, 10, 200, 0, 200);
-  fOutput->BinLogAxis("hTPC_dEdx_PionL", 0);
-  fOutput->CreateTH2F("hTPC_dEdx_Proton", "TPC dEdx for Lambda proton; p (GeV/c); dEdx (a.u.)", 20, 0.1, 10, 200, 0, 200);
-  fOutput->BinLogAxis("hTPC_dEdx_Proton", 0);
+    //
+    // ITS pid response
+    //
+    fOutput->CreateTH2F(Form("hITS_Signal_%s", name[i]), Form("ITS Signal org. for %ss", title[i]), 40, 0.1, 10, 400, 0, 1000, 0);
+    fOutput->CreateTH2Fvector1(5, Form("hITS_dEdx_%s", name[i]), Form("ITS dEdx for %ss; p (GeV/c); dEdx (a.u.)", title[i]), 40, 0.1, 10, 400, 0, 1000, 0);
+    
+    //
+    // TPC pid response
+    //
+    fOutput->CreateTH2F(Form("hTPC_dEdx_%s", name[i]), Form("TPC dEdx for %ss; p (GeV/c); dEdx (a.u.)", title[i]), 20, 0.1, 10, 200, 0, 200, 0);
 
- fOutput->CreateTH2F("hTPCnSigmaElectron", "TPC number of sigmas for conversion electrons; p (GeV/c); number of sigmas", 20, 0.1, 10, 100, -7, 7);
- fOutput->BinLogAxis("hTPCnSigmaElectron", 0);
- fOutput->CreateTH2F("hTPCnSigmaPionK0", "TPC number of sigmas for K0 pions; p (GeV/c); number of sigmas", 20, 0.1, 10, 100, -7, 7);
- fOutput->BinLogAxis("hTPCnSigmaPionK0", 0);
- fOutput->CreateTH2F("hTPCnSigmaPionL", "TPC number of sigmas for Lambda pions; p (GeV/c); number of sigmas", 20, 0.1, 10, 100, -7, 7);
- fOutput->BinLogAxis("hTPCnSigmaPionL", 0);
- fOutput->CreateTH2F("hTPCnSigmaProton", "TPC number of sigmas for Lambda protons; p (GeV/c); number of sigmas", 20, 0.1, 10, 100, -7, 7);
- fOutput->BinLogAxis("hTPCnSigmaProton", 0);
+    //
+    // TRD pid response 
+    //
+    fOutput->CreateTH2F(Form("hTRD_trk_%s", name[i]), Form("%s PID tracklets; p (GeV/c); N TRD tracklets", title[i]), 100, 0.1, 10, 7, -0.5, 6.5, 0);
+    // number of the non 0 slices per tracklet
+    fOutput->CreateTH2F(Form("hTRD_Nslc_%s", name[i]), Form("%s PID slices > 0; p (GeV/c); N slc > 0", title[i]), 100, 0.1, 10, 9, -0.5, 8.5, 0);
+    // location of the slices > 0 - where are the emtpy slices located ?
+    fOutput->CreateTH2F(Form("hTRD_slc_%s", name[i]), Form("%s PID slices > 0 position; p (GeV/c); slice", title[i]), 100, 0.1, 10, 9, -0.5, 8.5, 0);
+    fOutput->CreateTH2F(Form("hTRD_cls_%s", name[i]), Form("TRD clusters for %s candidates; p (GeV/c); N cls", title[i]), 25, 0.1, 10, 1000, 0, 1000);
+    fOutput->CreateTH2F(Form("hTRD_dEdx_%s", name[i]), Form("TRD dEdx (trk) for %s candidates; p (GeV/c); tracklet dEdx (a.u.)", title[i]), 25, 0.1, 10, 1000, 0, 100000, 0);
+ 
+    //
+    // TOF pid response
+    //
+    fOutput->CreateTH2F(Form("hTOF_beta_%s", name[i]), Form("TOF beta for %s; p (GeV/c); #beta", title[i]),  50, 0.1, 5, 350, 0.4, 1.1, 0);
+  }//.. loop over identified particle species
 
+  // Global histograms
+  fOutput->CreateTH1F("hITS_dEdx_nSamples", "ITS - number of non 0 dEdx samples", 4, 0.5, 4.5);
   fOutput->CreateTH2F("hTPC_PID", "TPC pid all tracks; tpc pid probability; species",100, 0, 1, 5, -0.5, 4.5 );
-  fOutput->CreateTH2F("hTPC_PID_p_Electron", "TPC PID for conversion electrons; p (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTPC_PID_p_Electron", 0);
-  fOutput->CreateTH2F("hTPC_PID_p_PionK0", "TPC PID for K0 pions; p (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTPC_PID_p_PionK0", 0);
-  fOutput->CreateTH2F("hTPC_PID_p_PionL", "TPC PID for Lambda pions; p (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTPC_PID_p_PionL", 0);
-  fOutput->CreateTH2F("hTPC_PID_p_Proton", "TPC PID for Lambda protons; p (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTPC_PID_p_Proton", 0);
-
-
-  // TRD pid response
-  fOutput->CreateTH2F("hTRD_Electron_trk", "all Electron candidate tracklets; p (GeV/c); N TRD tracklets", 100, 0.1, 10, 7, -0.5, 6.5);
-  fOutput->BinLogAxis("hTRD_Electron_trk", 0);
-  fOutput->CreateTH1F("hTRD_Electron_Y_like", "YES - V0 electron eff. for fixed likelihood cut; p (GeV/c); counts", 25, 0.1, 10);
-  fOutput->BinLogAxis("hTRD_Electron_Y_like", 0);
-  fOutput->CreateTH1F("hTRD_Electron_N_like", "NO - V0 electron eff. for fixed likelihood cut; p (GeV/c); counts", 25, 0.1, 10);
-  fOutput->BinLogAxis("hTRD_Electron_N_like", 0);
-  fOutput->CreateTH2F("hTRD_El_like_Electron", "V0 electron likelihoods for electrons; p (GeV/c); likelihood", 25, 0.1, 10, 1000, 0., 1.);
-  fOutput->BinLogAxis("hTRD_El_like_Electron", 0);
-  fOutput->CreateTH2F("hTRD_El_like_Pion", "V0 electron likelihoods for poins; p (GeV/c); likelihood", 25, 0.1, 10, 1000, 0., 1.);
-  fOutput->BinLogAxis("hTRD_El_like_Pion", 0);
-  fOutput->CreateTH2F("hTRD_El_like_Proton", "V0 electron likelihoods for protons; p (GeV/c); likelihood", 25, 0.1, 10, 1000, 0., 1.);
-  fOutput->BinLogAxis("hTRD_El_like_Proton", 0);
-
-
-  // TOF pid response
-  
   fOutput->CreateTH2F("hTOF_PID", "TOF pid all tracks; tof pid probability; species",100, 0, 1,5,  -0.5, 4.5 );
-
-  fOutput->CreateTH2F("hTOF_PID_p_Electron", "TOF PID for gamma converisons; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTOF_PID_p_Electron", 0);
-  fOutput->CreateTH2F("hTOF_PID_p_PionK0", "TOF PID for K0 pions; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTOF_PID_p_PionK0", 0);
-  fOutput->CreateTH2F("hTOF_PID_p_PionL", "TOF PID for Lambda pions; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTOF_PID_p_PionL", 0);
-  fOutput->CreateTH2F("hTOF_PID_p_Proton", "TOF PID for Lambda protons; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTOF_PID_p_Proton", 0);
-
-  fOutput->CreateTH2F("hTOF_beta_Electron", "TOF beta for gamma conversions; #beta; p (GeV/c)", 120, 0, 1.2, 100, 0.1, 10);
-  fOutput->BinLogAxis("hTOF_beta_Electron", 1);
-  fOutput->CreateTH2F("hTOF_beta_PionK0", "TOF beta for K0 pions; #beta; p (GeV/c)", 120, 0, 1.2, 100, 0.1, 10);
-  fOutput->BinLogAxis("hTOF_beta_PionK0", 1);
-  fOutput->CreateTH2F("hTOF_beta_PionL", "TOF beta Lambda pions; #beta; p (GeV/c)", 120, 0, 1.2, 100, 0.1, 10);
-  fOutput->BinLogAxis("hTOF_beta_PionL", 1);
-  fOutput->CreateTH2F("hTOF_beta_Proton", "TOF beta for Lambda protons; #beta; p (GeV/c)", 120, 0, 1.2, 100, 0.1, 10);
-  fOutput->BinLogAxis("hTOF_beta_Proton", 1);
+  fOutput->CreateTH2F("hTOF_beta_all", "TOF beta for all nice single tracks; p (GeV/c); #beta", 100, 0.1, 10, 480, 0, 1.2, 0);
+  fOutput->CreateTH2F("hTOF_qa_TmT0mT", "TOF (t - t0 - t[pion]) qa verus run",  10000, 114000, 124000, 200, -200, 200);
+  fOutput->CreateTH2F("hTOF_qa_length", "TOF track length verus run",  10000, 114000, 112400, 200, 0, 1000);
+  
+  //
+  // debug histograms
+  //
+  fOutput->CreateTH2F("hITS_kFlags", "ITS flags; flag; V0 candidates", 5, 0.5, 5.5, 5, -0.5, 4.5);  
+  fOutput->CreateTH2F("hTPC_kFlags", "TPC flags; flag; V0 candidates", 5, 0.5, 5.5, 5, -0.5, 4.5);
+  fOutput->CreateTH2F("hTRD_kFlags", "TRD flags; flag; V0 candidates", 5, 0.5, 5.5, 5, -0.5, 4.5);
+  fOutput->CreateTH2F("hTOF_kFlags", "TOF flags; flag; V0 candidates", 5, 0.5, 5.5, 5, -0.5, 4.5);
   
 
+  //
+  // event based histograms
+  //
+  Int_t n_T0[2] = {10000, 100};
+  Double_t min_T0[2] = {114500, -1000};
+  Double_t max_T0[2] = {124500, 1000};
+  fOutput->CreateTHnSparse("hEvent_T0", "T0 as a function of run number; run number; T0 (ns)", 2, n_T0, min_T0, max_T0);
 
-  // Prepare TRD PID
-/*  if(HasRecalculateTRDpid()){
-    fTRDpidResponse = new AliTRDPIDResponseLQ1D;
-    fTRDpidResponse->LoadReferences();
-  }*/
+  //
+  // test the tender V0 supply
+  //
+  fOutput->CreateTH2F("h_tender_check_01", "tender -vs- HFEpidQA; HFEpidQA V0 candiadates; tender V0 candidates", 4, -1.5, 2.5, 4, -1.5, 2.5);
+  fOutput->CreateTH2Fvector1(3, "h_tender_check_02", "tender -vs- HFEpidQA per type; AliHFEpidQA V0 ; tender V0", 4, -1.5, 2.5, 4, -1.5, 2.5);
+
+
+  //
+  // THnSpasre objects
+  //
+
+  // Create Illumination Plot
+  // bins: species, pt, eta, phi, TPC status, TRD status
+  {
+    Int_t nbins[6] = {4, 40, 16, 72, 2, 2};
+    Double_t min[6] = { 0, 0.1, -0.8, 0., 0., 0.};
+    Double_t max[6] = { 4., 20., 0.8, 2*TMath::Pi(), 2., 2.};
+    fOutput->CreateTHnSparse("hIllumination", "Illumination", 6, nbins, min, max);
+    fOutput->BinLogAxis("hIllumination", 1);
+  }
+
+  // TPC THnSparse
+  // bins: species, pt, n TPC clusters., TPC electron likelihood, TPC n sigmas, TPC signal
+  {
+    Int_t nbins[6] = { 5, 40, 20, 100, 100, 200};
+    Double_t min[6] = { -0.5, 0.1, 0., 0., -5., 0.};
+    Double_t max[6] = { 4.5, 20., 200, 1., 5., 120.};
+    TString htitle = "TPC info sparse; VO identified species; p (GeV/c); n TPC clusters; TPC N sigma; TPC signal";
+    fOutput->CreateTHnSparse("hTPCclusters",htitle,6, nbins, min, max);
+    fOutput->BinLogAxis("hTPCclusters", 1);
+  }
+  // TRD THnSparse - entries per tracklet
+  // species, p, tracklet position, number of PID tracklets, number of slices (non 0), number of clusters, electron likelihood, 
+  {
+    Int_t nbins[7] = {5, 20, 6, 7, 9, 45, 100};
+    Double_t min[7] = {-0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.};
+    Double_t max[7] = {4.5, 10, 5.5, 6.5, 8.5, 179.5, 1.};
+    TString htitle = "TRD tracklets; VO identified species; p (GeV/c); tracklet position; No. PID tacklets; No. slices; No. clusters; El. likelihood";
+    fOutput->CreateTHnSparse("hTRDtracklets",htitle,7, nbins, min, max);
+    fOutput->BinLogAxis("hTRDtracklets", 1);
+  }
+  
+
 }
-
 //__________________________________________
-void AliHFEpidQA::Process(AliVEvent *inputEvent){
+void AliHFEpidQA::Process(){
   //
   // Run PID QA
   //
-
-  if(fRun >= 104065 && fRun <= 104892){
-    CorrectT0();
-  }
 
   if(!fV0pid){
     AliError("V0pid not available! Forgotten to initialize?");
     return;
   }
+  if(!fESDpid){
+    AliError("fESDpid not initialized, I am leaving this!");
+    return;
+  }
+
+  // to be udpated to AOD save mdoe
+  if(!fEvent){
+    AliError("AliVEvent not available, returning");
+  }
 
   if(fMC) fV0pidMC->SetMCEvent(fMC);
 
-  fV0pid->Process(inputEvent);
-  TObjArray *electrons = fV0pid->GetListOfElectrons();
-  TObjArray *pionsK0 = fV0pid->GetListOfPionsK0();
-  TObjArray *pionsL = fV0pid->GetListOfPionsL();
-  TObjArray *protons = fV0pid->GetListOfProtons();
+  fV0pid->Process(fEvent);
+  TObjArray *hfeelectrons = fV0pid->GetListOfElectrons();
+  TObjArray *hfepionsK0 = fV0pid->GetListOfPionsK0();
+  TObjArray *hfepionsL = fV0pid->GetListOfPionsL();
+  TObjArray *hfeprotons = fV0pid->GetListOfProtons();
+
+  // Get Track list for normal purpose
+  TObjArray *electrons = MakeTrackList(hfeelectrons);
+  TObjArray *pionsK0 = MakeTrackList(hfepionsK0);
+  TObjArray *pionsL = MakeTrackList(hfepionsL);
+  TObjArray *protons = MakeTrackList(hfeprotons);
+  TObjArray *cleanElectrons = MakeCleanListElectrons(hfeelectrons);
 
   if(fMC){
     fV0pidMC->Process(electrons, AliHFEV0pid::kRecoElectron);
@@ -234,20 +341,112 @@ void AliHFEpidQA::Process(AliVEvent *inputEvent){
     MakePurity(pionsL,  AliHFEV0pid::kRecoPionL);
     MakePurity(protons,  AliHFEV0pid::kRecoProton);
   }
+
+  // some event wise checks
+  CheckEvent();
+
+  // Make Illumination Plot
+  FillIllumination(electrons, AliHFEV0pid::kRecoElectron);
+  FillIllumination(pionsK0, AliHFEV0pid::kRecoPionK0);
+  FillIllumination(pionsL, AliHFEV0pid::kRecoPionL);
+  FillIllumination(protons, AliHFEV0pid::kRecoProton);
+
   // Now we can do studies on the PID itself
-  // TRD PID: Fill electron Likelihoods for the particle species
-  FillTRDelectronLikelihoods(electrons,  AliHFEV0pid::kRecoElectron);
-  FillTRDelectronLikelihoods(pionsK0,  AliHFEV0pid::kRecoPionK0);
-  FillTRDelectronLikelihoods(pionsL,  AliHFEV0pid::kRecoPionL);
-  FillTRDelectronLikelihoods(protons,  AliHFEV0pid::kRecoProton);
+  // For TRD use the TRD PID QA object
+  fTRDpidQA->ProcessTracks(cleanElectrons, AliPID::kElectron);
+  fTRDpidQA->ProcessTracks(pionsK0, AliPID::kPion);
+  fTRDpidQA->ProcessTracks(pionsL, AliPID::kPion);
+  fTRDpidQA->ProcessTracks(protons, AliPID::kProton);
+
+  FillElectronLikelihoods(electrons,  AliHFEV0pid::kRecoElectron); 
+  FillElectronLikelihoods(pionsK0,  AliHFEV0pid::kRecoPionK0); 
+  FillElectronLikelihoods(pionsL,  AliHFEV0pid::kRecoPionL); 
+  FillElectronLikelihoods(protons,  AliHFEV0pid::kRecoProton); 
   
   FillPIDresponse(electrons, AliHFEV0pid::kRecoElectron);
   FillPIDresponse(pionsK0, AliHFEV0pid::kRecoPionK0);
   FillPIDresponse(pionsL, AliHFEV0pid::kRecoPionL);
   FillPIDresponse(protons, AliHFEV0pid::kRecoProton);
 
+  // check the tender V0s
+  CheckTenderV0pid(electrons, AliHFEV0pid::kRecoElectron);
+  CheckTenderV0pid(pionsK0, AliHFEV0pid::kRecoPionK0);
+  CheckTenderV0pid(pionsL, AliHFEV0pid::kRecoPionL);
+  CheckTenderV0pid(protons, AliHFEV0pid::kRecoProton);
+
   // Analysis done, flush the containers
   fV0pid->Flush();
+
+  delete electrons;
+  delete pionsL;
+  delete pionsK0;
+  delete protons;
+  delete cleanElectrons;
+}
+
+//__________________________________________
+void AliHFEpidQA::FillIllumination(TObjArray * const tracks, Int_t species){
+  //
+  // Fill Illumination Plot
+  //
+  THnSparseF *hIllumination = dynamic_cast<THnSparseF *>(fOutput->Get("hIllumination"));
+  if(!hIllumination) return;
+
+  Double_t quantities[6]; memset(quantities, 0, sizeof(Double_t) *6);
+  TIter trackIter(tracks);
+
+  quantities[0] = species;
+  TObject *o = NULL; AliESDtrack *esdtrack = NULL;
+  while((o = trackIter())){
+    if(!TString(o->IsA()->GetName()).CompareTo("AliESDtrack")){
+      // work on local copy in order to not spoil others
+      esdtrack = new AliESDtrack(*(dynamic_cast<AliESDtrack *>(o)));
+    } else if(!TString(o->IsA()->GetName()).CompareTo("AliAODrack")){
+      // Bad hack: Fill ESD track with AOD information
+      esdtrack = new AliESDtrack(dynamic_cast<AliAODTrack *>(o));
+    } else {
+      // Non usable
+      continue;
+    }
+
+    // Propagate to the entrance of the TRD
+    esdtrack->PropagateTo(300, fEvent->GetMagneticField());
+    quantities[1] = esdtrack->Pt();
+    quantities[2] = esdtrack->Eta();
+    quantities[3] = esdtrack->Phi();
+    quantities[4] = (esdtrack->GetStatus() & AliESDtrack::kTPCrefit) ? 1 : 0;
+    quantities[5] = (esdtrack->GetStatus() & AliESDtrack::kTRDout) ? 1. : 0.;
+    hIllumination->Fill(quantities);
+
+    delete esdtrack;
+  }
+}
+//__________________________________________
+void AliHFEpidQA::FillTPCinfo(AliESDtrack *const esdtrack, Int_t species){
+  //
+  // Fill TPC Cluster Plots
+  //
+  THnSparseF *hTPCclusters = dynamic_cast<THnSparseF *>(fOutput->Get("hTPCclusters"));
+  if(!hTPCclusters) return;
+
+  Double_t quantities[6]; memset(quantities, 0, sizeof(Double_t) *6);
+  
+  Double_t pidProbs[5];
+  const Int_t typePID[5] = {0, 2, 2, 3, 4};
+
+
+  quantities[0] = species;
+
+  
+  esdtrack->GetTPCpid(pidProbs);   
+    
+  quantities[1] = esdtrack->P();
+  quantities[2] = esdtrack->GetTPCNcls();
+  quantities[3] = pidProbs[0];
+  quantities[4] = fESDpid->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType)typePID[species]);
+  quantities[5] = esdtrack->GetTPCsignal();
+  hTPCclusters->Fill(quantities);
+
 }
 
 //__________________________________________
@@ -257,33 +456,31 @@ void AliHFEpidQA::MakePurity(TObjArray *tracks, Int_t species){
   //
   if(!fMC) return;
   AliDebug(3, Form("Doing Purity checks for species %d", species));
-  Int_t pdg = 0;
+  Int_t pdg = GetPDG(species);
   Char_t hname[256];
+
   switch(species){
-    case  AliHFEV0pid::kRecoElectron:
-      pdg = TMath::Abs(kElectron);
-      sprintf(hname, "purityElectron");
-      break;
-    case  AliHFEV0pid::kRecoPionK0:
-      pdg = TMath::Abs(kPiPlus);
-      sprintf(hname, "purityPionK0");
-      break;
-    case  AliHFEV0pid::kRecoPionL:
-      pdg = TMath::Abs(kPiPlus);
-      sprintf(hname, "purityPionL");
-      break;
-    case  AliHFEV0pid::kRecoProton:
-      pdg = TMath::Abs(kProton);
-      sprintf(hname, "purityProton");
-      break;
-    default:  // non investigated species
-      AliDebug(3, "Species not investigated");
-      return;
-  }
+  case  AliHFEV0pid::kRecoElectron:
+    sprintf(hname, "purityElectron");
+    break;
+  case  AliHFEV0pid::kRecoPionK0:
+    sprintf(hname, "purityPionK0");
+    break;
+  case  AliHFEV0pid::kRecoPionL:
+    sprintf(hname, "purityPionL");
+    break;
+  case  AliHFEV0pid::kRecoProton:
+    sprintf(hname, "purityProton");
+    break;
+  default:  // non investigated species
+    AliDebug(3, "Species not investigated");
+    return;
+  }  
+
   AliDebug(3, Form("Number of tracks: %d", tracks->GetEntries()));
-  TIterator *trackIter = tracks->MakeIterator();
+  TIter trackIter(tracks);
   AliVParticle *recTrack = NULL, *mcTrack = NULL;
-  while((recTrack = dynamic_cast<AliVParticle *>(trackIter->Next()))){
+  while((recTrack = dynamic_cast<AliVParticle *>(trackIter()))){
     Int_t label = recTrack->GetLabel();
     AliDebug(4, Form("MC Label %d", label));
     mcTrack =fMC->GetTrack(TMath::Abs(label));
@@ -304,77 +501,108 @@ void AliHFEpidQA::MakePurity(TObjArray *tracks, Int_t species){
       trackPdg = TMath::Abs(aodmcp->GetPdgCode());
     }
     if(trackPdg == pdg)    // Correct identification
-      fOutput->Fill(hname, 0., recTrack->Pt());
+      {
+	fOutput->Fill(hname, 0., recTrack->Pt());
+      }
     else  // Wrong identification
       fOutput->Fill(hname, 1., recTrack->Pt());
   }
-  delete trackIter;
 }
 
 //__________________________________________
-void AliHFEpidQA::FillTRDelectronLikelihoods(TObjArray * const particles, Int_t species){
+void AliHFEpidQA::FillElectronLikelihoods(TObjArray * const particles, Int_t species){
   //
-  // Fill electron Likelihoods for the TRD
+  // Fill electron Likelihoods for the ITS, TPC and TOF
   // Required for the calculation of the electron efficiency, 
   // pion and proton efficiency and the thresholds
   //
-  Char_t hname[256] = "hTRDelLike";
+  Long_t status = 0;
+  Char_t *detname[4] = {"ITS", "TPC", "TRD", "TOF"};
+  Char_t specname[256];
+
   switch(species){
-    case  AliHFEV0pid::kRecoElectron:
-      sprintf(hname, "%sElectron", hname);
-      break;
-    case  AliHFEV0pid::kRecoPionK0:
-      sprintf(hname, "%sPionK0", hname);
-      break;
-    case  AliHFEV0pid::kRecoPionL:
-      sprintf(hname, "%sPionL", hname);
-      break;
-    case  AliHFEV0pid::kRecoProton:
-      sprintf(hname, "%sProton", hname);
-      break;
-    default:
-      AliDebug(2, Form("Species %d not investigated", species));
-      return;
+  case  AliHFEV0pid::kRecoElectron:
+    sprintf(specname, "Electron");
+    break;
+  case  AliHFEV0pid::kRecoPionK0:
+    sprintf(specname, "PionK0");
+    break;
+  case  AliHFEV0pid::kRecoPionL:
+    sprintf(specname, "PionL");
+    break;
+  case  AliHFEV0pid::kRecoProton:
+    sprintf(specname, "Proton");
+    break;
+  default:
+    AliDebug(2, Form("Species %d not investigated", species));
+    return;
   };
   AliVParticle *recTrack = NULL;
-  TIterator *trackIter = particles->MakeIterator();
-  Double_t quantities[2] = {0., 0.};
-  Double_t trdPidProbs[5];
-  while((recTrack = dynamic_cast<AliVParticle *>(trackIter->Next()))){
+  //  mcTrack =fMC->GetTrack(TMath::Abs(label));
+  //   if(!mcTrack){
+  //     AliDebug(4, "MC track not available");
+  //     continue; // we don't know
+  //   }
+
+  TIter trackIter(particles);
+
+  Double_t quantities[2];
+  Double_t pidProbs[5];
+
+  while((recTrack = dynamic_cast<AliVParticle *>(trackIter()))){
     if(!TString(recTrack->IsA()->GetName()).CompareTo("AliESDtrack")){
       // case ESD
       AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(recTrack);
-      if(!esdTrack->GetTRDntracklets()) continue; // require at least 1 tracklet
-      // take momentum at the innermost TRD layer
-      Double_t p = 0.;
-      for(Int_t ily = 0; ily < 6; ily++){
-        if((p = esdTrack->GetTRDmomentum(ily)) > 1e-6) break;
+      status = esdTrack->GetStatus();
+
+      //TPC momentum and likelihoods
+      Double_t pTPC = 0.;
+      pTPC = esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P();
+      Bool_t mcFound = kFALSE;
+      if(fMC){
+	Int_t label = esdTrack->GetLabel();
+	AliMCParticle *mcTrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(label));
+	Int_t pdg = GetPDG(species);
+	Int_t trackPdg = 0; 
+	if(mcTrack){
+	  trackPdg = TMath::Abs(mcTrack->Particle()->GetPdgCode());
+	}
+	if(pdg == trackPdg) mcFound = kTRUE;	
       }
-      quantities[0] = p;
-      if(HasRecalculateTRDpid()) 
-        RecalculateTRDpid(esdTrack, trdPidProbs);
-      else
-        esdTrack->GetTRDpid(trdPidProbs);
-      quantities[1] = trdPidProbs[ AliPID::kElectron];
-    }
+      quantities[0] = pTPC;
+      Bool_t detFlagSet = kFALSE;
+      for(Int_t idet = 0; idet < 4; idet++){
+        Char_t histname[256], histnameMC[256];
+        sprintf(histname, "h%s_El_like_%s", detname[idet], specname);
+        sprintf(histnameMC, "h%s_El_like_MC_%s", detname[idet], specname);
+        switch(idet){
+          case kITS:  esdTrack->GetITSpid(pidProbs);
+                      detFlagSet = status & AliESDtrack::kITSpid;
+                      break;
+          case kTPC:  esdTrack->GetTPCpid(pidProbs);
+                      detFlagSet = status & AliESDtrack::kTPCpid;
+                      break;
+          case kTRD:  esdTrack->GetTRDpid(pidProbs);
+                      detFlagSet = status & AliESDtrack::kTRDpid;
+                      break;
+          case kTOF:  esdTrack->GetTOFpid(pidProbs);  
+                      detFlagSet = status & AliESDtrack::kTOFpid;
+                      break;
+        };
+        quantities[1] = pidProbs[AliPID::kElectron];
+	// in case of TRD require 6 PID tracklets
+	if(kTRD == idet && esdTrack->GetTRDntrackletsPID() != 6) continue;
+        if(detFlagSet){
+	  fOutput->Fill(histname, quantities[0], quantities[1]);
+	  if(mcFound)
+	    fOutput->Fill(histnameMC, quantities[0], quantities[1]);
+        }
+      }
+    }//.. ESD
     else{
-      AliAODTrack *aodTrack = dynamic_cast<AliAODTrack *>(recTrack);
-      if(!aodTrack->GetDetPid()) continue;
-      Float_t *trdMom = aodTrack->GetDetPid()->GetTRDmomentum(), p = 0.;
-      for(Int_t ily = 0; ily < 6; ily++){
-        if((p = trdMom[ily]) > 1e-6) break;
-      }
-      quantities[0] = p;
-      // case AOD (for the moment lacks)
-      if(HasRecalculateTRDpid()){
-        RecalculateTRDpid(aodTrack, trdPidProbs); 
-        quantities[1] = trdPidProbs[AliPID::kElectron];
-      }
-      else
-        continue;
-    }
-    fOutput->Fill(hname, quantities[0], quantities[1]);
-  }
+      //AOD
+    }//.. aod 
+  }//.. while tracks 
 }
 //__________________________________________
 void AliHFEpidQA::FillPIDresponse(TObjArray * const particles, Int_t species){
@@ -382,102 +610,261 @@ void AliHFEpidQA::FillPIDresponse(TObjArray * const particles, Int_t species){
   // Fill the PID response of different detectors to V0 daughter particles
   //
   Char_t hname[256] = "";
+  Char_t hname2[256] = "";
+  Char_t hname3[256] = "";
+   
   const Char_t *typeName[5] = {"Electron", "PionK0", "PionL", "Kaon", "Proton"};
   const Int_t typePID[5] = {0, 2, 2, 3, 4};
-  
-  AliHFEpidTRD *pidTRD = new AliHFEpidTRD("TRDpid");
-  
+
+  // PID THnSparse
+  // axes:
+  // 0) species,  1) momentum, 2) DCA xy, 3) DCA z 
+  // 4) ITS signal 
+  // 5) TPC Ncls 6) TPC signal 7) TPC nSigma, 
+  // 8) TRD Ntrk, 9) TRD Ncls, 10) TRD dEdx, 
+
+  Double_t data[12];
+  memset(data, -99, sizeof(Double_t) *12);
+
+  Int_t run = fEvent->GetRunNumber();
+    
   AliVParticle *recTrack = NULL;
-  TIterator *trackIter = particles->MakeIterator(); 
-  while((recTrack = dynamic_cast<AliVParticle *>(trackIter->Next()))){
+  TIter trackIter(particles); 
+  while((recTrack = dynamic_cast<AliVParticle *>(trackIter()))){
+    memset(data, -99, sizeof(Double_t) *10);
     // ESD
     if(!TString(recTrack->IsA()->GetName()).CompareTo("AliESDtrack")){
       // case ESD
       AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(recTrack);
-      const AliExternalTrackParam *tpcIn = esdTrack->GetTPCInnerParam();
-      if(!tpcIn) continue;
+      if(!esdTrack) continue;
       
-      // track kinematics
-      Double_t p = tpcIn->P();
-      //Double_t pt = tpcIn->Pt();
+      // for the PID THnSparse
+      data[0] = species;
+      data[1] = esdTrack->P();
+      Float_t impactR = -1.;
+      Float_t impactZ = -1.;
+      esdTrack->GetImpactParameters(impactR, impactZ);
+      data[2] = impactR;
+      data[3] = impactZ;
+      data[11] = 0; // initialize the TOF pid cut on elecgrons to false
+      // use ONLY tracks with PID flag TRUE
+      ULong_t status = 0;
+      status = esdTrack->GetStatus();
 
-      // TPC dEdx
-      Double_t dEdx = esdTrack->GetTPCsignal();
-      sprintf(hname, "hTPC_dEdx_%s", typeName[species]);
-      fOutput->Fill(hname, p, dEdx);
-
-      //TPC number of sigmas
-      Double_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack,(AliPID::EParticleType)typePID[species]);
-      sprintf(hname, "hTPCnSigma%s",  typeName[species]);
-      fOutput->Fill(hname, p, nsigma);
-
-      // TPC PID response
-      sprintf(hname, "hTPC_PID_p_%s", typeName[species]);
-      Double_t tpcPID[5] = {-1, -1, -1, -1, -1};
-      esdTrack->GetTPCpid(tpcPID);
-      Int_t ix = 0;
-      Double_t tmp = 0.;
-      for(Int_t k=0; k<5; ++k){
-	if(tpcPID[k] > tmp){
-	  ix = k;
-	  tmp = tpcPID[k];
-	}
-	fOutput->Fill("hTPC_PID", tpcPID[k], k);
-      }
-      if(tpcPID[ix] > 0){
-	fOutput->Fill(hname, p, ix);
-      }
-
-      // TOF PID response
-      sprintf(hname, "hTOF_PID_p_%s", typeName[species]);
-      Double_t tofPID[5] = {-1., -1., -1., -1., -1};
-      esdTrack->GetTOFpid(tofPID);
-      tmp = 0.;
-      for(Int_t k=0; k<5; ++k){
-	if(tofPID[k] > tmp){
-	  ix = k;
-	  tmp = tofPID[k];
-	}
-	if(tofPID[k] > 0)
-	  fOutput->Fill("hTOF_PID", tofPID[k], k);
-      }
-      if(tofPID[ix] > 0){
-	fOutput->Fill(hname, p, ix);
-      }
+      //
+      // DEBUG 
+      //
       
-      //TRD first electron only
-      Int_t nTRK = (int)esdTrack->GetTRDntrackletsPID();
-      if(AliHFEV0pid::kRecoElectron == species){
-	sprintf(hname, "hTRD_%s_trk", typeName[species]);
-	fOutput->Fill(hname, p, nTRK);
-      }
-      Char_t n1[256] = "";
-      Char_t n2[256] = "";	
-      Double_t pidProbs[AliPID::kSPECIES];
-      esdTrack->GetTRDpid(pidProbs);
-      Double_t threshold = pidTRD->GetTRDthresholds(0.9, p);
-      if(AliHFEV0pid::kRecoElectron == species && 6 == nTRK){
-	sprintf(n1, "hTRD_%s_Y_like", typeName[species]);
-	sprintf(n2, "hTRD_%s_N_like", typeName[species]);
-	if(pidProbs[typePID[0]] > threshold) fOutput->Fill(n1, p);
-	else fOutput->Fill(n2, p);
-	sprintf(hname, "hTRD_El_like_Electron");
-	fOutput->Fill(hname, p, pidProbs[typePID[species]]);
-      }
-      if( ((AliHFEV0pid::kRecoPionK0 == species) || (AliHFEV0pid::kRecoPionL == species)) && 6 == nTRK ){
-	sprintf(hname, "hTRD_El_like_Pion");
-	fOutput->Fill(hname, p, pidProbs[typePID[0]]);
-      }
-      if(AliHFEV0pid::kRecoProton == species && 6 == nTRK){
-	sprintf(hname,"hTRD_El_like_Proton");
-	fOutput->Fill(hname, p, pidProbs[typePID[0]]);
-      }
-    
+      fOutput->Fill("hITS_kFlags", 5., species);
+      if(status & AliESDtrack::kITSin)    fOutput->Fill("hITS_kFlags", 1., species);
+      if(status & AliESDtrack::kITSout)   fOutput->Fill("hITS_kFlags", 2., species);
+      if(status & AliESDtrack::kITSrefit) fOutput->Fill("hITS_kFlags", 3., species);
+      if(status & AliESDtrack::kITSpid)   fOutput->Fill("hITS_kFlags", 4., species);
+      
+      fOutput->Fill("hTPC_kFlags", 5., species);
+      if(status & AliESDtrack::kTPCin)    fOutput->Fill("hTPC_kFlags", 1., species);
+      if(status & AliESDtrack::kTPCout)   fOutput->Fill("hTPC_kFlags", 2., species);
+      if(status & AliESDtrack::kTPCrefit) fOutput->Fill("hTPC_kFlags", 3., species);
+      if(status & AliESDtrack::kTPCpid)   fOutput->Fill("hTPC_kFlags", 4., species);
 
-      //TOF beta
-      sprintf(hname, "hTOF_beta_%s", typeName[species]);
-      Float_t beta = TOFbeta(esdTrack);
-      fOutput->Fill(hname, beta, p);
+      fOutput->Fill("hTRD_kFlags", 5., species);
+      if(status & AliESDtrack::kTRDin)    fOutput->Fill("hTRD_kFlags", 1., species);
+      if(status & AliESDtrack::kTRDout)   fOutput->Fill("hTRD_kFlags", 2., species);
+      if(status & AliESDtrack::kTRDrefit) fOutput->Fill("hTRD_kFlags", 3., species);
+      if(status & AliESDtrack::kTRDpid)   fOutput->Fill("hTRD_kFlags", 4., species);
+
+      fOutput->Fill("hTOF_kFlags", 5., species);
+      if(status & AliESDtrack::kTOFin)    fOutput->Fill("hTOF_kFlags", 1., species);
+      if(status & AliESDtrack::kTOFout)   fOutput->Fill("hTOF_kFlags", 2., species);
+      if(status & AliESDtrack::kTOFrefit) fOutput->Fill("hTOF_kFlags", 3., species);
+      if(status & AliESDtrack::kTOFpid)   fOutput->Fill("hTOF_kFlags", 4., species);
+
+      
+      //
+      // ITS - 
+      //
+      if(status & AliESDtrack::kITSpid){
+	Double_t p = esdTrack->P();
+
+	// ITS signal
+	//Double_t itsSignal = esdTrack->GetITSsignal();
+	
+	// ITS dEdx
+	Double_t dEdxSamples[4];
+	esdTrack->GetITSdEdxSamples(dEdxSamples);
+	Int_t nSamples = 0;
+	Double_t dEdxSum = 0.;
+	sprintf(hname, "hITS_dEdx_%s", typeName[species]);
+	for(Int_t i=0; i<4; ++i){
+	  if(dEdxSamples[i] > 0){
+	    nSamples++;
+	    fOutput->Fill(hname, i+1, p, dEdxSamples[i]);
+	    dEdxSum += dEdxSamples[i];
+	  }
+	}
+	if(4 == nSamples)fOutput->Fill(hname, 0, p, dEdxSum);
+	fOutput->Fill("hITS_dEdx_nSamples", nSamples);
+
+	Double_t signal = esdTrack->GetITSsignal();
+	sprintf(hname, "hITS_Signal_%s", typeName[species]);
+	fOutput->Fill(hname, p, signal);
+	data[4] = signal;
+	
+	// ITS number of signas
+	Double_t nsigma = fESDpid->NumberOfSigmasITS(esdTrack,(AliPID::EParticleType)typePID[species]);
+	sprintf(hname, "hITS_nSigma_%s",  typeName[species]);
+	fOutput->Fill(hname, p, nsigma);
+	
+	// ITS PID response
+	Double_t itsPID[5] = {-1, -1, -1, -1, -1};
+	esdTrack->GetITSpid(itsPID);
+	Int_t ix = GetMaxPID(itsPID);
+	sprintf(hname, "hITS_PID_p_%s", typeName[species]);
+	fOutput->Fill(hname, p, ix);
+      }//.. kITSpid
+      
+      //
+      // TPC
+      //
+      if(status & AliESDtrack::kTPCpid){
+	// Make TPC clusters Plot
+	data[5] = esdTrack->GetTPCNcls();
+	FillTPCinfo(esdTrack, species);
+
+	Double_t p = esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P();
+	// TPC dEdx
+	Double_t dEdx = esdTrack->GetTPCsignal();
+	sprintf(hname, "hTPC_dEdx_%s", typeName[species]);
+	fOutput->Fill(hname, p, dEdx);
+	data[6] = dEdx;
+	
+	//TPC number of sigmas
+	Double_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack,(AliPID::EParticleType)typePID[species]);
+	sprintf(hname, "hTPC_nSigma_%s",  typeName[species]);
+	fOutput->Fill(hname, p, nsigma);
+	data[7] = nsigma;
+
+	// TPC PID response
+	sprintf(hname, "hTPC_PID_p_%s", typeName[species]);
+	Double_t tpcPID[5] = {-1, -1, -1, -1, -1};
+	esdTrack->GetTPCpid(tpcPID);
+	Int_t ix = GetMaxPID(tpcPID);
+	fOutput->Fill(hname, p, ix);	
+      }//.. kTPCpid
+      
+      //
+      // TRD
+      //
+      
+      if(status & AliESDtrack::kTRDpid){
+	Double_t p = esdTrack->GetOuterParam() ? esdTrack->GetOuterParam()->P() : esdTrack->P();
+	
+	// TRD number of tracklets
+	Int_t ntrk = esdTrack->GetTRDntrackletsPID();
+	sprintf(hname, "hTRD_trk_%s", typeName[species]);
+	fOutput->Fill(hname, p, ntrk);
+	data[8] = ntrk;
+
+	// TRD PID response
+	sprintf(hname, "hTRD_PID_p_%s", typeName[species]);
+	Double_t trdPID[5] = {-1., -1., -1., -1., -1};
+	esdTrack->GetTRDpid(trdPID);
+	Int_t ix = GetMaxPID(trdPID);
+	fOutput->Fill(hname, p, ix);
+	// TRD n clusters
+	Int_t ncls = esdTrack->GetTRDncls();
+	sprintf(hname, "hTRD_cls_%s", typeName[species]);
+	fOutput->Fill(hname, p, ncls);
+	data[9] = ncls;
+
+	// TRD - per tracklet - dEdx per, likelihood
+      	sprintf(hname, "hTRD_Nslc_%s", typeName[species]);
+	sprintf(hname2, "hTRD_slc_%s", typeName[species]);
+	sprintf(hname3, "hTRD_dEdx_%s", typeName[species]);
+	Int_t nSlices = esdTrack->GetNumberOfTRDslices();
+	Double_t sumTot = 0.;
+	Int_t not0Tot = 0;
+	for(Int_t l=0; l< 6; ++l){
+	  Double_t trkData[7] = {-1.,-1, -1, -1, -1, -1, -1};
+	  trkData[0] = species;
+	  trkData[1] = p;
+	  trkData[2] = l;
+	  trkData[3] = ntrk;
+	  trkData[5] = ncls;	    
+	  Double_t sum = 0.;
+	  Int_t not0 = 0;
+	  for(Int_t s=0; s<nSlices; ++s){
+	    Double_t slice = esdTrack->GetTRDslice(l, s);
+	    sum += slice;
+	    if(slice > 0){
+	      not0 += 1;
+	      fOutput->Fill(hname2, p, s);
+	    }
+	  }//..slices
+
+	  trkData[4] = not0;
+	  fOutput->Fill(hname, p, not0);
+	  fOutput->Fill(hname3, p, sum);
+	  if(sum > 0){
+	    sumTot += sum;
+	    not0Tot += 1;
+	  }
+	  // lkelihoods per layer
+	  if(not0Tot > 0 && fNNref){
+	    Double_t likelihoods[5] = {-1., -1., -1., -1., -1};
+	    TRDlikeTracklet(l, esdTrack, likelihoods);
+	    trkData[6] = likelihoods[0];
+	    //printf(" -D: species: %i, P; %f : %f, s: %f\n", species, p, likelihoods[0], s);
+	  }
+	  if(not0Tot) fOutput->Fill("hTRDtracklets", trkData);
+	}//..layers
+	// average dEx per number of tracklets
+	if(0 < not0Tot)
+	  data[10] = sumTot / not0Tot;
+      }//.. kTRDpid
+      
+      
+      //
+      // TOF
+      //
+      if(status & AliESDtrack::kTOFpid){
+	Double_t p = esdTrack->GetOuterParam() ? esdTrack->GetOuterParam()->P() : esdTrack->P();
+	Double_t t0 = fESDpid->GetTOFResponse().GetTimeZero();
+
+	//TOF beta
+	sprintf(hname, "hTOF_beta_%s", typeName[species]);
+	Float_t beta = TOFbeta(esdTrack);	
+	fOutput->Fill(hname, p, beta);
+	fOutput->Fill("hTOF_beta_all", p, beta);
+	// TOF nSigma
+	Double_t nsigma = fESDpid->NumberOfSigmasTOF(esdTrack,(AliPID::EParticleType)typePID[species], t0);
+	sprintf(hname, "hTOF_nSigma_%s",  typeName[species]);
+	fOutput->Fill(hname, p, nsigma);
+	if(beta > 0.97 && beta < 1.03){
+	  data[11] = 1;
+	}
+	
+	// TOF PID response
+	sprintf(hname, "hTOF_PID_p_%s", typeName[species]);
+	Double_t tofPID[5] = {-1., -1., -1., -1., -1};
+	esdTrack->GetTOFpid(tofPID);
+	Int_t ix = GetMaxPID(tofPID);
+	fOutput->Fill(hname, p, ix);
+	
+	// time of flight QA
+	// - distribution of (time - t0 - pion_time)
+	Double_t times[5];
+	esdTrack->GetIntegratedTimes(times);
+	Double_t tItrackL = esdTrack->GetIntegratedLength();
+	Double_t tTOFsignal = esdTrack->GetTOFsignal();
+	Double_t dT = tTOFsignal - t0 - times[2];
+	fOutput->Fill("hTOF_qa_TmT0mT", run*1.0, dT);
+	fOutput->Fill("hTOF_qa_length", run*1.0, tItrackL);
+
+	
+      }//.. kTOFpid
+      // temporary - the PIDsparse needs rebuilding
+      //fOutput->Fill("PIDsparse", data);
     }
     // AOD - comming soon
     else{
@@ -485,10 +872,22 @@ void AliHFEpidQA::FillPIDresponse(TObjArray * const particles, Int_t species){
     }
   }// .. tracks in TObjArray
   
-  if(pidTRD) delete pidTRD;
 
 }
+//__________________________________________
+void AliHFEpidQA:: CheckEvent(){
+  //
+  // check some event variables
+  //
 
+  // check the T0 as a function of run number (less than one bin per number
+  Double_t t0 = fESDpid->GetTOFResponse().GetTimeZero();
+  Int_t run = fEvent->GetRunNumber();
+  Double_t data[2] = {run*1.0, t0*1000.};
+  fOutput->Fill("hEvent_T0", data);
+  
+
+}
 //__________________________________________
 TList *AliHFEpidQA::GetOutput(){
   //
@@ -517,86 +916,27 @@ TList *AliHFEpidQA::GetV0pidMC(){
 
 //__________________________________________
 void AliHFEpidQA::RecalculateTRDpid(AliESDtrack * /*track*/, Double_t * /*pidProbs*/) const{
-//  fTRDpidResponse->MakePID(track);
-//  track->GetTRDpid(pidProbs);
+  //  fTRDpidResponse->MakePID(track);
+  //  track->GetTRDpid(pidProbs);
 }
 
 //__________________________________________
 void AliHFEpidQA::RecalculateTRDpid(AliAODTrack * /*track*/, Double_t * /*pidProbs*/) const{
-//  fTRDpidResponse->MakePID(track, pidProbs);
-}
-//___________________________________________________________________
-void AliHFEpidQA::CorrectT0(){
-  // temporary solutions for correction the T0 for pass4 & pass5
-  // returns corrected T0 for known runs
-  // returns 0 if the correction failed
-  if(! fRun > 0){
-    AliError("Run number not set");
-    fT0 = 0.;
-    return;
-  }
-  Bool_t runFound = kFALSE;
-  const Int_t corr[31][2] = {{104065, 1771614},
-			     {104068, 1771603},
-			     {104070, 1771594},
-			     {104073, 1771610},
-			     {104080, 1771305},
-			     {104083, 1771613},
-			     {104157, 1771665},
-			     {104159, 1771679},
-			     {104160, 1771633},
-			     {104316, 1764344},
-			     {104320, 1764342},
-			     {104321, 1764371},
-			     {104439, 1771750},
-			     {104792, 1771755},
-			     {104793, 1771762},
-			     {104799, 1771828},
-			     {104800, 1771788},
-			     {104801, 1771796},
-			     {104802, 1771775},
-			     {104803, 1771795},
-			     {104824, 1771751},
-			     {104825, 1771763},
-			     {104845, 1771792},
-			     {104852, 1771817},
-			     {104864, 1771825},
-			     {104865, 1771827},
-			     {104867, 1771841},
-			     {104876, 1771856},
-			     {104878, 1771847},
-			     {104879, 1771830},
-			     {104892, 1771837}};
- 
-  for(Int_t i=0; i<31; ++i){
-    if(fRun == corr[i][0]){
-      runFound = kTRUE;
-      fT0 = (float)corr[i][1];
-      // for the pass4 & pass5
-      fT0 -= 37*1024*24.4 - 170.;
-      //..
-      break;
-    }
-  }
-
-  if(!runFound){
-    TString error = "Setting T0 correction FAILED, no TOF pid available for run: ";
-    error += fRun;
-    AliError(error);
-    fT0 = 0.;
-  }
-  //cout<<" -D: run: "<<current_run<<" , fT0: "<<fT0<<endl;
-  
+  //  fTRDpidResponse->MakePID(track, pidProbs);
 }
 //___________________________________________________________________
 Float_t AliHFEpidQA::TOFbeta(AliESDtrack * const track) const {
   // computes the TOF beta
   Double_t l = track->GetIntegratedLength();  // cm
   Double_t t = track->GetTOFsignal();
-  Double_t t0 = fT0; // ps
+  Double_t t0 = fESDpid->GetTOFResponse().GetTimeZero(); // ps
+
+  //printf("-D: l: %f, t: %f, t0: %f\n", l, t, t0);
+
   if(l < 360. || l > 800.) return 0.;
   if(t <= 0.) return 0.;
-  if(t0 <= 0.) return 0.;
+  if(t0 >999990.0) return 0.;
+  
 
   t -= t0; // subtract the T0
 
@@ -609,4 +949,255 @@ Float_t AliHFEpidQA::TOFbeta(AliESDtrack * const track) const {
 
   return beta;
 }
- 
+//____________________________________________
+Int_t AliHFEpidQA::GetMaxPID(Double_t *pidProbs) const {
+  //
+  // return the index of maximal PID probability
+  //
+  Int_t ix = -1;
+  Double_t tmp = 0.2;
+  for(Int_t i=0; i<5; ++i){
+    if(pidProbs[i] > tmp){
+      ix = i;
+      tmp = pidProbs[i];
+    }
+  }
+  return ix;
+}
+//_____________________________________________
+Int_t AliHFEpidQA::GetPDG(Int_t species){
+  //
+  // return the PDG particle code
+  //
+
+  Int_t pdg = 0;
+
+  switch(species){
+  case  AliHFEV0pid::kRecoElectron:
+    pdg = TMath::Abs(kElectron);
+    break;
+  case  AliHFEV0pid::kRecoPionK0:
+    pdg = TMath::Abs(kPiPlus);
+    break;
+  case  AliHFEV0pid::kRecoPionL:
+    pdg = TMath::Abs(kPiPlus);
+    break;
+  case  AliHFEV0pid::kRecoProton:
+    pdg = TMath::Abs(kProton);
+    break;
+  default:  // non investigated species
+    AliDebug(3, "Species not recognised");
+    return 0;
+  }  
+
+  return pdg;
+
+}
+
+//_____________________________________________
+TObjArray * AliHFEpidQA::MakeTrackList(TObjArray *tracks) const {
+  //
+  // convert list of AliHFEV0Info into a list of AliVParticle
+  //
+  TObjArray *output = new TObjArray;
+  TIter trackInfos(tracks);
+  AliHFEV0info *trackInfo = NULL;
+  while((trackInfo = dynamic_cast<AliHFEV0info *>(trackInfos())))
+    output->Add(trackInfo->GetTrack());
+
+  return output;
+}
+
+//_____________________________________________
+TObjArray * AliHFEpidQA::MakeCleanListElectrons(TObjArray *electrons) const {
+  //
+  // Cleanup electron sample using TPC PID
+  // PID requirement will allways be implemented to the pair
+  // Strategy
+  //
+  TObjArray *tracks = new TObjArray;
+  TIter candidates(electrons);
+  AliESDEvent *esd; AliAODEvent *aod;
+  AliHFEV0info *hfetrack;
+  if((esd = dynamic_cast<AliESDEvent *>(fEvent))){
+    AliESDtrack *track = NULL, *partnerTrack = NULL;
+    while((hfetrack = dynamic_cast<AliHFEV0info *>(candidates()))){
+      track = dynamic_cast<AliESDtrack *>(hfetrack->GetTrack());
+      partnerTrack = esd->GetTrack(hfetrack->GetPartnerID());
+      Double_t nSigmaTrack = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron));
+      Double_t nSigmaPartner = TMath::Abs(fESDpid->NumberOfSigmasTPC(partnerTrack, AliPID::kElectron));
+      if((nSigmaTrack < 1 && nSigmaPartner < 4) || (nSigmaTrack < 4 && nSigmaPartner < 1))
+        tracks->Add(track);
+    }
+  } else {
+    aod = dynamic_cast<AliAODEvent *>(fEvent);
+    AliAODTrack *track = NULL, *partnerTrack = NULL;
+    while((hfetrack = dynamic_cast<AliHFEV0info *>(candidates()))){
+      track = dynamic_cast<AliAODTrack *>(hfetrack->GetTrack());
+      partnerTrack = aod->GetTrack(hfetrack->GetPartnerID());
+      // will be coming soon
+    }
+  }
+  return tracks;
+}
+//___________________________________________________________
+void AliHFEpidQA::CheckTenderV0pid(TObjArray * const particles, Int_t species){
+
+  //
+  // retrieve the status bits from the TObject used to flag
+  // the V0 daughter tracks and return the found PID
+  // 0 - electron, 1 - pion, 2 - proton
+  // 
+
+  const Int_t id[5] = {0, 1, 1, -1, 2}; // convert AliHFEpid to simple 0, 1, 2
+
+  AliVParticle *recTrack = NULL;
+  TIter trackIter(particles); 
+  while((recTrack = dynamic_cast<AliVParticle *>(trackIter()))){
+    if(!TString(recTrack->IsA()->GetName()).CompareTo("AliESDtrack")){
+      // case ESD
+      AliESDtrack *track = dynamic_cast<AliESDtrack *>(recTrack);
+      if(!track) continue;
+      Int_t tPID = GetTenderV0pid(track);
+      fOutput->Fill("h_tender_check_01", id[species]*1.0, tPID);
+      fOutput->Fill("h_tender_check_02", id[species], id[species]*1.0, tPID);
+      
+    } //.. case ESD      
+    
+  }//.. iterate of tracks  
+}
+//___________________________________________________________
+Int_t AliHFEpidQA::GetTenderV0pid(AliESDtrack * const track){
+  //
+  // retrieve the PID nformation stored in the status flags by the train tender
+  //
+  
+
+  Int_t pid = -1;
+  if(!track){
+    return pid;
+  }
+  
+  Int_t nTimes = 0;
+  
+  if(track->TestBit(2<<14)){
+    pid = 0;
+    nTimes++;
+  }
+  if(track->TestBit(2<<15)){
+    pid = 1;
+    nTimes++;
+  }
+  if(track->TestBit(2<<16)){
+    pid = 2;
+    nTimes++;
+  }
+  
+  if(nTimes > 1){
+    AliWarning("V0 track labeled multiple times by the V0 tender");
+    pid = -1;
+  }
+    
+  return pid;
+
+}
+//___________________________________________________________
+Double_t AliHFEpidQA::TRDlikeTracklet(Int_t layer, AliESDtrack * const track, Double_t *likelihood){
+  //
+  // compute the TRD electron likelihoods for 1 tracklet
+  // based on teh AliTRDpidRecalculator in train/until/tender
+  // returns sum of the likelihoods (which should be 1)
+  //
+
+  const Double_t cScaleGain = 1./ 16000.;
+  const Float_t pBins[11] ={0.6, 0.8, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0}; // momentum bins
+
+  if(!track) return kFALSE;
+  Float_t p = track->GetTRDmomentum(layer); // momentum for a tracklet in the ESDtrack
+  if(p < 0) return kFALSE;
+
+  Int_t mombin = TRDmomBin(p);  // momentum bin
+  Float_t dEdxTRDsum = 0;              // dEdxTRDsum for checking if tracklet is available
+  Float_t dEdxTRD[8];           // dEdx for a tracklet in the ESD slices
+  Double_t ddEdxTRD[8];         // dEdx as Double_t for TMultiLayerPerceptron::Evaluate()
+  
+  Double_t prob[AliPID::kSPECIES];  // probabilities for all species in all layers
+
+  for(Int_t is = 0; is < AliPID::kSPECIES; is++){
+    likelihood[is] = 0.2;               // init probabilities
+    prob[is] = 0.2; 
+  }
+
+  Double_t sum = 0.;
+
+  for(Int_t islice = 0; islice<8; islice++){
+    dEdxTRD[islice]=0.;                                    // init dE/dx
+    ddEdxTRD[islice]=0.;                                   // init dE/dx
+    dEdxTRD[islice]=track->GetTRDslice(layer,islice);       // get the dE/dx values
+    dEdxTRDsum += dEdxTRD[islice];
+    ddEdxTRD[islice]=(Double_t)dEdxTRD[islice]*cScaleGain;            // rescale dE/dx
+    
+  }
+  for(Int_t is = 0; is < AliPID::kSPECIES; is++){
+    Double_t probloc1, probloc2; 
+    if(mombin == 0 && mombin < pBins[0]){          //  calculate PID for p > 0.6 GeV/c
+      prob[is] = fNet[mombin]->Evaluate(is, ddEdxTRD);
+    }
+    else if(mombin == 10 && mombin >= pBins[10]){   //  calculate PID for p >= 10.0 GeV/c
+      prob[is] = fNet[mombin]->Evaluate(is, ddEdxTRD);
+    }
+    else{                                                    //  standard calculation
+      Int_t mombin1 = 0, mombin2 = 0;             // lower and upper momentum bin      
+      if(p < pBins[mombin]) {mombin1 = mombin -1; mombin2 = mombin;}
+      if(p >= pBins[mombin]) {mombin1 = mombin; mombin2 = mombin+1;}
+      probloc1 = fNet[mombin1]->Evaluate(is, ddEdxTRD);
+      probloc2 = fNet[mombin2]->Evaluate(is, ddEdxTRD);
+      // weighting of the probability with regard to the track momentum
+      prob[is] = probloc1 + (probloc2-probloc1)*(p-pBins[mombin1])/(pBins[mombin2]-pBins[mombin1]);
+    }
+    likelihood[is] = prob[is];
+    sum += likelihood[is];
+  }     
+  
+  return sum;
+}
+//__________________________________________________________________________
+Int_t  AliHFEpidQA::TRDmomBin(Double_t p){
+  //
+  // compute the momentum bin position
+  // 
+
+  const Float_t pBins[11] ={0.6, 0.8, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0}; // momentum bins
+  
+  Int_t pBin1 = -1;                                    // check bin1
+  Int_t pBin2 = -1;                                    // check bin2
+
+  if(p < 0) return -1;                                 // return -1 if momentum < 0
+  if(p < pBins[0]) return 0;                                      // smallest momentum bin
+  if(p >= pBins[10]) return 10; // largest momentum bin
+
+
+  // calculate momentum bin for non extremal momenta
+  for(Int_t iMomBin = 1; iMomBin < 11; iMomBin++){
+    if(p < pBins[iMomBin]){
+      pBin1 = iMomBin - 1;
+      pBin2 = iMomBin;
+    }
+    else
+      continue;
+
+    if(p - pBins[pBin1] >= pBins[pBin2] - p){
+      return pBin2;
+    }
+    else{
+      return pBin1;
+    }
+  }
+
+  return -1;
+
+
+}
+//__________________________________________________________________________
+
+

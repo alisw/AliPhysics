@@ -27,7 +27,7 @@
 
 #include "AliESDEvent.h"
 #include <AliESDtrack.h>
-#include <AliStack.h>
+#include <AliMCEvent.h>
 
 #include <AliLog.h>
 #include <AliKFParticle.h>
@@ -41,13 +41,17 @@ ClassImp(AliHFEpriVtx)
 //_______________________________________________________________________________________________
 AliHFEpriVtx::AliHFEpriVtx():
         fESD1(0x0)
-        ,fStack(0x0)
+        ,fMCEvent(0x0)
         ,fNtrackswoPid(0)
         ,fHNtrackswoPid(0x0)
         ,fNESDprimVtxContributor(0x0)
         ,fNESDprimVtxIndices(0x0)
         ,fDiffDCAvsPt(0x0)
         ,fDiffDCAvsNt(0x0)
+        ,fNsectrk2prim(0)
+        ,fPVxRe(-999.)
+        ,fPVyRe(-999.)
+        ,fPVzRe(-999.)
 { 
         //
         // Default constructor
@@ -61,13 +65,17 @@ AliHFEpriVtx::AliHFEpriVtx():
 AliHFEpriVtx::AliHFEpriVtx(const AliHFEpriVtx &p):
          TObject(p)
         ,fESD1(0x0)
-        ,fStack(0x0)
+        ,fMCEvent(0x0)
         ,fNtrackswoPid(p.fNtrackswoPid)
         ,fHNtrackswoPid(0x0)
         ,fNESDprimVtxContributor(0x0)
         ,fNESDprimVtxIndices(0x0)
         ,fDiffDCAvsPt(0x0)
         ,fDiffDCAvsNt(0x0)
+        ,fNsectrk2prim(p.fNsectrk2prim)
+        ,fPVxRe(p.fPVxRe)
+        ,fPVyRe(p.fPVyRe)
+        ,fPVzRe(p.fPVzRe)
 {
         //
         // Copy constructor
@@ -193,8 +201,10 @@ Int_t AliHFEpriVtx::GetMCPID(AliESDtrack *track)
         // get MC pid
         //
 
-        Int_t label = TMath::Abs(track->GetLabel());
-        TParticle* mcpart = fStack->Particle(label);
+	AliMCParticle *mctrack = NULL;
+	if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) return 0; 
+	TParticle *mcpart = mctrack->Particle();
+
         if ( !mcpart ) return 0;
         Int_t pdgCode = mcpart->GetPdgCode();
 
@@ -226,8 +236,15 @@ void AliHFEpriVtx::CountPriVxtElecContributor(AliESDtrack *ESDelectron, Int_t so
         // get track id of our selected electron
         Int_t elecTrkID = ESDelectron->GetID();
 
-        Int_t label = TMath::Abs(ESDelectron->GetLabel());
-        TParticle* mcpart = fStack->Particle(label);
+	AliMCParticle *mctrack = NULL;
+	if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(ESDelectron->GetLabel()))))) return; 
+	TParticle *mcpart = mctrack->Particle();
+
+
+        if(!mcpart){
+          AliDebug(1, "no mc particle, return\n");
+          return;
+        }
 
         AliKFParticle::SetField(fESD1->GetMagneticField());
         AliKFParticle kfElectron(*ESDelectron,11);
@@ -284,7 +301,7 @@ void AliHFEpriVtx::FillNprimVtxContributor() const
 }
 
 //_______________________________________________________________________________________________
-Double_t AliHFEpriVtx::GetDistanceFromRecalVertexXY(AliESDtrack *ESDelectron) 
+Double_t AliHFEpriVtx::GetDistanceFromRecalVertexXY(AliESDtrack * const ESDelectron) 
 {
         //
         // return recalculated DCA after removing input track from the primary vertex
@@ -319,6 +336,80 @@ Double_t AliHFEpriVtx::GetDistanceFromRecalVertexXY(AliESDtrack *ESDelectron)
                         }
                 } 
         }  
-	return -1;
+	      return -1;
+
+}
+
+void AliHFEpriVtx::RecalcPrimvtx(Int_t nkftrk, Int_t * const trkid, AliKFParticle * const kftrk)
+{
+        //
+        // recalculate primary vertex after removing the input track
+        //
+
+        const AliESDVertex *primvtx = fESD1->GetPrimaryVertex();
+
+        AliKFVertex kfESDprimary;
+        Int_t n = primvtx->GetNIndices();
+        fNsectrk2prim = 0;
+        fPVxRe = -999.;
+        fPVyRe = -999.;
+        fPVyRe = -999.;
+
+        if (n>0 && primvtx->GetStatus()){
+          kfESDprimary = AliKFVertex(*primvtx);
+          UShort_t *priIndex = primvtx->GetIndices();
+          for (Int_t j=0; j<nkftrk; j++){
+            for (Int_t i=0;i<n;i++){
+              Int_t idx = Int_t(priIndex[i]);
+              if (idx == trkid[j]){
+                kfESDprimary -= kftrk[j];
+                fNsectrk2prim++;
+              }
+            }
+          }
+        }
+
+        fPVxRe = kfESDprimary.GetX();
+        fPVyRe = kfESDprimary.GetY();
+        fPVzRe = kfESDprimary.GetZ();
+
+}
+
+
+//_______________________________________________________________________________________________
+void AliHFEpriVtx::RecalcPrimvtx(AliESDtrack * const ESDelectron)
+{
+        //
+        // recalculate primary vertex after removing the input track
+        //
+
+        // get track id of our selected electron
+        Int_t elecTrkID = ESDelectron->GetID();
+
+        AliKFParticle::SetField(fESD1->GetMagneticField());
+        AliKFParticle kfElectron(*ESDelectron,11);
+
+        const AliESDVertex *primvtx = fESD1->GetPrimaryVertex();
+
+        AliKFVertex kfESDprimary;
+        Int_t n = primvtx->GetNIndices();
+        fPVxRe = -999.;
+        fPVyRe = -999.;
+        fPVyRe = -999.;
+        
+        if (n>0 && primvtx->GetStatus()){
+          kfESDprimary = AliKFVertex(*primvtx);
+          UShort_t *priIndex = primvtx->GetIndices();
+          for (Int_t i=0;i<n;i++){
+            Int_t idx = Int_t(priIndex[i]);
+            if (idx == elecTrkID){
+              kfESDprimary -= kfElectron;
+            }
+          }
+        }     
+        
+        fPVxRe = kfESDprimary.GetX();
+        fPVyRe = kfESDprimary.GetY();
+        fPVzRe = kfESDprimary.GetZ();
 
 }

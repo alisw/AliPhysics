@@ -54,19 +54,23 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Bool_t HasAsymmetricSigmaCut() const { return TestBit(kAsymmetricSigmaCut);}
     Bool_t HasParticleRejection() const { return TestBit(kRejection); }
     void SetTPCnSigma(Short_t nSigma) { fNsigmaTPC = nSigma; };
-    void SetBetheBlochParameters(Double_t *pars);
     inline void SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, Float_t sigmaMin, Float_t sigmaMax);
     inline void SetRejectParticle(Int_t species, Float_t pmin, Float_t sigmaMin, Float_t pmax, Float_t sigmaMax);
+
+    void SetUpperSigmaCut(TF1 * const model) { fUpperSigmaCut = model; }
+    void SetLowerSigmaCut(TF1 * const model) { fLowerSigmaCut = model; }
 
   protected:
     void Copy(TObject &o) const;
     void AddQAhistograms(TList *qaList);
-    void FillTPChistograms(const AliESDtrack *track, const AliMCParticle *mctrack);
+    void FillTPChistograms(const AliESDtrack *track, const AliMCParticle *mctrack, Bool_t stepSelected = kFALSE);
     Int_t MakePIDaod(AliAODTrack *aodTrack, AliAODMCParticle *mcTrack);
     Int_t MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
     Int_t Reject(AliESDtrack *track);
     Double_t Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig = 2.);
     Double_t Suppression(const AliESDtrack *track, Int_t species);
+
+    Bool_t CutSigmaModel(AliESDtrack *track);
 
   private:
     enum{
@@ -76,13 +80,14 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Double_t fLineCrossingSigma[AliPID::kSPECIES];          // with of the exclusion point
     Int_t    fLineCrossingType;                             // 0 for no line crossing, otherwise AliPID of the particle crossing the electron dEdx band
     UChar_t fLineCrossingsEnabled;                          // Bitmap showing which line crossing is set
+    TF1 *fUpperSigmaCut;                                    // Upper Sigma Cut
+    TF1 *fLowerSigmaCut;                                    // Lower Sigma Cut
     Float_t fPAsigCut[2];                                   // Momentum region where to perform asymmetric sigma cut
     Float_t fNAsigmaTPC[2];                                 // Asymmetric TPC Sigma band        
     Short_t fNsigmaTPC;                                     // TPC sigma band
     Float_t fRejection[4*AliPID::kSPECIES];                 // All informations for Particle Rejection, order pmin, sigmin, pmax, sigmax
     UChar_t fRejectionEnabled;                              // Bitmap for enabled particle rejection
     AliPID *fPID;                                           //! PID Object
-    AliESDpid *fESDpid;                                     //! TPC PID object
     AliHFEcollection *fQAList;                              //! QA histograms
 
   ClassDef(AliHFEpidTPC, 1)   // TPC Electron ID class

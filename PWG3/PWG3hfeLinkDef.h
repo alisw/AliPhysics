@@ -16,10 +16,14 @@
 #pragma link C++ class  AliHFEsecVtx+;
 #pragma link C++ class  AliHFEpriVtx+;
 #pragma link C++ class  AliHFEelecbackground+;
+#pragma link C++ class  AliHFEspectrum+;
 
+#pragma link C++ class  AliHFEV0info+;
 #pragma link C++ class  AliHFEV0pid+;
+#pragma link C++ class  AliHFEV0cuts+;
 #pragma link C++ class  AliHFEV0pidMC+;
 #pragma link C++ class  AliHFEpidQA+;
+#pragma link C++ class  AliHFEtrdPIDqa+;
 #pragma link C++ class  AliHFEpid+;
 #pragma link C++ class  AliHFEpidBase+;
 #pragma link C++ class  AliHFEpidITS+;

@@ -14,9 +14,11 @@
 **************************************************************************/
 //
 // Class for checking impact parameter (DCA) study 
-// Study DCA in rphi (xy) and z
-// resolution and pull
-// 
+// + study DCA in rphi (xy) and z
+// + resolution and pull
+// + handle both MC and data 
+// + add plugin for primary vertex 
+//
 
 #ifndef ALIHFEDCA_H
 #define ALIHFEDCA_H
@@ -35,6 +37,7 @@ class TList;
 class TObjArray;
 class AliStack;
 class AliMCEvent;
+class AliMCVertex;
 
 class AliESDEvent;
 class AliESDtrack;
@@ -53,27 +56,63 @@ class AliHFEdca : public TObject{
  
   enum{
     kNParticles = 12,
-    kNPtBins = 43,   
+    kNPtBins = 50,   
     kNDcaVar = 2, 
+    kNVertexVar = 3,  
     kNPullVar = 2
   };
 
-  AliHFEdca();
-  AliHFEdca(const AliHFEdca &p); // copy constructor
-  AliHFEdca &operator=(const AliHFEdca &); // assignment operator
-
-  virtual ~AliHFEdca();
+  AliHFEdca(); // default constructor
+  AliHFEdca(const AliHFEdca &ref); // copy constructor
+  AliHFEdca &operator=(const AliHFEdca &ref); // assignment operator
+  virtual ~AliHFEdca(); // destructor
 
   void Initialize();
   void CreateHistogramsPull(TList *pullList);  
   void CreateHistogramsResidual(TList *residualList);  
+  void CreateHistogramsDca(TList *dcaList);  
+
+  void CreateHistogramsKfDca(TList *kfDcaList);  
+
+  void CreateHistogramsDataDca(TList *dataDcaList);  
+  void CreateHistogramsDataPull(TList *dataPullList);  
+
+  void CreateHistogramsVertex(TList *vertexList);  
+  void CreateHistogramsDataVertex(TList *vertexList);  
+
+  void CreateHistogramsPid(TList *pidList);
+  void CreateHistogramsDataPid(TList *pidList);
+
+  void CreateHistogramsHfeDca(TList *hfeDcaList);
+  void CreateHistogramsHfeDataDca(TList *hfeDataDcaList);
+
+  
   void InitAnalysis();  
-  void FillHistograms(AliESDEvent *esdEvent,  AliESDtrack *track,  AliMCEvent *mcEvent);
+  void FillHistogramsDca(AliESDEvent *esdEvent,  AliESDtrack *track,  AliMCEvent *mcEvent);
+  void FillHistogramsVtx(AliESDEvent *esdEvent,  AliMCEvent *mcEvent);
+  void FillHistogramsPid(AliESDtrack *track,  AliMCEvent *mcEvent);
+
+  void FillHistogramsKfDca(AliESDEvent *esdEvent,  AliESDtrack *track,  AliMCEvent *mcEvent);
+
+  void FillHistogramsDataDca(AliESDEvent *esdEvent,  AliESDtrack *track, AliESDVertex *vtxESDSkip);
+  void FillHistogramsDataVtx(AliESDEvent *esdEvent);
+  void FillHistogramsDataPid(AliESDtrack *track);
+
+  void FillHistogramsHfeDca(AliESDEvent *esdEvent,  AliESDtrack *track,  AliMCEvent *mcEvent);
+  void FillHistogramsHfeDataDca(AliESDEvent *esdEvent,  AliESDtrack *track);
+
+
+  void ApplyExtraCuts(AliESDEvent * const esdEvent, Int_t nMinPrimVtxContributor);
+
   void PostAnalysis() const;
 
+  Int_t GetCombinedPid(AliESDtrack *track);
 
  private:   
-  static const Char_t *fgkParticles[kNParticles];  // particle names
+
+
+  static const Char_t* fgkParticles[kNParticles];  // particle names
+  static const Int_t fgkPdgParticle[kNParticles-2]; // identified particle's name
   static const Int_t fgkColorPart[kNParticles]; // colors for particles
 
   static const Float_t fgkPtIntv[kNPtBins+1];  // pt intervals
@@ -81,17 +120,76 @@ class AliHFEdca : public TObject{
   static const Char_t* fgkDcaVar[kNDcaVar];  // dca variables
   static const Char_t* fgkDcaVarTitle[kNDcaVar]; // titles for dca variables
 
+  static const Char_t* fgkVertexVar[kNVertexVar];  // dca variables
+  static const Char_t* fgkVertexVarTitle[kNVertexVar]; // titles for dca variables
+
+  static const Char_t* fgkResDcaVar[kNDcaVar];  // dca variables
+  static const Char_t* fgkResDcaVarTitle[kNDcaVar]; // titles for dca variables
+
   static const Char_t* fgkPullDcaVar[kNPullVar];  // pull variables
   static const Char_t* fgkPullDcaVarTitle[kNPullVar]; // titles for pull variables
+  static const Char_t* fgkPullDataDcaVarTitle[kNPullVar]; // titles for pull variables
 
   TH1F* fHistDcaXYRes[kNParticles][kNPtBins];  //! residuals in XY
   TH1F* fHistDcaZRes[kNParticles][kNPtBins];   //! residuals in Z
+
   TH1F* fHistDcaXYPull[kNParticles][kNPtBins]; //! pulls XY
   TH1F* fHistDcaZPull[kNParticles][kNPtBins];  //! pulls Z
 
-  TList *fResidualList;   //! collection of histograms of residual
-  TList *fPullList;       //! collection of histograms of pull
+  TH1F* fHistDcaXY[kNParticles][kNPtBins]; //! dca XY
+  TH1F* fHistDcaZ[kNParticles][kNPtBins];  //! dca Z
+
+  TH1F* fHistEPDcaXYRes[kNParticles-2][kNPtBins];  //! residuals in XY with esd pid
+  TH1F* fHistEPDcaZRes[kNParticles-2][kNPtBins];   //! residuals in Z with esd pid
+
+  TH1F* fHistEPDcaXYPull[kNParticles-2][kNPtBins]; //! pulls XY with esd pid
+  TH1F* fHistEPDcaZPull[kNParticles-2][kNPtBins];  //! pulls Z with esd pid
+
+  TH1F* fHistEPDcaXY[kNParticles-2][kNPtBins]; //! dca XY with esd pid
+  TH1F* fHistEPDcaZ[kNParticles-2][kNPtBins];  //! dca Z with esd pid
+
+  TH1F* fHistKFDcaXY[kNParticles][kNPtBins]; //! KF dca XY
+  TH1F* fHistKFDcaZ[kNParticles][kNPtBins];  //! KF dca Z
   
+  TH1F* fHistDataDcaXY[kNParticles][kNPtBins]; //! data dca XY
+  TH1F* fHistDataDcaZ[kNParticles][kNPtBins];  //! data dca Z
+  TH1F* fHistDataWoDcaXY[kNParticles][kNPtBins]; //! data dca XY w/o current trk
+  TH1F* fHistDataWoDcaZ[kNParticles][kNPtBins];  //! data dca Z w/o current trk
+
+  TH1F* fHistDataDcaXYPull[kNParticles][kNPtBins]; //! data pull dca XY
+  TH1F* fHistDataDcaZPull[kNParticles][kNPtBins];  //! data pull dca Z 
+  TH1F* fHistDataWoDcaXYPull[kNParticles][kNPtBins]; //! data pull dca XY w/o current trk
+  TH1F* fHistDataWoDcaZPull[kNParticles][kNPtBins];  //! data pull dca Z  w/o current trk
+
+  TH1F* fHistMCvertex[kNVertexVar];    //! vertex MC
+  TH1F* fHistESDvertex[kNVertexVar];   //! vertex ESD
+  TH1F* fHistDatavertex[kNVertexVar];  //! vertex Data
+  
+  TH1F* fHistMcPid[kNParticles];      //! MC pid pt spectra
+  TH1F* fHistEsdPid[kNParticles];     //! ESD pid pt spectra
+
+  TH1F *fHistDataEsdPid[kNParticles];    //! Data ESD pid
+
+  // HFE pid part
+  // MC
+  TH1F* fHistHPDcaXYRes[2][kNPtBins];  //! residuals in XY
+  TH1F* fHistHPDcaZRes[2][kNPtBins];   //! residuals in Z
+  TH1F* fHistHPDcaXYPull[2][kNPtBins]; //! pulls XY
+  TH1F* fHistHPDcaZPull[2][kNPtBins];  //! pulls Z
+  TH1F* fHistHPDcaXY[2][kNPtBins];     //! dca XY
+  TH1F* fHistHPDcaZ[2][kNPtBins];      //! dca Z
+
+  TH1F* fHistHfePid[2][2];             // ! HFE pid pt spectra only for electrons
+
+  // Data
+  TH1F* fHistHPDataDcaXY[2][kNPtBins];     //! data dca XY with HFE pid
+  TH1F* fHistHPDataDcaZ[2][kNPtBins];      //! data dca Z with HFE pid
+  TH1F* fHistHPDataDcaXYPull[2][kNPtBins]; //! data pull dca XY
+  TH1F* fHistHPDataDcaZPull[2][kNPtBins];  //! data pull dca Z 
+
+  TH1F *fHistDataHfePid[2];            //! Data HFE pid
+
+  TH1I* fStat;                         //! counting diff of dca calculated from HF particle and ESD
   ClassDef(AliHFEdca, 1);
 };
 

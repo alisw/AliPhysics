@@ -36,29 +36,38 @@ class AliHFEsecVtxs : public TObject {
 
                 Int_t GetTrkLabel1() const {return fTrkLabel1;}
                 Int_t GetTrkLabel2() const {return fTrkLabel2;}
+                Int_t GetMCCode() const {return fMCCode;}
                 Double_t GetInvmass() const {return fInvmass;}
                 Double_t GetKFChi2() const {return fKFChi2;}
                 Double_t GetSignedLxy() const {return fSignedLxy;}
+                Double_t GetSignedLxy2() const {return fSignedLxy2;}
                 Double_t GetKFIP() const {return fKFIP;}
+                Double_t GetKFIP2() const {return fKFIP2;}
 
                 void SetTrkLabel1(Int_t label) {fTrkLabel1 = label;}
                 void SetTrkLabel2(Int_t label) {fTrkLabel2 = label;}
                 void SetInvmass(Double_t invmass) {fInvmass = invmass;}
                 void SetKFChi2(Double_t kfchi2) {fKFChi2 = kfchi2;}
                 void SetSignedLxy(Double_t signedlxy) {fSignedLxy = signedlxy;}
+                void SetSignedLxy2(Double_t signedlxy2) {fSignedLxy2 = signedlxy2;}
                 void SetKFIP(Double_t kfip) {fKFIP = kfip;}
+                void SetKFIP2(Double_t kfip2) {fKFIP2 = kfip2;}
+                void SetMCCode(Int_t mccode) {fMCCode = mccode;}
 
         protected:
                 Int_t fTrkLabel1;    // track 1 label associated to secvtx 
                 Int_t fTrkLabel2;    // track 2 label associated to secvtx
+                Int_t fMCCode;       // track mc code
                 Double_t fInvmass;   // secvtx invariant mass
                 Double_t fKFChi2;    // secvtx chi2 
                 Double_t fSignedLxy; // secvtx signed Lxy
-                Double_t fKFIP;      // secvtx impact parameter 
+                Double_t fSignedLxy2; // recalculated secvtx signed Lxy
+                Double_t fKFIP;       // secvtx impact parameter 
+                Double_t fKFIP2;      // recalculated secvtx impact parameter 
 
         private:
 
-        ClassDef(AliHFEsecVtxs,0);
+        ClassDef(AliHFEsecVtxs,1);
 };
 
 #endif

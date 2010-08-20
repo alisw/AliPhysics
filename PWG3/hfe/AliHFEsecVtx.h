@@ -37,10 +37,11 @@ class AliAODEvent;
 class AliVTrack;
 class AliESDtrack;
 class AliAODTrack;
-class AliStack;
+class AliMCEvent;
 class AliHFEtrackFilter;
 class AliHFEpairs;
 class AliHFEsecVtxs;
+class AliKFParticle;
 
 //________________________________________________________________
 class AliHFEsecVtx : public TObject {
@@ -64,7 +65,7 @@ class AliHFEsecVtx : public TObject {
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     void SetEvent(AliESDEvent* const ESD){fESD1=ESD;};    // set ESD pointer
     void SetEventAOD(AliAODEvent* const AOD){fAOD1=AOD;}; // set ESD pointer
-    void SetStack(AliStack* const stack){fStack=stack;};  // set stack pointer
+    void SetMCEvent(AliMCEvent* const mcEvent){fMCEvent=mcEvent;};  // set stack pointer
     void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
     void SetUseMCPID(Bool_t usemcpid){fUseMCPID=usemcpid;};
 
@@ -78,6 +79,7 @@ class AliHFEsecVtx : public TObject {
     Int_t GetPDG(AliVTrack *track);     // return pdg 
 		void GetESDPID(AliESDtrack *track, Int_t &recpid, Double_t &recprob); //return esd pid likelihood
     void GetPrimaryCondition();
+    void RecalcPrimvtx(Int_t nkftrk, Int_t * const, AliKFParticle * const); //recalculate primary vertex
 
     TClonesArray *HFEpairs();
     TClonesArray *HFEsecvtxs();
@@ -101,20 +103,24 @@ class AliHFEsecVtx : public TObject {
     void Init();
     void FindSECVTXCandid(AliVTrack *track);
     void CalcSECVTXProperty(AliVTrack* track1, AliVTrack* track2, AliVTrack* track3); // calculated distinctive variables
+    void CalcSECVTXProperty(AliVTrack* track1, AliVTrack* track2, AliVTrack* track3, AliVTrack* track4); // calculated distinctive variables
 
+    void Fill4TrkSECVTX(AliVTrack* track, Int_t ipair, Int_t jpair, Int_t kpair);
+    void Fill3TrkSECVTX(AliVTrack* track, Int_t ipair, Int_t jpair);
+    void Fill2TrkSECVTX(AliVTrack* track, AliHFEpairs *pair);
 
   private:
     enum{
       kHasMCData = BIT(15),     // bitset for mc data usage
       kAODanalysis = BIT(16)    // bitset for aod analysis
     };
-    enum {kAll, kDirectCharm, kDirectBeauty, kBeautyCharm, kGamma, kPi0, kElse, kBeautyGamma, kBeautyPi0, kBeautyElse}; // electron origin 
+    enum {kAll, kDirectCharm, kDirectBeauty, kBeautyCharm, kGamma, kPi0, kElse, kBeautyGamma, kBeautyPi0, kBeautyElse, kMisID}; // electron origin 
     enum {kCharm=4, kBeauty=5}; // quark flavor
 
     AliHFEtrackFilter *fFilter; // filter Tracks to combine the signal track with
     AliESDEvent* fESD1; // ESD pointer             
     AliAODEvent* fAOD1; // AOD pointer             
-    AliStack* fStack;   // stack pointer              
+    AliMCEvent* fMCEvent;   // MCEvent pointer              
 
     Bool_t fUseMCPID;   // if use MC pid 
 
@@ -127,6 +133,7 @@ class AliHFEsecVtx : public TObject {
 
     Int_t fNoOfHFEpairs;       // number of e-h pairs  
     Int_t fNoOfHFEsecvtxs;     // number of secondary vertexes
+    Int_t fArethereSecVtx;     // checker
 
     TClonesArray *fHFEpairs;   //! Array of pair 
     TClonesArray *fHFEsecvtxs; //! Array of secondary vertexes 
@@ -134,12 +141,21 @@ class AliHFEsecVtx : public TObject {
 
 		Double_t fPVx;          // primary vertex copy x 
 		Double_t fPVy;          // primary vertex copy y
+		Double_t fPVx2;         // recalculated primary vertex x 
+		Double_t fPVy2;         // recalculated primary vertex y
     Double_t fCosPhi;       // cos of opening angle of two pair vertex
     Double_t fSignedLxy;    // signed Lxy of secondary vertex
+    Double_t fSignedLxy2;   // signed Lxy of secondary vertex based on recalculated primary vertex
     Double_t fKFchi2;       // chi2 of secondary vertex
     Double_t fInvmass;      // invariant mass of secondary vertex
     Double_t fInvmassSigma; // invariant mass sigma of secondary vertex
     Double_t fKFip;         // impact parameter of secondary vertex track
+    Double_t fKFip2;        // impact parameter of secondary vertex track based on recalculated primary vertex
+
+    Int_t fNsectrk2prim;    // # of secvtx tracks contributing to primvtx calculation
+
+    Double_t fVtxchi2Tightcut; // pair vertex chi2 cut
+    Double_t fVtxchi2Loosecut; // secvtx vertex chi2 cut
 
     THnSparseF *fPairQA;    // qa histos for pair analysis 
     THnSparseF *fSecvtxQA;  // qa histos for secvtx

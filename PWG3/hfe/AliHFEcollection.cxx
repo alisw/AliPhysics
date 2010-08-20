@@ -61,7 +61,7 @@ AliHFEcollection::AliHFEcollection():
   
 }
 //___________________________________________________________________
-AliHFEcollection::AliHFEcollection(char* name, char* title):
+AliHFEcollection::AliHFEcollection(const char* name, const char* title):
   TNamed(name, title)
   , fList(0x0)
 {
@@ -71,6 +71,7 @@ AliHFEcollection::AliHFEcollection(char* name, char* title):
   //
  
   fList = new THashList();
+  fList->SetName(Form("list_%s", name));
   if(!fList){
     AliError("Initialization of the list failed");
   }
@@ -130,7 +131,7 @@ AliHFEcollection::~AliHFEcollection(){
   AliInfo("DESTRUCTOR");
 }
 //___________________________________________________________________
-Bool_t AliHFEcollection::CreateTH1F(const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax){
+Bool_t AliHFEcollection::CreateTH1F(const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax, Int_t logAxis){
 
   //
   // Creates a TH1F histogram for the collection
@@ -142,11 +143,14 @@ Bool_t AliHFEcollection::CreateTH1F(const char* name, const char* title, Int_t n
   }
   else{
     fList->Add(new TH1F(name, title, nBin, nMin, nMax));
+    if(logAxis >= 0){
+      BinLogAxis(name, logAxis);
+    }
     return CheckObject(name);
   }
 }
 //___________________________________________________________________
-Bool_t AliHFEcollection::CreateTH2F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY){
+Bool_t AliHFEcollection::CreateTH2F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY, Int_t logAxis){
 
   //
   // Creates a TH2F histogram for the collection
@@ -157,10 +161,13 @@ Bool_t AliHFEcollection::CreateTH2F(const char* name, const char* title, Int_t n
     return kFALSE;
   }
   fList->Add(new TH2F(name, title, nBinX, nMinX, nMaxX, nBinY, nMinY, nMaxY));
+  if(logAxis >= 0){
+    BinLogAxis(name, logAxis);
+  }
   return CheckObject(name); 
 }
 //___________________________________________________________________
-Bool_t AliHFEcollection::CreateTH1Fvector1(Int_t X, const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax){
+Bool_t AliHFEcollection::CreateTH1Fvector1(Int_t X, const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax, Int_t logAxis){
 
   //
   // create a 1 dimensional array of size [X]
@@ -180,16 +187,16 @@ Bool_t AliHFEcollection::CreateTH1Fvector1(Int_t X, const char* name, const char
     hname.Append(Form("%s_[%d]", name, i));
     //cout<<" -D: name: "<<name.str().c_str()<<endl;
     //cout<<" -D: nBin: "<<_nBin<<" ,Min: "<<_nMin<<" , Max: "<<_nMax<<endl;
-    CreateTH1F(hname.Data(), title, nBin, nMin, nMax);
+    CreateTH1F(hname.Data(), title, nBin, nMin, nMax, logAxis);
     if(!CheckObject(hname.Data())){
-      AliError(Form("Not possible to create object: %s", hname.Data()));
+      AliError(Form("Not possible to create object: ", hname.Data()));
       return kFALSE;
     }    
   }
   return kTRUE;  
 }
 //___________________________________________________________________
-Bool_t AliHFEcollection::CreateTH2Fvector1(Int_t X, const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY){
+Bool_t AliHFEcollection::CreateTH2Fvector1(Int_t X, const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY, Int_t logAxis){
 
   //
   // create a 1 dimensinal array of TH2F histograms with size [X]
@@ -209,7 +216,7 @@ Bool_t AliHFEcollection::CreateTH2Fvector1(Int_t X, const char* name, const char
     hname.Append(Form("%s_[%d]", name, i));
     //cout<<" -D: name: "<<name<<endl;
     //cout<<" -D: nBin: "<<_nBin<<" ,Min: "<<_nMin<<" , Max: "<<_nMax<<endl;
-    CreateTH2F(hname.Data(), title, nBinX, nMinX, nMaxX, nBinY, nMinY, nMaxY);
+    CreateTH2F(hname.Data(), title, nBinX, nMinX, nMaxX, nBinY, nMinY, nMaxY, logAxis);
     if(!CheckObject(hname.Data())){
       AliError(Form("Not possible to create object: %s", hname.Data()));
       return kFALSE;
@@ -218,7 +225,7 @@ Bool_t AliHFEcollection::CreateTH2Fvector1(Int_t X, const char* name, const char
   return kTRUE;  
 }
 //___________________________________________________________________
-Bool_t AliHFEcollection::CreateTH1Fvector2(Int_t X, Int_t Y, const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax){
+Bool_t AliHFEcollection::CreateTH1Fvector2(Int_t X, Int_t Y, const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax, Int_t logAxis){
 
   //
   // create a 2 dimensional array of histograms of size [X, Y]
@@ -239,7 +246,7 @@ Bool_t AliHFEcollection::CreateTH1Fvector2(Int_t X, Int_t Y, const char* name, c
       hname.Append(Form("%s_[%d][%d]", name, i, j));
       //cout<<" -D: name: "<<name.str().c_str()<<endl;
       //cout<<" -D: nBin: "<<_nBin<<" ,Min: "<<_nMin<<" , Max: "<<_nMax<<endl;
-      CreateTH1F(hname.Data(), title, nBin, nMin, nMax);
+      CreateTH1F(hname.Data(), title, nBin, nMin, nMax, logAxis);
       if(!CheckObject(hname.Data())){
 	      AliError(Form("Not possible to create object: %s", hname.Data()));
 	      return kFALSE;
@@ -301,10 +308,11 @@ Bool_t AliHFEcollection::Fill(const char* name, Double_t v){
   // fill function for one TH1 histograms
   //
 
-   if(!CheckObject(name)){
-    AliError(Form("Not possible to return pointer to the object '%s'\n", name));
+  if(!CheckObject(name)){
+    AliError(Form("Not possible to fill the object '%s', the object does not exist\n", name));
     return kFALSE;
   }
+
 
   // chack the possible object types
   if(fList->FindObject(name)->InheritsFrom("TH1")){
@@ -314,6 +322,15 @@ Bool_t AliHFEcollection::Fill(const char* name, Double_t v){
   
   return kFALSE;
 
+}
+//___________________________________________________________________
+Bool_t AliHFEcollection::Fill(const char* name, Int_t v){
+
+  //
+  // fill function for one TH1 histograms for integer numbers
+  //
+
+  return Fill(name, v*1.0);
 }
 //___________________________________________________________________
 Bool_t AliHFEcollection::Fill(const char* name, Int_t X, Double_t v){
@@ -368,8 +385,8 @@ Bool_t AliHFEcollection::Fill(const char* name, Double_t v1, Double_t v2){
   // fill function for TH2 objects
   //
 
-   if(!CheckObject(name)){
-    AliError(Form("Not possible to return pointer to the object '%s'\n", name));
+  if(!CheckObject(name)){
+    AliError(Form("Not possible to fill the object '%s', the object does not exist\n", name));
     return kFALSE;
   }
 
@@ -386,7 +403,24 @@ Bool_t AliHFEcollection::Fill(const char* name, Double_t v1, Double_t v2){
   return kFALSE;
   
 }
+//___________________________________________________________________
+Bool_t AliHFEcollection::Fill(const char* name, Double_t* entry, Double_t weight){
+  //
+  // Fill a THnSparse object
+  //
 
+  if(!CheckObject(name)){
+    AliError(Form("Not possible to fill the object '%s', the object does not exist\n", name));
+    return kFALSE;
+  }
+  
+   if(fList->FindObject(name)->InheritsFrom("THnSparse")){
+     (dynamic_cast<THnSparseF*>(fList->FindObject(name)))->Fill(entry, weight);
+     return kTRUE;
+   }
+   return kFALSE;
+
+}
 //___________________________________________________________________
 Bool_t AliHFEcollection::CheckObject(const char* name){
 
@@ -461,6 +495,10 @@ Bool_t AliHFEcollection::BinLogAxis(const char* name, Int_t dim){
   Int_t bins = axis->GetNbins();
 
   Double_t from = axis->GetXmin();
+  if(from <= 0){
+    AliError(Form(" Log binning not possible for object '%s'because the '%d' axis starts from '%f\n'", name, dim, from));
+    return kFALSE;
+  }
   Double_t to = axis->GetXmax();
   Double_t *newBins = new Double_t[bins+1];
   newBins[0] = from;
@@ -469,7 +507,7 @@ Bool_t AliHFEcollection::BinLogAxis(const char* name, Int_t dim){
     newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete [] newBins;
+  delete newBins;
 
   return kTRUE;
 

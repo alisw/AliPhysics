@@ -25,6 +25,7 @@
 #include <TIterator.h>
 #include <TParticle.h>
 
+#include <AliESDVertex.h>
 #include <AliESDEvent.h>
 #include <AliAODEvent.h>
 #include <AliVTrack.h>
@@ -34,7 +35,7 @@
 #include <AliKFParticle.h>
 #include <AliKFVertex.h>
 #include <AliLog.h>
-#include <AliStack.h>
+#include <AliMCEvent.h>
 #include <AliAODMCParticle.h>
 #include "AliHFEpairs.h"
 #include "AliHFEsecVtxs.h"
@@ -47,7 +48,7 @@ AliHFEsecVtx::AliHFEsecVtx():
   fFilter(0x0)
   ,fESD1(0x0)
   ,fAOD1(0x0)
-  ,fStack(0x0)
+  ,fMCEvent(0x0)
   ,fUseMCPID(kFALSE)
   ,fkSourceLabel()
   ,fNparents(0)
@@ -56,17 +57,25 @@ AliHFEsecVtx::AliHFEsecVtx():
   ,fDcaCut()
   ,fNoOfHFEpairs(0)
   ,fNoOfHFEsecvtxs(0)
+  ,fArethereSecVtx(0)
   ,fHFEpairs(0x0)
   ,fHFEsecvtxs(0x0)
   ,fMCArray(0x0)
-  ,fPVx(0)
-  ,fPVy(0)
+  ,fPVx(-999)
+  ,fPVy(-999)
+  ,fPVx2(999)
+  ,fPVy2(-999)
   ,fCosPhi(-1)
   ,fSignedLxy(-1)
+  ,fSignedLxy2(-1)
   ,fKFchi2(-1)
   ,fInvmass(-1)
   ,fInvmassSigma(-1)
   ,fKFip(0)
+  ,fKFip2(0)
+  ,fNsectrk2prim(0)
+  ,fVtxchi2Tightcut(3.)
+  ,fVtxchi2Loosecut(5.)
   ,fPairQA(0x0)
   ,fSecvtxQA(0x0)
   ,fSecVtxList(0x0)
@@ -84,7 +93,7 @@ AliHFEsecVtx::AliHFEsecVtx(const AliHFEsecVtx &p):
   ,fFilter(0x0)
   ,fESD1(0x0)
   ,fAOD1(0x0)
-  ,fStack(0x0)
+  ,fMCEvent(0x0)
   ,fUseMCPID(p.fUseMCPID)
   ,fkSourceLabel()
   ,fNparents(p.fNparents)
@@ -93,17 +102,25 @@ AliHFEsecVtx::AliHFEsecVtx(const AliHFEsecVtx &p):
   ,fDcaCut()
   ,fNoOfHFEpairs(p.fNoOfHFEpairs)
   ,fNoOfHFEsecvtxs(p.fNoOfHFEsecvtxs)
+  ,fArethereSecVtx(p.fArethereSecVtx)
   ,fHFEpairs(0x0)
   ,fHFEsecvtxs(0x0)
   ,fMCArray(0x0)
   ,fPVx(p.fPVx)
   ,fPVy(p.fPVy)
+  ,fPVx2(p.fPVx2)
+  ,fPVy2(p.fPVy2)
   ,fCosPhi(p.fCosPhi)
   ,fSignedLxy(p.fSignedLxy)
+  ,fSignedLxy2(p.fSignedLxy2)
   ,fKFchi2(p.fKFchi2)
   ,fInvmass(p.fInvmass)
   ,fInvmassSigma(p.fInvmassSigma)
   ,fKFip(p.fKFip)
+  ,fKFip2(p.fKFip2)
+  ,fNsectrk2prim(p.fNsectrk2prim)
+  ,fVtxchi2Tightcut(p.fVtxchi2Tightcut)
+  ,fVtxchi2Loosecut(p.fVtxchi2Loosecut)
   ,fPairQA(0x0)
   ,fSecvtxQA(0x0)
   ,fSecVtxList(0x0)
@@ -185,6 +202,9 @@ void AliHFEsecVtx::Init()
 } 
 
 void AliHFEsecVtx::Process(AliVTrack *signalTrack){ 
+  //
+  // Run Process
+  //
   if(signalTrack->Pt() < 1.0) return;
   AliESDtrack *track = dynamic_cast<AliESDtrack *>(signalTrack);
   InitHFEpairs();
@@ -261,13 +281,13 @@ void AliHFEsecVtx::GetPrimaryCondition()
     AliKFVertex primVtxCopy(*(fESD1->GetPrimaryVertex()));
     if( primVtxCopy.GetNDF() <1 ) return;
     fPVx = primVtxCopy.GetX();
-    fPVx = primVtxCopy.GetY();
+    fPVy = primVtxCopy.GetY();
   }
   else if(fAOD1) {
     AliKFVertex primVtxCopy(*(fAOD1->GetPrimaryVertex()));
     if( primVtxCopy.GetNDF() <1 ) return;
     fPVx = primVtxCopy.GetX();
-    fPVx = primVtxCopy.GetY();
+    fPVy = primVtxCopy.GetY();
   }
 }
 
@@ -282,11 +302,15 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   Float_t dca1[2]={-999.,-999.}, dca2[2]={-999.,-999.};
   Float_t cov1[3]={-999.,-999.,-999.}, cov2[3]={-999.,-999.,-999.};
 
+  Double_t dca1aod[2]={-999.,-999.}, dca2aod[2]={-999.,-999.};
+  Double_t cov1aod[3]={-999.,-999.,-999.}, cov2aod[3]={-999.,-999.,-999.};
+
   if (IsAODanalysis()){
+    const AliAODVertex *primVtx = fAOD1->GetPrimaryVertex();
     AliESDtrack esdTrk1(track1);
     AliESDtrack esdTrk2(track2);
-    esdTrk1.PropagateToDCA(fAOD1->GetPrimaryVertex(),0,10000,(Double_t*)dca1,(Double_t*)cov1);
-    esdTrk2.PropagateToDCA(fAOD1->GetPrimaryVertex(),0,10000,(Double_t*)dca2,(Double_t*)cov2);
+    esdTrk1.PropagateToDCA(primVtx,0.,10000.,dca1aod,cov1aod);
+    esdTrk2.PropagateToDCA(primVtx,0.,10000.,dca2aod,cov2aod);
   }
   else {
     ((AliESDtrack*)track1)->GetImpactParameters(dca1,cov1);
@@ -294,9 +318,9 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   }
 
   // apply pt dependent dca cut on hadrons
-  for(int ibin=0; ibin<6; ibin++){
+  /*for(int ibin=0; ibin<6; ibin++){
     if((track2->Pt()>fPtRng[ibin] && track2->Pt()<fPtRng[ibin+1]) && TMath::Abs(dca2[0])<fDcaCut[ibin]) return;
-  }
+  }*/
 
   // get KF particle input pid
   Int_t pdg1 = GetPDG(track1);
@@ -310,10 +334,12 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   // create KF particle of pair
   if(IsAODanalysis()) AliKFParticle::SetField(fAOD1->GetMagneticField());
   else AliKFParticle::SetField(fESD1->GetMagneticField()); 
-  AliKFParticle kfTrack1(*track1, pdg1);
-  AliKFParticle kfTrack2(*track2, pdg2);
 
-  AliKFParticle kfSecondary(kfTrack1,kfTrack2);
+  AliKFParticle kfTrack[2];
+  kfTrack[0] = AliKFParticle(*track1, pdg1);
+  kfTrack[1] = AliKFParticle(*track2, pdg2);
+  
+  AliKFParticle kfSecondary(kfTrack[0],kfTrack[1]);
 
   //secondary vertex point from kf particle
   Double_t kfx = kfSecondary.GetX();
@@ -324,6 +350,22 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   Double_t kfpx = kfSecondary.GetPx();
   Double_t kfpy = kfSecondary.GetPy();
   //Double_t kfpz = kfSecondary.GetPz();
+
+
+/* //directly use of ESD vertex 
+  const AliESDVertex *pvertex = fESD1->GetPrimaryVertex();
+  Double_t xyzVtx[3];
+  pvertex->GetXYZ(xyzVtx);
+
+  Double_t dx = kfx-xyzVtx[0];
+  Double_t dy = kfy-xyzVtx[1];*/
+
+  AliKFVertex primVtxCopy(*(fESD1->GetPrimaryVertex()));
+  if( primVtxCopy.GetNDF() <1 ) return;
+  fPVx = primVtxCopy.GetX();
+  fPVy = primVtxCopy.GetY();
+
+ // printf("esdx= %lf kfx= %lf esdy= %lf kfy= %lf\n",xyzVtx[0],fPVx,xyzVtx[1],fPVy);
 
   Double_t dx = kfx-fPVx;
   Double_t dy = kfy-fPVy;
@@ -339,8 +381,12 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   if(kfSecondary.GetNDF()>0) kfchi2 = TMath::Sqrt(TMath::Abs(kfSecondary.GetChi2()/kfSecondary.GetNDF()));
 
   // opening angle between two particles in XY plane
-  Double_t phi = kfTrack1.GetAngleXY(kfTrack2);
+  Double_t phi = kfTrack[0].GetAngleXY(kfTrack[1]);
   Double_t cosphi = TMath::Cos(phi);
+
+  // DCA from primary to e-h KF particle (impact parameter of KF particle)
+  Double_t vtx[2]={fPVx, fPVy};
+  Double_t kfip = kfSecondary.GetDistanceFromVertexXY(vtx);
 
   // projection of kf vertex vector to the kf momentum direction 
   Double_t signedLxy=-999.;
@@ -350,9 +396,24 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   //Double_t psqr = kfpx*kfpx+kfpy*kfpy;
   //if(psqr>0) signedLxy=(dx*kfpx+dy*kfpy)/TMath::Sqrt(psqr);  
 
-  // DCA from primary to e-h KF particle (impact parameter of KF particle)
-  Double_t vtx[2]={fPVx, fPVy}; 
-  Double_t kfip = kfSecondary.GetDistanceFromVertexXY(vtx);
+  //recalculating primary vertex after removing secvtx tracks --------------------------
+  Int_t trkid[2];
+  trkid[0] = track1->GetID();
+  trkid[1] = track2->GetID();
+
+  RecalcPrimvtx(2, trkid, kfTrack);
+  Double_t dx2 = kfx-fPVx2;
+  Double_t dy2 = kfy-fPVy2;
+
+  // IP of sec particle recalculated based on recalculated primary vertex
+  Double_t vtx2[2]={fPVx2, fPVy2};
+  Double_t kfip2 = kfSecondary.GetDistanceFromVertexXY(vtx2);
+  // signed Lxy recalculated based on recalculated primary vertex
+  Double_t signedLxy2=-999.;
+  if((dx2*kfpx+dy2*kfpy)>0) signedLxy2 = TMath::Sqrt(dx2*dx2+dy2*dy2);
+  if((dx2*kfpx+dy2*kfpy)<0) signedLxy2 = -1*TMath::Sqrt(dx2*dx2+dy2*dy2);
+  //------------------------------------------------------------------------------------
+
 
   Int_t paircode = -1;
   if (HasMCData()) paircode = GetPairCode(track1,track2); 
@@ -364,7 +425,9 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   hfepair.SetOpenangle(phi);
   hfepair.SetCosOpenangle(cosphi);
   hfepair.SetSignedLxy(signedLxy);
+  hfepair.SetSignedLxy2(signedLxy2);
   hfepair.SetKFIP(kfip);
+  hfepair.SetKFIP2(kfip2);
   hfepair.SetPairCode(paircode);
   AddHFEpairToArray(&hfepair);
   fNoOfHFEpairs++; 
@@ -374,17 +437,18 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   dataE[0]=invmass;
   dataE[1]=kfchi2;
   dataE[2]=phi;
-  dataE[3]=signedLxy;
-  dataE[4]=kfip;
+  dataE[3]=signedLxy2;
+  dataE[4]=kfip2;
   dataE[5]=paircode;
-  /*
-  dataE[6]=TMath::Abs(dca1[0]);
-  dataE[7]=TMath::Abs(dca2[0]);
   //if(cov1[0]>0) dataE[6]=Double_t(dca1[0]/cov1[0]);
   //if(cov2[0]>0) dataE[7]=Double_t(dca2[0]/cov2[0]);
-  dataE[8]=track1->Pt();
-  dataE[9]=track2->Pt();
-  */
+  //dataE[6]=track1->Pt();
+  //dataE[7]=track2->Pt();
+  //dataE[6]=dca1[0]; //mjtmp
+  //dataE[7]=dca2[0]; //mjtmp
+  //dataE[8]=TMath::Abs(dca1[0]);
+  //dataE[9]=TMath::Abs(dca2[0]);
+
   fPairQA->Fill(dataE);
 
 }
@@ -408,9 +472,14 @@ void AliHFEsecVtx::FindSECVTXCandid(AliVTrack *track)
   //
 
   AliVTrack *htrack[20];
-  Int_t htracklabel[20];
-  Double_t vtxchi2cut=3.; // testing cut 
-  Double_t dataE[6]={-999.,-999.,-999.,-999.,-1.,0};  
+  //Int_t htracklabel[20];
+  //Int_t paircode[20];
+  //Double_t vtxchi2[20]; 
+  //Double_t dataE[7]={-999.,-999.,-999.,-999.,-1.,0,0};  
+
+  fVtxchi2Tightcut=3.; // tight cut for pair
+  fVtxchi2Loosecut=5.; // loose cut for secvtx 
+
   if (HFEpairs()->GetEntriesFast()>20){
     AliDebug(3, "number of paired hadron is over maximum(20)");
     return; 
@@ -421,68 +490,280 @@ void AliHFEsecVtx::FindSECVTXCandid(AliVTrack *track)
   if (IsAODanalysis()){
     for (int ip=0; ip<HFEpairs()->GetEntriesFast(); ip++){
        pair = (AliHFEpairs*) (HFEpairs()->UncheckedAt(ip));
-       htracklabel[ip] = pair->GetTrkLabel();
+       //htracklabel[ip] = pair->GetTrkLabel();
        htrack[ip] = fAOD1->GetTrack(pair->GetTrkLabel());
+       //if(pair->GetPairCode()==2 || pair->GetPairCode()==3) paircode[ip]=1;
+       //else paircode[ip]=0;
+       //vtxchi2[ip] = pair->GetKFChi2();
     }
   }
   else{
     for (int ip=0; ip<HFEpairs()->GetEntriesFast(); ip++){
        pair = (AliHFEpairs*) (HFEpairs()->UncheckedAt(ip));
-       htracklabel[ip] = pair->GetTrkLabel();
+       //htracklabel[ip] = pair->GetTrkLabel();
        htrack[ip] = fESD1->GetTrack(pair->GetTrkLabel());
+       //if(pair->GetPairCode()==2 || pair->GetPairCode()==3) paircode[ip]=1;
+       //else paircode[ip]=0;
+       //vtxchi2[ip] = pair->GetKFChi2();
     }
   }
-  // in case there is only one paired track with the electron, put pair characteristics into secvtx container
-  // for the moment, I only apply pair vertex chi2 cut
-  if (HFEpairs()->GetEntriesFast() == 1){
-    if (pair->GetKFChi2()<vtxchi2cut) { // you can also put single track cut
-      AliHFEsecVtxs hfesecvtx;
-      hfesecvtx.SetTrkLabel1(pair->GetTrkLabel());
-      hfesecvtx.SetTrkLabel2(-999);
-      hfesecvtx.SetInvmass(pair->GetInvmass());
-      hfesecvtx.SetKFChi2(pair->GetKFChi2());
-      hfesecvtx.SetSignedLxy(pair->GetSignedLxy());
-      hfesecvtx.SetKFIP(pair->GetKFIP());
-      AddHFEsecvtxToArray(&hfesecvtx);
-      fNoOfHFEsecvtxs++; 
 
-      dataE[0]=pair->GetInvmass();
-      dataE[1]=pair->GetKFChi2();
-      dataE[2]=pair->GetSignedLxy();
-      dataE[3]=pair->GetKFIP();
-      if(HasMCData()) dataE[4]=GetElectronSource(TMath::Abs(track->GetLabel()));
-      dataE[5]=2;
-      fSecvtxQA->Fill(dataE);
+  Int_t nPairs = HFEpairs()->GetEntriesFast(); 
+
+
+  // 1 electron candidate + 1 track 
+  if (nPairs == 1){
+    if (pair->GetKFChi2() < fVtxchi2Tightcut) { // you can also put single track cut -> here you apply very tight cut for the pair
+      Fill2TrkSECVTX(track, pair);
     }
     return;
   }
+  //--------------------------------------------------------------
 
-  // in case there are multiple paired track with the electron, calculate secvtx characteristics
-  // put the secvtx characteristics into container if it passes cuts
-  for (int i=0; i<HFEpairs()->GetEntriesFast()-1; i++){
-     for (int j=i+1; j<HFEpairs()->GetEntriesFast(); j++){
-        CalcSECVTXProperty(track, htrack[i], htrack[j]);
-        if (fKFchi2<vtxchi2cut) {
-          AliHFEsecVtxs hfesecvtx;
-          hfesecvtx.SetTrkLabel1(htracklabel[i]);
-          hfesecvtx.SetTrkLabel2(htracklabel[j]);
-          hfesecvtx.SetKFChi2(fKFchi2);
-          hfesecvtx.SetInvmass(fInvmass);
-          hfesecvtx.SetSignedLxy(fSignedLxy);
-          hfesecvtx.SetKFIP(fKFip);
-          AddHFEsecvtxToArray(&hfesecvtx);
-          fNoOfHFEsecvtxs++; 
+  // 1 electron candidate + 2 tracks 
+  if (nPairs == 2){
+    CalcSECVTXProperty(track, htrack[0], htrack[1]); // calculate secondary vertex property
 
-          dataE[0]=fInvmass;
-          dataE[1]=fKFchi2;
-          dataE[2]=fSignedLxy;
-          dataE[3]=fKFip;
-          if(HasMCData()) dataE[4]=GetElectronSource(TMath::Abs(track->GetLabel()));
-          dataE[5]=3;
-          fSecvtxQA->Fill(dataE);
-        }
-     }
+    if (fKFchi2 < fVtxchi2Loosecut) { // -> here you apply rather loose cut
+      Fill3TrkSECVTX(track, 0, 1);
+    }
+    else{ // if doesn't pass the sec vtx chi2 cut
+      for(int jp=0; jp<2; jp++){
+         pair = (AliHFEpairs*) (HFEpairs()->UncheckedAt(jp));
+         if (pair->GetKFChi2() < fVtxchi2Tightcut){
+           Fill2TrkSECVTX(track, pair);
+         } 
+      }  
+    }
+    return;
   }
+  //--------------------------------------------------------------
+
+  // 1 electron candidate + 3 tracks 
+  if (nPairs == 3){
+    CalcSECVTXProperty(track, htrack[0], htrack[1], htrack[2]); // calculate secondary vertex property
+
+    if (fKFchi2 < fVtxchi2Loosecut) {
+      Fill4TrkSECVTX(track, 0, 1, 2);
+    }
+    else {
+      fArethereSecVtx=0;
+      for (int i=0; i<nPairs-1; i++){
+         for (int j=i+1; j<nPairs; j++){
+            CalcSECVTXProperty(track, htrack[i], htrack[j]);
+            if (fKFchi2 < fVtxchi2Loosecut) {
+              fArethereSecVtx++;
+              Fill3TrkSECVTX(track, i, j);
+            }
+         } 
+      }
+      if(!fArethereSecVtx){ 
+        for(int jp=0; jp<nPairs; jp++){
+           pair = (AliHFEpairs*) (HFEpairs()->UncheckedAt(jp));
+           if (pair->GetKFChi2() < fVtxchi2Tightcut){
+             Fill2TrkSECVTX(track, pair);
+           }
+        }  
+      }
+    }
+    return;
+  }
+  //--------------------------------------------------------------
+
+  // 1 electron candidate + more than 3 tracks 
+  if (nPairs > 3){
+    fArethereSecVtx=0;
+    for (int ih1=0; ih1<nPairs-2; ih1++){
+      for (int ih2=ih1+1; ih2<nPairs-1; ih2++){
+        for (int ih3=ih2+1; ih3<nPairs; ih3++){
+          CalcSECVTXProperty(track, htrack[ih1], htrack[ih2], htrack[ih3]); // calculate secondary vertex property
+          if (fKFchi2 < fVtxchi2Loosecut) {
+            fArethereSecVtx++;
+            Fill4TrkSECVTX(track, ih1, ih2, ih3);
+          }
+        }
+      }
+    }
+    if (!fArethereSecVtx){
+      fArethereSecVtx=0;
+      for (int i=0; i<nPairs-1; i++){
+        for (int j=i+1; j<nPairs; j++){
+          CalcSECVTXProperty(track, htrack[i], htrack[j]);
+          if (fKFchi2 < fVtxchi2Loosecut) {
+            fArethereSecVtx++;
+            Fill3TrkSECVTX(track, i, j);
+          }
+        }
+      }
+    }
+    if (!fArethereSecVtx){
+      for(int jp=0; jp<nPairs; jp++){
+        pair = (AliHFEpairs*) (HFEpairs()->UncheckedAt(jp));
+        if (pair->GetKFChi2() < fVtxchi2Tightcut){
+          Fill2TrkSECVTX(track, pair);
+        }
+      }
+    }
+    return;
+  }
+  //--------------------------------------------------------------
+
+}
+
+//_______________________________________________________________________________________________
+void AliHFEsecVtx::Fill4TrkSECVTX(AliVTrack* track, Int_t ipair, Int_t jpair, Int_t kpair)
+{
+  //
+  // fill 3 tracks' secondary vertex properties
+  //
+
+  Double_t dataE[9]={-999.,-999.,-999.,-999.,-1.,0,0,-999.,-999.};
+
+  Int_t paircode1 = 0, paircode2 = 0, paircode3 = 0;
+  Int_t htracklabel1 = 0, htracklabel2= 0;
+
+  if (HasMCData()){
+    AliHFEpairs *pair1=0x0;
+    AliHFEpairs *pair2=0x0;
+    AliHFEpairs *pair3=0x0;
+    pair1 = (AliHFEpairs*) (HFEpairs()->UncheckedAt(ipair));
+    pair2 = (AliHFEpairs*) (HFEpairs()->UncheckedAt(jpair));
+    pair3 = (AliHFEpairs*) (HFEpairs()->UncheckedAt(kpair));
+
+    htracklabel1 = pair1->GetTrkLabel();
+    htracklabel2 = pair2->GetTrkLabel();
+
+    if (pair1->GetPairCode()==2 || pair1->GetPairCode()==3) paircode1=1;
+    else paircode1=0;
+    if (pair2->GetPairCode()==2 || pair2->GetPairCode()==3) paircode2=1;
+    else paircode2=0;
+    if (pair3->GetPairCode()==2 || pair3->GetPairCode()==3) paircode3=1;
+    else paircode3=0;
+  }
+
+  AliHFEsecVtxs hfesecvtx;
+  hfesecvtx.SetTrkLabel1(htracklabel1); // mj: not much meaningful for the moment
+  hfesecvtx.SetTrkLabel2(htracklabel2); // mj: not much meaningful for the moment
+  if(HasMCData()) hfesecvtx.SetMCCode(GetElectronSource(TMath::Abs(track->GetLabel())));
+  hfesecvtx.SetKFChi2(fKFchi2);
+  hfesecvtx.SetInvmass(fInvmass);
+  hfesecvtx.SetSignedLxy(fSignedLxy);
+  hfesecvtx.SetSignedLxy2(fSignedLxy2);
+  hfesecvtx.SetKFIP(fKFip);
+  hfesecvtx.SetKFIP2(fKFip2);
+  AddHFEsecvtxToArray(&hfesecvtx);
+  fNoOfHFEsecvtxs++;
+
+  dataE[0]=fInvmass;
+  dataE[1]=fKFchi2;
+  dataE[2]=fSignedLxy;
+  dataE[3]=fKFip;
+  if(HasMCData()) dataE[4]=GetElectronSource(TMath::Abs(track->GetLabel()));
+  dataE[5]=4; //# of associated tracks
+  if(paircode1 & paircode2 & paircode3) dataE[6]=1;
+  else if(!paircode1 & !paircode2 & !paircode3) dataE[6]=0;
+  else dataE[6]=3;
+  dataE[7]=fSignedLxy2;
+  dataE[8]=track->Pt();
+  fSecvtxQA->Fill(dataE);
+}
+
+//_______________________________________________________________________________________________
+void AliHFEsecVtx::Fill3TrkSECVTX(AliVTrack* track, Int_t ipair, Int_t jpair)
+{
+  //
+  // fill 3 tracks' secondary vertex properties
+  //
+
+  Double_t dataE[9]={-999.,-999.,-999.,-999.,-1.,0,0,-999.,-999.};
+
+  Int_t paircode1 = 0, paircode2 = 0;
+  Int_t htracklabel1 = 0, htracklabel2 = 0; 
+
+  if (HasMCData()){
+    AliHFEpairs *pair1=0x0;
+    AliHFEpairs *pair2=0x0;
+    pair1 = (AliHFEpairs*) (HFEpairs()->UncheckedAt(ipair));
+    pair2 = (AliHFEpairs*) (HFEpairs()->UncheckedAt(jpair));
+
+    htracklabel1 = pair1->GetTrkLabel();
+    htracklabel2 = pair2->GetTrkLabel();
+
+    if (pair1->GetPairCode()==2 || pair1->GetPairCode()==3) paircode1=1;
+    else paircode1=0;
+    if (pair2->GetPairCode()==2 || pair2->GetPairCode()==3) paircode2=1;
+    else paircode2=0;
+  }
+
+  // fill secondary vertex container
+  AliHFEsecVtxs hfesecvtx;
+  hfesecvtx.SetTrkLabel1(htracklabel1);
+  hfesecvtx.SetTrkLabel2(htracklabel2);
+  if(HasMCData()) hfesecvtx.SetMCCode(GetElectronSource(TMath::Abs(track->GetLabel())));
+  hfesecvtx.SetKFChi2(fKFchi2);
+  hfesecvtx.SetInvmass(fInvmass);
+  hfesecvtx.SetSignedLxy(fSignedLxy);
+  hfesecvtx.SetSignedLxy2(fSignedLxy2);
+  hfesecvtx.SetKFIP(fKFip);
+  hfesecvtx.SetKFIP2(fKFip2);
+  AddHFEsecvtxToArray(&hfesecvtx);
+  fNoOfHFEsecvtxs++;
+
+  // fill debugging THnSparse 
+  dataE[0]=fInvmass;
+  dataE[1]=fKFchi2;
+  dataE[2]=fSignedLxy;
+  dataE[3]=fKFip;
+  if(HasMCData()) dataE[4]=GetElectronSource(TMath::Abs(track->GetLabel()));
+  dataE[5]=3;
+  if(paircode1 & paircode2) dataE[6]=1;
+  else if(!paircode1 & !paircode2) dataE[6]=0;
+  else dataE[6]=3;
+  dataE[7]=fSignedLxy2;
+  dataE[8]=track->Pt();
+  fSecvtxQA->Fill(dataE);
+
+}
+
+//_______________________________________________________________________________________________
+void AliHFEsecVtx::Fill2TrkSECVTX(AliVTrack* track, AliHFEpairs *pair)
+{
+  //
+  // fill 2 tracks' secondary vertex properties
+  //
+
+  Double_t dataE[9]={-999.,-999.,-999.,-999.,-1.,0,0,-999.,-999.};
+
+  Int_t paircode;
+  if (pair->GetPairCode()==2 || pair->GetPairCode()==3) paircode=1;
+  else paircode=0;
+
+  // fill secondary vertex container
+  AliHFEsecVtxs hfesecvtx;
+  hfesecvtx.SetTrkLabel1(pair->GetTrkLabel());
+  hfesecvtx.SetTrkLabel2(-999);
+  if(HasMCData()) hfesecvtx.SetMCCode(GetElectronSource(TMath::Abs(track->GetLabel())));
+  hfesecvtx.SetInvmass(pair->GetInvmass());
+  hfesecvtx.SetKFChi2(pair->GetKFChi2());
+  hfesecvtx.SetSignedLxy(pair->GetSignedLxy());
+  hfesecvtx.SetSignedLxy2(pair->GetSignedLxy2());
+  hfesecvtx.SetKFIP(pair->GetKFIP());
+  hfesecvtx.SetKFIP2(pair->GetKFIP2());
+  AddHFEsecvtxToArray(&hfesecvtx);
+  fNoOfHFEsecvtxs++;
+
+  // fill debugging THnSparse 
+  dataE[0]=pair->GetInvmass();
+  dataE[1]=pair->GetKFChi2();
+  dataE[2]=pair->GetSignedLxy();
+  dataE[3]=pair->GetKFIP();
+  if (HasMCData()) dataE[4]=GetElectronSource(TMath::Abs(track->GetLabel()));
+  dataE[5]=2;              //# of associated tracks
+  dataE[6]=paircode;
+  dataE[7]=pair->GetSignedLxy2();
+  dataE[8]=track->Pt();
+  fSecvtxQA->Fill(dataE);
+
 }
 
 //_______________________________________________________________________________________________
@@ -505,11 +786,13 @@ void AliHFEsecVtx::CalcSECVTXProperty(AliVTrack* track1, AliVTrack* track2, AliV
   // create KF particle of pair
   if(IsAODanalysis()) AliKFParticle::SetField(fAOD1->GetMagneticField());
   else AliKFParticle::SetField(fESD1->GetMagneticField());
-  AliKFParticle kfTrack1(*track1, pdg1);
-  AliKFParticle kfTrack2(*track2, pdg2);
-  AliKFParticle kfTrack3(*track3, pdg3);
+  AliKFParticle kfTrack[3];
+  kfTrack[0] = AliKFParticle(*track1, pdg1);
+  kfTrack[1] = AliKFParticle(*track2, pdg2);
+  kfTrack[2] = AliKFParticle(*track3, pdg3);
 
-  AliKFParticle kfSecondary(kfTrack1,kfTrack2,kfTrack3);
+  AliKFParticle kfSecondary(kfTrack[0],kfTrack[1],kfTrack[2]);
+  //AliKFParticle kfSecondary(kfTrack1,kfTrack2,kfTrack3);
         
   //secondary vertex point from kf particle
   Double_t kfx = kfSecondary.GetX();
@@ -540,6 +823,137 @@ void AliHFEsecVtx::CalcSECVTXProperty(AliVTrack* track1, AliVTrack* track2, AliV
   //[the other way to think about] - projection of kf vertex vector to the kf momentum direction
   //Double_t psqr = kfpx*kfpx+kfpy*kfpy;
   //if(psqr>0) fSignedLxy=(dx*kfpx+dy*kfpy)/TMath::Sqrt(psqr);  
+
+
+  //recalculating primary vertex after removing secvtx tracks --------------------------
+  Int_t trkid[3];
+  trkid[0] = track1->GetID();
+  trkid[1] = track2->GetID();
+  trkid[2] = track3->GetID();
+
+  RecalcPrimvtx(3, trkid, kfTrack);
+  Double_t dx2 = kfx-fPVx2;
+  Double_t dy2 = kfy-fPVy2;
+
+  // IP of sec particle recalculated based on recalculated primary vertex
+  Double_t vtx2[2]={fPVx2, fPVy2};
+  fKFip2 = kfSecondary.GetDistanceFromVertexXY(vtx2);
+  // signed Lxy recalculated based on recalculated primary vertex
+  if((dx2*kfpx+dy2*kfpy)>0) fSignedLxy2= TMath::Sqrt(dx2*dx2+dy2*dy2);
+  if((dx2*kfpx+dy2*kfpy)<0) fSignedLxy2= -1*TMath::Sqrt(dx2*dx2+dy2*dy2);
+  //------------------------------------------------------------------------------------
+  
+}
+
+//_______________________________________________________________________________________________
+void AliHFEsecVtx::CalcSECVTXProperty(AliVTrack* track1, AliVTrack* track2, AliVTrack* track3, AliVTrack* track4)
+{
+  //
+  // calculate secondary vertex properties
+  //
+
+  // get KF particle input pid
+  Int_t pdg1 = GetPDG(track1);
+  Int_t pdg2 = GetPDG(track2);
+  Int_t pdg3 = GetPDG(track3);
+  Int_t pdg4 = GetPDG(track4);
+
+  if(pdg1==-1 || pdg2==-1 || pdg3==-1 || pdg4==-1) {
+    //printf("out if considered pid range \n");
+    return;
+  }
+
+  // create KF particle of pair
+  if(IsAODanalysis()) AliKFParticle::SetField(fAOD1->GetMagneticField());
+  else AliKFParticle::SetField(fESD1->GetMagneticField());
+
+  AliKFParticle kfTrack[4];
+  kfTrack[0] = AliKFParticle(*track1, pdg1);
+  kfTrack[1] = AliKFParticle(*track2, pdg2);
+  kfTrack[2] = AliKFParticle(*track3, pdg3);
+  kfTrack[3] = AliKFParticle(*track4, pdg4);
+
+  AliKFParticle kfSecondary(kfTrack[0],kfTrack[1],kfTrack[2],kfTrack[3]);
+
+  //secondary vertex point from kf particle
+  Double_t kfx = kfSecondary.GetX();
+  Double_t kfy = kfSecondary.GetY();
+  //Double_t kfz = kfSecondary.GetZ();
+
+  //momentum at the decay point from kf particle
+  Double_t kfpx = kfSecondary.GetPx();
+  Double_t kfpy = kfSecondary.GetPy();
+  //Double_t kfpz = kfSecondary.GetPz();
+
+  Double_t dx = kfx-fPVx;
+  Double_t dy = kfy-fPVy;
+
+  // discriminating variables ----------------------------------------------------------
+
+  if(kfSecondary.GetNDF()>0) fKFchi2 = TMath::Sqrt(TMath::Abs(kfSecondary.GetChi2()/kfSecondary.GetNDF())); 
+
+  // invariant mass of the KF particle
+  kfSecondary.GetMass(fInvmass,fInvmassSigma);
+
+  // DCA from primary to e-h KF particle (impact parameter of KF particle)
+  Double_t vtx[2]={fPVx, fPVy};
+  fKFip = kfSecondary.GetDistanceFromVertexXY(vtx);
+
+  if((dx*kfpx+dy*kfpy)>0) fSignedLxy= TMath::Sqrt(dx*dx+dy*dy);
+  if((dx*kfpx+dy*kfpy)<0) fSignedLxy= -1*TMath::Sqrt(dx*dx+dy*dy);
+  //[the other way to think about] - projection of kf vertex vector to the kf momentum direction
+  //Double_t psqr = kfpx*kfpx+kfpy*kfpy;
+  //if(psqr>0) fSignedLxy=(dx*kfpx+dy*kfpy)/TMath::Sqrt(psqr);  
+
+  //recalculating primary vertex after removing secvtx tracks --------------------------
+  Int_t trkid[4];
+  trkid[0] = track1->GetID();
+  trkid[1] = track2->GetID();
+  trkid[2] = track3->GetID();
+  trkid[3] = track4->GetID();
+
+  RecalcPrimvtx(4, trkid, kfTrack);
+  Double_t dx2 = kfx-fPVx2;
+  Double_t dy2 = kfy-fPVy2;
+
+  // IP of sec particle recalculated based on recalculated primary vertex
+  Double_t vtx2[2]={fPVx2, fPVy2};
+  fKFip2 = kfSecondary.GetDistanceFromVertexXY(vtx2);
+  // signed Lxy recalculated based on recalculated primary vertex
+  if((dx2*kfpx+dy2*kfpy)>0) fSignedLxy2= TMath::Sqrt(dx2*dx2+dy2*dy2);
+  if((dx2*kfpx+dy2*kfpy)<0) fSignedLxy2= -1*TMath::Sqrt(dx2*dx2+dy2*dy2);
+  //------------------------------------------------------------------------------------
+
+}
+
+//_______________________________________________________________________________________________
+void AliHFEsecVtx::RecalcPrimvtx(Int_t nkftrk, Int_t * const trkid, AliKFParticle * const kftrk){
+
+  const AliESDVertex *primvtx = fESD1->GetPrimaryVertex();
+
+  AliKFVertex kfESDprimary;
+  Int_t n = primvtx->GetNIndices();
+  fNsectrk2prim = 0;
+  fPVx2 = -999.;
+  fPVy2 = -999.;
+
+  if (n>0 && primvtx->GetStatus()){
+    kfESDprimary = AliKFVertex(*primvtx);
+    UShort_t *priIndex = primvtx->GetIndices();
+    for(Int_t j=0; j<nkftrk; j++){
+      for (Int_t i=0;i<n;i++){
+        Int_t idx = Int_t(priIndex[i]);
+        if (idx == trkid[j]){
+          kfESDprimary -= kftrk[j];
+          fNsectrk2prim++;
+        }
+      }
+    }
+  }
+
+  fPVx2 = kfESDprimary.GetX();
+  fPVy2 = kfESDprimary.GetY();
+
 }
 
 //_______________________________________________________________________________________________
@@ -549,8 +963,10 @@ Int_t AliHFEsecVtx::GetMCPID(AliESDtrack *track)
   // return mc pid
   //      
 
-  Int_t label = TMath::Abs(track->GetLabel());
-  TParticle* mcpart = fStack->Particle(label);
+  AliMCParticle *mctrack = NULL;
+  if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) return 0; 
+  TParticle *mcpart = mctrack->Particle();
+
   if ( !mcpart ) return 0;
   Int_t pdgCode = mcpart->GetPdgCode();
 
@@ -580,8 +996,15 @@ Int_t AliHFEsecVtx::GetPairOriginESD(AliESDtrack* trk1, AliESDtrack* trk2)
   //           
 
   if (trk1->GetLabel()<0 || trk2->GetLabel()<0) return 0;
-  TParticle* part1 = fStack->Particle(trk1->GetLabel());
-  TParticle* part2 = fStack->Particle(trk2->GetLabel());
+
+  AliMCParticle *mctrack = NULL;
+  AliMCParticle *mctrack1 = NULL;
+  AliMCParticle *mctrack2 = NULL;
+  if(!(mctrack1 = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(trk1->GetLabel()))))) return 0; 
+  if(!(mctrack2 = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(trk2->GetLabel()))))) return 0; 
+  TParticle *part1 = mctrack1->Particle();
+  TParticle *part2 = mctrack2->Particle();
+
   TParticle* part2cp = part2;
   if (!(part1) || !(part2)) return 0;
 
@@ -598,7 +1021,9 @@ Int_t AliHFEsecVtx::GetPairOriginESD(AliESDtrack* trk1, AliESDtrack* trk2)
         if (label2 < 0) break; 
 
         if (label1 == label2){ //check if two tracks are originated from same mother
-          TParticle* commonmom = fStack->Particle(label2); 
+          if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(label2))))) return 0; 
+	  TParticle* commonmom = mctrack->Particle();
+
           srcpdg = abs(commonmom->GetPdgCode()); 
 
           //check ancester to see if it is originally from beauty 
@@ -606,7 +1031,9 @@ Int_t AliHFEsecVtx::GetPairOriginESD(AliESDtrack* trk1, AliESDtrack* trk2)
              Int_t ancesterlabel = commonmom->GetFirstMother();
              if (ancesterlabel < 0) return srcpdg; // if there is no more commonancester, return commonmom's pdg  
 
-             TParticle* commonancester = fStack->Particle(ancesterlabel);
+             if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(ancesterlabel))))) return 0; 
+	     TParticle* commonancester = mctrack->Particle();
+
              Int_t ancesterpdg = abs(commonancester->GetPdgCode());
 
              for (Int_t l=0; l<fNparents; l++){
@@ -618,10 +1045,13 @@ Int_t AliHFEsecVtx::GetPairOriginESD(AliESDtrack* trk1, AliESDtrack* trk2)
              commonmom = commonancester;
           }
         }
-        part2 = fStack->Particle(label2); //if their mother is different, go to earlier generation of 2nd particle
+	if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(label2))))) return 0; 
+	part2 = mctrack->Particle(); //if their mother is different, go to earlier generation of 2nd particle
+
         if (!(part2)) break;
      }
-     part1 = fStack->Particle(label1); //if their mother is different, go to earlier generation of 1st particle
+     if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(label1))))) return 0; 
+     part1 = mctrack->Particle(); //if their mother is different, go to earlier generation of 1st particle
      part2 = part2cp;
      if (!(part1)) return 0;
   }
@@ -748,7 +1178,16 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
     return -1;
   }
 
-  TParticle* mcpart = fStack->Particle(iTrack);
+  AliMCParticle *mctrack = NULL;
+  if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(iTrack))))) return -1; 
+  TParticle *mcpart = mctrack->Particle();
+
+  if(!mcpart){
+    AliDebug(1, "no mc particle, return\n");
+    return -1;
+  } 
+
+  if ( abs(mcpart->GetPdgCode()) != 11 ) return kMisID;
 
 //  if ( abs(mcpart->GetPdgCode()) != 11 ) return -1; // check if it is electron !
 
@@ -761,7 +1200,9 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;
 
-  TParticle *partMother = fStack->Particle(iLabel);
+  if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(iLabel))))) return -1; 
+  TParticle *partMother = mctrack->Particle();
+
   Int_t maPdgcode = partMother->GetPdgCode();
 
   // if the mother is charmed hadron  
@@ -788,7 +1229,9 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
       }
 
       // if there is an ancester
-      TParticle* grandMa = fStack->Particle(jLabel);
+      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))) return -1; 
+      TParticle *grandMa = mctrack->Particle();
+
       Int_t grandMaPDG = grandMa->GetPdgCode();
 
       for (Int_t j=0; j<fNparents; j++){
@@ -828,7 +1271,9 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
       }
 
       // if there is an ancester
-      TParticle* grandMa = fStack->Particle(jLabel);
+      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))) return -1; 
+      TParticle *grandMa = mctrack->Particle();
+
       Int_t grandMaPDG = grandMa->GetPdgCode();
 
       for (Int_t j=0; j<fNparents; j++){
@@ -862,7 +1307,9 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
       }
 
       // if there is an ancester
-      TParticle* grandMa = fStack->Particle(jLabel);
+      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))) return -1; 
+      TParticle *grandMa = mctrack->Particle();
+
       Int_t grandMaPDG = grandMa->GetPdgCode();
 
       for (Int_t j=0; j<fNparents; j++){
@@ -894,7 +1341,9 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
       }
 
       // if there is an ancester
-      TParticle* grandMa = fStack->Particle(jLabel);
+      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))) return -1; 
+      TParticle *grandMa = mctrack->Particle();
+
       Int_t grandMaPDG = grandMa->GetPdgCode();
 
       for (Int_t j=0; j<fNparents; j++){
@@ -960,6 +1409,7 @@ Int_t AliHFEsecVtx::GetMCPDG(AliVTrack *track)
 
   Int_t label = TMath::Abs(track->GetLabel());
   Int_t pdgCode; 
+  AliMCParticle *mctrack = NULL;
 
   if (IsAODanalysis()) {
     AliAODMCParticle *mcpart = (AliAODMCParticle*)fMCArray->At(label);
@@ -967,7 +1417,9 @@ Int_t AliHFEsecVtx::GetMCPDG(AliVTrack *track)
       pdgCode = mcpart->GetPdgCode();
   }
   else {
-    TParticle* mcpart = fStack->Particle(label);
+    if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(label))))) return 0; 
+    TParticle *mcpart = mctrack->Particle();
+
     if ( !mcpart ) return 0;
       pdgCode = mcpart->GetPdgCode();
   }
@@ -1125,16 +1577,16 @@ void AliHFEsecVtx::MakeContainer(){
   //
 
   const Int_t nDimPair=6;
-  Int_t nBinPair[nDimPair] = {200, 500, 314, 2000, 2000, 11};
-  //Int_t nBinPair[nDimPair] = {200, 500, 314, 2000, 2000, 11, 1000, 1000, 60, 60};
+  Int_t nBinPair[nDimPair] = {200, 500, 314, 2000, 2000, 13};
+  //Int_t nBinPair[nDimPair] = {200, 500, 314, 2000, 2000, 13, 60, 60, 2000, 2000};
   const Double_t kInvmassmin = 0., kInvmassmax = 20.;
   const Double_t kKFChi2min = 0, kKFChi2max= 50;
   const Double_t kOpenanglemin = 0, kOpenanglemax = 3.14;
   const Double_t kSignedLxymin = -10, kSignedLxymax= 10;
   const Double_t kKFIPmin = -10, kKFIPmax= 10;
-  const Double_t kPairCodemin = -1, kPairCodemax= 10;
-  //const Double_t kDCAsigmin = 0, kDCAsigmax= 5;
+  const Double_t kPairCodemin = -1, kPairCodemax= 12;
   //const Double_t kPtmin = 0, kPtmax= 30;
+  //const Double_t kDCAsigmin = -5, kDCAsigmax= 5;
 
   Double_t* binEdgesPair[nDimPair];
   for(Int_t ivar = 0; ivar < nDimPair; ivar++)
@@ -1146,23 +1598,25 @@ void AliHFEsecVtx::MakeContainer(){
   for(Int_t i=0; i<=nBinPair[3]; i++) binEdgesPair[3][i]=(Double_t)kSignedLxymin + (kSignedLxymax - kSignedLxymin)/nBinPair[3]*(Double_t)i;
   for(Int_t i=0; i<=nBinPair[4]; i++) binEdgesPair[4][i]=(Double_t)kKFIPmin + (kKFIPmax - kKFIPmin)/nBinPair[4]*(Double_t)i;
   for(Int_t i=0; i<=nBinPair[5]; i++) binEdgesPair[5][i]=(Double_t)kPairCodemin + (kPairCodemax - kPairCodemin)/nBinPair[5]*(Double_t)i;
-  /*for(Int_t i=0; i<=nBinPair[6]; i++) binEdgesPair[6][i]=(Double_t)kDCAsigmin + (kDCAsigmax - kDCAsigmin)/nBinPair[6]*(Double_t)i;
-  for(Int_t i=0; i<=nBinPair[7]; i++) binEdgesPair[7][i]=binEdgesPair[6][i];
-  for(Int_t i=0; i<=nBinPair[8]; i++) binEdgesPair[8][i]=(Double_t)kPtmin + (kPtmax - kPtmin)/nBinPair[8]*(Double_t)i;
-  for(Int_t i=0; i<=nBinPair[9]; i++) binEdgesPair[9][i]=binEdgesPair[8][i];*/
+  //for(Int_t i=0; i<=nBinPair[6]; i++) binEdgesPair[6][i]=(Double_t)kPtmin + (kPtmax - kPtmin)/nBinPair[6]*(Double_t)i;
+  //for(Int_t i=0; i<=nBinPair[7]; i++) binEdgesPair[7][i]=binEdgesPair[6][i];
+  //for(Int_t i=0; i<=nBinPair[6]; i++) binEdgesPair[6][i]=(Double_t)kDCAsigmin + (kDCAsigmax - kDCAsigmin)/nBinPair[6]*(Double_t)i;
+  //for(Int_t i=0; i<=nBinPair[7]; i++) binEdgesPair[7][i]=binEdgesPair[6][i];
 
-  fPairQA = new THnSparseF("pairQA", "QA for Pair; invmass[GeV/c^2]; KF chi2; opening angle; signed Lxy; KF ip; pair code", nDimPair, nBinPair);
-  //fPairQA = new THnSparseF("pairQA", "QA for Pair; invmass[GeV/c^2]; KF chi2; opening angle; signed Lxy; KF ip; pair code; dca sig trk1; dca sig trk2; pt trk1; pt trk2 ", nDimPair, nBinPair);
+  fPairQA = new THnSparseF("pairQA", "QA for Pair; invmass[GeV/c^2]; KF chi2; opening angle; signed Lxy; KF ip; pair code; dca1; dca2", nDimPair, nBinPair);
+  //fPairQA = new THnSparseF("pairQA", "QA for Pair; invmass[GeV/c^2]; KF chi2; opening angle; signed Lxy; KF ip; pair code; pt1; pt2; dca1; dca2", nDimPair, nBinPair);
   for(Int_t idim = 0; idim < nDimPair; idim++){
     fPairQA->SetBinEdges(idim, binEdgesPair[idim]);
   }
 
   fSecVtxList->AddAt(fPairQA,0);
 
-  const Int_t nDimSecvtx=6;
+  const Int_t nDimSecvtx=9;
   Double_t* binEdgesSecvtx[nDimSecvtx];
-  Int_t nBinSecvtx[nDimSecvtx] = {200, 500, 2000, 2000, 11, 3};
-  const Double_t kNtrksmin = 0, kNtrksmax= 3;
+  Int_t nBinSecvtx[nDimSecvtx] = {200, 500, 2000, 2000, 13, 10, 4, 2000, 500};
+  const Double_t kNtrksmin = 0, kNtrksmax= 10;
+  const Double_t kTrueBmin = 0, kTrueBmax= 4;
+  const Double_t kPtmin = 0, kPtmax= 50;
   for(Int_t ivar = 0; ivar < nDimSecvtx; ivar++)
     binEdgesSecvtx[ivar] = new Double_t[nBinSecvtx[ivar] + 1];
 
@@ -1172,6 +1626,9 @@ void AliHFEsecVtx::MakeContainer(){
   for(Int_t i=0; i<=nBinSecvtx[3]; i++) binEdgesSecvtx[3][i]=binEdgesPair[4][i];
   for(Int_t i=0; i<=nBinSecvtx[4]; i++) binEdgesSecvtx[4][i]=binEdgesPair[5][i];
   for(Int_t i=0; i<=nBinSecvtx[5]; i++) binEdgesSecvtx[5][i]=(Double_t)kNtrksmin + (kNtrksmax - kNtrksmin)/nBinSecvtx[5]*(Double_t)i;
+  for(Int_t i=0; i<=nBinSecvtx[6]; i++) binEdgesSecvtx[6][i]=(Double_t)kTrueBmin + (kTrueBmax - kTrueBmin)/nBinSecvtx[6]*(Double_t)i;
+  for(Int_t i=0; i<=nBinSecvtx[7]; i++) binEdgesSecvtx[7][i]=binEdgesPair[3][i];
+  for(Int_t i=0; i<=nBinSecvtx[8]; i++) binEdgesSecvtx[8][i]=(Double_t)kPtmin + (kPtmax - kPtmin)/nBinSecvtx[8]*(Double_t)i;
 
   fSecvtxQA = new THnSparseF("secvtxQA", "QA for Secvtx; invmass[GeV/c^2]; KF chi2; signed Lxy; KF ip; pair code; n tracks ", nDimSecvtx, nBinSecvtx);
   for(Int_t idim = 0; idim < nDimSecvtx; idim++){
@@ -1179,6 +1636,7 @@ void AliHFEsecVtx::MakeContainer(){
   }
 
   fSecVtxList->AddAt(fSecvtxQA,1);
+
   for(Int_t ivar = 0; ivar < nDimPair; ivar++)
     delete binEdgesPair[ivar];
   for(Int_t ivar = 0; ivar < nDimSecvtx; ivar++)

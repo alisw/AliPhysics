@@ -34,14 +34,21 @@
 
 #include <TCanvas.h>
 
+#include "AliAnalysisManager.h"
+
 #include "AliCFManager.h"
-#include "AliMCEvent.h"
+
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
-#include "AliAnalysisManager.h"
+#include "AliVertexerTracks.h"
+#include "AliESDVertex.h"
+
 #include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliMCParticle.h"
 
+#include "AliESDpid.h"
+#include "AliHFEpid.h"
 #include "AliHFEcuts.h"
 #include "AliHFEdca.h"
 
@@ -50,76 +57,117 @@
 
 //____________________________________________________________
 AliAnalysisTaskDCA::AliAnalysisTaskDCA():
-  AliAnalysisTask("Impact Parameter Resolution and Pull Analysis", "")
+  AliAnalysisTaskSE("Impact Parameter Resolution and Pull Analysis")
   , fPlugins(0)
-  , fESD(0x0)
-  , fMC(0x0)
   , fCuts(0x0)
+  , fDefaultPID(0x0)
+  , fHFEpid(0x0)
+  , fPIDdetectors("")
+  , fPIDstrategy(0)
   , fCFM(0x0)
   , fDCA(0x0)
-  , fPixelStatus(0x0)
   , fNclustersITS(0x0)
+  , fMinNprimVtxContrbutor(0x0)
   , fNEvents(0x0)
   , fResidualList(0x0)
   , fPullList(0x0)
+  , fDcaList(0x0)
+  , fKfDcaList(0x0)
+  , fMcVertexList(0x0)
+  , fDataDcaList(0x0)
+  , fDataVertexList(0x0)
+  , fDataPullList(0x0)
+  , fMcPidList(0x0) 
+  , fDataPidList(0x0)
+  , fHfeDcaList(0x0)
+  , fHfeDataDcaList(0x0)
   , fOutput(0x0)
 {
   //
   // Dummy constructor
   //
   DefineInput(0, TChain::Class());
-  DefineOutput(0, TH1I::Class());   // event
-  DefineOutput(1, TList::Class());  // output
+  DefineOutput(1, TH1I::Class());
+  DefineOutput(2, TList::Class());
 
-  SetHasMCData();
+  fDefaultPID = new AliESDpid;
+  fHFEpid = new AliHFEpid;
 
 }
 
 //____________________________________________________________
 AliAnalysisTaskDCA::AliAnalysisTaskDCA(const char * name):
-  AliAnalysisTask(name, "")
+  AliAnalysisTaskSE(name)
   , fPlugins(0)
-  , fESD(0x0)
-  , fMC(0x0)
   , fCuts(0x0)
+  , fDefaultPID(0x0)
+  , fHFEpid(0x0)
+  , fPIDdetectors("")
+  , fPIDstrategy(0)
   , fCFM(0x0)
   , fDCA(0x0)
-  , fPixelStatus(0x0)
   , fNclustersITS(0x0)
+  , fMinNprimVtxContrbutor(0x0)
   , fNEvents(0x0)
   , fResidualList(0x0)
   , fPullList(0x0)
+  , fDcaList(0x0) 
+  , fKfDcaList(0x0)
+  , fMcVertexList(0x0)
+  , fDataDcaList(0x0)
+  , fDataVertexList(0x0)
+  , fDataPullList(0x0)
+  , fMcPidList(0x0)
+  , fDataPidList(0x0)
+  , fHfeDcaList(0x0)
+  , fHfeDataDcaList(0x0)
   , fOutput(0x0)
 {
   //
   // Default constructor
   //
   DefineInput(0, TChain::Class());
-  DefineOutput(0, TH1I::Class());
-  DefineOutput(1, TList::Class());
+  DefineOutput(1, TH1I::Class());
+  DefineOutput(2, TList::Class());
+  
+  fDefaultPID = new AliESDpid;
+  fHFEpid = new AliHFEpid;
 
-  SetHasMCData();
 }
 
 //____________________________________________________________
 AliAnalysisTaskDCA::AliAnalysisTaskDCA(const AliAnalysisTaskDCA &ref):
-  AliAnalysisTask(ref)
+  AliAnalysisTaskSE(ref)
   , fPlugins(ref.fPlugins)
-  , fESD(ref.fESD)
-  , fMC(ref.fMC)
-  , fCuts(ref.fCuts)
+  , fCuts(ref.fCuts)  
+  , fDefaultPID(ref.fDefaultPID)
+  , fHFEpid(ref.fHFEpid)
+  , fPIDdetectors(ref.fPIDdetectors)
+  , fPIDstrategy(ref.fPIDstrategy)
   , fCFM(ref.fCFM)
   , fDCA(ref.fDCA)
-  , fPixelStatus(ref.fPixelStatus)
   , fNclustersITS(ref.fNclustersITS)
+  , fMinNprimVtxContrbutor(ref.fMinNprimVtxContrbutor)
   , fNEvents(ref.fNEvents)
   , fResidualList(ref.fResidualList)
   , fPullList(ref.fPullList)
+  , fDcaList(ref.fDcaList)
+  , fKfDcaList(ref.fKfDcaList)
+  , fMcVertexList(ref.fMcVertexList)
+  , fDataDcaList(ref.fDataDcaList)
+  , fDataVertexList(ref.fDataVertexList)
+  , fDataPullList(ref.fDataPullList)
+  , fMcPidList(ref.fMcPidList)
+  , fDataPidList(ref.fDataPidList)
+  , fHfeDcaList(ref.fHfeDcaList)
+  , fHfeDataDcaList(ref.fHfeDataDcaList)
   , fOutput(ref.fOutput)
 {
   //
   // Copy Constructor
   //
+
+  ref.Copy(*this);
 }
 
 //____________________________________________________________
@@ -128,19 +176,31 @@ AliAnalysisTaskDCA &AliAnalysisTaskDCA::operator=(const AliAnalysisTaskDCA &ref)
   // Assignment operator
   //
   if(this == &ref) return *this;
-  AliAnalysisTask::operator=(ref);
+  AliAnalysisTaskSE::operator=(ref);
   fPlugins = ref.fPlugins;
-  fESD = ref.fESD;
-  fMC = ref.fMC;
   fCuts = ref.fCuts;
+  fDefaultPID = ref.fDefaultPID;
+  fHFEpid = ref.fHFEpid;
+  fPIDdetectors = ref.fPIDdetectors;
+  fPIDstrategy = ref.fPIDstrategy;
   fCFM = ref.fCFM;
   fDCA = ref.fDCA;
-  fPixelStatus = ref.fPixelStatus;
   fNclustersITS = ref.fNclustersITS;
+  fMinNprimVtxContrbutor = ref.fMinNprimVtxContrbutor;
   fNEvents = ref.fNEvents;
-  fOutput = ref.fOutput;
   fResidualList = ref.fResidualList;
   fPullList = ref.fPullList;
+  fDcaList = ref.fDcaList;
+  fKfDcaList = ref.fKfDcaList;
+  fMcVertexList = ref.fMcVertexList;
+  fDataDcaList = ref.fDataDcaList;
+  fDataVertexList = ref.fDataVertexList;
+  fDataPullList = ref.fDataPullList;
+  fMcPidList = ref.fMcPidList;
+  fDataPidList = ref.fDataPidList;
+  fHfeDcaList = ref.fHfeDcaList;    
+  fHfeDataDcaList = ref.fHfeDataDcaList;
+  fOutput = ref.fOutput;
 
   return *this;
 }
@@ -151,18 +211,11 @@ AliAnalysisTaskDCA::~AliAnalysisTaskDCA(){
   // Destructor
   //
 
-  if(fESD) delete fESD;
-  if(fMC) delete fMC;
-
+  if(fDefaultPID) delete fDefaultPID;
+  if(fHFEpid) delete fHFEpid;
   if(fCFM) delete fCFM;
-
   if(fDCA) delete fDCA;  
-
-  if(fOutput){ 
-    fOutput->Clear();
-    delete fOutput;
-  }
-  
+  if(fNEvents) delete fNEvents;
   if(fResidualList){ 
     fResidualList->Clear();
     delete fResidualList;
@@ -173,37 +226,79 @@ AliAnalysisTaskDCA::~AliAnalysisTaskDCA(){
     delete fPullList;
   }
   
-  if(fNEvents) delete fNEvents;
-}
+  if(fDcaList){ 
+    fDcaList->Clear();
+    delete fDcaList;
+  }
+  if(fKfDcaList){ 
+    fKfDcaList->Clear();
+    delete fKfDcaList;
+  }
 
-//____________________________________________________________
-void AliAnalysisTaskDCA::ConnectInputData(Option_t *){
-  //
-  // Connecting the input
+  if(fMcVertexList){
+    fMcVertexList->Clear();
+    delete   fMcVertexList;
+  }
+
+  if(fDataDcaList){ 
+    fDataDcaList->Clear();
+    delete fDataDcaList;
+  }
+
+  if(fDataVertexList){
+    fDataVertexList->Clear();
+    delete   fDataVertexList;
+  }
+  if(fDataPullList){ 
+    fDataPullList->Clear();
+    delete fDataPullList;
+  }
+
+  if(fMcPidList){
+    fMcPidList -> Clear();
+    delete fMcPidList;
+  }
+  if(fDataPidList){
+    fDataPidList -> Clear();
+    delete fDataPidList;
+  }
+
+  if(fHfeDcaList) {
+    fHfeDcaList->Clear();
+    delete fHfeDcaList;
+  } 
   
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if(!esdH){      
-    AliError("No ESD input handler");
-    return;
-  } else {
-    fESD = esdH->GetEvent();
+  if(fHfeDataDcaList) {
+    fHfeDataDcaList->Clear();
+    delete fHfeDataDcaList;
+  } 
+  
+  if(fOutput){ 
+    fOutput->Clear();
+    delete fOutput;
   }
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if(!mcH){       
-    AliError("No MC truth handler");
-    return;
-  } else {
-    fMC = mcH->MCEvent();
-  }
+  
 }
 
 //____________________________________________________________
-void AliAnalysisTaskDCA::CreateOutputObjects(){
+void AliAnalysisTaskDCA::UserCreateOutputObjects(){
   // create output objects
   // fNEvents
   // residual and pull
+  
+  // Automatic determination of the analysis mode
+  AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    
+  if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
+    SetAODAnalysis();
+  } else {
+    SetESDAnalysis();
+    if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())
+      SetHasMCData();
+  }
+  
 
-  fNEvents = new TH1I("nEvents", "Number of Events in the Analysis", 2, 0, 2); // Number of Events neccessary for the analysis and not a QA histogram
+  fNEvents = new TH1I("nEvents", "Number of Events in the Analysis", 5, -0.5, 4.5); // Number of Events neccessary for the analysis and not a QA histogram
   if(!fOutput) fOutput = new TList;
   // Initialize correction Framework and Cuts
   fCFM = new AliCFManager;
@@ -217,56 +312,174 @@ void AliAnalysisTaskDCA::CreateOutputObjects(){
     fCuts->CreateStandardCuts();
   }
   
-  fCuts->SetCutITSpixel(fPixelStatus);
   fCuts->Initialize(fCFM);
   
+  if(!fHFEpid) printf("hallo, fHFEpid is not available\n");
+  
+  if(fHFEpid && GetPlugin(kHFEpid)) {      
+    fHFEpid->SetHasMCData(HasMCData());
+    if(!fPIDdetectors.Length() && ! fPIDstrategy) AddPIDdetector("TPC");
+    if(fPIDstrategy)
+      fHFEpid->InitializePID(Form("Strategy%d", fPIDstrategy));
+    else
+      fHFEpid->InitializePID(fPIDdetectors.Data());     // Only restrictions to TPC allowed 
+  }
 
   // dca study----------------------------------
+
+  
   if(!fDCA) fDCA = new AliHFEdca;
   if(!fResidualList) fResidualList = new TList();
   if(!fPullList) fPullList = new TList();
-
-  fDCA->CreateHistogramsResidual(fResidualList);
-  fDCA->CreateHistogramsPull(fPullList);
+  if(!fDcaList) fDcaList = new TList();
+  if(!fKfDcaList) fKfDcaList = new TList();
+  if(!fMcVertexList) fMcVertexList = new TList();
+  if(!fDataDcaList) fDataDcaList = new TList();
+  if(!fDataVertexList) fDataVertexList = new TList();
+  if(!fDataPullList) fDataPullList = new TList();
+  if(!fMcPidList) fMcPidList = new TList();
+  if(!fDataPidList) fDataPidList = new TList();  
   
-  // add output objects to the List
-  fOutput->AddAt(fResidualList,0);
-  fOutput->AddAt(fPullList,1);
+  if(!fHfeDcaList) fHfeDcaList = new TList();
+  if(!fHfeDataDcaList) fHfeDataDcaList = new TList();
 
+  if(HasMCData()) {    
+    if(GetPlugin(kImpactPar) ) {
+      fDCA->CreateHistogramsResidual(fResidualList);
+      fDCA->CreateHistogramsPull(fPullList);
+      fDCA->CreateHistogramsDca(fDcaList);
+      fOutput->AddAt(fResidualList,0);
+      fOutput->AddAt(fPullList,1);
+      fOutput->AddAt(fDcaList,2);
+    } 
+    if(GetPlugin(kKFdca)){
+      fDCA->CreateHistogramsKfDca(fKfDcaList);
+      fOutput->AddAt(fDcaList,3);
+    }
+    if(GetPlugin(kPrimVtx)){
+      fDCA->CreateHistogramsVertex(fMcVertexList);
+      fOutput->AddAt(fMcVertexList,4);
+    }
+    if(GetPlugin(kCombinedPid)){
+      fDCA->CreateHistogramsPid(fMcPidList);
+      fOutput->AddAt(fMcPidList, 5);
+    }
+    if(GetPlugin(kHFEpid)){
+      fDCA->CreateHistogramsHfeDca(fHfeDcaList);
+      fOutput->AddAt(fHfeDcaList, 6);
+    }
+  } // mc case
+
+  if(!HasMCData())  { 
+    
+    if(GetPlugin(kPrimVtx)){
+      fDCA->CreateHistogramsDataVertex(fDataVertexList);  
+      fOutput->AddAt(fDataVertexList,0);
+    }    
+
+    if(GetPlugin(kCombinedPid)){
+      fDCA->CreateHistogramsDataDca(fDataDcaList);  
+      fDCA->CreateHistogramsDataPull(fDataPullList);  
+      fDCA->CreateHistogramsDataPid(fDataPidList);
+      fOutput->AddAt(fDataDcaList,1);
+      fOutput->AddAt(fDataPullList,2);
+      fOutput->AddAt(fDataPidList, 3);
+    }
+    if(GetPlugin(kHFEpid)){
+      fDCA->CreateHistogramsHfeDataDca(fHfeDataDcaList);
+      fOutput->AddAt(fHfeDataDcaList, 4);
+    }
+    
+
+
+  }  // data case
+  
 }
 
 //____________________________________________________________
-void AliAnalysisTaskDCA::Exec(Option_t *){
+void AliAnalysisTaskDCA::UserExec(Option_t *){
   //
   // Run the analysis
   // 
 
   AliDebug(3, "Processing ESD events");
 
-  if(!fESD){
-    AliError("No ESD Event");
+  if(!fInputEvent){
+    AliError("Reconstructed Event not available");
     return;
   }
-  if(!fMC){
-    AliError("No MC Event");
-    return;
+  if(HasMCData()){
+    AliDebug(4, Form("MC Event: %p", fMCEvent));
+    if(!fMCEvent){
+      AliError("No MC Event, but MC Data required");
+      return;
+    }
   }
+
   if(!fCuts){
     AliError("HFE cuts not available");
     return;
   }
+ 
+
+  // protection
+  if(IsESDanalysis() && HasMCData()){
+    // Protect against missing MC trees
+    AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if(!mcH->InitOk()) return;
+    if(!mcH->TreeK()) return;
+    if(!mcH->TreeTR()) return;
+  }
+
+  if(!IsAODanalysis()) {
+    AliESDInputHandler *inH = dynamic_cast<AliESDInputHandler *>(fInputHandler);
+    AliESDpid *workingPID = inH->GetESDpid();
+    if(workingPID){
+      AliDebug(1, "Using ESD PID from the input handler");
+      fHFEpid->SetESDpid(workingPID);
+    } else {
+      AliDebug(1, "Using default ESD PID");
+      fHFEpid->SetESDpid(fDefaultPID);
+    }
+    ProcessDcaAnalysis();
+  }
+
+  
+  PostData(1, fNEvents);
+  PostData(2, fOutput);
+}
+//____________________________________________________________
+void AliAnalysisTaskDCA::ProcessDcaAnalysis(){
 
   //
   // Loop ESD
   //
+  
+  AliMCEvent *fMC = 0x0;
+  AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+  if(HasMCData())fMC = dynamic_cast<AliMCEvent*>(fMCEvent);
+
+  if(!fESD){
+    AliError("ESD Event required for ESD Analysis")
+      return;
+  }
+
+  fNEvents->Fill(1);  // original event number before cut
+  fDCA->ApplyExtraCuts(fESD,fMinNprimVtxContrbutor);  // cut on primVtx contributors
+  fNEvents->Fill(3);  // events number after cut
+
   AliESDtrack *track = 0x0;  
+  AliMCParticle *mctrack = 0x0;
+
   fCFM->SetRecEventInfo(fESD);
+ 
   // event cut level
   if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) return;
 
   for(Int_t itrack = 0; itrack < fESD->GetNumberOfTracks(); itrack++){
-
+    
     track = fESD->GetTrack(itrack);
+    if(HasMCData())mctrack = dynamic_cast<AliMCParticle *>(fMC->GetTrack(TMath::Abs(track->GetLabel())));
 
     // RecPrim: primary cuts
     if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecPrim, track)) continue;
@@ -275,19 +488,60 @@ void AliAnalysisTaskDCA::Exec(Option_t *){
     // HFEcuts: ITS layers cuts
     if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS, track)) continue;
     
-    if(track->GetITSclusters(0)<=fNclustersITS) continue;  // require 6 hits on all pixel layers
-
-    if(GetPlugin(kImpactPar)) {
-      //      Printf("analysis on impact parameter is ON");
-      fDCA->FillHistograms(fESD, track, fMC);
-    }   
+    if(track->GetITSclusters(0)<=fNclustersITS) continue;  // require number of ITS clusters
     
-  }  
-  fNEvents->Fill(1);
-  
-  PostData(0, fNEvents);
-  PostData(1, fOutput);
+    // track accepted, do PID
+    AliHFEpidObject hfetrack;
+    hfetrack.fAnalysisType = AliHFEpidObject::kESDanalysis;
+    hfetrack.fRecTrack = track;
+    if(HasMCData()) hfetrack.fMCtrack = mctrack;
+
+    if(HasMCData()){
+      if(GetPlugin(kPrimVtx))
+	fDCA->FillHistogramsVtx(fESD, fMC);
+      if(GetPlugin(kImpactPar)) 
+	fDCA->FillHistogramsDca(fESD, track, fMC);
+      if(GetPlugin(kKFdca)) 
+	fDCA->FillHistogramsKfDca(fESD, track, fMC);
+      if(GetPlugin(kCombinedPid)) 
+	fDCA->FillHistogramsPid(track, fMC);
+      if(GetPlugin(kHFEpid)) {
+	if(fHFEpid->IsSelected(&hfetrack)) 
+	  fDCA->FillHistogramsHfeDca(fESD, track, fMC);
+      } // plugin for hfepid 
+    }  // MC
+
+    if(!HasMCData()){
+      if(GetPlugin(kPrimVtx))
+	fDCA->FillHistogramsDataVtx(fESD);
+      if(GetPlugin(kCombinedPid)) {
+
+	// method from Andrea D 28.05.2010
+	AliVertexerTracks *vertexer = new AliVertexerTracks(fESD->GetMagneticField());
+	vertexer->SetITSMode();
+	vertexer->SetMinClusters(fNclustersITS);
+	Int_t skipped[2];
+	skipped[0] = (Int_t)track->GetID();
+	vertexer->SetSkipTracks(1,skipped);
+	AliESDVertex *vtxESDSkip = (AliESDVertex*)vertexer->FindPrimaryVertex(fESD);
+	delete vertexer; vertexer = NULL;
+	if(vtxESDSkip->GetNContributors()<fMinNprimVtxContrbutor) continue;
+
+	fDCA->FillHistogramsDataDca(fESD, track, vtxESDSkip);
+	fDCA->FillHistogramsDataPid(track);
+      }
+      if(GetPlugin(kHFEpid)) {
+	if(fHFEpid->IsSelected(&hfetrack)) {
+	  //	  printf("Found an electron in p+p collision! from HFE pid \n");
+	  fDCA->FillHistogramsHfeDataDca(fESD, track);    
+	} 
+      } // plugin for hfepid
+    }  // data case
+
+  } // track loop
+
 }
+
 
 //____________________________________________________________
 void AliAnalysisTaskDCA::Terminate(Option_t *){
@@ -316,13 +570,6 @@ void AliAnalysisTaskDCA::Load(TString filename){
     return;
   }
 
-  /* 
-  TH1 *htmp = dynamic_cast<TH1I *>(input->Get("nEvents"));
-  if(htmp)
-    fNEvents = dynamic_cast<TH1I *>(htmp->Clone());
-  else
-    AliError("Event Counter histogram not found"); 
-  */
   input->Close();
   delete input;
   
@@ -335,7 +582,7 @@ void AliAnalysisTaskDCA::PostProcess(){
   // should do fitting here for dca resolution
   // moved to an external macro to do the job
   
-  Load("impactPar.root");
+  Load("HFEdca.root");
   TCanvas *c1 = new TCanvas("c1", "number of analyzed events", 300, 400);
   fNEvents->Draw();
   c1->SaveAs("temp.png");
@@ -352,8 +599,14 @@ void AliAnalysisTaskDCA::PrintStatus() const {
   // Print Analysis status
   //
   printf("\n\tAnalysis Settings\n\t========================================\n");
-  printf("\timpact parameter analysis is %s\n", GetPlugin(kImpactPar)?"ON":"OFF");
-  printf("\tcuts: %s\n", (fCuts != NULL) ? "YES" : "NO");
+  printf("\t Running on %s\n", !HasMCData()?"p+p collision data":"MC sample");
+  printf("\t Cuts: %s\n", (fCuts != NULL) ? "YES" : "NO");
+  printf("\t Impact parameter analysis is %s\n", GetPlugin(kImpactPar)?"ON":"OFF");
+  printf("\t Using AliKFParticle for analysis? %s\n", GetPlugin(kKFdca)?"ON":"OFF");
+  printf("\t Primary vertex analysis is %s\n", GetPlugin(kPrimVtx)?"ON":"OFF");
+  printf("\t Combined pid analysis is %s\n", GetPlugin(kCombinedPid)?"ON":"OFF");
+  printf("\t HFE pid analysis is %s\n", GetPlugin(kHFEpid)?"ON":"OFF");
+  printf("\t Post process analysis is %s\n", GetPlugin(kPostProcess)?"ON":"OFF");
   printf("\t ");
   printf("\n");
 }
@@ -367,10 +620,22 @@ void AliAnalysisTaskDCA::SwitchOnPlugin(Int_t plug){
   //  - Post Processing                                                                      
   
   switch(plug){
+  case kPostProcess: 
+    SETBIT(fPlugins, plug); 
+    break;
   case kImpactPar: 
     SETBIT(fPlugins, plug); 
     break;
-  case kPostProcess: 
+  case kPrimVtx: 
+    SETBIT(fPlugins, plug); 
+    break;
+  case kCombinedPid:
+    SETBIT(fPlugins, plug); 
+    break;
+  case kHFEpid:
+    SETBIT(fPlugins, plug); 
+    break;
+  case kKFdca:
     SETBIT(fPlugins, plug); 
     break;
   default: 
@@ -423,7 +688,18 @@ void AliAnalysisTaskDCA::MakeParticleContainer(){
   }
 
 
-  // add more containers for correction purpose
-
-
 }
+
+//____________________________________________________________
+void AliAnalysisTaskDCA::AddPIDdetector(TString detector){
+  
+  //
+  // Adding PID detector to the task
+  //
+  
+  if(!fPIDdetectors.Length()) 
+    fPIDdetectors = detector;
+  else
+    fPIDdetectors += ":" + detector;
+}
+

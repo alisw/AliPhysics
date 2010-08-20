@@ -21,6 +21,9 @@ class AliAODMCParticle;
 class AliESDtrack;
 class AliMCParticle;
 class AliESDpid;
+class AliLog;
+
+class AliHFEcollection;
 
 class AliHFEpidTOF : public AliHFEpidBase{
   public:
@@ -41,6 +44,8 @@ class AliHFEpidTOF : public AliHFEpidBase{
     void Copy(TObject &ref) const;
     void AddQAhistograms(TList *qaHist);
     Int_t MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
+    Int_t MakePIDesdV2(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
+    Int_t MakePIDesdV3(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
     Int_t MakePIDaod(AliAODTrack *aodTrack, AliAODMCParticle *mcTrack);
   
   private:
@@ -57,10 +62,9 @@ class AliHFEpidTOF : public AliHFEpidBase{
     } QAHist_t;
   
     AliPID        *fPID;           //! PID Object
-    TList         *fQAList;        //! QA histograms
-    AliESDpid *fESDpid;            //! ESD pid object
+    AliHFEcollection *fQAList;     //! QA histograms
 
-    Short_t fNsigmaTOF;            // TOF sigma band
+    Short_t    fNsigmaTOF;         // TOF sigma band
 
     ClassDef(AliHFEpidTOF, 1)
 };

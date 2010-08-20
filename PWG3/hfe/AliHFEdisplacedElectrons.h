@@ -18,7 +18,8 @@
 // by DCA cuts, background subtraction 
 //
 // Authors:
-//   Hongyan Yang <hongyan@physi.uni-heidelberg.de>
+//  Hongyan Yang <hongyan@physi.uni-heidelberg.de>
+//  Carlo Bombonati <Carlo.Bombonati@cern.ch>
 // 
 
 #ifndef ALIHFEDISPLACEDELECTRONS_H
@@ -49,6 +50,7 @@ class TObjArray;
 class AliStack;
 class AliMCEvent;
 class AliESDEvent;
+class AliVEvent;
 
 class AliESDtrack;
 class AliESDVertex;
@@ -76,14 +78,17 @@ class AliHFEdisplacedElectrons : public TObject{
   void InitAnalysis();  
   void CreateOutputs(TList* const displacedList);
 
-  void FillMCOutput(AliESDEvent* fESDEvent, AliESDtrack *track, AliStack *stack);
-  void FillESDOutput(AliESDEvent* fESDEvent, AliESDtrack *track);
+  void FillMcOutput(AliESDEvent* fESD, AliMCEvent* fMC, AliMCParticle* mctrack);
+  void FillEsdOutput(AliESDEvent* fESDEvent, AliESDtrack *track, AliStack *stack);
+  void FillDataOutput(AliESDEvent* fESDEvent, AliESDtrack *track);
 
   Int_t GetMCpid(AliStack* stack, Int_t label) const;
 
   Bool_t HasMCData() const { return TestBit(kHasMCData); };
   void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData,hasMCdata); };
-  void SetDebugLevel(Int_t debugLevel){ fDebugLevel = debugLevel; };
+  void SetDebugLevel(Int_t debugLevel){ fDeDebugLevel = debugLevel; };
+  void SetNitsCluster(Int_t nITScls){ fNclustersITS = nITScls;};
+  void SetMinPrimVtxContrib(Int_t nContrib){fMinNprimVtxContributor = nContrib;};
 
   void PostAnalysis() const;
 
@@ -104,23 +109,25 @@ class AliHFEdisplacedElectrons : public TObject{
     kEleEta = 3, 
     kEleB = 4, 
     kEleC = 5, 
-    kEleBC = 6
+    kEleBC = 6,
+    kEleMissID = 7,
+    kEleMissIDpion = 8,
+    kPion = 8
   };  // electron source index
   
   enum{
-    kMCpion = 0, 
-    kMCelectron = 1, 
-    kData = 2
+    kMcElectron = 0, 
+    kEsdElectron = 1, 
+    kDataElectron = 2
   };  // MC or Data
 
   enum{
-    kNDcaMin = 21, 
+    kNDcaMin = 42, 
     kNPtIntv = 14, 
     kNKineVar = 3
   };   // several constant to be used
  
-  UInt_t fDebugLevel;   // debug level
-
+ 
   Int_t ElectronFromSource(AliStack *stack, Int_t eleLabel) const;
   Int_t ElePhotonDirect(AliStack *stack, Int_t label) const;
   Int_t ElectronFromCharm(AliStack *stack, Int_t eleLabel) const;
@@ -136,12 +143,16 @@ class AliHFEdisplacedElectrons : public TObject{
 
   static const Char_t *fgkKineVar[kNKineVar];  // particle names
   static const Char_t *fgkKineVarTitle[kNKineVar];  // particle names
+  
+  UInt_t fDeDebugLevel;   // debug level
+  Int_t fNclustersITS;  // ITS clusters
+  Int_t fMinNprimVtxContributor;      // minimum number of contributors to the primary vtx
 
-  THnSparseF *fTHnSparseDcaMcPionInfo;   //! container for MC pion part
-  THnSparseF *fTHnSparseDcaMcEleInfo;   //! container for MC electron part
+  THnSparseF *fTHnSparseDcaMcEleInfo;   //! container for MC pion part
+  THnSparseF *fTHnSparseDcaEsdEleInfo;   //! container for MC electron part
   THnSparseF *fTHnSparseDcaDataEleInfo; //! container for Data electron part
 
-  TList *fOutputList;  //! output container
+  TList *fDeOutputList;  //! output container
   ClassDef(AliHFEdisplacedElectrons, 0);
 };
 

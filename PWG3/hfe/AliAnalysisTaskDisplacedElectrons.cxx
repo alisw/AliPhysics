@@ -20,6 +20,7 @@
 // 
 // Authors:
 //  Hongyan Yang <hongyan@physi.uni-heidelberg.de>
+//  Carlo Bombonati <Carlo.Bombonati@cern.ch>
 //
 
 #include <TChain.h>
@@ -33,56 +34,62 @@
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TString.h>
-
 #include <TCanvas.h>
 
 #include "AliCFManager.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
+#include "AliMCParticle.h"
+#include "AliStack.h"
+
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
-#include "AliAnalysisManager.h"
-#include "AliMCParticle.h"
+#include "AliESDpid.h"
 
+#include "AliAnalysisManager.h"
 
 #include "AliHFEpid.h"
 #include "AliHFEcuts.h"
+#include "AliHFEtools.h"
 #include "AliHFEdisplacedElectrons.h"
-
 #include "AliAnalysisTaskDisplacedElectrons.h"
 
 
 //____________________________________________________________
 AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons():
   AliAnalysisTaskSE("Task for displaced electron study")
-  , fDebugLevel(0)
-  , fPIDdetectors("")
-  , fPIDstrategy(0)
-  , fPlugins(0)
-  , fESD(0x0)
-  , fMC(0x0)
-  , fCuts(0x0)
-  , fPID(0x0)
-  , fCFM(0x0)
-  , fNEvents(0x0)
-  , fElectronsPt(0x0)
-  , fOutput(0x0)
-  , fCorrection(0x0)
+  , fDeDebugLevel(0)
+  , fNminITSCluster(0)
+  , fNminPrimVtxContrib(0)
+  , fDePIDdetectors("")
+  , fDePIDstrategy(0)
+  , fDePlugins(0)
+  , fDeCuts(0x0)
+  , fDeDefaultPID(0x0)
+  , fDePID(0x0)
+  , fDeCFM(0x0)
   , fDisplacedElectrons(0x0)
+  , fDeNEvents(0x0)
+  , fElectronsMcPt(0x0)
+  , fElectronsEsdPt(0x0)
+  , fElectronsDataPt(0x0)
+  , fDeCorrection(0x0)
+  , fDeQA(0x0)
   , fHistDisplacedElectrons(0x0)
 {
   //
   // Dummy constructor
   //
   DefineInput(0, TChain::Class());
-  DefineOutput(2, TList::Class());  // output
-  DefineOutput(1, TList::Class());  // output
+  DefineOutput(1, TList::Class());  // displacedElectron
+  DefineOutput(2, TList::Class());  // correction framework
+  DefineOutput(3, TList::Class());  // QA
   
-  SetHasMCData();
-
   // Initialize pid
-  fPID = new AliHFEpid;
+  
+  fDeDefaultPID = new AliESDpid;
+  fDePID = new AliHFEpid;
   
 
 }
@@ -90,49 +97,59 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons():
 //____________________________________________________________
 AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons(const char * name):
   AliAnalysisTaskSE(name)
-  , fDebugLevel(0)
-  , fPIDdetectors("")
-  , fPIDstrategy(0)
-  , fPlugins(0)
-  , fESD(0x0)
-  , fMC(0x0)
-  , fCuts(0x0)
-  , fPID(0x0)
-  , fCFM(0x0)
-  , fNEvents(0x0)
-  , fElectronsPt(0x0)
-  , fOutput(0x0)
-  , fCorrection(0x0)
+  , fDeDebugLevel(0)
+  , fNminITSCluster(0)
+  , fNminPrimVtxContrib(0)
+  , fDePIDdetectors("")
+  , fDePIDstrategy(0)
+  , fDePlugins(0)
+  , fDeCuts(0x0)
+  , fDeDefaultPID(0x0)
+  , fDePID(0x0)
+  , fDeCFM(0x0)
   , fDisplacedElectrons(0x0)
+  , fDeNEvents(0x0)
+  , fElectronsMcPt(0x0)
+  , fElectronsEsdPt(0x0)
+  , fElectronsDataPt(0x0)
+  , fDeCorrection(0x0)
+  , fDeQA(0x0)
   , fHistDisplacedElectrons(0x0)
 {
   //
   // Default constructor
   //
   DefineInput(0, TChain::Class());
-  DefineOutput(2, TList::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+  DefineOutput(3, TList::Class());
 
-  SetHasMCData();
+  // Initialize pid
+  fDeDefaultPID = new AliESDpid;
+  fDePID = new AliHFEpid;
+
 }
 
 //____________________________________________________________
 AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons(const AliAnalysisTaskDisplacedElectrons &ref):
   AliAnalysisTaskSE(ref)
-  , fDebugLevel(ref.fDebugLevel)
-  , fPIDdetectors(ref.fPIDdetectors)
-  , fPIDstrategy(ref.fPIDstrategy)
-  , fPlugins(ref.fPlugins)
-  , fESD(ref.fESD)
-  , fMC(ref.fMC)
-  , fCuts(ref.fCuts)
-  , fPID(ref.fPID)
-  , fCFM(ref.fCFM)
-  , fNEvents(ref.fNEvents)
-  , fElectronsPt(ref.fElectronsPt)
-  , fOutput(ref.fOutput)
-  , fCorrection(ref.fCorrection)
+  , fDeDebugLevel(ref.fDeDebugLevel)
+  , fNminITSCluster(ref.fNminITSCluster)
+  , fNminPrimVtxContrib(ref.fNminPrimVtxContrib)
+  , fDePIDdetectors(ref.fDePIDdetectors)
+  , fDePIDstrategy(ref.fDePIDstrategy)
+  , fDePlugins(ref.fDePlugins)
+  , fDeCuts(ref.fDeCuts)
+  , fDeDefaultPID(ref.fDeDefaultPID)
+  , fDePID(ref.fDePID)
+  , fDeCFM(ref.fDeCFM)
   , fDisplacedElectrons(ref.fDisplacedElectrons)
+  , fDeNEvents(ref.fDeNEvents)
+  , fElectronsMcPt(ref.fElectronsMcPt)
+  , fElectronsEsdPt(ref.fElectronsEsdPt)
+  , fElectronsDataPt(ref.fElectronsDataPt)
+  , fDeCorrection(ref.fDeCorrection)
+  , fDeQA(ref.fDeQA)
   , fHistDisplacedElectrons(ref.fHistDisplacedElectrons)
 {
   //
@@ -147,19 +164,23 @@ AliAnalysisTaskDisplacedElectrons &AliAnalysisTaskDisplacedElectrons::operator=(
   //
   if(this == &ref) return *this;
   AliAnalysisTask::operator=(ref);
-  fDebugLevel = ref.fDebugLevel;
-  fPIDdetectors = ref.fPIDdetectors;
-  fPIDstrategy = ref.fPIDstrategy;
-  fPlugins = ref.fPlugins;
-  fESD = ref.fESD;
-  fMC = ref.fMC;
-  fPID = ref.fPID;
-  fCuts = ref.fCuts;
-  fCFM = ref.fCFM;
-  fNEvents = ref.fNEvents;
-  fOutput = ref.fOutput;
-  fCorrection = ref.fCorrection;
+  fDeDebugLevel = ref.fDeDebugLevel;
+  fNminITSCluster = ref.fNminITSCluster;
+  fNminPrimVtxContrib = ref.fNminPrimVtxContrib;
+  fDePIDdetectors = ref.fDePIDdetectors;
+  fDePIDstrategy = ref.fDePIDstrategy;
+  fDePlugins = ref.fDePlugins;
+  fDeDefaultPID = ref.fDeDefaultPID;
+  fDePID = ref.fDePID;
+  fDeCuts = ref.fDeCuts;
+  fDeCFM = ref.fDeCFM;
   fDisplacedElectrons = ref.fDisplacedElectrons;
+  fDeNEvents = ref.fDeNEvents;
+  fElectronsMcPt = ref.fElectronsMcPt;
+  fElectronsEsdPt = ref.fElectronsEsdPt;
+  fElectronsDataPt = ref.fElectronsDataPt;
+  fDeCorrection = ref.fDeCorrection;
+  fDeQA = ref.fDeQA;
   fHistDisplacedElectrons = ref.fHistDisplacedElectrons;
 
   return *this;
@@ -171,101 +192,105 @@ AliAnalysisTaskDisplacedElectrons::~AliAnalysisTaskDisplacedElectrons(){
   // Destructor
   //
 
-  if(fPID) delete fPID;
-  
-  if(fESD) delete fESD;
-  if(fMC) delete fMC;
-
-  if(fCFM) delete fCFM;
-
-  if(fNEvents) delete fNEvents;
-  
-  if(fElectronsPt) delete fElectronsPt;
-
-  if(fOutput){ 
-    fOutput->Clear();
-    delete fOutput;
-  }
-  
-
-  if(fCorrection){
-    fCorrection->Clear();
-    delete fCorrection;
-  }
- 
+  if(fDeDefaultPID) delete fDeDefaultPID;
+  if(fDePID) delete fDePID;
+  if(fDeCFM) delete fDeCFM;
   if(fDisplacedElectrons) delete fDisplacedElectrons;  
-
+ 
+  if(fDeNEvents) delete fDeNEvents;
+  if(fElectronsMcPt) delete fElectronsMcPt;
+  if(fElectronsEsdPt) delete fElectronsEsdPt;
+  if(fElectronsDataPt) delete fElectronsDataPt;
+  if(fDeCorrection){
+    fDeCorrection->Clear();
+    delete fDeCorrection;
+  }
+  if(fDeQA){
+    fDeQA->Clear();
+    delete fDeQA;
+  }
   if(fHistDisplacedElectrons){ 
     fHistDisplacedElectrons->Clear();  
     delete fHistDisplacedElectrons;  
   }
-   
-  
 }
 
 //____________________________________________________________
 void AliAnalysisTaskDisplacedElectrons::UserCreateOutputObjects(){
   // create output objects
-  // fNEvents
+  // fDeNEvents
   // MC and Data containers
 
-  fNEvents = new TH1I("nEvents", "Number of Events in the Analysis", 2, 0, 2); 
+
+  if(!fDeQA) fDeQA = new TList;
+  fDeQA->SetName("variousQAhistograms");
+  
+  fDeNEvents = new TH1I("nDeEvents", "Number of Events in the DE Analysis", 2, 0, 2); 
   const Int_t nBins = 14;
   const Float_t ptBins[nBins] = {0.0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,7.0,9.0,12.0,16.0,20.0};
-  fElectronsPt = new TH1F("esdPt", "p_{T} distribution of identified electrons (HFEpid);p_{T} (GeV/c);dN/dp_{T};", nBins-1, ptBins); 
-  if(!fOutput) fOutput = new TList;
-  fOutput->SetName("results");
-  fOutput->AddAt(fElectronsPt,0);
-  fOutput->AddAt(fNEvents,1);
+  fElectronsMcPt = new TH1F("mcElectronPt", "MC: p_{T} distribution of identified electrons (mcpid);p_{T} (GeV/c);Counts;", nBins-1, ptBins); 
+  fElectronsEsdPt = new TH1F("esdElectronPt", "ESD: p_{T} distribution of identified electrons (hfepid);p_{T} (GeV/c);Counts;", nBins-1, ptBins); 
+  fElectronsDataPt = new TH1F("dataElectronPt", "DATA: p_{T} distribution of identified electrons (hfepid);p_{T} (GeV/c);Counts;", nBins-1, ptBins); 
+  
+  fDeQA->AddAt(fDeNEvents,0);
+  if(HasMCData()){
+    fDeQA->AddAt(fElectronsMcPt, 1);
+    fDeQA->AddAt(fElectronsEsdPt, 2);  
+  }
+  else
+    fDeQA->AddAt(fElectronsDataPt, 1);  
+  
   // Initialize correction Framework and Cuts
-  fCFM = new AliCFManager;
+  fDeCFM = new AliCFManager;
   MakeEventContainer();
   MakeParticleContainer();
  
-  if(!fCorrection) fCorrection = new TList();
-  fCorrection->SetName("corrections");
-  fCorrection->AddAt(fCFM->GetEventContainer(), 0);
-  fCorrection->AddAt(fCFM->GetParticleContainer(), 1);
-  fCorrection->Print();
+  if(!fDeCorrection) fDeCorrection = new TList();
+  fDeCorrection->SetName("deCorrections");
+  fDeCorrection->AddAt(fDeCFM->GetEventContainer(), 0);
+  fDeCorrection->AddAt(fDeCFM->GetParticleContainer(), 1);
+  fDeCorrection->Print();
 
-  // Temporary fix: Initialize particle cuts with 0x0
-  for(Int_t istep = 0; istep < fCFM->GetEventContainer()->GetNStep(); istep++)
-    fCFM->SetEventCutsList(istep, 0x0);
-  for(Int_t istep = 0; istep < fCFM->GetParticleContainer()->GetNStep(); istep++)
-    fCFM->SetParticleCutsList(istep, 0x0);
-  if(!fCuts){
+  for(Int_t istep = 0; istep < fDeCFM->GetEventContainer()->GetNStep(); istep++)
+    fDeCFM->SetEventCutsList(istep, 0x0);
+  for(Int_t istep = 0; istep < fDeCFM->GetParticleContainer()->GetNStep(); istep++)
+    fDeCFM->SetParticleCutsList(istep, 0x0);
+
+  if(!fDeCuts){
     AliWarning("Cuts not available. Default cuts will be used");
-    fCuts = new AliHFEcuts;
-    fCuts->CreateStandardCuts();
-
+    fDeCuts = new AliHFEcuts;
+    fDeCuts->CreateStandardCuts();    
   }
   
-  fCuts->SetCutITSpixel(AliHFEextraCuts::kBoth);
+  fDeCuts->Initialize(fDeCFM);
   
-  fCuts->Initialize(fCFM);
-    
-  fPID->SetHasMCData(HasMCData());
-  if(!fPIDdetectors.Length() && ! fPIDstrategy) AddPIDdetector("TPC");
-  if(fPIDstrategy)
-    fPID->InitializePID(Form("Strategy%d", fPIDstrategy));
-  else
-    fPID->InitializePID(fPIDdetectors.Data());     // Only restrictions to TPC allowed 
+  if(GetPlugin(kDePidQA)){
+    AliInfo("PID QA switched on");
+    // fPID->SetDebugLevel(2);
+    fDePID->SetQAOn();
+    fDeQA->Add(fDePID->GetQAhistograms());
+  }  
 
+  fDePID->SetHasMCData(HasMCData());
+  if(!fDePIDdetectors.Length() && ! fDePIDstrategy) AddPIDdetector("TPC");
+  if(fDePIDstrategy)
+    fDePID->InitializePID(Form("Strategy%d", fDePIDstrategy));
+  else
+    fDePID->InitializePID(fDePIDdetectors.Data());     // Only restrictions to TPC allowed 
+  
   // displaced electron study----------------------------------
   if(GetPlugin(kDisplacedElectrons)){
     
     fDisplacedElectrons = new AliHFEdisplacedElectrons;
-    fDisplacedElectrons->SetDebugLevel(fDebugLevel);
+    fDisplacedElectrons->SetDebugLevel(fDeDebugLevel);
     fDisplacedElectrons->SetHasMCData(HasMCData());
-    
+    fDisplacedElectrons->SetMinPrimVtxContrib(fNminPrimVtxContrib);
+    fDisplacedElectrons->SetNitsCluster(fNminITSCluster);
+  
     if(!fHistDisplacedElectrons) fHistDisplacedElectrons = new TList();
-    
     fDisplacedElectrons->CreateOutputs(fHistDisplacedElectrons);
-    
-    fOutput->AddAt(fHistDisplacedElectrons, 2);
   }
-
-
+  
 }
 
 
@@ -276,192 +301,347 @@ void AliAnalysisTaskDisplacedElectrons::UserExec(Option_t *){
   // Run the analysis
   // 
 
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if(!esdH){      
-    AliError("No ESD input handler");
+  if(fDeDebugLevel>=10) AliInfo("analyse single event");
+
+  if(!fInputEvent){
+    AliError("Reconstructed Event not available");
     return;
-  } else {
-    fESD = esdH->GetEvent();
   }
  
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if(!mcH){       
-    AliError("No MC truth handler");
-    return;
-  } else {
-    fMC = mcH->MCEvent();
-  }
+  //  
+  AliESDInputHandler *inH = dynamic_cast<AliESDInputHandler *>(fInputHandler);
   
-  if(fDebugLevel>=5)AliInfo("Processing ESD events");
-  if(!fESD){
-    AliError("No ESD Event");
-    return;
-  }
-  
+  // pure MC analysis: 
+
   if(HasMCData()){
-    if(fDebugLevel>=5)AliInfo(Form("MC Event: %p", fMC));
-    if(!fMC){
+    // Protect against missing MC trees
+    AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if(!mcH->InitOk()) return;
+    if(!mcH->TreeK()) return;
+    if(!mcH->TreeTR()) return;            
+    
+    AliDebug(4, Form("MC Event: %p", fMCEvent));
+    if(!fMCEvent){
       AliError("No MC Event, but MC Data required");
       return;
     }
+    
+    ProcessMC();
   }
-  if(!fCuts){
+
+  
+  // from now on, only ESD are analyzed
+  // using HFE pid, using HFE cuts
+  // using CORRFW
+  
+  AliESDpid *workingPID = inH->GetESDpid();
+  if(workingPID){
+    AliDebug(1, "Using ESD PID from the input handler");
+    fDePID->SetESDpid(workingPID);
+  } else { 
+    AliDebug(1, "Using default ESD PID");
+    fDePID->SetESDpid(AliHFEtools::GetDefaultPID(HasMCData()));
+  }
+
+  if(!fDeCuts){
     AliError("HFE cuts not available");
     return;
   }
+
+  // ESD case with MC
+  if(HasMCData() && IsESDanalysis()) {
+    // Protect against missing MC trees
+    AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if(!mcH->InitOk()) return;
+    if(!mcH->TreeK()) return;
+    if(!mcH->TreeTR()) return;
+
+    AliDebug(4, Form("MC Event: %p", fMCEvent));
+    if(!fMCEvent){
+      AliError("No MC Event, but MC Data required");
+      return;
+    }
+
+    ProcessESD();
+  } 
+  
+  // now only for data ESDs without MC
+  if(!HasMCData() && IsESDanalysis()) {    
+    ProcessData();
+  }
+
+  fDeNEvents->Fill(1);  
+  PostData(1, fHistDisplacedElectrons);
+  PostData(2, fDeCorrection);
+  PostData(3, fDeQA);
+  
+}
+
+//____________________________________________________________
+void AliAnalysisTaskDisplacedElectrons::ProcessMC(){
+  //
+  // handel pure MC analysis
+  //
+
+  Int_t nMCelectrons = 0;
+  AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+
+  Double_t mcContainer[4];   // container for the output in THnSparse
+  memset(mcContainer, 0, sizeof(Double_t) * 4);
+
+  fDeCFM->SetMCEventInfo(fMCEvent);
+
+  Double_t nContributor = 0;
+  const AliVVertex *mcPrimVtx = fMCEvent->GetPrimaryVertex();
+  if(mcPrimVtx) nContributor = mcPrimVtx->GetNContributors();
+  
+  // 
+  // cut at MC event level
+  //
+
+  if(!fDeCFM->CheckEventCuts(AliHFEcuts::kEventStepGenerated, fMCEvent)) return;
+  if(GetPlugin(kCorrection)) fDeCFM->GetEventContainer()->Fill(&nContributor,AliHFEcuts::kEventStepGenerated);
+  
+  AliStack *stack = 0x0;
+  
+  if(!fMCEvent->Stack())return;
+  stack = fMCEvent->Stack();
+  Int_t nTracks = stack->GetNtrack();
+
+  AliMCParticle *mcTrack = 0x0;
+
+  for(Int_t itrack = 0; itrack<nTracks; itrack++){
+    if(!(stack->Particle(itrack))) continue;
+    if(mcTrack)mcTrack = 0x0;
+    mcTrack= dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(itrack));
+    //TParticle *mcPart = stack->Particle(itrack);
+        
+    mcContainer[0] = mcTrack->Pt();
+    mcContainer[1] = mcTrack->Eta();
+    mcContainer[2] = mcTrack->Phi();
+    mcContainer[3] = mcTrack->Charge();
+    
+
+
+    if (!stack->IsPhysicalPrimary(mcTrack->GetLabel())) continue;
+    // no cut but require primary
+    if(GetPlugin(kCorrection))fDeCFM->GetParticleContainer()->Fill(mcContainer, 0);    
+        
+    // all pions for reference
+    if(TMath::Abs(mcTrack->Particle()->GetPdgCode())==AliHFEdisplacedElectrons::kPDGpion && GetPlugin(kCorrection))
+      fDeCFM->GetParticleContainer()->Fill(mcContainer, 1);
+    
+    // cut for signal: all MC electrons
+    if(TMath::Abs(mcTrack->Particle()->GetPdgCode())==AliHFEdisplacedElectrons::kPDGelectron && GetPlugin(kCorrection)) 
+      fDeCFM->GetParticleContainer()->Fill(mcContainer, 2);
+
+    // cut at track level kinematics: pt and eta
+    if(TMath::Abs(mcContainer[1])>=0.8 || mcContainer[0]>20 || mcContainer[0]<0.1) continue;
+
+    if(TMath::Abs(mcTrack->Particle()->GetPdgCode())==AliHFEdisplacedElectrons::kPDGelectron){
+      nMCelectrons++;
+      fElectronsMcPt->Fill(mcContainer[0]);
+    }  
+
+    if(GetPlugin(kCorrection))fDeCFM->GetParticleContainer()->Fill(mcContainer, 3);
+
+    
+    // fill MC THnSparse
+    fDisplacedElectrons->FillMcOutput(fESD, fMCEvent, mcTrack);
+    
+  }  // mc track loop 
+
+  if(fDeDebugLevel>=10) printf("there are %d electrons in this MC event", nMCelectrons);
+  
+}
+
+//____________________________________________________________
+void AliAnalysisTaskDisplacedElectrons::ProcessESD(){
+  
+  // this is to handel ESD tracks with MC information
+  // MC pid is only used when HFE pid is implemented, for comparison
+  // corrections are taken into account
   
   // process data: ESD tracks with MC information
-  Double_t container[8];   // container for the output in THnSparse
-  memset(container, 0, sizeof(Double_t) * 8);
   
-  Bool_t signal = kTRUE;
+  Double_t esdContainer[4];   // container for the output in THnSparse
+  memset(esdContainer, 0, sizeof(Double_t) * 4);
+  AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+
+  fDeCFM->SetRecEventInfo(fESD);
+  Double_t nContrib = fESD->GetPrimaryVertex()->GetNContributors();
+
   Bool_t alreadyseen = kFALSE;
   LabelContainer cont(fESD->GetNumberOfTracks());
-
-  Int_t nElectrons=0;
   
+  Int_t nHFEelectrons=0;  
   AliESDtrack *track = 0x0;    
-  
-  Double_t nContrib = fESD->GetPrimaryVertex()->GetNContributors();
-  if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) return;
-  if(GetPlugin(kCorrection)){
-    fCFM->GetEventContainer()->Fill(&nContrib, AliHFEcuts::kEventStepReconstructed);
-  }
-  fCFM->SetRecEventInfo(fESD);
+  AliStack *stack = 0x0;
 
+  if(!(stack = fMCEvent->Stack()))return;
+  
+  //
+  // cut at ESD event level
+  //
+  if(!fDeCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) return;
+  if(GetPlugin(kCorrection)) fDeCFM->GetEventContainer()->Fill(&nContrib, AliHFEcuts::kEventStepReconstructed);
+  
   for(Int_t itrack = 0; itrack < fESD->GetNumberOfTracks(); itrack++){
     track = fESD->GetTrack(itrack);
     
-    //
-    //  track quality cut: 1st step: ITS and TPC cut; 2nd step: Rec prim; 3rd step: hfe cut on ITS pixel layer
-    //
-    // require within rapidity range +/-0.9
-
-    //   if((TMath::Abs(track->Eta()))>0.9) continue;
-
-	
     if(GetPlugin(kDisplacedElectrons)) {
-
-      // 1st cut
+      
+      esdContainer[0] = track->Pt();
+      esdContainer[1] = track->Eta();
+      esdContainer[2] = track->Phi();
+      esdContainer[3] = track->Charge();
+      
+      // before any cut
+      alreadyseen = cont.Find(TMath::Abs(track->GetLabel()));  
+      cont.Append(TMath::Abs(track->GetLabel()));  // check double counting
+      if(alreadyseen) continue;  // avoid double counting
+      if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(esdContainer, 1+AliHFEcuts::kStepRecNoCut);	
+      
+      // 1st track cut
       // RecKine: ITSTPC cuts : ITS & TPC refit, covmatrix: (2, 2, 0.5, 0.5, 2); min_tpccls: 50, chi2_tpccls: 3.5
-      if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC, track)){
-	signal = kFALSE;
-	continue;
-      }
+      if(!fDeCFM->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+      if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(esdContainer, 1+AliHFEcuts::kStepRecKineITSTPC);
       
-      container[0] = track->Pt();
-      container[1] = track->Eta();
-      container[2] = track->Phi();
-      container[3] = track->Charge();
-      
-      AliStack *stack = fMC->Stack();
-      if(!stack) continue;	
-      
-      AliMCParticle *mctrack = NULL;
-      if(HasMCData() ){ 
-	mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel())));
-	if(!mctrack)  continue;			
-	
- 	container[4] = mctrack->Pt();
- 	container[5] = mctrack->Eta();
- 	container[6] = mctrack->Phi();
- 	container[7] = mctrack->Charge();
-
-	//	if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE;
-	if(TMath::Abs(mctrack->Eta())>0.9) {
-	  signal = kFALSE;
-	  continue;
-	}  // cut on kinematics
-
-      }  // has MC data
-
-      
-      if(signal && GetPlugin(kCorrection)){
-	alreadyseen = cont.Find(TMath::Abs(track->GetLabel()));  // double counted track
-	cont.Append(TMath::Abs(track->GetLabel()));
-	fCFM->GetParticleContainer()->Fill(&container[4], AliHFEcuts::kStepRecKineITSTPC);
-	fCFM->GetParticleContainer()->Fill(&container[0], AliHFEcuts::kStepRecKineITSTPC + 2*AliHFEcuts::kNcutStepsESDtrack);
-	if(alreadyseen) 
-	  fCFM->GetParticleContainer()->Fill(&container[4], AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsESDtrack);
-	
-      }  // fill correction --- 1st
-    
-      // second cut
+      // 2nd track cut
       // RecPrim: cut on track quality : DCA to vertex max: 3cm and 10cm; reject kink daughters
-      if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepRecPrim, track)) { 
-	signal = kFALSE;
-	continue;
-      }
-
-      if(signal) {
-	alreadyseen = cont.Find(TMath::Abs(track->GetLabel()));
-	cont.Append(TMath::Abs(track->GetLabel()));
-	
-	fCFM->GetParticleContainer()->Fill(&container[4], AliHFEcuts::kStepRecPrim);
-	fCFM->GetParticleContainer()->Fill(&container[0], AliHFEcuts::kStepRecPrim + 2*AliHFEcuts::kNcutStepsESDtrack);
-	if(alreadyseen) {
-	  fCFM->GetParticleContainer()->Fill(&container[4], AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutStepsESDtrack);
-	}
-      }
+      if(!fDeCFM->CheckParticleCuts(AliHFEcuts::kStepRecPrim, track)) continue;
+      if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(esdContainer, 1+AliHFEcuts::kStepRecPrim);
       
-      //  third cut
+      // 3rd track cut
       // HFEcuts: ITS layers cuts: ITS pixel layer: kFirst, kSecond, kBoth, kNone or kAny
-      if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS, track)){
-	signal = kFALSE;
-	continue;
-      }
+      if(!fDeCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+      if(GetPlugin(kCorrection))fDeCFM->GetParticleContainer()->Fill(esdContainer, 1+AliHFEcuts::kStepHFEcutsITS);
 
-      if(signal) {
-	alreadyseen = cont.Find(TMath::Abs(track->GetLabel()));
-	cont.Append(TMath::Abs(track->GetLabel()));
-	
-	fCFM->GetParticleContainer()->Fill(&container[4], AliHFEcuts::kStepHFEcutsITS);
-	fCFM->GetParticleContainer()->Fill(&container[0], AliHFEcuts::kStepHFEcutsITS + 2*AliHFEcuts::kNcutStepsESDtrack);
-	if(alreadyseen) {
-	  fCFM->GetParticleContainer()->Fill(&container[4], AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsESDtrack);
-	}
-      }
+      /*
+      //  4th track cut
+      // TRD: number of tracklets in TRD
+      if(!fDeCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD, track)) continue;
+      if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(esdContainer, 1+AliHFEcuts::kStepHFEcutsTRD);
+      */
       
-      fDisplacedElectrons->FillMCOutput(fESD, track, stack);
-      
-      // track accepted, do PID --> only electron candidate will be processed
+      // 5th track cut
+      // track accepted, do PID 
+      // --> only electron candidate will be processed
       AliHFEpidObject hfetrack;
       hfetrack.fAnalysisType = AliHFEpidObject::kESDanalysis;
       hfetrack.fRecTrack = track;
-      if((fPID->IsSelected(&hfetrack)==kTRUE))
-	if(fDebugLevel>=10)
-	  AliInfo(Form("ESD info: this particle is %s identified as electron by HFEpid method \n", (fPID->IsSelected(&hfetrack)==kTRUE)?" ":" NOT "));
-      if(!fPID->IsSelected(&hfetrack))   continue;
+      //      if(HasMCData())hfetrack.fMCtrack = mctrack;
       
-         // Fill Containers
-
-      nElectrons++;
-
-      fElectronsPt->Fill(track->Pt());
-
-      if(signal) {
-	fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepPID + 2*AliHFEcuts::kNcutStepsESDtrack);
-	fCFM->GetParticleContainer()->Fill(&container[4], AliHFEcuts::kStepPID);
-	if(alreadyseen) {
-	  fCFM->GetParticleContainer()->Fill(&container[4], (AliHFEcuts::kStepPID + (AliHFEcuts::kNcutStepsESDtrack)));
-	}
-      }
+      if(!fDePID->IsSelected(&hfetrack)) continue;
       
-      fDisplacedElectrons->FillESDOutput(fESD, track);
+      else if(fDeDebugLevel>=10)
+	AliInfo("ESD info: this particle is identified as electron by HFEpid method \n");
+      if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(esdContainer, 1+AliHFEcuts::kStepPID);
       
+      // Fill Containers
+      nHFEelectrons++;
+      fElectronsEsdPt->Fill(esdContainer[0]);
+      fDisplacedElectrons->FillEsdOutput(fESD, track, stack);
+    
+    }  // displaced electron analysis on ESD with MC plugin
+  } // track loop  
+  
+  if(fDeDebugLevel>=10) printf("there are %d HFE electrons in this ESD event", nHFEelectrons);
+  
+}
+
+
+
+//____________________________________________________________
+void AliAnalysisTaskDisplacedElectrons::ProcessData(){
+
+  // this is a track loop over real data 
+  // no MC information at all 
+  // HFE pid is used
+
+  AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+
+  Double_t dataContainer[4];   // container for the output in THnSparse
+  memset(dataContainer, 0, sizeof(Double_t) * 4);
+  
+  Bool_t alreadyseen = kFALSE;
+  LabelContainer cont(fESD->GetNumberOfTracks());
+
+
+  AliESDtrack *track = 0x0;
+  Int_t nHFEelectrons= 0;
+  
+  fDeCFM->SetRecEventInfo(fESD);
+  Double_t nContrib = fESD->GetPrimaryVertex()->GetNContributors();
+  if(!fDeCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) return;
+  if(GetPlugin(kCorrection)) fDeCFM->GetEventContainer()->Fill(&nContrib, AliHFEcuts::kEventStepReconstructed);
+  
+  
+  for(Int_t itrack = 0; itrack < fESD->GetNumberOfTracks(); itrack++){
+    track = fESD->GetTrack(itrack);
+    
+    if(GetPlugin(kDisplacedElectrons)) {
+      
+      dataContainer[0] = track->Pt();
+      dataContainer[1] = track->Eta();
+      dataContainer[2] = track->Phi();
+      dataContainer[3] = track->Charge();
+      
+      alreadyseen = cont.Find(TMath::Abs(track->GetLabel()));  // double counted track
+      cont.Append(TMath::Abs(track->GetLabel()));
+      if(alreadyseen) continue;  // avoid double counting
+      if(GetPlugin(kCorrection))fDeCFM->GetParticleContainer()->Fill(&dataContainer[4], 
+								     1+AliHFEcuts::kStepRecNoCut + AliHFEcuts::kNcutStepsESDtrack);
+
+      // 1st track cut
+      // RecKine: ITSTPC cuts : ITS & TPC refit, covmatrix: (2, 2, 0.5, 0.5, 2); min_tpccls: 50, chi2_tpccls: 3.5
+      if(!fDeCFM->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+      if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(&dataContainer[4], 
+								      1+AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsESDtrack);
+      
+      // 2nd track cut
+      // RecPrim: cut on track quality : DCA to vertex max: 3cm and 10cm; reject kink daughters
+      if(!fDeCFM->CheckParticleCuts(AliHFEcuts::kStepRecPrim, track))  continue;
+      if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(&dataContainer[4], 
+								      1+AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutStepsESDtrack);
+	
+      //  3rd track cut
+      // HFEcuts: ITS layers cuts: ITS pixel layer: kFirst, kSecond, kBoth, kNone or kAny
+      if(!fDeCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+      if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(&dataContainer[4],
+								      1+AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsESDtrack);
+      
+      /*
+      //  4th track cut
+      // TRD: number of tracklets in TRD0
+      if(!fDeCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD, track)) continue;
+      if(GetPlugin(kCorrection)) if(HasMCData())fDeCFM->GetParticleContainer()->Fill(&dataContainer[4], 
+										     1+AliHFEcuts::kStepHFEcutsTRD + AliHFEcuts::kNcutStepsESDtrack);
+      */
+
+
+      // 5th track cut
+      // track accepted, do PID --> only electron candidate will be processed
+
+      AliHFEpidObject hfetrack;
+      hfetrack.fAnalysisType = AliHFEpidObject::kESDanalysis;
+      hfetrack.fRecTrack = track;
+      //      if(HasMCData())hfetrack.fMCtrack = mctrack;
+      
+      if(!fDePID->IsSelected(&hfetrack)) continue;
+      else if(fDeDebugLevel>=10)
+	AliInfo("ESD info: this particle is identified as electron by HFEpid method \n");
+      if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(dataContainer,  1+AliHFEcuts::kStepPID + AliHFEcuts::kNcutStepsESDtrack);
+
+      nHFEelectrons++;
+      fElectronsDataPt->Fill(dataContainer[0]);
+      fDisplacedElectrons->FillDataOutput(fESD, track);
     } // analyze displaced electrons plugin switched on
   } // track loop  
 
-  if(fDebugLevel>=5)
-    AliInfo(Form("ESD info: number of electrons found in this event: %d\n", nElectrons));
-
-
-  fNEvents->Fill(1);
-  
-  PostData(1, fOutput);
-  PostData(2, fCorrection);
-
+  if(fDeDebugLevel>=10) printf("there are %d HFE electrons in this DATA event", nHFEelectrons);
 }
+
 
 //____________________________________________________________
 void AliAnalysisTaskDisplacedElectrons::Terminate(Option_t *){
@@ -469,31 +649,20 @@ void AliAnalysisTaskDisplacedElectrons::Terminate(Option_t *){
   // Terminate not implemented at the moment
   //  
   
-  if(GetPlugin(kDisplacedElectrons))
-    {
-      
-      fOutput = dynamic_cast<TList *>(GetOutputData(1));
-      fCorrection= dynamic_cast<TList *>(GetOutputData(2));
+  fHistDisplacedElectrons = dynamic_cast<TList *>(GetOutputData(1));
+  fDeCorrection = dynamic_cast<TList *>(GetOutputData(2));
+  fDeQA = dynamic_cast<TList *>(GetOutputData(3));
+  if(!fDeCorrection) AliError("correction list not available\n");
+  if(!fHistDisplacedElectrons) AliError("de list not available\n");
+  if(!fDeQA) AliError("qa list is not available\n");
+  
+  fHistDisplacedElectrons->Print();
+  fDeCorrection->Print();
+  fDeQA->Print();
 
-      if(!fOutput || !fCorrection){
-	if(!fCorrection) AliError("correction list not available\n");
-	if(!fOutput) AliError("output list not available\n");
-	
-	return;
-      }
-
-      fOutput->Print();
-      fCorrection->Print();
-      
-      AliInfo("analysis done!\n");
-      
-    }
+  AliInfo("analysis done!\n");
+  
 }
-
-
-
-
-
 
 //____________________________________________________________
 void AliAnalysisTaskDisplacedElectrons::PrintStatus() const {
@@ -501,11 +670,14 @@ void AliAnalysisTaskDisplacedElectrons::PrintStatus() const {
   //
   // Print Analysis status
   //
-  printf("\n\tAnalysis Settings\n\t========================================\n");
-  printf("\tdisplaced electrons' analysis is %s\n", GetPlugin(kDisplacedElectrons)?"ON":"OFF");
-  printf("\tcorrection container  is %s\n", GetPlugin(kCorrection)?"ON":"OFF");
-  printf("\tpost processing  is %s\n", GetPlugin(kPostProcess)?"ON":"OFF");
-  printf("\tcuts: %s\n", (fCuts != NULL) ? "YES" : "NO");
+  printf("\n");
+  printf("\t Analysis Settings\n\t========================================\n");
+  printf("\t running over %s\n", HasMCData()?"MC data":"pp collision data");
+  printf("\t displaced electrons' analysis is %s\n", GetPlugin(kDisplacedElectrons)?"ON":"OFF");
+  printf("\t correction container is %s\n", GetPlugin(kCorrection)?"ON":"OFF");
+  printf("\t hfe pid qa is %s\n", GetPlugin(kDePidQA)?"ON":"OFF");
+  printf("\t post processing  is %s\n", GetPlugin(kPostProcess)?"ON":"OFF");
+  printf("\t cuts: %s\n", (fDeCuts != NULL) ? "YES" : "NO");
   printf("\t ");
   printf("\n");
 }
@@ -521,92 +693,103 @@ void AliAnalysisTaskDisplacedElectrons::SwitchOnPlugin(Int_t plug){
   switch(plug)
     {
     case kDisplacedElectrons: 
-      SETBIT(fPlugins, plug); 
-      break;
-    case kPostProcess: 
-      SETBIT(fPlugins, plug); 
+      SETBIT(fDePlugins, plug); 
       break;
     case kCorrection:
-      SETBIT(fPlugins, plug); 
+      SETBIT(fDePlugins, plug); 
+      break;
+    case kDePidQA:
+      SETBIT(fDePlugins, plug); 
+      break;
+    case kPostProcess: 
+      SETBIT(fDePlugins, plug); 
       break;
     default: 
       AliError("Unknown Plugin");
     };
 }
 
-
 //____________________________________________________________
 void AliAnalysisTaskDisplacedElectrons::MakeParticleContainer(){
   //
-  // Create the particle container (borrowed from AliAnalysisTaskHFE)
+  // Create the particle container for the correction framework manager and 
+  // link it
   //
-  const Int_t kNvar   = 4; //number of variables on the grid:pt,eta, phi
-  const Double_t kPtmin = 0.1, kPtmax = 20.;   // used for fixed pt bins
-  //  const Float_t ptBins[14] = {0.0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,7.0,9.0,12.0,16.0,20.0};
-  const Double_t kEtamin = -0.9, kEtamax = 0.9;
-  const Double_t kPhimin = 0., kPhimax = 2. * TMath::Pi();
+  const Int_t kNvar   = 4;
+  //number of variables on the grid:pt,eta, phi, charge
+  const Double_t kPtbound[2] = {0.1, 10.};
+  const Double_t kEtabound[2] = {-0.8, 0.8};
+  const Double_t kPhibound[2] = {0., 2. * TMath::Pi()};
 
   //arrays for the number of bins in each dimension
   Int_t iBin[kNvar];
-  iBin[0] = 40; //bins in pt   // used for fixed pt bins
-  //  iBin[0] = 13; //bins in pt
-  iBin[1] =  8; //bins in eta 
+  iBin[0] = 40; // bins in pt
+  iBin[1] =  8; // bins in eta 
   iBin[2] = 18; // bins in phi
   iBin[3] =  2; // bins in charge
-  
+
   //arrays for lower bounds :
   Double_t* binEdges[kNvar];
-  for(Int_t ivar = 0; ivar < kNvar; ivar++)
-    binEdges[ivar] = new Double_t[iBin[ivar] + 1];
+  binEdges[0] = AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
+  binEdges[1] = AliHFEtools::MakeLinearBinning(iBin[1], kEtabound[0], kEtabound[1]);
+  binEdges[2] = AliHFEtools::MakeLinearBinning(iBin[2], kPhibound[0], kPhibound[1]);
+  binEdges[3] = AliHFEtools::MakeLinearBinning(iBin[3], -1.1, 1.1); // Numeric precision
 
-  //values for bin lower bounds
-  //  for(Int_t i=0; i<=iBin[0]; i++) binEdges[0][i]=ptBins[i];  // using variable bins
-  for(Int_t i=0; i<=iBin[0]; i++) 
-     binEdges[0][i]=(Double_t)TMath::Power(10,TMath::Log10(kPtmin) + (TMath::Log10(kPtmax)-TMath::Log10(kPtmin))/iBin[0]*(Double_t)i);   // fixed pt bin
-  for(Int_t i=0; i<=iBin[1]; i++) binEdges[1][i]=(Double_t)kEtamin  + (kEtamax-kEtamin)/iBin[1]*(Double_t)i;
-  for(Int_t i=0; i<=iBin[2]; i++) binEdges[2][i]=(Double_t)kPhimin  + (kPhimax-kPhimin)/iBin[2]*(Double_t)i;
-  for(Int_t i=0; i<=iBin[3]; i++) binEdges[3][i]=1.1*i-1.1; // Numeric precision
+  //------------------------------------------------
+  //     one "container" for MC+ESD+Data          
+  //----------pure MC track-------------------------
+  // 0: MC generated
+  // 1: MC pion total  ---- be careful!!!!
+  // 2: MC electrons total
+  // 3: MC electrons in acceptance 
+  //-------ESD track with MC info-------------------
+  // 4: ESD track with MC: no cut
+  // 5: ESD track with MC: cut on kine its tpc
+  // 6: ESD track with MC: rec prim
+  // 7: ESD track with MC: hfe cuts its
+  // 8: ESD track with MC: hfe cuts trd
+  // 9: ESD track with MC: hfe pid 
+  //-----------data track---------------------------
+  // 10: DATA track wo MC: no cut
+  // 11: DATA track wo MC: cut on kine its tpc
+  // 12: DATA track wo MC: rec prim
+  // 13: DATA track wo MC: hfe cuts its
+  // 14: DATA track wo MC: hfe cuts trd
+  // 15: DATA track wo MC: hfe pid 
+  //------------------------------------------------
+
+  AliCFContainer* container = new AliCFContainer("deTrackContainer", "Container for tracks", 
+						 (1 + AliHFEcuts::kNcutStepsTrack + AliHFEcuts::kNcutStepsESDtrack), kNvar, iBin);
   
-  //one "container" for MC
-  AliCFContainer* container = new AliCFContainer("container","container for tracks", 
-						 (AliHFEcuts::kNcutStepsTrack + 1 + 2*(AliHFEcuts::kNcutStepsESDtrack + 1)), 
-						 kNvar, iBin);
-
   //setting the bin limits
-  for(Int_t ivar = 0; ivar < kNvar; ivar++)
+  for(Int_t ivar = 0; ivar < kNvar; ivar++){
     container -> SetBinLimits(ivar, binEdges[ivar]);
-  fCFM->SetParticleContainer(container);
-  
-  //create correlation matrix for unfolding
-  Int_t thnDim[2*kNvar];
-  for (int k=0; k<kNvar; k++) {
-    //first half  : reconstructed 
-    //second half : MC
-    thnDim[k]      = iBin[k];
-    thnDim[k+kNvar] = iBin[k];
   }
-
-  // add more containers
-
-
+  fDeCFM->SetParticleContainer(container);
 }
+
 
 //____________________________________________________________
 void AliAnalysisTaskDisplacedElectrons::MakeEventContainer(){
   //
   // Create the event container for the correction framework and link it
   //
+  
+  // event container
+  // 0: MC event
+  // 1: ESD event
+
   const Int_t kNvar = 1;  // number of variables on the grid: number of tracks per event
   const Double_t kNTrackBound[2] = {-0.5, 200.5};
   const Int_t kNBins = 201;
 
-  AliCFContainer *evCont = new AliCFContainer("eventContainer", "Container for events", AliHFEcuts::kNcutStepsEvent, kNvar, &kNBins);
+  AliCFContainer *evCont = new AliCFContainer("deEventContainer", "Container for DE events", AliHFEcuts::kNcutStepsEvent, kNvar, &kNBins);
 
   Double_t trackBins[kNBins];
   for(Int_t ibin = 0; ibin < kNBins; ibin++) trackBins[ibin] = kNTrackBound[0] + static_cast<Double_t>(ibin);
   evCont->SetBinLimits(0,trackBins);
 
-  fCFM->SetEventContainer(evCont);
+  fDeCFM->SetEventContainer(evCont);
 
 }
 
@@ -617,10 +800,10 @@ void AliAnalysisTaskDisplacedElectrons::AddPIDdetector(TString detector){
   //
   // Adding PID detector to the task
   //
-  if(!fPIDdetectors.Length()) 
-    fPIDdetectors = detector;
+  if(!fDePIDdetectors.Length()) 
+    fDePIDdetectors = detector;
   else
-    fPIDdetectors += ":" + detector;
+    fDePIDdetectors += ":" + detector;
 }
 
 
@@ -663,7 +846,7 @@ Bool_t AliAnalysisTaskDisplacedElectrons::LabelContainer::Find(Int_t label) cons
 }
 
 //____________________________________________________________
-Int_t AliAnalysisTaskDisplacedElectrons::LabelContainer::Next()  { 
+Int_t AliAnalysisTaskDisplacedElectrons::LabelContainer::Next() { 
   //
   // Mimic iterator
   //

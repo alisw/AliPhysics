@@ -26,6 +26,10 @@
 
 class TH1;
 class TList;
+class TFile;
+
+class AliLog;
+class AliMCEvent;
 
 class AliHFEpidQA;
 
@@ -45,6 +49,8 @@ class AliAnalysisTaskHFEpidQA : public AliAnalysisTaskSE{
     void SetV0pidQA(Bool_t v0pidQA = kTRUE) { SetBit(kV0pidQA, v0pidQA); };
     void SetRecalculateTRDpid(Bool_t recal = kTRUE) { SetBit(kRecalculateTRDpid, recal); };
 
+    void SetNNref(TFile *f) { fNNref = f; };
+
   private:
     enum{
       kV0pidQA = BIT(22),
@@ -55,6 +61,7 @@ class AliAnalysisTaskHFEpidQA : public AliAnalysisTaskSE{
     AliHFEpidQA *fPIDqa;    //! The heart of the analysis  
     TList *fOutput;         //! Container for output histos
     TH1 *fEvents;           //! Number of Events
+    TFile  *fNNref;         //  reference file for NN
 
     ClassDef(AliAnalysisTaskHFEpidQA, 1)
 };

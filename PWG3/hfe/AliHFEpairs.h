@@ -41,7 +41,9 @@ class AliHFEpairs : public TObject {
                 Double_t GetOpenangle() const {return fOpenangle;}
                 Double_t GetCosOpenangle() const {return fCosOpenangle;}
                 Double_t GetSignedLxy() const {return fSignedLxy;}
+                Double_t GetSignedLxy2() const {return fSignedLxy2;}
                 Double_t GetKFIP() const {return fKFIP;}
+                Double_t GetKFIP2() const {return fKFIP2;}
 
                 void SetTrkLabel(Int_t label) {fTrkLabel = label;}
                 void SetInvmass(Double_t invmass) {fInvmass = invmass;}
@@ -49,7 +51,9 @@ class AliHFEpairs : public TObject {
                 void SetOpenangle(Double_t openangle) {fOpenangle = openangle;}
                 void SetCosOpenangle(Double_t cosopenangle) {fCosOpenangle = cosopenangle;}
                 void SetSignedLxy(Double_t signedlxy) {fSignedLxy = signedlxy;}
+                void SetSignedLxy2(Double_t signedlxy2) {fSignedLxy2 = signedlxy2;}
                 void SetKFIP(Double_t kfip) {fKFIP = kfip;}
+                void SetKFIP2(Double_t kfip2) {fKFIP2 = kfip2;}
                 void SetPairCode(Int_t paircode) {fPairCode = paircode;}
 
         protected:
@@ -61,7 +65,9 @@ class AliHFEpairs : public TObject {
                 Double_t fOpenangle;    // pair opening angle 
                 Double_t fCosOpenangle; // pair cos(opening angle)
                 Double_t fSignedLxy;    // pair signed Lxy
+                Double_t fSignedLxy2;   // recalculated pair signed Lxy
                 Double_t fKFIP;         // impact parameter of the pair
+                Double_t fKFIP2;        // recalculated impact parameter of the pair
 
         private:
 

@@ -19,6 +19,7 @@
 //
 // Authors:
 //   Hongyan Yang <hongyan@physi.uni-heidelberg.de>
+//   Carlo Bombonati <Carlo.Bombonati@cern.ch>
 //
 
 #include "TMath.h"
@@ -27,14 +28,21 @@
 
 #include <TParticle.h>
 #include <TDatabasePDG.h>
-
 #include "THnSparse.h"
+
 #include "AliMCEvent.h"
-#include "AliESDEvent.h"
+#include "AliMCVertex.h"
 #include "AliMCParticle.h"
+#include "AliStack.h" 
+
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
-#include "AliStack.h" 
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
+
+#include "AliVertexerTracks.h"
+
 
 #include "AliHFEdisplacedElectrons.h"
 
@@ -79,11 +87,13 @@ const Char_t *AliHFEdisplacedElectrons::fgkKineVarTitle[3] ={
 
 //__________________________________________________________
 AliHFEdisplacedElectrons::AliHFEdisplacedElectrons():
-  fDebugLevel(0)
-  , fTHnSparseDcaMcPionInfo(NULL)
+  fDeDebugLevel(0)
+  , fNclustersITS(0)
+  , fMinNprimVtxContributor(1)
   , fTHnSparseDcaMcEleInfo(NULL)
+  , fTHnSparseDcaEsdEleInfo(NULL)
   , fTHnSparseDcaDataEleInfo(NULL)
-  , fOutputList(0x0)
+  , fDeOutputList(0x0)
 {
   //
   // default constructor
@@ -94,11 +104,13 @@ AliHFEdisplacedElectrons::AliHFEdisplacedElectrons():
 //__________________________________________________________
 AliHFEdisplacedElectrons::AliHFEdisplacedElectrons(const AliHFEdisplacedElectrons &ref):
   TObject(ref)
-  , fDebugLevel(ref.fDebugLevel)
-  , fTHnSparseDcaMcPionInfo(ref.fTHnSparseDcaMcPionInfo)
+  , fDeDebugLevel(ref.fDeDebugLevel)
+  , fNclustersITS(ref.fNclustersITS)
+  , fMinNprimVtxContributor(ref.fMinNprimVtxContributor)
   , fTHnSparseDcaMcEleInfo(ref.fTHnSparseDcaMcEleInfo)
+  , fTHnSparseDcaEsdEleInfo(ref.fTHnSparseDcaEsdEleInfo)
   , fTHnSparseDcaDataEleInfo(ref.fTHnSparseDcaDataEleInfo)
-  , fOutputList(ref.fOutputList)
+  , fDeOutputList(ref.fDeOutputList)
   
 {
   //
@@ -117,12 +129,13 @@ AliHFEdisplacedElectrons&AliHFEdisplacedElectrons::operator=(const AliHFEdisplac
   if(this == &ref) return *this;
   AliHFEdisplacedElectrons::operator=(ref);
 
-  fDebugLevel = ref.fDebugLevel;
-
-  fTHnSparseDcaMcPionInfo = ref.fTHnSparseDcaMcPionInfo;
+  fDeDebugLevel = ref.fDeDebugLevel;
+  fNclustersITS = ref.fNclustersITS;
+  fMinNprimVtxContributor = ref.fMinNprimVtxContributor;
   fTHnSparseDcaMcEleInfo = ref.fTHnSparseDcaMcEleInfo;
+  fTHnSparseDcaEsdEleInfo = ref.fTHnSparseDcaEsdEleInfo;
   fTHnSparseDcaDataEleInfo = ref.fTHnSparseDcaDataEleInfo;
-  fOutputList = ref.fOutputList;
+  fDeOutputList = ref.fDeOutputList;
 
   return *this;
 }
@@ -134,16 +147,16 @@ AliHFEdisplacedElectrons::~AliHFEdisplacedElectrons()
   // default constructor
   //
 
-  if(fTHnSparseDcaMcPionInfo) 
-    delete fTHnSparseDcaMcPionInfo;
   if(fTHnSparseDcaMcEleInfo) 
     delete fTHnSparseDcaMcEleInfo;
+  if(fTHnSparseDcaEsdEleInfo) 
+    delete fTHnSparseDcaEsdEleInfo;
   if(fTHnSparseDcaDataEleInfo) 
     delete fTHnSparseDcaDataEleInfo;
     
-  if(fOutputList){
-    fOutputList->Clear();
-    delete fOutputList;
+  if(fDeOutputList){
+    fDeOutputList->Clear();
+    delete fDeOutputList;
     
   }
 
@@ -166,13 +179,12 @@ void AliHFEdisplacedElectrons::InitAnalysis(){
 void AliHFEdisplacedElectrons::CreateOutputs(TList* const displacedList){
 
   //
-  //  create output fOutputList
+  //  create output fDeOutputList
   //
 
   // THnSparseF
-  // 8 interested electron sources: others, photon conv, direct photon,  pi0, eta, b, b->c, c
-  // 21 possible DCA cuts XY
-  // 21 possible DCA cuts Z
+  // 8+? interested electron sources: others, photon conv, direct photon,  pi0, eta, b, b->c, c + pion or missid, and missid pion
+  // 41 possible DCA cuts XY: 
   // 13 pT bins
   // 10 rapidity bins
   // 10 azimuthal angle phi bins
@@ -180,29 +192,36 @@ void AliHFEdisplacedElectrons::CreateOutputs(TList* const displacedList){
 
   if(!displacedList) return;
 
-  fOutputList = displacedList;
-  fOutputList -> SetName("information");
+  fDeOutputList = displacedList;
+  fDeOutputList -> SetName("displacedElectrons");
 
- 
   // electron source 
-  Int_t nBinsEleSource = 8;
+  Int_t nBinsEleSource = 10;
   Double_t minEleSource = -1.5; 
-  Double_t maxEleSource = 6.5;  
+  Double_t maxEleSource = 9.5;  
   Double_t *binLimEleSource = new Double_t[nBinsEleSource+1];
   for(Int_t i=0; i<=nBinsEleSource; i++)
     binLimEleSource[i] = minEleSource + i*(maxEleSource-minEleSource)/nBinsEleSource;
 
-  // dca bins: the same as XY and Z
-  // these should be variable bins as well
-  Int_t nBinsDca = kNDcaMin-1;  // 12 bins
-  Double_t minDca = -0.5; 
-  Double_t maxDca = 20.5; 
-  Double_t dcaBinWidth = (maxDca-minDca)/nBinsDca;
-  Double_t *binLimDca = new Double_t[nBinsDca+1];
-  for(Int_t i=0; i<=nBinsDca; i++)
-    binLimDca[i] = minDca + i*dcaBinWidth;
-  
+  // dca bins:  XY 
+  Int_t nBinsDcaXY = kNDcaMin-1;  // 41 bins
+  Double_t minDcaXY = -20.5; 
+  Double_t maxDcaXY = 20.5; 
+  Double_t dcaXYBinWidth = (maxDcaXY-minDcaXY)/nBinsDcaXY;
+  Double_t *binLimDcaXY = new Double_t[nBinsDcaXY+1];
+  for(Int_t i=0; i<=nBinsDcaXY; i++)
+    binLimDcaXY[i] = minDcaXY + i*dcaXYBinWidth;
 
+
+  // dca bins:  Z
+  Int_t nBinsDcaZ = kNDcaMin/2;  // 21 bins
+  Double_t minDcaZ = -10.5; 
+  Double_t maxDcaZ = 10.5; 
+  Double_t dcaZBinWidth = (maxDcaZ-minDcaZ)/nBinsDcaZ;
+  Double_t *binLimDcaZ = new Double_t[nBinsDcaZ+1];
+  for(Int_t i=0; i<=nBinsDcaZ; i++)
+    binLimDcaZ[i] = minDcaZ + i*dcaZBinWidth;
+  
  // pt bins
   Int_t nBinsPt = kNPtIntv-1;
   Double_t *binLimPt = new Double_t[nBinsPt+1];
@@ -226,140 +245,161 @@ void AliHFEdisplacedElectrons::CreateOutputs(TList* const displacedList){
     binLimPhi[i] = minPhi + i*(maxPhi-minPhi)/nBinsPhi;
 
 
+  fTHnSparseDcaMcEleInfo = 0x0;
+  fTHnSparseDcaEsdEleInfo = 0x0;
+  fTHnSparseDcaDataEleInfo = 0x0;
 
-  //for MC pionss
-  const Int_t nVarPion = 5;
-  Int_t iBinPion[nVarPion] = {nBinsDca, nBinsDca, nBinsPt, nBinsRap, nBinsPhi};
-   
-  //  THnSparseF *fTHnSparseDcaMcPionInfo = NULL; // empty for the moment 
-  if(HasMCData()){
-    fTHnSparseDcaMcPionInfo = new THnSparseF("dcaMcPionInfo", 
-					     "MC info:;dcaXY [50 #mum];dcaZ [50 #mum];pT [GeV/c];y [rapidity];#phi [rad];", 	
-					     nVarPion, iBinPion);
-    fTHnSparseDcaMcPionInfo->SetBinEdges(0, binLimDca);  // dca xy cut
-    fTHnSparseDcaMcPionInfo->SetBinEdges(1, binLimDca);  // dca z cut
-    fTHnSparseDcaMcPionInfo->SetBinEdges(2, binLimPt);   // pt
-    fTHnSparseDcaMcPionInfo->SetBinEdges(3, binLimRap);  // rapidity
-    fTHnSparseDcaMcPionInfo->SetBinEdges(4, binLimPhi);  // phi
-    fTHnSparseDcaMcPionInfo->Sumw2();
-
-    fOutputList -> AddAt(fTHnSparseDcaMcPionInfo, kMCpion);
-  }
-
-  // for MC electrons
-  const Int_t nVar = 6;
-  Int_t iBin[nVar] = {nBinsEleSource,nBinsDca, nBinsDca, nBinsPt, nBinsRap, nBinsPhi};
+  // for MC only: MC electron ID
+  const Int_t nVarMc = 6;
+  Int_t iBinMc[nVarMc] = {nBinsEleSource, nBinsDcaXY, nBinsDcaZ, nBinsPt, nBinsRap, nBinsPhi};
+     
+  fTHnSparseDcaMcEleInfo = new THnSparseF("dcaMcElectronInfo", 
+					   "MC electrons;electron source ID;mc dcaXY [50 #mum];mc dcaZ [100 #mum];mc pT [GeV/c];mc y [rapidity];mc #phi [rad];", 	
+					   nVarMc, iBinMc);
+  fTHnSparseDcaMcEleInfo->SetBinEdges(0, binLimEleSource); // electron source
+  fTHnSparseDcaMcEleInfo->SetBinEdges(1, binLimDcaXY);  // dca xy cut
+  fTHnSparseDcaMcEleInfo->SetBinEdges(2, binLimDcaZ);  // dca z cut
+  fTHnSparseDcaMcEleInfo->SetBinEdges(3, binLimPt);   // pt
+  fTHnSparseDcaMcEleInfo->SetBinEdges(4, binLimRap);  // rapidity
+  fTHnSparseDcaMcEleInfo->SetBinEdges(5, binLimPhi);  // phi
+  fTHnSparseDcaMcEleInfo->Sumw2();
   
-  //  THnSparseF *fTHnSparseDcaMcEleInfo = NULL; // empty for the moment 
-  if(HasMCData()){
-    fTHnSparseDcaMcEleInfo = new THnSparseF("dcaMcElectronInfo", 
-					 "MC info:;ID [electron source id];dcaXY [50 #mum];dcaZ [50 #mum];pT [GeV/c];y [rapidity];#phi [rad];",		
-					 nVar, iBin);
-    fTHnSparseDcaMcEleInfo->SetBinEdges(0, binLimEleSource); // electron source
-    fTHnSparseDcaMcEleInfo->SetBinEdges(1, binLimDca);  // dca xy cut
-    fTHnSparseDcaMcEleInfo->SetBinEdges(2, binLimDca);  // dca z cut
-    fTHnSparseDcaMcEleInfo->SetBinEdges(3, binLimPt);   // pt
-    fTHnSparseDcaMcEleInfo->SetBinEdges(4, binLimRap);  // rapidity
-    fTHnSparseDcaMcEleInfo->SetBinEdges(5, binLimPhi);  // phi
-    fTHnSparseDcaMcEleInfo->Sumw2();
-    fOutputList -> AddAt(fTHnSparseDcaMcEleInfo, kMCelectron);
-  }
-
+  // for ESD with MC: HFE pid and MC pid
+  const Int_t nVarEsd = 7;
+  Int_t iBin[nVarEsd] = {nBinsEleSource,nBinsDcaXY, nBinsDcaZ, nBinsDcaXY, nBinsPt, nBinsRap, nBinsPhi};
   
-  // for ESD: HFE pid
+  fTHnSparseDcaEsdEleInfo 
+    = new THnSparseF("dcaEsdElectronInfo", 
+		     "ESD electrons;electron source ID;esd dcaXY [50 #mum];esd dcaZ [100 #mum];esd dcaXY KF [50 #mum];pT [GeV/c];y [rapidity];#phi [rad];",		
+		     nVarEsd, iBin);
 
-  //  THnSparseF *fTHnSparseDcaDataEleInfo = NULL;  // empty for the moment
-  const Int_t nVarData = 5;
-  Int_t iBinData[nVarData] = {nBinsDca, nBinsDca, nBinsPt, nBinsRap, nBinsPhi};  
+  fTHnSparseDcaEsdEleInfo->SetBinEdges(0, binLimEleSource); // electron source
+  fTHnSparseDcaEsdEleInfo->SetBinEdges(1, binLimDcaXY);  // dca xy without current track
+  fTHnSparseDcaEsdEleInfo->SetBinEdges(2, binLimDcaZ);  // dca z without current track
+  fTHnSparseDcaEsdEleInfo->SetBinEdges(3, binLimDcaXY);  // dca xy kf without current track
+  fTHnSparseDcaEsdEleInfo->SetBinEdges(4, binLimPt);   // pt esd
+  fTHnSparseDcaEsdEleInfo->SetBinEdges(5, binLimRap);  // rapidity esd
+  fTHnSparseDcaEsdEleInfo->SetBinEdges(6, binLimPhi);  // phi esd
+  fTHnSparseDcaEsdEleInfo->Sumw2();
   
-  fTHnSparseDcaDataEleInfo = new THnSparseF("dcaDataElectronInfo", 
-					 "Data info:;dcaXY [50 #mum];dcaZ [50 #mum];pT [GeV/c];y [rapidity];#phi [rad];",		
-					 nVarData, iBinData);    
-  fTHnSparseDcaDataEleInfo->SetBinEdges(0, binLimDca);  // dca xy cut
-  fTHnSparseDcaDataEleInfo->SetBinEdges(1, binLimDca);  // dca z cut
-  fTHnSparseDcaDataEleInfo->SetBinEdges(2, binLimPt);   // pt
-  fTHnSparseDcaDataEleInfo->SetBinEdges(3, binLimRap);  // rapidity
-  fTHnSparseDcaDataEleInfo->SetBinEdges(4, binLimPhi);  // phi
+  // for ESD data: HFE pid
+  const Int_t nVarData = 6;
+  Int_t iBinData[nVarData] = {nBinsDcaXY, nBinsDcaZ, nBinsDcaXY, nBinsPt, nBinsRap, nBinsPhi};  
+  
+  fTHnSparseDcaDataEleInfo 
+    = new THnSparseF("dcaDataElectronInfo", 
+		     "Data electrons;dcaXY [50 #mum];dcaZ [100 #mum];dcaXYkf [50 #mum];pT [GeV/c];y [rapidity];#phi [rad];",
+		     nVarData, iBinData);    
+  fTHnSparseDcaDataEleInfo->SetBinEdges(0, binLimDcaXY);  // dca xy cut w/o
+  fTHnSparseDcaDataEleInfo->SetBinEdges(1, binLimDcaZ);  // dca z cut w/o
+  fTHnSparseDcaDataEleInfo->SetBinEdges(2, binLimDcaXY);  // dca xy kf cut 
+  fTHnSparseDcaDataEleInfo->SetBinEdges(3, binLimPt);   // pt
+  fTHnSparseDcaDataEleInfo->SetBinEdges(4, binLimRap);  // rapidity
+  fTHnSparseDcaDataEleInfo->SetBinEdges(5, binLimPhi);  // phi
   fTHnSparseDcaDataEleInfo->Sumw2();
-  
-  fOutputList -> AddAt(fTHnSparseDcaDataEleInfo, kData);
+
+  fDeOutputList -> AddAt(fTHnSparseDcaMcEleInfo, kMcElectron);
+  fDeOutputList -> AddAt(fTHnSparseDcaEsdEleInfo, kEsdElectron);
+  fDeOutputList -> AddAt(fTHnSparseDcaDataEleInfo, kDataElectron);
   
   AliInfo("THnSparse histograms are created\n");
-  fOutputList->Print();
+  fDeOutputList->Print();
 
 }
 
 
 //__________________________________________________________
-void AliHFEdisplacedElectrons::FillMCOutput(AliESDEvent * const fESDEvent, AliESDtrack* const esdTrack, AliStack * const stack)
+void AliHFEdisplacedElectrons::FillMcOutput(AliESDEvent *const fESD, AliMCEvent* const fMC, AliMCParticle* const mctrack)
 {
 
   // fill output
-  if(!esdTrack) return;
-  AliESDtrack *track = esdTrack;
-  Double_t pt   = track->Pt();
-  Double_t eta = track->Eta();
-  Double_t phi = track->Phi();
+  //0. after mc event cut
+  //1. after checking stack, mcpart etc are valid
+  //2. after PID
+  //3. after event and track selection 
+
+  AliStack *stack = fMC->Stack();
+  TParticle *part = mctrack->Particle();
+
+  // obtain impact parameters in xy and z
+  AliMCVertex *mcPrimVtx = (AliMCVertex *)fMC->GetPrimaryVertex();      
+  Double_t mcPrimV[3];
+  mcPrimV[0] = mcPrimVtx->GetX();
+  mcPrimV[1] = mcPrimVtx->GetY();
+  mcPrimV[2] = mcPrimVtx->GetZ();
+
+ Double_t mcVtxXY = TMath::Abs(mcPrimV[0]*mcPrimV[0] + mcPrimV[1]*mcPrimV[1]);
+
+  Float_t vx = part->Vx();  // in cm
+  Float_t vy = part->Vy();  // in cm
+  Float_t vz = part->Vz();   // in cm
   
-  Int_t label = track->GetLabel();
-  if(label<0 || label>stack->GetNtrack()) return;  
-
-  TParticle *particle = stack->Particle(label);
-  if(!particle) return;
- 
-
-  // obtain impact parameters in xy and y
-  const AliESDVertex *primVtx = fESDEvent->GetPrimaryVertex();      
-
-  Float_t magneticField = 5;  // initialized as 5kG
-  magneticField = fESDEvent->GetMagneticField();  // in kG 
+  Float_t vxy = TMath::Sqrt(vx*vx+vy*vy);
   
+  Float_t mcpx = part->Px();
+  Float_t mcpy = part->Py();
+  Float_t mcpt = TMath::Sqrt(mcpx*mcpx+mcpy*mcpy);
+  Float_t mceta = part->Eta();
+  Float_t mcphi = part->Phi();
 
-  Double_t dz[2];   // error of dca in cm
-  Double_t covardz[3];
-  track->PropagateToDCA(primVtx,magneticField, 1000., dz, covardz); 
-
-
-  Double_t dcaXY = TMath::Abs(dz[0])*1.0e4;  // conv dca in cm to dca in micron 
-  Double_t dcaZ = TMath::Abs(dz[1])*1.0e4;
-
-  // do PID with MC
-
-  if(HasMCData() && TMath::Abs(GetMCpid(stack, label))==kPDGelectron){
+  Int_t pdg = part->GetPdgCode();
   
-    Int_t eleLabel = label; 
+  Int_t charge = 1;
+  if(pdg==kPDGelectron || pdg==-kPDGpion) charge = -1;  
+  
+  // calculate mcDca ------------------------------------------------------------------ 
+  const Float_t conv[2] = {1.783/1.6, 2.99792458};
+  Float_t magneticField = 0;  // initialized as 5kG
+  magneticField = fESD->GetMagneticField();  // in kG
+  Float_t radiusMc = mcpt/(TMath::Abs(magneticField)/10.)*conv[0]*conv[1]; // pt in GeV/c, magnetic field in Tesla, radius in meter
+  
+  Float_t radius;
+  radius = TMath::Abs(radiusMc);
+  Float_t nx = mcpx/mcpt;
+  Float_t ny = mcpy/mcpt;
+  Double_t dxy = vxy - mcVtxXY;   // in cm
+  Double_t dvx = vx - mcPrimV[0]; // in cm
+  Double_t dvy = vy - mcPrimV[1]; // in cm
+  Float_t mcDcaXYm = (radius - TMath::Sqrt(dxy*dxy/100./100. + radius*radius + 2*radius*charge*(dvx*ny-dvy*nx)/100.)) ;  // in meters
+  Double_t mcDca[2] = {mcDcaXYm*100, vz};  // in cm
+  Double_t mcDcaXY = mcDca[0]*1.0e4;  // conv dca in cm to dca in micron 
+  Double_t mcDcaZ = mcDca[1]*1.0e4;
     
-    const Int_t nvarMC=6;
-    Double_t var[nvarMC];
-    var[0] = -1;
-    Int_t sourcePdg = ElectronFromSource(stack, eleLabel);     
+  const Int_t nvarMC=6;
+  Double_t var[nvarMC];
+  var[0] = -1;
+  
+  if(TMath::Abs(pdg)==kPDGelectron) {
 
-    if(sourcePdg==kPDGgamma){ // check direct photon or not  // fixme      
+    Int_t eleLabel = mctrack->GetLabel();
+    Int_t sourcePdg = ElectronFromSource(stack, eleLabel);     
+    
+    if(sourcePdg==kPDGgamma){ // check direct photon or not 
       if(ElePhotonDirect(stack, eleLabel)!=-1)	
 	var[0] = kEleDirectPhotonConv;    
       else 	
 	var[0] = kElePhotonConv;     
-      if(fDebugLevel>=10) 
+      if(fDeDebugLevel>=10) 
 	printf("photonconv=====this electron %d is from %d, source id=%.1f\n", eleLabel, sourcePdg, var[0]);   
     }   // photon or direct photon -> e
     
     if(sourcePdg==kPDGpi0){      
       var[0] = kElePi0;   
-      if(fDebugLevel>=10) printf("pi0======this electron %d is from %d, source id=%.1f\n", eleLabel, sourcePdg, var[0]);    
+      if(fDeDebugLevel>=10) printf("pi0======this electron %d is from %d, source id=%.1f\n", eleLabel, sourcePdg, var[0]);    
     } 
-
+    
     if(sourcePdg==kPDGeta){ 
       var[0] = kEleEta;     
-      if(fDebugLevel>=10) 
+      if(fDeDebugLevel>=10) 
 	printf("eta=====this electron %d is from %d, source id=%.1f\n", eleLabel, sourcePdg, var[0]);    
     }   // from eta -> e
-
+    
     if(TMath::Abs(sourcePdg%10000)/100==kPDGbeauty ||    // for special intermediate meson states: like 100553       
        TMath::Abs(sourcePdg)/1000==kPDGbeauty ||      
        TMath::Abs(sourcePdg)/100==kPDGbeauty ||     
        TMath::Abs(sourcePdg)==kPDGbeauty){     
       var[0]=kEleB;       
-      if(fDebugLevel>=10) 
+      if(fDeDebugLevel>=10) 
 	printf("beauty======electron %d is from %d with id %.1f\n", eleLabel, ElectronFromSource(stack, eleLabel), var[0]);   
     } // direct beauty  -> e      
     if(TMath::Abs(sourcePdg%10000)/100==kPDGcharm ||    // for special intermediate meson states: like 1004**      
@@ -371,61 +411,193 @@ void AliHFEdisplacedElectrons::FillMCOutput(AliESDEvent * const fESDEvent, AliES
       //            electron from c->e     
       if(ElectronFromCharm(stack, eleLabel)!=-1){
 	var[0] = ElectronFromCharm(stack, eleLabel);
-	if(fDebugLevel>=10)
+	if(fDeDebugLevel>=10)
 	  printf("charm----->electron %d has mother %d is from %.1f\n", eleLabel, ElectronFromSource(stack, eleLabel), var[0]);
       } 
     }  // charm electrons: b->c->e or c->e
-
-    if(fDebugLevel>=10) printf("others----->electron %d has mother %d is from %.1f\n", eleLabel, ElectronFromSource(stack, eleLabel), var[0]);
     
-    if(dcaXY<1000) var[1] = Int_t(dcaXY)/50;   // larger than 1mm should go to the last bin
-    else
-      var[1] = 20;
-    if(dcaZ<1000) var[2] = Int_t(dcaZ)/50;
-    else
-      var[2] = 20;
-
-    var[3] = pt; // pt 
-    var[4] = eta; // eta
-    var[5] = phi; // phi
-
-    (dynamic_cast<THnSparseF *>(fOutputList->At(kMCelectron)))->Fill(var);
-  }
-
-  if(HasMCData() && TMath::Abs(GetMCpid(stack, label))==kPDGpion){
-      
-    const Int_t nvarPionMC=5;
-    Double_t varPion[nvarPionMC];
-    if(dcaXY<1000)
-      varPion[0] = Int_t(dcaXY)/50; // dca xy 
-    else
-      varPion[0] = 20;
-    if(dcaZ<1000)
-      varPion[1] = Int_t(dcaZ)/50; // dca Z 
-    else
-      varPion[1] = 20;
-    
-//     varPion[0] = TMath::Abs(dcaXY); // dca xy 
-//     varPion[1] = TMath::Abs(dcaZ); // dca z    
-    varPion[2] = pt; // pt 
-    varPion[3] = eta; //eta
-    varPion[4] = phi; // phi
-    
-    (dynamic_cast<THnSparseF *>(fOutputList->At(kMCpion)))->Fill(varPion);
-  }
+    if(fDeDebugLevel>=10) printf("others----->electron %d has mother %d is from %.1f\n", eleLabel, ElectronFromSource(stack, eleLabel), var[0]);
+  } // electron source endif 
   
+  else
+    if(TMath::Abs(pdg)==kPDGpion)
+      var[0] = kPion;
+  
+  if(TMath::Abs(mcDcaXY)<1000) var[1] = Int_t(mcDcaXY)/50;   // larger than 1mm should go to the last bin
+  else
+    var[1] = ((mcDcaXY>0)?1:-1)*20;
+  
+  if(TMath::Abs(mcDcaZ)<1000) var[2] = Int_t(mcDcaZ)/100;
+  else
+    var[2] = ((mcDcaZ>0)?1:-1)*10;
+        
+    var[3] = mcpt;  // pt 
+    var[4] = mceta; // eta
+    var[5] = mcphi; // phi    
+
+    (dynamic_cast<THnSparseF *>(fDeOutputList->At(kMcElectron)))->Fill(var);
 }
 
 
 
 //__________________________________________________________
-void AliHFEdisplacedElectrons::FillESDOutput(AliESDEvent * const fESDEvent, AliESDtrack* const esdTrack)
+void AliHFEdisplacedElectrons::FillEsdOutput(AliESDEvent * const fESDEvent, AliESDtrack* const esdTrack, AliStack * const stack)
 {
+  // after esd event selection, esd track cuts, and hfe pid 
+  // this is the case for ESD tracks, with MC information
 
-  // fill output
+  AliESDtrack *track = esdTrack;
+  Double_t pt   = track->Pt();
+  Double_t eta = track->Eta();
+  Double_t phi = track->Phi();
+  
+  Int_t eleLabel = track->GetLabel();
+  if(eleLabel<0 || eleLabel>stack->GetNtrack()) return;  
+
+  TParticle *particle = stack->Particle(eleLabel);
+  if(!particle) return;
+
+  // obtain impact parameters in xy and z
+  
+  Float_t magneticField = 5;  // initialized as 5kG
+  magneticField = fESDEvent->GetMagneticField();  // in kG 
+  Double_t beampiperadius=3.;  
+  const AliESDVertex *primVtx = fESDEvent->GetPrimaryVertex();      
+
+  
+  const Int_t nvarESD = 7;
+  Double_t var[nvarESD];
+  var[0] = -1;
+
+  Int_t sourcePdg = -1;
+
+  if(TMath::Abs(particle->GetPdgCode())!=kPDGelectron)
+    if(TMath::Abs(particle->GetPdgCode())!=kPDGpion)
+      var[0] = kEleMissID;
+    else
+      var[0] = kEleMissIDpion;
+  
+  else {
+    sourcePdg = ElectronFromSource(stack, eleLabel);     
+    
+    if(sourcePdg==kPDGgamma){ // check direct photon or not 
+      if(ElePhotonDirect(stack, eleLabel)!=-1)	
+	var[0] = kEleDirectPhotonConv;    
+      else 	
+	var[0] = kElePhotonConv;     
+      if(fDeDebugLevel>=10) 
+	printf("photonconv=====this electron %d is from %d, source id=%.1f\n", eleLabel, sourcePdg, var[0]);   
+    }   // photon or direct photon -> e
+    
+    if(sourcePdg==kPDGpi0){      
+      var[0] = kElePi0;   
+      if(fDeDebugLevel>=10) printf("pi0======this electron %d is from %d, source id=%.1f\n", eleLabel, sourcePdg, var[0]);    
+    } 
+    
+    if(sourcePdg==kPDGeta){ 
+      var[0] = kEleEta;     
+      if(fDeDebugLevel>=10) 
+	printf("eta=====this electron %d is from %d, source id=%.1f\n", eleLabel, sourcePdg, var[0]);    
+    }   // from eta -> e
+    
+    if(TMath::Abs(sourcePdg%10000)/100==kPDGbeauty ||    // for special intermediate meson states: like 100553       
+       TMath::Abs(sourcePdg)/1000==kPDGbeauty ||      
+       TMath::Abs(sourcePdg)/100==kPDGbeauty ||     
+       TMath::Abs(sourcePdg)==kPDGbeauty){     
+      var[0]=kEleB;       
+      if(fDeDebugLevel>=10) 
+	printf("beauty======electron %d is from %d with id %.1f\n", eleLabel, ElectronFromSource(stack, eleLabel), var[0]);   
+    } // direct beauty  -> e      
+    if(TMath::Abs(sourcePdg%10000)/100==kPDGcharm ||    // for special intermediate meson states: like 1004**      
+       TMath::Abs(sourcePdg)/1000==kPDGcharm ||       
+       TMath::Abs(sourcePdg)/100==kPDGcharm ||        
+       TMath::Abs(sourcePdg)==kPDGcharm){           
+      // two cases: 
+      //            electron from b->c->e     
+      //            electron from c->e     
+      if(ElectronFromCharm(stack, eleLabel)!=-1){
+	var[0] = ElectronFromCharm(stack, eleLabel);
+	if(fDeDebugLevel>=10)
+	  printf("charm----->electron %d has mother %d is from %.1f\n", eleLabel, ElectronFromSource(stack, eleLabel), var[0]);
+      } 
+    }  // charm electrons: b->c->e or c->e
+  }  // correct pid 
+    
+  // excluding current track
+  // ---- beginning --- method from Andrea D 28.05.2010
+  AliVertexerTracks *vertexer = new AliVertexerTracks(magneticField);
+  vertexer->SetITSMode();
+  vertexer->SetMinClusters(fNclustersITS);
+  Int_t skipped[2];
+  skipped[0] = (Int_t)track->GetID();
+  vertexer->SetSkipTracks(1,skipped);
+  AliESDVertex *vtxESDSkip = (AliESDVertex*)vertexer->FindPrimaryVertex(fESDEvent);
+  delete vertexer; vertexer = NULL;
+  if(vtxESDSkip->GetNContributors()<fMinNprimVtxContributor) return;
+  // -- ending --- method from Andrea D 28.05.2010 
+  
+  Double_t dz[2];   // error of dca in cm
+  Double_t covardz[3];
+  if(!track->PropagateToDCA(vtxESDSkip,magneticField, beampiperadius, dz, covardz)) return; // protection    
+  
+  Double_t dcaXY = dz[0]*1.0e4;  // conv dca in cm to dca in micron 
+  Double_t dcaZ = dz[1]*1.0e4;  
+  
+  if(fDeDebugLevel>=10) printf("others----->electron %d has mother %d is from %.1f\n", eleLabel, ElectronFromSource(stack, eleLabel), var[0]);
+  
+  if(TMath::Abs(dcaXY)<1000) var[1] = Int_t(dcaXY)/50;   // larger than 1mm should go to the last bin
+  else
+    var[1] = ((dcaXY>0)?1:-1)*20;
+  
+  if(TMath::Abs(dcaZ)<1000) var[2] = Int_t(dcaZ)/100;
+  else
+    var[2] = ((dcaZ>0)?1:-1)*10;
+  
+  // calculate dca using AliKFParticle class------------------------------------------------------------------
+  Float_t  kfDcaXY = 0;
+  Int_t trkID = track->GetID();  
+  AliKFParticle::SetField(magneticField);
+  AliKFParticle kfParticle(*track, particle->GetPdgCode());  
+  // prepare kfprimary vertex
+  AliKFVertex kfESDprimary;
+  // Reconstruct Primary Vertex (with ESD tracks)
+  Int_t n=primVtx->GetNIndices();
+  if (n>0 && primVtx->GetStatus()){
+    kfESDprimary = AliKFVertex(*primVtx);        
+    UShort_t *priIndex = primVtx->GetIndices();    
+    for (Int_t i=0;i<n;i++){
+      Int_t idx = Int_t(priIndex[i]);
+      if (idx == trkID){
+	kfESDprimary -= kfParticle;
+	kfDcaXY = kfParticle.GetDistanceFromVertexXY(kfESDprimary)*1e4;
+      }  // remove current track from this calculation
+    }  // loop over all primary vertex contributors    
+  }
+  // end of KF dca
+  
+  if(TMath::Abs(kfDcaXY)<1000) 
+    var[3] = Int_t(kfDcaXY)/50;
+  else
+    var[3] = (kfDcaXY>0?1:-1)*20;
+  
+  var[4] = pt;  // pt 
+  var[5] = eta; // eta
+  var[6] = phi; // phi    
+  
+  (dynamic_cast<THnSparseF *>(fDeOutputList->At(kEsdElectron)))->Fill(var);
+  
+}
+
+//__________________________________________________________
+void AliHFEdisplacedElectrons::FillDataOutput(AliESDEvent * const fESDEvent, AliESDtrack* const esdTrack)
+{
+  
+  // this is pure data, without MC information at all
+  // fill output: with HFE pid selection of electrons after all track quality cuts 
+
   if(!esdTrack) return;
   AliESDtrack *track = esdTrack;
-
+  
   Double_t pt   = track->Pt();
   Double_t eta = track->Eta();
   Double_t phi = track->Phi();
@@ -435,30 +607,75 @@ void AliHFEdisplacedElectrons::FillESDOutput(AliESDEvent * const fESDEvent, AliE
   
   Float_t magneticField = 5;  // initialized as 5kG
   magneticField = fESDEvent->GetMagneticField();  // in kG 
+  Double_t beampiperadius=3.;     
+  
+ 
+  const Int_t nvarData = 6;
+  Double_t varData[nvarData]; 
+    
+  //
+  // excluding current track
+  //
+  
+  //------ beginning --- method from Andrea D 28.05.2010
+  AliVertexerTracks *vertexer = new AliVertexerTracks(fESDEvent->GetMagneticField());
+  vertexer->SetITSMode();
+  vertexer->SetMinClusters(fNclustersITS);
+  Int_t skipped[2];
+  skipped[0] = (Int_t)track->GetID();
+  vertexer->SetSkipTracks(1,skipped);
+  AliESDVertex *vtxESDSkip = (AliESDVertex*)vertexer->FindPrimaryVertex(fESDEvent);
+  delete vertexer; vertexer = NULL;
+  if(vtxESDSkip->GetNContributors()<fMinNprimVtxContributor) return;
+  //------ ending --- method from Andrea D 28.05.2010 
+ 
   Double_t dz[2];   // error of dca in cm
   Double_t covardz[3];
-  track->PropagateToDCA(primVtx,magneticField, 1000., dz, covardz); 
-  Double_t dcaXY = TMath::Abs(dz[0]*1.0e4);  // conv dca in cm to dca in micron 
-  Double_t dcaZ = TMath::Abs(dz[1]*1.0e4);
- 
-  
-  const Int_t nvarData = 5;
-  Double_t varData[nvarData]; 
-  // fixme
-  if(dcaXY<1000)
-    varData[0] = Int_t(dcaXY)/50; // dca xy 
-  else 
-    varData[0] = 20;
-  if(dcaZ<1000)
-    varData[1] = Int_t(dcaZ)/50; // dca Z 
-  else
-    varData[1] = 20;
 
-  varData[2] = pt; // pt 
-  varData[3] = eta; //eta
-  varData[4] = phi; // phi
+  if(!track->PropagateToDCA(vtxESDSkip,magneticField, beampiperadius, dz, covardz)) return; // protection 
   
-  (dynamic_cast<THnSparseF *>(fOutputList->At(kData)))->Fill(varData);
+  Double_t dcaXY = dz[0]*1.0e4;  // conv dca in cm to dca in micron 
+  Double_t dcaZ = dz[1]*1.0e4;
+   
+  if(TMath::Abs(dcaXY)<1000) varData[0] = Int_t(dcaXY)/50;   // larger than 1mm should go to the last bin
+  else
+    varData[0] = (dcaXY>0?1:-1)*20;
+  if(TMath::Abs(dcaZ)<1000) varData[1] = Int_t(dcaZ)/100;
+  else
+    varData[1] = (dcaZ>0?1:-1)*10;
+
+
+  // calculate dca using AliKFParticle class------------------------------------------------------------------
+  Float_t  kfDcaXY = 0;
+  Int_t trkID = track->GetID();  
+  AliKFParticle::SetField(magneticField);
+  AliKFParticle kfParticle(*track, -11*track->Charge());  
+  // prepare kfprimary vertex
+  AliKFVertex kfESDprimary;
+  // Reconstruct Primary Vertex (with ESD tracks)
+  Int_t n=primVtx->GetNIndices();
+  if (n>0 && primVtx->GetStatus()){
+    kfESDprimary = AliKFVertex(*primVtx);        
+    UShort_t *priIndex = primVtx->GetIndices();    
+    for (Int_t i=0;i<n;i++){
+      Int_t idx = Int_t(priIndex[i]);
+      if (idx == trkID){
+	  kfESDprimary -= kfParticle;
+	  kfDcaXY = kfParticle.GetDistanceFromVertexXY(kfESDprimary)*1e4;
+      }  // remove current track from this calculation
+    }  // loop over all primary vertex contributors    
+  }
+  if(TMath::Abs(kfDcaXY)<1000)
+    varData[2] = Int_t(kfDcaXY)/50;
+  else
+    varData[2] = ((kfDcaXY)>0?1:-1)*20;
+  // end of KF dca
+
+  varData[3] = pt; // pt 
+  varData[4] = eta; //eta
+  varData[5] = phi; // phi
+  
+  (dynamic_cast<THnSparseF *>(fDeOutputList->At(kDataElectron)))->Fill(varData);
 
 }
 
@@ -487,7 +704,7 @@ Int_t AliHFEdisplacedElectrons::ElectronFromSource(AliStack * const stack, Int_t
   Int_t pdgCode = TMath::Abs(motherPart->GetPdgCode());
 
   if(pdgCode==kPDGelectron) {
-    if(fDebugLevel>=10) printf("particle label: %d...(motherLabel=%d : motherPdg=%d)  grandmother's pdg code was returned...%d \n",
+    if(fDeDebugLevel>=10) printf("particle label: %d...(motherLabel=%d : motherPdg=%d)  grandmother's pdg code was returned...%d \n",
 			       label, motherLabel, pdgCode, ElectronFromSource(stack, motherLabel));
     return ElectronFromSource(stack, motherLabel);
   }
@@ -515,7 +732,7 @@ Int_t AliHFEdisplacedElectrons::ElectronFromCharm(AliStack * const stack, Int_t 
   Int_t pdgCode = gMotherPart->GetPdgCode();
   if(TMath::Abs(pdgCode%10000)/100==kPDGbeauty ||    // for special intermediate meson states: like 100553
      TMath::Abs(pdgCode)/1000==kPDGbeauty || TMath::Abs(pdgCode)/100==kPDGbeauty || TMath::Abs(pdgCode)==kPDGbeauty) {
-    if(fDebugLevel>=10)  printf("this electron label %d is from mother %d, and finally from %d\n", label, ElectronFromSource(stack, label), pdgCode);
+    if(fDeDebugLevel>=10)  printf("this electron label %d is from mother %d, and finally from %d\n", label, ElectronFromSource(stack, label), pdgCode);
     return kEleBC;
   }  // for sure it is from BC
   

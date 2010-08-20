@@ -9,8 +9,11 @@ SRCS=hfe/AliHFEtools.cxx \
      hfe/AliHFEsecVtx.cxx \
      hfe/AliHFEpriVtx.cxx \
      hfe/AliHFEelecbackground.cxx \
+     hfe/AliHFEspectrum.cxx \
+     hfe/AliHFEV0info.cxx \
      hfe/AliHFEV0pid.cxx \
      hfe/AliHFEpidQA.cxx \
+     hfe/AliHFEtrdPIDqa.cxx \
      hfe/AliHFEpid.cxx \
      hfe/AliHFEpidBase.cxx \
      hfe/AliHFEpidITS.cxx \
@@ -30,7 +33,8 @@ SRCS=hfe/AliHFEtools.cxx \
      hfe/AliAnalysisTaskHFEpidQA.cxx \
      hfe/AliHFEefficiency.cxx \
      hfe/AliAnalysisTaskHFE.cxx \
-     hfe/AliHFEV0pidMC.cxx
+     hfe/AliHFEV0pidMC.cxx \
+     hfe/AliHFEV0cuts.cxx
 HDRS= $(SRCS:.cxx=.h)
 
 DHDR= PWG3hfeLinkDef.h
