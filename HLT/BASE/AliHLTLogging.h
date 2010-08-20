@@ -248,6 +248,11 @@ public:
   static void SetLocalLoggingDefault(AliHLTComponentLogSeverity level);
 
   /**
+   * Get default setting for local logging filter for individual objects.
+   */
+  static AliHLTComponentLogSeverity GetLocalLoggingDefault() { return fgLocalLogDefault; }
+
+  /**
    * Get local logging level
    * logging filter for individual object
    */
