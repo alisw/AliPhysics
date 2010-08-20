@@ -49,6 +49,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
       kHistTRDSigV2 = 4,
       kHistOverallSpecies = 5
     };
+    AliHFEpidTRD();
     AliHFEpidTRD(const Char_t *name);
     AliHFEpidTRD(const AliHFEpidTRD &ref);
     AliHFEpidTRD& operator=(const AliHFEpidTRD &ref);

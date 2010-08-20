@@ -49,6 +49,8 @@ class AliHFEefficiency : public AliAnalysisTaskSE{
 
     void Load(const char* filename = "EffTask.root");
     void PostProcess();
+    Bool_t IsRunningTerminate() const { return TestBit(kTerminate); }
+    void SetRunTerminate(Bool_t terminate = kTRUE) { SetBit(kTerminate, terminate); }
 
     void CalculatePTsmearing();
     void DrawPtResolution(TList *l);
@@ -57,6 +59,9 @@ class AliHFEefficiency : public AliAnalysisTaskSE{
     enum{
       kNTracks,
       kPt
+    };
+    enum{ // Bit Definition
+      kTerminate = BIT(18)
     };
     AliHFEefficiency(const AliHFEefficiency &);
     AliHFEefficiency &operator=(const AliHFEefficiency &);

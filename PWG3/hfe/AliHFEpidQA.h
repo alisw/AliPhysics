@@ -27,24 +27,36 @@
 
 class TList;
 class TObjArray;
+class TPDGCode;
+class TParticle;
+class TFile;
+class TMultiLayerPerceptron;
 
 class AliAODTrack;
 class AliESDtrack;
-class AliHFEcollection;
-class AliHFEV0pid;
 class AliMCEvent;
-//class AliTRDPIDResponseLQ1D;
 class AliVEvent;
 class AliESDpid;
+class AliExternalTrackParam;
+class AliLog;
+
 class AliHFEV0pidMC;
+class AliHFEcollection;
+class AliHFEtrdPIDqa;
+class AliHFEV0pid;
+class AliHFEpidTRD;
+
 
 class AliHFEpidQA : public TObject{
   public:
     AliHFEpidQA();
     ~AliHFEpidQA();
+    AliHFEpidQA(const AliHFEpidQA &ref);
+    AliHFEpidQA &operator=(const AliHFEpidQA &ref);
+    virtual void Copy(TObject &o) const;
 
     void Init();
-    void Process(AliVEvent *inputEvent);
+    void Process();
 
     TList *GetOutput();
     TList *GetV0pidQA();
@@ -53,15 +65,18 @@ class AliHFEpidQA : public TObject{
     Bool_t   HasV0pidQA() const { return TestBit(kV0pidQA); };
     Bool_t   HasRecalculateTRDpid() const { return TestBit(kRecalculateTRDpid); };
 
+    void     SetEvent(AliVEvent* const ev) { fEvent = ev; };
     void     SetMCEvent(AliMCEvent * const mc) { fMC = mc; };
     void     SetV0pidQA(Bool_t v0pidQA = kTRUE) { SetBit(kV0pidQA, v0pidQA); };
     void     SetRecalculateTRDpid(Bool_t recal = kTRUE) { SetBit(kRecalculateTRDpid, recal); };
 
-    void     SetRun(Int_t run) { fRun = run; };
-    // temporary solutions for correction the T0 for pass4 & pass5
-    void     CorrectT0();
-    void     SetT0(Float_t t0) { fT0 = t0; };
-    Float_t  TOFbeta(AliESDtrack *const track) const;
+    void     SetESDpid(AliESDpid* const pid) { fESDpid = pid; }
+    Float_t  TOFbeta(AliESDtrack* const track) const;
+
+    void     CheckEvent();
+    void     SetNNref(TFile *f) { fNNref = f; };
+    
+    AliHFEtrdPIDqa *GetTRDQA() const { return fTRDpidQA; }
 
   protected:
     enum{
@@ -72,27 +87,41 @@ class AliHFEpidQA : public TObject{
       kITS = 0,
       kTPC = 1,
       kTRD = 2,
-      kTOF = 4
+      kTOF = 3
     };
 
+    TObjArray *MakeTrackList(TObjArray *tracks) const;
+    TObjArray *MakeCleanListElectrons(TObjArray *tracks) const;
+
     void MakePurity(TObjArray *tracks, Int_t species);
-    void FillTRDelectronLikelihoods(TObjArray * const particles, Int_t species);
+    TObjArray *MakeCleanListForTRD(TObjArray * const track, Int_t species);
+    void FillElectronLikelihoods(TObjArray * const particles, Int_t species);
     void FillPIDresponse(TObjArray * const particles, Int_t species);
+    void FillIllumination(TObjArray *const particles, Int_t species);
+    void FillTPCinfo(AliESDtrack * const track, Int_t species);
     void RecalculateTRDpid(AliESDtrack *track, Double_t *pidProbs) const;
     void RecalculateTRDpid(AliAODTrack *track, Double_t *pidProbs) const;
+    void CheckTenderV0pid(TObjArray * const particles, Int_t species);
+    Int_t GetTenderV0pid(AliESDtrack * const track);
+    
+    Double_t TRDlikeTracklet(Int_t layer, AliESDtrack * const track, Double_t *likelihood);
+    Int_t  TRDmomBin(Double_t p);
 
+ protected:
+    Int_t GetMaxPID(Double_t *pidProbs) const;
+    Int_t GetPDG(Int_t index);
+    
   private:
-    AliHFEpidQA(const AliHFEpidQA &ref);
-    AliHFEpidQA &operator=(const AliHFEpidQA &ref);
-
+    AliVEvent         *fEvent;        // event pointer
     AliMCEvent        *fMC;           // MC Event
     AliHFEV0pid       *fV0pid;        // V0 PID 
     AliHFEV0pidMC     *fV0pidMC;      // V0 MC PID
-    //AliTRDPIDResponseLQ1D *fTRDpidResponse;   // TRD PID
+    AliHFEtrdPIDqa    *fTRDpidQA;     //! TRD PID QA object
     AliHFEcollection  *fOutput;       // Output container
-    Float_t            fT0;           // corrected T0 for pass4 & pass5
-    Int_t              fRun;          // Run Number
-    AliESDpid *fESDpid;               // ESD PID object
+    AliESDpid         *fESDpid;       // ESD PID object
+ private:
+    TFile             *fNNref;        // reference file for NN pid 
+    TMultiLayerPerceptron *fNet[11];  //  reference networks
   
   ClassDef(AliHFEpidQA, 1)            // PID QA tool
 };

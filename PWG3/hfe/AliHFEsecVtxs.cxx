@@ -30,10 +30,13 @@ ClassImp(AliHFEsecVtxs)
 AliHFEsecVtxs::AliHFEsecVtxs():
   fTrkLabel1(0)
   ,fTrkLabel2(0)
+  ,fMCCode(0)
   ,fInvmass(0)
   ,fKFChi2(0)
   ,fSignedLxy(0)
+  ,fSignedLxy2(0)
   ,fKFIP(0)
+  ,fKFIP2(0)
 { 
   //
   // Default constructor
@@ -45,10 +48,13 @@ AliHFEsecVtxs::AliHFEsecVtxs(const AliHFEsecVtxs &p):
   TObject(p)
   ,fTrkLabel1(p.fTrkLabel1)
   ,fTrkLabel2(p.fTrkLabel2)
+  ,fMCCode(p.fMCCode)
   ,fInvmass(p.fInvmass)
   ,fKFChi2(p.fKFChi2)
   ,fSignedLxy(p.fSignedLxy)
+  ,fSignedLxy2(p.fSignedLxy2)
   ,fKFIP(p.fKFIP)
+  ,fKFIP2(p.fKFIP2)
 { 
   //
   // Copy constructor

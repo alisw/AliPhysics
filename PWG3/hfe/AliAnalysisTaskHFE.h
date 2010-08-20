@@ -40,6 +40,8 @@ class AliMCEvent;
 class AliVParticle;
 class TH1I; 
 class TList;
+class TH3D;
+class TF1;
 
 class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
   public:
@@ -53,22 +55,30 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kIsElecBackGround = 2,
       kPostProcess = 3
     };
+    enum CreationProcess_t{
+      kSignalCharm = 0,
+      kSignalBeauty = 1,
+      kGammaConv = 2,
+      kOther = 3
+    };
     AliAnalysisTaskHFE();
     AliAnalysisTaskHFE(const char * name);
     AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref);
     AliAnalysisTaskHFE& operator=(const AliAnalysisTaskHFE &ref);
+    virtual void Copy(TObject &o) const;
     virtual ~AliAnalysisTaskHFE();
 
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
     virtual void Terminate(Option_t *);
 
+    virtual Bool_t IsEventInBinZero();
+
     Bool_t IsQAOn(Int_t qaLevel) const { return TESTBIT(fQAlevel, qaLevel); };
     Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
     Bool_t IsESDanalysis() const { return !TestBit(kAODanalysis); };
     Bool_t HasMCData() const { return TestBit(kHasMCdata); }
     Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fPlugins, plug); };
-    Int_t IsSignalElectron(AliVParticle *fTrack) const;
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
     void SetHFEElecBackGround(AliHFEelecbackground * const elecBackGround) { fElecBackGround = elecBackGround; };
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
@@ -77,9 +87,10 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetPIDdetectors(Char_t * const detectors){ fPIDdetectors = detectors; }
     void SetPIDStrategy(UInt_t strategy) { fPIDstrategy = strategy; }
     void AddPIDdetector(TString detector);
-    void SetTPCBetheBlochParameters(Double_t *pars);
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
+    void SetWeightFactors(TH3D * const weightFactors);
+    void SetWeightFactorsFunction(TF1 * const weightFactorsFunction);
     void PrintStatus() const;
  
   private:
@@ -106,20 +117,29 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
         Int_t *fLast;         // Pointer to the last entry
         Int_t *fCurrent;      // Current entry to mimic an iterator
     };
+
+    Bool_t IsGammaElectron(const AliVParticle * const track) const;
+    Int_t  IsSignalElectron(const AliVParticle * const track) const;
+    Bool_t FillProductionVertex(const AliVParticle * const track) const;
+    Double_t FindWeight(Double_t pt, Double_t eta, Double_t phi) const;
     void MakeParticleContainer();
     void MakeEventContainer();
     void ProcessMC();
     void ProcessESD();
     void ProcessAOD();
     Bool_t ProcessMCtrack(AliVParticle *track);
-    Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track, Double_t *container, Bool_t signal, Bool_t alreadyseen);
+    Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track, Double_t *container, Bool_t signal, Bool_t alreadyseen,Double_t weight);
     
     ULong_t fQAlevel;                     // QA level
     TString fPIDdetectors;                // Detectors for Particle Identification
     UInt_t fPIDstrategy;                  // PID Strategy
     Double_t fTPCBetheBlochParameters[5]; // TPC Bethe-Bloch Parameters
     UShort_t fPlugins;                    // Enabled Plugins
+    Bool_t  fWeighting;                   // Weighting or not for the efficiency maps
+    TH3D *fWeightFactors;                 // Weight factors
+    TF1  *fWeightFactorsFunction;         // Weight factors
     AliCFManager *fCFM;                   //! Correction Framework Manager
+    AliCFContainer * fHadronicBackground; //! Container for hadronic Background
     TList *fCorrelation;                  //! response matrix for unfolding  
     THnSparseF *fPIDperformance;          //! info on contamination and yield of electron spectra
     THnSparseF *fSignalToBackgroundMC;    //! Signal To Background Studies on pure MC information
@@ -137,7 +157,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
 //    AliHFEcollection *fQAcoll;            //! collection class for basic QA histograms
 
-    ClassDef(AliAnalysisTaskHFE, 1)       // The electron Analysis Task
+    ClassDef(AliAnalysisTaskHFE, 2)       // The electron Analysis Task
 };
 #endif
 

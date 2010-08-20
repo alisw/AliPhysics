@@ -24,6 +24,7 @@
  #endif
 
 class TList;
+class AliESDpid;
 class AliVParticle;
 class AliMCParticle;
 
@@ -40,6 +41,7 @@ struct AliHFEpidObject{
 
 class AliHFEpidBase : public TNamed{
   public:
+    AliHFEpidBase();
     AliHFEpidBase(const Char_t *name);
     AliHFEpidBase(const AliHFEpidBase &c);
     AliHFEpidBase &operator=(const AliHFEpidBase &c);
@@ -53,11 +55,13 @@ class AliHFEpidBase : public TNamed{
     Bool_t IsQAon() const { return TestBit(kQAon);};
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
 
+    void SetESDpid(AliESDpid * const pid) { fESDpid = pid; }
     void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; }; 
     inline void SetQAOn(TList *fQAlist);
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData,hasMCdata); };
 
   protected:
+    AliESDpid *fESDpid;                         // ESD PID object
     void Copy(TObject &ref) const;
     virtual void AddQAhistograms(TList *){};
   private:

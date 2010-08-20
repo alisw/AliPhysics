@@ -40,6 +40,18 @@ ClassImp(AliHFEpidTRD)
 const Double_t AliHFEpidTRD::fgkVerySmall = 1e-12;
 
 //___________________________________________________________________
+AliHFEpidTRD::AliHFEpidTRD() :
+    AliHFEpidBase()
+  , fPIDMethod(kNN)
+  , fContainer(0x0)
+{
+  //
+  // default  constructor
+  // 
+  memset(fThreshParams, 0, sizeof(Double_t) * kThreshParams);
+}
+
+//___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD(const char* name) :
     AliHFEpidBase(name)
   , fPIDMethod(kNN)

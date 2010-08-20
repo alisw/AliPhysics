@@ -25,14 +25,12 @@
 #include <TObject.h>
 #endif
 
-#ifndef ALIHFECOLLECTION_H
-#include "AliHFEcollection.h"
-#endif
-
 class TList;
 
 class AliMCEvent;
 
+class AliHFEV0cuts;
+class AliHFEcollection;
 
 class AliHFEV0pidMC : public TObject {
 
@@ -52,9 +50,12 @@ class AliHFEV0pidMC : public TObject {
   AliHFEV0pidMC &operator=(const AliHFEV0pidMC &);
   Int_t PDGtoPIDdaughter(Int_t pdg) const;    // convert the PDG code to local PID
   Int_t PDGtoPIDmother(Int_t pdg) const;      // convert the PDG code to local PID
+  Int_t PDGtoAliPID(Int_t pdg) const;         // convert PDG to AliPID
 
   AliMCEvent*         fMC;      // MC event
   AliHFEcollection*   fColl;    // Histogram collection
+  AliHFEV0cuts*       fV0cuts;  // V0 cut class
+
    ClassDef(AliHFEV0pidMC, 1)   // QA class for V0 PID
 };
 //____________________________________________________________

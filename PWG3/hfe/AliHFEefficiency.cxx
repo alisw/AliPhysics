@@ -77,6 +77,8 @@ AliHFEefficiency::AliHFEefficiency(const Char_t *name):
   //
   DefineOutput(1, AliHFEcontainer::Class());
   DefineOutput(2, TList::Class());
+
+  SetRunTerminate();
 }
 
 AliHFEefficiency::~AliHFEefficiency(){
@@ -136,13 +138,11 @@ void AliHFEefficiency::UserCreateOutputObjects(){
   // create additional histos for testing purpose
   fOutput = new AliHFEcollection("histos", "QA histograms");
   fOutput->CreateTH1F("hNtracks","Number of Tracks per Event", 100, 0, 100);
-  fOutput->CreateTH1F("hPt","Pt of the tracks", 40, 0.1, 10);
-  fOutput->BinLogAxis("hPt", 0);
+  fOutput->CreateTH1F("hPt","Pt of the tracks", 40, 0.1, 10, 0);
   fOutput->CreateTH1F("kinkIndex", "Kink Index", 400, -200, 200);
   fOutput->CreateTH1F("itspixel", "ITS PIXEL", 2, 0, 2);
   fOutput->CreateTH1F("mcmother", "Mother PDG", 1000, -500, 500);
-  fOutput->CreateTH2F("ptres", "Pt Resolution", 40, 0.1, 10, 200, -1.5, 1.5);
-  fOutput->BinLogAxis("ptres", 0);
+  fOutput->CreateTH2F("ptres", "Pt Resolution", 40, 0.1, 10, 200, -1.5, 1.5, 0);
 }
 
 void AliHFEefficiency::UserExec(Option_t *){
@@ -172,14 +172,16 @@ void AliHFEefficiency::UserExec(Option_t *){
       fOutput->Fill("itspixel",1);
     else
       fOutput->Fill("itspixel",0);
-    AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel())));
-    if(mctrack){
-      Int_t motherLabel = mctrack->Particle()->GetFirstMother();
-      if(motherLabel){
-        AliMCParticle *mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(motherLabel));
-        fOutput->Fill("mcmother", mother->Particle()->GetPdgCode());
+    if(fMCEvent){
+      AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel())));
+      if(mctrack){
+        Int_t motherLabel = mctrack->Particle()->GetFirstMother();
+        if(motherLabel){
+          AliMCParticle *mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(motherLabel));
+          if(mother)fOutput->Fill("mcmother", mother->Particle()->GetPdgCode());
+        }
+        fOutput->Fill("ptres", mctrack->Pt(), (track->Pt() - mctrack->Pt())/mctrack->Pt());
       }
-      fOutput->Fill("ptres", mctrack->Pt(), (track->Pt() - mctrack->Pt())/mctrack->Pt());
     }
   }
   delete iter;
@@ -193,7 +195,12 @@ void AliHFEefficiency::Terminate(Option_t *){
   // Evaluate Results
   //
   fEfficiency = dynamic_cast<AliHFEcontainer *>(GetOutputData(1));
-  if(!fEfficiency) return;
+  if(!fEfficiency){
+    AliError("No Output data available");
+    return;
+  }
+
+  if(!IsRunningTerminate()) return;
   PostProcess();
 
   TList *l = dynamic_cast<TList *>(GetOutputData(2));

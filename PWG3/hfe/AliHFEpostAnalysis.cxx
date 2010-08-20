@@ -337,16 +337,19 @@ TH1 *AliHFEpostAnalysis::CreateHistoPIDperformance(Int_t mode, Int_t charge){
   //
   // Make Histograms for PID performance plots
   //
+  fPIDperformance->GetAxis(4)->SetRange(0, fPIDperformance->GetAxis(4)->GetNbins()+1);
+  fPIDperformance->GetAxis(3)->SetRange(0, fPIDperformance->GetAxis(3)->GetNbins() + 1);
+
   TH1 *hNom = NULL, *hDenom = NULL;
   char hname[256], htitle[256], cname[256];
   Color_t mycolor = kBlack;
-  if(charge) fSignalToBackgroundMC->GetAxis(3)->SetRange(charge, charge);
+  if(charge) fPIDperformance->GetAxis(3)->SetRange(charge, charge);
   // Normalisation by all candidates - no restriction in axis 4 - only for mode == 1 
-  if(mode == 1) fPIDperformance->GetAxis(4)->SetRange(2,2);
+  if(mode == 1) fPIDperformance->GetAxis(4)->SetRange(2,3);
   hDenom = fPIDperformance->Projection(0);
   hDenom->Sumw2();
   hDenom->SetName("hDenom");
-  if(mode == 1) fPIDperformance->GetAxis(4)->SetRange(0, fPIDperformance->GetAxis(4)->GetLast() + 1);
+  if(mode == 1) fPIDperformance->GetAxis(4)->SetRange(0, fPIDperformance->GetAxis(4)->GetNbins() + 1);
   // Nominator need a restriction in the 4th axis
   switch(mode){
     case 0: // Electron purity
@@ -385,8 +388,8 @@ TH1 *AliHFEpostAnalysis::CreateHistoPIDperformance(Int_t mode, Int_t charge){
   hNom->Sumw2();
   hNom->SetName("hNom");
   // Reset axis
-  fPIDperformance->GetAxis(4)->SetRange(0, fPIDperformance->GetAxis(4)->GetLast() + 1);
-  if(charge) fSignalToBackgroundMC->GetAxis(3)->SetRange(0, fSignalToBackgroundMC->GetAxis(3)->GetLast() + 1);
+  fPIDperformance->GetAxis(4)->SetRange(0, fPIDperformance->GetAxis(4)->GetNbins()+1);
+  if(charge) fPIDperformance->GetAxis(3)->SetRange(0, fPIDperformance->GetAxis(3)->GetNbins() + 1);
 
   // Create Efficiency histogram
   TH1 *hEff = dynamic_cast<TH1D *>(hNom->Clone());

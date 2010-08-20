@@ -34,7 +34,7 @@
 #include <TParticle.h>
 
 #include <AliLog.h>
-#include <AliStack.h>
+#include <AliMCEvent.h>
 #include <AliGenEventHeader.h>
 #include <AliAODMCParticle.h>
 
@@ -50,7 +50,7 @@ ClassImp(AliHFEmcQA)
 
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA() : 
-        fStack(NULL) 
+	fMCEvent(NULL) 
         ,fMCHeader(NULL)
         ,fMCArray(NULL)
         ,fQAhistos(NULL)
@@ -63,7 +63,7 @@ AliHFEmcQA::AliHFEmcQA() :
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
         TObject(p)
-        ,fStack(NULL) 
+        ,fMCEvent(NULL) 
         ,fMCHeader(NULL)
         ,fMCArray(NULL)
         ,fQAhistos(p.fQAhistos)
@@ -100,7 +100,7 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
 {
   // create histograms
 
-  if (kquark != kCharm && kquark != kBeauty) {
+  if (!(kquark == kCharm || kquark == kBeauty || kquark == kOthers)) {
     AliDebug(1, "This task is only for heavy quark QA, return\n");
     return; 
   }
@@ -123,16 +123,42 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
     kqTypeLabel[kDeHadron]="bDeHadron";
     kqTypeLabel[kElectron]="be";
     kqTypeLabel[kElectron2nd]="bce";
+  } else if (kquark == kOthers){
+    kqTypeLabel[kGamma-4]="gammae";
+    kqTypeLabel[kPi0-4]="pi0e";
+    kqTypeLabel[kElse-4]="elsee";
+    kqTypeLabel[kMisID-4]="miside";
   }
-
-
+/*
+  const Double_t kPtbound[2] = {0.001, 50.};
+  Int_t iBin[1];
+  iBin[0] = 100; // bins in pt
+  Double_t* binEdges[1];
+  binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
+  */
+  
   TString hname; 
+  if(kquark == kOthers){
+    for (Int_t iqType = 0; iqType < 4; iqType++ ){
+       hname = hnopt+"Pt_"+kqTypeLabel[iqType];
+       //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
+       fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",500,0,50);
+       hname = hnopt+"Y_"+kqTypeLabel[iqType];
+       fHist[iq][iqType][icut].fY = new TH1F(hname,hname,150,-7.5,7.5);
+       hname = hnopt+"Eta_"+kqTypeLabel[iqType];
+       fHist[iq][iqType][icut].fEta = new TH1F(hname,hname,150,-7.5,7.5);
+       // Fill List
+       if(fQAhistos) fHist[iq][iqType][icut].FillList(fQAhistos);
+    }
+    return;
+  }
   for (Int_t iqType = 0; iqType < fgkqType; iqType++ ){
      if (iqType < keHadron && icut > 0) continue; // don't duplicate histogram for quark and hadron
      hname = hnopt+"PdgCode_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fPdgCode = new TH1F(hname,hname,20001,-10000.5,10000.5);
      hname = hnopt+"Pt_"+kqTypeLabel[iqType];
-     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",250,0,50);
+     //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
+     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",500,0,50);
      hname = hnopt+"Y_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fY = new TH1F(hname,hname,150,-7.5,7.5);
      hname = hnopt+"Eta_"+kqTypeLabel[iqType];
@@ -198,12 +224,12 @@ void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark)
     }
     Int_t iq = kquark - kCharm; 
 
-    if (iTrack < 0) { 
-      AliDebug(1, "Stack label is negative, return\n");
+    if (iTrack < 0 || !part) { 
+      AliDebug(1, "Stack label is negative or no mcparticle, return\n");
       return; 
     }
 
-    //TParticle *part = fStack->Particle(iTrack); 
+    AliMCParticle *mctrack = NULL;
     Int_t partPdgcode = TMath::Abs(part->GetPdgCode());
 
     // select heavy hadron or not fragmented heavy quark 
@@ -217,7 +243,8 @@ void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark)
         iLabel = iTrack;
       } else{ // in case of heavy hadron, start to search for mother heavy parton 
         iLabel = part->GetFirstMother(); 
-        if (iLabel>-1) { partMother = fStack->Particle(iLabel); }
+        if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(iLabel))))) return; 
+        if (iLabel>-1) { partMother = mctrack->Particle(); }
         else {
           AliDebug(1, "Stack label is negative, return\n");
           return; 
@@ -236,7 +263,8 @@ void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark)
           Bool_t isSameString = kTRUE; 
           for (Int_t i=1; i<fgkMaxIter; i++){
              iLabel = iLabel - 1;
-             if (iLabel>-1) { partMother = fStack->Particle(iLabel); }
+             if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(iLabel))))) return; 
+             if (iLabel>-1) { partMother = mctrack->Particle(); }
              else {
                AliDebug(1, "Stack label is negative, return\n");
                return; 
@@ -391,7 +419,10 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
     }
     Int_t iq = kquark - kCharm;
 
-    //TParticle* mcpart = fStack->Particle(iTrack);
+    if(!mcpart){
+      AliDebug(1, "no mc particle, return\n");
+      return;
+    }
 
     Int_t iLabel = mcpart->GetFirstMother();
     if (iLabel<0){
@@ -402,6 +433,8 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
     TParticle *partCopy = mcpart;
     Int_t pdgcode = mcpart->GetPdgCode();
     Int_t pdgcodeCopy = pdgcode;
+
+    AliMCParticle *mctrack = NULL;
 
     // if the mother is charmed hadron  
     Bool_t isDirectCharm = kFALSE;
@@ -420,7 +453,8 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
                return;
              }
              // if there is an ancester
-             TParticle* mother = fStack->Particle(jLabel);
+             if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))) return; 
+             TParticle* mother = mctrack->Particle();
              Int_t motherPDG = mother->GetPdgCode();
     
              for (Int_t j=0; j<fNparents; j++){
@@ -450,21 +484,33 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
 {
     // decay electron kinematics
     
-    if (kquark != kCharm && kquark != kBeauty) {
+    if (!(kquark == kCharm || kquark == kBeauty || kquark == kOthers)){
       AliDebug(1, "This task is only for heavy quark QA, return\n");
       return; 
     }
     Int_t iq = kquark - kCharm; 
     Bool_t isFinalOpenCharm = kFALSE;
 
-/*
-    if (iTrack < 0) { 
-      AliDebug(1, "Stack label is negative, return\n");
-      return; 
+    if(!mcpart){
+      AliDebug(1, "no mcparticle, return\n");
+      return;
     }
-    */
 
-    //TParticle* mcpart = fStack->Particle(iTrack);
+    if(kquark==kOthers){
+      Int_t esource = -1;
+      if ( abs(mcpart->GetPdgCode()) != kdecayed ) esource = kMisID-4;
+      else esource =GetSource(mcpart)-4; // return for the cases kGamma=4, kPi0=5, kElse=6
+      if(esource==0|| esource==1 || esource==2 || esource==3){
+        fHist[iq][esource][icut].fPt->Fill(mcpart->Pt());
+        fHist[iq][esource][icut].fY->Fill(AliHFEtools::GetRapidity(mcpart));
+        fHist[iq][esource][icut].fEta->Fill(mcpart->Eta());
+        return; 
+      }
+      else {
+        AliDebug(1, "e source is out of defined ranges, return\n");
+        return;
+      }
+    }
 
     if ( abs(mcpart->GetPdgCode()) != kdecayed ) return;
 
@@ -474,12 +520,15 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
       return; 
     }
 
-    TParticle *partMother = fStack->Particle(iLabel);
+    AliMCParticle *mctrack = NULL;
+    if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(iLabel))))) return; 
+    TParticle *partMother = mctrack->Particle();
     TParticle *partMotherCopy = partMother;
     Int_t maPdgcode = partMother->GetPdgCode();
     Int_t maPdgcodeCopy = maPdgcode;
 
     // get mc primary vertex
+    /*
     TArrayF mcPrimVtx;
     if(fMCHeader) fMCHeader->PrimaryVertex(mcPrimVtx);
 
@@ -489,6 +538,8 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
 
     // calculated production vertex to primary vertex (in xy plane)
     Float_t decayLxy = TMath::Sqrt((mcPrimVtx[0]-ePoint[0])*(mcPrimVtx[0]-ePoint[0])+(mcPrimVtx[1]-ePoint[1])*(mcPrimVtx[1]-ePoint[1]));
+    */ 
+    Float_t decayLxy = 0;
 
     // if the mother is charmed hadron  
     Bool_t isMotherDirectCharm = kFALSE;
@@ -515,7 +566,8 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
              }
 
              // if there is an ancester
-             TParticle* grandMa = fStack->Particle(jLabel);
+             if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))) return; 
+             TParticle* grandMa = mctrack->Particle();
              Int_t grandMaPDG = grandMa->GetPdgCode();
 
              for (Int_t j=0; j<fNparents; j++){
@@ -584,6 +636,11 @@ void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, I
 
   Int_t iq = kquark - kCharm;
   Bool_t isFinalOpenCharm = kFALSE;
+
+  if(!mcpart){
+    AliDebug(1, "no mcparticle, return\n");
+    return;
+  }
 
   if ( abs(mcpart->GetPdgCode()) != kdecayed ) return;
 
@@ -679,7 +736,9 @@ void AliHFEmcQA::IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &gran
          AliDebug(1, "Stack label is negative, return\n");
          return; 
        }
-       TParticle *heavysMother = fStack->Particle(motherlabel);
+       AliMCParticle *mctrack = NULL;
+       if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(motherlabel))))) return; 
+       TParticle *heavysMother = mctrack->Particle();
        motherpdg = heavysMother->GetPdgCode();
        grandmotherlabel = heavysMother->GetFirstMother();
        AliDebug(1,Form("ancestor pdg code= %d\n",motherpdg));
@@ -690,8 +749,12 @@ void AliHFEmcQA::HardScattering(const Int_t kquark, Int_t &motherID, Int_t &moth
 {
        // mothertype -1 means this heavy quark coming from hard vertex
 
-       TParticle *afterinitialrad1  = fStack->Particle(4);
-       TParticle *afterinitialrad2  = fStack->Particle(5);
+       AliMCParticle *mctrack1 = NULL;
+       AliMCParticle *mctrack2 = NULL;
+       if(!(mctrack1 = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(4))))) return; 
+       if(!(mctrack2 = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(5))))) return; 
+       TParticle *afterinitialrad1  = mctrack1->Particle();
+       TParticle *afterinitialrad2  = mctrack2->Particle();
            
        motherlabel = -1;
 
@@ -723,8 +786,10 @@ Bool_t AliHFEmcQA::IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, 
 {
        // mothertype -2 means this heavy quark coming from initial state 
 
+       AliMCParticle *mctrack = NULL;
        if (inputmotherlabel==2 || inputmotherlabel==3){ // mother exist before initial state radiation
-         TParticle *heavysMother = fStack->Particle(inputmotherlabel);
+         if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(inputmotherlabel))))) return kFALSE; 
+         TParticle *heavysMother = mctrack->Particle();
          motherID = heavysMother->GetPdgCode(); 
          mothertype = -2; // there is mother before initial state radiation
          motherlabel = inputmotherlabel;
@@ -741,8 +806,10 @@ Bool_t AliHFEmcQA::IsFromFinalParton(Int_t inputmotherlabel, Int_t &motherID, In
 {
        // mothertype 2 means this heavy quark coming from final state 
 
+       AliMCParticle *mctrack = NULL;
        if (inputmotherlabel > 5){ // mother exist after hard scattering
-         TParticle *heavysMother = fStack->Particle(inputmotherlabel);
+         if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(inputmotherlabel))))) return kFALSE; 
+         TParticle *heavysMother = mctrack->Particle();
          motherID = heavysMother->GetPdgCode(); 
          mothertype = 2; // 
          motherlabel = inputmotherlabel;
@@ -773,6 +840,11 @@ Int_t AliHFEmcQA::GetSource(AliAODMCParticle * const mcpart)
        
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;
+
+  if(!mcpart){
+    AliDebug(1, "Stack label is negative or no mcparticle, return\n");
+    return -1;
+  }
 
   // mother
   Int_t iLabel = mcpart->GetMother();
@@ -851,13 +923,20 @@ Int_t AliHFEmcQA::GetSource(TParticle * const mcpart)
   Int_t origin = -1;
   Bool_t isFinalOpenCharm = kFALSE;
 
+  if(!mcpart){
+    AliDebug(1, "no mcparticle, return\n");
+    return -1;
+  }
+
   Int_t iLabel = mcpart->GetFirstMother();
   if (iLabel<0){
     AliDebug(1, "Stack label is negative, return\n");
     return -1;
   }
 
-  TParticle *partMother = fStack->Particle(iLabel);
+  AliMCParticle *mctrack = NULL;
+  if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(iLabel))))) return -1; 
+  TParticle *partMother = mctrack->Particle();
   Int_t maPdgcode = partMother->GetPdgCode();
 
    // if the mother is charmed hadron  
@@ -884,7 +963,8 @@ Int_t AliHFEmcQA::GetSource(TParticle * const mcpart)
         }
 
         // if there is an ancester
-        TParticle* grandMa = fStack->Particle(jLabel);
+        if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))) return -1; 
+        TParticle* grandMa = mctrack->Particle();
         Int_t grandMaPDG = grandMa->GetPdgCode();
 
         for (Int_t j=0; j<fNparents; j++){

@@ -35,7 +35,9 @@ AliHFEpairs::AliHFEpairs():
   ,fOpenangle(0)
   ,fCosOpenangle(0)
   ,fSignedLxy(0)
+  ,fSignedLxy2(0)
   ,fKFIP(0)
+  ,fKFIP2(0)
 { 
   //
   // Default constructor
@@ -52,7 +54,9 @@ AliHFEpairs::AliHFEpairs(const AliHFEpairs &p):
   ,fOpenangle(p.fOpenangle)
   ,fCosOpenangle(p.fCosOpenangle)
   ,fSignedLxy(p.fSignedLxy)
+  ,fSignedLxy2(p.fSignedLxy2)
   ,fKFIP(p.fKFIP)
+  ,fKFIP2(p.fKFIP2)
 { 
   //
   // Copy constructor

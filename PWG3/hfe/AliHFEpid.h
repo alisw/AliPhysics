@@ -28,7 +28,9 @@
 #include "AliHFEpidBase.h"
 #endif
 
+class AliESDpid;
 class AliESDtrack;
+class AliHFEpidBase;
 class AliVParticle;
 class AliMCParticle;
 
@@ -46,12 +48,12 @@ class AliHFEpid : public TObject{
 
     Bool_t IsQAOn() const { return TestBit(kIsQAOn); };
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
+    void SetESDpid(AliESDpid *pid);
     void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; }
     void SetQAOn();
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData, hasMCdata); };
     TList *GetQAhistograms() const { return fQAlist; };
 
-    inline void SetTPCBetheBlochParameters(Double_t *pars);
   protected:
     Bool_t MakePidTpcTof(AliHFEpidObject *track);
     Bool_t MakePidTpcTrd(AliHFEpidObject *track);
@@ -64,12 +66,15 @@ class AliHFEpid : public TObject{
     void InitStrategy4();
     void InitStrategy5();
     void InitStrategy6();
+    void InitStrategy7();
+    Bool_t IdentifyStrategy0(AliHFEpidObject *track);
     Bool_t IdentifyStrategy1(AliHFEpidObject *track);
     Bool_t IdentifyStrategy2(AliHFEpidObject *track);
     Bool_t IdentifyStrategy3(AliHFEpidObject *track);
     Bool_t IdentifyStrategy4(AliHFEpidObject *track);
     Bool_t IdentifyStrategy5(AliHFEpidObject *track);
     Bool_t IdentifyStrategy6(AliHFEpidObject *track);
+    Bool_t IdentifyStrategy7(AliHFEpidObject *track);
   private:
     enum{
       kIsQAOn = BIT(14),
@@ -91,18 +96,18 @@ class AliHFEpid : public TObject{
       kTRDSignal = 0,
       kITSSignal = 1
     };
+
+    void AddCommonObject(TObject * const o);
+    void ClearCommonObjects();
+
     AliHFEpidBase *fDetectorPID[kNdetectorPID];     //! Detector PID classes
     UInt_t fEnabledDetectors;                       //  Enabled Detectors
     UInt_t fPIDstrategy;                            //  PID Strategy
-    Double_t fTPCBetheBlochParameters[5];           //  TPC Bethe-Bloch Parameters
     TList *fQAlist;                                 //! QA histograms
     Int_t fDebugLevel;                              //  Debug Level
+    TObjArray *fCommonObjects;                       // Garbage Collector
 
   ClassDef(AliHFEpid, 1)      // Steering class for Electron ID
 };
-
-void AliHFEpid::SetTPCBetheBlochParameters(Double_t *pars){
-  memcpy(fTPCBetheBlochParameters, pars, sizeof(Double_t)*5);
-}
 
 #endif

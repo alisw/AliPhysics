@@ -17,6 +17,12 @@
 // study displaced electrons from beauty and charm 
 // with cut on impact parameters in various pT bins
 // 
+//
+// Authors:
+//  Hongyan Yang <hongyan@physi.uni-heidelberg.de>
+//  Carlo Bombonati <Carlo.Bombonati@cern.ch>
+// 
+
 
 
 #ifndef ALIANALYSISTASKDISPLACEDELECTRONS_H
@@ -53,7 +59,8 @@ class AliAnalysisTaskDisplacedElectrons : public AliAnalysisTaskSE{
   typedef enum{
     kPostProcess = 0,
     kDisplacedElectrons = 1, 
-    kCorrection = 2
+    kCorrection = 2,
+    kDePidQA = 3
   }Switches_t;
 
   enum{
@@ -74,19 +81,30 @@ class AliAnalysisTaskDisplacedElectrons : public AliAnalysisTaskSE{
 
   void PrintStatus() const;
   
-  Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fPlugins, plug); };
+  Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fDePlugins, plug); };
   void SwitchOnPlugin(Int_t plug);
 
-  void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
-  
-  void SetPIDdetectors(Char_t * const detectors){ fPIDdetectors = detectors; };
-  void SetPIDStrategy(UInt_t strategy) { fPIDstrategy = strategy; };
-  void SetDBLevel(UInt_t debugLevel) { fDebugLevel = debugLevel; };
+  void SetHFECuts(AliHFEcuts * const cuts) { fDeCuts = cuts; };
+  void SetNclustersITS(Int_t nITSclusters){fNminITSCluster = nITSclusters;};
+  void SetMinPrimVtxContrib(Int_t nPrimVtxContrib){fNminPrimVtxContrib = nPrimVtxContrib;};
+  void SetPIDdetectors(Char_t * const detectors){ fDePIDdetectors = detectors; };
+  void SetPIDStrategy(UInt_t strategy) { fDePIDstrategy = strategy; };
+  void SetDBLevel(UInt_t debugLevel) { fDeDebugLevel = debugLevel; };
   void AddPIDdetector(TString detector); 
  
-  Bool_t HasMCData() const { return TestBit(kHasMCdata); };
+  Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
+  Bool_t IsESDanalysis() const { return !TestBit(kAODanalysis); };
+  Bool_t HasMCData() const { return TestBit(kHasMCdata); }
   void SetHasMCData(Bool_t hasMC = kTRUE) { SetBit(kHasMCdata, hasMC); };
   
+  void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
+  void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
+
+  void ProcessMC();
+  void ProcessESD();
+  void ProcessData();
+  
+
   
  private:
   
@@ -113,25 +131,27 @@ class AliAnalysisTaskDisplacedElectrons : public AliAnalysisTaskSE{
   void MakeParticleContainer();
   void MakeEventContainer();
 
-  UInt_t fDebugLevel;                   // debug level
-  
-  TString fPIDdetectors;                // Detectors for Particle Identification
-  UInt_t fPIDstrategy;                  // PID Strategy
-  
+  UInt_t fDeDebugLevel;                  // debug level
+  Int_t fNminITSCluster;                 // number of clusters in ITS
+  Int_t fNminPrimVtxContrib;             // number of ncontributor in ITS for prim vtx
+  TString fDePIDdetectors;                // Detectors for Particle Identification
+  UInt_t fDePIDstrategy;                  // PID Strategy
 
-  UShort_t fPlugins;                    // Enabled Plugins                                    
-  AliESDEvent *fESD;                    //! The ESD Event
-  AliMCEvent *fMC;                      //! The MC Event
+  UShort_t fDePlugins;                    // Enabled Plugins    
 
-  AliHFEcuts *fCuts;                    // Cut Collection
-  AliHFEpid *fPID;                      // PID method
-  AliCFManager *fCFM;                   //! Correction Framework Manager
-                                               
-  TH1I *fNEvents;                       //! counter for the number of Events
-  TH1F *fElectronsPt;                       //! pt distribution of electrons (hfepid)
-  TList *fOutput;                       //! Container for this Task Output
-  TList *fCorrection;                       //! Container for correction  Output
+  AliHFEcuts *fDeCuts;                    // Cut Collection
+  AliESDpid *fDeDefaultPID;               //! ESD PID method
+  AliHFEpid *fDePID;                      //! PID method
+  AliCFManager *fDeCFM;                   //! Correction Framework Manager
   AliHFEdisplacedElectrons *fDisplacedElectrons;        //! HFE displaced Electrons pointer 
+  
+                                               
+  TH1I *fDeNEvents;                       //! counter for the number of Events
+  TH1F *fElectronsMcPt;                   //! pt distribution of MC electrons (mcpid)
+  TH1F *fElectronsEsdPt;                  //! pt distribution of ESD electrons (hfepid)
+  TH1F *fElectronsDataPt;                  //! pt distribution of DATA electrons (hfepid)
+  TList *fDeCorrection;                   //! Container for correction  Outpu  
+  TList *fDeQA;                          //! container for the PID qa 
   TList *fHistDisplacedElectrons;                      //! list of outputs
  
   ClassDef(AliAnalysisTaskDisplacedElectrons, 1);      // The DisplacedElectrons Analysis Task

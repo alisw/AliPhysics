@@ -383,8 +383,8 @@ AliHFEcutStep *AliHFEtrackFilter::MakeCutStepRecKineITSTPC(){
   //
   AliHFEcutStep *fCutStep = new AliHFEcutStep("RecKineITSTPC");
 
-  AliCFTrackQualityCuts *trackQuality = new AliCFTrackQualityCuts("QualityRec","REC Track Quality Cuts");
-  trackQuality->SetMinNClusterTPC(50);
+  AliCFTrackQualityCuts *trackQuality = new AliCFTrackQualityCuts((Char_t *)"QualityRec", (Char_t *)"REC Track Quality Cuts");
+  trackQuality->SetMinNClusterTPC(80);
   trackQuality->SetMaxChi2PerClusterTPC(3.5);
   trackQuality->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
   trackQuality->SetMaxCovDiagonalElements(2., 2., 0.5, 0.5, 2); 
@@ -394,9 +394,9 @@ AliHFEcutStep *AliHFEtrackFilter::MakeCutStepRecKineITSTPC(){
   hfecuts->SetClusterRatioTPC(0.6);
   fCutStep->AddCut(hfecuts);
   
-  AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts("RecKine", "REC Kine Cuts");
-  kineCuts->SetPtRange(0.1, 10);
-  kineCuts->SetEtaRange(-0.9, 0.9);
+  AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts((Char_t *)"RecKine", (Char_t *)"REC Kine Cuts");
+  kineCuts->SetPtRange(0.1, 20);
+  kineCuts->SetEtaRange(-0.8, 0.8);
   fCutStep->AddCut(kineCuts); 
 
   AddCutStep(fCutStep);
@@ -411,9 +411,9 @@ AliHFEcutStep *AliHFEtrackFilter::MakeCutStepPrimary(){
   //
   AliHFEcutStep *fCutStep = new AliHFEcutStep("Primary");
 
-  AliCFTrackIsPrimaryCuts *primaryCut = new AliCFTrackIsPrimaryCuts("PrimaryCuts", "REC Primary Cuts");
-  primaryCut->SetMaxDCAToVertexXY(2.);
-  primaryCut->SetMaxDCAToVertexZ(10.);
+  AliCFTrackIsPrimaryCuts *primaryCut = new AliCFTrackIsPrimaryCuts((Char_t *)"PrimaryCuts", (Char_t *)"REC Primary Cuts");
+  primaryCut->SetMaxDCAToVertexXY(0.5);
+  primaryCut->SetMaxDCAToVertexZ(5.);
   primaryCut->SetAcceptKinkDaughters(kFALSE);
   fCutStep->AddCut(primaryCut);
 
@@ -429,7 +429,7 @@ AliHFEcutStep *AliHFEtrackFilter::MakeCutStepHFEITS(){
   //
   AliHFEcutStep *fCutStep = new AliHFEcutStep("HFEITS");
 
-  AliHFEextraCuts *hfecuts = new AliHFEextraCuts("HFEPixelsCuts","Extra cuts from the HFE group");
+  AliHFEextraCuts *hfecuts = new AliHFEextraCuts((Char_t *)"HFEPixelsCuts",(Char_t *)"Extra cuts from the HFE group");
   hfecuts->SetRequireITSpixel(AliHFEextraCuts::kFirst);
   //hfecuts->SetCheckITSstatus(kTRUE);
   fCutStep->AddCut(hfecuts);
@@ -461,17 +461,18 @@ AliHFEcutStep *AliHFEtrackFilter::MakeMCSignalCuts(){
   // Cut step is already included in the filter
   //
   fMCsignal = new AliHFEcutStep("MCSignal");
-  AliCFParticleGenCuts *genCuts = new AliCFParticleGenCuts("fCutsGenMC", "Particle Generation Cuts");
+  AliCFParticleGenCuts *genCuts = new AliCFParticleGenCuts((Char_t *)"fCutsGenMC", (Char_t *)"Particle Generation Cuts");
   genCuts->SetRequireIsCharged();
   genCuts->SetRequireIsPrimary();
-  genCuts->SetProdVtxRangeX(-2, 2);
-  genCuts->SetProdVtxRangeY(-2, 2);
+  genCuts->SetProdVtxRange2D();
+  genCuts->SetProdVtxRangeX(0, 1);
+  genCuts->SetProdVtxRangeY(0, 1);
   genCuts->SetRequirePdgCode(11, kTRUE);
   fMCsignal->AddCut(genCuts);
   
-  AliCFTrackKineCuts *kineMCcuts = new AliCFTrackKineCuts("fCutsKineMC","MC Kine Cuts");
-  kineMCcuts->SetPtRange(0.1, 10.);
-  kineMCcuts->SetEtaRange(-0.9, 0.9);
+  AliCFTrackKineCuts *kineMCcuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineMC",(Char_t *)"MC Kine Cuts");
+  kineMCcuts->SetPtRange(0.1, 20.);
+  kineMCcuts->SetEtaRange(-0.8, 0.8);
   fMCsignal->AddCut(kineMCcuts);
 
   return fMCsignal;

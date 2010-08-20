@@ -31,7 +31,8 @@ class TH2F;
 class TString;
 class AliESDEvent;
 class AliESDtrack;
-class AliStack;
+class AliMCEvent;
+class AliKFParticle;
 
 //________________________________________________________________
 class AliHFEpriVtx : public TObject {
@@ -45,20 +46,26 @@ class AliHFEpriVtx : public TObject {
                 void CreateHistograms(TString hnopt=""); // create histograms
                 void Init();
                 void SetEvent(AliESDEvent * const ESD){fESD1=ESD;}; // set ESD pointer
-                void SetStack(AliStack * const stack){fStack=stack;} // set stack pointer
+                void SetMCEvent(AliMCEvent * const mcEvent){fMCEvent=mcEvent;} // set stack pointer
                 void CountNtracks(Int_t sourcePart, Int_t recpid, Double_t recprob); // count number of tracks passed certain cut
                 void FillNtracks(); // fill counted number of tracks
                 void CountPriVxtElecContributor(AliESDtrack *ESDelectron, Int_t sourcePart, Int_t recpid, Double_t recprob); 
-                void GetNPriVxtContributor();
                 void FillNprimVtxContributor() const;
-		Double_t GetDistanceFromRecalVertexXY(AliESDtrack *ESDelectron); 
-
+                void RecalcPrimvtx(Int_t nkftrk, Int_t * const, AliKFParticle * const); //recalculate primary vertex after removing given tracks
+                void RecalcPrimvtx(AliESDtrack * const ESDelectron); //recalculate primary vertex after removing given track
+                void GetRecalcPrimvtx(Double_t privtx[3]) const {
+                    privtx[0]=fPVxRe; privtx[1]=fPVyRe; privtx[2]=fPVzRe;
+                }
+                void GetNPriVxtContributor();
+                Double_t GetDistanceFromRecalVertexXY(AliESDtrack * const ESDelectron);
+		            Int_t GetNsectrk2prim() const {return fNsectrk2prim;}; 
                 Int_t GetMCPID(AliESDtrack *track); // return mc pid
+
 
         private:
 
                 AliESDEvent* fESD1; // ESD event 
-                AliStack* fStack; // MC Stack
+                AliMCEvent* fMCEvent; // MC Event
 
                 TString fkSourceLabel[10]; // storing source label
 
@@ -108,6 +115,10 @@ class AliHFEpriVtx : public TObject {
                 TH2F *fDiffDCAvsPt; // histogram to fill DCA difference as a function of pT
                 TH2F *fDiffDCAvsNt; // histogram to fill DCA difference as a function of pT
 
+                Int_t fNsectrk2prim; // # of secvtx tracks contributing to primvtx calculation
+                Double_t fPVxRe;     // recalculated primary vertex x 
+                Double_t fPVyRe;     // recalculated primary vertex y 
+                Double_t fPVzRe;     // recalculated primary vertex z  
 
         ClassDef(AliHFEpriVtx,0);
 };
