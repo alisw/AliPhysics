@@ -27,6 +27,7 @@
 #include <TLeaf.h>
 #include <TMath.h>
 #include <TNtuple.h>
+#include <TString.h>
 
 #include "AliStarEventReader.h"
 #include "AliStarEvent.h"
@@ -460,7 +461,23 @@ void AliStarEventReader::PrintTrack ( Int_t counter )
 }
 
 //______________________________________________________________________________
-Bool_t AliStarEventReader::MakeFileList ( const char* inputFileDirectory )
+Bool_t AliStarEventReader::MakeFileList ( const char* input )
+{
+  //get the files to process
+  TString inputStr(input);
+  if (inputStr.EndsWith(" "))
+  {
+    printf("AliStarEventReader::MakeFileList(): please remove trailing whitespace from filename\n");
+    return kFALSE;
+  }
+  if (inputStr.EndsWith("/"))
+    return MakeFileListFromDir(input);
+  else
+    return MakeFileListFromFile(input);
+}
+
+//______________________________________________________________________________
+Bool_t AliStarEventReader::MakeFileListFromDir ( const char* inputFileDirectory )
 {
   //get the files to process
   Int_t  Count        = 0 ;
@@ -499,5 +516,36 @@ Bool_t AliStarEventReader::MakeFileList ( const char* inputFileDirectory )
   cout << "Add: " << Count-1 << " more file(s) from this directory for a total of " << Count << " files." << endl ;
   cout << "Finished creating file list ... preparing to open first file." << endl << endl ;
   return true ;
+}
+
+//______________________________________________________________________________
+Bool_t AliStarEventReader::MakeFileListFromFile ( const char* inputFile )
+{
+  //get the files to process, from a text file, one file per line
+  if (!fFileList) fFileList=new TList();
+  ifstream filein;
+  filein.open(inputFile);
+  if (!filein.good()) 
+  {
+    printf("problem reading the file list \"%s\"\n",inputFile);
+    return kFALSE;
+  }
+  TString line;
+  while (filein.good())
+  {
+    printf("opening file: ");
+    line.ReadLine(filein);
+    if (line.Length() == 0) continue;
+    TFile* file = TFile::Open(line.Data());
+    if (!file) 
+    {
+      printf("problem opening file \"%s\"\n",line.Data());
+      continue;
+    }
+    fFileList->Add(file);
+    printf("%s\n",line.Data());
+  }
+  if (fFileList->GetEntries()>0) return kTRUE;
+  return kFALSE;
 }
 

@@ -38,6 +38,8 @@ class AliStarEventReader : public TObject {
   virtual Bool_t  GetNextEvent();
   virtual Int_t   Centrality( Int_t referenceMultiplicity );   
   virtual Bool_t  MakeFileList( const char* inputFileDirectory );
+  virtual Bool_t  MakeFileListFromDir( const char* inputFileDirectory );
+  virtual Bool_t  MakeFileListFromFile( const char* inputFileName );
   virtual Int_t   ParticleID( AliStarTrack* track ) ;
 
   virtual void    PrintEventHeader( ) ;
