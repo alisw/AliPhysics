@@ -66,7 +66,7 @@ endif
 # Check if DATE is installed
 
 ifeq ($(shell which date-config 2>/dev/null),)
-DATEFLAGS := -D`uname` -DDATE_SYS=`uname` -Dlong32='int' \
+DATEFLAGS := -D$(shell uname) -DDATE_SYS=$(shell uname) -Dlong32='int' \
              -Dlong64='long long' -DdatePointer='long'
 DMONLIBS  :=
 else 
