@@ -82,6 +82,7 @@
 
 // TRD performance classes
 #pragma link C++ class  AliTenderSupplyTRD+;
+#pragma link C++ class  AliTRDpwg1Helper+;
 #pragma link C++ class  AliTRDtrendValue+;
 #pragma link C++ class  AliTRDtrendingManager+;
 #pragma link C++ class  AliTRDclusterInfo+;
