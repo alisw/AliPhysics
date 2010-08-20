@@ -146,7 +146,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaphoton->SwitchOffFiducialCut();
   if(kSimulation){
     anaphoton->SwitchOnFiducialCut();
-    AliFiducialCut * fidCut1stYear = anaphoton->GetFidutialCut();
+    AliFiducialCut * fidCut1stYear = anaphoton->GetFiducialCut();
     fidCut1stYear->DoCTSFiducialCut(kFALSE) ;
     fidCut1stYear->DoEMCALFiducialCut(kTRUE) ;
     fidCut1stYear->DoPHOSFiducialCut(kTRUE) ;
