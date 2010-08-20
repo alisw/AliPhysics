@@ -22,6 +22,7 @@
 #include <Riostream.h>
 
 #include <TSystem.h>
+#include <TSystemFile.h>
 #include <TFile.h>
 #include <TList.h>
 #include <TLeaf.h>
@@ -464,16 +465,13 @@ void AliStarEventReader::PrintTrack ( Int_t counter )
 Bool_t AliStarEventReader::MakeFileList ( const char* input )
 {
   //get the files to process
-  TString inputStr(input);
-  if (inputStr.EndsWith(" "))
-  {
-    printf("AliStarEventReader::MakeFileList(): please remove trailing whitespace from filename\n");
-    return kFALSE;
-  }
-  if (inputStr.EndsWith("/"))
-    return MakeFileListFromDir(input);
+  TString inputstring(input);
+  inputstring = inputstring.Strip(TString::kBoth);
+  TSystemFile inputfile(inputstring.Data(),"");
+  if (inputfile.IsDirectory())
+    return MakeFileListFromDir(inputstring.Data());
   else
-    return MakeFileListFromFile(input);
+    return MakeFileListFromFile(inputstring.Data());
 }
 
 //______________________________________________________________________________
