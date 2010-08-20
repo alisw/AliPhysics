@@ -14,17 +14,18 @@
 //
 
 #include "AliQAv1.h"
+#include "TPaveText.h"
 
 class AliITSQASPDChecker: public TObject {
 
 public:
-  AliITSQASPDChecker():fSubDetOffset(0),fStepBitSPD(NULL),fLowSPDValue(NULL),fHighSPDValue(NULL) {;} 
+  AliITSQASPDChecker();
   AliITSQASPDChecker& operator = (const AliITSQASPDChecker& qac) ; //operator =
-  virtual ~AliITSQASPDChecker() {if(fStepBitSPD) delete[] fStepBitSPD ;if(fLowSPDValue)delete[]fLowSPDValue;if(fHighSPDValue) delete[]fHighSPDValue;} // dtor
+  virtual ~AliITSQASPDChecker(); // dtor
   virtual Double_t Check(AliQAv1::ALITASK_t index, TObjArray * list, const AliDetectorRecoParam * recoParam);
   Double_t CheckRawData(const TObjArray *list);
   void SetTaskOffset(Int_t TaskOffset);
-
+  
   void SetStepBit(const Double_t *steprange);
   Double_t *GetStepBit() const {return fStepBitSPD;};
   void SetSPDLimits(const Float_t *lowvalue, const Float_t * highvalue);
@@ -35,8 +36,10 @@ private:
   Double_t *fStepBitSPD;         // parameter interface for ITS final QA
   Float_t *fLowSPDValue;         // lower limits for QA bit settings
   Float_t *fHighSPDValue;        // lower limits for QA bit settings
+  
+  TPaveText * fDisplayStatus[6]; //Online Comments for the DQM-shifter histos 
 
-  ClassDef(AliITSQASPDChecker,2)  // description 
+  ClassDef(AliITSQASPDChecker,3)  // description 
 
 };
 

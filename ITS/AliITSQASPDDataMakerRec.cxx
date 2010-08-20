@@ -133,10 +133,16 @@ void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
   ((TH2I*)list->At(5+shift))->Reset(); // clean up MEB histo (needed at the first cycle for small statistics)
   
    ((TH1F*)list->At(7+shift))->Divide(((TH1F*)list->At(1+shift)),((TH1F*)list->At(0+shift)));
-   ((TH1F*)list->At(8+shift))->Divide(((TH1F*)list->At(2+shift)),((TH1F*)list->At(0+shift)));
-   ((TH1F*)list->At(9+shift))->Divide(((TH1F*)list->At(3+shift)),((TH1F*)list->At(4+shift)));
+   ((TH1F*)list->At(8+shift))->Divide(((TH1F*)list->At(2+shift)),((TH1F*)list->At(0+shift)));// missing FO ratio (per event)
+   ((TH1F*)list->At(9+shift))->Divide(((TH1F*)list->At(3+shift)),((TH1F*)list->At(4+shift)));// noisy FO ratio   (per event)
  
   for(Int_t i=0; i<1200; i++){
+  // threshold for protection in case of technical runs (->few entries per chip)
+   Short_t thre=20; // 20 is ok in run 104792 (where the problem occured).
+   if((((TH1F*)list->At(0+shift)))->GetBinContent(i+1)<thre) continue; // expected FO yield
+   if((((TH1F*)list->At(4+shift)))->GetBinContent(i+1)<thre) continue; // the total FO yield.
+
+    
   if(((TH1F*)list->At(8+shift))->GetBinContent(i+1)>0.5 && ((TH1F*)list->At(9+shift))->GetBinContent(i+1)>0.5){
    Int_t eq=i/60;
    Int_t hs=(i%60)/10;
@@ -211,8 +217,8 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
    hSPDChipsMEB->GetXaxis()->SetNdivisions(60,kFALSE);
    hSPDChipsMEB->GetYaxis()->SetTitle("SIDE C   ->   SIDE A           Chip");
    hSPDChipsMEB->GetYaxis()->SetNdivisions(20,kFALSE);
-   hSPDChipsMEB->SetMarkerStyle(21);
-   hSPDChipsMEB->SetMarkerColor(kRed);
+   hSPDChipsMEB->SetOption("COLZ");
+   hSPDChipsMEB->UseCurrentStyle();
    for(Int_t ibinx =0; ibinx< hSPDChipsMEB->GetNbinsX(); ibinx++){
    if(ibinx%6==0) hSPDChipsMEB->GetXaxis()->SetBinLabel(ibinx+1,Form("Sector %i__%i",ibinx/6,ibinx%6));
    else hSPDChipsMEB->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",ibinx%6));
@@ -227,6 +233,8 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   TH2F *hFastOrCorrelation = new TH2F("SPDFastOrCorrelation_OnlineSPD","Fast Or multiplicity correlation - SPD",100,0.,100.,100,0,100);
   hFastOrCorrelation->GetXaxis()->SetTitle("Layer 1");
   hFastOrCorrelation->GetYaxis()->SetTitle("Layer 2");
+  hFastOrCorrelation->SetOption("COLZ");
+  hFastOrCorrelation->UseCurrentStyle();
   rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrCorrelation, 6+shift, !expert, image, !saveCorr);
   fSPDhRawsTask++;
 // 7
@@ -259,6 +267,8 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   TH2F *herrorsAll = new TH2F("SPDErrorsAll_OnlineSPD","Error codes - SPD",20,-0.5,19.5,22,-0.5,21.5);
   herrorsAll->GetXaxis()->SetTitle("DDL");
   herrorsAll->GetYaxis()->SetTitle("Error Type");
+  herrorsAll->SetOption("COLZ");
+  herrorsAll->UseCurrentStyle();
   rv = fAliITSQADataMakerRec->Add2RawsList(herrorsAll, kAmoreFoOffset+shift, !expert, image, !saveCorr);
   fSPDhRawsTask++;
 //11-30
@@ -354,7 +364,8 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   if(ibiny < 10) hFastOrMapStaveChip->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",ibiny));
   else hFastOrMapStaveChip->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",19-ibiny));
   }
-  hFastOrMapStaveChip->SetDrawOption("colz");
+  hFastOrMapStaveChip->SetOption("COLZ");
+  hFastOrMapStaveChip->UseCurrentStyle();
   rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrMapStaveChip, 28+offset, !expert, image, !saveCorr);
   fSPDhRawsTask++;
 // 29
@@ -377,6 +388,8 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   else hHitMapHalfStaveChipInner->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",ibiny%2));
   hHitMapHalfStaveChipInner->GetYaxis()->SetTitleOffset(1.4);
   }
+  hHitMapHalfStaveChipInner->SetOption("COLZ");
+  hHitMapHalfStaveChipInner->UseCurrentStyle();
   rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapHalfStaveChipInner, 30+offset, !expert, image, !saveCorr);
   fSPDhRawsTask++;
 // 31
@@ -393,6 +406,8 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   else hHitMapHalfStaveChipOuter->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",ibiny%4+2));
   hHitMapHalfStaveChipOuter->GetYaxis()->SetTitleOffset(1.4);
   }
+  hHitMapHalfStaveChipOuter->SetOption("COLZ");
+  hHitMapHalfStaveChipOuter->UseCurrentStyle();
   rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapHalfStaveChipOuter, 31+offset, !expert, image, !saveCorr);
   fSPDhRawsTask++;
 // 32
