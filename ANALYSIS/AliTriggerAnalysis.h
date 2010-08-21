@@ -16,6 +16,7 @@
 //-------------------------------------------------------------------------
 
 class AliESDEvent;
+class AliESDtrackCuts;
 class TH1F;
 class TH2F;
 class TCollection;
@@ -24,7 +25,7 @@ class TMap;
 class AliTriggerAnalysis : public TObject
 {
   public:
-    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x16000 }; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
+    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x16000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
     
@@ -76,6 +77,8 @@ class AliTriggerAnalysis : public TObject
     void SaveHistograms() const;
     
     void PrintTriggerClasses() const;
+    void SetESDTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts;}
+    AliESDtrackCuts* GetESDTrackCuts() const  {return fEsdTrackCuts;}
 
   protected:
     Bool_t IsL0InputFired(const AliESDEvent* aEsd, UInt_t input) const;
@@ -113,8 +116,9 @@ class AliTriggerAnalysis : public TObject
     TMap* fTriggerClasses;    // counts the active trigger classes (uses the full string)
     
     Bool_t fMC;              // flag if MC is analyzed
+    AliESDtrackCuts* fEsdTrackCuts;  //Track Cuts to select ESD tracks
 
-    ClassDef(AliTriggerAnalysis, 9)
+    ClassDef(AliTriggerAnalysis, 10)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);

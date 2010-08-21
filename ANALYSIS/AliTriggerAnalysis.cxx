@@ -42,6 +42,7 @@
 #include <AliESDZDC.h>
 #include <AliESDFMD.h>
 #include <AliESDVertex.h>
+#include <AliESDtrackCuts.h>
 
 ClassImp(AliTriggerAnalysis)
 
@@ -65,7 +66,8 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fHistFMDSingle(0),
   fHistFMDSum(0),
   fTriggerClasses(0),
-  fMC(kFALSE)
+  fMC(kFALSE),
+  fEsdTrackCuts(0)
 {
   // constructor
 }
@@ -133,6 +135,11 @@ AliTriggerAnalysis::~AliTriggerAnalysis()
     fTriggerClasses->DeleteAll();
     delete fTriggerClasses;
     fTriggerClasses = 0;
+  }
+
+  if (fEsdTrackCuts){
+    delete fEsdTrackCuts;
+    fEsdTrackCuts =0;
   }
 }
 
@@ -202,6 +209,9 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
   
   if (trigger & kOneParticle)
     str += " OneParticle";  
+
+  if (trigger & kOneTrack)
+    str += " OneTrack";  
 
   return str;
 }
@@ -443,6 +453,38 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
         }
       }
     }
+  }
+
+  // hadron level definition for TPC tracks
+
+  if (decision && (trigger & kOneTrack))
+  {
+    decision = kFALSE;
+    const AliESDVertex* vertex = aEsd->GetPrimaryVertexSPD();
+    Float_t ptmin, ptmax;
+    fEsdTrackCuts->GetPtRange(ptmin,ptmax);
+    AliDebug(3, Form("ptmin = %f, ptmax = %f\n",ptmin, ptmax));
+
+    if (vertex && vertex->GetNContributors() > 0 && (!vertex->IsFromVertexerZ() || vertex->GetDispersion() < 0.02) && TMath::Abs(vertex->GetZv()) < 10.) {
+      AliDebug(3,Form("Check on the vertex passed\n"));
+      for (Int_t i=0; i<aEsd->GetNumberOfTracks(); ++i){
+	if (fEsdTrackCuts->AcceptTrack(aEsd->GetTrack(i))){
+	  AliDebug(2, Form("pt of track = %f --> check passed\n",aEsd->GetTrack(i)->Pt()));
+	  decision = kTRUE;
+	  break;
+        }
+      }
+    }
+    else{
+      AliDebug(4,Form("Check on the vertex not passed\n"));
+      for (Int_t i=0; i<aEsd->GetNumberOfTracks(); ++i){
+        if (fEsdTrackCuts->AcceptTrack(aEsd->GetTrack(i))){
+	  AliDebug(4,Form("pt of track = %f --> check would be passed if the vertex was ok\n",aEsd->GetTrack(i)->Pt()));
+	  break;
+	}
+      }
+    }
+    if (!decision) AliDebug(3,("Check for kOneTrack NOT passed\n"));
   }
 
   return decision;
