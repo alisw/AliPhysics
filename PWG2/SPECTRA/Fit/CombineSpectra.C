@@ -221,9 +221,9 @@ void FitCombined() {
 
   }
   table.InsertHline();
-  AliLatexTable tempTable(4,"c|ccc");
-  tempTable.InsertCustomRow("Part & Yield & Yield Below & Frac Above\\\\");
-
+  AliLatexTable tempTable(3,"c|cc");
+  tempTable.InsertCustomRow("Part & Yield &  $\\langle p_{t} \\rangle$ \\\\");
+  tempTable.InsertHline();
 
   TH1F* hRatiosToFit[kNPart][kNCharge];
   //  Fit all  
@@ -372,10 +372,11 @@ void FitCombined() {
       
 
       /// TEMP TABLE
-      tempTable.SetNextCol(partLabel[ipart][icharge]);
+      tempTable.SetNextCol(partLatex[ipart][icharge]);
       tempTable.SetNextCol(yieldTools, yieldETools, -4);
-      tempTable.SetNextCol(partialYields[1], partialYieldsErrors[1], -4);
-      tempTable.SetNextCol(yieldAbove/yield,-2);
+      tempTable.SetNextCol(mean,  meane ,-4);
+      //      tempTable.SetNextCol(partialYields[1], partialYieldsErrors[1], -4);
+      //      tempTable.SetNextCol(yieldAbove/yield,-2);
       tempTable.InsertRow();
       c2r->cd();
       hRatiosToFit[ipart][icharge]->Draw("esame");
@@ -577,22 +578,25 @@ void LoadSpectra() {
  
   
   // K0s
-  f = new TFile ("./Files/PtSpectraCorrectedK0sOff.root");
+  f = new TFile ("./Files/PtSpectraCorrectedK0sOff_20100803.root");
   //  hSpectra[kK0][kKaon][kPos] = (TH1F*) AliBWTools::GetdNdPtFromOneOverPt((TH1*) gDirectory->Get("hSpectraOff")); 
   hSpectra[kK0][kKaon][kPos] = (TH1F*) gDirectory->Get("hSpectraOff"); 
   //  hSpectra[kK0][kKaon][kPos]->Scale(2*TMath::Pi());
   //  hSpectra[kK0][kKaon][kPos]->Scale(1./272463);
   hSpectra[kK0][kKaon][kNeg] = hSpectra[kK0][kKaon][kPos];
 
-  // Kinks: TO BE FIXED WITH POSITIVES AND NEGATIVES
+  // Kinks
   //  f = new TFile ("./Files/PtAllKaonKinkRap6Apr24.root");
-  f = new TFile ("./Files/PtKaonKinkJune13AllPN_20100615.root");
+  //  f = new TFile ("./Files/PtKaonKinkJune13AllPN_20100615.root");
+  f = new TFile ("./Files/KaonKinkJun16PhySel2N.root");
   hSpectra[kKinks][kKaon][kPos] = (TH1F*)gDirectory->Get("fptallKPA");
   hSpectra[kKinks][kKaon][kNeg] = (TH1F*)gDirectory->Get("fptallKNA");
-  hSpectra[kKinks][kKaon][kPos]->Scale(0.5/0.7); // different rapidity range for kinks
-  hSpectra[kKinks][kKaon][kNeg]->Scale(0.5/0.7); // different rapidity range for kinks
-  hSpectra[kKinks][kKaon][kPos]->Scale(276004./263345.); // different N of events
-  hSpectra[kKinks][kKaon][kNeg]->Scale(276004./263345.); // different N of events
+  // hSpectra[kKinks][kKaon][kPos]->Scale(0.5/0.7); // different rapidity range for kinks
+  // hSpectra[kKinks][kKaon][kNeg]->Scale(0.5/0.7); // different rapidity range for kinks
+  // hSpectra[kKinks][kKaon][kPos]->Scale(276004./263345.); // different N of events
+  // hSpectra[kKinks][kKaon][kNeg]->Scale(276004./263345.); // different N of events
+  hSpectra[kKinks][kKaon][kPos]->Scale(1./303214); // different N of events
+  hSpectra[kKinks][kKaon][kNeg]->Scale(1./303214); // different N of events
 
   // Apply correction factors
   // Secondaries for protons
@@ -722,34 +726,14 @@ void LoadSpectra() {
 	    Float_t correction = hCorrFluka[icharge]->GetBinContent(1,hCorrFluka[icharge]->GetYaxis()->FindBin(pt));
 
 	    // already in the efficiency correction (F. Noferini)
-	    // 	    if (idet == kTOF && icharge == kNeg) {
 	    if (idet == kTOF) {
-	      correction = 1;
-// 	      // Apply parametrized correction computed by francesco
-// 	      // Fitted panos correction and using momentum at the outer radius of the TPC
-
-// 	      Float_t ptav = pt; // Just to use the same name francesco uses...
-
-// 	      // from pT constrained at P.V. (ptav) to pT TPC outer (ptTPCout)	      
-// 	      Float_t ptTPCout=ptav*(1-6.81059e-01*TMath::Exp(-ptav*4.20094));
-	      
-// 	      // traking correction (fit to Panos)
-// 	      Float_t antiprotonEC = 1 - 0.129758 *TMath::Exp(-ptav*0.679612);
-	      
-// 	      // TOF matching efficiency correction (derived from Panos one scaled for M.B.(TOF)/M.B.(TPC)).
-// 	      Float_t antiprotonEC2 = TMath::Power(1 -  0.129758*TMath::Exp(-ptTPCout*0.679612),0.07162/0.03471);
-// 	      correction = antiprotonEC * antiprotonEC2;
- 	    }
-
-	    //	    cout << icharge<< " " << h->GetBinCenter(ibin) << " " << pt << " " << correction << endl;
+	      if (icharge == kNeg)  correction = 1; // antiprotons already corrected in efficiency
+	      // Scale correction for the different material budget. Recipe by Francesco Noferini
+	      else correction = TMath::Power(correction,0.07162/0.03471);
+	    }	    
 	    if (correction != 0) {// If the bin is empty this is a  0
 	      h->SetBinContent(ibin,h->GetBinContent(ibin)*correction);
 	      h->SetBinError  (ibin,h->GetBinError  (ibin)*correction);
-// 	      if (idet == kTOF) {
-// 		cout << "CORRECTING TOF TWICE" << endl;
-// 		h->SetBinContent(ibin,h->GetBinContent(ibin)*correction);
-// 		h->SetBinError  (ibin,h->GetBinError  (ibin)*correction);		
-// 	      }
 	    } else if (h->GetBinContent(ibin) > 0) { // If we are skipping a non-empty bin, we notify the user
 	      cout << "Fluka/GEANT: Not correcting bin "<<ibin << " for protons secondaries, " << detFlag[idet] << " " << chargeFlag[icharge] << endl;
 	      cout << " Bin content: " << h->GetBinContent(ibin)  << endl;
@@ -816,7 +800,8 @@ void LoadSpectra() {
       }    
     }
   }
-  const Double_t scaleDet[] = {0.98,1,0.98}; // Scaling factor for the different detectors. Estimated from ratios, it has an estimated uncertainty of ~2% 
+  const Double_t scaleDet[] = {1.00,1.00,1.00}; // During the weekly meeting 19/08/2010 we decided not to apply any scaling.
+  //  const Double_t scaleDet[] = {0.98,1,1.00}; // Scaling factor for the different detectors. Estimated from ratios, it has an estimated uncertainty of ~2% 
   //  const Double_t scaleDet[] = {0.88,1,0.88}; // Scaling factor for the different detectors. Estimated from ratios, it has an estimated uncertainty of ~2% 
 
 
@@ -869,7 +854,7 @@ void LoadSpectra() {
       for(Int_t icharge = 0; icharge < kNCharge; icharge++){
 	if(hSpectra[idet][ipart][icharge]) {
 	  //	  cout << "Scaling!" << endl;
-	  if(idet!=kK0){
+	  if(idet != kKinks && idet != kK0){ // Kinks use a different run list, k0s normalized by Helene
 	    hSpectra[idet][ipart][icharge]->Scale(1.*effPhysSel[ipart]/278366.15); // Scale PhysSel tutti? // FIXME
 	  }
 	}
@@ -1120,11 +1105,11 @@ void DrawAllAndKaons() {
    leg->Draw();
 
    ALICEWorkInProgress(c1,today.Data(),"#splitline{ALICE Prelimiary}{Statistical Error Only}");
-   TLatex * tex = new TLatex(0.2120805,0.01288336,"Statistical error only");
-   tex->SetTextColor(2);
-   tex->SetTextFont(42);
-   tex->SetTextSize(0.03496503);
-   tex->Draw();
+   // TLatex * tex = new TLatex(0.2120805,0.01288336,"Statistical error only");
+   // tex->SetTextColor(2);
+   // tex->SetTextFont(42);
+   // tex->SetTextSize(0.03496503);
+   // tex->Draw();
 
    c1->Update();
    if(doPrint) c1->Print(TString(c1->GetName())+".png");
