@@ -28,9 +28,14 @@ Bool_t showLegendDiffFlow = kTRUE;
 Bool_t showBothErrorMeshAndMarkers = kFALSE; 
 // Some quick settings:
 Bool_t showOnlyReferenceFlow = kFALSE;
-Bool_t showResultsRelativeToMC = kTRUE;
+Bool_t showResultsRelativeToMC = kFALSE;
 Bool_t showOnlyPlotsForPOIs = kFALSE;
 Bool_t showOnlyPlotsForRPs = kFALSE;
+// Set here if you want to rebin pt bins to reduce the statistical errors in the plots for differential flow vs pt:
+Bool_t rebinInPt = kTRUE;
+const Int_t nPtIntervals = 3;
+Double_t ptInterval[nPtIntervals+1] = {0.,2.,5.,10.}; // in GeV
+Int_t nMergedBins[nPtIntervals] = {1,5,10}; 
 
 const Int_t nMethods = 12;
 TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL"};
@@ -205,7 +210,7 @@ void PlotDiffFlowEtaPOI()
 void PlotDiffFlowPtRP()
 {
  // Make a plot which compares the results for differential flow of RPs vs pt.
-
+ 
  // Settings for methods:
  const Int_t nMethods = 10;
  TString method[nMethods] = {"MCEP","SP","2,GFC","2,QC","4,GFC","4,QC","6,GFC","8,GFC","LYZ2SUM","LYZ2PROD"};
@@ -412,7 +417,7 @@ void PlotDiffFlow(Int_t nMethods, TString *method, Int_t *methodMarkerStyle, Int
  // Style histogram:
  StyleHistDiffFlow(ptEta.Data(),rpPoi.Data())->Draw();
  // Error mesh:  
- TGraph *errorMesh = GetErrorMeshDiffFlow(methodUsedToMakeErrorMesh.Data(),rpPoi.Data(),ptEta.Data());
+ TGraph *errorMesh = GetErrorMeshDiffFlow(methodUsedToMakeErrorMesh.Data(),rpPoi.Data(),ptEta.Data()); 
  if(errorMesh) 
  {
   errorMesh->SetFillStyle(meshStyle);
@@ -426,9 +431,10 @@ void PlotDiffFlow(Int_t nMethods, TString *method, Int_t *methodMarkerStyle, Int
   TH1D *hist = GetResultHistogram(method[b].Data(),rpPoi.Data(),ptEta.Data());
   if(hist)
   {
+   if(rebinInPt && ptEta == "Pt"){hist = RebinInPt(hist);}
    hist->SetMarkerStyle(methodMarkerStyle[b]);
    hist->SetMarkerColor(methodMarkerColor[b]);
-   hist->Draw("e1psame");
+   hist->Draw("e1psamex0");
   }
  } 
  if(showLegendDiffFlow)
@@ -532,64 +538,168 @@ TGraph* GetErrorMeshDiffFlow(TString methodUsedToMakeErrorMesh, TString rpPoi, T
  
  TH1D *hist = GetResultHistogram(methodUsedToMakeErrorMesh.Data(),rpPoi.Data(),ptEta.Data());
  
- Double_t dMin = 0.;
- if(ptEta == "Pt")
- { 
-  dMin = AliFlowCommonConstants::GetMaster()->GetPtMin();
- } else if(ptEta == "Eta")
-   {
-    dMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();
-   }  
- TGraph* errorMesh = NULL;
+ // Rebin higher pt bins:
+ if(hist && rebinInPt && ptEta == "Pt")
+ {
+  hist = RebinInPt(hist);
+ }
+  
+ // Make a mesh: 
  if(hist)
  {
   Int_t nBins = hist->GetNbinsX();
-  Double_t binWidth = hist->GetBinWidth(1); // assuming that all bins have the same width
+  Double_t value = 0.;
+  Double_t error = 0.;
   // Counting the non-empty bins: 
-  Int_t nNonEmptyBins=0;
+  Int_t nNonEmptyBins = 0;
   for(Int_t i=1;i<nBins+1;i++)
   {
-   if(!(hist)->GetBinError(i)==0.0))
+   value = hist->GetBinContent(i);
+   error = hist->GetBinError(i);
+   if(TMath::Abs(value)>0.0 && error>0.0)
    {
     nNonEmptyBins++;
    }
-  }   
-  errorMesh = new TGraph(2*nNonEmptyBins+1); 
-  Double_t value=0.,error=0.;
-  Int_t count=1;
-  Double_t xFirst=0.,yUpFirst=0.; // needed to close up the mesh
+  } // end of for(Int_t i=1;i<nBins+1;i++)  
+  // Error mesh:
+  TGraph *errorMesh = new TGraph(2*nNonEmptyBins+1); 
+  Int_t count = 0;
+  Double_t binCenter = 0.;
   for(Int_t i=1;i<nBins+1;i++)
   {
-   // Setting up the upper limit of the mesh:
    value = hist->GetBinContent(i);
-   error = hist->GetBinError(i);   
-   if(!(error==0.0))
+   error = hist->GetBinError(i);
+   // Setting up the the mesh:
+   if(TMath::Abs(value)>0.0 && error>0.0)
    {    
-    errorMesh->SetPoint(count++,(i-0.5)*binWidth+dMin,value+error);
-    if(xFirst==0.)
-    {
-     xFirst=(i-0.5)*binWidth+dMin;
-     yUpFirst=value+error;
-    }
-   } 
-  }   
-  for(Int_t i=nBins+1;i<2*nBins+1;i++)
-  {
-   // Setting up the lower limit of the mesh:
-   value = hist->GetBinContent(2*nBins+1-i);
-   error = hist->GetBinError(2*nBins+1-i); 
-   if(!(error==0.0))
-   {      
-    errorMesh->SetPoint(count++,(2*nBins-i+0.5)*binWidth+dMin,value-error);
-   }  
-  }
+    binCenter = hist->GetBinCenter(i);   
+    errorMesh->SetPoint(count,binCenter,value+error);
+    errorMesh->SetPoint(2*nNonEmptyBins-(count+1),binCenter,value-error);
+    count++;
+   }
+  } // end of for(Int_t i=1;i<nBins+1;i++)
   // Closing the mesh area:
-  errorMesh->SetPoint(2*nNonEmptyBins+1,xFirst,yUpFirst);   
+  Double_t xStart = 0.;
+  Double_t yStart = 0.;
+  errorMesh->GetPoint(0,xStart,yStart);
+  errorMesh->SetPoint(2*nNonEmptyBins,xStart,yStart);   
  } // end if(hist)
  
  return errorMesh;
  
 } // end of TGraph* GetErrorMeshDiffFlow(TString methodUsedToMakeErrorMesh, TString ptEta, TString rpPoi)
+
+// ===========================================================================================
+
+TH1D* RebinInPt(TH1D *hist)
+{
+ // Rebin original histograms.
+ 
+ if(!hist)
+ {
+  cout<<endl;
+  cout<<" WARNING: hist is NULL in RebinInPt() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ } 
+ 
+ Double_t binWidthOld = hist->GetXaxis()->GetBinWidth(4);
+ Int_t nBinsOld = hist->GetXaxis()->GetNbins(); 
+ for(Int_t b=1;b<=nBinsOld;b++)
+ {
+  if(TMath::Abs(hist->GetXaxis()->GetBinWidth(b)-binWidthOld)>1.e-44)
+  {
+   cout<<endl;
+   cout<<Form(" WARNING: %s have bins of unequal width !!!!",hist->GetName())<<endl;
+   cout<<"               Do not trust rebinning for high pt." <<endl;
+   cout<<endl;
+  }
+ } // end of for(Int_t b=1;b<=nBinsOld;b++)
+ if(binWidthOld<1.e-44)
+ {
+  cout<<endl;
+  cout<<Form(" WARNING: in %s bin width is 0 !!!!",hist->GetName())<<endl;
+  cout<<"               Cannot do rebinning in pt." <<endl;
+  cout<<endl;
+  exit(0);
+ }
+   
+ // Book rebinned histogram:
+ Int_t nBinsNew = 0;
+ for(Int_t i=0;i<nPtIntervals;i++)
+ {
+  Double_t xMin = TMath::Nint(ptInterval[i]/binWidthOld)*binWidthOld;
+  Double_t xMax = TMath::Nint(ptInterval[i+1]/binWidthOld)*binWidthOld;
+  Int_t nBins = TMath::Nint((xMax-xMin)/binWidthOld); 
+  if(nBins <= 0)
+  {
+   cout<<endl;
+   cout<<Form(" WARNING: nBins <=0 when rebinning %s !!!!",hist->GetName())<<endl;
+   cout<<"               Check entries in array ptInterval." <<endl;
+   cout<<endl;
+   exit(0);
+  }
+  if(nBins % nMergedBins[i] == 0)
+  {
+   nBinsNew += nBins/nMergedBins[i];
+  } else
+    {
+     nBinsNew += (nBins/nMergedBins[i] + 1);  
+    }      
+ } // end of for(Int_t i=0;i<nPtIntervals;i++) 
+ const Int_t nBinsRebinned = nBinsNew;
+ Double_t binEdges[nBinsRebinned+1] = {0.};
+ Int_t counterForRebinnedBins = 0; 
+ for(Int_t i=0;i<nPtIntervals;i++)
+ {
+  Double_t xMin = TMath::Nint(ptInterval[i]/binWidthOld)*binWidthOld;
+  Double_t xMax = TMath::Nint(ptInterval[i+1]/binWidthOld)*binWidthOld;
+  Int_t nBins = TMath::Nint((xMax-xMin)/binWidthOld); 
+  if(nBins % nMergedBins[i] == 0)
+  {
+   nBins = nBins/nMergedBins[i];
+  } else
+    {
+     nBins = (nBins/nMergedBins[i] + 1);  
+    }      
+  for(Int_t b=0;b<nBins;b++)
+  {
+   binEdges[counterForRebinnedBins] = xMin + b*binWidthOld*nMergedBins[i];
+   counterForRebinnedBins++;
+  }          
+ } // end of for(Int_t i=0;i<nPtIntervals;i++) 
+ // Last bin edge:
+ binEdges[counterForRebinnedBins] = hist->GetXaxis()->GetXmax(); 
+
+ TH1D *temp = new TH1D("","",nBinsRebinned,binEdges); // rebinned histogram 
+ for(Int_t br=0;br<nBinsRebinned;br++) // bins in rebinned histogram
+ { 
+  Double_t value = 0.;
+  Double_t error = 0.;
+  Double_t dSum1 = 0.; // sum value_i/(error_i)^2
+  Double_t dSum2 = 0.; // sum 1/(error_i)^2
+  Int_t startingBin = hist->FindBin(binEdges[br]);
+  Int_t endingBin = hist->FindBin(binEdges[br+1]);  
+  for(Int_t bo=startingBin;bo<endingBin;bo++) // bins in original histogram
+  {
+   value = hist->GetBinContent(bo);  
+   error = hist->GetBinError(bo);  
+   if(error>0.)
+   {
+    dSum1+=value/(error*error);
+    dSum2+=1./(error*error);
+   }
+  } 
+  if(dSum2>0.)
+  {
+   temp->SetBinContent(br+1,dSum1/dSum2);
+   temp->SetBinError(br+1,pow(1./dSum2,0.5));
+  }
+ } // end of for(Int_t b=1;b<=nBinsOld;b++)
+    
+ return temp;
+      
+} // end of RebinInPt()
 
 // ===========================================================================================
 
@@ -1402,7 +1512,7 @@ TH1D* GetResultHistogram(TString method, TString rfRpPoi, TString ptEta="")
            }  
       }
  }
-
+  
  return hist;
 
 } // end of TH1D* GetResultHistogram(TString method, TString rfRpPoi, TString ptEta="")
