@@ -37,8 +37,9 @@ int testAliHLTRootSchemaEvolutionComponent(const char* rawfile, int firstevent=0
   AliHLTConfiguration esdfilter("esdfilter", "BlockFilter" , "hltout-publisher", "-datatype ALIESDV0 'HLT ' -prescalar 2 -skip-events 3");  
   AliHLTConfiguration objfilter("objfilter", "BlockFilter" , "hltout-publisher", "-datatype ROOTTOBJ 'HLT '");  
   AliHLTConfiguration streamerinfo("streamerinfo", "ROOTSchemaEvolutionComponent" , "esdfilter objfilter", "");
+  AliHLTConfiguration writer("writer", "FileWriter" , "streamerinfo", "-write-all-events -directory streamerinfo");
 
-  pHLT->BuildTaskList("streamerinfo");
+  pHLT->BuildTaskList("writer");
   AliHLTOfflineInterface::SetParamsToComponents(NULL, rawreader);
 
   if (!rawreader->GotoEvent(firstevent)) {
