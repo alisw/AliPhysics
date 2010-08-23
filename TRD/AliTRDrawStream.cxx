@@ -410,7 +410,12 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
 	   (((fCurrStackMask & (1 << fCurrSlot)) == 0) || 
 	    ((fCurrLinkMask[fCurrSlot] & (1 << fCurrLink))) == 0));
 
-  return (fCurrSm * 30 + fCurrStack * 6 + fCurrLayer);
+  // return chamber information from HC if it is valid
+  // otherwise return information from link position
+  if (fCurrSm < 0 || fCurrSm > 17 || fCurrStack < 0 || fCurrStack > 4 || fCurrLayer < 0 || fCurrLayer > 5)
+    return ((fCurrEquipmentId-1024) + fCurrSlot * 6 + fCurrLink/2);
+  else
+    return (fCurrSm * 30 + fCurrStack * 6 + fCurrLayer);
 }
 
 
