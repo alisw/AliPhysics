@@ -112,7 +112,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       ce[2]=ci[kTracksSA];
       ce[3]=ci[kTracksKink];
       AddTRDcheckDET(mgr, bitmap, ce);
-       break;
+      break;
     case kEfficiency:
       // map slots
       ce[0]=ci[kTracksBarrel];
@@ -146,14 +146,16 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
 
 const Char_t* Translate(Bool_t doCheckESD, Bool_t doCheckDET, Bool_t doEffic, Bool_t doResolution, Bool_t doCheckPID, Bool_t doCheckV0)
 {
+  opt.Clear();
   if( doCheckESD==kTRUE &&
       doCheckDET==kTRUE &&
       doEffic==kTRUE &&
       doResolution==kTRUE &&
       doCheckPID==kTRUE &&
       doCheckV0==kTRUE
-  ) opt="ALL";
-  else{
+  ){
+    opt="ALL";
+  } else {
     Bool_t kINDENT(kFALSE);
     if(doCheckESD){ 
       opt.Append("ESD");
