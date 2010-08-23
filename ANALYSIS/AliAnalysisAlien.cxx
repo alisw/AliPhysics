@@ -460,6 +460,8 @@ Bool_t AliAnalysisAlien::CheckInputData()
          return kFALSE;
       }
       Info("CheckInputData", "Analysis will make a single xml for base data directory %s",fGridDataDir.Data());
+      if (fDataPattern.Contains("tag") && TestBit(AliAnalysisGrid::kTest))
+         TObject::SetBit(AliAnalysisGrid::kUseTags, kTRUE); // ADDED (fix problem in determining the tag usage in test mode) 
       return kTRUE;
    }
    // Process declared files
@@ -555,7 +557,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
          msg += " type: xml_collection;";
          if (useTags) msg += " using_tags: Yes";
          else          msg += " using_tags: No";
-         Info("CheckDataType", msg.Data());
+         Info("CheckDataType", "%s", msg.Data());
          if (fNrunsPerMaster<2) {
             AddDataFile(Form("%s.xml", os->GetString().Data()));
          } else {
@@ -583,7 +585,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
          msg += " type: xml_collection;";
          if (useTags) msg += " using_tags: Yes";
          else          msg += " using_tags: No";
-         Info("CheckDataType", msg.Data());
+         Info("CheckDataType", "%s", msg.Data());
          if (fNrunsPerMaster<2) {
             AddDataFile(Form("%s%d.xml",fRunPrefix.Data(),irun));
          } else {
@@ -1205,7 +1207,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
          else fGridJDL->SetOutputDirectory(Form("%s/$2",fGridOutputDir.Data()), "Output directory");
       } else {   
          fGridJDL->SetOutputDirectory(Form("%s/$2/#alien_counter_03i#", fGridOutputDir.Data()), "Output directory");
-         fMergingJDL->SetOutputDirectory(Form("$1", fGridOutputDir.Data()), "Output directory");
+         fMergingJDL->SetOutputDirectory("$1", "Output directory");
       }   
    }
       
@@ -1355,20 +1357,20 @@ void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &isCollection, Bool
       TGridResult *res = gGrid->Command(Form("listFilesFromCollection -z -v %s",lfn), kFALSE);
       if (!res) {
          msg += " using_tags: No (unknown)";
-         Info("CheckDataType", msg.Data());
+         Info("CheckDataType", "%s", msg.Data());
          return;
       }   
       const char* typeStr = res->GetKey(0, "origLFN");
       if (!typeStr || !strlen(typeStr)) {
          msg += " using_tags: No (unknown)";
-         Info("CheckDataType", msg.Data());
+         Info("CheckDataType", "%s", msg.Data());
          return;
       }   
       TString file = typeStr;
       useTags = file.Contains(".tag");
       if (useTags) msg += " using_tags: Yes";
       else          msg += " using_tags: No";
-      Info("CheckDataType", msg.Data());
+      Info("CheckDataType", "%s", msg.Data());
       return;
    }
    TString slfn(lfn);
@@ -1380,13 +1382,13 @@ void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &isCollection, Bool
       TGridCollection *coll = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"alien://%s\",1);",lfn));
       if (!coll) {
          msg += " using_tags: No (unknown)";
-         Info("CheckDataType", msg.Data());
+         Info("CheckDataType", "%s", msg.Data());
          return;
       }   
       TMap *map = coll->Next();
       if (!map) {
          msg += " using_tags: No (unknown)";
-         Info("CheckDataType", msg.Data());
+         Info("CheckDataType", "%s", msg.Data());
          return;
       }   
       map = (TMap*)map->GetValue("");
@@ -1396,7 +1398,7 @@ void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &isCollection, Bool
       delete coll;
       if (useTags) msg += " using_tags: Yes";
       else          msg += " using_tags: No";
-      Info("CheckDataType", msg.Data());
+      Info("CheckDataType", "%s", msg.Data());
       return;
    }
    useTags = slfn.Contains(".tag");
@@ -1404,7 +1406,7 @@ void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &isCollection, Bool
    else                        msg += " type: unknown file;";
    if (useTags) msg += " using_tags: Yes";
    else          msg += " using_tags: No";
-   Info("CheckDataType", msg.Data());
+   Info("CheckDataType", "%s", msg.Data());
 }
 
 //______________________________________________________________________________
@@ -2638,7 +2640,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             msg += "                      AliLHCTagCuts *lhcCuts,\n";
             msg += "                      AliDetectorTagCuts *detCuts,\n";
             msg += "                      AliEventTagCuts *evCuts)";
-            Info("WriteAnalysisMacro", msg.Data());
+            Info("WriteAnalysisMacro", "%s", msg.Data());
          }
       } 
       if (!IsUsingTags() || fFriendChainName!="") {
