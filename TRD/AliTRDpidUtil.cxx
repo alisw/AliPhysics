@@ -85,7 +85,7 @@ Bool_t  AliTRDpidUtil::CalculatePionEffi(TH1* histo1, TH1* histo2)
   fThreshold = histo1 -> GetBinCenter(cbinE);
 
   // calculate pion efficiency of each bin
-  for (bbinE = (histo2 -> GetNbinsX()); bbinE >= abinE; bbinE--){	
+  for (bbinE = (histo2 -> GetNbinsX()); bbinE > abinE; bbinE--){
     bBinSumE = 0;
     bBinSumE = histo2 -> GetBinContent(bbinE);
 
