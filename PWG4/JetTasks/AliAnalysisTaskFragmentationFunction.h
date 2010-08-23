@@ -322,6 +322,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   
   virtual void   SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
   virtual void   SetJetTypeGen(Int_t i){fJetTypeGen = i;}
+  virtual void   SetJetTypeRecEff(Int_t i){fJetTypeRecEff = i;}
 
   virtual void   SetBranchGenJets(const char* c){fBranchGenJets = c;}
   virtual void   SetBranchRecJets(const char* c){fBranchRecJets = c;}
@@ -345,7 +346,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH2* h,const char* x, const char* y,const char* z);
-  static  void   SetProperties(THnSparse* h, Int_t dim, const char** labels);
+  static  void   SetProperties(THnSparse* h,const Int_t dim, const char** labels);
 
   void   SetHighPtThreshold(Float_t pt = 5.) { fQATrackHighPtThreshold = pt; }
 
@@ -418,13 +419,19 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   void	   GetJetTracksPointing(TList* in, TList* out, AliAODJet* j, const Double_t r, Double_t& pt);  
   Double_t GetDiJetBin(Double_t invMass, Double_t leadingJetPt, Double_t eMean, Int_t kindSlices); // function to find which bin fill
   Double_t InvMass(AliAODJet* jet1, AliAODJet* jet2);
+  void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isGenPrim);
+  void     FillSingleTrackRecEffHisto(THnSparse* histo, TList* tracksGen, TList* tracksRec, TArrayI& indexAODTr, TArrayS& isGenPrim);
+  void     FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi,Double_t jetEta,Double_t jetPt,TList* jetTrackList, TList* tracksGen,
+				   TArrayI& indexAODTr,TArrayS& isGenPrim);
+
 
 
  private:
     
   // Consts
   
-  enum {kTrackUndef=0, kTrackAOD, kTrackAODCuts, kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
+  enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
+	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
   enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance};
   
   
@@ -440,6 +447,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   
   Int_t   fTrackTypeGen;  // type of generated tracks
   Int_t   fJetTypeGen;    // type of generated jets
+
+  Int_t   fJetTypeRecEff; // type of jets used for filling reconstruction efficiency histos
 
   UInt_t  fFilterMask;	  // filter bit for selected tracks
 	
@@ -468,13 +477,17 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
   
-  TList* fTracksRec;      //! reconstructed tracks
-  TList* fTracksRecCuts;  //! reconstructed tracks after cuts
-  TList* fTracksGen;      //! generated tracks 
+  TList* fTracksRec;            //! reconstructed tracks
+  TList* fTracksRecCuts;        //! reconstructed tracks after cuts
+  TList* fTracksGen;            //! generated tracks 
+  TList* fTracksAODMCCharged;   //! AOD MC tracks 
+  TList* fTracksRecQualityCuts; //! reconstructed tracks after quality cuts, no acceptance/pt cut
+
   
   TList* fJetsRec;        //! jets from reconstructed tracks
   TList* fJetsRecCuts;    //! jets from reonstructed tracks after jet cuts 
   TList* fJetsGen;        //! jets from generated tracks
+  TList* fJetsRecEff;     //! jets used for reconstruction efficiency histos 
   
   
   AliFragFuncQATrackHistos* fQATrackHistosRec;      //! track QA: reconstructed tracks
@@ -486,7 +499,9 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncQAJetHistos*  fQAJetHistosRecCutsLeading;  //! jet QA: leading jet from reconstructed tracks after jet cuts 
   AliFragFuncQAJetHistos*  fQAJetHistosGen;             //! jet QA: jets from generated tracks  
   AliFragFuncQAJetHistos*  fQAJetHistosGenLeading;      //! jet QA: leading jet from generated tracks  
+  AliFragFuncQAJetHistos*  fQAJetHistosRecEffLeading;   //! jet QA: leading jet used for reconstruction efficiency histos  
   
+
   AliFragFuncHistos*  fFFHistosRecCuts;         //! FF reconstructed tracks after cuts 
   AliFragFuncHistos*  fFFHistosRecLeading;      //! FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
   AliFragFuncHistos*  fFFHistosRecLeadingTrack; //! FF reconstructed tracks after cuts: leading track pt / jet pt
@@ -627,8 +642,14 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH1F	*fh1EvtMult;              //! number of reconstructed tracks after cuts 
   TH1F  *fh1nRecJetsCuts;         //! number of jets from reconstructed tracks per event 
   TH1F  *fh1nGenJets;             //! number of jets from generated tracks per event
+  TH1F  *fh1nRecEffJets;          //! number of jets for reconstruction eff per event
 
-  ClassDef(AliAnalysisTaskFragmentationFunction, 3);
+  // tracking efficiency 
+
+  THnSparseF *fhnSingleTrackRecEffHisto; //! track reconstruction efficiency 
+  THnSparseF *fhnJetTrackRecEffHisto;    //! reconstruction efficiency jet tracks 
+
+  ClassDef(AliAnalysisTaskFragmentationFunction, 4);
 };
 
 #endif

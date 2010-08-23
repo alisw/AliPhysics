@@ -130,6 +130,10 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    else if(typeJets.Contains("jetTypeUndef")) task->SetJetTypeGen(0); // undefined
    else Printf("jetType %s not found", typeJets.Data());
    
+   if(typeJets.Contains("AODMCb")) task->SetJetTypeRecEff(AliAnalysisTaskFragmentationFunction::kJetsGenAcceptance); // kJetsRecAcceptance
+   else if(typeJets.Contains("AODb")) task->SetJetTypeRecEff(AliAnalysisTaskFragmentationFunction::kJetsRecAcceptance); 
+   else task->SetJetTypeRecEff(0);
+
    task->SetFilterMask(filterMask);
   
    // Set default parameters 

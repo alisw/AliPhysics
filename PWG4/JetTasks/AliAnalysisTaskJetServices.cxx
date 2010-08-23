@@ -418,7 +418,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     for(int it = AliAnalysisHelperJetTasks::kAcceptAll;it < AliAnalysisHelperJetTasks::kTrigger;it++){
       Bool_t aodTrig = kFALSE;
       aodTrig = AliAnalysisHelperJetTasks::IsTriggerFired(aod,(AliAnalysisHelperJetTasks::Trigger)it);
-      Bool_t cand = (aod->GetHeader()->GetOfflineTrigger())&(AliVEvent::kMB);
+      Bool_t cand = ((aod->GetHeader()->GetOfflineTrigger())&(AliVEvent::kMB))==AliVEvent::kMB;
       if(aodTrig)fh2TriggerCount->Fill(it,kAllTriggered);
       if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
 	if(aodTrig)fh2TriggerCount->Fill(it,kTriggeredVertex);
