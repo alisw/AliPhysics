@@ -183,8 +183,6 @@ int AliHLTRootSchemaEvolutionComponent::ProcessCalibration( const AliHLTComponen
 
   // scale down the event processing according to the required rate
   // and average processing time.
-  AliHLTMessage msg(kMESS_OBJECT);
-  msg.EnableSchemaEvolution();
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
        pBlock && iResult>=0;
        pBlock=GetNextInputBlock()) {
@@ -206,8 +204,13 @@ int AliHLTRootSchemaEvolutionComponent::ProcessCalibration( const AliHLTComponen
     if (processBlock) {
       TObject* pObj=item->Extract(pBlock);
       if (pObj) {
-	if ((iResult=item->Stream(pObj, msg))>=0)
+	AliHLTMessage msg(kMESS_OBJECT);
+	msg.EnableSchemaEvolution();
+	if ((iResult=item->Stream(pObj, msg))>=0) {
 	  iResult=UpdateStreamerInfos(msg.GetStreamerInfos(), fpStreamerInfos);
+	} else {
+	  HLTError("failed to stream object %s of type %s", pObj->GetName(), pObj->ClassName());
+	}
 	delete pObj;
 	pObj=NULL;
       }
@@ -399,18 +402,44 @@ int AliHLTRootSchemaEvolutionComponent::WriteToFile(const char* filename, const 
 
   const char* entrypath="HLT/Calib/StreamerInfo";
   int version = -1;
-  AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
-  if (store) {
-    version = store->GetLatestVersion(entrypath, GetRunNo());
+  AliCDBStorage* store = NULL;
+  // TODO: to be activated later, first some methods need to be made
+  // public in AliCDBManager. Or some new methods to be added 
+  //if (AliCDBManager::Instance()->SelectSpecificStorage(entrypath))
+  //  store = AliCDBManager::Instance()->GetSpecificStorage(entrypath);
+  if (!store) 
+    store = AliCDBManager::Instance()->GetDefaultStorage();
+  AliCDBEntry* existingEntry=NULL;
+  if (store && store->GetLatestVersion(entrypath, GetRunNo())>=0 &&
+      (existingEntry=AliCDBManager::Instance()->Get(entrypath))!=NULL) {
+    version=existingEntry->GetId().GetVersion();
   }
   version++;
+
+  TObjArray* clone=NULL;
+
+  if (existingEntry && existingEntry->GetObject()) {
+    TObject* cloneObj=existingEntry->GetObject()->Clone();
+    if (cloneObj) clone=dynamic_cast<TObjArray*>(cloneObj);
+    if (MergeStreamerInfo(clone, infos)==0) {
+      // no change, store with identical version
+      version=existingEntry->GetId().GetVersion();
+    }
+  } else {
+    TObject* cloneObj=infos->Clone();
+    if (cloneObj) clone=dynamic_cast<TObjArray*>(cloneObj);
+  }
+  if (!clone) {
+    HLTError("failed to clone streamer info object array");
+    return -ENOMEM;
+  }
 
   AliCDBPath cdbPath(entrypath);
   AliCDBId cdbId(cdbPath, AliCDBManager::Instance()->GetRun(), AliCDBRunRange::Infinity(), version, 0);
   AliCDBMetaData* cdbMetaData=new AliCDBMetaData;
   cdbMetaData->SetResponsible("ALICE HLT Matthias.Richter@cern.ch");
   cdbMetaData->SetComment("Streamer info for HLTOUT payload");
-  AliCDBEntry* entry=new AliCDBEntry(infos->Clone(), cdbId, cdbMetaData, kTRUE);
+  AliCDBEntry* entry=new AliCDBEntry(clone, cdbId, cdbMetaData, kTRUE);
 
   out.cd();
   entry->Write();
@@ -422,6 +451,54 @@ int AliHLTRootSchemaEvolutionComponent::WriteToFile(const char* filename, const 
   out.Close();
 
   return 0;
+}
+
+int AliHLTRootSchemaEvolutionComponent::MergeStreamerInfo(TObjArray* tgt, const TObjArray* src)
+{
+  /// merge streamer info entries from source array to target array
+  /// return 1 if target array has been changed
+
+  // add all existing infos if not existing in the current one, or having
+  // different class version
+  int iResult=0;
+  if (!tgt || !src) return -EINVAL;
+
+  {
+    // check if all infos from the existing entry are in the new entry and with
+    // identical class version
+    TIter next(src);
+    TObject* nextobj=NULL;
+    while ((nextobj=next())) {
+      TStreamerInfo* srcInfo=dynamic_cast<TStreamerInfo*>(nextobj);
+      if (!srcInfo) continue;
+      TString srcInfoName=srcInfo->GetName();
+
+      int i=0;
+      for (; i<tgt->GetEntriesFast(); i++) {
+	if (tgt->At(i)==NULL) continue;
+	if (srcInfoName.CompareTo(tgt->At(i)->GetName())!=0) continue;
+	// TODO: 2010-08-23 some more detailed investigation is needed.
+	// Structures used for data exchange, e.g. AliHLTComponentDataType
+	// or AliHLTEventDDLV1 do not have a class version, but need to be stored in the
+	// streamer info. Strictly speaking not, because those structures are not supposed
+	// to be changed at all, so they should be the same in all versions in the future.
+	// There has been a problem with detecting whether the streamer info is already in
+	// the target array if the srcInfo has class version -1. As it just concerns
+	// structures not going to be changed we can safely skip checking the class version,
+	// as long as the entry is already in the target streamer infos it does not need
+	// to be copied again.
+	if (srcInfo->GetClassVersion()<0) break;
+	TStreamerInfo* tgtInfo=dynamic_cast<TStreamerInfo*>(tgt->At(i));
+	if (tgtInfo && tgtInfo->GetClassVersion()==srcInfo->GetClassVersion()) break;
+      }
+      if (i<tgt->GetEntriesFast()) continue;
+
+      iResult=1;
+      tgt->Add(srcInfo);
+    }
+  }
+
+  return iResult;
 }
 
 AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem*
