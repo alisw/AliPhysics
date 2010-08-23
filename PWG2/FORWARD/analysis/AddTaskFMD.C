@@ -22,6 +22,10 @@ AliFMDAnalysisTaskSE* AddTaskFMD() {
   pars->SetProcessPrimary(kTRUE);
   pars->SetProcessHits(kFALSE);
   
+  pars->SetRealData(kTRUE);
+  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if(eventHandler) pars->SetRealData(kFALSE);
+  
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += Form(":%s",pars->GetDndetaAnalysisName());
 
