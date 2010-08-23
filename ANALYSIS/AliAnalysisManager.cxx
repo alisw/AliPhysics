@@ -300,6 +300,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    TDirectory *curdir = gDirectory;
    // Call SlaveBegin only once in case of mixing
    if (isCalled && fMode==kMixingAnalysis) return;
+   gROOT->cd();
    // Call Init of EventHandler
    if (fOutputEventHandler) {
       if (fMode == kProofAnalysis) {
@@ -315,7 +316,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       if (!fSelector) Error("SlaveBegin", "Selector not set");
       else if (!init) {fSelector->Abort(msg); fSelector->SetStatus(-1);}
    }
-
+   gROOT->cd();
    if (fInputEventHandler) {
       fInputEventHandler->SetInputTree(tree);
       if (fMode == kProofAnalysis) {
@@ -329,7 +330,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       if (!fSelector) Error("SlaveBegin", "Selector not set");      
       else if (!init) {fSelector->Abort(msg); fSelector->SetStatus(-1);}
    }
-
+   gROOT->cd();
    if (fMCtruthEventHandler) {
       if (fMode == kProofAnalysis) {
          init = fMCtruthEventHandler->Init("proof");
@@ -349,14 +350,18 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    AliAnalysisTask *task;
    // Call CreateOutputObjects for all tasks
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
+   Bool_t dirStatus = TH1::AddDirectoryStatus();
    Int_t itask = 0;
    while ((task=(AliAnalysisTask*)next())) {
-      curdir = gDirectory;
+      gROOT->cd();
+      // Start with memory as current dir and make sure by default histograms do not get attached to files.
+      TH1::AddDirectory(kFALSE);
       task->CreateOutputObjects();
       if (getsysInfo) AliSysInfo::AddStamp(Form("%s_CREATEOUTOBJ",task->ClassName()), 0, itask, 0);
       itask++;
-      if (curdir) curdir->cd();
    }
+   TH1::AddDirectory(dirStatus);
+   if (curdir) curdir->cd();
    if (fDebug > 1) printf("<-AliAnalysisManager::SlaveBegin()\n");
 }
 
@@ -1407,12 +1412,15 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             TIter nextT(fTasks);
             // Call CreateOutputObjects for all tasks
             Int_t itask = 0;
+            Bool_t dirStatus = TH1::AddDirectoryStatus();
             while ((task=(AliAnalysisTask*)nextT())) {
+               TH1::AddDirectory(kFALSE);
                task->CreateOutputObjects();
                if (getsysInfo) AliSysInfo::AddStamp(Form("%s_CREATEOUTOBJ",task->ClassName()), 0, itask, 0);
                gROOT->cd();
                itask++;
             }   
+            TH1::AddDirectory(dirStatus);
             if (IsExternalLoop()) {
                Info("StartAnalysis", "Initialization done. Event loop is controlled externally.\
                      \nSetData for top container, call ExecAnalysis in a loop and then Terminate manually");
@@ -2002,7 +2010,7 @@ void AliAnalysisManager::DoLoadBranch(const char *name)
   if (!br) {
     br = fTree->GetBranch(name);
     if (!br) {
-      Error("DoLoadBranch",Form("Could not find branch %s",name));
+      Error("DoLoadBranch", "Could not find branch %s",name);
       return;
     }
     fTable.Add(br);
