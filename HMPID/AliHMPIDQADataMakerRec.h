@@ -15,6 +15,7 @@
 
 // --- ROOT system ---
 class TTree ;
+class TLine ;
 class AliRawReader;
 class AliESDEvent ;
 // --- AliRoot header files ---
@@ -42,9 +43,15 @@ private:
   virtual void   StartOfDetectorCycle() ;
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** obj) ;
   Int_t   fEvtRaw;    //!internal event counter for raw 
+  TLine  *fLineDdlDatSizeLow;  // line for minimum data size limit 
+  TLine  *fLineDdlDatSizeUp;   // line for maximum data size limit
+  TLine  *fLineDdlPadOCcLow;   // line for minimum occupancy limit
+  TLine  *fLineDdlPadOCcUp;    // line for maximum occpuancy limit 
+  TLine  *fModline[6];         // lines to separate the HMPID modules
   Int_t   fChannel ; //!
-
-  ClassDef(AliHMPIDQADataMakerRec,2)  // description 
+    
+  
+  ClassDef(AliHMPIDQADataMakerRec,3)  // description 
 
 };
 

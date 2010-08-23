@@ -52,16 +52,18 @@ ClassImp(AliHMPIDQADataMakerRec)
            
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec() : 
-  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker"),fEvtRaw(0),  fChannel(0)
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker"),fEvtRaw(0), fLineDdlDatSizeLow(0x0), fLineDdlDatSizeUp(0x0), fLineDdlPadOCcLow(0x0), fLineDdlPadOCcUp(0x0), fChannel(0) 
 {
   // ctor
+  for(Int_t i=0; i<6; i++) fModline[i]=0x0;
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec(const AliHMPIDQADataMakerRec& qadm) :
-  AliQADataMakerRec(),fEvtRaw(qadm.fEvtRaw), fChannel(qadm.fChannel)
+  AliQADataMakerRec(),fEvtRaw(qadm.fEvtRaw), fLineDdlDatSizeLow(qadm.fLineDdlDatSizeLow), fLineDdlDatSizeUp(qadm.fLineDdlDatSizeUp), fLineDdlPadOCcLow(qadm.fLineDdlPadOCcLow), fLineDdlPadOCcUp(qadm.fLineDdlPadOCcUp), fChannel(qadm.fChannel)
 {
   //copy ctor 
+  for(Int_t i=0; i<6; i++) fModline[i]=qadm.fModline[i];
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
 }
@@ -150,8 +152,15 @@ void AliHMPIDQADataMakerRec::InitRaws()
   TH2F *hDilo[14];
   TH2I *hPadMap[42]; //AMORE monitoring
   TH1I *hPadQ[42]; //AMORE monitoring
-   
+
+  fLineDdlDatSizeLow  = new TLine(0.5,932,14.5,932);   fLineDdlDatSizeLow->SetLineColor(kGreen); fLineDdlDatSizeLow->SetLineWidth(2);
+  fLineDdlDatSizeUp   = new TLine(0.5,1500,14.5,1500); fLineDdlDatSizeUp->SetLineColor(kGreen);  fLineDdlDatSizeUp->SetLineWidth(2);
   
+  fLineDdlPadOCcLow  = new TLine(0.5,0.086,14.5,0.086);   fLineDdlPadOCcLow->SetLineColor(kGreen); fLineDdlPadOCcLow->SetLineWidth(2);
+  fLineDdlPadOCcUp   = new TLine(0.5,0.86,14.5,0.86); fLineDdlPadOCcUp->SetLineColor(kGreen);  fLineDdlPadOCcUp->SetLineWidth(2);       
+
+  for(Int_t modcnt=0; modcnt < 6; modcnt++){ fModline[modcnt] = new TLine(0,(1+modcnt)*144,160,(1+modcnt)*144);  }
+      
   for(Int_t iddl =0; iddl<AliHMPIDRawStream::kNDDL; iddl++) {
     
     hSumErr[iddl] = new TH1F(Form("hSumErrDDL%i",iddl), Form("Error summary for DDL %i;??;??",iddl), 2*kNerr,0,2*kNerr);
@@ -188,7 +197,8 @@ void AliHMPIDQADataMakerRec::InitRaws()
   hHmpDdlDataSize->SetMinimum(0);
   for(Int_t iddl=0;iddl<14;iddl++)  hHmpDdlDataSize->GetXaxis()->SetBinLabel(iddl+1,Form("DDL_%d",1535+iddl+1));
   hHmpDdlDataSize->SetStats(0);hHmpDdlDataSize->SetMinimum(0);hHmpDdlDataSize->SetMarkerStyle(20);
-  
+  hHmpDdlDataSize->GetListOfFunctions()->Add(fLineDdlDatSizeLow);
+  hHmpDdlDataSize->GetListOfFunctions()->Add(fLineDdlDatSizeUp);    
   Add2RawsList(hHmpDdlDataSize,14+14+42+42+1,!expert,image,saveCorr);   //shifter, image
   
   TH1F *fHmpPadOcc = new TH1F("fHmpPadOcc","HMP Average pad occupancy per DDL;;Pad occupancy (%)",14,0.5,14.5);
@@ -196,10 +206,13 @@ void AliHMPIDQADataMakerRec::InitRaws()
   fHmpPadOcc->SetMinimum(0);
   for(Int_t iddl=0;iddl<14;iddl++)  fHmpPadOcc->GetXaxis()->SetBinLabel(iddl+1,Form("DDL_%d",1535+iddl+1));
   fHmpPadOcc->SetStats(0);fHmpPadOcc->SetMinimum(0);fHmpPadOcc->SetMarkerStyle(20);
+  fHmpPadOcc->GetListOfFunctions()->Add(fLineDdlPadOCcLow);
+  fHmpPadOcc->GetListOfFunctions()->Add(fLineDdlPadOCcUp);  
   Add2RawsList(fHmpPadOcc,14+14+42+42+2,!expert,image,!saveCorr);       //shifter, image
 
   TH2F* fHmpBigMap = new TH2F("hHmpBigMap","HMP Sum Q Maps Ch: 0-6;Ch 0-6: pad X;Ch0, Ch1, Ch2, Ch3, Ch4, Ch5, Ch6 pad Y ;Sum Q / Nevt",160,0,160,1008,0,1008);  
   fHmpBigMap->SetStats(0);  fHmpBigMap->SetOption("COLZ");
+  for(Int_t modcnt=0; modcnt < 6; modcnt++) fHmpBigMap->GetListOfFunctions()->Add(fModline[modcnt]);  
   Add2RawsList(fHmpBigMap,14+14+42+42+3,!expert,image,!saveCorr);       //shifter, image
    
   TH2F *fHmpHvSectorQ = new TH2F("fHmpHvSectorQ","HMP HV Sector vs Q; Q (ADC);HV Sector (Ch0-Sc0,Ch0-Sc1,...);Entries*Q/Nevt",410,1,4101,42,0,42);
@@ -432,18 +445,12 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
       }//ddl loop
        
       TH2F *h2 = (TH2F*)histos[specie]->At(14+14+42+42+3);
-      if(fEvtRaw>0) h2->Scale(1.0/(Float_t)fEvtRaw);
-      TLine *modline[6];
-      for(Int_t modcnt=0; modcnt < 6; modcnt++){ modline[modcnt] = new TLine(0,(1+modcnt)*144,160,(1+modcnt)*144); h2->GetListOfFunctions()->Add(modline[modcnt]); }
-     
+      if(fEvtRaw>0) h2->Scale(1.0/(Float_t)fEvtRaw);     
           
       TH2F *h3 = (TH2F*)histos[specie]->At(14+14+42+42+4);
       if(fEvtRaw>0) h3->Scale(1.0/(Float_t)fEvtRaw);
       
           
-      TLine *lineDdlDatSizeLow  = new TLine(0.5,932,14.5,932);   lineDdlDatSizeLow->SetLineColor(kGreen); lineDdlDatSizeLow->SetLineWidth(2);
-      TLine *lineDdlDatSizeUp   = new TLine(0.5,1500,14.5,1500); lineDdlDatSizeUp->SetLineColor(kGreen);  lineDdlDatSizeUp->SetLineWidth(2);
-      
       Double_t binval=0,binerr=0;
       
       TH1F *h4 = (TH1F*)histos[specie]->At(14+14+42+42+1);
@@ -454,13 +461,7 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
           h4->SetBinContent(iddl,binval);     h4->SetBinError(iddl,binerr);
          }
       //if(fEvtRaw>0) h4->Scale(1./(Float_t)fEvtRaw);
-      h4->GetListOfFunctions()->Add(lineDdlDatSizeLow);
-      h4->GetListOfFunctions()->Add(lineDdlDatSizeUp);
-
-      
-            
-      TLine *lineDdlPadOCcLow  = new TLine(0.5,0.086,14.5,0.086);   lineDdlPadOCcLow->SetLineColor(kGreen); lineDdlPadOCcLow->SetLineWidth(2);
-      TLine *lineDdlPadOCcUp   = new TLine(0.5,0.86,14.5,0.86); lineDdlPadOCcUp->SetLineColor(kGreen);  lineDdlPadOCcUp->SetLineWidth(2);
+                  
       TH1F *h5 = (TH1F*)histos[specie]->At(14+14+42+42+2);
       TProfile *h5prf = (TProfile*)histos[specie]->At(14+14+42+42+6);
       for(Int_t iddl=1;iddl<=14;iddl++) 
@@ -470,8 +471,6 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
        }
 
       //if(fEvtRaw>0) h5->Scale(1./(Float_t)fEvtRaw/11520.0*100.0);
-      h5->GetListOfFunctions()->Add(lineDdlPadOCcLow);
-      h5->GetListOfFunctions()->Add(lineDdlPadOCcUp);
            
      }//specie loop     
   }//RAWS
