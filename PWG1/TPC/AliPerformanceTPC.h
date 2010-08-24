@@ -74,6 +74,8 @@ public :
   TObjArray* GetTPCHistos() const { return fFolderObj; }
   static Bool_t GetMergeTHnSparse() { return fgMergeTHnSparse; }
   static void SetMergeTHnSparse(Bool_t mergeTHnSparse) { fgMergeTHnSparse = mergeTHnSparse; }
+  void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
+  Bool_t GetUseHLT() { return fUseHLT; }
 
 
 private:
@@ -95,11 +97,12 @@ private:
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
+  Bool_t fUseHLT; // use HLT ESD
 
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,5);
+  ClassDef(AliPerformanceTPC,6);
 };
 
 #endif
