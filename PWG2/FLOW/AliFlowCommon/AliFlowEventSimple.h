@@ -27,11 +27,14 @@ class AliFlowTrackSimpleCuts;
 class AliFlowEventSimple: public TObject {
 
  public:
+
+  enum ConstructionMethod {kEmpty,kGenerate};
+
   AliFlowEventSimple();
-  AliFlowEventSimple(Int_t aLenght);
   AliFlowEventSimple( Int_t nParticles,
-                      TF1* ptDist,
-                      Double_t phiMin=0,
+                      ConstructionMethod m=kEmpty,
+                      TF1* ptDist=NULL,
+                      Double_t phiMin=0.0,
                       Double_t phiMax=TMath::TwoPi(),
                       Double_t etaMin=-1.0,
                       Double_t etaMax= 1.0 );
@@ -39,13 +42,6 @@ class AliFlowEventSimple: public TObject {
   AliFlowEventSimple(const AliFlowEventSimple& anEvent);
   AliFlowEventSimple& operator=(const AliFlowEventSimple& anEvent);
   virtual  ~AliFlowEventSimple();
-
-  virtual void Generate( Int_t nParticles,
-                         TF1* ptDist=NULL,
-                         Double_t phiMin=0,
-                         Double_t phiMax=TMath::TwoPi(),
-                         Double_t etaMin=-1.0,
-                         Double_t etaMax= 1.0 );
 
   Bool_t  IsFolder() const {return kTRUE;};
   void    Browse(TBrowser *b); 
@@ -61,6 +57,8 @@ class AliFlowEventSimple: public TObject {
   Bool_t   IsSetMCReactionPlaneAngle() const        { return fMCReactionPlaneAngleIsSet; }
   void     SetAfterBurnerPrecision(Double_t p)      { fAfterBurnerPrecision=p; }
   Double_t GetAfterBurnerPrecision() const          { return fAfterBurnerPrecision; }
+  void     SetUserModified(Bool_t s=kTRUE)          { fUserModified=s; }
+  Bool_t   IsUserModified() const                   { return fUserModified; }
 
   void ResolutionPt(Double_t res);
   void TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
@@ -81,6 +79,13 @@ class AliFlowEventSimple: public TObject {
   void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  
 
  protected:
+  virtual void Generate( Int_t nParticles,
+                         TF1* ptDist=NULL,
+                         Double_t phiMin=0.0,
+                         Double_t phiMax=TMath::TwoPi(),
+                         Double_t etaMin=-1.0,
+                         Double_t etaMax= 1.0 );
+
   TObjArray*              fTrackCollection;           //-> collection of tracks
   Int_t                   fReferenceMultiplicity;           // reference multiplicity
   Int_t                   fNumberOfTracks;            // number of tracks
@@ -88,6 +93,7 @@ class AliFlowEventSimple: public TObject {
   Double_t                fMCReactionPlaneAngle;      // the angle of the reaction plane from the MC truth
   Bool_t                  fMCReactionPlaneAngleIsSet; // did we set it from MC?
   Double_t                fAfterBurnerPrecision;      // iteration precision in afterburner
+  Bool_t                  fUserModified;              // did we modify the event in any way (afterburner etc) ?
   TParameter<Int_t>*      fNumberOfTracksWrap;        //! number of tracks in TBrowser
   TParameter<Int_t>*      fNumberOfRPsWrap;           //! number of tracks that have passed the RP selection in TBrowser
   TParameter<Double_t>*   fMCReactionPlaneAngleWrap;  //! the angle of the reaction plane from the MC truth in TBrowser
