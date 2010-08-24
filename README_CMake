@@ -1,6 +1,20 @@
-You have to pass in the cmake step some parameter to the script
-otherwise the CMakeLists.txt in the subdirectories are not created.
+Steps to Build AliRoot with CMake :
 
-   cmake <path_to_source> -DGENERATE_FILES=TRUE
+1. Define environment variable ALICE_INSTALL
+	export ALICE_INSTALL=$ALICE/AliRootInstall
 
-is the correct command.
+2. Set Path to point to binaries and libraries that will be built in ALICE_INSTALL
+	export PATH=$PATH:$ALICE_INSTALL/bin/tgt_${ALICE_TARGET}
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ALICE_INSTALL/lib/tgt_${ALICE_TARGET}
+
+3. Execute the following commands to build AliRoot
+	cd $ALICE_INSTALL
+	cmake <path_to_source> 
+	make
+
+4. In order to build addtional targets like TFluka, THydjet and SHUTTLE add the following options to the cmake command
+	cmake -DTFLUKA=ON -DTHYDJET=ON -DSHUTTLE=ON <path_to_source>
+
+!IMPORTANT! : Make sure you delete all the files in your ALICE_INSTALL directory before you generate the Makefile again to clear the CMakeCache or the generated build system may not function properly.
+ 
+
