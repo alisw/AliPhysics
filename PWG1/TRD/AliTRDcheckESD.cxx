@@ -828,7 +828,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
     // pid quality
     Bool_t kBarrel = Bool_t(status & AliESDtrack::kTRDin);
 
-    TH3F *hhh;
+    TH3F *hhh(NULL);
     // find position and momentum of the track at entrance in TRD
     Double_t localCoord[3] = {0., 0., 0.};
     Bool_t localCoordGood = esdTrack->GetXYZAt(298., fESD->GetMagneticField(), localCoord);

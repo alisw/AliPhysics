@@ -46,7 +46,7 @@ Char_t const* AliTRDpwg1Helper::fgkTRDtaskOpt[AliTRDpwg1Helper::kNTRDTASKS+1] = 
 
 //______________________________________________________
 Int_t AliTRDpwg1Helper::ParseOptions(Char_t *trd){
-  Int_t fSteerTask = 1;
+  Int_t fSteerTask = 0;
   TObjArray *tasksArray = TString(trd).Tokenize(" ");
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
@@ -111,6 +111,14 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
   gSystem->Exec(Form("mv 0_%s %s", mark, mark));
   
   gSystem->Exec(Form("rm -rfv %s %s merge", MERGE, PURGE));
+}
+
+//______________________________________________________
+Int_t AliTRDpwg1Helper::GetTaskIndex(const Char_t *name){
+  for(Int_t it(0); it<kNTRDTASKS; it++){
+    if(strcmp(fgkTRDtaskClassName[it], name)==0) return it;
+  }
+  return -1;
 }
 
 //______________________________________________________
