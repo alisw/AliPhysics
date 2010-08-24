@@ -554,7 +554,6 @@ TObjArray *AliTRDcheckDET::Histos(){
   if(!(h = (TH1F *)gROOT->FindObject("hEventsTrigger")))
     h = new TH1F("hEventsTrigger", "Trigger Class", 100, 0, 100);
   else h->Reset();
-  printf("Histos Adding \n");
   
   fContainer->AddAt(h, kNeventsTrigger);
 
