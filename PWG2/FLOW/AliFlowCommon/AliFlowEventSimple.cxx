@@ -53,6 +53,7 @@ AliFlowEventSimple::AliFlowEventSimple():
   fMCReactionPlaneAngle(0.),
   fMCReactionPlaneAngleIsSet(kFALSE),
   fAfterBurnerPrecision(0.001),
+  fUserModified(kFALSE),
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL)
@@ -61,42 +62,32 @@ AliFlowEventSimple::AliFlowEventSimple():
 }
 
 //-----------------------------------------------------------------------
-AliFlowEventSimple::AliFlowEventSimple(Int_t aLength):
-  fTrackCollection(new TObjArray(aLength)),
-  fReferenceMultiplicity(0),
-  fNumberOfTracks(0),
-  fNumberOfRPs(0),
-  fMCReactionPlaneAngle(0.),
-  fMCReactionPlaneAngleIsSet(kFALSE),
-  fAfterBurnerPrecision(0.001),
-  fNumberOfTracksWrap(NULL),
-  fNumberOfRPsWrap(NULL),
-  fMCReactionPlaneAngleWrap(NULL)
-{
-  //constructor
-}
-
-//-----------------------------------------------------------------------
-AliFlowEventSimple::AliFlowEventSimple( Int_t nParticles,
+AliFlowEventSimple::AliFlowEventSimple( Int_t n,
+                                        ConstructionMethod method,
                                         TF1* ptDist,
                                         Double_t phiMin,
                                         Double_t phiMax,
                                         Double_t etaMin,
                                         Double_t etaMax):
-  fTrackCollection(new TObjArray(nParticles)),
-  fReferenceMultiplicity(nParticles),
+  fTrackCollection(new TObjArray(n)),
+  fReferenceMultiplicity(n),
   fNumberOfTracks(0),
   fNumberOfRPs(0),
   fMCReactionPlaneAngle(0.),
   fMCReactionPlaneAngleIsSet(kFALSE),
   fAfterBurnerPrecision(0.001),
+  fUserModified(kFALSE),
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL)
 {
-  //ctor. generates nParticles random tracks with given Pt distribution
-  //phi and eta are uniform
-  Generate(nParticles,ptDist,phiMin,phiMax,etaMin,etaMax);
+  //ctor
+  // if second argument is set to AliFlowEventSimple::kGenerate
+  // it generates n random tracks with given Pt distribution
+  // (a sane default is provided), phi and eta are uniform
+
+  if (method==kGenerate)
+    Generate(n,ptDist,phiMin,phiMax,etaMin,etaMax);
 }
 
 //-----------------------------------------------------------------------
@@ -109,6 +100,7 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fMCReactionPlaneAngle(anEvent.fMCReactionPlaneAngle),
   fMCReactionPlaneAngleIsSet(anEvent.fMCReactionPlaneAngleIsSet),
   fAfterBurnerPrecision(anEvent.fAfterBurnerPrecision),
+  fUserModified(anEvent.fUserModified),
   fNumberOfTracksWrap(anEvent.fNumberOfTracksWrap),
   fNumberOfRPsWrap(anEvent.fNumberOfRPsWrap),
   fMCReactionPlaneAngleWrap(anEvent.fMCReactionPlaneAngleWrap)
@@ -129,6 +121,7 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fMCReactionPlaneAngle = anEvent.fMCReactionPlaneAngle;
   fMCReactionPlaneAngleIsSet = anEvent.fMCReactionPlaneAngleIsSet;
   fAfterBurnerPrecision = anEvent.fAfterBurnerPrecision;
+  fUserModified=anEvent.fUserModified;
   fNumberOfTracksWrap = anEvent.fNumberOfTracksWrap;
   fNumberOfRPsWrap = anEvent.fNumberOfRPsWrap;
   fMCReactionPlaneAngleWrap=anEvent.fMCReactionPlaneAngleWrap;
@@ -161,6 +154,7 @@ void AliFlowEventSimple::Generate(Int_t nParticles,
     static TF1 ptdistribution("ptSpectra","x*TMath::Exp(-pow(0.13957*0.13957+x*x,0.5)/0.4)",0.1,10.);
     ptDist=&ptdistribution;
   }
+
   for (Int_t i=0; i<nParticles; i++)
   {
     AliFlowTrackSimple* track = new AliFlowTrackSimple();
@@ -171,6 +165,8 @@ void AliFlowEventSimple::Generate(Int_t nParticles,
     AddTrack(track);
   }
   fMCReactionPlaneAngle=gRandom->Uniform(0.0,TMath::TwoPi());
+  fMCReactionPlaneAngleIsSet=kTRUE;
+  SetUserModified();
 }
 
 //-----------------------------------------------------------------------
@@ -487,6 +483,7 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fMCReactionPlaneAngle(0.),
   fMCReactionPlaneAngleIsSet(kFALSE),
   fAfterBurnerPrecision(0.001),
+  fUserModified(kFALSE),
   fNumberOfTracksWrap(NULL),
   fNumberOfRPsWrap(NULL),
   fMCReactionPlaneAngleWrap(NULL)
@@ -551,6 +548,7 @@ void AliFlowEventSimple::CloneTracks(Int_t n)
       AddTrack(static_cast<AliFlowTrackSimple*>(track->Clone()));
     }
   }
+  SetUserModified();
 }
 
 //_____________________________________________________________________________
@@ -562,6 +560,7 @@ void AliFlowEventSimple::ResolutionPt(Double_t res)
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (track) track->ResolutionPt(res);
   }
+  SetUserModified();
 }
 
 //_____________________________________________________________________________
@@ -589,6 +588,7 @@ void AliFlowEventSimple::AddV1( Double_t v1 )
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (track) track->AddV1(v1, fMCReactionPlaneAngle, fAfterBurnerPrecision);
   }
+  SetUserModified();
 }
 
 //_____________________________________________________________________________
@@ -600,6 +600,7 @@ void AliFlowEventSimple::AddV2( Double_t v2 )
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (track) track->AddV2(v2, fMCReactionPlaneAngle, fAfterBurnerPrecision);
   }
+  SetUserModified();
 }
 
 //_____________________________________________________________________________
@@ -611,6 +612,7 @@ void AliFlowEventSimple::AddV4( Double_t v4 )
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (track) track->AddV4(v4, fMCReactionPlaneAngle, fAfterBurnerPrecision);
   }
+  SetUserModified();
 }
 
 //_____________________________________________________________________________
@@ -622,6 +624,7 @@ void AliFlowEventSimple::AddFlow( Double_t v1, Double_t v2, Double_t v3, Double_
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (track) track->AddFlow(v1,v2,v3,v4,fMCReactionPlaneAngle, fAfterBurnerPrecision);
   }
+  SetUserModified();
 }
 
 //_____________________________________________________________________________
