@@ -60,7 +60,6 @@ AliJetAODReader::AliJetAODReader():
     fGrid2(0),
     fGrid3(0),
     fGrid4(0),
-    fPtCut(0),
     fApplyElectronCorrection(kFALSE),
     fApplyMIPCorrection(kTRUE),
     fApplyFractionHadronicCorrection(kFALSE),

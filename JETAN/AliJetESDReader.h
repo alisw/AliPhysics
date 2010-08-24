@@ -64,7 +64,6 @@ class AliJetESDReader : public AliJetReader
   AliJetGrid                 *fGrid2;            // Pointer to grid object
   AliJetGrid                 *fGrid3;            // Pointer to grid object
   AliJetGrid                 *fGrid4;            // Pointer to grid object
-  Float_t                     fPtCut;            // Pt cut for tracks to minimise background contribution
   Int_t                       fApplyElectronCorrection;      // Electron correction flag
   Bool_t                      fApplyMIPCorrection; // Apply MIP or not ? Exclusive with fApplyFractionHadronicCorrection
   Bool_t                      fApplyFractionHadronicCorrection; // Another type of charged particle energy deposition in EMC
@@ -88,7 +87,7 @@ class AliJetESDReader : public AliJetReader
 
 
 
-  ClassDef(AliJetESDReader,1)
+  ClassDef(AliJetESDReader,2)
 };
  
 #endif

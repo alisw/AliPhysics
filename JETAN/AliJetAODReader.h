@@ -75,7 +75,6 @@ class AliJetAODReader : public AliJetReader
   AliJetGrid                 *fGrid2;            // Pointer to grid object
   AliJetGrid                 *fGrid3;            // Pointer to grid object
   AliJetGrid                 *fGrid4;            // Pointer to grid object
-  Float_t                     fPtCut;            // Pt cut for tracks to minimise background contribution
   Int_t                       fApplyElectronCorrection;      // Electron correction flag
   Bool_t                      fApplyMIPCorrection; // Apply MIP or not ? Exclusive with fApplyFractionHadronicCorrection
   Bool_t                      fApplyFractionHadronicCorrection; // Another type of charged particle energy deposition in EMC
@@ -90,7 +89,7 @@ class AliJetAODReader : public AliJetReader
   Int_t                       fNphi;             // Number of bins in phi of tpc grid
   TRefArray                  *fRefArray;         // array of digit position and energy
   Bool_t                      fProcId;           // Bool_t for TProcessID synchronization
-  ClassDef(AliJetAODReader,1)
+  ClassDef(AliJetAODReader,2)
 };
  
 #endif
