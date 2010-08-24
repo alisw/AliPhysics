@@ -25,7 +25,7 @@
 #include <TSystem.h>
 #include <TInterpreter.h>
 #include <TChain.h>
-#include <TRandom.h>
+#include <TRefArray.h>
 #include <TFile.h>
 #include <TKey.h>
 #include <TH1F.h>
@@ -42,8 +42,6 @@
 #include "AliJetFinder.h"
 #include "AliJetHeader.h"
 #include "AliJetReader.h"
-#include "AliJetReaderHeader.h"
-#include "AliUA1JetHeaderV1.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
@@ -69,17 +67,26 @@
 
 ClassImp(AliAnalysisTaskJetCluster)
 
+AliAnalysisTaskJetCluster::~AliAnalysisTaskJetCluster(){
+  delete fRef;
+}
+
 AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fAOD(0x0),
+  fAODExtension(0x0),
+  fRef(new TRefArray),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fUseGlobalSelection(kFALSE),
   fFilterMask(0),
   fTrackTypeRec(kTrackUndef),
-  fTrackTypeGen(kTrackUndef),
-  fAvgTrials(1),
+  fTrackTypeGen(kTrackUndef),  fAvgTrials(1),
   fExternalWeight(1),    
   fRecEtaWindow(0.5),
+  fTrackPtCut(0.),							
+  fJetOutputMinPt(1),
+  fNonStdBranch(""),
+  fNonStdFile(""),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -141,6 +148,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
 AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   AliAnalysisTaskSE(name),
   fAOD(0x0),
+  fAODExtension(0x0),
+  fRef(new TRefArray),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fUseGlobalSelection(kFALSE),
@@ -150,6 +159,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fAvgTrials(1),
   fExternalWeight(1),    
   fRecEtaWindow(0.5),
+  fTrackPtCut(0.),							
+  fJetOutputMinPt(1),
+  fNonStdBranch(""),
+  fNonStdFile(""),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -227,10 +240,49 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   //
 
 
+
+
   // Connect the AOD
 
 
   if (fDebug > 1) printf("AnalysisTaskJetCluster::UserCreateOutputObjects() \n");
+
+
+
+  if(fNonStdBranch.Length()!=0)
+    {
+      // only create the output branch if we have a name
+      // Create a new branch for jets...
+      //  -> cleared in the UserExec....
+      // here we can also have the case that the brnaches are written to a separate file
+
+      TClonesArray *tca = new TClonesArray("AliAODJet", 0);
+      tca->SetName(fNonStdBranch.Data());
+      AddAODBranch("TClonesArray",&tca,fNonStdFile.Data());
+      if(fNonStdFile.Length()!=0){
+	// 
+	// case that we have an AOD extension we need to fetch the jets from the extended output
+	// we identifay the extension aod event by looking for the branchname
+	AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+	TObjArray* extArray = aodH->GetExtensions();
+	if (extArray) {
+	  TIter next(extArray);
+	  while ((fAODExtension=(AliAODExtension*)next())){
+	    TObject *obj = fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data());
+	    if(fDebug>10){
+	      Printf("%s:%d Dumping..",(char*)__FILE__,__LINE__);
+	      fAODExtension->GetAOD()->Dump();
+	    }
+	    if(obj){
+	      if(fDebug>1)Printf("AODExtension found for %s",fNonStdBranch.Data());
+	      break;
+	    }
+	    fAODExtension = 0;
+	  }
+	}
+      }
+    }
+
 
   OpenFile(1);
   if(!fHistList)fHistList = new TList();
@@ -451,6 +503,15 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     return;
   }
 
+  // handle and reset the output jet branch 
+  // only need this once
+  TClonesArray* jarray = 0;  
+  if(fNonStdBranch.Length()!=0) {
+    if(AODEvent())jarray = (TClonesArray*)(AODEvent()->FindListObject(fNonStdBranch.Data()));
+    if(!jarray)jarray = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data()));
+    if(jarray)jarray->Delete();    // this is our responsibility, clear before filling again
+  }
+
   //
   // Execute analysis for current event
   //
@@ -476,11 +537,13 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   }
   
   Bool_t selectEvent =  false;
-  Bool_t physicsSelection = (fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
+  Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
 
   if(fAOD){
     const AliAODVertex *vtxAOD = fAOD->GetPrimaryVertex();
-    if(vtxAOD->GetNContributors()>0){
+    TString vtxTitle(vtxAOD->GetTitle());
+
+    if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
 	Float_t zvtx = vtxAOD->GetZ();
 	Float_t yvtx = vtxAOD->GetY();
 	Float_t xvtx = vtxAOD->GetX();
@@ -545,6 +608,15 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     jInpRan.set_user_index(i);
     inputParticlesRecRan.push_back(jInpRan);
 
+
+    // fill the tref array, only needed when we write out jets
+    if(jarray){
+      if(i == 0){
+	fRef->Delete(); // make sure to delete before placement new...
+	new(fRef) TRefArray(TProcessID::GetProcessWithUID(vp));
+      }
+      fRef->Add(vp);
+    }
   }
 
   if(inputParticlesRec.size()==0){
@@ -565,11 +637,14 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
  // loop over all jets an fill information, first on is the leading jet
 
- Int_t nRecOver = inclusiveJets.size();
- Int_t nRec     = inclusiveJets.size();
- if(inclusiveJets.size()>0){
-   AliAODJet leadingJet (sortedJets[0].px(), sortedJets[0].py(), sortedJets[0].pz(), sortedJets[0].E());
+  Int_t nRecOver = inclusiveJets.size();
+  Int_t nRec     = inclusiveJets.size();
+  if(inclusiveJets.size()>0){
+    AliAODJet leadingJet (sortedJets[0].px(), sortedJets[0].py(), sortedJets[0].pz(), sortedJets[0].E());
     Float_t pt = leadingJet.Pt();
+    Int_t nAodOutJets = 0;
+    Int_t nAodOutTracks = 0;
+    AliAODJet *aodOutJet = 0;
 
     Int_t iCount = 0;
     for(int i = 1;i <= fh2NRecJetsPt->GetNbinsX();i++){
@@ -588,11 +663,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     if(phi<0)phi+=TMath::Pi()*2.;    
     Float_t eta = leadingJet.Eta();
     pt = leadingJet.Pt();
-
+    
     // correlation of leading jet with tracks
     TIterator *recIter = recParticles.MakeIterator();
     AliVParticle *tmpRecTrack = (AliVParticle*)(recIter->Next());  
-
+    
     recIter->Reset();
     while((tmpRecTrack = (AliVParticle*)(recIter->Next()))){
       Float_t tmpPt = tmpRecTrack->Pt();
@@ -605,54 +680,73 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       //      Float_t dEta = eta - tmpRecTrack->Eta();
       fh2TracksLeadingJetPhiPt->Fill(dPhi,pt);
       fh2TracksLeadingJetPhiPtW->Fill(dPhi,pt,tmpPt);
-   }  
+    }  
+    
+   
+    
+   for(int j = 0; j < nRec;j++){
+     AliAODJet tmpRec (sortedJets[j].px(), sortedJets[j].py(), sortedJets[j].pz(), sortedJets[j].E());
+     aodOutJet = 0;
+     nAodOutTracks = 0;
+     Float_t tmpPt = tmpRec.Pt();  
+     fh1PtJetsRecIn->Fill(tmpPt);
+     // Fill Spectra with constituents
+     vector<fastjet::PseudoJet> constituents = clustSeq.constituents(sortedJets[j]);
+     fh1NConstRec->Fill(constituents.size());
+     fh2PtNch->Fill(nCh,tmpPt);
+     fh2PtNchN->Fill(nCh,tmpPt,constituents.size());
+     fh2NConstPt->Fill(tmpPt,constituents.size());
+     // loop over constiutents and fill spectrum
+
+     // Add the jet information and the track references to the output AOD
+     
+     if(tmpPt>fJetOutputMinPt&&jarray){
+       aodOutJet =  new ((*jarray)[nAodOutJets++]) AliAODJet(tmpRec);
+     }
+
+     
+     for(unsigned int ic = 0; ic < constituents.size();ic++){
+       AliVParticle *part = (AliVParticle*)recParticles.At(constituents[ic].user_index());
+       fh1PtJetConstRec->Fill(part->Pt());
+       if(aodOutJet){
+	 aodOutJet->AddTrack(fRef->At(constituents[ic].user_index()));
+       }
+       if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
+     }
 
 
 
-    for(int j = 0; j < nRec;j++){
-      AliAODJet tmpRec (sortedJets[j].px(), sortedJets[j].py(), sortedJets[j].pz(), sortedJets[j].E());
-      Float_t tmpPt = tmpRec.Pt();
-      fh1PtJetsRecIn->Fill(tmpPt);
-      // Fill Spectra with constituents
-      vector<fastjet::PseudoJet> constituents = clustSeq.constituents(sortedJets[j]);
-      fh1NConstRec->Fill(constituents.size());
-      fh2PtNch->Fill(nCh,tmpPt);
-      fh2PtNchN->Fill(nCh,tmpPt,constituents.size());
-      fh2NConstPt->Fill(tmpPt,constituents.size());
-      // loop over constiutents and fill spectrum
-      for(unsigned int ic = 0; ic < constituents.size();ic++){
-	AliVParticle *part = (AliVParticle*)recParticles.At(constituents[ic].user_index());
-	fh1PtJetConstRec->Fill(part->Pt());
-	if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
-      }
+     
+     
 
-      // correlation
-      Float_t tmpPhi =  tmpRec.Phi();
-      Float_t tmpEta =  tmpRec.Eta();
-      if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
 
-      if(j==0){
-	fh1PtJetsLeadingRecIn->Fill(tmpPt);
-	fh2LeadingJetPhiEta->Fill(tmpPhi,tmpEta);
-	fh2LeadingJetEtaPt->Fill(tmpEta,tmpPt);
-	fh1NConstLeadingRec->Fill(constituents.size());
-	fh2NConstLeadingPt->Fill(tmpPt,constituents.size());
-	continue;
-      }
-      fh2JetPhiEta->Fill(tmpRec.Phi(),tmpEta);
-      fh2JetEtaPt->Fill(tmpEta,tmpPt);
-      Float_t dPhi = phi - tmpPhi;
-      if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
-      if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
-      Float_t dEta = eta - tmpRec.Eta();
-      fh2JetsLeadingPhiEta->Fill(dPhi,dEta);
-      fh2JetsLeadingPhiPt->Fill(dPhi,pt);
-      fh2JetsLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
-    }
-    delete recIter;
- }
+     
+     // correlation
+     Float_t tmpPhi =  tmpRec.Phi();
+     Float_t tmpEta =  tmpRec.Eta();
+     if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
+     
+     if(j==0){
+       fh1PtJetsLeadingRecIn->Fill(tmpPt);
+       fh2LeadingJetPhiEta->Fill(tmpPhi,tmpEta);
+       fh2LeadingJetEtaPt->Fill(tmpEta,tmpPt);
+       fh1NConstLeadingRec->Fill(constituents.size());
+       fh2NConstLeadingPt->Fill(tmpPt,constituents.size());
+       continue;
+     }
+     fh2JetPhiEta->Fill(tmpRec.Phi(),tmpEta);
+     fh2JetEtaPt->Fill(tmpEta,tmpPt);
+     Float_t dPhi = phi - tmpPhi;
+     if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
+     if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
+     Float_t dEta = eta - tmpRec.Eta();
+     fh2JetsLeadingPhiEta->Fill(dPhi,dEta);
+     fh2JetsLeadingPhiPt->Fill(dPhi,pt);
+     fh2JetsLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
+   }
+   delete recIter;
+  }
  
-
  // fill track information
  Int_t nTrackOver = recParticles.GetSize();
   // do the same for tracks and jets

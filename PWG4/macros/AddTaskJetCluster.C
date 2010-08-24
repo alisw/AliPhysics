@@ -84,7 +84,9 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    }
    else if (typeRec.Contains("AOD")) {
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAOD);
+     pwg4spec->SetTrackPtCut(0.15);
    }
+
 
    if(typeGen.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
      pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetCluster::kTrackAODMCChargedAcceptance);
@@ -119,6 +121,11 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    }
 
    
+   if(TMath::Abs(radius-0.4)<0.01){
+     pwg4spec->SetJetOutputBranch(Form("clusters%s_%s%s",bRec,jf,cRadius));
+     pwg4spec->SetJetOutputMinPt(1); // store only jets / clusters above a certain threshold
+   }
+
    if(iPhysicsSelection)pwg4spec->SelectCollisionCandidates();
 
    mgr->AddTask(pwg4spec);

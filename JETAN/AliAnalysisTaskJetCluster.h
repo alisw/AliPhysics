@@ -19,6 +19,7 @@
 class AliJetHeader;
 class AliESDEvent;
 class AliAODEvent;
+class AliAODExtension;
 class AliAODJet;
 class AliGenPythiaEventHeader;
 class AliCFManager;
@@ -29,7 +30,7 @@ class TH2F;
 class TH1F;
 class TH3F;
 class TProfile;
-
+class TRefArray;
 
 
 class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
@@ -37,7 +38,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
  public:
     AliAnalysisTaskJetCluster();
     AliAnalysisTaskJetCluster(const char* name);
-    virtual ~AliAnalysisTaskJetCluster() {;}
+    virtual ~AliAnalysisTaskJetCluster();
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void Init();
@@ -52,7 +53,12 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
+    virtual void SetTrackPtCut(Float_t x){fTrackPtCut = x;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
+
+    virtual void SetJetOutputBranch(const char *c){fNonStdBranch = c;}
+    virtual void SetJetOutputFile(const char *c){fNonStdFile = c;}
+    virtual void SetJetOutputMinPt(Float_t x){fJetOutputMinPt = x;}
 
     // for Fast Jet
     fastjet::JetAlgorithm        GetAlgorithm()         const {return fAlgorithm;}
@@ -86,17 +92,26 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
 
     Int_t GetListOfTracks(TList *list,Int_t type);
 
-    AliAODEvent  *fAOD; // where we take the jets from can be input or output AOD
-
+    AliAODEvent     *fAOD;                // ! where we take the jets from can be input or output AOD
+    AliAODExtension *fAODExtension;       // ! AOD extension in case we write a non-sdt branch to a separate file and the aod is standard
+    TRefArray       *fRef;               // ! trefarray for track references within the jet
     Bool_t        fUseAODTrackInput;      // take track from input AOD not from ouptu AOD
     Bool_t        fUseAODMCInput;         // take MC from input AOD not from ouptu AOD
     Bool_t        fUseGlobalSelection;    // Limit the eta of the generated jets
-    UInt_t        fFilterMask;             // filter bit for slecected tracks
+    UInt_t        fFilterMask;            // filter bit for slecected tracks
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
+    Float_t       fTrackPtCut;            // minimum track pt to be accepted
+    Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out
+
+    // output configurartion
+    TString       fNonStdBranch;      // the name of the non-std branch name, if empty no branch is filled
+    TString       fNonStdFile;        // The optional name of the output file the non-std brnach is written to
+    
+
     // Fast jet
     Double_t fRparam;
     fastjet::JetAlgorithm fAlgorithm; //fastjet::kt_algorithm
@@ -160,7 +175,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 3) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetCluster, 4) 
 };
  
 #endif
