@@ -87,16 +87,6 @@ AliCaloRawAnalyzerPeakFinder::ResetVectors()
 AliCaloRawAnalyzerPeakFinder::~AliCaloRawAnalyzerPeakFinder()
 {
   //comment
-  for(int i=0; i < MAXSTART; i++)
-    {
-      for(int j=0; j < SAMPLERANGE; j++ )
-	{
-	  delete[] fPFAmpVectors[i][j];
-	  delete[] fPFTofVectors[i][j];
-	  delete[] fPFAmpVectorsCoarse[i][j];
-	  delete[] fPFTofVectorsCoarse[i][j];
-	}
-    }
 }
 
 

@@ -69,8 +69,9 @@ AliHMPIDQATask::~AliHMPIDQATask()
   delete fhHMPIDCkovP ;  
   delete fhHMPIDMipXY ;  
   delete fhHMPIDDifXY ;  
-  delete fhHMPIDSigP ;   
-  delete [] fhHMPIDProb ;
+  delete fhHMPIDSigP ;
+  for (Int_t i=0; i<5; i++)
+    delete fhHMPIDProb[i] ;
 }
 
 //______________________________________________________________________________

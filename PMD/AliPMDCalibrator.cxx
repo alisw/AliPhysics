@@ -123,9 +123,16 @@ AliPMDCalibrator &AliPMDCalibrator::operator=(const AliPMDCalibrator &pmdcalibra
 AliPMDCalibrator::~AliPMDCalibrator()
 {
   // destructor
-  if(fHdetIso) delete fHdetIso ;
-  if(fHsmIso)  delete fHsmIso ;
-  if(fHadcIso) delete fHadcIso ;
+  for (Int_t i=0; i<kDet; i++)
+    delete fHdetIso[i] ;
+  for (Int_t i=0; i<kDet; i++)
+    for (Int_t j=0; j<kMaxSMN; j++)
+      delete fHsmIso[i][j] ;
+  for (Int_t i=0; i<kDet; i++)
+    for (Int_t j=0; j<kMaxSMN; j++)
+      for (Int_t k=0; k<kMaxRow; k++)
+	for (Int_t l=0; l<kMaxCol; l++)
+	  delete fHadcIso[i][j][k][l] ;
   delete fCalibGain;
   delete fCalibPed;
 }

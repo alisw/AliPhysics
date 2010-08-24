@@ -699,7 +699,7 @@ void AliEveTRDTrackListEditor::HandleMacroPathSet()
         // Ignore the slash "/" in name
         AddMacro(name + 1, path);  
   
-        if (path != 0)  delete path;
+        if (path != 0)  delete [] path;
         path = 0;
       }       
     }

@@ -61,7 +61,6 @@ AliVZERODataFEE::AliVZERODataFEE(Int_t nRun, UInt_t startTime, UInt_t endTime) :
 //_____________________________________________________________________________
 AliVZERODataFEE::~AliVZERODataFEE()
 {
-	delete fAliasNames;
 	delete fParameters;
 }
 

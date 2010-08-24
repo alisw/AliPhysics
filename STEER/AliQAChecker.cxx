@@ -97,7 +97,8 @@ AliQAChecker::~AliQAChecker()
 // clean up
   if (fRunInfo)
     delete fRunInfo ; 
-  delete [] fCheckers ; 
+  for (Int_t det=0; det<AliQAv1::kNDET; det++)
+    delete fCheckers[det] ; 
   AliQAv1::Close() ; 
 }
 

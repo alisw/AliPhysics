@@ -82,12 +82,14 @@ TObject(),fTriggerData(NULL),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
 //_____________________________________________________________________________
 AliVZEROTriggerSimulator::~AliVZEROTriggerSimulator(){
 // Destructor
-	if(fBBGate) delete [] fBBGate;
-	if(fBGGate) delete [] fBGGate;
-	if(fBBLatch) delete [] fBBLatch;
-	if(fBBReset) delete [] fBBReset;
-	if(fBGLatch) delete [] fBGLatch;
-	if(fBGReset) delete [] fBGReset;
+  for (Int_t i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
+    delete fBBGate[i];
+    delete fBGGate[i];
+    delete fBBLatch[i];
+    delete fBBReset[i];
+    delete fBGLatch[i];
+    delete fBGReset[i];
+  }
 }
 
 //_____________________________________________________________________________

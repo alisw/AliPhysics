@@ -599,7 +599,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
 
   if (selCmds != 0)  delete [] selCmds;
   selCmds = 0;
-  if (mSelType != 0)  delete mSelType;
+  if (mSelType != 0)  delete [] mSelType;
   mSelType = 0;
 
   if (histos != 0)  delete [] histos;

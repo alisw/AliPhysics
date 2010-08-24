@@ -717,7 +717,7 @@ TH1F * AliAnalysisTaskBGvsTime::BookVsTimeHisto(const char * name, const char * 
   TH1::AddDirectory(oldStatus);
   
 
-  delete bins;
+  delete [] bins;
   return h;
 }
 
