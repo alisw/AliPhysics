@@ -660,8 +660,8 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
 
   AliDebug(1,Form("Stream version: %s", fRawStream->IsA()->GetName()));
   
-  Int_t det    = 0;
-  while ((det = fRawStream->NextChamber(fDigitsManager,fTrackletContainer)) >= 0){
+  UInt_t det = 0;
+  while ((det = fRawStream->NextChamber(fDigitsManager,fTrackletContainer)) < AliTRDgeometry::kNdet){
     if (fDigitsManager->GetIndexes(det)->HasEntry()){
       MakeClusters(det);
       fDigitsManager->ClearArrays(det);
