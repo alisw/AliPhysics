@@ -83,7 +83,7 @@ void AliRsnVAnalysisTaskSE::LocalInit()
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnVAnalysisTaskSE::Notify()
+Bool_t AliRsnVAnalysisTaskSE::UserNotify()
 {
 //
 // Calls the mother class Notify()
@@ -92,7 +92,7 @@ Bool_t AliRsnVAnalysisTaskSE::Notify()
   AliDebug(AliLog::kDebug+2,"<-");
   AliDebug(AliLog::kDebug+2,"->");
 
-  return AliAnalysisTaskSE::Notify();
+  return AliAnalysisTaskSE::UserNotify();
 }
 
 //_____________________________________________________________________________
