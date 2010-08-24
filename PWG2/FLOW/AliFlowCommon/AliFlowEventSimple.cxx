@@ -148,14 +148,19 @@ AliFlowEventSimple::~AliFlowEventSimple()
 
 //-----------------------------------------------------------------------
 void AliFlowEventSimple::Generate(Int_t nParticles,
-                                        TF1* ptDist,
-                                        Double_t phiMin,
-                                        Double_t phiMax,
-                                        Double_t etaMin,
-                                        Double_t etaMax)
+                                  TF1* ptDist,
+                                  Double_t phiMin,
+                                  Double_t phiMax,
+                                  Double_t etaMin,
+                                  Double_t etaMax)
 {
   //generate nParticles random tracks uniform in phi and eta
   //according to the specified pt distribution
+  if (!ptDist)
+  {
+    static TF1 ptdistribution("ptSpectra","x*TMath::Exp(-pow(0.13957*0.13957+x*x,0.5)/0.4)",0.1,10.);
+    ptDist=&ptdistribution;
+  }
   for (Int_t i=0; i<nParticles; i++)
   {
     AliFlowTrackSimple* track = new AliFlowTrackSimple();
@@ -165,6 +170,7 @@ void AliFlowEventSimple::Generate(Int_t nParticles,
     track->SetCharge( (gRandom->Uniform()-0.5<0)?-1:1 );
     AddTrack(track);
   }
+  fMCReactionPlaneAngle=gRandom->Uniform(0.0,TMath::TwoPi());
 }
 
 //-----------------------------------------------------------------------
