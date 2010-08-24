@@ -81,7 +81,7 @@ AliMUONOccupancySubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t end
   {
     TString fileName(Master()->GetFile(kSystem,kId,o->GetName()));
     Int_t ok = ReadFile(fileName.Data());
-    if (ok>0)
+    if ( ok>0 || ok == AliMUONTrackerIO::kNoInfoFile )
     {
       n += ok;
     }
@@ -112,19 +112,27 @@ AliMUONOccupancySubprocessor::Process(TMap* /*dcsAliasMap*/)
     return 1;
   }
   
-  Master()->Log("Storing occupancy map");
+  if ( fOccupancyMap->GetSize() )
+  {
+    Master()->Log("Storing occupancy map");
   
-  AliCDBMetaData metaData;
-	metaData.SetBeamPeriod(0);
-	metaData.SetResponsible("MUON TRK");
-  TString comment("Computed by AliMUONOccupancySubprocessor $Id$");
-  comment.ReplaceAll("$","");
-	metaData.SetComment(comment.Data());
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("MUON TRK");
+    TString comment("Computed by AliMUONOccupancySubprocessor $Id$");
+    comment.ReplaceAll("$","");
+    metaData.SetComment(comment.Data());
+    
+    Bool_t validToInfinity = kFALSE;
+    Bool_t result = Master()->Store("Calib", "OccupancyMap", fOccupancyMap, &metaData, 0, validToInfinity);
   
-  Bool_t validToInfinity = kFALSE;
-	Bool_t result = Master()->Store("Calib", "OccupancyMap", fOccupancyMap, &metaData, 0, validToInfinity);
-  
-  return ( result != kTRUE ); // return 0 if everything is ok.  
+    return ( result != kTRUE ); // return 0 if everything is ok.  
+  }
+  else
+  {
+    Master()->Log("No occupancy map to store");
+    return 0;
+  }
 }
 
 //_____________________________________________________________________________

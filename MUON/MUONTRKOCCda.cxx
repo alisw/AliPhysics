@@ -36,6 +36,7 @@
 ///
 /// $Id$
 
+#include "AliDAQ.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONRawStreamTrackerHP.h"
@@ -61,7 +62,7 @@
 #endif
 
 const char* OUTPUT_FILE = "mch.occupancy";
-const char* DAVERSION = "MUONTRKOCCda v1.5 ($Id$)";
+const char* DAVERSION = "MUONTRKOCCda v1.6 ($Id$)";
 
 //______________________________________________________________________________
 void Add(AliMUONVStore& destStore, const AliMUONVStore& srcStore)
@@ -96,7 +97,7 @@ void Add(AliMUONVStore& destStore, const AliMUONVStore& srcStore)
 
 //______________________________________________________________________________
 void GenerateOutputFile(const AliMUONVStore& store, ostream& out, 
-                        Int_t runNumber, Int_t nevents)
+                        Int_t runNumber, Int_t nevents, Int_t numberOfEventsWithMCH)
 {
   /// Write the channel hit count (grouped by manu) in the output file.
   
@@ -112,20 +113,31 @@ void GenerateOutputFile(const AliMUONVStore& store, ostream& out,
   out << "//---------------------------------------------------------------------------" << endl;
   out << "//  BP   MANU  SUM_N  NEVENTS" << endl;
   out << "//---------------------------------------------------------------------------" << endl;
+
+  Int_t nlines(0);
   
   while ( ( manu = static_cast<AliMUONVCalibParam*>(next()) ) )
   {
     Int_t sum(0);
-//    Int_t nevents(0);
     
     for ( Int_t i = 0; i < manu->Size(); ++i ) 
     {
       sum += manu->ValueAsInt(i);
-      //      nevents = TMath::Max(nevents,manu->ValueAsInt(i,1));
-      // nevents = TMath::Max(nevents,manu->ValueAsInt(i,1));
     }
     
     out << Form("%5d %5d %10d %10d",manu->ID0(),manu->ID1(),sum,nevents) << endl;
+    ++nlines;
+  }
+  
+  if (!nlines)
+  {
+    // ok : empty output. Is it because the run was empty ? 
+    if ( !numberOfEventsWithMCH )
+    {
+      // yes. Let give a hint in the file so the Shuttle preprocessor will know about this...
+      out << Form("%5d %5d %10d %10d",-1,-1,0,0) << endl;
+    }
+    // else the preprocessor will fail, and that's good because there's something wrong somewhere...
   }
 }
   
@@ -172,6 +184,8 @@ int main(int argc, char **argv)
   Int_t numberOfPhysicsEvent(0);
   Int_t numberOfBadEvents(0);
   Int_t numberOfUsedEvents(0);
+  
+  Int_t numberOfEventsWithMCH(0);
   
   AliMUON2DMap oneEventData(kTRUE);
   AliMUON2DMap accumulatedData(kTRUE);
@@ -255,6 +269,31 @@ int main(int argc, char **argv)
         runNumber = rawReader->GetRunNumber();
       }
       
+      // *without* using the MUONTRK event decoder, we update the number
+      // of events where we have information about MUONTRK.
+      // this should be what is called subevents in the logbook
+      // we do *not* use the MCH decoder on purpose, to not mistakenly
+      // believe there's no event if the data is corrupted (and thus the decoder
+      // "sees" nothing).
+      
+      Bool_t mchThere(kFALSE);
+      
+      for ( int iDDL = 0; iDDL < AliDAQ::NumberOfDdls("MUONTRK") && !mchThere; ++iDDL )
+      {
+        rawReader->Reset();
+        rawReader->Select("MUONTRK",iDDL,iDDL);
+        if (rawReader->ReadHeader() )
+        {
+          if (rawReader->GetEquipmentSize() ) mchThere = kTRUE;
+        }      
+      }
+
+      if ( mchThere) ++numberOfEventsWithMCH;
+      
+      rawReader->Reset();
+      
+      // now do our real work with the MCH decoder
+      
       AliMUONRawStreamTrackerHP stream(rawReader);
       
       stream.DisableWarnings();
@@ -300,12 +339,12 @@ int main(int argc, char **argv)
   }
   
   
-  cout << Form("%12d events processed : %12d physics %d used ones %d bad ones",
-               numberOfEvents,numberOfPhysicsEvent,numberOfUsedEvents,numberOfBadEvents) << endl;
+  cout << Form("%12d events processed : %12d physics %d used ones %d bad ones [ %d with MCH information ]",
+               numberOfEvents,numberOfPhysicsEvent,numberOfUsedEvents,numberOfBadEvents,numberOfEventsWithMCH) << endl;
     
   ofstream fout(OUTPUT_FILE);
   
-  GenerateOutputFile(accumulatedData,fout,runNumber,numberOfUsedEvents);
+  GenerateOutputFile(accumulatedData,fout,runNumber,numberOfUsedEvents,numberOfEventsWithMCH);
   
   fout.close();
   
@@ -318,7 +357,7 @@ int main(int argc, char **argv)
     
     ostringstream str;
     
-    GenerateOutputFile(accumulatedData,str,runNumber,numberOfUsedEvents);
+    GenerateOutputFile(accumulatedData,str,runNumber,numberOfUsedEvents,numberOfEventsWithMCH);
     
     TObjString occupancyAsString(str.str().c_str());
     

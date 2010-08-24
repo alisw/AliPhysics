@@ -97,7 +97,7 @@ AliMUONTrackerIO::DecodeOccupancy(const char* data, AliMUONVStore& occupancyMap)
   if ( ! AliMpDDLStore::Instance(kFALSE) )
   {
     AliErrorClass("Mapping not loaded. Cannot work");
-    return 0;
+    return kNoMapping;
   }
   
   char line[1024];
@@ -116,6 +116,13 @@ AliMUONTrackerIO::DecodeOccupancy(const char* data, AliMUONVStore& occupancyMap)
     Double_t sumn;
 
     sin >> busPatchId >> manuId >> sumn >> numberOfEvents;
+    
+    if ( busPatchId == -1 && manuId == -1 && sumn == 0 && numberOfEvents == 0 )
+    {
+      /// DA could not produce information (because run failed somehow). 
+      /// That's OK, but let the world know about it
+      return kNoInfoFile;
+    }
     
     Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromBus(busPatchId);
 

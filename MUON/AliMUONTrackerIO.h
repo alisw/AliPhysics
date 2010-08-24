@@ -46,10 +46,12 @@ public:
   {
     kCannotOpenFile = -1, /// cannot open given file
     kDummyFile = -2, /// file is a dummy one (e.g. some intermediate gain files from the DA)
-    kFormatError = -3 /// file is not of the expected format
+    kFormatError = -3, /// file is not of the expected format
+    kNoInfoFile = -4, /// file is "empty", i.e. contains to information but that's normal
+    kNoMapping = -99 /// mapping not loaded, cannot work
   };
   
-  ClassDef(AliMUONTrackerIO,1) // Calibration ASCII file reader for MUON tracker
+  ClassDef(AliMUONTrackerIO,2) // Calibration ASCII file reader for MUON tracker
 };
 
 #endif
