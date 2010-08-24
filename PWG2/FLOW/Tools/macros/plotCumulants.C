@@ -24,9 +24,9 @@ Int_t markerColor[nFiles-nSim] = {kBlack};
 // Set legend entries:
 TString legendEntry[nFiles] = {"LHC10bcd"};
  
-// Set if you want to rebin the histograms into wider multiplicity bins:
-Bool_t rebin = kTRUE;
-Int_t nMergedBins = 10; // set how many original multiplicity bins will be merged into 1 new one
+// Set if you want to rebin the histograms into wider multiplicity bins (set for each cumulant order separately):
+Bool_t rebin = kFALSE;
+Int_t nMergedBins[4] = {1,2,4,8}; // set how many original multiplicity bins will be merged into 1 new one 
  
 // Set if you whish to plot cumulants versus <reference multiplicity> (by default they are plotted versus # of RPs):
 Bool_t plotCumulantsVsReferenceMultiplicity = kFALSE;
@@ -359,7 +359,7 @@ void GetHistograms()
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fIntFlowQcumulantsVsM, %s",qcFlag[co].Data())));
       if(rebin && cumulantsVsM[f][m][co])
       {
-       cumulantsVsM[f][m][co] = Rebin(cumulantsVsM[f][m][co]);
+       cumulantsVsM[f][m][co] = Rebin(cumulantsVsM[f][m][co],co);
       }
       if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
       {
@@ -470,14 +470,14 @@ void Map(TH1D *hist, Int_t f)
 
 // =====================================================================================
 
-TH1D* Rebin(TH1D *hist)
+TH1D* Rebin(TH1D *hist, Int_t co)
 {
  // Rebin original histograms.
  
- if(nMergedBins == 0)
+ if(nMergedBins[co] == 0)
  {
   cout<<endl;
-  cout<<" WARNING: nMergedBins == 0 !!!!"<<endl;
+  cout<<Form(" WARNING: nMergedBins[%i] == 0 !!!!",co)<<endl;
   cout<<endl;
   exit(0);
  } 
@@ -494,9 +494,9 @@ TH1D* Rebin(TH1D *hist)
  Double_t xMinOld = hist->GetXaxis()->GetXmin(); 
  Double_t xMaxOld = hist->GetXaxis()->GetXmax(); 
  Double_t binWidthOld = (xMaxOld-xMinOld)/nBinsOld;
- Int_t nBinsNew = TMath::Floor(nBinsOld/nMergedBins);
+ Int_t nBinsNew = TMath::Floor(nBinsOld/nMergedBins[co]);
  Double_t xMinNew = xMinOld;
- Double_t xMaxNew = xMinOld + nBinsNew*nMergedBins*binWidthOld;
+ Double_t xMaxNew = xMinOld + nBinsNew*nMergedBins[co]*binWidthOld;
   
  TH1D *temp = new TH1D("","",nBinsNew,xMinNew,xMaxNew); // rebinned histogram 
  Int_t binNew = 1;
@@ -513,7 +513,7 @@ TH1D* Rebin(TH1D *hist)
    dSum1+=value/(error*error);
    dSum2+=1./(error*error);
   }
-  if(b%nMergedBins == 0)
+  if(b%nMergedBins[co] == 0)
   {
    if(dSum2>0.)
    {
@@ -523,12 +523,12 @@ TH1D* Rebin(TH1D *hist)
    binNew++;
    dSum1 = 0.;
    dSum2 = 0.;
-  } // end of if(b%nMergedBins == 0)
+  } // end of if(b%nMergedBins[co] == 0)
  } // end of for(Int_t b=1;b<=nBinsOld;b++)
   
  return temp;
       
-} // end of Rebin()
+} // end of TH1D* Rebin(TH1D *hist, Int_t co)
 
 // =====================================================================================
 
