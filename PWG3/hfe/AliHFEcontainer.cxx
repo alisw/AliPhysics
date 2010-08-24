@@ -249,7 +249,7 @@ AliCFContainer *AliHFEcontainer::MakeMergedCFContainer(const Char_t *name, const
   Int_t *dummyBinning = new Int_t[fNVars];
   for(UInt_t ibin = 0; ibin < fNVars; ibin++) dummyBinning[ibin] = 1;
   AliCFContainer *cmerged = new AliCFContainer(name, title, nStepMerged, fNVars, dummyBinning);
-  delete dummyBinning;
+  delete [] dummyBinning;
   // Fill container with content
   AliInfo("Filling new container");
   Int_t cstep = 0;

@@ -1430,7 +1430,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
     delete [] selectedDigit[ii];
     selectedDigit[ii] = 0x0;
   }
-  delete selectedDigit;
+  delete [] selectedDigit;
   selectedDigit = 0x0;
 
 }
@@ -1836,7 +1836,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
     delete [] selectedDigit[ii];
     selectedDigit[ii] = 0x0;
   }
-  delete selectedDigit;
+  delete [] selectedDigit;
   selectedDigit = 0x0;
 
 }
@@ -2243,7 +2243,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
     delete [] selectedDigit[ii];
     selectedDigit[ii] = 0x0;
   }
-  delete selectedDigit;
+  delete [] selectedDigit;
   selectedDigit = 0x0;
 
 }
@@ -3124,7 +3124,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
     delete [] selectedDigit[ii];
     selectedDigit[ii] = 0x0;
   }
-  delete selectedDigit;
+  delete [] selectedDigit;
   selectedDigit = 0x0;
 
 }
