@@ -127,7 +127,7 @@ Bool_t AliHFEtools::BinLogAxis(TObject *o, Int_t dim){
     newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete [] newBins;
 
   return kTRUE;
 }

@@ -289,7 +289,7 @@ void AliPtMothFromPtDaugh::SetBinsPtMoth(Double_t ptmin, Double_t ptmax,Int_t nb
    // alpha > 1 decreasing  "
    Double_t* edges = SetBinsSize(ptmin,ptmax,nbins,alpha);
    SetBinsPtMoth(nbins,edges);
-   delete edges;
+   delete [] edges;
    return;
   }
 
@@ -327,7 +327,7 @@ void AliPtMothFromPtDaugh::SetBinsPtMinMoth(Double_t ptmin, Double_t ptmax,Int_t
    // alpha > 1 decreasing  "
    Double_t* edges = SetBinsSize(ptmin,ptmax,nbins,alpha);
    SetBinsPtMinMoth(nbins,edges);
-   delete edges;
+   delete [] edges;
    return;
   }
 
@@ -825,7 +825,7 @@ Bool_t AliPtMothFromPtDaugh::EvaluateWij()
            }
         }
     }
-   delete entries;
+   delete [] entries;
    return kTRUE;
   }
 
@@ -916,8 +916,8 @@ Bool_t AliPtMothFromPtDaugh::EvaluateFi()
        }
       else {fFiMin[ii]=-1; fFiMin[ii+nbinsMmin]=999;}
      }
-   delete entries;
-   delete entries1;
+   delete [] entries;
+   delete [] entries1;
    return kTRUE;
   }
 
