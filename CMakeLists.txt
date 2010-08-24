@@ -207,6 +207,7 @@ Add_subdirectory(ALIROOT)
 add_subdirectory(test)
 add_test ("Aliroot_executable" aliroot -q) 
 #copy testing files
+configure_file("CTestCustom.cmake" "${CTEST_BINARY_DIRECTORY}" COPYONLY)
 execute_process(COMMAND "cmake" "-E" "copy_directory" "${ALICE_ROOT}/test" "${ALICE_INSTALL}/test")
 
 message("Note : In order for the warnings test to execute successfully you need to log your make build output to make.log in the ALICE_INSTALL Directory using this command \n make -k > make.log 2>&1")
