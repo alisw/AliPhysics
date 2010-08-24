@@ -166,6 +166,7 @@ void AliRsnCutSet::SetCutScheme(const TString & theValue)
 //
 
   AliDebug(AliLog::kDebug,"<-");
+  
   fCutScheme = theValue;
   SetCutSchemeIndexed(theValue);
   fIsScheme = kTRUE;
@@ -228,7 +229,25 @@ Bool_t AliRsnCutSet::IsValidScheme()
 // Validity check on cut expression specified by user
 //
 
-  return (!(ShowCutScheme().Contains("Error")));
+  TString str(fCutScheme);
+  AliRsnCut *cut;
+  for (Int_t i = 0; i < fNumOfCuts; i++) {
+    cut = (AliRsnCut*)fCuts.At(i);
+    str.ReplaceAll(cut->GetName(),"");
+  }
+  str.ReplaceAll("&","");
+  str.ReplaceAll("!","");
+  str.ReplaceAll("|","");
+  str.ReplaceAll("(","");
+  str.ReplaceAll(")","");
+
+  if (!str.IsNull()) {
+    AliError(Form("Cut scheme '%s' is not valid !!!",fCutScheme.Data()));
+    return kFALSE;
+  }
+
+  return kTRUE;
+//   return (!(ShowCutScheme().Contains("Error")));
 }
 
 //_____________________________________________________________________________
@@ -237,7 +256,9 @@ TString AliRsnCutSet::ShowCutScheme()
 //
 // Utility method to check validity of expression
 //
-  return fExpression->Unparse();
+
+  return fCutScheme;
+//   return fExpression->Unparse();
 }
 
 //_____________________________________________________________________________

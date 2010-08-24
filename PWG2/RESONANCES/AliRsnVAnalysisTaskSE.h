@@ -36,7 +36,7 @@ class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE
     virtual ~AliRsnVAnalysisTaskSE() {/* Does nothing*/;}
 
     virtual void    LocalInit();
-    virtual Bool_t  Notify();
+    virtual Bool_t  UserNotify();
     virtual void    ConnectInputData(Option_t *opt);
     // Implementation of interface methods
     virtual void    UserCreateOutputObjects();

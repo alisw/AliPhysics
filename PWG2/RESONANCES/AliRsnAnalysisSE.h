@@ -14,9 +14,9 @@
 #include "AliRsnVAnalysisTaskSE.h"
 #include "AliRsnAnalysisManager.h"
 #include "AliRsnEvent.h"
+#include "AliRsnCutSet.h"
 
 class AliRsnPIDDefESD;
-class AliRsnCutSet;
 
 class AliRsnAnalysisSE : public AliRsnVAnalysisTaskSE
 {
@@ -34,8 +34,8 @@ class AliRsnAnalysisSE : public AliRsnVAnalysisTaskSE
     AliRsnAnalysisManager *GetAnalysisManager() {return &fRsnAnalysisManager;}
     void                   SetAnalysisManagerName(const char *name) {fRsnAnalysisManager.SetName(name);}
 
-    AliRsnCutSet* GetEventCuts() const {return fEventCuts;}
-    void          SetEventCuts(AliRsnCutSet *const cuts) {fEventCuts = cuts;}
+    AliRsnCutSet* GetEventCuts() {return &fEventCuts;}
+//     void          SetEventCuts(AliRsnCutSet *const cuts) {fEventCuts = cuts;}
 
     Double_t GetZeroEventPercentWarning() const {return fZeroEventPercentWarning;}
     void     SetZeroEventPercentWarning(Double_t val = 50) {fZeroEventPercentWarning = val;}
@@ -46,11 +46,11 @@ class AliRsnAnalysisSE : public AliRsnVAnalysisTaskSE
     AliRsnAnalysisSE& operator=(const AliRsnAnalysisSE& /*copy*/) {return *this;}
 
     AliRsnAnalysisManager fRsnAnalysisManager;  // analysis main engine
-    AliRsnCutSet         *fEventCuts;           // event cuts
+    AliRsnCutSet          fEventCuts;           // event cuts
     TList                *fOutList;             // list of output events
 
-    Double_t              fZeroEventPercentWarning; //! Percent Number for Zero Event Warning
-    Bool_t                fUseZeroEventWarning;     //! flag if Zero Event Warning is used (default is true)
+    Double_t              fZeroEventPercentWarning; // Percent Number for Zero Event Warning
+    Bool_t                fUseZeroEventWarning;     // flag if Zero Event Warning is used (default is true)
 
     ClassDef(AliRsnAnalysisSE, 1)
 };

@@ -256,7 +256,7 @@ Bool_t AliRsnFunction::Fill()
       values[i] = 0.0;
       continue;
     }
-    if (fcnAxis->Eval(fPair, fPairDef, fEvent)) values[i] = fcnAxis->GetValue();
+    if (fcnAxis->Eval(fPair, fPairDef, fEvent)) values[i] = (Double_t)((Float_t)fcnAxis->GetValue());
   }
   
   // fill histogram

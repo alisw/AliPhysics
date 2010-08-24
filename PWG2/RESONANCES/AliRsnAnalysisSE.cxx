@@ -24,15 +24,15 @@ ClassImp(AliRsnAnalysisSE)
 AliRsnAnalysisSE::AliRsnAnalysisSE(const char *name, Bool_t useKine) :
   AliRsnVAnalysisTaskSE(name, useKine),
   fRsnAnalysisManager(),
-  fEventCuts(0x0),
+  fEventCuts("eventCuts", AliRsnCut::kEvent),
   fOutList(0x0),
-  fZeroEventPercentWarning(50),
+  fZeroEventPercentWarning(100),
   fUseZeroEventWarning(kTRUE)
 {
 //
 // Default constructor.
 //
-
+  AliDebug(AliLog::kDebug+2, "<-");
   DefineOutput(2, TList::Class());
   AliDebug(AliLog::kDebug+2,"->");
 }
@@ -127,19 +127,19 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
       if ((zeroEventPercent>fZeroEventPercentWarning)&&(fEntry>100))
         AliWarning(Form("%3.2f%% Events are with zero tracks (CurrentEvent=%d)!!!",zeroEventPercent,fEntry));
     }
-    //return;
+    return;
   }
 
   // if general event cuts are added to the task (recommended)
   // they are checked here on the RSN event interface and,
   // if the event does not pass them, it is skipped and ProcessInfo
   // is updated accordingly
-  if (fEventCuts) {
-    if (!fEventCuts->IsSelected(&fRsnEvent)) {
+//   if (fEventCuts) {
+    if (!fEventCuts.IsSelected(&fRsnEvent)) {
       fTaskInfo.SetEventUsed(kFALSE);
       return;
     }
-  }
+//   }
 
   // if cuts are passed or not cuts were defined,
   // update the task info...
