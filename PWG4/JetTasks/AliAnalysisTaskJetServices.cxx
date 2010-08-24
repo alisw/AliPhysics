@@ -337,7 +337,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       yvtx -= fVtxYMean; 
       zvtx -= fVtxZMean; 
       Float_t r2 = xvtx *xvtx + yvtx *yvtx; 
-      if(TMath::Abs(zvtx)<fVtxZCut&&r2<fVtxRCut)fh2ESDTriggerRun->Fill(run,iTrig+3);
+      if(TMath::Abs(zvtx)<fVtxZCut&&r2<(fVtxRCut*fVtxRCut))fh2ESDTriggerRun->Fill(run,iTrig+3);
     }
     else{
       fh2ESDTriggerRun->Fill(run,0);
@@ -402,6 +402,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	  fh2ESDTriggerCount->Fill(it,kTriggeredVertexIn);
 	  fh2ESDTriggerVtx->Fill(it,zvtx);
 	}
+	if(cand)fh2ESDTriggerCount->Fill(it,kSelectedALICEVertexValid);
       }
       if(cand&&esdEventSelected){
 	fh2ESDTriggerCount->Fill(it,kSelectedALICEVertexIn);
@@ -430,6 +431,11 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	  fh2TriggerVtx->Fill(it,zvtx);
 	  fh2TriggerCount->Fill(it,kTriggeredVertexIn);
 	}
+	if(cand){
+	  fh2TriggerCount->Fill(it,kSelectedALICEVertexValid);
+	  if(aodEventSelected)fh2TriggerCount->Fill(it,kSelectedALICEVertexIn);
+	}
+
       }
     }
   }
