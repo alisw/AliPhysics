@@ -114,6 +114,7 @@ AliAnalysisTaskSE(),
   fDoCF(kFALSE),
   fAODBranch(NULL),
   fAODBranchName("GammaConv"),
+  fKFForceAOD(kFALSE),
   fKFDeltaAODFileName(""),
   fDoNeutralMesonV0MCCheck(kFALSE),
   fKFReconstructedGammasV0Index()
@@ -191,7 +192,8 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fHighPtMapping(3.),
   fDoCF(kFALSE),
   fAODBranch(NULL),
-  fAODBranchName("GammaConv"),
+  fAODBranchName(name),
+  fKFForceAOD(kFALSE),
   fKFDeltaAODFileName(""),
   fDoNeutralMesonV0MCCheck(kFALSE),
   fKFReconstructedGammasV0Index()
@@ -333,6 +335,11 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     }
   } 
 
+  //Must set fForceAOD to true for the AOD to get filled. Should only be done when running independent chain / train. 
+  if(fKFForceAOD) {
+    if (!AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()) AliFatal("Cannot run ESD filter without an output event handler");
+    AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+  }
 
   if(fV0Reader == NULL){
     // Write warning here cuts and so on are default if this ever happens

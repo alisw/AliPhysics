@@ -104,7 +104,9 @@ Bool_t kGCdoOwnXYZCalculation = kFALSE;
 
 /** -------------AOD stuff ---------------------------------------------------------------*/
 TString kGCDeltaAODFilename = "AliAODGammaConversion.root";  //If empty, writes to standard common aod file.
-Bool_t kGCWriteAOD =kTRUE; 
+Bool_t kGCWriteAOD =kTRUE;    // Turn on AOD 
+Bool_t kGCForceAOD = kFALSE;  // Call AliAnalysisManager::SetFillAOD(kTRUE) every ESD event. 
+
 /** ------------------- define which histograms to plot here --------------------------------*/
 /**   NB: to change the bin numbers, see below the histogram flags                           */
 
@@ -947,6 +949,10 @@ Bool_t scanArguments(TString arguments){
 	cout<<"Turning off AOD"<<endl;
 	kGCWriteAOD = kFALSE;
       }
+      else if (argument.CompareTo("-force-aod") == 0){
+	cout<<"Turning on FillAOD = kTRUE every event; If running in common train this should probably not be done!!!"<<endl;
+	kGCForceAOD = kTRUE;
+      }
       else if (argument.CompareTo("-standard-aod") == 0){
 	cout<<"Writing to standard AOD, will only work on train"<<endl;
 	kGCDeltaAODFilename = "";
@@ -1375,6 +1381,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 
   // Define Output Event Handler and add
   if(kGCWriteAOD){
+    gammaconversion->SetForceAOD(kGCForceAOD);
 
     if( kGCrunOnTrain ) {
 

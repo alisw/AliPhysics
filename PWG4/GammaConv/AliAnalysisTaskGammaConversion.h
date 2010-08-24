@@ -64,6 +64,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   // AOD
   TString GetAODBranchName() const {return  fAODBranchName;}
   void SetAODBranchName(TString name)  {fAODBranchName = name ;}	
+  void SetForceAOD(Bool_t forceAOD ) { fKFForceAOD = forceAOD; }
   void FillAODWithConversionGammas();
   // end AOD
 		
@@ -246,6 +247,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 		
   TClonesArray* fAODBranch ;        //! selected particles branch
   TString fAODBranchName; // New AOD branch name
+  Bool_t fKFForceAOD;  //Set the Analysis Manager FillAOD variable to true every event
   TString fKFDeltaAODFileName; //! File name for delta AOD (if any)
   Bool_t fDoNeutralMesonV0MCCheck; //flag
 
