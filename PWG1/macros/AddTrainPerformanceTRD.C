@@ -95,7 +95,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
   Int_t bitmap = ParseOptions(trd);
   for(Int_t it=0; it<NTRDQATASKS; it++){
     if(!TSTBIT(bitmap, it)) continue;
-    if(gROOT->LoadMacro(Form("%s/Add%s.C+", addMacroPath, TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
+    if(gROOT->LoadMacro(Form("%s/Add%s.C++", addMacroPath, TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
       Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
       return kFALSE;
     } 

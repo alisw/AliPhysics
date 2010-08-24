@@ -37,10 +37,12 @@ class AliTRDpwg1Helper{
     static const Char_t * fgkTRDtaskClassName[kNTRDTASKS];
     static const Char_t * fgkTRDtaskOpt[kNTRDTASKS + 1];
 
-    static Int_t ParseOptions(Char_t *trd);
-    static void MergeProd(const Char_t *mark, const Char_t *files, Int_t nBatch);
+    static Int_t  GetTaskIndex(const Char_t *name);
     static Bool_t HasReadMCData(Char_t *opt);
     static Bool_t HasReadFriendData(Char_t *opt);
+
+    static void   MergeProd(const Char_t *mark, const Char_t *files, Int_t nBatch);
+    static Int_t  ParseOptions(Char_t *trd);
 
     AliTRDpwg1Helper();
     ~AliTRDpwg1Helper();

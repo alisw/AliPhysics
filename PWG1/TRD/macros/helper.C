@@ -15,7 +15,7 @@
 //____________________________________________
 Int_t ParseOptions(Char_t *trd)
 {
-  Int_t fSteerTask = 1;
+  Int_t fSteerTask = 0;
   TObjArray *tasksArray = TString(trd).Tokenize(" ");
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
     TString s = (dynamic_cast<TObjString *>(tasksArray->UncheckedAt(isel)))->String();
