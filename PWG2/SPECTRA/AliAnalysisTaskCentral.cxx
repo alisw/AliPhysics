@@ -77,10 +77,6 @@ AliAnalysisTaskCentral::AliAnalysisTaskCentral(const char *name)
     }
 
 	InitCuts(); //initialize the analysis specific cuts	
-    if (!fCutsList) {
-		Printf("ERROR: fCutsList not available");
-		return;
-    }
 
 }
 
@@ -94,9 +90,9 @@ AliAnalysisTaskCentral::~AliAnalysisTaskCentral()
 	if(fESD) delete fESD;
 	if(fMC) delete fMC;
 
-	if(fCutsList){ 
-    	delete [] fCutsList;
-  	}
+	for (Int_t i=0; i<10; i++)
+	  delete fCutsList[i];
+
 
 	if(fNoEvt) delete fNoEvt;
 
@@ -321,11 +317,6 @@ void AliAnalysisTaskCentral::SendEvent(TObject *obj) const{
 
 // Some cuts (ie MC IsPrimary) need the MC Event info
 
-    if (!fCutsList) {
-		printf("No particle cut list found!\n\n");
-		return;
-    }
-    else {
 		for(Int_t isel=0;isel< 10; isel++){
 			if(!fCutsList[isel]) continue;
 			TObjArrayIter iter(fCutsList[isel]);
@@ -347,7 +338,6 @@ void AliAnalysisTaskCentral::SendEvent(TObject *obj) const{
 				}
 			}
 		}
-    }
 
 }
 
@@ -358,7 +348,7 @@ Bool_t AliAnalysisTaskCentral::CheckCuts(Int_t no, TObject *obj) const{
 // For each cut run IsSelected();
 // 	printf("AliAnalysisTaskCentral::CheckCuts IN\n");
 
-    if(no > 10){
+    if(no > 9){
 		printf("\nAliAnalysisTaskCentral::CheckCuts -> Cut number is not ok! \n");
 		return kFALSE;
     }

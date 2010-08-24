@@ -355,20 +355,6 @@ AliAnaParticleJetLeadingConeCorrelation & AliAnaParticleJetLeadingConeCorrelatio
 AliAnaParticleJetLeadingConeCorrelation::~AliAnaParticleJetLeadingConeCorrelation() 
 {
    // Remove all pointers except analysis output pointers.
-  delete [] fJetE1;  
-  delete [] fJetE2;    
-  delete [] fJetSigma1;
-  delete [] fJetSigma2;
-  delete [] fBkgMean; 
-  delete [] fBkgRMS;  
-  delete [] fJetXMin1;
-  delete [] fJetXMin2;
-  delete [] fJetXMax1;
-  delete [] fJetXMax2; 
-  delete [] fJetCones;         
-  delete [] fJetNameCones;   
-  delete [] fJetPtThres;       
-  delete [] fJetNamePtThres;  
 }
 
 //____________________________________________________________________________

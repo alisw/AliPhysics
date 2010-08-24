@@ -61,18 +61,13 @@ AliAnalysisCentralCutEvtESD::AliAnalysisCentralCutEvtESD(const Char_t* name, con
     }
 
 	InitCuts();
-	if (!fCutsList) {
-		Printf("ERROR: fCutsList not available");
-		return;
-    }
 
 }
 
 AliAnalysisCentralCutEvtESD::~AliAnalysisCentralCutEvtESD() {
 //Destructor
-	if(fCutsList){
-		delete [] fCutsList;
-	}
+  for (Int_t i=0; i<10; i++)
+    delete fCutsList[i];
 
 }
 
