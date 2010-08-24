@@ -230,15 +230,16 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
   if (!pythiaGenHeader) {
-    std::cout<<" no pythia header!"<<std::endl;
-    return; 
+    std::cout<<" no pythia header! - NSD selection unusable"<<std::endl;
+    //return; 
   }
-  
-  Int_t pythiaType = pythiaGenHeader->ProcessType();
   Bool_t nsd = kTRUE;
-  if(pythiaType==92 || pythiaType==93)
-    nsd = kFALSE;
-  
+  if(pythiaGenHeader) {
+    Int_t pythiaType = pythiaGenHeader->ProcessType();
+    
+    if(pythiaType==92 || pythiaType==93)
+      nsd = kFALSE;
+  }
   //if(pythiaType==94){
   //  std::cout<<"double diffractive"<<std::endl;
   //  return;
