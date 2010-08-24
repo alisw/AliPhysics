@@ -41,7 +41,7 @@ class AliFlowEventSimple: public TObject {
   virtual  ~AliFlowEventSimple();
 
   virtual void Generate( Int_t nParticles,
-                         TF1* ptDist,
+                         TF1* ptDist=NULL,
                          Double_t phiMin=0,
                          Double_t phiMax=TMath::TwoPi(),
                          Double_t etaMin=-1.0,
