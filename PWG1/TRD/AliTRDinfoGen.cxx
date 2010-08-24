@@ -282,6 +282,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     return;
   }
   if(!IsInitOCDB()){
+    AliInfo("Initializing OCDB ...");
     // prepare OCDB access
     AliCDBManager* ocdb = AliCDBManager::Instance();
     ocdb->SetDefaultStorage(fOCDB.Data());
@@ -384,6 +385,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
 
 
   // LOOP 1 - over ESD tracks
+  AliTRDv0Info *v0info=NULL;
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
     new(fTrackInfo) AliTRDtrackInfo();
     esdTrack = fESDev->GetTrack(itrk);
@@ -465,7 +467,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
     nclsTrklt = 0;
   
     // set V0pid info
-    AliTRDv0Info *v0info = new AliTRDv0Info();
     for(Int_t iv(0); iv<fV0List->GetEntriesFast(); iv++){
       if(!(v0info = (AliTRDv0Info*)fV0List->At(iv))) continue;
       if(!v0info->fTrackP && !v0info->fTrackN) continue;
