@@ -19,14 +19,14 @@ AliFMDAnalysisTaskSE* AddTaskFMD() {
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
-  pars->SetProcessPrimary(kTRUE);
+  pars->SetProcessPrimary(kFALSE);
   pars->SetProcessHits(kFALSE);
   
   pars->SetRealData(kTRUE);
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if(eventHandler) {
     pars->SetRealData(kFALSE);
-    pars->SetProcessPrimary(kFALSE);
+    pars->SetProcessPrimary(kTRUE);
     pars->SetProcessHits(kFALSE);
   }
   
