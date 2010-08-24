@@ -26,7 +26,11 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    //Task for global tracks
    AliAnalysisTaskQASym *task0 = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_Global");
    task0->SetTrackType(0);
-   task0->SelectCollisionCandidates();
+   task0->SelectCollisionCandidates(); // default setting: kMB = min bias trigger
+   //Task for global tracks (high multiplicity)
+   AliAnalysisTaskQASym *task0HM = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_Global_HighMult");
+   task0HM->SetTrackType(0);
+   task0HM->SelectCollisionCandidates(AliVEvent::kHighMult);
    //Task for ITS tracks 
    AliAnalysisTaskQASym *task1 = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_ITS");
    task1->SetTrackType(1);
@@ -46,6 +50,7 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    AliESDtrackCuts* esdTrackCutsL0 = new AliESDtrackCuts("AliESDtrackCuts0","Global");
    esdTrackCutsL0->SetMinNClustersTPC(70);
    esdTrackCutsL0->SetRequireTPCRefit(kTRUE);
+   esdTrackCutsL0->SetRequireITSRefit(kTRUE);
    esdTrackCutsL0->SetMaxDCAToVertexXY(3.);
    esdTrackCutsL0->SetMaxDCAToVertexZ(3.);
    esdTrackCutsL0->SetAcceptKinkDaughters(kFALSE);
@@ -82,23 +87,28 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
   
 
    task0->SetCuts(esdTrackCutsL0);
+   task0HM->SetCuts(esdTrackCutsL0);
    task1->SetCuts(esdTrackCutsL1);
    task1sa->SetCuts(esdTrackCutsL1sa);
    task2->SetCuts(esdTrackCutsL2);
 
    mgr->AddTask(task0);
+   mgr->AddTask(task0HM);
    mgr->AddTask(task1);
    mgr->AddTask(task1sa);
    mgr->AddTask(task2);
   
-   AliAnalysisDataContainer *cout0  = 0;
-   AliAnalysisDataContainer *cout1  = 0;
+   AliAnalysisDataContainer *cout0    = 0;
+   AliAnalysisDataContainer *cout0HM  = 0;
+   AliAnalysisDataContainer *cout1    = 0;
    AliAnalysisDataContainer *cout1sa  = 0;
-   AliAnalysisDataContainer *cout2  = 0;
+   AliAnalysisDataContainer *cout2    = 0;
    
    if(runNumber>0){ 
     cout0 =  mgr->CreateContainer("QAsymHists_Global",TList::Class(),
 				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
+    cout0HM =  mgr->CreateContainer("QAsymHists_Global_HighMult",TList::Class(),
+				    AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
     cout1 =  mgr->CreateContainer("QAsymHists_ITS",TList::Class(),
 				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
     cout1sa =  mgr->CreateContainer("QAsymHists_ITS_SA",TList::Class(),
@@ -111,6 +121,9 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
       cout0 = mgr->CreateContainer("QAsymHists_Global",TList::Class(),
 				 AliAnalysisManager::kOutputContainer, 
 				 Form("%s:PWG1_QAsymHists",AliAnalysisManager::GetCommonFileName()));
+      cout0HM = mgr->CreateContainer("QAsymHists_Global_HighMult",TList::Class(),
+				   AliAnalysisManager::kOutputContainer, 
+				   Form("%s:PWG1_QAsymHists",AliAnalysisManager::GetCommonFileName()));
       cout1 = mgr->CreateContainer("QAsymHists_ITS",TList::Class(),
 				   AliAnalysisManager::kOutputContainer, 
 				 Form("%s:PWG1_QAsymHists",AliAnalysisManager::GetCommonFileName()));
@@ -123,15 +136,17 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    }
 
 
-   mgr->ConnectInput  (task0, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectInput  (task1, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectInput  (task0,   0, mgr->GetCommonInputContainer());
+   mgr->ConnectInput  (task0HM, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectInput  (task1,   0, mgr->GetCommonInputContainer());
    mgr->ConnectInput  (task1sa, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectInput  (task2, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectInput  (task2,   0, mgr->GetCommonInputContainer());
 
-   mgr->ConnectOutput (task0, 1, cout0);
-   mgr->ConnectOutput (task1, 1, cout1);
+   mgr->ConnectOutput (task0,   1, cout0);
+   mgr->ConnectOutput (task0HM, 1, cout0HM);
+   mgr->ConnectOutput (task1,   1, cout1);
    mgr->ConnectOutput (task1sa, 1, cout1sa);
-   mgr->ConnectOutput (task2, 1, cout2);
+   mgr->ConnectOutput (task2,   1, cout2);
   
    return task0;
 

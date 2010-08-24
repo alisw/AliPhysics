@@ -38,10 +38,16 @@ ClassImp(AliAnalysisTaskQASym)
     : AliAnalysisTaskSE(name) 
     ,fTrackType(0)
     ,fStandAlone(0)
+    ,fLow(0)
+    ,fHigh(1*10e7)
     ,fFieldOn(kTRUE)
     ,fHists(0)
     ,fHistRECpt(0)
     ,fEta(0)
+    ,fEtaWidth(0)
+    ,fPhiWidth(0)
+    ,fDcaWidth(0)
+    ,fPtWidth(0)
     ,fEtaPhi(0)
     ,fEtaPt(0)
     ,fQPt(0)
@@ -189,6 +195,15 @@ ClassImp(AliAnalysisTaskQASym)
     fDcaSigmaNeg[i] =0;
   }
 
+  for(Int_t i = 0;i< 3;i++){
+    for(Int_t j = 0;j< 2;j++){
+      fEtaBinPt[i][j]=0;
+      fPhiBinPt[i][j]=0;
+      fDcaBinPt[i][j]=0;
+      fEtaPhiBinPt[i][j]=0;
+    }
+  }
+
   DefineOutput(1,  TList::Class()); 
 
   
@@ -216,6 +231,18 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fEta   = new TH1F("fEta", 
 		    " #eta",
 		    200, -2., 2.);
+  fEtaWidth   = new TH1F("fEtaWidth", 
+			 " #eta",
+			 200, -2., 2.);
+  fPhiWidth   = new TH1F("fPhiWidth", 
+			 " #phi",
+			 200, 0., 2*TMath::Pi());
+  fDcaWidth   = new TH1F("fDcaWidth", 
+			 "dca",
+			 200, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+  fPtWidth   = new TH1F("fPtWidth", 
+			 "p_{T}",
+			 200, 0., pt);
   fEtavPt   = new TH2F("fEtavPt", 
 		       " #eta -p_{T}",
 		       200, -2., 2.,
@@ -237,11 +264,9 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fITSlayerPhi   = new TH2F("fITSlayerPhi", 
 			    "fITSlayerPhi",
 			    8, -1.5, 6.5, 200, 0,2*TMath::Pi());
-  
   fEtaPhi   = new TH2F("fEtaPhi", 
 		       " #eta - #phi",
 		       200, -2., 2., 128, 0., 2. * TMath::Pi());
-  
   fThetaRec   = new TH1F("fThetaRec", 
 			 " #theta",
 			 180, 0., TMath::Pi());
@@ -683,7 +708,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
     fRecEtaNegLadder[i]->GetXaxis()->SetTitle("#eta");
   }
 
-  Double_t vzmax = 15;
+  Double_t vzmax = 15.;
 
   fRecPtPosVz = new TH2F("fRecPtPosVz", 
 			 "p_{T} distribution vs Vz()",
@@ -848,13 +873,37 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 //   fRecDcaPhiPtNegEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
 //   fRecDcaPhiPtNegEtaNeg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
 
+  TString charge[2];
+  charge[0]="Pos";
+  charge[1]="Neg";
 
+  for(Int_t i=0;i<3;i++){
+    for(Int_t j=0;j<2;j++){
+      fEtaBinPt[i][j]   = new TH1F(Form("fEtaBinPt%d%s", i, charge[j].Data()), 
+				   "eta",
+				   200, -2., 2.);
+      fPhiBinPt[i][j]   = new TH1F(Form("fPhiBinPt%d%s", i,charge[j].Data() ), 
+				   "phi",
+				   181, 0, 2*TMath::Pi());
+      fDcaBinPt[i][j]   = new TH1F(Form("fDcaBinPt%d%s", i, charge[j].Data()), 
+				   "DCA",
+				   200,-range*(1+Int_t(fTrackType/2)*9),
+				   range*(1+Int_t(fTrackType/2)*9) );
+      fEtaPhiBinPt[i][j]= new TH2F(Form("fEtaPhiBinPt%d%s", i, charge[j].Data()), 
+				      "eta-phi",
+				      200, -2., 2., 200, 0.,2*TMath::Pi());
+    }
+  }
 
 
   fHists->SetOwner();
 
   fHists->Add(fHistRECpt);
   fHists->Add(fEta);
+  fHists->Add(fEtaWidth);
+  fHists->Add(fPhiWidth);
+  fHists->Add(fDcaWidth);
+  fHists->Add(fPtWidth);
   fHists->Add(fEtavPt);
   fHists->Add(fPhivPt);
   fHists->Add(fCompareTPCparam);
@@ -1004,8 +1053,14 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   //  fHists->Add(fRecDcaPhiPtNegEtaPos); 
   //  fHists->Add(fRecDcaPhiPtNegEtaNeg); 
 
-
-
+  for(Int_t i=0;i<3;i++){
+    for(Int_t j=0;j<2;j++){
+      fHists->Add(fEtaBinPt[i][j]);
+      fHists->Add(fPhiBinPt[i][j]);
+      fHists->Add(fDcaBinPt[i][j]);
+      fHists->Add(fEtaPhiBinPt[i][j]);
+    }
+  }
 
     
 //   for (Int_t i=0; i<fHists->GetEntries(); ++i) {
@@ -1076,6 +1131,24 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
   AliESDtrack *tpcP = 0x0;
   Int_t fNTracksAccepted=0;
+  Float_t phiArray   [event->GetNumberOfTracks()];
+  Float_t etaArray   [event->GetNumberOfTracks()];
+  Float_t ptArray    [event->GetNumberOfTracks()];
+  Float_t dcaArray   [event->GetNumberOfTracks()];
+  Int_t chargeArray[event->GetNumberOfTracks()];
+  Bool_t acceptedArray[event->GetNumberOfTracks()];
+
+  for (Int_t i = 0; i < event->GetNumberOfTracks(); i++) {
+    phiArray[i]     = 0.;
+    etaArray[i]     = 0.;
+    ptArray[i]      = 0.;
+    dcaArray[i]     = 0.;
+    chargeArray[i]  = 0;
+    acceptedArray[i]= kFALSE;
+    
+  }
+
+
 
   for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
     
@@ -1097,7 +1170,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     //__________
     // run Task for global tracks or ITS tracks or TPC tracks
     const AliExternalTrackParam *tpcPin = 0x0;
-    Double_t phiIn=0;
+    Double_t phiIn=0.;
 
     if(fTrackType==0){
       //Fill all histograms with global tracks
@@ -1137,6 +1210,12 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   
 
     fNTracksAccepted++;
+    phiArray[iTrack]     = tpcP->Phi();
+    etaArray[iTrack]     = tpcP->Eta();
+    ptArray[iTrack]      = tpcP->Pt();
+    chargeArray[iTrack]  = tpcP->Charge();
+    acceptedArray[iTrack]= kTRUE;
+
  
     if(tpcP->E()>leadingEnergy){
       leadingTrack=iTrack;
@@ -1219,6 +1298,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     fEtaPt->Fill(tpcP->Eta()/tpcP->Pt());
     fQPt->Fill(tpcP->Charge()/tpcP->Pt());
     fDca->Fill(fSignedDca);
+    dcaArray[iTrack]=fSignedDca;
     fRecQPtPhi->Fill(tpcP->Charge()/tpcP->Pt(), phiIn);
 
     Float_t fXY = 0.;
@@ -1411,6 +1491,39 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   }//first track loop
 
   fNumberAfterCut->Fill(fNTracksAccepted);
+  
+  //second track loop
+ 
+  for (Int_t iT = 0; iT < event->GetNumberOfTracks(); iT++) {
+    if(acceptedArray[iT]){
+      if(ptArray[iT]>0.2 && ptArray[iT]<1. ){
+	fEtaBinPt[0][Bool_t(chargeArray[iT]>0)]->Fill(etaArray[iT]);
+	fDcaBinPt[0][Bool_t(chargeArray[iT]>0)]->Fill(dcaArray[iT]);
+	fPhiBinPt[0][Bool_t(chargeArray[iT]>0)]->Fill(phiArray[iT]);
+	fEtaPhiBinPt[0][Bool_t(chargeArray[iT]>0)]->Fill(etaArray[iT], phiArray[iT]);
+      }
+      else if(ptArray[iT]>1. && ptArray[iT]<5.){
+	fEtaBinPt[1][Bool_t(chargeArray[iT]>0)]->Fill(etaArray[iT]);
+	fDcaBinPt[1][Bool_t(chargeArray[iT]>0)]->Fill(dcaArray[iT]);
+	fPhiBinPt[1][Bool_t(chargeArray[iT]>0)]->Fill(phiArray[iT]);
+	fEtaPhiBinPt[1][Bool_t(chargeArray[iT]>0)]->Fill(etaArray[iT], phiArray[iT]);
+      }
+      else if (ptArray[iT]>5.){
+	fEtaBinPt[2][Bool_t(chargeArray[iT]>0)]->Fill(etaArray[iT]);
+	fDcaBinPt[2][Bool_t(chargeArray[iT]>0)]->Fill(dcaArray[iT]);
+	fPhiBinPt[2][Bool_t(chargeArray[iT]>0)]->Fill(phiArray[iT]);
+	fEtaPhiBinPt[2][Bool_t(chargeArray[iT]>0)]->Fill(etaArray[iT], phiArray[iT]);
+      }
+
+      if(fNTracksAccepted>=fLow&&fNTracksAccepted<=fHigh){
+	fEtaWidth->Fill(etaArray[iT]);
+	fPhiWidth->Fill(phiArray[iT]);
+	fDcaWidth->Fill(dcaArray[iT]);
+	fPtWidth->Fill(ptArray[iT]);
+       }
+     }
+  }
+
 
   //prevent mem leak for TPConly track
   if(fTrackType==2&&tpcP){
