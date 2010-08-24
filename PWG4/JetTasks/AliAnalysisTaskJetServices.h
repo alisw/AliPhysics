@@ -55,7 +55,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Bool_t IsEventPileUpESD(AliESDEvent* esd);
     Bool_t IsEventCosmicESD(AliESDEvent* esd);
     Bool_t IsEventSelectedAOD(AliAODEvent* aod);
-    enum { kAllTriggered = 0,kTriggeredVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexIn,kSelected,kConstraints};
+    enum { kAllTriggered = 0,kTriggeredVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexValid,kSelectedALICEVertexIn,kSelected,kConstraints};
 
 
 
@@ -92,7 +92,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH1F*         fh1NCosmicsPerEvent;  // Number of coscmic candidates found in event
     TList *fHistList; // Output list
    
-    ClassDef(AliAnalysisTaskJetServices,5)
+    ClassDef(AliAnalysisTaskJetServices,6)
 };
  
 #endif

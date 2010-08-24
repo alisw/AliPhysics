@@ -84,7 +84,8 @@ Int_t       iPWG4JetServices   = 0;      // jet spectrum analysis
 Int_t       iPWG4JetSpectrum   = 0;      // jet spectrum analysis
 Int_t       iPWG4JCORRAN       = 0;      // JCORRAN module
 Int_t       iPWG4UE            = 0;      // Underlying Event analysis
-Int_t       iPWG4CorrectionsUE            = 0;      // Underlying Event analysis
+Int_t       iPWG4LeadingUE     = 0;      // Underlying Event analysis
+Int_t       iPWG4CorrectionsUE = 0;      // Underlying Event analysis
 Int_t       iPWG4TmpSourceSara = 0;      // Underlying Event analysis not in svn
 Int_t       iPWG4Fragmentation = 0;      // Official Fragmentation
 Int_t       iPWG4JetChem       = 0;      // Jet chemistry 
@@ -228,6 +229,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(printMask,"PWG4 Jet Spectrum",iPWG4JetSpectrum);
    printf(printMask,"PWG4 JCORRAN",iPWG4JCORRAN);
    printf(printMask,"PWG4 UE",iPWG4UE); 
+   printf(printMask,"PWG4 Leading UE",iPWG4LeadingUE); 
    printf(printMask,"PWG4 Corrections UE",iPWG4CorrectionsUE); 
    printf(printMask,"PWG4 Pt QA MC",iPWG4PtQAMC);
    printf(printMask,"PWG4 Pt Spectra",iPWG4PtSpectra);
@@ -388,6 +390,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	  selection &= ~(1<<1)&~(1<<2)&~(1<<4)&~(1<<6)&~(1<<8)&~(1<<10)&~(1<<12);
 	}
 	AddTaskJetsDelta(kDeltaAODJetName.Data(),kHighPtFilterMask,kUseAODMC,selection); 
+	AddTaskJets("AOD","FASTKT",0.2,kHighPtFilterMask); 
       }
       if (!taskjets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
    }
@@ -494,7 +497,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 selection &= ~(1<<6)&~(1<<11)&~(1<<12)&~(1<<13)&~(1<<14);
        }
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
-       AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,selection);
+       AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,selection,0,kTRUE);
      }
    }
    if(iPWG4JCORRAN){
@@ -524,6 +527,15 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
      if (!taskUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskUE cannot run for this train conditions - EXCLUDED");
    }
+
+   if(iPWG4LeadingUE){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskLeadingTrackUE.C");
+     AliAnalysisTaskLeadingTrackUE *taskLeadingUE = AddTaskLeadingTrackUE(kUseMC);
+     if (!taskLeadingUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTasLeadingTrackkUE cannot run for this train conditions - EXCLUDED");
+     taskLeadingUE->SetFilterBit(64);
+   }
+
+
    if(iPWG4CorrectionsUE){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCorrectionsUE.C");
      AliAnalysisTaskCorrectionsUE *taskCorrectionsUE = 0;
@@ -901,7 +913,7 @@ void CheckModuleFlags(const char *mode) {
 	iPWG4JetSpectrum = iPWG4UE =  iPWG4CorrectionsUE = iPWG4ThreeJets = iDIJETAN = 0;
       }
    }
-   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem||iPWG4Fragmentation;
+   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4LeadingUE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem||iPWG4Fragmentation;
    iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
    iPWG4GammaConvLib = iPWG4GammaConv||iPWG4CaloConv;
 
@@ -1411,7 +1423,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetRunMode(plugin_mode);
    if (kPluginUseProductionMode) plugin->SetProductionMode();
    plugin->SetJobTag(kJobTag);
-   plugin->SetNtestFiles(2);
+   plugin->SetNtestFiles(1);
 //   plugin->SetPreferedSE("ALICE::NIHAM::File");
 // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");

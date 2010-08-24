@@ -334,14 +334,14 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
 
 AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
   AliJetReader *er = 0;
-
+  const Float_t ptCut  = 0.15 ; // cut on track p_T
   switch (jr) {
   case "MC":
     AliJetKineReaderHeader *jrh = new AliJetKineReaderHeader();
     jrh->SetComment("MC full Kinematics");
     jrh->SetFastSimTPC(kFALSE);
     jrh->SetFastSimEMCAL(kFALSE);
-    jrh->SetPtCut(0.);
+    jrh->SetPtCut(ptCut);
     jrh->SetFiducialEta(-2.1,2.1); // to take all MC particles default is 0 .9                                                                             
     // Define reader and set its header                                     
     er = new AliJetKineReader();
@@ -353,7 +353,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
     jrh->SetFastSimTPC(kFALSE);
     jrh->SetFastSimEMCAL(kFALSE);
     jrh->SetChargedOnly(kTRUE);
-    jrh->SetPtCut(0.);
+    jrh->SetPtCut(ptCut);
     jrh->SetFiducialEta(-2.1,2.1); // to take all MC particles default is 0 .9                                                                             
     // Define reader and set its header                                     
     er = new AliJetKineReader();
@@ -362,9 +362,9 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
   case "ESD":
     AliJetESDReaderHeader *jrh = new AliJetESDReaderHeader();
     jrh->SetComment("Testing");
-    jrh->SetFirstEvent(0);
+    jrh->SetFirstEvent(0.);
     jrh->SetLastEvent(1000);
-    jrh->SetPtCut(0.);
+    jrh->SetPtCut(ptCut);
     jrh->SetReadSignalOnly(kFALSE);
     // Define reader and set its header                                     
     er = new AliJetESDReader();
@@ -374,7 +374,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
   case "AOD":
     AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
     jrh->SetComment("AOD Reader");
-    jrh->SetPtCut(0.);
+    jrh->SetPtCut(0.15); // set low p_T cut of to 150 MeV
     jrh->SetTestFilterMask(16); // Change this one for a different set of cuts
     if(filterMask>0)jrh->SetTestFilterMask(filterMask); 
     // Define reader and set its header
@@ -384,7 +384,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
   case "AODMC":
     AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
     jrh->SetComment("AOD MC Reader");
-    jrh->SetPtCut(0.);
+    jrh->SetPtCut(ptCut);
     jrh->SetFiducialEta(-2.1,2.1); // to take all MC particles default is 0.9
     jrh->SetReadAODMC(1);// 1 all primary MC , 2 all primary charged
     // Define reader and set its header
@@ -394,7 +394,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
   case "AODMC2":
     AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
     jrh->SetComment("AOD MC Reader");
-    jrh->SetPtCut(0.);
+    jrh->SetPtCut(ptCut);
     jrh->SetFiducialEta(-2.1,2.1); // to take all MC particles default is 0.9
     jrh->SetReadAODMC(2);// 1 all primary MC , 2 all primary charged
     // Define reader and set its header
@@ -404,7 +404,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
   case "AODMC2b":
     AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
     jrh->SetComment("AOD MC Reader");
-    jrh->SetPtCut(0.);
+    jrh->SetPtCut(ptCut);
     jrh->SetFiducialEta(-0.9,0.9); // to take all MC particles default is 0.9
     jrh->SetReadAODMC(2);// 1 all primary MC , 2 all primary charged
     // Define reader and set its header
