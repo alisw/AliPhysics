@@ -133,10 +133,10 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
 
   // function axes
   Double_t ybins[] = {-0.8, -0.7, -0.6, -0.5, 0.5, 0.6, 0.7, 0.8};
-  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass, 50,  0.9,  1.4);
-  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt,      0.0, 20.0, 0.1);
-  AliRsnValue *axisY  = new AliRsnValue("Y" , AliRsnValue::kPairY,       sizeof(ybins)/sizeof(ybins[0]), ybins);
-  AliRsnValue *axisEta = new AliRsnValue("Eta", AliRsnValue::kPairEta,   sizeof(ybins)/sizeof(ybins[0]), ybins);
+  AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass, 50,  0.9,  1.4);
+  AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt,      0.0, 20.0, 0.1);
+  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY,       sizeof(ybins)/sizeof(ybins[0]), ybins);
+  AliRsnValue *axisQinv = new AliRsnValue("QInv", AliRsnValue::kQInv,       100,  0.0, 10.0);
 
   // functions for TH1-like output
   AliRsnFunction *fcnPt    = new AliRsnFunction;
@@ -144,7 +144,7 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   fcnPt   ->AddAxis(axisIM);
   fcnPt   ->AddAxis(axisPt);
   fcnPt   ->AddAxis(axisY);
-  fcnPt   ->AddAxis(axisEta);
+  fcnPt   ->AddAxis(axisQinv);
   
   // add functions to TH1-like output
   pairPMhist->AddFunction(fcnPt);
@@ -153,10 +153,12 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   // add values to TNtuple-like output
   pairPMntp->AddValue(axisIM);
   pairPMntp->AddValue(axisPt);
+  pairPMntp->AddValue(axisY);
+  pairPMntp->AddValue(axisQinv);
   
   // add everything to analysis manager
-  task->GetAnalysisManager()->Add(pairPMhist);
-  //task->GetAnalysisManager()->Add(pairPMntp);
+  //task->GetAnalysisManager()->Add(pairPMhist);
+  task->GetAnalysisManager()->Add(pairPMntp);
 
   return kTRUE;
 }
