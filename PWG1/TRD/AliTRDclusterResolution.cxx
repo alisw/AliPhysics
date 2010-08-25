@@ -501,7 +501,7 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 
   
   fInfo = dynamic_cast<TObjArray *>(GetInputData(1));
-  AliDebug(2, Form("Clusters[%d]", fInfo->GetEntriesFast(), fDet, fCol, fRow));
+  AliDebug(2, Form("Clusters[%d]", fInfo->GetEntriesFast()));
   if(!IsCalibrated()){
     LoadCalibration();
     if(!IsCalibrated()){
