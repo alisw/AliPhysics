@@ -40,7 +40,7 @@ Now we are ready to start the analysis.
 For a quick start we make an event on the fly, tag the reference particles and particles of interest  and pass it to the two flow methods. \\
 \texttt{for(Int\textunderscore t i=0; i<nEvts; i++) \{}\\
 \texttt{      // make an event with mult particles }\\
-\texttt{      AliFlowEventSimple* event = new AliFlowEventSimple(mult,kGenerate);}\\
+\texttt{      AliFlowEventSimple* event = new AliFlowEventSimple(mult,AliFlowEventSimple::kGenerate);}\\
 \texttt{      // modify the tracks adding the flow value v2}\\
 \texttt{       event->AddV2(v2);}\\
 \texttt{      // select the particles for the reference flow}\\
