@@ -164,7 +164,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 	 {
 	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
 	    {
-		fDigitMakerPtr->SetGain(x, z, fCalibData->GetHighLowRatioEmc(module, z+1, x+1), fCalibData->GetADCchannelEmc(module, z+1, x+1));
+		fDigitMakerPtr->SetGain(x, z, fCalibData->GetHighLowRatioEmc(5-module, z+1, x+1), fCalibData->GetADCchannelEmc(5-module, z+1, x+1));
 	    }
 	 }
 	 fGainsInitialised = true;
