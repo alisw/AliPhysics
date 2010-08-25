@@ -393,7 +393,7 @@ void  AliEveHOMERManager::UpdateDisplay() {
 
   // -- Set EventID in Window Title  
   TString winTitle("Eve Main Window -- Event ID : ");
-  winTitle += Form("0x%llu ", GetEventID() );
+  winTitle += Form("0x%lu ", GetEventID() );
   GetEveManager()->GetBrowser()->SetWindowName(winTitle);
 
   //==============================================================================
@@ -537,9 +537,9 @@ void AliEveHOMERManager::ResetDisplay () {
 void AliEveHOMERManager::PrintScreens() {
   //See header file for documentation
 
-  fEveManager->GetDefaultGLViewer()->SavePicture(Form("0x%llu_3D.gif", GetEventID()));
-  fRhoZViewer->GetGLViewer()->SavePicture(Form("0x%llu_RhoZ.gif", GetEventID()));
-  fRPhiViewer->GetGLViewer()->SavePicture(Form("0x%llu_RPhi.gif", GetEventID()));
+  fEveManager->GetDefaultGLViewer()->SavePicture(Form("0x%lu_3D.gif", GetEventID()));
+  fRhoZViewer->GetGLViewer()->SavePicture(Form("0x%lu_RhoZ.gif", GetEventID()));
+  fRPhiViewer->GetGLViewer()->SavePicture(Form("0x%lu_RPhi.gif", GetEventID()));
 
 }
 
