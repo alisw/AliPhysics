@@ -352,6 +352,7 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_CHECK_HEADER([AliQAv1.h], [have_aliqav1=yes], [])
   AM_CONDITIONAL(EN_HLT_QA, test x$have_aliqav1 = xyes)
   AC_CHECK_HEADER([AliESDHLTDecision.h], [], [AC_DEFINE(HAVE_NOT_ALIESDHLTDECISION)])
+  AC_CHECK_HEADER([AliVCluster.h], [], [AC_DEFINE(HAVE_NOT_ALIVCLUSTER)])
 
   dnl
   dnl required header files and libraries for modules
@@ -972,6 +973,14 @@ else
                                          [have_alitrdrecoparam_r41621=yes],
                                          [AC_DEFINE(HAVE_NOT_ALITRD_RECOPARAM_r41621)])
       AC_MSG_RESULT([$have_alitrdrecoparam_r41621])
+
+      have_alitrdclusterizer_r42837=no
+      AC_MSG_CHECKING([checking for AliTRDclusterizer r42837])
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDclusterizer.h>], 
+                                         [AliTRDclusterizer::SetSkipTransform()]);],
+                                         [have_alitrdclusterizer_r442837=yes],
+                                         [AC_DEFINE(HAVE_NOT_ALITRD_CLUSTERIZER_r42837)])
+      AC_MSG_RESULT([$have_alitrdclusterizer_r42837])
     fi
 
     AC_LANG_POP(C++)
