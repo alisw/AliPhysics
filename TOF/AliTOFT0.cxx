@@ -268,7 +268,7 @@ void AliTOFT0::Exec(Option_t *option)
   }
 
   if(strstr(option,"all")){
-    AliInfo(Form("Selecting primary tracks with momentum between %d GeV/c and %d GeV/c",  fLowerMomBound, fUpperMomBound));
+    AliInfo(Form("Selecting primary tracks with momentum between %f GeV/c and %f GeV/c",  fLowerMomBound, fUpperMomBound));
     AliInfo("Memorandum: 0 means PION | 1 means KAON | 2 means PROTON")
   }
 
@@ -446,8 +446,8 @@ void AliTOFT0::Exec(Option_t *option)
 	    if(strstr(option,"all")){
 	      AliInfo(Form("True Assignment %d  %d  %d  %d  %d  %d  %d  %d  %d  %d", truparticle[0], truparticle[1], truparticle[2], truparticle[3], truparticle[4], truparticle[5], truparticle[6], truparticle[7], truparticle[8], truparticle[9]));
 	      AliInfo(Form("Best Assignment %d  %d  %d  %d  %d  %d  %d  %d  %d  %d", assparticle[0], assparticle[1], assparticle[2], assparticle[3], assparticle[4], assparticle[5], assparticle[6], assparticle[7], assparticle[8], assparticle[9]));
-	      AliInfo(Form("Minimum ChiSquare for current set   %d ", chisquare));
-	      AliInfo(Form("Confidence Level (Minimum ChiSquare) %d", confLevel));
+	      AliInfo(Form("Minimum ChiSquare for current set   %f ", chisquare));
+	      AliInfo(Form("Confidence Level (Minimum ChiSquare) %f", confLevel));
 	    }
 	    if (strstr(option,"visual") && itimes && (itimes%kUPDATE) == 0) {
 	      if (itimes == kUPDATE){
@@ -481,10 +481,10 @@ void AliTOFT0::Exec(Option_t *option)
     nmisidentified=(nmisidentified0+nmisidentified1+nmisidentified2+nmisidentified3+nmisidentified4+nmisidentified5+nmisidentified6+nmisidentified7+nmisidentified8+nmisidentified9);
     AliInfo(Form("total number of tracks token into account  %i", 10*5*fNevents));
     Float_t badPercentage=100.*(Float_t)nmisidentified/(10*5*fNevents);
-    AliInfo(Form("total misidentified                       %i (%d %) ", nmisidentified, badPercentage));
+    AliInfo(Form("total misidentified                       %i (%d %%) ", nmisidentified, badPercentage));
     AliInfo(Form("Total Number of set token into account     %i", 5*fNevents));
     Float_t goodSetPercentage=100.*(Float_t)ngood/(5*fNevents);
-    AliInfo(Form("Number of set with no misidentified tracks %i (%d %)", ngood, goodSetPercentage));
+    AliInfo(Form("Number of set with no misidentified tracks %i (%d %%)", ngood, goodSetPercentage));
   }
 
   // free used memory for canvas

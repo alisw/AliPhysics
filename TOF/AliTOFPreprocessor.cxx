@@ -448,7 +448,7 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 			  integralThr = tmpstr.Atof();
 		  }
 		  else {
-			  Log(Form("No IntegralThr value found in Map from Config entry in CDB, using default value: IntegralThr = %i",integralThr));
+			  Log(Form("No IntegralThr value found in Map from Config entry in CDB, using default value: IntegralThr = %f",integralThr));
 		  }
 		  TObjString *strThrPar = (TObjString*)configMap->GetValue("ThrPar");
 		  if (strThrPar) {
@@ -456,7 +456,7 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 			  thrPar = tmpstr.Atof();
 		  }
 		  else {
-			  Log(Form("No ThrPar value found in Map from Config entry in CDB, using default value: ThrPar = %i",thrPar));
+			  Log(Form("No ThrPar value found in Map from Config entry in CDB, using default value: ThrPar = %f",thrPar));
 		  }
 	  }
   }
@@ -992,17 +992,17 @@ AliTOFPreprocessor::ProcessNoiseCalibTrg()
   Float_t noiseThr = 1000.;   // setting default threshold for noise to 1000 Hz
   // reading config map
   AliCDBEntry *cdbEntry = GetFromOCDB("Calib","ConfigNoise");
-  if (!cdbEntry) Log(Form("No Configuration entry found in CDB, using default values: NoiseThr = %d",noiseThr));
+  if (!cdbEntry) Log(Form("No Configuration entry found in CDB, using default values: NoiseThr = %f",noiseThr));
   else {
     TMap *configMap = (TMap*)cdbEntry->GetObject();
-    if (!configMap) Log(Form("No map found in Config entry in CDB, using default values: NoiseThr = %d", noiseThr));
+    if (!configMap) Log(Form("No map found in Config entry in CDB, using default values: NoiseThr = %f", noiseThr));
     else {
       TObjString *strNoiseThr = (TObjString*)configMap->GetValue("NoiseThr");
       if (strNoiseThr) {
 	TString tmpstr = strNoiseThr->GetString();
 	noiseThr = tmpstr.Atoi();
       }
-      else Log(Form("No NoiseThr value found in Map from ConfigNoise entry in CDB, using default value: NoiseThr = %i",noiseThr));
+      else Log(Form("No NoiseThr value found in Map from ConfigNoise entry in CDB, using default value: NoiseThr = %f",noiseThr));
     }
   }
 
@@ -1426,12 +1426,12 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
   // reading config map
   AliCDBEntry *cdbEntry = GetFromOCDB("Calib","ConfigNoise");
   if (!cdbEntry) {
-	  Log(Form("No Configuration entry found in CDB, using default values: NoiseThr = %d",noiseThr));
+	  Log(Form("No Configuration entry found in CDB, using default values: NoiseThr = %f",noiseThr));
   }
   else {
 	  TMap *configMap = (TMap*)cdbEntry->GetObject();
 	  if (!configMap){
-		  Log(Form("No map found in Config entry in CDB, using default values: NoiseThr = %d", noiseThr));
+		  Log(Form("No map found in Config entry in CDB, using default values: NoiseThr = %f", noiseThr));
 	  }
 	  else{
 		  TObjString *strNoiseThr = (TObjString*)configMap->GetValue("NoiseThr");
@@ -1440,7 +1440,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 			  noiseThr = tmpstr.Atoi();
 		  }
 		  else {
-			  Log(Form("No NoiseThr value found in Map from ConfigNoise entry in CDB, using default value: NoiseThr = %i",noiseThr));
+			  Log(Form("No NoiseThr value found in Map from ConfigNoise entry in CDB, using default value: NoiseThr = %f",noiseThr));
 		  }
 	  }
   }

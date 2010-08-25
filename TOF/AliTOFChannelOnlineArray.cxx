@@ -75,9 +75,9 @@ AliTOFChannelOnlineArray &AliTOFChannelOnlineArray::operator=(const AliTOFChanne
 void AliTOFChannelOnlineArray::SetDelay(Int_t pos, Float_t parr)
 {
 	// setting status for channel at position = pos
-	AliDebug(2,Form("status = %d",(Float_t)parr));
+	AliDebug(2,Form("status = %f",(Float_t)parr));
 	if (pos>-1 && pos < fSize)fArray[pos] = parr;
-	AliDebug(2,Form("fArray[%d] = %d",pos,(Float_t)fArray[pos]));
+	AliDebug(2,Form("fArray[%d] = %f",pos,(Float_t)fArray[pos]));
 }
 //________________________________________________________________
 Float_t AliTOFChannelOnlineArray::GetDelay(Int_t pos) const 

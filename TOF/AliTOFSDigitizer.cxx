@@ -936,29 +936,29 @@ void AliTOFSDigitizer::PrintParameters()const
   
   AliInfo(Form(" Number of events:                       %i ", (fEvent2-fEvent1)));
   AliInfo(Form(" from event %i to event %i", fEvent1, (fEvent2-1)));
-  AliInfo(Form(" Time Resolution (ns) %d  Pad Efficiency: %d ", fTimeResolution, fpadefficiency));
+  AliInfo(Form(" Time Resolution (ns) %f  Pad Efficiency: %f ", fTimeResolution, fpadefficiency));
   AliInfo(Form(" Edge Effect option:  %d", fEdgeEffect));
 
   AliInfo(" Boundary Effect Simulation Parameters ");
-  AliInfo(Form(" Hparameter: %d  H2parameter: %d  Kparameter: %d  K2parameter: %d", fHparameter, fH2parameter, fKparameter, fK2parameter));
-  AliInfo(Form(" Efficiency in the central region of the pad: %d", fEffCenter));
-  AliInfo(Form(" Efficiency at the boundary region of the pad: %d", fEffBoundary));
-  AliInfo(Form(" Efficiency value at H2parameter %d", fEff2Boundary));
-  AliInfo(Form(" Efficiency value at K2parameter %d", fEff3Boundary));
-  AliInfo(Form(" Resolution (ps) in the central region of the pad: %d", fResCenter));
-  AliInfo(Form(" Resolution (ps) at the boundary of the pad      : %d", fResBoundary));
-  AliInfo(Form(" Slope (ps/K) for neighbouring pad               : %d", fResSlope));
-  AliInfo(Form(" Time walk (ps) in the central region of the pad : %d", fTimeWalkCenter));
-  AliInfo(Form(" Time walk (ps) at the boundary of the pad       : %d", fTimeWalkBoundary));
-  AliInfo(Form(" Slope (ps/K) for neighbouring pad               : %d", fTimeWalkSlope));
+  AliInfo(Form(" Hparameter: %f  H2parameter: %f  Kparameter: %f  K2parameter: %f", fHparameter, fH2parameter, fKparameter, fK2parameter));
+  AliInfo(Form(" Efficiency in the central region of the pad: %f", fEffCenter));
+  AliInfo(Form(" Efficiency at the boundary region of the pad: %f", fEffBoundary));
+  AliInfo(Form(" Efficiency value at H2parameter %f", fEff2Boundary));
+  AliInfo(Form(" Efficiency value at K2parameter %f", fEff3Boundary));
+  AliInfo(Form(" Resolution (ps) in the central region of the pad: %f", fResCenter));
+  AliInfo(Form(" Resolution (ps) at the boundary of the pad      : %f", fResBoundary));
+  AliInfo(Form(" Slope (ps/K) for neighbouring pad               : %f", fResSlope));
+  AliInfo(Form(" Time walk (ps) in the central region of the pad : %f", fTimeWalkCenter));
+  AliInfo(Form(" Time walk (ps) at the boundary of the pad       : %f", fTimeWalkBoundary));
+  AliInfo(Form(" Slope (ps/K) for neighbouring pad               : %f", fTimeWalkSlope));
   AliInfo(" Pulse Heigth Simulation Parameters ");
   AliInfo(Form(" Flag for delay due to the PulseHeightEffect  : %d", fTimeDelayFlag));
-  AliInfo(Form(" Pulse Height Slope                           : %d", fPulseHeightSlope));
-  AliInfo(Form(" Time Delay Slope                             : %d", fTimeDelaySlope));
-  AliInfo(Form(" Minimum charge amount which could be induced : %d", fMinimumCharge));
-  AliInfo(Form(" Smearing in charge in (q1/q2) vs x plot      : %d", fChargeSmearing));
-  AliInfo(Form(" Smearing in log of charge ratio              : %d", fLogChargeSmearing));
-  AliInfo(Form(" Smearing in time in time vs log(q1/q2) plot  : %d", fTimeSmearing));
+  AliInfo(Form(" Pulse Height Slope                           : %f", fPulseHeightSlope));
+  AliInfo(Form(" Time Delay Slope                             : %f", fTimeDelaySlope));
+  AliInfo(Form(" Minimum charge amount which could be induced : %f", fMinimumCharge));
+  AliInfo(Form(" Smearing in charge in (q1/q2) vs x plot      : %f", fChargeSmearing));
+  AliInfo(Form(" Smearing in log of charge ratio              : %f", fLogChargeSmearing));
+  AliInfo(Form(" Smearing in time in time vs log(q1/q2) plot  : %f", fTimeSmearing));
   AliInfo(Form(" Flag for average time                        : %d", fAverageTimeFlag));
   AliInfo(Form(" Edge tails option                            : %d", fEdgeTails));
   

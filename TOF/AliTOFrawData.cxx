@@ -175,7 +175,7 @@ void AliTOFrawData::Update(Int_t tof, Int_t tot, Int_t leading, Int_t trailing, 
   //  to evaluate the time-of-flight and time-over-threshold measurements
   //
 
-  AliDebug(2,Form(" %10.0f %10.0f %10.0f %1i %1i %1i",tof, tot, leading, psBit, acq, errorFlag));
+  AliDebug(2,Form(" %d %d %d %d %d %d",tof, tot, leading, psBit, acq, errorFlag));
 
   if (fLeading!=-1 /*&& fTime==-1*/ && fToT==-1 && trailing!=-1) { // adc
 

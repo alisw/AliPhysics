@@ -271,7 +271,7 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent * const event) {
 			covB[13],covA[13],
 			covB[14],covA[14]
 			));
-	AliDebug(3,Form(" %6d  %f %f %f %f % %6d %3d %f  %f %f %f %f %f",
+	AliDebug(3,Form(" %6d  %f %f %f %f %f %6d %3d %f  %f %f %f %f %f",
 			i,
 			t->GetTOFsignalRaw(),
 			t->GetTOFsignal(),

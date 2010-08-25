@@ -445,7 +445,7 @@ AliTOFFEEReader::DumpFEEConfig()
   AliInfo("dumping TOF FEE config");
   AliInfo("-------------------------------------");
   AliInfo(Form("version: %d", feeConfig->GetVersion()));
-  AliInfo(Form("dump time: %d", feeConfig->GetDumpTime()));
+  AliInfo(Form("dump time: %d", (Int_t)feeConfig->GetDumpTime()));
   AliInfo(Form("run number: %d", feeConfig->GetRunNumber()));
   AliInfo(Form("run type: %d", feeConfig->GetRunType()));
   AliInfo("-------------------------------------");

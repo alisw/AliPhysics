@@ -578,7 +578,7 @@ void AliTOFClusterFinderV1::FillRecPoint()
 	  dummy4 = fNumberOfTofClusters;
 	  FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
 	  if (fNumberOfTofClusters!=dummy4)
-	    AliDebug(2, Form(" (4): n1= %5d, n2 = %5", dummy4, fNumberOfTofClusters));
+	    AliDebug(2, Form(" (4): n1= %5d, n2 = %5d", dummy4, fNumberOfTofClusters));
 
 
 	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
@@ -588,7 +588,7 @@ void AliTOFClusterFinderV1::FillRecPoint()
 	  dummy3 = fNumberOfTofClusters;
 	  FindClustersPerStrip(iSector, iPlate, iStrip, 3); // 3 pads clusters
 	  if (fNumberOfTofClusters!=dummy3)
-	    AliDebug(2, Form(" (3): n1= %5d, n2 = %5", dummy3, fNumberOfTofClusters));
+	    AliDebug(2, Form(" (3): n1= %5d, n2 = %5d", dummy3, fNumberOfTofClusters));
 
 
 	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
@@ -598,7 +598,7 @@ void AliTOFClusterFinderV1::FillRecPoint()
 	  dummy2 = fNumberOfTofClusters;
 	  FindClustersPerStrip(iSector, iPlate, iStrip, 2); // 2 pads clusters
 	  if (fNumberOfTofClusters!=dummy2)
-	    AliDebug(2, Form(" (2): n1= %5d, n2 =%5", dummy2, fNumberOfTofClusters));
+	    AliDebug(2, Form(" (2): n1= %5d, n2 =%5d", dummy2, fNumberOfTofClusters));
 
 
 	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
@@ -1114,7 +1114,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -1147,7 +1147,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -1180,7 +1180,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -1213,7 +1213,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -1578,7 +1578,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -1610,7 +1610,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -1642,7 +1642,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -1674,7 +1674,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -1984,7 +1984,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -2016,7 +2016,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -2048,7 +2048,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -2080,7 +2080,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 	if (digitInteresting->GetToT()<=0) continue; // AdC
 	digitIndexLocal++; // AdC
 
-	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %f %f %f %f  %5d  %5d %5d %5d",
+	AliDebug(1,Form(" %2d %1d %2d %1d %2d  %d %d %d %d  %5d  %5d %5d %5d",
 			vol[0], vol[1], vol[2] ,vol[4], vol[3],
 			digitInteresting->GetTdc(), digitInteresting->GetAdc(),
 			digitInteresting->GetToT(), digitInteresting->GetToT()*digitInteresting->GetToT(),
@@ -2549,7 +2549,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 		continue;
 	      }
 
-	      AliDebug(1, Form(" %1d %1d (0x%x) %1d %1d (0x%x)", adesso1, firstIndex,selectedDigit[adesso1][firstIndex],
+	      AliDebug(1, Form(" %1d %1d (0x%p) %1d %1d (0x%p)", adesso1, firstIndex,selectedDigit[adesso1][firstIndex],
 			       adesso2, secondIndex,selectedDigit[adesso2][secondIndex]));
 
 	      interestingTOF[0] = selectedDigit[adesso1][firstIndex]->GetTDC();

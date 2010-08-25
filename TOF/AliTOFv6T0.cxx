@@ -378,10 +378,10 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
   //
 
   AliDebug(1, "************************* TOF geometry **************************");
-  AliDebug(1,Form(" xtof   %d",  xtof));
-  AliDebug(1,Form(" ytof   %d",  ytof));
-  AliDebug(1,Form(" zlenA   %d", zlenA));
-  AliDebug(2,Form(" zlenA*0.5 = %d", zlenA*0.5));
+  AliDebug(1,Form(" xtof   %f",  xtof));
+  AliDebug(1,Form(" ytof   %f",  ytof));
+  AliDebug(1,Form(" zlenA   %f", zlenA));
+  AliDebug(2,Form(" zlenA*0.5 = %f", zlenA*0.5));
 
   Float_t xFLT, yFLT, zFLTA;
   xFLT  = xtof     - 2.*fgkModuleWallThickness;
