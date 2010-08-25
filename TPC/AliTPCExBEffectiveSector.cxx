@@ -124,6 +124,10 @@ void AliTPCExBEffectiveSector::GetCorrection(const Float_t x[],const Short_t roc
   // Calculates the correction using the lookup table (histogram) of distortion
   // The histogram is created as poscl - postrack
   //   
+  dx[0]=0;
+  dx[1]=0;
+  dx[2]=0;
+  if (!fCorrectionRPhi) return;
   Double_t phi      = TMath::ATan2(x[1],x[0]);
   Double_t r        = TMath::Sqrt(x[1]*x[1]+x[0]*x[0]);
   Double_t sector   = 9.*phi/TMath::Pi();
@@ -136,33 +140,27 @@ void AliTPCExBEffectiveSector::GetCorrection(const Float_t x[],const Short_t roc
   if (roc%36>=18) kZ=-TMath::Abs(kZ);
   if (TMath::Abs(kZ)<0.15){
     kZ = (roc%36<18) ? 0.15:-0.15;
-  }
-  
+  }  
   //
   Double_t dlR=0;
   Double_t dlRPhi=0;
   Double_t dlZ=0;
+  Double_t rr=TMath::Max(r,fCorrectionRPhi->GetYaxis()->GetXmin()+0.01);
+  rr=TMath::Min(rr,fCorrectionRPhi->GetYaxis()->GetXmax()-0.01);
+  Double_t kZZ=TMath::Max(kZ,fCorrectionRPhi->GetZaxis()->GetXmin()+0.001);
+  kZZ=TMath::Min(kZZ,fCorrectionRPhi->GetZaxis()->GetXmax()-0.001);
+
   if (fCorrectionRPhi) {  
-    Double_t rr=TMath::Max(r,fCorrectionRPhi->GetYaxis()->GetXmin());
-    rr=TMath::Min(rr,fCorrectionRPhi->GetYaxis()->GetXmax());
-    Double_t kZZ=TMath::Max(kZ,fCorrectionRPhi->GetZaxis()->GetXmin());
-    kZZ=TMath::Min(kZZ,fCorrectionRPhi->GetZaxis()->GetXmax());
-    //    dlRPhi= -fCorrectionRPhi->GetBinContent(fCorrectionRPhi->FindBin(sector,rr,kZZ));
-    dlRPhi= -fCorrectionRPhi->Interpolate(sector,rr,kZZ);
+    //    dlRPhi= -fCorrectionRPhi->Interpolate(sector,rr,kZZ);
+    dlRPhi= -fCorrectionRPhi->GetBinContent(fCorrectionRPhi->FindBin(sector,rr,kZZ));
   }
   if (fCorrectionR)    {
-    Double_t rr=TMath::Max(r,fCorrectionR->GetYaxis()->GetXmin());
-    rr=TMath::Min(rr,fCorrectionR->GetYaxis()->GetXmax());
-    Double_t kZZ=TMath::Max(kZ,fCorrectionR->GetZaxis()->GetXmin());
-    kZZ=TMath::Min(kZZ,fCorrectionR->GetZaxis()->GetXmax());
-    dlR= -fCorrectionR->Interpolate(sector,rr,kZZ);
+    //    dlR= -fCorrectionR->Interpolate(sector,rr,kZZ);
+    dlR= -fCorrectionR->GetBinContent(fCorrectionR->FindBin(sector,rr,kZZ));
   }
   if (fCorrectionZ)    {
-    Double_t rr=TMath::Max(r,fCorrectionZ->GetYaxis()->GetXmin());
-    rr=TMath::Min(rr,fCorrectionZ->GetYaxis()->GetXmax());
-    Double_t kZZ=TMath::Max(kZ,fCorrectionZ->GetZaxis()->GetXmin());
-    kZZ=TMath::Min(kZZ,fCorrectionZ->GetZaxis()->GetXmax());
-    dlZ= -fCorrectionZ->Interpolate(sector,rr,kZZ);
+    //    dlZ= -fCorrectionZ->Interpolate(sector,rr,kZZ);
+    dlZ= -fCorrectionZ->GetBinContent(fCorrectionZ->FindBin(sector,rr,kZZ));
   }
   Double_t dr    = fC0*dlR  + fC1*dlRPhi;
   Double_t drphi = -fC1*dlR + fC0*dlRPhi;
@@ -314,8 +312,11 @@ void  AliTPCExBEffectiveSector::MakeResidualMap(THnSparse * hisInput, const char
 	Double_t entries= his->GetEntries();
 	//printf("%f\t%f\t%f\t%f\t%f\t%f\n", sector,localX,kZ, entries, mean,rms);
 	hisResMap3D->SetBinContent(ibin1,ibin2,ibin3, mean);
+	Double_t phi=TMath::Pi()*sector/9;
+	if (phi>TMath::Pi()) phi+=TMath::Pi();
 	(*pcstream)<<"delta"<<
 	  "sector="<<sector<<
+	  "phi="<<phi<<
 	  "localX="<<localX<<
 	  "kZ="<<kZ<<
 	  "mean="<<mean<<
