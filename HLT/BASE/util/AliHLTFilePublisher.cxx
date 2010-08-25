@@ -108,7 +108,23 @@ AliHLTComponent* AliHLTFilePublisher::Spawn()
 int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
+  int iResult=0;
+  if ((iResult=ConfigureFromArgumentString(argc, argv))<0) return iResult;
 
+  if (iResult>=0 && fEvents.GetSize()==0) {
+    HLTError("the publisher needs at least one file argument");
+    iResult=-EINVAL;
+  }
+  if (iResult>=0) iResult=OpenFiles(fOpenFilesAtStart);
+  if (iResult<0) {
+    fEvents.Clear();
+  }
+  return iResult;
+}
+
+int AliHLTFilePublisher::ScanConfigurationArgument(int argc, const char** argv)
+{
+  // argument scan
   //HLTDebug("%d %s", argc, argv[0]);
   int iResult=0;
   TString argument="";
@@ -119,7 +135,8 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
   AliHLTComponentDataType currDataType=kAliHLTVoidDataType;
   AliHLTUInt32_t          currSpecification=kAliHLTVoidDataSpec;
   EventFiles*             pCurrEvent=NULL;
-  for (int i=0; i<argc && iResult>=0; i++) {
+  int i=0;
+  for (; i<argc && iResult>=0; i++) {
     argument=argv[i];
     if (argument.IsNull()) continue;
 
@@ -139,7 +156,26 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
       // -datafilelist
     } else if (argument.CompareTo("-datafilelist")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      HLTWarning("-datafilelist option not yet implemented");
+      TString input=argv[i];
+      input+="?filetype=raw";
+      TFile* pFile=new TFile(input);
+      if (pFile && !pFile->IsZombie()) {
+	pFile->Seek(0);
+	TArrayC buffer;
+	buffer.Set(pFile->GetSize());
+	if (pFile->ReadBuffer(buffer.GetArray(), buffer.GetSize())==0) {
+	  const char* argbuffer=buffer.GetArray();
+	  if ((iResult=ConfigureFromArgumentString(1, &argbuffer))<0) {
+	    iResult=-EPROTO;
+	  }
+	} else {
+	  HLTError("failed to read configuration from file %s", argv[i]);
+	  iResult=-EIO;
+	}
+      } else {
+	HLTError("can not open configuration file %s", argv[i]);
+	iResult=-ENOENT;
+      }
 
       // -datatype
     } else if (argument.CompareTo("-datatype")==0) {
@@ -221,14 +257,8 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
   }
-  if (fEvents.GetSize()==0) {
-    HLTError("the publisher needs at least one file argument");
-    iResult=-EINVAL;
-  }
-  if (iResult>=0) iResult=OpenFiles(fOpenFilesAtStart);
-  if (iResult<0) {
-    fEvents.Clear();
-  }
+
+  if (iResult>=0) return i;
   return iResult;
 }
 

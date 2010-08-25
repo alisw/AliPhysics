@@ -54,6 +54,8 @@ AliHLTFileWriter::AliHLTFileWriter()
   , fBurstBufferSize(0)
   , fBurstBlocks()
   , fBurstBlockEvents()
+  , fPublisherConfName()
+  , fPublisherConfEvent(-1)
 {
   // see header file for class documentation
   // or
@@ -86,6 +88,7 @@ int AliHLTFileWriter::SetDefaults()
   fBurstBufferSize=0;
   fBurstBlocks.clear();
   fBurstBlockEvents.clear();
+  fPublisherConfEvent=-1;
   return 0;
 }
 
@@ -201,6 +204,11 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
     } else if (argument.CompareTo("-concatenate-events")==0) {
       SetMode(kConcatenateEvents);
 
+      // -publisher-conf
+    } else if (argument.CompareTo("-publisher-conf")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      fPublisherConfName=argv[i];
+
       // -write-all-events
     } else if (argument.CompareTo("-write-all-events")==0) {
       SetMode(kWriteAllEvents);
@@ -265,6 +273,13 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
       iResult=-ENOMEM;
       fBurstBufferSize=0;
     }
+    }
+  }
+
+  if (!fPublisherConfName.IsNull()) {
+    if (CheckMode(kConcatenateBlocks) || CheckMode(kConcatenateEvents)) {
+      fPublisherConfName="";
+      HLTWarning("option 'concatenate blocks/events' collides with writing of FilePublisher configuration, ignoring option '-publisher-conf'");
     }
   }
 
@@ -556,6 +571,34 @@ int AliHLTFileWriter::WriteBlock(int blockno, const AliHLTEventID_t& eventID,
       iResult=-EBADF;
     }
     dump.close();
+  }
+  if (iResult>=0 && !fPublisherConfName.IsNull()) {
+    if (!CheckMode(kConcatenateBlocks) &&
+	!CheckMode(kConcatenateEvents)) {
+      // append if not the first entry
+      if (fPublisherConfEvent>=0) filemode=ios::app;
+      else filemode=(ios::openmode)0;
+      ofstream conf(fPublisherConfName.Data(), filemode);
+      if (conf.good()) {
+	if (fPublisherConfEvent>=0 &&
+	    fPublisherConfEvent!=GetEventCount()) {
+	  conf << "-nextevent " << endl;
+	}
+	fPublisherConfEvent=GetEventCount();
+	conf << "-datatype ";
+	conf << DataType2Text(pDesc->fDataType, 3);
+	conf << " -datafile ";
+	conf << filename;
+	conf << endl;
+      } else {
+	fPublisherConfName="";
+	HLTError("can not open file %s for writing of configuration commands", fPublisherConfName.Data());
+      }
+      conf.close();
+    } else {
+	fPublisherConfName="";
+	HLTWarning("option 'concatenate blocks/events' collides with writing of FilePublisher configuration, disable ...");
+    }
   }
   return iResult;
 }

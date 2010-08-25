@@ -1,3 +1,4 @@
+// -*- Mode: C++ -*-
 // $Id$
 
 #ifndef ALIHLTFILEWRITER_H
@@ -67,6 +68,10 @@ class AliHLTBlockDataCollection;
  *      concatenate all events into one file, this skips the event no,
  *      the block no, and the block data type in the file name. Currently,
  *      this implies the -concatenate-blocks option.
+ * \li -publisher-conf <i>filename</i> <br>
+ *      write configuration file for FilePublisher component (AliHLTFilePublisher) <br>
+ *      one line per file: -datatype id origin -datafile filename           <br>
+ *      events separated by -nextevent
  * \li -write-all-events <br>
  *      by default, the file writer ignores all steering events like the
  *      the SOR/EOR events, with this option, all events will be considered
@@ -346,7 +351,12 @@ class AliHLTFileWriter : public AliHLTDataSink  {
 
   /** event ids for the burst blocks */
   vector<AliHLTEventID_t> fBurstBlockEvents;                       //!transient
+
+  /// configuration file of FilePublisher component
+  TString fPublisherConfName;                                      // see above
+  /// current event for FilePublisher configuration
+  int fPublisherConfEvent;                                         // see above
   
-  ClassDef(AliHLTFileWriter, 3)
+  ClassDef(AliHLTFileWriter, 0)
 };
 #endif

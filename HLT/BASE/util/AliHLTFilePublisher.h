@@ -1,5 +1,5 @@
 // -*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTFILEPUBLISHER_H
 #define ALIHLTFILEPUBLISHER_H
@@ -7,12 +7,12 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTFilePublisher.h
-    @author Matthias Richter
-    @date   
-    @brief  An HLT file publishing (data source) component.
-    @note   The class is used in Offline (AliRoot) context
-*/
+//  @file   AliHLTFilePublisher.h
+//  @author Matthias Richter
+//  @date   
+//  @brief  An HLT file publishing (data source) component.
+//  @note   The class is used in Offline (AliRoot) context
+// 
 
 #include "AliHLTDataSource.h"
 #include <TList.h>
@@ -33,21 +33,21 @@ class TFile;
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -datafile     <i> filename      </i>
- * \li -datafilelist <i> file pattern  </i> <br>
- *      not yet implemented
+ * \li -datafilelist <i> configfile  </i> <br>
+ *      read arguments from a configfile
  * \li -datatype     <i> datatype   dataorigin </i> <br>
  *      data type ID and origin, e.g. <tt>-datatype 'CLUSTERS' 'TPC ' </tt>
  * \li -dataspec     <i> specification </i> <br>
  *      data specification treated as decimal number or hex number if
  *      prepended by '0x'
- * \li -nextevent
- *      indicate files published by the next event
  *
  * <h2>Optional arguments:</h2>
  * \li -open_files_at_start
  *      Opens all files during component initialisation rather than as needed
  *      during event processing. Note: this feature may result in the system
  *      running out of file handles if a large number of files was specified.
+ * \li -nextevent
+ *      indicate files published by the next event
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -112,6 +112,9 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
    * Init method.
    */
   virtual int DoInit( int argc, const char** argv );
+
+  /// inherited from AliHLTComponent: argument scan
+  int ScanConfigurationArgument(int argc, const char** argv);
 
   /**
    * Deinit method.
@@ -288,6 +291,6 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   /** Is raw file (kTRUE) [default] or root file (kFALSE). */
   Bool_t fIsRaw;                                                   //! transient     
 
-  ClassDef(AliHLTFilePublisher, 3)
+  ClassDef(AliHLTFilePublisher, 0)
 };
 #endif
