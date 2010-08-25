@@ -296,7 +296,7 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   hEventsAll->Fill(vertexBin);
   if(nsd) hEventsAllNSD->Fill(vertexBin);
   
-  //  if(!vtxFound || !isTriggered) return;
+  if(!vtxFound || !isTriggered) return; //Not important for FMD but crucial for SPD since maps are done from ESD
   
   if(TMath::Abs(vertex.At(2)) > fZvtxCut) {
     return;
