@@ -203,7 +203,7 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    * @param pArgv   pointer to receive argument array pointer
    * @return argc if succeeded, neg. error code if failed
    */
-  int GetArguments(const char*** pArgv);
+  int GetArguments(const char*** pArgv) const;
 
   /**
    * Get output buffer size.

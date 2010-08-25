@@ -285,15 +285,14 @@ void AliHLTConfiguration::PrintStatus()
   }
 }
 
-int AliHLTConfiguration::GetArguments(const char*** pArgv)
+int AliHLTConfiguration::GetArguments(const char*** pArgv) const
 {
   // see header file for function documentation
   int iResult=0;
   if (pArgv) {
     if (fArgc==-1) {
-      if ((iResult=ExtractArguments())<0) {
+      if ((iResult=const_cast<AliHLTConfiguration*>(this)->ExtractArguments())<0) {
 	HLTError("error extracting arguments for configuration %s", GetName());
-	fArgc=-EINVAL;
       }
     } else if (fArgc<0) {
       HLTError("previous argument extraction failed");
@@ -371,6 +370,7 @@ int AliHLTConfiguration::ExtractArguments()
     // there are zero arguments
     fArgc=0;
   }
+  if (iResult<0) fArgc=iResult;
   return iResult;
 }
 
