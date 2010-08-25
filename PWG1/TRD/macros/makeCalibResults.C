@@ -66,10 +66,6 @@
 
 #endif
 
-#include "AliTRDperformanceTrain.h"
-#include "helper.C"
-//#include "../../PWG1/macros/AddPerformanceTask.h"
-
 Char_t const *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libSTAT.so", "libPWG1.so"};
 
 // define setup
@@ -107,10 +103,10 @@ void makeCalibResults(Char_t *opt, Char_t const *files=NULL, Bool_t kGRID=kFALSE
 
   if(!c) c=new TCanvas("c", "Calibration", 10, 10, 800, 500);
 
-  for(Int_t itask = NTRDQATASKS; itask<NTRDTASKS; itask++){
-    if(!TSTBIT(fSteerTask, itask)) continue;
+  for(Int_t itask = AliTRDpwg1Helper::kNTRDQATASKS; itask<AliTRDpwg1Helper::NTRDTASKS; itask++){
+    if(!TESTBIT(fSteerTask, itask)) continue;
     switch(itask){
-    case kPIDRefMaker:
+    case AliTRDpwg1Helper::kPIDRefMaker:
       calibrateTRD(itask, "AliTRDpidRefMakerLQ", "PIDrefMaker");
       //calibrateTRD(itask, "AliTRDpidRefMakerNN", "PIDrefMaker");
       break;
@@ -127,7 +123,7 @@ void makeCalibResults(Char_t *opt, Char_t const *files=NULL, Bool_t kGRID=kFALSE
 //______________________________________________________
 void calibrateTRD(Int_t itask, Char_t const* ntask, Char_t const* nfile)
 {
-  if(!ntask) ntask=fgkTRDtaskClassName[itask];
+  if(!ntask) ntask=AliTRDpwg1Helper::fgkTRDtaskClassName[itask];
   new(ctask) TClass(ntask);
   if(!ctask){
     Error("makeCalibResults.C", Form("Asking for wrong class name [%s].", ntask));

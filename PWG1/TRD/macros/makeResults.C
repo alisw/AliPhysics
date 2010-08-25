@@ -67,10 +67,6 @@
 
 #endif
 
-#include "AliTRDperformanceTrain.h"
-#include "helper.C"
-//#include "../../PWG1/macros/AddPerformanceTask.h"
-
 Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libPWG1.so"};
 // define setup
 TCanvas *c = 0x0;
@@ -97,19 +93,19 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
     return;
   }
 
-  mc = HasReadMCData(opt);
-  friends = HasReadFriendData(opt);
+  mc      = AliTRDpwg1Helper::HasReadMCData(opt);
+  friends = AliTRDpwg1Helper::HasReadFriendData(opt);
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
   TString outputFile;
   if(!TString(files).EndsWith(".root")){ 
     outputFile = Form("%s/QAResults.root", gSystem->ExpandPathName("$PWD"));
-    mergeProd("QAResults.root", files);
+    AliTRDpwg1Helper::MergeProd("QAResults.root", files);
   } else {
     outputFile = files;
   }
-  Int_t fSteerTask = ParseOptions(opt);
+  Int_t fSteerTask = AliTRDpwg1Helper::ParseOptions(opt);
 
   if(!dosummary){
     summary = kFALSE;
@@ -118,9 +114,9 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
 
   TClass *ctask = new TClass;
   AliAnalysisTask *task = 0x0;
-  for(Int_t itask = NTRDQATASKS; itask--;){
-    if(!TSTBIT(fSteerTask, itask)) continue;
-    new(ctask) TClass(fgkTRDtaskClassName[itask]);
+  for(Int_t itask = AliTRDpwg1Helper::kNTRDQATASKS; itask--;){
+    if(!TESTBIT(fSteerTask, itask)) continue;
+    new(ctask) TClass(AliTRDpwg1Helper::fgkTRDtaskClassName[itask]);
     task = (AliAnalysisTask*)ctask->New();
     task->SetName(Form("%s%s", task->GetName(), cid));
     printf(" *** task %s, output file %s\n", task->GetName(), outputFile.Data());

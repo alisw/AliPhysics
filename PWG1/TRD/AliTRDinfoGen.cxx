@@ -81,11 +81,11 @@
 #include "AliTRDseedV1.h"
 #include "AliTRDcluster.h"
 #include "AliTRDinfoGen.h"
+#include "AliTRDpwg1Helper.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDeventInfo.h"
 #include "info/AliTRDv0Info.h"
 #include "info/AliTRDeventCuts.h"
-#include "macros/AliTRDperformanceTrain.h"
 
 ClassImp(AliTRDinfoGen)
 
@@ -153,12 +153,12 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   // Default constructor
   //
   SetTitle("MC-REC TRD-track list generator");
-  DefineOutput(kTracksBarrel, TObjArray::Class());
-  DefineOutput(kTracksSA, TObjArray::Class());
-  DefineOutput(kTracksKink, TObjArray::Class());
-  DefineOutput(kEventInfo, AliTRDeventInfo::Class());
-  DefineOutput(kV0List, TObjArray::Class());
-  DefineOutput(kMonitor, TObjArray::Class()); // histogram list
+  DefineOutput(AliTRDpwg1Helper::kTracksBarrel, TObjArray::Class());
+  DefineOutput(AliTRDpwg1Helper::kTracksSA, TObjArray::Class());
+  DefineOutput(AliTRDpwg1Helper::kTracksKink, TObjArray::Class());
+  DefineOutput(AliTRDpwg1Helper::kEventInfo, AliTRDeventInfo::Class());
+  DefineOutput(AliTRDpwg1Helper::kV0List, TObjArray::Class());
+  DefineOutput(AliTRDpwg1Helper::kMonitor, TObjArray::Class()); // histogram list
 }
 
 //____________________________________________________________________
@@ -242,7 +242,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(11, "Kink");
   ax->SetBinLabel(12, "KinkMC");
   fContainer->AddAt(h, 0);
-  PostData(kMonitor, fContainer);
+  PostData(AliTRDpwg1Helper::kMonitor, fContainer);
 }
 
 //____________________________________________________________________
@@ -678,11 +678,11 @@ void AliTRDinfoGen::UserExec(Option_t *){
   h->Fill(10., nKink);
   h->Fill(11., nKinkMC);
 
-  PostData(kTracksBarrel, fTracksBarrel);
-  PostData(kTracksSA, fTracksSA);
-  PostData(kTracksKink, fTracksKink);
-  PostData(kEventInfo, fEventInfo);
-  PostData(kV0List, fV0List);
+  PostData(AliTRDpwg1Helper::kTracksBarrel, fTracksBarrel);
+  PostData(AliTRDpwg1Helper::kTracksSA, fTracksSA);
+  PostData(AliTRDpwg1Helper::kTracksKink, fTracksKink);
+  PostData(AliTRDpwg1Helper::kEventInfo, fEventInfo);
+  PostData(AliTRDpwg1Helper::kV0List, fV0List);
 }
 
 //____________________________________________________________________

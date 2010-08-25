@@ -11,7 +11,7 @@
 
 #include "AliTRDpwg1Helper.h"
 
-Char_t const* AliTRDpwg1Helper::fgkTRDtaskClassName[AliTRDpwg1Helper::kNTRDTASKS] = {
+const Char_t * AliTRDpwg1Helper::fgkTRDtaskClassName[AliTRDpwg1Helper::kNTRDTASKS] = {
   "AliTRDcheckESD"
   ,"AliTRDinfoGen"
   ,"AliTRDcheckDET"
@@ -27,7 +27,7 @@ Char_t const* AliTRDpwg1Helper::fgkTRDtaskClassName[AliTRDpwg1Helper::kNTRDTASKS
   ,"AliTRDmultiplicity"
 };
 
-Char_t const* AliTRDpwg1Helper::fgkTRDtaskOpt[AliTRDpwg1Helper::kNTRDTASKS+1] = {
+const Char_t * AliTRDpwg1Helper::fgkTRDtaskOpt[AliTRDpwg1Helper::kNTRDTASKS+1] = {
   "ESD"
   ,"GEN"
   ,"DET"

@@ -4,7 +4,7 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
+#include "PWG1/TRD/AliTRDpwg1Helper.h"
 #include "PWG1/TRD/AliTRDcheckPID.h"
 #include "PWG1/TRD/AliTRDpidRefMaker.h"
 #include "PWG1/TRD/AliTRDpidRefMakerNN.h"
@@ -29,7 +29,7 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer
   mgr->ConnectOutput(pid, 1, mgr->CreateContainer(pid->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
   mgr->ConnectOutput(pid, 2, co[0]);
 
-  if(TSTBIT(map, kPIDRefMaker)){
+  if(TESTBIT(map, AliTRDpwg1Helper::kPIDRefMaker)){
 
     //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
     //AliLog::SetClassDebugLevel("AliTRDpidRefMakerNN", 3);
