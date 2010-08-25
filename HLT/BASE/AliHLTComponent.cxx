@@ -433,6 +433,8 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
   TString argument="";
   int i=0;
   for (i=0; i<argc && iResult>=0; i++) {
+    if (argument.IsWhitespace()) continue;
+
     // special handling for single component arguments ending with
     // a sequence of blanks
     argument=argv[i];
