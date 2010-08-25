@@ -22,7 +22,6 @@
 
 AliHLTPHOSGeometry::AliHLTPHOSGeometry() :
 AliHLTCaloGeometry("PHOS"),
-AliHLTLogging(),
 fGeoUtils(0)
 {
  // See header file for class documentation
@@ -82,15 +81,18 @@ int AliHLTPHOSGeometry::GetGeometryFromCDB()
 	    }
 
 	  gGeoManager = (TGeoManager*) pEntry->GetObject();
-//	  HLTError("gGeoManager = 0x%x", gGeoManager);
 	  if(gGeoManager)
 	    {
 	      fGeoUtils = new AliPHOSGeoUtils("PHOS", "noCPV");
 	    }
+	    else
+	    {
+	       HLTError("can not get gGeoManager from OCDB");
+	    }
 	}
       else
 	{
-//	    HLTError("can not fetch object \"%s\" from OCDB", path);
+	    HLTError("can not fetch object \"%s\" from OCDB", path.GetPath().Data());
 	}
     }
     return 0;

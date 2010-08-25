@@ -50,6 +50,7 @@ void AliHLTPHOSRecoParamHandler::FillParameters()
       fLogWeight = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCLogWeight();
       fRecPointMemberThreshold = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCMinE();
       fRecPointThreshold = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCClusteringThreshold();
+      HLTInfo("Succesfully got reconstruction parameters from OCDB. Cluster seed threshold: %f, cluster member threshold: %f", GetRecPointThreshold(), GetRecPointMemberThreshold());
    }
 }
 

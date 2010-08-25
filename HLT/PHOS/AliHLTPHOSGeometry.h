@@ -22,7 +22,7 @@
 
 class AliPHOSGeoUtils;
 
-class AliHLTPHOSGeometry : public AliHLTCaloGeometry, public AliHLTLogging
+class AliHLTPHOSGeometry : public AliHLTCaloGeometry
   {
      public:
 
