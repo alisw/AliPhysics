@@ -82,6 +82,9 @@ struct AliHLTCaloDigitDataStruct
   /** ID of associated  cluster (-1 for no cluster) */
   Short_t fAssociatedCluster;
   
+  /** Flag to specify wether the HG channel has been present in this crystal */
+  Bool_t fHgPresent;
+  
 };
 
 #endif
