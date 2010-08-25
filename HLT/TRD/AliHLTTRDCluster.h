@@ -35,6 +35,16 @@ private:
   UChar_t  fBits;           // Bits of the cluster
 };
 
+// disable warnings to avoid
+// warning: base class ‘class ...’ has a non-virtual destructor
+#if defined __GNUC__
+#pragma GCC diagnostic ignored "-Weffc++"
+#elif defined __SUNPRO_CC
+#pragma disable_warn
+#elif defined _MSC_VER
+#pragma warning(push, 1)
+#endif
+
 class AliHLTTRDExtCluster: public AliHLTTRDCluster
 {
  public:
@@ -55,6 +65,14 @@ class AliHLTTRDExtCluster: public AliHLTTRDCluster
   // Float_t  fCenter;         //  Center of the cluster relative to the pad  
 
 };
+
+#if defined __GNUC__
+#pragma GCC diagnostic warning "-Weffc++"
+#elif defined __SUNPRO_CC
+#pragma enable_warn
+#elif defined _MSC_VER
+#pragma warning(pop)
+#endif
 
 struct AliHLTTRDClustersArray {
 #ifdef HAVE_NOT_ALITRD_RECOPARAM_r41621
