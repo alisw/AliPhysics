@@ -977,8 +977,8 @@ else
       have_alitrdclusterizer_r42837=no
       AC_MSG_CHECKING([checking for AliTRDclusterizer r42837])
       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDclusterizer.h>], 
-                                         [AliTRDclusterizer::SetSkipTransform()]);],
-                                         [have_alitrdclusterizer_r442837=yes],
+                                         [AliTRDclusterizer o; o.SetSkipTransform()]);],
+                                         [have_alitrdclusterizer_r42837=yes],
                                          [AC_DEFINE(HAVE_NOT_ALITRD_CLUSTERIZER_r42837)])
       AC_MSG_RESULT([$have_alitrdclusterizer_r42837])
     fi
