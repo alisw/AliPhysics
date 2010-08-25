@@ -1041,7 +1041,7 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
   if(!fRePEBE[sd]||!fImPEBE[sd])
   {
    cout<<endl;
-   cout<<" WARNING (MH): "<<Form("!fRePEBE[%d]||!fImPEBE[%d]",sd)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+   cout<<" WARNING (MH): "<<Form("!fRePEBE[%d]||!fImPEBE[%d]",sd,sd)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
    cout<<endl;
    exit(0);   
   }
@@ -1050,7 +1050,7 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
    if(!fOverlapEBE[fs][sd]||!fOverlapEBE[fs][sd])
    {
     cout<<endl;
-    cout<<" WARNING (MH): "<<Form("!fOverlapEBE[%d][%d]||!fOverlapEBE[%d][%d]",fs,sd)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+    cout<<" WARNING (MH): "<<Form("!fOverlapEBE[%d][%d]||!fOverlapEBE[%d][%d]",fs,sd,fs,sd)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
     cout<<endl;
     exit(0);   
    }
