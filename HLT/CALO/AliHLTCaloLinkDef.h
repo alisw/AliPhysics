@@ -18,5 +18,6 @@
 #pragma link C++ class AliHLTCaloRawAnalyzerCrude+;
 #pragma link C++ class AliHLTCaloRawAnalyzerComponentv3+;
 #pragma link C++ class AliHLTCaloDigitMakerComponent;
+#pragma link C++ class AliHLTCaloRecoParamHandler+;
 
 #endif
