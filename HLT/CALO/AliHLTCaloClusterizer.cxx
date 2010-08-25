@@ -236,7 +236,8 @@ AliHLTCaloClusterizer::AreNeighbours(AliHLTCaloDigitDataStruct* digit1,
         Int_t coldiff = TMath::Abs( digit1->fX - digit2->fX );
 
         // As in the offline code we define neighbours as cells that share an edge, a corner is not  enough
-        if (( coldiff <= 1   &&  rowdiff == 0 ) || ( coldiff == 0 &&  rowdiff <= 1 ))
+	//        if (( coldiff <= 1   &&  rowdiff == 0 ) || ( coldiff == 0 &&  rowdiff <= 1 ))
+        if (( coldiff <= 1) || ( rowdiff <= 1 ))
         {
             // Check also for time
             if (TMath::Abs(digit1->fTime - digit2->fTime ) < fEmcTimeGate)
