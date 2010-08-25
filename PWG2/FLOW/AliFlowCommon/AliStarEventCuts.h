@@ -46,7 +46,7 @@ class AliStarEventCuts : public TNamed {
   void SetNumberOfTracksMax(const Int_t value) {fNumberOfTracksMax=value;fCutNumberOfTracks=kTRUE;}
   void SetNumberOfTracksMin(const Int_t value) {fNumberOfTracksMin=value;fCutNumberOfTracks=kTRUE;}
 
-  const Int_t GetRunIDMax() const {return fRunIDMax;}
+  Int_t GetRunIDMax() const {return fRunIDMax;}
   Int_t GetRunIDMin() const {return fRunIDMin;}
   Int_t GetEventNumberMax() const {return fEventNumberMax;}
   Int_t GetEventNumberMin() const {return fEventNumberMin;}
