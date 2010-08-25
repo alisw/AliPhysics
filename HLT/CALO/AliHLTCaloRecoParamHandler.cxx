@@ -18,8 +18,11 @@
 #include "AliCDBManager.h"
 #include "TObjArray.h"
 
+ClassImp(AliHLTCaloRecoParamHandler);
+
 AliHLTCaloRecoParamHandler::AliHLTCaloRecoParamHandler ( TString det ) : 
 AliHLTCaloConstantsHandler(det)
+,AliHLTLogging()
 ,fLogWeight(4.5)
 ,fRecPointMemberThreshold(0.01)
 ,fRecPointThreshold(0.1)
@@ -54,12 +57,13 @@ Int_t AliHLTCaloRecoParamHandler::GetParametersFromCDB()
 	  
 	    if(!fRecoParamPtr)
 	    {
+	       HLTError("can not fetch object reconstruction parameters from \"%s\"", fRecoParamPath.GetPath().Data());
 	       return -1;
 	    }
 	}
       else
 	{
-//	    HLTError("can not fetch object \"%s\" from OCDB", path);
+	    HLTError("can not fetch object \"%s\" from OCDB", fRecoParamPath.GetPath().Data());
 	    return -1;
 	}
     }

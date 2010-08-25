@@ -18,10 +18,11 @@
 #define ALIHLTCALORECOPARAMHANDLER_H
 
 #include "AliHLTCaloConstantsHandler.h"
+#include "AliHLTLogging.h"
 #include "AliCDBPath.h"
 
 class AliDetectorRecoParam;
-class AliHLTCaloRecoParamHandler: public AliHLTCaloConstantsHandler
+class AliHLTCaloRecoParamHandler: public AliHLTCaloConstantsHandler, public AliHLTLogging
   {
   public:
     /** Constructor, */
@@ -64,6 +65,7 @@ class AliHLTCaloRecoParamHandler: public AliHLTCaloConstantsHandler
       /** Assignment operator, not implemented */
       AliHLTCaloRecoParamHandler & operator = (const AliHLTCaloRecoParamHandler &);  //COMMENT
 
+      ClassDef(AliHLTCaloRecoParamHandler, 0);
 	
   };
 

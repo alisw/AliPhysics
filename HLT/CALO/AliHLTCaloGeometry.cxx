@@ -28,6 +28,7 @@ ClassImp(AliHLTCaloGeometry);
 
 AliHLTCaloGeometry::AliHLTCaloGeometry(TString det) :  
   AliHLTCaloConstantsHandler(det)
+  ,AliHLTLogging()
 {  
   //see header file for class documentation
 }

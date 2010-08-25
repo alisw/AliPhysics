@@ -17,7 +17,7 @@
 class AliHLTCaloCoordinate;
 class AliHLTCaloGlobalCoordinate;
 
-class AliHLTCaloGeometry : public AliHLTCaloConstantsHandler
+class AliHLTCaloGeometry : public AliHLTCaloConstantsHandler, public AliHLTLogging
 {
 
  public:
@@ -33,7 +33,8 @@ class AliHLTCaloGeometry : public AliHLTCaloConstantsHandler
   /** Default constructor, not implemented */
    AliHLTCaloGeometry();   //COMMENT
 
-
+   ClassDef(AliHLTCaloGeometry, 0);
+   
 };
 
 #endif
