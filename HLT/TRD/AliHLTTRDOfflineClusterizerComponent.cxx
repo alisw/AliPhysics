@@ -99,7 +99,10 @@ int AliHLTTRDOfflineClusterizerComponent::SetParams()
   int iResult =  AliHLTTRDClusterizerComponent::SetParams();
 
   // here we need the coordinate transformation as we want to ship full flavoured clusters
+#ifndef HAVE_NOT_ALITRD_CLUSTERIZER_r42837
   fClusterizer->SetSkipTransform(kFALSE);
+#endif
+  return iResult;
 }
 
 

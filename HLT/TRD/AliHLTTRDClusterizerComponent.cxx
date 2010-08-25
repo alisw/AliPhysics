@@ -641,7 +641,9 @@ int AliHLTTRDClusterizerComponent::SetParams()
     
     // we transfer clusters that do no contain the XYZ coodrinates (AliHLTTRDCluster),
     // thus this coordinate transformation ist useless
+#ifndef HAVE_NOT_ALITRD_CLUSTERIZER_r42837
     fClusterizer->SetSkipTransform();
+#endif
   }
   if(fProcessTracklets) recoOptions += ",tp";
   else  recoOptions += ",!tp";
