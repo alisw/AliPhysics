@@ -199,7 +199,7 @@ int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& /*evtDa
   // see header file for class documentation
   int iResult=0;
   if ((fPrescalar==0 || ((GetEventCount())%fPrescalar)==0) &&
-      GetEventCount()>=fFirstEvent) {
+      GetEventCount()>=(int)fFirstEvent) {
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
        pBlock!=NULL; 
        pBlock=GetNextInputBlock()) {
