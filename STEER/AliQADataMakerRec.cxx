@@ -386,6 +386,7 @@ void AliQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
     TH1 * histo = NULL ; 
     while ( (histo = dynamic_cast<TH1*> (next())) ) {
       histo->Reset("ICE") ;
+      histo->ResetStats() ;
     }
   }
 }
