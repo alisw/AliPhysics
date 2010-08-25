@@ -68,6 +68,7 @@
 
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDeventInfo.h"
+#include "AliTRDinfoGen.h"
 #include "AliTRDcheckDET.h"
 
 #include <cstdio>
@@ -80,8 +81,6 @@ AliTRDcheckDET::AliTRDcheckDET():
   AliTRDrecoTask()
   ,fEventInfo(NULL)
   ,fTriggerNames(NULL)
-  ,fReconstructor(NULL)
-  ,fGeo(NULL)
   ,fFlags(0)
 {
   //
@@ -95,8 +94,6 @@ AliTRDcheckDET::AliTRDcheckDET(char* name):
   AliTRDrecoTask(name, "Basic TRD data checker")
   ,fEventInfo(NULL)
   ,fTriggerNames(NULL)
-  ,fReconstructor(NULL)
-  ,fGeo(NULL)
   ,fFlags(0)
 {
   //
@@ -104,9 +101,6 @@ AliTRDcheckDET::AliTRDcheckDET(char* name):
   //
   DefineInput(2, AliTRDeventInfo::Class());
 
-  fReconstructor = new AliTRDReconstructor;
-  fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
-  fGeo = new AliTRDgeometry;
   InitFunctorList();
 }
 
@@ -117,8 +111,6 @@ AliTRDcheckDET::~AliTRDcheckDET(){
   // Destructor
   // 
   if(fTriggerNames) delete fTriggerNames;
-  delete fReconstructor;
-  delete fGeo;
 }
 
 //_______________________________________________________
@@ -789,12 +781,13 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
 
   if(DebugLevel() > 2){
     AliTRDseedV1 *tracklet = NULL;
+    AliTRDgeometry *geo(AliTRDinfoGen::Geometry());
     Int_t sector = -1, stack = -1, detector;
     for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
       if(!(tracklet = fkTrack->GetTracklet(itl)) || !(tracklet->IsOK())) continue;
       detector = tracklet->GetDetector();
-      sector = fGeo->GetSector(detector);
-      stack = fGeo->GetStack(detector);
+      sector = geo->GetSector(detector);
+      stack = geo->GetStack(detector);
       break;
     }
     (*DebugStream()) << "NTrackletsTrack"
@@ -895,7 +888,7 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
   AliTRDpadPlane *pp;  
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
     if((tracklet = fkTrack->GetTracklet(il)) && tracklet->IsOK()){
-      tracklet->SetReconstructor(fReconstructor);
+      tracklet->SetReconstructor(AliTRDinfoGen::Reconstructor());
       nFound++;
     }
   }
@@ -939,11 +932,12 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
     AliTRDtrackerV1::FitKalman(&copyTrack, NULL, kTRUE, 6, pointsInward);
     memcpy(points, pointsOutward, sizeof(AliTrackPoint) * AliTRDgeometry::kNlayer);
   }
+  AliTRDgeometry *geo(AliTRDinfoGen::Geometry());
   for(Int_t il = 0; il < AliTRDgeometry::kNlayer; il++){
     y = points[il].GetY();
     z = points[il].GetZ();
-    if((stack = fGeo->GetStack(z, il)) < 0) continue; // Not findable
-    pp = fGeo->GetPadPlane(il, stack);
+    if((stack = geo->GetStack(z, il)) < 0) continue; // Not findable
+    pp = geo->GetPadPlane(il, stack);
     ymin = pp->GetCol0() + epsilon;
     ymax = pp->GetColEnd() - epsilon; 
     zmin = pp->GetRowEnd() + epsilon; 
@@ -1230,13 +1224,6 @@ TH1 *AliTRDcheckDET::PlotNTracksSector(const AliTRDtrackV1 *track){
   return h;
 }
 
-
-//________________________________________________________
-void AliTRDcheckDET::SetRecoParam(AliTRDrecoParam *r)
-{
-
-  fReconstructor->SetRecoParam(r);
-}
 
 //________________________________________________________
 void AliTRDcheckDET::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 * const tracklet, AliTRDcluster * const c)

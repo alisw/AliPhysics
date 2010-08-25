@@ -37,7 +37,6 @@
 #include "AliTrackReference.h"
 
 #include "AliTRDtrackV1.h"
-#include "AliTRDReconstructor.h"
 #include "AliTRDpidUtil.h"
 #include "AliTRDpidRefMakerNN.h"
 #include "AliTRDpidUtil.h"

@@ -72,10 +72,6 @@
 #include "AliPID.h"
 #include "AliLog.h"
 #include "AliESDtrack.h"
-#include "AliCDBManager.h"
-#include "AliCDBPath.h"
-#include "AliCDBEntry.h"
-#include "AliGeomManager.h"
 #include "AliMathBase.h"
 
 #include "AliTRDresolution.h"
@@ -87,6 +83,7 @@
 #include "AliTRDReconstructor.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDpidUtil.h"
+#include "AliTRDinfoGen.h"
 
 #include "info/AliTRDclusterInfo.h"
 
@@ -125,8 +122,6 @@ AliTRDresolution::AliTRDresolution()
   ,fIdxPlot(0)
   ,fIdxFrame(0)
   ,fPtThreshold(1.)
-  ,fReconstructor(NULL)
-  ,fGeo(NULL)
   ,fDBPDG(NULL)
   ,fGraphS(NULL)
   ,fGraphM(NULL)
@@ -149,8 +144,6 @@ AliTRDresolution::AliTRDresolution(char* name)
   ,fIdxPlot(0)
   ,fIdxFrame(0)
   ,fPtThreshold(1.)
-  ,fReconstructor(NULL)
-  ,fGeo(NULL)
   ,fDBPDG(NULL)
   ,fGraphS(NULL)
   ,fGraphM(NULL)
@@ -162,10 +155,6 @@ AliTRDresolution::AliTRDresolution(char* name)
   //
   // Default constructor
   //
-
-  fReconstructor = new AliTRDReconstructor();
-  fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
-  fGeo = new AliTRDgeometry();
 
   InitFunctorList();
   SetSegmentationLevel();
@@ -185,9 +174,6 @@ AliTRDresolution::~AliTRDresolution()
 
   if(fGraphS){fGraphS->Delete(); delete fGraphS;}
   if(fGraphM){fGraphM->Delete(); delete fGraphM;}
-  delete fGeo;
-  delete fReconstructor;
-  if(gGeoManager) delete gGeoManager;
   if(fCl){fCl->Delete(); delete fCl;}
   if(fMCcl){fMCcl->Delete(); delete fMCcl;}
 /*  if(fTrklt){fTrklt->Delete(); delete fTrklt;}
@@ -199,11 +185,6 @@ AliTRDresolution::~AliTRDresolution()
 void AliTRDresolution::UserCreateOutputObjects()
 {
   // spatial resolution
-
-  if(!fReconstructor){
-    fReconstructor = new AliTRDReconstructor();
-    fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
-  }
 
   AliTRDrecoTask::UserCreateOutputObjects();
   InitExchangeContainers();
@@ -232,17 +213,6 @@ void AliTRDresolution::UserExec(Option_t *opt)
   //
   // Execution part
   //
-
-  if(!IsInitGeom()){
-    // create geometry
-    AliCDBManager* ocdb = AliCDBManager::Instance();
-    AliCDBEntry* obj = ocdb->Get(AliCDBPath("GRP", "Geometry", "Data"));
-    AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
-    AliGeomManager::GetNalignable("TRD");
-    AliGeomManager::ApplyAlignObjsFromCDB("TRD"); 
-    fGeo = new AliTRDgeometry();
-    SetInitGeom();
-  }
 
   fCl->Delete();
   fMCcl->Delete();
@@ -343,6 +313,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
   Int_t sgm[3];
   Double_t covR[7], cov[3], dy[2], dz[2];
   Float_t pt, x0, y0, z0, dydx, dzdx;
+  const AliTRDgeometry *geo(AliTRDinfoGen::Geometry());
   AliTRDseedV1 *fTracklet(NULL);  TObjArray *clInfoArr(NULL);
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
@@ -391,8 +362,8 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       ((TH3S*)arr->At(1))->Fill(sgm[fSegmentLevel], dyz[0], dyz[1]);
   
       // Get z-position with respect to anode wire
-      Int_t istk = fGeo->GetStack(c->GetDetector());
-      AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
+      Int_t istk = geo->GetStack(c->GetDetector());
+      AliTRDpadPlane *pp = geo->GetPadPlane(ily, istk);
       Float_t row0 = pp->GetRow0();
       Float_t d  =  row0 - zt + pp->GetAnodeWireOffset();
       d -= ((Int_t)(2 * d)) / 2.0;
@@ -918,8 +889,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       << "cov=" << &cCOV
       << "\n";
   }
-
-  AliTRDReconstructor rec;
+  AliTRDgeometry *geo(AliTRDinfoGen::Geometry());
   AliTRDseedV1 *fTracklet(NULL); TObjArray *clInfoArr(NULL);
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     if(!(fTracklet = fkTrack->GetTracklet(ily)))/* ||
@@ -1013,7 +983,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     AliTRDseedV1 tt(*fTracklet);
     tt.SetZref(0, z0 - (x0-xAnode)*dzdx0);
     tt.SetZref(1, dzdx0); 
-    tt.SetReconstructor(&rec);
+    tt.SetReconstructor(AliTRDinfoGen::Reconstructor());
     tt.Fit(1);
     x= tt.GetX();y= tt.GetY();z= tt.GetZ();
     dydx = tt.GetYfit(1);
@@ -1049,7 +1019,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
         << "\n";
     }
 
-    AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, AliTRDgeometry::GetStack(sgm[2]));
+    AliTRDpadPlane *pp = geo->GetPadPlane(ily, AliTRDgeometry::GetStack(sgm[2]));
     Float_t zr0 = pp->GetRow0() + pp->GetAnodeWireOffset();
     //Double_t exb = AliTRDCommonParam::Instance()->GetOmegaTau(1.5);
 
@@ -2964,14 +2934,6 @@ void AliTRDresolution::GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm
 
   xM += 2*(mpv - xm);
   while((fx = f->Eval(xM))>.5*max) xM += dx;
-}
-
-
-//________________________________________________________
-void AliTRDresolution::SetRecoParam(AliTRDrecoParam *r)
-{
-
-  fReconstructor->SetRecoParam(r);
 }
 
 

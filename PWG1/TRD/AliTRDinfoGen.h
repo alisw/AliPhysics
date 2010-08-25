@@ -26,6 +26,8 @@ class AliESDtrackCuts;
 class TObjArray;
 class TString;
 class TTreeSRedirector;
+class AliTRDReconstructor;
+class AliTRDgeometry;
 class AliTRDinfoGen : public AliAnalysisTaskSE
 {
 public:
@@ -54,6 +56,8 @@ public:
   // temporary until check with AliAnalysisTaskSE collision selection mechanism
   Bool_t  IsInitOCDB() const {return TestBit(kOCDB);}
   Bool_t  IsCollision() const {return TestBit(kCollision);}
+  static const AliTRDReconstructor* Reconstructor() {return fgReconstructor;}
+  static AliTRDgeometry*      Geometry() {return fgGeo;}
   void    SetInitOCDB(Bool_t set=kTRUE) {SetBit(kOCDB, set);}
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
   void    SetLocalEvSelection(AliTRDeventCuts */*cut*/){;} 
@@ -87,7 +91,9 @@ private:
   static const Int_t   fgkNclTPC;   // N clusters TPC
   static const Float_t fgkPt;       // min. pt
   static const Float_t fgkEta;      // eta range
-  
+  static AliTRDReconstructor   *fgReconstructor; // single instance of TRD reconstructor used by all tasks
+  static AliTRDgeometry        *fgGeo;           // single instance of TRD geometry used by all tasks
+
   AliTRDinfoGen(const AliTRDinfoGen&);
   AliTRDinfoGen& operator=(const AliTRDinfoGen&);
   TTreeSRedirector* DebugStream();
@@ -109,6 +115,6 @@ private:
   TObjArray        *fContainer;      //! container to store results
   TTreeSRedirector *fDebugStream;    //! debug stream
 
-  ClassDef(AliTRDinfoGen, 6)         // entry to TRD analysis train
+  ClassDef(AliTRDinfoGen, 7)         // entry to TRD analysis train
 };
 #endif

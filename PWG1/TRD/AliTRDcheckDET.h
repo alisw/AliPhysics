@@ -22,8 +22,6 @@ class AliExternalTrackParam;
 class AliTRDcluster;
 class AliTRDseedV1;
 class AliTRDgeometry;
-class AliTRDReconstructor;
-class AliTRDrecoParam;
 class AliTRDeventInfo;
 class AliTRDcheckDET : public AliTRDrecoTask{
 public:
@@ -99,7 +97,6 @@ public:
   
   Bool_t IsUsingClustersOutsideChamber() const {return TESTBIT(fFlags, kUseClustersOutsideChamber);}
   void UseClustersOutsideChamber(Bool_t b = kTRUE) {if(b) SETBIT(fFlags, kUseClustersOutsideChamber); else CLRBIT(fFlags, kUseClustersOutsideChamber);}
-  void SetRecoParam(AliTRDrecoParam *r);
 
 private:
   enum{
@@ -118,10 +115,8 @@ private:
 
   AliTRDeventInfo *fEventInfo;         //! ESD Header
   TMap *fTriggerNames;                 //! Containing trigger class names
-  AliTRDReconstructor *fReconstructor; // TRD Reconstructor
-  AliTRDgeometry *fGeo;                // TRD Geometry object
   UChar_t fFlags;                      // Flags for setting
     
-  ClassDef(AliTRDcheckDET, 1)
+  ClassDef(AliTRDcheckDET, 2)
 };
 #endif

@@ -45,7 +45,10 @@
 
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
+#include "AliGeomManager.h"
 #include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliESDInputHandler.h"
@@ -69,6 +72,8 @@
 #include <iostream>
 #include <memory>
 
+#include "AliTRDReconstructor.h"
+#include "AliTRDrecoParam.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDtrackerV1.h"
 #include "AliTRDgeometry.h"
@@ -96,7 +101,8 @@ const Float_t AliTRDinfoGen::fgkTrkDCAz   = 10.;
 const Int_t   AliTRDinfoGen::fgkNclTPC    = 70;
 const Float_t AliTRDinfoGen::fgkPt        = 0.2;
 const Float_t AliTRDinfoGen::fgkEta       = 0.9;
-
+AliTRDReconstructor* AliTRDinfoGen::fgReconstructor(NULL);
+AliTRDgeometry* AliTRDinfoGen::fgGeo(NULL);
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen()
   :AliAnalysisTaskSE()
@@ -159,7 +165,8 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
 AliTRDinfoGen::~AliTRDinfoGen()
 {
 // Destructor
-  
+  if(fgGeo) delete fgGeo;
+  if(fgReconstructor) delete fgReconstructor;
   if(fDebugStream) delete fDebugStream;
   if(fEvTrigger) delete fEvTrigger;
   if(fV0Cut) delete fV0Cut;
@@ -281,14 +288,45 @@ void AliTRDinfoGen::UserExec(Option_t *){
     AliError("Failed retrieving ESD event");
     return;
   }
-  if(!IsInitOCDB()){
+  // WARNING
+  // This part may conflict with other detectors !!
+  if(!IsInitOCDB()){ 
     AliInfo("Initializing OCDB ...");
     // prepare OCDB access
     AliCDBManager* ocdb = AliCDBManager::Instance();
     ocdb->SetDefaultStorage(fOCDB.Data());
     ocdb->SetRun(fESDev->GetRunNumber());
+    // create geo manager
+    AliCDBEntry* obj = ocdb->Get(AliCDBPath("GRP", "Geometry", "Data"));
+    AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
+    AliGeomManager::GetNalignable("TRD");
+    AliGeomManager::ApplyAlignObjsFromCDB("TRD");
+    fgGeo = new AliTRDgeometry;
+
+    // set no of time bins
     AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS());
     AliInfo(Form("OCDB :  Loc[%s] Run[%d] TB[%d]", fOCDB.Data(), ocdb->GetRun(), AliTRDtrackerV1::GetNTimeBins()));
+
+    AliInfo(Form("Initializing TRD reco params for EventSpecie[%d]...",
+      fESDev->GetEventSpecie()));
+    fgReconstructor = new AliTRDReconstructor();
+    obj = ocdb->Get(AliCDBPath("TRD", "Calib", "RecoParam"));
+    obj->PrintMetaData();
+    TObjArray *recos((TObjArray*)obj->GetObject());
+    for(Int_t ireco(0); ireco<recos->GetEntriesFast(); ireco++){
+      AliTRDrecoParam *reco((AliTRDrecoParam*)recos->At(ireco));
+      Int_t es(reco->GetEventSpecie());
+      if(!(es&fESDev->GetEventSpecie())) continue;
+      fgReconstructor->SetRecoParam(reco);
+      TString s;
+      if(es&AliRecoParam::kLowMult) s="LowMult";
+      else if(es&AliRecoParam::kHighMult) s="HighMult";
+      else if(es&AliRecoParam::kCosmic) s="Cosmic";
+      else if(es&AliRecoParam::kCalib) s="Calib";
+      else s="Unknown";
+      AliInfo(Form("Using reco params for %s", s.Data()));
+      break;
+    }
     SetInitOCDB();
   }
 

@@ -14,6 +14,7 @@
 #include "AliTRDtrackV1.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDpidRefMaker.h"
+#include "AliTRDinfoGen.h"
 #include "info/AliTRDv0Info.h"
 #include "info/AliTRDpidInfo.h"
 
@@ -36,7 +37,6 @@ ClassImp(AliTRDpidRefMaker)
 //________________________________________________________________________
 AliTRDpidRefMaker::AliTRDpidRefMaker() 
   :AliTRDrecoTask()
-  ,fReconstructor(NULL)
   ,fV0s(NULL)
   ,fData(NULL)
   ,fInfo(NULL)
@@ -56,7 +56,6 @@ AliTRDpidRefMaker::AliTRDpidRefMaker()
 //________________________________________________________________________
 AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title) 
   :AliTRDrecoTask(name, title)
-  ,fReconstructor(NULL)
   ,fV0s(NULL)
   ,fData(NULL)
   ,fInfo(NULL)
@@ -71,8 +70,6 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
   // Default constructor
   //
 
-  fReconstructor = new AliTRDReconstructor();
-  fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
   memset(fdEdx, 0, 10*sizeof(Float_t));
   memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
 
@@ -86,7 +83,6 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
 AliTRDpidRefMaker::~AliTRDpidRefMaker() 
 {
   if(fPIDdataArray) delete fPIDdataArray;
-  if(fReconstructor) delete fReconstructor;
 }
 
 //________________________________________________________________________
@@ -291,7 +287,7 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo 
   case kRec:
     { 
       AliTRDtrackV1 *trackTRD = track->GetTrack();
-      trackTRD -> SetReconstructor(fReconstructor);
+      trackTRD -> SetReconstructor(AliTRDinfoGen::Reconstructor());
       //fReconstructor -> SetOption("nn");
       trackTRD -> CookPID();
       for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){

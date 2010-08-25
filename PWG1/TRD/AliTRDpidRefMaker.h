@@ -28,7 +28,6 @@
 
 class TTree;
 class TObjArray;
-class AliTRDReconstructor;
 class AliTRDseedV1;
 class AliTRDtrackInfo;
 class AliTRDpidInfo;
@@ -76,7 +75,6 @@ protected:
   virtual void     LinkPIDdata();
   virtual void     Fill();
 
-  AliTRDReconstructor *fReconstructor;  // reconstructor needed for recalculation the PID
   TObjArray     *fV0s;                  //! v0 array
   TTree         *fData;                 //! dEdx-P data
   TObjArray     *fInfo;                 //! list of PID info
@@ -94,7 +92,7 @@ private:
 
   Float_t        fPthreshold;            // momentum threshold [GeV/c]
 
-  ClassDef(AliTRDpidRefMaker, 3); // TRD PID reference  maker base class
+  ClassDef(AliTRDpidRefMaker, 4); // TRD PID reference  maker base class
 };
 
 #endif

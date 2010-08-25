@@ -25,8 +25,6 @@ class TF1;
 class TGraphErrors;
 class TObjArray;
 class TDatabasePDG;
-class AliTRDReconstructor;
-class AliTRDgeometry;
 class AliTRDrecoParam;
 class AliTRDseedV1;
 class AliTRDtrackInfo;
@@ -50,7 +48,6 @@ public:
   enum ETRDresolutionSteer {
     kVerbose  = BIT(18)
     ,kVisual  = BIT(19)
-    ,kGeom    = BIT(20)
   };
   enum ETRDresolutionOutSlots {
      kClToTrk    = 2
@@ -75,7 +72,6 @@ public:
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
   void    UserExec(Option_t * opt);
   void    InitExchangeContainers();
-  Bool_t  IsInitGeom() const {return TestBit(kGeom);}
   Bool_t  IsVerbose() const {return TestBit(kVerbose);}
   Bool_t  IsVisual() const {return TestBit(kVisual);}
   Bool_t  PostProcess();
@@ -89,8 +85,6 @@ public:
 
   void    SetSegmentationLevel(Int_t l=0);
   void    SetPtThreshold(Float_t pt) {fPtThreshold = pt;}
-  void    SetRecoParam(AliTRDrecoParam *r);
-  void    SetInitGeom(Bool_t set = kTRUE) {SetBit(kGeom, set);}
   void    SetVerbose(Bool_t v = kTRUE) {SetBit(kVerbose, v);}
   void    SetVisual(Bool_t v = kTRUE) {SetBit(kVisual, v);}
 
@@ -129,8 +123,6 @@ private:
   static UChar_t const fgNproj[kNviews]; //! number of projections per task
   static Int_t const  fgkNresYsegm[3];  //! number of segments for saving y resolution
   static Char_t const *fgkResYsegmName[3];//! name of segment for saving y resolution
-  AliTRDReconstructor *fReconstructor;  //! local reconstructor
-  AliTRDgeometry      *fGeo;            //! TRD geometry
   TDatabasePDG        *fDBPDG;          // PDG database
   TObjArray           *fGraphS;         //! result holder - sigma values
   TObjArray           *fGraphM;         //! result holder - mean values
@@ -141,6 +133,6 @@ private:
 /*  TObjArray           *fTrklt;  //! tracklet2track calib
   TObjArray           *fMCtrklt;//! tracklet2mc calib*/
   
-  ClassDef(AliTRDresolution, 7) // TRD tracking resolution task
+  ClassDef(AliTRDresolution, 8) // TRD tracking resolution task
 };
 #endif
