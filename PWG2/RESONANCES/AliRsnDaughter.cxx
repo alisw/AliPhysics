@@ -145,12 +145,12 @@ void AliRsnDaughter::Print(Option_t * const /*option*/) const
   
   if (fRef)
   {
-    AliInfo(Form(".......Px, Py, Pz, Pt (ref)   : %d %d %d %d", fP.X(), fP.Y(), fP.Z(), fP.Perp()));
+    AliInfo(Form(".......Px, Py, Pz, Pt (ref)   : %f %f %f %f", fP.X(), fP.Y(), fP.Z(), fP.Perp()));
   } else AliInfo("....... absent REF");
   
   if (fRefMC) 
   {
-    AliInfo(Form(".......Px, Py, Pz, Pt (ref MC): %d %d %d %d", fP.X(), fP.Y(), fP.Z(), fP.Perp())); 
+    AliInfo(Form(".......Px, Py, Pz, Pt (ref MC): %f %f %f %f", fP.X(), fP.Y(), fP.Z(), fP.Perp())); 
     AliInfo(Form(".......PDG code               : %d", fRefMC->Particle()->GetPdgCode()));
     AliInfo(Form(".......Mother (label)         : %d", fRefMC->Particle()->GetFirstMother()));
     AliInfo(Form(".......Mother (PDG code)      : %d", fMotherPDG));

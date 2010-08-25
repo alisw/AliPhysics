@@ -242,6 +242,12 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
     	  else fValue = 0;
       }
       break;
+    case kQInv:
+      {
+        TLorentzVector diff = mother->GetDaughter(0)->P() - mother->GetDaughter(1)->P();
+        fValue = diff.M();
+      }
+      break;
     default:
       AliWarning("Invalid value type");
       return kFALSE;

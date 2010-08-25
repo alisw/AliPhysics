@@ -220,17 +220,14 @@ THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
   
   // update the various axes using the definitions given in the array of axes here
   AliRsnValue *fcnAxis = 0;
-  TAxis       *axis = 0;
   for (Int_t i = 0; i < fSize; i++) 
   {
     fcnAxis = (AliRsnValue*)fAxisList.At(i);
-    axis    = fHSparse->GetAxis(i);
     if (!fcnAxis) {
-      axis->Set(1, -1E5, 1E5);
       AliError("Empty axis: doing unique bin betweeen -100000 and 100000");
       continue;
     }
-    axis->Set(fcnAxis->GetArray().GetSize() - 1, fcnAxis->GetArray().GetArray());
+    fHSparse->SetBinEdges(i, fcnAxis->GetArray().GetArray());
   }
 
   return fHSparse;
