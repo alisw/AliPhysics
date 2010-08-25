@@ -23,6 +23,7 @@ public:
   void DrawDeltaAlign();
   void UpdateOCDBTime0( AliTPCCalPad  *pad, Int_t ustartRun, Int_t uendRun,  const char* storagePath );
   static void UpdateAlign1D(Double_t delta, Double_t sigma, Int_t s1, Int_t s2, TMatrixD &param, TMatrixD &covar);
+  static void UpdateAlign1D(Double_t delta, Double_t sigma, Int_t s1, TMatrixD &param, TMatrixD &covar);
   static void BookAlign1D(TMatrixD &param, TMatrixD &covar, Double_t sigma, Double_t mean);
   void DumpOldAlignment(TTreeSRedirector *pcstream);
   void MakeNewAlignment(Bool_t add,TTreeSRedirector *pcstream=0);

@@ -2000,22 +2000,23 @@ void  AliTPCcalibAlign::MakeTree(const char *fname, Int_t minPoints){
 
       //
       //
-      TMatrixD * kpar = fSectorParamA;
-      TMatrixD * kcov = fSectorCovarA;
-      if (s1%36>=18){
-	kpar = fSectorParamC;
-	kcov = fSectorCovarC;
+      if (fSectorParamA){
+	TMatrixD * kpar = fSectorParamA;
+	TMatrixD * kcov = fSectorCovarA;
+	if (s1%36>=18){
+	  kpar = fSectorParamC;
+	  kcov = fSectorCovarC;
+	}
+	for (Int_t ipar=0;ipar<6;ipar++){
+	  Int_t isec1 = s1%18;
+	  Int_t isec2 = s2%18;
+	  if (s1>35) isec1+=18;
+	  if (s2>35) isec2+=18;	
+	  param6s1(ipar)=(*kpar)(6*isec1+ipar,0);
+	  param6s2(ipar)=(*kpar)(6*isec2+ipar,0);
+	}
       }
-      for (Int_t ipar=0;ipar<6;ipar++){
-	Int_t isec1 = s1%18;
-	Int_t isec2 = s2%18;
-	if (s1>35) isec1+=18;
-	if (s2>35) isec2+=18;	
-	param6s1(ipar)=(*kpar)(6*isec1+ipar,0);
-	param6s2(ipar)=(*kpar)(6*isec2+ipar,0);
-      }
-
-
+	
       Double_t dy=0, dz=0, dphi=0,dtheta=0;
       Double_t sy=0, sz=0, sphi=0,stheta=0;
       Double_t ny=0, nz=0, nphi=0,ntheta=0;
@@ -2641,11 +2642,12 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   // 3. Refit the track - out-in
   //                    - update the cluster delta histo lower part
   //
-  const Double_t kPtCut=1;    // pt
+  const Double_t kPtCut=1.0;    // pt
   const Double_t kSnpCut=0.2; // snp cut
   const Double_t kNclCut=120; //
   const Double_t kVertexCut=1;
   const Double_t kMaxDist=0.5; // max distance between tracks and cluster
+  const Double_t kEdgeCut = 2.5;
   if (!fCurrentTrack) return;
   if (!fCurrentFriendTrack) return;
   Float_t vertexXY=0,vertexZ=0;
@@ -2662,8 +2664,20 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   //
   AliExternalTrackParam trackIn  = *(fCurrentTrack->GetInnerParam());
   AliExternalTrackParam trackOut = *(fCurrentFriendTrack->GetTPCOut());
-  Double_t mass =    TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  static Double_t mass =    TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   //  
+  Int_t ncl=0;
+  for (Int_t irow=0; irow<160; irow++){
+    AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+    if (!cl) continue;
+    if (cl->GetX()<80) continue;
+    if (detector<0) detector=cl->GetDetector()%36;
+    if (detector!=cl->GetDetector()%36) return; // cluster from different sectors
+    // skip such tracks
+    ncl++;
+  }
+  if (ncl<kNclCut) return;
+
   Int_t nclIn=0,nclOut=0;
   Double_t xyz[3];
   //
@@ -2682,13 +2696,19 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};    
     Double_t cov[3]={0.01,0.,0.01}; 
     AliTPCseed::GetError(cl, &trackOut,cov[0],cov[2]);
+    Double_t dedge =  cl->GetX()*TMath::Tan(TMath::Pi()/18.)-TMath::Abs(trackOut.GetY());
     cov[0]+=1./(irow+1.); // bigger error at boundary
     cov[0]+=1./(160.-irow); // bigger error at boundary
     cov[2]+=1./(irow+1.); // bigger error at boundary
     cov[2]+=1./(160.-irow); // bigger error at boundary
+    cov[0]+=0.5/dedge;       // bigger error close to the boundary
+    cov[2]+=0.5/dedge;       // bigger error close to the boundary
     cov[0]*=cov[0];
     cov[2]*=cov[2];
     if (!AliTracker::PropagateTrackToBxByBz(&trackOut, r[0],mass,1.,kFALSE)) continue;
+    
+    if (TMath::Abs(dedge)<kEdgeCut) continue;
+
     if (TMath::Abs(cl->GetY()-trackOut.GetY())<kMaxDist){
       nclOut++;
       trackOut.Update(&r[1],cov);
@@ -2726,13 +2746,19 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};    
     Double_t cov[3]={0.01,0.,0.01}; 
     AliTPCseed::GetError(cl, &trackIn,cov[0],cov[2]);
+    Double_t dedge =  cl->GetX()*TMath::Tan(TMath::Pi()/18.)-TMath::Abs(trackIn.GetY());
     cov[0]+=1./(irow+1.); // bigger error at boundary
     cov[0]+=1./(160.-irow); // bigger error at boundary
     cov[2]+=1./(irow+1.); // bigger error at boundary
     cov[2]+=1./(160.-irow); // bigger error at boundary
+    cov[0]+=0.5/dedge;       // bigger error close to the boundary +-
+    cov[2]+=0.5/dedge;       // bigger error close to the boundary +-
     cov[0]*=cov[0];
     cov[2]*=cov[2];
     if (!AliTracker::PropagateTrackToBxByBz(&trackIn, r[0],mass,1.,kFALSE)) continue;
+    if (TMath::Abs(dedge)<kEdgeCut) continue;
+
+
     if (TMath::Abs(cl->GetY()-trackIn.GetY())<kMaxDist){
       nclIn++;
       trackIn.Update(&r[1],cov);
@@ -3074,7 +3100,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
 	    "vPosG.="<<&vPosG<<        // vertex position in global system
 	    "vPosL.="<<&vPosL<<        // vertex position in local  system
 	    "vImpact.="<<&vImpact<<   // track impact parameter
-	    "tofSignal="<<tofSignal<<   // tof signal
+	    //"tofSignal="<<tofSignal<<   // tof signal
 	    "tpcPosG.="<<&tpcPosG<<   // global position of track at the middle of fXmiddle
 	    "lphi="<<lphi<<             // expected local phi angle - if vertex at 0
 	    "gphi="<<gphi<<             // expected global phi if vertex at 0

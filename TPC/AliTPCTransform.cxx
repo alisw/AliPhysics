@@ -164,7 +164,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   Double_t xx[3];
   //  Apply Time0 correction - Pad by pad fluctuation
   //
-  x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
+  //x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
   //
   // Tranform from pad - time coordinate system to the rotated global (tracking) system
   //
@@ -304,6 +304,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   // simple caching non thread save
   static Double_t vdcorrectionTime=1;
+  static Double_t vdcorrectionTimeGY=0;
   static Double_t time0corrTime=0;
   static Int_t    lastStampT=-1;
   //
@@ -323,15 +324,13 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
     }
     //
     if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionGY()>0) {
-      Float_t xyzPad[3];
-      AliTPCROC::Instance()->GetPositionGlobal(sector, TMath::Nint(x[0]) ,TMath::Nint(x[1]), xyzPad);
       
-      Double_t corrGy= (1+(xyzPad[1])*AliTPCcalibDB::Instance()->
+      Double_t corrGy= AliTPCcalibDB::Instance()->
 			GetVDriftCorrectionGy(fCurrentTimeStamp, 
 					      AliTPCcalibDB::Instance()->GetRun(),
 					      sector%36>=18,
-					      fCurrentRecoParam->GetUseDriftCorrectionGY()));
-      vdcorrectionTime *=corrGy;
+					      fCurrentRecoParam->GetUseDriftCorrectionGY());
+      vdcorrectionTimeGY = corrGy;
     }
   }
 
@@ -345,7 +344,9 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector();
   Double_t sign = 1.;
   Double_t zwidth    = param->GetZWidth()*driftCorr;
-  if (AliTPCRecoParam:: GetUseTimeCalibration()) zwidth*=vdcorrectionTime;
+  Float_t xyzPad[3];
+  AliTPCROC::Instance()->GetPositionGlobal(sector, TMath::Nint(x[0]) ,TMath::Nint(x[1]), xyzPad);
+  if (AliTPCRecoParam:: GetUseTimeCalibration()) zwidth*=vdcorrectionTime*(1+xyzPad[1]*vdcorrectionTimeGY);
   Double_t padWidth  = 0;
   Double_t padLength = 0;
   Double_t    maxPad    = 0;

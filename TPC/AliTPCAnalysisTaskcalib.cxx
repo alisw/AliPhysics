@@ -42,7 +42,7 @@ AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib()
    fCalibJobs(0),
    fESD(0),
    fESDfriend(0),
-   fDebugOutputPath()
+   fDebugOutputPath("")
 {
   //
   // default constructor
@@ -56,7 +56,7 @@ AliTPCAnalysisTaskcalib::AliTPCAnalysisTaskcalib(const char *name)
    fCalibJobs(0),
    fESD(0),
    fESDfriend(0),
-   fDebugOutputPath()
+   fDebugOutputPath("")
 {
   //
   // Constructor
@@ -153,7 +153,9 @@ void AliTPCAnalysisTaskcalib::FinishTaskOutput()
   // on the slaves before sending data
   //
   Terminate("slave");
-  RegisterDebugOutput();
+  if(!fDebugOutputPath.IsNull()) { 
+    RegisterDebugOutput();
+  }
   
 }
 

@@ -645,13 +645,13 @@ void AliTPCcalibSummary::ProcessKryptonTime(Int_t run, Int_t timeStamp){
       krErr[isec]=0;
       gr=(TGraphErrors*)krArray->At(isec);
       if (gr) {
-	krMean[isec]=gr->Eval(timeStamp);
+	krMean[isec]=AliTPCcalibDButil::EvalGraphConst(gr,timeStamp);
 	AliTPCcalibDButil::GetNearest(gr, timeStamp,deltaT,gry);
 	krDist[isec]=deltaT;
       }     
       if (72+isec<krArray->GetEntries()) {
 	gr=(TGraphErrors*)krArray->At(72+isec);
-	if (gr) krErr[isec]=gr->Eval(timeStamp);
+	if (gr) krErr[isec]=AliTPCcalibDButil::EvalGraphConst(gr,timeStamp);
       }
     }
     krMean[72]= TMath::Median(36,krMean.GetMatrixArray());
@@ -694,16 +694,24 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
   //
   static Float_t  gainCosmic = 0;
   static Float_t  gainMIP = 0;
+  static Float_t  attachMIP = 0;
+  static Double_t dMIP=0; 
+  Double_t dummy=0;
   TObjArray * gainSplines = fCalibDB->GetTimeGainSplinesRun(irun);
   if (gainSplines) {
     TGraphErrors * graphMIP = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");
     TGraphErrors * graphCosmic = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL");
+    TGraphErrors * graphAttach = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_ATTACHMENT_BEAM_ALL");
     if (graphMIP) gainMIP = AliTPCcalibDButil::EvalGraphConst(graphMIP,timeStamp);
     if (graphCosmic) gainCosmic = AliTPCcalibDButil::EvalGraphConst(graphCosmic,timeStamp);
+    if (graphAttach) attachMIP = AliTPCcalibDButil::EvalGraphConst(graphAttach,timeStamp);
+    if (graphMIP)  AliTPCcalibDButil::GetNearest(graphMIP, timeStamp, dMIP,dummy);
   }
   // time dependence of gain
   (*fPcstream)<<"dcs"<<
     "gainMIP="<<gainMIP<<
+    "attachMIP="<<attachMIP<<
+    "dMIP="<<dMIP<<
     "gainCosmic="<<gainCosmic;     
 }
 
@@ -733,7 +741,7 @@ void AliTPCcalibSummary::ProcessAlign(Int_t run, Int_t timeStamp){
       }
       values[9*idet+ipar]=0;
       errs[9*idet+ipar]=0;
-      if (gr) values[9*idet+ipar]=gr->Eval(timeStamp);
+      if (gr) values[9*idet+ipar]=AliTPCcalibDButil::EvalGraphConst(gr,timeStamp);
       (*fPcstream)<<"dcs"<<
 	Form("%s=",grName.Data())<<values[9*idet+ipar];
       (*fPcstream)<<"align"<<
@@ -764,8 +772,8 @@ void AliTPCcalibSummary::ProcessDriftCERef(){
   static TVectorD vecALx(72);
   static TVectorD vecAChi2(72);
   //
-  static TVectorD vecQ(72);
-  static TVectorD vecQRef(72);
+  static TVectorD vecASide(4);
+  static TVectorD vecCSide(4);
   static Bool_t isCalc=kFALSE;
   
   TFile f("calPads.root");
@@ -789,7 +797,7 @@ void AliTPCcalibSummary::ProcessDriftCERef(){
     fstringG+="ly.fElements++";
     fstringG+="(lx.fElements-134.)++";  
     for (Int_t isec=0; isec<72; isec++){
-      TStatToolkit::FitPlane(tree,"2.64*dt", fstringG.Data(),Form("sector==%d",isec)+cutAll, chi2,npoints,param,covar,-1,0, 10000000, kFALSE);
+      TStatToolkit::FitPlane(tree,"0.264*dt", fstringG.Data(),Form("sector==%d",isec)+cutAll, chi2,npoints,param,covar,-1,0, 10000000, kFALSE);
       if (npoints<3) continue;
       printf("Sector=%d\n",isec);
       vec0[isec]=param[0];
@@ -797,22 +805,31 @@ void AliTPCcalibSummary::ProcessDriftCERef(){
       vecLx[isec]=param[2];
       sec[isec]=isec;
       vecN[isec]=npoints;
+      vecChi2[isec]=TMath::Sqrt(chi2/npoints);
 
-      TStatToolkit::FitPlane(tree,"2.64*CETmean.fElements", fstringG.Data(),Form("sector==%d",isec)+cutAll, chi2,npoints,param,covar,-1,0, 10000000, kFALSE);
+      TStatToolkit::FitPlane(tree,"0.264*CETmean.fElements", fstringG.Data(),Form("sector==%d",isec)+cutAll, chi2,npoints,param,covar,-1,0, 10000000, kFALSE);
       if (npoints<3) continue;
       printf("Sector=%d\n",isec);
       vecA0[isec]=param[0];
       vecALy[isec]=param[1];
       vecALx[isec]=param[2];
       vecAChi2[isec]=TMath::Sqrt(chi2/npoints);
-      tree->Draw("CETmean.fElements",Form("sector==%d",isec)+cutAll);
-      tree->Draw("CETmean.fElements/R.CETmean.fElements",Form("sector==%d",isec)+cutAll);
     }
     isCalc=kTRUE;
+    //
+    TString  fstringRef="";              // global fit
+    fstringRef+="gx.fElements++";
+    fstringRef+="gy.fElements++";  
+    fstringRef+="lx.fElements++";
+    TStatToolkit::FitPlane(tree,"0.264*dt", fstringG.Data(),"(sector%36)<18"+cutAll, chi2,npoints,vecASide,covar,-1,0, 10000000, kFALSE);
+    TStatToolkit::FitPlane(tree,"0.264*dt", fstringG.Data(),"(sector%36)>=18"+cutAll, chi2,npoints,vecCSide,covar,-1,0, 10000000, kFALSE);
+
   }
   (*fPcstream)<<"dcs"<<     // CE information
     "CETSector.="<<&sec<<    // sector numbers
-    //                      // fit in respect to reference
+    "CETRefA.="<<&vecASide<<   // diff to reference A side
+    "CETRefC.="<<&vecCSide<<   // diff to reference C side    
+    //                      // fit in respect to reference data
     "CETRef0.="<<&vec0<<    // offset change
     "CETRefY.="<<&vecLy<<   // slope y change - rad
     "CETRefX.="<<&vecLx<<   // slope x change - rad
@@ -882,6 +899,7 @@ void AliTPCcalibSummary::ProcessPulserRef(){
       vecALx[isec]=param[2];
       vecAChi2[isec]=TMath::Sqrt(chi2/npoints);
     }
+
     isCalc=kTRUE;
   }
   (*fPcstream)<<"dcs"<<     // Pulser information

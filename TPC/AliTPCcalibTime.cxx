@@ -1301,7 +1301,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   //
   // 3. Update alignment
   //
-  Int_t htime = fTime/3600; //time in hours
+  Int_t htime = (fTime-1800/2)/1800; //time bins in half of hours
   if (fAlignITSTPC->GetEntriesFast()<htime){
     fAlignITSTPC->Expand(htime*2+20);
   }
@@ -1320,7 +1320,12 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
     fAlignITSTPC->AddAt(align,htime);
   }
   align->AddTrackParams(&pITS,&pTPC);
-  align->SetTimeStamp(fTime);
+  Double_t averageTime =  fTime;
+  if (align->GetTimeStamp()>0&&align->GetNUpdates()>0){
+    averageTime=(align->GetTimeStamp()*align->GetNUpdates()+fTime)/(align->GetNUpdates()+1.);
+  }
+  align->SetTimeStamp(Int_t(averageTime));
+
   align->SetRunNumber(fRun );
   Float_t dca[2],cov[3];
   track->GetImpactParameters(dca,cov);
@@ -1392,6 +1397,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
+  const Int_t    kTime=900; // time in seconds
   //
   // 0. Apply standard cuts
   //
@@ -1451,7 +1457,8 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   //
   // 3. Update alignment
   //
-  Int_t htime = fTime/3600; //time in hours
+  //Int_t htime = fTime/3600; //time in hours
+  Int_t htime = (Int_t)(fTime-kTime)/1800; //time in half hour
   if (fAlignTRDTPC->GetEntriesFast()<htime){
     fAlignTRDTPC->Expand(htime*2+20);
   }
@@ -1469,7 +1476,16 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
     fAlignTRDTPC->AddAt(align,htime);
   }
   align->AddTrackParams(&pTRD,&pTPC);
-  align->SetTimeStamp(fTime);
+  //align->SetTimeStamp(fTime);
+  Double_t averageTime =  fTime;
+  if (align->GetTimeStamp()>0 && align->GetNUpdates()>0) {
+    averageTime = (((Double_t)fTime) + ((Double_t)align->GetTimeStamp())*align->GetNUpdates()) / (align->GetNUpdates() + 1.);
+    //printf("align->GetTimeStamp() %d, align->GetNUpdates() %d \n", align->GetTimeStamp(), align->GetNUpdates());
+  }
+  align->SetTimeStamp((Int_t)averageTime);
+
+  //printf("fTime %d, averageTime %d \n", fTime, (Int_t)averageTime);
+
   align->SetRunNumber(fRun );
   Float_t dca[2],cov[3];
   track->GetImpactParameters(dca,cov);
@@ -1536,6 +1552,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
+  const Int_t      kTime=900; // time in seconds
   //
   // -1. Make a TOF track-
   //     Clusters are not in friends - use alingment points
@@ -1616,7 +1633,8 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   //
   // 3. Update alignment
   //
-  Int_t htime = fTime/3600; //time in hours
+  //Int_t htime = fTime/3600; //time in hours
+  Int_t htime = (Int_t)(fTime-kTime)/1800; //time in half hour
   if (fAlignTOFTPC->GetEntriesFast()<htime){
     fAlignTOFTPC->Expand(htime*2+20);
   }
@@ -1639,7 +1657,16 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   if (TMath::Abs(dca[0])<kMaxDy){
     FillResHistoTPCTOF(&pTPC,&pTOF);
   }
-  align->SetTimeStamp(fTime);
+  //align->SetTimeStamp(fTime);
+  Double_t averageTime =  fTime;
+  if (align->GetTimeStamp()>0 && align->GetNUpdates()>0) {
+    averageTime = (((Double_t)fTime) + ((Double_t)align->GetTimeStamp())*align->GetNUpdates()) / (align->GetNUpdates() + 1.);
+    //printf("align->GetTimeStamp() %d, align->GetNUpdates() %d \n", align->GetTimeStamp(), align->GetNUpdates());
+  }
+  align->SetTimeStamp((Int_t)averageTime);
+
+  //printf("fTime %d, averageTime %d \n", fTime, (Int_t)averageTime);
+
   align->SetRunNumber(fRun );
   //
   Int_t nupdates=align->GetNUpdates();

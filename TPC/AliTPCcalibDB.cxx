@@ -243,7 +243,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fVoltageArray(0),
   fTemperatureArray(0),   //! array of temperature sensors - per run - Just for calibration studies
   fVdriftArray(0),         //! array of v drift interfaces
-  fDriftCorrectionArray(0),         //! array of v drift interfaces
+  fDriftCorrectionArray(0), //! array of v drift corrections
   fRunList(0),              //! run list - indicates try to get the run param 
   fDButil(0),
   fCTPTimeParams(0)
@@ -323,6 +323,7 @@ void AliTPCcalibDB::Update(){
   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
   fDButil = new AliTPCcalibDButil;   
   //
+
   entry          = GetCDBEntry("TPC/Calib/PadGainFactor");
   if (entry){
     //if (fPadGainFactor) delete fPadGainFactor;
@@ -1002,12 +1003,15 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
     fDButil->FilterSensor(press,kMinP,kMaxP,kMaxdP,kSigmaCut);
     if (press->GetFit()==0) accept=kFALSE;
   }
+
   if (press && temp &&accept){
     AliTPCCalibVdrift * vdrift = new AliTPCCalibVdrift(temp, press,0);
     fVdriftArray.AddAt(vdrift,run);
   }
+
   fDButil->FilterCE(120., 3., 4.,0);
   fDButil->FilterTracks(run, 10.,0);
+
 }
 
 
@@ -1777,6 +1781,9 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
   if (mode==1) {
     const Double_t kEpsilon=0.00000000001;
     const Double_t kdeltaT=360.; // 10 minutes
+    if(TMath::Abs(driftITS) < 12*kdeltaT) {
+      result = driftITS;
+    } else {
     wITS  = 64.*kdeltaT/(deltaITS +kdeltaT);
     wLT   = 16.*kdeltaT/(deltaLT  +kdeltaT);
     wP    = 0. *kdeltaT/(deltaP   +kdeltaT);
@@ -1789,6 +1796,9 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
     if (TMath::Abs(driftCE)<kEpsilon) wCE=0;  // invalid calibration
     if (wP+wITS+wLT+wCE<kEpsilon) return 0;
     result = (driftP*wP+driftITS*wITS+driftLT*wLT+driftCE*wCE)/(wP+wITS+wLT+wCE);
+   }
+   
+
   }
 
   return result;
@@ -1829,9 +1839,9 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   //
   // Get global y correction drift velocity correction factor
   // additive factor        vd = vdnom*(1+GetVDriftCorrectionGy *gy)
-  // Value etracted combining the vdrift correction using laser tracks and CE
+  // Value etracted combining the vdrift correction using laser tracks and CE or TPC-ITS
   // Arguments:
-  // mode determines the algorith how to combine the Laser Track, LaserCE
+  // mode determines the algorith how to combine the Laser Track, LaserCE or TPC-ITS
   // timestamp - timestamp
   // run       - run number
   // side      - the drift velocity gy correction per side (CE and Laser tracks)
@@ -1842,10 +1852,25 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   UpdateRunInformations(run,kFALSE);
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
   if (!array) return 0;
+  Double_t result=0;
+
+  // use TPC-ITS if present
+  TGraphErrors *gr= (TGraphErrors*)array->FindObject("ALIGN_ITSB_TPC_VDGY");
+  if(gr) { 
+    result = (gr->Eval(timeStamp));
+
+    // transform from [(cm/mus)/ m] to [1/cm]
+    result /= (fParam->GetDriftV()/1000000.);
+    result /= 100.;
+
+    //printf("result %e \n", result);
+    return result; 
+  }
+
+  // use laser if ITS-TPC not present
   TGraphErrors *laserA= (TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_A");
   TGraphErrors *laserC= (TGraphErrors*)array->FindObject("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_C");
   
-  Double_t result=0;
   if (laserA && laserC){
    result= (laserA->Eval(timeStamp)+laserC->Eval(timeStamp))*0.5;
   }
@@ -1855,6 +1880,8 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   if (laserC &&side==1){
     result = (laserC->Eval(timeStamp));
   }
+  //printf("laser result %e \n", -result/250.);
+
   return -result/250.; //normalized before
 }
 

@@ -192,6 +192,60 @@ void AliTPCkalmanAlign::UpdateAlign1D(Double_t delta, Double_t sigma, Int_t s1, 
   covXk2= (mat1-(matKk*matHk));
   covXk3 =  covXk2*covXk;          
   covXk = covXk3;  
+  Int_t nrows=covXk3.GetNrows();
+  
+  for (Int_t irow=0; irow<nrows; irow++)
+    for (Int_t icol=0; icol<nrows; icol++){
+      // rounding problems - make matrix again symteric
+      covXk(irow,icol)=(covXk3(irow,icol)+covXk3(icol,irow))*0.5; 
+    }
+}
+
+void AliTPCkalmanAlign::UpdateAlign1D(Double_t delta, Double_t sigma, Int_t s1, TMatrixD &vecXk, TMatrixD &covXk){
+  //
+  // Update 1D kalman filter - with one measurement
+  //
+  const Int_t knMeas=1;
+  const Int_t knElem=72;
+  TMatrixD mat1(72,72);            // update covariance matrix
+  TMatrixD matHk(1,knElem);        // vector to mesurement
+  TMatrixD vecYk(knMeas,1);        // Innovation or measurement residual
+  TMatrixD matHkT(knElem,knMeas);  // helper matrix Hk transpose
+  TMatrixD matSk(knMeas,knMeas);   // Innovation (or residual) covariance
+  TMatrixD matKk(knElem,knMeas);   // Optimal Kalman gain
+  TMatrixD covXk2(knElem,knElem);  // helper matrix
+  TMatrixD covXk3(knElem,knElem);  // helper matrix
+  TMatrixD vecZk(1,1);
+  TMatrixD measR(1,1);
+  vecZk(0,0)=delta;
+  measR(0,0)=sigma*sigma;
+  //
+  // reset matHk
+  for (Int_t iel=0;iel<knElem;iel++) 
+    for (Int_t ip=0;ip<knMeas;ip++) matHk(ip,iel)=0; 
+  //mat1
+  for (Int_t iel=0;iel<knElem;iel++) {
+    for (Int_t jel=0;jel<knElem;jel++) mat1(iel,jel)=0;
+    mat1(iel,iel)=1;
+  }
+  //
+  matHk(0, s1)=1;
+  vecYk = vecZk-matHk*vecXk;               // Innovation or measurement residual
+  matHkT=matHk.T(); matHk.T();
+  matSk = (matHk*(covXk*matHkT))+measR;    // Innovation (or residual) covariance
+  matSk.Invert();
+  matKk = (covXk*matHkT)*matSk;            //  Optimal Kalman gain
+  vecXk += matKk*vecYk;                    //  updated vector 
+  covXk2= (mat1-(matKk*matHk));
+  covXk3 =  covXk2*covXk;          
+  covXk = covXk3;  
+  Int_t nrows=covXk3.GetNrows();
+  
+  for (Int_t irow=0; irow<nrows; irow++)
+    for (Int_t icol=0; icol<nrows; icol++){
+      // rounding problems - make matrix again symteric
+      covXk(irow,icol)=(covXk3(irow,icol)+covXk3(icol,irow))*0.5; 
+    }
 }
 
 

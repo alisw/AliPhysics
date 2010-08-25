@@ -1607,16 +1607,26 @@ Int_t AliTPCcalibDButil::GetNearest(TGraph *graph, Double_t xref, Double_t &dx, 
   //
   // find the closest point to xref  in x  direction
   // return dx and value 
+  dx = 0;
+  y = 0;
+
+  if(!graph) return 0;
+  if(graph->GetN() < 1) return 0;
+
   Int_t index=0;
   index = TMath::BinarySearch(graph->GetN(), graph->GetX(),xref);
   if (index<0) index=0;
-  if (index>=graph->GetN()-1) index=graph->GetN()-2;
-  if (xref-graph->GetX()[index]>graph->GetX()[index]-xref) index++;
-  dx = xref-graph->GetX()[index];
+  if(graph->GetN()==1) {
+    dx = xref-graph->GetX()[index];
+  }
+  else {
+    if (index>=graph->GetN()-1) index=graph->GetN()-2;
+    if (xref-graph->GetX()[index]>graph->GetX()[index]-xref) index++;
+    dx = xref-graph->GetX()[index];
+  }
   y  = graph->GetY()[index];
   return index;
 }
-
 
 Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Double_t deltaT, Double_t deltaTLaser, Int_t valType){
   //
@@ -1721,7 +1731,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeS
   AliTPCcalibDButil::GetNearest(cosmicAll,timeStamp,dist,grY);
 
   Double_t t0= AliTPCcalibDButil::GetTriggerOffsetTPC(run,timeStamp, deltaT, deltaTLaser,valType);
-  Double_t vcosmic=  AliTPCcalibDButil::EvalGraphConst(cosmicAll, timeStamp);
+  Double_t vcosmic =  AliTPCcalibDButil::EvalGraphConst(cosmicAll, timeStamp);
   if (timeStamp>cosmicAll->GetX()[cosmicAll->GetN()-1])  vcosmic=cosmicAll->GetY()[cosmicAll->GetN()-1];
   if (timeStamp<cosmicAll->GetX()[0])  vcosmic=cosmicAll->GetY()[0];
   return  vcosmic-t0;
@@ -1831,12 +1841,12 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCLaserTracks(Double_t &dist, Int_t run, 
   grlaserA=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
   grlaserC=(TGraphErrors*)array->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_C");
   Double_t deltaY;
-  if (grlaserA) {
+  if (grlaserA && grlaserA->GetN()>0) {
     AliTPCcalibDButil::GetNearest(grlaserA,timeStamp,dist,deltaY);
     if (TMath::Abs(dist)>deltaT)  vlaserA= deltaY;
     else  vlaserA = AliTPCcalibDButil::EvalGraphConst(grlaserA,timeStamp);
   }
-  if (grlaserC) {
+  if (grlaserC && grlaserC->GetN()>0) {
     AliTPCcalibDButil::GetNearest(grlaserC,timeStamp,dist,deltaY);
     if (TMath::Abs(dist)>deltaT)  vlaserC= deltaY;
     else  vlaserC = AliTPCcalibDButil::EvalGraphConst(grlaserC,timeStamp);
@@ -1872,6 +1882,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCCE(Double_t &dist,Int_t run, Int_t time
   Double_t gry=0;
   Double_t corrA=0, corrC=0;
   Double_t timeA=0, timeC=0;
+  const Double_t kEpsilon = 0.00001;
   TGraph *graphA = (TGraph*)arrT->At(72);
   TGraph *graphC = (TGraph*)arrT->At(73);
   if (!graphA && !graphC) return 0.;
@@ -1880,6 +1891,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCCE(Double_t &dist,Int_t run, Int_t time
     timeA   = AliTPCcalibDButil::EvalGraphConst(graphA,timeStamp);
     Int_t mtime   =TMath::Nint((graphA->GetX()[0]+graphA->GetX()[graphA->GetN()-1])*0.5);
     ltime0A       = GetLaserTime0(run,mtime,TMath::Nint(deltaT),0);
+    if(ltime0A < kEpsilon) return 0;
     if (driftCalib) corrPTA =  driftCalib->GetPTRelative(timeStamp,0);
     corrA = (param->GetZLength(36)/(timeA*param->GetTSample()*(1.-ltime0A)-param->GetL1Delay()-0*param->GetZSigma()/param->GetDriftV()))/param->GetDriftV()-1;
     corrA-=corrPTA;
@@ -1889,7 +1901,8 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCCE(Double_t &dist,Int_t run, Int_t time
     timeC=AliTPCcalibDButil::EvalGraphConst(graphC,timeStamp);
     Int_t mtime=TMath::Nint((graphC->GetX()[0]+graphC->GetX()[graphC->GetN()-1])*0.5);
     ltime0C       = GetLaserTime0(run,mtime,TMath::Nint(deltaT),0);
-    if (driftCalib) corrPTC =  driftCalib->GetPTRelative(timeStamp,0);
+    if(ltime0C < kEpsilon) return 0;   
+if (driftCalib) corrPTC =  driftCalib->GetPTRelative(timeStamp,0);
     corrC = (param->GetZLength(54)/(timeC*param->GetTSample()*(1.-ltime0C)-param->GetL1Delay()-0*param->GetZSigma()/param->GetDriftV()))/param->GetDriftV()-1;
     corrC-=corrPTC;
   }
@@ -1911,6 +1924,7 @@ Double_t  AliTPCcalibDButil::GetVDriftTPCITS(Double_t &dist, Int_t run, Int_t ti
   TGraphErrors *graph=0;
   dist=0;
   if (!array) return 0;
+  //array->ls();
   graph = (TGraphErrors*)array->FindObject("ALIGN_ITSB_TPC_DRIFTVD");
   if (!graph) return 0;
   Double_t deltaY;
@@ -2211,13 +2225,23 @@ Double_t AliTPCcalibDButil::EvalGraphConst(TGraph * const graph, Double_t xref){
     printf("AliTPCcalibDButil::EvalGraphConst: 0 pointer\n");
     return 0;
   }
+
   if (graph->GetN()<1){
-    printf("AliTPCcalibDButil::EvalGraphConst: Empty graph");
+    printf("AliTPCcalibDButil::EvalGraphConst: Empty graph \n");
     return 0;
   }
+ 
+
   if (xref<graph->GetX()[0]) return graph->GetY()[0];
   if (xref>graph->GetX()[graph->GetN()-1]) return graph->GetY()[graph->GetN()-1]; 
-  return graph->Eval( xref);
+
+  printf("graph->Eval(graph->GetX()[0]) %f, graph->Eval(xref) %f \n",graph->Eval(graph->GetX()[0]), graph->Eval(xref));
+
+  if(graph->GetN()==1)
+    return graph->Eval(graph->GetX()[0]);
+
+
+  return graph->Eval(xref);
 }
 
 Float_t AliTPCcalibDButil::FilterSensor(AliDCSSensor * sensor, Double_t ymin, Double_t ymax, Double_t maxdy,  Double_t sigmaCut){
@@ -2544,9 +2568,18 @@ void AliTPCcalibDButil::FilterTracks(Int_t run, Double_t cutSigma, TTreeSRedirec
       arrT->AddAt(0,i);
       continue;
     }
-    TGraphErrors *graph2= FilterGraphMedianErr(graph,cutSigma,medianY);
-    if (!graph2) {
-      delete graph; arrT->AddAt(0,i); continue;
+    TGraphErrors *graph2 = NULL;
+    if(graph->GetN()<10) {
+      graph2 = new TGraphErrors(graph->GetN(),graph->GetX(),graph->GetY(),graph->GetEX(),graph->GetEY()); 
+      if (!graph2) {
+        delete graph; arrT->AddAt(0,i); continue;
+      }
+    } 
+    else {
+      graph2= FilterGraphMedianErr(graph,cutSigma,medianY);
+      if (!graph2) {
+        delete graph; arrT->AddAt(0,i); continue;
+      }
     }
     if (graph2->GetN()<1) {
       delete graph; arrT->AddAt(0,i); continue;
@@ -2825,7 +2858,8 @@ TMatrixD* AliTPCcalibDButil::MakeStatRelKalman(TObjArray * const array, Float_t 
       (*valArray[ipar])[naccept]=state[ipar];
     naccept++;
   }
-  if (naccept<2) return 0;
+  //if (naccept<2) return 0;
+  if (naccept<1) return 0;
   TMatrixD *pstat=new TMatrixD(9,3);
   TMatrixD &stat=*pstat;
   for (Int_t ipar=0; ipar<9; ipar++){
