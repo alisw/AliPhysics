@@ -1,6 +1,7 @@
 \chapter{A Quick Start}
 \label{quickstart}
 The \textit{ALICE flow package}\footnote{\texttt{http://alisoft.cern.ch/viewvc/trunk/PWG2/FLOW/?root=AliRoot .}} contains many different flow analysis methods and ways to read data. 
+\section{Quick On The Fly}
 The macro \texttt{Documentation/examples/runFlowSimple.C} 
  is a basic example of how the flow package works. 
 In this section we explain the main pieces of that macro.
@@ -27,8 +28,9 @@ instantiate two methods: the first  which calculates the flow versus the reactio
  \texttt{mcep->Init(); }
 \texttt{qc->Init();}\\
 \item
-To define the particles we are going to use as reference particles ("particles 
-used for the event plane determination") and the particles of interest (the particles of which we calculate the differential flow) we have to define two trackcut objects:\\
+To define the particles we are going to use as Reference Particles (RP's, particles 
+used for the {\bf Q} vector) and the Particles Of Interest (POI's, the particles of which 
+we calculate the differential flow) we have to define two trackcut objects:\\
 \texttt{AliFlowTrackSimpleCuts *cutsRP = new AliFlowTrackSimpleCuts();}\\
 \texttt{AliFlowTrackSimpleCuts *cutsPOI = new AliFlowTrackSimpleCuts();}\\
 \texttt{cutsPOI->SetPtMin(0.2);}\\
@@ -57,5 +59,8 @@ This concludes the analysis and now we can write the results into a file:\\
 \texttt{ TFile *outputFile = new TFile("AnalysisResults.root","RECREATE");}\\
 \texttt{ mcep->WriteHistograms();}\\
 \texttt{ qc->WriteHistograms();}\\
+
+\section{What is in the output file?}
+Now we have written the results into a file, but what is in there?
 
 \end{enumerate}
