@@ -4,7 +4,6 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
 #include "PWG1/TRD/AliTRDv0Monitor.h"
 #endif
 

@@ -78,7 +78,7 @@
 #include <EveDet/AliEveTRDTrackListEditor.h>
 
 #include <../PWG1/TRD/AliTRDrecoTask.h>
-#include <../PWG1/TRD/macros/AliTRDperformanceTrain.h>
+#include <../PWG1/TRD/AliTRDpwg1Helper.h>
 
 ClassImp(AliEveTRDTrackList)
 
@@ -264,7 +264,7 @@ void AliEveTRDTrackList::AddStandardContent()
 {
   // Adds standard macros to the macro list.
 
-  // Add your standard macros here, e.g.: 
+  // Add your standard macros here, e.g.:
   // To add a macro use:
   // AddMacro("$(ALICE_ROOT)/myFolder", "myMacroName.C");
   // -> If the file does not exist, nothing happens. So if you want to handle this,
@@ -279,10 +279,19 @@ void AliEveTRDTrackList::AddStandardContent()
     return;
   }
 
-  AliTRDrecoTask *task = 0x0;
-  TList *fPlots = 0x0;
-  for(Int_t it=2; it<NTRDQATASKS; it++){
-    TClass c(fgkTRDtaskClassName[it]);
+  const Char_t *fgkTRDPWG1taskClassName[AliTRDpwg1Helper::kNTRDQATASKS] = {
+    "AliTRDcheckESD"
+    ,"AliTRDinfoGen"
+    ,"AliTRDcheckDET"
+    ,"AliTRDefficiency"
+    ,"AliTRDresolution"
+    ,"AliTRDcheckPID"
+    ,"AliTRDv0Monitor"
+  };
+  AliTRDrecoTask *task(NULL);
+  TList *fPlots(NULL);
+  for(Int_t it=2; it<AliTRDpwg1Helper::kNTRDQATASKS; it++){
+    TClass c(fgkTRDPWG1taskClassName[it]);
     task = (AliTRDrecoTask*)c.New();
     task->SetMCdata(kFALSE);
     if(!(fPlots = task->GetPlotFunctors())){
@@ -297,13 +306,14 @@ void AliEveTRDTrackList::AddStandardContent()
     }
 
     // export task to CINT and add functions
-    gROOT->ProcessLine(Form("%s* %s = (%s*)%p;", fgkTRDtaskClassName[it], task->GetName(), fgkTRDtaskClassName[it], (void*)task));
+    gROOT->ProcessLine(Form("%s* %s = (%s*)%p;", fgkTRDPWG1taskClassName[it], task->GetName(), fgkTRDPWG1taskClassName[it], (void*)task));
     TIter iter(fPlots); TMethodCall *m = 0x0;
     while((m = dynamic_cast<TMethodCall*>(iter()))){
       AddMacroFast("", Form("%s->%s", task->GetName(), m->GetMethodName()), kSingleTrackHisto);
     }
   }
 }
+
 
 //______________________________________________________
 Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TList* procIterator)

@@ -2,7 +2,7 @@
 #include "TError.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
+#include "PWG1/TRD/AliTRDpwg1Helper.h"
 #include "PWG1/TRD/AliTRDefficiency.h"
 #include "PWG1/TRD/AliTRDefficiencyMC.h"
 #include "PWG1/TRD/AliTRDmultiplicity.h"
@@ -22,7 +22,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     
 
   // TRD combined tracking efficiency
-  if(mgr->GetMCtruthEventHandler() && TSTBIT(map, kEfficiencyMC)) {
+  if(mgr->GetMCtruthEventHandler() && TESTBIT(map, AliTRDpwg1Helper::kEfficiencyMC)) {
     mgr->AddTask(eff = new AliTRDefficiencyMC((char*)"TRDefficiencyMC"));
     eff->SetDebugLevel(0);
     //AliLog::SetClassDebugLevel("AliTRDefficiencyMC", 5);  
@@ -34,7 +34,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
   }
 
   // TRD single track selection
-  if(!(TSTBIT(map, kMultiplicity))) return;
+  if(!(TESTBIT(map, AliTRDpwg1Helper::kMultiplicity))) return;
 
   mgr->AddTask(eff = new AliTRDmultiplicity((char*)"TRDmultiplicity"));
   eff->SetDebugLevel(0);

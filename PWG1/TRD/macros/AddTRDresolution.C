@@ -5,7 +5,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "TRD/AliTRDgeometry.h"
-#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
+#include "PWG1/TRD/AliTRDpwg1Helper.h"
 #include "PWG1/TRD/AliTRDresolution.h"
 #include "PWG1/TRD/AliTRDclusterResolution.h"
 #include "PWG1/TRD/AliTRDalignmentTask.h"
@@ -15,8 +15,8 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
 {
   Info("AddTRDresolution", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName()));
 
-  AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
-  AliLog::SetClassDebugLevel("AliTRDresolution", 2);
+  //AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
+  //AliLog::SetClassDebugLevel("AliTRDresolution", 2);
   AliTRDresolution *res(NULL);
   const Char_t *suffix[]={"", "SA", "K"};
   for(Int_t itq=0; itq<1/*3*/; itq++){
@@ -39,7 +39,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     
     TObjArray *coa = mgr->GetContainers();
     // Cluster Error Parameterization
-    if(TSTBIT(map, kClErrParam)){
+    if(TESTBIT(map, AliTRDpwg1Helper::kClErrParam)){
       AliTRDclusterResolution *taskCl(NULL);
       AliLog::SetClassDebugLevel("AliTRDclusterResolution", 2);
       for(Int_t idet(10); idet<11/*AliTRDgeometry::kNdet*/; idet++){
@@ -62,7 +62,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
   }
 
   // TRD alignment
-  if(TSTBIT(map, kAlignment)){
+  if(TESTBIT(map, AliTRDpwg1Helper::kAlignment)){
     AliTRDalignmentTask *taskAlign(NULL);
     mgr->AddTask(taskAlign = new AliTRDalignmentTask((char*)"TRDalignment"));
     taskAlign->SetDebugLevel(0);

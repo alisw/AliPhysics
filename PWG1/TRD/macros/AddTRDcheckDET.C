@@ -3,7 +3,7 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
+#include "PWG1/TRD/AliTRDpwg1Helper.h"
 #include "PWG1/TRD/AliTRDcheckDET.h"
 #include "PWG1/TRD/AliTRDcalibration.h"
 #endif
@@ -27,7 +27,7 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer
   
 
   // CALIBRATION
-  if(!(TSTBIT(map, kCalibration))) return;
+  if(!(TESTBIT(map, AliTRDpwg1Helper::kCalibration))) return;
   AliTRDcalibration *ctask(NULL);
   mgr->AddTask(ctask = new AliTRDcalibration((char*)"calibration"));
   ctask->SetHisto2d(kTRUE);

@@ -3,13 +3,13 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "PWG1/TRD/AliTRDinfoGen.h"
+#include "PWG1/TRD/AliTRDpwg1Helper.h"
 #include "PWG1/TRD/info/AliTRDeventInfo.h"
-#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
 #endif
 
 void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
 {
-  Bool_t mc(mgr->GetMCtruthEventHandler()?kTRUE:kFALSE);
+  Bool_t mc=mgr->GetMCtruthEventHandler();
   //AliLog::SetClassDebugLevel("AliTRDinfoGen", 2);
   AliTRDinfoGen *info(NULL);
   mgr->AddTask(info = new AliTRDinfoGen((char*)"TRDinfoGen"));
@@ -30,15 +30,15 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   
   // Connect IO slots
   mgr->ConnectInput (info, 0, mgr->GetCommonInputContainer());
-  co[kEventInfo] = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
-  co[kTracksBarrel] = mgr->CreateContainer("tracksBarrel", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-  co[kTracksSA] = mgr->CreateContainer("tracksSA", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-  co[kTracksKink] = mgr->CreateContainer("tracksKink", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-  co[kV0List] = mgr->CreateContainer("v0List", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-  for(Int_t ios(1);ios<kNOutSlots-1;ios++) mgr->ConnectOutput(info, ios, co[ios]);
+  co[AliTRDpwg1Helper::kEventInfo] = mgr->CreateContainer("eventInfo", AliTRDeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliTRDpwg1Helper::kTracksBarrel] = mgr->CreateContainer("tracksBarrel", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliTRDpwg1Helper::kTracksSA] = mgr->CreateContainer("tracksSA", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliTRDpwg1Helper::kTracksKink] = mgr->CreateContainer("tracksKink", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliTRDpwg1Helper::kV0List] = mgr->CreateContainer("v0List", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  for(Int_t ios(1);ios<AliTRDpwg1Helper::kNOutSlots-1;ios++) mgr->ConnectOutput(info, ios, co[ios]);
   
   // add last monitor container
   AliAnalysisDataContainer *mon=mgr->CreateContainer(info->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName()));
-  mgr->ConnectOutput(info, kNOutSlots-1, mon);
+  mgr->ConnectOutput(info, AliTRDpwg1Helper::kNOutSlots-1, mon);
 }
 

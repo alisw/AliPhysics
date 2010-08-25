@@ -10,7 +10,8 @@ void AddTRDcheckESD(AliAnalysisManager *mgr)
   //AliLog::SetClassDebugLevel("AliTRDcheckESD", 5);
   AliTRDcheckESD *checkESD = new AliTRDcheckESD((char*)"TRDcheckESD");
   mgr->AddTask(checkESD);
-  checkESD->SetMC(mgr->GetMCtruthEventHandler());
+  Bool_t mc = mgr->GetMCtruthEventHandler();
+  checkESD->SetMC(mc);
   checkESD->SetCollision(/*kFALSE*/);
   checkESD->SetDebugLevel(0);
 

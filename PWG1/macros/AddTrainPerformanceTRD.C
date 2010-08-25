@@ -63,7 +63,6 @@
 #include "TRD/AliTRDtrackerV1.h"
 #include "TRD/AliTRDcalibDB.h"
 
-#include "PWG1/TRD/macros/AliTRDperformanceTrain.h"
 #include "PWG1/TRD/macros/AddTRDcheckESD.C"
 #include "PWG1/TRD/macros/AddTRDinfoGen.C"
 #include "PWG1/TRD/macros/AddTRDcheckDET.C"
@@ -72,9 +71,6 @@
 #include "PWG1/TRD/macros/AddTRDcheckPID.C"
 #include "PWG1/TRD/macros/AddTRDv0Monitor.C"
 #endif
-
-#include "../TRD/macros/AliTRDperformanceTrain.h"
-#include "../TRD/macros/helper.C"
 
 TString opt("");
 const Char_t* Translate(Bool_t doCheckESD=kTRUE, Bool_t doCheckDET=kTRUE, Bool_t doEffic=kTRUE, Bool_t doResolution=kTRUE, Bool_t doCheckPID=kTRUE, Bool_t doV0Monitor=kTRUE);
@@ -87,53 +83,53 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
   }
 
   // TRD data containers
-  AliAnalysisDataContainer *ci[kNOutSlots];
+  AliAnalysisDataContainer *ci[AliTRDpwg1Helper::kNOutSlots];
   AliAnalysisDataContainer *ce[5];
 
   Info("AddTrainPerformanceTRD", Form("Add Macros taken from %s", addMacroPath));
   Info("AddTrainPerformanceTRD", Form("TRD wagons \"%s\"", trd));
-  Int_t bitmap = ParseOptions(trd);
-  for(Int_t it=0; it<NTRDQATASKS; it++){
-    if(!TSTBIT(bitmap, it)) continue;
-    if(gROOT->LoadMacro(Form("%s/Add%s.C++", addMacroPath, TString(fgkTRDtaskClassName[it])(3,20).Data()))) {
-      Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", fgkTRDtaskClassName[it]));
+  Int_t bitmap = AliTRDpwg1Helper::ParseOptions(trd);
+  for(Int_t it=0; it<AliTRDpwg1Helper::kNTRDQATASKS; it++){
+    //if(!TESTBIT(bitmap, it)) continue;
+    if(gROOT->LoadMacro(Form("%s/Add%s.C+", addMacroPath, TString(AliTRDpwg1Helper::fgkTRDtaskClassName[it])(3,20).Data()))) {
+      Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", AliTRDpwg1Helper::fgkTRDtaskClassName[it]));
       return kFALSE;
     } 
 
     switch(it){
-    case kCheckESD:
+    case AliTRDpwg1Helper::kCheckESD:
       AddTRDcheckESD(mgr); break;
-    case kInfoGen:
+    case AliTRDpwg1Helper::kInfoGen:
       AddTRDinfoGen(mgr, 0, NULL, ci); break;
-    case kCheckDET:
+    case AliTRDpwg1Helper::kCheckDET:
       // map slots
-      ce[0]=ci[kEventInfo];
-      ce[1]=ci[kTracksBarrel];
-      ce[2]=ci[kTracksSA];
-      ce[3]=ci[kTracksKink];
+      ce[0]=ci[AliTRDpwg1Helper::kEventInfo];
+      ce[1]=ci[AliTRDpwg1Helper::kTracksBarrel];
+      ce[2]=ci[AliTRDpwg1Helper::kTracksSA];
+      ce[3]=ci[AliTRDpwg1Helper::kTracksKink];
       AddTRDcheckDET(mgr, bitmap, ce);
       break;
-    case kEfficiency:
+    case AliTRDpwg1Helper::kEfficiency:
       // map slots
-      ce[0]=ci[kTracksBarrel];
-      ce[1]=ci[kTracksSA];
-      ce[2]=ci[kTracksKink];
+      ce[0]=ci[AliTRDpwg1Helper::kTracksBarrel];
+      ce[1]=ci[AliTRDpwg1Helper::kTracksSA];
+      ce[2]=ci[AliTRDpwg1Helper::kTracksKink];
       AddTRDefficiency(mgr, bitmap, ce);
       break;
-    case kResolution:
+    case AliTRDpwg1Helper::kResolution:
       // map slots
-      ce[0]=ci[kTracksBarrel];
-      ce[1]=ci[kTracksSA];
-      ce[2]=ci[kTracksKink];
+      ce[0]=ci[AliTRDpwg1Helper::kTracksBarrel];
+      ce[1]=ci[AliTRDpwg1Helper::kTracksSA];
+      ce[2]=ci[AliTRDpwg1Helper::kTracksKink];
       AddTRDresolution(mgr, bitmap, ce); 
       break;
-    case kCheckPID:
+    case AliTRDpwg1Helper::kCheckPID:
       // map slots
-      ce[0]=ci[kTracksBarrel];
-      ce[1]=ci[kV0List];
+      ce[0]=ci[AliTRDpwg1Helper::kTracksBarrel];
+      ce[1]=ci[AliTRDpwg1Helper::kV0List];
       AddTRDcheckPID(mgr, bitmap, ce, &ce[2]); 
       break;
-    case kV0Monitor:
+    case AliTRDpwg1Helper::kV0Monitor:
       // slots already mapped by checkPID
       AddTRDv0Monitor(mgr, 0, ce);
       break;
