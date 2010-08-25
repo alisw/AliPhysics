@@ -26,7 +26,7 @@ class AliHLTEMCALRecPointDataStruct;
 
 class AliEMCALGeoUtils;
 
-class  AliHLTEMCALGeometry : public AliHLTCaloGeometry, public AliHLTLogging
+class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
 {
  public:
 	AliHLTEMCALGeometry();

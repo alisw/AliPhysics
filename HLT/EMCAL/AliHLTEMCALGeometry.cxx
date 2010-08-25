@@ -151,7 +151,7 @@ AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint
 
   if(!fGeo)
     {
-      Logging(kHLTLogError, "HLT", "EMCAL", "AliHLTEMCALGeometry::GetGlobalCoordinates: no geometry initialised");
+      HLTError("No geometry initialised");
       return;
     }
 
