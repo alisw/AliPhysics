@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(AliRoot NONE)
 
 # Set AliRoot variables
-
+set(CMAKE_VERBOSE_MAKEFILES OFF)
 set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 set(ALICE_ROOT $ENV{ALICE_ROOT})
 set(ALICE_STATIC_BUILD OFF CACHE BOOL "Build also statics libs")
@@ -23,7 +23,7 @@ endif(NOT ALICE_ROOT)
 
 
 message("ALICE_ROOT: ${ALICE_ROOT}")
-set(CMAKE_VERBOSE_MAKEFILE ON)
+
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ 
 set(PROJECT_BINARY_DIR ${ALICE_INSTALL})
