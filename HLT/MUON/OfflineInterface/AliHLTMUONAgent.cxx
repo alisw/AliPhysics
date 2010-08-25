@@ -54,6 +54,7 @@ AliHLTMUONAgent AliHLTMUONAgent::fgkInstance;
 AliHLTOUTHandlerChain AliHLTMUONAgent::fgkESDMakerChain("libAliHLTMUON.so chains=dHLT-make-esd");
 AliHLTOUTHandlerChain AliHLTMUONAgent::fgkRootifyDumpChain("libAliHLTMUON.so chains=dHLT-rootify-and-dump");
 Int_t AliHLTMUONAgent::fgMuonModuleLoaded = 0;
+bool AliHLTMUONAgent::fgRunRootifyChain = false;
 
 
 ClassImp(AliHLTMUONAgent);
@@ -507,17 +508,18 @@ int AliHLTMUONAgent::GetHandlerDescription(
 		return 1;
 	}
 	
-	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
-	    dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
-	    dt == AliHLTMUONConstants::RecHitsBlockDataType() or
-	    dt == AliHLTMUONConstants::ClusterBlockDataType() or
-	    dt == AliHLTMUONConstants::ChannelBlockDataType() or
-	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
-	    dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
-	    dt == AliHLTMUONConstants::TracksBlockDataType() or
-	    dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
-	    dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
-	   )
+	if (fgRunRootifyChain and
+	    (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
+	     dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
+	     dt == AliHLTMUONConstants::RecHitsBlockDataType() or
+	     dt == AliHLTMUONConstants::ClusterBlockDataType() or
+	     dt == AliHLTMUONConstants::ChannelBlockDataType() or
+	     dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
+	     dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
+	     dt == AliHLTMUONConstants::TracksBlockDataType() or
+	     dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
+	     dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
+	   ))
 	{
 		HLTDebug("Indicating we can handle data type = %s and specification"
 			" = 0x%8.8X with dHLT-rootify-and-dump chain",
@@ -557,17 +559,18 @@ AliHLTOUTHandler* AliHLTMUONAgent::GetOutputHandler(
 		return &fgkESDMakerChain;
 	}
 
-	if (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
-	    dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
-	    dt == AliHLTMUONConstants::RecHitsBlockDataType() or
-	    dt == AliHLTMUONConstants::ClusterBlockDataType() or
-	    dt == AliHLTMUONConstants::ChannelBlockDataType() or
-	    dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
-	    dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
-	    dt == AliHLTMUONConstants::TracksBlockDataType() or
-	    dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
-	    dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
-	   )
+	if (fgRunRootifyChain and
+	    (dt == AliHLTMUONConstants::TriggerRecordsBlockDataType() or
+	     dt == AliHLTMUONConstants::TrigRecsDebugBlockDataType() or
+	     dt == AliHLTMUONConstants::RecHitsBlockDataType() or
+	     dt == AliHLTMUONConstants::ClusterBlockDataType() or
+	     dt == AliHLTMUONConstants::ChannelBlockDataType() or
+	     dt == AliHLTMUONConstants::MansoTracksBlockDataType() or
+	     dt == AliHLTMUONConstants::MansoCandidatesBlockDataType() or
+	     dt == AliHLTMUONConstants::TracksBlockDataType() or
+	     dt == AliHLTMUONConstants::SinglesDecisionBlockDataType() or
+	     dt == AliHLTMUONConstants::PairsDecisionBlockDataType()
+	   ))
 	{
 		return &fgkRootifyDumpChain;
 	}

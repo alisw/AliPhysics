@@ -97,6 +97,20 @@ public:
 	 */
 	static bool IsMuonModuleLoaded();
 	
+	/**
+	 * \returns the flag indicating if the dHLT-rootify-and-dump chain should
+	 *    be run as a HLTOUT handler during reconstruction. The default is not
+	 *    to run this chain. The chain is used to convert HLT raw data blocks
+	 *    into ROOT objects, typically useful for testing and debugging.
+	 */
+	static bool RunRootifyChain() { return fgRunRootifyChain; }
+	
+	/**
+	 * Sets the flag indicating if the dHLT-rootify-and-dump chain should be
+	 * run during reconstruction.
+	 */
+	static void RunRootifyChain(bool value) { fgRunRootifyChain = value; }
+	
 private:
 	// The following instance is used for automatic agent and component registration.
 	static AliHLTMUONAgent fgkInstance;  ///< The single global instance of the dimuon HLT agent.
@@ -105,6 +119,7 @@ private:
 	static AliHLTOUTHandlerChain  fgkRootifyDumpChain;  ///< Chain handler for converting dHLT raw data to ROOT objects and dumping to file.
 
 	static Int_t fgMuonModuleLoaded; ///< Cached flag for indicating if the MUON module was loaded for a simulation.
+	static bool fgRunRootifyChain; // Indicates if the dHLT-rootify-and-dump chain should be run.
 
 	ClassDef(AliHLTMUONAgent, 0); // Dimuon HLT module agent which handles processing configurations.
 };
