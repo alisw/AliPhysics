@@ -23,7 +23,6 @@
 #include "AliPID.h"
 #endif
 
-class AliTRDReconstructor;
 class AliTRDpidUtil;
 class AliTRDcheckPID : public AliTRDrecoTask 
 {
@@ -87,7 +86,6 @@ private:
   void   LocalInit();
 
   static Char_t const *fgMethod[3];        // PID method name
-  AliTRDReconstructor *fReconstructor;     // reconstructor needed for recalculation the PID
   AliTRDpidUtil       *fUtil;              // utility class for PID calculations
   TObjArray           *fGraph;             //! array of graphs filled in PostProcess
   TObjArray           *fPID;               //! array of PID info/track for calibration
@@ -96,7 +94,7 @@ private:
   TAxis               *fMomentumAxis;      // helper mementum binning
   Int_t                fMinNTracklets;     // minimum number of required Tracklets (for systematic studies)
   Int_t                fMaxNTracklets;     // maximum number of required Tracklets (for systematic studies) 
-  ClassDef(AliTRDcheckPID, 2); // TRD PID checker
+  ClassDef(AliTRDcheckPID, 3); // TRD PID checker
 };
 
 //________________________________________________________________________

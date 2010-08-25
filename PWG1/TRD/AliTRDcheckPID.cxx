@@ -50,6 +50,7 @@
 #include "Cal/AliTRDCalPID.h"
 #include "Cal/AliTRDCalPIDNN.h"
 #include "AliTRDcheckPID.h"
+#include "AliTRDinfoGen.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDpidInfo.h"
 #include "info/AliTRDv0Info.h"
@@ -61,7 +62,6 @@ ClassImp(AliTRDcheckPID)
 //________________________________________________________________________
 AliTRDcheckPID::AliTRDcheckPID() 
   :AliTRDrecoTask()
-  ,fReconstructor(NULL)
   ,fUtil(NULL)
   ,fGraph(NULL)
   ,fPID(NULL)
@@ -80,7 +80,6 @@ AliTRDcheckPID::AliTRDcheckPID()
 //________________________________________________________________________
 AliTRDcheckPID::AliTRDcheckPID(char* name ) 
   :AliTRDrecoTask(name, "Check TRD PID")
-  ,fReconstructor(NULL)
   ,fUtil(NULL)
   ,fGraph(NULL)
   ,fPID(NULL)
@@ -105,8 +104,6 @@ AliTRDcheckPID::AliTRDcheckPID(char* name )
 void AliTRDcheckPID::LocalInit() 
 {
 // Initialize working data
-  fReconstructor = new AliTRDReconstructor();
-  fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
 
   // Initialize momentum axis with default values
   Double_t defaultMomenta[AliTRDCalPID::kNMom+1];
@@ -124,7 +121,6 @@ AliTRDcheckPID::~AliTRDcheckPID()
 {
   if(fPID){fPID->Delete(); delete fPID;}
   if(fGraph){fGraph->Delete(); delete fGraph;}
-  if(fReconstructor) delete fReconstructor;
   if(fUtil) delete fUtil;
 }
 
@@ -278,8 +274,8 @@ Int_t AliTRDcheckPID::CalcPDG(AliTRDtrackV1* track)
 {
 // Documentation to come
 
-  track -> SetReconstructor(fReconstructor);
-  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork();
+  track -> SetReconstructor(AliTRDinfoGen::Reconstructor());
+  (const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork();
   track -> CookPID();
 
   if(track -> GetPID(AliPID::kElectron) > track -> GetPID(AliPID::kMuon) + track -> GetPID(AliPID::kPion)  + track -> GetPID(AliPID::kKaon) + track -> GetPID(AliPID::kProton)){
@@ -325,7 +321,7 @@ TH1 *AliTRDcheckPID::PlotLQ(const AliTRDtrackV1 *track)
   if(!CheckTrackQuality(fkTrack)) return NULL;
 
   AliTRDtrackV1 cTrack(*fkTrack);
-  cTrack.SetReconstructor(fReconstructor);
+  cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
@@ -340,7 +336,7 @@ TH1 *AliTRDcheckPID::PlotLQ(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return NULL;
 
-  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
+  (const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
   cTrack.CookPID();
   if(cTrack.GetNumberOfTrackletsPID() < fMinNTracklets) return NULL;
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
@@ -390,7 +386,7 @@ TH1 *AliTRDcheckPID::PlotNN(const AliTRDtrackV1 *track)
   if(!CheckTrackQuality(fkTrack)) return NULL;
   
   AliTRDtrackV1 cTrack(*fkTrack);
-  cTrack.SetReconstructor(fReconstructor);
+  cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
 
   Int_t pdg = 0;
   Float_t momentum = 0.;
@@ -404,7 +400,7 @@ TH1 *AliTRDcheckPID::PlotNN(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return NULL;
 
-  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork();
+  (const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork();
   cTrack.CookPID();
   if(cTrack.GetNumberOfTrackletsPID() < fMinNTracklets) return NULL;
 
@@ -463,7 +459,7 @@ TH1 *AliTRDcheckPID::PlotESD(const AliTRDtrackV1 *track)
   } else {
     //AliWarning("No MC info available!");
     AliTRDtrackV1 cTrack(*fkTrack);
-    cTrack.SetReconstructor(fReconstructor);
+    cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
@@ -513,7 +509,7 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
   }
 
   AliTRDtrackV1 cTrack(*fkTrack);
-  cTrack.SetReconstructor(fReconstructor);
+  cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
   Int_t pdg = 0;
   Float_t momentum = 0.;
   if(fkMC){
@@ -530,7 +526,7 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
   Int_t s(AliTRDpidUtil::Pdg2Pid(pdg));
   AliTRDpidInfo *pid = new AliTRDpidInfo(s);
 
-  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(kTRUE);
+  (const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork(kTRUE);
 
   Float_t sumdEdx(0.);
   Int_t iBin = FindBin(s, momentum);
@@ -577,7 +573,7 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
   }
 
   AliTRDtrackV1 cTrack(*fkTrack);
-  cTrack.SetReconstructor(fReconstructor);
+  cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
   Int_t pdg = 0;
   Float_t momentum = 0.;
   if(fkMC){
@@ -590,7 +586,7 @@ TH1 *AliTRDcheckPID::PlotdEdxSlice(const AliTRDtrackV1 *track)
   }
   if(!IsInRange(momentum)) return NULL;
 
-  (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
+  (const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
   Int_t iMomBin = fMomentumAxis->FindBin(momentum);
   Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   Float_t *fdEdx;
@@ -641,7 +637,7 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
   } else {
     //AliWarning("No MC info available!");
     AliTRDtrackV1 cTrack(*fkTrack);
-    cTrack.SetReconstructor(fReconstructor);
+    cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
@@ -695,7 +691,7 @@ TH1 *AliTRDcheckPID::PlotNClus(const AliTRDtrackV1 *track)
   } else {
     //AliWarning("No MC info available!");
     AliTRDtrackV1 cTrack(*fkTrack);
-    cTrack.SetReconstructor(fReconstructor);
+    cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
@@ -733,7 +729,7 @@ TH1 *AliTRDcheckPID::PlotNTracklets(const AliTRDtrackV1 *track)
   }
 
   AliTRDtrackV1 cTrack(*fkTrack);
-  cTrack.SetReconstructor(fReconstructor);
+  cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
   Int_t pdg = 0;
   Float_t momentum = 0.;
   if(fkMC){
@@ -782,7 +778,7 @@ TH1 *AliTRDcheckPID::PlotMom(const AliTRDtrackV1 *track)
   } else {
     //AliWarning("No MC info available!");
     AliTRDtrackV1 cTrack(*fkTrack);
-    cTrack.SetReconstructor(fReconstructor);
+    cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
@@ -822,7 +818,7 @@ TH1 *AliTRDcheckPID::PlotMomBin(const AliTRDtrackV1 *track)
   } else {
     //AliWarning("No MC info available!");
     AliTRDtrackV1 cTrack(*fkTrack);
-    cTrack.SetReconstructor(fReconstructor);
+    cTrack.SetReconstructor(AliTRDinfoGen::Reconstructor());
     momentum = cTrack.GetMomentum(0);
   }
   if(IsInRange(momentum)) hMomBin -> Fill(fMomentumAxis->FindBin(momentum));
