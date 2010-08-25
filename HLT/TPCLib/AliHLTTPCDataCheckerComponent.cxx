@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -210,10 +210,10 @@ Int_t AliHLTTPCDataCheckerComponent::DoDeinit()
 int AliHLTTPCDataCheckerComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
 		const AliHLTComponentBlockData* blocks, 
-		AliHLTComponentTriggerData& trigData,
-		AliHLTUInt8_t* outputPtr, 
+		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTUInt8_t* /*outputPtr*/, 
 		AliHLTUInt32_t& size,
-		AliHLTComponentBlockDataList& outputBlocks
+		AliHLTComponentBlockDataList& /*outputBlocks*/
 	)
 {
 	// Check all the input data blocks.

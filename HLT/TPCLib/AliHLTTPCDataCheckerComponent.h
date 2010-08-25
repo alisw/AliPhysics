@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: $
+// $Id$
 #ifndef ALIHLTTPCDATACHECKERCOMPONENT_H
 #define ALIHLTTPCDATACHECKERCOMPONENT_H
 /* This file is property of and copyright by the ALICE HLT Project        *
