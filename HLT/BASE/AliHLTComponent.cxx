@@ -433,8 +433,34 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
   TString argument="";
   int i=0;
   for (i=0; i<argc && iResult>=0; i++) {
+    // special handling for single component arguments ending with
+    // a sequence of blanks
     argument=argv[i];
+    argument.Remove(0, argument.First(' '));
+    if (argument.IsWhitespace()) {
+      array.push_back(argv[i]);
+      continue;
+    }
+
+    // extra blank to insert blank token before leading quotes
+    argument=" ";
+    argument+=argv[i];
+    // insert blank in consecutive quotes to correctly tokenize
+    argument.ReplaceAll("''", "' '");
+    // replace newlines by blanks
+    argument.ReplaceAll("\n", " ");
     if (argument.IsNull()) continue;
+    TObjArray* pTokensQuote=argument.Tokenize("'");
+    if (pTokensQuote) {
+      if (pTokensQuote->GetEntriesFast()>0) {
+	for (int k=0; k<pTokensQuote->GetEntriesFast(); k++) {
+	  argument=((TObjString*)pTokensQuote->At(k))->GetString();
+	  if (argument.IsWhitespace()) continue;
+	  if (k%2) {
+	    // every second entry is enclosed by quotes and thus
+	    // one single argument
+	    array.push_back(argument.Data());
+	  } else {
     TObjArray* pTokens=argument.Tokenize(" ");
     if (pTokens) {
       if (pTokens->GetEntriesFast()>0) {
@@ -448,6 +474,12 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
 	pTokens->SetOwner(kFALSE);
       }
       delete pTokens;
+    }
+	  }
+	}
+	pTokensQuote->SetOwner(kFALSE);
+      }
+      delete pTokensQuote;
     }
   }
 
@@ -620,6 +652,39 @@ string AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, int 
   // see header file for function documentation
   string out("");
 
+  // 'typeid' 'origin'
+  // aligned to 8 and 4 chars respectively, blocks enclosed in quotes and
+  // separated by blank e.g.
+  // 'DDL_RAW ' 'TPC '
+  if (mode==3) {
+    int i=0;
+    char tmp[8];
+    out+="'";
+    for (i=0; i<kAliHLTComponentDataTypefIDsize; i++) {
+      unsigned char* puc=(unsigned char*)type.fID;
+      if (puc[i]<32)
+	sprintf(tmp, "\\%x", type.fID[i]);
+      else
+	sprintf(tmp, "%c", type.fID[i]);
+      out+=tmp;
+    }
+    out+="' '";
+    for (i=0; i<kAliHLTComponentDataTypefOriginSize; i++) {
+      unsigned char* puc=(unsigned char*)type.fOrigin;
+      if ((puc[i])<32)
+	sprintf(tmp, "\\%x", type.fOrigin[i]);
+      else
+	sprintf(tmp, "%c", type.fOrigin[i]);
+      out+=tmp;
+    }
+    out+="'";
+    return out;
+  }
+
+  // origin typeid as numbers separated by colon e.g.
+  // aligned to 8 and 4 chars respectively, all characters separated by
+  // quotes, e.g.
+  // '84'80'67'32':'68'68'76'95'82'65'87'32'
   if (mode==2) {
     int i=0;
     char tmp[8];
@@ -635,6 +700,10 @@ string AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, int 
     return out;
   }
 
+  // origin typeid separated by colon e.g.
+  // aligned to 8 and 4 chars respectively, all characters separated by
+  // quotes, e.g.
+  // 'T'P'C' ':'D'D'L'_'R'A'W' '
   if (mode==1) {
     int i=0;
     char tmp[8];
@@ -658,6 +727,9 @@ string AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, int 
     return out;
   }
 
+  // origin typeid
+  // aligned to 8 and 4 chars respectively, separated by colon e.g.
+  // TPC :DDL_RAW 
   if (type==kAliHLTVoidDataType) {
     out="VOID:VOID";
   } else {

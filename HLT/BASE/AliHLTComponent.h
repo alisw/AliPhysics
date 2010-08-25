@@ -633,7 +633,8 @@ class AliHLTComponent : public AliHLTLogging {
    * @param type        data type structure
    * @param mode        0 print string origin:type          <br>
    *                    1 print chars                       <br>
-   *                    2 print numbers
+   *                    2 print numbers                     <br>
+   *                    3 print 'type' 'origin' 
    */
   static string DataType2Text( const AliHLTComponentDataType& type, int mode=0);
 
