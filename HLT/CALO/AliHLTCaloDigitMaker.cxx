@@ -227,9 +227,11 @@ AliHLTCaloDigitMaker::Reset()
 void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, AliHLTCaloCoordinate &coord)
 {
 
+  // Some book keeping of the pointers
   AliHLTCaloDigitDataStruct *tmpDigit = fDigitStructPtr + 1;
 
-  if(fChannelBook[coord.fX][coord.fZ])
+  // Check if we already have a digit in this position, and correct the book keeping correspondently
+  if(fChannelBook[coord.fX][coord.fZ]) 
     {
       tmpDigit = fDigitStructPtr;
       fDigitStructPtr = fChannelBook[coord.fX][coord.fZ];
@@ -238,7 +240,6 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
     }
   
   fChannelBook[coord.fX][coord.fZ] = fDigitStructPtr;
-
  
   fDigitStructPtr->fX = coord.fX;
   fDigitStructPtr->fZ = coord.fZ;
@@ -251,6 +252,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
   if(coord.fGain == fCaloConstants->GetHIGHGAIN() )
     {
       fDigitStructPtr->fEnergy = channelData->fEnergy*fHighGainFactors[coord.fX][coord.fZ];
+      fDigitStructPtr->fHgPresent = true;
       if(channelData->fEnergy >= fMaxEnergy)
 	{
 	  fDigitStructPtr->fOverflow = true;
@@ -301,6 +303,7 @@ bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, Al
 	  	  //printf("UseDigit: Already have digit with, x: %d, z: %d, with low gain: %d\n", channelCoordinates.fX, channelCoordinates.fZ);
 	  if(channel->fEnergy > fMaxEnergy )
 	    {
+	      tmpDigit->fHgPresent = true;
 	      return false;
 	    }
 	  return true;
@@ -319,7 +322,7 @@ void AliHLTCaloDigitMaker::SetBadChannel(Int_t x, Int_t z, Bool_t bad)
 void AliHLTCaloDigitMaker::SetGain(Int_t x, Int_t z, Float_t ratio, Float_t gain)
 {
    // See header file for class documentation
-   
+   HLTDebug("Applying gain: %f for channel x: %d, z: %d", gain, x, z); 
    fHighGainFactors[x][z] = gain;
    fLowGainFactors[x][z] = gain * ratio;
    
