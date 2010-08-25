@@ -39,6 +39,7 @@ using namespace std;
 #include <ctime>
 #include "AliHLTTask.h"
 #include "AliHLTConfiguration.h"
+#include "AliHLTConfigurationHandler.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
 #include "TList.h"
@@ -112,10 +113,14 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
   return iResult;
 }
 
-int AliHLTTask::CreateComponent(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH, AliHLTComponent*& pComponent) const
+int AliHLTTask::CreateComponent(AliHLTConfiguration* pConfiguration, AliHLTComponentHandler* pCH, AliHLTComponent*& pComponent) const
 {
   // see header file for class documentation
   int iResult=0;
+  if (!pConfiguration) return -EINVAL;
+
+  const AliHLTConfiguration* pConf=AliHLTConfigurationHandler::FindSubstitution(*pConfiguration);
+  if (!pConf) pConf=pConfiguration;
   if (pConf) {
     if (pCH) {
       int argc=0;
