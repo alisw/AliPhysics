@@ -23,6 +23,7 @@
 
 #include "AliHLTLogging.h"
 class AliHLTConfiguration;
+class TMap;
 
 /**
  * @class AliHLTConfigurationHandler
@@ -105,6 +106,28 @@ class AliHLTConfigurationHandler : public AliHLTLogging {
    */
   void PrintConfigurations();
 
+  /**
+   * Add a component substitution by component id.
+   * All components of the specified component id will be replaced by the
+   * substitution component, the component arguments are replaced accordingly.
+   * Component substitution is in particular useful if the input to a specific
+   * component should be written to file.
+   */
+  static int AddSubstitution(const char* componentId, const AliHLTConfiguration& subst);
+
+  /**
+   * Add a component substitution by configuration id.
+   * The component of the specified configuration will be replaced by the
+   * substitution component, the component arguments are replaced accordingly.
+   * Component substitution is in particular useful if the input to a specific
+   * component should be written to file.
+   */
+  static int AddSubstitution(const AliHLTConfiguration& conf , const AliHLTConfiguration& subst);
+
+  /**
+   * Find component substitution.
+   */
+  static const AliHLTConfiguration* FindSubstitution(const AliHLTConfiguration& conf);
 
  private:
   /** the list of registered configurations */
@@ -115,7 +138,11 @@ class AliHLTConfigurationHandler : public AliHLTLogging {
   /** number of used instances of the global singleton */
   static int fgNofInstances;                                       //!transient 
 
-  ClassDef(AliHLTConfigurationHandler, 2);
+  /// component substitution map
+  /// key: either TObjString with component id or AliHLTConfiguration object
+  static TMap* fgpSubstitutions;                                    //!transient 
+
+  ClassDef(AliHLTConfigurationHandler, 0);
 };
 
 #endif

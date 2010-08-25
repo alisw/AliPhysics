@@ -37,6 +37,8 @@ using namespace std;
 #include <string>
 #include "AliHLTConfigurationHandler.h"
 #include "AliHLTConfiguration.h"
+#include "TMap.h"
+#include "TObjString.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTConfigurationHandler)
@@ -67,6 +69,7 @@ AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
 
 AliHLTConfigurationHandler* AliHLTConfigurationHandler::fgpInstance=NULL;
 int AliHLTConfigurationHandler::fgNofInstances=0;
+TMap* AliHLTConfigurationHandler::fgpSubstitutions=NULL;
 
 AliHLTConfigurationHandler* AliHLTConfigurationHandler::CreateHandler()
 {
@@ -84,8 +87,10 @@ int AliHLTConfigurationHandler::Destroy()
     nofInstances=fgNofInstances--;
   }
   if (fgNofInstances==0) {
-    delete fgpInstance;
+    if (fgpInstance) delete fgpInstance;
     fgpInstance = NULL;
+    if (fgpSubstitutions) delete fgpSubstitutions;
+    fgpSubstitutions=NULL;
   }
   return nofInstances;
 }
@@ -209,3 +214,44 @@ AliHLTConfiguration* AliHLTConfigurationHandler::FindConfiguration(const char* i
   return pConf;
 }
 
+int AliHLTConfigurationHandler::AddSubstitution(const char* componentId, const AliHLTConfiguration& subst)
+{
+  /// add component substitution for components of specified id
+  if (!componentId) return -EINVAL;
+  if (!fgpSubstitutions) fgpSubstitutions=new TMap;
+  if (!fgpSubstitutions) return -ENOMEM;
+  fgpSubstitutions->SetOwnerKeyValue(kTRUE);
+
+  fgpSubstitutions->Add(new TObjString(componentId), new AliHLTConfiguration(subst));
+
+  return 0;  
+}
+
+int AliHLTConfigurationHandler::AddSubstitution(const AliHLTConfiguration& conf , const AliHLTConfiguration& subst)
+{
+  /// add component substitution for components of specified id
+  if (!fgpSubstitutions) fgpSubstitutions=new TMap;
+  if (!fgpSubstitutions) return -ENOMEM;
+  fgpSubstitutions->SetOwnerKeyValue(kTRUE);
+
+  fgpSubstitutions->Add(new AliHLTConfiguration(conf), new AliHLTConfiguration(subst));
+
+  return 0;  
+}
+
+const AliHLTConfiguration* AliHLTConfigurationHandler::FindSubstitution(const AliHLTConfiguration& conf)
+{
+  /// find component substitution for a configuration
+  if (!fgpSubstitutions) return NULL;
+  TObject* value=NULL;
+
+  // check for specific configuration
+  value=fgpSubstitutions->GetValue(conf.GetName());
+  if (value) return dynamic_cast<AliHLTConfiguration*>(value);
+
+  // check for component Id
+  value=fgpSubstitutions->GetValue(conf.GetComponentID());
+  if (value) return dynamic_cast<AliHLTConfiguration*>(value);
+
+  return NULL;
+}
