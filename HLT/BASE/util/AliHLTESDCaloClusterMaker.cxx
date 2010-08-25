@@ -69,14 +69,27 @@ AliHLTESDCaloClusterMaker::FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterH
       AliESDCaloCluster esdCluster;
 
       esdCluster.SetID(caloClusterStructPtr->fID);
+#ifndef HAVE_NOT_ALIVCLUSTER // backward compatibility for r42844
       esdCluster.SetType(caloClusterStructPtr->fClusterType);
+#else
+      esdCluster.SetClusterType(caloClusterStructPtr->fClusterType);
+#endif
       esdCluster.SetPosition((Float_t*)(caloClusterStructPtr->fGlobalPos));
       esdCluster.SetE(caloClusterStructPtr->fEnergy);
       esdCluster.SetTOF(caloClusterStructPtr->fTOF);
+#ifndef HAVE_NOT_ALIVCLUSTER // backward compatibility for r42844
       esdCluster.SetDispersion(caloClusterStructPtr->fDispersion);
       esdCluster.SetChi2(caloClusterStructPtr->fFitQuality);
+#else
+      esdCluster.SetClusterDisp(caloClusterStructPtr->fDispersion);
+      esdCluster.SetClusterChi2(caloClusterStructPtr->fFitQuality);
+#endif
       const Float_t *pid = caloClusterStructPtr->fPID;
+#ifndef HAVE_NOT_ALIVCLUSTER // backward compatibility for r42844
       esdCluster.SetPID(pid);
+#else
+      esdCluster.SetPid(pid);
+#endif
       esdCluster.SetM20(caloClusterStructPtr->fM20);
       esdCluster.SetM02(caloClusterStructPtr->fM02);
       esdCluster.SetNExMax(caloClusterStructPtr->fNExMax);
