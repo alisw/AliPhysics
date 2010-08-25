@@ -14,7 +14,6 @@ int runFlowSimple(Int_t nEvts=200, Int_t mult=500, Float_t v2=0.05, Int_t iseed=
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
   gSystem->Load("libPWG2flowCommon");
-  enum ConstructionMethod {kEmpty,kGenerate};
 
   fMyTRandom3 = new TRandom3(iseed);   
   gRandom->SetSeed(fMyTRandom3->Integer(65539));
@@ -41,7 +40,7 @@ int runFlowSimple(Int_t nEvts=200, Int_t mult=500, Float_t v2=0.05, Int_t iseed=
   for(Int_t i=0; i<nEvts; i++)
     {
       // creating the event with above settings:
-      AliFlowEventSimple* event = new AliFlowEventSimple(mult,kGenerate);
+      AliFlowEventSimple* event = new AliFlowEventSimple(mult,AliFlowEventSimple::kGenerate);
        event->AddV2(v2);
       // select the particles for the reference flow ("for the event plane determination")
       event->TagRP(cutsRP);
