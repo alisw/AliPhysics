@@ -114,9 +114,14 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
             // Could be changed if this is a bottle neck.
             for (Int_t i = 0; i < nDigits; i++)
             {
+	       // If we have a digit based on a low gain channel, but there has been no high gain channel, 
+	       // we shouldn't use it since we are then very sensitive to noise (e.g. for PHOS 1 LG ADC count = 40 MeV)
+	       if(digitDataPtr->fHgPresent)
+	       {
                 fDigitsPointerArray[digCount] = digitDataPtr;
                 digCount++;
                 digitDataPtr++;
+	       }
             }
         }
     }
@@ -282,6 +287,7 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
             fAnalyserPtr->SetRecoParamHandler(fRecoParamsPtr);
             fClusterizerPtr->SetEmcClusteringThreshold(fRecoParamsPtr->GetRecPointThreshold());
             fClusterizerPtr->SetEmcMinEnergyThreshold(fRecoParamsPtr->GetRecPointMemberThreshold());
+	    HLTInfo("Setting thresholds for clusterizer: %f, %f", fRecoParamsPtr->GetRecPointThreshold(), fRecoParamsPtr->GetRecPointMemberThreshold());
         }
     }
     //
