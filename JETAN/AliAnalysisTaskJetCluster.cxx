@@ -80,7 +80,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fUseGlobalSelection(kFALSE),
   fFilterMask(0),
   fTrackTypeRec(kTrackUndef),
-  fTrackTypeGen(kTrackUndef),  fAvgTrials(1),
+  fTrackTypeGen(kTrackUndef),  
+  fNSkipLeadingRan(0),
+  fAvgTrials(1),
   fExternalWeight(1),    
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
@@ -156,6 +158,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fFilterMask(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
+  fNSkipLeadingRan(0),
   fAvgTrials(1),
   fExternalWeight(1),    
   fRecEtaWindow(0.5),
@@ -592,22 +595,21 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     inputParticlesRec.push_back(jInp);
 
     // the randomized input changes eta and phi, but keeps the p_T
-    Double_t pT = vp->Pt();
-    Double_t eta = 1.8 * gRandom->Rndm() - 0.9;
-    Double_t phi = 2.* TMath::Pi() * gRandom->Rndm();
+    if(i>=fNSkipLeadingRan){// eventually skip the leading particles
+      Double_t pT = vp->Pt();
+      Double_t eta = 1.8 * gRandom->Rndm() - 0.9;
+      Double_t phi = 2.* TMath::Pi() * gRandom->Rndm();
+      
+      Double_t theta = 2.*TMath::ATan(TMath::Exp(-2.*eta));  
+      Double_t pZ = pT/TMath::Tan(theta);
 
-
-    Double_t theta = 2.*TMath::ATan(TMath::Exp(-2.*eta));  
-    Double_t pZ = pT/TMath::Tan(theta);
-
-    Double_t pX = pT * TMath::Cos(phi);
-    Double_t pY = pT * TMath::Sin(phi);
-    Double_t p  = TMath::Sqrt(pT*pT+pZ*pZ); 
-
-    fastjet::PseudoJet jInpRan(pX,pY,pZ,p);
-    jInpRan.set_user_index(i);
-    inputParticlesRecRan.push_back(jInpRan);
-
+      Double_t pX = pT * TMath::Cos(phi);
+      Double_t pY = pT * TMath::Sin(phi);
+      Double_t p  = TMath::Sqrt(pT*pT+pZ*pZ); 
+      fastjet::PseudoJet jInpRan(pX,pY,pZ,p);
+      jInpRan.set_user_index(i);
+      inputParticlesRecRan.push_back(jInpRan);
+    }
 
     // fill the tref array, only needed when we write out jets
     if(jarray){

@@ -395,6 +395,33 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       if (!taskjets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
    }
 
+   if(iPWG4Cluster){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCluster.C");
+     AliAnalysisTaskJetCluster *taskCl = 0;
+     if(iPWG4Cluster&1){
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT");
+       if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
+     }
+     if(iPWG4Cluster&2){
+       UInt_t selection = 0;
+       if(!iAODanalysis) selection = 0xffffff;
+       else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
+       selection&=~(1<<4); // exluded R = .04 already the dafault
+       AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"KT",selection);
+     }
+     if(iPWG4Cluster&4){
+       UInt_t selection = 0;
+       if(!iAODanalysis){
+	 selection = 0xffffff;
+	 selection &= ~(1<<1)&~(1<<3)&~(1<<5)&~(1<<7)&~(1<<9);
+       }
+       else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
+       AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"ANTIKT",selection);
+       AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"ANTIKT",0.4,1);
+
+     }
+   }
+
    if (iDIJETAN) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskDiJets.C");
       AliAnalysisTaskDiJets *taskdijets = 0;
@@ -586,33 +613,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskKMeans) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskKMenans cannot run for this train conditions - EXCLUDED");
    }
 
-   if(iPWG4Cluster){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCluster.C");
-     AliAnalysisTaskJetCluster *taskCl = 0;
-     if(iPWG4Cluster&1){
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT");
-     }
-     if(iPWG4Cluster&2){
-       UInt_t selection = 0;
-       if(!iAODanalysis) selection = 0xffffff;
-       else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
-       selection&=~(1<<4); // exluded R = .04 already the dafault
-       AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"KT",selection);
-     }
-     if(iPWG4Cluster&4){
-       UInt_t selection = 0;
-       if(!iAODanalysis){
-	 selection = 0xffffff;
-	 selection &= ~(1<<1)&~(1<<3)&~(1<<5)&~(1<<7)&~(1<<9);
-       }
-       else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
-       AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"ANTIKT",selection);
-     }
-
-
-     if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
-
-   }
    if(iPWG4PartCorr){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
      AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS",kFALSE,kIsMC);

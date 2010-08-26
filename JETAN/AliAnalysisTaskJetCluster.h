@@ -56,6 +56,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetTrackPtCut(Float_t x){fTrackPtCut = x;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
 
+    virtual void SetNSkipLeadingRan(Int_t x){fNSkipLeadingRan = x;}
+
     virtual void SetJetOutputBranch(const char *c){fNonStdBranch = c;}
     virtual void SetJetOutputFile(const char *c){fNonStdFile = c;}
     virtual void SetJetOutputMinPt(Float_t x){fJetOutputMinPt = x;}
@@ -101,6 +103,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
+    Int_t         fNSkipLeadingRan;        // number of leading tracks to be skipped in the randomized event
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
