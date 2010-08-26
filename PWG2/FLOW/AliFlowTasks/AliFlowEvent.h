@@ -57,6 +57,7 @@ public:
 
 
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
+  using AliFlowEventSimple::SetMCReactionPlaneAngle;
 
   AliFlowTrack* GetTrack( Int_t i );
 
