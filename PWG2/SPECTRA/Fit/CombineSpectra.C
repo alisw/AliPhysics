@@ -43,6 +43,7 @@ enum {kFitLevi=0, kFitUA1, kFitPowerLaw,
       kFitPhojet, kFitAtlasCSC, kFitCMS6D6T, kFitPerugia0,
       kNFit};
 enum {kDoFits=0, kDoRatios, kDoSuperposition, kDoDrawWithModels, kDoCompareToStar, kDoDrawSyst, kDoHelp};
+enum {kStatErrors = 0, kSystErrors, kStatSystErrors}; // which errors do we put in the histo that we fit? stat,syst or stat+syst?
 
 // flags, labels and names
 const char * partFlag[] = {"Pion", "Kaon", "Proton"};
@@ -145,6 +146,8 @@ TString today = "";
 
 // Switches
 Bool_t convertToMT = 0;
+Bool_t sumCharge = kFALSE;
+Int_t whatToFit = kStatErrors; 
 Bool_t doPrint = 1;
 Bool_t scaleKaons =  kFALSE;
 Bool_t drawStar =  kFALSE; // Overlay star when doing fits
@@ -224,8 +227,9 @@ void FitCombined() {
   tempTable.InsertHline();
 
   TH1F* hRatiosToFit[kNPart][kNCharge];
-  //  Fit all  
-  for(Int_t icharge = 0; icharge < kNCharge; icharge++){
+  //  Fit all 
+  Int_t chargeLoop = sumCharge ? 1 : 2; 
+  for(Int_t icharge = 0; icharge < chargeLoop; icharge++){
 
     TCanvas * c2 = new TCanvas(TString("cCombined")+chargeFlag[icharge]+"_"+funcName[fitFuncID], TString("cCombined")+chargeFlag[icharge],700,700);
     c2->SetTickx();
@@ -297,12 +301,20 @@ void FitCombined() {
 	fitmax = 1.0;
       }
 
-      //      TH1F * hToFit = hSpectra[iCombInStudy][ipart][icharge]; // Shorthand
-      // Temp: fit histo with sist errors FIXME
+      // Temp: fit histo with sist errors 
       TH1F * hsyst = new TH1F(*htemplate);
+      hsyst->SetFillColor(kYellow);
       AliBWTools::GetValueAndError(hsyst,hSpectra[iCombInStudy][ipart][icharge],hSystError[iCombInStudy][ipart][icharge],kTRUE);
-      TH1F * hToFit = hsyst;// Shorthand
 
+      TH1F * hToFit = 0;
+      if (whatToFit == kStatErrors) hToFit = hSpectra[iCombInStudy][ipart][icharge]; // Shorthand
+      if (sumCharge) hToFit->Add(hSpectra[iCombInStudy][ipart][1]);
+      if (whatToFit == kStatSystErrors) {
+	AliBWTools::GetHistoCombinedErrors(hsyst,hSpectra[iCombInStudy][ipart][icharge]); // combine syst and stat
+	hToFit = hsyst;// Shorthand
+      }
+      if (whatToFit == kSystErrors) hToFit = hsyst;
+      
 
       if(!AliBWTools::Fit(hToFit,func,fitmin,fitmax)) {
 	cout << " FIT ERROR " << endl;
@@ -310,32 +322,33 @@ void FitCombined() {
       }
       cout << "DRAWING" << endl;
       c2->cd();
-      hSpectra[iCombInStudy][ipart][icharge]->Draw("same");    
+      //      hsyst->Draw("same,e2");    
+      hToFit->Draw("same");    
       TF1* fitfunc=(TF1*)hToFit->GetListOfFunctions()->At(0);
       fitfunc->Draw("same");
       fitfunc->SetRange(0,4);
       fitfunc->SetLineColor(hSpectra[iCombInStudy][ipart][icharge]->GetLineColor());
       if(drawStar)    DrawStar(icharge);
-      hRatiosToFit[ipart][icharge]=(TH1F*)hSpectra[iCombInStudy][ipart][icharge]->Clone(Form("hRatio%s%s",chargeFlag[icharge],partFlag[icharge])); // Ratio data/fit
-      for(Int_t iBin=1; iBin<hSpectra[iCombInStudy][ipart][icharge]->GetNbinsX(); iBin++){
-	Double_t lowLim=hSpectra[iCombInStudy][ipart][icharge]->GetBinLowEdge(iBin);
-	Double_t highLim=hSpectra[iCombInStudy][ipart][icharge]->GetBinLowEdge(iBin+1);
+      hRatiosToFit[ipart][icharge]=(TH1F*)hToFit->Clone(Form("hRatio%s%s",chargeFlag[icharge],partFlag[icharge])); // Ratio data/fit
+      for(Int_t iBin=1; iBin<hToFit->GetNbinsX(); iBin++){
+	Double_t lowLim=hToFit->GetBinLowEdge(iBin);
+	Double_t highLim=hToFit->GetBinLowEdge(iBin+1);
 	Double_t contFunc=fitfunc->Integral(lowLim,highLim)/(highLim-lowLim);
-	Double_t ratio=hSpectra[iCombInStudy][ipart][icharge]->GetBinContent(iBin)/contFunc;
-	Double_t eratio=hSpectra[iCombInStudy][ipart][icharge]->GetBinError(iBin)/contFunc;
+	Double_t ratio=hToFit->GetBinContent(iBin)/contFunc;
+	Double_t eratio=hToFit->GetBinError(iBin)/contFunc;
 	hRatiosToFit[ipart][icharge]->SetBinContent(iBin,ratio);
 	hRatiosToFit[ipart][icharge]->SetBinError(iBin,eratio);
       }
-      //      hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->At(0)->Draw("same");
-      //      ((TF1*)hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->At(0))->SetRange(0,4);
-      //      ((TF1*)hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->At(0))->SetLineColor(hSpectra[iCombInStudy][ipart][icharge]->GetLineColor());
+      //      hToFit->GetListOfFunctions()->At(0)->Draw("same");
+      //      ((TF1*)hToFit->GetListOfFunctions()->At(0))->SetRange(0,4);
+      //      ((TF1*)hToFit->GetListOfFunctions()->At(0))->SetLineColor(hToFit->GetLineColor());
       c2->Update();
-      l->AddEntry(hSpectra[iCombInStudy][ipart][icharge], 
+      l->AddEntry(hToFit, 
 		  scaleKaons && ipart == kKaon ? 
 		  (TString(partLabel[ipart][icharge])+" #times 2").Data() 
 		  : partLabel[ipart][icharge]);
-//       TF1 * fClone = (TF1*) hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->At(0)->Clone();
-//       hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->Add(fClone);
+//       TF1 * fClone = (TF1*) hToFit->GetListOfFunctions()->At(0)->Clone();
+//       hToFit->GetListOfFunctions()->Add(fClone);
 //       fClone->SetLineStyle(kDashed);
 //       fClone->SetRange(0,100);
 //       fClone->Draw("same");
@@ -349,7 +362,7 @@ void FitCombined() {
 
       Double_t yieldTools, yieldETools;
       Double_t partialYields[3],partialYieldsErrors[3]; 
-      AliBWTools::GetYield(hSpectra[iCombInStudy][ipart][icharge], func, yieldTools, yieldETools, 
+      AliBWTools::GetYield(hToFit, func, yieldTools, yieldETools, 
 			   0, 100, partialYields,partialYieldsErrors);
       Double_t tslope   = func->GetParameter(2);
       Double_t tslopeE  = func->GetParError(2);	
@@ -361,7 +374,7 @@ void FitCombined() {
       table.SetNextCol(tslope,tslopeE,-4);
       table.SetNextCol(func->GetParameter(1),func->GetParError(1)); 
       table.SetNextCol(Form("%2.2f/%d",func->GetChisquare(),func->GetNDF())); 
-      Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[iCombInStudy][ipart][icharge]);
+      Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hToFit);
       //Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[kITS][ipart][icharge]);
       Float_t yieldAbove  = func->Integral(lowestPoint,100);
       table.SetNextCol(lowestPoint,-2);

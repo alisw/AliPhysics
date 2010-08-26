@@ -69,8 +69,10 @@ public:
 
   static void WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr);
 
-  static void GetValueAndError(TH1 * hdest, TH1 * hvalue, TH1 * herror, Bool_t isPercentError) ;  
-  static void AddHisto(TH1 * hdest, TH1* hsource, Bool_t getMirrorBins = kFALSE);
+  static void GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * herror, Bool_t isPercentError) ;  
+  static void AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins = kFALSE);
+  static void GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) ;
+
 
 private:
 

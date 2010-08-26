@@ -937,7 +937,7 @@ void AliBWTools::WeightedMean(Int_t npoints, const Double_t *x, const Double_t *
   
 }
 
-void AliBWTools::GetValueAndError(TH1 * hdest, TH1 * hvalue, TH1 * herror, Bool_t isPercentError) {
+void AliBWTools::GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * herror, Bool_t isPercentError) {
   
   // Put into source, bin-by-bin, the values from hvalue and the
   // errors from content from herror. 
@@ -997,7 +997,7 @@ void AliBWTools::GetValueAndError(TH1 * hdest, TH1 * hvalue, TH1 * herror, Bool_
 
 }
 
-void AliBWTools::AddHisto(TH1 * hdest, TH1* hsource, Bool_t getMirrorBins) {
+void AliBWTools::AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins) {
 
   // Adds hsource to hdest bin by bin, even if they have a different
   // binning If getMirrorBins is true, it takes the negative bins
@@ -1047,3 +1047,18 @@ void AliBWTools::AddHisto(TH1 * hdest, TH1* hsource, Bool_t getMirrorBins) {
 
 }
 
+void AliBWTools::GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) {
+
+  // Combine the errors of hdest with the errors of h1, summing in
+  // quadrature. Results are put in hdest. Histograms are assumed to
+  // have the same binning
+
+  Int_t nbin = hdest->GetNbinsX();
+  for(Int_t ibin = 0; ibin < nbin; ibin++){
+    Double_t e1 = hdest->GetBinError(ibin);
+    Double_t e2 = h1->GetBinError(ibin);
+    hdest->SetBinError(ibin, TMath::Sqrt(e1*e1+e2*e2));
+  }
+  
+
+}
