@@ -11,6 +11,8 @@
 #define ALIRSNANALYSISEFFSE_H
 
 #include <TArrayD.h>
+#include <TArrayI.h>
+#include <TClonesArray.h>
 
 #include "AliRsnVAnalysisTaskSE.h"
 #include "AliRsnEvent.h"
@@ -42,11 +44,11 @@ class AliRsnAnalysisEffSE : public AliRsnVAnalysisTaskSE
     virtual void    RsnTerminate(Option_t*);
 
     // settings
-    void            SetEventCuts(AliRsnCutSet *const cuts) {fEventCuts = cuts;}
+    AliRsnCutSet*   GetEventCuts() {return &fEventCuts;}
     void            AddPairDef(AliRsnPairDef *pairDef);
-    void            AddStepMC(AliRsnCutManager *mgr)  {fStepListMC.AddLast(mgr);}
-    void            AddStepESD(AliRsnCutManager *mgr) {fStepListESD.AddLast(mgr);}
-    void            AddAxis(AliRsnValue *axis) {fAxisList.AddLast(axis);}
+    void            AddStepMC(AliRsnCutManager *mgr);
+    void            AddStepESD(AliRsnCutManager *mgr);
+    void            AddAxis(AliRsnValue *axis);
 
   private:
 
@@ -56,19 +58,20 @@ class AliRsnAnalysisEffSE : public AliRsnVAnalysisTaskSE
     void                 ProcessEventESD(AliRsnPairDef *pairDef);
     void                 FillContainer(AliCFContainer *cont, const TObjArray *stepList, AliRsnPairDef *pd, Int_t firstOutStep);
     Int_t                FindESDtrack(Int_t label, AliESDEvent *esd, Bool_t rejectFakes);
+    TArrayI              FindESDtracks(Int_t label, AliESDEvent *esd);
 
     Bool_t                fUseITSSA;                // switch to use ITS standalone tracks
     Bool_t                fUseGlobal;               // switch to use global tracks
-    AliRsnCutSet         *fEventCuts;               // event cuts
     TObjArray             fStepListMC;              // list of cut managers for all steps with MC
     TObjArray             fStepListESD;             // list of cut managers for all steps with ESD
-    TObjArray             fAxisList;                // list of axes of efficiency plots
+    TClonesArray          fAxisList;                // list of axes of efficiency plots
     TObjArray             fPairDefList;             // decay channels
     TList                *fContainerList;           // list of CF containers
     TList                *fOutList;                 // global output list
     TArrayD               fVar;                     // list of variables of the container
     AliRsnMother          fPair;                    // interface to pair
     AliRsnDaughter        fDaughter[2];             // interface to tracks
+    AliRsnCutSet          fEventCuts;               // event cuts
 
     ClassDef(AliRsnAnalysisEffSE, 1)
 };
