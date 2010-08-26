@@ -36,6 +36,7 @@ class AliRsnCutStd : public AliRsnCut
       // cut without reference values
       kCharge,
       kSameLabel,
+      kPhysPrimary,
       // last
       kLastType
     };

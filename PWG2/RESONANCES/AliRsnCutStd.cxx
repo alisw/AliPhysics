@@ -19,6 +19,8 @@
 #include <TMath.h>
 #include <TLorentzVector.h>
 
+#include "AliStack.h"
+#include "AliMCEvent.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
 #include "AliRsnEvent.h"
@@ -199,6 +201,12 @@ Bool_t AliRsnCutStd::IsDaughterSelected(AliRsnDaughter *daughter)
     case kCharge:
       fCutValueI = (Int_t)ref->Charge();
       return OkValue();
+    case kPhysPrimary:
+      if (!fEvent->GetRefMC()) return kFALSE;
+      else
+      {
+        return fEvent->GetRefMC()->Stack()->IsPhysicalPrimary(TMath::Abs(((AliVTrack*)ref)->GetLabel()));
+      }
     default:
       AliWarning(Form("Value %d is not included in available cuts for DAUGHTER. Cut skipped.", fType));
       return kTRUE;
