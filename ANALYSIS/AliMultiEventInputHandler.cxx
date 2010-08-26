@@ -111,8 +111,16 @@ Bool_t AliMultiEventInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 
 Bool_t AliMultiEventInputHandler::Notify(const char */*path*/)
 {
+    static Bool_t first = kTRUE;
+    
     // Connect to new tree
-    fEventBuffer[0]->ReadFromTree(fTree, "");
+    if (first) {
+	fEventBuffer[0]->ReadFromTree(fTree, "");
+	first = kFALSE;
+    } else {
+    	fEventBuffer[0]->ReadFromTree(fTree, "reconnect");
+    }
+    
     return (kTRUE);
 }
 

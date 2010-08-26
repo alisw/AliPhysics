@@ -1349,7 +1349,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
 
     // Connect to tree
     // prevent a memory leak when reading back the TList
-    // if (!(strcmp(opt, "reconnect"))) fESDObjects->Delete();
+    if (!(strcmp(opt, "reconnect"))) fESDObjects->Delete();
     
     if(!fUseOwnList){
       // create a new TList from the UserInfo TList... 
@@ -1378,7 +1378,8 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
       if(bname.CompareTo("AliESDfriend")==0)
 	{
 	  // AliESDfriend does not have a name ...
-	  tree->SetBranchAddress("ESDfriend.",fESDObjects->GetObjectRef(el));
+	    TBranch *br = tree->GetBranch(bname.Data());
+	    if (br) tree->SetBranchAddress("ESDfriend.",fESDObjects->GetObjectRef(el));
 	}
       else{
 	// check if branch exists under this Name
