@@ -40,6 +40,7 @@ class AliStarEvent : public TObject {
   Int_t GetNumberOfPrimaryTracks() const {return (Int_t)fParams[8];}
   Int_t GetNumberOfTracks() const {return (Int_t)fParams[9];}
   const Float_t* GetParams() const {return fParams; }
+  Int_t CalculateCentrality(Int_t refMult) const;
 
   const AliStarTrack* GetTrack( const Int_t i ) const;
   void AddTrack( AliStarTrack* track );

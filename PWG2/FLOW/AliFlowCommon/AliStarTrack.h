@@ -48,6 +48,7 @@ class AliStarTrack : public TObject {
   Float_t GetNSigK() const {return fParams[13];}
   Float_t GetNSigProton() const {return fParams[14];}
   const Float_t* GetParams() const {return fParams;}
+  Int_t PID() const;
 
   void SetID( const Int_t p)  { fParams[0]=(Float_t)p;}
   void SetCharge( const Int_t p)  { fParams[1]=(Float_t)p;}
