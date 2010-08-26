@@ -23,8 +23,8 @@ In  \textit{root} additional libraries need to be loaded: \\
 \texttt{gSystem->Load("libPWG2flowCommon");}\\
 \item
 We need to instantiate the flow analysis methods which we want to use. In this example we will
-instantiate two methods: the first  which calculates the flow versus the reaction plane of the Monte Carlo, 
-which is our reference value, and second the so called Q-cumulant method.
+instantiate two methods: the first  which calculates the flow versus the reaction plane of the Monte Carlo, which is our reference value (see section \ref{MC}), 
+and second the so called Q-cumulant method (see section \ref{qvc}).
 \texttt{AliFlowAnalysisWithMCEventPlane *mcep} \\
 \texttt{= new AliFlowAnalysisWithMCEventPlane();}\\
 \texttt{AliFlowAnalysisWithQCumulants *qc}\\
@@ -70,12 +70,9 @@ This concludes the analysis and now we can write the results into a file:\\
 Now we have written the results into a file, but what is in there?
 
 \section{Reading events from file}
-The macro \texttt{Documentation/examples/runFlowReaderExample.C} is an example how to setup a flow analysis if the events are already generate and
+The macro \texttt{Documentation/examples/runFlowReaderExample.C} is an example how to setup a flow analysis if the events are already generated and
 for example are stored in ntuples.
  
 \section{A simple flow analysis in ALICE using Tasks}
-The macro \texttt{Documentation/examples/runFlowTaskExample.C} is an example how to setup a flow analysis in ALICE which can read ESD's and OAD's
-and runs locally, on a proof farm (CAF) and on the GRID.
-
-
+The macro \texttt{Documentation/examples/runFlowTaskExample.C} is an example how to setup a flow analysis using the full ALICE Analysis Framework.
 \end{enumerate}
