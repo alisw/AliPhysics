@@ -91,8 +91,8 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
   Int_t bitmap = AliTRDpwg1Helper::ParseOptions(trd);
   for(Int_t it=0; it<AliTRDpwg1Helper::kNTRDQATASKS; it++){
     //if(!TESTBIT(bitmap, it)) continue;
-    if(gROOT->LoadMacro(Form("%s/Add%s.C+", addMacroPath, TString(AliTRDpwg1Helper::fgkTRDtaskClassName[it])(3,20).Data()))) {
-      Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", AliTRDpwg1Helper::fgkTRDtaskClassName[it]));
+    if(gROOT->LoadMacro(Form("%s/Add%s.C+", addMacroPath, TString(AliTRDpwg1Helper::TaskClassName(it))(3,20).Data()))) {
+      Error("AddTrainPerformanceTRD()", Form("Error loading %s task.", AliTRDpwg1Helper::TaskClassName(it)));
       return kFALSE;
     } 
 
