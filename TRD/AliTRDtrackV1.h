@@ -90,7 +90,7 @@ public:
   UChar_t        GetNumberOfTrackletsPID() const;
   Double_t       GetPredictedChi2(const AliTRDseedV1 *tracklet, Double_t *cov) const;
   Double_t       GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
-  Int_t          GetProlongation(Double_t xk, Double_t &y, Double_t &z);
+  Int_t          GetProlongation(Double_t xk, Double_t &y, Double_t &z) const;
   inline UChar_t GetStatusTRD(Int_t ly=-1) const;
   Int_t          GetSector() const;
   AliTRDseedV1*  GetTracklet(Int_t plane) const {return plane >=0 && plane <kNplane ? fTracklet[plane] : NULL;}

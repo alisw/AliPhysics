@@ -562,7 +562,7 @@ Int_t AliTRDtrackV1::MakeBackupTrack()
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDtrackV1::GetProlongation(Double_t xk, Double_t &y, Double_t &z)
+Int_t AliTRDtrackV1::GetProlongation(Double_t xk, Double_t &y, Double_t &z) const
 {
   //
   // Find a prolongation at given x
