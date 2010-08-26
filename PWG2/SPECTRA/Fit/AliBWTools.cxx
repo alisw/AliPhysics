@@ -224,9 +224,10 @@ TGraphErrors * AliBWTools::ConcatenateGraphs(const TGraphErrors * g1,const TGrap
 
 
 TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  const TH1* h3, 
-					    const TH1 * he1, const TH1 * he2, const TH1 * he3, 
+					    TH1 * he1,  TH1 * he2,  TH1 * he3, 
 					    const TH1* htemplate, Int_t statFrom, 
-					    Float_t renorm1, Float_t renorm2, Float_t renorm3) {
+					    Float_t renorm1, Float_t renorm2, Float_t renorm3,
+					    TH1 ** hSyst, Bool_t errorFromBinContent) {
 
   // Combines 3 histos (h1,h2,h3), weighting by the errors provided in
   // he1,he2,he3, supposed to be the independent systematic errors.
@@ -236,7 +237,8 @@ TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  co
   // of tracks. statFrom tells the stat error of which of the 3 is
   // going to be assigned to the combined
   // Optionally, it is possible to rescale any of the histograms.
-
+  // if hSyst is give, the histo is filled with combined syst error vs pt
+  // if errorFromBinContent is true, the weights are taken from the he* content rather than errors
   TH1F * hcomb = (TH1F*) htemplate->Clone(TString("hComb_")+h1->GetName()+"_"+h2->GetName()+h3->GetName());
 
   // TODO: I should have used an array for h*local...
@@ -274,22 +276,27 @@ TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  co
     y[0]  = h1local->GetBinContent(ibin1);
     y[1]  = h2local->GetBinContent(ibin2);
     y[2]  = h3local->GetBinContent(ibin3);
-    ye[0] = he1->GetBinError(ibin1);
-    ye[1] = he2->GetBinError(ibin2);
-    ye[2] = he3->GetBinError(ibin3);
- 
+    if (errorFromBinContent) {
+      ye[0] = he1->GetBinContent(he1->FindBin(hcomb->GetBinCenter(ibin)));
+      ye[1] = he2->GetBinContent(he2->FindBin(hcomb->GetBinCenter(ibin)));
+      ye[2] = he3->GetBinContent(he3->FindBin(hcomb->GetBinCenter(ibin)));
+    } else {
+      ye[0] = he1->GetBinError(ibin1);
+      ye[1] = he2->GetBinError(ibin2);
+      ye[2] = he3->GetBinError(ibin3);
+    }
     // Set error to 0 if content is 0 (means it was not filled)
     if(!h1local->GetBinContent(ibin1)) ye[0] = 0;
     if(!h2local->GetBinContent(ibin2)) ye[1] = 0;
     if(!h3local->GetBinContent(ibin3)) ye[2] = 0;
     
     // Compute weighted mean
+    //    cout << "Bins:  "<< ibin1 << " " << ibin2 << " " << ibin3 << endl;    
     Double_t mean, err;
     WeightedMean(3,y,ye,mean,err);
 
 
     // Fill combined
-    // TODO: return error from weighted mean somehow...
     hcomb->SetBinContent(ibin,mean);
     Double_t statError = 0;
     if (hStatError->GetBinContent(ibinError)) {
@@ -309,7 +316,7 @@ TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  co
       statError = h3local->GetBinError(ibin3)/h3local->GetBinContent(ibin3)*hcomb->GetBinContent(ibin);
     }
     hcomb->SetBinError  (ibin,statError);
-
+    if(hSyst) (*hSyst)->SetBinContent(ibin,err);
     //    cout << "BIN " << ibin << " " << mean << " " << statError << endl;
 
   }
@@ -912,7 +919,7 @@ void AliBWTools::WeightedMean(Int_t npoints, const Double_t *x, const Double_t *
       Double_t weight = 1. / xerr2;
       sumweight += weight;
       mean += weight * x[ipoint];
-    }
+    }// else cout << " Skipping " << ipoint << endl;
     
   }
 
@@ -922,9 +929,121 @@ void AliBWTools::WeightedMean(Int_t npoints, const Double_t *x, const Double_t *
     meanerr = TMath::Sqrt(1./ sumweight);
   }
   else {
+    //    cout << " No sumweight" << endl;
     mean = 0;
     meanerr = 0;
   }
 
   
 }
+
+void AliBWTools::GetValueAndError(TH1 * hdest, TH1 * hvalue, TH1 * herror, Bool_t isPercentError) {
+  
+  // Put into source, bin-by-bin, the values from hvalue and the
+  // errors from content from herror. 
+  // Used mainly to combine histos of systemati errors with their spectra
+  // Set isPercentError to kTRUE if the error is given in % 
+
+  if(hdest == NULL){ 
+    Printf("AliBWTools::GetValueAndError Errror: hdest is null");
+    return;
+  }
+
+
+  Int_t nbin  = hdest->GetNbinsX();
+  Int_t nBinSourceVal = hvalue->GetNbinsX();
+  Int_t nBinSourceErr = herror->GetNbinsX();
+  
+  for(Int_t iBinDest = 1; iBinDest <= nbin; iBinDest++){
+    Float_t lowPtDest=hdest->GetBinLowEdge(iBinDest);
+    Float_t binWidDest=hdest->GetBinWidth(iBinDest);
+    // Loop over Source bins and find overlapping bins to Dest
+    // First value then error
+    // Value
+    Bool_t foundValue = kFALSE;
+    for(Int_t iBinSourceVal=1; iBinSourceVal<=nBinSourceVal; iBinSourceVal++){
+      Float_t lowPtSource=  hvalue->GetBinLowEdge(iBinSourceVal) ;
+      Float_t binWidSource= hvalue->GetBinWidth(iBinSourceVal);
+      if(TMath::Abs(lowPtDest-lowPtSource)<0.001 && TMath::Abs(binWidSource-binWidDest)<0.001){
+	Double_t content = hvalue->GetBinContent(iBinSourceVal);
+	hdest->SetBinContent(iBinDest, content);
+	foundValue = kTRUE;
+	break;
+      }
+    }
+    // if (!foundValue){
+    //   Printf("AliBWTools::GetValueAndError: Error: cannot find matching value source bin for destination %d",iBinDest);
+    // }
+
+    // Error
+    Bool_t foundError = kFALSE;
+    for(Int_t iBinSourceErr=1; iBinSourceErr<=nBinSourceErr; iBinSourceErr++){
+      Float_t lowPtSource=  herror->GetBinLowEdge(iBinSourceErr) ;
+      Float_t binWidSource= herror->GetBinWidth(iBinSourceErr);
+      if(TMath::Abs(lowPtDest-lowPtSource)<0.001 && TMath::Abs(binWidSource-binWidDest)<0.001){
+	Double_t error = herror->GetBinContent(iBinSourceErr);
+	//	cout << "-> " << iBinDest << " " << error << " " << hdest->GetBinContent(iBinDest) << endl;
+	
+	hdest->SetBinError(iBinDest, isPercentError ? error * hdest->GetBinContent(iBinDest) : error);
+	foundError=kTRUE;
+	break;
+      }      
+    }
+    // if (!foundError ){
+    //   Printf("AliBWTools::GetValueAndError: Error: cannot find matching error source bin for destination %d",iBinDest);
+    // }
+  }
+  
+
+}
+
+void AliBWTools::AddHisto(TH1 * hdest, TH1* hsource, Bool_t getMirrorBins) {
+
+  // Adds hsource to hdest bin by bin, even if they have a different
+  // binning If getMirrorBins is true, it takes the negative bins
+  // (Needed because sometimes the TPC uses the positive axis for
+  // negative particles and the possitive axis for positive
+  // particles).
+
+
+  if (hdest == NULL) {
+    Printf("Error: hdest is NULL\n");
+  } 
+  if (hsource == NULL) {
+    Printf("Error: hsource is NULL\n");
+  } 
+
+  Int_t nBinSource = hsource->GetNbinsX();
+  Int_t nBinDest = hdest->GetNbinsX();
+
+  // Loop over destination bins, 
+  for(Int_t iBinDest=1; iBinDest<=nBinDest; iBinDest++){
+    Float_t lowPtDest=hdest->GetBinLowEdge(iBinDest);
+    Float_t binWidDest=hdest->GetBinWidth(iBinDest);
+    // Loop over Source bins and find overlapping bins to Dest
+    Bool_t found = kFALSE;
+    for(Int_t iBinSource=1; iBinSource<=nBinSource; iBinSource++){      
+      Float_t lowPtSource= getMirrorBins ? -hsource->GetBinLowEdge(iBinSource)+hsource->GetBinWidth(iBinSource) : hsource->GetBinLowEdge(iBinSource) ;
+      Float_t binWidSource= hsource->GetBinWidth(iBinSource)  ;
+      if(TMath::Abs(lowPtDest-lowPtSource)<0.001 && TMath::Abs(binWidSource-binWidDest)<0.001){
+	Float_t dest=hdest->GetBinContent(iBinDest);
+	Float_t source=hsource->GetBinContent(iBinSource);
+	Float_t edest=hdest->GetBinError(iBinDest);
+	Float_t esource=hsource->GetBinError(iBinSource);
+	Double_t cont=dest+source;
+	Double_t econt=TMath::Sqrt(edest*edest+esource*esource);
+	hdest->SetBinContent(iBinDest,cont);
+	hdest->SetBinError  (iBinDest,econt);
+	found = kTRUE;
+	
+	break;
+      }
+    }
+    if (!found){
+      Printf("Error: cannot find matching source bin for destination %d",iBinDest);
+    }
+  }
+
+
+}
+

@@ -40,9 +40,10 @@ public:
   static TGraphErrors * GetGraphFromHisto(const TH1F * h, Bool_t binWidth = kTRUE) ; 
   static TH1F *         CombineHistos(const TH1 * h1, TH1 * h2, const TH1* htemplate, Float_t renorm1=1.);
   static TH1F *         Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  const TH1* h3, 
-						 const TH1 * he1, const TH1 * he2, const TH1 * he3, 
+						  TH1 * he1,  TH1 * he2,  TH1 * he3, 
 						 const TH1* htemplate, Int_t statFrom = 0, 
-						 Float_t renorm1=1., Float_t renorm2=1., Float_t renorm3=1.);
+						 Float_t renorm1=1., Float_t renorm2=1., Float_t renorm3=1.,
+						 TH1 ** hSyst =0, Bool_t errorFromBinContent=kFALSE);
   static void GetFromHistoGraphDifferentX(const TH1F * h, TF1 * f, TGraphErrors ** gBarycentre, TGraphErrors ** gXlw); 
   static Float_t GetMean(TH1F * h, Float_t min, Float_t max) ; 
 
@@ -67,6 +68,9 @@ public:
   static TH1F         * DivideHistoByFunc (TH1F * h, TF1 * f, Bool_t invert = kFALSE);
 
   static void WeightedMean(Int_t npoints, const Double_t *x, const Double_t *xerr, Double_t &mean, Double_t &meanerr);
+
+  static void GetValueAndError(TH1 * hdest, TH1 * hvalue, TH1 * herror, Bool_t isPercentError) ;  
+  static void AddHisto(TH1 * hdest, TH1* hsource, Bool_t getMirrorBins = kFALSE);
 
 private:
 
