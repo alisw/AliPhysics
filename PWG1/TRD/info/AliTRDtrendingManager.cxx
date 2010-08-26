@@ -1,3 +1,13 @@
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Trend Value Manager                                                   //
+//                                                                        //
+//  Mediates interaction with DB (OCDB ?!)                                //                                                                      //                                                                        //
+//  Authors:                                                              //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "TObjArray.h"
 #include "AliLog.h"
 #include "AliCDBRunRange.h"
@@ -61,12 +71,14 @@ AliTRDtrendingManager::AliTRDtrendingManager()
   ,fEntries(NULL)
   ,fValue(NULL)
 {
+// Constructor
   fRunRange[0] = 0; fRunRange[1] = AliCDBRunRange::Infinity();
 }
 
 //____________________________________________
 AliTRDtrendingManager::~AliTRDtrendingManager()
 {
+// Destructor
   if(fValue) delete fValue;
   if(fEntries) delete fEntries;
 }
@@ -78,8 +90,8 @@ void AliTRDtrendingManager::AddValue(
   ,Char_t *title
   ,Double_t limits[2*(AliTRDtrendValue::kNlevels+1)]
   ,Char_t *messages[AliTRDtrendValue::kNlevels]
-  ,Char_t *responsible
-  ,Char_t *notifiables
+  ,const Char_t *responsible
+  ,const Char_t *notifiables
   )
 {
 // Expert Function !!!
@@ -138,6 +150,7 @@ void AliTRDtrendingManager::AddValue(
 //____________________________________________
 AliTRDtrendValue* AliTRDtrendingManager::GetValue(Char_t *class_name, Char_t *value_name)
 {
+// Search trend value list by value "value_name" and class responsible "class_name" 
   if(!fEntries){
     AliError("No trending map defined.");
     return NULL;
@@ -157,8 +170,8 @@ Bool_t AliTRDtrendingManager::ModifyValue(
   ,Char_t *title
   ,Double_t *limits
   ,Char_t **messages
-  ,Char_t *responsible
-  ,Char_t *notifiables
+  ,const Char_t *responsible
+  ,const Char_t *notifiables
   )
 {
 // Expert Function !!!
@@ -212,6 +225,7 @@ Bool_t AliTRDtrendingManager::ModifyValue(
 //____________________________________________
 void AliTRDtrendingManager::Print(Option_t *o) const
 {
+// Dump trend value list
   if(!fEntries){
     AliError("No trending map available.");
     return;

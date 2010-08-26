@@ -1,3 +1,12 @@
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  TRD PID/Track summary info for performance                            //
+//                                                                        //
+//  Authors:                                                              //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "AliTRDpidInfo.h"
 #include "AliTRDgeometry.h"
 
@@ -44,6 +53,7 @@ AliTRDpidInfo::~AliTRDpidInfo()
 //________________________________________________________________________
 AliTRDpidInfo::AliTRDpidData const* AliTRDpidInfo::GetDataInLayer(Int_t ily) const
 {
+// Extract PID raw signals for layer "ily"
   if(!fData) return NULL;
   if(ily<0 || ily>=AliTRDgeometry::kNlayer) return NULL;
 

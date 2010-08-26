@@ -3,6 +3,14 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Trend Value Manager                                                   //
+//                                                                        //
+//  Authors:                                                              //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #ifndef ROOT_TObject
 #include "TObject.h"
@@ -22,8 +30,8 @@ public:
                             ,Char_t *value_title
                             ,Double_t limits[2*(AliTRDtrendValue::kNlevels+1)]
                             ,Char_t *messages[AliTRDtrendValue::kNlevels]
-                            ,Char_t *responsible
-                            ,Char_t *notifiables=NULL
+                            ,const Char_t *responsible
+                            ,const Char_t *notifiables=NULL
                             );
   AliTRDtrendValue* GetValue(Char_t *class_name, Char_t *value_name);
   static AliTRDtrendingManager*	Instance();
@@ -32,8 +40,8 @@ public:
                             ,Char_t *value_title
                             ,Double_t *limits=NULL
                             ,Char_t **messages=NULL
-                            ,Char_t *responsible=NULL
-                            ,Char_t *notifiables=NULL
+                            ,const Char_t *responsible=NULL
+                            ,const Char_t *notifiables=NULL
                             );
   void              Print(Option_t *o="") const;
   void              Save();

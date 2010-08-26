@@ -63,7 +63,7 @@ public:
   
   void    UserCreateOutputObjects();
   Float_t GetPtThreshold() const {return fPtThreshold;}
-  Float_t GetSegmentationLevel() {return fSegmentLevel;}
+  Float_t GetSegmentationLevel() const {return fSegmentLevel;}
   Bool_t  GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
   Bool_t  Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir="TRD_Performance");
@@ -111,7 +111,7 @@ private:
   Bool_t  Process3DL(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=NULL,  Float_t scale=1.);
   Bool_t  Process3Darray(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=NULL,  Float_t scale=1.);
   Bool_t  Process3DlinkedArray(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=NULL,  Float_t scale=1.);
-  Bool_t  Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt);
+  Bool_t  Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt) const;
 
   UChar_t             fSegmentLevel;    // segmentation level [sector/stack/chamber]
   UShort_t            fIdxPlot;         // plot counter (internal)
@@ -120,8 +120,9 @@ private:
   Char_t              *fAxTitle[kNprojs][4]; //! Title for all ref histos
   Float_t             fPtThreshold;     // pt threshold for some performance plots
   static Char_t const *fgPerformanceName[kNviews]; //! name of performance plot
+  static Char_t const *fgParticle[11];    //! latex name of particles/sign 
   static UChar_t const fgNproj[kNviews]; //! number of projections per task
-  static Int_t const  fgkNresYsegm[3];  //! number of segments for saving y resolution
+  static Int_t const  fgkNresYsegm[3];   //! number of segments for saving y resolution
   static Char_t const *fgkResYsegmName[3];//! name of segment for saving y resolution
   TDatabasePDG        *fDBPDG;          // PDG database
   TObjArray           *fGraphS;         //! result holder - sigma values

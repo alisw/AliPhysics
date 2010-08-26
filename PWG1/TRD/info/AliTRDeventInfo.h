@@ -1,5 +1,16 @@
-#ifndef __ALITRDEVENTINFO_H__
-#define __ALITRDEVENTINFO_H__
+#ifndef ALITRDEVENTINFO_H
+#define ALITRDEVENTINFO_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Event info for TRD performance train                                  //
+//                                                                        //
+//  Authors:                                                              //
+//    Markus Fasel <M.Fasel@gsi.de>                                       //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 
@@ -27,7 +38,7 @@ private:
     kOwner = BIT(14)
   };
   AliESDHeader *fHeader;		//! The ESD Header
-  AliESDRun *fRun;		//! The ESD Run Info
+  AliESDRun *fRun;		      //! The ESD Run Info
 
   ClassDef(AliTRDeventInfo, 1)
 };

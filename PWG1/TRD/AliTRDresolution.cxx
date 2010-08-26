@@ -105,6 +105,12 @@ Char_t const * AliTRDresolution::fgPerformanceName[kNviews] = {
     ,"TRDout2MC"
     ,"TRD2MC"
 };
+Char_t const * AliTRDresolution::fgParticle[11]={
+  " p bar", " K -", " #pi -", " #mu -", " e -",
+  " No PID",
+  " e +", " #mu +", " #pi +", " K +", " p",
+};
+
 // Configure segmentation for y resolution/residuals
 Int_t const AliTRDresolution::fgkNresYsegm[3] = {
   AliTRDgeometry::kNsector
@@ -193,7 +199,9 @@ void AliTRDresolution::UserCreateOutputObjects()
 //________________________________________________________
 void AliTRDresolution::InitExchangeContainers()
 {
-  fCl = new TObjArray();
+// Init containers for subsequent tasks (AliTRDclusterResolution)
+
+  fCl = new TObjArray(200);
   fCl->SetOwner(kTRUE);
   fMCcl = new TObjArray();
   fMCcl->SetOwner(kTRUE);
@@ -222,7 +230,7 @@ void AliTRDresolution::UserExec(Option_t *opt)
 }
 
 //________________________________________________________
-Bool_t AliTRDresolution::Pulls(Double_t dyz[2], Double_t cov[3], Double_t tilt)
+Bool_t AliTRDresolution::Pulls(Double_t dyz[2], Double_t cov[3], Double_t tilt) const
 {
 // Helper function to calculate pulls in the yz plane 
 // using proper tilt rotation
@@ -877,14 +885,14 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   Double_t covR[7]/*, cov[3]*/;
 
   if(DebugLevel()>=3){
-    TVectorD dX(12), dY(12), dZ(12), Pt(12), dPt(12), cCOV(12*15);
-    fkMC->PropagateKalman(&dX, &dY, &dZ, &Pt, &dPt, &cCOV);
+    TVectorD dX(12), dY(12), dZ(12), vPt(12), dPt(12), cCOV(12*15);
+    fkMC->PropagateKalman(&dX, &dY, &dZ, &vPt, &dPt, &cCOV);
     (*DebugStream()) << "MCkalman"
       << "pdg=" << pdg
       << "dx="  << &dX
       << "dy="  << &dY
       << "dz="  << &dZ
-      << "pt="  << &Pt
+      << "pt="  << &vPt
       << "dpt=" << &dPt
       << "cov=" << &cCOV
       << "\n";
@@ -1915,12 +1923,12 @@ void AliTRDresolution::GetRange(TH2 *h2, Char_t mod, Float_t *range)
     Int_t bmax(h1.GetMaximumBin());
     Int_t jBinMin(1), jBinMax(100);
     for(Int_t ibin(bmax); ibin--;){
-      if(h1.GetBinContent(ibin)==0){
+      if(h1.GetBinContent(ibin)<1.){
         jBinMin=ibin; break;
       }
     }
     for(Int_t ibin(bmax); ibin++;){
-      if(h1.GetBinContent(ibin)==0){
+      if(h1.GetBinContent(ibin)<1.){
         jBinMax=ibin; break;
       }
     }
@@ -1936,6 +1944,8 @@ void AliTRDresolution::GetRange(TH2 *h2, Char_t mod, Float_t *range)
 //________________________________________________________
 void AliTRDresolution::MakeSummaryPlot(TObjArray *a, TH2 *h2)
 {
+// Core functionality for MakeSummary function.  
+
   h2->Reset();  
   Double_t x,y;
   TGraphErrors *g(NULL); TAxis *ax(h2->GetXaxis());
@@ -1950,33 +1960,33 @@ void AliTRDresolution::MakeSummaryPlot(TObjArray *a, TH2 *h2)
 
 
 //________________________________________________________
-Char_t const *fgParticle[11]={
-  " p bar", " K -", " #pi -", " #mu -", " e -",
-  " No PID",
-  " e +", " #mu +", " #pi +", " K +", " p",
-};
-const Color_t fgColorS[11]={
-kOrange, kOrange-3, kMagenta+1, kViolet, kRed,
-kGray,
-kRed, kViolet, kMagenta+1, kOrange-3, kOrange
-};
-const Color_t fgColorM[11]={
-kCyan-5, kAzure-4, kBlue-7, kBlue+2, kViolet+10,
-kBlack,
-kViolet+10, kBlue+2, kBlue-7, kAzure-4, kCyan-5
-};
-const Marker_t fgMarker[11]={
-30, 30, 26, 25, 24,
-28,
-20, 21, 22, 29, 29
-};
 Bool_t AliTRDresolution::PostProcess()
 {
-  //fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));
+// Fit, Project, Combine, Extract values from the containers filled during execution
+
+  /*fContainer = dynamic_cast<TObjArray*>(GetOutputData(0));*/
   if (!fContainer) {
     AliError("ERROR: list not available");
     return kFALSE;
   }
+
+  // define general behavior parameters
+  const Color_t fgColorS[11]={
+  kOrange, kOrange-3, kMagenta+1, kViolet, kRed,
+  kGray,
+  kRed, kViolet, kMagenta+1, kOrange-3, kOrange
+  };
+  const Color_t fgColorM[11]={
+  kCyan-5, kAzure-4, kBlue-7, kBlue+2, kViolet+10,
+  kBlack,
+  kViolet+10, kBlue+2, kBlue-7, kAzure-4, kCyan-5
+  };
+  const Marker_t fgMarker[11]={
+  30, 30, 26, 25, 24,
+  28,
+  20, 21, 22, 29, 29
+  };
+
   TGraph *gm= NULL, *gs= NULL;
   if(!fGraphS && !fGraphM){ 
     TObjArray *aM(NULL), *aS(NULL);
@@ -2294,11 +2304,11 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
   const Int_t kNpt(14);
   const Int_t kNdpt(150); 
   const Int_t kNspc = 2*AliPID::kSPECIES+1;
-  Float_t Pt=0.1, DPt=-.1, Spc=-5.5;
+  Float_t lPt=0.1, lDPt=-.1, lSpc=-5.5;
   Float_t binsPt[kNpt+1], binsSpc[kNspc+1], binsDPt[kNdpt+1];
-  for(Int_t i=0;i<kNpt+1; i++,Pt=TMath::Exp(i*.15)-1.) binsPt[i]=Pt;
-  for(Int_t i=0; i<kNspc+1; i++,Spc+=1.) binsSpc[i]=Spc;
-  for(Int_t i=0; i<kNdpt+1; i++,DPt+=2.e-3) binsDPt[i]=DPt;
+  for(Int_t i=0;i<kNpt+1; i++,lPt=TMath::Exp(i*.15)-1.) binsPt[i]=lPt;
+  for(Int_t i=0; i<kNspc+1; i++,lSpc+=1.) binsSpc[i]=lSpc;
+  for(Int_t i=0; i<kNdpt+1; i++,lDPt+=2.e-3) binsDPt[i]=lDPt;
 
   // Pt resolution
   sprintf(hname, "%s_%s_Pt", GetNameId(), name);
@@ -2351,11 +2361,11 @@ TObjArray* AliTRDresolution::Histos()
 
   // binnings for plots containing momentum or pt
   const Int_t kNpt(14), kNphi(48), kNdy(60);
-  Float_t Phi=-.48, Dy=-.3, Pt=0.1;
+  Float_t lPhi=-.48, lDy=-.3, lPt=0.1;
   Float_t binsPhi[kNphi+1], binsDy[kNdy+1], binsPt[kNpt+1];
-  for(Int_t i=0; i<kNphi+1; i++,Phi+=.02) binsPhi[i]=Phi;
-  for(Int_t i=0; i<kNdy+1; i++,Dy+=.01) binsDy[i]=Dy;
-  for(Int_t i=0;i<kNpt+1; i++,Pt=TMath::Exp(i*.15)-1.) binsPt[i]=Pt;
+  for(Int_t i=0; i<kNphi+1; i++,lPhi+=.02) binsPhi[i]=lPhi;
+  for(Int_t i=0; i<kNdy+1; i++,lDy+=.01) binsDy[i]=lDy;
+  for(Int_t i=0;i<kNpt+1; i++,lPt=TMath::Exp(i*.15)-1.) binsPt[i]=lPt;
 
   // cluster to track residuals/pulls
   fContainer->AddAt(arr = new TObjArray(2), kCharge);

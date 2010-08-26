@@ -1,3 +1,12 @@
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Event info for TRD performance train                                  //
+//                                                                        //
+//  Authors:                                                              //
+//    Markus Fasel <M.Fasel@gsi.de>                                       //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "AliESDHeader.h"
 #include "AliESDRun.h"
 
@@ -71,9 +80,11 @@ void AliTRDeventInfo::Delete(const Option_t *){
   fRun = 0x0;
 }
 
-void AliTRDeventInfo::SetOwner(){
-  SetBit(kOwner, 1);
+void AliTRDeventInfo::SetOwner()
+{
   // Do deep copy
+  
+  SetBit(kOwner, 1);
   fHeader = new AliESDHeader(*fHeader);
   fRun = new AliESDRun(*fRun);
 }

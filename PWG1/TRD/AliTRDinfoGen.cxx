@@ -202,6 +202,7 @@ AliTRDinfoGen::~AliTRDinfoGen()
 //____________________________________________________________________
 Bool_t AliTRDinfoGen::GetRefFigure(Int_t)
 {
+// General graphs for PWG1/TRD train
   if(!gPad){
     AliWarning("Please provide a canvas to draw results.");
     return kFALSE;
@@ -686,7 +687,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
 }
 
 //____________________________________________________________________
-void AliTRDinfoGen::SetLocalV0Selection(AliTRDv0Info *v0)
+void AliTRDinfoGen::SetLocalV0Selection(const AliTRDv0Info *v0)
 {
 // Set V0 cuts from outside
 
@@ -704,6 +705,7 @@ void AliTRDinfoGen::SetTrigger(const Char_t *trigger)
 //____________________________________________________________________
 TTreeSRedirector* AliTRDinfoGen::DebugStream()
 {
+// Manage debug stream for task
   if(!fDebugStream){
     TDirectory *savedir = gDirectory;
     fDebugStream = new TTreeSRedirector("TRD.DebugInfoGen.root");

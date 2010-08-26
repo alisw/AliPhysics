@@ -1,3 +1,12 @@
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Helper class for PWG1 TRD train                                       //
+//                                                                        //
+//  Authors:                                                              //
+//    Markus Fasel <M.Fasel@gsi.de>                                       //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include <Rtypes.h>
 #include <TError.h>
 #include <TObjArray.h>
@@ -45,7 +54,29 @@ const Char_t * AliTRDpwg1Helper::fgkTRDtaskOpt[AliTRDpwg1Helper::kNTRDTASKS+1] =
 };
 
 //______________________________________________________
-Int_t AliTRDpwg1Helper::ParseOptions(Char_t *trd){
+Int_t AliTRDpwg1Helper::ParseOptions(Char_t *trd)
+{
+// Parse space separated options.
+// Possible options are:
+//      "ALL" : [default] all performance (no calibration) tasks
+// ------- Performance tasks ----------
+//     "ESD"  : Basic TRD Detector checks on ESD only (no TRD tracks analysed)
+//     "DET"  : Basic TRD Detector checks
+//     "RES"  : TRD tracking Resolution
+//     "EFF"  : TRD Tracking Efficiency
+//     "PID"  : TRD PID - pion efficiency
+//     "V0"   : monitor V0 performance for use in TRD PID calibration
+// ------- Calibration tasks ----------
+//     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
+//     "MULT"  : TRD single track selection
+//     "CLRES": clusters Resolution
+//     "CAL"  : TRD calibration
+//     "ALGN" : TRD alignment
+//     "PIDR" : TRD PID - reference data
+// ------- SPECIAL OPTIONS -----------
+//     "NOFR" : Data set does not have AliESDfriends.root
+//     "NOMC" : Data set does not have Monte Carlo Informations (default have MC),
+
   Int_t fSteerTask = 0;
   TObjArray *tasksArray = TString(trd).Tokenize(" ");
   for(Int_t isel = 0; isel < tasksArray->GetEntriesFast(); isel++){
@@ -83,11 +114,10 @@ Int_t AliTRDpwg1Helper::ParseOptions(Char_t *trd){
 //______________________________________________________
 void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const Int_t nBatch = 20)
 {
+// Merge Output files named "mark" from list in "files"
 
-
-  // Clear first predefines
-  Char_t MERGE[8]; sprintf(MERGE, "%d.lst", (Int_t)gRandom->Uniform(9999.));
-  Char_t PURGE[8]; sprintf(PURGE, "%d.lst", (Int_t)gRandom->Uniform(9999.));
+  Char_t lMERGE[8]; sprintf(lMERGE, "%d.lst", (Int_t)gRandom->Uniform(9999.));
+  Char_t lPURGE[8]; sprintf(lPURGE, "%d.lst", (Int_t)gRandom->Uniform(9999.));
   gSystem->Exec("mkdir -p merge; rm -rf merge/*");
 
   // purge file list
@@ -96,25 +126,27 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
   Int_t iline(0);
   while(getline(file, filename)){
     if(Int_t(filename.find(mark)) < 0) continue;
-    gSystem->Exec(Form("echo %s >> %s", filename.c_str(), PURGE));
+    gSystem->Exec(Form("echo %s >> %s", filename.c_str(), lPURGE));
     iline++;
   }
   Int_t nBatches(iline/nBatch);
 
   for(Int_t ibatch(0); ibatch<nBatches; ibatch++){
     Int_t first(ibatch*nBatch);
-    if(!gSystem->Exec(Form("root.exe -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, PURGE, nBatch, first))) continue;
+    if(!gSystem->Exec(Form("root.exe -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, lPURGE, nBatch, first))) continue;
     gSystem->Exec(Form("mv %d_%s merge/", first, mark));
-    gSystem->Exec(Form("echo %s/merge/%d_%s >> %s", gSystem->ExpandPathName("$PWD"), first, mark, MERGE));
+    gSystem->Exec(Form("echo %s/merge/%d_%s >> %s", gSystem->ExpandPathName("$PWD"), first, mark, lMERGE));
   }
-  gSystem->Exec(Form("root.exe -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, 0, kFALSE, kTRUE)\'", mark, MERGE, nBatches));
+  gSystem->Exec(Form("root.exe -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, 0, kFALSE, kTRUE)\'", mark, lMERGE, nBatches));
   gSystem->Exec(Form("mv 0_%s %s", mark, mark));
   
-  gSystem->Exec(Form("rm -rfv %s %s merge", MERGE, PURGE));
+  gSystem->Exec(Form("rm -rfv %s %s merge", lMERGE, lPURGE));
 }
 
 //______________________________________________________
-Int_t AliTRDpwg1Helper::GetTaskIndex(const Char_t *name){
+Int_t AliTRDpwg1Helper::GetTaskIndex(const Char_t *name)
+{
+//  Give index in TRD train of task class "name"
   for(Int_t it(0); it<kNTRDTASKS; it++){
     if(strcmp(fgkTRDtaskClassName[it], name)==0) return it;
   }
@@ -122,12 +154,16 @@ Int_t AliTRDpwg1Helper::GetTaskIndex(const Char_t *name){
 }
 
 //______________________________________________________
-Bool_t AliTRDpwg1Helper::HasReadMCData(Char_t *opt){
+Bool_t AliTRDpwg1Helper::HasReadMCData(Char_t *opt)
+{
+// Use MC data option
   return !(Bool_t)strstr(opt, "NOMC");
 }
 
 //____________________________________________
-Bool_t AliTRDpwg1Helper::HasReadFriendData(Char_t *opt){
+Bool_t AliTRDpwg1Helper::HasReadFriendData(Char_t *opt)
+{
+// Use friends data option
   return !(Bool_t)strstr(opt, "NOFR");
 }
 
