@@ -122,7 +122,7 @@ private:
   TMatrixD *fLookUpBasic5DeltaEz[kPhiSlices];    // Array to store electric field integral 
 
 
-  ClassDef(AliTPCFCVoltError3D,0); 
+  ClassDef(AliTPCFCVoltError3D,0); //
 };
 
 #endif
