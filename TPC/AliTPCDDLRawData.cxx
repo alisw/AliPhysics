@@ -127,20 +127,21 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
       if ( (data.Time==(pTimeBin+1)) &&
 	   (pPadNumber==data.Pad) &&
 	   (pRowNumber==data.Row) &&
-	   (pSecNumber==data.Sec)){
+	   (pSecNumber==data.Sec) &&
+	   (pSubSector==data.SubSec)){
 	bunchLength++;
       }//end if
       else{
 	buffer->FillBuffer(pTimeBin);
 	buffer->FillBuffer(bunchLength+2);
 	nwords+=2;
-	if ((pPadNumber!=data.Pad)||(pRowNumber!=data.Row)||(pSecNumber!=data.Sec)){
+	if ((pPadNumber!=data.Pad)||(pRowNumber!=data.Row)||(pSecNumber!=data.Sec)||(pSubSector!=data.SubSec)){
 	  //Trailer is formatted and inserted!!
 	  buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
 	  numPackets++;
 	  nwords=0;
 
-	  if(pSubSector!=data.SubSec){
+	  if(pSecNumber!=data.Sec || pSubSector!=data.SubSec){
 	    //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
 	    buffer->Flush();
 	    buffer->WriteDataHeader(kFALSE,kFALSE);
