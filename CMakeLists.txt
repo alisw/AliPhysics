@@ -8,6 +8,10 @@ project(AliRoot NONE)
 
 # Set AliRoot variables
 set(CMAKE_VERBOSE_MAKEFILES OFF)
+#fix for MACOSX
+SET(CMAKE_INCLUDE_SYSTEM_FLAG_C "-isystem")
+SET(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem") 
+
 set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 set(ALICE_ROOT $ENV{ALICE_ROOT})
 set(ALICE_STATIC_BUILD OFF CACHE BOOL "Build also statics libs")
