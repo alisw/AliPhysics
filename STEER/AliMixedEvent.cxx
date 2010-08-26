@@ -289,12 +289,7 @@ void AliMixedEvent::Reset()
     delete[]  fNEMCALCellsCumul;
     fNEMCALCellsCumul = 0;
   }
-  if (fPHOSCells) {
-     fPHOSCells->DeleteContainer();
-  }
-  if (fEMCALCells) {
-    fEMCALCells->DeleteContainer();
-  }
+
 }
 
 Int_t AliMixedEvent::EventIndex(Int_t itrack) const
