@@ -416,38 +416,29 @@ void AliTRDseedV1::CookdEdx(Int_t nslices)
   memset(fdEdx, 0, kNslices*sizeof(Float_t));
   const Double_t kDriftLength = (.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick());
 
-  for(int ic=0; ic<kNtb; ic++){
-    AliTRDcluster *c(NULL); Float_t qt(0.);
-    if(fClusters[ic]){
-      c = fClusters[ic];
-      qt += TMath::Abs(c->GetQ());
-    }
-    if(fClusters[ic+kNtb]){
-      c = fClusters[ic+kNtb];
-      qt += TMath::Abs(c->GetQ());
-    }
-    if(!c) continue; // no cluster found
-    Float_t dx(fX0 - c->GetX());
-    
+  AliTRDcluster *c(NULL);
+  for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++){
+    if(!(c = fClusters[ic]) && !(c = fClusters[ic+kNtb])) continue;
+    Float_t dx = TMath::Abs(fX0 - c->GetX());
+
     // Filter clusters for dE/dx calculation
-    
+
     // 1.consider calibration effects for slice determination
-    Int_t slice(0);
-    if(dx<0.) slice = 0; // amplification region ?!
-    else if(dx<kDriftLength) slice = Int_t(dx * nslices / kDriftLength); // TODO should be replaced by c->IsInChamber()
-    else slice = nslices-1;
+    Int_t slice;
+    if(dx<kDriftLength){ // TODO should be replaced by c->IsInChamber()
+      slice = Int_t(dx * nslices / kDriftLength);
+    } else slice = c->GetX() < fX0 ? nslices-1 : 0;
+
 
     // 2. take sharing into account
     Float_t w = /*c->IsShared() ? .5 :*/ 1.;
-    
+
     // 3. take into account large clusters TODO
     //w *= c->GetNPads() > 3 ? .8 : 1.;
-    
-    fdEdx[slice]   += w * qt;
-  } // End of loop over clusters
 
-  // normalization to track inclination
-  for(Int_t is(0); is<nslices; is++) fdEdx[is] /= TMath::Sqrt(1. + fYfit[1]*fYfit[1] + fZref[1]*fZref[1]);
+    //CHECK !!!
+    fdEdx[slice]   += w * GetdQdl(ic); //fdQdl[ic];
+  } // End of loop over clusters
 }
 
 //_____________________________________________________________________________
