@@ -143,6 +143,9 @@ void AliTRDcheckESD::UserCreateOutputObjects()
 
 //____________________________________________________________________
 void AliTRDcheckESD::MakeSummary(){
+  //
+  // Draw summary plots for the ESDcheck task
+  //
   TCanvas *cOut = new TCanvas(Form("summary%s1", GetName()), Form("Summary 1 for task %s", GetName()), 1024, 768);
   cOut->cd();
   GetRefFigure(4);
@@ -157,6 +160,9 @@ void AliTRDcheckESD::MakeSummary(){
 //____________________________________________________________________
 Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
 {
+  //
+  // Produce reference Plots during PostProcessing
+  //
   if(ifig>=fNRefFigures){
     AliWarning(Form("Ref plot %d not available. Valid only up to %d", ifig, fNRefFigures));
     return kFALSE;
@@ -891,22 +897,22 @@ void AliTRDcheckESD::UserExec(Option_t *){
       h = (TH2F*)fHistos->At(kNClsTrackTRD); h->Fill(esdTrack->GetP(), esdTrack->GetTRDncls());
       // (slicePH,sliceNo) distribution and Qtot from slices
       for(Int_t iPlane=0; iPlane<6; iPlane++) {
-        Float_t Qtot=0;
+        Float_t qtot=0;
         for(Int_t iSlice=0; iSlice<8; iSlice++) {
 	  if(esdTrack->GetTRDslice(iPlane, iSlice)>20.) {
 	    h = (TH2F*)fHistos->At(kPHSlice); h->Fill(iSlice, esdTrack->GetTRDslice(iPlane, iSlice));
-	    Qtot += esdTrack->GetTRDslice(iPlane, iSlice);
+	    qtot += esdTrack->GetTRDslice(iPlane, iSlice);
 	  }
         }
         // Qtot>100 to avoid noise
-        if(Qtot>100.) {
-          h = (TH2F*)fHistos->At(kQtotP); h->Fill(esdTrack->GetTRDmomentum(iPlane), fgkQs*Qtot);
+        if(qtot>100.) {
+          h = (TH2F*)fHistos->At(kQtotP); h->Fill(esdTrack->GetTRDmomentum(iPlane), fgkQs*qtot);
 	}
 	// Qtot>100 to avoid noise
 	// fgkQs*Qtot<40. so that the average will give a value close to the peak
-	if(localCoordGood && localMomGood && Qtot>100. && fgkQs*Qtot<40.) {
+	if(localCoordGood && localMomGood && qtot>100. && fgkQs*qtot<40.) {
 	  h2d = (TProfile2D*)fHistos->At(kTRDEtaPhiAvQtot+iPlane);
-	  h2d->Fill(eta, localSagitaPhi, fgkQs*Qtot);
+	  h2d->Fill(eta, localSagitaPhi, fgkQs*qtot);
 	}
       }
       // theta distribution
@@ -1021,9 +1027,9 @@ TObjArray* AliTRDcheckESD::Histos()
 
   // clusters per track
   const Int_t kNpt(30);
-  Float_t Pt(0.2);
+  Float_t pt(0.2);
   Float_t binsPt[kNpt+1];
-  for(Int_t i=0;i<kNpt+1; i++,Pt+=(TMath::Exp(i*i*.001)-1.)) binsPt[i]=Pt;
+  for(Int_t i=0;i<kNpt+1; i++,pt+=(TMath::Exp(i*i*.001)-1.)) binsPt[i]=pt;
   if(!(h = (TH2S*)gROOT->FindObject("hNCl"))){
     h = new TH2S("hNCl", "Clusters per TRD track;N_{cl}^{TRD};SPECIES;entries", 60, 0., 180., 10, -0.5, 9.5);
     TAxis *ay(h->GetYaxis());
@@ -1037,9 +1043,9 @@ TObjArray* AliTRDcheckESD::Histos()
 
   // status bits histogram
   const Int_t kNbits(5);
-  Float_t Bits(.5);
+  Float_t bits(.5);
   Float_t binsBits[kNbits+1];
-  for(Int_t i=0; i<kNbits+1; i++,Bits+=1.) binsBits[i]=Bits;
+  for(Int_t i=0; i<kNbits+1; i++,bits+=1.) binsBits[i]=bits;
   if(!(h = (TH2I*)gROOT->FindObject("hTRDstat"))){
     h = new TH2I("hTRDstat", "TRD status bits;p_{t} @ TRD [GeV/c];status;entries", kNpt, binsPt, kNbits, binsBits);
     TAxis *ay(h->GetYaxis());
@@ -1060,10 +1066,10 @@ TObjArray* AliTRDcheckESD::Histos()
 
   // pt resolution
   const Int_t kNdpt(100), kNspec(4*AliPID::kSPECIES);
-  Float_t DPt(-3.), Spec(-0.5);
+  Float_t dpt(-3.), spec(-0.5);
   Float_t binsDPt[kNdpt+1], binsSpec[kNspec+1];
-  for(Int_t i=0; i<kNdpt+1; i++,DPt+=6.e-2) binsDPt[i]=DPt;
-  for(Int_t i=0; i<kNspec+1; i++,Spec+=1.) binsSpec[i]=Spec;
+  for(Int_t i=0; i<kNdpt+1; i++,dpt+=6.e-2) binsDPt[i]=dpt;
+  for(Int_t i=0; i<kNspec+1; i++,spec+=1.) binsSpec[i]=spec;
   if(!(h = (TH3S*)gROOT->FindObject("hPtRes"))){
     h = new TH3S("hPtRes", "P_{t} resolution @ DCA;p_{t}^{MC} [GeV/c];#Delta p_{t}/p_{t}^{MC} [%];SPECIES", kNpt, binsPt, kNdpt, binsDPt, kNspec, binsSpec);
     TAxis *az(h->GetZaxis());
@@ -1558,8 +1564,11 @@ void AliTRDcheckESD::Terminate(Option_t *)
 }
 
 //____________________________________________________________________
-Int_t AliTRDcheckESD::Pdg2Idx(Int_t pdg)
+Int_t AliTRDcheckESD::Pdg2Idx(Int_t pdg) const
 {
+  //
+  // Helper function converting PDG code into AliPID index
+  //
   switch(pdg){
   case kElectron: 
   case kPositron: return AliPID::kElectron;  

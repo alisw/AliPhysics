@@ -17,9 +17,6 @@
 #ifndef ALIANALYSISTASK_H
 #include "AliAnalysisTaskSE.h"
 #endif
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TH3F.h>
 
 class AliESDEvent;
 class AliMCEvent;
@@ -111,7 +108,7 @@ private:
 
   AliTRDcheckESD(const AliTRDcheckESD&);
   AliTRDcheckESD& operator=(const AliTRDcheckESD&);
-  Int_t         Pdg2Idx(Int_t pdg);
+  Int_t         Pdg2Idx(Int_t pdg) const;
   void          Process(TH1 **h, TGraphErrors *g);
   void          Process2D(TH2 * const h, TGraphErrors **g);
   void          PrintStatus(ULong_t s);
