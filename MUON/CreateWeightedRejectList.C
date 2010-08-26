@@ -277,6 +277,8 @@ Int_t AddEventsSingleRun(Int_t index, Int_t runNumber, AliMUONRejectList& reject
   AliMUONCalibrationData calibrationData(runNumber);
   AliMUONPadStatusMaker status(calibrationData);
   
+  status.SetLimits(*recoParam);
+  
   Long64_t nEvents = runs[index].Nevents();
   
   Int_t rejectMask = recoParam->PadGoodnessMask();
