@@ -109,6 +109,7 @@ enum EAliAnalysisFlags {
    TObjArray          *GetTopTasks() const        {return fTopTasks;}
    TTree              *GetTree() const            {return fTree;}
    TObjArray          *GetZombieTasks() const     {return fZombies;}
+   Bool_t              IsProofMode() const        {return (fMode==kProofAnalysis)?kTRUE:kFALSE;}
    Bool_t              IsRemote() const           {return fIsRemote;}
    Bool_t              IsUsingDataSet() const     {return TObject::TestBit(kUseDataSet);}
    void                LoadBranch(const char *n)  { if(fAutoBranchHandling) return; DoLoadBranch(n); }
