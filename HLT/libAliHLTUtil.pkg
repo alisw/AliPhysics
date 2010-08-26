@@ -23,7 +23,8 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTAgentUtil.h \
 		AliHLTESDCaloClusterMaker.h \
 		AliHLTCaloClusterReader.h  \
-                AliHLTComponentBenchmark.h 
+                AliHLTComponentBenchmark.h \
+		AliHLTESDTrackCuts.h
 
 #		AliHLTMCGeneratorComponent.h
 
@@ -33,10 +34,10 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
-EINCLUDE := HLT/BASE HLT/BASE/util STEER RAW 
+EINCLUDE := HLT/BASE HLT/BASE/util STEER RAW ANALYSIS
 #PYTHIA6
 
-LIBRARY_DEP := -lHLTbase -lSTEER -lSTEERBase -lRAWDatabase 
+LIBRARY_DEP := -lHLTbase -lSTEER -lSTEERBase -lRAWDatabase -lANALYSIS -lANALYSISalice
 #-llhapdf -lEGPythia6 -lpythia6 -lAliPythia6
 
 include $(MODDIR)/hlt.conf
