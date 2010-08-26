@@ -26,15 +26,15 @@ AliRsnAnalysisEffSE::AliRsnAnalysisEffSE(const char *name) :
   AliRsnVAnalysisTaskSE(name),
   fUseITSSA(kTRUE),
   fUseGlobal(kTRUE),
-  fEventCuts(0x0),
   fStepListMC(0),
   fStepListESD(0),
-  fAxisList(0),
+  fAxisList("AliRsnValue", 0),
   fPairDefList(0),
   fContainerList(0x0),
   fOutList(0x0),
   fVar(0),
-  fPair()
+  fPair(),
+  fEventCuts("eventCuts", AliRsnCut::kEvent)
 {
 //
 // Default constructor.
@@ -52,7 +52,6 @@ AliRsnAnalysisEffSE::AliRsnAnalysisEffSE(const AliRsnAnalysisEffSE& copy) :
   AliRsnVAnalysisTaskSE(copy),
   fUseITSSA(copy.fUseITSSA),
   fUseGlobal(copy.fUseGlobal),
-  fEventCuts(copy.fEventCuts),
   fStepListMC(copy.fStepListMC),
   fStepListESD(copy.fStepListESD),
   fAxisList(copy.fAxisList),
@@ -60,11 +59,43 @@ AliRsnAnalysisEffSE::AliRsnAnalysisEffSE(const AliRsnAnalysisEffSE& copy) :
   fContainerList(copy.fContainerList),
   fOutList(0x0),
   fVar(0),
-  fPair()
+  fPair(),
+  fEventCuts(copy.fEventCuts)
 {
 //
 // Copy constrtuctor
 //
+}
+
+//_____________________________________________________________________________
+void AliRsnAnalysisEffSE::AddStepMC(AliRsnCutManager *mgr)
+{
+//
+// Add a step on montecarlo
+//
+
+  fStepListMC.AddLast(mgr);
+}
+
+//_____________________________________________________________________________
+void AliRsnAnalysisEffSE::AddStepESD(AliRsnCutManager *mgr) 
+{
+//
+// Add a step on ESD
+//
+
+  fStepListESD.AddLast(mgr);
+}
+    
+//_____________________________________________________________________________
+void AliRsnAnalysisEffSE::AddAxis(AliRsnValue *axis) 
+{
+//
+// Add a new axis
+//
+
+  Int_t n = fAxisList.GetEntries();
+  new (fAxisList[n]) AliRsnValue(*axis);
 }
 
 //_____________________________________________________________________________
@@ -102,6 +133,7 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   for (iaxis = 0; iaxis < nAxes; iaxis++) 
   {
     AliRsnValue *fcnAxis = (AliRsnValue*)fAxisList.At(iaxis);
+    fcnAxis->Print(); 
     array[iaxis] = fcnAxis->GetArray();
     nBins[iaxis] = array[iaxis].GetSize() - 1;
   }
@@ -129,6 +161,7 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   }
 
   fOutList->Add(fContainerList);
+  fOutList->Print();
 
   PostData(2, fOutList);
 
@@ -190,14 +223,11 @@ void AliRsnAnalysisEffSE::RsnUserExec(Option_t*)
   // they are checked here on the RSN event interface and,
   // if the event does not pass them, it is skipped and ProcessInfo
   // is updated accordingly
-  if (fEventCuts) 
-  {
-    if (!fEventCuts->IsSelected(&fRsnEvent)) {
-      fTaskInfo.SetEventUsed(kFALSE);
-      return;
-    }
+  if (!fEventCuts.IsSelected(&fRsnEvent)) {
+    fTaskInfo.SetEventUsed(kFALSE);
+    return;
   }
-
+  
   // if cuts are passed or not cuts were defined,
   // update the task info before processing the event
   fTaskInfo.SetEventUsed(kTRUE);
@@ -273,11 +303,11 @@ void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
     {
       if (label[j] < 0) continue;
       part[j]   = stack->Particle(label[j]);
-      pdgD[j]    = TMath::Abs(part[j]->GetPdgCode());
+      pdgD[j]   = TMath::Abs(part[j]->GetPdgCode());
       charge[j] = (Short_t)(part[j]->GetPDG()->Charge() / 3);
-      if (pdgD[j] == pairDef->GetPID(0) && charge[j] == pairDef->GetChargeShort(0))
+      if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(0)) && charge[j] == pairDef->GetChargeShort(0))
         pairDefMatch[j] = 0;
-      else if (pdgD[j] == pairDef->GetPID(1) && charge[j] == pairDef->GetChargeShort(1))
+      else if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(1)) && charge[j] == pairDef->GetChargeShort(1))
         pairDefMatch[j] = 1;
       else
         pairDefMatch[j] = -1;
@@ -285,7 +315,10 @@ void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
       // find corresponding ESD particle: first try rejecting fakes,
       // and in case of failure, try accepting fakes
       esdIndex[j] = FindESDtrack(label[j], esd, kTRUE);
+      //TArrayI idx = FindESDtracks(label[j], esd);
+      //for (Int_t kk = 0; kk < idx.GetSize(); kk++) cout << "DAUGHTER " << j << " --> FOUND INDEX: " << idx[kk] << endl;
       if (esdIndex[j] < 0) esdIndex[j] = FindESDtrack(label[j], esd, kFALSE);
+      //cout << "DAUGHTER " << j << " SINGLE FOUND INDEX = " << esdIndex[j] << endl;
     }
     
     // since each candidate good resonance is taken once, we must check
@@ -312,7 +345,7 @@ void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
       // 2nd track --> 1st member of PairDef
       fDaughter[1].SetRef(mc->GetTrack(label[0]));
       fDaughter[1].SetRefMC((AliMCParticle*)mc->GetTrack(label[0]));
-      fDaughter[0].SetGood();
+      fDaughter[1].SetGood();
     }
     else
     {
@@ -336,7 +369,8 @@ void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
       // 1st track --> 1st member of PairDef
       fDaughter[0].SetRef(esd->GetTrack(esdIndex[0]));
       // 2nd track --> 2nd member of PairDef
-      fDaughter[1].SetRef(mc->GetTrack(esdIndex[1]));
+      fDaughter[1].SetRef(esd->GetTrack(esdIndex[1]));
+      //cout << "****** MATCHING SCHEME 1" << endl;
     }
     else if ((pairDefMatch[0] == 1 && pairDefMatch[1] == 0))
     {
@@ -344,8 +378,9 @@ void AliRsnAnalysisEffSE::ProcessEvent(AliRsnPairDef *pairDef)
       fDaughter[0].SetRef(esd->GetTrack(esdIndex[1]));
       // 2nd track --> 1st member of PairDef
       fDaughter[1].SetRef(esd->GetTrack(esdIndex[0]));
+      //cout << "****** MATCHING SCHEME 2" << endl;
     }
-    fPair.SetDaughters(&fDaughter[0], pairDef->GetMass(0), &fDaughter[1], pairDef->GetMass(1));
+    //cout << "****** IDs = " << fDaughter[0].GetID() << ' ' << fDaughter[1].GetID() << endl;
     // here we must remember how many steps were already filled
     first = (Int_t)fStepListMC.GetEntries();
     FillContainer(cont, &fStepListESD, pairDef, first);
@@ -449,6 +484,9 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
 
   Int_t iaxis, nAxes  = fAxisList.GetEntries();
   Int_t istep, nSteps = stepList->GetEntries();
+  
+  // set daughters to pair
+  fPair.SetDaughters(&fDaughter[0], pd->GetMass(0), &fDaughter[1], pd->GetMass(1));
 
   // compute values for all axes
   for (iaxis = 0; iaxis < nAxes; iaxis++) 
@@ -462,11 +500,13 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
   for (istep = 0; istep < nSteps; istep++) 
   {
     AliRsnCutManager *cutMgr = (AliRsnCutManager*)stepList->At(istep);
-    if (!cutMgr->PassCommonDaughterCuts(fPair.GetDaughter(0))) break;
-    if (!cutMgr->PassCommonDaughterCuts(fPair.GetDaughter(1))) break;
-    if (!cutMgr->PassDaughter1Cuts(fPair.GetDaughter(0))) break;
-    if (!cutMgr->PassDaughter2Cuts(fPair.GetDaughter(1))) break;
+    cutMgr->SetEvent(&fRsnEvent);
+    if (!cutMgr->PassCommonDaughterCuts(&fDaughter[0])) break;
+    if (!cutMgr->PassCommonDaughterCuts(&fDaughter[1])) break;
+    if (!cutMgr->PassDaughter1Cuts(&fDaughter[0])) break;
+    if (!cutMgr->PassDaughter2Cuts(&fDaughter[1])) break;
     if (!cutMgr->PassMotherCuts(&fPair)) break;
+    //cout << "**************************************** FILLING STEP " << istep << endl;
     cont->Fill(fVar.GetArray(), istep + firstOutStep);
   }
 }
@@ -504,8 +544,11 @@ Int_t AliRsnAnalysisEffSE::FindESDtrack(Int_t label, AliESDEvent *esd, Bool_t re
 // If global tracks are disabled, search only among ITS SA
 //
 
-  Int_t i = 0;
-  Int_t ntracks = esd->GetNumberOfTracks();
+  Int_t   i = 0;
+  Int_t   ntracks = esd->GetNumberOfTracks();
+  ULong_t status;
+  Bool_t  isTPC;
+  Bool_t  isITSSA;
   
   // loop for global tracks
   if (fUseGlobal)
@@ -513,12 +556,12 @@ Int_t AliRsnAnalysisEffSE::FindESDtrack(Int_t label, AliESDEvent *esd, Bool_t re
     for (i = 0; i < ntracks; i++)
     {
       AliESDtrack *track = esd->GetTrack(i);
+      status  = (ULong_t)track->GetStatus();
+      isTPC   = ((status & AliESDtrack::kTPCin)  != 0);
+      if (!isTPC) continue;
       
       // check that label match
       if (TMath::Abs(track->GetLabel()) != label) continue;
-      
-      // check global flags
-      if (!track->IsOn(AliESDtrack::kTPCin)) continue;
       
       // if required, reject fakes
       if (rejectFakes && track->GetLabel() < 0) continue;
@@ -537,15 +580,13 @@ Int_t AliRsnAnalysisEffSE::FindESDtrack(Int_t label, AliESDEvent *esd, Bool_t re
     for (i = 0; i < ntracks; i++)
     {
       AliESDtrack *track = esd->GetTrack(i);
+      status  = (ULong_t)track->GetStatus();
+      isITSSA = ((status & AliESDtrack::kTPCin)  == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
+      if (!isITSSA) continue;
       
       // check that label match
       if (TMath::Abs(track->GetLabel()) != label) continue;
-      
-      // check global flags
-      if (!fUseGlobal && !track->IsOn(AliESDtrack::kITSpureSA)) continue;
-      if (track->IsOn(AliESDtrack::kTPCin)) continue;
-      if (!track->IsOn(AliESDtrack::kITSrefit)) continue;
-      
+            
       // if required, reject fakes
       if (rejectFakes && track->GetLabel() < 0) continue;
       
@@ -558,4 +599,63 @@ Int_t AliRsnAnalysisEffSE::FindESDtrack(Int_t label, AliESDEvent *esd, Bool_t re
   
   // if we reach this point, no match were found
   return -1;
+}
+
+//_____________________________________________________________________________
+TArrayI AliRsnAnalysisEffSE::FindESDtracks(Int_t label, AliESDEvent *esd)
+{
+//
+// Finds in the ESD a track whose label corresponds to that in argument.
+// When global tracks are enabled, tries first to find a global track 
+// satisfying that requirement.
+// If no global tracks are found, if ITS-SA are enable, tries to search among them
+// otherwise return a negative number.
+// If global tracks are disabled, search only among ITS SA
+//
+
+  Int_t   i = 0;
+  Int_t   ntracks = esd->GetNumberOfTracks();
+  ULong_t status;
+  Bool_t  isTPC;
+  Bool_t  isITSSA;
+  TArrayI array(100);
+  Int_t   nfound = 0;
+  
+  // loop for global tracks
+  if (fUseGlobal)
+  {
+    for (i = 0; i < ntracks; i++)
+    {
+      AliESDtrack *track = esd->GetTrack(i);
+      status  = (ULong_t)track->GetStatus();
+      isTPC   = ((status & AliESDtrack::kTPCin)  != 0);
+      if (!isTPC) continue;
+      
+      // check that label match
+      if (TMath::Abs(track->GetLabel()) != label) continue;
+      
+      array[nfound++] = i;
+    }
+  }
+  
+  // loop for ITS-SA tracks (this happens only if no global tracks were found
+  // or searching among globals is disabled)
+  if (fUseITSSA)
+  {
+    for (i = 0; i < ntracks; i++)
+    {
+      AliESDtrack *track = esd->GetTrack(i);
+      status  = (ULong_t)track->GetStatus();
+      isITSSA = ((status & AliESDtrack::kTPCin)  == 0 && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
+      if (!isITSSA) continue;
+      
+      // check that label match
+      if (TMath::Abs(track->GetLabel()) != label) continue;
+            
+      array[nfound++] = i;
+    }
+  }
+  
+  array.Set(nfound);
+  return array;
 }

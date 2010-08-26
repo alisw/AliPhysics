@@ -255,3 +255,19 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
   
   return kTRUE;
 }
+
+//_____________________________________________________________________________
+void AliRsnValue::Print(Option_t *) const
+{
+//
+// Print all bins
+//
+
+  Int_t   i, n = fArray.GetSize();
+  TString msg("Array values: ");
+  
+  for (i = 0; i < n; i++) msg += Form("%f, ", fArray[i]);
+  
+  AliInfo(Form("Axis name: %s", GetName()));
+  AliInfo(msg.Data());
+}

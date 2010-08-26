@@ -68,6 +68,7 @@ class AliRsnValue : public TNamed
     void        SetBins(Int_t n, Double_t *array);
     
     Bool_t      Eval(AliRsnMother * const mother, AliRsnPairDef * const pairDef, AliRsnEvent * const event);
+    void        Print(Option_t *option = "") const;
 
   private:
 
