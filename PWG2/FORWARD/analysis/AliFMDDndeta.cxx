@@ -10,6 +10,7 @@
 #include "TCanvas.h"
 #include "TLine.h"
 #include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
 #include "TPad.h"
 #include "iostream"
 #include "TH3.h"
@@ -42,7 +43,7 @@ AliFMDDndeta::AliFMDDndeta()
   fPrimdNdeta(),
   fDrawAll(kFALSE)
 {
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  //AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   /* fDataObject = new TProfile3D("dataObject","dataObject",
 			       pars->GetNetaBins(),-6,6,
 			       20,0,2*TMath::Pi(),
@@ -221,7 +222,7 @@ void AliFMDDndeta::Init(const Char_t* filename) {
   AliFMDAnaParameters* pars =  AliFMDAnaParameters::Instance();
   //pars->Init();
   
-  TList* list = (TList*)fin->Get(Form("%s/BackgroundCorrected",pars->GetDndetaAnalysisName()));
+  TList* list = (TList*)fin->Get(Form("%s/BackgroundCorrected",pars->GetDndetaAnalysisName().Data()));
   
   if(!list) //an old file ? Perhaps...
     list = (TList*)fin->Get("BackgroundCorrected");
@@ -344,7 +345,7 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	Float_t xrange = multhistproj->GetXaxis()->GetXmax() - multhistproj->GetXaxis()->GetXmin(); 
 	multhistproj->Scale(xnBins / xrange);
 	
-	TH2F* multhist = (TH2F*)fList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,v));
+	//TH2F* multhist = (TH2F*)fList->FindObject(Form("dNdeta_FMD%d%c_vtxbin%d",det,ringChar,v));
 
 	
 	//if(nEvents)
@@ -501,7 +502,7 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
   
 }
 //_____________________________________________________________________
-void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
+void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TString pythiafile) {
   //Draw everything
   if(!fIsInit) {
     AliWarning("Not initialised - call Init to remedy");
@@ -512,7 +513,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
     AliWarning("Not generated - generate first then draw!");
     return;
   }
-  
+  AliFMDAnaParameters* pars =  AliFMDAnaParameters::Instance();
   SetNames(what);
   //UA5 data NSD
   Float_t x[19] = {0.125,0.375,0.625,0.875,1.125,1.375,1.625,1.875,2.125,2.375,
@@ -553,11 +554,115 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   
   //End UA5 data
   
-  AliFMDAnaParameters* pars =  AliFMDAnaParameters::Instance();
+  //Published ALICE data
+  // Plot: p7742_d1x1y1
+  TGraphAsymmErrors* p7742_d1x1y1 = 0;
+  double p7742_d1x1y1_xval[] = { -1.3, -1.1, -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 
+    0.5, 0.7, 0.9, 1.1, 1.3 };
+  double p7742_d1x1y1_xerrminus[] = { 0.09999999999999987, 0.09999999999999987, 0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.10000000000000003, 0.1, 0.1, 0.09999999999999998, 
+    0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.10000000000000009, 0.10000000000000009 };
+  double p7742_d1x1y1_xerrplus[] = { 0.10000000000000009, 0.10000000000000009, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.1, 0.1, 0.10000000000000003, 
+    0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.09999999999999987, 0.09999999999999987 };
+  double p7742_d1x1y1_yval[] = { 3.28, 3.28, 3.22, 3.12, 3.06, 3.02, 2.98, 3.02, 3.02, 
+    3.05, 3.15, 3.21, 3.26, 3.33 };
+  double p7742_d1x1y1_yerrminus[] = { 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.05385164807134505, 0.05385164807134505, 0.05385164807134505, 0.05385164807134505, 
+    0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758, 0.06324555320336758 };
+  double p7742_d1x1y1_yerrplus[] = { 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.07280109889280519, 0.08246211251235322, 0.08246211251235322, 
+    0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322, 0.08246211251235322 };
+  int p7742_d1x1y1_numpoints = 14;
+  p7742_d1x1y1 = new TGraphAsymmErrors(p7742_d1x1y1_numpoints, p7742_d1x1y1_xval, p7742_d1x1y1_yval, p7742_d1x1y1_xerrminus, p7742_d1x1y1_xerrplus, p7742_d1x1y1_yerrminus, p7742_d1x1y1_yerrplus);
+  p7742_d1x1y1->SetName("/HepData/7742/d1x1y1");
+  p7742_d1x1y1->SetTitle("/HepData/7742/d1x1y1");
+  p7742_d1x1y1->SetMarkerStyle(21);
+  p7742_d1x1y1->SetMarkerColor(kRed);
+  // p7742_d1x1y1->Draw("Psame");
+
+
+
+
+  //End official data
+  
+  
+  
+  
+  TH1I* hEvents   = (TH1I*)fList->FindObject(fEvents.Data());
+  
+  TH1I* hMCEvents = (TH1I*)fList->FindObject(fPrimEvents.Data());
+  
+   //SPD part
+  TH1D* hSPDana = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",5));
+  
+  for(Int_t nn = 0; nn < pars->GetNvtxBins() ; nn++) {
+    TH1D* hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",nn));
+    TH1D* hSPDanalysisTrVtx = (TH1D*)fList->FindObject(Form("dNdetaTrVtx_SPD_vtxbin%d_proj",nn));
+    TH1D* hSPDanalysisNSD = (TH1D*)fList->FindObject(Form("dNdetaNSD_SPD_vtxbin%d_proj",nn));
+    
+    Float_t nEventsSPD = (Float_t)hEvents->GetBinContent(nn+1);
+    
+    hSPDanalysis->Scale(1/nEventsSPD);
+    hSPDanalysisTrVtx->Scale(1/nEventsSPD);
+    hSPDanalysisNSD->Scale(1/nEventsSPD);
+  }
+  
+  TH1F* hSPDcombi = new TH1F("SPDcombi","SPDcombi",hSPDana->GetNbinsX(),hSPDana->GetXaxis()->GetXmin(),hSPDana->GetXaxis()->GetXmax());
+  TH1D* hSPDanalysis = 0;
+  for(Int_t kk = 1; kk <=hSPDana->GetNbinsX(); kk++) {
+    Float_t weight = 0, wav=0,sumofw = 0;
+    for(Int_t nn = 0; nn < pars->GetNvtxBins() ; nn++) {
+      if(what == kMult)
+	hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",nn));
+      else if(what == kMultNSD)
+	hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdetaNSD_SPD_vtxbin%d_proj",nn));
+      else if(what == kMultTrVtx)
+	hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdetaTrVtx_SPD_vtxbin%d_proj",nn));
+      else continue;
+      
+      if(TMath::Abs(hSPDanalysis->GetBinCenter(kk)) > 2)
+	continue;
+      Float_t mult = hSPDanalysis->GetBinContent(kk);
+      Float_t error = hSPDanalysis->GetBinError(kk);
+      
+      if(mult > 0 && hSPDanalysis->GetBinContent(kk-1) < SMALLNUMBER)
+	continue;
+      if(mult > 0 && hSPDanalysis->GetBinContent(kk-2) < SMALLNUMBER)
+	continue;
+      
+      if(mult > 0 && hSPDanalysis->GetBinContent(kk+1) < SMALLNUMBER)
+	continue;
+      if(mult > 0 && hSPDanalysis->GetBinContent(kk+2) < SMALLNUMBER)
+	continue;
+      
+      if(mult > 0) {
+	weight = 1/TMath::Power(error,2);
+	wav    = wav + weight*mult;
+	sumofw = sumofw + weight;
+      }
+      
+    }
+    
+    if(sumofw && wav) {
+      Float_t errorTotal = 1/TMath::Sqrt(sumofw);
+      hSPDcombi->SetBinContent(kk,wav/sumofw);
+      hSPDcombi->SetBinError(kk,errorTotal);
+    }
+  }
+    
+  
+  Float_t xb1 = hSPDcombi->GetNbinsX();
+  Float_t xr1 = hSPDcombi->GetXaxis()->GetXmax() - hSPDcombi->GetXaxis()->GetXmin(); 
+  hSPDcombi->Scale(xb1 / xr1);
+  //hSPDcombi->Rebin(rebin);
+  //hSPDcombi->Scale(1/(Float_t)rebin);
+  //RebinHistogram(hSPDcombi,rebin);
+  hSPDcombi->SetMarkerStyle(29);
+  hSPDcombi->SetMarkerColor(kBlue);
+  //hSPDcombi->DrawCopy("same");
+  
+  
   TCanvas* c1 = new TCanvas("cvertexbins","Overlaps",1400,800);
   c1->Divide(5,2);
-  TCanvas* cCorrections;
-  TCanvas* cCorrectionsPhi;
+  TCanvas* cCorrections = 0;
+  TCanvas* cCorrectionsPhi = 0;
   if(fDrawAll) {
     cCorrections = new TCanvas("corrections","Correction vs Eta",1400,800);
     cCorrections->Divide(5,2);
@@ -570,9 +675,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   
   Int_t nVertexBins  =  pars->GetNvtxBins();
   
-  TH1I* hEvents   = (TH1I*)fList->FindObject(fEvents.Data());
   
-  TH1I* hMCEvents = (TH1I*)fList->FindObject(fPrimEvents.Data());
   //Int_t npadphi = 0;
   TH1F*  hPrimVtx = 0;
   for(Int_t det = 1; det<=3; det++) {
@@ -699,6 +802,13 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
 	  hPrimVtx->DrawCopy("E3");
 	  l->Draw();
 	  multhistproj->DrawCopy("same");
+	  
+	  TH1D* hSPDanavtxbin = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",v));
+	  hSPDanavtxbin->SetMarkerColor(kBlue);
+	  hSPDanavtxbin->SetMarkerStyle(kStar);
+	  hSPDanavtxbin->Scale(xb1 / xr1);
+	  hSPDanavtxbin->DrawCopy("same");
+	  
 	  if(what != kMultNSD) {
 	    graphinel->Draw("sameP");
 	    graphinel2->Draw("sameP");
@@ -751,70 +861,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
     }
   }
   
-  //SPD part
-  TH1D* hSPDana = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",5));
-  
-  for(Int_t nn = 0; nn < pars->GetNvtxBins() ; nn++) {
-    TH1D* hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",nn));
-    TH1D* hSPDanalysisTrVtx = (TH1D*)fList->FindObject(Form("dNdetaTrVtx_SPD_vtxbin%d_proj",nn));
-    TH1D* hSPDanalysisNSD = (TH1D*)fList->FindObject(Form("dNdetaNSD_SPD_vtxbin%d_proj",nn));
-    
-    Float_t nEventsSPD = (Float_t)hEvents->GetBinContent(nn+1);
-    
-    hSPDanalysis->Scale(1/nEventsSPD);
-    hSPDanalysisTrVtx->Scale(1/nEventsSPD);
-    hSPDanalysisNSD->Scale(1/nEventsSPD);
-  }
-  
-  TH1F* hSPDcombi = new TH1F("SPDcombi","SPDcombi",hSPDana->GetNbinsX(),hSPDana->GetXaxis()->GetXmin(),hSPDana->GetXaxis()->GetXmax());
-  TH1D* hSPDanalysis = 0;
-  for(Int_t kk = 1; kk <=hSPDana->GetNbinsX(); kk++) {
-    Float_t weight = 0, wav=0,sumofw = 0;
-    for(Int_t nn = 0; nn < pars->GetNvtxBins() ; nn++) {
-      if(what != kMultNSD)
-	hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",nn));
-      else
-	hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdetaNSD_SPD_vtxbin%d_proj",nn));
-      if(TMath::Abs(hSPDanalysis->GetBinCenter(kk)) > 2)
-	continue;
-      Float_t mult = hSPDanalysis->GetBinContent(kk);
-      Float_t error = hSPDanalysis->GetBinError(kk);
-      
-      if(mult > 0 && hSPDanalysis->GetBinContent(kk-1) < SMALLNUMBER)
-	continue;
-      if(mult > 0 && hSPDanalysis->GetBinContent(kk-2) < SMALLNUMBER)
-	continue;
-      
-      if(mult > 0 && hSPDanalysis->GetBinContent(kk+1) < SMALLNUMBER)
-	continue;
-      if(mult > 0 && hSPDanalysis->GetBinContent(kk+2) < SMALLNUMBER)
-	continue;
-      
-      if(mult > 0) {
-	weight = 1/TMath::Power(error,2);
-	wav    = wav + weight*mult;
-	sumofw = sumofw + weight;
-      }
-      
-    }
-    
-    if(sumofw && wav) {
-      Float_t errorTotal = 1/TMath::Sqrt(sumofw);
-      hSPDcombi->SetBinContent(kk,wav/sumofw);
-      hSPDcombi->SetBinError(kk,errorTotal);
-    }
-  }
-    
-  
-  Float_t xb1 = hSPDcombi->GetNbinsX();
-  Float_t xr1 = hSPDcombi->GetXaxis()->GetXmax() - hSPDcombi->GetXaxis()->GetXmin(); 
-  hSPDcombi->Scale(xb1 / xr1);
-  //hSPDcombi->Rebin(rebin);
-  //hSPDcombi->Scale(1/(Float_t)rebin);
-  //RebinHistogram(hSPDcombi,rebin);
-  hSPDcombi->SetMarkerStyle(29);
-  hSPDcombi->SetMarkerColor(kBlue);
-  hSPDcombi->DrawCopy("same");
+ 
   // End of SPD
 
   
@@ -957,8 +1004,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   
   sumMultSystPos->SetFillColor(18);
   sumMultSystNeg->SetFillColor(18);
-  sumMultSystPos->DrawCopy("sameE5");
-  sumMultSystNeg->DrawCopy("sameE5");
+  //sumMultSystPos->DrawCopy("sameE5");
+  //sumMultSystNeg->DrawCopy("sameE5");
   //End syst errors
   
   
@@ -1007,16 +1054,13 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   //graph2->Draw("P");
   TH1F* hPythiaMB = 0;
   
-  TFile* fpyt;
-  if(pars->GetEnergy() == AliFMDAnaParameters::k7000)
-    fpyt = TFile::Open("/home/canute/ALICE/FMDanalysis/FirstAnalysis/pythia_study/pythiahists7000.root","READ");
-  else if(pars->GetEnergy() == AliFMDAnaParameters::k900)
-    fpyt = TFile::Open("/home/canute/ALICE/FMDanalysis/FirstAnalysis/pythia_study/pythiahists900.root","READ");
+  TFile* fpyt = 0;
   
-  
+  if(!pythiafile.Contains("none"))
+    fpyt = TFile::Open(pythiafile);
   
   if(realdata ) {
-    if(fpyt) {
+    if(fpyt && !pythiafile.Contains("none")) {
       hPythiaMB = (TH1F*)fpyt->Get("hPythiaMB");
     }
     else
@@ -1031,6 +1075,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
       if(what != kMultNSD) {
 	graphinel->Draw("PEsame");
 	graphinel2->Draw("PEsame");
+	p7742_d1x1y1->Draw("PEsame");
       }
       else{
 	graph->Draw("PEsame");
@@ -1069,11 +1114,11 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   
   if(realdata) {
   if(what == kMult)
-    leg->AddEntry(hMirror,"FMD INEL","p");
+    leg->AddEntry(hMirror,"Mirror FMD INEL","p");
   else if(what == kMultTrVtx)
-    leg->AddEntry(hMirror,"FMD TrVtx","p");
+    leg->AddEntry(hMirror,"Mirror FMD TrVtx","p");
   else if(what == kMultNSD)
-    leg->AddEntry(hMirror,"FMD NSD","p");
+    leg->AddEntry(hMirror,"Mirror FMD NSD","p");
    
   if(what == kMultNSD) {  
     leg->AddEntry(graph,"UA5 NSD","p");
@@ -1083,7 +1128,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
     leg->AddEntry(graphinel2,"Mirror UA5 INEL","p");
   }
     //leg->AddEntry(hPythiaMB,"Pythia MB","l");
-    leg->AddEntry(hSPDcombi,"HHD SPD clusters","p");
+  leg->AddEntry(hSPDcombi,"HHD SPD clusters","p");
+  leg->AddEntry(p7742_d1x1y1,"ALICE INEL published","p");
     
   }
   leg->Draw();
@@ -1092,18 +1138,50 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   gPad->cd(2);
   TH1F* hRatioMultPythia = 0;
   TH1F* hRatioMultUA5 = 0;
+  TH1F* hRatioMultUA5_rebin5 = new TH1F("hRatioMultUA5_rebin5","hRatioMultUA5_rebin5",sumMult->GetNbinsX(),sumMult->GetXaxis()->GetXmin(),sumMult->GetXaxis()->GetXmax());
+  
+  Double_t xval=0, yval=0;
+  Int_t ipos=0;
+  for(Int_t bb =hRatioMultUA5_rebin5->FindBin(0); bb<=hRatioMultUA5_rebin5->GetNbinsX();bb++) {
+    
+    
+    
+    xval=yval=0;
+    
+    if(hRatioMultUA5_rebin5->GetBinCenter(bb) >= 0) {
+      
+      graphinel->GetPoint(ipos,xval,yval);
+      
+      if(yval>0) {
+	hRatioMultUA5_rebin5->SetBinContent(bb,yval);
+	hRatioMultUA5_rebin5->SetBinError(bb,graphinel->GetErrorY(ipos));
+	if(hRatioMultUA5_rebin5->GetBinCenter(bb) < 4) {
+	  hRatioMultUA5_rebin5->SetBinContent(hRatioMultUA5_rebin5->FindBin(-1*hRatioMultUA5_rebin5->GetBinCenter(bb)),yval);
+	  hRatioMultUA5_rebin5->SetBinError(hRatioMultUA5_rebin5->FindBin(-1*hRatioMultUA5_rebin5->GetBinCenter(bb)),graphinel->GetErrorY(ipos));
+	
+	}
+	ipos++;
+      }
+    }
+  }
+       
+      
+
   if(realdata) {
     
     Float_t ratio = 1;
-    if(hPythiaMB->GetNbinsX() !=  sumMult->GetNbinsX())
-      ratio = (Float_t)sumMult->GetNbinsX() / (Float_t)hPythiaMB->GetNbinsX();
+    if(hPythiaMB) {
+      if(hPythiaMB->GetNbinsX() !=  sumMult->GetNbinsX())
+	ratio = (Float_t)sumMult->GetNbinsX() / (Float_t)hPythiaMB->GetNbinsX();
+    }
+    
     hRatioMultPythia = (TH1F*)sumMult->Clone("hRatioMultPythia");
     hRatioMultUA5    = (TH1F*)sumMult->Clone("hRatioMultUA5");
     if(ratio > 1) {
       hRatioMultPythia->Rebin(ratio);
       hRatioMultPythia->Scale(1/ratio);
     }
-    if(ratio < 1) {
+    if(ratio < 1 && hPythiaMB) {
       hPythiaMB->Rebin(1/ratio);
       hPythiaMB->Scale(ratio);
     }
@@ -1155,6 +1233,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
       }
       
       */
+    if(rebin !=5) {
     TGraphErrors* tmp1;
     if(what == kMultNSD)
       tmp1 = (TGraphErrors*)graph->Clone("UA5tmp");
@@ -1198,7 +1277,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
 	graphinel2->GetHistogram()->SetStats(kFALSE);
 	
       }
-      
+    }
+    else hRatioMultUA5->Divide(hRatioMultUA5_rebin5);
       //}
   
       
@@ -1231,10 +1311,45 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   cPaper->cd();
   
   sumMult->DrawCopy();
-  sumMultSystPos->DrawCopy("sameE5");
-  sumMultSystNeg->DrawCopy("sameE5");
+  //sumMultSystPos->DrawCopy("sameE5");
+  // sumMultSystNeg->DrawCopy("sameE5");
   //hTestdNdeta->DrawCopy("same");
-  hSPDcombi->DrawCopy("same");
+  //hSPDcombi->DrawCopy("same");
+  p7742_d1x1y1->Draw("PEsame");
+  
+  TLegend* leg2 = new TLegend(0.3,0.2,0.7,0.45,"");
+  if(what == kMult)
+    leg2->AddEntry(sumMult,"FMD INEL","p");
+  else if(what == kMultTrVtx)
+    leg2->AddEntry(sumMult,"FMD TrVtx","p");
+  else if(what == kMultNSD)
+    leg2->AddEntry(sumMult,"FMD NSD","p");
+  
+  if(realdata) {
+    
+    /* if(what == kMult)
+    leg2->AddEntry(hMirror,"Mirror FMD INEL","p");
+  else if(what == kMultTrVtx)
+    leg2->AddEntry(hMirror,"FMD TrVtx","p");
+  else if(what == kMultNSD)
+  leg2->AddEntry(hMirror,"FMD NSD","p");*/
+   
+  if(what == kMultNSD) {  
+    leg2->AddEntry(graph,"UA5 NSD","p");
+    leg2->AddEntry(graph2,"Mirror UA5 NSD","p"); }
+  else if(what == kMult) {
+    leg2->AddEntry(graphinel,"UA5 INEL","p");
+    leg2->AddEntry(graphinel2,"Mirror UA5 INEL","p");
+  }
+    //leg2->AddEntry(hPythiaMB,"Pythia MB","l");
+    //leg2->AddEntry(hSPDcombi,"HHD SPD clusters","p");
+    leg2->AddEntry(p7742_d1x1y1,"ALICE INEL published","p");
+    
+  }
+  leg2->Draw();
+  
+  
+  
   if(what != kMultNSD) {
     graphinel->Draw("PEsame");
     graphinel2->Draw("PEsame");
@@ -1252,19 +1367,19 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   
   switch(what) {
   case kMult: 
-    species.Form("mult");
+    species = "mult";
     break;
   case kMultTrVtx:
-    species.Form("mult_TrVtx");
+    species = "mult_TrVtx";
     break;
   case kHits:
-    species.Form("hits");
+    species = "hits";
     break;
   case kHitsTrVtx:
-    species.Form("hits_TrVtx");
+    species = "hits_TrVtx";
     break;
   case kMultNSD:
-    species.Form("mult_NSD");
+    species = "mult_NSD";
     break;
     
   default:
@@ -1316,8 +1431,8 @@ void AliFMDDndeta::CreateSharingEfficiency(const Char_t* filename, Bool_t store)
 	TH1F* hMCHits      = (TH1F*)fList->FindObject(GetPrimName(kHits,det, ringChar, v));
 	TH1F* hMCHitsTrVtx = (TH1F*)fList->FindObject(GetPrimName(kHitsTrVtx,det, ringChar, v));
 	
-	TH1F* hCorrection  = (TH1F*)hHits->Clone(Form("hCorrection_FMD%d%c_vtx%d"));
-	TH1F* hCorrectionTrVtx  = (TH1F*)hHitsTrVtx->Clone(Form("hCorrection_FMD%d%c_vtx%d"));
+	TH1F* hCorrection  = (TH1F*)hHits->Clone(Form("hCorrection_FMD%d%c_vtx%d",det, ringChar, v));
+	TH1F* hCorrectionTrVtx  = (TH1F*)hHitsTrVtx->Clone(Form("hCorrection_FMD%d%c_vtx%d",det, ringChar, v));
 	if(hEvents->GetBinContent(v+1))
 	  hCorrection->Scale(1./(Float_t)hEvents->GetBinContent(v+1));
 	if(hPrimEvents->GetBinContent(v+1))

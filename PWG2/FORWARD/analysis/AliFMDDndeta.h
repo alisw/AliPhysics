@@ -48,7 +48,7 @@ class AliFMDDndeta : public TObject
   void Init(const Char_t* filename);
   void Init(TList* list);
   void GenerateMult(Analysis what);
-  void DrawDndeta(Analysis what, Int_t rebin = 1, Bool_t realdata = kFALSE);
+  void DrawDndeta(Analysis what, Int_t rebin = 1, Bool_t realdata = kFALSE, TString filename = "none");
   void SetNbinsToCut(Int_t nbins) {fNbinsToCut = nbins;}
   void SetVtxCut1(Int_t vtxcut) {fVtxCut1 = vtxcut;}
   void SetVtxCut2(Int_t vtxcut) {fVtxCut2 = vtxcut;}

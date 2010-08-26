@@ -14,8 +14,8 @@ ClassImp(AliFMDAnaCalibEventSelectionEfficiency)
 //____________________________________________________________________
 AliFMDAnaCalibEventSelectionEfficiency::AliFMDAnaCalibEventSelectionEfficiency() : TObject(),
 										   fCorrection(),
-										   fIsInit(kFALSE),
 										   fCorrectionList(),
+										   fIsInit(kFALSE),
 										   fVtxEff(1)
 {
   
@@ -28,8 +28,8 @@ AliFMDAnaCalibEventSelectionEfficiency::AliFMDAnaCalibEventSelectionEfficiency()
 AliFMDAnaCalibEventSelectionEfficiency::
 AliFMDAnaCalibEventSelectionEfficiency(const AliFMDAnaCalibEventSelectionEfficiency& o) : TObject(o),			     
 											  fCorrection(o.fCorrection),
-											  fIsInit(o.fIsInit),
 											  fCorrectionList(),
+											  fIsInit(o.fIsInit),
 											  fVtxEff(o.fVtxEff)
 {
   // Copy ctor 
@@ -68,12 +68,13 @@ void AliFMDAnaCalibEventSelectionEfficiency::SetCorrection(Char_t* trig,
 							   Int_t vtxbin, 
 							   Char_t ring,
 							   TH2F* hCorrection) {
-  if(trig != "INEL" && trig != "NSD")
+  TString test = trig;
+  if(!test.Contains("INEL") && !test.Contains("NSD"))
     AliWarning("Please choose NSD or INEL!");
   
-  if(trig == "INEL")
+  if(test.Contains("INEL"))
     hCorrection->SetName(Form("correction_%c_%d",ring,vtxbin));
-  if(trig == "NSD") 
+  if(test.Contains("NSD")) 
     hCorrection->SetName(Form("correction%s_%c_%d","NSD",ring,vtxbin));
   
   fCorrectionList.Add(hCorrection);

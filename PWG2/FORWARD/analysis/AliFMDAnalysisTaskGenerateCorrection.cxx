@@ -473,7 +473,7 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
     fEventSelectionEff->SetCorrection("NSD",v,'O',hAnalysedNSDOuter);
     
     
-}
+  }
   
   Float_t vtxEff = 1;
   if(hEventsSelectedTrigger->GetEntries())
