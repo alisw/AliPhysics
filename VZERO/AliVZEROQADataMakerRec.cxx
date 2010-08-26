@@ -212,16 +212,16 @@ void AliVZEROQADataMakerRec::InitESDs()
   h2d = new TH2D("H2D_Charge_Channel", "ADC Charge per channel;Channel;Charge (ADC counts)",64, 0, 64, 1024, 0, 1024) ;  
   Add2ESDsList(h2d, kChargeChannel, !expert, image)  ;  
   
-  h2d = new TH2D("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",64, 0, 64, 820, 0, 410) ;  
+  h2d = new TH2D("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",64, 0, 64, 400, -100, 100) ;  
   Add2ESDsList(h2d, kTimeChannel, !expert, image)  ;  
   
-  h1d = new TH1D("H1D_V0A_Time", "Mean V0A Time;Time (ns);Counts",2048, 0., 409.6);
+  h1d = new TH1D("H1D_V0A_Time", "Mean V0A Time;Time (ns);Counts",1000, -100., 100.);
   Add2ESDsList(h1d,kESDV0ATime, !expert, image); 
   
-  h1d = new TH1D("H1D_V0C_Time", "Mean V0C Time;Time (ns);Counts",2048, 0., 409.6);
+  h1d = new TH1D("H1D_V0C_Time", "Mean V0C Time;Time (ns);Counts",1000, -100., 100.);
   Add2ESDsList(h1d,kESDV0CTime, !expert, image); 
   
-  h1d = new TH1D("H1D_Diff_Time", "Diff Time V0A - V0C;Diff Time V0A - V0C (ns);Counts",2*2048, -409.6, 409.6);
+  h1d = new TH1D("H1D_Diff_Time", "Diff Time V0A - V0C;Diff Time V0A - V0C (ns);Counts",1000, -200., 200.);
   Add2ESDsList(h1d,kESDDiffTime, !expert, image); 
 	
 }
@@ -490,35 +490,28 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
     	GetESDsData(kMIPMultiV0A)->Fill(esdVZERO->GetMTotV0A());
     	GetESDsData(kMIPMultiV0C)->Fill(esdVZERO->GetMTotV0C());  
     	
-	Float_t  timeV0A = 0., timeV0C = 0., diffTime;
-	Int_t   iTimeV0A = 0, iTimeV0C = 0;
-		
 	for(Int_t i=0;i<64;i++) {
 			GetESDsData(kMIPMultiChannel)->Fill((Float_t) i,(Float_t) esdVZERO->GetMultiplicity(i));
 		   	GetESDsData(kChargeChannel)->Fill((Float_t) i,(Float_t) esdVZERO->GetAdc(i));
-			if(esdVZERO->GetBBFlag(i)) GetESDsData(kBBFlag)->Fill((Float_t) i);
-		  	if(esdVZERO->GetBGFlag(i)) GetESDsData(kBGFlag)->Fill((Float_t) i);
-
-			Float_t time = (Float_t) esdVZERO->GetTime(i)/10.; //Convert in ns:  1 TDC channel = 100ps 
-			GetESDsData(kTimeChannel)->Fill((Float_t) i,time);
-
-			if(time>0.){
-				if (i<32) {
-					iTimeV0C++;
-					timeV0C += time;
-				}else{
-					iTimeV0A++;
-					timeV0A += time;
-				}
+			if (i < 32) {
+			  if(esdVZERO->BBTriggerV0C(i)) GetESDsData(kBBFlag)->Fill((Float_t) i);
+			  if(esdVZERO->BGTriggerV0C(i)) GetESDsData(kBGFlag)->Fill((Float_t) i);
 			}
+			else {
+			  if(esdVZERO->BBTriggerV0A(i-32)) GetESDsData(kBBFlag)->Fill((Float_t) i);  
+			  if(esdVZERO->BGTriggerV0A(i-32)) GetESDsData(kBGFlag)->Fill((Float_t) i);
+			}		  	
+			Float_t time = (Float_t) esdVZERO->GetTime(i); //Convert in ns:  1 TDC channel = 100ps 
+			GetESDsData(kTimeChannel)->Fill((Float_t) i,time);
     	}
-	if(iTimeV0A>0) timeV0A /= iTimeV0A; 
-	else timeV0A = -1.;
-	if(iTimeV0C>0) timeV0C /= iTimeV0C;
-	else timeV0C = -1.;
-	if(timeV0A<0. || timeV0C<0.) diffTime = -10000.;
-	else diffTime = timeV0A - timeV0C;
 				
+	Float_t timeV0A = esdVZERO->GetV0ATime();
+	Float_t timeV0C = esdVZERO->GetV0CTime();
+	Float_t diffTime;
+
+	if(timeV0A<-1024.+1.e-6 || timeV0C<-1024.+1.e-6) diffTime = -1024.;
+	else diffTime = timeV0A - timeV0C;
+
 	GetESDsData(kESDV0ATime)->Fill(timeV0A);
 	GetESDsData(kESDV0CTime)->Fill(timeV0C);
 	GetESDsData(kESDDiffTime)->Fill(diffTime);
