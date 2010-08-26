@@ -53,6 +53,7 @@
  *      - ESD<br>
  *      - HLTESD<br>
  *      - MC (publishes both AliHLTMCEvent and AliMCEvent) <br>
+ *      - MCFAST (publishes both AliHLTMCEvent and AliMCEvent created from FastSim) <br>
  *
  * \li -datapath     <i> Path to list of data files     </i><br>
  *      - AliESDs.root<br>
