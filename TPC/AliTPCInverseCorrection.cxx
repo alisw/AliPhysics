@@ -61,6 +61,7 @@ AliTPCInverseCorrection::~AliTPCInverseCorrection() {
   //
   // virtual destructor
   //
+  if (fCorrection) delete fCorrection;
 }
 
 

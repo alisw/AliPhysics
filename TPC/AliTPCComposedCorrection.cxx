@@ -57,7 +57,7 @@
 #include <TCollection.h>
 #include <TTimeStamp.h>
 #include <TIterator.h>
-
+#include "AliLog.h"
 
 #include "AliTPCComposedCorrection.h"
 
@@ -87,8 +87,18 @@ AliTPCComposedCorrection::AliTPCComposedCorrection(TCollection *corrections,
 
 AliTPCComposedCorrection::~AliTPCComposedCorrection() {
   // 
-  // virtual destructor
+  // destructor
   //
+  if (!fCorrections) {
+    AliInfo("No Correction-models were set: can not delete them");
+  } else {
+    TIterator *i=fCorrections->MakeIterator();
+    AliTPCCorrection *c;
+    while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) {
+      delete c;
+    }
+    delete i;
+  }
 }
 
 
@@ -97,7 +107,12 @@ void AliTPCComposedCorrection::GetCorrection(const Float_t x[],const Short_t roc
   // This applies all correction and the specified manner (see general
   // class description for details).
   //
-  TIterator *i=fCorrections->MakeIterator();
+
+  if (!fCorrections) {
+    AliInfo("No Corrections-models were set: can not calculate distortions");
+    return;
+  }
+    TIterator *i=fCorrections->MakeIterator();
   AliTPCCorrection *c;
   switch (fMode) {
   case kParallel:
@@ -127,6 +142,10 @@ void AliTPCComposedCorrection::GetDistortion(const Float_t x[],const Short_t roc
   // class descxiption for details).
   //
 
+  if (!fCorrections) {
+    AliInfo("No Corrections-models were set: can not calculate distortions");
+    return;
+  }
   TIterator *i=fCorrections->MakeReverseIterator();
   AliTPCCorrection *c;
   switch (fMode) {
@@ -162,6 +181,10 @@ void AliTPCComposedCorrection::Print(Option_t* option) const {
   printf("Composed TPC spacepoint correction \"%s\" -- composed of:\n",GetTitle());
   TString opt = option; opt.ToLower();
   Int_t in=1;
+  if (!fCorrections) {
+    printf("   - composed correction is empty!\n");
+    return;
+  }
   TIterator *i=fCorrections->MakeIterator();
   AliTPCCorrection *c;
   while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) {
@@ -183,7 +206,10 @@ void AliTPCComposedCorrection::Init() {
   //
   // Initialization funtion (not used at the moment)
   //
-  
+  if (!fCorrections) {
+    AliInfo("No Correction-models were set");
+    return;
+  }
   TIterator *i=fCorrections->MakeIterator();
   AliTPCCorrection *c;
   while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) 
@@ -196,6 +222,10 @@ void AliTPCComposedCorrection::Update(const TTimeStamp &timeStamp) {
   //
   // Update function 
   //
+  if (!fCorrections) {
+    AliInfo("No Correction-models were set");
+    return;
+  }
 
   TIterator *i=fCorrections->MakeIterator();
   AliTPCCorrection *c;
@@ -219,6 +249,11 @@ void AliTPCComposedCorrection::SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float
   //
   // Note: overwrites previously set values!
   // 
+
+  if (!fCorrections) {
+    AliInfo("No Correction-models were set");
+    return;
+  }
 
   TIterator *i=fCorrections->MakeIterator();
   AliTPCCorrection *c;

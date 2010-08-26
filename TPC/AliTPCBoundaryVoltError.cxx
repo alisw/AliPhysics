@@ -25,7 +25,7 @@
 //                                                                          //
 // The class allows "effective Omega Tau" corrections.                      // 
 //                                                                          //
-// NOTE: This class is not  capable of calculation z distortions due to     //
+// NOTE: This class is capable of calculating z distortions due to          //
 //       drift velocity change in dependence of the electric field!!!       //
 //                                                                          //
 // date: 01/06/2010                                                         //
@@ -60,6 +60,7 @@ ClassImp(AliTPCBoundaryVoltError)
 AliTPCBoundaryVoltError::AliTPCBoundaryVoltError()
   : AliTPCCorrection("BoundaryVoltError","Boundary Voltage Error"),
     fC0(0.),fC1(0.),
+    fROCdisplacement(kTRUE),
     fInitLookUp(kFALSE)
 {
   //
@@ -113,7 +114,6 @@ void AliTPCBoundaryVoltError::Update(const TTimeStamp &/*timeStamp*/) {
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
 
-
 }
 
 
@@ -123,11 +123,14 @@ void AliTPCBoundaryVoltError::GetCorrection(const Float_t x[],const Short_t roc,
   // Calculates the correction due e.g. residual voltage errors on the TPC boundaries
   //   
 
-  if (!fInitLookUp) AliError("Lookup table was not initialized! You should do InitBoundaryVoltErrorDistortion() ...");
+  if (!fInitLookUp) {
+    AliInfo("Lookup table was not initialized!  Perform the inizialisation now ...");
+    InitBoundaryVoltErrorDistortion();
+  }
 
   Int_t   order     = 1 ;               // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2         
                                         // note that the poisson solution was linearly mirroed on this grid!
-  Double_t intEr, intEphi ;
+  Double_t intEr, intEphi, intdEz ;
   Double_t r, phi, z ;
   Int_t    sign;
 
@@ -153,6 +156,8 @@ void AliTPCBoundaryVoltError::GetCorrection(const Float_t x[],const Short_t roc,
 
   // Get the E field integral
   Interpolate2DEdistortion( order, r, z, fLookUpErOverEz, intEr );
+  // Get DeltaEz field integral
+  Interpolate2DEdistortion( order, r, z, fLookUpDeltaEz, intdEz );
   
   // Calculate distorted position
   if ( r > 0.0 ) {
@@ -163,7 +168,9 @@ void AliTPCBoundaryVoltError::GetCorrection(const Float_t x[],const Short_t roc,
   // Calculate correction in cartesian coordinates
   dx[0] = r * TMath::Cos(phi) - x[0];
   dx[1] = r * TMath::Sin(phi) - x[1]; 
-  dx[2] = 0.; // z distortion not implemented (1st order distortions)
+  dx[2] = intdEz;  // z distortion - (internally scaled with driftvelocity dependency 
+                   // on the Ez field plus the actual ROC misalignment (if set TRUE)
+
 
 }
 
@@ -179,6 +186,7 @@ void AliTPCBoundaryVoltError::InitBoundaryVoltErrorDistortion() {
   TMatrixD voltArrayA(kRows,kColumns), voltArrayC(kRows,kColumns); // boundary vectors
   TMatrixD chargeDensity(kRows,kColumns);                              // dummy charge
   TMatrixD arrayErOverEzA(kRows,kColumns), arrayErOverEzC(kRows,kColumns); // solution
+  TMatrixD arrayDeltaEzA(kRows,kColumns),  arrayDeltaEzC(kRows,kColumns); // solution
 
   Double_t  rList[kRows], zedList[kColumns] ;
   
@@ -230,25 +238,25 @@ void AliTPCBoundaryVoltError::InitBoundaryVoltErrorDistortion() {
       // A side boundary vectors
       if ( i == 0 ) voltArrayA(i,j) += zed   *((fBoundariesA[1]-fBoundariesA[0])/((kColumns-1)*gridSizeZ))
 	+ fBoundariesA[0] ; // IFC
-      if ( j == kColumns-1 ) voltArrayA(i,j) += radius*((fBoundariesA[3]-fBoundariesA[2])/((kRows-1)*gridSizeR+fgkIFCRadius))
+      if ( j == kColumns-1 ) voltArrayA(i,j) += (radius-fgkIFCRadius)*((fBoundariesA[3]-fBoundariesA[2])/((kRows-1)*gridSizeR))
 	+ fBoundariesA[2] ; // ROC
       if ( i == kRows-1 ) voltArrayA(i,j) += zed   *((fBoundariesA[4]-fBoundariesA[5])/((kColumns-1)*gridSizeZ))
 	+ fBoundariesA[5] ; // OFC
-      if ( j == 0 ) voltArrayA(i,j) += radius*((fBoundariesA[6]-fBoundariesA[7])/((kRows-1)*gridSizeR+fgkIFCRadius))
+      if ( j == 0 ) voltArrayA(i,j) += (radius-fgkIFCRadius)*((fBoundariesA[6]-fBoundariesA[7])/((kRows-1)*gridSizeR))
 	+ fBoundariesA[7] ; // CE
-
+      
       if (symmetry==0) {
 	// C side boundary vectors
 	if ( i == 0 ) voltArrayC(i,j) += zed   *((fBoundariesC[1]-fBoundariesC[0])/((kColumns-1)*gridSizeZ))
 	  + fBoundariesC[0] ; // IFC
-	if ( j == kColumns-1 ) voltArrayC(i,j) += radius*((fBoundariesC[3]-fBoundariesC[2])/((kRows-1)*gridSizeR+fgkIFCRadius))
+	if ( j == kColumns-1 ) voltArrayC(i,j) += (radius-fgkIFCRadius)*((fBoundariesC[3]-fBoundariesC[2])/((kRows-1)*gridSizeR))
 	  + fBoundariesC[2] ; // ROC
 	if ( i == kRows-1 ) voltArrayC(i,j) += zed   *((fBoundariesC[4]-fBoundariesC[5])/((kColumns-1)*gridSizeZ))
 	  + fBoundariesC[5] ; // OFC
-	if ( j == 0 ) voltArrayC(i,j) += radius*((fBoundariesC[6]-fBoundariesC[7])/((kRows-1)*gridSizeR+fgkIFCRadius))
+	if ( j == 0 ) voltArrayC(i,j) += (radius-fgkIFCRadius)*((fBoundariesC[6]-fBoundariesC[7])/((kRows-1)*gridSizeR))
 	  + fBoundariesC[7] ; // CE
-
       }
+
     }
   }
 
@@ -266,58 +274,81 @@ void AliTPCBoundaryVoltError::InitBoundaryVoltErrorDistortion() {
 
 
   // always solve the problem on the A side
-  PoissonRelaxation2D( voltArrayA, chargeDensity, arrayErOverEzA, kRows, kColumns, kIterations ) ;
+  PoissonRelaxation2D( voltArrayA, chargeDensity, arrayErOverEzA, arrayDeltaEzA, 
+		       kRows, kColumns, kIterations, fROCdisplacement ) ;
 
   if (symmetry!=0) { // A and C side are the same ("anti-symmetric" or "symmetric")
     for ( Int_t j = 0 ; j < kColumns ; j++ ) {
       for ( Int_t i = 0 ; i < kRows ; i++ ) { 
 	arrayErOverEzC(i,j) = symmetry*arrayErOverEzA(i,j);
+	arrayDeltaEzC(i,j) = -symmetry*arrayDeltaEzA(i,j);
       }
     }
   } else if (symmetry==0) { // A and C side are different - Solve the problem on the C side too
-    PoissonRelaxation2D( voltArrayC, chargeDensity, arrayErOverEzC, kRows, kColumns, kIterations ) ;
+    PoissonRelaxation2D( voltArrayC, chargeDensity, arrayErOverEzC, arrayDeltaEzC,
+			 kRows, kColumns, kIterations, fROCdisplacement ) ;
+    for ( Int_t j = 0 ; j < kColumns ; j++ ) {
+      for ( Int_t i = 0 ; i < kRows ; i++ ) { 
+	arrayDeltaEzC(i,j) = -arrayDeltaEzC(i,j); // negative z coordinate!
+      }
+    }
   }
 
   //Interpolate results onto standard grid for Electric Fields
   Int_t ilow=0, jlow=0 ;
   Double_t z,r;
   Float_t saveEr[2] ;	      
+  Float_t saveEz[2] ;	      
   for ( Int_t i = 0 ; i < kNZ ; ++i )  {
     z = TMath::Abs( fgkZList[i] ) ;
     for ( Int_t j = 0 ; j < kNR ; ++j ) {
       // Linear interpolation !!
       r = fgkRList[j] ;
-	Search( kRows,   rList, r, ilow ) ;          // Note switch - R in rows and Z in columns
-	Search( kColumns, zedList, z, jlow ) ;
-	if ( ilow < 0 ) ilow = 0 ;                   // check if out of range
-	if ( jlow < 0 ) jlow = 0 ;   
-	if ( ilow + 1  >=  kRows - 1 ) ilow =  kRows - 2 ;	      
-	if ( jlow + 1  >=  kColumns - 1 ) jlow =  kColumns - 2 ; 
+      Search( kRows,   rList, r, ilow ) ;          // Note switch - R in rows and Z in columns
+      Search( kColumns, zedList, z, jlow ) ;
+      if ( ilow < 0 ) ilow = 0 ;                   // check if out of range
+      if ( jlow < 0 ) jlow = 0 ;   
+      if ( ilow + 1  >=  kRows - 1 ) ilow =  kRows - 2 ;	      
+      if ( jlow + 1  >=  kColumns - 1 ) jlow =  kColumns - 2 ; 
+      
+      if (fgkZList[i]>0) {         // A side solution
+	saveEr[0] = arrayErOverEzA(ilow,jlow) + 
+	  (arrayErOverEzA(ilow,jlow+1)-arrayErOverEzA(ilow,jlow))*(z-zedList[jlow])/gridSizeZ ;
+	saveEr[1] = arrayErOverEzA(ilow+1,jlow) + 
+	  (arrayErOverEzA(ilow+1,jlow+1)-arrayErOverEzA(ilow+1,jlow))*(z-zedList[jlow])/gridSizeZ ;
+	saveEz[0] = arrayDeltaEzA(ilow,jlow) + 
+	  (arrayDeltaEzA(ilow,jlow+1)-arrayDeltaEzA(ilow,jlow))*(z-zedList[jlow])/gridSizeZ ;
+	saveEz[1] = arrayDeltaEzA(ilow+1,jlow) + 
+	  (arrayDeltaEzA(ilow+1,jlow+1)-arrayDeltaEzA(ilow+1,jlow))*(z-zedList[jlow])/gridSizeZ ;
 
-	if (fgkZList[i]>0) {         // A side solution
-	  saveEr[0] = arrayErOverEzA(ilow,jlow) + 
-	    (arrayErOverEzA(ilow,jlow+1)-arrayErOverEzA(ilow,jlow))*(z-zedList[jlow])/gridSizeZ ;
-	  saveEr[1] = arrayErOverEzA(ilow+1,jlow) + 
-	    (arrayErOverEzA(ilow+1,jlow+1)-arrayErOverEzA(ilow+1,jlow))*(z-zedList[jlow])/gridSizeZ ;
-	} else if (fgkZList[i]<0) {  // C side solution
-	  saveEr[0] = arrayErOverEzC(ilow,jlow) + 
-	    (arrayErOverEzC(ilow,jlow+1)-arrayErOverEzC(ilow,jlow))*(z-zedList[jlow])/gridSizeZ ;
-	  saveEr[1] = arrayErOverEzC(ilow+1,jlow) + 
-	    (arrayErOverEzC(ilow+1,jlow+1)-arrayErOverEzC(ilow+1,jlow))*(z-zedList[jlow])/gridSizeZ ;
-	} else {
-	  AliWarning("Field calculation at z=0 (CE) is not allowed!");
-	  saveEr[0]=0; saveEr[1]=0;
-	}
-	fLookUpErOverEz[i][j] = saveEr[0] + (saveEr[1]-saveEr[0])*(r-rList[ilow])/gridSizeR ;
+      } else if (fgkZList[i]<0) {  // C side solution
+	saveEr[0] = arrayErOverEzC(ilow,jlow) + 
+	  (arrayErOverEzC(ilow,jlow+1)-arrayErOverEzC(ilow,jlow))*(z-zedList[jlow])/gridSizeZ ;
+	saveEr[1] = arrayErOverEzC(ilow+1,jlow) + 
+	  (arrayErOverEzC(ilow+1,jlow+1)-arrayErOverEzC(ilow+1,jlow))*(z-zedList[jlow])/gridSizeZ ;
+	saveEz[0] = arrayDeltaEzC(ilow,jlow) + 
+	  (arrayDeltaEzC(ilow,jlow+1)-arrayDeltaEzC(ilow,jlow))*(z-zedList[jlow])/gridSizeZ ;
+	saveEz[1] = arrayDeltaEzC(ilow+1,jlow) + 
+	  (arrayDeltaEzC(ilow+1,jlow+1)-arrayDeltaEzC(ilow+1,jlow))*(z-zedList[jlow])/gridSizeZ ;
+
+      } else {
+	AliWarning("Field calculation at z=0 (CE) is not allowed!");
+	saveEr[0]=0; saveEr[1]=0;
+	saveEz[0]=0; saveEz[1]=0;
       }
+      fLookUpErOverEz[i][j] = saveEr[0] + (saveEr[1]-saveEr[0])*(r-rList[ilow])/gridSizeR ;
+      fLookUpDeltaEz[i][j]  = saveEz[0] + (saveEz[1]-saveEz[0])*(r-rList[ilow])/gridSizeR ;
+    }
   }
   
-  /* delete [] saveEr;
-     delete [] sVec;
-     delete [] rList;
-     delete [] zedList;
-  */
-
+  voltArrayA.Clear();
+  voltArrayC.Clear();
+  chargeDensity.Clear();
+  arrayErOverEzA.Clear();
+  arrayErOverEzC.Clear();
+  arrayDeltaEzA.Clear();
+  arrayDeltaEzC.Clear();
+  
   fInitLookUp = kTRUE;
 
 }
@@ -355,7 +386,8 @@ void AliTPCBoundaryVoltError::Print(const Option_t* option) const {
     printf(" - C1: %1.4f, C0: %1.4f \n",fC1,fC0);
   } 
    
-  if (!fInitLookUp) AliError("Lookup table was not initialized! You should do InitBoundaryVoltErrorDistortion() ...");
+  if (!fInitLookUp) 
+    AliError("Lookup table was not initialized! You should do InitBoundaryVoltErrorDistortion() ...");
 
 }
 
@@ -377,11 +409,11 @@ void AliTPCBoundaryVoltError::SetBoundariesA(Float_t boundariesA[8]){
     fBoundariesA[i]= boundariesA[i];  
     if (i>5) fBoundariesC[i]= -boundariesA[i]; // setting for the CE is passed to C side
   }
-
+  fInitLookUp=kFALSE;
 }
 void AliTPCBoundaryVoltError::SetBoundariesC(Float_t boundariesC[6]){
   //
-  // set voltage errors on the TPC boundaries - A side 
+  // set voltage errors on the TPC boundaries - C side 
   //
   // Start at IFC at the Central electrode and work clockwise (for C side) through 
   // IFC, ROC and OFC. The boundary conditions are currently defined to be a linear 
@@ -395,5 +427,5 @@ void AliTPCBoundaryVoltError::SetBoundariesC(Float_t boundariesC[6]){
   for (Int_t i=0; i<6; i++) {
     fBoundariesC[i]= boundariesC[i];  
   }
-
+  fInitLookUp=kFALSE;
 }

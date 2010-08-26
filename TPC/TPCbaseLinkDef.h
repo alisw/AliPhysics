@@ -96,10 +96,13 @@
 #pragma link C++ class AliTPCComposedCorrection+;
 #pragma link C++ class AliTPCExBBShape+;
 #pragma link C++ class AliTPCExBTwist+;
-#pragma link C++ class AliTPCExBConical+;
 #pragma link C++ class AliTPCGGVoltError+;
+#pragma link C++ class AliTPCFCVoltError3D+;
+#pragma link C++ class AliTPCROCVoltError3D+;
 #pragma link C++ class AliTPCBoundaryVoltError+;
 #pragma link C++ class AliTPCCalibGlobalMisalignment+;
+#pragma link C++ class AliTPCSpaceCharge+;
+
 #pragma link C++ class AliTPCExBEffective+;
 #pragma link C++ class AliTPCExBEffectiveSector+;
 

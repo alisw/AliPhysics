@@ -147,7 +147,7 @@ void AliTPCGGVoltError::GetCorrection(const Float_t x[],const Short_t roc,Float_
   // Calculate correction in cartesian coordinates
   dx[0] = r * TMath::Cos(phi) - x[0];
   dx[1] = r * TMath::Sin(phi) - x[1]; 
-  dx[2] = 0.; // z distortion not implemented (1st order distortions)
+  dx[2] = 0.; // z distortion not implemented (1st order distortions) - see e.g. AliTPCBoundaryVoltError-class
 
 
 

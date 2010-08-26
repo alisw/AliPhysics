@@ -50,10 +50,12 @@
 #include <AliCDBStorage.h>
 #include <AliCDBId.h>
 #include <AliCDBMetaData.h>
-#include  "TVectorD.h"
+#include "TVectorD.h"
+#include "AliTPCParamSR.h"
 
+#include "AliTPCCorrection.h"
+#include "AliLog.h"
 
-#include "TRandom.h"
 #include "AliExternalTrackParam.h"
 #include "AliTrackPointArray.h"
 #include "TDatabasePDG.h"
@@ -61,28 +63,21 @@
 #include "AliTPCROC.h"
 #include "THnSparse.h"
 
+#include "AliTPCLaserTrack.h"
+#include "AliESDVertex.h"
+#include "AliVertexerTracks.h"
+#include "TDatabasePDG.h"
+#include "TF1.h"
 #include "TRandom.h"
+
+#include "TDatabasePDG.h"
+
 #include "AliTPCTransform.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCExB.h"
-#include "AliTPCCorrection.h"
+
 #include "AliTPCRecoParam.h"
 
-#include  "AliExternalTrackParam.h"
-#include  "AliTrackPointArray.h"
-#include  "TDatabasePDG.h"
-#include  "AliTrackerBase.h"
-#include  "AliTPCROC.h"
-#include  "THnSparse.h"
-
-#include  "AliTPCLaserTrack.h"
-#include  "AliESDVertex.h"
-#include  "AliVertexerTracks.h"
-#include  "TDatabasePDG.h"
-#include  "TF1.h"
-
-#include "AliTPCCorrection.h"
-#include "AliLog.h"
 
 ClassImp(AliTPCCorrection)
 
@@ -92,28 +87,34 @@ TObjArray *AliTPCCorrection::fgVisualCorrection=0;
 
 
 // FIXME: the following values should come from the database
-const Double_t AliTPCCorrection::fgkTPCZ0    =249.7;     // nominal gating grid position 
-const Double_t AliTPCCorrection::fgkIFCRadius= 83.06;    // Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
-const Double_t AliTPCCorrection::fgkOFCRadius=254.5;     // Mean Radius of the Outer Field Cage (252.55 min, 256.45 max) (cm)
-const Double_t AliTPCCorrection::fgkZOffSet  = 0.2;      // Offset from CE: calculate all distortions closer to CE as if at this point
-const Double_t AliTPCCorrection::fgkCathodeV =-100000.0; // Cathode Voltage (volts)
-const Double_t AliTPCCorrection::fgkGG       =-70.0;     // Gating Grid voltage (volts)
+const Double_t AliTPCCorrection::fgkTPCZ0    = 249.7;     // nominal gating grid position 
+const Double_t AliTPCCorrection::fgkIFCRadius=  83.06;    // Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
+const Double_t AliTPCCorrection::fgkOFCRadius= 254.5;     // Mean Radius of the Outer Field Cage (252.55 min, 256.45 max) (cm)
+const Double_t AliTPCCorrection::fgkZOffSet  =   0.2;     // Offset from CE: calculate all distortions closer to CE as if at this point
+const Double_t AliTPCCorrection::fgkCathodeV = -100000.0; // Cathode Voltage (volts)
+const Double_t AliTPCCorrection::fgkGG       =     -70.0; // Gating Grid voltage (volts)
 
+const Double_t  AliTPCCorrection::fgkdvdE = 0.0024; // [cm/V] drift velocity dependency on the E field (from Magboltz for NeCO2N2 at standard environment)
 
+const Double_t AliTPCCorrection::fgkEM = -1.602176487e-19/9.10938215e-31; // charge/mass in [C/kg]
+const Double_t AliTPCCorrection::fgke0 = 8.854187817e-12;                 // vacuum permittivity [A·s/(V·m)]
 
 // FIXME: List of interpolation points (course grid in the middle, fine grid on the borders)
 const Double_t AliTPCCorrection::fgkRList[AliTPCCorrection::kNR] =  {   
-84.0,   84.5,   85.0,   85.5,   86.0,  87.0,    88.0,
-90.0,   92.0,   94.0,   96.0,   98.0,  100.0,  102.0,  104.0,  106.0,  108.0, 
-110.0,  112.0,  114.0,  116.0,  118.0,  120.0,  122.0,  124.0,  126.0,  128.0, 
-130.0,  132.0,  134.0,  136.0,  138.0,  140.0,  142.0,  144.0,  146.0,  148.0, 
-150.0,  152.0,  154.0,  156.0,  158.0,  160.0,  162.0,  164.0,  166.0,  168.0, 
-170.0,  172.0,  174.0,  176.0,  178.0,  180.0,  182.0,  184.0,  186.0,  188.0,
-190.0,  192.0,  194.0,  196.0,  198.0,  200.0,  202.0,  204.0,  206.0,  208.0,
-210.0,  212.0,  214.0,  216.0,  218.0,  220.0,  222.0,  224.0,  226.0,  228.0,
-230.0,  232.0,  234.0,  236.0,  238.0,  240.0,  242.0,  244.0,  246.0,  248.0,
-249.0,  249.5,  250.0,  251.5,  252.0  } ;
-  
+  83.06,   83.5,   84.0,   84.5,   85.0,   85.5,   86.0,   86.5,      
+   87.0,   87.5,   88.0,   88.5,   89.0,   89.5,   90.0,   90.5,   91.0,   92.0,
+   93.0,   94.0,   95.0,   96.0,   98.0,  100.0,  102.0,  104.0,  106.0,  108.0, 
+  110.0,  112.0,  114.0,  116.0,  118.0,  120.0,  122.0,  124.0,  126.0,  128.0, 
+  130.0,  132.0,  134.0,  136.0,  138.0,  140.0,  142.0,  144.0,  146.0,  148.0, 
+  150.0,  152.0,  154.0,  156.0,  158.0,  160.0,  162.0,  164.0,  166.0,  168.0, 
+  170.0,  172.0,  174.0,  176.0,  178.0,  180.0,  182.0,  184.0,  186.0,  188.0,
+  190.0,  192.0,  194.0,  196.0,  198.0,  200.0,  202.0,  204.0,  206.0,  208.0,
+  210.0,  212.0,  214.0,  216.0,  218.0,  220.0,  222.0,  224.0,  226.0,  228.0,
+  230.0,  232.0,  234.0,  236.0,  238.0,  240.0,  241.0,  242.0,  243.0,  244.0,  
+  245.0,  245.5,  246.0,  246.5,  247.0,  247.5,  248.0,  248.5,  249.0,  249.5,  
+  250.0,  250.5,  251.0,  251.5,  252.0,  252.5,  253.0,  253.5,  254.0,  254.5 
+} ;
+ 
 const Double_t AliTPCCorrection::fgkZList[AliTPCCorrection::kNZ]     =   { 
 -249.5, -249.0, -248.5, -248.0, -247.0, -246.0, -245.0, -243.0, -242.0, -241.0,
 -240.0, -238.0, -236.0, -234.0, -232.0, -230.0, -228.0, -226.0, -224.0, -222.0,
@@ -146,21 +147,33 @@ const Double_t AliTPCCorrection::fgkZList[AliTPCCorrection::kNZ]     =   {
 
 
 AliTPCCorrection::AliTPCCorrection() 
-  : TNamed("correction_unity","unity"),fJLow(0),fKLow(0), fT1(1), fT2(1)
+  : TNamed("correction_unity","unity"),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1)
 {
   //
   // default constructor
   //
   if (!fgVisualCorrection) fgVisualCorrection= new TObjArray;
+
+  // Initialization of interpolation points 
+  for (Int_t i = 0; i<kNPhi; i++) {
+    fgkPhiList[i] = TMath::TwoPi()*i/(kNPhi-1);    
+  }
+
 }
 
 AliTPCCorrection::AliTPCCorrection(const char *name,const char *title)
-: TNamed(name,title),fJLow(0),fKLow(0), fT1(1), fT2(1)
+: TNamed(name,title),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1)
 {
   //
   // default constructor, that set the name and title
   //
   if (!fgVisualCorrection) fgVisualCorrection= new TObjArray;
+
+  // Initialization of interpolation points 
+  for (Int_t i = 0; i<kNPhi; i++) {
+    fgkPhiList[i] = TMath::TwoPi()*i/(kNPhi-1);    
+  }
+
 }
 
 AliTPCCorrection::~AliTPCCorrection() {
@@ -270,7 +283,8 @@ TH2F* AliTPCCorrection::CreateHistoDRinXY(Float_t z,Int_t nx,Int_t ny) {
   // in respect to position z within the XY plane.
   // The histogramm has nx times ny entries. 
   //
-  
+  AliTPCParam* tpcparam = new AliTPCParamSR;
+
   TH2F *h=CreateTH2F("dr_xy",GetTitle(),"x [cm]","y [cm]","dr [cm]",
 		     nx,-250.,250.,ny,-250.,250.);
   Float_t x[3],dx[3];
@@ -282,7 +296,7 @@ TH2F* AliTPCCorrection::CreateHistoDRinXY(Float_t z,Int_t nx,Int_t ny) {
       x[0]=h->GetXaxis()->GetBinCenter(ix);
       GetCorrection(x,roc,dx);
       Float_t r0=TMath::Sqrt((x[0]      )*(x[0]      )+(x[1]      )*(x[1]      ));
-      if (90.<=r0 && r0<=250.) {
+      if (tpcparam->GetPadRowRadii(0,0)<=r0 && r0<=tpcparam->GetPadRowRadii(36,95)) {
 	Float_t r1=TMath::Sqrt((x[0]+dx[0])*(x[0]+dx[0])+(x[1]+dx[1])*(x[1]+dx[1]));
 	h->SetBinContent(ix,iy,r1-r0);
       }
@@ -290,6 +304,7 @@ TH2F* AliTPCCorrection::CreateHistoDRinXY(Float_t z,Int_t nx,Int_t ny) {
 	h->SetBinContent(ix,iy,0.);
     }
   }
+  delete tpcparam;
   return h;
 }
 
@@ -300,6 +315,8 @@ TH2F* AliTPCCorrection::CreateHistoDRPhiinXY(Float_t z,Int_t nx,Int_t ny) {
   // in respect to position z within the XY plane.
   // The histogramm has nx times ny entries. 
   //
+
+  AliTPCParam* tpcparam = new AliTPCParamSR;
 
   TH2F *h=CreateTH2F("drphi_xy",GetTitle(),"x [cm]","y [cm]","drphi [cm]",
 		     nx,-250.,250.,ny,-250.,250.);
@@ -312,7 +329,7 @@ TH2F* AliTPCCorrection::CreateHistoDRPhiinXY(Float_t z,Int_t nx,Int_t ny) {
       x[0]=h->GetXaxis()->GetBinCenter(ix);
       GetCorrection(x,roc,dx);
       Float_t r0=TMath::Sqrt((x[0]      )*(x[0]      )+(x[1]      )*(x[1]      ));
-      if (90.<=r0 && r0<=250.) {
+      if (tpcparam->GetPadRowRadii(0,0)<=r0 && r0<=tpcparam->GetPadRowRadii(36,95)) {
  	Float_t phi0=TMath::ATan2(x[1]      ,x[0]      );
 	Float_t phi1=TMath::ATan2(x[1]+dx[1],x[0]+dx[0]);
 
@@ -326,6 +343,39 @@ TH2F* AliTPCCorrection::CreateHistoDRPhiinXY(Float_t z,Int_t nx,Int_t ny) {
 	h->SetBinContent(ix,iy,0.);
     }
   }
+  delete tpcparam;
+  return h;
+}
+
+TH2F* AliTPCCorrection::CreateHistoDZinXY(Float_t z,Int_t nx,Int_t ny) {
+  //
+  // Simple plot functionality.
+  // Returns a 2d hisogram which represents the corrections in longitudinal direction (dz)
+  // in respect to position z within the XY plane.
+  // The histogramm has nx times ny entries. 
+  //
+
+  AliTPCParam* tpcparam = new AliTPCParamSR;
+ 
+  TH2F *h=CreateTH2F("dz_xy",GetTitle(),"x [cm]","y [cm]","dz [cm]",
+		     nx,-250.,250.,ny,-250.,250.);
+  Float_t x[3],dx[3];
+  x[2]=z;
+  Int_t roc=z>0.?0:18; // FIXME
+  for (Int_t iy=1;iy<=ny;++iy) {
+    x[1]=h->GetYaxis()->GetBinCenter(iy);
+    for (Int_t ix=1;ix<=nx;++ix) {
+      x[0]=h->GetXaxis()->GetBinCenter(ix);
+      GetCorrection(x,roc,dx);
+      Float_t r0=TMath::Sqrt((x[0]      )*(x[0]      )+(x[1]      )*(x[1]      ));
+      if (tpcparam->GetPadRowRadii(0,0)<=r0 && r0<=tpcparam->GetPadRowRadii(36,95)) {
+	h->SetBinContent(ix,iy,dx[2]);
+      }
+      else
+	h->SetBinContent(ix,iy,0.);
+    }
+  }
+  delete tpcparam;
   return h;
 }
 
@@ -388,6 +438,32 @@ TH2F* AliTPCCorrection::CreateHistoDRPhiinZR(Float_t phi,Int_t nz,Int_t nr) {
   return h;
 }
 
+TH2F* AliTPCCorrection::CreateHistoDZinZR(Float_t phi,Int_t nz,Int_t nr) {
+  //
+  // Simple plot functionality.
+  // Returns a 2d hisogram which represents the corrections in longitudinal direction (dz) 
+  // in respect to angle phi within the ZR plane.
+  // The histogramm has nx times ny entries. 
+  //
+  TH2F *h=CreateTH2F("dz_zr",GetTitle(),"z [cm]","r [cm]","dz [cm]",
+		     nz,-250.,250.,nr,85.,250.);
+  Float_t x[3],dx[3];
+  for (Int_t ir=1;ir<=nr;++ir) {
+    Float_t radius=h->GetYaxis()->GetBinCenter(ir);
+    x[0]=radius*TMath::Cos(phi);
+    x[1]=radius*TMath::Sin(phi);
+    for (Int_t iz=1;iz<=nz;++iz) {
+      x[2]=h->GetXaxis()->GetBinCenter(iz);
+      Int_t roc=x[2]>0.?0:18; // FIXME
+      GetCorrection(x,roc,dx);
+      h->SetBinContent(iz,ir,dx[2]);
+    }
+  }
+  return h;
+
+}
+
+
 TH2F* AliTPCCorrection::CreateTH2F(const char *name,const char *title,
 				   const char *xlabel,const char *ylabel,const char *zlabel,
 				  Int_t nbinsx,Double_t xlow,Double_t xup,
@@ -416,7 +492,6 @@ TH2F* AliTPCCorrection::CreateTH2F(const char *name,const char *title,
   return h;
 }
 
-
 // Simple Interpolation functions: e.g. with bi(tri)cubic interpolations (not yet in TH2 and TH3)
 
 void AliTPCCorrection::Interpolate2DEdistortion( const Int_t order, const Double_t r, const Double_t z, 
@@ -439,6 +514,109 @@ void AliTPCCorrection::Interpolate2DEdistortion( const Int_t order, const Double
   erValue = Interpolate( &fgkZList[fJLow], saveEr, order, z )   ;
 
 }
+
+void AliTPCCorrection::Interpolate3DEdistortion( const Int_t order, const Double_t r, const Float_t phi, const Double_t z, 
+						 const Double_t er[kNZ][kNPhi][kNR], const Double_t ephi[kNZ][kNPhi][kNR], const Double_t ez[kNZ][kNPhi][kNR],
+						 Double_t &erValue, Double_t &ephiValue, Double_t &ezValue) {
+  //
+  // Interpolate table - 3D interpolation
+  //
+  
+  Double_t saveEr[10],   savedEr[10] ;
+  Double_t saveEphi[10], savedEphi[10] ;
+  Double_t saveEz[10],   savedEz[10] ;
+
+  Search( kNZ,   fgkZList,   z,   fILow   ) ;
+  Search( kNPhi, fgkPhiList, z,   fJLow   ) ;
+  Search( kNR,   fgkRList,   r,   fKLow   ) ;
+
+  if ( fILow < 0 ) fILow = 0 ;   // check if out of range
+  if ( fJLow < 0 ) fJLow = 0 ;
+  if ( fKLow < 0 ) fKLow = 0 ;
+
+  if ( fILow + order  >=    kNZ - 1 ) fILow =   kNZ - 1 - order ;
+  if ( fJLow + order  >=  kNPhi - 1 ) fJLow = kNPhi - 1 - order ;
+  if ( fKLow + order  >=    kNR - 1 ) fKLow =   kNR - 1 - order ;
+
+  for ( Int_t i = fILow ; i < fILow + order + 1 ; i++ ) {
+    for ( Int_t j = fJLow ; j < fJLow + order + 1 ; j++ ) {
+      saveEr[j-fJLow]     = Interpolate( &fgkRList[fKLow], &er[i][j][fKLow], order, r )   ;
+      saveEphi[j-fJLow]   = Interpolate( &fgkRList[fKLow], &ephi[i][j][fKLow], order, r ) ;
+      saveEz[j-fJLow]     = Interpolate( &fgkRList[fKLow], &ez[i][j][fKLow], order, r )   ;
+    }
+    savedEr[i-fILow]     = Interpolate( &fgkPhiList[fJLow], saveEr, order, phi )   ; 
+    savedEphi[i-fILow]   = Interpolate( &fgkPhiList[fJLow], saveEphi, order, phi ) ; 
+    savedEz[i-fILow]     = Interpolate( &fgkPhiList[fJLow], saveEz, order, phi )   ; 
+  }
+  erValue     = Interpolate( &fgkZList[fILow], savedEr, order, z )    ;
+  ephiValue   = Interpolate( &fgkZList[fILow], savedEphi, order, z )  ;
+  ezValue     = Interpolate( &fgkZList[fILow], savedEz, order, z )    ;
+
+}
+
+Double_t AliTPCCorrection::Interpolate2DTable( const Int_t order, const Double_t x, const Double_t y, 
+					      const Int_t nx,  const Int_t ny, const Double_t xv[], const Double_t yv[], 
+					      const TMatrixD &array ) {
+  //
+  // Interpolate table (TMatrix format) - 2D interpolation
+  //
+
+  static  Int_t jlow = 0, klow = 0 ;
+  Double_t saveArray[10]  ;
+
+  Search( nx,  xv,  x,   jlow  ) ;
+  Search( ny,  yv,  y,   klow  ) ;
+  if ( jlow < 0 ) jlow = 0 ;   // check if out of range
+  if ( klow < 0 ) klow = 0 ;
+  if ( jlow + order  >=    nx - 1 ) jlow =   nx - 1 - order ;
+  if ( klow + order  >=    ny - 1 ) klow =   ny - 1 - order ;
+
+  for ( Int_t j = jlow ; j < jlow + order + 1 ; j++ )
+    {
+      Double_t *ajkl = &((TMatrixD&)array)(j,klow);
+      saveArray[j-jlow]  = Interpolate( &yv[klow], ajkl , order, y )   ;
+    }
+
+  return( Interpolate( &xv[jlow], saveArray, order, x ) )   ;
+
+}
+
+Double_t AliTPCCorrection::Interpolate3DTable( const Int_t order, const Double_t x,   const Double_t y,   const Double_t z,
+					      const Int_t  nx,    const Int_t  ny,    const Int_t  nz,
+					      const Double_t xv[], const Double_t yv[], const Double_t zv[],
+					      TMatrixD **arrayofArrays ) {
+  //
+  // Interpolate table (TMatrix format) - 3D interpolation
+  //
+
+  static  Int_t ilow = 0, jlow = 0, klow = 0 ;
+  Double_t saveArray[10],  savedArray[10] ;
+
+  Search( nx, xv, x, ilow   ) ;
+  Search( ny, yv, y, jlow   ) ;
+  Search( nz, zv, z, klow   ) ;  
+
+  if ( ilow < 0 ) ilow = 0 ;   // check if out of range
+  if ( jlow < 0 ) jlow = 0 ;
+  if ( klow < 0 ) klow = 0 ;
+
+  if ( ilow + order  >=    nx - 1 ) ilow =   nx - 1 - order ;
+  if ( jlow + order  >=    ny - 1 ) jlow =   ny - 1 - order ;
+  if ( klow + order  >=    nz - 1 ) klow =   nz - 1 - order ;
+
+  for ( Int_t k = klow ; k < klow + order + 1 ; k++ )
+    {
+      TMatrixD &table = *arrayofArrays[k] ;
+      for ( Int_t i = ilow ; i < ilow + order + 1 ; i++ )
+	{
+	  saveArray[i-ilow] = Interpolate( &yv[jlow], &table(i,jlow), order, y )   ;
+	}
+      savedArray[k-klow] = Interpolate( &xv[ilow], saveArray, order, x )   ; 
+    }
+  return( Interpolate( &zv[klow], savedArray, order, z ) )   ;
+
+}
+
 
 
 Double_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Double_t yArray[], 
@@ -508,9 +686,10 @@ void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Dou
   
 }
 
-void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, const TMatrixD &chargeDensity, 
-					   TMatrixD &arrayErOverEz, const Int_t rows, 
-					   const Int_t columns, const Int_t iterations ) {
+void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, TMatrixD &chargeDensity, 
+					   TMatrixD &arrayErOverEz, TMatrixD &arrayDeltaEz, 
+					   const Int_t rows, const Int_t columns, const Int_t iterations,
+					   const Bool_t rocDisplacement ) {
   //
   // Solve Poisson's Equation by Relaxation Technique in 2D (assuming cylindrical symmetry)
   //
@@ -530,6 +709,8 @@ void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, const TMatrixD &cha
   // NOTE: In order for this algorithmto work, the number of rows and columns must be a power of 2 plus one.
   // So rows == 2**M + 1 and columns == 2**N + 1.  The number of rows and columns can be different.
   // 
+  // NOTE: rocDisplacement is used to include (or ignore) the ROC misalignment in the dz calculation
+  //
   // Original code by Jim Thomas (STAR TPC Collaboration)
   //
 
@@ -658,6 +839,7 @@ void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, const TMatrixD &cha
     iOne = iOne / 2 ; if ( iOne < 1 ) iOne = 1 ;
     jOne = jOne / 2 ; if ( jOne < 1 ) jOne = 1 ;
 
+    sumChargeDensity.Clear();
   }      
 
   // Differentiate V(r) and solve for E(r) using special equations for the first and last rows
@@ -687,25 +869,393 @@ void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, const TMatrixD &cha
   // Integrate Er/Ez from Z to zero
   for ( Int_t j = 0 ; j < columns ; j++ )  {	  
     for ( Int_t i = 0 ; i < rows ; i++ ) {
+      
       Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.  
       arrayErOverEz(i,j) = 0.0 ;
+      arrayDeltaEz(i,j) = 0.0 ;
+      
       for ( Int_t k = j ; k < columns ; k++ ) {
 	arrayErOverEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayEr(i,k)/arrayEz(i,k) ;
+	arrayDeltaEz(i,j)   +=  index*(gridSizeZ/3.0)*(arrayEz(i,k)-ezField) ;
 	if ( index != 4 )  index = 4; else index = 2 ;
       }
-      if ( index == 4 ) arrayErOverEz(i,j)  -=  (gridSizeZ/3.0)*arrayEr(i,columns-1)/arrayEz(i,columns-1) ;
-      if ( index == 2 ) arrayErOverEz(i,j)  +=  
-	(gridSizeZ/3.0) * ( 0.5*arrayEr(i,columns-2)/arrayEz(i,columns-2) 
-			    -2.5*arrayEr(i,columns-1)/arrayEz(i,columns-1) )   ;
-      if ( j == columns-2 ) arrayErOverEz(i,j) =  
-	(gridSizeZ/3.0) * ( 1.5*arrayEr(i,columns-2)/arrayEz(i,columns-2)
-			    +1.5*arrayEr(i,columns-1)/arrayEz(i,columns-1) ) ;
-      if ( j == columns-1 ) arrayErOverEz(i,j) =  0.0 ;
+      if ( index == 4 ) {
+	arrayErOverEz(i,j)  -=  (gridSizeZ/3.0)*arrayEr(i,columns-1)/arrayEz(i,columns-1) ;
+	arrayDeltaEz(i,j)   -=  (gridSizeZ/3.0)*(arrayEz(i,columns-1)-ezField) ;
+      }
+      if ( index == 2 ) {
+	arrayErOverEz(i,j)  +=  (gridSizeZ/3.0) * ( 0.5*arrayEr(i,columns-2)/arrayEz(i,columns-2) 
+						    -2.5*arrayEr(i,columns-1)/arrayEz(i,columns-1));
+	arrayDeltaEz(i,j)   +=  (gridSizeZ/3.0) * ( 0.5*(arrayEz(i,columns-2)-ezField) 
+						    -2.5*(arrayEz(i,columns-1)-ezField));
+      }
+      if ( j == columns-2 ) {
+	arrayErOverEz(i,j) =  (gridSizeZ/3.0) * ( 1.5*arrayEr(i,columns-2)/arrayEz(i,columns-2)
+						  +1.5*arrayEr(i,columns-1)/arrayEz(i,columns-1) ) ;
+	arrayDeltaEz(i,j)  =  (gridSizeZ/3.0) * ( 1.5*(arrayEz(i,columns-2)-ezField)
+						  +1.5*(arrayEz(i,columns-1)-ezField) ) ;
+      }
+      if ( j == columns-1 ) {
+	arrayErOverEz(i,j) =  0.0 ;
+	arrayDeltaEz(i,j)  =  0.0 ;
+      }
     }
   }
   
+  // calculate z distortion from the integrated Delta Ez residuals
+  // and include the aquivalence (Volt to cm) of the ROC shift !!
+
+  for ( Int_t j = 0 ; j < columns ; j++ )  {	  
+    for ( Int_t i = 0 ; i < rows ; i++ ) {
+
+      // Scale the Ez distortions with the drift velocity pertubation -> delivers cm
+      arrayDeltaEz(i,j) = arrayDeltaEz(i,j)*fgkdvdE;
+
+      // ROC Potential in cm aquivalent
+      Double_t dzROCShift =  arrayV(i, columns -1)/ezField;  
+      if ( rocDisplacement ) arrayDeltaEz(i,j) = arrayDeltaEz(i,j) + dzROCShift;  // add the ROC misaligment
+
+    }
+  }
+ 
+  arrayEr.Clear();
+  arrayEz.Clear();
+
 }
 
+void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**arrayofChargeDensities, 
+		    TMatrixD**arrayofEroverEz, TMatrixD**arrayofEPhioverEz, TMatrixD**arrayofDeltaEz,
+		    const Int_t rows, const Int_t columns,  const Int_t phislices, 
+		    const Float_t deltaphi, const Int_t iterations, const Int_t symmetry,
+		    Bool_t rocDisplacement  ) {
+  //
+  // 3D - Solve Poisson's Equation in 3D by Relaxation Technique
+  //
+  //    NOTE: In order for this algorith to work, the number of rows and columns must be a power of 2 plus one.  
+  //    The number of rows and COLUMNS can be different.
+  //
+  //    ROWS       ==  2**M + 1  
+  //    COLUMNS    ==  2**N + 1  
+  //    PHISLICES  ==  Arbitrary but greater than 3
+  //
+  //    DeltaPhi in Radians
+  //
+  //    SYMMETRY = 0 if no phi symmetries, and no phi boundary conditions
+  //             = 1 if we have reflection symmetry at the boundaries (eg. sector symmetry or half sector symmetries).
+  //
+  // NOTE: rocDisplacement is used to include (or ignore) the ROC misalignment in the dz calculation
+
+  const Double_t ezField = (fgkCathodeV-fgkGG)/fgkTPCZ0; // = ALICE Electric Field (V/cm) Magnitude ~ -400 V/cm; 
+
+  const Float_t  gridSizeR   =  (fgkOFCRadius-fgkIFCRadius) / (rows-1) ;
+  const Float_t  gridSizePhi =  deltaphi ;
+  const Float_t  gridSizeZ   =  fgkTPCZ0 / (columns-1) ;
+  const Float_t  ratioPhi    =  gridSizeR*gridSizeR / (gridSizePhi*gridSizePhi) ;
+  const Float_t  ratioZ      =  gridSizeR*gridSizeR / (gridSizeZ*gridSizeZ) ;
+
+  TMatrixD arrayE(rows,columns) ;
+
+  // Check that the number of rows and columns is suitable for a binary expansion
+  if ( !IsPowerOfTwo((rows-1))    ) {  
+    AliError("Poisson3DRelaxation - Error in the number of rows. Must be 2**M - 1"); 
+    return; }
+  if ( !IsPowerOfTwo((columns-1)) ) { 
+    AliError("Poisson3DRelaxation - Error in the number of columns. Must be 2**N - 1");
+    return; }
+  if ( phislices <= 3   )  { 
+    AliError("Poisson3DRelaxation - Error in the number of phislices. Must be larger than 3");
+    return; }
+  if  ( phislices > 1000 ) { 
+    AliError("Poisson3D  phislices > 1000 is not allowed (nor wise) ");  
+    return; }  
+  
+  // Solve Poisson's equation in cylindrical coordinates by relaxation technique
+  // Allow for different size grid spacing in R and Z directions
+  // Use a binary expansion of the matrix to speed up the solution of the problem
+
+  Int_t loops, mplus, mminus, signplus, signminus  ;
+  Int_t ione = (rows-1)/4 ;
+  Int_t jone = (columns-1)/4 ;
+  loops = TMath::Max(ione, jone) ;      // Calculate the number of loops for the binary expansion
+  loops = 1 + (int) ( 0.5 + TMath::Log2((double)loops) ) ;  // Solve for N in 2**N
+
+  TMatrixD* arrayofSumChargeDensities[1000] ;    // Create temporary arrays to store low resolution charge arrays
+
+  for ( Int_t i = 0 ; i < phislices ; i++ ) { arrayofSumChargeDensities[i] = new TMatrixD(rows,columns) ; }
+
+  for ( Int_t count = 0 ; count < loops ; count++ ) {      // START the master loop and do the binary expansion
+   
+    Float_t  tempgridSizeR   =  gridSizeR  * ione ;
+    Float_t  tempratioPhi    =  ratioPhi * ione * ione ; // Used tobe divided by ( m_one * m_one ) when m_one was != 1
+    Float_t  tempratioZ      =  ratioZ   * ione * ione / ( jone * jone ) ;
+
+    std::vector<float> coef1(rows) ;  // Do this the standard C++ way to avoid gcc extensions for Float_t coef1[rows]
+    std::vector<float> coef2(rows) ;  // Do this the standard C++ way to avoid gcc extensions for Float_t coef1[rows]
+    std::vector<float> coef3(rows) ;  // Do this the standard C++ way to avoid gcc extensions for Float_t coef1[rows]
+    std::vector<float> coef4(rows) ;  // Do this the standard C++ way to avoid gcc extensions for Float_t coef1[rows]
+
+    for ( Int_t i = ione ; i < rows-1 ; i+=ione )  {
+      Float_t radius = fgkIFCRadius + i*gridSizeR ;
+      coef1[i] = 1.0 + tempgridSizeR/(2*radius);
+      coef2[i] = 1.0 - tempgridSizeR/(2*radius);
+      coef3[i] = tempratioPhi/(radius*radius);
+      coef4[i] = 0.5 / (1.0 + tempratioZ + coef3[i]);
+    }
+
+    for ( Int_t m = 0 ; m < phislices ; m++ ) {
+      TMatrixD &chargeDensity    = *arrayofChargeDensities[m] ;
+      TMatrixD &sumChargeDensity = *arrayofSumChargeDensities[m] ;
+      for ( Int_t i = ione ; i < rows-1 ; i += ione ) {
+	Float_t radius = fgkIFCRadius + i*gridSizeR ;
+	for ( Int_t j = jone ; j < columns-1 ; j += jone ) {
+	  if ( ione == 1 && jone == 1 ) sumChargeDensity(i,j) = chargeDensity(i,j) ;
+	  else {           // Add up all enclosed charge density contributions within 1/2 unit in all directions
+	    Float_t weight = 0.0 ;
+	    Float_t sum    = 0.0 ;
+	    sumChargeDensity(i,j) = 0.0 ;
+	    for ( Int_t ii = i-ione/2 ; ii <= i+ione/2 ; ii++ ) {
+	      for ( Int_t jj = j-jone/2 ; jj <= j+jone/2 ; jj++ ) {
+		if ( ii == i-ione/2 || ii == i+ione/2 || jj == j-jone/2 || jj == j+jone/2 ) weight = 0.5 ;
+		else
+		  weight = 1.0 ; 
+		sumChargeDensity(i,j) += chargeDensity(ii,jj)*weight*radius ;  
+		sum += weight*radius ;
+	      }
+	    }
+	    sumChargeDensity(i,j) /= sum ;
+	  }
+          sumChargeDensity(i,j) *= tempgridSizeR*tempgridSizeR; // just saving a step later on
+	}
+      }
+    }
+
+    for ( Int_t k = 1 ; k <= iterations; k++ ) {
+
+      // over-relaxation index, >= 1 but < 2
+      Float_t overRelax   = 1.0 + TMath::Sqrt( TMath::Cos( (k*TMath::PiOver2())/iterations ) ) ; 
+      Float_t overRelaxM1 = overRelax - 1.0 ;
+
+      std::vector<float> overRelaxcoef4(rows) ;  // Do this the standard C++ way to avoid gcc extensions
+      std::vector<float> overRelaxcoef5(rows) ;  // Do this the standard C++ way to avoid gcc extensions
+
+      for ( Int_t i = ione ; i < rows-1 ; i+=ione ) { 
+	overRelaxcoef4[i] = overRelax * coef4[i] ;
+	overRelaxcoef5[i] = overRelaxM1 / overRelaxcoef4[i] ; 
+      }
+
+      for ( Int_t m = 0 ; m < phislices ; m++ ) {
+
+	mplus  = m + 1;   signplus  = 1 ; 
+	mminus = m - 1 ;  signminus = 1 ;
+	if (symmetry==1) {  // Reflection symmetry in phi (e.g. symmetry at sector boundaries, or half sectors, etc.)
+	  if ( mplus  > phislices-1 ) mplus  = phislices - 2 ;
+	  if ( mminus < 0 )           mminus = 1 ;
+	}
+	else if (symmetry==-1) {   // Anti-symmetry in phi
+	  if ( mplus  > phislices-1 ) { mplus  = phislices - 2 ; signplus  = -1 ; }
+	  if ( mminus < 0 )           { mminus = 1 ;	         signminus = -1 ; } 
+	}
+		else { // No Symmetries in phi, no boundaries, the calculation is continuous across all phi
+	  if ( mplus  > phislices-1 ) mplus  = m + 1 - phislices ;
+	  if ( mminus < 0 )           mminus = m - 1 + phislices ;
+	}
+	TMatrixD& arrayV    =  *arrayofArrayV[m] ;
+	TMatrixD& arrayVP   =  *arrayofArrayV[mplus] ;
+	TMatrixD& arrayVM   =  *arrayofArrayV[mminus] ;
+	TMatrixD& sumChargeDensity =  *arrayofSumChargeDensities[m] ;
+
+	for ( Int_t i = ione ; i < rows-1 ; i+=ione )  {
+	  for ( Int_t j = jone ; j < columns-1 ; j+=jone ) {
+
+            arrayV(i,j) = (   coef2[i]          *   arrayV(i-ione,j)
+			    + tempratioZ        * ( arrayV(i,j-jone)  +  arrayV(i,j+jone) )
+			    - overRelaxcoef5[i] *   arrayV(i,j) 
+			    + coef1[i]          *   arrayV(i+ione,j)  
+			    + coef3[i]          * ( signplus*arrayVP(i,j)       +  signminus*arrayVM(i,j) )
+			    + sumChargeDensity(i,j) 
+			  ) * overRelaxcoef4[i] ;     
+	    // Note: over-relax the solution at each step.  This speeds up the convergance.
+
+	  }
+	}
+
+	if ( k == iterations ) {   // After full solution is achieved, copy low resolution solution into higher res array
+	  for ( Int_t i = ione ; i < rows-1 ; i+=ione )  {
+	    for ( Int_t j = jone ; j < columns-1 ; j+=jone ) {
+	      
+	      if ( ione > 1 ) {              
+		arrayV(i+ione/2,j)                    =  ( arrayV(i+ione,j) + arrayV(i,j)     ) / 2 ;
+		if ( i == ione )  arrayV(i-ione/2,j) =  ( arrayV(0,j)       + arrayV(ione,j) ) / 2 ;
+	      }
+	      if ( jone > 1 ) {
+		arrayV(i,j+jone/2)                    =  ( arrayV(i,j+jone) + arrayV(i,j) )     / 2 ;
+		if ( j == jone )  arrayV(i,j-jone/2) =  ( arrayV(i,0)       + arrayV(i,jone) ) / 2 ;
+	      }
+	      if ( ione > 1 && jone > 1 ) {
+		arrayV(i+ione/2,j+jone/2) =  ( arrayV(i+ione,j+jone) + arrayV(i,j) ) / 2 ;
+		if ( i == ione ) arrayV(i-ione/2,j-jone/2) =   ( arrayV(0,j-jone) + arrayV(ione,j) ) / 2 ;
+		if ( j == jone ) arrayV(i-ione/2,j-jone/2) =   ( arrayV(i-ione,0) + arrayV(i,jone) ) / 2 ;
+		// Note that this leaves a point at the upper left and lower right corners uninitialized. Not a big deal.
+	      }
+	    }	    
+	  }
+	}
+
+      }
+    }      
+
+    ione = ione / 2 ; if ( ione < 1 ) ione = 1 ;
+    jone = jone / 2 ; if ( jone < 1 ) jone = 1 ;
+
+  }
+  
+  //Differentiate V(r) and solve for E(r) using special equations for the first and last row
+  //Integrate E(r)/E(z) from point of origin to pad plane
+
+  for ( Int_t m = 0 ; m < phislices ; m++ ) {
+    TMatrixD& arrayV    =  *arrayofArrayV[m] ;
+    TMatrixD& eroverEz  =  *arrayofEroverEz[m] ;
+    
+    for ( Int_t j = columns-1 ; j >= 0 ; j-- ) {  // Count backwards to facilitate integration over Z
+      
+      // Differentiate in R
+      for ( Int_t i = 1 ; i < rows-1 ; i++ )  arrayE(i,j) = -1 * ( arrayV(i+1,j) - arrayV(i-1,j) ) / (2*gridSizeR) ;
+      arrayE(0,j)      =  -1 * ( -0.5*arrayV(2,j) + 2.0*arrayV(1,j) - 1.5*arrayV(0,j) ) / gridSizeR ;  
+      arrayE(rows-1,j) =  -1 * ( 1.5*arrayV(rows-1,j) - 2.0*arrayV(rows-2,j) + 0.5*arrayV(rows-3,j) ) / gridSizeR ; 
+      // Integrate over Z
+      for ( Int_t i = 0 ; i < rows ; i++ ) {
+	Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.  
+	eroverEz(i,j) = 0.0 ;
+	for ( Int_t k = j ; k < columns ; k++ ) {
+	  
+	  eroverEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayE(i,k)/(-1*ezField) ;
+	  if ( index != 4 )  index = 4; else index = 2 ;
+	}
+	if ( index == 4 ) eroverEz(i,j)  -=  (gridSizeZ/3.0)*arrayE(i,columns-1)/ (-1*ezField) ;
+	if ( index == 2 ) eroverEz(i,j)  +=  
+	  (gridSizeZ/3.0)*(0.5*arrayE(i,columns-2)-2.5*arrayE(i,columns-1))/(-1*ezField) ;
+	if ( j == columns-2 ) eroverEz(i,j) =  
+	  (gridSizeZ/3.0)*(1.5*arrayE(i,columns-2)+1.5*arrayE(i,columns-1))/(-1*ezField) ;
+	if ( j == columns-1 ) eroverEz(i,j) =  0.0 ;
+      }
+    }
+    // if ( m == 0 ) { TCanvas*  c1 =  new TCanvas("erOverEz","erOverEz",50,50,840,600) ;  c1 -> cd() ;
+    // eroverEz.Draw("surf") ; } // JT test
+  }
+  
+  //Differentiate V(r) and solve for E(phi) 
+  //Integrate E(phi)/E(z) from point of origin to pad plane
+
+  for ( Int_t m = 0 ; m < phislices ; m++ ) {
+    
+    mplus  = m + 1;   signplus  = 1 ; 
+    mminus = m - 1 ;  signminus = 1 ; 
+    if (symmetry==1) { // Reflection symmetry in phi (e.g. symmetry at sector boundaries, or half sectors, etc.)
+      if ( mplus  > phislices-1 ) mplus  = phislices - 2 ;
+      if ( mminus < 0 )           mminus = 1 ;
+    }
+    else if (symmetry==-1) {       // Anti-symmetry in phi
+      if ( mplus  > phislices-1 ) { mplus  = phislices - 2 ;  signplus  = -1 ; }
+      if ( mminus < 0 )           { mminus = 1 ;	            signminus = -1 ; } 
+    }
+    else { // No Symmetries in phi, no boundaries, the calculations is continuous across all phi
+      if ( mplus  > phislices-1 ) mplus  = m + 1 - phislices ;
+      if ( mminus < 0 )           mminus = m - 1 + phislices ;
+    }
+    TMatrixD &arrayVP     =  *arrayofArrayV[mplus] ;
+    TMatrixD &arrayVM     =  *arrayofArrayV[mminus] ;
+    TMatrixD &ePhioverEz  =  *arrayofEPhioverEz[m] ;
+    for ( Int_t j = columns-1 ; j >= 0 ; j-- ) { // Count backwards to facilitate integration over Z
+      // Differentiate in Phi
+      for ( Int_t i = 0 ; i < rows ; i++ ) {
+	Float_t radius = fgkIFCRadius + i*gridSizeR ;
+	arrayE(i,j) = -1 * (signplus * arrayVP(i,j) - signminus * arrayVM(i,j) ) / (2*radius*gridSizePhi) ;
+      }
+      // Integrate over Z
+      for ( Int_t i = 0 ; i < rows ; i++ ) {
+	Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.  
+	ePhioverEz(i,j) = 0.0 ;
+	for ( Int_t k = j ; k < columns ; k++ ) {
+	  
+	  ePhioverEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayE(i,k)/(-1*ezField) ;
+	  if ( index != 4 )  index = 4; else index = 2 ;
+	}
+	if ( index == 4 ) ePhioverEz(i,j)  -=  (gridSizeZ/3.0)*arrayE(i,columns-1)/ (-1*ezField) ;
+	if ( index == 2 ) ePhioverEz(i,j)  +=  
+	  (gridSizeZ/3.0)*(0.5*arrayE(i,columns-2)-2.5*arrayE(i,columns-1))/(-1*ezField) ;
+	if ( j == columns-2 ) ePhioverEz(i,j) =  
+	  (gridSizeZ/3.0)*(1.5*arrayE(i,columns-2)+1.5*arrayE(i,columns-1))/(-1*ezField) ;
+	if ( j == columns-1 ) ePhioverEz(i,j) =  0.0 ;
+      }
+    }
+    // if ( m == 5 ) { TCanvas* c2 =  new TCanvas("arrayE","arrayE",50,50,840,600) ;  c2 -> cd() ;
+    // arrayE.Draw("surf") ; } // JT test
+  }
+  
+
+  // Differentiate V(r) and solve for E(z) using special equations for the first and last row
+  // Integrate (E(z)-Ezstd) from point of origin to pad plane
+  
+  for ( Int_t m = 0 ; m < phislices ; m++ ) {
+    TMatrixD& arrayV   =  *arrayofArrayV[m] ;
+    TMatrixD& deltaEz  =  *arrayofDeltaEz[m] ;
+    
+    // Differentiate V(z) and solve for E(z) using special equations for the first and last columns
+    for ( Int_t i = 0 ; i < rows ; i++) {
+      for ( Int_t j = 1 ; j < columns-1 ; j++ ) arrayE(i,j) = -1 * ( arrayV(i,j+1) - arrayV(i,j-1) ) / (2*gridSizeZ) ;
+      arrayE(i,0)         =  -1 * ( -0.5*arrayV(i,2) + 2.0*arrayV(i,1) - 1.5*arrayV(i,0) ) / gridSizeZ ;  
+      arrayE(i,columns-1) =  -1 * ( 1.5*arrayV(i,columns-1) - 2.0*arrayV(i,columns-2) + 0.5*arrayV(i,columns-3) ) / gridSizeZ ; 
+    }
+    
+    for ( Int_t j = columns-1 ; j >= 0 ; j-- ) {  // Count backwards to facilitate integration over Z
+      // Integrate over Z
+      for ( Int_t i = 0 ; i < rows ; i++ ) {
+	Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.  
+	deltaEz(i,j) = 0.0 ;
+	for ( Int_t k = j ; k < columns ; k++ ) {
+	  deltaEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayE(i,k) ;
+	  if ( index != 4 )  index = 4; else index = 2 ;
+	}
+	if ( index == 4 ) deltaEz(i,j)  -=  (gridSizeZ/3.0)*arrayE(i,columns-1) ;
+	if ( index == 2 ) deltaEz(i,j)  +=  
+	  (gridSizeZ/3.0)*(0.5*arrayE(i,columns-2)-2.5*arrayE(i,columns-1)) ;
+	if ( j == columns-2 ) deltaEz(i,j) =  
+	  (gridSizeZ/3.0)*(1.5*arrayE(i,columns-2)+1.5*arrayE(i,columns-1)) ;
+	if ( j == columns-1 ) deltaEz(i,j) =  0.0 ;
+      }
+    }
+    // if ( m == 0 ) { TCanvas*  c1 =  new TCanvas("erOverEz","erOverEz",50,50,840,600) ;  c1 -> cd() ;
+    // eroverEz.Draw("surf") ; } // JT test
+    
+    // calculate z distortion from the integrated Delta Ez residuals
+    // and include the aquivalence (Volt to cm) of the ROC shift !!
+    
+    for ( Int_t j = 0 ; j < columns ; j++ )  {	  
+      for ( Int_t i = 0 ; i < rows ; i++ ) {
+	
+	// Scale the Ez distortions with the drift velocity pertubation -> delivers cm
+	deltaEz(i,j) = deltaEz(i,j)*fgkdvdE;
+	
+	// ROC Potential in cm aquivalent
+	Double_t dzROCShift =  arrayV(i, columns -1)/ezField;  
+	if ( rocDisplacement ) deltaEz(i,j) = deltaEz(i,j) + dzROCShift;  // add the ROC misaligment
+	
+      }
+    }
+
+  } // end loop over phi
+  
+ 
+
+  for ( Int_t k = 0 ; k < phislices ; k++ )
+    {
+      arrayofSumChargeDensities[k]->Delete() ;
+    }
+  
+
+
+  arrayE.Clear();
+}
 
 
 Int_t AliTPCCorrection::IsPowerOfTwo(Int_t i) const {
@@ -955,6 +1505,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   // corrArray - array with partial corrections
   // step      - skipe entries  - if 1 all entries processed - it is slow
   // debug     0 if debug on also space points dumped - it is slow
+
   const Double_t kMaxSnp = 0.85;  
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   //  const Double_t kB2C=-0.299792458e-3;
@@ -1272,16 +1823,23 @@ void AliTPCCorrection::StoreInOCDB(Int_t startRun, Int_t endRun, const char *com
 
 
 void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTracks, AliESDVertex &aV, AliESDVertex &avOrg, AliESDVertex &cV, AliESDVertex &cvOrg, TTreeSRedirector * const pcstream, Double_t etaCuts){
+  //
+  // Fast method to simulate the influence of the given distortion on the vertex reconstruction
+  //
 
-  AliVertexerTracks *vertexer = new AliVertexerTracks(5);// 5kGaus
+  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!magF) AliError("Magneticd field - not initialized");
+  Double_t bz = magF->SolenoidField(); //field in kGauss
+  printf("bz: %lf\n",bz);
+  AliVertexerTracks *vertexer = new AliVertexerTracks(bz); // bz in kGauss
 
-  TObjArray   ATrk;               // Original Track array of Aside
-  TObjArray   dATrk;              // Distorted Track array of A side
-  UShort_t    *AId = new UShort_t[nTracks];      // A side Track ID
-  TObjArray   CTrk;               
-  TObjArray   dCTrk;
-  UShort_t    *CId = new UShort_t [nTracks];
-  Int_t ID=0; 
+  TObjArray   aTrk;              // Original Track array of Aside
+  TObjArray   daTrk;             // Distorted Track array of A side
+  UShort_t    *aId = new UShort_t[nTracks];      // A side Track ID
+  TObjArray   cTrk;               
+  TObjArray   dcTrk;
+  UShort_t    *cId = new UShort_t [nTracks];
+  Int_t id=0; 
   Double_t mass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   TF1 fpt("fpt",Form("x*(1+(sqrt(x*x+%f^2)-%f)/([0]*[1]))^(-[0])",mass,mass),0.4,10);
   fpt.SetParameters(7.24,0.120);
@@ -1289,7 +1847,8 @@ void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTrac
   for(Int_t nt=0; nt<nTracks; nt++){
     Double_t phi = gRandom->Uniform(0.0, 2*TMath::Pi());
     Double_t eta = gRandom->Uniform(-etaCuts, etaCuts);
-    Double_t pt = fpt.GetRandom();// momentum for f1
+    Double_t pt = fpt.GetRandom(); // momentum for f1
+    //   printf("phi %lf  eta %lf pt %lf\n",phi,eta,pt);
     Short_t sign=1;
     if(gRandom->Rndm() < 0.5){
       sign =1;
@@ -1317,29 +1876,29 @@ void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTrac
       "\n";
     if(( eta>0.07 )&&( eta<etaCuts )) { // - log(tan(0.5*theta)), theta = 0.5*pi - ATan(5.0/80.0)
       if (td){
-	dATrk.AddLast(td);
-	ATrk.AddLast(t);
-	Int_t nn=ATrk.GetEntriesFast();
-	AId[nn]=ID;
+	daTrk.AddLast(td);
+	aTrk.AddLast(t);
+	Int_t nn=aTrk.GetEntriesFast();
+	aId[nn]=id;
       }
     }else if(( eta<-0.07 )&&( eta>-etaCuts )){
       if (td){
-	dCTrk.AddLast(td);
-	CTrk.AddLast(t);
-	Int_t nn=CTrk.GetEntriesFast();
-	CId[nn]=ID;
+	dcTrk.AddLast(td);
+	cTrk.AddLast(t);
+	Int_t nn=cTrk.GetEntriesFast();
+	cId[nn]=id;
       }
     }
-    ID++;  
+    id++;  
   }// end of track loop
 
   vertexer->SetTPCMode();
   vertexer->SetConstraintOff();
 
-  aV = *((AliESDVertex*)vertexer->FindPrimaryVertex(&dATrk,AId));  
-  avOrg = *((AliESDVertex*)vertexer->FindPrimaryVertex(&ATrk,AId));
-  cV = *((AliESDVertex*)vertexer->FindPrimaryVertex(&dCTrk,CId));  
-  cvOrg = *((AliESDVertex*)vertexer->FindPrimaryVertex(&CTrk,CId));
+  aV = *((AliESDVertex*)vertexer->FindPrimaryVertex(&daTrk,aId));  
+  avOrg = *((AliESDVertex*)vertexer->FindPrimaryVertex(&aTrk,aId));
+  cV = *((AliESDVertex*)vertexer->FindPrimaryVertex(&dcTrk,cId));  
+  cvOrg = *((AliESDVertex*)vertexer->FindPrimaryVertex(&cTrk,cId));
   if (pcstream) (*pcstream)<<"vertex"<<
     "x="<<orgVertex[0]<<
     "y="<<orgVertex[1]<<
@@ -1349,8 +1908,8 @@ void AliTPCCorrection::FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTrac
     "avO.="<<&avOrg<<         // original vertex A side
     "cvO.="<<&cvOrg<<
     "\n";
-  delete []AId;
-  delete []CId;
+  delete []aId;
+  delete []cId;
 }
 
 void AliTPCCorrection::AddVisualCorrection(AliTPCCorrection* corr, Int_t position){

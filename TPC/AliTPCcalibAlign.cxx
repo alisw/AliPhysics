@@ -2864,7 +2864,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   TVectorD vPosG(3);                  //vertex position
   TVectorD vPosL(3);                 // vertex position in the TPC local system
   TVectorF vImpact(2);               //track impact parameter
-  Double_t tofSignal= fCurrentTrack->GetTOFsignal();      // tof signal
+  //  Double_t tofSignal= fCurrentTrack->GetTOFsignal();      // tof signal
   TVectorF tpcPosG(3);                                    // global position of track at the middle of fXmiddle
   Double_t lphi = TMath::ATan2(pyf[0],fXmiddle);          // expected local phi angle - if vertex at 0
   Double_t gphi = 2.*TMath::Pi()*(isec%18+0.5)/18.+lphi;  // expected global phi if vertex at 0
