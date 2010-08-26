@@ -26,7 +26,9 @@
 #include "StarPPSpectra.C"
 #include "GetE735Ratios.C"
 #include "TString.h"
+#include "TObjString.h"
 #endif
+
 
 using namespace std;
 
@@ -40,7 +42,7 @@ enum {kPhojet=0,kPyTuneAtlasCSC, kPyTuneCMS6D6T, kPyTunePerugia0, kNTunes} ;
 enum {kFitLevi=0, kFitUA1, kFitPowerLaw,
       kFitPhojet, kFitAtlasCSC, kFitCMS6D6T, kFitPerugia0,
       kNFit};
-enum {kDoFits=0, kDoRatios, kDoSuperposition, kDoDrawWithModels, kDoCompareToStar, kDoHelp};
+enum {kDoFits=0, kDoRatios, kDoSuperposition, kDoDrawWithModels, kDoCompareToStar, kDoDrawSyst, kDoHelp};
 
 // flags, labels and names
 const char * partFlag[] = {"Pion", "Kaon", "Proton"};
@@ -79,6 +81,7 @@ TH1F * htemplate = new TH1F("htemplate", "htemplate",nbinsTempl, templBins );
 //  Globals
 TH1F * hSpectra[kNHist][kNPart][kNCharge];
 TH1F * hSpectraMC[kNTunes][kNPart][kNCharge];
+TH1F * hSystError[kNHist][kNPart][kNCharge];
 Double_t mass[kNPart];
 
 // Functions:
@@ -87,6 +90,7 @@ void LoadSpectra() ;
 void LoadMC() ;
 
 // Additional tasks (may be uncommented below)
+void LoadLibs();
 void DrawStar(Int_t icharge);
 void GetITSResiduals();
 void DrawWithModels() ;
@@ -94,7 +98,9 @@ void DrawAllAndKaons();
 void DrawWithJacek();
 void DrawRatioToStar();
 void DrawRatios();
+void DrawWithSyst();
 void FitCombined();
+void PrintCanvas(TCanvas* c,const TString formats) ;
 void Help();
 
 // External stuff
@@ -157,16 +163,7 @@ void CombineSpectra(Int_t analysisType=kDoHelp, Int_t  locfitFuncID = kFitLevi) 
   fitFuncID=locfitFuncID;
 
   // Load stuff
-  gSystem->Load("libTree.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libMinuit.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-  gSystem->Load("libPWG2spectra.so");
+  LoadLibs();
 
   // Print Help and quit
   if (analysisType == kDoHelp) {
@@ -196,6 +193,7 @@ void CombineSpectra(Int_t analysisType=kDoHelp, Int_t  locfitFuncID = kFitLevi) 
   //DrawWithJacek();
   else if(analysisType==kDoCompareToStar) DrawRatioToStar();
   else if(analysisType==kDoRatios) DrawRatios();
+  else if(analysisType==kDoDrawSyst) DrawWithSyst();
   else if(analysisType==kDoFits) FitCombined();
   return;
 }
@@ -299,13 +297,21 @@ void FitCombined() {
 	fitmax = 1.0;
       }
 
-      if(!AliBWTools::Fit(hSpectra[iCombInStudy][ipart][icharge],func,fitmin,fitmax)) {
+      //      TH1F * hToFit = hSpectra[iCombInStudy][ipart][icharge]; // Shorthand
+      // Temp: fit histo with sist errors FIXME
+      TH1F * hsyst = new TH1F(*htemplate);
+      AliBWTools::GetValueAndError(hsyst,hSpectra[iCombInStudy][ipart][icharge],hSystError[iCombInStudy][ipart][icharge],kTRUE);
+      TH1F * hToFit = hsyst;// Shorthand
+
+
+      if(!AliBWTools::Fit(hToFit,func,fitmin,fitmax)) {
 	cout << " FIT ERROR " << endl;
 	return;      
       }
+      cout << "DRAWING" << endl;
       c2->cd();
       hSpectra[iCombInStudy][ipart][icharge]->Draw("same");    
-      TF1* fitfunc=(TF1*)hSpectra[iCombInStudy][ipart][icharge]->GetListOfFunctions()->At(0);
+      TF1* fitfunc=(TF1*)hToFit->GetListOfFunctions()->At(0);
       fitfunc->Draw("same");
       fitfunc->SetRange(0,4);
       fitfunc->SetLineColor(hSpectra[iCombInStudy][ipart][icharge]->GetLineColor());
@@ -416,7 +422,26 @@ void FitCombined() {
 
 void LoadSpectra() {
 
+  // Loads spectra for different detectors and corresponding systematic errors.
+
   TFile * f=0;
+
+  // Systematic errors: initialize histos
+  gROOT->cd();
+  for(Int_t ipart = 0; ipart < kNPart; ipart++){
+    for(Int_t idet = 0; idet < kNHist; idet++){
+      for(Int_t icharge = 0; icharge < kNCharge; icharge++){
+	hSystError[idet][ipart][icharge] = new TH1F (TString("hSyst_")+detFlag[idet]+partFlag[ipart]+chargeFlag[icharge],
+						     TString("hSyst_")+detFlag[idet]+partFlag[ipart]+chargeFlag[icharge],
+						     nbinsTempl,templBins);
+	hSystError[idet][ipart][icharge]->SetMarkerColor (color[ipart] );
+	hSystError[idet][ipart][icharge]->SetLineColor   (color[ipart] );
+
+      }
+      
+    }
+    
+  }
 
   // Load
 
@@ -491,6 +516,23 @@ void LoadSpectra() {
 //   // Scale pbar so that pbar/p is compatible with Panos
 //   hSpectra[kTOF][kProton][kNeg]->Scale(1./1.1);
   
+  // TOF: systematics
+  // Load TOF systematic errors:
+  f = new TFile ("./Files/systMatchingPos.root");
+  AliBWTools::AddHisto(hSystError[kTOF][kPion][kPos]  ,(TH1*)gDirectory->Get("hErrPionMatch")  );
+  AliBWTools::AddHisto(hSystError[kTOF][kProton][kPos],(TH1*)gDirectory->Get("hErrProtonMatch"));
+  AliBWTools::AddHisto(hSystError[kTOF][kKaon][kPos]  ,(TH1*)gDirectory->Get("hErrKaonMatch")  );
+  f = new TFile ("./Files/systMatchingNeg.root");
+  AliBWTools::AddHisto(hSystError[kTOF][kPion]  [kNeg],(TH1*)gDirectory->Get("hErrPionMatch"));
+  AliBWTools::AddHisto(hSystError[kTOF][kProton][kNeg],(TH1*)gDirectory->Get("hErrProtonMatch"));
+  AliBWTools::AddHisto(hSystError[kTOF][kKaon]  [kNeg],(TH1*)gDirectory->Get("hErrKaonMatch"));  
+  f = new TFile ("./Files/systPIDall.root");
+  AliBWTools::AddHisto(hSystError[kTOF][kPion]  [kPos],(TH1*)gDirectory->Get("hpiCorr"));
+  AliBWTools::AddHisto(hSystError[kTOF][kProton][kPos],(TH1*)gDirectory->Get("hpCorr"));
+  AliBWTools::AddHisto(hSystError[kTOF][kKaon]  [kPos],(TH1*)gDirectory->Get("hkCorr"));  
+  AliBWTools::AddHisto(hSystError[kTOF][kPion]  [kNeg],(TH1*)gDirectory->Get("hpiCorr"));
+  AliBWTools::AddHisto(hSystError[kTOF][kProton][kNeg],(TH1*)gDirectory->Get("hpCorr"));
+  AliBWTools::AddHisto(hSystError[kTOF][kKaon]  [kNeg],(TH1*)gDirectory->Get("hkCorr"));  
   
   
   // ITS SA 
@@ -533,6 +575,14 @@ void LoadSpectra() {
     fseccorr->Close();
   }
 
+  // Load ITS sa systematics, only pt dependent ones
+  f = TFile::Open("./Files/ITSsa-systematics.root");
+  for(Int_t ipart = 0; ipart < kNPart; ipart++){
+      for(Int_t icharge = 0; icharge < kNCharge; icharge++){
+	AliBWTools::AddHisto(hSystError[kITS][ipart][icharge], (TH1*) gDirectory->Get(Form("hSystTot%s%s",chargeFlag[icharge],partFlag[ipart]))); // Using total error
+      }
+    }
+
   // ITS + TPC (Marek)
   f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons20100720.root");
   TList * list = (TList*) gDirectory->Get("output");
@@ -573,10 +623,18 @@ void LoadSpectra() {
     }
   }
   
-
-
- 
-  
+  // Load TPC systematics
+  cout << "WARNING: TPC SYST FOR NEGATIVES TO BE CORRECTED" << endl;
+  f = TFile ::Open("./Files/pionsSystSum.root");
+  AliBWTools::AddHisto(hSystError[kTPC][kPion][kPos],(TH1*) gDirectory->Get("pionsSyst"));
+  AliBWTools::AddHisto(hSystError[kTPC][kPion][kNeg],(TH1*) gDirectory->Get("pionsSyst"));
+  f = TFile ::Open("./Files/kaonsSystSum.root");
+  AliBWTools::AddHisto(hSystError[kTPC][kKaon][kPos],(TH1*) gDirectory->Get("kaonsSyst"));
+  AliBWTools::AddHisto(hSystError[kTPC][kKaon][kNeg],(TH1*) gDirectory->Get("kaonsSyst"));
+  f = TFile ::Open("./Files/ProtonsSystSum.root");
+  AliBWTools::AddHisto(hSystError[kTPC][kProton][kPos],(TH1*) gDirectory->Get("ProtonsSyst"));
+  AliBWTools::AddHisto(hSystError[kTPC][kProton][kNeg],(TH1*) gDirectory->Get("ProtonsSyst"));
+    
   // K0s
   f = new TFile ("./Files/PtSpectraCorrectedK0sOff_20100803.root");
   //  hSpectra[kK0][kKaon][kPos] = (TH1F*) AliBWTools::GetdNdPtFromOneOverPt((TH1*) gDirectory->Get("hSpectraOff")); 
@@ -785,12 +843,12 @@ void LoadSpectra() {
   // Using syste from table in paper. It would be better to have this as a function of pt.
   TH1F * hWeights[3][kNPart];
   const Double_t kWeights[3][kNPart] =  
-    {{4,  3,  10.2},  // TPC
-     {4.1,8.8,7.0 },  //TOF
-     {4.5,5.6,7.0 }}; // ITS
-    // {{0.1,0.1,0.1},  // TPC
-    //  {0.1,0.1,0.1},  //TOF
-    //  {0.1,0.1,0.1}}; // ITS
+    // {{4,  3,  10.2},  // TPC
+    //  {4.1,8.8,7.0 },  //TOF
+    //  {4.5,5.6,7.0 }}; // ITS
+    {{0.1,0.1,0.1},  // TPC
+     {0.1,0.1,0.1},  //TOF
+     {0.1,0.1,0.1}}; // ITS
   for(Int_t ipart = 0; ipart <= kNPart ; ipart++){
     for(Int_t idet = 0; idet <= kITS ; idet++){
       hWeights[idet][ipart] = (TH1F*) hSpectra[idet][ipart][kPos]->Clone();
@@ -818,17 +876,23 @@ void LoadSpectra() {
       hSpectra[kCombTOFTPC][ipart][icharge] = AliBWTools::CombineHistos(hSpectra[kTOF][ipart][icharge],
 									hSpectra[kTPC][ipart][icharge],
 									htemplLocal,1.);;
+
       hSpectra[kCombAll][ipart][icharge]   = 
-	AliBWTools::Combine3HistosWithErrors(hSpectra[kITS][ipart][icharge],
+	AliBWTools::Combine3HistosWithErrors(hSpectra[kITS][ipart][icharge],  // Histos to combine
 					     hSpectra[kTPC][ipart][icharge],
 					     hSpectra[kTOF][ipart][icharge],
-					     hWeights[kITS][ipart],
-					     hWeights[kTPC][ipart],
-					     hWeights[kTOF][ipart],
-					     htemplLocal,1,
-					     scaleDet[kITS],
+					     hSystError[kITS][ipart][icharge], // Errors (weights) used for the average
+					     hSystError[kTPC][ipart][icharge],
+					     hSystError[kTOF][ipart][icharge],
+					     // hWeights[kITS][ipart],
+					     // hWeights[kTPC][ipart],
+					     // hWeights[kTOF][ipart],
+					     htemplLocal,1,   // template, take statistical error from TPC in overlap
+					     scaleDet[kITS],  // relative scaling
 					     scaleDet[kTPC],
-					     scaleDet[kTOF]
+					     scaleDet[kTOF],
+					     (TH1**)&hSystError[kCombAll][ipart][icharge], // put combined syst error here
+					     1 // weights histos contain error in bin content
 					     );
 //       if (convertToMT) {
 // 	TH1F * htmp = (TH1F*) AliBWTools::GetOneOverPtdNdPt(hSpectra[kCombTOFTPC][ipart][icharge]);
@@ -1644,6 +1708,38 @@ void DrawRatios() {
 
 }
 
+void DrawWithSyst() {
+
+  // Draws detector and combined with syst errors. 
+
+  for(Int_t idet = 0; idet < kNHist; idet++){
+    if(idet > kITS && idet != iCombInStudy) continue;
+    for(Int_t icharge = 0; icharge < kNCharge; icharge++){
+      TCanvas * c = new TCanvas(TString("cWithSyst")+detFlag[idet]+chargeFlag[icharge],TString("cWithSyst")+detFlag[idet]+chargeFlag[icharge]);
+      TH2F * hempty = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,2.9, 100, 0.0005,5);
+      hempty->SetXTitle("p_{t} (GeV/c)");
+      hempty->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1}");
+      hempty->GetYaxis()->SetTitleOffset(1.35);
+      hempty->GetXaxis()->SetTitleOffset(1.1);
+      hempty->Draw();      
+      c->SetLogy();
+      for(Int_t ipart = 0; ipart < kNPart; ipart++){
+	//	cout << detFlag[idet] << " " << chargeFlag[icharge] << " " << partFlag[ipart] << endl;
+	
+	TString opt = ipart ? "" : "same";
+	TH1F * hsyst = new TH1F(*htemplate);
+	AliBWTools::GetValueAndError(hsyst,hSpectra[idet][ipart][icharge],hSystError[idet][ipart][icharge],kTRUE);
+	hsyst->SetFillColor(kYellow);
+	hsyst->Draw("e5,same");
+	hSpectra[idet][ipart][icharge]->Draw("same");
+	hSystError[idet][ipart][icharge]->Draw("lhist,same");
+				     
+
+      }
+      PrintCanvas(c,"png");
+    }
+  }
+}
 
 void Help() {
 
@@ -1657,11 +1753,44 @@ void Help() {
   cout << "    kDoSuperposition:  Compare different detectors (superimpose and ratios)" << endl;
   cout << "    kDoCompareStar:    Compare combined spectra to star results" << endl;
   cout << "    kDoDrawWithModels: Compare combined spectra and models" << endl;
+  cout << "    kDoDrawSyst:       Draws spectra from individual detectors with their systematic error" << endl;
   cout << "    kDoHelp:           This help" << endl;
   cout << "- fitFuncID, function used to extrapolate and compute yields" << endl;
   cout << "    An analitic fit function [kFitLevi, kFitUA1, kFitPowerLaw]" << endl;
   cout << "    Or a shape from a MC moder [kFitPhojet, kFitAtlasCSC, kFitCMS6D6T, kFitPerugia0]" << endl;
   cout << "    Which is fitted to the data at low pt and used to extrapolate at low pt" << endl;
 
+
+}
+
+void PrintCanvas(TCanvas* c,const TString formats) {
+  // print a canvas in every of the given comma-separated formats
+  // ensure the canvas is updated
+  c->Update();
+  gSystem->ProcessEvents();
+  TObjArray * arr = formats.Tokenize(",");
+  TIterator * iter = arr->MakeIterator();
+  TObjString * element = 0;
+  TString name  =c ->GetName();
+  name.ReplaceAll(" ","_");
+  name.ReplaceAll("+","Plus");
+  name.ReplaceAll("-","");
+  while ((element = (TObjString*) iter->Next())) {
+    c->Print(name+ "."+element->GetString());
+  }
+}
+
+void LoadLibs(){
+
+  gSystem->Load("libTree.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libMinuit.so");
+  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libESD.so");
+  gSystem->Load("libAOD.so");
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libPWG2spectra.so");
 
 }
