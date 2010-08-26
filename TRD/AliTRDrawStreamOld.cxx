@@ -358,7 +358,7 @@ Bool_t AliTRDrawStreamOld::SkipWords(UInt_t iw)
     return kTRUE;
   }
   else {
-    if (fWarnError) AliWarning(Form("Skip %u words failed. %u available", iw, fpEnd - fpPos - 1));
+    if (fWarnError) AliWarning(Form("Skip %u words failed. %ld available", iw, fpEnd - fpPos - 1));
     return kFALSE;
   }
 
@@ -857,7 +857,7 @@ Bool_t AliTRDrawStreamOld::InitBuffer(void * const buffer, UInt_t length)
   fpPos = fpBegin;
 
   if (fpBegin == 0 || length <= 0) {
-    AliError(Form("Buffer size or pointer is strange. pointer to the buffer is 0x%p of size %ld", fpBegin, length));
+    AliError(Form("Buffer size or pointer is strange. pointer to the buffer is 0x%p of size %u", fpBegin, length));
     return kFALSE;
   }
 
