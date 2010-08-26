@@ -431,9 +431,9 @@ TObjArray *AliTRDcheckDET::Histos(){
 
   // Binning for momentum dependent tracklet Plots
   const Int_t kNp(30);
-  Float_t P=0.2;
+  Float_t p=0.2;
   Float_t binsP[kNp+1], binsTrklt[AliTRDgeometry::kNlayer+1];
-  for(Int_t i=0;i<kNp+1; i++,P+=(TMath::Exp(i*i*.001)-1.)) binsP[i]=P;
+  for(Int_t i=0;i<kNp+1; i++,p+=(TMath::Exp(i*i*.001)-1.)) binsP[i]=p;
   for(Int_t il = 0; il <= AliTRDgeometry::kNlayer; il++) binsTrklt[il] = 0.5 + il;
   if(!(h = (TH1F *)gROOT->FindObject("htlsBAR"))){
     // Make tracklets for barrel tracks momentum dependent (if we do not exceed min and max values)
@@ -1028,7 +1028,7 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
         Float_t momentumMC = 0, momentumRec = trdPar ? trdPar->P() : track->P(); // prefer Track Low
         Int_t pdg = 0;
         Int_t kinkIndex = fkESD ? fkESD->GetKinkIndex() : 0;
-        UShort_t TPCncls = fkESD ? fkESD->GetTPCncls() : 0;
+        UShort_t tpcNCLS = fkESD ? fkESD->GetTPCncls() : 0;
         if(fkMC){
           if(fkMC->GetTrackRef()) momentumMC = fkMC->GetTrackRef()->P();
           pdg = fkMC->GetPDG();
@@ -1045,7 +1045,7 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
           << "theta="			<< theta
           << "phi="				<< phi
           << "kinkIndex="	<< kinkIndex
-          << "TPCncls="		<< TPCncls
+          << "TPCncls="		<< tpcNCLS
           << "dy="        << distance[0]
           << "dz="        << distance[1]
           << "c.="        << c
@@ -1234,7 +1234,7 @@ void AliTRDcheckDET::GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 * const 
 }
 
 //________________________________________________________
-void AliTRDcheckDET::GetEtaPhiAt(AliExternalTrackParam *track, Double_t x, Double_t &eta, Double_t &phi){
+void AliTRDcheckDET::GetEtaPhiAt(const AliExternalTrackParam *track, Double_t x, Double_t &eta, Double_t &phi){
   //
   // Get phi and eta at a given radial position
   // 

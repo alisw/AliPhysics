@@ -111,7 +111,7 @@ private:
   void MakePlotnTrackletsVsP();
   void MakePlotMeanClustersLayer();
   Bool_t MakeBarPlot(TH1 *histo, Int_t Color);
-  void GetEtaPhiAt(AliExternalTrackParam *track, Double_t x, Double_t &eta, Double_t &phi);
+  void GetEtaPhiAt(const AliExternalTrackParam *track, Double_t x, Double_t &eta, Double_t &phi);
 
   AliTRDeventInfo *fEventInfo;         //! ESD Header
   TMap *fTriggerNames;                 //! Containing trigger class names
