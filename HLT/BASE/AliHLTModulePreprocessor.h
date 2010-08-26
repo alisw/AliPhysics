@@ -72,13 +72,13 @@ public:
   virtual UInt_t Process(TMap* dcsAliasMap) = 0;
 
   /** Get the run no */
-  Int_t GetRun();
+  Int_t GetRun() const;
 
   /** Get the start time */
-  UInt_t GetStartTime();
+  UInt_t GetStartTime() const;
 
   /** Get the end time */
-  UInt_t GetEndTime();
+  UInt_t GetEndTime() const;
 
  /**
    * Get the id of the module

@@ -86,7 +86,7 @@ void AliHLTModulePreprocessor::SetShuttleInterface(AliHLTShuttleInterface* pInte
   fpInterface=pInterface;
 }
 
-Int_t AliHLTModulePreprocessor::GetRun()
+Int_t AliHLTModulePreprocessor::GetRun() const
 {
   // see header file for function documentation
 
@@ -95,7 +95,7 @@ Int_t AliHLTModulePreprocessor::GetRun()
   return fpInterface->PreprocessorGetRun();
 }
 
-UInt_t AliHLTModulePreprocessor::GetStartTime()
+UInt_t AliHLTModulePreprocessor::GetStartTime() const
 {
   // see header file for function documentation
 
@@ -104,7 +104,7 @@ UInt_t AliHLTModulePreprocessor::GetStartTime()
   return fpInterface->PreprocessorGetStartTime();
 }
 
-UInt_t AliHLTModulePreprocessor::GetEndTime()
+UInt_t AliHLTModulePreprocessor::GetEndTime() const
 {
   // see header file for function documentation
 
