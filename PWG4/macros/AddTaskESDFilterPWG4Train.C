@@ -83,6 +83,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
 
 
    // these are needed for older MC 
+   /*
    AliESDtrackCuts* esdTrackCutsH1 = new AliESDtrackCuts("OldStandardTrackCuts+ITSRefit", "High pT ESD Track Cuts");
    esdTrackCutsH1->SetMinNClustersTPC(50);
    esdTrackCutsH1->SetMaxChi2PerClusterTPC(3.5);
@@ -93,6 +94,11 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsH1->SetRequireSigmaToVertex(kFALSE);
    esdTrackCutsH1->SetAcceptKinkDaughters(kFALSE);
    esdTrackCutsH1->SetRequireITSRefit(kTRUE); // additional cut 
+   */
+   AliESDtrackCuts* esdTrackCutsH1 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009();
+   esdTrackCutsH1->SetName("StandardFromAliESDTrackCutsMaxRelPt");
+   esdTrackCutsH1->SetMaxRel1PtUncertainty(0.08); // new 
+
 
    AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009();
    esdTrackCutsH2->SetName("StandardFromAliESDTrackCutsNoSPDRequirement");
