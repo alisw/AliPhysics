@@ -60,11 +60,11 @@ public:
   static AliTRDgeometry*      Geometry() {return fgGeo;}
   void    SetInitOCDB(Bool_t set=kTRUE) {SetBit(kOCDB, set);}
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
-  void    SetLocalEvSelection(AliTRDeventCuts */*cut*/){;} 
+  //void    SetLocalEvSelection(const AliTRDeventCuts */*cut*/){;} 
   void    SetLocalEvSelection(Bool_t use=kTRUE) {SetBit(kUseLocalEvSelection, use);}
-  void    SetLocalTrkSelection(AliESDtrackCuts */*cut*/){;} 
+  //void    SetLocalTrkSelection(const AliESDtrackCuts */*cut*/){;} 
   void    SetLocalTrkSelection(Bool_t use=kTRUE) {SetBit(kUseLocalTrkSelection, use);}
-  void    SetLocalV0Selection(AliTRDv0Info *v0);
+  void    SetLocalV0Selection(const AliTRDv0Info *v0);
   void    SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   void    SetOCDB(const char *ocdb) {fOCDB=ocdb;}
   void    SetTrigger(const Char_t *trigger);

@@ -3,6 +3,14 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  TRD cluster summary info for performance                              //
+//                                                                        //
+//  Authors:                                                              //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 
 #ifndef Root_TObject
@@ -17,14 +25,9 @@ public:
 
   Float_t   GetAnisochronity() const {return fD;}
   inline void GetCluster(Int_t &det, Float_t &x, Float_t &y, Float_t &z, Float_t &q, Int_t &t, Float_t *cov=0x0) const;
-  void      GetMC(Int_t &pdg, Int_t &label) const{
-      pdg  = fPdg;
-      label= fLbl; }
+  void      GetMC(Int_t &pdg, Int_t &label) const {pdg  = fPdg; label= fLbl; }
   void      GetGlobalPosition(Float_t &yt, Float_t &zt, Float_t &dydx, Float_t &dzdx, Float_t *cov=0x0) const {
-      dydx = fdydx;
-      dzdx = fdzdx;
-      yt   = fYt;
-      zt   = fZt;
+      dydx = fdydx; dzdx = fdzdx; yt   = fYt; zt   = fZt;
       if(cov) memcpy(cov, fCov, 3*sizeof(Float_t));}
   void      GetCenterPad(Int_t &c, Int_t &r) const {c=fCol; r=fRow;}
   Float_t   GetResolution() const {return fdy;}
@@ -40,10 +43,7 @@ public:
       fPdg  = pdg;
       fLbl  = label;}
   void      SetGlobalPosition(Float_t yt, Float_t zt, Float_t dydx, Float_t dzdx, Float_t *cov=0x0) {
-      fdydx = dydx;
-      fdzdx = dzdx;
-      fYt   = yt;
-      fZt   = zt;
+      fdydx = dydx; fdzdx = dzdx; fYt   = yt; fZt   = zt;
       if(cov) memcpy(fCov, cov, 3*sizeof(Float_t));}
   void      SetResolution(Float_t dy) {fdy = dy;}
   void      SetDriftLength(Float_t d) {fXd = d;}

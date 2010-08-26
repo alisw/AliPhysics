@@ -3,6 +3,14 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Trend Value Incapsulation                                             //
+//                                                                        //
+//  Authors:                                                              //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #ifndef ROOT_TNamed
 #include "TNamed.h"
@@ -10,9 +18,8 @@
 
 class AliTRDtrendValue : public TNamed
 {
-public:
-  friend class AliTRDtrendingManager;
-  
+friend class AliTRDtrendingManager; // allow easy access for Manager
+public:  
   enum ETRDtrendValue{
     kNlevels = 4
    ,kNnotifiable = 10 
@@ -38,19 +45,22 @@ protected: // only manager can fill these info !!
   void        SetNotifiable(const Char_t *name, const Char_t *mail);
 
 private:
+  AliTRDtrendValue(const AliTRDtrendValue &ref);
+  const AliTRDtrendValue& operator=(const AliTRDtrendValue &ref);
+
   UChar_t       fAlarmLevel;// alarm level
   Double_t      fValue;     // current value
   Double_t      fLimits[2*(kNlevels+1)];// limits
-  Char_t        fAlarmMessage[kNlevels][1024]; // 
+  Char_t        fAlarmMessage[kNlevels][1024]; // list of alarm messages
 
   struct AliTRDtrendValueResponsible{
     AliTRDtrendValueResponsible(Char_t *name=NULL, Char_t *mail=NULL);
-    Char_t name[100];
-    Char_t mail[200];
+    Char_t fNameR[100]; // name of responsible 
+    Char_t fMail[200]; // mail of responsible
   };
   AliTRDtrendValueResponsible fResponsible; // responsible person
   Int_t                       fNnotifiable; // number of persons to be notify
-  AliTRDtrendValueResponsible fNotifiable[kNnotifiable]; // 
+  AliTRDtrendValueResponsible fNotifiable[kNnotifiable]; //also notify these persons 
 
   ClassDef(AliTRDtrendValue, 0) // TRD trending value representation
 };

@@ -116,7 +116,7 @@ public:
   ULong_t            GetStatus() const {return fESD.fStatus;}
   AliTRDtrackV1*     GetTrack() const { return fTRDtrack; }
   AliTrackReference* GetTrackRef(Int_t entry) const;
-  AliTrackReference* GetTrackRef(AliTRDseedV1* const tracklet) const;
+  AliTrackReference* GetTrackRef(const AliTRDseedV1* const tracklet) const;
 
   Bool_t             IsCurved() const {return TestBit(kCurv);}
   Bool_t             IsPrimary() const {return TestBit(kPrim);}

@@ -3,6 +3,14 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  TRD PID/Track summary info for performance                            //
+//                                                                        //
+//  Authors:                                                              //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #ifndef ROOT_TObject
 #include "TObject.h"
@@ -12,12 +20,15 @@ class AliTRDpidInfo : public TObject
 {
 public:
   class AliTRDpidData {
+  friend class AliTRDpidInfo;       // allow direct access
+  friend class AliTRDpidRefMakerLQ; // allow direct access
+  friend class AliTRDpidRefMakerNN; // allow direct access
   public:
     AliTRDpidData();
     virtual ~AliTRDpidData(){}
     Int_t   Layer() const    { return (fPLbin&0xf0)>>4;}
     Int_t   Momentum() const { return fPLbin&0xf;}
-
+  protected:
     UChar_t fPLbin;   // momentum / layer bin
     Float_t fdEdx[8]; // dEdx array
     ClassDef(AliTRDpidData, 1)  // PID layer representation

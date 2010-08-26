@@ -1,3 +1,12 @@
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  TRD cluster summary info for performance                              //
+//                                                                        //
+//  Authors:                                                              //
+//    Alexandru Bercuci <A.Bercuci@gsi.de>                                //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "TMath.h"
 
 #include "AliLog.h"
@@ -30,6 +39,7 @@ AliTRDclusterInfo::AliTRDclusterInfo()
   ,fD(0.)
   ,fTilt(0.)
 {
+//  Constructor. Resets all fields.
   fCov[0] = 1.; fCov[1] = 0.;
   fCov[2] = 1.;
   fCovCl[0] = 1.; fCovCl[1] = 0.;
@@ -39,6 +49,7 @@ AliTRDclusterInfo::AliTRDclusterInfo()
 //_________________________________________________
 void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c)
 {
+// Load rec cluster data
   if(!c) return;
   fDet = c->GetDetector();
   fCol = c->GetPadCol();
@@ -57,6 +68,7 @@ void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c)
 //_________________________________________________
 void AliTRDclusterInfo::Print(Option_t */*opt*/) const
 {
+// Dump info
   printf("Det[%3d] Col[%3d] Row[%2d] X[%7.2f] Y[%7.2f] Z[%7.2f] Q[%7.2f]\n", (fDet==0xffff ? -1 : fDet), (fCol==0xff ? -1 : fCol), (fRow==0xff ? -1 : fRow), fX, fY, fZ, fQ);
   printf("\tPdg[%d] Lbl[%d] Yt[%7.2f] Zt[%7.2f]\n", fPdg, fLbl, fYt, fZt);
 }
