@@ -392,7 +392,8 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
   Bool_t firstTrack = kTRUE;
   Bool_t firstTrackNSD = kTRUE;
   
-  TH1F* hPrimVtxBin = (TH1F*)fOutputList->FindObject(Form("primmult_NSD_vtxbin%d",vertexBin));
+  TH1F* hPrimVtxBinNSD = (TH1F*)fOutputList->FindObject(Form("primmult_NSD_vtxbin%d",vertexBin));
+  TH1F* hPrimVtxBin = (TH1F*)fOutputList->FindObject(Form("primmult_vtxbin%d",vertexBin));
   
   // we loop over the primaries only unless we need the hits (diagnostics running slowly)
   Int_t nTracks = stack->GetNprimary();
@@ -406,21 +407,22 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
    
     if(stack->IsPhysicalPrimary(i) && particle->Charge() != 0) {
       hPrimary->Fill(particle->Eta());
-      if(nsd) {
-	hPrimaryNSD->Fill(particle->Eta());
-	
-	hPrimVtxBin->Fill(particle->Eta());
-	if(firstTrackNSD) {
-	  fNMCNSDevents.Fill(vertexBin);
-	  firstTrackNSD = kFALSE;
-	}
-      }
-      TH1F* hPrimVtxBin = (TH1F*)fOutputList->FindObject(Form("primmult_vtxbin%d",vertexBin));
       hPrimVtxBin->Fill(particle->Eta());
       if(firstTrack) {
 	fNMCevents.Fill(vertexBin);
 	firstTrack = kFALSE;
       }
+      
+      if(nsd) {
+	hPrimaryNSD->Fill(particle->Eta());
+	hPrimVtxBinNSD->Fill(particle->Eta());
+	if(firstTrackNSD) {
+	  fNMCNSDevents.Fill(vertexBin);
+	  firstTrackNSD = kFALSE;
+	}
+      }
+      
+      
     
     }
     if(pars->GetProcessHits()) {

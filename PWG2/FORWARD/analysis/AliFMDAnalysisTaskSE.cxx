@@ -142,10 +142,11 @@ void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
     else
       fDndeta.SetVtxEfficiency(pars->GetVtxSelectionEffFromMC());
     std::cout<<fSharing.GetNSDVtxEfficiencyFromData()<<"   "<<fSharing.GetVtxEfficiencyFromData()<<"   "<<pars->GetVtxSelectionEffFromMC()<<std::endl;
+    
     if(fSharing.GetNSDVtxEfficiencyFromData() > 0)
       fDndeta.SetVtxEfficiencyNSD(fSharing.GetNSDVtxEfficiencyFromData());
     else
-      fDndeta.SetVtxEfficiency(pars->GetVtxSelectionEffFromMC());
+      fDndeta.SetVtxEfficiencyNSD(pars->GetVtxSelectionEffFromMC());
     
     fDndeta.Terminate("");
     //fBFCorrelation.Terminate("");
@@ -180,7 +181,7 @@ void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
     
     t.GenerateMult(AliFMDDndeta::kMultNSD);
     TList* dNdetalist5 = t.GetMultList(AliFMDDndeta::kMultNSD);
-    TList* cloneList5 = (TList*)dNdetalist4->Clone("MultNSD");
+    TList* cloneList5 = (TList*)dNdetalist5->Clone("MultNSD");
     cloneList5->SetName("MultNSD");
     outputList->Add(cloneList5);
     

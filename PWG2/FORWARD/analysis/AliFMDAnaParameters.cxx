@@ -94,7 +94,8 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fEtaHighBinLimits(),
   fTriggerInel(kFALSE),
   fTriggerNSD(kFALSE),
-  fTriggerEmpty(kFALSE)     
+  fTriggerEmpty(kFALSE),
+  fUseBuiltInNSD(kFALSE)
 {
   // Default constructor 
   fPhysicsSelection = new AliPhysicsSelection;
@@ -103,7 +104,7 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   
   
   AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
-  
+  backgroundSelection->Init();
   fPhysicsSelection->AddBackgroundIdentification(backgroundSelection);
   //fPhysicsSelection->Initialize(104792);
   // Do not use this - it is only for IO 
@@ -562,7 +563,8 @@ Float_t AliFMDAnaParameters::GetVtxSelectionEffFromMC() {
 TH2F* AliFMDAnaParameters::GetEventSelectionEfficiency(Char_t* trig, Int_t vtxbin, Char_t ring) {
   //Get event selection efficiency object
   
-  if(trig != "NSD" && trig != "INEL") {
+  TString test = trig;
+  if(!test.Contains("NSD") && test.Contains("INEL")) {
     AliWarning("Event selection efficiency only available for INEL and NSD");
     return 0;
   }
@@ -760,7 +762,15 @@ void AliFMDAnaParameters::SetTriggerStatus(const AliESDEvent *esd) {
   if(fPhysicsSelection->IsCollisionCandidate(esd)) {
     fTriggerInel = kTRUE;
   }
-  if(fTriggerInel && tAna.IsOfflineTriggerFired(esd,AliTriggerAnalysis::kNSD1)) {
+  
+  Bool_t nsd = kFALSE;
+  if(fUseBuiltInNSD) { 
+    if ((tAna.FMDTrigger(esd, AliTriggerAnalysis::kASide) || tAna.V0Trigger(esd, AliTriggerAnalysis::kASide, kFALSE) == AliTriggerAnalysis::kV0BB) && (tAna.FMDTrigger(esd, AliTriggerAnalysis::kCSide) || tAna.V0Trigger(esd, AliTriggerAnalysis::kCSide, kFALSE) == AliTriggerAnalysis::kV0BB))
+      nsd = kTRUE;
+  }
+  else nsd = tAna.IsOfflineTriggerFired(esd,AliTriggerAnalysis::kNSD1);
+  
+  if(fTriggerInel && nsd) {
     fTriggerNSD = kTRUE;
   }
   if(triggers.Contains("CBEAMB-ABCE-NOPF-ALL")) {

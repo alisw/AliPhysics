@@ -109,10 +109,10 @@ public:
   Float_t  GetBaseStripLength(Char_t ring, UShort_t strip)  ;
   Float_t  GetMaxR(Char_t ring) const;
   Float_t  GetMinR(Char_t ring) const;
-  void     SetBackgroundPath(const Char_t* bgpath) {fBackgroundPath.Form(bgpath);}
-  void     SetEnergyPath(const Char_t* epath) {fEnergyPath.Form(epath);}
-  void     SetEventSelectionPath(const Char_t* evpath) {fEventSelectionEffPath.Form(evpath);}
-  void     SetSharingEfficiencyPath(const Char_t* sharpath) {fSharingEffPath.Form(sharpath);}
+  void     SetBackgroundPath(const Char_t* bgpath) {fBackgroundPath = bgpath;}
+  void     SetEnergyPath(const Char_t* epath) {fEnergyPath = epath;}
+  void     SetEventSelectionPath(const Char_t* evpath) {fEventSelectionEffPath = evpath;}
+  void     SetSharingEfficiencyPath(const Char_t* sharpath) {fSharingEffPath = sharpath;}
   void     SetProcessPrimary(Bool_t prim=kTRUE) {fProcessPrimary = prim;}
   void     SetProcessHits(Bool_t hits=kTRUE) {fProcessHits = hits;}
   Bool_t   GetProcessPrimary() const {return fProcessPrimary;} 
@@ -131,7 +131,7 @@ public:
   Species  GetCollisionSystem() const {return fSpecies;}
   void     PrintStatus() const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
-  char*    GetDndetaAnalysisName() const {return "PWG2forwardDnDeta";}
+  TString  GetDndetaAnalysisName() const {return "PWG2forwardDnDeta";}
   TH1F*    GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
   TH1F*    GetEmptyEnergyDistribution(Int_t det, Char_t ring);
   TH1F*    GetRingEnergyDistribution(Int_t det, Char_t ring);
@@ -146,7 +146,7 @@ public:
   Bool_t   SharingEffPresent() {return fSharingObjectPresent;}
   Int_t    GetFirstEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring) ;
   Int_t    GetLastEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring) ;
-  
+  void     SetUseInternalNSDTrigger(Bool_t internalNSD) {fUseBuiltInNSD = internalNSD;}
 
   void     SetNumberOfEtaBinsToCut(Int_t nbins) {fNumberOfEtaBinsToCut = nbins;}
   Int_t    GetNumberOfEtaBinsToCut() const {return fNumberOfEtaBinsToCut;}
@@ -244,6 +244,7 @@ protected:
   Bool_t   fTriggerInel;              //If the selected INEL trigger fired
   Bool_t   fTriggerNSD;               //If the NSD trigger fired
   Bool_t   fTriggerEmpty;             //Event should be empty (empty bunches)
+  Bool_t   fUseBuiltInNSD;            //Should we use the internal NSD trigger by A. Hansen
   
   ClassDef(AliFMDAnaParameters,1) // Manager of parameters
 };
