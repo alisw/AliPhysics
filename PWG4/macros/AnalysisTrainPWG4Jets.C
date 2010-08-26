@@ -459,6 +459,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
 
+	 taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","clustersAOD_ANTIKT04","",kHighPtFilterMask,iPhysicsSelection); 
+
 	 if(kIsMC){
 
 	   UInt_t eventSelection =  AliAnalysisHelperJetTasks::kIsPileUp|AliAnalysisHelperJetTasks::kVertexIn;
