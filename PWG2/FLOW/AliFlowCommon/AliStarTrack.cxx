@@ -118,3 +118,43 @@ void AliStarTrack::Print( Option_t* option ) const
 	 id, charge, eta, phi, pt, dca, nHits, nHitsFit, nHitsPoss, nHitsDedx, dEdx,
 	 nSigmaElectron, nSigmaPion, nSigmaKaon, nSigmaProton ) ;
 }
+
+//______________________________________________________________________________
+Int_t AliStarTrack::PID() const
+{
+  // Note: This is a very simple PID selection scheme.  More elaborate methods (with multiple cuts) may be required.
+  // When you *are* using dEdx information, you must chose a finite number of good Dedx hits ... but the limit should
+  // be about 2/3 of nHitsMin.  This is because some clusters do not form good dEdx hits due to track
+  // merging, etc., and so nHitsDedx is always less than nHitsFit.  A rule of thumb says ~2/3 ratio.
+
+  Int_t ID = 0 ;
+
+  const Int_t   nHitDedxMin =    15  ;       // 10 to 20 is typical.  nHitDedxMin is often chosen to be about 2/3 of nHitMin.
+  const Float_t nSigmaPID   =    2.0 ;       // Number of Sigma cut to apply to PID bands
+
+  // Test on Number of dE/dx hits required, return 0 if not enough hits
+  if ( GetNHitsDedx() <  nHitDedxMin ) return ID;
+
+  // Begin PID
+
+  if ( TMath::Abs( GetNSigElect() ) >= nSigmaPID )
+  {
+    if ( TMath::Abs( GetNSigK()  ) <= nSigmaPID )
+    {
+      ID = 321  ;
+    }
+    if ( TMath::Abs( GetNSigProton()  ) <= nSigmaPID )
+    {
+      ID = 2212 ;
+    }
+    if ( TMath::Abs( GetNSigPi()  ) <= nSigmaPID )
+    {
+      ID = 211  ;
+    }
+  }
+
+  // Pion is the default in case of ambiguity because it is most abundent. Don't re-arrange order, above.
+
+  return ID ;
+}
+

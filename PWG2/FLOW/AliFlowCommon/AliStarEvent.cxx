@@ -149,3 +149,72 @@ void AliStarEvent::Print( Option_t* option ) const
   track->Print("legend");
   fTracks->Print();
 }
+
+//______________________________________________________________________________
+Int_t AliStarEvent::CalculateCentrality( Int_t referenceMultiplicity ) const
+{
+  // Note Carefully:  Centrality is based on refMult.  This is the 'reference' multiplicity that is measured
+  // independpently from the TPC.  Selecting the centrality bins according to the refMult is something that
+  // is calibrated for each year and each run.  You can get the basic information off the web:
+  // For Example .... http://www.star.bnl.gov/protected/common/common2004/trigger2004/200gev/200gevFaq.html
+  // An index pointing to FAQs, Trigger and Centrality data, for all years, is available at:
+  // http://www.star.bnl.gov/public/all
+  //
+  // Note: Add 0.5 to the (int) that is returned by centrality() when using it as an argument for a histogram
+  // that expects (float) or (double) as input parameters.  This will place the data point in the center of
+  // the bin, avoids ambiguities, and is best for plotting scatter plots and contour plots.
+  // For example histogram2D[1] -> Fill ( (float)CentralityID + 0.5 , SumData )   ;
+  //
+  // The refMult quoted in the Centrality bins array is the lower limit on refMult
+
+
+  Int_t   CentralityBins  [] = { 14 , 31 , 57 , 96 , 150 , 222 , 319 , 441 , 520 , 1000 } ;  // Run4 200 GeV
+  Int_t   MiddleBinID     [] = {  0 ,  1 ,  2 ,  3 ,   4 ,   5 ,   6 ,   7 ,   8 ,    9 } ;  // ID Number
+  //Info  MiddleBinPercent[] = { 85., 75., 65., 55.,  45.,  35.,  25.,  15., 7.5 ,  2.5 } ;  // Percent
+  Int_t   myCentrality  ;
+
+  if      ( referenceMultiplicity < CentralityBins[0] )
+  {
+    myCentrality = MiddleBinID[0] ;
+  }
+  else if ( referenceMultiplicity < CentralityBins[1] )
+  {
+    myCentrality = MiddleBinID[1] ;
+  }
+  else if ( referenceMultiplicity < CentralityBins[2] )
+  {
+    myCentrality = MiddleBinID[2] ;
+  }
+  else if ( referenceMultiplicity < CentralityBins[3] )
+  {
+    myCentrality = MiddleBinID[3] ;
+  }
+  else if ( referenceMultiplicity < CentralityBins[4] )
+  {
+    myCentrality = MiddleBinID[4] ;
+  }
+  else if ( referenceMultiplicity < CentralityBins[5] )
+  {
+    myCentrality = MiddleBinID[5] ;
+  }
+  else if ( referenceMultiplicity < CentralityBins[6] )
+  {
+    myCentrality = MiddleBinID[6] ;
+  }
+  else if ( referenceMultiplicity < CentralityBins[7] )
+  {
+    myCentrality = MiddleBinID[7] ;
+  }
+  else if ( referenceMultiplicity < CentralityBins[8] )
+  {
+    myCentrality = MiddleBinID[8] ;
+  }
+  else
+  {
+    myCentrality = MiddleBinID[9] ;
+  }
+
+  return myCentrality ;
+}
+
+
