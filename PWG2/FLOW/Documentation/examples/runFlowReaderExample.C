@@ -1,4 +1,4 @@
-void  runStarFlowExample( Int_t maxNumberOfEvents = 1000, const char* inputDataFiles="/Users/snelling/alice_data/jthomas/testData/")
+void  runFlowReaderExample( Int_t maxNumberOfEvents = 1000, const char* inputDataFiles="/Users/snelling/alice_data/jthomas/testData/")
 {
   gSystem->Load("libTree.so");
   gSystem->Load("libVMC.so");

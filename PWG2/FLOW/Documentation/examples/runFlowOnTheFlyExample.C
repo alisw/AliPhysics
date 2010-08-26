@@ -3,7 +3,7 @@
 #include "TFile.h"
 
 
-int runFlowSimple(Int_t nEvts=200, Int_t mult=500, Float_t v2=0.05, Int_t iseed=7669)
+int runFlowOnTheFlyExample(Int_t nEvts=200, Int_t mult=500, Float_t v2=0.05, Int_t iseed=7669)
 {
   TStopwatch timer;
   timer.Start();

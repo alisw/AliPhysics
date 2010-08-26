@@ -1,8 +1,13 @@
 \chapter{A Quick Start}
 \label{quickstart}
-The \textit{ALICE flow package}\footnote{\texttt{http://alisoft.cern.ch/viewvc/trunk/PWG2/FLOW/?root=AliRoot .}} contains many different flow analysis methods and ways to read data. 
-\section{Quick On The Fly}
-The macro \texttt{Documentation/examples/runFlowSimple.C} 
+The \textit{ALICE flow package}\footnote{\texttt{http://alisoft.cern.ch/viewvc/trunk/PWG2/FLOW/?root=AliRoot .}} 
+contains most known flow analysis methods.  In this chapter we give a few examples how to setup an
+analysis for the most common cases. The chapters that follow provide more detailed information on the structure of the code 
+and settings of the various flow methods. 
+This write-up is however not a complete listing of the methods, for this the reader is referred to the header files.
+ 
+\section{On the fly}
+The macro \texttt{Documentation/examples/runFlowOnTheFlyExample.C} 
  is a basic example of how the flow package works. 
 In this section we explain the main pieces of that macro.
 
@@ -18,7 +23,8 @@ In  \textit{root} additional libraries need to be loaded: \\
 \texttt{gSystem->Load("libPWG2flowCommon");}\\
 \item
 We need to instantiate the flow analysis methods which we want to use. In this example we will
-instantiate two methods: the first  which calculates the flow versus the reaction plane of the Monte Carlo, which is our reference value, and second the so called Q-cumulant method.
+instantiate two methods: the first  which calculates the flow versus the reaction plane of the Monte Carlo, 
+which is our reference value, and second the so called Q-cumulant method.
 \texttt{AliFlowAnalysisWithMCEventPlane *mcep} \\
 \texttt{= new AliFlowAnalysisWithMCEventPlane();}\\
 \texttt{AliFlowAnalysisWithQCumulants *qc}\\
@@ -62,5 +68,14 @@ This concludes the analysis and now we can write the results into a file:\\
 
 \section{What is in the output file?}
 Now we have written the results into a file, but what is in there?
+
+\section{Reading events from file}
+The macro \texttt{Documentation/examples/runFlowReaderExample.C} is an example how to setup a flow analysis if the events are already generate and
+for example are stored in ntuples.
+ 
+\section{A simple flow analysis in ALICE using Tasks}
+The macro \texttt{Documentation/examples/runFlowTaskExample.C} is an example how to setup a flow analysis in ALICE which can read ESD's and OAD's
+and runs locally, on a proof farm (CAF) and on the GRID.
+
 
 \end{enumerate}
