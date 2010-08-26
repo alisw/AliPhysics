@@ -1927,7 +1927,7 @@ void AliTPCCorrection::AddVisualCorrection(AliTPCCorrection* corr, Int_t positio
 
 
 
-Double_t AliTPCCorrection::GetCorrSector(Double_t sector, Double_t localX, Double_t kZ, Int_t axisType, Int_t corrType){
+Double_t AliTPCCorrection::GetCorrSector(Double_t sector, Double_t r, Double_t kZ, Int_t axisType, Int_t corrType){
   //
   // calculate the correction at given position - check the geffCorr
   //
@@ -1935,9 +1935,9 @@ Double_t AliTPCCorrection::GetCorrSector(Double_t sector, Double_t localX, Doubl
   AliTPCCorrection *corr = (AliTPCCorrection*)fgVisualCorrection->At(corrType);
   if (!corr) return 0;
   Double_t phi=sector*TMath::Pi()/9.;
-  Double_t gx = localX*TMath::Cos(phi);
-  Double_t gy = localX*TMath::Sin(phi);
-  Double_t gz = localX*kZ;
+  Double_t gx = r*TMath::Cos(phi);
+  Double_t gy = r*TMath::Sin(phi);
+  Double_t gz = r*kZ;
   Int_t nsector=(gz>0) ? 0:18; 
   //
   //

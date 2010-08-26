@@ -1676,7 +1676,7 @@ void AliTPCcalibAlign::MakeResidualHistos(){
   axisName[1]="sector";   axisTitle[1]="Sector Number"; 
   binsTrack[1]=180;       xminTrack[1]=0;        xmaxTrack[1]=18; 
   //
-  axisName[2]="localX";   axisTitle[2]="x (cm)"; 
+  axisName[2]="R";   axisTitle[2]="r (cm)"; 
   binsTrack[2]=53;       xminTrack[2]=85.;        xmaxTrack[2]=245.; 
   //
   //
@@ -2722,7 +2722,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     trackOut.GetXYZ(xyz);
     resVector[1]= 9.*TMath::ATan2(xyz[1],xyz[0])/TMath::Pi();
     if (resVector[1]<0) resVector[1]+=18;
-    resVector[2]= cl->GetX();
+    resVector[2]= TMath::Sqrt(cl->GetX()*cl->GetX()+cl->GetY()*cl->GetY());
     resVector[3]= cl->GetZ()/cl->GetX();
     //
     resVector[0]= cl->GetY()-trackOut.GetY();
@@ -2772,7 +2772,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     trackIn.GetXYZ(xyz);
     resVector[1]= 9.*TMath::ATan2(xyz[1],xyz[0])/TMath::Pi();
     if (resVector[1]<0) resVector[1]+=18;
-    resVector[2]= cl->GetX();
+    resVector[2]= TMath::Sqrt(cl->GetX()*cl->GetX()+cl->GetY()*cl->GetY());
     resVector[3]= cl->GetZ()/cl->GetX();
     //
     resVector[0]= cl->GetY()-trackIn.GetY();
@@ -2963,7 +2963,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
     if (fCurrentTrack->IsOn(0x4)&&TMath::Abs(vImpact[0])<1&&TMath::Abs(vImpact[1])<1){    
       Double_t resVector[5];
       resVector[1]= 9.*gphi/TMath::Pi();
-      resVector[2]= c->GetX();
+      resVector[2]= TMath::Sqrt(c->GetX()*c->GetX()+c->GetY()*c->GetY());
       resVector[3]= c->GetZ()/c->GetX();
       //
       //
