@@ -1,5 +1,6 @@
 # -*- mode: cmake -*-
 #_______________________________________________________________________________
+
 Macro(CHANGE_FILE_EXTENSION OLD_EXT NEW_EXT RESULT LIST)
 
 # This is probably an obsolete Macro
@@ -41,6 +42,7 @@ EndMacro (CHECK_OUT_OF_SOURCE_BUILD)
 Function (AddLibrary LIB SRCS DHDRS)
 
 # Adds an AliRoot library as a target
+  string(REGEX REPLACE "$ENV{ALICE_ROOT}/?([^/]*)/?.*" "\\1" label ${CMAKE_CURRENT_SOURCE_DIR})
 
   # Message(STATUS Debug ${LIB})
   Set(_path)
@@ -48,7 +50,6 @@ Function (AddLibrary LIB SRCS DHDRS)
   If(_len GREATER 0)
     List(GET SRCS 0 _file)
     Get_filename_component(_path ${_file} PATH)
-#    Message(STATUS Debug ${_file} ${_path})
   Endif(_len GREATER 0)
 
   Set(LDEF)
@@ -86,9 +87,10 @@ Function (AddLibrary LIB SRCS DHDRS)
   Endif(LDEF)
 
   Add_Library(${LIB} SHARED ${ASRCS})
+  set_property(TARGET ${LIB} PROPERTY LABELS ${label})
   Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES})
   Set_Target_Properties(${LIB} PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES})
-  
+#  message("${LIB}-${label}")
   Install(TARGETS ${LIB} DESTINATION ${ALIROOT_INSTALL_DIR}/lib
     COMPONENT shared)
 
@@ -108,13 +110,12 @@ EndFunction (AddLibrary)
 Function (AddHLTLibrary LIB SRCS DHDRS)
 
 # Adds an AliRoot library as a target
-
+  string(REGEX REPLACE "$ENV{ALICE_ROOT}/?([^/]*)/?.*" "\\1" label ${CMAKE_CURRENT_SOURCE_DIR})
   Set(_path)
   List(LENGTH SRCS _len)
   If(_len GREATER 0)
     List(GET SRCS 0 _file)
     Get_filename_component(_path ${_file} PATH)
-    #Message(STATUS Debug ${_file} ${_path})
   Endif(_len GREATER 0)
 
   Set(LDEF)
@@ -155,9 +156,10 @@ Function (AddHLTLibrary LIB SRCS DHDRS)
   Endif(LDEF)
 
   Add_Library(${LIB} SHARED ${ASRCS})
+  set_property(TARGET ${LIB} PROPERTY LABELS ${label})
   Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES})
   Set_Target_Properties(${LIB} PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES})
-  
+#  message("${LIB}-${label}")  
   Install(TARGETS ${LIB} DESTINATION ${ALIROOT_INSTALL_DIR}/lib
     COMPONENT shared)
 
@@ -187,11 +189,14 @@ EndMacro(SetModule)
 Function (AddExecutable BIN SRCS LIBS)
 
 # Adds an AliRoot executable as a target
-
+    
+  string(REGEX REPLACE "$ENV{ALICE_ROOT}/?([^/]*)/?.*" "\\1" label ${CMAKE_CURRENT_SOURCE_DIR})
   String(REGEX REPLACE "(.*)exe" "\\1" executable_name "${BIN}")
   # MESSAGE("EXECUTABLE: ${executable_name}")
 
   Add_Executable(${BIN} ${SRCS})
+  set_property(TARGET ${BIN} PROPERTY LABELS ${label})
+#  message("${BIN}-${label}")
   Target_Link_Libraries(${BIN} ${ROOT_LIBRARIES} ${LIBS})
   set_target_properties(${BIN} PROPERTIES OUTPUT_NAME ${executable_name})
   Install(TARGETS ${BIN} DESTINATION ${ALIROOT_INSTALL_DIR}/bin)
