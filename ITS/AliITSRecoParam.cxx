@@ -135,6 +135,7 @@ fRequireClusterInInnerLayerPlaneEff(kFALSE),
 fOnlyConstraintPlaneEff(kFALSE),
 fNSigXFromBoundaryPlaneEff(1.),
 fNSigZFromBoundaryPlaneEff(1.),
+fImproveWithVertex(kFALSE),
 fExtendedEtaAcceptance(kFALSE),
 fUseBadZonesFromOCDB(kTRUE),
 fUseSingleBadChannelsFromOCDB(kFALSE),
@@ -311,6 +312,8 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   // use of bads from OCDB
   param->SetUseBadZonesFromOCDB(kTRUE);
   param->SetUseSingleBadChannelsFromOCDB(kFALSE);
+  // use pointing to vertex during prolongation
+  param->SetImproveWithVertex(kTRUE);
   // extended eta acceptance
   param->SetExtendedEtaAcceptance(kFALSE);
   // allow to skip layer if no cluster and no bad

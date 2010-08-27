@@ -1045,7 +1045,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	if(LocalModuleCoord(ilayer,idet,vtrack,xloc,zloc)) { // local module coords
 	  vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 	}
-	if(constrain) vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
+	if(constrain && AliITSReconstructor::GetRecoParam()->GetImproveWithVertex()) vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	ntracks[ilayer]++;
 	continue;
       }
@@ -1136,7 +1136,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 		TMath::Abs(updatetrack->GetD(1)/(1.+ilayer)) > // z
 		AliITSReconstructor::GetRecoParam()->GetMaxDZforPrimTrk()) isPrim=kFALSE;
 	  }
-	  if (isPrim) updatetrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
+	  if (isPrim && AliITSReconstructor::GetRecoParam()->GetImproveWithVertex()) updatetrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	}
 	updatetrack->SetNDeadZone(updatetrack->GetNDeadZone()+1);
 	if (dead) {
@@ -1246,7 +1246,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 		  TMath::Abs(updatetrack->GetD(1)/(1.+ilayer)) > // z
 		  AliITSReconstructor::GetRecoParam()->GetMaxDZforPrimTrk()) isPrim=kFALSE;
 	    }
-	    if (isPrim) updatetrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
+	    if (isPrim && AliITSReconstructor::GetRecoParam()->GetImproveWithVertex()) updatetrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	  } //apply vertex constrain	  	  
 	  ntracks[ilayer]++;
 	}  // create new hypothesis
@@ -1264,7 +1264,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	vtrack->SetClIndex(ilayer,-1);
 	modstatus = 3; // skipped 
 	vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
-	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
+	if(AliITSReconstructor::GetRecoParam()->GetImproveWithVertex()) vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	vtrack->IncrementNSkipped();
 	ntracks[ilayer]++;
       }
@@ -3414,7 +3414,9 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
     backtrack = new(backtrack) AliITStrackMI(*track); 
     if (track->GetConstrain()) {
       if (!CorrectForPipeMaterial(backtrack,"inward")) continue;
-      if (!backtrack->Improve(0,xyzVtx,ersVtx))         continue;     
+      if (AliITSReconstructor::GetRecoParam()->GetImproveWithVertex()) {
+	if (!backtrack->Improve(0,xyzVtx,ersVtx)) continue;     
+      }
       backtrack->ResetCovariance(10.);      
     }else{
       backtrack->ResetCovariance(10.);

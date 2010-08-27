@@ -395,8 +395,6 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
   //------------------------------------------------------------------
   //Store the initail track parameters
 
-  return kTRUE; //PH temporary switched off
-
   Double_t x = GetX();
   Double_t alpha = GetAlpha();
   Double_t par[] = {GetY(),GetZ(),GetSnp(),GetTgl(),GetSigned1Pt()};

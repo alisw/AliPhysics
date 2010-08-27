@@ -252,6 +252,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void SetNSigZFromBoundaryPlaneEff(Double_t nsigz=1.) {fNSigZFromBoundaryPlaneEff=nsigz;}
   Double_t GetNSigZFromBoundaryPlaneEff() const {return fNSigZFromBoundaryPlaneEff;}
   //
+  void   SetImproveWithVertex(Bool_t impr=kFALSE) { fImproveWithVertex=impr; return; }
+  Bool_t GetImproveWithVertex() const { return fImproveWithVertex; }
   void   SetExtendedEtaAcceptance(Bool_t ext=kTRUE) { fExtendedEtaAcceptance=ext; return; }
   Bool_t GetExtendedEtaAcceptance() const { return fExtendedEtaAcceptance; }
   void   SetAllowProlongationWithEmptyRoad(Bool_t allow=kTRUE) { fAllowProlongationWithEmptyRoad=allow; return; }  
@@ -582,6 +584,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t fNSigXFromBoundaryPlaneEff;  // accept one track for PlaneEff if distance from border (in loc x or z)
   Double_t fNSigZFromBoundaryPlaneEff;  // is greater than fNSigXFromBoundaryPlaneEff * Track_precision
 
+  Bool_t fImproveWithVertex;    // use the method AliITStrackV2::Improve() to point to the vertex during prolongation
   Bool_t fExtendedEtaAcceptance;  // enable jumping from TPC to SPD at large eta (MI)
   Bool_t fUseBadZonesFromOCDB; // enable using OCDB info on dead modules and chips (MI)
   Bool_t fUseSingleBadChannelsFromOCDB; // enable using OCDB info on bad single SPD pixels and SDD anodes (MI)
@@ -684,7 +687,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,29) // ITS reco parameters
+  ClassDef(AliITSRecoParam,30) // ITS reco parameters
 };
 
 #endif
