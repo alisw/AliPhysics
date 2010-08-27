@@ -206,7 +206,8 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * processing, the data blocks are released. <br>
    * The @ref StartRun method must be called before.
    */
-  int ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType=gkAliEventTypeData, AliHLTUInt64_t trgMask=0);
+  int ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType,
+		  AliHLTUInt64_t trgMask, AliHLTUInt32_t timestamp);
 
   /**
    * Determine the number of matching data block between the component and the

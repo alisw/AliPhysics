@@ -339,7 +339,8 @@ void AliHLTSystem::PrintTaskList()
   }
 }
 
-int AliHLTSystem::Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask)
+int AliHLTSystem::Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask,
+		      AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype)
 {
   // see header file for class documentation
   int iResult=0;
@@ -363,7 +364,12 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask)
 	  // reset and prepare for new data
 	  fpHLTOUTTask->Reset();
 	}
-	if ((iResult=ProcessTasks(i, trgMask))>=0) {
+	if (eventtype) {
+	  // TODO: translate RawReader event types into the HLT event types
+	  // this needs to be done after the analysis framework has been extended to
+	  // handle all different cases correctly
+	}
+	if ((iResult=ProcessTasks(i, trgMask, timestamp, gkAliEventTypeData))>=0) {
 	  fGoodEvents++;
 	  iCount++;
 	} else {
@@ -575,7 +581,8 @@ int AliHLTSystem::StartTasks()
   return iResult;
 }
 
-int AliHLTSystem::ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask)
+int AliHLTSystem::ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask,
+	  AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype)
 {
   // see header file for class documentation
   int iResult=0;
@@ -585,7 +592,7 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask)
     TObject* obj=lnk->GetObject();
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
-      iResult=pTask->ProcessTask(eventNo, gkAliEventTypeData, trgMask);
+      iResult=pTask->ProcessTask(eventNo, eventtype, trgMask, timestamp);
 //       ProcInfo_t ProcInfo;
 //       gSystem->GetProcInfo(&ProcInfo);
 //       HLTInfo("task %s processed (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
@@ -678,7 +685,7 @@ int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
       if (dt==kAliHLTDataTypeSOR) eventType=gkAliEventTypeStartOfRun;
       else if (dt==kAliHLTDataTypeEOR) eventType=gkAliEventTypeEndOfRun;
       else HLTWarning("unknown control event %s", AliHLTComponent::DataType2Text(dt).c_str());
-      iResult=pTask->ProcessTask(-1, eventType);
+      iResult=pTask->ProcessTask(-1, eventType, 0, 0);
     } else {
     }
     lnk = lnk->Next();
@@ -801,6 +808,8 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
       } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
 	AliHLTUInt64_t trgMask=0x1;
+	AliHLTUInt32_t timestamp=0;
+	AliHLTUInt32_t eventtype=0;
 	if (runLoader==NULL) {
 	  // this is a quick workaround for the case of simulation
 	  // the trigger framework is still under development, secondly, AliHLTSimulation
@@ -808,10 +817,15 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	  // AliHLTTask will initialize one dummy CTP trigger class with bit 0, that's why the
 	  // default trigger mask is 0x1
 	  trgMask=AliHLTMisc::Instance().GetTriggerMask(rawReader);
+
+	  // get the timestamp and type of the event from the raw reader
+	  // this is currently only meaningfull for reconstruction (runloader==NULL)
+	  timestamp=AliHLTMisc::Instance().GetTimeStamp(rawReader);
+	  eventtype=AliHLTMisc::Instance().GetEventType(rawReader);
 	}
 	// the system always remains started after event processing, a specific
 	// call with nofEvents==0 is needed to execute the stop sequence
-	if ((iResult=Run(nofEvents, 0, trgMask))<0) SetStatusFlags(kError);
+	if ((iResult=Run(nofEvents, 0, trgMask, timestamp, eventtype))<0) SetStatusFlags(kError);
       }
       }
     } else {

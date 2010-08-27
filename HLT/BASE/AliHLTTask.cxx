@@ -450,7 +450,7 @@ int AliHLTTask::EndRun()
   return iResult;
 }
 
-int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt64_t trgMask)
+int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt64_t trgMask, AliHLTUInt32_t timestamp)
 {
   // see header file for function documentation
   int iResult=0;
@@ -572,6 +572,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
       AliHLTComponent::FillEventData(evtData);
       if (eventNo>=0)
 	evtData.fEventID=(AliHLTEventID_t)eventNo;
+      if (timestamp) evtData.fEventCreation_s=timestamp;
+      else
       evtData.fEventCreation_s=static_cast<AliHLTUInt32_t>(time(NULL));
       AliHLTComponentTriggerData trigData;
       AliHLTEventTriggerData evtTrigData;

@@ -203,9 +203,13 @@ class AliHLTSystem : public AliHLTLogging {
    * nofEvents==0 is needed to execute the stop sequence.
    * @param iNofEvents number of events
    * @param bStop      stop the chain after processing
+   * @param trgMask    ctp trigger mask from the rawreader
+   * @param timestamp  timestamp of the event, read from the rawreader
+   * @param eventtype  event type, read from the rawreader
    * @return number of reconstructed events, neg error code if failed
    */
-  int Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask);
+  int Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask,
+	  AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype);
 
   /**
    * Run the tasklist
@@ -213,7 +217,7 @@ class AliHLTSystem : public AliHLTLogging {
    * Re-introducing the original function, and forwarding it.
    */
   int Run(Int_t iNofEvents=1, int bStop=1)
-  {return Run(iNofEvents, bStop, 0);}
+  {return Run(iNofEvents, bStop, 0, 0, 0);}
 
   /**
    * Init all tasks from the list.
@@ -269,7 +273,8 @@ class AliHLTSystem : public AliHLTLogging {
    * The @ref AliHLTTask::ProcessTask method is called for each task.
    * @return neg error code if failed
    */
-  int ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask=0);
+  int ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask,
+		   AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype);
 
   /**
    * Stop task list.
