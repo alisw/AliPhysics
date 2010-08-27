@@ -372,7 +372,7 @@ void AliAnalysisTaskSEDStarSpectra::Terminate(Option_t*)
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
   
-  Info("Terminate","");
+  //Info("Terminate","");
   AliAnalysisTaskSE::Terminate();
   
   fOutput = dynamic_cast<TList*> (GetOutputData(1));

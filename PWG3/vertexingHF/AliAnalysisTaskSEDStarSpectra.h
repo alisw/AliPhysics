@@ -25,14 +25,16 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 
 
-class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE {
+class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE 
+{
   
  public:
   
   AliAnalysisTaskSEDStarSpectra();
   AliAnalysisTaskSEDStarSpectra(const Char_t* name,AliRDHFCutsDStartoKpipi* cuts);
   virtual ~AliAnalysisTaskSEDStarSpectra();
-  
+
+  // Implementation of interface methods  
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -63,7 +65,10 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE {
   void     SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t   GetMC() const {return fUseMCInfo;}
   
- protected:
+ private:
+  
+  AliAnalysisTaskSEDStarSpectra(const AliAnalysisTaskSEDStarSpectra &source);
+  AliAnalysisTaskSEDStarSpectra& operator=(const AliAnalysisTaskSEDStarSpectra& source); 
   
   Int_t  fEvents;                //  n. of events
   Int_t  fAnalysis;		 //  0: HD;	1: UU;
