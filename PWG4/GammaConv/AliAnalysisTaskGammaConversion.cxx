@@ -36,6 +36,7 @@
 #include "AliGammaConversionBGHandler.h"
 #include "AliESDCaloCluster.h" // for combining PHOS and GammaConv
 #include "AliKFVertex.h"
+class AliESDTrackCuts;
 class AliCFContainer;
 class AliCFManager;
 class AliKFVertex;
@@ -268,27 +269,32 @@ void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
 //   fEsdTrackCuts->SetRequireSigmaToVertex(kTRUE);
 
   //------- To be tested-----------
-  
-   Int_t minNClustersTPC = 70;
-   Double_t maxChi2PerClusterTPC = 4.0;
-   Double_t maxDCAtoVertexXY = 2.4; // cm
-   Double_t maxDCAtoVertexZ  = 3.2; // cm
-   fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-   fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
-   fEsdTrackCuts->SetRequireITSRefit(kTRUE);
-   //   fEsdTrackCuts->SetRequireTPCStandAlone(kTRUE);
-   fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-   fEsdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
-   fEsdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
-   fEsdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
-   fEsdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
-   fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
-   fEsdTrackCuts->SetEtaRange(-0.8, 0.8);
-   fEsdTrackCuts->SetPtRange(0.15);
+  // Cuts used up to 26th of Agost
+//    Int_t minNClustersTPC = 70;
+//    Double_t maxChi2PerClusterTPC = 4.0;
+//    Double_t maxDCAtoVertexXY = 2.4; // cm
+//    Double_t maxDCAtoVertexZ  = 3.2; // cm
+//    fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+//    fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+//    fEsdTrackCuts->SetRequireITSRefit(kTRUE);
+//    //   fEsdTrackCuts->SetRequireTPCStandAlone(kTRUE);
+//    fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+//    fEsdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
+//    fEsdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
+//    fEsdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
+//    fEsdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
+//    fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
+//    fEsdTrackCuts->SetEtaRange(-0.8, 0.8);
+//    fEsdTrackCuts->SetPtRange(0.15);
 
-   fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+//    fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
 
 
+// Using standard function  for setting Cuts
+  Bool_t selectPrimaries=kTRUE;
+  fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
+  fEsdTrackCuts->SetEtaRange(-0.8, 0.8);
+  fEsdTrackCuts->SetPtRange(0.15);
   
   //-----  From Jacek 10.03.03 ------------------/
 //     minNClustersTPC = 70;
@@ -1736,11 +1742,12 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
       Double_t widthTwoGammaCandidate = 0.;
       Double_t chi2TwoGammaCandidate =10000.;	
       twoGammaCandidate->GetMass(massTwoGammaCandidate,widthTwoGammaCandidate);
-      if(twoGammaCandidate->GetNDF()>0){
-	chi2TwoGammaCandidate = twoGammaCandidate->GetChi2()/twoGammaCandidate->GetNDF();
+      //      if(twoGammaCandidate->GetNDF()>0){
+      //	chi2TwoGammaCandidate = twoGammaCandidate->GetChi2()/twoGammaCandidate->GetNDF();
+      chi2TwoGammaCandidate = twoGammaCandidate->GetChi2();
 				
 	fHistograms->FillHistogram("ESD_Mother_Chi2",chi2TwoGammaCandidate);
-	if(chi2TwoGammaCandidate>0 && chi2TwoGammaCandidate<fV0Reader->GetChi2CutMeson()){
+	//if(chi2TwoGammaCandidate>0 && chi2TwoGammaCandidate<fV0Reader->GetChi2CutMeson()){
 					
 	  TVector3 momentumVectorTwoGammaCandidate(twoGammaCandidate->GetPx(),twoGammaCandidate->GetPy(),twoGammaCandidate->GetPz());
 	  TVector3 spaceVectorTwoGammaCandidate(twoGammaCandidate->GetX(),twoGammaCandidate->GetY(),twoGammaCandidate->GetZ());
@@ -1856,6 +1863,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
+		    if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+		    }
 		  }
 		}
 		else if(TMath::Abs(eta1)>0.9 || TMath::Abs(eta2)>0.9){
@@ -1867,6 +1877,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
+		    if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+		    }
 		  }
 		}
 		else{
@@ -1878,6 +1891,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
+		    if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+		    }
 		  }
 		}
 	      }
@@ -1908,9 +1924,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
             fGammav2.push_back(secondGammaIndex);
           }
 
-	}
-      }
-      delete twoGammaCandidate;
+	  //        }
+	  //}
+	  delete twoGammaCandidate;
     }
   }
 }
@@ -2040,9 +2056,10 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	Double_t widthBG = 0.;
 	Double_t chi2BG =10000.;	
 	backgroundCandidate->GetMass(massBG,widthBG);
-	if(backgroundCandidate->GetNDF()>0){
-	  chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
-	  if(chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()){
+	//	if(backgroundCandidate->GetNDF()>0){
+	//	  chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
+	  chi2BG = backgroundCandidate->GetChi2();
+	  //	  if(chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()){
 					
 	    TVector3 momentumVectorbackgroundCandidate(backgroundCandidate->GetPx(),backgroundCandidate->GetPy(),backgroundCandidate->GetPz());
 	    TVector3 spaceVectorbackgroundCandidate(backgroundCandidate->GetX(),backgroundCandidate->GetY(),backgroundCandidate->GetZ());
@@ -2112,8 +2129,8 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
 	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
 	    }
-	  }
-	}
+	    //	  }
+	    //	}
 	delete backgroundCandidate;      
       }
     }
@@ -2174,9 +2191,10 @@ void AliAnalysisTaskGammaConversion::CreateListOfChargedParticles(){
     if(!curTrack){
       continue;
     }
-    if(!IsGoodImpPar(curTrack)){
-      continue;
-    }
+    // Not needed if Standard function used.
+//     if(!IsGoodImpPar(curTrack)){
+//       continue;
+//     }
 		
     if(fEsdTrackCuts->AcceptTrack(curTrack) ){
       new((*fChargedParticles)[fChargedParticles->GetEntriesFast()])  AliESDtrack(*curTrack);
