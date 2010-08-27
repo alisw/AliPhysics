@@ -1,100 +1,104 @@
-////////////////////////////////////////////
-// Author: Ionut Cristian Arsene          //          
-// email:  iarsene@mail.cern.ch           //
-////////////////////////////////////////////
-// Use this macro to create ROOT trees with time dependent information from the TRD OCDB
-//
-// Usage:
-//
-// void DumpOCDBtoTree(const Char_t* outFilename,
-// 		       const Char_t* runListFilename,
-//		       Int_t firstRun = -1, Int_t lastRun = -1,
-//		       const Char_t* storage = "alien://folder=/alice/data/2010/OCDB/",
-//		       Bool_t getHVInfo = kTRUE,
-//		       Bool_t getCalibrationInfo = kFALSE,
-//                     Bool_t getGasInfo = kFALSE,
-//		       Bool_t getStatusInfo = kFALSE,
-//		       Bool_t getGoofieInfo = kFALSE,
-//		       Bool_t getDCSInfo = kFALSE,
-//		       Bool_t getGRPInfo = kTRUE)
-//
-//    * runListFilename   - name of an ascii file containing run numbers
-//    * outFilename       - name of the root file where the TRD OCDB information tree to be stored
-//    * firstRun, lastRun - lowest and highest run numbers (from the ascii file) to be dumped
-//                          if these numbers are not specified (-1) all run numbers in the input ascii file will
-//                          be used. If the run list file is not specified then all runs in this interval
-//                          will be queried
-//    * getHVInfo         - flag to switch on/off HV information (HV anode and drift currents/voltages)
-//    * getCalibrationInfo- flag to switch on/off calibration information (gain, pedestal, T0, vdrift, pad status)
-//    * getGasInfo        - flag to switch on/off gas related information (gas composition, overpressure, temperature)
-//    * getStatusInfo     - flag to switch on/off status information (trd_chamberStatus)
-//    * getGoofieInfo     - flag to switch on/off goofie information (gain, HV, pressure, temperature, drift velocity,
-//                          gas composition)
-//    * getDCSInfo        - flag to switch on/off DCS information
-//    * getGRPInfo        - flag to switch on/off GRP information --> there will be no time information in the output tree
-//    * storage           - path of the OCDB database (if it is on alien, be sure to have a valid/active token)
+  ////////////////////////////////////////////
+  // Author: Ionut Cristian Arsene          //
+  // email:  iarsene@mail.cern.ch           //
+  ////////////////////////////////////////////
+  // Use this macro to create ROOT trees with time dependent information from the TRD OCDB
+  //
+  // Usage:
+  //
+  // void DumpOCDBtoTree(const Char_t* outFilename,
+  // 		       const Char_t* runListFilename,
+  //		       Int_t firstRun = -1, Int_t lastRun = -1,
+  //		       const Char_t* storageURI = "alien://folder=/alice/data/2010/OCDB/",
+  //		       Bool_t getHVInfo = kTRUE,
+  //		       Bool_t getCalibrationInfo = kFALSE,
+  //                     Bool_t getGasInfo = kFALSE,
+  //		       Bool_t getStatusInfo = kFALSE,
+  //		       Bool_t getGoofieInfo = kFALSE,
+  //		       Bool_t getDCSInfo = kFALSE,
+  //		       Bool_t getGRPInfo = kTRUE)
+  //
+  //    * runListFilename   - name of an ascii file containing run numbers
+  //    * outFilename       - name of the root file where the TRD OCDB information tree to be stored
+  //    * firstRun, lastRun - lowest and highest run numbers (from the ascii file) to be dumped
+  //                          if these numbers are not specified (-1) all run numbers in the input ascii file will
+  //                          be used. If the run list file is not specified then all runs in this interval
+  //                          will be queried
+  //    * getHVInfo         - flag to switch on/off HV information (HV anode and drift currents/voltages)
+  //    * getCalibrationInfo- flag to switch on/off calibration information (gain, pedestal, T0, vdrift, pad status)
+  //    * getGasInfo        - flag to switch on/off gas related information (gas composition, overpressure, temperature)
+  //    * getStatusInfo     - flag to switch on/off status information (trd_chamberStatus)
+  //    * getGoofieInfo     - flag to switch on/off goofie information (gain, HV, pressure, temperature, drift velocity,
+  //                          gas composition)
+  //    * getDCSInfo        - flag to switch on/off DCS information
+  //    * getGRPInfo        - flag to switch on/off GRP information --> there will be no time information in the output tree
+  //    * storageURI           - path of the OCDB database (if it is on alien, be sure to have a valid/active token)
 
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <exception>
-#include "TVectorD.h"
-#include "TTreeStream.h"
-#include "TObjString.h"
-#include "TTimeStamp.h"
-#include "TH1.h"
-#include "TMath.h"
-#include "TObjArray.h"
-#include "TFile.h"
-#include "TSystem.h"
-#include "TGrid.h"
-#include "AliCDBManager.h"
-#include "AliCDBEntry.h"
-#include "AliTRDcalibDB.h"
-#include "AliGRPObject.h"
-#include "AliDCSSensor.h"
-#include "AliTRDSensorArray.h"
-#include "AliTRDCalDet.h"
-#include "AliTRDCalPad.h"
-#include "AliTRDCalROC.h"
-#include "AliTRDCalPadStatus.h"
-#include "AliTRDCalChamberStatus.h"
-#include "AliTRDCalSingleChamberStatus.h"
-#include "AliTRDCalDCS.h"
-#include "AliTRDCalDCSFEE.h"
-using namespace std;
+  #include <iostream>
+  #include <fstream>
+  #include <string>
+  #include <exception>
+  #include "TError.h"
+  #include "TVectorD.h"
+  #include "TTreeStream.h"
+  #include "TObjString.h"
+  #include "TTimeStamp.h"
+  #include "TH1.h"
+  #include "TMath.h"
+  #include "TObjArray.h"
+  #include "TFile.h"
+  #include "TSystem.h"
+  #include "TGrid.h"
+  #include "AliCDBManager.h"
+  #include "AliCDBStorage.h"
+  #include "AliCDBEntry.h"
+  #include "AliTRDcalibDB.h"
+  #include "AliGRPObject.h"
+  #include "AliDCSSensor.h"
+  #include "AliTRDSensorArray.h"
+  #include "AliTRDCalDet.h"
+  #include "AliTRDCalPad.h"
+  #include "AliTRDCalROC.h"
+  #include "AliTRDCalPadStatus.h"
+  #include "AliTRDCalChamberStatus.h"
+  #include "AliTRDCalSingleChamberStatus.h"
+  #include "AliTRDCalDCS.h"
+  #include "AliTRDCalDCSFEE.h"
+  using namespace std;
 
-// global variables
-// histograms used for extracting the mean and RMS of calibration parameters
-TH1F *gRunWiseHisto;
-TH1F *gSuperModuleWiseHisto;
-TH1F *gChamberWiseHisto;
+  // global variables
+  // histograms used for extracting the mean and RMS of calibration parameters
+  TH1F *gRunWiseHisto;
+  TH1F *gSuperModuleWiseHisto;
+  TH1F *gChamberWiseHisto;
 
-// global constants
-const Int_t gkSuperModuleStatus[18] = {1, 1, 0, 0, 0, 0, 0, 1, 1,   // (1-installed)
-				       1, 1, 0, 0, 0, 0, 0, 0, 1};  
-
-void MakeRunListFromOCDB(const Char_t* directory, const Char_t* outfile, Bool_t fromAlien=kFALSE);
-void ProcessTRDSensorArray(AliTRDSensorArray*, TTimeStamp, TVectorD&);
-void ProcessTRDCalibArray(AliTRDCalDet*, AliTRDCalPad*, TString, Double_t&, Double_t&,
-			  TVectorD&, TVectorD&, TVectorD&, TVectorD&);
-void ProcessTRDstatus(AliTRDCalChamberStatus*, AliTRDCalPadStatus*, Float_t&, TVectorD&, TVectorD&);
-void ProcessTRDCalDCSFEE(AliTRDCalDCS*, AliTRDCalDCS*, Int_t&, Int_t&, Int_t&, Int_t&, Int_t&, Int_t&, Bool_t&, 
-			 TVectorD&, TVectorD&);
-
-//__________________________________________________________________________________________
-void DumpOCDBtoTree(const Char_t* outFilename,
-		    const Char_t* runListFilename,
-		    Int_t firstRun = -1, Int_t lastRun = -1,
-		    const Char_t* storage = "alien://folder=/alice/data/2010/OCDB/",
-		    Bool_t getHVInfo = kTRUE,
-		    Bool_t getCalibrationInfo = kFALSE,
+  // global constants
+  const Int_t gkSuperModuleStatus[18] = {1, 1, 0, 0, 0, 0, 0, 1, 1,   // (1-installed)
+                1, 1, 0, 0, 0, 0, 0, 0, 1};
+  AliCDBStorage *storage = NULL;
+  AliCDBManager *manager = NULL;
+  Int_t currRun(0);
+  void MakeRunListFromOCDB(const Char_t* directory, const Char_t* outfile, Bool_t fromAlien=kFALSE);
+  void ProcessTRDSensorArray(AliTRDSensorArray*, TTimeStamp, TVectorD&);
+  void ProcessTRDCalibArray(AliTRDCalDet*, AliTRDCalPad*, TString, Double_t&, Double_t&,
+        TVectorD&, TVectorD&, TVectorD&, TVectorD&);
+  void ProcessTRDstatus(AliTRDCalChamberStatus*, AliTRDCalPadStatus*, Float_t&, TVectorD&, TVectorD&);
+  void ProcessTRDCalDCSFEE(AliTRDCalDCS*, AliTRDCalDCS*, Int_t&, Int_t&, Int_t&, Int_t&, Int_t&, Int_t&, Bool_t&,
+        TVectorD&, TVectorD&);
+  AliCDBEntry* GetCDBentry(const Char_t *path, Bool_t owner=kTRUE);
+  //__________________________________________________________________________________________
+  void DumpOCDBtoTree(const Char_t* outFilename,
+        const Char_t* runListFilename,
+        Int_t firstRun = -1, Int_t lastRun = -1,
+        const Char_t* storageURI = "alien://folder=/alice/data/2010/OCDB/",
+        Bool_t getHVInfo = kTRUE,
+        Bool_t getCalibrationInfo = kFALSE,
                     Bool_t getGasInfo = kFALSE,
-		    Bool_t getStatusInfo = kFALSE,
-		    Bool_t getGoofieInfo = kFALSE,
-		    Bool_t getDCSInfo = kFALSE,
-		    Bool_t getGRPInfo = kTRUE) {
+        Bool_t getStatusInfo = kFALSE,
+        Bool_t getGoofieInfo = kFALSE,
+        Bool_t getDCSInfo = kFALSE,
+        Bool_t getGRPInfo = kTRUE) {
   //
   // Main function to steer the extraction of TRD OCDB information
   //
@@ -102,17 +106,20 @@ void DumpOCDBtoTree(const Char_t* outFilename,
 
   TTimeStamp jobStartTime;
   // if the storage is on alien than we need to do some extra stuff
-  TString storageString(storage);
+  TString storageString(storageURI);
   if(storageString.Contains("alien://")) {
     TGrid::Connect("alien://");
   }
   // initialize the OCDB manager
-  AliCDBManager *manager = AliCDBManager::Instance();
-  manager->SetDefaultStorage(storage);
-    
+  manager = AliCDBManager::Instance();
+  manager->SetDefaultStorage(storageURI);
+  manager->SetCacheFlag(kTRUE);
+  storage = manager->GetDefaultStorage();
+  AliCDBEntry *entry = NULL;
+
   // initialize the tree
   TTreeSRedirector *treeStreamer = new TTreeSRedirector(outFilename);
-  
+
   // initialize the histograms used for extracting the mean and RMS
   gRunWiseHisto = new TH1F("runHisto", "runHisto", 200, -10.0, 10.0);
   gSuperModuleWiseHisto = new TH1F("smHisto", "smHisto", 200, -10.0, 10.0);
@@ -124,9 +131,8 @@ void DumpOCDBtoTree(const Char_t* outFilename,
     in.open(runListFilename);
 
   // if a run list file was not specified then use the run range
-  Int_t currRun;
   if(runListFilename[0]=='\0' && firstRun!=-1 && lastRun!=-1)
-    currRun = firstRun-1;  
+    currRun = firstRun-1;
 
   TVectorD runs;
   TVectorD rejectedRuns;
@@ -143,11 +149,10 @@ void DumpOCDBtoTree(const Char_t* outFilename,
       if(in.eof()) break;
       if(!(in>>currRun)) continue;
       if(currRun < (firstRun==-1 ? 0 : firstRun) ||
-	 currRun > (lastRun==-1 ? 999999999 : lastRun))
-	continue;
+          currRun > (lastRun==-1 ? 999999999 : lastRun)) continue;
     }
 
-    cout << "run = " << currRun << endl;
+    printf("\n\tRUN[%d]\n", currRun);
     // check if the run was processed already
     Bool_t runProcessed = kFALSE;
     for(Int_t iRun=0; iRun<runs.GetNoElements(); iRun++) {
@@ -157,10 +162,9 @@ void DumpOCDBtoTree(const Char_t* outFilename,
       cout << "Run processed already" << endl;
       continue;
     }
-
     manager->SetRun(currRun);
 
-    // Get the GRP data. Only runs with a corresponding GRP entry in the OCDB 
+    // Get the GRP data. Only runs with a corresponding GRP entry in the OCDB
     // will be processed.
     time_t startTime = 0;
     time_t endTime = 0;
@@ -168,21 +172,14 @@ void DumpOCDBtoTree(const Char_t* outFilename,
     AliDCSSensor *cavern_pressure = 0x0;
     AliDCSSensor *surface_pressure = 0x0;
     UInt_t detectorMask = 0;
-    AliCDBEntry *entry = (getGRPInfo ? manager->Get("GRP/GRP/Data") : 0);
-    if(entry) {
-      entry->SetOwner(kFALSE);
-    }
-    AliGRPObject* grpObject = 0;
-    if(entry) 
-      grpObject = dynamic_cast<AliGRPObject*>(entry->GetObject());
-    else {
-      if(getGRPInfo) {
-	// add the run number to the list of rejected runs
-	rejectedRuns.ResizeTo(rejectedRuns.GetNoElements()+1);
-	rejectedRuns[rejectedRuns.GetNoElements()-1] = currRun;
-	continue;
+    if(getGRPInfo){
+      if(!(entry = GetCDBentry("GRP/GRP/Data", 0))) {
+        rejectedRuns.ResizeTo(rejectedRuns.GetNoElements()+1);
+        rejectedRuns[rejectedRuns.GetNoElements()-1] = currRun;
+        continue;
       }
     }
+    AliGRPObject* grpObject = dynamic_cast<AliGRPObject*>(entry->GetObject());
     if(grpObject) {
       startTime = grpObject->GetTimeStart();
       endTime = grpObject->GetTimeEnd();
@@ -192,27 +189,26 @@ void DumpOCDBtoTree(const Char_t* outFilename,
       detectorMask = grpObject->GetDetectorMask();
       TTimeStamp start(grpObject->GetTimeStart());
       TTimeStamp end(grpObject->GetTimeEnd());
-      cout << "Start time: " << start.GetDate()/10000 << "/" 
-	   << (start.GetDate()/100)-(start.GetDate()/10000)*100 << "/" 
-	   << start.GetDate()%100 << "   "
-	   << start.GetTime()/10000 << ":"
-	   << (start.GetTime()/100)-(start.GetTime()/10000)*100 << ":" 
-	   << start.GetTime()%100 << endl;
-      cout << "End time: " << end.GetDate()/10000 << "/" 
-	   << (end.GetDate()/100)-(end.GetDate()/10000)*100 << "/" 
-	   << end.GetDate()%100 << "   "
-	   << end.GetTime()/10000 << ":"
-	   << (end.GetTime()/100)-(end.GetTime()/10000)*100 << ":"
-	   << end.GetTime()%100 << endl;
-      cout << "Run type = " << grpObject->GetRunType().Data() << endl;
-    }
-    else {
+      cout << "   Start time: " << start.GetDate()/10000 << "/"
+      << (start.GetDate()/100)-(start.GetDate()/10000)*100 << "/"
+      << start.GetDate()%100 << "   "
+      << start.GetTime()/10000 << ":"
+      << (start.GetTime()/100)-(start.GetTime()/10000)*100 << ":"
+      << start.GetTime()%100 << endl;
+      cout << "   End time: " << end.GetDate()/10000 << "/"
+      << (end.GetDate()/100)-(end.GetDate()/10000)*100 << "/"
+      << end.GetDate()%100 << "   "
+      << end.GetTime()/10000 << ":"
+      << (end.GetTime()/100)-(end.GetTime()/10000)*100 << ":"
+      << end.GetTime()%100 << endl;
+      cout << "   Run type = " << grpObject->GetRunType().Data() << endl;
+    } else {
       if(getGRPInfo) {
-	cout << "No GRP info available --> skiping this run!" << endl;
-	// add the run number to the list of rejected runs
-	rejectedRuns.ResizeTo(rejectedRuns.GetNoElements()+1);
-	rejectedRuns[rejectedRuns.GetNoElements()-1] = currRun;
-	continue;
+        cout << "No GRP info available --> skiping this run!" << endl;
+        // add the run number to the list of rejected runs
+        rejectedRuns.ResizeTo(rejectedRuns.GetNoElements()+1);
+        rejectedRuns[rejectedRuns.GetNoElements()-1] = currRun;
+        continue;
       }
     }
 
@@ -243,87 +239,44 @@ void DumpOCDBtoTree(const Char_t* outFilename,
 
     if(getHVInfo) {
       // anode hv currents (per chamber)
-      entry = manager->Get("TRD/Calib/trd_hvAnodeImon");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	anodeISensors = (AliTRDSensorArray*)entry->GetObject();
-      }
-
+      if((entry = GetCDBentry("TRD/Calib/trd_hvAnodeImon"))) anodeISensors = (AliTRDSensorArray*)entry->GetObject();
       // anode hv voltages (per chamber)
-      entry = manager->Get("TRD/Calib/trd_hvAnodeUmon");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	anodeUSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
-
+      if((entry = GetCDBentry("TRD/Calib/trd_hvAnodeUmon"))) anodeUSensors = (AliTRDSensorArray*)entry->GetObject();
       // drift hv currents (per chamber)
-      entry = manager->Get("TRD/Calib/trd_hvDriftImon");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	driftISensors = (AliTRDSensorArray*)entry->GetObject();
-      }
-    
+      if((entry = GetCDBentry("TRD/Calib/trd_hvDriftImon"))) driftISensors = (AliTRDSensorArray*)entry->GetObject();
       // drift hv voltages (per chamber)
-      entry = manager->Get("TRD/Calib/trd_hvDriftUmon");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	driftUSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
+      if((entry = GetCDBentry("TRD/Calib/trd_hvDriftUmon"))) driftUSensors = (AliTRDSensorArray*)entry->GetObject();
     }  // end if(getHVInfo)
 
     if(getStatusInfo) {
       // chamber status (from sensors)
-      entry = manager->Get("TRD/Calib/trd_chamberStatus");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	chamberStatusSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
+      if((entry = GetCDBentry("TRD/Calib/trd_chamberStatus"))) chamberStatusSensors = (AliTRDSensorArray*)entry->GetObject();
     }   // end if(getStatusInfo)
 
     if(getGasInfo) {
       // temperatures from chamber sensors (per chamber)
-      entry = manager->Get("TRD/Calib/trd_envTemp");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	temperatureSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
-    
+      if((entry = GetCDBentry("TRD/Calib/trd_envTemp"))) temperatureSensors = (AliTRDSensorArray*)entry->GetObject();
+
       // gas overpressure (per whole TRD)
-      entry = manager->Get("TRD/Calib/trd_gasOverpressure");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	overpressureSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
-    
+      if((entry = GetCDBentry("TRD/Calib/trd_gasOverpressure"))) overpressureSensors = (AliTRDSensorArray*)entry->GetObject();
+
       // gas CO2 fraction (whole TRD)
-      entry = manager->Get("TRD/Calib/trd_gasCO2");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	gasCO2Sensors = (AliTRDSensorArray*)entry->GetObject();
-      }
-    
+      if((entry = GetCDBentry("TRD/Calib/trd_gasCO2"))) gasCO2Sensors = (AliTRDSensorArray*)entry->GetObject();
+
       // gas H2O fraction (whole TRD)
-      entry = manager->Get("TRD/Calib/trd_gasH2O");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	gasH2OSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
-      
+      if((entry = GetCDBentry("TRD/Calib/trd_gasH2O"))) gasH2OSensors = (AliTRDSensorArray*)entry->GetObject();
+
       // gas O2 fraction (whole TRD)
-      entry = manager->Get("TRD/Calib/trd_gasO2");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	gasO2Sensors = (AliTRDSensorArray*)entry->GetObject();
-      }
-    
+      if((entry = GetCDBentry("TRD/Calib/trd_gasO2"))) gasO2Sensors = (AliTRDSensorArray*)entry->GetObject();
+
       // ADC Clk phase (whole TRD)
-/*
+  /*
       entry = manager->Get("TRD/Calib/trd_adcClkPhase");
       if(entry) {
-	entry->SetOwner(kTRUE);
-	adcClkPhaseSensors = (AliTRDSensorArray*)entry->GetObject();
+  entry->SetOwner(kTRUE);
+  adcClkPhaseSensors = (AliTRDSensorArray*)entry->GetObject();
       }
-*/
+  */
     }  // end if getGasInfo
 
 
@@ -338,21 +291,15 @@ void DumpOCDBtoTree(const Char_t* outFilename,
     TVectorD smRMSGain(AliTRDcalibDB::kNsector);
     TString parName("Gain");
     if(getCalibrationInfo) {
-      entry = manager->Get("TRD/Calib/ChamberGainFactor");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	chamberGainFactor = (AliTRDCalDet*)entry->GetObject();
-      }
-      entry = manager->Get("TRD/Calib/LocalGainFactor");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	padGainFactor = (AliTRDCalPad*)entry->GetObject();
-      }
-      ProcessTRDCalibArray(chamberGainFactor, padGainFactor, 
-			   parName,
-			   runMeanGain, runRMSGain,
-			   chamberMeanGain, chamberRMSGain,
-			   smMeanGain, smRMSGain);
+      if((entry = GetCDBentry("TRD/Calib/ChamberGainFactor", 0))) chamberGainFactor = (AliTRDCalDet*)entry->GetObject();
+
+      if((entry = GetCDBentry("TRD/Calib/LocalGainFactor", 0))) padGainFactor = (AliTRDCalPad*)entry->GetObject();
+
+      ProcessTRDCalibArray(chamberGainFactor, padGainFactor,
+          parName,
+          runMeanGain, runRMSGain,
+          chamberMeanGain, chamberRMSGain,
+          smMeanGain, smRMSGain);
     }
 
     // process pedestals
@@ -365,21 +312,15 @@ void DumpOCDBtoTree(const Char_t* outFilename,
     TVectorD smRMSNoise(AliTRDcalibDB::kNsector);
     parName = "Noise";
     if(getCalibrationInfo) {
-      entry = manager->Get("TRD/Calib/DetNoise");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	chamberNoise = (AliTRDCalDet*)entry->GetObject();
-      }
-      entry = manager->Get("TRD/Calib/PadNoise");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	padNoise = (AliTRDCalPad*)entry->GetObject();
-      }
-      ProcessTRDCalibArray(chamberNoise, padNoise, 
-			   parName,
-			   runMeanNoise, runRMSNoise,
-			   chamberMeanNoise, chamberRMSNoise,
-			   smMeanNoise, smRMSNoise);
+      if((entry = GetCDBentry("TRD/Calib/DetNoise", 0))) chamberNoise = (AliTRDCalDet*)entry->GetObject();
+
+      if((entry = GetCDBentry("TRD/Calib/PadNoise", 0))) padNoise = (AliTRDCalPad*)entry->GetObject();
+
+      ProcessTRDCalibArray(chamberNoise, padNoise,
+          parName,
+          runMeanNoise, runRMSNoise,
+          chamberMeanNoise, chamberRMSNoise,
+          smMeanNoise, smRMSNoise);
     }
 
     // process drift velocity
@@ -392,23 +333,17 @@ void DumpOCDBtoTree(const Char_t* outFilename,
     TVectorD smRMSVdrift(AliTRDcalibDB::kNsector);
     parName = "Vdrift";
     if(getCalibrationInfo) {
-      entry = manager->Get("TRD/Calib/ChamberVdrift");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	chamberVdrift = (AliTRDCalDet*)entry->GetObject();
-      }
-      entry = manager->Get("TRD/Calib/LocalVdrift");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	padVdrift = (AliTRDCalPad*)entry->GetObject();
-      }
-      ProcessTRDCalibArray(chamberVdrift, padVdrift, 
-			   parName,
-			   runMeanVdrift, runRMSVdrift,
-			   chamberMeanVdrift, chamberRMSVdrift,
-			   smMeanVdrift, smRMSVdrift);
+      if((entry = GetCDBentry("TRD/Calib/ChamberVdrift", 0))) chamberVdrift = (AliTRDCalDet*)entry->GetObject();
+
+      if((entry = GetCDBentry("TRD/Calib/LocalVdrift", 0))) padVdrift = (AliTRDCalPad*)entry->GetObject();
+
+      ProcessTRDCalibArray(chamberVdrift, padVdrift,
+          parName,
+          runMeanVdrift, runRMSVdrift,
+          chamberMeanVdrift, chamberRMSVdrift,
+          smMeanVdrift, smRMSVdrift);
     }
-    
+
     // process T0
     AliTRDCalDet *chamberT0 = 0;
     AliTRDCalPad *padT0 = 0;
@@ -419,22 +354,16 @@ void DumpOCDBtoTree(const Char_t* outFilename,
     TVectorD smRMST0(AliTRDcalibDB::kNsector);
     parName = "T0";
     if(getCalibrationInfo) {
-      entry = manager->Get("TRD/Calib/ChamberT0");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	chamberT0 = (AliTRDCalDet*)entry->GetObject();
-      }
-      entry = manager->Get("TRD/Calib/LocalT0");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	padT0 = (AliTRDCalPad*)entry->GetObject();
-      }
-      ProcessTRDCalibArray(chamberT0, padT0, 
-			   parName,
-			   runMeanT0, runRMST0,
-			   chamberMeanT0, chamberRMST0,
-			   smMeanT0, smRMST0);
-    }    
+      if((entry = GetCDBentry("TRD/Calib/ChamberT0", 0))) chamberT0 = (AliTRDCalDet*)entry->GetObject();
+
+      if((entry = GetCDBentry("TRD/Calib/LocalT0", 0))) padT0 = (AliTRDCalPad*)entry->GetObject();
+
+      ProcessTRDCalibArray(chamberT0, padT0,
+          parName,
+          runMeanT0, runRMST0,
+          chamberMeanT0, chamberRMST0,
+          smMeanT0, smRMST0);
+    }
 
     // process pad and chamber status
     AliTRDCalChamberStatus* chamberStatus = 0;
@@ -443,19 +372,13 @@ void DumpOCDBtoTree(const Char_t* outFilename,
     TVectorD chamberBadPadFraction(AliTRDcalibDB::kNdet);
     TVectorD chamberStatusValues(AliTRDcalibDB::kNdet);
     if(getCalibrationInfo) {
-      entry = manager->Get("TRD/Calib/ChamberStatus");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	chamberStatus = (AliTRDCalChamberStatus*)entry->GetObject();
-      }
-      entry = manager->Get("TRD/Calib/PadStatus");
-      if(entry) {
-	entry->SetOwner(kFALSE);
-	padStatus = (AliTRDCalPadStatus*)entry->GetObject();
-      }
-      ProcessTRDstatus(chamberStatus, padStatus, 
-		       runBadPadFraction, chamberBadPadFraction,
-		       chamberStatusValues);
+      if((entry = GetCDBentry("TRD/Calib/ChamberStatus", 0))) chamberStatus = (AliTRDCalChamberStatus*)entry->GetObject();
+
+      if((entry = GetCDBentry("TRD/Calib/PadStatus", 0))) padStatus = (AliTRDCalPadStatus*)entry->GetObject();
+
+      ProcessTRDstatus(chamberStatus, padStatus,
+            runBadPadFraction, chamberBadPadFraction,
+            chamberStatusValues);
     }
 
     // get Goofie information
@@ -469,51 +392,29 @@ void DumpOCDBtoTree(const Char_t* outFilename,
 
     if(getGoofieInfo) {
       // goofie gain
-      entry = manager->Get("TRD/Calib/trd_goofieGain");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	goofieGainSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
+      if((entry = GetCDBentry("TRD/Calib/trd_goofieGain"))) goofieGainSensors = (AliTRDSensorArray*)entry->GetObject();
+
       // goofie HV
-      entry = manager->Get("TRD/Calib/trd_goofieHv");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	goofieHvSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
+      if((entry = GetCDBentry("TRD/Calib/trd_goofieHv"))) goofieHvSensors = (AliTRDSensorArray*)entry->GetObject();
+
       // goofie pressure
-      entry = manager->Get("TRD/Calib/trd_goofiePressure");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	goofiePressureSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
+      if((entry = GetCDBentry("TRD/Calib/trd_goofiePressure"))) goofiePressureSensors = (AliTRDSensorArray*)entry->GetObject();
+
       // goofie temperature
-      entry = manager->Get("TRD/Calib/trd_goofieTemp");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	goofieTempSensors = (AliTRDSensorArray*)entry->GetObject();
-      }
+      if((entry = GetCDBentry("TRD/Calib/trd_goofieTemp"))) goofieTempSensors = (AliTRDSensorArray*)entry->GetObject();
+
       // goofie drift velocity
-      entry = manager->Get("TRD/Calib/trd_goofieVelocity");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	goofieVelocitySensors = (AliTRDSensorArray*)entry->GetObject();
-      }
+      if((entry = GetCDBentry("TRD/Calib/trd_goofieVelocity"))) goofieVelocitySensors = (AliTRDSensorArray*)entry->GetObject();
+
       // goofie CO2
-      entry = manager->Get("TRD/Calib/trd_goofieCO2");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	goofieCO2Sensors = (AliTRDSensorArray*)entry->GetObject();
-      }
+      if((entry = GetCDBentry("TRD/Calib/trd_goofieCO2"))) goofieCO2Sensors = (AliTRDSensorArray*)entry->GetObject();
+
       // goofie N2
-      entry = manager->Get("TRD/Calib/trd_goofieN2");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	goofieN2Sensors = (AliTRDSensorArray*)entry->GetObject();
-      }
+      if((entry = GetCDBentry("TRD/Calib/trd_goofieN2"))) goofieN2Sensors = (AliTRDSensorArray*)entry->GetObject();
     }   // end if getGoofieInfo
 
     // process the DCS FEE arrays
-    Int_t nSB1 = 0; Int_t nSB2 = 0; Int_t nSB3 = 0; Int_t nSB4 = 0; Int_t nSB5 = 0; 
+    Int_t nSB1 = 0; Int_t nSB2 = 0; Int_t nSB3 = 0; Int_t nSB4 = 0; Int_t nSB5 = 0;
     Int_t nChanged = 0;
     Bool_t sorAndEor = kFALSE;
     TVectorD statusArraySOR(AliTRDcalibDB::kNdet);
@@ -540,265 +441,240 @@ void DumpOCDBtoTree(const Char_t* outFilename,
       TObjArray *objArrayCDB = 0;
       AliTRDCalDCS* calDCSsor = 0x0;
       AliTRDCalDCS* calDCSeor = 0x0;
-      entry = manager->Get("TRD/Calib/DCS");
-      if(entry) {
-	entry->SetOwner(kTRUE);
-	objArrayCDB = (TObjArray*)entry->GetObject();
-	if(objArrayCDB) {
-	  objArrayCDB->SetOwner(kTRUE);
-	  calDCSsor = (AliTRDCalDCS*)objArrayCDB->At(0);
-	  calDCSeor = (AliTRDCalDCS*)objArrayCDB->At(1);
-	}
+      if((entry = GetCDBentry("TRD/Calib/DCS"))) objArrayCDB = (TObjArray*)entry->GetObject();
+      if(objArrayCDB) {
+        objArrayCDB->SetOwner(kTRUE);
+        calDCSsor = (AliTRDCalDCS*)objArrayCDB->At(0);
+        calDCSeor = (AliTRDCalDCS*)objArrayCDB->At(1);
+
+        ProcessTRDCalDCSFEE(calDCSsor, calDCSeor,
+          nSB1, nSB2, nSB3, nSB4, nSB5,
+          nChanged, sorAndEor, statusArraySOR, statusArrayEOR);
       }
-      ProcessTRDCalDCSFEE(calDCSsor, calDCSeor, 
-			  nSB1, nSB2, nSB3, nSB4, nSB5, 
-			  nChanged, sorAndEor, statusArraySOR, statusArrayEOR);
-      
       if(calDCSsor || calDCSeor) {
-	AliTRDCalDCS *caldcs = 0;
-	if(calDCSsor) caldcs = calDCSsor;
-	else caldcs = calDCSeor;
-	dcsFeeGlobalNTimeBins = caldcs->GetGlobalNumberOfTimeBins();
-	dcsFeeGlobalConfigTag = caldcs->GetGlobalConfigTag();
-	dcsFeeGlobalSingleHitThres = caldcs->GetGlobalSingleHitThres();
-	dcsFeeGlobalThreePadClustThres = caldcs->GetGlobalThreePadClustThres();
-	dcsFeeGlobalSelectiveNoSZ = caldcs->GetGlobalSelectiveNoZS();
-	dcsFeeGlobalTCFilterWeight = caldcs->GetGlobalTCFilterWeight();
-	dcsFeeGlobalTCFilterShortDecPar = caldcs->GetGlobalTCFilterShortDecPar();
-	dcsFeeGlobalTCFilterLongDecPar = caldcs->GetGlobalTCFilterLongDecPar();
-	dcsFeeGlobalModeFastStatNoise = caldcs->GetGlobalModeFastStatNoise();
-	dcsFeeGlobalConfigVersion = caldcs->GetGlobalConfigVersion().Data();
-	dcsFeeGlobalConfigName = caldcs->GetGlobalConfigName().Data();
-	dcsFeeGlobalFilterType = caldcs->GetGlobalFilterType().Data();
-	dcsFeeGlobalReadoutParam = caldcs->GetGlobalReadoutParam().Data();
-	dcsFeeGlobalTestPattern = caldcs->GetGlobalTestPattern().Data();
-	dcsFeeGlobalTrackletMode = caldcs->GetGlobalTrackletMode().Data();
-	dcsFeeGlobalTrackletDef = caldcs->GetGlobalTrackletDef().Data();
-	dcsFeeGlobalTriggerSetup = caldcs->GetGlobalTriggerSetup().Data();
-	dcsFeeGlobalAddOptions = caldcs->GetGlobalAddOptions().Data();
+        AliTRDCalDCS *caldcs = 0;
+        if(calDCSsor) caldcs = calDCSsor;
+        else caldcs = calDCSeor;
+        dcsFeeGlobalNTimeBins = caldcs->GetGlobalNumberOfTimeBins();
+        dcsFeeGlobalConfigTag = caldcs->GetGlobalConfigTag();
+        dcsFeeGlobalSingleHitThres = caldcs->GetGlobalSingleHitThres();
+        dcsFeeGlobalThreePadClustThres = caldcs->GetGlobalThreePadClustThres();
+        dcsFeeGlobalSelectiveNoSZ = caldcs->GetGlobalSelectiveNoZS();
+        dcsFeeGlobalTCFilterWeight = caldcs->GetGlobalTCFilterWeight();
+        dcsFeeGlobalTCFilterShortDecPar = caldcs->GetGlobalTCFilterShortDecPar();
+        dcsFeeGlobalTCFilterLongDecPar = caldcs->GetGlobalTCFilterLongDecPar();
+        dcsFeeGlobalModeFastStatNoise = caldcs->GetGlobalModeFastStatNoise();
+        dcsFeeGlobalConfigVersion = caldcs->GetGlobalConfigVersion().Data();
+        dcsFeeGlobalConfigName = caldcs->GetGlobalConfigName().Data();
+        dcsFeeGlobalFilterType = caldcs->GetGlobalFilterType().Data();
+        dcsFeeGlobalReadoutParam = caldcs->GetGlobalReadoutParam().Data();
+        dcsFeeGlobalTestPattern = caldcs->GetGlobalTestPattern().Data();
+        dcsFeeGlobalTrackletMode = caldcs->GetGlobalTrackletMode().Data();
+        dcsFeeGlobalTrackletDef = caldcs->GetGlobalTrackletDef().Data();
+        dcsFeeGlobalTriggerSetup = caldcs->GetGlobalTriggerSetup().Data();
+        dcsFeeGlobalAddOptions = caldcs->GetGlobalAddOptions().Data();
       }
       if(objArrayCDB) objArrayCDB->RemoveAll();
     }   // end if(getDCSInfo)
-       
+
 
     // loop over time steps
     for(UInt_t iTime = (getGRPInfo ? startTime : 0); iTime<=(getGRPInfo ? endTime : 0); iTime += (getGRPInfo ? dTime : 1)) {
       // time stamp
       TTimeStamp iStamp(iTime);
-      cout << "time step  " << iStamp.GetDate()/10000 << "/" 
-	   << (iStamp.GetDate()/100)-(iStamp.GetDate()/10000)*100 << "/" 
-	   << iStamp.GetDate()%100 << "   "
-	   << iStamp.GetTime()/10000 << ":"
-	   << (iStamp.GetTime()/100)-(iStamp.GetTime()/10000)*100 << ":" 
-	   << iStamp.GetTime()%100 << endl;
-      
+      cout << "time step  " << iStamp.GetDate()/10000 << "/"
+      << (iStamp.GetDate()/100)-(iStamp.GetDate()/10000)*100 << "/"
+      << iStamp.GetDate()%100 << "   "
+      << iStamp.GetTime()/10000 << ":"
+      << (iStamp.GetTime()/100)-(iStamp.GetTime()/10000)*100 << ":"
+      << iStamp.GetTime()%100 << endl;
+
       // cavern pressure
       Float_t pressure = -99.;
       Bool_t inside=kFALSE;
-      if(cavern_pressure) 
-	pressure = cavern_pressure->Eval(iStamp,inside);
-            
+      if(cavern_pressure) pressure = cavern_pressure->Eval(iStamp,inside);
+
       // surface pressure
       Float_t surfacePressure = -99.;
-      if(surface_pressure) 
-	surfacePressure = surface_pressure->Eval(iStamp,inside);
-            
+      if(surface_pressure) surfacePressure = surface_pressure->Eval(iStamp,inside);
+
       // anode I sensors
       TVectorD anodeIValues(AliTRDcalibDB::kNdet);
-      if(anodeISensors) 
-	ProcessTRDSensorArray(anodeISensors, iStamp, anodeIValues);
-            
+      if(anodeISensors) ProcessTRDSensorArray(anodeISensors, iStamp, anodeIValues);
+
       // anode U sensors
       TVectorD anodeUValues(AliTRDcalibDB::kNdet);
-      if(anodeUSensors) 
-	ProcessTRDSensorArray(anodeUSensors, iStamp, anodeUValues);
-            
+      if(anodeUSensors) ProcessTRDSensorArray(anodeUSensors, iStamp, anodeUValues);
+
       // drift I sensors
       TVectorD driftIValues(AliTRDcalibDB::kNdet);
-      if(driftISensors) 
-	ProcessTRDSensorArray(driftISensors, iStamp, driftIValues);
-      
+      if(driftISensors) ProcessTRDSensorArray(driftISensors, iStamp, driftIValues);
+
       // drift U sensors
       TVectorD driftUValues(AliTRDcalibDB::kNdet);
-      if(driftUSensors) 
-	ProcessTRDSensorArray(driftUSensors, iStamp, driftUValues);
-      
+      if(driftUSensors) ProcessTRDSensorArray(driftUSensors, iStamp, driftUValues);
+
       // chamber temperatures
       TVectorD envTempValues(AliTRDcalibDB::kNdet);
-      if(temperatureSensors) 
-	ProcessTRDSensorArray(temperatureSensors, iStamp, envTempValues);
+      if(temperatureSensors) ProcessTRDSensorArray(temperatureSensors, iStamp, envTempValues);
 
       // chamber status sensors
       TVectorD statusValues(AliTRDcalibDB::kNdet);
-      if(chamberStatusSensors)
-	ProcessTRDSensorArray(chamberStatusSensors, iStamp, statusValues);
+      if(chamberStatusSensors) ProcessTRDSensorArray(chamberStatusSensors, iStamp, statusValues);
 
       // gas overpressure
       TVectorD overpressureValues(overpressureSensors ? overpressureSensors->NumSensors() : 0);
-      if(overpressureSensors)
-	ProcessTRDSensorArray(overpressureSensors, iStamp, overpressureValues);
-      
+      if(overpressureSensors) ProcessTRDSensorArray(overpressureSensors, iStamp, overpressureValues);
+
       // gas CO2
       TVectorD gasCO2Values(gasCO2Sensors ? gasCO2Sensors->NumSensors() : 0);
-      if(gasCO2Sensors)
-	ProcessTRDSensorArray(gasCO2Sensors, iStamp, gasCO2Values);
-      
+      if(gasCO2Sensors) ProcessTRDSensorArray(gasCO2Sensors, iStamp, gasCO2Values);
+
       // gas H2O
       TVectorD gasH2OValues(gasH2OSensors ? gasH2OSensors->NumSensors() : 0);
-      if(gasH2OSensors)
-	ProcessTRDSensorArray(gasH2OSensors, iStamp, gasH2OValues);
-      
+      if(gasH2OSensors) ProcessTRDSensorArray(gasH2OSensors, iStamp, gasH2OValues);
+
       // gas O2
       TVectorD gasO2Values(gasO2Sensors ? gasO2Sensors->NumSensors() : 0);
-      if(gasO2Sensors)
-	ProcessTRDSensorArray(gasO2Sensors, iStamp, gasO2Values);
-      
+      if(gasO2Sensors) ProcessTRDSensorArray(gasO2Sensors, iStamp, gasO2Values);
+
       // ADC Clk phase
       //TVectorD adcClkPhaseValues(adcClkPhaseSensors ? adcClkPhaseSensors->NumSensors() : 0);
-      //if(adcClkPhaseSensors)
-//	ProcessTRDSensorArray(adcClkPhaseSensors, iStamp, adcClkPhaseValues);
+      //if(adcClkPhaseSensors) ProcessTRDSensorArray(adcClkPhaseSensors, iStamp, adcClkPhaseValues);
 
       // goofie gain
       TVectorD goofieGainValues(goofieGainSensors ? goofieGainSensors->NumSensors() : 0);
-      if(goofieGainSensors)
-	ProcessTRDSensorArray(goofieGainSensors, iStamp, goofieGainValues);
+      if(goofieGainSensors) ProcessTRDSensorArray(goofieGainSensors, iStamp, goofieGainValues);
 
       // goofie HV
       TVectorD goofieHvValues(goofieHvSensors ? goofieHvSensors->NumSensors() : 0);
-      if(goofieHvSensors)
-	ProcessTRDSensorArray(goofieHvSensors, iStamp, goofieHvValues);
+      if(goofieHvSensors) ProcessTRDSensorArray(goofieHvSensors, iStamp, goofieHvValues);
 
       // goofie pressure
       TVectorD goofiePressureValues(goofiePressureSensors ? goofiePressureSensors->NumSensors() : 0);
-      if(goofiePressureSensors)
-	ProcessTRDSensorArray(goofiePressureSensors, iStamp, goofiePressureValues);
-      
+      if(goofiePressureSensors) ProcessTRDSensorArray(goofiePressureSensors, iStamp, goofiePressureValues);
+
       // goofie temperature
       TVectorD goofieTempValues(goofieTempSensors ? goofieTempSensors->NumSensors() : 0);
-      if(goofieTempSensors) 
-	ProcessTRDSensorArray(goofieTempSensors, iStamp, goofieTempValues);
-      
+      if(goofieTempSensors) ProcessTRDSensorArray(goofieTempSensors, iStamp, goofieTempValues);
+
       // goofie drift velocity
       TVectorD goofieVelocityValues(goofieVelocitySensors ? goofieVelocitySensors->NumSensors() : 0);
-      if(goofieVelocitySensors) 
-	ProcessTRDSensorArray(goofieVelocitySensors, iStamp, goofieVelocityValues);
-      
+      if(goofieVelocitySensors) ProcessTRDSensorArray(goofieVelocitySensors, iStamp, goofieVelocityValues);
+
       // goofie CO2
       TVectorD goofieCO2Values(goofieCO2Sensors ? goofieCO2Sensors->NumSensors() : 0);
-      if(goofieCO2Sensors) 
-	ProcessTRDSensorArray(goofieCO2Sensors, iStamp, goofieCO2Values);
-      
+      if(goofieCO2Sensors) ProcessTRDSensorArray(goofieCO2Sensors, iStamp, goofieCO2Values);
+
       // goofie N2
       TVectorD goofieN2Values(goofieN2Sensors ? goofieN2Sensors->NumSensors() : 0);
-      if(goofieN2Sensors) 
-	ProcessTRDSensorArray(goofieN2Sensors, iStamp, goofieN2Values);
-      
-            
+      if(goofieN2Sensors) ProcessTRDSensorArray(goofieN2Sensors, iStamp, goofieN2Values);
+
       // fill the tree
       (*treeStreamer)<< "trdTree"
-		     << "run=" << currRun
-		     << "time=" << iTime
-		     << "runType.=" << &runType;
+          << "run=" << currRun
+          << "time=" << iTime
+          << "runType.=" << &runType;
       if(getGRPInfo) {
-	(*treeStreamer)<< "trdTree"
-		       << "startTimeGRP=" << startTime
-		       << "endTimeGRP=" << endTime
-		       << "cavernPressure=" << pressure
-		       << "surfacePressure=" << surfacePressure
-		       << "detectorMask=" << detectorMask;
+        (*treeStreamer)<< "trdTree"
+            << "startTimeGRP=" << startTime
+            << "endTimeGRP=" << endTime
+            << "cavernPressure=" << pressure
+            << "surfacePressure=" << surfacePressure
+            << "detectorMask=" << detectorMask;
       }
       if(getHVInfo) {
-	(*treeStreamer)<< "trdTree"
-		       << "hvAnodeI.=" << &anodeIValues
-		       << "hvAnodeU.=" << &anodeUValues
-		       << "hvDriftI.=" << &driftIValues
-		       << "hvDriftU.=" << &driftUValues;
+        (*treeStreamer)<< "trdTree"
+            << "hvAnodeI.=" << &anodeIValues
+            << "hvAnodeU.=" << &anodeUValues
+            << "hvDriftI.=" << &driftIValues
+            << "hvDriftU.=" << &driftUValues;
       }
       if(getStatusInfo) {
-	(*treeStreamer)<< "trdTree"
-		       << "sensorStatusValues.=" << &statusValues;
+        (*treeStreamer)<< "trdTree"
+            << "sensorStatusValues.=" << &statusValues;
       }
       if(getGasInfo) {
-	(*treeStreamer)<< "trdTree"
-		       << "envTemp.=" << &envTempValues
-		       << "gasOverPressure.=" << &overpressureValues
-		       << "gasCO2.=" << &gasCO2Values
-		       << "gasH2O.=" << &gasH2OValues
-		       << "gasO2.=" << &gasO2Values;
-		       //<< "adcClkPhase.=" << &adcClkPhaseValues;
+        (*treeStreamer)<< "trdTree"
+            << "envTemp.=" << &envTempValues
+            << "gasOverPressure.=" << &overpressureValues
+            << "gasCO2.=" << &gasCO2Values
+            << "gasH2O.=" << &gasH2OValues
+            << "gasO2.=" << &gasO2Values;
+            //<< "adcClkPhase.=" << &adcClkPhaseValues;
       }
       if(getGoofieInfo) {
-	(*treeStreamer)<< "trdTree"
-		       << "goofieGain.=" << &goofieGainValues
-		       << "goofieHV.=" << &goofieHvValues
-		       << "goofiePressure.=" << &goofiePressureValues
-		       << "goofieTemp.=" << &goofieTempValues
-		       << "goofieVelocity.=" << &goofieVelocityValues
-		       << "goofieCO2.=" << &goofieCO2Values
-		       << "goofieN2.=" << &goofieN2Values;
+  (*treeStreamer)<< "trdTree"
+            << "goofieGain.=" << &goofieGainValues
+            << "goofieHV.=" << &goofieHvValues
+            << "goofiePressure.=" << &goofiePressureValues
+            << "goofieTemp.=" << &goofieTempValues
+            << "goofieVelocity.=" << &goofieVelocityValues
+            << "goofieCO2.=" << &goofieCO2Values
+            << "goofieN2.=" << &goofieN2Values;
       }
       if(getCalibrationInfo) {
-	(*treeStreamer)<< "trdTree"
-		       << "runMeanGain=" << runMeanGain
-		       << "runRMSGain=" << runRMSGain
-		       << "smMeanGain.=" << &smMeanGain
-		       << "smRMSGain.=" << &smRMSGain
-		       << "chamberMeanGain.=" << &chamberMeanGain
-		       << "chamberRMSGain.=" << &chamberRMSGain
-		       << "runMeanNoise=" << runMeanNoise
-		       << "runRMSNoise=" << runRMSNoise
-		       << "smMeanNoise.=" << &smMeanNoise
-		       << "smRMSNoise.=" << &smRMSNoise
-		       << "chamberMeanNoise.=" << &chamberMeanNoise
-		       << "chamberRMSNoise.=" << &chamberRMSNoise
-		       << "runMeanVdrift=" << runMeanVdrift
-		       << "runRMSVdrift=" << runRMSVdrift
-		       << "smMeanVdrift.=" << &smMeanVdrift
-		       << "smRMSVdrift.=" << &smRMSVdrift
-		       << "chamberMeanVdrift.=" << &chamberMeanVdrift
-		       << "chamberRMSVdrift.=" << &chamberRMSVdrift
-		       << "runMeanT0=" << runMeanT0
-		       << "runRMST0=" << runRMST0
-		       << "smMeanT0.=" << &smMeanT0
-		       << "smRMST0.=" << &smRMST0
-		       << "chamberMeanT0.=" << &chamberMeanT0
-		       << "chamberRMST0.=" << &chamberRMST0
-		       << "runBadPadFraction=" << runBadPadFraction
-		       << "chamberBadPadFraction.=" << &chamberBadPadFraction
-		       << "chamberStatusValues.=" << &chamberStatusValues;
+        (*treeStreamer)<< "trdTree"
+            << "runMeanGain=" << runMeanGain
+            << "runRMSGain=" << runRMSGain
+            << "smMeanGain.=" << &smMeanGain
+            << "smRMSGain.=" << &smRMSGain
+            << "chamberMeanGain.=" << &chamberMeanGain
+            << "chamberRMSGain.=" << &chamberRMSGain
+            << "runMeanNoise=" << runMeanNoise
+            << "runRMSNoise=" << runRMSNoise
+            << "smMeanNoise.=" << &smMeanNoise
+            << "smRMSNoise.=" << &smRMSNoise
+            << "chamberMeanNoise.=" << &chamberMeanNoise
+            << "chamberRMSNoise.=" << &chamberRMSNoise
+            << "runMeanVdrift=" << runMeanVdrift
+            << "runRMSVdrift=" << runRMSVdrift
+            << "smMeanVdrift.=" << &smMeanVdrift
+            << "smRMSVdrift.=" << &smRMSVdrift
+            << "chamberMeanVdrift.=" << &chamberMeanVdrift
+            << "chamberRMSVdrift.=" << &chamberRMSVdrift
+            << "runMeanT0=" << runMeanT0
+            << "runRMST0=" << runRMST0
+            << "smMeanT0.=" << &smMeanT0
+            << "smRMST0.=" << &smRMST0
+            << "chamberMeanT0.=" << &chamberMeanT0
+            << "chamberRMST0.=" << &chamberRMST0
+            << "runBadPadFraction=" << runBadPadFraction
+            << "chamberBadPadFraction.=" << &chamberBadPadFraction
+            << "chamberStatusValues.=" << &chamberStatusValues;
       }
       if(getDCSInfo) {
-	(*treeStreamer)<< "trdTree" 
-		       << "dcsFeeGlobalNTimeBins=" << dcsFeeGlobalNTimeBins
-		       << "dcsFeeGlobalConfigTag=" << dcsFeeGlobalConfigTag
-		       << "dcsFeeGlobalSingleHitThres=" << dcsFeeGlobalSingleHitThres
-		       << "dcsFeeGlobalThreePadClustThres=" << dcsFeeGlobalThreePadClustThres
-		       << "dcsFeeGlobalSelectiveNoSZ=" << dcsFeeGlobalSelectiveNoSZ
-		       << "dcsFeeGlobalTCFilterWeight=" << dcsFeeGlobalTCFilterWeight
-		       << "dcsFeeGlobalTCFilterShortDecPar=" << dcsFeeGlobalTCFilterShortDecPar
-		       << "dcsFeeGlobalTCFilterLongDecPar=" << dcsFeeGlobalTCFilterLongDecPar
-		       << "dcsFeeGlobalModeFastStatNoise=" << dcsFeeGlobalModeFastStatNoise
-	  //		     << "dcsFeeGlobalConfigVersion.=" << &dcsFeeGlobalConfigVersion
-	  //		     << "dcsFeeGlobalConfigName.=" << &dcsFeeGlobalConfigName
-	  //		     << "dcsFeeGlobalFilterType.=" << &dcsFeeGlobalFilterType
-	  //		     << "dcsFeeGlobalReadoutParam.=" << &dcsFeeGlobalReadoutParam
-	  //		     << "dcsFeeGlobalTestPattern.=" << &dcsFeeGlobalTestPattern
-	  //		     << "dcsFeeGlobalTrackletMode.=" << &dcsFeeGlobalTrackletMode
-	  //		     << "dcsFeeGlobalTrackletDef.=" << &dcsFeeGlobalTrackletDef
-	  //		     << "dcsFeeGlobalTriggerSetup.=" << &dcsFeeGlobalTriggerSetup
-	  //		     << "dcsFeeGlobalAddOptions.=" << &dcsFeeGlobalAddOptions
-		       << "statusDCSFEESOR.=" << &statusArraySOR
-		       << "statusDCSFEEEOR.=" << &statusArrayEOR
-		       << "SORandEOR=" << sorAndEor
-		       << "nChanged=" << nChanged
-		       << "nSB1=" << nSB1
-		       << "nSB2=" << nSB2
-		       << "nSB3=" << nSB3
-		       << "nSB4=" << nSB4
-		       << "nSB5=" << nSB5;
+        (*treeStreamer)<< "trdTree"
+            << "dcsFeeGlobalNTimeBins=" << dcsFeeGlobalNTimeBins
+            << "dcsFeeGlobalConfigTag=" << dcsFeeGlobalConfigTag
+            << "dcsFeeGlobalSingleHitThres=" << dcsFeeGlobalSingleHitThres
+            << "dcsFeeGlobalThreePadClustThres=" << dcsFeeGlobalThreePadClustThres
+            << "dcsFeeGlobalSelectiveNoSZ=" << dcsFeeGlobalSelectiveNoSZ
+            << "dcsFeeGlobalTCFilterWeight=" << dcsFeeGlobalTCFilterWeight
+            << "dcsFeeGlobalTCFilterShortDecPar=" << dcsFeeGlobalTCFilterShortDecPar
+            << "dcsFeeGlobalTCFilterLongDecPar=" << dcsFeeGlobalTCFilterLongDecPar
+            << "dcsFeeGlobalModeFastStatNoise=" << dcsFeeGlobalModeFastStatNoise
+    //		     << "dcsFeeGlobalConfigVersion.=" << &dcsFeeGlobalConfigVersion
+    //		     << "dcsFeeGlobalConfigName.=" << &dcsFeeGlobalConfigName
+    //		     << "dcsFeeGlobalFilterType.=" << &dcsFeeGlobalFilterType
+    //		     << "dcsFeeGlobalReadoutParam.=" << &dcsFeeGlobalReadoutParam
+    //		     << "dcsFeeGlobalTestPattern.=" << &dcsFeeGlobalTestPattern
+    //		     << "dcsFeeGlobalTrackletMode.=" << &dcsFeeGlobalTrackletMode
+    //		     << "dcsFeeGlobalTrackletDef.=" << &dcsFeeGlobalTrackletDef
+    //		     << "dcsFeeGlobalTriggerSetup.=" << &dcsFeeGlobalTriggerSetup
+    //		     << "dcsFeeGlobalAddOptions.=" << &dcsFeeGlobalAddOptions
+            << "statusDCSFEESOR.=" << &statusArraySOR
+            << "statusDCSFEEEOR.=" << &statusArrayEOR
+            << "SORandEOR=" << sorAndEor
+            << "nChanged=" << nChanged
+            << "nSB1=" << nSB1
+            << "nSB2=" << nSB2
+            << "nSB3=" << nSB3
+            << "nSB4=" << nSB4
+            << "nSB5=" << nSB5;
       }
       (*treeStreamer)<< "trdTree"
-		     << "\n";
+          << "\n";
     }  // end loop over time steps
 
     // add the run number to the list of runs
@@ -848,18 +724,18 @@ void DumpOCDBtoTree(const Char_t* outFilename,
   cout << "Loop over runs started at:  " << loopStartTime.AsString() << endl;
   cout << "Loop over runs ended at  :  " << loopEndTime.AsString() << endl;
   cout << "Job ended at             :  " << jobEndTime.AsString() << endl;
-  cout << "Initialization duration  :  " 
-       << loopStartTime.GetSec() - jobStartTime.GetSec() << " seconds" << endl;
-  cout << "Loop over runs duration  :  " 
-       << loopEndTime.GetSec() - loopStartTime.GetSec() << " seconds" << endl;
+  cout << "Initialization duration  :  "
+        << loopStartTime.GetSec() - jobStartTime.GetSec() << " seconds" << endl;
+  cout << "Loop over runs duration  :  "
+        << loopEndTime.GetSec() - loopStartTime.GetSec() << " seconds" << endl;
   cout << "Post loop                :  "
-       << jobEndTime.GetSec() - loopEndTime.GetSec() << " seconds" << endl;
+        << jobEndTime.GetSec() - loopEndTime.GetSec() << " seconds" << endl;
   cout << "Running time per processed run:  "
-       << (loopEndTime.GetSec()-loopStartTime.GetSec())/(runs.GetNoElements()>0 ? Double_t(runs.GetNoElements()) : 1.0)
-       << " sec./run" << endl;
+        << (loopEndTime.GetSec()-loopStartTime.GetSec())/(runs.GetNoElements()>0 ? Double_t(runs.GetNoElements()) : 1.0)
+        << " sec./run" << endl;
   cout << "Running time per input run:  "
-       << (loopEndTime.GetSec()-loopStartTime.GetSec())/((rejectedRuns.GetNoElements()+runs.GetNoElements())>0 ? Double_t(runs.GetNoElements()+rejectedRuns.GetNoElements()) : 1.0)
-       << " sec./run" << endl;
+        << (loopEndTime.GetSec()-loopStartTime.GetSec())/((rejectedRuns.GetNoElements()+runs.GetNoElements())>0 ? Double_t(runs.GetNoElements()+rejectedRuns.GetNoElements()) : 1.0)
+        << " sec./run" << endl;
 
   // print the runs that had problems
   cout << "number of rejected runs: " << rejectedRuns.GetNoElements() << endl;
@@ -871,10 +747,10 @@ void DumpOCDBtoTree(const Char_t* outFilename,
   }
   cout << "=============================================" << endl;
   return;
-}
+  }
 
-//__________________________________________________________________________________________
-void ProcessTRDSensorArray(AliTRDSensorArray *sensorArray, TTimeStamp timeStamp, TVectorD &values) {
+  //__________________________________________________________________________________________
+  void ProcessTRDSensorArray(AliTRDSensorArray *sensorArray, TTimeStamp timeStamp, TVectorD &values) {
   // Fill a vector with sensor values for a given time stamp
   // The sensor->Eval() method makes interpolation inside the covered time interval
   // and returns the value at the closest time limit (start or end) outside the covered time range
@@ -882,20 +758,20 @@ void ProcessTRDSensorArray(AliTRDSensorArray *sensorArray, TTimeStamp timeStamp,
   Bool_t inside=kFALSE;
   for(Int_t i=0; i<sensorArray->NumSensors(); i++) {
     sensor = sensorArray->GetSensorNum(i);
-    if(sensor && sensor->GetGraph()) 
+    if(sensor && sensor->GetGraph())
       values[i] = sensor->Eval(timeStamp,inside);
     else
       values[i] = -99.;
   }
   return;
-}
+  }
 
-//__________________________________________________________________________________________
-void ProcessTRDCalibArray(AliTRDCalDet* chamberCalib, AliTRDCalPad *padCalib,
-			  TString parName,
-			  Double_t &runValue, Double_t &runRMS,
-			  TVectorD &chamberValues, TVectorD &chamberValuesRMS,
-			  TVectorD &superModuleValues, TVectorD &superModuleValuesRMS) {
+  //__________________________________________________________________________________________
+  void ProcessTRDCalibArray(AliTRDCalDet* chamberCalib, AliTRDCalPad *padCalib,
+        TString parName,
+        Double_t &runValue, Double_t &runRMS,
+        TVectorD &chamberValues, TVectorD &chamberValuesRMS,
+        TVectorD &superModuleValues, TVectorD &superModuleValuesRMS) {
   // Process the calibrations for a given run.
   // Calculates the run and chamber wise averages
   //
@@ -911,31 +787,31 @@ void ProcessTRDCalibArray(AliTRDCalDet* chamberCalib, AliTRDCalPad *padCalib,
     gSuperModuleWiseHisto->Reset();
     // check if SM is installed
     if(!gkSuperModuleStatus[iSM]) continue;
-    for(Int_t iChamber=iSM*AliTRDcalibDB::kNstack*AliTRDcalibDB::kNlayer; 
-	iChamber < (iSM+1)*AliTRDcalibDB::kNstack*AliTRDcalibDB::kNlayer; 
-	iChamber++) {  // loop over chambers in this supermodule
+    for(Int_t iChamber=iSM*AliTRDcalibDB::kNstack*AliTRDcalibDB::kNlayer;
+  iChamber < (iSM+1)*AliTRDcalibDB::kNstack*AliTRDcalibDB::kNlayer;
+  iChamber++) {  // loop over chambers in this supermodule
       // get the chamber value
       Float_t chamberValue = chamberCalib->GetValue(iChamber);
       // get the ROC object
       AliTRDCalROC *chamberROC = padCalib->GetCalROC(iChamber);
-      if(!chamberROC) 
-	continue;
+      if(!chamberROC)
+  continue;
       gChamberWiseHisto->Reset();
       for(Int_t iChannel = 0; iChannel < chamberROC->GetNchannels(); iChannel++){ // loop over channels
-	// calculate the calibration parameter for this pad
-	Float_t padValue;
-	if(multiplicative)
-	  padValue = chamberValue * chamberROC->GetValue(iChannel);
-	else
-	  padValue = chamberValue + chamberROC->GetValue(iChannel);
-	// fill the run, SM and chamber wise histograms
-	gChamberWiseHisto->Fill(padValue);
-	// if the parameter is Noise then check if the pad value is not a default one
-	// Default value is now 1.2!!!! Check with Raphaelle for more informations
-	if(parName.Contains("Noise") &&
-	   TMath::Abs(padValue-1.2)<0.00001) continue;
-	gSuperModuleWiseHisto->Fill(padValue);
-	gRunWiseHisto->Fill(padValue);
+  // calculate the calibration parameter for this pad
+  Float_t padValue;
+  if(multiplicative)
+    padValue = chamberValue * chamberROC->GetValue(iChannel);
+  else
+    padValue = chamberValue + chamberROC->GetValue(iChannel);
+  // fill the run, SM and chamber wise histograms
+  gChamberWiseHisto->Fill(padValue);
+  // if the parameter is Noise then check if the pad value is not a default one
+  // Default value is now 1.2!!!! Check with Raphaelle for more informations
+  if(parName.Contains("Noise") &&
+      TMath::Abs(padValue-1.2)<0.00001) continue;
+  gSuperModuleWiseHisto->Fill(padValue);
+  gRunWiseHisto->Fill(padValue);
       }  // end loop over channels
       // get the chamber wise mean and RMS
       chamberValues[iChamber] = gChamberWiseHisto->GetMean();
@@ -959,42 +835,42 @@ void ProcessTRDCalibArray(AliTRDCalDet* chamberCalib, AliTRDCalPad *padCalib,
     gSuperModuleWiseHisto->Reset();
     // eliminate the uninstalled super modules
     if(!gkSuperModuleStatus[iSM]) continue;
-    for(Int_t iChamber=iSM*AliTRDcalibDB::kNstack*AliTRDcalibDB::kNlayer; 
-	iChamber < (iSM+1)*AliTRDcalibDB::kNstack*AliTRDcalibDB::kNlayer; 
-	iChamber++) {  // loop over chambers
+    for(Int_t iChamber=iSM*AliTRDcalibDB::kNstack*AliTRDcalibDB::kNlayer;
+  iChamber < (iSM+1)*AliTRDcalibDB::kNstack*AliTRDcalibDB::kNlayer;
+  iChamber++) {  // loop over chambers
       // the chamber value
       Float_t chamberValue = chamberCalib->GetValue(iChamber);
       AliTRDCalROC *chamberROC = padCalib->GetCalROC(iChamber);
-      if(!chamberROC) 
-	continue;
-      
+      if(!chamberROC)
+  continue;
+
       for(Int_t iChannel = 0; iChannel < chamberROC->GetNchannels(); iChannel++){ // loop over channels in a chamber
-	// get the pad value
-	Float_t padValue;
-	if(multiplicative)
-	  padValue = chamberValue * chamberROC->GetValue(iChannel);
-	else
-	  padValue = chamberValue + chamberROC->GetValue(iChannel);
-	// eliminate from the average and RMS calculation all pads which
-	// have the calib parameter equal with the SM average
-	if((parName.Contains("Vdrift") || parName.Contains("T0")) && 
-	   TMath::Abs(padValue-superModuleValues[iSM])<0.00001) continue;
-	gSuperModuleWiseHisto->Fill(padValue);
-	gRunWiseHisto->Fill(padValue);
+  // get the pad value
+  Float_t padValue;
+  if(multiplicative)
+    padValue = chamberValue * chamberROC->GetValue(iChannel);
+  else
+    padValue = chamberValue + chamberROC->GetValue(iChannel);
+  // eliminate from the average and RMS calculation all pads which
+  // have the calib parameter equal with the SM average
+  if((parName.Contains("Vdrift") || parName.Contains("T0")) &&
+      TMath::Abs(padValue-superModuleValues[iSM])<0.00001) continue;
+  gSuperModuleWiseHisto->Fill(padValue);
+  gRunWiseHisto->Fill(padValue);
       }   // end loop over channels
-    }   // end loop over chambers 
+    }   // end loop over chambers
     superModuleValues[iSM] = gSuperModuleWiseHisto->GetMean();
     superModuleValuesRMS[iSM] = gSuperModuleWiseHisto->GetRMS();
   }   // end loop over super modules
   runValue = gRunWiseHisto->GetMean();
   runRMS = gRunWiseHisto->GetRMS();
   return;
-}
+  }
 
-//__________________________________________________________________________________________
-void ProcessTRDstatus(AliTRDCalChamberStatus* chamberStatus, AliTRDCalPadStatus* padStatus,
-		      Float_t &runBadPadFraction, TVectorD &chamberBadPadFraction,
-		      TVectorD &chamberStatusValues) {
+  //__________________________________________________________________________________________
+  void ProcessTRDstatus(AliTRDCalChamberStatus* chamberStatus, AliTRDCalPadStatus* padStatus,
+          Float_t &runBadPadFraction, TVectorD &chamberBadPadFraction,
+          TVectorD &chamberStatusValues) {
   // Process the pad status. Calculates the fraction of pads with non 0 status
   // run and chamber wise
   //
@@ -1002,7 +878,7 @@ void ProcessTRDstatus(AliTRDCalChamberStatus* chamberStatus, AliTRDCalPadStatus*
   Int_t runPadStatusAll = 0;
 
   Int_t superModuleStatus[18] = {1, 1, 0, 0, 0, 0, 0, 1, 1,
-				 1, 1, 0, 0, 0, 0, 0, 0, 1};  
+          1, 1, 0, 0, 0, 0, 0, 0, 1};
 
   // loop over chambers
   for(Int_t iChamber=0; iChamber < AliTRDcalibDB::kNdet; iChamber++) {
@@ -1019,24 +895,24 @@ void ProcessTRDstatus(AliTRDCalChamberStatus* chamberStatus, AliTRDCalPadStatus*
     // loop over channels in a chamber
     for(Int_t iChannel = 0; iChannel < singleChamberStatus->GetNchannels(); iChannel++) {
       if(singleChamberStatus->GetStatus(iChannel) > 0) {
-	chamberPadStatusNot0++;
-	runPadStatusNot0++;
+  chamberPadStatusNot0++;
+  runPadStatusNot0++;
       }
       chamberPadStatusAll++;
       runPadStatusAll++;
     }
-    chamberBadPadFraction[iChamber] = (chamberPadStatusAll>0 ? 
-				       Float_t(chamberPadStatusNot0)/Float_t(chamberPadStatusAll) : -99.);
+    chamberBadPadFraction[iChamber] = (chamberPadStatusAll>0 ?
+                Float_t(chamberPadStatusNot0)/Float_t(chamberPadStatusAll) : -99.);
   }
   runBadPadFraction = (runPadStatusAll>0 ? Float_t(runPadStatusNot0)/Float_t(runPadStatusAll) : -99.);
   return;
-}
+  }
 
-//__________________________________________________________________________________________
-void ProcessTRDCalDCSFEE(AliTRDCalDCS *caldcsSOR, AliTRDCalDCS *caldcsEOR, 
-			 Int_t &nsb1, Int_t &nsb2, Int_t &nsb3, Int_t &nsb4, Int_t &nsb5,
-			 Int_t &nChanged, Bool_t &sorAndEor, 
-			 TVectorD &statusArraySOR, TVectorD &statusArrayEOR) {
+  //__________________________________________________________________________________________
+  void ProcessTRDCalDCSFEE(AliTRDCalDCS *caldcsSOR, AliTRDCalDCS *caldcsEOR,
+        Int_t &nsb1, Int_t &nsb2, Int_t &nsb3, Int_t &nsb4, Int_t &nsb5,
+        Int_t &nChanged, Bool_t &sorAndEor,
+        TVectorD &statusArraySOR, TVectorD &statusArrayEOR) {
   //
   // Process the DCS information
   //
@@ -1070,13 +946,13 @@ void ProcessTRDCalDCSFEE(AliTRDCalDCS *caldcsSOR, AliTRDCalDCS *caldcsEOR,
     }
     if(sorAndEor) {
       if((statusArraySOR[iROC]-statusArrayEOR[iROC]) != 0) nChanged++;
-    } 
+    }
   }
   return;
-}
+  }
 
-//__________________________________________________________________________________________
-void MakeRunListFromOCDB(const Char_t* directory, const Char_t* outfile, Bool_t fromAlien) {
+  //__________________________________________________________________________________________
+  void MakeRunListFromOCDB(const Char_t* directory, const Char_t* outfile, Bool_t fromAlien) {
   //
   // For a given OCDB path dump the list of available run numbers
   //
@@ -1109,4 +985,21 @@ void MakeRunListFromOCDB(const Char_t* directory, const Char_t* outfile, Bool_t 
   outBuffer.close();
   gSystem->Exec("rm temp.txt");
   return;
-}
+  }
+
+  //__________________________________________________________________________________________
+  AliCDBEntry* GetCDBentry(const Char_t *path, Bool_t owner)
+  {
+  ::Info("GetCDBentry", Form("QUERY RUN [%d] for \"%s\".", currRun, path));
+  AliCDBEntry *entry(NULL);
+  storage->QueryCDB(currRun, path);
+  if(!storage->GetQueryCDBList()->GetEntries()){
+    ::Error("GetCDBentry", Form("Missing \"%s\" in run %d.", path, currRun));
+    return NULL;
+  } else entry = manager->Get(path);
+  if(!entry) return NULL;
+
+  entry->SetOwner(owner);
+  ::Info("GetCDBentry", Form("FOUND ENTRY @ [%p].", (void*)entry));
+  return entry;
+  }
