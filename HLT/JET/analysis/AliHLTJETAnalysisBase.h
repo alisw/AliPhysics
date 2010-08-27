@@ -7,8 +7,7 @@
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTJETAnalysisBase.h
-    @author Jochen Thaeder
-    @date   
+    @author Jochen Thaeder <jochen@thaeder.de>
     @brief  Base functionality for HLT JET analysis package
 */
 
@@ -57,15 +56,18 @@ class AliHLTJETAnalysisBase : public TObject, public AliHLTLogging {
  
   /** Plot type of Spectra histograms */
   enum JetSpectraType_t {
-    kSpectraPythiaAll,        /**< Spectra of all pythia jets */
-    kSpectraPythiaMatched,    /**< Spectra of matched pythia jets */
-    kSpectraPythiaUnmatched,  /**< Spectra of unmatched pythia jets */
-    kSpectraRecoAll,          /**< Spectra of all reco jets */
-    kSpectraRecoMatched,      /**< Spectra of matched reco jets */
-    kSpectraRecoUnmatched,    /**< Spectra of unmatched reco jets */
-    kSpectraRecoLeadAll,      /**< Spectra of all leading reco jets */
-    kSpectraRecoLeadMatched,  /**< Spectra of matched leading reco jets */
-    kSpectraRecoLeadUnmatched,/**< Spectra of unmatched leading reco jets */
+    kSpectraCmpAll,           /**< Spectra of all cmp jets */
+    kSpectraCmpMatched,       /**< Spectra of matched cmp jets */
+    kSpectraCmpUnmatched,     /**< Spectra of unmatched cmp jets */
+    kSpectraCmpLeadAll,       /**< Spectra of all leading cmp jets */
+    kSpectraCmpLeadMatched,   /**< Spectra of matched leading cmp jets */
+    kSpectraCmpLeadUnmatched, /**< Spectra of unmatched leading cmp jets */
+    kSpectraRecAll,           /**< Spectra of all rec jets */
+    kSpectraRecMatched,       /**< Spectra of matched rec jets */
+    kSpectraRecUnmatched,     /**< Spectra of unmatched rec jets */
+    kSpectraRecLeadAll,       /**< Spectra of all leading rec jets */
+    kSpectraRecLeadMatched,   /**< Spectra of matched leading rec jets */
+    kSpectraRecLeadUnmatched, /**< Spectra of unmatched leading rec jets */
     kSpectraMax               /**< Number of enum entries */
   };
   
@@ -96,6 +98,9 @@ class AliHLTJETAnalysisBase : public TObject, public AliHLTLogging {
 
   /** Array of types of the Spectra histograms */
   static const Char_t *fgkSpectraType[];      //! transient
+
+  /** Array of types of the MC Spectra histograms */
+  static const Char_t *fgkSpectraTypeMC[];    //! transient
 
   /** Array of types of histograms */
   static const Char_t *fgkPlotType[];         //! transient

@@ -4,7 +4,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Jochen Thaeder <thaeder@kip.uni-heidelberg.de>        *
+//* Primary Authors: Jochen Thaeder <jochen@thaeder.de>                    *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -16,10 +16,9 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTJETAnalysisComponent.cxx
-    @author Jochen Thaeder <thaeder@kip.uni-heidelberg.de>
-    @date   
-    @brief   Component to run the ConeJet jetfinder
+/** @file   AliHLTJETAnalysisComponent.cxx    
+    @author Jochen Thaeder <jochen@thaeder.de>
+    @brief  Component to run the analysis for the jetfinder
 */
 
 #if __GNUC__>= 3
@@ -204,7 +203,7 @@ Int_t AliHLTJETAnalysisComponent::DoEvent( const AliHLTComponentEventData& /*evt
     for ( iter=GetFirstInputObject(kAliHLTDataTypeJet|kAliHLTDataOriginHLT); 
 	  iter != NULL && !iResult; iter=GetNextInputObject() ) {
       
-      fAnalysisJets->SetJets(reinterpret_cast<AliHLTJets*>(const_cast<TObject*>(iter)));
+      fAnalysisJets->SetJetsRec(reinterpret_cast<AliHLTJets*>(const_cast<TObject*>(iter)));
     }
     
     // -- ADD MC Object -- On-line
@@ -212,16 +211,17 @@ Int_t AliHLTJETAnalysisComponent::DoEvent( const AliHLTComponentEventData& /*evt
     for ( iter=GetFirstInputObject(kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT); 
 	  iter != NULL && !iResult; iter=GetNextInputObject() ) {
       
-      fAnalysisJets->SetHLTMC(reinterpret_cast<AliHLTMCEvent*>(const_cast<TObject*>(iter)));
-    }
-        
+      fAnalysisJets->SetJetsCmp(reinterpret_cast<AliHLTMCEvent*>(const_cast<TObject*>(iter)),
+				NULL,
+				NULL);
+    }         
     // -- Process event
     // ------------------
     iResult = fAnalysisJets->Analyze();
   }
 
   // ------------------------------------------------
-  // -- DATA Event 
+  // -- EOR Event 
   // ------------------------------------------------
   else {
     if ( GetFirstInputBlock(kAliHLTDataTypeEOR) ) {

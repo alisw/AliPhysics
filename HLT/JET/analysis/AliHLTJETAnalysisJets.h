@@ -10,7 +10,7 @@
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTJETAnalysisJets.h
-    @author Jochen Thaeder
+    @author Jochen Thaeder <jochen@thaeder.de>
     @date   
     @brief  Container holding analysis objects
 */
@@ -82,20 +82,18 @@ public:
    * ---------------------------------------------------------------------------------
    */
 
-  /** Set pythia jets in HLT environment
-   *  @param mcEvent    Ptr to AliHLTMCEvent
-   */
-  void SetHLTMC( AliHLTMCEvent* mcEvent );
-
-  /** Set pythia jets in Off-line environment
-   *  @param mcEvent    Ptr to AliMCEvent
-   */
-  void SetMC( AliMCEvent* mcEvent );
-
   /** Set reconstructed jets
    *  @param jets       Ptr to AliHLTJets
    */
-  void SetJets( AliHLTJets* jets );
+  void SetJetsRec( AliHLTJets* jets );
+
+  /** Set compare jets
+   *  Filled in order of presence
+   *  @param hltMcEvent    Ptr to AliHLTMCEvent, sets pythia jets in HLT environment
+   *  @param mcEvent       Ptr to AliMCEvent, sets pythia jets in Off-line environment
+   *  @param jets          Ptr to AliHLTJets
+   */
+  void SetJetsCmp( AliHLTMCEvent* hltMcEvent, AliMCEvent* mcEvent, AliHLTJets* jets );
 
   /*
    * ---------------------------------------------------------------------------------
@@ -207,7 +205,7 @@ public:
    *  @param valueX  x value
    *  @param valueY  y value
    */
-  void FillHist( TClonesArray* array, Int_t idx, Float_t valueX,Float_t valueY );
+  void FillHist( TClonesArray* array, Int_t idx, Float_t valueX, Float_t valueY );
   
   /** Get Distance^2 in eta phi space of 2 jets
    *  @param jet1    Ptr to jet 1
@@ -228,21 +226,33 @@ public:
   // ++-> replaced every event
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  /** MC jets are filled in fJetsCmp */
+  Bool_t         fHasMC;                         // see above
+
   // ---------------------------------------------------
   // -- Members filled per event
   // ---------------------------------------------------
 
-  /** jets */
-  AliHLTJets    *fJets;                          //! transient      
+  /** reconstructed jets */
+  AliHLTJets    *fJetsRec;                       //! transient      
 
-  /** MC jets */
-  AliHLTJets    *fJetsMC;                        //! transient      
+  /** compare jets - rec or MC */
+  AliHLTJets    *fJetsCmp;                       //! transient      
 
   /** Array of indices of the matched reconstructed jets */
-  TArrayI       *fMatchedJets;                   //! transient      
+  TArrayI       *fMatchedJetsRec;                //! transient      
 
-  /** Array of indices of the matched MC jets */
-  TArrayI       *fMatchedJetsMC;                 //! transient      
+  /** Array of indices of the matched compae jets */
+  TArrayI       *fMatchedJetsCmp;                //! transient      
+
+
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // ++ Analysis Parameter 
+  // ++
+  // ++ -> Created once
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  Float_t        fMatchingThreshold;             // see above
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++ Analysis Output 
@@ -257,13 +267,13 @@ public:
   /** Matched Jets - delta Et */
   TClonesArray  *fDeltaEt;                       // see above
 
-  /** Delta eta ( pythia - jetfinder ) */
+  /** Delta eta ( jetRec - jetCmp ) */
   TClonesArray  *fDeltaEta;                      // see above
   
-  /** Delta phi ( pythia - jetfinder ) */
+  /** Delta phi ( jetRec - jetCmp ) */
   TClonesArray  *fDeltaPhi;                      // see above
   
-  /** Delta eta, delta phi( pythia - jetfinder ) */
+  /** Delta eta, delta phi ( jetRec - jetCmp ) */
   TClonesArray  *fDeltaEtaDeltaPhi;              // see above
   
   // ---------------------------------------------------
@@ -283,19 +293,19 @@ public:
   // -- Correlations
   // ---------------------------------------------------
 
-  /** Correleation pythia vs jet finder */
+  /** Correleation jetRec vs jetCmp finder */
   TClonesArray  *fCorrelationsJetEt;             // see above
 
   // ---------------------------------------------------
   // -- Resolutions
   // ---------------------------------------------------
   
-  /** Resolutions for Et for jetfinder - pythia fixed */
+  /** Resolutions for Et for jetRec - jetCmp fixed */
   TClonesArray  *fResolutionsJetEt;              // see above
 
   /** Resolutions for Et for jetfinder - nearside fixed */
   TClonesArray  *fResolutionsDiJetEt;            // see above
 
-  ClassDef(AliHLTJETAnalysisJets, 2);
+  ClassDef(AliHLTJETAnalysisJets, 3);
 };
 #endif

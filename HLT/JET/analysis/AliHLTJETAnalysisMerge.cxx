@@ -4,7 +4,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Jochen Thaeder <thaeder@kip.uni-heidelberg.de>        *
+//* Primary Authors: Jochen Thaeder <jochen@thaeder.de>                    *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -17,8 +17,7 @@
 //**************************************************************************
 
 /** @file   AliHLTJETAnalysisMerge.cxx
-    @author Jochen Thaeder
-    @date   
+    @author Jochen Thaeder <jochen@thaeder.de>
     @brief  Container merging analysis objects
 */
 
@@ -130,17 +129,13 @@ void AliHLTJETAnalysisMerge::CreateCanvas() {
   return;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///                                                                                                              ///
-//////                                               PRIVATE                                                  //////
-///                                                                                                              ///
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+///                                                                              ///
+//////                             PRIVATE                                    //////
+///                                                                              ///
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
 
 /*
  * ---------------------------------------------------------------------------------
@@ -159,81 +154,30 @@ void AliHLTJETAnalysisMerge::CreateCanvasSpectra() {
   
   // -- Spectra E_t
   // ----------------
-  TCanvas* canvas = AddCanvas( Form("E_{t} ")+canvasName, 3, 3 );
+  TCanvas* canvas = AddCanvas( Form("E_{t} ")+canvasName, 3, 4 );
+  Int_t type = AliHLTJETAnalysisBase::kHistSpectraEt;
 
-  DrawHistogram(canvas, 1, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEt, 
-					      AliHLTJETAnalysisBase::kSpectraRecoAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 2, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEt, 
-					      AliHLTJETAnalysisBase::kSpectraRecoMatched),kTRUE, kFALSE);
-  DrawHistogram(canvas, 3, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEt, 
-					      AliHLTJETAnalysisBase::kSpectraRecoUnmatched),kTRUE, kFALSE);
-
-  DrawHistogram(canvas, 4, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEt, 
-					      AliHLTJETAnalysisBase::kSpectraRecoLeadAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 5, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEt, 
-					      AliHLTJETAnalysisBase::kSpectraRecoLeadMatched),kTRUE, kFALSE);
-  DrawHistogram(canvas, 6, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEt, 
-					      AliHLTJETAnalysisBase::kSpectraRecoLeadUnmatched),kTRUE, kFALSE);
-
-  DrawHistogram(canvas, 7, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEt, 
-					      AliHLTJETAnalysisBase::kSpectraPythiaAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 8, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEt, 
-					      AliHLTJETAnalysisBase::kSpectraPythiaMatched),kTRUE, kFALSE);
-  DrawHistogram(canvas, 9, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEt, 
-					      AliHLTJETAnalysisBase::kSpectraPythiaUnmatched),kTRUE, kFALSE);
-  
+  for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kSpectraMax ; ++idx )
+    DrawHistogram(canvas, idx+1, jets->GetHistogram( type, idx ), kTRUE, kFALSE);
+        
   // -- Spectra eta
   // ----------------
-  canvas = AddCanvas( Form("#eta ")+canvasName, 3, 3 );
+  canvas = AddCanvas( Form("#eta ")+canvasName, 3, 4 );
+  type = AliHLTJETAnalysisBase::kHistSpectraEta;
 
-  DrawHistogram(canvas, 1, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEta, 
-					      AliHLTJETAnalysisBase::kSpectraRecoAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 2, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEta, 
-					      AliHLTJETAnalysisBase::kSpectraRecoMatched),kTRUE, kFALSE);
-  DrawHistogram(canvas, 3, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEta, 
-					      AliHLTJETAnalysisBase::kSpectraRecoUnmatched),kTRUE, kFALSE);
-
-  DrawHistogram(canvas, 4, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEta, 
-					      AliHLTJETAnalysisBase::kSpectraRecoLeadAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 5, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEta, 
-					      AliHLTJETAnalysisBase::kSpectraRecoLeadMatched),kTRUE, kFALSE);
-  DrawHistogram(canvas, 6, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEta, 
-					      AliHLTJETAnalysisBase::kSpectraRecoLeadUnmatched),kTRUE, kFALSE);
-
-  DrawHistogram(canvas, 7, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEta, 
-					      AliHLTJETAnalysisBase::kSpectraPythiaAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 8, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEta, 
-					      AliHLTJETAnalysisBase::kSpectraPythiaMatched),kTRUE, kFALSE);
-  DrawHistogram(canvas, 9, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraEta, 
-					      AliHLTJETAnalysisBase::kSpectraPythiaUnmatched),kTRUE, kFALSE);
+  for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kSpectraMax ; ++idx )
+    DrawHistogram(canvas, idx+1, jets->GetHistogram( type, idx ), kTRUE, kFALSE);
 
   // -- Spectra phi
   // ----------------
-  canvas = AddCanvas( Form("#phi ")+canvasName, 3, 3);
-  
-  DrawHistogram(canvas, 1, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraPhi, 
-					      AliHLTJETAnalysisBase::kSpectraRecoAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 2, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraPhi, 
-					      AliHLTJETAnalysisBase::kSpectraRecoMatched),kTRUE, kFALSE);
-  DrawHistogram(canvas, 3, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraPhi, 
-					      AliHLTJETAnalysisBase::kSpectraRecoUnmatched),kTRUE, kFALSE);
+  canvas = AddCanvas( Form("#phi ")+canvasName, 3, 4 );
+  type = AliHLTJETAnalysisBase::kHistSpectraPhi;  
 
-  DrawHistogram(canvas, 4, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraPhi, 
-					      AliHLTJETAnalysisBase::kSpectraRecoLeadAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 5, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraPhi, 
-					      AliHLTJETAnalysisBase::kSpectraRecoLeadMatched),kTRUE, kFALSE);
-  DrawHistogram(canvas, 6, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraPhi, 
-					      AliHLTJETAnalysisBase::kSpectraRecoLeadUnmatched),kTRUE, kFALSE);
-
-  DrawHistogram(canvas, 7, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraPhi, 
-					      AliHLTJETAnalysisBase::kSpectraPythiaAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 8, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraPhi, 
-					      AliHLTJETAnalysisBase::kSpectraPythiaMatched),kTRUE, kFALSE);
-  DrawHistogram(canvas, 9, jets->GetHistogram(AliHLTJETAnalysisBase::kHistSpectraPhi, 
-					      AliHLTJETAnalysisBase::kSpectraPythiaUnmatched),kTRUE, kFALSE);
+  for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kSpectraMax ; ++idx )
+    DrawHistogram(canvas, idx+1, jets->GetHistogram( type, idx ), kTRUE, kFALSE);
 
   return;
-}
+  }
 
 //##################################################################################
 void AliHLTJETAnalysisMerge::CreateCanvasDelta() {
@@ -247,54 +191,34 @@ void AliHLTJETAnalysisMerge::CreateCanvasDelta() {
   // -- Delta E_t
   // --------------
   TCanvas* canvas = AddCanvas( Form("#DeltaE_{t} ")+canvasName, 2, 2 );
+  Int_t type = AliHLTJETAnalysisBase::kHistDeltaEt;
 
-  DrawHistogram(canvas, 1, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaEt, 
-					      AliHLTJETAnalysisBase::kDeltaAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 2, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaEt, 
-					      AliHLTJETAnalysisBase::kDeltaMatchedAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 3, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaEt, 
-					      AliHLTJETAnalysisBase::kDeltaLead),kTRUE, kFALSE);
-  DrawHistogram(canvas, 4, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaEt, 
-					      AliHLTJETAnalysisBase::kDeltaMatchedLead),kTRUE, kFALSE);
-
+  for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kDeltaMax ; ++idx )
+    DrawHistogram(canvas, idx+1, jets->GetHistogram( type, idx ), kTRUE, kFALSE);
+    
   // -- Delta Eta
   // --------------
   canvas = AddCanvas( Form("#Delta#eta} ")+canvasName, 2, 2 );
+  type = AliHLTJETAnalysisBase::kHistDeltaEta;
 
-  DrawHistogram(canvas, 1, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaEta, 
-					      AliHLTJETAnalysisBase::kDeltaAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 2, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaEta, 
-					      AliHLTJETAnalysisBase::kDeltaMatchedAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 3, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaEta, 
-					      AliHLTJETAnalysisBase::kDeltaLead),kTRUE, kFALSE);
-  DrawHistogram(canvas, 4, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaEta, 
-					      AliHLTJETAnalysisBase::kDeltaMatchedLead),kTRUE, kFALSE);
-
+  for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kDeltaMax ; ++idx )
+    DrawHistogram(canvas, idx+1, jets->GetHistogram( type, idx ), kTRUE, kFALSE);
+    
   // -- Delta Phi
   // --------------
   canvas = AddCanvas( Form("#Delta#phi ")+canvasName, 2, 2 );
+  type = AliHLTJETAnalysisBase::kHistDeltaPhi;
 
-  DrawHistogram(canvas, 1, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaPhi, 
-					      AliHLTJETAnalysisBase::kDeltaAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 2, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaPhi, 
-					      AliHLTJETAnalysisBase::kDeltaMatchedAll),kTRUE, kFALSE);
-  DrawHistogram(canvas, 3, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaPhi, 
-					      AliHLTJETAnalysisBase::kDeltaLead),kTRUE, kFALSE);
-  DrawHistogram(canvas, 4, jets->GetHistogram(AliHLTJETAnalysisBase::kHistDeltaPhi, 
-					      AliHLTJETAnalysisBase::kDeltaMatchedLead),kTRUE, kFALSE);
+  for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kDeltaMax ; ++idx )
+    DrawHistogram(canvas, idx+1, jets->GetHistogram( type, idx ), kTRUE, kFALSE);
 
   // -- Delta Eta Delta Phi
   // ------------------------
   canvas = AddCanvas( Form("#Delta#eta#Delta#phi ")+canvasName, 2, 2 );
+  type = AliHLTJETAnalysisBase::kHistDeltaEtaDeltaPhi;
 
-  DrawHistogram(canvas, 1, jets->GetHistogram( AliHLTJETAnalysisBase::kHistDeltaEtaDeltaPhi, 
-					       AliHLTJETAnalysisBase::kDeltaAll ),kTRUE, kFALSE);
-  DrawHistogram(canvas, 2, jets->GetHistogram( AliHLTJETAnalysisBase::kHistDeltaEtaDeltaPhi, 
-					       AliHLTJETAnalysisBase::kDeltaMatchedAll ),kTRUE, kFALSE);
-  DrawHistogram(canvas, 3, jets->GetHistogram( AliHLTJETAnalysisBase::kHistDeltaEtaDeltaPhi, 
-					       AliHLTJETAnalysisBase::kDeltaLead ),kTRUE, kFALSE);
-  DrawHistogram(canvas, 4, jets->GetHistogram( AliHLTJETAnalysisBase::kHistDeltaEtaDeltaPhi, 
-					       AliHLTJETAnalysisBase::kDeltaMatchedLead ),kTRUE, kFALSE);
+  for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kDeltaMax ; ++idx )
+    DrawHistogram(canvas, idx+1, jets->GetHistogram( type, idx ), kTRUE, kFALSE);
 
   return;
 }

@@ -10,9 +10,8 @@
 //* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTJETAnalysisComponent.h
-    @author Jochen Thaeder <thaeder@kip.uni-heidelberg.de>
-    @date   
-    @brief  Component to run the ConeJet jetfinder
+    @author Jochen Thaeder <jochen@thaeder.de>
+    @brief  Component to run the analysis for the jetfinder
 */
 
 // see below for class documentation

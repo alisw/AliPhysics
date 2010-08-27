@@ -3,7 +3,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Jochen Thaeder <thaeder@kip.uni-heidelberg.de>        *
+//* Primary Authors: Jochen Thaeder <jochen@thaeder.de>                    *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -16,8 +16,7 @@
 //**************************************************************************
 
 /** @file   AliHLTJETAnalysisBase.cxx
-    @author Jochen Thaeder
-    @date   
+    @author Jochen Thaeder <jochen@thaeder.de>q
     @brief  Base functionality for HLT JET analysis package
 */
 
@@ -66,12 +65,19 @@ AliHLTJETAnalysisBase::~AliHLTJETAnalysisBase() {
 //##################################################################################
 const Char_t *AliHLTJETAnalysisBase::fgkDeltaType[] = { 
   "all", "leading", 
-  "Matched - all", "Matched -Leading" 
+  "Matched - all", "Matched - leading" 
 };
 
 //##################################################################################
 const Char_t *AliHLTJETAnalysisBase::fgkSpectraType[] = { 
-  "Pythia",        "Pythia - Matched",        "Pythia - UnMatched",
+  "Compare",       "Compare - Matched",       "Compare - UnMatched",
+  "Reconstructed", "Reconstructed - Matched", "Reconstructed - UnMatched",
+  "Reco Leading",  "Reco Leading - Matched",  "Reco Leading - UnMatched"
+};
+
+//##################################################################################
+const Char_t *AliHLTJETAnalysisBase::fgkSpectraTypeMC[] = { 
+  "MC",        "MC - Matched",        "MC - UnMatched",
   "Reconstructed", "Reconstructed - Matched", "Reconstructed - UnMatched",
   "Reco Leading",  "Reco Leading - Matched",  "Reco Leading - UnMatched"
 };

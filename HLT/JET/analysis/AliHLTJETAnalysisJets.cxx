@@ -4,7 +4,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Jochen Thaeder <thaeder@kip.uni-heidelberg.de>        *
+//* Primary Authors: Jochen Thaeder <jochen@thaeder.de>                    *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -17,8 +17,7 @@
 //**************************************************************************
 
 /** @file   AliHLTJETAnalysisJets.cxx
-    @author Jochen Thaeder
-    @date   
+    @author Jochen Thaeder <jochen@thaeder.de>
     @brief  Container holding analysis objects
 */
 
@@ -47,20 +46,14 @@ ClassImp(AliHLTJETAnalysisJets)
 
 //##################################################################################
 AliHLTJETAnalysisJets::AliHLTJETAnalysisJets() :
-  fJets(NULL ),
-  fJetsMC(NULL ),
-  fMatchedJets(NULL),
-  fMatchedJetsMC(NULL),
-  fDeltaEt(NULL),
-  fDeltaEta(NULL),
-  fDeltaPhi(NULL),
-  fDeltaEtaDeltaPhi(NULL),
-  fSpectraEt(NULL),
-  fSpectraEta(NULL),
-  fSpectraPhi(NULL),
+  fHasMC(kFALSE),
+  fJetsRec(NULL), fJetsCmp(NULL),
+  fMatchedJetsRec(NULL), fMatchedJetsCmp(NULL),
+  fMatchingThreshold(5.),
+  fDeltaEt(NULL), fDeltaEta(NULL), fDeltaPhi(NULL), fDeltaEtaDeltaPhi(NULL),
+  fSpectraEt(NULL), fSpectraEta(NULL), fSpectraPhi(NULL),
   fCorrelationsJetEt(NULL),
-  fResolutionsJetEt(NULL),
-  fResolutionsDiJetEt(NULL) {
+  fResolutionsJetEt(NULL), fResolutionsDiJetEt(NULL) {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -73,17 +66,19 @@ AliHLTJETAnalysisJets::AliHLTJETAnalysisJets() :
 AliHLTJETAnalysisJets::~AliHLTJETAnalysisJets() {
   // see header file for class documentation
 
-  if ( fJetsMC )
-    delete fJetsMC;
-  fJetsMC = NULL;
+  if ( fHasMC ) {
+    if ( fJetsCmp )
+      delete fJetsCmp;
+    fJetsCmp = NULL;
+  }
+  
+  if ( fMatchedJetsRec )
+    delete fMatchedJetsRec;
+  fMatchedJetsRec = NULL;
 
-  if ( fMatchedJets )
-    delete fMatchedJets;
-  fMatchedJets = NULL;
-
-  if ( fMatchedJetsMC )
-    delete fMatchedJetsMC;
-  fMatchedJetsMC = NULL;
+  if ( fMatchedJetsCmp )
+    delete fMatchedJetsCmp;
+  fMatchedJetsCmp = NULL;
 
   if ( fDeltaEt ) {
     fDeltaEt->Clear();
@@ -160,8 +155,8 @@ Int_t AliHLTJETAnalysisJets::Initialize() {
   Int_t iResult = 0;
 
   // -- Setup match arrays
-  fMatchedJets = new TArrayI(100);
-  fMatchedJetsMC = new TArrayI(100);
+  fMatchedJetsRec = new TArrayI(100);
+  fMatchedJetsCmp = new TArrayI(100);
 
   // -- Setup Delta histograms  
   SetupDeltaHistograms();
@@ -172,6 +167,8 @@ Int_t AliHLTJETAnalysisJets::Initialize() {
   // -- Setup Matched histograms
   SetupMatchedHistograms();
 
+  fMatchingThreshold = 10.;
+
   return iResult;
 }
 
@@ -179,11 +176,11 @@ Int_t AliHLTJETAnalysisJets::Initialize() {
 void AliHLTJETAnalysisJets::ResetEvent() {
   // see header file for class documentation  
 
-  if ( fJetsMC )
-    delete fJetsMC;
-  fJetsMC = NULL;
+  fJetsRec = NULL;
 
-  fJets = NULL;
+  if ( fJetsCmp && fHasMC )
+    delete fJetsCmp;
+  fJetsCmp = NULL;
 
   return;
 }
@@ -195,42 +192,50 @@ void AliHLTJETAnalysisJets::ResetEvent() {
  */
 
 //##################################################################################
-void AliHLTJETAnalysisJets::SetHLTMC( AliHLTMCEvent* mcEvent ) {
+void AliHLTJETAnalysisJets::SetJetsRec( AliHLTJets* jets ) {
   // see header file for class documentation
 
-  // -- New MC jets 
-  if ( fJetsMC )
-    delete fJetsMC;
-  fJetsMC = new AliHLTJets();
-  
-  AliAODJet* jet = NULL;
-
-  while ( (jet = mcEvent->NextGenJet()) )
-    fJetsMC->AddJet(jet);
+  fJetsRec = jets;
 
   // -- Sort jets
-  fJetsMC->Sort();
+  fJetsRec->Sort();
 
   return;
 }
 
 //##################################################################################
-void AliHLTJETAnalysisJets::SetMC( AliMCEvent* /*mcEvent*/ ) {
+void AliHLTJETAnalysisJets::SetJetsCmp( AliHLTMCEvent* hltMcEvent = NULL, 
+					AliMCEvent* mcEvent = NULL, 
+					AliHLTJets* jets = NULL ) {
   // see header file for class documentation
 
-  HLTFatal("No implemented!");
+  // -- Fill HLT MC event
+  if ( hltMcEvent ) {   
+    fHasMC = kTRUE;
+
+    // -- New MC jets 
+    if ( fJetsCmp )
+      delete fJetsCmp;
+    fJetsCmp = new AliHLTJets();
   
-  return;
-}
+    AliAODJet* jet = NULL;
 
-//##################################################################################
-void AliHLTJETAnalysisJets::SetJets( AliHLTJets* jets ) {
-  // see header file for class documentation
+    while ( (jet = hltMcEvent->NextGenJet()) )
+      fJetsCmp->AddJet(jet);
+  }
 
-  fJets = jets;
+  // -- Fill Off-Line MC event
+  else if ( mcEvent ) {
+    fHasMC = kTRUE;
+    HLTFatal("No implemented!");
+  }
+
+  // -- Fill reconstructed jets
+  else  
+    fJetsCmp = jets;
 
   // -- Sort jets
-  fJets->Sort();
+  fJetsCmp->Sort();
 
   return;
 }
@@ -322,12 +327,8 @@ Int_t AliHLTJETAnalysisJets::Analyze() {
   
   Int_t iResult = 0;
 
-  if ( !fJets ) {
+  if ( !fJetsRec ) {
     HLTError("No input jets set.");
-    iResult = -1;
-  }
-  if ( !fJetsMC ) {
-    HLTError("No input MC jets set.");
     iResult = -1;
   }
 
@@ -337,29 +338,23 @@ Int_t AliHLTJETAnalysisJets::Analyze() {
     FillBasicSpectraHistograms();
     FillUnmatchedDeltaHistograms();
     
-    // -- Match jets
-    MatchJets();
-   
-    // -- Fill matched jets into histograms
-    FillMatchedDeltaHistograms();  
-    FillMatchedSpectraHistograms();  
-    FillMatchedHistograms();  
+    // -- Match jets and fill matched jets into histograms
+    if ( ! MatchJets() ) {
+      FillMatchedDeltaHistograms();  
+      FillMatchedSpectraHistograms();  
+      FillMatchedHistograms();  
+    }
   }
-
   return iResult;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///                                                                                                              ///
-//////                                               PRIVATE                                                  //////
-///                                                                                                              ///
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+///                                                                              ///
+//////                             PRIVATE                                    //////
+///                                                                              ///
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
 
 /*
  * ---------------------------------------------------------------------------------
@@ -383,35 +378,29 @@ void AliHLTJETAnalysisJets::SetupDeltaHistograms() {
 
   for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kDeltaMax; ++idx ) {
 
+    const Char_t *type = AliHLTJETAnalysisBase::fgkDeltaType[idx];
+
     // -- Delta Et -------------------------------------------------
-    new ((*fDeltaEt)[idx]) TH1F(Form("delta E_{t} : %s", 
-				     AliHLTJETAnalysisBase::fgkDeltaType[idx] ), 
-				Form("#DeltaE_{t} : %s;#DeltaE_{t};dN/d#DeltaE_{t}", 
-				     AliHLTJETAnalysisBase::fgkDeltaType[idx] ),
+    new ((*fDeltaEt)[idx]) TH1F(Form("delta E_{t} : %s", type), 
+				Form("#DeltaE_{t} : %s;#DeltaE_{t};dN/d#DeltaE_{t}", type),
 				100, -200., 200.);
     SetupHist(reinterpret_cast<TH1F*>((*fDeltaEt)[idx]));
         
     // -- Delta Eta ------------------------------------------------
-    new ((*fDeltaEta)[idx]) TH1F(Form("delta Eta : %s", 
-				      AliHLTJETAnalysisBase::fgkDeltaType[idx] ), 
-				 Form("#Delta#eta : %s;#Delta#eta;dN/d#Delta#eta", 
-				      AliHLTJETAnalysisBase::fgkDeltaType[idx] ),
+    new ((*fDeltaEta)[idx]) TH1F(Form("delta Eta : %s", type), 
+				 Form("#Delta#eta : %s;#Delta#eta;dN/d#Delta#eta", type), 
 				 100, -1.2, 1.2);
     SetupHist(reinterpret_cast<TH1F*>((*fDeltaEta)[idx]));
     
     // -- Delta Phi ------------------------------------------------
-    new ((*fDeltaPhi )[idx]) TH1F(Form("delta Phi : %s", 
-				       AliHLTJETAnalysisBase::fgkDeltaType[idx] ), 
-				  Form("#Delta#phi : %s;#Delta #phi;dN/d#Delta#phi", 
-				       AliHLTJETAnalysisBase::fgkDeltaType[idx] ), 
+    new ((*fDeltaPhi )[idx]) TH1F(Form("delta Phi : %s", type), 
+				  Form("#Delta#phi : %s;#Delta #phi;dN/d#Delta#phi", type), 
 				  100, -7., 7.);
     SetupHist(reinterpret_cast<TH1F*>((*fDeltaPhi)[idx]));
     
     // -- Delta Eta Delta Phi --------------------------------------
-    new ((*fDeltaEtaDeltaPhi) [idx] ) TH2F(Form("delta Eta delta Phi : %s", 
-						AliHLTJETAnalysisBase::fgkDeltaType[idx] ), 
-					   Form("#Delta#eta #Delta#phi : %s;#Delta#eta;#Delta#phi", 
-						AliHLTJETAnalysisBase::fgkDeltaType[idx] ), 
+    new ((*fDeltaEtaDeltaPhi) [idx] ) TH2F(Form("delta Eta delta Phi : %s", type), 
+					   Form("#Delta#eta #Delta#phi : %s;#Delta#eta;#Delta#phi", type), 
 					   100, -1.2, 1.2, 100, -7., 7.);
     SetupHist(reinterpret_cast<TH2F*>((*fDeltaEtaDeltaPhi)[idx]));
 
@@ -432,29 +421,30 @@ void AliHLTJETAnalysisJets::SetupSpectraHistograms() {
   fSpectraEta = new TClonesArray( "TH1F", AliHLTJETAnalysisBase::kSpectraMax );
   fSpectraPhi = new TClonesArray( "TH1F", AliHLTJETAnalysisBase::kSpectraMax );
 
+  const Char_t *type = NULL;
+
   for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kSpectraMax; ++idx ) {
     
+    if (fHasMC)
+      type = AliHLTJETAnalysisBase::fgkSpectraTypeMC[idx];
+    else
+      type = AliHLTJETAnalysisBase::fgkSpectraType[idx];
+
     // -- Spectra Et -----------------------------------------------
-    new ((*fSpectraEt)[idx]) TH1F(Form("E_{t} : %s", 
-				       AliHLTJETAnalysisBase::fgkSpectraType[idx] ), 
-				  Form("E_{t} : %s;E_{t} (GeV/c);dN/dE_{t}", 
-				       AliHLTJETAnalysisBase::fgkSpectraType[idx] ),
+    new ((*fSpectraEt)[idx]) TH1F(Form("E_{t} : %s", type), 
+				  Form("E_{t} : %s;E_{t} (GeV/c);dN/dE_{t}", type), 
 				  100, 0., 200.);
     SetupHist(reinterpret_cast<TH1F*>((*fSpectraEt)[idx]));
     
     // -- Spectra Eta ----------------------------------------------
-    new ((*fSpectraEta)[idx]) TH1F(Form("#eta : %s", 
-					AliHLTJETAnalysisBase::fgkSpectraType[idx] ), 
-				   Form("#eta : %s;#eta;dN/d#eta",
-					AliHLTJETAnalysisBase::fgkSpectraType[idx] ),
+    new ((*fSpectraEta)[idx]) TH1F(Form("#eta : %s", type), 
+				   Form("#eta : %s;#eta;dN/d#eta", type), 
 				   80, -0.9, 0.9);
     SetupHist(reinterpret_cast<TH1F*>((*fSpectraEta)[idx]));
     
     // -- Spectra Phi ----------------------------------------------
-    new ((*fSpectraPhi)[idx]) TH1F(Form("#phi : %s", 
-					AliHLTJETAnalysisBase::fgkSpectraType[idx] ), 
-				   Form("#phi : %s;#phi;dN/d#phi",
-					AliHLTJETAnalysisBase::fgkSpectraType[idx] ),
+    new ((*fSpectraPhi)[idx]) TH1F(Form("#phi : %s", type), 
+				   Form("#phi : %s;#phi;dN/d#phi", type), 
 				   50, 0., 7.);
     SetupHist(reinterpret_cast<TH1F*>((*fSpectraPhi)[idx]));
     
@@ -478,28 +468,24 @@ void AliHLTJETAnalysisJets::SetupMatchedHistograms() {
 
   for ( Int_t idx = 0; idx < AliHLTJETAnalysisBase::kPlotMax; ++idx ) {
 
+    const Char_t *type = AliHLTJETAnalysisBase::fgkPlotType[idx];
+
     // -- Correlations ---------------------------------------------
-    new ((*fCorrelationsJetEt)[idx]) TH2F(Form("Correlations : %s", 
-					       AliHLTJETAnalysisBase::fgkPlotType[idx] ), 
-					  Form("Correlations : %s; E_{t,Pythia} (GeV/c); E_{t,Rec} (GeV/c)", 
-					       AliHLTJETAnalysisBase::fgkPlotType[idx] ),
+    new ((*fCorrelationsJetEt)[idx]) TH2F(Form("Correlations : %s", type), 
+					  Form("Correlations : %s; E_{t,Pythia} (GeV/c); E_{t,Rec} (GeV/c)", type), 
 					  100, 0., 200.,100, 0., 200.);
     SetupHist(reinterpret_cast<TH1F*>((*fCorrelationsJetEt)[idx]));
     
     // -- Jet Resolutions ------------------------------------------
-    new ((*fResolutionsJetEt)[idx]) TH2F(Form("Resolutions : %s", 
-					      AliHLTJETAnalysisBase::fgkPlotType[idx] ), 
-					 Form("Resolutions : %s; E_{t,Pythia} (GeV/c); f", 
-					      AliHLTJETAnalysisBase::fgkPlotType[idx] ),
+    new ((*fResolutionsJetEt)[idx]) TH2F(Form("Resolutions : %s", type), 
+					 Form("Resolutions : %s; E_{t,Pythia} (GeV/c); f", type), 
 					 200, 0., 200.,200, -2., 2.);
 					
     SetupHist(reinterpret_cast<TH1F*>((*fResolutionsJetEt)[idx]));
 
     // -- Di-Jet Resolutions ---------------------------------------
-    new ((*fResolutionsDiJetEt)[idx]) TH2F(Form("Di Jet Resolutions : %s", 
-						AliHLTJETAnalysisBase::fgkPlotType[idx] ), 
-					   Form("Di Jet Resolutions : %s; E_{t,Pythia} (GeV/c); f", 
-						AliHLTJETAnalysisBase::fgkPlotType[idx] ),
+    new ((*fResolutionsDiJetEt)[idx]) TH2F(Form("Di Jet Resolutions : %s", type), 
+					   Form("Di Jet Resolutions : %s; E_{t,Pythia} (GeV/c); f", type),  
 					   100, -200., 200.,100, -200., 200.);
 					
     SetupHist(reinterpret_cast<TH1F*>((*fResolutionsDiJetEt)[idx]));
@@ -521,48 +507,56 @@ Int_t AliHLTJETAnalysisJets::MatchJets() {
 
   Int_t iResult = 0;
 
+  // -- Check for both inputs
+  if ( !fJetsRec || !fJetsCmp )
+    return -1;
+
+  // -- Check for jets in both inputs
+  if ( fJetsRec->GetNAODJets() == 0 || fJetsCmp->GetNAODJets() == 0 )
+    return -1;
+
   // -- Reset match arrays
   Int_t maxNJets;
-  if ( fJets->GetNAODJets() > fJetsMC->GetNAODJets() )
-    maxNJets = fJets->GetNAODJets();
+  if ( fJetsRec->GetNAODJets() > fJetsCmp->GetNAODJets() )
+    maxNJets = fJetsRec->GetNAODJets();
   else
-    maxNJets = fJetsMC->GetNAODJets();
+    maxNJets = fJetsCmp->GetNAODJets();
 
   for ( Int_t idx = 0; idx < maxNJets; ++idx ) {
-    (*fMatchedJets)[idx] = -1;
-    (*fMatchedJetsMC)[idx] = -1;
+    (*fMatchedJetsRec)[idx] = -1;
+    (*fMatchedJetsCmp)[idx] = -1;
   }
 
-  // -- Match Jets - pythia fixed
-  for ( Int_t jetIterMC = 0; jetIterMC < fJetsMC->GetNAODJets(); ++jetIterMC ) {
+  // -- Match Jets - compare fixed
+  for ( Int_t jetIterCmp = 0; jetIterCmp < fJetsCmp->GetNAODJets(); ++jetIterCmp ) {
 
     Float_t minDistance2 = 100.;
     Int_t idxClosest = -1;
 
-    for ( Int_t jetIter = 0; jetIter < fJets->GetNAODJets(); ++jetIter ) {
+    for ( Int_t jetIterRec = 0; jetIterRec < fJetsRec->GetNAODJets(); ++jetIterRec ) {
 
-      // -- very Jet matched only once
-      if ( (*fMatchedJets)[jetIter] != -1 )
+      // -- every Jet matched only once
+      if ( (*fMatchedJetsRec)[jetIterRec] != -1 )
 	continue;
                           
-      Float_t distance2 = GetDistance2( fJetsMC->GetJet(jetIterMC), 
-					fJets->GetJet(jetIter) );
+      Float_t distance2 = GetDistance2( fJetsCmp->GetJet(jetIterCmp), 
+					fJetsRec->GetJet(jetIterRec) );
       
       // -- Get Closest
       if ( distance2 < minDistance2 ) {
 	minDistance2 = distance2;
-	idxClosest = jetIter;
+	idxClosest = jetIterRec;
       }
 
-    } //     for ( Int_t jetIter = 0; jetIter < fJets->GetNAODJets(); ++jetIter ) {
+    } //     for ( Int_t jetIterRec = 0; jetIterRec < fJetsRec->GetNAODJets(); ++jetIterRec ) {
  
     // -- Match found
-    if  ( minDistance2 < 10. ) {
-      (*fMatchedJetsMC)[jetIterMC] = idxClosest;
-      (*fMatchedJets)[idxClosest] = jetIterMC;
+    if  ( minDistance2 < fMatchingThreshold ) {
+      (*fMatchedJetsCmp)[jetIterCmp] = idxClosest;
+      (*fMatchedJetsRec)[idxClosest] = jetIterCmp;
     }
 
-  } //  for ( Int_t jetIterMC = 0; jetIterMC < fJetsMC->GetNAODJets(); ++jetIterMC ) {
+  } //  for ( Int_t jetIterCmp = 0; jetIterCmp < fJetsCmp->GetNAODJets(); ++jetIterCmp ) {
 
   return iResult;
 }
@@ -577,29 +571,41 @@ Int_t AliHLTJETAnalysisJets::MatchJets() {
 void AliHLTJETAnalysisJets::FillBasicSpectraHistograms() {
   // see header file for class documentation
 
-  // -- Fill basic MC spectras
-  // ---------------------------
-  for ( Int_t jetIter = 0; jetIter < fJetsMC->GetNAODJets(); ++jetIter ) {
-    FillHist(fSpectraEt, AliHLTJETAnalysisBase::kSpectraPythiaAll, fJetsMC->GetJet(jetIter)->Pt());
-    FillHist(fSpectraEta, AliHLTJETAnalysisBase::kSpectraPythiaAll, fJetsMC->GetJet(jetIter)->Eta());
-    FillHist(fSpectraPhi, AliHLTJETAnalysisBase::kSpectraPythiaAll, fJetsMC->GetJet(jetIter)->Phi());
-  } // for ( Int_t jetIter = 0; jetIter < fJetsMC->GetNAODJets(); ++jetIter ) {
+  if (fJetsRec) {
+    // -- Fill basic Reco spectras
+    // -----------------------------
+    for ( Int_t jetIter = 0; jetIter < fJetsRec->GetNAODJets(); ++jetIter ) {
+      FillHist(fSpectraEt,  AliHLTJETAnalysisBase::kSpectraRecAll, fJetsRec->GetJet(jetIter)->Pt());
+      FillHist(fSpectraEta, AliHLTJETAnalysisBase::kSpectraRecAll, fJetsRec->GetJet(jetIter)->Eta());
+      FillHist(fSpectraPhi, AliHLTJETAnalysisBase::kSpectraRecAll, fJetsRec->GetJet(jetIter)->Phi());
+    } // for ( Int_t jetIter = 0; jetIter < fJetsRec->GetNAODJets(); ++jetIter ) {
+    
+    // -- Fill basic Reco leading spectras
+    // -------------------------------------
+    if ( fJetsRec->GetNAODJets() > 0 ) {
+      FillHist(fSpectraEt,  AliHLTJETAnalysisBase::kSpectraRecLeadAll, fJetsRec->GetJet(0)->Pt());
+      FillHist(fSpectraEta, AliHLTJETAnalysisBase::kSpectraRecLeadAll, fJetsRec->GetJet(0)->Eta());
+      FillHist(fSpectraPhi, AliHLTJETAnalysisBase::kSpectraRecLeadAll, fJetsRec->GetJet(0)->Phi());
+    } 
+  }
 
-  // -- Fill basic Reco spectras
-  // -----------------------------
-  for ( Int_t jetIter = 0; jetIter < fJets->GetNAODJets(); ++jetIter ) {
-    FillHist(fSpectraEt, AliHLTJETAnalysisBase::kSpectraRecoAll, fJets->GetJet(jetIter)->Pt());
-    FillHist(fSpectraEta, AliHLTJETAnalysisBase::kSpectraRecoAll, fJets->GetJet(jetIter)->Eta());
-    FillHist(fSpectraPhi, AliHLTJETAnalysisBase::kSpectraRecoAll, fJets->GetJet(jetIter)->Phi());
-  } // for ( Int_t jetIter = 0; jetIter < fJets->GetNAODJets(); ++jetIter ) {
+  if (fJetsCmp) {
+    // -- Fill basic Compare spectras
+    // --------------------------------
+    for ( Int_t jetIter = 0; jetIter < fJetsCmp->GetNAODJets(); ++jetIter ) {
+      FillHist(fSpectraEt,  AliHLTJETAnalysisBase::kSpectraCmpAll, fJetsCmp->GetJet(jetIter)->Pt());
+      FillHist(fSpectraEta, AliHLTJETAnalysisBase::kSpectraCmpAll, fJetsCmp->GetJet(jetIter)->Eta());
+      FillHist(fSpectraPhi, AliHLTJETAnalysisBase::kSpectraCmpAll, fJetsCmp->GetJet(jetIter)->Phi());
+    } // for ( Int_t jetIter = 0; jetIter < fJetsCmp->GetNAODJets(); ++jetIter ) {
 
-  // -- Fill basic Reco leading spectras
-  // -------------------------------------
-  if ( fJets->GetNAODJets() > 0 ) {
-    FillHist(fSpectraEt, AliHLTJETAnalysisBase::kSpectraRecoLeadAll, fJets->GetJet(0)->Pt());
-    FillHist(fSpectraEta, AliHLTJETAnalysisBase::kSpectraRecoLeadAll, fJets->GetJet(0)->Eta());
-    FillHist(fSpectraPhi, AliHLTJETAnalysisBase::kSpectraRecoLeadAll, fJets->GetJet(0)->Phi());
-  } 
+    // -- Fill basic Reco leading spectras
+    // -------------------------------------
+    if ( fJetsCmp->GetNAODJets() > 0 ) {
+      FillHist(fSpectraEt,  AliHLTJETAnalysisBase::kSpectraCmpLeadAll, fJetsCmp->GetJet(0)->Pt());
+      FillHist(fSpectraEta, AliHLTJETAnalysisBase::kSpectraCmpLeadAll, fJetsCmp->GetJet(0)->Eta());
+      FillHist(fSpectraPhi, AliHLTJETAnalysisBase::kSpectraCmpLeadAll, fJetsCmp->GetJet(0)->Phi());
+    }
+  }
 
   return;
 }
@@ -608,32 +614,37 @@ void AliHLTJETAnalysisJets::FillBasicSpectraHistograms() {
 void AliHLTJETAnalysisJets::FillUnmatchedDeltaHistograms() {
   // see header file for class documentation
 
-  for ( Int_t jetIterMC = 0; jetIterMC < fJetsMC->GetNAODJets(); ++jetIterMC ) {
-    AliAODJet *jetMC = fJetsMC->GetJet(jetIterMC);
-    
-    for ( Int_t jetIter = 0; jetIter < fJets->GetNAODJets(); ++jetIter ) {
-      AliAODJet *jet = fJets->GetJet(jetIter);
+  if ( !fJetsRec || !fJetsCmp )
+    return;
 
-      FillHist(fDeltaEt, AliHLTJETAnalysisBase::kDeltaAll, jetMC->Pt()-jet->Pt());
-      FillHist(fDeltaEta, AliHLTJETAnalysisBase::kDeltaAll, jetMC->Eta()-jet->Eta());
-      FillHist(fDeltaPhi, AliHLTJETAnalysisBase::kDeltaAll, jetMC->Phi()-jet->Phi());
+  for ( Int_t jetIterCmp = 0; jetIterCmp < fJetsCmp->GetNAODJets(); ++jetIterCmp ) {
+    AliAODJet *jetCmp = fJetsCmp->GetJet(jetIterCmp);
+ 
+    for ( Int_t jetIterRec = 0; jetIterRec < fJetsRec->GetNAODJets(); ++jetIterRec ) {
+      AliAODJet *jetRec = fJetsRec->GetJet(jetIterRec);
+ 
+      FillHist(fDeltaEt,  AliHLTJETAnalysisBase::kDeltaAll, jetCmp->Pt()  - jetRec->Pt());
+      FillHist(fDeltaEta, AliHLTJETAnalysisBase::kDeltaAll, jetCmp->Eta() - jetRec->Eta());
+      FillHist(fDeltaPhi, AliHLTJETAnalysisBase::kDeltaAll, jetCmp->Phi() - jetRec->Phi());
       FillHist(fDeltaEtaDeltaPhi, AliHLTJETAnalysisBase::kDeltaAll,
-	       jetMC->Eta()-jet->Eta(), jetMC->Phi()-jet->Phi());
+	       jetCmp->Eta() - jetRec->Eta(), 
+	       jetCmp->Phi() - jetRec->Phi());
       
-    } // for ( Int_t jetIter = 0; jetIter < fJets->GetNAODJets(); ++jetIter ) {
-  } // for ( Int_t jetIterMC = 0; jetIterMC < fJetsMC->GetNAODJets(); ++jetIterMC ) {
+    } // for ( Int_t jetIterRec = 0; jetIterRec < fJetsRec->GetNAODJets(); ++jetIterRec ) {
+  } // for ( Int_t jetIterCmp = 0; jetIterCmp < fJetsCmp->GetNAODJets(); ++jetIterCmp ) {
 
   // -- Leading Jets
   // -----------------
-  if ( fJets->GetNAODJets() > 0 && fJetsMC->GetNAODJets() > 0 ) {
-    AliAODJet *jetMC = fJetsMC->GetJet(0);
-    AliAODJet *jet = fJets->GetJet(0);
+  if ( fJetsRec->GetNAODJets() > 0 && fJetsCmp->GetNAODJets() > 0 ) {
+    AliAODJet *jetCmp = fJetsCmp->GetJet(0);
+    AliAODJet *jetRec = fJetsRec->GetJet(0);
 
-    FillHist(fDeltaEt, AliHLTJETAnalysisBase::kDeltaLead, jetMC->Pt()-jet->Pt());
-    FillHist(fDeltaEta, AliHLTJETAnalysisBase::kDeltaLead, jetMC->Eta()-jet->Eta());
-    FillHist(fDeltaPhi, AliHLTJETAnalysisBase::kDeltaLead, jetMC->Phi()-jet->Phi());
+    FillHist(fDeltaEt,  AliHLTJETAnalysisBase::kDeltaLead, jetCmp->Pt()  - jetRec->Pt());
+    FillHist(fDeltaEta, AliHLTJETAnalysisBase::kDeltaLead, jetCmp->Eta() - jetRec->Eta());
+    FillHist(fDeltaPhi, AliHLTJETAnalysisBase::kDeltaLead, jetCmp->Phi() - jetRec->Phi());
     FillHist(fDeltaEtaDeltaPhi, AliHLTJETAnalysisBase::kDeltaLead,
-	     jetMC->Eta()-jet->Eta(), jetMC->Phi()-jet->Phi());
+	     jetCmp->Eta() - jetRec->Eta(), 
+	     jetCmp->Phi() - jetRec->Phi());
   }
 
   return;
@@ -643,35 +654,37 @@ void AliHLTJETAnalysisJets::FillUnmatchedDeltaHistograms() {
 void AliHLTJETAnalysisJets::FillMatchedDeltaHistograms() {
   // see header file for class documentation
 
-  for ( Int_t jetIterMC = 0; jetIterMC < fJetsMC->GetNAODJets(); ++jetIterMC ) {
+  for ( Int_t jetIterCmp = 0; jetIterCmp < fJetsCmp->GetNAODJets(); ++jetIterCmp ) {
 
     // -- Not matched jet
-    if ( (*fMatchedJetsMC)[jetIterMC] == -1 )
+    if ( (*fMatchedJetsCmp)[jetIterCmp] == -1 )
       continue;
     
-    AliAODJet *jetMC = fJetsMC->GetJet(jetIterMC);
-    AliAODJet *jet = fJets->GetJet((*fMatchedJetsMC)[jetIterMC]);
+    AliAODJet *jetCmp = fJetsCmp->GetJet(jetIterCmp);
+    AliAODJet *jetRec = fJetsRec->GetJet((*fMatchedJetsCmp)[jetIterCmp]);
 
-    FillHist(fDeltaEt, AliHLTJETAnalysisBase::kDeltaMatchedAll, jetMC->Pt()-jet->Pt());
-    FillHist(fDeltaEta, AliHLTJETAnalysisBase::kDeltaMatchedAll, jetMC->Eta()-jet->Eta());
-    FillHist(fDeltaPhi, AliHLTJETAnalysisBase::kDeltaMatchedAll, jetMC->Phi()-jet->Phi());
+    FillHist(fDeltaEt,  AliHLTJETAnalysisBase::kDeltaMatchedAll, jetCmp->Pt()  - jetRec->Pt());
+    FillHist(fDeltaEta, AliHLTJETAnalysisBase::kDeltaMatchedAll, jetCmp->Eta() - jetRec->Eta());
+    FillHist(fDeltaPhi, AliHLTJETAnalysisBase::kDeltaMatchedAll, jetCmp->Phi() - jetRec->Phi());
     FillHist(fDeltaEtaDeltaPhi, AliHLTJETAnalysisBase::kDeltaMatchedAll,
-	     jetMC->Eta()-jet->Eta(), jetMC->Phi()-jet->Phi());
+	     jetCmp->Eta() - jetRec->Eta(), 
+	     jetCmp->Phi() - jetRec->Phi());
     
-  } // for ( Int_t jetIter = 0; jetIter < fJetsMC->GetNAODJets(); ++jetIter ) {
+  } // for ( Int_t jetIterCmp = 0; jetIterCmp < fJetsCmp->GetNAODJets(); ++jetIterCmp ) {
   
   // -- Leading Jets
   // -----------------
-  if ((*fMatchedJetsMC)[0] != -1 ) {
+  if ((*fMatchedJetsCmp)[0] != -1 ) {
 
-    AliAODJet *jetMC = fJetsMC->GetJet(0);
-    AliAODJet *jet = fJets->GetJet((*fMatchedJetsMC)[0]);
+    AliAODJet *jetCmp = fJetsCmp->GetJet(0);
+    AliAODJet *jetRec = fJetsRec->GetJet((*fMatchedJetsCmp)[0]);
     
-    FillHist(fDeltaEt, AliHLTJETAnalysisBase::kDeltaMatchedLead, jetMC->Pt()-jet->Pt());
-    FillHist(fDeltaEta, AliHLTJETAnalysisBase::kDeltaMatchedLead, jetMC->Eta()-jet->Eta());
-    FillHist(fDeltaPhi, AliHLTJETAnalysisBase::kDeltaMatchedLead, jetMC->Phi()-jet->Phi());
+    FillHist(fDeltaEt,  AliHLTJETAnalysisBase::kDeltaMatchedLead, jetCmp->Pt()  - jetRec->Pt());
+    FillHist(fDeltaEta, AliHLTJETAnalysisBase::kDeltaMatchedLead, jetCmp->Eta() - jetRec->Eta());
+    FillHist(fDeltaPhi, AliHLTJETAnalysisBase::kDeltaMatchedLead, jetCmp->Phi() - jetRec->Phi());
     FillHist(fDeltaEtaDeltaPhi, AliHLTJETAnalysisBase::kDeltaMatchedLead,
-	     jetMC->Eta()-jet->Eta(), jetMC->Phi()-jet->Phi());
+ 	     jetCmp->Eta() - jetRec->Eta(), 
+	     jetCmp->Phi() - jetRec->Phi());
   }
   
   return;
@@ -683,43 +696,56 @@ void AliHLTJETAnalysisJets::FillMatchedSpectraHistograms() {
 
   Int_t idx = 0;
 
-  // -- Fill matched MC spectras
-  // ---------------------------
-  for ( Int_t jetIter = 0; jetIter < fJetsMC->GetNAODJets(); ++jetIter ) {
-    if ( (*fMatchedJetsMC)[jetIter] == -1 )
-      idx = AliHLTJETAnalysisBase::kSpectraPythiaUnmatched;
+  // -- Fill matched compare spectras
+  // --------------------------------
+  for ( Int_t jetIter = 0; jetIter < fJetsCmp->GetNAODJets(); ++jetIter ) {
+    if ( (*fMatchedJetsCmp)[jetIter] == -1 )
+      idx = AliHLTJETAnalysisBase::kSpectraCmpUnmatched;
     else
-      idx = AliHLTJETAnalysisBase::kSpectraPythiaMatched;
+      idx = AliHLTJETAnalysisBase::kSpectraCmpMatched;
 
-    FillHist(fSpectraEt, idx, fJetsMC->GetJet(jetIter)->Pt());
-    FillHist(fSpectraEta, idx, fJetsMC->GetJet(jetIter)->Eta());
-    FillHist(fSpectraPhi, idx, fJetsMC->GetJet(jetIter)->Phi());
-  } // for ( Int_t jetIter = 0; jetIter < fJetsMC->GetNAODJets(); ++jetIter ) {
+    FillHist(fSpectraEt,  idx, fJetsCmp->GetJet(jetIter)->Pt());
+    FillHist(fSpectraEta, idx, fJetsCmp->GetJet(jetIter)->Eta());
+    FillHist(fSpectraPhi, idx, fJetsCmp->GetJet(jetIter)->Phi());
+  } // for ( Int_t jetIter = 0; jetIter < fJetsCmp->GetNAODJets(); ++jetIter ) {
+
+  // -- Fill matched compare leading spectras
+  // ----------------------------------------
+  if ( fJetsCmp->GetNAODJets() > 0 ) {
+    if ( (*fMatchedJetsCmp)[0] == -1 )
+      idx = AliHLTJETAnalysisBase::kSpectraCmpLeadUnmatched;
+    else
+      idx = AliHLTJETAnalysisBase::kSpectraCmpLeadMatched; 
+
+    FillHist(fSpectraEt,  idx, fJetsCmp->GetJet(0)->Pt());
+    FillHist(fSpectraEta, idx, fJetsCmp->GetJet(0)->Eta());
+    FillHist(fSpectraPhi, idx, fJetsCmp->GetJet(0)->Phi());
+  }
 
   // -- Fill matched Reco spectras
   // -----------------------------
-  for ( Int_t jetIter = 0; jetIter < fJets->GetNAODJets(); ++jetIter ) {
-    if ( (*fMatchedJets)[jetIter] == -1 )
-      idx = AliHLTJETAnalysisBase::kSpectraRecoUnmatched;
+  for ( Int_t jetIter = 0; jetIter < fJetsRec->GetNAODJets(); ++jetIter ) {
+    if ( (*fMatchedJetsRec)[jetIter] == -1 )
+      idx = AliHLTJETAnalysisBase::kSpectraRecUnmatched;
     else
-      idx = AliHLTJETAnalysisBase::kSpectraRecoMatched;
+      idx = AliHLTJETAnalysisBase::kSpectraRecMatched;
     
-    FillHist(fSpectraEt, idx, fJets->GetJet(jetIter)->Pt());
-    FillHist(fSpectraEta, idx, fJets->GetJet(jetIter)->Eta());
-    FillHist(fSpectraPhi, idx, fJets->GetJet(jetIter)->Phi());
-  } // for ( Int_t jetIter = 0; jetIter < fJets->GetNAODJets(); ++jetIter ) {
+    FillHist(fSpectraEt,  idx, fJetsRec->GetJet(jetIter)->Pt());
+    FillHist(fSpectraEta, idx, fJetsRec->GetJet(jetIter)->Eta());
+    FillHist(fSpectraPhi, idx, fJetsRec->GetJet(jetIter)->Phi());
+  } // for ( Int_t jetIter = 0; jetIter < fJetsRec->GetNAODJets(); ++jetIter ) {
 
   // -- Fill matched Reco leading spectras
   // -------------------------------------
-  if ( fJets->GetNAODJets() > 0 ) {
-    if ( (*fMatchedJets)[0] == -1 )
-      idx = AliHLTJETAnalysisBase::kSpectraRecoLeadUnmatched;
+  if ( fJetsRec->GetNAODJets() > 0 ) {
+    if ( (*fMatchedJetsRec)[0] == -1 )
+      idx = AliHLTJETAnalysisBase::kSpectraRecLeadUnmatched;
     else
-      idx = AliHLTJETAnalysisBase::kSpectraRecoLeadMatched;
+      idx = AliHLTJETAnalysisBase::kSpectraRecLeadMatched;
 
-    FillHist(fSpectraEt, idx, fJets->GetJet(0)->Pt());
-    FillHist(fSpectraEta, idx, fJets->GetJet(0)->Eta());
-    FillHist(fSpectraPhi, idx, fJets->GetJet(0)->Phi());
+    FillHist(fSpectraEt,  idx, fJetsRec->GetJet(0)->Pt());
+    FillHist(fSpectraEta, idx, fJetsRec->GetJet(0)->Eta());
+    FillHist(fSpectraPhi, idx, fJetsRec->GetJet(0)->Phi());
   } 
   
   return;
@@ -729,37 +755,37 @@ void AliHLTJETAnalysisJets::FillMatchedSpectraHistograms() {
 void AliHLTJETAnalysisJets::FillMatchedHistograms() {
   // see header file for class documentation
 
-  for ( Int_t jetIterMC = 0; jetIterMC < fJetsMC->GetNAODJets(); ++jetIterMC ) {
+  for ( Int_t jetIterCmp = 0; jetIterCmp < fJetsCmp->GetNAODJets(); ++jetIterCmp ) {
 
     // -- Not matched jet
-    if ( (*fMatchedJetsMC)[jetIterMC] == -1 )
+    if ( (*fMatchedJetsCmp)[jetIterCmp] == -1 )
       continue;
     
-    AliAODJet *jetMC = fJetsMC->GetJet(jetIterMC);
-    AliAODJet *jet = fJets->GetJet((*fMatchedJetsMC)[jetIterMC]);
+    AliAODJet *jetCmp = fJetsCmp->GetJet(jetIterCmp);
+    AliAODJet *jetRec = fJetsRec->GetJet((*fMatchedJetsCmp)[jetIterCmp]);
 
     // -- Correlations    
-    FillHist(fCorrelationsJetEt, AliHLTJETAnalysisBase::kPlotAll, jetMC->Pt(), jet->Pt());
+    FillHist(fCorrelationsJetEt, AliHLTJETAnalysisBase::kPlotAll, jetCmp->Pt(), jetRec->Pt());
 
     // -- Resolutions
-    FillHist(fResolutionsJetEt, AliHLTJETAnalysisBase::kPlotAll, jetMC->Pt(),
-	     (jetMC->Pt()-jet->Pt())/(jetMC->Pt()+jet->Pt()));
+    FillHist(fResolutionsJetEt, AliHLTJETAnalysisBase::kPlotAll, jetCmp->Pt(),
+	     (jetCmp->Pt()-jetRec->Pt())/(jetCmp->Pt()+jetRec->Pt()));
 
-  } // for ( Int_t jetIter = 0; jetIter < fJetsMC->GetNAODJets(); ++jetIter ) {
+  } // for ( Int_t jetIter = 0; jetIter < fJetsCmp->GetNAODJets(); ++jetIter ) {
   
   // -- Leading Jets
   // -----------------
-  if ((*fMatchedJetsMC)[0] != -1 ) {
+  if ((*fMatchedJetsCmp)[0] != -1 ) {
 
-    AliAODJet *jetMC = fJetsMC->GetJet(0);
-    AliAODJet *jet = fJets->GetJet((*fMatchedJetsMC)[0]);
+    AliAODJet *jetCmp = fJetsCmp->GetJet(0);
+    AliAODJet *jetRec = fJetsRec->GetJet((*fMatchedJetsCmp)[0]);
     
     // -- Correlations    
-    FillHist(fCorrelationsJetEt, AliHLTJETAnalysisBase::kPlotLead, jetMC->Pt(), jet->Pt());
+    FillHist(fCorrelationsJetEt, AliHLTJETAnalysisBase::kPlotLead, jetCmp->Pt(), jetRec->Pt());
     
     // -- Resolutions
-    FillHist(fResolutionsJetEt, AliHLTJETAnalysisBase::kPlotLead, jetMC->Pt(),
-	     (jetMC->Pt()-jet->Pt())/(jetMC->Pt()+jet->Pt()));
+    FillHist(fResolutionsJetEt, AliHLTJETAnalysisBase::kPlotLead, jetCmp->Pt(),
+	     (jetCmp->Pt()-jetRec->Pt())/(jetCmp->Pt()+jetRec->Pt()));
   }
 
   return;
