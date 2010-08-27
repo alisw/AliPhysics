@@ -1,6 +1,6 @@
 /** ---------------------------------------------------------------------
  *  @file   ConfigJetAnalysisHLT.C
- *  @author Jochen Thaeder <thaeder@kip.uni-heidelberg.de>
+ *  @author Jochen Thaeder <jochen@thaeder.de>
  *  @brief  Run HLT cone finder in analysis framework, on ESDs
  *
  *  --------------------------------------------------------------------- 
@@ -48,8 +48,8 @@ AliJetFinder*  ConfigJetAnalysis() {
   jetReaderHeader->SetJetAlgorithm(algorithm);
 
   // Set prt to track cuts
-  jetReaderHeader->SetTrackCuts( trackCuts );
-  jetReaderHeader->SetSeedCuts( seedCuts );
+  jetReaderHeader->SetTrackCuts(trackCuts);
+  jetReaderHeader->SetSeedCuts(seedCuts);
 
   // Set Eta min/max and Phi min/max
   jetReaderHeader->SetFiducialEta( -0.9, 0.9) ;

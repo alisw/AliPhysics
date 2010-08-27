@@ -31,10 +31,13 @@ void JetAnalysisManagerHLT() {
   //
   // --------------------------------------------------------------------------------  
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  gROOT->LoadMacro("${ALICE_ROOT}/PWG0/CreateESDChain.C");
   TChain* chain = new TChain("esdTree");
   
-  chain->Add("~/jet/data/HEAD_2009-06-04/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=10,1000_R=0.7_100ev/AliESDs.root");
+  chain->Add("~/jet/data/HEAD_2010-01-08/Gen/kPythia6Jets86_104_14TeV/JET-ETA=-0.2,0.2_JET-ET=10,1000_R=0.4_20ev/AliESDs.root");
+
+
+  //  chain->Add("~/jet/data/HEAD_2009-06-04/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=10,1000_R=0.7_100ev/AliESDs.root");
   //chain->Add("~/jet/data/HEAD_2009-06-04/kPythia6Jets104_125_14TeV/JET-ETA=-0.2,0.2_JET-ET=10,1000_R=0.7_1ev/AliESDs.root");
 
   // --------------------------------------------------------------------------------  
@@ -52,12 +55,12 @@ void JetAnalysisManagerHLT() {
 
   // MC Truth
   AliMCEventHandler* mcHandler = new AliMCEventHandler();
-    
+
   AliAnalysisManager *mgr  = new AliAnalysisManager("Jet Manager", "Jet Manager");
   mgr->SetInputEventHandler  (inpHandler);
   mgr->SetOutputEventHandler (aodHandler);
   mgr->SetMCtruthEventHandler(mcHandler);
-  mgr->SetDebugLevel(0);
+  mgr->SetDebugLevel(10);
 
   // --------------------------------------------------------------------------------
   //
@@ -70,14 +73,7 @@ void JetAnalysisManagerHLT() {
   jetana->SetConfigFile("./tasks/ConfigJetAnalysisHLT.C");
   jetana->SetNonStdBranch("jetsHLT");
   jetana->SetDebugLevel(10);
-  mgr->AddTask(jetana);  
-
-  // -- HLT FFSC - MC
-  AliAnalysisTaskJets *jetanaMC = new AliAnalysisTaskJets("JetAnalysisHLTMC");
-  jetanaMC->SetConfigFile("./tasks/ConfigJetAnalysisHLTMC.C");
-  jetanaMC->SetNonStdBranch("jetsHLTMC");
-  jetanaMC->SetDebugLevel(0);
-  mgr->AddTask(jetanaMC);
+  mgr->AddTask(jetana);
 
   // --------------------------------------------------------------------------------
   //
@@ -88,22 +84,18 @@ void JetAnalysisManagerHLT() {
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histos", TList::Class(), AliAnalysisManager::kOutputContainer, "histos.root");
-  AliAnalysisDataContainer *coutputMC2 = mgr->CreateContainer("histosMC", TList::Class(), AliAnalysisManager::kOutputContainer, "histosMC.root");
-  
+
   mgr->ConnectInput  (jetana,     0, cinput1  );
   mgr->ConnectOutput (jetana,     0, coutput1 );
   mgr->ConnectOutput (jetana,     1, coutput2 );
-    
-  mgr->ConnectInput  (jetanaMC,     0, cinput1  );
-  mgr->ConnectOutput (jetanaMC,     0, coutput1 );
-  mgr->ConnectOutput (jetanaMC,     1, coutputMC2 );
-  
+
+
   // --------------------------------------------------------------------------------  
   //
   // Run the analysis
   //    
   // --------------------------------------------------------------------------------  
-  
+
   mgr->InitAnalysis();
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);

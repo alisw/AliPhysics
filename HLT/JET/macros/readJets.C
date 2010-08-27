@@ -28,7 +28,7 @@ void readJets( Char_t* fileName = "./analysis/EOR_analyze_100000_kPythia6Jets104
   
   AliHLTJETAnalysisMerge* merge = new AliHLTJETAnalysisMerge();
   merge->Initialize();
-
+    
   merge->AddJets( jets ); 
     
   merge->CreateCanvas();

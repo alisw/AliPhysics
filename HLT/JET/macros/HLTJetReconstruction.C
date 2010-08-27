@@ -107,8 +107,9 @@ void HLTJetReconstruction(Int_t nEvents=1, Bool_t generate=kFALSE, PprRun_t runT
     // ------------------------------------------
     TString publisherId("ESDMCEventPublisher");
     // ------------------------------------------
-
-    TString publisherArg( Form("-entrytype MCFAST -dataspec 0x0000001F -datapath /home/jthaeder/jet/data/HEAD_2009-10-26/FastGen/kPythia6Jets125_150_14TeV/JET-ETA=-0.2,0.2_JET-ET=50,1000_R=0.4_200ev") );
+    // MCFAST - MC - ESD
+    TString publisherArg("-entrytype ESD -dataspec 0x0000001F -datapath /lustre/alice/jthaeder/data/HEAD_2010-07-09/7TeV/pp_Perugia0/014000");
+    
     AliHLTConfiguration ESDMCEventPublisher(publisherId.Data(), "ESDMCEventPublisher", NULL, publisherArg.Data() );
 
     if (!analysisInput.IsNull()) analysisInput+=" ";
@@ -142,15 +143,18 @@ void HLTJetReconstruction(Int_t nEvents=1, Bool_t generate=kFALSE, PprRun_t runT
   // -- Processing Components -- //
   // -                         - //
   // ----------------------------//
+
 #if 1
+
   // ------------------------------------------
   // -- ConeJetFinder
   // ------------------------------------------
   TString jetId("JETConeJet");
   // ------------------------------------------
 
-  TString jetArg( Form("-algorithm FSCSquareCell -leading 1 -coneRadius %.1f -trackCutMinPt 0.0 -seedCutMinPt %.1f -jetCutMinEt %.1f",
-		       coneRadius, cutPtSeed, cutEtJet) );
+  TString jetArg(
+		 Form("-algorithm FSCSquareCell -leading 1 -coneRadius %.1f -trackCutMinPt 0.0 -seedCutMinPt %.1f -jetCutMinEt %.1f", coneRadius, cutPtSeed, cutEtJet) 
+		 );
   
   AliHLTConfiguration jetCone(jetId.Data(), "JETConeJetFinder", jetInput.Data(), jetArg.Data()); 
   
@@ -158,24 +162,22 @@ void HLTJetReconstruction(Int_t nEvents=1, Bool_t generate=kFALSE, PprRun_t runT
   analysisInput += jetId;
 
 #else
+
   // ------------------------------------------
   // -- FastJetFinder
   // ------------------------------------------
 
-  AliHLTConfiguration jetFinder("JETFastJet_Kt", "JETFastJetFinder",
-				jetInput.Data(),"-finderType kt");
+  AliHLTConfiguration jetFinder("JETFastJet_Kt", "JETFastJetFinder", jetInput.Data(),"-finderType kt");
     
   if (!writerInput.IsNull()) writerInput+=" ";
   writerInput+="JETFastJet_Kt";
   
-  
-  AliHLTConfiguration jetFinder("JETFastJet_AntiKt", "JETFastJetFinder",
-				jetInput.Data(),"-finderType antikt");
+  AliHLTConfiguration jetFinder("JETFastJet_AntiKt", "JETFastJetFinder", jetInput.Data(),"-finderType antikt");
   
   if (!writerInput.IsNull()) writerInput+=" ";
   writerInput+="JETFastJet_AntiKt";
 #endif
-  
+
   // ------------------------------------------
   // -- Jet Analysis 
   // ------------------------------------------
@@ -198,8 +200,7 @@ void HLTJetReconstruction(Int_t nEvents=1, Bool_t generate=kFALSE, PprRun_t runT
   TString writerArg( Form("-directory analysis -datafile analyze_%d_%s -write-all-events", nEvents, pprRunName[runType] ));
 
   // -- The RootFileWriter 
-  AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", 
-				 writerInput.Data(), writerArg.Data() );
+  AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", writerInput.Data(), writerArg.Data() );
   
   // --------------------------- //
   // -                         - //
