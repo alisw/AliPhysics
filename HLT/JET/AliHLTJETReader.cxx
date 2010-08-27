@@ -134,15 +134,6 @@ Int_t AliHLTJETReader::Initialize() {
  
   // -- Get ptr to cuts from reader
   // --------------------------------
- 
-  // -- Seed cuts
-  if ( ! iResult ) {
-    fSeedCuts = readerHeader->GetSeedCuts();
-    if ( ! fSeedCuts ) {
-      HLTError("Error getting ptr to seed cuts.");
-      iResult = -EINPROGRESS;
-    }
-  }
 
   // -- Track cuts
   if ( ! iResult ) {
@@ -422,7 +413,6 @@ Bool_t AliHLTJETReader::FillVectorESD() {
   } // for ( Int_t iter = 0; iter < fESD->GetNumberOfTracks() && !iResult; iter++ ) {
   
   HLTInfo(" Number of selected tracks %d", nTracks);
-
 
   return bResult;
 }
@@ -732,6 +722,18 @@ Int_t AliHLTJETReader::InitializeFFSC() {
     fJetCandidates = new TClonesArray("AliHLTJETConeJetCandidate", 30);
     if ( ! fJetCandidates) {
       HLTError("Error instanciating jet candidates.");
+      iResult = -EINPROGRESS;
+    }
+  }
+
+  // -- Get ptr to cuts from reader
+  // --------------------------------
+ 
+  // -- Seed cuts
+  if ( ! iResult ) {
+    fSeedCuts = readerHeader->GetSeedCuts();
+    if ( ! fSeedCuts ) {
+      HLTError("Error getting ptr to seed cuts.");
       iResult = -EINPROGRESS;
     }
   }

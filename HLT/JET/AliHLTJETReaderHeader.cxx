@@ -110,17 +110,20 @@ Int_t AliHLTJETReaderHeader::Initialize() {
     HLTInfo(" -= TrackCuts =- " );
   }
 
-  if ( ! fSeedCuts ) {
-    HLTError("No seed cuts set in reader header");
-    iResult = -EINPROGRESS;
+  // Check for seeds only cone based algoritms
+  if ( fAlgorithm >= AliHLTJETBase::kFFSCSquareCell ) {
+    if ( !fSeedCuts ) {
+      HLTError("No seed cuts set in reader header");
+      iResult = -EINPROGRESS;
+    }
+    else {
+      fSeedCuts->SetEtaRange( fFiducialEtaMin+fConeRadius, 
+			      fFiducialEtaMax-fConeRadius );
+      fSeedCuts->SetPhiRange( fFiducialPhiMin, fFiducialPhiMax );
+      HLTInfo(" -= SeedCuts =- " );
+    }
   }
-  else {
-    fSeedCuts->SetEtaRange( fFiducialEtaMin+fConeRadius, 
-			     fFiducialEtaMax-fConeRadius );
-    fSeedCuts->SetPhiRange( fFiducialPhiMin, fFiducialPhiMax );
-    HLTInfo(" -= SeedCuts =- " );
-  }
-
+  
   return iResult;
 }
 

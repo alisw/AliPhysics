@@ -5,7 +5,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Jochen Thaeder <thaeder@kip.uni-heidelberg.de>        *
+//* Primary Authors: Jochen Thaeder <jochen@thaeder.de>                    *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -18,9 +18,8 @@
 //**************************************************************************
 
 /** @file   AliHLTJETFastJetComponent.cxx
-    @author Jochen Thaeder <thaeder@kip.uni-heidelberg.de>
-    @date   
-    @brief   Component to run the FastJet jetfinder
+    @author Jochen Thaeder <jochen@thaeder.de>
+    @brief  Component to run the FastJet jetfinder
 */
 
 #if __GNUC__>= 3

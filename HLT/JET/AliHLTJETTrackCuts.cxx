@@ -116,8 +116,12 @@ Bool_t AliHLTJETTrackCuts::IsSelected( TParticle *particle ) {
     bResult = kFALSE;
 
   // -- Charged particles only
-  if ( fChargedOnly && !particle->GetPDG()->Charge() )
+  if ( ! particle->GetPDG() )
     bResult = kFALSE;
+  else {
+    if ( fChargedOnly && !particle->GetPDG()->Charge() )
+      bResult = kFALSE;
+  }
 
   // -- cut on min Pt
   if ( particle->Pt() < fPtMin )

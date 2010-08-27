@@ -171,7 +171,7 @@ private:
   /** Cone radius */
   Float_t                    fConeRadius;           // see above
   
-  /** Use MC Data -- only neede for off-line*/
+  /** Use MC Data -- only needed for off-line */
   Bool_t                     fUseMC;                // see above 
 
   ClassDef(AliHLTJETReaderHeader, 1)
