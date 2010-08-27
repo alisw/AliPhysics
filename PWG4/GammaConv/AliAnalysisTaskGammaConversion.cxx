@@ -432,14 +432,16 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   }
   */
 
-  if(!fV0Reader->CheckForPrimaryVertexZ() ){
-    return;
-  }
-
   if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
     //    cout<< "Event not taken"<< endl;
     return; // aborts if the primary vertex does not have contributors.
   }
+
+
+  if(!fV0Reader->CheckForPrimaryVertexZ() ){
+    return;
+  }
+
 
 
   // Process the MC information
