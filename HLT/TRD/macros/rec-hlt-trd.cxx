@@ -37,16 +37,18 @@
 
 #include "readCDBentry.h"
 
-int rec_hlt_trd(const TString input ="raw.root", TString outPath=gSystem->pwd());
+int rec_hlt_trd(const TString input ="raw.root", TString outPath=gSystem->pwd(), const TString extra="");
 Int_t ExtractRunNumber(const TString str);
+Int_t ExtractYear(const TString str);
 int main(int argc, char** argv)
 {
   if(argc==2) return rec_hlt_trd(argv[1]);
   else if(argc==3) return rec_hlt_trd(argv[1],argv[2]);
+  else if(argc==4) return rec_hlt_trd(argv[1],argv[2],argv[3]);
   else return rec_hlt_trd();
 }
 
-int rec_hlt_trd(const TString filename, TString outPath)
+int rec_hlt_trd(const TString filename, TString outPath, const TString extra)
 {
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,6 +101,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   printf("File path %s\n",dataPath.Data());
   printf("Processing file %s\n",extInput.Data());
   printf("Output to %s\n",outPath.Data());
+  printf("extra: %s\n",extra.Data());
 
   if(!gSystem->AccessPathName("galice.root")){
     cerr << "please delete the galice.root or run at different place." << endl;
@@ -142,7 +145,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
       if(TRDmodules[i]>-1)usedModules++;
   }
 
-  TString option="libAliHLTUtil.so libAliHLTTRD.so libAliHLTMUON.so libAliHLTGlobal.so libAliHLTTrigger.so loglevel=0x7f chains=";
+  TString option="libAliHLTUtil.so libAliHLTTRD.so libAliHLTGlobal.so libAliHLTTrigger.so loglevel=0x7f chains=";
   option+=chains;
   TString afterTr, afterTrOff, afterCf, afterCal;
 
@@ -156,12 +159,16 @@ int rec_hlt_trd(const TString filename, TString outPath)
       
       // Clusterizer
       arg = "";
-      if(customArgs || disableHLTflag){
+      if(customArgs || disableHLTflag || extra.Length()){
 	arg = readCDBentry("HLT/ConfigTRD/ClusterizerComponent"); //output_percentage 100 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT
 	if(customArgs)
 	  arg += "";
 	if(disableHLTflag)
 	  arg += " -HLTflag no";
+	if(extra.Length()>0){
+	  arg += " ";
+	  arg += extra.Data();
+	}
       }
 
       cf.Form("TRD-CF_%02d", TRDmodules[module]);
@@ -172,12 +179,16 @@ int rec_hlt_trd(const TString filename, TString outPath)
 
       // Tracker
       arg="";
-      if(customArgs || disableHLTflag){
+      if(customArgs || disableHLTflag || extra.Length()){
 	arg = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
 	if(customArgs)
 	  arg += "";
 	if(disableHLTflag)
 	  arg += " -HLTflag no";
+	if(extra.Length()>0){
+	  arg += " ";
+	  arg += extra.Data();
+	}
       }
 
       tr.Form("TRD-TR_%02d", TRDmodules[module]);
@@ -189,9 +200,13 @@ int rec_hlt_trd(const TString filename, TString outPath)
       // Offline Tracker (for debug purposes only)
       arg = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
       if(customArgs)
-	arg += " -highLevelOutput yes -emulateHLToutput no";
+	arg += " -highLevelOutput yes -emulateHLToutput no"; 
       if(disableHLTflag)
 	arg+=" -HLTflag no";
+      if(extra.Length()>0){
+	arg += " ";
+	arg += extra.Data();
+      }
 
       trOff.Form("TRD-TROFF_%02d", TRDmodules[module]);
       AliHLTConfiguration trOffConf(trOff.Data(), "TRDOfflineTrackerV1", cf.Data(), arg.Data());
@@ -211,16 +226,34 @@ int rec_hlt_trd(const TString filename, TString outPath)
     }
 
   // cluster histogramm
-  AliHLTConfiguration histoConf("TRD-ClHisto", "TRDClusterHisto", afterCf.Data(), "");
-  AliHLTConfiguration writerHistoConf( "TRD-ClHistoFile", "ROOTFileWriter", "TRD-ClHisto", "-directory hlt-trd-histo/ -datafile histo.root -concatenate-events -concatenate-blocks");
+  AliHLTConfiguration clHistoConf("TRD-ClHisto", "TRDClusterHisto", afterCf.Data(), "");
+  AliHLTConfiguration writerClHistoConf( "TRD-ClHistoFile", "ROOTFileWriter", "TRD-ClHisto", "-directory hlt-trd-histo/ -datafile clHisto.root -concatenate-events -concatenate-blocks -overwrite");
+
+  AliHLTConfiguration clHistoMerg("TRD-ClHistoMerg", "TRDHistoMerger", "TRD-ClHisto", "");
+  AliHLTConfiguration writerClHistoMerg("TRD-ClHistoMergFile", "ROOTFileWriter", "TRD-ClHistoMerg", "-directory hlt-trd-histo/ -datafile clMergeHisto.root -concatenate-events -concatenate-blocks -overwrite");
+
+  // track histogramm
+  AliHLTConfiguration trHistoConf("TRD-TrHisto", "TRDTrackHisto", afterTr.Data(), "");
+  AliHLTConfiguration writerTrHistoConf( "TRD-TrHistoFile", "ROOTFileWriter", "TRD-TrHisto", "-directory hlt-trd-histo/ -datafile trHisto.root -concatenate-events -concatenate-blocks -overwrite");
+
+  AliHLTConfiguration trHistoMerg("TRD-TrHistoMerg", "TRDHistoMerger", "TRD-TrHisto", "");
+  AliHLTConfiguration writerTrHistoMerg("TRD-TrHistoMergFile", "ROOTFileWriter", "TRD-TrHistoMerg", "-directory hlt-trd-histo/ -datafile trMergeHisto.root -concatenate-events -concatenate-blocks -overwrite");
+
+  // // calibration histo (you may use tr or trOff here)
+  // AliHLTConfiguration calibHistoConf("TRD-CalibHisto", "TRDCalibHisto", afterTr.Data(), "-takeAllEvents");
+  // AliHLTConfiguration writerCalibHistoConf( "TRD-CalibHistoFile", "ROOTFileWriter", "TRD-CalibHisto", "-directory hlt-trd-calib/ -datafile calibHisto.root -concatenate-events -concatenate-blocks -write-all-events");
+
+  // // new calibration
+  // AliHLTConfiguration calibFitConf("TRD-CalibFit", "TRDCalibFit", "TRD-CalibHisto", "");
+  // AliHLTConfiguration writerCalibFitConf( "TRD-CalibFitFile", "ROOTFileWriter", "TRD-CalibFit", "-directory hlt-trd-calib/ -datafile calibFit.root -concatenate-events -concatenate-blocks -write-all-events");
 
   // new calibration (SM wise)
   AliHLTConfiguration calibFitConf("TRD-CalibFit", "TRDCalibFit", afterCal.Data(), "");
-  AliHLTConfiguration writerCalibFitConf( "TRD-CalibFitFile", "ROOTFileWriter", "TRD-CalibFit", "-directory hlt-trd-calib/ -datafile calibFit.root -concatenate-events -concatenate-blocks -write-all-events");
+  AliHLTConfiguration writerCalibFitConf( "TRD-CalibFitFile", "ROOTFileWriter", "TRD-CalibFit", "-directory hlt-trd-calib/ -datafile calibFit.root -concatenate-events -concatenate-blocks -write-all-events -overwrite");
 
   // old calibration (you may use tr or trOff here)
   AliHLTConfiguration calibConf("TRD-Calib", "TRDCalibration", afterTr.Data(), "-takeAllEvents");
-  AliHLTConfiguration writerCalibConf( "TRD-CalibFile", "ROOTFileWriter", "TRD-Calib", "-directory hlt-trd-calib/ -datafile calib.root -concatenate-events -concatenate-blocks -write-all-events");
+  AliHLTConfiguration writerCalibConf( "TRD-CalibFile", "ROOTFileWriter", "TRD-Calib", "-directory hlt-trd-calib/ -datafile calib.root -concatenate-events -concatenate-blocks -write-all-events -overwrite");
 
   // esd converter
   AliHLTConfiguration esdConf("TRD-Esd", "GlobalEsdConverter", afterTr.Data(), "-notree");
@@ -237,19 +270,18 @@ int rec_hlt_trd(const TString filename, TString outPath)
   //
   AliCDBManager * man = AliCDBManager::Instance();
   Int_t run = 0;
+  man->SetRun(run);
   if(bRealData){
+    run = ExtractRunNumber(filename);    
+    Int_t year = ExtractYear(filename);
     //alien://folder=/alice/data/2010/OCDB?user=username?cacheF=yourDirectory?cacheS=yourSize
-    man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB?cacheFolder=/tmp/alice/data/2010/OCDB");
-    //man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB"); 
-    man->SetSpecificStorage("GRP/GRP/Data","alien://folder=/alice/data/2010/OCDB?cacheFolder=/tmp/alice/data/2010/OCDB");
-    //man->SetSpecificStorage("GRP/GRP/Data","alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB");
-    man->SetSpecificStorage("HLT/*","local://$ALICE_ROOT/OCDB?cacheFolder=/tmp/alice/data/2010/OCDB");
-    run = ExtractRunNumber(filename);
+    man->SetDefaultStorage(Form("alien://folder=/alice/data/20%02i/OCDB",year));
+    man->SetSpecificStorage("GRP/GRP/Data",Form("alien://folder=/alice/data/20%02i/OCDB",year));
+    man->SetSpecificStorage("HLT/*","local://$ALICE_ROOT/OCDB");
   }else{
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); 
     man->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",dataPath.Data()));
   }
-  man->SetRun(run);
 
   if(bCosmics){
     // no magnetic field
@@ -259,7 +291,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   // Find TRD triggers
   TString filestring = filename;
   if(useOnlyTRDtrigger){
-    AliCDBEntry *grp_ctp = man->Get("GRP/CTP/Config");
+    AliCDBEntry *grp_ctp = man->Get("GRP/CTP/Config",run);
     AliTriggerConfiguration *trg_conf = (AliTriggerConfiguration *)grp_ctp->GetObject();
     trg_conf->Print();
     TObjArray trg_masks = trg_conf->GetClasses(); // Reference!!!
@@ -276,8 +308,13 @@ int rec_hlt_trd(const TString filename, TString outPath)
       //        triggerconfs.push_back(trg_class->GetMask());
       // }
 
-      // pp run 2009
-      if(TString(trg_class->GetName()).Contains("CINT1B-ABCE-NOPF-ALL")){
+      // pp run 2009 and first half 2010
+      // if(TString(trg_class->GetName()).Contains("CINT1B-ABCE-NOPF-ALL")){
+      //   triggerconfs.push_back(trg_class->GetMask());
+      // }
+
+      // second half 2010
+      if(TString(trg_class->GetName()).Contains("CINT1WU-B-NOPF-ALL")){
         triggerconfs.push_back(trg_class->GetMask());
       }
 
@@ -323,5 +360,14 @@ Int_t ExtractRunNumber(const TString str){
   TObjArray *toks = (TObjArray *)path.Tokenize("/");
   TString fname = ((TObjString *)(toks->UncheckedAt(toks->GetEntriesFast() - 1)))->String();
   TString rstr = fname(2,9);
+  return rstr.Atoi();
+}
+
+Int_t ExtractYear(const TString str){
+  TObjArray *ptoks = (TObjArray *)str.Tokenize("?");
+  TString path = ((TObjString *)ptoks->UncheckedAt(0))->String();
+  TObjArray *toks = (TObjArray *)path.Tokenize("/");
+  TString fname = ((TObjString *)(toks->UncheckedAt(toks->GetEntriesFast() - 1)))->String();
+  TString rstr = fname(0,2);
   return rstr.Atoi();
 }
