@@ -2723,7 +2723,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     resVector[1]= 9.*TMath::ATan2(xyz[1],xyz[0])/TMath::Pi();
     if (resVector[1]<0) resVector[1]+=18;
     resVector[2]= TMath::Sqrt(cl->GetX()*cl->GetX()+cl->GetY()*cl->GetY());
-    resVector[3]= cl->GetZ()/cl->GetX();
+    resVector[3]= cl->GetZ()/resVector[2];
     //
     resVector[0]= cl->GetY()-trackOut.GetY();
     fClusterDelta[0]->Fill(resVector);
@@ -2773,7 +2773,7 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     resVector[1]= 9.*TMath::ATan2(xyz[1],xyz[0])/TMath::Pi();
     if (resVector[1]<0) resVector[1]+=18;
     resVector[2]= TMath::Sqrt(cl->GetX()*cl->GetX()+cl->GetY()*cl->GetY());
-    resVector[3]= cl->GetZ()/cl->GetX();
+    resVector[3]= cl->GetZ()/resVector[2];
     //
     resVector[0]= cl->GetY()-trackIn.GetY();
     fClusterDelta[0]->Fill(resVector);
@@ -2964,7 +2964,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
       Double_t resVector[5];
       resVector[1]= 9.*gphi/TMath::Pi();
       resVector[2]= TMath::Sqrt(c->GetX()*c->GetX()+c->GetY()*c->GetY());
-      resVector[3]= c->GetZ()/c->GetX();
+      resVector[3]= c->GetZ()/resVector[2];
       //
       //
       resVector[0]= c->GetY()-yfitC;

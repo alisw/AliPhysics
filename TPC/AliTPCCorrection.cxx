@@ -1922,6 +1922,7 @@ void AliTPCCorrection::AddVisualCorrection(AliTPCCorrection* corr, Int_t positio
   // NOTE - class is not owner of correction
   //     
   if (!fgVisualCorrection) fgVisualCorrection=new TObjArray;
+  if (position>=fgVisualCorrection->GetEntriesFast()) fgVisualCorrection->Expand(position*2);
   fgVisualCorrection->AddAt(corr, position);
 }
 

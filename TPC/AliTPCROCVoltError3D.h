@@ -76,11 +76,11 @@ private:
   // basic numbers for the poisson relaxation //can be set individually in each class
   enum {kRows   =257}; // grid size in r direction used in the poisson relaxation // ( 2**n + 1 ) eg. 65, 129, 257 etc.
   enum {kColumns=129}; // grid size in z direction used in the poisson relaxation // ( 2**m + 1 ) eg. 65, 129, 257 etc.
-  enum {kPhiSlicesPerSector=6};  // phi slices per sector
+  enum {kPhiSlicesPerSector=10};  // phi slices per sector
   enum {kPhiSlices = 18*kPhiSlicesPerSector };    // number of points in phi for the basic lookup tables
   enum {kIterations=100}; // Number of iterations within the poisson relaxation 
 
-  ClassDef(AliTPCROCVoltError3D,0); 
+  ClassDef(AliTPCROCVoltError3D,1); 
 };
 
 #endif

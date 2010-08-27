@@ -77,8 +77,8 @@ private:
   Float_t fRodVoltShiftC[36];      // Rod (&strips) shift in Volt (40V~1mm) 
   Float_t fRotatedClipVoltA[2];    // rotated clips at HV rod
   Float_t fRotatedClipVoltC[2];    // rotated clips at HV rod
-  Float_t fOFCRodShiftA[18];        // only Rod shift on OFC
-  Float_t fOFCRodShiftC[18];        // only Rod shift on OFC
+  Float_t fOFCRodShiftA[18];       // only Rod shift on OFC
+  Float_t fOFCRodShiftC[18];       // only Rod shift on OFC
 
   Bool_t fInitLookUp;           // flag to check it the Look Up table was created (SUM)
   Bool_t fInitLookUpBasic[5];   // flag if the basic lookup was created (shifted Rod (IFC,OFC) or rotated clip (IFC,OFC))
@@ -122,7 +122,7 @@ private:
   TMatrixD *fLookUpBasic5DeltaEz[kPhiSlices];    // Array to store electric field integral 
 
 
-  ClassDef(AliTPCFCVoltError3D,0); //
+  ClassDef(AliTPCFCVoltError3D,1); //
 };
 
 #endif
