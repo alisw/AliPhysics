@@ -141,25 +141,30 @@ Macro(ROOT_GENERATE_DICTIONARY INFILES LINKDEF_FILE OUTFILE INCLUDE_DIRS_IN)
   Foreach (_current_FILE ${INCLUDE_DIRS_IN})
     Set(INCLUDE_DIRS ${INCLUDE_DIRS} -I${_current_FILE})   
   Endforeach (_current_FILE ${INCLUDE_DIRS_IN})
- 
+  list(APPEND INCLUDE_DIRS "-Iinclude" "-isystem${ROOT_INCLUDE_DIR}")
   String(REGEX REPLACE "^(.*)\\.(.*)$" "\\1.h" bla "${OUTFILE}")
   Set(OUTFILES ${OUTFILE} ${bla})
 
   Foreach (_current_FILE ${INFILES})
-    Get_filename_component(name_wo_path ${_current_FILE} NAME)
-    Set(infiles_nopath ${infiles_nopath} ${name_wo_path})   
+    string(REGEX MATCH "Ali" ALICE ${_current_FILE})
+#Filter Non-ALICE files
+    if(ALICE)
+      Get_filename_component(name_wo_path ${_current_FILE} NAME)
+      Set(infiles_nopath ${infiles_nopath} ${name_wo_path})   
+    endif(ALICE)
   Endforeach (_current_FILE ${INFILES})
 
   Get_property(_defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
-  Set(_ddefs)
+  set(_ddefs)
   Foreach (_def ${_defs})
-    Set(_ddefs "${_ddefs} -D${_def}")
+    set(_ddefs "${_ddefs} -D${_def}")
   Endforeach (_def ${_defs})
+#Remove DALI_DIM for dictionaries
+  string(REGEX REPLACE "-DALI_DIM" "" _ddefs ${_ddefs})
   Separate_arguments(_ddefs)
-
   Add_custom_command(OUTPUT ${OUTFILES}
      COMMAND DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}:${ROOT_LIBRARY_DIR} ${ROOTCINT}
-     ARGS -f ${OUTFILE} -c -DHAVE_CONFIG_H ${_ddefs} ${_special_settings} ${INCLUDE_DIRS} ${infiles_nopath} ${LINKDEF_FILE} 
+     ARGS -f ${OUTFILE} -c -DHAVE_CONFIG_H ${_ddefs} ${__DATEFLAGS} ${_special_settings} ${INCLUDE_DIRS} ${infiles_nopath} ${LINKDEF_FILE} 
      DEPENDS ${INFILES} ${LINKDEF_FILE})
 
 Endmacro(ROOT_GENERATE_DICTIONARY)

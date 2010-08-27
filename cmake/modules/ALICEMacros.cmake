@@ -88,7 +88,7 @@ Function (AddLibrary LIB SRCS DHDRS)
 
   Add_Library(${LIB} SHARED ${ASRCS})
   set_property(TARGET ${LIB} PROPERTY LABELS ${label})
-  Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES})
+  Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES} ${DMONLIBS})
   Set_Target_Properties(${LIB} PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES})
 #  message("${LIB}-${label}")
   Install(TARGETS ${LIB} DESTINATION ${ALIROOT_INSTALL_DIR}/lib
@@ -157,7 +157,7 @@ Function (AddHLTLibrary LIB SRCS DHDRS)
 
   Add_Library(${LIB} SHARED ${ASRCS})
   set_property(TARGET ${LIB} PROPERTY LABELS ${label})
-  Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES})
+  Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES} ${DMONLIBS})
   Set_Target_Properties(${LIB} PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES})
 #  message("${LIB}-${label}")  
   Install(TARGETS ${LIB} DESTINATION ${ALIROOT_INSTALL_DIR}/lib
@@ -197,7 +197,7 @@ Function (AddExecutable BIN SRCS LIBS)
   Add_Executable(${BIN} ${SRCS})
   set_property(TARGET ${BIN} PROPERTY LABELS ${label})
 #  message("${BIN}-${label}")
-  Target_Link_Libraries(${BIN} ${ROOT_LIBRARIES} ${LIBS})
+  Target_Link_Libraries(${BIN} ${ROOT_LIBRARIES} ${LIBS} ${DMONLIBS})
   set_target_properties(${BIN} PROPERTIES OUTPUT_NAME ${executable_name})
   Install(TARGETS ${BIN} DESTINATION ${ALIROOT_INSTALL_DIR}/bin)
 
