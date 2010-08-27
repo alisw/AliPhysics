@@ -38,7 +38,7 @@ Bool_t kGCRecalculateV0ForGamma = kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="900356200010030"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="900356200010031"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=10;
 
