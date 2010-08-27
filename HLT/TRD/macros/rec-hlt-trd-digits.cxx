@@ -27,30 +27,24 @@
 #include "initGRP.h"
 #include "readCDBentry.h"
 
-int rec_hlt_trd_digits(const TString input = gSystem->pwd(), const TString extra="");
+int rec_hlt_trd_digits(const TString input = gSystem->pwd());
 int main(int argc, char** argv)
 {
-  switch(argc){
-  case 1: return rec_hlt_trd_digits(); break;
-  case 2: return rec_hlt_trd_digits(argv[1]); break;
-  case 3: return rec_hlt_trd_digits(argv[1],argv[2]); break;
-  default: printf("error\n"); return 1; break;
-  }
+  if(argc==2) return rec_hlt_trd_digits(argv[1]);
+  else return rec_hlt_trd_digits();
 }
 
-int rec_hlt_trd_digits(const TString input, const TString extra){
+int rec_hlt_trd_digits(const TString input){
 
-  // Use custom arguments for components? i.e.: not reading OCDB arguments
-  Bool_t customArgs=kTRUE;
+  // Use custom arguments for components?
+  Bool_t customArgs=kFALSE;
 
   // Disable HLT flag?
   Bool_t disableHLTflag=kFALSE;
 
-  ////////////////////////////////
 
-  printf("customArgs: %i\n",customArgs);
-  printf("disableHLTflag: %i\n",disableHLTflag);
-  printf("extra: %s\n",extra.Data());
+
+  ////////////////////////////////
 
   gSystem->ChangeDirectory(input.Data());
 
@@ -88,31 +82,23 @@ int rec_hlt_trd_digits(const TString input, const TString extra){
   AliHLTConfiguration pubDigiConf("TRD-DigiP", "AliLoaderPublisher", NULL , "-loader TRDLoader -tree digits -datatype 'ALITREED' 'TRD '");
 
   TString arg="";
-  if(customArgs || disableHLTflag || extra.Length()){
+  if(customArgs || disableHLTflag){
     arg = readCDBentry("HLT/ConfigTRD/ClusterizerComponent"); //output_percentage 100 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT
     if(customArgs)
       arg += " -highLevelOutput yes -emulateHLToutput no";
     if(disableHLTflag)
       arg += " -HLTflag no";
-    if(extra.Length()>0){
-      arg += " ";
-      arg += extra.Data();
-    }
   }
   // clusterizer which processes digits
   AliHLTConfiguration cfDigiConf("TRD-DigiCF", "TRDOfflineClusterizer", "TRD-DigiP", arg.Data());
 
   arg="";
-  if(customArgs || disableHLTflag || extra.Length()){
+  if(customArgs || disableHLTflag){
     arg = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
     if(customArgs)
       arg += " -highLevelOutput yes -emulateHLToutput no";
     if(disableHLTflag)
       arg+=" -HLTflag no";
-    if(extra.Length()>0){
-      arg += " ";
-      arg += extra.Data();
-    }
   }
   // tracker reading the output from the clusterizer which processes the digits
   AliHLTConfiguration trDigiConf("TRD-DigiTR", "TRDOfflineTrackerV1", "TRD-DigiCF", arg.Data());
@@ -123,3 +109,4 @@ int rec_hlt_trd_digits(const TString input, const TString extra){
   gHLT.BuildTaskList("TRD-DigiEsdFile");
   gHLT.Run(runLoader->GetNumberOfEvents());
 }
+
