@@ -1973,6 +1973,7 @@ histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt_alpha" ,"Invariant Mass vs Pt
 	histograms->AddHistogram("ESD_TruePi0_OpeningAngle_0912" ,"" , kGCnXBinsOpeningAngle, kGCfirstXBinOpeningAngle, kGClastXBinOpeningAngle, "", "");
 	histograms->AddHistogram("ESD_TruePi0_OpeningAngle_0909" ,"" , kGCnXBinsOpeningAngle, kGCfirstXBinOpeningAngle, kGClastXBinOpeningAngle, "", "");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
+histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt1212" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt0912" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt0909" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
