@@ -107,6 +107,16 @@ void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLo
     itsRecoParam->SetClusterMisalErrorYBOn(0.0010,0.0030,0.0500,0.0500,0.0020,0.0020); // [cm]
     itsRecoParam->SetClusterMisalErrorZBOn(0.0100,0.0100,0.0100,0.0100,0.0500,0.0500); // [cm]
     //----
+
+
+    // tracklets
+    itsRecoParam->SetTrackleterPhiWindowL2(0.07);
+    itsRecoParam->SetTrackleterZetaWindowL2(0.4);
+    itsRecoParam->SetTrackleterPhiWindowL1(0.10);
+    itsRecoParam->SetTrackleterZetaWindowL1(0.6);
+    // Removal of tracklets reconstructed in the SPD overlaps 
+    itsRecoParam->SetTrackleterRemoveClustersFromOverlaps(kTRUE);
+
     itsRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
     recoParamArray->AddLast(itsRecoParam);
   }
