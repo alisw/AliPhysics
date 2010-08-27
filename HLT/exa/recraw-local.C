@@ -72,6 +72,16 @@ void recraw_local(const char *filename,
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage(cdbURI);
+  if (struri.BeginsWith("local://")) {
+    // set specific storage for GRP entry
+    // search in the working directory and one level above, the latter
+    // follows the standard simulation setup like e.g. in test/ppbench
+    if (!gSystem->AccessPathName("GRP/GRP/Data")) {
+      man->SetSpecificStorage("GRP/GRP/Data", "local://$PWD");
+    } else if (!gSystem->AccessPathName("../GRP/GRP/Data")) {
+      man->SetSpecificStorage("GRP/GRP/Data", "local://$PWD/..");      
+    }
+  }
 
   // Reconstruction settings
   AliReconstruction rec;
