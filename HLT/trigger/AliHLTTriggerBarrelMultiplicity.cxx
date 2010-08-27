@@ -4,6 +4,7 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  Jochen Thaeder <jochen@thaeder.de>                    *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -16,7 +17,7 @@
 //**************************************************************************
 
 /// @file   AliHLTTriggerBarrelMultiplicity.cxx
-/// @author Matthias Richter
+/// @author Matthias Richter, Jochen Thaeder
 /// @date   2009-06-30
 /// @brief  HLT trigger component for charged particle multiplicity in
 ///         the central barrel.
@@ -28,10 +29,13 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTTriggerBarrelMultiplicity.h"
+#include "AliHLTESDTrackCuts.h"
+#include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include "AliHLTTriggerDecision.h"
 #include "AliHLTDomainEntry.h"
 #include "AliHLTGlobalBarrelTrack.h"
+#include "AliHLTErrorGuard.h"
 #include "TObjArray.h"
 #include "TObjString.h"
 
@@ -40,15 +44,8 @@ ClassImp(AliHLTTriggerBarrelMultiplicity)
 
 AliHLTTriggerBarrelMultiplicity::AliHLTTriggerBarrelMultiplicity()
   : AliHLTTrigger()
-  , fPtMin(0.0)
-  , fPtMax(0.0)
+  , fHLTESDTrackCuts(NULL)
   , fMinTracks(1)
-  , fDCAReference()
-  , fMinLDca(-1.)
-  , fMaxLDca(-1.)
-  , fMinTDca(-1.)
-  , fMaxTDca(-1.)
-  , fSolenoidBz(0.0)
   , fName()
 {
   // see header file for class documentation
@@ -56,8 +53,6 @@ AliHLTTriggerBarrelMultiplicity::AliHLTTriggerBarrelMultiplicity()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-  for (int i=0; i<fgkDCAReferenceSize; i++) fDCAReference[i]=0.0;
 }
 
 const char* AliHLTTriggerBarrelMultiplicity::fgkDefaultOCDBEntry="HLT/ConfigHLT/BarrelMultiplicityTrigger";
@@ -70,7 +65,11 @@ AliHLTTriggerBarrelMultiplicity::~AliHLTTriggerBarrelMultiplicity()
 const char* AliHLTTriggerBarrelMultiplicity::GetTriggerName() const
 {
   // see header file for class documentation
-  return "BarrelMultiplicityTrigger";
+
+  if (!fName.IsNull())
+    return fName.Data();
+  else
+    return "BarrelMultiplicityTrigger";
 }
 
 AliHLTComponent* AliHLTTriggerBarrelMultiplicity::Spawn()
@@ -88,18 +87,28 @@ int AliHLTTriggerBarrelMultiplicity::DoTrigger()
   // try the ESD as input
   const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
-  TString description;
-  TString ptcut,tdca,ldca,dcaref,op1st,op2nd;
+  
   if (esd != NULL) {
     numberOfTracks=0;
     esd->GetStdContent();
     
     for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) {
-      if (CheckCondition(esd->GetTrack(i), esd->GetMagneticField())) numberOfTracks++;
+      AliESDtrack *esdTrack = esd->GetTrack(i);
+      if ( !esdTrack )
+	continue;
+
+      if ( fHLTESDTrackCuts->IsSelected(esdTrack) )
+	numberOfTracks++;
     }
   }
 
   // try the AliHLTExternal track data as input
+  // TODO: 2010-08-27
+  // AliHLTTrackCuts needs an AliESDtrack object and not just AliExternalTrackParam
+  // this part needs to be revised to work correctly with the track array as input
+  // - think about specific conversion method in AliHLTGlobalBarrelTrack
+  // - make sure that all necessary parameters are set
+  // - clarify what to do about the track flags
   if (iResult>=0 && numberOfTracks<0) {
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
@@ -108,7 +117,8 @@ int AliHLTTriggerBarrelMultiplicity::DoTrigger()
       if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
 	for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
 	     element!=tracks.end(); element++) {
-	  if (CheckCondition(&(*element), fSolenoidBz)) numberOfTracks++;
+	  ALIHLTERRORGUARD(1, "component needs to be revised to work with track array as input");
+	  // TODO CHECK CONDITION HERE
 	}
       } else if (iResult<0) {
 	HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
@@ -118,117 +128,38 @@ int AliHLTTriggerBarrelMultiplicity::DoTrigger()
   }
 
   bool condition=false;
+  TString description;
+
   if (iResult>=0 && numberOfTracks>=0) {
-    if (fPtMax>fPtMin) {
-      ptcut.Form(" %.02f GeV/c <= pt < %.02f GeV/c", fPtMin, fPtMax);
-    } else {
-      ptcut.Form(" pt >= %.02f GeV/c", fPtMin);
-    }
-
-    if (fMinTDca>=0.0) {
-      if (fMaxTDca>=0.0) {
-	tdca.Form(", %.02f<=transverse_dca<=%.02f", fMinTDca, fMaxTDca);
-      } else {
-	tdca.Form(" transverse_dca >= %.02f", fMinTDca);
-      }
-    } else if (fMaxTDca>=0.0) {
-	tdca.Form(" transverse_dca<=%.02f", fMaxTDca);
-    }
-    if (!tdca.IsNull()) {
-      if (op1st.IsNull()) op1st=" && ";
-      else op2nd=" && ";
-    }
-
-    if (fMinLDca>=0.0) {
-      if (fMaxLDca>=0.0) {
-	ldca.Form(" %.02f<=longitudinal_dca<=%.02f", fMinLDca, fMaxLDca);
-      } else {
-	ldca.Form(" longitudinal_dca >= %.02f", fMinLDca);
-      }
-    } else if (fMaxLDca>=0.0) {
-	ldca.Form(" longitudinal_dca<=%.02f", fMaxLDca);
-    }
-    if (!ldca.IsNull()) {
-      if (op1st.IsNull()) op1st=" && ";
-      else op2nd=" && ";
-    }
-
-    if (fMinTDca>=0.0 || fMaxTDca>=0 || fMinLDca>=0.0 || fMaxLDca>=0) {
-      dcaref.Form(" (%.01f,%.01f,%.01f)", fDCAReference[0], fDCAReference[1], fDCAReference[2]);
-    }
-
     if (numberOfTracks>=fMinTracks) {
-      description.Form("Event contains %d track(s) with ", numberOfTracks);
-      description+=ptcut;
-      description+=op1st;
-      description+=ldca;
-      description+=op2nd;
-      description+=tdca;
-      description+=dcaref;
-      SetDescription(description.Data());
-      // Enable the central detectors for readout.
-      GetReadoutList().Enable(
-			      AliHLTReadoutList::kITSSPD |
-			      AliHLTReadoutList::kITSSDD |
-			      AliHLTReadoutList::kITSSSD |
-			      AliHLTReadoutList::kTPC |
-			      AliHLTReadoutList::kTRD |
-			      AliHLTReadoutList::kTOF |
-			      AliHLTReadoutList::kHMPID |
-			      AliHLTReadoutList::kPHOS |
-			      AliHLTReadoutList::kEMCAL
-			      );
+      description.Form("Event contains %d track(s) with : ", numberOfTracks);
+      description += fHLTESDTrackCuts->GetTitle();
       condition=true;
     } else {
-    description.Form("No tracks matching the tresholds found in the central barrel (min tracks %d, ", fMinTracks);
-    description+=ptcut;
-    description+=op1st;
-    description+=ldca;
-    description+=op2nd;
-    description+=tdca;
-    description+=dcaref;
-    description+=")";
+      description.Form("No tracks matching the tresholds found in the central barrel (min tracks %d) with : ", fMinTracks);
+      description += fHLTESDTrackCuts->GetTitle();
     }
   } else {
-    description.Form("No input blocks found");
+    if(IsDataEvent()) {
+      description.Form("No input blocks found");
+    } else {
+      description.Form("No DataEvent found");
+    }
   }
+  
+  SetDescription(description.Data());
 
   // add a specific trigger decision object with initialized name
   // the readout list however is fixed 
   AliHLTTriggerDecision decision(
 				 condition,
-				 fName.IsNull()?GetTriggerName():fName.Data(),
+				 GetTriggerName(),
 				 GetReadoutList(),
-				 description.Data()
+				 GetDescription()
 				 );
   TriggerEvent(&decision, kAliHLTDataTypeTObject|kAliHLTDataOriginOut);
 
   return iResult;
-}
-
-template<class T>
-bool AliHLTTriggerBarrelMultiplicity::CheckCondition(T* track, float b)
-{
-  // see header file for class documentation
-  if (!track) return false;
-
-  // check on ptransverse momentum
-  if (TMath::Abs(track->Pt()) < fPtMin || (fPtMax>fPtMin && TMath::Abs(track->Pt()) > fPtMax)) {
-    return false;
-  }
-
-  // check on transverse and longitudinal DCA
-  if (fMinTDca>=0.0 || fMaxTDca>=0 || fMinLDca>=0.0 || fMaxLDca>=0) {
-    Float_t dz[2]={0.0,0.0};
-    track->GetDZ(fDCAReference[0], fDCAReference[1], fDCAReference[2], b, dz);
-    HLTDebug("checking dca condition: transversal %f logitudinal %f", dz[0], dz[1]);
-    if (fMinTDca>=0 && TMath::Abs(dz[0])<fMinTDca) return false;
-    if (fMaxTDca>=0 && TMath::Abs(dz[0])>fMaxTDca) return false;
-    if (fMinLDca>=0 && TMath::Abs(dz[1])<fMinLDca) return false;
-    if (fMaxLDca>=0 && TMath::Abs(dz[1])>fMaxLDca) return false;
-  }
-
-  return true;
 }
 
 int AliHLTTriggerBarrelMultiplicity::DoInit(int argc, const char** argv)
@@ -251,7 +182,7 @@ int AliHLTTriggerBarrelMultiplicity::DoInit(int argc, const char** argv)
     remainingArgs.push_back(argv[i]);
   }
 
-  // first configure the default
+  // get path from triggername, use default object otherwise
   TString cdbPath;
   if (!fName.IsNull()) {
     cdbPath="HLT/ConfigHLT/";
@@ -259,19 +190,38 @@ int AliHLTTriggerBarrelMultiplicity::DoInit(int argc, const char** argv)
   } else {
     cdbPath=fgkDefaultOCDBEntry;
   }
-  iResult=ConfigureFromCDBTObjString(cdbPath);
 
-  // configure from the command line parameters if specified
+  // -- Check if CDB object is AliHLTESDTrackCuts or TObjString 
+  //    and configure from it. Replace "-" by "_._" if needed in the cdbPath
+  iResult = ConfigureFromCDBObject(cdbPath);
+
+  // -- Configure from the command line parameters if specified
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(remainingArgs.size(), &(remainingArgs[0]));
 
-  fSolenoidBz=GetBz();
+  // -- Check if we have the track cuts for triggering
+  if (!fHLTESDTrackCuts) {
+    HLTError("No AliHLTESDTrackCuts object has been created as basis for triggering.");
+    iResult=-ENOENT;
+  }
+  else {
+    if (!fName.IsNull()) {
+      if (fName.Contains("Barrel_pT_Single"))
+	fMinTracks = 1;
+    }
+  }
+
   return iResult;
 }
 
 int AliHLTTriggerBarrelMultiplicity::DoDeinit()
 {
   // see header file for class documentation
+
+  if (fHLTESDTrackCuts)
+    delete fHLTESDTrackCuts;
+  fHLTESDTrackCuts = NULL;
+
   return 0;
 }
 
@@ -292,7 +242,7 @@ int AliHLTTriggerBarrelMultiplicity::Reconfigure(const char* cdbEntry, const cha
     cdbPath=cdbEntry;
   }
 
-  return ConfigureFromCDBTObjString(cdbPath);
+  return ConfigureFromCDBObject(cdbPath);
 }
 
 int AliHLTTriggerBarrelMultiplicity::ReadPreprocessorValues(const char* /*modules*/)
@@ -303,6 +253,50 @@ int AliHLTTriggerBarrelMultiplicity::ReadPreprocessorValues(const char* /*module
   return 0;
 }
 
+Int_t AliHLTTriggerBarrelMultiplicity::ConfigureFromCDBObject(TString cdbPath)
+{
+  // see header file for class documentation
+
+  Int_t iResult = 0;
+  TString arguments;
+
+  // -- check for "-" and replace by "_._" in the path name
+  cdbPath.ReplaceAll("-",1,"_._",3);
+
+  TObject* pCDBObject = LoadAndExtractOCDBObject(cdbPath);
+  if (pCDBObject) {
+    AliHLTESDTrackCuts *pCuts = dynamic_cast<AliHLTESDTrackCuts*>(pCDBObject);
+    if (pCuts) {
+      HLTInfo("Received AliHLTESDTrackCuts configuration object : \'%s\'", pCuts->GetTitle());
+      if (fHLTESDTrackCuts)
+	delete fHLTESDTrackCuts;
+      fHLTESDTrackCuts = pCuts;
+    }
+    else {
+      TObjString* pString = dynamic_cast<TObjString*>(pCDBObject);
+      if (pString) {
+	HLTInfo("Received configuration object string: \'%s\'", pString->GetString().Data());
+	arguments+=pString->GetString().Data();
+      } 
+      else {
+	HLTError("Configuration object \"%s\" has wrong type, required AliHLTESDTrackCuts or TObjString", cdbPath.Data());
+	iResult=-EINVAL;
+      }
+    }
+  } 
+  else {
+    HLTError("Can not fetch object \"%s\" from CDB", cdbPath.Data());
+    iResult=-ENOENT;
+  }
+  
+  if ( iResult>=0 && !arguments.IsNull() ) {
+    const Char_t* array = arguments.Data();
+    iResult = ConfigureFromArgumentString(1, &array);
+  }
+
+  return iResult;
+}
+
 int AliHLTTriggerBarrelMultiplicity::ScanConfigurationArgument(int argc, const char** argv)
 {
   // see header file for class documentation
@@ -310,11 +304,24 @@ int AliHLTTriggerBarrelMultiplicity::ScanConfigurationArgument(int argc, const c
   int i=0;
   TString argument=argv[i];
 
+  if (!fHLTESDTrackCuts)
+    fHLTESDTrackCuts = new AliHLTESDTrackCuts("AliHLTESDTrackCuts","No track cuts");
+
   // -maxpt
   if (argument.CompareTo("-maxpt")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fPtMax=argument.Atof();
+
+    Float_t minPt, maxPt;
+    fHLTESDTrackCuts->GetPtRange(minPt,maxPt);
+    maxPt = argument.Atof(); 
+    fHLTESDTrackCuts->SetPtRange(minPt,maxPt);
+
+    TString title = fHLTESDTrackCuts->GetTitle();
+    if (!title.CompareTo("No track cuts")) title = "";
+    else title += " && ";
+    title += Form("p_t < %f", maxPt);
+    fHLTESDTrackCuts->SetTitle(title);
     return 2;
   }    
 
@@ -322,7 +329,17 @@ int AliHLTTriggerBarrelMultiplicity::ScanConfigurationArgument(int argc, const c
   if (argument.CompareTo("-minpt")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fPtMin=argument.Atof();
+
+    Float_t minPt, maxPt;
+    fHLTESDTrackCuts->GetPtRange(minPt,maxPt);
+    minPt = argument.Atof(); 
+    fHLTESDTrackCuts->SetPtRange(minPt,maxPt);
+
+    TString title = fHLTESDTrackCuts->GetTitle();
+    if (!title.CompareTo("No track cuts")) title = "";
+    else title += " && ";
+    title += Form("p_t > %f", minPt);
+    fHLTESDTrackCuts->SetTitle(title);
     return 2;
   }    
 
@@ -334,56 +351,73 @@ int AliHLTTriggerBarrelMultiplicity::ScanConfigurationArgument(int argc, const c
     return 2;
   }    
 
-  // -dca-reference
-  // reference point for the transverse and longitudinal dca cut
-  if (argument.CompareTo("-dca-reference")==0) {
-    if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    // scan x,y,z
-    TObjArray* pTokens=argument.Tokenize("'");
-    if (pTokens) {
-      for (int c=0; c<pTokens->GetEntriesFast() && c<fgkDCAReferenceSize; c++) {
-	argument=((TObjString*)pTokens->At(c))->GetString();
-	fDCAReference[i]=argument.Atof();
-      }
-      delete pTokens;
-    }
-    return 2;
-  }
-
   // -min-ldca
-  // minimum longitudinal dca to reference point
+  // minimum longitudinal dca to vertex
   if (argument.CompareTo("-min-ldca")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fMinLDca=argument.Atof();
+
+    fHLTESDTrackCuts->SetMinDCAToVertexZ(argument.Atof());
+    TString title = fHLTESDTrackCuts->GetTitle();
+    if (!title.CompareTo("No track cuts")) title = "";
+    else title += " && ";
+    title += Form("DCAz > %f", argument.Atof());
+    fHLTESDTrackCuts->SetTitle(title);
     return 2;
   }
   
   // -max-ldca
-  // maximum longitudinal dca to reference point
+  // maximum longitudinal dca to vertex
   if (argument.CompareTo("-max-ldca")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fMaxLDca=argument.Atof();
+
+    fHLTESDTrackCuts->SetMaxDCAToVertexZ(argument.Atof());
+    TString title = fHLTESDTrackCuts->GetTitle();
+    if (!title.CompareTo("No track cuts")) title = "";
+    else title += " && ";
+    title += Form("DCAz < %f", argument.Atof());
+    fHLTESDTrackCuts->SetTitle(title);
     return 2;
   }
 
   // -min-tdca
-  // minimum transverse dca to reference point
+  // minimum transverse dca to vertex
   if (argument.CompareTo("-min-tdca")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fMinTDca=argument.Atof();
+
+    fHLTESDTrackCuts->SetMinDCAToVertexXY(argument.Atof());
+    TString title = fHLTESDTrackCuts->GetTitle();
+    if (!title.CompareTo("No track cuts")) title = "";
+    else title += " && ";
+    title += Form("DCAr > %f", argument.Atof());
+    fHLTESDTrackCuts->SetTitle(title);
     return 2;
   }
   
   // -max-tdca
-  // maximum transverse dca to reference point
+  // maximum transverse dca to vertex
   if (argument.CompareTo("-max-tdca")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fMaxTDca=argument.Atof();
+
+    fHLTESDTrackCuts->SetMaxDCAToVertexXY(argument.Atof());
+    TString title = fHLTESDTrackCuts->GetTitle();
+    if (!title.CompareTo("No track cuts")) title = "";
+    else title += " && ";
+    title += Form("DCAr < %f", argument.Atof());
+    fHLTESDTrackCuts->SetTitle(title);
+    return 2;
+  }
+
+  // -- deprecated
+
+  // -dca-reference
+  // reference point for the transverse and longitudinal dca cut
+  if (argument.CompareTo("-dca-reference")==0) {
+    if (++i>=argc) return -EPROTO;
+    HLTWarning("argument -dca-reference deprecated, ESDTrackCuts only allow for DCA to vertex");
     return 2;
   }
 

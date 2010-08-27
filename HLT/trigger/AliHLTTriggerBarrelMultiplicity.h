@@ -7,7 +7,7 @@
 //* See cxx source for full Copyright notice                               *
 
 /// @file   AliHLTTriggerBarrelMultiplicity.h
-/// @author Matthias Richter
+/// @author Matthias Richter, Jochen Thaeder
 /// @date   2009-06-30
 /// @brief  HLT trigger component for charged particle multiplicity in
 ///         the central barrel.
@@ -16,6 +16,8 @@
 #include "TString.h"
 
 class AliESDtrack;
+
+class AliHLTESDTrackCuts;
 
 /**
  * @class  AliHLTTriggerBarrelMultiplicity
@@ -53,8 +55,6 @@ class AliESDtrack;
  *      required minimum pt for a trigger
  * \li -maxpt    <i> pt  </i> <br>
  *      required maximum pt for a trigger
- * \li -dca-reference    <i> x,y,z  </i> <br>
- *      reference point for the transverse and longitudinal dca cut
  * \li -min-ldca    <i> dca  </i> <br>
  *      minimum longitudinal dca to reference point
  * \li -max-ldca    <i> dca  </i> <br>
@@ -63,7 +63,7 @@ class AliESDtrack;
  *      minimum transverse dca to reference point
  * \li -max-tdca    <i> dca  </i> <br>
  *      maximum transverse dca to reference point
- * \li  -triggername    <i> name  </i> <br>
+ * \li -triggername    <i> name  </i> <br>
  *      The name of this specific trigger.
  *
  * By default, configuration is loaded from OCDB, can be overridden by
@@ -72,6 +72,16 @@ class AliESDtrack;
  * <h2>Default CDB entries:</h2>
  * HLT/ConfigHLT/BarrelMultiplicityTrigger: TObjString storing the arguments <br>
  * HLT/ConfigHLT/<name>: for triggers with specific names
+ *
+ * HLT/ConfigHLT/H_._Barrel_pT_Single_._V0001.001
+ *   - TriggerName : H-Barrel_pT_Single-V0001.001
+ *   - ObjectType  : AliHLTESDTrackCuts 
+ * HLT/ConfigHLT/H_._Barrel_pT_Single_._V0002.001
+ *   - TriggerName : H-Barrel_pT_Single-V0002.001
+ *   - ObjectType  : AliHLTESDTrackCuts 
+ * HLT/ConfigHLT/H_._Barrel_pT_Single_._V0003.001
+ *   - TriggerName : H-Barrel_pT_Single-V0003.001
+ *   - ObjectType  : AliHLTESDTrackCuts 
  *
  * <h2>Performance:</h2>
  * 
@@ -88,7 +98,7 @@ class AliHLTTriggerBarrelMultiplicity : public AliHLTTrigger
 {
  public:
   AliHLTTriggerBarrelMultiplicity();
-  ~AliHLTTriggerBarrelMultiplicity();
+  virtual ~AliHLTTriggerBarrelMultiplicity();
 
   /// inherited from AliHLTTrigger: name of this trigger
   virtual const char* GetTriggerName() const;
@@ -108,45 +118,34 @@ class AliHLTTriggerBarrelMultiplicity : public AliHLTTrigger
   /// inherited from AliHLTComponent: handle dcs update event
   int ReadPreprocessorValues(const char* modules);
 
+  /// Configure from CDB object, checking if AliHLTESDTrackCuts or TObjString
+  int ConfigureFromCDBObject(TString cdbPath);
+
   /// inherited from AliHLTComponent, scan one argument and
   /// its parameters
   int ScanConfigurationArgument(int argc, const char** argv);
 
  private:
+  /// copy constructor prohibited 
+  AliHLTTriggerBarrelMultiplicity (const AliHLTTriggerBarrelMultiplicity&);
+  
+  /// assignment operator prohibited
+  AliHLTTriggerBarrelMultiplicity& operator=(const AliHLTTriggerBarrelMultiplicity&);
 
   /// inherited from AliHLTTrigger: calculate the trigger
   virtual int DoTrigger();
 
-  /// check whether a track meets the criteria
-  template<class T>
-  bool CheckCondition(T* track, float b);
+  /// ESD track cut object
+  AliHLTESDTrackCuts  *fHLTESDTrackCuts;    //! transient
 
-  /// pt cut, minimum
-  float fPtMin; //! transient
-  /// pt cut, maximum
-  float fPtMax; //! transient
   /// required number of tracks
   int fMinTracks; //!transient
 
-  /// number of coordinates for the DCA reference point
-  const static short fgkDCAReferenceSize=3;
-  /// reference point for the transverse and longitudinal dca cut
-  float fDCAReference[fgkDCAReferenceSize];
-  /// minimum longitudinal dca to reference point
-  float fMinLDca; //!transient
-  /// maximum longitudinal dca to reference point
-  float fMaxLDca; //!transient
-  /// minimum transverse dca to reference point
-  float fMinTDca; //!transient
-  /// maximum transverse dca to reference point
-  float fMaxTDca; //!transient
-  /// magnetic field (dca estimation for)
-  float fSolenoidBz; //!transient
-  /// name of the trigger
-  TString fName; //!transient
+  /// Name of the trigger
+  TString              fName;               //! transient
 
   /// the default configuration entry for this component
-  static const char* fgkDefaultOCDBEntry; //!transient
+  static const char*   fgkDefaultOCDBEntry; //!transient
 
   ClassDef(AliHLTTriggerBarrelMultiplicity, 0)
 };
