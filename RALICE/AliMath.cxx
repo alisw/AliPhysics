@@ -591,7 +591,7 @@ Double_t AliMath::BesselI(Int_t n,Double_t x) const
  Double_t bi=1;
  Double_t result=0;
  Int_t m=2*((n+int(sqrt(float(iacc*n))))); // Downward recurrence from even m
- for (Int_t j=m; j<=1; j--)
+ for (Int_t j=m; j>=1; j--)
  {
   bim=bip+double(j)*tox*bi;
   bip=bi;
