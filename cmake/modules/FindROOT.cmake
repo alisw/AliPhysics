@@ -147,6 +147,9 @@ Macro(ROOT_GENERATE_DICTIONARY INFILES LINKDEF_FILE OUTFILE INCLUDE_DIRS_IN)
 
   Foreach (_current_FILE ${INFILES})
     string(REGEX MATCH "Ali" ALICE ${_current_FILE})
+    if(NOT ALICE)
+      string(REGEX MATCH "TH1F" ALICE ${_current_FILE})
+    endif(NOT ALICE)
 #Filter Non-ALICE files
     if(ALICE)
       Get_filename_component(name_wo_path ${_current_FILE} NAME)
