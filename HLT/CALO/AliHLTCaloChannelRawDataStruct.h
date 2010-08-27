@@ -26,7 +26,11 @@
 // disable warnings to avoid
 // warning: base class ‘class ...’ has a non-virtual destructor
 #if defined __GNUC__
+#if __GNUC__ == 4 && __GNUC_MINOR__ > 3
 #pragma GCC diagnostic ignored "-Weffc++"
+#else
+#pragma GCC system_header 
+#endif
 #elif defined __SUNPRO_CC
 #pragma disable_warn
 #elif defined _MSC_VER
@@ -46,7 +50,9 @@ struct  AliHLTCaloChannelRawDataStruct : public AliHLTCaloChannelDataStruct
 };
 
 #if defined __GNUC__
-#pragma GCC diagnostic warning "-Weffc++"
+#if __GNUC__ == 4 && __GNUC_MINOR__ > 3
+#pragma GCC diagnostic ignored "-Weffc++"
+#endif
 #elif defined __SUNPRO_CC
 #pragma enable_warn
 #elif defined _MSC_VER
