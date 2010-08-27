@@ -374,9 +374,44 @@ AliESDv0* AliV0Reader::GetV0(Int_t index){
   return fCurrentV0;
 }
 
+Int_t AliV0Reader::GetNumberOfContributorsVtx(){
+  if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors()>0) {
+    return fESDEvent->GetPrimaryVertexTracks()->GetNContributors();
+  }
+
+  if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors()<1) {
+    if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors()>0) {
+      return fESDEvent->GetPrimaryVertexSPD()->GetNContributors();
+
+    }
+    if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors()<1) {
+      cout<<"number of contributors from bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
+      return 0;
+    }
+  }
+  return 0;
+}
 Bool_t AliV0Reader::CheckForPrimaryVertex(){
   //see headerfile for documentation
-  return fESDEvent->GetPrimaryVertex()->GetNContributors()>0;
+
+  if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors()>0) {
+    return 1;
+  }
+
+  if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors()<1) {
+  // SPD vertex
+    if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors()>0) {
+      //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
+      return 1;
+
+    }
+    if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors()<1) {
+      //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
+      return 0;
+    }
+  }
+  return 0;
+  //  return fESDEvent->GetPrimaryVertex()->GetNContributors()>0;
 }
 
 Bool_t AliV0Reader::CheckForPrimaryVertexZ(){
@@ -674,7 +709,8 @@ Bool_t AliV0Reader::NextV0(){
     }
 
     //checks if we have a prim vertex
-    if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) { 
+    //if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) { 
+    if(GetNumberOfContributorsVtx()<=0) { 
       if(fHistograms != NULL){
 	fHistograms->FillHistogram("ESD_CutNContributors_InvMass",GetMotherCandidateMass());
       }
