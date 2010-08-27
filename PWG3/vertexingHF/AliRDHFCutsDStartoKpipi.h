@@ -27,7 +27,7 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
   Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) const; 
-  
+  virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(9,iPtBin)] : 1.e6);} // for the Dstar
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);} // for the D0
 
