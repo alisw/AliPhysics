@@ -901,18 +901,18 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
   if (procCmds != 0)  delete [] procCmds;
   procCmds = 0;
-  if (mProcObjectType != 0) delete mProcObjectType;
+  if (mProcObjectType != 0) delete [] mProcObjectType;
   mProcObjectType = 0;
-  if (mProcObjectType2 != 0) delete mProcObjectType2;
+  if (mProcObjectType2 != 0) delete [] mProcObjectType2;
   mProcObjectType2 = 0;
   if (mProcType != 0)  delete [] mProcType;
   mProcType = 0;
 
   if (selCmds != 0)  delete [] selCmds;
   selCmds = 0;
-  if (mSelObjectType != 0)  delete mSelObjectType;
+  if (mSelObjectType != 0)  delete [] mSelObjectType;
   mSelObjectType = 0;
-  if (mSelObjectType2 != 0)  delete mSelObjectType2;
+  if (mSelObjectType2 != 0)  delete [] mSelObjectType2;
   mSelObjectType2 = 0;
   if (mSelType != 0)  delete [] mSelType;
   mSelType = 0;
