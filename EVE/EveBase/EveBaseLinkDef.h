@@ -88,3 +88,7 @@
 // AliEveLego
 #pragma link C++ class AliEveLego+;
 #pragma link C++ class AliEveLegoEditor+;
+
+// AliEveBeamInfo
+#pragma link C++ class AliEveBeamsInfo+;
+#pragma link C++ class AliEveBeamsInfoEditor+;

@@ -39,55 +39,73 @@ public:
 
    // Declare callback/slot methods
    void DoAllEvents();
-   void ShowByCharge(Int_t id);
-   void ShowByChargeAE(Int_t id);
+   void ShowPosCharge();
+   void ShowNegCharge();
+   void ShowElectrons();
+   void ShowMuons();
+   void ShowPions();
+   void ShowKaons();
+   void ShowProtons();
+   void ShowPosChargeAE();
+   void ShowNegChargeAE();
+   void ShowElectronsAE();
+   void ShowMuonsAE();
+   void ShowPionsAE();
+   void ShowKaonsAE();
+   void ShowProtonsAE();
    void SetThreshold();
    void SetThresholdAE();
    void SetMaxPt();
    void SetMaxPtAE();
    void ShowByTracks(Int_t id);
    void ShowByTracksAE(Int_t id);
-   void ShowByEvents(Int_t id);
-   void ShowEventSelection();
-   void SelectEventSelection(Int_t id);
    void CreateAllEventsEditor();
-   void ShowPrevEvent();
-   void ShowNextEvent();
+   void ApplyChanges();
+   void DataIsMC();
+   void CollisionCandidatesOnly();
 
 protected:
    AliEveLego            *fM; // Model object.
 
    // Single event GUI
    TGTextButton  *fAllEventsButton; // text button for all events
-   TGButtonGroup *fParticlesBG;     // particle selection button
+   TGGroupFrame  *fParticlesBG;     // particle selection button
    TGButtonGroup *fTrackSelection;  // track selection button
-   TGGroupFrame *fEventSelection;   // event selection button
-   TGCheckButton *fRevents;         // check button for events
-   TGRadioButton *fRcharge[3];      // radio button for charge selection
+   TGCheckButton *fPosCharged;      // check button for positive only charged particles
+   TGCheckButton *fNegCharged;      // check button for negative only charged particles
+   TGCheckButton *fElectrons;       // check button for electrons
+   TGCheckButton *fMuons;           // check button for muons
+   TGCheckButton *fPions;           // check button for pions
+   TGCheckButton *fKaons;           // check button for kaons
+   TGCheckButton *fProtons;         // check button for protons
    TGRadioButton *fRtracks[2];      // radio button for track selection
    TGLabel       *fLabel;           // label for track selection
    TGLabel       *fLabel1;          // label for event selection
    TGNumberEntry *fThreshold;       // number entry to setup threshold
    TGNumberEntry *fMaxPt;           // number entry to setup max pt
    TGComboBox    *fSelect;          // combo box to filter events
-   TGTextButton  *fButtonPrev;      // previous event selection button
-   TGTextButton  *fButtonNext;      // next event selection button
+
 
    // All events GUI
    TGButtonGroup *fParticlesBGAE;    // particle selection button for all events
    TGButtonGroup *fTrackSelectionAE; // track selection for all events
-   TGGroupFrame  *fEventSelectionAE; // event selection for all events
-   TGCheckButton *fReventsAE;        // check button for event selection
-   TGRadioButton *fRchargeAE[3];     // radio button event
+   TGCheckButton *fPosChargedAE;     // check button for positive only charged particles
+   TGCheckButton *fNegChargedAE;     // check button for negative only charged particles
+   TGCheckButton *fElectronsAE;      // check button for electrons
+   TGCheckButton *fMuonsAE;          // check button for muons
+   TGCheckButton *fPionsAE;          // check button for pions
+   TGCheckButton *fKaonsAE;          // check button for kaons
+   TGCheckButton *fProtonsAE;        // check button for protons
+   TGTextButton  *fApplyChanges;     // apply selections
    TGRadioButton *fRtracksAE[2];     // radio button track
    TGLabel       *fLabelAE;          // label for track selection
    TGLabel       *fLabel1AE;         // label for event selection
    TGNumberEntry *fThresholdAE;      // number entry to setup threshold
    TGNumberEntry *fMaxPtAE;          // number entry to setup max pt
-   TGComboBox    *fSelectAE;         // combo box to filter events
-   TGTextButton  *fButtonPrevAE;     // previous event selection button
-   TGTextButton  *fButtonNextAE;     // next event selection button
 
+   TGButtonGroup *fEventControl;            // event control panel
+   TGCheckButton *fIsMC;                    // check if data is from MC
+   TGCheckButton *fCollisionCandidatesOnly; // fill all collision candidates events
 
 private:
 

@@ -12,7 +12,6 @@
 #include "AliEveEventManager.h"
 #include "AliEveMultiView.h"
 #include "AliPhysicsSelection.h"
-#include "AliEveEventSelector.h"
 
 #include "TH2F.h"
 #include "TMath.h"
@@ -30,7 +29,6 @@
 #include "TEveProjectionManager.h"
 #include "TEveProjectionAxes.h"
 #include "TGLWidget.h"
-#include "TGLOverlayButton.h"
 #include "TStopwatch.h"
 
 //______________________________________________________________________________
@@ -43,11 +41,12 @@ Double_t kPi = TMath::Pi();
 //______________________________________________________________________________
 AliEveLego::AliEveLego(const char* name) :
   TEveElementList(name),
-  fChargeId(1),
+  fIsMC(kFALSE),
+  fCollisionCandidatesOnly(kFALSE),
+  fParticleTypeId(0),
+  fParticleTypeIdAE(0),
   fTracksId(1),
-  fEventsId(1),
   fMaxPt(10000),
-  fChargeIdAE(0),
   fTracksIdAE(0),
   fMaxPtAE(10000),
   fEsd(0),
@@ -56,6 +55,16 @@ AliEveLego::AliEveLego(const char* name) :
   fHistoposAllEvents(0),
   fHistoneg(0),
   fHistonegAllEvents(0),
+  fHistoElectrons(0),
+  fHistoElectronsAllEvents(0),
+  fHistoMuons(0),
+  fHistoMuonsAllEvents(0),
+  fHistoPions(0),
+  fHistoPionsAllEvents(0),
+  fHistoKaons(0),
+  fHistoKaonsAllEvents(0),
+  fHistoProtons(0),
+  fHistoProtonsAllEvents(0),
   fData(0),
   fDataAllEvents(0),
   fLego(0),
@@ -77,12 +86,7 @@ AliEveLego::AliEveLego(const char* name) :
   fAl(0),
   fHisto2dLegoOverlay(0),
   fHisto2dAllEventsLegoOverlay(0),
-  fHisto2dAllEventsSlot(0),
-  fEventSelector(0),
-  fShowEventsInfo(0),
-  fGButton(0),
-  fB1(0),
-  fB2(0)
+  fHisto2dAllEventsSlot(0)
 {
   // Constructor.
   gEve->AddToListTree(this,0);
@@ -90,22 +94,64 @@ AliEveLego::AliEveLego(const char* name) :
   // Get Current ESD event
   fEsd = AliEveEventManager::AssertESD();
 
+  // Particles types per default
+  fParticleTypeId = new Bool_t[7];
+  fParticleTypeIdAE = new Bool_t[7];
+
+  for (Int_t s = 0; s < 7; s++)
+  {
+    if (s > 1){
+      fParticleTypeId[s] = kFALSE;
+      fParticleTypeIdAE[s] = kFALSE;
+    } else {
+      fParticleTypeId[s] = kTRUE;
+      fParticleTypeIdAE[s] = kTRUE;
+    }
+  }
+
   fPhysicsSelection = new AliPhysicsSelection();
   fPhysicsSelection->Initialize(fEsd->GetRunNumber());
 
-  fEventSelector = AliEveEventManager::GetMaster()->GetEventSelector();
-
-  fHistopos = new TH2F("histopos","Histo 2d positive", 100, -1.5, 1.5, 80, -kPi, kPi);
-  fHistoneg = new TH2F("histoneg","Histo 2d negative", 100, -1.5, 1.5, 80, -kPi, kPi);
+  fHistopos       = new TH2F("histopos","Histo 2d positive", 100, -1.5, 1.5, 80, -kPi, kPi);
+  fHistoneg       = new TH2F("histoneg","Histo 2d negative", 100, -1.5, 1.5, 80, -kPi, kPi);
+  fHistoElectrons = new TH2F("histoele","Histo 2d electron", 100, -1.5, 1.5, 80, -kPi, kPi);
+  fHistoMuons     = new TH2F("histomuo","Histo 2d muons   ", 100, -1.5, 1.5, 80, -kPi, kPi);
+  fHistoPions     = new TH2F("histopio","Histo 2d pions   ", 100, -1.5, 1.5, 80, -kPi, kPi);
+  fHistoKaons     = new TH2F("histokao","Histo 2d kaons   ", 100, -1.5, 1.5, 80, -kPi, kPi);
+  fHistoProtons   = new TH2F("histopro","Histo 2d protons ", 100, -1.5, 1.5, 80, -kPi, kPi);
 
   fHistopos->SetDirectory(0);
   fHistoneg->SetDirectory(0);
+  fHistoElectrons->SetDirectory(0);
+  fHistoMuons->SetDirectory(0);
+  fHistoPions->SetDirectory(0);
+  fHistoKaons->SetDirectory(0);
+  fHistoProtons->SetDirectory(0);
+
+  // colors from get_pdg_color() in /alice-macros/kine_tracks.C
+  static Color_t fElectro = 5;
+  static Color_t fMuon = 30;
+  static Color_t fPion = 3;
+  static Color_t fKaon = 38;
+  static Color_t fProton = 10;
 
   fData = new TEveCaloDataHist();
+
   fData->AddHistogram(fHistoneg);
   fData->RefSliceInfo(0).Setup("NegCg:", 0, kBlue);
   fData->AddHistogram(fHistopos);
   fData->RefSliceInfo(1).Setup("PosCg:", 0, kRed);
+  fData->AddHistogram(fHistoElectrons);
+  fData->RefSliceInfo(2).Setup("Electrons:", 0, fElectro);
+  fData->AddHistogram(fHistoMuons);
+  fData->RefSliceInfo(3).Setup("Muons:", 0, fMuon);
+  fData->AddHistogram(fHistoPions);
+  fData->RefSliceInfo(4).Setup("Pions:", 0, fPion);
+  fData->AddHistogram(fHistoKaons);
+  fData->RefSliceInfo(5).Setup("Kaons:", 0, fKaon);
+  fData->AddHistogram(fHistoProtons);
+  fData->RefSliceInfo(6).Setup("Protons:", 0, fProton);
+
   fData->GetEtaBins()->SetTitleFont(120);
   fData->GetEtaBins()->SetTitle("h");
   fData->GetPhiBins()->SetTitleFont(120);
@@ -124,14 +170,6 @@ AliEveLego::AliEveLego(const char* name) :
   fAl->ImportEventRPhi(fCalo3d);
   fAl->ImportEventRhoZ(fCalo3d);
 
-  // glbutton
-  fGButton = new TGLOverlayButton(0, "", 10.0, -10.0, 190.0, 20.0);
-  fGButton->SetAlphaValues(1.5,1.5);
-  fB1 = new TGLOverlayButton(0, "", 10.0, -30.0, 190.0, 20.0);
-  fB1->SetAlphaValues(1.5,1.5);
-  fB2 = new TGLOverlayButton(0, "", 10.0, -50.0, 190.0, 20.0);
-  fB2->SetAlphaValues(1.5,1.5);
-
   // Update
   Update();
 }
@@ -146,6 +184,19 @@ AliEveLego::~AliEveLego()
    delete fHistoposAllEvents;
    delete fHistoneg;
    delete fHistonegAllEvents;
+   delete fHistoElectrons;
+   delete fHistoElectronsAllEvents;
+   delete fHistoMuons;
+   delete fHistoMuonsAllEvents;
+   delete fHistoPions;
+   delete fHistoPionsAllEvents;
+   delete fHistoKaons;
+   delete fHistoKaonsAllEvents;
+   delete fHistoProtons;
+   delete fHistoProtonsAllEvents;
+
+   delete[] fParticleTypeId;
+   delete[] fParticleTypeIdAE;
 
    delete fData;
    delete fDataAllEvents;
@@ -172,10 +223,6 @@ AliEveLego::~AliEveLego()
    delete fHisto2dAllEventsLegoOverlay;
    delete fHisto2dAllEventsSlot;
 
-   delete fEventSelector;
-   delete fGButton;
-   delete fB1;
-   delete fB2;
 }
 
 namespace
@@ -198,21 +245,39 @@ TEveCaloDataHist* AliEveLego::LoadData()
    // Load data from ESD tree
    fHistopos->Reset();
    fHistoneg->Reset();
+   fHistoElectrons->Reset();
+   fHistoMuons->Reset();
+   fHistoPions->Reset();
+   fHistoKaons->Reset();
+   fHistoProtons->Reset();
 
    // Getting current tracks, filling histograms
    for (int n = 0; n < fEsd->GetNumberOfTracks(); ++n) {
 
-      if (fEsd->GetTrack(n)->GetSign() > 0) {
-         fHistopos->Fill(fEsd->GetTrack(n)->Eta(),
-                         getphi(fEsd->GetTrack(n)->Phi()),
-                         fabs(fEsd->GetTrack(n)->Pt()));
-      }
+     AliESDtrack *track = fEsd->GetTrack(n);
+     const Double_t sign = fEsd->GetTrack(n)->GetSign();
+     const Int_t prob = GetParticleType(track);     
 
-      if (fEsd->GetTrack(n)->GetSign() < 0) {
-         fHistoneg->Fill(fEsd->GetTrack(n)->Eta(),
-                         getphi(fEsd->GetTrack(n)->Phi()),
-                         fabs(fEsd->GetTrack(n)->Pt()));
-      }
+      if (sign > 0)
+        fHistopos->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+      if (sign < 0)
+        fHistoneg->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+      if (prob == 0)
+        fHistoElectrons->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+      if (prob == 1)
+        fHistoMuons->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+      if (prob == 2)
+        fHistoPions->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+      if (prob == 3)
+        fHistoKaons->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+      if (prob == 4)
+        fHistoProtons->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
    }
 
    fData->DataChanged();
@@ -228,25 +293,54 @@ TEveCaloDataHist* AliEveLego::LoadAllData()
    // load data from all events ESD
    fHistoposAllEvents->Reset();
    fHistonegAllEvents->Reset();
+   fHistoElectronsAllEvents->Reset();
+   fHistoMuonsAllEvents->Reset();
+   fHistoPionsAllEvents->Reset();
+   fHistoKaonsAllEvents->Reset();
+   fHistoProtonsAllEvents->Reset();
 
    TTree* t = AliEveEventManager::GetMaster()->GetESDTree();
 
    // Getting current tracks for each event, filling histograms
+   Int_t fAcceptedEvents = 0;
    for (int event = 0; event < t->GetEntries(); event++) {
       t->GetEntry(event);
-         for (int n = 0; n < fEsd->GetNumberOfTracks(); ++n) {
 
-            if (fEsd->GetTrack(n)->GetSign() > 0) {
-               fHistoposAllEvents->Fill(fEsd->GetTrack(n)->Eta(),
-                                          getphi(fEsd->GetTrack(n)->Phi()),
-                                          fabs(fEsd->GetTrack(n)->Pt()));
-            } else {
-               fHistonegAllEvents->Fill(fEsd->GetTrack(n)->Eta(),
-                                          getphi(fEsd->GetTrack(n)->Phi()),
-                                          fabs(fEsd->GetTrack(n)->Pt()));
-            }
+      if (fCollisionCandidatesOnly == kTRUE)
+        if (fPhysicsSelection->IsCollisionCandidate(fEsd) == kFALSE) continue;
+
+      fAcceptedEvents++;
+
+      for (int n = 0; n < fEsd->GetNumberOfTracks(); ++n) {
+
+           AliESDtrack *track = fEsd->GetTrack(n);
+           const Double_t sign = track->GetSign();
+           const Int_t prob = GetParticleType(track);
+
+            if (sign > 0)
+              fHistoposAllEvents->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+            if (sign < 0)
+              fHistonegAllEvents->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+            if (prob == 0)
+              fHistoElectronsAllEvents->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+            if (prob == 1)
+              fHistoMuonsAllEvents->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+            if (prob == 2)
+              fHistoPionsAllEvents->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+            if (prob == 3)
+              fHistoKaonsAllEvents->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
+
+            if (prob == 4)
+              fHistoProtonsAllEvents->Fill(track->Eta(), getphi(track->Phi()), fabs(track->Pt()));
          }
    }
+   t->GetEntry(0);
+   printf("Number of events loaded: %i, with AliPhysicsSelection: %i\n",fAcceptedEvents,fCollisionCandidatesOnly);
 
    fDataAllEvents->DataChanged();
 
@@ -261,18 +355,40 @@ TEveCaloDataHist* AliEveLego::FilterData()
    {
       fHistopos->Reset();
       fHistoneg->Reset();
+      fHistoElectrons->Reset();
+      fHistoMuons->Reset();
+      fHistoPions->Reset();
+      fHistoKaons->Reset();
+      fHistoProtons->Reset();
 
       const AliESDVertex *pv  = fEsd->GetPrimaryVertex();
 
       for (Int_t n = 0; n < pv->GetNIndices(); n++ )
       {
          AliESDtrack *at = fEsd->GetTrack(pv->GetIndices()[n]);
-         if (at->GetSign() > 0) {
-            fHistopos->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
-         }
-         if (at->GetSign() < 0) {
-            fHistoneg->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
-         }
+         const Double_t sign = at->GetSign();
+         const Int_t prob = GetParticleType(at);
+
+         if (sign > 0)
+           fHistopos->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+         if (sign < 0)
+           fHistoneg->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+         if (prob == 0)
+           fHistoElectrons->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+         if (prob == 1)
+           fHistoMuons->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+         if (prob == 2)
+           fHistoPions->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+         if (prob == 3)
+           fHistoKaons->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+         if (prob == 4)
+           fHistoProtons->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
       }
    }
 
@@ -282,29 +398,44 @@ TEveCaloDataHist* AliEveLego::FilterData()
    if (GetPtMax() >= fMaxPt){
       for (Int_t binx = 1; binx <= 100; binx++) {
          for (Int_t biny = 1; biny <= 80; biny++) {
-            if (fHistopos->GetBinContent(binx, biny) >= fMaxPt)
-            {
-               fHistopos->SetBinContent(binx, biny, fMaxPt);
-            }
-            if (fHistoneg->GetBinContent(binx, biny) >= fMaxPt)
-            {
-               fHistoneg->SetBinContent(binx, biny, fMaxPt);
-            }           
+
+           if (fHistopos->GetBinContent(binx, biny) >= fMaxPt)
+             fHistopos->SetBinContent(binx, biny, fMaxPt);
+
+           if (fHistoneg->GetBinContent(binx, biny) >= fMaxPt)
+             fHistoneg->SetBinContent(binx, biny, fMaxPt);
+
+           if (fHistoElectrons->GetBinContent(binx, biny) >= fMaxPt)
+             fHistoElectrons->SetBinContent(binx, biny, fMaxPt);
+
+           if (fHistoMuons->GetBinContent(binx, biny) >= fMaxPt)
+             fHistoMuons->SetBinContent(binx, biny, fMaxPt);
+
+           if (fHistoPions->GetBinContent(binx, biny) >= fMaxPt)
+             fHistoPions->SetBinContent(binx, biny, fMaxPt);
+
+           if (fHistoKaons->GetBinContent(binx, biny) >= fMaxPt)
+             fHistoKaons->SetBinContent(binx, biny, fMaxPt);
+
+           if (fHistoProtons->GetBinContent(binx, biny) >= fMaxPt)
+             fHistoProtons->SetBinContent(binx, biny, fMaxPt);
          }
       }
    }
 
-   // Positive only
-   if ( fChargeId == 2 ) fHistoneg->Reset();
-
-   // Negative only
-   if ( fChargeId == 3 ) fHistopos->Reset();
+   // Particle type filter
+   if ( fParticleTypeId[0] == kFALSE) fHistopos->Reset();
+   if ( fParticleTypeId[1] == kFALSE) fHistoneg->Reset();
+   if ( fParticleTypeId[2] == kFALSE) fHistoElectrons->Reset();
+   if ( fParticleTypeId[3] == kFALSE) fHistoMuons->Reset();
+   if ( fParticleTypeId[4] == kFALSE) fHistoPions->Reset();
+   if ( fParticleTypeId[5] == kFALSE) fHistoKaons->Reset();
+   if ( fParticleTypeId[6] == kFALSE) fHistoProtons->Reset();
 
    fData->DataChanged();
 
    return fData;
 }
-
 
 //______________________________________________________________________________
 TEveCaloDataHist* AliEveLego::FilterAllData()
@@ -314,31 +445,62 @@ TEveCaloDataHist* AliEveLego::FilterAllData()
    {
       fHistoposAllEvents->Reset();
       fHistonegAllEvents->Reset();
+      fHistoElectronsAllEvents->Reset();
+      fHistoMuonsAllEvents->Reset();
+      fHistoPionsAllEvents->Reset();
+      fHistoKaonsAllEvents->Reset();
+      fHistoProtonsAllEvents->Reset();
 
       TTree* t = AliEveEventManager::GetMaster()->GetESDTree();
 
       // Getting current tracks for each event, filling histograms
+      Int_t fAcceptedEvents = 0;
       for (int event = 0; event < t->GetEntries(); event++) {
 
-         t->GetEntry(event);
+        t->GetEntry(event);
+        const AliESDVertex *pv  = fEsd->GetPrimaryVertex();
 
-      const AliESDVertex *pv  = fEsd->GetPrimaryVertex();
+        if (fCollisionCandidatesOnly == kTRUE)
+          if (fPhysicsSelection->IsCollisionCandidate(fEsd) == kFALSE) continue;
 
-      for (Int_t n = 0; n < pv->GetNIndices(); n++ )
-      {
-         AliESDtrack *at = fEsd->GetTrack(pv->GetIndices()[n]);
+        fAcceptedEvents++;
 
-         if (at->GetSign() > 0) {
+        for (Int_t n = 0; n < pv->GetNIndices(); n++ )
+        {
+          AliESDtrack *at = fEsd->GetTrack(pv->GetIndices()[n]);
+          const Double_t sign = at->GetSign();
+          const Int_t prob = GetParticleType(at);
+
+          if (sign > 0)
             fHistoposAllEvents->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
-         }
-         if (at->GetSign() < 0) {
+
+          if (sign < 0)
             fHistonegAllEvents->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
-         }
+
+          if (prob == 0)
+            fHistoElectronsAllEvents->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+          if (prob == 1)
+            fHistoMuonsAllEvents->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+          if (prob == 2)
+            fHistoPionsAllEvents->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+          if (prob == 3)
+            fHistoKaonsAllEvents->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+
+          if (prob == 4)
+            fHistoProtonsAllEvents->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+        }
       }
-      }
+      t->GetEntry(0);
+      printf("Number of events loaded: %i, with AliPhysicsSelection: %i\n",fAcceptedEvents,fCollisionCandidatesOnly);
+
    } else {
+
       LoadAllData();
-   }
+
+    }
    
    fDataAllEvents->DataChanged();
 
@@ -346,23 +508,39 @@ TEveCaloDataHist* AliEveLego::FilterAllData()
    if (GetPtMaxAE() >= fMaxPtAE){
       for (Int_t binx = 1; binx <= 100; binx++) {
          for (Int_t biny = 1; biny <= 80; biny++) {
-            if (fHistoposAllEvents->GetBinContent(binx, biny) >= fMaxPtAE)
-            {
-               fHistoposAllEvents->SetBinContent(binx, biny, fMaxPtAE);
-            }
-            if (fHistonegAllEvents->GetBinContent(binx, biny) >= fMaxPtAE)
-            {
-               fHistonegAllEvents->SetBinContent(binx, biny, fMaxPtAE);
-            }           
+
+            if (fHistoposAllEvents->GetBinContent(binx, biny) >= fMaxPtAE)            
+              fHistoposAllEvents->SetBinContent(binx, biny, fMaxPtAE);
+
+            if (fHistonegAllEvents->GetBinContent(binx, biny) >= fMaxPtAE)            
+              fHistonegAllEvents->SetBinContent(binx, biny, fMaxPtAE);
+
+            if (fHistoElectronsAllEvents->GetBinContent(binx, biny) >= fMaxPt)
+              fHistoElectronsAllEvents->SetBinContent(binx, biny, fMaxPt);
+
+            if (fHistoMuonsAllEvents->GetBinContent(binx, biny) >= fMaxPt)
+              fHistoMuonsAllEvents->SetBinContent(binx, biny, fMaxPt);
+
+            if (fHistoPionsAllEvents->GetBinContent(binx, biny) >= fMaxPt)
+              fHistoPionsAllEvents->SetBinContent(binx, biny, fMaxPt);
+
+            if (fHistoKaonsAllEvents->GetBinContent(binx, biny) >= fMaxPt)
+              fHistoKaonsAllEvents->SetBinContent(binx, biny, fMaxPt);
+
+            if (fHistoProtonsAllEvents->GetBinContent(binx, biny) >= fMaxPt)
+              fHistoProtonsAllEvents->SetBinContent(binx, biny, fMaxPt);
          }
       }
    }
 
    // Positive only
-   if ( fChargeIdAE == 2 ) fHistonegAllEvents->Reset();
-
-   // Negative only
-   if ( fChargeIdAE == 3 ) fHistoposAllEvents->Reset();
+   if ( fParticleTypeIdAE[0] == kFALSE ) fHistoposAllEvents->Reset();
+   if ( fParticleTypeIdAE[1] == kFALSE ) fHistonegAllEvents->Reset();
+   if ( fParticleTypeIdAE[2] == kFALSE ) fHistoElectronsAllEvents->Reset();
+   if ( fParticleTypeIdAE[3] == kFALSE ) fHistoMuonsAllEvents->Reset();
+   if ( fParticleTypeIdAE[4] == kFALSE ) fHistoPionsAllEvents->Reset();
+   if ( fParticleTypeIdAE[5] == kFALSE ) fHistoKaonsAllEvents->Reset();
+   if ( fParticleTypeIdAE[6] == kFALSE ) fHistoProtonsAllEvents->Reset();
 
    fDataAllEvents->DataChanged();
 
@@ -382,9 +560,6 @@ void AliEveLego::Update()
 
    // Create 3d view
    Create3DView();
-
-   // Show information about event;
-   ShowEventSeletion(fShowEventsInfo, kTRUE);
 
    // Update the viewers
    gEve->Redraw3D(kTRUE);
@@ -562,15 +737,48 @@ TEveCaloDataHist* AliEveLego::LoadAllEvents()
                                  100,-1.5,1.5,80,-kPi,kPi);
       fHistonegAllEvents = new TH2F("fHistonegAllEvents","Histo 2d negative",
                                  100,-1.5,1.5,80,-kPi,kPi);
+      fHistoElectronsAllEvents = new TH2F("fHistoElectronsAllEvents","Histo 2d electrons",
+                                       100,-1.5,1.5,80,-kPi,kPi);
+      fHistoMuonsAllEvents = new TH2F("fHistoMuonsAllEvents","Histo 2d muons",
+                                       100,-1.5,1.5,80,-kPi,kPi);
+      fHistoPionsAllEvents = new TH2F("fHistoPionsAllEvents","Histo 2d pions",
+                                       100,-1.5,1.5,80,-kPi,kPi);
+      fHistoKaonsAllEvents = new TH2F("fHistoKaonsAllEvents","Histo 2d kaons",
+                                       100,-1.5,1.5,80,-kPi,kPi);
+      fHistoProtonsAllEvents = new TH2F("fHistoProtonsAllEvents","Histo 2d protons",
+                                       100,-1.5,1.5,80,-kPi,kPi);
 
       fHistoposAllEvents->SetDirectory(0);
       fHistonegAllEvents->SetDirectory(0);
+      fHistoElectronsAllEvents->SetDirectory(0);
+      fHistoMuonsAllEvents->SetDirectory(0);
+      fHistoPionsAllEvents->SetDirectory(0);
+      fHistoKaonsAllEvents->SetDirectory(0);
+      fHistoProtonsAllEvents->SetDirectory(0);
+
+      // colors from get_pdg_color() in /alice-macros/kine_tracks.C
+      static Color_t fElectro = 5;
+      static Color_t fMuon = 30;
+      static Color_t fPion = 3;
+      static Color_t fKaon = 38;
+      static Color_t fProton = 10;
 
       fDataAllEvents = new TEveCaloDataHist();
       fDataAllEvents->AddHistogram(fHistonegAllEvents);
       fDataAllEvents->RefSliceInfo(0).Setup("NegCg:", 0, kBlue);
       fDataAllEvents->AddHistogram(fHistoposAllEvents);
       fDataAllEvents->RefSliceInfo(1).Setup("PosCg:", 0, kRed);
+      fDataAllEvents->AddHistogram(fHistoElectronsAllEvents);
+      fDataAllEvents->RefSliceInfo(2).Setup("Electrons:", 0, fElectro);
+      fDataAllEvents->AddHistogram(fHistoMuonsAllEvents);
+      fDataAllEvents->RefSliceInfo(3).Setup("Muons:", 0, fMuon);
+      fDataAllEvents->AddHistogram(fHistoPionsAllEvents);
+      fDataAllEvents->RefSliceInfo(4).Setup("Pions:", 0, fPion);
+      fDataAllEvents->AddHistogram(fHistoKaonsAllEvents);
+      fDataAllEvents->RefSliceInfo(5).Setup("Kaons:", 0, fKaon);
+      fDataAllEvents->AddHistogram(fHistoProtonsAllEvents);
+      fDataAllEvents->RefSliceInfo(6).Setup("Protons:", 0, fProton);
+
       fDataAllEvents->GetEtaBins()->SetTitleFont(120);
       fDataAllEvents->GetEtaBins()->SetTitle("h");
       fDataAllEvents->GetPhiBins()->SetTitleFont(120);
@@ -601,7 +809,7 @@ TEveCaloDataHist* AliEveLego::LoadAllEvents()
       CreateHistoLego(slotLeftBottom);
       CreateProjections(slotRightTop, slotRightBottom);
 
-      LoadAllData();
+      FilterAllData();
 
       gEve->Redraw3D(kTRUE);
 
@@ -615,15 +823,70 @@ TEveCaloDataHist* AliEveLego::LoadAllEvents()
 }
 
 //______________________________________________________________________________
+void AliEveLego::ApplyParticleTypeSelectionAE()
+{
+  // reload all events applying particle type selection
+  FilterAllData();
+}
+
+//______________________________________________________________________________
 Float_t AliEveLego::GetPtMax()
 {
+   // return pT maximum
    return fData->GetMaxVal(fLego->GetPlotEt());
 }
 
 //______________________________________________________________________________
 Float_t AliEveLego::GetPtMaxAE()
 {
+   // return pT max from all events
    return fDataAllEvents->GetMaxVal(fLegoAllEvents->GetPlotEt());
+}
+
+//______________________________________________________________________________
+Int_t AliEveLego::GetParticleType(AliESDtrack *track)
+{
+  // determine the particle type
+  Double_t *prob = new Double_t[5];
+  track->GetESDpid(prob);
+
+  Double_t max = prob[0];
+  Int_t index = 0;
+
+  for (Int_t i = 1 ; i < 5; i++)
+  {
+    if (prob[i] > max){
+      max = prob[i];
+      index = i;
+    }
+  }
+  return index;
+}
+
+//______________________________________________________________________________
+void AliEveLego::SetParticleType(Int_t id)
+{
+  // activate/deactivate particles types
+  if (fParticleTypeId[id] == 0)
+  {
+    fParticleTypeId[id] = 1;
+  } else {
+    fParticleTypeId[id] = 0;
+  }
+
+  Update();
+}
+
+//______________________________________________________________________________
+void AliEveLego::SetParticleTypeAE(Int_t id)
+{
+  // activate/deactivate particles types
+  if (fParticleTypeIdAE[id] == 0)
+  {
+    fParticleTypeIdAE[id] = 1;
+  } else {
+    fParticleTypeIdAE[id] = 0;
+  }
 }
 
 //______________________________________________________________________________
@@ -648,6 +911,11 @@ void AliEveLego::SetThreshold(Double_t val)
    // Setting up the new threshold for all histograms
    fData->SetSliceThreshold(0,val);
    fData->SetSliceThreshold(1,val);
+   fData->SetSliceThreshold(2,val);
+   fData->SetSliceThreshold(3,val);
+   fData->SetSliceThreshold(4,val);
+   fData->SetSliceThreshold(5,val);
+   fData->SetSliceThreshold(6,val);
    fData->DataChanged();
 
    gEve->Redraw3D(kTRUE);
@@ -659,125 +927,50 @@ void AliEveLego::SetThresholdAE(Double_t val)
    // Setting up the new threshold for all histograms
    fDataAllEvents->SetSliceThreshold(0,val);
    fDataAllEvents->SetSliceThreshold(1,val);
+   fDataAllEvents->SetSliceThreshold(2,val);
+   fDataAllEvents->SetSliceThreshold(3,val);
+   fDataAllEvents->SetSliceThreshold(4,val);
+   fDataAllEvents->SetSliceThreshold(5,val);
+   fDataAllEvents->SetSliceThreshold(6,val);
    fDataAllEvents->DataChanged();
 
    gEve->Redraw3D(kTRUE);
 }
 
 //______________________________________________________________________________
-void AliEveLego::SetEventSelection()
+void AliEveLego::SwitchDataType()
 {
-   // activate/deactivate info box
-   if (fShowEventsInfo == 0)
-   {
-      fShowEventsInfo = 1;
-   } else {
-      fShowEventsInfo = 0;
-   }
+  // activate/deactivate MC / real data type
+  if (fIsMC == 0)
+  {
+    fIsMC = 1;
+  } else {
+    fIsMC = 0;
+  }
+  //Removing defaul physics selection
 
-   ShowEventSeletion(fShowEventsInfo);
+  delete fPhysicsSelection;
+  fPhysicsSelection = NULL;
+
+  fPhysicsSelection = new AliPhysicsSelection();
+  fPhysicsSelection->SetAnalyzeMC(fIsMC);
+  fPhysicsSelection->Initialize(fEsd->GetRunNumber());
+  FilterAllData();
 }
 
 //______________________________________________________________________________
-void AliEveLego::ShowEventSeletion(Bool_t show, Bool_t updateonly)
+void AliEveLego::SetCollisionCandidatesOnly()
 {
-   // activate/deactivate info box
-   if (show == 0)
-   {
-      gEve->GetDefaultGLViewer()->RemoveOverlayElement(fGButton);
-      fAl->Get3DView()->GetGLViewer()->RemoveOverlayElement(fGButton);
-      fHisto2dv->GetGLViewer()->RemoveOverlayElement(fGButton);
-
-      gEve->GetDefaultGLViewer()->RemoveOverlayElement(fB1);
-      fAl->Get3DView()->GetGLViewer()->RemoveOverlayElement(fB1);
-      fHisto2dv->GetGLViewer()->RemoveOverlayElement(fB1);
-
-      gEve->GetDefaultGLViewer()->RemoveOverlayElement(fB2);
-      fAl->Get3DView()->GetGLViewer()->RemoveOverlayElement(fB2);
-      fHisto2dv->GetGLViewer()->RemoveOverlayElement(fB2);
-
-   } else {
-
-      //Collision candidate
-      if (updateonly == kFALSE) {
-         gEve->GetDefaultGLViewer()->AddOverlayElement(fGButton);
-         fAl->Get3DView()->GetGLViewer()->AddOverlayElement(fGButton);
-         fHisto2dv->GetGLViewer()->AddOverlayElement(fGButton);
-      }
-
-      Bool_t ev = fPhysicsSelection->IsCollisionCandidate(fEsd);
-
-      if (ev == 1)
-      {
-         fGButton->SetText("Collision candidate: YES");
-      } else {
-         fGButton->SetText("Collision candidate: NO ");
-      }
-
-      // Beam 1 & 2 setup: method 1
-      if (updateonly == kFALSE) {
-         gEve->GetDefaultGLViewer()->AddOverlayElement(fB1);
-         fAl->Get3DView()->GetGLViewer()->AddOverlayElement(fB1);
-         fHisto2dv->GetGLViewer()->AddOverlayElement(fB1);
-
-         gEve->GetDefaultGLViewer()->AddOverlayElement(fB2);
-         fAl->Get3DView()->GetGLViewer()->AddOverlayElement(fB2);
-         fHisto2dv->GetGLViewer()->AddOverlayElement(fB2);
-      }
-
-      Bool_t b1  = fEsd->IsTriggerClassFired("CINT1A-ABCE-NOPF-ALL");
-      Bool_t b2  = fEsd->IsTriggerClassFired("CINT1C-ABCE-NOPF-ALL");
-      Bool_t b12 = fEsd->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL");
-
-      if (b1 == 1 || b12 == 1)
-      {
-         fB1->SetText("Beam 1: YES");
-         fB1->SetBackColor(0x00ff00);
-      } else {
-         fB1->SetText("Beam 1: NO");
-         fB1->SetBackColor(0xff0000);
-      }
-
-      if (b2 == 1 || b12 == 1)
-      {
-         fB2->SetText("Beam 2: YES");
-         fB2->SetBackColor(0x00ff00);
-      } else {
-         fB2->SetText("Beam 2: NO");
-         fB2->SetBackColor(0xff0000);
-      }
-   }
-
-   gEve->Redraw3D(kTRUE);
-
+  // activate/deactivate MC / real data type
+  if (fCollisionCandidatesOnly == 0)
+  {
+    fCollisionCandidatesOnly = 1;
+  } else {
+    fCollisionCandidatesOnly = 0;
+  }
+  FilterAllData();
 }
 
-//______________________________________________________________________________
-void AliEveLego::SelectEventSelection(Int_t id)
-{
-   // show trigger information
-   if (id == 0)
-   {
-      fEventSelector->SetSelectOnTriggerType(kFALSE);
-   } else {
-      if (id == 1) fEventSelector->SetTriggerType("CINT1A-ABCE-NOPF-ALL");
-      if (id == 2) fEventSelector->SetTriggerType("CINT1C-ABCE-NOPF-ALL");
-      if (id == 3) fEventSelector->SetTriggerType("CINT1B-ABCE-NOPF-ALL");
-      fEventSelector->SetSelectOnTriggerType(kTRUE);
-   }
-}
-
-//______________________________________________________________________________
-void AliEveLego::ShowPrevEvent()
-{
-   AliEveEventManager::GetMaster()->PrevEvent();
-}
-
-//______________________________________________________________________________
-void AliEveLego::ShowNextEvent()
-{
-   AliEveEventManager::GetMaster()->NextEvent();
-}
 /******************************************************************************/
 
 

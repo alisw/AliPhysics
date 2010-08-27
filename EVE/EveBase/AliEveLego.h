@@ -16,6 +16,7 @@ class AliESDEvent;
 class AliEveEventSelector;
 class AliEveMultiView;
 class AliPhysicsSelection;
+class AliESDtrack;
 
 class TEveCaloDataHist;
 class TEveCaloLego;
@@ -50,20 +51,19 @@ public:
   AliEveMultiView*  GetMultiView()      {   return fAl;               }
   Float_t           GetPtMax();
   Float_t           GetPtMaxAE();
+  Int_t             GetParticleType(AliESDtrack *track);
 
   // Set Methods
-  void SetCharge(Int_t id) {  fChargeId = id;  Update();  }
-  void SetAllEventsCharge(Int_t id) {  fChargeIdAE = id; FilterAllData();  }
+  void SetParticleType(Int_t id);
+  void SetParticleTypeAE(Int_t id);
   void SetTracks(Int_t id) {  fTracksId = id;  Update();  }
   void SetTracksAE(Int_t id) {  fTracksIdAE = id;  FilterAllData();  }
-  void SetEvents(Int_t id) {  fEventsId = id;  Update();  }
   void SetMaxPt(Double_t val);
   void SetMaxPtAE(Double_t val);
   void SetThreshold(Double_t val);
   void SetThresholdAE(Double_t val);
-  void SetEventSelection();
-  void ShowPrevEvent();
-  void ShowNextEvent();
+  void SwitchDataType();
+  void SetCollisionCandidatesOnly();
 
   // Functions
   void Update();
@@ -78,16 +78,16 @@ public:
   void              CreateProjections(TEveWindowSlot* slot1,
                                       TEveWindowSlot* slot2);
   TEveCaloDataHist* LoadAllEvents();
-  void              ShowEventSeletion(Bool_t show, Bool_t updateonly = kFALSE);
-  void              SelectEventSelection(Int_t id);
+  void ApplyParticleTypeSelectionAE();
 
 private:
-  Int_t fChargeId;  // determine if the charge is +/-
-  Int_t fTracksId;  // determine tracks selection
-  Int_t fEventsId;  // determine events selection
-  Float_t fMaxPt;   // set maximum pT
+  Bool_t fIsMC;                    // switch to MC mode for AliPhysicsSelection
+  Bool_t fCollisionCandidatesOnly; // activate flag when loading all events
+  Bool_t *fParticleTypeId;    // determine how particles to show
+  Bool_t *fParticleTypeIdAE;  // determine how particles to show
+  Int_t   fTracksId;          // determine tracks selection
+  Float_t fMaxPt;             // set maximum pT
 
-  Int_t fChargeIdAE;  // determine if the charge is +/- for all events
   Int_t fTracksIdAE;  // determine tracks selection for all events
   Float_t fMaxPtAE;   // determine maximum pT for all events
 
@@ -97,6 +97,16 @@ private:
   TH2F *fHistoposAllEvents;               // positive charge histogram for all events
   TH2F *fHistoneg;                        // negative charge histogram
   TH2F *fHistonegAllEvents;               // negative charge histogram for all events
+  TH2F *fHistoElectrons;                  // electrons histogram
+  TH2F *fHistoElectronsAllEvents;         // electrons histogram all events
+  TH2F *fHistoMuons;                      // muons histogram
+  TH2F *fHistoMuonsAllEvents;             // muons histogram all events
+  TH2F *fHistoPions;                      // pions histogram
+  TH2F *fHistoPionsAllEvents;             // pions histogram all events
+  TH2F *fHistoKaons;                      // kaons histogram
+  TH2F *fHistoKaonsAllEvents;             // kaons histogram all events
+  TH2F *fHistoProtons;                    // protons histogram
+  TH2F *fHistoProtonsAllEvents;           // protons histogram all events
 
   TEveCaloDataHist *fData;          // calo data for 2D, 3D histograms
   TEveCaloDataHist *fDataAllEvents; // calo data for all events
@@ -122,12 +132,6 @@ private:
   TEveCaloLegoOverlay *fHisto2dLegoOverlay; // Overlay for calo lego
   TEveCaloLegoOverlay* fHisto2dAllEventsLegoOverlay; // Overlay for calo lego all events
   TEveWindowSlot* fHisto2dAllEventsSlot;  // window slot for 2d all events histogram
-
-  AliEveEventSelector *fEventSelector;  // event selector
-  Bool_t fShowEventsInfo;               // determine if show events info
-  TGLOverlayButton *fGButton;           // button box with collision candidate information
-  TGLOverlayButton *fB1;                // button box with beam 1 information
-  TGLOverlayButton *fB2;                // button box with beam 2 information
 
   AliEveLego(const AliEveLego&);            // Not implemented
   AliEveLego& operator=(const AliEveLego&); // Not implemented
