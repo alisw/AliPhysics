@@ -3,7 +3,7 @@
 # N Events
 NEVENTS=10
 
-# TriggerName [Belonging to BarrelMultiplicityTrigger Component-
+# TriggerName [Belonging to BarrelMultiplicityTrigger Component]
 TRIGGER="H-Barrel_pT_Single-V0001.001"
   
 # Path to ESD
