@@ -114,26 +114,27 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   //emcalQA->SetFiducialCut(fidCut);
   emcalQA->SwitchOffFiducialCut();
   emcalQA->SwitchOffPlotsMaking();
-  emcalQA->SwitchOffCalorimetersCorrelation();
+  emcalQA->SwitchOnCalorimetersCorrelation();
   if(kUseKinematics)emcalQA->SetTimeCut(420,825);//Open for the moment
   //Set Histrograms bins and ranges
   emcalQA->SetHistoPtRangeAndNBins(0, 5, 50) ;
-  emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 50) ;
-  emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 100) ;
+  emcalQA->SetHistoFinePtRangeAndNBins(0, 5, 1000) ; // bining for fhAmpId
+  emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 100) ;
+  emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 200) ;
   emcalQA->SetNumberOfModules(4); //EMCAL first year
-  emcalQA->SetHistoMassRangeAndNBins(0., 0.5, 100) ;
-  emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 5 );
+  emcalQA->SetHistoMassRangeAndNBins(0., 0.6, 200) ;
+  emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
   emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
-  emcalQA->SetHistodEdxRangeAndNBins(0.,200.,100);
+  emcalQA->SetHistodEdxRangeAndNBins(0.,200.,200);
   emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
-  emcalQA->SetHistoTimeRangeAndNBins(400.,800,200);
+  emcalQA->SetHistoTimeRangeAndNBins(300.,900,300);
   emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
-  emcalQA->SetHistoVertexDistRangeAndNBins(0.,500.,100);
+  emcalQA->SetHistoVertexDistRangeAndNBins(0.,500.,500);
   emcalQA->SetHistoNClusterCellRangeAndNBins(0,50,50);
-  emcalQA->SetHistoXRangeAndNBins(-230,90,80);
-  emcalQA->SetHistoYRangeAndNBins(370,450,20);
-  emcalQA->SetHistoZRangeAndNBins(-400,400,100);
-  emcalQA->SetHistoRRangeAndNBins(400,450,10);
+  emcalQA->SetHistoXRangeAndNBins(-230,90,120);
+  emcalQA->SetHistoYRangeAndNBins(370,450,40);
+  emcalQA->SetHistoZRangeAndNBins(-400,400,200);
+  emcalQA->SetHistoRRangeAndNBins(400,450,25);
   
   //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
 	
@@ -151,22 +152,23 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   phosQA->SwitchOffPlotsMaking();
   //Set Histrograms bins and ranges
   phosQA->SetHistoPtRangeAndNBins(0, 5, 50) ;
+  phosQA->SetHistoFinePtRangeAndNBins(0, 5, 1000) ; // bining for fhAmpId
   phosQA->SetHistoPhiRangeAndNBins(259*TMath::DegToRad(), 321*TMath::DegToRad(), 130) ;
   phosQA->SetHistoEtaRangeAndNBins(-0.125, 0.125, 57) ;
   phosQA->SetNumberOfModules(3); //PHOS first year
-  phosQA->SetHistoMassRangeAndNBins(0., 0.5, 100) ;
-  phosQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 5) ;
+  phosQA->SetHistoMassRangeAndNBins(0., 0.6, 200) ;
+  phosQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10) ;
   phosQA->SetHistoPOverERangeAndNBins(0,10.,100);
-  phosQA->SetHistodEdxRangeAndNBins(0.,200.,100);
+  phosQA->SetHistodEdxRangeAndNBins(0.,200.,200);
   phosQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
-  phosQA->SetHistoTimeRangeAndNBins(0.,200,100);
+  phosQA->SetHistoTimeRangeAndNBins(0.,300,300);
   phosQA->SetHistoRatioRangeAndNBins(0.,2.,100);
-  phosQA->SetHistoVertexDistRangeAndNBins(0.,500.,100);
-  phosQA->SetHistoNClusterCellRangeAndNBins(0,20,20);
-  phosQA->SetHistoXRangeAndNBins(-100,400,50);
-  phosQA->SetHistoYRangeAndNBins(-490,-290,50);
-  phosQA->SetHistoZRangeAndNBins(-80,80,50);
-  phosQA->SetHistoRRangeAndNBins(440,480,40);
+  phosQA->SetHistoVertexDistRangeAndNBins(0.,500.,500);
+  phosQA->SetHistoNClusterCellRangeAndNBins(0,50,50);
+  phosQA->SetHistoXRangeAndNBins(-100,400,100);
+  phosQA->SetHistoYRangeAndNBins(-490,-290,100);
+  phosQA->SetHistoZRangeAndNBins(-80,80,100);
+  phosQA->SetHistoRRangeAndNBins(440,480,80);
 	
   //if(kPrintSettings)phosQA->Print("");	
 	

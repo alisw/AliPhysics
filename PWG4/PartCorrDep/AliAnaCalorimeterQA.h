@@ -93,6 +93,18 @@ public:
   Float_t GetHistoPOverEMin()   const { return fHistoPOverEMin ; }
   Float_t GetHistoPOverEMax()   const { return fHistoPOverEMax ; }	
 	
+  virtual void SetHistoFinePtRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoFinePtBins  = n ;
+    fHistoFinePtMax   = max ;
+    fHistoFinePtMin   = min ;
+  }
+	
+  Int_t   GetHistoFinePtBins()  const { return fHistoFinePtBins ; }
+  Float_t GetHistoFinePtMin()   const { return fHistoFinePtMin ; }
+  Float_t GetHistoFinePtMax()   const { return fHistoFinePtMax ; }	
+	
+  
+  
 	virtual void SetHistodEdxRangeAndNBins(Float_t min, Float_t max, Int_t n) {
 		fHistodEdxBins  = n ;
 		fHistodEdxMax   = max ;
@@ -223,6 +235,9 @@ public:
   
   //Histograms
   //Histogram Bins
+  Int_t   fHistoFinePtBins;        // fine binning for fhAmpId histogram
+  Float_t fHistoFinePtMax;         // maximum pt value for fhAmpId histogram
+  Float_t fHistoFinePtMin;         // minimum pt value for fhAmpId histogram
   Int_t   fHistoPOverEBins;        // p/E histogram number of bins
   Float_t fHistoPOverEMax;         // p/E maximum value
   Float_t fHistoPOverEMin;         // p/E minimum value
