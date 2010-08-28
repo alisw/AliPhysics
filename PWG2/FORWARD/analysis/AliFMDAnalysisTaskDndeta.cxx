@@ -374,13 +374,19 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
   TH1F* hPrimaryNSD = (TH1F*)fOutputList->FindObject("hMultvsEtaNSD");
   AliHeader* header            = mcEvent->Header();
   AliGenEventHeader* genHeader = header->GenEventHeader();
+  
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
-  
-  Int_t pythiaType = pythiaGenHeader->ProcessType();
   Bool_t nsd = kTRUE;
-  if(pythiaType==92||pythiaType==93)
-    nsd = kFALSE;
-  
+  if (!pythiaGenHeader) {
+    std::cout<<" no pythia header!"<<std::endl;
+    //  return; 
+  }
+  else {
+    Int_t pythiaType = pythiaGenHeader->ProcessType();
+    
+    if(pythiaType==92||pythiaType==93)
+      nsd = kFALSE;
+  }
   TArrayF vertex;
   genHeader->PrimaryVertex(vertex);
   if(TMath::Abs(vertex.At(2)) > pars->GetVtxCutZ())

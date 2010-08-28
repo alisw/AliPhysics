@@ -782,18 +782,19 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   AliGenEventHeader* genHeader = header->GenEventHeader();
   
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
-  
+  Bool_t nsd = kTRUE;
   if (!pythiaGenHeader) {
     std::cout<<" no pythia header!"<<std::endl;
-    return; 
+    //  return; 
   }
+  else {
   
 	
   Int_t pythiaType = pythiaGenHeader->ProcessType();
-  Bool_t nsd = kTRUE;
+  
   if(pythiaType==92||pythiaType==93)
     nsd = kFALSE;
-  
+  }
   
   /*if(pythiaType==92||pythiaType==93){
       std::cout<<"single diffractive"<<std::endl;
