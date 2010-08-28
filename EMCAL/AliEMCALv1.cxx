@@ -77,13 +77,13 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title)
 
 //______________________________________________________________________
 AliEMCALv1::~AliEMCALv1(){
-    // dtor
-
-    if ( fHits) {
-	fHits->Delete();
-	delete fHits;
-	fHits = 0;
-    }
+  // dtor
+  
+  if ( fHits ) {
+    fHits->Clear();
+    delete fHits;
+    fHits = 0;
+  }
 }
 
 //______________________________________________________________________

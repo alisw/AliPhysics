@@ -76,11 +76,11 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title)
 AliEMCALv2::~AliEMCALv2(){
     // dtor
 
-    if ( fHits) {
-	fHits->Delete();
-	delete fHits;
-	fHits = 0;
-    }
+  if ( fHits ) {
+    fHits->Clear();
+    delete fHits;
+    fHits = 0;
+  }
 }
 
 //______________________________________________________________________
