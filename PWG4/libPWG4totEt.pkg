@@ -1,0 +1,24 @@
+#-*- Mode: Makefile -*-
+
+SRCS = totEt/AliAnalysisEt.cxx \
+totEt/AliAnalysisEtMonteCarlo.cxx \
+totEt/AliAnalysisEtMonteCarloEmcal.cxx \
+totEt/AliAnalysisEtMonteCarloPhos.cxx \
+totEt/AliAnalysisEtReconstructed.cxx \
+totEt/AliAnalysisEtReconstructedEmcal.cxx \
+totEt/AliAnalysisEtReconstructedPhos.cxx \
+totEt/AliAnalysisTaskTotEt.cxx \
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR:= PWG4totEtLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+EINCLUDE = PWG4/totEt 
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSUtils \
+                         -L$(ROOTLIBDIR) -lEG
+endif
