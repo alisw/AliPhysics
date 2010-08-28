@@ -382,15 +382,18 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   for(Int_t iMod=0; iMod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); iMod++) {
     for(Int_t iRow=0; iRow<AliEMCALGeoParams::fgkEMCALRows; iRow++) {
       for(Int_t iCol=0; iCol<AliEMCALGeoParams::fgkEMCALCols; iCol++) {
-	sprintf(hname,"%d_%d_%d",iMod,iCol,iRow);
-	sprintf(htitl,"Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
-	fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
-	fOutputContainer->Add(fHmpi0[iMod][iCol][iRow]);
+        sprintf(hname,"%d_%d_%d",iMod,iCol,iRow);
+        sprintf(htitl,"Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
+        fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
+        fOutputContainer->Add(fHmpi0[iMod][iCol][iRow]);
       }
     }
   }
 
-  fHmgg = new TH1F("hmgg","2-cluster invariant mass",fNbins,fMinBin,fMaxBin);
+  fHmgg = new TH2F("hmgg","2-cluster invariant mass",fNbins,fMinBin,fMaxBin,100,0,10);
+  fHmgg->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+  fHmgg->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+
   fOutputContainer->Add(fHmgg);
   
   fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
@@ -415,7 +418,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) kAOD=kTRUE;
   Bool_t kESD = kFALSE;
   if(!strcmp(InputEvent()->GetName(),"AliESDEvent")) kESD=kTRUE;
-
+  
   if(kAOD){
     //Input are ESDs
     aod = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -447,20 +450,20 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   //FIXME Not neede the matrices for the moment MEFIX
   //Get the matrix with geometry information
   //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
-//  if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) {
-//    if(DebugLevel() > 1) 
-//      printf("AliAnalysisTaskEMCALPi0CalibSelection Use ideal geometry, values geometry matrix not kept in AODs.\n");
-//  }
-//  else{	
-//    if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
-//    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
-//    for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
-//      if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
-//    }
-//  }
+  //  if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) {
+  //    if(DebugLevel() > 1) 
+  //      printf("AliAnalysisTaskEMCALPi0CalibSelection Use ideal geometry, values geometry matrix not kept in AODs.\n");
+  //  }
+  //  else{	
+  //    if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
+  //    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
+  //    for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
+  //      if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
+  //    }
+  //  }
   
   if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
-    
+  
   Int_t iSupMod1 = -1;
   Int_t iphi1    = -1;
   Int_t ieta1    = -1;
@@ -493,12 +496,12 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     else if (c1->GetNCells() < fMinNCells) continue; 
     
     if(DebugLevel() > 2)
-      { 
-	printf("Std  : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,e1i, c1->GetDispersion(),c1->GetM02(),c1->GetM20());
-	Float_t pos[]={0,0,0};
-	c1->GetPosition(pos);
-	printf("Std  : i %d, x %f, y %f, z %f\n",iClu, pos[0], pos[1], pos[2]);
-      }
+    { 
+      printf("Std  : i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,e1i, c1->GetDispersion(),c1->GetM02(),c1->GetM20());
+      Float_t pos[]={0,0,0};
+      c1->GetPosition(pos);
+      printf("Std  : i %d, x %f, y %f, z %f\n",iClu, pos[0], pos[1], pos[2]);
+    }
     
     //AliEMCALAodCluster clu1(*c1);
     //clu1.Recalibrate(fCalibData, emCells, fEMCALGeoName);
@@ -514,14 +517,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     Float_t e1ii = c1->E(); // cluster energy after correction
     
     if(DebugLevel() > 2)
-      { 
-	//printf("Recal: i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,e1ii, clu1.GetDispersion(),clu1.GetM02(),clu1.GetM20()); 
-	printf("Recal: i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,e1ii, c1->GetDispersion(),c1->GetM02(),c1->GetM20());    
-	Float_t pos2[]={0,0,0};
-	//clu1.GetPosition(pos2);
-	c1->GetPosition(pos2);
-	printf("Recal: i %d, x %f, y %f, z %f\n",iClu, pos2[0], pos2[1], pos2[2]);
-      }
+    { 
+      //printf("Recal: i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,e1ii, clu1.GetDispersion(),clu1.GetM02(),clu1.GetM20()); 
+      printf("Recal: i %d, E %f, dispersion %f, m02 %f, m20 %f\n",iClu,e1ii, c1->GetDispersion(),c1->GetM02(),c1->GetM20());    
+      Float_t pos2[]={0,0,0};
+      //clu1.GetPosition(pos2);
+      c1->GetPosition(pos2);
+      printf("Recal: i %d, x %f, y %f, z %f\n",iClu, pos2[0], pos2[1], pos2[2]);
+    }
     
     //clu1.GetMomentum(p1,v);
     c1->GetMomentum(p1,v);
@@ -545,9 +548,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       //clu2.EvalEnergy();
       //clu2.EvalAll(fLogWeight,fEMCALGeoName);
       if(IsRecalibrationOn())	{
-	Float_t energy = RecalibrateClusterEnergy(c2, emCells);
-	//clu2.SetE(energy);
-	c2->SetE(energy);
+        Float_t energy = RecalibrateClusterEnergy(c2, emCells);
+        //clu2.SetE(energy);
+        c2->SetE(energy);
       }
       
       Float_t e2ii = c2->E();
@@ -563,31 +566,31 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       Float_t invmass = p12.M()*1000; 
       
       if(invmass < fMaxBin && invmass > fMinBin){
-	fHmgg->Fill(invmass); 
-	
-	if (fGroupNCells == 0){
-	  fHmpi0[iSupMod1][ieta1][iphi1]->Fill(invmass);
-	  fHmpi0[iSupMod2][ieta2][iphi2]->Fill(invmass);
-	}	
-	else  {
-	  //printf("Regroup N %d, eta1 %d, phi1 %d, eta2 %d, phi2 %d \n",fGroupNCells, ieta1, iphi1, ieta2, iphi2);
-	  for (Int_t i = -fGroupNCells; i < fGroupNCells+1; i++) {
-	    for (Int_t j = -fGroupNCells; j < fGroupNCells+1; j++) {
-	      //printf("\t i %d, j %d\n",i,j);
-	      if((ieta1+i >= 0) && (iphi1+j >= 0) && (ieta1+i < 48) && (iphi1+j < 24)){
-		//printf("\t \t eta1+i %d, phi1+j %d\n", ieta1+i, iphi1+j);
-		fHmpi0[iSupMod1][ieta1+i][iphi1+j]->Fill(invmass);
-	      }
-	      if((ieta2+i >= 0) && (iphi2+j >= 0) && (ieta2+i < 48) && (iphi2+j < 24)){
-		//printf("\t \t eta2+i %d, phi2+j %d\n", ieta2+i, iphi2+j);
-		fHmpi0[iSupMod2][ieta2+i][iphi2+j]->Fill(invmass);
-	      }
-	    }// j loop
-	  }//i loop
-	}//group cells
-	
-	if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Mass in (SM%d,%d,%d) and  (SM%d,%d,%d): %.3f GeV  E1_i=%f E1_ii=%f  E2_i=%f E2_ii=%f\n",
-				    iSupMod1,iphi1,ieta1,iSupMod2,iphi2,ieta2,p12.M(),e1i,e1ii,e2i,e2ii);
+        fHmgg->Fill(invmass,p12.Pt()); 
+        
+        if (fGroupNCells == 0){
+          fHmpi0[iSupMod1][ieta1][iphi1]->Fill(invmass);
+          fHmpi0[iSupMod2][ieta2][iphi2]->Fill(invmass);
+        }	
+        else  {
+          //printf("Regroup N %d, eta1 %d, phi1 %d, eta2 %d, phi2 %d \n",fGroupNCells, ieta1, iphi1, ieta2, iphi2);
+          for (Int_t i = -fGroupNCells; i < fGroupNCells+1; i++) {
+            for (Int_t j = -fGroupNCells; j < fGroupNCells+1; j++) {
+              //printf("\t i %d, j %d\n",i,j);
+              if((ieta1+i >= 0) && (iphi1+j >= 0) && (ieta1+i < 48) && (iphi1+j < 24)){
+                //printf("\t \t eta1+i %d, phi1+j %d\n", ieta1+i, iphi1+j);
+                fHmpi0[iSupMod1][ieta1+i][iphi1+j]->Fill(invmass);
+              }
+              if((ieta2+i >= 0) && (iphi2+j >= 0) && (ieta2+i < 48) && (iphi2+j < 24)){
+                //printf("\t \t eta2+i %d, phi2+j %d\n", ieta2+i, iphi2+j);
+                fHmpi0[iSupMod2][ieta2+i][iphi2+j]->Fill(invmass);
+              }
+            }// j loop
+          }//i loop
+        }//group cells
+        
+        if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Mass in (SM%d,%d,%d) and  (SM%d,%d,%d): %.3f GeV  E1_i=%f E1_ii=%f  E2_i=%f E2_ii=%f\n",
+                                    iSupMod1,iphi1,ieta1,iSupMod2,iphi2,ieta2,p12.M(),e1i,e1ii,e2i,e2ii);
       }
       
     }

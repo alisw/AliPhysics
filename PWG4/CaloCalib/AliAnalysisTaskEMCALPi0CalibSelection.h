@@ -110,7 +110,7 @@ private:
   Float_t fEmin;          // min. cluster energy
   Float_t fEmax;          // max. cluster energy
   Int_t   fMinNCells;     // min. ncells in cluster
-  Int_t fGroupNCells;     // group n cells
+  Int_t   fGroupNCells;   // group n cells
   Float_t fLogWeight;     // log weight used in cluster recalibration
   Bool_t  fCopyAOD;       // Copy calo information only to AOD?
   TString fEMCALGeoName;  // Name of geometry to use.
@@ -127,7 +127,7 @@ private:
 
   TList*  fOutputContainer; //!histogram container
   TH1F*   fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];//! two-cluster inv. mass assigned to each cell.
-  TH1F*   fHmgg;            //! two-cluster inv.mass
+  TH2F*   fHmgg;            //! two-cluster inv.mass vt pt of pair
   TH1I*   fhNEvents;        //! Number of events counter histogram
   TList * fCuts ;           //! List with analysis cuts
 
