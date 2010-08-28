@@ -1,0 +1,16 @@
+#ifdef __CINT__
+ 
+#pragma link off all globals;
+#pragma link off all classes;
+#pragma link off all functions;
+
+#pragma link C++ class AliAnalysisEt+;
+#pragma link C++ class AliAnalysisEtMonteCarlo+;
+#pragma link C++ class AliAnalysisEtMonteCarloEmcal+;
+#pragma link C++ class AliAnalysisEtMonteCarloPhos+;
+#pragma link C++ class AliAnalysisEtReconstructed+;
+#pragma link C++ class AliAnalysisEtReconstructedEmcal+;
+#pragma link C++ class AliAnalysisEtReconstructedPhos+;
+#pragma link C++ class AliAnalysisTaskTotEt+;
+      
+#endif
