@@ -203,36 +203,36 @@ public:
   Bool_t WriteDeltaAODToFile() const {return fWriteOutputDeltaAOD ; } 
   
  protected:
-  Int_t	           fEventNumber; // Event number
-  TString          fCurrentFileName; // Current file name under analysis
-  Int_t            fDataType ;   // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
-  Int_t            fDebug;       // Debugging level
-  AliFiducialCut * fFiducialCut; //! Acceptance cuts
-  Bool_t           fCheckFidCut ;// Do analysis for clusters in defined region         
+  Int_t	           fEventNumber;    // Event number
+  TString          fCurrentFileName;// Current file name under analysis
+  Int_t            fDataType ;      // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
+  Int_t            fDebug;          // Debugging level
+  AliFiducialCut * fFiducialCut;    //! Acceptance cuts
+  Bool_t           fCheckFidCut ;   // Do analysis for clusters in defined region         
 
   Bool_t           fComparePtHardAndJetPt;  // In MonteCarlo, jet events, reject fake events with wrong jet energy.
   Float_t          fPtHardAndJetPtFactor;   // Factor between ptHard and jet pT to reject/accept event.
 
-  Float_t        fCTSPtMin;      // pT Threshold on charged particles 
-  Float_t        fEMCALPtMin;    // pT Threshold on emcal clusters
-  Float_t        fPHOSPtMin;     // pT Threshold on phos clusters
+  Float_t          fCTSPtMin;       // pT Threshold on charged particles 
+  Float_t          fEMCALPtMin;     // pT Threshold on emcal clusters
+  Float_t          fPHOSPtMin;      // pT Threshold on phos clusters
 
-  TList *        fAODBranchList ; //! List with AOD branches created and needed in analysis  
-  TObjArray *    fAODCTS ;        //! temporal referenced array with tracks
-  TObjArray *    fAODEMCAL ;      //! temporal referenced array with EMCAL CaloClusters
-  TObjArray *    fAODPHOS ;       //! temporal referenced array with PHOS CaloClusters
-  AliVCaloCells *fEMCALCells ;    //! temporal array with EMCAL CaloCells, ESD or AOD
-  AliVCaloCells *fPHOSCells ;     //! temporal array with PHOS CaloCells, ESD or AOD
+  TList          * fAODBranchList ; //! List with AOD branches created and needed in analysis  
+  TObjArray      * fAODCTS ;        //! temporal referenced array with tracks
+  TObjArray      * fAODEMCAL ;      //! temporal referenced array with EMCAL CaloClusters
+  TObjArray      * fAODPHOS ;       //! temporal referenced array with PHOS CaloClusters
+  AliVCaloCells  * fEMCALCells ;    //! temporal array with EMCAL CaloCells, ESD or AOD
+  AliVCaloCells  * fPHOSCells ;     //! temporal array with PHOS CaloCells, ESD or AOD
 
-  AliVEvent   *  fInputEvent;     //! pointer to esd or aod input
-  AliAODEvent *  fOutputEvent;    //! pointer to aod output
-  AliMCEvent  *  fMC;             //! Monte Carlo Event Handler  
+  AliVEvent      * fInputEvent;     //! pointer to esd or aod input
+  AliAODEvent    * fOutputEvent;    //! pointer to aod output
+  AliMCEvent     * fMC;             //! Monte Carlo Event Handler  
 
-  Bool_t         fFillCTS;        // use data from CTS
-  Bool_t         fFillEMCAL;      // use data from EMCAL
-  Bool_t         fFillPHOS;       // use data from PHOS
-  Bool_t         fFillEMCALCells; // use data from EMCAL
-  Bool_t         fFillPHOSCells;  // use data from PHOS
+  Bool_t           fFillCTS;        // use data from CTS
+  Bool_t           fFillEMCAL;      // use data from EMCAL
+  Bool_t           fFillPHOS;       // use data from PHOS
+  Bool_t           fFillEMCALCells; // use data from EMCAL
+  Bool_t           fFillPHOSCells;  // use data from PHOS
 
 //  TTree *        fSecondInputAODTree;    // Tree with second input AOD, for mixing analysis.	
 //  AliAODEvent*   fSecondInputAODEvent;   //! pointer to second input AOD event.
@@ -243,25 +243,25 @@ public:
 //  Int_t          fAODEMCALNormalInputEntries; // Number of entries in EMCAL in case of standard input, larger with mixing.
 //  Int_t          fAODPHOSNormalInputEntries;  // Number of entries in PHOS  in case of standard input, larger with mixing.
 	
-  ULong_t        fTrackStatus        ; // Track selection bit, select tracks refitted in TPC, ITS ...
-  Bool_t         fReadStack          ; // Access kine information from stack
-  Bool_t	       fReadAODMCParticles ; // Access kine information from filtered AOD MC particles
+  ULong_t          fTrackStatus        ; // Track selection bit, select tracks refitted in TPC, ITS ...
+  Bool_t           fReadStack          ; // Access kine information from stack
+  Bool_t	         fReadAODMCParticles ; // Access kine information from filtered AOD MC particles
 	
-  TString        fDeltaAODFileName ;   // Delta AOD file name
-  TString        fFiredTriggerClassName  ;  // Name of trigger event type used to do the analysis
+  TString          fDeltaAODFileName   ; // Delta AOD file name
+  TString          fFiredTriggerClassName; // Name of trigger event type used to do the analysis
 
-  Bool_t         fAnaLED;             // Analyze LED data only.
+  Bool_t           fAnaLED;             // Analyze LED data only.
 
-  TString fTaskName;           // Name of task that executes the analysis
+  TString          fTaskName;           // Name of task that executes the analysis
 	
-  AliCalorimeterUtils *  fCaloUtils ;  //  Pointer to CalorimeterUtils
+  AliCalorimeterUtils * fCaloUtils ;    //  Pointer to CalorimeterUtils
 
-  AliMixedEvent* fMixedEvent ;         //! mixed event object. This class is not the owner
-  Int_t          fNMixedEvent ;        //! number of events in mixed event buffer
-  Double_t **    fVertex ;             //! vertex array 3 dim for each mixed event buffer
+  AliMixedEvent  * fMixedEvent  ;       //! mixed event object. This class is not the owner
+  Int_t            fNMixedEvent ;       // number of events in mixed event buffer
+  Double_t      ** fVertex      ;       //! vertex array 3 dim for each mixed event buffer
   
-  Bool_t         fWriteOutputDeltaAOD; // Write the created delta AOD objects into file  
-	Bool_t         fOldAOD;              // Old AODs, before revision 4.20
+  Bool_t           fWriteOutputDeltaAOD;// Write the created delta AOD objects into file  
+	Bool_t           fOldAOD;             // Old AODs, before revision 4.20
   
   ClassDef(AliCaloTrackReader,19)
 } ;

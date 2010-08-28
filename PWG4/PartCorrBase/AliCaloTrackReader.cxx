@@ -200,11 +200,14 @@ AliCaloTrackReader::~AliCaloTrackReader() {
     delete fPHOSCells ;
   }
 
-  for (Int_t i = 0; i < fNMixedEvent; i++) {
-     delete [] fVertex[i] ; 
-  }
-  delete [] fVertex ;
-	
+  if(fVertex){
+    for (Int_t i = 0; i < fNMixedEvent; i++) {
+      delete [] fVertex[i] ;
+
+    }
+    delete [] fVertex ;
+	}
+
 //  Pointers not owned, done by the analysis frame
 //  if(fInputEvent)  delete fInputEvent ;
 //  if(fOutputEvent) delete fOutputEvent ;
@@ -528,11 +531,11 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 void AliCaloTrackReader::ResetLists() {
   //  Reset lists, called by the analysis maker 
 
-  if(fAODCTS)   fAODCTS -> Clear();
-  if(fAODEMCAL) fAODEMCAL -> Clear();
-  if(fAODPHOS)  fAODPHOS -> Clear();
+  if(fAODCTS)     fAODCTS     -> Clear();
+  if(fAODEMCAL)   fAODEMCAL   -> Clear();
+  if(fAODPHOS)    fAODPHOS    -> Clear();
   if(fEMCALCells) fEMCALCells -> Clear();
-  if(fPHOSCells)  fPHOSCells -> Clear();
+  if(fPHOSCells)  fPHOSCells  -> Clear();
 }
 
 //____________________________________________________________________________
