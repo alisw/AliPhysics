@@ -107,8 +107,24 @@ Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decC
     return kFALSE;
   }
 
+  TH1F* hstat=(TH1F*)histlist->FindObject("fHistNEvents");
+  TCanvas *cst=new TCanvas("hstat","Summary of statistics");
+  if(hstat) {
+    cst->cd();
+    cst->SetGrid();
+    hstat->Draw("htext0");
+    hstat->SaveAs("hstat.png");
+  }else{
+    cout<<"Warning! fHistNEvents not found in "<<listname.Data()<<endl;
+  }
+
+  Bool_t isMC=kFALSE;
+  TH1F* htestIsMC=(TH1F*)histlist->FindObject("hSgn_0");
+  if(htestIsMC) isMC=kTRUE;
+
   Int_t nptbins=listamdv->GetEntries();
-  Int_t nhist=histlist->GetEntries()-1;//-1 because of fHistNevents
+  Int_t nhist=(histlist->GetEntries()-1);//-1 because of fHistNevents
+  if(isMC) nhist/=4; ///4 because hMass_, hSgn_,hBkg_,hRfl_
   Int_t count=0;
   Int_t *indexes= new Int_t[nhist];
   //initialize indexes[i] to -1
@@ -331,7 +347,7 @@ Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decC
 
 fout->Close();
 
-outcheck<<"\nSummary:\n - "<<count<<" histograms with more than "<<minentries<<" entries; \n - Too few entries in histo "<<countNoHist<<" times;\n - Fit failed "<<countFitFail<<" times \n - no sense Signal/Background/Significance "<<countSgnfFail<<" times\n - only background "<<countBkgOnly<<" times"<<endl;
+ outcheck<<"\nSummary:\n - Total number of histograms: "<<nhist<<"\n - "<<count<<" histograms with more than "<<minentries<<" entries; \n - Too few entries in histo "<<countNoHist<<" times;\n - Fit failed "<<countFitFail<<" times \n - no sense Signal/Background/Significance "<<countSgnfFail<<" times\n - only background "<<countBkgOnly<<" times"<<endl;
 outcheck.close();
 return kTRUE;
 }
@@ -342,17 +358,22 @@ return kTRUE;
 // which=0 plot significance
 //      =1 plot signal
 //      =2 plot background
-// nfixed = number of fixed variable (specify only in case you want to chose a fixed step, otherwise it is step 0 or the first combination which gives significance/signal/background != 0)
-// readfromfile = kTRUE if you want to read the value fixed in a previous run of this function (e.g. significance or signal maximization)
-// step[nfixed]={stepvar0,stepvar1,....,stepvarnfixed}
+// maximize = kTRUE (default) if you want to fix the step of the variables not shown to the value that maximize the significance. Note that these values are saved in fixedvars.dat
+// readfromfile = kTRUE (default is kFALSE) if you want to read the value fixed in a previous run of this function (e.g. significance or signal maximization)
 
-void showMultiDimVector(Int_t n=2,Int_t which=0,Int_t nfixed=0, Bool_t maximize=kFALSE,Bool_t readfromfile=kFALSE, Int_t* step=0x0){
+
+void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t maximize=kTRUE,Bool_t readfromfile=kFALSE){
 
   gStyle->SetCanvasColor(0);
   gStyle->SetFrameFillColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetOptStat(0);
   //gStyle->SetOptTitle(0);
+
+  if((maximize && readfromfile) || (!maximize && !readfromfile)){
+    cout<<"Error! maximize & readfromfile cannot be both kTRUE or kFALSE"<<endl;
+    return;
+  }
 
   TFile* fin=new TFile("outputSignifMaxim.root");
   if(!fin->IsOpen()){
@@ -413,19 +434,27 @@ void showMultiDimVector(Int_t n=2,Int_t which=0,Int_t nfixed=0, Bool_t maximize=
   }
 
   Int_t nvarsopt=mdv->GetNVariables();
-  Int_t *fixedvars = new Int_t[nvarsopt];
-  fstream writefixedvars;
-  if(nfixed==0 && !readfromfile) {cout<<"QUI!"<<endl;writefixedvars.open("fixedvars.dat",ios::out);}
-  else writefixedvars.open("fixedvars.dat",ios::in);
+  //Int_t nfixed=nvarsopt-n;
+  Int_t fixedvars[nvarsopt];
+  Int_t allfixedvars[nvarsopt*nptbins];
 
-  if(nfixed!=0 && nfixed != nvarsopt-n){
-    cout<<"Error! You must specify "<<nvarsopt-n<<" fixed values, not "<<nfixed<<endl;
-    return;
+  fstream writefixedvars;
+  if(readfromfile) {
+    //open file in read mode
+    writefixedvars.open("fixedvars.dat",ios::in);
+    Int_t longi=0;
+    while(writefixedvars){
+      writefixedvars>>allfixedvars[longi];
+      longi++;
+    }
+  }
+  else {
+    //open file in write mode
+    writefixedvars.open("fixedvars.dat",ios::out);
   }
 
   //ask variables for projection
   for(Int_t k=0;k<nvarsopt;k++){
-    fixedvars[k]=0; //fix the other variables to the first step value
     cout<<k<<" "<<mdv->GetAxisTitle(k)<<endl;
   }
   cout<<"Choose "<<n<<" variable(s)"<<endl;
@@ -435,20 +464,8 @@ void showMultiDimVector(Int_t n=2,Int_t which=0,Int_t nfixed=0, Bool_t maximize=
   }
   if(n==1) variable[1]=999;
 
-  //set fixed values if requested
-
-  if(nfixed != 0 && step){
-    Int_t l=0;
-    for(Int_t k=0;k<nvarsopt;k++){
-      if(!(k==variable[0] || (n==2 && k==variable[1])) ){
-	fixedvars[k]=step[l];
-	l++;
-      }
-    }
-  }
-
-
   TCanvas* cvpj=new TCanvas(Form("proj%d",variable[0]),Form("%s wrt %s",title.Data(),(mdv->GetAxisTitle(variable[0])).Data()));
+
   TMultiGraph* mg=new TMultiGraph(Form("proj%d",variable[0]),Form("%s wrt %s;%s;%s",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),(mdv->GetAxisTitle(variable[0])).Data(),title.Data()));
   TLegend *leg=new TLegend(0.7,0.2,0.9,0.6,"Pt Bin");
   leg->SetBorderSize(0);
@@ -476,34 +493,43 @@ void showMultiDimVector(Int_t n=2,Int_t which=0,Int_t nfixed=0, Bool_t maximize=
 
     AliSignificanceCalculator *cal=new AliSignificanceCalculator(mdvS,mdvB,mdvSerr,mdvBerr,1.,1.);
 
-    //AliMultiDimVector* mvsts=cal->GetSignificance();
     AliMultiDimVector* mvess=cal->GetSignificanceError();
-    //AliMultiDimVector* mvsob=cal->CalculateSOverB();
-    // AliMultiDimVector* mvesob=cal->CalculateSOverBError();
     AliMultiDimVector* mvpur=cal->CalculatePurity();
     AliMultiDimVector* mvepur=cal->CalculatePurityError();
-    //printf("going2 \n");
+
     Int_t ncuts=mdvS->GetNVariables();
     Int_t *maxInd=new Int_t[ncuts];
     Float_t *cutvalues=new Float_t[ncuts];
+    //init
     for(Int_t ind=0;ind<ncuts;ind++)maxInd[ind]=0;
+
     Float_t sigMax0=cal->GetMaxSignificance(maxInd,0);
     for(Int_t ic=0;ic<ncuts;ic++){
       cutvalues[ic]=((AliMultiDimVector*)fin->Get(nameS.Data()))->GetCutValue(ic,maxInd[ic]);
-      if(maximize) fixedvars[ic]=maxInd[ic];
+
+      //setting step of fixed variables
+      if(readfromfile){ //from file
+	fixedvars[ic]=allfixedvars[i+ic];
+      }
+
+      if(maximize) { //using the values which maximize the significance
+	fixedvars[ic]=maxInd[ic];
+	//write to output fixedvars.dat
+	writefixedvars<<fixedvars[ic]<<"\t";
+      }
     }
+    //output file: return after each pt bin
+    if(maximize) writefixedvars<<endl;
+
     printf("Maximum of significance for Ptbin %d found in bin:\n",i);
     for(Int_t ic=0;ic<ncuts;ic++){
       printf("   %d\n",maxInd[ic]);
       printf("corresponding to cut:\n");
       printf("   %f\n",cutvalues[ic]);
     }
-    //   printf("Significance = %f +- %f\n",mvsts->GetElement(maxInd,i),mvess->GetElement(maxInd,i));
-   printf("Significance = %f +- %f\n",sigMax0,mvess->GetElement(maxInd,0));
-    //printf("S/B          = %f +- %f\n",mvsob->GetElement(maxInd,iptb),mvesob->GetElement(maxInd,iptb));
-    printf("Purity       = %f +- %f\n",mvpur->GetElement(maxInd,0),mvepur->GetElement(maxInd,i));
 
-    
+    printf("Significance = %f +- %f\n",sigMax0,mvess->GetElement(maxInd,0));
+    printf("Purity       = %f +- %f\n",mvpur->GetElement(maxInd,0),mvepur->GetElement(maxInd,i));
 
     //multidimvector
     mdvname=Form("%s%d",name.Data(),i);   
@@ -523,12 +549,12 @@ void showMultiDimVector(Int_t n=2,Int_t which=0,Int_t nfixed=0, Bool_t maximize=
       hproj->SetTitle(Form("%s wrt %s vs %s (Ptbin%d);%s;%s",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i,(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data()));
       TCanvas* cvpj=new TCanvas(Form("proj%d%dpt%d",variable[0],variable[1],i),Form("%s wrt %s vs %s (Ptbin%d)",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i));
       cvpj->cd();
-      hproj->DrawClone("COLZ");
+      hproj->DrawClone("COLZtext");
       delete hproj;
     }
 
     if(n==1){
- 
+
       Int_t nbins=mdv->GetNCutSteps(variable[0]);
  
       Double_t *x=new Double_t[nbins];
@@ -537,17 +563,11 @@ void showMultiDimVector(Int_t n=2,Int_t which=0,Int_t nfixed=0, Bool_t maximize=
       Double_t *erry=new Double_t[nbins];
 
       for(Int_t k=0;k<nbins;k++){ //loop on the steps (that is the bins of the graph)
+	//init
 	x[k]=0;y[k]=0;
 	errx[k]=0;erry[k]=0;
 
-	fixedvars[variable[0]]=k; //variable[0] is the index of the variable on which we project. This variable must increase, the others are set to zero before
-
-	if (nfixed!=0 && readfromfile){
-	  for(Int_t l=0; l<nvarsopt; l++) {
-	    writefixedvars>>fixedvars[l];
-	    cout<<"l = "<<l<<" fixedvars[l] = "<<fixedvars[l]<<endl;
-	  }
-	}
+	fixedvars[variable[0]]=k; //variable[0] is the index of the variable on which we project. This variable must increase, the others have been set before
 
 	x[k]=mdv->GetCutValue(variable[0],k);
 	errx[k]=mdv->GetCutStep(variable[0])/2.;
@@ -555,40 +575,10 @@ void showMultiDimVector(Int_t n=2,Int_t which=0,Int_t nfixed=0, Bool_t maximize=
 	y[k]=mdv->GetElement(fixedvars,0);
 	erry[k]=mdverr->GetElement(fixedvars,0);
 
-	if(nfixed == 0){ //user didn't choose a step
-	  for(Int_t stepindex=1;stepindex<nbins;stepindex++){ //step 0 already considered
-	    for(Int_t varindex=0;varindex<nvarsopt;varindex++){
-	      if (varindex==variable[0]) continue; //don't want to change the variable I'm studing!
-	      if(y[k]==0){//look for the first combination which is !=0 (this is not optimal, one can set his/her own preferred value insted -> to be implemented)
-		//cout<<"stepindex="<<stepindex<<" varindex="<<varindex<<endl;
-		fixedvars[varindex]=stepindex;
-		y[k]=mdv->GetElement(fixedvars,0);
-	      }else {
-		break;
-	      }
-	    }
-
-	    if(y[k]!=0) {
-
-	      break;
-	    }
-	  }
-	}
-	cout<<mdv->GetAxisTitle(variable[0])<<" step "<<k<<" = "<<x[k]<<":"<<endl;
-	for(Int_t k=0;k<nvarsopt;k++){
-	  //cout<<"var["<<k<<"] = "<<fixedvars[k]<<"\t";
-	  if (k!=variable[0]) cout<<"Fix variable "<<k<<" ("<<mdv->GetAxisTitle(k)<<") to step "<<fixedvars[k]<<" = "<<mdv->GetCutValue(k,fixedvars[k])<<endl;
-	  
-	  if(nfixed==0 || maximize) {
-	    if(k==0)cout<<"Writing to file fixedvars.dat"<<endl;
-	    writefixedvars<<fixedvars[k]<<"\t"<<endl;
-	    cout<<fixedvars[k]<<"\t"<<endl;
-	    fixedvars[k]=0; //fix the other variables to the first step value
-	  }
-	}
-	cout<<endl;
-	if(nfixed==0) writefixedvars<<endl;
+	cout<<mdv->GetAxisTitle(variable[0])<<" step "<<k<<" = "<<x[k]<<":"<<" y = "<<y[k]<<endl;
       }
+            
+      cout<<"----------------------------------------------------------"<<endl;
       TGraphErrors* gr=new TGraphErrors(nbins,x,y,errx,erry);
       gr->SetMarkerStyle(20+i);
       gr->SetMarkerColor(i+1);
@@ -604,6 +594,6 @@ void showMultiDimVector(Int_t n=2,Int_t which=0,Int_t nfixed=0, Bool_t maximize=
     cvpj->cd();
     mg->Draw("A");
     leg->Draw();
-  }
+  } else delete cvpj;
 }
 
