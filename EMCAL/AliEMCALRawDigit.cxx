@@ -65,14 +65,14 @@ fSamples(0x0)
 AliEMCALRawDigit::~AliEMCALRawDigit() 
 {
   // Delete array of time samples
-  delete [] fSamples;
+  if(fSamples) delete [] fSamples;
 }
 
 //____________________________________________________________________________
 void AliEMCALRawDigit::Clear(Option_t *) 
 {
   // Delete array of time samples
-  delete [] fSamples;
+  if(fSamples) delete [] fSamples;
 }
 
 

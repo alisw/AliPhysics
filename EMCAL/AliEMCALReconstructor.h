@@ -97,13 +97,15 @@ private:
 						// parameters for EMCAL
   static AliEMCALRawUtils*   fgRawUtils;  // raw utilities class -
 					  // only need one per reco
-  static TClonesArray*       fgDigitsArr; // Array with EMCAL digits
+  static TClonesArray*       fgDigitsArr;   // Array with EMCAL digits
+  static TObjArray*          fgClustersArr; // Array with EMCAL clusters
+
   AliEMCALCalibData    * fCalibData   ;   //! Calibration database if aval
   AliCaloCalibPedestal * fPedestalData ;   //! Tower status database if aval
 
   static AliEMCALTriggerElectronics* fgTriggerProcessor;
 
-  ClassDef(AliEMCALReconstructor,9)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,10)  // Reconstruction algorithm class (Base Class)
 
 }; 
 
