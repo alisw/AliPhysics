@@ -127,7 +127,7 @@ AliTMinuitToolkit::AliTMinuitToolkit() :
    TNamed(),
    fFormula(0),
    fWeightFunction(0),
-   fFitAlgorithm(0),
+   fFitAlgorithm(""),
    fPoints(0),
    fWeights(0),
    fParam(0),
@@ -153,7 +153,7 @@ AliTMinuitToolkit::AliTMinuitToolkit(const AliTMinuitToolkit&) :
    TNamed(),
    fFormula(0),
    fWeightFunction(0),
-   fFitAlgorithm(0),
+   fFitAlgorithm(""),
    fPoints(0),
    fWeights(0),
    fParam(0),
@@ -325,7 +325,7 @@ void AliTMinuitToolkit::Fit() {
   }
   
   // migrad fit algorithm as default
-  if (fFitAlgorithm == 0) {
+  if (fFitAlgorithm == "") {
    fFitAlgorithm = "migrad";
   }
   

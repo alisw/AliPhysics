@@ -52,7 +52,7 @@ private:
   //
   TFormula        * fFormula;            // formula of the fitted function
   TFormula        * fWeightFunction;     // weight function, must be defined between 0 and 1
-  Char_t          * fFitAlgorithm;       // fit algorithm for TMinuit: migrad, simplex, ...
+  TString          fFitAlgorithm;       // fit algorithm for TMinuit: migrad, simplex, ...
   //
   //
   TMatrixD        * fPoints;             // fitted points
