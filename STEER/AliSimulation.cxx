@@ -651,9 +651,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (!AliGeomManager::GetGeometry()) {
     // Initialize the geometry manager
     AliGeomManager::LoadGeometry("geometry.root");
-  AliSysInfo::AddStamp("GetGeometry");
-
-    
+    AliSysInfo::AddStamp("GetGeometry");
 //    // Check that the consistency of symbolic names for the activated subdetectors
 //    // in the geometry loaded by AliGeomManager
 //    AliRunLoader* runLoader = LoadRun("READ");
@@ -1788,7 +1786,7 @@ Bool_t AliSimulation::IsSelected(TString detName, TString& detectors) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* esdFileName) 
+Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* esdFileName, Int_t N) 
 {
 //
 // Steering routine  to convert raw data in directory rawDirectory/ to fake SDigits. 
@@ -1833,6 +1831,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
    AliRunLoader::Instance()->LoadKinematics("RECREATE");
    AliRunLoader::Instance()->LoadTrackRefs("RECREATE");
    AliRunLoader::Instance()->LoadHits("all","RECREATE");
+
    //
    // Save stuff at the beginning of the file to avoid file corruption
    AliRunLoader::Instance()->CdGAFile();
@@ -1852,7 +1851,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     TFile* esdFile = 0;
     TTree* treeESD = 0;
     AliESDEvent* esd = 0;
-    if (strlen(esdFileName)>0) {
+    if (esdFileName && (strlen(esdFileName)>0)) {
       esdFile = TFile::Open(esdFileName);
       if (esdFile) {
         esd = new AliESDEvent();
@@ -1884,14 +1883,12 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     Int_t nev = 0;
     while(kTRUE) {
 	if (!(rawReader->NextEvent())) break;
-
 	runLoader->SetEventNumber(nev);
         runLoader->GetHeader()->Reset(rawReader->GetRunNumber(), 
                                       nev, nev);
 	runLoader->TreeE()->Fill();
         runLoader->GetEvent(nev);
-        AliInfo(Form("We are at event %d\n",nev));
-
+        AliInfo(Form("We are at event %d",nev));
 	//
 	// Detector loop
         TString detStr = fMakeSDigits;
@@ -1899,7 +1896,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
 	    AliModule* det = (AliModule*) detArray->At(iDet);
 	    if (!det || !det->IsActive()) continue;
 	    if (IsSelected(det->GetName(), detStr)) {
-	      AliInfo(Form("Calling Raw2SDigits for %s\n", det->GetName()));
+	      AliInfo(Form("Calling Raw2SDigits for %s", det->GetName()));
 	      det->Raw2SDigits(rawReader);
 	      rawReader->Reset();
 	    }
@@ -1920,12 +1917,14 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
 	    mcHeader->SetPrimaryVertex(mcV);
 	    header->Reset(0,nev);
 	    header->SetGenEventHeader(mcHeader);
-	    printf("***** Saved vertex %f %f %f \n", position[0], position[1], position[2]);
+	    AliInfo(Form("***** Saved vertex %f %f %f \n", position[0], position[1], position[2]));
 	}
 //
 //      Finish the event
-        AliInfo(Form("Finished event %d\n",nev));
+        AliInfo(Form("Finished event %d",nev));
 	nev++;
+        if (N>0&&nev>=N)
+          break;
     } // events
  
     delete rawReader;
