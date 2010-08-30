@@ -5,7 +5,7 @@
 // Class to extract some TPC Performance parameters from AliPerformanceTPC and
 // AliPerformanceDEdx objects and produce trend graphs.  
 // 
-// Author: M.Knichel 2010-05-21
+// Author: M.Knichel 2010-08-24
 //------------------------------------------------------------------------------
 
 class TTree;
@@ -26,11 +26,17 @@ class AliTPCPerformanceSummary
     static Int_t WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const Char_t* outfile, Int_t run); // calles by MakeReport
     
     // the two key functions
-    static Int_t MakeReport(const Char_t* infile, const Char_t* outfile, Int_t run);    
+    static Int_t MakeReport(const Char_t* infile, const Char_t* outfile, Int_t run);
     static Int_t ProduceTrends(const Char_t* infilelist, const Char_t* outfile);
+    
+    static Bool_t getForceTHnSparse() { return fgForceTHnSparse; }
+    static void setForceTHnSparse(Bool_t forceSparse = kTRUE) { fgForceTHnSparse = forceSparse; }      
   
-    private:    
+    private:
+    
+    static Bool_t fgForceTHnSparse;    
     // save graphs to current directory
+    
     static Int_t SaveGraph(TTree* tree, const Char_t* y, const Char_t* x, const Char_t* condition);
     
     // helper functions to extract parameter and write to TTreeSRedirector
@@ -43,11 +49,12 @@ class AliTPCPerformanceSummary
     static Int_t AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
     static Int_t AnalyzeGain(const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* pcstream);
     static Int_t AnalyzeEvent(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
+    
       
     AliTPCPerformanceSummary(const AliTPCPerformanceSummary&); // copy contructor (not implemented)
     AliTPCPerformanceSummary& operator=(const AliTPCPerformanceSummary&); // assignment operator (not implemented)
       
-    ClassDef(AliTPCPerformanceSummary, 1);
+    ClassDef(AliTPCPerformanceSummary, 2);
 };
 
 #endif
