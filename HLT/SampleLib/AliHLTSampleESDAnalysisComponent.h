@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
-//  @file   AliHLTSampleESDAnalysisComponent.h
-//  @author Matthias Richter
-//  @date   2010-04-17
-//  @brief  A sample processing component for ESD analysis.
-//  @ingroup alihlt_tutorial
+/// @file   AliHLTSampleESDAnalysisComponent.h
+/// @author Matthias Richter
+/// @date   2010-04-17
+/// @brief  A sample processing component for ESD analysis.
+/// @ingroup alihlt_tutorial
 
 #include "AliHLTProcessor.h"
 
@@ -31,7 +31,7 @@
  *
  * <h2>General properties:</h2>
  *
- * Component ID: \b Sample-ESDAnalysis <br>
+ * Component ID: \b SampleESDAnalysis <br>
  * Library: \b libAliHLTSample.so     <br>
  * Input Data Types: @ref kAliHLTDataTypeESDObject <br>
  * Output Data Types: @ref kAliHLTDataTypeTObjArray|kAliHLTDataOriginSample
@@ -71,7 +71,6 @@
  *
  * <h2>Output size:</h2>
  * The component has no output data.
- *
  *
  * @ingroup alihlt_tutorial
  */

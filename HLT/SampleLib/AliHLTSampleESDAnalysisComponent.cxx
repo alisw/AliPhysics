@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-//  @file   AliHLTSampleESDAnalysisComponent.cxx
-//  @author Matthias Richter
-//  @date   2010-04-17
-//  @brief  A sample processing component for ESD analysis.
-//  @ingroup alihlt_tutorial
+/// @file   AliHLTSampleESDAnalysisComponent.cxx
+/// @author Matthias Richter
+/// @date   2010-04-17
+/// @brief  A sample processing component for ESD analysis.
+/// @ingroup alihlt_tutorial
 
 #if __GNUC__== 3
 using namespace std;
@@ -36,7 +36,13 @@ using namespace std;
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSampleESDAnalysisComponent)
 
-/** one global instance used for registration */
+/** one global instance used for  registration of
+ * AliHLTSampleESDAnalysisComponent
+ * Note: there are two ways of component registration
+ * - via a global object
+ * - via the AliHLTModuleAgent::RegisterComponents function
+ * @see @ref alihlt_component_registration
+ */
 AliHLTSampleESDAnalysisComponent gAliHLTSampleESDAnalysisComponent;
 
 AliHLTSampleESDAnalysisComponent::AliHLTSampleESDAnalysisComponent()
@@ -69,7 +75,7 @@ const char* AliHLTSampleESDAnalysisComponent::GetComponentID()
 void AliHLTSampleESDAnalysisComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   // component property: list of input data types
-    list.push_back(kAliHLTDataTypeESDObject);
+  list.push_back(kAliHLTDataTypeESDObject);
 }
 
 AliHLTComponentDataType AliHLTSampleESDAnalysisComponent::GetOutputDataType()
