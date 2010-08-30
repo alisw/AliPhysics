@@ -446,37 +446,136 @@ int AliHLTGlobalVertexerComponent::Reconfigure(const char* cdbEntry, const char*
 }
 
 
+struct AliHLTGlobalVertexerDeviation
+{
+  int fI; // track index
+  float fD; // deviation from vertex
+
+  bool operator<(const AliHLTGlobalVertexerDeviation &a) const { return fD<a.fD; }
+};
+
 
 void AliHLTGlobalVertexerComponent::FindPrimaryVertex()
 {
   //* Find event primary vertex
 
-  const AliKFParticle **vSelected = new const AliKFParticle*[fNTracks]; //* Selected particles for the vertex fit
-  Int_t *vIndex = new int [fNTracks];                    //* Indices of selected particles
-  Bool_t *vFlag = new bool [fNTracks];                    //* Flags returned by the vertex finder
-
   fPrimaryVtx.Initialize();
   //fPrimaryVtx.SetBeamConstraint(fESD->GetDiamondX(),fESD->GetDiamondY(),0,
   //TMath::Sqrt(fESD->GetSigma2DiamondX()),TMath::Sqrt(fESD->GetSigma2DiamondY()),5.3);
-
   fPrimaryVtx.SetBeamConstraint( 0, 0, 0, 3., 3., 5.3 );
-  
+
+  const AliKFParticle **vSelected = new const AliKFParticle*[fNTracks]; //* Selected particles for the vertex fit
+  AliHLTGlobalVertexerDeviation *dev = new AliHLTGlobalVertexerDeviation[fNTracks];  
+
   Int_t nSelected = 0;
+  
   for( Int_t i = 0; i<fNTracks; i++){ 
     if(!fTrackInfos[i].fOK ) continue;
     //if( fESD->GetTrack(i)->GetTPCNcls()<60  ) continue;
     const AliKFParticle &p = fTrackInfos[i].fParticle;
     Double_t chi = p.GetDeviationFromVertex( fPrimaryVtx );      
     if( chi > fConstrainedTrackDeviation ) continue;
+    dev[nSelected].fI = i; 
+    dev[nSelected].fD = chi; 
     vSelected[nSelected] = &(fTrackInfos[i].fParticle);
-    vIndex[nSelected] = i;
     nSelected++;  
-  }
-  
-  fPrimaryVtx.ConstructPrimaryVertex( vSelected, nSelected, vFlag, fConstrainedTrackDeviation );
+  }    
+
+  Int_t nPreSelected = nSelected;
 
   for( Int_t i = 0; i<nSelected; i++){ 
-    if( vFlag[i] ) fTrackInfos[vIndex[i]].fPrimUsedFlag = 1;
+    vSelected[i] = &(fTrackInfos[dev[i].fI].fParticle);      
+  }
+
+  // fit
+
+  if( nSelected>2 ){ 
+    fPrimaryVtx.Initialize();
+    fPrimaryVtx.SetBeamConstraint( 0, 0, 0, 3., 3., 5.3 );    
+    fPrimaryVtx.SetVtxGuess( 0, 0, 0 );
+    fPrimaryVtx.Construct( vSelected, nSelected, 0, -1, 1 );    
+  }
+
+  while( nSelected>2 ){ 
+
+    //* Primary vertex finder with rejection of outliers
+
+    for( Int_t i = 0; i<nSelected; i++){ 
+      vSelected[i] = &(fTrackInfos[dev[i].fI].fParticle);      
+    }
+    /*
+    fPrimaryVtx.Initialize();
+    fPrimaryVtx.SetBeamConstraint( 0, 0, 0, 3., 3., 5.3 );
+    {
+      double xv = fPrimaryVtx.GetX();
+      double yv = fPrimaryVtx.GetY();
+      double zv = fPrimaryVtx.GetZ();      
+      fPrimaryVtx.SetVtxGuess( xv, yv, zv );
+    }
+
+    fPrimaryVtx.Construct( vSelected, nSelected, 0, -1, 1 );
+    */    
+    for( Int_t it=0; it<nSelected; it++ ){ 
+      const AliKFParticle &p = fTrackInfos[dev[it].fI].fParticle;
+      if( nSelected <= 20 ){
+	AliKFVertex tmp =  fPrimaryVtx - p;
+	dev[it].fD = p.GetDeviationFromVertex( tmp );
+      } else {
+	dev[it].fD = p.GetDeviationFromVertex( fPrimaryVtx );	
+      }
+    }
+    sort(dev,dev+nSelected);
+       
+    int nRemove = (int) ( 0.3*nSelected );    
+    if( nSelected - nRemove <=20 ) nRemove = 1;    
+    int firstRemove = nSelected - nRemove;
+    while( firstRemove<nSelected ){
+      if( dev[firstRemove].fD >= fConstrainedTrackDeviation ) break;
+      firstRemove++;
+    }
+    if( firstRemove>=nSelected ) break;
+
+    for( int i=firstRemove; i<nSelected; i++ ){
+      fPrimaryVtx -= fTrackInfos[dev[i].fI].fParticle;
+    }
+    nSelected = firstRemove;
+  }
+
+  if( nSelected>=3 ){// final refit     
+    double xv = fPrimaryVtx.GetX();
+    double yv = fPrimaryVtx.GetY();
+    double zv = fPrimaryVtx.GetZ();
+      
+    nSelected = 0;
+    for( Int_t it=0; it<nPreSelected; it++ ){ 
+      const AliKFParticle &p = fTrackInfos[dev[it].fI].fParticle;
+      dev[nSelected].fI = dev[it].fI;
+      dev[nSelected].fD = p.GetDeviationFromVertex( fPrimaryVtx );
+      vSelected[nSelected] = &p;
+      if( dev[nSelected].fD < fConstrainedTrackDeviation ) nSelected++;
+    }
+
+    fPrimaryVtx.Initialize();
+    fPrimaryVtx.SetVtxGuess( xv, yv, zv );
+    fPrimaryVtx.SetBeamConstraint( 0, 0, 0, 3., 3., 5.3 );
+
+    if( nSelected >= 3 ){
+      fPrimaryVtx.Construct( vSelected, nSelected, 0, -1, 1 );
+    }
+  }
+
+  for( Int_t i = 0; i<fNTracks; i++){ 
+    fTrackInfos[i].fPrimUsedFlag = 0;
+  }
+
+  if( nSelected < 3 ){    
+    fPrimaryVtx.NDF() = -3;
+    fPrimaryVtx.Chi2() = 0;
+    nSelected = 0;
+  }
+  
+  for( Int_t i = 0; i<nSelected; i++){ 
+    fTrackInfos[dev[i].fI].fPrimUsedFlag = 1;
   }
 
   for( Int_t i = 0; i<fNTracks; i++ ){
@@ -484,15 +583,10 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex()
     info.fPrimDeviation = info.fParticle.GetDeviationFromVertex( fPrimaryVtx );   
   }
 
-
-  if( fPrimaryVtx.GetNContributors()<3 ){
-    for( Int_t i = 0; i<fNTracks; i++)
-      fTrackInfos[i].fPrimUsedFlag = 0;
-  }
   delete[] vSelected;
-  delete[] vIndex;
-  delete[] vFlag;
+  delete[] dev;
 }
+
 
 
 void AliHLTGlobalVertexerComponent::FindV0s( vector<pair<int,int> > &v0s  )
