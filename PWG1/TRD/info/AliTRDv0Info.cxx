@@ -76,9 +76,9 @@ AliTRDv0Info::AliTRDv0Info()
   memset(fPminus, 0, 2*kNlayer*sizeof(Float_t));
   memset(fDetPID, 0, 2*kNDaughters*kNDetectors*AliPID::kSPECIES*sizeof(Float_t));
   memset(fComPID, 0, 2*kNDaughters*AliPID::kSPECIES*sizeof(Float_t));
-  memset(fInvMass, 0, kNMomBins*kNDecays*sizeof(Double_t));
+  memset(fInvMass, 0, kNDecays*sizeof(Double_t));
   memset(fArmenteros, 0, kNDecays*sizeof(Bool_t));
-  memset(fTPCdEdx, 0, kNDecays*sizeof(Float_t));
+  memset(fTPCdEdx, 0, kNDaughters*sizeof(Float_t));
   memset(fChi2ndf, 0, kNDecays*sizeof(Double_t));
 
   /////////////////////////////////////////////////////////////////////////////
@@ -264,7 +264,7 @@ AliTRDv0Info::AliTRDv0Info(const AliTRDv0Info &ref)
   memcpy(fPminus, ref.fPminus, 2*kNlayer*sizeof(Float_t));
   memcpy(fDetPID, ref.fDetPID, 2*kNDaughters*kNDetectors*AliPID::kSPECIES*sizeof(Float_t));
   memcpy(fComPID, ref.fComPID, 2*kNDaughters*AliPID::kSPECIES*sizeof(Float_t));
-  memcpy(fInvMass, ref.fInvMass, kNMomBins*kNDecays*sizeof(Double_t));
+  memcpy(fInvMass, ref.fInvMass, kNDecays*sizeof(Double_t));
   memcpy(fArmenteros, ref.fArmenteros, kNDecays*sizeof(Bool_t));
   memcpy(fChi2ndf, ref.fChi2ndf, kNDecays*sizeof(Double_t));
   memcpy(fTPCdEdx, ref.fTPCdEdx, kNDaughters*sizeof(Float_t));

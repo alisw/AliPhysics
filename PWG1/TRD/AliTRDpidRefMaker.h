@@ -20,7 +20,10 @@
 #include "AliPID.h"
 #endif
 #ifndef ALITRDCALPID_H
-#include "Cal/AliTRDCalPID.h"
+#include "AliTRDCalPID.h"
+#endif
+#ifndef ALITRDPIDUTIL_H
+#include "AliTRDpidUtil.h"
 #endif
 #ifndef ALITRDGEOMETRY_H
 #include "AliTRDgeometry.h"
@@ -83,7 +86,7 @@ protected:
   ETRDpidRefMakerSource  fRefP;         // reference momentum source
   Float_t       fFreq;                  // training sample relative abundance
   Float_t       fP;                     // momentum
-  Float_t       fdEdx[8];               // dEdx array
+  Float_t       fdEdx[AliTRDpidUtil::kNNslices];// dEdx array
   Float_t       fPID[AliPID::kSPECIES]; // pid from v0s
 
 private:
