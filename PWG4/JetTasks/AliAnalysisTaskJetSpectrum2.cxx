@@ -423,15 +423,15 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 			      nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
 
     fh2RhoPtRec[ij] =  new TH2F(Form("fh2RhoPtRec_j%d",ij),"jet shape rho for jets;r;p_{T,rec};",
-				20,0.,1.,nBinPt,binLimitsPt);
+				40,0.,1.,nBinPt,binLimitsPt);
     fh2PsiPtRec[ij] =  new TH2F(Form("fh2PsiPtRec_j%d",ij),"jet shape psi for jets;r;p_{T,rec};",
-				20,0.,1.,nBinPt,binLimitsPt);
+				40,0.,2.,nBinPt,binLimitsPt);
 
     fh2RhoPtGen[ij] =  new TH2F(Form("fh2RhoPtGen_j%d",ij),"jet shape rho for jets;r;p_{T,gen};",
-				20,0.,1.,nBinPt,binLimitsPt);
+			       40,0.,2.,nBinPt,binLimitsPt);
     fh2PsiPtGen[ij] =  new TH2F(Form("fh2PsiPtGen_j%d",ij),"jet shape psi for jets;r;p_{T,gen};",
-				20,0.,1.,nBinPt,binLimitsPt);
-    if(!fh1TmpRho)fh1TmpRho = new TH1F("fh1TmpRho","tmp histo for jet shape",20,0.,1);
+				40,0.,2.,nBinPt,binLimitsPt);
+    if(!fh1TmpRho)fh1TmpRho = new TH1F("fh1TmpRho","tmp histo for jet shape",40,0.,2);
 
 
     fh2FragRec[ij] = new TH2F(Form("fh2FragRec_j%d",ij),"Jet Fragmentation;x=p_{T,i}/p_{T,jet};p_{T,jet};1/N_{jet}dN_{ch}/dx",
@@ -1030,7 +1030,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
       }
       Float_t rhoSum = 0;
-      for(int ibx = 1;ibx<fh2RhoPtGen[ir]->GetNbinsX();ibx++){
+      for(int ibx = 1;ibx<=fh2RhoPtGen[ir]->GetNbinsX();ibx++){
 	Float_t r = fh2RhoPtGen[ir]->GetXaxis()->GetBinCenter(ibx);
 	Float_t rho = fh1TmpRho->GetBinContent(ibx);
 	rhoSum += rho;
@@ -1173,7 +1173,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       }
       // fill the jet shapes
       Float_t rhoSum = 0;
-      for(int ibx = 1;ibx<fh2RhoPtRec[ir]->GetNbinsX();ibx++){
+      for(int ibx = 1;ibx<=fh2RhoPtRec[ir]->GetNbinsX();ibx++){
 	Float_t r = fh2RhoPtRec[ir]->GetXaxis()->GetBinCenter(ibx);
 	Float_t rho = fh1TmpRho->GetBinContent(ibx);
 	rhoSum += rho;

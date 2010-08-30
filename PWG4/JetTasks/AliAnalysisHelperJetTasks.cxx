@@ -816,7 +816,7 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerFired(const AliVEvent* aEv, Trigger t
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader);
 
   if (!pythiaGenHeader) {
-    printf(" AliAnalysisHelperJetTasks::GetProcessType : Unknown gen Header type). \n");
+    //    printf(" AliAnalysisHelperJetTasks::GetProcessType : Unknown gen Header type). \n");
     return kInvalidProcess;
   }
 
