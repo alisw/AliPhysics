@@ -2001,31 +2001,42 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   fQADiJetHistosRecCuts->DefineQADiJetHistos();
   fQADiJetHistosGen->DefineQADiJetHistos();
 
+  Bool_t genJets    = (fJetTypeGen != kJetsUndef) ? kTRUE : kFALSE;
+  Bool_t genTracks  = (fTrackTypeGen != kTrackUndef) ? kTRUE : kFALSE;
+  Bool_t recJetsEff = (fJetTypeRecEff != kJetsUndef) ? kTRUE : kFALSE;
+
+
   const Int_t saveLevel = 5;
   if(saveLevel>0){
     fCommonHistList->Add(fh1EvtSelection);
     fFFHistosRecCuts->AddToOutput(fCommonHistList);
     fFFHistosRecLeading->AddToOutput(fCommonHistList);
     fFFHistosRecLeadingTrack->AddToOutput(fCommonHistList);
-    fFFHistosGen->AddToOutput(fCommonHistList);
-    fFFHistosGenLeading->AddToOutput(fCommonHistList);
-    fFFHistosGenLeadingTrack->AddToOutput(fCommonHistList);
+
+    if(genJets && genTracks){
+       fFFHistosGen->AddToOutput(fCommonHistList);
+       fFFHistosGenLeading->AddToOutput(fCommonHistList);
+       fFFHistosGenLeadingTrack->AddToOutput(fCommonHistList);
+    }
   }
   if(saveLevel>1){
     fQATrackHistosRec->AddToOutput(fCommonHistList);
     fQATrackHistosRecCuts->AddToOutput(fCommonHistList);
-    fQATrackHistosGen->AddToOutput(fCommonHistList);
+    if(genTracks) fQATrackHistosGen->AddToOutput(fCommonHistList);
     
     fQAJetHistosRec->AddToOutput(fCommonHistList);
     fQAJetHistosRecCuts->AddToOutput(fCommonHistList);
     fQAJetHistosRecCutsLeading->AddToOutput(fCommonHistList);
-    fQAJetHistosGen->AddToOutput(fCommonHistList);
-    fQAJetHistosGenLeading->AddToOutput(fCommonHistList);
-    fQAJetHistosRecEffLeading->AddToOutput(fCommonHistList); 
+    if(recJetsEff) fQAJetHistosRecEffLeading->AddToOutput(fCommonHistList); 
+
+    if(genJets){
+       fQAJetHistosGen->AddToOutput(fCommonHistList);
+       fQAJetHistosGenLeading->AddToOutput(fCommonHistList);
+    }
 
     fCommonHistList->Add(fh1EvtMult);
     fCommonHistList->Add(fh1nRecJetsCuts);
-    fCommonHistList->Add(fh1nGenJets);
+    if(genJets) fCommonHistList->Add(fh1nGenJets);
   }
   if(saveLevel>2){
     fCommonHistList->Add(fh1VertexNContributors);
@@ -2035,22 +2046,31 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
     fIJHistosRecCuts->AddToOutput(fCommonHistList);
     fIJHistosRecLeading->AddToOutput(fCommonHistList);
     fIJHistosRecLeadingTrack->AddToOutput(fCommonHistList);
-    fIJHistosGen->AddToOutput(fCommonHistList);
-    fIJHistosGenLeading->AddToOutput(fCommonHistList);
-    fIJHistosGenLeadingTrack->AddToOutput(fCommonHistList);
+
+    if(genJets && genTracks){
+       fIJHistosGen->AddToOutput(fCommonHistList);
+       fIJHistosGenLeading->AddToOutput(fCommonHistList);
+       fIJHistosGenLeadingTrack->AddToOutput(fCommonHistList);
+    }
   }
   if(saveLevel>4){
     fFFDiJetHistosRecCuts->AddToOutput(fCommonHistList);
     fFFDiJetHistosRecLeading->AddToOutput(fCommonHistList);
     fFFDiJetHistosRecLeadingTrack->AddToOutput(fCommonHistList);
-    fFFDiJetHistosGen->AddToOutput(fCommonHistList);
-    fFFDiJetHistosGenLeading->AddToOutput(fCommonHistList);
-    fFFDiJetHistosGenLeadingTrack->AddToOutput(fCommonHistList);
     fQADiJetHistosRecCuts->AddToOutput(fCommonHistList);
-    fQADiJetHistosGen->AddToOutput(fCommonHistList); 
-    fCommonHistList->Add(fhnSingleTrackRecEffHisto);
-    fCommonHistList->Add(fhnJetTrackRecEffHisto);
-    fCommonHistList->Add(fh1nRecEffJets);
+
+    if(genJets && genTracks){
+        fFFDiJetHistosGen->AddToOutput(fCommonHistList);
+        fFFDiJetHistosGenLeading->AddToOutput(fCommonHistList);
+        fFFDiJetHistosGenLeadingTrack->AddToOutput(fCommonHistList);
+        fQADiJetHistosGen->AddToOutput(fCommonHistList);
+    }
+
+    if(recJetsEff && genTracks){
+       fCommonHistList->Add(fhnSingleTrackRecEffHisto);
+       fCommonHistList->Add(fhnJetTrackRecEffHisto);
+       fCommonHistList->Add(fh1nRecEffJets);
+    }
   }
 
   // =========== Switch on Sumw2 for all histos ===========
