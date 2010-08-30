@@ -160,9 +160,11 @@ Macro(ROOT_GENERATE_DICTIONARY INFILES LINKDEF_FILE OUTFILE INCLUDE_DIRS_IN)
   Endforeach (_def ${_defs})
 #Remove DALI_DIM for dictionaries
   string(REGEX REPLACE "-DALI_DIM" "" _ddefs ${_ddefs})
-  Separate_arguments(_ddefs)
+  Separate_arguments(_ddefs
+		  )
   Add_custom_command(OUTPUT ${OUTFILES}
-     COMMAND DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}:${ROOT_LIBRARY_DIR} ${ROOTCINT}
+     COMMAND DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}:${ROOT_LIBRARY_DIR} 
+     COMMAND ${ROOTCINT}
      ARGS -f ${OUTFILE} -c -DHAVE_CONFIG_H ${_ddefs} ${__DATEFLAGS} ${_special_settings} ${INCLUDE_DIRS} ${infiles_nopath} ${LINKDEF_FILE} 
      DEPENDS ${INFILES} ${LINKDEF_FILE})
 
