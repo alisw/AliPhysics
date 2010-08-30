@@ -240,6 +240,7 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 		if (index<0) continue;
 		if (index>=kMaxBin) continue;
 		AliBin *b=&bins[s][index];
+		if(b->GetQ()<0.1) continue;
 		AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
 		for (Int_t itrack=0;itrack<10;itrack++){
 		  Int_t track = (d->GetTracks())[itrack];
