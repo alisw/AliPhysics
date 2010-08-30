@@ -62,6 +62,7 @@ public:
   TTreeStream  &operator<<(Double_t  &d){CheckIn('D',&d);return *this;}
   TTreeStream  &operator<<(TObject*o){CheckIn(o);return *this;} 
   TTreeStream  &operator<<(const Char_t *name);
+  TTree * GetTree() const { return fTree;}
  protected:
   //
 
