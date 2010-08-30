@@ -1210,7 +1210,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   
 
     fNTracksAccepted++;
-    phiArray[iTrack]     = tpcP->Phi();
+    phiArray[iTrack]     = phiIn;
     etaArray[iTrack]     = tpcP->Eta();
     ptArray[iTrack]      = tpcP->Pt();
     chargeArray[iTrack]  = tpcP->Charge();
@@ -1286,7 +1286,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     fHistRECpt->Fill(tpcP->Pt());
     fEta->Fill(tpcP->Eta());
     fEtavPt->Fill(tpcP->Eta(), TMath::Log(tpcP->Pt()));
-    fPhivPt->Fill(tpcP->Phi(), TMath::Log(tpcP->Pt()));
+    fPhivPt->Fill(phiIn, TMath::Log(tpcP->Pt()));
     fEtaPhi->Fill(tpcP->Eta(), phiIn);
     fThetaRec->Fill(tpcP->Theta());
     fPhiRec->Fill(phiIn);
