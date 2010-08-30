@@ -145,7 +145,6 @@ Macro(ROOT_GENERATE_DICTIONARY INFILES LINKDEF_FILE OUTFILE INCLUDE_DIRS_IN)
   String(REGEX REPLACE "^(.*)\\.(.*)$" "\\1.h" bla "${OUTFILE}")
   Set(OUTFILES ${OUTFILE} ${bla})
 #Remove file from dictionary building
-  list(REMOVE_ITEM INFILES "SORNotifier.h")
   Foreach (_current_FILE ${INFILES})
 #Remove file from dictionary generations
     if(NOT ${_current_FILE} STREQUAL "SORNotifier.h")
