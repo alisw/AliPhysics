@@ -16,14 +16,15 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTDAQ.cxx
-    @author Matthias Richter
-    @date   24.10.2008
-    @brief  Virtual Interface to the AliDAQ class.
-*/
+/// @file   AliHLTDAQ.cxx
+/// @author Matthias Richter
+/// @date   24.10.2008
+/// @brief  Virtual Interface to the AliDAQ class.
+///
 
 #include "AliHLTDAQ.h"
 #include "AliHLTLogging.h"
+#include "AliHLTDataTypes.h"
 #include "TClass.h"
 #include "TSystem.h"
 
@@ -42,6 +43,28 @@ AliHLTDAQ::AliHLTDAQ()
 AliHLTDAQ* AliHLTDAQ::fgpInstance=NULL;
 const char* AliHLTDAQ::fgkImplName="AliHLTDAQInterfaceImplementation";
 const char* AliHLTDAQ::fgkImplLibrary="libHLTrec.so";
+const char* AliHLTDAQ::fgkOriginMapping[] = {
+  kAliHLTDataOriginITSSPD,  
+  kAliHLTDataOriginITSSDD,
+  kAliHLTDataOriginITSSSD,
+  kAliHLTDataOriginTPC,
+  kAliHLTDataOriginTRD,
+  kAliHLTDataOriginTOF,
+  kAliHLTDataOriginHMPID,
+  kAliHLTDataOriginPHOS,
+  kAliHLTDataOriginCPV,
+  kAliHLTDataOriginPMD,
+  kAliHLTDataOriginMUON,
+  "", // MUONTRG
+  kAliHLTDataOriginFMD,
+  kAliHLTDataOriginT0,
+  kAliHLTDataOriginVZERO,
+  kAliHLTDataOriginZDC,
+  kAliHLTDataOriginACORDE,
+  kAliHLTDataOriginTRG,
+  kAliHLTDataOriginEMCAL,
+  NULL
+};
 
 AliHLTDAQ::~AliHLTDAQ()
 {
@@ -69,6 +92,18 @@ const char *AliHLTDAQ::DetectorName(Int_t detectorID)
   // see header file for class documentation
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDetectorName(detectorID);
+  return NULL;
+}
+
+const char *AliHLTDAQ::DetectorName(const char dataorigin[4])
+{
+  // see header file for class documentation
+  for (int i=0; fgkOriginMapping[i]!=NULL; i++) {
+    if (strncmp(fgkOriginMapping[i], dataorigin, kAliHLTComponentDataTypefOriginSize)==0) {
+      return DetectorName(i);
+    }
+  }
+
   return NULL;
 }
 
@@ -196,6 +231,22 @@ const char *AliHLTDAQ::OnlineName(Int_t detectorID)
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtOnlineName(detectorID);
   return NULL;
+}
+
+string AliHLTDAQ::HLTOrigin(const char *detectorName)
+{
+  // get HLT origin from detector name
+  return HLTOrigin(DetectorID(detectorName));
+}
+
+string AliHLTDAQ::HLTOrigin(Int_t detectorID)
+{
+  // get HLT origin from detector ID
+  string origin;
+  if (detectorID>=0 && detectorID<(int)sizeof(fgkOriginMapping)/sizeof(const char*)) {
+    origin.append(fgkOriginMapping[detectorID], kAliHLTComponentDataTypefOriginSize);
+  }
+  return origin;
 }
 
 AliHLTDAQ* AliHLTDAQ::GetInstance()

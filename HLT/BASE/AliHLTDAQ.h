@@ -7,19 +7,23 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTDAQ.h
-    @author Matthias Richter
-    @date   24.10.2008
-    @brief  Virtual Interface to the AliDAQ class.
-*/
+/// @file   AliHLTDAQ.h
+/// @author Matthias Richter
+/// @date   24.10.2008
+/// @brief  Virtual Interface to the AliDAQ class.
+///
 
 #include "Rtypes.h"
+#include <string>
 
 /**
  * Virtual interface to the AliDAQ class.
  * In order to keep the libHLTbase free of AliRoot dependencies, the
  * implementation has been separated from libHLTbase.
  * Implementation in libHLTrec.
+ *
+ * @author Matthias.Richter@ift.uib.no
+ * @ingroup alihlt_system
  */
 class AliHLTDAQ {
  public:
@@ -29,6 +33,7 @@ class AliHLTDAQ {
 
   static  Int_t       DetectorID(const char *detectorName);
   static  const char *DetectorName(Int_t detectorID);
+  static  const char *DetectorName(const char dataorigin[4]);
 
   static  Int_t       DdlIDOffset(const char *detectorName);
   static  Int_t       DdlIDOffset(Int_t detectorID);
@@ -52,6 +57,9 @@ class AliHLTDAQ {
 
   static const char *OnlineName(const char *detectorName);
   static const char *OnlineName(Int_t detectorID);
+
+  static std::string HLTOrigin(const char *detectorName);
+  static std::string HLTOrigin(Int_t detectorID);
 
   static AliHLTDAQ* GetInstance();
 
@@ -92,6 +100,9 @@ class AliHLTDAQ {
 
   /** the library of the implementation */
   static const char* fgkImplLibrary; //!
+
+  /// mapping between HLT data origin and AliDAQ detector number
+  static const char* fgkOriginMapping[]; //!
 };
 
 #endif //AliHLTDAQ
