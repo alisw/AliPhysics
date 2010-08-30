@@ -189,7 +189,7 @@ void AliHLTReadoutList::FillStruct(const AliHLTEventDDL& list)
   }
   else if (list.fCount == (unsigned)gkAliHLTDDLListSizeV1)
   {
-    memcpy(&fReadoutList.fList, &list.fList, sizeof(AliHLTEventDDL));
+    memcpy(&fReadoutList, &list, sizeof(AliHLTEventDDL));
   }
   else
   {

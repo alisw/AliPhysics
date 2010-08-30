@@ -113,7 +113,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   // Copy Constructor
   //
   memcpy(fProdVtx, c.fProdVtx, sizeof(Double_t) * 4);
-  memcpy(fDCAtoVtx, c.fDCAtoVtx, sizeof(Double_t) * 4);
+  memcpy(fDCAtoVtx, c.fDCAtoVtx, sizeof(Double_t) * 2);
   memcpy(fPtRange, c.fPtRange, sizeof(Double_t) *2);
   fCutList = dynamic_cast<TObjArray *>(c.fCutList->Clone());
   fCutList->SetOwner();

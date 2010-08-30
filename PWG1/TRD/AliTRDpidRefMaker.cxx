@@ -70,7 +70,7 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
   // Default constructor
   //
 
-  memset(fdEdx, 0, 10*sizeof(Float_t));
+  memset(fdEdx, 0, AliTRDpidUtil::kNNslices*sizeof(Float_t));
   memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
 
   DefineInput(2, TObjArray::Class()); // v0 list

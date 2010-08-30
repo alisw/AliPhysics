@@ -61,7 +61,7 @@ class AliESDpidCuts : public AliAnalysisCuts{
     Char_t  fTPCsigmaCutRequired;                   // Sigma cut Requirement for TPC and Particle Species
     Char_t  fTOFsigmaCutRequired;                   // Sigma cut Requirement for TOF and Particle Species
     Float_t fCutTPCnSigma[AliPID::kSPECIES * 2];    // Species dependent cut on the distance to the TPC dE/dx line
-    Float_t fCutTOFnSigma[AliPID::kSPECIES];        // Species dependent cut on the distance to the TOF calculated time of flight line
+    Float_t fCutTOFnSigma[AliPID::kSPECIES * 2];    // Species dependent cut on the distance to the TOF calculated time of flight line
     Float_t fCutTPCclusterRatio;                    // Cut on Ratio of found clusters with repect to findable clusters in the TPC
     Float_t fMinMomentumTOF;                        // Apply TOF PID only above a certain momentum
 
@@ -74,7 +74,7 @@ class AliESDpidCuts : public AliAnalysisCuts{
     TH1F *fHnSigmaTOF[AliPID::kSPECIES][2];      // TOF n-sigma cut
     //------------------------------------------
     
-    ClassDef(AliESDpidCuts, 2)
+    ClassDef(AliESDpidCuts, 3)
 };
 
 //_____________________________________________________________________

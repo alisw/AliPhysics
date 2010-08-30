@@ -51,8 +51,8 @@ AliESDpidCuts::AliESDpidCuts(const Char_t *name, const Char_t *title):
   //
   
   fESDpid = new AliESDpid;
-  memset(fCutTPCnSigma, 0, sizeof(Float_t) * 2);
-  memset(fCutTOFnSigma, 0, sizeof(Float_t) * 2);
+  memset(fCutTPCnSigma, 0, sizeof(Float_t)* AliPID::kSPECIES * 2);
+  memset(fCutTOFnSigma, 0, sizeof(Float_t)* AliPID::kSPECIES * 2);
 
   memset(fHclusterRatio, 0, sizeof(TH1F *) * 2);
   memset(fHnSigmaTPC, 0, sizeof(TH1F *) * AliPID::kSPECIES * 2);
@@ -160,7 +160,7 @@ void AliESDpidCuts::Copy(TObject &c) const {
   }
  
   memcpy(target.fCutTPCnSigma, fCutTPCnSigma, sizeof(Float_t) * AliPID::kSPECIES * 2);
-  memcpy(target.fCutTOFnSigma, fCutTOFnSigma, sizeof(Float_t) * AliPID::kSPECIES);
+  memcpy(target.fCutTOFnSigma, fCutTOFnSigma, sizeof(Float_t) * AliPID::kSPECIES * 2);
  
   AliESDpidCuts::Copy(c);
 }
