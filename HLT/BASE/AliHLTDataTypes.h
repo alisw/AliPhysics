@@ -178,6 +178,52 @@ extern const char kAliHLTDataOriginSample[kAliHLTComponentDataTypefOriginSize];
  */
 extern const char kAliHLTDataOriginEMCAL[kAliHLTComponentDataTypefOriginSize];
 
+/** Data origin TOF
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginTOF[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin HMPID
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginHMPID[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin CPV
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginCPV[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin PMD
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginPMD[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin T0
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginT0[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin VZERO
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginVZERO[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin ZDC
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginZDC[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin ACORDE
+ * @ingroup alihlt_component_datatypes
+ */
+
+extern const char kAliHLTDataOriginACORDE[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin TRG
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginTRG[kAliHLTComponentDataTypefOriginSize];
+
 //////////////////////////////////////////////////////////////////////////
 //
 // HLT common data type defines

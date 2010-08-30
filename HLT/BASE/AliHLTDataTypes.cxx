@@ -264,3 +264,29 @@ const char kAliHLTDataOriginSample[kAliHLTComponentDataTypefOriginSize]  = {'S',
 /** EMCAL */
 const char kAliHLTDataOriginEMCAL[kAliHLTComponentDataTypefOriginSize]   = {'E','M','C','A'};
 
+/** TOF */
+const char kAliHLTDataOriginTOF[kAliHLTComponentDataTypefOriginSize]   = {'T','O','F',' '};
+
+/** HMPID */
+const char kAliHLTDataOriginHMPID[kAliHLTComponentDataTypefOriginSize]   = {'H','M','P','I'};
+
+/** CPV */
+const char kAliHLTDataOriginCPV[kAliHLTComponentDataTypefOriginSize]   = {'C','P','V',' '};
+
+/** PMD */
+const char kAliHLTDataOriginPMD[kAliHLTComponentDataTypefOriginSize]   = {'P','M','D',' '};
+
+/** T0 */
+const char kAliHLTDataOriginT0[kAliHLTComponentDataTypefOriginSize]   = {'T','Z','R','O'};
+
+/** VZERO */
+const char kAliHLTDataOriginVZERO[kAliHLTComponentDataTypefOriginSize]   = {'V','Z','R','O'};
+
+/** ZDC */
+const char kAliHLTDataOriginZDC[kAliHLTComponentDataTypefOriginSize]   = {'Z','D','C',' '};
+
+/** ACORDE */
+const char kAliHLTDataOriginACORDE[kAliHLTComponentDataTypefOriginSize]   = {'A','C','O','R'};
+
+/** TRG */
+const char kAliHLTDataOriginTRG[kAliHLTComponentDataTypefOriginSize]   = {'T','R','G',' '};
