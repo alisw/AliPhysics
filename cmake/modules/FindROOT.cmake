@@ -144,17 +144,14 @@ Macro(ROOT_GENERATE_DICTIONARY INFILES LINKDEF_FILE OUTFILE INCLUDE_DIRS_IN)
   list(APPEND INCLUDE_DIRS "-Iinclude" "-isystem${ROOT_INCLUDE_DIR}")
   String(REGEX REPLACE "^(.*)\\.(.*)$" "\\1.h" bla "${OUTFILE}")
   Set(OUTFILES ${OUTFILE} ${bla})
-
+#Remove file from dictionary building
+  list(REMOVE_ITEM INFILES "SORNotifier.h")
   Foreach (_current_FILE ${INFILES})
-    string(REGEX MATCH "Ali" ALICE ${_current_FILE})
-    if(NOT ALICE)
-      string(REGEX MATCH "TH1F" ALICE ${_current_FILE})
-    endif(NOT ALICE)
-#Filter Non-ALICE files
-    if(ALICE)
+#Remove file from dictionary generations
+    if(NOT ${_current_FILE} STREQUAL "SORNotifier.h")
       Get_filename_component(name_wo_path ${_current_FILE} NAME)
       Set(infiles_nopath ${infiles_nopath} ${name_wo_path})   
-    endif(ALICE)
+    endif(NOT ${_current_FILE} STREQUAL "SORNotifier.h")
   Endforeach (_current_FILE ${INFILES})
 
   Get_property(_defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
