@@ -12,6 +12,7 @@ CLASS_HDRS:= 	AliHLTSampleComponent1.h \
 		AliHLTSampleComponent2.h \
 		AliHLTSampleCalibrationComponent.h \
 		AliHLTSampleESDAnalysisComponent.h \
+		AliHLTSampleRawAnalysisComponent.h \
 		AliHLTSampleMonitoringComponent.h \
 		AliHLTAgentSample.h \
 		AliHLTSamplePreprocessor.h \
@@ -38,7 +39,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:=
 
-EINCLUDE := HLT/BASE HLT/shuttle HLT/SampleLib STEER
+EINCLUDE := HLT/BASE HLT/shuttle HLT/SampleLib STEER RAW
 
 LIBRARY_DEP := -lHLTbase -lCDB -lSTEERBase
 
