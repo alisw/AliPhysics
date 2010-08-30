@@ -1,5 +1,5 @@
 // $Id$
-// Author: Stefano Carrazza 2010
+// Author: Stefano Carrazza 2010, CERN, stefano.carrazza@cern.ch
 
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, all rights reserved. *
@@ -13,11 +13,11 @@
 #include "TGedFrame.h"
 
 class TGButton;
-class TGCheckButton;
-class TGNumberEntry;
 class TGColorSelect;
-class TGGroupFrame;
 class TGComboBox;
+class TGCheckButton;
+class TGGroupFrame;
+class TGNumberEntry;
 class TGTextButton;
 
 class AliEveBeamsInfo;
@@ -35,21 +35,28 @@ public:
 
    virtual void SetModel(TObject* obj);
 
-   // Declare callback/slot methods
-   void ShowEventSelection();
+   // Set Methods
+   void SetAlpha();
+
+   // Slot methods
    void SelectEventSelection(Int_t id);
+   void ShowEventSelection();
    void ShowPrevEvent();
    void ShowNextEvent();
+   void SwitchDataType();
 
 protected:
-   AliEveBeamsInfo            *fM; // Model object.
+   AliEveBeamsInfo *fM;              // Model object.
 
 private:
-   TGGroupFrame  *fEventSelection;  // event selection group box
-   TGCheckButton *fShowEvents;      // display information checkbox
-   TGComboBox    *fSelect;          // combo box display
-   TGTextButton  *fButtonPrev;      // previous event selection
-   TGTextButton  *fButtonNext;      // next event selection
+   TGCheckButton   *fIsMC;           // activating mc selection
+   TGGroupFrame    *fEventSelection; // event selection group box
+   TGCheckButton   *fShowEvents;     // display information checkbox
+   TGComboBox      *fSelect;         // combo box display
+   TGTextButton    *fButtonPrev;     // previous event selection
+   TGTextButton    *fButtonNext;     // next event selection
+   TGGroupFrame    *fSetAlpha;       // set alpha for overlay buttons
+   TGNumberEntry   *fAlpha;          // alpha value
 
    AliEveBeamsInfoEditor(const AliEveBeamsInfoEditor&);            // Not implemented
    AliEveBeamsInfoEditor& operator=(const AliEveBeamsInfoEditor&); // Not implemented

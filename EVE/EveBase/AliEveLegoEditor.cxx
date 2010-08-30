@@ -1,5 +1,5 @@
 // $Id$
-// Author: Stefano Carrazza 2010
+// Author: Stefano Carrazza 2010, CERN, stefano.carrazza@cern.ch
 
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, all rights reserved. *
@@ -7,24 +7,23 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#include "AliEveLegoEditor.h"
 #include "AliEveLego.h"
+#include "AliEveLegoEditor.h"
 
-#include "TVirtualPad.h"
 #include "TColor.h"
-
-#include "TGLabel.h"
 #include "TGButton.h"
-#include "TGNumberEntry.h"
-#include "TGColorSelect.h"
-#include "TGDoubleSlider.h"
 #include "TGButtonGroup.h"
-#include "TGString.h"
+#include "TGColorSelect.h"
 #include "TGComboBox.h"
+#include "TGDoubleSlider.h"
 #include "TGFrame.h"
+#include "TGLabel.h"
+#include "TGNumberEntry.h"
+#include "TGString.h"
+#include "TVirtualPad.h"
 
 //______________________________________________________________________________
-// GUI editor for AliEveLego.
+// This is the GUI editor for AliEveLego.
 //
 
 ClassImp(AliEveLegoEditor)
@@ -71,10 +70,13 @@ AliEveLegoEditor::AliEveLegoEditor(const TGWindow *p, Int_t width, Int_t height,
   MakeTitle("AliEveLego");
 
   // Create widgets
+
+  //------ AllEventsButton ------
   fAllEventsButton = new TGTextButton(this, "Create lego of all events");
   AddFrame(fAllEventsButton, new TGLayoutHints(kLHintsExpandX));
   fAllEventsButton->Connect("Clicked()", "AliEveLegoEditor", this, "DoAllEvents()");
 
+  //------ Particle Selection ------
   fParticlesBG = new TGGroupFrame(this, "Particle selection:", kVerticalFrame);
   fPosCharged  = new TGCheckButton(fParticlesBG, new TGHotString("&Positive charged"));
   fNegCharged  = new TGCheckButton(fParticlesBG, new TGHotString("&Negative charged"));
@@ -111,6 +113,7 @@ AliEveLegoEditor::AliEveLegoEditor(const TGWindow *p, Int_t width, Int_t height,
 
   AddFrame(fParticlesBG, new TGLayoutHints(kLHintsExpandX));
 
+  //------ Track selection ------
   fTrackSelection = new TGButtonGroup(this, "Track selection:", kHorizontalFrame);
   fRtracks[0] = new TGRadioButton(fTrackSelection, new TGHotString("&All tracks  "));
   fRtracks[1] = new TGRadioButton(fTrackSelection, new TGHotString("&Primary tracks"));
@@ -118,8 +121,7 @@ AliEveLegoEditor::AliEveLegoEditor(const TGWindow *p, Int_t width, Int_t height,
   AddFrame(fTrackSelection, new TGLayoutHints(kLHintsExpandX));
   fTrackSelection->Connect("Clicked(Int_t)", "AliEveLegoEditor", this, "ShowByTracks(Int_t)");
 
-  //**************
-
+  //------ Track threshold ------
   TGHorizontalFrame *horz = new TGHorizontalFrame(this);
   AddFrame(horz, new TGLayoutHints(kLHintsExpandX | kLHintsCenterY));
   fLabel = new TGLabel(horz, "Tracks maximum Pt (GeV): ");
@@ -152,17 +154,17 @@ AliEveLegoEditor::AliEveLegoEditor(const TGWindow *p, Int_t width, Int_t height,
 
 }
 
-/******************************************************************************/
-
 //______________________________________________________________________________
 void AliEveLegoEditor::SetModel(TObject* obj)
 {
+  // Calls the associated AliEveLego object
   fM = dynamic_cast<AliEveLego*>(obj);
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::DoAllEvents()
 {
+  // Creates the all events editor
   fAllEventsButton->SetEnabled(kFALSE);
   CreateAllEventsEditor();
   fM->LoadAllEvents();
@@ -171,142 +173,163 @@ void AliEveLegoEditor::DoAllEvents()
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowPosCharge()
 {   
-  fM->SetParticleType(0);
+  // Send particle type to main class
+  fM->SetParticleType(0, fPosCharged->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowNegCharge()
 {
-  fM->SetParticleType(1);
+  // Send particle type to main class
+  fM->SetParticleType(1, fNegCharged->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowElectrons()
 {
-  fM->SetParticleType(2);
+  // Send particle type to main class
+  fM->SetParticleType(2, fElectrons->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowMuons()
 {
-  fM->SetParticleType(3);
+  // Send particle type to main class
+  fM->SetParticleType(3, fMuons->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowPions()
 {
-  fM->SetParticleType(4);
+  // Send particle type to main class
+  fM->SetParticleType(4, fPions->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowKaons()
 {
-  fM->SetParticleType(5);
+  // Send particle type to main class
+  fM->SetParticleType(5, fKaons->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowProtons()
 {
-  fM->SetParticleType(6);
+  // Send particle type to main class
+  fM->SetParticleType(6, fProtons->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowPosChargeAE()
 {
-   fM->SetParticleTypeAE(0);
+  // Send particle type to main class
+  fM->SetParticleTypeAE(0, fPosChargedAE->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowNegChargeAE()
 {
-  fM->SetParticleTypeAE(1);
+  // Send particle type to main class
+  fM->SetParticleTypeAE(1, fNegChargedAE->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowElectronsAE()
 {
-  fM->SetParticleTypeAE(2);
+  // Send particle type to main class
+  fM->SetParticleTypeAE(2, fElectronsAE->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowMuonsAE()
 {
-  fM->SetParticleTypeAE(3);
+  // Send particle type to main class
+  fM->SetParticleTypeAE(3, fMuonsAE->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowPionsAE()
 {
-  fM->SetParticleTypeAE(4);
+  // Send particle type to main class
+  fM->SetParticleTypeAE(4, fPionsAE->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowKaonsAE()
 {
-  fM->SetParticleTypeAE(5);
+  // Send particle type to main class
+  fM->SetParticleTypeAE(5, fKaonsAE->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowProtonsAE()
 {
-  fM->SetParticleTypeAE(6);
+  // Send particle type to main class
+  fM->SetParticleTypeAE(6, fProtonsAE->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::SetMaxPt()
 {
-   fM->SetMaxPt(fMaxPt->GetNumber());
+  // Send particle type to main class
+  fM->SetMaxPt(fMaxPt->GetNumber());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::SetMaxPtAE()
 {
-   fM->SetMaxPtAE(fMaxPtAE->GetNumber());
+  // Send particle type to main class
+  fM->SetMaxPtAE(fMaxPtAE->GetNumber());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::SetThreshold()
 {
-   fM->SetThreshold(fThreshold->GetNumber());
+  // Send particle type to main class
+  fM->SetThreshold(fThreshold->GetNumber());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::SetThresholdAE()
 {
-   fM->SetThresholdAE(fThresholdAE->GetNumber());
+  // Send particle type to main class
+  fM->SetThresholdAE(fThresholdAE->GetNumber());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowByTracks(Int_t id)
 {
-   fM->SetTracks(id);
+  // Send particle type to main class
+  fM->SetTracks(id);
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ShowByTracksAE(Int_t id)
 {
-   fM->SetTracksAE(id);
+  // Send particle type to main class
+  fM->SetTracksAE(id);
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::CreateAllEventsEditor()
 {
-   // create the GUI of all events
+   // Create the GUI of all events
    TGVerticalFrame *this2 = this->CreateEditorTabSubFrame("All events style");
 
+   //------ Event control ------
    fEventControl = new TGButtonGroup(this2, "Event control:", kVerticalFrame);
    fIsMC = new TGCheckButton(fEventControl, new TGHotString("&Data is from simulation (MC)"));
    fCollisionCandidatesOnly = new TGCheckButton(fEventControl, new TGHotString("&Only collision candidates events"));
 
+   //------ Simulation checkbox ------
    fIsMC->SetState(kButtonUp);
    fCollisionCandidatesOnly->SetState(kButtonUp);
-
    fIsMC->Connect("Clicked()", "AliEveLegoEditor", this, "DataIsMC()");
    fCollisionCandidatesOnly->Connect("Clicked()", "AliEveLegoEditor", this, "CollisionCandidatesOnly()");
    this2->AddFrame(fEventControl, new TGLayoutHints(kLHintsExpandX));
 
+   //------ Particle selection ------
    fParticlesBGAE = new TGButtonGroup(this2, "Particle selection:", kVerticalFrame);
-
    fPosChargedAE  = new TGCheckButton(fParticlesBGAE, new TGHotString("&Positive charged"));
    fNegChargedAE  = new TGCheckButton(fParticlesBGAE, new TGHotString("&Negative charged"));
    fElectronsAE   = new TGCheckButton(fParticlesBGAE, new TGHotString("&Electrons"));
@@ -333,19 +356,20 @@ void AliEveLegoEditor::CreateAllEventsEditor()
 
    this2->AddFrame(fParticlesBGAE, new TGLayoutHints(kLHintsExpandX));
 
+   //------ Apply particle selection criteria ------
    fApplyChanges = new TGTextButton(this2, "Apply particle selection");
-   this2->AddFrame(fApplyChanges, new TGLayoutHints(kLHintsExpandX));
    fApplyChanges->Connect("Clicked()", "AliEveLegoEditor", this, "ApplyChanges()");
+   this2->AddFrame(fApplyChanges, new TGLayoutHints(kLHintsExpandX));
 
+   //------ Track selection ------
    fTrackSelectionAE = new TGButtonGroup(this2, "Track selection:", kHorizontalFrame);
    fRtracksAE[0] = new TGRadioButton(fTrackSelectionAE, new TGHotString("&All tracks  "));
    fRtracksAE[1] = new TGRadioButton(fTrackSelectionAE, new TGHotString("&Primary tracks"));
-   fRtracksAE[0]->SetState(kButtonDown);
-   this2->AddFrame(fTrackSelectionAE, new TGLayoutHints(kLHintsExpandX));
+   fRtracksAE[0]->SetState(kButtonDown);   
    fTrackSelectionAE->Connect("Clicked(Int_t)", "AliEveLegoEditor", this, "ShowByTracksAE(Int_t)");
+   this2->AddFrame(fTrackSelectionAE, new TGLayoutHints(kLHintsExpandX));
 
-   //**************
-
+   //------ Threshold setup ------
    TGHorizontalFrame *horzAE = new TGHorizontalFrame(this2);
 
    fLabelAE = new TGLabel(horzAE, "Tracks maximum Pt (GeV): ");
@@ -377,24 +401,25 @@ void AliEveLegoEditor::CreateAllEventsEditor()
    horz1AE->AddFrame( fThresholdAE, new TGLayoutHints(kLHintsRight | kLHintsNormal | kLHintsCenterY));
 
    this2->AddFrame(horz1AE, new TGLayoutHints(kLHintsExpandX | kLHintsCenterY));
-
-
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::ApplyChanges()
 {
+  // Apply particle selection for all events
   fM->ApplyParticleTypeSelectionAE();
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::DataIsMC()
 {
-  fM->SwitchDataType();
+  // Set data type
+  fM->SwitchDataType(fIsMC->IsOn());
 }
 
 //______________________________________________________________________________
 void AliEveLegoEditor::CollisionCandidatesOnly()
 {
+  // Activate collision candidates only
   fM->SetCollisionCandidatesOnly();
 }
