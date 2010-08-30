@@ -119,7 +119,7 @@ void sampleEsdAnalysis(const char *filename,
 		       int minEvent=-1,
 		       int maxEvent=-1)
 {
-  sampleEsdAnalysis(filename, "raw://", minEvent, maxEvent, modules, hltOptions);
+  sampleEsdAnalysis(filename, "raw://", minEvent, maxEvent);
 }
 
 void sampleEsdAnalysis()
