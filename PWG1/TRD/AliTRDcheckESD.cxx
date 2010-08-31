@@ -463,8 +463,8 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
     pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    hFeffP = TRDEfficiency(+1);
-    hFeffN = TRDEfficiency(-1);
+    hFeffP = EfficiencyTRD(1);
+    hFeffN = EfficiencyTRD(-1);
     h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.1);
     h2F->SetStats(kFALSE);
     h2F->GetXaxis()->SetTitle("p_{T} [GeV/c]");
@@ -1701,7 +1701,7 @@ TH2F* AliTRDcheckESD::Proj3D(TH3F* hist, TH2F* accMap, Int_t zbinLow, Int_t zbin
   return projHisto;
 }
 //____________________________________________________________________
-TH1F* AliTRDcheckESD::TRDEfficiency(Short_t positives) {
+TH1F* AliTRDcheckESD::EfficiencyTRD(Short_t positives) {
   //
   // Calculate the TRD-TPC matching efficiency as function of pt
   //

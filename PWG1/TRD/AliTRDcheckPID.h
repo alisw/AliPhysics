@@ -72,7 +72,7 @@ public:
   static Char_t const* MethodName(Int_t id) { return fgMethod[id]; };
   //TObjArray *GetHistos() { return fContainer; };
   virtual TObjArray *Histos();
-  void EvaluateEfficiency(TObjArray* const histoContainer, TObjArray *results, Int_t species, Float_t electronEfficiency);
+  void EvaluateEfficiency(const TObjArray* const histoContainer, TObjArray *results, Int_t species, Float_t electronEfficiency);
   inline void SetMomentumBinning(Int_t nBins, Double_t *bins);
   inline Int_t FindBin(Int_t species, Double_t momentum);
   inline Bool_t IsInRange(Double_t momentum);

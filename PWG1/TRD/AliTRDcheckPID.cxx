@@ -1182,7 +1182,7 @@ Bool_t AliTRDcheckPID::PostProcess()
 }
 
 //________________________________________________________________________
-void AliTRDcheckPID::EvaluateEfficiency(TObjArray * const histoContainer, TObjArray *results, Int_t species, Float_t electronEfficiency){
+void AliTRDcheckPID::EvaluateEfficiency(const TObjArray * const histoContainer, TObjArray *results, Int_t species, Float_t electronEfficiency){
 // Process PID information for pion efficiency
 
   fUtil->SetElectronEfficiency(electronEfficiency);

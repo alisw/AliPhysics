@@ -575,6 +575,17 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 //_______________________________________________________
 Bool_t AliTRDclusterResolution::PostProcess()
 {
+// Steer processing of various cluster resolution dependences :
+//
+//   - process resolution dependency cluster charge
+//   if(HasProcess(kQRes)) ProcessCharge();
+//   - process resolution dependency on y displacement
+//   if(HasProcess(kCenter)) ProcessCenterPad();
+//   - process resolution dependency on drift legth and drift cell width
+//   if(HasProcess(kSigm)) ProcessSigma();
+//   - process systematic shift on drift legth and drift cell width
+//   if(HasProcess(kMean)) ProcessMean();
+
   if(!fContainer) return kFALSE;
   if(!IsCalibrated()){
     AliWarning("Not calibrated.");

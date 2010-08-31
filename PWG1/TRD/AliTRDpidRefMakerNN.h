@@ -18,6 +18,9 @@
 #ifndef ALITRDPIDREFMAKER_H
 #include "AliTRDpidRefMaker.h"
 #endif
+#ifndef ALITRDCALPID_H
+#include "Cal/AliTRDCalPID.h"
+#endif
 
 class TEventList;
 class TMultiLayerPerceptron;
@@ -82,13 +85,13 @@ private:
   Bool_t        fContinueTraining;         // checks if training from an older run should be continued
   Int_t         fTrainPath;                // sets the path for continuing the training
 
-  Float_t       fScale;
+  Float_t       fScale;                    // scaling factor
   Int_t         fLy;                       // TRD layer
   Int_t         fNtrkl;                    // No. tracklets
-  TTree         *fTrainData[AliTRDCalPID::kNMom]; 
-  TFile         *fRef;
+  TTree         *fTrainData[AliTRDCalPID::kNMom];//Tree for reference data for all momentum bins 
+  TFile         *fRef;                     //file containing reference data
 
-  ClassDef(AliTRDpidRefMakerNN, 3); // TRD reference  maker for NN
+  ClassDef(AliTRDpidRefMakerNN, 3);        // TRD reference  maker for NN
 };
 
 #endif

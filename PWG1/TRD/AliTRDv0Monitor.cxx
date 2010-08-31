@@ -20,18 +20,12 @@
 //  Authors:                                          
 //  Markus Heide <mheide@uni-muenster.de> 
 //////////////////////////////////////////////////////
-    
-//#include "TPDGCode.h"
-/*#include "TFile.h"
-#include "TTree.h"
-#include "TEventList.h"*/
+
 #include "TObjArray.h"
 #include "TH2.h"
 #include "TH2F.h"
 #include "TH1I.h"
 #include "TCanvas.h"
-// #include "TPad.h"
-// #include "TLegend.h"
 
 #include "AliLog.h"
 #include "AliESDtrack.h"
@@ -76,21 +70,22 @@ AliTRDv0Monitor::AliTRDv0Monitor(const char *name)
 
 
 //____________________________________________________________________
-void AliTRDv0Monitor::MakeSummary(){
-  TCanvas *cOut = new TCanvas("v0MonitorSummary1", "Summary 1 for task V0Monitor", 1024, 768);
-  cOut->cd();
+void AliTRDv0Monitor::MakeSummary(){//makes a summary with potentially nice reference figures
+  //TCanvas *cOut = new TCanvas("v0MonitorSummary1", "Summary 1 for task V0Monitor", 1024, 768);
+  //cOut->cd();
   //GetRefFigure(4);
-  cOut->SaveAs("V0MonitorSummary.gif");
+  //cOut->SaveAs("V0MonitorSummary.gif");
 
-  cOut = new TCanvas("v0MonitorSummary2","Summary 2 for task V0Monitor", 1024, 768);
-  cOut->cd();
+  //cOut = new TCanvas("v0MonitorSummary2","Summary 2 for task V0Monitor", 1024, 768);
+  //cOut->cd();
   //GetRefFigure(5);
-  cOut->SaveAs("V0MonitorSummary2.gif");
+  //cOut->SaveAs("V0MonitorSummary2.gif");
 }
 
 //________________________________________________________________________
 Bool_t AliTRDv0Monitor::GetRefFigure(Int_t /*ifig*/)
 {
+  //creating reference figures
 
   AliInfo("Implementation on going ...");
   return kTRUE;
@@ -101,7 +96,6 @@ TObjArray* AliTRDv0Monitor::Histos()
 {
   // Create histograms
   // Called once
-
   if(fContainer) return fContainer;
 
   fContainer = new TObjArray(kNPlots);
@@ -185,7 +179,6 @@ void AliTRDv0Monitor::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-  
   if(!(fTracks = dynamic_cast<TObjArray*>(GetInputData(1)))) return;
   if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))) return;
   if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))) return;
@@ -193,8 +186,6 @@ void AliTRDv0Monitor::UserExec(Option_t *)
   
   AliTRDtrackInfo     *track = NULL;
   AliTRDv0Info *v0(NULL);
-
-
 
   for(Int_t itrk=0; itrk<fTracks->GetEntriesFast(); itrk++){
     track = (AliTRDtrackInfo*)fTracks->UncheckedAt(itrk);
@@ -204,9 +195,9 @@ void AliTRDv0Monitor::UserExec(Option_t *)
       ULong_t status = track->GetStatus();
       if(!(status&AliESDtrack::kTRDpid)) continue;
       
-      fhQualityReductions->Fill(v0->fQuality);//fills integer codes for tracks cut out by track/V0 quality cuts
+      fhQualityReductions->Fill(v0->GetQuality());//fills integer codes for tracks cut out by track/V0 quality cuts
       
-      if(!(v0->fQuality == 1)) continue;
+      if(!(v0->GetQuality() == 1)) continue;
 
       for(Int_t part = 0; part < AliPID::kSPECIES; part++){
         fhCutReductions[part]->Fill(v0->GetPID(part,track));//fill in numbers of tracks eliminated by different PID cuts
@@ -225,47 +216,47 @@ void AliTRDv0Monitor::UserExec(Option_t *)
         } 
         
         //fill histograms with track/V0 quality cuts only
-        fhPsiPair[idecay][0]->Fill(v0->fV0Momentum,v0->fPsiPair);//Angle between daughter momentum plane and plane perpendicular to magnetic field
-        fhInvMass[idecay]->Fill(v0->fV0Momentum,v0->fInvMass[idecay]);//Invariant mass
-        fhPointAngle[idecay][0]->Fill(v0->fV0Momentum,v0->fPointingAngle);// = TMath::ACos(esdv0->GetV0CosineOfPointingAngle()); // Cosine of pointing angle
-        fhOpenAngle[idecay][0]->Fill(v0->fV0Momentum,v0->fOpenAngle);// opening angle between daughters
-        fhDCA[idecay][0]->Fill(v0->fV0Momentum,v0->fDCA);// Distance of closest approach of daughter tracks	
-        fhV0Chi2ndf[idecay][0]->Fill(v0->fV0Momentum,v0->fChi2ndf[idecay]);//Kalman Filter Chi2/NDF
-        fhRadius[idecay][0]->Fill(v0->fV0Momentum,v0->fRadius);//distance of decay/conversion from primary vertex in x-y plane
+        fhPsiPair[idecay][0]->Fill(v0->GetV0Momentum(),v0->GetPsiPair());//Angle between daughter momentum plane and plane perpendicular to magnetic field
+        fhInvMass[idecay]->Fill(v0->GetV0Momentum(),v0->GetInvMass(idecay));//Invariant mass
+        fhPointAngle[idecay][0]->Fill(v0->GetV0Momentum(),v0->GetPointingAngle());// = TMath::ACos(esdv0->GetV0CosineOfPointingAngle()); // Cosine of pointing angle
+        fhOpenAngle[idecay][0]->Fill(v0->GetV0Momentum(),v0->GetOpenAngle());// opening angle between daughters
+        fhDCA[idecay][0]->Fill(v0->GetV0Momentum(),v0->GetDCA());// Distance of closest approach of daughter tracks	
+        fhV0Chi2ndf[idecay][0]->Fill(v0->GetV0Momentum(),v0->GetChi2ndf(idecay));//Kalman Filter Chi2/NDF
+        fhRadius[idecay][0]->Fill(v0->GetV0Momentum(),v0->GetRadius());//distance of decay/conversion from primary vertex in x-y plane
       
         if(v0->HasTrack(track) == -1){	  
-          fhTPCdEdx[part][0]->Fill(v0->fTrackN->P(),v0->fTPCdEdx[AliTRDv0Info::kNeg]);//TPC dE/dx for negative track
+          fhTPCdEdx[part][0]->Fill(v0->GetV0Daughter(-1)->P(),v0->GetTPCdEdx(AliTRDv0Info::kNeg));//TPC dE/dx for negative track
         } else if(v0->HasTrack(track) == 1){
-          fhTPCdEdx[part][0]->Fill(v0->fTrackP->P(),v0->fTPCdEdx[AliTRDv0Info::kPos]);//TPC dE/dx for positive track
+          fhTPCdEdx[part][0]->Fill(v0->GetV0Daughter(1)->P(),v0->GetTPCdEdx(AliTRDv0Info::kPos));//TPC dE/dx for positive track
         }
       
         //fill histograms after invariant mass cuts
-        if((v0->fInvMass[idecay] < v0->fUpInvMass[idecay][0])&&(v0->fInvMass[idecay]> v0->fDownInvMass[idecay])){
-          fhV0Chi2ndf[idecay][1]->Fill(v0->fV0Momentum,v0->fChi2ndf[idecay]);
-          fhPsiPair[idecay][1]->Fill(v0->fV0Momentum,v0->fPsiPair);
-          fhPointAngle[idecay][1]->Fill(v0->fV0Momentum,v0->fPointingAngle);
-          fhOpenAngle[idecay][1]->Fill(v0->fV0Momentum,v0->fOpenAngle);
-          fhDCA[idecay][1]->Fill(v0->fV0Momentum,v0->fDCA);
-          fhRadius[idecay][1]->Fill(v0->fV0Momentum,v0->fRadius);
+        if((v0->GetInvMass(idecay) < v0->GetUpInvMass(idecay,0))&&(v0->GetInvMass(idecay)> v0->GetDownInvMass(idecay))){
+          fhV0Chi2ndf[idecay][1]->Fill(v0->GetV0Momentum(),v0->GetChi2ndf(idecay));
+          fhPsiPair[idecay][1]->Fill(v0->GetV0Momentum(),v0->GetPsiPair());
+          fhPointAngle[idecay][1]->Fill(v0->GetV0Momentum(),v0->GetPointingAngle());
+          fhOpenAngle[idecay][1]->Fill(v0->GetV0Momentum(),v0->GetOpenAngle());
+          fhDCA[idecay][1]->Fill(v0->GetV0Momentum(),v0->GetDCA());
+          fhRadius[idecay][1]->Fill(v0->GetV0Momentum(),v0->GetRadius());
           if(v0->HasTrack(track) == -1)
-            fhTPCdEdx[part][1]->Fill(v0->fTrackN->P(),v0->fTPCdEdx[AliTRDv0Info::kNeg]);
+            fhTPCdEdx[part][1]->Fill(v0->GetV0Daughter(-1)->P(),v0->GetTPCdEdx(AliTRDv0Info::kNeg));
           else if(v0->HasTrack(track) == 1)
-            fhTPCdEdx[part][1]->Fill(v0->fTrackP->P(),v0->fTPCdEdx[AliTRDv0Info::kPos]);
+            fhTPCdEdx[part][1]->Fill(v0->GetV0Daughter(1)->P(),v0->GetTPCdEdx(AliTRDv0Info::kPos));
       
         }
 
         //fill histograms after all reference selection cuts
         if(v0->GetPID(part,track)==1){
-          fhV0Chi2ndf[idecay][2]->Fill(v0->fV0Momentum,v0->fChi2ndf[idecay]);
-          fhPsiPair[idecay][2]->Fill(v0->fV0Momentum,v0->fPsiPair);
-          fhPointAngle[idecay][2]->Fill(v0->fV0Momentum,v0->fPointingAngle);
-          fhOpenAngle[idecay][2]->Fill(v0->fV0Momentum,v0->fOpenAngle);
-          fhDCA[idecay][2]->Fill(v0->fV0Momentum,v0->fDCA);
-          fhRadius[idecay][2]->Fill(v0->fV0Momentum,v0->fRadius);
+          fhV0Chi2ndf[idecay][2]->Fill(v0->GetV0Momentum(),v0->GetChi2ndf(idecay));
+          fhPsiPair[idecay][2]->Fill(v0->GetV0Momentum(),v0->GetPsiPair());
+          fhPointAngle[idecay][2]->Fill(v0->GetV0Momentum(),v0->GetPointingAngle());
+          fhOpenAngle[idecay][2]->Fill(v0->GetV0Momentum(),v0->GetOpenAngle());
+          fhDCA[idecay][2]->Fill(v0->GetV0Momentum(),v0->GetDCA());
+          fhRadius[idecay][2]->Fill(v0->GetV0Momentum(),v0->GetRadius());
           if(v0->HasTrack(track) == -1)
-            fhTPCdEdx[part][2]->Fill(v0->fTrackN->P(),v0->fTPCdEdx[AliTRDv0Info::kNeg]);
+            fhTPCdEdx[part][2]->Fill(v0->GetV0Daughter(-1)->P(),v0->GetTPCdEdx(AliTRDv0Info::kNeg));
           else if(v0->HasTrack(track) == 1)
-            fhTPCdEdx[part][2]->Fill(v0->fTrackP->P(),v0->fTPCdEdx[AliTRDv0Info::kPos]);
+            fhTPCdEdx[part][2]->Fill(v0->GetV0Daughter(1)->P(),v0->GetTPCdEdx(AliTRDv0Info::kPos));
         }
       }
     }

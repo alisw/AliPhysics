@@ -11,7 +11,9 @@
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
 #endif
+#ifndef ALILOG_H
 #include "AliLog.h"
+#endif
 
 class TCanvas;
 class TObjArray;

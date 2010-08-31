@@ -220,7 +220,7 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
 //________________________________________________________________________
 Bool_t AliTRDpidRefMakerNN::MakeTrainingSample() 
 {
-
+  // convert AnalysisResults.root to training file
   TFile *fCalib = TFile::Open(Form("AnalysisResults.root"));
   if (!fCalib) {
     AliError("Calibration file not available");
@@ -525,7 +525,7 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
       for(Int_t iEvent = 0; iEvent < fTrain[mombin] -> GetN(); iEvent++ ){
 	fTrainData[mombin] -> GetEntry(fTrain[mombin] -> GetEntry(iEvent));
 	// use event only if it is electron or pion
-	if(!(fPID[is] == 1.0)) continue;
+	if(fPID[is] <1.e-5) continue;
 	// get the probabilities for each particle type in each chamber
 	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
 	  like[iPart][iChamb] = fNet -> Result(fTrain[mombin] -> GetEntry(iEvent), iPart);
@@ -588,7 +588,7 @@ void AliTRDpidRefMakerNN::MonitorTraining(Int_t mombin)
       for(Int_t iEvent = 0; iEvent < fTest[mombin] -> GetN(); iEvent++ ){
 	fTrainData[mombin] -> GetEntry(fTest[mombin] -> GetEntry(iEvent));
 	// use event only if it is electron or pion
-	if(!(fPID[is] == 1.0)) continue;
+	if(TMath::Abs(fPID[is]- 1.)<1.e-5) continue;
 
 	// get the probabilities for each particle type in each chamber
 	for(Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++){
