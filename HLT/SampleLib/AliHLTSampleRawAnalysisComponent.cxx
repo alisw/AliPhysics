@@ -225,7 +225,7 @@ int AliHLTSampleRawAnalysisComponent::DoEvent(const AliHLTComponentEventData& /*
        pBlock=GetNextInputBlock()) {
     // extract DDL id from specification
     int ddlnum=-1;
-    for (int pos=0; pos<8*sizeof(AliHLTUInt32_t); pos++) {
+    for (unsigned pos=0; pos<8*sizeof(AliHLTUInt32_t); pos++) {
       if (pBlock->fSpecification & (0x1<<pos)) {
 	if (ddlnum>=0) {
 	  // this is just an example, please avoid warnings in every event since those will
