@@ -2294,7 +2294,10 @@ Bool_t AliAnalysisAlien::SubmitMerging()
 //______________________________________________________________________________
 Bool_t AliAnalysisAlien::SubmitNext()
 {
-// Submit next bunch of master jobs if the queue is free.
+// Submit next bunch of master jobs if the queue is free. The first master job is
+// submitted right away, while the next will not be unless the previous was split.
+// The plugin will not submit new master jobs if there are more that 500 jobs in
+// waiting phase.
    static Bool_t iscalled = kFALSE;
    static Int_t firstmaster = 0;
    static Int_t lastmaster = 0;
@@ -2312,9 +2315,9 @@ Bool_t AliAnalysisAlien::SubmitNext()
       // If last master not split, just return
       if (status != "SPLIT") {iscalled = kFALSE; return kTRUE;}
       // No more than 100 waiting jobs
-      if (nwaiting>100) {iscalled = kFALSE; return kTRUE;}
+      if (nwaiting>500) {iscalled = kFALSE; return kTRUE;}
       npermaster = (nrunning+nwaiting+nerror+ndone)/fNsubmitted;      
-      if (npermaster) ntosubmit = (100-nwaiting)/npermaster;
+      if (npermaster) ntosubmit = (500-nwaiting)/npermaster;
       if (!ntosubmit) ntosubmit = 1;
       printf("=== WAITING(%d) RUNNING(%d) DONE(%d) OTHER(%d) NperMaster=%d => to submit %d jobs\n", 
              nwaiting, nrunning, ndone, nerror, npermaster, ntosubmit);

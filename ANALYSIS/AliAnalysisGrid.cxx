@@ -21,6 +21,7 @@
 //==============================================================================
 
 #include "TSystem.h"
+#include "TError.h"
 #include "AliAnalysisGrid.h"
 
 ClassImp(AliAnalysisGrid)
@@ -47,6 +48,8 @@ AliAnalysisGrid &AliAnalysisGrid::operator=(const AliAnalysisGrid& other)
 Bool_t AliAnalysisGrid::CreateToken(const char *username)
 {
 // Check if a valid token exists - if not create one
+   ::Warning("AliAnalysisGrid::CreateToken()", "**** !!!! Obsolete method. Please remove the line calling this in your plugin configuration !!!! ****\n");
+   return kTRUE;
    TString user = gSystem->Getenv("USER");
    if (!user.Length()) {
       printf("Error in AliAnalysisGrid::CreateToken: $USER environment empty");
