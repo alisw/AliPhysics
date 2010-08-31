@@ -562,7 +562,7 @@ void AliTRDefficiencyMC::FillStreamTrackWOMC(AliTRDtrackInfo * const trkInf){
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDefficiencyMC::IsRegistered(AliTRDtrackInfo * const trkInf, Int_t *indices, Int_t nTracks){
+Int_t AliTRDefficiencyMC::IsRegistered(const AliTRDtrackInfo * const trkInf, Int_t *indices, Int_t nTracks){
   //
   // Checks if track is registered in a given mode
   //

@@ -22,6 +22,9 @@ class AliESDEvent;
 class AliMCEvent;
 class TH1;
 class TH2;
+class TH1F;
+class TH2F;
+class TH3F;
 class TH3;
 class TObjArray;
 class TGraph;
@@ -113,7 +116,7 @@ private:
   void          Process2D(TH2 * const h, TGraphErrors **g);
   void          PrintStatus(ULong_t s);
   TH2F*         Proj3D(TH3F* hist, TH2F* accMap, Int_t binLow, Int_t binHigh, Float_t &entries);
-  TH1F*         TRDEfficiency(Short_t positives=+1);
+  TH1F*         EfficiencyTRD(Short_t positives=1);
   
   Int_t            fStatus;            // bit mask for controlling the task
   Int_t            fNRefFigures;       // number of current ref plots

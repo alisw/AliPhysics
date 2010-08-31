@@ -16,17 +16,8 @@
 #ifndef ALITRDRECOTASK_H
 #include "AliTRDrecoTask.h"
 #endif
-#ifndef ALIPID_H
-#include "AliPID.h"
-#endif
-#ifndef ALITRDCALPID_H
-#include "AliTRDCalPID.h"
-#endif
 #ifndef ALITRDPIDUTIL_H
 #include "AliTRDpidUtil.h"
-#endif
-#ifndef ALITRDGEOMETRY_H
-#include "AliTRDgeometry.h"
 #endif
 
 class TTree;

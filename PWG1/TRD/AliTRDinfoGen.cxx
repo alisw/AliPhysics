@@ -508,7 +508,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // set V0pid info
     for(Int_t iv(0); iv<fV0List->GetEntriesFast(); iv++){
       if(!(v0info = (AliTRDv0Info*)fV0List->At(iv))) continue;
-      if(!v0info->fTrackP && !v0info->fTrackN) continue;
+      if(!v0info->GetV0Daughter(1) && !v0info->GetV0Daughter(-1)) continue;
       if(!v0info->HasTrack(fTrackInfo)) continue;
       memset(v0pid, 0, AliPID::kSPECIES*sizeof(Int_t));
       fTrackInfo->SetV0();

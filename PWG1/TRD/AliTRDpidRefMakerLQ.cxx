@@ -193,6 +193,8 @@ Bool_t AliTRDpidRefMakerLQ::GetRefFigure(Int_t ifig)
 //________________________________________________________________________
 Bool_t AliTRDpidRefMakerLQ::Load(const Char_t *file, const Char_t *dir)
 {
+// Load tree with data in case of detached PostProcess processing. 
+
   if(gSystem->AccessPathName(file, kReadPermission)){
     AliError(Form("File %s not readable", file));
     return kFALSE;

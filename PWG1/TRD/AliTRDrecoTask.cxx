@@ -239,7 +239,8 @@ Bool_t AliTRDrecoTask::PostProcess()
 }
 
 //_______________________________________________________
-void AliTRDrecoTask::MakeSummary(){
+void AliTRDrecoTask::MakeSummary()
+{
 // To be implemented by particular tasks
   AliWarning("Summary not available");
 }

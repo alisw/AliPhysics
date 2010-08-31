@@ -55,7 +55,7 @@ private:
   void    FillStreamTrackWOMC(AliTRDtrackInfo * const trkInf);
 
   Int_t   IsFindableNot(AliTRDtrackInfo * const trkInf);
-  Int_t   IsRegistered(AliTRDtrackInfo * const trkInf, Int_t *indices, Int_t nTracks);
+  Int_t   IsRegistered(const AliTRDtrackInfo * const trkInf, Int_t *indices, Int_t nTracks);
     
   static Float_t      fgPCut;   // lower momentum cut
   static Float_t      fgPhiCut; // higher phi cut
