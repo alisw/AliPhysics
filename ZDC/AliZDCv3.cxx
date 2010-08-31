@@ -965,7 +965,7 @@ void AliZDCv3::CreateBeamLine()
   TGeoTube *tubeQA07 = new TGeoTube(0.,tubpar[0],tubpar[2]);
   TGeoScale *scaleQA07 = new TGeoScale(1., tubpar[1]/tubpar[0], 1.);
   TGeoScaledShape *sshapeQA07 = new TGeoScaledShape(tubeQA07, scaleQA07);
-  new TGeoVolume("QA07", sshapeQA07, gGeoManager->GetMedium(idtmed[7]));
+  new TGeoVolume("QA07", sshapeQA07, gGeoManager->GetMedium(idtmed[10]));
   //printf("	QA07 TUBE from z = %1.2f to z= %1.2f\n",zd2,2*tubpar[2]+zd2);
   gMC->Gspos("QA06", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY"); 
   gMC->Gspos("QA07", 1, "QA06", 0., 0., 0., 0, "ONLY");  
