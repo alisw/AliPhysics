@@ -45,8 +45,15 @@ set(CTEST_TEST_TIMEOUT 0)
 #Default drop site
 set(CTEST_DROP_METHOD "http")
 set(CTEST_DROP_SITE "alirootbuildcmake.cern.ch")
-set(CTEST_DROP_LOCATION "/~johny/submit.php?project=AliRoot")
+set(CTEST_DROP_LOCATION "/submit.php?project=AliRoot")
 set(CTEST_DROP_SITE_CDASH TRUE)
+
+#Ctest custom settings
+set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_ERRORS "1000")
+set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS "1000")
+set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE "5000")
+set(CTEST_USE_LAUNCHERS ON)
+set(BUILD_JOBS 1)
 
 set(OLDREV 0)
 set(NEWREV 0)
@@ -66,7 +73,6 @@ set(CTEST_DASHBOARD_ROOT    "$ENV{HOME}/Dashboards")
 #  set(CTEST_CHECKOUT_COMMAND "${CTEST_SVN_COMMAND} co ${ALICE_REPO} $ENV{ALICE_ROOT}")
 set(CTEST_UPDATE_COMMAND "${CTEST_SVN_COMMAND}")
 set(CTEST_CMAKE_COMMAND "\"${CMAKE_EXECUTABLE_NAME}\" -D Continuous")
-
 #CMake Generator
 set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 
@@ -80,7 +86,7 @@ while (${CTEST_ELAPSED_TIME} LESS 36000)
       
   #Build only if new revision of source is available
   while(${OLDREV} EQUAL ${NEWREV} AND ${CYCLE} GREATER 0)
-    message("Updating source")
+    message("Checking for updates...")
     message("Current revision : ${OLDREV}")
     ctest_update(BUILD "${CTEST_SOURCE_DIRECTORY}")
     execute_process(COMMAND svn info ${ALICE_ROOT} OUTPUT_VARIABLE _svn_out)
@@ -93,22 +99,46 @@ while (${CTEST_ELAPSED_TIME} LESS 36000)
     endif(${OLDREV} EQUAL ${NEWREV})
   endwhile()
   ctest_submit (PARTS Update)
+  
+  #Keeping track of builds
   set(OLDREV ${NEWREV})
   math(EXPR CYCLE "${CYCLE} + 1")
   message("Build #${CYCLE} ")
   message("Revision : ${OLDREV}")
   set (START_TIME ${CTEST_ELAPSED_TIME})    
   math(EXPR CLEAR "${CYCLE}%${CLEARCYCLE}")
-  
+
+  #Get CTest configuration
+  include("${CTEST_SOURCE_DIRECTORY}/CTestConfig.cmake")
+
+
   #Clear build directory every CLEARCYCLE build
   if(${CLEAR} EQUAL 0)
     message("Clearing build directory")
     ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
   endif(${CLEAR} EQUAL 0) 
+
   message(STATUS "Building source")
-  ctest_build(BUILD "${CTEST_BINARY_DIRECTORY}")
-  ctest_submit(PARTS Build)
+  foreach(subproject ${CTEST_PROJECT_SUBPROJECTS})
+    set_property(GLOBAL PROPERTY SubProject ${subproject})
+    set_property(GLOBAL PROPERTY Label ${subproject})
+    #Configure
+    ctest_configure(BUILD "${CTEST_BINARY_DIRECTORY}")
+    ctest_submit(PARTS Configure)
+    set(CTEST_BUILD_TARGET "${subproject}-all")
+    set(CTEST_BUILD_COMMAND "${MAKE} -i -j${BUILD_JOBS} ${CTEST_BUILD_TARGET}") 
+    ctest_build(BUILD "${CTEST_BINARY_DIRECTORY}" APPEND)
+    ctest_submit(PARTS Build)
+  endforeach(subproject)
+
+  message("Building all")
+  set_property(GLOBAL PROPERTY SubProject)
+  set_property(GLOBAL PROPERTY Label)
+  set(CTEST_BUILD_TARGET "all")
+  ctest_build(BUILD "${CTEST_BINARY_DIRECTORY}" APPEND)
+  ctest_submit(PARTS BUILD)
   #Test every other build
+
   math(EXPR TEST "${CYCLE}%${TESTCYCLE}")
   if(${TEST} EQUAL 0)
     message(STATUS "Running tests")
@@ -116,7 +146,6 @@ while (${CTEST_ELAPSED_TIME} LESS 36000)
   endif(${TEST} EQUAL 0)
   ctest_submit ()
   message("Build ${CYCLE} completed")
-  ctest_sleep(300)
 endwhile()
 
 

@@ -104,7 +104,7 @@ Function (AddLibrary LIB SRCS DHDRS)
   Endif(ARGV3)
 
   CheckViols(${LIB} "${SRCS}")
-
+  add_dependencies("${label}-all" ${LIB})
 EndFunction (AddLibrary)
 #_______________________________________________________________________________
 Function (AddHLTLibrary LIB SRCS DHDRS)
@@ -173,7 +173,7 @@ Function (AddHLTLibrary LIB SRCS DHDRS)
   Endif(ARGV3)
 
   CheckViols(${LIB} "${SRCS}")
-
+  add_dependencies("${label}-all" ${LIB})
 EndFunction (AddHLTLibrary)
 
 #_______________________________________________________________________________
@@ -218,7 +218,7 @@ Function (AddExecutable BIN SRCS LIBS)
   EndIf(ALICE_STATIC_BUILD)
 
   CheckViols(${BIN} "${SRCS}")
-
+  add_dependencies("${label}-all" ${BIN})
 EndFunction (AddExecutable)
 
 #_______________________________________________________________________________
