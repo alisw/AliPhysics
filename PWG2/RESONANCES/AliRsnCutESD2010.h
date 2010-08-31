@@ -27,7 +27,7 @@ class AliRsnCutESD2010 : public AliRsnCut
     AliRsnCutESD2010(const char *name);
     virtual ~AliRsnCutESD2010() {;};
 
-    void             Initialize();
+    void             InitializeToDefaults(Bool_t isSim = kFALSE);
     AliESDtrackCuts* GetCutsTPC() {return &fESDtrackCutsTPC;}
     AliESDtrackCuts* GetCutsITS() {return &fESDtrackCutsITS;}
     virtual Bool_t   IsSelected(TObject *obj1, TObject *obj2 = 0x0);

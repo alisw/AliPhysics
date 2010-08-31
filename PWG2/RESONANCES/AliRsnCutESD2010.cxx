@@ -120,16 +120,64 @@ AliRsnCutESD2010::AliRsnCutESD2010
 //
 // Main constructor.
 //
-
-  Initialize();
 }
 
 //_________________________________________________________________________________________________
-void AliRsnCutESD2010::Initialize()
+void AliRsnCutESD2010::InitializeToDefaults(Bool_t isSim)
 {
 //
 // Main constructor.
 //
+
+  // ----> set TPC range for PID and calibration
+  SetTPCrange(5.0, 3.0);
+  SetTPCpLimit(0.35);
+  
+  // ----> set ITS range for PID
+  SetITSband(4.0);
+  
+  // ----> set TPC calibration
+  if (isSim) SetTPCpar(2.15898 / 50.0, 1.75295E1, 3.40030E-9, 1.96178, 3.91720);
+  else       SetTPCpar(1.41543 / 50.0, 2.63394E1, 5.0411E-11, 2.12543, 4.88663);
+  
+  // ----> set standard quality cuts for TPC global tracks
+  fESDtrackCutsTPC.SetRequireTPCStandAlone(kTRUE); // require to have the projection at inner TPC wall
+  fESDtrackCutsTPC.SetMinNClustersTPC(70);
+  fESDtrackCutsTPC.SetMaxChi2PerClusterTPC(4);
+  fESDtrackCutsTPC.SetAcceptKinkDaughters(kFALSE);
+  fESDtrackCutsTPC.SetRequireTPCRefit(kTRUE);
+  fESDtrackCutsTPC.SetRequireITSRefit(kTRUE);
+  fESDtrackCutsTPC.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+  fESDtrackCutsTPC.SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9"); // DCA pt dependent: 7*(0.0050+0.0060/pt0.9)
+  fESDtrackCutsTPC.SetMaxDCAToVertexZ(1e6); // disabled
+  fESDtrackCutsTPC.SetDCAToVertex2D(kFALSE); // each DCA is checked separately
+  fESDtrackCutsTPC.SetRequireSigmaToVertex(kFALSE);
+  
+  // ----> set standard quality cuts for ITS standalone tracks
+  fESDtrackCutsITS.SetRequireITSStandAlone(kTRUE, kTRUE);
+  fESDtrackCutsITS.SetRequireITSRefit(kTRUE);
+  fESDtrackCutsITS.SetMinNClustersITS(4);
+  fESDtrackCutsITS.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+  fESDtrackCutsITS.SetMaxChi2PerClusterITS(1.);
+  fESDtrackCutsITS.SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55"); // DCA pt dependent
+  fESDtrackCutsITS.SetMaxDCAToVertexZ(1e6); // disabled
+  fESDtrackCutsITS.SetDCAToVertex2D(kFALSE); // each DCA is checked separately
+  
+  // ----> set the TOF calibration depending on type of input (sim/data)
+  SetTOFcorrectTExp(kTRUE);
+  SetTOFuseT0(kTRUE);
+  SetTOFresolution(100.0);
+  if (isSim)
+  {
+    SetTOFcalibrateESD(kFALSE);
+    SetTOFtuneMC(kTRUE);
+  }
+  else
+  {
+    //if (isPass2) SetTOFcalibrateESD(kFALSE); // potrebbe anche essere kFALSE
+    SetTOFcalibrateESD(kTRUE);
+    SetTOFtuneMC(kFALSE);
+  }
 }
 
 //_________________________________________________________________________________________________
@@ -271,12 +319,14 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
         else
         {
           okTOF = kTRUE;
+          if (!fCheckTPC) okTOF = kFALSE;
           //cout << "TOF    -- not checked due to ZERO reference time" << endl;
         }
       }
       else
       {
         okTOF = kTRUE;
+        if (!fCheckTPC) okTOF = kFALSE;
         //cout << "TOF    -- not checked because TOF pid absent" << endl;
       }
     }
