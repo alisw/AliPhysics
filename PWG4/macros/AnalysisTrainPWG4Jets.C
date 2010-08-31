@@ -484,7 +484,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskjetSpectrum = AddTaskJetSpectrum2("jets","","",kHighPtFilterMask,iPhysicsSelection);      
        if(!iAODanalysis){
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
-	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
+	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","64",64,iPhysicsSelection);      
 
 	 taskjetSpectrum = AddTaskJetSpectrum2("jetsAOD_FASTJET04","clustersAOD_ANTIKT04","",kHighPtFilterMask,iPhysicsSelection); 
 
@@ -660,9 +660,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
-      TString gcArguments = "-run-on-train -run-jet -run-omega-meson -run-neutralmeson";
-      TString kGCAnalysisCutSelectionId="9002111000";
-      gcArguments.Append(Form("-set-cut-selection  %s ",kGCAnalysisCutSelectionId.Data()));
+      TString gcArguments = "-run-on-train -run-jet -run-omega-meson -run-neutralmeson -no-aod";
+      TString kGCAnalysisCutSelectionId="900356200010031";
+      gcArguments.Append(Form(" -set-cut-selection %s ",kGCAnalysisCutSelectionId.Data()));
       if(!kIsMC)gcArguments += " -mc-off";
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
       gSystem->ChangeDirectory(cdir);
@@ -1478,7 +1478,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
      // just use run numbers, negatives will be excluded
      while(in1>>iRun){
        
-       if(iRun>0&&(nRun<kGridMaxRunsFromList)){
+       if(iRun>=0&&(nRun<kGridMaxRunsFromList)){
 	   Printf("AnalysisTrainPWG4Jets Adding run number from File %s", Form(kGridRunPattern.Data(),iRun));
 	   plugin->AddRunNumber(Form(kGridRunPattern.Data(),iRun));
 	   nRun++;
@@ -1620,47 +1620,57 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    }
 
    TString outputArchive;
-   outputArchive = Form("log_archive.zip:std*@%s",kGridOutputStorages.Data());
+   outputArchive = Form("log_archive.zip:std*@%s","disk=1");
    listaods.ReplaceAll(" ", ",");
    listhists.ReplaceAll(" ", ",");
-   if (listhists.Length()) listhists = Form("hist_archive.zip:%s@%s", listhists.Data(), kGridOutputStorages.Data());
-   if (listaods.Length())  listaods  = Form("aod_archive.zip:%s@%s", listaods.Data(), kGridOutputStorages.Data());
-
-   if (!listhists.Length() && !listaods.Length()) {
-      ::Fatal("AnalysisTrainPWG4Jets", "No task output !");
+   if (listhists.Length()){
+     outputArchive += " ";
+     outputArchive += "root_archive.zip:";
+     outputArchive += listhists;
+     if (listaods.Length()){
+       outputArchive += ",";
+       outputArchive += listaods;
+     }
+     outputArchive += Form("@%s", kGridOutputStorages.Data());
    }
-   
-   if (listaods.Length()) {
-      outputArchive += " ";
-      outputArchive += listaods;
-   }   
-   if (listhists.Length()) {
-      outputArchive += " ";
-      outputArchive += listhists;
-   }   
+   else{
+     
+     if (listaods.Length()){
+       // we have only aod'ish output
+       outputArchive += " ";
+       outputArchive += "root_archive.zip:";
+       outputArchive += listaods;
+       outputArchive += Form("@%s", kGridOutputStorages.Data());
+     }
+     else{
+       // no other outputs than std..
+      ::Fatal("AnalysisTrainPWG4Jets", "No task output !");
+     }
+   }
+
    plugin->SetDefaultOutputs(kFALSE);
    plugin->SetOutputArchive(outputArchive);
 
 
-// Optionally set a name for the generated analysis macro (default MyAnalysis.C)
+   // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro(Form("%s.C", kTrainName.Data()));
-// Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
+   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
    plugin->SetSplitMaxInputFileNumber(kGridFilesPerJob);
-// Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
-//   plugin->SetMaxInitFailed(5);
-// Optionally resubmit threshold.
-//   plugin->SetMasterResubmitThreshold(90);
-// Optionally set time to live (default 30000 sec)
+   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
+   plugin->SetMaxInitFailed(5);
+   // Optionally resubmit threshold.
+   //   plugin->SetMasterResubmitThreshold(90);
+   // Optionally set time to live (default 30000 sec)
    plugin->SetTTL(50400); // 14h...
-// Optionally set input format (default xml-single)
+   // Optionally set input format (default xml-single)
    plugin->SetInputFormat("xml-single");
-// Optionally modify the name of the generated JDL (default analysis.jdl)
+   // Optionally modify the name of the generated JDL (default analysis.jdl)
    plugin->SetJDLName(Form("%s.jdl", kTrainName.Data()));
-// Optionally modify the executable name (default analysis.sh)
+   // Optionally modify the executable name (default analysis.sh)
    plugin->SetExecutable(Form("%s.sh", kTrainName.Data()));
-// Optionally modify job price (default 1)
+   // Optionally modify job price (default 1)
    plugin->SetPrice(1);      
-// Optionally modify split mode (default 'se')    
+   // Optionally modify split mode (default 'se')    
    plugin->SetSplitMode("se");
    return plugin;
 }
