@@ -174,7 +174,7 @@ Bool_t AliRsnVAnalysisTaskME::CheckAndPrintEvents()
 // or number of events is less or equal 1
 //
 
-  AliInfo(Form("Current Entry %d", Entry()));
+  AliInfo(Form("Current Entry %d", (Int_t)Entry()));
   Int_t nEvents = fInputHandler->GetBufferSize();
   if (nEvents <= 1) return kFALSE;
   fESDEvent = dynamic_cast<AliESDEvent*>(GetEvent(0));
