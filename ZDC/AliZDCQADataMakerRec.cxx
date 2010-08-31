@@ -174,8 +174,8 @@ void AliZDCQADataMakerRec::InitRaws()
   TH1F * hZPCSpectrum = new TH1F("hZPCSpectrum","ZPC spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZNASpectrum = new TH1F("hZNASpectrum","ZNA spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZPASpectrum = new TH1F("hZPASpectrum","ZPA spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
-  TH1F * hZEM1Spectrum = new TH1F("hZEM1Spectrum","ZEM1 spectrum;Amplitude [ADC counts];Counts",100,7., 1207.);
-  TH1F * hZEM2Spectrum = new TH1F("hZEM2Spectrum","ZEM2 spectrum;Amplitude [ADC counts];Counts",100,7., 1207.);
+  TH1F * hZEM1Spectrum = new TH1F("hZEM1Spectrum","ZEM1 spectrum;Amplitude [ADC counts];Counts",100,8., 1208.);
+  TH1F * hZEM2Spectrum = new TH1F("hZEM2Spectrum","ZEM2 spectrum;Amplitude [ADC counts];Counts",100,8., 1208.);
   Add2RawsList(hZNCSpectrum, 0, expert, !image);
   Add2RawsList(hZNASpectrum, 1, expert, !image);
   Add2RawsList(hZPCSpectrum, 2, expert, !image);
@@ -183,23 +183,23 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hZEM1Spectrum, 4, !expert, image);
   Add2RawsList(hZEM2Spectrum, 5, !expert, image);
   //
-  TH2F * hZNCpmCvsPMq = new TH2F("hZNCpmCvsPMq", "ZNC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1207.,50,7., 1207.);
-  TH2F * hZPCpmCvsPMq = new TH2F("hZPCpmCvsPMq", "ZPC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1207.,50,7., 1207.);
-  TH2F * hZNApmCvsPMq = new TH2F("hZNApmCvsPMq", "ZNA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1207.,50,7., 1207.);
-  TH2F * hZPApmCvsPMq = new TH2F("hZPApmCvsPMq", "ZPA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1207.,50,7., 1207.);
+  TH2F * hZNCpmCvsPMq = new TH2F("hZNCpmCvsPMq", "ZNC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,8.,1208.,50,8., 1208.);
+  TH2F * hZPCpmCvsPMq = new TH2F("hZPCpmCvsPMq", "ZPC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,8.,1208.,50,8., 1208.);
+  TH2F * hZNApmCvsPMq = new TH2F("hZNApmCvsPMq", "ZNA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,8.,1208.,50,8., 1208.);
+  TH2F * hZPApmCvsPMq = new TH2F("hZPApmCvsPMq", "ZPA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,8.,1208.,50,8., 1208.);
   Add2RawsList(hZNCpmCvsPMq, 6, !expert, image);
   Add2RawsList(hZNApmCvsPMq, 7, !expert, image);
   Add2RawsList(hZPCpmCvsPMq, 8, !expert, image);
   Add2RawsList(hZPApmCvsPMq, 9, !expert, image);
     
-  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw ZNC PMC;Amplitude [ADC counts];Counts",100, 7., 1207.);
-  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw ZNA PMC;Amplitude [ADC counts];Counts",100, 7., 1207.);
-  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw ZPC PMC;Amplitude [ADC counts];Counts",100, 7., 1207.);
-  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw ZPA PMC;Amplitude [ADC counts];Counts",100, 7., 1207.);
-  Add2RawsList(hRawPMCZNC, 10, !expert, image);
-  Add2RawsList(hRawPMCZNA, 11, !expert, image);
-  Add2RawsList(hRawPMCZPC, 12, !expert, image);
-  Add2RawsList(hRawPMCZPA, 13, !expert, image);
+  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw ZNC PMC;Amplitude [ADC counts];Counts",100, 8., 1208.);
+  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw ZNA PMC;Amplitude [ADC counts];Counts",100, 8., 1208.);
+  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw ZPC PMC;Amplitude [ADC counts];Counts",100, 8., 1208.);
+  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw ZPA PMC;Amplitude [ADC counts];Counts",100, 8., 1208.);
+  Add2RawsList(hRawPMCZNC, 10, expert, !image);
+  Add2RawsList(hRawPMCZNA, 11, expert, !image);
+  Add2RawsList(hRawPMCZPC, 12, expert, !image);
+  Add2RawsList(hRawPMCZPA, 13, expert, !image);
   TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw sumQ ZNC;Amplitude [ADC counts];Counts",100, 0., 1200.);
   TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw sumQ ZNA;Amplitude [ADC counts];Counts",100, 0., 1200.);
   TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw sumQ ZPC;Amplitude [ADC counts];Counts",100, 0., 1200.);
@@ -209,9 +209,9 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hRawSumQZPC, 16, expert, !image);
   Add2RawsList(hRawSumQZPA, 17, expert, !image);
   
-  TH1F * hRawTDCZEM1 = new TH1F("hRawTDCZEM1", "Raw TDC ZEM1;TDC [ns]",200, -100., -50.);
+  TH1F * hRawTDCZEM1 = new TH1F("hRawTDCZEM1", "Raw TDC ZEM1;TDC [ns]",160, -100., -60.);
   Add2RawsList(hRawTDCZEM1, 18, !expert, image);
-  TH1F * hRawTDCZPC = new TH1F("hRawTDCZPC", "Raw TDC ZPC;TDC [ns]",200, -100., -50.);
+  TH1F * hRawTDCZPC = new TH1F("hRawTDCZPC", "Raw TDC ZPC;TDC [ns]",160, -100., -60.);
   Add2RawsList(hRawTDCZPC, 19, !expert, image);
 
 }
@@ -544,22 +544,22 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   	 //
   	 if(isZNCFired && indZNC==5){
   	   GetRawsData(0)->Fill(zncSignal);
-  	   GetRawsData(6)->Fill(zncSumQ, zncpmC);
+  	   GetRawsData(6)->Fill(zncpmC, zncSumQ);
   	   GetRawsData(14)->Fill(zncSumQ); 
   	 }
   	 if(isZPCFired && indZPC==5){
   	   GetRawsData(2)->Fill(zpcSignal);
-           GetRawsData(8)->Fill(zpcSumQ, zpcpmC);
+           GetRawsData(8)->Fill(zpcpmC, zpcSumQ);
            GetRawsData(16)->Fill(zpcSumQ); 
          }
          if(isZNAFired && indZNA==5){ 
           GetRawsData(1)->Fill(znaSignal);
-          GetRawsData(7)->Fill(znaSumQ, znapmC);
+          GetRawsData(7)->Fill(znapmC, znaSumQ);
           GetRawsData(15)->Fill(znaSumQ); 
          }
          if(isZPAFired && indZPA==5){ 
           GetRawsData(3)->Fill(zpaSignal);
-          GetRawsData(9)->Fill(zpaSumQ, zpapmC);
+          GetRawsData(9)->Fill(zpapmC, zpaSumQ);
           GetRawsData(17)->Fill(zpaSumQ); 
          }
 	 
