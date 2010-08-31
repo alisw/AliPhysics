@@ -222,7 +222,7 @@ void AliFMDDndeta::Init(const Char_t* filename) {
   AliFMDAnaParameters* pars =  AliFMDAnaParameters::Instance();
   //pars->Init();
   
-  TList* list = (TList*)fin->Get(Form("%s/BackgroundCorrected",pars->GetDndetaAnalysisName().Data()));
+  TList* list = (TList*)fin->Get(Form("%s/BackgroundCorrected",pars->GetDndetaAnalysisName()));
   
   if(!list) //an old file ? Perhaps...
     list = (TList*)fin->Get("BackgroundCorrected");
@@ -556,6 +556,9 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   
   //Published ALICE data
   // Plot: p7742_d1x1y1
+  
+  // INEL
+  
   TGraphAsymmErrors* p7742_d1x1y1 = 0;
   double p7742_d1x1y1_xval[] = { -1.3, -1.1, -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 
     0.5, 0.7, 0.9, 1.1, 1.3 };
@@ -576,13 +579,55 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   p7742_d1x1y1->SetMarkerStyle(21);
   p7742_d1x1y1->SetMarkerColor(kRed);
   // p7742_d1x1y1->Draw("Psame");
+  
+  
+  //NSD
+  TGraphAsymmErrors*  p7742_d2x1y1 = 0;
+ double p7742_d2x1y1_xval[] = { -1.3, -1.1, -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 
+    0.5, 0.7, 0.9, 1.1, 1.3 };
+  double p7742_d2x1y1_xerrminus[] = { 0.09999999999999987, 0.09999999999999987, 0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.10000000000000003, 0.1, 0.1, 0.09999999999999998, 
+    0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.10000000000000009, 0.10000000000000009 };
+  double p7742_d2x1y1_xerrplus[] = { 0.10000000000000009, 0.10000000000000009, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.09999999999999998, 0.1, 0.1, 0.10000000000000003, 
+    0.09999999999999998, 0.10000000000000009, 0.09999999999999998, 0.09999999999999987, 0.09999999999999987 };
+  double p7742_d2x1y1_yval[] = { 3.9, 3.89, 3.81, 3.7, 3.64, 3.59, 3.53, 3.58, 3.59, 
+    3.61, 3.74, 3.8, 3.87, 3.95 };
+  double p7742_d2x1y1_yerrminus[] = { 0.13341664064126335, 0.13152946437965907, 0.13152946437965907, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 
+    0.1216552506059644, 0.1216552506059644, 0.13152946437965907, 0.13152946437965907, 0.13341664064126335 };
+  double p7742_d2x1y1_yerrplus[] = { 0.13341664064126335, 0.13152946437965907, 0.13152946437965907, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 0.1216552506059644, 
+    0.1216552506059644, 0.1216552506059644, 0.13152946437965907, 0.13152946437965907, 0.13341664064126335 };
+  int p7742_d2x1y1_numpoints = 14;
+
+  p7742_d2x1y1 = new TGraphAsymmErrors(p7742_d2x1y1_numpoints, p7742_d2x1y1_xval, p7742_d2x1y1_yval, p7742_d2x1y1_xerrminus, p7742_d2x1y1_xerrplus, p7742_d2x1y1_yerrminus, p7742_d2x1y1_yerrplus);
+  p7742_d2x1y1->SetName("/HepData/7742/d2x1y1");
+  p7742_d2x1y1->SetTitle("/HepData/7742/d2x1y1");
+  p7742_d2x1y1->SetMarkerStyle(21);
+  p7742_d2x1y1->SetMarkerColor(kRed);
+  //p7742_d2x1y1.Draw("AP");
+
+
 
 
 
 
   //End official data
   
+  // CMS published NSD data
   
+  TGraphAsymmErrors* p7743_d8x1y1 = 0;
+  double p7743_d8x1y1_xval[] = { -2.25, -1.75, -1.25, -0.75, -0.25, 0.25, 0.75, 1.25, 1.75, 
+    2.25 };
+  double p7743_d8x1y1_xerrminus[] = { 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 };
+  double p7743_d8x1y1_xerrplus[] = { 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 };
+  double p7743_d8x1y1_yval[] = { 3.6, 3.73, 3.62, 3.54, 3.48, 3.48, 3.54, 3.62, 3.73,  3.6 };
+  double p7743_d8x1y1_yerrminus[] = { 0.13, 0.14, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.14,0.13 };
+  double p7743_d8x1y1_yerrplus[] = { 0.13, 0.14, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.14, 0.13 };
+  int p7743_d8x1y1_numpoints = 10;
+  p7743_d8x1y1 = new TGraphAsymmErrors(p7743_d8x1y1_numpoints, p7743_d8x1y1_xval, p7743_d8x1y1_yval, p7743_d8x1y1_xerrminus, p7743_d8x1y1_xerrplus, p7743_d8x1y1_yerrminus, p7743_d8x1y1_yerrplus);
+
+  p7743_d8x1y1->SetMarkerStyle(20);
+  p7743_d8x1y1->SetMarkerColor(kBlack);
+  
+  //End CMS
   
   
   TH1I* hEvents   = (TH1I*)fList->FindObject(fEvents.Data());
@@ -598,7 +643,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
     TH1D* hSPDanalysisNSD = (TH1D*)fList->FindObject(Form("dNdetaNSD_SPD_vtxbin%d_proj",nn));
     
     Float_t nEventsSPD = (Float_t)hEvents->GetBinContent(nn+1);
-    
+    if(!nEventsSPD) continue; 
     hSPDanalysis->Scale(1/nEventsSPD);
     hSPDanalysisTrVtx->Scale(1/nEventsSPD);
     hSPDanalysisNSD->Scale(1/nEventsSPD);
@@ -1080,6 +1125,8 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
       else{
 	graph->Draw("PEsame");
 	graph2->Draw("PEsame");
+	p7742_d2x1y1->Draw("PEsame");
+	p7743_d8x1y1->Draw("PEsame");
 
       }
 	
@@ -1129,8 +1176,12 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   }
     //leg->AddEntry(hPythiaMB,"Pythia MB","l");
   leg->AddEntry(hSPDcombi,"HHD SPD clusters","p");
-  leg->AddEntry(p7742_d1x1y1,"ALICE INEL published","p");
-    
+  if(what == kMult)
+    leg->AddEntry(p7742_d1x1y1,"ALICE INEL published","p");
+  if(what == kMultNSD) {
+    leg->AddEntry(p7742_d2x1y1,"ALICE NSD published","p");
+    leg->AddEntry(p7743_d8x1y1, "CMS NSD published","p");
+  }
   }
   leg->Draw();
   
@@ -1149,15 +1200,17 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
     xval=yval=0;
     
     if(hRatioMultUA5_rebin5->GetBinCenter(bb) >= 0) {
-      
-      graphinel->GetPoint(ipos,xval,yval);
+      if(what == kMultNSD)
+	graph->GetPoint(ipos,xval,yval);
+      else
+	graphinel->GetPoint(ipos,xval,yval);
       
       if(yval>0) {
 	hRatioMultUA5_rebin5->SetBinContent(bb,yval);
 	hRatioMultUA5_rebin5->SetBinError(bb,graphinel->GetErrorY(ipos));
 	if(hRatioMultUA5_rebin5->GetBinCenter(bb) < 4) {
 	  hRatioMultUA5_rebin5->SetBinContent(hRatioMultUA5_rebin5->FindBin(-1*hRatioMultUA5_rebin5->GetBinCenter(bb)),yval);
-	  hRatioMultUA5_rebin5->SetBinError(hRatioMultUA5_rebin5->FindBin(-1*hRatioMultUA5_rebin5->GetBinCenter(bb)),graphinel->GetErrorY(ipos));
+	  hRatioMultUA5_rebin5->SetBinError(hRatioMultUA5_rebin5->FindBin(-1*hRatioMultUA5_rebin5->GetBinCenter(bb)),(what == kMultNSD ? graph->GetErrorY(ipos) : graph->GetErrorY(ipos)));
 	
 	}
 	ipos++;
@@ -1186,56 +1239,9 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
       hPythiaMB->Scale(ratio);
     }
     
-    //hRatioMultPythia->Divide(hPythiaMB);
-    /*
-    for(Int_t j=1;j<=hRatioMultUA5->GetNbinsX(); j++) {
-      Float_t data = hRatioMultUA5->GetBinContent(j);
-      Float_t errordata = hRatioMultUA5->GetBinError(j);
-      Float_t ua5  = 0;
-      Float_t ua5error = 0;
-      
-      
-      if(hRatioMultUA5->GetBinCenter(j) > 0) {
-	Double_t* xv  = graphinel->GetX();
-	Double_t* yv  = graphinel->GetY();
-	Double_t* eyv = graphinel->GetEY();
-
-	for(Int_t kk =0; kk<graphinel->GetN();kk++) {
-	  if(xv[kk] < hRatioMultUA5->GetBinCenter(j) &&  xv[kk+1] > hRatioMultUA5->GetBinCenter(j)) {
-	    ua5 = yv[kk];
-	    ua5error = eyv[kk];
-	    }
-	}
-	  
-	  }
-      else {
-	Double_t* xv = graphinel2->GetX();
-	Double_t* yv = graphinel2->GetY();
-	Double_t* eyv = graphinel->GetEY();
-	
-	for(Int_t kk =0; kk<graphinel2->GetN();kk++) {
-	  if(xv[kk+1] < hRatioMultUA5->GetBinCenter(j) &&  xv[kk] > hRatioMultUA5->GetBinCenter(j)) {
-	    ua5 = yv[kk];
-	    ua5error = eyv[kk];
-	  }
-	}
-	
-      }
-      
-      Float_t ratio2 = 1;
-      if(ua5> 0) {
-	ratio2 =  data / ua5;
-	Float_t errorratio = 0;
-	if(ua5 != 0 && data !=0) 
-	  errorratio = ratio2*TMath::Sqrt(TMath::Power(ua5error/ua5,2)+TMath::Power(errordata/data,2));
-	hRatioMultUA5->SetBinContent(j,ratio2);
-	hRatioMultUA5->SetBinError(j,errorratio);
-      }
-      
-      */
     if(rebin !=5) {
-    TGraphErrors* tmp1;
-    if(what == kMultNSD)
+      TGraphErrors* tmp1;
+      if(what == kMultNSD)
       tmp1 = (TGraphErrors*)graph->Clone("UA5tmp");
     else
       tmp1 = (TGraphErrors*)graphinel->Clone("UA5tmp");
@@ -1315,14 +1321,19 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   // sumMultSystNeg->DrawCopy("sameE5");
   //hTestdNdeta->DrawCopy("same");
   //hSPDcombi->DrawCopy("same");
-  p7742_d1x1y1->Draw("PEsame");
-  
+  if(what == kMult)
+    p7742_d1x1y1->Draw("PEsame");
+  if(what == kMultNSD) {
+    p7742_d2x1y1->Draw("PEsame");
+    p7743_d8x1y1->Draw("PEsame");
+  }
+
   TLegend* leg2 = new TLegend(0.3,0.2,0.7,0.45,"");
   if(what == kMult)
     leg2->AddEntry(sumMult,"FMD INEL","p");
   else if(what == kMultTrVtx)
     leg2->AddEntry(sumMult,"FMD TrVtx","p");
-  else if(what == kMultNSD)
+  else if(what == kMultNSD) 
     leg2->AddEntry(sumMult,"FMD NSD","p");
   
   if(realdata) {
@@ -1343,8 +1354,12 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   }
     //leg2->AddEntry(hPythiaMB,"Pythia MB","l");
     //leg2->AddEntry(hSPDcombi,"HHD SPD clusters","p");
+  if(what == kMult)
     leg2->AddEntry(p7742_d1x1y1,"ALICE INEL published","p");
-    
+  if(what == kMultNSD) {
+    leg2->AddEntry(p7742_d2x1y1,"ALICE NSD published","p");
+    leg2->AddEntry(p7743_d8x1y1,"CMS NSD published","p");
+  }
   }
   leg2->Draw();
   

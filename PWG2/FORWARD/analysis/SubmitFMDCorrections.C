@@ -1,4 +1,4 @@
-void SubmitFMDCorrections(const Char_t* filename, Bool_t store, Float_t energy, Int_t trigger, Float_t mag, Int_t collsystem) {
+void SubmitFMDCorrections(const Char_t* filename, Bool_t store, Float_t energy, Int_t trigger, Float_t mag, Int_t collsystem,Bool_t inelGtZero=kFALSE) {
   
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
@@ -33,6 +33,8 @@ void SubmitFMDCorrections(const Char_t* filename, Bool_t store, Float_t energy, 
   else if(collsystem == 1)
     pars->SetCollisionSystem(AliFMDAnaParameters::kPbPb);
   
+  
+  pars->SetInelGtZero(inelGtZero);
   pars->PrintStatus();
   
   std::cout<<"creating background object"<<std::endl;

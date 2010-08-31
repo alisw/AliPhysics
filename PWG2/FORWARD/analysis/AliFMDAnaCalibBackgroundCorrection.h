@@ -26,6 +26,9 @@ class AliFMDAnaCalibBackgroundCorrection : public TObject
   
   TH2F*   GetBgCorrection(Int_t det, Char_t ring, Int_t vtxbin);
   void    SetBgCorrection(Int_t det, Char_t ring, Int_t vtxbin, TH2F* hCorrection);
+  TH2F*   GetNSDBgCorrection(Int_t det, Char_t ring, Int_t vtxbin);
+  void    SetNSDBgCorrection(Int_t det, Char_t ring, Int_t vtxbin, TH2F* hCorrection);
+  
   TH1F*   GetDoubleHitCorrection(Int_t det, Char_t ring);
   void    SetDoubleHitCorrection(Int_t det, Char_t ring, TH1F* hCorrection);
   TH1F*   GetSPDDeadCorrection(Int_t vtxbin);
@@ -43,7 +46,8 @@ class AliFMDAnaCalibBackgroundCorrection : public TObject
   TAxis      fAxis;
   Bool_t     fIsInit;
   TList      fListOfDoubleHitCorrection;
-  ClassDef(AliFMDAnaCalibBackgroundCorrection,2);
+  TList      fListOfNSDBgMaps;
+  ClassDef(AliFMDAnaCalibBackgroundCorrection,3);
 };
 
 #endif

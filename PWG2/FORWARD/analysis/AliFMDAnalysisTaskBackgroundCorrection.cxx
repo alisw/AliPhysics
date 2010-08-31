@@ -221,8 +221,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
     
   }
   
-  AliESDInputHandler* eventHandler = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  AliESDEvent* esd = eventHandler->GetEvent();
+ 
   Bool_t nsd = pars->IsEventTriggered(AliFMDAnaParameters::kNSD);
   for(UShort_t det=1;det<=3;det++) {
     
@@ -240,7 +239,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       hHits->Add(hMultInput);
       
       TH2F* hBg        = pars->GetBackgroundCorrection(det, ringChar, vtxbin);
-      
+      TH2F* hBgNSD     = pars->GetBackgroundCorrectionNSD(det, ringChar, vtxbin);
       hMult->Add(hMultInput);
       hMultTrVtx->Add(hMultInput);
       
@@ -303,6 +302,9 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
   TH2F* hSPDMult      = (TH2F*)fOutputList->FindObject(Form("mult_SPD_vtxbin%d",vtxbin));
   TH2F* hSPDMultTrVtx = (TH2F*)fOutputList->FindObject(Form("multTrVtx_SPD_vtxbin%d",vtxbin));
   TH2F* hSPDMultNSD   = (TH2F*)fOutputList->FindObject(Form("multNSD_SPD_vtxbin%d",vtxbin));
+  
+  AliESDInputHandler* eventHandler = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  AliESDEvent* esd = eventHandler->GetEvent();
   
   const AliMultiplicity* spdmult = esd->GetMultiplicity();
   for(Int_t j = 0; j< spdmult->GetNumberOfTracklets();j++) {

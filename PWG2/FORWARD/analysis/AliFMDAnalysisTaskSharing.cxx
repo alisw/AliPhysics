@@ -30,6 +30,7 @@
 #include "AliFMDStripIndex.h"
 #include "AliESDVZERO.h"
 #include "AliESDtrack.h"
+#include "AliGenDPMjetEventHeader.h"
 
 // This is the task to do the FMD sharing or hit merging.
 // It reads the input ESDFMD data and posts an ESDFMD object to
@@ -782,32 +783,31 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   AliGenEventHeader* genHeader = header->GenEventHeader();
   
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+  AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(header->GenEventHeader());
+  
+ 
   Bool_t nsd = kTRUE;
-  if (!pythiaGenHeader) {
-    std::cout<<" no pythia header!"<<std::endl;
-    //  return; 
+  
+  
+  if (!pythiaGenHeader && !dpmHeader) {
+    std::cout<<" no pythia or dpm header!"<<std::endl;
   }
   else {
-  
-	
-  Int_t pythiaType = pythiaGenHeader->ProcessType();
-  
-  if(pythiaType==92||pythiaType==93)
-    nsd = kFALSE;
+    if(pythiaGenHeader)	{
+      Int_t pythiaType = pythiaGenHeader->ProcessType();
+      
+      if(pythiaType==92||pythiaType==93)
+	nsd = kFALSE;
+      
+    }
+    if(dpmHeader) {
+      Int_t processType = dpmHeader->ProcessType();
+      if(processType == 5 || processType == 6)  
+	nsd = kFALSE;
+    
+    }
   }
-  
-  /*if(pythiaType==92||pythiaType==93){
-      std::cout<<"single diffractive"<<std::endl;
-      return;
-     }
-  if(pythiaType==94){
-    std::cout<<"double diffractive"<<std::endl;
-    return;
-  }
-  */
-  //std::cout<<pythiaType<<std::endl;
-  
-  
+
   TArrayF vertex;
   genHeader->PrimaryVertex(vertex);
   
