@@ -13,7 +13,8 @@ SRCS=   JCORRAN/AliPhJBaseTrack.cxx \
         JCORRAN/AliPhJHeaderList.cxx \
         JCORRAN/AliJRunHeader.cxx \
 	JCORRAN/AliJCORRANSetup.cxx \
-	JCORRAN/AliJCORRANTask.cxx
+	JCORRAN/AliJCORRANTask.cxx \
+	JCORRAN/AliAnalysisTaskDiHadron.cxx
 
 HDRS:= $(SRCS:.cxx=.h) JCORRAN/JConst.h 
 
