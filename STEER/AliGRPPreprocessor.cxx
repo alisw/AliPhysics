@@ -2841,11 +2841,14 @@ AliLHCClockPhase* AliGRPPreprocessor::ProcessLHCClockPhase(TObjArray *beam1phase
     return NULL;
   }
   else{
+    TString timeCreatedStr = GetRunParameter("time_created");
+    Double_t timeCreated = timeCreatedStr.Atof();
     Double_t prevPhase = 0;
     for (Int_t i = 0; i < nCounts; i++){
       AliDCSArray *dcs = (AliDCSArray*)beam1phase->At(i);
       if (dcs){
-	if (dcs->GetTimeStamp()>=timeStart && dcs->GetTimeStamp()<=timeEnd) {
+	      //if (dcs->GetTimeStamp()>=timeStart && dcs->GetTimeStamp()<=timeEnd) {
+	      if (dcs->GetTimeStamp()>=timeCreated && dcs->GetTimeStamp()<=timeEnd) {
 	  if ((i == 0) || (i == (nCounts-1)) ||
 	      !foundBeam1Phase ||
 	      (TMath::Abs(dcs->GetDouble(0)-prevPhase) > threshold)) {
