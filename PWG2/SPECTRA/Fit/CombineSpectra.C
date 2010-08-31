@@ -158,6 +158,8 @@ Int_t fitFuncID = kFitLevi;
 Bool_t showMC=kTRUE;
 Bool_t showE735=kTRUE;
 Bool_t useSecCorrFromDCA=kFALSE;
+const char * printFormats = "eps"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
+
 
 void CombineSpectra(Int_t analysisType=kDoHelp, Int_t  locfitFuncID = kFitLevi) {  //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
 
@@ -251,7 +253,8 @@ void FitCombined() {
     hemptyR->SetYTitle("Data/Fit");
     hemptyR->Draw();
 
-    TLegend * l = new TLegend(0.516779, 0.7, 0.89094 ,0.916084, chargeLabel[icharge]);
+    
+    TLegend * l = new TLegend(0.176724, 0.153274, 0.475575, 0.434524,chargeLabel[icharge]);
     l->SetFillColor(kWhite);
     l->SetTextSize(0.035);
     TPaveText* tf=new TPaveText(0.18,0.14,0.56,0.29,"NDC");
@@ -280,6 +283,8 @@ void FitCombined() {
       }      
       else if(fitFuncID == kFitUA1)      func = fm->GetUA1(mass[ipart],0.2,1.25,1.25,0.2,1.5);
       else if(fitFuncID == kFitPowerLaw) {
+	// fitmin=0;
+	// fitmax=1;
 	if (ipart == kPion)
 	  func = fm->GetPowerLaw(1.0, 8.6, 7);
 	if (ipart == kKaon)
@@ -302,16 +307,19 @@ void FitCombined() {
       }
 
       // Temp: fit histo with sist errors 
-      TH1F * hsyst = new TH1F(*htemplate);
+      TH1F * hsyst     = new TH1F(*htemplate);
+      TH1F * hsyststat = 0;
       hsyst->SetFillColor(kYellow);
       AliBWTools::GetValueAndError(hsyst,hSpectra[iCombInStudy][ipart][icharge],hSystError[iCombInStudy][ipart][icharge],kTRUE);
+      hsyststat= new TH1F(*hsyst);
+      AliBWTools::GetHistoCombinedErrors(hsyststat,hSpectra[iCombInStudy][ipart][icharge]); // combine syst and stat
+      hsyststat->SetFillColor(kYellow);
 
       TH1F * hToFit = 0;
       if (whatToFit == kStatErrors) hToFit = hSpectra[iCombInStudy][ipart][icharge]; // Shorthand
       if (sumCharge) hToFit->Add(hSpectra[iCombInStudy][ipart][1]);
       if (whatToFit == kStatSystErrors) {
-	AliBWTools::GetHistoCombinedErrors(hsyst,hSpectra[iCombInStudy][ipart][icharge]); // combine syst and stat
-	hToFit = hsyst;// Shorthand
+	hToFit = hsyststat;// Shorthand
       }
       if (whatToFit == kSystErrors) hToFit = hsyst;
       
@@ -321,8 +329,12 @@ void FitCombined() {
 	return;      
       }
       cout << "DRAWING" << endl;
-      c2->cd();
-      //      hsyst->Draw("same,e2");    
+      c2->cd();      
+      hsyststat->Draw("same,e2");    
+      // TH1F * hsyststat2 = new TH1F(*hsyststat);
+      //      hsyststat2->SetFillColor(kWhite);
+      //      hsyststat2->SetLineColor(kBlack);
+      //      hsyststat2->Draw("same,e2");    
       hToFit->Draw("same");    
       TF1* fitfunc=(TF1*)hToFit->GetListOfFunctions()->At(0);
       fitfunc->Draw("same");
@@ -409,9 +421,9 @@ void FitCombined() {
       c2->cd();
       c2->Update();
       gSystem->ProcessEvents();
-      tf->Draw();
+      //      tf->Draw();
       c2->Print(TString(c2->GetName()) + ".eps");
-      ALICEWorkInProgress(c2,"","#splitline{ALICE Preliminary}{Statistical Error Only}");
+      //      ALICEWorkInProgress(c2,"","#splitline{ALICE Preliminary}{Statistical Error Only}");
       c2->Update();
       c2->Print(TString(c2->GetName()) + ".png");
       c2r->Update();
@@ -659,15 +671,20 @@ void LoadSpectra() {
   // Kinks
   //  f = new TFile ("./Files/PtAllKaonKinkRap6Apr24.root");
   //  f = new TFile ("./Files/PtKaonKinkJune13AllPN_20100615.root");
-  f = new TFile ("./Files/KaonKinkJun16PhySel2N.root");
+  //  f = new TFile ("./Files/KaonKinkJun16PhySel2N.root");
+  f = new TFile ("./Files/KaonKinkJun16PhySel2NRebPass6.root");
   hSpectra[kKinks][kKaon][kPos] = (TH1F*)gDirectory->Get("fptallKPA");
   hSpectra[kKinks][kKaon][kNeg] = (TH1F*)gDirectory->Get("fptallKNA");
   // hSpectra[kKinks][kKaon][kPos]->Scale(0.5/0.7); // different rapidity range for kinks
   // hSpectra[kKinks][kKaon][kNeg]->Scale(0.5/0.7); // different rapidity range for kinks
   // hSpectra[kKinks][kKaon][kPos]->Scale(276004./263345.); // different N of events
   // hSpectra[kKinks][kKaon][kNeg]->Scale(276004./263345.); // different N of events
-  hSpectra[kKinks][kKaon][kPos]->Scale(1./303214); // different N of events
-  hSpectra[kKinks][kKaon][kNeg]->Scale(1./303214); // different N of events
+  // This normalization if for KaonKinkJun16PhySel2N
+  // hSpectra[kKinks][kKaon][kPos]->Scale(1./303214); // different N of events
+  // hSpectra[kKinks][kKaon][kNeg]->Scale(1./303214); // different N of events
+  // This normalization is for KaonKinkJun16PhySel2NRebPass6
+  hSpectra[kKinks][kKaon][kPos]->Scale(1./260432.26); // different N of events
+  hSpectra[kKinks][kKaon][kNeg]->Scale(1./260432.26); // different N of events
 
   // Apply correction factors
   // Secondaries for protons
@@ -1125,7 +1142,7 @@ void DrawWithModels() {
 	c1->Update();
 	gSystem->ProcessEvents();
 	c1->Print(TString(c1->GetName())+".eps");
-	ALICEWorkInProgress(c1,"","#splitline{ALICE Preliminary}{Statistical Error Only}");
+	//	ALICEWorkInProgress(c1,"","#splitline{ALICE Preliminary}{Statistical Error Only}");
 	c1->Print(TString(c1->GetName())+".png");
 	
       }
@@ -1138,6 +1155,7 @@ void DrawWithModels() {
 
 void DrawAllAndKaons() {
 
+  
 
   //  gROOT->LoadMacro("ALICEWorkInProgress.C");
 
@@ -1163,13 +1181,15 @@ void DrawAllAndKaons() {
   c1->SetLogy();
   TH2F * hempty = new TH2F("hempty_allkaons","hempty",100,0.,3, 100, 1e-3,6);
   hempty->SetXTitle("p_{t} (GeV/c)");
-  hempty->SetYTitle("dN / dp_{t} (A.U.)");
+  //  hempty->SetYTitle("dN / dp_{t} (A.U.)");
+  hempty->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1}");
   hempty->Draw();
   hK0Scaled->Draw("same");
   hKaonsAllTPCTOF->Draw("same");
   hKinksAll->Draw("same");
+  
 
-  TLegend * leg = new TLegend(0.2013423,0.2255245,0.5503356,0.4335664,NULL,"brNDC");
+  TLegend * leg = new TLegend(0.456897, 0.71875, 0.892241, 0.936012,NULL,"brNDC");
   //    leg->SetBorderSize(0);
 //    leg->SetLineColor(1);
 //    leg->SetLineStyle(1);
@@ -1181,7 +1201,7 @@ void DrawAllAndKaons() {
    entry=leg->AddEntry(hKinksAll,"K^{+} + K ^{-}, Kinks","lpf");
    leg->Draw();
 
-   ALICEWorkInProgress(c1,today.Data(),"#splitline{ALICE Prelimiary}{Statistical Error Only}");
+   //   ALICEWorkInProgress(c1,today.Data(),"#splitline{ALICE Prelimiary}{Statistical Error Only}");
    // TLatex * tex = new TLatex(0.2120805,0.01288336,"Statistical error only");
    // tex->SetTextColor(2);
    // tex->SetTextFont(42);
@@ -1189,7 +1209,7 @@ void DrawAllAndKaons() {
    // tex->Draw();
 
    c1->Update();
-   if(doPrint) c1->Print(TString(c1->GetName())+".png");
+   PrintCanvas(c1, printFormats);
 
   // Draw all "stable" hadrons
   for(Int_t icharge = 0; icharge < kNCharge; icharge++){
@@ -1202,7 +1222,7 @@ void DrawAllAndKaons() {
     hempty->GetYaxis()->SetTitleOffset(1.35);
     hempty->GetXaxis()->SetTitleOffset(1.1);
     hempty->Draw();
-    leg = new TLegend(  0.645973,  0.2,  0.892617,0.636364, NULL,"brNDC");
+    leg = new TLegend(0.602011, 0.489583, 0.896552, 0.925595, NULL,"brNDC");
     leg->SetFillColor(0);
     for(Int_t ipart = 0; ipart < kNPart; ipart++) {
       for(Int_t idet = 0; idet <= kITSTPC; idet++){
@@ -1215,9 +1235,8 @@ void DrawAllAndKaons() {
       //      leg->AddLine();
     }    
     leg->Draw();
-    ALICEWorkInProgress(c1,today.Data(),"#splitline{ALICE Preliminary}{Statistical Error Only}");
-    c1->Update();
-    if(doPrint) c1->Print(TString(c1->GetName())+".png");
+    //    ALICEWorkInProgress(c1,today.Data(),"#splitline{ALICE Preliminary}{Statistical Error Only}");
+    PrintCanvas(c1,printFormats);
   }
  
 
@@ -1308,7 +1327,7 @@ void DrawAllAndKaons() {
       hRatioITSTPC[ipart][icharge]->Fit("pol0","","same");
        
     }
-    if(doPrint) c1->Print(TString(c1->GetName())+".png");
+    PrintCanvas(c1,printFormats);
   }
 
   // TOF/TPC
@@ -1360,7 +1379,7 @@ void DrawAllAndKaons() {
       hRatioTOFTPC[ipart][icharge]->Draw("");
       hRatioTOFTPC[ipart][icharge]->Fit("pol0","","same");
     }
-    if(doPrint) c1t->Print(TString(c1t->GetName())+".png");
+    PrintCanvas(c1t,printFormats);
   }
 
 }
@@ -1745,11 +1764,27 @@ void DrawWithSyst() {
 	hsyst->SetFillColor(kYellow);
 	hsyst->Draw("e5,same");
 	hSpectra[idet][ipart][icharge]->Draw("same");
-	hSystError[idet][ipart][icharge]->Draw("lhist,same");
+	// Do not draw syst error outside of spectra range
+	Float_t lowEdge = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[idet][ipart][icharge]);
+	Float_t hiEdge  = AliBWTools::GetHighestNotEmptyBinEdge(hSpectra[idet][ipart][icharge]);
+	Int_t lowBin = hSystError[idet][ipart][icharge]->FindBin(lowEdge);
+	Int_t hiBin = hSystError[idet][ipart][icharge]->FindBin(hiEdge);
+	Int_t nbin = 	hSystError[idet][ipart][icharge]->GetNbinsX();
+	for(Int_t ibin = 1; ibin <= lowBin; ibin++){
+	  hSystError[idet][ipart][icharge]->SetBinContent(ibin,0);	  
+	  hSystError[idet][ipart][icharge]->SetBinError(ibin,0);	  
+	}
+	for(Int_t ibin = hiBin; ibin <= nbin; ibin++){
+	  hSystError[idet][ipart][icharge]->SetBinContent(ibin,0);	  
+	  hSystError[idet][ipart][icharge]->SetBinError(ibin,0);	  
+	}
+	// Draw relative syst error, convert to graph to avoid vertical bars at the edges (empty bins in histo)
+	AliBWTools::GetGraphFromHisto(hSystError[idet][ipart][icharge])->Draw("LX");
+
 				     
 
       }
-      PrintCanvas(c,"png");
+      PrintCanvas(c,"png,eps");
     }
   }
 }
@@ -1779,6 +1814,7 @@ void Help() {
 void PrintCanvas(TCanvas* c,const TString formats) {
   // print a canvas in every of the given comma-separated formats
   // ensure the canvas is updated
+  if(!doPrint) return;
   c->Update();
   gSystem->ProcessEvents();
   TObjArray * arr = formats.Tokenize(",");
@@ -1792,6 +1828,7 @@ void PrintCanvas(TCanvas* c,const TString formats) {
     c->Print(name+ "."+element->GetString());
   }
 }
+
 
 void LoadLibs(){
 
@@ -1807,3 +1844,4 @@ void LoadLibs(){
   gSystem->Load("libPWG2spectra.so");
 
 }
+
