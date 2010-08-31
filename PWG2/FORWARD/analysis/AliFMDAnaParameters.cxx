@@ -39,6 +39,7 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 
+
 //====================================================================
 ClassImp(AliFMDAnaParameters)
 #if 0
@@ -95,17 +96,18 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fTriggerInel(kFALSE),
   fTriggerNSD(kFALSE),
   fTriggerEmpty(kFALSE),
-  fUseBuiltInNSD(kFALSE)
+  fUseBuiltInNSD(kFALSE),
+  fInelGtZero(kFALSE)
 {
   // Default constructor 
-  fPhysicsSelection = new AliPhysicsSelection;
-  fPhysicsSelection->SetAnalyzeMC(kTRUE); //For the background correction. This is reset in Init if relevant
+  //  fPhysicsSelection = new AliPhysicsSelection;
+  //  fPhysicsSelection->SetAnalyzeMC(kTRUE); //For the background correction. This is reset in Init if relevant
   // fPhysicsSelection->SetUseBXNumbers(kFALSE);
   
   
-  AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
-  backgroundSelection->Init();
-  fPhysicsSelection->AddBackgroundIdentification(backgroundSelection);
+  //  AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
+  //  backgroundSelection->Init();
+  //  fPhysicsSelection->AddBackgroundIdentification(backgroundSelection);
   //fPhysicsSelection->Initialize(104792);
   // Do not use this - it is only for IO 
   fgInstance = this;
@@ -124,7 +126,7 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
 		fTrigger,
 		fMagField,
 		fSpecies,
-		0,
+		fInelGtZero,
 		0);
   if(species == fgkEnergyDistributionID)
     path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
@@ -144,7 +146,7 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
 		fTrigger,
 		fMagField,
 		fSpecies,
-		0,
+		fInelGtZero,
 		0);
   if(species == fgkSharingEffID)
     path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
@@ -163,7 +165,16 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
 void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
 {
   // Initialize the parameters manager.  We need to get stuff from files here.
-   
+  
+  /*  AliPhysicsSelection* test = (AliPhysicsSelection*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEventSelection();
+  
+    if(fPhysicsSelection) {
+    if(!fRealData) {
+      fPhysicsSelection->SetAnalyzeMC(kTRUE);
+    }
+    else fPhysicsSelection->SetAnalyzeMC(kFALSE);
+  }
+  */
   if (forceReInit) fIsInit = kFALSE;
   if (fIsInit) return;
   if (what & kBackgroundCorrection)       InitBackground();
@@ -176,11 +187,7 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
   if(fBackground)
     FindEtaLimits();
   
-  if(!fRealData) {
-    fPhysicsSelection->SetAnalyzeMC(kTRUE);
-  }
-  else fPhysicsSelection->SetAnalyzeMC(kFALSE);
-  
+ 
     
 }
 //____________________________________________________________________
@@ -323,13 +330,17 @@ void AliFMDAnaParameters::PrintStatus() const
   default:
     datastring.Form("Unknown"); break ;
   }
-    
-  std::cout<<"Energy      = "<<energystring.Data()<<std::endl;
-  std::cout<<"Trigger     = "<<triggerstring.Data()<<std::endl;
-  std::cout<<"Mag Field   = "<<magstring.Data()<<std::endl;
-  std::cout<<"Coll System = "<<collsystemstring.Data()<<std::endl;
-  std::cout<<"Data origin = "<<datastring.Data()<<std::endl;
   
+  TString InelString;
+  if(fInelGtZero) InelString = "INEL > 0";
+  else InelString = "INEL";
+  
+  std::cout<<"Energy       = "<<energystring.Data()<<std::endl;
+  std::cout<<"Trigger      = "<<triggerstring.Data()<<std::endl;
+  std::cout<<"Mag Field    = "<<magstring.Data()<<std::endl;
+  std::cout<<"Coll System  = "<<collsystemstring.Data()<<std::endl;
+  std::cout<<"Data origin  = "<<datastring.Data()<<std::endl;
+  std::cout<<"Basic trigger: "<<InelString.Data()<<std::endl;
   
   
 }
@@ -516,6 +527,28 @@ TH2F* AliFMDAnaParameters::GetBackgroundCorrection(Int_t det,
   return fBackground->GetBgCorrection(det,ring,vtxbin);
 }
 //____________________________________________________________________
+TH2F* AliFMDAnaParameters::GetBackgroundCorrectionNSD(Int_t det, 
+						      Char_t ring, 
+						      Int_t vtxbin) {
+  //Get background correction histogram for NSD event class
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  if(vtxbin > fBackground->GetNvtxBins()) {
+    AliWarning(Form("No background object for vertex bin %d", vtxbin));
+    return 0;
+  } 
+  
+  if(fBackground->GetNSDBgCorrection(det,ring,vtxbin))
+    return fBackground->GetNSDBgCorrection(det,ring,vtxbin);
+  else 
+    AliWarning("No NSD background map. You get usual one. Difference is probablyu negligible");
+  
+  return fBackground->GetBgCorrection(det,ring,vtxbin); 
+}
+//____________________________________________________________________
 
 TH1F* AliFMDAnaParameters::GetDoubleHitCorrection(Int_t det, 
 						  Char_t ring) {
@@ -564,7 +597,7 @@ TH2F* AliFMDAnaParameters::GetEventSelectionEfficiency(Char_t* trig, Int_t vtxbi
   //Get event selection efficiency object
   
   TString test = trig;
-  if(!test.Contains("NSD") && test.Contains("INEL")) {
+  if(!test.Contains("NSD") && !test.Contains("INEL")) {
     AliWarning("Event selection efficiency only available for INEL and NSD");
     return 0;
   }
@@ -732,34 +765,53 @@ void AliFMDAnaParameters::SetTriggerStatus(const AliESDEvent *esd) {
 
   //ULong64_t triggerMask = esd->GetTriggerMask();
   
+  AliPhysicsSelection* centralPhysicsSelection = (AliPhysicsSelection*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEventSelection();
+  
+  if(!centralPhysicsSelection && !fPhysicsSelection) {
+    
+    std::cout<<"Creating AliPhysicsSelection object due to absence of central object"<<std::endl;
+    fPhysicsSelection = new AliPhysicsSelection;
+    fPhysicsSelection->SetAnalyzeMC(!fRealData);
+    // fPhysicsSelection->SetUseBXNumbers(kFALSE);
+    
+    
+    AliBackgroundSelection* backgroundSelection = new AliBackgroundSelection("bg","bg");
+    backgroundSelection->Init();
+    fPhysicsSelection->AddBackgroundIdentification(backgroundSelection);
+    
+  }
+  
   TString triggers = esd->GetFiredTriggerClasses();
   
-  //if(triggers.Contains("CINT1B-ABCE-NOPF-ALL") || triggers.Contains("CINT1B-E-NOPF-ALL")) return kTRUE;
-  //else return kFALSE;
-  //if(triggers.Contains("CINT1B-E-NOPF-ALL"))    return kFALSE;
-  
-  // if(triggers.Contains("CINT1A-ABCE-NOPF-ALL")) return kFALSE;
-  // if(triggers.Contains("CINT1C-ABCE-NOPF-ALL")) return kFALSE;
-  
-  // definitions from p-p.cfg
-  //ULong64_t spdFO = (1 << 14);
-  // ULong64_t v0left = (1 << 11);
-  // ULong64_t v0right = (1 << 12);
-  
   AliTriggerAnalysis tAna;
-    
-  //REMOVE WHEN FINISHED PLAYING WITH TRIGGERS!
-  //fPhysicsSelection->IsCollisionCandidate(esd);
-  
-  //if(!fRealData) {
-  //  fPhysicsSelection->SetAnalyzeMC(kTRUE);
-  // }
   
   fTriggerInel  = kFALSE;
   fTriggerNSD   = kFALSE;
   fTriggerEmpty = kFALSE;
   
-  if(fPhysicsSelection->IsCollisionCandidate(esd)) {
+  UInt_t inel = kFALSE;
+  
+  if(centralPhysicsSelection) {
+    inel= ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  }
+  else
+    inel = fPhysicsSelection->IsCollisionCandidate(esd);
+  
+  
+  
+  if(fInelGtZero && inel) {
+    const AliMultiplicity* spdmult = esd->GetMultiplicity();
+    Int_t nCentralTracklets = 0;
+    Int_t j = 0;
+    while( nCentralTracklets < 1 && j< spdmult->GetNumberOfTracklets() ) {
+      if(TMath::Abs(spdmult->GetEta(j)) < 1) nCentralTracklets++;
+      j++;
+    }
+    if(nCentralTracklets < 1) inel = kFALSE;      
+  }
+  
+  //std::cout<<fTriggerInel<<std::endl;
+  if(inel) {
     fTriggerInel = kTRUE;
   }
   

@@ -45,6 +45,8 @@
 #include <TString.h>
 //#include "AliPWG0Helper.h"
 #include "AliESDEvent.h"
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 //class AliESDEvent;
 
 /**
@@ -96,6 +98,7 @@ public:
   static const char* GetEventSelectionEffID()      { return fgkEventSelectionEffID;}
   static const char* GetSharingEffID()      { return fgkSharingEffID;}
   TH2F* GetBackgroundCorrection(Int_t det, Char_t ring, Int_t vtxbin);
+  TH2F* GetBackgroundCorrectionNSD(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetDoubleHitCorrection(Int_t det, Char_t ring);
   TH1F* GetSPDDeadCorrection(Int_t vtxbin);
   
@@ -113,6 +116,7 @@ public:
   void     SetEnergyPath(const Char_t* epath) {fEnergyPath = epath;}
   void     SetEventSelectionPath(const Char_t* evpath) {fEventSelectionEffPath = evpath;}
   void     SetSharingEfficiencyPath(const Char_t* sharpath) {fSharingEffPath = sharpath;}
+  void     SetInelGtZero(Bool_t InelGtZero) {fInelGtZero = InelGtZero;}
   void     SetProcessPrimary(Bool_t prim=kTRUE) {fProcessPrimary = prim;}
   void     SetProcessHits(Bool_t hits=kTRUE) {fProcessHits = hits;}
   Bool_t   GetProcessPrimary() const {return fProcessPrimary;} 
@@ -131,11 +135,11 @@ public:
   Species  GetCollisionSystem() const {return fSpecies;}
   void     PrintStatus() const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
-  TString  GetDndetaAnalysisName() const {return "PWG2forwardDnDeta";}
+  const Char_t*  GetDndetaAnalysisName() const {return "PWG2forwardDnDeta";}
   TH1F*    GetEnergyDistribution(Int_t det, Char_t ring, Float_t eta);
   TH1F*    GetEmptyEnergyDistribution(Int_t det, Char_t ring);
   TH1F*    GetRingEnergyDistribution(Int_t det, Char_t ring);
-  AliPhysicsSelection* GetPhysicsSelection() const {return fPhysicsSelection;}
+  AliPhysicsSelection* GetPhysicsSelection() const { return fPhysicsSelection ? fPhysicsSelection : (AliPhysicsSelection*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetEventSelection();  /*return fPhysicsSelection;*/ }
   Bool_t   IsRealData() const {return fRealData; }
   void     SetRealData(Bool_t realdata) {fRealData = realdata;}
   Float_t  GetLowSPDLimit() const {return fSPDlowLimit;}
@@ -184,7 +188,9 @@ protected:
       fEtaHighBinLimits(o.fEtaHighBinLimits),
       fTriggerInel(o.fTriggerInel),
       fTriggerNSD(o.fTriggerNSD),
-      fTriggerEmpty(o.fTriggerEmpty)
+      fTriggerEmpty(o.fTriggerEmpty),
+      fUseBuiltInNSD(o.fUseBuiltInNSD),
+      fInelGtZero(o.fInelGtZero)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -245,7 +251,7 @@ protected:
   Bool_t   fTriggerNSD;               //If the NSD trigger fired
   Bool_t   fTriggerEmpty;             //Event should be empty (empty bunches)
   Bool_t   fUseBuiltInNSD;            //Should we use the internal NSD trigger by A. Hansen
-  
+  Bool_t   fInelGtZero;               //Should INEL be INEL>0
   ClassDef(AliFMDAnaParameters,1) // Manager of parameters
 };
 

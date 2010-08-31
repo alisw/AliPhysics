@@ -33,7 +33,7 @@ AliFMDAnalysisTaskSE* AddTaskFMD() {
   pars->Init();
   
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  outputfile += Form(":%s",pars->GetDndetaAnalysisName().Data());
+  outputfile += Form(":%s",pars->GetDndetaAnalysisName());
 
   AliAnalysisDataContainer *cout_fmd = mgr->CreateContainer("BackgroundCorrected", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);                             
   mgr->ConnectInput(taskfmd, 0, mgr->GetCommonInputContainer());

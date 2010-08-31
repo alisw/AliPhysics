@@ -28,7 +28,7 @@
 //#include "TParticlePDG.h"
 #include "AliFMDStripIndex.h"
 #include "AliESDInputHandler.h"
-
+#include "AliGenDPMjetEventHeader.h"
 ClassImp(AliFMDAnalysisTaskDndeta)
 
 
@@ -376,17 +376,28 @@ void AliFMDAnalysisTaskDndeta::ProcessPrimary() {
   AliGenEventHeader* genHeader = header->GenEventHeader();
   
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+  AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(header->GenEventHeader());
   Bool_t nsd = kTRUE;
-  if (!pythiaGenHeader) {
-    std::cout<<" no pythia header!"<<std::endl;
-    //  return; 
+  
+  if (!pythiaGenHeader && !dpmHeader) {
+    std::cout<<" no pythia or dpm header!"<<std::endl;
   }
   else {
-    Int_t pythiaType = pythiaGenHeader->ProcessType();
+    if(pythiaGenHeader)	{
+      Int_t pythiaType = pythiaGenHeader->ProcessType();
+      
+      if(pythiaType==92||pythiaType==93)
+	nsd = kFALSE;
+      
+    }
+    if(dpmHeader) {
+      Int_t processType = dpmHeader->ProcessType();
+      if(processType == 5 || processType == 6)  
+	nsd = kFALSE;
     
-    if(pythiaType==92||pythiaType==93)
-      nsd = kFALSE;
+    }
   }
+  
   TArrayF vertex;
   genHeader->PrimaryVertex(vertex);
   if(TMath::Abs(vertex.At(2)) > pars->GetVtxCutZ())
