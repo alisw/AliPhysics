@@ -917,7 +917,7 @@ void AliStack::ConnectTree(TTree* tree)
   TBranch *branch=fTreeK->GetBranch("Particles");
   if(branch == 0x0)
    {
-    branch = fTreeK->Branch("Particles", "TParticle", &fParticleBuffer, 4000);
+    branch = fTreeK->Branch("Particles", &fParticleBuffer, 4000);
     AliDebug(2, "Creating Branch in Tree");
    }  
   else

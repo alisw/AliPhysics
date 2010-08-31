@@ -1189,7 +1189,7 @@ void AliMC::MakeTmpTrackRefsTree()
     fTmpFileTR = new TFile("TrackRefsTmp.root", "recreate");
     fTmpTreeTR = new TTree("TreeTR", "Track References");
     TClonesArray* pRef = &fTmpTrackReferences;
-    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &pRef, 4000);
+    fTmpTreeTR->Branch("TrackReferences", &pRef, 4000);
 }
 
 //_______________________________________________________________________
@@ -1210,7 +1210,6 @@ void AliMC::ReorderAndExpandTreeTR()
 	TBranch *branch;
 	TClonesArray* pRef = &fTrackReferences;
 	branch = treeTR->Branch("TrackReferences", &pRef);
-	branch->SetAddress(&pRef);
     }
 
     AliStack* stack  = rl->Stack();
