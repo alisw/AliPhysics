@@ -36,10 +36,10 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC()
   
   AliESDtrackCuts *trackCutsITS = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts with ITSrefit");
   //Standard Cuts
-  trackCuts=trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
-  trackCuts->SetEtaRange(-0.9,0.9);
-  trackCuts->SetPtRange(0.15, 1e10);
-  trackCuts->SetRequireITSRefit(kTRUE);
+  trackCutsITS=trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
+  trackCutsITS->SetEtaRange(-0.9,0.9);
+  trackCutsITS->SetPtRange(0.15, 1e10);
+  trackCutsITS->SetRequireITSRefit(kTRUE);
 
   //Create the task
   AliPWG4HighPtQAMC *taskPWG4QAMC = new AliPWG4HighPtQAMC("AliPWG4HighPtQAMC");
