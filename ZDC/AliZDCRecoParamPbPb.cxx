@@ -138,7 +138,7 @@ AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetHighFluxParam(Float_t beamEnergy)
   TFile *fileGlauberMC =  TFile::Open("$ALICE_ROOT/ZDC/GlauberMCDist.root");
   if(!fileGlauberMC) printf(" AliZDCRecoParamPbPb::GetHighFluxParam() ERROR opening file $ALICE_ROOT/ZDC/SpectatorSignal.root\n");
   
-  TH1D *hNpartDist, *hbDist;
+  TH1D *hNpartDist=0x0, *hbDist=0x0;
   if(TMath::Abs(beamEnergy-5500)<100.){
     fileGlauberMC->cd("energy5500");
     fileGlauberMC->GetObject("energy5500/hNpartGlauber;1", hNpartDist);

@@ -185,6 +185,7 @@ public:
   {if(fESDZDC) fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, 
             participants, nPartA, nPartC, b, bA, bC,  recoflag);}
   void     SetZDCScaler(UInt_t *counts) {if(fESDZDC) fESDZDC->SetZDCScaler(counts);}
+  void     SetZDCTDC(Int_t *values) {if(fESDZDC) fESDZDC->SetZDCTDC(values);}
 
 
   // FMD

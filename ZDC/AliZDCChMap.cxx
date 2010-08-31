@@ -52,11 +52,16 @@ TNamed()
     fADCChannel[i] = -1;
     fDetector[i] = -1;
     fSector[i] = -1;
+    fADCSignalCode[i] = -1;
   }
   for(Int_t i=0; i<kNScChannels; i++){
     fScalerChannel[i] = -1;
     fScDetector[i] = -1;
     fScSector[i] = -1;
+    fScSignalCode[i] = -1;
+    //
+    fTDCChannel[i] = -1;
+    fTDCSignalCode[i] = -1;
   }
   
   
@@ -81,10 +86,15 @@ AliZDCChMap::AliZDCChMap(const AliZDCChMap& calibda) :
      fADCChannel[t] = calibda.GetADCChannel(t);
      fDetector[t]   = calibda.GetDetector(t);
      fSector[t]     = calibda.GetSector(t);
+     fADCSignalCode[t]  = calibda.GetADCSignalCode(t);
      if(t<kNScChannels){
        fScalerChannel[t] = calibda.GetScChannel(t);
        fScDetector[t]    = calibda.GetScDetector(t);
        fScSector[t]      = calibda.GetScSector(t);
+       fScSignalCode[t]  = calibda.GetScSignalCode(t);
+       //
+       fTDCChannel[t] = calibda.GetTDCChannel(t);
+       fTDCSignalCode[t] = calibda.GetTDCChannel(t);
      }
   }
 }
@@ -107,10 +117,15 @@ AliZDCChMap &AliZDCChMap::operator =(const AliZDCChMap& calibda)
      fADCChannel[t] = calibda.GetADCChannel(t);
      fDetector[t]   = calibda.GetDetector(t);
      fSector[t]     = calibda.GetSector(t);
+     fADCSignalCode[t]  = calibda.GetADCSignalCode(t);
      if(t<kNScChannels){
        fScalerChannel[t] = calibda.GetScChannel(t);
        fScDetector[t]    = calibda.GetScDetector(t);
        fScSector[t]      = calibda.GetScSector(t);
+       fScSignalCode[t]  = calibda.GetScSignalCode(t);
+       //
+       fTDCChannel[t] = calibda.GetTDCChannel(t);
+       fTDCSignalCode[t] = calibda.GetTDCChannel(t);
      }
   }
 
@@ -130,9 +145,13 @@ void AliZDCChMap::Reset()
   memset(fADCChannel,0,48*sizeof(Int_t));
   memset(fDetector,0,48*sizeof(Int_t));
   memset(fSector,0,48*sizeof(Int_t));
+  memset(fADCSignalCode,0,48*sizeof(Int_t));
   memset(fScalerChannel,0,32*sizeof(Int_t));
   memset(fScDetector,0,32*sizeof(Int_t));
   memset(fScSector,0,32*sizeof(Int_t));
+  memset(fScSignalCode,0,32*sizeof(Int_t));
+  memset(fTDCChannel,0,32*sizeof(Int_t));
+  memset(fTDCSignalCode,0,32*sizeof(Int_t));
 }                                                                                       
 
 
@@ -141,17 +160,24 @@ void  AliZDCChMap::Print(Option_t *) const
 {
    // Printing of calibration object
    printf("\n\n\t ******************* AliZDCChMap object *******************\n\n");
-   for(Int_t i=0; i<9; i++){
+   for(Int_t i=0; i<10; i++){
      printf("  ******** GEO %d mod. type %d #ch. %d\n",
       fModuleMap[i][0],fModuleMap[i][1],fModuleMap[i][2]);     
    } 
+   printf("\n");
    for(Int_t i=0; i<48; i++) 
-     printf(" ADC - mod. %d ch. %d -> detector %d sector %d\n",
-      fADCModule[i], fADCChannel[i],fDetector[i], fSector[i]);
-   for(Int_t i=0; i<32; i++) 
+     printf(" ADC - mod. %d ch. %d signal %d -> detector %d sector %d\n",
+      fADCModule[i], fADCChannel[i], fADCSignalCode[i], fDetector[i], fSector[i]);
+   printf("\n");
+   for(Int_t i=0; i<32; i++)
      if(fScalerChannel[i]!=-1)
-       printf(" SCALER - ch. %d -> detector %d sector %d\n",
-        fScalerChannel[i],fScDetector[i], fScSector[i]);
-   printf("\n\n\t **********************************************************\n\n");
+       printf(" SCALER - ch. %d signal %d\n",
+        fScalerChannel[i], fScSignalCode[i]);
+   printf("\n");
+   for(Int_t i=0; i<32; i++) 
+     if(fTDCChannel[i]!=-1)
+       printf(" TDC - ch. %d signal %d\n",
+        fTDCChannel[i], fTDCSignalCode[i]);
+   printf("\n\t **********************************************************\n\n");
  
 } 

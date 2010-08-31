@@ -22,7 +22,7 @@ public:
 	     Int_t trsp, Int_t trspSideA, Int_t trspSideC,
 	     Int_t npart, Int_t npartSideA, Int_t npartSideC, 
 	     Float_t b, Float_t bSideA, Float_t bSideC,
-	     UInt_t recoFlag, Bool_t scalerOn, UInt_t* scaler);
+	     UInt_t recoFlag, Bool_t scalerOn, UInt_t* scaler, Int_t *tdcData);
 
   AliZDCReco(const AliZDCReco &oldreco);
   virtual ~AliZDCReco() {}
@@ -80,6 +80,8 @@ public:
   //
   virtual Bool_t  IsScalerOn()          const {return fIsScalerOn;}
   virtual UInt_t  GetZDCScaler(Int_t k) const {return fZDCScaler[k];}
+  //
+  virtual Int_t   GetZDCTDCData(Int_t j) const {return fZDCTDCData[j];}
 
   // Print method
   virtual void Print(Option_t *) const;
@@ -119,8 +121,10 @@ private:
   UInt_t  fRecoFlag;       // Reconstruction flag
   Bool_t  fIsScalerOn;     // True if scaler has been read in the event
   UInt_t  fZDCScaler[32];  // Counts from ZDC VME scaler
+  //
+  Int_t   fZDCTDCData[32]; // TDC data
 
-  ClassDef(AliZDCReco,8)  // RecPoints for the Zero Degree Calorimeters
+  ClassDef(AliZDCReco,9)  // RecPoints for the Zero Degree Calorimeters
 };
  
 #endif

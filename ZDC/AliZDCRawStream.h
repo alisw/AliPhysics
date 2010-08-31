@@ -129,6 +129,10 @@ class AliZDCRawStream: public TObject {
     Int_t  GetScalerSignFromMap(Int_t i) const {return fScalerMap[i][2];}
     Int_t  GetScDetectorFromMap(Int_t i) const {return fScalerMap[i][3];}
     Int_t  GetScTowerFromMap(Int_t i)    const {return fScalerMap[i][4];}
+    //  TDC map
+    Int_t  GetTDCModFromMap(Int_t i)  const {return fTDCMap[i][0];}
+    Int_t  GetTDCChFromMap(Int_t i)   const {return fTDCMap[i][1];}
+    Int_t  GetTDCSignFromMap(Int_t i) const {return fTDCMap[i][2];}
     
     Bool_t IsCalibration()   const {return fIsCalib;}
     Bool_t IsDARCHeader()    const {return fIsDARCHeader;}
@@ -263,6 +267,8 @@ class AliZDCRawStream: public TObject {
     Int_t fMapADC[48][5];    // ADC map {ADC mod., ch., signal, det., sec.}
     Int_t fCurrScCh;	     // current mapped scaler ch.
     Int_t fScalerMap[32][5]; // Scaler map {Scaler mod., ch., signal, det., sec.}
+    Int_t fCurrTDCCh;	     // current mapped TDC ch.
+    Int_t fTDCMap[32][3];    // TDC map {Scaler mod., ch., signal}
     
     // Checks over raw data event quality
     Bool_t fIsADCEventGood; // true if not valid datum not corrupted

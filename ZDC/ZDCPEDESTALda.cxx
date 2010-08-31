@@ -90,6 +90,14 @@ int main(int argc, char **argv) {
   for(Int_t y=0; y<kNScChannels; y++){
     scMod[y]=scCh[y]=scSigCode[y]=scDet[y]=scSec[y]=0;
   }
+      
+  Int_t itdcCh=0;
+  Int_t tdcMod[kNScChannels], tdcCh[kNScChannels], tdcSigCode[kNScChannels];
+  Int_t tdcDet[kNScChannels], tdcSec[kNScChannels];
+  for(Int_t y=0; y<kNScChannels; y++){
+    tdcMod[y]=tdcCh[y]=tdcSigCode[y]=tdcDet[y]=tdcSec[y]=-1;
+  }
+	
 
   /* log start of process */
   printf("\n ZDC PEDESTAL program started\n");  
@@ -245,7 +253,7 @@ int main(int argc, char **argv) {
       
       if(eventT==START_OF_DATA){
 	
-	iMod=-1; ich=0; iScCh=0;
+	iMod=-1; ich=0; iScCh=0; itdcCh=0;
 	  		
 	rawStreamZDC->SetSODReading(kTRUE);
 	
@@ -278,6 +286,12 @@ int main(int argc, char **argv) {
 	        scSec[iScCh]     = rawStreamZDC->GetScTowerFromMap(iScCh);
 	        iScCh++;
 	      }
+	      else if(modType[iMod]==6 && modGeo[iMod]==4){ // ZDC TDC mapping --------------------
+	        tdcMod[itdcCh]     = rawStreamZDC->GetTDCModFromMap(itdcCh);
+	        tdcCh[itdcCh]      = rawStreamZDC->GetTDCChFromMap(itdcCh);
+	        tdcSigCode[itdcCh] = rawStreamZDC->GetTDCSignFromMap(itdcCh);
+	        itdcCh++;
+	      }
 	    }
  	  }
 	  // Writing data on output FXS file
@@ -292,6 +306,12 @@ int main(int argc, char **argv) {
 	       is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
  	     //printf("  Pedestal DA -> %d Scaler: mod %d ch %d, code %d det %d, sec %d\n",
 	     //  is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
+	  }
+	  for(Int_t is=0; is<kNScChannels; is++){
+	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\n",
+	       is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
+ 	     //if(tdcMod[is]!=-1) printf("  Mapping DA -> %d TDC: mod %d ch %d, code %d\n",
+	     //  is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
 	  }
 	  for(Int_t is=0; is<kNModules; is++){
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\n",

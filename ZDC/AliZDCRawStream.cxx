@@ -100,6 +100,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fCurrentCh(-1),
   fCabledSignal(-1),
   fCurrScCh(-1),
+  fCurrTDCCh(-1),
   fIsADCEventGood(kTRUE),
   fIsL0BitSet(kTRUE),
   fIsPileUpEvent(kFALSE),
@@ -122,7 +123,10 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   for(Int_t i=0; i<kNch; i++){
     for(Int_t j=0; j<5; j++){
       fMapADC[i][j]=-1;
-      if(i<32) fScalerMap[i][j]=-1;
+      if(i<32){
+        fScalerMap[i][j]=-1;
+        if(j<3) fTDCMap[i][j]=-1;
+      }
     }
   }
   
@@ -195,6 +199,7 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fCurrentCh(stream.fCurrentCh),
   fCabledSignal(stream.GetCabledSignal()),
   fCurrScCh(stream.fCurrScCh),
+  fCurrTDCCh(stream.fCurrTDCCh),
   fIsADCEventGood(stream.fIsADCEventGood),
   fIsL0BitSet(stream.fIsL0BitSet),
   fIsPileUpEvent(stream.fIsPileUpEvent),
@@ -385,7 +390,7 @@ Bool_t AliZDCRawStream::Next()
     //if(fEvType==7 || fEvType ==8){ //Physics or calibration event
       ReadCDHHeader();
     //}
-    fCurrentCh=0; fCurrScCh=0; fNChannelsOn=0;
+    fCurrentCh=0; fCurrScCh=0;  fCurrTDCCh=0;fNChannelsOn=0;
     // Ch. debug
     //printf("\n  AliZDCRawStream::Next() - ev. type %d",fEvType);
   }
@@ -431,7 +436,7 @@ Bool_t AliZDCRawStream::Next()
         // DARC 1st datum @ fDataOffset+1 \ ZRC 1st valid datum @ fDataOffset=0
         if((fPosition==fDataOffset+1) || (fPosition==fDataOffset)){ 
 	   printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
-	   fCurrentCh=0; fCurrScCh=0;	
+	   fCurrentCh=0; fCurrScCh=0; fCurrTDCCh=0;	
         }
 	else{
 	  printf(" ------ AliZDCRawStream -> End of ZDC StartOfData event ------\n\n");
@@ -584,11 +589,21 @@ Bool_t AliZDCRawStream::Next()
 	    else if(fCabledSignal==kZEM2 || fCabledSignal==kZEM2D) fScalerMap[fCurrScCh][4]=2;
 	  }
       	  // Ch debug.
-	  //printf("\t VME scaler mod. %d ch. %d, signal %d",fScalerMap[fCurrScCh][0],fADCChannel,fCabledSignal);
-	  //if(fCabledSignal!=0 && fCabledSignal!=1) printf("  det. %d sec. %d\n",fScalerMap[fCurrScCh][3],fScalerMap[fCurrScCh][4]);
-	  //else printf("  Signal void/not connected\n");
+	  printf("\t VME scaler mod. %d ch. %d, signal %d",fScalerMap[fCurrScCh][0],fADCChannel,fCabledSignal);
+	  if(fCabledSignal!=0 && fCabledSignal!=1) printf("  det. %d sec. %d\n",fScalerMap[fCurrScCh][3],fScalerMap[fCurrScCh][4]);
+	  else printf("  Signal void/not connected\n");
 	  
           fCurrScCh++;
+        }
+	else if(fModType==KV1290 && fADCModule==kZDCTDCGeo){  // ******** ZDC TDC **************************
+          fIsChMapping = kTRUE;
+	  fTDCMap[fCurrTDCCh][0] = fADCModule;
+	  fTDCMap[fCurrTDCCh][1] = fADCChannel;
+	  fTDCMap[fCurrTDCCh][2] = fCabledSignal;
+          
+	  fCurrTDCCh++;
+      	  
+	  printf("\tZDC TDC: mod. %d ch. %d, signal %d\n",fADCModule,fADCChannel,fCabledSignal);	  
         }
 	/*else if(fModType == kTRG){ // **** scalers from trigger card
       	  //printf("\t Trigger scaler mod. %d ch. %d, signal %d\n",fADCModule,fADCChannel,fCabledSignal);	  
@@ -793,7 +808,7 @@ Bool_t AliZDCRawStream::Next()
         //Ch. debug
         //printf("  AliZDCRawStream -> ZDC TDC: mod.%d\n",fADCModule);
       }
-      else if (fADCModule==kADDTDCGeo){ // *** ADD TDC
+      else if(fADCModule==kADDTDCGeo){ // *** ADD TDC
         fIsADDTDCHeader = kTRUE;
         //Ch. debug
         //printf("  AliZDCRawStream -> ADD TDC: mod.%d\n",fADCModule);

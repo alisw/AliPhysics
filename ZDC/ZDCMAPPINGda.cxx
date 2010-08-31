@@ -119,25 +119,32 @@ int main(int argc, char **argv) {
       if(eventT==START_OF_DATA){
 	  	
       
-      Int_t iMod=-1;
-      Int_t modGeo[kNModules], modType[kNModules],modNCh[kNModules];
-      for(Int_t kl=0; kl<kNModules; kl++){
-         modGeo[kl]=modType[kl]=modNCh[kl]=0;
-      }
-  
-      Int_t ich=0;
-      Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
-      Int_t det[2*kNChannels], sec[2*kNChannels];
-      for(Int_t y=0; y<2*kNChannels; y++){
-        adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=0;
-      }
+        Int_t iMod=-1;
+        Int_t modGeo[kNModules], modType[kNModules],modNCh[kNModules];
+        for(Int_t kl=0; kl<kNModules; kl++){
+      	   modGeo[kl]=modType[kl]=modNCh[kl]=0;
+        }
+        
+        Int_t ich=0;
+        Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
+        Int_t det[2*kNChannels], sec[2*kNChannels];
+        for(Int_t y=0; y<2*kNChannels; y++){
+          adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=-1;
+        }
       
-      Int_t iScCh=0;
-      Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
-      Int_t scDet[kNScChannels], scSec[kNScChannels];
-      for(Int_t y=0; y<kNScChannels; y++){
-        scMod[y]=scCh[y]=scSigCode[y]=scDet[y]=scSec[y]=0;
-      }
+        Int_t iScCh=0;
+        Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
+        Int_t scDet[kNScChannels], scSec[kNScChannels];
+        for(Int_t y=0; y<kNScChannels; y++){
+          scMod[y]=scCh[y]=scSigCode[y]=scDet[y]=scSec[y]=-1;
+        }
+      
+        Int_t itdcCh=0;
+        Int_t tdcMod[kNScChannels], tdcCh[kNScChannels], tdcSigCode[kNScChannels];
+        Int_t tdcDet[kNScChannels], tdcSec[kNScChannels];
+        for(Int_t y=0; y<kNScChannels; y++){
+          tdcMod[y]=tdcCh[y]=tdcSigCode[y]=tdcDet[y]=tdcSec[y]=-1;
+        }
 	
 	rawStreamZDC->SetSODReading(kTRUE);
 	
@@ -162,13 +169,19 @@ int main(int argc, char **argv) {
 	        sec[ich]     = rawStreamZDC->GetTowerFromMap(ich);
 	        ich++;
 	      }
-	      else if(modType[iMod]==2){ //VME scaler mapping --------------------
+	      else if(modType[iMod]==2){ // VME scaler mapping -------------
 	        scMod[iScCh]     = rawStreamZDC->GetScalerModFromMap(iScCh);
 	        scCh[iScCh]      = rawStreamZDC->GetScalerChFromMap(iScCh);
 	        scSigCode[iScCh] = rawStreamZDC->GetScalerSignFromMap(iScCh);
 	        scDet[iScCh]     = rawStreamZDC->GetScDetectorFromMap(iScCh);
 	        scSec[iScCh]     = rawStreamZDC->GetScTowerFromMap(iScCh);
 	        iScCh++;
+	      }
+	      else if(modType[iMod]==6 && modGeo[iMod]==4){ // ZDC TDC mapping --------------------
+	        tdcMod[itdcCh]     = rawStreamZDC->GetTDCModFromMap(itdcCh);
+	        tdcCh[itdcCh]      = rawStreamZDC->GetTDCChFromMap(itdcCh);
+	        tdcSigCode[itdcCh] = rawStreamZDC->GetTDCSignFromMap(itdcCh);
+	        itdcCh++;
 	      }
 	    }
  	  }
@@ -182,8 +195,14 @@ int main(int argc, char **argv) {
 	  for(Int_t is=0; is<kNScChannels; is++){
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\t%d\t%d\n",
 	       is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
- 	     //if(scMod[is]!=0) printf("  Mapping DA -> %d Scaler: mod %d ch %d, code %d det %d, sec %d\n",
+ 	     //if(scMod[is]!=-1) printf("  Mapping DA -> %d Scaler: mod %d ch %d, code %d det %d, sec %d\n",
 	     //  is,scMod[is],scCh[is],scSigCode[is],scDet[is],scSec[is]);
+	  }
+	  for(Int_t is=0; is<kNScChannels; is++){
+	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\t%d\n",
+	       is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
+ 	     //if(tdcMod[is]!=-1) printf("  Mapping DA -> %d TDC: mod %d ch %d, code %d\n",
+	     //  is,tdcMod[is],tdcCh[is],tdcSigCode[is]);
 	  }
 	  for(Int_t is=0; is<kNModules; is++){
 	     fprintf(mapFile4Shuttle,"\t%d\t%d\t%d\n",

@@ -75,15 +75,15 @@ private:
 	 const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	 const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	 Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	 const Int_t* const evQualityBlock, const Int_t* const triggerBlock, 
-	 const Int_t* const chBlock, UInt_t puBits) const;
+	 Int_t* tdcData, const Int_t* const evQualityBlock, 
+	 const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const;
   void   ReconstructEventPbPb(TTree *clustersTree, 
 	 const Float_t* const corrADCZN1, const Float_t* const corrADCZP1, 
 	 const Float_t* const corrADCZN2, const Float_t* const corrADCZP2,
 	 const Float_t* const corrADCZEM1, const Float_t* const corrADCZEM2,
 	 Float_t* sPMRef1, Float_t* sPMRef2, Bool_t isScalerOn, UInt_t* scaler, 
-	 const Int_t* const evQualityBlock, const Int_t* const triggerBlock, 
-	 const Int_t* const chBlock, UInt_t puBits) const;
+	 Int_t* tdcData, const Int_t* const evQualityBlock, 
+	 const Int_t* const triggerBlock, const Int_t* const chBlock, UInt_t puBits) const;
   
   void   FillZDCintoESD(TTree *clustersTree, AliESDEvent*esd) const;
 

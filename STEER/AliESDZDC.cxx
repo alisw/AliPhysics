@@ -53,7 +53,10 @@ AliESDZDC::AliESDZDC() :
   for(Int_t i=0; i<2; i++){
     fZNACentrCoord[i] = fZNCCentrCoord[i] = 0.;
   }
-  for(Int_t i=0; i<32; i++) fVMEScaler[i]=0;
+  for(Int_t i=0; i<32; i++){
+    fVMEScaler[i]=0;
+    fZDCTDCData[i]=0;
+  }
 }
 
 //______________________________________________________________________________
@@ -88,7 +91,10 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
     fZNACentrCoord[i] = zdc.fZNACentrCoord[i];
     fZNCCentrCoord[i] = zdc.fZNCCentrCoord[i];
   }
-  for(Int_t i=0; i<32; i++) fVMEScaler[i] = zdc.fVMEScaler[i];
+  for(Int_t i=0; i<32; i++){
+    fVMEScaler[i] = zdc.fVMEScaler[i];
+    fZDCTDCData[i] = zdc.fZDCTDCData[i];
+  }
 }
 
 //______________________________________________________________________________
@@ -127,7 +133,10 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
     }
     //
     fESDQuality = zdc.fESDQuality;
-    for(Int_t i=0; i<32; i++) fVMEScaler[i] = zdc.fVMEScaler[i];
+    for(Int_t i=0; i<32; i++){
+      fVMEScaler[i] = zdc.fVMEScaler[i];
+      fZDCTDCData[i] = zdc.fZDCTDCData[i];
+    }
   } 
   return *this;
 }
@@ -173,7 +182,10 @@ void AliESDZDC::Reset()
        fZNACentrCoord[i] = fZNCCentrCoord[i] = 0.;
   }
   fESDQuality=0;
-  for(Int_t i=0; i<32; i++) fVMEScaler[i] = 0;
+  for(Int_t i=0; i<32; i++){
+     fVMEScaler[i] = 0;
+     fZDCTDCData[i] = 0;
+  }
 }
 
 //______________________________________________________________________________
@@ -185,8 +197,12 @@ void AliESDZDC::Print(const Option_t *) const
   fZDCN1Energy/1000.,fZDCP1Energy/1000.,fZDCN2Energy/1000.,fZDCP2Energy/1000.,
   fZDCEMEnergy+fZDCEMEnergy1, fZDCParticipants,fImpactParameter);
   //
-  printf(" ### fVMEScaler: \n");
-  for(Int_t i=0; i<32; i++) printf("\t datum %d: %d \n",i,fVMEScaler[i]);
+  printf(" ### VMEScaler (!=0): \n");
+  for(Int_t i=0; i<32; i++) if(fVMEScaler[i]!=0) printf("\t %d \n",fVMEScaler[i]);
+  printf("\n");
+  //
+  printf(" ### TDCData (!=0): \n");
+  for(Int_t i=0; i<32; i++) if(fZDCTDCData[i]!=0) printf("\t %d \n",fZDCTDCData[i]);
   printf("\n");
 }
 
