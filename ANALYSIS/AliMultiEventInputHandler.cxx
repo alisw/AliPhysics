@@ -55,17 +55,9 @@ AliMultiEventInputHandler::AliMultiEventInputHandler(Int_t size, Int_t format) :
     fIndex(0),
     fCurrentBin(0),
     fEventPool(0),
-    fEventBuffer(new AliVEvent*[size])
+    fEventBuffer(0)
 {
-  // Default constructor
-    for (Int_t i = 0; i < size; i++) 
-	if (fFormat == 1) {
-	    fEventBuffer[i] = new AliAODEvent();
-	} else if (fFormat == 0) {
-	    fEventBuffer[i] = new AliESDEvent();
-	} else{
-	    AliWarning(Form("Unknown Format %5d", fFormat));
-	}
+  // constructor
 }
 
 //______________________________________________________________________________
@@ -77,17 +69,10 @@ AliMultiEventInputHandler::AliMultiEventInputHandler(const char* name, const cha
     fIndex(0),
     fCurrentBin(0),
     fEventPool(0),
-    fEventBuffer(new AliVEvent*[size])
+    fEventBuffer(0)
 {
     // Constructor
-    for (Int_t i = 0; i < size; i++) 
-	if (fFormat == 1) {
-	    fEventBuffer[i] = new AliAODEvent();
-	} else if (fFormat == 0) {
-	    fEventBuffer[i] = new AliESDEvent();
-	} else{
-	    AliWarning(Form("Unknown Format %5d", fFormat));
-	}
+
 }
 
 //______________________________________________________________________________
@@ -99,6 +84,20 @@ AliMultiEventInputHandler::~AliMultiEventInputHandler()
 Bool_t AliMultiEventInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 {
     // Initialisation necessary for each new tree
+    if (!fEventBuffer) {
+	fEventBuffer = new AliVEvent*[fBufferSize];
+	
+	for (Int_t i = 0; i < fBufferSize; i++) 
+	    if (fFormat == 1) {
+		fEventBuffer[i] = new AliAODEvent();
+	    } else if (fFormat == 0) {
+		fEventBuffer[i] = new AliESDEvent();
+	    } else{
+		AliWarning(Form("Unknown Format %5d", fFormat));
+	    }
+    }
+    
+
     fTree = tree;
     if (!fTree) return kFALSE;
     for (Int_t i = 0; i < fBufferSize; i++) 
@@ -111,15 +110,19 @@ Bool_t AliMultiEventInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 
 Bool_t AliMultiEventInputHandler::Notify(const char */*path*/)
 {
+    // Connect to new tree
+
+	
     static Bool_t first = kTRUE;
     
-    // Connect to new tree
+    
     if (first) {
 	fEventBuffer[0]->ReadFromTree(fTree, "");
 	first = kFALSE;
     } else {
-    	fEventBuffer[0]->ReadFromTree(fTree, "reconnect");
+	fEventBuffer[0]->ReadFromTree(fTree, "reconnect");
     }
+    
     
     return (kTRUE);
 }
