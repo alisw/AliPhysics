@@ -18,5 +18,5 @@
 #pragma link C++ class AliPhJPiZero+;
 #pragma link C++ class AliJCORRANSetup+;
 #pragma link C++ class AliJCORRANTask+;
-
+#pragma link C++ class AliAnalysisTaskDiHadron+;
 #endif /* __CINT__ */
