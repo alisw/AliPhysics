@@ -191,10 +191,8 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   ResetVertex();
   TClonesArray *itsRec  = 0;
   // lc1 and gc1 are local and global coordinates for layer 1
-  Float_t lc1[3]={0.,0.,0.}; // for(Int_t ii=0; ii<3; ii++) lc1[ii]=0.;
   Float_t gc1[3]={0.,0.,0.}; // ; for(Int_t ii=0; ii<3; ii++) gc1[ii]=0.;
   // lc2 and gc2 are local and global coordinates for layer 2
-  Float_t lc2[3]={0.,0.,0.}; // ; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
   Float_t gc2[3]={0.,0.,0.}; //; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
   itsRec=rpcont->FetchClusters(0,itsClusterTree);
