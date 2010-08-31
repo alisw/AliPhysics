@@ -243,7 +243,7 @@ string AliHLTDAQ::HLTOrigin(Int_t detectorID)
 {
   // get HLT origin from detector ID
   string origin;
-  if (detectorID>=0 && detectorID<(int)sizeof(fgkOriginMapping)/sizeof(const char*)) {
+  if (detectorID>=0 && (unsigned)detectorID<sizeof(fgkOriginMapping)/sizeof(const char*)) {
     origin.append(fgkOriginMapping[detectorID], kAliHLTComponentDataTypefOriginSize);
   }
   return origin;
