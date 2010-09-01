@@ -33,6 +33,9 @@ AliTOFPIDResponse::AliTOFPIDResponse():
   fPmax(0),         // zero at 0.5 GeV/c for pp
   fTime0(0)
 {
+  // Reset T0 info
+  ResetT0info();
+  SetMomBoundary();
 }
 //_________________________________________________________________________
 AliTOFPIDResponse::AliTOFPIDResponse(Double_t *param):
@@ -46,6 +49,10 @@ AliTOFPIDResponse::AliTOFPIDResponse(Double_t *param):
   //
 
   //fPmax=TMath::Exp(-0.5*3*3)/fSigma; // ~3 sigma at 0.5 GeV/c for PbPb 
+
+  // Reset T0 info
+  ResetT0info();
+  SetMomBoundary();
 }
 //_________________________________________________________________________
 Double_t 
@@ -69,12 +76,37 @@ Double_t AliTOFPIDResponse::GetExpectedSigma(Float_t mom, Float_t time, Float_t 
   // If the operation is not possible, return a negative value.
   //
 
-  Double_t dpp = 0.01;      //mean relative pt resolution;
-  if (mom>0.5) dpp = 0.01*mom;
+  Double_t dpp=0.018*mass/mom;      //mean relative pt resolution;
 
  
   Double_t sigma = dpp*time/(1.+ mom*mom/(mass*mass));
+  
+  Int_t index = GetMomBin(mom);
 
-  return TMath::Sqrt(sigma*sigma + fSigma*fSigma);
+  Double_t t0res = fT0resolution[index];
+
+  return TMath::Sqrt(sigma*sigma + 50.0*50.0/mom/mom + fSigma*fSigma + t0res*t0res);
+
 }
+//_________________________________________________________________________
+Int_t AliTOFPIDResponse::GetMomBin(Float_t p) const{
+  Int_t i=0;
+  while(p > fPCutMin[i] && i < fNmomBins) i++;
+  if(i > 0) i--;
 
+  return i;
+}
+//_________________________________________________________________________
+void AliTOFPIDResponse::SetMomBoundary(){
+  fPCutMin[0] = 0.3;
+  fPCutMin[1] = 0.5;
+  fPCutMin[2] = 0.6;
+  fPCutMin[3] = 0.7;
+  fPCutMin[4] = 0.8;
+  fPCutMin[5] = 0.9;
+  fPCutMin[6] = 1;
+  fPCutMin[7] = 1.2;
+  fPCutMin[8] = 1.5;
+  fPCutMin[9] = 2;
+  fPCutMin[10] = 3;  
+}
