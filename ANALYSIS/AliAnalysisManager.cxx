@@ -1696,7 +1696,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          lastTree = fTree;
       }   
       if (!ncalls) timer->Start();
-      if (!fIsRemote) ProgressBar("Processing event", ncalls, nentries, timer, kFALSE);
+      if (!fIsRemote && TObject::TestBit(kUseProgressBar)) ProgressBar("Processing event", ncalls, nentries, timer, kFALSE);
    }
    gROOT->cd();
    TDirectory *cdir = gDirectory;

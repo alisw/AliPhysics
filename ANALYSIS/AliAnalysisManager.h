@@ -56,7 +56,8 @@ enum EAliAnalysisFlags {
    kUseDataSet       = BIT(16),
    kSaveCanvases     = BIT(17),
    kExternalLoop     = BIT(18),
-   kSkipTerminate    = BIT(19)
+   kSkipTerminate    = BIT(19),
+   kUseProgressBar   = BIT(20)
 };   
 
    AliAnalysisManager(const char *name = "mgr", const char *title="");
@@ -130,6 +131,7 @@ enum EAliAnalysisFlags {
    void                SetSelector(AliAnalysisSelector * const sel)      {fSelector = sel;}
    void                SetSaveCanvases(Bool_t flag=kTRUE)         {TObject::SetBit(kSaveCanvases,flag);}
    void                SetSkipTerminate(Bool_t flag)              {TObject::SetBit(kSkipTerminate,flag);}
+   void                SetUseProgressBar(Bool_t flag)             {TObject::SetBit(kUseProgressBar,flag);}
    void                SetSpecialOutputLocation(const char *loc)  {fSpecialOutputLocation = loc;}
 
    // Container handling
