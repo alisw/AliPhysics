@@ -271,6 +271,7 @@ int AliHLTTRDCalibHistoComponent::DoDeinit()
   
   HLTDebug("DeinitCalibration");
   delete fTracksArray; fTracksArray=0;
+  fTRDCalibraFillHisto->DestroyDebugStreamer();
   //fTRDCalibraFillHisto->Destroy();
   //fOutArray->Delete();
   delete fOutArray; fOutArray=0;

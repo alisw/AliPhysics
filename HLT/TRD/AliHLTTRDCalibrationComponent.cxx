@@ -272,6 +272,7 @@ Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
   
   HLTDebug("DeinitCalibration");
   delete fTracksArray; fTracksArray=0;
+  fTRDCalibraFillHisto->DestroyDebugStreamer();
   //fTRDCalibraFillHisto->Destroy();
   //fOutArray->Delete();
   delete fOutArray; fOutArray=0;
@@ -433,8 +434,6 @@ void AliHLTTRDCalibrationComponent::FormOutput(Int_t param)
 
 Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
-  //fTRDCalibraFillHisto->DestroyDebugStreamer();
-
   AliHLTReadoutList rdList(AliHLTReadoutList::kTRD);
 
   EORCalibration();

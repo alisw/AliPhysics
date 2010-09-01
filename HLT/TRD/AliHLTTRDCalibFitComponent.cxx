@@ -215,8 +215,6 @@ Int_t AliHLTTRDCalibFitComponent::ProcessCalibration(const AliHLTComponent_Event
 
 Int_t AliHLTTRDCalibFitComponent::ShipDataToFXS(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
-  //fTRDCalibraFillHisto->DestroyDebugStreamer();
-
   AliHLTReadoutList rdList(AliHLTReadoutList::kTRD);
 
   EORCalibration();
