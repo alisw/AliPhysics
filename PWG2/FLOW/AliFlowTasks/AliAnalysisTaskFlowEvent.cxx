@@ -101,15 +101,13 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fEtaMax(5.),	     
   fQMin(0.),	     
   fQMax(3.),
-  fMCReactionPlaneAngle(0.),
-  fCount(0),
-  fNoOfLoops(1),
-  fEllipticFlowValue(0.),
-  fSigmaEllipticFlowValue(0.),
-  fMultiplicityOfEvent(1000000000),
-  fSigmaMultiplicityOfEvent(0),
-  fMyTRandom3(NULL),
-  fbAfterburnerOn(kFALSE)
+  fAfterburnerOn(kFALSE),
+  fNonFlowNumberOfTrackClones(0),
+  fV1(0.),
+  fV2(0.),
+  fV3(0.),
+  fV4(0.),
+  fMyTRandom3(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent()"<<endl;
@@ -147,15 +145,13 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fEtaMax(5.),	     
   fQMin(0.),	     
   fQMax(3.),
-  fMCReactionPlaneAngle(0.),
-  fCount(0),
-  fNoOfLoops(1),
-  fEllipticFlowValue(0.),
-  fSigmaEllipticFlowValue(0.),
-  fMultiplicityOfEvent(1000000000),
-  fSigmaMultiplicityOfEvent(0),
-  fMyTRandom3(NULL),
-  fbAfterburnerOn(kFALSE)
+  fAfterburnerOn(kFALSE),
+  fNonFlowNumberOfTrackClones(0),
+  fV1(0.),
+  fV2(0.),
+  fV3(0.),
+  fV4(0.),
+  fMyTRandom3(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed)"<<endl;
@@ -383,6 +379,19 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   {
     AliWarning("FlowEvent cut on multiplicity"); return;
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////AFTERBURNER
+  if (fAfterburnerOn)
+  {
+    //if reaction plane not set from elsewhere randomize it before adding flow
+    if (!flowEvent->IsSetMCReactionPlaneAngle())
+      flowEvent->SetMCReactionPlaneAngle(gRandom->Uniform(0.0,TMath::TwoPi()));
+
+    flowEvent->AddFlow(fV1,fV2,fV3,fV4);     //add flow
+    flowEvent->CloneTracks(fNonFlowNumberOfTrackClones); //add nonflow by cloning tracks
+  }
+  //////////////////////////////////////////////////////////////////////////////
 
   //tag subEvents
   flowEvent->TagSubeventsInEta(fMinA,fMaxA,fMinB,fMaxB);

@@ -24,6 +24,13 @@ Double_t maxA = -0.5;
 Double_t minB = 0.5;
 Double_t maxB = 0.9;
 
+// AFTERBURNER
+Bool_t useAfterBurner=kFALSE;
+Double_t v1=0.0;
+Double_t v2=0.0;
+Double_t v3=0.0;
+Double_t v4=0.0;
+Int_t numberOfTrackClones=0; //non-flow
 
 // use physics selection class
 Bool_t  UsePhysicsSelection = kTRUE;
@@ -170,12 +177,6 @@ const Int_t minTrackrefsTpcPOI = 2;
 const Int_t minTrackrefsTrdPOI = 0; 
 const Int_t minTrackrefsTofPOI = 0; 
 const Int_t minTrackrefsMuonPOI = 0; 
-
-
-//----------For Adding Flow to the Event----------
-const Bool_t AddToEvent = kFALSE;
-Double_t ellipticFlow = 0.05;
-
 
 AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, Bool_t* WEIGHTS)
 {
@@ -337,9 +338,12 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   //===========================================================================
   AliAnalysisTaskFlowEvent *taskFE = NULL;
   if (QA) { 
-    if(AddToEvent) { 
+    if(useAfterBurner)
+    { 
       taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kTRUE,1);
-      taskFE->SetEllipticFlowValue(ellipticFlow); }    //TEST
+      taskFE->SetFlow(v1,v2,v3,v4); 
+      taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
+    }
     else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kTRUE); }
     taskFE->SetAnalysisType(type);
     taskFE->SetRPType(rptype); //only for ESD
@@ -355,9 +359,12 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     mgr->AddTask(taskFE);
   }
   else { 
-    if(AddToEvent) { 
+    if(useAfterBurner)
+    { 
       taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE,1);
-      taskFE->SetEllipticFlowValue(ellipticFlow); }    //TEST
+      taskFE->SetFlow(v1,v2,v3,v4); 
+      taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
+    }
     else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE); }
     taskFE->SetAnalysisType(type);
     if (UseMultCut) {
