@@ -4614,7 +4614,7 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t 
                     tmp.GetClIndex(lay),((AliESDtrack*)tmp.GetESDtrack())->GetLabel())) ;
     if (tmp.GetClIndex(lay)>=0) ncl_in++;
   }
-  Int_t ncl=ncl_out+ncl_out;
+  Int_t ncl=ncl_out+ncl_in;
   Bool_t nextout = kFALSE;
   if(ilayer==AliITSgeomTGeo::kNLayers-1) nextout=kTRUE; // you are already on the outermost layer
   else nextout = ((tmp.GetClIndex(ilayer+1)>=0)? kTRUE : kFALSE );
