@@ -1899,7 +1899,7 @@ Int_t AliAnalysisTaskSEImpParRes::ClusterTypeOnITSLayer(AliESDtrack *track,
   
   const AliTrackPointArray *array = track->GetTrackPointArray();
   if(!array) {
-    printf("No tracks points avaialble: check ESDfriends\n");
+//    printf("No tracks points avaialble: check ESDfriends\n");
     return ctype;
   }
   AliTrackPoint point;
