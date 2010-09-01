@@ -28,13 +28,13 @@ public:
   AliTOFT0maker() ; // default constructor
   AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib); // overloaded constructor
   virtual ~AliTOFT0maker() ; // dtor
- 
+  
   // return (fCalculated[0]=event time -- fCalculated[1]=sigma event time in ps -- fCalculated[2]=mean event time for each fill -- fCalculated[3]=number of tracks at the TOF level) if you can subtruct the event time; return NULL if there is no event time
   Double_t *ComputeT0TOF(AliESDEvent *esd,Double_t t0time=0.,Double_t t0sigma=1000.); // t0time and t0sigma in ps
   void ApplyT0TOF(AliESDEvent *esd);
   Float_t GetExpectedSigma(Float_t mom, Float_t tof, Float_t mass);
   Double_t  *GetT0p(Float_t p);
-
+  
   void      SetTimeResolution(Double_t timeresolution){fTimeResolution=timeresolution;};// TOF timeresolution in [ps]
   Double_t  GetTimeResolution() const {return fTimeResolution;} // Get TOF Time Resolution
   void SetT0FillWidth(Float_t width){fT0width = width;}; // in ps
@@ -44,15 +44,17 @@ public:
   
   void SetNoTOFT0(Bool_t status=kTRUE){fNoTOFT0=status;}; // disable the TOF T0 info
   void SetMaskOffChannel(Bool_t status=kTRUE){fKmask=status;}; // switch for the map off channel
-
+  
   Float_t  TuneForMC(AliESDEvent *esd); // set enabled channeld, add a smeared t0, add a TOF smearing, return true(smeared) T0 event
-
-
+  
+  void SetT0spread(Float_t t0spread){fT0spreadExt=t0spread;};
+  void SetT0fill(Float_t t0fill){fT0fillExt=t0fill;};
+  
  private:
-
+  
   AliTOFT0maker(const AliTOFT0maker &);
   AliTOFT0maker & operator=(const AliTOFT0maker &);
-
+  
   void SetTOFResponse();
 
   AliTOFT0v1 *fT0TOF; // T0-TOF
@@ -60,15 +62,14 @@ public:
   Bool_t fExternalPIDFlag; // external PID flag
   AliTOFcalib *fTOFcalib; // TOF calibration
 
-  Double_t fT0pt[10],fT0ptSigma[10]; // T0 and T0sigma in p-bins
-
   Bool_t fNoTOFT0;   // swithc to avoid T0-TOF is used
 
-  Float_t fPtCutMin[10]; // min values for p bins
-  Float_t fPtCutMax[10]; // max values for p bins
+  Int_t fNmomBins;
+
+  Double_t fCalculated[10]; // contains the parameters with the event time
+
   Double_t fT0cur[2]; // current T0 and T0 sigma
  
-  Double_t fCalculated[8]; // contains the parameters with the event time
   Double_t fTimeResolution;  // global time resolution used to calculate T0
   
   Float_t fT0sigma; // T0 resolution
@@ -78,8 +79,11 @@ public:
   
   Float_t fT0width; // T0 FILL width
 
+  Float_t fT0spreadExt;
+  Float_t fT0fillExt; // t0spread if set 
+
   ClassDef(AliTOFT0maker,2);  // Calculate the time zero using TOF detector */
   
 };
 
-#endif // ALITOFT0MAKERANA_H
+#endif // ALITOFT0MAKER_H

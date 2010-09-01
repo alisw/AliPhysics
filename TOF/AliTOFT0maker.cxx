@@ -64,11 +64,14 @@ AliTOFT0maker::AliTOFT0maker():
   fExternalPIDFlag(kFALSE),
   fTOFcalib(NULL),
   fNoTOFT0(0),
+  fNmomBins(0),
   fTimeResolution(100),
   fT0sigma(1000),
   fHmapChannel(0),
   fKmask(0),
-  fT0width(150.)
+  fT0width(150.),
+  fT0spreadExt(-1.),
+  fT0fillExt(0)
 {
   // ctr
   fCalculated[0] = 0;
@@ -76,38 +79,15 @@ AliTOFT0maker::AliTOFT0maker():
   fCalculated[2] = 0;
   fCalculated[3] = 0;
 
-  fT0TOF = new AliTOFT0v1();
   if(AliPID::ParticleMass(0) == 0) new AliPID();
 
   fPIDesd = new AliESDpid();
 
-  fPtCutMin[0] = 0.3;
-  fPtCutMin[1] = 0.5;
-  fPtCutMin[2] = 0.6;
-  fPtCutMin[3] = 0.7;
-  fPtCutMin[4] = 0.8;
-  fPtCutMin[5] = 0.9;
-  fPtCutMin[6] = 1;
-  fPtCutMin[7] = 1.2;
-  fPtCutMin[8] = 1.5;
-  fPtCutMin[9] = 2;
+  fNmomBins = fPIDesd->GetTOFResponse().GetNmomBins();
+  SetTOFResponse();
 
-  fPtCutMax[0] = 0.5;
-  fPtCutMax[1] = 0.6;
-  fPtCutMax[2] = 0.7;
-  fPtCutMax[3] = 0.8;
-  fPtCutMax[4] = 0.9;
-  fPtCutMax[5] = 1;
-  fPtCutMax[6] = 1.2;
-  fPtCutMax[7] = 1.5;
-  fPtCutMax[8] = 2;
-  fPtCutMax[9] = 3;
+  fT0TOF = new AliTOFT0v1(fPIDesd);
 
-  /* init arrays */
-  for (Int_t i = 0; i < 10; i++) {
-    fT0pt[i] = 0.;
-    fT0ptSigma[i] = 0.;
-  }
 }
 //____________________________________________________________________________ 
 AliTOFT0maker::AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib):
@@ -117,11 +97,14 @@ AliTOFT0maker::AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib):
     fExternalPIDFlag(kTRUE),
     fTOFcalib(tofCalib),
     fNoTOFT0(0),
+    fNmomBins(0),
     fTimeResolution(100),
     fT0sigma(1000),
     fHmapChannel(0),
     fKmask(0),
-    fT0width(150.)
+    fT0width(150.),
+    fT0spreadExt(-1.),
+    fT0fillExt(0)
 {
   // ctr
   fCalculated[0] = 0;
@@ -129,7 +112,6 @@ AliTOFT0maker::AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib):
   fCalculated[2] = 0;
   fCalculated[3] = 0;
 
-  fT0TOF = new AliTOFT0v1();
   if(AliPID::ParticleMass(0) == 0) new AliPID();
 
   if(!fPIDesd){
@@ -137,70 +119,12 @@ AliTOFT0maker::AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib):
     fExternalPIDFlag = kFALSE;
   }
 
-  fPtCutMin[0] = 0.3;
-  fPtCutMin[1] = 0.5;
-  fPtCutMin[2] = 0.6;
-  fPtCutMin[3] = 0.7;
-  fPtCutMin[4] = 0.8;
-  fPtCutMin[5] = 0.9;
-  fPtCutMin[6] = 1;
-  fPtCutMin[7] = 1.2;
-  fPtCutMin[8] = 1.5;
-  fPtCutMin[9] = 2;
+  fNmomBins = fPIDesd->GetTOFResponse().GetNmomBins();
+  SetTOFResponse();
 
-  fPtCutMax[0] = 0.5;
-  fPtCutMax[1] = 0.6;
-  fPtCutMax[2] = 0.7;
-  fPtCutMax[3] = 0.8;
-  fPtCutMax[4] = 0.9;
-  fPtCutMax[5] = 1;
-  fPtCutMax[6] = 1.2;
-  fPtCutMax[7] = 1.5;
-  fPtCutMax[8] = 2;
-  fPtCutMax[9] = 3;
+  fT0TOF = new AliTOFT0v1(fPIDesd);
 
-  /* init arrays */
-  for (Int_t i = 0; i < 10; i++) {
-    fT0pt[i] = 0.;
-    fT0ptSigma[i] = 0.;
-  }
 }
-
-/* copy-constructor and operator= suppressed
-
-
-//____________________________________________________________________________ 
-AliTOFT0maker::AliTOFT0maker(const AliTOFT0maker & t) :
-  TObject(t),
-  fT0TOF(t.fT0TOF),
-  fPIDESD(t.fPIDESD),
-  fNoTOFT0(t.fNoTOFT0),
-  fTimeResolution(t.fTimeResolution),
-  fT0sigma(t.fT0sigma),
-  fHmapChannel(t.fHmapChannel),
-  fKmask(t.fKmask)
-  {
-  // copy ctr
-}
-
-//____________________________________________________________________________ 
-AliTOFT0maker& AliTOFT0maker::operator=(const AliTOFT0maker &t)
-{
-  //
-  // assign. operator
-  //
-
-  if (this == &t)
-    return *this;
-
-  TObject::operator=(t);
-  fTimeResolution = t.fTimeResolution;
-  fT0sigma = t.fT0sigma;
-
-  return *this;
-}
-
-*/
 
 //____________________________________________________________________________ 
 AliTOFT0maker::~AliTOFT0maker()
@@ -216,34 +140,46 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
   // Remake TOF PID probabilities
   //
 
-  Double_t t0tof[4];
+  Double_t t0tof[6];
 
   if(fKmask) ApplyMask(esd);
+
+  Double_t t0fill = 0.;
+
+  fPIDesd->GetTOFResponse().ResetT0info();
 
   /* get T0 spread from TOFcalib if available otherwise use default value */
   if (fTOFcalib && esd) {
     AliTOFRunParams *runParams = fTOFcalib->GetRunParams();
     if (runParams && runParams->GetTimestamp(0) != 0) {
       Float_t t0spread = runParams->EvalT0Spread(esd->GetTimeStamp());
-      SetT0FillWidth(t0spread);
+      if(fT0spreadExt > 0) SetT0FillWidth(fT0spreadExt);
+      else{
+	SetT0FillWidth(t0spread);
+	t0fill = fT0fillExt;
+      }
+    }
+    else{
+      SetT0FillWidth(fT0spreadExt);
+      t0fill = fT0fillExt;
     }
   }
 
   fT0TOF->Init(esd);
   AliTOFT0v1* t0maker= fT0TOF;
-  t0maker->SetTimeResolution(fTimeResolution*1e-12);
 
   t0maker->DefineT0("all",1.5,3.0);
   t0tof[0] = t0maker->GetResult(0);
   t0tof[1] = t0maker->GetResult(1);
   t0tof[2] = t0maker->GetResult(2);
   t0tof[3] = t0maker->GetResult(3);
+  t0tof[4] = t0maker->GetResult(4);
+  t0tof[5] = t0maker->GetResult(5);
 
   Float_t lT0Current=0.;
   fT0sigma=1000;
 
 //   Int_t nrun = esd->GetRunNumber();
-  Double_t t0fill = 0.;
 
   t0time += t0fill;
 
@@ -259,6 +195,10 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
   fCalculated[5]=1000*t0tof[1]; // TOF t0 sigma
   fCalculated[6]=sigmaFill; // sigma t0 fill
   fCalculated[7] = t0tof[3];  // n TOF tracks used for T0
+
+  //statistics
+  fCalculated[8] = t0tof[4]; // real time in s
+  fCalculated[9] = t0tof[5]; // cpu time in s
 
   if(fCalculated[1] < sigmaFill && TMath::Abs(fCalculated[0] - t0fill) < 500 && fCalculated[1] < fTimeResolution*1.2){
     fT0sigma=fCalculated[1];
@@ -305,48 +245,67 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
   }
 
   // T0 pt bin
-  for(Int_t i=0;i<10;i++){
-   t0maker->DefineT0("all",fPtCutMin[i],fPtCutMax[i]);
-    t0tof[0] = t0maker->GetResult(0);
-    t0tof[1] = t0maker->GetResult(1);
-    t0tof[2] = t0maker->GetResult(2);
-    t0tof[3] = t0maker->GetResult(3);
-    fT0pt[i] =-1000*t0tof[0]; // best t0
-    fT0ptSigma[i] =1000*t0tof[1]; // sigma best t0
+  if(fCalculated[7] < 100){
+    for(Int_t i=0;i<fNmomBins;i++){
+      t0maker->DefineT0("all",fPIDesd->GetTOFResponse().GetMinMom(i),fPIDesd->GetTOFResponse().GetMaxMom(i));
+      t0tof[0] = t0maker->GetResult(0);
+      t0tof[1] = t0maker->GetResult(1);
+      t0tof[2] = t0maker->GetResult(2);
+      t0tof[3] = t0maker->GetResult(3);
+ 
 
-    if(fT0ptSigma[i] < sigmaFill  && fT0ptSigma[i] < fTimeResolution * 1.2 && TMath::Abs(fT0pt[i] - t0fill) < 500){
-      // Ok T0
-    }
-    else{
-      fT0pt[i] = t0fill;
-      fT0ptSigma[i] = sigmaFill;
+      Float_t t0bin =-1000*t0tof[0]; // best t0
+      Float_t t0binRes =1000*t0tof[1]; // sigma best t0
+      
+      if(t0binRes < sigmaFill  && t0binRes < fTimeResolution * 1.2 && TMath::Abs(t0bin - t0fill) < 500){
+	// Ok T0
+	if(t0sigma < 1000){
+	  Double_t w1 = 1./t0sigma/t0sigma;
+	  Double_t w2 = 1./t0binRes/t0binRes;
+	  
+	  Double_t wtot = w1+w2;
+	  
+	  t0bin = (w1*t0time + w2*t0bin) / wtot;
+	  t0binRes = TMath::Sqrt(1./wtot);
+	}
+      }
+      else{
+	t0bin = t0fill;
+	t0binRes = sigmaFill;
+	if(t0sigma < 1000){
+	  t0bin = t0time;
+	   t0binRes= t0sigma;	  
+	}
+      }
+      fPIDesd->GetTOFResponse().SetT0bin(i,t0bin);
+      fPIDesd->GetTOFResponse().SetT0binRes(i,t0binRes);
     }
   }
-  //----
-  SetTOFResponse();
+  else{
+    for(Int_t i=0;i<fNmomBins;i++){
+      fPIDesd->GetTOFResponse().SetT0bin(i,lT0Current);
+      fPIDesd->GetTOFResponse().SetT0binRes(i,fT0sigma);
+    }
+  }
 
   return fCalculated;
 }
 //____________________________________________________________________________ 
 Double_t  *AliTOFT0maker::GetT0p(Float_t p){// [0]=to -- [1] = sigma T0
-  Int_t i=0;
-  while(p > fPtCutMin[i] && i < 10) i++;
-  if(i > 0) i--;
+  Int_t i=fPIDesd->GetTOFResponse().GetMomBin(p);
   
-  fT0cur[0] = fT0pt[i];
-  fT0cur[1] = fT0ptSigma[i];
+  fT0cur[0] = fPIDesd->GetTOFResponse().GetT0bin(i);
+  fT0cur[1] = fPIDesd->GetTOFResponse().GetT0binRes(i);
+
   return fT0cur;
 }
 //____________________________________________________________________________ 
 void AliTOFT0maker::SetTOFResponse(){
-    fPIDesd->GetTOFResponse().SetTimeResolution(TMath::Sqrt(fT0sigma*fT0sigma + fTimeResolution*fTimeResolution));
+  fPIDesd->GetTOFResponse().SetTimeResolution(fTimeResolution);
 }
 //____________________________________________________________________________ 
 Float_t AliTOFT0maker::GetExpectedSigma(Float_t mom, Float_t tof, Float_t mass){
-  Double_t *sigmaT0 = GetT0p(mom);
-  fPIDesd->GetTOFResponse().SetTimeResolution(TMath::Sqrt(sigmaT0[1]*sigmaT0[1] + fTimeResolution*fTimeResolution));
   Float_t sigma = fPIDesd->GetTOFResponse().GetExpectedSigma(mom,tof,mass);
-  fPIDesd->GetTOFResponse().SetTimeResolution(TMath::Sqrt(fT0sigma*fT0sigma + fTimeResolution*fTimeResolution));
 
   return sigma;
 }

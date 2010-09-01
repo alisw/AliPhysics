@@ -58,69 +58,55 @@
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include "AliTOFT0v1.h"
+#include "TBenchmark.h"
+#include "AliPID.h"
+#include "AliESDpid.h"
 
 ClassImp(AliTOFT0v1)
            
 //____________________________________________________________________________ 
-AliTOFT0v1::AliTOFT0v1():
+AliTOFT0v1::AliTOFT0v1(AliESDpid *extPID):
   TObject(),
   fLowerMomBound(0.5),
   fUpperMomBound(3),  
-  fTimeResolution(0.80e-10), 
   fTimeCorr(0.), 
-  fEvent(0x0)
-//   fCalib(0x0)
+  fEvent(0x0),
+  fPIDesd(extPID)
 {
   //
   // default constructor
   //
+  if(AliPID::ParticleMass(0) == 0) new AliPID();
+
+  if(!fPIDesd){
+    fPIDesd = new AliESDpid();
+  }
 
   Init(NULL);
     
 }
 
-           
 //____________________________________________________________________________ 
-AliTOFT0v1::AliTOFT0v1(AliESDEvent* event): 
+AliTOFT0v1::AliTOFT0v1(AliESDEvent* event,AliESDpid *extPID): 
   TObject(),
   fLowerMomBound(0.5),
   fUpperMomBound(3.0),  
-  fTimeResolution(0.80e-10), 
   fTimeCorr(0.), 
-  fEvent(event)
-//   fCalib(0x0)
+  fEvent(event),
+  fPIDesd(extPID)
 {
   //
   // real constructor
   //
-  
+  if(AliPID::ParticleMass(0) == 0) new AliPID();
+
+  if(!fPIDesd){
+    fPIDesd = new AliESDpid();
+  }
+
   Init(event);
 
 }
-
-/* copy-constructor and operator= suppresed 
-
-//____________________________________________________________________________ 
-AliTOFT0v1::AliTOFT0v1(const AliTOFT0v1 & tzero):
-  TObject(),
-  fLowerMomBound(tzero.fLowerMomBound),
-  fUpperMomBound(tzero.fUpperMomBound),  
-  fTimeResolution(tzero.fTimeResolution), 
-  fTimeCorr(tzero.fTimeCorr), 
-  fEvent(tzero.fEvent)
-//   fCalib(tzero.fCalib)
-{
-  //
-  // copy constructor
-  //
-    
-  fT0SigmaT0def[0]=tzero.fT0SigmaT0def[0];
-  fT0SigmaT0def[1]=tzero.fT0SigmaT0def[1];
-  fT0SigmaT0def[2]=tzero.fT0SigmaT0def[2];
-  fT0SigmaT0def[3]=tzero.fT0SigmaT0def[3];
-
-}
-
 //____________________________________________________________________________ 
 AliTOFT0v1& AliTOFT0v1::operator=(const AliTOFT0v1 &tzero)
 {
@@ -133,10 +119,8 @@ AliTOFT0v1& AliTOFT0v1::operator=(const AliTOFT0v1 &tzero)
   
   fLowerMomBound=tzero.fLowerMomBound;
   fUpperMomBound=tzero.fUpperMomBound;  
-  fTimeResolution=tzero.fTimeResolution; 
   fTimeCorr=tzero.fTimeCorr; 
   fEvent=tzero.fEvent;
-//   fCalib=tzero.fCalib;
   fT0SigmaT0def[0]=tzero.fT0SigmaT0def[0];
   fT0SigmaT0def[1]=tzero.fT0SigmaT0def[1];
   fT0SigmaT0def[2]=tzero.fT0SigmaT0def[2];
@@ -145,12 +129,10 @@ AliTOFT0v1& AliTOFT0v1::operator=(const AliTOFT0v1 &tzero)
   return *this;
 }
 
-*/
 //____________________________________________________________________________ 
 AliTOFT0v1::~AliTOFT0v1()
 {
   // dtor
-//   fCalib=NULL;
   fEvent=NULL;
 
 }
@@ -172,25 +154,21 @@ AliTOFT0v1::Init(AliESDEvent *event)
 
 }
 
-//____________________________________________________________________________ 
-void AliTOFT0v1::SetTimeResolution(Double_t timeresolution){
-  // Set the TOF time resolution
-  fTimeResolution=timeresolution;
-}
-//____________________________________________________________________________
 //____________________________________________________________________________
 Double_t * AliTOFT0v1::DefineT0(Option_t *option) 
 { 
   // Caluclate the Event Time using the ESD TOF time
 
+  TBenchmark *bench=new TBenchmark();
+  bench->Start("t0computation");
+
   fT0SigmaT0def[0]=0.;
   fT0SigmaT0def[1]=0.600;
   fT0SigmaT0def[2]=0.;
   fT0SigmaT0def[3]=0.;
-
- Float_t timeresolutioninns=fTimeResolution*(1.e+9); // convert in [ns]
   
-  const Int_t nmaxtracksinset=10;
+  const Int_t nmaxtracksinsetMax=10;
+  Int_t nmaxtracksinset=10;
 //   if(strstr(option,"all")){
 //     cout << "Selecting primary tracks with momentum between " << fLowerMomBound << " GeV/c and " << fUpperMomBound << " GeV/c" << endl;
 //     cout << "Memorandum: 0 means PION | 1 means KAON | 2 means PROTON" << endl;
@@ -233,16 +211,17 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
     
     time*=1.E-3; // tof given in nanoseconds	   
     if (!(mom<=fUpperMomBound && mom>=fLowerMomBound))continue;
-   
+
     if (!AcceptTrack(t)) continue;
 
-    if(t->GetIntegratedLength() < 350)continue; //skip decays
+    if(t->GetP() < fLowerMomBound || t->GetIntegratedLength() < 350 || t->GetTOFsignalToT() < 0.000000001)continue; //skip decays
     if(time <= mintime) mintime=time;
     tracks[ngoodtrk]=t;
     ngoodtrk++;
   }
   
-  
+  if(ngoodtrk>22) nmaxtracksinset = 6;
+
 //    cout << " N. of ESD tracks                    : " << ntrk << endl;
 //    cout << " N. of preselected tracks            : " << ngoodtrk << endl;
 //    cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
@@ -304,27 +283,27 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	
 	// Analyse it
 	
-	Int_t   assparticle[nmaxtracksinset];
-	Float_t exptof[nmaxtracksinset][3];
-	Float_t timeofflight[nmaxtracksinset];
-	Float_t momentum[nmaxtracksinset];
-	Float_t timezero[nmaxtracksinset];
-	Float_t weightedtimezero[nmaxtracksinset];
-	Float_t beta[nmaxtracksinset];
-	Float_t texp[nmaxtracksinset];
-	Float_t dtexp[nmaxtracksinset];
-	Float_t sqMomError[nmaxtracksinset];
-	Float_t sqTrackError[nmaxtracksinset];
+	Int_t   assparticle[nmaxtracksinsetMax];
+	Float_t exptof[nmaxtracksinsetMax][3];
+	Float_t timeofflight[nmaxtracksinsetMax];
+	Float_t momentum[nmaxtracksinsetMax];
+	Float_t timezero[nmaxtracksinsetMax];
+	Float_t weightedtimezero[nmaxtracksinsetMax];
+	Float_t beta[nmaxtracksinsetMax];
+	Float_t texp[nmaxtracksinsetMax];
+	Float_t dtexp[nmaxtracksinsetMax];
+	Float_t sqMomError[nmaxtracksinsetMax];
+	Float_t sqTrackError[nmaxtracksinsetMax];
 	Float_t massarray[3]={0.13957,0.493677,0.9382723};
-	Float_t tracktoflen[nmaxtracksinset];
-	Float_t besttimezero[nmaxtracksinset];
-	Float_t besttexp[nmaxtracksinset];
-	Float_t besttimeofflight[nmaxtracksinset];
-	Float_t bestmomentum[nmaxtracksinset];
-	Float_t bestchisquare[nmaxtracksinset];
-	Float_t bestweightedtimezero[nmaxtracksinset];
-	Float_t bestsqTrackError[nmaxtracksinset];
-	Int_t imass[nmaxtracksinset];
+	Float_t tracktoflen[nmaxtracksinsetMax];
+	Float_t besttimezero[nmaxtracksinsetMax];
+	Float_t besttexp[nmaxtracksinsetMax];
+	Float_t besttimeofflight[nmaxtracksinsetMax];
+	Float_t bestmomentum[nmaxtracksinsetMax];
+	Float_t bestchisquare[nmaxtracksinsetMax];
+	Float_t bestweightedtimezero[nmaxtracksinsetMax];
+	Float_t bestsqTrackError[nmaxtracksinsetMax];
+	Int_t imass[nmaxtracksinsetMax];
 	
 	for (Int_t j=0; j<ntracksinset; j++) {
 	  assparticle[j] = 3;
@@ -373,7 +352,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  beta[itz]=momentum[itz]/sqrt(massarray[0]*massarray[0]
 				       +momentum[itz]*momentum[itz]);
 	  sqMomError[itz]= ((1.-beta[itz]*beta[itz])*0.01)*((1.-beta[itz]*beta[itz])*0.01)*(tracktoflen[itz]/(0.299792*beta[itz]))*(tracktoflen[itz]/(0.299792*beta[itz])); 
-	  sqTrackError[itz]=(timeresolutioninns*timeresolutioninns+sqMomError[itz]); //in ns
+	  sqTrackError[itz]=sqMomError[itz]; //in ns
 	  timezero[itz]=exptof[itz][0]-timeofflight[itz];// in ns
 	  weightedtimezero[itz]=timezero[itz]/sqTrackError[itz];
 	  sumAllweightspi+=1./sqTrackError[itz];
@@ -403,10 +382,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  Float_t eMeanTzero=0.;
 	  
 	  for (Int_t itz=0; itz<ntracksinsetmy;itz++) {
-	    sqTrackError[itz]=
-	      (timeresolutioninns*
-	       timeresolutioninns
-	       +dtexp[itz]*dtexp[itz]*1E-6); //in ns2
+	    sqTrackError[itz]=dtexp[itz]*dtexp[itz]*1E-6; //in ns2
 	    
 	    timezero[itz]=texp[itz]-timeofflight[itz];// in ns		    	  
 	    
@@ -452,7 +428,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	  
 	}
 	
-	Double_t chi2cut[nmaxtracksinset];
+	Double_t chi2cut[nmaxtracksinsetMax];
 	chi2cut[0] = 0;
 	chi2cut[1] = 6.6; // corresponding to a C.L. of 0.01
 	for (Int_t j=2; j<ntracksinset; j++) {
@@ -465,7 +441,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	
 	Bool_t kRedoT0 = kFALSE;
         ntracksinsetmyCut = ntracksinsetmy;
-	Bool_t usetrack[nmaxtracksinset];
+	Bool_t usetrack[nmaxtracksinsetMax];
 	for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
 	  usetrack[icsq] = kTRUE;
 	  if((bestchisquare[icsq] > chisquarebest*0.5 && ntracksinsetmy > 2) || (bestchisquare[icsq] > chi2singlecut)){
@@ -493,10 +469,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	    
 	    for (Int_t itz=0; itz<ntracksinsetmy;itz++) {
 	      if(! usetrack[itz]) continue;
-	      sqTrackError[itz]=
-		(timeresolutioninns*
-		 timeresolutioninns
-		 +dtexp[itz]*dtexp[itz]*1E-6); //in ns2
+	      sqTrackError[itz]=dtexp[itz]*dtexp[itz]*1E-6; //in ns2
 	      
 	      timezero[itz]=texp[itz]-timeofflight[itz];// in ns		    	  
 	      
@@ -587,6 +560,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
 	    sumWt0bestallSel += 1./eT0best/eT0best;
 	    ngoodsetsSel++;
 	    ngoodtrktrulyused+=ntracksinsetmyCut;	    
+
+	    //	    printf("t0 of a set = %f +/- %f\n",t0best,eT0best);
 	  }
 	  else{
 	    //	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
@@ -615,12 +590,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
       
       t0def=t0bestallSel;
       deltat0def=eT0bestallSel;
-      if ((TMath::Abs(t0bestallSel) < 0.001)&&(TMath::Abs(eT0bestallSel)<0.001)){
-	t0def=-999; deltat0def=0.600;
-      }
       
       fT0SigmaT0def[0]=t0def;
-      fT0SigmaT0def[1]=TMath::Sqrt(deltat0def*deltat0def*ngoodtrktrulyused/(ngoodtrktrulyused-1));
+      fT0SigmaT0def[1]=TMath::Sqrt(deltat0def*deltat0def);//*ngoodtrktrulyused/(ngoodtrktrulyused-1));
       fT0SigmaT0def[2]=ngoodtrkt0;
       fT0SigmaT0def[3]=ngoodtrktrulyused;
     }
@@ -630,23 +602,35 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option)
   //     cout << "AliTOFT0v1:" << endl ;
   //}
   
-  if(fT0SigmaT0def[1] < 0.01) fT0SigmaT0def[1] = 0.6;
+  if(fT0SigmaT0def[1] < 0.00001) fT0SigmaT0def[1] = 0.6;
+
+  bench->Stop("t0computation");
+
+  fT0SigmaT0def[4]=bench->GetRealTime("t0computation");
+  fT0SigmaT0def[5]=bench->GetCpuTime("t0computation");
+
+//   bench->Print("t0computation");
+//   printf("%f %f\n",fT0SigmaT0def[4],fT0SigmaT0def[5]);
+
+  bench->Reset();
 
   return fT0SigmaT0def;
   }
 //__________________________________________________________________
 Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut) 
 { 
+  TBenchmark *bench=new TBenchmark();
+  bench->Start("t0computation");
+
   // Caluclate the Event Time using the ESD TOF time
 
   fT0SigmaT0def[0]=0.;
   fT0SigmaT0def[1]=0.600;
   fT0SigmaT0def[2]=0.;
   fT0SigmaT0def[3]=0.;
-
- Float_t timeresolutioninns=fTimeResolution*(1.e+9); // convert in [ns]
   
-  const Int_t nmaxtracksinset=10;
+  const Int_t nmaxtracksinsetMax=10;
+  Int_t nmaxtracksinset=10;
 //   if(strstr(option,"all")){
 //     cout << "Selecting primary tracks with momentum between " << fLowerMomBound << " GeV/c and " << fUpperMomBound << " GeV/c" << endl;
 //     cout << "Memorandum: 0 means PION | 1 means KAON | 2 means PROTON" << endl;
@@ -690,7 +674,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
     
     time*=1.E-3; // tof given in nanoseconds	   
     if (!(mom<=fUpperMomBound && mom>=fLowerMomBound))continue;
-   
+
     if (!AcceptTrack(t)) continue;
 
     if(t->GetIntegratedLength() < 350)continue; //skip decays
@@ -700,10 +684,12 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
     ngoodtrk++;
   }
   
+  if(ngoodtrk>22) nmaxtracksinset = 6;
+
   
-//    cout << " N. of ESD tracks                    : " << ntrk << endl;
-//    cout << " N. of preselected tracks            : " << ngoodtrk << endl;
-//    cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
+//     cout << " N. of ESD tracks                    : " << ntrk << endl;
+//     cout << " N. of preselected tracks            : " << ngoodtrk << endl;
+//     cout << " Minimum tof time in set (in ns)                 : " << mintime << endl;
   
   AliESDtrack **gtracks=new AliESDtrack*[ngoodtrk];
   
@@ -717,10 +703,13 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
     }
   }
   
+//     cout << " N. of preselected tracks t0         : " << ngoodtrkt0 << endl;
 
   Int_t nseteq = (ngoodtrkt0-1)/nmaxtracksinset + 1;
   Int_t nmaxtracksinsetCurrent=ngoodtrkt0/nseteq;
   if(nmaxtracksinsetCurrent*nseteq < ngoodtrkt0) nmaxtracksinsetCurrent++;
+
+//   cout << " N. of sets                        : " << nseteq << endl;
 
   if(ngoodtrkt0<2){
 //     cout << "less than 2 tracks, skip event " << endl;
@@ -743,7 +732,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
     
     if(nset>=1){
       for (Int_t i=0; i< nset; i++) {   
-	
+	//	printf("Set %i of %i\n",i+1,nset);
 	Float_t t0best=999.;
 	Float_t eT0best=999.;
 	Float_t chisquarebest=99999.;
@@ -762,27 +751,27 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	
 	// Analyse it
 	
-	Int_t   assparticle[nmaxtracksinset];
-	Float_t exptof[nmaxtracksinset][3];
-	Float_t timeofflight[nmaxtracksinset];
-	Float_t momentum[nmaxtracksinset];
-	Float_t timezero[nmaxtracksinset];
-	Float_t weightedtimezero[nmaxtracksinset];
-	Float_t beta[nmaxtracksinset];
-	Float_t texp[nmaxtracksinset];
-	Float_t dtexp[nmaxtracksinset];
-	Float_t sqMomError[nmaxtracksinset];
-	Float_t sqTrackError[nmaxtracksinset];
+	Int_t   assparticle[nmaxtracksinsetMax];
+	Float_t exptof[nmaxtracksinsetMax][3];
+	Float_t timeofflight[nmaxtracksinsetMax];
+	Float_t momentum[nmaxtracksinsetMax];
+	Float_t timezero[nmaxtracksinsetMax];
+	Float_t weightedtimezero[nmaxtracksinsetMax];
+	Float_t beta[nmaxtracksinsetMax];
+	Float_t texp[nmaxtracksinsetMax];
+	Float_t dtexp[nmaxtracksinsetMax];
+	Float_t sqMomError[nmaxtracksinsetMax];
+	Float_t sqTrackError[nmaxtracksinsetMax];
 	Float_t massarray[3]={0.13957,0.493677,0.9382723};
-	Float_t tracktoflen[nmaxtracksinset];
-	Float_t besttimezero[nmaxtracksinset];
-	Float_t besttexp[nmaxtracksinset];
-	Float_t besttimeofflight[nmaxtracksinset];
-	Float_t bestmomentum[nmaxtracksinset];
-	Float_t bestchisquare[nmaxtracksinset];
-	Float_t bestweightedtimezero[nmaxtracksinset];
-	Float_t bestsqTrackError[nmaxtracksinset];
-	Int_t imass[nmaxtracksinset];
+	Float_t tracktoflen[nmaxtracksinsetMax];
+	Float_t besttimezero[nmaxtracksinsetMax];
+	Float_t besttexp[nmaxtracksinsetMax];
+	Float_t besttimeofflight[nmaxtracksinsetMax];
+	Float_t bestmomentum[nmaxtracksinsetMax];
+	Float_t bestchisquare[nmaxtracksinsetMax];
+	Float_t bestweightedtimezero[nmaxtracksinsetMax];
+	Float_t bestsqTrackError[nmaxtracksinsetMax];
+	Int_t imass[nmaxtracksinsetMax];
 	
 	for (Int_t j=0; j<ntracksinset; j++) {
 	  assparticle[j] = 3;
@@ -831,7 +820,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  beta[itz]=momentum[itz]/sqrt(massarray[0]*massarray[0]
 				       +momentum[itz]*momentum[itz]);
 	  sqMomError[itz]= ((1.-beta[itz]*beta[itz])*0.01)*((1.-beta[itz]*beta[itz])*0.01)*(tracktoflen[itz]/(0.299792*beta[itz]))*(tracktoflen[itz]/(0.299792*beta[itz])); 
-	  sqTrackError[itz]=(timeresolutioninns*timeresolutioninns+sqMomError[itz]); //in ns
+	  sqTrackError[itz]=sqMomError[itz]; //in ns
 	  timezero[itz]=exptof[itz][0]-timeofflight[itz];// in ns
 	  weightedtimezero[itz]=timezero[itz]/sqTrackError[itz];
 	  sumAllweightspi+=1./sqTrackError[itz];
@@ -861,10 +850,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  Float_t eMeanTzero=0.;
 	  
 	  for (Int_t itz=0; itz<ntracksinsetmy;itz++) {
-	    sqTrackError[itz]=
-	      (timeresolutioninns*
-	       timeresolutioninns
-	       +dtexp[itz]*dtexp[itz]*1E-6); //in ns2
+	    sqTrackError[itz]=dtexp[itz]*dtexp[itz]*1E-6; //in ns2
 	    
 	    timezero[itz]=texp[itz]-timeofflight[itz];// in ns		    	  
 	    
@@ -882,7 +868,6 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  Float_t chisquare=0.;		
 	  for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
 	    chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq];
-	    
 	  } // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	  
 	  if(chisquare<=chisquarebest){
@@ -907,10 +892,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	    t0best=meantzero;
 	    eT0best=eMeanTzero;
 	  } // close if(dummychisquare<=chisquare)
-	  
 	}
 	
-	Double_t chi2cut[nmaxtracksinset];
+	Double_t chi2cut[nmaxtracksinsetMax];
 	chi2cut[0] = 0;
 	chi2cut[1] = 6.6; // corresponding to a C.L. of 0.01
 	for (Int_t j=2; j<ntracksinset; j++) {
@@ -919,11 +903,11 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	
 	Double_t chi2singlecut = chi2cut[ntracksinsetmy-1]/ntracksinsetmy + TMath::Abs(chisquarebest-chi2cut[ntracksinsetmy-1])/ntracksinsetmy;
 	
-//  	printf("tracks removed with a chi2 > %f (chi2total = %f w.r.t. the limit of %f)\n",chi2singlecut,chisquarebest,chi2cut[ntracksinsetmy-1]);
+	//	printf("tracks removed with a chi2 > %f (chi2total = %f w.r.t. the limit of %f)\n",chi2singlecut,chisquarebest,chi2cut[ntracksinsetmy-1]);
 	
 	Bool_t kRedoT0 = kFALSE;
         ntracksinsetmyCut = ntracksinsetmy;
-	Bool_t usetrack[nmaxtracksinset];
+	Bool_t usetrack[nmaxtracksinsetMax];
 	for (Int_t icsq=0; icsq<ntracksinsetmy;icsq++) {
 	  usetrack[icsq] = kTRUE;
 	  if((bestchisquare[icsq] > chisquarebest*0.5 && ntracksinsetmy > 2) || (bestchisquare[icsq] > chi2singlecut)){
@@ -934,7 +918,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	} // end loop for (Int_t icsq=0; icsq<15;icsq++) 
 	
 	//	printf("ntrackinsetmy = %i - %i\n",ntracksinsetmy,ntracksinsetmyCut);
-	
+
 	// Loop on mass hypotheses Redo
 	if(kRedoT0 && ntracksinsetmyCut > 1){
 	  //	  printf("Redo T0\n");
@@ -951,10 +935,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	    
 	    for (Int_t itz=0; itz<ntracksinsetmy;itz++) {
 	      if(! usetrack[itz]) continue;
-	      sqTrackError[itz]=
-		(timeresolutioninns*
-		 timeresolutioninns
-		 +dtexp[itz]*dtexp[itz]*1E-6); //in ns2
+	      sqTrackError[itz]=dtexp[itz]*dtexp[itz]*1E-6; //in ns2
 	      
 	      timezero[itz]=texp[itz]-timeofflight[itz];// in ns		    	  
 	      
@@ -1007,6 +988,7 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	Float_t confLevel=999;
 	
 	// Sets with decent chisquares
+	//	printf("Chi2best of the set = %f \n",chisquarebest);
 	
 	if(chisquarebest<999.){
 	  Double_t dblechisquare=(Double_t)chisquarebest;
@@ -1034,6 +1016,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 //  		 << " is used = " << usetrack[icsq] << endl;
 	  }
 	  
+	  //	  printf("%i) CL(Chi2) = %f < 0.01\n",ngoodsetsSel,confLevel);
+
 	  // Pick up only those with C.L. >1%
 	  //	  if(confLevel>0.01 && ngoodsetsSel<200){
 	  if(confLevel>0.01 && ngoodsetsSel<200){
@@ -1044,7 +1028,8 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	    t0bestallSel += t0best/eT0best/eT0best;
 	    sumWt0bestallSel += 1./eT0best/eT0best;
 	    ngoodsetsSel++;
-	    ngoodtrktrulyused+=ntracksinsetmyCut;	    
+	    ngoodtrktrulyused+=ntracksinsetmyCut;
+	    //	    printf("T0 set = %f +/- %f\n",t0best,eT0best);
 	  }
 	  else{
 	    //	    printf("conflevel = %f -- ngoodsetsSel = %i -- ntrackset = %i\n",confLevel,ngoodsetsSel,ntracksinsetmy);
@@ -1062,10 +1047,12 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
 	  eMeanTzeroPi=sqrt(1./sumAllweightspi); // it is given in [ns]
 	}      
 	
+	//	printf("t0bestallSel = %f -- eT0bestallSel = %f\n",t0bestallSel,sumWt0bestallSel);
+
 	if(sumWt0bestallSel>0){
 	  t0bestallSel  = t0bestallSel/sumWt0bestallSel;
 	  eT0bestallSel = sqrt(1./sumWt0bestallSel);
-	  
+	  //	  printf("Final) t0bestallSel = %f -- eT0bestallSel = %f\n",t0bestallSel,eT0bestallSel);	  
 	}// end of if(sumWt0bestallSel>0){
 	
 // 	cout << "T0 all " << t0bestallSel << " +/- " << eT0bestallSel << "Number of tracks used: "<<ngoodtrktrulyused<<endl;
@@ -1073,12 +1060,9 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
       
       t0def=t0bestallSel;
       deltat0def=eT0bestallSel;
-      if ((TMath::Abs(t0bestallSel) < 0.001)&&(TMath::Abs(eT0bestallSel)<0.001)){
-	t0def=-999; deltat0def=0.600;
-      }
       
       fT0SigmaT0def[0]=t0def;
-      fT0SigmaT0def[1]=TMath::Sqrt(deltat0def*deltat0def*ngoodtrktrulyused/(ngoodtrktrulyused-1));
+      fT0SigmaT0def[1]=TMath::Sqrt(deltat0def*deltat0def);//*ngoodtrktrulyused/(ngoodtrktrulyused-1));
       fT0SigmaT0def[2]=ngoodtrkt0;
       fT0SigmaT0def[3]=ngoodtrktrulyused;
     }
@@ -1088,7 +1072,17 @@ Double_t * AliTOFT0v1::DefineT0(Option_t *option,Float_t pMinCut,Float_t pMaxCut
   //     cout << "AliTOFT0v1:" << endl ;
   //}
 
-  if(fT0SigmaT0def[1] < 0.01) fT0SigmaT0def[1] = 0.6;
+  if(fT0SigmaT0def[1] < 0.00001) fT0SigmaT0def[1] = 0.6;
+
+  bench->Stop("t0computation");
+
+  fT0SigmaT0def[4]=bench->GetRealTime("t0computation");
+  fT0SigmaT0def[5]=bench->GetCpuTime("t0computation");
+
+//   bench->Print("t0computation");
+//   printf("(%4.1f < p < %4.1f GeV/c) T0-TOF =%9.1f +/- %5.1f ps (n_track = %i)\n\n",pMinCut,pMaxCut,-fT0SigmaT0def[0]*1000,fT0SigmaT0def[1]*1000,Int_t(fT0SigmaT0def[3]));
+
+  bench->Reset();
 
   return fT0SigmaT0def;
   }
@@ -1102,11 +1096,8 @@ Float_t AliTOFT0v1::GetMomError(Int_t index, Float_t mom, Float_t texp) const
   };
 
   Double_t mass=kMasses[index+2];
-  Double_t dpp=0.02;      //mean relative pt resolution;
-  //  if(mom > 1) dpp = 0.02*mom;
-  Double_t sigma=dpp*texp*1E3/(1.+ mom*mom/(mass*mass));
 
-  sigma =TMath::Sqrt(sigma*sigma);
+  Float_t sigma = fPIDesd->GetTOFResponse().GetExpectedSigma(mom,texp,mass);
 
   return sigma;
 }
