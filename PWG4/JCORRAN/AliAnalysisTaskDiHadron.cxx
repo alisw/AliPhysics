@@ -190,12 +190,12 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
   char histtitle[200];
   int nptbins=fNAPtBins;
   int lptbins=0;
-  char *cmc1[2]={"","_MC"};
-  char *cmc2[2]={""," MC"};
-  char *sign1[3]={"","_LS","_ULS"};
-  char *sign2[3]={""," Like-Sign"," Unlike-Sign"};
-  char *sign31[4]={"","_LS","_ULT","_ULA"};
-  char *sign32[4]={""," Like-Sign"," Trigger-Diff"," Assoc-Diff"};
+  const char *cmc1[2]={"","_MC"};
+  const char *cmc2[2]={""," MC"};
+  const char *sign1[3]={"","_LS","_ULS"};
+  const char *sign2[3]={""," Like-Sign"," Unlike-Sign"};
+  const char *sign31[4]={"","_LS","_ULT","_ULA"};
+  const char *sign32[4]={""," Like-Sign"," Trigger-Diff"," Assoc-Diff"};
   Float_t EtaEdge=2*fEtaCut;
   Float_t PhiArray[fnBinPhi+1];
   Float_t EtaArray[fnBinEta+1];
