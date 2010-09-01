@@ -62,8 +62,9 @@
  *                 kAliHLTDataTypeStreamerInfo (ROOTSTRI)
  *  13       Changed AliHLTEventDDL to now contain 31 words. The extra word is
  *           for the EMCAL detector, which needs 46 DDLs after DCAL was added.
+ *  14       Adding new data block type for HLT global trigger counters.
  */
-#define ALIHLT_DATA_TYPES_VERSION 13
+#define ALIHLT_DATA_TYPES_VERSION 14
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -476,6 +477,12 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * @ingroup alihlt_component_datatypes
  */
 #define kAliHLTTNtupleDataTypeID              {'R','O','O','T','T','U','P','L'}
+
+/** HLT trigger counters.
+ * - For the AliHLTTriggerCounters object. Normally with HLT as origin.
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTTriggerCountersDataTypeID       {'T','R','G','C','O','U','N','T'}
 
 /** HLT Track
  * - Struct for Tracks based on AliExternalTrackParam
@@ -1116,6 +1123,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */							  		
   extern const AliHLTComponentDataType kAliHLTDataTypeTNtuple;		  // {ROOTTUPL,"***"}
+
+  /** AliHLTTriggerCounters object for HLT global trigger counters.
+   * @ingroup alihlt_component_datatypes
+   */							  		
+  extern const AliHLTComponentDataType kAliHLTDataTypeTriggerCounters;		  // {TRGCOUNT,"HLT "}
 
   /** General track array for the barrel tracks based on AliExternalTrackParam
    * Data format defined by AliHLTTracksData
