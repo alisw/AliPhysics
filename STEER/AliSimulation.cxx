@@ -201,7 +201,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fRunQA(kTRUE), 
   fEventSpecie(AliRecoParam::kDefault),
   fWriteQAExpertData(kTRUE), 
-  fGeometryFile("geometry.root"),
+  fGeometryFile(),
   fRunHLT("default"),
   fpHLT(NULL),
   fWriteGRPEntry(kTRUE)
@@ -650,7 +650,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   // If RunSimulation was not called, load the geometry and misalign it
   if (!AliGeomManager::GetGeometry()) {
     // Initialize the geometry manager
-    AliGeomManager::LoadGeometry(fGeometryFile.Data());
+    AliGeomManager::LoadGeometry("geometry.root");
     AliSysInfo::AddStamp("GetGeometry");
 //    // Check that the consistency of symbolic names for the activated subdetectors
 //    // in the geometry loaded by AliGeomManager
