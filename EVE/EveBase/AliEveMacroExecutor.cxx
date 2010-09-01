@@ -136,7 +136,7 @@ void AliEveMacroExecutor::ExecMacros()
 	G__security_recover(0);
       }
 
-      if (error)
+      if (error != TInterpreter::kNoError)
       {
         mac->SetExecError();
         Error("ExecMacros", "Executing %s::%s, CINT error ... hopefully recovered.",

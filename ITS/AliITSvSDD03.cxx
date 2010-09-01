@@ -339,7 +339,7 @@ void AliITSvSDD03::CreateGeometry(){
     gMC->Gspos("IDET",2,"ITSV",pdet2X,pdet2Y,pdet2Z,idrotm[0],"ONLY");// Detector2
 
 // Target definition and placement
-    if(fTarg){
+    if(fTarg != kNoTarg){
       data[0] = 30*kmm;
       data[1] = fTargThick*kmm;  // Target thickness
       data[2] = 30*kmm;

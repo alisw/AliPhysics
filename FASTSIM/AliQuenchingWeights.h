@@ -120,7 +120,7 @@ class AliQuenchingWeights : public TObject {
   Float_t GetMu()           const {return fMu;}
   Float_t GetQTransport()   const {return fQTransport;}
   Float_t GetK()            const {return fK;}
-  Bool_t  GetECMethod()     const {return fECMethod;}
+  kECMethod  GetECMethod()  const {return fECMethod;}
   Bool_t  GetTablesLoaded() const {return fTablesLoaded;}
   Bool_t  GetMultSoft()     const {return fMultSoft;}
   Int_t   GetLengthMax()    const {return fLengthMax;}

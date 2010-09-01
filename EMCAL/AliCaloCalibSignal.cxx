@@ -334,7 +334,7 @@ void AliCaloCalibSignal::SetParametersFromFile(const char *parameterFile)
       s >> keyValue;
       
       // check stream status
-      if( s.rdstate() & ios::failbit ) break;
+      if( ( s.rdstate() & ios::failbit ) == ios::failbit ) break;
 			
       // skip rest of line if comments found
       if( keyValue.substr( 0, 2 ) == "//" ) break;

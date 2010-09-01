@@ -293,7 +293,7 @@ AliGeomManager::ELayerID AliGeomManager::VolUIDToLayerSafe(UShort_t voluid, Int_
   // Checks the validity of the given voluid
   //
   ELayerID layId = VolUIDToLayerSafe(voluid);
-  if(layId){
+  if(layId != AliGeomManager::kInvalidLayer){
     Int_t mId = Int_t(voluid & 0x7ff);
     if( mId>=0 && mId<LayerSize(layId)){
       modId = mId;
