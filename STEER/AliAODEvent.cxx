@@ -705,7 +705,7 @@ Bool_t  AliAODEvent::IsPileupFromSPD(Int_t minContributors,
       Double_t z2=pv->GetZ();
       Double_t distZ=TMath::Abs(z2-z1);
       Double_t distZdiam=TMath::Abs(z2-GetDiamondZ());
-      Double_t cutZdiam=nSigmaDiamZ*GetSigma2DiamondZ();
+      Double_t cutZdiam=nSigmaDiamZ*TMath::Sqrt(GetSigma2DiamondZ());
       if(GetSigma2DiamondZ()<0.0001)cutZdiam=99999.; //protection for missing z diamond information
       if(distZ>minZdist && distZdiam<cutZdiam){
 	Double_t x2=pv->GetX();
