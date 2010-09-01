@@ -44,6 +44,7 @@
 #include "AliHLTReadoutListDumpComponent.h"
 #include "AliHLTOUTPublisherComponent.h"
 #include "AliHLTCompStatCollector.h"
+#include "AliHLTCorruptorComponent.h"
 
 /** global instance for agent registration */
 AliHLTAgentUtil gAliHLTAgentUtil;
@@ -127,6 +128,7 @@ int AliHLTAgentUtil::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTReadoutListDumpComponent);
   pHandler->AddComponent(new AliHLTOUTPublisherComponent);
   pHandler->AddComponent(new AliHLTCompStatCollector);
+  pHandler->AddComponent(new AliHLTCorruptorComponent);
   return 0;
 }
 

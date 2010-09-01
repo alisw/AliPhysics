@@ -23,7 +23,8 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTAgentUtil.h \
 		AliHLTESDCaloClusterMaker.h \
 		AliHLTCaloClusterReader.h  \
-                AliHLTComponentBenchmark.h \
+		AliHLTComponentBenchmark.h \
+		AliHLTCorruptorComponent.h \
 		AliHLTESDTrackCuts.h
 
 #		AliHLTMCGeneratorComponent.h

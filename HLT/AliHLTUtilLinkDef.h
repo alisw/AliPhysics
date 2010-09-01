@@ -20,6 +20,7 @@
 #pragma link C++ class AliHLTDataGenerator+;
 #pragma link C++ class AliHLTBlockFilterComponent+;
 #pragma link C++ class AliHLTCompStatCollector+;
+#pragma link C++ class AliHLTCorruptorComponent+;
 #pragma link C++ class AliHLTAgentUtil+;
 #endif
 
