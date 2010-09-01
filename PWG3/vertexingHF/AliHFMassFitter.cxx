@@ -844,6 +844,34 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   //Set default fitter Minuit in order to use gMinuit in the contour plots    
   TVirtualFitter::SetDefaultFitter("Minuit");
 
+  Bool_t isBkgOnly=kFALSE;
+
+  Int_t fit1status=RefitWithBkgOnly(kFALSE);
+  if(fit1status){
+    Int_t checkinnsigma=4;
+    Double_t range[2]={fMass-checkinnsigma*fSigmaSgn,fMass+checkinnsigma*fSigmaSgn};
+    TF1* func=GetHistoClone()->GetFunction("funcbkgonly");
+    Double_t intUnderFunc=func->Integral(range[0],range[1]);
+    Double_t intUnderHisto=fhistoInvMass->Integral(fhistoInvMass->FindBin(range[0]),fhistoInvMass->FindBin(range[1]),"width");
+    cout<<"Pick zone: IntFunc = "<<intUnderFunc<<"; IntHist = "<<intUnderHisto<<"\tDiff = "<<intUnderHisto-intUnderFunc<<"\tRelDiff = "<<(intUnderHisto-intUnderFunc)/intUnderFunc<<endl;
+    Double_t diffUnderPick=(intUnderHisto-intUnderFunc);
+    intUnderFunc=func->Integral(fminMass,fminMass+checkinnsigma*fSigmaSgn);
+    intUnderHisto=fhistoInvMass->Integral(fhistoInvMass->FindBin(fminMass),fhistoInvMass->FindBin(fminMass+checkinnsigma*fSigmaSgn),"width");
+    cout<<"Band (l) zone: IntFunc = "<<intUnderFunc<<"; IntHist = "<<intUnderHisto<<"\tDiff = "<<intUnderHisto-intUnderFunc<<"\tRelDiff = "<<(intUnderHisto-intUnderFunc)/intUnderFunc<<endl;
+    Double_t diffUnderBands=(intUnderHisto-intUnderFunc);
+    Double_t relDiff=diffUnderPick/diffUnderBands;
+    cout<<"Relative difference = "<<relDiff<<endl;
+    if(TMath::Abs(relDiff) < 1) isBkgOnly=kTRUE;
+    else{
+      cout<<"Relative difference = "<<relDiff<<": I suppose there is some signal, continue with total fit!"<<endl;
+    }
+  }
+  if(isBkgOnly) {
+    cout<<"INFO!! The histogram contains only background"<<endl;
+    if(draw)DrawFit();
+    return kTRUE;
+  }
+
   Int_t nFitPars=0; //total function's number of parameters
   switch (ftypeOfFit4Bkg){
   case 0:
@@ -1234,6 +1262,7 @@ Bool_t AliHFMassFitter::RefitWithBkgOnly(Bool_t draw){
   //perform a fit with background function only. Can be useful to try when fit fails to understand if it is because there's no signal
   //If you want to change the backgroud function or range use SetType or SetRangeFit before
 
+  cout<<"++++ I'm in RefitWithBkgOnly ++++"<<endl;
   TString bkgname="funcbkgonly";
   fSideBands = kFALSE;
 
@@ -1623,9 +1652,9 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
   pd->cd();
   hdraw->SetMarkerStyle(20);
   hdraw->DrawClone("PE");
-  hdraw->GetFunction("funcbkgFullRange")->DrawClone("same");
-  hdraw->GetFunction("funcbkgRecalc")->DrawClone("same");
-  hdraw->GetFunction("funcmass")->DrawClone("same");
+  if(hdraw->GetFunction("funcbkgFullRange")) hdraw->GetFunction("funcbkgFullRange")->DrawClone("same");
+  if(hdraw->GetFunction("funcbkgRecalc")) hdraw->GetFunction("funcbkgRecalc")->DrawClone("same");
+  if(hdraw->GetFunction("funcmass")) hdraw->GetFunction("funcmass")->DrawClone("same");
 
   if(writeFitInfo > 0){
     TPaveText *pinfob=new TPaveText(0.6,0.86,1.,1.,"NDC");
