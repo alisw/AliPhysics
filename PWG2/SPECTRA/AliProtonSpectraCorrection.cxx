@@ -95,8 +95,9 @@ void AliProtonSpectraCorrection::InitAnalysisHistograms(Int_t nbinsY,
   
   //=========================================================//
   //Setting up the criteria for the generated particles
-  AliCFTrackKineCuts *mcKineCutsProtons = new AliCFTrackKineCuts("mcKineCutsProtons",
-								 "MC-level kinematic cuts");
+  Char_t *titleCF = "mcKineCutsProtons";
+  Char_t *nameCF = "MC-level kinematic cuts";
+  AliCFTrackKineCuts *mcKineCutsProtons = new AliCFTrackKineCuts(titleCF,nameCF);
   mcKineCutsProtons->SetPtRange(fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     mcKineCutsProtons->SetEtaRange(fMinY,fMaxY);
@@ -104,8 +105,8 @@ void AliProtonSpectraCorrection::InitAnalysisHistograms(Int_t nbinsY,
     mcKineCutsProtons->SetRapidityRange(fMinY,fMaxY);
   mcKineCutsProtons->SetChargeMC(1.0);
 
-  AliCFTrackKineCuts *mcKineCutsAntiProtons = new AliCFTrackKineCuts("mcKineCutsAntiProtons",
-								     "MC-level kinematic cuts");
+  titleCF = "mcKineCutsAntiProtons";
+  AliCFTrackKineCuts *mcKineCutsAntiProtons = new AliCFTrackKineCuts(titleCF,nameCF);
   mcKineCutsAntiProtons->SetPtRange(fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     mcKineCutsAntiProtons->SetEtaRange(fMinY,fMaxY);
@@ -113,12 +114,14 @@ void AliProtonSpectraCorrection::InitAnalysisHistograms(Int_t nbinsY,
     mcKineCutsAntiProtons->SetRapidityRange(fMinY,fMaxY);
   mcKineCutsAntiProtons->SetChargeMC(-1.0);
 
-  AliCFParticleGenCuts* mcGenCutsProtons = new AliCFParticleGenCuts("mcGenCutsProtons",
-								    "MC particle generation cuts");
+  titleCF = "mcGenCutsProtons";
+  nameCF = "MC particle generation cuts";
+  AliCFParticleGenCuts* mcGenCutsProtons = new AliCFParticleGenCuts(titleCF,nameCF);
   mcGenCutsProtons->SetRequireIsPrimary();
   mcGenCutsProtons->SetRequirePdgCode(2212);
-  AliCFParticleGenCuts* mcGenCutsAntiProtons = new AliCFParticleGenCuts("mcGenCutsAntiProtons",
-									"MC particle generation cuts");
+
+  titleCF = "mcGenCutsAntiProtons";
+  AliCFParticleGenCuts* mcGenCutsAntiProtons = new AliCFParticleGenCuts(titleCF,nameCF);
   mcGenCutsAntiProtons->SetRequireIsPrimary();
   mcGenCutsAntiProtons->SetRequirePdgCode(-2212);
 
@@ -130,8 +133,9 @@ void AliProtonSpectraCorrection::InitAnalysisHistograms(Int_t nbinsY,
   mcListAntiProtons->AddLast(mcGenCutsAntiProtons);
 
   //Setting up the criteria for the reconstructible particles
-  AliCFAcceptanceCuts *mcAccCuts = new AliCFAcceptanceCuts("mcAccCuts",
-							   "Acceptance cuts");
+  titleCF = "mcAccCuts";
+  nameCF = "Acceptance cuts";
+  AliCFAcceptanceCuts *mcAccCuts = new AliCFAcceptanceCuts(titleCF,nameCF);
   mcAccCuts->SetMinNHitTPC(mintrackrefsTPC);
   TObjArray* accList = new TObjArray(0);
   accList->AddLast(mcAccCuts);
@@ -139,8 +143,9 @@ void AliProtonSpectraCorrection::InitAnalysisHistograms(Int_t nbinsY,
   //____________________________________________//
   //Setting up the criteria for the reconstructed tracks
   //____________________________________________//
-  AliCFTrackKineCuts *recKineCutsProtons = new AliCFTrackKineCuts("recKineCutsProtons",
-								  "rec-level kine cuts");
+  titleCF = "recKineCutsProtons";
+  nameCF = "rec-level kine cuts";
+  AliCFTrackKineCuts *recKineCutsProtons = new AliCFTrackKineCuts(titleCF,nameCF);								  
   recKineCutsProtons->SetPtRange(fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     recKineCutsProtons->SetEtaRange(fMinY,fMaxY);
@@ -149,8 +154,8 @@ void AliProtonSpectraCorrection::InitAnalysisHistograms(Int_t nbinsY,
   recKineCutsProtons->SetChargeRec(1.0);
 
   //____________________________________________//
-  AliCFTrackKineCuts *recKineCutsAntiProtons = new AliCFTrackKineCuts("recKineCutsAntiProtons",
-								      "rec-level kine cuts");
+  titleCF = "recKineCutsAntiProtons";
+  AliCFTrackKineCuts *recKineCutsAntiProtons = new AliCFTrackKineCuts(titleCF,nameCF);
   recKineCutsAntiProtons->SetPtRange(fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
     recKineCutsAntiProtons->SetEtaRange(fMinY,fMinY);
