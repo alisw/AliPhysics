@@ -21,7 +21,7 @@ class TString;
 class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFlowEvent();
-  AliAnalysisTaskFlowEvent(const char *name,TString RPtype,Bool_t QAon,UInt_t=666);
+  AliAnalysisTaskFlowEvent(const char *name, TString RPtype, Bool_t QAon, UInt_t seed=666);
   virtual ~AliAnalysisTaskFlowEvent();
   
   virtual void   UserCreateOutputObjects();
@@ -77,17 +77,9 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   // end setters common constants
 
   // setters for adding by hand flow values (afterburner)
-  void SetMCReactionPlaneAngle(Double_t fPhiRP)  { this->fMCReactionPlaneAngle = fPhiRP; }
-  void SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
-  Int_t GetNoOfLoops() const {return this->fNoOfLoops;} 
-  void SetEllipticFlowValue(Double_t elfv) {this->fEllipticFlowValue = elfv;}
-  Double_t GetEllipticFlowValue() const {return this->fEllipticFlowValue;} 
-  void SetSigmaEllipticFlowValue(Double_t sigelfv) {this->fSigmaEllipticFlowValue = sigelfv;}
-  Double_t GetSigmaEllipticFlowValue() const {return this->fSigmaEllipticFlowValue;} 
-  void SetMultiplicityOfEvent(Int_t multevnt) {this->fMultiplicityOfEvent = multevnt;}
-  Int_t GetMultiplicityOfEvent() const {return this->fMultiplicityOfEvent;} 
-  void SetSigmaMultiplicityOfEvent(Int_t sigmultevnt) {this->fSigmaMultiplicityOfEvent = sigmultevnt;}
-  Int_t GetSigmaMultiplicityOfEvent() const {return this->fSigmaMultiplicityOfEvent;} 
+  void SetAfterburnerOn(Bool_t b=kTRUE) {fAfterburnerOn=b;}
+  void SetNonFlowNumberOfTrackClones(Int_t n) {fNonFlowNumberOfTrackClones=n;}
+  void SetFlow(Double_t v1, Double_t v2, Double_t v3, Double_t v4) {fV1=v1;fV2=v2;fV3=v3;fV4=v4;}
   // end setters afterburner
 
  private:
@@ -135,16 +127,14 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   // end common constants
 
   // values afterburner
-  Double_t  fMCReactionPlaneAngle;     // the angle of the reaction plane from the MC truth
-  Int_t     fCount;                    // counter for the number of events processed
-  Int_t     fNoOfLoops;                // number of times to use the same particle (nonflow) 
-  Double_t  fEllipticFlowValue;        // Add Flow. Must be in range [0,1].
-  Double_t  fSigmaEllipticFlowValue;   // Sigma Flow (Gaussian). Must be in range [0,1].
-  Int_t     fMultiplicityOfEvent;      // Set maximal multiplicity.
-  Int_t     fSigmaMultiplicityOfEvent; // Sigma multiplicity (Gaussian).
+  Bool_t    fAfterburnerOn;              // do we afterburn?
+  Int_t     fNonFlowNumberOfTrackClones; // number of times to clone the particles (nonflow) 
+  Double_t  fV1;        // Add Flow. Must be in range [0,0.5].
+  Double_t  fV2;        // Add Flow. Must be in range [0,0.5].
+  Double_t  fV3;        // Add Flow. Must be in range [0,0.5].
+  Double_t  fV4;        // Add Flow. Must be in range [0,0.5].
     
   TRandom3* fMyTRandom3;     // TRandom3 generator
-  Bool_t    fbAfterburnerOn;
   // end afterburner
   
   ClassDef(AliAnalysisTaskFlowEvent, 1); // example of analysis
