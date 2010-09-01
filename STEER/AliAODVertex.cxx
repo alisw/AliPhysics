@@ -275,7 +275,9 @@ Int_t AliAODVertex::GetNContributors() const
 	if (!aodT) continue;
 	if (aodT->GetUsedForPrimVtxFit()) cont++;
     } 
- }
+    // the constraint adds another DOF
+    if(vtitle.Contains("VertexerTracksWithConstraint"))cont++;
+  }
   return cont;
 }
 
