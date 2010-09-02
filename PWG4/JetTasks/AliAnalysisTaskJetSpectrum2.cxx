@@ -620,9 +620,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       Printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
       return;
     }
-    if(fDebug>0){
-      fESD = dynamic_cast<AliESDEvent*> (InputEvent());
-    }
+    fESD = dynamic_cast<AliESDEvent*> (InputEvent());
   }
   
 
