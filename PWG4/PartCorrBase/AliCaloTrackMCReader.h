@@ -21,7 +21,7 @@ class TParticle ;
 
 // --- AliRoot system ---
 #include "AliCaloTrackReader.h" 
-class AliAODCaloCluster ;
+class AliVCluster ;
 class AliAODTrack ;
 class AliAODEvent ;
 class AliMCEvent  ;
@@ -69,7 +69,7 @@ public:
   AliVEvent*  GetInputEvent() const {return (AliVEvent *) GetMC();}
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;
   
-  void SetCaloClusterPID(const Int_t pdgCode, AliAODCaloCluster *calo) const ;
+  void SetCaloClusterPID(const Int_t pdgCode, AliVCluster *calo) const ;
   void SetTrackChargeAndPID(const Int_t pdgCode, AliAODTrack *track) const ;
   
   void SwitchOnOverlapCheck()  {fCheckOverlap = kTRUE;}
@@ -84,8 +84,7 @@ public:
   
   void CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg);
   void MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, TLorentzVector &p2) const ;//, Double_t &angle); 
-  void FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector momentum,   
-			Int_t &naod) ;
+  void FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector momentum) ;
   
   private:
   Bool_t    fDecayPi0 ;              // If not decayed, decay pi0 by hand

@@ -35,7 +35,7 @@
 #include "AliAnaBtag.h" 
 #include "AliCaloTrackReader.h"
 #include "AliMCAnalysisUtils.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliFiducialCut.h"
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
@@ -214,7 +214,7 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
   //CLUSTER STUFF
   if(1){
     for(Int_t iclus = 0; iclus < ntot; iclus++) {
-      AliAODCaloCluster * clus = (AliAODCaloCluster*) (cl->At(iclus));
+      AliVCluster * clus = (AliVCluster*) (cl->At(iclus));
       if(!clus) continue;
       fhClusterEnergy->Fill(clus->E());
     }
@@ -281,7 +281,7 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
         Double_t minPt   = -1;
 
 	for(Int_t iclus = 0; iclus < ntot; iclus++) {
-	  AliAODCaloCluster * clus = (AliAODCaloCluster*) (cl->At(iclus));
+	  AliVCluster * clus = (AliVCluster*) (cl->At(iclus));
 	  if(!clus) continue;
 
 	  //As of 11-Oct-2009
@@ -418,89 +418,89 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
 void  AliAnaBtag::MakeAnalysisFillHistograms() 
 {
   //Do analysis and fill histograms
-
+  
   AliStack * stack = 0x0;
-//   TParticle * primary = 0x0;
-
-
-
-
+  //   TParticle * primary = 0x0;
+  
+  
+  
+  
   if(IsDataMC()) {
     if(GetReader()->ReadStack()){
       stack =  GetMCStack() ;      
       if(!stack)
-	printf("AliAnaBtag::MakeAnalysisFillHistograms() *** no stack ***: \n");
+        printf("AliAnaBtag::MakeAnalysisFillHistograms() *** no stack ***: \n");
       
     }
   }// is data and MC
-
+  
   ////////////////////////////////////
   //Loop over jets and check for b-tag
   ////////////////////////////////////
   double maxjetEta=-4.;
   double maxjetPhi=-4.;
-
-  Int_t njets = (GetReader()->GetOutputEvent())->GetNJets();
+  
+  Int_t njets = 0; 
+  if(GetReader()->GetOutputEvent()) njets = (GetReader()->GetOutputEvent())->GetNJets();
   if(njets > 0) {
     if(GetDebug() > 0) printf("AliAnaBtag::MakeAnalysisFillHistograms() - Jet AOD branch has %d jets.  Performing b-jet tag analysis\n",njets);
-
+    
     for(Int_t ijet = 0; ijet < njets ; ijet++) {
       AliAODJet * jet = (AliAODJet*)(GetReader()->GetOutputEvent())->GetJet(ijet) ;
-
+      
       if(ijet==0){
         maxjetEta=jet->Eta();
         maxjetPhi=jet->Phi();
       }
-
+      
       fhJets->Fill(jet->Pt(),1);
       fhJetsAllEtaPhi->Fill(jet->Eta(),jet->Phi());
-
+      
       if(jet->Pt() < 0.) continue; //This has to be adjusted depending on pp or AA!
       fhJets->Fill(jet->Pt(),3); //All jets after pt cut
-
+      
       //Geometric EMCAL cut
       if(TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
       if(jet->Phi() < fJetPhiMin || jet->Phi() > fJetPhiMax) continue;
       fhJets->Fill(jet->Pt(),4); //All jets after geometric cut
-
+      
       Bool_t leadJet  = kFALSE;
       if (ijet==0){ 
-	fhJets->Fill(jet->Pt(),5); //Leading jets
-	leadJet= kTRUE;
+        fhJets->Fill(jet->Pt(),5); //Leading jets
+        leadJet= kTRUE;
       }
-
-
+      
+      
       Bool_t dvmJet = kFALSE;  
       TRefArray* rt = jet->GetRefTracks();
       Int_t ntrk = rt->GetEntries();
-
+      
       for(Int_t itrk = 0; itrk < ntrk; itrk++) {
       	AliAODTrack* jetTrack = (AliAODTrack*)jet->GetTrack(itrk);
-	Bool_t isDVM = CheckIfBjet(jetTrack);
-	if(isDVM) dvmJet = kTRUE;
+        Bool_t isDVM = CheckIfBjet(jetTrack);
+        if(isDVM) dvmJet = kTRUE;
       }
-
+      
       if(dvmJet)
-	fhJets->Fill(jet->Pt(),6);
-
-
-
+        fhJets->Fill(jet->Pt(),6);
+      
+      
       if(IsDataMC()) {
-	//determine tagging efficiency & mis-tagging rate
-	//using b-quarks from stack
-	Bool_t isTrueBjet = IsMcBJet(jet->Eta(), jet->Phi());
-	Bool_t isTrueDjet = IsMcDJet(jet->Eta(), jet->Phi());
-	if (isTrueBjet && GetDebug() > 0) printf("== True Bjet==\n");
-	if (isTrueDjet && GetDebug() > 0) printf("== True Charm-jet==\n");
-	if (dvmJet && GetDebug() > 0)     printf("== found DVM jet==\n");
+        //determine tagging efficiency & mis-tagging rate
+        //using b-quarks from stack
+        Bool_t isTrueBjet = IsMcBJet(jet->Eta(), jet->Phi());
+        Bool_t isTrueDjet = IsMcDJet(jet->Eta(), jet->Phi());
+        if (isTrueBjet && GetDebug() > 0) printf("== True Bjet==\n");
+        if (isTrueDjet && GetDebug() > 0) printf("== True Charm-jet==\n");
+        if (dvmJet && GetDebug() > 0)     printf("== found DVM jet==\n");
       }
-
+      
     } //jet loop
   } //jets exist
   
-
-
-
+  
+  
+  
   //Electron loop, read back electrons, fill histos
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaBtag::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
@@ -508,25 +508,25 @@ void  AliAnaBtag::MakeAnalysisFillHistograms()
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4Particle* ele =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = ele->GetPdg();
-
-
+    
+    
     if(TMath::Abs(pdg) != AliCaloPID::kElectron) continue; //not necessary..
-
+    
     //MC tag of this electron
     //    Int_t mctag = ele->GetTag();
-
-
+    
+    
     fhElectrons->Fill(ele->Pt(),1); //All electrons
     Bool_t photonic = kFALSE;
     photonic = PhotonicV0(ele->GetTrackLabel(0)); //check against V0s
     if(!photonic) fhElectrons->Fill(ele->Pt(),3); //nonphotonic electrons
     if(photonic) fhElectrons->Fill(ele->Pt(),4);  //photonic electrons
-
+    
     //Fill electron histograms 
     Float_t phiele = ele->Phi();
     Float_t etaele = ele->Eta();
-
-
+    
+    
     if(ele->GetBtag()>0){ // removed bit tag shit
       fhElectrons->Fill(ele->Pt(),5);
       if(!photonic) fhElectrons->Fill(ele->Pt(),6);
@@ -541,7 +541,7 @@ void  AliAnaBtag::MakeAnalysisFillHistograms()
     }
     
   }//electron aod loop
-
+  
 }
 
 //__________________________________________________________________

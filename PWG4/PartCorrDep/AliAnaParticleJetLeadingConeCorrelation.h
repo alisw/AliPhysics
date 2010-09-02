@@ -21,7 +21,7 @@ class TH2F;
 
 //---- Analysis system ----
 class AliAODTrack;
-class AliAODCaloCluster;
+class AliVCluster;
 class AliCaloTrackReader;
 class AliNeutralMesonSelection;
 
@@ -125,7 +125,7 @@ public:
   void MakeJetFromAOD(AliAODPWG4ParticleCorrelation * particle, const TLorentzVector pLeading, 
 		      TLorentzVector & jet, TLorentzVector & bkg) const ; 
   
-  Bool_t  SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) ;
+  Bool_t  SelectCluster(AliVCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) ;
   
  private:
   

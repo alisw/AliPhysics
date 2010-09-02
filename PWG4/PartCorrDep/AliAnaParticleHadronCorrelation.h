@@ -61,7 +61,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   void MakeAnalysisFillAOD()  ;
   void MakeAnalysisFillHistograms() ; 
   
-  Bool_t SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) ;
+  Bool_t SelectCluster(AliVCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) ;
   
  private:
   

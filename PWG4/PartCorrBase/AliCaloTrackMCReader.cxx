@@ -37,7 +37,7 @@
 #include "AliCaloTrackMCReader.h" 
 #include "AliGenEventHeader.h"
 #include "AliStack.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliAODTrack.h"
 #include "AliAODEvent.h"
 #include "AliFiducialCut.h"
@@ -189,8 +189,7 @@ void  AliCaloTrackMCReader::CheckOverlap(const Float_t anglethres, const Int_t i
 }
 
 //____________________________________________________________________________
-void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector momentum,
-					     Int_t &ncalo) {
+void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector momentum) {
   //Fill AODCaloClusters or TParticles lists of PHOS or EMCAL
   //In PHOS
   if(fFillPHOS && momentum.Pt() > fPHOSPtMin){
@@ -202,12 +201,11 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
     if(fCheckOverlap) 
       CheckOverlap(fPHOSOverlapAngle,particle->GetFirstMother(),index, iParticle, momentum, pdg);
     
-    Char_t ttype= AliAODCluster::kPHOSNeutral;	
+    Char_t ttype= AliVCluster::kPHOSNeutral;	
     Int_t labels[] = {index};
     Float_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
     //Create object and write it to file
-    AliAODCaloCluster *calo = new((*(fOutputEvent->GetCaloClusters()))[ncalo++]) 
-      AliAODCaloCluster(index,1,labels,momentum.E(), x, NULL, ttype, 0);
+    AliAODCaloCluster *calo = new AliAODCaloCluster(index,1,labels,momentum.E(), x, NULL, ttype, 0);
     
     SetCaloClusterPID(pdg,calo) ;
     if(fDebug > 3 && momentum.Pt() > 0.2)
@@ -227,12 +225,11 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
     if(fCheckOverlap) 
       CheckOverlap(fEMCALOverlapAngle,particle->GetFirstMother(),iParticle, index, momentum, pdg);
     
-    Char_t ttype= AliAODCluster::kEMCALClusterv1;
+    Char_t ttype= AliVCluster::kEMCALClusterv1;
     Int_t labels[] = {index};
     Float_t x[] = {momentum.X(), momentum.Y(), momentum.Z()};
     //Create object and write it to file
-    AliAODCaloCluster *calo = new((*(fOutputEvent->GetCaloClusters()))[ncalo++]) 
-      AliAODCaloCluster(iParticle,1,labels,momentum.E(), x, NULL, ttype, 0);
+    AliAODCaloCluster *calo = new AliAODCaloCluster(iParticle,1,labels,momentum.E(), x, NULL, ttype, 0);
     
     SetCaloClusterPID(pdg,calo) ;
     if(fDebug > 3 && momentum.Pt() > 0.2)
@@ -256,8 +253,6 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
 	
   Int_t iParticle = 0 ;
   Double_t charge = 0.;
-  Int_t ncalo  = (fOutputEvent->GetCaloClusters())->GetEntriesFast();
-  Int_t ntrack = (fOutputEvent->GetTracks())->GetEntriesFast();
 	
   for (iParticle = 0 ; iParticle <  GetStack()->GetNtrack() ; iParticle++) {
     TParticle * particle = GetStack()->Particle(iParticle);
@@ -288,8 +283,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
 	  x[0] = particle->Vx(); x[1] = particle->Vy(); x[2] = particle->Vz();
 	  p[0] = particle->Px(); p[1] = particle->Py(); p[2] = particle->Pz();
 	  //Create object and write it to file
-	  AliAODTrack *aodTrack = new((*(fOutputEvent->GetTracks()))[ntrack++]) 
-	    AliAODTrack(0, iParticle, p, kTRUE, x, kFALSE,NULL, 0, 0, 
+	  AliAODTrack *aodTrack = new AliAODTrack(0, iParticle, p, kTRUE, x, kFALSE,NULL, 0, 0, 
 			NULL,
 			0x0,//primary,
 			kFALSE, // No fit performed
@@ -300,7 +294,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
 	  fAODCTS->Add(aodTrack);//reference the selected object to the list
 	}
 	//Keep some charged particles in calorimeters lists
-	if((fFillPHOS || fFillEMCAL) && KeepChargedParticles(pdg)) FillCalorimeters(iParticle, particle, momentum, ncalo);
+	if((fFillPHOS || fFillEMCAL) && KeepChargedParticles(pdg)) FillCalorimeters(iParticle, particle, momentum);
 	
       }//Charged
       
@@ -311,7 +305,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
 	if(SkipNeutralParticles(pdg)) continue ;
 	//Fill particle/calocluster arrays
 	if(!fDecayPi0) {
-	  FillCalorimeters(iParticle, particle, momentum, ncalo);
+	  FillCalorimeters(iParticle, particle, momentum);
 	}
 	else {
 	  //Sometimes pi0 are stable for the generator, if needed decay it by hand
@@ -329,11 +323,11 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
 	      TParticle * pPhoton2 = new TParticle(22,1,iParticle,0,0,0,lvGamma2.Px(),lvGamma2.Py(),
 						   lvGamma2.Pz(),lvGamma2.E(),0,0,0,0);
 	      //Fill particle/calocluster arrays
-	      FillCalorimeters(iParticle,pPhoton1,lvGamma1, ncalo);
-	      FillCalorimeters(iParticle,pPhoton2,lvGamma2, ncalo);
+	      FillCalorimeters(iParticle,pPhoton1,lvGamma1);
+	      FillCalorimeters(iParticle,pPhoton2,lvGamma2);
 	    }//pt cut
 	  }//pi0
-	  else FillCalorimeters(iParticle,particle, momentum, ncalo); //Add the rest
+	  else FillCalorimeters(iParticle,particle, momentum); //Add the rest
 	}
       }//neutral particles
     } //particle with correct status
@@ -378,6 +372,8 @@ void AliCaloTrackMCReader::Print(const Option_t * opt) const
   //Print some relevant parameters set for the analysis
   if(! opt)
     return;
+  
+  AliCaloTrackReader::Print(opt);
   
   printf("**** Print **** %s %s ****\n", GetName(), GetTitle() ) ;
   
@@ -704,7 +700,7 @@ void AliCaloTrackMCReader::SetTrackChargeAndPID(const Int_t pdgCode, AliAODTrack
 }
 
 //____________________________________________________________________
-void AliCaloTrackMCReader::SetCaloClusterPID(const Int_t pdgCode, AliAODCaloCluster *calo) const {
+void AliCaloTrackMCReader::SetCaloClusterPID(const Int_t pdgCode, AliVCluster *calo) const {
 //Give a PID weight for CaloClusters equal to 1 depending on the particle type
 
   Float_t pid[13] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
@@ -712,198 +708,198 @@ void AliCaloTrackMCReader::SetCaloClusterPID(const Int_t pdgCode, AliAODCaloClus
   switch (pdgCode) {
 
   case 22: // gamma
-    pid[AliAODCaloCluster::kPhoton] = 1.;
+    pid[AliVCluster::kPhoton] = 1.;
     calo->SetPID(pid);
     break;
 
   case 11: // e- 
-    pid[AliAODCaloCluster::kElectron] = 1.;
+    pid[AliVCluster::kElectron] = 1.;
     calo->SetPID(pid);
     break;
     
   case -11: // e+
-    pid[AliAODCaloCluster::kElectron] = 1.;
+    pid[AliVCluster::kElectron] = 1.;
     calo->SetPID(pid);
     break;
     
   case 13: // mu- 
-    pid[AliAODCaloCluster::kCharged] = 1.;
+    pid[AliVCluster::kCharged] = 1.;
     calo->SetPID(pid);
     break;
     
   case -13: // mu+
-    pid[AliAODCaloCluster::kCharged] = 1.;
+    pid[AliVCluster::kCharged] = 1.;
     calo->SetPID(pid);
     break;
     
   case 111: // pi0
-    pid[AliAODCaloCluster::kPi0] = 1.;
+    pid[AliVCluster::kPi0] = 1.;
     calo->SetPID(pid);
     break;
     
   case 211: // pi+
-    pid[AliAODCaloCluster::kCharged] = 1.;
+    pid[AliVCluster::kCharged] = 1.;
     calo->SetPID(pid);
     break;
     
   case -211: // pi-
-    pid[AliAODCaloCluster::kCharged] = 1.;
+    pid[AliVCluster::kCharged] = 1.;
     calo->SetPID(pid);
     break;
     
   case 130: // K0L
-    pid[AliAODCaloCluster::kKaon0] = 1.;
-    pid[AliAODCaloCluster::kNeutral] = 1;
+    pid[AliVCluster::kKaon0] = 1.;
+    pid[AliVCluster::kNeutral] = 1;
     calo->SetPID(pid);
     break;
     
   case 321: // K+
-    pid[AliAODCaloCluster::kCharged] = 1.;
+    pid[AliVCluster::kCharged] = 1.;
     calo->SetPID(pid);
     break;
     
   case -321: // K- 
-    pid[AliAODCaloCluster::kCharged] = 1.;
+    pid[AliVCluster::kCharged] = 1.;
     calo->SetPID(pid);
     break;
     
   case 2112: // n
-    pid[AliAODCaloCluster::kNeutron] = 1.;
-    pid[AliAODCaloCluster::kNeutral] = 1.;
+    pid[AliVCluster::kNeutron] = 1.;
+    pid[AliVCluster::kNeutral] = 1.;
     calo->SetPID(pid);
     break;
     
   case 2212: // p
-    pid[AliAODCaloCluster::kCharged] = 1.;
+    pid[AliVCluster::kCharged] = 1.;
     calo->SetPID(pid);
     break;
     
   case -2212: // anti-p
-    pid[AliAODCaloCluster::kCharged] = 1.;
+    pid[AliVCluster::kCharged] = 1.;
     calo->SetPID(pid);
     break;
 
   case 310: // K0S
-    pid[AliAODCaloCluster::kKaon0] = 1.;
-    pid[AliAODCaloCluster::kNeutral] = 1.;
+    pid[AliVCluster::kKaon0] = 1.;
+    pid[AliVCluster::kNeutral] = 1.;
     calo->SetPID(pid);
     break;
     
   case 311: // K0
-    pid[AliAODCaloCluster::kKaon0] = 1.;
-    pid[AliAODCaloCluster::kNeutral] = 1.;
+    pid[AliVCluster::kKaon0] = 1.;
+    pid[AliVCluster::kNeutral] = 1.;
     calo->SetPID(pid);
     break;
     
   case -311: // anti-K0
-    pid[AliAODCaloCluster::kKaon0] = 1.;
-    pid[AliAODCaloCluster::kNeutral] = 1.;
+    pid[AliVCluster::kKaon0] = 1.;
+    pid[AliVCluster::kNeutral] = 1.;
     calo->SetPID(pid);
     break;
     
   case 221: // eta
-    pid[AliAODCaloCluster::kNeutral] = 1.;
+    pid[AliVCluster::kNeutral] = 1.;
     calo->SetPID(pid);
     break;
 
   case 3122: // lambda
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case 3222: // Sigma+
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case 3212: // Sigma0
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case 3112: // Sigma-
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case 3322: // Xi0
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case 3312: // Xi-
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case 3334: // Omega-
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case -2112: // n-bar
-    pid[AliAODCaloCluster::kNeutron] = 1.;
-    pid[AliAODCaloCluster::kNeutral] = 1.;
+    pid[AliVCluster::kNeutron] = 1.;
+    pid[AliVCluster::kNeutral] = 1.;
     calo->SetPID(pid);
     break;
 
   case -3122: // anti-Lambda
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case -3222: // anti-Sigma-
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case -3212: // anti-Sigma0
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case -3112: // anti-Sigma+
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case -3322: // anti-Xi0
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case -3312: // anti-Xi+
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case -3334: // anti-Omega+
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case 411: // D+
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case -411: // D- 
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case 421: // D0
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   case -421: // anti-D0
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
     break;
 
   default : // unknown
-    pid[AliAODCaloCluster::kUnknown] = 1.;
+    pid[AliVCluster::kUnknown] = 1.;
     calo->SetPID(pid);
  }
 

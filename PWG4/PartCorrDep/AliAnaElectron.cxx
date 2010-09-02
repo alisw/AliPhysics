@@ -36,7 +36,7 @@
 #include "AliAnaElectron.h" 
 #include "AliCaloTrackReader.h"
 #include "AliMCAnalysisUtils.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliFiducialCut.h"
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
@@ -783,7 +783,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
         Double_t minPt   = -1;
 
 	for(Int_t iclus = 0; iclus < ntot; iclus++) {
-	  AliAODCaloCluster * clus = (AliAODCaloCluster*) (cl->At(iclus));
+	  AliVCluster * clus = (AliVCluster*) (cl->At(iclus));
 	  if(!clus) continue;
 
 	  //As of 11-Oct-2009

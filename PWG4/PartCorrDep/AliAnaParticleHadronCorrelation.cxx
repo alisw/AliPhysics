@@ -40,7 +40,7 @@
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliFiducialCut.h"
 #include "AliAODTrack.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliMCAnalysisUtils.h"
 #include "TParticle.h"
 #include "AliStack.h"
@@ -817,7 +817,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
     //Int_t iEvent= GetReader()->GetEventNumber() ;
   Int_t nclus = pl->GetEntriesFast();
   for(Int_t iclus = 0;iclus < nclus ; iclus ++ ){
-    AliAODCaloCluster * calo = (AliAODCaloCluster *) (pl->At(iclus)) ;
+    AliVCluster * calo = (AliVCluster *) (pl->At(iclus)) ;
     
     Int_t evtIndex1 = 0 ; 
     if (GetMixedEvent()) {
@@ -879,7 +879,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillAOD(AliAODPWG4P
         //Search the photon companion in case it comes from  a Pi0 decay
         //Apply several cuts to select the good pair;
       for(Int_t jclus = iclus+1; jclus < pl->GetEntries() ; jclus ++ ){
-        AliAODCaloCluster * calo2 = (AliAODCaloCluster *) (pl->At(jclus)) ;
+        AliVCluster * calo2 = (AliVCluster *) (pl->At(jclus)) ;
         Int_t evtIndex2 = 0 ; 
         if (GetMixedEvent()) {
           evtIndex2=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
@@ -1072,7 +1072,7 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelationFillHistograms(AliA
 
 
 //____________________________________________________________________________
-Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) {
+Bool_t  AliAnaParticleHadronCorrelation::SelectCluster(AliVCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) {
   //Select cluster depending on its pid and acceptance selections
   
   //Skip matched clusters with tracks

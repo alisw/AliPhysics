@@ -31,10 +31,6 @@
 
 //---- ANALYSIS system ----
 #include "AliCaloTrackAODReader.h" 
-#include "AliAODCaloCluster.h"
-#include "AliAODTrack.h"
-#include "AliESDtrack.h"
-#include "AliFiducialCut.h"
 #include "AliAODInputHandler.h"
 #include "AliMultiEventInputHandler.h"
 #include "AliAnalysisManager.h"
@@ -52,30 +48,8 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
   fDataType=kAOD;
   fReadStack          = kTRUE;
   fReadAODMCParticles = kFALSE;
-  //We want tracks fitted in the detectors:
-  fTrackStatus=AliESDtrack::kTPCrefit;
-  fTrackStatus|=AliESDtrack::kITSrefit;
-
+ 
 }
-/*
-//____________________________________________________________________________
-AliCaloTrackAODReader::AliCaloTrackAODReader(const AliCaloTrackAODReader & aodr) :   
-  AliCaloTrackReader(aodr), fWriteOutputStdAOD(aodr.fWriteOutputStdAOD)
-{
-  // cpy ctor
-}
-*/
-//_________________________________________________________________________
-//AliCaloTrackAODReader & AliCaloTrackAODReader::operator = (const AliCaloTrackAODReader & source)
-//{
-//  // assignment operator
-//
-//  if(&source == this) return *this;
-//
-//  return *this;
-//
-//}
-
 
 //____________________________________________________________________________
 //void AliCaloTrackAODReader::GetSecondInputAODVertex(Double_t  v[3]) const {

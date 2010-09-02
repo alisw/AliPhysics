@@ -36,7 +36,7 @@
 
 //---- Analysis system ----
 #include "AliAODTrack.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliCaloTrackReader.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliAnaParticleJetLeadingConeCorrelation.h"  
@@ -44,7 +44,6 @@
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliFiducialCut.h"
 #include "AliAODTrack.h"
-#include "AliAODCaloCluster.h"
 
 ClassImp(AliAnaParticleJetLeadingConeCorrelation)
 
@@ -953,7 +952,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
 	  
     //Cluster loop, select pairs with good pt, phi and fill AODs or histograms
     for(Int_t iclus = 0;iclus < GetAODEMCAL()->GetEntriesFast() ; iclus ++ ){
-      AliAODCaloCluster * calo = (AliAODCaloCluster *)(GetAODEMCAL()->At(iclus)) ;
+      AliVCluster * calo = (AliVCluster *)(GetAODEMCAL()->At(iclus)) ;
       
 	  //Input from second AOD?
 	  Int_t inputi = 0;
@@ -993,7 +992,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
 	//Search the photon companion in case it comes from  a Pi0 decay
 	//Apply several cuts to select the good pair
 	for(Int_t jclus = iclus+1; jclus < GetAODEMCAL()->GetEntriesFast() ; jclus ++ ){
-	  AliAODCaloCluster * calo2 = (AliAODCaloCluster *) (GetAODEMCAL()->At(jclus)) ;
+	  AliVCluster * calo2 = (AliVCluster *) (GetAODEMCAL()->At(jclus)) ;
 	  
 	  //Input from second AOD?
 	  Int_t inputj = 0;
@@ -1502,7 +1501,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
 	}
 	  
     for(Int_t iclus = 0;iclus < (GetAODEMCAL())->GetEntriesFast() ; iclus ++ ){
-      AliAODCaloCluster * calo = (AliAODCaloCluster *) (GetAODEMCAL()->At(iclus)) ;
+      AliVCluster * calo = (AliVCluster *) (GetAODEMCAL()->At(iclus)) ;
       
       //Cluster selection, not charged
       if(IsTrackMatched(calo)) continue ;
@@ -1622,7 +1621,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
     //Loop on jet particles
     if(refclusters){
       for(Int_t iclus = 0;iclus < refclusters->GetEntriesFast() ; iclus ++ ){
-		  AliAODCaloCluster * calo = (AliAODCaloCluster *) refclusters->At(iclus) ;
+		  AliVCluster * calo = (AliVCluster *) refclusters->At(iclus) ;
 		  
 		  //Input from second AOD?
 		  Int_t input = 0;
@@ -1640,7 +1639,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
     //Loop on background particles
     if(refclustersbkg){
       for(Int_t iclus = 0;iclus < refclustersbkg->GetEntriesFast() ; iclus ++ ){
-		  AliAODCaloCluster * calo = (AliAODCaloCluster *) refclustersbkg->At(iclus) ;
+		  AliVCluster * calo = (AliVCluster *) refclustersbkg->At(iclus) ;
 
 		  //Input from second AOD?
 		  Int_t input = 0;
@@ -1668,7 +1667,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
 }
 
 //____________________________________________________________________________
-Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliAODCaloCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) {
+Bool_t  AliAnaParticleJetLeadingConeCorrelation::SelectCluster(AliVCluster * calo, Double_t *vertex, TLorentzVector & mom, Int_t & pdg) {
   //Select cluster depending on its pid and acceptance selections
   
   //Skip matched clusters with tracks
