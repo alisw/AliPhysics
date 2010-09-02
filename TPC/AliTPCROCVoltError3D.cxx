@@ -50,7 +50,7 @@ AliTPCROCVoltError3D::AliTPCROCVoltError3D()
     fC0(0.),fC1(0.),
     fROCdisplacement(kTRUE),
     fInitLookUp(kFALSE),
-    fROCDataFileName("$(ALICE_ROOT)/TPC/Calib/maps/TPCROCdzSurvey.root"),  // standard file name of ROC survey
+    fROCDataFileName((char*)"$(ALICE_ROOT)/TPC/Calib/maps/TPCROCdzSurvey.root"),  
     fdzDataLinFit(0)
 {
   //

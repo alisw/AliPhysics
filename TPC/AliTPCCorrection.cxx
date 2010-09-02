@@ -88,7 +88,8 @@ TObjArray *AliTPCCorrection::fgVisualCorrection=0;
 
 // FIXME: the following values should come from the database
 const Double_t AliTPCCorrection::fgkTPCZ0    = 249.7;     // nominal gating grid position 
-const Double_t AliTPCCorrection::fgkIFCRadius=  83.06;    // Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
+const Double_t AliTPCCorrection::fgkIFCRadius=  83.5;     // radius which renders the "18 rod manifold" best -> compare calc. of Jim Thomas
+// compare gkIFCRadius=  83.05: Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
 const Double_t AliTPCCorrection::fgkOFCRadius= 254.5;     // Mean Radius of the Outer Field Cage (252.55 min, 256.45 max) (cm)
 const Double_t AliTPCCorrection::fgkZOffSet  =   0.2;     // Offset from CE: calculate all distortions closer to CE as if at this point
 const Double_t AliTPCCorrection::fgkCathodeV = -100000.0; // Cathode Voltage (volts)

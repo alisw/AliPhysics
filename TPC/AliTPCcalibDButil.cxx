@@ -2235,7 +2235,7 @@ Double_t AliTPCcalibDButil::EvalGraphConst(TGraph * const graph, Double_t xref){
   if (xref<graph->GetX()[0]) return graph->GetY()[0];
   if (xref>graph->GetX()[graph->GetN()-1]) return graph->GetY()[graph->GetN()-1]; 
 
-  printf("graph->Eval(graph->GetX()[0]) %f, graph->Eval(xref) %f \n",graph->Eval(graph->GetX()[0]), graph->Eval(xref));
+  //  printf("graph->Eval(graph->GetX()[0]) %f, graph->Eval(xref) %f \n",graph->Eval(graph->GetX()[0]), graph->Eval(xref));
 
   if(graph->GetN()==1)
     return graph->Eval(graph->GetX()[0]);
