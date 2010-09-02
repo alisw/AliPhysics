@@ -42,7 +42,7 @@
 #include "AliStack.h"
 #include "AliFiducialCut.h"
 #include "TParticle.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 
@@ -479,10 +479,10 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     pl = GetAODPHOS();
   else if (fCalorimeter == "EMCAL")
     pl = GetAODEMCAL();
-  //Fill AODCaloClusters and AODParticle with PHOS aods
+
   TLorentzVector mom ;
   for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
-    AliAODCaloCluster * calo = (AliAODCaloCluster*) (pl->At(icalo));	
+    AliVCluster * calo = (AliVCluster*) (pl->At(icalo));	
     
     //Cluster selection, not charged, with pi0 id and in fiducial cut
 	  

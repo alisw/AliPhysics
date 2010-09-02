@@ -38,7 +38,7 @@
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliAODMCParticle.h"
 #include "AliMixedEvent.h"
 
@@ -49,12 +49,12 @@ ClassImp(AliAnaPhoton)
   AliAnaPhoton::AliAnaPhoton() : 
     AliAnaPartCorrBaseClass(), fCalorimeter(""), 
     fMinDist(0.),fMinDist2(0.),fMinDist3(0.),fRejectTrackMatch(0),
-	fCheckConversion(kFALSE),fAddConvertedPairsToAOD(kFALSE), fMassCut(0),
+    fCheckConversion(kFALSE),fAddConvertedPairsToAOD(kFALSE), fMassCut(0),
     fTimeCutMin(-1), fTimeCutMax(9999999), fNCellsCut(0),
-	fhPtPhoton(0),fhPhiPhoton(0),fhEtaPhoton(0),
+    fhPtPhoton(0),fhPhiPhoton(0),fhEtaPhoton(0),
     //MC
     fhDeltaE(0), fhDeltaPt(0),fhRatioE(0), fhRatioPt(0),fh2E(0),fh2Pt(0),
-	fhPtMCPhoton(0),fhPhiMCPhoton(0),fhEtaMCPhoton(0), 
+    fhPtMCPhoton(0),fhPhiMCPhoton(0),fhEtaMCPhoton(0), 
     fhPtPrompt(0),fhPhiPrompt(0),fhEtaPrompt(0), 
     fhPtFragmentation(0),fhPhiFragmentation(0),fhEtaFragmentation(0), 
     fhPtISR(0),fhPhiISR(0),fhEtaISR(0), 
@@ -473,18 +473,20 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     pl = GetAODPHOS();
   else if (fCalorimeter == "EMCAL")
     pl = GetAODEMCAL();
-  
-  //Fill AODCaloClusters and AODParticle with PHOS/EMCAL aods
+
+
+  //Fill AODParticle with PHOS/EMCAL aods
   TLorentzVector mom, mom2 ;
   Int_t nCaloClusters = pl->GetEntriesFast();
+  if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - input %s cluster entries %d\n", fCalorimeter.Data(), nCaloClusters);
   Bool_t * indexConverted = new Bool_t[nCaloClusters];
   for (Int_t i = 0; i < nCaloClusters; i++) 
     indexConverted[i] = kFALSE;
 	
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++){    
 	  
-	  AliAODCaloCluster * calo =  (AliAODCaloCluster*) (pl->At(icalo));	
-    
+	  AliVCluster * calo =  (AliVCluster*) (pl->At(icalo));	
+    //printf("calo %d, %f\n",icalo,calo->E());
     Int_t evtIndex = 0 ; 
     if (GetMixedEvent()) {
       evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
@@ -510,15 +512,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     if(tof < fTimeCutMin || tof > fTimeCutMax) continue;
 	  
-    if(calo->GetNCells() <= fNCellsCut) continue;
+    if(calo->GetNCells() <= fNCellsCut && GetReader()->GetDataType() != AliCaloTrackReader::kMC) continue;
 	  
-    //printf("AliAnaPhoton::Current Event %d; Current File Name : %s, E %f, pT %f, Ecl %f\n",GetReader()->GetEventNumber(),(GetReader()->GetCurrentFileName()).Data(), mom.E(), mom.Pt(),calo->E());
+    //printf("AliAnaPhoton::Current Event %d; Current File Name : %s, E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",GetReader()->GetEventNumber(),(GetReader()->GetCurrentFileName()).Data(), 
+      //     mom.E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
     
     //Check acceptance selection
     if(IsFiducialCutOn()){
       Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
       if(! in ) continue ;
     }
+    //printf("Fiducial cut passed \n");
     
     //Create AOD for analysis
     AliAODPWG4Particle aodph = AliAODPWG4Particle(mom);
@@ -605,7 +609,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         //Check if set previously as converted couple, if so skip its use.
         if (indexConverted[jcalo]) continue;
         //printf("Check Conversion indeces %d and %d\n",icalo,jcalo);
-        AliAODCaloCluster * calo2 =  (AliAODCaloCluster*) (pl->At(jcalo));              //Get cluster kinematics
+        AliVCluster * calo2 =  (AliVCluster*) (pl->At(jcalo));              //Get cluster kinematics
         Int_t evtIndex2 = 0 ; 
         if (GetMixedEvent()) {
           evtIndex2=GetMixedEvent()->EventIndexForCaloCluster(calo2->GetID()) ; 

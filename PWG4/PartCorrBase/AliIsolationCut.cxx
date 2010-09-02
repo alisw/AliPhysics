@@ -34,7 +34,7 @@
 #include "AliIsolationCut.h" 
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliAODTrack.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliCaloTrackReader.h"
 
 ClassImp(AliIsolationCut)
@@ -188,7 +188,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
 	}
     TLorentzVector mom ;
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ ){
-      AliAODCaloCluster * calo = (AliAODCaloCluster *)(plNe->At(ipr)) ;
+      AliVCluster * calo = (AliVCluster *)(plNe->At(ipr)) ;
       
       //Do not count the candidate (photon or pi0) or the daughters of the candidate
       if(calo->GetID() == pCandidate->GetCaloLabel(0) || calo->GetID() == pCandidate->GetCaloLabel(1)) continue ;      //Skip matched clusters with tracks

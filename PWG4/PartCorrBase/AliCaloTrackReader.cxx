@@ -42,6 +42,7 @@
 #include "AliVTrack.h"
 #include "AliVParticle.h"
 #include "AliMixedEvent.h"
+#include "AliESDtrack.h"
 
 ClassImp(AliCaloTrackReader)
   
@@ -399,6 +400,11 @@ void AliCaloTrackReader::InitParameters()
   fFiredTriggerClassName      = "";
 	 	
   fAnaLED = kFALSE;
+  
+  //We want tracks fitted in the detectors:
+  fTrackStatus=AliESDtrack::kTPCrefit;
+  fTrackStatus|=AliESDtrack::kITSrefit;  
+  
 }
 
 //________________________________________________________________

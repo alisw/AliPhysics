@@ -8,11 +8,8 @@
 // Class for reading data (ESDs) in order to do prompt gamma 
 //  or other particle identification and correlations
 // 
-// It is a filtering class, transforms ESD tracks or CaloClusters
-// into AOD tracks and calocluters, which are the basic input of the analysis
-// classes in this frame.
-// It is recommended to use the official filter AliAnalysisTaskESDfilter, and 
-// then the reader for AODs AliCaloTrackAODReader.//
+//
+//
 //
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
@@ -30,14 +27,7 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
   //AliCaloTrackESDReader(const AliCaloTrackESDReader & g) ; // cpy ctor
   //AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & g) ;//cpy assignment
   virtual ~AliCaloTrackESDReader() {;} //virtual dtor
-  
-//  void FillInputCTS  () ;
-//  void FillInputEMCAL() ;
-//  void FillInputPHOS () ;  
-//  void FillInputEMCALCells() ;
-//  void FillInputPHOSCells() ;
-  
-//  void GetVertex(Double_t v[3]) const ;
+
   Double_t GetBField() const;
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
 	

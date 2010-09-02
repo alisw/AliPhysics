@@ -157,7 +157,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   
   if(!partList || partList->GetEntriesFast() == 0) return ;
   
-  //Fill AODCaloClusters and AODParticle with PHOS/EMCAL aods
+  //Fill AODParticle with PHOS/EMCAL aods
   if(fDetector == "EMCAL" || fDetector == "PHOS"){
     
     //Get vertex for photon momentum calculation
@@ -223,7 +223,6 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   
   if(GetDebug() > 0) {
     if(fDetector!="CTS" && GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
-      //printf("Example: final aod calocluster entries %d\n", GetAODCaloClusters()->GetEntriesFast());
       printf("AliAnaExample::MakeAnalysisFillAOD() - Final aod branch entries %d\n", GetOutputAODBranch()->GetEntriesFast());  
     //	if(fDetector!="CTS" && GetReader()->GetDataType()!= AliCaloTrackReader::kMC) 
     //printf("Example: final aod cell  entries %d\n", GetAODCaloCells()->GetNumberOfCells());

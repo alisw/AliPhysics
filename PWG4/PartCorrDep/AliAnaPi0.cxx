@@ -41,7 +41,6 @@
 #include "AliStack.h"
 #include "AliFiducialCut.h"
 #include "TParticle.h"
-#include "AliAODCaloCluster.h"
 #include "AliVEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
@@ -317,7 +316,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 	
 	
   //Histograms filled only if MC data is requested 	
-  if(IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC) ){
+  if(IsDataMC()){
     // if(fhEtalon->GetXaxis()->GetXbins() && fhEtalon->GetXaxis()->GetXbins()->GetSize()){ //Variable bin size
     //   fhPrimPt = new TH1D("hPrimPt","Primary pi0 pt",fhEtalon->GetXaxis()->GetNbins(),fhEtalon->GetXaxis()->GetXbins()->GetArray()) ;
     //   fhPrimAccPt = new TH1D("hPrimAccPt","Primary pi0 pt with both photons in acceptance",fhEtalon->GetXaxis()->GetNbins(),
@@ -552,6 +551,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   }// DoOwnMix
   
   //Acceptance
+    printf("Fill acceptance histograms? %d, %d\n", IsDataMC(), GetReader()->ReadStack());
+
   if(IsDataMC() && GetReader()->ReadStack()){	
     AliStack * stack = GetMCStack();
     if(stack && (IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC)) ){
@@ -809,7 +810,7 @@ Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)
     GetMixedEvent()->GetVertexOfEvent(rv)->GetXYZ(vert); 
     if(vert[2] < -fZvtxCut || vert[2] > fZvtxCut)
       rv = -2 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
-  } else {
+  } else if(GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
     Double_t * tempo = GetReader()->GetVertex() ;
     vert[0] = tempo[0] ; 
     vert[1] = tempo[1] ; 
@@ -818,6 +819,8 @@ Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)
       rv = -1 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
     else 
       rv = 0 ;
-  }
+  }//No MC reader
+  else rv = 0;
+  
   return rv ; 
 }

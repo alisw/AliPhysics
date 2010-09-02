@@ -136,7 +136,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else {//EMCAL
     //anaphoton->SetNCellCut(0);// At least 2 cells
     anaphoton->SetMinPt(0.1); // no effect minium EMCAL cut.
-    if(kUseKinematics) anaphoton->SetTimeCut(525,725);// Time window of [550-750] ns
+    if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
     anaphoton->SetMinDistanceToBadChannel(6, 12, 18);
   }
   anaphoton->SetCalorimeter(calorimeter);
@@ -191,7 +191,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SetNZvertBin(1);
   anapi0->SetNRPBin(1);
   anapi0->SetNMaxEvMix(10);
-  anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
+  if(kUseKinematics)anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
+  else anapi0->SwitchOffDataMC() ;
   if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
   else  anapi0->SetNumberOfModules(4); //EMCAL first year
   anapi0->SetHistoPtRangeAndNBins(0, 50, 200) ;

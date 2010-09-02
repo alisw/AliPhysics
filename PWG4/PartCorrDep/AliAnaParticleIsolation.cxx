@@ -41,7 +41,7 @@
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliAODTrack.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 
 ClassImp(AliAnaParticleIsolation)
   
@@ -796,7 +796,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if(refclusters){    
       TLorentzVector mom ;
       for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++){
-        AliAODCaloCluster* calo = (AliAODCaloCluster *) refclusters->At(icalo);
+        AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
         Int_t input = 0;
         //			if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
         //			else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;

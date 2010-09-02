@@ -20,7 +20,7 @@
 // being kPhoton, kElectron, kPi0 ... as defined in the header file
 //   - GetPdg(const TString calo, const Double_t * pid, const Float_t energy)
 //      Reads the PID weights array of the ESDs and depending on its magnitude identifies the particle
-//   - GetPdg(const TString calo,const TLorentzVector mom, const AliAODCaloCluster * cluster)
+//   - GetPdg(const TString calo,const TLorentzVector mom, const AliVCluster * cluster)
 //      Recalcultes PID, the bayesian or any new one to be implemented in the future
 //      Right now only the possibility to recalculate EMCAL with bayesian and simple PID.
 //      In order to recalculate Bayesian, it is necessary to load the EMCALUtils library
@@ -46,7 +46,7 @@
 
 //---- ANALYSIS system ----
 #include "AliCaloPID.h"
-#include "AliAODCaloCluster.h"
+#include "AliVCluster.h"
 #include "AliAODPWG4Particle.h"
 #include "AliEMCALPIDUtils.h"
 ClassImp(AliCaloPID)
@@ -294,7 +294,7 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
 }
 
 //_______________________________________________________________
-Int_t AliCaloPID::GetPdg(const TString calo,const TLorentzVector mom, const AliAODCaloCluster * cluster) const {
+Int_t AliCaloPID::GetPdg(const TString calo,const TLorentzVector mom, const AliVCluster * cluster) const {
   //Recalculated PID with all parameters
   Float_t lambda0 = cluster->GetM02();
   Float_t energy = mom.E();	
@@ -415,7 +415,7 @@ void AliCaloPID::Print(const Option_t * opt) const
 } 
 
 //_______________________________________________________________
-void AliCaloPID::SetPIDBits(const TString calo, const AliAODCaloCluster * cluster, AliAODPWG4Particle * ph) {
+void AliCaloPID::SetPIDBits(const TString calo, const AliVCluster * cluster, AliAODPWG4Particle * ph) {
   //Set Bits for PID selection
   
   //Dispersion/lambdas

@@ -202,6 +202,24 @@ public:
   void SwitchOffWriteDeltaAOD() {fWriteOutputDeltaAOD = kFALSE ; }
   Bool_t WriteDeltaAODToFile() const {return fWriteOutputDeltaAOD ; } 
   
+  
+  //MC reader methods:
+  
+  virtual void AddNeutralParticlesArray(TArrayI & /*array*/)  { ; }  
+  virtual void AddChargedParticlesArray(TArrayI & /*array*/)  { ; } 
+  virtual void AddStatusArray(TArrayI & /*array*/)            { ; }
+  
+  virtual void SwitchOnPi0Decay()         { ; } 
+  virtual void SwitchOffPi0Decay()        { ; } 
+  virtual void SwitchOnStatusSelection()  { ; }
+  virtual void SwitchOffStatusSelection() { ; }
+  virtual void SwitchOnOverlapCheck()     { ; }
+  virtual void SwitchOffOverlapCheck()    { ; }
+  
+  virtual void SetEMCALOverlapAngle(Float_t /*angle*/)  { ; }
+  virtual void SetPHOSOverlapAngle(Float_t /*angle*/)   { ; }
+  
+  
  protected:
   Int_t	           fEventNumber;    // Event number
   TString          fCurrentFileName;// Current file name under analysis
