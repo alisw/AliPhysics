@@ -296,7 +296,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   }
   
   fSelectionInfoESD |= AliAnalysisHelperJetTasks::kNone;
-  fEventESD |= AliAnalysisHelperJetTasks::kNone;
+  fEventCutInfoESD |= AliAnalysisHelperJetTasks::kNone;
 
   Bool_t esdVtxValid = false;
   Bool_t esdVtxIn = false;
