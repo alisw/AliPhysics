@@ -1098,6 +1098,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
                fMergingJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
             else
                fMergingJDL->AddToOutputSandbox(os->GetString(), comment);
+            first = kFALSE;   
          }   
          delete arr;
       }
@@ -1696,7 +1697,7 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
          delete res;
          printf("=> Removing files from previous stages...\n");
          gGrid->Rm(Form("%s/*Stage*.root", aliendir));
-         gGrid->Rm(Form("%s/*Stage*.zip", aliendir));
+//         gGrid->Rm(Form("%s/*Stage*.zip", aliendir));
          return kTRUE;
       }               
    }
