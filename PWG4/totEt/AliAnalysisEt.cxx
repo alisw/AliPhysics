@@ -5,12 +5,38 @@
 #include "TH2F.h"
 #include <iostream>
 #include "AliAnalysisEtCuts.h"
+#include "AliVEvent.h"
+
+using namespace std;
 ClassImp(AliAnalysisEt);
 
 
 AliAnalysisEt::AliAnalysisEt() :
         fHistogramNameSuffix("")
         ,fPdgDB(0)
+        ,PiPlusCode(0)
+        ,PiMinusCode(0)
+        ,KPlusCode(0)
+        ,KMinusCode(0)
+        ,ProtonCode(0)
+        ,AntiProtonCode(0)
+        ,LambdaCode(0)
+        ,AntiLambdaCode(0)
+        ,K0SCode(0)
+        ,OmegaCode(0)
+        ,AntiOmegaCode(0)
+        ,Xi0Code(0)
+        ,AntiXi0Code(0)
+        ,XiCode(0)
+        ,AntiXiCode(0)
+        ,SigmaCode(0)
+        ,AntiSigmaCode(0)
+        ,K0LCode(0)
+        ,NeutronCode(0)
+        ,AntiNeutronCode(0)
+        ,EPlusCode(0)
+        ,EMinusCode(0)
+        ,PionMass(0)
         ,fSumEt(0)
         ,fSumEtAcc(0)
         ,fTotEt(0)
@@ -95,7 +121,32 @@ void AliAnalysisEt::FillOutputList(TList *list)
 
 void AliAnalysisEt::Init()
 {
-    fPdgDB = new TDatabasePDG();
+
+  if(!fPdgDB) fPdgDB = new TDatabasePDG();
+  PionMass = fPdgDB->GetParticle("pi+")->Mass();
+  PiPlusCode = fPdgDB->GetParticle("pi+")->PdgCode();
+    PiMinusCode = fPdgDB->GetParticle("pi-")->PdgCode();
+    KPlusCode = fPdgDB->GetParticle("K+")->PdgCode();
+    KMinusCode = fPdgDB->GetParticle("K-")->PdgCode();
+    ProtonCode = fPdgDB->GetParticle("proton")->PdgCode();
+    AntiProtonCode = fPdgDB->GetParticle("antiproton")->PdgCode();
+    LambdaCode = fPdgDB->GetParticle("Lambda0")->PdgCode();
+    AntiLambdaCode = fPdgDB->GetParticle("Lambda0_bar")->PdgCode();
+    K0SCode = fPdgDB->GetParticle("K_S0")->PdgCode();
+    OmegaCode = fPdgDB->GetParticle("Omega-")->PdgCode();
+    AntiOmegaCode = fPdgDB->GetParticle("Omega+")->PdgCode();
+    Xi0Code = fPdgDB->GetParticle("Xi0")->PdgCode();
+    AntiXi0Code = fPdgDB->GetParticle("Xi0_bar")->PdgCode();
+    XiCode = fPdgDB->GetParticle("Xi-")->PdgCode();
+    AntiXiCode = fPdgDB->GetParticle("Xi-_bar")->PdgCode();
+    SigmaCode = fPdgDB->GetParticle("Sigma-")->PdgCode();
+    AntiSigmaCode = fPdgDB->GetParticle("Sigma+")->PdgCode();
+    K0LCode = fPdgDB->GetParticle("K_L0")->PdgCode();
+    NeutronCode = fPdgDB->GetParticle("neutron")->PdgCode();
+    AntiNeutronCode = fPdgDB->GetParticle("antineutron")->PdgCode();
+    EPlusCode = fPdgDB->GetParticle("e+")->PdgCode();
+    EMinusCode = fPdgDB->GetParticle("e-")->PdgCode();
+
 }
 
 void AliAnalysisEt::CreateHistograms()
@@ -207,6 +258,12 @@ void AliAnalysisEt::FillHistograms()
 
     fHistTMDeltaR;
     */
+}
+Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)
+{
+  //this line is basically here to eliminate a compiler warning that event is not used.  Making it a virtual function did not work with the plugin.
+  cout<<"This event has "<<event->GetNumberOfTracks()<<" tracks"<<endl;
+  return 0;
 }
 
 void AliAnalysisEt::ResetEventValues()
