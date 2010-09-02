@@ -210,12 +210,26 @@ THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
     return 0x0;
   }
   
-  // create dummy variables to initialize the histogram
-  Int_t    dummyI;
-  Double_t dummyD;
+  // initialize the array of number of bins for each axis
+  // taking it from the stored values, while for the bins
+  // they are set as summied and defined later
+  Double_t            dummyD;
+  Int_t              *nbins   = new Int_t[fSize];
+  AliRsnFunctionAxis *fcnAxis = 0;
+  for (Int_t i = 0; i < fSize; i++) 
+  {
+    fcnAxis = (AliRsnFunctionAxis*)fAxisList.At(i);
+    if (!fcnAxis) 
+    {
+      nbins[i] = 1;
+      AliError("Empty axis");
+      continue;
+    }
+    nbins[i] = fcnAxis->GetNBins();
+  }
 
   // create histogram
-  fHSparse = new THnSparseF(histoName, histoTitle, fSize, &dummyI, &dummyD, &dummyD);
+  fHSparse = new THnSparseF(histoName, histoTitle, fSize, nbins, &dummyD, &dummyD);
   fHSparse->Sumw2();
   
   // update the various axes using the definitions given in the array of axes here
