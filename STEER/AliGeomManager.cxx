@@ -944,6 +944,7 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
     TString snSTRIP = "/strip";
     
     for (Int_t isect = 0; isect < nSectors; isect++) {
+	if(tofSMs[isect]) AliDebugClass(3,Form("Consistency check for symnames of TOF supermodule %d.",isect));
       for (Int_t istr = 1; istr <= nStrips; istr++) {	
 	symname  = snSM;
 	symname += Form("%02d",isect);
@@ -951,7 +952,6 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
 	symname += Form("%02d",istr);
 	uid = LayerToVolUID(kTOF,modnum++);
 	if(!tofSMs[isect]) continue; // taking possible missing TOF sectors (partial geometry) into account
-	AliDebugClass(2,Form("Consistency check for symnames of TOF supermodule %d.",isect));
 	if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue; //taking holes into account
 	pne = fgGeometry->GetAlignableEntryByUID(uid);
 	if(!pne)
@@ -1015,6 +1015,7 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
     
     for(Int_t layer=0; layer<6; layer++){
       modnum=0;
+      AliDebugClass(3,Form("Consistency check for symnames of TRD layer %d.",layer));
       for (Int_t isect = 0; isect < 18; isect++) {
 	for (Int_t icham = 0; icham < 5; icham++) {
 	  symname  = snStr;
@@ -1025,7 +1026,6 @@ Bool_t AliGeomManager::CheckSymNamesLUT(const char* /*detsToBeChecked*/)
 	  symname += layer;
 	  uid = LayerToVolUID(arTRDlayId[layer],modnum++);
 	  if(!trdSMs[isect]) continue;
-	  AliDebugClass(2,Form("Consistency check for symnames of TRD supermodule %d.",isect));
 	  if ((isect==13 || isect==14 || isect==15) && icham==2) continue; //keeping holes into account
 	  pne = fgGeometry->GetAlignableEntryByUID(uid);
 	  if(!pne)
