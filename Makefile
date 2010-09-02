@@ -167,7 +167,7 @@ MODDIRS := $(MODULES)
 # Default include dirs for C++, Fortran, Cint, and dependencies
 # The module directory will be added by each module
 
-GENINC     := -Iinclude -isystem$(shell root-config --incdir)
+GENINC     := -I$(ALICE_ROOT)/include -isystem$(shell root-config --incdir)
 RCFLAGS    := $(shell root-config --auxcflags) 
 RLFLAGS    := $(shell root-config --ldflags)
 CXXFLAGS   += $(GENINC) $(RCFLAGS)
