@@ -289,8 +289,10 @@ void AliMpRow::SetGlobalIndices(AliMp::Direction constPadSizeDirection,
            AliMpVRowSegment* seg = rowBefore->FindRowSegment(ix);	
 	   AliMpMotifPosition* motPos =  FindMotifPosition(seg, ix);
 	   if (!dynamic_cast<AliMpRowSegmentRSpecial*>(rowSegment)) {
-             if (!motPos) 
+             if (!motPos) {
 	       Fatal("SetGlobalIndices", "Motif position in rowBefore not found.");
+               return;
+             }  
 	   
              iy = motPos->GetHighLimitIy()+1;
 	   }  

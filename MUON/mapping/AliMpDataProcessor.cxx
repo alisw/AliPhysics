@@ -304,8 +304,9 @@ Bool_t AliMpDataProcessor::GenerateData(AliMpDataMap* dataMap,
     string path = tpath.Data();
     string data = tdata.Data(); 
   
-    if ( path.find_last_of("/") != string::npos ) {
-      string dataDir(path, 0, path.find_last_of("/"));
+    string::size_type slashPos =  path.find_last_of("/");
+    if ( slashPos != string::npos ) {
+      string dataDir(path, 0, slashPos);
       TString dataDirPath
         = outputDataPath + "/" + dataDir.c_str();
       if ( ! gSystem->OpenDirectory(dataDirPath.Data()) ) {

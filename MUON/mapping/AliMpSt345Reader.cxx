@@ -145,7 +145,7 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
         AliDebug(1,Form("Got motifType %s from motifMap",sMotifType.Data()));
       }
       
-      pcb->Add(motifType,ix,iy);
+      if (pcb) pcb->Add(motifType,ix,iy);
     }
   }
   

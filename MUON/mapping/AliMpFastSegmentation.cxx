@@ -86,13 +86,13 @@ fPositionY(0.)
 {
   /// Ctor. We adopt vseg.
   
-  AliCodeTimerAuto(vseg->ClassName(),0);
-  
   if (!vseg) 
   {
     AliError("Will get a hard time working with a NULL vseg !");
     return;
   }
+  
+  AliCodeTimerAuto(vseg->ClassName(),0);
   
   fPositionX = vseg->GetPositionX();
   fPositionY = vseg->GetPositionY();

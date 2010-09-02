@@ -50,7 +50,8 @@ AliMpIteratorPainter::AliMpIteratorPainter(AliMpVPadIterator *it)
   
   //if (!it) throw;
   if (!it) {
-    AliFatal("Iterator must not be null.");;
+    AliFatal("Iterator must not be null.");
+    return;
   }  
  
   Double_t xmin(1E9), xmax(-1E9);
