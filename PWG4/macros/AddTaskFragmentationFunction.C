@@ -30,12 +30,14 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=
 
         // only reconstructed (default)
 	if(iFlag&(1<<0)) ff = AddTaskFragmentationFunction("jets", "", "", "", filterMask);
-        // MC tracks in acceptance, MC jets in acceptance
-	if(iFlag&(1<<1)) ff = AddTaskFragmentationFunction("jets", "AODMC2b", "AODMCb", "AODMCb", filterMask);
+        // charged MC tracks and jets
+	if(iFlag&(1<<1)) ff = AddTaskFragmentationFunction("jets", "jetsAODMC2_UA04", "AODMC", "AODMC2", filterMask);
+        // charged MC tracks and jets with acceptance cuts
+	if(iFlag&(1<<2)) ff = AddTaskFragmentationFunction("jets", "jetsAODMC2_UA04", "AODMCb", "AODMC2b", filterMask);
         // kine tracks in acceptance, pythia jets in acceptance
-	if(iFlag&(1<<2)) ff = AddTaskFragmentationFunction("jets", "", "KINEb", "KINEb", filterMask);
+	if(iFlag&(1<<3)) ff = AddTaskFragmentationFunction("jets", "", "KINEb", "KINEb", filterMask);
         // reconstructed charged tracks after cuts, MC jets in acceptance 
-	if(iFlag&(1<<3)) ff = AddTaskFragmentationFunction("jets", "AODMC2b", "AODMCb", "AOD2b", filterMask);
+	if(iFlag&(1<<4)) ff = AddTaskFragmentationFunction("jets", "jetsMC2b", "AODMCb", "AOD2b", filterMask);
 	
 	return ff;
 }

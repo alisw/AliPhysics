@@ -15,6 +15,7 @@ class AliAODEvent;
 class TList;
 class TH1F;
 class TH2F;
+class TProfile;
 
 #include "THnSparse.h"
 #include "AliAnalysisTaskSE.h"
@@ -319,6 +320,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   LocalInit() {Init();}
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t* );
+  virtual Bool_t Notify();
   
   virtual void   SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
   virtual void   SetJetTypeGen(Int_t i){fJetTypeGen = i;}
@@ -332,6 +334,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   {fTrackPtCut = trackPt; fTrackEtaMin = trackEtaMin; fTrackEtaMax = trackEtaMax; 
     fTrackPhiMin = trackPhiMin; fTrackPhiMax = trackPhiMax;}
   virtual void   SetFilterMask(UInt_t i) {fFilterMask = i;}
+  virtual void   UsePhysicsSelection(Bool_t b) {fUsePhysicsSelection = b;}
   virtual void   SetJetCuts(Float_t jetPt = 5., Float_t jetEtaMin = -0.5, Float_t jetEtaMax = 0.5, 
 			    Float_t jetPhiMin = 0., Float_t jetPhiMax = 2*TMath::Pi())
   {fJetPtCut = jetPt; fJetEtaMin = jetEtaMin; fJetEtaMax = jetEtaMax; 
@@ -351,8 +354,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   void   SetHighPtThreshold(Float_t pt = 5.) { fQATrackHighPtThreshold = pt; }
 
 
-  void   SetFFHistoBins(Int_t nJetPt = 55, Float_t jetPtMin = 5, Float_t jetPtMax = 60, 
-			Int_t nPt = 70, Float_t ptMin = 0., Float_t ptMax = 70., 
+  void   SetFFHistoBins(Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
+			Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
 			Int_t nXi = 70, Float_t xiMin = 0., Float_t xiMax = 7.,
 			Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1)
   { fFFNBinsJetPt = nJetPt; fFFJetPtMin = jetPtMin; fFFJetPtMax = jetPtMax; 
@@ -360,22 +363,22 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     fFFNBinsXi = nXi; fFFXiMin = xiMin; fFFXiMax = xiMax;
     fFFNBinsZ  = nZ;  fFFZMin  = zMin;  fFFZMax  = zMax; }
   
-  void  SetQAJetHistoBins(Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200.,
+  void  SetQAJetHistoBins(Int_t nPt = 300, Float_t ptMin = 0., Float_t ptMax = 300.,
 			  Int_t nEta = 20, Float_t etaMin = -1.0, Float_t etaMax = 1.0,
 			  Int_t nPhi = 60, Float_t phiMin = 0., Float_t phiMax = 2*TMath::Pi())
     { fQAJetNBinsPt = nPt; fQAJetPtMin = ptMin; fQAJetPtMax = ptMax;
       fQAJetNBinsEta = nEta; fQAJetEtaMin = etaMin; fQAJetEtaMax = etaMax;
       fQAJetNBinsPhi = nPhi; fQAJetPhiMin = phiMin; fQAJetPhiMax = phiMax; }
   
-  void  SetQATrackHistoBins(Int_t nPt = 70, Float_t ptMin = 0., Float_t ptMax = 70.,
+  void  SetQATrackHistoBins(Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200.,
 			    Int_t nEta = 20, Float_t etaMin = -1.0, Float_t etaMax = 1.0,
 			    Int_t nPhi = 60, Float_t phiMin = 0., Float_t phiMax = 2*TMath::Pi())
   { fQATrackNBinsPt = nPt; fQATrackPtMin = ptMin; fQATrackPtMax = ptMax;
     fQATrackNBinsEta = nEta; fQATrackEtaMin = etaMin; fQATrackEtaMax = etaMax;
     fQATrackNBinsPhi = nPhi; fQATrackPhiMin = phiMin; fQATrackPhiMax = phiMax; }
   
-  void   SetIJHistoBins(Int_t nJetPt = 55, Float_t jetPtMin = 5, Float_t jetPtMax = 60, 
-			Int_t nPt = 70, Float_t ptMin = 0., Float_t ptMax = 70., 
+  void   SetIJHistoBins(Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
+			Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
 			Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1,
 			Int_t nCosTheta = 100,  Float_t costhetaMin = 0.,  Float_t costhetaMax = 1.,
 			Int_t nTheta = 200,  Float_t thetaMin = -0.5,  Float_t thetaMax = 1.5,
@@ -387,9 +390,9 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     fIJNBinsTheta  = nTheta;  fIJThetaMin  = thetaMin;  fIJThetaMax  = thetaMax;
     fIJNBinsJt  = nJt;  fIJJtMin  = jtMin;  fIJJtMax  = jtMax; }
 
-  void SetDiJetHistoBins(Int_t nJetInvMass = 55, Float_t jetInvMassMin = 5, Float_t jetInvMassMax = 60, 
-			 Int_t nJetPt = 55, Float_t jetPtMin = 5, Float_t jetPtMax = 60, 
-			 Int_t nPt = 70, Float_t ptMin = 0., Float_t ptMax = 70., 
+  void SetDiJetHistoBins(Int_t nJetInvMass = 245, Float_t jetInvMassMin = 5, Float_t jetInvMassMax = 250, 
+			 Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
+			 Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
 			 Int_t nXi = 70, Float_t xiMin = 0., Float_t xiMax = 7.,
 			 Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1)
   {
@@ -400,8 +403,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     fDiJetNBinsZ = nZ; fDiJetZMin = zMin; fDiJetZMax = zMax;
   }
 
-  void SetQADiJetHistoBins(Int_t nInvMass = 55, Float_t invMassMin = 5., Float_t invMassMax = 60.,
-			   Int_t nJetPt = 55, Float_t jetPtMin = 5, Float_t jetPtMax = 60, 
+  void SetQADiJetHistoBins(Int_t nInvMass = 245, Float_t invMassMin = 5., Float_t invMassMax = 250.,
+			   Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
 			   Int_t nDeltaPhi = 100, Float_t deltaPhiMin = 0., Float_t deltaPhiMax = TMath::Pi(),
 			   Int_t nDeltaEta = 22, Float_t deltaEtaMin = 0., Float_t deltaEtaMax = 1.1,
 			   Int_t nDeltaPt = 100, Float_t deltaPtMin = 0., Float_t deltaPtMax = 100.)
@@ -424,16 +427,15 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   void     FillJetTrackRecEffHisto(THnSparse* histo,Double_t jetPhi,Double_t jetEta,Double_t jetPt,TList* jetTrackList, TList* tracksGen,
 				   TArrayI& indexAODTr,TArrayS& isGenPrim);
 
-
-
- private:
     
   // Consts
   
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
 	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
   enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance};
-  
+ 
+ 
+ private:
   
   Int_t   GetListOfTracks(TList* list, Int_t type);
   Int_t	  GetListOfJets(TList* list, Int_t type);
@@ -451,6 +453,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Int_t   fJetTypeRecEff; // type of jets used for filling reconstruction efficiency histos
 
   UInt_t  fFilterMask;	  // filter bit for selected tracks
+  Bool_t  fUsePhysicsSelection; // switch for event selection
 	
   // track cuts
   Float_t fTrackPtCut;    // track transverse momentum cut
@@ -640,6 +643,12 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH1F	*fh1VertexNContributors;  //! NContributors to prim vertex
   TH1F	*fh1VertexZ;              //! prim vertex z distribution
   TH1F	*fh1EvtMult;              //! number of reconstructed tracks after cuts 
+
+  TProfile* fh1Xsec;              //! pythia cross section and trials
+  TH1F*     fh1Trials;            //! sum of trials
+  TH1F*     fh1PtHard;            //! pt hard of the event
+  TH1F*     fh1PtHardTrials;      //! pt hard of the event
+
   TH1F  *fh1nRecJetsCuts;         //! number of jets from reconstructed tracks per event 
   TH1F  *fh1nGenJets;             //! number of jets from generated tracks per event
   TH1F  *fh1nRecEffJets;          //! number of jets for reconstruction eff per event
@@ -649,7 +658,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   THnSparseF *fhnSingleTrackRecEffHisto; //! track reconstruction efficiency 
   THnSparseF *fhnJetTrackRecEffHisto;    //! reconstruction efficiency jet tracks 
 
-  ClassDef(AliAnalysisTaskFragmentationFunction, 4);
+  ClassDef(AliAnalysisTaskFragmentationFunction, 5);
 };
 
 #endif

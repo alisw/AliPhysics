@@ -27,6 +27,9 @@
 #include "TH2F.h"
 #include "TString.h"
 #include "THnSparse.h"
+#include "TProfile.h"
+#include "TFile.h"
+#include "TKey.h"
 
 #include "AliAODInputHandler.h" 
 #include "AliAODHandler.h" 
@@ -57,6 +60,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fJetTypeGen(0)
    ,fJetTypeRecEff(0)
    ,fFilterMask(0)
+   ,fUsePhysicsSelection(kTRUE)
    ,fTrackPtCut(0)
    ,fTrackEtaMin(0)
    ,fTrackEtaMax(0)
@@ -195,6 +199,10 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fh1VertexNContributors(0)
    ,fh1VertexZ(0)
    ,fh1EvtMult(0)
+   ,fh1Xsec(0)
+   ,fh1Trials(0)
+   ,fh1PtHard(0)
+   ,fh1PtHardTrials(0)
    ,fh1nRecJetsCuts(0)
    ,fh1nGenJets(0)
    ,fh1nRecEffJets(0)
@@ -216,6 +224,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fJetTypeGen(0)
   ,fJetTypeRecEff(0)
   ,fFilterMask(0)
+  ,fUsePhysicsSelection(kTRUE)
   ,fTrackPtCut(0)
   ,fTrackEtaMin(0)
   ,fTrackEtaMax(0)
@@ -354,6 +363,10 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fh1VertexNContributors(0)
   ,fh1VertexZ(0)
   ,fh1EvtMult(0)
+  ,fh1Xsec(0)
+  ,fh1Trials(0)
+  ,fh1PtHard(0)
+  ,fh1PtHardTrials(0)
   ,fh1nRecJetsCuts(0)
   ,fh1nGenJets(0)
   ,fh1nRecEffJets(0)
@@ -379,6 +392,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fJetTypeGen(copy.fJetTypeGen)
   ,fJetTypeRecEff(copy.fJetTypeRecEff)
   ,fFilterMask(copy.fFilterMask)
+  ,fUsePhysicsSelection(copy.fUsePhysicsSelection)
   ,fTrackPtCut(copy.fTrackPtCut)
   ,fTrackEtaMin(copy.fTrackEtaMin)
   ,fTrackEtaMax(copy.fTrackEtaMax)
@@ -517,6 +531,10 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fh1VertexNContributors(copy.fh1VertexNContributors)
   ,fh1VertexZ(copy.fh1VertexZ)
   ,fh1EvtMult(copy.fh1EvtMult)
+  ,fh1Xsec(copy.fh1Xsec)
+  ,fh1Trials(copy.fh1Trials)
+  ,fh1PtHard(copy.fh1PtHard)  
+  ,fh1PtHardTrials(copy.fh1PtHardTrials)  
   ,fh1nRecJetsCuts(copy.fh1nRecJetsCuts)
   ,fh1nGenJets(copy.fh1nGenJets)
   ,fh1nRecEffJets(copy.fh1nRecEffJets)
@@ -544,6 +562,7 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fJetTypeGen                   = o.fJetTypeGen;
     fJetTypeRecEff                = o.fJetTypeRecEff;
     fFilterMask                   = o.fFilterMask;
+    fUsePhysicsSelection          = o.fUsePhysicsSelection;
     fTrackPtCut                   = o.fTrackPtCut;
     fTrackEtaMin                  = o.fTrackEtaMin;
     fTrackEtaMax                  = o.fTrackEtaMax;
@@ -682,6 +701,10 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fh1VertexNContributors        = o.fh1VertexNContributors;
     fh1VertexZ                    = o.fh1VertexZ;
     fh1EvtMult                    = o.fh1EvtMult;
+    fh1Xsec                       = o.fh1Xsec;
+    fh1Trials                     = o.fh1Trials;
+    fh1PtHard                     = o.fh1PtHard;
+    fh1PtHardTrials               = o.fh1PtHardTrials;
     fh1nRecJetsCuts               = o.fh1nRecJetsCuts;
     fh1nGenJets                   = o.fh1nGenJets; 
     fh1nRecEffJets                = o.fh1nRecEffJets;
@@ -1734,6 +1757,88 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncIntraJetHistos::AddToOutpu
 
 }
 
+
+Bool_t AliAnalysisTaskFragmentationFunction::Notify()
+{
+  //
+  // Implemented Notify() to read the cross sections
+  // and number of trials from pyxsec.root
+  // (taken from AliAnalysisTaskJetSpectrum)
+  // 
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+  Double_t xsection = 0;
+  UInt_t   ntrials  = 0;
+  Float_t   ftrials  = 0;
+  if(tree){
+    TFile *curfile = tree->GetCurrentFile();
+    if (!curfile) {
+      Error("Notify","No current file");
+      return kFALSE;
+    }
+    if(!fh1Xsec||!fh1Trials){
+      Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+      return kFALSE;
+    }
+
+    TString fileName(curfile->GetName());
+    if(fileName.Contains("AliESDs.root")){
+        fileName.ReplaceAll("AliESDs.root", "");
+    }
+    else if(fileName.Contains("AliAOD.root")){
+        fileName.ReplaceAll("AliAOD.root", "");
+    }
+    else if(fileName.Contains("AliAODs.root")){
+        fileName.ReplaceAll("AliAODs.root", "");
+    }
+    else if(fileName.Contains("galice.root")){
+        // for running with galice and kinematics alone...                      
+        fileName.ReplaceAll("galice.root", "");
+    }
+    TFile *fxsec = TFile::Open(Form("%s%s",fileName.Data(),"pyxsec.root"));
+    if(!fxsec){
+      if(fDebug>0)Printf("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,Form("%s%s",fileName.Data(),"pyxsec.root"));
+      // next trial fetch the histgram file
+      fxsec = TFile::Open(Form("%s%s",fileName.Data(),"pyxsec_hists.root"));
+      if(!fxsec){
+	// not a severe condition
+	if(fDebug>0)Printf("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,Form("%s%s",fileName.Data(),"pyxsec_hists.root"));	
+	return kTRUE;
+      }
+      else{
+	// find the tlist we want to be independtent of the name so use the Tkey
+	TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
+	if(!key){
+	  if(fDebug>0)Printf("%s:%d key not found in the file",(char*)__FILE__,__LINE__);	
+	  return kTRUE;
+	}
+	TList *list = dynamic_cast<TList*>(key->ReadObj());
+	if(!list){
+	  if(fDebug>0)Printf("%s:%d key is not a tlist",(char*)__FILE__,__LINE__);	
+	  return kTRUE;
+	}
+	xsection = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
+	ftrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
+      }
+    }
+    else{
+      TTree *xtree = (TTree*)fxsec->Get("Xsection");
+      if(!xtree){
+	Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
+      }
+      xtree->SetBranchAddress("xsection",&xsection);
+      xtree->SetBranchAddress("ntrials",&ntrials);
+      ftrials = ntrials;
+      xtree->GetEntry(0);
+    }
+    fh1Xsec->Fill("<#sigma>",xsection);
+    fh1Trials->Fill("#sum{ntrials}",ftrials);
+  }
+  
+  return kTRUE;
+}
+
+
+
 //__________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
 {
@@ -1789,7 +1894,15 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   fh1EvtSelection            = new TH1F("fh1EvtSelection", "Event Selection", 6, -0.5, 5.5);
   fh1VertexNContributors     = new TH1F("fh1VertexNContributors", "Vertex N contributors", 11,-.5, 10.5);
   fh1VertexZ                 = new TH1F("fh1VertexZ", "Vertex z distribution", 30, -15., 15.);
-  fh1EvtMult 	             = new TH1F("fh1EvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",100,0.,100.);
+  fh1EvtMult 	             = new TH1F("fh1EvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",120,0.,120.);
+
+  fh1Xsec                    = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
+  fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+  fh1Trials                  = new TH1F("fh1Trials","trials from pyxsec.root",1,0,1);
+  fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+  fh1PtHard                  = new TH1F("fh1PtHard","PYTHIA Pt hard;p_{T,hard}",350,-.5,349.5);
+  fh1PtHardTrials            = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",350,-.5,349.5);
+
   fh1nRecJetsCuts            = new TH1F("fh1nRecJetsCuts","reconstructed jets per event",10,-0.5,9.5);
   fh1nGenJets                = new TH1F("fh1nGenJets","generated jets per event",10,-0.5,9.5);
   fh1nRecEffJets             = new TH1F("fh1nRecEffJets","reconstruction effiency: jets per event",10,-0.5,9.5);
@@ -2017,6 +2130,11 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
        fFFHistosGen->AddToOutput(fCommonHistList);
        fFFHistosGenLeading->AddToOutput(fCommonHistList);
        fFFHistosGenLeadingTrack->AddToOutput(fCommonHistList);
+
+       fCommonHistList->Add(fh1Xsec);
+       fCommonHistList->Add(fh1Trials);
+       fCommonHistList->Add(fh1PtHard);
+       fCommonHistList->Add(fh1PtHardTrials);
     }
   }
   if(saveLevel>1){
@@ -2112,7 +2230,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     fh1EvtSelection->Fill(1.);
   } else {
     fh1EvtSelection->Fill(0.);
-    if(inputHandler->InheritsFrom("AliESDInputHandler")){ // PhysicsSelection only with ESD input
+    if(inputHandler->InheritsFrom("AliESDInputHandler") && fUsePhysicsSelection){ // PhysicsSelection only with ESD input
       if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
       PostData(1, fCommonHistList);
       return;
@@ -2182,6 +2300,26 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   }
   if (fDebug > 1) Printf("%s:%d primary vertex selection: event ACCEPTED ...",(char*)__FILE__,__LINE__); 
   fh1EvtSelection->Fill(5.);
+
+
+  //___ get MC information __________________________________________________________________
+
+  Double_t ptHard = 0.;
+  Double_t nTrials = 1; // trials for MC trigger weight for real data
+ 
+  AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMCEvent);
+  if(!pythiaGenHeader){
+     if(fJetTypeGen != kJetsUndef && fTrackTypeGen != kTrackUndef){
+        Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
+        return;
+     }
+  } else {
+     nTrials = pythiaGenHeader->Trials();
+     ptHard  = pythiaGenHeader->GetPtHard();
+
+     fh1PtHard->Fill(ptHard);
+     fh1PtHardTrials->Fill(ptHard,nTrials);
+  }
   
   
   //___ fetch jets __________________________________________________________________________
