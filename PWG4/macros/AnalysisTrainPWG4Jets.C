@@ -453,7 +453,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4Fragmentation){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFragmentationFunction.C");
-     AliAnalysisTaskFragmentationFunction *taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask);
+       AliAnalysisTaskFragmentationFunction *taskFrag = 0;
+     if(kUseAODMC){
+       taskFrag = AddTaskFragmentationFunction(1<<1,kHighPtFilterMask);
+       taskFrag = AddTaskFragmentationFunction(1<<2,kHighPtFilterMask);
+       taskFrag = AddTaskFragmentationFunction(1<<3,kHighPtFilterMask);
+     }
+     else{
+       taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask);
+     }
+
      if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragmentationFunction cannot run for this train conditions - EXCLUDED");
    }
 
@@ -471,7 +480,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      taskjetServ = AddTaskJetServices();
      if (!taskjetServ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetServices cannot run for this train conditions - EXCLUDED");
      if(kGridRunRange[0]>0)taskjetServ->SetRunRange(kGridRunRange[0],kGridRunRange[1]);
-     else taskjetServ->SetRunRange(104000,125000);
+     else taskjetServ->SetRunRange(100000,150000);
      if(!kIsMC) taskjetServ->SetRealData(kTRUE);
      taskjetServ->SetUsePhysicsSelection((Bool_t)iPhysicsSelection);
      taskjetServ->SetDebugLevel(0);
