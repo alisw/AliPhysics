@@ -71,6 +71,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fUsePhysicsSelection(kFALSE),
   fRealData(kFALSE),
   fSelectionInfoESD(0),
+  fEventCutInfoESD(0),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -85,6 +86,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fh1PtHard(0x0),
   fh1PtHardTrials(0x0),
   fh1SelectionInfoESD(0x0),
+  fh1EventCutInfoESD(0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -103,6 +105,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fUsePhysicsSelection(kFALSE),
   fRealData(kFALSE),
   fSelectionInfoESD(0),
+  fEventCutInfoESD(0),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -117,6 +120,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh1PtHard(0x0),
   fh1PtHardTrials(0x0),
   fh1SelectionInfoESD(0x0),
+  fh1EventCutInfoESD(0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -216,8 +220,12 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   fHistList->Add(fh1PtHardTrials);
   fh1SelectionInfoESD = new TH1F("fh1SelectionInfoESD","Bit Masks that satisfy the selection info",
 				 AliAnalysisHelperJetTasks::kTotalSelections,0.5,AliAnalysisHelperJetTasks::kTotalSelections+0.5);
-
   fHistList->Add(fh1SelectionInfoESD);
+
+  fh1EventCutInfoESD = new TH1F("fh1EventCutInfoESD","Bit Masks that for the events after each step of cuts",
+				kTotalEventCuts,0.5,kTotalEventCuts+0.5);
+  fHistList->Add(fh1EventCutInfoESD);
+
   // 3 decisions, 0 trigger X, X + SPD vertex, X + SPD vertex in range  
   // 3 triggers BB BE/EB EE
 
@@ -265,6 +273,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   AliAnalysisHelperJetTasks::Selected(kTRUE,kFALSE); // set slection to false
   fSelectionInfoESD = 0; // reset
+  fEventCutInfoESD = 0; // reset
   AliAnalysisHelperJetTasks::SelectInfo(kTRUE,fSelectionInfoESD); // set slection to false
 
 
@@ -287,20 +296,33 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   }
   
   fSelectionInfoESD |= AliAnalysisHelperJetTasks::kNone;
+  fEventESD |= AliAnalysisHelperJetTasks::kNone;
+
+  Bool_t esdVtxValid = false;
+  Bool_t esdVtxIn = false;
+  Bool_t aodVtxValid = false;
+  Bool_t aodVtxIn = false;
 
   if(esd){
     Float_t run = (Float_t)esd->GetRunNumber();
     const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
+    esdVtxValid = 
+    esdVtxIn = IsVertexIn(vtxESD);
     Float_t zvtx = -999;
     Float_t xvtx = -999;
     Float_t yvtx = -999;
 
-    if(vtxESD->GetNContributors()>2){
+    if(esdVtxValid){
       zvtx = vtxESD->GetZ();
       yvtx = vtxESD->GetY();
       xvtx = vtxESD->GetX();
     }
 
+
+    
+
+    // CKB this can be cleaned up a bit...
+    
     Int_t iTrig = -1;
     if(esd->GetFiredTriggerClasses().Contains("CINT1B")
        ||esd->GetFiredTriggerClasses().Contains("CSMBB")
@@ -342,19 +364,22 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     else{
       fh2ESDTriggerRun->Fill(run,0);
     }
-
-
+    // BKC
   }
   
 
   // Apply additional constraints
-  Bool_t esdEventSelected = IsEventSelectedESD(esd);
-  Bool_t esdEventPileUp = IsEventPileUpESD(esd);
-  Bool_t esdEventCosmic = IsEventCosmicESD(esd);
+  Bool_t esdEventSelected = IsEventSelected(esd);
+  Bool_t esdEventPileUp = IsEventPileUp(esd);
+  Bool_t esdEventCosmic = IsEventCosmic(esd);
 
-  Bool_t aodEventSelected = IsEventSelectedAOD(aod);
+  Bool_t aodEventSelected = IsEventSelected(aod);
 
   Bool_t physicsSelection = ((fInputHandler->IsEventSelected())&AliVEvent::kMB);
+  fEventCutInfoESD |= kPhysicsSelectionCut; // other alreay set via IsEventSelected
+  fh1EventCutInfoESD->Fill(fEventCutInfoESD);
+
+  
 
   if(esdEventSelected) fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kVertexIn;
   if(esdEventPileUp)   fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kIsPileUp;
@@ -366,7 +391,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   for(unsigned int i = 1;i<(UInt_t)fh1SelectionInfoESD->GetNbinsX();i++){
     if((i&fSelectionInfoESD)==i)fh1SelectionInfoESD->Fill(i);
   }
-  AliAnalysisHelperJetTasks::SelectInfo(kTRUE,fSelectionInfoESD); // set slection to false
+  AliAnalysisHelperJetTasks::SelectInfo(kTRUE,fSelectionInfoESD); 
 
   if(esd&&aod&&fDebug){
     if(esdEventSelected&&!aodEventSelected){
@@ -414,14 +439,15 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   if(aod){
     const AliAODVertex *vtxAOD = aod->GetPrimaryVertex();
-    //      Printf(">> AODvtx %s %s",vtxAOD->GetName(),vtxAOD->GetTitle());vtxAOD->Print();
-    TString vtxTitle(vtxAOD->GetTitle());
+    aodVtxValid = IsVertexValid(vtxAOD);
+    aodVtxIn = IsVertexIn(vtxAOD);
+
     for(int it = AliAnalysisHelperJetTasks::kAcceptAll;it < AliAnalysisHelperJetTasks::kTrigger;it++){
       Bool_t aodTrig = kFALSE;
       aodTrig = AliAnalysisHelperJetTasks::IsTriggerFired(aod,(AliAnalysisHelperJetTasks::Trigger)it);
-      Bool_t cand = ((aod->GetHeader()->GetOfflineTrigger())&(AliVEvent::kMB))==AliVEvent::kMB;
+      Bool_t cand = aod->GetHeader()->GetOfflineTrigger()&AliVEvent::kMB;
       if(aodTrig)fh2TriggerCount->Fill(it,kAllTriggered);
-      if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
+      if(aodVtxValid){
 	if(aodTrig)fh2TriggerCount->Fill(it,kTriggeredVertex);
 	Float_t zvtx = vtxAOD->GetZ();
 	if(cand&&aodEventSelected){
@@ -435,7 +461,6 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	  fh2TriggerCount->Fill(it,kSelectedALICEVertexValid);
 	  if(aodEventSelected)fh2TriggerCount->Fill(it,kSelectedALICEVertexIn);
 	}
-
       }
     }
   }
@@ -475,9 +500,66 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   PostData(1, fHistList);
 }
 
-Bool_t AliAnalysisTaskJetServices::IsEventSelectedESD(AliESDEvent* esd){
+Bool_t AliAnalysisTaskJetServices::IsEventSelected(const AliESDEvent* esd){
   if(!esd)return kFALSE;
   const AliESDVertex *vtx = esd->GetPrimaryVertex();
+  return IsVertexIn(vtx); // vertex in calls vertex valid
+}
+
+
+Bool_t AliAnalysisTaskJetServices::IsEventSelected(const AliAODEvent* aod) const {
+  if(!aod)return kFALSE;
+  const AliAODVertex *vtx = aod->GetPrimaryVertex();
+  return IsVertexIn(vtx); // VertexIn calls VertexValid
+}
+
+Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliESDVertex* vtx) {
+
+  // We can check the type of the vertex by its name and title
+  // if vertexer failed title is empty (default c'tor) and ncontributors is 0
+  // vtx       name                  title
+  // Tracks    PrimaryVertex         VertexerTracksNoConstraint
+  // Tracks    PrimaryVertex         VertexerTracksWithConstraint
+  // TPC       TPCVertex             VertexerTracksNoConstraint
+  // TPC       TPCVertex             VertexerTracksWithConstraint
+  // SPD       SPDVertex             vertexer: 3D
+  // SPD       SPDVertex             vertexer: Z
+  
+  Int_t nCont = vtx->GetNContributors();
+
+  if(nCont>=1){
+    fEventCutInfoESD |= kContributorsCut1;    
+    if(nCont>=2){
+      fEventCutInfoESD |= kContributorsCut2;    
+      if(nCont>=3){
+	fEventCutInfoESD |= kContributorsCut3;    
+      }
+    }
+  }
+  
+  if(nCont<3)return kFALSE;
+
+  // do not want tpc only primary vertex
+  TString vtxName(vtx->GetName());
+  if(vtxName.Contains("TPCVertex")){
+    fEventCutInfoESD |= kVertexTPC;
+    return kFALSE;
+  }
+  if(vtxName.Contains("SPDVertex"))fEventCutInfoESD |= kVertexSPD;
+  if(vtxName.Contains("PrimaryVertex"))fEventCutInfoESD |= kVertexGlobal;
+
+
+  TString vtxTitle(vtx->GetTitle());
+  if(vtxTitle.Contains("vertexer: Z")){
+    if(vtx->GetDispersion()>0.02)return kFALSE;   
+  }
+  fEventCutInfoESD |= kSPDDispersionCut;
+  return kTRUE;
+}
+
+
+Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliAODVertex* vtx) const {
+
   // We can check the type of the vertex by its name and title
   // if vertexer failed title is empty (default c'tor) and ncontributors is 0
   // vtx       name                  title
@@ -486,18 +568,56 @@ Bool_t AliAnalysisTaskJetServices::IsEventSelectedESD(AliESDEvent* esd){
   // SPD       SPDVertex             vertexer: 3D
   // SPD       SPDVertex             vertexer: Z
   
-
-
   if(vtx->GetNContributors()<3)return kFALSE;
-
   // do not want tpc only primary vertex
   TString vtxName(vtx->GetName());
   if(vtxName.Contains("TPCVertex"))return kFALSE;
+
+  // no dispersion yet...
+  /* 
+  TString vtxTitle(vtx->GetTitle());
+  if(vtxTitle.Contains("vertexer: Z")){
+    if(vtx->GetDispersion()>0.02)return kFALSE;
+  }
+  */
+  return kTRUE;
+}
+
+
+Bool_t  AliAnalysisTaskJetServices::IsVertexIn (const AliESDVertex* vtx) {
+
+  if(!IsVertexValid(vtx))return kFALSE;
+
   Float_t zvtx = vtx->GetZ();
   Float_t yvtx = vtx->GetY();
   Float_t xvtx = vtx->GetX();
 
-  // here we may fill the histos for run dependence....
+  xvtx -= fVtxXMean;
+  yvtx -= fVtxYMean;
+  zvtx -= fVtxZMean;
+
+
+
+  if(TMath::Abs(zvtx)>fVtxZCut){
+    return kFALSE;
+  }
+  fEventCutInfoESD |= kVertexZCut;  
+  Float_t r2   = yvtx*yvtx+xvtx*xvtx;      
+  if(r2>(fVtxRCut*fVtxRCut)){
+    return kFALSE;
+  }
+  fEventCutInfoESD |= kVertexRCut;  
+  return kTRUE;
+}
+
+
+Bool_t  AliAnalysisTaskJetServices::IsVertexIn (const AliAODVertex* vtx) const {
+
+  if(!IsVertexValid(vtx))return kFALSE;
+
+  Float_t zvtx = vtx->GetZ();
+  Float_t yvtx = vtx->GetY();
+  Float_t xvtx = vtx->GetX();
 
   xvtx -= fVtxXMean;
   yvtx -= fVtxYMean;
@@ -505,16 +625,16 @@ Bool_t AliAnalysisTaskJetServices::IsEventSelectedESD(AliESDEvent* esd){
 
   Float_t r2   = yvtx*yvtx+xvtx*xvtx;      
 
-  Bool_t eventSel = TMath::Abs(zvtx)<fVtxZCut&&r2<(fVtxRCut*fVtxRCut);
-  return eventSel;
+  Bool_t vertexIn = TMath::Abs(zvtx)<fVtxZCut&&r2<(fVtxRCut*fVtxRCut);
+  return vertexIn;
 }
 
-Bool_t AliAnalysisTaskJetServices::IsEventPileUpESD(AliESDEvent* esd){
+Bool_t AliAnalysisTaskJetServices::IsEventPileUp(const AliESDEvent* esd) const{
   if(!esd)return kFALSE;
   return esd->IsPileupFromSPD();
 }
 
-Bool_t AliAnalysisTaskJetServices::IsEventCosmicESD(AliESDEvent* esd){
+Bool_t AliAnalysisTaskJetServices::IsEventCosmic(const AliESDEvent* esd) const {
   if(!esd)return kFALSE;
   // add track cuts for which we look for cosmics...
 
@@ -563,41 +683,6 @@ Bool_t AliAnalysisTaskJetServices::IsEventCosmicESD(AliESDEvent* esd){
   fh1NCosmicsPerEvent->Fill((float)nCosmicCandidates);
 
   return isCosmic;
-}
-
-
-Bool_t AliAnalysisTaskJetServices::IsEventSelectedAOD(AliAODEvent* aod){
-  if(!aod)return kFALSE;
-  const AliAODVertex *vtx = aod->GetPrimaryVertex();
-  // We can check the type of the vertex by its name and title
-  // if vertexer failed title is empty (default c'tor) and ncontributors is 0
-  // vtx       name                  title
-  // Tracks    PrimaryVertex         VertexerTracksNoConstraint
-  // TPC       TPCVertex             VertexerTracksNoConstraint
-  // SPD       SPDVertex             vertexer: 3D
-  // SPD       SPDVertex             vertexer: Z
-  
-
-
-  if(vtx->GetNContributors()<3)return kFALSE;
-
-  // do not want tpc only primary vertex
-  TString vtxName(vtx->GetName());
-  if(vtxName.Contains("TPCVertex"))return kFALSE;
-
-  Float_t zvtx = vtx->GetZ();
-  Float_t yvtx = vtx->GetY();
-  Float_t xvtx = vtx->GetX();
-
-  // here we may fill the histos for run dependence....
-
-  xvtx -= fVtxXMean;
-  yvtx -= fVtxYMean;
-  zvtx -= fVtxZMean;
-
-  Float_t r2   = yvtx*yvtx+xvtx*xvtx;      
-  Bool_t eventSel = TMath::Abs(zvtx)<fVtxZCut&&r2<(fVtxRCut*fVtxRCut);
-  return eventSel;
 }
 
 
