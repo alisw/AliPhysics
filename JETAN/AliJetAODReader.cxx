@@ -119,9 +119,7 @@ void AliJetAODReader::OpenInputFiles()
        if (a>=naod) continue;
        
        if (strstr(name,pattern)){
-	   char path[256];
-	   sprintf(path,"%s/%s/aod.root",dirName,name);
-	   fChain->AddFile(path);
+	   fChain->AddFile(Form("%s/%s/aod.root",dirName,name));
 	   a++;
        }
    }

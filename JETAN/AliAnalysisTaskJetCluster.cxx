@@ -668,9 +668,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     
     // correlation of leading jet with tracks
     TIterator *recIter = recParticles.MakeIterator();
-    AliVParticle *tmpRecTrack = (AliVParticle*)(recIter->Next());  
-    
     recIter->Reset();
+    AliVParticle *tmpRecTrack = 0;
     while((tmpRecTrack = (AliVParticle*)(recIter->Next()))){
       Float_t tmpPt = tmpRecTrack->Pt();
       // correlation
@@ -679,7 +678,6 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       Float_t dPhi = phi - tmpPhi;
       if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
       if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
-      //      Float_t dEta = eta - tmpRecTrack->Eta();
       fh2TracksLeadingJetPhiPt->Fill(dPhi,pt);
       fh2TracksLeadingJetPhiPtW->Fill(dPhi,pt,tmpPt);
     }  
@@ -848,7 +846,6 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	Float_t dPhi = phi - tmpPhi;
 	if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
 	if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
-	//      Float_t dEta = eta - tmpRecTrack->Eta();
 	fh2TracksLeadingJetPhiPtRan->Fill(dPhi,pt);
 	fh2TracksLeadingJetPhiPtWRan->Fill(dPhi,pt,tmpPt);
       }  
@@ -938,7 +935,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
     TClonesArray *tca = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
     if(!tca)return iCount;
     for(int it = 0;it < tca->GetEntriesFast();++it){
-      AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(it));
+      AliAODMCParticle *part = (AliAODMCParticle*)(tca->At(it));
       if(!part->IsPhysicalPrimary())continue;
       if(type == kTrackAODMCAll){
 	list->Add(part);

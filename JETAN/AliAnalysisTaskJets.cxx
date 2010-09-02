@@ -137,20 +137,23 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
 	// case that we have an AOD extension we need to fetch the jets from the extended output
 	// we identifay the extension aod event by looking for the branchname
 	AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-	TObjArray* extArray = aodH->GetExtensions();
-	if (extArray) {
-	  TIter next(extArray);
-	  while ((fAODExtension=(AliAODExtension*)next())){
-	    TObject *obj = fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data());
-	    if(fDebug>10){
-	      Printf("%s:%d Dumping..",(char*)__FILE__,__LINE__);
-	      fAODExtension->GetAOD()->Dump();
-	    }
-	    if(obj){
+	fAODExtension = 0;
+	if(aodH){
+	  TObjArray* extArray = aodH->GetExtensions();
+	  if (extArray) {
+	    TIter next(extArray);
+	    while ((fAODExtension=(AliAODExtension*)next())){
+	      TObject *obj = fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data());
+	      if(fDebug>10){
+		Printf("%s:%d Dumping..",(char*)__FILE__,__LINE__);
+		fAODExtension->GetAOD()->Dump();
+	      }
+	      if(obj){
 	      if(fDebug>1)Printf("AODExtension found for %s",fNonStdBranch.Data());
 	      break;
+	      }
+	      fAODExtension = 0;
 	    }
-	    fAODExtension = 0;
 	  }
 	}
 	if(fAODExtension)fJetFinder->ConnectAODNonStd(fAODExtension->GetAOD(), fNonStdBranch.Data()); 

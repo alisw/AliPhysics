@@ -122,9 +122,7 @@ void AliJetESDReader::OpenInputFiles()
        
        if (strstr(name,pattern)){
 	 printf("Adding %s\n",name);
-	 char path[256];
-	 sprintf(path,"%s/%s/AliESDs.root",dirName,name);
-	 fChain->AddFile(path);
+	 fChain->AddFile(Form("%s/%s/AliESDs.root",dirName,name));
 	 a++;
        }
    }

@@ -397,7 +397,7 @@ Float_t AliJetBkg::BkgFastJetCone(TClonesArray* fAODJets)
   Float_t rCone=0.4;
   
   if(nJ==1) { 
-    AliAODJet *jettmp = dynamic_cast<AliAODJet*>(fAODJets->At(0));
+    AliAODJet *jettmp = (AliAODJet*)(fAODJets->At(0));
     jeteta=jettmp->Eta();
     jetphi=jettmp->Phi();
     acc=EmcalAcceptance(jeteta,jetphi,rCone);
@@ -407,8 +407,8 @@ Float_t AliJetBkg::BkgFastJetCone(TClonesArray* fAODJets)
 
   
   if(nJ>=2) { 
-    AliAODJet *jettmp = dynamic_cast<AliAODJet*>(fAODJets->At(0));
-    AliAODJet *jettmp1 = dynamic_cast<AliAODJet*>(fAODJets->At(1));
+    AliAODJet *jettmp = (AliAODJet*)(fAODJets->At(0));
+    AliAODJet *jettmp1 = (AliAODJet*)(fAODJets->At(1));
     jeteta=jettmp->Eta();
     jetphi=jettmp->Phi();
     jeteta1=jettmp1->Eta();

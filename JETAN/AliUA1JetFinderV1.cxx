@@ -97,7 +97,7 @@ void AliUA1JetFinderV1::FindJets()
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   TClonesArray *lvArray = fReader->GetMomentumArray();
   Int_t nIn =  lvArray->GetEntries();
-  if (nIn == 0) return;
+  if (nIn <= 0) return;
 
   // local arrays for input
   // ToDo: check memory fragmentation, maybe better to 
@@ -108,6 +108,9 @@ void AliUA1JetFinderV1::FindJets()
   Float_t* phiT  = new Float_t[nIn];
   Int_t*   injet = new Int_t[nIn];
 
+  memset(ptT,0,sizeof(Float_t)*nIn);
+  memset(etaT,0,sizeof(Float_t)*nIn);
+  memset(phiT,0,sizeof(Float_t)*nIn);
 
 
   // load input vectors and calculate total energy in array
