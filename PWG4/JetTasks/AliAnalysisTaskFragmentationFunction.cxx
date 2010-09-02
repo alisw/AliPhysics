@@ -2887,9 +2887,9 @@ Double_t AliAnalysisTaskFragmentationFunction::GetDiJetBin(Double_t invMass, Dou
 	{
 	  jetBin = fDiJetJetInvMassMin + i*stepInvMass/2.;
 	  if(((fDiJetJetInvMassMin+i*stepInvMass) <= invMass) &&
-	     (fDiJetJetInvMassMin + (i+1)*stepInvMass) > invMass) jetBinOk = jetBin;
+	     (fDiJetJetInvMassMin + (i+1)*stepInvMass) > invMass) {jetBinOk = jetBin; break;}
+          else jetBinOk = -1.;
 	}
-      jetBinOk = -1.;
     }
   else if (kindBins == 3)
     {
@@ -2897,9 +2897,9 @@ Double_t AliAnalysisTaskFragmentationFunction::GetDiJetBin(Double_t invMass, Dou
 	{
 	  jetBin = fDiJetJetPtMin + i*stepPt/2.;
 	  if(((fDiJetJetPtMin+i*stepPt) <= EtMean) &&
-	     (fDiJetJetPtMin + (i+1)*stepPt) > EtMean) jetBinOk = jetBin;
+	     (fDiJetJetPtMin + (i+1)*stepPt) > EtMean) {jetBinOk = jetBin; break;}
+          else jetBinOk = -1.;
 	}
-      jetBinOk = -1.;
     }
   else if (kindBins == 2)
     {
@@ -2907,9 +2907,9 @@ Double_t AliAnalysisTaskFragmentationFunction::GetDiJetBin(Double_t invMass, Dou
 	{
 	  jetBin = fDiJetJetPtMin + i*stepPt/2.;
 	  if(((fDiJetJetPtMin+i*stepPt) <= leadingJetPt) &&
-	     (fDiJetJetPtMin + (i+1)*stepPt) > leadingJetPt) jetBinOk = jetBin;
+	     (fDiJetJetPtMin + (i+1)*stepPt) > leadingJetPt) {jetBinOk = jetBin; break;}
+          else jetBinOk = -1.;
 	}
-      jetBinOk = -1.;
     }
   else {Printf("WARNING: kindBins wrongly set ! Please make sure to call SetKindSlices() and set the kind parameter to 1, 2 or 3.\n");}
 
@@ -2941,7 +2941,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
   if(type==kTrackUndef) return 0;
   
   Int_t iCount = 0;
-  if(type==kTrackAODCuts || type==kTrackAOD){
+  if(type==kTrackAODCuts || type==kTrackAODQualityCuts || type==kTrackAOD){
 
     // all rec. tracks, esd filter mask, eta range
     if(!fAOD) return -1;
@@ -2949,11 +2949,13 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
     for(Int_t it=0; it<fAOD->GetNumberOfTracks(); ++it){
       AliAODTrack *tr = fAOD->GetTrack(it);
       
-      if(type == kTrackAODCuts){
+      if(type == kTrackAODCuts || type==kTrackAODQualityCuts ){
 	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))   continue;
-	if(tr->Eta() < fTrackEtaMin || tr->Eta() > fTrackEtaMax) continue;
-	if(tr->Phi() < fTrackPhiMin || tr->Phi() > fTrackPhiMax) continue;
-	if(tr->Pt()  < fTrackPtCut) continue;
+	if(type == kTrackAODCuts){
+	  if(tr->Eta() < fTrackEtaMin || tr->Eta() > fTrackEtaMax) continue;
+	  if(tr->Phi() < fTrackPhiMin || tr->Phi() > fTrackPhiMax) continue;
+	  if(tr->Pt()  < fTrackPtCut) continue;
+	}
       }
       list->Add(tr);
       iCount++;
