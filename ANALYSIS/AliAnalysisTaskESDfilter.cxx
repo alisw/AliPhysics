@@ -119,6 +119,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     // ESD Filter analysis task executed for each event
 
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+    if(!esd)return;
     AliESD*      old = esd->GetAliESDOld();
 
     // Fetch Stack for debuggging if available 
