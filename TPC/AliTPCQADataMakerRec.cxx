@@ -508,28 +508,26 @@ void AliTPCQADataMakerRec::MakeDigits(TTree* digitTree)
 //____________________________________________________________________________
 void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)
 {
-
-  AliTPCClustersRow clrow, *pclrow = &clrow;
-  pclrow = new AliTPCClustersRow("AliTPCclusterMI");
-  TBranch* branch = recTree->GetBranch("Segment");
   
-  branch->SetAddress(&pclrow);
-  TClonesArray * pclarray = 0x0;
+  AliTPCClustersRow* clrow = 0x0;
+  TBranch* branch = recTree->GetBranch("Segment");  
+  branch->SetAddress(&clrow);
+  TClonesArray * clarray = 0x0;
 
   const Int_t nEntries = Int_t(recTree->GetEntries());
   for (Int_t i = 0; i < nEntries; i++) {
     
     branch->GetEntry(i);
 
-    pclarray = clrow.GetArray();
+    clarray = clrow->GetArray();
 
-    if (!pclarray) continue;
+    if (!clarray) continue;
 
-    const Int_t nClusters = pclarray->GetEntriesFast();
+    const Int_t nClusters = clarray->GetEntriesFast();
     for (Int_t icl=0; icl < nClusters; icl++){
       
       AliTPCclusterMI* cluster = 
-	(AliTPCclusterMI*)pclarray->At(icl);
+	(AliTPCclusterMI*)clarray->At(icl);
       
       Float_t Qmax = cluster->GetMax();
       Float_t Q    = cluster->GetQ();
@@ -555,7 +553,6 @@ void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)
       GetRecPointsData(kRow)->Fill(row);
     } // end loop over clusters
   } // end loop over tree
-  if (pclarray) pclarray->Clear("C");
 }
 
 //____________________________________________________________________________
