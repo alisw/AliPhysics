@@ -19,8 +19,8 @@ ClassImp(AliRsnValue)
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue() :
   TNamed(),
-  fType(kValueTypes),
   fValue(0.0),
+  fType(kValueTypes),
   fArray(0)
 {
 //
@@ -33,8 +33,8 @@ AliRsnValue::AliRsnValue() :
 AliRsnValue::AliRsnValue
 (const char *name, EValueType type, Int_t nbins, Double_t min, Double_t max) :
   TNamed(name, ""),
-  fType(type),
   fValue(0.0),
+  fType(type),
   fArray(0)
 {
 //
@@ -49,8 +49,8 @@ AliRsnValue::AliRsnValue
 AliRsnValue::AliRsnValue
 (const char *name, EValueType type, Double_t min, Double_t max, Double_t step) :
   TNamed(name, ""),
-  fType(type),
   fValue(0.0),
+  fType(type),
   fArray(0)
 {
 //
@@ -64,8 +64,8 @@ AliRsnValue::AliRsnValue
 AliRsnValue::AliRsnValue
 (const char *name, EValueType type, Int_t nbins, Double_t *array) :
   TNamed(name, ""),
-  fType(type),
   fValue(0.0),
+  fType(type),
   fArray(0)
 {
 //
