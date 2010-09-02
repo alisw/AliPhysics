@@ -169,7 +169,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   // This handler can return the current MC event
   
   AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  //  AliMCEventHandler* eventHandler = (AliMCEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   
   AliStack* stack = 0x0;
   AliMCEvent* mcEvent = 0x0;
@@ -181,7 +180,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       PostData(0,fHistList);
       PostData(1,fCFManagerPos->GetParticleContainer());
       PostData(2,fCFManagerNeg->GetParticleContainer());
-    return;
+      return;
     }
     
     AliDebug(2,Form("MC particles: %d", mcEvent->GetNumberOfTracks()));
@@ -334,7 +333,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       {
 	AliMCParticle *mcPart  = (AliMCParticle*)mcEvent->GetTrack(iPart);
 	if(!mcPart) continue;
-	
 	//fill the container
 	containerInputMC[0] = mcPart->Pt();
 	containerInputMC[1] = mcPart->Phi();      

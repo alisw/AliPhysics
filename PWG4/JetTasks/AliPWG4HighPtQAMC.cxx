@@ -48,8 +48,10 @@ ClassImp(AliPWG4HighPtQAMC)
 
 AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(): AliAnalysisTask("AliPWG4HighPtQAMC", ""), 
   fESD(0), 
+  fMC(0),
   fTrackCuts(0), 
   fTrackCutsITS(0),
+  fPtMax(100.),
   fNEventAll(0),
   fNEventSel(0),
   fPtAll(0),  
@@ -85,8 +87,10 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(): AliAnalysisTask("AliPWG4HighPtQAMC", "")
 AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name): 
   AliAnalysisTask(name, ""), 
   fESD(0),
+  fMC(0),
   fTrackCuts(),
   fTrackCutsITS(),
+  fPtMax(100.),
   fNEventAll(0),
   fNEventSel(0),
   fPtAll(0),
@@ -133,21 +137,30 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
 //________________________________________________________________________
 void AliPWG4HighPtQAMC::ConnectInputData(Option_t *) 
 {
-  // Connect ESD here
+  // Connect ESD and MC event handler here
   // Called once
   AliDebug(2,Form(">> AliPWG4HighPtSpectra::ConnectInputData \n"));
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
-    AliDebug(2,Form("ERROR: Could not read chain from input slot 0"));
-  } else {
-    
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
-    if (!esdH) {
-      AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
-    } else
-      fESD = esdH->GetEvent();
+    AliDebug(2,Form( "ERROR: Could not read chain from input slot 0 \n"));
+    return;
   }
+
+  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+
+  if (!esdH) {
+    AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
+    return;
+  } else
+    fESD = esdH->GetEvent();
+  
+ AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+ if (!eventHandler) {
+   AliDebug(2,Form( "ERROR: Could not retrieve MC event handler \n"));
+ }
+  else
+    fMC = eventHandler->MCEvent();
+
 }
 
 //________________________________________________________________________
@@ -169,7 +182,7 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   
   Int_t fgkNPtBins=98;
   Float_t fgkPtMin=2.;
-  Float_t fgkPtMax=100.;
+  Float_t fgkPtMax=fPtMax;
   Int_t fgkResPtBins=80;
 
   fNEventAll = new TH1F("fNEventAll","NEventAll",1,-0.5,0.5);
@@ -306,12 +319,11 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   // Main loop
   // Called for each event
   AliDebug(2,Form(">> AliPWG4HighPtQATPConly::Exec \n"));  
-  
   // All events without selection
   fNEventAll->Fill(0.);
 
   if (!fESD) {
-    AliDebug(2,Form("ERROR: fESD not available"));
+    AliDebug(2,Form("ERROR: fESD not available\n"));
     PostData(0, fHistList);
     PostData(1, fHistListITS);
     return;
@@ -326,34 +338,18 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     return;
   }
   
- AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!eventHandler) {
-    AliDebug(2,Form("ERROR: Could not retrieve MC event handler"));
+  AliStack* stack = 0x0;
+  
+  if(fMC) {
+    AliDebug(2,Form("MC particles: %d", fMC->GetNumberOfTracks()));
+    stack = fMC->Stack();                //Particles Stack
+    AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
+  } else {
+    AliDebug(2,Form("ERROR: Could not retrieve MC eventHandler"));
     PostData(0, fHistList);
     PostData(1, fHistListITS);
     return;
   }
-
-  AliMCEvent* mcEvent = eventHandler->MCEvent();
-  if (!mcEvent) {
-    AliDebug(2,Form("ERROR: Could not retrieve MC event"));
-    PostData(0, fHistList);
-    PostData(1, fHistListITS);
-    return;
-  }
-
-  AliDebug(2,Form("MC particles: %d", mcEvent->GetNumberOfTracks()));
-
-  if (!fESD) {
-    AliDebug(2,Form("ERROR: fESD not available"));
-    PostData(0, fHistList);
-    PostData(1, fHistListITS);
-    return;
-  }
-
-  AliStack* stack = mcEvent->Stack();                //Particles Stack
-
-  AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
 
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
   // Need vertex cut
@@ -372,7 +368,6 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
   double primVtx[3];
   vtx->GetXYZ(primVtx);
-  //  printf("primVtx: %g  %g  %g \n",primVtx[0],primVtx[1],primVtx[2]);
   if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
     // Post output data
     PostData(0, fHistList);
@@ -392,7 +387,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   }
 
   Int_t nTracks = fESD->GetNumberOfTracks();
-  AliDebug(2,Form("nTracks %d", nTracks));
+  AliDebug(2,Form("nTracks ESD%d", nTracks));
 
   int nMCtracks = stack->GetNtrack();
 
