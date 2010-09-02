@@ -478,6 +478,90 @@ void AliTPCcalibDButil::ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseM
 }
 
 //_____________________________________________________________________________________
+void AliTPCcalibDButil::ProcessQAData(TVectorD &vQaOcc, TVectorD &vQaQtot, 
+				      TVectorD &vQaQmax)
+{
+  //
+  // process QA data
+  //
+  // vQaOcc/Qtot/Qmax contains the Mean occupancy/Qtot/Qmax for each sector
+  //
+
+
+  const UInt_t infoSize = 72;
+  //reset counters to error number
+  vQaOcc.ResizeTo(infoSize);
+  vQaOcc.Zero();
+  vQaQtot.ResizeTo(infoSize);
+  vQaQtot.Zero();
+  vQaQmax.ResizeTo(infoSize);
+  vQaQmax.Zero();
+  //counter
+  //retrieve pulser and ALTRO data
+  
+  if (!fDataQA) {
+    
+    AliInfo("No QA data");
+    return;
+  }
+  if (fDataQA->GetEventCounter()<=0) {
+
+    AliInfo("No QA data");
+    return; // no data processed
+  }
+  //
+  fDataQA->Analyse();
+
+  TVectorD normOcc(infoSize);
+  TVectorD normQ(infoSize);
+
+  for (UInt_t isec=0;isec<AliTPCCalPad::kNsec;++isec){
+
+    printf("Sector %d\n", isec);
+
+    AliTPCCalROC* occupancyROC = fDataQA->GetNoThreshold()->GetCalROC(isec); 
+    AliTPCCalROC* nclusterROC = fDataQA->GetNLocalMaxima()->GetCalROC(isec); 
+    AliTPCCalROC* qROC = fDataQA->GetMeanCharge()->GetCalROC(isec); 
+    AliTPCCalROC* qmaxROC = fDataQA->GetMaxCharge()->GetCalROC(isec); 
+    if (!occupancyROC) continue;
+    if (!nclusterROC) continue;
+    if (!qROC) continue;
+    if (!qmaxROC) continue;
+    
+    const UInt_t nchannels=occupancyROC->GetNchannels();
+
+    printf("Nchannels %d\n", nchannels);
+
+    for (UInt_t ichannel=0;ichannel<nchannels;++ichannel){
+
+      vQaOcc[isec] += occupancyROC->GetValue(ichannel);
+      ++normOcc[isec];
+
+      Float_t nClusters = nclusterROC->GetValue(ichannel);
+      normQ[isec] += nClusters;
+      vQaQtot[isec]+=nClusters*qROC->GetValue(ichannel);
+      vQaQmax[isec]+=nClusters*qmaxROC->GetValue(ichannel);
+    }
+  }
+
+  //calculate mean values
+  for (UInt_t isec=0;isec<AliTPCCalPad::kNsec;++isec){
+    
+    if (normOcc[isec]>0) vQaOcc[isec] /= normOcc[isec];
+    else vQaOcc[isec] = 0;
+
+    if (normQ[isec]>0) {
+      vQaQtot[isec] /= normQ[isec];
+      vQaQmax[isec] /= normQ[isec];
+    }else {
+
+      vQaQtot[isec] = 0;
+      vQaQmax[isec] = 0;
+    }
+  }
+}
+
+//_____________________________________________________________________________________
 void AliTPCcalibDButil::ProcessPulser(TVectorD &vMeanTime)
 {
   //
@@ -1140,8 +1224,8 @@ void AliTPCcalibDButil::UpdateRefDataFromOCDB()
     entry=GetRefEntry(cdbPath.Data());
     if (entry){
       entry->SetOwner(kTRUE);
-      fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
-      if (!fDataQA){
+      fRefDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
+      if (!fRefDataQA){
         AliError(Form("Could not get object from entry '%s'\nPlease check!!!",entry->GetId().GetPath().Data()));
       } else {
         fRefDataQA=(AliTPCdataQA*)fDataQA->Clone();

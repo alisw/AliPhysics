@@ -51,6 +51,7 @@ public:
   void ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseMeanSenRegions,
                         TVectorD &vNoiseRMS, TVectorD &vNoiseRMSSenRegions,
                         Int_t &nonMaskedZero, Int_t &nNaN);
+  void ProcessQAData(TVectorD &vQaOcc, TVectorD &vQaQtot, TVectorD &vQaQmax);
   void ProcessPulser(TVectorD &vMeanTime);
   void ProcessALTROConfig(Int_t &nMasked);
   void ProcessGoofie(TVectorD & vecEntries, TVectorD & vecMedian, TVectorD &vecMean, TVectorD &vecRMS);

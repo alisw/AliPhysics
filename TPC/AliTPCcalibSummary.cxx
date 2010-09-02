@@ -229,6 +229,13 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
   Float_t bz=AliTPCcalibDB::GetBz(irun);
   Char_t  l3pol=AliTPCcalibDB::GetL3Polarity(irun);
   //
+  //QA data processing
+  //
+  TVectorD vQaOcc;
+  TVectorD vQaQtot;
+  TVectorD vQaQmax;
+  fDButil->ProcessQAData(vQaOcc, vQaQtot, vQaQmax);
+  //
   //calibration Pulser data processing
   //
   Int_t nOffChannels=0;
@@ -387,7 +394,11 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "rmsNoise.="<<&vNoiseRMS<<
       "rmsNoiseSen.="<<&vNoiseRMSSenRegions<<
       "zeroNoise="<<nonMaskedZero<<
-      "nNaN="<<nNaN<<
+      "nNaN="<<nNaN<<  
+      //QA data
+      "occQA.="  << &vQaOcc  <<
+      "qQA.="    << &vQaQtot <<
+      "qmaxQA.=" << &vQaQmax <<
       //pulser data
       "timePulser.=" << &vTimePulser <<
       "nOffPulser="<<nOffChannels<<
