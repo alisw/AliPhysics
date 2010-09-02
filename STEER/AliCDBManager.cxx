@@ -954,13 +954,13 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry, DataType type){
 		return kFALSE;
 	}
 
-	if (entry->GetObject()==0x0){
-		AliError("No valid object in CDB entry!");
+	if (!entry){
+		AliError("No entry!");
 		return kFALSE;
 	}
 
-	if (!entry){
-		AliError("No entry!");
+	if (entry->GetObject()==0x0){
+		AliError("No valid object in CDB entry!");
 		return kFALSE;
 	}
 
