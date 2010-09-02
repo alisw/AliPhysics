@@ -267,7 +267,7 @@ int main(int argc, char **argv) {
 
   printf("After loop, before writing histos\n");
   TH1F* hAmp = new TH1F("hAmpLaser"," Laser amplitude ", 1000, 0.5, 20.5);  
-  for(Int_t k=0; k<nEntries; k++)   hAmp->Fill(mipsin[k]); 
+  for(Int_t i=0; i<nEntries; i++)   hAmp->Fill(mipsin[i]); 
   // write a file with the histograms
   TFile *hist=0;
   if(nIndex == 1 )
