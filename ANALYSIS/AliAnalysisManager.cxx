@@ -474,6 +474,8 @@ void AliAnalysisManager::PackOutput(TList *target)
       TIter next(fOutputs);
       AliAnalysisDataContainer *output;
       Bool_t isManagedByHandler = kFALSE;
+      TList filestmp;
+      filestmp.SetOwner();
       while ((output=(AliAnalysisDataContainer*)next())) {
          // Do not consider outputs of post event loop tasks
          isManagedByHandler = kFALSE;
@@ -497,33 +499,42 @@ void AliAnalysisManager::PackOutput(TList *target)
                // File resident outputs. 
                // Check first if the file exists.
                TString openoption = "RECREATE";
-               if (!gSystem->AccessPathName(output->GetFileName())) openoption = "UPDATE";
-               TFile *file = AliAnalysisManager::OpenFile(output, openoption, kTRUE);
+               Bool_t firsttime = kTRUE;
+               if (filestmp.FindObject(output->GetFileName())) {
+                  firsttime = kFALSE;
+               } else {   
+                  filestmp.Add(new TNamed(output->GetFileName(),""));
+               }   
+               if (!gSystem->AccessPathName(output->GetFileName()) && !firsttime) openoption = "UPDATE";
+//               TFile *file = AliAnalysisManager::OpenFile(output, openoption, kTRUE);
                // Save data to file, then close.
                if (output->GetData()->InheritsFrom(TCollection::Class())) {
                   // If data is a collection, we set the name of the collection 
                   // as the one of the container and we save as a single key.
                   TCollection *coll = (TCollection*)output->GetData();
                   coll->SetName(output->GetName());
-                  coll->Write(output->GetName(), TObject::kSingleKey);
+//                  coll->Write(output->GetName(), TObject::kSingleKey);
                } else {
                   if (output->GetData()->InheritsFrom(TTree::Class())) {
+                     TFile *file = AliAnalysisManager::OpenFile(output, openoption, kTRUE);
+                     // Save data to file, then close.
                      TTree *tree = (TTree*)output->GetData();
                      // Check if tree is in memory
                      if (tree->GetDirectory()==gROOT) tree->SetDirectory(gDirectory);
                      tree->AutoSave();
+                     file->Close();
                   } else {
-                     output->GetData()->Write();
+//                     output->GetData()->Write();
                   }   
                }      
                if (fDebug > 1) printf("PackOutput %s: memory merge, file resident output\n", output->GetName());
-               if (fDebug > 2) {
-                  printf("   file %s listing content:\n", filename);
-                  file->ls();
-               }   
+//               if (fDebug > 2) {
+//                  printf("   file %s listing content:\n", filename);
+//                  file->ls();
+//               }   
                // Clear file list to release object ownership to user.
 //               file->Clear();
-               file->Close();
+//               file->Close();
                output->SetFile(NULL);
                // Restore current directory
                if (opwd) opwd->cd();
@@ -816,6 +827,7 @@ void AliAnalysisManager::Terminate()
       handlerFile = fOutputEventHandler->GetOutputFileName();
    }
    icont = 0;
+   TList filestmp;
    while ((output=(AliAnalysisDataContainer*)next1())) {
       // Special outputs or grid files have the files already closed and written.
       icont++;
@@ -833,7 +845,13 @@ void AliAnalysisManager::Terminate()
       if (!file) file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
       if (!file) {
 	      //if (handlerFile == filename && !gSystem->AccessPathName(filename)) openoption = "UPDATE";
-         if (!gSystem->AccessPathName(filename)) openoption = "UPDATE";
+         Bool_t firsttime = kTRUE;
+         if (filestmp.FindObject(filename)) {
+            firsttime = kFALSE;
+         } else {   
+            filestmp.Add(new TNamed(filename,""));
+         }   
+         if (!gSystem->AccessPathName(filename) && !firsttime) openoption = "UPDATE";
 	      if (fDebug>1) printf("Opening file: %s  option=%s\n",filename, openoption.Data());
          file = new TFile(filename, openoption);
       } else {
@@ -1376,7 +1394,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
       cdir->cd();
       return 0;
    }
-   char line[256];
+   TString line;
    SetEventLoop(kFALSE);
    // Enable event loop mode if a tree was provided
    if (tree || fMode==kMixingAnalysis) SetEventLoop(kTRUE);
@@ -1442,7 +1460,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             cdir->cd();
             return -1;
          }   
-         sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
+         line = Form("gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
          gROOT->ProcessLine(line);
          if (chain) {
             chain->SetProof();
@@ -1503,7 +1521,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
       return -1;
    }   
    fMode = kProofAnalysis;
-   char line[256];
+   TString line;
    SetEventLoop(kTRUE);
    // Set the dataset flag
    TObject::SetBit(kUseDataSet);
@@ -1520,14 +1538,14 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
       Error("StartAnalysis", "No PROOF!!! Exiting.");
       return -1;
    }   
-   sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
+   line = Form("gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
    gROOT->ProcessLine(line);
 //   sprintf(line, "gProof->GetDataSet(\"%s\");", dataset);
 //   if (!gROOT->ProcessLine(line)) {
 //      Error("StartAnalysis", "Dataset %s not found", dataset);
 //      return -1;
 //   }   
-   sprintf(line, "gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
+   line = Form("gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
            dataset, nentries, firstentry);
    cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
    Long_t retv = (Long_t)gROOT->ProcessLine(line);
@@ -1633,7 +1651,10 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
       printf("File: %s already booked via TProofOutputFile\n", filename.Data());
     }  
     f = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
-    if (!f) Fatal("OpenProofFile", "Proof output file found but no file opened for %s", filename.Data());
+    if (!f) {
+       Fatal("OpenProofFile", "Proof output file found but no file opened for %s", filename.Data());
+       return NULL;
+    }   
     // Check if option "UPDATE" was preserved 
     TString opt(option);
     opt.ToUpper();
