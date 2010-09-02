@@ -588,15 +588,15 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
    if(iPWG4PtQAMC){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQAMC.C");
-     AliPWG4HighPtQAMC *taskQAMC = AddTaskPWG4HighPtQAMC();
+     AliPWG4HighPtQAMC *taskQAMC = AddTaskPWG4HighPtQAMC(kGridDataSet.Data());
      if (!taskQAMC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQAMC cannot run for this train conditions - EXCLUDED");
    }
 
    if(iPWG4PtQATPC){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQATPConly.C");
      AliPWG4HighPtQATPConly *taskQATPC = 0;
-     if(iPWG4PtQATPC&1)taskQATPC = AddTaskPWG4HighPtQATPConly(1);
-     if(iPWG4PtQATPC&2)taskQATPC = AddTaskPWG4HighPtQATPConly(2);
+     if(iPWG4PtQATPC&1)taskQATPC = AddTaskPWG4HighPtQATPConly(kGridDataSet.Data(),1);
+     if(iPWG4PtQATPC&2)taskQATPC = AddTaskPWG4HighPtQATPConly(kGridDataSet.Data(),2);
 
  if (!taskQATPC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQATPC cannot run for this train conditions - EXCLUDED");
    }
@@ -613,7 +613,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4PtSpectra){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtSpectra.C");
-     AliPWG4HighPtSpectra *taskPtSpectra = AddTaskPWG4HighPtSpectra();
+     AliPWG4HighPtSpectra *taskPtSpectra = AddTaskPWG4HighPtSpectra(kGridDataSet.Data());
      if (!taskPtSpectra) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskPtSpectra cannot run for this train conditions - EXCLUDED");
    }
    if(iPWG4KMeans){

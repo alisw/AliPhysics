@@ -29,6 +29,7 @@ class TH3F;
 class TList;
 class AliESDEvent;
 class AliESDtrackCuts;
+class AliMCEvent;
 
 class AliPWG4HighPtQAMC: public AliAnalysisTask {
 
@@ -45,17 +46,23 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
 
+  void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
+  Float_t GetPtMax()           {return fPtMax;}
+
  protected:
 
  private:
 
-  void InitHistPointers();
   AliPWG4HighPtQAMC(const AliPWG4HighPtQAMC&);
   AliPWG4HighPtQAMC& operator=(const AliPWG4HighPtQAMC&);
 
   AliESDEvent *fESD;              //! ESD object
+  AliMCEvent  *fMC;               //! MC event object
+ 
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global reconstructed vs MC comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
+
+  Float_t fPtMax;                 // Maximum pT for histograms
 
   
   TH1F *fNEventAll;                            //! Event counter

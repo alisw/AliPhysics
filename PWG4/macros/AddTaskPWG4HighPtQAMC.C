@@ -1,6 +1,6 @@
 //DEFINITION OF A FEW CONSTANTS
 
-AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC()
+AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14")
 {
   // Creates HighPtQAMC analysis task and adds it to the analysis manager.
   
@@ -45,7 +45,8 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC()
   AliPWG4HighPtQAMC *taskPWG4QAMC = new AliPWG4HighPtQAMC("AliPWG4HighPtQAMC");
   taskPWG4QAMC->SetCuts(trackCuts);
   taskPWG4QAMC->SetCutsITS(trackCutsITS);
-  
+  if(!strcmp(prodType, "LHC10e14")  || !strcmp(prodType, "PbPb")) taskPWG4QAMC->SetPtMax(500.);
+  else taskPWG4QAMC->SetPtMax(100.);
  
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below

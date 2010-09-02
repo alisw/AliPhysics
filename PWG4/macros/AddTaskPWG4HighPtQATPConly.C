@@ -1,6 +1,6 @@
 //DEFINITION OF A FEW CONSTANTS
 
-AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly(int cuts=1)//1: Standard Cuts 2009 2: GetStandardITSTPCTrackCuts2009
+AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly(char *prodType = "LHC10e14",int cuts=2)//1: Standard Cuts 2009 2: GetStandardITSTPCTrackCuts2009
 {
   // Creates HighPtQATPConly analysis task and adds it to the analysis manager.
   
@@ -74,7 +74,9 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly(int cuts=1)//1: Standard Cuts
   taskPWG4QA->SetCuts(trackCuts);
   taskPWG4QA->SetCutsITS(trackCutsITS);
   taskPWG4QA->SetCutType(cuts);
- 
+  if(!strcmp(prodType, "LHC10e14") || !strcmp(prodType, "PbPb")) taskPWG4QA->SetPtMax(500.);
+  else taskPWG4QA->SetPtMax(100.);
+
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================

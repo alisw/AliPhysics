@@ -51,8 +51,10 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   void SetCutType(Int_t ctype) {fCutType = ctype;}
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
+  void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
 
   Int_t GetCutType() {return fCutType;}
+  Float_t GetPtMax()           {return fPtMax;}
 
  protected:
 
@@ -68,6 +70,8 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   Int_t fCutType;                 // Cut Type set in AddTask*
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global vs TPConly comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
+
+  Float_t fPtMax;                 // Maximum pT for histograms
   
   TH1F *fNEventAll;                             //! Event counter
   TH1F *fNEventSel;                             //! Event counter: Selected events for analysis
