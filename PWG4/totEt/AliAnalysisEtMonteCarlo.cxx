@@ -45,12 +45,12 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
             TParticlePDG *pdgCode =  part->GetPDG(0);
             if (
-                TMath::Abs(pdgCode->PdgCode()) == fPdgDB->GetParticle("proton")->PdgCode() ||
-                TMath::Abs(pdgCode->PdgCode()) == fPdgDB->GetParticle("neutron")->PdgCode() ||
-                TMath::Abs(pdgCode->PdgCode()) == fPdgDB->GetParticle("Lambda0")->PdgCode() ||
-                TMath::Abs(pdgCode->PdgCode()) == fPdgDB->GetParticle("Xi-")->PdgCode() ||
-                TMath::Abs(pdgCode->PdgCode()) == fPdgDB->GetParticle("Xi0")->PdgCode() ||
-                TMath::Abs(pdgCode->PdgCode()) == fPdgDB->GetParticle("Omega-")->PdgCode()
+                TMath::Abs(pdgCode->PdgCode()) == ProtonCode ||
+                TMath::Abs(pdgCode->PdgCode()) == NeutronCode ||
+                TMath::Abs(pdgCode->PdgCode()) == LambdaCode ||
+                TMath::Abs(pdgCode->PdgCode()) == XiCode ||
+                TMath::Abs(pdgCode->PdgCode()) == Xi0Code ||
+                TMath::Abs(pdgCode->PdgCode()) == OmegaCode
 	       )
             {
                 particleMassPart = -TMath::Sign(pdgCode->PdgCode(), pdgCode->PdgCode())*pdgCode->Mass();

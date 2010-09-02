@@ -1,34 +1,32 @@
-#ifndef ALIANALYSISET_H
-#define ALIANALYSISET_H
+//Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//University of Tennessee at Knoxville
+#ifndef ALIANALYSISHADET_H
+#define ALIANALYSISHADET_H
 
 #include "TString.h"
 #include "TDatabasePDG.h"
+#include "TParticle.h"
 #include "Rtypes.h"
+#include "TString.h"
+#include "AliESDtrackCuts.h"
 
 class TH2F;
 class TH1F;
 class AliVEvent;
 class TList;
 
-class AliAnalysisEt
+class AliAnalysisHadEt
 {
 public:
    
-    AliAnalysisEt();
-    virtual ~AliAnalysisEt();
+  AliAnalysisHadEt();
+    virtual ~AliAnalysisHadEt();
 
-private:
-  //Declare it private to avoid compilation warning
-  AliAnalysisEt & operator = (const AliAnalysisEt & g) ;//cpy assignment
-  AliAnalysisEt(const AliAnalysisEt & g) ; // cpy ctor
-  
-public:
-  
     /** Analyse the event! */
     virtual Int_t AnalyseEvent(AliVEvent *event);
 
     /** Fill the objects you want to output, classes which add new histograms should overload this. */
-    virtual void FillOutputList(TList* list);
+    virtual void FillOutputList();
 
     /** Initialise the analysis, must be overloaded. */
     virtual void Init();
@@ -70,6 +68,12 @@ public:
     Double_t GetTotChargedEtAcc() { return fTotChargedEtAcc; }
 
 
+    void SetHistoList(TList *mylist){histoList = mylist;}
+
+    void SetTPCITSTrackCuts(AliESDtrackCuts *cuts){ esdtrackCutsITSTPC = cuts;}
+    void SetTPCOnlyTrackCuts(AliESDtrackCuts *cuts){ esdtrackCutsTPC = cuts;}
+    void SetITSTrackCuts(AliESDtrackCuts *cuts){ esdtrackCutsITS = cuts;}
+
 protected:
    
     /** The suffix for the histogram names */
@@ -77,7 +81,6 @@ protected:
 
     /** PDG Database */
     TDatabasePDG *fPdgDB;
-
     Int_t PiPlusCode;
     Int_t PiMinusCode;
     Int_t KPlusCode;
@@ -141,15 +144,6 @@ protected:
     /** Eta cut for our acceptance */
     Double_t fEtaCutAcc;
 
-    /** Min phi cut for our acceptance in radians */
-    Double_t fPhiCutAccMin;
-
-    /** Max phi cut for our acceptance in radians */
-    Double_t fPhiCutAccMax;
-
-    /** Detector radius */
-    Double_t fDetectorRadius;
-
     /** Vertex cuts */
     Double_t fVertexXCut;
     Double_t fVertexYCut;
@@ -159,64 +153,36 @@ protected:
     Double_t fIPxyCut;
     Double_t fIPzCut;
 
-    /** Cut on the cluster energy */
-    Double_t fClusterEnergyCut;
 
-    /** Cut on track pt */
-    Double_t fTrackPtCut;
+    void CreateEtaPtHisto2D(TString name, TString title);
+    void CreateEtaHisto1D(TString name, TString title);
+    void CreateHisto2D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh,Int_t ybins,Float_t ylow,Float_t yhigh);
+    void CreateHisto1D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh);
+    void CreateIntHisto1D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Int_t xlow,Int_t xhigh);
+    void CreateIntHisto2D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Int_t xlow,Int_t xhigh,Int_t ybins,Int_t ylow,Int_t yhigh);
+    void FillHisto1D(TString histname, Float_t x, Float_t weight);
+    void FillHisto2D(TString histname, Float_t x, Float_t y, Float_t weight);
 
-    /** Minimum energy to cut on single cell cluster */
-    Double_t fSingleCellEnergyCut;
+    Float_t Et(TParticle *part, float mass = -1000);
+    AliESDtrackCuts* esdtrackCutsITSTPC;
+    AliESDtrackCuts* esdtrackCutsTPC;
+    AliESDtrackCuts* esdtrackCutsITS;
+
+    TList *histoList;
+    static Float_t etaAxis[47];
+    static Int_t numOfEtaBins;
+    static Float_t ptAxis[117];
+    static Int_t numOfPtBins;
     
-    // Declare the histograms
 
-    /** The full Et spectrum measured */
-    TH1F *fHistEt; //Et spectrum
+ private:
 
-    /** The full charged Et spectrum measured */
-    TH1F *fHistChargedEt; //Charged Et spectrum
+private:
+  //Declare it private to avoid compilation warning
+  AliAnalysisHadEt & operator = (const AliAnalysisHadEt & g) ;//cpy assignment
+  AliAnalysisHadEt(const AliAnalysisHadEt & g) ; // cpy ctor
 
-    /** The full neutral Et spectrum measured */
-    TH1F *fHistNeutralEt; //Neutral Et spectrum
-
-    /** The Et spectrum within the calorimeter acceptance */
-    TH1F *fHistEtAcc; //Et in acceptance
-
-    /** The charged Et spectrum within the calorimeter acceptance */
-    TH1F *fHistChargedEtAcc; //Charged Et in acceptance
-
-    /** The neutral Et spectrum within the calorimeter acceptance */
-    TH1F *fHistNeutralEtAcc; //Et in acceptance
-
-    /** Multiplicity of particles in the events */
-    TH1F *fHistMult; //Multiplicity
-
-    /** Charged multiplicity of particles in the events */
-    TH1F *fHistChargedMult; //Charged multiplicity
-
-    /** Neutral multiplicity of particles in the events */
-    TH1F *fHistNeutralMult; //Neutral multiplicity
-
-    /* Acceptance plots */
-    TH2F *fHistPhivsPtPos; //phi vs pT plot for positive tracks
-    TH2F *fHistPhivsPtNeg; //phi vs pT plot for negative tracks
-
-    /* PID plots */
-    TH1F *fHistBaryonEt;
-    TH1F *fHistAntiBaryonEt;
-    TH1F *fHistMesonEt;
-
-    TH1F *fHistBaryonEtAcc;
-    TH1F *fHistAntiBaryonEtAcc;
-    TH1F *fHistMesonEtAcc;
-
-    /* Correction plots */
-    TH2F *fHistEtRecvsEtMC; //Reconstructed Et versus MC Et
-
-    /* Track matching plots */
-    TH1F *fHistTMDeltaR;
-
-    ClassDef(AliAnalysisEt, 0);
+    ClassDef(AliAnalysisHadEt, 0);
 };
 
-#endif // ALIANALYSISET_H
+#endif // ALIANALYSISHADET_H

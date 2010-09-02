@@ -8,6 +8,10 @@ totEt/AliAnalysisEtReconstructed.cxx \
 totEt/AliAnalysisEtReconstructedEmcal.cxx \
 totEt/AliAnalysisEtReconstructedPhos.cxx \
 totEt/AliAnalysisTaskTotEt.cxx \
+totEt/AliAnalysisHadEt.cxx \
+totEt/AliAnalysisHadEtMonteCarlo.cxx \
+totEt/AliAnalysisHadEtReconstructed.cxx \
+totEt/AliAnalysisTaskHadEt.cxx \
 
 HDRS:= $(SRCS:.cxx=.h) 
 

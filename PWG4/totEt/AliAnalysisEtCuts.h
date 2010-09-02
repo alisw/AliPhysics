@@ -6,7 +6,7 @@
 namespace EtCommonCuts
 {
    
-   const Double_t kEtaCut = 0.5;
+   const Double_t kEtaCut = 0.8;
    const Double_t kClusterEnergyCut = 0.0;
    const Double_t kTrackPtCut = 0.0;
    
