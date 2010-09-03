@@ -68,9 +68,9 @@ AliTPCFCVoltError3D::AliTPCFCVoltError3D()
     fRotatedClipVoltC[i] = 0;  
   }
   // 
-  for (Int_t i=0; i<18; i++){
-    fOFCRodShiftA[i] = 0;  
-    fOFCRodShiftC[i] = 0;  
+  for (Int_t i=0; i<36; i++){
+    fCopperRodShiftA[i] = 0;  
+    fCopperRodShiftC[i] = 0;  
   }
 
   // Array which will contain the solution according to the setted boundary conditions
@@ -102,6 +102,10 @@ AliTPCFCVoltError3D::AliTPCFCVoltError3D()
     fLookUpBasic5ErOverEz[k]   = 0;
     fLookUpBasic5EphiOverEz[k] = 0; 
     fLookUpBasic5DeltaEz[k]    = 0;
+
+    fLookUpBasic6ErOverEz[k]   = 0;
+    fLookUpBasic6EphiOverEz[k] = 0; 
+    fLookUpBasic6DeltaEz[k]    = 0;
   }
 
 }
@@ -137,6 +141,11 @@ AliTPCFCVoltError3D::~AliTPCFCVoltError3D() {
     delete fLookUpBasic5ErOverEz[k];  // does nothing if pointer is zero!
     delete fLookUpBasic5EphiOverEz[k]; 
     delete fLookUpBasic5DeltaEz[k]; 
+
+    delete fLookUpBasic6ErOverEz[k];  // does nothing if pointer is zero!
+    delete fLookUpBasic6EphiOverEz[k]; 
+    delete fLookUpBasic6DeltaEz[k]; 
+
   }
 }
 
@@ -187,7 +196,6 @@ void AliTPCFCVoltError3D::GetCorrection(const Float_t x[],const Short_t roc,Floa
   if (!fInitLookUp) {
     AliInfo("Lookup table was not initialized! Perform the inizialisation now ...");
     InitFCVoltError3D();
-    return;
   }
 
   Int_t   order     = 1 ;               // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2         
@@ -275,11 +283,11 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
   // Solve Poisson's equation in 3D cylindrical coordinates by relaxation technique
   // Allow for different size grid spacing in R and Z directions
   
-  const Int_t   symmetry[5] =    {1,1,-1,-1,1}; // shifted rod (2x), rotated clip (2x), only rod shift on OFC (1x)
+  const Int_t   symmetry[6] =    {1,1,-1,-1,1,1}; // shifted rod (2x), rotated clip (2x), only rod shift on OFC (1x)
 
   // check which lookup tables are needed ---------------------------------
 
-  Bool_t needTable[5] ={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+  Bool_t needTable[6] ={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
 
   // Shifted rods & strips
   for ( Int_t rod = 0 ; rod < 18 ; rod++ ) {
@@ -294,10 +302,15 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
   if (fRotatedClipVoltA[0]!=0 || fRotatedClipVoltC[0]!=0) needTable[2]=kTRUE;
   if (fRotatedClipVoltA[1]!=0 || fRotatedClipVoltC[1]!=0) needTable[3]=kTRUE;
  
-  // shifted Copper rods on OFC
+  // shifted Copper rods 
   for ( Int_t rod = 0 ; rod < 18 ; rod++ ) {
-    if (fOFCRodShiftA[rod]!=0) needTable[4]=kTRUE;
-    if (fOFCRodShiftC[rod]!=0) needTable[4]=kTRUE;
+    if (fCopperRodShiftA[rod]!=0) needTable[4]=kTRUE;
+    if (fCopperRodShiftC[rod]!=0) needTable[4]=kTRUE;
+  }
+  // shifted Copper rods 
+  for ( Int_t rod = 18; rod < 36 ; rod++ ) {
+    if (fCopperRodShiftA[rod]!=0) needTable[5]=kTRUE;
+    if (fCopperRodShiftC[rod]!=0) needTable[5]=kTRUE;
   }
 
 
@@ -342,10 +355,18 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
       // will be deleted in destructor
     }
   }
+  if (needTable[5] && !fInitLookUpBasic[5]) {
+    for ( Int_t k = 0 ; k < kPhiSlices ; k++ ) {   // Possibly make an extra table to be used for 0 == 360
+      fLookUpBasic6ErOverEz[k]   =   new TMatrixD(kRows,kColumns);
+      fLookUpBasic6EphiOverEz[k] =   new TMatrixD(kRows,kColumns);
+      fLookUpBasic6DeltaEz[k]    =   new TMatrixD(kRows,kColumns);
+      // will be deleted in destructor
+    }
+  }
  
   // Set bondaries and solve Poisson's equation --------------------------
  
-  for (Int_t look=0; look<5; look++) {
+  for (Int_t look=0; look<6; look++) {
    
     Float_t inner18[18] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;  
     Float_t outer18[18] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ; 
@@ -367,21 +388,31 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 	AliInfo(Form("OFC - Clip rot. : Filling table (~ %d sec)",3*(int)(kPhiSlices/5)));
 	outer18[0] = 1;  
       } else if (look==4) {
+	AliInfo(Form("IFC - CopperRod shift : Filling table (~ %d sec)",3*(int)(kPhiSlices/5)));
+	inner18[0] = 1;  
+      } else if (look==5) {
 	AliInfo(Form("OFC - CopperRod shift : Filling table (~ %d sec)",3*(int)(kPhiSlices/5)));
 	outer18[0] = 1;  
       }
       // Build potentials on boundary stripes for a rotated clip (SYMMETRY==-1) or a shifted rod (SYMMETRY==1)
-      if (look!=4) {
+      if (look<4) {
 	// in these cases, the strips follow the actual rod shift (linear interpolation between the rods)
 	for ( Int_t k = 0 ; k < kPhiSlices ; k++ ) {
 	  Int_t slices = kPhiSlicesPerSector ;
 	  Int_t ipoint = k/slices  ;  
-	  innerList[k] = (((ipoint+1)*slices-k)*-1*inner18[ipoint]+(k-ipoint*slices)*inner18[ipoint+1])/slices ;
-	  outerList[k] = (((ipoint+1)*slices-k)*-1*outer18[ipoint]+(k-ipoint*slices)*outer18[ipoint+1])/slices ;
+	  innerList[k] = (((ipoint+1)*slices-k)*inner18[ipoint]-(k-ipoint*slices)*inner18[ipoint+1])/slices ;
+	  outerList[k] = (((ipoint+1)*slices-k)*outer18[ipoint]-(k-ipoint*slices)*outer18[ipoint+1])/slices ;
 	  if ( (k%slices) == 0 && symmetry[look] == -1 ) { innerList[k] = 0.0 ; outerList[k] = 0.0 ; } 
 	  // above, force Zero if Anti-Sym
 	} 
-      } else {
+      } else if (look==4){
+	// in this case, we assume that the strips stay at the correct position, but the rods move
+	// the distortion is then much more localized around the rod (indicated by real data)
+	for ( Int_t k = 0 ; k < kPhiSlices ; k++ )
+	  innerList[k] = outerList[k] = 0;
+	innerList[0] = inner18[0];     // point at rod
+	innerList[0] = inner18[0]/4*3;  // point close to rod (educated guess)
+      } else if (look==5){
 	// in this case, we assume that the strips stay at the correct position, but the copper plated OFC-rods move
 	// the distortion is then much more localized around the rod (indicated by real data)
 	for ( Int_t k = 0 ; k < kPhiSlices ; k++ )
@@ -437,6 +468,11 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 	PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
 			     fLookUpBasic5ErOverEz, fLookUpBasic5EphiOverEz, fLookUpBasic5DeltaEz,
 			     kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, symmetry[4]) ;
+	AliInfo("IFC - CopperRod shift : done ");
+      } else if (look==5) {
+	PoissonRelaxation3D( arrayofArrayV, arrayofCharge, 
+			     fLookUpBasic6ErOverEz, fLookUpBasic6EphiOverEz, fLookUpBasic6DeltaEz,
+			     kRows, kColumns, kPhiSlices, gridSizePhi, kIterations, symmetry[5]) ;
 	AliInfo("OFC - CopperRod shift : done ");
       }
       
@@ -694,13 +730,13 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 	  }
 	}
 
-	// OFC Cooper rod shift  +++++++++++++++++++++++++++++
+	// IFC Cooper rod shift  +++++++++++++++++++++++++++++
 	for ( Int_t rod = 0 ; rod < 18 ; rod++ ) {
 	  
 	  erIntegral = ephiIntegral = ezIntegral = 0.0 ;
 	  
-	  if ( fOFCRodShiftA[rod] == 0 && fgkZList[i] > 0) continue ;
-	  if ( fOFCRodShiftC[rod] == 0 && fgkZList[i] < 0) continue ;
+	  if ( fCopperRodShiftA[rod] == 0 && fgkZList[i] > 0) continue ;
+	  if ( fCopperRodShiftC[rod] == 0 && fgkZList[i] < 0) continue ;
 
 	  // Rotate to a position where we have maps and prepare to sum
 	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;  
@@ -728,20 +764,71 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 					      rlist, zedlist, philist, fLookUpBasic5DeltaEz   );
 	    
 	    // Flip symmetry of phi integral for symmetric boundary conditions
-	    if ( symmetry[0] ==  1 ) ephiIntegral *= -1  ;    
+	    if ( symmetry[4] ==  1 ) ephiIntegral *= -1  ;    
 	    // Flip symmetry of r integral if anti-symmetric boundary conditions 
-	    if ( symmetry[0] == -1 ) erIntegral   *= -1  ;    
+	    if ( symmetry[4] == -1 ) erIntegral   *= -1  ;    
 
 	  }
 
 	  if ( fgkZList[i] > 0 ) {
-	    erIntegralSum   += fOFCRodShiftA[rod]*erIntegral   ;
-	    ephiIntegralSum += fOFCRodShiftA[rod]*ephiIntegral ;
-	    ezIntegralSum   += fOFCRodShiftA[rod]*ezIntegral;
+	    erIntegralSum   += fCopperRodShiftA[rod]*erIntegral   ;
+	    ephiIntegralSum += fCopperRodShiftA[rod]*ephiIntegral ;
+	    ezIntegralSum   += fCopperRodShiftA[rod]*ezIntegral;
 	  } else if ( fgkZList[i] < 0 ) {
-	    erIntegralSum   += fOFCRodShiftC[rod]*erIntegral   ;
-	    ephiIntegralSum += fOFCRodShiftC[rod]*ephiIntegral ;
-	    ezIntegralSum   -= fOFCRodShiftC[rod]*ezIntegral;
+	    erIntegralSum   += fCopperRodShiftC[rod]*erIntegral   ;
+	    ephiIntegralSum += fCopperRodShiftC[rod]*ephiIntegral ;
+	    ezIntegralSum   -= fCopperRodShiftC[rod]*ezIntegral;
+	  }
+	}
+
+	// OFC Cooper rod shift  +++++++++++++++++++++++++++++
+	for ( Int_t rod = 18 ; rod < 36 ; rod++ ) {
+	  
+	  erIntegral = ephiIntegral = ezIntegral = 0.0 ;
+	  
+	  if ( fCopperRodShiftA[rod] == 0 && fgkZList[i] > 0) continue ;
+	  if ( fCopperRodShiftC[rod] == 0 && fgkZList[i] < 0) continue ;
+
+	  // Rotate to a position where we have maps and prepare to sum
+	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;  
+
+	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi    
+
+	  if ( (phiPrime >= 0) && (phiPrime <= kPhiSlices*gridSizePhi) ) {
+	    
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+					      rlist, zedlist, philist, fLookUpBasic6ErOverEz  );
+	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
+					      rlist, zedlist, philist, fLookUpBasic6EphiOverEz);
+	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
+					      rlist, zedlist, philist, fLookUpBasic6DeltaEz   );
+	    
+	  }  else if ( (phiPrime <= TMath::TwoPi()) && (phiPrime >= (TMath::TwoPi()-kPhiSlices*gridSizePhi)) ){
+	    
+	    phiPrime     = TMath::TwoPi() - phiPrime ;
+	    
+	    erIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices, 
+					      rlist, zedlist, philist, fLookUpBasic6ErOverEz  );
+	    ephiIntegral = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
+					      rlist, zedlist, philist, fLookUpBasic6EphiOverEz);
+	    ezIntegral   = Interpolate3DTable(order, r, z, phiPrime, kRows, kColumns, kPhiSlices,
+					      rlist, zedlist, philist, fLookUpBasic6DeltaEz   );
+	    
+	    // Flip symmetry of phi integral for symmetric boundary conditions
+	    if ( symmetry[5] ==  1 ) ephiIntegral *= -1  ;    
+	    // Flip symmetry of r integral if anti-symmetric boundary conditions 
+	    if ( symmetry[5] == -1 ) erIntegral   *= -1  ;    
+
+	  }
+
+	  if ( fgkZList[i] > 0 ) {
+	    erIntegralSum   += fCopperRodShiftA[rod]*erIntegral   ;
+	    ephiIntegralSum += fCopperRodShiftA[rod]*ephiIntegral ;
+	    ezIntegralSum   += fCopperRodShiftA[rod]*ezIntegral;
+	  } else if ( fgkZList[i] < 0 ) {
+	    erIntegralSum   += fCopperRodShiftC[rod]*erIntegral   ;
+	    ephiIntegralSum += fCopperRodShiftC[rod]*ephiIntegral ;
+	    ezIntegralSum   -= fCopperRodShiftC[rod]*ezIntegral;
 	  }
 	}
 
@@ -778,49 +865,23 @@ void AliTPCFCVoltError3D::Print(const Option_t* option) const {
   printf("%s\n",GetTitle());
   printf(" - ROD shifts  (residual voltage settings): 40V correspond to 1mm of shift\n");
   Int_t count = 0;
-  printf("  : A-side - IFC (Rod & Strips) \n     "); 
-  for (Int_t i=0; i<18;i++) {
+  printf("  : A-side - (Rod & Strips) \n     "); 
+  for (Int_t i=0; i<36;i++) {
     if (fRodVoltShiftA[i]!=0) {
-      printf("Rod %2d: %3.1f V \t",i,fRodVoltShiftA[i]);
-      count++;
-    }
-    if (count==0&&i==17) 
-      printf("-> all at 0 V\n");
-    else if (i==17){
-      printf("\n");
-      count=0;
-    }
-  } 
-  printf("  : C-side - IFC (Rod & Strips) \n     "); 
-  for (Int_t i=0; i<18;i++) {
-    if (fRodVoltShiftC[i]!=0) {
-      printf("Rod %2d: %3.1f V \t",i,fRodVoltShiftC[i]);
-      count++;
-    }
-    if (count==0&&i==17) 
-      printf("-> all at 0 V\n");
-    else if (i==17){
-      printf("\n");
-      count=0;
-    }
-  } 
-  printf("  : A-side - OFC (only Rod) \n     "); 
-  for (Int_t i=18; i<36;i++) {
-    if (fRodVoltShiftA[i]!=0) {
-      printf("Rod %2d: %3.1f V \t",i,fRodVoltShiftA[i]);
+      printf("Rod%2d:%3.1fV ",i,fRodVoltShiftA[i]);
       count++;
     }
     if (count==0&&i==35) 
       printf("-> all at 0 V\n");
-    else if (i==35) {
+    else if (i==35){
       printf("\n");
       count=0;
     }
   } 
-  printf("  : C-side - OFC (only Rod) \n     "); 
-  for (Int_t i=18; i<36;i++) {
+  printf("  : C-side - (Rod & Strips) \n     "); 
+  for (Int_t i=0; i<36;i++) {
     if (fRodVoltShiftC[i]!=0) {
-      printf("Rod %2d: %3.1f V \t",i,fRodVoltShiftC[i]);
+      printf("Rod%2d:%3.1fV ",i,fRodVoltShiftC[i]);
       count++;
     }
     if (count==0&&i==35) 
@@ -841,28 +902,28 @@ void AliTPCFCVoltError3D::Print(const Option_t* option) const {
 
   count=0;
   printf(" - Copper ROD shifts (without strips):\n");
-  printf("  : A-side - OFC (Copper Rod shift) \n     "); 
-  for (Int_t i=0; i<18;i++) {
-    if (fOFCRodShiftA[i]!=0) {
-      printf("Rod %2d: %3.1f V \t",i,fOFCRodShiftA[i]);
+  printf("  : A-side - (Copper Rod shift) \n     "); 
+  for (Int_t i=0; i<36;i++) {
+    if (fCopperRodShiftA[i]!=0) {
+      printf("Rod%2d:%3.1fV ",i,fCopperRodShiftA[i]);
       count++;
     }
-    if (count==0&&i==17) 
+    if (count==0&&i==35) 
       printf("-> all at 0 V\n");
-    else if (i==17){
+    else if (i==35){
       printf("\n");
       count=0;
     }
   } 
-  printf("  : C-side - OFC (Copper Rod shift) \n     "); 
-  for (Int_t i=0; i<18;i++) {
-    if (fOFCRodShiftC[i]!=0) {
-      printf("Rod %2d: %3.1f V \t",i,fOFCRodShiftC[i]);
+  printf("  : C-side - (Copper Rod shift) \n     "); 
+  for (Int_t i=0; i<36;i++) {
+    if (fCopperRodShiftC[i]!=0) {
+      printf("Rod%2d:%3.1fV ",i,fCopperRodShiftC[i]);
       count++;
     }
-    if (count==0&&i==17) 
+    if (count==0&&i==35) 
       printf("-> all at 0 V\n");
-    else if (i==17){
+    else if (i==35){
       printf("\n");
       count=0;
     }

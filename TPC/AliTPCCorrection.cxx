@@ -500,7 +500,7 @@ void AliTPCCorrection::Interpolate2DEdistortion( const Int_t order, const Double
   //
   // Interpolate table - 2D interpolation
   //
-  Double_t saveEr[10] ;
+  Double_t saveEr[5] = {0,0,0,0,0};
 
   Search( kNZ,   fgkZList,  z,   fJLow   ) ;
   Search( kNR,   fgkRList,  r,   fKLow   ) ;
@@ -523,9 +523,14 @@ void AliTPCCorrection::Interpolate3DEdistortion( const Int_t order, const Double
   // Interpolate table - 3D interpolation
   //
   
-  Double_t saveEr[10],   savedEr[10] ;
-  Double_t saveEphi[10], savedEphi[10] ;
-  Double_t saveEz[10],   savedEz[10] ;
+  Double_t saveEr[5]= {0,0,0,0,0};
+  Double_t savedEr[5]= {0,0,0,0,0} ;
+
+  Double_t saveEphi[5]= {0,0,0,0,0};
+  Double_t savedEphi[5]= {0,0,0,0,0} ;
+
+  Double_t saveEz[5]= {0,0,0,0,0};
+  Double_t savedEz[5]= {0,0,0,0,0} ;
 
   Search( kNZ,   fgkZList,   z,   fILow   ) ;
   Search( kNPhi, fgkPhiList, z,   fJLow   ) ;
@@ -563,7 +568,7 @@ Double_t AliTPCCorrection::Interpolate2DTable( const Int_t order, const Double_t
   //
 
   static  Int_t jlow = 0, klow = 0 ;
-  Double_t saveArray[10]  ;
+  Double_t saveArray[5] = {0,0,0,0,0} ;
 
   Search( nx,  xv,  x,   jlow  ) ;
   Search( ny,  yv,  y,   klow  ) ;
@@ -591,7 +596,8 @@ Double_t AliTPCCorrection::Interpolate3DTable( const Int_t order, const Double_t
   //
 
   static  Int_t ilow = 0, jlow = 0, klow = 0 ;
-  Double_t saveArray[10],  savedArray[10] ;
+  Double_t saveArray[5]= {0,0,0,0,0};
+  Double_t savedArray[5]= {0,0,0,0,0} ;
 
   Search( nx, xv, x, ilow   ) ;
   Search( ny, yv, y, jlow   ) ;
@@ -1936,6 +1942,7 @@ Double_t AliTPCCorrection::GetCorrSector(Double_t sector, Double_t r, Double_t k
   if (!fgVisualCorrection) return 0;
   AliTPCCorrection *corr = (AliTPCCorrection*)fgVisualCorrection->At(corrType);
   if (!corr) return 0;
+
   Double_t phi=sector*TMath::Pi()/9.;
   Double_t gx = r*TMath::Cos(phi);
   Double_t gy = r*TMath::Sin(phi);
