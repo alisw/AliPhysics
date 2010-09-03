@@ -527,15 +527,15 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));
     if (connectedList && (strcmp(opt, "reconnect"))) {
         // If connected use the connected list of objects
-      fAODObjects->Delete();
-      fAODObjects = connectedList;
-      GetStdContent(); 
-      fConnected = kTRUE;
-      return;
+	fAODObjects->Delete();
+	fAODObjects = connectedList;
+	GetStdContent(); 
+	fConnected = kTRUE;
+	return;
     } 
       // Connect to tree
       // prevent a memory leak when reading back the TList
-      // if (!(strcmp(opt, "reconnect"))) fAODObjects->Delete();
+//      if (!(strcmp(opt, "reconnect"))) fAODObjects->Delete();
     
       // create a new TList from the UserInfo TList... 
       // copy constructor does not work...

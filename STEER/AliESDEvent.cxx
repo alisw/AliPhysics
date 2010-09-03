@@ -1349,7 +1349,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
 
     // Connect to tree
     // prevent a memory leak when reading back the TList
-    if (!(strcmp(opt, "reconnect"))) fESDObjects->Delete();
+    // if (!(strcmp(opt, "reconnect"))) fESDObjects->Delete();
     
     if(!fUseOwnList){
       // create a new TList from the UserInfo TList... 
