@@ -29,6 +29,8 @@
 //---- ANALYSIS system ----
 #include "AliCalorimeterUtils.h"
 #include "AliVEvent.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
 #include "AliAODPWG4Particle.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
@@ -371,8 +373,30 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
 	else if(particle->GetDetector()=="PHOS"){
-    AliVCluster *cluster = inputEvent->GetCaloCluster(particle->GetCaloLabel(0));
-    return GetModuleNumber(cluster);
+    // In case we use the MC reader, the input are TParticles, 
+    // in this case use the corresponing method in PHOS Geometry to get the particle.
+    if(strcmp(inputEvent->ClassName(), "AliMCEvent") == 0 )
+    {
+      Int_t mod =-1;
+      Double_t z = 0., x=0.;
+      TParticle* primary = 0x0;
+      AliStack * stack = ((AliMCEvent*)inputEvent)->Stack();
+      if(stack) {
+        primary = stack->Particle(particle->GetCaloLabel(0));
+      }
+      else {
+        printf("AliCalorimeterUtils::GetModuleNumber(AOD) - Stack not available, stop!");
+        abort();
+      }
+        
+      fPHOSGeo->ImpactOnEmc(primary,mod,z,x) ;
+      return mod;
+    }
+    // Input are ESDs or AODs, get the PHOS module number like this.
+    else{
+      AliVCluster *cluster = inputEvent->GetCaloCluster(particle->GetCaloLabel(0));
+      return GetModuleNumber(cluster);
+    }
 	}//PHOS
 	
 	return -1;
