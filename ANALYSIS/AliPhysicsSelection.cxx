@@ -628,6 +628,17 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1835 #2726";
     else AliError(Form("Unknown trigger: %s", trigger));
     
+  } 
+  else if (runNumber >= 130148 && runNumber <= 130375) {
+    TString triggerString = trigger;
+    static TString returnString = " ";
+    returnString = "";
+    if (triggerString.Contains("B")) returnString += "   #346  #396  #446  #496  #546  #596  #646  #696  #1240  #1290  #1340  #1390  #1440  #1490  #1540  #1590 ";
+    if (triggerString.Contains("A")) returnString += "   #755  #805  #855  #905  #955  #1005  #1799  #1849  #1899  #2131  #2181  #2231  #2281  #2331  #2381  #2431  #2481  #2531  #2581  #2631  #2846  #3016  #3066  #3116  #3166  #3216  #3266  #3316  #3366  #3425  #3475  #3525 ";
+    if (triggerString.Contains("C")) returnString += "   #3019  #3069  #3119  #3169  #3219  #3269  #3319  #3369  #14  #64  #114  #746  #796  #846  #908  #958  #1008  #1640  #1690  #1740  #2055  #2125  #2175  #2225  #2275  #2325  #2375  #2425  #2475  #2534  #2584  #2634 ";
+    // Printf("0x%x",returnString.Data());
+    // Printf("%s",returnString.Data());
+    return returnString.Data();
   }
 
   else {
@@ -700,19 +711,19 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
         
         // triggers classes used from August 2010
         // MB
-        fCollTrigClasses.Add(new TObjString(Form("+CINT1-B-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMB)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CINT1-AC-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMB)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CINT1-E-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMB)));
-        
-	// MUON
-        fCollTrigClasses.Add(new TObjString(Form("+CMUS1-B-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMUON)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMUS1-AC-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMUON)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CMUS1-E-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kMUON)));
-
-	// High Multiplicity
-        fCollTrigClasses.Add(new TObjString(Form("+CSH1-B-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kHighMult)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CSH1-AC-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kHighMult)));
-        fBGTrigClasses.Add  (new TObjString(Form("+CSH1-E-NOPF-ALLNOTRD &%u", (UInt_t) AliVEvent::kHighMult)));
+        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u", "+CINT1-B-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "B"),  (UInt_t) AliVEvent::kMB)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CINT1-AC-NOPF-ALLNOTRD", GetBXIDs(runNumber, "AC"), (UInt_t) AliVEvent::kMB)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CINT1-E-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "E"),  (UInt_t) AliVEvent::kMB)));
+        					  	 			      
+	// MUON					  	 			      
+        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u", "+CMUS1-B-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "B"),  (UInt_t) AliVEvent::kMUON)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CMUS1-AC-NOPF-ALLNOTRD", GetBXIDs(runNumber, "AC"), (UInt_t) AliVEvent::kMUON)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CMUS1-E-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "E"),  (UInt_t) AliVEvent::kMUON)));
+						  				     
+	// High Multiplicity			  				     
+        fCollTrigClasses.Add(new TObjString(Form("%s%s &%u", "+CSH1-B-NOPF-ALLNOTRD"  , GetBXIDs(runNumber, "B"),  (UInt_t) AliVEvent::kHighMult)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CSH1-AC-NOPF-ALLNOTRD" , GetBXIDs(runNumber, "AC"), (UInt_t) AliVEvent::kHighMult)));
+        fBGTrigClasses.Add  (new TObjString(Form("%s%s &%u", "+CSH1-E-NOPF-ALLNOTRD"  , GetBXIDs(runNumber, "E"),  (UInt_t) AliVEvent::kHighMult)));
 
         break;
         
@@ -818,10 +829,10 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
 }
 
 TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
-
-    // add 6 rows to count for the estimate of good, accidentals and
-    // BG and the ratio of BG and accidentals to total +ratio goot to
-    // first col + 2 for error on good.
+  // add 6 rows to count for the estimate of good, accidentals and
+  // BG and the ratio of BG and accidentals to total +ratio goot to
+  // first col + 2 for error on good.
+  // TODO: Remember the the indexes of rows for the BG selection. Add new member fBGRows[] and use kStat as indexes
 
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
 #ifdef VERBOSE_STAT
@@ -1043,6 +1054,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
     } else {
       // 0. Determine the ratios of triggers E/B, A/B, C/B from the stat histogram
       // Those are used to rescale the different classes to the same number of bx ids
+      // TODO: pass names of the rows for B, CA and E and look names of the rows. How do I handle the case in which both AC are in the same row?
       Float_t nB = 0;
       Float_t nC = 0;
       Float_t nA = 0;
