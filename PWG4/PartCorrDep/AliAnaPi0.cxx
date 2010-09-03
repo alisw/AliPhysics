@@ -551,7 +551,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   }// DoOwnMix
   
   //Acceptance
-    printf("Fill acceptance histograms? %d, %d\n", IsDataMC(), GetReader()->ReadStack());
 
   if(IsDataMC() && GetReader()->ReadStack()){	
     AliStack * stack = GetMCStack();
