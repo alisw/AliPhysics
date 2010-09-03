@@ -51,7 +51,7 @@ AliHLTTRDCluster::AliHLTTRDCluster(const AliTRDcluster* const inCluster):
 
   fSignals = inCluster->fSignals[2];
   fSignals|= inCluster->fSignals[3]<<10;
-  fSignals|= inCluster->fSignals[4]<<20;
+  fSignals|= inCluster->fSignals[4]<<21;
 
   fBits = UInt_t(inCluster->TestBits(-1)) >> 14; 
 }
@@ -67,10 +67,10 @@ void AliHLTTRDCluster::ExportTRDCluster(AliTRDcluster* const outCluster) const
   outCluster->fPadTime=fPadTime;
   
   outCluster->fSignals[2] = 0x3ff & fSignals;
-  outCluster->fSignals[3] = 0x3ff & fSignals>>10;
-  outCluster->fSignals[4] = 0x3ff & fSignals>>20;
+  outCluster->fSignals[3] = 0x7ff & fSignals>>10;
+  outCluster->fSignals[4] = 0x3ff & fSignals>>21;
 
-  for(int i=0; i<3; i++){
+  for(int i=2; i<5; i++){
     outCluster->fQ+=outCluster->fSignals[i];
   }
 
