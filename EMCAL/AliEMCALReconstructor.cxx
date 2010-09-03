@@ -37,6 +37,8 @@
 #include "AliEMCALReconstructor.h"
 
 #include "AliCodeTimer.h"
+#include "AliCaloCalibPedestal.h"
+#include "AliEMCALCalibData.h"
 #include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
@@ -132,11 +134,11 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 AliEMCALReconstructor::~AliEMCALReconstructor()
 {
   // dtor
-  delete fGeom;
-  delete fgRawUtils;
-  delete fgClusterizer;
-  delete fgTriggerProcessor;
-  
+
+  if(fGeom)              delete fGeom;
+  if(fCalibData)         delete fCalibData;
+  if(fPedestalData)      delete fPedestalData;
+
   if(fgDigitsArr){
     fgDigitsArr->Clear("C");
     delete fgDigitsArr; 
@@ -147,6 +149,9 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
     delete fgClustersArr; 
   }
   
+  if(fgRawUtils)         delete fgRawUtils;
+  if(fgClusterizer)      delete fgClusterizer;
+  if(fgTriggerProcessor) delete fgTriggerProcessor;
   
   AliCodeTimer::Instance()->Print();
 } 

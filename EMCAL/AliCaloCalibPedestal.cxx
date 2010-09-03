@@ -127,7 +127,17 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     fRowMultiplier = 1;
   } 
   fDetType = detectorType;
- 
+
+  // ValidateProfiles(); // not to be done in ctor; info from Axel N. 
+}
+
+//_____________________________________________________________________
+void AliCaloCalibPedestal::ValidateProfiles()
+{
+  //Make sure the basic histos exist
+  if (!fPedestalLowGain.IsEmpty()) return; //The profiles already exist. We just check one, because they're all created at
+  //the same time
+
   //Then, loop for the requested number of modules
   TString title, name;
   for (int i = 0; i < fModules; i++) {
@@ -200,7 +210,13 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
 			  fRows, fRowMin, fRowMax));
   
   }//end for nModules create the histograms
- 
+
+  CompressAndSetOwner();
+}
+
+//_____________________________________________________________________
+void AliCaloCalibPedestal::CompressAndSetOwner()
+{ 
   //Compress the arrays, in order to remove the empty objects (a 16 slot array is created by default)
   fPedestalLowGain.Compress();
   fPedestalHighGain.Compress();
@@ -232,7 +248,6 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fPeakMinusPedLowGainRatio.SetOwner(kTRUE);
   fPeakMinusPedHighGainRatio.SetOwner(kTRUE);
   fDeadMap.SetOwner(kTRUE);
-
 }
 
 // dtor
@@ -267,7 +282,7 @@ AliCaloCalibPedestal::~AliCaloCalibPedestal()
 
 // copy ctor
 //_____________________________________________________________________
-AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
+AliCaloCalibPedestal::AliCaloCalibPedestal(AliCaloCalibPedestal &ped) :
   TObject(ped),
   fPedestalLowGain(),
   fPedestalHighGain(),
@@ -328,43 +343,12 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
     fDeadMap.Add( ped.GetDeadMap(i) );  
   }//end for nModules 
  
-  //Compress the arrays, in order to remove the empty objects (a 16 slot array is created by default)
-  fPedestalLowGain.Compress();
-  fPedestalHighGain.Compress();
-  fPedestalLEDRefLowGain.Compress();
-  fPedestalLEDRefHighGain.Compress();
-  fPeakMinusPedLowGain.Compress();
-  fPeakMinusPedHighGain.Compress();
-  fPeakMinusPedHighGainHisto.Compress();
-  fDeadMap.Compress();
-
-  // set owner ship for everyone
-  fPedestalLowGain.SetOwner(kTRUE);
-  fPedestalHighGain.SetOwner(kTRUE);
-  fPedestalLEDRefLowGain.SetOwner(kTRUE);
-  fPedestalLEDRefHighGain.SetOwner(kTRUE);
-  fPeakMinusPedLowGain.SetOwner(kTRUE);
-  fPeakMinusPedHighGain.SetOwner(kTRUE);
-  fPeakMinusPedHighGainHisto.SetOwner(kTRUE);
-  fPedestalLowGainDiff.SetOwner(kTRUE);
-  fPedestalHighGainDiff.SetOwner(kTRUE);
-  fPedestalLEDRefLowGainDiff.SetOwner(kTRUE);
-  fPedestalLEDRefHighGainDiff.SetOwner(kTRUE);
-  fPeakMinusPedLowGainDiff.SetOwner(kTRUE);
-  fPeakMinusPedHighGainDiff.SetOwner(kTRUE);
-  fPedestalLowGainRatio.SetOwner(kTRUE);
-  fPedestalHighGainRatio.SetOwner(kTRUE);
-  fPedestalLEDRefLowGainRatio.SetOwner(kTRUE);
-  fPedestalLEDRefHighGainRatio.SetOwner(kTRUE);
-  fPeakMinusPedLowGainRatio.SetOwner(kTRUE);
-  fPeakMinusPedHighGainRatio.SetOwner(kTRUE);
-  fDeadMap.SetOwner(kTRUE);
-
+  CompressAndSetOwner();
 }
 
 // assignment operator; use copy ctor to make life easy..
 //_____________________________________________________________________
-AliCaloCalibPedestal& AliCaloCalibPedestal::operator = (const AliCaloCalibPedestal &source)
+AliCaloCalibPedestal& AliCaloCalibPedestal::operator = (AliCaloCalibPedestal &source)
 {
   // assignment operator; use copy ctor
   if (&source == this) return *this;
@@ -376,6 +360,7 @@ AliCaloCalibPedestal& AliCaloCalibPedestal::operator = (const AliCaloCalibPedest
 //_____________________________________________________________________
 void AliCaloCalibPedestal::Reset()
 {
+  ValidateProfiles(); // make sure histos/profiles exist
   // Reset all arrays/histograms
   for (int i = 0; i < fModules; i++) {
     GetPedProfileLowGain(i)->Reset();
@@ -448,7 +433,7 @@ void AliCaloCalibPedestal::SetParametersFromFile(const char *parameterFile)
       s >> keyValue;
       
       // check stream status
-      if( ( s.rdstate() & ios::failbit ) == ios::failbit ) break;
+      if( s.rdstate() & ios::failbit ) break;
 			
       // skip rest of line if comments found
       if( keyValue.substr( 0, 2 ) == "//" ) break;
@@ -527,8 +512,9 @@ void AliCaloCalibPedestal::WriteParametersToFile(const char *parameterFile)
 }
 
 //_____________________________________________________________________
-Bool_t AliCaloCalibPedestal::AddInfo(const AliCaloCalibPedestal *ped)
+Bool_t AliCaloCalibPedestal::AddInfo(AliCaloCalibPedestal *ped)
 {
+  ValidateProfiles(); // make sure histos/profiles exist
   // just do this for the basic histograms/profiles that get filled in ProcessEvent
   // may not have data for all modules, but let's just Add everything..
   for (int i = 0; i < fModules; i++) {
@@ -562,6 +548,8 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
   // Method to process=analyze one event in the data stream
   if (!in) return kFALSE; //Return right away if there's a null pointer
   fNEvents++; // one more event
+
+  if (fNEvents==1) ValidateProfiles(); // 1st event, make sure histos/profiles exist
   
   // indices for the reading
   int sample = 0;
@@ -671,7 +659,7 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
 Bool_t AliCaloCalibPedestal::SaveHistograms(TString fileName, Bool_t saveEmptyHistos)
 {
   //Saves all the histograms (or profiles, to be accurate) to the designated file
-  
+  ValidateProfiles(); // make sure histos/profiles exist
   TFile destFile(fileName, "recreate");
   
   if (destFile.IsZombie()) {
@@ -882,6 +870,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
 void AliCaloCalibPedestal::ComputeDiffAndRatio()
 {
   // calculate differences and ratios relative to a reference
+  ValidateProfiles(); // make sure histos/profiles exist
   ValidateComparisonProfiles();//Make sure the comparison histos exist
  
   if (!fReference) {
@@ -968,6 +957,7 @@ void AliCaloCalibPedestal::ComputeDiffAndRatio()
 //_____________________________________________________________________
 void AliCaloCalibPedestal::ComputeHotAndWarningTowers(const char * hotMapFile)
 { // look for hot/noisy towers
+  ValidateProfiles(); // make sure histos/profiles exist
   ofstream * fout = 0;
   char name[512];//Quite a long temp buffer, just in case the filename includes a path
 
@@ -1054,6 +1044,7 @@ void AliCaloCalibPedestal::ComputeHotAndWarningTowers(const char * hotMapFile)
 //_____________________________________________________________________
 void AliCaloCalibPedestal::ComputeDeadTowers(const char * deadMapFile)
 {
+  ValidateProfiles(); // make sure histos/profiles exist
   //Computes the number of dead towers etc etc into memory, after this you can call the GetDead... -functions
   int countTot = 0;
   int countNew = 0;
@@ -1144,6 +1135,11 @@ void AliCaloCalibPedestal::ComputeDeadTowers(const char * deadMapFile)
 //_____________________________________________________________________
 Bool_t AliCaloCalibPedestal::IsBadChannel(int imod, int icol, int irow) const
 {
+  // Check if status info histo exists
+  if (!fDeadMap[imod]) { 
+    return kFALSE;
+  }
+
   //Check if channel is dead or hot.  
   Int_t status =  (Int_t) ( ((TH2D*)fDeadMap[imod])->GetBinContent(icol,irow) );
   if(status == kAlive)
@@ -1156,6 +1152,7 @@ Bool_t AliCaloCalibPedestal::IsBadChannel(int imod, int icol, int irow) const
 //_____________________________________________________________________
 void AliCaloCalibPedestal::SetChannelStatus(int imod, int icol, int irow, int status)
 {
+  ValidateProfiles(); // make sure histos/profiles exist
   //Set status of channel dead, hot, alive ...  
   ((TH2D*)fDeadMap[imod])->SetBinContent(icol, irow, status);	
 }

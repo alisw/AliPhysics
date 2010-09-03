@@ -44,8 +44,8 @@ class AliCaloCalibPedestal : public TObject {
 
   // copy ctor, and '=' operator, are not fully tested/debugged yet
   // at least for now; the reference info is not copied from one to the other
-  AliCaloCalibPedestal(const AliCaloCalibPedestal &ped); 
-  AliCaloCalibPedestal& operator = (const  AliCaloCalibPedestal &source);
+  AliCaloCalibPedestal(AliCaloCalibPedestal &ped); 
+  AliCaloCalibPedestal& operator = (AliCaloCalibPedestal &source);
   
   // Event processing methods:  
   Bool_t ProcessEvent(AliRawReader *rawReader);
@@ -62,12 +62,12 @@ class AliCaloCalibPedestal : public TObject {
   ////////////////////////////
   //Simple getters
   // Main profiles:
-  TProfile2D * GetPedProfileLowGain(int i) const {return (TProfile2D*)fPedestalLowGain[i];};	// Return a pointer to the low-gain pedestal profile
-  TProfile2D * GetPedProfileHighGain(int i) const {return (TProfile2D*)fPedestalHighGain[i];};	// Return a pointer to the high-gain pedestal profile
-  TProfile * GetPedLEDRefProfileLowGain(int i) const {return (TProfile*)fPedestalLEDRefLowGain[i];};	// Return a pointer to the low-gain LEDRef profile 
-  TProfile * GetPedLEDRefProfileHighGain(int i) const {return (TProfile*)fPedestalLEDRefHighGain[i];};	// Return a pointer to the high-gain LEDRef profile 
-  TProfile2D * GetPeakProfileLowGain(int i) const {return (TProfile2D*)fPeakMinusPedLowGain[i];};	// Return a pointer to the low-gain peak-pedestal profile
-  TProfile2D * GetPeakProfileHighGain(int i) const {return (TProfile2D*)fPeakMinusPedHighGain[i];};	// Return a pointer to the high-gain peak-pedestal profile
+  TProfile2D * GetPedProfileLowGain(int i) {ValidateProfiles(); return (TProfile2D*)fPedestalLowGain[i];};	// Return a pointer to the low-gain pedestal profile
+  TProfile2D * GetPedProfileHighGain(int i) {ValidateProfiles(); return (TProfile2D*)fPedestalHighGain[i];};	// Return a pointer to the high-gain pedestal profile
+  TProfile * GetPedLEDRefProfileLowGain(int i) {ValidateProfiles(); return (TProfile*)fPedestalLEDRefLowGain[i];};	// Return a pointer to the low-gain LEDRef profile 
+  TProfile * GetPedLEDRefProfileHighGain(int i) {ValidateProfiles(); return (TProfile*)fPedestalLEDRefHighGain[i];};	// Return a pointer to the high-gain LEDRef profile 
+  TProfile2D * GetPeakProfileLowGain(int i) {ValidateProfiles(); return (TProfile2D*)fPeakMinusPedLowGain[i];};	// Return a pointer to the low-gain peak-pedestal profile
+  TProfile2D * GetPeakProfileHighGain(int i) {ValidateProfiles(); return (TProfile2D*)fPeakMinusPedHighGain[i];};	// Return a pointer to the high-gain peak-pedestal profile
   
   // Differences to references:
   TProfile2D * GetPedProfileLowGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalLowGainDiff[i];};	// Return a pointer to the low-gain pedestal profile difference
@@ -85,10 +85,10 @@ class AliCaloCalibPedestal : public TObject {
   TProfile2D * GetPeakProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainRatio[i];};	// Return a pointer to the low-gain peak-pedestal profile ratio
   TProfile2D * GetPeakProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainRatio[i];};	// Return a pointer to the high-gain peak-pedestal profile ratio
   
-  TH2F * GetPeakHighGainHisto(int i) const {return (TH2F*)fPeakMinusPedHighGainHisto[i];};	// Return a pointer to the high-gain peak-pedestal histo
+  TH2F * GetPeakHighGainHisto(int i) {ValidateProfiles(); return (TH2F*)fPeakMinusPedHighGainHisto[i];};	// Return a pointer to the high-gain peak-pedestal histo
 
 
-  TH2D * GetDeadMap(int i) const {return (TH2D*)fDeadMap[i];}
+  TH2D * GetDeadMap(int i) {ValidateProfiles(); return (TH2D*)fDeadMap[i];}
   //void SetDeadMap(int i, TH2D *h) const {((TH2D*)fDeadMap[i])=h;}
 	
   Bool_t IsBadChannel(int imod, int icol, int irow) const; 
@@ -146,7 +146,7 @@ class AliCaloCalibPedestal : public TObject {
   int GetDeadTowerResurrected() const {return fResurrectedTowers;}; //The the towers resurrected since the reference run
 
   void Reset();//Resets the whole class.
-  Bool_t AddInfo(const AliCaloCalibPedestal *ped);//picks up new info from supplied argument
+  Bool_t AddInfo(AliCaloCalibPedestal *ped);//picks up new info from supplied argument
   
   //////////////////////////////////////////////////////
   //Functions related to comparing this with another (reference) run.
@@ -162,6 +162,8 @@ class AliCaloCalibPedestal : public TObject {
   
  private:
   
+  void ValidateProfiles(); //Makes sure that basic histos/profiles exist
+  void CompressAndSetOwner(); //Makes sure that basic histos/profiles exist
   void ValidateComparisonProfiles(); //Makes sure that fPe..Diff and fPe..Ratio profiles exist
   
   //The histograms. We use a TObjArray instead of a simple array,because this gives automatic streaming properties for the
