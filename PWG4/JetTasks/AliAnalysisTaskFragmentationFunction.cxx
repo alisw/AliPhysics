@@ -42,6 +42,8 @@
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliVParticle.h"
+#include "AliVEvent.h"
 
 #include "AliAnalysisTaskFragmentationFunction.h"
 
@@ -2306,20 +2308,22 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
   Double_t ptHard = 0.;
   Double_t nTrials = 1; // trials for MC trigger weight for real data
- 
-  AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMCEvent);
-  if(!pythiaGenHeader){
-     if(fJetTypeGen != kJetsUndef && fTrackTypeGen != kTrackUndef){
-        Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
-        return;
-     }
-  } else {
-     nTrials = pythiaGenHeader->Trials();
-     ptHard  = pythiaGenHeader->GetPtHard();
+  
+  if(fMCEvent){
+     AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(fMCEvent);
+     if(!pythiaGenHeader){
+        if(fJetTypeGen != kJetsUndef && fTrackTypeGen != kTrackUndef){
+           Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
+           return;
+        }
+     } else {
+        nTrials = pythiaGenHeader->Trials();
+        ptHard  = pythiaGenHeader->GetPtHard();
 
-     fh1PtHard->Fill(ptHard);
-     fh1PtHardTrials->Fill(ptHard,nTrials);
-  }
+        fh1PtHard->Fill(ptHard);
+        fh1PtHardTrials->Fill(ptHard,nTrials);
+     }
+   }
   
   
   //___ fetch jets __________________________________________________________________________
@@ -2746,7 +2750,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
         {
           if (it < jettracklist1->GetSize())
 	  { 
-  	    Float_t trackPt1 = (dynamic_cast<AliAODTrack*>(jettracklist1->At(it)))->Pt();
+  	    Float_t trackPt1 = (dynamic_cast<AliVParticle*>(jettracklist1->At(it)))->Pt();
 	    Float_t jetPt1 = jet1->Pt();
 
             Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
@@ -2765,10 +2769,10 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	    fFFDiJetHistosGenLeading->FillDiJetFF( 1, trackPt1, leadTrackPt1, jetBin, incrementJetPt);
 	    fFFDiJetHistosGenLeading->FillDiJetFF( 0, trackPt1, leadTrackPt1, jetBin, incrementJetPt);
 	  }
-      
+	  
           if (it < jettracklist2->GetSize())
 	  { 
-	    Float_t trackPt2 = (dynamic_cast<AliAODTrack*>(jettracklist2->At(it)))->Pt();
+	    Float_t trackPt2 = (dynamic_cast<AliVParticle*>(jettracklist2->At(it)))->Pt();
 	    Float_t jetPt2 = jet2->Pt();
 
             Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
