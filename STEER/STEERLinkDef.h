@@ -175,6 +175,8 @@
 
 #pragma link C++ class AliLHCClockPhase+;
 
+#pragma link C++ class AliLTUConfig+;
+
 #pragma link C++ typedef AliLHCDipValD;
 #pragma link C++ typedef AliLHCDipValI;
 #pragma link C++ typedef AliLHCDipValF;
