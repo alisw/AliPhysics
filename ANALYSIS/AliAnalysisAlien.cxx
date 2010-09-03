@@ -2452,6 +2452,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "// Automatically generated analysis steering macro executed in grid subjobs" << endl << endl;
       out << "   TStopwatch timer;" << endl;
       out << "   timer.Start();" << endl << endl;
+      // Change temp directory to current one
+      out << "// Set temporary merging directory to current one" << endl;
+      out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
       out << "// load base root libraries" << endl;
       out << "   gSystem->Load(\"libTree\");" << endl;
       out << "   gSystem->Load(\"libGeom\");" << endl;
@@ -2569,9 +2572,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }   
-      // Change temp directory to current one
-      out << "// Set temporary merging directory to current one" << endl;
-      out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
       out << "// connect to AliEn and make the chain" << endl;
       out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       if (IsUsingTags()) {
