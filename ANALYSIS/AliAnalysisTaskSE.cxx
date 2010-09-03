@@ -289,8 +289,6 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 	    // cache the pointerd in the AODEvent
 	    fOutputAOD->GetStdContent();
 	}
-    } else {
-	AliWarning("No AOD Event Handler connected.") ; 
     }
     UserCreateOutputObjects();
 }
