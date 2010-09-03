@@ -33,6 +33,7 @@ Int_t AliAnalysisHelperJetTasks::fgLastProcessType = -1;
  
 AliGenPythiaEventHeader*  AliAnalysisHelperJetTasks::GetPythiaEventHeader(AliMCEvent *mcEvent){
   
+  if(!mcEvent)return 0;
   AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
   if(!pythiaGenHeader){
