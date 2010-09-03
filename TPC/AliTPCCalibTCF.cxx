@@ -286,14 +286,14 @@ void AliTPCCalibTCF::ProcessRawEvent(AliTPCRawStream *rawStream, const char *nam
       // has to be >= 0.1; if maximum==0 set ratio to 0.1
       Double_t maxCorr = max - baseline;
       Double_t binRatio = 0.1;
-      if(maxCorr != 0) {
+      if(TMath::Abs(maxCorr)>1e-5) {
 	binRatio = (tempHis->GetBinContent(maxpos+1) - baseline) / maxCorr;
       }
       
       // Decision if found pulse is a proper one according to given tresholds
       if (max>lowLim && max<upLim && !((last-first)<fPulseLength) && rms<fRMSLim && (intHist/intPulse)<fRatioIntLim && (binRatio >= 0.1) ) {
 	char hname[100];
-	sprintf(hname,"sec%drow%dpad%d",prevSec,prevRow,prevPad);
+	snprintf(hname,100,"sec%drow%dpad%d",prevSec,prevRow,prevPad);
 	
 	TH1F *his = (TH1F*)fileOut.Get(hname);
 	
@@ -359,7 +359,7 @@ void AliTPCCalibTCF::MergeHistoPerSector(const char *nameFileIn) {
   TIter next( fileIn.GetListOfKeys() );
 
   char nameFileOut[100];
-  sprintf(nameFileOut,"Sec-%s",nameFileIn);
+  snprintf(nameFileOut,100,"Sec-%s",nameFileIn);
 
   TFile fileOut(nameFileOut,"RECREATE");
   fileOut.cd();
@@ -378,7 +378,7 @@ void AliTPCCalibTCF::MergeHistoPerSector(const char *nameFileIn) {
     Int_t sector = (Int_t)hisPad->GetBinContent(2);
   
     char hname[100];
-    sprintf(hname,"sector%d",sector);
+    snprintf(hname,100,"sector%d",sector);
     TH1F *his = (TH1F*)fileOut.Get(hname);
     
     if (!his ) { // new histogram (new sector)
@@ -431,7 +431,7 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse, 
   TIter next( fileIn.GetListOfKeys() );
 
   char nameFileOut[100];
-  sprintf(nameFileOut,"TCF-%s",nameFileIn);
+  snprintf(nameFileOut,100,"TCF-%s",nameFileIn);
   
   TFile fileOut(nameFileOut,"RECREATE");
   fileOut.cd();
@@ -480,7 +480,7 @@ void AliTPCCalibTCF::AnalyzeRootFile(const char *nameFileIn, Int_t minNumPulse, 
 
 
 //____________________________________________________________________________
-Int_t AliTPCCalibTCF::AnalyzePulse(TH1F *hisIn, Double_t *coefZ, Double_t *coefP) {
+Int_t AliTPCCalibTCF::AnalyzePulse(TH1F * const hisIn, Double_t *coefZ, Double_t *coefP) {
   //
   // Performs the analysis on one specific pulse (histogram) by means of fitting
   // the pulse and equalization of the pulseheight. The found TCF parameters 
@@ -570,7 +570,7 @@ void AliTPCCalibTCF::TestTCFonRootFile(const char *nameFileIn, const char *nameF
   }
 
   char nameFileOut[100];
-  sprintf(nameFileOut,"Quality_%s_AT_%s",nameFileTCF, nameFileIn);
+  snprintf(nameFileOut,100,"Quality_%s_AT_%s",nameFileTCF, nameFileIn);
   TFile fileOut(nameFileOut,"RECREATE");
 
   TNtuple *qualityTuple = new TNtuple("TCFquality","TCF quality Values","sec:row:pad:npulse:heightDev:areaRed:widthRed:undershot:maxUndershot");
@@ -769,7 +769,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	// has to be >= 0.1; if maximum==0 set ratio to 0.1
 	Double_t maxCorr = max - baseline;
 	Double_t binRatio = 0.1;
-	if(maxCorr != 0) {
+	if(TMath::Abs(maxCorr) > 1e-5 ) {
 	  binRatio = (tempHis->GetBinContent(maxpos+1) - baseline) / maxCorr;
 	}
 
@@ -779,7 +779,7 @@ void AliTPCCalibTCF::TestTCFonRawFile(const char *nameRawFile, const char *nameF
 	  // note:
 	  // assuming that lowLim is higher than the pedestal value!
 	  char hname[100];
-	  sprintf(hname,"sec%drow%dpad%d",prevSec,prevRow,prevPad);
+	  snprintf(hname,100,"sec%drow%dpad%d",prevSec,prevRow,prevPad);
 	  TH1F *his = new TH1F(hname,hname, fPulseLength+4, 0, fPulseLength+4);
 	  his->SetBinContent(1,1); //  pulse counter (1st pulse)
 	  his->SetBinContent(2,prevSec);  //  sector
@@ -878,7 +878,7 @@ TH2F *AliTPCCalibTCF::PlotOccupSummary2Dhist(const char *nameFileIn, Int_t side)
     if ( (side==0) && (sec%36>=18) ) continue;
     if ( (side>0) && (sec%36<18) ) continue;
 
-    if ( (row==-1) && (pad==-1) ) { // summed pulses per sector
+    if ( (row<0) && (pad<0) ) { // row and pad are equal to -1, then -> summed pulses per sector
       // fill all pad with this values
       for (UInt_t rowi=0; rowi<roc->GetNRows(sec); rowi++) {
         for (UInt_t padi=0; padi<roc->GetNPads(sec,rowi); padi++) {
@@ -928,7 +928,7 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
 
 
   char nameFileOut[100];
-  sprintf(nameFileOut,"Occup-%s",nameFile);
+  snprintf(nameFileOut,100,"Occup-%s",nameFile);
   TFile fileOut(nameFileOut,"RECREATE");
   // fileOut.cd();
 
@@ -949,7 +949,7 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
     Int_t row = (Int_t)his->GetBinContent(3);
     Int_t pad = (Int_t)his->GetBinContent(4);
 
-    if ( (row==-1) && (pad==-1) ) { // summed pulses per sector
+    if ( (row<0) && (pad<0) ) { // row and pad are equal to -1, then -> summed pulses per sector
       row = 40; pad = 40;    // set to approx middle row for better plot
       secWise=1;
     }
@@ -973,10 +973,10 @@ void AliTPCCalibTCF::PlotOccupSummary(const char *nameFile, Int_t side, Int_t nP
 
   char cSel[100];
   if (!side) {
-    sprintf(cSel,"z>0&&npulse>=%d",nPulseMin);
+    snprintf(cSel,100,"z>0&&npulse>=%d",nPulseMin);
     ntuple->Draw("y:x:npulse",cSel,"colz");
   } else {
-    sprintf(cSel,"z<0&&npulse>=%d",nPulseMin);
+    snprintf(cSel,100,"z<0&&npulse>=%d",nPulseMin);
     ntuple->Draw("y:x:npulse",cSel,"colz");
   }
 
@@ -1017,7 +1017,7 @@ void AliTPCCalibTCF::PlotQualitySummary(const char *nameFileQuality, const char 
   
   TH2F *his2D = new TH2F(plotSpec,nameFileQuality,11,-10,1,25,1,100);
   char plSpec[100];
-  sprintf(plSpec,"%s>>%s",plotSpec,plotSpec);
+  snprintf(plSpec,100,"%s>>%s",plotSpec,plotSpec);
   qualityTuple->Draw(plSpec,cut,pOpt);
 
   gStyle->SetLabelSize(0.03,"X");
@@ -1125,7 +1125,7 @@ Int_t AliTPCCalibTCF::FitPulse(TNtuple *dataTuple, Double_t *coefZ, Double_t *co
 
 
 //____________________________________________________________________________
-void AliTPCCalibTCF::FitFcn(Int_t &/*nPar*/, Double_t */*grad*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
+void AliTPCCalibTCF::FitFcn(Int_t &/*nPar*/, Double_t */*grad*/, Double_t &f, Double_t * const par, Int_t /*iflag*/)
 {
   //
   // Minimization function needed for TMinuit with FitFunction included 
@@ -1189,8 +1189,8 @@ Double_t* AliTPCCalibTCF::ExtractPZValues(Double_t *param) {
   // to the different stages of the TCF filter
   // (e.g. first 2 fit parameters represent the electron signal itself!)
 
-  if (param[3]==param[4]) {param[3]=param[3]+0.0001;}
-  if (param[5]==param[4]) {param[5]=param[5]+0.0001;}
+  if ((param[3]-param[4]) <1e-5 ) {param[3]=param[3]+0.0001;} // if equal
+  if ((param[5]-param[4]) <1e-5 ) {param[5]=param[5]+0.0001;} // if equal
   
   if ((param[5]>param[4])&&(param[5]>param[3])) {
     if (param[4]>=param[3]) {
@@ -1252,12 +1252,17 @@ Int_t AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t
   // order to restore the original pulse height and adds them to the passed arrays
   //
 
-  Double_t *s0 = new Double_t[1000]; // original pulse
-  Double_t *s1 = new Double_t[1000]; // pulse after 1st PZ filter
-  Double_t *s2 = new Double_t[1000]; // pulse after 2nd PZ filter
-
   const Int_t kPulseLength = dataTuple->GetEntries();
-  
+
+  if (kPulseLength<2) {
+    //    prinft("PulseLength does not make sense\n");
+    return 0;
+  }
+
+  Double_t *s0 = new Double_t[kPulseLength]; // original pulse
+  Double_t *s1 = new Double_t[kPulseLength]; // pulse after 1st PZ filter
+  Double_t *s2 = new Double_t[kPulseLength]; // pulse after 2nd PZ filter
+
   for (Int_t ipos=0; ipos<kPulseLength; ipos++) {
     dataTuple->GetEntry(ipos);
     Float_t *p = dataTuple->GetArgs();
@@ -1302,9 +1307,9 @@ Int_t AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t
     coefZ[2] = 0;
   }
 
-  s0->~Double_t();
-  s1->~Double_t();
-  s2->~Double_t();
+  delete [] s0;
+  delete [] s1;
+  delete [] s2;
   
   // if equalization out of range (<0 or >=1) it failed!
   // if ratio of amplitudes of fittet to original pulse < 0.9 it failed!
@@ -1319,7 +1324,7 @@ Int_t AliTPCCalibTCF::Equalization(TNtuple *dataTuple, Double_t *coefZ, Double_t
 
 
 //____________________________________________________________________________
-Int_t AliTPCCalibTCF::FindCorTCFparam(TH1F *hisIn, const char *nameFileTCF, Double_t *coefZ, Double_t *coefP) {
+Int_t AliTPCCalibTCF::FindCorTCFparam(TH1F * const hisIn, const char *nameFileTCF, Double_t *coefZ, Double_t *coefP) {
   //
   // This function searches for the correct TCF parameters to the given
   // histogram 'hisIn' within the file 'nameFileTCF' 
@@ -1340,10 +1345,10 @@ Int_t AliTPCCalibTCF::FindCorTCFparam(TH1F *hisIn, const char *nameFileTCF, Doub
   char sel[100];   
   if ( paramTuple->GetEntries("row==-1&&pad==-1") ) { 
     // parameters per SECTOR
-    sprintf(sel,"sec==%d&&row==-1&&pad==-1",sector);
+    snprintf(sel,100,"sec==%d&&row==-1&&pad==-1",sector);
   } else {            
     // parameters per PAD
-    sprintf(sel,"sec==%d&&row==%d&&pad==%d",sector,row,pad);
+    snprintf(sel,100,"sec==%d&&row==%d&&pad==%d",sector,row,pad);
   }
 
   // list should contain just ONE entry! ... otherwise there is a mistake!
@@ -1355,9 +1360,9 @@ Int_t AliTPCCalibTCF::FindCorTCFparam(TH1F *hisIn, const char *nameFileTCF, Doub
     paramTuple->GetEntry(pos);   // get specific TCF parameters       
     Float_t *p = paramTuple->GetArgs();
     // check ...
-    if(sector==p[0]) {printf("sector ok ... "); }          
-    if(row==p[1]) {printf("row ok ... "); }          
-    if(pad==p[2]) {printf("pad ok ... \n"); }          
+    if((sector-p[0])<1e-5) {printf("sector ok ... "); }          
+    if((row-p[1])<1e-5) {printf("row ok ... "); }          
+    if((pad-p[2])<1e-5) {printf("pad ok ... \n"); }          
     
     // number of averaged pulses used to produce TCF params
     nPulse = (Int_t)p[3]; 
@@ -1480,7 +1485,7 @@ Double_t *AliTPCCalibTCF::GetQualityOfTCF(TH1F *hisIn, Double_t *coefZ, Double_t
     }
 
     // Search for maximal undershot (is equal to minimum after the pulse)
-    if ( (undershotStart==1)&&(i<(posOfStartTCF+widthTCF+20)) ) {
+    if ( ((undershotStart-1)<1e-7)&&(i<(posOfStartTCF+widthTCF+20)) ) {
       if (maxUndershot>sigTCF) { maxUndershot = sigTCF; }
     }
 
@@ -1544,7 +1549,7 @@ Double_t *AliTPCCalibTCF::GetQualityOfTCF(TH1F *hisIn, Double_t *coefZ, Double_t
 
 
 //____________________________________________________________________________
-TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *coefP, Int_t plotFlag) {
+TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F * const hisIn, Double_t * const coefZ, Double_t * const coefP, Int_t plotFlag) {
   //
   // Applies the given TCF parameters on the given pulse via the ALTRO emulator 
   // class (discret values) and stores both pulses into a returned TNtuple
@@ -1611,7 +1616,7 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *c
 
   if (plotFlag) {
     char hname[100];
-    sprintf(hname,"sec%drow%dpad%d",sector,row,pad);
+    snprintf(hname,100,"sec%drow%dpad%d",sector,row,pad);
     new TCanvas(hname,hname,600,400);
     //just plotting non-discret pulses | they look pretties in case of mean sig ;-)
     pulseTuple->Draw("sigND:timebin","","L");
@@ -1623,7 +1628,9 @@ TNtuple *AliTPCCalibTCF::ApplyTCFilter(TH1F *hisIn, Double_t *coefZ, Double_t *c
   
   delete [] signalIn;
   delete [] signalOut;
-
+  delete [] signalInD;
+  delete [] signalOutD;
+ 
   return pulseTuple;
 
 }
@@ -1663,7 +1670,8 @@ void AliTPCCalibTCF::MergeHistoPerFile(const char *fileNameIn, const char *fileN
   TH1F *hisIn;                             
   TKey *key;                                          
   TIter next(fileIn.GetListOfKeys());  
-  TFile *fileOut = 0;
+  // opens a file, although, it might not be uses (see "mode")
+  TFile *fileOut = new TFile(fileNameSum,"UPDATE"); 
   //fileOut.cd();
   
   Int_t nHist=fileIn.GetNkeys();
@@ -1672,9 +1680,7 @@ void AliTPCCalibTCF::MergeHistoPerFile(const char *fileNameIn, const char *fileN
   Int_t secPrev = -1;
   char fileNameSumSec[100];
 
-  if (mode==0) {
-    fileOut = new TFile(fileNameSum,"UPDATE");
-  }
+
   while((key=(TKey*)next())) {
     const char *hisName = key->GetName();
 
@@ -1689,7 +1695,7 @@ void AliTPCCalibTCF::MergeHistoPerFile(const char *fileNameIn, const char *fileN
         fileOut->Close();
       }
       // opening new file 
-      sprintf(fileNameSumSec,"%s-Sec%d.root",fileNameSum,sec);
+      snprintf(fileNameSumSec,100,"%s-Sec%d.root",fileNameSum,sec);
       fileOut = new TFile(fileNameSumSec,"UPDATE");
       secPrev = sec;
     }
@@ -1745,7 +1751,7 @@ void AliTPCCalibTCF::MergeToOneFile(const char *nameFileSum) {
 
   for (Int_t sec=0; sec<72; sec++) { // loop over all possible filenames
 
-    sprintf(nameFileSumSec,"%s-Sec%d.root",nameFileSum,sec);
+    snprintf(nameFileSumSec,100,"%s-Sec%d.root",nameFileSum,sec);
     TFile *fileSumSec = new TFile(nameFileSumSec,"READ");
 
     Int_t nHist=fileSumSec->GetNkeys();
@@ -1798,7 +1804,7 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,con
   // the roc are retreived from nameFileTCFPerSec. If there are parameters for
   // a roc missing, then the parameters are set to -1.  
 
-  Float_t K0 = -1, K1 = -1, K2 = -1, L0 = -1, L1 = -1, L2 = -1;
+  Float_t k0 = -1, k1 = -1, k2 = -1, l0 = -1, l1 = -1, l2 = -1;
   Int_t roc, row, pad, side, sector, rcu, hwAddr; 
   Int_t entryNum = 0;
   Int_t checksum = 0;
@@ -1830,11 +1836,11 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,con
   // creating outputfile
   ofstream fileOut;
   char nameFileOut[255];
-  sprintf(nameFileOut,"tpcTCFparamPAD.data");
+  snprintf(nameFileOut,255,"tpcTCFparamPAD.data");
   fileOut.open(nameFileOut);
   // following not used:
   // char headerLine[255];
-  // sprintf(headerLine,"15\tside\tsector\tRCU\tHWadr\tK0\tK1\tK2\tL0\tL1\tL2\tValidFlag");
+  // snprintf(headerLine,255,"15\tside\tsector\tRCU\tHWadr\tk0\tk1\tk2\tl0\tl1\tl2\tValidFlag");
   // fileOut << headerLine << std::endl;
   fileOut << "15" << std::endl;
  
@@ -1851,18 +1857,18 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,con
     sector = Int_t(mapping->GetSectorFromRoc(roc));
     rcu = Int_t(mapping->GetRcu(roc,row,pad));
     hwAddr = Int_t(mapping->GetHWAddress(roc,row,pad));
-    K0 = TMath::Nint(paramArgs[7] * (TMath::Power(2,16) - 1));
-    K1 = TMath::Nint(paramArgs[8] * (TMath::Power(2,16) - 1));
-    K2 = TMath::Nint(paramArgs[9] * (TMath::Power(2,16) - 1));
-    L0 = TMath::Nint(paramArgs[4] * (TMath::Power(2,16) - 1));
-    L1 = TMath::Nint(paramArgs[5] * (TMath::Power(2,16) - 1));
-    L2 = TMath::Nint(paramArgs[6] * (TMath::Power(2,16) - 1));
+    k0 = TMath::Nint(paramArgs[7] * (TMath::Power(2,16) - 1));
+    k1 = TMath::Nint(paramArgs[8] * (TMath::Power(2,16) - 1));
+    k2 = TMath::Nint(paramArgs[9] * (TMath::Power(2,16) - 1));
+    l0 = TMath::Nint(paramArgs[4] * (TMath::Power(2,16) - 1));
+    l1 = TMath::Nint(paramArgs[5] * (TMath::Power(2,16) - 1));
+    l2 = TMath::Nint(paramArgs[6] * (TMath::Power(2,16) - 1));
     if (entryNum%10000==0) {
       printf("assigned pad %i / %i\n",entryNum,tpcPadNum);
     }
     
     fileOut << entryNum++ << "\t" << side << "\t" << sector << "\t" << rcu << "\t" << hwAddr << "\t";
-    fileOut << K0 << "\t" << K1 << "\t" << K2 << "\t" << L0 << "\t" << L1 << "\t" << L2 << "\t" << validFlag << std::endl;
+    fileOut << k0 << "\t" << k1 << "\t" << k2 << "\t" << l0 << "\t" << l1 << "\t" << l2 << "\t" << validFlag << std::endl;
     entryID[roc*100000 + row*1000 + pad] = 1;
   }
 
@@ -1882,16 +1888,16 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,con
     for (Int_t iParamSec = 0; iParamSec < paramTupleSec->GetEntries(); iParamSec++) {
       paramTupleSec->GetEntry(iParamSec);
       Float_t *paramArgsSec = paramTupleSec->GetArgs();
-      if (paramArgsSec[0] == roc) {
-	K0 = TMath::Nint(paramArgsSec[7] * (TMath::Power(2,16) - 1));
-	K1 = TMath::Nint(paramArgsSec[8] * (TMath::Power(2,16) - 1));
-	K2 = TMath::Nint(paramArgsSec[9] * (TMath::Power(2,16) - 1));
-	L0 = TMath::Nint(paramArgsSec[4] * (TMath::Power(2,16) - 1));
-	L1 = TMath::Nint(paramArgsSec[5] * (TMath::Power(2,16) - 1));
-	L2 = TMath::Nint(paramArgsSec[6] * (TMath::Power(2,16) - 1));
+      if ((paramArgsSec[0]-roc)<1e-7) { // if roc is found
+	k0 = TMath::Nint(paramArgsSec[7] * (TMath::Power(2,16) - 1));
+	k1 = TMath::Nint(paramArgsSec[8] * (TMath::Power(2,16) - 1));
+	k2 = TMath::Nint(paramArgsSec[9] * (TMath::Power(2,16) - 1));
+	l0 = TMath::Nint(paramArgsSec[4] * (TMath::Power(2,16) - 1));
+	l1 = TMath::Nint(paramArgsSec[5] * (TMath::Power(2,16) - 1));
+	l2 = TMath::Nint(paramArgsSec[6] * (TMath::Power(2,16) - 1));
 	break;
       } else {
-	K0 = K1 = K2 = L0 = L1 = L2 = -1;
+	k0 = k1 = k2 = l0 = l1 = l2 = -1;
       }
     }
     for (row = 0; row<mapping->GetNpadrows(roc); row++) {
@@ -1908,7 +1914,7 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,con
 	}
 
 	fileOut << entryNum++ << "\t" << side << "\t" << sector << "\t" << rcu << "\t" << hwAddr << "\t";
-	fileOut << K0 << "\t" << K1 << "\t" << K2 << "\t" << L0 << "\t" << L1 << "\t" << L2 << "\t" << validFlag << std::endl;
+	fileOut << k0 << "\t" << k1 << "\t" << k2 << "\t" << l0 << "\t" << l1 << "\t" << l2 << "\t" << validFlag << std::endl;
       }
     }
   }
@@ -1929,7 +1935,7 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,con
   fileOut.close();
   fileTCFparam.Close();
   fileSecTCFparam.Close();
-  entryID->~Bool_t();
+  delete [] entryID;
   printf("output written to file: %s\n",nameFileOut);
   return 0;
 }
@@ -1949,7 +1955,7 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerSector(const char *nameFileTCFPerSec,
   //
   // If there are parameters for a roc missing, then the parameters are set to -1
   
-  Float_t K0 = -1, K1 = -1, K2 = -1, L0 = -1, L1 = -1, L2 = -1;
+  Float_t k0 = -1, k1 = -1, k2 = -1, l0 = -1, l1 = -1, l2 = -1;
   Int_t entryNum = 0;
   Int_t validFlag = 0; // 1 if parameters for roc exist
   
@@ -1976,11 +1982,11 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerSector(const char *nameFileTCFPerSec,
   
   ofstream fileOut;
   char nameFileOut[255];
-  sprintf(nameFileOut,"tpcTCFparamSector.data");
+  snprintf(nameFileOut,255,"tpcTCFparamSector.data");
   fileOut.open(nameFileOut);
   // following not used:   
   // char headerLine[255];
-  // sprintf(headerLine,"16\tside\tsector\tRCU\tHWadr\tK0\tK1\tK2\tL0\tL1\tL2\tValidFlag");
+  // snprintf(headerLine,255,"16\tside\tsector\tRCU\tHWadr\tk0\tk1\tk2\tl0\tl1\tl2\tValidFlag");
   // fileOut << headerLine << std::endl;
   fileOut << "16" << std::endl;
   
@@ -1997,23 +2003,23 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerSector(const char *nameFileTCFPerSec,
 	for (Int_t iParam = 0; iParam < paramTupleSec->GetEntries(); iParam++) {
 	  paramTupleSec->GetEntry(iParam);
 	  Float_t *paramArgs = paramTupleSec->GetArgs();
-	  if (paramArgs[0] == roc) {
+	  if ((paramArgs[0]-roc)<1e-7) { // if roc is found
 	    validFlag = 1; 
-	    K0 = TMath::Nint(paramArgs[7] * (TMath::Power(2,16) - 1));
-	    K1 = TMath::Nint(paramArgs[8] * (TMath::Power(2,16) - 1));
-	    K2 = TMath::Nint(paramArgs[9] * (TMath::Power(2,16) - 1));
-	    L0 = TMath::Nint(paramArgs[4] * (TMath::Power(2,16) - 1));
-	    L1 = TMath::Nint(paramArgs[5] * (TMath::Power(2,16) - 1));
-	    L2 = TMath::Nint(paramArgs[6] * (TMath::Power(2,16) - 1));
+	    k0 = TMath::Nint(paramArgs[7] * (TMath::Power(2,16) - 1));
+	    k1 = TMath::Nint(paramArgs[8] * (TMath::Power(2,16) - 1));
+	    k2 = TMath::Nint(paramArgs[9] * (TMath::Power(2,16) - 1));
+	    l0 = TMath::Nint(paramArgs[4] * (TMath::Power(2,16) - 1));
+	    l1 = TMath::Nint(paramArgs[5] * (TMath::Power(2,16) - 1));
+	    l2 = TMath::Nint(paramArgs[6] * (TMath::Power(2,16) - 1));
 	    break;
 	  }
 	}
 	if (!validFlag) { // No TCF parameters found for this roc 
-	  K0 = K1 = K2 = L0 = L1 = L2 = -1;
+	  k0 = k1 = k2 = l0 = l1 = l2 = -1;
 	}
 	
 	fileOut << entryNum++ << "\t" << side << "\t" << sector << "\t" << rcu << "\t" << -1 << "\t";
-	fileOut << K0 << "\t" << K1 << "\t" << K2 << "\t" << L0 << "\t" << L1 << "\t" << L2 << "\t" << validFlag << std::endl;
+	fileOut << k0 << "\t" << k1 << "\t" << k2 << "\t" << l0 << "\t" << l1 << "\t" << l2 << "\t" << validFlag << std::endl;
       }
     }
   }
