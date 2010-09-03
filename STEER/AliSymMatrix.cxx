@@ -108,12 +108,12 @@ AliSymMatrix&  AliSymMatrix::operator=(const AliSymMatrix& src)
       int nmainel = src.GetSizeBooked()*(src.GetSizeBooked()+1);
       memcpy(fElems,src.fElems,nmainel*sizeof(Double_t));
       if (src.GetSizeAdded()) { // transfer extra rows to main matrix
-	Double_t *pnt = fElems + nmainel*sizeof(Double_t);
+	Double_t *pnt = fElems + nmainel;//*sizeof(Double_t);
 	int ncl = src.GetSizeBooked() + 1;
 	for (int ir=0;ir<src.GetSizeAdded();ir++) {
 	  ncl += ir; 
 	  memcpy(pnt,src.fElemsAdd[ir],ncl*sizeof(Double_t));
-	  pnt += ncl*sizeof(Double_t);
+	  pnt += ncl;//*sizeof(Double_t);
 	}
       }
       //
@@ -549,11 +549,11 @@ int AliSymMatrix::SolveSpmInv(double *vecB, Bool_t stabilize)
     }
   }
   //
-  for (Int_t i=0; i<nGlo; i++) for (Int_t j=0; j<nGlo; j++) {
-      double vl = TMath::Sqrt(colMax[i])*TMath::Sqrt(rowMax[j]); // Correct matrix V
-      if (i>=j) (*this)(i,j) *= vl;
-      else      (*fgBuffer)(j,i) *= vl;
-    }
+  if (stabilize) for (Int_t i=0; i<nGlo; i++) for (Int_t j=0; j<nGlo; j++) {
+	double vl = TMath::Sqrt(colMax[i])*TMath::Sqrt(rowMax[j]); // Correct matrix V
+	if (i>=j) (*this)(i,j) *= vl;
+	else      (*fgBuffer)(j,i) *= vl;
+      }
   //
   for (Int_t j=0; j<nGlo; j++) {
     rowMax[j] = 0.0;

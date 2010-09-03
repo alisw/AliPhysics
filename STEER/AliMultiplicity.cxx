@@ -201,6 +201,13 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
     fLabelsL2 = new Int_t[fNtracks];
     if (m.fUsedClusT) fUsedClusT = new ULong64_t[fNtracks];
     else fUsedClusT = 0;
+    if(m.fTh)memcpy(fTh,m.fTh,fNtracks*sizeof(Double_t));
+    if(m.fPhi)memcpy(fPhi,m.fPhi,fNtracks*sizeof(Double_t));
+    if(m.fDeltTh)memcpy(fDeltTh,m.fDeltTh,fNtracks*sizeof(Double_t));
+    if(m.fDeltPhi)memcpy(fDeltPhi,m.fDeltPhi,fNtracks*sizeof(Double_t));
+    if(m.fLabels)memcpy(fLabels,m.fLabels,fNtracks*sizeof(Int_t));
+    if(m.fLabelsL2)memcpy(fLabelsL2,m.fLabelsL2,fNtracks*sizeof(Int_t));
+    if(fUsedClusT) memcpy(fUsedClusT,m.fUsedClusT,fNtracks*sizeof(ULong64_t));
   }
   else {
     fTh = 0;
@@ -217,23 +224,17 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
     fLabelssingle = new Int_t[fNsingle];
     if (m.fUsedClusS) fUsedClusS = new UInt_t[fNsingle];
     else fUsedClusS = 0;
+    if(m.fThsingle)memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Double_t));
+    if(m.fPhisingle)memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Double_t));
+    if(m.fLabelssingle)memcpy(fLabelssingle,m.fLabelssingle,fNsingle*sizeof(Int_t));
+    if(fUsedClusS) memcpy(fUsedClusS,m.fUsedClusS,fNsingle*sizeof(UInt_t));
   }
   else {
     fThsingle = 0;
     fPhisingle = 0;
     fLabelssingle = 0;
   }
-  if(m.fTh)memcpy(fTh,m.fTh,fNtracks*sizeof(Double_t));
-  if(m.fPhi)memcpy(fPhi,m.fPhi,fNtracks*sizeof(Double_t));
-  if(m.fDeltTh)memcpy(fDeltTh,m.fDeltTh,fNtracks*sizeof(Double_t));
-  if(m.fDeltPhi)memcpy(fDeltPhi,m.fDeltPhi,fNtracks*sizeof(Double_t));
-  if(m.fLabels)memcpy(fLabels,m.fLabels,fNtracks*sizeof(Int_t));
-  if(m.fLabelsL2)memcpy(fLabelsL2,m.fLabelsL2,fNtracks*sizeof(Int_t));
-  if(m.fThsingle)memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Double_t));
-  if(m.fPhisingle)memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Double_t));
-  if(m.fLabelssingle)memcpy(fLabelssingle,m.fLabelssingle,fNsingle*sizeof(Int_t));
-  if(fUsedClusS) memcpy(fUsedClusS,m.fUsedClusS,fNsingle*sizeof(UInt_t));
-  if(fUsedClusT) memcpy(fUsedClusT,m.fUsedClusT,fNtracks*sizeof(ULong64_t));
+
   fFiredChips[0] = m.fFiredChips[0];
   fFiredChips[1] = m.fFiredChips[1];
   for(Int_t ilayer = 0; ilayer < 6; ilayer++){

@@ -532,8 +532,9 @@ Double_t AliMagWrapCheb::FieldCylSolBz(const Double_t *rphiz) const
   AliCheb3D* par = GetParamSol(id);
 #ifndef _BRING_TO_BOUNDARY_  
   return par->IsInside(rphiz) ? par->Eval(rphiz,2) : 0;
-#endif
+#else
   return par->Eval(rphiz,2);
+#endif
   //
 }
 

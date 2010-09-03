@@ -37,7 +37,11 @@ AliCheb3D::AliCheb3D() :
   fUsrFunName(""), 
   fUsrMacro(0) 
 {
-  for (int i=3;i--;) fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+  for (int i=3;i--;) {
+    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+    fNPoints[i] = 0;
+    fGridOffs[i] = 0.;
+  }
 }
 
 //__________________________________________________________________________________________
@@ -59,6 +63,7 @@ AliCheb3D::AliCheb3D(const AliCheb3D& src) :
     fBScale[i]  = src.fBScale[i];
     fBOffset[i] = src.fBOffset[i];
     fNPoints[i] = src.fNPoints[i];
+    fGridOffs[i] = src.fGridOffs[i];
   }
   for (int i=0;i<fDimOut;i++) {
     AliCheb3DCalc* cbc = src.GetChebCalc(i);
@@ -78,7 +83,11 @@ AliCheb3D::AliCheb3D(const char* inpFile) :
   fUsrMacro(0)
 {
   // read coefs from text file
-  for (int i=3;i--;) fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+  for (int i=3;i--;) {
+    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+    fNPoints[i] = 0;
+    fGridOffs[i] = 0.;
+  }
   LoadData(inpFile);
 }
 
@@ -94,7 +103,11 @@ AliCheb3D::AliCheb3D(FILE* stream) :
   fUsrMacro(0)
 {
   // read coefs from stream
-  for (int i=3;i--;) fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+  for (int i=3;i--;) {
+    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+    fNPoints[i] = 0;
+    fGridOffs[i] = 0.;
+  }
   LoadData(stream);
 }
 
@@ -120,6 +133,11 @@ AliCheb3D::AliCheb3D(const char* funName, int DimOut, Float_t  *bmin,Float_t  *b
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   //
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  for (int i=3;i--;) {
+    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+    fNPoints[i] = 0;
+    fGridOffs[i] = 0.;
+  }
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
   DefineGrid(npoints);
@@ -150,6 +168,12 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   //
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  for (int i=3;i--;) {
+    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+    fNPoints[i] = 0;
+    fGridOffs[i] = 0.;
+  }
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
   DefineGrid(npoints);
@@ -182,6 +206,12 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   //
   if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  for (int i=3;i--;) {
+    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+    fNPoints[i] = 0;
+    fGridOffs[i] = 0.;
+  }
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
   SetUsrFunction(ptr);
@@ -217,6 +247,12 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   // prec    : max allowed absolute difference between the user function and computed parameterization on the requested grid
   //
   if (DimOut!=3) {Error("AliCheb3D","This constructor works only for 3D fits, %dD fit was requested\n",fDimOut); exit(1);}
+  if (DimOut<1) {Error("AliCheb3D","Requested output dimension is %d\nStop\n",fDimOut); exit(1);}
+  for (int i=3;i--;) {
+    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = 0;
+    fNPoints[i] = 0;
+    fGridOffs[i] = 0.;
+  }
   SetDimOut(DimOut);
   PrepareBoundaries(bmin,bmax);
   SetUsrFunction(ptr);

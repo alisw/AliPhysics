@@ -43,14 +43,14 @@ AliParamSolver& AliParamSolver::operator=(const AliParamSolver& src)
   if (src.fMatrix && (fNGlobal!=src.fNGlobal || fMaxPoints<src.fNPoints)) {
     fNGlobal   = src.fNGlobal;
     fMaxGlobal = src.fMaxGlobal;
-    if (fMatrix)   delete   fMatrix;
-    if (fSolGlo)   delete[] fSolGlo;
-    if (fSolLoc)   delete[] fSolLoc;
-    if (fRHSGlo)   delete[] fRHSGlo;
-    if (fRHSLoc)   delete[] fRHSLoc;
-    if (fMatGamma) delete[] fMatGamma;
-    if (fMatG)     delete[] fMatG;
-    if (fCovDGl)   delete[] fCovDGl;
+    if (fMatrix)   delete   fMatrix; fMatrix = 0;
+    if (fSolGlo)   delete[] fSolGlo; fSolGlo = 0;
+    if (fSolLoc)   delete[] fSolLoc; fSolLoc = 0;
+    if (fRHSGlo)   delete[] fRHSGlo; fRHSGlo = 0;
+    if (fRHSLoc)   delete[] fRHSLoc; fRHSLoc = 0;
+    if (fMatGamma) delete[] fMatGamma; fMatGamma = 0;
+    if (fMatG)     delete[] fMatG; fMatG = 0;
+    if (fCovDGl)   delete[] fCovDGl; fCovDGl = 0;
     Init(src.fMaxPoints);
   }
   if (src.fMatrix) {
@@ -306,14 +306,14 @@ void AliParamSolver::SetMaxGlobal(Int_t n)
   if (n>0 && n==fMaxGlobal) return;
   fMaxGlobal = n;
   fNGlobal = n;
-  if (fMatrix)   delete   fMatrix;
-  if (fSolGlo)   delete[] fSolGlo;
-  if (fSolLoc)   delete[] fSolLoc;
-  if (fRHSGlo)   delete[] fRHSGlo;
-  if (fRHSLoc)   delete[] fRHSLoc;
-  if (fMatGamma) delete[] fMatGamma;
-  if (fMatG)     delete[] fMatG;
-  if (fCovDGl)   delete[] fCovDGl;
+  if (fMatrix)   delete   fMatrix;   fMatrix = 0;
+  if (fSolGlo)   delete[] fSolGlo;   fSolGlo = 0;
+  if (fSolLoc)   delete[] fSolLoc;   fSolLoc = 0;
+  if (fRHSGlo)   delete[] fRHSGlo;   fRHSGlo = 0;
+  if (fRHSLoc)   delete[] fRHSLoc;   fRHSLoc = 0;
+  if (fMatGamma) delete[] fMatGamma; fMatGamma = 0;
+  if (fMatG)     delete[] fMatG;     fMatG = 0;
+  if (fCovDGl)   delete[] fCovDGl;   fCovDGl = 0;
   n = TMath::Max(16,fMaxPoints);
   Init(n);
   //

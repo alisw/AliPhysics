@@ -1004,6 +1004,10 @@ Int_t AliMillePede2::SolveGlobalMatEq()
   if (!res) {
     const char* faildump = "fgmr_failed.dat";
     int defout = dup(1);
+    if (defout<0) {
+      AliInfo("Failed on dup");
+      return gkFailed;
+    }
     int slvDump = open(faildump, O_RDWR|O_CREAT, 0666);
     dup2(slvDump,1);
     //
