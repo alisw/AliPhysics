@@ -123,30 +123,7 @@ void AliAnalysisEt::Init()
 {
 
   if(!fPdgDB) fPdgDB = new TDatabasePDG();
-  PionMass = fPdgDB->GetParticle("pi+")->Mass();
-  PiPlusCode = fPdgDB->GetParticle("pi+")->PdgCode();
-    PiMinusCode = fPdgDB->GetParticle("pi-")->PdgCode();
-    KPlusCode = fPdgDB->GetParticle("K+")->PdgCode();
-    KMinusCode = fPdgDB->GetParticle("K-")->PdgCode();
-    ProtonCode = fPdgDB->GetParticle("proton")->PdgCode();
-    AntiProtonCode = fPdgDB->GetParticle("antiproton")->PdgCode();
-    LambdaCode = fPdgDB->GetParticle("Lambda0")->PdgCode();
-    AntiLambdaCode = fPdgDB->GetParticle("Lambda0_bar")->PdgCode();
-    K0SCode = fPdgDB->GetParticle("K_S0")->PdgCode();
-    OmegaCode = fPdgDB->GetParticle("Omega-")->PdgCode();
-    AntiOmegaCode = fPdgDB->GetParticle("Omega+")->PdgCode();
-    Xi0Code = fPdgDB->GetParticle("Xi0")->PdgCode();
-    AntiXi0Code = fPdgDB->GetParticle("Xi0_bar")->PdgCode();
-    XiCode = fPdgDB->GetParticle("Xi-")->PdgCode();
-    AntiXiCode = fPdgDB->GetParticle("Xi-_bar")->PdgCode();
-    SigmaCode = fPdgDB->GetParticle("Sigma-")->PdgCode();
-    AntiSigmaCode = fPdgDB->GetParticle("Sigma+")->PdgCode();
-    K0LCode = fPdgDB->GetParticle("K_L0")->PdgCode();
-    NeutronCode = fPdgDB->GetParticle("neutron")->PdgCode();
-    AntiNeutronCode = fPdgDB->GetParticle("antineutron")->PdgCode();
-    EPlusCode = fPdgDB->GetParticle("e+")->PdgCode();
-    EMinusCode = fPdgDB->GetParticle("e-")->PdgCode();
-
+  SetParticleCodes();
 }
 
 void AliAnalysisEt::CreateHistograms()
@@ -277,4 +254,42 @@ void AliAnalysisEt::ResetEventValues()
     fMultiplicity = 0;
     fChargedMultiplicity = 0;
     fNeutralMultiplicity = 0;
+
+    if(!fPdgDB) fPdgDB = new TDatabasePDG();
+
+    if(PiPlusCode==0){
+      SetParticleCodes();
+    }
 }
+
+void AliAnalysisEt::SetParticleCodes()
+{     
+  PionMass = fPdgDB->GetParticle("pi+")->Mass();
+  PiPlusCode = fPdgDB->GetParticle("pi+")->PdgCode();
+  PiMinusCode = fPdgDB->GetParticle("pi-")->PdgCode();
+  KPlusCode = fPdgDB->GetParticle("K+")->PdgCode();
+  KMinusCode = fPdgDB->GetParticle("K-")->PdgCode();
+  ProtonCode = fPdgDB->GetParticle("proton")->PdgCode();
+  AntiProtonCode = fPdgDB->GetParticle("antiproton")->PdgCode();
+  LambdaCode = fPdgDB->GetParticle("Lambda0")->PdgCode();
+  AntiLambdaCode = fPdgDB->GetParticle("Lambda0_bar")->PdgCode();
+  K0SCode = fPdgDB->GetParticle("K_S0")->PdgCode();
+  OmegaCode = fPdgDB->GetParticle("Omega-")->PdgCode();
+  AntiOmegaCode = fPdgDB->GetParticle("Omega+")->PdgCode();
+  Xi0Code = fPdgDB->GetParticle("Xi0")->PdgCode();
+  AntiXi0Code = fPdgDB->GetParticle("Xi0_bar")->PdgCode();
+  XiCode = fPdgDB->GetParticle("Xi-")->PdgCode();
+  AntiXiCode = fPdgDB->GetParticle("Xi-_bar")->PdgCode();
+  SigmaCode = fPdgDB->GetParticle("Sigma-")->PdgCode();
+  AntiSigmaCode = fPdgDB->GetParticle("Sigma+")->PdgCode();
+  K0LCode = fPdgDB->GetParticle("K_L0")->PdgCode();
+  NeutronCode = fPdgDB->GetParticle("neutron")->PdgCode();
+  AntiNeutronCode = fPdgDB->GetParticle("antineutron")->PdgCode();
+  EPlusCode = fPdgDB->GetParticle("e+")->PdgCode();
+  EMinusCode = fPdgDB->GetParticle("e-")->PdgCode();
+  cout << "Resetting Codes: Pion " << PiPlusCode
+       << "," << PiMinusCode 
+       << " Kaon " << KPlusCode 
+       << "," << KMinusCode << endl;
+}
+
