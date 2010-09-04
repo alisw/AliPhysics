@@ -62,7 +62,7 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title)
 {
     // Standard Creator.
 
-    fHits= new TClonesArray("AliEMCALHit",1000);
+    //fHits= new TClonesArray("AliEMCALHit",1000); //Already done in ctor of v1
     gAlice->GetMCApp()->AddHitList(fHits);
 
     fNhits    = 0;
@@ -76,11 +76,12 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title)
 AliEMCALv2::~AliEMCALv2(){
     // dtor
 
-  if ( fHits ) {
-    fHits->Clear();
-    delete fHits;
-    fHits = 0;
-  }
+  //Already done in dtor of v1
+//  if ( fHits ) {
+//    fHits->Clear();
+//    delete fHits;
+//    fHits = 0;
+//  }
 }
 
 //______________________________________________________________________

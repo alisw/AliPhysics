@@ -172,7 +172,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
 //    fPedestal(0),//Not used, remove?
 //    fSlope(0),   //Not used, remove?
     fPinNoise(0),
-	fTimeDelay(0),
+    fTimeDelay(0),
     fTimeResolution(0),
 //    fTimeThreshold(0),    //Not used, remove?
 //    fTimeSignalLength(0), //Not used, remove?
@@ -217,7 +217,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fCalibData(d.fCalibData)
 {
   // copyy ctor 
- }
+}
 
 //____________________________________________________________________________ 
 AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
@@ -263,15 +263,16 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
   }
   else
     AliDebug(1," no runloader present");
+  
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
-
+  
 }
 
 //____________________________________________________________________________
 void AliEMCALDigitizer::Digitize(Int_t event) 
 { 
-
+  
   // Makes the digitization of the collected summable digits
   // for this it first creates the array of all EMCAL modules
   // filled with noise and after that adds contributions from 
@@ -284,7 +285,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   // back to an energy in GeV before adding it to the Digit
   //
   static int nEMC=0; //max number of digits possible
-
+  
   AliRunLoader *rl = AliRunLoader::Instance();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
   Int_t readEvent = event ; 
@@ -292,13 +293,13 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   if (fManager) 
     readEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
   AliDebug(1,Form("Adding event %d from input stream 0 %s %s", 
-		  readEvent, GetTitle(), fEventFolderName.Data())) ; 
+                  readEvent, GetTitle(), fEventFolderName.Data())) ; 
   rl->GetEvent(readEvent);
-
+  
   TClonesArray * digits = emcalLoader->Digits() ; 
   digits->Delete() ;  //correct way to clear array when memory is
-		      //allocated by objects stored in array
-
+  //allocated by objects stored in array
+  
   // Load Geometry
   AliEMCALGeometry *geom = 0;
   if (rl->GetAliRun()) {
@@ -307,203 +308,251 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   }
   else 
     AliFatal("Could not get AliRun from runLoader");
-
+  
   nEMC = geom->GetNCells();
   AliDebug(1,Form("nEMC %i (number cells in EMCAL) | %s \n", nEMC, geom->GetName()));
   
   Int_t absID = -1 ;
-
+  
   digits->Expand(nEMC) ;
-
+  
   // get first the sdigitizer from the tasks list (must have same name as the digitizer)
   if ( !emcalLoader->SDigitizer() ) 
     emcalLoader->LoadSDigitizer();
   AliEMCALSDigitizer * sDigitizer = dynamic_cast<AliEMCALSDigitizer*>(emcalLoader->SDigitizer()); 
   
-  if ( !sDigitizer )
+  if (!sDigitizer )
+  {
     Fatal("Digitize", "SDigitizer with name %s %s not found", fEventFolderName.Data(), GetTitle() ) ; 
-
-  //take all the inputs to add together and load the SDigits
-  TObjArray * sdigArray = new TObjArray(fInput) ;
-  sdigArray->AddAt(emcalLoader->SDigits(), 0) ;
-  
-  Int_t i ;
-  for(i = 1 ; i < fInput ; i++){
-    TString tempo(fEventNames[i]) ; 
-    tempo += i ;
-
-    AliRunLoader *  rl2 = AliRunLoader::GetRunLoader(tempo) ; 
-
-    if (rl2==0) 
-      rl2 = AliRunLoader::Open(fInputFileNames[i], tempo) ; 
-
-    if (fManager) 
-      readEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
-    Info("Digitize", "Adding event %d from input stream %d %s %s", readEvent, i, fInputFileNames[i].Data(), tempo.Data()) ; 
-    rl2->LoadSDigits();
-    rl2->GetEvent(readEvent);
-    AliEMCALLoader *emcalLoader2 = dynamic_cast<AliEMCALLoader*>(rl2->GetDetectorLoader("EMCAL"));
-    sdigArray->AddAt(emcalLoader2->SDigits(), i) ;
   }
-  
-  //Find the first tower with signal
-  Int_t nextSig = nEMC + 1 ; 
-  TClonesArray * sdigits ;  
-  for(i = 0 ; i < fInput ; i++){
-    sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
-    if ( !sdigits->GetEntriesFast() )
-      continue ; 
-    Int_t curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(0))->GetId() ;
-     if(curNext < nextSig) 
-       nextSig = curNext ;
-     AliDebug(1,Form("input %i : #sdigits %i \n",
-		     i, sdigits->GetEntriesFast()));
-  }
-  AliDebug(1,Form("FIRST tower with signal %i \n", nextSig));
-
-  TArrayI index(fInput) ;
-  index.Reset() ;  //Set all indexes to zero
-
-  AliEMCALDigit * digit ;
-  AliEMCALDigit * curSDigit ;
-
-  //  TClonesArray * ticks = new TClonesArray("AliEMCALTick",1000) ;
-
-  //Put Noise contribution
-  for(absID = 0; absID < nEMC; absID++){ // Nov 30, 2006 by PAI; was from 1 to nEMC
-    Float_t energy = 0 ;
-    // amplitude set to zero, noise will be added later
-    new((*digits)[absID]) AliEMCALDigit( -1, -1, absID, 0., TimeOfNoise(),kFALSE); // absID-1->absID
-    //look if we have to add signal?
-    digit = dynamic_cast<AliEMCALDigit *>(digits->At(absID)); // absID-1->absID
+  else
+  {
+    //take all the inputs to add together and load the SDigits
+    TObjArray * sdigArray = new TObjArray(fInput) ;
+    sdigArray->AddAt(emcalLoader->SDigits(), 0) ;
     
-    if(absID==nextSig){
-      //Add SDigits from all inputs    
-      //      ticks->Clear() ;
-      //Int_t contrib = 0 ;
-
-      //Follow PHOS and comment out this timing model til a better one
-      //can be developed - JLK 28-Apr-2008
-
-      //Float_t a = digit->GetAmplitude() ;
-      //Float_t b = TMath::Abs( a /fTimeSignalLength) ;
-      //Mark the beginning of the signal
-      //new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime(),0, b);  
-      //Mark the end of the signal     
-      //new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime()+fTimeSignalLength, -a, -b);
-
-      // Calculate time as time of the largest digit
-      Float_t time = digit->GetTime() ;
-      Float_t aTime= digit->GetAmplitude() ;
+    Int_t i ;
+    for(i = 1 ; i < fInput ; i++){
+      TString tempo(fEventNames[i]) ; 
+      tempo += i ;
       
-      // loop over input
-      for(i = 0; i< fInput ; i++){  //loop over (possible) merge sources
-    	if(dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	  curSDigit = dynamic_cast<AliEMCALDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
-	else
-	  curSDigit = 0 ;
-	//May be several digits will contribute from the same input
-	while(curSDigit && (curSDigit->GetId() == absID)){	   
-	  //Shift primary to separate primaries belonging different inputs
-	  Int_t primaryoffset ;
-	  if(fManager)
-	    primaryoffset = fManager->GetMask(i) ; 
-	  else
-	    primaryoffset = i ;
-	  curSDigit->ShiftPrimary(primaryoffset) ;
-
-	  //Remove old timing model - JLK 28-April-2008
-	  //a = curSDigit->GetAmplitude() ;
-	  //b = a /fTimeSignalLength ;
-	  //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime(),0, b);  
-	  //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime()+fTimeSignalLength, -a, -b); 
-	  if(curSDigit->GetAmplitude()>aTime) {
-	    aTime = curSDigit->GetAmplitude();
-	    time = curSDigit->GetTime();
-	  }
-
-	  *digit = *digit + *curSDigit ;  //adds amplitudes of each digit
-
-	  index[i]++ ;
-	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	    curSDigit = dynamic_cast<AliEMCALDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ;
-	  else
-	    curSDigit = 0 ;
-	}
+      AliRunLoader *  rl2 = AliRunLoader::GetRunLoader(tempo) ; 
+      
+      if (rl2==0) 
+        rl2 = AliRunLoader::Open(fInputFileNames[i], tempo) ; 
+      
+      if (fManager) 
+        readEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
+      Info("Digitize", "Adding event %d from input stream %d %s %s", readEvent, i, fInputFileNames[i].Data(), tempo.Data()) ; 
+      rl2->LoadSDigits();
+      rl2->GetEvent(readEvent);
+      if(rl2->GetDetectorLoader("EMCAL"))
+      {
+        AliEMCALLoader *emcalLoader2 = dynamic_cast<AliEMCALLoader*>(rl2->GetDetectorLoader("EMCAL"));
+        sdigArray->AddAt(emcalLoader2->SDigits(), i) ;
       }
-      //Here we convert the summed amplitude to an energy in GeV
-      energy = sDigitizer->Calibrate(digit->GetAmplitude()) ; // GeV
-      // add fluctuations for photo-electron creation
-      energy *= static_cast<Float_t>(gRandom->Poisson(fMeanPhotonElectron)) / static_cast<Float_t>(fMeanPhotonElectron) ;
-  
-      //calculate and set time
-      //New timing model needed - JLK 28-April-2008
-      //Float_t time = FrontEdgeTime(ticks) ;
-      digit->SetTime(time) ;
-
-      //Find next signal module
-      nextSig = nEMC + 1 ;
-      for(i = 0 ; i < fInput ; i++){
-        sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
-        Int_t curNext = nextSig ;
-        if(sdigits->GetEntriesFast() > index[i] ){
-          curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]))->GetId() ;	  
-        }
-        if(curNext < nextSig) nextSig = curNext ;
-      }
+      else Fatal("Digitize", "Loader of second input not found");
     }
-    // add the noise now
-    energy += TMath::Abs(gRandom->Gaus(0., fPinNoise)) ;
-    // JLK 26-June-2008
-    //Now digitize the energy according to the sDigitizer method,
-    //which merely converts the energy to an integer.  Later we will
-    //check that the stored value matches our allowed dynamic ranges
-    digit->SetAmplitude(sDigitizer->Digitize(energy)) ;  
-    AliDebug(10,Form(" absID %5i energy %f nextSig %5i\n",
-		     absID, energy, nextSig));
-  } // for(absID = 0; absID < nEMC; absID++)
-  
-  //ticks->Delete() ;
-  //delete ticks ;
+    
+    //Find the first tower with signal
+    Int_t nextSig = nEMC + 1 ; 
+    TClonesArray * sdigits ;  
+    for(i = 0 ; i < fInput ; i++){
+      
+      sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
+      if(sdigits){
+        if (sdigits->GetEntriesFast() ){
+          if(sdigits->At(0)){
 
-  //JLK is it better to call Clear() here?
-  delete sdigArray ; //We should not delete its contents
-
-  //remove digits below thresholds
-  // until 10-02-2010 remove digits with energy smaller than fDigitThreshold 3*fPinNoise
-  // now, remove digits with Digitized ADC smaller than fDigitThreshold = 3
-  Float_t energy=0;
-  for(i = 0 ; i < nEMC ; i++){
-    digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
-    //First get the energy in GeV units.
-    energy = sDigitizer->Calibrate(digit->GetAmplitude()) ;
-    //Then digitize using the calibration constants of the ocdb
-    Float_t ampADC = DigitizeEnergy(energy, digit->GetId())  ; 	  
-    //if(ampADC>2)printf("Digit energy %f, amp %d, amp cal %d, threshold %d\n",energy,digit->GetAmplitude(),ampADC,fDigitThreshold);
-    if(ampADC < fDigitThreshold)
-      digits->RemoveAt(i) ;
-    else 
-      digit->SetTime(gRandom->Gaus(digit->GetTime(),fTimeResolution) ) ;
-  }
-  
-  digits->Compress() ;  
-  
-  Int_t ndigits = digits->GetEntriesFast() ; 
-  
-  //JLK 26-June-2008
-  //After we have done the summing and digitizing to create the
-  //digits, now we want to calibrate the resulting amplitude to match
-  //the dynamic range of our real data.  
-  for (i = 0 ; i < ndigits ; i++) { 
-    digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ; 
-    digit->SetIndexInList(i) ; 
-    energy = sDigitizer->Calibrate(digit->GetAmplitude()) ;
-    digit->SetAmplitude(DigitizeEnergy(energy, digit->GetId()) ) ;
-	//Add delay to time
-	digit->SetTime(digit->GetTime()+fTimeDelay) ;
-	 // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
-  }
-
+          Int_t curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(0))->GetId() ;
+          if(curNext < nextSig) 
+            nextSig = curNext ;
+          AliDebug(1,Form("input %i : #sdigits %i \n",
+                          i, sdigits->GetEntriesFast()));
+            
+          }//First entry is not NULL
+          else {
+            Info("Digitize", "NULL sdigit pointer");
+            continue;
+          }
+        }//There is at least one entry
+        else {
+          Info("Digitize", "NULL sdigits array");
+          continue;
+        }
+      }// SDigits array exists
+      else {
+        Info("Digitizer","Null sdigit pointer");
+        continue;
+      }
+    }// input loop
+    AliDebug(1,Form("FIRST tower with signal %i \n", nextSig));
+    
+    TArrayI index(fInput) ;
+    index.Reset() ;  //Set all indexes to zero
+    
+    AliEMCALDigit * digit ;
+    AliEMCALDigit * curSDigit ;
+    
+    //  TClonesArray * ticks = new TClonesArray("AliEMCALTick",1000) ;
+    
+    //Put Noise contribution
+    for(absID = 0; absID < nEMC; absID++){ // Nov 30, 2006 by PAI; was from 1 to nEMC
+      Float_t energy = 0 ;
+      // amplitude set to zero, noise will be added later
+      new((*digits)[absID]) AliEMCALDigit( -1, -1, absID, 0., TimeOfNoise(),kFALSE); // absID-1->absID
+      //look if we have to add signal?
+      
+      digit = dynamic_cast<AliEMCALDigit *>(digits->At(absID)); // absID-1->absID
+      
+      if (digit) {
+        
+        if(absID==nextSig){
+          //Add SDigits from all inputs    
+          //      ticks->Clear() ;
+          //Int_t contrib = 0 ;
+          
+          //Follow PHOS and comment out this timing model til a better one
+          //can be developed - JLK 28-Apr-2008
+          
+          //Float_t a = digit->GetAmplitude() ;
+          //Float_t b = TMath::Abs( a /fTimeSignalLength) ;
+          //Mark the beginning of the signal
+          //new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime(),0, b);  
+          //Mark the end of the signal     
+          //new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime()+fTimeSignalLength, -a, -b);
+          
+          // Calculate time as time of the largest digit
+          Float_t time = digit->GetTime() ;
+          Float_t aTime= digit->GetAmplitude() ;
+          
+          // loop over input
+          for(i = 0; i< fInput ; i++){  //loop over (possible) merge sources
+            if(sdigArray->At(i)) {
+              Int_t sDigitEntries = dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast();
+              
+              if(sDigitEntries > index[i] )
+                curSDigit = dynamic_cast<AliEMCALDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
+              else
+                curSDigit = 0 ;
+              
+              //May be several digits will contribute from the same input
+              while(curSDigit && (curSDigit->GetId() == absID)){	   
+                //Shift primary to separate primaries belonging different inputs
+                Int_t primaryoffset ;
+                if(fManager)
+                  primaryoffset = fManager->GetMask(i) ; 
+                else
+                  primaryoffset = i ;
+                curSDigit->ShiftPrimary(primaryoffset) ;
+                
+                //Remove old timing model - JLK 28-April-2008
+                //a = curSDigit->GetAmplitude() ;
+                //b = a /fTimeSignalLength ;
+                //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime(),0, b);  
+                //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime()+fTimeSignalLength, -a, -b); 
+                if(curSDigit->GetAmplitude()>aTime) {
+                  aTime = curSDigit->GetAmplitude();
+                  time  = curSDigit->GetTime();
+                }
+                
+                *digit = *digit + *curSDigit ;  //adds amplitudes of each digit
+                
+                index[i]++ ;
+                if( sDigitEntries > index[i] )
+                  curSDigit = dynamic_cast<AliEMCALDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ;
+                else
+                  curSDigit = 0 ;
+              }// while
+            }// source exists
+          }// loop over merging sources
+          
+          //Here we convert the summed amplitude to an energy in GeV
+          energy = sDigitizer->Calibrate(digit->GetAmplitude()) ; // GeV
+          // add fluctuations for photo-electron creation
+          energy *= static_cast<Float_t>(gRandom->Poisson(fMeanPhotonElectron)) / static_cast<Float_t>(fMeanPhotonElectron) ;
+          
+          //calculate and set time
+          //New timing model needed - JLK 28-April-2008
+          //Float_t time = FrontEdgeTime(ticks) ;
+          digit->SetTime(time) ;
+          
+          //Find next signal module
+          nextSig = nEMC + 1 ;
+          for(i = 0 ; i < fInput ; i++){
+            sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
+            if(sdigits){
+              Int_t curNext = nextSig ;
+              if(sdigits->GetEntriesFast() > index[i] && sdigits->At(index[i])){
+                curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]))->GetId() ;	  
+              }
+              if(curNext < nextSig) nextSig = curNext ;
+            }// sdigits exist
+          } // input loop       
+        
+        }//absID==nextSig
+        
+        // add the noise now
+        energy += TMath::Abs(gRandom->Gaus(0., fPinNoise)) ;
+        // JLK 26-June-2008
+        //Now digitize the energy according to the sDigitizer method,
+        //which merely converts the energy to an integer.  Later we will
+        //check that the stored value matches our allowed dynamic ranges
+        digit->SetAmplitude(sDigitizer->Digitize(energy)) ;  
+        AliDebug(10,Form(" absID %5i energy %f nextSig %5i\n",
+                         absID, energy, nextSig));
+      }// Digit pointer exists
+      else{
+        Info("Digitizer","Digit pointer is null");
+      }
+    } // for(absID = 0; absID < nEMC; absID++)
+    
+    //ticks->Delete() ;
+    //delete ticks ;
+    
+    //JLK is it better to call Clear() here?
+    delete sdigArray ; //We should not delete its contents
+    
+    //remove digits below thresholds
+    // until 10-02-2010 remove digits with energy smaller than fDigitThreshold 3*fPinNoise
+    // now, remove digits with Digitized ADC smaller than fDigitThreshold = 3
+    Float_t energy=0;
+    for(i = 0 ; i < nEMC ; i++){
+      digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
+      if(digit){
+        //First get the energy in GeV units.
+        energy = sDigitizer->Calibrate(digit->GetAmplitude()) ;
+        //Then digitize using the calibration constants of the ocdb
+        Float_t ampADC = DigitizeEnergy(energy, digit->GetId())  ; 	  
+        //if(ampADC>2)printf("Digit energy %f, amp %d, amp cal %d, threshold %d\n",energy,digit->GetAmplitude(),ampADC,fDigitThreshold);
+        if(ampADC < fDigitThreshold)
+          digits->RemoveAt(i) ;
+        else 
+          digit->SetTime(gRandom->Gaus(digit->GetTime(),fTimeResolution) ) ;
+      }// digit exists
+    } // digit loop
+    
+    digits->Compress() ;  
+    
+    Int_t ndigits = digits->GetEntriesFast() ; 
+    
+    //JLK 26-June-2008
+    //After we have done the summing and digitizing to create the
+    //digits, now we want to calibrate the resulting amplitude to match
+    //the dynamic range of our real data.  
+    for (i = 0 ; i < ndigits ; i++) { 
+      digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ; 
+      if(digit){
+        digit->SetIndexInList(i) ; 
+        energy = sDigitizer->Calibrate(digit->GetAmplitude()) ;
+        digit->SetAmplitude(DigitizeEnergy(energy, digit->GetId()) ) ;
+        //Add delay to time
+        digit->SetTime(digit->GetTime()+fTimeDelay) ;
+        // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
+      }// digit exists
+    }//Digit loop
+    
+  }//SDigitizer not null
 }
 
 // //_____________________________________________________________________
@@ -519,32 +568,35 @@ Float_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
   // Load Geometry
   const AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
 
-  if (geom==0)
-    AliFatal("Did not get geometry from EMCALLoader");
-
-  Int_t iSupMod = -1;
-  Int_t nModule  = -1;
-  Int_t nIphi   = -1;
-  Int_t nIeta   = -1;
-  Int_t iphi    = -1;
-  Int_t ieta    = -1;
   Float_t channel = -999; 
-
-  Bool_t bCell = geom->GetCellIndex(AbsId, iSupMod, nModule, nIphi, nIeta) ;
-  if(!bCell)
-    Error("DigitizeEnergy","Wrong cell id number : AbsId %i ", AbsId) ;
-  geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
   
-  if(fCalibData) {
-    fADCpedestalEC = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
-    fADCchannelEC = fCalibData->GetADCchannel(iSupMod,ieta,iphi);
+  if (geom==0){
+    AliFatal("Did not get geometry from EMCALLoader");
   }
+  else {
+    Int_t iSupMod = -1;
+    Int_t nModule  = -1;
+    Int_t nIphi   = -1;
+    Int_t nIeta   = -1;
+    Int_t iphi    = -1;
+    Int_t ieta    = -1;
+    Bool_t bCell = geom->GetCellIndex(AbsId, iSupMod, nModule, nIphi, nIeta) ;
+    if(!bCell)
+      Error("DigitizeEnergy","Wrong cell id number : AbsId %i ", AbsId) ;
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
   
-  //channel = static_cast<Int_t> (TMath::Floor( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
-  channel = (energy + fADCpedestalEC)/fADCchannelEC   ;
+    if(fCalibData) {
+      fADCpedestalEC = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
+      fADCchannelEC = fCalibData->GetADCchannel(iSupMod,ieta,iphi);
+    }
+  
+    //channel = static_cast<Int_t> (TMath::Floor( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
+    channel = (energy + fADCpedestalEC)/fADCchannelEC   ;
 
-  if(channel > fNADCEC ) 
-    channel =  fNADCEC ; 
+    if(channel > fNADCEC ) 
+      channel =  fNADCEC ; 
+  }// geometry exists
+  
   return channel ;
   
 }
@@ -574,57 +626,70 @@ void AliEMCALDigitizer::Exec(Option_t *option)
 
   AliRunLoader *rl = AliRunLoader::Instance();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
-
-  // Post Digitizer to the white board
-  emcalLoader->PostDigitizer(this) ;
-  
-  if (fLastEvent == -1)  {
-    fLastEvent = rl->GetNumberOfEvents() - 1 ;
+  Int_t nEvents = 0;
+  if(!emcalLoader){
+    AliFatal("Did not get the  Loader");
   }
-  else if (fManager) 
-    fLastEvent = fFirstEvent ; // what is this ??
-
-  Int_t nEvents = fLastEvent - fFirstEvent + 1;
-  Int_t ievent  = -1;
-
-  TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", 32 * 96);
-  TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    32 * 96);
-  rl->LoadSDigits("EMCAL");
-  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
+  else{
+    // Post Digitizer to the white board
+    emcalLoader->PostDigitizer(this) ;
     
-    rl->GetEvent(ievent);
+    if (fLastEvent == -1)  {
+      fLastEvent = rl->GetNumberOfEvents() - 1 ;
+    }
+    else if (fManager) 
+      fLastEvent = fFirstEvent ; // what is this ??
+    
+    nEvents = fLastEvent - fFirstEvent + 1;
+    Int_t ievent  = -1;
 
-    Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
+    TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    32*96);
+    TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", 32*96);
 
-    WriteDigits() ;
-	  
-	//Trigger Digits
-	//-------------------------------------
-	Digits2FastOR(digitsTMP, digitsTRG);  
-	  
-	WriteDigits(digitsTRG);
-	  
-	(emcalLoader->TreeD())->Fill();
-	  
-	emcalLoader->WriteDigits(   "OVERWRITE");
-	emcalLoader->WriteDigitizer("OVERWRITE");
-	  
-	Unload();
-	  
-	digitsTRG->Clear("C");
-	digitsTMP->Clear("C");
-	//-------------------------------------
+    rl->LoadSDigits("EMCAL");
+    for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
+      
+      rl->GetEvent(ievent);
+      
+      Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
+      
+      WriteDigits() ;
+      
+      //Trigger Digits
+      //-------------------------------------
+     
 
-    if(strstr(option,"deb"))
-      PrintDigits(option);
-    if(strstr(option,"table")) gObjectTable->Print();
-
-    //increment the total number of Digits per run 
-    fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;  
-  }
+      Digits2FastOR(digitsTMP, digitsTRG);  
+      
+      WriteDigits(digitsTRG);
+      
+      (emcalLoader->TreeD())->Fill();
+      
+      emcalLoader->WriteDigits(   "OVERWRITE");
+      emcalLoader->WriteDigitizer("OVERWRITE");
+      
+      Unload();
+      
+      digitsTRG  ->Delete();
+      digitsTMP  ->Delete();
+      
+      //-------------------------------------
+      
+      if(strstr(option,"deb"))
+        PrintDigits(option);
+      if(strstr(option,"table")) gObjectTable->Print();
+      
+      //increment the total number of Digits per run 
+      fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;  
+    }//loop
+    
+ //   delete digitsTRG;
+ //   delete digitsTMP;
+    
+    emcalLoader->CleanDigitizer() ;
+    
+  }//loader exists
   
-  emcalLoader->CleanDigitizer() ;
-
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALDigitizer");
     AliInfo(Form("Exec: took %f seconds for Digitizing %f seconds per event", 
@@ -647,97 +712,103 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
 	AliRun* run = runLoader->GetAliRun();
 	
 	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
-	
-	AliEMCALGeometry* geom = dynamic_cast<AliEMCAL*>(run->GetDetector("EMCAL"))->GetGeometry();
-	
-	// build FOR from simulated digits
-	// and xfer to the corresponding TRU input (mapping)
-	
-	TClonesArray* digits = emcalLoader->Digits();
-	
-	TIter NextDigit(digits);
-	while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
-	{
-		Int_t id = digit->GetId();
-		
-		Int_t iSupMod, nModule, nIphi, nIeta, iphi, ieta, iphim, ietam;
-		
-		geom->GetCellIndex(              id, iSupMod, nModule, nIphi, nIeta );
-		geom->GetModulePhiEtaIndexInSModule( iSupMod, nModule, iphim, ietam );		
-		geom->GetCellPhiEtaIndexInSModule(   iSupMod, nModule, nIphi, nIeta, iphi, ieta); 
-		
-		// identify to which TRU this FEE digit belong
-		//Int_t itru = (iSupMod < 11) ? iphim / 4 + 3 * iSupMod : 31;
-		Int_t itru = -1;
-		if (iSupMod < 11)
-			itru = (iSupMod % 2) ? (2 - int(iphim / 4)) + 3 * iSupMod : iphim / 4 + 3 * iSupMod;
-		else 
-			itru = 31;
-		
-		//---------
-		//
-		// FIXME: bad numbering solution to deal w/ the last 2 SM which have only 1 TRU each
-		// using the AliEMCALGeometry official numbering
-		// only 1 TRU/SM in SM 10 & SM 11
-		//
-		//---------
-		if ((itru == 31 && iphim < 2) || (itru == 30 && iphim > 5)) continue;
-		
-		// to be compliant with %4 per TRU
-		if (itru == 31) iphim -= 2;
-		
-		Int_t trgid = 0;
-		Bool_t isOK = geom->GetAbsFastORIndexFromPositionInTRU(itru, ietam, iphim % 4, trgid);
-		
-		AliDebug(2,Form("trigger digit id: %d itru: %d isOK: %d\n",trgid,itru,isOK));
-		
-		if (isOK) 
-		{
-			AliEMCALDigit* d = static_cast<AliEMCALDigit*>(digitsTMP->At(trgid));
-			
-			if (!d)
-			{
-				new((*digitsTMP)[trgid]) AliEMCALDigit(*digit);
-				d = (AliEMCALDigit*)digitsTMP->At(trgid);
-				d->SetId(trgid);
-			}	
-			else
-			{
-				*d = *d + *digit;
-			}
-		}
-	}
-	
-	Int_t    nSamples = 32;
-	Int_t *timeSamples = new Int_t[nSamples];
-	
-	NextDigit = TIter(digitsTMP);
-	while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
-	{
-		if (digit)
-		{
-			Int_t     id = digit->GetId();
-			Float_t time = digit->GetTime();
-						
-			Double_t depositedEnergy = 0.;
-			for (Int_t j = 1; j <= digit->GetNprimary(); j++) depositedEnergy += digit->GetDEPrimary(j);
-			
-			// FIXME: Check digit time!
-			if (depositedEnergy)
-			{
-				DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
-				
-				for (Int_t j=0;j<nSamples;j++) 
-				{
-					timeSamples[j] = ((j << 12) & 0xFF000) | (timeSamples[j] & 0xFFF);
-				}
-				
-				new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
-			}
-		}
-	}
-
-	delete [] timeSamples;
+	if(!emcalLoader){
+     AliFatal("Did not get the  Loader");
+  }
+  else {
+    AliEMCALGeometry* geom = dynamic_cast<AliEMCAL*>(run->GetDetector("EMCAL"))->GetGeometry();
+    
+    // build FOR from simulated digits
+    // and xfer to the corresponding TRU input (mapping)
+    
+    TClonesArray* digits = emcalLoader->Digits();
+    
+    TIter NextDigit(digits);
+    while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
+    {
+      Int_t id = digit->GetId();
+      
+      Int_t iSupMod, nModule, nIphi, nIeta, iphi, ieta, iphim, ietam;
+      
+      geom->GetCellIndex(              id, iSupMod, nModule, nIphi, nIeta );
+      geom->GetModulePhiEtaIndexInSModule( iSupMod, nModule, iphim, ietam );		
+      geom->GetCellPhiEtaIndexInSModule(   iSupMod, nModule, nIphi, nIeta, iphi, ieta); 
+      
+      // identify to which TRU this FEE digit belong
+      //Int_t itru = (iSupMod < 11) ? iphim / 4 + 3 * iSupMod : 31;
+      Int_t itru = -1;
+      if (iSupMod < 11)
+        itru = (iSupMod % 2) ? (2 - int(iphim / 4)) + 3 * iSupMod : iphim / 4 + 3 * iSupMod;
+      else 
+        itru = 31;
+      
+      //---------
+      //
+      // FIXME: bad numbering solution to deal w/ the last 2 SM which have only 1 TRU each
+      // using the AliEMCALGeometry official numbering
+      // only 1 TRU/SM in SM 10 & SM 11
+      //
+      //---------
+      if ((itru == 31 && iphim < 2) || (itru == 30 && iphim > 5)) continue;
+      
+      // to be compliant with %4 per TRU
+      if (itru == 31) iphim -= 2;
+      
+      Int_t trgid = 0;
+      Bool_t isOK = geom->GetAbsFastORIndexFromPositionInTRU(itru, ietam, iphim % 4, trgid);
+      
+      AliDebug(2,Form("trigger digit id: %d itru: %d isOK: %d\n",trgid,itru,isOK));
+      
+      if (isOK) 
+      {
+        AliEMCALDigit* d = static_cast<AliEMCALDigit*>(digitsTMP->At(trgid));
+        
+        if (!d)
+        {
+          new((*digitsTMP)[trgid]) AliEMCALDigit(*digit);
+          d = (AliEMCALDigit*)digitsTMP->At(trgid);
+          d->SetId(trgid);
+        }	
+        else
+        {
+          *d = *d + *digit;
+        }
+      }
+    }
+    
+    Int_t    nSamples = 32;
+    Int_t *timeSamples = new Int_t[nSamples];
+    
+    NextDigit = TIter(digitsTMP);
+    while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
+    {
+      if (digit)
+      {
+        Int_t     id = digit->GetId();
+        Float_t time = digit->GetTime();
+        
+        Double_t depositedEnergy = 0.;
+        for (Int_t j = 1; j <= digit->GetNprimary(); j++) depositedEnergy += digit->GetDEPrimary(j);
+        
+        // FIXME: Check digit time!
+        if (depositedEnergy)
+        {
+          DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
+          
+          for (Int_t j=0;j<nSamples;j++) 
+          {
+            timeSamples[j] = ((j << 12) & 0xFF000) | (timeSamples[j] & 0xFFF);
+          }
+          
+          new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
+        }
+      }
+    }
+    
+    delete [] timeSamples;
+    
+  }// loader exists
+  
 }
 
 //____________________________________________________________________________ 
@@ -901,7 +972,12 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
   }
   // looking for the file which contains SDigits
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
-  TString fileName( emcalLoader->GetSDigitsFileName() ) ; 
+  
+  if(emcalLoader){
+    AliFatal("Did not get the  Loader");
+  }
+  else{
+    TString fileName( emcalLoader->GetSDigitsFileName() ) ; 
     if ( eventFolderName != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
       fileName = fileName.ReplaceAll(".root", "") + "_" + eventFolderName + ".root" ;
     if ( (gSystem->AccessPathName(fileName)) ) { 
@@ -914,15 +990,18 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
     delete [] fInputFileNames ; 
     fInputFileNames = new TString[fInput+1] ; 
     fInputFileNames[fInput-1] = tempo ; 
- 
+    
     tempo = fEventNames[fInput-1] ; 
     delete [] fEventNames ; 
     fEventNames = new TString[fInput+1] ; 
     fEventNames[fInput-1] = tempo ; 
-
+    
     fInputFileNames[fInput] = alirunFileName ; 
     fEventNames[fInput]     = eventFolderName ;
     fInput++ ;
+    
+  }// Loader exits
+  
 }  
 
 //__________________________________________________________________
@@ -953,18 +1032,21 @@ void AliEMCALDigitizer::Print(Option_t*)const
       TString tempo(fEventNames[index]) ; 
       tempo += index ;
       if ((rl = AliRunLoader::GetRunLoader(tempo)) == 0)
-	rl = AliRunLoader::Open(fInputFileNames[index], tempo) ; 
+        rl = AliRunLoader::Open(fInputFileNames[index], tempo) ; 
       AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
-      TString fileName( emcalLoader->GetSDigitsFileName() ) ; 
-      if ( fEventNames[index] != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
-	fileName = fileName.ReplaceAll(".root", "") + "_" + fEventNames[index]  + ".root" ;
-      printf ("Adding SDigits from %s %s\n", fInputFileNames[index].Data(), fileName.Data()) ; 
+      if(emcalLoader){
+        TString fileName( emcalLoader->GetSDigitsFileName() ) ; 
+        if ( fEventNames[index] != AliConfig::GetDefaultEventFolderName()) // only if not the default folder name 
+          fileName = fileName.ReplaceAll(".root", "") + "_" + fEventNames[index]  + ".root" ;
+        printf ("Adding SDigits from %s %s\n", fInputFileNames[index].Data(), fileName.Data()) ; 
+      }//loader
     }
 
     AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
 
-    printf("\nWriting digits to %s", emcalLoader->GetDigitsFileName().Data()) ;
-    
+    if(emcalLoader) printf("\nWriting digits to %s", emcalLoader->GetDigitsFileName().Data()) ;
+    else printf("\nNULL LOADER");
+
     printf("\nWith following parameters:\n") ;
     
     printf("    Electronics noise in EMC (fPinNoise) = %f\n", fPinNoise) ;
@@ -981,29 +1063,34 @@ void AliEMCALDigitizer::PrintDigits(Option_t * option)
   //utility method for printing digit information
 
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
-  TClonesArray * digits  = emcalLoader->Digits() ;
-  TClonesArray * sdigits = emcalLoader->SDigits() ;
-  
-  printf("\n #Digits: %d : sdigits %d ", digits->GetEntriesFast(), sdigits->GetEntriesFast()) ; 
-  printf("\n event %d", emcalLoader->GetRunLoader()->GetEventNumber());
-  
-  if(strstr(option,"all")){  
-    //loop over digits
-    AliEMCALDigit * digit;
-    printf("\nEMC digits (with primaries):\n")  ;
-    printf("\n   Id  Amplitude    Time          Index Nprim: Primaries list \n") ;    
-    Int_t index ;
-    for (index = 0 ; index < digits->GetEntries() ; index++) {
-      digit = dynamic_cast<AliEMCALDigit *>(digits->At(index)) ;
-      printf("\n%6d  %8f    %6.5e %4d      %2d : ",
-	      digit->GetId(), digit->GetAmplitude(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
-      Int_t iprimary;
-      for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
-	printf("%d ",digit->GetPrimary(iprimary+1) ) ; 
-      }
-    }   
-  }
-  printf("\n");
+  if(emcalLoader){
+    TClonesArray * digits  = emcalLoader->Digits() ;
+    TClonesArray * sdigits = emcalLoader->SDigits() ;
+    
+    printf("\n #Digits: %d : sdigits %d ", digits->GetEntriesFast(), sdigits->GetEntriesFast()) ; 
+    printf("\n event %d", emcalLoader->GetRunLoader()->GetEventNumber());
+    
+    if(strstr(option,"all")){  
+      //loop over digits
+      AliEMCALDigit * digit;
+      printf("\nEMC digits (with primaries):\n")  ;
+      printf("\n   Id  Amplitude    Time          Index Nprim: Primaries list \n") ;    
+      Int_t index ;
+      for (index = 0 ; index < digits->GetEntries() ; index++) {
+        digit = dynamic_cast<AliEMCALDigit *>(digits->At(index)) ;
+        if(digit){
+          printf("\n%6d  %8f    %6.5e %4d      %2d : ",
+                 digit->GetId(), digit->GetAmplitude(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
+          Int_t iprimary;
+          for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
+            printf("%d ",digit->GetPrimary(iprimary+1) ) ; 
+          }
+        }// digit exists
+      }// loop
+    }
+    printf("\n");
+  }// loader exists
+  else printf("NULL LOADER, cannot print\n");
 }
 
 //__________________________________________________________________
@@ -1028,13 +1115,14 @@ void AliEMCALDigitizer::Unload()
       rl->GetDetectorLoader("EMCAL")->UnloadSDigits() ; 
   }
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
-  emcalLoader->UnloadDigits() ; 
+  if(emcalLoader)emcalLoader->UnloadDigits() ; 
+  else AliFatal("Did not get the loader");
 }
 
 //_________________________________________________________________________________________
 void AliEMCALDigitizer::WriteDigits()
 {
-
+  
   // Makes TreeD in the output file. 
   // Check if branch already exists: 
   //   if yes, exit without writing: ROOT TTree does not support overwriting/updating of 
@@ -1042,34 +1130,38 @@ void AliEMCALDigitizer::WriteDigits()
   //   else creates branch with Digits, named "EMCAL", title "...",
   //      and branch "AliEMCALDigitizer", with the same title to keep all the parameters
   //      and names of files, from which digits are made.
-
+  
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
-
-  const TClonesArray * digits = emcalLoader->Digits() ; 
-  TTree * treeD = emcalLoader->TreeD(); 
-  if ( !treeD ) {
-    emcalLoader->MakeDigitsContainer();
-    treeD = emcalLoader->TreeD(); 
-  }
-
-  // -- create Digits branch
-  Int_t bufferSize = 32000 ;    
-  TBranch * digitsBranch = 0;
-  if ((digitsBranch = treeD->GetBranch("EMCAL"))) {
-    digitsBranch->SetAddress(&digits);
-    AliWarning("Digits Branch already exists. Not all digits will be visible");
-  }
-  else
-    treeD->Branch("EMCAL","TClonesArray",&digits,bufferSize);
-  //digitsBranch->SetTitle(fEventFolderName);
-
-//	treeD->Fill() ;
-/*  
-  emcalLoader->WriteDigits("OVERWRITE");
-  emcalLoader->WriteDigitizer("OVERWRITE");
-
-  Unload() ; 
-*/
+  
+  if(emcalLoader){
+    const TClonesArray * digits = emcalLoader->Digits() ; 
+    TTree * treeD = emcalLoader->TreeD(); 
+    if ( !treeD ) {
+      emcalLoader->MakeDigitsContainer();
+      treeD = emcalLoader->TreeD(); 
+    }
+    
+    // -- create Digits branch
+    Int_t bufferSize = 32000 ;    
+    TBranch * digitsBranch = 0;
+    if ((digitsBranch = treeD->GetBranch("EMCAL"))) {
+      digitsBranch->SetAddress(&digits);
+      AliWarning("Digits Branch already exists. Not all digits will be visible");
+    }
+    else
+      treeD->Branch("EMCAL","TClonesArray",&digits,bufferSize);
+    //digitsBranch->SetTitle(fEventFolderName);
+    
+    //	treeD->Fill() ;
+    /*  
+     emcalLoader->WriteDigits("OVERWRITE");
+     emcalLoader->WriteDigitizer("OVERWRITE");
+     
+     Unload() ; 
+     */
+    
+  }// loader exists
+  else AliFatal("Loader not available");
 }
 
 //__________________________________________________________________
@@ -1077,27 +1169,30 @@ void AliEMCALDigitizer::WriteDigits(TClonesArray* digits, const char* branchName
 {
 	//
 	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
-	
-	TTree* treeD = emcalLoader->TreeD(); 
-	if (!treeD) 
-	{
-		emcalLoader->MakeDigitsContainer();
-		treeD = emcalLoader->TreeD(); 
-	}
-	
-	// -- create Digits branch
-	Int_t bufferSize = 32000;
-	
-	if (TBranch* triggerBranch = treeD->GetBranch(branchName)) 
-	{
-		triggerBranch->SetAddress(&digits);
-	}
-	else
-	{
-		treeD->Branch(branchName,"TClonesArray",&digits,bufferSize);
-	}
-	
-//	treeD->Fill();
+	if(emcalLoader){
+    
+    TTree* treeD = emcalLoader->TreeD(); 
+    if (!treeD) 
+    {
+      emcalLoader->MakeDigitsContainer();
+      treeD = emcalLoader->TreeD(); 
+    }
+    
+    // -- create Digits branch
+    Int_t bufferSize = 32000;
+    
+    if (TBranch* triggerBranch = treeD->GetBranch(branchName)) 
+    {
+      triggerBranch->SetAddress(&digits);
+    }
+    else
+    {
+      treeD->Branch(branchName,"TClonesArray",&digits,bufferSize);
+    }
+    
+    //	treeD->Fill();
+  }// loader exists
+  else AliFatal("Loader not available");
 }
 
 //__________________________________________________________________
