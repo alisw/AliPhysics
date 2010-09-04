@@ -44,6 +44,9 @@ public:
 
     /** Reset event specific values (Et etc.) */
     virtual void ResetEventValues();
+
+    /** Set Particle codes/mass */
+    virtual void SetParticleCodes();
     
     /** Sum of the total Et for all events */
     Double_t GetSumEt() { return fSumEt; }
