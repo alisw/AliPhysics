@@ -205,6 +205,8 @@ const char* AliHLTMUONAgent::GetRequiredComponentLibraries() const
 		"libMUONtrigger.so",
 		"libMUONevaluation.so",
 		"libMUONrec.so",
+		"libANALYSIS.so",
+		"libANALYSISalice.so",
 		"libHLTbase.so",
 		"libAliHLTUtil.so",
 		NULL
