@@ -3,7 +3,8 @@
 SRCS:=  base/AliQuarkoniaAcceptance.cxx \
         base/AliQuarkoniaEfficiency.cxx \
         base/AliAnalysisTaskPtMothFromPtDaugh.cxx \
-        base/AliPtMothFromPtDaugh.cxx
+        base/AliPtMothFromPtDaugh.cxx \
+	base/AliCounterCollection.cxx 
      
 HDRS:= $(SRCS:.cxx=.h)
 
