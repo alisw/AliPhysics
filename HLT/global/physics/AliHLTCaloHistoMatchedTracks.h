@@ -80,7 +80,8 @@ class AliHLTCaloHistoMatchedTracks : public AliHLTCaloHistoProducer {
   AliHLTCaloHistoMatchedTracks & operator= (const AliHLTCaloHistoMatchedTracks);
 
   /** Histograms of the track - cluster residuals */
-  TH1F *fHistMatchDistance;                  //!transient
+  TH1F *fHistDxy;                  //!transient
+  TH1F *fHistDz;                  //!transient
   TH2F *fHistDxyDz;                           //!transient
   
   /** Histograms of the energy distribution of mached and unmatched clusters */
