@@ -32,9 +32,9 @@ class AliTRDtransform : public TObject {
   AliTRDtransform(Int_t det);
   AliTRDtransform(const AliTRDtransform &t);
   virtual ~AliTRDtransform();
-  AliTRDtransform &operator=(const AliTRDtransform &t) { *(new(this) AliTRDtransform(t));
-                                                          return *this; }
-
+  AliTRDtransform &operator=(const AliTRDtransform &t);
+  
+  virtual void     Copy(TObject &t) const;
   virtual Bool_t   Transform(AliTRDcluster *c);
   virtual void     Recalibrate(AliTRDcluster *c, Bool_t setDet = kTRUE);
 

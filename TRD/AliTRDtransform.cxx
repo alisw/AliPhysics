@@ -180,6 +180,51 @@ AliTRDtransform::~AliTRDtransform()
 }
 
 //_____________________________________________________________________________
+AliTRDtransform &AliTRDtransform::operator=(const AliTRDtransform &t)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &t) {
+    ((AliTRDtransform &) t).Copy(*this);
+  }
+
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDtransform::Copy(TObject &t) const
+{
+  //
+  // Copy function
+  //
+
+  ((AliTRDtransform &) t).fDetector          = fDetector;
+  ((AliTRDtransform &) t).fParam             = AliTRDCommonParam::Instance();
+  ((AliTRDtransform &) t).fCalibration       = AliTRDcalibDB::Instance();
+  if (fCalibration) {
+    ((AliTRDtransform &) t).fkCalVdriftDet   = fCalibration->GetVdriftDet();
+    ((AliTRDtransform &) t).fkCalT0Det       = fCalibration->GetT0Det();
+  }
+  else {
+    ((AliTRDtransform &) t).fkCalVdriftDet   = 0;
+    ((AliTRDtransform &) t).fkCalT0Det       = 0;
+  }
+  ((AliTRDtransform &) t).fCalVdriftROC      = 0x0;
+  ((AliTRDtransform &) t).fCalT0ROC          = 0x0;
+  ((AliTRDtransform &) t).fCalPRFROC         = 0x0;
+  ((AliTRDtransform &) t).fCalVdriftDetValue = 0; 
+  ((AliTRDtransform &) t).fCalT0DetValue     = 0;
+  ((AliTRDtransform &) t).fSamplingFrequency = 0;
+  ((AliTRDtransform &) t).fPadPlane          = 0x0;
+  ((AliTRDtransform &) t).fZShiftIdeal       = 0;
+  ((AliTRDtransform &) t).fMatrix            = 0x0;
+
+}
+
+//_____________________________________________________________________________
 void AliTRDtransform::SetDetector(Int_t det)
 {
   //
