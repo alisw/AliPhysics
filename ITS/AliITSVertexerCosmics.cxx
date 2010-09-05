@@ -148,7 +148,7 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(TTree *itsCluster
   Int_t nclOutLayStored=0;
   Int_t nRecPoints,nRecPointsInnLay=0;
 
-  Float_t gc[3],gcov[5];
+  Float_t gc[3],gcov[6];
 
   Float_t matchOutLayValue;
   Float_t distxyInnLay,distxyInnLayBest=0.;
