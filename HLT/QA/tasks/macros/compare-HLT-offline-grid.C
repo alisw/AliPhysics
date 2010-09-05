@@ -9,7 +9,6 @@
  * Usage:
  * <pre>
  *   aliroot -q compare-HLT-offline-grid.C'("000115322","/alice/data/2010/LHC10b","ESDcomparison","output","full","global")' 2>&1 | tee log
- * </pre>
  * - run number
  * - GRID input directory, where you define in which LHC period the run number belongs to
  * - GRID working directory, where the .xml, .jdl and the task are uploaded (you have to create it yourself in advance)
@@ -43,7 +42,7 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
 
   
-  Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
+  Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -57,9 +56,13 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
          if(argument.CompareTo("tpc", TString::kIgnoreCase)==0){
 	    bTPC = kTRUE;
 	    continue;
-         }        
+         }
          if(argument.CompareTo("phos", TString::kIgnoreCase)==0){
   	    bPHOS = kTRUE;
+	    continue;
+         }
+         if(argument.CompareTo("emcal", TString::kIgnoreCase)==0){
+  	    bEMCAL = kTRUE;
 	    continue;
          }         
 	 if(argument.CompareTo("its", TString::kIgnoreCase)==0){
@@ -73,6 +76,7 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
 	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
 	    bTPC    = kTRUE;
 	    bPHOS   = kTRUE;
+	    bEMCAL   = kTRUE;
 	    bITS    = kTRUE;
 	    bGLOBAL = kTRUE;
 	    bAll    = kTRUE;
@@ -109,6 +113,14 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
     gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
     gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+");  
   }
+  if(bEMCAL) {
+     AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
+    pHLT->LoadComponentLibraries("libHLTbase");
+    pHLT->LoadComponentLibraries("libAliHLTUtil");
+    pHLT->LoadComponentLibraries("libAliHLTGlobal");
+    gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
+    gROOT->LoadMacro("AliAnalysisTaskHLTEMCAL.cxx+");  
+  }
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
 
@@ -129,6 +141,13 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
      AliAnalysisDataContainer *coutput2 =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
      mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(taskPHOS,1,coutput2);
+  }
+  if(bEMCAL){
+     AliAnalysisTaskHLTEMCAL *taskEMCAL = new AliAnalysisTaskHLTEMCAL("offhlt_comparison_EMCAL");
+     mgr->AddTask(taskEMCAL);
+     AliAnalysisDataContainer *coutput5 =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
+     mgr->ConnectInput(taskEMCAL,0,mgr->GetCommonInputContainer());
+     mgr->ConnectOutput(taskEMCAL,1,coutput5);
   }
   
   if(bITS){

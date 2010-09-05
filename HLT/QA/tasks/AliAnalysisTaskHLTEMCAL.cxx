@@ -51,18 +51,28 @@ ClassImp(AliAnalysisTaskHLTEMCAL)
 
 //===========================================================================================
 
+AliAnalysisTaskHLTEMCAL::AliAnalysisTaskHLTEMCAL() : AliAnalysisTaskHLTCalo()
+{
+  // Constructor
+}
 AliAnalysisTaskHLTEMCAL::AliAnalysisTaskHLTEMCAL(const char *name) : AliAnalysisTaskHLTCalo(name)
 {
   // Constructor
 }
 
 void AliAnalysisTaskHLTEMCAL::CreateSpecificStuff(TList * fOutputList){
-  return;
+  if(fOutputList)
+    return;
+  else
+    return;
 }
 
 
 void AliAnalysisTaskHLTEMCAL::DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD) {
-  return;
+  if(evESD || evHLTESD) 
+    return;
+  else
+    return;
 }
 
 Int_t AliAnalysisTaskHLTEMCAL::GetClusters(AliESDEvent * event, TRefArray * clusters) {

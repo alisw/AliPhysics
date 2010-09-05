@@ -43,7 +43,7 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   plugin->SetGridOutputDir(gridOutputDir);   // relative to working dir
   
   
-  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
+  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -62,6 +62,10 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   	    bPHOS = kTRUE;
 	    continue;
          }         
+         if(argument.CompareTo("emcal", TString::kIgnoreCase)==0){
+  	    bEMCAL = kTRUE;
+	    continue;
+         }         
 	 if(argument.CompareTo("its", TString::kIgnoreCase)==0){
   	    bITS = kTRUE;
 	    continue;
@@ -73,6 +77,7 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
 	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
 	    bTPC    = kTRUE;
 	    bPHOS   = kTRUE;
+	    bEMCAL   = kTRUE;
 	    bITS    = kTRUE;
 	    bGLOBAL = kTRUE;
 	    continue;
@@ -97,6 +102,12 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
     plugin->SetAnalysisSource("AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTPHOS.cxx");  
     plugin->SetAdditionalLibs("libRAWDatabase.so libProof.so libGui.so libCDB.so libSTEER.so libHLTbase.so libAliHLTUtil.so libAliHLTGlobal.so AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTCalo.h AliAnalysisTaskHLTPHOS.cxx AliAnalysisTaskHLTPHOS.h");  
     plugin->SetOutputFiles("HLT-OFFLINE-PHOS-comparison.root");    
+  }
+  if(bEMCAL){  
+    plugin->AddIncludePath("-I$ROOTSYS -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/HLT/BASE/util -I$ALICE_ROOT/HLT/global/physics");
+    plugin->SetAnalysisSource("AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTEMCAL.cxx");  
+    plugin->SetAdditionalLibs("libRAWDatabase.so libProof.so libGui.so libCDB.so libSTEER.so libHLTbase.so libAliHLTUtil.so libAliHLTGlobal.so AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTCalo.h AliAnalysisTaskHLTEMCAL.cxx AliAnalysisTaskHLTEMCAL.h");  
+    plugin->SetOutputFiles("HLT-OFFLINE-EMCAL-comparison.root");    
   }
   if(bGLOBAL){  
     plugin->SetAnalysisSource("AliAnalysisTaskHLT.cxx");  
