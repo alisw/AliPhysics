@@ -155,7 +155,7 @@ Hypersurface::Hypersurface(const char *dirname) {
 }
 
 Hypersurface::Hypersurface(void) {
-  Hypersurface::Hypersurface("./");
+  Hypersurface("./");
 }
 
 
