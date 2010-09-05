@@ -174,6 +174,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anapi0->SetDebug(-1);//10 for lots of messages
   anapi0->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   anapi0->SetCalorimeter(calorimeter);
+  anapi0->SwitchOnMultipleCutAnalysis(); 
   if(kSimulation){
     anapi0->SwitchOnFiducialCut();
     AliFiducialCut * fidCut1stYear = anapi0->GetFiducialCut();

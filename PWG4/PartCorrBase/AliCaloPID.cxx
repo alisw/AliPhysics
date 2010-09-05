@@ -202,7 +202,7 @@ void AliCaloPID::InitParameters()
   //fPHOSPi0WeightFormula = 
     //new TFormula("pi0Weight","0.98*(x<65)+ 0.915*(x>=100)+(x>=65 && x-x*(1.95e-3)-x*x*(4.31e-05)+x*x*x*(3.61e-07))");
   
-  fDispCut  = 1.5;
+  fDispCut  = 0.25;
   fTOFCut   = 5.e-9;
   fDebug = -1;
 	
@@ -343,38 +343,39 @@ TString  AliCaloPID::GetPIDParametersList()  {
   //Put data member values in string to keep in output container
   
   TString parList ; //this will be list of parameters used for this analysis.
-  char onePar[255] ;
-  sprintf(onePar,"--- AliCaloPID ---\n") ;
+  const Int_t buffersize = 255;
+  char onePar[buffersize] ;
+  snprintf(onePar,buffersize,"--- AliCaloPID ---\n") ;
   parList+=onePar ;	
-  sprintf(onePar,"fDispCut =%2.2f (Cut on dispersion, used in PID evaluation) \n",fDispCut) ;
+  snprintf(onePar,buffersize,"fDispCut =%2.2f (Cut on dispersion, used in PID evaluation) \n",fDispCut) ;
   parList+=onePar ;
-  sprintf(onePar,"fTOFCut  =%e (Cut on TOF, used in PID evaluation) \n",fTOFCut) ;
+  snprintf(onePar,buffersize,"fTOFCut  =%e (Cut on TOF, used in PID evaluation) \n",fTOFCut) ;
   parList+=onePar ;
-  sprintf(onePar,"fEMCALPhotonWeight =%2.2f (EMCAL bayesian weight for photons)\n",fEMCALPhotonWeight) ;
+  snprintf(onePar,buffersize,"fEMCALPhotonWeight =%2.2f (EMCAL bayesian weight for photons)\n",fEMCALPhotonWeight) ;
   parList+=onePar ;
-  sprintf(onePar,"fEMCALPi0Weight =%2.2f (EMCAL bayesian weight for pi0)\n",fEMCALPi0Weight) ;
+  snprintf(onePar,buffersize,"fEMCALPi0Weight =%2.2f (EMCAL bayesian weight for pi0)\n",fEMCALPi0Weight) ;
   parList+=onePar ;
-  sprintf(onePar,"fEMCALElectronWeight =%2.2f(EMCAL bayesian weight for electrons)\n",fEMCALElectronWeight) ;
+  snprintf(onePar,buffersize,"fEMCALElectronWeight =%2.2f(EMCAL bayesian weight for electrons)\n",fEMCALElectronWeight) ;
   parList+=onePar ;
-  sprintf(onePar,"fEMCALChargeWeight =%2.2f (EMCAL bayesian weight for charged hadrons)\n",fEMCALChargeWeight) ;
+  snprintf(onePar,buffersize,"fEMCALChargeWeight =%2.2f (EMCAL bayesian weight for charged hadrons)\n",fEMCALChargeWeight) ;
   parList+=onePar ;
-  sprintf(onePar,"fEMCALNeutralWeight =%2.2f (EMCAL bayesian weight for neutral hadrons)\n",fEMCALNeutralWeight) ;
+  snprintf(onePar,buffersize,"fEMCALNeutralWeight =%2.2f (EMCAL bayesian weight for neutral hadrons)\n",fEMCALNeutralWeight) ;
   parList+=onePar ;
-  sprintf(onePar,"fPHOSPhotonWeight =%2.2f (PHOS bayesian weight for photons)\n",fPHOSPhotonWeight) ;
+  snprintf(onePar,buffersize,"fPHOSPhotonWeight =%2.2f (PHOS bayesian weight for photons)\n",fPHOSPhotonWeight) ;
   parList+=onePar ;
-  sprintf(onePar,"fPHOSPi0Weight =%2.2f (PHOS bayesian weight for pi0)\n",fPHOSPi0Weight) ;
+  snprintf(onePar,buffersize,"fPHOSPi0Weight =%2.2f (PHOS bayesian weight for pi0)\n",fPHOSPi0Weight) ;
   parList+=onePar ;
-  sprintf(onePar,"fPHOSElectronWeight =%2.2f(PHOS bayesian weight for electrons)\n",fPHOSElectronWeight) ;
+  snprintf(onePar,buffersize,"fPHOSElectronWeight =%2.2f(PHOS bayesian weight for electrons)\n",fPHOSElectronWeight) ;
   parList+=onePar ;
-  sprintf(onePar,"fPHOSChargeWeight =%2.2f (PHOS bayesian weight for charged hadrons)\n",fPHOSChargeWeight) ;
+  snprintf(onePar,buffersize,"fPHOSChargeWeight =%2.2f (PHOS bayesian weight for charged hadrons)\n",fPHOSChargeWeight) ;
   parList+=onePar ;
-  sprintf(onePar,"fPHOSNeutralWeight =%2.2f (PHOS bayesian weight for neutral hadrons)\n",fPHOSNeutralWeight) ;
+  snprintf(onePar,buffersize,"fPHOSNeutralWeight =%2.2f (PHOS bayesian weight for neutral hadrons)\n",fPHOSNeutralWeight) ;
   parList+=onePar ;
   
 //  if(fPHOSWeightFormula){
-//	sprintf(onePar,"PHOS Photon Weight Formula: %s\n",(fPHOSPhotonWeightFormula->GetExpFormula("p")).Data()) ;
+//	sprintf(onePar,buffersize,"PHOS Photon Weight Formula: %s\n",(fPHOSPhotonWeightFormula->GetExpFormula("p")).Data()) ;
 //    parList+=onePar;
-//	sprintf(onePar,"PHOS Pi0    Weight Formula: %s\n",(fPHOSPi0WeightFormula->GetExpFormula("p")).Data()) ;
+//	sprintf(onePar,buffersize,"PHOS Pi0    Weight Formula: %s\n",(fPHOSPi0WeightFormula->GetExpFormula("p")).Data()) ;
 //	parList+=onePar;	  
 //  }
   
@@ -419,28 +420,88 @@ void AliCaloPID::SetPIDBits(const TString calo, const AliVCluster * cluster, Ali
   //Set Bits for PID selection
   
   //Dispersion/lambdas
-  Double_t disp=cluster->GetDispersion()  ;
-	//    Double_t m20=calo->GetM20() ;
-	//    Double_t m02=calo->GetM02() ; 
-  ph->SetDispBit(disp<fDispCut) ;  
+  //Double_t disp= cluster->GetDispersion()  ;
+  Double_t l1  = cluster->GetM20() ;
+  Double_t l0  = cluster->GetM02() ; 
+  Bool_t isDispOK = kTRUE ;
+  if(cluster->IsPHOS()){
+    
+    if(l1>= 0   && l0>= 0   && l1 < 0.1 && l0 < 0.1) isDispOK=kFALSE ;
+    if(l1>= 0   && l0 > 0.5 && l1 < 0.1 && l0 < 1.5) isDispOK=kTRUE ;
+    if(l1>= 0   && l0 > 2.0 && l1 < 0.1 && l0 < 2.7) isDispOK=kFALSE ;
+    if(l1>= 0   && l0 > 2.7 && l1 < 0.1 && l0 < 4.0) isDispOK=kFALSE ;
+    if(l1 > 0.1 && l1 < 0.7 && l0 > 0.7 && l0 < 2.1) isDispOK=kTRUE ;
+    if(l1 > 0.1 && l1 < 0.3 && l0 > 3.0 && l0 < 5.0) isDispOK=kFALSE  ;
+    if(l1 > 0.3 && l1 < 0.7 && l0 > 2.5 && l0 < 4.0) isDispOK=kFALSE ;
+    if(l1 > 0.7 && l1 < 1.3 && l0 > 1.0 && l0 < 1.6) isDispOK=kTRUE ;
+    if(l1 > 0.7 && l1 < 1.3 && l0 > 1.6 && l0 < 3.5) isDispOK=kTRUE ;
+    if(l1 > 1.3 && l1 < 3.5 && l0 > 1.3 && l0 < 3.5) isDispOK=kTRUE ;    
+    
+  }
+  else{//EMCAL
+    
+    if(l0 > fDispCut || l0 < 0.) isDispOK = kFALSE;
+    
+  }
+  
+  ph->SetDispBit(isDispOK) ;
   
   //TOF
   Double_t tof=cluster->GetTOF()  ;
   ph->SetTOFBit(TMath::Abs(tof)<fTOFCut) ; 
   
-  //Charged veto
-  //    Double_t cpvR=calo->GetEmcCpvDistance() ; 
-  Int_t ntr=cluster->GetNTracksMatched();  //number of track matched
-  ph->SetChargedBit(ntr>0) ;  //Temporary cut, should we evaluate distance?
+  //Charged veto  
+  //Bool_t isNeutral = kTRUE ;
+  //if(cluster->IsPHOS())  isNeutral = cluster->GetEmcCpvDistance() > 5. ;
+  //else 
+  Bool_t isNeutral = IsTrackMatched(cluster);
+  
+  ph->SetChargedBit(isNeutral);
   
   //Set PID pdg
   ph->SetPdg(GetPdg(calo,cluster->GetPID(),ph->E()));
   
   if(fDebug > 0){ 
-    printf("AliCaloPID::SetPIDBits: TOF %e, Dispersion %2.2f, NTracks %d\n",tof , disp, ntr); 	
+    printf("AliCaloPID::SetPIDBits: TOF %e, Lambda0 %2.2f, Lambda1 %2.2f\n",tof , l0, l1); 	
     printf("AliCaloPID::SetPIDBits: pdg %d, bits: TOF %d, Dispersion %d, Charge %d\n",
 	     ph->GetPdg(), ph->GetTOFBit() , ph->GetDispBit() , ph->GetChargedBit()); 
   }
+}
+
+//__________________________________________________________________________
+Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster) const {
+  //Check if there is any track attached to this cluster
+  
+  Int_t nMatches = cluster->GetNTracksMatched();
+  
+  //  printf("N matches %d, first match %d\n",nMatches,cluster->GetTrackMatchedIndex());
+  //  if     (cluster->GetTrackMatched(0))        printf("\t matched track id %d\n",((AliVTrack*)cluster->GetTrackMatched(0))->GetID()) ;
+  //  else if(cluster->GetTrackMatchedIndex()>=0) printf("\t matched track id %d\n",((AliVTrack*) GetReader()->GetInputEvent()->GetTrack(cluster->GetTrackMatchedIndex()))->GetID()) ;
+  
+  if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
+  {
+    if (nMatches > 0) {
+      if (nMatches == 1 ) {
+        Int_t iESDtrack = cluster->GetTrackMatchedIndex();
+        //printf("Track Matched index %d\n",iESDtrack);
+        if(iESDtrack==-1) return kFALSE ;// Default value of array, there is no match
+        else              return kTRUE;
+      }//Just one, check
+      else return kTRUE ;//More than one, there is a match.
+    }// > 0
+    else return kFALSE; //It does not happen, but in case
+    
+  }//ESDs
+  else
+  {
+    //AODs
+    if(nMatches > 0) return kTRUE; //There is at least one match.
+    else             return kFALSE;
+    
+  }//AODs or MC (copy into AOD)
+  
+  return kFALSE;
+  
 }
 
 

@@ -294,43 +294,43 @@ void AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() {
       printf(" AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() - Input Branch  <%s>, not found!\n",fInputAODName.Data());
   }
 }
-
-//__________________________________________________________________________
-Bool_t AliAnaPartCorrBaseClass::IsTrackMatched(AliVCluster* cluster) const {
-  //Check if there is any track attached to this cluster
-  
-  Int_t nMatches = cluster->GetNTracksMatched();
-//  printf("N matches %d, first match %d\n",nMatches,cluster->GetTrackMatchedIndex());
-//  if     (cluster->GetTrackMatched(0))        printf("\t matched track id %d\n",((AliVTrack*)cluster->GetTrackMatched(0))->GetID()) ;
-//  else if(cluster->GetTrackMatchedIndex()>=0) printf("\t matched track id %d\n",((AliVTrack*) GetReader()->GetInputEvent()->GetTrack(cluster->GetTrackMatchedIndex()))->GetID()) ;
-
-  if(fReader->GetDataType()==AliCaloTrackReader::kESD)
-  {
-    
-    if (nMatches > 0) {
-      if (nMatches == 1 ) {
-        Int_t iESDtrack = cluster->GetTrackMatchedIndex();
-        //printf("Track Matched index %d\n",iESDtrack);
-        if(iESDtrack==-1) return kFALSE ;// Default value of array, there is no match
-        else              return kTRUE;
-      }//Just one, check
-      else return kTRUE ;//More than one, there is a match.
-    }// > 0
-    else return kFALSE; //It does not happen, but in case
-      
-  }//ESDs
-  else
-  {
-    //AODs
-    if(nMatches > 0) return kTRUE; //There is at least one match.
-    else             return kFALSE;
-    
-  }//AODs or MC (copy into AOD)
-  
-  return kFALSE;
-  
-}
-
+//
+////__________________________________________________________________________
+//Bool_t AliAnaPartCorrBaseClass::IsTrackMatched(AliVCluster* cluster) const {
+//  //Check if there is any track attached to this cluster
+//  
+//  Int_t nMatches = cluster->GetNTracksMatched();
+////  printf("N matches %d, first match %d\n",nMatches,cluster->GetTrackMatchedIndex());
+////  if     (cluster->GetTrackMatched(0))        printf("\t matched track id %d\n",((AliVTrack*)cluster->GetTrackMatched(0))->GetID()) ;
+////  else if(cluster->GetTrackMatchedIndex()>=0) printf("\t matched track id %d\n",((AliVTrack*) GetReader()->GetInputEvent()->GetTrack(cluster->GetTrackMatchedIndex()))->GetID()) ;
+//
+//  if(fReader->GetDataType()==AliCaloTrackReader::kESD)
+//  {
+//    
+//    if (nMatches > 0) {
+//      if (nMatches == 1 ) {
+//        Int_t iESDtrack = cluster->GetTrackMatchedIndex();
+//        //printf("Track Matched index %d\n",iESDtrack);
+//        if(iESDtrack==-1) return kFALSE ;// Default value of array, there is no match
+//        else              return kTRUE;
+//      }//Just one, check
+//      else return kTRUE ;//More than one, there is a match.
+//    }// > 0
+//    else return kFALSE; //It does not happen, but in case
+//      
+//  }//ESDs
+//  else
+//  {
+//    //AODs
+//    if(nMatches > 0) return kTRUE; //There is at least one match.
+//    else             return kFALSE;
+//    
+//  }//AODs or MC (copy into AOD)
+//  
+//  return kFALSE;
+//  
+//}
+//
 //__________________________________________________
 TObjArray *  AliAnaPartCorrBaseClass::GetAODCTS() const {
   //Get list of referenced tracks from reader
@@ -376,32 +376,33 @@ TString  AliAnaPartCorrBaseClass::GetBaseParametersList()  {
   //Put data member values in string to keep in output container
 
   TString parList ; //this will be list of parameters used for this analysis.
-  char onePar[255] ;
-  sprintf(onePar,"--- AliAnaPartCorrBaseClass ---\n") ;
+  const Int_t buffersize = 255;
+  char onePar[buffersize] ;
+  snprintf(onePar,buffersize,"--- AliAnaPartCorrBaseClass ---\n") ;
   parList+=onePar ;	
-  sprintf(onePar,"Minimal P_t: %2.2f ; Max\n", fMinPt) ;
+  snprintf(onePar,buffersize,"Minimal P_t: %2.2f ; Max\n", fMinPt) ;
   parList+=onePar ;
-  sprintf(onePar,"Minimal P_t: %2.2f ; Max\n", fMaxPt) ;
+  snprintf(onePar,buffersize,"Minimal P_t: %2.2f ; Max\n", fMaxPt) ;
   parList+=onePar ;
-  sprintf(onePar,"fDataMC =%d (Check MC information, on/off) \n",fDataMC) ;
+  snprintf(onePar,buffersize,"fDataMC =%d (Check MC information, on/off) \n",fDataMC) ;
   parList+=onePar ;
-  sprintf(onePar,"fCheckFidCut=%d (Check Fiducial cut selection on/off) \n",fCheckFidCut) ;
+  snprintf(onePar,buffersize,"fCheckFidCut=%d (Check Fiducial cut selection on/off) \n",fCheckFidCut) ;
   parList+=onePar ;
-  sprintf(onePar,"fCheckCaloPID =%d (Use Bayesian PID in calorimetes, on/off) \n",fCheckCaloPID) ;
+  snprintf(onePar,buffersize,"fCheckCaloPID =%d (Use Bayesian PID in calorimetes, on/off) \n",fCheckCaloPID) ;
   parList+=onePar ;
-  sprintf(onePar,"fRecalculateCaloPID  =%d (Calculate PID from shower/tof/tracking parameters, on/off) \n",fRecalculateCaloPID) ;
+  snprintf(onePar,buffersize,"fRecalculateCaloPID  =%d (Calculate PID from shower/tof/tracking parameters, on/off) \n",fRecalculateCaloPID) ;
   parList+=onePar ;
-  sprintf(onePar,"fInputAODName  =%s Input AOD name \n",fInputAODName.Data()) ;
+  snprintf(onePar,buffersize,"fInputAODName  =%s Input AOD name \n",fInputAODName.Data()) ;
   parList+=onePar ;	
   if(fNewAOD){
-     sprintf(onePar,"fOutputAODName  =%s Output AOD name \n",fOutputAODName.Data()) ;
+     snprintf(onePar,buffersize,"fOutputAODName  =%s Output AOD name \n",fOutputAODName.Data()) ;
      parList+=onePar ;	
-	 sprintf(onePar,"fOutputAODClassName  =%s Output AOD class name \n",fOutputAODClassName.Data()) ;
-	 parList+=onePar ;	
+     snprintf(onePar,buffersize,"fOutputAODClassName  =%s Output AOD class name \n",fOutputAODClassName.Data()) ;
+     parList+=onePar ;	
   }
-  sprintf(onePar,"fAODObjArrayName  =%s Reference arrays in AOD name \n",fAODObjArrayName.Data()) ;
+  snprintf(onePar,buffersize,"fAODObjArrayName  =%s Reference arrays in AOD name \n",fAODObjArrayName.Data()) ;
   parList+=onePar ;	
-  sprintf(onePar,"fAddToHistogramsName  =%s String added to beginning of histograms name \n",fAddToHistogramsName.Data()) ;
+  snprintf(onePar,buffersize,"fAddToHistogramsName  =%s String added to beginning of histograms name \n",fAddToHistogramsName.Data()) ;
   parList+=onePar ;	
 	
   return parList; 

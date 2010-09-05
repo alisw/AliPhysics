@@ -68,96 +68,7 @@ ClassImp(AliAnaPhoton)
   //Initialize parameters
   InitParameters();
 
-}
-/*
-//____________________________________________________________________________
-AliAnaPhoton::AliAnaPhoton(const AliAnaPhoton & g) : 
-  AliAnaPartCorrBaseClass(g), fCalorimeter(g.fCalorimeter),
-  fMinDist(g.fMinDist),fMinDist2(g.fMinDist2), fMinDist3(g.fMinDist3),
-  fRejectTrackMatch(g.fRejectTrackMatch),
-  fCheckConversion(g.fCheckConversion),fAddConvertedPairsToAOD(g.fAddConvertedPairsToAOD),
-  fMassCut(g.fMassCut), fTimeCutMin(g.fTimeCutMin), fTimeCutMax(g.fTimeCutMax),	fNCellsCut(g.fNCellsCut),
-  fhPtPhoton(g.fhPtPhoton),fhPhiPhoton(g.fhPhiPhoton),fhEtaPhoton(g.fhEtaPhoton), 
-  //MC
-  fhDeltaE(g.fhDeltaE), fhDeltaPt(g.fhDeltaPt), 
-  fhRatioE(g.fhRatioE), fhRatioPt(g.fhRatioPt),
-  fh2E(g.fh2E), fh2Pt(g.fh2Pt), 
-  fhPtMCPhoton(g.fhPtMCPhoton),fhPhiMCPhoton(g.fhPhiMCPhoton),fhEtaMCPhoton(g.fhEtaMCPhoton),
-  fhPtPrompt(g.fhPtPrompt),fhPhiPrompt(g.fhPhiPrompt),fhEtaPrompt(g.fhEtaPrompt), 
-  fhPtFragmentation(g.fhPtFragmentation),fhPhiFragmentation(g.fhPhiFragmentation),fhEtaFragmentation(g.fhEtaFragmentation), 
-  fhPtISR(g.fhPtISR),fhPhiISR(g.fhPhiISR),fhEtaISR(g.fhEtaISR), 
-  fhPtPi0Decay(g.fhPtPi0Decay),fhPhiPi0Decay(g.fhPhiPi0Decay),fhEtaPi0Decay(g.fhEtaPi0Decay), 
-  fhPtOtherDecay(g.fhPtOtherDecay),fhPhiOtherDecay(g.fhPhiOtherDecay),fhEtaOtherDecay(g.fhEtaOtherDecay), 
-  fhPtConversion(g. fhPtConversion),fhPhiConversion(g.fhPhiConversion),fhEtaConversion(g.fhEtaConversion), 
-  fhPtUnknown(g.fhPtUnknown),fhPhiUnknown(g.fhPhiUnknown),fhEtaUnknown(g.fhEtaUnknown)
-  
-{
-  // cpy ctor
-  
-}
-
-//_________________________________________________________________________
-AliAnaPhoton & AliAnaPhoton::operator = (const AliAnaPhoton & g)
-{
-  // assignment operator
-  
-  if(&g == this) return *this;
-
-  fCalorimeter = g.fCalorimeter ;
-  fMinDist  = g.fMinDist;
-  fMinDist2 = g.fMinDist2;
-  fMinDist3 = g.fMinDist3;
-  fMassCut  = g.fMassCut;
-	
-  fTimeCutMin = g.fTimeCutMin; 
-  fTimeCutMax = g.fTimeCutMax;	
-  fNCellsCut  = g.fNCellsCut;
-	
-  fRejectTrackMatch       = g.fRejectTrackMatch;
-  fCheckConversion        = g.fCheckConversion;
-  fAddConvertedPairsToAOD = g.fAddConvertedPairsToAOD;
-	
-  fhPtPhoton  = g.fhPtPhoton ; 
-  fhPhiPhoton = g.fhPhiPhoton ;
-  fhEtaPhoton = g.fhEtaPhoton ;
-
-  fhDeltaE   = g.fhDeltaE;  
-  fhDeltaPt  = g.fhDeltaPt;
-  fhRatioE   = g.fhRatioE;  
-  fhRatioPt  = g.fhRatioPt;
-  fh2E   = g.fh2E;  
-  fh2Pt  = g.fh2Pt;
- 
-  fhPtMCPhoton  = g.fhPtMCPhoton ; 
-  fhPhiMCPhoton = g.fhPhiMCPhoton ;
-  fhEtaMCPhoton = g.fhEtaMCPhoton ;	
-  fhPtPrompt  = g.fhPtPrompt;
-  fhPhiPrompt = g.fhPhiPrompt;
-  fhEtaPrompt = g.fhEtaPrompt; 
-  fhPtFragmentation  = g.fhPtFragmentation;
-  fhPhiFragmentation = g.fhPhiFragmentation;
-  fhEtaFragmentation = g.fhEtaFragmentation; 
-  fhPtISR  = g.fhPtISR;
-  fhPhiISR = g.fhPhiISR; 
-  fhEtaISR = g.fhEtaISR; 
-  fhPtPi0Decay  = g.fhPtPi0Decay;
-  fhPhiPi0Decay = g.fhPhiPi0Decay;
-  fhEtaPi0Decay = g.fhEtaPi0Decay; 
-  fhPtOtherDecay  = g.fhPtOtherDecay;
-  fhPhiOtherDecay = g.fhPhiOtherDecay;
-  fhEtaOtherDecay = g.fhEtaOtherDecay; 
-  fhPtConversion  = g. fhPtConversion;
-  fhPhiConversion = g.fhPhiConversion;
-  fhEtaConversion = g.fhEtaConversion; 
-  fhPtUnknown  = g.fhPtUnknown;
-  fhPhiUnknown = g.fhPhiUnknown;
-  fhEtaUnknown = g.fhEtaUnknown; 
-
-  return *this;
-  
-}
-*/
-//____________________________________________________________________________
+}//____________________________________________________________________________
 AliAnaPhoton::~AliAnaPhoton() 
 {
   //dtor
@@ -169,19 +80,20 @@ TObjString *  AliAnaPhoton::GetAnalysisCuts()
 {  	
   //Save parameters used for analysis
   TString parList ; //this will be list of parameters used for this analysis.
-  char onePar[255] ;
+  const Int_t buffersize = 255;
+  char onePar[buffersize] ;
   
-  sprintf(onePar,"--- AliAnaPhoton ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaPhoton ---\n") ;
   parList+=onePar ;	
-  sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s\n",fCalorimeter.Data()) ;
   parList+=onePar ;
-  sprintf(onePar,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+  snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
   parList+=onePar ;
-  sprintf(onePar,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+  snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
   parList+=onePar ;
-  sprintf(onePar,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+  snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
   parList+=onePar ;
-  sprintf(onePar,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
+  snprintf(onePar,buffersize,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
   parList+=onePar ;  
   
   //Get parameters set in base class.
@@ -228,7 +140,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   outputContainer->Add(fhPhiPhoton) ; 
   
   fhEtaPhoton  = new TH2F
-    ("hEtaPhoton","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+    ("hEtaPhoton","#eta_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
   fhEtaPhoton->SetYTitle("#eta");
   fhEtaPhoton->SetXTitle("p_{T #gamma} (GeV/c)");
   outputContainer->Add(fhEtaPhoton) ;
@@ -266,13 +178,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhPtMCPhoton) ; 
     
     fhPhiMCPhoton  = new TH2F
-      ("hPhiMCPhoton","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCPhoton","#phi_{#gamma}, #gamma in MC",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
     fhPhiMCPhoton->SetYTitle("#phi");
     fhPhiMCPhoton->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhPhiMCPhoton) ; 
     
     fhEtaMCPhoton  = new TH2F
-      ("hEtaMCPhoton","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCPhoton","#eta_{#gamma}, #gamma in MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
     fhEtaMCPhoton->SetYTitle("#eta");
     fhEtaMCPhoton->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhEtaMCPhoton) ;
@@ -283,13 +195,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhPtPrompt) ; 
     
     fhPhiPrompt  = new TH2F
-      ("hPhiMCPrompt","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCPrompt","#phi_{#gamma}, prompt #gamma in MC",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
     fhPhiPrompt->SetYTitle("#phi");
     fhPhiPrompt->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhPhiPrompt) ; 
     
     fhEtaPrompt  = new TH2F
-      ("hEtaMCPrompt","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCPrompt","#eta_{#gamma}, prompt #gamma in MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
     fhEtaPrompt->SetYTitle("#eta");
     fhEtaPrompt->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhEtaPrompt) ;
@@ -300,13 +212,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhPtFragmentation) ; 
     
     fhPhiFragmentation  = new TH2F
-      ("hPhiMCFragmentation","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCFragmentation","#phi_{#gamma}, fragmentation #gamma in MC",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
     fhPhiFragmentation->SetYTitle("#phi");
     fhPhiFragmentation->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhPhiFragmentation) ; 
     
     fhEtaFragmentation  = new TH2F
-      ("hEtaMCFragmentation","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCFragmentation","#eta_{#gamma}, fragmentation #gamma in MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
     fhEtaFragmentation->SetYTitle("#eta");
     fhEtaFragmentation->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhEtaFragmentation) ;
@@ -323,7 +235,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhPhiISR) ; 
     
     fhEtaISR  = new TH2F
-      ("hEtaMCISR","#phi_{#gamma} initial state radiation",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCISR","#eta_{#gamma} initial state radiation",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
     fhEtaISR->SetYTitle("#eta");
     fhEtaISR->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhEtaISR) ;
@@ -334,13 +246,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhPtPi0Decay) ; 
     
     fhPhiPi0Decay  = new TH2F
-      ("hPhiMCPi0Decay","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCPi0Decay","#phi_{#gamma}, #pi^{0} decay #gamma in MC",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
     fhPhiPi0Decay->SetYTitle("#phi");
     fhPhiPi0Decay->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhPhiPi0Decay) ; 
     
     fhEtaPi0Decay  = new TH2F
-      ("hEtaMCPi0Decay","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCPi0Decay","#eta_{#gamma}, #pi^{0} #gamma in MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
     fhEtaPi0Decay->SetYTitle("#eta");
     fhEtaPi0Decay->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhEtaPi0Decay) ;
@@ -351,13 +263,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhPtOtherDecay) ; 
     
     fhPhiOtherDecay  = new TH2F
-      ("hPhiMCOtherDecay","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCOtherDecay","#phi_{#gamma}, other decay #gamma in MC",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
     fhPhiOtherDecay->SetYTitle("#phi");
     fhPhiOtherDecay->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhPhiOtherDecay) ; 
     
     fhEtaOtherDecay  = new TH2F
-      ("hEtaMCOtherDecay","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCOtherDecay","#eta_{#gamma}, other decay #gamma in MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
     fhEtaOtherDecay->SetYTitle("#eta");
     fhEtaOtherDecay->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhEtaOtherDecay) ;
@@ -368,13 +280,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhPtConversion) ; 
     
     fhPhiConversion  = new TH2F
-      ("hPhiMCConversion","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCConversion","#phi_{#gamma}, conversion #gamma in MC",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
     fhPhiConversion->SetYTitle("#phi");
     fhPhiConversion->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhPhiConversion) ; 
     
     fhEtaConversion  = new TH2F
-      ("hEtaMCConversion","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCConversion","#eta_{#gamma}, conversion #gamma in MC",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
     fhEtaConversion->SetYTitle("#eta");
     fhEtaConversion->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhEtaConversion) ;
@@ -385,13 +297,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhPtUnknown) ; 
     
     fhPhiUnknown  = new TH2F
-      ("hPhiMCUnknown","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCUnknown","#phi_{#gamma}, unknown origin",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
     fhPhiUnknown->SetYTitle("#phi");
     fhPhiUnknown->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhPhiUnknown) ; 
     
     fhEtaUnknown  = new TH2F
-      ("hEtaMCUnknown","#phi_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCUnknown","#eta_{#gamma}, unknown origin",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
     fhEtaUnknown->SetYTitle("#eta");
     fhEtaUnknown->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhEtaUnknown) ;
@@ -473,7 +385,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     pl = GetAODPHOS();
   else if (fCalorimeter == "EMCAL")
     pl = GetAODEMCAL();
-
+  
+  if(!pl) {
+    Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
+    return;
+  }
 
   //Fill AODParticle with PHOS/EMCAL aods
   TLorentzVector mom, mom2 ;

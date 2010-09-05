@@ -116,21 +116,22 @@ TObjString *  AliAnaPi0EbE::GetAnalysisCuts()
 {	
 	//Save parameters used for analysis
 	 TString parList ; //this will be list of parameters used for this analysis.
-	 char onePar[255] ;
+   const Int_t buffersize = 255;
+	 char onePar[buffersize] ;
 	 
-	 sprintf(onePar,"--- AliAnaPi0EbE ---\n") ;
+	 snprintf(onePar,buffersize,"--- AliAnaPi0EbE ---\n") ;
 	 parList+=onePar ;	
-	 sprintf(onePar,"fAnaType=%d (Pi0 selection type) \n",fAnaType) ;
+	 snprintf(onePar,buffersize,"fAnaType=%d (Pi0 selection type) \n",fAnaType) ;
 	 parList+=onePar ;
 	 
 	 if(fAnaType == kSSCalo){
-	   sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+	   snprintf(onePar,buffersize,"Calorimeter: %s\n",fCalorimeter.Data()) ;
 	   parList+=onePar ;
-	   sprintf(onePar,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+	   snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
 	   parList+=onePar ;
-	   sprintf(onePar,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+	   snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
 	   parList+=onePar ;
-	   sprintf(onePar,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+	   snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
 	   parList+=onePar ;
 	 }
 	 
@@ -167,13 +168,13 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   outputContainer->Add(fhPtPi0) ; 
   
   fhPhiPi0  = new TH2F
-    ("hPhiPi0","#phi_{#pi^{0}}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+  ("hPhiPi0","#phi_{#pi^{0}}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
   fhPhiPi0->SetYTitle("#phi");
   fhPhiPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
   outputContainer->Add(fhPhiPi0) ; 
   
   fhEtaPi0  = new TH2F
-    ("hEtaPi0","#phi_{#pi^{0}}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+  ("hEtaPi0","#phi_{#pi^{0}}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
   fhEtaPi0->SetYTitle("#eta");
   fhEtaPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
   outputContainer->Add(fhEtaPi0) ;
@@ -188,13 +189,13 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       outputContainer->Add(fhPtMCPi0) ; 
       
       fhPhiMCPi0  = new TH2F
-	("hPhiMCPi0","Identified pi0 from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCPi0","Identified pi0 from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiMCPi0->SetYTitle("#phi");
       fhPhiMCPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
       outputContainer->Add(fhPhiMCPi0) ; 
       
       fhEtaMCPi0  = new TH2F
-	("hEtaMCPi0","Identified pi0 from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCPi0","Identified pi0 from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaMCPi0->SetYTitle("#eta");
       fhEtaMCPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
       outputContainer->Add(fhEtaMCPi0) ;
@@ -205,13 +206,13 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       outputContainer->Add(fhPtMCNoPi0) ; 
       
       fhPhiMCNoPi0  = new TH2F
-	("hPhiMCNoPi0","Identified pi0 not from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCNoPi0","Identified pi0 not from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiMCNoPi0->SetYTitle("#phi");
       fhPhiMCNoPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
       outputContainer->Add(fhPhiMCNoPi0) ; 
       
       fhEtaMCNoPi0  = new TH2F
-	("hEtaMCNoPi0","Identified pi0 not from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCNoPi0","Identified pi0 not from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaMCNoPi0->SetYTitle("#eta");
       fhEtaMCNoPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
       outputContainer->Add(fhEtaMCNoPi0) ;
@@ -228,7 +229,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     TList * nmsHistos = GetNeutralMesonSelection()->GetCreateOutputObjects() ;
     if(GetNeutralMesonSelection()->AreNeutralMesonSelectionHistosKept())
       for(Int_t i = 0; i < nmsHistos->GetEntries(); i++) outputContainer->Add(nmsHistos->At(i)) ;
-	delete nmsHistos;
+    delete nmsHistos;
 	  
   }
   
@@ -464,6 +465,16 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   //Search for pi0 in fCalorimeter with shower shape analysis 
   
   TObjArray * pl = 0x0; 
+  //Select the Calorimeter of the photon
+  if(fCalorimeter == "PHOS")
+    pl = GetAODPHOS();
+  else if (fCalorimeter == "EMCAL")
+    pl = GetAODEMCAL();
+
+  if(!pl) {
+    Info("MakeShowerShapeIdentification","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
+    return;
+  }  
   
   //Get vertex for photon momentum calculation
   Double_t vertex[]  = {0,0,0} ; //vertex 
@@ -474,11 +485,6 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 	  //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
   }
 	
-  //Select the Calorimeter of the photon
-  if(fCalorimeter == "PHOS")
-    pl = GetAODPHOS();
-  else if (fCalorimeter == "EMCAL")
-    pl = GetAODEMCAL();
 
   TLorentzVector mom ;
   for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
