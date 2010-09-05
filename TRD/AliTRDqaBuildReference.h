@@ -23,11 +23,10 @@ class AliTRDqaBuildReference: public TObject {
 
   AliTRDqaBuildReference() {}          // ctor
   AliTRDqaBuildReference(const AliTRDqaBuildReference& qadm):TObject(qadm) {}   
-  AliTRDqaBuildReference& operator = (const AliTRDqaBuildReference& qadm) 
-                                     { *(new(this) AliTRDqaBuildReference(qadm));
-                                       return *this; }
+  AliTRDqaBuildReference& operator = (const AliTRDqaBuildReference& qadm);
   virtual ~AliTRDqaBuildReference() {;} // dtor
   
+  virtual void Copy(TObject &/*qadm*/) const;
   void     BuildRefHistos(TFile *file) const;
   Double_t CalculateQuality(TH1D* /*measured*/, TH1D* /*reference*/) const {return 1.;}
 

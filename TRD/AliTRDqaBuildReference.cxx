@@ -31,6 +31,30 @@
 
 //////////////////////////////////////////////////////////////////////////////////////
 
+//_____________________________________________________________________________
+AliTRDqaBuildReference &AliTRDqaBuildReference::operator=(const AliTRDqaBuildReference &qadm)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &qadm) {
+    ((AliTRDqaBuildReference &) qadm).Copy(*this);
+  }
+
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDqaBuildReference::Copy(TObject &/*qadm*/) const
+{
+  //
+  // Copy function
+  //
+
+}
+
 void  AliTRDqaBuildReference::BuildRefHistos(TFile *file) const
 {
   //
