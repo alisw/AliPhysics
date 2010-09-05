@@ -181,8 +181,8 @@ void AliCFTaskForDStarAnalysis::UserExec(Option_t *)
   fCFManager->SetMCEventInfo(aodEvent);
   
   // event selection
-  Double_t containerInput[14] ;
-  Double_t containerInputMC[14] ;
+  Double_t containerInput[15] ;
+  Double_t containerInputMC[15] ;
   
   //loop on the MC event
   
