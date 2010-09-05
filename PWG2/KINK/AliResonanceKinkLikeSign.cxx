@@ -331,27 +331,27 @@ Bool_t AliResonanceKinkLikeSign::IsAcceptedForTrack(AliESDEvent *localesd,      
   } 
 
   if(extCov[0] > fMaxCov0) {
-      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[0] of %lf (max. requested: %lf)", cov[0], fMaxCov0);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[0] of %lf (max. requested: %lf)", extCov[0], fMaxCov0);
       return kFALSE;
   }
   
   if(extCov[2] > fMaxCov2) {
-      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[2] of %lf (max. requested: %lf)", cov[2], fMaxCov2);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[2] of %lf (max. requested: %lf)", extCov[2], fMaxCov2);
       return kFALSE;
   }
     
   if(extCov[5] > fMaxCov5) {
-      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[5] of %lf (max. requested: %lf)", cov[5], fMaxCov5);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[5] of %lf (max. requested: %lf)", extCov[5], fMaxCov5);
       return kFALSE;
   }  
   
   if(extCov[9] > fMaxCov9) {
-      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[9] of %lf (max. requested: %lf)", cov[9], fMaxCov9);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[9] of %lf (max. requested: %lf)", extCov[9], fMaxCov9);
       return kFALSE;
   }  
   
   if(extCov[14] > fMaxCov14) {
-      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[14] of %lf (max. requested: %lf)", cov[14], fMaxCov14);
+      if (fDebug > 1) Printf("IsAccepted: Track rejected because it has a value of cov[14] of %lf (max. requested: %lf)", extCov[14], fMaxCov14);
       return kFALSE;
   } 
  
