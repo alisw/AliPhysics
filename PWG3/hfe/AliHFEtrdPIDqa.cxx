@@ -494,7 +494,7 @@ void AliHFEtrdPIDqa::SaveThresholdParameters(const Char_t *name){
 
     lHistos = dynamic_cast<TList *>(fThresholds->FindObject(Form("%dTracklets", itracklet)));
     if(!lHistos){
-      AliError(Form("Threshold histograms for the case %d tracklets not found"));
+      AliError(Form("Threshold histograms for the case %d tracklets not found", itracklet));
       continue;
     }
     lFormulas = new TList;
@@ -675,7 +675,7 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet){
   TGraphErrors *pi, *pr;
   TGraph *tr;
   TLegend *leg;
-  TCanvas *c1 = new TCanvas(Form("tracklet%d", itracklet), Form("Tracklet %d", itracklet));
+  TCanvas *c1 = new TCanvas(Form("tracklet%d", itracklet), Form("Tracklet %d", itracklet), 1024, 768);
   c1->Divide(3,2);
   for(Int_t ieff = 0; ieff < kNElectronEffs; ieff++){
     c1->cd(ieff + 1);
@@ -689,11 +689,11 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet){
     // Define nice plot, draw
     // Axis Title
     pi->GetXaxis()->SetTitle("p / GeV/c");
-    pi->GetYaxis()->SetTitle("Efficiency / %");
+    pi->GetYaxis()->SetTitle("Efficiency");
     pr->GetXaxis()->SetTitle("p / GeV/c");
-    pr->GetYaxis()->SetTitle("Efficiency / %");
+    pr->GetYaxis()->SetTitle("Efficiency");
     tr->GetXaxis()->SetTitle("p / GeV/c");
-    tr->GetYaxis()->SetTitle("Efficiency / %");
+    tr->GetYaxis()->SetTitle("Efficiency");
     // Axis Range
     pi->GetYaxis()->SetRangeUser(0., 1.);
     pr->GetYaxis()->SetRangeUser(0., 1.);

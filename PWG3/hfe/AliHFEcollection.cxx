@@ -189,7 +189,7 @@ Bool_t AliHFEcollection::CreateTH1Fvector1(Int_t X, const char* name, const char
     //cout<<" -D: nBin: "<<_nBin<<" ,Min: "<<_nMin<<" , Max: "<<_nMax<<endl;
     CreateTH1F(hname.Data(), title, nBin, nMin, nMax, logAxis);
     if(!CheckObject(hname.Data())){
-      AliError(Form("Not possible to create object: ", hname.Data()));
+      AliError(Form("Not possible to create object: %s", hname.Data()));
       return kFALSE;
     }    
   }
