@@ -40,7 +40,6 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord) :
   fNHits(0),
   fNHits0(0),
   fNHits1(0),
-  fLabel(-1),
   fSlope(0.),
   fOffset(0.),
   fError(0.),
@@ -49,6 +48,9 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord) :
   fClsCharges(0x0)
 { 
     fGeo = new AliTRDgeometry();
+    fLabel[0] = -1;
+    fLabel[1] = -1;
+    fLabel[2] = -1;
 }
 
 AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
@@ -63,7 +65,6 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
   fNHits(0),
   fNHits0(0),
   fNHits1(0),
-  fLabel(-1),
   fSlope(0.),
   fOffset(0.),
   fError(0.),
@@ -72,6 +73,9 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
   fClsCharges(0x0)
 { 
     fGeo = new AliTRDgeometry();
+    fLabel[0] = -1;
+    fLabel[1] = -1;
+    fLabel[2] = -1;
 }
 
 AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid, Int_t rob, Int_t mcm) :
@@ -86,7 +90,6 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid, Int_t rob,
   fNHits(0),
   fNHits0(0),
   fNHits1(0),
-  fLabel(-1),
   fSlope(0.),
   fOffset(0.),
   fError(0.),
@@ -95,6 +98,9 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid, Int_t rob,
   fClsCharges(0x0)
 { 
     fGeo = new AliTRDgeometry();
+    fLabel[0] = -1;
+    fLabel[1] = -1;
+    fLabel[2] = -1;
 }
 
 AliTRDtrackletMCM::AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs) :
@@ -109,8 +115,7 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs) :
   fNHits(rhs.fNHits),
   fNHits0(rhs.fNHits0),
   fNHits1(rhs.fNHits1),
-  fLabel(rhs.fLabel),
-  fSlope(rhs.fLabel),
+  fSlope(rhs.fSlope),
   fOffset(rhs.fOffset),
   fError(rhs.fError),
   fNClusters(rhs.fNClusters),
@@ -124,6 +129,9 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs) :
       fResiduals[iCls] = rhs.fResiduals[iCls];
       fClsCharges[iCls] = rhs.fClsCharges[iCls];
     }
+    fLabel[0] = rhs.fLabel[0];
+    fLabel[1] = rhs.fLabel[1];
+    fLabel[2] = rhs.fLabel[2];
 }
 
 AliTRDtrackletMCM::~AliTRDtrackletMCM() 
@@ -152,6 +160,13 @@ Int_t AliTRDtrackletMCM::GetdY() const
   else {
     return ((fTrackletWord >> 13) & 0x7f);
   }
+}
+
+void AliTRDtrackletMCM::SetLabel(Int_t label[])
+{ 
+  fLabel[0] = label[0];
+  fLabel[1] = label[1];
+  fLabel[2] = label[2];
 }
 
 void AliTRDtrackletMCM::SetClusters(Float_t *res, Float_t *q, Int_t n)

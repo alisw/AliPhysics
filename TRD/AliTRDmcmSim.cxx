@@ -668,7 +668,7 @@ Bool_t AliTRDmcmSim::GetHit(Int_t index, Int_t &channel, Int_t &timebin, Int_t &
                         (channel << 8) - ypos) 
     * (0.635 + 0.03 * (fDetector % 6))
     / 256.0;
-  label   = fHits[index].fLabel;
+  label   = fHits[index].fLabel[0];
 
   return kTRUE;
 }
@@ -1147,7 +1147,7 @@ void AliTRDmcmSim::ZSMapping()
   }
 }
 
-void AliTRDmcmSim::AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Short_t ypos, Int_t label) 
+void AliTRDmcmSim::AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Short_t ypos, Int_t label[])
 {
   // Add the given hit to the fit register which is lateron used for 
   // the tracklet calculation. 
@@ -1178,7 +1178,9 @@ void AliTRDmcmSim::AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Sh
   fHits[fNHits].fQtot = qtot;
   fHits[fNHits].fYpos = ypos;
   fHits[fNHits].fTimebin = timebin;
-  fHits[fNHits].fLabel = label;
+  fHits[fNHits].fLabel[0] = label[0];
+  fHits[fNHits].fLabel[1] = label[1];
+  fHits[fNHits].fLabel[2] = label[2];
   fNHits++;
 }
 
@@ -1348,16 +1350,16 @@ void AliTRDmcmSim::CalcFitreg()
         ypos = 128*(adcLeft - adcRight) / adcCentral;
         if (ypos < 0) ypos = -ypos;
         // make the correction using the position LUT
-        ypos = ypos + fTrapConfig->GetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + (ypos & 0x7F))); 
+        ypos = ypos + fTrapConfig->GetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + (ypos & 0x7F)),
+					      fDetector, fRobPos, fMcmPos);
         if (adcLeft > adcRight) ypos = -ypos;
 
-        // label calculation
-        Int_t mcLabel = -1;
+        // label calculation (up to 3)
+        Int_t mcLabel[] = {-1, -1, -1};
         if (fDigitsManager) {
-          Int_t label[9] = { 0 }; // up to 9 different labels possible
-          Int_t count[9] = { 0 };
-          Int_t maxIdx = -1;
-          Int_t maxCount = 0;
+          const Int_t maxLabels = 9;
+          Int_t label[maxLabels] = { 0 }; // up to 9 different labels possible
+          Int_t count[maxLabels] = { 0 };
           Int_t nLabels = 0;
           Int_t padcol[3]; 
           padcol[0] = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, adcch);
@@ -1370,26 +1372,29 @@ void AliTRDmcmSim::CalcFitreg()
             for (Int_t iPad = 0; iPad < 3; iPad++) {
               if (padcol[iPad] < 0) 
                 continue;
-              Int_t currLabel = fDict[iDict]->GetData(padrow, padcol[iPad], timebin); //fDigitsManager->GetTrack(iDict, padrow, padcol, timebin, fDetector);
+              Int_t currLabel = fDict[iDict]->GetData(padrow, padcol[iPad], timebin);
 	      AliDebug(10, Form("Read label: %4i for det: %3i, row: %i, col: %i, tb: %i\n", currLabel, fDetector, padrow, padcol[iPad], timebin));
               for (Int_t iLabel = 0; iLabel < nLabels; iLabel++) {
                 if (currLabel == label[iLabel]) {
                   count[iLabel]++;
-                  if (count[iLabel] > maxCount) {
-                    maxCount = count[iLabel];
-                    maxIdx = iLabel;
-                  }
                   currLabel = -1;
                   break;
                 }
               } 
               if (currLabel >= 0) {
-                label[nLabels++] = currLabel;
+                label[nLabels] = currLabel;
+		count[nLabels] = 1;
+		nLabels++;
               }
             }
           }
-          if (maxIdx >= 0)
-            mcLabel = label[maxIdx];
+	  Int_t index[maxLabels];
+	  TMath::Sort(maxLabels, count, index);
+	  for (Int_t i = 0; i < 3; i++) {
+	    if (count[index[i]] <= 0)
+	      break;
+	    mcLabel[i] = label[index[i]];
+	  }
         }
 
         // add the hit to the fitregister
@@ -1635,14 +1640,13 @@ void AliTRDmcmSim::FitTracklet()
         fMCMT[cpu] = (pid << 24) | (padrow << 20) | (slope << 13) | offset;
 
         // calculate MC label
-        Int_t mcLabel = -1;
+        Int_t mcLabel[] = { -1, -1, -1};
 	Int_t nHits0 = 0;
 	Int_t nHits1 = 0;
         if (fDigitsManager) {
-          Int_t label[30] = {0}; // up to 30 different labels possible
-          Int_t count[30] = {0};
-          Int_t maxIdx = -1;
-          Int_t maxCount = 0;
+	  const Int_t maxLabels = 30;
+          Int_t label[maxLabels] = {0}; // up to 30 different labels possible
+          Int_t count[maxLabels] = {0};
           Int_t nLabels = 0;
           for (Int_t iHit = 0; iHit < fNHits; iHit++) {
             if ((fHits[iHit].fChannel - fFitPtr[cpu] < 0) ||
@@ -1657,24 +1661,29 @@ void AliTRDmcmSim::FitTracklet()
 		fHits[iHit].fTimebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1))
 	      nHits1++;
 
-            Int_t currLabel = fHits[iHit].fLabel;
-            for (Int_t iLabel = 0; iLabel < nLabels; iLabel++) {
-              if (currLabel == label[iLabel]) {
-                count[iLabel]++;
-                if (count[iLabel] > maxCount) {
-                  maxCount = count[iLabel];
-                  maxIdx = iLabel;
-                }
-                currLabel = -1;
-                break;
-              }
-            }
-            if (currLabel >= 0) {
-              label[nLabels++] = currLabel;
-            }
-          }
-          if (maxIdx >= 0)
-            mcLabel = label[maxIdx];
+	    for (Int_t i = 0; i < 3; i++) {
+	      Int_t currLabel = fHits[iHit].fLabel[i];
+	      for (Int_t iLabel = 0; iLabel < nLabels; iLabel++) {
+		if (currLabel == label[iLabel]) {
+		  count[iLabel]++;
+		  currLabel = -1;
+		  break;
+		}
+	      }
+	      if (currLabel >= 0 && nLabels < maxLabels) {
+		label[nLabels] = currLabel;
+		count[nLabels]++;
+		nLabels++;
+	      }
+	    }
+	  }
+	  Int_t index[maxLabels];
+	  TMath::Sort(maxLabels, count, index);
+	  for (Int_t i = 0; i < 3; i++) {
+	    if (count[index[i]] <= 0)
+	      break;
+	    mcLabel[i] = label[index[i]];
+	  }
         }
         new ((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletMCM((UInt_t) fMCMT[cpu], fDetector*2 + fRobPos%2, fRobPos, fMcmPos);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetLabel(mcLabel);

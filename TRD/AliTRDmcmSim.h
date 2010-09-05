@@ -101,7 +101,7 @@ class AliTRDmcmSim : public TObject {
 	  UShort_t  FilterTailNextSample(Int_t adc, UShort_t value);
 
 	  // tracklet calculation
-	  void      AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Short_t ypos, Int_t label);
+	  void      AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Short_t ypos, Int_t label[]);
 	  void      CalcFitreg();
 	  void      TrackletSelection();
 	  void      FitTracklet();
@@ -185,7 +185,7 @@ class AliTRDmcmSim : public TObject {
 	    Int_t fTimebin;                             // timebin of the hit
 	    Int_t fQtot;                                // total charge of the hit
 	    Int_t fYpos;                                // calculated y-position
-	    Int_t fLabel;                               // label (only in MC)
+	    Int_t fLabel[3];                            // up to 3 labels (only in MC)
 	  } fHits[fgkNHitsMC];
 	  Int_t fNHits;                                 // Number of detected hits
 

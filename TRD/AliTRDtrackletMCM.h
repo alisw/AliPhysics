@@ -33,7 +33,9 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   // ----- Getters for MCM-tracklet information -----
   Int_t GetMCM() const { return fMCM; }
   Int_t GetROB() const { return fROB; }
-  Int_t GetLabel() const { return fLabel; }
+  Int_t GetLabel() const { return fLabel[0]; }
+  Int_t GetLabel(const Int_t i) const { return fLabel[i]; }
+  Bool_t HasLabel(const Int_t label) const { return (fLabel[0] == label || fLabel[1] == label || fLabel[2] == label); }
 
   // ----- Getters for offline corresponding values -----
   Bool_t CookPID() { return kFALSE; }
@@ -45,7 +47,8 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Float_t GetY() const { return (GetYbin() * 160e-4); }
   Float_t GetZ() const { return fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowPos( 4 * (fROB / 2) + fMCM / 4) - 
       fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId /12) % 5)->GetRowSize(4 * (fROB / 2) + fMCM / 4) * .5; }
-  Float_t GetLocalZ() const { return GetZ() - fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowPos(8); }
+  Float_t GetLocalZ() const { return GetZ() - 
+      (fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRow0()+fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowEnd())/2.; }
 
   Int_t GetQ0() const { return fQ0; }
   Int_t GetQ1() const { return fQ1; }
@@ -60,7 +63,7 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   void SetHCId(Int_t id) { fHCId = id; }
   void SetMCM(Int_t mcm) { fMCM = mcm; }
   void SetROB(Int_t rob) { fROB = rob; }
-  void SetLabel(Int_t label) { fLabel = label; }
+  void SetLabel(Int_t label[]);
   void SetQ0(Int_t charge) { fQ0 = charge; }
   void SetQ1(Int_t charge) { fQ1 = charge; }
   void SetNHits(Int_t nhits) { fNHits = nhits; }
@@ -95,7 +98,7 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Int_t fNHits0; // no. of contributing clusters in window 0
   Int_t fNHits1; // no. of contributing clusters in window 1
 
-  Int_t fLabel; // label for MC track
+  Int_t fLabel[3]; // up to 3 labels for MC track
   
   Float_t  fSlope;	      // tracklet slope
   Float_t  fOffset;	      // tracklet offset
