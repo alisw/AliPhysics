@@ -230,6 +230,56 @@ AliTRDtrackV1::~AliTRDtrackV1()
 }
 	
 //_______________________________________________________________
+AliTRDtrackV1 &AliTRDtrackV1::operator=(const AliTRDtrackV1 &t)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &t) {
+    ((AliTRDtrackV1 &) t).Copy(*this);
+  }
+
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDtrackV1::Copy(TObject &t) const
+{
+  //
+  // Copy function
+  //
+
+  ((AliTRDtrackV1 &) t).fStatus         = fStatus;
+  ((AliTRDtrackV1 &) t).fESDid          = fESDid;
+  ((AliTRDtrackV1 &) t).fDE             = fDE;
+  ((AliTRDtrackV1 &) t).fkReconstructor = fkReconstructor;
+  ((AliTRDtrackV1 &) t).fBackupTrack    = 0x0;
+  ((AliTRDtrackV1 &) t).fTrackLow       = 0x0;
+  ((AliTRDtrackV1 &) t).fTrackHigh      = 0x0;
+
+  for(Int_t ip = 0; ip < kNplane; ip++) { 
+    ((AliTRDtrackV1 &) t).fTrackletIndex[ip] = fTrackletIndex[ip];
+    ((AliTRDtrackV1 &) t).fTracklet[ip]      = fTracklet[ip];
+  }
+  if (fTrackLow) {
+    ((AliTRDtrackV1 &) t).fTrackLow  = new AliExternalTrackParam(*fTrackLow);
+  }
+  if (fTrackHigh){
+    ((AliTRDtrackV1 &) t).fTrackHigh = new AliExternalTrackParam(*fTrackHigh);
+  }
+ 
+  for (Int_t i = 0; i < 3; i++) {
+    ((AliTRDtrackV1 &) t).fBudget[i] = fBudget[i];
+  }
+  for (Int_t is = 0; is < AliPID::kSPECIES; is++) {
+    ((AliTRDtrackV1 &) t).fPID[is] = fPID[is];
+  }  
+
+}
+
+//_______________________________________________________________
 Bool_t AliTRDtrackV1::CookLabel(Float_t wrong)
 {
   // set MC label for this track

@@ -72,8 +72,9 @@ public:
   AliTRDtrackV1(const AliESDtrack &ref);
   AliTRDtrackV1(const AliTRDtrackV1 &ref);
   virtual ~AliTRDtrackV1();
-  AliTRDtrackV1 &operator=(const AliTRDtrackV1 &ref) { *(new(this) AliTRDtrackV1(ref)); return *this; }
-  
+  AliTRDtrackV1 &operator=(const AliTRDtrackV1 &ref);
+  virtual void   Copy(TObject &ref) const;
+ 
   Bool_t         CookPID();
   Bool_t         CookLabel(Float_t wrong);
   AliTRDtrackV1* GetBackupTrack() const {return fBackupTrack;}
