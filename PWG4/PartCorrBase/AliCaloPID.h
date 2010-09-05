@@ -113,6 +113,9 @@ public:
 //  void SetPHOSPi0WeightFormula(TFormula * const pi0)   {  fPHOSPi0WeightFormula  = pi0; }
   
   //PID bits setters and getters
+  
+  Bool_t IsTrackMatched(const AliVCluster * cluster) const ;  
+  
   void SetDispersionCut(Float_t dcut ) {fDispCut = dcut; }
   Float_t GetDispersionCut() const {return fDispCut ;}   
   

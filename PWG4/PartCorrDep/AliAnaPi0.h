@@ -43,14 +43,13 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   //void Init();
   void InitParameters();
   
+  void FillAcceptanceHistograms();
   //void MakeAnalysisFillAOD() {;} //Not needed
   void MakeAnalysisFillHistograms();
   
   //    void SetBadRunsList(){;} ;     //Set list of runs which can be used for this analysis
   //To be defined in future.
-  
-  //void SetEtalonHisto(TH3D * h);//Provide etalon of binning for histograms
-  
+    
   //Setters for parameters of event buffers
   void SetNCentrBin(Int_t n=5) {fNCentrBin=n ;} //number of bins in centrality 
   void SetNZvertBin(Int_t n=5) {fNZvertBin=n ;} //number of bins for vertex position
@@ -79,6 +78,31 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void SwitchOnOwnMix()    {fDoOwnMix = kTRUE ; }
   void SwitchOffOwnMix()   {fDoOwnMix = kFALSE ; }
 
+  //Cuts for multiple analysis
+  void SwitchOnMultipleCutAnalysis()   {fMultiCutAna = kTRUE;}
+  void SwitchOffMultipleCutAnalysis()  {fMultiCutAna = kFALSE;}
+
+  void SetPtCuts   (Int_t ncuts)       {fNPtCuts    = ncuts;}
+  void SetAsymCuts (Int_t ncuts)       {fNAsymCuts  = ncuts;}
+  void SetCellNCuts(Int_t ncuts)       {fNCellNCuts = ncuts;}
+  void SetPIDBits  (Int_t ncuts)       {fNPIDBits   = ncuts;}
+
+  void SetPtCuts   (Float_t * cuts)    {fPtCuts    = cuts;}
+  void SetAsymCuts (Float_t * cuts)    {fAsymCuts  = cuts;}
+  void SetCellNCuts(Int_t   * cuts)    {fCellNCuts = cuts;}
+  void SetPIDBits  (Int_t   * cuts)    {fPIDBits   = cuts;}
+
+  //Histogram range setters
+  virtual void SetHistoInvPtRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoInvPtBins = n ;
+    fHistoInvPtMax = max ;
+    fHistoInvPtMin = min ;
+  }
+  
+  virtual Int_t   GetHistoInvPtBins()  const { return fHistoInvPtBins; }
+  virtual Float_t GetHistoInvPtMin()   const { return fHistoInvPtMin ; }
+  virtual Float_t GetHistoInvPtMax()   const { return fHistoInvPtMax ; }
+  
 
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
@@ -95,19 +119,42 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Int_t    fNModules ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
   Bool_t   fUseAngleCut ; // Select pairs depending on their opening angle
   TList ** fEventsList ;  //! Containers for photons in stored events
-  
+  Bool_t   fMultiCutAna;  // Do analysis with several or fixed cut
+  Int_t    fNPtCuts;      // number of pt cuts
+  Float_t* fPtCuts;       //[fNPtCuts] array with different pt cuts
+  Int_t    fNAsymCuts;    // number of assymmetry cuts
+  Float_t* fAsymCuts;     //[fNAsymCuts] array with different assymetry cuts
+  Int_t    fNCellNCuts;   // number of cuts with number of cells in cluster
+  Int_t*   fCellNCuts;    //[fNCellNCuts] array with different cell number cluster cuts
+  Int_t    fNPIDBits;     // number of PID bits to check in multi cuts option
+  Int_t*   fPIDBits;      //[fNPIDBits] array with different pid bits
+
   //Histograms
-  
-  //TH3D * fhEtalon ; //Etalon histo, all distributions will have same binning as this one
+    
+  Int_t    fHistoInvPtBins   ;  // Number of bins in inverse pt axis
+  Float_t  fHistoInvPtMax    ;  // Maximum value of inverse pt histogram range
+  Float_t  fHistoInvPtMin    ;  // Minimum value of inverse pt histogram range  
   
   TH3D ** fhReMod ;  //!REAL two-photon invariant mass distribution for different calorimeter modules.
 	
-  TH3D ** fhRe1 ;  //!REAL two-photon invariant mass distribution for different centralities and PID 
+  TH3D ** fhRe1 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID 
   TH3D ** fhMi1 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
-  TH3D ** fhRe2 ;  //!REAL two-photon invariant mass distribution for different centralities and PID 
+  TH3D ** fhRe2 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID 
   TH3D ** fhMi2 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
-  TH3D ** fhRe3 ;  //!REAL two-photon invariant mass distribution for different centralities and PID 
+  TH3D ** fhRe3 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID 
   TH3D ** fhMi3 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID
+  
+  TH3D ** fhReInvPt1 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID, inverse pT
+  TH3D ** fhMiInvPt1 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID, inverse pT
+  TH3D ** fhReInvPt2 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID, inverse pT 
+  TH3D ** fhMiInvPt2 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID, inverse pT
+  TH3D ** fhReInvPt3 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID, inverse pT
+  TH3D ** fhMiInvPt3 ;  //!MIXED two-photon invariant mass distribution for different centralities and PID, inverse pT
+  
+  //Multiple cuts
+  TH2D ** fhRePtNCellAsymCuts ; //!REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry
+  TH2D ** fhRePIDBits ;         //!REAL two-photon invariant mass distribution for different PID bits
+
   TH3D * fhEvents; //!Number of events per centrality, RP, zbin
 
   TH2D * fhRealOpeningAngle ;    //! Opening angle of pair versus pair energy
@@ -123,7 +170,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D * fhPrimOpeningAngle ;    //! Opening angle of pair versus pair energy, primaries
   TH2D * fhPrimCosOpeningAngle ; //! Cosinus of opening angle of pair version pair energy, primaries
 	
-  ClassDef(AliAnaPi0,9)
+  ClassDef(AliAnaPi0,10)
 } ;
 
 

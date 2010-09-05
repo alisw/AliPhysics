@@ -86,19 +86,20 @@ TString AliIsolationCut::GetICParametersList()
   //Put data member values in string to keep in output container
   
   TString parList ; //this will be list of parameters used for this analysis.
-  char onePar[255] ;
+  const Int_t buffersize = 255;
+  char onePar[buffersize] ;
   
-  sprintf(onePar,"--- AliIsolationCut ---\n") ;
+  snprintf(onePar,buffersize,"--- AliIsolationCut ---\n") ;
   parList+=onePar ;	
-  sprintf(onePar,"fConeSize: (isolation cone size) %1.2f\n",fConeSize) ;
+  snprintf(onePar,buffersize,"fConeSize: (isolation cone size) %1.2f\n",fConeSize) ;
   parList+=onePar ;
-  sprintf(onePar,"fPtThreshold =%1.2f (isolation pt threshold) \n",fPtThreshold) ;
+  snprintf(onePar,buffersize,"fPtThreshold =%1.2f (isolation pt threshold) \n",fPtThreshold) ;
   parList+=onePar ;
-  sprintf(onePar,"fPtFraction=%1.2f (isolation pt threshold fraction ) \n",fPtFraction) ;
+  snprintf(onePar,buffersize,"fPtFraction=%1.2f (isolation pt threshold fraction ) \n",fPtFraction) ;
   parList+=onePar ;
-  sprintf(onePar,"fICMethod=%d (isolation cut case) \n",fICMethod) ;
+  snprintf(onePar,buffersize,"fICMethod=%d (isolation cut case) \n",fICMethod) ;
   parList+=onePar ;
-  sprintf(onePar,"fPartInCone=%d \n",fPartInCone) ;
+  snprintf(onePar,buffersize,"fPartInCone=%d \n",fPartInCone) ;
   parList+=onePar ;
 
   return parList; 
@@ -134,7 +135,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   n = 0 ;
   coneptsum = 0.; 
   isolated = kFALSE;
-
+  
   //Initialize the array with refrences
   TObjArray * refclusters = 0x0;
   TObjArray * reftracks   = 0x0;
@@ -158,19 +159,19 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
       
       if(rad < fConeSize){
-	if(fillAOD) {
-	  ntrackrefs++;
-	  if(ntrackrefs == 1){
-	    reftracks = new TObjArray(0);
-	    reftracks->SetName(aodArrayRefName+"Tracks");
-	    reftracks->SetOwner(kFALSE);
-	  }
-	  reftracks->Add(track);
-	}
-	//printf("charged in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
-	coneptsum+=pt;
-	if(pt > fPtThreshold ) n++;
-	if(pt > fPtFraction*ptC ) nfrac++;  
+        if(fillAOD) {
+          ntrackrefs++;
+          if(ntrackrefs == 1){
+            reftracks = new TObjArray(0);
+            reftracks->SetName(aodArrayRefName+"Tracks");
+            reftracks->SetOwner(kFALSE);
+          }
+          reftracks->Add(track);
+        }
+        //printf("charged in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
+        coneptsum+=pt;
+        if(pt > fPtThreshold ) n++;
+        if(pt > fPtFraction*ptC ) nfrac++;  
       }
     }// charged particle loop
   }//Tracks
@@ -178,14 +179,14 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   //Check neutral particles in cone.  
   if(plNe && (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged)){
 	  
-	//Get vertex for photon momentum calculation
-	Double_t vertex[]  = {0,0,0} ; //vertex ;
-	Double_t vertex2[] = {0,0,0} ; //vertex second AOD input ;
-	if(!reader->GetDataType()== AliCaloTrackReader::kMC) 
-	{
-		reader->GetVertex(vertex);
-		//if(reader->GetSecondInputAODTree()) reader->GetSecondInputAODVertex(vertex2);
-	}
+    //Get vertex for photon momentum calculation
+    Double_t vertex[]  = {0,0,0} ; //vertex ;
+    Double_t vertex2[] = {0,0,0} ; //vertex second AOD input ;
+    if(reader->GetDataType()!= AliCaloTrackReader::kMC) 
+    {
+      reader->GetVertex(vertex);
+      //if(reader->GetSecondInputAODTree()) reader->GetSecondInputAODVertex(vertex2);
+    }
     TLorentzVector mom ;
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ ){
       AliVCluster * calo = (AliVCluster *)(plNe->At(ipr)) ;
@@ -196,8 +197,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       if(calo->GetNTracksMatched() > 0) continue ; 
       //Input from second AOD?
       Int_t input = 0;
-//      if     (pCandidate->GetDetector() == "EMCAL" && reader->GetAODEMCALNormalInputEntries() <= ipr) input = 1 ;
-//      else if(pCandidate->GetDetector() == "PHOS"  && reader->GetAODPHOSNormalInputEntries()  <= ipr) input = 1;
+      //      if     (pCandidate->GetDetector() == "EMCAL" && reader->GetAODEMCALNormalInputEntries() <= ipr) input = 1 ;
+      //      else if(pCandidate->GetDetector() == "PHOS"  && reader->GetAODPHOSNormalInputEntries()  <= ipr) input = 1;
       
       //Get Momentum vector, 
       if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
@@ -211,19 +212,19 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
       rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
       if(rad < fConeSize){
-	if(fillAOD) {
-	  nclusterrefs++;
-	  if(nclusterrefs==1){
-	    refclusters = new TObjArray(0);
-	    refclusters->SetName(aodArrayRefName+"Clusters");
-	    refclusters->SetOwner(kFALSE);
-	  }
-	  refclusters->Add(calo);
-	}
-	//printf("neutral in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
-	coneptsum+=pt;
-	if(pt > fPtThreshold ) n++;
-	if(pt > fPtFraction*ptC ) nfrac++;
+        if(fillAOD) {
+          nclusterrefs++;
+          if(nclusterrefs==1){
+            refclusters = new TObjArray(0);
+            refclusters->SetName(aodArrayRefName+"Clusters");
+            refclusters->SetOwner(kFALSE);
+          }
+          refclusters->Add(calo);
+        }
+        //printf("neutral in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
+        coneptsum+=pt;
+        if(pt > fPtThreshold ) n++;
+        if(pt > fPtFraction*ptC ) nfrac++;
       }//in cone
     }// neutral particle loop
   }//neutrals
@@ -235,7 +236,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
     if(refclusters)	pCandidate->AddObjArray(refclusters);
     if(reftracks)	pCandidate->AddObjArray(reftracks);
   }
-
+  
   //Check isolation, depending on method.
   if( fICMethod == kPtThresIC){
     if(n==0) isolated = kTRUE ;
@@ -251,10 +252,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
     if(coneptsum < fPtFraction*ptC)
       isolated  =  kTRUE ;
   }
-
+  
   //if(refclusters) delete refclusters;
   //if(reftracks)   delete reftracks;
-
+  
 }
 
 //__________________________________________________________________

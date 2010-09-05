@@ -217,10 +217,10 @@ public:
   virtual Float_t GetHistoAsymmetryMax()   const { return fHistoAsymMax ; }	
   
   virtual AliMixedEvent * GetMixedEvent() ; 
-  Int_t GetNMixedEvent() const { return fNMixedEvent ; } 
+  Int_t       GetNMixedEvent() const { return fNMixedEvent ; } 
   Double_t *  GetVertex(Int_t i) const { return fVertex[i] ; } 
 
-	virtual Bool_t IsTrackMatched(AliVCluster * cluster) const ; 
+	virtual Bool_t IsTrackMatched(const AliVCluster * cluster) const { return fCaloPID->IsTrackMatched(cluster); } 
   
 private:    
   
