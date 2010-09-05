@@ -53,7 +53,7 @@ fCrystalBallParam(kFALSE)
   SetMassWndLow(0.5);
   for(Int_t iPar = 0; iPar < 16; iPar++) fParameters[iPar] = 0.;
   fParameters[9] = 1.;fParameters[11] = 1.;fParameters[12] = 1.;
-  for(Int_t index=0; index<6; index++) fResolutionConstants[index] = 0.;
+  for(Int_t index=0; index<5; index++) fResolutionConstants[index] = 0.;
   AliInfo("Instance of AliBtoJPSItoEleCDFfitFCN-class created");
 }
 //_________________________________________________________________________________________________
@@ -79,7 +79,7 @@ fCrystalBallParam(source.fCrystalBallParam)
   // Copy constructor
   //
   for(Int_t iPar = 0; iPar < 16; iPar++) fParameters[iPar] = source.fParameters[iPar];
-  for(Int_t index=0; index<6; index++) fResolutionConstants[index] = source.fResolutionConstants[index];
+  for(Int_t index=0; index<5; index++) fResolutionConstants[index] = source.fResolutionConstants[index];
 }
 //_________________________________________________________________________________________________
 AliBtoJPSItoEleCDFfitFCN& AliBtoJPSItoEleCDFfitFCN::operator=(const AliBtoJPSItoEleCDFfitFCN& source) 
@@ -103,7 +103,7 @@ AliBtoJPSItoEleCDFfitFCN& AliBtoJPSItoEleCDFfitFCN::operator=(const AliBtoJPSIto
   fCrystalBallParam = source.fCrystalBallParam;
 
   for(Int_t iPar = 0; iPar < 16; iPar++) fParameters[iPar] = source.fParameters[iPar];
-  for(Int_t index=0; index<6; index++) fResolutionConstants[index] = source.fResolutionConstants[index];
+  for(Int_t index=0; index<5; index++) fResolutionConstants[index] = source.fResolutionConstants[index];
 
   return *this;
 }  
@@ -116,7 +116,7 @@ AliBtoJPSItoEleCDFfitFCN::~AliBtoJPSItoEleCDFfitFCN()
   
   delete fhCsiMC;
   for(Int_t iPar = 0; iPar < 16; iPar++) fParameters[iPar] = 0.;
-  for(Int_t index=0; index<6; index++) fResolutionConstants[index] = 0.;
+  for(Int_t index=0; index<5; index++) fResolutionConstants[index] = 0.;
 }
 //_________________________________________________________________________________________________
 Double_t AliBtoJPSItoEleCDFfitFCN::EvaluateLikelihood(const Double_t* pseudoproperdecaytime,
