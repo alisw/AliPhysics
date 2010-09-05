@@ -9,6 +9,7 @@
  * Usage:
  * <pre>
  *   aliroot -q compare-HLT-offline-grid.C'("000115322","/alice/data/2010/LHC10b","ESDcomparison","output","full","global")' 2>&1 | tee log
+ * </pre>
  * - run number
  * - GRID input directory, where you define in which LHC period the run number belongs to
  * - GRID working directory, where the .xml, .jdl and the task are uploaded (you have to create it yourself in advance)
