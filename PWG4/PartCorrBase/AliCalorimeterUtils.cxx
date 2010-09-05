@@ -57,28 +57,6 @@ ClassImp(AliCalorimeterUtils)
   //Initialize parameters
   InitParameters();
 }
-/*
-//____________________________________________________________________________
-AliCalorimeterUtils::AliCalorimeterUtils(const AliCalorimeterUtils & calo) :   
-  TObject(calo), fDebug(calo.fDebug),
-  fEMCALGeoName(calo.fEMCALGeoName), fPHOSGeoName(calo.fPHOSGeoName),
-  fEMCALGeo(new AliEMCALGeoUtils(*calo.fEMCALGeo)), 
-  fPHOSGeo(new AliPHOSGeoUtils(*calo.fPHOSGeo)),
-  fEMCALGeoMatrixSet(calo.fEMCALGeoMatrixSet), 
-  fPHOSGeoMatrixSet(calo.fPHOSGeoMatrixSet),
-  fRemoveBadChannels(calo.fRemoveBadChannels),
-  fEMCALBadChannelMap(new TObjArray(*calo.fEMCALBadChannelMap)),
-  fPHOSBadChannelMap(new TObjArray(*calo.fPHOSBadChannelMap)),
-  fNCellsFromEMCALBorder(calo.fNCellsFromEMCALBorder),
-  fNCellsFromPHOSBorder(calo.fNCellsFromPHOSBorder), 
-  fNoEMCALBorderAtEta0(calo.fNoEMCALBorderAtEta0), 
-  fRecalibration(calo.fRecalibration),
-  fEMCALRecalibrationFactors(new TObjArray(*calo.fEMCALRecalibrationFactors)), 
-  fPHOSRecalibrationFactors(new TObjArray(*calo.fEMCALRecalibrationFactors))
-{
-  // cpy ctor  
-}
-*/
 
 //_________________________________
 AliCalorimeterUtils::~AliCalorimeterUtils() {
@@ -165,7 +143,7 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
   }
 	
 	if(fDebug > 1)
-		printf("AliCalorimeterUtils::CheckCellFiducialRegion(AOD) - Cluster Max AbsId %d, Cell Energy %2.2f, Cluster Energy %2.2f\n", 
+		printf("AliCalorimeterUtils::CheckCellFiducialRegion() - Cluster Max AbsId %d, Cell Energy %2.2f, Cluster Energy %2.2f\n", 
 		   absIdMax, ampMax, cluster->E());
 	
 	if(absIdMax==-1) return kFALSE;
@@ -179,7 +157,10 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
 		Int_t iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1, iSM = -1; 
 		fEMCALGeo->GetCellIndex(absIdMax,iSM,iTower,iIphi,iIeta); 
 		fEMCALGeo->GetCellPhiEtaIndexInSModule(iSM,iTower,iIphi, iIeta,iphi,ieta);
-		
+		if(iSM < 0 || iphi < 0 || ieta < 0 ) {
+      Fatal("CheckCellFidutialRegion","Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",iSM,ieta,iphi);
+    }
+      
 		//Check rows/phi
 		if(iSM < 10){
 			if(iphi >= fNCellsFromEMCALBorder && iphi < 24-fNCellsFromEMCALBorder) okrow =kTRUE; 
@@ -202,7 +183,7 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
 		}//eta 0 not checked
 		if(fDebug > 1)
 		{
-			printf("AliCalorimeterUtils::CheckCellFiducialRegion(AOD) - EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d ?",
+			printf("AliCalorimeterUtils::CheckCellFiducialRegion() - EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d ?",
 				   fNCellsFromEMCALBorder, ieta, iphi, iSM);
 			if (okcol && okrow ) printf(" YES \n");
 			else  printf(" NO: column ok? %d, row ok? %d \n",okcol,okrow);
@@ -219,7 +200,7 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
 		if(icol >= fNCellsFromPHOSBorder && icol < 56-fNCellsFromPHOSBorder) okcol =kTRUE; 
 		if(fDebug > 1)
 		{
-			printf("AliCalorimeterUtils::CheckCellFiducialRegion(AOD) - PHOS Cluster in %d cells fiducial volume: icol %d, irow %d, Module %d?",
+			printf("AliCalorimeterUtils::CheckCellFiducialRegion() - PHOS Cluster in %d cells fiducial volume: icol %d, irow %d, Module %d?",
 				   fNCellsFromPHOSBorder, icol, irow, relId[0]-1);
 			if (okcol && okrow ) printf(" YES \n");
 			else  printf(" NO: column ok? %d, row ok? %d \n",okcol,okrow);
@@ -230,94 +211,6 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
 	else                return kFALSE;
 	
 }	
-
-//_______________________________________________________________
-//Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliESDCaloCluster* cluster, AliESDCaloCells* cells) const {
-//	// Given the list of AbsId of the cluster, get the maximum cell and 
-//	// check if there are fNCellsFromBorder from the calorimeter border
-//	
-//	//If the distance to the border is 0 or negative just exit accept all clusters
-//	if(cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 ) return kTRUE;
-//	if(cells->GetType()==AliVCaloCells::kPHOSCell  && fNCellsFromPHOSBorder  <= 0 ) return kTRUE;
-//	
-//	//Find cell with maximum amplitude
-//	Int_t absIdMax	= -1;
-//	Float_t ampMax  = -1;
-//	for(Int_t i = 0; i < cluster->GetNCells() ; i++){
-//		Int_t absId = cluster->GetCellAbsId(i) ;
-//		Float_t amp	= cells->GetCellAmplitude(absId);
-//		if(amp > ampMax){
-//			ampMax   = amp;
-//			absIdMax = absId;
-//		}
-//	}
-//	
-//	if(fDebug > 1)
-//		printf("AliCalorimeterUtils::CheckCellFiducialRegion(ESD) - Cluster Max AbsId %d, Cell Energy %2.2f, Cluster Energy %2.2f\n", 
-//						 absIdMax, ampMax, cluster->E());
-//	if(absIdMax==-1) return kFALSE;
-//	
-//	//Check if the cell is close to the borders:
-//	Bool_t okrow = kFALSE;
-//	Bool_t okcol = kFALSE;
-//	
-//	if(cells->GetType()==AliESDCaloCells::kEMCALCell){
-//		
-//		Int_t iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1, iSM = -1; 
-//		fEMCALGeo->GetCellIndex(absIdMax,iSM,iTower,iIphi,iIeta); 
-//		fEMCALGeo->GetCellPhiEtaIndexInSModule(iSM,iTower,iIphi, iIeta,iphi,ieta);
-//		
-//		//Check rows/phi
-//		if(iSM < 10){
-//			if(iphi >= fNCellsFromEMCALBorder && iphi < 24-fNCellsFromEMCALBorder) okrow =kTRUE; 
-//	    }
-//		else{
-//			if(iphi >= fNCellsFromEMCALBorder && iphi < 12-fNCellsFromEMCALBorder) okrow =kTRUE; 
-//		}
-//		
-//		//Check collumns/eta
-//		if(!fNoEMCALBorderAtEta0){
-//			if(ieta  > fNCellsFromEMCALBorder && ieta < 48-fNCellsFromEMCALBorder) okcol =kTRUE; 
-//		}
-//		else{
-//			if(iSM%2==0){
-//				if(ieta >= fNCellsFromEMCALBorder)     okcol = kTRUE;	
-//			}
-//			else {
-//				if(ieta <  48-fNCellsFromEMCALBorder)  okcol = kTRUE;	
-//			}
-//		}//eta 0 not checked
-//		if(fDebug > 1)
-//		{
-//			printf("AliCalorimeterUtils::CheckCellFiducialRegion(ESD) - EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d ?",
-//				   fNCellsFromEMCALBorder, ieta, iphi, iSM);
-//			if (okcol && okrow ) printf(" YES \n");
-//			else  printf(" NO: column ok? %d, row ok? %d \n",okcol,okrow);
-//		}
-//	}//EMCAL
-//	else if(cells->GetType()==AliVCaloCells::kPHOSCell){
-//		Int_t relId[4];
-//		Int_t irow = -1, icol = -1;
-//		fPHOSGeo->AbsToRelNumbering(absIdMax,relId);
-//		irow = relId[2];
-//		icol = relId[3];
-//		//imod = relId[0]-1;
-//		if(irow >= fNCellsFromPHOSBorder && irow < 64-fNCellsFromPHOSBorder) okrow =kTRUE; 
-//		if(icol >= fNCellsFromPHOSBorder && icol < 56-fNCellsFromPHOSBorder) okcol =kTRUE; 
-//		if(fDebug > 1)
-//		{
-//			printf("AliCalorimeterUtils::CheckCellFiducialRegion(ESD) - PHOS Cluster in %d cells fiducial volume: icol %d, irow %d, Module %d ?",
-//				   fNCellsFromPHOSBorder, icol, irow,relId[0]-1);
-//			if (okcol && okrow ) printf(" YES \n");
-//			else  printf(" NO: column ok? %d, row ok? %d \n",okcol,okrow);
-//		}
-//	}//PHOS
-//	
-//	if (okcol && okrow) return kTRUE; 
-//	else                return kFALSE;
-//	
-//}	
-//
 
 //_________________________________________________________________________________________________________
 Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells){
@@ -339,7 +232,12 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
 			fEMCALGeo->GetCellIndex(cellList[iCell],imod,iTower,iIphi,iIeta); 
 			if(fEMCALBadChannelMap->GetEntries() <= imod) continue;
-			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);			
+			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);		
+      
+      if(imod < 0 || irow < 0 || icol < 0 ) {
+        Fatal("ClusterContainsBadChannel","Negative value for super module: %d, or cell icol: %d, or cell irow: %d, check EMCAL geometry name\n",imod,icol,irow);
+      }
+      
 			if(GetEMCALChannelStatus(imod, icol, irow))return kTRUE;
 		}
 		else if(calorimeter=="PHOS"){
@@ -385,8 +283,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
         primary = stack->Particle(particle->GetCaloLabel(0));
       }
       else {
-        printf("AliCalorimeterUtils::GetModuleNumber(AOD) - Stack not available, stop!");
-        abort();
+        Fatal("GetModuleNumber(PWG4AOD)", "Stack not available, stop!");
       }
         
       fPHOSGeo->ImpactOnEmc(primary,mod,z,x) ;
@@ -405,7 +302,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
 //____________________________________________________________________________________________________________________________________________________
 Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 {
-	//Get the EMCAL/PHOS module number that corresponds to this cluster, input are AODs
+	//Get the EMCAL/PHOS module number that corresponds to this cluster
 	TLorentzVector lv;
 	Double_t v[]={0.,0.,0.}; //not necessary to pass the real vertex.
 	cluster->GetMomentum(lv,v);
@@ -415,7 +312,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 	if(cluster->IsEMCAL()){
 		fEMCALGeo->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
 		if(fDebug > 2) 
-		  printf("AliCalorimeterUtils::GetModuleNumber(ESD) - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
+		  printf("AliCalorimeterUtils::GetModuleNumber() - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
 			 lv.Eta(), phi*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
@@ -424,7 +321,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 		if ( cluster->GetNCells() > 0) {
 			absId = cluster->GetCellAbsId(0);
 			if(fDebug > 2) 
-				printf("AliCalorimeterUtils::GetModuleNumber(AOD) - PHOS: cluster eta %f, phi %f, e %f, absId %d\n",
+				printf("AliCalorimeterUtils::GetModuleNumber() - PHOS: cluster eta %f, phi %f, e %f, absId %d\n",
 					   lv.Eta(), phi*TMath::RadToDeg(), lv.E(), absId);
 		}
 		else return -1;
@@ -432,7 +329,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 		if ( absId >= 0) {
 			fPHOSGeo->AbsToRelNumbering(absId,relId);
 			if(fDebug > 2) 
-			  printf("AliCalorimeterUtils::GetModuleNumber(AOD) - PHOS: Module %d\n",relId[0]-1);
+			  printf("AliCalorimeterUtils::GetModuleNumber() - PHOS: Module %d\n",relId[0]-1);
 			return relId[0]-1;
 		}
 		else return -1;
@@ -451,7 +348,10 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
 			fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
 			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
-			
+      if(imod < 0 || irow < 0 || icol < 0 ) {
+        Fatal("GetModuleNumberCellIndexes()","Negative value for super module: %d, or cell icol: %d, or cell irow: %d, check EMCAL geometry name\n",imod,icol,irow);
+      }
+      
 			//RCU0
 			if (0<=irow&&irow<8) iRCU=0; // first cable row
 			else if (8<=irow&&irow<16 && 0<=icol&&icol<24) iRCU=0; // first half; 
@@ -463,8 +363,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 			
 			if (imod%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
 			if (iRCU<0) {
-				printf("AliCalorimeterUtils::GetModuleNumberCellIndexes() - Wrong EMCAL RCU number = %d\n", iRCU);
-				abort();
+				Fatal("GetModuleNumberCellIndexes()","Wrong EMCAL RCU number = %d\n", iRCU);
 			}			
 			
 			return imod ;
@@ -478,8 +377,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 			iRCU= (Int_t)(relId[2]-1)/16 ;
 			//Int_t iBranch= (Int_t)(relid[3]-1)/28 ; //0 to 1
 			if (iRCU >= 4) {
-				printf("AliCalorimeterUtils::GetModuleNumberCellIndexes() - Wrong PHOS RCU number = %d\n", iRCU);
-				abort();
+				Fatal("GetModuleNumberCellIndexes()","Wrong PHOS RCU number = %d\n", iRCU);
 			}			
 			return imod;
 		}//PHOS	
@@ -663,11 +561,9 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
 //________________________________________________________________
 Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, AliVCaloCells * cells){
 	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
-	// ESD case
 
 	if(!cells) {
-		printf("AliCalorimeterUtils::RecalibrateClusterEnergy(ESD) - Cells pointer does not exist, stop!");
-		abort();
+		Fatal("RecalibrateClusterEnergy()","Cells pointer does not exist!");
 	}
 	//Get the cluster number of cells and list of absId, check what kind of cluster do we have.
 	UShort_t * index    = cluster->GetCellsAbsId() ;
@@ -690,14 +586,14 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, Ali
 		if(cluster->IsPHOS()) factor = GetPHOSChannelRecalibrationFactor (module,icol,irow);
 		else                  factor = GetEMCALChannelRecalibrationFactor(module,icol,irow);
 		if(fDebug>2)
-			printf("AliCalorimeterUtils::RecalibrateClusterEnergy(ESD) - recalibrate cell: %s, module %d, col %d, row %d, cell fraction %f, recalibration factor %f, cell energy %f\n", 
+			printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - recalibrate cell: %s, module %d, col %d, row %d, cell fraction %f, recalibration factor %f, cell energy %f\n", 
 				calo.Data(),module,icol,irow,frac,factor,cells->GetCellAmplitude(absId));
 		
 		energy += cells->GetCellAmplitude(absId)*factor*frac;
 	}
 	
 	if(fDebug>1)
-		printf("AliCalorimeterUtils::RecalibrateClusterEnergy(ESD) - Energy before %f, after %f\n",cluster->E(),energy);
+		printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - Energy before %f, after %f\n",cluster->E(),energy);
 	
 	return energy;
 }
