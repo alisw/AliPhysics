@@ -177,7 +177,7 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
   
   //Defining tag objects
   AliRunTag   *tag     = new AliRunTag;
-  AliEventTag *evTag   = 0x0;
+  //  AliEventTag *evTag   = 0x0;
   AliFileTag  *flTag   = 0x0;
 
   fChain->SetBranchAddress("AliTAG",&tag);
@@ -266,7 +266,7 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut,
   
   //Defining tag objects 	 
   AliRunTag   *tag   = new AliRunTag; 	 
-  AliEventTag *evTag = 0x0;
+  //  AliEventTag *evTag = 0x0;
   fChain->SetBranchAddress("AliTAG",&tag); 	 
   
   TString guid; 	 
@@ -297,7 +297,7 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut,
       if(fLHCFormula->EvalInstance(iTagFiles) == 1) { 	 
 	if(fDetectorFormula->EvalInstance(iTagFiles) == 1) {
           localList->Reset(); 	 
-	  Int_t iEvents = fEventFormula->GetNdata(); 	 
+	  //	  Int_t iEvents = fEventFormula->GetNdata(); 	 
 	  // *** FIXME ***
 
 // 	  const TClonesArray *tagList = tag->GetEventTags(); 	 
@@ -376,7 +376,7 @@ AliTagAnalysis::CreateXMLCollection(const char* name,
 
   Int_t iTagFiles = 0;
   
-  AliEventTag *evTag = 0x0;
+  //  AliEventTag *evTag = 0x0;
   AliFileTag  *flTag = 0x0;
 
   //  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetListOfFiles()->GetEntries(); ++iTagFiles) 
@@ -503,7 +503,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
 
   //Defining tag objects
   AliRunTag *tag     = new AliRunTag;
-  AliEventTag *evTag = 0x0;
+  //  AliEventTag *evTag = 0x0;
   fChain->SetBranchAddress("AliTAG",&tag);
 
   TTreeFormula *fRunFormula = new TTreeFormula("fRun",fRunCut,fChain);
@@ -530,7 +530,7 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
     if(fRunFormula->EvalInstance(iTagFiles) == 1) {
       if(fLHCFormula->EvalInstance(iTagFiles) == 1) { 	 
 	if(fDetectorFormula->EvalInstance(iTagFiles) == 1) { 	 
-	  Int_t iEvents = fEventFormula->GetNdata();
+	  //	  Int_t iEvents = fEventFormula->GetNdata();
 	  // *** FIXME ***
 
 

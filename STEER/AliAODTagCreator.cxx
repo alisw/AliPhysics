@@ -297,7 +297,7 @@ void AliAODTagCreator::CreateTags(const char* type)
     Int_t nEvents = fChain->GetEntries();
     Int_t ntags    = 0;
     Int_t tagentry = 0;
-    const TClonesArray *evTagList = 0;
+    //    const TClonesArray *evTagList = 0;
     TString foldguid = "";
 
     for (Int_t iEventNumber = 0; iEventNumber < nEvents; iEventNumber++) {
