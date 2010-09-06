@@ -35,6 +35,13 @@
   // results are stored at the ocdbPath - local or alien ...
   // default storage ""- data stored at current working directory 
  
+  e.g.
+  AliTPCPreprocessorOffline process;
+  process.CalibTimeGain("CalibObjects.root",114000,121040,0);
+  TFile oo("OCDB/TPC/Calib/TimeGain/Run114000_121040_v0_s0.root")
+  TObjArray * arr = AliCDBEntry->GetObject()
+  arr->At(4)->Draw("alp")
+
 */
 #include "Riostream.h"
 #include <fstream>
@@ -88,7 +95,8 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fFitCosmic(0),               // fit of dependence - Plateu
   fGainArray(new TObjArray),               // array to be stored in the OCDB
   fGainMIP(0),          // calibration component for MIP
-  fGainCosmic(0)       // calibration component for cosmic
+  fGainCosmic(0),       // calibration component for cosmic
+  fSwitchOnValidation(kFALSE) // flag to switch on validation of OCDB parameters
 {
   //
   // default constructor
@@ -157,7 +165,14 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
   //
   // 1. Initialization and run range setting
   TFile fcalib(file);
-  fTimeDrift=(AliTPCcalibTime*)fcalib.Get("calibTime");
+  TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
+  if (array){
+    fTimeDrift = (AliTPCcalibTime *)array->FindObject("calibTime");
+  } else {
+    fTimeDrift = (AliTPCcalibTime*)fcalib.Get("calibTime");
+  }
+  if(!fTimeDrift) return;
+
   startRun=ustartRun;
   endRun=ustartRun; 
   TObjArray *hisArray =fTimeDrift->GetHistoDrift();  
@@ -180,12 +195,20 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
   // 3. Append QA plots
   //
   MakeDefaultPlots(fVdriftArray,fVdriftArray);
+
+  //
+  // 4. validate OCDB entries
+  //
+  if(fSwitchOnValidation==kTRUE && ValidateTimeDrift()==kFALSE) { 
+    Printf("TPC time drift OCDB parameters out of range!");
+    return;
+  }
+
   //
   //
-  // 4. update of OCDB
+  // 5. update of OCDB
   //
   //
-  
   UpdateOCDBDrift(ustartRun,uendRun,ocdbStorage);
 }
 
@@ -205,7 +228,48 @@ void AliTPCPreprocessorOffline::UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun,
   gStorage->Put(fVdriftArray, (*id1), metaData);
 }
 
+Bool_t AliTPCPreprocessorOffline::ValidateTimeGain(Double_t minGain, Double_t maxGain)
+{
+  //
+  // Validate time gain corrections 
+  //
+  Printf("ValidateTimeGain..." );
 
+  TGraphErrors *gr = (TGraphErrors*)fGainArray->FindObject("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");
+  if(!gr) return kFALSE;
+  if(gr->GetN()<1) return kFALSE;
+
+  // check whether gain in the range
+  for(Int_t iPoint=0; iPoint<gr->GetN(); iPoint++) 
+  {
+    if(gr->GetY()[iPoint] < minGain || gr->GetY()[iPoint] > maxGain)  
+      return kFALSE;
+  }
+
+return kTRUE;
+}
+
+
+Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift(Double_t maxVDriftCorr)
+{
+  //
+  // Validate time drift velocity corrections 
+  //
+  Printf("ValidateTimeDrift..." );
+
+  TGraphErrors* gr = (TGraphErrors*)fVdriftArray->FindObject("ALIGN_ITSB_TPC_DRIFTVD");
+  if(!gr) return kFALSE;
+  if(gr->GetN()<1) return kFALSE;
+
+  // check whether drift velocity corrections in the range
+  for(Int_t iPoint = 0; iPoint<gr->GetN(); iPoint++) 
+  {
+    if(TMath::Abs(gr->GetY()[iPoint]) > maxVDriftCorr)  
+      return kFALSE;
+  }
+
+return kTRUE;
+}
 
 void AliTPCPreprocessorOffline::UpdateDriftParam(AliTPCParam *param, TObjArray *const arr, Int_t lstartRun){
   //
@@ -512,7 +576,7 @@ TGraphErrors * AliTPCPreprocessorOffline::MakeGraphFilter0(THnSparse *hisN, Int_
   hisN->GetAxis(itime)->SetRange(firstBinA,lastBinA);
   hisN->GetAxis(ival)->SetRange(firstBinV,lastBinV);
   Int_t entries=0;
-  for (Int_t ibin=firstBinA; ibin<lastBinA; ibin++){
+  for (Int_t ibin=firstBinA; ibin<=lastBinA; ibin++){
     Double_t cont = hisT->GetBinContent(ibin);
     if (cont<minEntries) continue;
     entries++;
@@ -523,10 +587,16 @@ TGraphErrors * AliTPCPreprocessorOffline::MakeGraphFilter0(THnSparse *hisN, Int_
   TVectorD vecMean1(entries);
   TVectorD vecRMS1(entries);
   entries=0;
-  {for (Int_t ibin=firstBinA; ibin<=lastBinA; ibin++){
+  for (Int_t ibin=firstBinA; ibin<=lastBinA; ibin++){
       Double_t cont = hisT->GetBinContent(ibin);
       if (cont<minEntries) continue;
-      hisN->GetAxis(itime)->SetRange(ibin-1,ibin+1);
+      //hisN->GetAxis(itime)->SetRange(ibin-1,ibin+1);
+      Int_t minBin = ibin-1;
+      Int_t maxBin = ibin+1;
+      if(minBin <= 0) minBin = 1;
+      if(maxBin >= hisN->GetAxis(itime)->GetNbins()) maxBin = hisN->GetAxis(itime)->GetNbins()-1;
+      hisN->GetAxis(itime)->SetRange(minBin,maxBin);
+      
       Double_t time = hisT->GetBinCenter(ibin);
       TH1 * his = hisN->Projection(ival);
       Double_t nentries0= his->GetBinContent(his->FindBin(0));
@@ -540,7 +610,7 @@ TGraphErrors * AliTPCPreprocessorOffline::MakeGraphFilter0(THnSparse *hisN, Int_
       vecRMS1[entries] =his->GetRMSError();
       delete his;  
       entries++;
-    }}
+  }
   delete hisT;
   delete hisV;
   TGraphErrors * graph =  new TGraphErrors(entries,vecTime.GetMatrixArray(), vecMean0.GetMatrixArray(),					   0, vecMean1.GetMatrixArray());
@@ -591,7 +661,7 @@ void AliTPCPreprocessorOffline::SetPadStyle(TPad *pad, Float_t mx0, Float_t mx1,
 }
 
 
-void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArray *picArray){
+void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArray * /*picArray*/){
   //
   // 0. make a default QA plots
   // 1. Store them in the array
@@ -630,7 +700,7 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArra
     legend->AddEntry(laserA,"Laser A side");
     legend->AddEntry(laserC,"Laser C side");
     legend->Draw();    
-    picArray->AddLast(pad);
+    //picArray->AddLast(pad);
   }
 
   if (itstpcP&&itstpcM){
@@ -647,7 +717,7 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArra
     legend->AddEntry(itstpcM,"ITS-TPC smooth minus");
     legend->AddEntry(itstpcB,"ITS-TPC smooth ");
     legend->Draw();    
-    picArray->AddLast(pad);
+    //picArray->AddLast(pad);
   }
 
   if (itstpcB&&laserA){
@@ -663,7 +733,7 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArra
     legend->AddEntry(itstpcM,"ITS-TPC smooth minus");   
     legend->AddEntry(itstpcB,"ITS-TPC smooth ");
     legend->Draw();
-    picArray->AddLast(pad);
+    //picArray->AddLast(pad);
   }
 
   if (itstpcP&&cross){ 
@@ -679,7 +749,7 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArra
     legend->AddEntry(cross,"TPC cross tracks");
     legend->AddEntry(itstpcB,"ITS-TPC smooth");
     legend->Draw();        
-    picArray->AddLast(pad);
+    //picArray->AddLast(pad);
   }
   if (itstpcP&&cosmic){ 
     pad = new TCanvas("ITSTPC_COSMIC","ITSTPC_COSMIC");
@@ -694,7 +764,7 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArra
     legend->AddEntry(cosmic,"TPC cross tracks0 up-down");
     legend->AddEntry(itstpcB,"ITS-TPC smooth");
     legend->Draw();        
-    picArray->AddLast(pad);
+    //picArray->AddLast(pad);
   }
 }
 
@@ -705,16 +775,37 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   //
   // Update OCDB gain
   //
+  if (pocdbStorage.Length()==0) pocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+
+  //
+  // 1. Read gain values
+  //
   ReadGainGlobal(fileName);
+
+  //
+  // 2. Extract calibration values
+  //
   AnalyzeGain(startRunNumber,endRunNumber, 1000,1.43);
   AnalyzeAttachment(startRunNumber,endRunNumber);
+
+  //
+  // 3. Make control plots
+  //
   MakeQAPlot(1.43);  
-  if (pocdbStorage.Length()==0) pocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+
+  //
+  // 4. validate OCDB entries
+  //
+  if(fSwitchOnValidation==kTRUE && ValidateTimeGain()==kFALSE) { 
+    Printf("TPC time gain OCDB parameters out of range!");
+    return;
+  }
+
+  //
+  // 5. Update OCDB
+  //
   UpdateOCDBGain( startRunNumber, endRunNumber, pocdbStorage.Data());
 }
-
-
-
 
 void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   //
@@ -756,20 +847,24 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRun
   //
   // Analyze gain - produce the calibration graphs
   //
-  fGainMIP->GetHistGainTime()->GetAxis(5)->SetRangeUser(startRunNumber, endRunNumber);
+
   // 1.) try to create MIP spline
-  fGainMIP->GetHistGainTime()->GetAxis(2)->SetRangeUser(1.51,2.49); // only beam data
-  fGainMIP->GetHistGainTime()->GetAxis(4)->SetRangeUser(0.39,0.51); // only MIP pions
-  //
-  fGraphMIP = AliTPCcalibBase::FitSlices(fGainMIP->GetHistGainTime(),0,1,minEntriesGaussFit,10,0.1,0.7);
-  if (fGraphMIP->GetN()==0) fGraphMIP = 0x0;
-  if (fGraphMIP) fFitMIP = AliTPCcalibTimeGain::MakeSplineFit(fGraphMIP);
-  if (fGraphMIP) fGraphMIP->SetName("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");// set proper names according to naming convention
-  fGainArray->AddAt(fFitMIP,0);
-  
+  if (fGainMIP) 
+  {
+    fGainMIP->GetHistGainTime()->GetAxis(5)->SetRangeUser(startRunNumber, endRunNumber);
+    fGainMIP->GetHistGainTime()->GetAxis(2)->SetRangeUser(1.51,2.49); // only beam data
+    fGainMIP->GetHistGainTime()->GetAxis(4)->SetRangeUser(0.39,0.51); // only MIP pions
+    //
+    fGraphMIP = AliTPCcalibBase::FitSlices(fGainMIP->GetHistGainTime(),0,1,minEntriesGaussFit,10,0.1,0.7);
+    if (fGraphMIP->GetN()==0) fGraphMIP = 0x0;
+    if (fGraphMIP) fFitMIP = AliTPCcalibTimeGain::MakeSplineFit(fGraphMIP);
+    if (fGraphMIP) fGraphMIP->SetName("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");// set proper names according to naming convention
+    fGainArray->AddAt(fFitMIP,0);
+  } 
 
   // 2.) try to create Cosmic spline
-  if (fGainCosmic){
+  if (fGainCosmic)
+  {
     fGainCosmic->GetHistGainTime()->GetAxis(2)->SetRangeUser(0.51,1.49); // only cosmics
     fGainCosmic->GetHistGainTime()->GetAxis(4)->SetRangeUser(20,100);    // only Fermi-Plateau muons
     //
@@ -795,15 +890,19 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRun
 
 }
 
-
 Bool_t AliTPCPreprocessorOffline::AnalyzeAttachment(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesFit) {
   //
   // determine slope as a function of mean driftlength
   //
+  if(!fGainMIP) return kFALSE;
+
   fGainMIP->GetHistGainTime()->GetAxis(5)->SetRangeUser(startRunNumber, endRunNumber);
   //
   fGainMIP->GetHistGainTime()->GetAxis(2)->SetRangeUser(1.51,2.49); // only beam data
   fGainMIP->GetHistGainTime()->GetAxis(4)->SetRangeUser(0.39,0.51); // only MIP pions
+  //
+  fGainMIP->GetHistGainTime()->GetAxis(3)->SetRangeUser(125,250);// only full tracking region (driftlength)
+  fGainMIP->GetHistGainTime()->GetAxis(0)->SetRangeUser(1.5,3.5);// only full tracking region (driftlength)
   //
   TH3D * hist = fGainMIP->GetHistGainTime()->Projection(1, 0, 3);
   //
@@ -817,7 +916,7 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeAttachment(Int_t startRunNumber, Int_t 
     Int_t nsum=0;
     Int_t imin   =  i;
     Int_t imax   =  i;    
-    for (Int_t idelta=0; idelta<10; idelta++){
+    for (Int_t idelta=0; idelta<5; idelta++){
       //
       imin   =  TMath::Max(i-idelta,1);
       imax   =  TMath::Min(i+idelta,hist->GetNbinsX());
@@ -827,25 +926,30 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeAttachment(Int_t startRunNumber, Int_t 
     }
     if (nsum<minEntriesFit) continue;
     //
-    fGainMIP->GetHistGainTime()->GetAxis(1)->SetRangeUser(hist->GetXaxis()->GetBinCenter(imin),hist->GetXaxis()->GetBinCenter(imax)); // define time range
-    TGraphErrors * driftDep = AliTPCcalibBase::FitSlices(fGainMIP->GetHistGainTime(),0,3,100,10,0.1,0.7);
-    if (driftDep->GetN() < 4) {
-      delete driftDep;
-         continue;
-    }
-    //
+    fGainMIP->GetHistGainTime()->GetAxis(1)->SetRangeUser(hist->GetXaxis()->GetBinCenter(imin-1),hist->GetXaxis()->GetBinCenter(imax+1)); // define time range
+    TH2D * histZdep = fGainMIP->GetHistGainTime()->Projection(0,3);
     TObjArray arr;
+    histZdep->FitSlicesY(0,0,-1,0,"QNR",&arr);
+    TH1D * driftDep = (TH1D*)arr.At(1);
+    delete histZdep;
+    //TGraphErrors * driftDep = AliTPCcalibBase::FitSlices(fGainMIP->GetHistGainTime(),0,3,100,1,0.,1);
+    /*if (driftDep->GetN() < 4) {
+      delete driftDep;
+      continue;
+      }*/
     //
-    TF1 pol1("polynom1","pol1",10,240);
+    //TObjArray arr;
+    //
+    TF1 pol1("polynom1","pol1",125,240);
     //driftDep->Fit(&pol1,"QNRROB=0.8");
     driftDep->Fit(&pol1,"QNR");
-    xvec[counter] = 0.5*(hist->GetXaxis()->GetBinCenter(imin)+hist->GetXaxis()->GetBinCenter(imax));
+    xvec[counter] = 0.5*(hist->GetXaxis()->GetBinCenter(imin-1)+hist->GetXaxis()->GetBinCenter(imax+1));
     yvec[counter] = pol1.GetParameter(1)/pol1.GetParameter(0);
-    xerr[counter] = 0;
+    xerr[counter] = hist->GetXaxis()->GetBinCenter(imax+1)-hist->GetXaxis()->GetBinCenter(imin-1);
     yerr[counter] = pol1.GetParError(1)/pol1.GetParameter(0);
     counter++;
     //
-    delete driftDep;
+    //delete driftDep;
   }
   //
   fGraphAttachmentMIP = new TGraphErrors(counter, xvec, yvec, xerr, yerr);
@@ -860,10 +964,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeAttachment(Int_t startRunNumber, Int_t 
   //
   if (counter < 1) return kFALSE;
   return kTRUE;
+
 }
-
-
-
 
 
 void AliTPCPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
@@ -912,7 +1014,7 @@ void AliTPCPreprocessorOffline::MakeQAPlot(Float_t  FPtoMIPratio) {
     grfFitCosmic->SetLineColor(2);
     grfFitCosmic->Draw("lu");
     fGainArray->AddLast(gainHistoCosmic);
-    fGainArray->AddLast(canvasCosmic->Clone());
+    //fGainArray->AddLast(canvasCosmic->Clone());
     delete canvasCosmic;    
   }
   if (fFitMIP) {
@@ -930,7 +1032,7 @@ void AliTPCPreprocessorOffline::MakeQAPlot(Float_t  FPtoMIPratio) {
     grfFitMIP->SetLineColor(2);
     grfFitMIP->Draw("lu");    
     fGainArray->AddLast(gainHistoMIP);
-    fGainArray->AddLast(canvasMIP->Clone());
+    //fGainArray->AddLast(canvasMIP->Clone());
     delete canvasMIP;    
   }  
 }

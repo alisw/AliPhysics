@@ -37,6 +37,7 @@ public:
   void AddLaserGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
   void SetDefaultGraphDrift(TGraph *graph, Int_t color, Int_t style);
   void MakeDefaultPlots(TObjArray * const arr, TObjArray *picArray);
+  Bool_t ValidateTimeDrift(Double_t maxVDriftCorr=0.03);
   //
   // Gain part
   //
@@ -45,6 +46,7 @@ public:
   void MakeQAPlot(Float_t  FPtoMIPratio);
   Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit = 500, Float_t FPtoMIPratio = 1.43); 
   Bool_t AnalyzeAttachment(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesFit = 2000);
+  Bool_t ValidateTimeGain(Double_t minGain=2.0, Double_t maxGain = 3.0);
   //
   // QA drawing part
   //
@@ -56,6 +58,11 @@ public:
   static TGraphErrors* FilterGraphMedianAbs(TGraphErrors * graph, Float_t cut,Double_t &medianY);
   static TGraphErrors* FilterGraphDrift(TGraphErrors * graph, Float_t errSigmaCut, Float_t medianCutAbs);
   static TGraphErrors * MakeGraphFilter0(THnSparse *hisN, Int_t itime, Int_t ival, Int_t minEntries, Double_t offset=0);
+
+  //
+  void SwitchOnValidation(Bool_t val = kTRUE) {fSwitchOnValidation = val;} 
+  Bool_t IsSwitchOnValidation() { return fSwitchOnValidation; } 
+
 
 private:
   Int_t fMinEntries;                      // minimal number of entries for fit
@@ -74,6 +81,8 @@ private:
   TObjArray    * fGainArray;               // array to be stored in the OCDB
   AliTPCcalibTimeGain * fGainMIP;          // calibration component for MIP
   AliTPCcalibTimeGain * fGainCosmic;       // calibration component for cosmic
+  
+  Bool_t fSwitchOnValidation;  // flag to switch on validation of OCDB parameters
 
 private:
   AliTPCPreprocessorOffline& operator=(const AliTPCPreprocessorOffline&); // not implemented
