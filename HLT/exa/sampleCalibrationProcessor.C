@@ -53,12 +53,20 @@ void sampleCalibrationProcessor(const char *filename,
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage(cdbURI);
-  if (struri.BeginsWith("local://") && !gSystem->AccessPathName("GRP/GRP/Data")) {
-    // set specific storage for GRP entry according to the default simulation
-    man->SetSpecificStorage("GRP/GRP/Data", "local://$PWD");
-  } else if (struri.BeginsWith("local://") && !gSystem->AccessPathName("../GRP/GRP/Data")) {
-    // set specific storage for GRP entry according to the default simulation
-    man->SetSpecificStorage("GRP/GRP/Data", "local://$PWD/../");
+  if (struri.BeginsWith("local://")) {
+    // set specific storage for GRP entry
+    // search in the working directory and one level above, the latter
+    // follows the standard simulation setup like e.g. in test/ppbench
+    if (!gSystem->AccessPathName("GRP/GRP/Data")) {
+      man->SetSpecificStorage("GRP/GRP/Data", "local://$PWD");
+    } else if (!gSystem->AccessPathName("../GRP/GRP/Data")) {
+      man->SetSpecificStorage("GRP/GRP/Data", "local://$PWD/..");      
+    } else {
+      cerr << "can not find a GRP entry, please run the macro in the folder" << endl;
+      cerr << "of a simulated data sample, or specify a GRID OCDB" << endl;
+      sampleRawAnalysis();      
+      return;
+    }
   }
 
   // Reconstruction settings
@@ -81,6 +89,7 @@ void sampleCalibrationProcessor(const char *filename,
 
   rec.SetRunPlaneEff(kFALSE);
   rec.SetRunVertexFinder(kFALSE);
+  rec.SetRunMultFinder(kFALSE);
 
   // switch off cleanESD
   rec.SetCleanESD(kFALSE);
