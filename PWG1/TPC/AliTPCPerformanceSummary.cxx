@@ -211,7 +211,7 @@ Int_t AliTPCPerformanceSummary::ProduceTrends(const Char_t* infilelist, const Ch
     
     TFile* out = new TFile(outfile,"RECREATE");
     out->cd();
-    Char_t* condition = "meanTPCncl>0";
+    const Char_t* condition = "meanTPCncl>0";
     SaveGraph(tree,"meanTPCnclF","run",condition);
     SaveGraph(tree,"rmsTPCnclF","run",condition);
     SaveGraph(tree,"meanTPCChi2","run",condition);

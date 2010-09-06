@@ -163,7 +163,7 @@ void AliTPCtaskQA::Init(){
   //
   BinLogX(fTPCqa->GetAxis(4));
   
-  char *hisAxisName[7] ={"chi2/N_{cl}","N_{cl}","N_{clF}","N_{clR}","p_{t}","#eta","#phi"};
+  const char *hisAxisName[7] ={"chi2/N_{cl}","N_{cl}","N_{clF}","N_{clR}","p_{t}","#eta","#phi"};
   //  
   for (Int_t i=0;i<7;i++) {
     fTPCqa->GetAxis(i)->SetTitle(hisAxisName[i]);

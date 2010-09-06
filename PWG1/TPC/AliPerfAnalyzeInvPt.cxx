@@ -176,7 +176,7 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
    
 }
 //_____________________________________________________________________________________________________________________________________________
-AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(Char_t* name="AliAnalyzeInvPt",Char_t* title="AliAnalyzeInvPt"):
+AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(const Char_t* name="AliAnalyzeInvPt",const Char_t* title="AliAnalyzeInvPt"):
    TNamed(name, title),
    fNThetaBins(0), 
    fNPhiBins(0),
