@@ -578,7 +578,6 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 
 	  // Rotate to a position where we have maps and prepare to sum
 	  phiPrime =  phi - (rod-18)*kPhiSlicesPerSector*gridSizePhi ;  
-
 		  
 	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi    
 
@@ -790,7 +789,7 @@ void AliTPCFCVoltError3D::InitFCVoltError3D() {
 	  if ( fCopperRodShiftC[rod] == 0 && fgkZList[i] < 0) continue ;
 
 	  // Rotate to a position where we have maps and prepare to sum
-	  phiPrime =  phi - rod*kPhiSlicesPerSector*gridSizePhi ;  
+	  phiPrime =  phi - (rod-18)*kPhiSlicesPerSector*gridSizePhi ;  
 
 	  if ( phiPrime < 0 ) phiPrime += TMath::TwoPi() ;   // Stay in range from 0 to TwoPi    
 
