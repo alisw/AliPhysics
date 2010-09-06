@@ -1142,7 +1142,8 @@ return histNorm;
 }
 
 //_____________________________________________________________________________
-THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name) {
+//THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name) {
+THnSparse* AlidNdPtHelper::GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, const char *name) {
 // generate correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -1153,7 +1154,8 @@ return h;
 }
 
 //_____________________________________________________________________________
-TH2* AlidNdPtHelper::GenerateCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name) {
+//TH2* AlidNdPtHelper::GenerateCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name) {
+TH2* AlidNdPtHelper::GenerateCorrMatrix(TH2 *const hist1, TH2 *const hist2, const char *name) {
 // generate correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -1164,7 +1166,8 @@ return h;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::GenerateCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name) {
+//TH1* AlidNdPtHelper::GenerateCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name) {
+TH1* AlidNdPtHelper::GenerateCorrMatrix(TH1 *const hist1, TH1 *const hist2, const char* name) {
 // generate correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -1175,7 +1178,8 @@ return h;
 }
 
 //_____________________________________________________________________________
-THnSparse* AlidNdPtHelper::GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name) {
+//THnSparse* AlidNdPtHelper::GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name) {
+THnSparse* AlidNdPtHelper::GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, const char* name) {
 // generate contamination correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -1201,7 +1205,8 @@ return hist;
 }
 
 //_____________________________________________________________________________
-TH2* AlidNdPtHelper::GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name) {
+//TH2* AlidNdPtHelper::GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name) {
+TH2* AlidNdPtHelper::GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, const char* name) {
 // generate contamination correction matrix
 if(!hist1 || !hist2) return 0; 
 
@@ -1224,7 +1229,8 @@ return hist;
 }
 
 //_____________________________________________________________________________
-TH1* AlidNdPtHelper::GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name) {
+//TH1* AlidNdPtHelper::GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name) {
+TH1* AlidNdPtHelper::GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, const char* name) {
 // generate contamination correction matrix
 if(!hist1 || !hist2) return 0; 
 
