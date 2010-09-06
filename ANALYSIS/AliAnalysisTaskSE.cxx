@@ -310,10 +310,10 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 // Was event selected ? If no event selection mechanism, the event SHOULD be selected (AG)
     UInt_t isSelected = AliVEvent::kAny;
     if( fInputHandler && fInputHandler->GetEventSelection()) {
-      // Get the actual offline trigger mask for the event
-      isSelected = fInputHandler->IsEventSelected();
-      // If the task had a selection AND it with the event mask (i.e. event interesting for the task if at least one matching trigger)
-      if (fOfflineTriggerMask) isSelected &= fOfflineTriggerMask;
+      // Get the actual offline trigger mask for the event and AND it with the
+      // requested mask. If no mask requested select by default the event.
+      if (fOfflineTriggerMask)
+         isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
     }
 //  Functionality below moved in the filter tasks (AG)
 //    if (handler) handler->SetFillAOD(isSelected);
