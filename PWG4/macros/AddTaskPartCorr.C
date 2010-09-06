@@ -129,8 +129,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnaPhoton *anaphoton = new AliAnaPhoton();
   anaphoton->SetDebug(-1); //10 for lots of messages
   if(calorimeter == "PHOS"){
-    anaphoton->SetNCellCut(1);// At least 2 cells
-    anaphoton->SetMinPt(0.2);
+    anaphoton->SetNCellCut(0);// At least 2 cells
+    anaphoton->SetMinPt(0.);
     anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
   }
   else {//EMCAL
@@ -207,7 +207,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   //Pi0, event by event
   //---------------------------  
   
-  
   AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
   anapi0ebe->SetDebug(-1);//10 for lots of messages
   anapi0ebe->SetAnalysisType(AliAnaPi0EbE::kIMCalo);
@@ -224,15 +223,21 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   else  anapi0ebe->SwitchOffDataMC() ;	
   
   AliNeutralMesonSelection *nms = anapi0ebe->GetNeutralMesonSelection();
-  nms->SetInvMassCutRange(0.05, 0.2)     ;
+  nms->SetInvMassCutRange(0.08, 0.18)     ;
   nms->KeepNeutralMesonSelectionHistos(kTRUE);
   //Set Histrograms bins and ranges
-  nms->SetHistoERangeAndNBins(0, 50, 200) ;
+  if(calorimeter=="EMCAL" ){
+    nms->SetHistoERangeAndNBins(0, 15, 150) ;  
+    anapi0ebe->SetHistoPtRangeAndNBins(0, 15, 75) ;
+  }
+  else{
+    nms->SetHistoERangeAndNBins(0, 30, 200) ;  
+    anapi0ebe->SetHistoPtRangeAndNBins(0, 30, 100) ;
+  }
   //      nms->SetHistoPtRangeAndNBins(0, 50, 100) ;
   //      nms->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
   //      nsm->SetHistoIMRangeAndNBins(0, 0.4, 100) ;  
   //Set Histrograms bins and ranges
-  anapi0ebe->SetHistoPtRangeAndNBins(0, 50, 200) ;
   //      anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
   //      anapi0->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anapi0ebe->Print("");

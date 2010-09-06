@@ -17,7 +17,7 @@
 
 
 // --- ROOT system ---
-class TH2F ; 
+class TH3F ; 
 class TList ;
 class TObjString;
 
@@ -67,6 +67,19 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
     fMinDist3 = m3;
   }
   
+  //Histograms range
+  
+  virtual void SetHistoShowerShapeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistoSSBins  = n ;
+		fHistoSSMax   = max ;
+		fHistoSSMin   = min ;
+	}
+	
+	Int_t   GetHistoShowerShapeBins()  const { return fHistoSSBins ; }
+	Float_t GetHistoShowerShapeMin()   const { return fHistoSSMin ; }
+	Float_t GetHistoShowerShapeMax()   const { return fHistoSSMax ; }	
+  
+  
  private:
   
   anaTypes fAnaType; //Select analysis type
@@ -82,10 +95,18 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TString fInputAODGammaConvName;    //Name of AOD branch with conversion photons
   
   //Histograms
+  Int_t   fHistoSSBins;            // Shower Shape parameter histogram number of bins
+  Float_t fHistoSSMax;             // Shower Shape parameter position maximum value
+  Float_t fHistoSSMin;             // Shower Shape parameter position minimum value
+	  
   TH1F * fhPtPi0   ;         //! Number of identified  pi0
-  TH2F * fhPhiPi0  ;         //! Phi of identified  pi0
-  TH2F * fhEtaPi0  ;         //! eta of identified  pi0  
-  
+  TH3F * fhPtEtaPhiPi0  ;    //! pt vs eta phi of identified  pi0
+  TH3F * fhPtEtaPhiBkg  ;    //! pt vs eta phi of discarded pairs  
+  TH2F * fhPtDispPi0 ;       //! pt vs disp of pi0 pairs
+  TH2F * fhPtDispBkg ;       //! pt vs disp of discarded pairs
+  TH3F * fhPtLambdaPi0 ;     //! pt vs lambda0 vs lambda1 of pi0 pairs
+  TH3F * fhPtLambdaBkg ;     //! pt vs lambda0 vs lambda1 of discarded pairs
+
   //MC
   TH1F * fhPtMCNoPi0;   //! Number of identified pi0, not coming from pi0
   TH2F * fhPhiMCNoPi0;  //! Phi of identified pi0, not coming from pi0
@@ -94,7 +115,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F * fhPhiMCPi0;    //! Phi of identified pi0, coming from pi0
   TH2F * fhEtaMCPi0;    //! eta of identified pi0, coming from pi0
   
-  ClassDef(AliAnaPi0EbE,1)
+  ClassDef(AliAnaPi0EbE,2)
     } ;
 
 
