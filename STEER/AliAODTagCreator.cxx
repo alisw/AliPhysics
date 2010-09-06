@@ -353,17 +353,17 @@ void AliAODTagCreator::CreateTags(const char* type)
 
 	    AliFileTag *nftag = new AliFileTag();
 	    
-	    if(fSession == "grid") {
+	    // if(fSession == "grid") {
 	      nftag->SetMD5("");
 	      nftag->SetTURL(fturl);
 	      nftag->SetSize(0);
-	    }
-	    else {
-	      nftag->SetPath(fturl);
-	      nftag->SetSize(0);
-	      nftag->SetMD5("");
-	      nftag->SetTURL(fturl);
-	    }
+	    // }
+	    // else {
+	    //   nftag->SetPath(fturl);
+	    //   nftag->SetSize(0);
+	    //   nftag->SetMD5("");
+	    //   nftag->SetTURL(fturl);
+	    // }
       
 	    if (fRunTag->GetFileId(fguid) > -1)
 	      AliFatal("Adding a file which is already in the RunTag.");
@@ -385,17 +385,17 @@ void AliAODTagCreator::CreateTags(const char* type)
 
 	    AliFileTag *nftag = new AliFileTag();
 	    
-	    if(fSession == "grid") {
+	    // if(fSession == "grid") {
 	      nftag->SetMD5("");
 	      nftag->SetTURL(fturl);
 	      nftag->SetSize(0);
-	    }
-	    else {
-	      nftag->SetPath(fturl);
-	      nftag->SetSize(0);
-	      nftag->SetMD5("");
-	      nftag->SetTURL(fturl);
-	    }
+	    // }
+	    // else {
+	    //   nftag->SetPath(fturl);
+	    //   nftag->SetSize(0);
+	    //   nftag->SetMD5("");
+	    //   nftag->SetTURL(fturl);
+	    // }
       
 	    if (fRunTag->GetFileId(fguid) > -1)
 	      AliFatal("Adding a file which is already in the RunTag.");
