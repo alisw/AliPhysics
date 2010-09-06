@@ -457,7 +457,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
     return;
   }
 
-  TNtuple* zdcSignal;
+  TNtuple* zdcSignal=0x0;
   
   Float_t sqrtS = 2*fBeamEnergy;
   //
