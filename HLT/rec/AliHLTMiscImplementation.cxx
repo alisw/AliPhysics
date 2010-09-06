@@ -139,6 +139,8 @@ int AliHLTMiscImplementation::CheckOCDBEntries(const TMap* const pMap) const
   Int_t runNo = GetCDBRunNo();
 
   TIterator* next=pMap->MakeIterator();
+  if (!next) return -ENOENT;
+
   TObject* pEntry=NULL;
   while ((pEntry=next->Next())) {
     // check if the entry has specific storage
@@ -159,6 +161,8 @@ int AliHLTMiscImplementation::CheckOCDBEntries(const TMap* const pMap) const
       log.Logging(kHLTLogDebug, "CheckOCDBEntries", "CDB handling", "found required OCDB object %s for run number %d in storage %s", pEntry->GetName(), runNo, pStorage->GetURI().Data());
     }
   }
+  delete next;
+  next=NULL;
 
   return iResult;
 }
