@@ -1697,7 +1697,8 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
          delete res;
          printf("=> Removing files from previous stages...\n");
          gGrid->Rm(Form("%s/*Stage*.root", aliendir));
-//         gGrid->Rm(Form("%s/*Stage*.zip", aliendir));
+         for (i=1; i<stage; i++)
+            gGrid->Rm(Form("%s/*Stage%d*.zip", aliendir, i));
          return kTRUE;
       }               
    }
