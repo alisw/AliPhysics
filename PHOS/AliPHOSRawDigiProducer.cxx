@@ -250,7 +250,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
 //CalibrateT moved to Clusterizer
 //      time = CalibrateT(time,relId,!caloFlag) ;
       // subtract RCU L1 phase (L1Phase is in seconds) w.r.t. L0:
-      time -= fRawStream->GetL1Phase()/fPulseGenerator->GetRawFormatTimeTrigger();
+      time += fRawStream->GetL1Phase();
 
 
       
