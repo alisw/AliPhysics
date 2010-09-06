@@ -33,7 +33,7 @@ public:
   void SetC0C1(Float_t c0,Float_t c1) {fC0=c0;fC1=c1;} // CAUTION: USE WITH CARE
   Float_t GetC0() const {return fC0;}
   Float_t GetC1() const {return fC1;}
-
+  void SetDZMap(TMatrixD * matrix);
   // setters and getters 
   void SetROCDataFileName(char *const fname);
   char* GetROCDataFileName() const {return fROCDataFileName;}

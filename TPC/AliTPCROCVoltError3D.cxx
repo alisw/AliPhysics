@@ -84,6 +84,15 @@ AliTPCROCVoltError3D::~AliTPCROCVoltError3D() {
   delete fdzDataLinFit;
 }
 
+void AliTPCROCVoltError3D::SetDZMap(TMatrixD * matrix){
+  //
+  //
+  //
+  if (!fdzDataLinFit) fdzDataLinFit=new TMatrixD(*matrix);
+  else *fdzDataLinFit = *matrix;
+}
+
+
 void AliTPCROCVoltError3D::Init() {
   //
   // Initialization funtion
