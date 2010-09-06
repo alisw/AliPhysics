@@ -33,7 +33,7 @@ class AliESDfriendTrack;
 class AliMCInfoCuts;
 class AliRecInfoCuts;
 class AliESDtrackCuts;
-
+class AliESDpid;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
@@ -64,7 +64,7 @@ public:
   
    void SetAliESDtrackCuts( AliESDtrackCuts* esdTrackCuts) { fESDTrackCuts = esdTrackCuts;fESDcuts=kTRUE;}//esd track cuts
 
-
+   void SetAnalysePions(const Bool_t anaPions) {fPions = anaPions;}
    void SetPtShift(const Double_t shiftVal); // set user defined shift in charge/pt
 
    // setters for analysis with AliPerformancePtCalib::Analyse()  
@@ -112,6 +112,7 @@ private:
    //options for cuts
    Bool_t fOptTPC;// flag for reading of TPC tracks in Exec
    Bool_t fESDcuts;//flag for usage of esd track cuts
+   Bool_t fPions;// flag for analzsing pions instead of all charged particles
 
    //ESD track cut values
    Double_t fEtaAcceptance;//sets value of eta window
@@ -140,8 +141,11 @@ private:
    
 
    TH1F        *fHistUserPtShift;// shows the shift value if set by user
+   TH2F        *fHistdedxPions;// dEdx vs cahrge*pt
    
    AliESDtrackCuts* fESDTrackCuts;// esd track cuts
+   //pid
+   AliESDpid *fESDpid;
    // analysis folder 
    TFolder *fAnalysisFolder; // folder for analysed histograms
 
