@@ -92,18 +92,6 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void SetCellNCuts(Int_t   * cuts)    {fCellNCuts = cuts;}
   void SetPIDBits  (Int_t   * cuts)    {fPIDBits   = cuts;}
 
-  //Histogram range setters
-  virtual void SetHistoInvPtRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-    fHistoInvPtBins = n ;
-    fHistoInvPtMax = max ;
-    fHistoInvPtMin = min ;
-  }
-  
-  virtual Int_t   GetHistoInvPtBins()  const { return fHistoInvPtBins; }
-  virtual Float_t GetHistoInvPtMin()   const { return fHistoInvPtMin ; }
-  virtual Float_t GetHistoInvPtMax()   const { return fHistoInvPtMax ; }
-  
-
   private:
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
   
@@ -130,11 +118,6 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Int_t*   fPIDBits;      //[fNPIDBits] array with different pid bits
 
   //Histograms
-    
-  Int_t    fHistoInvPtBins   ;  // Number of bins in inverse pt axis
-  Float_t  fHistoInvPtMax    ;  // Maximum value of inverse pt histogram range
-  Float_t  fHistoInvPtMin    ;  // Minimum value of inverse pt histogram range  
-  
   TH3D ** fhReMod ;  //!REAL two-photon invariant mass distribution for different calorimeter modules.
 	
   TH3D ** fhRe1 ;  //!REAL  two-photon invariant mass distribution for different centralities and PID 
