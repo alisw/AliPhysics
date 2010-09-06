@@ -21,6 +21,7 @@
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 
+#include <stdlib.h>
 #include "AliRunTag.h"
 #include "AliDetectorTag.h"
 #include "AliEventTag.h"
@@ -41,16 +42,29 @@ ClassImp(AliRunTag)
     fLHCPeriod(0),
     fRecPass(0),
     fProductionName(0),
-    fAliceRunQuality(0),
+    fAliceRunValidated(0),
+    fAliceRunGlobalQuality(0),
     fAliceBeamEnergy(0.0),
     fAliceBeamType(0),
     fAliceCalibrationVersion(0),
     fAliceDataType(0),
-    fNumEvents(0),
+    //    fNumEvents(0),
+    fNumFiles(0),
+    fBeamTriggers(0),
+    fCollisionTriggers(0),
+    fEmptyTriggers(0),
+    fASideTriggers(0),
+    fCSideTriggers(0),
+    fHMTriggers(0),
+    fMuonTriggers(0),
+    fCollisionRate(0.0),
+    fMeanVertex(0.0),
+    fVertexQuality(0.0),
     fNumDetectors(0),
-    fEventTag("AliEventTag", 1000),
+    fFileTags(100),
     fDetectorTag(),
     fLHCTag(), 
+    fActiveTriggerClasses(""),
     fQA(),  
     fQALength(0), 
     fQAArray(NULL), 
@@ -63,11 +77,12 @@ ClassImp(AliRunTag)
 //___________________________________________________________________________
 AliRunTag::~AliRunTag() {
   //Destructor
-  fEventTag.Delete();
+  //  fEventTag.Delete();
   if ( fQAArray ) 
     delete [] fQAArray ; 
   if ( fEventSpecies )
     delete [] fEventSpecies ; 
+  fFileTags.Delete();
 }
 
 //___________________________________________________________________________
@@ -84,16 +99,29 @@ fGeant3Version(tag.fGeant3Version),
 fLHCPeriod(tag.fLHCPeriod),
 fRecPass(tag.fRecPass),
 fProductionName(tag.fProductionName),
-fAliceRunQuality(tag.fAliceRunQuality),
+fAliceRunValidated(tag.fAliceRunValidated),
+fAliceRunGlobalQuality(tag.fAliceRunGlobalQuality),
 fAliceBeamEnergy(tag.fAliceBeamEnergy),
 fAliceBeamType(tag.fAliceBeamType),
 fAliceCalibrationVersion(tag.fAliceCalibrationVersion),
 fAliceDataType(tag.fAliceDataType),
-fNumEvents(tag.fNumEvents),
+//fNumEvents(tag.fNumEvents),
+fNumFiles(tag.fNumFiles),
+fBeamTriggers(tag.fBeamTriggers),
+fCollisionTriggers(tag.fCollisionTriggers),
+fEmptyTriggers(tag.fEmptyTriggers),
+fASideTriggers(tag.fASideTriggers),
+fCSideTriggers(tag.fCSideTriggers),
+fHMTriggers(tag.fHMTriggers),
+fMuonTriggers(tag.fMuonTriggers),
+fCollisionRate(tag.fCollisionRate),
+fMeanVertex(tag.fMeanVertex),
+fVertexQuality(tag.fVertexQuality),
 fNumDetectors(tag.fNumDetectors),
-fEventTag(tag.fEventTag),
+fFileTags(100),
 fDetectorTag(tag.fDetectorTag),
 fLHCTag(tag.fLHCTag), 
+fActiveTriggerClasses(tag.fActiveTriggerClasses),
 fQA(tag.fQA),
 fQALength(tag.fQALength),
 fQAArray(NULL), 
@@ -113,6 +141,11 @@ fEventSpecies(NULL)
     fEventSpecies = new Bool_t[fESLength] ; 
     memcpy(fEventSpecies, tag.fEventSpecies, fESLength*sizeof(Bool_t)) ;
   }
+  for (int ifl=0; ifl<fNumFiles; ifl++) {
+    AddFileTag(tag.GetFileTag(ifl));
+  }
+    
+
 }
 
 //___________________________________________________________________________
@@ -130,16 +163,28 @@ AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
     fLHCPeriod                = tag.fLHCPeriod ; 
     fRecPass                  = tag.fRecPass ; 
     fProductionName           = tag.fProductionName ; 
-    fAliceRunQuality          = tag.fAliceRunQuality ; 
+    fAliceRunValidated        = tag.fAliceRunValidated ; 
+    fAliceRunGlobalQuality    = tag.fAliceRunGlobalQuality ; 
     fAliceBeamEnergy          = tag.fAliceBeamEnergy ;
     fAliceBeamType            = tag.fAliceBeamType ; 
     fAliceCalibrationVersion  = tag.fAliceCalibrationVersion ; 
     fAliceDataType            = tag.fAliceDataType ; 
-    fNumEvents                = tag.fNumEvents ;
+    //    fNumEvents                = tag.fNumEvents ;
+    fNumFiles                 = tag.fNumFiles;
+    fBeamTriggers             = tag.fBeamTriggers;
+    fCollisionTriggers	      = tag.fCollisionTriggers;
+    fEmptyTriggers	      = tag.fEmptyTriggers;
+    fASideTriggers	      = tag.fASideTriggers;
+    fCSideTriggers	      = tag.fCSideTriggers;
+    fHMTriggers               = tag.fHMTriggers;
+    fMuonTriggers             = tag.fMuonTriggers;
+    fCollisionRate	      = tag.fCollisionRate;
+    fMeanVertex		      = tag.fMeanVertex;
+    fVertexQuality	      = tag.fVertexQuality;
     fNumDetectors             = tag.fNumDetectors ; 
-    fEventTag                 = tag.fEventTag ;
     fDetectorTag              = tag.fDetectorTag ;
     fLHCTag                   = tag.fLHCTag ;  
+    fActiveTriggerClasses     = tag.fActiveTriggerClasses;
     fQA                       = tag.fQA ;      
     fQALength                 = tag.fQALength ; 
     if (fQAArray) 
@@ -159,6 +204,11 @@ AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
       fEventSpecies = new Bool_t[fESLength] ; 
       memcpy(fEventSpecies, tag.fEventSpecies, fESLength*sizeof(Bool_t)) ;
     }
+    for (int ifl=0; ifl<fNumFiles; ifl++) {
+      AddFileTag(tag.GetFileTag(ifl));
+    }
+//     for (int ifile=0; ifile<tag.GetFileTags()->GetEntries(); ifile++)
+//       AddFileTag(*((AliFileTag *) tag.GetFileTags()->At(ifile)));
   }
   return *this ; 
 }
@@ -177,16 +227,50 @@ void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
   SetLHCPeriod(oldtag->GetLHCPeriod());
   SetReconstructionPass(oldtag->GetReconstructionPass());
   SetProductionName(oldtag->GetProductionName());
+  SetRunValidation(oldtag->GetRunValidation());
   SetRunQuality(oldtag->GetRunQuality());
   SetBeamEnergy(oldtag->GetBeamEnergy());
   SetBeamType(oldtag->GetBeamType());
   SetCalibVersion(oldtag->GetCalibVersion());
   SetDataType(oldtag->GetDataType());
+  SetBeamTriggers(oldtag->GetBeamTriggers());
+  SetCollisionTriggers(oldtag->GetCollisionTriggers());
+  SetEmptyTriggers(oldtag->GetEmptyTriggers());
+  SetASideTriggers(oldtag->GetASideTriggers());
+  SetCSideTriggers(oldtag->GetCSideTriggers());
+  SetHMTriggers(oldtag->GetHMTriggers());
+  SetMuonTriggers(oldtag->GetMuonTriggers());
+  SetCollisionRate(oldtag->GetCollisionRate());
+  SetMeanVertex(oldtag->GetMeanVertex());
+  SetVertexQuality(oldtag->GetVertexQuality());
   SetLHCTag(oldtag->GetLHCTag()->GetLuminosity(),oldtag->GetLHCTag()->GetLHCState());
   SetDetectorTag(oldtag->GetDetectorTags()->GetIntDetectorMaskDAQ(), oldtag->GetDetectorTags()->GetIntDetectorMaskReco());
+  SetActiveTriggerClasses(oldtag->GetActiveTriggerClasses());
   SetQA(*(oldtag->GetQA())) ;  	
   SetQAArray(oldtag->GetQAArray(), oldtag->GetQALength()) ;  
   SetEventSpecies(oldtag->GetEventSpecies(), oldtag->GetESLength()) ;  
+  for (int ifile=0; ifile<oldtag->GetNFiles(); ifile++) {
+    AliFileTag *ntag = new AliFileTag();
+    ntag->CopyFileInfo((const AliFileTag &) *(oldtag->GetFileTag(ifile)));
+    AddFileTag(ntag);
+  }
+}
+
+void AliRunTag::UpdateFromRunTable(AliRunTag *tabtag)
+{
+  SetBeamTriggers(tabtag->GetBeamTriggers());
+  SetCollisionTriggers(tabtag->GetCollisionTriggers());
+  SetEmptyTriggers(tabtag->GetEmptyTriggers());
+  SetASideTriggers(tabtag->GetASideTriggers());
+  SetCSideTriggers(tabtag->GetCSideTriggers());
+  SetHMTriggers(tabtag->GetHMTriggers());
+  SetMuonTriggers(tabtag->GetMuonTriggers());
+  SetCollisionRate(tabtag->GetCollisionRate());
+  SetMeanVertex(tabtag->GetMeanVertex());
+  SetVertexQuality(tabtag->GetVertexQuality());
+  SetRunQuality(tabtag->GetRunQuality());
+  fLHCTag.UpdateFromRunTable(*tabtag->GetLHCTag());
+  fDetectorTag.UpdateFromRunTable(*tabtag->GetDetectorTags());
 }
 
 //___________________________________________________________________________
@@ -217,7 +301,8 @@ void AliRunTag::SetEventSpecies(Bool_t * es, Int_t eslength) {
 //___________________________________________________________________________
 void AliRunTag::SetLHCTag(Float_t lumin, TString type) {
   //Setter for the LHC tags
-  fLHCTag.SetLHCTag(lumin,type);
+  fLHCTag.SetLuminosity(lumin);
+  fLHCTag.SetLHCState(type);
 }
 
 //___________________________________________________________________________
@@ -239,16 +324,23 @@ void AliRunTag::SetDetectorTag(UInt_t mask, UInt_t maskReco) {
 //___________________________________________________________________________
 void AliRunTag::AddEventTag(const AliEventTag & EvTag) {
   //Adds an entry to the event tag TClonesArray
-  new(fEventTag[fNumEvents++]) AliEventTag(EvTag);
+  ((AliFileTag *) fFileTags[fNumFiles-1])->AddEventTag(EvTag);
+  //  new(fEventTag[fNumEvents++]) AliEventTag(EvTag);
+}
+
+void AliRunTag::AddFileTag(AliFileTag *t) {
+  //Adds an entry for each file tag
+  //  new(fFileTags[fNumFiles++]) AliFileTag(t);
+  fFileTags[fNumFiles++] = t;
 }
 
 //___________________________________________________________________________
 void AliRunTag::Clear(const char *) {
   //Resets the number of events and detectors
-  fEventTag.Delete();
-  fNumEvents = 0;
-  fDetectorTag.Clear();
-  fNumDetectors = 0;
+  //  fEventTag.Delete();
+  //  fNumEvents = 0;
+  fFileTags.Delete();
+  fNumFiles = 0;
   if ( fQAArray ) {
     delete [] fQAArray ;
     fQAArray = 0x0;
@@ -260,3 +352,51 @@ void AliRunTag::Clear(const char *) {
   } 
   fESLength=0;
 }
+
+const AliEventTag* AliRunTag::GetEventTag(int evt) const
+{
+  int curev = evt;
+  int curf = 0;
+
+  if (evt >= GetNEvents()) return 0;
+ 
+  while (curev > ((AliFileTag *) fFileTags[curf])->GetNEvents()) {
+    curf++;
+    curev -= ((AliFileTag *) fFileTags[curf])->GetNEvents();
+  }
+  return ((AliFileTag *) fFileTags[curf])->GetEventTag(curev);
+}
+
+AliFileTag *AliRunTag::GetFileTagForEvent(int evt) 
+{
+  // Returns FileTag in which the given event is
+  int curev = evt;
+  int curf = 0;
+
+  if (evt >= GetNEvents()) return 0;
+ 
+  while (curev > ((AliFileTag *) fFileTags[curf])->GetNEvents()) {
+    curf++;
+    curev -= ((AliFileTag *) fFileTags[curf])->GetNEvents();
+  }
+  return (AliFileTag *) fFileTags[curf];
+}
+
+Int_t       AliRunTag::GetNEvents() const
+{
+  Int_t evtot = 0;
+  for (int iter=0; iter<fNumFiles; iter++)
+    evtot += ((AliFileTag *) fFileTags[iter])->GetNEvents();
+
+  return evtot;
+}
+
+Int_t      AliRunTag::GetFileId(const char *guid)
+{
+  for (int iter=0; iter<fNumFiles; iter++) {
+    if (strcmp(((AliFileTag *) fFileTags[iter])->GetGUID(), guid))
+      return iter;
+  }
+  return -1;
+}
+

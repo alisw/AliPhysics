@@ -178,6 +178,8 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
   //Defining tag objects
   AliRunTag   *tag     = new AliRunTag;
   AliEventTag *evTag   = 0x0;
+  AliFileTag  *flTag   = 0x0;
+
   fChain->SetBranchAddress("AliTAG",&tag);
 
   TString guid;
@@ -190,24 +192,39 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
   
   for(Int_t iEntry = 0; iEntry < fChain->GetEntries(); iEntry++) {
     fChain->GetEntry(iEntry);
+    evTagCuts->InitializeTriggerClasses(tag->GetActiveTriggerClasses());
 
     if(runTagCuts->IsAccepted(tag)) {
       if(lhcTagCuts->IsAccepted(tag->GetLHCTag())) {
 	if(detTagCuts->IsAccepted(tag->GetDetectorTags())) {
 	  localList->Reset();
 	  Int_t iEvents = tag->GetNEvents();
-	  const TClonesArray *tagList = tag->GetEventTags();
-	  for(Int_t i = 0; i < iEvents; i++) {
-	    evTag = (AliEventTag *) tagList->At(i);
-	    guid = evTag->GetGUID(); 
-	    turl = evTag->GetTURL(); 
-	    path = evTag->GetPath();
-	    localList->SetTreeName(aliceFile.Data());
-	    if(turl!="") localList->SetFileName(turl.Data());
-	    else localList->SetFileName(path.Data());
+	  
+	  for (int i = 0; i < iEvents; i++) {
+	    //	    evTag = tag->GetEventTag(i);
+	    flTag = tag->GetFileTagForEvent(i);
+	    guid = flTag->GetGUID();
+	    turl = flTag->GetTURL();
+	    path = flTag->GetPath();
+ 	    localList->SetTreeName(aliceFile.Data());
+ 	    if(turl!="") localList->SetFileName(turl.Data());
+ 	    else localList->SetFileName(path.Data());
+
+ 	    if(evTagCuts->IsAccepted(tag->GetEventTag(i))) localList->Enter(i);
+	  }
+
+// 	  const TClonesArray *tagList = tag->GetEventTags();
+// 	  for(Int_t i = 0; i < iEvents; i++) {
+// 	    evTag = (AliEventTag *) tagList->At(i);
+// 	    guid = evTag->GetGUID(); 
+// 	    turl = evTag->GetTURL(); 
+// 	    path = evTag->GetPath();
+// 	    localList->SetTreeName(aliceFile.Data());
+// 	    if(turl!="") localList->SetFileName(turl.Data());
+// 	    else localList->SetFileName(path.Data());
 	    
-	    if(evTagCuts->IsAccepted(evTag)) localList->Enter(i);
-	  }//event loop
+// 	    if(evTagCuts->IsAccepted(evTag)) localList->Enter(i);
+// 	  }//event loop
 	  iAccepted += localList->GetN();
 	  if(turl != "")      esdChain->AddFile(turl);
 	  else if(path != "") esdChain->AddFile(path);
@@ -281,16 +298,18 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut,
 	if(fDetectorFormula->EvalInstance(iTagFiles) == 1) {
           localList->Reset(); 	 
 	  Int_t iEvents = fEventFormula->GetNdata(); 	 
-	  const TClonesArray *tagList = tag->GetEventTags(); 	 
-	  for(Int_t i = 0; i < iEvents; i++) { 	 
-	    evTag = (AliEventTag *) tagList->At(i); 	 
-	    guid = evTag->GetGUID(); 	 
-	    turl = evTag->GetTURL(); 	 
-	    path = evTag->GetPath(); 	 
-	    localList->SetTreeName(aliceFile.Data());
-	    localList->SetFileName(turl.Data());
-	    if(fEventFormula->EvalInstance(i) == 1) localList->Enter(i);
-	  }//event loop 	 
+	  // *** FIXME ***
+
+// 	  const TClonesArray *tagList = tag->GetEventTags(); 	 
+// 	  for(Int_t i = 0; i < iEvents; i++) { 	 
+// 	    evTag = (AliEventTag *) tagList->At(i); 	 
+// 	    guid = evTag->GetGUID(); 	 
+// 	    turl = evTag->GetTURL(); 	 
+// 	    path = evTag->GetPath(); 	 
+// 	    localList->SetTreeName(aliceFile.Data());
+// 	    localList->SetFileName(turl.Data());
+// 	    if(fEventFormula->EvalInstance(i) == 1) localList->Enter(i);
+// 	  }//event loop 	 
 
 	  if(path != "")      esdChain->AddFile(path); 	 
 	  else if(turl != "") esdChain->AddFile(turl); 	 
@@ -354,13 +373,21 @@ AliTagAnalysis::CreateXMLCollection(const char* name,
   //Defining tag objects
   AliRunTag* tag = new AliRunTag;
   fChain->SetBranchAddress("AliTAG",&tag);
+
+  Int_t iTagFiles = 0;
   
-  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetListOfFiles()->GetEntries(); ++iTagFiles) 
+  AliEventTag *evTag = 0x0;
+  AliFileTag  *flTag = 0x0;
+
+  //  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetListOfFiles()->GetEntries(); ++iTagFiles) 
+  for(Int_t iRunTags = 0; iRunTags < fChain->GetEntries(); ++iRunTags) 
   {
-    fChain->GetEntry(iTagFiles);
+    fChain->GetEntry(iRunTags);
     //Event list
     iTotalEvents += tag->GetNEvents();
     localList.Reset();
+    
+    evTagCuts->InitializeTriggerClasses(tag->GetActiveTriggerClasses());
     
     if ( !runTagCuts || ( runTagCuts && runTagCuts->IsAccepted(tag) ) ) 
       {
@@ -368,30 +395,58 @@ AliTagAnalysis::CreateXMLCollection(const char* name,
 	  {
 	    if ( !detTagCuts || ( detTagCuts && detTagCuts->IsAccepted(tag->GetDetectorTags())) )
 	      {
-		Int_t i(0);
-		TIter next(tag->GetEventTags());
-		AliEventTag* evTag(0x0);
-		iRejectedEvtInFile = 0;
-		iAcceptedEvtInFile = 0;
-		while ( ( evTag = static_cast<AliEventTag*>(next()) ) )
+		for (int iChunk = 0; iChunk < tag->GetNFiles(); iChunk++, iTagFiles++) 
 		  {
-		    guid = evTag->GetGUID(); 
-		    turl = evTag->GetTURL(); 
+		    iRejectedEvtInFile = 0;
+		    iAcceptedEvtInFile = 0;
+
+		    flTag = tag->GetFileTag(iChunk);
+		    guid = flTag->GetGUID();
+		    turl = flTag->GetTURL();
 		    lfn = turl(8,turl.Length());
-		    if( !evTagCuts || ( evTagCuts && evTagCuts->IsAccepted(evTag)) )
-            {
-	      localList.Enter(i);
-              iAcceptedEvtInFile++;
-            }
-		    else 
+
+		    for (int i = 0; i<flTag->GetNEvents(); i++) 
 		      {
-			++iRejectedEvt;
-			++iRejectedEvtInFile;
+			//			evTag = flTag->GetEventTag(i);
+		
+			if( !evTagCuts || ( evTagCuts && evTagCuts->IsAccepted(flTag->GetEventTag(i))) )
+			  {
+			    localList.Enter(i);
+			    iAcceptedEvtInFile++;
+			  }
+			else 
+			  {
+			    ++iRejectedEvt;
+			    ++iRejectedEvtInFile;
+			  }
 		      }
-		    ++i;
-		  }//event loop
-		iAccepted += localList.GetN();
-		collection.WriteBody(iTagFiles+1,guid,lfn,turl,&localList,iAcceptedEvtInFile,iRejectedEvtInFile);
+		// *** FIXME ***
+//		Int_t i(0);
+
+// 		TIter next(tag->GetEventTags());
+// 		AliEventTag* evTag(0x0);
+// 		iRejectedEvtInFile = 0;
+// 		iAcceptedEvtInFile = 0;
+// 		while ( ( evTag = static_cast<AliEventTag*>(next()) ) )
+// 		  {
+// 		    guid = evTag->GetGUID(); 
+// 		    turl = evTag->GetTURL(); 
+// 		    lfn = turl(8,turl.Length());
+// 		    if( !evTagCuts || ( evTagCuts && evTagCuts->IsAccepted(evTag)) )
+// 		      {
+// 			localList.Enter(i);
+// 			iAcceptedEvtInFile++;
+// 		      }
+// 		    else 
+// 		      {
+// 			++iRejectedEvt;
+// 			++iRejectedEvtInFile;
+// 		      }
+// 		    ++i;
+// 		  }//event loop
+		    iAccepted += localList.GetN();
+		    collection.WriteBody(iTagFiles+1,guid,lfn,turl,&localList,iAcceptedEvtInFile,iRejectedEvtInFile);
+		  } // chunk loop
 	      }//detector tag cuts
 	    else {
 	      iRejectedDet += tag->GetNEvents();
@@ -476,23 +531,27 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
       if(fLHCFormula->EvalInstance(iTagFiles) == 1) { 	 
 	if(fDetectorFormula->EvalInstance(iTagFiles) == 1) { 	 
 	  Int_t iEvents = fEventFormula->GetNdata();
-	  const TClonesArray *tagList = tag->GetEventTags();
-	  iRejectedEvtInFile = 0;
-	  iAcceptedEvtInFile = 0;
-	  for(Int_t i = 0; i < iEvents; i++) {
-	    evTag = (AliEventTag *) tagList->At(i);
-	    guid = evTag->GetGUID(); 
-	    turl = evTag->GetTURL(); 
-	    lfn = turl(8,turl.Length());
-	    if(fEventFormula->EvalInstance(i) == 1) {
-	      localList->Enter(i);
-	      iAcceptedEvtInFile++;
-	    }
-	    else {
-	      iRejectedEvt++;
-	      iRejectedEvtInFile++;
-	    }
-	  }//event loop
+	  // *** FIXME ***
+
+
+// 	  const TClonesArray *tagList = tag->GetEventTags();
+// 	  iRejectedEvtInFile = 0;
+// 	  iAcceptedEvtInFile = 0;
+// 	  for(Int_t i = 0; i < iEvents; i++) {
+// 	    evTag = (AliEventTag *) tagList->At(i);
+// 	    guid = evTag->GetGUID(); 
+// 	    turl = evTag->GetTURL(); 
+// 	    lfn = turl(8,turl.Length());
+// 	    if(fEventFormula->EvalInstance(i) == 1) {
+// 	      localList->Enter(i);
+// 	      iAcceptedEvtInFile++;
+// 	    }
+// 	    else {
+// 	      iRejectedEvt++;
+// 	      iRejectedEvtInFile++;
+// 	    }
+// 	  }//event loop
+
 	  collection->WriteBody(iTagFiles+1,guid,lfn,turl,localList,iAcceptedEvtInFile, iRejectedEvtInFile);
 	  iAccepted += localList->GetN();
 	}//detector tag cuts

@@ -33,18 +33,31 @@ ClassImp(AliDetectorTag)
 AliDetectorTag::AliDetectorTag() :
   TObject(),
   fMaskDAQ(0),
-  fMaskReco(0)
+  fMaskReco(0),
+  fDetectorValidityRange(),
+  fDetectorStatus()
 {
   // Default constructor
+  for (int iter=0; iter<AliDAQ::kHLTId; iter++) {
+    fDetectorValidityRange[iter] = 0;
+    fDetectorStatus[iter] = "";
+  }
 }
 
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
   TObject(detTag),
   fMaskDAQ(detTag.fMaskDAQ),
-  fMaskReco(detTag.fMaskReco)
- {
+  fMaskReco(detTag.fMaskReco),
+  fDetectorValidityRange(),
+  fDetectorStatus() 
+{
   // DetectorTag copy constructor
+  
+  for (int iter=0; iter<AliDAQ::kHLTId; iter++) {
+    fDetectorValidityRange[iter] = detTag.GetDetectorValidityRange(iter);
+    fDetectorStatus[iter] = detTag.GetDetectorStatus(iter);
+  }
 }
 
 //___________________________________________________________________________
@@ -55,6 +68,10 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
     
     fMaskDAQ = detTag.fMaskDAQ;   
     fMaskReco = detTag.fMaskReco;   
+    for (int iter=0; iter<AliDAQ::kHLTId; iter++) {
+      fDetectorValidityRange[iter] = detTag.GetDetectorValidityRange(iter);
+      fDetectorStatus[iter] = detTag.GetDetectorStatus(iter);
+    }
   }
   return *this;
 }
@@ -62,6 +79,14 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
 //___________________________________________________________________________
 AliDetectorTag::~AliDetectorTag() {
   // Destructor
+}
+
+void AliDetectorTag::UpdateFromRunTable(AliDetectorTag &detTag)
+{
+  for (int iter=0; iter<AliDAQ::kHLTId; iter++) {
+    fDetectorValidityRange[iter] = detTag.GetDetectorValidityRange(iter);
+    fDetectorStatus[iter] = detTag.GetDetectorStatus(iter);
+  }
 }
 
 

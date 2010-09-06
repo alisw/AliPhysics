@@ -30,16 +30,16 @@ class AliEventTag : public TObject {
   void SetOrbitNumber(UInt_t n) {fOrbitNumber = n;}
   void SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber = n;}
 
-  void SetFiredTriggerClasses(TString names) {fFiredTriggerClasses = names;}
+  //*T*  void SetFiredTriggerClasses(TString names) {fFiredTriggerClasses = names;}
   void SetEventType(UInt_t ntype) {fEventType = ntype;}
   void SetPhysicsFlag(UShort_t nflag) {fPhysicsFlag = nflag;}
   void SetBackgroungFlag(UShort_t nflag) {fBackgroundFlag = nflag;}
 
-  void SetGUID(TString Pid) {fGUID = Pid;}
-  void SetPath(TString Pid) {fPath = Pid;}
-  void SetMD5(TString Pid) {fmd5 = Pid;}
-  void SetTURL(TString Pid) {fturl = Pid;}
-  void SetSize(Long64_t i) {fsize = i;}
+/*   void SetGUID(TString Pid); */
+/*   void SetPath(TString Pid); */
+/*   void SetMD5(TString Pid); */
+/*   void SetTURL(TString Pid); */
+/*   void SetSize(Long64_t i); */
   void SetNumOfParticipants(Int_t P) {fNumberOfParticipants = P;}
   void SetNumOfParticipants2(Int_t P2) {fNumberOfParticipants = P2;}
   void SetImpactParameter(Float_t Pimpact) {fImpactParameter = Pimpact;}
@@ -119,16 +119,17 @@ class AliEventTag : public TObject {
   UInt_t GetOrbitNumber() const {return fOrbitNumber;}
   UShort_t GetBunchCrossNumber() const {return fBunchCrossNumber;}
 
-  TString GetFiredTriggerClasses() const {return fFiredTriggerClasses;}
+  //*T*  TString GetFiredTriggerClasses() const {return fFiredTriggerClasses;}
+  TString GetFiredTriggerClasses(TString actclass) const; //*T* {return fFiredTriggerClasses;}
   UInt_t GetEventType() const {return fEventType;}
   UShort_t GetPhysicsFlag() const {return fPhysicsFlag;}
   UShort_t GetBackgroundFlag() const {return fBackgroundFlag;}
 
-  const char *GetGUID() const {return fGUID.Data();}
-  const char *GetPath() const {return fPath.Data();}
-  const char *GetMD5() const {return fmd5.Data();}
-  const char *GetTURL() const {return fturl.Data();}
-  Long64_t    GetSize() const {return fsize;}
+/*   const char *GetGUID() const {return ((AliFileTag *) fFileRef.GetObject())->GetGUID();} */
+/*   const char *GetPath() const {return ((AliFileTag *) fFileRef.GetObject())->GetPath();} */
+/*   const char *GetMD5() const {return  ((AliFileTag *) fFileRef.GetObject())->GetMD5();} */
+/*   const char *GetTURL() const {return ((AliFileTag *) fFileRef.GetObject())->GetTURL();} */
+/*   Long64_t    GetSize() const {return ((AliFileTag *) fFileRef.GetObject())->GetSize();} */
   Int_t       GetNumOfParticipants() const {return fNumberOfParticipants;}
   Int_t       GetNumOfParticipants2() const {return fNumberOfParticipants2;}
   Float_t     GetImpactParameter() const {return fImpactParameter;}
@@ -207,16 +208,16 @@ class AliEventTag : public TObject {
   UInt_t    fPeriodNumber;                  //The period number
   UInt_t    fOrbitNumber;                   //The orbit number
   UShort_t  fBunchCrossNumber;              //The BC number
-  TString   fFiredTriggerClasses;           //List of the fired trigger class names
+  //*T*  TString   fFiredTriggerClasses;           //List of the fired trigger class names
   UInt_t    fEventType;                     //event type == 7 ==> PHYSICS_EVENT
   UShort_t  fPhysicsFlag;                   //1 - flagged as correct physics event
   UShort_t  fBackgroundFlag;                //1 - flagged by the background rejection procedure
 
-  TString   fGUID;		            //The unique identifier of the file
-  TString   fPath;		            //The file's path (local storage)
-  Long64_t  fsize;                          //the size of the file
-  TString   fmd5;                           //another file identifier
-  TString   fturl;                          //the file's url
+/*   TString   fGUID;		            //The unique identifier of the file */
+/*   TString   fPath;		            //The file's path (local storage) */
+/*   Long64_t  fsize;                          //the size of the file */
+/*   TString   fmd5;                           //another file identifier */
+/*   TString   fturl;                          //the file's url */
   Int_t     fNumberOfParticipants;    	    //Number of participants - side C
   Int_t     fNumberOfParticipants2;    	    //Number of participants - side A
   Float_t   fImpactParameter;		    //The impact parameter
@@ -285,12 +286,12 @@ class AliEventTag : public TObject {
   Int_t     fNumberOfFiredChipsLayer2;      //number of fired chips - layer 2
   Int_t     fNumberOfSPDTracklets;          //number of SPD tracklets
 
-  Float_t     fMTotV0A;                     //Total multiplicity in V0 A side
-  Float_t     fMTotV0C;                     //Total multiplicity in V0 C side
+  Float_t   fMTotV0A;                       //Total multiplicity in V0 A side
+  Float_t   fMTotV0C;                       //Total multiplicity in V0 C side
   Short_t   fNbPMV0A;                       //Total number of fired channels in V0 A side
   Short_t   fNbPMV0C;                       //Total number of fired channels in V0 C side
 
-  ClassDef(AliEventTag,16)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,17)  //(ClassName, ClassVersion)
       };
 //___________________________________________________________________________
 

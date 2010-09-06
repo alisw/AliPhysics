@@ -97,6 +97,10 @@ void testpool(const char * dirname = ".", const char * pattern = "Run180001") {
 #include "AliRunTag.h"
 #include "AliEventTag.h"
 #include "AliLog.h"
+#include "AliRunTagCuts.h"
+#include "AliLHCTagCuts.h"
+#include "AliDetectorTagCuts.h"
+#include "AliEventTagCuts.h"
 
 #include <TObjArray.h>
 #include <TAxis.h>
@@ -121,6 +125,10 @@ AliEventPoolSparse::AliEventPoolSparse() :
   fLHCCut(0x0),
   fDetCut(0x0),
   fEvCut(0x0),
+  fRunTagCut(0x0),
+  fEventTagCut(0x0),
+  fDetectorTagCut(0x0),
+  fLHCTagCut(0x0),
   fBinNumber(0)
 {
   // Default constructor. Initializes the THnSparseI,
@@ -145,6 +153,10 @@ AliEventPoolSparse::AliEventPoolSparse(const char* name, const char* title, TCha
   fLHCCut(0x0),
   fDetCut(0x0),
   fEvCut(0x0),
+  fRunTagCut(0x0),
+  fEventTagCut(0x0),
+  fDetectorTagCut(0x0),
+  fLHCTagCut(0x0),
   fBinNumber(0){
   // Constructor. Initializes the THnSparseI,
   // the initial size of the pool array and the array itself
@@ -181,6 +193,12 @@ AliEventPoolSparse::~AliEventPoolSparse() {
   delete fLHCCut;
   delete fDetCut;
   delete fEvCut;
+
+  delete fRunTagCut;
+  delete fEventTagCut;
+  delete fDetectorTagCut;
+  delete fLHCTagCut;
+
 }
 
 
@@ -257,13 +275,15 @@ void  AliEventPoolSparse::Init(){
 
     if (current != fTagChain->GetTreeNumber()) { 	 
       // Update the formula leaves if a new file is processed by the chain
-      if (fRunCut) fRunCut->UpdateFormulaLeaves(); 	 
-      if (fLHCCut) fLHCCut->UpdateFormulaLeaves(); 	 
-      if (fDetCut) fDetCut->UpdateFormulaLeaves(); 	 
-      if (fEvCut)  fEvCut->UpdateFormulaLeaves();
+//       if (fRunCut) fRunCut->UpdateFormulaLeaves(); 	 
+//       if (fLHCCut) fLHCCut->UpdateFormulaLeaves(); 	 
+//       if (fDetCut) fDetCut->UpdateFormulaLeaves(); 	 
+//       if (fEvCut)  fEvCut->UpdateFormulaLeaves();
+
+      if (fEventTagCut) fEventTagCut->InitializeTriggerClasses(tag->GetActiveTriggerClasses());
 
       for (Int_t ivar=0; ivar<fHnSparseI.GetNdimensions(); ++ivar)
-	if (fVars[ivar]) fVars[ivar]->UpdateFormulaLeaves();
+ 	if (fVars[ivar]) fVars[ivar]->UpdateFormulaLeaves();
 
       // Create the ESD/AOD chain if not done
       if (!fChain) {
@@ -281,65 +301,133 @@ void  AliEventPoolSparse::Init(){
       // Update the tree number
       current = fTagChain->GetTreeNumber();
     }
+    
+    // Deprecated use of TTreeFormulas
+//     // Apply Run, LHC, and detector cuts if they exist
+//     if(!fRunCut || fRunCut->EvalInstance(iTagFiles) == 1) { 	 
+//       if(!fLHCCut || fLHCCut->EvalInstance(iTagFiles) == 1) { 	 
+// 	if(!fDetCut || fDetCut->EvalInstance(iTagFiles) == 1) {
+ 	 
+
+// 	  // Get access to the event data in the TTreeFormula
+// 	  if (fEvCut) fEvCut->GetNdata();
+// 	  for (Int_t ivar=0; ivar<fHnSparseI.GetNdimensions(); ++ivar)
+// 	    if (fVars[ivar]) fVars[ivar]->GetNdata();
+ 	 
+// 	  // Loop on events
+// 	  //	  const TClonesArray *tagList = tag->GetEventTags();
+// 	  Int_t iFiles = tag->GetNFiles();
+// 	  for (int ifs = 0; ifs<iFiles; ifs++) {
+// 	    AliFileTag *eftag = (AliFileTag *) tag->GetFileTag(ifs);
+
+// 	    guid = eftag->GetGUID(); 	 
+// 	    turl = eftag->GetTURL(); 	 
+// 	    path = eftag->GetPath(); 	 
+	    
+// 	    Int_t iEvents = eftag->GetNEvents();
+// 	    for(Int_t i = 0; i < iEvents; i++) { 	 
+// 	      evTag = (AliEventTag *) eftag->GetEventTag(i); 	 
+	      
+	      
+// 	      if(!fEvCut || fEvCut->EvalInstance(i) == 1) {
+// 		TEntryList *fLocalList = new TEntryList();
+// 		fLocalList->SetTreeName(fChain->GetName());
+// 		fLocalList->SetFileName(turl.Data());
+// 		fLocalList->Enter(i);
+		
+		
+// 		// Add this event to the corresponding pool
+// 		{
+// 		  // Increment the bin content corrresponding to the vector "x" by "w",
+// 		  // and store the event index iev to the array associated with the bin,
+// 		  // then return the bin index.
+		  
+// 		  for (Int_t ivar=0; ivar<ndim; ++ivar) x[ivar] = fVars[ivar]->EvalInstance(i);
+		  
+// 		  Int_t bin =  fHnSparseI.Fill(x);
+// 		  // Check if we have to enlarge the array of pointers
+// 		  if (bin>=fN) Set(bin+fChunkSize);
+// 		  // Allocate the TEntryList if this is the first use of it
+// 		  if (!fPool[bin]) fPool[bin] = new TEntryList();
+// 		  // Add the event iev to the corresponding bin
+// 		  fPool[bin]->Add(fLocalList);
+// 		}
+// 	      }
+// 	    }//event loop 	 
+	  
+// 	    for (Int_t ipool=0; ipool<fHnSparseI.GetNbins(); ++ipool) 
+// 	      fPool[ipool]->OptimizeStorage();
+	    
+// 	    // Add the current file to the ESD/AOD chain
+// 	    if(!path.IsNull()) fChain->AddFile(path); 	 
+// 	    else if(!turl.IsNull()) fChain->AddFile(turl);
+// 	  }
+// 	}//detector tag cuts
+//       }//lhc tag cuts
+//     }//run tag cut 	 
 
     // Apply Run, LHC, and detector cuts if they exist
-    if(!fRunCut || fRunCut->EvalInstance(iTagFiles) == 1) { 	 
-      if(!fLHCCut || fLHCCut->EvalInstance(iTagFiles) == 1) { 	 
-	if(!fDetCut || fDetCut->EvalInstance(iTagFiles) == 1) {
+    if(!fRunTagCut || fRunTagCut->IsAccepted(tag)) { 	 
+      if(!fLHCTagCut || fLHCTagCut->IsAccepted(tag->GetLHCTag())) { 	 
+	if(!fDetectorTagCut || fDetectorTagCut->IsAccepted(tag->GetDetectorTags())) {
  	 
-
-	  // Get access to the event data in the TTreeFormula
-	  if (fEvCut) fEvCut->GetNdata();
-	  for (Int_t ivar=0; ivar<fHnSparseI.GetNdimensions(); ++ivar)
-	    if (fVars[ivar]) fVars[ivar]->GetNdata();
+// 	  // Get access to the event data in the TTreeFormula
+// 	  if (fEvCut) fEvCut->GetNdata();
+ 	  for (Int_t ivar=0; ivar<fHnSparseI.GetNdimensions(); ++ivar)
+ 	    if (fVars[ivar]) fVars[ivar]->GetNdata();
  	 
 	  // Loop on events
-	  const TClonesArray *tagList = tag->GetEventTags();
-	  Int_t iEvents = tagList->GetEntries();
-	  for(Int_t i = 0; i < iEvents; i++) { 	 
-	    evTag = (AliEventTag *) tagList->At(i); 	 
+	  //	  const TClonesArray *tagList = tag->GetEventTags();
+	  Int_t iFiles = tag->GetNFiles();
+	  for (int ifs = 0; ifs<iFiles; ifs++) {
+	    AliFileTag *eftag = (AliFileTag *) tag->GetFileTag(ifs);
 
-	    guid = evTag->GetGUID(); 	 
-	    turl = evTag->GetTURL(); 	 
-	    path = evTag->GetPath(); 	 
-
-
-	    if(!fEvCut || fEvCut->EvalInstance(i) == 1) {
-	      TEntryList *fLocalList = new TEntryList();
-	      fLocalList->SetTreeName(fChain->GetName());
-	      fLocalList->SetFileName(turl.Data());
-	      fLocalList->Enter(i);
-
-
-	      // Add this event to the corresponding pool
-	      {
-		// Increment the bin content corrresponding to the vector "x" by "w",
-		// and store the event index iev to the array associated with the bin,
-		// then return the bin index.
-
-		for (Int_t ivar=0; ivar<ndim; ++ivar) x[ivar] = fVars[ivar]->EvalInstance(i);
+	    guid = eftag->GetGUID(); 	 
+	    turl = eftag->GetTURL(); 	 
+	    path = eftag->GetPath(); 	 
+	    
+	    Int_t iEvents = eftag->GetNEvents();
+	    for(Int_t i = 0; i < iEvents; i++) { 	 
+	      evTag = (AliEventTag *) eftag->GetEventTag(i); 	 
+	      
+	      
+	      if(!fEventTagCut || fEventTagCut->IsAccepted(evTag)) {
+		TEntryList *fLocalList = new TEntryList();
+		fLocalList->SetTreeName(fChain->GetName());
+		fLocalList->SetFileName(turl.Data());
+		fLocalList->Enter(i);
 		
-		Int_t bin =  fHnSparseI.Fill(x);
-		// Check if we have to enlarge the array of pointers
-		if (bin>=fN) Set(bin+fChunkSize);
-		// Allocate the TEntryList if this is the first use of it
-		if (!fPool[bin]) fPool[bin] = new TEntryList();
-		// Add the event iev to the corresponding bin
-		fPool[bin]->Add(fLocalList);
+		
+		// Add this event to the corresponding pool
+		{
+		  // Increment the bin content corrresponding to the vector "x" by "w",
+		  // and store the event index iev to the array associated with the bin,
+		  // then return the bin index.
+		  
+		  for (Int_t ivar=0; ivar<ndim; ++ivar) x[ivar] = fVars[ivar]->EvalInstance(i);
+		  
+		  Int_t bin =  fHnSparseI.Fill(x);
+		  // Check if we have to enlarge the array of pointers
+		  if (bin>=fN) Set(bin+fChunkSize);
+		  // Allocate the TEntryList if this is the first use of it
+		  if (!fPool[bin]) fPool[bin] = new TEntryList();
+		  // Add the event iev to the corresponding bin
+		  fPool[bin]->Add(fLocalList);
+		}
 	      }
-	    }
-	  }//event loop 	 
+	    }//event loop 	 
 	  
-	  for (Int_t ipool=0; ipool<fHnSparseI.GetNbins(); ++ipool) 
-	    fPool[ipool]->OptimizeStorage();
-
-	  // Add the current file to the ESD/AOD chain
-	  if(!path.IsNull()) fChain->AddFile(path); 	 
-	  else if(!turl.IsNull()) fChain->AddFile(turl);
- 	 
+	    for (Int_t ipool=0; ipool<fHnSparseI.GetNbins(); ++ipool) 
+	      fPool[ipool]->OptimizeStorage();
+	    
+	    // Add the current file to the ESD/AOD chain
+	    if(!path.IsNull()) fChain->AddFile(path); 	 
+	    else if(!turl.IsNull()) fChain->AddFile(turl);
+	  }
 	}//detector tag cuts
       }//lhc tag cuts
     }//run tag cut 	 
+
   }//tag file loop 	 
 
   delete [] x;
@@ -372,6 +460,27 @@ void AliEventPoolSparse::SetEventCut(const char * cut){
   // Event selection cuts
   if (fEvCut) delete fEvCut;
   fEvCut = new TTreeFormula("fEv",cut,fTagChain);
+}
+
+// _________________________________________________________________________
+void AliEventPoolSparse::SetRunCut(AliRunTagCuts* cut)
+{
+  fRunTagCut = cut;
+}
+// _________________________________________________________________________
+void AliEventPoolSparse::SetEventCut(AliEventTagCuts* cut)
+{
+  fEventTagCut = cut;
+}
+// _________________________________________________________________________
+void AliEventPoolSparse::SetDetectorCut(AliDetectorTagCuts* cut)
+{
+  fDetectorTagCut = cut;
+}
+// _________________________________________________________________________
+void AliEventPoolSparse::SetLHCCut(AliLHCTagCuts* cut)
+{
+  fLHCTagCut = cut;
 }
 
 // _________________________________________________________________________

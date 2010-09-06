@@ -22,6 +22,8 @@
 //-----------------------------------------------------------------
 
 #include "AliEventTag.h"
+#include <TObjArray.h>
+#include <TObjString.h>
 
 ClassImp(AliEventTag)
 
@@ -31,15 +33,16 @@ ClassImp(AliEventTag)
     fPeriodNumber(0),
     fOrbitNumber(0),
     fBunchCrossNumber(0),
-    fFiredTriggerClasses(),
+    //*T*    fFiredTriggerClasses(),
     fEventType(0),
     fPhysicsFlag(0),
     fBackgroundFlag(0),
-    fGUID(0),
-    fPath(0),
-    fsize(0),
-    fmd5(0),
-    fturl(0),
+//     fGUID(0),
+//     fPath(0),
+//     fsize(0),
+//     fmd5(0),
+//     fturl(0),
+//    fFileRef(0),
     fNumberOfParticipants(-10),
     fNumberOfParticipants2(-10),
     fImpactParameter(-10.0),
@@ -120,15 +123,16 @@ AliEventTag::AliEventTag(const AliEventTag & evTag) :
   fPeriodNumber(evTag.fPeriodNumber),
   fOrbitNumber(evTag.fOrbitNumber),
   fBunchCrossNumber(evTag.fBunchCrossNumber),
-  fFiredTriggerClasses(evTag.fFiredTriggerClasses),
+  //*T*  fFiredTriggerClasses(evTag.fFiredTriggerClasses),
   fEventType(evTag.fEventType),
   fPhysicsFlag(evTag.fPhysicsFlag),
   fBackgroundFlag(evTag.fBackgroundFlag),
-  fGUID(evTag.fGUID),
-  fPath(evTag.fPath),
-  fsize(evTag.fsize),
-  fmd5(evTag.fmd5),
-  fturl(evTag.fturl),
+//   fGUID(evTag.fGUID),
+//   fPath(evTag.fPath),
+//   fsize(evTag.fsize),
+//   fmd5(evTag.fmd5),
+//   fturl(evTag.fturl),
+// fFileRef(0),
   fNumberOfParticipants(evTag.fNumberOfParticipants),
   fNumberOfParticipants2(evTag.fNumberOfParticipants2),
   fImpactParameter(evTag.fImpactParameter),
@@ -211,15 +215,15 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &evTag) {
     SetPeriodNumber(evTag.GetPeriodNumber());
     SetOrbitNumber(evTag.GetOrbitNumber());
     SetBunchCrossNumber(evTag.GetBunchCrossNumber());
-    SetFiredTriggerClasses(evTag.GetFiredTriggerClasses());
+    //*T*    SetFiredTriggerClasses(evTag.GetFiredTriggerClasses());
     SetEventType(evTag.GetEventType());
     SetPhysicsFlag(evTag.GetPhysicsFlag());
     SetBackgroungFlag(evTag.GetBackgroundFlag());
-    SetGUID(evTag.GetGUID());
-    SetPath(evTag.GetPath());
-    SetMD5(evTag.GetMD5());
-    SetTURL(evTag.GetTURL());
-    SetSize(evTag.GetSize());
+//     SetGUID(evTag.GetGUID());
+//     SetPath(evTag.GetPath());
+//     SetMD5(evTag.GetMD5());
+//     SetTURL(evTag.GetTURL());
+//     SetSize(evTag.GetSize());
     SetNumOfParticipants(evTag.GetNumOfParticipants());
     SetImpactParameter(evTag.GetImpactParameter());
     SetVertexX(evTag.GetVertexX());
@@ -295,4 +299,29 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &evTag) {
 //___________________________________________________________________________
 AliEventTag::~AliEventTag() {
   // AliEventTag destructor
+}
+
+// void AliEventTag::SetGUID(TString Pid) { ((AliFileTag * ) fFileRef.GetObject())->SetGUID(Pid);}
+// void AliEventTag::SetPath(TString Pid) {((AliFileTag * ) fFileRef.GetObject())->SetPath(Pid);}
+// void AliEventTag::SetMD5(TString Pid) {((AliFileTag * ) fFileRef.GetObject())->SetMD5(Pid);}
+// void AliEventTag::SetTURL(TString Pid) {((AliFileTag * ) fFileRef.GetObject())->SetTURL(Pid);}
+// void AliEventTag::SetSize(Long64_t i) {((AliFileTag * ) fFileRef.GetObject())->SetSize(i);}
+
+TString AliEventTag::GetFiredTriggerClasses(TString actclass) const 
+{
+  // Uses the actclass string to decode the trigger mask
+  // into the fired trigger classes
+  TObjArray *actrig = actclass.Tokenize(" ");
+  TString tFired("");
+
+  for(Int_t i = 0; i < actrig->GetEntries(); i++) {
+    if (fTriggerMask & (1ull << i)) {
+      TString str = ((TObjString *) actrig->At(i))->GetString();
+      if (tFired.Length() > 0)
+	tFired += " ";
+      tFired += str;
+    }
+  }
+
+  return tFired;
 }

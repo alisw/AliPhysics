@@ -19,12 +19,14 @@
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 
-class AliLog;
+#include <AliLog.h>
 class AliESD;
 
-#include "TMath.h"
+#include <TMath.h>
 #include "AliEventTag.h"
 #include "AliEventTagCuts.h"
+#include <TObjArray.h>
+#include <TObjString.h>
 
 ClassImp(AliEventTagCuts)
 
@@ -171,8 +173,8 @@ AliEventTagCuts::AliEventTagCuts() :
   fNumberOfSPDTrackletsMin(0), fNumberOfSPDTrackletsMax(100000),
   fNumberOfSPDTrackletsFlag(kFALSE),
   
-  fFiredTriggerCleassFlag(kFALSE), fFiredTriggerCleass("")
-
+  fFiredTriggerClassFlag(kFALSE), fFiredTriggerClass(""),
+  fActiveTriggerClasses("")
 {
   //Default constructor which calls the Reset method.
   Reset();
@@ -339,8 +341,8 @@ void AliEventTagCuts::Reset() {
   fNumberOfFiredChipsLayer2Min = 0, fNumberOfFiredChipsLayer2Max = 100000;
   fNumberOfSPDTrackletsMin = 0, fNumberOfSPDTrackletsMax = 100000;
 
-  fFiredTriggerCleass = "";
-  fFiredTriggerCleassFlag = kFALSE;
+  fFiredTriggerClass = "";
+  fFiredTriggerClassFlag = kFALSE;
 }
 
 //___________________________________________________________________________
@@ -942,10 +944,22 @@ void AliEventTagCuts::SetHBTRadiiRange(Float_t low, Float_t high) {
   fHBTRadiiFlag = kTRUE;
 }
 
-void AliEventTagCuts::SetFiredTriggerClass(TString aclass)
+void AliEventTagCuts::AddRequiredFiredTriggerClass(TString aclass)
 {
-  fFiredTriggerCleass = aclass;
-  fFiredTriggerCleassFlag = kTRUE;
+  fFiredTriggerClassFlag += " ";
+  fFiredTriggerClass += aclass;
+  fFiredTriggerClassFlag = kTRUE;
+}
+
+void AliEventTagCuts::ResetTriggerClasses()
+{
+  fFiredTriggerClassFlag = kFALSE;
+  fFiredTriggerClass = "";
+}
+
+void AliEventTagCuts::InitializeTriggerClasses(TString aclass)
+{
+  fActiveTriggerClasses = aclass;
 }
 
 //___________________________________________________________________________
@@ -1220,9 +1234,321 @@ Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const {
     if((EvTag->GetHBTRadii() < fHBTRadiiMin) || (EvTag->GetHBTRadii() > fHBTRadiiMax))
       return kFALSE; 
 
-  if (fFiredTriggerCleassFlag)
-    if (!EvTag->GetFiredTriggerClasses().Contains(fFiredTriggerCleass))
-      return kFALSE;
+  if (fFiredTriggerClassFlag) {
+    if (fActiveTriggerClasses.Length() == 0) {
+      AliWarning("Attempt to select Trigger classes but Active trigger classes not set in AliEventTagCuts. Cannot make the selection on Fired Trigger classes");
+    }
+    else {
+      TObjArray *tClasses = fFiredTriggerClass.Tokenize(" ");
+      Bool_t tTrig = kFALSE;
+    
+      for (int itrig=0; itrig<tClasses->GetEntries(); itrig++)
+	if (EvTag->GetFiredTriggerClasses(fActiveTriggerClasses).Contains(((TObjString *) tClasses->At(itrig))->GetString()))
+	  tTrig = kTRUE;
+      
+      tClasses->Delete();
+      delete tClasses;
+      
+      if (!tTrig)
+	return kFALSE;
+    }
+  }
   
   return kTRUE;
+}
+
+Bool_t AliEventTagCuts::IsAccepted(const AliEventTag *EvTag) const
+{
+  //Returns true if the event is accepted otherwise false.
+  if(fEventTypeFlag)
+    if(EvTag->GetEventType() != fEventType)
+      return kFALSE;
+  
+  if(fNumberOfFiredChipsLayer1Flag)
+    if((EvTag->GetNumberOfFiredChipsLayer1() < fNumberOfFiredChipsLayer1Min) || (EvTag->GetNumberOfFiredChipsLayer1() > fNumberOfFiredChipsLayer1Max))
+      return kFALSE;
+
+  if(fNumberOfFiredChipsLayer2Flag)
+    if((EvTag->GetNumberOfFiredChipsLayer2() < fNumberOfFiredChipsLayer2Min) || (EvTag->GetNumberOfFiredChipsLayer2() > fNumberOfFiredChipsLayer2Max))
+      return kFALSE;
+
+  if(fNumberOfSPDTrackletsFlag)
+    if((EvTag->GetNumberOfSPDTracklets() < fNumberOfSPDTrackletsMin) || (EvTag->GetNumberOfSPDTracklets() > fNumberOfSPDTrackletsMax))
+      return kFALSE;
+
+  if(fPeriodNumberFlag)
+    if((EvTag->GetPeriodNumber() < fPeriodNumberMin) || (EvTag->GetPeriodNumber() > fPeriodNumberMax))
+      return kFALSE;
+
+  if(fOrbitNumberFlag)
+    if((EvTag->GetOrbitNumber() < fOrbitNumberMin) || (EvTag->GetOrbitNumber() > fOrbitNumberMax))
+      return kFALSE;
+
+  if(fBunchCrossNumberFlag)
+    if((EvTag->GetBunchCrossNumber() < fBunchCrossNumberMin) || (EvTag->GetBunchCrossNumber() > fBunchCrossNumberMax))
+      return kFALSE;
+
+
+ if(fEtaFlag)
+    if((EvTag->GetEtaMaxPt() < fEtaMin) || (EvTag->GetEtaMaxPt() > fEtaMax))
+      return kFALSE;
+
+  if(fPhiFlag)
+    if((EvTag->GetPhiMaxPt() < fPhiMin) || (EvTag->GetPhiMaxPt() > fPhiMax))
+      return kFALSE;
+
+  if(fVzFlag)
+    if((EvTag->GetVertexZ() < fVzMin) || (EvTag->GetVertexZ() > fVzMax))
+      return kFALSE;
+  
+  if(fVyFlag)
+    if((EvTag->GetVertexY() < fVyMin) || (EvTag->GetVertexY() > fVyMax))
+      return kFALSE;
+  
+  if(fVxFlag)
+    if((EvTag->GetVertexX() < fVxMin) || (EvTag->GetVertexX() > fVxMax))
+      return kFALSE;
+  
+  if(fNParticipantsFlag)
+    if((EvTag->GetNumOfParticipants() < fNParticipantsMin) || (EvTag->GetNumOfParticipants() > fNParticipantsMax))
+      return kFALSE; 
+  
+  if(fImpactParamFlag)
+    if((EvTag->GetImpactParameter() < fImpactParamMin) || (EvTag->GetImpactParameter() > fImpactParamMax))
+      return kFALSE; 
+  
+  if(fPVFlag)
+    if((EvTag->GetVertexFlag() != fPrimaryVertexFlag))
+      return kFALSE; 
+  
+  if(fPVzErrorFlag)
+    if((EvTag->GetVertexZError() < fPrimaryVertexZErrorMin) || (EvTag->GetVertexZError() > fPrimaryVertexZErrorMax))
+      return kFALSE; 
+  if(fTriggerMaskFlag)
+    if((EvTag->GetTriggerMask() & fTriggerMask) != fTriggerMask)
+      return kFALSE; 
+  if(fTriggerClusterFlag)
+    if((EvTag->GetTriggerCluster() != fTriggerCluster))
+      return kFALSE; 
+
+  if(fZDCNeutron1EnergyFlag)
+    if((EvTag->GetZDCNeutron1Energy() < fZDCNeutron1EnergyMin) || (EvTag->GetZDCNeutron1Energy() > fZDCNeutron1EnergyMax))
+      return kFALSE; 
+  
+  if(fZDCProton1EnergyFlag)
+    if((EvTag->GetZDCProton1Energy() < fZDCProton1EnergyMin) || (EvTag->GetZDCProton1Energy() > fZDCProton1EnergyMax))
+      return kFALSE; 
+  
+  if(fZDCNeutron2EnergyFlag)
+    if((EvTag->GetZDCNeutron2Energy() < fZDCNeutron2EnergyMin) || (EvTag->GetZDCNeutron2Energy() > fZDCNeutron2EnergyMax))
+      return kFALSE; 
+  
+  if(fZDCProton2EnergyFlag)
+    if((EvTag->GetZDCProton2Energy() < fZDCProton2EnergyMin) || (EvTag->GetZDCProton2Energy() > fZDCProton2EnergyMax))
+      return kFALSE; 
+  
+  if(fZDCEMEnergyFlag)
+    if((EvTag->GetZDCEMEnergy(1) < fZDCEMEnergyMin) || (EvTag->GetZDCEMEnergy(1) > fZDCEMEnergyMax))
+      return kFALSE; 
+  
+  if(fT0VertexZFlag)
+    if((EvTag->GetT0VertexZ() < fT0VertexZMin) || (EvTag->GetT0VertexZ() > fT0VertexZMax))
+      return kFALSE; 
+  
+  if(fMultFlag)
+    if((EvTag->GetNumOfTracks() < fMultMin) || (EvTag->GetNumOfTracks() > fMultMax))
+      return kFALSE; 
+  
+  if(fPosMultFlag)
+    if((EvTag->GetNumOfPosTracks() < fPosMultMin) || (EvTag->GetNumOfPosTracks() > fPosMultMax))
+      return kFALSE; 
+  
+  if(fNegMultFlag)
+    if((EvTag->GetNumOfNegTracks() < fNegMultMin) || (EvTag->GetNumOfNegTracks() > fNegMultMax))
+      return kFALSE; 
+  
+  if(fNeutrMultFlag)
+    if((EvTag->GetNumOfNeutrTracks() < fNeutrMultMin) || (EvTag->GetNumOfNeutrTracks() > fNeutrMultMax))
+      return kFALSE; 
+  
+  if(fNV0sFlag)
+    if((EvTag->GetNumOfV0s() < fNV0sMin) || (EvTag->GetNumOfV0s() > fNV0sMax))
+      return kFALSE; 
+  
+  if(fNCascadesFlag)
+    if((EvTag->GetNumOfCascades() < fNCascadesMin) || (EvTag->GetNumOfCascades() > fNCascadesMax))
+      return kFALSE; 
+  
+  if(fNKinksFlag)
+    if((EvTag->GetNumOfKinks() < fNKinksMin) || (EvTag->GetNumOfKinks() > fNKinksMax))
+      return kFALSE; 
+
+
+  if(fNPMDTracksFlag)
+    if((EvTag->GetNumOfPMDTracks() < fNPMDTracksMin) || (EvTag->GetNumOfPMDTracks() > fNPMDTracksMax))
+      return kFALSE; 
+  if(fNFMDTracksFlag)
+    if((EvTag->GetNumOfFMDTracks() < fNFMDTracksMin) || (EvTag->GetNumOfFMDTracks() > fNFMDTracksMax))
+      return kFALSE; 
+  if(fNPHOSClustersFlag)
+    if((EvTag->GetNumOfPHOSClusters() < fNPHOSClustersMin) || (EvTag->GetNumOfPHOSClusters() > fNPHOSClustersMax))
+      return kFALSE; 
+  if(fNEMCALClustersFlag)
+    if((EvTag->GetNumOfEMCALClusters() < fNEMCALClustersMin) || (EvTag->GetNumOfEMCALClusters() > fNEMCALClustersMax))
+      return kFALSE; 
+  if(fNJetCandidatesFlag)
+    if((EvTag->GetNumOfJetCandidates() < fNJetCandidatesMin) || (EvTag->GetNumOfJetCandidates() > fNJetCandidatesMax))
+      return kFALSE; 
+
+
+  if(fTopJetEnergyMinFlag)
+    if((EvTag->GetMaxJetEnergy() < fTopJetEnergyMin))
+      return kFALSE; 
+  
+  if(fNHardPhotonCandidatesFlag)
+    if((EvTag->GetNumOfHardPhotonsCandidates() < fNHardPhotonCandidatesMin) || (EvTag->GetNumOfHardPhotonsCandidates() > fNHardPhotonCandidatesMax))
+      return kFALSE; 
+  
+  if(fTopNeutralEnergyMinFlag)
+    if((EvTag->GetMaxNeutralEnergy() < fTopNeutralEnergyMin))
+      return kFALSE; 
+  
+  if(fNChargedAbove1GeVFlag)
+    if((EvTag->GetNumOfChargedAbove1GeV() < fNChargedAbove1GeVMin) || (EvTag->GetNumOfChargedAbove1GeV() > fNChargedAbove1GeVMax))
+      return kFALSE; 
+  
+  if(fNChargedAbove3GeVFlag)
+    if((EvTag->GetNumOfChargedAbove3GeV() < fNChargedAbove3GeVMin) || (EvTag->GetNumOfChargedAbove3GeV() > fNChargedAbove3GeVMax))
+      return kFALSE; 
+  
+  if(fNChargedAbove10GeVFlag)
+    if((EvTag->GetNumOfChargedAbove10GeV() < fNChargedAbove10GeVMin) || (EvTag->GetNumOfChargedAbove10GeV() > fNChargedAbove10GeVMax))
+      return kFALSE; 
+  
+  if(fNMuonsAbove1GeVFlag)
+    if((EvTag->GetNumOfMuonsAbove1GeV() < fNMuonsAbove1GeVMin) || (EvTag->GetNumOfMuonsAbove1GeV() > fNMuonsAbove1GeVMax))
+      return kFALSE; 
+  
+  if(fNMuonsAbove3GeVFlag)
+    if((EvTag->GetNumOfMuonsAbove3GeV() < fNMuonsAbove3GeVMin) || (EvTag->GetNumOfMuonsAbove3GeV() > fNMuonsAbove3GeVMax))
+      return kFALSE; 
+  
+  if(fNMuonsAbove10GeVFlag)
+    if((EvTag->GetNumOfMuonsAbove10GeV() < fNMuonsAbove10GeVMin) || (EvTag->GetNumOfMuonsAbove10GeV() > fNMuonsAbove10GeVMax))
+      return kFALSE; 
+  
+  if(fNElectronsAbove1GeVFlag)
+    if((EvTag->GetNumOfElectronsAbove1GeV()  < fNElectronsAbove1GeVMin) || (EvTag->GetNumOfElectronsAbove1GeV()  > fNElectronsAbove1GeVMax))
+      return kFALSE; 
+  
+  if(fNElectronsAbove3GeVFlag)
+    if((EvTag->GetNumOfElectronsAbove3GeV() < fNElectronsAbove3GeVMin) || (EvTag->GetNumOfElectronsAbove3GeV() > fNElectronsAbove3GeVMax))
+      return kFALSE; 
+  
+  if(fNElectronsAbove10GeVFlag)
+    if((EvTag->GetNumOfElectronsAbove10GeV() < fNElectronsAbove10GeVMin) || (EvTag->GetNumOfElectronsAbove10GeV() > fNElectronsAbove10GeVMax))
+      return kFALSE; 
+  
+  if(fNElectronsFlag)
+    if((EvTag->GetNumOfElectrons() < fNElectronsMin) || (EvTag->GetNumOfElectrons() > fNElectronsMax))
+      return kFALSE; 
+  
+  if(fNFWMuonsFlag)
+    if((EvTag->GetNumOfFWMuons() < fNFWMuonsMin) || (EvTag->GetNumOfFWMuons() > fNFWMuonsMax))
+      return kFALSE; 
+  
+  if(fNFWMatchedMuonsFlag)
+    if((EvTag->GetNumOfFWMatchedMuons() < fNFWMatchedMuonsMin) || (EvTag->GetNumOfFWMatchedMuons() > fNFWMatchedMuonsMax))
+      return kFALSE; 
+  
+  if(fNMuonsFlag)
+    if((EvTag->GetNumOfMuons() < fNMuonsMin) || (EvTag->GetNumOfMuons() > fNMuonsMax))
+      return kFALSE; 
+  
+  if(fNPionsFlag)
+    if((EvTag->GetNumOfPions() < fNPionsMin) || (EvTag->GetNumOfPions() > fNPionsMax))
+      return kFALSE; 
+  
+  if(fNKaonsFlag)
+    if((EvTag->GetNumOfKaons() < fNKaonsMin) || (EvTag->GetNumOfKaons() > fNKaonsMax))
+      return kFALSE; 
+  
+  if(fNProtonsFlag)
+    if((EvTag->GetNumOfProtons() < fNProtonsMin) || (EvTag->GetNumOfProtons() > fNProtonsMax))
+      return kFALSE; 
+  
+  if(fNLambdasFlag)
+    if((EvTag->GetNumOfLambdas() < fNLambdasMin) || (EvTag->GetNumOfLambdas() > fNLambdasMax))
+      return kFALSE; 
+  
+  if(fNPhotonFlag)
+    if((EvTag->GetNumOfPhotons() < fNPhotonsMin) || (EvTag->GetNumOfPhotons() > fNPhotonsMax))
+      return kFALSE; 
+  
+  if(fNPi0sFlag)
+    if((EvTag->GetNumOfPi0s() < fNPi0sMin) || (EvTag->GetNumOfPi0s() > fNPi0sMax))
+      return kFALSE; 
+  
+  if(fNNeutronsFlag)
+    if((EvTag->GetNumOfNeutrons() < fNNeutronsMin) || (EvTag->GetNumOfNeutrons() > fNNeutronsMax))
+      return kFALSE; 
+  
+  if(fNKaon0sFlag)
+    if((EvTag->GetNumOfKaon0s() < fNKaon0sMin) || (EvTag->GetNumOfKaon0s() > fNKaon0sMax))
+      return kFALSE; 
+  
+  if(fTotalPFlag)
+    if((EvTag->GetTotalMomentum() < fTotalPMin) || (EvTag->GetTotalMomentum() > fTotalPMax))
+      return kFALSE; 
+  
+  if(fMeanPtFlag)
+    if((EvTag->GetMeanPt() < fMeanPtMin) || (EvTag->GetMeanPt() > fMeanPtMax))
+      return kFALSE; 
+  
+  if(fTopPtMinFlag)
+    if((EvTag->GetMaxPt() < fTopPtMin))
+      return kFALSE; 
+  
+  if(fTotalNeutralPFlag)
+    if((EvTag->GetNeutralTotalMomentum() < fTotalNeutralPMin) || (EvTag->GetNeutralTotalMomentum() > fTotalNeutralPMax))
+      return kFALSE; 
+  
+  if(fMeanNeutralPtFlag)
+    if((EvTag->GetNeutralMeanPt() < fMeanNeutralPtMin) || (EvTag->GetNeutralMeanPt() >fMeanNeutralPtMax ))
+      return kFALSE; 
+  
+  if(fTopNeutralPtMinFlag)
+    if((EvTag->GetNeutralMaxPt() < fTopNeutralPtMin))
+      return kFALSE; 
+  
+  if(fEventPlaneAngleFlag)
+    if((EvTag->GetEventPlaneAngle() < fEventPlaneAngleMin) || (EvTag->GetEventPlaneAngle() > fEventPlaneAngleMax))
+      return kFALSE; 
+  
+  if(fHBTRadiiFlag)
+    if((EvTag->GetHBTRadii() < fHBTRadiiMin) || (EvTag->GetHBTRadii() > fHBTRadiiMax))
+      return kFALSE; 
+
+  if (fFiredTriggerClassFlag) {
+    if (fActiveTriggerClasses.Length() == 0) {
+      AliWarning("Attempt to select Trigger classes but Active trigger classes not set in AliEventTagCuts. Cannot make the selection on Fired Trigger classes");
+    }
+    else {
+      TObjArray *tClasses = fFiredTriggerClass.Tokenize(" ");
+      Bool_t tTrig = kFALSE;
+    
+      for (int itrig=0; itrig<tClasses->GetEntries(); itrig++)
+	if (EvTag->GetFiredTriggerClasses(fActiveTriggerClasses).Contains(((TObjString *) tClasses->At(itrig))->GetString()))
+	  tTrig = kTRUE;
+      
+      tClasses->Delete();
+      delete tClasses;
+      
+      if (!tTrig)
+	return kFALSE;
+    }
+  }
+  
+  return kTRUE;
+  
 }

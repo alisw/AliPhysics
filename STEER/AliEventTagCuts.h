@@ -104,9 +104,12 @@ class AliEventTagCuts : public TObject {
   void SetNumberOfSPDTrackletsRange(Int_t low, Int_t high);
 
   // Trigger
-  void SetFiredTriggerClass(TString aclass);
+  void ResetTriggerClasses();
+  void AddRequiredFiredTriggerClass(TString aclass);
+  void InitializeTriggerClasses(TString aclass);
 
   Bool_t IsAccepted(AliEventTag *EvTag) const;
+  Bool_t IsAccepted(const AliEventTag *EvTag) const;
 
   //____________________________________________________//
  private:
@@ -260,10 +263,12 @@ class AliEventTagCuts : public TObject {
   Int_t fNumberOfSPDTrackletsMin, fNumberOfSPDTrackletsMax;   //min/max number of SPD tracklets
   Bool_t fNumberOfSPDTrackletsFlag;                          // Shows whether this cut is used or not
 
-  Bool_t fFiredTriggerCleassFlag;                             // Shows whether this cut is used or not
-  TString fFiredTriggerCleass;                                // Triger class must be present to accept event
+  Bool_t fFiredTriggerClassFlag;                              // Shows whether this cut is used or not
+  TString fFiredTriggerClass;                                 // Triger class must be present to accept event
 
-  ClassDef(AliEventTagCuts, 3)
+  TString fActiveTriggerClasses;                              // Trigger classes active for this run
+
+  ClassDef(AliEventTagCuts, 4)
 };
 
 #endif

@@ -34,7 +34,17 @@ AliLHCTagCuts::AliLHCTagCuts() :
   fLHCStateFlag(kFALSE),
   fLHCLuminosityMin(0),
   fLHCLuminosityMax(0),
-  fLHCLuminosityFlag(kFALSE)
+  fLHCLuminosityFlag(kFALSE),
+  fNBunchesRange(), 
+  fNBunchesFlag(kFALSE),     
+  fFillingScheme(""),        
+  fFillingSchemeFlag(kFALSE),          
+  fFillNoRange(),       
+  fFillNoFlag(kFALSE),           
+  fBeamEnergyRange(),   
+  fBeamEnergyFlag(kFALSE),       
+  fBunchIntensityRange(),
+  fBunchIntensityFlag(kFALSE)  
 {
   //Default constructor which calls the Reset method.
   Reset();
@@ -53,6 +63,20 @@ void AliLHCTagCuts::Reset() {
   fLHCLuminosityMin = -1.0;
   fLHCLuminosityMax = 0.0;
   fLHCLuminosityFlag = kFALSE;
+  fNBunchesRange[0] = 0; 
+  fNBunchesRange[1] = 10000; 
+  fNBunchesFlag = kFALSE;
+  fFillingScheme = "";        
+  fFillingSchemeFlag = kFALSE;          
+  fFillNoRange[0] = 0;       
+  fFillNoRange[1] = 10000000;       
+  fFillNoFlag = kFALSE;           
+  fBeamEnergyRange[0] = 0.0;
+  fBeamEnergyRange[1] = 10000;   
+  fBeamEnergyFlag = kFALSE;       
+  fBunchIntensityRange[0] = 0.0;
+  fBunchIntensityRange[1] = 1e30;
+  fBunchIntensityFlag = kFALSE;  
 }
 
 //___________________________________________________________________________
@@ -64,6 +88,21 @@ Bool_t AliLHCTagCuts::IsAccepted(AliLHCTag *lhcTag) const {
   if(fLHCLuminosityFlag)
     if((lhcTag->GetLuminosity() < fLHCLuminosityMin)||(lhcTag->GetLuminosity() > fLHCLuminosityMax))
       return kFALSE;
- 
+  if (fNBunchesFlag) 
+    if ((lhcTag->GetNBunches() < fNBunchesRange[0]) || (lhcTag->GetNBunches() > fNBunchesRange[1]))
+      return kFALSE;
+  if (fFillingSchemeFlag) 
+    if (!(lhcTag->GetFillingScheme().Contains(fFillingScheme)))
+      return kFALSE;
+  if (fFillNoFlag) 
+    if ((lhcTag->GetFillNo() < fFillNoRange[0]) || (lhcTag->GetFillNo() > fFillNoRange[1]))
+      return kFALSE;
+  if (fBeamEnergyFlag) 
+    if ((lhcTag->GetBeamEnergy() < fBeamEnergyRange[0]) || (lhcTag->GetBeamEnergy() > fBeamEnergyRange[1]))
+      return kFALSE;
+  if (fBunchIntensityFlag) 
+    if ((lhcTag->GetBunchIntensity() < fBunchIntensityRange[0]) || (lhcTag->GetBunchIntensity() > fBunchIntensityRange[1]))
+      return kFALSE;
+
   return kTRUE;
 }

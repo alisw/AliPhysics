@@ -34,9 +34,15 @@ AliDetectorTagCuts::AliDetectorTagCuts() :
   TObject(),
   fDetectorsReco(0),
   fDetectorsDAQ(0),
-  fDetectorsFlag(kFALSE)
+  fDetectorsFlag(kFALSE),
+  fDetectorValidityMatch(),
+  fDetectorValidityFlag()
 {
   //Default constructor which calls the Reset method.
+  for (int iter = 0; iter<AliDAQ::kHLTId; iter++) {
+    fDetectorValidityMatch[iter] = 0;
+    fDetectorValidityFlag[iter] = 0;
+  }
 }
 
 //___________________________________________________________________________
@@ -50,7 +56,13 @@ Bool_t AliDetectorTagCuts::IsAccepted(AliDetectorTag *detTag) const {
   if (fDetectorsFlag) {
     Bool_t daqsel = (detTag->GetIntDetectorMaskDAQ() & fDetectorsDAQ) > 0;
     Bool_t recsel = (detTag->GetIntDetectorMaskReco() & fDetectorsReco) > 0;
-    return (daqsel && recsel);
+    Bool_t valsel = kTRUE;
+    for (int iter=0;  iter<AliDAQ::kHLTId; iter++) {
+      if (fDetectorValidityFlag[iter])
+	if (!(fDetectorValidityMatch[iter] == detTag->GetDetectorValidityRange(iter)))
+	  valsel = kFALSE;
+    }
+    return (daqsel && recsel && valsel);
   }
   return true;
 
@@ -63,6 +75,15 @@ Bool_t AliDetectorTagCuts::IsAccepted(AliDetectorTag *detTag) const {
 //     }
 //   }
 //   return kTRUE;
+}
+  
+void AliDetectorTagCuts::SetDetectorValidityValue(TString det, UShort_t val)
+{
+  // Set Validity requiement for detector
+
+  Short_t detid = AliDAQ::DetectorID(det.Data());
+  fDetectorValidityMatch[detid] = val;
+  fDetectorsFlag = kTRUE;
 }
 
 //___________________________________________________________________________

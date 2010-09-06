@@ -39,7 +39,7 @@ class AliTagCreator : public TObject {
   //____________________________________________________//
   Bool_t MergeTags(const char* type);
   Bool_t MergeTags(const char* type, TGridResult *result);
-  Bool_t MergeTags(const char *type, const char *inflist);
+  Bool_t MergeTags(const char* type, const char *inflist);
 
   Bool_t MergeTagsForRun(const char* type);
   Bool_t MergeTagsForRun(const char* type, TGridResult *result);

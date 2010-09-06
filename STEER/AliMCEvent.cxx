@@ -183,16 +183,28 @@ void AliMCEvent::Clean()
     }
 }
 
+#include <iostream>
+
 void AliMCEvent::FinishEvent()
 {
   // Clean-up after event
   //    
     if (fStack) fStack->Reset(0);
+    std::cout << "MCParticles delete " << fMCParticleMap->GetEntries() << std::endl;
     fMCParticles->Delete();
-    fMCParticleMap->Clear();
-    if (fTRBuffer)
+    std::cout << "ParticleMap clear " << std::endl;
+    
+    if (fMCParticleMap) 
+      fMCParticleMap->Clear();
+    std::cout << "Clear done" << std::endl;
+    if (fTRBuffer) {
+      std::cout << "TRBuffer delete" << std::endl;
       fTRBuffer->Delete();
-    fTrackReferences->Delete();
+    }
+    //    fTrackReferences->Delete();
+  std::cout << "TrackReferences clear" << std::endl;
+    fTrackReferences->Clear();
+  std::cout << "Finished" << std::endl;
     fNparticles = -1;
     fNprimaries = -1;    
     fStack      =  0;
@@ -264,7 +276,7 @@ void AliMCEvent::ReorderAndExpandTreeTR()
     fTmpFileTR = new TFile("TrackRefsTmp.root", "recreate");
     fTmpTreeTR = new TTree("TreeTR", "TrackReferences");
     if (!fTRBuffer)  fTRBuffer = new TClonesArray("AliTrackReference", 100);
-    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTRBuffer, 32000, 0);
+    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTRBuffer, 64000, 0);
     
 
 //

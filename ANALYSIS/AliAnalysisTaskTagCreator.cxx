@@ -117,13 +117,19 @@ void AliAnalysisTaskTagCreator::UserExec(Option_t */*option*/)
 	fturl = url->GetFile();
     }
 
-    evtTag->SetGUID(guid);
-    if(fAODFileName.Length() != 0) {
-	evtTag->SetMD5("");
-	evtTag->SetTURL(fturl);
-	evtTag->SetSize(0);
+    if (fRunTag->GetFileId(guid) == -1) {
+      AliFileTag *eftag = new AliFileTag();
+
+      eftag->SetGUID(guid);
+      if(fAODFileName.Length() != 0) {
+	eftag->SetMD5("");
+	eftag->SetTURL(fturl);
+	eftag->SetSize(0);
+      }
+      else eftag->SetPath(fturl);
+
+      fRunTag->AddFileTag(eftag);
     }
-    else evtTag->SetPath(fturl);
     //
     // Add the event tag
     fRunTag->AddEventTag(*evtTag);

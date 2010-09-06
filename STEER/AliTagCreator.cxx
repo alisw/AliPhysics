@@ -446,15 +446,19 @@ Bool_t AliTagCreator::MergeToSingleRunTag(TChain *chain, const char *filename)
 
   AliRunTag *tag = new AliRunTag;
   TTree * ttag = new TTree("T","A Tree with event tags");
-  TBranch * btag = ttag->Branch("AliTAG", &tag);
+  TBranch * btag = ttag->Branch("AliTAG", &tag, 1000000);
   btag->SetCompressionLevel(9);
+  ttag->AutoSave("10000");
 
   AliRunTag *rtag = new AliRunTag();
   chain->SetBranchAddress("AliTAG", &rtag);
 
+  AliFileTag *evt;
+
   if (chain->GetEntries()) {
     chain->GetEntry(0);
     tag->CopyStandardContent(rtag);
+    tag->Clear();
 
     int runno = rtag->GetRunId();
 
@@ -465,8 +469,9 @@ Bool_t AliTagCreator::MergeToSingleRunTag(TChain *chain, const char *filename)
 	continue;
       }
 
-      for (int iev=0; iev<rtag->GetEventTags()->GetEntries(); iev++) {
-	tag->AddEventTag(*((AliEventTag *) rtag->GetEventTags()->At(iev)));
+      for (int iev=0; iev<rtag->GetNFiles(); iev++) {
+	evt = (AliFileTag *) rtag->GetFileTag(iev);
+	tag->AddFileTag(new AliFileTag(*evt));
       }
     }
   }

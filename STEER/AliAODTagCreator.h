@@ -36,7 +36,7 @@ class TGridResult;
 class AliAODEvent;
 class AliRunTag;
 class AliEventTag;
-
+class AliFileTag;
 
 //___________________________________________________________________________
 class AliAODTagCreator : public AliTagCreator {

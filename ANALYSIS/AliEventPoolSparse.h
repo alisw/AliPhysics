@@ -16,6 +16,10 @@
 
 class TChain;
 class TTreeFormula;
+class AliRunTagCuts;
+class AliEventTagCuts;
+class AliDetectorTagCuts;
+class AliLHCTagCuts;
 
 //_____________________________________________________________________________
 class AliEventPoolSparse : public AliVEventPool {
@@ -62,6 +66,11 @@ class AliEventPoolSparse : public AliVEventPool {
   void SetDetCut(const char * cut);
   void SetEventCut(const char * cut);
 
+  void SetRunCut(AliRunTagCuts* cut);
+  void SetEventCut(AliEventTagCuts* cut);
+  void SetDetectorCut(AliDetectorTagCuts* cut);
+  void SetLHCCut(AliLHCTagCuts* cut);
+
   TTreeFormula ** GetPoolVars() const {return fVars;}
   TTreeFormula * GetRunCut() const {return fRunCut;}
   TTreeFormula * GetLHCCut() const {return fLHCCut;}
@@ -91,9 +100,15 @@ class AliEventPoolSparse : public AliVEventPool {
   TTreeFormula * fLHCCut;// LNC-based selection
   TTreeFormula * fDetCut;// Detector-based selection
   TTreeFormula * fEvCut; // Event-based selection
+
+  AliRunTagCuts *fRunTagCut; // RunTag class cut
+  AliEventTagCuts *fEventTagCut; // EventTag class cut
+  AliDetectorTagCuts *fDetectorTagCut; // DetectorTag class cut
+  AliLHCTagCuts *fLHCTagCut; // LHCTag class cut
+
   Int_t fBinNumber;      // Current bin
   
-  ClassDef(AliEventPoolSparse,1)  // 
+  ClassDef(AliEventPoolSparse,2)  // 
 };
 
 #endif

@@ -11,7 +11,7 @@ SRCS = AliVParticle.cxx \
        AliVEventPool.cxx \
        AliVCuts.cxx \
        AliPID.cxx AliLog.cxx \
-       AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx \
+       AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx AliFileTag.cxx \
        AliEventTagCuts.cxx AliRunTagCuts.cxx \
        AliLHCTagCuts.cxx AliDetectorTagCuts.cxx \
        AliTagCreator.cxx \

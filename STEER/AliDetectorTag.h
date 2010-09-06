@@ -26,14 +26,20 @@ class AliDetectorTag : public TObject {
   AliDetectorTag &operator=(const AliDetectorTag &rhs);
   virtual ~AliDetectorTag();
   
+  void UpdateFromRunTable(AliDetectorTag &detTag);
+
   //____________________________________________________//
   void SetDetectorMask(UInt_t mask)     {fMaskDAQ = mask; fMaskReco = mask; }
   void SetDetectorMaskDAQ(UInt_t mask)  {fMaskDAQ = mask;}
   void SetDetectorMaskReco(UInt_t mask) {fMaskReco = mask;}
+  void SetDetectorValidityRange(UChar_t idet, UShort_t vr) {fDetectorValidityRange[idet] = vr; }
+  void SetDetectorStatus(UChar_t idet, TString co) { fDetectorStatus[idet] = co; }
   TObjArray *GetDetectorMask() { return 0; } // {return fDetectorArray;}
   UInt_t GetIntDetectorMask() { return fMaskDAQ; }
   UInt_t GetIntDetectorMaskDAQ() { return fMaskDAQ; }
   UInt_t GetIntDetectorMaskReco() { return fMaskReco; }
+  UShort_t GetDetectorValidityRange(UChar_t idet) const { return fDetectorValidityRange[idet]; }
+  TString  GetDetectorStatus(UChar_t idet) const { return fDetectorStatus[idet]; }
   const char *GetDetectorMaskDAQ() { return AliDAQ::ListOfTriggeredDetectors(fMaskDAQ); }
   const char *GetDetectorMaskReco() { return AliDAQ::ListOfTriggeredDetectors(fMaskReco); }
   void PrintDetectorMask();
@@ -96,7 +102,10 @@ class AliDetectorTag : public TObject {
   //   Bool_t     fZDC;           //ZDC active = 1
   //   Bool_t     fEMCAL;         //EMCAL active = 1
 
-  ClassDef(AliDetectorTag, 5)  //(ClassName, ClassVersion)
+  UShort_t   fDetectorValidityRange[AliDAQ::kHLTId];
+  TString    fDetectorStatus[AliDAQ::kHLTId];
+
+  ClassDef(AliDetectorTag, 6)  //(ClassName, ClassVersion)
 };
 //______________________________________________________________________________
 

@@ -29,9 +29,53 @@ ClassImp(AliLHCTag)
   AliLHCTag::AliLHCTag() : 
     TObject(),  
     fLHCState(0),
-    fLHCLuminosity(-10.)
+    fLHCLuminosity(-10.),
+    fNBunches(0),
+    fFillingScheme(),
+    fFillNo(-1),
+    fBeamEnergy(-1.0),
+    fBunchIntensity(0.0)
 {
   // AliLHCTag default constructor
+}
+
+AliLHCTag::AliLHCTag(const AliLHCTag &tag):
+  TObject(tag),
+  fLHCState(tag.fLHCState),
+  fLHCLuminosity(tag.fLHCLuminosity),
+  fNBunches(tag.fNBunches),
+  fFillingScheme(tag.fFillingScheme),
+  fFillNo(tag.fFillNo),
+  fBeamEnergy(tag.fBeamEnergy),
+  fBunchIntensity(tag.fBunchIntensity)
+{
+}
+
+AliLHCTag &AliLHCTag::operator=(const AliLHCTag &tag)
+{
+  if (this != &tag) {
+    TObject::operator=(tag);
+
+    TString state(tag.GetLHCState());
+    SetLHCState(state);
+    SetLuminosity(tag.GetLuminosity());
+    SetNBunches(tag.GetNBunches());
+    SetFillingScheme(tag.GetFillingScheme());
+    SetFillNo(tag.GetFillNo());
+    SetBeamEnergy(tag.GetBeamEnergy());
+    SetBunchIntensity(tag.GetBunchIntensity());
+  }
+
+  return *this;
+}
+
+void AliLHCTag::UpdateFromRunTable(AliLHCTag &tag)
+{
+  SetNBunches(tag.GetNBunches());
+  SetFillingScheme(tag.GetFillingScheme());
+  SetFillNo(tag.GetFillNo());
+  SetBeamEnergy(tag.GetBeamEnergy());
+  SetBunchIntensity(tag.GetBunchIntensity());  
 }
 
 //___________________________________________________________________________

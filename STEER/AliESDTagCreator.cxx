@@ -201,7 +201,7 @@ Bool_t AliESDTagCreator::ReadCAFCollection(const char *filename) {
 void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   //private method that creates tag files
   TString fSession = type;
-  TString fguid, fmd5, fturl;
+  TString fguid, fmd5, fturl, foldguid;
   TString fTempGuid;
 
   Int_t iRunNumber = 0;
@@ -230,7 +230,6 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   localFileName += ".ESD.tag.root";
 
   TString fileName;
-  TRefArray tmp;
  
   if(fStorage == 0) {
     fileName = localFileName.Data();      
@@ -259,258 +258,64 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   tag->SetMagneticField(esd->GetMagneticField());
   tag->SetBeamEnergy(esd->GetBeamEnergy());
   tag->SetBeamType(TString(esd->GetBeamType()));
+  tag->SetActiveTriggerClasses(esd->GetESDRun()->GetActiveTriggerClasses());
+  
+  foldguid = "";
 
   for(Int_t iEventNumber = 0; iEventNumber < chain->GetEntries(); iEventNumber++) {
     FillEventTag(chain, evTag, iEventNumber, esd);
-//     ntrack = 0; nPos = 0; nNeg = 0; nNeutr =0;
-//     nK0s = 0; nNeutrons = 0; nPi0s = 0;
-//     nGamas = 0; nProtons = 0; nKaons = 0;
-//     nPions = 0; nMuons = 0; nElectrons = 0; nFWMuons = 0; nFWMatchedMuons = 0;	  
-//     nCh1GeV = 0; nCh3GeV = 0; nCh10GeV = 0;
-//     nMu1GeV = 0; nMu3GeV = 0; nMu10GeV = 0;
-//     nEl1GeV = 0; nEl3GeV = 0; nEl10GeV = 0;
-//     maxPt = .0; etamaxPt = -999.; phimaxPt = -999.; meanPt = .0; totalP = .0;
-//     fVertexflag = 1;
-    
-//     chain->GetEntry(iEventNumber);    
-//     esdold = esd->GetAliESDOld();
-//     if(esdold) esd->CopyFromOldESD();
-
-    TFile *file = chain->GetFile();
-    const TUrl *url = file->GetEndpointUrl();
-    fguid = file->GetUUID().AsString();
-    if(fSession == "grid") {
-      TString fturltemp = "alien://"; fturltemp += url->GetFile();
-      fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
-    }
-    else fturl = url->GetFile();
 
     if(iEventNumber == 0) iInitRunNumber = esd->GetRunNumber();
     iRunNumber = esd->GetRunNumber();
     if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD - You are trying to merge different runs!!!");
 
-//     const AliESDVertex * vertexIn = esd->GetVertex();
-//     fVertexName = vertexIn->GetName();
-//     if(fVertexName == "default") fVertexflag = 0;
+    TFile *file = chain->GetFile();
+    const TUrl *url = file->GetEndpointUrl();
+    fguid = file->GetUUID().AsString();
 
-//     for (Int_t iTrackNumber = 0; iTrackNumber < esd->GetNumberOfTracks(); iTrackNumber++) {
-//       AliESDtrack * esdTrack = esd->GetTrack(iTrackNumber);
-//       if(esdTrack->GetLabel() != 0) fIsSim = kTRUE;
-//       else if(esdTrack->GetLabel() == 0) fIsSim = kFALSE;
-//       UInt_t status = esdTrack->GetStatus();
-      
-//       //select only tracks with ITS refit
-//       if ((status&AliESDtrack::kITSrefit)==0) continue;
-//       //select only tracks with TPC refit
-//       if ((status&AliESDtrack::kTPCrefit)==0) continue;
-      
-//       //select only tracks with the "combined PID"
-//       if ((status&AliESDtrack::kESDpid)==0) continue;
-//       Double_t p[3];
-//       esdTrack->GetPxPyPz(p);
-//       Double_t pt2 = p[0]*p[0]+p[1]*p[1];
-//       Double_t momentum = TMath::Sqrt(pt2+p[2]*p[2]);
-//       Double_t fPt = TMath::Sqrt(pt2);
-//       totalP += momentum;
-//       meanPt += fPt;
-//       if(fPt > maxPt) {
-// 	  maxPt = fPt;
-// 	  phimaxPt = esdTrack->Phi();
-// 	  etamaxPt = esdTrack->Eta();
-//       }
-      
-//       if(esdTrack->GetSign() > 0) {
-// 	nPos++;
-// 	if(fPt > fLowPtCut) nCh1GeV++;
-// 	if(fPt > fHighPtCut) nCh3GeV++;
-// 	if(fPt > fVeryHighPtCut) nCh10GeV++;
-//       }
-//       if(esdTrack->GetSign() < 0) {
-// 	nNeg++;
-// 	if(fPt > fLowPtCut) nCh1GeV++;
-// 	if(fPt > fHighPtCut) nCh3GeV++;
-// 	if(fPt > fVeryHighPtCut) nCh10GeV++;
-//       }
-//       if(esdTrack->GetSign() == 0) nNeutr++;
-      
-//       //PID
-//       Double_t prob[5];
-//       esdTrack->GetESDpid(prob);
-      
-//       Double_t rcc = 0.0;
-//       for(Int_t i = 0; i < AliPID::kSPECIES; i++) rcc += prob[i]*partFrac[i];
-//       if(rcc == 0.0) continue;
-//       //Bayes' formula
-//       Double_t w[5];
-//       for(Int_t i = 0; i < AliPID::kSPECIES; i++) w[i] = prob[i]*partFrac[i]/rcc;
-      
-//       //protons
-//       if ((w[4]>w[3])&&(w[4]>w[2])&&(w[4]>w[1])&&(w[4]>w[0])) nProtons++;
-//       //kaons
-//       if ((w[3]>w[4])&&(w[3]>w[2])&&(w[3]>w[1])&&(w[3]>w[0])) nKaons++;
-//       //pions
-//       if ((w[2]>w[4])&&(w[2]>w[3])&&(w[2]>w[1])&&(w[2]>w[0])) nPions++; 
-//       //electrons
-//       if ((w[0]>w[4])&&(w[0]>w[3])&&(w[0]>w[2])&&(w[0]>w[1])) {
-// 	nElectrons++;
-// 	if(fPt > fLowPtCut) nEl1GeV++;
-// 	if(fPt > fHighPtCut) nEl3GeV++;
-// 	if(fPt > fVeryHighPtCut) nEl10GeV++;
-//       }	  
-//       ntrack++;
-//     }//esd track loop
-    
-//     /////////////
-//     //muon code//
-//     ////////////
-//     Int_t nMuonTracks = esd->GetNumberOfMuonTracks();
-//     // loop over all reconstructed tracks (also first track of combination)
-//     for (Int_t iTrack = 0; iTrack <  nMuonTracks;  iTrack++) {
-//       AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
-//       if (muonTrack == 0x0) continue;
-      
-//       // Coordinates at vertex
-//       fZ = muonTrack->GetZ(); 
-//       fY = muonTrack->GetBendingCoor();
-//       fX = muonTrack->GetNonBendingCoor(); 
-      
-//       fThetaX = muonTrack->GetThetaX();
-//       fThetaY = muonTrack->GetThetaY();
-      
-//       fPyz = 1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-//       fPzRec = - fPyz / TMath::Sqrt(1.0 + TMath::Tan(fThetaY)*TMath::Tan(fThetaY));
-//       fPxRec = fPzRec * TMath::Tan(fThetaX);
-//       fPyRec = fPzRec * TMath::Tan(fThetaY);
-//       fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
-      
-//       //ChiSquare of the track if needed
-//       fChisquare = muonTrack->GetChi2()/(2.0 * muonTrack->GetNHit() - 5);
-//       fEnergy = TMath::Sqrt(fMUONMASS * fMUONMASS + fPxRec * fPxRec + fPyRec * fPyRec + fPzRec * fPzRec);
-//       fEPvector.SetPxPyPzE(fPxRec, fPyRec, fPzRec, fEnergy);
-      
-//       if (muonTrack->GetMatchTrigger()>0) nFWMatchedMuons++;
-      
-//       nMuons++;
-//       nFWMuons++;
-//       if(fEPvector.Pt() > fLowPtCut) {
-//         nMu1GeV++; 
-//         if(fEPvector.Pt() > fHighPtCut) {
-//           nMu3GeV++; 
-//           if (fEPvector.Pt() > fVeryHighPtCut) {
-//             nMu10GeV++;
-//           }
-//         }
-//       }
-//     }//muon track loop
-    
-//     // Fill the event tags 
-//     if(ntrack != 0) meanPt = meanPt/ntrack;
-    
-//     //AliInfo(Form("====================================="));
-//     //AliInfo(Form("URL: %s - GUID: %s",fturl.Data(),fguid.Data()));
-//     //AliInfo(Form("====================================="));
-
-//     //First physics data
-//     const AliMultiplicity *spdMult = esd->GetMultiplicity();
-//     evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
-//     evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
-//     evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
-
-//     AliESDVZERO *vzeroData = esd->GetVZEROData();
-//     evTag->SetMTotV0A(vzeroData->GetMTotV0A());
-//     evTag->SetMTotV0C(vzeroData->GetMTotV0C());
-//     evTag->SetNbPMV0A(vzeroData->GetNbPMV0A());
-//     evTag->SetNbPMV0C(vzeroData->GetNbPMV0C());
-
-//     //evTag->SetEventId(iEventNumber+1);
-//     evTag->SetPeriodNumber(esd->GetPeriodNumber());
-//     evTag->SetOrbitNumber(esd->GetOrbitNumber());
-//     evTag->SetBunchCrossNumber(esd->GetBunchCrossNumber());
-//     evTag->SetGUID(fguid);
-    if(fSession == "grid") {
-      evTag->SetMD5("");
-      evTag->SetTURL(fturl);
-      evTag->SetSize(0);
+    if (foldguid == fguid) {
+      tag->AddEventTag(*evTag);
     }
-    else evTag->SetPath(fturl);
-    
-//     evTag->SetVertexX(vertexIn->GetXv());
-//     evTag->SetVertexY(vertexIn->GetYv());
-//     evTag->SetVertexZ(vertexIn->GetZv());
-//     evTag->SetVertexZError(vertexIn->GetZRes());
-//     evTag->SetVertexFlag(fVertexflag);
-    
-//     evTag->SetT0VertexZ(esd->GetT0zVertex());
-    
-//     evTag->SetTriggerMask(esd->GetTriggerMask());
-//     evTag->SetTriggerCluster(esd->GetTriggerCluster());
-    
-//     evTag->SetEventType(esd->GetEventType());
-//     evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
+    else {
+      AliFileTag *nftag = new AliFileTag();
 
-//     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
-//     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
-//     evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
-//     evTag->SetZDCNeutron1Energy(esd->GetZDCN2Energy());
-//     evTag->SetZDCProton1Energy(esd->GetZDCP2Energy());
-//     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
-    
-    
-//     evTag->SetNumOfTracks(esd->GetNumberOfTracks());
-//     evTag->SetNumOfPosTracks(nPos);
-//     evTag->SetNumOfNegTracks(nNeg);
-//     evTag->SetNumOfNeutrTracks(nNeutr);
-    
-//     evTag->SetNumOfV0s(esd->GetNumberOfV0s());
-//     evTag->SetNumOfCascades(esd->GetNumberOfCascades());
-//     evTag->SetNumOfKinks(esd->GetNumberOfKinks());
-//     evTag->SetNumOfPMDTracks(esd->GetNumberOfPmdTracks());
-    
-//     evTag->SetNumOfProtons(nProtons);
-//     evTag->SetNumOfKaons(nKaons);
-//     evTag->SetNumOfPions(nPions);
-//     evTag->SetNumOfMuons(nMuons);
-//     evTag->SetNumOfFWMuons(nFWMuons);
-//     evTag->SetNumOfFWMatchedMuons(nFWMatchedMuons);
-//     evTag->SetNumOfElectrons(nElectrons);
-//     evTag->SetNumOfPhotons(nGamas);
-//     evTag->SetNumOfPi0s(nPi0s);
-//     evTag->SetNumOfNeutrons(nNeutrons);
-//     evTag->SetNumOfKaon0s(nK0s);
-    
-//     evTag->SetNumOfChargedAbove1GeV(nCh1GeV);
-//     evTag->SetNumOfChargedAbove3GeV(nCh3GeV);
-//     evTag->SetNumOfChargedAbove10GeV(nCh10GeV);
-//     evTag->SetNumOfMuonsAbove1GeV(nMu1GeV);
-//     evTag->SetNumOfMuonsAbove3GeV(nMu3GeV);
-//     evTag->SetNumOfMuonsAbove10GeV(nMu10GeV);
-//     evTag->SetNumOfElectronsAbove1GeV(nEl1GeV);
-//     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
-//     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
-    
-//     tmp.Clear();
-//     evTag->SetNumOfPHOSClusters(esd->GetPHOSClusters(&tmp));
-//     tmp.Clear();
-//     evTag->SetNumOfEMCALClusters(esd->GetEMCALClusters(&tmp));
-    
-//     evTag->SetTotalMomentum(totalP);
-//     evTag->SetMeanPt(meanPt);
-//     evTag->SetMaxPt(maxPt);
-//     evTag->SetEtaMaxPt(etamaxPt);
-//     evTag->SetPhiMaxPt(phimaxPt);
-    
+      if(fSession == "grid") {
+	TString fturltemp = "alien://"; fturltemp += url->GetFile();
+	fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+      }
+      else fturl = url->GetFile();
+
+      if(fSession == "grid") {
+	nftag->SetMD5("");
+	nftag->SetTURL(fturl);
+	nftag->SetSize(0);
+      }
+      else {
+	nftag->SetPath(fturl);
+	nftag->SetSize(0);
+	nftag->SetMD5("");
+	nftag->SetTURL(fturl);
+      }
+      foldguid = fguid;
+      
+      if (tag->GetFileId(fguid) > -1)
+	AliFatal("Adding a file which is already in the RunTag.");
+
+      tag->AddFileTag(nftag);
+    }
+
     tag->SetRunId(iInitRunNumber);
 //     if(fIsSim) tag->SetDataType(0);
 //     else tag->SetDataType(1);
 
-    if(fguid != fTempGuid) {
-      fTempGuid = fguid;
-      ttag->Fill();
-      tag->Clear("");
-    }
-    tag->AddEventTag(*evTag);
+//     if(fguid != fTempGuid) {
+//       fTempGuid = fguid;
+//       ttag->Fill();
+//       tag->Clear("");
+//     }
     if(iEventNumber+1 == chain->GetEntries()) {
       //AliInfo(Form("File: %s",fturl.Data()));
+
       ttag->Fill();
       tag->Clear("");
     }      
@@ -604,247 +409,22 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
 
   t->GetEntry(0);
   Int_t iInitRunNumber = esd->GetRunNumber();
+  tag->SetMagneticField(esd->GetMagneticField());
+  tag->SetBeamEnergy(esd->GetBeamEnergy());
+  tag->SetBeamType(TString(esd->GetBeamType()));
+  tag->SetActiveTriggerClasses(esd->GetESDRun()->GetActiveTriggerClasses());
+
+  AliFileTag *eftag = new AliFileTag();
+  eftag->SetMD5(md5);
+  eftag->SetTURL(fturl);
+  eftag->SetSize(size);
+  tag->AddFileTag(eftag);
 
   Int_t iNumberOfEvents = (Int_t)t->GetEntries();
   for (Int_t iEventNumber = 0; iEventNumber < iNumberOfEvents; iEventNumber++) {
     FillEventTag(t, evTag, iEventNumber, esd);
-//     ntrack = 0;
-//     nPos = 0;
-//     nNeg = 0;
-//     nNeutr =0;
-//     nK0s = 0;
-//     nNeutrons = 0;
-//     nPi0s = 0;
-//     nGamas = 0;
-//     nProtons = 0;
-//     nKaons = 0;
-//     nPions = 0;
-//     nMuons = 0;
-//     nFWMuons = 0;
-//     nFWMatchedMuons = 0;
-//     nElectrons = 0;	  
-//     nCh1GeV = 0;
-//     nCh3GeV = 0;
-//     nCh10GeV = 0;
-//     nMu1GeV = 0;
-//     nMu3GeV = 0;
-//     nMu10GeV = 0;
-//     nEl1GeV = 0;
-//     nEl3GeV = 0;
-//     nEl10GeV = 0;
-//     maxPt = .0;
-//     etamaxPt = -999.;
-//     phimaxPt = -999.;
-//     meanPt = .0;
-//     totalP = .0;
-//     fVertexflag = 1;
-    
-//     t->GetEntry(iEventNumber);
     iRunNumber = esd->GetRunNumber();
     if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD!!!");
-//     const AliESDVertex * vertexIn = esd->GetVertex();
-//     fVertexName = vertexIn->GetName();
-//     if(fVertexName == "default") fVertexflag = 0;
-
-//     for (Int_t iTrackNumber = 0; iTrackNumber < esd->GetNumberOfTracks(); iTrackNumber++) {
-//       AliESDtrack * esdTrack = esd->GetTrack(iTrackNumber);
-//       if(esdTrack->GetLabel() != 0) fIsSim = kTRUE;
-//       else if(esdTrack->GetLabel() == 0) fIsSim = kFALSE;
-//       UInt_t status = esdTrack->GetStatus();
-      
-//       //select only tracks with ITS refit
-//       if ((status&AliESDtrack::kITSrefit)==0) continue;
-//       //select only tracks with TPC refit
-//       if ((status&AliESDtrack::kTPCrefit)==0) continue;
-      
-//       //select only tracks with the "combined PID"
-//       if ((status&AliESDtrack::kESDpid)==0) continue;
-//       Double_t p[3];
-//       esdTrack->GetPxPyPz(p);
-//       Double_t pt2 = p[0]*p[0]+p[1]*p[1];
-//       Double_t momentum = TMath::Sqrt(pt2+p[2]*p[2]);
-//       Double_t fPt = TMath::Sqrt(pt2);
-//       totalP += momentum;
-//       meanPt += fPt;
-//       if(fPt > maxPt) {
-// 	  maxPt = fPt;
-// 	  etamaxPt = esdTrack->Eta();
-// 	  phimaxPt = esdTrack->Phi();
-//       }
-      
-	      
-//       if(esdTrack->GetSign() > 0) {
-// 	nPos++;
-// 	if(fPt > fLowPtCut) nCh1GeV++;
-// 	if(fPt > fHighPtCut) nCh3GeV++;
-// 	if(fPt > fVeryHighPtCut) nCh10GeV++;
-//       }
-//       if(esdTrack->GetSign() < 0) {
-// 	nNeg++;
-// 	if(fPt > fLowPtCut) nCh1GeV++;
-// 	if(fPt > fHighPtCut) nCh3GeV++;
-// 	if(fPt > fVeryHighPtCut) nCh10GeV++;
-//       }
-//       if(esdTrack->GetSign() == 0) nNeutr++;
-      
-//       //PID
-//       Double_t prob[5];
-//       esdTrack->GetESDpid(prob);
-      
-//       Double_t rcc = 0.0;
-//       for(Int_t i = 0; i < AliPID::kSPECIES; i++) rcc += prob[i]*partFrac[i];
-//       if(rcc == 0.0) continue;
-//       //Bayes' formula
-//       Double_t w[5];
-//       for(Int_t i = 0; i < AliPID::kSPECIES; i++) w[i] = prob[i]*partFrac[i]/rcc;
-      
-//       //protons
-//       if ((w[4]>w[3])&&(w[4]>w[2])&&(w[4]>w[1])&&(w[4]>w[0])) nProtons++;
-//       //kaons
-//       if ((w[3]>w[4])&&(w[3]>w[2])&&(w[3]>w[1])&&(w[3]>w[0])) nKaons++;
-//       //pions
-//       if ((w[2]>w[4])&&(w[2]>w[3])&&(w[2]>w[1])&&(w[2]>w[0])) nPions++; 
-//       //electrons
-//       if ((w[0]>w[4])&&(w[0]>w[3])&&(w[0]>w[2])&&(w[0]>w[1])) {
-// 	nElectrons++;
-// 	if(fPt > fLowPtCut) nEl1GeV++;
-// 	if(fPt > fHighPtCut) nEl3GeV++;
-// 	if(fPt > fVeryHighPtCut) nEl10GeV++;
-//       }	  
-//       ntrack++;
-//     }//esd track loop
-    
-//     /////////////
-//     //muon code//
-//     ////////////
-//     Int_t nMuonTracks = esd->GetNumberOfMuonTracks();
-//     // loop over all reconstructed tracks (also first track of combination)
-//     for (Int_t iTrack = 0; iTrack <  nMuonTracks;  iTrack++) {
-//       AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
-//       if (muonTrack == 0x0) continue;
-      
-//       // Coordinates at vertex
-//       fZ = muonTrack->GetZ(); 
-//       fY = muonTrack->GetBendingCoor();
-//       fX = muonTrack->GetNonBendingCoor(); 
-      
-//       fThetaX = muonTrack->GetThetaX();
-//       fThetaY = muonTrack->GetThetaY();
-      
-//       fPyz = 1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-//       fPzRec = - fPyz / TMath::Sqrt(1.0 + TMath::Tan(fThetaY)*TMath::Tan(fThetaY));
-//       fPxRec = fPzRec * TMath::Tan(fThetaX);
-//       fPyRec = fPzRec * TMath::Tan(fThetaY);
-//       fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
-      
-//       //ChiSquare of the track if needed
-//       fChisquare = muonTrack->GetChi2()/(2.0 * muonTrack->GetNHit() - 5);
-//       fEnergy = TMath::Sqrt(fMUONMASS * fMUONMASS + fPxRec * fPxRec + fPyRec * fPyRec + fPzRec * fPzRec);
-//       fEPvector.SetPxPyPzE(fPxRec, fPyRec, fPzRec, fEnergy);
-      
-//       if (muonTrack->GetMatchTrigger()>0) nFWMatchedMuons++;
-      
-//       nMuons++;
-//       nFWMuons++;
-//       if(fEPvector.Pt() > fLowPtCut) {
-//         nMu1GeV++; 
-//         if(fEPvector.Pt() > fHighPtCut) {
-//           nMu3GeV++; 
-//           if (fEPvector.Pt() > fVeryHighPtCut) {
-//             nMu10GeV++;
-//           }
-//         }
-//       }
-//     }//muon track loop
-    
-//     // Fill the event tags 
-//     if(ntrack != 0) meanPt = meanPt/ntrack;
-    
-//     //First physics data
-//     const AliMultiplicity *spdMult = esd->GetMultiplicity();
-//     evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
-//     evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
-//     evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
-
-//     AliESDVZERO *vzeroData = esd->GetVZEROData();
-//     evTag->SetMTotV0A(vzeroData->GetMTotV0A());
-//     evTag->SetMTotV0C(vzeroData->GetMTotV0C());
-//     evTag->SetNbPMV0A(vzeroData->GetNbPMV0A());
-//     evTag->SetNbPMV0C(vzeroData->GetNbPMV0C());
-
-//     //evTag->SetEventId(iEventNumber+1);
-//     evTag->SetPeriodNumber(esd->GetPeriodNumber());
-//     evTag->SetOrbitNumber(esd->GetOrbitNumber());
-//     evTag->SetBunchCrossNumber(esd->GetBunchCrossNumber());
-
-//     evTag->SetGUID(fguid);
-    evTag->SetMD5(fmd5);
-    evTag->SetTURL(fturl);
-    evTag->SetSize(size);
-//     evTag->SetVertexX(vertexIn->GetXv());
-//     evTag->SetVertexY(vertexIn->GetYv());
-//     evTag->SetVertexZ(vertexIn->GetZv());
-//     evTag->SetVertexZError(vertexIn->GetZRes());
-//     evTag->SetVertexFlag(fVertexflag);
-    
-//     evTag->SetT0VertexZ(esd->GetT0zVertex());
-    
-//     evTag->SetTriggerMask(esd->GetTriggerMask());
-//     evTag->SetTriggerCluster(esd->GetTriggerCluster());
-    
-//     evTag->SetEventType(esd->GetEventType());
-//     evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
-
-//     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
-//     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
-//     evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
-//     evTag->SetZDCNeutron1Energy(esd->GetZDCN2Energy());
-//     evTag->SetZDCProton1Energy(esd->GetZDCP2Energy());
-//     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
-    
-    
-//     evTag->SetNumOfTracks(esd->GetNumberOfTracks());
-//     evTag->SetNumOfPosTracks(nPos);
-//     evTag->SetNumOfNegTracks(nNeg);
-//     evTag->SetNumOfNeutrTracks(nNeutr);
-    
-//     evTag->SetNumOfV0s(esd->GetNumberOfV0s());
-//     evTag->SetNumOfCascades(esd->GetNumberOfCascades());
-//     evTag->SetNumOfKinks(esd->GetNumberOfKinks());
-//     evTag->SetNumOfPMDTracks(esd->GetNumberOfPmdTracks());
-    
-//     evTag->SetNumOfProtons(nProtons);
-//     evTag->SetNumOfKaons(nKaons);
-//     evTag->SetNumOfPions(nPions);
-//     evTag->SetNumOfMuons(nMuons);
-//     evTag->SetNumOfFWMuons(nFWMuons);
-//     evTag->SetNumOfFWMatchedMuons(nFWMatchedMuons);
-//     evTag->SetNumOfElectrons(nElectrons);
-//     evTag->SetNumOfPhotons(nGamas);
-//     evTag->SetNumOfPi0s(nPi0s);
-//     evTag->SetNumOfNeutrons(nNeutrons);
-//     evTag->SetNumOfKaon0s(nK0s);
-    
-//     evTag->SetNumOfChargedAbove1GeV(nCh1GeV);
-//     evTag->SetNumOfChargedAbove3GeV(nCh3GeV);
-//     evTag->SetNumOfChargedAbove10GeV(nCh10GeV);
-//     evTag->SetNumOfMuonsAbove1GeV(nMu1GeV);
-//     evTag->SetNumOfMuonsAbove3GeV(nMu3GeV);
-//     evTag->SetNumOfMuonsAbove10GeV(nMu10GeV);
-//     evTag->SetNumOfElectronsAbove1GeV(nEl1GeV);
-//     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
-//     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
-    
-//     tmp.Clear();
-//     evTag->SetNumOfPHOSClusters(esd->GetPHOSClusters(&tmp));
-//     tmp.Clear();
-//     evTag->SetNumOfEMCALClusters(esd->GetEMCALClusters(&tmp));
-    
-//     evTag->SetTotalMomentum(totalP);
-//     evTag->SetMeanPt(meanPt);
-//     evTag->SetMaxPt(maxPt);
-//     evTag->SetEtaMaxPt(etamaxPt);
-//     evTag->SetPhiMaxPt(phimaxPt);
     
     tag->SetRunId(iInitRunNumber);
     if(fIsSim) tag->SetDataType(0);
@@ -955,244 +535,24 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
   
   t->GetEntry(0);
   Int_t iInitRunNumber = esd->GetRunNumber();
+  tag->SetMagneticField(esd->GetMagneticField());
+  tag->SetBeamEnergy(esd->GetBeamEnergy());
+  tag->SetBeamType(TString(esd->GetBeamType()));
+  tag->SetActiveTriggerClasses(esd->GetESDRun()->GetActiveTriggerClasses());
+
+  AliFileTag *eftag = new AliFileTag();
+  eftag->SetPath(filepath);
+  eftag->SetTURL(Form("local://%s", filepath));
+  eftag->SetSize(0);
+  eftag->SetMD5("");
+  tag->AddFileTag(eftag);
 
   Int_t iNumberOfEvents = (Int_t)t->GetEntries();
   for (Int_t iEventNumber = 0; iEventNumber < iNumberOfEvents; iEventNumber++) {
     FillEventTag(t, evTag, iEventNumber, esd);
-//     ntrack = 0;
-//     nPos = 0;
-//     nNeg = 0;
-//     nNeutr =0;
-//     nK0s = 0;
-//     nNeutrons = 0;
-//     nPi0s = 0;
-//     nGamas = 0;
-//     nProtons = 0;
-//     nKaons = 0;
-//     nPions = 0;
-//     nMuons = 0;
-//     nFWMuons = 0;
-//     nFWMatchedMuons = 0;
-//     nElectrons = 0;	  
-//     nCh1GeV = 0;
-//     nCh3GeV = 0;
-//     nCh10GeV = 0;
-//     nMu1GeV = 0;
-//     nMu3GeV = 0;
-//     nMu10GeV = 0;
-//     nEl1GeV = 0;
-//     nEl3GeV = 0;
-//     nEl10GeV = 0;
-//     maxPt = .0;
-//     etamaxPt = -999.;
-//     phimaxPt = -999.;
-//     meanPt = .0;
-//     totalP = .0;
-//     fVertexflag = 1;
-    
-//     t->GetEntry(iEventNumber);
     iRunNumber = esd->GetRunNumber();
     if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD!!!");
-//     const AliESDVertex * vertexIn = esd->GetVertex();
-//     fVertexName = vertexIn->GetName();
-//     if(fVertexName == "default") fVertexflag = 0;
-
-//     for (Int_t iTrackNumber = 0; iTrackNumber < esd->GetNumberOfTracks(); iTrackNumber++) {
-//       AliESDtrack * esdTrack = esd->GetTrack(iTrackNumber);
-//       if(esdTrack->GetLabel() != 0) fIsSim = kTRUE;
-//       else if(esdTrack->GetLabel() == 0) fIsSim = kFALSE;
-//       UInt_t status = esdTrack->GetStatus();
-      
-//       //select only tracks with ITS refit
-//       if ((status&AliESDtrack::kITSrefit)==0) continue;
-//       //select only tracks with TPC refit
-//       if ((status&AliESDtrack::kTPCrefit)==0) continue;
-      
-//       //select only tracks with the "combined PID"
-//       if ((status&AliESDtrack::kESDpid)==0) continue;
-//       Double_t p[3];
-//       esdTrack->GetPxPyPz(p);
-//       Double_t pt2 = p[0]*p[0]+p[1]*p[1];
-//       Double_t momentum = TMath::Sqrt(pt2+p[2]*p[2]);
-//       Double_t fPt = TMath::Sqrt(pt2);
-//       totalP += momentum;
-//       meanPt += fPt;
-//       if(fPt > maxPt) {
-// 	  maxPt = fPt;
-// 	  etamaxPt = esdTrack->Eta();
-// 	  phimaxPt = esdTrack->Phi();
-//       }
-      
-      
-//       if(esdTrack->GetSign() > 0) {
-// 	nPos++;
-// 	if(fPt > fLowPtCut) nCh1GeV++;
-// 	if(fPt > fHighPtCut) nCh3GeV++;
-// 	if(fPt > fVeryHighPtCut) nCh10GeV++;
-//       }
-//       if(esdTrack->GetSign() < 0) {
-// 	nNeg++;
-// 	if(fPt > fLowPtCut) nCh1GeV++;
-// 	if(fPt > fHighPtCut) nCh3GeV++;
-// 	if(fPt > fVeryHighPtCut) nCh10GeV++;
-//       }
-//       if(esdTrack->GetSign() == 0) nNeutr++;
-      
-//       //PID
-//       Double_t prob[5];
-//       esdTrack->GetESDpid(prob);
-      
-//       Double_t rcc = 0.0;
-//       for(Int_t i = 0; i < AliPID::kSPECIES; i++) rcc += prob[i]*partFrac[i];
-//       if(rcc == 0.0) continue;
-//       //Bayes' formula
-//       Double_t w[5];
-//       for(Int_t i = 0; i < AliPID::kSPECIES; i++) w[i] = prob[i]*partFrac[i]/rcc;
-      
-//       //protons
-//       if ((w[4]>w[3])&&(w[4]>w[2])&&(w[4]>w[1])&&(w[4]>w[0])) nProtons++;
-//       //kaons
-//       if ((w[3]>w[4])&&(w[3]>w[2])&&(w[3]>w[1])&&(w[3]>w[0])) nKaons++;
-//       //pions
-//       if ((w[2]>w[4])&&(w[2]>w[3])&&(w[2]>w[1])&&(w[2]>w[0])) nPions++; 
-//       //electrons
-//       if ((w[0]>w[4])&&(w[0]>w[3])&&(w[0]>w[2])&&(w[0]>w[1])) {
-// 	nElectrons++;
-// 	if(fPt > fLowPtCut) nEl1GeV++;
-// 	if(fPt > fHighPtCut) nEl3GeV++;
-// 	if(fPt > fVeryHighPtCut) nEl10GeV++;
-//       }	  
-//       ntrack++;
-//     }//esd track loop
-    
-//     /////////////
-//     //muon code//
-//     ////////////
-//     Int_t nMuonTracks = esd->GetNumberOfMuonTracks();
-//     // loop over all reconstructed tracks (also first track of combination)
-//     for (Int_t iTrack = 0; iTrack <  nMuonTracks;  iTrack++) {
-//       AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
-//       if (muonTrack == 0x0) continue;
-      
-//       // Coordinates at vertex
-//       fZ = muonTrack->GetZ(); 
-//       fY = muonTrack->GetBendingCoor();
-//       fX = muonTrack->GetNonBendingCoor(); 
-      
-//       fThetaX = muonTrack->GetThetaX();
-//       fThetaY = muonTrack->GetThetaY();
-      
-//       fPyz = 1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-//       fPzRec = - fPyz / TMath::Sqrt(1.0 + TMath::Tan(fThetaY)*TMath::Tan(fThetaY));
-//       fPxRec = fPzRec * TMath::Tan(fThetaX);
-//       fPyRec = fPzRec * TMath::Tan(fThetaY);
-//       fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
-      
-//       //ChiSquare of the track if needed
-//       fChisquare = muonTrack->GetChi2()/(2.0 * muonTrack->GetNHit() - 5);
-//       fEnergy = TMath::Sqrt(fMUONMASS * fMUONMASS + fPxRec * fPxRec + fPyRec * fPyRec + fPzRec * fPzRec);
-//       fEPvector.SetPxPyPzE(fPxRec, fPyRec, fPzRec, fEnergy);
-      
-//       if (muonTrack->GetMatchTrigger()>0) nFWMatchedMuons++;
-
-//       nMuons++;
-//       nFWMuons++;
-//       if(fEPvector.Pt() > fLowPtCut) {
-//         nMu1GeV++; 
-//         if(fEPvector.Pt() > fHighPtCut) {
-//           nMu3GeV++; 
-//           if (fEPvector.Pt() > fVeryHighPtCut) {
-//             nMu10GeV++;
-//           }
-//         }
-//       }
-//     }//muon track loop
-    
-//     // Fill the event tags 
-//     if(ntrack != 0) meanPt = meanPt/ntrack;
-    
-//     //First physics data
-//     const AliMultiplicity *spdMult = esd->GetMultiplicity();
-//     evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
-//     evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
-//     evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
-
-//     AliESDVZERO *vzeroData = esd->GetVZEROData();
-//     evTag->SetMTotV0A(vzeroData->GetMTotV0A());
-//     evTag->SetMTotV0C(vzeroData->GetMTotV0C());
-//     evTag->SetNbPMV0A(vzeroData->GetNbPMV0A());
-//     evTag->SetNbPMV0C(vzeroData->GetNbPMV0C());
-
-//     //evTag->SetEventId(iEventNumber+1);
-//     evTag->SetPeriodNumber(esd->GetPeriodNumber());
-//     evTag->SetOrbitNumber(esd->GetOrbitNumber());
-//     evTag->SetBunchCrossNumber(esd->GetBunchCrossNumber());
-    evTag->SetPath(filepath);
- 
-//     evTag->SetVertexX(vertexIn->GetXv());
-//     evTag->SetVertexY(vertexIn->GetYv());
-//     evTag->SetVertexZ(vertexIn->GetZv());
-//     evTag->SetVertexZError(vertexIn->GetZRes());
-//     evTag->SetVertexFlag(fVertexflag);
-    
-//     evTag->SetT0VertexZ(esd->GetT0zVertex());
-    
-//     evTag->SetTriggerMask(esd->GetTriggerMask());
-//     evTag->SetTriggerCluster(esd->GetTriggerCluster());
-    
-//     evTag->SetEventType(esd->GetEventType());
-//     evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
-
-//     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
-//     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
-//     evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
-//     evTag->SetZDCNeutron1Energy(esd->GetZDCN2Energy());
-//     evTag->SetZDCProton1Energy(esd->GetZDCP2Energy());
-//     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
-    
-    
-//     evTag->SetNumOfTracks(esd->GetNumberOfTracks());
-//     evTag->SetNumOfPosTracks(nPos);
-//     evTag->SetNumOfNegTracks(nNeg);
-//     evTag->SetNumOfNeutrTracks(nNeutr);
-    
-//     evTag->SetNumOfV0s(esd->GetNumberOfV0s());
-//     evTag->SetNumOfCascades(esd->GetNumberOfCascades());
-//     evTag->SetNumOfKinks(esd->GetNumberOfKinks());
-//     evTag->SetNumOfPMDTracks(esd->GetNumberOfPmdTracks());
-    
-//     evTag->SetNumOfProtons(nProtons);
-//     evTag->SetNumOfKaons(nKaons);
-//     evTag->SetNumOfPions(nPions);
-//     evTag->SetNumOfMuons(nMuons);
-//     evTag->SetNumOfFWMuons(nFWMuons);
-//     evTag->SetNumOfFWMatchedMuons(nFWMatchedMuons);
-//     evTag->SetNumOfElectrons(nElectrons);
-//     evTag->SetNumOfPhotons(nGamas);
-//     evTag->SetNumOfPi0s(nPi0s);
-//     evTag->SetNumOfNeutrons(nNeutrons);
-//     evTag->SetNumOfKaon0s(nK0s);
-    
-//     evTag->SetNumOfChargedAbove1GeV(nCh1GeV);
-//     evTag->SetNumOfChargedAbove3GeV(nCh3GeV);
-//     evTag->SetNumOfChargedAbove10GeV(nCh10GeV);
-//     evTag->SetNumOfMuonsAbove1GeV(nMu1GeV);
-//     evTag->SetNumOfMuonsAbove3GeV(nMu3GeV);
-//     evTag->SetNumOfMuonsAbove10GeV(nMu10GeV);
-//     evTag->SetNumOfElectronsAbove1GeV(nEl1GeV);
-//     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
-//     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
-    
-//     tmp.Clear();
-//     evTag->SetNumOfPHOSClusters(esd->GetPHOSClusters(&tmp));
-//     tmp.Clear();
-//     evTag->SetNumOfEMCALClusters(esd->GetEMCALClusters(&tmp));
-    
-//     evTag->SetTotalMomentum(totalP);
-//     evTag->SetMeanPt(meanPt);
-//     evTag->SetMaxPt(maxPt);
-//     evTag->SetEtaMaxPt(etamaxPt);
-//     evTag->SetPhiMaxPt(phimaxPt);
+    //    evTag->SetPath(filepath);
     
     tag->SetRunId(iInitRunNumber);
 //     if(fIsSim) tag->SetDataType(0);
@@ -1325,264 +685,48 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
 
   if ((fLastEvent != -1) && ((Int_t) b->GetEntries() > fLastEvent)) 
     iNumberOfEvents = fLastEvent + 1;
+
+  AliFileTag *eftag = new AliFileTag();
+  tag->AddFileTag(eftag);
+
   for (Int_t iEventNumber = fFirstEvent; iEventNumber < iNumberOfEvents; iEventNumber++) {
     FillEventTag(b, evTag, iEventNumber, esd);
-//     ntrack = 0;
-//     nPos = 0;
-//     nNeg = 0;
-//     nNeutr =0;
-//     nK0s = 0;
-//     nNeutrons = 0;
-//     nPi0s = 0;
-//     nGamas = 0;
-//     nProtons = 0;
-//     nKaons = 0;
-//     nPions = 0;
-//     nMuons = 0;
-//     nFWMuons = 0;
-//     nFWMatchedMuons = 0;
-//     nElectrons = 0;	  
-//     nCh1GeV = 0;
-//     nCh3GeV = 0;
-//     nCh10GeV = 0;
-//     nMu1GeV = 0;
-//     nMu3GeV = 0;
-//     nMu10GeV = 0;
-//     nEl1GeV = 0;
-//     nEl3GeV = 0;
-//     nEl10GeV = 0;
-//     maxPt = .0;
-//     etamaxPt = -999.;
-//     phimaxPt = -999.;
-//     meanPt = .0;
-//     totalP = .0;
-//     fVertexflag = 0;
-
-//     b->GetEntry(iEventNumber);
     iRunNumber = esd->GetRunNumber();
     if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD!!!");
 
-    TFile *file = b->GetCurrentFile();
-    const TUrl *url = file->GetEndpointUrl();
-    fguid = file->GetUUID().AsString();
-    if(fStorage == 1) {
-      TString fturltemp = "alien://"; fturltemp += url->GetFile();
-      fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+    if (iEventNumber == fFirstEvent) {
+      TFile *file = b->GetCurrentFile();
+      const TUrl *url = file->GetEndpointUrl();
+      fguid = file->GetUUID().AsString();
+      if(fStorage == 1) {
+	TString fturltemp = "alien://"; fturltemp += url->GetFile();
+	fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+      }
+      else fturl = url->GetFile(); 
+      
+      //    evTag->SetGUID(fguid);
+      ((AliFileTag *) tag->GetFileTag(tag->GetNFiles()-1))->SetGUID(fguid);
+      if(fStorage == 1) {
+	((AliFileTag *) tag->GetFileTag(tag->GetNFiles()-1))->SetMD5("");
+	((AliFileTag *) tag->GetFileTag(tag->GetNFiles()-1))->SetTURL(fturl);
+	((AliFileTag *) tag->GetFileTag(tag->GetNFiles()-1))->SetSize(0);
+      }
+      else {
+	//      evTag->SetPath(fturl);
+	((AliFileTag *) tag->GetFileTag(tag->GetNFiles()-1))->SetPath(fturl);
+	((AliFileTag *) tag->GetFileTag(tag->GetNFiles()-1))->SetMD5("");
+	((AliFileTag *) tag->GetFileTag(tag->GetNFiles()-1))->SetSize(0);
+      }
+
     }
-    else fturl = url->GetFile();
 
-    evTag->SetGUID(fguid);
-    if(fStorage == 1) {
-      evTag->SetMD5("");
-      evTag->SetTURL(fturl);
-      evTag->SetSize(0);
-    }
-    else evTag->SetPath(fturl);
-//     const AliESDVertex * vertexIn = esd->GetVertex();
-//     if (!vertexIn) AliError("ESD has not defined vertex.");
-//     if (vertexIn) fVertexName = vertexIn->GetName();
-//     if(fVertexName != "default") fVertexflag = 1;
-//     for (Int_t iTrackNumber = 0; iTrackNumber < esd->GetNumberOfTracks(); iTrackNumber++) {
-//       AliESDtrack * esdTrack = esd->GetTrack(iTrackNumber);
-//       UInt_t status = esdTrack->GetStatus();
-      
-//       //select only tracks with ITS refit
-//       if ((status&AliESDtrack::kITSrefit)==0) continue;
-//       //select only tracks with TPC refit
-//       if ((status&AliESDtrack::kTPCrefit)==0) continue;
-      
-//       //select only tracks with the "combined PID"
-//       if ((status&AliESDtrack::kESDpid)==0) continue;
-//       Double_t p[3];
-//       esdTrack->GetPxPyPz(p);
-//       Double_t pt2 = p[0]*p[0]+p[1]*p[1];
-//       Double_t momentum = TMath::Sqrt(pt2+p[2]*p[2]);
-//       Double_t fPt = TMath::Sqrt(pt2);
-//       totalP += momentum;
-//       meanPt += fPt;
-//       if(fPt > maxPt) {
-// 	  maxPt = fPt;
-// 	  phimaxPt = esdTrack->Eta();
-// 	  etamaxPt = esdTrack->Phi();
-//       }
-      
-//       if(esdTrack->GetSign() > 0) {
-// 	nPos++;
-// 	if(fPt > fLowPtCut) nCh1GeV++;
-// 	if(fPt > fHighPtCut) nCh3GeV++;
-// 	if(fPt > fVeryHighPtCut) nCh10GeV++;
-//       }
-//       if(esdTrack->GetSign() < 0) {
-// 	nNeg++;
-// 	if(fPt > fLowPtCut) nCh1GeV++;
-// 	if(fPt > fHighPtCut) nCh3GeV++;
-// 	if(fPt > fVeryHighPtCut) nCh10GeV++;
-//       }
-//       if(esdTrack->GetSign() == 0) nNeutr++;
-      
-//       //PID
-//       Double_t prob[5];
-//       esdTrack->GetESDpid(prob);
-      
-//       Double_t rcc = 0.0;
-//       for(Int_t i = 0; i < AliPID::kSPECIES; i++) rcc += prob[i]*partFrac[i];
-//       if(rcc == 0.0) continue;
-//       //Bayes' formula
-//       Double_t w[5];
-//       for(Int_t i = 0; i < AliPID::kSPECIES; i++) w[i] = prob[i]*partFrac[i]/rcc;
-      
-//       //protons
-//       if ((w[4]>w[3])&&(w[4]>w[2])&&(w[4]>w[1])&&(w[4]>w[0])) nProtons++;
-//       //kaons
-//       if ((w[3]>w[4])&&(w[3]>w[2])&&(w[3]>w[1])&&(w[3]>w[0])) nKaons++;
-//       //pions
-//       if ((w[2]>w[4])&&(w[2]>w[3])&&(w[2]>w[1])&&(w[2]>w[0])) nPions++; 
-//       //electrons
-//       if ((w[0]>w[4])&&(w[0]>w[3])&&(w[0]>w[2])&&(w[0]>w[1])) {
-// 	nElectrons++;
-// 	if(fPt > fLowPtCut) nEl1GeV++;
-// 	if(fPt > fHighPtCut) nEl3GeV++;
-// 	if(fPt > fVeryHighPtCut) nEl10GeV++;
-//       }	  
-//       ntrack++;
-//     }//track loop
-    
-//     /////////////
-//     //muon code//
-//     ////////////
-//     Int_t nMuonTracks = esd->GetNumberOfMuonTracks();
-//     // loop over all reconstructed tracks (also first track of combination)
-//     for (Int_t iTrack = 0; iTrack <  nMuonTracks;  iTrack++) {
-//       AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
-//       if (muonTrack == 0x0) continue;
-      
-//       // Coordinates at vertex
-//       fZ = muonTrack->GetZ(); 
-//       fY = muonTrack->GetBendingCoor();
-//       fX = muonTrack->GetNonBendingCoor(); 
-      
-//       fThetaX = muonTrack->GetThetaX();
-//       fThetaY = muonTrack->GetThetaY();
-      
-//       fPyz = 1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-//       fPzRec = - fPyz / TMath::Sqrt(1.0 + TMath::Tan(fThetaY)*TMath::Tan(fThetaY));
-//       fPxRec = fPzRec * TMath::Tan(fThetaX);
-//       fPyRec = fPzRec * TMath::Tan(fThetaY);
-//       fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
-      
-//       //ChiSquare of the track if needed
-//       fChisquare = muonTrack->GetChi2()/(2.0 * muonTrack->GetNHit() - 5);
-//       fEnergy = TMath::Sqrt(fMUONMASS * fMUONMASS + fPxRec * fPxRec + fPyRec * fPyRec + fPzRec * fPzRec);
-//       fEPvector.SetPxPyPzE(fPxRec, fPyRec, fPzRec, fEnergy);
-      
-//       if (muonTrack->GetMatchTrigger()>0) nFWMatchedMuons++;
-
-//       nMuons++;
-//       nFWMuons++;
-//       if(fEPvector.Pt() > fLowPtCut) {
-//         nMu1GeV++; 
-//         if(fEPvector.Pt() > fHighPtCut) {
-//           nMu3GeV++; 
-//           if (fEPvector.Pt() > fVeryHighPtCut) {
-//             nMu10GeV++;
-//           }
-//         }
-//       }
-//     }//muon track loop
-
-    
-//     // Fill the event tags 
-//     if(ntrack != 0)
-//       meanPt = meanPt/ntrack;
-
-//     //First physics data
-//     const AliMultiplicity *spdMult = esd->GetMultiplicity();
-//     evTag->SetNumberOfFiredChipsLayer1(spdMult->GetNumberOfFiredChips(0));
-//     evTag->SetNumberOfFiredChipsLayer2(spdMult->GetNumberOfFiredChips(1));
-//     evTag->SetNumberOfSPDTracklets(spdMult->GetNumberOfTracklets());
-
-//     AliESDVZERO *vzeroData = esd->GetVZEROData();
-//     evTag->SetMTotV0A(vzeroData->GetMTotV0A());
-//     evTag->SetMTotV0C(vzeroData->GetMTotV0C());
-//     evTag->SetNbPMV0A(vzeroData->GetNbPMV0A());
-//     evTag->SetNbPMV0C(vzeroData->GetNbPMV0C());
-
-//     //evTag->SetEventId(iEventNumber+1);
-//     evTag->SetPeriodNumber(esd->GetPeriodNumber());
-//     evTag->SetOrbitNumber(esd->GetOrbitNumber());
-//     evTag->SetBunchCrossNumber(esd->GetBunchCrossNumber());
-//     if (vertexIn) {
-//       evTag->SetVertexX(vertexIn->GetXv());
-//       evTag->SetVertexY(vertexIn->GetYv());
-//       evTag->SetVertexZ(vertexIn->GetZv());
-//       evTag->SetVertexZError(vertexIn->GetZRes());
-//     }  
-//     evTag->SetVertexFlag(fVertexflag);
-
-//     evTag->SetT0VertexZ(esd->GetT0zVertex());
-    
-//     evTag->SetTriggerMask(esd->GetTriggerMask());
-//     evTag->SetTriggerCluster(esd->GetTriggerCluster());
-    
-//     evTag->SetEventType(esd->GetEventType());
-//     evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
-
-//     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
-//     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
-//     evTag->SetZDCNeutron2Energy(esd->GetZDCN2Energy());
-//     evTag->SetZDCProton2Energy(esd->GetZDCP2Energy());
-//     evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
-//     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
-    
-    
-//     evTag->SetNumOfTracks(esd->GetNumberOfTracks());
-//     evTag->SetNumOfPosTracks(nPos);
-//     evTag->SetNumOfNegTracks(nNeg);
-//     evTag->SetNumOfNeutrTracks(nNeutr);
-    
-//     evTag->SetNumOfV0s(esd->GetNumberOfV0s());
-//     evTag->SetNumOfCascades(esd->GetNumberOfCascades());
-//     evTag->SetNumOfKinks(esd->GetNumberOfKinks());
-//     evTag->SetNumOfPMDTracks(esd->GetNumberOfPmdTracks());
-    
-//     evTag->SetNumOfProtons(nProtons);
-//     evTag->SetNumOfKaons(nKaons);
-//     evTag->SetNumOfPions(nPions);
-//     evTag->SetNumOfMuons(nMuons);
-//     evTag->SetNumOfFWMuons(nFWMuons);
-//     evTag->SetNumOfFWMatchedMuons(nFWMatchedMuons);
-//     evTag->SetNumOfElectrons(nElectrons);
-//     evTag->SetNumOfPhotons(nGamas);
-//     evTag->SetNumOfPi0s(nPi0s);
-//     evTag->SetNumOfNeutrons(nNeutrons);
-//     evTag->SetNumOfKaon0s(nK0s);
-    
-//     evTag->SetNumOfChargedAbove1GeV(nCh1GeV);
-//     evTag->SetNumOfChargedAbove3GeV(nCh3GeV);
-//     evTag->SetNumOfChargedAbove10GeV(nCh10GeV);
-//     evTag->SetNumOfMuonsAbove1GeV(nMu1GeV);
-//     evTag->SetNumOfMuonsAbove3GeV(nMu3GeV);
-//     evTag->SetNumOfMuonsAbove10GeV(nMu10GeV);
-//     evTag->SetNumOfElectronsAbove1GeV(nEl1GeV);
-//     evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
-//     evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
-    
-//     tmp.Clear();
-//     evTag->SetNumOfPHOSClusters(esd->GetPHOSClusters(&tmp));
-//     tmp.Clear();
-//     evTag->SetNumOfEMCALClusters(esd->GetEMCALClusters(&tmp));
-    
-//     evTag->SetTotalMomentum(totalP);
-//     evTag->SetMeanPt(meanPt);
-//     evTag->SetMaxPt(maxPt);
-//     evTag->SetEtaMaxPt(etamaxPt);
-//     evTag->SetPhiMaxPt(phimaxPt);
     tag->AddEventTag(*evTag);
   }    
   
   tag->SetLHCTag(lhcLuminosity,lhcState);
   tag->SetDetectorTag(esd->GetESDRun()->GetDetectorsInDAQ(), esd->GetESDRun()->GetDetectorsInReco());
-  
+  tag->SetActiveTriggerClasses(esd->GetESDRun()->GetActiveTriggerClasses());
+
   // Get magnetic field info
   Bool_t ok = kTRUE;
   
@@ -1636,7 +780,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   //QA setting 
   tag->SetQAArray(qa, qalength) ; 
   tag->SetEventSpecies(es, eslength) ;
-  	
+
   ftag->cd();
   ttag->Fill();
   tag->Clear();
@@ -1668,6 +812,7 @@ void AliESDTagCreator::CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData,
 
   Int_t iRunNumber = 0;
   TString fguid, fmd5, fturl;
+  TString fturlold;
 
   AliInfo(Form("Creating the ESD tags......."));	
 
@@ -1694,6 +839,9 @@ void AliESDTagCreator::CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData,
   TBranch * btag = ttag->Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
 
+//   AliFileTag *eftag = new AliFileTag();
+//   tag->AddFileTag(*eftag);
+
   for (Int_t iEventNumber = iFirstEvent; iEventNumber < iNumberOfEvents; iEventNumber++) {
     FillEventTag(chain, evTag, iEventNumber, esd);
 
@@ -1709,15 +857,37 @@ void AliESDTagCreator::CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData,
     }
     else fturl = url->GetFile();
 
-    evTag->SetGUID(fguid);
-    if(fStorage == 1) {
-      evTag->SetMD5("");
-      evTag->SetTURL(fturl);
-      evTag->SetSize(0);
+    if (fturl.CompareTo(fturlold)) {
+
+      AliFileTag *eftag = new AliFileTag();
+      
+      //evTag->SetGUID(fguid);
+      eftag->SetGUID(fguid);
+      if(fStorage == 1) {
+	//       evTag->SetMD5("");
+	//       evTag->SetTURL(fturl);
+	//       evTag->SetSize(0);
+	eftag->SetPath("");
+	eftag->SetMD5("");
+	eftag->SetTURL(fturl);
+	eftag->SetSize(0);
+      }
+      else {
+	//       evTag->SetPath(fturl);
+	//       evTag->SetTURL(fturl);
+	eftag->SetPath(fturl);
+	eftag->SetTURL(fturl);
+	eftag->SetMD5("");
+	eftag->SetSize(0);
+      }
+
+      tag->AddFileTag(eftag);
+    
+      fturlold = fturl;
+      
     }
     else {
-      evTag->SetPath(fturl);
-      evTag->SetTURL(fturl);
+      //      cout << "FileTag found " << fturl.Data() << " " << fturlold.Data() << endl;
     }
 
     tag->AddEventTag(*evTag);
@@ -1725,6 +895,7 @@ void AliESDTagCreator::CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData,
 
   tag->SetLHCTag(lhcLuminosity,lhcState);
   tag->SetDetectorTag(esd->GetESDRun()->GetDetectorsInDAQ(), esd->GetESDRun()->GetDetectorsInReco());
+  tag->SetActiveTriggerClasses(esd->GetESDRun()->GetActiveTriggerClasses());
   
   // Get magnetic field info
   Bool_t ok = kTRUE;
@@ -1779,7 +950,7 @@ void AliESDTagCreator::CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData,
   //QA setting 
   tag->SetQAArray(qa, qalength) ; 
   tag->SetEventSpecies(es, eslength) ;
-  
+
   ftag->cd();
   ttag->Fill();
   tag->Clear();
@@ -2024,7 +1195,7 @@ void AliESDTagCreator::FillEventTag(TTree *chain, AliEventTag *evTag, Int_t iEve
   evTag->SetTriggerCluster(esd->GetTriggerCluster());
   
   evTag->SetEventType(esd->GetEventType());
-  evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
+  //*T*  evTag->SetFiredTriggerClasses(esd->GetFiredTriggerClasses());
   
   evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
   evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
@@ -2084,7 +1255,7 @@ void AliESDTagCreator::FillEventTag(TTree *chain, AliEventTag *evTag, Int_t iEve
 void AliESDTagCreator::CreateESDRunTagSummary(TTree *chain)
 {
   // Merge all tags from a run into a single RunTag
-  // with as many EventTags as there is files
+  // with only the File tags
   AliRunTag *rtag;
   chain->SetBranchAddress("AliTAG", &rtag);
 
@@ -2099,16 +1270,6 @@ void AliESDTagCreator::CreateESDRunTagSummary(TTree *chain)
     chain->GetEntry(itag);
     tag->CopyStandardContent(rtag);
     
-    TString curguid="";
-
-    for (int iev=0; iev<rtag->GetEventTags()->GetEntries(); iev++) {
-      if (!curguid.Contains(((AliEventTag *) rtag->GetEventTags()->At(iev))->GetGUID())) {
-	curguid = ((AliEventTag *) rtag->GetEventTags()->At(iev))->GetGUID();
-	cout << "Adding " << curguid << endl;
-	tag->AddEventTag(*((AliEventTag *) rtag->GetEventTags()->At(iev)));
-      }
-    }
-
     ttag->Fill();
     tag->Clear();
   }
