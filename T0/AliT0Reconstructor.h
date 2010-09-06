@@ -54,7 +54,7 @@ class AliT0Reconstructor: public AliReconstructor {
   AliT0Reconstructor( const AliT0Reconstructor&r ); //Not implemented
   AliT0Reconstructor& operator=(const AliT0Reconstructor&r); //Not implemented
 
-  ClassDef(AliT0Reconstructor, 5)   // class for the T0 reconstruction
+  ClassDef(AliT0Reconstructor, 6)   // class for the T0 reconstruction
 
 };
 
