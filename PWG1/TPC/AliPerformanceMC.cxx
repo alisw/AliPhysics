@@ -513,8 +513,8 @@ void AliPerformanceMC::ProcessOuterTPCExt(TParticle *const part, TClonesArray * 
     iref1 = iref;    
   }
   if (iref1-iref0<kMinRefs) return;
-  Double_t covar[14];
-  for (Int_t icov=0; icov<14; icov++) covar[icov]=0;
+  Double_t covar[15];
+  for (Int_t icov=0; icov<15; icov++) covar[icov]=0;
   covar[0]=1; 
   covar[2]=1; 
   covar[5]=1;

@@ -263,12 +263,12 @@ AliExternalTrackParam * AliMaterialBudget::MakeTrack(const AliTrackReference* re
   if (!part->GetPDG()) return 0;
   Double_t xyz[3]={ref->X(),ref->Y(),ref->Z()};
   Double_t pxyz[3]={ref->Px(),ref->Py(),ref->Pz()};
-  Double_t charge = TMath::Nint(part->GetPDG()->Charge()/3.);
+  Int_t charge = TMath::Nint(part->GetPDG()->Charge()/3.);
   if (ref->X()*ref->Px()+ref->Y()*ref->Py() <0){
     pxyz[0]*=-1;
     pxyz[1]*=-1;
     pxyz[2]*=-1;
-    charge*=-1.;
+    charge*=-1;
   }
   Double_t cv[21];
   for (Int_t i=0; i<21;i++) cv[i]=0;
@@ -581,8 +581,8 @@ void  AliMaterialBudget::FitTrackRefs(TParticle * part, TClonesArray * trefs){
     iref1 = iref;    
   }
   if (iref1-iref0<kMinRefs) return;
-  Double_t covar[14];
-  for (Int_t icov=0; icov<14; icov++) covar[icov]=0;
+  Double_t covar[15];
+  for (Int_t icov=0; icov<15; icov++) covar[icov]=0;
   covar[0]=1; 
   covar[2]=1; 
   covar[5]=1;

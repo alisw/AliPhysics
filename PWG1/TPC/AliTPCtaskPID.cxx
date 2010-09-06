@@ -189,9 +189,9 @@ void AliTPCtaskPID::Init(){
   BinLogX(fTPCr->GetAxis(1));
   BinLogX(fTPCr->GetAxis(3));
   
-  char *hisAxisName[7] ={"pid","p (GeV/c)","#eta","#beta#gamma","Number of cluster","dEdx_{rec},dedx_{mc}"};
-  char *hisAxisNameNorm[7] ={"pid","p (GeV/c)","#eta","#beta#gamma","Number of cluster","dEdx_{rec}/dEdx_{mc},dedx_{mc}"};
-  char *hisAxisNameR[7] ={"pid","p (GeV/c)","#eta","#beta#gamma","Number of cluster","TPCr","pid2"};
+  const char *hisAxisName[7] ={"pid","p (GeV/c)","#eta","#beta#gamma","Number of cluster","dEdx_{rec},dedx_{mc}"};
+  const char *hisAxisNameNorm[7] ={"pid","p (GeV/c)","#eta","#beta#gamma","Number of cluster","dEdx_{rec}/dEdx_{mc},dedx_{mc}"};
+  const char *hisAxisNameR[7] ={"pid","p (GeV/c)","#eta","#beta#gamma","Number of cluster","TPCr","pid2"};
   //  
   for (Int_t i=0;i<7;i++) {
     fTPCsignal->GetAxis(i)->SetTitle(hisAxisName[i]);
@@ -343,7 +343,7 @@ void  AliTPCtaskPID::ProcessMCInfo(){
     //
     // Fill histos
     //
-    Double_t x[5];
+    Double_t x[7];
     //PID
     Int_t pdg = particle->GetPdgCode();
     for (Int_t iType=0;iType<5;iType++) {
