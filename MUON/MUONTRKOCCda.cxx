@@ -6,7 +6,7 @@
  Run Type: PHYSICS STANDALONE
  DA Type: MON
  Number of events needed: all (or at least as much as possible...)
- Input Files: 09000094301009.10.raw
+ Input Files: 10000119041028.20.raw 10000130367042.10.raw 10000120691024.50.raw
  Output Files: mch.occupancy, to be exported to the DAQ FXS
  Trigger types used: PHYSICS_EVENT
 */
@@ -62,7 +62,7 @@
 #endif
 
 const char* OUTPUT_FILE = "mch.occupancy";
-const char* DAVERSION = "MUONTRKOCCda v1.6 ($Id$)";
+const char* DAVERSION = "MUONTRKOCCda v1.61 ($Id$)";
 
 //______________________________________________________________________________
 void Add(AliMUONVStore& destStore, const AliMUONVStore& srcStore)
