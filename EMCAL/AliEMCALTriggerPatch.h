@@ -31,7 +31,7 @@ public:
 	void      SetPeak(Int_t x, Int_t y, Int_t sizeX, Int_t sizeY);
 
 	void      Position(TVector2& pos       ) const {pos = *fPosition;}
-	void      Position(Int_t& px, Int_t& py) const {px = fPosition->X(); py = fPosition->Y();}
+	void      Position(Int_t& px, Int_t& py) const {px = (Int_t)fPosition->X(); py = (Int_t)fPosition->Y();}
 	TVector2* Position(                    ) const {return fPosition;}
 	Int_t     Sum()   const {return fSum;} // in ADC counts
 	Int_t     Time()  const {return fTime;}

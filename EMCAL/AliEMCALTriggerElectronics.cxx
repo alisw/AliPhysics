@@ -151,9 +151,9 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 		{
 			iL0 += iTRU->L0();
 			
-			Int_t sizeX = (iTRU->PatchSize())->X() * (iTRU->SubRegionSize())->X();
+			Int_t sizeX = (Int_t) ((iTRU->PatchSize())->X() * (iTRU->SubRegionSize())->X());
 			
-			Int_t sizeY = (iTRU->PatchSize())->Y() * (iTRU->SubRegionSize())->Y();
+			Int_t sizeY = (Int_t) ((iTRU->PatchSize())->Y() * (iTRU->SubRegionSize())->Y());
 			
 			// transform local to global 
 			TIter Next(&iTRU->Patches());
