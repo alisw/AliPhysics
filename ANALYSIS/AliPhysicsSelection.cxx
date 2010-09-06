@@ -997,7 +997,17 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
     AliPhysicsSelection* entry = dynamic_cast<AliPhysicsSelection*> (obj);
     if (entry == 0) 
       continue;
-      
+    // Update run number. If this one is not initialized (-1) take the one from 
+    // the next physics selection to be merged with. In case of 2 different run
+    // numbers issue a warning (should physics selections from different runs be 
+    // merged together) A.G.
+    Int_t currentRun = entry->GetCurrentRun();
+    // Nothing to merge with since run number was not initialized.
+    if (currentRun < 0) continue;
+    if (fCurrentRun < 0) fCurrentRun = currentRun;
+    if (fCurrentRun != currentRun)
+       AliWarning(Form("Current run %d not matching the one to be merged with %d", fCurrentRun, currentRun));
+    
     collections[0].Add(&(entry->fTriggerAnalysis));
     if (entry->fHistStatistics[0])
       collections[1].Add(entry->fHistStatistics[0]);

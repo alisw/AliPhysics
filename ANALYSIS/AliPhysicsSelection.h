@@ -55,6 +55,7 @@ public:
   virtual Bool_t IsSelected(TList*) { return kFALSE; }
   virtual Bool_t IsSelected(TObject*)  {return kFALSE;}
     
+  Int_t  GetCurrentRun() const {return fCurrentRun;}
   UInt_t IsCollisionCandidate(const AliESDEvent* aEsd);
   Bool_t Initialize(Int_t runNumber);
     
