@@ -1,18 +1,18 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTCOMPONENTHANDLER_H
 #define ALIHLTCOMPONENTHANDLER_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTComponentHandler.h
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  Global handling of HLT processing components
-    @note   The handler is part of the interface and both used in the
-            Online (PubSub) and Offline (AliRoot) context.
-                                                                          */
+/// @file   AliHLTComponentHandler.h
+/// @author Matthias Richter, Timm Steinbeck
+/// @date   
+/// @brief  Global handling of HLT processing components
+/// @note   The handler is part of the interface and both used in the
+///         Online (PubSub) and Offline (AliRoot) context.
 
 // see below for class documentation
 // or
@@ -21,6 +21,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 #include <vector>
+#include <utility>
 //#include "TObject.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
@@ -101,6 +102,11 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @return 0 if succeeded, neg. error code if failed
    */
   int LoadLibrary( const char* libraryPath, int bActivateAgents=1);
+
+  /**
+   * Load external library dependencies defined in a static array.
+   */
+  int LoadDependencies( const char* libraryPath);
 
   /**
    * Find a symbol in a dynamically loaded library.
@@ -355,7 +361,9 @@ class AliHLTComponentHandler : public AliHLTLogging {
   /** the global singleton */
   static AliHLTComponentHandler* fgpInstance;                      //!transient
   /** number of used instances of the global singleton */
-  static int fgNofInstances;                                       //!transient 
+  static int fgNofInstances;                                       //!transient
+  /// library dependencies
+  static const std::pair<const char*, const char*> fgkLibDep[];    //!transient
 
   ClassDef(AliHLTComponentHandler, 2);
 
