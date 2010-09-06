@@ -28,6 +28,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=
         
         AliAnalysisTaskFragmentationFunction *ff=0;
 
+        // UA1 Jets
         // only reconstructed (default)
 	if(iFlag&(1<<0)) ff = AddTaskFragmentationFunction("jets", "", "", "", filterMask);
         // charged MC tracks and jets
@@ -38,6 +39,24 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=
 	if(iFlag&(1<<3)) ff = AddTaskFragmentationFunction("jets", "", "KINEb", "KINEb", filterMask);
         // reconstructed charged tracks after cuts, MC jets in acceptance 
 	if(iFlag&(1<<4)) ff = AddTaskFragmentationFunction("jets", "jetsMC2b", "AODMCb", "AOD2b", filterMask);
+
+        // kt jets
+        // only reconstructed 
+	if(iFlag&(1<<10)) ff = AddTaskFragmentationFunction("jetsAOD_FASTKT04", "", "", "", filterMask);
+        // charged MC tracks and jets
+	if(iFlag&(1<<11)) ff = AddTaskFragmentationFunction("jetsAOD_FASTKT04", "jetsAODMC2_FASTKT04", "AODMC", "AODMC2", filterMask);
+        // charged MC tracks and jets with acceptance cuts
+	if(iFlag&(1<<12)) ff = AddTaskFragmentationFunction("jetsAOD_FASTKT04", "jetsAODMC2_FASTKT04", "AODMCb", "AODMC2b", filterMask);
+
+        // anti-kt jets
+        // only reconstructed 
+	if(iFlag&(1<<20)) ff = AddTaskFragmentationFunction("jetsAOD_FASTJET04", "", "", "", filterMask);
+        // charged MC tracks and jets
+	if(iFlag&(1<<21)) ff = AddTaskFragmentationFunction("jetsAOD_FASTJET04", "jetsAODMC2_FASTJET04", "AODMC", "AODMC2", filterMask);
+        // charged MC tracks and jets with acceptance cuts
+	if(iFlag&(1<<22)) ff = AddTaskFragmentationFunction("jetsAOD_FASTJET04", "jetsAODMC2_FASTJET04", "AODMCb", "AODMC2b", filterMask);
+
+
 	
 	return ff;
 }
