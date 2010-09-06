@@ -26,7 +26,7 @@ int print_ESD_HLTdecision(const char* esdFileName="AliESDs.root",
 
   TFile* esdFile=NULL;
   if (esdFileName && esdFileName[0]!=0) esdFile=TFile::Open(esdFileName);
-  if (!esdFileName || esdFileName[0]==0 || esdFile->IsZombie()) {
+  if (!esdFileName || esdFileName[0]==0 || !esdFile || esdFile->IsZombie()) {
     if (esdFileName && esdFileName[0]!=0)
       cerr << "can not open esd file " << esdFileName << endl;
     else
@@ -37,7 +37,9 @@ int print_ESD_HLTdecision(const char* esdFileName="AliESDs.root",
     cerr << "  Parameter:" << endl;
     cerr << "       esdFileName      default \"AliESDs.root\"" << endl;
     cerr << "       minEvent         first event (optional)" << endl;
-    cerr << "       maxEvent         last event (optional)" << endl;
+    cerr << "       maxEvent         last event (optional)" << endl << endl;
+    cerr << "  The input file can be a file on Grid like e.g." << endl;
+    cerr << "  \"alien:///alice/data/2009/LHC09d/000104321/ESDs/pass5/09000104321018.30/AliESDs.root\"" << endl;
     cerr << "===============================================================" << endl;
     return -1;
   }
