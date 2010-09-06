@@ -68,6 +68,7 @@ fout.Close();
 #include "AliESDfriendTrack.h"
 #include "AliESDfriend.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDpid.h"
 
 #include "AliPerfAnalyzeInvPt.h"
 #include "AliPerformancePtCalib.h"
@@ -99,6 +100,7 @@ ClassImp(AliPerformancePtCalib)
       //options for cuts
       fOptTPC(0),
       fESDcuts(0),
+      fPions(0),
       fEtaAcceptance(0),
       fCutsRC(0),
       fCutsMC(0),
@@ -118,9 +120,11 @@ ClassImp(AliPerformancePtCalib)
       fHistTPCMomentaPosPt(0),
       fHistTPCMomentaNegPt(0),
       fHistUserPtShift(0),
-
+      fHistdedxPions(0),
       //esd track cuts
       fESDTrackCuts(0),
+      //pid
+      fESDpid(0),
       // analysis folder 
       fAnalysisFolder(0)
 {
@@ -132,6 +136,7 @@ ClassImp(AliPerformancePtCalib)
    //options for cuts
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
+   fPions = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
    
@@ -176,6 +181,7 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    //options for cuts
    fOptTPC(0),
    fESDcuts(0),
+   fPions(0),
    fEtaAcceptance(0),
    fCutsRC(0),
    fCutsMC(0),
@@ -194,8 +200,11 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    fHistTPCMomentaPosPt(0),
    fHistTPCMomentaNegPt(0),
    fHistUserPtShift(0),	
-   //esd track cuts														     
+   fHistdedxPions(0),
+   //esd track cuts													 
    fESDTrackCuts(0),
+   //pid
+   fESDpid(0),
    // analysis folder 
    fAnalysisFolder(0)
    
@@ -207,6 +216,7 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    //options for cuts
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
+   fPions = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
    
@@ -249,8 +259,10 @@ AliPerformancePtCalib::~AliPerformancePtCalib() {
    if(fHistTPCMomentaPosPt) delete fHistTPCMomentaPosPt;fHistTPCMomentaPosPt=0; 
    if(fHistTPCMomentaNegPt) delete fHistTPCMomentaNegPt ;fHistTPCMomentaNegPt=0; 
    if(fHistUserPtShift)     delete fHistUserPtShift;fHistUserPtShift=0; 
-   //esd track cuts														     
+   //esd track cuts
    if(fESDTrackCuts) delete fESDTrackCuts;
+   //pid
+   if(fESDpid) delete fESDpid;fESDpid=0;
    //analysis folder 
    if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0; 
 }
@@ -311,8 +323,12 @@ void AliPerformancePtCalib::Init()
    //user pt shift check
    fHistUserPtShift = new TH1F("fHistUserPtShift","user defined shift in 1/pt",100,-0.5,1.5);
    fList->Add(fHistUserPtShift);
+   //pid by dedx
+   fHistdedxPions = new TH2F ("fHistdedxPions","dEdx of pions ident. via kPID vs signed Pt",300,-15.05,15.05,200,0.0,400.0);
+   fList->Add(fHistdedxPions);
+   //pid
+   fESDpid = NULL;
 
-  
    // esd track cuts  
    fESDTrackCuts =NULL;
 }
@@ -383,6 +399,16 @@ void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *con
 	 if(fabs(tpcTrack->Eta())>= fEtaAcceptance) continue;
       
 	 Double_t signedPt = tpcTrack->GetSignedPt();
+
+	 // pid
+	 if(fPions){
+	   fESDpid= new AliESDpid();
+	   fESDpid->GetTPCResponse().SetBetheBlochParameters(0.0283086,2.63394e+01,5.04114e-11, 2.12543e+00,4.88663e+00);
+	   
+	   if( TMath::Abs(fESDpid->NumberOfSigmasTPC(esdTrack,AliPID::kPion)) >1) continue;
+	   fHistdedxPions->Fill(signedPt,esdTrack->GetTPCsignal());
+	 }
+	 
 	 Double_t invPt = 0.0;
 	 if(signedPt) {
 	    invPt = 1.0/signedPt;
@@ -547,7 +573,7 @@ Long64_t AliPerformancePtCalib::Merge(TCollection* const list)
 	 fHistTPCMomentaNegP->Add(entry->fHistTPCMomentaNegP);
 	 fHistTPCMomentaPosPt->Add(entry->fHistTPCMomentaPosPt);
 	 fHistTPCMomentaNegPt->Add(entry->fHistTPCMomentaNegPt);
-  
+	 fHistdedxPions->Add(entry->fHistdedxPions);
 	 count++;
       }
   
