@@ -57,8 +57,7 @@ fDoOwnMix(kFALSE),fNCentrBin(0),fNZvertBin(0),fNrpBin(0),
 fNPID(0),fNmaxMixEv(0), fZvtxCut(0.),fCalorimeter(""),
 fNModules(12), fUseAngleCut(kFALSE), fEventsList(0x0), fMultiCutAna(kFALSE),
 fNPtCuts(0),fPtCuts(0x0),fNAsymCuts(0),fAsymCuts(0x0),
-fNCellNCuts(0),fCellNCuts(0x0),fNPIDBits(0),fPIDBits(0x0),
-fHistoInvPtBins(0), fHistoInvPtMax(0), fHistoInvPtMin(0), fhReMod(0x0),
+fNCellNCuts(0),fCellNCuts(0x0),fNPIDBits(0),fPIDBits(0x0),fhReMod(0x0),
 fhRe1(0x0),      fhMi1(0x0),      fhRe2(0x0),      fhMi2(0x0),      fhRe3(0x0),      fhMi3(0x0),
 fhReInvPt1(0x0), fhMiInvPt1(0x0), fhReInvPt2(0x0), fhMiInvPt2(0x0), fhReInvPt3(0x0), fhMiInvPt3(0x0),
 fhRePtNCellAsymCuts(0x0), fhRePIDBits(0x0),
@@ -116,7 +115,7 @@ void AliAnaPi0::InitParameters()
 
   fNAsymCuts = 3;
   fAsymCuts  = new Float_t[fNAsymCuts];
-  fAsymCuts[0] = 0.7;  fAsymCuts[2] = 0.8;   fAsymCuts[2] = 1.;   
+  fAsymCuts[0] = 0.7;  fAsymCuts[1] = 0.8;   fAsymCuts[2] = 1.;   
   
   fNCellNCuts = 3;
   fCellNCuts  = new Int_t[fNCellNCuts];
@@ -126,10 +125,6 @@ void AliAnaPi0::InitParameters()
   fPIDBits  = new Int_t[fNPIDBits];
   fPIDBits[0] = 2;   fPIDBits[1] = 4;   fPIDBits[2] = 6; // check dispersion, neutral, dispersion&&neutral
   
-  fHistoInvPtMax  = 10.;
-  fHistoInvPtMin  = 0.;
-  fHistoInvPtBins = 200;
-
 }
 
 
@@ -160,7 +155,24 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
 	 parList+=onePar ;
 	 snprintf(onePar,buffersize,"Number of modules: %d \n",fNModules) ;
 	 parList+=onePar ;
-	 
+  if(fMultiCutAna){
+    snprintf(onePar, buffersize," pT cuts: n = %d, pt > ",fNPtCuts) ;
+    for(Int_t i = 0; i < fNPtCuts; i++) snprintf(onePar,buffersize,"%s %2.2f;",onePar,fPtCuts[i]);
+    parList+=onePar ;
+    
+    snprintf(onePar,buffersize, " N cell in cluster cuts: n = %d, nCell > ",fNCellNCuts) ;
+    for(Int_t i = 0; i < fNCellNCuts; i++) snprintf(onePar,buffersize,"%s %d;",onePar,fCellNCuts[i]);
+    parList+=onePar ;
+    
+    snprintf(onePar,buffersize," Asymmetry cuts: n = %d, asymmetry < ",fNAsymCuts) ;
+    for(Int_t i = 0; i < fNAsymCuts; i++) snprintf(onePar,buffersize,"%s %2.2f;",onePar,fAsymCuts[i]);
+    parList+=onePar ;
+    
+    snprintf(onePar,buffersize," PID selection bits: n = %d, PID bit =\n",fNPIDBits) ;
+    for(Int_t i = 0; i < fNPIDBits; i++) snprintf(onePar,buffersize,"%s %d;",onePar,fPIDBits[i]);
+    parList+=onePar ;
+  }
+  
 	 return new TObjString(parList) ;	
 }
 
@@ -204,15 +216,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   char title[buffersize] ;
   
   Int_t nptbins   = GetHistoPtBins();
-  Int_t niptbins  = GetHistoInvPtBins();
   Int_t nphibins  = GetHistoPhiBins();
   Int_t netabins  = GetHistoEtaBins();
   Float_t ptmax   = GetHistoPtMax();
-  Float_t iptmax  = GetHistoInvPtMax();
   Float_t phimax  = GetHistoPhiMax();
   Float_t etamax  = GetHistoEtaMax();
   Float_t ptmin   = GetHistoPtMin();
-  Float_t iptmin  = GetHistoInvPtMin();
   Float_t phimin  = GetHistoPhiMin();
   Float_t etamin  = GetHistoEtaMin();	
 	
@@ -248,19 +257,19 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       //Distance to bad module 1
       snprintf(key, buffersize,"hReInvPt_cen%d_pid%d_dist1",ic,ipid) ;
       snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-      fhReInvPt1[ic*fNPID+ipid] = new TH3D(key,title,niptbins,iptmin,iptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
+      fhReInvPt1[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhReInvPt1[ic*fNPID+ipid]) ;
       
       //Distance to bad module 2
       snprintf(key, buffersize,"hReInvPt_cen%d_pid%d_dist2",ic,ipid) ;
       snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-      fhReInvPt2[ic*fNPID+ipid] = new TH3D(key,title,niptbins,iptmin,iptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
+      fhReInvPt2[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhReInvPt2[ic*fNPID+ipid]) ;
       
       //Distance to bad module 3
       snprintf(key, buffersize,"hReInvPt_cen%d_pid%d_dist3",ic,ipid) ;
       snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-      fhReInvPt3[ic*fNPID+ipid] = new TH3D(key,title,niptbins,iptmin,iptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
+      fhReInvPt3[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
       outputContainer->Add(fhReInvPt3[ic*fNPID+ipid]) ;
       
       
@@ -287,19 +296,19 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         //Distance to bad module 1
         snprintf(key, buffersize,"hMiInvPt_cen%d_pid%d_dist1",ic,ipid) ;
         snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-        fhMiInvPt1[ic*fNPID+ipid] = new TH3D(key,title,niptbins,iptmin,iptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
+        fhMiInvPt1[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
         outputContainer->Add(fhMiInvPt1[ic*fNPID+ipid]) ;
         
         //Distance to bad module 2
         snprintf(key, buffersize,"hMiInvPt_cen%d_pid%d_dist2",ic,ipid) ;
         snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-        fhMiInvPt2[ic*fNPID+ipid] = new TH3D(key,title,niptbins,iptmin,iptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
+        fhMiInvPt2[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
         outputContainer->Add(fhMiInvPt2[ic*fNPID+ipid]) ;
         
         //Distance to bad module 3
         snprintf(key, buffersize,"hMiInvPt_cen%d_pid%d_dist3",ic,ipid) ;
         snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for centrality=%d and PID=%d",ic,ipid) ;
-        fhMiInvPt3[ic*fNPID+ipid] = new TH3D(key,title,niptbins,iptmin,iptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
+        fhMiInvPt3[ic*fNPID+ipid] = new TH3D(key,title,nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax,nmassbins,massmin,massmax) ;
         outputContainer->Add(fhMiInvPt3[ic*fNPID+ipid]) ;
         
         
@@ -411,6 +420,28 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   printf("Z vertex position: -%2.3f < z < %2.3f \n",fZvtxCut,fZvtxCut) ;
   printf("Number of modules:             %d \n",fNModules) ;
   printf("Select pairs with their angle: %d \n",fUseAngleCut) ;
+  if(fMultiCutAna){
+    printf("pT cuts: n = %d, \n",fNPtCuts) ;
+    printf("\tpT > ");
+    for(Int_t i = 0; i < fNPtCuts; i++) printf("%2.2f ",fPtCuts[i]);
+    printf("GeV/c\n");
+    
+    printf("N cell in cluster cuts: n = %d, \n",fNCellNCuts) ;
+    printf("\tnCell > ");
+    for(Int_t i = 0; i < fNCellNCuts; i++) printf("%d ",fCellNCuts[i]);
+    printf("\n");
+
+    printf("Asymmetry cuts: n = %d, \n",fNAsymCuts) ;
+    printf("\tasymmetry < ");
+    for(Int_t i = 0; i < fNAsymCuts; i++) printf("%2.2f ",fAsymCuts[i]);
+    printf("\n");
+
+    printf("PID selection bits: n = %d, \n",fNPIDBits) ;
+    printf("\tPID bit = ");
+    for(Int_t i = 0; i < fNPIDBits; i++) printf("%d ",fPIDBits[i]);
+    printf("\n");
+  
+  }
   printf("------------------------------------------------------\n") ;
 } 
 
@@ -583,14 +614,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       
       for(Int_t ipid=0; ipid<fNPID; ipid++){
         if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 
-          fhRe1     [curCentrBin*fNPID+ipid]->Fill(pt,   a,m) ;
-          fhReInvPt1[curCentrBin*fNPID+ipid]->Fill(1./pt,a,m) ;
+          fhRe1     [curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+          fhReInvPt1[curCentrBin*fNPID+ipid]->Fill(pt,a,m,1./pt) ;
           if(p1->DistToBad()>0 && p2->DistToBad()>0){
-            fhRe2     [curCentrBin*fNPID+ipid]->Fill(pt,   a,m) ;
-            fhReInvPt2[curCentrBin*fNPID+ipid]->Fill(1./pt,a,m) ;
+            fhRe2     [curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+            fhReInvPt2[curCentrBin*fNPID+ipid]->Fill(pt,a,m,1./pt) ;
             if(p1->DistToBad()>1 && p2->DistToBad()>1){
-              fhRe3     [curCentrBin*fNPID+ipid]->Fill(pt,   a,m) ;
-              fhReInvPt3[curCentrBin*fNPID+ipid]->Fill(1./pt,a,m) ;
+              fhRe3     [curCentrBin*fNPID+ipid]->Fill(pt,a,m) ;
+              fhReInvPt3[curCentrBin*fNPID+ipid]->Fill(pt,a,m,1./pt) ;
             }// bad 3
           }// bad2
         }// bad 1
