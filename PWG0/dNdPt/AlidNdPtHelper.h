@@ -84,13 +84,21 @@ class AlidNdPtHelper : public TObject
     static TH1* CalcRelativeDifferenceFun(TH1 *const hist=0, TF1 *const fun=0);
     static TH1* NormalizeToEvent(TH2 *const hist1=0, TH1 *const hist2=0);
 
-    static THnSparse* GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name);
-    static TH2* GenerateCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name);
-    static TH1* GenerateCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name);
+    //static THnSparse* GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name);
+    //static TH2* GenerateCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name);
+    //static TH1* GenerateCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name);
 
-    static THnSparse* GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name);
-    static TH2* GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name);
-    static TH1* GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name);
+    //static THnSparse* GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name);
+    //static TH2* GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name);
+    //static TH1* GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name);
+
+    static THnSparse* GenerateCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, const char * name);
+    static TH2* GenerateCorrMatrix(TH2 *const hist1, TH2 *const hist2, const char* name);
+    static TH1* GenerateCorrMatrix(TH1 *const hist1, TH1 *const hist2, const char* name);
+
+    static THnSparse* GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, const char* name);
+    static TH2* GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, const char* name);
+    static TH1* GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, const char* name);
 
     static Double_t GetStrangenessCorrFactor(const Double_t pt);
     static Double_t GetLinearInterpolationValue(const Double_t x1, const Double_t y1, const Double_t x2, const Double_t y2, const Double_t pt);
