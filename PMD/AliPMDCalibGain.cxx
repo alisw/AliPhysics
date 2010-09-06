@@ -194,8 +194,21 @@ Int_t AliPMDCalibGain::ExtractHotChannel(const Char_t *rootFile)
 
   if(!hotmapfile)
     {
-      printf(" NO HOTCHANNEL MAP FOUND (PMD_HOT.root) FILE IS FOUND \n");
-      fHotFlag[kDet][kMaxSMN][kMaxRow][kMaxCol] = 0.;
+      printf(" NO HOTCHANNEL MAP (PMD_HOT.root) FILE IS FOUND \n");
+
+      for (Int_t idet = 0; idet < kDet; idet++)
+	{
+	  for (Int_t ismn = 0; ismn < kMaxSMN; idet++)
+	    {
+	      for (Int_t irow = 0; irow < kMaxRow; idet++)
+		{
+		  for (Int_t icol = 0; icol < kMaxCol; idet++)
+		    {
+		      fHotFlag[idet][kMaxSMN][kMaxRow][kMaxCol] = 0.;
+		    }
+		}
+	    }
+	}
     }
 
 
