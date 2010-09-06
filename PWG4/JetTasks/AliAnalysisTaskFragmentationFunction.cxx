@@ -79,6 +79,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fDiJetCDFCut(0)
    ,fDiJetKindBins(0)
    ,fFFRadius(0)
+   ,fAvgTrials(0)
    ,fTracksRec(0)
    ,fTracksRecCuts(0)
    ,fTracksGen(0)
@@ -243,6 +244,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fDiJetCDFCut(0)
   ,fDiJetKindBins(0)
   ,fFFRadius(0)
+  ,fAvgTrials(0)
   ,fTracksRec(0)
   ,fTracksRecCuts(0)
   ,fTracksGen(0)
@@ -411,6 +413,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fDiJetCDFCut(copy.fDiJetCDFCut)
   ,fDiJetKindBins(copy.fDiJetKindBins)
   ,fFFRadius(copy.fFFRadius)
+  ,fAvgTrials(copy.fAvgTrials)
   ,fTracksRec(copy.fTracksRec)
   ,fTracksRecCuts(copy.fTracksRecCuts)
   ,fTracksGen(copy.fTracksGen)
@@ -581,6 +584,7 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fDiJetCDFCut                  = o.fDiJetCDFCut;
     fDiJetKindBins                = o.fDiJetKindBins;
     fFFRadius                     = o.fFFRadius;
+    fAvgTrials                    = o.fAvgTrials;
     fTracksRec                    = o.fTracksRec;
     fTracksRecCuts                = o.fTracksRecCuts;
     fTracksGen                    = o.fTracksGen;
@@ -1765,12 +1769,13 @@ Bool_t AliAnalysisTaskFragmentationFunction::Notify()
   //
   // Implemented Notify() to read the cross sections
   // and number of trials from pyxsec.root
-  // (taken from AliAnalysisTaskJetSpectrum)
+  // (taken from AliAnalysisTaskJetSpectrum2)
   // 
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-  Double_t xsection = 0;
-  UInt_t   ntrials  = 0;
-  Float_t   ftrials  = 0;
+  Float_t xsection = 0;
+  Float_t ftrials  = 1;
+
+  fAvgTrials = 1;
   if(tree){
     TFile *curfile = tree->GetCurrentFile();
     if (!curfile) {
@@ -1781,61 +1786,12 @@ Bool_t AliAnalysisTaskFragmentationFunction::Notify()
       Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
       return kFALSE;
     }
-
-    TString fileName(curfile->GetName());
-    if(fileName.Contains("AliESDs.root")){
-        fileName.ReplaceAll("AliESDs.root", "");
-    }
-    else if(fileName.Contains("AliAOD.root")){
-        fileName.ReplaceAll("AliAOD.root", "");
-    }
-    else if(fileName.Contains("AliAODs.root")){
-        fileName.ReplaceAll("AliAODs.root", "");
-    }
-    else if(fileName.Contains("galice.root")){
-        // for running with galice and kinematics alone...                      
-        fileName.ReplaceAll("galice.root", "");
-    }
-    TFile *fxsec = TFile::Open(Form("%s%s",fileName.Data(),"pyxsec.root"));
-    if(!fxsec){
-      if(fDebug>0)Printf("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,Form("%s%s",fileName.Data(),"pyxsec.root"));
-      // next trial fetch the histgram file
-      fxsec = TFile::Open(Form("%s%s",fileName.Data(),"pyxsec_hists.root"));
-      if(!fxsec){
-	// not a severe condition
-	if(fDebug>0)Printf("%s:%d %s not found in the Input",(char*)__FILE__,__LINE__,Form("%s%s",fileName.Data(),"pyxsec_hists.root"));	
-	return kTRUE;
-      }
-      else{
-	// find the tlist we want to be independtent of the name so use the Tkey
-	TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
-	if(!key){
-	  if(fDebug>0)Printf("%s:%d key not found in the file",(char*)__FILE__,__LINE__);	
-	  return kTRUE;
-	}
-	TList *list = dynamic_cast<TList*>(key->ReadObj());
-	if(!list){
-	  if(fDebug>0)Printf("%s:%d key is not a tlist",(char*)__FILE__,__LINE__);	
-	  return kTRUE;
-	}
-	xsection = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
-	ftrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
-      }
-    }
-    else{
-      TTree *xtree = (TTree*)fxsec->Get("Xsection");
-      if(!xtree){
-	Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
-      }
-      xtree->SetBranchAddress("xsection",&xsection);
-      xtree->SetBranchAddress("ntrials",&ntrials);
-      ftrials = ntrials;
-      xtree->GetEntry(0);
-    }
+    AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
     fh1Xsec->Fill("<#sigma>",xsection);
-    fh1Trials->Fill("#sum{ntrials}",ftrials);
+    // construct a poor man average trials 
+    Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
+    if(ftrials>=nEntries && nEntries>0.)fAvgTrials = ftrials/nEntries;
   }
-  
   return kTRUE;
 }
 
@@ -2322,6 +2278,8 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
         fh1PtHard->Fill(ptHard);
         fh1PtHardTrials->Fill(ptHard,nTrials);
+
+        fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
      }
    }
   

@@ -458,9 +458,17 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskFrag = AddTaskFragmentationFunction(1<<1,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<2,kHighPtFilterMask);
        taskFrag = AddTaskFragmentationFunction(1<<3,kHighPtFilterMask);
+       taskFrag = AddTaskFragmentationFunction(1<<11);  // w/o acceptance cuts
+       taskFrag =  AddTaskFragmentationFunction(1<<12);  // with acceptance cuts
+       // anti-kt
+       taskFrag = AddTaskFragmentationFunction(1<<21);  // w/o acceptance cuts
+       taskFrag = AddTaskFragmentationFunction(1<<22);  // with acceptance cuts
+
      }
      else{
        taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask);
+       taskFrag = AddTaskFragmentationFunction(1<<10,kHighPtFilterMask);
+       taskFrag = AddTaskFragmentationFunction(1<<20,kHighPtFilterMask);
      }
 
      if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragmentationFunction cannot run for this train conditions - EXCLUDED");

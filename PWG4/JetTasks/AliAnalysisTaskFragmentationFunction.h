@@ -479,6 +479,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   static  TArrayD* fDiJetBins;   // bining in invmass, etleading, emean
 
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
+
+  Float_t fAvgTrials;       // average number of trials per event
   
   TList* fTracksRec;            //! reconstructed tracks
   TList* fTracksRecCuts;        //! reconstructed tracks after cuts
