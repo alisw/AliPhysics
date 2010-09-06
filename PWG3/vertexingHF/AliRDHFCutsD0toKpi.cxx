@@ -559,8 +559,8 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
     
     combinedPID[0][0]=isKaonPionTOF[0][0]+isKaonPionTPC[0][0];
     combinedPID[0][1]=isKaonPionTOF[0][1]+isKaonPionTPC[0][1];
-    combinedPID[0][0]=isKaonPionTOF[1][0]+isKaonPionTPC[1][0];
-    combinedPID[0][1]=isKaonPionTOF[1][1]+isKaonPionTPC[1][1];
+    combinedPID[1][0]=isKaonPionTOF[1][0]+isKaonPionTPC[1][0];
+    combinedPID[1][1]=isKaonPionTOF[1][1]+isKaonPionTPC[1][1];
     
     if(combinedPID[0][0]<=0&&combinedPID[1][0]<=0){
       fWhyRejection=32;// reject cases where the Kaon is not identified
