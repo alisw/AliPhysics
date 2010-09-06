@@ -109,10 +109,13 @@ AliTPCcalibTime::AliTPCcalibTime()
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99),  // direction vector products
    fCutTracks(100),
+   fArrayLaserA(0),      //laser  fit parameters C
+   fArrayLaserC(0),      //laser  fit parameters A
    fArrayDz(0),          //NEW! Tmap of V drifts for different triggers
    fAlignITSTPC(0),      //alignemnt array ITS TPC match
    fAlignTRDTPC(0),      //alignemnt array TRD TPC match 
    fAlignTOFTPC(0),      //alignemnt array TOF TPC match
+   fTimeKalmanBin(60*15), //time bin width for kalman - 15 minutes default
    fTimeBins(0),
    fTimeStart(0),
    fTimeEnd(0),
@@ -157,10 +160,13 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
    fCutTheta(5*0.004644),// maximal distan theta
    fCutMinDir(-0.99),    // direction vector products
    fCutTracks(100),
+   fArrayLaserA(new TObjArray(1000)),      //laser  fit parameters C
+   fArrayLaserC(new TObjArray(1000)),      //laser  fit parameters A
    fArrayDz(0),            //Tmap of V drifts for different triggers
    fAlignITSTPC(0),      //alignemnt array ITS TPC match
    fAlignTRDTPC(0),      //alignemnt array TRD TPC match 
    fAlignTOFTPC(0),      //alignemnt array TOF TPC match
+   fTimeKalmanBin(60*15), //time bin width for kalman - 15 minutes default
    fTimeBins(0),
    fTimeStart(0),
    fTimeEnd(0),
@@ -444,6 +450,20 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
   npointsC= TMath::Nint(vdriftC[3]);
   chi2C= vdriftC[4];
 
+  if (npointsA>kMinTracksSide || npointsC>kMinTracksSide){
+    TVectorD *fitA = new TVectorD(6);
+    TVectorD *fitC = new TVectorD(6);
+    for (Int_t ipar=0; ipar<5; ipar++){
+      (*fitA)[ipar]=vdriftA[ipar];
+      (*fitC)[ipar]=vdriftC[ipar];
+    }
+    (*fitA)[5]=fTime;
+    (*fitC)[5]=fTime;
+    fArrayLaserA->AddLast(fitA);
+    fArrayLaserC->AddLast(fitC);
+  }
+  //
+  
   TTimeStamp tstamp(fTime);
   Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
   Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
@@ -473,33 +493,6 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
     fHistVdriftLaserA[icalib]->Fill(vecDriftLaserA);
     fHistVdriftLaserC[icalib]->Fill(vecDriftLaserC);
   }
-
-//   THnSparse* curHist=new THnSparseF("","HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
-//   TString shortName=curHist->ClassName();
-//   shortName+="_MEAN_DRIFT_LASER_";
-//   delete curHist;
-//   curHist=NULL;
-//   TString name="";
-
-//   name=shortName;
-//   name+=event->GetFiredTriggerClasses();
-//   name.ToUpper();
-//   curHist=(THnSparseF*)fArrayDz->FindObject(name);
-//   if(!curHist){
-//     curHist=new THnSparseF(name,"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
-//     fArrayDz->AddLast(curHist);
-//   }
-//   curHist->Fill(vecDrift);
-	  
-//   name=shortName;
-//   name+="ALL";
-//   name.ToUpper();
-//   curHist=(THnSparseF*)fArrayDz->FindObject(name);
-//   if(!curHist){
-//     curHist=new THnSparseF(name,"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
-//     fArrayDz->AddLast(curHist);
-//   }
-//   curHist->Fill(vecDrift);
 }
 
 void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
@@ -885,6 +878,16 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
 	else
 	  fResHistoTPCTOF[imeas]=(THnSparse*)cal->fResHistoTPCTOF[imeas]->Clone();      
       }
+
+      if (cal->fArrayLaserA){
+	fArrayLaserA->Expand(fArrayLaserA->GetEntriesFast()+cal->fArrayLaserA->GetEntriesFast());
+	fArrayLaserC->Expand(fArrayLaserC->GetEntriesFast()+cal->fArrayLaserC->GetEntriesFast());
+	for (Int_t ical=0; ical<cal->fArrayLaserA->GetEntriesFast(); ical++){
+	  if (cal->fArrayLaserA->UncheckedAt(ical)) fArrayLaserA->AddLast(cal->fArrayLaserA->UncheckedAt(ical)->Clone());
+	  if (cal->fArrayLaserC->UncheckedAt(ical)) fArrayLaserC->AddLast(cal->fArrayLaserC->UncheckedAt(ical)->Clone());
+	}
+      }
+
     }
     TObjArray* addArray=cal->GetHistoDrift();
     if(!addArray) return 0;
@@ -1212,6 +1215,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   const Double_t kMaxAngle= 0.015;  // maximal angular distance
   const Double_t kSigmaCut= 5;     // maximal sigma distance to median
   const Double_t kVdErr   = 0.1;  // initial uncertainty of the vd correction 
+  const Double_t kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
   const Double_t kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
   const Double_t kMinPt   = 0.3;   // minimal pt
@@ -1301,7 +1305,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   //
   // 3. Update alignment
   //
-  Int_t htime = (fTime-1800/2)/1800; //time bins in half of hours
+  Int_t htime = (fTime-fTimeKalmanBin/2)/fTimeKalmanBin; //time bins number
   if (fAlignITSTPC->GetEntriesFast()<htime){
     fAlignITSTPC->Expand(htime*2+20);
   }
@@ -1311,6 +1315,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
     align=new AliRelAlignerKalman(); 
     align->SetRunNumber(fRun);
     (*align->GetStateCov())(6,6)=kVdErr*kVdErr;
+    (*align->GetStateCov())(7,7)=kT0Err*kT0Err;
     (*align->GetStateCov())(8,8)=kVdYErr*kVdYErr;
     align->SetOutRejSigma(kOutCut+kOutCut*kN);
     align->SetRejectOutliers(kFALSE);
@@ -1322,7 +1327,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   align->AddTrackParams(&pITS,&pTPC);
   Double_t averageTime =  fTime;
   if (align->GetTimeStamp()>0&&align->GetNUpdates()>0){
-    averageTime=(align->GetTimeStamp()*align->GetNUpdates()+fTime)/(align->GetNUpdates()+1.);
+    averageTime=((Double_t(align->GetTimeStamp())*Double_t(align->GetNUpdates())+Double_t(fTime)))/(Double_t(align->GetNUpdates())+1.);
   }
   align->SetTimeStamp(Int_t(averageTime));
 
@@ -1391,13 +1396,13 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   const Double_t kMaxAngle= 0.1;  // maximal angular distance
   const Double_t kSigmaCut= 10;     // maximal sigma distance to median
   const Double_t kVdErr   = 0.1;  // initial uncertainty of the vd correction 
+  const Double_t kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
   const Double_t kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
   const Double_t kRefX    = 275;   // reference X
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
-  const Int_t    kTime=900; // time in seconds
   //
   // 0. Apply standard cuts
   //
@@ -1458,7 +1463,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   // 3. Update alignment
   //
   //Int_t htime = fTime/3600; //time in hours
-  Int_t htime = (Int_t)(fTime-kTime)/1800; //time in half hour
+  Int_t htime = (Int_t)(fTime-fTimeKalmanBin/2)/fTimeKalmanBin; //time in half hour
   if (fAlignTRDTPC->GetEntriesFast()<htime){
     fAlignTRDTPC->Expand(htime*2+20);
   }
@@ -1468,6 +1473,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
     align=new AliRelAlignerKalman(); 
     align->SetRunNumber(fRun);
     (*align->GetStateCov())(6,6)=kVdErr*kVdErr;
+    (*align->GetStateCov())(7,7)=kT0Err*kT0Err;
     (*align->GetStateCov())(8,8)=kVdYErr*kVdYErr;
     align->SetOutRejSigma(kOutCut+kOutCut*kN);
     align->SetRejectOutliers(kFALSE);
@@ -1546,13 +1552,13 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   const Double_t   kMaxAngle= 0.015;  // maximal angular distance
   const Double_t   kSigmaCut= 5;     // maximal sigma distance to median
   const Double_t   kVdErr   = 0.1;  // initial uncertainty of the vd correction 
+  const Double_t   kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t   kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
 
   const Double_t   kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
-  const Int_t      kTime=900; // time in seconds
   //
   // -1. Make a TOF track-
   //     Clusters are not in friends - use alingment points
@@ -1634,7 +1640,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   // 3. Update alignment
   //
   //Int_t htime = fTime/3600; //time in hours
-  Int_t htime = (Int_t)(fTime-kTime)/1800; //time in half hour
+  Int_t htime = (Int_t)(fTime-fTimeKalmanBin)/fTimeKalmanBin; //time bin
   if (fAlignTOFTPC->GetEntriesFast()<htime){
     fAlignTOFTPC->Expand(htime*2+20);
   }
@@ -1644,6 +1650,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
     align=new AliRelAlignerKalman(); 
     align->SetRunNumber(fRun);
     (*align->GetStateCov())(6,6)=kVdErr*kVdErr;
+    (*align->GetStateCov())(7,7)=kT0Err*kT0Err;
     (*align->GetStateCov())(8,8)=kVdYErr*kVdYErr;
     align->SetOutRejSigma(kOutCut+kOutCut*kN);
     align->SetRejectOutliers(kFALSE);
