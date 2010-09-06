@@ -74,7 +74,10 @@ public:
   void        FillResHistoTPCTRD(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTRDIn );
   void        FillResHistoTPCTOF(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTOFIn );
 
-public:
+  TObjArray * GetLaserArrayA() const { return fArrayLaserA;}
+  TObjArray * GetLaserArrayC() const { return fArrayLaserC;}
+
+protected:
   void ResetCurrent();                  // reset current values
 
   AliTPCcalibLaser * fLaser;            //! laser calibration
@@ -91,8 +94,6 @@ public:
   Float_t fCutMinDir;   // direction vector products
   Int_t   fCutTracks;   // maximal number of tracks
  
-  AliTPCcalibTime(const AliTPCcalibTime&); 
-  AliTPCcalibTime& operator=(const AliTPCcalibTime&); 
 
   TH1F* fCosmiMatchingHisto[10];
   //
@@ -129,6 +130,11 @@ public:
   Int_t    fBinsVdrift[4];		//Bins for vdrift
   Double_t fXminVdrift[4];		//Xmax for vdrift
   Double_t fXmaxVdrift[4];		//Xmin for vdrift
+
+private:
+  AliTPCcalibTime(const AliTPCcalibTime&); 
+  AliTPCcalibTime& operator=(const AliTPCcalibTime&); 
+
   ClassDef(AliTPCcalibTime, 5); 
 };
 
