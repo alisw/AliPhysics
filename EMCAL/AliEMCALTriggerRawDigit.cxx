@@ -12,151 +12,145 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
- 
- 
 
- 
+/*
+
+
+
  Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
-// --- ROOT system ---
+// --- ROOT system ---AliEMCALTriggerRawDigit
 #include <Riostream.h>
 #include <TMath.h>
 
-// --- AliRoot header files ---
-#include "AliEMCALRawDigit.h"
+#include "AliEMCALTriggerRawDigit.h"
 #include "AliLog.h"
 
-ClassImp(AliEMCALRawDigit)
+ClassImp(AliEMCALTriggerRawDigit)
 
 //____________________________________________________________________________
-AliEMCALRawDigit::AliEMCALRawDigit() : TObject(),
-fId(-1),
-fNSamples(0),
-fSamples(0x0),
-fAmplitude(0),
-fTime(0)
+AliEMCALTriggerRawDigit::AliEMCALTriggerRawDigit() : AliEMCALRawDigit(),
+fL0Trigger(0),
+fNL0Times(0),
+fL0Times(),
+fL1TimeSum(-1)
 {
 	// default ctor 
+	for (Int_t i = 0; i < 10; i++) fL0Times[i] = -1;
 }
 
 //____________________________________________________________________________
-AliEMCALRawDigit::AliEMCALRawDigit(Int_t id, Int_t timeSamples[], Int_t nSamples) : TObject(),
-fId(id),
-fNSamples(nSamples),
-fSamples(0x0),
-fAmplitude(0),
-fTime(0)
+AliEMCALTriggerRawDigit::AliEMCALTriggerRawDigit(Int_t id, Int_t timeSamples[], Int_t nSamples) : AliEMCALRawDigit(id, timeSamples, nSamples),
+fL0Trigger(0),
+fNL0Times(0),
+fL0Times(),
+fL1TimeSum(-1)
 {
 	//
-	fSamples = new Int_t[fNSamples];
-	for (Int_t i = 0; i < fNSamples; i++) fSamples[i] = timeSamples[i];
+	for (Int_t i = 0; i < 10; i++) fL0Times[i] = -1;
 }
 
 //____________________________________________________________________________
-AliEMCALRawDigit::~AliEMCALRawDigit() 
-{
-  //dtor, delete array of time samples
-  if(fSamples) delete [] fSamples;
-}
-
-//____________________________________________________________________________
-void AliEMCALRawDigit::Clear(Option_t *) 
-{
-  // clear, delete array of time samples
-  if(fSamples) delete [] fSamples;
-}
-
-
-//____________________________________________________________________________
-Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& timeBin, Int_t& amp) const
+AliEMCALTriggerRawDigit::~AliEMCALTriggerRawDigit() 
 {
 	//
-	if (iSample > fNSamples || iSample < 0) return kFALSE;
-	
-	amp     =  fSamples[iSample] & 0xFFF;
-	timeBin = (fSamples[iSample] >> 12) & 0xFF;
-
-	return kTRUE;
+	//delete [] fL0Times;
 }
 
 //____________________________________________________________________________
-void AliEMCALRawDigit::SetTimeSamples(const Int_t timeSamples[], const Int_t nSamples) 
+Bool_t AliEMCALTriggerRawDigit::SetL0Time(const Int_t i)
 {
 	//
-	if (fSamples) 
+	for (Int_t j = 0; j < fNL0Times; j++)
 	{
-		AliWarning("Samples already filled: delete first!");
-		fNSamples = 0;
-		delete [] fSamples;
-	}
-	
-	fNSamples = nSamples;
-	fSamples = new Int_t[fNSamples];
-	for (Int_t i = 0; i < fNSamples; i++) fSamples[i] = timeSamples[i];
-}
-
-//____________________________________________________________________________
-Bool_t AliEMCALRawDigit::GetMaximum(Int_t& amplitude, Int_t& time) const
-{
-	//
-	if (!fNSamples)
-	{
-		AliError("Digit has no time sample");
-		return kFALSE;
-	}
-		
-	amplitude = 0;
-	for (Int_t i = 0; i < fNSamples; i++)
-	{
-		Int_t t, a;
-		if (GetTimeSample(i, t, a))
+		if (i == fL0Times[j]) 
 		{
-			if (a > amplitude)
-			{
-				amplitude = a;
-				time      = t;
-			}
+			AliWarning("L0 time already there! Won't add it twice");
+			return kFALSE;
 		}
 	}
 	
+	fNL0Times++;
+	
+	if (fNL0Times > 9)
+	{
+		AliError("More than 10 L0 times!");
+		return kFALSE;
+	}
+	
+	fL0Times[fNL0Times - 1] = i;
+	
 	return kTRUE;
 }
 
 //____________________________________________________________________________
-Int_t AliEMCALRawDigit::Compare(const TObject * obj) const
+Bool_t AliEMCALTriggerRawDigit::GetL0Time(const Int_t i, Int_t& time) const
 {
-	// Compares two digits with respect to its Id
-	// to sort according increasing Id
+	//
+	if (i < 0 || i > fNL0Times)
+	{
+		AliError("Bad index!");
+		return kFALSE;
+	}
+		
+	time = fL0Times[i];
 	
-	Int_t rv=0;
-	
-	AliEMCALRawDigit* digit = (AliEMCALRawDigit*)obj; 
-	
-	Int_t iddiff = fId - digit->GetId();
-	
-	if (iddiff > 0) 
-		rv =  1;
-	else if (iddiff < 0)
-		rv = -1; 
-	else
-		rv =  0;
-	
-	return rv; 
+	return kTRUE;
 }
 
 //____________________________________________________________________________
-void AliEMCALRawDigit::Print(const Option_t* /*opt*/) const
+Bool_t AliEMCALTriggerRawDigit::GetL0Times(Int_t times[]) const
+{
+	//
+	if (sizeof(times) < (sizeof(Int_t) * fNL0Times))
+	{
+		AliError("Array size too small!");
+		return kFALSE;
+	}
+	
+	for (Int_t i = 0; i < fNL0Times; i++) times[i] = fL0Times[i];
+	
+	return kTRUE;
+}
+
+//____________________________________________________________________________
+Int_t AliEMCALTriggerRawDigit::GetL0TimeSum(const Int_t time) const
+{
+	//
+	
+	Int_t value = 0;
+	
+	for (Int_t i = 0; i < fNSamples; i++)
+	{
+		Int_t timeBin, amp;
+		GetTimeSample(i, timeBin, amp);
+		
+		if (timeBin >= time && timeBin < time + 4) value += amp;
+	}
+	
+	return value;
+}
+
+//____________________________________________________________________________
+void AliEMCALTriggerRawDigit::Print(const Option_t* /*opt*/) const
 {
 	//
 	printf("===\n| Digit id: %4d / %d Time Samples: \n",fId,fNSamples);
 	for (Int_t i=0; i < fNSamples; i++) 
 	{
-		Int_t timeBin=-1, amp=0;
+		Int_t timeBin, amp;
 		GetTimeSample(i, timeBin, amp);
 		printf("| (%d,%d) ",timeBin,amp);
-	}
-	
+	}	
 	printf("\n");
+	printf("| L0: %4d / %d Time(s): \n",fL0Trigger,fNL0Times);
+	for (Int_t i = 0; i < fNL0Times; i++) 
+	{
+		Int_t time;
+		if (GetL0Time(i, time)) printf("| %d ",time);
+	}
+	printf("\n");
+	printf("| Time sum: %d\n", fL1TimeSum);
 }
+

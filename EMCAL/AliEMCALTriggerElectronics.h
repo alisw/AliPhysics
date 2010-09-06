@@ -28,7 +28,7 @@ public:
 			       AliEMCALTriggerElectronics(const AliEMCALTriggerDCSConfig* dcsConfig = 0x0); // ctor
 	virtual       ~AliEMCALTriggerElectronics();                                   // dtor
 	
-	virtual void   Digits2Trigger(const TClonesArray* digits, const Int_t V0M[], AliEMCALTriggerData* data);	
+	virtual void   Digits2Trigger(TClonesArray* digits, const Int_t V0M[], AliEMCALTriggerData* data);	
 	virtual void   Reset();  
 	
 	virtual AliEMCALTriggerTRU* GetTRU( Int_t iTRU ) {return (AliEMCALTriggerTRU*)fTRU->At(iTRU);}

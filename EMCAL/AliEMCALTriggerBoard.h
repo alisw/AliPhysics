@@ -9,11 +9,11 @@ run the sliding window algorithm
 Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
+#include "AliEMCALTriggerTypes.h"
+
 #include "TVector2.h"
 
 class TClonesArray;
-
-typedef enum { kGamma, kJet } L1TriggerType_t;
 
 class AliEMCALTriggerBoard : public TObject 
 {	
@@ -23,7 +23,7 @@ public:
 	         AliEMCALTriggerBoard(const TVector2& RegionSize);
 	virtual ~AliEMCALTriggerBoard();
 	
-	virtual void SlidingWindow(L1TriggerType_t type, Int_t Threshold);
+	virtual void SlidingWindow(TriggerType_t type, Int_t Threshold, Int_t time = -1);
 
 	virtual void ZeroRegion();
 	
@@ -42,10 +42,12 @@ public:
 	virtual void    SetRegionSize(const TVector2& Size) {    *fRegionSize = Size;}
 	virtual void     SetPatchSize(const TVector2& Size) {     *fPatchSize = Size;}
 	virtual void SetSubRegionSize(const TVector2& Size) { *fSubRegionSize = Size;}
+
+	virtual void SetRegion(Int_t arr[][64]) {for (Int_t i = 0; i < fRegionSize->X(); i++) for (Int_t j = 0; j < fRegionSize->Y(); j++) fRegion[i][j] = arr[i][j];}
 	
 	virtual Int_t** Region() {return fRegion;}
 	virtual Int_t**    Map() {return    fMap;}
-	virtual void       Map(Int_t arr[][64], const TVector2& Size) {for (Int_t i=0;i<Size.X();i++) for (Int_t j=0;j<Size.Y();j++) arr[i][j] = fMap[i][j];}
+	virtual void       Map(Int_t arr[][64], const TVector2& Size) {for (Int_t i = 0; i < Size.X(); i++) for (Int_t j = 0; j < Size.Y(); j++) arr[i][j] = fMap[i][j];}
 
 private:
 	

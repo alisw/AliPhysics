@@ -75,6 +75,8 @@ AliEMCALGeoUtils::AliEMCALGeoUtils():
   fEnvelop[2] = 0.;
   for(Int_t i=0;i<12;i++)fkSModuleMatrix[i]=0 ;
 
+  for (Int_t i = 0; i < 48; i++)
+	for (Int_t j = 0; j < 64; j++) fFastOR2DMap[i][j] = -1;
 }  
 
 //____________________________________________________________________________
@@ -96,6 +98,9 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const AliEMCALGeoUtils & geo)
   fEnvelop[1] = geo.fEnvelop[1];
   fEnvelop[2] = geo.fEnvelop[2];
   for(Int_t i=0;i<12;i++)fkSModuleMatrix[i]=0 ;
+  
+  for (Int_t i = 0; i < 48; i++)
+	for (Int_t j = 0; j < 64; j++) fFastOR2DMap[i][j] = geo.fFastOR2DMap[i][j];
 }
 
 //____________________________________________________________________________
@@ -171,6 +176,10 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const Text_t* name, const Text_t* title)
     PrintGeometry();
   }
 
+  for (Int_t ix = 0; ix < 48; ix++)
+	for (Int_t jx = 0; jx < 64; jx++) fFastOR2DMap[ix][jx] = -1;
+
+  BuildFastOR2DMap();
 }
 
 //____________________________________________________________________________
@@ -244,7 +253,7 @@ void AliEMCALGeoUtils::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind)
 void AliEMCALGeoUtils::GetGlobal(Int_t absId , double glob[3]) const
 {
   // Alice numbering scheme - Jun 03, 2006
-  static Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1;
+  static Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1;
   static double loc[3];
 
   glob[0]=glob[1]=glob[2]=0.0; // bad case
@@ -276,8 +285,8 @@ void AliEMCALGeoUtils::GetGlobal(Int_t absId , TVector3 &vglob) const
 void AliEMCALGeoUtils::PrintCellIndexes(Int_t absId, int pri, const char *tit) const
 {
   // Service methods
-  Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1;
-  Int_t iphi=-1, ieta=-1;
+  Int_t nSupMod, nModule, nIphi, nIeta;
+  Int_t iphi, ieta;
   TVector3 vg;
 
   GetCellIndex(absId,  nSupMod, nModule, nIphi, nIeta);
@@ -354,7 +363,7 @@ void  AliEMCALGeoUtils::GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, 
 			Int_t &iphim, Int_t &ietam, Int_t &nModule) const
 {
   // Transition from cell indexes (ieta,iphi) to module indexes (ietam,iphim, nModule)
-  static Int_t nphi=0;
+  static Int_t nphi=-1;
   nphi  = GetNumberOfModuleInPhiDirection(nSupMod);  
 
   ietam  = ieta/fNETAdiv;
@@ -409,8 +418,8 @@ Bool_t AliEMCALGeoUtils::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
 {
   // Nov 17,2006
   // stay here - phi problem as usual 
-  static Int_t nSupMod=0, i=0, ieta=-1, iphi=-1, etaShift=0, nphi=0;
-  static Double_t absEta=0.0, d=0.0, dmin=0.0, phiLoc=0.;
+  static Int_t nSupMod=-1, i=0, ieta=-1, iphi=-1, etaShift=0, nphi=-1;
+  static Double_t absEta=0.0, d=0.0, dmin=0.0, phiLoc=0;
   absId = nSupMod = - 1;
   if(SuperModuleNumberFromEtaPhi(eta, phi, nSupMod)) {
     // phi index first
@@ -515,7 +524,7 @@ Int_t  AliEMCALGeoUtils::GetSuperModuleNumber(Int_t absId)  const
   // Return the number of the  supermodule given the absolute
   // ALICE numbering id
 
-  static Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1;
+  static Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1;
   GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
   return nSupMod;
 } 
@@ -528,7 +537,7 @@ void AliEMCALGeoUtils::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModul
   // ietam, iphi - indexes of module in two dimensional grid of SM
   // ietam - have to change from 0 to fNZ-1
   // iphim - have to change from 0 to nphi-1 (fNPhi-1 or fNPhi/2-1)
-  static Int_t nphi = 0;
+  static Int_t nphi=-1;
 
   if(fKey110DEG == 1 && nSupMod>=10) nphi = fNPhi/2;
   else                               nphi = fNPhi;
@@ -584,7 +593,7 @@ Bool_t AliEMCALGeoUtils::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
   const Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
-  static Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
+  static Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
   GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
@@ -842,7 +851,7 @@ void AliEMCALGeoUtils::ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi,
   GetAbsCellIdFromEtaPhi(direction.Eta(),direction.Phi(),absId);
   
   //tower absID hitted -> tower/module plane (evaluated at the center of the tower)
-  Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1;
+  Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1;
   Double_t loc[3],loc2[3],loc3[3];
   Double_t glob[3]={},glob2[3]={},glob3[3]={};
   
@@ -927,9 +936,10 @@ Bool_t AliEMCALGeoUtils::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
   Double_t r=sqrt(x*x+y*y);
 
   if ( r > fEnvelop[0] ) {
-     Double_t theta  = TMath::ATan2(r,z);
-     Double_t eta    = 9999;
-     if(theta < 1e-5) // before theta == 0, not allowed by coding convention 
+     Double_t theta;
+     theta  =    TMath::ATan2(r,z);
+     Double_t eta;
+     if(theta == 0) 
        eta = 9999;
      else 
        eta    =   -TMath::Log(TMath::Tan(theta/2.));
@@ -963,8 +973,10 @@ Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t 
 		AliError("TRU out of range!");
 		return kFALSE;
 	}
-				 
-	id = iADC + iTRU * 96;
+	
+	id  = ( iTRU % 2 ) ? iADC%4 + 4 * (23 - int(iADC/4)) : (3 - iADC%4) + 4 * int(iADC/4);
+
+	id += iTRU * 96;
 	
 	return kTRUE;
 }
@@ -982,7 +994,10 @@ Bool_t AliEMCALGeoUtils::GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, I
 	}
 	
 	iTRU = id / 96;
+	
 	iADC = id % 96;
+	
+	iADC = ( iTRU % 2 ) ? iADC%4 + 4 * (23 - int(iADC/4)) : (3 - iADC%4) + 4 * int(iADC/4);
 	
 	return kTRUE;
 }
@@ -992,21 +1007,18 @@ Bool_t AliEMCALGeoUtils::GetPositionInTRUFromAbsFastORIndex(const Int_t id, Int_
 {
 	//Trigger mapping method, get position in TRU from FasOr Index
 	
-	Int_t iADC = 0;
-	
-	Bool_t isOK = GetTRUFromAbsFastORIndex(id, iTRU, iADC);
-	
-	if (!isOK) return kFALSE;
+	Int_t iADC=-1;	
+	if (!GetTRUFromAbsFastORIndex(id, iTRU, iADC)) return kFALSE;
 	
 	Int_t x = iADC / 4;
 	Int_t y = iADC % 4;
 	
-	if ( int( iTRU / 3 ) % 2 ) // C side 
+	if ( iTRU % 2 ) // C side 
 	{
 		iEta = 23 - x;
 		iPhi =      y;
 	}
-	else                       // A side
+	else            // A side
 	{
 		iEta =      x;
 		iPhi =  3 - y;
@@ -1020,23 +1032,39 @@ Bool_t AliEMCALGeoUtils::GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t
 {
 	//Trigger mapping method, get position in Super Module from FasOr Index
 
-	Int_t iTRU = 0;
-	Bool_t isOK = GetPositionInTRUFromAbsFastORIndex(id, iTRU, iEta, iPhi);
+	Int_t iTRU=-1;
+		
+	if (!GetPositionInTRUFromAbsFastORIndex(id, iTRU, iEta, iPhi)) return kFALSE;
 	
-	if (!isOK) return kFALSE;
-	
-	iSM  = iTRU / 3;
-	
-	if ( int( iTRU / 3 ) % 2 ) // C side
+	if (iTRU % 2) // C side
 	{
-		iPhi = iPhi + 4 * ( 2 - ( iTRU % 3 ) );
+		iSM  = 2 * ( int( int(iTRU / 2) / 3 ) ) + 1;
 	}
-	else                       // A side
+	else            // A side
 	{
-		iPhi = iPhi + 4 * (       iTRU % 3   );
+		iSM  = 2 * ( int( int(iTRU / 2) / 3 ) );
 	}
+
+	iPhi += 4 * int((iTRU % 6) / 2);
 	
 	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetPositionInEMCALFromAbsFastORIndex(const Int_t id, Int_t& iEta, Int_t& iPhi) const
+{
+	Int_t iSM=-1;
+	
+	if (GetPositionInSMFromAbsFastORIndex(id, iSM, iEta, iPhi))
+	{
+		if (iSM % 2) iEta += 24; 
+		
+		iPhi += 12 * int(iSM / 2);
+		
+		return kTRUE;
+	}
+	
+	return kFALSE;
 }
 
 //________________________________________________________________________________________________
@@ -1044,15 +1072,179 @@ Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, co
 {
 	//Trigger mapping method, get Index if FastOr from Position in TRU
 
-	if (iTRU < 0 || iTRU > 31 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 3) return kFALSE;
-	
-	if ( int( iTRU / 3 ) % 2 ) // C side
+	if (iTRU < 0 || iTRU > 31 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 3) 
 	{
-		id =      iPhi  + 4 * ( 23 - iEta ) + iTRU * 96;
+		AliError("Out of range!");	
+		return kFALSE;
 	}
-	else 
+	
+	id =  iPhi  + 4 * iEta + iTRU * 96;
+	
+	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromPositionInSM(const Int_t  iSM, const Int_t iEta, const Int_t iPhi, Int_t& id) const
+{
+	//
+	if (iSM < 0 || iSM > 11 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 11) 
 	{
-		id = (3 - iPhi) + 4 *        iEta + iTRU * 96;
+		AliError("Out of range!");
+		return kFALSE;
+	}
+	
+	Int_t x = iEta;
+	Int_t y = iPhi % 4;	
+	
+	Int_t iOff = (iSM % 2) ? 1 : 0;
+	Int_t iTRU = 2 * int(iPhi / 4) + 6 * int(iSM / 2) + iOff;
+
+	if (GetAbsFastORIndexFromPositionInTRU(iTRU, x, y, id))
+	{
+		return kTRUE;
+	}
+	
+	return kFALSE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetAbsFastORIndexFromPositionInEMCAL(const Int_t iEta, const Int_t iPhi, Int_t& id) const
+{
+	//
+	if (iEta < 0 || iEta > 47 || iPhi < 0 || iPhi > 63 ) 
+	{
+		AliError("Out of range!");
+		return kFALSE;
+	}
+	
+	if (fFastOR2DMap[iEta][iPhi] == -1) 
+	{
+		AliError("Invalid index!");
+		return kFALSE;
+	}
+	
+	id = fFastOR2DMap[iEta][iPhi];
+	
+	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetFastORIndexFromCellIndex(const Int_t id, Int_t& idx) const
+{
+	Int_t iSupMod, nModule, nIphi, nIeta, iphim, ietam;
+	
+	Bool_t isOK = GetCellIndex( id, iSupMod, nModule, nIphi, nIeta );
+	
+	GetModulePhiEtaIndexInSModule( iSupMod, nModule, iphim, ietam );
+	
+	if (isOK && GetAbsFastORIndexFromPositionInSM(iSupMod, ietam, iphim, idx))
+	{
+		return kTRUE;
+	}
+	
+	return kFALSE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4]) const
+{
+	Int_t iSM=-1, iEta=-1, iPhi=-1;
+	if (GetPositionInSMFromAbsFastORIndex(id, iSM, iEta, iPhi))
+	{
+		Int_t ix = 2 * iEta;
+		Int_t iy = 2 * iPhi;
+		
+		for (Int_t i=0; i<2; i++)
+		{
+			for (Int_t j=0; j<2; j++)
+			{
+				idx[2*i+j] = GetAbsCellIdFromCellIndexes(iSM, iy + i, ix + j);
+			}
+		}
+		
+		return kTRUE;
+	}
+	
+	return kFALSE;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) const
+{
+	if (id > 31 || id < 0) 
+	{
+		AliError(Form("TRU index out of range: %d",id));
+		return kFALSE;
+	}
+	
+	idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
+	
+	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Int_t AliEMCALGeoUtils::GetTRUIndexFromSTUIndex(const Int_t id) const
+{
+	if (id > 31 || id < 0) 
+	{
+		AliError(Form("TRU index out of range: %d",id));
+	}
+	
+	Int_t idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
+	
+	return idx;
+}
+
+//________________________________________________________________________________________________
+void AliEMCALGeoUtils::BuildFastOR2DMap()
+{
+	// Needed by STU
+	for (Int_t i = 0; i < 32; i++)
+	{
+		for (Int_t j = 0; j < 24; j++)
+		{
+			for (Int_t k = 0; k < 4; k++)
+			{
+				Int_t id;
+				if (GetAbsFastORIndexFromPositionInTRU(i, j, k, id))
+				{
+					Int_t x = j, y = k + 4 * int(i / 2);
+				
+					if (i % 2) x += 24;
+				
+					fFastOR2DMap[x][y] = id;
+				}
+			}			
+		}
+	}
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeoUtils::GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const
+{
+	if (size <= 0 ||size > 4)
+	{
+		AliError("Size not supported!");
+		return kFALSE;
+	}
+		
+	Int_t motif[4] = {0, 1, 4, 5};
+	
+	switch (size)
+	{
+		case 1: // Cosmic trigger
+			if (!GetAbsFastORIndexFromTRU(iTRU, id, idx[0])) return kFALSE;
+			break;
+		case 4: // 4 x 4
+			for (Int_t k = 0; k < 4; k++)
+			{
+				Int_t iADC = motif[k] + 4 * int(id / 3) + (id % 3);
+				
+				if (!GetAbsFastORIndexFromTRU(iTRU, iADC, idx[k])) return kFALSE;
+			}
+			break;
+		default:
+			break;
 	}
 	
 	return kTRUE;

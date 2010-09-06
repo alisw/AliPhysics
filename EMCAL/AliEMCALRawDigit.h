@@ -5,44 +5,51 @@
 
 /* $Id: AliEMCALRawDigit.h 17335 2007-03-10 03:40:17Z mvl $ */
 
-// --- ROOT system ---
+/*
+ 
+ 
+ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
+*/
 
 #include "TObject.h" 
 
-// --- Standard library ---
-
-// --- AliRoot header files ---
-//#include "AliDigitNew.h"
-
 class AliEMCALRawDigit : public TObject 
 {
-//	friend ostream& operator<<(ostream& , const AliEMCALRawDigit&);
-
 public:
 	
 	AliEMCALRawDigit();
 	AliEMCALRawDigit(Int_t id, Int_t timeSamples[], Int_t nSamples);
-	AliEMCALRawDigit(const AliEMCALRawDigit& digit);
 	
 	virtual ~AliEMCALRawDigit();
-        void Clear(Option_t *);
-	Bool_t operator==(const AliEMCALRawDigit &rValue) const;
-	const AliEMCALRawDigit& operator = (const AliEMCALRawDigit&) {return *this;}
+	void Clear(Option_t *);
 
+	Bool_t  IsSortable() const { return kTRUE;}
 	Int_t   Compare(const TObject* obj) const;
-	Bool_t  IsSortable() const {return kTRUE;}
+
 	void    SetId(Int_t id) {fId = id;}
-    Int_t   GetId() const {return fId;}
-	
-	Int_t   GetNSamples() const {return fNSamples;}
+	void    SetAmplitude(Float_t amp) {fAmplitude = amp;}
+	void    SetTime(Float_t time) {fTime = time;}
+	void    SetTimeSamples(const Int_t timeSamples[], const Int_t nSamples);
+
+	Int_t   GetId()        const {return fId;}	
+	Float_t GetAmplitude() const {return fAmplitude;}
+	Float_t GetTime()      const {return fTime;}
+	Int_t   GetNSamples()  const {return fNSamples;}
 	Bool_t  GetTimeSample(const Int_t iSample, Int_t& timeBin, Int_t& amp) const;
+	Bool_t  GetMaximum(Int_t& amplitude, Int_t& time) const;
+
 	virtual void Print(const Option_t* opt) const;
 	
-private: 
+protected: 
  
+	AliEMCALRawDigit(const AliEMCALRawDigit &cd);            // Not implemented
+	AliEMCALRawDigit &operator=(const AliEMCALRawDigit &cd); // Not implemented
+
 	Int_t   fId;            //Absolute id
 	Int_t   fNSamples;      //Number of time samples
 	Int_t*  fSamples;	    //[fNSamples]
+	Float_t fAmplitude;
+	Float_t fTime;
 	
 	ClassDef(AliEMCALRawDigit,1)   // Digit in EMCAL 
 };

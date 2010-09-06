@@ -1,0 +1,52 @@
+#ifndef ALIEMCALTRIGGERRAWDIGIT_H
+#define ALIEMCALTRIGGERRAWDIGIT_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/*
+ 
+ 
+ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
+*/
+
+#include "AliEMCALRawDigit.h" 
+
+class AliEMCALTriggerRawDigit : public AliEMCALRawDigit 
+{
+public:
+	
+	AliEMCALTriggerRawDigit();
+	AliEMCALTriggerRawDigit(Int_t id, Int_t timeSamples[], Int_t nSamples);
+	
+	virtual ~AliEMCALTriggerRawDigit();
+	
+	void    SetL0Trigger(Int_t v) {fL0Trigger = v;}
+	Bool_t  SetL0Time(   Int_t i);
+	
+	Int_t   GetL0Trigger(                       ) const {return  fL0Trigger;}
+	Bool_t  GetL0Time(const Int_t i, Int_t& time) const;
+	Bool_t  GetL0Times(Int_t times[]            ) const;
+	Int_t   GetNL0Times(                        ) const {return fNL0Times;}
+	
+	Int_t   GetL0TimeSum(const Int_t time) const;
+	
+	void    SetL1TimeSum(Int_t ts) {fL1TimeSum = ts;}
+	Int_t   GetL1TimeSum(        ) const {return fL1TimeSum;}
+	
+	virtual void Print(const Option_t* opt) const;
+	
+private: 
+ 
+	AliEMCALTriggerRawDigit(const AliEMCALTriggerRawDigit &cd);            // Not implemented
+	AliEMCALTriggerRawDigit &operator=(const AliEMCALTriggerRawDigit &cd); // Not implemented
+
+	Int_t   fL0Trigger;
+	Int_t   fNL0Times;
+	Int_t   fL0Times[10];
+	
+	Int_t   fL1TimeSum;
+	
+	ClassDef(AliEMCALTriggerRawDigit,1)
+};
+#endif
+

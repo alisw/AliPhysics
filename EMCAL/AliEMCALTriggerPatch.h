@@ -21,14 +21,23 @@ class AliEMCALTriggerPatch : public TObject {
 public:
 	          AliEMCALTriggerPatch();                                  // default ctor
 	          AliEMCALTriggerPatch(const AliEMCALTriggerPatch& other); // copy ctor
-              AliEMCALTriggerPatch(Int_t i, Int_t j, Int_t e);
+              AliEMCALTriggerPatch(Int_t i, Int_t j, Int_t e = 0, Int_t t = 0);
 	 virtual ~AliEMCALTriggerPatch();
 
-	void      Position(TVector2& pos) const {pos = *fPosition;}
-	TVector2* Position(             ) const {return fPosition;}
-	Int_t     Sum() const {return fSum;} // in ADC counts
+	void      SetPosition(Int_t px, Int_t py)  {fPosition->Set(float(px), float(py));}
+	void      SetPosition(const TVector2& pos) {*fPosition = pos;}
+	void      SetSum(Int_t sum) {fSum = sum;}
+	void      SetTime(Int_t time) {fTime = time;}
+	void      SetPeak(Int_t x, Int_t y, Int_t sizeX, Int_t sizeY);
+
+	void      Position(TVector2& pos       ) const {pos = *fPosition;}
+	void      Position(Int_t& px, Int_t& py) const {px = fPosition->X(); py = fPosition->Y();}
+	TVector2* Position(                    ) const {return fPosition;}
+	Int_t     Sum()   const {return fSum;} // in ADC counts
+	Int_t     Time()  const {return fTime;}
+	Int_t     Peaks() const {return fPeaks;}
+	
 	void      Print(const Option_t*) const;
-	void      GetAbsCellIdsFromPatchPosition(TVector2& psize, TVector2& ssize, TArrayI& absid);
 	
 private:
 	
@@ -36,6 +45,8 @@ private:
 	
 	TVector2*         fPosition;
 	Int_t             fSum;
+	Int_t             fTime;
+	Int_t             fPeaks;
 	
 	ClassDef(AliEMCALTriggerPatch,1)
 };

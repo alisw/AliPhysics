@@ -32,7 +32,8 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 namespace
 {
-	const Int_t kPayLoadSize = 944;
+	const Int_t kPayLoadSize            =  944;
+	const Int_t kPayLoadSizeWithRawData = 1772;
 }
 
 ClassImp(AliEMCALTriggerSTURawStream)
@@ -42,14 +43,13 @@ AliEMCALTriggerSTURawStream::AliEMCALTriggerSTURawStream() : TObject(),
 fRawReader(0x0),
 fL1JetThreshold(0),
 fL1GammaThreshold(0),
-fL0GammaPatchIndex(0x0),
-fL1GammaPatchIndex(0x0),
-fL1JetPatchIndex(0x0),
+fL0GammaPatchIndex(),
+fL1GammaPatchIndex(),
+fL1JetPatchIndex(),
 fNL0GammaPatch(0),
 fNL1JetPatch(0),
 fNL1GammaPatch(0),
-fGetRawData(0),
-fL0(0)
+fGetRawData(0)
 {
 	//
 }
@@ -59,14 +59,13 @@ AliEMCALTriggerSTURawStream::AliEMCALTriggerSTURawStream(AliRawReader* rawReader
 fRawReader(rawReader),
 fL1JetThreshold(0),
 fL1GammaThreshold(0),
-fL0GammaPatchIndex(0x0),
-fL1GammaPatchIndex(0x0),
-fL1JetPatchIndex(0x0),
+fL0GammaPatchIndex(),
+fL1GammaPatchIndex(),
+fL1JetPatchIndex(),
 fNL0GammaPatch(0),
 fNL1JetPatch(0),
-fNL1GammaPatch(0),  
-fGetRawData(0),								       
-fL0(0)
+fNL1GammaPatch(0),
+fGetRawData(0)
 {
 	//
 	fRawReader->Reset();
@@ -84,14 +83,10 @@ void AliEMCALTriggerSTURawStream::Reset()
 {
 	//
 	if (fRawReader) fRawReader->Reset();
-
+	
 	fNL0GammaPatch = 0;
 	fNL1GammaPatch = 0;
 	fNL1JetPatch   = 0;	
-	
-	delete fL0GammaPatchIndex; fL0GammaPatchIndex = 0x0;
-	delete fL1GammaPatchIndex; fL1GammaPatchIndex = 0x0;
-	delete fL1JetPatchIndex;   fL1JetPatchIndex   = 0x0;	
 }
 
 //_____________________________________________________________________________
@@ -101,31 +96,39 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	// bourrion@lpsc.in2p3.fr
 	
 	UInt_t word32[1772]; // 32b words
-
+	for (Int_t i=0;i<1772;i++) word32[i] = 0;
+	
 	Int_t iword = 0;
 	
 	fNL0GammaPatch = 0;
 	fNL1GammaPatch = 0;
 	fNL1JetPatch   = 0;
 	
-	delete fL0GammaPatchIndex; fL0GammaPatchIndex = 0x0;
-	delete fL1GammaPatchIndex; fL1GammaPatchIndex = 0x0;
-	delete fL1JetPatchIndex;   fL1JetPatchIndex   = 0x0;
+	Int_t eqId = -1, eqSize = 0;
 	
 	UInt_t w32;
-	while (fRawReader->ReadNextInt(w32)) word32[iword++] = w32;
-	
-	if (iword < kPayLoadSize) 
+	while (fRawReader->ReadNextInt(w32)) 
 	{
-		AliError(Form("STU raw data size is too small: %d word32 only!", iword));
-		return kFALSE;
-	} 
-	else if (iword > kPayLoadSize )
-	{
-		AliLog::Message(AliLog::kInfo, "TRU raw data in the STU payload enabled","EMCAL","AliEMCALTriggerSTURawStream","ReadPayLoad()","AliEMCALTriggerSTURawStream.cxx",104);
+		if (!iword)
+		{
+			eqId   = fRawReader->GetEquipmentId();
+			eqSize = fRawReader->GetEquipmentSize();
+		}
+		
+		word32[iword++] = w32;
 	}
-
-	fL0 = 0;
+	
+	if (iword != kPayLoadSize && iword != kPayLoadSizeWithRawData)
+	{
+		AliError(Form("ERROR: STU payload (eqId: %d, eqSize: %d) doesn't match expected size! %d word32",
+					  eqId, eqSize, iword));
+		return kFALSE;
+	}
+	else if (AliDebugLevel())
+	{
+		AliInfo(Form("STU (eqId: %d, eqSize: %d) payload size: %d word32",
+					 eqId, eqSize, iword));
+	}
 	
 	  fL1JetThreshold = ((word32[0]>>16) & 0xFFF);
 	fL1GammaThreshold =  (word32[0]      & 0xFFF);
@@ -139,8 +142,6 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 			if (currentrow & (1 << jet_col))
 			{
 				fNL1JetPatch++;
-				fL1JetPatchIndex = (UShort_t*)realloc(fL1JetPatchIndex, fNL1JetPatch * sizeof(UShort_t));
-				if (fL1JetPatchIndex == NULL) {AliError("Error (re)allocating L1 jet patch memory");}
 				
 				fL1JetPatchIndex[fNL1JetPatch-1] = ((jet_row << 8) & 0xFF00) | (jet_col & 0xFF);
 			}
@@ -172,19 +173,11 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 			{
 				if ((TRU_L0_indexes[tru_num][index] & (1 << bit_num)))
 				{
-					fL0 = 1;
-
 					Int_t idx = 12 * index + bit_num;
-					
-					Int_t col = idx / 3;
-					Int_t row = idx % 3;
-					
+										
 					fNL0GammaPatch++;
-					fL0GammaPatchIndex = (UShort_t*)realloc(fL0GammaPatchIndex, fNL0GammaPatch * sizeof(UShort_t));
 					
-					if (fL0GammaPatchIndex == NULL) {AliError("Error (re)allocating L0 gamma patch memory");}
-					
-					fL0GammaPatchIndex[fNL0GammaPatch-1] = (((row << 10) & 0xC00) | ((col << 5) & 0x3E0) | (tru_num & 0x1F));
+					fL0GammaPatchIndex[fNL0GammaPatch-1] = (((idx << 5) & 0x7E0) | (tru_num & 0x1F));
 				}
 			}
 		}
@@ -230,9 +223,6 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 					}						
 					
 					fNL1GammaPatch++;
-					fL1GammaPatchIndex = (UShort_t*)realloc(fL1GammaPatchIndex, fNL1GammaPatch * sizeof(UShort_t));
-
-					if (fL1GammaPatchIndex == NULL) {AliError("Error (re)allocating L1 gamma patch memory");}
 					
 					fL1GammaPatchIndex[fNL1GammaPatch-1] = (((indexcopy << 10) & 0xC00) | ((gammacolnum << 5) & 0x3E0) | (tru_num & 0x1F));
 				}
@@ -247,7 +237,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	if ( iword <= kPayLoadSize ) 
 	{
 		fGetRawData = 0;
-		return kFALSE;
+		return kTRUE;
 	}
 	
 	fGetRawData = 1;
@@ -264,24 +254,23 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 
 	for (Int_t tru_num=16;tru_num<32;tru_num++) // A side
 	{
-		for (Int_t index=0;index<96;index++)
-		{
-			fADC[tru_num][index] = fADC[tru_num][95-index];
-		}
+		Int_t v[96];
+		for (Int_t index=0;index<96;index++) v[index] = fADC[tru_num][95-index];
+		
+		for (Int_t index=0;index<96;index++) fADC[tru_num][index] = v[index];
 	}
 	
-	return kFALSE;
+	return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliEMCALTriggerSTURawStream::GetL0GammaPatch(const Int_t i, Int_t& tru, Int_t& col, Int_t& row) const
+Bool_t AliEMCALTriggerSTURawStream::GetL0GammaPatch(const Int_t i, Int_t& tru, Int_t& idx) const
 {
 	//
 	if (i > fNL0GammaPatch) return kFALSE;
 	
 	tru =  fL0GammaPatchIndex[i] & 0x1F;
-	col = (fL0GammaPatchIndex[i] & 0x3E0) >> 5;
-	row = (fL0GammaPatchIndex[i] & 0xC00) >> 10;
+	idx = (fL0GammaPatchIndex[i] & 0x7E0) >> 5;
 	
 	return kTRUE;
 }
@@ -325,18 +314,19 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 	TString op = option;
 	
 	cout << "Jet Threshold: " << fL1JetThreshold << " Gamma threshold: " << fL1GammaThreshold << endl;
+	cout << "Number of L0:   " << fNL0GammaPatch << endl;
+	cout << "Number of L1-g: " << fNL1GammaPatch << endl;
+	cout << "Number of L1-j: " << fNL1JetPatch << endl;
 	
 	Int_t itru, col, row;
-
-	Bool_t isOK;
 	
 	if (op.Contains("L0") || op.Contains("ALL"))
 	{
 		for (Int_t i=0;i<fNL0GammaPatch;i++)
 		{
-			isOK = GetL0GammaPatch(i,itru,col,row);
-			if (isOK) cout << "> Found L0 gamma in TRU #" << setw(2) << itru
-						<<  " at: ( col: " << setw(2) << col << " , row: " << setw(2) << row << " )" << endl;
+			
+			if (GetL0GammaPatch(i,itru,col)) 
+				cout << "> Found L0 gamma in TRU #" << setw(2) << itru <<  " at idx: " << setw(2) << col << endl;
 		}
 	}
 	
@@ -344,15 +334,13 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 	{
 		for (Int_t i=0;i<fNL1GammaPatch;i++)
 		{
-			isOK = GetL1GammaPatch(i,itru,col,row);
-			if (isOK) cout << "> Found L1 gamma in TRU #" << setw(2) << itru
-						<<  " at: ( col: " << setw(2) << col << " , row: " << setw(2) << row << " )" << endl;
+			if (GetL1GammaPatch(i,itru,col,row)) 
+				cout << "> Found L1 gamma in TRU #" << setw(2) << itru <<  " at: ( col: " << setw(2) << col << " , row: " << setw(2) << row << " )" << endl;
 		}
 
 		for (Int_t i=0;i<fNL1JetPatch;i++)
 		{
-			isOK = GetL1JetPatch(i,col,row);
-			if (isOK) cout << "> Found L1 jet at: ( col: " << setw(2) << col << " , row: " << setw(2) << row << " )" << endl;
+			if (GetL1JetPatch(i,col,row)) cout << "> Found L1 jet at: ( col: " << setw(2) << col << " , row: " << setw(2) << row << " )" << endl;
 		}
 	}
 	

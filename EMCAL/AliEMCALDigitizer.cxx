@@ -683,9 +683,6 @@ void AliEMCALDigitizer::Exec(Option_t *option)
       fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;  
     }//loop
     
- //   delete digitsTRG;
- //   delete digitsTMP;
-    
     emcalLoader->CleanDigitizer() ;
     
   }//loader exists
@@ -700,20 +697,20 @@ void AliEMCALDigitizer::Exec(Option_t *option)
 //____________________________________________________________________________ 
 void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* digitsTRG)
 {
-	// FEE digits afterburner to produce TRG digits 
-	// we are only interested in the FEE digit deposited energy
-	// to be converted later into a voltage value
-	
-	// push the FEE digit to its associated FastOR (numbered from 0:95)
-	// TRU is in charge of summing module digits
-	
-	AliRunLoader *runLoader = AliRunLoader::Instance();
-	
-	AliRun* run = runLoader->GetAliRun();
-	
-	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
-	if(!emcalLoader){
-     AliFatal("Did not get the  Loader");
+  // FEE digits afterburner to produce TRG digits 
+  // we are only interested in the FEE digit deposited energy
+  // to be converted later into a voltage value
+  
+  // push the FEE digit to its associated FastOR (numbered from 0:95)
+  // TRU is in charge of summing module digits
+  
+  AliRunLoader *runLoader = AliRunLoader::Instance();
+  
+  AliRun* run = runLoader->GetAliRun();
+  
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
+  if(!emcalLoader){
+    AliFatal("Did not get the  Loader");
   }
   else {
     AliEMCALGeometry* geom = dynamic_cast<AliEMCAL*>(run->GetDetector("EMCAL"))->GetGeometry();
@@ -722,88 +719,64 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
     // and xfer to the corresponding TRU input (mapping)
     
     TClonesArray* digits = emcalLoader->Digits();
-    
+
     TIter NextDigit(digits);
     while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
-    {
-      Int_t id = digit->GetId();
-      
-      Int_t iSupMod, nModule, nIphi, nIeta, iphi, ieta, iphim, ietam;
-      
-      geom->GetCellIndex(              id, iSupMod, nModule, nIphi, nIeta );
-      geom->GetModulePhiEtaIndexInSModule( iSupMod, nModule, iphim, ietam );		
-      geom->GetCellPhiEtaIndexInSModule(   iSupMod, nModule, nIphi, nIeta, iphi, ieta); 
-      
-      // identify to which TRU this FEE digit belong
-      //Int_t itru = (iSupMod < 11) ? iphim / 4 + 3 * iSupMod : 31;
-      Int_t itru = -1;
-      if (iSupMod < 11)
-        itru = (iSupMod % 2) ? (2 - int(iphim / 4)) + 3 * iSupMod : iphim / 4 + 3 * iSupMod;
-      else 
-        itru = 31;
-      
-      //---------
-      //
-      // FIXME: bad numbering solution to deal w/ the last 2 SM which have only 1 TRU each
-      // using the AliEMCALGeometry official numbering
-      // only 1 TRU/SM in SM 10 & SM 11
-      //
-      //---------
-      if ((itru == 31 && iphim < 2) || (itru == 30 && iphim > 5)) continue;
-      
-      // to be compliant with %4 per TRU
-      if (itru == 31) iphim -= 2;
-      
-      Int_t trgid = 0;
-      Bool_t isOK = geom->GetAbsFastORIndexFromPositionInTRU(itru, ietam, iphim % 4, trgid);
-      
-      AliDebug(2,Form("trigger digit id: %d itru: %d isOK: %d\n",trgid,itru,isOK));
-      
-      if (isOK) 
       {
-        AliEMCALDigit* d = static_cast<AliEMCALDigit*>(digitsTMP->At(trgid));
-        
-        if (!d)
-        {
-          new((*digitsTMP)[trgid]) AliEMCALDigit(*digit);
-          d = (AliEMCALDigit*)digitsTMP->At(trgid);
-          d->SetId(trgid);
-        }	
-        else
-        {
-          *d = *d + *digit;
-        }
+	Int_t id = digit->GetId();
+	
+	Int_t trgid;
+	if (geom->GetFastORIndexFromCellIndex(id , trgid)) 
+	  {
+	    AliDebug(1,Form("trigger digit id: %d from cell id: %d\n",trgid,id));
+	    
+	    AliEMCALDigit* d = static_cast<AliEMCALDigit*>(digitsTMP->At(trgid));
+	    
+	    if (!d)
+	      {
+		new((*digitsTMP)[trgid]) AliEMCALDigit(*digit);
+		d = (AliEMCALDigit*)digitsTMP->At(trgid);
+		d->SetId(trgid);
+	      }	
+	    else
+	      {
+		*d = *d + *digit;
+	      }
+	  }
       }
-    }
+    
+    if (AliDebugLevel()) printf("Number of TRG digits: %d\n",digitsTMP->GetEntriesFast());
     
     Int_t    nSamples = 32;
     Int_t *timeSamples = new Int_t[nSamples];
     
     NextDigit = TIter(digitsTMP);
     while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
-    {
-      if (digit)
       {
-        Int_t     id = digit->GetId();
-        Float_t time = digit->GetTime();
-        
-        Double_t depositedEnergy = 0.;
-        for (Int_t j = 1; j <= digit->GetNprimary(); j++) depositedEnergy += digit->GetDEPrimary(j);
-        
-        // FIXME: Check digit time!
-        if (depositedEnergy)
-        {
-          DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
-          
-          for (Int_t j=0;j<nSamples;j++) 
-          {
-            timeSamples[j] = ((j << 12) & 0xFF000) | (timeSamples[j] & 0xFFF);
-          }
-          
-          new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
-        }
+	if (digit)
+	  {
+	    Int_t     id = digit->GetId();
+	    Float_t time = digit->GetTime();
+	    
+	    Double_t depositedEnergy = 0.;
+	    for (Int_t j = 1; j <= digit->GetNprimary(); j++) depositedEnergy += digit->GetDEPrimary(j);
+	    
+	    if (AliDebugLevel()) printf("Deposited Energy: %f\n", depositedEnergy);
+	    
+	    // FIXME: Check digit time!
+	    if (depositedEnergy)
+	      {
+		DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
+		
+		for (Int_t j=0;j<nSamples;j++) 
+		  {
+		    timeSamples[j] = ((j << 12) & 0xFF000) | (timeSamples[j] & 0xFFF);
+		  }
+		
+		new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
+	      }
+	  }
       }
-    }
     
     delete [] timeSamples;
     

@@ -50,7 +50,6 @@ AliEMCALTriggerSTU::AliEMCALTriggerSTU() : AliEMCALTriggerBoard()
 ,fDCSConfig(0x0)
 {
 	//
-	fV0M[0] = fV0M[1] = 0;
 }
 
 //_______________
@@ -60,7 +59,6 @@ AliEMCALTriggerSTU::AliEMCALTriggerSTU(AliEMCALTriggerSTUDCSConfig *dcsConf, con
 ,fDCSConfig(dcsConf)
 {
 	//
-	fV0M[0] = fV0M[1] = 0;
 }
 
 //_______________
@@ -70,48 +68,80 @@ AliEMCALTriggerSTU::~AliEMCALTriggerSTU()
 }
 
 //_______________
-void AliEMCALTriggerSTU::BuildMap( Int_t iTRU, Int_t** M, const TVector2* rSize )
+Int_t AliEMCALTriggerSTU::GetRawData() const
 {
 	//
-	if ( iTRU == 31 ) iTRU = 35;
-	
-	Int_t i2y = iTRU / 3 / 2;
-	
-	if ( ( iTRU / 3 ) % 2 ) // odd (z<0) C side
-	{
-		Int_t i1y = 2 - ( iTRU - int( iTRU / 3 ) * 3 ); // 0 1 2 w/ increasing phi
-
-		for (Int_t i=0; i<rSize->X(); i++) 
-			for (Int_t j=0; j<rSize->Y(); j++) fMap[24+i][j + i1y * 4 + i2y * 12] = M[i][j];
-	}
-	else                   // A side
-	{
-		Int_t i1y =       iTRU - int( iTRU / 3 ) * 3;
-		
-		for (Int_t i=0; i<rSize->X(); i++)
-			for (Int_t j=0; j<rSize->Y(); j++) fMap[   i][j + i1y * 4 + i2y * 12] = M[i][j];
-	}	
+	return fDCSConfig->GetRawData();
 }
 
 //_______________
-void AliEMCALTriggerSTU::L1( L1TriggerType_t type )
+void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVector2* rSize )
 {
 	//
-	SlidingWindow( type, GetThreshold( type ) );	
+	str.ToLower();
+	
+	Int_t ix = (iTRU % 2) ? 24 : 0;
+
+	Int_t iy =  iTRU / 2;
+	
+	Int_t** v = 0x0;
+	
+	if (str.Contains("map"))
+	{
+		v = fMap;
+	}
+	else if (str.Contains("region"))
+	{
+		v = fRegion;
+	}
+	else
+	{
+		AliError("Operation not allowed: STU won't be configured properly!");
+	}
+	
+	for (Int_t i=0; i<rSize->X(); i++)
+		for (Int_t j=0; j<rSize->Y(); j++) v[i + ix][j + iy * 4] = M[i][j];
+}
+
+//_______________
+void AliEMCALTriggerSTU::L1(TriggerType_t type)
+{
+	//
+	TVector2 s1, s2, s3, s4;
+	fDCSConfig->GetSegmentation(s1, s2, s3, s4);
+	
+	switch (type)
+	{
+		case kL1Gamma:
+			SetSubRegionSize(s1); 
+			SetPatchSize(s2);
+			break;
+		case kL1Jet:
+			SetSubRegionSize(s3);
+			SetPatchSize(s4);
+			break;
+		default:
+			AliError("Not supported L1 trigger type");
+			return;
+			break;
+	}
+	
+	SlidingWindow(type, GetThreshold(type));	
 }
 
 //________________
-void AliEMCALTriggerSTU::PrintADC( L1TriggerType_t type, TVector2& pos, TVector2& idx )
+void AliEMCALTriggerSTU::PrintADC( TriggerType_t type, TVector2& pos, TVector2& idx )
 {
 	//
-        Int_t ix = (Int_t) (( pos.X() + fPatchSize->X() ) * fSubRegionSize->X());
-        Int_t iy = (Int_t) (( pos.Y() + fPatchSize->Y() ) * fSubRegionSize->Y());
+	Int_t ix = (Int_t) (( pos.X() + fPatchSize->X() ) * fSubRegionSize->X());
+	
+	Int_t iy = (Int_t) (( pos.Y() + fPatchSize->Y() ) * fSubRegionSize->Y());
 	
 	TString subRegionADC[] = {"0->15", "16->31", "32->47", "48->63", "64->79", "80->95"};
 	
 	switch ( type )
 	{
-		case kGamma:
+		case kL1Gamma:
 		{
 			Int_t iTRU = ( (ix-1) < 24 ) ? 31 - int(pos.Y() / 4) : 15 - int(pos.Y() / 4);
 			
@@ -129,13 +159,13 @@ void AliEMCALTriggerSTU::PrintADC( L1TriggerType_t type, TVector2& pos, TVector2
 			cout << endl;
 		}	
 		break;
-		case kJet:
+		case kL1Jet:
 		{
 			//Int_t jTRU = ( (ix-1) < 24 ) ? 31 - (iy-1) / 4 : 15 - (iy-1) / 4;
 			
 			printf("jet found at row : %d and col : %d",int(idx.X()),int(idx.Y()));
 			
-			Char_t* vPair = 0x0;
+			Char_t vPair[100];
 			Int_t nSubRegion = 0;
 			
 			for (Int_t i=(Int_t)(pos.X() * fSubRegionSize->X());i<ix;i++) 
@@ -158,8 +188,6 @@ void AliEMCALTriggerSTU::PrintADC( L1TriggerType_t type, TVector2& pos, TVector2
 					if (!isFound) 
 					{	
 						nSubRegion++;
-						vPair = (Char_t*)realloc(vPair, nSubRegion * sizeof(Char_t));
-						if (vPair == NULL) {AliError("Error (re)allocating PrintADC() memory");}
 						
 						vPair[nSubRegion-1] = value;
 					}
@@ -173,39 +201,10 @@ void AliEMCALTriggerSTU::PrintADC( L1TriggerType_t type, TVector2& pos, TVector2
 			}
 		
 			cout << endl;
-			if (vPair) delete[] vPair;
 		}
 		break;
 		default:
 			AliError("AliEMCALTriggerSTU::PrintADC(): Undefined trigger type, pls check!");
-	}
-}
-
-//________________
-void AliEMCALTriggerSTU::FetchFOR( Int_t iTRU, Int_t **R, const TVector2* rSize )
-{
-	// L1 triggers run over the whole EMCal surface
-	// STU builds its own fRegion aggregating TRU fRegion into one 
-	
-	// STU I from TRUs O in Olivier's coordinate system
-	
-	if ( iTRU == 31 ) iTRU = 35;
-		
-	Int_t i2y = iTRU / 3 / 2;	
-	
-	if ( ( iTRU / 3 ) % 2 ) // C side odd (z<0)
-	{
-		Int_t i1y = 2 - ( iTRU - int( iTRU / 3 ) * 3 ); // 0 1 2 w/ increasing phi
-		
-		for (Int_t i=0; i<rSize->X(); i++)                                            //  0:23 0:4 
-			for (Int_t j=0; j<rSize->Y(); j++) fRegion[24+i][j + i1y * 4 + i2y * 12] = R[i][j];
-	}
-	else                    // A side
-	{
-		Int_t i1y =       iTRU - int( iTRU / 3 ) * 3;
-		
-		for (Int_t i=0; i<rSize->X(); i++)
-			for (Int_t j=0; j<rSize->Y(); j++) fRegion[   i][j + i1y * 4 + i2y * 12] = R[i][j];
 	}
 }
 
@@ -280,32 +279,46 @@ void AliEMCALTriggerSTU::PatchGenerator(const TClonesArray* lpos, Int_t val)
 }
 
 //___________
-void AliEMCALTriggerSTU::SetV0Multiplicity(const Int_t M[], Int_t n)
+void AliEMCALTriggerSTU::ComputeThFromV0(const Int_t M[])
 {
 	//
-	for (Int_t i=0;i<n;i++) fV0M[i] = M[i]; 
+	if (!(M[0] + M[1])) AliWarning("V0A + V0C is null!"); // 0/1: V0C/V0A
 
-	Int_t sumV0 = fV0M[0] + fV0M[1];
 	
-	if (!sumV0) AliWarning("V0A + V0C is null!");
+	fGammaTh = fDCSConfig->GetGA()*(M[0] + M[1])*(M[0] + M[1]) + fDCSConfig->GetGB()*(M[0] + M[1]) + fDCSConfig->GetGC();
 	
-	fGammaTh = fDCSConfig->GetGA()*sumV0*sumV0+fDCSConfig->GetGB()*sumV0+fDCSConfig->GetGC();
-	
-	fJetTh   = fDCSConfig->GetJA()*sumV0*sumV0+fDCSConfig->GetJB()*sumV0+fDCSConfig->GetJC();
+	fJetTh   = fDCSConfig->GetJA()*(M[0] + M[1])*(M[0] + M[1]) + fDCSConfig->GetJB()*(M[0] + M[1]) + fDCSConfig->GetJC();	
 }
 
 //___________
-Int_t AliEMCALTriggerSTU::GetThreshold( L1TriggerType_t type )
+void AliEMCALTriggerSTU::SetThreshold(TriggerType_t type, Int_t v)
+{
+	switch (type)
+	{
+		case kL1Gamma:
+			fGammaTh = v;
+			break;
+		case kL1Jet:
+			fJetTh = v;		
+			break;
+		default:
+			AliError("AliEMCALTriggerSTU::SetThreshold(): Undefined trigger type, pls check!");
+	}
+}
+
+//___________
+Int_t AliEMCALTriggerSTU::GetThreshold(TriggerType_t type)
 {	
 	// Compute threshold FIXME: need an access to the OCDB
 	// to get f(V0) parameters depending on trigger type
 	
-	switch ( type )
+	
+	switch (type)
 	{
-		case kGamma:
+		case kL1Gamma:
 			return fGammaTh;
 			break;
-		case kJet:
+		case kL1Jet:
 			return fJetTh;		
 			break;
 		default:

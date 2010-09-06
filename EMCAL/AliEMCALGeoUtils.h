@@ -126,14 +126,23 @@ public:
   void     GetModulePhiEtaIndexInSModuleFromTRUIndex(
 	       Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const;
   Int_t   GetAbsTRUNumberFromNumberInSm(const Int_t row, const Int_t col, const Int_t sm) const ;
+
+	
+  void     BuildFastOR2DMap();
   Bool_t   GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& id) const;
   Bool_t                    GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, const Int_t iEta, const Int_t iPhi, Int_t& id) const;	
+  Bool_t                    GetAbsFastORIndexFromPositionInSM( const Int_t  iSM, const Int_t iEta, const Int_t iPhi, Int_t& id) const;	
+  Bool_t                    GetAbsFastORIndexFromPositionInEMCAL(                const Int_t iEta, const Int_t iPhi, Int_t& id) const;
   Bool_t             GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iADC) const;
   Bool_t   GetPositionInTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iEta, Int_t& iPhi) const;
   Bool_t    GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t& iSM, Int_t& iEta, Int_t& iPhi) const;
-  
-
-
+  Bool_t GetPositionInEMCALFromAbsFastORIndex(const Int_t id, Int_t& iEta, Int_t& iPhi) const;
+  Bool_t          GetFastORIndexFromCellIndex(const Int_t id, Int_t& idx) const;
+  Bool_t          GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4]) const;
+  Bool_t              GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) const;
+  Int_t               GetTRUIndexFromSTUIndex(const Int_t id) const;
+  Bool_t            GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const;
+	
   ///////////////////
   // useful utilities
   //
@@ -202,6 +211,8 @@ protected:
   Float_t  fZLength;			     // Total length in z direction
   Float_t  fSampling;			     // Sampling factor
 
+  Int_t    fFastOR2DMap[48][64];	 // FastOR 2D Map over full EMCal
+	
   TGeoHMatrix* fkSModuleMatrix[12] ; //Orientations of EMCAL super modules
 
 	
@@ -210,3 +221,4 @@ protected:
 } ;
 
 #endif // AliEMCALGEOUTILS_H
+

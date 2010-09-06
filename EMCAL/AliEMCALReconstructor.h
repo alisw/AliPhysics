@@ -40,6 +40,7 @@ class AliEMCALGeometry;
 class AliEMCALCalibData ;
 class AliCaloCalibPedestal ;
 class AliEMCALTriggerElectronics;
+class AliEMCALTriggerData;
 
 // --- Standard library ---
 
@@ -55,7 +56,7 @@ public:
 
   virtual  void Init() {;}
   virtual  void InitClusterizer();
-  
+
   Bool_t       Debug() const { return fDebug ; }
 
   using AliReconstructor::FillESD;
@@ -104,7 +105,9 @@ private:
   AliCaloCalibPedestal * fPedestalData ;   //! Tower status database if aval
 
   static AliEMCALTriggerElectronics* fgTriggerProcessor;
-
+  AliEMCALTriggerData* fTriggerData;
+	
+	
   ClassDef(AliEMCALReconstructor,10)  // Reconstruction algorithm class (Base Class)
 
 }; 

@@ -4,17 +4,15 @@
  * See cxx source for full Copyright notice                               */
 
 /*
-EMCal trigger data container
+EMCal trigger data container: can be used independently of the data stream (simulation or raw data)
 for persistency of produced data presently stored in TTreeD
 Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
+#include "AliEMCALTriggerTypes.h"
+
 #include <TObject.h>
 #include <TVector2.h>
-
-//#include <TObjArray.h>
-//#include <Riostream.h>
-
 #include <TClonesArray.h>
 
 class AliEMCALTriggerData : public TObject 
@@ -23,75 +21,54 @@ class AliEMCALTriggerData : public TObject
 public:
 	             AliEMCALTriggerData();
 	virtual     ~AliEMCALTriggerData();
+
+	virtual void SetMode(Int_t i) {fMode = i;}
 	
-	virtual void SetL0Patches(Int_t i, const TClonesArray& patches);
-	virtual void SetL0RegionSize(       TVector2 size ) {    fL0RegionSize = size; }
-	virtual void SetL0SubRegionSize(    TVector2 size ) { fL0SubRegionSize = size; }
-	virtual void SetL0PatchSize(        TVector2 size ) {     fL0PatchSize = size; }
+	virtual void SetL0Trigger(      Int_t i, Int_t j, Int_t k) { fL0Trigger[i][j] = k; }
+	virtual void SetL0Region(       Int_t i, const Int_t**& region);
+	virtual void SetL1Region(       Int_t i,       Int_t**& region);
 	
-	virtual void SetL1GammaPatches(const TClonesArray& patches);
-	virtual void SetL1JetPatches(const TClonesArray& patches);
+	virtual void SetPatches(TriggerType_t type, Int_t i, const TClonesArray& patches);
+	
+	virtual void SetL1GammaThreshold(Int_t v) {fL1GammaThreshold = v;}
+	virtual void SetL1JetThreshold(  Int_t v) {  fL1JetThreshold = v;}
 
-	virtual void SetL1Region(Int_t**& region);
-	virtual void SetL1V0(const Int_t*& arr);
+	virtual void          GetL0Trigger(  Int_t i, Int_t j, Int_t& k  ) const {   k = fL0Trigger[i][j];}
+	virtual Int_t         GetL0Trigger(  Int_t i, Int_t j            ) const {return fL0Trigger[i][j];}
+	
+	virtual void          GetPatches(TriggerType_t type, Int_t i, TClonesArray& patches) const;
+	virtual TClonesArray* GetPatches(TriggerType_t type, Int_t i                       ) const;
 
-	virtual void SetL1RegionSize(         TVector2 size ) {         fL1RegionSize = size; }
-	virtual void SetL1GammaPatchSize(     TVector2 size ) {     fL1GammaPatchSize = size; }
-	virtual void SetL1GammaSubRegionSize( TVector2 size ) { fL1GammaSubRegionSize = size; }
-	virtual void SetL1JetPatchSize(       TVector2 size ) {       fL1JetPatchSize = size; }
-	virtual void SetL1JetSubRegionSize(   TVector2 size ) {   fL1JetSubRegionSize = size; }
+	virtual void          GetL1Region( Int_t i, Int_t arr[][64]             ) const;
+	
+	virtual Int_t         GetL1GammaThreshold() const {return fL1GammaThreshold;}
+	virtual Int_t         GetL1JetThreshold()   const {return   fL1JetThreshold;}
 
-	virtual void          L0Patches(       TClonesArray& patches ) const { patches =  *fL0Patches;            }
-	virtual TClonesArray* L0Patches(                             ) const {     return  fL0Patches;            }
- 	virtual void          L0RegionSize(        TVector2 size     ) const { size =      fL0RegionSize;         }
- 	virtual TVector2      L0RegionSize(                          ) const {     return  fL0RegionSize;         }
-	virtual void          L0PatchSize(         TVector2 size     ) const { size =      fL0PatchSize;          }
-	virtual TVector2      L0PatchSize(                           ) const {     return  fL0PatchSize;          }
-	virtual void          L0SubRegionSize(     TVector2 size     ) const { size =      fL0SubRegionSize;      }
-	virtual TVector2      L0SubRegionSize(                       ) const {     return  fL0SubRegionSize;      }
-	virtual void          L0NPatches( Int_t arr[32]              ) const { for (Int_t i=0;i<32;i++) arr[i] = fL0NPatches[i]; }
-
-	virtual void          L1GammaPatches(  TClonesArray& patches ) const { patches =  *fL1GammaPatches;       }
-	virtual TClonesArray* L1GammaPatches(                        ) const {     return  fL1GammaPatches;       }
-	virtual void          L1JetPatches(    TClonesArray& patches ) const { patches =  *fL1JetPatches;         }
-	virtual TClonesArray* L1JetPatches(                          ) const {     return  fL1JetPatches;         }
-	virtual void          L1Region( Int_t arr[][64]              ) const { for (Int_t i=0;i<48;i++) for (Int_t j=0;j<64;j++) { arr[i][j] = fL1Region[i][j]; } }
-	virtual Int_t*        L1V0(                                  )       {     return &fL1V0[0];              }
-	virtual void          L1RegionSize(         TVector2& size   ) const { size =      fL1RegionSize;         }
-	virtual TVector2      L1RegionSize(                          ) const {     return  fL1RegionSize;         }
-	virtual void          L1GammaPatchSize(     TVector2& size   ) const { size =      fL1GammaPatchSize;     }
-	virtual TVector2      L1GammaPatchSize(                      ) const {     return  fL1GammaPatchSize;     }
-	virtual void          L1GammaSubRegionSize( TVector2& size   ) const { size =      fL1GammaSubRegionSize; }
-	virtual TVector2      L1GammaSubRegionSize(                  ) const {     return  fL1GammaSubRegionSize; }
-	virtual void          L1JetPatchSize(       TVector2& size   ) const { size =      fL1JetPatchSize;       }
-	virtual TVector2      L1JetPatchSize(                        ) const {     return  fL1JetPatchSize;       }
-	virtual void          L1JetSubRegionSize(   TVector2& size   ) const { size =      fL1JetSubRegionSize;   }
-	virtual TVector2      L1JetSubRegionSize(                    ) const {     return  fL1JetSubRegionSize;   }
-
-	virtual void Scan() const;
-
-	virtual void Reset();
+	virtual Int_t         GetMode() const {return fMode;}
+	
+	virtual void          Scan() const;
+	virtual void          Reset();
 	
 private:
 
     AliEMCALTriggerData(const AliEMCALTriggerData& rhs);            // NOT implemented
 	AliEMCALTriggerData& operator=(const AliEMCALTriggerData& rhs); // NOT implemented
 	
-	TClonesArray*  fL0Patches;            // array of patches  
-	Int_t          fL0NPatches[32];
-	TVector2       fL0RegionSize;         // region size in units of fast or
-	TVector2       fL0SubRegionSize;      // subregion size in units of fast or
-	TVector2       fL0PatchSize;          // patch size in units of subregion
+	Int_t                      fMode;
 	
-	TClonesArray*  fL1GammaPatches;       // array of patches  
-	TClonesArray*  fL1JetPatches;         // array of patches  
-	Int_t          fL1Region[48][64];     // STU FastOR 48-by-124
-	Int_t          fL1V0[2];              // V0A V0C multiplicity estimates	
-	TVector2       fL1RegionSize;         // region size in units of fast or
-	TVector2       fL1GammaPatchSize;     // patch size in units of subregion
-	TVector2       fL1GammaSubRegionSize; // subregion size in units of fast or
-	TVector2       fL1JetPatchSize;       // patch size in units of subregion
-	TVector2       fL1JetSubRegionSize;   // subregion size in units of fast or 
+	Int_t           fL0Trigger[2][32];
+	
+	TClonesArray*       fL0Patches[2];          // array of patches  
+	
+	Int_t               fL0Region[32][24][4];   // from F-ALTRO data only
+	
+	TClonesArray*  fL1GammaPatches[2];          // array of patches  
+	TClonesArray*    fL1JetPatches[2];          // array of patches
+	
+	Int_t                fL1Region[2][48][64];  // STU FastOR
+
+	Int_t        fL1GammaThreshold;             //
+	Int_t          fL1JetThreshold;             //	
 	
 	ClassDef(AliEMCALTriggerData,1)
 };

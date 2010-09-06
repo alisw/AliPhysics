@@ -34,13 +34,10 @@ class AliEMCALTriggerSTURawStream: public TObject
 	virtual Int_t       GetNL1JetPatch() const {return fNL1JetPatch;}
 	virtual Int_t          GetRawData() const {return fGetRawData;}
 	
-	virtual Bool_t     GetL0GammaPatch(const Int_t i, Int_t& x, Int_t& y, Int_t& z) const;
+	virtual Bool_t     GetL0GammaPatch(const Int_t i, Int_t& x, Int_t& y) const;
 	virtual Bool_t     GetL1GammaPatch(const Int_t i, Int_t& x, Int_t& y, Int_t& z) const;
 	virtual Bool_t       GetL1JetPatch(const Int_t i, Int_t& x, Int_t& y) const;
-	
-	
-	virtual UInt_t L0() {return fL0;}
-	
+		
 private:
     
 	AliEMCALTriggerSTURawStream(const AliEMCALTriggerSTURawStream& rhs);
@@ -48,20 +45,19 @@ private:
 
     AliRawReader* fRawReader;   // object for reading the raw data
 
-	UInt_t              	              fL1JetThreshold;
-	UInt_t              	            fL1GammaThreshold;
-	UShort_t*                          fL0GammaPatchIndex; // [fNL0GammaPatch]
-	UShort_t*                          fL1GammaPatchIndex; // [fNL1GammaPatch]
-	UShort_t*                            fL1JetPatchIndex; // [fNL1JetPatch]
+	UInt_t              	             fL1JetThreshold;
+	UInt_t              	           fL1GammaThreshold;
+	UShort_t                          fL0GammaPatchIndex[3100]; 
+	UShort_t                          fL1GammaPatchIndex[3100]; 
+	UShort_t                            fL1JetPatchIndex[200];
 	
-	Int_t                                  fNL0GammaPatch;
-	Int_t                                    fNL1JetPatch;
-	Int_t                                  fNL1GammaPatch;
+	Int_t                                 fNL0GammaPatch;
+	Int_t                                   fNL1JetPatch;
+	Int_t                                 fNL1GammaPatch;
 	
 	Int_t                                     fGetRawData;
 	
-	UInt_t                                           fADC[32][96];
-	UInt_t				                 fL0;
+	UInt_t                                          fADC[32][96];
 	
     ClassDef(AliEMCALTriggerSTURawStream,1)   // class for reading EMCAL STU DDL raw data
 };

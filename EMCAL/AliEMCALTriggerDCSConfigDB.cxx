@@ -13,6 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/*
+
+
+
+
+Adapted from TRD
+Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
+*/
+
 #include <TClonesArray.h>
 #include <TObjArray.h>
 
@@ -134,21 +143,6 @@ const TObject *AliEMCALTriggerDCSConfigDB::GetCachedCDBObject(Int_t id)
 	// Retrieves a cdb object with the given id. The objects are cached as
 	// long as the run number is not changed.
 	//
-	// Put together the available objects here by using the lines
-	//   a) For usual calibration objects:
-	//      case kID<Name> : 
-	//        return CacheCDBEntry(kID<Name>,"TRD/Calib/<Path>"); 
-	//        break;
-	//      See function CacheCDBEntry for details.
-	//   and
-	//   b) For calibration data which depends on two objects: One containing 
-	//      a value per detector and one the local fluctuations per pad:
-	//      case kID<Name> :
-	//        return CacheMergeCDBEntry(kID<Name>,"TRD/Calib/<padPath>","TRD/Calib/<chamberPath>"); 
-	//        break;
-	//      See function CacheMergeCDBEntry for details.
-	//
-    
 	switch (id) 
 	{
 		// Parameters defined per pad and chamber
@@ -253,7 +247,7 @@ const AliEMCALTriggerDCSConfig* AliEMCALTriggerDCSConfigDB::GetTriggerDCSConfig(
 }
 
 //_____________________________________________________________________________
-void AliEMCALTriggerDCSConfigDB::GetSTUSegmentation(Int_t ss[], Int_t sp[])
+void AliEMCALTriggerDCSConfigDB::GetSTUSegmentation(Int_t ssg[], Int_t spg[], Int_t ssj[], Int_t spj[])
 {
 	//
 	//
@@ -267,15 +261,36 @@ void AliEMCALTriggerDCSConfigDB::GetSTUSegmentation(Int_t ss[], Int_t sp[])
 	switch ( fw )
 	{
 		case 2223:
-			ss[0] = 4;
-			ss[1] = 4;
-			sp[0] = 2;
-			sp[1] = 2;
+			ssg[0] = 1;
+			ssg[1] = 1;
+			spg[0] = 2;
+			spg[1] = 2;
+			
+			ssj[0] = 4;
+			ssj[1] = 4;
+			spj[0] = 2;
+			spj[1] = 2;
 			break;
 		default:
 			AliError("Firmware version do not match!");
 			break;
 	}
+}
+
+//_____________________________________________________________________________
+Int_t AliEMCALTriggerDCSConfigDB::GetTRUSegmentation(Int_t iTRU)
+{
+	//
+	const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
+	
+	AliEMCALTriggerTRUDCSConfig* truConf = dcsConf->GetTRUDCSConfig(iTRU);
+
+	Int_t sel = truConf->GetL0SEL();
+	
+	if (sel & 0x0001)
+		return 2;
+	else
+		return 1;
 }
 
 //_____________________________________________________________________________

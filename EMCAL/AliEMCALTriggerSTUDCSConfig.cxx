@@ -43,4 +43,18 @@ AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig() : TObject()
   //
 }
 
+//_____________________________________________________________________________
+void AliEMCALTriggerSTUDCSConfig::GetSegmentation(TVector2& v1, TVector2& v2, TVector2& v3, TVector2& v4) const
+{
+	//
+	switch (fFw)
+	{
+		case 2223:
+			v1.Set(1., 1.);
+			v2.Set(2., 2.);
+			v3.Set(4., 4.);
+			v4.Set(2., 2.);
+			break;
+	}
+}
 

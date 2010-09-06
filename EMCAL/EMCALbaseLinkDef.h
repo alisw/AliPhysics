@@ -49,6 +49,9 @@
 #pragma link C++ class AliEMCALTriggerTRUDCSConfig+;
 #pragma link C++ class AliEMCALTriggerSTUDCSConfig+;
 #pragma link C++ class AliEMCALTriggerDCSConfigDB+;
+#pragma link C++ class AliEMCALTriggerRawDigitMaker+;
+#pragma link C++ class AliCaloRawAnalyzerFakeALTRO+;
+#pragma link C++ class AliEMCALTriggerRawDigit+;
 
 #endif
 

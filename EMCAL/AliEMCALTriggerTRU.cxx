@@ -42,8 +42,8 @@ namespace
 ClassImp(AliEMCALTriggerTRU)
 
 //________________
-AliEMCALTriggerTRU::AliEMCALTriggerTRU() : AliEMCALTriggerBoard()
-,fDCSConfig(0x0)
+AliEMCALTriggerTRU::AliEMCALTriggerTRU() : AliEMCALTriggerBoard(),
+fDCSConfig(0x0)
 {
 	//
 	for (Int_t i=0;i<96;i++) for (Int_t j=0;j<256;j++) fADC[i][j] = 0;
@@ -51,20 +51,30 @@ AliEMCALTriggerTRU::AliEMCALTriggerTRU() : AliEMCALTriggerBoard()
 
 //________________
 AliEMCALTriggerTRU::AliEMCALTriggerTRU(AliEMCALTriggerTRUDCSConfig* dcsConf, const TVector2& rSize, Int_t mapType) : 
-AliEMCALTriggerBoard(rSize)
-,fDCSConfig(dcsConf)
+AliEMCALTriggerBoard(rSize),
+fDCSConfig(dcsConf)
 {
 	//
 	for (Int_t i=0;i<96;i++) for (Int_t j=0;j<256;j++) fADC[i][j] = 0;
 
-	// FIXME: use of class AliEMCALTriggerParam to get size
 	TVector2 size;
 	
-	size.Set( 1. , 1. );
-	SetSubRegionSize( size ); // 1 by 1 FOR
-	
-	size.Set( 2. , 2. );
-	SetPatchSize( size );     // 2 by 2 subregions
+	if (dcsConf->GetL0SEL() & 0x0001) // 4-by-4
+	{
+		size.Set( 1. , 1. );
+		SetSubRegionSize( size );
+		
+		size.Set( 2. , 2. );
+		SetPatchSize( size );
+	}	
+	else                              // 2-by-2
+	{
+		size.Set( 1. , 1. );
+		SetSubRegionSize( size );
+		
+		size.Set( 1. , 1. );
+		SetPatchSize( size );	
+	}	
 	
 	for (Int_t ietam=0;ietam<24;ietam++)
 	{
@@ -82,8 +92,7 @@ AliEMCALTriggerBoard(rSize)
 //________________
 AliEMCALTriggerTRU::~AliEMCALTriggerTRU()
 {
-   // delete TRU digits only used as transient containers 
-   // to compute FastOR from energy deposit
+	//
 }
 
 //________________
@@ -126,7 +135,7 @@ Int_t AliEMCALTriggerTRU::L0()
 	// compute the time sum for all the FastOR of a given TRU
 	// and then move the space window
 
-	AliDebug(1,"=== Running TRU L0 algorithm ===");
+	AliDebug(999,"=== Running TRU L0 algorithm ===");
 	const Int_t xsize    = Int_t(fRegionSize->X());
 	const Int_t ysize    = Int_t(fRegionSize->Y());
 	const Int_t zsize    = kNup+kNdown;
@@ -142,13 +151,14 @@ Int_t AliEMCALTriggerTRU::L0()
 		}
 	}
 	
-	for (Int_t i=0; i<fRegionSize->X(); i++) for (Int_t j=0; j<fRegionSize->Y(); j++) 
-		for (Int_t k=0; k<kNup+kNdown; k++)	buffer[i][j][k] = 0;
+	for (Int_t i = 0; i < fRegionSize->X(); i++) 
+		for (Int_t j = 0; j < fRegionSize->Y(); j++) 
+			for (Int_t k = 0; k < kNup + kNdown; k++) buffer[i][j][k] = 0;
 		
 	// Time sliding window algorithm
 	for (Int_t i=0; i<=(kTimeBins-kTimeWindowSize); i++) 
 	{
-		AliDebug(1,Form("----------- Time window: %d\n",i));
+		AliDebug(999,Form("----------- Time window: %d\n",i));
 		
 		for (Int_t j=0; j<fRegionSize->X(); j++)
 		{		
@@ -156,7 +166,6 @@ Int_t AliEMCALTriggerTRU::L0()
 			{
 				for (Int_t l=i; l<i+kTimeWindowSize; l++) 
 				{
-//					printf("fRegion[%2d][%2d]: %d += fADC[%2d][%2d]: %d\n",j,k,fRegion[j][k],fMap[j][k],l,fADC[fMap[j][k]][l]);
 					// [eta][phi][time]
 					fRegion[j][k] += fADC[fMap[j][k]][l];	
 				}
@@ -173,11 +182,6 @@ Int_t AliEMCALTriggerTRU::L0()
 				{
 					buffer[j][k][i] = fRegion[j][k];
 				}
-
-/*
-				for (Int_t v = 0; v<kNup + kNdown; v++) 
-					printf("buffer[%2d][%2d][%2d]: %d\n",j,k,v,buffer[j][k][v]);
-*/
 				
 //				if (kTimeWindowSize > 4) fRegion[j][k] = fRegion[j][k] >> 1; // truncate time sum to fit 14b
 			}
@@ -220,23 +224,8 @@ Int_t AliEMCALTriggerTRU::L0()
 			}
 		}
 
-/*		
-		for (Int_t j=0; j<fRegionSize->X(); j++)
-		{		
-			for (Int_t k=0; k<fRegionSize->Y(); k++)
-			{
-				printf("peaks[%2d][%2d]: %d\n",j,k,peaks[j][k]);
-			}
-		}
-*/		
-		if ( !nPeaks )
+		if (!nPeaks)
 		{
-			//Delete, avoid leak
-			for (Int_t x = 0; x < xsize; x++)
-			  {
-			    delete [] peaks[x];
-			  }
-			delete [] peaks;
 			ZeroRegion();
 			continue;
 		}
@@ -247,7 +236,7 @@ Int_t AliEMCALTriggerTRU::L0()
 		// return the list of patches above threshold
 		// Theshold checked out from OCDB
 		
-		SlidingWindow( kGamma, fDCSConfig->GetGTHRL0() );
+		SlidingWindow(kL0, fDCSConfig->GetGTHRL0(), i);
 		
 //		for(Int_t j=0; j<fRegionSize->X(); j++)
 //			for (Int_t k=0; k<fRegionSize->Y(); k++) fRegion[j][k] = fRegion[j][k]>>2; // go to 12b before shipping to STU
@@ -278,13 +267,16 @@ Int_t AliEMCALTriggerTRU::L0()
 					
 					idx[index] = fMap[int(v.X()*fSubRegionSize->X())+xx][int(v.Y()*fSubRegionSize->Y())+yy]; // Get current patch FastOR ADC channels 
 					
-					if (peaks[int(v.X()*fSubRegionSize->X())+xx][int(v.Y()*fSubRegionSize->Y())+yy]) foundPeak++;
+					if (peaks[int(v.X() * fSubRegionSize->X()) + xx][int(v.Y() * fSubRegionSize->Y()) + yy]) 
+					{
+						foundPeak++;
+						
+						p->SetPeak(xx, yy, sizeX, sizeY);
+					}
 					
-					if ( AliDebugLevel() ) ShowFastOR(i,idx[index]);
+					if (AliDebugLevel() >= 999) ShowFastOR(i, idx[index]);
 				}
 			}
-
-			delete [] idx;
 			
 			if ( !foundPeak ) 
 			{
@@ -302,10 +294,20 @@ Int_t AliEMCALTriggerTRU::L0()
 
 		if ( !fPatches->GetEntriesFast() ) // No patch left
 			ZeroRegion();
-		else
+		else                             // Stop the algo when at least one patch is found ( thres & max )
 		{
-			break;     // Stop the algo when at least one patch is found ( thres & max )
-		}
+			for (Int_t xx = 0; xx < fRegionSize->X(); xx++) 
+			{
+				for (Int_t yy = 0; yy < fRegionSize->Y(); yy++) 
+				{   
+					// Prepare data to be sent to STU for further L1 processing
+					// Sent time sum (rollback tuning) is the one before L0 is issued (maximum time sum)
+					fRegion[xx][yy] = buffer[xx][yy][1];
+				}
+			}
+			
+			break;
+		}		
 	}
 	
 	//Delete, avoid leak

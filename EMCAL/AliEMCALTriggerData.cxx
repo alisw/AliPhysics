@@ -17,131 +17,222 @@
  
  
 EMCal trigger data container
-for persistency of produced data presently stored in TTreeD
+for data (both raw & rec) persistency
 Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
 #include "AliEMCALTriggerData.h"
 #include "AliEMCALTriggerPatch.h"
+#include "AliLog.h"
+#include "Riostream.h"
 
 ClassImp(AliEMCALTriggerData)
 
 //_____________
 AliEMCALTriggerData::AliEMCALTriggerData() : TObject(),
-fL0Patches( new TClonesArray("AliEMCALTriggerPatch") ),
-fL0NPatches(),
-fL0RegionSize(0,0),
-fL0SubRegionSize(0,0),
-fL0PatchSize(0,0),
-fL1GammaPatches( new TClonesArray("AliEMCALTriggerPatch") ),
-fL1JetPatches( new TClonesArray("AliEMCALTriggerPatch") ),
-fL1RegionSize(0,0),
-fL1GammaPatchSize(0,0),
-fL1GammaSubRegionSize(0,0),
-fL1JetPatchSize(0,0),
-fL1JetSubRegionSize(0,0)
+fMode(0),
+fL0Patches(),
+fL0Region(),
+fL1GammaPatches(),
+fL1JetPatches(),
+fL1Region(),
+fL1GammaThreshold(0),
+fL1JetThreshold(0)
 {  
-	for (Int_t i=0;i<32;i++) fL0NPatches[i] = 0;
-	for (Int_t i=0;i<48;i++) for (Int_t j=0;j<64;j++) fL1Region[i][j] = 0;
+	//
+	for (Int_t i = 0; i < 2; i++)
+	{
+		       fL0Patches[i] = new TClonesArray("AliEMCALTriggerPatch");
+		  fL1GammaPatches[i] = new TClonesArray("AliEMCALTriggerPatch");
+		    fL1JetPatches[i] = new TClonesArray("AliEMCALTriggerPatch");
+	}
 	
-	fL1V0[0] = fL1V0[1] = 0;
+	for (Int_t i = 0; i < 32; i++) for (Int_t j = 0; j < 24; j++) for (Int_t k = 0; k <  4; k++) fL0Region[i][j][k] = 0;
+	for (Int_t i = 0; i <  2; i++) for (Int_t j = 0; j < 48; j++) for (Int_t k = 0; k < 64; k++) fL1Region[i][j][k] = 0;
 }
 
 //_____________
 AliEMCALTriggerData::~AliEMCALTriggerData()
 {
-}
-
-//_____________
-void AliEMCALTriggerData::SetL0Patches(Int_t i, const TClonesArray& patches)
-{
-	Int_t new_size = patches.GetEntriesFast();
-	Int_t old_size = fL0Patches->GetEntriesFast();
-
-	fL0NPatches[i] = new_size;
-	
-	Int_t size = 0;
-	for (Int_t j=0;j<=i;j++) size += fL0NPatches[j];
-		
-	fL0Patches->Expand( size );
-			
-	for (Int_t j=0;j<new_size;j++)
+	//
+	for (Int_t i = 0; i < 2; i++)
 	{
-		AliEMCALTriggerPatch* p = static_cast<AliEMCALTriggerPatch*>( patches.At(j) );
-		new((*fL0Patches)[old_size+j]) AliEMCALTriggerPatch( *p );
+		if (     fL0Patches[i])      fL0Patches[i]->Delete();
+		if (fL1GammaPatches[i]) fL1GammaPatches[i]->Delete();
+		if (  fL1JetPatches[i])   fL1JetPatches[i]->Delete();
 	}
 }
 
 //_____________
-void AliEMCALTriggerData::SetL1GammaPatches(const TClonesArray& patches)
-{
-	Int_t size = patches.GetEntriesFast();
-	fL1GammaPatches->Expand( size );
-
-	for (Int_t j=0;j<size;j++)
-	{
-		AliEMCALTriggerPatch* p = static_cast<AliEMCALTriggerPatch*>( patches.At(j) );
-		new((*fL1GammaPatches)[j]) AliEMCALTriggerPatch( *p );
-	}
-}
-
-//_____________
-void AliEMCALTriggerData::SetL1JetPatches(const TClonesArray& patches)
-{
-	Int_t size = patches.GetEntriesFast();
-	
-	fL1JetPatches->Expand( size );
-	
-	for (Int_t j=0;j<size;j++)
-	{
-		AliEMCALTriggerPatch* p = static_cast<AliEMCALTriggerPatch*>( patches.At(j) );
-		new((*fL1JetPatches)[j]) AliEMCALTriggerPatch( *p );
-	}
-}
-
-//_____________
-void AliEMCALTriggerData::SetL1Region(Int_t**& region)
+void AliEMCALTriggerData::SetL0Region(Int_t i, const Int_t**& region)
 {
 	//
-  	for (Int_t i=0;i<48;i++)
-  		for (Int_t j=0;j<64;j++)
-		{
-			fL1Region[i][j] = region[i][j];
-		}
+	if (i < 0 || i > 31) 
+	{
+		AliError("Bad index!");
+		return;
+	}
+	
+  	for (Int_t j=0;j<24;j++)
+  		for (Int_t k=0;k<4;k++) fL0Region[i][j][k] = region[j][k];
 }
 
 //_____________
-void AliEMCALTriggerData::SetL1V0(const Int_t*& arr)
+void AliEMCALTriggerData::GetPatches(TriggerType_t type, Int_t i, TClonesArray& patches) const
 {
-	for (Int_t i=0;i<2;i++) fL1V0[i] = arr[i];
+	//
+	if (i < 0 || i > 1) 
+	{
+		AliError("Bad index!");
+		return;
+	}
+	
+	switch (type)
+	{
+		case kL0:
+			patches =  *fL0Patches[i];
+			break;
+		case kL1Gamma:
+			patches =  *fL1GammaPatches[i];
+			break;
+		case kL1Jet:
+			patches =  *fL1JetPatches[i];
+			break;
+		default:
+			AliError("Unknown trigger type!");
+			break;
+	}
 }
+
+//_____________
+TClonesArray* AliEMCALTriggerData::GetPatches(TriggerType_t type, Int_t i) const
+{
+	//
+	if (i < 0 || i > 1) 
+	{
+		AliError("Bad index!");
+		return 0x0;
+	}
+	
+	switch (type)
+	{
+		case kL0:
+			return fL0Patches[i];
+			break;
+		case kL1Gamma:
+			return fL1GammaPatches[i];
+			break;
+		case kL1Jet:
+			return fL1JetPatches[i];
+			break;
+		default:
+			AliError("Unknown trigger type!");
+			break;
+	}
+
+	return 0x0;
+}
+
+//_____________
+void AliEMCALTriggerData::SetPatches(TriggerType_t type, Int_t i, const TClonesArray& patches)
+{
+	//
+	if (i < 0 || i > 1) 
+	{
+		AliError("Bad index!");
+		return;
+	}
+	
+	if (patches.GetEntriesFast())
+	{
+		TClonesArray* arr = 0x0;
+		
+		switch (type)
+		{
+			case kL0:
+				arr = fL0Patches[i];
+				break;
+			case kL1Gamma:
+				arr = fL1GammaPatches[i];
+				break;
+			case kL1Jet:
+				arr = fL1JetPatches[i];
+				break;
+			default:
+				AliError("Unknown trigger type!");
+				return;
+		}
+		
+		if (arr)
+		{
+			Int_t size = arr->GetSize() + patches.GetSize();
+		
+			arr->Expand(size);
+		
+			for (Int_t k = 0; k < patches.GetEntriesFast(); k++)
+			{
+				AliEMCALTriggerPatch* p = static_cast<AliEMCALTriggerPatch*>(patches.At(k));
+				new((*arr)[arr->GetEntriesFast()]) AliEMCALTriggerPatch(*p);
+			}
+		}
+		else
+		{
+			AliError("TClonesArray is NULL!");
+		}
+	}
+}
+
+//_____________
+void AliEMCALTriggerData::SetL1Region(Int_t i, Int_t**& region)
+{
+	//
+	if (i < 0 || i > 1) 
+	{
+		AliError("Bad index!");
+		return;
+	}
+		
+  	for (Int_t j = 0; j < 48; j++)
+  		for (Int_t k = 0; k < 64; k++) fL1Region[i][j][k] = region[j][k];
+}
+
+//_____________
+void AliEMCALTriggerData::GetL1Region(Int_t i, Int_t arr[][64]) const 
+{ 
+	//
+	if (i < 0 || i > 1) 
+	{
+		AliError("Bad index!");
+		return;
+	}
+	
+	for (Int_t j = 0; j < 48; j++) for (Int_t k = 0; k < 64; k++) { arr[j][k] = fL1Region[i][j][k]; } 
+}
+
 
 //_____________
 void AliEMCALTriggerData::Scan() const
 {
 	//
 	printf("L0:\n");
-	for (Int_t i=0;i<32;i++) printf("\tFound %2d patches in TRU %2d\n",fL0NPatches[i],i);
-	
+	printf("\tFound (%2d , %2d) patches\n", fL0Patches[0]->GetEntriesFast(), fL0Patches[1]->GetEntriesFast());
 	printf("L1:\n");
-	printf("\tRegion of size.....................(%2d,%2d)\n",int(fL1RegionSize.X()),int(fL1RegionSize.Y()));
-	printf("\tGamma sub-region size..............(%2d,%2d)\n",int(fL1GammaSubRegionSize.X()),int(fL1GammaSubRegionSize.Y()));
-	printf("\tJet sub-region size................(%2d,%2d)\n",int(fL1JetSubRegionSize.X()),int(fL1JetSubRegionSize.Y()));
-	printf("\tFound %4d gamma patches of size...(%2d,%2d)\n",fL1GammaPatches->GetEntriesFast(),int(fL1GammaPatchSize.X()),int(fL1GammaPatchSize.Y()));
-	printf("\tFound %4d jet patches of size.....(%2d,%2d)\n",fL1JetPatches->GetEntriesFast(),int(fL1JetPatchSize.X()),int(fL1JetPatchSize.Y()));
+	printf("\tFound (%4d,%4d) gamma patches\n",fL1GammaPatches[0]->GetEntriesFast(), fL1GammaPatches[1]->GetEntriesFast());
+	printf("\tFound (%4d,%4d) jet patches\n",fL1JetPatches[0]->GetEntriesFast(), fL1JetPatches[1]->GetEntriesFast());
 }
 
 //_____________
 void AliEMCALTriggerData::Reset()
 {
 	//
-    if (fL0Patches)           fL0Patches->Delete(); 
-  	if (fL1GammaPatches) fL1GammaPatches->Delete();
-	if (fL1JetPatches)     fL1JetPatches->Delete();	
-
-	for (Int_t i=0;i<32;i++) fL0NPatches[i] = 0;
- 	for (Int_t i=0;i<48;i++) for (Int_t j=0;j<64;j++) fL1Region[i][j] = 0;
- 	fL1V0[0] = fL1V0[1] = 0;
+	for (Int_t i = 0; i < 2; i++)
+	{
+		if (     fL0Patches[i])      fL0Patches[i]->Delete();
+		if (fL1GammaPatches[i]) fL1GammaPatches[i]->Delete();
+		if (  fL1JetPatches[i])   fL1JetPatches[i]->Delete();	
+	}
+	 	
+	for (Int_t i = 0; i < 2; i++) for (Int_t j = 0; j < 48; j++) for (Int_t k = 0; k < 64; k++) fL1Region[i][j][k] = 0;
 }
 
 
