@@ -36,6 +36,7 @@
 #include <AliLHCClockPhase.h>
 #include <AliVZEROCalibData.h>
 #include <AliVZEROTriggerMask.h>
+#include <AliVZEROReconstructor.h>
 
 #include "AliVZEROTenderSupply.h"
 
@@ -89,6 +90,14 @@ void AliVZEROTenderSupply::ProcessEvent()
     if (fDebug) printf("AliVZEROTenderSupply::ProcessEvent - Run Changed (%d)\n",fTender->GetRun());
     GetPhaseCorrection();
 
+    AliCDBEntry *entryGeom = fTender->GetCDBManager()->Get("GRP/Geometry/Data",fTender->GetRun());
+    if (!entryGeom) {
+      AliError("No geometry entry is found");
+      return;
+    } else {
+      if (fDebug) printf("AliVZEROTenderSupply::Used geometry entry: %s\n",entryGeom->GetId().ToString().Data());
+    }
+
     AliCDBEntry *entryCal = fTender->GetCDBManager()->Get("VZERO/Calib/Data",fTender->GetRun());
     if (!entryCal) {
       AliError("No VZERO calibration entry is found");
@@ -110,8 +119,10 @@ void AliVZEROTenderSupply::ProcessEvent()
     }
   }
 
-  if (!fCalibData || !fTimeSlewing) return;
-
+  if (!fCalibData || !fTimeSlewing) {
+    AliWarning("VZERO calibration objects not found!");
+    return;
+  }
   //
   // correct VZERO time signals and decision
   //
@@ -125,10 +136,16 @@ void AliVZEROTenderSupply::ProcessEvent()
     return;
   }
 
+  if (fDebug) printf("LHC-clock phase correction: %f\n",fLHCClockPhase);
+
+  if (fDebug) printf("Original VZERO decision %d (%f ns) and %d (%f ns)\n",
+		     esdVZERO->GetV0ADecision(),esdVZERO->GetV0ATime(),
+		     esdVZERO->GetV0CDecision(),esdVZERO->GetV0CTime());
   Float_t time[64];
   for(Int_t i = 0; i < 64; ++i) {
     time[i] = esdVZERO->GetTime(i);
-    time[i] += fLHCClockPhase;
+    if (time[i] > (AliVZEROReconstructor::kInvalidTime + 1e-6))
+      time[i] += fLHCClockPhase;
   }
   esdVZERO->SetTime(time);
 
@@ -136,6 +153,9 @@ void AliVZEROTenderSupply::ProcessEvent()
     AliVZEROTriggerMask triggerMask;
     triggerMask.FillMasks(esdVZERO, fCalibData, fTimeSlewing);
   }
+  if (fDebug) printf("Modified VZERO decision %d (%f ns) and %d (%f ns)\n",
+		     esdVZERO->GetV0ADecision(),esdVZERO->GetV0ATime(),
+		     esdVZERO->GetV0CDecision(),esdVZERO->GetV0CTime());
 
 }
 
