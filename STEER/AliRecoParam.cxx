@@ -267,6 +267,7 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
 
       otherTrigger = kTRUE;
     }
+    delete trClassArray;
 
     if (calibTrigger) {
       fEventSpecie = kCalib;
