@@ -481,10 +481,10 @@ void AliTOFT0::Exec(Option_t *option)
     nmisidentified=(nmisidentified0+nmisidentified1+nmisidentified2+nmisidentified3+nmisidentified4+nmisidentified5+nmisidentified6+nmisidentified7+nmisidentified8+nmisidentified9);
     AliInfo(Form("total number of tracks token into account  %i", 10*5*fNevents));
     Float_t badPercentage=100.*(Float_t)nmisidentified/(10*5*fNevents);
-    AliInfo(Form("total misidentified                       %i (%d %%) ", nmisidentified, badPercentage));
+    AliInfo(Form("total misidentified                       %i (%f %%) ", nmisidentified, badPercentage));
     AliInfo(Form("Total Number of set token into account     %i", 5*fNevents));
     Float_t goodSetPercentage=100.*(Float_t)ngood/(5*fNevents);
-    AliInfo(Form("Number of set with no misidentified tracks %i (%d %%)", ngood, goodSetPercentage));
+    AliInfo(Form("Number of set with no misidentified tracks %i (%f %%)", ngood, goodSetPercentage));
   }
 
   // free used memory for canvas
