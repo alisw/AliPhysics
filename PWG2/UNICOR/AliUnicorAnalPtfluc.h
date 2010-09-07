@@ -19,7 +19,7 @@ class AliUnicorHN;
 class AliUnicorAnalPtfluc : public AliUnicorAnal {
    
  public:
-  AliUnicorAnalPtfluc(Char_t *nam="correl", Int_t pid0=0, Int_t pid1=0);    // constructor
+  AliUnicorAnalPtfluc(const char *nam="correl", Int_t pid0=0, Int_t pid1=0);    // constructor
   virtual ~AliUnicorAnalPtfluc(){}                                          // destructor
   void Process(Int_t tmr, AliUnicorEvent * const ev0, AliUnicorEvent * const ev1);  // process event(s)
 

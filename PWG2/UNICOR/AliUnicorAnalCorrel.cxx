@@ -32,9 +32,9 @@
 ClassImp(AliUnicorAnalCorrel)
  
 //=============================================================================
-AliUnicorAnalCorrel::AliUnicorAnalCorrel(Char_t *nam, Double_t emi, Double_t ema, 
-			 Int_t pid0, Int_t pid1): 
-  AliUnicorAnal(nam), fPid0(pid0), fPid1(pid1), fMass0(0), fMass1(0), fPa()
+AliUnicorAnalCorrel::AliUnicorAnalCorrel(const char *nam, Double_t emi, Double_t ema, 
+			 Int_t pid0, Int_t pid1, Int_t frame): 
+  AliUnicorAnal(nam), fPid0(pid0), fPid1(pid1), fMass0(0), fMass1(0), fFrame(frame), fPa() 
 {
   // constructor
   // emi and ema define the rapidity range for histogram
@@ -49,11 +49,16 @@ AliUnicorAnalCorrel::AliUnicorAnalCorrel(Char_t *nam, Double_t emi, Double_t ema
 
   //int npt = 7; double ptbins[]={0,0.1,0.2,0.3,0.4,0.5,0.7,1.0};
   //int npt = 6; double ptbins[]={0,0.1,0.25,0.35,0.55,1.0,2.0}; // like Adam, except last bin split
-  int npt = 7; double ptbins[]={0,0.1,0.25,0.40,0.55,0.7,1.0,2.0}; // like Adam in Mar-2010, + first+last
+  //int npt = 7; double ptbins[]={0,0.1,0.25,0.40,0.55,0.7,1.0,2.0}; // like Adam in Mar-2010, + first+last
+  int npt = 8; double ptbins[]={0,0.1,0.2,0.3,0.4,0.5,0.7,1.0,2.0};  // for Pb
 
-  double qbins[100];
-  for (int i=0;i<20;i++) qbins[i]=i*0.005;
-  for (int i=0;i<45;i++) qbins[20+i]=0.1+i*0.02;
+  double qbins[200] = {0};
+  //  for (int i=0;i<20;i++) qbins[i]=i*0.005;
+  //  for (int i=0;i<45;i++) qbins[20+i]=0.1+i*0.02;
+  for (int i=0;i<30;i++) qbins[i]=i*0.010;
+  for (int i=0;i<35;i++) qbins[30+i]=0.3+i*0.02;
+  for (int i=0;i<20;i++) qbins[65+i]=1.0+i*0.05;
+  for (int i=0;i<11;i++) qbins[85+i]=2.0+i*0.20;
 
   TAxis *ax[8];
   ax[0] = new TAxis(3,-0.5,2.5);ax[0]->SetTitle("trumixrot");
@@ -64,8 +69,8 @@ AliUnicorAnalCorrel::AliUnicorAnalCorrel(Char_t *nam, Double_t emi, Double_t ema
   ax[4] = new TAxis(npt,ptbins);ax[4]->SetTitle("kt (GeV/c)"); // pair pt/2
   ax[5] = new TAxis(8,0,pi);    ax[5]->SetTitle("q-theta");
   ax[6] = new TAxis(16,-pi,pi); ax[6]->SetTitle("q-phi");
-  //ax[7] = new TAxis(64,qbins);  ax[7]->SetTitle("q (GeV/c)");
-  ax[7] = new TAxis(150,0,3.0); ax[7]->SetTitle("q (GeV/c)");
+  ax[7] = new TAxis(95,qbins);  ax[7]->SetTitle("q (GeV/c)");
+  //  ax[7] = new TAxis(700,0,3.5); ax[7]->SetTitle("q (GeV/c)");
   AliUnicorHN *pair = new AliUnicorHN("pair",8,ax);
   for (int i=0; i<8; i++) delete ax[i];
   fHistos.Add(pair);
@@ -113,7 +118,7 @@ void AliUnicorAnalCorrel::Process(Int_t tmr, const AliUnicorEvent * const ev0, c
   // thus, proper rotation is either by 180, or by 170 AND 190, etc. 
 
   double cent = (ev0->Centrality()+ev1->Centrality())/2.0;
-  double q0x,q0y,q1x,q1y;
+  double q0x=0,q0y=0,q1x=0,q1y=0;
   ev0->RP(q0x,q0y);
   ev1->RP(q1x,q1y); 
   double rpphi = atan2(q0y+q1y,q0x+q1x);
@@ -134,12 +139,13 @@ void AliUnicorAnalCorrel::Process(Int_t tmr, const AliUnicorEvent * const ev0, c
 			 ev1->ParticleP(j),ev1->ParticleTheta(j),ev1->ParticlePhi(j)+phirot)) continue;
       twot->Fill((double) tmr, 1.0, fPa.Pt()/2.0, fPa.DTheta(), fPa.DPhi(),1.0);
       fPa.CalcLAB();
-      fPa.CalcPairCM();
-      //fPa.CalcLcmsCM();
-      if (fPa.QCM()==0) return; // should not be too frequent
+      if (fFrame == kPairFrame) fPa.CalcPairCM();
+      if (fFrame == kLCMS)      fPa.CalcLcmsCM();
+      if (fPa.QCM()==0) {printf("AliUnicorAnalCorrel: Q=0\n"); return;} // should not be too frequent
       double phi = TVector2::Phi_mpi_pi(fPa.Phi()-rpphi);
       double weigth = 1.0;
-      //      if (tmr==0) weigth = 1.0+0.5*exp(-fPa.QCM()*fPa.QCM()*1*1/0.197/0.197); 
+      //      if (tmr==0 && fPid0==fPid1) weigth = 1.0+0.6*exp(-pow(fPa.QCM()*5/0.197,2)); 
+      //      if (tmr==0 && fPid0==fPid1) weigth = 1.0+0.6*exp(-fPa.QCM()*2/0.197); 
       pair->Fill((double) tmr,           // 0 for tru, 1 for mix, 2 for rot
 		 cent,                   // centrality
 		 fPa.Rapidity(),         // pair rapidity

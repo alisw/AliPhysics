@@ -34,9 +34,9 @@
 ClassImp(AliUnicorHN)
 
 //=============================================================================
-AliUnicorHN::AliUnicorHN(Char_t *nam, Int_t ndim, TAxis **ax) 
+AliUnicorHN::AliUnicorHN(const char *nam, Int_t ndim, TAxis **ax) 
   : TH1D(nam, nam, Albins(ndim,ax), 0.5, Albins(ndim,ax)+0.5), 
-    fNdim(ndim) 
+    fNdim(ndim)
 {
   // Constructor for building from scratch.
  
@@ -51,13 +51,13 @@ AliUnicorHN::AliUnicorHN(Char_t *nam, Int_t ndim, TAxis **ax)
   // and the running product of the latter on fMbins
   // so fMbins = {...,fNbins[fNdim-2]*fNbins[fNdim-1],fNbins[fNdim-1],1}
 
-  fMbins[fNdim-1] = 1;
-  for (int i=0; i<fNdim; i++) fNbins[i] = fAxis[i].GetNbins();
+  for (int i=0; i<fgkMaxNdim; i++) fNbins[i] = fAxis[i].GetNbins();
+  for (int i=0; i<fgkMaxNdim; i++) fMbins[i] = 1;
   for (int i=fNdim-1; i>0; i--) fMbins[i-1] = fMbins[i]*fNbins[i];
   printf("   %d-dimensional histogram %s with %d bins created\n",fNdim,nam,GetNbinsX());
 }
 //=============================================================================
-AliUnicorHN::AliUnicorHN(Char_t *filnam, Char_t *nam) : 
+AliUnicorHN::AliUnicorHN(const char *filnam, const char *nam) : 
   TH1D(*(TFile::Open(filnam,"read")?
 	 TFile::Open(filnam,"read")->GetDirectory(nam)?
 	 (TH1D*) TFile::Open(filnam,"read")->GetDirectory(nam)->Get("histo"):new TH1D():new TH1D()
@@ -76,8 +76,8 @@ AliUnicorHN::AliUnicorHN(Char_t *filnam, Char_t *nam) :
     }
     f->Close();
 
-    fMbins[fNdim-1] = 1;
-    for (int i=0; i<fNdim; i++) fNbins[i] = fAxis[i].GetNbins();
+    for (int i=0; i<fgkMaxNdim; i++) fNbins[i] = fAxis[i].GetNbins();
+    for (int i=0; i<fgkMaxNdim; i++) fMbins[i] = 1;
     for (int i=fNdim-1; i>0; i--) fMbins[i-1] = fMbins[i]*fNbins[i];
     
     if (GetNbinsX()!=Albins(fNdim,ax)) {
@@ -125,7 +125,7 @@ Int_t AliUnicorHN::MulToOne(Double_t *x)
   // abscissa of the n-dim histogram. The result will be between 0 and 
   // GetNbinsX()-1. 
 
-  Int_t k[fgkMaxNdim];
+  Int_t k[fgkMaxNdim] = {0};
   for (int i=0; i<fNdim; i++) k[i] = fAxis[i].FindBin(x[i])-1;
   return MulToOne(k);
 }
@@ -189,7 +189,7 @@ Int_t AliUnicorHN::Write() const
   return nbytes;
 }
 //=============================================================================
-AliUnicorHN *AliUnicorHN::ProjectAlong(char *nam, Int_t dim, Int_t first, Int_t last) 
+AliUnicorHN *AliUnicorHN::ProjectAlong(const char *nam, Int_t dim, Int_t first, Int_t last) 
 {
   // Reduce dimension dim by summing up its bins between first and last. 
   // Use root convention: bin=1 is the first bin, bin=nbins is the last. 
@@ -201,18 +201,18 @@ AliUnicorHN *AliUnicorHN::ProjectAlong(char *nam, Int_t dim, Int_t first, Int_t 
 
   // create new (reduced) histogram
 
-  TAxis *ax[fgkMaxNdim-1];
+  TAxis *ax[fgkMaxNdim-1] = {0};
   int n=0;
   for (int i=0; i<fNdim; i++) if (i!=dim) ax[n++] = GetAxis(i);
-  char *name = strlen(nam)? nam : Form("%s_wo%d",GetName(),dim);
-  char *eame = Form("%s_error",name); 
+  const char *name = strlen(nam)? nam : Form("%s_wo%d",GetName(),dim);
+  const char *eame = Form("%s_error",name); 
   AliUnicorHN *his = new AliUnicorHN(name,fNdim-1,ax); // result histogram
   AliUnicorHN *eis = new AliUnicorHN(eame,fNdim-1,ax); // temporary storage for errors
 
   // sum up the content and errors squared
 
-  Int_t *k = new Int_t[fNdim];   // old hist multiindex
-  Int_t *m = new Int_t[fNdim-1]; // new hist multiindex
+  int k[fgkMaxNdim] = {0}; // old hist multiindex
+  int m[fgkMaxNdim] = {0}; // new hist multiindex
   for (int i=0; i<GetNbinsX(); i++) {
     OneToMul(i,k);
     if (k[dim]+1<first) continue;
@@ -241,7 +241,7 @@ AliUnicorHN *AliUnicorHN::ProjectAlong(char *nam, Int_t dim, Int_t first, Int_t 
   return his;
 }
 //=============================================================================
-TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, const Int_t * const first, const Int_t * const last) const 
+TH1D *AliUnicorHN::ProjectOn(const char *nam, Int_t dim, const Int_t * const first, const Int_t * const last) const 
 {
   // Project on dimension dim. Use only bins between first[i] and last[i]. 
   // Use root convention: bin=1 is the first bin, bin=nbins is the last. 
@@ -274,7 +274,7 @@ TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, const Int_t * const first, co
   // use name nam if specified; otherwise generate one
 
   TH1D *his;
-  char *name = strlen(nam)? nam : Form("%s_proj%d",GetName(),dim);
+  const char *name = strlen(nam)? nam : Form("%s_proj%d",GetName(),dim);
   //  if (gDirectory->Get(name)) gDirectory->Get(name)->Delete(); // for some reason leads to troubles
   if (fAxis[dim].IsVariableBinSize()) 
     his = new TH1D(name,name,fNbins[dim],fAxis[dim].GetXbins()->GetArray());
@@ -302,13 +302,13 @@ TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, const Int_t * const first, co
   return his;
 }
 //=============================================================================
-TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, const Double_t * const first, const Double_t * const last) 
+TH1D *AliUnicorHN::ProjectOn(const char *nam, Int_t dim, const Double_t * const first, const Double_t * const last) 
 {
   // Project on dimension dim. Use only bins between first[i] and last[i]. 
 
   if (dim<0 || dim>fNdim-1) return 0;
-  Int_t kfirst[fgkMaxNdim];
-  Int_t klast[fgkMaxNdim];
+  Int_t kfirst[fgkMaxNdim] = {0};
+  Int_t klast[fgkMaxNdim] = {0};
   for (int i=0; i<fNdim; i++) {
     kfirst[i] = fAxis[i].FindBin(first[i]);
     klast[i] = fAxis[i].FindBin(last[i]);
@@ -316,7 +316,7 @@ TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, const Double_t * const first,
   return ProjectOn(nam,dim,kfirst,klast);
 }
 //=============================================================================
-TH2D *AliUnicorHN::ProjectOn(char *nam, Int_t dim0, Int_t dim1, const Int_t * const first, const Int_t * const last) const
+TH2D *AliUnicorHN::ProjectOn(const char *nam, Int_t dim0, Int_t dim1, const Int_t * const first, const Int_t * const last) const
 {
   // Project on dim1 vs dim0. Use only bins between first[i] and last[i]. 
   // Use root convention: bin=1 is the first bin, bin=nbins is the last. 
@@ -352,7 +352,7 @@ TH2D *AliUnicorHN::ProjectOn(char *nam, Int_t dim0, Int_t dim1, const Int_t * co
   // use name nam if specified; otherwise generate one
 
   TH2D *his=0;
-  char *name = strlen(nam)? nam : Form("%s_proj%dvs%d",GetName(),dim1,dim0);
+  const char *name = strlen(nam)? nam : Form("%s_proj%dvs%d",GetName(),dim1,dim0);
   if (fAxis[dim0].IsVariableBinSize() && fAxis[dim1].IsVariableBinSize()) 
     his = new TH2D(name,name,
 		   fNbins[dim0],fAxis[dim0].GetXbins()->GetArray(),

@@ -18,9 +18,9 @@ class AliUnicorEvent;
 class AliUnicorAnalGlobal : public AliUnicorAnal {
    
  public:
-  AliUnicorAnalGlobal(Char_t *nam="global"); // constructor
-  virtual ~AliUnicorAnalGlobal(){}           // destructor
-  void Process(AliUnicorEvent *ev) const;    // fill histograms
+  AliUnicorAnalGlobal(const char *nam="global"); // constructor
+  virtual ~AliUnicorAnalGlobal(){}               // destructor
+  void Process(AliUnicorEvent *ev) const;        // fill histograms
 
   ClassDef(AliUnicorAnalGlobal,1)
 };

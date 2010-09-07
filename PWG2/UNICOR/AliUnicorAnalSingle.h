@@ -19,7 +19,7 @@ class AliUnicorHN;
 class AliUnicorAnalSingle : public AliUnicorAnal {
    
  public:
-  AliUnicorAnalSingle(Char_t *nam="single", 
+  AliUnicorAnalSingle(const char *nam="single", 
 	      Double_t emi=-1, Double_t ema=1, 
 	      Int_t pid=0);                       // constructor
   virtual ~AliUnicorAnalSingle(){}                        // destructor

@@ -19,10 +19,10 @@ class AliUnicorEvent;
 class AliUnicorAnalCorrel : public AliUnicorAnal {
    
  public:
-  AliUnicorAnalCorrel(Char_t *nam="correl", 
-	      Double_t emi=-1, Double_t ema=1, 
-	      Int_t pid0=0, Int_t pid1=0);     // constructor
-  virtual ~AliUnicorAnalCorrel(){}                     // destructor
+  enum AnalysisFrames {kPairFrame, kLCMS, kLAB};
+  AliUnicorAnalCorrel(const char *nam="correl", Double_t emi=-1, Double_t ema=1, 
+	      Int_t pid0=0, Int_t pid1=0, Int_t frame=0); // constructor
+  virtual ~AliUnicorAnalCorrel(){}                                // destructor
   // process one (tru) or two (mix) events
   void Process(Int_t tmr, const AliUnicorEvent * const ev0, const AliUnicorEvent * const ev1, Double_t phirot);
 
@@ -31,6 +31,7 @@ class AliUnicorAnalCorrel : public AliUnicorAnal {
   Int_t    fPid1;                       // particle species 1
   Double_t fMass0;                      // mass 0
   Double_t fMass1;                      // mass 1
+  Int_t    fFrame;                      // analysis frame
   AliUnicorPair    fPa;                         // pair buffer for calculations
 
   ClassDef(AliUnicorAnalCorrel,1)
