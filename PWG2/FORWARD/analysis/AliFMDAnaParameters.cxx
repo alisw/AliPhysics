@@ -114,52 +114,51 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   
 }
 //____________________________________________________________________
-const char* AliFMDAnaParameters::GetPath(const char* species) const  {
+const char* AliFMDAnaParameters::GetPath(const char* species)  {
   //Get path of object
-  TString path = "";
-  
+  static TString*  path = new TString();
+ 
   if(species == fgkBackgroundID)
-    path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
-		fBackgroundPath.Data(),
-		fgkBackgroundID,
-		fEnergy,
-		fTrigger,
-		fMagField,
-		fSpecies,
-		fInelGtZero,
-		0);
+    path->Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
+	      fBackgroundPath.Data(),
+	      fgkBackgroundID,
+	      fEnergy,
+	      fTrigger,
+	      fMagField,
+	      fSpecies,
+	      fInelGtZero,
+	      0);
   if(species == fgkEnergyDistributionID)
-    path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
-		fEnergyPath.Data(),
-		fgkEnergyDistributionID,
-		fEnergy,
-		fTrigger,
-		fMagField,
-		fSpecies,
-		fRealData,
-		0);
+    path->Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
+	      fEnergyPath.Data(),
+	      fgkEnergyDistributionID,
+	      fEnergy,
+	      fTrigger,
+	      fMagField,
+	      fSpecies,
+	      fRealData,
+	      0);
   if(species == fgkEventSelectionEffID)
-    path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
-		fEventSelectionEffPath.Data(),
-		fgkEventSelectionEffID,
-		fEnergy,
-		fTrigger,
-		fMagField,
-		fSpecies,
-		fInelGtZero,
-		0);
+    path->Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
+	      fEventSelectionEffPath.Data(),
+	      fgkEventSelectionEffID,
+	      fEnergy,
+	      fTrigger,
+	      fMagField,
+	      fSpecies,
+	      fInelGtZero,
+	      0);
   if(species == fgkSharingEffID)
-    path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
-		fSharingEffPath.Data(),
-		fgkSharingEffID,
-		fEnergy,
-		fTrigger,
-		fMagField,
-		fSpecies,
-		0,
-		0);
-
-  return path.Data();
+    path->Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
+	      fSharingEffPath.Data(),
+	      fgkSharingEffID,
+	      fEnergy,
+	      fTrigger,
+	      fMagField,
+	      fSpecies,
+	      0,
+	      0);
+  return path->Data();
 }
 //____________________________________________________________________
 void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
@@ -210,6 +209,7 @@ void AliFMDAnaParameters::InitBackground() {
 
 void AliFMDAnaParameters::InitEnergyDists() {
   //Init energy distributions
+    
   TFile* fin = TFile::Open(GetPath(fgkEnergyDistributionID));
   
   if (!fin) return;

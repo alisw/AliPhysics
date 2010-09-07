@@ -13,7 +13,7 @@ void SubmitSharingEffCorrection(const Char_t* filename="fmdana.root", Bool_t sto
   gStyle->SetTitleFont(132,"Z");
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  
+  pars->Init(kTRUE,AliFMDAnaParameters::kBackgroundCorrection);
   if(energy == 900)
     pars->SetEnergy(AliFMDAnaParameters::k900);
   else if(energy == 7000)
