@@ -130,7 +130,7 @@ public:
   void     SetEnergy(Energy energy) {fEnergy = energy;}
   Energy   GetEnergy() {return fEnergy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
-  const char*    GetPath(const char* species) const;
+  const char*    GetPath(const char* species);
   void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}
   Species  GetCollisionSystem() const {return fSpecies;}
   void     PrintStatus() const;
