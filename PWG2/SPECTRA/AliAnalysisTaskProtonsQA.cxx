@@ -89,13 +89,13 @@ void AliAnalysisTaskProtonsQA::ConnectInputData(Option_t *) {
 void AliAnalysisTaskProtonsQA::CreateOutputObjects() {
   // Create histograms
   // Called once  
-  char *gCutName[5] = {"Total","Triggered","Offline trigger",
-		       "Vertex","Analyzed"};
+  TString gCutName[5] = {"Total","Triggered","Offline trigger",
+			 "Vertex","Analyzed"};
   fHistEventStats = new TH1F("fHistEventStats",
 			     "Event statistics;;N_{events}",
 			     5,0.5,5.5);
   for(Int_t i = 1; i <= 5; i++) 
-    fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1]);
+    fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
 
   fList0 = new TList();
   fList0 = fProtonQAAnalysis->GetGlobalQAList();
