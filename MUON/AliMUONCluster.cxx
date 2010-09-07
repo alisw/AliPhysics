@@ -144,17 +144,16 @@ AliMUONCluster::operator=(const AliMUONCluster& src)
 AliMUONCluster::~AliMUONCluster()
 {
   /// dtor : note that we're owner of our pads
-  //  fPads.Delete();
+//   fPads.Delete();
 }
 
 //_____________________________________________________________________________
 void
 AliMUONCluster::Clear(Option_t*)
 {
-  /// Clear our pad array.
-  /// We have to call the destructor of TObjArray to be sure that all
-  /// allocated memory is released.
-  fPads.~TObjArray();
+  /// Clear our pad array
+  fPads.Clear();
+//  fPads.Delete();
 }
 
 //_____________________________________________________________________________
