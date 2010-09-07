@@ -71,7 +71,7 @@ class AliFMDDndeta : public TObject
   TString fPrimEvents;                   // Number of prim events
   TString fEvents;                       // Number of events
   TString fPrimdNdeta;                   // the primary dNdeta from MC
-  Char_t* fAnalysisNames[5];             // Names of analysis
+  TString fAnalysisNames[5];             // Names of analysis
   // TProfile3D*   fDataObject;                  // New data object
   Bool_t fDrawAll;                        //Draw relevant or all
   //TH3D*   fDataObject;                  // New data object

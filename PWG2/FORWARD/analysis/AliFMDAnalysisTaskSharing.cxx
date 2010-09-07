@@ -340,10 +340,10 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   TH1F* hEventsNSD    = (TH1F*)fDiagList->FindObject("hEventsNSD");
   TH1F* hEventsNSDVtx = (TH1F*)fDiagList->FindObject("hEventsNSDVtx");
   
-  // if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
-  //  vtxStatus = kFALSE;
-  // }
-  
+  if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
+    fStatus = kFALSE;
+    return;
+  }
   
   if(vtxStatus) hEventsVtx->Fill(vtxbin);
   if(isTriggered) hEventsTr->Fill(vtxbin);
@@ -368,10 +368,7 @@ void AliFMDAnalysisTaskSharing::Exec(Option_t */*option*/)
   //std::cout<<vertex[2]<<std::endl;
   //Int_t nTrackLets = testmult->GetNumberOfTracklets();
   
-  if( TMath::Abs(vertex[2]) > pars->GetVtxCutZ()) {
-    fStatus = kFALSE;
-    return;
-  }
+ 
     
   if(nTrackLets < 1000) foutputESDFMD->SetUniqueID(kTRUE);
   else foutputESDFMD->SetUniqueID(kFALSE);
@@ -765,6 +762,7 @@ Float_t AliFMDAnalysisTaskSharing::Eta2Theta(Float_t eta) const{
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   //Get the unspoiled MC dN/deta before event cuts
+  
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   AliMCEvent* mcEvent = eventHandler->MCEvent();
   if(!mcEvent)
