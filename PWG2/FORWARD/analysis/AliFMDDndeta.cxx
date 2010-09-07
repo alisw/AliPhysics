@@ -161,7 +161,7 @@ void AliFMDDndeta::GenerateHits(Analysis what) {
   Float_t etaMax     =  hTmp->GetXaxis()->GetXmax();
 
   for(Int_t i = 0; i<nVertexBins;i++) { // 
-    TH1F* hHits = new TH1F(Form("hMCHits_vtxbin%d_%s",i,fAnalysisNames[what]),Form("hHits_vtxbin%d_%s",i,fAnalysisNames[what]),nEtaBins,etaMin,etaMax);
+    TH1F* hHits = new TH1F(Form("hMCHits_vtxbin%d_%s",i,fAnalysisNames[what].Data()),Form("hHits_vtxbin%d_%s",i,fAnalysisNames[what].Data()),nEtaBins,etaMin,etaMax);
     hHits->Sumw2();
     fMultList[what]->Add(hHits);
   }
@@ -182,7 +182,7 @@ void AliFMDDndeta::GenerateHits(Analysis what) {
 	    nNonZero++;
 	}
 
-	TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what]));
+	TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what].Data()));
 	for(Int_t i =1;i<=sumMultHist->GetNbinsX();i++) {
 	  if(hits->GetBinContent(i) == 0 ) continue;
 	  
@@ -280,7 +280,7 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
   Float_t etaMax     =  hTmp->GetXaxis()->GetXmax();
   
   for(Int_t i = 0; i<nVertexBins;i++) {
-    TH1F* hMult = new TH1F(Form("hMult_vtxbin%d_%s",i,fAnalysisNames[what]),Form("hMult_vtxbin%d_%s",i,fAnalysisNames[what]),nEtaBins,etaMin,etaMax);
+    TH1F* hMult = new TH1F(Form("hMult_vtxbin%d_%s",i,fAnalysisNames[what].Data()),Form("hMult_vtxbin%d_%s",i,fAnalysisNames[what].Data()),nEtaBins,etaMin,etaMax);
     hMult->Sumw2();
     fMultList[what]->Add(hMult);
   }
@@ -290,7 +290,7 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
     for(Int_t iring = 0; iring<=maxRing; iring++) {
       Char_t ringChar = (iring == 0 ? 'I' : 'O');
       //Int_t nsec  = (iring == 0 ? 20 : 40);
-      TH1F* hRingMult= new TH1F(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]),Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]),nEtaBins,etaMin,etaMax);
+      TH1F* hRingMult= new TH1F(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what].Data()),Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what].Data()),nEtaBins,etaMin,etaMax);
       fMultList[what]->Add(hRingMult);
       //      TProfile* phiprofile     = new TProfile(Form("dNdphiFMD%d%c",det,ringChar), Form("dNdphiFMD%d%c;#Phi",det,ringChar), nsec , 0, 2*TMath::Pi());
       //fMultList[what]->Add(phiprofile);
@@ -309,7 +309,7 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
       for(Int_t v=0; v< nVertexBins; v++) {
 	if(det == 1) {
 	  if(what == kHits || what == kHitsTrVtx)
-	    hPrimVtx = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what]));
+	    hPrimVtx = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what].Data()));
 	  else
 	    hPrimVtx = (TH1F*)fList->FindObject(GetPrimName(what,det,ringChar,v));
 	  
@@ -380,7 +380,7 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	//if(det == 1 && ringChar =='I') {
 	//  fNbinsToCut = 0;
 	//	}
-	TH1F* hRingMult = (TH1F*)fMultList[what]->FindObject(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]));
+	TH1F* hRingMult = (TH1F*)fMultList[what]->FindObject(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what].Data()));
 	
 	for(Int_t i=1; i<=hRingMult->GetNbinsX(); i++) {
 	  if(multhistproj->GetBinContent(i)!=0) {
@@ -408,7 +408,7 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
 	}
 	nNonZeroInData = 0;
 	
-	TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMult_vtxbin%d_%s",v,fAnalysisNames[what]));
+	TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMult_vtxbin%d_%s",v,fAnalysisNames[what].Data()));
 	
 	for(Int_t i =1;i<=sumMultHist->GetNbinsX();i++) {
 	  if(multhistproj->GetBinContent(i) != 0 ) {	  
@@ -440,10 +440,10 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
     }
   }
   
-  TH1F* sumMult  = new TH1F(Form("dNdeta_%s",fAnalysisNames[what]),Form("dNdeta_%s",fAnalysisNames[what]),nEtaBins,etaMin,etaMax);
+  TH1F* sumMult  = new TH1F(Form("dNdeta_%s",fAnalysisNames[what].Data()),Form("dNdeta_%s",fAnalysisNames[what].Data()),nEtaBins,etaMin,etaMax);
   sumMult->Sumw2();
   fMultList[what]->Add(sumMult);
-  TH1F* primMult  = new TH1F(Form("primary_%s",fAnalysisNames[what]),Form("primary_%s",fAnalysisNames[what]),nEtaBins,etaMin,etaMax);
+  TH1F* primMult  = new TH1F(Form("primary_%s",fAnalysisNames[what].Data()),Form("primary_%s",fAnalysisNames[what].Data()),nEtaBins,etaMin,etaMax);
   primMult->Sumw2();
   fMultList[what]->Add(primMult);
 
@@ -452,10 +452,10 @@ void AliFMDDndeta::GenerateMult(Analysis what) {
     
     for(Int_t v = 0; v<nVertexBins;v++) {
       if(what == kHits || what == kHitsTrVtx)
-	hPrimVtx = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what]));
+	hPrimVtx = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what].Data()));
       else
 	hPrimVtx = (TH1F*)fList->FindObject(GetPrimName(what,0,0,v));
-      TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMult_vtxbin%d_%s",v,fAnalysisNames[what]));
+      TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMult_vtxbin%d_%s",v,fAnalysisNames[what].Data()));
       //etaofbin += sumMultHist->GetBinCenter(i);
       // if( hPrimVtx->GetBinContent(i)!=0 && hPrimVtx->GetBinError(i)>0.001 && sumMultHist->GetBinContent(i)!=0) {
       if( TMath::Abs(hPrimVtx->GetBinContent(i)) > 0) {
@@ -648,12 +648,30 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
     hSPDanalysisTrVtx->Scale(1/nEventsSPD);
     hSPDanalysisNSD->Scale(1/nEventsSPD);
   }
-  
+  Float_t lowlimits[10] = {-1,-1.25,-1.5,-1.75,-1.9,-1.9,-1.9,-1.9,-1.9,-1.9};
+  Float_t highlimits[10] = {1.9,1.9,1.9,1.9,1.9,1.9,1.75,1.5,1.25,1};
+
   TH1F* hSPDcombi = new TH1F("SPDcombi","SPDcombi",hSPDana->GetNbinsX(),hSPDana->GetXaxis()->GetXmin(),hSPDana->GetXaxis()->GetXmax());
   TH1D* hSPDanalysis = 0;
   for(Int_t kk = 1; kk <=hSPDana->GetNbinsX(); kk++) {
+    
     Float_t weight = 0, wav=0,sumofw = 0;
-    for(Int_t nn = 0; nn < pars->GetNvtxBins() ; nn++) {
+    
+    // if(hSPDana->GetBinCenter(kk) < lowlimits[nn])
+    //	continue;
+    //if(hSPDana->GetBinCenter(kk) > highlimits[nn])
+    //  continue;
+    
+    for(Int_t nn =0; nn < pars->GetNvtxBins() ; nn++) {   
+      Double_t delta = 2*pars->GetVtxCutZ()/pars->GetNvtxBins();
+      Float_t vtxZ1   = (delta*nn) - pars->GetVtxCutZ();
+      Float_t vtxZ2   = (delta*(nn+1)) - pars->GetVtxCutZ();
+      
+      if(vtxZ1<fVtxCut1 || vtxZ2 >fVtxCut2)
+	continue;
+      
+      //std::cout<<vtxZ1<<"   "<<vtxZ2<<std::endl;
+      
       if(what == kMult)
 	hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",nn));
       else if(what == kMultNSD)
@@ -661,12 +679,15 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
       else if(what == kMultTrVtx)
 	hSPDanalysis = (TH1D*)fList->FindObject(Form("dNdetaTrVtx_SPD_vtxbin%d_proj",nn));
       else continue;
-      
-      if(TMath::Abs(hSPDanalysis->GetBinCenter(kk)) > 2)
+      if(hSPDanalysis->GetBinCenter(kk) < lowlimits[nn])
+    	continue;
+      if(hSPDanalysis->GetBinCenter(kk) > highlimits[nn])
 	continue;
+      //std::cout<<hSPDanalysis->GetBinCenter(kk)<<"  "<<lowlimits[nn]<<std::endl;
+     
       Float_t mult = hSPDanalysis->GetBinContent(kk);
       Float_t error = hSPDanalysis->GetBinError(kk);
-      
+      /*
       if(mult > 0 && hSPDanalysis->GetBinContent(kk-1) < SMALLNUMBER)
 	continue;
       if(mult > 0 && hSPDanalysis->GetBinContent(kk-2) < SMALLNUMBER)
@@ -676,7 +697,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
 	continue;
       if(mult > 0 && hSPDanalysis->GetBinContent(kk+2) < SMALLNUMBER)
 	continue;
-      
+      */
       if(mult > 0) {
 	weight = 1/TMath::Power(error,2);
 	wav    = wav + weight*mult;
@@ -831,11 +852,11 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
 	
 	if(det == 1) {
 	  if(what == kHits || what == kHitsTrVtx)
-	    hPrimVtx = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what]));
+	    hPrimVtx = (TH1F*)fMultList[what]->FindObject(Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what].Data()));
 	  else
 	    hPrimVtx = (TH1F*)fList->FindObject(GetPrimName(what,det,ringChar,v));
 	  // std::cout<<hPrimVtx<<"   "<<kHits<<"   "<<kHitsTrVtx<<"   "<<what<<std::endl;
-	  //std::cout<<Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what])<<std::endl;
+	  //std::cout<<Form("hMCHits_vtxbin%d_%s",v,fAnalysisNames[what].Data())<<std::endl;
 	  hPrimVtx->SetTitle("");
 	  TLatex* l = new TLatex(0.14,0.92,Form("Vtx range [%.1f, %.1f], %d events",vtxZ1,vtxZ2,(Int_t)nEvents));
 	  l->SetNDC(kTRUE);
@@ -847,8 +868,14 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
 	  hPrimVtx->DrawCopy("E3");
 	  l->Draw();
 	  multhistproj->DrawCopy("same");
+	  TH1D* hSPDanavtxbin = 0;
+	  if(what == kMult)
+	    hSPDanavtxbin = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",v));
+	  if(what == kMultTrVtx)
+	    hSPDanavtxbin = (TH1D*)fList->FindObject(Form("dNdetaTrVtx_SPD_vtxbin%d_proj",v));
 	  
-	  TH1D* hSPDanavtxbin = (TH1D*)fList->FindObject(Form("dNdeta_SPD_vtxbin%d_proj",v));
+	  if(what == kMultNSD)
+	    hSPDanavtxbin = (TH1D*)fList->FindObject(Form("dNdetaNSD_SPD_vtxbin%d_proj",v));
 	  hSPDanavtxbin->SetMarkerColor(kBlue);
 	  hSPDanavtxbin->SetMarkerStyle(kStar);
 	  hSPDanavtxbin->Scale(xb1 / xr1);
@@ -886,21 +913,21 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   }
   }
   for(Int_t v=0; v< nVertexBins; v++) {
-    TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMult_vtxbin%d_%s",v,fAnalysisNames[what]));
+    TH1F* sumMultHist = (TH1F*)fMultList[what]->FindObject(Form("hMult_vtxbin%d_%s",v,fAnalysisNames[what].Data()));
     c1->cd(v+1);
     sumMultHist->SetMarkerStyle(25);
     sumMultHist->DrawCopy("same");
     
   }
-  TH1F* primMult = (TH1F*)fMultList[what]->FindObject(Form("primary_%s",fAnalysisNames[what]));
-  TH1F* sumMult  = (TH1F*)fMultList[what]->FindObject(Form("dNdeta_%s",fAnalysisNames[what]));
+  TH1F* primMult = (TH1F*)fMultList[what]->FindObject(Form("primary_%s",fAnalysisNames[what].Data()));
+  TH1F* sumMult  = (TH1F*)fMultList[what]->FindObject(Form("dNdeta_%s",fAnalysisNames[what].Data()));
   sumMult->SetMarkerStyle(23);
   sumMult->SetMarkerColor(kRed);
   for(Int_t det = 1; det<=3;det++) {
     Int_t maxRing = (det == 1 ? 0 : 1);
     for(Int_t iring = 0; iring<=maxRing; iring++) {
       Char_t ringChar = (iring == 0 ? 'I' : 'O');
-      TH1F* hRingMult= (TH1F*)fMultList[what]->FindObject(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what]));
+      TH1F* hRingMult= (TH1F*)fMultList[what]->FindObject(Form("hRingMult_FMD%d%c_%s",det,ringChar,fAnalysisNames[what].Data()));
       hRingMult->Add(primMult,-1);
       hRingMult->Divide(primMult);
     }

@@ -105,7 +105,7 @@ public:
   TH1F* GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetSharingEfficiencyTrVtx(Int_t det, Char_t ring, Int_t vtxbin);
   Float_t  GetEventSelectionEfficiency(Int_t vtxbin);
-  TH2F*    GetEventSelectionEfficiency(Char_t* trig, Int_t vtxbin, Char_t ring);
+  TH2F*    GetEventSelectionEfficiency(TString trig, Int_t vtxbin, Char_t ring);
   Float_t  GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const;
   Float_t  GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx) const;
   Float_t  GetStripLength(Char_t ring, UShort_t strip)  ;
@@ -130,7 +130,7 @@ public:
   void     SetEnergy(Energy energy) {fEnergy = energy;}
   Energy   GetEnergy() {return fEnergy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
-  char*    GetPath(const char* species);
+  const char*    GetPath(const char* species) const;
   void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}
   Species  GetCollisionSystem() const {return fSpecies;}
   void     PrintStatus() const;

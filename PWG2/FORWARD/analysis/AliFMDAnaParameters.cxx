@@ -114,9 +114,9 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   
 }
 //____________________________________________________________________
-char* AliFMDAnaParameters::GetPath(const char* species) {
+const char* AliFMDAnaParameters::GetPath(const char* species) const  {
   //Get path of object
-  char* path = "";
+  TString path = "";
   
   if(species == fgkBackgroundID)
     path = Form("%s/%s_%d_%d_%d_%d_%d_%d.root",
@@ -159,7 +159,7 @@ char* AliFMDAnaParameters::GetPath(const char* species) {
 		0,
 		0);
 
-  return path;
+  return path.Data();
 }
 //____________________________________________________________________
 void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
@@ -544,7 +544,7 @@ TH2F* AliFMDAnaParameters::GetBackgroundCorrectionNSD(Int_t det,
   if(fBackground->GetNSDBgCorrection(det,ring,vtxbin))
     return fBackground->GetNSDBgCorrection(det,ring,vtxbin);
   else 
-    AliWarning("No NSD background map. You get usual one. Difference is probablyu negligible");
+    AliWarning("No NSD background map. You get usual one. Difference is probably negligible");
   
   return fBackground->GetBgCorrection(det,ring,vtxbin); 
 }
@@ -593,11 +593,11 @@ Float_t AliFMDAnaParameters::GetVtxSelectionEffFromMC() {
 
 }
 //_____________________________________________________________________
-TH2F* AliFMDAnaParameters::GetEventSelectionEfficiency(Char_t* trig, Int_t vtxbin, Char_t ring) {
+TH2F* AliFMDAnaParameters::GetEventSelectionEfficiency(TString trig, Int_t vtxbin, Char_t ring) {
   //Get event selection efficiency object
   
-  TString test = trig;
-  if(!test.Contains("NSD") && !test.Contains("INEL")) {
+  //TString test = trig;
+  if(!trig.Contains("NSD") && !trig.Contains("INEL")) {
     AliWarning("Event selection efficiency only available for INEL and NSD");
     return 0;
   }

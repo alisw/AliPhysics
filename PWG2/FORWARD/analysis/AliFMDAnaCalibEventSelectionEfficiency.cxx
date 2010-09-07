@@ -64,32 +64,32 @@ void AliFMDAnaCalibEventSelectionEfficiency::SetCorrection(TH1F* hCorrection) {
 
 }
 //____________________________________________________________________
-void AliFMDAnaCalibEventSelectionEfficiency::SetCorrection(Char_t* trig,
+void AliFMDAnaCalibEventSelectionEfficiency::SetCorrection(TString trig,
 							   Int_t vtxbin, 
 							   Char_t ring,
 							   TH2F* hCorrection) {
-  TString test = trig;
-  if(!test.Contains("INEL") && !test.Contains("NSD"))
+  //TString test = trig;
+  if(!trig.Contains("INEL") && !trig.Contains("NSD"))
     AliWarning("Please choose NSD or INEL!");
   
-  if(test.Contains("INEL"))
+  if(trig.Contains("INEL"))
     hCorrection->SetName(Form("correction_%c_%d",ring,vtxbin));
-  if(test.Contains("NSD")) 
+  if(trig.Contains("NSD")) 
     hCorrection->SetName(Form("correction%s_%c_%d","NSD",ring,vtxbin));
   
   fCorrectionList.Add(hCorrection);
   
 }
 //____________________________________________________________________
-TH2F* AliFMDAnaCalibEventSelectionEfficiency::GetCorrection(Char_t* trig,
+TH2F* AliFMDAnaCalibEventSelectionEfficiency::GetCorrection(TString name,
 							    Int_t vtxbin, 
 							    Char_t ring) {
   
-  TString name;
+  //TString name = trig;
   
-  if(trig == "INEL")
+  if(name.Contains("INEL"))
     name.Form("correction_%c_%d",ring,vtxbin);
-  if(trig == "NSD") 
+  if(name.Contains("NSD")) 
     name.Form("correction%s_%c_%d","NSD",ring,vtxbin);
   
   TH2F* hCorrection = (TH2F*)fCorrectionList.FindObject(name);

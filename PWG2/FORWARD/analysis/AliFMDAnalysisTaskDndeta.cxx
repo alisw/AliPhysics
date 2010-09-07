@@ -342,7 +342,7 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
       hSPDMult->Scale(fVtxEff);
 	
     if(fVtxEffNSD)
-      hSPDMult->Scale(fVtxEffNSD);
+      hSPDMultNSD->Scale(fVtxEffNSD);
     
     TH1D* hMultProj   = hSPDMult->ProjectionX(Form("dNdeta_SPD_vtxbin%d_proj",i),1,hSPDMult->GetNbinsY());
     TH1D* hMultProjTrVtx   = hSPDMultTrVtx->ProjectionX(Form("dNdetaTrVtx_SPD_vtxbin%d_proj",i),1,hSPDMultTrVtx->GetNbinsY());

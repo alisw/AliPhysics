@@ -248,7 +248,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       
       if(nsd) {
 	hMultNSD->Add(hMultInput);
-	hMultNSD->Divide(hBg);
+	hMultNSD->Divide(hBgNSD);
       }
       
       //sharing efficiency correction ?
@@ -286,10 +286,10 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
 	}
       }
       
-      //if(pars->GetEventSelectionEfficiency(vtxbin) > 0)
+      // if(pars->GetEventSelectionEfficiency(vtxbin) > 0)
       //	hMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
-	//else
-	//hMult->Scale(0);
+      //else
+      //	hMult->Scale(0);
       hMult->Divide(pars->GetEventSelectionEfficiency("INEL",vtxbin,ringChar));
       hMultNSD->Divide(pars->GetEventSelectionEfficiency("NSD",vtxbin,ringChar));
       
@@ -320,7 +320,11 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
   
   TH2F* hBgSPD        = pars->GetBackgroundCorrection(0, 'Q', vtxbin);
   if(hBgSPD) { 
-   
+    
+    hSPDMult->Divide(hBgSPD);
+    hSPDMultTrVtx->Divide(hBgSPD);
+    hSPDMultNSD->Divide(hBgSPD);
+      
     TH1F* hDead      = pars->GetSPDDeadCorrection(vtxbin);
     for(Int_t i=1; i<=hSPDMult->GetNbinsX(); i++) {
       for(Int_t j=1; j<=hSPDMult->GetNbinsY(); j++) {
@@ -328,29 +332,32 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
 	Float_t correction = hBgSPD->GetBinContent(i,j);
 	Float_t correctedMult = 0;
 	Float_t correctedError = 0;
-	if(correction > 0 && mult > 0) {
-	  //correctedMult = mult;///correction;
-	  correctedMult = mult/correction;
+	
+	
+	if( mult > 0 && correction > 0.) {
+	correctedMult = mult;///correction;
+	  //std::cout<<correction<<"   "<<hSPDMult->GetXaxis()->GetBinCenter(i)<<std::endl;
+	//  correctedMult = mult/correction;
 	  
 	  if(hDead->GetBinContent(i) > 0)
 	    correctedMult = correctedMult/hDead->GetBinContent(i);
 	  correctedError = correctedMult*TMath::Sqrt( TMath::Power(hSPDMult->GetBinError(i,j)/hSPDMult->GetBinContent(i,j),2) + 
 						      TMath::Power(hBgSPD->GetBinError(i,j)/hBgSPD->GetBinContent(i,j),2)); 
 	  
-	    }
+	}
 	
-	 if(correctedMult != 0) {
-	   hSPDMult->SetBinContent(i,j,correctedMult);
-	   hSPDMultTrVtx->SetBinContent(i,j,correctedMult);
-	   hSPDMult->SetBinError(i,j,correctedError);
-	   hSPDMultTrVtx->SetBinError(i,j,correctedError);
-	   if(nsd) {
-	     hSPDMultNSD->SetBinContent(i,j,correctedMult);
-	     hSPDMultNSD->SetBinError(i,j,correctedError);
+	if(correctedMult > 0) {
+	  hSPDMult->SetBinContent(i,j,correctedMult);
+	  hSPDMultTrVtx->SetBinContent(i,j,correctedMult);
+	  hSPDMult->SetBinError(i,j,correctedError);
+	  hSPDMultTrVtx->SetBinError(i,j,correctedError);
+	  if(nsd) {
+	    hSPDMultNSD->SetBinContent(i,j,correctedMult);
+	    hSPDMultNSD->SetBinError(i,j,correctedError);
+	  }
+	  
 	}
-	   
-	}
-    }
+      }
     }
     hSPDMult->Divide(pars->GetEventSelectionEfficiency("INEL",vtxbin,'I'));
     hSPDMultNSD->Divide(pars->GetEventSelectionEfficiency("NSD",vtxbin,'I'));
