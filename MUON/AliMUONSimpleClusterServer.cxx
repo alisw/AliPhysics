@@ -335,6 +335,7 @@ AliMUONSimpleClusterServer::UseDigits(TIter& next, AliMUONVDigitStore* digitStor
   while ( ( d = static_cast<AliMUONVDigit*>(next()) ) )
   {
     if ( ! d->Charge() > 0 ) continue; // skip void digits.
+    if ( ! d->IsTracker() ) continue; // skip trigger digits
     Int_t ix = d->PadX();
     Int_t iy = d->PadY();
     Int_t cathode = d->Cathode();
