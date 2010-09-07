@@ -126,6 +126,21 @@ AliTRDseed::AliTRDseed(const AliTRDseed &s)
 }
 
 //_____________________________________________________________________________
+AliTRDseed &AliTRDseed::operator=(const AliTRDseed &s)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &s) {
+    ((AliTRDseed &) s).Copy(*this);
+  }
+
+  return *this;
+
+}
+
+//_____________________________________________________________________________
 void AliTRDseed::Copy(TObject &o) const
 {
 	//printf("AliTRDseed::Copy()\n");

@@ -26,8 +26,7 @@ public:
   AliTRDseed(const AliTRDseed &s);
   virtual ~AliTRDseed() {};
 
-  AliTRDseed      &operator=(const AliTRDseed &s)           { *(new(this) AliTRDseed(s)); 
-                                                              return *this;          }
+  AliTRDseed      &operator=(const AliTRDseed &s);
 
   static  Float_t  FitRiemanTilt(AliTRDseed *seed, Bool_t error);
           void     UseClusters();
