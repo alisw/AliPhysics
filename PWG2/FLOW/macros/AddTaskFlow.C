@@ -343,6 +343,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
       taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kTRUE,1);
       taskFE->SetFlow(v1,v2,v3,v4); 
       taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
+      taskFE->SetAfterburnerOn();
     }
     else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kTRUE); }
     taskFE->SetAnalysisType(type);
@@ -364,6 +365,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
       taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE,1);
       taskFE->SetFlow(v1,v2,v3,v4); 
       taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
+      taskFE->SetAfterburnerOn();
     }
     else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE); }
     taskFE->SetAnalysisType(type);
