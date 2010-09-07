@@ -26,13 +26,13 @@
 ClassImp(AliUnicorEventAliceESD)
 
 //=============================================================================
-  AliUnicorEventAliceESD::AliUnicorEventAliceESD(AliESDEvent *esd) : AliUnicorEvent(), fESD(esd), fPhysicsSelection(0) 
+  AliUnicorEventAliceESD::AliUnicorEventAliceESD(AliESDEvent *esd) : AliUnicorEvent(), fESD(esd)//, fPhysicsSelection(0) 
 {
   // constructor 
 
   //  printf("%s object created\n",ClassName());
   if (!fESD) fESD = new AliESDEvent();
-  fPhysicsSelection = new AliPhysicsSelection();
+  //  fPhysicsSelection = new AliPhysicsSelection();
 }
 //=============================================================================
 AliUnicorEventAliceESD::~AliUnicorEventAliceESD()
@@ -49,6 +49,18 @@ Bool_t AliUnicorEventAliceESD::Good() const
   const AliESDVertex *vtx = fESD->GetPrimaryVertex();
   if (!vtx->GetStatus()) return kFALSE;
   if (fabs(Zver())>1) return kFALSE;
+
+  /*
+  int hard=0;
+  for (int i=0; i<NParticles(); i++) {
+    if (!ParticleGood(i)) continue;
+    if (ParticlePt(i)<1.0) continue;
+    hard = 1;
+    break;
+  }
+  return hard;
+  */
+
   return kTRUE;
 }
 //=============================================================================
@@ -62,7 +74,7 @@ Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
   AliESDtrack *track = fESD->GetTrack(i);
   if (!track->IsOn(AliESDtrack::kTPCrefit)) return 0;        // TPC refit
   if (!track->IsOn(AliESDtrack::kITSrefit)) return 0;        // ITS refit
-  if (track->GetTPCNcls() < 90) return 0;                    // number of TPC clusters
+  if (track->GetTPCNcls() < 70) return 0;                    // number of TPC clusters
   if (track->GetKinkIndex(0) > 0) return 0;                  // no kink daughters
   const AliExternalTrackParam *tp = GetTrackParam(i);
   if (!tp) return 0;                                         // track param
@@ -73,6 +85,7 @@ Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
   //  double phi = ParticlePhi(i);
   //  if (eta>0 && phi>-8*pi9 && phi<-7*pi9) return 0; // A10
   //  if (eta>0 && phi> 1*pi9 && phi< 2*pi9) return 0; // A01
+  //  if (tp->Pt()<0.2) return 0;                      // lower pt cutoff
 
   Float_t r,z;
   track->GetImpactParametersTPC(r,z);
@@ -93,24 +106,25 @@ Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
 
   if (pidi == -211) return p[AliPID::kPion]+p[AliPID::kMuon]>0.5 && q==-1;
   else if (pidi == 211) return p[AliPID::kPion]+p[AliPID::kMuon]>0.5 && q==1;
-
   else if (pidi == -321) return p[AliPID::kKaon]>0.5 && q==-1;
   else if (pidi ==  321) return p[AliPID::kKaon]>0.5 && q==1;
   else if (pidi == -2212) return p[AliPID::kProton]>0.5 && q==-1;
   else if (pidi ==  2212) return p[AliPID::kProton]>0.5 && q==1;
+  else if (pidi == -11) return p[AliPID::kElectron]>0.5 && q==1;
+  else if (pidi ==  11) return p[AliPID::kElectron]>0.5 && q==-1;
   else return 0;
 }
 //=============================================================================
-Bool_t AliUnicorEventAliceESD::PairGood(Double_t /*p0*/, Double_t the0, Double_t phi0, 
-				Double_t /*p1*/, Double_t the1, Double_t phi1) const {
+Bool_t AliUnicorEventAliceESD::PairGood(Double_t /*p0*/, Double_t /*the0*/, Double_t /*phi0*/, 
+				Double_t /*p1*/, Double_t /*the1*/, Double_t /*phi1*/) const {
 
   // two-track separation cut
 
+  // double dthe = the1-the0;
+  // double dphi = TVector2::Phi_mpi_pi(phi1-phi0);
+  // double dpt = p1*sin(the1) - p0*sin(the0);
+  // return (fabs(dthe)>0.010 || fabs(dphi)>0.060);
+  // return (dpt*dphi<0);
   return 1;
-  double dthe = the1-the0;
-  double dphi = TVector2::Phi_mpi_pi(phi1-phi0);
-  //  double dpt = p1*sin(the1) - p0*sin(the0);
-  return (fabs(dthe)>0.010 || fabs(dphi)>0.060);
-  //return (dpt*dphi<0);
 }
 //=============================================================================

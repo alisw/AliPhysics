@@ -26,7 +26,7 @@ class AliUnicorPair : public TObject {
    void Set1(double m,double p,double theta,double phi)  {fP1.SetXYZM(0,0,p,m); fP1.SetTheta(theta); fP1.SetPhi(phi);}
    void SetMXYZ0(double m,double px,double py,double pz) {fP0.SetXYZM(px,py,pz,m);}
    void SetMXYZ1(double m,double px,double py,double pz) {fP1.SetXYZM(px,py,pz,m);}
-   void CalcLAB()                 {fP=fP0+fP1; fQ=fP1-fP0; fBeta=fP.BoostVector(); 
+   void CalcLAB()                 {fCMp=fP=fP0+fP1; fCMq=fQ=fP1-fP0; fBeta=fP.BoostVector(); 
                                    fBetaz.SetXYZ(0,0,fBeta.Z()); fBetat=fBeta; fBetat.SetZ(0); 
                                    fUbeta=fBeta.Unit(); fUbetat=fBetat.Unit(); fUbetaz=fBetaz.Unit();}
    double Rapidity()        const {return fP.Rapidity();}
@@ -34,8 +34,8 @@ class AliUnicorPair : public TObject {
    double Phi()             const {return fP.Phi();}
    double DTheta()          const {return fP1.Theta()-fP0.Theta();}
    double DPhi()            const {return TVector2::Phi_mpi_pi(fP1.Phi()-fP0.Phi());}
-   void CalcPairCM()              {fCMp=fP; fCMp.Boost(-fBeta);  fCMq=fQ; fCMq.Boost(-fBeta);}
-   void CalcLcmsCM()              {fCMp=fP; fCMp.Boost(-fBetaz); fCMq=fQ; fCMq.Boost(-fBetaz);}
+   void CalcPairCM()              {fCMp.Boost(-fBeta);  fCMq.Boost(-fBeta);}
+   void CalcLcmsCM()              {fCMp.Boost(-fBetaz); fCMq.Boost(-fBetaz);}
    void Swap()                    {fBuf=fP0; fP0=fP1; fP1=fBuf; fQ=-fQ; fCMq=-fCMq;}
    double Minv()            const {return fP.M();}
    double Qinv2()           const {return -fQ.M2();}

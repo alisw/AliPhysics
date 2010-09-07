@@ -33,7 +33,7 @@ ClassImp(AliUnicorAnal)
 TDatabasePDG AliUnicorAnal::fgPDG;
 
 //=============================================================================
-AliUnicorAnal::AliUnicorAnal(char *nam) : TNamed(nam,nam), fHistos() {
+AliUnicorAnal::AliUnicorAnal(const char *nam) : TNamed(nam,nam), fHistos() {
 
   // constructor
 

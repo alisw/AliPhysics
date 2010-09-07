@@ -33,9 +33,8 @@ class AliUnicorEvent : public TObject {
   virtual Double_t    RPphi() const = 0;
   virtual Double_t    Zver() const = 0;           // z-vertex (-1,1)
   virtual Int_t       NParticles() const = 0;     // number of tracks
-  virtual Int_t       NGoodParticles() const = 0; // number of good particles
 
-  virtual Bool_t      ParticleGood(Int_t i, Int_t pidi) const = 0;
+  virtual Bool_t      ParticleGood(Int_t i, Int_t pidi=0) const = 0;
   virtual Double_t    ParticleP(Int_t i) const = 0;
   virtual Double_t    ParticleTheta(Int_t i) const = 0;
   virtual Double_t    ParticlePhi(Int_t i) const = 0;
@@ -45,6 +44,7 @@ class AliUnicorEvent : public TObject {
 
   // toolkit part
 
+  Int_t    NGoodParticles() const {int n=0; for (int i=0; i<NParticles(); i++) if (ParticleGood(i)) n++; return n;}
   void     RP(Double_t &qx, Double_t &qy, Int_t harmonic) const;
   Double_t ParticlePt(Int_t i) const {return ParticleP(i)*sin(ParticleTheta(i));}
   Double_t ParticlePz(Int_t i) const {return ParticleP(i)*cos(ParticleTheta(i));}

@@ -32,7 +32,7 @@
 ClassImp(AliUnicorAnalHighpt)
  
 //=============================================================================
-AliUnicorAnalHighpt::AliUnicorAnalHighpt(Char_t *nam, Double_t emi, Double_t ema, Int_t pid0, 
+AliUnicorAnalHighpt::AliUnicorAnalHighpt(const char *nam, Double_t emi, Double_t ema, Int_t pid0, 
 			 Int_t pid1): AliUnicorAnal(nam), fPid0(pid0), fPid1(pid1)
 {
   // constructor
@@ -68,7 +68,7 @@ void AliUnicorAnalHighpt::Process(const AliUnicorEvent * const ev0, const AliUni
   // mixing-proof centrality and reaction plane angle
 
   double cent = (ev0->Centrality()+ev1->Centrality())/2.0;
-  double q0x,q0y,q1x,q1y;
+  double q0x=0,q0y=0,q1x=0,q1y=0;
   ev0->RP(q0x,q0y);
   ev1->RP(q1x,q1y); 
   double rpphi = atan2(q0y+q1y,q0x+q1x);

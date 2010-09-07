@@ -21,7 +21,7 @@ class TCollection;
 class AliUnicorAnal : public TNamed {
    
  public:
-  AliUnicorAnal(char *nam="anal");                                       // constructor
+  AliUnicorAnal(const char *nam="anal");                                 // constructor
   virtual ~AliUnicorAnal() {}                                            // destructor
   Long64_t Merge(const TCollection * const list);                // sumup histograms
   void     Save(const char *outfil, const char *mode="update");  // save histograms 

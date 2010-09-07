@@ -18,7 +18,7 @@ class AliUnicorEvent;
 class AliUnicorAnalHighpt : public AliUnicorAnal {
    
  public:
-  AliUnicorAnalHighpt(Char_t *nam="highpt", 
+  AliUnicorAnalHighpt(const char *nam="highpt", 
 	      Double_t emi=-1, Double_t ema=1, 
 	      Int_t pid0=0, Int_t pid1=0);   // constructor
   virtual ~AliUnicorAnalHighpt(){}                   // destructor

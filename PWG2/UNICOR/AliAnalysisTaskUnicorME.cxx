@@ -19,7 +19,7 @@
 // unicor analysis task
 //=============================================================================
 #include "AliMultiEventInputHandler.h"
-#include "AliESDHeader.h"
+#include "AliESDEvent.h"
 #include "AliUnicorAnalGlobal.h"
 #include "AliUnicorAnalSingle.h"
 #include "AliUnicorAnalCorrel.h"
@@ -53,33 +53,36 @@ void AliAnalysisTaskUnicorME::UserCreateOutputObjects()
   fOutputList->Add(new AliUnicorAnalSingle("all",fEv0->Etamin(),fEv0->Etamax(),0));
   fOutputList->Add(new AliUnicorAnalSingle("pim",fEv0->Etamin(),fEv0->Etamax(),-211));
   fOutputList->Add(new AliUnicorAnalSingle("pip",fEv0->Etamin(),fEv0->Etamax(), 211));
-  fOutputList->Add(new AliUnicorAnalCorrel("cnn",fEv0->Etamin(),fEv0->Etamax(),-211,-211));
-  fOutputList->Add(new AliUnicorAnalCorrel("cpp",fEv0->Etamin(),fEv0->Etamax(), 211, 211));
-  fOutputList->Add(new AliUnicorAnalCorrel("cnp",fEv0->Etamin(),fEv0->Etamax(),-211, 211));
+  int frame = AliUnicorAnalCorrel::kLCMS;
+  fOutputList->Add(new AliUnicorAnalCorrel("cnn",fEv0->Etamin(),fEv0->Etamax(),-211,-211, frame));
+  fOutputList->Add(new AliUnicorAnalCorrel("cpp",fEv0->Etamin(),fEv0->Etamax(), 211, 211, frame));
+  fOutputList->Add(new AliUnicorAnalCorrel("cnp",fEv0->Etamin(),fEv0->Etamax(),-211, 211, frame));
   fOutputList->Add(new AliUnicorAnalPtfluc("ptf",0,0));
   fOutputList->Add(new AliUnicorAnalHighpt("hpt",fEv0->Etamin(),fEv0->Etamax(),0,0));
 }
 //=============================================================================
 void AliAnalysisTaskUnicorME::UserExec(Option_t */*option*/)
 {
-  // process one event
+  // process one event pair
+
+  static int nic0=0;
+  static int nic1=0;
+  static int nic2=0;
+  static int nic3=0;
+
+  nic0++;
 
   if (fInputHandler->GetBufferSize() < 2) return;
+  nic1++;
   AliESDEvent *esd0 = dynamic_cast<AliESDEvent*>(GetEvent(0));
   AliESDEvent *esd1 = dynamic_cast<AliESDEvent*>(GetEvent(1));
+
   if (!esd0) return;
-  if (!esd1) return;
-  if (!esd0->GetNumberOfTracks()) return;
-  if (!esd1->GetNumberOfTracks()) return;
-
-  printf("esd0 nr %3d mult %3d     esd1 nr %3d mult %3d\n",
-	 esd0->GetEventNumberInFile(), esd0->GetNumberOfTracks(), 
-	 esd1->GetEventNumberInFile(), esd1->GetNumberOfTracks());
-
+  nic2++;
+  //  if (esd0->GetEventType() != 7) return; // physics event
   fEv0->SetESD(esd0);
-  fEv1->SetESD(esd1);
-
   if (!fEv0->Good()) return;
+  nic3++;
   ((AliUnicorAnalGlobal *) fOutputList->At(0))->Process(fEv0);
   ((AliUnicorAnalSingle *) fOutputList->At(1))->Process(fEv0);
   ((AliUnicorAnalSingle *) fOutputList->At(2))->Process(fEv0);
@@ -93,6 +96,12 @@ void AliAnalysisTaskUnicorME::UserExec(Option_t */*option*/)
   ((AliUnicorAnalPtfluc *) fOutputList->At(7))->Process(0,fEv0,fEv0);
   ((AliUnicorAnalHighpt *) fOutputList->At(8))->Process(fEv0,fEv0);
 
+  if (!esd1) return;
+  //  if (esd1->GetEventType() != 7) return; // physics event
+  printf("esd0 nr %3d mult %3d     esd1 nr %3d mult %3d\n",
+	 esd0->GetEventNumberInFile(), esd0->GetNumberOfTracks(), 
+	 esd1->GetEventNumberInFile(), esd1->GetNumberOfTracks());
+  fEv1->SetESD(esd1);
   if (!fEv1->Good()) return;
   ((AliUnicorAnalCorrel *) fOutputList->At(4))->Process(1,fEv0,fEv1,0);
   ((AliUnicorAnalCorrel *) fOutputList->At(5))->Process(1,fEv0,fEv1,0);
@@ -100,6 +109,7 @@ void AliAnalysisTaskUnicorME::UserExec(Option_t */*option*/)
   ((AliUnicorAnalPtfluc *) fOutputList->At(7))->Process(1,fEv0,fEv1);
   ((AliUnicorAnalHighpt *) fOutputList->At(8))->Process(fEv0,fEv1);
 
+  printf("counts: %6d %6d %6d %6d\n",nic0,nic1,nic2,nic3);
   PostData(1, fOutputList);
 } 
 //=============================================================================

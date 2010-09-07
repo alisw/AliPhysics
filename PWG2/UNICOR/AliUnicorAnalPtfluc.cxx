@@ -33,7 +33,7 @@
 ClassImp(AliUnicorAnalPtfluc)
 
 //=============================================================================
-AliUnicorAnalPtfluc::AliUnicorAnalPtfluc(Char_t *nam, Int_t pid0, Int_t pid1) : 
+AliUnicorAnalPtfluc::AliUnicorAnalPtfluc(const char *nam, Int_t pid0, Int_t pid1) : 
   AliUnicorAnal(nam), fPid0(pid0), fPid1(pid1) 
 {
   // constructor

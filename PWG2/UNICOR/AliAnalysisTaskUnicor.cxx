@@ -24,6 +24,7 @@
 #include "AliUnicorAnalPtfluc.h"
 #include "AliUnicorAnalHighpt.h"
 #include "AliUnicorEventAliceESD.h"
+#include "AliESDEvent.h"
 #include "AliAnalysisTaskUnicor.h"
 
 ClassImp(AliAnalysisTaskUnicor)
@@ -49,9 +50,10 @@ void AliAnalysisTaskUnicor::UserCreateOutputObjects()
   fOutputList->Add(new AliUnicorAnalSingle("all",fEv0->Etamin(),fEv0->Etamax(),0));
   fOutputList->Add(new AliUnicorAnalSingle("pim",fEv0->Etamin(),fEv0->Etamax(),-211));
   fOutputList->Add(new AliUnicorAnalSingle("pip",fEv0->Etamin(),fEv0->Etamax(), 211));
-  fOutputList->Add(new AliUnicorAnalCorrel("cnn",fEv0->Etamin(),fEv0->Etamax(),-211,-211));
-  fOutputList->Add(new AliUnicorAnalCorrel("cpp",fEv0->Etamin(),fEv0->Etamax(), 211, 211));
-  fOutputList->Add(new AliUnicorAnalCorrel("cnp",fEv0->Etamin(),fEv0->Etamax(),-211, 211));
+  int frame = AliUnicorAnalCorrel::kLCMS;
+  fOutputList->Add(new AliUnicorAnalCorrel("cnn",fEv0->Etamin(),fEv0->Etamax(),-211,-211, frame));
+  fOutputList->Add(new AliUnicorAnalCorrel("cpp",fEv0->Etamin(),fEv0->Etamax(), 211, 211, frame));
+  fOutputList->Add(new AliUnicorAnalCorrel("cnp",fEv0->Etamin(),fEv0->Etamax(),-211, 211, frame));
   fOutputList->Add(new AliUnicorAnalPtfluc("ptf",0,0));
   fOutputList->Add(new AliUnicorAnalHighpt("hpt",fEv0->Etamin(),fEv0->Etamax(),0,0));
 }

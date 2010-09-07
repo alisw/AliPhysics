@@ -33,7 +33,7 @@
 ClassImp(AliUnicorAnalSingle)
 
 //=============================================================================
-AliUnicorAnalSingle::AliUnicorAnalSingle(Char_t *nam, Double_t emi, Double_t ema, Int_t pid) : 
+AliUnicorAnalSingle::AliUnicorAnalSingle(const char *nam, Double_t emi, Double_t ema, Int_t pid) : 
   AliUnicorAnal(nam), fPid(pid), fMass(0.0) 
 {
   // constructor

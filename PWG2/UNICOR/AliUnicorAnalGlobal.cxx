@@ -32,7 +32,7 @@ class TH2;
 ClassImp(AliUnicorAnalGlobal)
   
 //=============================================================================
-AliUnicorAnalGlobal::AliUnicorAnalGlobal(Char_t *nam) : AliUnicorAnal(nam) 
+AliUnicorAnalGlobal::AliUnicorAnalGlobal(const char *nam) : AliUnicorAnal(nam) 
 {
   // constructor
 
@@ -69,7 +69,7 @@ void AliUnicorAnalGlobal::Process(AliUnicorEvent *ev) const
   mult->Fill(ev->NGoodParticles(),1.0);
   cent->Fill(ev->Centrality(),1.0);
   cemu->Fill(ev->Centrality(),ev->NGoodParticles());
-  Double_t qx,qy;
+  Double_t qx=0,qy=0;
   ev->RP(qx,qy);
   dire->Fill(qx,qy,1.0);
   zver->Fill(ev->Zver(),1.0);
