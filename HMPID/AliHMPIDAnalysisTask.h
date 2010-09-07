@@ -42,13 +42,14 @@ class AliHMPIDAnalysisTask : public AliAnalysisTaskSE {
   AliHMPIDAnalysisTask(const AliHMPIDAnalysisTask& c);
   virtual ~AliHMPIDAnalysisTask();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserConnectInputData(Option_t *);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
+          void   SetUseMC(Bool_t useMC) { fUseMC = useMC; }
           Bool_t Equal(Double_t x, Double_t y, Double_t tolerance);
-  
+
  protected:
      
  private:     
@@ -57,10 +58,12 @@ class AliHMPIDAnalysisTask : public AliAnalysisTaskSE {
   AliESDEvent *fESD;               //! ESD object
   AliMCEvent  *fMC;                //! MC event
 
+  Bool_t       fUseMC;             // decide whether use or not the MC information
+
   TList         *fHmpHistList ;    // list of histograms
-  Int_t          fNevts       ;    //event numbering
-  Int_t          fTrigNevts   ;    //event numbering with the requested trigger
-  Int_t          fTrigger     ;    //requested trigger
+  Int_t          fNevts       ;    // event numbering
+  Int_t          fTrigNevts   ;    // event numbering with the requested trigger
+  Int_t          fTrigger     ;    // requested trigger
 
   TH2F          *fHmpPesdPhmp;     // HMP momentum vs ESD momentum
   TH2F          *fHmpCkovPesd;     // Ckov angle vs ESD momentum
