@@ -12,6 +12,7 @@
 
 class AliCFContainer;
 class TH1;
+class TH1F;
 class TH3;
 class TH1D;
 class TH2D;
@@ -43,7 +44,7 @@ class AliUEHist : public TObject
   
   TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1);
   TH1* GetEventEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1);
-  TH1* GetBias(CFStep step1, CFStep step2, const char* axis, Float_t leadPtMin = 0, Float_t leadPtMax = 0);
+  TH1* GetBias(CFStep step1, CFStep step2, Int_t region, const char* axis, Float_t leadPtMin = 0, Float_t leadPtMax = 0);
   
   TH1D* GetTrackingEfficiency(Int_t axis);
   TH2D* GetTrackingEfficiency();
@@ -54,14 +55,22 @@ class AliUEHist : public TObject
   TH1D* GetTrackingCorrection(Int_t axis);
   TH2D* GetTrackingCorrection();
   
+  TH1D* GetTrackingEfficiencyCorrection(Int_t axis);
+  TH2D* GetTrackingEfficiencyCorrection();
+  
   void Correct(AliUEHist* corrections);
   void CorrectTracks(CFStep step1, CFStep step2, TH1* trackCorrection, Int_t var1, Int_t var2 = -1);
+  void CorrectTracks(CFStep step1, CFStep step2, Int_t region, TH1* trackCorrection, Int_t var1, Int_t var2 = -1);
   void CorrectEvents(CFStep step1, CFStep step2, TH1D* eventCorrection, Int_t var);
   
   void SetCombineMinMax(Bool_t flag) { fCombineMinMax = flag; }
   
   void SetEtaRange(Float_t etaMin, Float_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; }
   void SetPtRange(Float_t ptMin, Float_t ptMax)    { fPtMin = ptMin; fPtMax = ptMax; }
+  
+  void SetContaminationEnhancement(TH1F* hist)    { fContaminationEnhancement = hist; }
+  
+  void CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_t ptLeadMax);
   
   AliUEHist(const AliUEHist &c);
   AliUEHist& operator=(const AliUEHist& corr);
@@ -83,11 +92,13 @@ protected:
   Float_t fPtMin;                     // pT min for projections (for track pT, not pT,lead)
   Float_t fPtMax;                     // pT max for projections (for track pT, not pT,lead)
   
+  TH1F* fContaminationEnhancement;    // histogram that contains the underestimation of secondaries in the MC as function of pT
+  
   Bool_t fCombineMinMax;              // flag to combine min and max to a general towards region
   
   AliCFContainer* fCache;             //! cache variable for GetTrackEfficiency
   
-  ClassDef(AliUEHist, 1) // underlying event histogram container
+  ClassDef(AliUEHist, 2) // underlying event histogram container
 };
 
 #endif

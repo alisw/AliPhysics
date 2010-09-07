@@ -47,6 +47,7 @@ class AliUEHistograms : public TObject
   
   void SetEtaRange(Float_t etaMin, Float_t etaMax);
   void SetPtRange(Float_t ptMin, Float_t ptMax);
+  void SetContaminationEnhancement(TH1F* hist);
   void SetCombineMinMax(Bool_t flag);
   
   AliUEHistograms(const AliUEHistograms &c);

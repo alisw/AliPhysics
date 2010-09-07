@@ -14,16 +14,19 @@
 #include <TObject.h> 
 
 class AliAODEvent;
+class AliAODInputHandler;
 class AliESDEvent;
 class AliAODTrack;
 class AliESDTrack;
 class AliGenPythiaEventHeader;
 class AliInputEventHandler;
+class AliLog;
 class AliMCEvent;
 class AliStack;
 class AliVParticle;
 class TClonesArray;
 class TObject;
+class TROOT;
 class TVector3;
 
 class AliAnalyseLeadingTrackUE : public TObject {
