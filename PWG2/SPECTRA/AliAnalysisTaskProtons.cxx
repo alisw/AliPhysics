@@ -101,13 +101,13 @@ void AliAnalysisTaskProtons::ConnectInputData(Option_t *) {
 void AliAnalysisTaskProtons::CreateOutputObjects() {
   // Create output objects
   // Called once
-  char *gCutName[5] = {"Total","Triggered","Offline trigger",
-		       "Vertex","Analyzed"};
+  TString gCutName[5] = {"Total","Triggered","Offline trigger",
+			 "Vertex","Analyzed"};
   fHistEventStats = new TH1F("fHistEventStats",
 			     "Event statistics;;N_{events}",
 			     5,0.5,5.5);
   for(Int_t i = 1; i <= 5; i++) 
-    fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1]);
+    fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
 
   fListAnalysis = new TList();
   fListAnalysis->Add(fProtonAnalysis->GetProtonYPtHistogram());
