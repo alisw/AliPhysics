@@ -56,7 +56,7 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
     virtual     void   Exec(Option_t *option);
     virtual     void   Terminate(Option_t *);
 
-    void FillReducedEfficiency(Int_t eventId, AliUEHist::CFStep step, TObjArray* ltRECO, Bool_t twoStep);
+    void FillReducedEfficiency(Int_t eventId, AliUEHist::CFStep step,const TObjArray* ltRECO, Bool_t twoStep);
 
     // Setters/Getters
     // general configuration
@@ -69,7 +69,7 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
       				fMinJetPtInHist = min; 
       				fMaxJetPtInHist = max; 
     				}
-    void SetTrackingEfficiency(TH1D* hist) { fTrackingEfficiency = hist; }
+    void SetTrackingEfficiency( const TH1D* hist) { fkTrackingEfficiency = hist; }
 
     // for event QA
     void   SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
@@ -79,6 +79,7 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
     void   SetTrackEtaCut(Double_t val)       { fTrackEtaCut = val; }
     void   SetLeadingTrackEtaCut( Double_t val )    { fLeadingTrackEtaCut = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
+    void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
     
   protected:
@@ -104,7 +105,7 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
     AliUEHistograms*  fHistosUE;       //! points to class to handle histograms/containers  
     
-    TH1D* fTrackingEfficiency;       // used for study of bias by tracking 
+    const TH1D* fkTrackingEfficiency;       // used for study of bias by tracking 
 
     // Handlers and events
     AliAODEvent*             fAOD;             //! AOD Event 
@@ -128,6 +129,7 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
     Double_t            fTrackEtaCut;          // Eta cut on inclusive tracks
     Double_t      	fLeadingTrackEtaCut;   // Eta cut on leading track
     UInt_t         	fFilterBit;            // Select tracks from an specific track cut (default 0xFF all track selected)
+    UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
     
     // MC cross-section 

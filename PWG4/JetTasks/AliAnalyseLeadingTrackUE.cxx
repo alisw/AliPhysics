@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <TROOT.h>
 //#include <TBranch.h>
 //#include <TCanvas.h>
 //#include <TChain.h>
@@ -38,7 +37,6 @@
 //#include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 //#include "AliAODHandler.h"
-#include "AliAODInputHandler.h"
 //#include "AliAODJet.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
@@ -48,7 +46,7 @@
 //#include "AliGenPythiaEventHeader.h"
 #include "AliInputEventHandler.h"
 //#include "AliKFVertex.h"
-#include "AliLog.h"
+//#include "AliLog.h"
 #include "AliMCEvent.h"
 //#include "AliMCEventHandler.h"
 //#include "AliStack.h"
@@ -278,7 +276,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
   	AliAODEvent *aodEvent = dynamic_cast<AliAODEvent*>(obj);
         part = aodEvent->GetTrack(ipart);
 	// track selection cuts
-	if (!( ((AliAODTrack*)part)->TestFilterBit(fFilterBit)) )return 0; 
+	if ( !(((AliAODTrack*)part)->TestFilterBit(fFilterBit)) ) return 0; 
+	//if ( !(((AliAODTrack*)part)->TestFilterBit(fFilterBit)) && !(((AliAODTrack*)part)->TestFilterBit(32)) ) return 0; 
 	// only primary candidates
 	//if ( ((AliAODTrack*)part)->IsPrimaryCandidate() )return 0;
 	// eventually only hadrons
@@ -447,7 +446,7 @@ Bool_t  AliAnalyseLeadingTrackUE::TriggerSelection(const TObject* obj)
 
   //Use AliPhysicsSelection to select good events
   if( !obj->InheritsFrom("AliAODInputHandler") ) { // not needed for AOD input 
-  	if (!(((AliInputEventHandler*)obj)->IsEventSelected()))return kFALSE;
+	if (!(((AliInputEventHandler*)obj)->IsEventSelected()&AliVEvent::kMB))return kFALSE;
         }                                
 
   return kTRUE;
@@ -464,10 +463,14 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
   	Int_t nVertex = ((AliAODEvent*)obj)->GetNumberOfVertices();
   	if( nVertex > 0 ) { 
   		AliAODVertex* vertex = (AliAODVertex*)((AliAODEvent*)obj)->GetPrimaryVertex();
-  		Int_t nTracksPrim = vertex->GetNContributors();
+		Int_t nTracksPrim = vertex->GetNContributors();
   		Double_t zVertex = vertex->GetZ();
   		if (fDebug > 1)AliInfo(Form(" Vertex in = %f with %d particles by  %s data ...",zVertex,nTracksPrim,vertex->GetName()));
-  		// Select a quality vertex by number of tracks?
+  		// Reject TPC only vertex
+		TString name(vertex->GetName());
+		if (name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex"))return kFALSE;
+
+		// Select a quality vertex by number of tracks?
   		if( nTracksPrim < ntracks || TMath::Abs(zVertex) > zed ) {
   			if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
   			return kFALSE;
@@ -490,7 +493,32 @@ Bool_t  AliAnalyseLeadingTrackUE::VertexSelection(const TObject* obj, Int_t ntra
       return kFALSE;
     }
   }
-	// TO-DO: ESD case for DCA studies
+
+  // ESD case for DCA studies
+  if (obj->InheritsFrom("AliESDEvent")){
+       AliESDVertex* vertex = (AliESDVertex*)((AliESDEvent*)obj)->GetPrimaryVertex();
+       if ( vertex){
+               Int_t nTracksPrim = vertex->GetNContributors();
+               Double_t zVertex = vertex->GetZ();
+               if (fDebug > 1)AliInfo(Form(" Vertex in = %f with %d particles by  %s data ...",zVertex,nTracksPrim,vertex->GetName()));
+               // Reject SPD or TPC only vertex
+               TString name(vertex->GetName());
+               if (name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex"))return kFALSE;
+
+               // Select a quality vertex by number of tracks?
+               if( nTracksPrim < ntracks || TMath::Abs(zVertex) > zed ) {
+                       if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
+                       return kFALSE;
+                       }
+               // TODO remove vertexer Z events with dispersion > 0.02: Doesn't work for AOD at present
+                //if (strcmp(vertex->GetTitle(), "AliVertexerZ") == 0 && vertex->GetDispersion() > 0.02)
+                //  return kFALSE;
+               if (fDebug > 1) AliInfo(" Primary-vertex Selection: event ACCEPTED...");
+               } else {
+                       if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
+                       return kFALSE;
+                       }
+       }
 	
   return kTRUE;
 }

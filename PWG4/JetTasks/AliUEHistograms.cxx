@@ -67,7 +67,7 @@ AliUEHistograms::AliUEHistograms() :
   fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #phi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
   
-  fEventCount = new TH2F("fEventCount", ";step;event type;count", AliUEHist::fgkCFSteps+1, -1.5, -0.5 + AliUEHist::fgkCFSteps, 3, -0.5, 2.5);
+  fEventCount = new TH2F("fEventCount", ";step;event type;count", AliUEHist::fgkCFSteps+2, -2.5, -0.5 + AliUEHist::fgkCFSteps, 3, -0.5, 2.5);
   fEventCount->GetYaxis()->SetBinLabel(1, "ND");
   fEventCount->GetYaxis()->SetBinLabel(2, "SD");
   fEventCount->GetYaxis()->SetBinLabel(3, "DD");
@@ -332,6 +332,16 @@ void AliUEHistograms::SetPtRange(Float_t ptMin, Float_t ptMax)
 }
 
 //____________________________________________________________________
+void AliUEHistograms::SetContaminationEnhancement(TH1F* hist)
+{
+  // sets the contamination enhancement histogram in all contained AliUEHist classes
+  
+  fNumberDensitypT->SetContaminationEnhancement(hist);
+  fSumpT->SetContaminationEnhancement(hist);
+  fNumberDensityPhi->SetContaminationEnhancement(hist);
+}  
+
+//____________________________________________________________________
 void AliUEHistograms::SetCombineMinMax(Bool_t flag)
 {
   // sets pT min and max for all contained AliUEHist classes
@@ -348,7 +358,7 @@ void AliUEHistograms::Correct(AliUEHistograms* corrections)
   
   fNumberDensitypT->Correct(corrections->fNumberDensitypT);
   fSumpT->Correct(corrections->fSumpT);
-  fNumberDensityPhi->Correct(corrections->fNumberDensityPhi);
+  //fNumberDensityPhi->Correct(corrections->fNumberDensityPhi);
 }
 
 //____________________________________________________________________
