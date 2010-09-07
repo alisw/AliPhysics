@@ -89,7 +89,7 @@ AliMUONPreClusterFinder::Prepare(Int_t detElemId,
 {
   /// Prepare for clustering, by giving access to segmentations and digit lists
 
-  fClusters.Clear("C");
+  fClusters.Delete();
   
   fPads = pads;
   fDetElemId = detElemId;
