@@ -43,7 +43,7 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) :
   fEvent(NULL),
   fMc(NULL),
   fListHistos(NULL),
-  fEvaluateMixedHarmonics(kTRUE),
+  fEvaluateMixedHarmonics(kFALSE),
   fnBinsMult(10000),
   fMinMult(0.),  
   fMaxMult(10000.),    

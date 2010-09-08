@@ -1,40 +1,40 @@
 // add comment
  
 // Set how many output analysis files in total you want to access:
-const Int_t nFiles = 1;
+const Int_t nFiles = 3;
  
 // Set how many of those output analysis files you want to represent with a mesh (usually used to represent results of simulations):
-const Int_t nSim = 0;
- 
+const Int_t nSim = 1;
+
 // Set paths of all output analysis files (first the ones to be represented with mesh (simulations), then the ones to be represented with markers (real data))
-TString files[nFiles] = {"data/LHC10bcd"};
+TString files[nFiles] = {"all","positive","negative"};
 
 // Set analysis types for all output analysis files (can be "ESD","AOD","MC",""):
-TString type[nFiles] = {"ESD"};
+TString type[nFiles] = {"","",""};
  
 // Set mesh color:
-Int_t meshColor[nSim] = {};
+Int_t meshColor[nSim] = {kGray};
 
 // Set marker styles:
-Int_t markerStyle[nFiles-nSim] = {kStar};
+Int_t markerStyle[nFiles-nSim] = {kFullSquare,kFullSquare};
 
 // Set marker colors:
-Int_t markerColor[nFiles-nSim] = {kBlack};
+Int_t markerColor[nFiles-nSim] = {kRed,kBlue};
 
 // Set legend entries:
-TString legendEntry[nFiles] = {"LHC10bcd"};
+TString legendEntry[nFiles] = {"-1 < #eta < 1","0 < #eta < 1","-1 < #eta < 0"};
  
 // Set if you want to rebin the histograms into wider multiplicity bins (set for each cumulant order separately):
 Bool_t rebin = kFALSE;
-Int_t nMergedBins[4] = {1,2,4,8}; // set how many original multiplicity bins will be merged into 1 new one 
+Int_t nMergedBins[4] = {2,2,2,2}; // set how many original multiplicity bins will be merged into 1 new one 
  
 // Set if you whish to plot cumulants versus <reference multiplicity> (by default they are plotted versus # of RPs):
 Bool_t plotCumulantsVsReferenceMultiplicity = kFALSE;
 
 // Set flow values whose theoretical contribution to cumulants will be shown on the plots with the straight coloured lines: 
-Bool_t showTheoreticalLines = kTRUE;
+Bool_t showTheoreticalLines = kFALSE;
 const Int_t nFlowValues = 1;
-Double_t v[nFlowValues] = {0.1,};
+Double_t v[nFlowValues] = {0.08};
 Int_t lineColor[nFlowValues] = {kRed}; 
 
 // If the statistical error of 6th and 8th order cumulant is huge you may prefer not to show them:
@@ -44,9 +44,14 @@ Bool_t plotOnly2ndAnd4thOrderCumulant = kFALSE;
 Bool_t showAlsoGFCResults = kFALSE;
 Int_t gfcLineStyle = 3;
 
-// Set method names which calculate cumulants vs multiplicity:
-const Int_t nMethods = 2;
-TString method[nMethods] = {"QC","GFC"}; 
+// For comparison sake show also Monte Carlo QC results with coloured mesh:
+Bool_t showAlsoMCEPResults = kFALSE; 
+Bool_t showOnlyMCEPResults = kFALSE;
+Int_t mcepMeshColor[nSim] = {kRed-10};
+
+// Set method names which calculate cumulants vs multiplicity (do not touch these settings unless you are looking for a trouble):
+const Int_t nMethods = 3;
+TString method[nMethods] = {"QC","GFC","MCEP"}; 
 
 TFile *commonOutputFiles[nFiles] = {NULL}; // common output files "AnalysisResults.root"
 TList *lists[nFiles][nMethods] = {{NULL}}; // lists cobj<method> holding objects with results for each method
@@ -70,6 +75,9 @@ void plotCumulants(Int_t analysisMode=mLocal)
  // Load needed libraries:
  LoadLibrariesPC(analysisMode);
  
+ // Global settings which will affect all plots:
+ GlobalSettings();
+ 
  // Access all common output files:
  TString commonOutputFileName = "AnalysisResults.root"; 
  AccessCommonOutputFiles(commonOutputFileName);
@@ -79,10 +87,10 @@ void plotCumulants(Int_t analysisMode=mLocal)
  
  // Get histograms with results for cumulants vs multiplicity:
  GetHistograms();
- 
+   
  // Determine ranges for plots:
  DetermineMinMax();
- 
+  
  // Make lines which indicate theoretical contributions of flow to cumulants:
  Lines();
  
@@ -91,9 +99,6 @@ void plotCumulants(Int_t analysisMode=mLocal)
  
  // Make plots:
  Plot(); 
- 
- // Global settings which will affect all plots:
- GlobalSettings();
  
 } // end of void plotCumulants(Int_t analysisMode=mLocal) 
  
@@ -130,29 +135,38 @@ void Plot()
   // simulations:
   for(Int_t s=0;s<nSim;s++) 
   {
+   // Monte Carlo QC:
+   if(showAlsoMCEPResults)
+   {
+    TGraph *mcepQC = GetErrorMesh(cumulantsVsM[s][2][co]);    
+    if(mcepQC)
+    {
+     mcepQC->SetFillColor(mcepMeshColor[s]);
+     mcepQC->Draw("lfsame");
+    }
+    if(co==0){legend->AddEntry(mcepQC,Form("%s (MC)",legendEntry[s].Data()),"f");}   
+   } // end of if(showAlsoMCEPResults)  
+   // QC:
    TGraph *errorMesh = GetErrorMesh(cumulantsVsM[s][0][co]);
    if(errorMesh)
    {
     errorMesh->SetFillColor(meshColor[s]);
-    errorMesh->Draw("lfsame");
+    if(!(showOnlyMCEPResults && showAlsoMCEPResults)){errorMesh->Draw("lfsame");}
    }
-   if(co==0){legend->AddEntry(errorMesh,legendEntry[s].Data(),"f");}
+   if(co==0 && !(showOnlyMCEPResults && showAlsoMCEPResults)){legend->AddEntry(errorMesh,legendEntry[s].Data(),"f");}  
   } // end of if(Int_t s=0;s<nSim;s++) 
+  // Theoretical lines:
+  if(showTheoreticalLines)
+  {
+   for(Int_t fv=0;fv<nFlowValues;fv++)
+   { 
+    lines[fv][co]->Draw("lsame");
+    if(co==0){legend->AddEntry(lines[fv][co],Form("v_{2} = %g",v[fv]),"l");}  
+   } 
+  } 
   // data:
   for(Int_t f=nSim;f<nFiles;f++)
   {
-   // Theoretical lines:
-   if(showTheoreticalLines)
-   {
-    if(f==nSim) // plot them only once
-    {
-     for(Int_t fv=0;fv<nFlowValues;fv++)
-     { 
-      lines[fv][co]->Draw("lsame");
-      if(co==0){legend->AddEntry(lines[fv][co],Form("v_{2} = %g",v[fv]),"l");}  
-     } 
-    }
-   } 
    // QC results:
    if(cumulantsVsM[f][0][co])
    {
@@ -181,7 +195,6 @@ void Plot()
   // Draw legend:
   if(co==0){legend->Draw("same");}
  } // end of for(Int_t co=0;co<4;co++) // cumulant order
- 
  // Plot also <reference multiplicity> vs # of RPs:
  if(plotCumulantsVsReferenceMultiplicity)
  {
@@ -357,14 +370,14 @@ void GetHistograms()
      for(Int_t co=0;co<4;co++)
      {
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fIntFlowQcumulantsVsM, %s",qcFlag[co].Data())));
+      if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
+      {
+       cumulantsVsM[f][m][co] = Map(cumulantsVsM[f][m][co],f);
+      }    
       if(rebin && cumulantsVsM[f][m][co])
       {
        cumulantsVsM[f][m][co] = Rebin(cumulantsVsM[f][m][co],co);
       }
-      if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
-      {
-       Map(cumulantsVsM[f][m][co],f);
-      }    
      } 
     } 
    } // end of if(!(strcmp(method[m].Data(),"QC")))
@@ -379,11 +392,68 @@ void GetHistograms()
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fReferenceFlowCumulantsVsM, %s",gfcFlag[co].Data())));
       if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
       {
-       Map(cumulantsVsM[f][m][co],f);
+       cumulantsVsM[f][m][co] = Map(cumulantsVsM[f][m][co],f);
       }
+      if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
+      {
+       cumulantsVsM[f][m][co] = Map(cumulantsVsM[f][m][co],f);
+      }         
      } // end of for(Int_t co=0;co<4;co++)
     } // end of if(temp)
-   } // end of else if(!(strcmp(method[m].Data(),"QC")))
+   } // end of else if(!(strcmp(method[m].Data(),"GFC")))
+   else if(!(strcmp(method[m].Data(),"MCEP")) && lists[f][m])
+   {
+    TProfile *mcepVsM = dynamic_cast<TProfile*> (lists[f][m]->FindObject("FlowPro_VsM_MCEP"));
+    if(!mcepVsM)
+    {
+     cout<<endl;
+     cout<<" WARNING: Couldn't access TProfile FlowPro_VsM_MCEP in the file "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;
+     cout<<endl;
+     return;
+    } 
+    for(Int_t co=0;co<4;co++)
+    {
+     cumulantsVsM[f][m][co] = new TH1D("",Form("Monte Carlo QC{%i} #font[72]{vs} M",2*(co+1)),
+                                       mcepVsM->GetNbinsX(),mcepVsM->GetBinLowEdge(1),mcepVsM->GetBinLowEdge(1+mcepVsM->GetNbinsX()));
+    } // end of for(Int_t co=0;co<4;co++)
+    for(Int_t b=1;b<=mcepVsM->GetNbinsX();b++)
+    {
+     Double_t v = mcepVsM->GetBinContent(b);
+     Double_t vError = mcepVsM->GetBinError(b);
+     if(TMath::Abs(v)<1.e-44 || TMath::Abs(vError)<1.e-44){continue;}
+     // Monte Carlo QC{2}:     
+     Double_t qc2 = pow(v,2.);
+     Double_t qc2Error = 2.*TMath::Abs(v)*vError; // error propagation for f(x) = x^2
+     cumulantsVsM[f][m][0]->SetBinContent(b,qc2);
+     cumulantsVsM[f][m][0]->SetBinError(b,qc2Error);
+     // Monte Carlo QC{4}:     
+     Double_t qc4 = -pow(v,4.);
+     Double_t qc4Error = 4.*TMath::Abs(pow(v,3.))*vError; // error propagation for f(x) = -x^4
+     cumulantsVsM[f][m][1]->SetBinContent(b,qc4);
+     cumulantsVsM[f][m][1]->SetBinError(b,qc4Error);    
+     // Monte Carlo QC{6}:     
+     Double_t qc6 = 4.*pow(v,6.);
+     Double_t qc6Error = 24.*TMath::Abs(pow(v,5.))*vError; // error propagation for f(x) = 4x^6
+     cumulantsVsM[f][m][2]->SetBinContent(b,qc6);
+     cumulantsVsM[f][m][2]->SetBinError(b,qc6Error);
+     // Monte Carlo QC{8}:     
+     Double_t qc8 = -33.*pow(v,8.);
+     Double_t qc8Error = 264.*TMath::Abs(pow(v,7.))*vError; // error propagation for f(x) = -33x^8
+     cumulantsVsM[f][m][3]->SetBinContent(b,qc8);
+     cumulantsVsM[f][m][3]->SetBinError(b,qc8Error);
+    } // end of for(Int_t b=1;b<=mcepVsM->GetNbinsX();b++)
+    for(Int_t co=0;co<4;co++)
+    {
+     if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
+     {
+      cumulantsVsM[f][m][co] = Map(cumulantsVsM[f][m][co],f);
+     }     
+     if(rebin && cumulantsVsM[f][m][co])
+     {
+      cumulantsVsM[f][m][co] = Rebin(cumulantsVsM[f][m][co],co);
+     }    
+    } // end of for(Int_t co=0;co<4;co++)
+   } // end of else if(!(strcmp(method[m].Data(),"MCEP")))
   } // end of  for(Int_t m=0;m<nMethods;m++)
  } // end of for(Int_t f=0;f<nFiles;f++)
 
@@ -437,17 +507,18 @@ void GetProfileForRefMultVsNoOfRPs()
      cout<<"WARNING: commonHist && commonHist->GetRefMultVsNoOfRPs() is NULL in GetProfileForRefMultVsNoOfRPs() !!!!"<<endl;
      cout<<endl;
     }
- }   
+ }
+  
+ return;  
  
 } // end of void GetProfileForRefMultVsNoOfRPs()
 
 // =====================================================================================
 
-void Map(TH1D *hist, Int_t f)
+TH1D* Map(TH1D *hist, Int_t f)
 {
  // Map cumulant versus # of RPs into cumulants versus <reference multiplicity>.
  
- TH1D *temp = NULL;
  if(!refMultVsNoOfRPs[f])
  {
   cout<<endl;
@@ -455,16 +526,42 @@ void Map(TH1D *hist, Int_t f)
   cout<<endl;
  }
  
+ Int_t rpMaxBin = refMultVsNoOfRPs[f]->FindLastBinAbove(); // FindLastBinAbove(Double_t threshold = 0, Int_t axis = 1) 
+ Int_t rmMaxBin = (Int_t)TMath::Floor(refMultVsNoOfRPs[f]->GetMaximum()); 
+  
  if(hist)
  {
   temp = (TH1D*) hist->Clone();
-  Int_t nBins = hist->GetNbinsX();
-  for(Int_t b=1;b<=nBins;b++)
-  {
-   hist->SetBinContent((Int_t)refMultVsNoOfRPs[f]->GetBinContent(b),temp->GetBinContent(b));
-   hist->SetBinError((Int_t)refMultVsNoOfRPs[f]->GetBinContent(b),temp->GetBinError(b));
-  }
- }
+  temp->Reset();
+  for(Int_t rmBin=1;rmBin<=rmMaxBin;rmBin++) // reference multiplicity bins
+  { 
+   Double_t value = 0.;
+   Double_t error = 0.;
+   Double_t dSum1 = 0.; // sum value_i/(error_i)^2
+   Double_t dSum2 = 0.; // sum 1/(error_i)^2
+   for(Int_t rpBin=1;rpBin<=rpMaxBin;rpBin++) // # of RPs bins
+   {
+    if((Int_t)TMath::Floor(refMultVsNoOfRPs[f]->GetBinContent(rpBin)) >= temp->GetBinLowEdge(rmBin) &&
+       (Int_t)TMath::Floor(refMultVsNoOfRPs[f]->GetBinContent(rpBin)) < temp->GetBinLowEdge(rmBin+1))
+    {        
+     value = hist->GetBinContent(rpBin);  
+     error = hist->GetBinError(rpBin);  
+     if(error>0.)
+     {
+      dSum1+=value/(error*error);
+      dSum2+=1./(error*error);
+     }
+    }
+   } // end of for(Int_t rpBin=1;rpBin<=nBins;rpBin++) // # of RPs bins
+   if(dSum2>0.)
+   {
+    temp->SetBinContent(rmBin,dSum1/dSum2);
+    temp->SetBinError(rmBin,pow(1./dSum2,0.5));
+   } 
+  } // end of for(Int_t rmBin=1;rmBin<=nBins;rmBin++) // reference multiplicity bins
+ } // end of if(hist)
+     
+ return temp;
      
 } // end of Map()
 
@@ -575,54 +672,45 @@ TGraph* GetErrorMesh(TH1D *hist)
 {
  // Error mesh.
  
- TGraph* errorMesh = NULL;
  if(hist)
  {
   Int_t nBins = hist->GetNbinsX();
-  Double_t binWidth = hist->GetBinWidth(1); // assuming that all bins have the same width
+  Double_t value = 0.;
+  Double_t error = 0.;
   // Counting the non-empty bins: 
-  Int_t nNonEmptyBins=0;
+  Int_t nNonEmptyBins = 0;
   for(Int_t i=1;i<nBins+1;i++)
   {
-   if(!(hist)->GetBinError(i)==0.0))
+   value = hist->GetBinContent(i);
+   error = hist->GetBinError(i);
+   if(TMath::Abs(value)>0.0 && error>0.0)
    {
     nNonEmptyBins++;
    }
-  }   
-  errorMesh = new TGraph(2*nNonEmptyBins+1); 
-  Double_t value=0.,error=0.;
-  Int_t count=1;
-  Double_t xFirst=0.,yUpFirst=0.; // needed to close up the mesh
+  } // end of for(Int_t i=1;i<nBins+1;i++)  
+  // Error mesh:
+  TGraph *errorMesh = new TGraph(2*nNonEmptyBins+1); 
+  Int_t count = 0;
+  Double_t binCenter = 0.;
   for(Int_t i=1;i<nBins+1;i++)
   {
-   // Setting up the upper limit of the mesh:
    value = hist->GetBinContent(i);
-   error = hist->GetBinError(i);   
-   if(!(error==0.0))
+   error = hist->GetBinError(i);
+   // Setting up the the mesh:
+   if(TMath::Abs(value)>0.0 && error>0.0)
    {    
-    errorMesh->SetPoint(count++,(i-0.5)*binWidth,value+error);
-    if(xFirst==0.)
-    {
-     xFirst=(i-0.5)*binWidth;
-     yUpFirst=value+error;
-    }
-   } 
-  }   
-  for(Int_t i=nBins+1;i<2*nBins+1;i++)
-  {
-   // Setting up the lower limit of the mesh:
-   value = hist->GetBinContent(2*nBins+1-i);
-   error = hist->GetBinError(2*nBins+1-i); 
-   if(!(error==0.0))
-   {      
-    errorMesh->SetPoint(count++,(2*nBins-i+0.5)*binWidth,value-error);
-   }  
-  }
+    binCenter = hist->GetBinCenter(i);   
+    errorMesh->SetPoint(count,binCenter,value+error);
+    errorMesh->SetPoint(2*nNonEmptyBins-(count+1),binCenter,value-error);
+    count++;
+   }
+  } // end of for(Int_t i=1;i<nBins+1;i++)
   // Closing the mesh area:
-  errorMesh->SetPoint(2*nNonEmptyBins+1,xFirst,yUpFirst);   
+  Double_t xStart = 0.;
+  Double_t yStart = 0.;
+  errorMesh->GetPoint(0,xStart,yStart);
+  errorMesh->SetPoint(2*nNonEmptyBins,xStart,yStart);   
  } // end if(hist)
- 
- errorMesh->SetFillStyle(1001);
  
  return errorMesh;
  
@@ -677,7 +765,7 @@ void GetLists()
    } else 
      {
       cout<<endl;
-      cout<<" WARNING: Couldn't find a file "<<fileName[f][i].Data()<<".root in "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;exit(0);
+      cout<<" WARNING: Couldn't find a file "<<fileName[f][i].Data()<<".root in "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;
       cout<<endl;
      }
   } // end of for(Int_t i=0;i<nMethods;i++)   
