@@ -154,7 +154,7 @@ void AliRsnCutESD2010::InitializeToDefaults(Bool_t isSim)
   fESDtrackCutsTPC.SetRequireSigmaToVertex(kFALSE);
   
   // ----> set standard quality cuts for ITS standalone tracks
-  fESDtrackCutsITS.SetRequireITSStandAlone(kTRUE, kTRUE);
+  fESDtrackCutsITS.SetRequireITSStandAlone(kTRUE);
   fESDtrackCutsITS.SetRequireITSRefit(kTRUE);
   fESDtrackCutsITS.SetMinNClustersITS(4);
   fESDtrackCutsITS.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
