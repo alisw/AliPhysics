@@ -1,4 +1,4 @@
-testPID(const Char_t *filename, Bool_t calibrateESD = kTRUE, Bool_t correctTExp = kTRUE, Bool_t useT0TOF = kTRUE, Double_t timeResolution = 100., Bool_t tuneTOFMC = kFALSE)
+TestTOFPID(const Char_t *filename, Bool_t calibrateESD = kTRUE, Bool_t correctTExp = kTRUE, Bool_t useT0TOF = kTRUE, Double_t timeResolution = 100., Bool_t tuneTOFMC = kFALSE)
 {
   /* PID analysis */
 
