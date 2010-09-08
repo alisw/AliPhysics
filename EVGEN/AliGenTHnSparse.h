@@ -21,7 +21,7 @@ public:
   virtual ~AliGenTHnSparse();
   virtual void Generate();
   virtual void Init();
-  virtual void SetPart(Int_t part) {fIpart=part;}
+  virtual void SetPart(Int_t part, Bool_t both) {fIpart=part; fBoth=both;}
   virtual void SetThnSparse(char *file_name, char *thn_name);
   
 private:
@@ -29,8 +29,9 @@ private:
   THnSparse *fHn; // Pointer to THnSparse object
   TFile *fFile;   // Pointer to input file
   Int_t fIpart;   // Particle type
-
-  ClassDef(AliGenTHnSparse,1)
+  Bool_t fBoth;   // Particle and anti-particle type
+      
+  ClassDef(AliGenTHnSparse,2)
 };
 
 #endif

@@ -23,10 +23,9 @@
 //-----------------------------------------------------------------------
 /*
   Example for generation :
- 
   	AliGenTHnSparse *gener = new AliGenTHnSparse();
 	gener->SetNumberParticles(10);
-	gener->SetPart(13);
+	gener->SetPart(13,kTRUE); // for generating id 13 and -13
 	gener->SetThnSparse("file_name","thn_name");
 	gener->Init();
 */
@@ -37,6 +36,11 @@
 
 #include "AliGenTHnSparse.h"
 
+// NEW
+#include "AliRun.h"
+#include "AliGenEventHeader.h"
+//
+
 ClassImp(AliGenTHnSparse)
 
 //_______________________________________________________________________
@@ -44,7 +48,8 @@ AliGenTHnSparse::AliGenTHnSparse():
   AliGenerator(),
   fHn(0),
   fFile(0),
-  fIpart(0)
+  fIpart(0),
+  fBoth(kFALSE)
 {
     // Default constructor
     SetNumberParticles(1);
@@ -82,7 +87,8 @@ AliGenTHnSparse::~AliGenTHnSparse()
 //_______________________________________________________________________
 void AliGenTHnSparse::Generate()
 {
-  
+    Int_t naccepted =0;
+
     // Generate Npart of id Ipart
     
     Double_t rand[4]; //  z, ptot, r, theta
@@ -90,7 +96,7 @@ void AliGenTHnSparse::Generate()
     Float_t mom[3];
     Int_t pdg = fIpart;
   
-    for (Int_t ipart = 0; ipart < fNpart; ipart++) {
+    for (Int_t ipart = 0; ipart < fNpart && naccepted<fNpart; ipart++) {
 
 	fHn->GetRandom(rand);
 	z=rand[0];
@@ -117,12 +123,25 @@ void AliGenTHnSparse::Generate()
 
 // propagation
 
-	Float_t polarization[3]= {0,0,0};
+	Float_t polarization[3] = {0,0,0};
 	Int_t nt;
+
+// Part and anti-part
+
+	if(fBoth){
+	    Double_t sign = gRandom->Rndm();
+	    if(sign < 0.5) pdg = -fIpart;
+	    else pdg = fIpart;
+	}
+
 	PushTrack(fTrackIt,-1,pdg,mom, pos, polarization,0,kPPrimary,nt);
+	naccepted++;
   }
 
+    AliGenEventHeader* header = new AliGenEventHeader("THn");
+    gAlice->SetGenEventHeader(header);
     return;
+
 }
 
 //_______________________________________________________________________

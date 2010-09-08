@@ -61,6 +61,7 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "AliGenFunction.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliGenFunction)
 
@@ -160,7 +161,8 @@ void AliGenFunction::Generate()
     naccepted++;
   }
 
-
+  AliGenEventHeader* header = new AliGenEventHeader("THn");
+  gAlice->SetGenEventHeader(header);
   return;
 }
 //-----------------------------------------------------------------------------
