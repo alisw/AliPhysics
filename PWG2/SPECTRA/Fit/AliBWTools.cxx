@@ -336,8 +336,52 @@ TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  co
 }
 
 
-TH1F * AliBWTools::CombineHistos(const TH1 * h1, TH1 * h2, const TH1* htemplate, Float_t renorm1){
+void AliBWTools::GetMeanDataAndExtrapolation(const TH1 * hData, TF1 * fExtrapolation, Double_t &mean, Double_t &error, Float_t min, Float_t max){
+  // Computes the mean of the combined data and extrapolation in a
+  // given range, use data where they are available and the function
+  // where data are not available
+  // ERROR is from DATA ONLY returned in this version! 
+  //
+  Printf("AliBWTools::GetMeanDataAndExtrapolation: WARNING from data only");
+  Float_t minData    = GetLowestNotEmptyBinEdge (hData);
+  Float_t minDataBin = GetLowestNotEmptyBin     (hData);
+  Float_t maxData    = GetHighestNotEmptyBinEdge(hData);
+  Float_t maxDataBin = GetHighestNotEmptyBin    (hData);
+  Double_t integral  = 0; 
+  mean      = 0;
+  error     = 0; 
+  if (min < minData) {
+    // Compute integral exploiting root function to calculate moments, "unnormalizing" them
+    mean     += fExtrapolation->Mean(min,minData)*fExtrapolation->Integral(min,minData);
+    integral += fExtrapolation->Integral(min,minData);
+    cout << " Low "<< mean << " " << integral << endl;
+    
+  }
+  
+  if (max > maxData) {
+    // Compute integral exploiting root function to calculate moments, "unnormalizing" them
+    mean     += fExtrapolation->Mean(maxData,max)*fExtrapolation->Integral(maxData,max);
+    integral += fExtrapolation->Integral(maxData,max);
+    cout << " Hi "<< mean << " " << integral << endl;
+  } 
+  Float_t err2 = 0;
+  
+  for(Int_t ibin = minDataBin; ibin <= maxDataBin; ibin++){
+    if(hData->GetBinCenter(ibin) < min) continue;
+    if(hData->GetBinCenter(ibin) > max) continue;
+    mean     = mean + (hData->GetBinCenter(ibin) *  hData->GetBinWidth(ibin)* hData->GetBinContent(ibin));
+    err2     = err2 + TMath::Power(hData->GetBinError(ibin) * hData->GetBinCenter(ibin) *  hData->GetBinWidth(ibin),2);
+    integral = integral + hData->GetBinContent(ibin) * hData->GetBinWidth(ibin);
+  }
+  cout << " Data "<< mean << " " << integral << endl;
+  
+  mean = mean/integral;
+  error = TMath::Sqrt(err2);
 
+
+}
+
+TH1F * AliBWTools::CombineHistos(const TH1 * h1, TH1 * h2, const TH1* htemplate, Float_t renorm1){
   // Combine two histos. This assumes the histos have the same binning
   // in the overlapping region. It computes the arithmetic mean in the
   // overlapping region and assigns as an error the relative error
@@ -444,21 +488,25 @@ void AliBWTools::GetFromHistoGraphDifferentX(const TH1F * h, TF1 * f, TGraphErro
 }
 
 
-Float_t AliBWTools::GetMean(TH1F * h, Float_t min, Float_t max) {
+Float_t AliBWTools::GetMean(TH1F * h, Float_t min, Float_t max, Float_t * error) {
 
   // Get the mean of histo in a range; root is not reliable in sub
   // ranges with variable binning.  
   Int_t minBin = h->FindBin(min);
-  Int_t maxBin = h->FindBin(max);
+  Int_t maxBin = h->FindBin(max-0.00001);
 
   Float_t mean = 0 ;
   Float_t integral = 0;
-  for(Int_t ibin = minBin; ibin < maxBin; ibin++){
+  Float_t err2 = 0;
+  for(Int_t ibin = minBin; ibin <= maxBin; ibin++){
     mean     = mean + (h->GetBinCenter(ibin) *  h->GetBinWidth(ibin)* h->GetBinContent(ibin));
+    err2     = err2 + TMath::Power(h->GetBinError(ibin) * h->GetBinCenter(ibin) *  h->GetBinWidth(ibin),2);
     integral = integral + h->GetBinContent(ibin) * h->GetBinWidth(ibin);
   }
   
-  return mean/integral;
+  Float_t value = mean/integral;  
+  if (error) (*error) = TMath::Sqrt(err2);
+  return value;
 
 
 }

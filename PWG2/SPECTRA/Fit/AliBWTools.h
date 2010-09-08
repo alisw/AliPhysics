@@ -38,6 +38,8 @@ public:
   static TGraphErrors * ConcatenateGraphs(const TGraphErrors * g1,const TGraphErrors * g2); 
   static TH1F *         GetHistoFromGraph(const TGraphErrors * g, const TH1F* hTemplate) ;  
   static TGraphErrors * GetGraphFromHisto(const TH1F * h, Bool_t binWidth = kTRUE) ; 
+  static void GetMeanDataAndExtrapolation(const TH1 * hData, TF1 * fExtrapolation, Double_t &mean, Double_t &error, Float_t min=0, Float_t max=100);
+
   static TH1F *         CombineHistos(const TH1 * h1, TH1 * h2, const TH1* htemplate, Float_t renorm1=1.);
   static TH1F *         Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  const TH1* h3, 
 						  TH1 * he1,  TH1 * he2,  TH1 * he3, 
@@ -45,7 +47,7 @@ public:
 						 Float_t renorm1=1., Float_t renorm2=1., Float_t renorm3=1.,
 						 TH1 ** hSyst =0, Bool_t errorFromBinContent=kFALSE);
   static void GetFromHistoGraphDifferentX(const TH1F * h, TF1 * f, TGraphErrors ** gBarycentre, TGraphErrors ** gXlw); 
-  static Float_t GetMean(TH1F * h, Float_t min, Float_t max) ; 
+  static Float_t GetMean(TH1F * h, Float_t min, Float_t max, Float_t * error = NULL) ; 
 
   static void GetMean(TF1 * func, Float_t &mean, Float_t &error, Float_t min=0, Float_t max=100, Int_t normPar = -1);
   static void GetMeanSquare(TF1 * func, Float_t &mean, Float_t &error, Float_t min=0, Float_t max=100, Int_t normPar = -1) ;
@@ -72,7 +74,7 @@ public:
   static void GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * herror, Bool_t isPercentError) ;  
   static void AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins = kFALSE);
   static void GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) ;
-
+  
 
 private:
 
