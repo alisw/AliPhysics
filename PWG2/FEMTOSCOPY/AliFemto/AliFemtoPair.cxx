@@ -18,6 +18,7 @@ double AliFemtoPair::fgMaxDzOuter = 3.2;
 
 AliFemtoPair::AliFemtoPair() :
   fTrack1(0), fTrack2(0),
+  fPairAngleEP(0),
   fNonIdParNotCalculated(0),
   fDKSide(0),
   fDKOut(0),
@@ -56,6 +57,7 @@ AliFemtoPair::AliFemtoPair() :
 
 AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b)
   : fTrack1(a), fTrack2(b),
+  fPairAngleEP(0),
   fNonIdParNotCalculated(0),
   fDKSide(0),
   fDKOut(0),
@@ -120,6 +122,7 @@ AliFemtoPair::~AliFemtoPair() {
 
 AliFemtoPair::AliFemtoPair(const AliFemtoPair &aPair):
   fTrack1(0), fTrack2(0),
+  fPairAngleEP(0),
   fNonIdParNotCalculated(0),
   fDKSide(0),
   fDKOut(0),
@@ -243,6 +246,11 @@ AliFemtoPair& AliFemtoPair::operator=(const AliFemtoPair &aPair)
   return *this;
 }
 
+//________________________
+double AliFemtoPair::GetPairAngleEP() const
+{
+	return fPairAngleEP;
+}
 //_________________
 double AliFemtoPair::MInv() const
 {

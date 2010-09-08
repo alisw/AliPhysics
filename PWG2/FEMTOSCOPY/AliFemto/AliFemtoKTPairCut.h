@@ -19,7 +19,6 @@
  *
  **************************************************************************/
 
-
 #ifndef ALIFEMTOKTPAIRCUT_H
 #define ALIFEMTOKTPAIRCUT_H
 
@@ -37,13 +36,13 @@ public:
   AliFemtoKTPairCut(const AliFemtoKTPairCut& c);
   virtual ~AliFemtoKTPairCut();
 
-  virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
   AliFemtoPairCut* Clone();
   void SetKTRange(double ktmin, double ktmax);
   void SetPhiRange(double phimin, double phimax);
-  bool Pass(const AliFemtoPair* pair, double aRPAngle);
+  virtual bool Pass(const AliFemtoPair* pair);
+  virtual bool Pass(const AliFemtoPair* pair, double aRPAngle);
 
  protected:
   Double_t fKTMin;          // Minimum allowed pair transverse momentum

@@ -153,9 +153,15 @@ public:
 /*   double GetFracOfMergedRowV0PosV0Pos() const; */
 /*   double GetFracOfMergedRowV0NegV0Neg() const; */
 
+//Setting and getting emission angle wrt EP
+  double	GetPairAngleEP() const;
+  void		SetPairAngleEP(double x) {fPairAngleEP = x;}
+
 private:
   AliFemtoParticle* fTrack1; // Link to the first track in the pair
   AliFemtoParticle* fTrack2; // Link to the second track in the pair
+
+  double fPairAngleEP;	//Pair emission angle wrt EP
 
   mutable short fNonIdParNotCalculated; // Set to 1 when NonId variables (kstar) have been already calculated for this pair
   mutable double fDKSide; // momemntum of first particle in PRF - k* side component

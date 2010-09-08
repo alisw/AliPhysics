@@ -18,7 +18,6 @@
  *
  *
  **************************************************************************/
-
 #include "AliFemtoKTPairCut.h"
 #include <string>
 #include <cstdio>
@@ -67,7 +66,7 @@ AliFemtoKTPairCut::~AliFemtoKTPairCut(){
   /* no-op */
 }
 //__________________
-bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair){
+/*bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair){
   bool temp = true;
   
   if (pair->KT() < fKTMin)
@@ -77,7 +76,7 @@ bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair){
     temp = false;
 
   return temp;
-}
+}*/
 //__________________
 AliFemtoString AliFemtoKTPairCut::Report(){
   // Prepare a report from the execution
@@ -118,20 +117,23 @@ void AliFemtoKTPairCut::SetPhiRange(double phimin, double phimax)
   fPhiMax = phimax;
 }
 
-bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair, double aRPAngle)
+//______________________________________________________
+bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair)
 {
-  if (!(Pass(pair))) return false;
-
-  //  cout << "Got pair angle RP " << pair->EmissionAngle() << "   " << aRPAngle << endl;
-
   bool temp = true;
-  double rpangle = pair->EmissionAngle();
-  if (rpangle > 180.0) rpangle -= 180.0;
-  rpangle -= aRPAngle*180/TMath::Pi();
+
+//Taking care of the Kt cut
+  if (pair->KT() < fKTMin)
+    temp = false;
+
+  if (pair->KT() > fKTMax)
+    temp = false;
+
+//Taking care of the Phi cut
+  double rpangle = (pair->GetPairAngleEP())*180/TMath::Pi();
+
   if (rpangle > 180.0) rpangle -= 180.0;
   if (rpangle < 0.0) rpangle += 180.0;
-
-  //  cout << "Got difference " << rpangle << endl;
 
   if (fPhiMin < 0) {
     if ((rpangle > fPhiMax) && (rpangle < 180.0+fPhiMin)) 
@@ -141,8 +143,19 @@ bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair, double aRPAngle)
     if ((rpangle < fPhiMin) || (rpangle > fPhiMax))
       temp = false;
   }
-      
-  //  if (temp) cout << "Accepted !" << endl;
+  return temp;
+}
+
+//_____________________________________
+bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair, double aRPAngle)
+{
+//The same as above, but it is defined with RP Angle as input in all the Correlatin function classes.
+
+  bool temp = (aRPAngle > 0.);
+  aRPAngle = true;
+   
+  if (!Pass(pair))
+	temp = false;
 
   return temp;
 }
