@@ -109,7 +109,7 @@ void AliTPCROCVoltError3D::Init() {
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
 
-  InitROCVoltError3D();
+  if (!fInitLookUp) InitROCVoltError3D();
 }
 
 void AliTPCROCVoltError3D::Update(const TTimeStamp &/*timeStamp*/) {

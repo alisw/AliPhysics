@@ -54,7 +54,7 @@ AliTPCFCVoltError3D::AliTPCFCVoltError3D()
   //
 
   // flags for filled 'basic lookup tables'
-  for (Int_t i=0; i<5; i++){
+  for (Int_t i=0; i<6; i++){
     fInitLookUpBasic[i]= kFALSE;  
   }
 
@@ -165,7 +165,7 @@ void AliTPCFCVoltError3D::Init() {
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
   SetOmegaTauT1T2(wt,fT1,fT2);
 
-  InitFCVoltError3D();
+  if (!fInitLookUp) InitFCVoltError3D();
 }
 
 void AliTPCFCVoltError3D::Update(const TTimeStamp &/*timeStamp*/) {

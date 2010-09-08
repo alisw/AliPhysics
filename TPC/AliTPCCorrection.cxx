@@ -99,53 +99,7 @@ const Double_t  AliTPCCorrection::fgkdvdE = 0.0024; // [cm/V] drift velocity dep
 
 const Double_t AliTPCCorrection::fgkEM = -1.602176487e-19/9.10938215e-31; // charge/mass in [C/kg]
 const Double_t AliTPCCorrection::fgke0 = 8.854187817e-12;                 // vacuum permittivity [A·s/(V·m)]
-
-// FIXME: List of interpolation points (course grid in the middle, fine grid on the borders)
-const Double_t AliTPCCorrection::fgkRList[AliTPCCorrection::kNR] =  {   
-  83.06,   83.5,   84.0,   84.5,   85.0,   85.5,   86.0,   86.5,      
-   87.0,   87.5,   88.0,   88.5,   89.0,   89.5,   90.0,   90.5,   91.0,   92.0,
-   93.0,   94.0,   95.0,   96.0,   98.0,  100.0,  102.0,  104.0,  106.0,  108.0, 
-  110.0,  112.0,  114.0,  116.0,  118.0,  120.0,  122.0,  124.0,  126.0,  128.0, 
-  130.0,  132.0,  134.0,  136.0,  138.0,  140.0,  142.0,  144.0,  146.0,  148.0, 
-  150.0,  152.0,  154.0,  156.0,  158.0,  160.0,  162.0,  164.0,  166.0,  168.0, 
-  170.0,  172.0,  174.0,  176.0,  178.0,  180.0,  182.0,  184.0,  186.0,  188.0,
-  190.0,  192.0,  194.0,  196.0,  198.0,  200.0,  202.0,  204.0,  206.0,  208.0,
-  210.0,  212.0,  214.0,  216.0,  218.0,  220.0,  222.0,  224.0,  226.0,  228.0,
-  230.0,  232.0,  234.0,  236.0,  238.0,  240.0,  241.0,  242.0,  243.0,  244.0,  
-  245.0,  245.5,  246.0,  246.5,  247.0,  247.5,  248.0,  248.5,  249.0,  249.5,  
-  250.0,  250.5,  251.0,  251.5,  252.0,  252.5,  253.0,  253.5,  254.0,  254.5 
-} ;
  
-const Double_t AliTPCCorrection::fgkZList[AliTPCCorrection::kNZ]     =   { 
--249.5, -249.0, -248.5, -248.0, -247.0, -246.0, -245.0, -243.0, -242.0, -241.0,
--240.0, -238.0, -236.0, -234.0, -232.0, -230.0, -228.0, -226.0, -224.0, -222.0,
--220.0, -218.0, -216.0, -214.0, -212.0, -210.0, -208.0, -206.0, -204.0, -202.0,
--200.0, -198.0, -196.0, -194.0, -192.0, -190.0, -188.0, -186.0, -184.0, -182.0,
--180.0, -178.0, -176.0, -174.0, -172.0, -170.0, -168.0, -166.0, -164.0, -162.0,
--160.0, -158.0, -156.0, -154.0, -152.0, -150.0, -148.0, -146.0, -144.0, -142.0,
--140.0, -138.0, -136.0, -134.0, -132.0, -130.0, -128.0, -126.0, -124.0, -122.0,
--120.0, -118.0, -116.0, -114.0, -112.0, -110.0, -108.0, -106.0, -104.0, -102.0,
--100.0,  -98.0,  -96.0,  -94.0,  -92.0,  -90.0,  -88.0,  -86.0,  -84.0,  -82.0,
--80.0,  -78.0,  -76.0,  -74.0,  -72.0,  -70.0,  -68.0,  -66.0,  -64.0,  -62.0,
--60.0,  -58.0,  -56.0,  -54.0,  -52.0,  -50.0,  -48.0,  -46.0,  -44.0,  -42.0,
--40.0,  -38.0,  -36.0,  -34.0,  -32.0,  -30.0,  -28.0,  -26.0,  -24.0,  -22.0,
--20.0,  -18.0,  -16.0,  -14.0,  -12.0,  -10.0,   -8.0,   -6.0,   -4.0,   -2.0,
--1.0,   -0.5,   -0.2,   -0.1,  -0.05,   0.05,    0.1,    0.2,    0.5,    1.0, 
- 2.0,    4.0,    6.0,    8.0,   10.0,   12.0,   14.0,   16.0,   18.0,   20.0,
- 22.0,   24.0,   26.0,   28.0,   30.0,   32.0,   34.0,   36.0,   38.0,   40.0, 
- 42.0,   44.0,   46.0,   48.0,   50.0,   52.0,   54.0,   56.0,   58.0,   60.0, 
- 62.0,   64.0,   66.0,   68.0,   70.0,   72.0,   74.0,   76.0,   78.0,   80.0, 
- 82.0,   84.0,   86.0,   88.0,   90.0,   92.0,   94.0,   96.0,   98.0,  100.0, 
-102.0,  104.0,  106.0,  108.0,  110.0,  112.0,  114.0,  116.0,  118.0,  120.0, 
-122.0,  124.0,  126.0,  128.0,  130.0,  132.0,  134.0,  136.0,  138.0,  140.0, 
-142.0,  144.0,  146.0,  148.0,  150.0,  152.0,  154.0,  156.0,  158.0,  160.0, 
-162.0,  164.0,  166.0,  168.0,  170.0,  172.0,  174.0,  176.0,  178.0,  180.0, 
-182.0,  184.0,  186.0,  188.0,  190.0,  192.0,  194.0,  196.0,  198.0,  200.0,
-202.0,  204.0,  206.0,  208.0,  210.0,  212.0,  214.0,  216.0,  218.0,  220.0,
-222.0,  224.0,  226.0,  228.0,  230.0,  232.0,  234.0,  236.0,  238.0,  240.0,
-242.0,  243.0,  244.0,  245.0,  246.0,  247.0,  248.0,  248.5,  249.0,  249.5   } ;
-
-
 
 AliTPCCorrection::AliTPCCorrection() 
   : TNamed("correction_unity","unity"),fILow(0),fJLow(0),fKLow(0), fT1(1), fT2(1)
@@ -155,10 +109,7 @@ AliTPCCorrection::AliTPCCorrection()
   //
   if (!fgVisualCorrection) fgVisualCorrection= new TObjArray;
 
-  // Initialization of interpolation points 
-  for (Int_t i = 0; i<kNPhi; i++) {
-    fgkPhiList[i] = TMath::TwoPi()*i/(kNPhi-1);    
-  }
+  InitLookUpfulcrums();
 
 }
 
@@ -170,10 +121,7 @@ AliTPCCorrection::AliTPCCorrection(const char *name,const char *title)
   //
   if (!fgVisualCorrection) fgVisualCorrection= new TObjArray;
 
-  // Initialization of interpolation points 
-  for (Int_t i = 0; i<kNPhi; i++) {
-    fgkPhiList[i] = TMath::TwoPi()*i/(kNPhi-1);    
-  }
+  InitLookUpfulcrums();
 
 }
 
@@ -625,7 +573,6 @@ Double_t AliTPCCorrection::Interpolate3DTable( const Int_t order, const Double_t
 }
 
 
-
 Double_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Double_t yArray[], 
 				       const Int_t order, const Double_t x ) {
   //
@@ -692,6 +639,56 @@ void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Dou
   if ( x == xArray[0]   ) low = 0 ;
   
 }
+
+void AliTPCCorrection::InitLookUpfulcrums() {
+  //
+  // Initialization of interpolation points - for main look up table
+  //   (course grid in the middle, fine grid on the borders)
+  //
+
+  AliTPCROC * roc = AliTPCROC::Instance();
+  const Double_t rLow =  TMath::Floor(roc->GetPadRowRadii(0,0))-1; // first padRow plus some margin 
+
+  // fulcrums in R
+  fgkRList[0] = rLow;
+  for (Int_t i = 1; i<kNR; i++) {
+    fgkRList[i] = fgkRList[i-1] + 3.5;     // 3.5 cm spacing    
+    if (fgkRList[i]<90 ||fgkRList[i]>245) 
+       fgkRList[i] = fgkRList[i-1] + 0.5; // 0.5 cm spacing
+    else if (fgkRList[i]<100 || fgkRList[i]>235) 
+       fgkRList[i] = fgkRList[i-1] + 1.5;  // 1.5 cm spacing
+    else if (fgkRList[i]<120 || fgkRList[i]>225) 
+       fgkRList[i] = fgkRList[i-1] + 2.5;  // 2.5 cm spacing
+  }
+
+  // fulcrums in Z
+  fgkZList[0] = -249.5;
+  fgkZList[kNZ-1] = 249.5;
+  for (Int_t j = 1; j<kNZ/2; j++) {
+    fgkZList[j] = fgkZList[j-1];
+    if      (TMath::Abs(fgkZList[j])< 0.15)
+      fgkZList[j] = fgkZList[j-1] + 0.09; // 0.09 cm spacing
+    else if(TMath::Abs(fgkZList[j])< 0.6)
+      fgkZList[j] = fgkZList[j-1] + 0.4; // 0.4 cm spacing
+    else if      (TMath::Abs(fgkZList[j])< 2.5 || TMath::Abs(fgkZList[j])>248) 
+      fgkZList[j] = fgkZList[j-1] + 0.5; // 0.5 cm spacing
+    else if (TMath::Abs(fgkZList[j])<10 || TMath::Abs(fgkZList[j])>235) 
+      fgkZList[j] = fgkZList[j-1] + 1.5;  // 1.5 cm spacing
+    else if (TMath::Abs(fgkZList[j])<25 || TMath::Abs(fgkZList[j])>225) 
+      fgkZList[j] = fgkZList[j-1] + 2.5;  // 2.5 cm spacing
+    else 
+      fgkZList[j] = fgkZList[j-1] + 4;  // 4 cm spacing
+
+    fgkZList[kNZ-j-1] = -fgkZList[j];
+  }
+  
+  // fulcrums in phi
+  for (Int_t k = 0; k<kNPhi; k++) 
+    fgkPhiList[k] = TMath::TwoPi()*k/(kNPhi-1);    
+  
+  
+}
+
 
 void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, TMatrixD &chargeDensity, 
 					   TMatrixD &arrayErOverEz, TMatrixD &arrayDeltaEz, 

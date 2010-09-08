@@ -110,20 +110,21 @@ protected:
   static const Double_t fgke0;          // vacuum permittivity [A·s/(V·m)]
 
 
-  enum {kNR=   118};             // Number of R points in the table for interpolating distortion data
-  enum {kNPhi= 18*10+1};          // Number of Phi points in the table for interpolating distortion data ( plus one extra for 360 == 0 ) 
-  enum {kNZ=  270};              // Number of Z points in the table for interpolating distortion data
+  enum {kNR=   72  };     // Number of R points in the table for interpolating distortion data
+  enum {kNPhi= 18*10+1};  // Number of Phi points in the table for interpolating distortion data ( plus one extra for 360 == 0 ) 
+  enum {kNZ=   166};      // Number of Z points in the table for interpolating distortion data
 
-  static const Double_t fgkRList[kNR]; // points in the radial direction (for the lookup table)
+  Double_t fgkRList[kNR]; // points in the radial direction (for the lookup table)
   Double_t fgkPhiList[kNPhi]; // points in the phi direction (for the lookup table)
-  static const Double_t fgkZList[kNZ]; // points in the z direction (for the lookup table)
+  Double_t fgkZList[kNZ]; // points in the z direction (for the lookup table)
 
   // Simple Interpolation functions: e.g. with tricubic interpolation (not yet in TH3)
   Int_t fILow, fJLow, fKLow;          // variable to help in the interpolation 
   void Interpolate2DEdistortion( const Int_t order, const Double_t r, const Double_t z, 
 				 const Double_t er[kNZ][kNR], Double_t &erValue );
   void Interpolate3DEdistortion( const Int_t order, const Double_t r, const Float_t phi, const Double_t z, 
-				 const Double_t er[kNZ][kNPhi][kNR], const Double_t ephi[kNZ][kNPhi][kNR], const Double_t ez[kNZ][kNPhi][kNR],
+				 const Double_t er[kNZ][kNPhi][kNR], const Double_t ephi[kNZ][kNPhi][kNR], 
+				 const Double_t ez[kNZ][kNPhi][kNR],
 				 Double_t &erValue, Double_t &ephiValue, Double_t &ezValue);
   Double_t Interpolate2DTable( const Int_t order, const Double_t x, const Double_t y, 
 			      const Int_t nx,  const Int_t ny, const Double_t xv[], const Double_t yv[], 
@@ -159,7 +160,9 @@ private:
   AliTPCCorrection(const AliTPCCorrection &);               // not implemented
   AliTPCCorrection &operator=(const AliTPCCorrection &);    // not implemented
 
-  ClassDef(AliTPCCorrection,3);
+  void InitLookUpfulcrums();   // to initialize the grid of the look up table
+
+  ClassDef(AliTPCCorrection,4);
 };
 
 #endif
