@@ -107,7 +107,8 @@ void Help();
 // External stuff
 void ALICEWorkInProgress(TCanvas *c,TString today="11/05/2010", TString label = "ALICE performance"){
 
-  TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",0.72,0.79,0.82,0.89);
+  TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",0.72,0.72,0.89,0.89);
+  //TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",0.72,0.62,0.85,0.75);
   myPadLogo->SetFillColor(0); 
   myPadLogo->SetBorderMode(0);
   myPadLogo->SetBorderSize(2);
@@ -121,21 +122,38 @@ void ALICEWorkInProgress(TCanvas *c,TString today="11/05/2010", TString label = 
   myPadLogo->cd();
   TASImage *myAliceLogo = new TASImage("alice_logo.png");
   myAliceLogo->Draw();
-  c->cd();
-  TPaveText* t1=new TPaveText(0.65,0.73,0.89,0.78,"NDC");
+  c->cd();  
+  TPaveText* t1=new TPaveText(0.418103, 0.837798, 0.656609, 0.888393,"NDC");
   t1->SetFillStyle(0);
   t1->SetBorderSize(0);
   t1->AddText(0.,0.,label);
   t1->SetTextColor(kRed);
   t1->SetTextFont(42);
+  t1->SetTextSize(0.04);
   t1->Draw();
-  TPaveText* t2=new TPaveText(0.65,0.65,0.89,0.7,"NDC");
+  TPaveText* t2=new TPaveText(0.418103, 0.80, 0.656609, 0.84,"NDC");
   t2->SetFillStyle(0);
   t2->SetBorderSize(0);
+  t2->AddText(0.,0.,"pp at #sqrt{s} = 900 GeV (2009 data)");
   t2->SetTextColor(kRed);
-  t2->SetTextFont(52);
-  t2->AddText(0.,0.,today.Data());
+  t2->SetTextFont(42);
+  t2->SetTextSize(0.027);
   t2->Draw();
+  TPaveText* t3=new TPaveText(0.418103, 0.76, 0.656609, 0.80,"NDC");
+  t3->SetFillStyle(0);
+  t3->SetBorderSize(0);
+  t3->AddText(0.,0.,"Statistical and systematic errors");
+  t3->SetTextColor(kRed);
+  t3->SetTextFont(42);
+  t3->SetTextSize(0.027);
+  t3->Draw(); 
+  // TPaveText* t2=new TPaveText(0.65,0.65,0.89,0.7,"NDC");
+  // t2->SetFillStyle(0);
+  // t2->SetBorderSize(0);
+  // t2->SetTextColor(kRed);
+  // t2->SetTextFont(52);
+  // t2->AddText(0.,0.,today.Data());
+  // t2->Draw();
 }
 
 // Used to tag plots
@@ -148,7 +166,7 @@ TString today = "";
 Bool_t convertToMT = 0;
 Bool_t sumCharge = kFALSE;
 Int_t whatToFit = kStatErrors; 
-Bool_t doPrint = 1;
+Bool_t doPrint = 0;
 Bool_t scaleKaons =  kFALSE;
 Bool_t drawStar =  kFALSE; // Overlay star when doing fits
 Bool_t correctSecondaries  = 1;
@@ -216,11 +234,11 @@ void FitCombined() {
   // table to print results
   AliLatexTable table(10,"c|ccccccccc");
   if (fitFuncID == kFitLevi) {
-    table.InsertCustomRow("Part & Yield & Yield (FIT) &  T Slope & n & $\\chi^2$/NDF & Min X & Frac Above & $\\langle p_{t} \\rangle$  & $\\langle p_{t}^{2} \\rangle$ \\\\");
+    table.InsertCustomRow("Part & Yield & Yield (FIT) &  T Slope & n & $\\chi^2$/NDF & Min X & Extrap (%) & $\\langle p_{t} \\rangle (Fit)$  & $\\langle p_{t} \\rangle$ (FIT+DATA)\\\\");
   }  else if (fitFuncID == kFitPowerLaw) {
-    table.InsertCustomRow("Part & Yield & Norm &  n & pt0 & $\\chi^2$/NDF & Min X & Frac Above & $\\langle p_{t} \\rangle$  & $\\langle p_{t}^{2} \\rangle$ \\\\");    
+    table.InsertCustomRow("Part & Yield & Norm &  n & pt0 & $\\chi^2$/NDF & Min X & Frac Above  & $\\langle p_{t} \\rangle (Fit)$  & $\\langle p_{t} \\rangle$ (FIT+DATA)  \\\\");    
   } else {
-    table.InsertCustomRow("Part & Yield & Par0 & Par2  & Par1 & $\\chi^2$/NDF & Min X & Frac Above & $\\langle p_{t} \\rangle$  & $\\langle p_{t}^{2} \\rangle$ \\\\");
+    table.InsertCustomRow("Part & Yield & Par0 & Par2  & Par1 & $\\chi^2$/NDF & Min X & Frac Above  & $\\langle p_{t} \\rangle (Fit)$  & $\\langle p_{t} \\rangle$ (FIT+DATA)  \\\\");
 
   }
   table.InsertHline();
@@ -257,12 +275,15 @@ void FitCombined() {
     TLegend * l = new TLegend(0.176724, 0.153274, 0.475575, 0.434524,chargeLabel[icharge]);
     l->SetFillColor(kWhite);
     l->SetTextSize(0.035);
-    TPaveText* tf=new TPaveText(0.18,0.14,0.56,0.29,"NDC");
+    
+
+    
+    TPaveText* tf=new TPaveText(0.321839, 0.175595, 0.685345, 0.299107,"NDC");
     if(fitFuncID == kFitLevi){
       tf->AddText("#frac{dN}{dp_{t}} #propto p_{t} #left(1+#frac{#sqrt{m^{2}+p_{t}^{2}} -m}{nT} #right)^{-n}");
       //      tf->SetNDC();
       tf->SetTextFont(12);
-      tf->SetTextSize(0.035);
+      tf->SetTextSize(0.032);
     }
     for(Int_t ipart = 0; ipart < kNPart; ipart++){
       printf(" ----- Fit %s %s ------\n",partFlag[ipart],chargeFlag[icharge]);
@@ -309,11 +330,11 @@ void FitCombined() {
       // Temp: fit histo with sist errors 
       TH1F * hsyst     = new TH1F(*htemplate);
       TH1F * hsyststat = 0;
-      hsyst->SetFillColor(kYellow);
+      hsyst->SetFillColor(kGray);
       AliBWTools::GetValueAndError(hsyst,hSpectra[iCombInStudy][ipart][icharge],hSystError[iCombInStudy][ipart][icharge],kTRUE);
       hsyststat= new TH1F(*hsyst);
       AliBWTools::GetHistoCombinedErrors(hsyststat,hSpectra[iCombInStudy][ipart][icharge]); // combine syst and stat
-      hsyststat->SetFillColor(kYellow);
+      hsyststat->SetFillColor(kGray);
 
       TH1F * hToFit = 0;
       if (whatToFit == kStatErrors) hToFit = hSpectra[iCombInStudy][ipart][icharge]; // Shorthand
@@ -384,19 +405,27 @@ void FitCombined() {
       table.SetNextCol(yieldTools, yieldETools,-4);
       table.SetNextCol(func->GetParameter(0));
       table.SetNextCol(tslope,tslopeE,-4);
-      table.SetNextCol(func->GetParameter(1),func->GetParError(1)); 
+      table.SetNextCol(func->GetParameter(1),func->GetParError(1),-2); 
       table.SetNextCol(Form("%2.2f/%d",func->GetChisquare(),func->GetNDF())); 
       Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hToFit);
       //Float_t lowestPoint = AliBWTools::GetLowestNotEmptyBinEdge(hSpectra[kITS][ipart][icharge]);
       Float_t yieldAbove  = func->Integral(lowestPoint,100);
       table.SetNextCol(lowestPoint,-2);
-      table.SetNextCol(yieldAbove/yield,-2);
-      Float_t mean, meane;
+      table.SetNextCol((1 - yieldAbove/yield)*100,-1);
+      Float_t mean, meane;  // Mean using only fit function
+      Double_t meanDF, meanDFe; // Mean from data + fit 
       Float_t mean2, mean2e;
-      AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
-      AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
-      table.SetNextCol(mean,  meane ,-4);
-      table.SetNextCol(mean2, mean2e,-4);
+      if (fitFuncID < kFitPhojet) {
+	AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
+	AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
+      }
+      AliBWTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, 0.,100.);
+      // FIXME CANCELLAMI
+      mean = AliBWTools::GetMean      (hToFit, 0.,100., &meane);
+      AliBWTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, AliBWTools::GetLowestNotEmptyBinEdge(hToFit),AliBWTools::GetHighestNotEmptyBinEdge(hToFit));      
+      // --
+      table.SetNextCol(mean,   meane  ,-4);
+      table.SetNextCol(meanDF, meanDFe,-4);
       
       //			 fMean2->IntegralError(0,100)/func->Integral(0,100),-7);
       table.InsertRow();
@@ -405,7 +434,7 @@ void FitCombined() {
       /// TEMP TABLE
       tempTable.SetNextCol(partLatex[ipart][icharge]);
       tempTable.SetNextCol(yieldTools, yieldETools, -4);
-      tempTable.SetNextCol(mean,  meane ,-4);
+      tempTable.SetNextCol(meanDF,  meanDFe ,-4);
       //      tempTable.SetNextCol(partialYields[1], partialYieldsErrors[1], -4);
       //      tempTable.SetNextCol(yieldAbove/yield,-2);
       tempTable.InsertRow();
@@ -414,29 +443,20 @@ void FitCombined() {
 
     }
     c2->cd();
+    ALICEWorkInProgress(c2,"","ALICE Preliminary");
     l->Draw();
+    tf->Draw();
     c2r->cd();
+    ALICEWorkInProgress(c2r,"","ALICE Preliminary");
     l->Draw();
-    if (doPrint) {
-      c2->cd();
-      c2->Update();
-      gSystem->ProcessEvents();
-      //      tf->Draw();
-      c2->Print(TString(c2->GetName()) + ".eps");
-      //      ALICEWorkInProgress(c2,"","#splitline{ALICE Preliminary}{Statistical Error Only}");
-      c2->Update();
-      c2->Print(TString(c2->GetName()) + ".png");
-      c2r->Update();
-      gSystem->ProcessEvents();
-      c2r->Print(TString(c2r->GetName()) + ".eps");
-      c2r->Print(TString(c2r->GetName()) + ".png");
-    }
+    PrintCanvas(c2,"eps,root,png");
+    PrintCanvas(c2r,"eps,root,png");
     
     
   }
 
   
-  table.PrintTable("");
+  table.PrintTable("ASCII");
   
   cout << "" << endl;
   tempTable.PrintTable("ASCII");
@@ -1617,8 +1637,8 @@ void DrawRatios() {
   hPPiRatio->Divide(htmp);
   hPPiRatio->SetYTitle("(p+#bar{p})/(#pi^{+}+#pi^{-})");
 
+  TH1F * hPPiRatioMC[kNTunes];
   if(showMC){
-    TH1F * hPPiRatioMC[kNTunes];
     for(Int_t itune = 0; itune < kNTunes; itune++){
       hPPiRatioMC[itune] = (TH1F*) hSpectraMC[itune][kProton][kPos]->Clone();
       hPPiRatioMC[itune]->Add(hSpectraMC[itune][kProton][kNeg]);
@@ -1673,6 +1693,7 @@ void DrawRatios() {
 
   TCanvas * c2 = new TCanvas(TString("cRatio_KPi"),TString("cRatio_KPi"));  
   c2->SetGridy();
+  hKPiRatio->SetMaximum(0.8);
   hKPiRatio->Draw();
   TLegend * lMC = new TLegend(0.526846, 0.18007, 0.887584,0.407343);
   lMC->SetFillColor(kWhite);
@@ -1719,8 +1740,8 @@ void DrawRatios() {
 
     for(Int_t itune = 0; itune < kNTunes; itune++){
       lMC->AddEntry(hKPiRatioMC[itune],mcTuneName[itune]);
-      hKPiRatioMC[itune]->SetLineWidth(2);    
-      hKPiRatioMC[itune]->Draw("same,chist");    	
+      hPPiRatioMC[itune]->SetLineWidth(2);    
+      hPPiRatioMC[itune]->Draw("same,chist");    	
     }
   
     lMC->Draw();
@@ -1761,7 +1782,7 @@ void DrawWithSyst() {
 	TString opt = ipart ? "" : "same";
 	TH1F * hsyst = new TH1F(*htemplate);
 	AliBWTools::GetValueAndError(hsyst,hSpectra[idet][ipart][icharge],hSystError[idet][ipart][icharge],kTRUE);
-	hsyst->SetFillColor(kYellow);
+	hsyst->SetFillColor(kGray);
 	hsyst->Draw("e5,same");
 	hSpectra[idet][ipart][icharge]->Draw("same");
 	// Do not draw syst error outside of spectra range
