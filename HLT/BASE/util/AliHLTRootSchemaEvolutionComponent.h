@@ -150,13 +150,6 @@ class AliHLTRootSchemaEvolutionComponent : public AliHLTCalibrationProcessor
     /// print status
     void Print(const char* option) const;
 
-    class TimeSum : public binary_function<int,AliHLTDataBlockItem,int> {
-    public:
-      int operator() (int a, AliHLTDataBlockItem b) {
-	return a+b.GetTotalTime();
-      }
-    };
-
   private:
     /// data type of the block
     AliHLTComponentDataType fDt; //! transient

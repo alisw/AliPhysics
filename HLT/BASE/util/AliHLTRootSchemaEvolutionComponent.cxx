@@ -43,6 +43,20 @@
 #include <numeric>
 using std::accumulate;
 
+namespace
+{
+  // Helper class for std::accumulate algorithm.
+  class AliTimeSum {
+  public:
+    typedef int first_argument_type;
+    typedef AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem second_argument_type;
+    typedef bool result_type;
+    int operator() (int a, AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem b) {
+      return a+b.GetTotalTime();
+    }
+  };
+} // end of namespace
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRootSchemaEvolutionComponent)
 
@@ -166,7 +180,7 @@ int AliHLTRootSchemaEvolutionComponent::ProcessCalibration( const AliHLTComponen
     return 0;
   }
 
-  AliHLTUInt32_t listtime=accumulate(fList.begin(), fList.end(), int(0), AliHLTDataBlockItem::TimeSum());
+  AliHLTUInt32_t listtime=accumulate(fList.begin(), fList.end(), int(0), AliTimeSum());
   AliHLTUInt32_t averageEventTime=0;
   AliHLTUInt32_t averageCycleTime=0;
 
