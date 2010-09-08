@@ -43,6 +43,7 @@ public:
   TString GetNameList() const { return fNameList;}; 
   void SetCalDetGain(AliTRDCalDet *calDetGainUsed) {fCalDetGainUsed = calDetGainUsed;};
   void SetCalDetVdrift(AliTRDCalDet *calDetVdriftUsed) {fCalDetVdriftUsed = calDetVdriftUsed;};
+  void SetSwitchOnValidation(Bool_t switchOnValidation) {fSwitchOnValidation = switchOnValidation;};
   AliTRDCalDet *GetCalDetGain() const { return fCalDetGainUsed;};
   AliTRDCalDet *GetCalDetVdrift() const { return fCalDetVdriftUsed;};
 
@@ -114,4 +115,5 @@ private:
 };
 
 #endif
+
 

@@ -119,6 +119,8 @@ void AliTRDPreprocessorOffline::CalibVdriftT0(const Char_t* file, Int_t startRun
   //
   // 1. Initialization 
   //
+  fVdriftValidated = kTRUE;
+  fT0Validated = kTRUE;
   //
   // 2. extraction of the information
   //
@@ -850,4 +852,5 @@ Int_t AliTRDPreprocessorOffline::GetSubVersion(TString name) const
   return -1;
 
 }
+
 
