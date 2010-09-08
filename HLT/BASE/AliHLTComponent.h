@@ -82,6 +82,7 @@ class AliHLTComponentHandler;
 class TObjArray;
 class TMap;
 class TStopwatch;
+class TUUID;
 class AliRawDataHeader;
 class AliHLTComponent;
 class AliHLTMemoryFile;
@@ -876,6 +877,15 @@ class AliHLTComponent : public AliHLTLogging {
    * small output buffer.
    */
   int GetLastObjectSize() const {return fLastObjectSize;}
+
+  /**
+   * This method generates a V4 Globally Unique Identifier (GUID) using the
+   * ROOT TRandom3 pseudo-random number generator with the process' UID, GID
+   * PID and host address as seeds. For good measure MD5 sum hashing is also
+   * applied.
+   * @return the newly generated GUID structure.
+   */
+  static TUUID GenerateGUID();
 
  protected:
 

@@ -202,8 +202,10 @@ void RunTrigger(int config = 0, bool usecint = false, bool debug = false, int nu
 	sys.BuildTaskList("sink");
 	sys.Run(
 		numOfEvents,
-		1,  // Stop chain at end of run.
-		0x1 // Active CTP trigger mask.
+		1,   // Stop chain at end of run.
+		0x1, // Active CTP trigger mask.
+		0,   // Time stamp.
+		0    // Event type.
 	);
 }
 

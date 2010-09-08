@@ -42,6 +42,9 @@ using namespace std;
 #include "TClass.h"
 #include "TStopwatch.h"
 #include "TFormula.h"
+#include "TUUID.h"
+#include "TMD5.h"
+#include "TRandom3.h"
 #include "AliHLTMemoryFile.h"
 #include "AliHLTMisc.h"
 #include <cassert>
@@ -2583,6 +2586,55 @@ int AliHLTComponent::LoggingVarargs(AliHLTComponentLogSeverity severity,
   va_end(args);
 
   return iResult;
+}
+
+TUUID AliHLTComponent::GenerateGUID()
+{
+  // Generates a globally unique identifier.
+
+  // Start by creating a new UUID. We cannot use the one automatically generated
+  // by ROOT because the algorithm used will not guarantee unique IDs when generating
+  // these UUIDs at a high rate in parallel.
+  TUUID uuid;
+  // We then use the generated UUID to form part of the random number seeds which
+  // will be used to generate a proper random UUID. For good measure we use a MD5
+  // hash also. Note that we want to use the TUUID class because it will combine the
+  // host address information into the UUID. Using gSystem->GetHostByName() apparently
+  // can cause problems on Windows machines with a firewall, because it always tries
+  // to contact a DNS. The TUUID class handles this case appropriately.
+  union
+  {
+    UChar_t buf[16];
+    UShort_t word[8];
+    UInt_t dword[4];
+  };
+  uuid.GetUUID(buf);
+  TMD5 md5;
+  md5.Update(buf, sizeof(buf));
+  TMD5 md52 = md5;
+  md5.Final(buf);
+  dword[0] += gSystem->GetUid();
+  dword[1] += gSystem->GetGid();
+  dword[2] += gSystem->GetPid();
+  for (int i = 0; i < 4; ++i)
+  {
+    gRandom->SetSeed(dword[i]);
+    dword[i] = gRandom->Integer(0xFFFFFFFF);
+  }
+  md52.Update(buf, sizeof(buf));
+  md52.Final(buf);
+  // To keep to the standard we need to set the version and reserved bits.
+  word[3] = (word[3] & 0x0FFF) | 0x4000;
+  buf[8] = (buf[8] & 0x3F) | 0x80;
+
+  // Create the name of the new class and file.
+  char uuidstr[64];
+  sprintf(uuidstr, "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+    dword[0], word[2], word[3], buf[8], buf[9], buf[10], buf[11], buf[12], buf[13], buf[14], buf[15]
+  );
+
+  uuid.SetUUID(uuidstr);
+  return uuid;
 }
 
 int AliHLTComponent::ScanECSParam(const char* ecsParam)

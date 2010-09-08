@@ -202,11 +202,11 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   int LoadTriggerMenu(const char* cdbPath, const AliHLTTriggerMenu*& menu);
   
   /**
-   * Generates a file name for the generated on the fly code using a UUID.
+   * Generates a file name for the generated on the fly code using a GUID.
    * \param name <i>out</i> The name of the class to use.
    * \param filename <i>out</i> The name of the file containing the code.
    */
-  void GenerateFileName(TString& name, TString& filename) const;
+  void GenerateFileName(TString& name, TString& filename);
   
   /**
    * Generates the code for the global trigger to apply the given trigger menu.
@@ -308,6 +308,7 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   AliHLTUInt32_t fBits; //! Status bits
   bool fDataEventsOnly; //! Flag indicating if only data events are processed with trigger logic.
   int fMonitorPeriod; //! Period of the monitoring trigger in s, -1 means monitoring trigger off
+  UInt_t fUniqueID; //! Unique ID for the decision output objects.
 
   static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   

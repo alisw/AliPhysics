@@ -33,8 +33,6 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "TUUID.h"
-#include "TMD5.h"
-#include "TRandom3.h"
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TRegexp.h"
@@ -83,8 +81,9 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fIncludeFiles(TObjString::Class()),
 	fLibStateAtLoad(),
 	fBits(0),
-	fDataEventsOnly(true)
-	, fMonitorPeriod(-1)
+	fDataEventsOnly(true),
+	fMonitorPeriod(-1),
+	fUniqueID(0)
 {
   // Default constructor.
   
@@ -488,6 +487,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
       (triggerResult == true) ? description.Data() : GetDescription()
     );
 
+  decision.SetUniqueID(fUniqueID);
   decision.SetCounters(fTrigger->GetCounters(), GetEventCount()+1);
   if (fTrigger->CallFailed()) return -EPROTO;
   
@@ -706,52 +706,22 @@ int AliHLTGlobalTriggerComponent::LoadTriggerMenu(const char* cdbPath, const Ali
 }
 
 
-void AliHLTGlobalTriggerComponent::GenerateFileName(TString& name, TString& filename) const
+void AliHLTGlobalTriggerComponent::GenerateFileName(TString& name, TString& filename)
 {
   // Creates a unique file name for the generated code.
   
-  // Start by creating a new UUID. We cannot use the one automatically generated
-  // by ROOT because the algorithm used will not guarantee unique IDs when generating
-  // these UUIDs at a high rate in parallel.
-  TUUID uuid;
-  // We then use the generated UUID to form part of the random number seeds which
-  // will be used to generate a proper random UUID. For good measure we use a MD5
-  // hash also. Note that we want to use the TUUID class because it will combine the
-  // host address information into the UUID. Using gSystem->GetHostByName() apparently
-  // can cause problems on Windows machines with a firewall, because it always tries
-  // to contact a DNS. The TUUID class handles this case appropriately.
-  union
+  TUUID guid = GenerateGUID();
+  UChar_t buf[16];
+  guid.GetUUID(buf);
+  fUniqueID = *reinterpret_cast<UInt_t*>(buf);
+  TString guidstr = guid.AsString();
+  // Replace '-' with '_' in string.
+  for (int i = 0; i < guidstr.Length(); ++i)
   {
-    UChar_t buf[16];
-    UShort_t word[8];
-    UInt_t dword[4];
-  };
-  uuid.GetUUID(buf);
-  TMD5 md5;
-  md5.Update(buf, sizeof(buf));
-  TMD5 md52 = md5;
-  md5.Final(buf);
-  dword[0] += gSystem->GetUid();
-  dword[1] += gSystem->GetGid();
-  dword[2] += gSystem->GetPid();
-  for (int i = 0; i < 4; ++i)
-  {
-    gRandom->SetSeed(dword[i]);
-    dword[i] = gRandom->Integer(0xFFFFFFFF);
+    if (guidstr[i] == '-') guidstr[i] = '_';
   }
-  md52.Update(buf, sizeof(buf));
-  md52.Final(buf);
-  // To keep to the standard we need to set the version and reserved bits.
-  word[3] = (word[3] & 0x0FFF) | 0x4000;
-  buf[8] = (buf[8] & 0x3F) | 0x80;
-
-  // Create the name of the new class and file.
-  char uuidstr[64];
-  sprintf(uuidstr, "%08x_%04x_%04x_%02x%02x_%02x%02x%02x%02x%02x%02x",
-    dword[0], word[2], word[3], buf[8], buf[9], buf[10], buf[11], buf[12], buf[13], buf[14], buf[15]
-  );
   name = "AliHLTGlobalTriggerImpl_";
-  name += uuidstr;
+  name += guidstr;
   filename = name + ".cxx";
 
   // For good measure, check that the file names are not used. If they are then regenerate.
