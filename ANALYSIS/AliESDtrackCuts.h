@@ -270,7 +270,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 11)
+  ClassDef(AliESDtrackCuts, 12)
 };
 
 
