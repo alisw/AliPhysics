@@ -70,6 +70,7 @@ public:
   Float_t GetEta()    const { return fRecDecayP.Eta(); }
   Float_t GetRadius() const { return fRecDecayV.Perp(); }
   Float_t GetPt()     const { return fRecDecayP.Perp(); }
+  Float_t GetMomentum() const { return fRecDecayP.Mag(); }
 
   Float_t GetInvMass(Int_t nPdgCode, Int_t pPdgCode) const;
   Float_t GetK0sInvMass() const { return GetInvMass(kPiMinus,kPiPlus); }

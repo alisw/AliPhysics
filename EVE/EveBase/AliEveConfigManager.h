@@ -31,6 +31,8 @@ public:
 protected:
   static AliEveConfigManager* fgMaster;  // Main instance.
 
+  TGPopupMenu      *fAnalysisPopup; // AliEve menu with analysis tools.
+
   TGPopupMenu      *fAliEvePopup; // AliEve menu.
 
   TGPopupMenu      *fAliEveGeometries; // AliEve submenu - geometries.

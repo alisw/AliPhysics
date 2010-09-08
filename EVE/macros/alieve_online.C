@@ -175,6 +175,28 @@ void alieve_online_on_new_event()
 
   glv->DoDraw();
 
+//  TGLViewer *glv = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("3D View")))->GetGLViewer();
+  TGLViewer *glv1 = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("RPhi View")))->GetGLViewer();
+  TGLViewer *glv2 = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("RhoZ View")))->GetGLViewer();
+ 
+  Double_t RPhiCameraFrustrumCenter = TMath::Sqrt(glv1->CurrentCamera().FrustumCenter().X()*glv1->CurrentCamera().FrustumCenter().X() + glv1->CurrentCamera().FrustumCenter().Y()*glv1->CurrentCamera().FrustumCenter().Y());
+
+  Double_t RhoZCameraFrustrumCenter = TMath::Sqrt(glv2->CurrentCamera().FrustumCenter().X()*glv2->CurrentCamera().FrustumCenter().X() + glv2->CurrentCamera().FrustumCenter().Y()*glv2->CurrentCamera().FrustumCenter().Y());
+
+  if(RPhiCameraFrustrumCenter > 500 || RhoZCameraFrustrumCenter > 500)
+  {
+
+    glv->ResetCurrentCamera();
+    glv->CurrentCamera().RotateRad(-0.3, -1.8);
+    glv->CurrentCamera().Dolly(250, kFALSE, kFALSE);
+
+    glv1->ResetCurrentCamera();
+    glv2->ResetCurrentCamera();
+
+    gEve->FullRedraw3D();
+
+  }
+
   multiView->DestroyEventRPhi();
   if (gCenterProjectionsAtPrimaryVertex)
     multiView->SetCenterRPhi(x[0], x[1], x[2]);

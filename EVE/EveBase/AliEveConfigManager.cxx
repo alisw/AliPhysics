@@ -42,7 +42,7 @@ namespace
 {
  enum EAliEveMenu_e
  {
-   kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault
+   kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui
  };
 }
  
@@ -76,6 +76,7 @@ AliEveConfigManager* AliEveConfigManager::GetMaster()
 //______________________________________________________________________________
 AliEveConfigManager::AliEveConfigManager() :
   TObject(),
+  fAnalysisPopup(0),
   fAliEvePopup(0),
   fAliEveGeometries(0),
   fAliEvePictures(0),
@@ -162,13 +163,29 @@ AliEveConfigManager::AliEveConfigManager() :
   fAliEvePopup->AddPopup("&DataSelection", fAliEveDataSelection);
   fAliEvePopup->AddSeparator();
 
+  fAnalysisPopup = new TGPopupMenu(gClient->GetRoot());  
+//  fAnalysisPopup->AddEntry("&Residuals", kAEMResiduals);
+//  fAnalysisPopup->AddSeparator();
+  fAnalysisPopup->AddEntry("&Cuts", kAEMCuts);
+  fAnalysisPopup->AddSeparator();
+  fAnalysisPopup->AddEntry("&Momentum vectors", kAEMVectors);
+  fAnalysisPopup->AddSeparator();
+//  fAnalysisPopup->AddEntry("&Gui Mode", kAEMGui);
+//  fAnalysisPopup->AddSeparator();
+
   fAliEvePopup->Connect("Activated(Int_t)", "AliEveConfigManager",
                         this, "AliEvePopupHandler(Int_t)");
+
+  fAnalysisPopup->Connect("Activated(Int_t)", "AliEveConfigManager",
+                        this, "AliEvePopupHandler(Int_t)");
+
   fLoadCheck = kFALSE;
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,25,4)
   TGMenuBar *mBar = gEve->GetBrowser()->GetMenuBar();
   mBar->AddPopup("&AliEve", fAliEvePopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
+  ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
+  mBar->AddPopup("&Tools", fAnalysisPopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
   gEve->GetBrowser()->GetTopMenuFrame()->Layout();
 #else
   // Uber hack as TRootBrowser does not provede manu-bar getter.
@@ -181,6 +198,8 @@ AliEveConfigManager::AliEveConfigManager() :
   xxFE = (TGFrameElement*)   xxCF->GetList()->First();
   TGMenuBar *mBar = (TGMenuBar*) xxFE->fFrame;
   mBar->AddPopup("&AliEve", fAliEvePopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
+  ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
+  mBar->AddPopup("&Tools", fAnalysisPopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
   ((TGCompositeFrame*)mBar->GetParent()->GetParent())->Layout();
 #endif
 }
@@ -643,13 +662,13 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
      TEveElement::List_i i = viewers->BeginChildren();
      i++;
      TEveViewer* view3d = ((TEveViewer*)*i);
-     view3d->GetGLViewer()->SavePictureScale(file1,4.0); // getting high resolution
+     view3d->GetGLViewer()->SavePictureScale(file1,6.0); // getting high resolution
      i++;
      TEveViewer* viewrphi = ((TEveViewer*)*i);
-     viewrphi->GetGLViewer()->SavePictureScale(file2,4.0);
+     viewrphi->GetGLViewer()->SavePictureScale(file2,6.0);
      i++;
      TEveViewer* viewrhoz = ((TEveViewer*)*i);
-     viewrhoz->GetGLViewer()->SavePictureScale(file3,4.0);
+     viewrhoz->GetGLViewer()->SavePictureScale(file3,6.0);
      
      printf("Done.\n"); 
       
@@ -955,6 +974,46 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 
 
     }
+
+/*
+    case kAEMResiduals:
+    {
+
+      TEveUtil::Macro("make_residuals.C");
+
+      break;
+
+    }
+*/
+
+    case kAEMCuts:
+    {
+
+      TEveUtil::Macro("alieve_set_cuts.C");
+
+      break;
+
+    }
+
+    case kAEMVectors:
+    {
+
+      TEveUtil::Macro("set_momentum_vectors.C");
+
+      break;
+
+    }
+
+/*
+    case kAEMGui:
+    {
+
+      TEveUtil::Macro("alieve_gui_mode.C");
+
+      break;
+
+    }
+*/
 
     default:
     {

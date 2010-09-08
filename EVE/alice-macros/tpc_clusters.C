@@ -15,18 +15,23 @@ class TEvePointSet;
 #else
 
 #include <TEveManager.h>
+#include <TColor.h>
 #include <TEvePointSet.h>
 #include <EveBase/AliEveEventManager.h>
 
 #include <AliRunLoader.h>
 #include <AliCluster.h>
 #include <TPC/AliTPCClustersRow.h>
+#include <TPC/AliTPCclusterMI.h>
 
 #endif
 
 TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
 {
+
   const Int_t kMaxCl=100*160;
+
+  Int_t fNColorBins = 5;
 
   AliEveEventManager::AssertGeometry();
 
@@ -45,6 +50,26 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
   TEvePointSet* clusters = new TEvePointSet(kMaxCl);
   clusters->SetOwnIds(kTRUE);
 
+  TEvePointSetArray * cc = new TEvePointSetArray("TPC Clusters Colorized");
+  cc->SetMainColor(kRed);
+  cc->SetMarkerStyle(4);
+  cc->SetMarkerSize(0.4);
+  cc->InitBins("Cluster Charge", fNColorBins, 0., fNColorBins*60.);
+  
+  cc->GetBin(0)->SetMainColor(kGray);
+  cc->GetBin(0)->SetMarkerSize(0.4);
+  cc->GetBin(1)->SetMainColor(kBlue);
+  cc->GetBin(1)->SetMarkerSize(0.42);
+  cc->GetBin(2)->SetMainColor(kCyan);
+  cc->GetBin(2)->SetMarkerSize(0.44);
+  cc->GetBin(3)->SetMainColor(kGreen);
+  cc->GetBin(3)->SetMarkerSize(0.46);
+  cc->GetBin(4)->SetMainColor(kYellow);
+  cc->GetBin(4)->SetMarkerSize(0.48);
+  cc->GetBin(5)->SetMainColor(kRed);
+  cc->GetBin(5)->SetMarkerSize(0.50);
+  cc->GetBin(6)->SetMainColor(kMagenta);
+  cc->GetBin(6)->SetMarkerSize(0.52);
 
   Float_t maxRsqr = maxR*maxR;
   Int_t nentr=(Int_t)cTree->GetEntries();
@@ -57,11 +82,15 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
 
     while (ncl--)
     {
+
+      AliTPCclusterMI* clusterMi = (AliTPCclusterMI*) cl->At(ncl);
+
       AliCluster *c = (AliCluster*) cl->UncheckedAt(ncl);
       Float_t g[3]; //global coordinates
       c->GetGlobalXYZ(g);
       if (g[0]*g[0]+g[1]*g[1] < maxRsqr)
       {
+        cc->Fill(g[0], g[1], g[2], clusterMi->GetQ());
 	clusters->SetNextPoint(g[0], g[1], g[2]);
 	AliCluster *atp = new AliCluster(*c);
 	clusters->SetPointId(atp);
@@ -89,7 +118,14 @@ TEvePointSet* tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
 
   clusters->ApplyVizTag(viz_tag, "Clusters");
 
-  gEve->AddElement(clusters, cont);
+//  clusters->SetRnrSelf(kFALSE);
+//  clusters->SetRnrChildren(kFALSE);    
+
+//  gEve->AddElement(clusters, cont);
+
+  cc->SetRnrSelf(kTRUE);
+
+  gEve->AddElement(cc);
 
   gEve->Redraw3D();
 
