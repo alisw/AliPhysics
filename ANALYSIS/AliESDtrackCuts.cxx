@@ -65,7 +65,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "SDD cluster requirement",
  "SSD cluster requirement",
  "require ITS stand-alone",
- "rel 1/pt uncertainty"
+ "rel 1/pt uncertainty",
+ "require ITS Pid"
 };
 
 //____________________________________________________________________
@@ -85,9 +86,10 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutMaxFractionSharedTPCClusters(0),
   fCutRequireTPCRefit(0),
   fCutRequireTPCStandAlone(0),
-  fCutRequireITSRefit(0),
+  fCutRequireITSRefit(0), 
+  fCutRequireITSPid(0),
   fCutRequireITSStandAlone(0),
-  fCutRejectITSpureSA(0),
+  fCutRequireITSpureSA(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
   fCutMaxDCAToVertexXY(0),
@@ -139,7 +141,9 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetRequireTPCRefit();
   SetRequireTPCStandAlone();
   SetRequireITSRefit();
+  SetRequireITSPid(kFALSE);
   SetRequireITSStandAlone(kFALSE);
+  SetRequireITSPureStandAlone(kFALSE);
   SetAcceptKinkDaughters();
   SetMaxNsigmaToVertex();
   SetMaxDCAToVertexXY();
@@ -179,8 +183,9 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutRequireTPCRefit(0),
   fCutRequireTPCStandAlone(0),
   fCutRequireITSRefit(0),
+  fCutRequireITSPid(0),
   fCutRequireITSStandAlone(0),
-  fCutRejectITSpureSA(0),
+  fCutRequireITSpureSA(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
   fCutMaxDCAToVertexXY(0),
@@ -323,8 +328,9 @@ void AliESDtrackCuts::Init()
   fCutRequireTPCRefit = 0;
   fCutRequireTPCStandAlone = 0;
   fCutRequireITSRefit = 0;
+  fCutRequireITSPid = 0;
   fCutRequireITSStandAlone = 0;
-  fCutRejectITSpureSA = 0;
+  fCutRequireITSpureSA = 0;
 
   fCutNsigmaToVertex = 0;
   fCutSigmaToVertexRequired = 0;
@@ -447,8 +453,9 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutRequireTPCRefit = fCutRequireTPCRefit;
   target.fCutRequireTPCStandAlone = fCutRequireTPCStandAlone;
   target.fCutRequireITSRefit = fCutRequireITSRefit;
+  target.fCutRequireITSPid = fCutRequireITSPid;
   target.fCutRequireITSStandAlone = fCutRequireITSStandAlone;
-  target.fCutRejectITSpureSA = fCutRejectITSpureSA;
+  target.fCutRequireITSpureSA = fCutRequireITSpureSA;
 
   target.fCutNsigmaToVertex = fCutNsigmaToVertex;
   target.fCutSigmaToVertexRequired = fCutSigmaToVertexRequired;
@@ -636,6 +643,52 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   
   return esdTrackCuts;
 }
+//____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
+{
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
+  
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+  esdTrackCuts->SetRequireITSPureStandAlone(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE); 
+  esdTrackCuts->SetMinNClustersITS(4);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMaxChi2PerClusterITS(1.);
+
+  if(selPrimaries) {
+    // 7*(0.0085+0.0026/pt^1.55)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55");
+  }
+  if(useForPid){
+    esdTrackCuts->SetRequireITSPid(kTRUE);
+  }
+  return esdTrackCuts;
+}
+//____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
+{
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
+  
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+  esdTrackCuts->SetRequireITSStandAlone(kTRUE);
+  esdTrackCuts->SetRequireITSPureStandAlone(kFALSE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE); 
+  esdTrackCuts->SetMinNClustersITS(4);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMaxChi2PerClusterITS(1.);
+
+  if(selPrimaries) {
+    // 7*(0.0085+0.0026/pt^1.55)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55");
+  }
+  if(useForPid){
+    esdTrackCuts->SetRequireITSPid(kTRUE);
+  }
+  return esdTrackCuts;
+}
+
 
 //____________________________________________________________________
 Int_t AliESDtrackCuts::GetReferenceMultiplicity(AliESDEvent* esd, Bool_t tpcOnly)
@@ -904,12 +957,19 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   for (Int_t i = 0; i < 3; i++)
     cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
   
-  if (fCutRequireITSStandAlone && ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)))
-    cuts[31] = kTRUE;
-
-  if (fCutRejectITSpureSA && (status & AliESDtrack::kITSpureSA)) 
-    cuts[31] = kTRUE;
-
+  if(fCutRequireITSStandAlone || fCutRequireITSpureSA){
+    if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)){
+      // TPC tracks
+      cuts[31] = kTRUE; 
+    }else{
+      // ITS standalone tracks
+      if(fCutRequireITSStandAlone && !fCutRequireITSpureSA){
+	if(status & AliESDtrack::kITSpureSA) cuts[31] = kTRUE;
+      }else if(fCutRequireITSpureSA){
+	if(!(status & AliESDtrack::kITSpureSA)) cuts[31] = kTRUE;
+      }
+    }
+  }
 
   if (relUncertainty1Pt > fCutMaxRel1PtUncertainty)
      cuts[32] = kTRUE;
@@ -919,6 +979,15 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
 
   if (fracClustersTPCShared > fCutMaxFractionSharedTPCClusters)
     cuts[34] = kTRUE;  
+
+  if(fCutRequireITSPid){
+    UChar_t clumap=esdTrack->GetITSClusterMap();
+    Int_t nPointsForPid=0;
+    for(Int_t i=2; i<6; i++){
+      if(clumap&(1<<i)) ++nPointsForPid;
+    }
+    if(nPointsForPid<3) cuts[35] = kTRUE;
+  }
 
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 

@@ -60,7 +60,8 @@ public:
   // Standard cut definitions
   static AliESDtrackCuts* GetStandardTPCOnlyTrackCuts();
   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
-
+  static AliESDtrackCuts* GetStandardITSSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
+  static AliESDtrackCuts* GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
@@ -77,7 +78,11 @@ public:
   void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
   void SetRequireTPCStandAlone(Bool_t b=kFALSE)  {fCutRequireTPCStandAlone=b;}
   void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
-  void SetRequireITSStandAlone(Bool_t b,Bool_t rejectITSpureSA=kFALSE) {fCutRequireITSStandAlone = b; fCutRejectITSpureSA=rejectITSpureSA;}
+  void SetRequireITSPid(Bool_t b=kFALSE)         {fCutRequireITSPid=b;}
+  void SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone = b;} 
+  void SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA = b;}
+
+
   void SetAcceptKinkDaughters(Bool_t b=kTRUE)    {fCutAcceptKinkDaughters=b;}
   void SetAcceptSharedTPCClusters(Bool_t b=kTRUE){fCutAcceptSharedTPCClusters=b;}
   void SetMaxFractionSharedTPCClusters(Float_t max=1e10) {fCutMaxFractionSharedTPCClusters=max;}
@@ -167,7 +172,7 @@ protected:
   Bool_t CheckPtDepDCA(TString dist,Bool_t print=kFALSE) const;
   void SetPtDepDCACuts(Double_t pt);
 
-  enum { kNCuts = 35 }; 
+  enum { kNCuts = 36 }; 
 
   //######################################################
   // esd track quality cuts
@@ -195,8 +200,9 @@ protected:
   Bool_t  fCutRequireTPCRefit;        // require TPC refit
   Bool_t  fCutRequireTPCStandAlone;   // require TPC standalone tracks
   Bool_t  fCutRequireITSRefit;        // require ITS refit
-  Bool_t  fCutRequireITSStandAlone;   // require ITS standalone tracks
-  Bool_t  fCutRejectITSpureSA;        // reject  ITS standalone tracks found using all ITS clusters
+  Bool_t  fCutRequireITSPid;          // require ITS refit
+  Bool_t  fCutRequireITSStandAlone;   // require ITS standalone tracks (remove pure SA)
+  Bool_t  fCutRequireITSpureSA;       // require ITS pure standalone tracks (found using all ITS clusters)
 
   // track to vertex cut
   Float_t fCutNsigmaToVertex;         // max number of estimated sigma from track-to-vertex
