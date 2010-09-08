@@ -63,7 +63,7 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fHistSpreadOfFlow(NULL),
    fHarmonic(2),
    fMixedHarmonicsList(NULL),
-   fEvaluateMixedHarmonics(kTRUE),
+   fEvaluateMixedHarmonics(kFALSE),
    fMixedHarmonicsSettings(NULL),
    fnBinsMult(10000),
    fMinMult(0.),  
