@@ -123,6 +123,62 @@ AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimu
   cout << " AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimuthal& a) - analysis copied " << endl;
 }
 
+AliFemtoAnalysisAzimuthal& AliFemtoAnalysisAzimuthal::operator=(const AliFemtoAnalysisAzimuthal& a)
+{
+  // Assignment operator
+  if (this == &a)
+    return *this;
+
+  fCorrFctnCollection= 0;
+  fCorrFctnCollection = new AliFemtoCorrFctnCollection;
+  fVertexZ[0] = a.fVertexZ[0]; 
+  fVertexZ[1] = a.fVertexZ[1];
+  fMult[0] = a.fMult[0]; 
+  fMult[1] = a.fMult[1];
+  if (fMixingBuffer) delete fMixingBuffer;
+  fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexZBins,fVertexZ[0],fVertexZ[1],
+										     fMultBins,fMult[0],fMult[1],
+										     fRPBins,0.0,TMath::Pi());
+  // find the right event cut
+  fEventCut = a.fEventCut->Clone();
+  // find the right femto particle cut
+  fFemtoParticleCut = a.fFemtoParticleCut->Clone();
+  // find the right flow particle cut
+  fFlowParticleCut = a.fFlowParticleCut->Clone();
+  // find the right pair cut
+  fPairCut = a.fPairCut->Clone();
+  
+  if ( fEventCut ) {
+      SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimuthal& a) - event cut set " << endl;
+  }
+  if ( fFemtoParticleCut ) {
+      SetFirstParticleCut(fFemtoParticleCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimuthal& a) - femto particle cut set " << endl;
+  }
+  if ( fFlowParticleCut ) {
+      SetSecondParticleCut(fFlowParticleCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimuthal& a) - flow particle cut set " << endl;
+  }
+  if ( fPairCut ) {
+      SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimuthal& a) - pair cut set " << endl;
+  }
+
+  AliFemtoCorrFctnIterator iter;
+  for (iter=a.fCorrFctnCollection->begin(); iter!=a.fCorrFctnCollection->end();iter++){
+    cout << " AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimuthal& a) - looking for correlation functions " << endl;
+    AliFemtoCorrFctn* fctn = (*iter)->Clone();
+    if (fctn) AddCorrFctn(fctn);
+    else cout << " AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimuthal& a) - correlation function not found " << endl;
+  }
+  fNumEventsToMix = a.fNumEventsToMix;
+  cout << " AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimuthal& a) - analysis copied " << endl;
+
+  return *this;
+  
+}
+
 //____________________________
 AliFemtoAnalysisAzimuthal::~AliFemtoAnalysisAzimuthal(){
   // now delete every PicoEvent in the EventMixingBuffer and then the Buffer itself

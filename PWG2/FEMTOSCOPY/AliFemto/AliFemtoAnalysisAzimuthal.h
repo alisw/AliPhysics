@@ -20,6 +20,8 @@ public:
   AliFemtoAnalysisAzimuthal(unsigned int binsVertex=10, double minVertex=-100., double maxVertex=+100., unsigned int binsMult=10, double minMult=-1.e9, double maxMult=+1.e9, unsigned short binsRP=10);
   AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimuthal& TheOriginalAnalysis);  // copy constructor
 
+  AliFemtoAnalysisAzimuthal& operator=(const AliFemtoAnalysisAzimuthal& aAna);
+
   virtual void ProcessEvent(const AliFemtoEvent* ProcessThisEvent);
   virtual ~AliFemtoAnalysisAzimuthal();
   virtual unsigned int OverflowVertexZ() const { return fOverFlowVertexZ;}
@@ -57,7 +59,6 @@ protected:
   unsigned int fUnderFlowMult;        /* number of events encountered which had too small multiplicity */
   unsigned short fRPBins;             // Number of reaction plane angle orientation bins
   double fPsi;                		// Reaction plane angle of the current event
-  TList* tOutputList;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoAnalysisAzimuthal, 0)
