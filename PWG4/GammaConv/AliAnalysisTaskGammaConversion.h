@@ -33,7 +33,6 @@ class AliESDtrackCuts;
 class AliCFManager; // for CF
 class AliCFContainer; // for CF
 
-
 class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 {
 	
