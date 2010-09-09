@@ -14,7 +14,6 @@
 class AliStack;
 class AliESDEvent;
 #include "TMath.h"
-
 class AliGammaConversionAODObject : public TObject {
 
  public: 

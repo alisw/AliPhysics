@@ -263,6 +263,7 @@ AliAnalysisTaskGammaConversion::~AliAnalysisTaskGammaConversion()
 
 }
 
+
 void AliAnalysisTaskGammaConversion::Init()
 {
   // Initialization
@@ -381,9 +382,9 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     //}
   //Each event needs an empty branch
   //  fAODBranch->Clear();
-  fAODGamma->Delete();
-  fAODPi0->Delete();
-  fAODOmega->Delete();
+  if(fAODGamma) fAODGamma->Delete();
+  if(fAODPi0) fAODPi0->Delete();
+  if(fAODOmega) fAODOmega->Delete();
 	
   if(fKFReconstructedGammasTClone == NULL){
     fKFReconstructedGammasTClone = new TClonesArray("AliKFParticle",0);
