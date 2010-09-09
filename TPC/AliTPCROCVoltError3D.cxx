@@ -50,7 +50,7 @@ AliTPCROCVoltError3D::AliTPCROCVoltError3D()
     fC0(0.),fC1(0.),
     fROCdisplacement(kTRUE),
     fInitLookUp(kFALSE),
-    fROCDataFileName((char*)"$(ALICE_ROOT)/TPC/Calib/maps/TPCROCdzSurvey.root"),  
+    fROCDataFileName(""),  
     fdzDataLinFit(0)
 {
   //
@@ -65,8 +65,8 @@ AliTPCROCVoltError3D::AliTPCROCVoltError3D()
     fLookUpEphiOverEz[k] =  new TMatrixD(kNR,kNZ);
     fLookUpDeltaEz[k]    =  new TMatrixD(kNR,kNZ);   
   }
-
-  SetROCDataFileName(fROCDataFileName); // initialization of fdzDataLinFit is included
+  fROCDataFileName="$ALICE_ROOT/TPC/Calib/maps/TPCROCdzSurvey.root";
+  SetROCDataFileName(fROCDataFileName.Data()); // initialization of fdzDataLinFit is included
 
 }
 
@@ -84,7 +84,7 @@ AliTPCROCVoltError3D::~AliTPCROCVoltError3D() {
   delete fdzDataLinFit;
 }
 
-void AliTPCROCVoltError3D::SetDZMap(TMatrixD * matrix){
+void AliTPCROCVoltError3D::SetROCData(TMatrixD * matrix){
   //
   // Set a z alignment map of the chambers not via a file, but
   // directly via a TMatrix(72,3), where dz = p0 + p1*lx + p2*ly
@@ -130,14 +130,14 @@ void AliTPCROCVoltError3D::Update(const TTimeStamp &/*timeStamp*/) {
 
 }
 
-void  AliTPCROCVoltError3D::SetROCDataFileName(char *const fname) {
+void  AliTPCROCVoltError3D::SetROCDataFileName(const char * fname) {
   //
   // Set / load the ROC data (linear fit of ROC misalignments)
   //
 
   fROCDataFileName = fname;
   
-  TFile f(fROCDataFileName,"READ");
+  TFile f(fROCDataFileName.Data(),"READ");
   TMatrixD *m = (TMatrixD*) f.Get("dzSurveyLinFitData");
   TMatrixD &mf = *m;
 
@@ -441,7 +441,7 @@ void AliTPCROCVoltError3D::Print(const Option_t* option) const {
   TString opt = option; opt.ToLower();
   printf("%s\n",GetTitle());
   printf(" - Voltage settings on the TPC Read-Out chambers - linearly interpolated\n");
-  printf("   info: Check the following data-file for more details: %s \n",fROCDataFileName);
+  printf("   info: Check the following data-file for more details: %s \n",fROCDataFileName.Data());
 
   if (opt.Contains("a")) { // Print all details
     printf(" - T1: %1.4f, T2: %1.4f \n",fT1,fT2);

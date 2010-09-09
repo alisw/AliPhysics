@@ -33,10 +33,10 @@ public:
   void SetC0C1(Float_t c0,Float_t c1) {fC0=c0;fC1=c1;} // CAUTION: USE WITH CARE
   Float_t GetC0() const {return fC0;}
   Float_t GetC1() const {return fC1;}
-  void SetDZMap(TMatrixD * matrix);
+  void SetROCData(TMatrixD * matrix);
   // setters and getters 
-  void SetROCDataFileName(char *const fname);
-  char* GetROCDataFileName() const {return fROCDataFileName;}
+  void SetROCDataFileName(const char * fname);
+  const Char_t* GetROCDataFileName() const {return fROCDataFileName.Data();}
 
   // flag to wheter or not include the z aligment in the dz calculation 
   // if FALSE, the dz offset is purely due to the electric field change
@@ -70,7 +70,7 @@ private:
   TMatrixD *fLookUpEphiOverEz[kNPhi]; // Array to store electric field integral (int Er/Ez)
   TMatrixD *fLookUpDeltaEz[kNPhi];    // Array to store electric field integral (int Er/Ez)
 
-  char *fROCDataFileName;         // filename of the survey data containing the lin Fit values
+  TString  fROCDataFileName;         // filename of the survey data containing the lin Fit values
   TMatrixD *fdzDataLinFit;  // Linear fits of dz survey points (each sector=72) (z0,slopeX,slopeY)         
 
   // basic numbers for the poisson relaxation //can be set individually in each class
