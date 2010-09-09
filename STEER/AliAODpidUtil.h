@@ -77,13 +77,10 @@ inline Float_t AliAODpidUtil::NumberOfSigmasITS(const AliAODTrack *track, AliPID
   for(Int_t i=2; i<6; i++){
     if(clumap&(1<<i)) ++nPointsForPid;
   }
-  if(track->GetTPCNcls()>0){
-    Float_t mom=pidObj->GetTPCmomentum();
-    return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,kFALSE);
-  }else{
-    Float_t mom=track->P();
-    return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,kTRUE);
-  }
+  Float_t mom=track->P();
+  Bool_t isSA=kTRUE;  
+  if(track->GetTPCNcls()>0) isSA=kFALSE;
+  return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA);
 }
 #endif
 

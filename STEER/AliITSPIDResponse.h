@@ -20,6 +20,14 @@ public:
   AliITSPIDResponse(Bool_t isMC=kFALSE);
   AliITSPIDResponse(Double_t *param);
  ~AliITSPIDResponse() {}
+
+ void SetBetheBlochParamsITSTPC(Double_t* param){
+   for(Int_t iPar=0; iPar<5; iPar++) fBBtpcits[iPar]=param[iPar];
+ }
+ void SetBetheBlochParamsITSsa(Double_t* param){
+   for(Int_t iPar=0; iPar<5; iPar++) fBBsa[iPar]=param[iPar];
+ }
+
  Double_t BetheAleph(Double_t p,Double_t mass) const;
  Double_t Bethe(Double_t p, Double_t mass, Bool_t iSA=kFALSE) const;
  Double_t GetResolution(Double_t bethe, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const;

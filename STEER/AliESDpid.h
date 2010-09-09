@@ -80,14 +80,10 @@ inline Float_t AliESDpid::NumberOfSigmasITS(const AliESDtrack *track, AliPID::EP
   for(Int_t i=2; i<6; i++){
     if(clumap&(1<<i)) ++nPointsForPid;
   }
-  if(trStatus&AliESDtrack::kTPCin){
-    const AliExternalTrackParam *in = track->GetInnerParam();
-    Float_t mom=in->P();
-    return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,kFALSE);
-  }else{
-    Float_t mom=track->P();
-    return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,kTRUE);
-  }
+  Float_t mom=track->P();
+  Bool_t isSA=kTRUE;
+  if(trStatus&AliESDtrack::kTPCin) isSA=kFALSE;
+  return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA);
 }
 #endif
 
