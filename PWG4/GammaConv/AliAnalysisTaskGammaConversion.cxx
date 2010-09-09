@@ -1436,9 +1436,11 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	fHistograms->FillHistogram("ESD_TrueConvGamma_DcaDaughters", fV0Reader->GetDcaDaughters());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_NormDcaDistDaughters", fV0Reader->GetNormDcaDistDaughters());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_LikelihoodAP", fV0Reader->GetLikelihoodAP());
-
-	fHistograms->FillHistogram("ESD_TrueConvGamma_E_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetNegativeTrackP()/fV0Reader->GetMotherCandidateP());
-	fHistograms->FillHistogram("ESD_TrueConvGamma_P_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetPositiveTrackP()/fV0Reader->GetMotherCandidateP());
+	if (fV0Reader->GetMotherCandidateP() != 0) {
+	  fHistograms->FillHistogram("ESD_TrueConvGamma_E_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetNegativeTrackP()/fV0Reader->GetMotherCandidateP());
+	  fHistograms->FillHistogram("ESD_TrueConvGamma_P_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetPositiveTrackP()/fV0Reader->GetMotherCandidateP());
+	} else { cout << "Error::fV0Reader->GetNegativeTrackP() == 0 !!!" << endl; }
+	
 	fHistograms->FillHistogram("ESD_TrueConvGamma_E_dEdxP",fV0Reader->GetNegativeTrackP(),fV0Reader->GetNegativeTrackTPCdEdx());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_P_dEdxP",fV0Reader->GetPositiveTrackP(),fV0Reader->GetPositiveTrackTPCdEdx());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
@@ -1762,7 +1764,8 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 					
 	  Double_t openingAngleTwoGammaCandidate = twoGammaDecayCandidateDaughter0->GetAngle(*twoGammaDecayCandidateDaughter1);					
 	  Double_t rapidity;
-	  if(twoGammaCandidate->GetE() - twoGammaCandidate->GetPz() == 0 || twoGammaCandidate->GetE() + twoGammaCandidate->GetPz() == 0){
+	  if(twoGammaCandidate->GetE() - twoGammaCandidate->GetPz() <= 0 || twoGammaCandidate->GetE() + twoGammaCandidate->GetPz() <= 0){
+	    cout << "Error: |Pz| > E !!!! " << endl;
 	    rapidity=0;
 	  }
 	  else{
@@ -2075,9 +2078,13 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	    Double_t openingAngleBG = currentEventGoodV0.GetAngle(previousGoodV0);
 					
 	    Double_t rapidity;
-	    if(backgroundCandidate->GetE() - backgroundCandidate->GetPz() == 0 || backgroundCandidate->GetE() + backgroundCandidate->GetPz() == 0) rapidity=0;
-	    else rapidity = 0.5*(TMath::Log((backgroundCandidate->GetE() +backgroundCandidate->GetPz()) / (backgroundCandidate->GetE()-backgroundCandidate->GetPz())));
-					
+	    
+	    if(backgroundCandidate->GetE() - backgroundCandidate->GetPz() <= 0 || backgroundCandidate->GetE() + backgroundCandidate->GetPz() <= 0){
+	      	    cout << "Error: |Pz| > E !!!! " << endl;
+		    rapidity=0;
+	    } else {
+	      rapidity = 0.5*(TMath::Log((backgroundCandidate->GetE() +backgroundCandidate->GetPz()) / (backgroundCandidate->GetE()-backgroundCandidate->GetPz())));
+	    }				
 					
 	    Double_t alfa=0.0;
 	    if( (currentEventGoodV0.GetE()+previousGoodV0.GetE()) != 0){
