@@ -68,7 +68,7 @@ public:
   
   enum Energy { k900 , k10000, k14000 , k7000, k2400, k5500};
   
-  enum MagField {k0G, k5G};
+  enum MagField {k0G, k5G, k5Gnegative};
   
   enum Species {kPP, kPbPb};
 
