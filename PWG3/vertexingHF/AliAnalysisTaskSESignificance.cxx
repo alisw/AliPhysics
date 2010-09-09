@@ -450,6 +450,8 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     prongpdg=4122;
     break;
   }
+  Int_t prongPdgPlus=prongpdg;
+  Int_t prongPdgMinus=TMath::Abs(prongPdgPlus)*(-1);
 
   Int_t nHistpermv=((AliMultiDimVector*)fCutList->FindObject("multiDimVectorPtBin0"))->GetNTotCells();
   Int_t nProng = arrayProng->GetEntriesFast();
@@ -490,12 +492,12 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	fHistNEvents->Fill(3);
 	if(fReadMC){
 	  Int_t lab=-1;
-	  lab = d->MatchToMC(prongpdg,arrayMC,nprongs,pdgdaughters);
+	  lab = d->MatchToMC(prongPdgPlus,arrayMC,nprongs,pdgdaughters);
 	  if(lab>=0){ //signal
 	    AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(lab);
 	    Int_t pdgMC = dMC->GetPdgCode();
 	    
-	    if(pdgMC==+prongpdg) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
+	    if(pdgMC==prongPdgPlus) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
 	    else fRflHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
 	  }
 	  else{ //background
@@ -524,11 +526,11 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	  fMassHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
 	  if(fReadMC){
 	    Int_t lab=-1;
-	    lab = d->MatchToMC(-prongpdg,arrayMC,nprongs,pdgdaughters);
+	    lab = d->MatchToMC(prongPdgMinus,arrayMC,nprongs,pdgdaughters);
 	    if(lab>=0){ //signal
 	      AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(lab);
 	      Int_t pdgMC = dMC->GetPdgCode();
-	      if(pdgMC==-prongpdg) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
+	      if(pdgMC==prongPdgMinus) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
 	      else fRflHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
 	    }
 	    else{ //background
@@ -550,12 +552,12 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
         fMassHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
         if(fReadMC){
          Int_t lab=-1;
-         lab = d->MatchToMC(-prongpdg,arrayMC,nprongs,pdgdaughters);
+         lab = d->MatchToMC(prongPdgMinus,arrayMC,nprongs,pdgdaughters);
 						                 //cambia il match
 	 if(lab>=0){ //signal
 	 AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(lab);
 	 Int_t pdgMC = dMC->GetPdgCode();
-	 if(pdgMC==-prongpdg) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
+	 if(pdgMC==prongPdgMinus) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
 	 else fRflHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
 	}
 	                                                                                 else{ //background
