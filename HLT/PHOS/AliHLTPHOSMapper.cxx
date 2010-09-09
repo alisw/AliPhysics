@@ -79,7 +79,7 @@ AliHLTPHOSMapper::InitAltroMapping(const unsigned long specification)
         fModuleId = modId;
 
 //        int nChannels = 0;
-        int maxaddr = 3919;
+        int maxaddr = fCaloConstants->GetMAXHWADDRESSES();
         //int tmpHwaddr = 0;
         //int tmpZRow = 0;
         //int tmpXCol = 0;
@@ -87,10 +87,10 @@ AliHLTPHOSMapper::InitAltroMapping(const unsigned long specification)
 //        int res = 0;
         if (fHw2geomapPtr)
         {
-            delete fHw2geomapPtr;
+            delete [] fHw2geomapPtr;
         }
         fHw2geomapPtr = new fAltromap[maxaddr];
-	Int_t hwAdds[3919];
+	Int_t hwAdds[maxaddr];
 	Int_t nCh = 0;
         for (int x = 0; x < fCaloConstants->GetNXCOLUMNSRCU(); x++)
         {
