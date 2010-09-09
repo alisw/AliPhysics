@@ -25,10 +25,10 @@ ClassImp(AliFemtoQinvCorrFctnEMCIC)
 //____________________________
 AliFemtoQinvCorrFctnEMCIC::AliFemtoQinvCorrFctnEMCIC(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
 AliFemtoQinvCorrFctn(title, nbins, QinvLo, QinvHi),
-  fESumReal(0),
+/*fESumReal(0),
   fEMultReal(0),
   fPtMultReal(0),
-  fPzMultReal(0),
+  fPzMultReal(0),*/
   fESumMix(0),
   fEMultMix(0),
   fPtMultMix(0),
@@ -38,7 +38,7 @@ AliFemtoQinvCorrFctn(title, nbins, QinvLo, QinvHi),
   
 
   // set up emcic histograms
-  char tTitESum[100] = "ESumReal";
+  /*char tTitESum[100] = "ESumReal";
   strcat(tTitESum,title);
   fESumReal = new TH1D(tTitESum,title,nbins,QinvLo,QinvHi);
   char tTitEMult[100] = "EMultReal";
@@ -49,7 +49,7 @@ AliFemtoQinvCorrFctn(title, nbins, QinvLo, QinvHi),
   fPtMultReal = new TH1D(tTitPt,title,nbins,QinvLo,QinvHi);
   char tTitPz[100] = "PzMultReal";
   strcat(tTitPz,title);
-  fPzMultReal = new TH1D(tTitPz,title,nbins,QinvLo,QinvHi);
+  fPzMultReal = new TH1D(tTitPz,title,nbins,QinvLo,QinvHi);*/
  
   char tTitESum2[100] = "ESumMix";
   strcat(tTitESum2,title);
@@ -68,10 +68,10 @@ AliFemtoQinvCorrFctn(title, nbins, QinvLo, QinvHi),
 
   // to enable error bar calculation...
   
-  fESumReal->Sumw2();
+  /*  fESumReal->Sumw2();
   fEMultReal->Sumw2();
   fPtMultReal->Sumw2();
-  fPzMultReal->Sumw2();
+  fPzMultReal->Sumw2();*/
   fESumMix->Sumw2();
   fEMultMix->Sumw2();
   fPtMultMix->Sumw2();
@@ -81,10 +81,10 @@ AliFemtoQinvCorrFctn(title, nbins, QinvLo, QinvHi),
 //____________________________
 AliFemtoQinvCorrFctnEMCIC::AliFemtoQinvCorrFctnEMCIC(const AliFemtoQinvCorrFctnEMCIC& aCorrFctn) :
   AliFemtoQinvCorrFctn(aCorrFctn),
-  fESumReal(0),
+  /*fESumReal(0),
   fEMultReal(0),
   fPtMultReal(0),
-  fPzMultReal(0),
+  fPzMultReal(0),*/
   fESumMix(0),
   fEMultMix(0),
   fPtMultMix(0),
@@ -92,10 +92,10 @@ AliFemtoQinvCorrFctnEMCIC::AliFemtoQinvCorrFctnEMCIC(const AliFemtoQinvCorrFctnE
 {
   // copy constructor
   
-  fESumReal= new TH1D(*aCorrFctn.fESumReal);
+  /*fESumReal= new TH1D(*aCorrFctn.fESumReal);
   fEMultReal= new TH1D(*aCorrFctn.fEMultReal);
   fPtMultReal= new TH1D(*aCorrFctn.fPtMultReal);
-  fPzMultReal= new TH1D(*aCorrFctn.fPzMultReal);
+  fPzMultReal= new TH1D(*aCorrFctn.fPzMultReal);*/
   fESumMix= new TH1D(*aCorrFctn.fESumMix);
   fEMultMix= new TH1D(*aCorrFctn.fEMultMix);
   fPtMultMix= new TH1D(*aCorrFctn.fPtMultMix);
@@ -106,10 +106,10 @@ AliFemtoQinvCorrFctnEMCIC::AliFemtoQinvCorrFctnEMCIC(const AliFemtoQinvCorrFctnE
 AliFemtoQinvCorrFctnEMCIC::~AliFemtoQinvCorrFctnEMCIC(){
   // destructor
   
-  delete fESumReal;
+  /*delete fESumReal;
   delete fEMultReal;
   delete fPtMultReal;
-  delete fPzMultReal;
+  delete fPzMultReal;*/
   delete fESumMix;
   delete fEMultMix;
   delete fPtMultMix;
@@ -123,7 +123,7 @@ AliFemtoQinvCorrFctnEMCIC& AliFemtoQinvCorrFctnEMCIC::operator=(const AliFemtoQi
   if (this == &aCorrFctn)
     return *this;
 
-  if (fESumReal) delete fESumReal;
+  /*if (fESumReal) delete fESumReal;
   fESumReal= new TH1D(*aCorrFctn.fESumReal);
   if (fEMultReal) delete fEMultReal;
   fEMultReal= new TH1D(*aCorrFctn.fEMultReal);
@@ -131,7 +131,8 @@ AliFemtoQinvCorrFctnEMCIC& AliFemtoQinvCorrFctnEMCIC::operator=(const AliFemtoQi
   fPtMultReal= new TH1D(*aCorrFctn.fPtMultReal);
   if (fPzMultReal) delete fPzMultReal;
   fPzMultReal= new TH1D(*aCorrFctn.fPzMultReal);
-  if (fESumMix) delete fESumMix;
+  if (fESumMix) delete fESumMix;*/
+  
   fESumMix= new TH1D(*aCorrFctn.fESumMix);
   if (fEMultMix) delete fEMultMix;
   fEMultMix= new TH1D(*aCorrFctn.fEMultMix);
@@ -146,30 +147,32 @@ AliFemtoQinvCorrFctnEMCIC& AliFemtoQinvCorrFctnEMCIC::operator=(const AliFemtoQi
 //____________________________
 void AliFemtoQinvCorrFctnEMCIC::AddRealPair(AliFemtoPair* pair){
   // add true pair
+  
   if (fPairCut)
     if (!fPairCut->Pass(pair)) return;
-
-  double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
+  AliFemtoQinvCorrFctn::AddRealPair(pair);
   
-    
+ 
+  //double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
+  
 // The EMCICs are calculated here for real pairs
-  AliFemtoLorentzVector tMom1 = pair->Track1()->FourMomentum();
+  /*AliFemtoLorentzVector tMom1 = pair->Track1()->FourMomentum();
   AliFemtoLorentzVector tMom2 = pair->Track2()->FourMomentum();
   double tE1 = tMom1.e();
   double tE2 = tMom2.e();
   double tPz1 = tMom1.pz();
   double tPz2 = tMom2.pz();
-  TVector2 tPt1;
-  TVector2 tPt2;
   
+  TVector2 tPt1;  
+  TVector2 tPt2; 
   tPt1.Set(tMom1.px(),tMom1.py());
   tPt2.Set(tMom2.px(),tMom2.py());
-  double tPt1DotPt2=tPt1*tPt2;
+  double tPt1DotPt2 = tPt1*tPt2;
   
   fESumReal->Fill(tQinv,tE1+tE2);
   fEMultReal->Fill(tQinv,tE1*tE2);
   fPzMultReal->Fill(tQinv,tPz1*tPz2);
-  fPtMultReal->Fill(tQinv,tPt1DotPt2);
+  fPtMultReal->Fill(tQinv,tPt1DotPt2);*/
 
 }
 //____________________________
@@ -177,7 +180,7 @@ void AliFemtoQinvCorrFctnEMCIC::AddMixedPair(AliFemtoPair* pair){
   // add mixed (background) pair
   if (fPairCut)
     if (!fPairCut->Pass(pair)) return;
- 
+  AliFemtoQinvCorrFctn::AddMixedPair(pair);
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   
 
@@ -188,12 +191,12 @@ void AliFemtoQinvCorrFctnEMCIC::AddMixedPair(AliFemtoPair* pair){
   double tE2 = tMom2.e();
   double tPz1 = tMom1.pz();
   double tPz2 = tMom2.pz();
-  TVector2 tPt1;
-  TVector2 tPt2;
   
+  TVector2 tPt1;  
+  TVector2 tPt2; 
   tPt1.Set(tMom1.px(),tMom1.py());
   tPt2.Set(tMom2.px(),tMom2.py());
-  double tPt1DotPt2=tPt1*tPt2;
+  double tPt1DotPt2 = tPt1*tPt2;
   
   fESumMix->Fill(tQinv,tE1+tE2);
   fEMultMix->Fill(tQinv,tE1*tE2);
@@ -206,11 +209,11 @@ void AliFemtoQinvCorrFctnEMCIC::AddMixedPair(AliFemtoPair* pair){
 //____________________________
 void AliFemtoQinvCorrFctnEMCIC::Write(){
   // Write out neccessary objects
-  
-  fESumReal->Write();
+  AliFemtoQinvCorrFctn::Write();  //Write num and den
+  /*fESumReal->Write();
   fEMultReal->Write();
   fPtMultReal->Write();
-  fPzMultReal->Write();
+  fPzMultReal->Write(); */
   fESumMix->Write();
   fEMultMix->Write();
   fPtMultMix->Write();
@@ -222,12 +225,12 @@ TList* AliFemtoQinvCorrFctnEMCIC::GetOutputList()
 {
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
-
+  tOutputList = (TList*)AliFemtoQinvCorrFctn::GetOutputList();
   cout << "Getting list from Qinv CF emicic" << endl;
-  tOutputList->Add(fESumReal);
+  /*tOutputList->Add(fESumReal);
   tOutputList->Add(fEMultReal);
   tOutputList->Add(fPtMultReal);
-  tOutputList->Add(fPzMultReal);
+  tOutputList->Add(fPzMultReal); */
   tOutputList->Add(fESumMix);
   tOutputList->Add(fEMultMix);
   tOutputList->Add(fPtMultMix);

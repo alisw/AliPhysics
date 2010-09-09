@@ -55,10 +55,10 @@ class AliFemtoQinvCorrFctnEMCIC : public AliFemtoQinvCorrFctn
   
  private:
   //Emcic histograms:  
-  TH1D* fESumReal;   //  <E1+E2>   from real Pairs 
+  /*TH1D* fESumReal;   //  <E1+E2>   from real Pairs 
   TH1D* fEMultReal;  //  <E1*E2>   from real Pairs 
   TH1D* fPtMultReal; //  <Pt1*Pt2> from real Pairs 
-  TH1D* fPzMultReal; //  <Pz1*Pz2> from real Pairs 
+  TH1D* fPzMultReal; //  <Pz1*Pz2> from real Pairs */
   TH1D* fESumMix;    //  <E1+E2>   from mixed Pairs 
   TH1D* fEMultMix;   //  <E1*E2>   from mixed Pairs
   TH1D* fPtMultMix;  //  <PT1*Pt2> from mixed Pairs
