@@ -86,7 +86,8 @@ AliTPCROCVoltError3D::~AliTPCROCVoltError3D() {
 
 void AliTPCROCVoltError3D::SetDZMap(TMatrixD * matrix){
   //
-  //
+  // Set a z alignment map of the chambers not via a file, but
+  // directly via a TMatrix(72,3), where dz = p0 + p1*lx + p2*ly
   //
   if (!fdzDataLinFit) fdzDataLinFit=new TMatrixD(*matrix);
   else *fdzDataLinFit = *matrix;
@@ -372,9 +373,15 @@ Float_t AliTPCROCVoltError3D::GetROCVoltOffset(Int_t side, Float_t r0, Float_t p
   if (side==1) roc+=18; // C side
   if (r0>132) roc+=36;  // OROC 
   
-  // linear-plane data:  z = z0 + kx*x + ky*y
+  // linear-plane data:  z = z0 + kx*lx + ky*ly (rotation in local coordinates)
   TMatrixD &fitData = *fdzDataLinFit;
-  Float_t dz = fitData(roc,0)+fitData(roc,1)*xp + fitData(roc,2)*yp; // value in cm
+
+  // local coordinates                                                          
+  Double_t secAlpha = TMath::DegToRad()*(10.+20.*(((Int_t)roc)%18));
+  Float_t lx = xp*TMath::Cos(secAlpha)+yp*TMath::Sin(secAlpha);
+  Float_t ly = yp*TMath::Cos(secAlpha)-xp*TMath::Sin(secAlpha);
+
+  Float_t dz = fitData(roc,0)+fitData(roc,1)*lx + fitData(roc,2)*ly; // value in cm
 
   // aproximated Voltage-offset-aquivalent to the z misalignment
   // (linearly scaled with the z position)
