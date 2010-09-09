@@ -3,6 +3,7 @@
 
 
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
+		AliHLTTPCClusterTransformation.h \
 		AliHLTTPCAgent.h \
 		AliHLTTPCMemHandler.h \
 		AliHLTTPCDataCompressorHelper.h \
