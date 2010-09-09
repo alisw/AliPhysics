@@ -20,7 +20,8 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliTPCRecoParam.h"
+#include"Rtypes.h"
+
 class AliTPCParam;
 class AliTPCTransform;
 
@@ -43,16 +44,16 @@ class AliHLTTPCClusterTransformation{
   virtual ~AliHLTTPCClusterTransformation();
 
   int  Init( double FieldBz, UInt_t TimeStamp );
-  void SetTimeStamp( UInt_t TimeStamp );
+  void SetCurrentTimeStamp( UInt_t TimeStamp );
   int  Transform( int Slice, int Row, float Pad, float Time, float XYZ[] );
 
  protected:
 
   AliTPCTransform * fOfflineTransform;                             //! transient
-  AliTPCParam     *fOfflineTPCParam;                                 //! transient
-  AliTPCRecoParam fOfflineTPCRecoParam;                            //! transient
+  AliTPCParam     * fOfflineTPCParam;                                 //! transient
 
  private:
+
   /** copy constructor prohibited */
   AliHLTTPCClusterTransformation(const AliHLTTPCClusterTransformation&);
   /** assignment operator prohibited */

@@ -28,8 +28,8 @@
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
-#include "AliTPCRecoParam.h"
 #include "AliTPCParam.h"
+#include "AliTPCRecoParam.h"
 
 
 ClassImp(AliHLTTPCClusterTransformation) //ROOT macro for the implementation of ROOT specific class methods
@@ -37,8 +37,7 @@ ClassImp(AliHLTTPCClusterTransformation) //ROOT macro for the implementation of 
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 :
   fOfflineTransform(NULL),
-  fOfflineTPCParam( NULL ),
-  fOfflineTPCRecoParam(*AliTPCRecoParam::GetHLTParam())
+  fOfflineTPCParam( NULL )
 {
   // see header file for class documentation
   // or
@@ -50,8 +49,7 @@ AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation(const AliHLTTPCClusterTransformation&)
 :
   fOfflineTransform(NULL),
-  fOfflineTPCParam( NULL ),
-  fOfflineTPCRecoParam(*AliTPCRecoParam::GetHLTParam())
+  fOfflineTPCParam( NULL )
 {
   // copy constructor prohibited
 }
@@ -73,16 +71,19 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t /*TimeStamp*/ 
 {
   // Initialisation
 
+  delete fOfflineTransform;
+  fOfflineTPCParam = 0;
+
   AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
 
   if(!pCalib ) return -1;
 
   pCalib->SetExBField(FieldBz);
 
-  if( !pCalib->GetTransform() ) return -2;
-  
+  if( !pCalib->GetTransform() ) return -2; 
+
   fOfflineTransform = new AliTPCTransform (*pCalib->GetTransform());
-  fOfflineTransform->SetCurrentRecoParam(&fOfflineTPCRecoParam);
+  fOfflineTransform->SetCurrentRecoParam( AliTPCRecoParam::GetHLTParam() );
 
   fOfflineTPCParam = pCalib->GetParameters(); 
   if( !fOfflineTPCParam ) return -3;
@@ -94,9 +95,10 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t /*TimeStamp*/ 
 }
 
 
-void AliHLTTPCClusterTransformation::SetTimeStamp( UInt_t /*TimeStamp*/ )
+void AliHLTTPCClusterTransformation::SetCurrentTimeStamp( UInt_t TimeStamp )
 {
   // Set the current time stamp
+  if( fOfflineTransform ) fOfflineTransform->SetCurrentTimeStamp( TimeStamp );
 }
 
 
