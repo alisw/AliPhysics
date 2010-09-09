@@ -36,6 +36,8 @@ namespace CaloHLTConst
   const int CSPSPERFEE    = 32;
   const int NBRANCHES      =   2;   
   
+  const int MAXHWADDRESSES = 4096;
+  
   namespace EmcalHLTConst
   {
     const int NZROWSMOD      =  48;   /**<Number of rows per module*/       
@@ -79,6 +81,7 @@ public:
   static  Int_t GetNALTROS()           { return CALO::NALTROS; };
   static  Int_t GetNALTROCHANNELS()    { return CALO::NALTROCHANNELS; };
   static  Int_t GetNBRANCHES()         { return CALO::NBRANCHES; }; 	
+  static Int_t GetMAXHWADDRESSES() { return CALO::MAXHWADDRESSES; }
 
   // Detector specific stuff
   // PHOS Only, bad move somewher else, PTH
