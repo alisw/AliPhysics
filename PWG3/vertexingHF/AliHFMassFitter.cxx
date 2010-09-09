@@ -48,6 +48,8 @@ AliHFMassFitter::AliHFMassFitter() :
   fhistoInvMass(0),
   fminMass(0),
   fmaxMass(0),
+  fminBinMass(0),
+  fmaxBinMass(0),
   fNbin(0),
   fParsSize(1),
   fNFinalPars(1),
@@ -57,7 +59,7 @@ AliHFMassFitter::AliHFMassFitter() :
   ftypeOfFit4Sgn(0),
   ffactor(1),
   fntuParam(0),
-  fMass(1.85),
+  fMass(1.865),
   fSigmaSgn(0.012),
   fSideBands(0),
   fFixPar(0),
@@ -80,6 +82,8 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
  fhistoInvMass(0),
  fminMass(0),
  fmaxMass(0),
+ fminBinMass(0),
+ fmaxBinMass(0),
  fNbin(0),
  fParsSize(1),
  fNFinalPars(1),
@@ -89,7 +93,7 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
  ftypeOfFit4Sgn(0),
  ffactor(1),
  fntuParam(0),
- fMass(1.85),
+ fMass(1.865),
  fSigmaSgn(0.012),
  fSideBands(0),
  fFixPar(0),
@@ -130,6 +134,8 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   fhistoInvMass(mfit.fhistoInvMass),
   fminMass(mfit.fminMass),
   fmaxMass(mfit.fmaxMass),
+  fminBinMass(mfit.fminBinMass),
+  fmaxBinMass(mfit.fmaxBinMass),
   fNbin(mfit.fNbin),
   fParsSize(mfit.fParsSize),
   fNFinalPars(mfit.fNFinalPars),
@@ -156,7 +162,7 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
     memcpy(fFitPars,mfit.fFitPars,mfit.fParsSize*sizeof(Float_t));
     memcpy(fFixPar,mfit.fFixPar,mfit.fNFinalPars*sizeof(Bool_t));
   }
-  //for(Int_t i=0;i<fParsSize;i++) fFitPars[i]=mfit.fFitPars[i];
+
 }
 
 //_________________________________________________________________________
@@ -233,8 +239,6 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
     fFixPar=new Bool_t[fNFinalPars];
     memcpy(fFixPar,mfit.fFixPar,mfit.fNFinalPars*sizeof(Float_t));
   }
-// fFitPars=new Float_t[fParsSize];
-//   for(Int_t i=0;i<fParsSize;i++) fFitPars[i]=mfit.fFitPars[i];
 
   return *this;
 }
@@ -355,7 +359,7 @@ Bool_t AliHFMassFitter::GetFixThisParam(Int_t thispar)const{
 
 //___________________________________________________________________________
 void AliHFMassFitter::SetHisto(const TH1F *histoToFit){
-  //fhistoInvMass = (TH1F*)histoToFit->Clone();
+
   fhistoInvMass = new TH1F(*histoToFit);
   fhistoInvMass->SetDirectory(0);
   cout<<"SetHisto pointer "<<fhistoInvMass<<endl;
@@ -363,30 +367,17 @@ void AliHFMassFitter::SetHisto(const TH1F *histoToFit){
 
 //___________________________________________________________________________
 
-  void AliHFMassFitter::SetType(Int_t fittypeb, Int_t fittypes) {
-
-    //set the type of fit to perform for signal and background
-
-    ftypeOfFit4Bkg = fittypeb; 
-    ftypeOfFit4Sgn = fittypes; 
-
-    /*
-    if(fFitPars) {
-      delete[] fFitPars;
-      fFitPars=NULL;
-    }
-    */
-    ComputeParSize();
-    fFitPars = new Float_t[fParsSize];
-    /*
-    if(fFixPar){
-      delete[] fFixPar;
-      fFixPar=NULL;
-    }
-    */
-    SetDefaultFixParam();
- 
- 
+void AliHFMassFitter::SetType(Int_t fittypeb, Int_t fittypes) {
+  
+  //set the type of fit to perform for signal and background
+  
+  ftypeOfFit4Bkg = fittypeb; 
+  ftypeOfFit4Sgn = fittypes; 
+  
+  ComputeParSize();
+  fFitPars = new Float_t[fParsSize];
+  
+  SetDefaultFixParam();
 }
 
 //___________________________________________________________________________
@@ -400,7 +391,6 @@ void AliHFMassFitter::Reset() {
   fSigmaSgn=0.012;
   cout<<"Reset "<<fhistoInvMass<<endl;
   if(fhistoInvMass) {
-    //cout<<"esiste"<<endl;
     delete fhistoInvMass;
     fhistoInvMass=NULL;
     cout<<fhistoInvMass<<endl;
@@ -733,39 +723,65 @@ Bool_t AliHFMassFitter::SideBandsBounds(){
 
   //determines the ranges of the side bands
 
-  Double_t width=fhistoInvMass->GetBinWidth(8);
   if (fNbin==0) fNbin=fhistoInvMass->GetNbinsX();
   Double_t minHisto=fhistoInvMass->GetBinLowEdge(1);
-  Double_t maxHisto=fhistoInvMass->GetBinLowEdge(fNbin)+width;
+  Double_t maxHisto=fhistoInvMass->GetBinLowEdge(fNbin+1);
+
+  Double_t sidebandldouble,sidebandrdouble;
+  Bool_t leftok=kFALSE, rightok=kFALSE;
 
   if(fMass-fminMass < 0 || fmaxMass-fMass <0) {
     cout<<"Left limit of range > mean or right limit of range < mean: change left/right limit or initial mean value"<<endl;
     return kFALSE;
   } 
   
-  if((TMath::Abs(fminMass-minHisto) < 10e6 || TMath::Abs(fmaxMass - maxHisto) < 10e6) && (fMass-4.*fSigmaSgn-fminMass) < 10e6){
+  //histo limit = fit function limit
+  if((TMath::Abs(fminMass-minHisto) < 1e6 || TMath::Abs(fmaxMass - maxHisto) < 1e6) && (fMass-4.*fSigmaSgn-fminMass) < 1e6){
     Double_t coeff = (fMass-fminMass)/fSigmaSgn;
-    
-    fSideBandl=(Int_t)((fMass-0.5*coeff*fSigmaSgn-fminMass)/width);
-    fSideBandr=(Int_t)((fMass+0.5*coeff*fSigmaSgn-fminMass)/width);
+    sidebandldouble=(fMass-0.5*coeff*fSigmaSgn);
+    sidebandrdouble=(fMass+0.5*coeff*fSigmaSgn);
     cout<<"Changed number of sigma from 4 to "<<0.5*coeff<<" for the estimation of the side bands"<<endl;
     if (coeff<3) cout<<"Side bands inside 3 sigma, may be better use ftypeOfFit4Bkg = 3 (only signal)"<<endl;
     if (coeff<2) {
       cout<<"Side bands inside 2 sigma. Change mode: ftypeOfFit4Bkg = 3"<<endl;
       ftypeOfFit4Bkg=3;
       //set binleft and right without considering SetRangeFit- anyway no bkg!
-      fSideBandl=(Int_t)((fMass-4.*fSigmaSgn-minHisto)/width);
-      fSideBandr=(Int_t)((fMass+4.*fSigmaSgn-minHisto)/width);
+      sidebandldouble=(fMass-4.*fSigmaSgn);
+      sidebandrdouble=(fMass+4.*fSigmaSgn);
     }
   }
   else {
-  fSideBandl=(Int_t)((fMass-4.*fSigmaSgn-minHisto)/width);
-  fSideBandr=(Int_t)((fMass+4.*fSigmaSgn-minHisto)/width);
-//   cout<<"\tfMass = "<<fMass<<"\tfSigmaSgn = "<<fSigmaSgn<<"\tminHisto = "<<minHisto<<endl;
-//   cout<<"\tbinleft = "<<fSideBandl<<"\tbinright = "<<fSideBandr<<endl;
+    sidebandldouble=(fMass-4.*fSigmaSgn);
+    sidebandrdouble=(fMass+4.*fSigmaSgn);
   }
 
-  if (fSideBandl==0) {
+  cout<<"Left side band ";
+  Double_t tmp=0.;
+  tmp=sidebandldouble;
+  //calculate bin corresponding to fSideBandl
+  fSideBandl=fhistoInvMass->FindBin(sidebandldouble);
+  if (sidebandldouble >= fhistoInvMass->GetBinCenter(fSideBandl)) fSideBandl++;
+  sidebandldouble=fhistoInvMass->GetBinLowEdge(fSideBandl);
+  
+  if(TMath::Abs(tmp-sidebandldouble) > 1e-6){
+    cout<<tmp<<" is not allowed, changing it to the nearest value allowed: ";
+    leftok=kTRUE;
+  }
+  cout<<sidebandldouble<<" (bin "<<fSideBandl<<")"<<endl;
+
+  cout<<"Right side band ";
+  tmp=sidebandrdouble;
+  //calculate bin corresponding to fSideBandr
+  fSideBandr=fhistoInvMass->FindBin(sidebandrdouble);
+  if (sidebandrdouble < fhistoInvMass->GetBinCenter(fSideBandr)) fSideBandr--;
+  sidebandrdouble=fhistoInvMass->GetBinLowEdge(fSideBandr+1);
+
+  if(TMath::Abs(tmp-sidebandrdouble) > 1e-6){
+    cout<<tmp<<" is not allowed, changing it to the nearest value allowed: ";
+    rightok=kTRUE;
+  }
+  cout<<sidebandrdouble<<" (bin "<<fSideBandr<<")"<<endl;
+  if (fSideBandl==0 || fSideBandr==fNbin) {
     cout<<"Error! Range too little"; 
     return kFALSE;
   }
@@ -796,8 +812,7 @@ Bool_t AliHFMassFitter::CheckRangeFit(){
   }
   Bool_t leftok=kFALSE, rightok=kFALSE;
   Int_t nbins=fhistoInvMass->GetNbinsX();
-  Double_t width=fhistoInvMass->GetBinWidth(1);
-  Double_t minhisto=fhistoInvMass->GetBinLowEdge(1), maxhisto=fhistoInvMass->GetBinLowEdge(nbins)+width;
+  Double_t minhisto=fhistoInvMass->GetBinLowEdge(1), maxhisto=fhistoInvMass->GetBinLowEdge(nbins+1);
 
   //check if limits are inside histogram range
 
@@ -810,13 +825,12 @@ Bool_t AliHFMassFitter::CheckRangeFit(){
     fmaxMass=maxhisto;
   }
 
-  Int_t binl,binr;
   Double_t tmp=0.;
   tmp=fminMass;
   //calculate bin corresponding to fminMass
-  binl=fhistoInvMass->FindBin(fminMass);
-  if (fminMass > fhistoInvMass->GetBinCenter(binl)) binl++;
-  fminMass=fhistoInvMass->GetBinLowEdge(binl);
+  fminBinMass=fhistoInvMass->FindBin(fminMass);
+  if (fminMass >= fhistoInvMass->GetBinCenter(fminBinMass)) fminBinMass++;
+  fminMass=fhistoInvMass->GetBinLowEdge(fminBinMass);
   if(TMath::Abs(tmp-fminMass) > 1e-6){
     cout<<"Left bound "<<tmp<<" is not allowed, changing it to the nearest value allowed: "<<fminMass<<endl;
     leftok=kTRUE;
@@ -824,9 +838,9 @@ Bool_t AliHFMassFitter::CheckRangeFit(){
  
   tmp=fmaxMass;
   //calculate bin corresponding to fmaxMass
-  binr=fhistoInvMass->FindBin(fmaxMass);
-  if (fmaxMass < fhistoInvMass->GetBinCenter(binr)) binr--;
-  fmaxMass=fhistoInvMass->GetBinLowEdge(binr)+width;
+  fmaxBinMass=fhistoInvMass->FindBin(fmaxMass);
+  if (fmaxMass < fhistoInvMass->GetBinCenter(fmaxBinMass)) fmaxBinMass--;
+  fmaxMass=fhistoInvMass->GetBinLowEdge(fmaxBinMass+1);
   if(TMath::Abs(tmp-fmaxMass) > 1e-6){
     cout<<"Right bound "<<tmp<<" is not allowed, changing it to the nearest value allowed: "<<fmaxMass<<endl;
     rightok=kTRUE;
@@ -843,6 +857,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   
   //Set default fitter Minuit in order to use gMinuit in the contour plots    
   TVirtualFitter::SetDefaultFitter("Minuit");
+
 
   Bool_t isBkgOnly=kFALSE;
 
@@ -869,28 +884,16 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   if(isBkgOnly) {
     cout<<"INFO!! The histogram contains only background"<<endl;
     if(draw)DrawFit();
+
+    //increase counter of number of fits done
+    fcounter++;
+
     return kTRUE;
   }
 
-  Int_t nFitPars=0; //total function's number of parameters
-  switch (ftypeOfFit4Bkg){
-  case 0:
-    nFitPars=5; //3+2
-    break;
-  case 1:
-    nFitPars=5; //3+2
-    break;
-  case 2:
-    nFitPars=6; //3+3
-    break;
-  case 3:
-    nFitPars=4; //3+1
-    break;
-  }
+  Int_t bkgPar = fNFinalPars-3; //background function's number of parameters
 
-  Int_t bkgPar = nFitPars-3; //background function's number of parameters
-
-  cout<<"nFitPars = "<<nFitPars<<"\tbkgPar = "<<bkgPar<<endl;
+  cout<<"fNFinalPars = "<<fNFinalPars<<"\tbkgPar = "<<bkgPar<<endl;
 
 
   TString listname="contourplot";
@@ -909,14 +912,13 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   TString massname="funcmass";
 
   //Total integral
-  Double_t totInt = fhistoInvMass->Integral(fhistoInvMass->FindBin(fminMass), fhistoInvMass->FindBin(fmaxMass), "width");
-
+  Double_t totInt = fhistoInvMass->Integral(fminBinMass,fmaxBinMass, "width");
+  cout<<"Here tot integral is = "<<totInt<<"; integral in whole range is "<<fhistoInvMass->Integral("width")<<endl;
   fSideBands = kTRUE;
   Double_t width=fhistoInvMass->GetBinWidth(8);
   cout<<"fNbin"<<fNbin<<endl;
   if (fNbin==0) fNbin=fhistoInvMass->GetNbinsX();
-  //Double_t minHisto=fhistoInvMass->GetBinLowEdge(1);
-  //Double_t maxHisto=fhistoInvMass->GetBinLowEdge(fNbin)+width;
+
   Bool_t ok=SideBandsBounds();
   if(!ok) return kFALSE;
   
@@ -976,12 +978,12 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     for(Int_t i=0;i<bkgPar;i++){
       fFitPars[i]=funcbkg->GetParameter(i);
       //cout<<i<<"\t"<<funcbkg->GetParameter(i)<<"\t";
-      fFitPars[nFitPars+2*bkgPar+3+i]= funcbkg->GetParError(i);
-      //cout<<nFitPars+2*bkgPar+3+i<<"\t"<< funcbkg->GetParError(i)<<endl;
+      fFitPars[fNFinalPars+2*bkgPar+3+i]= funcbkg->GetParError(i);
+      //cout<<fNFinalPars+2*bkgPar+3+i<<"\t"<< funcbkg->GetParError(i)<<endl;
     }
     fSideBands = kFALSE;
     //intbkg1 = funcbkg->GetParameter(0);
-    funcbkg->SetRange(fminMass,fmaxMass);
+
     intbkg1 = funcbkg->Integral(fminMass,fmaxMass);
     if(ftypeOfFit4Bkg!=3) slope1 = funcbkg->GetParameter(1);
     if(ftypeOfFit4Bkg==2) conc1 = funcbkg->GetParameter(2);
@@ -995,7 +997,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     cout<<"\nBACKGROUND FIT WITH REFLECTION"<<endl;
     bkgPar+=3;
     
-    cout<<"nFitPars = "<<nFitPars<<"\tbkgPar = "<<bkgPar<<endl;
+    cout<<"fNFinalPars = "<<fNFinalPars<<"\tbkgPar = "<<bkgPar<<endl;
 
     funcbkg1 = new TF1(bkg1name.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,bkgPar,"AliHFMassFitter","FitFunction4Bkg");
     cout<<"Function name = "<<funcbkg1->GetName()<<endl;
@@ -1032,8 +1034,8 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     for(Int_t i=0;i<bkgPar;i++){
       fFitPars[bkgPar-3+i]=funcbkg1->GetParameter(i);
       //cout<<bkgPar-3+i<<"\t"<<funcbkg1->GetParameter(i);
-      fFitPars[nFitPars+3*bkgPar-6+i]= funcbkg1->GetParError(i);
-      //cout<<"\t"<<nFitPars+3*bkgPar-6+i<<"\t"<<funcbkg1->GetParError(i)<<endl; 
+      fFitPars[fNFinalPars+3*bkgPar-6+i]= funcbkg1->GetParError(i);
+      //cout<<"\t"<<fNFinalPars+3*bkgPar-6+i<<"\t"<<funcbkg1->GetParError(i)<<endl; 
     }
 
     intbkg1=funcbkg1->GetParameter(3);
@@ -1046,15 +1048,15 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     for(Int_t i=0;i<3;i++){
       fFitPars[bkgPar-3+i]=0.;
       cout<<bkgPar-3+i<<"\t"<<0.<<"\t";
-      fFitPars[nFitPars+3*bkgPar-6+i]= 0.;
-      cout<<nFitPars+3*bkgPar-6+i<<"\t"<<0.<<endl;
+      fFitPars[fNFinalPars+3*bkgPar-6+i]= 0.;
+      cout<<fNFinalPars+3*bkgPar-6+i<<"\t"<<0.<<endl;
     }
   
     for(Int_t i=0;i<bkgPar-3;i++){
       fFitPars[bkgPar+i]=funcbkg->GetParameter(i);
       cout<<bkgPar+i<<"\t"<<funcbkg->GetParameter(i)<<"\t";
-      fFitPars[nFitPars+3*bkgPar-3+i]= funcbkg->GetParError(i);
-      cout<<nFitPars+3*bkgPar-3+i<<"\t"<< funcbkg->GetParError(i)<<endl;
+      fFitPars[fNFinalPars+3*bkgPar-3+i]= funcbkg->GetParError(i);
+      cout<<fNFinalPars+3*bkgPar-3+i<<"\t"<< funcbkg->GetParError(i)<<endl;
     }
 
    
@@ -1076,20 +1078,20 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     cout<<"Setting sgnInt = - sgnInt"<<endl;
     sgnInt=- sgnInt;
   }
-  /*Fit All Mass distribution with exponential + gaussian (+gaussiam braodened) */
-  TF1 *funcmass = new TF1(massname.Data(),this,&AliHFMassFitter::FitFunction4MassDistr,fminMass,fmaxMass,nFitPars,"AliHFMassFitter","FitFunction4MassDistr");
+  /*Fit All Mass distribution with exponential + gaussian (+gaussian braodened) */
+  TF1 *funcmass = new TF1(massname.Data(),this,&AliHFMassFitter::FitFunction4MassDistr,fminMass,fmaxMass,fNFinalPars,"AliHFMassFitter","FitFunction4MassDistr");
   cout<<"Function name = "<<funcmass->GetName()<<endl<<endl;
   funcmass->SetLineColor(4); //blue
 
   //Set parameters
   cout<<"\nTOTAL FIT"<<endl;
 
-  if(nFitPars==5){
+  if(fNFinalPars==5){
     funcmass->SetParNames("TotInt","Slope","SgnInt","Mean","Sigma");
     funcmass->SetParameters(totInt,slope1,sgnInt,fMass,fSigmaSgn);
 
     //cout<<"Parameters set to: "<<totInt<<"\t"<<slope1<<"\t"<<sgnInt<<"\t"<<fMass<<"\t"<<fSigmaSgn<<"\t"<<endl;
-    //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<nFitPars<<"\tgsidebands = "<<fSideBands<<endl;
+    //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<fNFinalPars<<"\tgsidebands = "<<fSideBands<<endl;
     if(fFixPar[0]){
       cout<<"fix1"<<endl;
       funcmass->FixParameter(0,totInt);
@@ -1111,12 +1113,12 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
       funcmass->FixParameter(4,fSigmaSgn);
     }
   }
-  if (nFitPars==6){
+  if (fNFinalPars==6){
     funcmass->SetParNames("TotInt","Coef1","Coef2","SgnInt","Mean","Sigma");
     funcmass->SetParameters(totInt,slope1,conc1,sgnInt,fMass,fSigmaSgn);
  
     //cout<<"Parameters set to: "<<totInt<<"\t"<<slope1<<"\t"<<conc1<<"\t"<<sgnInt<<"\t"<<fMass<<"\t"<<fSigmaSgn<<"\t"<<endl;
-    //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<nFitPars<<"\tgsidebands = "<<fSideBands<<endl;
+    //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<fNFinalPars<<"\tgsidebands = "<<fSideBands<<endl;
     if(fFixPar[0])funcmass->FixParameter(0,totInt);
     if(fFixPar[1])funcmass->FixParameter(1,slope1);
     if(fFixPar[2])funcmass->FixParameter(2,conc1);
@@ -1126,18 +1128,16 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     //
     //funcmass->FixParameter(2,sgnInt);
   }
-  if(nFitPars==4){
+  if(fNFinalPars==4){
     funcmass->SetParNames("Const","SgnInt","Mean","Sigma");
     if(ftypeOfFit4Sgn == 1) funcmass->SetParameters(0.,0.5*totInt,fMass,fSigmaSgn);
     else funcmass->SetParameters(0.,totInt,fMass,fSigmaSgn);
     if(fFixPar[0]) funcmass->FixParameter(0,0.);
     //cout<<"Parameters set to: "<<0.5*totInt<<"\t"<<fMass<<"\t"<<fSigmaSgn<<"\t"<<endl;
-    //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<nFitPars<<"\tgsidebands = "<<fSideBands<<endl;
+    //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<fNFinalPars<<"\tgsidebands = "<<fSideBands<<endl;
 
   }
-  //funcmass->FixParameter(nFitPars-2,fMass);
-  //funcmass->SetParLimits(nFitPars-1,0.007,0.05);
-    //funcmass->SetParLimits(nFitPars-2,fMass-0.01,fMass+0.01);
+
   Int_t status;
 
   status = fhistoInvMass->Fit(massname.Data(),"R,L,E,+,0");
@@ -1148,33 +1148,22 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
 
   cout<<"fit done"<<endl;
   //reset value of fMass and fSigmaSgn to those found from fit
-  fMass=funcmass->GetParameter(nFitPars-2);
-  fSigmaSgn=funcmass->GetParameter(nFitPars-1);
+  fMass=funcmass->GetParameter(fNFinalPars-2);
+  fSigmaSgn=funcmass->GetParameter(fNFinalPars-1);
   
-  for(Int_t i=0;i<nFitPars;i++){
+  for(Int_t i=0;i<fNFinalPars;i++){
     fFitPars[i+2*bkgPar-3]=funcmass->GetParameter(i);
-    fFitPars[nFitPars+4*bkgPar-6+i]= funcmass->GetParError(i);
-    //cout<<i+2*bkgPar-3<<"\t"<<funcmass->GetParameter(i)<<"\t\t"<<nFitPars+4*bkgPar-6+i<<"\t"<<funcmass->GetParError(i)<<endl;
+    fFitPars[fNFinalPars+4*bkgPar-6+i]= funcmass->GetParError(i);
+    //cout<<i+2*bkgPar-3<<"\t"<<funcmass->GetParameter(i)<<"\t\t"<<fNFinalPars+4*bkgPar-6+i<<"\t"<<funcmass->GetParError(i)<<endl;
   }
   /*
   //check: cout parameters  
-  for(Int_t i=0;i<2*(nFitPars+2*bkgPar-3);i++){
+  for(Int_t i=0;i<2*(fNFinalPars+2*bkgPar-3);i++){
     cout<<i<<"\t"<<fFitPars[i]<<endl;
     }
   */
   
-//   if(draw){
-//     TCanvas *canvas=new TCanvas(fhistoInvMass->GetName(),fhistoInvMass->GetName());
-//     TH1F *fhistocopy=new TH1F(*fhistoInvMass);
-//     canvas->cd();
-//     fhistocopy->DrawClone();
-//     if(ftypeOfFit4Sgn == 1) funcbkg1->DrawClone("sames");
-//     else funcbkg->DrawClone("sames");
-//     funcmass->DrawClone("sames");
-//     cout<<"Drawn"<<endl;
-//   }
-
-  if(funcmass->GetParameter(nFitPars-1) <0 || funcmass->GetParameter(nFitPars-2) <0 || funcmass->GetParameter(nFitPars-3) <0 ) {
+  if(funcmass->GetParameter(fNFinalPars-1) <0 || funcmass->GetParameter(fNFinalPars-2) <0 || funcmass->GetParameter(fNFinalPars-3) <0 ) {
     cout<<"IntS or mean or sigma negative. You may tray to SetInitialGaussianSigma(..) and SetInitialGaussianMean(..)"<<endl;
     return kFALSE;
   }
@@ -1185,9 +1174,9 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   //contour plots
   if(draw){
 
-    for (Int_t kpar=1; kpar<nFitPars;kpar++){
+    for (Int_t kpar=1; kpar<fNFinalPars;kpar++){
 
-      for(Int_t jpar=kpar+1;jpar<nFitPars;jpar++){
+      for(Int_t jpar=kpar+1;jpar<fNFinalPars;jpar++){
 	cout<<"Par "<<kpar<<" and "<<jpar<<endl;
 	
 	// produce 2 contours per couple of parameters
@@ -1262,7 +1251,6 @@ Bool_t AliHFMassFitter::RefitWithBkgOnly(Bool_t draw){
   //perform a fit with background function only. Can be useful to try when fit fails to understand if it is because there's no signal
   //If you want to change the backgroud function or range use SetType or SetRangeFit before
 
-  cout<<"++++ I'm in RefitWithBkgOnly ++++"<<endl;
   TString bkgname="funcbkgonly";
   fSideBands = kFALSE;
 
@@ -1360,25 +1348,6 @@ void AliHFMassFitter::AddFunctionsToHisto(){
 
   cout<<"AddFunctionsToHisto called"<<endl;
   TString bkgname = "funcbkg";
-  Int_t np=-99;
-  switch (ftypeOfFit4Bkg){
-  case 0: //expo
-    np=2;
-    break;
-  case 1: //linear
-    np=2;
-    break;
-  case 2: //pol2
-    np=3;
-    break;
-  case 3: //no bkg
-    np=1;
-    break;
-  }
-  if (ftypeOfFit4Sgn == 1) {
-    bkgname += 1;
-    np+=3;
-  }
 
   Bool_t done1=kFALSE,done2=kFALSE;
 
@@ -1428,10 +1397,10 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     }
 
     bkgname += "FullRange";
-    TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
+    TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars,"AliHFMassFitter","FitFunction4Bkg");
     //cout<<bfullrange->GetName()<<endl;
-    for(Int_t i=0;i<np;i++){
-      //cout<<i<<" di "<<np<<endl;
+    for(Int_t i=0;i<fNFinalPars;i++){
+      //cout<<i<<" di "<<fNFinalPars<<endl;
       bfullrange->SetParName(i,b->GetParName(i));
       bfullrange->SetParameter(i,b->GetParameter(i));
       bfullrange->SetParError(i,b->GetParError(i));
@@ -1441,7 +1410,7 @@ void AliHFMassFitter::AddFunctionsToHisto(){
 
     bkgnamesave += "Recalc";
 
-    TF1 *blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,np,"AliHFMassFitter","FitFunction4Bkg");
+    TF1 *blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars,"AliHFMassFitter","FitFunction4Bkg");
 
     TF1 *mass=fhistoInvMass->GetFunction("funcmass");
 
@@ -1450,13 +1419,14 @@ void AliHFMassFitter::AddFunctionsToHisto(){
       return;
     }
 
-    blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(np));
-    blastpar->SetParError(0,mass->GetParError(np));
-    if (np>=2) {
+    //intBkg=intTot-intS
+    blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(fNFinalPars));
+    blastpar->SetParError(0,mass->GetParError(fNFinalPars));
+    if (fNFinalPars>=2) {
       blastpar->SetParameter(1,mass->GetParameter(1));
       blastpar->SetParError(1,mass->GetParError(1));
     }
-    if (np==3) {
+    if (fNFinalPars==3) {
       blastpar->SetParameter(2,mass->GetParameter(2));
       blastpar->SetParError(2,mass->GetParError(2));
     }
@@ -1748,27 +1718,8 @@ void AliHFMassFitter::PrintParTitles() const{
     return;
   }
 
-  Int_t np=0;
-  switch (ftypeOfFit4Bkg){
-  case 0: //expo
-    np=2;
-    break;
-  case 1: //linear
-    np=2;
-    break;
-  case 2: //pol2
-    np=3;
-    break;
-  case 3: //no bkg
-    np=1;
-    break;
-  }
-
-  np+=3; //3 parameter for signal
-  if (ftypeOfFit4Sgn == 1) np+=3;
-
   cout<<"Parameter Titles \n";
-  for(Int_t i=0;i<np;i++){
+  for(Int_t i=0;i<fNFinalPars;i++){
     cout<<"Par "<<i<<": "<<f->GetParName(i)<<endl;
   }
   cout<<endl;
@@ -1792,61 +1743,7 @@ void AliHFMassFitter::Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsig
 
   Signal(min,max,signal,errsignal);
 
-//   //functions names
-//   TString bkgname= "funcbkgRecalc";
-//   TString bkg1name="funcbkg1Recalc";
-//   TString massname="funcmass";
 
-
-//   TF1 *funcbkg=0;
-//   TF1 *funcmass=fhistoInvMass->GetFunction(massname.Data());
-//   if(!funcmass){
-//     cout<<"AliHFMassFitter::Signal() ERROR -> Mass distr function not found!"<<endl;
-//     return;
-//   }
-
-//   if(ftypeOfFit4Sgn == 0) funcbkg=fhistoInvMass->GetFunction(bkgname.Data());
-//   else funcbkg=fhistoInvMass->GetFunction(bkg1name.Data());
-
-//   if(!funcbkg){
-//     cout<<"AliHFMassFitter::Signal() ERROR -> Bkg function not found!"<<endl;
-//     return;
-//   }
-
-//   Int_t np=-99;
-//   switch (ftypeOfFit4Bkg){
-//   case 0: //expo
-//     np=2;
-//     break;
-//   case 1: //linear
-//     np=2;
-//     break;
-//   case 2: //pol2
-//     np=3;
-//     break;
-//   case 3: //no bkg
-//     np=1;
-//     break;
-//   }
-
-//   Float_t intS,intSerr;
-
-//  //relative error evaluation
- 
-//   intS=funcmass->GetParameter(np);
-//   intSerr=funcmass->GetParError(np);
- 
-//   cout<<"Sgn relative error evaluation from fit: "<<intSerr/intS<<endl;
-//   Double_t background,errbackground;
-//   Background(nOfSigma,background,errbackground);
-
-//   //signal +/- error in nsigma
-//   Double_t min=fMass-nOfSigma*fSigmaSgn;
-//   Double_t max=fMass+nOfSigma*fSigmaSgn;
-
-//   Double_t mass=funcmass->Integral(min, max)/fhistoInvMass->GetBinWidth(4);
-//   signal=mass - background;
-//   errsignal=TMath::Sqrt((intSerr/intS*mass)*(intSerr/intS*mass)/*assume relative error is the same as for total integral*/ + errbackground*errbackground);
   return;
 
 }
@@ -1883,21 +1780,7 @@ void AliHFMassFitter::Signal(Double_t min, Double_t max, Double_t &signal,Double
     return;
   }
 
-  Int_t np=-99;
-  switch (ftypeOfFit4Bkg){
-  case 0: //expo
-    np=2;
-    break;
-  case 1: //linear
-    np=2;
-    break;
-  case 2: //pol2
-    np=3;
-    break;
-  case 3: //no bkg
-    np=1;
-    break;
-  }
+  Int_t np=fNFinalPars-3;
 
   Double_t intS,intSerr;
 
@@ -1931,62 +1814,8 @@ void AliHFMassFitter::Background(Double_t nOfSigma,Double_t &background,Double_t
 
   Background(min,max,background,errbackground);
 
-//   //functions names
-//   TString bkgname="funcbkgRecalc";
-//   TString bkg1name="funcbkg1Recalc";
-
-//   TF1 *funcbkg=0;
-//   if(ftypeOfFit4Sgn == 0) funcbkg=fhistoInvMass->GetFunction(bkgname.Data());
-//   else funcbkg=fhistoInvMass->GetFunction(bkg1name.Data());
-//   if(!funcbkg){
-//     cout<<"AliHFMassFitter::Background() ERROR -> Bkg function not found!"<<endl;
-//     return;
-//   }
-
-//   Float_t intB,intBerr;//, intT,intTerr,intS,intSerr;
-
-//   //relative error evaluation: from final parameters of the fit
-//   if(ftypeOfFit4Bkg==3 && ftypeOfFit4Sgn == 0) cout<<"No background fit: Bkg relative error evaluation put to zero"<<endl;
-//   else{
-    
-//     intB=funcbkg->GetParameter(0);
-//     intBerr=funcbkg->GetParError(0);
- 
-//     cout<<"Bkg relative error evaluation: from final parameters of the fit: "<<intBerr/intB<<endl;
-//   }
-
-//   Double_t min=fMass-nOfSigma*fSigmaSgn;
-//   Double_t max=fMass+nOfSigma*fSigmaSgn;
-  
-//   //relative error evaluation: from histo
-   
-//   intB=fhistoInvMass->Integral(1,fSideBandl)+fhistoInvMass->Integral(fSideBandr,fNbin);
-//   Double_t sum2=0;
-
-//   for(Int_t i=1;i<=fSideBandl;i++){
-//     sum2+=fhistoInvMass->GetBinError(i)*fhistoInvMass->GetBinError(i);
-//   }
-//   for(Int_t i=fSideBandr;i<=fNbin;i++){
-//     sum2+=fhistoInvMass->GetBinError(i)*fhistoInvMass->GetBinError(i);
-//   }
-
-//   intBerr=TMath::Sqrt(sum2);
-//   cout<<"Bkg relative error evaluation: from histo: "<<intBerr/intB<<endl;
-  
-//   cout<<"Last estimation of bkg error is used"<<endl;
-
-//   //backround +/- error in nsigma
-//   if (ftypeOfFit4Bkg == 3 && ftypeOfFit4Sgn == 0) {
-//     background = 0;
-//     errbackground = 0;
-//   }
-//   else{
-//     background=funcbkg->Integral(min,max)/(Double_t)fhistoInvMass->GetBinWidth(2);
-//     errbackground=intBerr/intB*background; // assume relative error is the same as for total integral
-//     //cout<<"integral = "<<funcbkg->Integral(min, max)<<"\tbinW = "<<fhistoInvMass->GetBinWidth(2)<<endl;
-//   }
   return;
-
+  
 }
 //___________________________________________________________________________
 
@@ -2060,15 +1889,7 @@ void AliHFMassFitter::Significance(Double_t nOfSigma,Double_t &significance,Doub
   Double_t min=fMass-nOfSigma*fSigmaSgn;
   Double_t max=fMass+nOfSigma*fSigmaSgn;
   Significance(min, max, significance, errsignificance);
-  /*
-  Double_t signal,errsignal,background,errbackground;
-  Signal(nOfSigma,signal,errsignal);
-  Background(nOfSigma,background,errbackground);
 
-  significance =  signal/TMath::Sqrt(signal+background);
-  
-  errsignificance = TMath::Sqrt(significance*significance/(signal+background)/(signal+background)*(1/4.*errsignal*errsignal+errbackground*errbackground)+significance*significance/signal/signal*errsignal*errsignal);
-  */
   return;
 }
 

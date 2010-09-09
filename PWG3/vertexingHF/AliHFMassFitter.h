@@ -34,8 +34,8 @@ class AliHFMassFitter : public TNamed {
   //setters
   void     SetHisto(const TH1F *histoToFit);
   void     SetRangeFit(Double_t minvalue, Double_t maxvalue){fminMass=minvalue; fmaxMass=maxvalue; CheckRangeFit();}
-  void     SetMinRangeFit(Double_t minvalue){fminMass=minvalue;}
-  void     SetMaxRangeFit(Double_t maxvalue){fmaxMass=maxvalue;}
+  void     SetMinRangeFit(Double_t minvalue){fminMass=minvalue;printf("CheckRangeFit after SetMaxRangeFit is also set\n");}
+  void     SetMaxRangeFit(Double_t maxvalue){fmaxMass=maxvalue;printf("CheckRangeFit after SetMinRangeFit is also set\n");}
   void     SetBinN(Int_t newbinN){fNbin=newbinN;}
   void     SetType(Int_t fittypeb, Int_t fittypes);
   void     SetReflectionSigmaFactor(Int_t constant) {ffactor=constant;}
@@ -45,7 +45,7 @@ class AliHFMassFitter : public TNamed {
   void     SetFixParam(Bool_t *fixpar){fFixPar=fixpar;}
   void     SetDefaultFixParam();
   Bool_t   SetFixThisParam(Int_t thispar,Bool_t fixpar);
-  void     SetFixGaussianMean(Double_t mean=1.85,Bool_t fixpar=kTRUE){SetInitialGaussianMean(mean); SetFixThisParam(fNFinalPars-2,fixpar);}
+  void     SetFixGaussianMean(Double_t mean=1.865,Bool_t fixpar=kTRUE){SetInitialGaussianMean(mean); SetFixThisParam(fNFinalPars-2,fixpar);}
   void     SetFixGaussianSigma(Double_t sigma=0.012, Bool_t fixpar=kTRUE){SetInitialGaussianMean(sigma); SetFixThisParam(fNFinalPars-1,fixpar);}
 
   //getters
@@ -110,6 +110,8 @@ class AliHFMassFitter : public TNamed {
   TH1F*     fhistoInvMass;     // histogram to fit
   Double_t  fminMass;          // lower mass limit
   Double_t  fmaxMass;          // upper mass limit
+  Int_t     fminBinMass;
+  Int_t     fmaxBinMass;
   Int_t     fNbin;             // number of bins
   Int_t     fParsSize;         // size of fFitPars array
   Int_t     fNFinalPars;       // number of parameters of the final function
@@ -127,7 +129,7 @@ class AliHFMassFitter : public TNamed {
   Int_t     fSideBandr;        // right side band limit (bin number)
   Int_t     fcounter;          // internal counter
   TList*    fContourGraph;     // TList of TGraph containing contour plots
-  ClassDef(AliHFMassFitter,3); // class for invariant mass fit
+  ClassDef(AliHFMassFitter,4); // class for invariant mass fit
 };
 
 #endif
