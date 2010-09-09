@@ -42,10 +42,10 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(char* title, 
   AliFemtoCorrFctn(),
   fNumerator(0),
   fDenominator(0),
-  fEnergyTotalReal(0),  
+/*fEnergyTotalReal(0),  
   fEnergyMultReal(0),        
   fPzMultReal(0),      
-  fPtMultReal(0),            
+  fPtMultReal(0),*/            
   fEnergyTotalMix (0),      
   fEnergyMultMix (0),      
   fPzMultMix(0),            
@@ -68,7 +68,7 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(char* title, 
 
   //Added histograms to calculate EMCICs , Nicolas Bock 19.01.2010
   //Setup EnergyTotalReal
-  char tTitNum1[100] = "ESumReal";
+  /*char tTitNum1[100] = "ESumReal";
   strcat(tTitNum1,title);
   fEnergyTotalReal = new TH3D(tTitNum1,title,nqbins,QLo,QHi,nphibins,
 			      -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
@@ -90,7 +90,7 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(char* title, 
   strcat(tTitNum4,title);
   fPtMultReal = new TH3D(tTitNum4,title,nqbins,QLo,QHi,nphibins,
 			 -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
-  
+  */ 
 
 
   //Setup EnergyTotalMix
@@ -121,10 +121,10 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(char* title, 
   // to enable error bar calculation...
   fNumerator->Sumw2();
   fDenominator->Sumw2();
-  fEnergyTotalReal->Sumw2();
+  /*fEnergyTotalReal->Sumw2();
   fEnergyMultReal->Sumw2();
   fPzMultReal->Sumw2();
-  fPtMultReal->Sumw2();
+  fPtMultReal->Sumw2();  */
   fEnergyTotalMix->Sumw2();
   fEnergyMultMix->Sumw2();
   fPzMultMix->Sumw2();
@@ -137,10 +137,10 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(const AliFemt
   AliFemtoCorrFctn(),
   fNumerator(0),
   fDenominator(0),
-  fEnergyTotalReal(0),
+  /*fEnergyTotalReal(0),
   fEnergyMultReal(0),        
   fPzMultReal(0),      
-  fPtMultReal(0),            
+  fPtMultReal(0),            */
   fEnergyTotalMix (0),      
   fEnergyMultMix (0),      
   fPzMultMix(0),            
@@ -150,10 +150,10 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(const AliFemt
   // Copy constructor
   fNumerator = new TH3D(*aCorrFctn.fNumerator);
   fDenominator = new TH3D(*aCorrFctn.fDenominator);
-  fEnergyTotalReal = new TH3D(*aCorrFctn.fEnergyTotalReal);
+  /*fEnergyTotalReal = new TH3D(*aCorrFctn.fEnergyTotalReal);
   fEnergyMultReal = new TH3D(*aCorrFctn.fEnergyMultReal);
   fPzMultReal = new TH3D(*aCorrFctn.fPzMultReal);
-  fPtMultReal = new TH3D(*aCorrFctn.fPtMultReal);
+  fPtMultReal = new TH3D(*aCorrFctn.fPtMultReal);*/
   fEnergyTotalMix = new TH3D(*aCorrFctn.fEnergyTotalMix);
   fEnergyMultMix = new TH3D(*aCorrFctn.fEnergyMultMix);
   fPzMultMix = new TH3D(*aCorrFctn.fPzMultMix);
@@ -165,10 +165,10 @@ AliFemtoCorrFctn3DSphericalEMCIC::~AliFemtoCorrFctn3DSphericalEMCIC(){
   // Destructor
   delete fNumerator;
   delete fDenominator;
-  delete fEnergyTotalReal;
+  /*delete fEnergyTotalReal;
   delete fEnergyMultReal;        
   delete fPzMultReal;     
-  delete fPtMultReal;            
+  delete fPtMultReal;            */
   delete fEnergyTotalMix;      
   delete fEnergyMultMix; 
   delete fPzMultMix;   
@@ -185,14 +185,14 @@ AliFemtoCorrFctn3DSphericalEMCIC& AliFemtoCorrFctn3DSphericalEMCIC::operator=(co
   fNumerator = new TH3D(*aCorrFctn.fNumerator);
   if (fDenominator) delete fDenominator;
   fDenominator = new TH3D(*aCorrFctn.fDenominator);
-  if (fEnergyTotalReal) delete fEnergyTotalReal;
+  /*  if (fEnergyTotalReal) delete fEnergyTotalReal;
   fEnergyTotalReal = new TH3D(*aCorrFctn.fEnergyTotalReal);
   if (fEnergyMultReal) delete fEnergyMultReal;
   fEnergyMultReal = new TH3D(*aCorrFctn.fEnergyMultReal);
   if (fPzMultReal) delete fPzMultReal;
   fPzMultReal = new TH3D(*aCorrFctn.fPzMultReal);
   if (fPtMultReal) delete fPtMultReal;
-  fPtMultReal = new TH3D(*aCorrFctn.fPtMultReal);
+  fPtMultReal = new TH3D(*aCorrFctn.fPtMultReal);  */
   if (fEnergyTotalMix) delete fEnergyTotalMix;
   fEnergyTotalMix = new TH3D(*aCorrFctn.fEnergyTotalMix);
   if (fEnergyMultMix) delete fEnergyMultMix;
@@ -211,10 +211,10 @@ void AliFemtoCorrFctn3DSphericalEMCIC::WriteOutHistos(){
   // Write out all histograms to file
   fNumerator->Write();
   fDenominator->Write();
-  fEnergyTotalReal->Write();
+  /*fEnergyTotalReal->Write();
   fEnergyMultReal->Write();        
   fPzMultReal->Write();      
-  fPtMultReal->Write();            
+  fPtMultReal->Write();            */
   fEnergyTotalMix->Write();      
   fEnergyMultMix->Write();      
   fPzMultMix->Write();            
@@ -228,10 +228,10 @@ TList* AliFemtoCorrFctn3DSphericalEMCIC::GetOutputList()
 
   tOutputList->Add(fNumerator); 
   tOutputList->Add(fDenominator);  
-  tOutputList->Add(fEnergyTotalReal);
+  /*  tOutputList->Add(fEnergyTotalReal);
   tOutputList->Add(fEnergyMultReal);        
   tOutputList->Add(fPzMultReal);      
-  tOutputList->Add(fPtMultReal);            
+  tOutputList->Add(fPtMultReal);            */
   tOutputList->Add(fEnergyTotalMix );      
   tOutputList->Add(fEnergyMultMix );      
   tOutputList->Add(fPzMultMix);            
@@ -275,38 +275,37 @@ void AliFemtoCorrFctn3DSphericalEMCIC::AddRealPair( AliFemtoPair* pair){
     if (!(fPairCut->Pass(pair))) return;
   }
 
-  //                          //Changed K to Q to be in LCMS, N. Bock
-  double tKO = pair->QOutCMS();  //KOut();
-  double tKS = pair->QSideCMS();  //KSide(); 
-  double tKL = pair->QLongCMS();  //  KLong();
+  //                          
+  double tQO = pair->QOutCMS();  
+  double tQS = pair->QSideCMS();  
+  double tQL = pair->QLongCMS();  
 
-  double tKR = sqrt(tKO*tKO + tKS*tKS + tKL*tKL);
-  double tKC;
-  if ( fabs(tKR) < 1e-10 ) tKC = 0.0;
-  else tKC=tKL/tKR;
-  double tKP=atan2(tKS,tKO);
+  double tQR = sqrt(tQO*tQO + tQS*tQS + tQL*tQL);
+  double tQC = 0;
+  if ( fabs(tQR) < 1e-10 ) tQC = 0.0;
+  else tQC = tQL/tQR;
+  double tQP = atan2(tQS,tQO);
 
-  fNumerator->Fill(tKR,tKP,tKC);
+  fNumerator->Fill(tQR,tQP,tQC);
   
   // EMCICs  
-  AliFemtoLorentzVector tMom1 = pair->Track1()->FourMomentum();
+  /*AliFemtoLorentzVector tMom1 = pair->Track1()->FourMomentum();
   AliFemtoLorentzVector tMom2 = pair->Track2()->FourMomentum();
   double tE1 = tMom1.e();
   double tE2 = tMom2.e();
   double tPz1 = tMom1.pz();
   double tPz2 = tMom2.pz();
-  TVector2 tPt1;
-  TVector2 tPt2;
-  cout <<"AddRealPair" << "E1,E2, K,Ks,KL" <<  
-    tE1 <<" " << tE2<<" " <<  tKR <<" " <<  tKS <<" " << tKL<<endl;
+  
+  TVector2 tPt1;  
+  TVector2 tPt2; 
   tPt1.Set(tMom1.px(),tMom1.py());
   tPt2.Set(tMom2.px(),tMom2.py());
-  double tPt1DotPt2=tPt1*tPt2;
+  double tPt1DotPt2 = tPt1*tPt2;
   
-  fEnergyTotalReal->Fill(tKR,tKP,tKC,tE1+tE2);
-  fEnergyMultReal->Fill(tKR,tKP,tKC,tE1*tE2);
-  fPzMultReal->Fill(tKR,tKP,tKC,tPz1*tPz2);
-  fPtMultReal->Fill(tKR,tKP,tKC,tPt1DotPt2);
+  fEnergyTotalReal->Fill(tQR,tQP,tQC,tE1+tE2);
+  fEnergyMultReal->Fill(tQR,tQP,tQC,tE1*tE2);
+  fPzMultReal->Fill(tQR,tQP,tQC,tPz1*tPz2);
+  fPtMultReal->Fill(tQR,tQP,tQC,tPt1DotPt2);*/
    
 
 }
@@ -317,17 +316,17 @@ void AliFemtoCorrFctn3DSphericalEMCIC::AddMixedPair( AliFemtoPair* pair){
     if (!(fPairCut->Pass(pair))) return;
   }
  //                          //Changed K to Q to be in LCMS, N. Bock
-  double tKO = pair->QOutCMS();  //KOut();
-  double tKS = pair->QSideCMS();  //KSide(); 
-  double tKL = pair->QLongCMS();  //  KLong();
+  double tQO = pair->QOutCMS();  
+  double tQS = pair->QSideCMS();   
+  double tQL = pair->QLongCMS();  
 
-  double tKR = sqrt(tKO*tKO + tKS*tKS + tKL*tKL);
-  double tKC;
-  if ( fabs(tKR) < 1e-10 ) tKC = 0.0;
-  else tKC=tKL/tKR;
-  double tKP=atan2(tKS,tKO);
+  double tQR = sqrt(tQO*tQO + tQS*tQS + tQL*tQL);
+  double tQC;
+  if ( fabs(tQR) < 1e-10 ) tQC = 0.0;
+  else tQC=tQL/tQR;
+  double tQP=atan2(tQS,tQO);
 
-  fDenominator->Fill(tKR,tKP,tKC);
+  fDenominator->Fill(tQR,tQP,tQC);
 
   // EMCICs   
   AliFemtoLorentzVector tMom1 = pair->Track1()->FourMomentum();
@@ -336,15 +335,16 @@ void AliFemtoCorrFctn3DSphericalEMCIC::AddMixedPair( AliFemtoPair* pair){
   double tE2 = tMom2.e();
   double tPz1 = tMom1.pz();
   double tPz2 = tMom2.pz();
-  TVector2 tPt1;
-  TVector2 tPt2;
+  
+  TVector2 tPt1;  
+  TVector2 tPt2; 
   tPt1.Set(tMom1.px(),tMom1.py());
   tPt2.Set(tMom2.px(),tMom2.py());
-  double tPt1DotPt2=tPt1*tPt2;
+  double tPt1DotPt2 = tPt1*tPt2;
   
-  fEnergyTotalMix->Fill(tKR,tKP,tKC,tE1+tE2);
-  fEnergyMultMix->Fill(tKR,tKP,tKC,tE1*tE2);
-  fPzMultMix->Fill(tKR,tKP,tKC,tPz1*tPz2);
-  fPtMultMix->Fill(tKR,tKP,tKC,tPt1DotPt2);
+  fEnergyTotalMix->Fill(tQR,tQP,tQC,tE1+tE2);
+  fEnergyMultMix->Fill(tQR,tQP,tQC,tE1*tE2);
+  fPzMultMix->Fill(tQR,tQP,tQC,tPz1*tPz2);
+  fPtMultMix->Fill(tQR,tQP,tQC,tPt1DotPt2);
   
 }

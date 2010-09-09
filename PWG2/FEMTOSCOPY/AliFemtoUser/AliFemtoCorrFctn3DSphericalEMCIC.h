@@ -40,10 +40,10 @@ private:
   TH3D* fNumerator;         // numerator
   TH3D* fDenominator;       // denominator
   //EMCIC histograms:
-  TH3D* fEnergyTotalReal;       // E1+E2 from real pairs
+  /*TH3D* fEnergyTotalReal;       // E1+E2 from real pairs
   TH3D* fEnergyMultReal;        // E1*E2
   TH3D* fPzMultReal;            // Pz1*Pz2
-  TH3D* fPtMultReal;            // Pt1*Pt2
+  TH3D* fPtMultReal;            // Pt1*Pt2  */
   TH3D* fEnergyTotalMix;       // E1+E2 from mixed pairs
   TH3D* fEnergyMultMix;        // E1*E2
   TH3D* fPzMultMix;            // Pz1*Pz2
