@@ -36,6 +36,7 @@
 #include "AliGammaConversionBGHandler.h"
 #include "AliESDCaloCluster.h" // for combining PHOS and GammaConv
 #include "AliKFVertex.h"
+#include <AliMCEventHandler.h>
 class AliESDTrackCuts;
 class AliCFContainer;
 class AliCFManager;
@@ -369,6 +370,16 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 
   if(fV0Reader == NULL){
     // Write warning here cuts and so on are default if this ever happens
+  }
+
+  if (fMCEvent ) {
+    // To avoid crashes due to unzip errors. Sometimes the trees are not there.
+
+    AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!mcHandler){ AliError("Could not retrive MC event handler!"); return; }
+    if (!mcHandler->InitOk() ) return;
+    if (!mcHandler->TreeK() )  return;
+    if (!mcHandler->TreeTR() ) return;
   }
 
   fV0Reader->SetInputAndMCEvent(InputEvent(), MCEvent());
@@ -1247,13 +1258,22 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
   while(fV0Reader->NextV0()){
     nSurvivingV0s++;
 		
-		
+
+    TVector3 vtxConv(fV0Reader->GetX(),fV0Reader->GetY(), fV0Reader->GetZ());
+	
     //-------------------------- filling v0 information -------------------------------------
     fHistograms->FillHistogram("ESD_Conversion_R", fV0Reader->GetXYRadius());
     fHistograms->FillHistogram("ESD_Conversion_ZR", fV0Reader->GetZ(),fV0Reader->GetXYRadius());
     fHistograms->FillHistogram("ESD_Conversion_XY", fV0Reader->GetX(),fV0Reader->GetY());
     fHistograms->FillHistogram("ESD_Conversion_OpeningAngle", fV0Reader->GetOpeningAngle());    
-		
+
+    // Specific histograms for beam pipe studies
+    if( TMath::Abs(fV0Reader->GetZ()) < fV0Reader->GetLineCutZValue() ){
+      fHistograms->FillHistogram("ESD_Conversion_XY_BeamPipe", fV0Reader->GetX(),fV0Reader->GetY());
+      fHistograms->FillHistogram("ESD_Conversion_RPhi_BeamPipe", vtxConv.Phi(),fV0Reader->GetXYRadius());
+    }
+
+	
     fHistograms->FillHistogram("ESD_E_Energy", fV0Reader->GetNegativeTrackEnergy());
     fHistograms->FillHistogram("ESD_E_Pt", fV0Reader->GetNegativeTrackPt());
     fHistograms->FillHistogram("ESD_E_Eta", fV0Reader->GetNegativeTrackEta());
@@ -1319,7 +1339,7 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     Int_t phiBin  = fHistograms->GetPhiBin(fV0Reader->GetNegativeTrackPhi());
     Double_t rFMD=30;
 
-    TVector3 vtxConv(fV0Reader->GetX(),fV0Reader->GetY(), fV0Reader->GetZ());
+
 
     //    Double_t motherCandidateEta= fV0Reader->GetMotherCandidateEta();
 		

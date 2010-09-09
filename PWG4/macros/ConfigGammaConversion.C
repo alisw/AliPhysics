@@ -38,7 +38,7 @@ Bool_t kGCRecalculateV0ForGamma = kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="900356200010031"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="900356200010030"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=10;
 
@@ -234,6 +234,8 @@ Bool_t kGCplotMCEtaZRConvGammaWithinAcceptance = kTRUE;
 Bool_t kGCplotESDConversionR                   = kTRUE;
 Bool_t kGCplotESDConversionZR                  = kTRUE;
 Bool_t kGCplotESDConversionXY                  = kTRUE;
+Bool_t kGCplotESDConversionXYBeamPipe          = kTRUE;
+Bool_t kGCplotESDConversionRPhiBeamPipe        = kTRUE;
 Bool_t kGCplotESDConversionOpeningAngle        = kTRUE;
 Bool_t kGCplotESDConvGammaCosPointingAngle     = kTRUE;
 Bool_t kGCplotESDConvGammaDcaDaugthers         = kTRUE;
@@ -484,6 +486,24 @@ Double_t kGClastXBinXY = 200.;
 Int_t kGCnYBinsXY = 800;
 Double_t kGCfirstYBinXY = -200.;
 Double_t kGClastYBinXY = 200.;
+
+//XY-plots-BeamPipe
+Int_t kGCnXBinsXYBP = 200;
+Double_t kGCfirstXBinXYBP = -10.;
+Double_t kGClastXBinXYBP = 10.;
+Int_t kGCnYBinsXYBP = 200;
+Double_t kGCfirstYBinXYBP = -10.;
+Double_t kGClastYBinXYBP = 10.;
+
+//Rphi-plots-BeamPipe
+Int_t kGCnXBinsRPhiBP = 200;
+Double_t kGCfirstXBinRPhiBP = -TMath::Pi();
+Double_t kGClastXBinRPhiBP = TMath::Pi();
+Int_t kGCnYBinsRPhiBP = 200;
+Double_t kGCfirstYBinRPhiBP = 0.;
+Double_t kGClastYBinRPhiBP = 10.;
+
+
 
 //OpenAngle-plots
 Int_t kGCnXBinsOpeningAngle = 400;
@@ -1664,6 +1684,8 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDConversionR == kTRUE){ histograms->AddHistogram("ESD_Conversion_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");}
     if(kGCplotESDConversionZR == kTRUE){ histograms->AddHistogram("ESD_Conversion_ZR" ,"" , kGCnXBinsZR, kGCfirstXBinZR, kGClastXBinZR, kGCnYBinsZR, kGCfirstYBinZR, kGClastYBinZR, "", "");}
     if(kGCplotESDConversionXY == kTRUE){ histograms->AddHistogram("ESD_Conversion_XY" ,"" , kGCnXBinsXY, kGCfirstXBinXY, kGClastXBinXY, kGCnYBinsXY, kGCfirstYBinXY, kGClastYBinXY, "", "");}
+    if(kGCplotESDConversionXYBeamPipe == kTRUE){ histograms->AddHistogram("ESD_Conversion_XY_BeamPipe" ,"" , kGCnXBinsXYBP, kGCfirstXBinXYBP, kGClastXBinXYBP, kGCnYBinsXYBP, kGCfirstYBinXYBP, kGClastYBinXYBP, "", "");}
+    if(kGCplotESDConversionRPhiBeamPipe == kTRUE){ histograms->AddHistogram("ESD_Conversion_RPhi_BeamPipe" ,"" , kGCnXBinsRPhiBP, kGCfirstXBinRPhiBP, kGClastXBinRPhiBP, kGCnYBinsRPhiBP, kGCfirstYBinRPhiBP, kGClastYBinRPhiBP, "", "");}
     if(kGCplotESDConversionOpeningAngle == kTRUE){ histograms->AddHistogram("ESD_Conversion_OpeningAngle" ,"" , kGCnXBinsOpeningAngle, kGCfirstXBinOpeningAngle, kGClastXBinOpeningAngle, "", "");}
 
     if(kGCplotESDConvGammaCosPointingAngle == kTRUE){ histograms->AddHistogram("ESD_ConvGamma_CosPointingAngle" ,"" , kGCnXBinsCosPointingAngle, kGCfirstXBinCosPointingAngle, kGClastXBinCosPointingAngle, "", "");}
