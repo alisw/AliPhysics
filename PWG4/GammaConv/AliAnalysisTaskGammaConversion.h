@@ -33,6 +33,7 @@ class AliESDtrackCuts;
 class AliCFManager; // for CF
 class AliCFContainer; // for CF
 
+
 class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 {
 	
@@ -133,6 +134,10 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
+  
+  /// Add reconstructed pions to aod
+  void AddPionToAOD(AliKFParticle * pionkf, Double_t mass, Int_t daughter1, Int_t daughter2); 
+  void AddOmegaToAOD(AliKFParticle * pionkf, Double_t mass, Int_t daughter1, Int_t daughter2); 
 		
   // for CF
   enum{
@@ -245,7 +250,9 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Double_t fHighPtMapping; //! transient
   Bool_t fDoCF; //! transient
 		
-  TClonesArray* fAODBranch ;        //! selected particles branch
+  TClonesArray * fAODGamma; //TClonesArray for gammas to put in AOD
+  TClonesArray * fAODPi0; //TTClonesArray for Pi0s to put in AOD
+  TClonesArray * fAODOmega; //TTClonesArray for omegas to put in AOD
   TString fAODBranchName; // New AOD branch name
   Bool_t fKFForceAOD;  //Set the Analysis Manager FillAOD variable to true every event
   TString fKFDeltaAODFileName; //! File name for delta AOD (if any)
