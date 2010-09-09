@@ -81,16 +81,10 @@ AliAnalysisTask(name,""), fESD(0), fMC(0), fOutput(0),fMinClustersTPC(0),fMinClu
       }
     }
   }
-  // tPhi=NULL;
-  //  tEta=NULL;
-  // tPt=NULL;
-
-  //fPi=3.1415926535898;
-
-
+ 
   }
 //--------------------------------------
-void AliAnalysisTaskDiHadron::SetCuts(Int_t MinClustersTPC,  Float_t MinClusterRatio, Float_t MaxTPCchi2, Int_t MinClustersITS, Float_t EtaCut, Float_t TrigEtaCut, Float_t NearPhiCut, Float_t XECut, Float_t MaxDCA, Float_t MaxDCAXY, Float_t MaxDCAZ, Int_t DCA2D, Int_t TPCRefit, Int_t ITSRefit, Int_t SPDCut, Float_t MinPtAssoc, Float_t MaxPtAssoc, Float_t VzCut, Int_t NIDs, char **TrigIDArray){
+void AliAnalysisTaskDiHadron::SetCuts(Int_t MinClustersTPC,  Float_t MinClusterRatio, Float_t MaxTPCchi2, Int_t MinClustersITS, Float_t EtaCut, Float_t TrigEtaCut, Float_t NearPhiCut, Float_t XECut, Float_t MaxDCA, Float_t MaxDCAXY, Float_t MaxDCAZ, Int_t DCA2D, Int_t TPCRefit, Int_t ITSRefit, Int_t SPDCut, Float_t MinPtAssoc, Float_t MaxPtAssoc, Float_t VzCut, Int_t NIDs, char * TrigIDArray){
   fMinClustersTPC=MinClustersTPC;
   fMinClusterRatio=MinClusterRatio;
   fMaxTPCchi2=MaxTPCchi2;
@@ -110,16 +104,13 @@ void AliAnalysisTaskDiHadron::SetCuts(Int_t MinClustersTPC,  Float_t MinClusterR
   fMaxPtAssoc=MaxPtAssoc;
   fVzCut=VzCut;
   fNIDs=NIDs;
-   fTrigIDArray=(char**)TrigIDArray;
-
-   //  Printf("TPC%d R%2.1f Chi%2.1f ITS%d Eta%2.1f Near%2.1f NearX%2.1f DCA%2.1f DCAR%2.1f DCAZ%2.1f DCAM%d TPCFit%d ITSFit%d SPD%d MinPt%2.1f MaxPt%2.1f Vz%2.1f Trig_%s",fMinClustersTPC,fMinClusterRatio,fMaxTPCchi2,fMinClustersITS,fEtaCut,fNearPhiCut,fXECut,fMaxDCA,fMaxDCAXY,fMaxDCAZ,fDCA2D,fTPCRefit,fITSRefit,fSPDCut,fMinPtAssoc,fMaxPtAssoc,fVzCut,fTrigIDArray[0]);
+  fTrigIDArray=(char*)TrigIDArray;
 }
 //--------------------------------------------------------
 void AliAnalysisTaskDiHadron::SetOptions(Int_t EfficiencyCorr, Int_t fDEBUG,  Int_t MCHistos){
   fEfficiencyCorr=EfficiencyCorr;
   DEBUG=fDEBUG;
   fMCHistos=MCHistos;
-  //Printf("Eff%d DEBUG%d MCHistos%d",fEfficiencyCorr,DEBUG,fMCHistos);
 }
 //------------------------------------------------------
 void AliAnalysisTaskDiHadron::SetBins(Int_t nBinPhi, Int_t nBinEta, Int_t nBinPhiEtaPhi, Int_t nBinPhiEtaEta, Int_t nBinPhi3, Int_t nBinEta3,Float_t dPhiMin, Float_t dPhiMax, Int_t NTPtBins, Int_t NMixBins, Int_t NCentBins,Int_t NAPtBins, Int_t NAPt3Bins, Int_t NVertexBins, Int_t NXEBins,Float_t *PtTrigArray, Float_t *PtAssocArray,Float_t *PtAssoc3Array1, Float_t *PtAssoc3Array2, Int_t *CentArrayMin, Int_t *CentArrayMax, Float_t *XEArray){
@@ -138,15 +129,21 @@ void AliAnalysisTaskDiHadron::SetBins(Int_t nBinPhi, Int_t nBinEta, Int_t nBinPh
   fNAPt3Bins=NAPt3Bins;
   fNVertexBins=NVertexBins;
   fNXEBins=NXEBins;
-  fPtTrigArray=(Float_t*)PtTrigArray;
-  fPtAssocArray=(Float_t*)PtAssocArray;
-  fPtAssoc3Array1=(Float_t*)PtAssoc3Array1;
-  fPtAssoc3Array2=(Float_t*)PtAssoc3Array2;
-  fCentArrayMin=(Int_t*)CentArrayMin;
-  fCentArrayMax=(Int_t*)CentArrayMax;
-  fXEArray=(Float_t*)XEArray;
+  fPtTrigArray=new Float_t [fNTPtBins];
+  for(int i=0;i<fNTPtBins;i++)fPtTrigArray[i]=PtTrigArray[i];
+  fPtAssocArray=new Float_t [fNAPtBins];
+  for(int i=0;i<fNAPtBins;i++)fPtAssocArray[i]=PtAssocArray[i];
+  fPtAssoc3Array1=new Float_t [fNAPt3Bins];
+  for(int i=0;i<fNAPt3Bins;i++)fPtAssoc3Array1[i]=PtAssoc3Array1[i];
+  fPtAssoc3Array2=new Float_t [fNAPt3Bins];
+  for(int i=0;i<fNAPt3Bins;i++)fPtAssoc3Array2[i]=PtAssoc3Array2[i];
+  fCentArrayMin=new Int_t [fNCentBins];
+  for(int i=0;i<NCentBins;i++)fCentArrayMin[i]=CentArrayMin[i];
+  fCentArrayMax=new Int_t [fNCentBins];
+  for(int i=0;i<NCentBins;i++)fCentArrayMax[i]=CentArrayMax[i];
+  fXEArray=new Float_t [fNXEBins];
+  for(int i=0;i<fNXEBins;i++)fXEArray[i]=XEArray[i];
  for(int i=0;i<=fNVertexBins;i++)fVertexArray[i]=(2.*i/fNVertexBins-1)*fVzCut;
- //Printf("BinPhi%d BinEta%d BinPhiEta%d %d Bin3Phi%d Bin3Eta%d VertexArray%2.1f %2.1f",fnBinPhi,fnBinEta,fnBinPhiEtaPhi,fnBinPhiEtaEta,fnBinPhi3,fnBinEta3,fVertexArray[0],fVertexArray[fNVertexBins]);
 }
 //-------------------------------------------------------
 void AliAnalysisTaskDiHadron::SetEfficiencies(Float_t EffFitPt, TF1 *FitLow, TF1 *FitHigh, Int_t NFitLowParam, Int_t NFitHighParam, Float_t *FitLowParam, Float_t *FitHighParam){
@@ -155,11 +152,10 @@ void AliAnalysisTaskDiHadron::SetEfficiencies(Float_t EffFitPt, TF1 *FitLow, TF1
   fFitHigh=(TF1*)FitHigh;
   fNFitLowParam=NFitLowParam;
   fNFitHighParam=NFitHighParam;
-  // Printf("NCent%d NFitLow%d NFitHigh%d",NCent,fNFitLowParam,fNFitHighParam);
-  //  Printf("FitLowParm%2.4f",FitLowParam[0]);
-  fFitLowParam=(Float_t*)FitLowParam;
-  fFitHighParam=(Float_t*)FitHighParam;
-  //Printf("fEffFitPt%2.1f FitParam%2.1f",fEffFitPt,fFitLowParam[0]);
+  fFitLowParam=new Float_t [fNFitLowParam*fNCentBins];
+  for(int i=0;i<fNFitLowParam*fNCentBins;i++)fFitLowParam[i]=FitLowParam[i];
+  fFitHighParam=new Float_t [fNFitHighParam*fNCentBins];
+  for(int i=0;i<fNFitHighParam*fNCentBins;i++)fFitHighParam[i]=FitHighParam[i];
 }
 
 //-----------------------------------------------------------
@@ -196,7 +192,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
   const char *sign2[3]={""," Like-Sign"," Unlike-Sign"};
   const char *sign31[4]={"","_LS","_ULT","_ULA"};
   const char *sign32[4]={""," Like-Sign"," Trigger-Diff"," Assoc-Diff"};
-  Float_t EtaEdge=2*fEtaCut;
+  Float_t EtaEdge=EtaEdge=fEtaCut+fTrigEtaCut;
   Float_t PhiArray[fnBinPhi+1];
   Float_t EtaArray[fnBinEta+1];
   Float_t PhiEtaArrayPhi[fnBinPhiEtaPhi+1];
@@ -647,8 +643,20 @@ Int_t AliAnalysisTaskDiHadron::CheckVertex(AliESDEvent *rESD){
 Int_t AliAnalysisTaskDiHadron::CheckTrigger(AliESDEvent *rESD){
   Int_t rGood=0;
   TString trigID=rESD->GetFiredTriggerClasses();
+  int count=0;
+  char TrigID[50];
+  int stop=0;//in as a safety
+
   for(int i=0;i<fNIDs;i++){
-    if(trigID.Contains(fTrigIDArray[i])) rGood=1;
+    if(stop==1)continue;
+    for(int j=0;j<50;j++){
+      if(fTrigIDArray[count]==',')TrigID[j]='\0';
+      else if(fTrigIDArray[count]=='\0'){TrigID[j]='\0';stop=1;}
+      else TrigID[j]=fTrigIDArray[count];
+      count++;
+      if(TrigID[j]=='\0') break;
+      }
+      if(trigID.Contains(TrigID)) rGood=1;
   }
     return rGood;
 }
@@ -1201,5 +1209,22 @@ void AliAnalysisTaskDiHadron::Terminate(Option_t *){
       }
     }
   }
+  delete [] fFitLowParam;
+  delete [] fFitHighParam;
+  delete [] fPtTrigArray;
+  delete [] fPtAssocArray;
+  delete [] fPtAssoc3Array1;
+  delete [] fPtAssoc3Array2;
+  delete [] fCentArrayMin;
+  delete [] fCentArrayMax;
+  delete [] fXEArray;
+  fFitLowParam=NULL;
+  fFitHighParam=NULL;
+  fPtTrigArray=NULL;
+  fPtAssocArray=NULL;
+  fPtAssoc3Array1=NULL;
+  fPtAssoc3Array2=NULL;
+  fCentArrayMin=NULL;
+  fCentArrayMax=NULL;
   Printf("Terminate AliAnalysisTaskDiHadron");
 }
