@@ -31,12 +31,9 @@ using namespace std;
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 
-#include "AliTPCcalibDB.h"
-#include "AliTPCTransform.h"
-#include "AliTPCCalPad.h"
-
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "AliTPCcalibDB.h"
 
 #include "TMath.h"
 #include "TObjString.h" 
@@ -50,10 +47,9 @@ const char* AliHLTTPCHWClusterTransformComponent::fgkOCDBEntryHWTransform="HLT/C
 
 AliHLTTPCHWClusterTransformComponent::AliHLTTPCHWClusterTransformComponent()
 :
-fOfflineTransform(NULL),
 fDataId(kFALSE),
 fChargeThreshold(10),
-fOfflineTPCRecoParam(),
+fTransform(),
 fBenchmark("HWClusterTransform")
 {
   // see header file for class documentation
@@ -111,19 +107,13 @@ AliHLTComponent* AliHLTTPCHWClusterTransformComponent::Spawn() {
 	
 int AliHLTTPCHWClusterTransformComponent::DoInit( int argc, const char** argv ) { 
 // see header file for class documentation
+  
+  int err = fTransform.Init( GetBz(), GetTimeStamp() );
 
-  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
-  if(!pCalib ||
-     !(fOfflineTransform = AliTPCcalibDB::Instance()->GetTransform())){
-    HLTError("Cannot retrieve offline transform from AliTPCcalibDB (%p)", pCalib);
+  if( err!=0 ){
+    HLTError("Cannot retrieve offline transform from AliTPCcalibDB");
     return -ENOENT;
   }
-  // set the flags in the reco param
-  fOfflineTPCRecoParam.SetUseExBCorrection(1);
-  fOfflineTPCRecoParam.SetUseTOFCorrection(1);
-  fOfflineTransform->SetCurrentRecoParam(&fOfflineTPCRecoParam);
-  
-  pCalib->SetExBField(GetBz());
 
   int iResult=0;
   iResult = ConfigureFromCDBTObjString(fgkOCDBEntryHWTransform);
@@ -153,6 +143,8 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
+
+  fTransform.SetCurrentTimeStamp( GetTimeStamp() );
 
   const AliHLTComponentBlockData *iter = NULL;    
   unsigned long ndx; 
@@ -215,8 +207,6 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      buffer[13]=0x80000000;
      */
 
-     Int_t sector=-99, thisrow=-99;
-
      // PrintDebug(buffer, 14);
      
      // skip the first 8 32-bit CDH words
@@ -265,37 +255,16 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   // Kenneth: 12.11.2009 I'm not sure if this is a correct calculation. Leave it out for now since it is anyway not used later since it caused segfaults.
 	   // cluster.fSigmaY2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
 	   // cluster.fSigmaZ2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
-
-    	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = -99.;
     	  	   
 	   HLTDebug("padrow: %d, charge: %d, pad: %f, time: %f, errY: %f, errZ: %f \n", cluster.fPadRow, (UInt_t)cluster.fCharge, tmpPad, tmpTime, cluster.fSigmaY2, cluster.fSigmaZ2);        	   
-	   
-	   //fOfflineTransform=NULL;
-	   
-	   if(fOfflineTransform == NULL){	   	   
-	      cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);             	   
-	      AliHLTTPCTransform::Slice2Sector(minSlice, cluster.fPadRow, sector, thisrow);	      
-    	      AliHLTTPCTransform::Raw2Local(xyz, sector, thisrow, tmpPad, tmpTime); 
-	      if(minSlice>17) xyz[1]=(-1)*xyz[1];	   
-	      cluster.fX = xyz[0];
-    	      cluster.fY = xyz[1];
-    	      cluster.fZ = xyz[2]; 
-     	   } else {	
-	   
-	         
-	    
-	     cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);
-	     
-	     AliHLTTPCTransform::Slice2Sector(minSlice, (UInt_t)cluster.fPadRow, sector, thisrow);	     
-	     
+	   	    
+	   cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);	     	     
 	      
-	     Double_t x[3] = {thisrow,tmpPad+.5,tmpTime}; 
-	     Int_t iSector[1]= {sector};
-	     fOfflineTransform->Transform(x,iSector,0,1);
-	     cluster.fX = x[0];
-	     cluster.fY = x[1];
-	     cluster.fZ = x[2];		     
- 	   }	   
+	   Float_t xyz[3];
+	   fTransform.Transform( minSlice, cluster.fPadRow, tmpPad, tmpTime, xyz );
+	   cluster.fX = xyz[0];
+	   cluster.fY = xyz[1];
+	   cluster.fZ = xyz[2];		     		   
 
 	   // set the cluster ID so that the cluster dump printout is the same for FCF and SCF
 	   cluster.fID = nAddedClusters +((minSlice&0x7f)<<25)+((minPartition&0x7)<<22);
