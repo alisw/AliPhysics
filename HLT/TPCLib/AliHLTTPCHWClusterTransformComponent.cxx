@@ -148,20 +148,13 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
   }
  
   const AliHLTComponentBlockData *iter = NULL;    
-  unsigned long ndx;
-
-  AliHLTTPCClusterData* outPtr;
+  unsigned long ndx; 
 
   AliHLTUInt8_t* outBPtr;
   UInt_t offset, mysize, nSize, tSize = 0;
 
   outBPtr = outputPtr;
-  outPtr  = (AliHLTTPCClusterData*)outBPtr;
-  
-  AliHLTTPCSpacePointData *spacePoints = outPtr->fSpacePoints;
-
-  unsigned long maxPoints = 0;
-    
+      
   for(ndx=0; ndx<evtData.fBlockCnt; ndx++){
      
      iter   = blocks+ndx;
@@ -182,8 +175,9 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      
      HLTDebug("minSlice: %d, minPartition: %d", minSlice, minPartition);
     
-     outPtr = (AliHLTTPCClusterData*)outBPtr;
-     maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
+     AliHLTTPCClusterData* outPtr  = (AliHLTTPCClusterData*)outBPtr;
+
+     unsigned long maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
      
      AliHLTUInt32_t *buffer;     
      buffer = (AliHLTUInt32_t*)iter->fPtr;  
@@ -296,7 +290,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   cluster.fID = nAddedClusters +((minSlice&0x7f)<<25)+((minPartition&0x7)<<22);
 
 	   HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", nAddedClusters, cluster.fX, cluster.fY, cluster.fZ, (UInt_t)cluster.fCharge);
-	   spacePoints[nAddedClusters] = cluster;
+	   outPtr->fSpacePoints[nAddedClusters] = cluster;
 	   	   
            nAddedClusters++; 
 	} // end of clusters starting with 11=0x3
@@ -326,7 +320,6 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      
      tSize   += mysize;
      outBPtr += mysize;
-     outPtr   = (AliHLTTPCClusterData*)outBPtr;
   
    } // end of loop over data blocks
    size = tSize;
