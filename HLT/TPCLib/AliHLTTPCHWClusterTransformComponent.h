@@ -22,6 +22,7 @@
 
 #include "AliHLTProcessor.h"
 #include "AliTPCRecoParam.h"
+#include "AliHLTComponentBenchmark.h"
 #include <vector>
 
 class AliTPCTransform;
@@ -152,6 +153,7 @@ private:
 
   AliTPCRecoParam fOfflineTPCRecoParam;       //! transient
   static const char* fgkOCDBEntryHWTransform; //!transient
+  AliHLTComponentBenchmark fBenchmark; // benchmarks
   
   ClassDef(AliHLTTPCHWClusterTransformComponent, 0)
 };

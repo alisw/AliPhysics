@@ -53,13 +53,17 @@ AliHLTTPCHWClusterTransformComponent::AliHLTTPCHWClusterTransformComponent()
 fOfflineTransform(NULL),
 fDataId(kFALSE),
 fChargeThreshold(10),
-fOfflineTPCRecoParam()
+fOfflineTPCRecoParam(),
+fBenchmark("HWClusterTransform")
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt  
+
+  fBenchmark.Reset();
+  fBenchmark.SetTimer(0,"total");
 }
 
 AliHLTTPCHWClusterTransformComponent::~AliHLTTPCHWClusterTransformComponent() { 
@@ -146,7 +150,10 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      size = 0;
      return 0;
   }
- 
+
+  fBenchmark.StartNewEvent();
+  fBenchmark.Start(0);
+
   const AliHLTComponentBlockData *iter = NULL;    
   unsigned long ndx; 
 
@@ -160,7 +167,9 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      iter   = blocks+ndx;
      mysize = 0;
      offset = tSize;
- 
+     
+     fBenchmark.AddInput(iter->fSize);
+
      HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
      	       evtData.fEventID, evtData.fEventID, 
      	       DataType2Text( iter->fDataType).c_str(), 
@@ -172,7 +181,9 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      UInt_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
      //UInt_t maxSlice     = AliHLTTPCDefinitions::GetMaxSliceNr(*iter); 
      //UInt_t maxPartition = AliHLTTPCDefinitions::GetMaxPatchNr(*iter);
-     
+
+     fBenchmark.SetName(Form("HWClusterTransform slice %d patch %d",minSlice,minPartition));
+
      HLTDebug("minSlice: %d, minPartition: %d", minSlice, minPartition);
     
      AliHLTTPCClusterData* outPtr  = (AliHLTTPCClusterData*)outBPtr;
@@ -318,12 +329,19 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      
      outputBlocks.push_back( bd );
      
+     fBenchmark.AddOutput(bd.fSize);
+    
      tSize   += mysize;
      outBPtr += mysize;
   
    } // end of loop over data blocks
-   size = tSize;
-   return 0;
+
+  size = tSize;
+  
+  fBenchmark.Stop(0);
+  HLTInfo(fBenchmark.GetStatistics());
+
+  return 0;
 } // end DoEvent()
 
 int AliHLTTPCHWClusterTransformComponent::ScanConfigurationArgument(int argc, const char** argv){
