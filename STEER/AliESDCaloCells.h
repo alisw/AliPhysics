@@ -26,6 +26,8 @@ class AliESDCaloCells : public AliVCaloCells
   AliESDCaloCells & operator=(const AliESDCaloCells& source);
   virtual ~AliESDCaloCells();
   virtual void Copy(TObject &obj) const;
+  virtual AliVCaloCells * CopyCaloCells(Bool_t all) const;
+
   
   Bool_t IsEMCAL()  const { return (fType == kEMCALCell);}
   Bool_t IsPHOS()   const { return (fType == kPHOSCell) ;}
@@ -46,8 +48,6 @@ class AliESDCaloCells : public AliVCaloCells
   inline Double_t GetAmplitude(Short_t pos) const;
   inline Double_t GetTime(Short_t pos) const;
   inline Short_t  GetCellNumber(Short_t pos) const;
-
-
 
  protected:
   Int_t       fNCells;       // Number of cells

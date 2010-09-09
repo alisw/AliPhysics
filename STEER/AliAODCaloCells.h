@@ -21,7 +21,9 @@ class AliAODCaloCells : public AliVCaloCells
   AliAODCaloCells(const char* name, const char* title, VCells_t ttype=kUndef);
   AliAODCaloCells(const AliAODCaloCells& cells); 
   AliAODCaloCells& operator=(const AliAODCaloCells& cells);
-  
+  virtual void Copy(TObject &obj) const;
+  virtual AliVCaloCells* CopyCaloCells(Bool_t all) const;
+
   virtual ~AliAODCaloCells();
   
   void CreateContainer(Short_t nCells);

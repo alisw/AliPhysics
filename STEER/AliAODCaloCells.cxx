@@ -74,6 +74,41 @@ AliAODCaloCells::~AliAODCaloCells()
   DeleteContainer();
 }
 
+
+void AliAODCaloCells::Copy(TObject &obj) const {
+  
+  // this overwrites the virtual TOBject::Copy()
+  // to allow run time copying without casting
+  // in AliESDEvent
+  
+  if(this==&obj)return;
+  AliAODCaloCells *robj = dynamic_cast<AliAODCaloCells*>(&obj);
+  if(!robj)return; // not an AliAODCaloCells
+  *robj = *this;
+  
+}
+
+AliVCaloCells *AliAODCaloCells::CopyCaloCells(Bool_t all = kTRUE) const {
+  
+  // copy the calo cells into a new object. If option all=FALSE, just the object type, 
+  // for mixing
+  
+  AliVCaloCells *obj =  new AliAODCaloCells();
+  
+  if(all){
+    obj->SetName (GetName()) ; 
+    obj->SetTitle(GetTitle()) ; 
+    obj->SetType (GetType()) ; 
+  
+    obj->SetNumberOfCells(fNCells);
+    for (Short_t i = 0; i < fNCells; i++) 
+      obj->SetCell(i,fCellNumber[i],fAmplitude[i],-1);
+  }
+  
+  return obj;
+  
+}
+
 void AliAODCaloCells::CreateContainer(Short_t nCells)
 {
   // function that creates container to store calorimeter cell data

@@ -47,6 +47,9 @@ class AliVCaloCells : public TNamed
   virtual Double_t GetTime(Short_t pos)       const     = 0;
   virtual Short_t  GetCellNumber(Short_t pos) const     = 0;
   
+  virtual void     Copy(TObject &obj)         const     = 0;
+  virtual AliVCaloCells* CopyCaloCells(Bool_t all) const = 0;
+
   ClassDef(AliVCaloCells, 0);
 };
 

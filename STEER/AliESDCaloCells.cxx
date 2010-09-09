@@ -84,7 +84,7 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
 
 }
 
-
+//_______________________________________________________________________
 void AliESDCaloCells::Copy(TObject &obj) const {
   
   // this overwrites the virtual TOBject::Copy()
@@ -97,6 +97,28 @@ void AliESDCaloCells::Copy(TObject &obj) const {
   *robj = *this;
 
 }
+
+//_______________________________________________________________________
+AliVCaloCells* AliESDCaloCells::CopyCaloCells(Bool_t all = kTRUE) const {
+  
+  // copy the calo cells into a new object. If option all=FALSE, just the object type, 
+  // for mixing
+  
+  AliVCaloCells *obj = new AliESDCaloCells();
+  
+  if(all){
+    obj->SetName (GetName()) ; 
+    obj->SetTitle(GetTitle()) ; 
+    obj->SetType (GetType()) ; 
+    
+    obj->SetNumberOfCells(fNCells);
+    for (Short_t i = 0; i < fNCells; i++) 
+      obj->SetCell(i,fCellNumber[i],fAmplitude[i],fTime[i]);
+  }
+
+  return obj;
+}
+
 
 //_______________________________________________________________________
 AliESDCaloCells::~AliESDCaloCells()

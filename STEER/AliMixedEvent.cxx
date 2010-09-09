@@ -135,93 +135,49 @@ void AliMixedEvent::Init()
   Int_t firstEMCALEvent = kTRUE;
   
   while((event = (AliVEvent*)next())) {
-    if (event->GetPHOSCells()) {
+    AliVCaloCells * phosCells = event->GetPHOSCells() ; 
+    if (phosCells) {
       
       //Create the container
       if(firstPHOSEvent)
       {
-        fPHOSCells = event->GetPHOSCells() ;// Just recover the pointer of the type ESD or AOD
-        
-        //Get the arrays and put them in a temporary array
-        Int_t ncells = fPHOSCells->GetNumberOfCells() ;
-        Short_t    *cellNumber = new Short_t   [ncells];  
-        Double32_t *amplitude  = new Double32_t[ncells];   
-        Double32_t *time       = new Double32_t[ncells];        
-        for (Int_t icell = 0; icell < ncells; icell++) {
-          cellNumber[icell] = fPHOSCells->GetCellNumber(icell);
-          amplitude [icell] = fPHOSCells->GetAmplitude(icell); 
-          time      [icell] = fPHOSCells->GetTime(icell) ; 
-        }
-        
-        //Now clean the event and enlarge the arrays
-        fPHOSCells->DeleteContainer();      // Delete the arrays set for the first event we need a larger array
+        if(!fPHOSCells) fPHOSCells = phosCells->CopyCaloCells(kFALSE) ;// Just recover the first event type:  ESD/AOD
+        else fPHOSCells->DeleteContainer(); //delete the previous container 
+        //Now create a new container with the adequate size
         fPHOSCells->SetType(AliVCaloCells::kPHOSCell) ; 
         fPHOSCells->CreateContainer(fNumberOfPHOSCells) ;
-        
-        //Put back the contents of the first event to the enlarged array
-        for (Int_t icell = 0; icell < ncells; icell++) {
-          fPHOSCells->SetCell(phosPos++, cellNumber[icell], amplitude[icell], time[icell]) ; 
-        }
-        
-        delete [] cellNumber ;
-        delete [] amplitude ;
-        delete [] time ;
-        
         firstPHOSEvent=kFALSE;
-      }
-      else // Add the rest of the events
-      {
-        Int_t ncells = event->GetPHOSCells()->GetNumberOfCells() ;
-        AliVCaloCells * phosCells = event->GetPHOSCells() ; 
-        for (Int_t icell = 0; icell < ncells; icell++) {
+
+      }//First event
+
+      Int_t ncells = event->GetPHOSCells()->GetNumberOfCells() ;
+      for (Int_t icell = 0; icell < ncells; icell++) {
           fPHOSCells->SetCell(phosPos++, phosCells->GetCellNumber(icell), phosCells->GetAmplitude(icell), phosCells->GetTime(icell)) ; 
-        }
-      }//not first event
-    }
-    if (event->GetEMCALCells()) {
+      }
+     
+    }// phos cells
+    
+    AliVCaloCells * emcalCells = event->GetEMCALCells() ; 
+    if (emcalCells) {
       
       //Create the container
       if(firstEMCALEvent)
       {
-        fEMCALCells = event->GetEMCALCells() ; // Just recover the pointer of the type ESD or AOD
-        
-        //Get the arrays and put them in a temporary array
-        Int_t ncells = fEMCALCells->GetNumberOfCells() ;
-        Short_t    *cellNumber = new Short_t   [ncells];  
-        Double32_t *amplitude  = new Double32_t[ncells];   
-        Double32_t *time       = new Double32_t[ncells];        
-        for (Int_t icell = 0; icell < ncells; icell++) {
-          cellNumber[icell] = fEMCALCells->GetCellNumber(icell);
-          amplitude [icell] = fEMCALCells->GetAmplitude(icell); 
-          time      [icell] = fEMCALCells->GetTime(icell) ; 
-        }
-        
-        //Now clean the event and enlarge the arrays
-        fEMCALCells->DeleteContainer();        // Delete the arrays set for the first event we need a larger array
+        if(!fEMCALCells)fEMCALCells = emcalCells->CopyCaloCells(kFALSE) ; // Just recover the first event type:  ESD/AOD
+        else fEMCALCells->DeleteContainer();       // delete the previous container
+        //Now create a new container with the adequate size
         fEMCALCells->SetType(AliVCaloCells::kEMCALCell) ; 
         fEMCALCells->CreateContainer(fNumberOfEMCALCells) ;
-        
-        //Put back the contents of the first event to the enlarged array
-        for (Int_t icell = 0; icell < ncells; icell++) {
-          fEMCALCells->SetCell(emcalPos++, cellNumber[icell], amplitude[icell], time[icell]) ; 
-        }        
-
-        delete [] cellNumber ;
-        delete [] amplitude ;
-        delete [] time ;
-        
         firstEMCALEvent=kFALSE;
-      }
-      else // Add the rest of the events
-      {
-        Int_t ncells = event->GetEMCALCells()->GetNumberOfCells() ;
-        AliVCaloCells * emcalCells = event->GetEMCALCells() ; 
-        for (Int_t icell = 0; icell < ncells; icell++) {
+      }//First event
+      
+      Int_t ncells = emcalCells->GetNumberOfCells() ;
+      for (Int_t icell = 0; icell < ncells; icell++) {
           fEMCALCells->SetCell(emcalPos++, emcalCells->GetCellNumber(icell), emcalCells->GetAmplitude(icell), emcalCells->GetTime(icell)) ; 
-        }
-      }//not first event
-    }
-  }  
+      }
+    }//EMCAL cells
+  }//while event
+  
 }
 
 AliVParticle* AliMixedEvent::GetTrack(Int_t i) const
@@ -289,7 +245,14 @@ void AliMixedEvent::Reset()
     delete[]  fNEMCALCellsCumul;
     fNEMCALCellsCumul = 0;
   }
-
+  
+  if (fPHOSCells) {	 
+    fPHOSCells->DeleteContainer();	 
+  }	 
+  if (fEMCALCells) {	 
+    fEMCALCells->DeleteContainer();	 
+  }
+  
 }
 
 Int_t AliMixedEvent::EventIndex(Int_t itrack) const
