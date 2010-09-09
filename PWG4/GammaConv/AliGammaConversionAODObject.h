@@ -71,12 +71,12 @@ class AliGammaConversionAODObject : public TObject {
 
   //Get Pt of gamma
   Float_t Pt() const {return TMath::Sqrt(fPx* fPx + fPy*fPy);}
-
+  
   ///Get Energy of gamma
   Float_t E() const {return TMath::Sqrt(fPx*fPx + fPy*fPy + fPz*fPz);}
 
-
-
+  ///Get Phi of photon
+  Float_t Phi() const {    return fPx == 0.0 && fPy == 0.0 ? 0.0 : TMath::ATan2(fPy,fPx); }
   /*
    * This function returns the esd label of the first electron
    */
