@@ -74,12 +74,12 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             }
         }
 
-        Double_t phi = track->Phi();
-        Double_t pt = track->Pt();
         if (TrackHitsCalorimeter(track, event->GetMagneticField()))
         {
-            if (track->Charge() > 0) fHistPhivsPtPos->Fill(phi,pt);
-            else fHistPhivsPtNeg->Fill(phi, pt);
+	  Double_t phi = track->Phi();
+	  Double_t pt = track->Pt();
+	  if (track->Charge() > 0) fHistPhivsPtPos->Fill(phi, pt);
+	  else fHistPhivsPtNeg->Fill(phi, pt);
         }
     }
 
@@ -123,12 +123,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         float theta = TMath::ATan(pos[2]/dist)+TMath::Pi()/2;
         // float eta = TMath::Log(TMath::Abs( TMath::Tan( 0.5 * theta ) ) );
         fTotNeutralEt += cluster->E() * TMath::Sin(theta);
+	fNeutralMultiplicity++;
 
         fMultiplicity++;
-
     }
 
     fTotNeutralEtAcc = fTotNeutralEt;
+
     fTotEt = fTotChargedEt + fTotNeutralEt;
     fTotEtAcc = fTotChargedEtAcc + fTotNeutralEtAcc;
 

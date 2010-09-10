@@ -128,79 +128,88 @@ void AliAnalysisEt::Init()
 
 void AliAnalysisEt::CreateHistograms()
 {
+  // histogram binning for E_T, p_T and Multiplicity: defaults for p+p
+  Int_t nbinsEt = 1000;
+  Double_t minEt = 0.0001;
+  Double_t maxEt = 100;
+  Int_t nbinsPt = 200;
+  Double_t minPt = 0;
+  Double_t maxPt = 20;
+  Int_t nbinsMult = 200;
+  Double_t minMult = -0.5; // offset -0.5 to have integer bins centered around 0
+  Double_t maxMult = nbinsMult + minMult; // 1 bin per integer value
 
     TString histname = "fHistEt" + fHistogramNameSuffix;
-
-    fHistEt = new TH1F(histname.Data(), "Total E_{T} Distribution", 1000, 0.00, 99);
+    fHistEt = new TH1F(histname.Data(), "Total E_{T} Distribution", nbinsEt, minEt, maxEt);
     fHistEt->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
     fHistEt->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
 
     histname = "fHistChargedEt" + fHistogramNameSuffix;
-    fHistChargedEt = new TH1F(histname.Data(), "Total Charged E_{T} Distribution", 1000, 0.00, 99);
+    fHistChargedEt = new TH1F(histname.Data(), "Total Charged E_{T} Distribution", nbinsEt, minEt, maxEt);
     fHistChargedEt->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
     fHistChargedEt->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
 
     histname = "fHistNeutralEt" + fHistogramNameSuffix;
-    fHistNeutralEt = new TH1F(histname.Data(), "Total Neutral E_{T} Distribution", 1000, 0.00, 99);
+    fHistNeutralEt = new TH1F(histname.Data(), "Total Neutral E_{T} Distribution", nbinsEt, minEt, maxEt);
     fHistNeutralEt->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
     fHistNeutralEt->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
 
     histname = "fHistEtAcc" + fHistogramNameSuffix;
-    fHistEtAcc = new TH1F(histname.Data(), "Total E_{T} Distribution in Acceptance", 1000, 0.00, 99);
+    fHistEtAcc = new TH1F(histname.Data(), "Total E_{T} Distribution in Acceptance", nbinsEt, minEt, maxEt);
     fHistEtAcc->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
     fHistEtAcc->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
 
     histname = "fHistChargedEtAcc" + fHistogramNameSuffix;
-    fHistChargedEtAcc = new TH1F(histname.Data(), "Total Charged E_{T} Distribution in Acceptance", 1000, 0.00, 99);
+    fHistChargedEtAcc = new TH1F(histname.Data(), "Total Charged E_{T} Distribution in Acceptance", nbinsEt, minEt, maxEt);
     fHistChargedEtAcc->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
     fHistChargedEtAcc->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
 
     histname = "fHistNeutralEtAcc" + fHistogramNameSuffix;
-    fHistNeutralEtAcc = new TH1F(histname.Data(), "Total Neutral E_{T} Distribution in Acceptance", 1000, 0.00, 99);
+    fHistNeutralEtAcc = new TH1F(histname.Data(), "Total Neutral E_{T} Distribution in Acceptance", nbinsEt, minEt, maxEt);
     fHistNeutralEtAcc->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
     fHistNeutralEtAcc->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
     std::cout << histname << std::endl;
     histname = "fHistMult" + fHistogramNameSuffix;
-    fHistMult = new TH1F(histname.Data(), "Total Multiplicity", 200, 0, 199);
+    fHistMult = new TH1F(histname.Data(), "Total Multiplicity", nbinsMult, minMult, maxMult);
     fHistMult->GetXaxis()->SetTitle("N");
     fHistMult->GetYaxis()->SetTitle("Multiplicity");
 
     histname = "fHistChargedMult" + fHistogramNameSuffix;
-    fHistChargedMult = new TH1F(histname.Data(), "Charged Multiplicity", 200, 0, 199);
+    fHistChargedMult = new TH1F(histname.Data(), "Charged Multiplicity", nbinsMult, minMult, maxMult);
     fHistChargedMult->GetXaxis()->SetTitle("N");
     fHistChargedMult->GetYaxis()->SetTitle("Multiplicity");
 
     histname = "fHistNeutralMult" + fHistogramNameSuffix;
-    fHistNeutralMult = new TH1F(histname.Data(), "Charged Multiplicity", 200, 0, 199);
+    fHistNeutralMult = new TH1F(histname.Data(), "Neutral Multiplicity", nbinsMult, minMult, maxMult);
     fHistNeutralMult->GetXaxis()->SetTitle("N");
     fHistNeutralMult->GetYaxis()->SetTitle("Multiplicity");
 
     histname = "fHistPhivsPtPos" + fHistogramNameSuffix;
-    fHistPhivsPtPos = new TH2F(histname.Data(), "Phi vs pT of positively charged tracks hitting the calorimeter", 	200, 0, 2*TMath::Pi(), 2000, 0, 100);
+    fHistPhivsPtPos = new TH2F(histname.Data(), "Phi vs pT of positively charged tracks hitting the calorimeter", 	200, 0, 2*TMath::Pi(), nbinsPt, minPt, maxPt);
 
     histname = "fHistPhivsPtNeg" + fHistogramNameSuffix;
-    fHistPhivsPtNeg = new TH2F(histname.Data(), "Phi vs pT of negatively charged tracks hitting the calorimeter", 	200, 0, 2*TMath::Pi(), 2000, 0, 100);
+    fHistPhivsPtNeg = new TH2F(histname.Data(), "Phi vs pT of negatively charged tracks hitting the calorimeter", 	200, 0, 2*TMath::Pi(), nbinsPt, minPt, maxPt);
 
     histname = "fHistBaryonEt" + fHistogramNameSuffix;
-    fHistBaryonEt = new TH1F(histname.Data(), "E_{T} for baryons",  1000, 0.0001, 100);
+    fHistBaryonEt = new TH1F(histname.Data(), "E_{T} for baryons",  nbinsEt, minEt, maxEt);
 
     histname = "fHistAntiBaryonEt" + fHistogramNameSuffix;
-    fHistAntiBaryonEt = new TH1F(histname.Data(), "E_{T} for anti baryons",  1000, 0.0001, 100);
+    fHistAntiBaryonEt = new TH1F(histname.Data(), "E_{T} for anti baryons",  nbinsEt, minEt, maxEt);
 
     histname = "fHistMesonEt" + fHistogramNameSuffix;
-    fHistMesonEt = new TH1F(histname.Data(), "E_{T} for mesons",  1000, 0.0001, 100);
+    fHistMesonEt = new TH1F(histname.Data(), "E_{T} for mesons",  nbinsEt, minEt, maxEt);
 
     histname = "fHistBaryonEtAcc" + fHistogramNameSuffix;
-    fHistBaryonEtAcc = new TH1F(histname.Data(), "E_{T} for baryons in calorimeter acceptance",  1000, 0.0001, 100);
+    fHistBaryonEtAcc = new TH1F(histname.Data(), "E_{T} for baryons in calorimeter acceptance",  nbinsEt, minEt, maxEt);
 
     histname = "fHistAntiBaryonEtAcc" + fHistogramNameSuffix;
-    fHistAntiBaryonEtAcc = new TH1F(histname.Data(), "E_{T} for anti baryons in calorimeter acceptance",  1000, 0.0001, 100);
+    fHistAntiBaryonEtAcc = new TH1F(histname.Data(), "E_{T} for anti baryons in calorimeter acceptance",  nbinsEt, minEt, maxEt);
 
     histname = "fHistMesonEtAcc" + fHistogramNameSuffix;
-    fHistMesonEtAcc = new TH1F(histname.Data(), "E_{T} for mesons in calorimeter acceptance",  1000, 0.0001, 100);
+    fHistMesonEtAcc = new TH1F(histname.Data(), "E_{T} for mesons in calorimeter acceptance",  nbinsEt, minEt, maxEt);
 
     histname = "fHistEtRecvsEtMC" + fHistogramNameSuffix;
-    fHistEtRecvsEtMC = new TH2F(histname.Data(), "Reconstructed E_{t} vs MC E_{t}", 1000, 0.000, 100, 1000, 0.0001, 100);
+    fHistEtRecvsEtMC = new TH2F(histname.Data(), "Reconstructed E_{t} vs MC E_{t}", nbinsEt, minEt, maxEt, nbinsEt, minEt, maxEt);
 
     histname = "fHistTMDeltaR" + fHistogramNameSuffix;
     fHistTMDeltaR = new TH1F(histname.Data(), "#Delta R for calorimeter clusters", 200, 0, 50);
