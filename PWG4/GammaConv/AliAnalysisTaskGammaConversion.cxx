@@ -194,14 +194,14 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fLeadingChargedIndex(-1),
   fLowPtMapping(1.),
   fHighPtMapping(3.),
-   fDoCF(kFALSE),
-   fAODGamma(NULL),
-   fAODPi0(NULL),
-   fAODOmega(NULL),
-   fAODBranchName("GammaConv"),
-   fKFForceAOD(kFALSE),
-   fKFDeltaAODFileName(""),
-   fDoNeutralMesonV0MCCheck(kFALSE),
+  fDoCF(kFALSE),
+  fAODGamma(NULL),
+  fAODPi0(NULL),
+  fAODOmega(NULL),
+  fAODBranchName("GammaConv"),
+  fKFForceAOD(kFALSE),
+  fKFDeltaAODFileName(""),
+  fDoNeutralMesonV0MCCheck(kFALSE),
   fKFReconstructedGammasV0Index()
 {
   // Common I/O in slot 0
@@ -1697,8 +1697,10 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
 
       omegaCandidate.GetMass(massOmegaCandidate,widthOmegaCandidate);
 
-      AddOmegaToAOD(&omegaCandidate, massOmegaCandidate, firstPi0Index, firstGammaIndex);
-
+      if ( massOmegaCandidata > 733 && massOmegaCandidata < 833 ) {
+	AddOmegaToAOD(&omegaCandidate, massOmegaCandidate, firstPi0Index, firstGammaIndex);
+      }
+      
       fHistograms->FillHistogram("ESD_Omega_InvMass_vs_Pt",massOmegaCandidate ,omegaCandidate.GetPt());
       fHistograms->FillHistogram("ESD_Omega_InvMass",massOmegaCandidate);
  
@@ -1996,7 +1998,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
             new((*fKFReconstructedPi0sTClone)[fKFReconstructedPi0sTClone->GetEntriesFast()])  AliKFParticle(*twoGammaCandidate);
             fGammav1.push_back(firstGammaIndex);
             fGammav2.push_back(secondGammaIndex);
-	AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
+	    AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
           }
 
 	  //        }
