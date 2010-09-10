@@ -92,7 +92,6 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fMinMult(0.),   
  fMaxMult(10000.),
  fGEBE(NULL), 
- fReferenceMultiplicityEBE(0.),
  fReferenceFlowGenFun(NULL),
  fQvectorComponents(NULL),
  fAverageOfSquaredWeight(NULL),
@@ -202,7 +201,6 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  if(fTuneParameters) {this->FillGeneratingFunctionsForDifferentTuningParameters(anEvent);} 
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of particles used to determine the reaction plane)
  if(nRP<10) {return;} // generating function formalism make sense only for nRPs >= 10 for default settings 
- fReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
  fCommonHists->FillControlHistograms(anEvent);                                                               
  this->FillGeneratingFunctionForReferenceFlow(anEvent);
  this->FillQvectorComponents(anEvent);
@@ -525,7 +523,7 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionForReferenceFlow(AliFlo
                                           // nPOI  = # of particles of interest for a detailed flow analysis.
  
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // nRP = # of particles used to determine the reaction plane;
- if(fCalculateVsMultiplicity){fAvMVsM->Fill(fReferenceMultiplicityEBE+0.5,nRP,1.);}
+ if(fCalculateVsMultiplicity){fAvMVsM->Fill(nRP+0.5,nRP,1.);}
  
  // Initializing the generating function G[p][q] for reference flow for current event: 
  Int_t pMax = fGEBE->GetNrows();
@@ -603,7 +601,7 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionForReferenceFlow(AliFlo
   for(Int_t q=0;q<qMax;q++)
   {
    fReferenceFlowGenFun->Fill((Double_t)p,(Double_t)q,(*fGEBE)(p,q),eventWeight); 
-   if(fCalculateVsMultiplicity){fReferenceFlowGenFunVsM->Fill(fReferenceMultiplicityEBE+0.5,(Double_t)p,(Double_t)q,(*fGEBE)(p,q),eventWeight);}
+   if(fCalculateVsMultiplicity){fReferenceFlowGenFunVsM->Fill(nRP+0.5,(Double_t)p,(Double_t)q,(*fGEBE)(p,q),eventWeight);}
   }
  } 
  

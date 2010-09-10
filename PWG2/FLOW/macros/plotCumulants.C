@@ -1,5 +1,11 @@
-// add comment
- 
+// Macro plotCumulants.C is used to represent true correlations, a.k.a. cumulants,
+// as a function of reference multiplicity. Different order cumulants provide
+// independent estimates of the flow harmonics. In the ideal case when only flow
+// correlations are present we have: 
+//         c{2} = v^2, c{4} = -v^4, c{6} = 4v^6 and c{8} = -33v^8.
+// In practice cumulants can are calculated via Q-vectors (QC) or via formalism
+// of generating functions (GFC). 
+
 // Set how many output analysis files in total you want to access:
 const Int_t nFiles = 3;
  
@@ -7,10 +13,10 @@ const Int_t nFiles = 3;
 const Int_t nSim = 1;
 
 // Set paths of all output analysis files (first the ones to be represented with mesh (simulations), then the ones to be represented with markers (real data))
-TString files[nFiles] = {"all","positive","negative"};
+TString files[nFiles] = {"all","plusPlus","minusMinus"};
 
 // Set analysis types for all output analysis files (can be "ESD","AOD","MC",""):
-TString type[nFiles] = {"","",""};
+TString type[nFiles] = {"ESD","ESD","ESD"};
  
 // Set mesh color:
 Int_t meshColor[nSim] = {kGray};
@@ -22,23 +28,24 @@ Int_t markerStyle[nFiles-nSim] = {kFullSquare,kFullSquare};
 Int_t markerColor[nFiles-nSim] = {kRed,kBlue};
 
 // Set legend entries:
-TString legendEntry[nFiles] = {"-1 < #eta < 1","0 < #eta < 1","-1 < #eta < 0"};
+TString legendEntry[nFiles] = {"all","+ vs +","- vs -"};
  
 // Set if you want to rebin the histograms into wider multiplicity bins (set for each cumulant order separately):
-Bool_t rebin = kFALSE;
-Int_t nMergedBins[4] = {2,2,2,2}; // set how many original multiplicity bins will be merged into 1 new one 
+Bool_t rebin = kTRUE;
+Int_t nMergedBins[4] = {1,4,4,4}; // set how many original multiplicity bins will be merged into 1 new one 
  
 // Set if you whish to plot cumulants versus <reference multiplicity> (by default they are plotted versus # of RPs):
-Bool_t plotCumulantsVsReferenceMultiplicity = kFALSE;
+Bool_t plotCumulantsVsReferenceMultiplicity = kTRUE;
+Bool_t showReferenceMultiplicityVsNoOfRPs = kTRUE; 
 
 // Set flow values whose theoretical contribution to cumulants will be shown on the plots with the straight coloured lines: 
-Bool_t showTheoreticalLines = kFALSE;
+Bool_t showTheoreticalLines = kTRUE;
 const Int_t nFlowValues = 1;
-Double_t v[nFlowValues] = {0.08};
+Double_t v[nFlowValues] = {0.05};
 Int_t lineColor[nFlowValues] = {kRed}; 
 
 // If the statistical error of 6th and 8th order cumulant is huge you may prefer not to show them:
-Bool_t plotOnly2ndAnd4thOrderCumulant = kFALSE;
+Bool_t plotOnly2ndAnd4thOrderCumulant = kTRUE;
 
 // For comparison sake show also GFC results with dotted line:
 Bool_t showAlsoGFCResults = kFALSE;
@@ -47,7 +54,7 @@ Int_t gfcLineStyle = 3;
 // For comparison sake show also Monte Carlo QC results with coloured mesh:
 Bool_t showAlsoMCEPResults = kFALSE; 
 Bool_t showOnlyMCEPResults = kFALSE;
-Int_t mcepMeshColor[nSim] = {kRed-10};
+Int_t mcepMeshColor[nSim] = {kGray};
 
 // Set method names which calculate cumulants vs multiplicity (do not touch these settings unless you are looking for a trouble):
 const Int_t nMethods = 3;
@@ -71,6 +78,9 @@ void plotCumulants(Int_t analysisMode=mLocal)
 {
  // analysisMode: if analysisMode = mLocal -> analyze data on your computer using aliroot
  //               if analysisMode = mLocalSource -> analyze data on your computer using root + source files 
+ 
+ // Cross-check user settings:
+ CrossCheckSettings();
     
  // Load needed libraries:
  LoadLibrariesPC(analysisMode);
@@ -99,7 +109,7 @@ void plotCumulants(Int_t analysisMode=mLocal)
  
  // Make plots:
  Plot(); 
- 
+
 } // end of void plotCumulants(Int_t analysisMode=mLocal) 
  
 // =====================================================================================
@@ -195,8 +205,9 @@ void Plot()
   // Draw legend:
   if(co==0){legend->Draw("same");}
  } // end of for(Int_t co=0;co<4;co++) // cumulant order
+ 
  // Plot also <reference multiplicity> vs # of RPs:
- if(plotCumulantsVsReferenceMultiplicity)
+ if(plotCumulantsVsReferenceMultiplicity && showReferenceMultiplicityVsNoOfRPs)
  {
   TCanvas *cRefMultVsNoOfRPs = new TCanvas("cRefMultVsNoOfRPs","#LTreference multiplicity#GT vs # of RPs",1200,600);
   cRefMultVsNoOfRPs->Divide(nFiles,1);
@@ -219,6 +230,30 @@ void Plot()
  
 } // end of void Plot()
  
+// =====================================================================================
+
+void CrossCheckSettings()
+{
+ // Cross-check user settings in this method.
+ 
+ if(showAlsoGFCResults && rebin)
+ {
+  cout<<endl;
+  cout<<" WARNING: Rebinning in M not supported for GFC yet !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+ if(showAlsoGFCResults && plotCumulantsVsReferenceMultiplicity)
+ {
+  cout<<endl;
+  cout<<" WARNING: Showing GFC versus <reference multiplicity> not supported yet !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+} // end of void CrossCheckSettings()
+
 // =====================================================================================
 
 void Lines()
@@ -310,7 +345,7 @@ void DetermineMinMax()
   
  for(Int_t f=0;f<nFiles;f++)
  {
-  for(Int_t m=0;m<nMethods;m++)
+  for(Int_t m=0;m<1+(Int_t)(showAlsoGFCResults)+(Int_t)(showAlsoMCEPResults);m++)
   { 
    for(Int_t co=0;co<4;co++)
    { 
@@ -325,9 +360,9 @@ void DetermineMinMax()
       {
        // y-axis:
        if(yMin[co] > result-error){yMin[co] = result-error;} // min value
-       if(yMax[co] < result+error) {yMax[co] = result+error;} // max value    
+       if(yMax[co] < result+error){yMax[co] = result+error;} // max value    
        // x-axis:
-       xMax[co] = cumulantsVsM[f][m][co]->GetBinLowEdge(b+1); 
+       if(xMax[co] < cumulantsVsM[f][m][co]->GetBinLowEdge(b+1)){xMax[co] = cumulantsVsM[f][m][co]->GetBinLowEdge(b+1);}
       }
      } // end of for(Int_t b=1;b<=cumulantsVsM[f][m][co]->GetXaxis()->GetNbins();b++) 
      // theoretical contributions:
@@ -350,10 +385,15 @@ void DetermineMinMax()
 
 void GetHistograms()
 {
- // Get histograms with results for cumulants vs multiplicity.
+ // Get all histograms and profiles.
  
- if(plotCumulantsVsReferenceMultiplicity) {GetProfileForRefMultVsNoOfRPs();}
+ // a) Get profiles holding results for <refMult> vs number of Reference Particles (RPs); 
+ // b) Get histograms holding results for cumulants vs multiplicity.
+ 
+ // a) Get profiles holding results for <refMult> vs number of Reference Particles (RPs): 
+ if(plotCumulantsVsReferenceMultiplicity){GetProfileRefMultVsNoOfRPs();}
   
+ // b) Get histograms holding results for cumulants vs multiplicity:
  TString qcFlag[4] = {"QC{2}","QC{4}","QC{6}","QC{8}"};
  TString gfcFlag[4] = {"GFC{2}","GFC{4}","GFC{6}","GFC{8}"};
  for(Int_t f=0;f<nFiles;f++)
@@ -378,8 +418,8 @@ void GetHistograms()
       {
        cumulantsVsM[f][m][co] = Rebin(cumulantsVsM[f][m][co],co);
       }
-     } 
-    } 
+     } // end of for(Int_t co=0;co<4;co++)
+    } // end of if(temp) 
    } // end of if(!(strcmp(method[m].Data(),"QC")))
    else if(!(strcmp(method[m].Data(),"GFC")) && lists[f][m])
    {
@@ -390,14 +430,22 @@ void GetHistograms()
      for(Int_t co=0;co<4;co++)
      {
       cumulantsVsM[f][m][co] = dynamic_cast<TH1D*> (temp->FindObject(Form("fReferenceFlowCumulantsVsM, %s",gfcFlag[co].Data())));
-      if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
+      if(showAlsoGFCResults && !cumulantsVsM[f][m][co])
       {
-       cumulantsVsM[f][m][co] = Map(cumulantsVsM[f][m][co],f);
+       cout<<endl;
+       cout<<Form(" WARNING: Couldn't access histogram fReferenceFlowCumulantsVsM, %s in the ",gfcFlag[co].Data())<<endl;
+       cout<<"          file "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;
+       cout<<"          Did you enable calculation of GFC vs M in the analysis which produced this file?"<<endl;
+       cout<<endl;  
       }
       if(plotCumulantsVsReferenceMultiplicity && cumulantsVsM[f][m][co])
       {
        cumulantsVsM[f][m][co] = Map(cumulantsVsM[f][m][co],f);
-      }         
+      }
+      if(rebin && cumulantsVsM[f][m][co])
+      {
+       cumulantsVsM[f][m][co] = Rebin(cumulantsVsM[f][m][co],co);
+      }       
      } // end of for(Int_t co=0;co<4;co++)
     } // end of if(temp)
    } // end of else if(!(strcmp(method[m].Data(),"GFC")))
@@ -482,21 +530,37 @@ void GetHistograms()
 
 // =====================================================================================
 
-void GetProfileForRefMultVsNoOfRPs()
+void GetProfileRefMultVsNoOfRPs()
 {
- // Get profile holding <reference multiplicity> versus # of RPs.
+ // Get profiles holding results for <reference multiplicity> vs number of Reference Particles (RPs).
  
+ // Set here from which method's output file this profile will be accessed:
+ TString methodName = "QC"; // Alternatives are GFC and MCEP
+ Int_t i = -1; 
+ for(Int_t m=0;m<nMethods;m++)
+ {
+  if(method[m] == methodName){i=m;}
+ }
+ if(i==-1)
+ {
+  cout<<endl;
+  cout<<" WARNING: Unknown method name in GetProfileRefMultVsNoOfRPs() !!!!"<<endl;
+  cout<<"          Try something else for TString methodName in GetProfileRefMultVsNoOfRPs()."<<endl;
+  cout<<endl;exit(0);    
+ }
+  
  for(Int_t f=0;f<nFiles;f++)
  {
   AliFlowCommonHist *commonHist = NULL;
-  if(lists[f][0])
+  if(lists[f][i])
   {
-   commonHist = dynamic_cast<AliFlowCommonHist*> (lists[f][0]->FindObject("AliFlowCommonHistQC"));
+   commonHist = dynamic_cast<AliFlowCommonHist*> (lists[f][i]->FindObject(Form("AliFlowCommonHist%s",method[i].Data())));
   } else
     {
      cout<<endl;
-     cout<<"WARNING: lists[f][0] is NULL in GetProfileForRefMultVsNoOfRPs(), f = "<<f<<" !!!!"<<endl;
-     cout<<endl;    
+     cout<<Form(" WARNING: lists[%i][%i] is NULL in GetProfileRefMultVsNoOfRPs() !!!!",f,i)<<endl;
+     cout<<Form("          Did you use method %s in the analysis which has produced output",method[i].Data())<<endl;
+     cout<<Form("          file %s?",commonOutputFiles[f]->GetName())<<endl;
     } 
   if(commonHist && commonHist->GetRefMultVsNoOfRPs())
   {
@@ -504,14 +568,14 @@ void GetProfileForRefMultVsNoOfRPs()
   } else
     {
      cout<<endl;
-     cout<<"WARNING: commonHist && commonHist->GetRefMultVsNoOfRPs() is NULL in GetProfileForRefMultVsNoOfRPs() !!!!"<<endl;
+     cout<<" WARNING: commonHist && commonHist->GetRefMultVsNoOfRPs() is NULL in GetProfileRefMultVsNoOfRPs() !!!!"<<endl;
      cout<<endl;
     }
- }
+ } // end of for(Int_t f=0;f<nFiles;f++)
   
  return;  
  
-} // end of void GetProfileForRefMultVsNoOfRPs()
+} // end of void GetProfileRefMultVsNoOfRPs()
 
 // =====================================================================================
 
@@ -522,24 +586,33 @@ TH1D* Map(TH1D *hist, Int_t f)
  if(!refMultVsNoOfRPs[f])
  {
   cout<<endl;
-  cout<<"WARNING: refMultVsNoOfRPs[f] is NULL in Map(...), f = "<<f<<" !!!!"<<endl;
+  cout<<Form(" WARNING: refMultVsNoOfRPs[%i] is NULL in Map(...) !!!!",f)<<endl;
   cout<<endl;
  }
  
+ Int_t rpMinBin = refMultVsNoOfRPs[f]->FindFirstBinAbove(); // FindFirstBinAbove(Double_t threshold = 0, Int_t axis = 1) 
  Int_t rpMaxBin = refMultVsNoOfRPs[f]->FindLastBinAbove(); // FindLastBinAbove(Double_t threshold = 0, Int_t axis = 1) 
+ Int_t rmMinBin = 440000;; 
  Int_t rmMaxBin = (Int_t)TMath::Floor(refMultVsNoOfRPs[f]->GetMaximum()); 
+ for(Int_t rpBin=rpMinBin;rpBin<=rpMaxBin;rpBin++) // non-empty # of RPs bins
+ {
+  if(refMultVsNoOfRPs[f]->GetBinContent(rpBin)>0. && refMultVsNoOfRPs[f]->GetBinContent(rpBin)<rmMinBin)
+  {
+   rmMinBin = (Int_t)TMath::Floor(refMultVsNoOfRPs[f]->GetBinContent(rpBin));
+  }
+ } // end of for(Int_t rpBin=rpMinBin;rpBin<=rpMaxBin;rpBin++) // non-empty # of RPs bins 
   
  if(hist)
  {
   temp = (TH1D*) hist->Clone();
   temp->Reset();
-  for(Int_t rmBin=1;rmBin<=rmMaxBin;rmBin++) // reference multiplicity bins
+  for(Int_t rmBin=rmMinBin;rmBin<=rmMaxBin;rmBin++) // reference multiplicity bins
   { 
    Double_t value = 0.;
    Double_t error = 0.;
    Double_t dSum1 = 0.; // sum value_i/(error_i)^2
    Double_t dSum2 = 0.; // sum 1/(error_i)^2
-   for(Int_t rpBin=1;rpBin<=rpMaxBin;rpBin++) // # of RPs bins
+   for(Int_t rpBin=rpMinBin;rpBin<=rpMaxBin;rpBin++) // # of RPs bins
    {
     if((Int_t)TMath::Floor(refMultVsNoOfRPs[f]->GetBinContent(rpBin)) >= temp->GetBinLowEdge(rmBin) &&
        (Int_t)TMath::Floor(refMultVsNoOfRPs[f]->GetBinContent(rpBin)) < temp->GetBinLowEdge(rmBin+1))
@@ -760,7 +833,6 @@ void GetLists()
      cout<<endl;
      cout<<" WARNING: Couldn't find a list "<<listName[f][i].Data()<<" in "<<commonOutputFiles[f]->GetName()<<" !!!!"<<endl;
      cout<<"          Did you use method "<<method[i].Data()<<" in the analysis which produced this file?"<<endl;
-     cout<<endl;
     }
    } else 
      {
@@ -778,6 +850,7 @@ void GetLists()
 void AccessCommonOutputFiles(TString commonOutputFileName)
 {
  // Access all output files.
+ 
  for(Int_t f=0;f<nFiles;f++)
  { 
   if(!(gSystem->AccessPathName(Form("%s/%s/%s",gSystem->pwd(),files[f].Data(),commonOutputFileName.Data()),kFileExists)))
@@ -786,7 +859,8 @@ void AccessCommonOutputFiles(TString commonOutputFileName)
   } else
     { 
      cout<<endl;
-     cout<<"WARNING: Couldn't find the file "<<Form("%s/%s/%s",gSystem->pwd(),files[f].Data(),commonOutputFileName.Data())<<" !!!!"<<endl;
+     cout<<" WARNING: Couldn't find the file "<<Form("%s/%s/%s",gSystem->pwd(),files[f].Data(),commonOutputFileName.Data())<<" !!!!"<<endl;
+     cout<<"          Did you specify correctly all paths in TString files[nFiles]?"<<endl;
      cout<<endl;
      exit(0);
     }
