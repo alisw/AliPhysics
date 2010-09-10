@@ -1697,7 +1697,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
 
       omegaCandidate.GetMass(massOmegaCandidate,widthOmegaCandidate);
 
-      if ( massOmegaCandidata > 733 && massOmegaCandidata < 833 ) {
+      if ( massOmegaCandidate > 733 && massOmegaCandidate < 833 ) {
 	AddOmegaToAOD(&omegaCandidate, massOmegaCandidate, firstPi0Index, firstGammaIndex);
       }
       
