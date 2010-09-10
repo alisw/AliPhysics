@@ -607,8 +607,8 @@ void AliAnalysisManager::PackOutput(TList *target)
                TString remote = fSpecialOutputLocation;
                remote += "/";
                Int_t gid = gROOT->ProcessLine("gProofServ->GetGroupId();");
-               if (remote.BeginsWith("alien://")) {
-                  gROOT->ProcessLine("TGrid::Connect(\"alien://pcapiserv01.cern.ch:10000\", gProofServ->GetUser());");
+               if (remote.BeginsWith("alien:")) {
+                  gROOT->ProcessLine("TGrid::Connect(\"alien:\", gProofServ->GetUser());");
                   remote += outFilename;
                   remote.ReplaceAll(".root", Form("_%d.root", gid));
                } else {   
@@ -1455,6 +1455,10 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          break;
       case kProofAnalysis:
          fIsRemote = kTRUE;
+         // Check if the plugin is used
+         if (fGridHandler) {
+            return StartAnalysis(type, fGridHandler->GetProofDataSet(), nentries, firstentry);
+         }
          if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
             Error("StartAnalysis", "No PROOF!!! Exiting.");
             cdir->cd();
@@ -1526,6 +1530,37 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    // Set the dataset flag
    TObject::SetBit(kUseDataSet);
    fTree = 0;
+   TChain *chain = 0;
+   if (fGridHandler) {
+      // Start proof analysis using the grid handler
+      if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
+         Error("StartAnalysis", "The grid plugin could not start PROOF analysis");
+         return -1;
+      }
+      // Check if the plugin is in test mode
+      if (fGridHandler->GetRunMode() == AliAnalysisGrid::kTest) {
+         // Get the chain to be used for test mode
+         TString dataType = "esdTree";
+         if (fInputEventHandler) {
+            dataType = fInputEventHandler->GetDataType();
+            dataType.ToLower();
+            dataType += "Tree";
+         }   
+         chain = fGridHandler->GetChainForTestMode(dataType);
+         if (!chain) {
+            Error("StartAnalysis", "No chain for test mode. Aborting.");
+            return -1;
+         }
+         fTree = chain;
+      } else {
+         dataset = fGridHandler->GetProofDataSet();
+      }
+   }   
+
+   if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
+      Error("StartAnalysis", "No PROOF!!! Exiting.");
+      return -1;
+   }   
 
    // Initialize locally all tasks
    TIter next(fTasks);
@@ -1534,21 +1569,19 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
       task->LocalInit();
    }
    
-   if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
-      Error("StartAnalysis", "No PROOF!!! Exiting.");
-      return -1;
-   }   
    line = Form("gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
    gROOT->ProcessLine(line);
-//   sprintf(line, "gProof->GetDataSet(\"%s\");", dataset);
-//   if (!gROOT->ProcessLine(line)) {
-//      Error("StartAnalysis", "Dataset %s not found", dataset);
-//      return -1;
-//   }   
-   line = Form("gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
-           dataset, nentries, firstentry);
-   cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
-   Long_t retv = (Long_t)gROOT->ProcessLine(line);
+   Long_t retv;
+   if (chain) {
+//      chain->SetProof();
+      cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON TEST CHAIN " << chain->GetName() << endl;
+      retv = chain->Process("AliAnalysisSelector", "", nentries, firstentry);
+   } else {   
+      line = Form("gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
+                  dataset, nentries, firstentry);
+      cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
+      retv = (Long_t)gROOT->ProcessLine(line);
+   }   
    return retv;
 }   
 

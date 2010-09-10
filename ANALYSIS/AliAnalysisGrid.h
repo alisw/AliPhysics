@@ -14,6 +14,8 @@
 #include <TNamed.h>
 #endif
 
+class TChain;
+
 class AliAnalysisGrid : public TNamed {
 
 public:
@@ -35,7 +37,9 @@ enum EPluginBits {
    kBitMask32  = 0xffffffff,
    kUseCopy    = BIT(0),
    kCheckCopy  = BIT(1),
-   kKeepLogs   = BIT(2)
+   kKeepLogs   = BIT(2),
+   kClearPackages = BIT(3),
+   kUseSubmitPolicy = BIT(4)
 };
 
    AliAnalysisGrid() : TNamed(), fSpecialBits(0) {}
@@ -107,6 +111,21 @@ enum EPluginBits {
    void                SetCheckCopy(Bool_t flag=kTRUE) {SetSpecialBit(kCheckCopy,flag);}
    Bool_t              IsKeepLogs() const {return TestSpecialBit(kKeepLogs);}
    void                SetKeepLogs(Bool_t flag=kTRUE) {SetSpecialBit(kKeepLogs,flag);}   
+   Bool_t              IsUseSubmitPolicy() const {return TestSpecialBit(kUseSubmitPolicy);}
+   void                SetUseSubmitPolicy(Bool_t flag=kTRUE) {SetSpecialBit(kUseSubmitPolicy,flag);}   
+
+// PROOF mode
+   virtual void        SetProofCluster(const char *cluster)              = 0;
+   virtual void        SetProofDataSet(const char *dataset)              = 0;
+   virtual const char *GetProofDataSet() const                           = 0;
+   virtual void        SetProofReset(Int_t mode)                         = 0;
+   virtual void        SetClearPackages(Bool_t flag=kTRUE) {SetSpecialBit(kClearPackages,flag);}
+   virtual void        SetNproofWorkers(Int_t nworkers)                  = 0;
+   virtual void        SetRootVersionForProof(const char *version)       = 0;
+   virtual void        SetAliRootMode(const char *mode)                  = 0;
+   // .txt file containing the list of files to be chained in test mode
+   virtual void        SetFileForTestMode(const char *filename)          = 0;
+   virtual TChain     *GetChainForTestMode(const char *treeName) const   = 0;
 
 protected:
 // Methods

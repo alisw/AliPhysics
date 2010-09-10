@@ -112,6 +112,18 @@ public:
    virtual void        WriteProductionFile(const char *filename) const;
    virtual void        WriteValidationScript(Bool_t merge=kFALSE);
 
+// PROOF mode
+   virtual void        SetProofCluster(const char *cluster)              {fProofCluster = cluster;}
+   virtual void        SetProofDataSet(const char *dataset)              {fProofDataSet = dataset;}
+   virtual const char *GetProofDataSet() const                           {return fProofDataSet.Data();}
+   virtual void        SetProofReset(Int_t mode)                         {fProofReset = mode;}
+   virtual void        SetNproofWorkers(Int_t nworkers)                  {fNproofWorkers = nworkers;}
+   virtual void        SetRootVersionForProof(const char *version)       {fRootVersionForProof = version;}
+   virtual void        SetAliRootMode(const char *mode)                  {fAliRootMode = mode;}
+   // .txt file containing the list of files to be chained in test mode
+   virtual void        SetFileForTestMode(const char *filename)          {fFileForTestMode = filename;}
+   virtual TChain     *GetChainForTestMode(const char *treeName) const;
+
 protected:
    void                CdWork();
    Bool_t              CheckInputData();
@@ -143,6 +155,8 @@ private:
    Int_t            fFastReadOption;  // Use xrootd tweaks to reduce timeouts in file access
    Int_t            fOverwriteMode;   // Overwrite existing files if any
    Int_t            fNreplicas;       // Number of replicas for the output files
+   Int_t            fNproofWorkers;   // Number of workers in proof mode
+   Int_t            fProofReset;      // Proof reset mode: 0=no reset, 1=soft, 2=hard
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
    TString          fExecutableCommand;  // Command(s) to be executed in the executable script
@@ -174,9 +188,14 @@ private:
    TString          fJobTag;          // Job tag
    TString          fOutputSingle;    // Directory name for the output when split is per file
    TString          fRunPrefix;       // Run prefix to be applied to run numbers
+   TString          fProofCluster;    // Proof cluster name
+   TString          fProofDataSet;    // Proof dataset to be used
+   TString          fFileForTestMode; // .txt file for the chain to be used in PROOF test mode
+   TString          fRootVersionForProof; // ROOT version to be used in PROOF mode. The default one taken if empty.
+   TString          fAliRootMode;     // AliRoot mode among the list supported by the proof cluster
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 13)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 14)   // Class providing some AliEn utilities
 };
 #endif
