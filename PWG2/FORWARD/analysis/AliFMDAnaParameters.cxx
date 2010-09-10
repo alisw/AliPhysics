@@ -97,7 +97,10 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fTriggerNSD(kFALSE),
   fTriggerEmpty(kFALSE),
   fUseBuiltInNSD(kFALSE),
-  fInelGtZero(kFALSE)
+  fInelGtZero(kFALSE),
+  fRunDndeta(kTRUE),
+  fRunBFCorrelation(kTRUE),
+  fRunMultiplicity(kTRUE)
 {
   // Default constructor 
   //  fPhysicsSelection = new AliPhysicsSelection;
@@ -271,6 +274,29 @@ void AliFMDAnaParameters::FindEtaLimits() {
   }
 
 }
+//____________________________________________________________________
+void AliFMDAnaParameters::SetParametersFromESD(AliESDEvent* esd) {
+
+  Float_t energy   = esd->GetBeamEnergy();
+  Float_t magfield = esd->GetCurrentL3(); 
+  TString beamtype = esd->GetBeamType();
+  
+  if(TMath::Abs(energy - 450.) < 1)  fEnergy = k900;
+  if(TMath::Abs(energy - 3500.) < 1) fEnergy = k7000;
+  if(TMath::Abs(energy - 1380.) < 20) fEnergy = k1380;
+  
+  
+  if(TMath::Abs(magfield - 30000.) < 10 ) fMagField = k5G;
+  if(TMath::Abs(magfield + 30000.) < 10 ) fMagField = k5Gnegative;
+  if(TMath::Abs(magfield) < 10 ) fMagField = k0G;
+  
+  if(beamtype.Contains("p-p"))   fSpecies = kPP; 
+  if(beamtype.Contains("Pb-Pb")) fSpecies = kPbPb;
+  
+  Init(kTRUE);
+  
+}
+
 //____________________________________________________________________
 
 void AliFMDAnaParameters::PrintStatus() const
