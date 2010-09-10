@@ -24,24 +24,22 @@ class AliFMDAnalysisTaskBFCorrelation : public AliAnalysisTask
     AliFMDAnalysisTaskBFCorrelation();
     AliFMDAnalysisTaskBFCorrelation(const char* name, Bool_t SE = kTRUE);
     virtual ~AliFMDAnalysisTaskBFCorrelation() {;}
-  AliFMDAnalysisTaskBFCorrelation(const AliFMDAnalysisTaskBFCorrelation& o) : AliAnalysisTask(),
-									      fDebug(o.fDebug),
-									      fOutputList(0),
-									      fInputList(0),
-									      fInternalList(0),
-									      fVertexString(o.fVertexString),
-									      fStandalone(o.fStandalone),
-									      fEvent(0),
-									      fnBinsX(200),
-									      fXmin(-6),
-									      fXmax(6),
-									      fnBinsY(20),
-									      fYmin(2),
-									      fYmax(2 * TMath::Pi()),
-									      c(0),
-									      debug0(0),
-									      debug1(0)
- {}
+  AliFMDAnalysisTaskBFCorrelation(const AliFMDAnalysisTaskBFCorrelation& o) 
+  : AliAnalysisTask(),
+    fDebug(o.fDebug),
+    fOutputList(0),
+    fInputList(0),
+    fInternalList(0),
+    fVertexString(o.fVertexString),
+    fStandalone(o.fStandalone),
+    fEvent(0),
+    fnBinsX(0),
+    fXmin(0),
+    fXmax(0),
+    fnBinsY(0),
+    fYmin(0),
+    fYmax(0)
+  {}
   
   AliFMDAnalysisTaskBFCorrelation& operator=(const AliFMDAnalysisTaskBFCorrelation&) { return *this; }
   // Implementation of interface methods
@@ -55,11 +53,13 @@ class AliFMDAnalysisTaskBFCorrelation : public AliAnalysisTask
   void SetInputList(TList* inputList) {fInputList = inputList;}
   void SetInputVertex(TObjString* vtxString) {fVertexString = vtxString;}
   void SetOutputList(TList* outputList) {fOutputList = outputList;}
-  void CountESDHits();
-  void CalculateValues(TString type);
-  void SetBounds();
-  void MergeEvent(TH2D *hMultTrVtxFull);
-  
+  void ProjectAndMirror(TString sType);
+  void CalculateValues(TString sType);
+  //  void ProjectAndMirror(TString type);
+  //  void CalculateParameters(TString type);
+  void MultiplicityVsEta(TString type);
+  void CreateResponseMatrix();
+
   void ProcessPrimary();
   
   TList* GetOutputList() {return fOutputList;}
@@ -80,11 +80,6 @@ class AliFMDAnalysisTaskBFCorrelation : public AliAnalysisTask
   Int_t   fnBinsY;
   Float_t fYmin;
   Float_t fYmax;
-
-  TCanvas *c;
-
-  Double_t debug0;
-  Double_t debug1;
 
   ClassDef(AliFMDAnalysisTaskBFCorrelation, 0); // Analysis task for FMD analysis
 };
