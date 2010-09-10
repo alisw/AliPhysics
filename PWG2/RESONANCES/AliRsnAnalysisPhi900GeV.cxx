@@ -131,7 +131,7 @@ void AliRsnAnalysisPhi900GeV::UserCreateOutputObjects()
   AliInfo(Form("TOF settings = %s", fTOFmaker->Settings().Data()));
   
   // load dead channel map
-  fTOFmaker->LoadChannelMap("tofmap.root");
+  fTOFmaker->LoadChannelMap((char *)"tofmap.root");
   fTOFmaker->SetMaskOffChannel();
   
   // initialize random

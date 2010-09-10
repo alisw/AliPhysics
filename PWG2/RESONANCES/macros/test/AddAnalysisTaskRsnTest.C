@@ -20,7 +20,7 @@ Bool_t AddAnalysisTaskRsnTest
   AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis");
   task->SetZeroEventPercentWarning(100.0);
   //task->SelectCollisionCandidates();
-  task->SetMCOnly(kTRUE);
+  //task->SetMCOnly(kTRUE);
 
   // load and execute configuration macro
   gROOT->LoadMacro(configMacro);

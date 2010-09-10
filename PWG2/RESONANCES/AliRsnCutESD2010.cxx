@@ -219,8 +219,11 @@ void AliRsnCutESD2010::SetEvent(AliRsnEvent *event)
     fTOFmaker->SetTimeResolution(fTOFresolution);
       
     AliCDBManager *cdb = AliCDBManager::Instance();
+    cdb->ClearCache(); // suggestion by Annalisa
+    cdb->Clear();      // suggestion by Annalisa
     cdb->SetDefaultStorage("raw://");
     cdb->SetRun(run);
+    
     fTOFcalib->SetCorrectTExp(fTOFcorrectTExp);
     fTOFcalib->Init();
   }
