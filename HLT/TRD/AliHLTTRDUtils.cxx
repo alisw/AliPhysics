@@ -131,21 +131,21 @@ AliHLTUInt32_t AliHLTTRDUtils::ReadClusters(TClonesArray *const outArray, const 
     *nTimeBins=*(Int_t*)(inPtr+size-sizeof(*nTimeBins));
   }
   size-=sizeof(*nTimeBins);
-#ifndef HAVE_NOT_ALITRD_RECOPARAM_r41621
+#ifndef HAVE_NOT_ALITRD_CLUSTERIZER_r42837
   AliTRDtransform trans;
 #endif
   while (curSize < size)
     {
       AliHLTTRDClustersArray* clsArr = (AliHLTTRDClustersArray*)(inPtr+curSize);
       curSize+=sizeof(AliHLTTRDClustersArray);
-#ifndef HAVE_NOT_ALITRD_RECOPARAM_r41621
+#ifndef HAVE_NOT_ALITRD_CLUSTERIZER_r42837
       trans.SetDetector(clsArr->fDetector);
 #endif
       for(Int_t iCluster = 0; iCluster<clsArr->fCount; iCluster++){
 	AliTRDcluster* curTRDCluster = new((*outArray)[counter]) AliTRDcluster();
 	clsArr->fCluster[iCluster].ExportTRDCluster(curTRDCluster);
 	curTRDCluster->SetDetector(clsArr->fDetector);
-#ifndef HAVE_NOT_ALITRD_RECOPARAM_r41621
+#ifndef HAVE_NOT_ALITRD_CLUSTERIZER_r42837
 	trans.Transform(curTRDCluster);
 #endif
 	curSize += sizeof(AliHLTTRDClustersArray::cluster_type); 

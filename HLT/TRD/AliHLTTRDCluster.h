@@ -81,7 +81,7 @@ class AliHLTTRDExtCluster: public AliHLTTRDCluster
 #endif
 
 struct AliHLTTRDClustersArray {
-#ifdef HAVE_NOT_ALITRD_RECOPARAM_r41621
+#ifdef HAVE_NOT_ALITRD_CLUSTERIZER_r42837
   typedef AliHLTTRDExtCluster cluster_type;
 #else
   typedef AliHLTTRDCluster cluster_type;
