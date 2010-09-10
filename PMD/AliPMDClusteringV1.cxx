@@ -111,15 +111,14 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
   const float ktwobysqrt3 = 1.1547; // 2./sqrt(3.)
   const Int_t kNmaxCell   = 19;     // # of cells surrounding a cluster center
 
-  Int_t    i,  j, nmx1, incr, id, jd;
+  Int_t    i = 0,  j = 0, nmx1 = 0;
+  Int_t    incr = 0, id = 0, jd = 0;
   Int_t    celldataX[kNmaxCell], celldataY[kNmaxCell];
   Int_t    celldataTr[kNmaxCell], celldataPid[kNmaxCell];
   Float_t  celldataAdc[kNmaxCell];
-  Float_t  clusdata[6];
+  Float_t  clusdata[6] = {0.,0.,0.,0.,0.,0.};
   Double_t cutoff, ave;
   Double_t edepcell[kNMX];
-  
-  
   Double_t cellenergy[11424];
   
   // ndimXr and ndimYr are different because of different module size
@@ -314,8 +313,9 @@ Int_t AliPMDClusteringV1::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
   // connected cells
   //
   const Int_t kndim = 4609;
-  Int_t i,j,k,id1,id2,icl, numcell, clust[2][kndim];
-  Int_t jd1,jd2, icell, cellcount;
+  Int_t i=0,j=0,k=0,id1=0,id2=0,icl=0, numcell=0;
+  Int_t jd1=0,jd2=0, icell=0, cellcount=0;
+  Int_t clust[2][kndim];
   static Int_t neibx[6]={1,0,-1,-1,0,1}, neiby[6]={0,1,1,0,-1,-1};
 
   AliDebug(1,Form("kNMX = %d nmx1 = %d kNDIMX = %d kNDIMY = %d ave = %f cutoff = %f",kNMX,nmx1,kNDIMX,kNDIMY,ave,cutoff));
@@ -446,10 +446,13 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
   
   Int_t    *ncl  = 0x0;
   Int_t    *clxy = 0x0;  
-  Int_t    i12, i22;
-  Int_t    i, j, k, i1, i2, id, icl,  itest,ihld, ig, nsupcl,clno, t1, t2;
+  Int_t    i12 = 0, i22 = 0;
+  Int_t    i = 0, j = 0, k = 0;
+  Int_t    i1 = 0, i2 = 0, id = 0, icl = 0;
+  Int_t    itest = 0, ihld = 0, ig = 0;
+  Int_t    nsupcl = 0, clno = 0, t1 = 0, t2 = 0;
   Float_t  clusdata[6];
-  Double_t x1, y1, z1, x2, y2, z2, rr;
+  Double_t x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, rr = 0;
   
   ncl   = new Int_t [ndim];
   clxy  = new Int_t [kNmaxCell];

@@ -147,8 +147,8 @@ Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader, TObjArray *pmd
 
     const Int_t kDDL = AliDAQ::NumberOfDdls("PMD");
 
-    UInt_t detsmnrowcol;
-    UInt_t pbus, mcm, chno;
+    UInt_t detsmnrowcol = 0;
+    UInt_t pbus = 0, mcm = 0, chno = 0;
 
     fRunNumber = rawReader->GetRunNumber();
 
@@ -206,11 +206,11 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
     //  Calculate pedestal Mean and RMS
     //
 
-    UInt_t  detsmnrowcol;
-    Int_t   det, sm, row, col;
-    Int_t   idet, ism, irow, icol;
-    Float_t mean, rms;
-    Float_t meansq, diff;
+    UInt_t  detsmnrowcol = 0;
+    Int_t   det = 0, sm = 0, row = 0, col = 0;
+    Int_t   idet = 0, ism = 0, irow = 0, icol = 0;
+    Float_t mean = 0., rms = 0.;
+    Float_t meansq = 0., diff = 0.;
 
     FILE *fpw0 = fopen("pedestal2304.ped","w");
     FILE *fpw1 = fopen("pedestal2305.ped","w");

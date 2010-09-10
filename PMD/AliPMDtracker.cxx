@@ -142,10 +142,10 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
   // algorithm on CPV plane and PREshower plane
   //
 
-  Int_t   idet;
-  Int_t   ismn;
-  Int_t   trackno, trackpid;
-  Float_t clusdata[6];
+  Int_t   idet = 0;
+  Int_t   ismn = 0;
+  Int_t   trackno = 1, trackpid = 0;
+  Float_t clusdata[6] = {0.,0.,0.,0.,0.,0.};
   
   Int_t *irow;
   Int_t *icol;
@@ -246,11 +246,11 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
   const Float_t kzpos = 361.5;    // middle of the PMD
 
   Int_t   ix = -1, iy = -1;
-  Int_t   det,smn,trno,trpid,mstat;
-  Float_t xpos,ypos;
-  Float_t adc, ncell, radx, rady;
+  Int_t   det = 0, smn = 0, trno = 1, trpid = 0, mstat = 0;
+  Float_t xpos = 0., ypos = 0.;
+  Float_t adc = 0., ncell = 0., radx = 0., rady = 0.;
   Float_t xglobal = 0., yglobal = 0., zglobal = 0;
-  Float_t pid;
+  Float_t pid = 0.;
 
   fPMDutil->ApplyAlignment();
 

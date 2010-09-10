@@ -157,12 +157,12 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
   //
   // This algorithm is called during the reconstruction from digits
 
-  Int_t    det = 0,smn = 0;
-  Int_t    xpos,ypos;
-  Float_t  adc;
-  Int_t    ismn;
-  Int_t    idet;
-  Float_t  clusdata[6];
+  Int_t    det  = 0, smn = 0;
+  Int_t    xpos = 0, ypos = 0;
+  Int_t    ismn = 0;
+  Int_t    idet = 0;
+  Float_t  adc  = 0.;
+  Float_t  clusdata[6] = {0.,0.,0.,0.,0.,0.};
 
   AliPMDcluster *pmdcl = 0x0;
 
@@ -348,10 +348,10 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   infileddl.open(ddlinfofileName.Data(), ios::in); // ascii file
   if(!infileddl) AliError("Could not read the ddl info file");
 
-  Int_t ddlno;
-  Int_t modno;
-  Int_t modulePerDDL;
-  Int_t moduleddl[6];
+  Int_t ddlno = 0;
+  Int_t modno = 0;
+  Int_t modulePerDDL = 0;
+  Int_t moduleddl[6] = {0,0,0,0,0,0};
 
   for(Int_t jddl = 0; jddl < 6; jddl++)
     {

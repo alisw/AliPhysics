@@ -240,7 +240,7 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     Int_t   iddl = -1;
     Int_t   xpad = -1;
     Int_t   ypad = -1;
-    Float_t xx, yy;
+    Float_t xx = 0., yy = 0.;
 
     AliPMDUtility cc;
 

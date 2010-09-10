@@ -143,8 +143,8 @@ Int_t AliPMDCalibGain::ExtractPedestal(const Char_t *rootFile)
   // Pedestal extraction from the PMD_PED.root file
   // To be called once at the beginning
   
-  Int_t   det, sm, row, col;
-  Float_t mean, rms;
+  Int_t   det=0, sm=0, row=0, col=0;
+  Float_t mean=0., rms=0.;
   
   TFile *pedfile = new TFile(rootFile);
   
@@ -187,8 +187,8 @@ Int_t AliPMDCalibGain::ExtractHotChannel(const Char_t *rootFile)
   // HotChannel extraction from the PMD_HOT.root file
   // To be called once at the beginning
 
-  Int_t   det, sm, row, col;
-  Float_t flag;
+  Int_t   det=0, sm=0, row=0, col=0;
+  Float_t flag=0.;
 
   TFile *hotmapfile = new TFile(rootFile);
 
@@ -246,8 +246,8 @@ void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
   
   fpw = fopen(tempFile,"r");
   
-  Float_t smcount, smiso;
-  Float_t cellcount, celliso;
+  Float_t smcount = 0., smiso = 0.;
+  Float_t cellcount = 0., celliso = 0.;
 
 
   for (Int_t idet = 0; idet < kDet; idet++)
@@ -346,8 +346,8 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlc
   Int_t neibx[6] = {1,0,-1,-1,0,1};
   Int_t neiby[6] = {0,1,1,0,-1,-1};
   
-  Int_t id1,jd1;  //neighbour row/col
-  Int_t isocount; //number of neighbours with 0 signal
+  Int_t id1 = 0,jd1 = 0;  //neighbour row/col
+  Int_t isocount = 0;     //number of neighbours with 0 signal
 
   Float_t d1[kDet][kMaxSMN][kMaxRow][kMaxCol];
   
@@ -479,8 +479,8 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader, TObjArray *pmdddlc
 void AliPMDCalibGain::Analyse(TTree *gaintree, TTree *meantree)
 {
   // Calculates the mean
-  Int_t   det, sm, row, col;
-  Float_t gain;
+  Int_t   det = 0, sm = 0, row = 0, col = 0;
+  Float_t gain = 0.;
   Float_t cellmean = 0.;
 
   Float_t modmean[2][24];
@@ -555,11 +555,11 @@ void AliPMDCalibGain::Analyse(TTree *gaintree, TTree *meantree)
 void AliPMDCalibGain::FindHotCell(TTree *hottree, Float_t xvar)
 {
   // Calculates the mean
-  Int_t   det, sm, row, col;
-  Float_t flag;
-  Float_t meannhit;
-  Float_t meanSqnhit;
-  Float_t sigmanhit,nhitcut;
+  Int_t   det = 0, sm = 0, row = 0, col = 0;
+  Float_t flag = 0.;
+  Float_t meannhit = 0.;
+  Float_t meanSqnhit = 0.;
+  Float_t sigmanhit = 0.,nhitcut = 0.;
 
   //Float_t xvar = 5.;
 

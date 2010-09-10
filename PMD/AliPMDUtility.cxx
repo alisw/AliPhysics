@@ -564,8 +564,8 @@ void AliPMDUtility::GenerateBoundaryPoints(Int_t ism, Float_t &x1ism,
 void AliPMDUtility::DrawPMDModule(Int_t idet)
 {
 
-    Float_t x1ism, x2ism, y1ism, y2ism;
-    Float_t deltaX, deltaY;
+    Float_t x1ism = 0., x2ism = 0., y1ism = 0., y2ism = 0.;
+    Float_t deltaX = 0., deltaY = 0.;
     
     //TH2F *h2 = new TH2F("h2","Y vs. X",200,-100.,100.,200,-100.,100.);
     //h2->Draw();
@@ -653,17 +653,15 @@ void AliPMDUtility::SetWriteModule(Int_t wrmod)
 }
 void AliPMDUtility::CalculateEta()
 {
-  Float_t rpxpy, theta, eta;
-
-  rpxpy  = TMath::Sqrt(fPx*fPx + fPy*fPy);
-  theta  = TMath::ATan2(rpxpy,fPz);
-  eta    = -TMath::Log(TMath::Tan(0.5*theta));
+  Float_t rpxpy  = TMath::Sqrt(fPx*fPx + fPy*fPy);
+  Float_t theta  = TMath::ATan2(rpxpy,fPz);
+  Float_t eta    = -TMath::Log(TMath::Tan(0.5*theta));
   fTheta = theta;
   fEta   = eta;
 }
 void AliPMDUtility::CalculatePhi()
 {
-  Float_t pybypx, phi = 0., phi1;
+  Float_t pybypx = 0., phi = 0., phi1 = 0.;
 
   if(fPx==0)
     {
@@ -689,12 +687,11 @@ void AliPMDUtility::CalculatePhi()
 }
 void AliPMDUtility::CalculateEtaPhi()
 {
-  Float_t rpxpy, theta, eta;
-  Float_t pybypx, phi = 0., phi1;
+  Float_t pybypx = 0., phi = 0., phi1 = 0.;
 
-  rpxpy = TMath::Sqrt(fPx*fPx + fPy*fPy);
-  theta = TMath::ATan2(rpxpy,fPz);
-  eta   = -TMath::Log(TMath::Tan(0.5*theta));
+  Float_t rpxpy = TMath::Sqrt(fPx*fPx + fPy*fPy);
+  Float_t theta = TMath::ATan2(rpxpy,fPz);
+  Float_t eta   = -TMath::Log(TMath::Tan(0.5*theta));
   
   if(fPx == 0)
     {

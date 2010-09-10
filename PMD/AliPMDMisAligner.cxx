@@ -89,11 +89,11 @@ TClonesArray* AliPMDMisAligner::MakeAlObjsArray() {
     const char *Sector4="PMD/Sector4"; 
 
     //Sectors 1 and 4
-    Double_t dx14, dy14, dz14;          // Misalignment in X,Y and Z
-    Double_t dpsi14, dtheta14, dphi14; //  Angular displacements
+    Double_t dx14=0., dy14=0., dz14=0.;          // Misalignment in X,Y and Z
+    Double_t dpsi14=0., dtheta14=0., dphi14=0.; //  Angular displacements
     //Sectors 2 and 3
-    Double_t dx23, dy23, dz23;          // Misalignment in X,Y and Z
-    Double_t dpsi23, dtheta23, dphi23; //  Angular displacements
+    Double_t dx23=0., dy23=0., dz23=0.;          // Misalignment in X,Y and Z
+    Double_t dpsi23=0., dtheta23=0., dphi23=0.; //  Angular displacements
 
     UShort_t iIndex=0; // PMD is not indexed
     AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;

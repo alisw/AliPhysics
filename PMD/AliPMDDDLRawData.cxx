@@ -377,16 +377,17 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
 {
   // Retrieves digits data UnitModule by UnitModule
 
-  UInt_t baseword;
-  UInt_t mcmno, chno;
-  UInt_t adc;
-  Int_t  det, smn, irow, icol;
-  Int_t  parity;
+  const Int_t kMaxBus = 51;
+
+  UInt_t baseword = 0;
+  UInt_t mcmno = 0, chno = 0;
+  UInt_t adc = 0;
+  Int_t  det = 0, smn = 0, irow = 0, icol = 0;
+  Int_t  parity = 0;
   
-  const Int_t kMaxBus = 51;   // BKN
-  Int_t totPatchBus, bPatchBus, ePatchBus;
-  Int_t ibus, totmcm, rows, cols, rowe, cole;
-  Int_t moduleno;
+  Int_t totPatchBus = 0, bPatchBus = 0, ePatchBus = 0;
+  Int_t ibus = 0, totmcm = 0, rows = 0, cols = 0, rowe = 0, cole = 0;
+  Int_t moduleno = 0;
   Int_t busno = 0;
   Int_t patchBusNo[kMaxBus], mcmperBus[kMaxBus];
   Int_t startRowBus[kMaxBus], startColBus[kMaxBus];
@@ -482,8 +483,8 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
   Int_t srowoff2[2][24], erowoff2[2][24];
   Int_t scoloff2[2][24], ecoloff2[2][24];
 
-  Int_t rows1, rowe1, cols1, cole1;
-  Int_t rows2, rowe2, cols2, cole2;
+  Int_t rows1 = 0, rowe1 = 0, cols1 = 0, cole1 = 0;
+  Int_t rows2 = 0, rowe2 = 0, cols2 = 0, cole2 = 0;
 
   for (Int_t im = 0; im < 48; im++)
     {
@@ -506,7 +507,7 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
   Int_t nentries = fDigits->GetLast();
   Int_t totword = nentries+1;
 
-  AliPMDdigit *pmddigit;
+  AliPMDdigit *pmddigit = 0x0;
 
   for (Int_t ient = 0; ient < totword; ient++)
     {

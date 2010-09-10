@@ -105,14 +105,15 @@ void AliPMDClusteringV2::DoClust(Int_t idet, Int_t ismn,
 
   const Float_t ktwobysqrt3 = 1.1547; // 2./sqrt(3.)
   const Int_t   kNmaxCell   = 19;     // # of cells surrounding a cluster center
-  Int_t    i, j, nmx1, incr, id, jd;
+  Int_t    i = 0, j = 0, nmx1 = 0;
+  Int_t    incr = 0, id = 0, jd = 0;
   Int_t    ndimXr = 0;
   Int_t    ndimYr = 0;
   Int_t    celldataX[kNmaxCell], celldataY[kNmaxCell];
   Int_t    celldataTr[kNmaxCell], celldataPid[kNmaxCell];
   Float_t  celldataAdc[kNmaxCell];
-  Float_t  clusdata[6];  
-  Double_t cutoff, ave;
+  Float_t  clusdata[6] = {0.,0.,0.,0.,0.,0.};  
+  Double_t cutoff = 0., ave = 0.;
   Double_t edepcell[kNMX];
 
 
@@ -275,8 +276,8 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
   // connected cells
   //
 
-  Int_t i,j,k,id1,id2,icl, numcell;
-  Int_t jd1,jd2, icell, cellcount;
+  Int_t i = 0, j = 0, k = 0, id1 =0, id2 = 0, icl = 0, numcell = 0;
+  Int_t jd1 = 0, jd2 = 0, icell = 0, cellcount = 0;
   Int_t clust[2][5000];
   static Int_t neibx[6] = {1,0,-1,-1,0,1}, neiby[6] = {0,1,1,0,-1,-1};
 
@@ -411,13 +412,14 @@ Int_t AliPMDClusteringV2::CrClust(Double_t ave, Double_t cutoff, Int_t nmx1,
 
   AliPMDcludata *pmdcludata = 0;
 
-  Int_t i12;
-  Int_t    i, j, k, i1, i2, id, icl, itest, ihld;
-  Int_t    ig, nsupcl, clno, clX,clY;
-  Int_t    clxy[kNmaxCell];
+  Int_t i12 = 0;
+  Int_t i = 0, j = 0, k = 0;
+  Int_t i1 = 0, i2 = 0, id = 0, icl = 0, itest = 0, ihld = 0;
+  Int_t ig = 0, nsupcl = 0, clno = 0, clX = 0, clY = 0;
+  Int_t clxy[kNmaxCell];
 
-  Float_t  clusdata[6];
-  Double_t x1, y1, z1, x2, y2, z2, rr;
+  Float_t  clusdata[6] = {0.,0.,0.,0.,0.,0.};
+  Double_t x1 = 0., y1 = 0., z1 = 0., x2 = 0., y2 = 0., z2 = 0., rr = 0.;
 
   Int_t kndim = incr + 1;
 
@@ -741,9 +743,11 @@ void AliPMDClusteringV2::ClustDetails(Int_t ncell, Int_t nclust, Double_t x[],
   Int_t kndim2 = 20;
   Int_t kndim3 = nclust + 1;//nclust
 
-  Int_t    i, j, k, i1, i2;
-  Double_t x1, y1, x2, y2, rr, b, c, r1, r2;
-  Double_t sumx, sumy, sumxy, sumxx, sum, sum1, sumyy;
+  Int_t    i = 0, j = 0, k = 0, i1 = 0, i2 = 0;
+  Double_t x1 = 0., y1 = 0., x2 = 0., y2 = 0.;
+  Double_t rr = 0., b = 0., c = 0., r1 = 0., r2 = 0.;
+  Double_t sumx = 0., sumy = 0., sumxy = 0.;
+  Double_t sumxx = 0., sum = 0., sum1 = 0., sumyy = 0.;
 
   Double_t  *str, *str1, *xcl, *ycl, *cln; 
   Int_t    **cell;

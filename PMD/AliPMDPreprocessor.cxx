@@ -376,8 +376,8 @@ Bool_t AliPMDPreprocessor::StorePmdMEAN()
 	  
 	  Log(Form("PMDMEAN: File with id PMD_MEAN_SM.root got from %s", sourc->GetName()));
 	  
-	  Int_t det, sm ;
-	  Float_t smmean;
+	  Int_t det = 0, sm = 0;
+	  Float_t smmean = 0.;
 	  
 	  TFile *opnFile = new TFile(filenam.Data());
 	  if(!opnFile || !opnFile->IsOpen()) 

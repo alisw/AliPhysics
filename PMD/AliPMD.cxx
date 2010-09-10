@@ -140,8 +140,8 @@ void AliPMD::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   // vol[4],vol[5],vol[6],vol[7]);
 
   newcell = new AliPMDhit(fIshunt, track, vol, hits);
-  Int_t i;
-  for (i=0; i<fNhits; i++) {
+
+  for (Int_t i=0; i<fNhits; i++) {
     //
     // See if this cell has already been hit
     curcell=(AliPMDhit*) lhits[i];

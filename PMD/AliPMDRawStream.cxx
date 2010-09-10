@@ -110,14 +110,14 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
   if (dataSize <= 0) return -1;
 
-  UInt_t data;
+  UInt_t data = 0;
 
   fRawReader->ReadNextData(fData);
 
   fPosition = 0;
 
 
-  Int_t ibus;
+  Int_t ibus = 0;
 
   const Int_t kNPatchBus = 51;
 
@@ -177,8 +177,8 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
   const Int_t kdspHLen  = dspHeader.GetHeaderLength();
   const Int_t kpbusHLen = pbusHeader.GetHeaderLength();
   
-  Int_t parity;
-  Int_t idet, ismn;
+  Int_t parity = 0;
+  Int_t idet = 0, ismn = 0;
   Int_t irow = -1;
   Int_t icol = -1;
 

@@ -58,8 +58,8 @@ void AliPMDEmpDiscriminator::Discrimination(TObjArray *pmdcontin, TObjArray *pmd
   // matching the clusters of CPV and PREshower plane
   //
 
-  Int_t   det,smn, trno, trpid, mstatus;
-  Float_t clusdata[7];
+  Int_t   det = 0,smn = 0, trno = 0, trpid = 0, mstatus = 0;
+  Float_t clusdata[7] = {0.,0.,0.,0.,0.,0.,0.};
 
   AliPMDrecdata  *pmdcl    = 0;
   AliPMDclupid   *pmdclout = 0;

@@ -76,11 +76,11 @@ void AliPMDDiscriminator::EmpDiscrimination(TObjArray *pmdcontin, TObjArray *pmd
   //
   const  Int_t kumperdet = 24;
   static Int_t neibx[6]={1,0,-1,-1,0,1}, neiby[6]={0,1,1,0,-1,-1}; 
-  Int_t   det,smn;
+  Int_t   det = 0, smn = 0;
   Int_t   iprecount[24], icpvcount[24];
-  Float_t xpos,ypos;
-  Float_t adc, ncell, rad;
-  Float_t clusdata[6];
+  Float_t xpos = 0., ypos = 0.;
+  Float_t adc = 0., ncell = 0., rad = 0.;
+  Float_t clusdata[6] = {0.,0.,0.,0.,0.,0.};
 
   for(Int_t i = 0; i < kumperdet; i++)
     {
@@ -103,7 +103,7 @@ void AliPMDDiscriminator::EmpDiscrimination(TObjArray *pmdcontin, TObjArray *pmd
       if(det == 1) icpvcount[smn]++;
     } // Entries of TObjArray loop
 
-  Int_t   idet, ismn;
+  Int_t   idet = 0, ismn = 0;
   Float_t edepcpv[48][96];
   Int_t   statuscpv[48][96];
 

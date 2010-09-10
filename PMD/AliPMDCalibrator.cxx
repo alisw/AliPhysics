@@ -192,12 +192,12 @@ void AliPMDCalibrator::CalculateIsoCell()
   Int_t neibx[6] = {1,0,-1,-1,0,1};
   Int_t neiby[6] = {0,1,1,0,-1,-1};
 
-  Int_t id1,jd1;            //neighbour row/col
-  Int_t countisocell = 0 ;  //number of isilated cell
-  Int_t isocount;           //number of neighbours with 0 signal
-  Int_t d1[kDet][kMaxSMN][kMaxRow][kMaxCol];
-  Int_t maxhit;
+  Int_t id1 = 0,jd1 = 0;        //neighbour row/col
+  Int_t countisocell = 0 ;      //number of isilated cell
+  Int_t isocount = 0;           //number of neighbours with 0 signal
+  Int_t maxhit = 0;
   Int_t nhit[kDet][kMaxSMN];
+  Int_t d1[kDet][kMaxSMN][kMaxRow][kMaxCol];
   Int_t nhitcell[kDet][kMaxSMN][kMaxRow][kMaxCol];
   
   for(Int_t idet = 0; idet < kDet; idet++)
