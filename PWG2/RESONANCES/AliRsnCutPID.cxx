@@ -261,7 +261,7 @@ Bool_t AliRsnCutPID::IsSelected(TObject *obj1, TObject* /*obj2*/)
   // coherence check
   if (!AliRsnCut::TargetOK(obj1))
   {
-    AliError("Wrong target. Skipping cut");
+    AliError(Form("Wrong target '%s'. Skipping cut", GetName()));
     return kTRUE;
   }
   

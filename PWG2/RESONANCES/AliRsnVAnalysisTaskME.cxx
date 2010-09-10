@@ -174,7 +174,7 @@ Bool_t AliRsnVAnalysisTaskME::CheckAndPrintEvents()
 // or number of events is less or equal 1
 //
 
-  AliInfo(Form("Current Entry %d", (Int_t)Entry()));
+  AliInfo(Form("Current Entry %lld", Entry()));
   Int_t nEvents = fInputHandler->GetBufferSize();
   if (nEvents <= 1) return kFALSE;
   fESDEvent = dynamic_cast<AliESDEvent*>(GetEvent(0));
@@ -233,9 +233,9 @@ void AliRsnVAnalysisTaskME::Terminate(Option_t* opt)
   }
 
   AliInfo(Form("=== %s ==================", GetName()));
-  AliInfo(Form("Number Of Events Processed : %10d", (Int_t)hEventInfo->Integral()));
-  AliInfo(Form("Number Of Events Accepted  : %10d", (Int_t)hEventInfo->GetBinContent(2)));
-  AliInfo(Form("Number Of Events Skipped   : %10d", (Int_t)hEventInfo->GetBinContent(1)));
+  AliInfo(Form("Number Of Events Processed : %10lld", (Long64_t)hEventInfo->Integral()));
+  AliInfo(Form("Number Of Events Accepted  : %10lld", (Long64_t)hEventInfo->GetBinContent(2)));
+  AliInfo(Form("Number Of Events Skipped   : %10lld", (Long64_t)hEventInfo->GetBinContent(1)));
   AliInfo(Form("=== end %s ==============", GetName()));
 
   AliDebug(AliLog::kDebug+2,"->");

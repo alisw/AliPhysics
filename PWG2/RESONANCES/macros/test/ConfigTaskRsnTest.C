@@ -111,7 +111,6 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
     cuts2010->SetTOFtuneMC(kTRUE);
     cuts2010->SetTOFresolution(100.0);
   }
-  cuts2010->Initialize();
   
   // -- tracks --> PID
   AliRsnCutPID *cutPID = new AliRsnCutPID("cutPID", AliPID::kKaon, 0.0, kTRUE);
@@ -157,7 +156,7 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   pairPMntp->AddValue(axisQinv);
   
   // add everything to analysis manager
-  //task->GetAnalysisManager()->Add(pairPMhist);
+  task->GetAnalysisManager()->Add(pairPMhist);
   task->GetAnalysisManager()->Add(pairPMntp);
 
   return kTRUE;
