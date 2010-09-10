@@ -317,7 +317,8 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  *
  * The base class provides two functions regarding OCDB objects: 
  * - LoadAndExtractOCDBObject() loads the OCDB entry for the specified path and extracts
- *                              the TObject from it.
+ *                              the TObject from it. An optional key allows to access
+ *                              a TObject within a TMap
  * - ConfigureFromCDBTObjString() can load a number of OCDB objects and calls the
  *                              argument parsing ConfigureFromArgumentString
  *
@@ -332,9 +333,13 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * ConfigureFromArgumentString() can treat both arrays of arguments and arguments in
  * one single string separated by blanks. The two options can be mixed.
  *
- * A second bas class function ConfigureFromCDBTObjString() allows to configure
+ * A second base class function ConfigureFromCDBTObjString() allows to configure
  * directly from a number of OCDB objects. This requires the entries to be of
  * type TObjString and the child implementation of ScanConfigurationArgument().
+ * The object can also be of type TMap with TObjStrings as key-value pairs. The
+ * key identifier can be chosen by the component implementation. Normally it will
+ * be the run type ("p","A-A", "p-A", ...) or e.g. the trigger code secified by
+ * ECS.
  *
  * @section alihltcomponent-handling Component handling 
  * The handling of HLT analysis components is carried out by the AliHLTComponentHandler.
@@ -1075,19 +1080,26 @@ class AliHLTComponent : public AliHLTLogging {
    * Read configuration objects from OCDB and configure from
    * the content of TObjString entries.
    * @param entries   blank separated list of OCDB paths
+   * @param key       if the entry is a TMap, search for the corresponding object
    * @return neg. error code if failed
    */
-  int ConfigureFromCDBTObjString(const char* entries);
+  int ConfigureFromCDBTObjString(const char* entries, const char* key=NULL);
 
   /**
    * Load specified entry from the OCDB and extract the object.
    * The entry is explicitely unloaded from the cache before it is loaded.
+   * If parameter key is specified the OCDB object is treated as TMap
+   * and the TObject associated with 'key' is loaded.
    * @param path      path of the entry under to root of the OCDB
    * @param version   version of the entry
    * @param subVersion  subversion of the entry
+   * @param key       key of the object within TMap
    */
-  TObject* LoadAndExtractOCDBObject(const char* path, int version = -1, int subVersion = -1);
+  TObject* LoadAndExtractOCDBObject(const char* path, int version = -1, int subVersion = -1, const char* key=NULL);
 
+  TObject* LoadAndExtractOCDBObject(const char* path, const char* key) {
+    return LoadAndExtractOCDBObject(path, -1, -1, key);
+  }
 
   /**
    * Get event number.
