@@ -27,7 +27,10 @@ AliAnalysisTaskSE(),
   fBackground("BackgroundCorrected",kFALSE),
   fDndeta("dNdeta",kFALSE), 
   fBFCorrelation("BFCorrelation",kFALSE), 
-  fParams(0)
+  fParams(0),
+  fFirstEvent(kTRUE),
+  fCentralityLow(0),
+  fCentralityHigh(100)
 {
   // Default constructor
 }
@@ -40,7 +43,10 @@ AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE(const char* name):
   fBackground("BackgroundCorrected",kFALSE),
   fDndeta("dNdeta",kFALSE), 
   fBFCorrelation("BFCorrelation",kFALSE), 
-  fParams(0)
+  fParams(0),
+  fFirstEvent(kTRUE),
+  fCentralityLow(0),
+  fCentralityHigh(100)
 {
   SetParams(AliFMDAnaParameters::Instance());
   DefineOutput(1, TList::Class());
@@ -61,7 +67,7 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   TList* densitylist = new TList();
   
   TList* bgcorlist = new TList();
-  
+    
   fSharing.SetFMDData(fmd);
   fSharing.SetVertex(vertex);
   fSharing.SetOutputList(fListOfHistos);
@@ -103,8 +109,21 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
   
   AliESDEvent* fESD = (AliESDEvent*)InputEvent();
   
-  //std::cout<<fESD->GetBeamEnergy()<<"   "<<fESD->GetBeamType()<<"    "<<fESD->GetCurrentL3()<<std::endl;
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  
+  // Centrality selection - work in progress
+  Float_t centrality = 1;
+  
+  if( centrality < fCentralityLow || centrality > fCentralityHigh )
+    return;
+  
+  //End of centrality selection
+  
+  if(fFirstEvent) {
+    pars->SetParametersFromESD(fESD);
+    pars->PrintStatus();
+    fFirstEvent = kFALSE;
+  }
   
   pars->SetTriggerStatus(fESD);
   fSharing.SetInputESD(fESD);
@@ -114,8 +133,10 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
     fDensity.Exec("");
     if(fDensity.GetEventStatus()) {
       fBackground.Exec("");  
-      fDndeta.Exec("");
-      //      fBFCorrelation.Exec("");
+      if(pars->GetRunDndeta())
+	fDndeta.Exec("");
+      if(pars->GetRunBFCorrelation())
+	fBFCorrelation.Exec("");
     }
     else return;
   }

@@ -66,7 +66,7 @@ public:
   
   enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kNOCTP, kEMPTY , kNSD};
   
-  enum Energy { k900 , k10000, k14000 , k7000, k2400, k5500};
+  enum Energy { k900 , k10000, k14000 , k7000, k2400, k5500, k1380};
   
   enum MagField {k0G, k5G, k5Gnegative};
   
@@ -104,6 +104,8 @@ public:
   
   TH1F* GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetSharingEfficiencyTrVtx(Int_t det, Char_t ring, Int_t vtxbin);
+  
+  void     SetParametersFromESD(AliESDEvent* esd);
   Float_t  GetEventSelectionEfficiency(Int_t vtxbin);
   TH2F*    GetEventSelectionEfficiency(TString trig, Int_t vtxbin, Char_t ring);
   Float_t  GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const;
@@ -124,6 +126,14 @@ public:
   Bool_t   GetVertex(const AliESDEvent* esd, Double_t* vertexXYZ);
   void     SetTriggerDefinition(Trigger trigger) {fTrigger = trigger;}
   Trigger  GetTriggerDefinition() const {return fTrigger;}
+  void     SetRunDndeta(Bool_t rundndeta) { fRunDndeta = rundndeta;  }
+  void     SetRunBFCorrelation(Bool_t runBFcor) { fRunBFCorrelation = runBFcor;  }
+  void     SetRunMultiplicity(Bool_t runMultiplicity) { fRunMultiplicity = runMultiplicity;  }
+  
+  Bool_t   GetRunDndeta()        {return fRunDndeta;}
+  Bool_t   GetRunBFCorrelation() {return fRunBFCorrelation;}
+  Bool_t   GetRunMultiplicity()  {return fRunMultiplicity;}
+
   //Bool_t   IsEventTriggered(const AliESDEvent *esd) ;
   Bool_t   IsEventTriggered(Trigger trigger) ;
   void     SetTriggerStatus(const AliESDEvent *esd) ;
@@ -190,7 +200,10 @@ protected:
       fTriggerNSD(o.fTriggerNSD),
       fTriggerEmpty(o.fTriggerEmpty),
       fUseBuiltInNSD(o.fUseBuiltInNSD),
-      fInelGtZero(o.fInelGtZero)
+      fInelGtZero(o.fInelGtZero),
+      fRunDndeta(o.fRunDndeta),
+      fRunBFCorrelation(o.fRunBFCorrelation),
+      fRunMultiplicity(o.fRunMultiplicity)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -252,7 +265,12 @@ protected:
   Bool_t   fTriggerEmpty;             //Event should be empty (empty bunches)
   Bool_t   fUseBuiltInNSD;            //Should we use the internal NSD trigger by A. Hansen
   Bool_t   fInelGtZero;               //Should INEL be INEL>0
-  ClassDef(AliFMDAnaParameters,1) // Manager of parameters
+  Bool_t   fRunDndeta;                //Run the Dndeta analysis ?
+  Bool_t   fRunBFCorrelation;         //Run the BF correlation analysis ?
+  Bool_t   fRunMultiplicity;          //Run the multiplicity analysis ?
+  
+  ClassDef(AliFMDAnaParameters,1)     // Manager of parameters
+  
 };
 
 #endif

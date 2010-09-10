@@ -43,7 +43,10 @@ public:				//
       fBackground(o.fBackground),
       fDndeta(o.fDndeta),   
       fBFCorrelation(o.fBFCorrelation), 
-      fParams(o.fParams)
+      fParams(o.fParams),
+      fFirstEvent(o.fFirstEvent),
+      fCentralityLow(o.fCentralityLow),
+      fCentralityHigh(o.fCentralityHigh)
   {}
   AliFMDAnalysisTaskSE& operator=(const AliFMDAnalysisTaskSE&) { return *this; }
   
@@ -56,13 +59,16 @@ public:				//
   
 private:
   
-  TList*                                 fListOfHistos;  // Output list
-  AliFMDAnalysisTaskSharing              fSharing;       // Sharing task
-  AliFMDAnalysisTaskDensity              fDensity;       // Density task
-  AliFMDAnalysisTaskBackgroundCorrection fBackground;    // Background task
-  AliFMDAnalysisTaskDndeta               fDndeta;        // dN/deta task
-  AliFMDAnalysisTaskBFCorrelation        fBFCorrelation; // BF correlation task
-  AliFMDAnaParameters*                   fParams;        // Analysis parameters
+  TList*                                 fListOfHistos;   // Output list
+  AliFMDAnalysisTaskSharing              fSharing;        // Sharing task
+  AliFMDAnalysisTaskDensity              fDensity;        // Density task
+  AliFMDAnalysisTaskBackgroundCorrection fBackground;     // Background task
+  AliFMDAnalysisTaskDndeta               fDndeta;         // dN/deta task
+  AliFMDAnalysisTaskBFCorrelation        fBFCorrelation;  // BF correlation task
+  AliFMDAnaParameters*                   fParams;         // Analysis parameters
+  Bool_t                                 fFirstEvent;     // Is the next event the first event ?
+  Float_t                                fCentralityLow;  // Low centrality
+  Float_t                                fCentralityHigh; // High centrality
   
   ClassDef(AliFMDAnalysisTaskSE, 1);
 
