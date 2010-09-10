@@ -111,12 +111,35 @@ int AliHLTMiscImplementation::GetCDBRunNo() const
 AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo, int version, int subVersion) const
 {
   // see header file for function documentation
-  AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man) return NULL;
+
+  const char* uri=man->GetURI(path);
+  if (!uri) return NULL;
+
+  AliCDBStorage* store = AliCDBManager::Instance()->GetStorage(uri);
   if (!store) {
     return NULL;
   }
+
+  TString strUri=store->GetURI();
+  bool bIsGrid=strUri.BeginsWith("alien://");
+
   if (version<0) version = store->GetLatestVersion(path, runNo);
-  if (subVersion<0) subVersion = store->GetLatestSubVersion(path, runNo, version);
+
+  // OCDB objects on GRID have no sub version
+  if (subVersion<0 && !bIsGrid) subVersion = store->GetLatestSubVersion(path, runNo, version);
+  AliCDBEntry* entry=man->Get(path, runNo, version, subVersion);
+  if (entry) {
+    // there seems to be a problem with the caching of objects in the CDBManager
+    // regardless what version is specified it returns the object from the cache
+    AliCDBId id=entry->GetId();
+    if (id.GetVersion()==version &&
+	id.GetSubVersion()==subVersion) {
+      // entry in the cache has the correct version
+      return entry;
+    }
+  }
   return store->Get(path, runNo, version, subVersion);
 }
 
@@ -152,6 +175,8 @@ int AliHLTMiscImplementation::CheckOCDBEntries(const TMap* const pMap) const
       pStorage=AliCDBManager::Instance()->GetDefaultStorage();
     }
 
+    // FIXME: this will fail as soon as we have several specific storages
+    // access to the internal mapping information for specific storages is needed
     if (pStorage->GetLatestVersion(pEntry->GetName(), runNo)<0) {
       AliHLTLogging log;
       log.Logging(kHLTLogError, "CheckOCDBEntries", "CDB handling", "can not find required OCDB object %s for run number %d in storage %s", pEntry->GetName(), runNo, pStorage->GetURI().Data());
@@ -224,6 +249,12 @@ AliHLTUInt32_t AliHLTMiscImplementation::GetEventType(AliRawReader* rawReader) c
   const AliRawEventHeaderBase* eventHeader = rawReader->GetEventHeader();
   if (!eventHeader) return 0;
   return eventHeader->Get("Type");
+}
+
+const char* AliHLTMiscImplementation::GetBeamTypeFromGRP() const
+{
+  // get beam type from GRP
+  return NULL;
 }
 
 Double_t AliHLTMiscImplementation::GetBz()

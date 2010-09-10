@@ -37,6 +37,7 @@ class AliHLTMiscImplementation : public AliHLTMisc
 
   AliHLTUInt32_t GetTimeStamp(AliRawReader* rawReader) const;
   AliHLTUInt32_t GetEventType(AliRawReader* rawReader) const;
+  const char* GetBeamTypeFromGRP() const;
 
   Double_t GetBz();
   Double_t GetBz(const Double_t *r);
