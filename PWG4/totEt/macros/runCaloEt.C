@@ -5,7 +5,7 @@
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
 void runCaloEt(bool submit = true, // true or false 
-	       const char *dataType="sim", // "sim" or "real" or "simPbPb"
+	       const char *dataType="simPbPb", // "sim" or "real" or "simPbPb"
 	       const char *det = "EMCAL") // "PHOS" or "EMCAL"
 {
   TStopwatch timer;
@@ -39,7 +39,6 @@ void runCaloEt(bool submit = true, // true or false
     
     gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
   }
-
   char *kTreeName = "esdTree" ;
   TChain * chain   = new TChain(kTreeName,"myESDTree") ;
   
@@ -62,7 +61,7 @@ void runCaloEt(bool submit = true, // true or false
   cout << " taskName " << taskName
        << " outputName " << outputName << endl;
 
-  if(submit){
+  if (submit) {
     gROOT->LoadMacro("CreateAlienHandlerCaloEtSim.C");
     AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName);  
     if (!alienHandler) return;
@@ -74,16 +73,18 @@ void runCaloEt(bool submit = true, // true or false
   AliMCEventHandler* handler = new AliMCEventHandler;
   if ( dataStr.Contains("sim") ) {
     cout << " MC " << endl;
-    chain->Add("/home/dsilverm/data/E_T/sim/LHC10d1/117222/100/AliESDs.root"); // link to local test file
     if ( dataStr.Contains("PbPb") ) {
       cout << " PbPb " << endl;
       chain->Add("/home/dsilverm/data/E_T/sim/LHC10e11/191001/001/AliESDs.root"); // link to local test file
     }
+    else { // pp
+      chain->Add("/home/dsilverm/data/E_T/sim/LHC10d1/117222/100/AliESDs.root"); // link to local test file
+    }
     handler->SetReadTR(kFALSE);
     mgr->SetMCtruthEventHandler(handler);
   }
-  else {
-  chain->Add("/home/dsilverm/data/E_T/data/2010/LHC10b/000117222/ESDs/pass2/10000117222021.30/AliESDs.root"); // link to local test file
+  else { // real data
+    chain->Add("/home/dsilverm/data/E_T/data/2010/LHC10b/000117222/ESDs/pass2/10000117222021.30/AliESDs.root"); // link to local test file
     cout << " not MC " << endl;
   }
 

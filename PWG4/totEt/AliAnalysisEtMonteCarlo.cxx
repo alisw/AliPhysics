@@ -1,8 +1,9 @@
 #include "AliAnalysisEtMonteCarlo.h"
 #include "AliAnalysisEtCuts.h"
-
+#include "AliESDtrack.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
+#include "TH2F.h"
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 {
@@ -43,7 +44,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
         if (TMath::Abs(part->Eta()) < fEtaCut)
         {
 
-            TParticlePDG *pdgCode =  part->GetPDG(0);
+	  TParticlePDG *pdgCode =  part->GetPDG(0);
             if (
                 TMath::Abs(pdgCode->PdgCode()) == ProtonCode ||
                 TMath::Abs(pdgCode->PdgCode()) == NeutronCode ||
@@ -76,8 +77,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                     fTotChargedEtAcc += part->Energy()*TMath::Sin(part->Theta());
                     fTotEtAcc += part->Energy()*TMath::Sin(part->Theta());
                 }
-            }
-        }
+
+		//	  if (TrackHitsCalorimeter(part, event->GetMagneticField()))
+		if (TrackHitsCalorimeter(part)) // magnetic field info not filled?
+		  {
+		    if (pdgCode->Charge() > 0) fHistPhivsPtPos->Fill(part->Phi(),part->Pt());
+		    else fHistPhivsPtNeg->Fill(part->Phi(), part->Pt());
+		  }
+	    }
+	}
     }
     
     fTotNeutralEtAcc = fTotNeutralEt;
@@ -101,3 +109,23 @@ void AliAnalysisEtMonteCarlo::Init()
     fIPzCut = EtReconstructedCuts::kIPzCut;
 
 }
+
+bool AliAnalysisEtMonteCarlo::TrackHitsCalorimeter(TParticle* part, Double_t magField)
+{
+  //  printf(" TrackHitsCalorimeter - magField %f\n", magField);
+   AliESDtrack *esdTrack = new AliESDtrack(part);
+   // Printf("MC Propagating track: eta: %f, phi: %f, pt: %f", esdTrack->Eta(), esdTrack->Phi(), esdTrack->Pt());
+
+    Bool_t prop = esdTrack->PropagateTo(fDetectorRadius, magField);
+
+    // if(prop) Printf("Track propagated, eta: %f, phi: %f, pt: %f", esdTrack->Eta(), esdTrack->Phi(), esdTrack->Pt());
+
+    bool status = prop && 
+      TMath::Abs(esdTrack->Eta()) < fEtaCutAcc && 
+      esdTrack->Phi() > fPhiCutAccMin*TMath::Pi()/180. && 
+      esdTrack->Phi() < fPhiCutAccMax*TMath::Pi()/180.;
+    delete esdTrack;
+
+    return status;
+}
+
