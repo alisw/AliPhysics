@@ -1420,8 +1420,8 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     }
 
     //intBkg=intTot-intS
-    blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(fNFinalPars));
-    blastpar->SetParError(0,mass->GetParError(fNFinalPars));
+    blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(fNFinalPars-3));
+    blastpar->SetParError(0,mass->GetParError(fNFinalPars-3));
     if (fNFinalPars>=2) {
       blastpar->SetParameter(1,mass->GetParameter(1));
       blastpar->SetParError(1,mass->GetParError(1));
