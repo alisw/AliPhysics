@@ -25,6 +25,7 @@
 #include "TH1.h"
 #include "TString.h"
 #include "TList.h"
+#include "TCanvas.h"
 
 // --- AliRoot header files ---
 #include "AliITSQASPDChecker.h"
@@ -38,10 +39,11 @@ AliITSQASPDChecker::AliITSQASPDChecker() :
  fSubDetOffset(0), 
  fStepBitSPD(NULL),
  fLowSPDValue(NULL),
- fHighSPDValue(NULL) 
+ fHighSPDValue(NULL),
+ fImage(NULL) 
  {
  for(Int_t i=0; i<6 ; i++) { 
-  fDisplayStatus[i] = new TPaveText(0.2,0.1,0.8,0.3,"NDC");
+  fDisplayStatus[i] = new TPaveText(0.2,0.23,0.7,0.5,"NDC");
   fDisplayStatus[i]->SetFillColor(kGreen);
   fDisplayStatus[i]->AddText("OK");
   } 
@@ -59,6 +61,7 @@ AliITSQASPDChecker::~AliITSQASPDChecker() {
 if(fStepBitSPD) delete[] fStepBitSPD ;
 if(fLowSPDValue)delete[]fLowSPDValue;
 if(fHighSPDValue) delete[]fHighSPDValue;
+if(fImage) delete[]fImage;
 for(Int_t i=0; i<6; i++){
 delete fDisplayStatus[i];
 }
@@ -295,4 +298,132 @@ void  AliITSQASPDChecker::SetSPDLimits(const Float_t *lowvalue, const Float_t * 
     }
 
 }
+//__________________________________________________________________
+Bool_t  AliITSQASPDChecker::MakeSPDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
+{
+  Bool_t val=kFALSE;
 
+  fImage=(TCanvas**)AliQAChecker::Instance()->GetDetQAChecker(0)->GetImage();
+  //create the image for raws and recpoints. In the other case, the default methodof CheckerBase class will be used
+  switch(task)
+    {
+    case AliQAv1::kRAWS:{
+      val = MakeSPDRawsImage(list, task,mode);
+    }
+      break;
+    case AliQAv1::kRECPOINTS:;
+    case AliQAv1::kHITS:; 
+    case AliQAv1::kESDS:; 
+    case AliQAv1::kDIGITS:;
+    case AliQAv1::kDIGITSR:;
+    case AliQAv1::kSDIGITS:;
+    case AliQAv1::kTRACKSEGMENTS:;
+    case AliQAv1::kRECPARTICLES:; 
+    default:
+    {
+       //AliQAChecker::Instance()->GetDetQAChecker(0)->MakeImage(list,task,mode);
+      val = kFALSE;
+    }
+    break;
+    case AliQAv1::kNULLTASKINDEX:; case  AliQAv1::kNTASKINDEX: 
+      {AliWarning(Form("No histograms for these tasks ( %s ) \n", AliQAv1::GetTaskName(task).Data())); val = kFALSE;}
+      break;
+    }
+ return val; 
+}
+//_______________________________________________________________________
+Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode )
+{
+    //
+    // create layout of the histograms used in the DQM
+    //
+  
+  
+    for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+      //printf("-------------------------> %i \n", esIndex);
+      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) 
+          {printf ("Nothing for %s \n", AliRecoParam::GetEventSpecieName(esIndex)); continue;}
+      else{
+	const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
+	if ( !fImage[esIndex] ) {
+	  fImage[esIndex] = new TCanvas(title, title,1280,980) ;
+	}
+	
+	fImage[esIndex]->Clear() ; 
+	fImage[esIndex]->SetTitle(title) ; 
+	fImage[esIndex]->cd();
+ 
+	TPaveText someText(0.015, 0.015, 0.98, 0.98);
+	someText.AddText(title);
+	someText.Draw(); 
+	fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+	fImage[esIndex]->Clear() ; 
+	Int_t nx =3; 
+	Int_t ny =2; 
+	
+	fImage[esIndex]->Divide(nx, ny) ; 
+         
+	TH1* hist = NULL ;
+	Int_t npad = 1 ; 
+	fImage[esIndex]->cd(npad); 
+	fImage[esIndex]->cd(npad)->SetBorderMode(0) ;
+        
+        TIter next(list[esIndex]);
+
+	while ( (hist=static_cast<TH1*>(next())) ) {
+	  //gPad=fImage[esIndex]->cd(npad)->GetPad(npad);
+          if(!hist->TestBit(AliQAv1::GetImageBit())) continue;
+          TString name(hist->GetName());
+           if(name.Contains("SPDErrorsAll")) {
+            fImage[esIndex]->cd(1) ; 
+	    gPad->SetBorderMode(0) ;  
+            gPad->SetRightMargin(0.25);
+	    hist->SetStats(0);
+	    hist->SetOption("colz") ;
+            hist->DrawCopy();  
+           }     
+           if(name.Contains("MEB")) {
+            fImage[esIndex]->cd(2) ; 
+	    gPad->SetBorderMode(0) ;  
+            gPad->SetBottomMargin(0.25);
+	    hist->SetOption("colz") ;
+            hist->DrawCopy();  
+           }     
+           if(name.Contains("SPDFastOrCorrelation")){
+            fImage[esIndex]->cd(3) ; 
+	    gPad->SetBorderMode(0) ;  
+	    hist->SetOption("") ;
+            hist->DrawCopy();               
+           }
+           
+            if(name.Contains("SPDHitMapStaveChipInner")){
+            fImage[esIndex]->cd(4) ; 
+	    gPad->SetBorderMode(0) ;  
+            gPad->SetRightMargin(0.25);
+	    hist->SetOption("colz") ;
+            hist->DrawCopy();               
+           }
+            if(name.Contains("SPDHitMapStaveChipOuter")){
+            fImage[esIndex]->cd(5) ; 
+	    gPad->SetBorderMode(0) ;  
+            gPad->SetRightMargin(0.25);
+	    hist->SetOption("colz") ;
+            hist->DrawCopy();               
+           }
+            if(name.Contains("SPDFastOrMapStaveChip")){
+            fImage[esIndex]->cd(6) ; 
+	    gPad->SetBorderMode(0) ;  
+            gPad->SetRightMargin(0.25);
+            gPad->SetBottomMargin(0.25);
+	    hist->SetOption("colz") ;
+            hist->DrawCopy();               
+           }
+          
+          
+	}
+        
+	fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+      }
+    }
+  return kTRUE;
+}

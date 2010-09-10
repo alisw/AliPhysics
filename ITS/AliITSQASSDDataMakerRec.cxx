@@ -188,8 +188,10 @@ AliITSQASSDDataMakerRec::~AliITSQASSDDataMakerRec() {
 void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
 {
 
- if ( fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
- 	return ;
+  if(fAliITSQADataMakerRec->ListExists(AliQAv1::kRAWS)==kFALSE)return;
+
+  //if ( fAliITSQADataMakerRec->GetRawsData(0) == NULL ) // Raws not defined
+  //return ;
  
  //for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
  //if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue;

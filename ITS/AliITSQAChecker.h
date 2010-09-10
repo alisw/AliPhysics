@@ -52,6 +52,8 @@ public:
   virtual Int_t GetSDDHisto(){return fSDDHisto;} ;
   virtual Int_t GetSSDHisto(){return fSSDHisto;} ;
 
+  virtual  void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ; 
+  virtual  void   MakeITSImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) { AliQACheckerBase::MakeImage(list,task, mode);} 
 
 protected:
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam) ;

@@ -20,6 +20,10 @@ class TH2F ;
 
 // --- AliRoot header files ---
 #include "AliQAv1.h"
+#include "AliQAChecker.h"
+#include "AliQACheckerBase.h"
+
+
 class AliITSLoader ; 
 
 class AliITSQASSDChecker: public TObject {
@@ -37,6 +41,10 @@ public:
   void CheckRecPoints(TH1 * /* histo */) const {return;}
   void SetTaskOffset(Int_t TaskOffset);
   void SetSSDLimits(const Float_t *lowvalue, const Float_t * highvalue);
+
+  virtual  Bool_t   MakeSSDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) 
+  { AliInfo(Form("Use default MakeImage method for the  %s for  task %s mode %s \n",list[0]->ClassName(), AliQAv1::GetTaskName(task).Data(), AliQAv1::GetModeName(mode))); return kFALSE;} 
+
 
 
 private:

@@ -24,6 +24,7 @@
 // --- ROOT system ---
 #include "TH1.h"
 #include <Riostream.h>
+#include "TStyle.h"
 
 // --- AliRoot header files ---
 #include "AliITSQAChecker.h"
@@ -470,4 +471,45 @@ void AliITSQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
 
 }
 
+
+//__________________________________________________________________
+void  AliITSQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
+{
+
+  //gStyle->SetPalette(1);
+
+  //Int_t nImages = 0 ;
+  //Int_t imageindex=0;
+  for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) ) 
+      continue ;
+    //else imageindex=esIndex;
+
+    TIter next(list[esIndex]) ;  
+    TH1 * hdata = NULL ; 
+    while ( (hdata=static_cast<TH1 *>(next())) ) {
+      TString cln(hdata->ClassName()) ; 
+      if ( ! cln.Contains("TH") )
+        continue ; 
+      if(cln.Contains("TH2")) hdata->SetOption("colz");
+    }
+    break ; 
+  }
+
+  Bool_t retvalue=kFALSE;
+
+  if(GetSubDet()==0) MakeITSImage(list,task, mode);
+  else if(GetSubDet()==1) 
+    {
+      retvalue=fSPDChecker->MakeSPDImage(list,task, mode) ; 
+      if(retvalue==kFALSE)AliQACheckerBase::MakeImage(list,task, mode);
+    }
+  else if(GetSubDet()==2){ retvalue=fSDDChecker->MakeSDDImage(list,task, mode) ;if(retvalue==kFALSE)AliQACheckerBase::MakeImage(list,task,mode); }
+  else if(GetSubDet()==3) 
+    {
+      retvalue=fSSDChecker->MakeSSDImage(list,task, mode) ;
+      if(retvalue==kFALSE)AliQACheckerBase::MakeImage(list,task, mode); 
+    }
+
+}
 

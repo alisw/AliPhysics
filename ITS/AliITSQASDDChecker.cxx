@@ -25,6 +25,10 @@
 #include "TH1.h"
 #include <TH1D.h>
 #include <TH2.h>
+#include "TCanvas.h"
+#include "TPaveText.h"
+#include "TPad.h"
+//#include "TPaletteAxis.h"
 // --- AliRoot header files ---
 #include "AliITSQADataMakerRec.h"
 #include "AliITSQASDDChecker.h"
@@ -33,6 +37,10 @@
 #include "AliCDBManager.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSgeomTGeo.h"
+#include "AliQAManager.h"
+#include "AliQAv1.h"
+#include "AliQAChecker.h"
+#include "AliQACheckerBase.h"
 
 
 ClassImp(AliITSQASDDChecker)
@@ -68,6 +76,11 @@ AliITSQASDDChecker::~AliITSQASDDChecker()
     {
       delete fCalibration;
       fCalibration=NULL;
+    }
+  if(fImage)
+    {
+      delete []fImage; 
+      fImage=NULL;
     }
 } // dtor
 
@@ -256,63 +269,98 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
     
   case AliQAv1::kREC:
     {
-      
+      Int_t uidrec=list->GetUniqueID();
       AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index))); 
-
-      if (list->GetEntries() == 0){ //check if the list is empty
-	//printf("SDDQACheckerValue = %f \t value %f\n",SDDQACheckerValue,fHighSDDValue[AliQAv1::kFATAL]);
-	SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL]; 
-	break;			
-      }//end if getentries
+      if(uidrec==20){
+	//recpoints
+	if (list->GetEntries() == 0){ //check if the list is empty
+	  //printf("SDDQACheckerValue = %f \t value %f\n",SDDQACheckerValue,fHighSDDValue[AliQAv1::kFATAL]);
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL]; 
+	  break;			
+	}//end if getentries
       
-      while((hdata=dynamic_cast<TH1* >(next()))){
-	if (hdata){
-	  TString hname=hdata->GetName();
-	  if(hname.Contains("_RelativeOccupancy")) {
-	    Float_t threshold = hdata->GetMean() + 4*hdata->GetRMS();
-	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 3: L3 mean: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
-	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 4: L4 mean: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
-	    Int_t aboveThreshold = 0;
-	    for(Int_t k=0; k<= ((Int_t)hdata->GetNbinsX()); k++) {
-	      if(hdata->GetBinLowEdge(k) > threshold) aboveThreshold += (Int_t)(hdata->GetBinContent(k));
+	while((hdata=dynamic_cast<TH1* >(next()))){
+	  if (hdata){
+	    TString hname=hdata->GetName();
+	    if(hname.Contains("_RelativeOccupancy")) {
+	      Float_t threshold = hdata->GetMean() + 4*hdata->GetRMS();
+	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 3: L3 mean: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
+	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 4: L4 mean: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
+	      Int_t aboveThreshold = 0;
+	      for(Int_t k=0; k<= ((Int_t)hdata->GetNbinsX()); k++) {
+		if(hdata->GetBinLowEdge(k) > threshold) aboveThreshold += (Int_t)(hdata->GetBinContent(k));
+	      }
+	      Float_t fractionAboveThreshold = ((Float_t) aboveThreshold)/hdata->GetEntries();
+	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 3, L3: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
+	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 4, L4: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
+	      if(fractionAboveThreshold > fThresholdForRelativeOccupancy) { 
+		SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+		if(hname.Contains("L3")) AliInfo(Form("SDD check number 3: Set Warning (L3 RecPoints)"));
+		if(hname.Contains("L4")) AliInfo(Form("SDD check number 4: Set Warning (L4 RecPoints)"));
+	      }
 	    }
-	    Float_t fractionAboveThreshold = ((Float_t) aboveThreshold)/hdata->GetEntries();
-	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 3, L3: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
-	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 4, L4: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
-	    if(fractionAboveThreshold > fThresholdForRelativeOccupancy) { 
-	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
-	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 3: Set Warning (L3 RecPoints)"));
-	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 4: Set Warning (L4 RecPoints)"));
+	    if(hname.Contains("Rec2Raw") && !hname.Contains("2D")) {
+	      //Float_t threshold = 0.;
+	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 5: L3 R2R mean: %f, rms: ,%f",((TH1F *) hdata)->GetMean(),((TH1F *) hdata)->GetRMS()));
+	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 6: L4 R2R mean: %f, rms: ,%f",((TH1F *) hdata)->GetMean(),((TH1F *) hdata)->GetRMS()));
+	      Int_t belowThreshold = 0;
+	      for(Int_t k=0; k<=((TH1F *)hdata)->GetNbinsX(); k++) {
+		if(((TH1F *) hdata)->GetBinLowEdge(k) < fThresholdForRecToRawRatio) belowThreshold += ((Int_t)((TH1F *) hdata)->GetBinContent(k));
+	      }
+	      Double_t fractionBelowThreshold =0.;
+	      Double_t entries3=((TH1F *)hdata)->GetEntries();
+	      if(entries3>0.001)fractionBelowThreshold = ((Double_t)(belowThreshold))/entries3;
+	      else{ AliWarning(Form("No entries on %s. The check will retuns zero.\n",hdata->GetName() )); }
+	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 5, L3: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
+	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 6, L4: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
+	      if(fractionBelowThreshold > fThresholdForRelativeOccupancy) { 
+		SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+		if(hname.Contains("L3")) AliInfo(Form("SDD check number 5: Set Warning (L3 RecPoints2Raws)"));
+		if(hname.Contains("L4")) AliInfo(Form("SDD check number 6: Set Warning (L4 RecPoints2Raws)"));
+	      }
+	    }
+	    if(hname.Contains("dedx")) {
+	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 7: L3 average charge: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
+	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 8: L4 average charge: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
 	    }
 	  }
-	  if(hname.Contains("Rec2Raw") && !hname.Contains("2D")) {
-	    //Float_t threshold = 0.;
-	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 5: L3 R2R mean: %f, rms: ,%f",((TH1F *) hdata)->GetMean(),((TH1F *) hdata)->GetRMS()));
-	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 6: L4 R2R mean: %f, rms: ,%f",((TH1F *) hdata)->GetMean(),((TH1F *) hdata)->GetRMS()));
-	    Int_t belowThreshold = 0;
-	    for(Int_t k=0; k<=((TH1F *)hdata)->GetNbinsX(); k++) {
-	      if(((TH1F *) hdata)->GetBinLowEdge(k) < fThresholdForRecToRawRatio) belowThreshold += ((Int_t)((TH1F *) hdata)->GetBinContent(k));
-	    }
-	    Double_t fractionBelowThreshold =0.;
-	    Double_t entries3=((TH1F *)hdata)->GetEntries();
-	    if(entries3>0.001)fractionBelowThreshold = ((Double_t)(belowThreshold))/entries3;
-	    else{ AliWarning(Form("No entries on %s. The check will retuns zero.\n",hdata->GetName() )); }
-	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 5, L3: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
-	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 6, L4: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
-	    if(fractionBelowThreshold > fThresholdForRelativeOccupancy) { 
-	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
-	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 5: Set Warning (L3 RecPoints2Raws)"));
-	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 6: Set Warning (L4 RecPoints2Raws)"));
-	    }
-	  }
-	  if(hname.Contains("dedx")) {
-	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 7: L3 average charge: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
-	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 8: L4 average charge: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
-	  }
+	}				
+      
+	SDDQACheckerValue=1.;
+      }
+      else if(uidrec==40)
+	{
+	  //digitsr
+	  if (list->GetEntries() == 0){ 
+	    SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	    break;
+	  } else{
+	
+	    while( (hdata = dynamic_cast<TH1* >(next())) ){
+	      if (hdata){
+		if(hdata->GetEntries()==0)SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+		else {
+		  TString hname=hdata->GetName();
+		  if(hname.Contains("SDD DIGITS Module Pattern")) {
+		    //see raws
+		
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  } else if(hname.Contains("SDD Anode Distribution")) {
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  } else if(hname.Contains("SDD Tbin Distribution")) {
+		    //to do as rp
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  } else if(hname.Contains("SDD ADC Counts Distribution")) {
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  }//end adc counts
+	      
+		}//end entries !=0
+	      }//end hdata
+	    }//end while
+	  }//end else
+	  SDDQACheckerValue=1.;
 	}
-      }				
-      
-      SDDQACheckerValue=1.;
+
     }
     break;
   case AliQAv1::kANA:
@@ -468,4 +516,170 @@ void  AliITSQASDDChecker::SetSDDLimits(const Float_t *lowvalue, const Float_t * 
     }
 
 }
+//__________________________________________________________________
+Bool_t  AliITSQASDDChecker::MakeSDDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
+{
+  Bool_t rval=kFALSE;
+  fImage=(TCanvas**)AliQAChecker::Instance()->GetDetQAChecker(0)->GetImage();
+  //create the image for raws and recpoints. In the other case, the default methodof CheckerBase class will be used
+  switch(task)
+    {
+    case AliQAv1::kRAWS:{
+      rval=MakeSDDRawsImage(list, task,mode);
+    }
+      break;
+    case AliQAv1::kRECPOINTS:{ rval=MakeSDDRecPointsImage(list, task,mode); }
+      break;
+    case AliQAv1::kHITS:; case AliQAv1::kESDS:; case AliQAv1::kDIGITS:;case AliQAv1::kDIGITSR:;case AliQAv1::kSDIGITS:;case AliQAv1::kTRACKSEGMENTS:;case AliQAv1::kRECPARTICLES:; default:
+    {
+       rval=kFALSE;
+       //AliQAChecker::Instance()->GetDetQAChecker(0)->MakeImage(list,task,mode);
+    }
+    break;
+    case AliQAv1::kNULLTASKINDEX:; case  AliQAv1::kNTASKINDEX: 
+      {AliWarning(Form("No histograms for this task ( %s ) \n", AliQAv1::GetTaskName(task).Data())); rval=kFALSE;}
+      break;
+    }
+return rval;  
+}
 
+
+//_______________________________________________________________________
+Bool_t AliITSQASDDChecker::MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode )
+{
+
+    for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+      //printf("-------------------------> %i \n", esIndex);
+      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) 
+          {//printf ("Nothing for %s \n", AliRecoParam::GetEventSpecieName(esIndex));
+	 continue;
+	}
+      else{
+	const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
+	if ( !fImage[esIndex] ) {
+	  fImage[esIndex] = new TCanvas(title, title,1280,980) ;
+	}
+	
+	fImage[esIndex]->Clear() ; 
+	fImage[esIndex]->SetTitle(title) ; 
+	fImage[esIndex]->cd();
+ 
+	TPaveText someText(0.015, 0.015, 0.98, 0.98);
+	someText.AddText(title);
+	someText.Draw(); 
+	fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+	fImage[esIndex]->Clear() ; 
+	Int_t nx =2; //TMath::Nint(TMath::Sqrt(nImages));
+	Int_t ny =1; // nx  ; 
+	//if (nx < TMath::Sqrt(nImages))
+	//ny++ ;  
+	fImage[esIndex]->Divide(nx, ny) ; 
+	TIter nexthist(list[esIndex]) ; 
+	TH1* hist = NULL ;
+	Int_t npad = 1 ; 
+	fImage[esIndex]->cd(npad); 
+	fImage[esIndex]->cd(npad)->SetBorderMode(0) ;
+	while ( (hist=static_cast<TH1*>(nexthist())) ) {
+	  //gPad=fImage[esIndex]->cd(npad)->GetPad(npad);
+	  TString cln(hist->ClassName()) ; 
+	  if ( ! cln.Contains("TH") )
+	    continue ;
+	  
+	  if(hist->TestBit(AliQAv1::GetImageBit())) {
+	    hist->GetXaxis()->SetTitleSize(0.02);
+	    hist->GetYaxis()->SetTitleSize(0.02);
+	    hist->GetXaxis()->SetLabelSize(0.02);
+	    hist->GetYaxis()->SetLabelSize(0.02);
+	    if(cln.Contains("TH2"))
+	      {
+		gPad->SetRightMargin(0.15);
+		gPad->SetLeftMargin(0.05);
+		hist->SetStats(0);
+		hist->SetOption("colz") ;
+		//hist->GetListOfFunctions()->FindObject("palette")->SetLabelSize(0.025);
+		//gPad->Update();
+	      }
+	    hist->DrawCopy() ; 
+	    fImage[esIndex]->cd(++npad) ; 
+	    fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
+	  }
+	}
+	fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+      }
+    }
+   return kTRUE;
+}
+
+
+
+
+//_______________________________________________________________________
+Bool_t AliITSQASDDChecker::MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode )
+{
+
+    for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) 
+        {
+	//printf ("Nothing for %s \n", AliQAv1::GetTaskName(task).Data()); 
+	continue;
+	}
+      const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
+      if ( !fImage[esIndex] ) {
+        fImage[esIndex] = new TCanvas(title, title,1280,980) ;
+      }
+      fImage[esIndex]->Clear() ; 
+      fImage[esIndex]->SetTitle(title) ; 
+      fImage[esIndex]->cd();
+      fImage[esIndex]->SetBorderMode(0) ;  
+      TPaveText someText(0.015, 0.015, 0.98, 0.98);
+      someText.AddText(title);
+      someText.Draw(); 
+      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+      fImage[esIndex]->Clear() ; 
+      Int_t nx =2; //TMath::Nint(TMath::Sqrt(nImages));
+      Int_t ny =4; // nx  ; 
+      //if (nx < TMath::Sqrt(nImages))
+      //ny++ ;  
+      fImage[esIndex]->Divide(nx, ny) ; 
+      TIter nexthist(list[esIndex]) ; 
+      TH1* hist = NULL ;
+      Int_t npad = 1 ; 
+      fImage[esIndex]->cd(npad) ; 
+      fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
+      while ( (hist=static_cast<TH1*>(nexthist())) ) {
+	//gPad=fImage[esIndex]->cd(npad)->GetPad(npad);
+        TString cln(hist->ClassName()) ;
+	//printf("=====================> Class name %s \n",cln.Data()); 
+        if ( ! cln.Contains("TH") )
+          continue ;
+        if(hist->TestBit(AliQAv1::GetImageBit())) {
+	    hist->GetXaxis()->SetTitleSize(0.02);
+	    hist->GetYaxis()->SetTitleSize(0.02);
+	    hist->GetXaxis()->SetLabelSize(0.02);
+	    hist->GetYaxis()->SetLabelSize(0.02);
+	  if(cln.Contains("TH1"))
+	    {
+	      hist->SetFillColor(kOrange+7);
+	      //SetFrameFillColor(kAzure-9);
+	      //hist->DrawCopy() ; 
+	    }
+	  if(cln.Contains("TH2"))
+	    {
+	      gPad->SetRightMargin(0.15);
+	      gPad->SetLeftMargin(0.05);
+	      hist->SetStats(0);
+	      hist->SetOption("colz") ;
+	      //	      TPaletteAxis *paletta =(TPaletteAxis*)hist->GetListOfFunctions()->FindObject("palette");
+	      //paletta->SetLabelSize(0.025);
+	      //gPad->Update(); 
+	    }
+	  hist->DrawCopy();
+          fImage[esIndex]->cd(++npad) ; 
+	  fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
+        }
+      }
+      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+    }
+    // }  
+   return kTRUE;
+}

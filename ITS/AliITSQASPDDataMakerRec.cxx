@@ -213,7 +213,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
 // 5
   
    TH2I *hSPDChipsMEB = new TH2I("SPDChipsMEB_OnlineSPD","Chips with MEB problem - SPD",60,-0.5,59.5,20,-0.2,19.5);
-   hSPDChipsMEB->GetXaxis()->SetTitle("Stave");
+  // hSPDChipsMEB->GetXaxis()->SetTitle("Stave");
    hSPDChipsMEB->GetXaxis()->SetNdivisions(60,kFALSE);
    hSPDChipsMEB->GetYaxis()->SetTitle("SIDE C   ->   SIDE A           Chip");
    hSPDChipsMEB->GetYaxis()->SetNdivisions(20,kFALSE);
@@ -354,7 +354,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
 // 28
   TH2F *hFastOrMapStaveChip 
          = new TH2F("SPDFastOrMapStaveChip_SPD","FastOr map per Stave per Chip - SPD",60,-0.5,59.5,20,-0.5,19.5);
-  hFastOrMapStaveChip->GetXaxis()->SetTitle("Stave");
+//  hFastOrMapStaveChip->GetXaxis()->SetTitle("Stave");
   hFastOrMapStaveChip->GetYaxis()->SetTitle("SIDE C   ->   SIDE A           Chip");
   for(Int_t ibinx =0; ibinx< hFastOrMapStaveChip->GetNbinsX(); ibinx++){
   if(ibinx%6==0) hFastOrMapStaveChip->GetXaxis()->SetBinLabel(ibinx+1,Form("Sector %i__%i",ibinx/6,ibinx%6));
@@ -378,7 +378,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   TH2F *hHitMapHalfStaveChipInner 
      = new TH2F("SPDHitMapStaveChipInner_SPD","Hit map per Stave per Chip Inner Layer- SPD",20,0.,20.,20,0.,20.);
   hHitMapHalfStaveChipInner->GetXaxis()->SetTitle("SIDE C                                 SIDE A                   Chip");
-  hHitMapHalfStaveChipInner->GetYaxis()->SetTitle("Stave in Sector S");
+  //hHitMapHalfStaveChipInner->GetYaxis()->SetTitle("Stave in Sector S");
   for(Int_t ibinx =0; ibinx< hHitMapHalfStaveChipInner->GetNbinsX(); ibinx++){
   if(ibinx < 10) hHitMapHalfStaveChipInner->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",ibinx));
   else hHitMapHalfStaveChipInner->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",20-(ibinx+1)));
@@ -396,7 +396,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   TH2F *hHitMapHalfStaveChipOuter 
      = new TH2F("SPDHitMapStaveChipOuter_SPD","Hit map per Stave per Chip Outer Layer - SPD",20,0.,20.,40,0.,40.);
   hHitMapHalfStaveChipOuter->GetXaxis()->SetTitle("SIDE C                                 SIDE A                   Chip");
-  hHitMapHalfStaveChipOuter->GetYaxis()->SetTitle("Stave in Sector S");
+  //hHitMapHalfStaveChipOuter->GetYaxis()->SetTitle("Stave in Sector S");
   for(Int_t ibinx =0; ibinx< hHitMapHalfStaveChipOuter->GetNbinsX(); ibinx++){
   if(ibinx < 10) hHitMapHalfStaveChipOuter->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",ibinx));
   else hHitMapHalfStaveChipOuter->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",20-(ibinx+1)));
@@ -424,7 +424,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   fSPDhRawsTask++;
 // 34
   TH1F *hHitMapStaveInnerPhi = new TH1F("SPDHitMapChipInnerPhi_SPD","Hit map per Stave in Phi Inner - SPD",20,0.,20.);
-  hHitMapStaveInnerPhi->GetXaxis()->SetTitle("Stave");
+  //hHitMapStaveInnerPhi->GetXaxis()->SetTitle("Stave");
   hHitMapStaveInnerPhi->GetYaxis()->SetTitle("Entries");
   for(Int_t ibinx =0; ibinx< hHitMapStaveInnerPhi->GetNbinsX(); ibinx++){
   if(ibinx%2==0) hHitMapStaveInnerPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i___Sector %i",ibinx%2,ibinx/2));
@@ -434,7 +434,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   fSPDhRawsTask++;
 // 35
   TH1F *hHitMapStaveOuterPhi = new TH1F("SPDHitMapChipOuterPhi_SPD","Hit map per Stave in Phi Outer - SPD",40,0.,40.);
-  hHitMapStaveOuterPhi->GetXaxis()->SetTitle("Stave");
+  //hHitMapStaveOuterPhi->GetXaxis()->SetTitle("Stave");
   hHitMapStaveOuterPhi->GetYaxis()->SetTitle("Entries");
   for(Int_t ibinx =0; ibinx< hHitMapStaveOuterPhi->GetNbinsX(); ibinx++){
   if(ibinx%4==0) hHitMapStaveOuterPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i___Sector %i ",ibinx%4+2,ibinx/4));
