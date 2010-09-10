@@ -138,8 +138,8 @@ int main(int argc, char **argv) {
   
   for(Int_t ic=0; ic<24; ic++) 
     {
-      hQTC[ic] = new TH1F(Form("hQTC%d_%d",ic+1,nIndex),"QTC",1000, 500, 4500);
-      hLED[ic] = new TH1F(Form("hLED%d_%d",ic+1,nIndex),"LED",300,300,600);
+      hQTC[ic] = new TH1F(Form("hQTC%d_%d",ic+1,nIndex),"QTC",1000, 500, 10000);
+      hLED[ic] = new TH1F(Form("hLED%d_%d",ic+1,nIndex),"LED",125,200,700);
       hCFD[ic] = new TH1F(Form("hCFD%d_%d",ic+1,nIndex),"CFD", Int_t ((hcfd-lcfd)/2), lcfd, hcfd);
     }
  
@@ -267,7 +267,7 @@ int main(int argc, char **argv) {
 
   printf("After loop, before writing histos\n");
   TH1F* hAmp = new TH1F("hAmpLaser"," Laser amplitude ", 1000, 0.5, 20.5);  
-  for(Int_t i=0; i<nEntries; i++)   hAmp->Fill(mipsin[i]); 
+  for(Int_t i=0; i<nIndex; i++)   hAmp->Fill(mipsin[i]); 
   // write a file with the histograms
   TFile *hist=0;
   if(nIndex == 1 )
