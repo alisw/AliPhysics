@@ -192,7 +192,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
   const char *sign2[3]={""," Like-Sign"," Unlike-Sign"};
   const char *sign31[4]={"","_LS","_ULT","_ULA"};
   const char *sign32[4]={""," Like-Sign"," Trigger-Diff"," Assoc-Diff"};
-  Float_t EtaEdge=EtaEdge=fEtaCut+fTrigEtaCut;
+  Float_t EtaEdge=fEtaCut+fTrigEtaCut;
   Float_t PhiArray[fnBinPhi+1];
   Float_t EtaArray[fnBinEta+1];
   Float_t PhiEtaArrayPhi[fnBinPhiEtaPhi+1];
