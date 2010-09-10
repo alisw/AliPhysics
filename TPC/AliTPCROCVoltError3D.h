@@ -40,14 +40,23 @@ public:
 
   // flag to wheter or not include the z aligment in the dz calculation 
   // if FALSE, the dz offset is purely due to the electric field change
-  void SetROCDisplacement(Bool_t flag) { fROCdisplacement = flag; fInitLookUp=kFALSE;}
+  void SetROCDisplacement(Bool_t flag) { 
+    if (flag!=fROCdisplacement) { fROCdisplacement = flag; fInitLookUp=kFALSE; }
+  }
   Bool_t GetROCDisplacement() const { return fROCdisplacement; }
+  
+  // flag on wheter to consider the difference in the electron arrival between IROC and OROC
+  // due to the different position of the Anode wires
+  void SetElectronArrivalCorrection(Bool_t flag) { 
+    if (flag!=fElectronArrivalCorrection) { fElectronArrivalCorrection = flag; fInitLookUp=kFALSE; }
+  }
+  Bool_t GetElectronArrivalCorrection() const { return fElectronArrivalCorrection; }
 
 
   void InitROCVoltError3D(); // Fill the lookup tables
 
   Float_t GetROCVoltOffset(Int_t side, Float_t r0, Float_t phi0);
-  TH2F* CreateHistoOfZSurvey(Int_t side, Int_t nx=250, Int_t ny=250);
+  TH2F* CreateHistoOfZAlignment(Int_t side, Int_t nx=250, Int_t ny=250);
 
   virtual void Print(const Option_t* option="") const;
 
@@ -64,6 +73,11 @@ private:
 
   Bool_t fROCdisplacement;      // flag on wheter to consider the ROC displacement 
                                 // when calculating the z distortions
+  Bool_t fElectronArrivalCorrection; // flag on wheter to consider the difference 
+                                      // in the electron arrival between IROC and OROC
+                                      // due to the different position of the Anode wires
+  
+
   Bool_t fInitLookUp;           // flag to check it the Look Up table was created (SUM)
 
   TMatrixD *fLookUpErOverEz[kNPhi];   // Array to store electric field integral (int Er/Ez)

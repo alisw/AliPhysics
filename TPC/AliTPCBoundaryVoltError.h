@@ -40,7 +40,9 @@ public:
   Float_t GetBoundariesA(Int_t i) const {return fBoundariesA[i]; }
   Float_t GetBoundariesC(Int_t i) const {return fBoundariesC[i]; }
 
-  void SetROCDisplacement(Bool_t flag) { fROCdisplacement = flag; fInitLookUp=kFALSE;}
+  void SetROCDisplacement(Bool_t flag) { 
+    if (flag!=fROCdisplacement) { fROCdisplacement = flag; fInitLookUp=kFALSE; }
+  }
   Bool_t GetROCDisplacement() const { return fROCdisplacement; }
 
   void InitBoundaryVoltErrorDistortion();

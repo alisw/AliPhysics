@@ -49,6 +49,7 @@ AliTPCROCVoltError3D::AliTPCROCVoltError3D()
   : AliTPCCorrection("ROCVoltErrors","ROC z alignment Errors"),
     fC0(0.),fC1(0.),
     fROCdisplacement(kTRUE),
+    fElectronArrivalCorrection(kTRUE),
     fInitLookUp(kFALSE),
     fROCDataFileName(""),  
     fdzDataLinFit(0)
@@ -87,7 +88,7 @@ AliTPCROCVoltError3D::~AliTPCROCVoltError3D() {
 void AliTPCROCVoltError3D::SetROCData(TMatrixD * matrix){
   //
   // Set a z alignment map of the chambers not via a file, but
-  // directly via a TMatrix(72,3), where dz = p0 + p1*lx + p2*ly
+  // directly via a TMatrix(72,3), where dz = p0 + p1*(lx-133.4) + p2*ly (all in cm)
   //
   if (!fdzDataLinFit) fdzDataLinFit=new TMatrixD(*matrix);
   else *fdzDataLinFit = *matrix;
@@ -170,7 +171,7 @@ void AliTPCROCVoltError3D::GetCorrection(const Float_t x[],const Short_t roc,Flo
     return;
   }
 
-  Int_t   order     = 1 ;               // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2         
+  Int_t   order     = 1 ;    // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2         
 
   Double_t intEr, intEphi, intDeltaEz;
   Double_t r, phi, z ;
@@ -215,6 +216,26 @@ void AliTPCROCVoltError3D::GetCorrection(const Float_t x[],const Short_t roc,Flo
   dx[1] = r * TMath::Sin(phi) - x[1]; 
   dx[2] = intDeltaEz;  // z distortion - (internally scaled with driftvelocity dependency 
                        // on the Ez field plus the actual ROC misalignment (if set TRUE)
+
+
+  if (fElectronArrivalCorrection) {
+
+    // correction for the OROC (in average, a 0.014usec longer drift time
+    // due to different position of the anode wires) -> vd*dt -> 2.64*0.014 = 0.0369 cm
+    // FIXME: correction are token from Magboltz simulations
+    //        should be loaded from a database
+ 
+    AliTPCROC * rocInfo = AliTPCROC::Instance();
+    Double_t rCrossingROC  =  (rocInfo->GetPadRowRadii(0,62)+rocInfo->GetPadRowRadii(36,0))/2;
+  
+    if (r>rCrossingROC) {
+      if (sign==1)
+	dx[2] += 0.0369; // A side - negative correction
+      else
+	dx[2] -= 0.0369; // C side - positive correction
+    }
+    
+  }
 
 }
 
@@ -381,7 +402,13 @@ Float_t AliTPCROCVoltError3D::GetROCVoltOffset(Int_t side, Float_t r0, Float_t p
   Float_t lx = xp*TMath::Cos(secAlpha)+yp*TMath::Sin(secAlpha);
   Float_t ly = yp*TMath::Cos(secAlpha)-xp*TMath::Sin(secAlpha);
 
-  Float_t dz = fitData(roc,0)+fitData(roc,1)*lx + fitData(roc,2)*ly; // value in cm
+  // reference of rotation in lx is at the intersection between OROC and IROC
+  // necessary, since the Fitprozedure is otherwise useless
+  
+  AliTPCROC * rocInfo = AliTPCROC::Instance();
+  Double_t lxRef  = (rocInfo->GetPadRowRadii(0,62)+rocInfo->GetPadRowRadii(36,0))/2;
+  
+  Float_t dz = fitData(roc,0)+fitData(roc,1)*(lx-lxRef) + fitData(roc,2)*ly; // value in cm
 
   // aproximated Voltage-offset-aquivalent to the z misalignment
   // (linearly scaled with the z position)
@@ -391,7 +418,7 @@ Float_t AliTPCROCVoltError3D::GetROCVoltOffset(Int_t side, Float_t r0, Float_t p
   return voltOff;
 }
 
-TH2F * AliTPCROCVoltError3D::CreateHistoOfZSurvey(Int_t side, Int_t nx, Int_t ny) {
+TH2F * AliTPCROCVoltError3D::CreateHistoOfZAlignment(Int_t side, Int_t nx, Int_t ny) {
   //
   // return a simple histogramm containing the input to the poisson solver
   // (z positions of the Read-out chambers, linearly interpolated)
@@ -440,10 +467,25 @@ void AliTPCROCVoltError3D::Print(const Option_t* option) const {
 
   TString opt = option; opt.ToLower();
   printf("%s\n",GetTitle());
-  printf(" - Voltage settings on the TPC Read-Out chambers - linearly interpolated\n");
-  printf("   info: Check the following data-file for more details: %s \n",fROCDataFileName.Data());
+  printf(" - z aligmnet of the TPC Read-Out chambers \n");
+  printf("   (linear interpolation within the chamber:  dz = z0 + kx*(lx-133) + ky*ly [cm] ) \n");
+  printf("   Info: Check the following data-file for more details: %s \n",fROCDataFileName.Data());
 
   if (opt.Contains("a")) { // Print all details
+    TMatrixD &fitData = *fdzDataLinFit;
+    printf(" A side:  IROC   ROCX=(z0,kx,ky): \n");
+    for (Int_t roc = 0; roc<18; roc++) 
+      printf("ROC%d:(%.2e,%.2e,%.2e) ",roc,fitData(roc,0),fitData(roc,1),fitData(roc,2));
+    printf("\n A side:  OROC   ROCX=(z0,kx,ky): \n");
+    for (Int_t roc = 36; roc<54; roc++) 
+      printf("ROC%d:(%.2e,%.2e,%.2e) ",roc,fitData(roc,0),fitData(roc,1),fitData(roc,2));
+    printf("\n C side:  IROC   ROCX=(z0,kx,ky): \n");
+    for (Int_t roc = 18; roc<36; roc++) 
+      printf("ROC%d:(%.2e,%.2e,%.2e) ",roc,fitData(roc,0),fitData(roc,1),fitData(roc,2));
+    printf("\n C side:  OROC   ROCX=(z0,kx,ky): \n");
+    for (Int_t roc = 54; roc<72; roc++) 
+      printf("ROC%d:(%.2e,%.2e,%.2e) ",roc,fitData(roc,0),fitData(roc,1),fitData(roc,2));
+    printf("\n\n");
     printf(" - T1: %1.4f, T2: %1.4f \n",fT1,fT2);
     printf(" - C1: %1.4f, C0: %1.4f \n",fC1,fC0);
   }
