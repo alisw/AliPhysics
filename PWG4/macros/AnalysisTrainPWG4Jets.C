@@ -677,7 +677,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
-      TString gcArguments = "-run-on-train -run-jet -run-omega-meson -run-neutralmeson -no-aod";
+      TString gcArguments = "-run-on-train -run-jet -run-omega-meson -use-own-xyz -run-neutralmeson -no-aod";
       TString kGCAnalysisCutSelectionId="900356200010031";
       gcArguments.Append(Form(" -set-cut-selection %s ",kGCAnalysisCutSelectionId.Data()));
       if(!kIsMC)gcArguments += " -mc-off";
@@ -1099,8 +1099,10 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 // Load common analysis libraries.
   Bool_t success = kTRUE;
    if (iESDfilter) {
+     /*
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
           !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
+     */
    }   
    // JETAN
    if (iJETANLib) {
