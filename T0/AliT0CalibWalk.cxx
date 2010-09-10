@@ -98,7 +98,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
   //make walk corerction for preprocessor
   Int_t npeaks = 20;
-  Int_t sigma=3.;
+  Int_t sigma=3;
   Bool_t down=false;
   Int_t index[20];
   Bool_t ok=true;
@@ -123,7 +123,10 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	}	
       }    
       
-      if (nmips<15) ok=false; 
+      if (nmips<17) {
+	ok=false;
+	return ok;
+      } 
        
       Float_t x1[50], y1[50]; 
       Float_t x2[50], xx2[50],y2[50];
@@ -181,13 +184,25 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		      hCFD->GetXaxis()->SetRangeUser(hmin-10,hmax+10);
 		    }
 		    else 
-		      ok=false;
+		      {
+			ok=false;
+			printf("no peak in CFD spectrum for PMT %i amplitude %i\n",i,im);
+			return ok;
+		      }
+
 		  }
 
 		if (im == 0) cfd0[i] = hCFD->GetMean();
 		y1[im] =  hCFD->GetMean() - cfd0[i];
 	      }
-	      if( hQTC) x1[im] = hQTC->GetMean();
+	      if( hQTC) {
+		x1[im] = hQTC->GetMean();
+		if( x1[im] == 0) {
+		  ok=false;
+		  printf("no peak in QTC signal for PMT %i amplitude %i\n",i,im);
+		  return ok;
+		  }
+	      }
 	      
 	      if( hLED){
 		TSpectrum *s = new TSpectrum(2*npeaks,1);
@@ -200,8 +215,12 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		  Double_t hmin = xp-10*sigma;
 		  hLED->GetXaxis()->SetRangeUser(hmin-10,hmax+10);
 		}
-		else 
-		  ok=false;
+		else
+		  { 
+		    ok=false;
+		    printf("no peak in LED spectrum for PMT %i amplitude %i\n",i,im);
+		    return ok;
+		  }
 		x2[im] = hLED->GetMean();
 		xx2[im] = x2[nmips-im-1];
 	      }
@@ -259,7 +278,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	cout<<"Graphs created..."<<endl;
 	}
     } //if gFile exits
-  ok=true;
+
   return ok;
 }
 
