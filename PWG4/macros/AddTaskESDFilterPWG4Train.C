@@ -41,11 +41,11 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
    mgr->AddTask(esdfilter);
    // Muons
-   AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
-   mgr->AddTask(esdmuonfilter);
+   //   AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
+   //   mgr->AddTask(esdmuonfilter);
    if(usePhysicsSelection){
      esdfilter->SelectCollisionCandidates(AliVEvent::kAny);
-     esdmuonfilter->SelectCollisionCandidates(AliVEvent::kAny);
+     //     esdmuonfilter->SelectCollisionCandidates(AliVEvent::kAny);
    }  
 
    // Filtering of MC particles (decays conversions etc)
@@ -56,6 +56,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    AliAnalysisTaskMCParticleFilter *kinefilter = 0;
    if (useKineFilter) {
       kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
+      if(usePhysicsSelection)kinefilter->SelectCollisionCandidates(AliVEvent::kAny);
       mgr->AddTask(kinefilter);
    }   
 
@@ -139,10 +140,10 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    //  esdfilter->SetV0Filter(v0Filter);
 
    // Enable writing of Muon AODs
-   esdmuonfilter->SetWriteMuonAOD(writeMuonAOD);
+   //   esdmuonfilter->SetWriteMuonAOD(writeMuonAOD);
    
    // Enable writing of Dimuon AODs
-   esdmuonfilter->SetWriteDimuonAOD(writeDimuonAOD);
+   //   esdmuonfilter->SetWriteDimuonAOD(writeDimuonAOD);
  
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
