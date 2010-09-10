@@ -5443,6 +5443,24 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t wPVC[3] = {  2.    , 3.     ,  1.   };
     Float_t dPVC    = 1.3;
 
+    // PBT (Polybutylene terephthalate = C12-H12-O4) - 01 Sep 10
+    Float_t aPBT[3] = { 12.0107, 1.00794, 15.9994};
+    Float_t zPBT[3] = {  6.    , 1.     ,  8.   };
+    Float_t wPBT[3] = { 12.    ,12.     ,  4.   };
+    Float_t dPBT    = 1.31;
+
+    // POLYAX (POLYAX = C37-H24-O6-N2) - 03 Sep 10
+    Float_t aPOLYAX[4] = { 12.0107, 1.00794, 15.9994, 14.00674};
+    Float_t zPOLYAX[4] = {  6.    , 1.     ,  8.    ,  7.     };
+    Float_t wPOLYAX[4] = { 37.    ,24.     ,  6.    ,  2.     };
+    Float_t dPOLYAX    = 1.27;
+
+    // PPS (PPS = C6-H4-S) - 05 Sep 10
+    Float_t aPPS[3] = { 12.0107, 1.00794, 32.066};
+    Float_t zPPS[3] = {  6.    , 1.     , 16.   };
+    Float_t wPPS[3] = {  6.    , 4.     ,  1.   };
+    Float_t dPPS    = 1.35;
+
     //SSD NiSn capacitor ends
     Float_t aNiSn[2]  = { 56.6934,118.710};
     Float_t zNiSn[2]  = {     28.,     50.};
@@ -5504,6 +5522,15 @@ void AliITSv11Hybrid::CreateMaterials(){
 
     AliMixture(27,"GEN Air$",aAir,zAir,dAir,4,wAir);
     AliMedium(27,"GEN Air$",27,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
+
+    AliMixture(44,"PPS$",aPPS,zPPS,dPPS,-3,wPPS);
+    AliMedium(44,"PPS$",44,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMixture(45,"POLYAX$",aPOLYAX,zPOLYAX,dPOLYAX,-4,wPOLYAX);
+    AliMedium(45,"POLYAX$",45,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMixture(46,"PBT$",aPBT,zPBT,dPBT,-3,wPBT);
+    AliMedium(46,"PBT$",46,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(47,"PVC$",aPVC,zPVC,dPVC,-3,wPVC);
     AliMedium(47,"PVC$",47,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);

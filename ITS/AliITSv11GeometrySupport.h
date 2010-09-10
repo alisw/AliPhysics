@@ -65,7 +65,7 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
     void SSDCableTraysSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
     void SSDCableTraysSideC(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
 
-    TGeoVolumeAssembly* CreateSDDForwardTraySideA(TGeoManager *mgr);
+    void CreateSDDForwardTraySideA(TGeoVolumeAssembly *tray, TGeoManager *mgr);
 
     TGeoCompositeShape* CreateTrayAForwardCover(const Double_t coverLen);
     TGeoCompositeShape* CreateTrayAExternalCover(const Double_t coverLen);
