@@ -24,6 +24,9 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliAnalysisTaskSELambdac.cxx \
        vertexingHF/AliAnalysisTaskSED0Mass.cxx \
        vertexingHF/AliAnalysisTaskSECharmFraction.cxx \
+       vertexingHF/AliCFVertexingHF.cxx \
+       vertexingHF/AliCFVertexingHF2Prong.cxx \
+       vertexingHF/AliCFTaskVertexingHF.cxx \
        vertexingHF/AliCFHeavyFlavourTaskMultiVarMultiStep.cxx \
        vertexingHF/AliCFTaskForDStarAnalysis.cxx \
        vertexingHF/AliAnalysisTaskSEDStarJets.cxx \
