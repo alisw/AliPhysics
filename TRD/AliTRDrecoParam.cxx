@@ -200,8 +200,6 @@ AliTRDrecoParam *AliTRDrecoParam::GetHighFluxHLTParam()
 
   AliTRDrecoParam *rec = GetHighFluxParam();
   rec->fNumberOfConfigs = 1;
-  rec->fRecEveryNTB = 2;
-  rec->fkNMeanClusters = 10;
   return rec;
 
 }

@@ -138,6 +138,7 @@ public:
   inline void SetSysCovMatrix(Double_t *sys);
   void     SetNumberOfPresamples(Int_t n)                     { fNumberOfPresamples = n;}
   void     SetNumberOfPostsamples(Int_t n)                    { fNumberOfPostsamples = n;}
+  void     SetRecEveryTwoTB()                                 { fRecEveryNTB = 2; fkNMeanClusters = 10; }
 
 private:
   // Physics reference values for TRD
