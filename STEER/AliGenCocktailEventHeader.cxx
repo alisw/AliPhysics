@@ -55,7 +55,7 @@ void AliGenCocktailEventHeader::AddHeader(AliGenEventHeader* header)
 {
 // Add a header to the list
     if (!fHeaders) fHeaders = new TList();
-    fHeaders->Add(header);
+    fHeaders->Add(header->Clone());
 }
 
 Int_t AliGenCocktailEventHeader::CalcNProduced()
