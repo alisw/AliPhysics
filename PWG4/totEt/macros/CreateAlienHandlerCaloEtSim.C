@@ -13,8 +13,8 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   //plugin->SetRunMode("test");  // VERY IMPORTANT - DECRIBED BELOW
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-26-00b-6");
-  plugin->SetAliROOTVersion("v4-20-06-AN");
+  plugin->SetROOTVersion("v5-27-05");
+  plugin->SetAliROOTVersion("v4-20-08-AN");
   // Declare input data to be processed.
 
   // Method 1: Create automatically XML collections using alien 'find' command.

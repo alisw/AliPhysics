@@ -1,7 +1,8 @@
 #ifndef AliAnalysisTaskTotEt_cxx
 #define AliAnalysisTaskTotEt_cxx
 
-class AliAnalysisEt;
+class AliAnalysisEtReconstructed;
+class AliAnalysisEtMonteCarlo;
 class TTree;
 class AliVParticle;
 class TH1F;
@@ -68,8 +69,8 @@ private:
   
   TList *fOutputList;
   
-  AliAnalysisEt *fRecAnalysis;
-  AliAnalysisEt *fMCAnalysis;
+  AliAnalysisEtReconstructed *fRecAnalysis;
+  AliAnalysisEtMonteCarlo *fMCAnalysis;
   
   TH2F *fHistEtRecvsEtMC;
   

@@ -4,8 +4,8 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runCaloEt(bool submit = true, // true or false 
-	       const char *dataType="simPbPb", // "sim" or "real" or "simPbPb"
+void runCaloEt(bool submit = false, // true or false 
+	       const char *dataType="simPbPb/LHC10e18a", // "sim" or "real" or "simPbPb"
 	       const char *det = "EMCAL") // "PHOS" or "EMCAL"
 {
   TStopwatch timer;
@@ -55,11 +55,14 @@ void runCaloEt(bool submit = true, // true or false
   TString detStr(det);
   TString taskName = "TaskTotEt" + detStr;
   TString dataStr(dataType);
-  TString outputName = "Et.ESD." + dataStr + "." + detStr + ".root";
+  TString dataStrName(dataType);
+  dataStrName.ReplaceAll("/",".");
+  TString outputName = "Et.ESD." + dataStrName + "." + detStr + ".root";
   TString outputDir = "totEt" + dataStr;
 
   cout << " taskName " << taskName
-       << " outputName " << outputName << endl;
+       << " outputName " << outputName 
+       << " outputDir (alien) " << outputDir << endl;
 
   if (submit) {
     gROOT->LoadMacro("CreateAlienHandlerCaloEtSim.C");
@@ -73,9 +76,11 @@ void runCaloEt(bool submit = true, // true or false
   AliMCEventHandler* handler = new AliMCEventHandler;
   if ( dataStr.Contains("sim") ) {
     cout << " MC " << endl;
-    if ( dataStr.Contains("PbPb") ) {
+    if ( dataStr.Contains("PbPb") ) { // a la: simPbPb/LHC10e18a
       cout << " PbPb " << endl;
-      chain->Add("/home/dsilverm/data/E_T/sim/LHC10e11/191001/001/AliESDs.root"); // link to local test file
+      TString fileLocation = "/home/dsilverm/data/E_T/" + dataStr + "/198000/001/AliESDs.root";
+      cout << "fileLocation " << fileLocation.Data() << endl; 
+      chain->Add(fileLocation.Data()); // link to local test file
     }
     else { // pp
       chain->Add("/home/dsilverm/data/E_T/sim/LHC10d1/117222/100/AliESDs.root"); // link to local test file
