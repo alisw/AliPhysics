@@ -690,33 +690,14 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
   // argument 'online' is used as a switch between online and offline trigger algorithms
   //
   // Based on an algorithm by Cvetan Cheshkov
-  
+
   AliESDVZERO* esdV0 = aEsd->GetVZEROData();
   if (!esdV0)
   {
     AliError("AliESDVZERO not available");
     return kV0Invalid;
   }
-
-  if (esdV0->TestBit(AliESDVZERO::kDecisionFilled)) {
-    if (online) {
-      AliWarning("V0 online trigger analysis is not yet available!");
-      return kV0BB;
-    }
-    else {
-
-      if (fillHists) {
-	if (side == kASide && fHistV0A)
-	  fHistV0A->Fill(esdV0->GetV0ATime());
-	if (side == kCSide && fHistV0C)
-	  fHistV0C->Fill(esdV0->GetV0CTime());
-      }
-
-      if (side == kASide) return (V0Decision)esdV0->GetV0ADecision();
-      else if (side == kCSide) return (V0Decision)esdV0->GetV0CDecision();
-      else return kV0Invalid;
-    }
-  }
+  AliDebug(2,Form("In V0Trigger: %f %f",esdV0->GetV0ATime(),esdV0->GetV0CTime()));
 
   Int_t begin = -1;
   Int_t end = -1;
@@ -734,6 +715,37 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
   else
     return kV0Invalid;
     
+   if (esdV0->TestBit(AliESDVZERO::kDecisionFilled)) {
+    if (online) {
+      if (esdV0->TestBit(AliESDVZERO::kOnlineBitsFilled)) {
+	for (Int_t i = begin; i < end; ++i) {
+	  if (esdV0->GetBBFlag(i)) return kV0BB;
+	}
+	for (Int_t i = begin; i < end; ++i) {
+	  if (esdV0->GetBGFlag(i)) return kV0BG;
+	}
+	return kV0Empty;
+      }
+      else {
+	AliWarning("V0 online trigger analysis is not yet available!");
+	return kV0BB;
+      }
+    }
+    else {
+
+      if (fillHists) {
+	if (side == kASide && fHistV0A)
+	  fHistV0A->Fill(esdV0->GetV0ATime());
+	if (side == kCSide && fHistV0C)
+	  fHistV0C->Fill(esdV0->GetV0CTime());
+      }
+
+      if (side == kASide) return (V0Decision)esdV0->GetV0ADecision();
+      else if (side == kCSide) return (V0Decision)esdV0->GetV0CDecision();
+      else return kV0Invalid;
+    }
+  }
+
   Float_t time = 0;
   Float_t weight = 0;
   if (fMC)
