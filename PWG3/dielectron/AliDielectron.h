@@ -50,10 +50,12 @@ public:
   const AliAnalysisFilter& GetTrackFilter() const { return fTrackFilter; }
   const AliAnalysisFilter& GetPairFilter()  const { return fPairFilter;  }
 
-  AliAnalysisFilter& GetEventFilter() { return fEventFilter; }
-  AliAnalysisFilter& GetTrackFilter() { return fTrackFilter; }
-  AliAnalysisFilter& GetPairFilter()  { return fPairFilter;  }
-
+  AliAnalysisFilter& GetEventFilter()       { return fEventFilter;       }
+  AliAnalysisFilter& GetTrackFilter()       { return fTrackFilter;       }
+  AliAnalysisFilter& GetPairFilter()        { return fPairFilter;        }
+  AliAnalysisFilter& GetPairPreFilter()     { return fPairPreFilter;     }
+  AliAnalysisFilter& GetPairPreFilterLegs() { return fPairPreFilterLegs; }
+  
   void  SetMotherPdg( Int_t pdgMother ) { fPdgMother=pdgMother; }
   void  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2) { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
   Int_t GetMotherPdg() const { return fPdgMother; }
@@ -84,9 +86,11 @@ public:
 private:
 
   
-  AliAnalysisFilter fEventFilter; // Event cuts
-  AliAnalysisFilter fTrackFilter; // leg cuts
-  AliAnalysisFilter fPairFilter;  // pair cuts
+  AliAnalysisFilter fEventFilter;    // Event cuts
+  AliAnalysisFilter fTrackFilter;    // leg cuts
+  AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
+  AliAnalysisFilter fPairPreFilterLegs; // Leg filter after the pair prefilter cuts
+  AliAnalysisFilter fPairFilter;     // pair cuts
   
   Int_t fPdgMother;     // pdg code of mother tracks
   Int_t fPdgLeg1;       // pdg code leg1
@@ -110,6 +114,7 @@ private:
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
   
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
+  void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2);
   void FillPairArrays(Int_t arr1, Int_t arr2);
   
   Int_t GetPairIndex(Int_t arr1, Int_t arr2) const {return arr1>=arr2?arr1*(arr1+1)/2+arr2:arr2*(arr2+1)/2+arr1;}
@@ -130,7 +135,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,3);
+  ClassDef(AliDielectron,4);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

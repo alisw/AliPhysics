@@ -191,6 +191,7 @@ void AliDielectronSignalFunc::SetFunctions(TF1 * const sig, TF1 * const back, TF
 
   if (!sig||!back||!combined) {
     AliError("Both, signal and background function need to be set!");
+    return;
   }
   fSignal=sig;
   fBackground=back;

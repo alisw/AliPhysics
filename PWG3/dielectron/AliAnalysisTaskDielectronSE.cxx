@@ -21,9 +21,13 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include <TChain.h>
+#include <TH1D.h>
 
 #include <AliCFContainer.h>
 #include <AliVEvent.h>
+#include <AliInputEventHandler.h>
+#include <AliESDInputHandler.h>
+#include <AliAnalysisManager.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronHistos.h"
@@ -35,7 +39,10 @@ ClassImp(AliAnalysisTaskDielectronSE)
 //_________________________________________________________________________________
 AliAnalysisTaskDielectronSE::AliAnalysisTaskDielectronSE() :
   AliAnalysisTaskSE(),
-  fDielectron(0)
+  fDielectron(0),
+  fSelectPhysics(kFALSE),
+  fTriggerMask(AliVEvent::kMB),
+  fEventStat(0x0)
 {
   //
   // Constructor
@@ -45,7 +52,10 @@ AliAnalysisTaskDielectronSE::AliAnalysisTaskDielectronSE() :
 //_________________________________________________________________________________
 AliAnalysisTaskDielectronSE::AliAnalysisTaskDielectronSE(const char *name) :
   AliAnalysisTaskSE(name),
-  fDielectron(0)
+  fDielectron(0),
+  fSelectPhysics(kFALSE),
+  fTriggerMask(AliVEvent::kMB),
+  fEventStat(0x0)
 {
   //
   // Constructor
@@ -53,6 +63,7 @@ AliAnalysisTaskDielectronSE::AliAnalysisTaskDielectronSE(const char *name) :
   DefineInput(0,TChain::Class());
   DefineOutput(1, THashList::Class());
   DefineOutput(2, AliCFContainer::Class());
+  DefineOutput(3, TH1D::Class());
 }
 
 //_________________________________________________________________________________
@@ -66,6 +77,21 @@ void AliAnalysisTaskDielectronSE::UserCreateOutputObjects()
     return;
   }
   fDielectron->Init();
+  if (fDielectron->GetHistogramList()){
+    PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));
+  }
+  if (fDielectron->GetCFManagerPair()){
+    PostData(2, const_cast<AliCFContainer*>(fDielectron->GetCFManagerPair()->GetContainer()));
+  }
+  
+  if (!fEventStat){
+    fEventStat=new TH1D("hEventStat","Event statistics",5,0,5);
+    fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
+    fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
+  }
+  
+  PostData(3,fEventStat);
+  
 }
 
 //_________________________________________________________________________________
@@ -76,6 +102,39 @@ void AliAnalysisTaskDielectronSE::UserExec(Option_t *)
   //
 
   if (!fDielectron) return;
+  
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliESDInputHandler *esdHandler=0x0;
+  if ( (esdHandler=dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler())) && esdHandler->GetESDpid() ){
+    AliDielectronVarManager::SetESDpid(esdHandler->GetESDpid());
+  } else {
+    //load esd pid bethe bloch parameters depending on the existance of the MC handler
+    // yes: MC parameters
+    // no:  data parameters
+    if (!AliDielectronVarManager::GetESDpid()){
+      if (AliDielectronMC::Instance()->HasMC()) {
+        AliDielectronVarManager::InitESDpid();
+      } else {
+        AliDielectronVarManager::InitESDpid(1);
+      }
+    }
+  }
+  // Was event selected ?
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  UInt_t isSelected = AliVEvent::kAny;
+  if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
+    isSelected = inputHandler->IsEventSelected();
+    isSelected&=fTriggerMask;
+  }
+  
+  //Before physics selection
+  fEventStat->Fill(0.);
+  if (isSelected==0) {
+    PostData(3,fEventStat);
+    return;
+  }
+  //after physics selection
+  fEventStat->Fill(1.);
   
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
@@ -89,5 +148,6 @@ void AliAnalysisTaskDielectronSE::UserExec(Option_t *)
   if (fDielectron->GetCFManagerPair()){
     PostData(2, const_cast<AliCFContainer*>(fDielectron->GetCFManagerPair()->GetContainer()));
   }
+  PostData(3,fEventStat);
 }
 

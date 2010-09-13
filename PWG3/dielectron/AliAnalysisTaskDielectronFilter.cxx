@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include <TChain.h>
+#include <TH1D.h>
 
 #include <AliLog.h>
 #include <AliAODHandler.h>
@@ -38,9 +39,11 @@ ClassImp(AliAnalysisTaskDielectronFilter)
 
 //_________________________________________________________________________________
 AliAnalysisTaskDielectronFilter::AliAnalysisTaskDielectronFilter() :
-    AliAnalysisTaskSE(),
-                      fDielectron(0),
-                                  fSelectPhysics(kTRUE)
+  AliAnalysisTaskSE(),
+  fDielectron(0),
+  fSelectPhysics(kTRUE),
+  fTriggerMask(AliVEvent::kMB),
+  fEventStat(0x0)
 {
   //
   // Constructor
@@ -49,15 +52,18 @@ AliAnalysisTaskDielectronFilter::AliAnalysisTaskDielectronFilter() :
 
 //_________________________________________________________________________________
 AliAnalysisTaskDielectronFilter::AliAnalysisTaskDielectronFilter(const char *name) :
-    AliAnalysisTaskSE(name),
-                      fDielectron(0),
-                                  fSelectPhysics(kTRUE)
+  AliAnalysisTaskSE(name),
+  fDielectron(0),
+  fSelectPhysics(kTRUE),
+  fTriggerMask(AliVEvent::kMB),
+  fEventStat(0x0)
 {
   //
   // Constructor
   //
   DefineInput(0,TChain::Class());
   DefineOutput(1, THashList::Class());
+  DefineOutput(2, TH1D::Class());
 }
 
 //_________________________________________________________________________________
@@ -79,6 +85,22 @@ void AliAnalysisTaskDielectronFilter::Init()
   
   aodH->AddFilteredAOD("AliAOD.Dielectron.root", "DielectronEvents");
 //   AddAODBranch("AliDielectronCandidates",fDielectron->GetPairArraysPointer(),"deltaAOD.Dielectron.root");
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskDielectronFilter::UserCreateOutputObjects()
+{
+  //
+  // Initilise histograms
+  //
+  if (!fEventStat){
+    fEventStat=new TH1D("hEventStat","Event statistics",5,0,5);
+    fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
+    fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
+    fEventStat->GetXaxis()->SetBinLabel(3,"After Cand. Sel.");
+  }
+
+  PostData(2,fEventStat);
 }
 
 //_________________________________________________________________________________
@@ -108,12 +130,20 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   }
   // Was event selected ?
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  Bool_t isSelected = kTRUE;
+  UInt_t isSelected = AliVEvent::kAny;
   if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
     isSelected = inputHandler->IsEventSelected();
+    isSelected&=fTriggerMask;
   }
-  
-  if (!isSelected) return;
+
+  //Before physics selection
+  fEventStat->Fill(0.);
+  if (isSelected==0) {
+    PostData(2,fEventStat);
+    return;
+  }
+  //after physics selection
+  fEventStat->Fill(1.);
   
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
@@ -151,6 +181,9 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
     AliAODExtension *extDielectron = dynamic_cast<AliAODHandler*>
         ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler())->GetFilteredAOD("AliAOD.Dielectron.root");
     extDielectron->SelectEvent();
+    //after candidate selection
+    fEventStat->Fill(2.);
+    
     //see if dielectron candidate branch exists, if not create is
     TTree *t=extDielectron->GetTree();
     if (!t->GetBranch("dielectrons")){
@@ -159,5 +192,6 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   }
   
   PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));
+  PostData(2,fEventStat);
 }
 

@@ -39,11 +39,15 @@ AliAnalysisTask *AddTaskJPSIFilter(){
   //create output container
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("QA", TList::Class(), AliAnalysisManager::kOutputContainer,
+    mgr->CreateContainer("jpsi_FilterQA",
+                         THashList::Class(),
+                         AliAnalysisManager::kOutputContainer,
                          containerName.Data());
   
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("CF", TList::Class(), AliAnalysisManager::kOutputContainer,
+    mgr->CreateContainer("jpsi_FilterEventStat",
+                         TH1D::Class(),
+                         AliAnalysisManager::kOutputContainer,
                          containerName.Data());
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());

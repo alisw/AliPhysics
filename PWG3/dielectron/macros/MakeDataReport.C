@@ -526,6 +526,9 @@ c->Draw("Leg2_TPC_nSigma_Protons+.5:Leg2_P_InnerParam>>+nSigP","cut","colz")
 
 
 
+c->Draw("Leg1_TOF_nSigma_Electrons:Leg1_P_InnerParam>>nSigE","cut","colz")
+c->Draw("Leg2_TOF_nSigma_Electrons:Leg2_P_InnerParam>>+nSigE","cut","colz")
+
 
 c->Draw("Leg1_TOF_nSigma_Protons:Leg1_P_InnerParam>>nSigP","cut","goff")
 c->Draw("Leg2_TOF_nSigma_Protons:Leg2_P_InnerParam>>+nSigP","cut","colz")
@@ -702,7 +705,220 @@ c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-1.5+.8&&Leg2_TPC_nSigma_Electrons
 c->SetAlias("cut","Leg2_P_InnerParam>1.5&&cutE")
 c->SetMarkerStyle(20);
 c->SetMarkerColor(kRed);
+c->Draw("M>>hM3(50,1.99,3.99)","cut","esame");
+
+
+
+
+//=================== pass 1 pass 2 comparison =======================
+
+
+//------ cuts ------------
+
+
+c->SetAlias("cutPro","Leg1_TPC_signal>50*exp(-.5*(Leg1_P_InnerParam-2))&&Leg2_TPC_signal>50*exp(-.5*(Leg2_P_InnerParam-2))&&Leg1_TPC_signal<85&&Leg2_TPC_signal<85");
+
+c->SetAlias("Pcut","Leg1_P_InnerParam>1.3&&Leg2_P_InnerParam>1.3")
+c->SetAlias("Ptcut","Leg1_Pt>1&&Leg2_Pt>1")
+c->SetAlias("TOFcut","abs(Leg1_TOF_nSigma_Electrons)<3&&abs(Leg2_TOF_nSigma_Electrons)<3");
+c->SetAlias("TOFcut2","(Leg1_P_InnerParam<1.3&&abs(Leg1_TOF_nSigma_Electrons)<3||Leg1_P_InnerParam>=1.3)&&(Leg2_P_InnerParam<1.3&&abs(Leg2_TOF_nSigma_Electrons)<3||Leg2_P_InnerParam>=1.3)");
+c->SetAlias("TPCcut","(Leg1_TPC_signal>70*(1-exp(-1*(Leg1_P_InnerParam+2))))&&(Leg2_TPC_signal>70*(1-exp(-1*(Leg2_P_InnerParam+2))))")
+c->SetAlias("NClcut","Leg1_NclsTPC>120&&Leg2_NclsTPC>120");
+
+c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-2.65*exp(-0.6757*Leg1_P_InnerParam)&&Leg2_TPC_nSigma_Electrons>-2.65*exp(-0.6757*Leg2_P_InnerParam)")
+c->SetAlias("cut","PairType==1&&eleParam")
+c->SetAlias("cut","1==1")
+c->SetAlias("cut","NClcut")
+
+c->SetAlias("cut","TOFcut&&TPCcut&&NClcut")
+
+c->SetAlias("cut","TOFcut2&&TPCcut&&NClcut")
+
+c->SetAlias("cut","cutPro&&TPCcut&&NClcut")
+
+c->SetAlias("cut","Pcut&&TPCcut&&NClcut")
+
+c->SetAlias("cut","Ptcut&&TPCcut&&NClcut")
+
+
+
+//------------ plots --------------
+
+//no cut
+c->SetAlias("cut","1==1")
+c1->SetLogx(0)
+c1->SetLogz(0)
+c->SetLineColor(kBlack);
+c->Draw("M>>hM(50,1.99,3.99)","cut","e");
+hM->SetTitle(";Inv. Mass [GeV]; Pair (e+e-) / 40GeV")
+c1->Modified()
+c1->Update();
+c1->Print("pics/M_noCut.png");
+
+//=============
+//ncl: No cut
+//=============
+c->SetAlias("cut","1==1")
+c1->SetLogx(1)
+c1->SetLogz(0)
+gStyle->SetOptStat(0);
+c->Draw("Leg1_NclsTPC:Leg1_TPC_signal:Leg1_P_InnerParam>>test(1000,0,40,200,60,100)","cut","profcolz")
+c->Draw("Leg2_NclsTPC:Leg2_TPC_signal:Leg2_P_InnerParam>>+test","cut","profcolz")
+test->SetMinimum(80)
+test->SetTitle("mean TPC number of clusters;P_{TPC} [GeV]; TPC signal [arb. units]")
+c1->Modified()
+c1->Update();
+c1->Print("pics/TPCnCl_P.png");
+
+//=============
+//TPCsignal: ncl cut
+//=============
+c->SetAlias("cut","NClcut")
+c->Draw("Leg1_NclsTPC:Leg1_TPC_signal:Leg1_P_InnerParam>>test(1000,0,40,200,60,100)","cut","profcolz")
+c->Draw("Leg2_NclsTPC:Leg2_TPC_signal:Leg2_P_InnerParam>>+test","cut","profcolz")
+test->SetMinimum(80)
+test->SetTitle("mean TPC number of clusters;P_{TPC} [GeV]; TPC signal [arb. units]")
+c1->Modified()
+c1->Update();
+c1->Print("pics/TPCnCl_P_cutNcl.png");
+
+
+//=============
+//tpc signal + signal cut
+//=============
+c1->SetLogx(1)
+c1->SetLogy(0)
+c1->SetLogz(1)
+h.GetHistogram("TPCsignal","sigTPC")->GetYaxis()->SetRangeUser(60,100);
+c->SetAlias("cut","NClcut")
+c->Draw("Leg1_TPC_signal:Leg1_P_InnerParam>>sigTPC","cut","colz")
+c->Draw("Leg2_TPC_signal:Leg2_P_InnerParam>>+sigTPC","cut","colz")
+TF1 f("f1","[0]*(1-exp(-[1]*(x-[2])))",0.3,40);
+f.SetParameters(70,1,-2);
+f.Draw("same");
+c1->Modified();
+c1->Update();
+c1->Print("pics/TPCsignal_P_cutNcl.png");
+
+//------- Mass
+
+c1->SetLogx(0)
+c1->SetLogy(1)
+c1->SetLogz(0)
+c->SetAlias("cut","1==1")
+c->SetLineColor(kBlack);
+c->SetMarkerColor(kBlack);
+c->Draw("M>>hM(50,1.99,3.99)","cut","e");
+hM->SetTitle(";Inv. Mass [GeV]; Pair (e+e-) / 40GeV")
+hM->SetMinimum(5e2);
+c->SetAlias("cut","NClcut")
+c->SetLineColor(kRed);
+c->SetMarkerColor(kRed);
 c->Draw("M>>hM2(50,1.99,3.99)","cut","esame");
+c1->Modified();
+c1->Update();
+c1->Print("pics/M_nClCut.png");
+
+
+//==========
+//tpc signal: ncl + tpc cut
+//==========
+c1->SetLogx(1)
+c1->SetLogy(0)
+c1->SetLogz(1)
+c->SetAlias("cut","TPCcut&&NClcut")
+c->Draw("Leg1_TPC_signal:Leg1_P_InnerParam>>sigTPC","cut","colz")
+c->Draw("Leg2_TPC_signal:Leg2_P_InnerParam>>+sigTPC","cut","colz")
+c1->Modified();
+c1->Update();
+c1->Print("pics/TPCsignal_P_cutNcl_tpc.png");
+
+/--- Mass
+
+c1->SetLogx(0)
+c1->SetLogy(1)
+c1->SetLogz(0)
+c->SetAlias("cut","1==1")
+c->SetLineColor(kBlack);
+c->SetMarkerColor(kBlack);
+c->Draw("M>>hM(50,1.99,3.99)","cut","e");
+hM->SetTitle(";Inv. Mass [GeV]; Pair (e+e-) / 40GeV")
+hM->SetMinimum(5);
+c->SetAlias("cut","NClcut")
+c->SetLineColor(kRed);
+c->SetMarkerColor(kRed);
+c->Draw("M>>hM2(50,1.99,3.99)","cut","esame");
+c->SetAlias("cut","TPCcut&&NClcut")
+c->SetLineColor(kGreen);
+c->SetMarkerColor(kGreen);
+c->Draw("M>>hM3(50,1.99,3.99)","cut","esame");
+c1->Modified();
+c1->Update();
+c1->Print("pics/M_nClCut_tpc.png");
+
+
+//========
+//TPC signal: ncl + tpc +  tof cut
+//=======
+c1->SetLogx(1)
+c1->SetLogy(0)
+c1->SetLogz(1)
+c->SetAlias("cut","TOFcut2&&TPCcut&&NClcut")
+c->Draw("Leg1_TPC_signal:Leg1_P_InnerParam>>sigTPC","cut","colz")
+c->Draw("Leg2_TPC_signal:Leg2_P_InnerParam>>+sigTPC","cut","colz")
+c1->Modified();
+c1->Update();
+c1->Print("pics/TPCsignal_P_cutNcl_tpc.png");
+
+//--- Mass
+
+c1->SetLogx(0)
+c1->SetLogy(0)
+c1->SetLogz(0)
+c->SetAlias("cut","1==1")
+c->SetAlias("cut","TPCcut&&NClcut")
+c->SetLineColor(kGreen);
+c->Draw("M>>hM(50,1.99,3.99)","cut","e");
+hM->SetTitle(";Inv. Mass [GeV]; Pair (e+e-) / 40GeV")
+hM->SetMinimum(.1);
+c->SetAlias("cut","TOFcut2&&TPCcut&&NClcut")
+c->SetLineColor(kBlue);
+c->Draw("M>>hM2(50,1.99,3.99)","cut","esame");
+c1->Modified();
+c1->Update();
+c1->Print("pics/M_nClCut_tpc.png");
+
+//========
+//Inv Mass: different cuts
+//=======
+
+c1->SetLogx(0)
+c1->SetLogy(0)
+c1->SetLogz(0)
+c->SetAlias("cut","Ptcut&&TPCcut&&NClcut")
+c->SetLineColor(kMagenta);
+c->SetMarkerColor(kMagenta);
+c->SetMarkerStyle(22);
+c->Draw("M>>hM(50,1.99,3.99)","cut","e");
+
+c->SetAlias("cut","Pcut&&TPCcut&&NClcut")
+c->SetLineColor(kCyan+1);
+c->SetMarkerColor(kCyan+1);
+c->SetMarkerStyle(21);
+c->Draw("M>>hM2(50,1.99,3.99)","cut","esame");
+
+c->SetAlias("cut","TOFcut2&&TPCcut&&NClcut")
+c->SetMarkerStyle(20);
+c->SetLineColor(kBlue);
+c->SetMarkerColor(kBlue);
+c->Draw("M>>hM3(50,1.99,3.99)","cut","esame");
+
+c1->Modified();
+c1->Update();
+c1->Print("pics/M_nClCut_tpc_tof.png");
+
+
+
 
 */
 

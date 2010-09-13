@@ -20,6 +20,7 @@
 #include "AliAnalysisTaskSE.h"
 
 class AliDielectron;
+class TH1D;
 
 class AliAnalysisTaskMultiDielectron : public AliAnalysisTaskSE {
   
@@ -33,6 +34,8 @@ public:
   virtual void FinishTaskOutput();
   
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
+  void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
+  UInt_t GetTriggerMask() const { return fTriggerMask; }
   
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
   
@@ -43,6 +46,9 @@ private:
   TList fListCF;                     //! List with CF Managers
 
   Bool_t fSelectPhysics;             // Whether to use physics selection
+  UInt_t fTriggerMask;               // Event trigger mask
+
+  TH1D *fEventStat;                  //! Histogram with event statistics
   
   AliAnalysisTaskMultiDielectron(const AliAnalysisTaskMultiDielectron &c);
   AliAnalysisTaskMultiDielectron& operator= (const AliAnalysisTaskMultiDielectron &c);

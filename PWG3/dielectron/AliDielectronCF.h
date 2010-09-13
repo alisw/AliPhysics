@@ -22,12 +22,14 @@
 
 
 #include <TNamed.h>
+#include <TVectorDfwd.h>
 #include "AliDielectronVarManager.h"
 
 class AliAnalysisCuts;
 class AliAnalysisFilter;
 class AliCFContainer;
 class AliDielectronPair;
+class TObjArray;
 
 class AliDielectronCF : public TNamed {
 public:
@@ -50,7 +52,8 @@ public:
   void AddStepMask(UInt_t mask)                  { fStepMasks[fNStepMasks++]=mask; }
   
   void AddVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins, Double_t min, Double_t max, Bool_t leg=kFALSE);
-
+  void AddVariable(AliDielectronVarManager::ValueTypes type, TVectorD * const binLimits);
+  
   void InitialiseContainer(const AliAnalysisFilter& filter);
   
 //   void Fill(UInt_t mask, const TObject *particle);
@@ -69,6 +72,7 @@ private:
   Int_t           fNBins[kNmaxAddSteps];       // array of numbers ob bins of the vars
   Double_t        fVarLoLimit[kNmaxAddSteps];  // array of the lower limits of the vars
   Double_t        fVarUpLimit[kNmaxAddSteps];  // array of the upper limits of the vars
+  TObjArray      *fVarBinLimits;               // alternative array of bin limits
 
   Int_t           fNVarsLeg;                      // number of variables for the legs
   Int_t           fNBinsLeg[kNmaxAddSteps];       // array of numbers ob bins of the vars for the legs
