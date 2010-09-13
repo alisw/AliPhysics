@@ -70,6 +70,23 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   TH2F        *fhTrackRefs;     //! output histo
   TTree       *fTreeBeamSpot;  //! output tree beam spot
 
+  TH1F        *fhTriggeredTrklets; //! output histo
+  TH1F        *fhSPD3DTrklets; //! output histo
+  TH1F        *fhSPDZTrklets; //! output histo
+  TH1F        *fhTRKTrklets; //! output histo
+  TH1F        *fhTRKcTrklets; //! output histo
+  TH1F        *fhTRKncTrklets; //! output histo
+  TH1F        *fhSPD3DZreco; //! output histo
+  TH1F        *fhSPDZZreco; //! output histo
+
+
+  TH1F        *fhSPDVertexXPile; //! output histo
+  TH1F        *fhSPDVertexYPile; //! output histo
+  TH1F        *fhSPDVertexZPile; //! output histo
+  TH1F        *fhSPDVertexDiffZPile; //! output histo
+  TH1F        *fhSPDContributorsPile; //! output histo
+  TH2F        *fhSPDDispContributors; //! output histo
+
  private:    
 
   AliAnalysisTaskVertexESD(const AliAnalysisTaskVertexESD&); // not implemented
