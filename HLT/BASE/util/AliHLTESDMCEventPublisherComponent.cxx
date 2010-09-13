@@ -491,7 +491,7 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
 
 	fpHLTMC = new AliHLTMCEvent( fApplyParticleCuts );
 	
-	if ( !(iResult=fpHLTMC->FillMCEvent(fpMC)) )
+	if ( iResult>=0 && !(iResult=fpHLTMC->FillMCEvent(fpMC)) )
 	  if ((iResult=PushBack( fpHLTMC, kAliHLTDataTypeMCObject|kAliHLTDataOriginHLT , fSpecification ))==-ENOSPC) {
 	    fOutputSize+=GetLastObjectSize();	    
 	  }
