@@ -27,6 +27,7 @@
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TFile.h"
+#include "TFileCollection.h"
 #include "TChain.h"
 #include "TObjString.h"
 #include "TObjArray.h"
@@ -2212,11 +2213,11 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          TString dataset = fProofDataSet;
          Int_t index = dataset.Index("#");
          if (index>=0) dataset.Remove(index);
-         if (!gROOT->ProcessLine(Form("gProof->ExistsDataSet(\"%s\");",fProofDataSet.Data()))) {
-            Error("StartAnalysis", "Dataset %s not existing", fProofDataSet.Data());
-            return kFALSE;
-         }
-         Info("StartAnalysis", "Dataset %s found", dataset.Data());
+//         if (!gROOT->ProcessLine(Form("gProof->ExistsDataSet(\"%s\");",fProofDataSet.Data()))) {
+//            Error("StartAnalysis", "Dataset %s not existing", fProofDataSet.Data());
+//            return kFALSE;
+//         }
+//         Info("StartAnalysis", "Dataset %s found", dataset.Data());
       }
       // Is ClearPackages() needed ?
       if (TestSpecialBit(kClearPackages)) {
@@ -2225,7 +2226,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       }
       // Is a given aliroot mode requested ?
       TList optionsList;
-      if (!fAliRootMode.IsNull() && !testMode) {
+      if (!fAliRootMode.IsNull()) {
          TString alirootMode = fAliRootMode;
          if (alirootMode == "default") alirootMode = "";
          Info("StartAnalysis", "You are requesting AliRoot mode: %s", fAliRootMode.Data());
@@ -2240,17 +2241,45 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             TIter next(list);
             TObjString *str;
             while((str=(TObjString*)next()) && str->GetString().Contains(".so")) {
+               TString stmp = str->GetName();
+               if (stmp.BeginsWith("lib")) stmp.Remove(0,3);
+               stmp.ReplaceAll(".so","");
                if (!extraLibs.IsNull()) extraLibs += ":";
-               extraLibs += str->GetName();
+               extraLibs += stmp;
             }
             if (list) delete list;            
          }
          if (!extraLibs.IsNull()) optionsList.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
-         if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"VO_ALICE@AliRoot::%s\", (TList*)0x%lx);", 
-                                fAliROOTVersion.Data(), (ULong_t)&optionsList))) {
-            Error("StartAnalysis", "There was an error trying to enable package VO_ALICE@AliRoot::%s", fAliROOTVersion.Data());
-            return kFALSE;
-         }                       
+         // Check extra includes
+         if (!fIncludePath.IsNull()) {
+            TString includePath = fIncludePath;
+            includePath.ReplaceAll(" ",":");
+            includePath.Strip(TString::kTrailing, ':');
+            Info("StartAnalysis", "Adding extra includes: %s",includePath.Data()); 
+            optionsList.Add(new TNamed("ALIROOT_EXTRA_INCLUDES",includePath.Data()));
+         }
+         // Enable AliRoot par
+         if (testMode) {
+         // Enable proof lite package
+            TString alirootLite = gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AliRootProofLite.par");
+            for (Int_t i=0; i<optionsList.GetSize(); i++) {
+               TNamed *obj = (TNamed*)optionsList.At(i);
+               printf("%s  %s\n", obj->GetName(), obj->GetTitle());
+            }   
+            if (!gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");",alirootLite.Data()))
+              && !gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\", (TList*)0x%lx);",alirootLite.Data(),(ULong_t)&optionsList))) {
+                  Info("StartAnalysis", "AliRootProofLite enabled");
+            } else {                      
+               Error("StartAnalysis", "There was an error trying to enable package AliRootProofLite.par");
+               return kFALSE;
+            }   
+         } else {
+            if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"VO_ALICE@AliRoot::%s\", (TList*)0x%lx);", 
+                                   fAliROOTVersion.Data(), (ULong_t)&optionsList))) {
+               Error("StartAnalysis", "There was an error trying to enable package VO_ALICE@AliRoot::%s", fAliROOTVersion.Data());
+               return kFALSE;
+            }         
+         }      
       } else {
          if (fAdditionalLibs.Contains(".so") && !testMode) {
             Error("StartAnalysis", "You request additional libs to be loaded but did not enabled any AliRoot mode. Please refer to: \
@@ -2284,6 +2313,24 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             gROOT->ProcessLine(Form("gProof->Load(\"%s+g\", kTRUE);", str->GetName()));
          }   
          if (list) delete list;
+      }
+      if (testMode) {
+      // Register dataset to proof lite.
+         if (fFileForTestMode.IsNull()) {
+            Error("GetChainForTestMode", "For proof test mode please use SetFileForTestMode() pointing to a file that contains data file locations.");
+            return kFALSE;
+         }
+         if (gSystem->AccessPathName(fFileForTestMode)) {
+            Error("GetChainForTestMode", "File not found: %s", fFileForTestMode.Data());
+            return kFALSE;
+         }   
+         TFileCollection *coll = new TFileCollection();
+         coll->AddFromFile(fFileForTestMode);
+         gROOT->ProcessLine("if (gProof->ExistsDataSet(\"test_collection\")) gProof->RemoveDataSet(\"test_collection\");");
+         gROOT->ProcessLine(Form("gProof->RegisterDataSet(\"test_collection\", (TFileCollection*)0x%lx);", (ULong_t)coll));
+         gROOT->ProcessLine("gProof->VerifyDataSet(\"test_collection\");");
+         gROOT->ProcessLine("gProof->ShowDataSets();");
+         
       }
       return kTRUE;
    }

@@ -1539,7 +1539,9 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
       }
       // Check if the plugin is in test mode
       if (fGridHandler->GetRunMode() == AliAnalysisGrid::kTest) {
+         dataset = "test_collection";
          // Get the chain to be used for test mode
+/*
          TString dataType = "esdTree";
          if (fInputEventHandler) {
             dataType = fInputEventHandler->GetDataType();
@@ -1552,6 +1554,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
             return -1;
          }
          fTree = chain;
+*/         
       } else {
          dataset = fGridHandler->GetProofDataSet();
       }
