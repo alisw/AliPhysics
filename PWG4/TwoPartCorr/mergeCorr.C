@@ -60,6 +60,7 @@ void mergeCorr(Int_t run_from,
     TTree *tree = dynamic_cast<TTree*>(output->FindObject("MyTree"));
     Int_t nent = tree->GetEntries();
     if (nent<1) {
+      delete tree;
       file->Close();
       delete file;
       continue;
@@ -110,6 +111,7 @@ void mergeCorr(Int_t run_from,
       cout << ") found in " << fname << endl;
       cout << " Cannot deal with this case yet!!!" << endl;
     }
+    delete tree;
     file->Close();
     delete file;
   }
@@ -158,6 +160,7 @@ void mergeCorr(Int_t nEvents,
     TTree *tree = dynamic_cast<TTree*>(output->FindObject("MyTree"));
     Int_t nent = tree->GetEntries();
     if (nent<1) {
+      delete tree;
       file->Close();
       delete file;
       continue;
@@ -221,7 +224,7 @@ void mergeCorr(Int_t nEvents,
       cinfo->fEntry = ev;
       einfos.insert( pair<ULong64_t, EvInfo*>(evtid,cinfo) );
     }
-
+    delete tree;
     file->Close();
     delete file;
     if ((nEvents>0) && (einfos.size()>=(UInt_t)nEvents))
@@ -288,22 +291,8 @@ void mergeCorr(Int_t nEvents,
   newFile->Close();
   delete newFile;
 
-  for(Int_t i=0;i<nfiles;++i)
+  for(Int_t i=0;i<nfiles;++i) {
+    delete trees.at(i);
     delete files.at(i);
-
-#if 0
-  TClonesArray *parts = 0;
-  MyHeader *header = 0;
-
-  c->SetBranchAddress("info",&info);
-  c->SetBranchAddress("nucs",&nucs);
-  c->SetBranchAddress("parts",&parts);
-
-  Int_t nRead = nEvents;
-  if (nRead<0)
-    nRead = c->GetEntries();
-  else if (0 && (nRead>c->GetEntries()))
-    nRead = c->GetEntries();
-
-#endif
+  }
 }
