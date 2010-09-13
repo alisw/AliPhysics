@@ -42,3 +42,21 @@ AliCollisionGeometry::AliCollisionGeometry() :
   fReactionPlaneAngle(0)
 {
 }
+
+AliCollisionGeometry::AliCollisionGeometry(const AliCollisionGeometry& cgeo):
+  fNHardScatters(cgeo.fNHardScatters),
+  fNProjectileParticipants(cgeo.fNProjectileParticipants),
+  fNTargetParticipants(cgeo.fNTargetParticipants),
+  fNNColl(cgeo.fNNColl),
+  fNNwColl(cgeo.fNNwColl),
+  fNwNColl(cgeo.fNwNColl),
+  fNwNwColl(cgeo.fNwNwColl),
+  fProjectileSpecn(cgeo.fProjectileSpecn),
+  fProjectileSpecp(cgeo.fProjectileSpecp),
+  fTargetSpecn(cgeo.fTargetSpecn),
+  fTargetSpecp(cgeo.fTargetSpecp),
+  fImpactParameter(cgeo.fImpactParameter),
+  fReactionPlaneAngle(cgeo.fReactionPlaneAngle)
+{
+    // Copy constructor
+}

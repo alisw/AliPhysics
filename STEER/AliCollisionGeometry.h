@@ -16,6 +16,7 @@ class AliCollisionGeometry
 {
 public:
     AliCollisionGeometry();
+    AliCollisionGeometry(const AliCollisionGeometry& cgeo);
     virtual ~AliCollisionGeometry(){;}
     // Getters
     Float_t ImpactParameter() const  {return fImpactParameter;}

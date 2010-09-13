@@ -241,8 +241,9 @@ void AliGenCocktailAfterBurner::Generate()
 	    //
 	    entry->SetLast(partArray->GetEntriesFast());
 	    
-	    if (fCurrentGenerator->ProvidesCollisionGeometry())  fCollisionGeometries[i] = fCurrentGenerator->CollisionGeometry();
-	    
+	    if (fCurrentGenerator->ProvidesCollisionGeometry())  
+	      fCollisionGeometries[i] = 
+		new AliCollisionGeometry(*(fCurrentGenerator->CollisionGeometry()));
 	} // event loop
 /***********************************************/
       } // generator loop
