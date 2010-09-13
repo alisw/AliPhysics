@@ -34,6 +34,8 @@
 #include <TH1F.h>
 #include <TH2F.h>  
 #include <TCanvas.h>
+#include <TGraphAsymmErrors.h>
+#include <TFile.h>
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -62,29 +64,43 @@ ClassImp(AliAnalysisTaskVertexESD)
 //________________________________________________________________________
 AliAnalysisTaskVertexESD::AliAnalysisTaskVertexESD(const char *name) : 
 AliAnalysisTaskSE(name), 
-fCheckEventType(kTRUE),
-fReadMC(kFALSE),
-fRecoVtxTPC(kFALSE),
-fRecoVtxITSTPC(kFALSE),
-fRecoVtxITSTPCHalfEvent(kFALSE),
-fOnlyITSTPCTracks(kFALSE),
-fOnlyITSSATracks(kFALSE),
-fFillNtuple(kFALSE),
-fFillTreeBeamSpot(kFALSE),
-fESD(0), 
-fOutput(0), 
-fNtupleVertexESD(0),
-fhSPDVertexX(0),
-fhSPDVertexY(0),
-fhSPDVertexZ(0),
-fhTRKVertexX(0),
-fhTRKVertexY(0),
-fhTRKVertexZ(0),
-fhTPCVertexX(0),
-fhTPCVertexY(0),
-fhTPCVertexZ(0),
-fhTrackRefs(0),
-fTreeBeamSpot(0)
+  fCheckEventType(kTRUE),
+  fReadMC(kFALSE),
+  fRecoVtxTPC(kFALSE),
+  fRecoVtxITSTPC(kTRUE),
+  fRecoVtxITSTPCHalfEvent(kFALSE),
+  fOnlyITSTPCTracks(kFALSE),
+  fOnlyITSSATracks(kFALSE),
+  fFillNtuple(kFALSE),
+  fFillTreeBeamSpot(kFALSE),
+  fESD(0), 
+  fOutput(0), 
+  fNtupleVertexESD(0),
+  fhSPDVertexX(0),
+  fhSPDVertexY(0),
+  fhSPDVertexZ(0),
+  fhTRKVertexX(0),
+  fhTRKVertexY(0),
+  fhTRKVertexZ(0),
+  fhTPCVertexX(0),
+  fhTPCVertexY(0),
+  fhTPCVertexZ(0),
+  fhTrackRefs(0),
+  fTreeBeamSpot(0),
+  fhTriggeredTrklets(0),
+  fhSPD3DTrklets(0),
+  fhSPDZTrklets(0),
+  fhTRKTrklets(0),
+  fhTRKcTrklets(0),
+  fhTRKncTrklets(0),
+  fhSPD3DZreco(0),
+  fhSPDZZreco(0),
+  fhSPDVertexXPile(0),
+  fhSPDVertexYPile(0),
+  fhSPDVertexZPile(0),
+  fhSPDVertexDiffZPile(0),
+  fhSPDContributorsPile(0),
+  fhSPDDispContributors(0)
 {
   // Constructor
 
@@ -139,6 +155,16 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput->Add(fhTPCVertexY);
   fhTPCVertexZ = new TH1F("fhTPCVertexZ","TPCVertex z; z vertex [cm]; events",200,-20,20);
   fOutput->Add(fhTPCVertexZ);
+  
+  
+  fhSPDVertexXPile = new TH1F("fhSPDVertexXPile","SPDVertexPile x; x vertex [cm]; events",200,-20,20);
+  fOutput->Add(fhSPDVertexXPile);
+  fhSPDVertexYPile = new TH1F("fhSPDVertexYPile","SPDVertexPile y; y vertex [cm]; events",200,-20,20);
+  fOutput->Add(fhSPDVertexYPile);
+  fhSPDVertexZPile = new TH1F("fhSPDVertexZPile","SPDVertexPile z; z vertex [cm]; events",200,-40,40);
+  fOutput->Add(fhSPDVertexZPile);
+  fhSPDVertexDiffZPile = new TH1F("fhSPDVertexDiffZPile","SPDVertexDiff z; zmain - zdiff [cm]; events",200,-80,80);
+  fOutput->Add(fhSPDVertexDiffZPile);
 
   fhTrackRefs = new TH2F("fhTrackRefs","Track references; x; y",1000,-4,4,1000,-4,4);
   fOutput->Add(fhTrackRefs);
@@ -158,6 +184,34 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fTreeBeamSpot->Branch("ntrksTRKnc", &ntrksTRKnc, "ntrksTRKnc/s");
   fOutput->Add(fTreeBeamSpot);
 
+  Int_t nbinTrklets=11;
+  Float_t lowTrklets[12]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,7.5,10.5,50.5,100.5,200.};
+  fhTriggeredTrklets = new TH1F("fhTriggeredTrklets","trklets dist for triggered ev.; ntrklets; entries",nbinTrklets,lowTrklets);
+  fOutput->Add(fhTriggeredTrklets);
+  fhSPD3DTrklets = new TH1F("fhSPD3DTrklets","trklets dist for SPD3D ev.; ntrklets; entries",nbinTrklets,lowTrklets);
+  fOutput->Add(fhSPD3DTrklets);
+  fhSPDZTrklets = new TH1F("fhSPDZTrklets","trklets dist for SPDZ ev.; ntrklets; entries",nbinTrklets,lowTrklets);
+  fOutput->Add(fhSPDZTrklets);
+  fhTRKTrklets = new TH1F("fhTRKTrklets","trklets dist for TRK ev.; ntrklets; entries",nbinTrklets,lowTrklets);
+  fOutput->Add(fhTRKTrklets);
+  fhTRKcTrklets = new TH1F("fhTRKcTrklets","trklets dist for TRKc ev.; ntrklets; entries",nbinTrklets,lowTrklets);
+  fOutput->Add(fhTRKcTrklets);
+  fhTRKncTrklets = new TH1F("fhTRKncTrklets","trklets dist for TRKnc ev.; ntrklets; entries",nbinTrklets,lowTrklets);
+  fOutput->Add(fhTRKncTrklets);
+  
+  Int_t nbinZreco = 16;
+  Double_t lowZreco[17]={-15.0,-10.0,-7.0,-5,-4,-3,-2,-1,0,1,2,3,4,5,7,10,15};
+  fhSPD3DZreco = new TH1F("fhSPD3DZreco","Zreco dist for SPD3D ev.; Zreco [cm]; entries",nbinZreco,lowZreco);
+  fOutput->Add(fhSPD3DZreco);
+  fhSPDZZreco = new TH1F("fhSPDZZreco","Zreco dist for SPDZ ev.; Zreco [cm]; entries",nbinZreco,lowZreco);
+  fOutput->Add(fhSPDZZreco);
+  
+  fhSPDContributorsPile = new TH1F("fhSPDContributorsPile","ncontributors pile up vertex; ncontributors; entries",200,-0.5,199.5);
+  fOutput->Add(fhSPDContributorsPile);
+  
+  fhSPDDispContributors = new TH2F("fhSPDDispContributors","ncontributors main-pile; ncontributors main; ncontributors pile",200,-0.5,199.5,200,-0.5,199.5);
+  fOutput->Add(fhSPDDispContributors);
+  
   PostData(1, fOutput);
 
   return;
@@ -347,6 +401,36 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     }
   } 
 
+
+  
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // filling Vertex reco efficiency plots
+  if(eventTriggered ? 1. : 0.){
+    fhTriggeredTrklets->Fill(ntrklets);
+    if(spdv->GetNContributors()>0.5){
+      TString spdtitle = spdv->GetTitle();
+      if(spdtitle.Contains("vertexer: 3D") ? 1. : 0.){
+	fhSPD3DTrklets->Fill(ntrklets);
+	fhSPD3DZreco->Fill(spdv->GetZv());
+      }
+      else{
+	fhSPDZTrklets->Fill(ntrklets);
+	fhSPDZZreco->Fill(spdv->GetZv());
+      }
+    }
+    if(trkv->GetNContributors()>0.5)fhTRKTrklets->Fill(ntrklets);
+    if(fRecoVtxITSTPC) {
+      AliESDVertex *trkvc = ReconstructPrimaryVertexITSTPC(kTRUE);
+      if(trkvc->GetNContributors()>0.5)fhTRKcTrklets->Fill(ntrklets);
+      delete trkvc; trkvc=0;
+      AliESDVertex *trkvnc = ReconstructPrimaryVertexITSTPC(kFALSE);
+      if(trkvnc->GetNContributors()>0.5)fhTRKncTrklets->Fill(ntrklets);
+      delete trkvnc; trkvnc=0;
+    } 
+  }
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   Float_t xpile=-999.;
   Float_t ypile=-999.;
   Float_t zpile=-999.;
@@ -356,6 +440,17 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   Int_t ntrkspile=-1;
 
   if(esdE->GetNumberOfPileupVerticesSPD()>0 && spdvp){
+  
+    if(spdvp->GetNContributors()>0) {
+     
+	  fhSPDVertexXPile->Fill(spdvp->GetXv());
+	  fhSPDVertexYPile->Fill(spdvp->GetYv());  
+      fhSPDContributorsPile->Fill(spdvp->GetNContributors());
+      fhSPDDispContributors->Fill(spdv->GetNContributors(),spdvp->GetNContributors());
+      fhSPDVertexZPile->Fill(spdvp->GetZv());
+      fhSPDVertexDiffZPile->Fill(spdv->GetZv()-spdvp->GetZv());
+    }
+   
     xpile=spdvp->GetXv();
     expile=spdvp->GetXRes();
     ypile=spdvp->GetYv();
@@ -563,6 +658,99 @@ void AliAnalysisTaskVertexESD::Terminate(Option_t *)
     return;
   }
   
+  //////////////////////////////////////////////////////
+  /*  
+  TH1F *fhTriggeredTrklets=(TH1F*)fOutput->FindObject("fhTriggeredTrklets");
+  TH1F *fhSPDZTrklets=(TH1F*)fOutput->FindObject("fhSPDZTrklets");
+  TH1F *fhSPD3DTrklets=(TH1F*)fOutput->FindObject("fhSPD3DTrklets");
+  TH1F *fhTRKTrklets=(TH1F*)fOutput->FindObject("fhTRKTrklets");
+  TH1F *fhTRKcTrklets=(TH1F*)fOutput->FindObject("fhTRKcTrklets");
+  TH1F *fhTRKncTrklets=(TH1F*)fOutput->FindObject("fhTRKncTrklets");
+  TH1F *fhSPDZZreco=(TH1F*)fOutput->FindObject("fhSPDZZreco");
+  TH1F *fhSPD3DZreco=(TH1F*)fOutput->FindObject("fhSPD3DZreco");
+  
+  TGraphAsymmErrors *fhSPDZEffTrklets=new TGraphAsymmErrors(fhSPDZTrklets,fhTriggeredTrklets,"w");
+  fhSPDZEffTrklets->SetName("fhSPDZEffTrklets");
+  fhSPDZEffTrklets->SetDrawOption("AP");
+  TGraphAsymmErrors *fhSPD3DEffTrklets=new TGraphAsymmErrors(fhSPD3DTrklets,fhTriggeredTrklets,"w");
+  fhSPD3DEffTrklets->SetName("fhSPD3DEffTrklets");
+  TH1F * fhSPDOverallTrklets=(TH1F*)fhSPDZTrklets->Clone("fhSPDOverallTrklets");
+  fhSPDOverallTrklets->Add(fhSPD3DTrklets);
+  TGraphAsymmErrors *fhSPDOverallEffTrklets=new TGraphAsymmErrors(fhSPDOverallTrklets,fhTriggeredTrklets,"w");
+  fhSPDOverallEffTrklets->SetName("fhSPDOverallEffTrklets");
+  TGraphAsymmErrors *fhTRKEffTrklets=new TGraphAsymmErrors(fhTRKTrklets,fhTriggeredTrklets,"w");
+  fhTRKEffTrklets->SetName("fhTRKEffTrklets");
+  TGraphAsymmErrors *fhTRKcEffTrklets=new TGraphAsymmErrors(fhTRKcTrklets,fhTriggeredTrklets,"w");
+  fhTRKcEffTrklets->SetName("fhTRKcEffTrklets");
+  TGraphAsymmErrors *fhTRKncEffTrklets=new TGraphAsymmErrors(fhTRKncTrklets,fhTriggeredTrklets,"w");
+  fhTRKncEffTrklets->SetName("fhTRKncEffTrklets");
+  TH1F * fhSPDOverallZreco=(TH1F*)fhSPDZZreco->Clone("fhSPDOverallZreco");
+  fhSPDOverallZreco->Add(fhSPD3DZreco);
+  TGraphAsymmErrors *fhSPDEffZreco=new TGraphAsymmErrors(fhSPD3DZreco,fhSPDOverallZreco,"w");
+  fhSPDEffZreco->SetName("fhSPDEffZreco");
+
+  TH1F *fhEff = new TH1F("hEff","hEff",6,0.5,6.5);
+  Int_t count=1;
+  if(fhSPDZTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
+    fhEff->Fill(count,fhSPDZTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
+    fhEff->SetBinError(count,fhEff->GetBinContent(count)*TMath::Sqrt(1/fhSPDZTrklets->GetEntries()+1/fhTriggeredTrklets->GetEntries()));
+  }
+  fhEff->GetXaxis()->SetBinLabel(count,"SPDZ");
+  
+  count++;
+  if(fhSPD3DTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
+    fhEff->Fill(count,fhSPD3DTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
+    fhEff->SetBinError(count,fhEff->GetBinContent(count)*TMath::Sqrt(1/fhSPD3DTrklets->GetEntries()+1/fhTriggeredTrklets->GetEntries()));
+  }
+  fhEff->GetXaxis()->SetBinLabel(count,"SPD3D");
+  
+  count++;
+  if(fhSPDOverallTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
+    fhEff->Fill(count,fhSPDOverallTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
+    fhEff->SetBinError(count,fhEff->GetBinContent(count)*TMath::Sqrt(1/fhSPDOverallTrklets->GetEntries()+1/fhTriggeredTrklets->GetEntries()));
+  }
+  fhEff->GetXaxis()->SetBinLabel(count,"SPD Overall");
+  
+  count++;
+  if(fhTRKTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
+    fhEff->Fill(count,fhTRKTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
+    fhEff->SetBinError(count,fhEff->GetBinContent(count)*TMath::Sqrt(1/fhTRKTrklets->GetEntries()+1/fhTriggeredTrklets->GetEntries()));
+  }
+  fhEff->GetXaxis()->SetBinLabel(count,"TRK");
+  
+  count++;
+  if(fhTRKcTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
+    fhEff->Fill(count,fhTRKcTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
+    fhEff->SetBinError(count,fhEff->GetBinContent(count)*TMath::Sqrt(1/fhTRKcTrklets->GetEntries()+1/fhTriggeredTrklets->GetEntries()));
+  }
+  fhEff->GetXaxis()->SetBinLabel(count,"TRKc");
+  
+  count++;
+  if(fhTRKncTrklets->GetEntries()!=0 && fhTriggeredTrklets->GetEntries()!=0){
+    fhEff->Fill(count,fhTRKncTrklets->GetEntries()/fhTriggeredTrklets->GetEntries());
+    fhEff->SetBinError(count,fhEff->GetBinContent(count)*TMath::Sqrt(1/fhTRKncTrklets->GetEntries()+1/fhTriggeredTrklets->GetEntries()));
+  }
+  fhEff->GetXaxis()->SetBinLabel(count,"TRKnc");
+  
+  count++;
+  fhEff->Print("all");
+  
+  TFile* fileEff = new TFile("VtxEff.root","recreate");
+  fhSPDZEffTrklets->Write();
+  fhSPD3DEffTrklets->Write();
+  fhSPDOverallEffTrklets->Write();
+  fhTRKEffTrklets->Write();
+  fhTRKcEffTrklets->Write();
+  fhTRKncEffTrklets->Write();
+  fhSPDEffZreco->Write();
+  fhEff->Write();
+  fileEff->Close();
+  delete fileEff;
+  
+  /////////////////////////////////////////
+  */
+
+
   if (!fNtupleVertexESD){
     Printf("ERROR: fNtuple not available");
     return;
