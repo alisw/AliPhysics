@@ -672,7 +672,7 @@ void AliTOFTrigger::SetBit(Int_t *detind)
   if(index[0]<36)
     fCTTMmatrixFront[index[0]][index[1]]=kTRUE;
   else
-    fCTTMmatrixBack[index[0]][index[1]]=kTRUE;
+    fCTTMmatrixBack[index[0]-36][index[1]]=kTRUE;
 
 }
 
@@ -709,7 +709,7 @@ void AliTOFTrigger::SetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
     if (index[0]<36)
       fCTTMmatrixFront[index[0]][index[1]]=kTRUE;
     else
-      fCTTMmatrixBack[index[0]][index[1]]=kTRUE;
+      fCTTMmatrixBack[index[0]-36][index[1]]=kTRUE; // AdC
   }
   else
     AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
@@ -728,7 +728,7 @@ void AliTOFTrigger::ResetBit(Int_t *detind)
   if(index[0]<36)
     fCTTMmatrixFront[index[0]][index[1]]=kFALSE;
   else
-    fCTTMmatrixBack[index[0]][index[1]]=kFALSE;
+    fCTTMmatrixBack[index[0]-36][index[1]]=kFALSE; // AdC
 
 }
 
@@ -765,7 +765,7 @@ void AliTOFTrigger::ResetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
     if (index[0]<36)
       fCTTMmatrixFront[index[0]][index[1]]=kFALSE;
     else
-      fCTTMmatrixBack[index[0]][index[1]]=kFALSE;
+      fCTTMmatrixBack[index[0]-36][index[1]]=kFALSE; // AdC
   }
   else
     AliError("Call this function only if(nTRM==3 && iTDC>12 && iTDC<14 && nDDL%2==1) ");
@@ -781,7 +781,7 @@ Bool_t AliTOFTrigger::GetBit(Int_t *detind)
 
   Int_t index[2];
   GetCTTMIndex(detind,index);
-  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]][index[1]];
+  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]-36][index[1]]; // AdC
 
 }
 
@@ -823,7 +823,7 @@ Bool_t AliTOFTrigger::GetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
     iLTMindex++;
   iChannelindex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
   Int_t index[2]={iLTMindex,iChannelindex};
-  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]][index[1]];
+  return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]-36][index[1]]; // AdC
 
 }
 

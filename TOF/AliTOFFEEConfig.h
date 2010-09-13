@@ -229,7 +229,7 @@ class AliTOFFEEConfig
   Int_t GetRunNumber() const {return fRunNumber;}; // get run number
   Int_t GetRunType() const {return fRunType;}; // get run type
   Int_t GetBytes() const {return fBytes;}; // get bytes
-  Int_t GetCTTMTriggerMask(UShort_t iCrate) const {return iCrate < GetNumberOfCrates() ? fCTTMTriggerMask[iCrate] : NULL;}; // get CTTM trigger mask
+  Int_t GetCTTMTriggerMask(UShort_t iCrate) const {return iCrate < GetNumberOfCrates() ? fCTTMTriggerMask[iCrate] : 0;}; // get CTTM trigger mask
   AliTOFCrateConfig *GetCrateConfig(UShort_t iCrate) {return iCrate < GetNumberOfCrates() ? &fCrateConfig[iCrate] : NULL;}; // get crate config
 
 };
