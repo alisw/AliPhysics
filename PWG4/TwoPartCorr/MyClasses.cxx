@@ -17,7 +17,9 @@ class MyHeader
 public:
   MyHeader() : fRun(0), fOrbit(0), fTime(0), fPeriod(0), fBx(0),
                fNChips1(0), fNChips2(0), fNTracks(0), fNSelTracks(0), fNTracklets(0), 
-               fVz(0), fVc(0), fIsPileupSPD(0), fNPileupSPD(0), fNPileup(0) {;}
+               fVz(0), fVc(-1), fIsPileupSPD(0), fNPileupSPD(0), fNPileup(0),
+               fTrClassMask(0), fTrCluster(0), fEvNumberInFile(-1), fFileId(-1),
+               fVzSPD(0), fVcSPD(-1) {;}
   virtual ~MyHeader() {;}
   ULong64_t     GetEventId() const {
                   return ((ULong64_t)fBx+
@@ -40,7 +42,14 @@ public:
   Bool_t        fIsPileupSPD; 
   Char_t        fNPileupSPD;
   Char_t        fNPileup;
-  ClassDef(MyHeader,2) // My header class
+  ULong64_t     fTrClassMask;
+  UChar_t       fTrCluster;
+  Int_t         fEvNumberInFile;
+  Short_t       fFileId;
+  Double_t      fVzSPD; //[0,0,16]
+  Double_t      fVcSPD; //[0,0,16]
+
+  ClassDef(MyHeader,3) // My header class
 };
 
 class MyPart : public TObject
@@ -63,5 +72,22 @@ protected:
   Double32_t  fEta; //[0,0,10]
   Double32_t  fPhi; //[0,0,10]
   ClassDef(MyPart,1) // My particle class in cylindrical coordinates
+};
+
+class MyTracklet : public TObject
+{
+public:
+  MyTracklet(Double_t dphi=0, Double_t dth=0, Double_t eta=0, Double_t phi=0) :
+    TObject(), fDPhi(dphi), fDTh(dth), fEta(eta), fPhi(phi) {;}
+  Double_t    DPhi()   const { return fDPhi; }
+  Double_t    DTh()    const { return fDTh;  }
+  Double_t    Eta()    const { return fEta;  }
+  Double_t    Phi()    const { return fPhi;  }
+protected:
+  Double32_t  fDPhi; //[0,0,10]
+  Double32_t  fDTh;  //[0,0,10]
+  Double32_t  fEta;  //[0,0,10]
+  Double32_t  fPhi;  //[0,0,10]
+  ClassDef(MyTracklet,1) // My tracklet class
 };
 #endif
