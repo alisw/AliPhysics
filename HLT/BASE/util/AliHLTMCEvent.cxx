@@ -303,6 +303,7 @@ Int_t AliHLTMCEvent::FillMCJets( AliGenPythiaEventHeader* header ) {
   if ( !header ) {
     HLTError( "Error no PythiaHeader present" );
     iResult = -EINPROGRESS;
+    return iResult;
   }
 
   // -- Create jet array  
