@@ -31,6 +31,8 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include <TList.h>
+#include <TObjArray.h>
+#include <TVectorD.h>
 
 #include <AliCFContainer.h>
 #include <AliAnalysisFilter.h>
@@ -48,6 +50,7 @@ AliDielectronCF::AliDielectronCF() :
   TNamed("DielectronCF","DielectronCF"),
   fNSteps(0),
   fNVars(0),
+  fVarBinLimits(0x0),
   fNVarsLeg(0),
   fNCuts(0),
   fValues(0x0),
@@ -69,6 +72,7 @@ AliDielectronCF::AliDielectronCF() :
   //
   for (Int_t i=0; i<AliDielectronVarManager::kNMaxValues; ++i){
     fVariables[i]=0;
+    fVariablesLeg[i]=0;
   }
 
   for (Int_t i=0; i<kNmaxAddSteps; ++i){
@@ -78,6 +82,7 @@ AliDielectronCF::AliDielectronCF() :
     fNBinsLeg[i]=0;
     fVarLoLimitLeg[i]=0.;
     fVarUpLimitLeg[i]=0.;
+    fVarBinLimits[i]=0x0;
     fStepMasks[i]=0xFFFFFF;
   }
 }
@@ -87,6 +92,7 @@ AliDielectronCF::AliDielectronCF(const char* name, const char* title) :
   TNamed(name, title),
   fNSteps(0),
   fNVars(0),
+  fVarBinLimits(0x0),
   fNVarsLeg(0),
   fNCuts(0),
   fValues(0x0),
@@ -108,6 +114,7 @@ AliDielectronCF::AliDielectronCF(const char* name, const char* title) :
   //
   for (Int_t i=0; i<AliDielectronVarManager::kNMaxValues; ++i){
     fVariables[i]=0;
+    fVariablesLeg[i]=0;
   }
   
   for (Int_t i=0; i<kNmaxAddSteps; ++i){
@@ -138,6 +145,11 @@ void AliDielectronCF::AddVariable(AliDielectronVarManager::ValueTypes type, Int_
   //
 
   if (!leg){
+    if (max<min){
+      Double_t tmp=min;
+      min=max;
+      max=tmp;
+    }
     fVariables[fNVars]  = (UInt_t)type;
     fVarLoLimit[fNVars] = min;
     fVarUpLimit[fNVars] = max;
@@ -150,6 +162,22 @@ void AliDielectronCF::AddVariable(AliDielectronVarManager::ValueTypes type, Int_
     fNBinsLeg[fNVarsLeg]      = nbins;
     ++fNVarsLeg;
   }
+}
+
+//________________________________________________________________
+void AliDielectronCF::AddVariable(AliDielectronVarManager::ValueTypes type, TVectorD * const binLimits)
+{
+  //
+  // Add a variable to the CF configuration
+  //
+  if (!binLimits) return;
+  if (!fVarBinLimits) fVarBinLimits=new TObjArray(kNmaxAddSteps);
+  fVarBinLimits->AddAt(binLimits, fNVars);
+  fVariables[fNVars]  = (UInt_t)type;
+  fVarLoLimit[fNVars] = 2.;
+  fVarUpLimit[fNVars] = 1.;
+  fNBins[fNVars]      = binLimits->GetNrows()-1;
+  ++fNVars;
 }
 
 //________________________________________________________________
@@ -198,14 +226,28 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
     Int_t    nBins = fNBins[iVar];
     Double_t loLim = fVarLoLimit[iVar];
     Double_t upLim = fVarUpLimit[iVar];
-    Double_t *binLim = new Double_t[nBins+1];
-    
-    // set the bin limits
-    for(Int_t iBin=0; iBin<=nBins; iBin++) binLim[iBin] = loLim + (upLim-loLim) / nBins*(Double_t)iBin;
-    
+    Double_t *binLim = 0x0;
+
+    if (upLim<loLim) {
+      if (!fVarBinLimits) {
+        AliError(Form("Expected variable bin limits for variable %d (%s)",
+                      iVar,AliDielectronVarManager::GetValueName(type)));
+        continue;
+      }
+      if (!fVarBinLimits->At(iVar)) {
+        AliError(Form("Expected variable bin limits for variable %d (%s)",
+                      iVar,AliDielectronVarManager::GetValueName(type)));
+        continue;
+      }
+      binLim=(static_cast<TVectorD*>(fVarBinLimits->At(iVar)))->GetMatrixArray();
+    } else {
+      binLim=new Double_t[nBins+1];
+      // set the bin limits
+      for(Int_t iBin=0; iBin<=nBins; iBin++) binLim[iBin] = loLim + (upLim-loLim) / nBins*(Double_t)iBin;
+    }
     fCfContainer->SetBinLimits(iVar, binLim);
     fCfContainer->SetVarTitle(iVar, AliDielectronVarManager::GetValueName(type));
-    delete [] binLim;
+    if ( upLim>loLim ) delete [] binLim;
   }
   
   // initialize the variables and their bin limits for the Legs

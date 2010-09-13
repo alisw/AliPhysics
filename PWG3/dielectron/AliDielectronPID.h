@@ -33,6 +33,7 @@ class TList;
 class AliDielectronPID : public AliAnalysisCuts {
 public:
   enum DetType {kITS, kTPC, kTRD, kTOF};
+  enum PIDbitTupe {kIgnore=0, kRequire, kIfAvailable};
   
   AliDielectronPID();
   AliDielectronPID(const char*name, const char* title);
@@ -40,20 +41,19 @@ public:
   virtual ~AliDielectronPID();
 
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp=-99999.,
-              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE);
+              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire);
 
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, TF1 * const funUp,
-              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE);
+              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire);
 
   void AddCut(DetType det, AliPID::EParticleType type, TF1 * const funLow, Double_t nSigmaUp,
-              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE);
+              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire);
 
   void AddCut(DetType det, AliPID::EParticleType type, TF1 * const funLow, TF1 * const funUp,
-              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE);
+              Double_t pMin=0, Double_t pMax=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire);
   
   void SetDefaults(Int_t def);
 
-  void SetRequirePIDbit(Bool_t require) {fRequirePIDbit=require;}
   //
   //Analysis cuts interface
   //const
@@ -73,8 +73,7 @@ private:
   TF1     *fFunUpperCut[kNmaxPID];//use function as upper cut
   TF1     *fFunLowerCut[kNmaxPID];//use function as lower cut
   UChar_t  fNcuts;                //number of cuts
-
-  Bool_t fRequirePIDbit;          //If to require the PID bits to be set.
+  UChar_t  fRequirePIDbit[kNmaxPID]; //How to make use of the pid bit (see)
 
   AliESDpid *fESDpid;             //! esd pid object
 
@@ -91,7 +90,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,1)         // Dielectron PID
+  ClassDef(AliDielectronPID,2)         // Dielectron PID
 };
 
 

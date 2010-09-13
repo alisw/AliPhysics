@@ -26,6 +26,7 @@ Add a sattelite AOD with the array of candidates.
 #include "AliAnalysisTaskSE.h"
 
 class AliDielectron;
+class TH1D;
 
 class AliAnalysisTaskDielectronFilter : public AliAnalysisTaskSE {
   
@@ -36,9 +37,12 @@ public:
 
   virtual void UserExec(Option_t *option);
   virtual void Init();
+  virtual void UserCreateOutputObjects();
   virtual void LocalInit() {Init();}
 
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
+  void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
+  UInt_t GetTriggerMask() const { return fTriggerMask; }
   
   void SetDielectron(AliDielectron * const die) { fDielectron = die; }
   
@@ -47,6 +51,9 @@ private:
   AliDielectron *fDielectron;             // J/psi framework object
 
   Bool_t fSelectPhysics;                  // Whether to use physics selection
+  UInt_t fTriggerMask;               // Event trigger mask
+
+  TH1D *fEventStat;                  //! Histogram with event statistics
   
   AliAnalysisTaskDielectronFilter(const AliAnalysisTaskDielectronFilter &c);
   AliAnalysisTaskDielectronFilter& operator= (const AliAnalysisTaskDielectronFilter &c);

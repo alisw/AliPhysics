@@ -28,6 +28,7 @@
 #include <TCollection.h>
 #include <THashList.h>
 #include <TString.h>
+#include <TObjString.h>
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TError.h>
@@ -79,7 +80,7 @@ AliDielectronHistos::~AliDielectronHistos()
   //
   // Destructor
   //
-  fHistoList.Delete();
+  fHistoList.Clear();
   delete fReservedWords;
 }
 
@@ -395,6 +396,27 @@ void AliDielectronHistos::Draw(const Option_t* option)
   //
 
   TString drawStr(option);
+  TObjArray *arr=drawStr.Tokenize(";");
+  arr->SetOwner();
+  TIter nextOpt(arr);
+
+  TString drawClasses;
+  TObjString *ostr=0x0;
+
+  TString currentOpt;
+  TString testOpt;
+  while ( (ostr=(TObjString*)nextOpt()) ){
+    currentOpt=ostr->GetString();
+    currentOpt.Remove(TString::kBoth,'\t');
+    currentOpt.Remove(TString::kBoth,' ');
+
+    testOpt="classes=";
+    if ( currentOpt.Contains(testOpt.Data()) ){
+      drawClasses=currentOpt(testOpt.Length(),currentOpt.Length());
+    }
+  }
+
+  delete arr;
   drawStr.ToLower();
   //options
 //   Bool_t same=drawOpt.Contains("same"); //FIXME not yet implemented
@@ -406,13 +428,16 @@ void AliDielectronHistos::Draw(const Option_t* option)
       return;
     }
     c=gPad->GetCanvas();
+    c->cd();
 //     c=new TCanvas;
   }
   
   TIter nextClass(&fHistoList);
   THashList *classTable=0;
-  Bool_t first=kTRUE;
+//   Bool_t first=kTRUE;
   while ( (classTable=(THashList*)nextClass()) ){
+    //test classes option
+    if (!drawClasses.IsNull() && !drawClasses.Contains(classTable->GetName())) continue;
     //optimised division
     Int_t nPads = classTable->GetEntries();
     Int_t nCols = (Int_t)TMath::Ceil( TMath::Sqrt(nPads) );
@@ -426,11 +451,12 @@ void AliDielectronHistos::Draw(const Option_t* option)
       if (!c) c=new TCanvas(canvasName.Data(),Form("%s: %s",GetName(),classTable->GetName()));
       c->Clear();
     } else {
-      if (first){
-        first=kFALSE;
-      } else {
-        c->Clear();
-      }
+//       if (first){
+//         first=kFALSE;
+//         if (nPads>1) gVirtualPS->NewPage();
+//       } else {
+        if (nPads>1) c->Clear();
+//       }
     }
     if (nCols>1||nRows>1) c->Divide(nCols,nRows);
     
@@ -455,7 +481,10 @@ void AliDielectronHistos::Draw(const Option_t* option)
       histOpt.ReplaceAll("logz","");
       h->Draw(drawOpt.Data());
     }
-    if (gVirtualPS) c->Update();
+    if (gVirtualPS) {
+      c->Update();
+    }
+    
   }
 //   if (gVirtualPS) delete c;
 }
@@ -499,7 +528,8 @@ void AliDielectronHistos::SetHistogramList(THashList &list)
   // set histogram classes and histograms to this instance. It will take onwnership!
   //
   ResetHistogramList();
-  SetName(list.GetName());
+  TString name(GetName());
+  if (name == "AliDielectronHistos") SetName(list.GetName());
   TIter next(&list);
   TObject *o;
   while ( (o=next()) ){

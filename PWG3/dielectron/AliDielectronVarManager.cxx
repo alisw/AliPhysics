@@ -47,6 +47,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "NclsTPC",
   "NFclsTPC",
   "TPCsignalN",
+  "TPCchi2PerCluster",
+  "TrackStatus",
+    
   "NclsTRD",
   "TRDntracklets",
   "TRDpidQuality",
@@ -96,6 +99,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "PhiCS",
   "LegDistance",
   "LegDistanceXY",
+  "DeltaEta",
+  "DeltaPhi",
   "Merr",
   "DCA",
   "PairType",

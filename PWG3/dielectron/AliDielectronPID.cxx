@@ -41,7 +41,6 @@ ClassImp(AliDielectronPID)
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
   fNcuts(0),
-  fRequirePIDbit(kTRUE),
   fESDpid(0x0)
 {
   //
@@ -57,6 +56,7 @@ AliDielectronPID::AliDielectronPID() :
     fExclude[icut]=kFALSE;
     fFunUpperCut[icut]=0x0;
     fFunLowerCut[icut]=0x0;
+    fRequirePIDbit[icut]=0;
   }
 }
 
@@ -64,7 +64,6 @@ AliDielectronPID::AliDielectronPID() :
 AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
   AliAnalysisCuts(name, title),
   fNcuts(0),
-  fRequirePIDbit(kTRUE),
   fESDpid(0x0)
 {
   //
@@ -80,6 +79,7 @@ AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
     fExclude[icut]=kFALSE;
     fFunUpperCut[icut]=0x0;
     fFunLowerCut[icut]=0x0;
+    fRequirePIDbit[icut]=0;
   }
 }
 
@@ -93,7 +93,8 @@ AliDielectronPID::~AliDielectronPID()
 
 //______________________________________________
 void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp/*=-99999.*/,
-                   Double_t pMin/*=0*/, Double_t pMax/*=0*/, Bool_t exclude/*=kFALSE*/)
+                              Double_t pMin/*=0*/, Double_t pMax/*=0*/, Bool_t exclude/*=kFALSE*/,
+                              UInt_t pidBitType/*=AliDielectronPID::kRequire*/)
 {
   //
   // Add a pid nsigma cut
@@ -117,13 +118,15 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
   fPmin[fNcuts]=pMin;
   fPmax[fNcuts]=pMax;
   fExclude[fNcuts]=exclude;
+  fRequirePIDbit[fNcuts]=pidBitType;
   ++fNcuts;
   
 }
 
 //______________________________________________
 void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, TF1 * const funUp,
-            Double_t pMin/*=0*/, Double_t pMax/*=0*/, Bool_t exclude/*=kFALSE*/)
+                              Double_t pMin/*=0*/, Double_t pMax/*=0*/, Bool_t exclude/*=kFALSE*/,
+                              UInt_t pidBitType/*=AliDielectronPID::kRequire*/)
 {
   //
   // cut using a TF1 as upper cut
@@ -133,12 +136,13 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
     return;
   }
   fFunUpperCut[fNcuts]=funUp;
-  AddCut(det,type,nSigmaLow,0.,pMin,pMax,exclude);
+  AddCut(det,type,nSigmaLow,0.,pMin,pMax,exclude,pidBitType);
 }
 
 //______________________________________________
 void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, TF1 * const funLow, Double_t nSigmaUp,
-            Double_t pMin/*=0*/, Double_t pMax/*=0*/, Bool_t exclude/*=kFALSE*/)
+                              Double_t pMin/*=0*/, Double_t pMax/*=0*/, Bool_t exclude/*=kFALSE*/,
+                              UInt_t pidBitType/*=AliDielectronPID::kRequire*/)
 {
   //
   // cut using a TF1 as lower cut
@@ -148,12 +152,13 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, TF1 * con
     return;
   }
   fFunLowerCut[fNcuts]=funLow;
-  AddCut(det,type,0.,nSigmaUp,pMin,pMax,exclude);
+  AddCut(det,type,0.,nSigmaUp,pMin,pMax,exclude,pidBitType);
 }
 
 //______________________________________________
 void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, TF1 * const funLow, TF1 * const funUp,
-            Double_t pMin/*=0*/, Double_t pMax/*=0*/, Bool_t exclude/*=kFALSE*/)
+                              Double_t pMin/*=0*/, Double_t pMax/*=0*/, Bool_t exclude/*=kFALSE*/,
+                              UInt_t pidBitType/*=AliDielectronPID::kRequire*/)
 {
   //
   // cut using a TF1 as lower and upper cut
@@ -164,7 +169,7 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, TF1 * con
   }
   fFunUpperCut[fNcuts]=funUp;
   fFunLowerCut[fNcuts]=funLow;
-  AddCut(det,type,0.,0.,pMin,pMax,exclude);
+  AddCut(det,type,0.,0.,pMin,pMax,exclude,pidBitType);
 }
 
 //______________________________________________
@@ -226,7 +231,8 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVParticle * const part, Int_t icut) co
   if (part->IsA()==AliESDtrack::Class()){
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
-    if (fRequirePIDbit&&!(track->GetStatus()&AliESDtrack::kITSpid)) return kFALSE;
+    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(track->GetStatus()&AliESDtrack::kITSpid)) return kFALSE;
+    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(track->GetStatus()&AliESDtrack::kITSpid)) return kTRUE;
     
     numberOfSigmas=fESDpid->NumberOfSigmasITS(track, fPartType[icut]);
   }else{
@@ -251,7 +257,8 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVParticle * const part, Int_t icut) co
   if (part->IsA()==AliESDtrack::Class()){
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
-    if (fRequirePIDbit&&!(track->GetStatus()&AliESDtrack::kTPCpid)) return kFALSE;
+    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(track->GetStatus()&AliESDtrack::kTPCpid)) return kFALSE;
+    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(track->GetStatus()&AliESDtrack::kTPCpid)) return kTRUE;
     
     numberOfSigmas=fESDpid->NumberOfSigmasTPC(track, fPartType[icut]);
   }else{
@@ -286,7 +293,8 @@ Bool_t AliDielectronPID::IsSelectedTOF(AliVParticle * const part, Int_t icut) co
   if (part->IsA()==AliESDtrack::Class()){
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
-    if (fRequirePIDbit&&!(track->GetStatus()&AliESDtrack::kTOFpid)) return kFALSE;
+    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(track->GetStatus()&AliESDtrack::kTOFpid)) return kFALSE;
+    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(track->GetStatus()&AliESDtrack::kTOFpid)) return kTRUE;
     
     numberOfSigmas=fESDpid->NumberOfSigmasTOF(track, fPartType[icut], fESDpid->GetTOFResponse().GetTimeZero());
   }else{
@@ -354,7 +362,6 @@ void AliDielectronPID::SetDefaults(Int_t def){
     AddCut(kTOF,AliPID::kKaon,-3.,3.,0.,1.,kTRUE);
     AddCut(kTOF,AliPID::kProton,-6.,6.,0.,1.,kTRUE);
     AddCut(kTOF,AliPID::kProton,-3.,3.,1.,2.,kTRUE);
-    fRequirePIDbit=kFALSE;
   } else if (def==5) {
     AddCut(kTPC,AliPID::kElectron,-0.5,3);
     AddCut(kTOF,AliPID::kElectron,-3,3,0,1.5);
@@ -367,11 +374,29 @@ void AliDielectronPID::SetDefaults(Int_t def){
     AddCut(kTPC,AliPID::kElectron,lowerCut,3.);
     AddCut(kTOF,AliPID::kElectron,-3,3,0,1.5);
   } else if (def==7) {
-    // lower cut TPC: parametrisation by HFE
-    // upper cut TPC: 3 sigma
+    // wide TPC cut
     // TOF ele band 3sigma 0<p<1.5GeV
     AddCut(kTPC,AliPID::kElectron,10.);
     AddCut(kTOF,AliPID::kElectron,-3,3,0,1.5);
+  } else if (def==8) {
+    // TOF 5 sigma inclusion if TOFpid available
+    // this should reduce K,p,Pi to a large extent
+    AddCut(kTOF,AliPID::kElectron,-5,5,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+  } else if (def==9) {
+    // lower cut TPC: parametrisation by HFE
+    // upper cut TPC: 3 sigma
+    // TOF 5 sigma inclusion if TOFpid available
+    // this should reduce K,p,Pi to a large extent
+    TF1 *lowerCut=new TF1("lowerCut", "[0] * TMath::Exp([1]*x)", 0, 100);
+    lowerCut->SetParameters(-2.7,-0.4357);
+    AddCut(kTPC,AliPID::kElectron,lowerCut,3.);
+    AddCut(kTOF,AliPID::kElectron,-5,5,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+  } else if (def==10) {
+    AddCut(kTOF,AliPID::kElectron,-5,5,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+    AddCut(kTPC,AliPID::kElectron,3.);
+    AddCut(kTPC,AliPID::kPion,-3.,3.,0.,0.,kTRUE);
+    AddCut(kTPC,AliPID::kProton,-3.,3.,0.,0.,kTRUE);
+    
   }
 }
 

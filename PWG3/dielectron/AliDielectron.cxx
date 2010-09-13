@@ -88,6 +88,8 @@ AliDielectron::AliDielectron() :
   TNamed("AliDielectron","AliDielectron"),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
+  fPairPreFilter("PairPreFilter"),
+  fPairPreFilterLegs("PairPreFilterLegs"),
   fPairFilter("PairFilter"),
   fPdgMother(443),
   fPdgLeg1(11),
@@ -108,6 +110,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   TNamed(name,title),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
+  fPairPreFilter("PairPreFilter"),
+  fPairPreFilterLegs("PairPreFilterLegs"),
   fPairFilter("PairFilter"),
   fPdgMother(443),
   fPdgLeg1(11),
@@ -155,7 +159,10 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
    
   //in case we have MC load the MC event and process the MC particles
   if (AliDielectronMC::Instance()->HasMC()) {
-    AliDielectronMC::Instance()->ConnectMCEvent();
+    if (!AliDielectronMC::Instance()->ConnectMCEvent()){
+      AliError("Could not properly connect the MC event, skipping this event!");
+      return;
+    }
     ProcessMC();
   }
   
@@ -221,15 +228,17 @@ void AliDielectron::FillHistograms(const AliVEvent *ev)
   // Fill Histogram information for tracks and pairs
   //
   
-  TString  className;
+  TString  className,className2;
   Double_t values[AliDielectronVarManager::kNMaxValues];
   //Fill event information
   AliDielectronVarManager::Fill(ev, values);
-  fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, values);
+  if (fHistos->GetHistogramList()->FindObject("Event"))
+    fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, values);
   
   //Fill track information, separately for the track array candidates
   for (Int_t i=0; i<4; ++i){
     className.Form("Track_%s",fgkTrackClassNames[i]);
+    if (!fHistos->GetHistogramList()->FindObject(className.Data())) continue;
     Int_t ntracks=fTracks[i].GetEntriesFast();
     for (Int_t itrack=0; itrack<ntracks; ++itrack){
       AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), values);
@@ -237,14 +246,41 @@ void AliDielectron::FillHistograms(const AliVEvent *ev)
     }
   }
 
-  //Fill Pair information, separately for all pair candidate arrays
+  //Fill Pair information, separately for all pair candidate arrays and the legs
+  TObjArray arrLegs(100);
   for (Int_t i=0; i<10; ++i){
     className.Form("Pair_%s",fgkPairClassNames[i]);
+    className2.Form("Track_Legs_%s",fgkPairClassNames[i]);
+    Bool_t pairClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
+    Bool_t legClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
+    if (!pairClass&&!legClass) continue;
     Int_t ntracks=PairArray(i)->GetEntriesFast();
     for (Int_t ipair=0; ipair<ntracks; ++ipair){
-      AliDielectronVarManager::Fill(PairArray(i)->UncheckedAt(ipair), values);
-      fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+      AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(i)->UncheckedAt(ipair));
+      
+      //fill pair information
+      if (pairClass){
+        AliDielectronVarManager::Fill(pair, values);
+        fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+      }
+
+      //fill leg information, don't fill the information twice
+      if (legClass){
+        AliVParticle *d1=pair->GetFirstDaughter();
+        AliVParticle *d2=pair->GetSecondDaughter();
+        if (!arrLegs.FindObject(d1)){
+          AliDielectronVarManager::Fill(d1, values);
+          fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+          arrLegs.Add(d1);
+        }
+        if (!arrLegs.FindObject(d2)){
+          AliDielectronVarManager::Fill(d2, values);
+          fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+          arrLegs.Add(d2);
+        }
+      }
     }
+    if (legClass) arrLegs.Clear();
   }
   
 }
@@ -282,14 +318,98 @@ void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr)
 }
 
 //________________________________________________________________
+void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2) {
+  //
+  // Prefilter tracks from pairs
+  // Needed for datlitz rejections
+  // remove all tracks from the Single track arrays that pass the cuts in this filter
+  //
+  Int_t pairIndex=GetPairIndex(arr1,arr2);
+  
+  Int_t ntrack1=arrTracks1.GetEntriesFast();
+  Int_t ntrack2=arrTracks2.GetEntriesFast();
+  
+  AliDielectronPair candidate;
+  
+  UInt_t selectedMask=(1<<fPairPreFilter.GetCuts()->GetEntries())-1;
+  
+  for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
+    Int_t end=ntrack2;
+    if (arr1==arr2) end=itrack1;
+    Bool_t accepted=kFALSE;
+    for (Int_t itrack2=0; itrack2<end; ++itrack2){
+      AliVTrack *track1=static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1));
+      AliVTrack *track2=static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2));
+      if (!track1 || !track2) continue;
+      //create the pair
+      candidate.SetTracks(track1, fPdgLeg1,
+                          track2, fPdgLeg2);
+      candidate.SetType(pairIndex);
+      candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+      
+      //pair cuts
+      UInt_t cutMask=fPairPreFilter.IsSelected(&candidate);
+      
+      //apply cut
+      if (cutMask!=selectedMask) continue;
+      accepted=kTRUE;
+      //remove the tracks from the Track arrays
+      arrTracks2.AddAt(0x0,itrack2);
+      //in case of like sign remove the track from both arrays!
+      if (arr1==arr2) arrTracks1.AddAt(0x0, itrack2);
+    }
+    if ( accepted ) arrTracks1.AddAt(0x0,itrack1);
+  }
+  //compress the track arrays
+  arrTracks1.Compress();
+  arrTracks2.Compress();
+  
+  //apply leg cuts after the pre filter
+  if ( fPairPreFilterLegs.GetCuts()->GetEntries()>0 ) {
+    selectedMask=(1<<fPairPreFilterLegs.GetCuts()->GetEntries())-1;
+    //loop over tracks from array 1
+    for (Int_t itrack=0; itrack<arrTracks1.GetEntriesFast();++itrack){
+      //test cuts
+      UInt_t cutMask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
+      //apply cut
+      if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);;
+    }
+    arrTracks1.Compress();
+    
+    //in case of like sign don't loop over second array
+    if (arr1==arr2) {
+      arrTracks2=arrTracks1;
+    } else {
+      
+      //loop over tracks from array 2
+      for (Int_t itrack=0; itrack<arrTracks2.GetEntriesFast();++itrack){
+      //test cuts
+        UInt_t cutMask=fPairPreFilterLegs.IsSelected(arrTracks2.UncheckedAt(itrack));
+      //apply cut
+        if (cutMask!=selectedMask) arrTracks2.AddAt(0x0,itrack);
+      }
+      arrTracks2.Compress();
+      
+    }
+  }
+}
+
+//________________________________________________________________
 void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2) {
   //
   // select pairs and fill pair candidate arrays
   //
+
+  TObjArray arrTracks1=fTracks[arr1];
+  TObjArray arrTracks2=fTracks[arr2];
+
+  //process pre filter if set
+  if ( fPairPreFilter.GetCuts()->GetEntries()>0 ) PairPreFilter(arr1, arr2, arrTracks1, arrTracks2);
+  
   Int_t pairIndex=GetPairIndex(arr1,arr2);
 
-  Int_t ntrack1=fTracks[arr1].GetEntriesFast();
-  Int_t ntrack2=fTracks[arr2].GetEntriesFast();
+  Int_t ntrack1=arrTracks1.GetEntriesFast();
+  Int_t ntrack2=arrTracks2.GetEntriesFast();
 
   AliDielectronPair *candidate=new AliDielectronPair;
 
@@ -300,8 +420,8 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2) {
     if (arr1==arr2) end=itrack1;
     for (Int_t itrack2=0; itrack2<end; ++itrack2){
       //create the pair
-      candidate->SetTracks(static_cast<AliVTrack*>(fTracks[arr1].UncheckedAt(itrack1)), fPdgLeg1,
-                           static_cast<AliVTrack*>(fTracks[arr2].UncheckedAt(itrack2)), fPdgLeg2);
+      candidate->SetTracks(static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1)), fPdgLeg1,
+                           static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
       candidate->SetType(pairIndex);
       candidate->SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother));
 

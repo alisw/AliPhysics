@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include <TChain.h>
+#include <TH1D.h>
 
 #include <AliCFContainer.h>
 #include <AliInputEventHandler.h>
@@ -41,7 +42,9 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fListDielectron(),
   fListHistos(),
   fListCF(),
-  fSelectPhysics(kFALSE)
+  fSelectPhysics(kFALSE),
+  fTriggerMask(AliVEvent::kMB),
+  fEventStat(0x0)
 {
   //
   // Constructor
@@ -54,7 +57,9 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fListDielectron(),
   fListHistos(),
   fListCF(),
-  fSelectPhysics(kFALSE)
+  fSelectPhysics(kFALSE),
+  fTriggerMask(AliVEvent::kMB),
+  fEventStat(0x0)
 {
   //
   // Constructor
@@ -62,6 +67,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   DefineInput(0,TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+  DefineOutput(3, TH1D::Class());
   fListHistos.SetName("Dielectron_Histos_Multi");
   fListCF.SetName("Dielectron_CF_Multi");
 }
@@ -83,6 +89,16 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
     if (die->GetHistogramList()) fListHistos.Add(const_cast<THashList*>(die->GetHistogramList()));
     if (die->GetCFManagerPair()) fListCF.Add(const_cast<AliCFContainer*>(die->GetCFManagerPair()->GetContainer()));
   }
+
+  if (!fEventStat){
+    fEventStat=new TH1D("hEventStat","Event statistics",5,0,5);
+    fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
+    fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
+  }
+  
+  PostData(1, &fListHistos);
+  PostData(2, &fListCF);
+  PostData(3, fEventStat);
 }
 
 //_________________________________________________________________________________
@@ -112,12 +128,20 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   } 
   // Was event selected ?
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  Bool_t isSelected = kTRUE;
+  UInt_t isSelected = AliVEvent::kAny;
   if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
     isSelected = inputHandler->IsEventSelected();
+    isSelected&=fTriggerMask;
   }
   
-  if (!isSelected) return;
+  //Before physics selection
+  fEventStat->Fill(0.);
+  if (isSelected==0) {
+    PostData(3,fEventStat);
+    return;
+  }
+  //after physics selection
+  fEventStat->Fill(1.);
   
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
@@ -132,6 +156,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
+  PostData(3,fEventStat);
 }
 
 //_________________________________________________________________________________

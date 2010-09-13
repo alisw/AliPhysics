@@ -119,9 +119,10 @@ void AliDielectronCFdraw::SetCFContainers(const TSeqCollection *arr)
   Int_t nstep=0;
   while ( (o=next()) ){
     AliCFContainer *cf=dynamic_cast<AliCFContainer*>(o);
-    if (!o) continue;
+    if (!cf) continue;
     nstep+=cf->GetNStep();
   }
+  if (nstep==0) return;
   Int_t nbins[1]={1};
   fCfContainer=new AliCFContainer(GetName(), GetTitle(), nstep, 1, nbins);
 
@@ -152,19 +153,18 @@ void AliDielectronCFdraw::SetCFContainers(const char* filename)
 
   TFile f(filename);
   TList *l=f.GetListOfKeys();
-  Int_t entries=l->GetEntries();
-  if (entries==0) return;
-  
-  TKey *k=(TKey*)l->At(0);
-  if (!k) return;
-  TObject *o=k->ReadObj();
-  if (o->IsA()->InheritsFrom(TSeqCollection::Class())){
-    TSeqCollection *arr=static_cast<TSeqCollection*>(o);
-    SetCFContainers(arr);
-  } else if (o->IsA()==AliCFContainer::Class()){
-    fCfContainer=static_cast<AliCFContainer*>(o);
-    if (fEffGrid) delete fEffGrid;
-    fEffGrid=new AliCFEffGrid("eff","eff",*fCfContainer);
+  TIter nextKey(l);
+  TKey *k=0x0;
+  while ( (k=static_cast<TKey*>(nextKey())) ){
+    TObject *o=k->ReadObj();
+    if (o->IsA()->InheritsFrom(TSeqCollection::Class())){
+      TSeqCollection *arr=static_cast<TSeqCollection*>(o);
+      SetCFContainers(arr);
+    } else if (o->IsA()==AliCFContainer::Class()){
+      fCfContainer=static_cast<AliCFContainer*>(o);
+      if (fEffGrid) delete fEffGrid;
+      fEffGrid=new AliCFEffGrid("eff","eff",*fCfContainer);
+    }
   }
 }
 
