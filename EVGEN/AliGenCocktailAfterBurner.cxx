@@ -81,8 +81,17 @@ AliGenCocktailAfterBurner::~AliGenCocktailAfterBurner()
        delete fInternalStacks;
     }
     if (fAfterBurnerEntries) delete fAfterBurnerEntries; //delete entries
-    delete[] fCollisionGeometries;
-    delete[] fHeaders;
+    Int_t numberOfEvents = AliRunLoader::Instance()->GetNumberOfEventsPerRun();
+    if (fCollisionGeometries) {
+      for (Int_t i = 0; i < (numberOfEvents + fNBgEvents); i++)
+	if (fCollisionGeometries[i]) delete fCollisionGeometries[i];
+      delete[] fCollisionGeometries;
+    }
+    if (fHeaders) {
+      for (Int_t i = 0; i < (numberOfEvents + fNBgEvents); i++)
+	if (fHeaders[i]) delete fHeaders[i];
+      delete[] fHeaders;
+    }
   }
 /*********************************************************************/ 
 /*********************************************************************/ 
@@ -124,6 +133,7 @@ AddAfterBurner(AliGenerator *AfterBurner, char* Name, Float_t RateExp)
 void AliGenCocktailAfterBurner::Init()
 {
 // Initialisation
+  Int_t numberOfEvents = AliRunLoader::Instance()->GetNumberOfEventsPerRun();
     fGenerationDone = kFALSE;
     if (fInternalStacks) //delete stacks
      { 
@@ -131,8 +141,17 @@ void AliGenCocktailAfterBurner::Init()
        fInternalStacks->Delete(); //clean after previous generation cycle
      }
 
-    if (fCollisionGeometries) delete[] fCollisionGeometries;
-    
+    if (fCollisionGeometries) {
+      for (Int_t i = 0; i < (numberOfEvents + fNBgEvents); i++)
+	if (fCollisionGeometries[i]) delete fCollisionGeometries[i];
+      delete[] fCollisionGeometries;
+    }
+    if (fHeaders) {
+      for (Int_t i = 0; i < (numberOfEvents + fNBgEvents); i++)
+	if (fHeaders[i]) delete fHeaders[i];
+      delete[] fHeaders;
+    }
+
     this->AliGenCocktail::Init(); 
     
     if (gDebug>0) cout<<"AliGenCocktailAfterBurner::Init"<<endl;
