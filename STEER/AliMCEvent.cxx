@@ -190,21 +190,15 @@ void AliMCEvent::FinishEvent()
   // Clean-up after event
   //    
     if (fStack) fStack->Reset(0);
-    std::cout << "MCParticles delete " << fMCParticleMap->GetEntries() << std::endl;
     fMCParticles->Delete();
-    std::cout << "ParticleMap clear " << std::endl;
     
     if (fMCParticleMap) 
       fMCParticleMap->Clear();
-    std::cout << "Clear done" << std::endl;
     if (fTRBuffer) {
-      std::cout << "TRBuffer delete" << std::endl;
       fTRBuffer->Delete();
     }
     //    fTrackReferences->Delete();
-  std::cout << "TrackReferences clear" << std::endl;
     fTrackReferences->Clear();
-  std::cout << "Finished" << std::endl;
     fNparticles = -1;
     fNprimaries = -1;    
     fStack      =  0;
