@@ -22,6 +22,10 @@
 ///////////////////////////////////////////////////////////////////////
 
 /*
+    Modified by fbellini on 13/09/2010
+  - Set TLines as private members
+  - Set image flag for expert histos
+
   Modified by fbellini on 14/06/2010
   - Updated plots
   - use LoadRawDataBuffersV2()
@@ -78,12 +82,21 @@ ClassImp(AliTOFQADataMakerRec)
   fCalibData(0x0),
   fEnableNoiseFiltering(kFALSE),
     fEnableDqmShifterOpt(kFALSE),
-    fProcessedRawEventN(0)
+    fProcessedRawEventN(0),
+    fLineExpTimeMin(0x0),
+    fLineExpTimeMax(0x0),
+    fLineExpTotMin(0x0),
+    fLineExpTotMax(0x0)
 {
   //
   // ctor
   //
    
+  for (Int_t sm=0;sm<10;sm++){
+      fLineSMid035[sm]=0x0;
+      fLineSMid3671[sm]=0x0;
+  }
+    
 }
 
 //____________________________________________________________________________ 
@@ -92,15 +105,22 @@ AliTOFQADataMakerRec::AliTOFQADataMakerRec(const AliTOFQADataMakerRec& qadm) :
   fCalibData(qadm.fCalibData),
   fEnableNoiseFiltering(qadm.fEnableNoiseFiltering),
   fEnableDqmShifterOpt(qadm.fEnableDqmShifterOpt),
-  fProcessedRawEventN(qadm.fProcessedRawEventN)
+  fProcessedRawEventN(qadm.fProcessedRawEventN),
+  fLineExpTimeMin(qadm.fLineExpTimeMin),
+  fLineExpTimeMax(qadm.fLineExpTimeMax),
+  fLineExpTotMin(qadm.fLineExpTotMin),
+  fLineExpTotMax(qadm.fLineExpTotMax)
 {
   //
   //copy ctor 
   //
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
-  
- 
+   
+  for (Int_t sm=0;sm<10;sm++){
+      fLineSMid035[sm]=qadm.fLineSMid035[sm];
+      fLineSMid3671[sm]=qadm.fLineSMid3671[sm];
+  }
 }
 
 //__________________________________________________________________
@@ -216,15 +236,15 @@ void AliTOFQADataMakerRec::InitRaws()
   h24->Sumw2() ;
 
   Add2RawsList(h0,   0, !expert,  image, !saveCorr) ;
-  Add2RawsList(h1,   1,  expert, !image, !saveCorr) ;
-  Add2RawsList(h2,   2,  expert, !image, !saveCorr) ;
-  Add2RawsList(h3,   3,  expert, !image, !saveCorr) ;
-  Add2RawsList(h4,   4,  expert, !image, !saveCorr) ;
+  Add2RawsList(h1,   1,  expert,  image, !saveCorr) ;
+  Add2RawsList(h2,   2,  expert,  image, !saveCorr) ;
+  Add2RawsList(h3,   3,  expert,  image, !saveCorr) ;
+  Add2RawsList(h4,   4,  expert,  image, !saveCorr) ;
   Add2RawsList(h5,   5, !expert,  image, !saveCorr) ;
-  Add2RawsList(h6,   6,  expert, !image, !saveCorr) ;
-  Add2RawsList(h7,   7,  expert, !image, !saveCorr) ;
-  Add2RawsList(h8,   8,  expert, !image, !saveCorr) ;
-  Add2RawsList(h9,   9,  expert, !image, !saveCorr) ;
+  Add2RawsList(h6,   6,  expert,  image, !saveCorr) ;
+  Add2RawsList(h7,   7,  expert,  image, !saveCorr) ;
+  Add2RawsList(h8,   8,  expert,  image, !saveCorr) ;
+  Add2RawsList(h9,   9,  expert,  image, !saveCorr) ;
   Add2RawsList(h10, 10, !expert,  image, !saveCorr) ;
   Add2RawsList(h11, 11,  expert, !image, !saveCorr) ;
   Add2RawsList(h12, 12,  expert, !image, !saveCorr) ;
@@ -241,6 +261,39 @@ void AliTOFQADataMakerRec::InitRaws()
   Add2RawsList(h23, 23,  expert, !image, !saveCorr) ;
   Add2RawsList(h24, 24,  expert, !image, !saveCorr) ;
 
+  //add lines for DQM shifter
+  fLineExpTimeMin = new TLine(200., 0., 200., 0.);
+  fLineExpTimeMin->SetLineColor(kGreen);
+  fLineExpTimeMin->SetLineWidth(2);
+  
+  fLineExpTimeMax = new TLine(250., 0., 250., 0.);
+  fLineExpTimeMax->SetLineColor(kGreen);
+  fLineExpTimeMax->SetLineWidth(2);
+  
+  fLineExpTotMin = new TLine( 5., 0., 5., 0.);
+  fLineExpTotMin->SetLineColor(kGreen);
+  fLineExpTotMin->SetLineWidth(2);
+  
+  fLineExpTotMax = new TLine(20., 0., 20., 0.);
+  fLineExpTotMax->SetLineColor(kGreen);
+  fLineExpTotMax->SetLineWidth(2);
+  
+  h5->GetListOfFunctions()->Add(fLineExpTimeMin);
+  h5->GetListOfFunctions()->Add(fLineExpTimeMax);
+  h10->GetListOfFunctions()->Add(fLineExpTotMin);
+  h10->GetListOfFunctions()->Add(fLineExpTotMax);
+  
+  for (Int_t sm=0;sm<10;sm++){
+      fLineSMid035[sm] = new TLine( 40*sm, 0, 40*sm, 0.);
+      fLineSMid035[sm]->SetLineColor(kMagenta);
+      fLineSMid035[sm]->SetLineWidth(2);
+      GetRawsData(16)->GetListOfFunctions()->Add(fLineSMid035[sm]);
+      fLineSMid3671[sm] = new TLine( 40*sm+360, 0, 40*sm+360, 0.);
+      fLineSMid3671[sm]->SetLineColor(kMagenta);
+      fLineSMid3671[sm]->SetLineWidth(2);
+      GetRawsData(17)->GetListOfFunctions()->Add(fLineSMid3671[sm]);
+  }
+  
 }
 
 //____________________________________________________________________________ 
@@ -699,14 +752,12 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
 	if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
 	    continue ; 
 	
 	if (fEnableDqmShifterOpt){
 	    // Help make the raw qa histogram easier to interpret for the DQM shifter
-	    // This is still to be optimized...
-	    
 	    if (!GetRawsData(0) || !GetRawsData(5) || !GetRawsData(10) 
 		|| !GetRawsData(15) || !GetRawsData(16) || !GetRawsData(17)) {
 		printf("No histogram for DQM found - Possible memory corruption ???. Please check\n") ; 
@@ -739,64 +790,52 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 		GetRawsData(17)->GetYaxis()->SetTitle("hits/active channels");
 	    }
 	    
-	    
-	    Double_t yTimeMin = GetRawsData(5)->GetMinimum();
+	    //set minima and maxima to allow log scale
 	    Double_t yTimeMax = GetRawsData(5)->GetMaximum();
-	    Double_t yTotMin = GetRawsData(10)->GetMinimum();
 	    Double_t yTotMax = GetRawsData(10)->GetMaximum();
+	    Double_t yTrmMax = TMath::Max(GetRawsData(16)->GetMaximum(),GetRawsData(17)->GetMaximum());
+	    // Double_t yLtmMax = GetRawsData(15)->GetMaximum();
+	    // Double_t yHitMax = GetRawsData(0)->GetMaximum();
+
+	    // GetRawsData(0)->SetMinimum(0.1);
+	    // GetRawsData(5)->SetMinimum(0.1);
+	    // GetRawsData(10)->SetMinimum(0.1);
+	    // GetRawsData(15)->SetMinimum(0.1);
+   	    GetRawsData(16)->SetMinimum(0.0001);
+	    GetRawsData(17)->SetMinimum(0.0001);
+
+	    // GetRawsData(0)->SetMaximum(yHitMax);
+	    // GetRawsData(5)->SetMaximum(yTimeMax);
+	    // GetRawsData(10)->SetMaximum(yTotMax);
+	    // GetRawsData(15)->SetMaximum(yLtmMax);
+	    GetRawsData(16)->SetMaximum(yTrmMax);
+	    GetRawsData(17)->SetMaximum(yTrmMax);
 	    
-	    TLine* lineExpTimeMin = new TLine(200., yTimeMin, 200., yTimeMax);
-	    lineExpTimeMin->SetLineColor(kGreen);
-	    lineExpTimeMin->SetLineWidth(2);
-	    
-	    TLine* lineExpTimeMax = new TLine(250., yTimeMin, 250., yTimeMax);
-	    lineExpTimeMax->SetLineColor(kGreen);
-	    lineExpTimeMax->SetLineWidth(2);
-	    
-	    TLine* lineExpTotMin = new TLine( 5., yTotMin, 5., yTotMax);
-	    lineExpTotMin->SetLineColor(kGreen);
-	    lineExpTotMin->SetLineWidth(2);
-	    
-	    TLine* lineExpTotMax = new TLine(20., yTotMin, 20., yTotMax);
-	    lineExpTotMax->SetLineColor(kGreen);
-	    lineExpTotMax->SetLineWidth(2);
-	    
-	    ((TH1F*)GetRawsData(5))->GetListOfFunctions()->Add(lineExpTimeMin);
-	    ((TH1F*)GetRawsData(5))->GetListOfFunctions()->Add(lineExpTimeMax);
-	    ((TH1F*)GetRawsData(10))->GetListOfFunctions()->Add(lineExpTotMin);
-	    ((TH1F*)GetRawsData(10))->GetListOfFunctions()->Add(lineExpTotMax);
-			    
-	    //make up for all bistos 
-	    for(Int_t j=0;j<20;j++){
-	      if (j<5) {
-		GetRawsData(j)->SetMarkerColor(kRed);
-		GetRawsData(j)->SetMarkerStyle(7);
-	      } else {
-		GetRawsData(j)->SetLineColor(kBlue+1);
-		GetRawsData(j)->SetLineWidth(1);
-		GetRawsData(j)->SetMarkerColor(kBlue+1);
-	      }
-	    }
-	    Float_t ySMmax035=GetRawsData(16)->GetMaximum();
-	    TLine* lineSMid035[10];
-	    Float_t ySMmax3671=GetRawsData(17)->GetMaximum();
-	    TLine* lineSMid3671[10];
-	    
+	    fLineExpTimeMin->SetY2(yTimeMax);
+	    fLineExpTimeMax->SetY2(yTimeMax);
+	    fLineExpTotMin->SetY2(yTotMax);
+	    fLineExpTotMax->SetY2(yTotMax);
 	    for (Int_t sm=0;sm<10;sm++){
-	      lineSMid035[sm] = new TLine( 40*sm, 0, 40*sm, ySMmax035);
-	      lineSMid035[sm]->SetLineColor(kMagenta);
-	      lineSMid035[sm]->SetLineWidth(2);
-	      GetRawsData(16)->GetListOfFunctions()->Add(lineSMid035[sm]);
-	      
-	      lineSMid3671[sm] = new TLine( 40*sm+360, 0, 40*sm+360, ySMmax3671);
-	      lineSMid3671[sm]->SetLineColor(kMagenta);
-	      lineSMid3671[sm]->SetLineWidth(2);
-	      GetRawsData(17)->GetListOfFunctions()->Add(lineSMid3671[sm]);
+		fLineSMid035[sm]->SetY2(yTrmMax);
+		fLineSMid3671[sm]->SetY2(yTrmMax);
+	    }
+
+
+            //make up for all histos 
+	    for(Int_t j=0;j<20;j++){
+		if (j<5) {
+		    GetRawsData(j)->SetMarkerColor(kRed);
+		    GetRawsData(j)->SetMarkerStyle(7);
+		} else {
+		    GetRawsData(j)->SetLineColor(kBlue+1);
+		    GetRawsData(j)->SetLineWidth(1);
+		    GetRawsData(j)->SetMarkerColor(kBlue+1);
+		}
 	    }
 	    
 	    for (Int_t j=15;j<19;j++){
-	      GetRawsData(j)->SetFillColor(kGray+1);
-	      GetRawsData(j)->SetOption("bar");
+		GetRawsData(j)->SetFillColor(kGray+1);
+		GetRawsData(j)->SetOption("bar");
 	    }
 	    
 	}

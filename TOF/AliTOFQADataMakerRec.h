@@ -12,7 +12,7 @@
 //    /* last modified by F. Bellini on 25/02/2010 */             // 
 ////////////////////////////////////////////////////////////////////
 
-
+#include <TLine.h>
 #include "AliQADataMakerRec.h"
 #include "AliQAv1.h"
 
@@ -57,8 +57,16 @@ private:
 					// interpretation of the TOF
 					// raw QA histograms
 	  Int_t  fProcessedRawEventN;   // number of processed rawData events
+	  
+	  //lines for the DQM GUI
+	  TLine* fLineExpTimeMin;
+	  TLine* fLineExpTimeMax;
+	  TLine* fLineExpTotMin;
+	  TLine* fLineExpTotMax;
+	  TLine* fLineSMid035[10];
+	  TLine* fLineSMid3671[10];
 
-  ClassDef(AliTOFQADataMakerRec,2)  // description 
+	  ClassDef(AliTOFQADataMakerRec,3)  // description 
 
 };
 
