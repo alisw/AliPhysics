@@ -1010,7 +1010,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   if (fUseVertexFromCDB) {
       Double_t vtxPos[3] = {0., 0., 0.}; 
       Double_t vtxSig[3] = {0., 0., 0.};
-      AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
+      AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
       AliESDVertex* vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
       if (vertex) {
 	  vertex->GetXYZ(vtxPos);
