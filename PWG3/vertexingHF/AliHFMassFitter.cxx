@@ -1303,6 +1303,10 @@ Bool_t AliHFMassFitter::RefitWithBkgOnly(Bool_t draw){
 //_________________________________________________________________________
 Double_t AliHFMassFitter::GetChiSquare() const{
   TF1 *funcmass=(TF1*)fhistoInvMass->GetFunction("funcmass");
+  if(!funcmass) {
+    cout<<"funcmass not found"<<endl;
+    return -1;
+  }
   return funcmass->GetChisquare();
 }
 
