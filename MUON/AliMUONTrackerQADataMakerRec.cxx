@@ -858,7 +858,7 @@ void AliMUONTrackerQADataMakerRec::BookHistograms(AliQAv1::TASKINDEX_t task)
     // for raw data, we differentiate events seen from events used to be able to detect
     // severe decoder errors that lead to no event decoded (i.e. zero event used) even if
     // events are there (i.e non-zero event seen).
-    hnevents = new TH1F("kTrackerNofPhysicsEventsSeen","Number of physics events seen",1,-0.5,0.5);
+    hnevents = new TH1F("hTrackerNofPhysicsEventsSeen","Number of physics events seen",1,-0.5,0.5);
     // this one will count the number of physics event the rawdatamaker is *seeing*
     TAxis* a = hnevents->GetXaxis();
     a->SetBinLabel(1,"NPhysicsEvents");
@@ -866,7 +866,7 @@ void AliMUONTrackerQADataMakerRec::BookHistograms(AliQAv1::TASKINDEX_t task)
     Master()->Add2List(hnevents,AliMUONQAIndices::kTrackerNofPhysicsEventsSeen,task,expert,!image,!saveCorr);
   }
   
-  hnevents = new TH1F("kTrackerNofGoodPhysicsEventsUsed","Number of good physics events used",1,-0.5,0.5);
+  hnevents = new TH1F("hTrackerNofGoodPhysicsEventsUsed","Number of good physics events used",1,-0.5,0.5);
   // this one will get its content from the TrackerData, i.e. it will count the number of *good* physics events *used*
   // (i.e. not empty and with no fatal readout error)
   TAxis* a = hnevents->GetXaxis();
@@ -1745,6 +1745,7 @@ AliMUONTrackerQADataMakerRec::MappingCheckRecPoints(Int_t specieIndex, Bool_t cr
   if (array)
   {
     o = array->At(specieIndex);
+    array->SetOwner(kTRUE);
     if (!o && create)
     {
       AliMUONQAMappingCheck* mcheck = new AliMUONQAMappingCheck(RunNumber()); 
