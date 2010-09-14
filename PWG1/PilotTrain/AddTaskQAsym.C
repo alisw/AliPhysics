@@ -66,7 +66,7 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    esdTrackCutsL1->SetMaxDCAToVertexZ(3.);
    esdTrackCutsL1->SetAcceptKinkDaughters(kFALSE);
    esdTrackCutsL1->SetRequireITSRefit(kTRUE);
-   esdTrackCutsL1->SetRequireITSStandAlone(kTRUE, kTRUE); //2nd option: reject pure SA tracks
+   esdTrackCutsL1->SetRequireITSStandAlone(kTRUE); 
 
    //cuts for ITS tracks SA
    AliESDtrackCuts* esdTrackCutsL1sa = new AliESDtrackCuts("AliESDtrackCuts1","ITS_SA");
@@ -74,7 +74,7 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    esdTrackCutsL1sa->SetMaxDCAToVertexZ(3.);
    esdTrackCutsL1sa->SetAcceptKinkDaughters(kFALSE);
    esdTrackCutsL1sa->SetRequireITSRefit(kTRUE);
-   // esdTrackCutsL1sa->SetRequireITSStandAlone(kTRUE, kTRUE); //cut on SA tracks in AliAnalysisTaskQASym
+   esdTrackCutsL1sa->SetRequireITSPureStandAlone(kTRUE);
    
    //cuts for TPC tracks
    AliESDtrackCuts* esdTrackCutsL2 = new AliESDtrackCuts("AliESDtrackCuts2","TPC");
