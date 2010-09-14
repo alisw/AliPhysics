@@ -3,24 +3,25 @@ SRCS:=mchview.cxx
 EINCLUDE+=MUON/mapping
 
 ELIBS:= \
-STEERBase \
-ESD \
-AOD \
-RAWDatarec \
+MUONmapping \
+RAWDatabase \
+MUONshuttle \
+MUONgraphics \
+MUONrec \
+MUONgeometry \
+MUONcalib \
+MUONbase \
+MUONraw \
+RAWDatasim \
+MUONtrigger \
+MUONcore \
 STEER \
 CDB \
-MUONmapping \
-MUONcalib \
-MUONgeometry \
-MUONtrigger \
+AOD \
+RAWDatarec \
+ESD \
 RAWDatabase \
-RAWDatasim \
-MUONraw \
-MUONbase \
-MUONshuttle \
-MUONrec \
-MUONgraphics \
-MUONcore
+STEERBase
 
 ifneq (,$(findstring macosx,$(ALICE_TARGET)))
 ELIBS+=\
