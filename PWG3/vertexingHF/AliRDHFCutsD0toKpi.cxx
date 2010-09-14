@@ -36,7 +36,6 @@ ClassImp(AliRDHFCutsD0toKpi)
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) : 
 AliRDHFCuts(name),
-fRemoveDaughtersFromPrimary(kFALSE),
 fUseSpecialCuts(kFALSE)
 {
   //
@@ -76,11 +75,11 @@ fUseSpecialCuts(kFALSE)
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 
+  SetRemoveDaughtersFromPrim(kTRUE);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
   AliRDHFCuts(source),  
-  fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary),
   fUseSpecialCuts(source.fUseSpecialCuts)
 {
   //
@@ -97,7 +96,6 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
   if(&source == this) return *this;
 
   AliRDHFCuts::operator=(source);
-  fRemoveDaughtersFromPrimary=source.fRemoveDaughtersFromPrimary;
   fUseSpecialCuts=source.fUseSpecialCuts;
 
   return *this;
@@ -231,7 +229,11 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
     //recalculate vertex w/o daughters
     AliAODVertex *origownvtx=0x0;
     AliAODVertex *recvtx=0x0;
-    if(aod && fRemoveDaughtersFromPrimary) {
+    if(fRemoveDaughtersFromPrimary) {
+      if(!aod) {
+	AliError("Can not remove daughters from vertex without AOD event");
+	return 0;
+      }
       if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
       recvtx=d->RemoveDaughtersFromPrimaryVtx(aod);
       if(!recvtx){

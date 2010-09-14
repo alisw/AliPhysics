@@ -56,7 +56,8 @@ fCutsRD(0),
 fIsUpperCut(0),
 fUsePID(kFALSE),
 fPidHF(0),
-fWhyRejection(0)
+fWhyRejection(0),
+fRemoveDaughtersFromPrimary(kFALSE)
 {
   //
   // Default Constructor
@@ -83,7 +84,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fIsUpperCut(0),
   fUsePID(source.fUsePID),
   fPidHF(0),
-  fWhyRejection(source.fWhyRejection)
+  fWhyRejection(source.fWhyRejection),
+  fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary)
 {
   //
   // Copy constructor
@@ -120,6 +122,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fUsePID=source.fUsePID;
   SetPidHF(source.GetPidHF());
   fWhyRejection=source.fWhyRejection;
+  fRemoveDaughtersFromPrimary=source.fRemoveDaughtersFromPrimary;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
