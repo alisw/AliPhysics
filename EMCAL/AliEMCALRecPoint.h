@@ -122,7 +122,7 @@ class AliEMCALRecPoint : public AliCluster {
   Float_t     GetTime(void)       const { return  fTime ; }
 	
   Bool_t      SharedCluster(void) const { return  fSharedCluster ; }
-  void        SetSharedCluster(Bool_t s){ s = fSharedCluster ; }
+  void        SetSharedCluster(Bool_t s){ fSharedCluster = s ; }
 	
   virtual Bool_t  IsEmc(void)     const { return kTRUE ;  }
   virtual Bool_t  IsSortable()    const { 

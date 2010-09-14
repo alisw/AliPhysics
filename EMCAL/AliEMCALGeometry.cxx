@@ -57,7 +57,7 @@
 // // --- EMCAL headers
 #include "AliEMCALGeometry.h"
 #include "AliEMCALShishKebabTrd1Module.h"
-#include "AliEMCALRecPoint.h"
+//#include "AliEMCALRecPoint.h"
 //#include "AliEMCALHistoUtilities.h"
 
 ClassImp(AliEMCALGeometry)
