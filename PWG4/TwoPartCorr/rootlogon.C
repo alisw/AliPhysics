@@ -15,7 +15,7 @@
       delete gRandom;
       gRandom = new TRandom3(0);
    }
-  gROOT->LoadMacro("MyClasses.cxx+g");
+  gROOT->LoadMacro("MyTreeClasses.C+g");
 }
 
 
