@@ -648,11 +648,16 @@ void AliFlowEventSimple::TagRP( AliFlowTrackSimpleCuts* cuts )
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (!track) continue;
     Bool_t pass=cuts->PassesCuts(track);
-    track->SetForRPSelection(pass);
+    Bool_t rpTrack=track->InRPSelection();
     if (pass) 
-      fNumberOfRPs++;
+    {
+      if (!rpTrack) fNumberOfRPs++; //only increase if not already tagged
+    }
     else
-      fNumberOfRPs--;
+    {
+      if (rpTrack) fNumberOfRPs--; //only decrease if detagging
+    }
+    track->SetForRPSelection(pass);
   }
 }
 
