@@ -58,6 +58,10 @@ void AliAnalysisTaskCaloFilter::CreateAODFromAOD()
   // Copy AOD header, vertex, CaloClusters and CaloCells to output AOD
   
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
+  if(!aod) {
+    printf("AliAnalysisTaskCaloFilter::CreateAODFromAOD() - This event does not contain AODs?");
+    return;
+  }
   
   // set arrays and pointers
   Float_t posF[3];
@@ -194,6 +198,10 @@ void AliAnalysisTaskCaloFilter::CreateAODFromESD()
   // Copy ESD header, vertex, CaloClusters and CaloCells to output AOD
   
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  if(!esd) {
+    printf("AliAnalysisTaskCaloFilter::CreateAODFromESD() - This event does not contain AODs?");
+    return;
+  }
   
   // set arrays and pointers
   Float_t posF[3];

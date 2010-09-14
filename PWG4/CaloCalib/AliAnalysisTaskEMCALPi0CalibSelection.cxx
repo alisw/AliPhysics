@@ -48,20 +48,25 @@ ClassImp(AliAnalysisTaskEMCALPi0CalibSelection)
 AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
   AliAnalysisTaskSE(name),fEMCALGeo(0x0),//fCalibData(0x0), 
   fEmin(0.5), fEmax(15.), fMinNCells(2), fGroupNCells(0),
-  fLogWeight(4.5), fCopyAOD(kFALSE), fEMCALGeoName("EMCAL_FIRSTYEAR"),     
-  fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(0x0),
+  fLogWeight(4.5), fCopyAOD(kFALSE), fSameSM(kFALSE), fOldAOD(kFALSE),
+  fEMCALGeoName("EMCAL_FIRSTYEAR"), fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(0x0),
   fRecalibration(kFALSE),fEMCALRecalibrationFactors(), 
   fNbins(300), fMinBin(0.), fMaxBin(300.),
-  fOutputContainer(0x0),fHmgg(0x0), fhNEvents(0x0),fCuts(0x0)
+  fOutputContainer(0x0),fHmgg(0x0), fHmggDifferentSM(0x0), fhNEvents(0x0),fCuts(0x0)
 {
   //Named constructor which should be used.
   
   for(Int_t iMod=0; iMod < 12; iMod++) {
     for(Int_t iX=0; iX<24; iX++) {
       for(Int_t iZ=0; iZ<48; iZ++) {
-	fHmpi0[iMod][iX][iZ]=0;
+        fHmpi0[iMod][iZ][iX]=0;
       }
     } 
+  }
+  
+  for(Int_t iSM=0; iSM<4; iSM++) {
+    fHmggSM[iSM]    =0;
+    fHmggPairSM[iSM]=0;
   }
   
   DefineOutput(1, TList::Class());
@@ -100,19 +105,20 @@ void AliAnalysisTaskEMCALPi0CalibSelection::LocalInit()
 	// Local Initialization
 	
 	// Create cuts/param objects and publish to slot
-	
-	char onePar[255] ;
+	const Int_t buffersize = 255;
+	char onePar[buffersize] ;
 	fCuts = new TList();
 
-	sprintf(onePar,"Custer cuts: %2.2f < E < %2.2f GeV; min number of cells %d;", fEmin,fEmax, fMinNCells) ;
+	snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; min number of cells %d;", fEmin,fEmax, fMinNCells) ;
 	fCuts->Add(new TObjString(onePar));
-	sprintf(onePar,"Group %d cells;", fGroupNCells) ;
+	snprintf(onePar,buffersize, "Group %d cells;", fGroupNCells) ;
 	fCuts->Add(new TObjString(onePar));
-	sprintf(onePar,"Histograms: bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
+	snprintf(onePar,buffersize, "Histograms: bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
 	fCuts->Add(new TObjString(onePar));
-	sprintf(onePar,"Switchs: Remove Bad Channels? %d; Copy AODs? %d;  Recalibrate %d?",fRemoveBadChannels,fCopyAOD,fRecalibration) ;
+	snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Copy AODs? %d;  Recalibrate %d?, Analyze Old AODs? %d, Mass per channel same SM clusters? %d ",
+            fRemoveBadChannels,fCopyAOD,fRecalibration, fOldAOD, fSameSM) ;
 	fCuts->Add(new TObjString(onePar));
-	sprintf(onePar,"EMCAL Geometry name: < %s >",fEMCALGeoName.Data()) ;
+	snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >",fEMCALGeoName.Data()) ;
 	fCuts->Add(new TObjString(onePar));
 
 	// Post Data
@@ -125,6 +131,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD()
 {
   // Copy AOD header, vertex, CaloClusters and CaloCells to output AOD
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
+  
+  if(!aod) {
+  printf("AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD() - This event does not contain AODs?");
+    return;
+  }
   
   // set arrays and pointers
   Float_t posF[3];
@@ -182,17 +193,17 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD()
   // Access to the AOD container of clusters
   TClonesArray &caloClusters = *(AODEvent()->GetCaloClusters());
   Int_t jClusters=0;
-  printf("nCaloClus %d\n",nCaloClus);
+  //printf("nCaloClus %d\n",nCaloClus);
   
   for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
     
     AliAODCaloCluster * cluster = aod->GetCaloCluster(iClust);
     
     //Check if it is a EMCAL cluster
-    if(!cluster->IsEMCAL())  continue ;
-    printf("EMCAL cluster %d, ncells %d\n",iClust, cluster->GetNCells());
-    if(ClusterContainsBadChannel(cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
-    printf("copy\n");
+    if(!IsEMCALCluster(cluster))  continue ;
+    //printf("EMCAL cluster %d, ncells %d\n",iClust, cluster->GetNCells());
+    //if(ClusterContainsBadChannel(cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
+    //printf("copy\n");
     Int_t id       = cluster->GetID();
     Float_t energy = cluster->E();
     cluster->GetPosition(posF);
@@ -248,6 +259,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromESD()
   
   // Copy Header, Vertex, CaloClusters and CaloCells from ESDs to AODs
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  
+  if(!esd) {
+    printf("AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromAOD() - This event does not contain AODs?");
+    return;
+  }
   
   // set arrays and pointers
   Float_t posF[3];
@@ -306,18 +322,18 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromESD()
   // Access to the AOD container of clusters
   TClonesArray &caloClusters = *(AODEvent()->GetCaloClusters());
   Int_t jClusters=0;
-  printf("nCaloClus %d\n",nCaloClus);
+  //printf("nCaloClus %d\n",nCaloClus);
   
   for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
     
     AliESDCaloCluster * cluster = esd->GetCaloCluster(iClust);
     
     //Check which calorimeter information we want to keep.
-    if(!cluster->IsEMCAL())  continue ;
-    printf("EMCAL cluster %d, ncells %d\n",iClust, cluster->GetNCells());
+    if(!IsEMCALCluster(cluster))  continue ;
+    //printf("EMCAL cluster %d, ncells %d\n",iClust, cluster->GetNCells());
     
     if(ClusterContainsBadChannel(cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
-    printf("copy\n");
+    //printf("copy\n");
     
     Int_t id       = cluster->GetID();
     Float_t energy = cluster->E();
@@ -368,6 +384,48 @@ void AliAnalysisTaskEMCALPi0CalibSelection::CreateAODFromESD()
 
 }
 
+//_________________________________________________________________
+Int_t AliAnalysisTaskEMCALPi0CalibSelection::GetEMCALClusters(AliVEvent * event, TRefArray *clusters) const
+{
+  // fills the provided TRefArray with all found emcal clusters
+  
+  clusters->Clear();
+  AliVCluster *cl = 0;
+  Bool_t first = kTRUE;
+  for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++) {
+    if ( (cl = event->GetCaloCluster(i)) ) {
+      if (IsEMCALCluster(cl)){
+        if(first) {
+          new (clusters) TRefArray(TProcessID::GetProcessWithUID(cl)); 
+          first=kFALSE;
+        }
+        clusters->Add(cl);
+        //printf("IsEMCal cluster %d, E %2.3f Size: %d \n",i,cl->E(),clusters->GetEntriesFast());
+      }
+    }
+  }
+  return clusters->GetEntriesFast();
+}
+
+
+//____________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsEMCALCluster(AliVCluster* cluster) const {
+  // Check if it is a cluster from EMCAL. For old AODs cluster type has
+  // different number and need to patch here
+  
+  if(fOldAOD)
+  {
+    if (cluster->GetType() == 2) return kTRUE;
+    else                         return kFALSE;
+  }
+  else 
+  {
+    return cluster->IsEMCAL();
+  }
+  
+}
+
+
 //__________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
 {
@@ -376,14 +434,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
 	
   fOutputContainer = new TList();
-  
-  char hname[128], htitl[128];
+  const Int_t buffersize = 255;
+  char hname[buffersize], htitl[buffersize];
   
   for(Int_t iMod=0; iMod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); iMod++) {
     for(Int_t iRow=0; iRow<AliEMCALGeoParams::fgkEMCALRows; iRow++) {
       for(Int_t iCol=0; iCol<AliEMCALGeoParams::fgkEMCALCols; iCol++) {
-        sprintf(hname,"%d_%d_%d",iMod,iCol,iRow);
-        sprintf(htitl,"Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
+        snprintf(hname,buffersize, "%d_%d_%d",iMod,iCol,iRow);
+        snprintf(htitl,buffersize, "Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
         fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
         fOutputContainer->Add(fHmpi0[iMod][iCol][iRow]);
       }
@@ -393,8 +451,34 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fHmgg = new TH2F("hmgg","2-cluster invariant mass",fNbins,fMinBin,fMaxBin,100,0,10);
   fHmgg->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
   fHmgg->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-
   fOutputContainer->Add(fHmgg);
+
+  fHmggDifferentSM = new TH2F("hmggDifferentSM","2-cluster invariant mass, different SM",fNbins,fMinBin,fMaxBin,100,0,10);
+  fHmggDifferentSM->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+  fHmggDifferentSM->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+  fOutputContainer->Add(fHmggDifferentSM);
+  
+  TString pairname[] = {"A side (0-2)", "C side (1-3)","Row 0 (0-1)", "Row 1 (2-3)"};
+  
+  for(Int_t iSM=0; iSM<4; iSM++) {
+    
+    snprintf(hname, buffersize, "hmgg_SM%d",iSM);
+    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d",iSM);
+    fHmggSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggSM[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    
+    fOutputContainer->Add(fHmggSM[iSM]);
+    
+    
+    snprintf(hname,buffersize, "hmgg_PairSM%d",iSM);
+    snprintf(htitl,buffersize, "Two-gamma inv. mass for SM pair: %s",pairname[iSM].Data());
+    fHmggPairSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggPairSM[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggPairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    
+    fOutputContainer->Add(fHmggPairSM[iSM]);
+  }  
   
   fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
   fOutputContainer->Add(fhNEvents);
@@ -422,12 +506,22 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   if(kAOD){
     //Input are ESDs
     aod = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!aod) {
+      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - This event does not contain AODs?");
+      return;
+    }
+    
     // Create new AOD with only CaloClusters and CaloCells
     if(fCopyAOD) CreateAODFromAOD();
   }
   else  if(kESD) {
     //Input are ESDs
     aod = AODEvent();
+    if(!aod) {
+      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - This event does not contain AODs?");
+      return;
+    }
+    
     // Create AOD with CaloClusters and use it as input.
     // If filtering task is already executed, this is not needed.
     if(fCopyAOD) CreateAODFromESD();
@@ -447,7 +541,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   Int_t runNum = aod->GetRunNumber();
   if(DebugLevel() > 1) printf("Run number: %d\n",runNum);
   
-  //FIXME Not neede the matrices for the moment MEFIX
+  //FIXME Not need the matrices for the moment MEFIX
   //Get the matrix with geometry information
   //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
   //  if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) {
@@ -457,6 +551,10 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   //  else{	
   //    if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection Load Misaligned matrices. \n");
   //    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
+  //    if(!esd) {
+  //      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - This event does not contain ESDs?");
+  //      return;
+  //    }
   //    for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
   //      if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
   //    }
@@ -476,8 +574,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   TLorentzVector p12;
   
   TRefArray * caloClustersArr  = new TRefArray();
-  aod->GetEMCALClusters(caloClustersArr);
-  
+  if(!fOldAOD) aod->GetEMCALClusters(caloClustersArr);
+  else  GetEMCALClusters(aod,caloClustersArr);
+    
   const Int_t kNumberOfEMCALClusters   = caloClustersArr->GetEntries() ;
   if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALPi0CalibSelection - N CaloClusters: %d \n", kNumberOfEMCALClusters);
   
@@ -568,9 +667,20 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       if(invmass < fMaxBin && invmass > fMinBin){
         fHmgg->Fill(invmass,p12.Pt()); 
         
+        if(iSupMod1==iSupMod2) fHmggSM[iSupMod1]->Fill(invmass,p12.Pt()); 
+        else  fHmggDifferentSM->Fill(invmass,p12.Pt());
+        
+        if((iSupMod1==0 && iSupMod2==2) || (iSupMod1==2 && iSupMod2==0)) fHmggPairSM[0]->Fill(invmass,p12.Pt()); 
+        if((iSupMod1==1 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==1)) fHmggPairSM[1]->Fill(invmass,p12.Pt()); 
+        if((iSupMod1==0 && iSupMod2==1) || (iSupMod1==1 && iSupMod2==0)) fHmggPairSM[2]->Fill(invmass,p12.Pt()); 
+        if((iSupMod1==2 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==2)) fHmggPairSM[3]->Fill(invmass,p12.Pt()); 
+        
+        //In case of filling only channels with second cluster in same SM
+        if(fSameSM && iSupMod1!=iSupMod2) continue;
+        
         if (fGroupNCells == 0){
-          fHmpi0[iSupMod1][ieta1][iphi1]->Fill(invmass);
-          fHmpi0[iSupMod2][ieta2][iphi2]->Fill(invmass);
+            fHmpi0[iSupMod1][ieta1][iphi1]->Fill(invmass);
+            fHmpi0[iSupMod2][ieta2][iphi2]->Fill(invmass);
         }	
         else  {
           //printf("Regroup N %d, eta1 %d, phi1 %d, eta2 %d, phi2 %d \n",fGroupNCells, ieta1, iphi1, ieta2, iphi2);

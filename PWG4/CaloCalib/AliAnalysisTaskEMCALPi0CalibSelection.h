@@ -49,6 +49,14 @@ public:
   void CopyAOD(Bool_t copy)   { fCopyAOD = copy ; }
   Bool_t IsAODCopied() const { return fCopyAOD ; }
 	
+  void SwitchOnSameSM()    {fSameSM = kTRUE  ; }
+  void SwitchOffSameSM()   {fSameSM = kFALSE ; }
+  
+  Int_t  GetEMCALClusters(AliVEvent* event, TRefArray *clusters) const;
+  Bool_t IsEMCALCluster(AliVCluster *clus) const;
+  void SwitchOnOldAODs()   {fOldAOD = kTRUE  ; }
+  void SwitchOffOldAODs()  {fOldAOD = kFALSE ; }  
+  
   void SetGeometryName(TString name)   { fEMCALGeoName = name ; }
   TString GeometryName() const { return fEMCALGeoName ; }
  
@@ -113,6 +121,8 @@ private:
   Int_t   fGroupNCells;   // group n cells
   Float_t fLogWeight;     // log weight used in cluster recalibration
   Bool_t  fCopyAOD;       // Copy calo information only to AOD?
+  Bool_t  fSameSM;        // Combine clusters in channels on same SM
+  Bool_t  fOldAOD;        // Reading Old AODs, created before release 4.20
   TString fEMCALGeoName;  // Name of geometry to use.
 	
   Bool_t     fRemoveBadChannels;         // Check the channel status provided and remove clusters with bad channels
@@ -128,10 +138,13 @@ private:
   TList*  fOutputContainer; //!histogram container
   TH1F*   fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];//! two-cluster inv. mass assigned to each cell.
   TH2F*   fHmgg;            //! two-cluster inv.mass vt pt of pair
+  TH2F*   fHmggDifferentSM; //! two-cluster inv.mass vt pt of pair, each cluster in different SM
+  TH2F*   fHmggSM[4];       //! two-cluster inv.mass per SM
+  TH2F*   fHmggPairSM[4];   //! two-cluster inv.mass per Pair
   TH1I*   fhNEvents;        //! Number of events counter histogram
   TList * fCuts ;           //! List with analysis cuts
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,3);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,4);
 
 };
 

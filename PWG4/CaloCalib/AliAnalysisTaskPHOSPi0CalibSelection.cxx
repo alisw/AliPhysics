@@ -99,6 +99,11 @@ void AliAnalysisTaskPHOSPi0CalibSelection::CreateAODFromAOD()
   
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
   
+  if(!aod) {
+    printf("AliAnalysisTaskPHOSPi0CalibSelection::CreateAODFromAOD() - This event does not contain AODs?");
+    return;
+  }
+  
   // set arrays and pointers
   Float_t posF[3];
   Double_t pos[3];
@@ -218,6 +223,11 @@ void AliAnalysisTaskPHOSPi0CalibSelection::CreateAODFromESD()
   
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   
+  if(!esd) {
+    printf("AliAnalysisTaskPHOSPi0CalibSelection::CreateAODFromESD() - This event does not contain AODs?");
+    return;
+  }
+  
   // set arrays and pointers
   Float_t posF[3];
   Double_t pos[3];
@@ -332,16 +342,16 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserCreateOutputObjects()
 {
   //Create output container
   fOutputContainer = new TList();
-  
-  char hname[128], htitl[128];
+  const Int_t buffersize = 255;
+  char hname[buffersize], htitl[buffersize];
   
   for(Int_t iMod=0; iMod<5; iMod++) {
     for(Int_t iX=0; iX<64; iX++) {
       for(Int_t iZ=0; iZ<56; iZ++) {
-	sprintf(hname,"%d_%d_%d",iMod,iX,iZ);
-	sprintf(htitl,"Two-gamma inv. mass for mod %d, cell (%d,%d)",iMod,iX,iZ);
-	fHmpi0[iMod][iX][iZ] = new TH1F(hname,htitl,100,0.,300.);
-	fOutputContainer->Add(fHmpi0[iMod][iX][iZ]);
+        snprintf(hname,buffersize,"%d_%d_%d",iMod,iX,iZ);
+        snprintf(htitl,buffersize,"Two-gamma inv. mass for mod %d, cell (%d,%d)",iMod,iX,iZ);
+        fHmpi0[iMod][iX][iZ] = new TH1F(hname,htitl,100,0.,300.);
+        fOutputContainer->Add(fHmpi0[iMod][iX][iZ]);
       }
     }
   }
@@ -364,12 +374,22 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
   if(!strcmp(InputEvent()->GetName(),"AliAODEvent")) {
     //Input are ESDs
     aod = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!aod) {
+      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - This event does not contain AODs?");
+      return;
+    }    
+    
     // Create new AOD with only CaloClusters and CaloCells
     if(fCopyAOD) CreateAODFromAOD();
   }
   else  if(!strcmp(InputEvent()->GetName(),"AliESDEvent")) {
     //Input are ESDs
     aod = AODEvent();
+    if(!aod) {
+      printf("AliAnalysisTaskPHOSPi0CalibSelection::UserExec() - This event does not contain AODs?");
+      return;
+    } 
+    
     // Create AOD with CaloClusters and use it as input.
     // If filtering task is already executed, this is not needed.
     if(fCopyAOD) CreateAODFromESD();
@@ -397,6 +417,10 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
   else{	
 	  if(DebugLevel() > 1) printf("AliAnalysisTaskPHOSPi0CalibSelection Load Misaligned matrices. \n");
 	  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
+    if(!esd) {
+       printf("AliAnalysisTaskPHOSPi0CalibSelection::UserExec() - This event does not contain ESDs?");
+      return;
+    }
 	  for(Int_t mod=0; mod<5; mod++){ 
 		if(esd->GetPHOSMatrix(mod))
 			fPhosGeo->SetMisalMatrix(esd->GetPHOSMatrix(mod),mod) ;

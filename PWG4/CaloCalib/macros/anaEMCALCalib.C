@@ -118,6 +118,8 @@ void anaEMCALCalib(Int_t mode=mLocal)
     pi0calib->SetClusterMinNCells(0);
     pi0calib->SetNCellsGroup(0);
     pi0calib->SwitchOnBadChannelsRemoval();
+    pi0calib->SwitchOffSameSM();
+    pi0calib->SwitchOffOldAODs();
     // SM0
     pi0calib->SetEMCALChannelStatus(0,3,13);  pi0calib->SetEMCALChannelStatus(0,44,1); pi0calib->SetEMCALChannelStatus(0,3,13); 
     pi0calib->SetEMCALChannelStatus(0,20,7);  pi0calib->SetEMCALChannelStatus(0,38,2);   
