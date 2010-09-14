@@ -135,7 +135,7 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-26-00b-6";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginRootVersion       = "v5-27-05";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-19-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
@@ -1438,7 +1438,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Check if user has a valid token, otherwise make one. This has limitations.
 // One can always follow the standard procedure of calling alien-token-init then
 //   source /tmp/gclient_env_$UID in the current shell.
-   if (!AliAnalysisGrid::CreateToken()) return NULL;
+//   if (!AliAnalysisGrid::CreateToken()) return NULL;
    AliAnalysisAlien *plugin = new AliAnalysisAlien();
 // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(plugin_mode);
@@ -1458,7 +1458,8 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetGridDataDir(kGridDatadir.Data());
 // Set data search pattern
    if (iAODanalysis) plugin->SetDataPattern(" *AliAOD.root");
-   else              plugin->SetDataPattern(Form(" %s/*/*ESD.tag.root",kGridPassPattern.Data()));
+   //   else              plugin->SetDataPattern(Form(" %s/*/*ESD.tag.root",kGridPassPattern.Data()));
+   else              plugin->SetDataPattern(Form(" %s/*/*AliESDs.root",kGridPassPattern.Data()));
 // ...then add run numbers to be considered
 //   plugin->SetRunRange(kGridRunRange[0], kGridRunRange[1]);
    for (Int_t i=kGridRunRange[0]; i<=kGridRunRange[1]; i++) {
@@ -1678,7 +1679,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
    plugin->SetMaxInitFailed(5);
    // Optionally resubmit threshold.
-   //   plugin->SetMasterResubmitThreshold(90);
+   // plugin->SetMasterResubmitThreshold(90);
    // Optionally set time to live (default 30000 sec)
    plugin->SetTTL(50400); // 14h...
    // Optionally set input format (default xml-single)
