@@ -452,22 +452,23 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
       // adjust acceptance range
       // produce with drawPlots.C: DetermineAcceptance(...)
+      const Int_t binBeginSPD[maxBins] = {19, 18, 17, 15, 14, 12, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
+      const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1};
+      const Int_t binBeginTPCITS[maxBins] = {-1, -1, -1, -1, -1, -1, -1, 14, 10, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1};
+
       if (fAnalysisMode & AliPWG0Helper::kSPD)
       {
         //const Int_t binBeginSPD[maxBins] = {15, 14, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
-        const Int_t binBeginSPD[maxBins] = {19, 18, 17, 15, 14, 12, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
         
         binBegin = binBeginSPD;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPC)
       {
-        const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1};
 
         binBegin = binBeginTPC;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPCITS)
       {
-        const Int_t binBeginTPCITS[maxBins] = {-1, -1, -1, -1, -1, -1, -1, 14, 10, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1};
 
         binBegin = binBeginTPCITS;
       }
