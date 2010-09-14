@@ -1,7 +1,7 @@
 // $Id:$
 
-#ifndef MyTreeClasses_cxx
-#define MyTreeClasses_cxx
+#ifndef TreeClasses_h
+#define TreeClasses_h
 
 #include <Riostream.h>
 #include <TTree.h>
