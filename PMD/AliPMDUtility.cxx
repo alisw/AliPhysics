@@ -25,22 +25,15 @@
 #include "TMath.h"
 #include "TText.h"
 #include "TLine.h"
-#include <TClonesArray.h>
 
 #include <stdio.h>
 #include <math.h>
 
 #include "AliPMDUtility.h"
-#include "AliAlignObjMatrix.h"
-#include "AliCDBManager.h"
-#include "AliCDBEntry.h"
-#include "AliLog.h"
-
 
 ClassImp(AliPMDUtility)
 
 AliPMDUtility::AliPMDUtility():
-  fAlObj(GetAlignObj()),
   fPx(0.),
   fPy(0.),
   fPz(0.),
@@ -61,7 +54,6 @@ AliPMDUtility::AliPMDUtility():
 }
 
 AliPMDUtility::AliPMDUtility(Float_t px, Float_t py, Float_t pz):
-  fAlObj(GetAlignObj()),
   fPx(px),
   fPy(py),
   fPz(pz),
@@ -82,7 +74,6 @@ AliPMDUtility::AliPMDUtility(Float_t px, Float_t py, Float_t pz):
 }
 AliPMDUtility::AliPMDUtility(const AliPMDUtility &pmdutil):
   TObject(pmdutil),
-  fAlObj(pmdutil.GetAlignObj()),
   fPx(pmdutil.fPx),
   fPy(pmdutil.fPy),
   fPz(pmdutil.fPz),
@@ -614,22 +605,15 @@ void AliPMDUtility::ApplyVertexCorrection(Float_t vertex[], Float_t xpos,
   fPy = ypos - vertex[1];
   fPz = zpos - vertex[2];
 }
-void AliPMDUtility::ApplyAlignment()
+void AliPMDUtility::ApplyAlignment(Double_t sectr[][3])
 {
   // Get the alignment stuff here
 
-  AliAlignObjMatrix * aam;
-  Double_t tr[3];
-  //Double_t secTr[4][3];
-
   for (Int_t isector=0; isector<4; isector++)
     {
-      aam = (AliAlignObjMatrix*)fAlObj->UncheckedAt(isector);
-      aam->GetTranslation(tr);
-      
       for(Int_t ixyz=0; ixyz < 3; ixyz++)
 	{
-	  fSecTr[isector][ixyz] = (Float_t) tr[ixyz];
+	  fSecTr[isector][ixyz] = (Float_t) sectr[isector][ixyz];
 	}
     }
 }
@@ -756,20 +740,3 @@ Float_t AliPMDUtility::GetZ() const
   return fPz;
 }
 //--------------------------------------------------------------------//
-TClonesArray* AliPMDUtility::GetAlignObj() const
-{
-  // The run number will be centralized in AliCDBManager,
-  // you don't need to set it here!
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Align/Data");
-  
-  if(!entry) AliFatal("Alignment object retrieval failed!");
-  
-  TClonesArray *alobj = 0;
-  if (entry) alobj = (TClonesArray*) entry->GetObject();
-  
-  if (!alobj)  AliFatal("No alignment data from  database !");
-  
-  return alobj;
-}
-
-

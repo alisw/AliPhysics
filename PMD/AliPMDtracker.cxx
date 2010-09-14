@@ -32,6 +32,10 @@
 #include <TNtuple.h>
 #include <TParticle.h>
 
+#include <TGeoMatrix.h>
+
+#include "AliGeomManager.h"
+
 #include "AliPMDcluster.h"
 #include "AliPMDclupid.h"
 #include "AliPMDrecpoint1.h"
@@ -243,6 +247,29 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
   AliPMDEmpDiscriminator pmddiscriminator;
   pmddiscriminator.Discrimination(fPMDcontin,fPMDcontout);
 
+  // alignment implemention
+
+  Double_t sectr[4][3] = { {0.,0.,0.},{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
+  TString snsector="PMD/Sector";
+  TString symname;
+  TGeoHMatrix gpmdor;
+  
+  for(Int_t isector=1; isector<=4; isector++)
+    {
+      symname = snsector;
+      symname += isector;
+      TGeoHMatrix *gpmdal = AliGeomManager::GetMatrix(symname);
+      Double_t *tral = gpmdal->GetTranslation();
+
+      AliGeomManager::GetOrigGlobalMatrix(symname, gpmdor);
+      Double_t *tror = gpmdor.GetTranslation();
+      
+      for(Int_t ixyz=0; ixyz<3; ixyz++)
+	{
+	  sectr[isector-1][ixyz] = tral[ixyz] - tror[ixyz];
+	}
+    }
+
   const Float_t kzpos = 361.5;    // middle of the PMD
 
   Int_t   ix = -1, iy = -1;
@@ -252,7 +279,7 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
   Float_t xglobal = 0., yglobal = 0., zglobal = 0;
   Float_t pid = 0.;
 
-  fPMDutil->ApplyAlignment();
+  fPMDutil->ApplyAlignment(sectr);
 
   Int_t nentries2 = fPMDcontout->GetEntries();
   AliDebug(1,Form("Number of clusters coming after discrimination = %d"
