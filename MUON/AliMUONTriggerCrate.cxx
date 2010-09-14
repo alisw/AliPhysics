@@ -57,7 +57,8 @@ AliMUONTriggerCrate::AliMUONTriggerCrate(const char *name, Int_t n) :
     fBoards(new TObjArray(fNslots)),
     fSourceFileName(0)
 {
-/// Standard constructor
+  /// Standard constructor
+  fBoards->SetOwner(kTRUE);
 }
 
 //___________________________________________
