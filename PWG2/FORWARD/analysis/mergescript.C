@@ -1,6 +1,10 @@
-alienmerge(const char* path, const char* pattern, const char* outfile=0, Int_t nFiles = 10000){
-  //gSystem->Load("libVMC.so");
-  
+alienmerge(const char* path, 
+	   const char* pattern, 
+	   const char* outfile=0, 
+	   Int_t nFiles = 10000, 
+	   const char* blacklist1 ="roskilde", 
+	   const char* blacklist2 = "hvidovre"){
+    
   TGrid::Connect("alien://",0,0,"t");
   TGridResult* result = gGrid->Query(path,pattern);
   result->Print();
@@ -26,8 +30,14 @@ alienmerge(const char* path, const char* pattern, const char* outfile=0, Int_t n
     // list.Add(tmp);
     
     //    if(i!=blacklist1 && i!=blacklist2) {
-      m.AddFile(result->GetKey(i,"turl"));
-      cout<<i<<"   "<<result->GetKey(i,"turl")<<endl;
+    TString test(result->GetKey(i,"turl"));
+    test.ToLower();
+    if(test.Contains(blacklist1) || test.Contains(blacklist2) ) {
+      i++:
+      continue;
+    }
+    m.AddFile(result->GetKey(i,"turl"));
+    cout<<i<<"   "<<result->GetKey(i,"turl")<<endl;
       
       // }
       i++;
