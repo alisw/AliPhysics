@@ -1188,6 +1188,9 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       if(fStandAlone==kTRUE) {
 	if(!(tpcP->GetStatus()&AliESDtrack::kITSpureSA))continue;
       }
+      else if(fStandAlone==kFALSE){
+	if(tpcP->GetStatus()&AliESDtrack::kITSpureSA)continue;
+      }
     }
     else if(fTrackType==2){     
       //Fill all histograms with TPC track information
