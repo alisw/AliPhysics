@@ -853,15 +853,28 @@ void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *const trklt, Int_t index)
 //_______________________________________________________________
 void AliTRDtrackV1::SetTrackIn()
 {
+//  Save location of birth for the TRD track
+//  If the pointer is not valid allocate memory
+//
   const AliExternalTrackParam *op = dynamic_cast<const AliExternalTrackParam*>(this);
-  fTrackLow = fTrackLow ? new(fTrackLow) AliExternalTrackParam(*op) : new AliExternalTrackParam(*op);
+
+  if(fTrackLow){
+    fTrackLow->~AliExternalTrackParam();
+    new(fTrackLow) AliExternalTrackParam(*op);
+  } else fTrackLow = new AliExternalTrackParam(*op);
 }
 
 //_______________________________________________________________
 void AliTRDtrackV1::SetTrackOut(const AliExternalTrackParam *op)
 {
+//  Save location of death for the TRD track
+//  If the pointer is not valid allocate memory
+//
   if(!op) op = dynamic_cast<const AliExternalTrackParam*>(this);
-  fTrackHigh = fTrackHigh ? new(fTrackHigh) AliExternalTrackParam(*op) : new AliExternalTrackParam(*op);
+  if(fTrackHigh){
+    fTrackHigh->~AliExternalTrackParam();
+    new(fTrackHigh) AliExternalTrackParam(*op);
+  } else fTrackHigh = new AliExternalTrackParam(*op);
 }
 
 //_______________________________________________________________
