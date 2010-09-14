@@ -12,7 +12,8 @@
 #include <TMath.h>
 #include <TRandom3.h>
 #include <TSystem.h>
-#include "MyClasses.cxx"
+#include <TObjectTable.h>
+#include "MyTreeClasses.C"
 #endif
 
 //#define DUPLICATECHECK
@@ -57,10 +58,11 @@ void mergeCorr(Int_t run_from,
     if (!file)
       continue;
     TList *output = dynamic_cast<TList*>(file->Get("output"));
+    output->SetOwner(1);
     TTree *tree = dynamic_cast<TTree*>(output->FindObject("MyTree"));
     Int_t nent = tree->GetEntries();
     if (nent<1) {
-      delete tree;
+      delete output;
       file->Close();
       delete file;
       continue;
@@ -111,7 +113,7 @@ void mergeCorr(Int_t run_from,
       cout << ") found in " << fname << endl;
       cout << " Cannot deal with this case yet!!!" << endl;
     }
-    delete tree;
+    delete output;
     file->Close();
     delete file;
   }
@@ -157,10 +159,11 @@ void mergeCorr(Int_t nEvents,
     if (!file)
       continue;
     TList *output = dynamic_cast<TList*>(file->Get("output"));
+    output->SetOwner(1);
     TTree *tree = dynamic_cast<TTree*>(output->FindObject("MyTree"));
     Int_t nent = tree->GetEntries();
     if (nent<1) {
-      delete tree;
+      delete output;
       file->Close();
       delete file;
       continue;
@@ -224,14 +227,14 @@ void mergeCorr(Int_t nEvents,
       cinfo->fEntry = ev;
       einfos.insert( pair<ULong64_t, EvInfo*>(evtid,cinfo) );
     }
-    delete tree;
+    delete output;
     file->Close();
     delete file;
     if ((nEvents>0) && (einfos.size()>=(UInt_t)nEvents))
       break;
   }
   cout << "Found total: " << totnent << endl;
-  cout << "Found suspicious: " << totnsus << endl;
+//  cout << "Found suspicious: " << totnsus << endl;
 #ifdef DUPLICATECHECK
   cout << "Found potential duplicates: " << totncan << endl;
 #ifdef DUPLICATEVERBOSE        
