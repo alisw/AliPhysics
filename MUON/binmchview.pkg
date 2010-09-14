@@ -3,16 +3,12 @@ SRCS:=mchview.cxx
 EINCLUDE+=MUON/mapping
 
 ELIBS:= \
-VMC \
-Minuit \
-Tree \
 STEERBase \
 ESD \
 AOD \
 RAWDatarec \
 STEER \
 CDB \
-Physics \
 MUONmapping \
 MUONcalib \
 MUONgeometry \
