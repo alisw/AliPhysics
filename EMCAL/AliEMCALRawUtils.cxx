@@ -68,15 +68,15 @@ class AliEMCALDigitizer;
 ClassImp(AliEMCALRawUtils)
   
 // Signal shape parameters
-Int_t    AliEMCALRawUtils::fgTimeBins     = 256;       // number of sampling bins of the raw RO signal (we typically use 15-50; theoretical max is 1k+) 
-Double_t AliEMCALRawUtils::fgTimeBinWidth = 100E-9 ;   // each sample is 100 ns
-Double_t AliEMCALRawUtils::fgTimeTrigger  = 0.6E-6 ;   // 15 time bins ~ 1.5 musec
+Int_t    AliEMCALRawUtils::fgTimeBins = 256; // number of sampling bins of the raw RO signal (we typically use 15-50; theoretical max is 1k+) 
+Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
+Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 musec
 
 // some digitization constants
-Int_t    AliEMCALRawUtils::fgThreshold         = 1;
+Int_t    AliEMCALRawUtils::fgThreshold = 1;
 Int_t    AliEMCALRawUtils::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
-Int_t    AliEMCALRawUtils::fgPedestalValue     = 0;  // pedestal value for digits2raw, default generate ZS data
-Double_t AliEMCALRawUtils::fgFEENoise          = 3.; // 3 ADC channels of noise (sampled)
+Int_t    AliEMCALRawUtils::fgPedestalValue = 0;     // pedestal value for digits2raw, default generate ZS data
+Double_t AliEMCALRawUtils::fgFEENoise = 3.;          // 3 ADC channels of noise (sampled)
 
 AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
@@ -110,14 +110,8 @@ AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
   //To make sure we match with the geometry in a simulation file,
   //let's try to get it first.  If not, take the default geometry
   AliRunLoader *rl = AliRunLoader::Instance();
-  if (rl && rl->GetAliRun()) {
-    AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
-    if(emcal)fGeom = emcal->GetGeometry();
-    else {
-      AliDebug(1, Form("Using default geometry in raw reco"));
-      fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
-    }
-
+  if (rl && rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
+    fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   } else {
     AliDebug(1, Form("Using default geometry in raw reco"));
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
@@ -237,7 +231,7 @@ void AliEMCALRawUtils::Digits2Raw()
   
   AliRunLoader *rl = AliRunLoader::Instance();
   AliEMCALLoader *loader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
-  
+
   // get the digits
   loader->LoadDigits("EMCAL");
   loader->GetEvent();
@@ -247,12 +241,12 @@ void AliEMCALRawUtils::Digits2Raw()
     Warning("Digits2Raw", "no digits found !");
     return;
   }
-  
+
   static const Int_t nDDL = 12*2; // 12 SM hardcoded for now. Buffers allocated dynamically, when needed, so just need an upper limit here
   AliAltroBuffer* buffers[nDDL];
   for (Int_t i=0; i < nDDL; i++)
     buffers[i] = 0;
-  
+
   TArrayI adcValuesLow(fgTimeBins);
   TArrayI adcValuesHigh(fgTimeBins);
   
@@ -264,7 +258,7 @@ void AliEMCALRawUtils::Digits2Raw()
     }
     else{
       if (digit->GetAmplitude() < fgThreshold) 
-        continue;
+	continue;
       
       //get cell indices
       Int_t nSM = 0;
@@ -290,45 +284,45 @@ void AliEMCALRawUtils::Digits2Raw()
       if (nSM%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
       
       if (iRCU<0) 
-        Fatal("Digits2Raw()","Non-existent RCU number: %d", iRCU);
+	Fatal("Digits2Raw()","Non-existent RCU number: %d", iRCU);
       
       //Which DDL?
       Int_t iDDL = fgDDLPerSuperModule* nSM + iRCU;
       if (iDDL >= nDDL)
-        Fatal("Digits2Raw()","Non-existent DDL board number: %d", iDDL);
+	Fatal("Digits2Raw()","Non-existent DDL board number: %d", iDDL);
       
       if (buffers[iDDL] == 0) {      
-        // open new file and write dummy header
-        TString fileName = AliDAQ::DdlFileName("EMCAL",iDDL);
-        //Select mapping file RCU0A, RCU0C, RCU1A, RCU1C
-        Int_t iRCUside=iRCU+(nSM%2)*2;
-        //iRCU=0 and even (0) SM -> RCU0A.data   0
-        //iRCU=1 and even (0) SM -> RCU1A.data   1
-        //iRCU=0 and odd  (1) SM -> RCU0C.data   2
-        //iRCU=1 and odd  (1) SM -> RCU1C.data   3
-        //cout<<" nSM "<<nSM<<"; iRCU "<<iRCU<<"; iRCUside "<<iRCUside<<endl;
-        buffers[iDDL] = new AliAltroBuffer(fileName.Data(),fMapping[iRCUside]);
-        buffers[iDDL]->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
+	// open new file and write dummy header
+	TString fileName = AliDAQ::DdlFileName("EMCAL",iDDL);
+	//Select mapping file RCU0A, RCU0C, RCU1A, RCU1C
+	Int_t iRCUside=iRCU+(nSM%2)*2;
+	//iRCU=0 and even (0) SM -> RCU0A.data   0
+	//iRCU=1 and even (0) SM -> RCU1A.data   1
+	//iRCU=0 and odd  (1) SM -> RCU0C.data   2
+	//iRCU=1 and odd  (1) SM -> RCU1C.data   3
+	//cout<<" nSM "<<nSM<<"; iRCU "<<iRCU<<"; iRCUside "<<iRCUside<<endl;
+	buffers[iDDL] = new AliAltroBuffer(fileName.Data(),fMapping[iRCUside]);
+	buffers[iDDL]->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
       }
       
       // out of time range signal (?)
       if (digit->GetTimeR() > GetRawFormatTimeMax() ) {
-        AliInfo("Signal is out of time range.\n");
-        buffers[iDDL]->FillBuffer((Int_t)digit->GetAmplitude());
-        buffers[iDDL]->FillBuffer(GetRawFormatTimeBins() );  // time bin
-        buffers[iDDL]->FillBuffer(3);          // bunch length      
-        buffers[iDDL]->WriteTrailer(3, ieta, iphi, nSM);  // trailer
-        // calculate the time response function
+	AliInfo("Signal is out of time range.\n");
+	buffers[iDDL]->FillBuffer((Int_t)digit->GetAmplitude());
+	buffers[iDDL]->FillBuffer(GetRawFormatTimeBins() );  // time bin
+	buffers[iDDL]->FillBuffer(3);          // bunch length      
+	buffers[iDDL]->WriteTrailer(3, ieta, iphi, nSM);  // trailer
+	// calculate the time response function
       } else {
-        Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), digit->GetAmplitude(), adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
-        if (lowgain) 
-          buffers[iDDL]->WriteChannel(ieta, iphi, 0, GetRawFormatTimeBins(), adcValuesLow.GetArray(), fgThreshold);
-        else 
-          buffers[iDDL]->WriteChannel(ieta,iphi, 1, GetRawFormatTimeBins(), adcValuesHigh.GetArray(), fgThreshold);
+	Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), digit->GetAmplitude(), adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
+	if (lowgain) 
+	  buffers[iDDL]->WriteChannel(ieta, iphi, 0, GetRawFormatTimeBins(), adcValuesLow.GetArray(), fgThreshold);
+	else 
+	  buffers[iDDL]->WriteChannel(ieta,iphi, 1, GetRawFormatTimeBins(), adcValuesHigh.GetArray(), fgThreshold);
       }
     }//digit exists
   }//Digit loop
-  
+
   // write headers and close files
   for (Int_t i=0; i < nDDL; i++) {
     if (buffers[i]) {
@@ -345,9 +339,9 @@ void AliEMCALRawUtils::Digits2Raw()
 void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap, TClonesArray *digitsTRG, AliEMCALTriggerData* trgData)
 {
   // convert raw data of the current event to digits                                                                                     
-  
+
   if(digitsArr) digitsArr->Clear("C"); 
-  
+
   if (!digitsArr) {
     Error("Raw2Digits", "no digits found !");
     return;
@@ -363,7 +357,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	
   // Select EMCAL DDL's;
   reader->Select("EMCAL",0,43); // 43 = AliEMCALGeoParams::fgkLastAltroDDL
-  
+
   fTriggerRawDigitMaker->Reset();	
   fTriggerRawDigitMaker->SetIO(reader, in, inSTU, digitsTRG, trgData);
 	
@@ -373,138 +367,133 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   fRawAnalyzer->SetAmpCut(fNoiseThreshold);
   fRawAnalyzer->SetFitArrayCut(fNoiseThreshold);
   fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
-  
+
   // channel info parameters
   Int_t lowGain  = 0;
   Int_t caloFlag = 0; // low, high gain, or TRU, or LED ref.
-  
+
   // start loop over input stream 
   while (in.NextDDL()) {
 	  
-    //    if ( in.GetDDLNumber() != 0 && in.GetDDLNumber() != 2 ) continue;
-    
+//    if ( in.GetDDLNumber() != 0 && in.GetDDLNumber() != 2 ) continue;
+
     while (in.NextChannel()) {
-      
+
       //Check if the signal  is high or low gain and then do the fit, 
       //if it  is from TRU or LEDMon do not fit
       caloFlag = in.GetCaloFlag();
-      //		if (caloFlag != 0 && caloFlag != 1) continue; 
-      if (caloFlag > 2) continue; // Work with ALTRO and FALTRO 
-      
+//		if (caloFlag != 0 && caloFlag != 1) continue; 
+	  if (caloFlag > 2) continue; // Work with ALTRO and FALTRO 
+		
       //Do not fit bad channels of ALTRO
       if(caloFlag < 2 && fRemoveBadChannels && pedbadmap->IsBadChannel(in.GetModule(),in.GetColumn(),in.GetRow())) {
-        //printf("Tower from SM %d, column %d, row %d is BAD!!! Skip \n", in.GetModule(),in.GetColumn(),in.GetRow());
-        continue;
+	//printf("Tower from SM %d, column %d, row %d is BAD!!! Skip \n", in.GetModule(),in.GetColumn(),in.GetRow());
+	continue;
       }  
-      
+
       vector<AliCaloBunchInfo> bunchlist; 
       while (in.NextBunch()) {
-        bunchlist.push_back( AliCaloBunchInfo(in.GetStartTimeBin(), in.GetBunchLength(), in.GetSignals() ) );
+	bunchlist.push_back( AliCaloBunchInfo(in.GetStartTimeBin(), in.GetBunchLength(), in.GetSignals() ) );
       } // loop over bunches
-      
-      
+
+   
       if ( caloFlag < 2 ){ // ALTRO
-        
-        Float_t time = 0; 
-        Float_t amp  = 0; 
-        short timeEstimate  = 0;
-        Float_t ampEstimate = 0;
-        Bool_t fitDone = kFALSE;
-        Float_t chi2 = 0;
-        Int_t ndf = 0;
-        
-        if ( fFittingAlgorithm == kFastFit || fFittingAlgorithm == kNeuralNet || fFittingAlgorithm == kLMS || fFittingAlgorithm == kPeakFinder || fFittingAlgorithm == kCrude) {
-          // all functionality to determine amp and time etc is encapsulated inside the Evaluate call for these methods 
-          AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
-          
-          amp          = fitResults.GetAmp();
-          time         = fitResults.GetTime();
-          timeEstimate = fitResults.GetMaxTimebin();
-          ampEstimate  = fitResults.GetMaxSig();
-          chi2 = fitResults.GetChi2();
-          ndf = fitResults.GetNdf();
-          if (fitResults.GetStatus() == AliCaloFitResults::kFitPar) {
-            fitDone = kTRUE;
-          }
-        }
-        else { // for the other methods we for now use the functionality of 
-          // AliCaloRawAnalyzer as well, to select samples and prepare for fits, 
-          // if it looks like there is something to fit
-          
-          // parameters init.
-          Float_t pedEstimate  = 0;
-          short maxADC = 0;
-          Int_t first = 0;
-          Int_t last = 0;
-          Int_t bunchIndex = 0;
-          //
-          // The PreFitEvaluateSamples + later call to FitRaw will hopefully 
-          // be replaced by a single Evaluate call or so soon, like for the other
-          // methods, but this should be good enough for evaluation of 
-          // the methods for now (Jan. 2010)
-          //
-          int nsamples = fRawAnalyzer->PreFitEvaluateSamples( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2(), bunchIndex, ampEstimate, maxADC, timeEstimate, pedEstimate, first, last); 
-          
-          if (ampEstimate >= fNoiseThreshold) { // something worth looking at
-            
-            time = timeEstimate; // maxrev in AliCaloRawAnalyzer speak; comes with an offset w.r.t. real timebin
-            Int_t timebinOffset = bunchlist.at(bunchIndex).GetStartBin() - (bunchlist.at(bunchIndex).GetLength()-1); 
-            amp = ampEstimate; 
-            
-            if ( nsamples > 1 && maxADC<fgkOverflowCut ) { // possibly something to fit
-              FitRaw(first, last, amp, time, chi2, fitDone);
-              time += timebinOffset;
-              timeEstimate += timebinOffset;
-              ndf = nsamples - 2;
-              printf("time offset %d\n",timebinOffset);
-            }
-            
-          } // ampEstimate check
-        } // method selection
-        printf("b) amp %f, time %f, chi2 %f \n", amp,time, chi2 );
+		
+	Float_t time = 0; 
+	Float_t amp  = 0; 
+	short timeEstimate  = 0;
+	Float_t ampEstimate = 0;
+	Bool_t fitDone = kFALSE;
+	Float_t chi2 = 0;
+	Int_t ndf = 0;
 
-        if ( fitDone ) { // brief sanity check of fit results	    
-          Float_t ampAsymm = (amp - ampEstimate)/(amp + ampEstimate);
-          Float_t timeDiff = time - timeEstimate;
-          if ( (TMath::Abs(ampAsymm) > 0.1) || (TMath::Abs(timeDiff) > 2) ) {
-            // AliDebug(2,Form("Fit results amp %f time %f not consistent with expectations amp %f time %d", amp, time, ampEstimate, timeEstimate));
-            
-            // for now just overwrite the fit results with the simple/initial estimate
-            amp     = ampEstimate;
-            time    = timeEstimate; 
-            fitDone = kFALSE;
-          } 
-        } // fitDone
-        
-        if (amp >= fNoiseThreshold) { // something to be stored
-          if ( ! fitDone) { // smear ADC with +- 0.5 uniform (avoid discrete effects)
-            amp += (0.5 - gRandom->Rndm()); // Rndm generates a number in ]0,1]
-          }
-          
-          Int_t id = fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-          lowGain  = in.IsLowGain();
-          
-          // go from time-bin units to physical time fgtimetrigger
-          time = time * GetRawFormatTimeBinWidth(); // skip subtraction of fgTimeTrigger?
-          // subtract RCU L1 phase (L1Phase is in seconds) w.r.t. L0:
-          printf("L1 PHASE %e \n",in.GetL1Phase());
-          time -= in.GetL1Phase();
-          
-          AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
-          // printf("Added tower: SM %d, row %d, column %d, amp %3.2f\n",in.GetModule(), in.GetRow(), in.GetColumn(),amp);
-          printf("c) amp %f, time %e, chi2 %f \n", amp,time, chi2);
+      if ( fFittingAlgorithm == kFastFit || fFittingAlgorithm == kNeuralNet || fFittingAlgorithm == kLMS || fFittingAlgorithm == kPeakFinder || fFittingAlgorithm == kCrude) {
+	// all functionality to determine amp and time etc is encapsulated inside the Evaluate call for these methods 
+	AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
 
-          AddDigit(digitsArr, id, lowGain, amp, time, chi2, ndf); 
-        }
-        
-      }//ALTRO
-      else if(fUseFALTRO)
-      {// Fake ALTRO
-        fTriggerRawDigitMaker->Add( bunchlist );
-      }//Fake ALTRO
-    } // end while over channel   
+	amp          = fitResults.GetAmp();
+	time         = fitResults.GetTime();
+	timeEstimate = fitResults.GetMaxTimebin();
+	ampEstimate  = fitResults.GetMaxSig();
+	chi2 = fitResults.GetChi2();
+	ndf = fitResults.GetNdf();
+	if (fitResults.GetStatus() == AliCaloFitResults::kFitPar) {
+	  fitDone = kTRUE;
+	}
+      }
+      else { // for the other methods we for now use the functionality of 
+	// AliCaloRawAnalyzer as well, to select samples and prepare for fits, 
+	// if it looks like there is something to fit
+
+	// parameters init.
+	Float_t pedEstimate  = 0;
+	short maxADC = 0;
+	Int_t first = 0;
+	Int_t last = 0;
+	Int_t bunchIndex = 0;
+	//
+	// The PreFitEvaluateSamples + later call to FitRaw will hopefully 
+	// be replaced by a single Evaluate call or so soon, like for the other
+	// methods, but this should be good enough for evaluation of 
+	// the methods for now (Jan. 2010)
+	//
+	int nsamples = fRawAnalyzer->PreFitEvaluateSamples( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2(), bunchIndex, ampEstimate, maxADC, timeEstimate, pedEstimate, first, last); 
+	
+	if (ampEstimate >= fNoiseThreshold) { // something worth looking at
+	  
+	  time = timeEstimate; // maxrev in AliCaloRawAnalyzer speak; comes with an offset w.r.t. real timebin
+	  Int_t timebinOffset = bunchlist.at(bunchIndex).GetStartBin() - (bunchlist.at(bunchIndex).GetLength()-1); 
+	  amp = ampEstimate; 
+	  
+	  if ( nsamples > 1 && maxADC<fgkOverflowCut ) { // possibly something to fit
+	    FitRaw(first, last, amp, time, chi2, fitDone);
+	    time += timebinOffset;
+	    timeEstimate += timebinOffset;
+	    ndf = nsamples - 2;
+	  }
+	  
+	} // ampEstimate check
+      } // method selection
+
+      if ( fitDone ) { // brief sanity check of fit results	    
+	Float_t ampAsymm = (amp - ampEstimate)/(amp + ampEstimate);
+	Float_t timeDiff = time - timeEstimate;
+	if ( (TMath::Abs(ampAsymm) > 0.1) || (TMath::Abs(timeDiff) > 2) ) {
+	  // AliDebug(2,Form("Fit results amp %f time %f not consistent with expectations amp %f time %d", amp, time, ampEstimate, timeEstimate));
+	  
+	  // for now just overwrite the fit results with the simple/initial estimate
+	  amp     = ampEstimate;
+	  time    = timeEstimate; 
+	  fitDone = kFALSE;
+	} 
+      } // fitDone
+    
+      if (amp >= fNoiseThreshold) { // something to be stored
+	if ( ! fitDone) { // smear ADC with +- 0.5 uniform (avoid discrete effects)
+	  amp += (0.5 - gRandom->Rndm()); // Rndm generates a number in ]0,1]
+	}
+
+	Int_t id = fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
+	lowGain  = in.IsLowGain();
+
+	// go from time-bin units to physical time fgtimetrigger
+	time = time * GetRawFormatTimeBinWidth(); // skip subtraction of fgTimeTrigger?
+	// subtract RCU L1 phase (L1Phase is in seconds) w.r.t. L0:
+	time -= in.GetL1Phase();
+
+	AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
+	// printf("Added tower: SM %d, row %d, column %d, amp %3.2f\n",in.GetModule(), in.GetRow(), in.GetColumn(),amp);
+	AddDigit(digitsArr, id, lowGain, amp, time, chi2, ndf); 
+      }
+      
+	}//ALTRO
+	else if(fUseFALTRO)
+	{// Fake ALTRO
+		fTriggerRawDigitMaker->Add( bunchlist );
+	}//Fake ALTRO
+   } // end while over channel   
   } //end while over DDL's, of input stream 
-  
+
   fTriggerRawDigitMaker->PostProcess();	
 	
   TrimDigits(digitsArr);
@@ -573,8 +562,7 @@ void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr)
   Int_t nDigits = digitsArr->GetEntriesFast();
   TIter nextdigit(digitsArr);
   while ((digit = (AliEMCALDigit*) nextdigit())) {
-    printf("TRIM: time %e, min %e, max %e\n",digit->GetTime(),fTimeMin, fTimeMax);
-
+    
     //Check if only LG existed, remove if so
     if (digit->GetType() == AliEMCALDigit::kLGnoHG) {
       AliDebug(1,Form("Remove digit with id %d, LGnoHG",digit->GetId()));
@@ -611,22 +599,20 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
   //--------------------------------------------------
   int nsamples = lastTimeBin - firstTimeBin + 1;
   fitDone = kFALSE;
-  
+
   switch(fFittingAlgorithm) {
-    case kStandard:
+  case kStandard:
     {
       if (nsamples < 3) { return; } // nothing much to fit
       //printf("Standard fitter \n");
-      printf("---------------------------------\n");
 
       // Create Graph to hold data we will fit 
       TGraph *gSig =  new TGraph( nsamples); 
       for (int i=0; i<nsamples; i++) {
-        Int_t timebin = firstTimeBin + i;    
-        gSig->SetPoint(i, timebin, fRawAnalyzer->GetReversed(timebin)); 
-        if(fRawAnalyzer->GetReversed(timebin)>0.001)printf("signal %f, timebin %d\n",fRawAnalyzer->GetReversed(timebin),timebin);
+	Int_t timebin = firstTimeBin + i;    
+	gSig->SetPoint(i, timebin, fRawAnalyzer->GetReversed(timebin)); 
       }
-      
+
       TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeBins(), 5);
       signalF->SetParameters(10.,5.,fTau,fOrder,0.); //set all defaults once, just to be safe
       signalF->SetParNames("amp","t0","tau","N","ped");
@@ -638,41 +624,40 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
       // set rather loose parameter limits
       signalF->SetParLimits(0, 0.5*amp, 2*amp );
       signalF->SetParLimits(1, time - 4, time + 4); 
-      
+
       try {			
-        gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
-        // assign fit results
-        amp  = signalF->GetParameter(0); 
-        time = signalF->GetParameter(1);
-        chi2 = signalF->GetChisquare();
-        printf("amp %f, time %f, chi2 %f \n", amp,time, chi2);
-        fitDone = kTRUE;
+	gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
+	// assign fit results
+	amp  = signalF->GetParameter(0); 
+	time = signalF->GetParameter(1);
+	chi2 = signalF->GetChisquare();
+	fitDone = kTRUE;
       }
       catch (const std::exception & e) {
-        AliError( Form("TGraph Fit exception %s", e.what()) ); 
-        // stay with default amp and time in case of exception, i.e. no special action required
-        fitDone = kFALSE;
+	AliError( Form("TGraph Fit exception %s", e.what()) ); 
+	// stay with default amp and time in case of exception, i.e. no special action required
+	fitDone = kFALSE;
       }
       delete signalF;
-      
+
       //printf("Std   : Amp %f, time %g\n",amp, time);
       delete gSig; // delete TGraph
-      
+				
       break;
     }//kStandard Fitter
-      //----------------------------
-    case kLogFit:
+    //----------------------------
+  case kLogFit:
     {
       if (nsamples < 3) { return; } // nothing much to fit
       //printf("LogFit \n");
-      
+
       // Create Graph to hold data we will fit 
       TGraph *gSigLog =  new TGraph( nsamples); 
       for (int i=0; i<nsamples; i++) {
-        Int_t timebin = firstTimeBin + i;    
-        gSigLog->SetPoint(timebin, timebin, TMath::Log(fRawAnalyzer->GetReversed(timebin) ) ); 
+	Int_t timebin = firstTimeBin + i;    
+	gSigLog->SetPoint(timebin, timebin, TMath::Log(fRawAnalyzer->GetReversed(timebin) ) ); 
       }
-      
+
       TF1 * signalFLog = new TF1("signalLog", RawResponseFunctionLog, 0, GetRawFormatTimeBins(), 5);
       signalFLog->SetParameters(2.3, 5.,fTau,fOrder,0.); //set all defaults once, just to be safe
       signalFLog->SetParNames("amplog","t0","tau","N","ped");
@@ -681,27 +666,27 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
       signalFLog->FixParameter(4, 0); // pedestal should be subtracted when we get here 
       signalFLog->SetParameter(1, time);
       if (amp>=1) {
-        signalFLog->SetParameter(0, TMath::Log(amp));
+	signalFLog->SetParameter(0, TMath::Log(amp));
       }
-      
+	
       gSigLog->Fit(signalFLog, "QROW"); // Note option 'W': equal errors on all points
-      
+				
       // assign fit results
       Double_t amplog = signalFLog->GetParameter(0); //Not Amp, but Log of Amp
       amp = TMath::Exp(amplog);
       time = signalFLog->GetParameter(1);
       fitDone = kTRUE;
-      
+
       delete signalFLog;
       //printf("LogFit: Amp %f, time %g\n",amp, time);
       delete gSigLog; 
       break;
     } //kLogFit 
-      //----------------------------	
-      
-      //----------------------------
+    //----------------------------	
+    
+    //----------------------------
   }//switch fitting algorithms
-  
+
   return;
 }
 
@@ -740,13 +725,13 @@ void AliEMCALRawUtils::FitParabola(const TGraph *gSig, Float_t & amp) const
       Double_t sxy = 0 ; 
       Double_t sx2y = 0 ; 
       for (Int_t i = 0; i < kN ; i++) {
-        sy += ymMaxY[i] ; 
-        sx += ymMaxX[i] ; 		
-        sx2 += ymMaxX[i]*ymMaxX[i] ; 
-        sx3 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
-        sx4 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
-        sxy += ymMaxX[i]*ymMaxY[i] ; 
-        sx2y += ymMaxX[i]*ymMaxX[i]*ymMaxY[i] ; 
+	sy += ymMaxY[i] ; 
+	sx += ymMaxX[i] ; 		
+	sx2 += ymMaxX[i]*ymMaxX[i] ; 
+	sx3 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
+	sx4 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
+	sxy += ymMaxX[i]*ymMaxY[i] ; 
+	sx2y += ymMaxX[i]*ymMaxX[i]*ymMaxY[i] ; 
       }
       Double_t cN = (sx2y*kN-sy*sx2)*(sx3*sx-sx2*sx2)-(sx2y*sx-sxy*sx2)*(sx3*kN-sx*sx2); 
       Double_t cD = (sx4*kN-sx2*sx2)*(sx3*sx-sx2*sx2)-(sx4*sx-sx3*sx2)*(sx3*kN-sx*sx2) ;
@@ -838,18 +823,17 @@ Bool_t AliEMCALRawUtils::RawSampledResponse(const Double_t dtime, const Double_t
 {
   // for a start time dtime and an amplitude damp given by digit, 
   // calculates the raw sampled response AliEMCAL::RawResponseFunction
-  printf("---------------------------------\n");
+
   Bool_t lowGain = kFALSE ; 
-  
+
   // A:   par[0]   // Amplitude = peak value
   // t0:  par[1]                            
   // tau: par[2]                            
   // N:   par[3]                            
   // ped: par[4]
-  
+
   TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeBins(), 5);
   signalF.SetParameter(0, damp) ; 
-  printf("amp %f, time %e, trigger time %e, bin %f\n",damp,dtime,fgTimeTrigger,(dtime + fgTimeTrigger)/fgTimeBinWidth);
   signalF.SetParameter(1, (dtime + fgTimeTrigger)/fgTimeBinWidth) ; 
   signalF.SetParameter(2, fTau) ; 
   signalF.SetParameter(3, fOrder);
@@ -858,38 +842,34 @@ Bool_t AliEMCALRawUtils::RawSampledResponse(const Double_t dtime, const Double_t
   Double_t signal=0.0, noise=0.0;
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
     signal = signalF.Eval(iTime) ;  
-    if(signal>0.001)printf("iTime %d, signal %f \n",iTime,signal);
+	
     // Next lines commeted for the moment but in principle it is not necessary to add
     // extra noise since noise already added at the digits level.	
-    
+
     //According to Terry Awes, 13-Apr-2008
     //add gaussian noise in quadrature to each sample
     //Double_t noise = gRandom->Gaus(0.,fgFEENoise);
     //signal = sqrt(signal*signal + noise*noise);
-    
+
     // March 17,09 for fast fit simulations by Alexei Pavlinov.
     // Get from PHOS analysis. In some sense it is open questions.
-    if(keyErr>0) {
-      noise = gRandom->Gaus(0.,fgFEENoise);
-      signal += noise; 
-    }
+	if(keyErr>0) {
+		noise = gRandom->Gaus(0.,fgFEENoise);
+		signal += noise; 
+	}
 	  
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     if ( adcH[iTime] > fgkRawSignalOverflow ){  // larger than 10 bits 
       adcH[iTime] = fgkRawSignalOverflow ;
       lowGain = kTRUE ; 
     }
-    
+
     signal /= fHighLowGainFactor;
-    
+
     adcL[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     if ( adcL[iTime] > fgkRawSignalOverflow)  // larger than 10 bits 
       adcL[iTime] = fgkRawSignalOverflow ;
-    
-    if(adcH[iTime] || adcL[iTime])printf("\t high gain %d, low gain %d, bool %d\n", adcH[iTime],adcL[iTime], lowGain);
-    
   }
-  
   return lowGain ; 
 }
 
