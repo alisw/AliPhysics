@@ -1,4 +1,13 @@
-void set_momentum_vectors()//(Int_t mode = 1, Double_t minMomentum = 0, Bool_t drawWithTracks = kTRUE)
+/**************************************************************************
+ * Copyright(c) 1998-2009, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+
+// Author: Pawel Debski 2010
+
+
+void set_momentum_vectors()
 {
 
    TString str1 = 0;

@@ -1,3 +1,11 @@
+/**************************************************************************
+ * Copyright(c) 1998-2009, ALICE Experiment at CERN, all rights reserved. *
+ * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
+ * full copyright notice.                                                 *
+ **************************************************************************/
+
+// Author: Pawel Debski 2010
+
 #include <TGButton.h>
 #include <TGComboBox.h>
 #include <TEveBrowser.h>
@@ -11,88 +19,6 @@
 #include <TGSlider.h>
 #include "TGDoubleSlider.h"
 #include <TEvePointSet.h>
-
-/*
-class CutsDoubleSlider : public TGMainFrame {
-
-protected:
-   TGLabel*		gLabel;
-   TGCheckButton*	gApplyCut;
-   TGNumberEntry*	gMaxValue;
-   TGNumberEntry*	gMinValue;
-   TGDoubleSlider*	gDoubleSlider;
-
-public:
-   CutsDoubleSlider((const TGWindow* p, Int_t sliderWidth, const char* labelText, Int_t valMin, Int_t valMax, Pixel_t backgroundColor, Pixel_t textColor);
-
-   void GetLabel() { return gLabel; };
-   void GetCheckButton() { return gApplyCut; };
-   void GetEntryMax() { return gMaxValue; };
-   void GetEntryMin() { return gMinValue; };
-   void GetSlider() { return gDoubleSlider; };
-
-   ClassDef(CutsDoubleSlider, 0)
-};
-
-CutsDoubleSlider::CutsDoubleSlider(const TGWindow* p, Int_t sliderWidth, const char* labelText, Int_t valMin, Int_t valMax, Pixel_t backgroundColor, Pixel_t textColor)
- : TGMainFrame(p, 10, 10, kHorizontalFrame)
-{
-
-   TGVerticalFrame *vframe = new TGVerticalFrame(this);
-
-   TGHorizontalFrame* hframe = new TGHorizontalFrame(vframe, 200, 20, kFixedWidth);
-   TGLabel *label = 0;
-
-   gLabel = new TGLabel(hframe,labelText);
-   gLabel->SetBackgroundColor(backgroundColor);
-   gLabel->SetTextColor(textColor);
-
-   gMinValue = new TGNumberEntry(hframe, 0, 6);
-   gMinValue->SetNumber(valMin);
-   gMinValue->SetBackgroundColor(backgroundColor);
-
-   gMaxValue = new TGNumberEntry(hframe, 0, 6);
-   gMaxValue->SetNumber(valMax);
-   gMaxValue->SetBackgroundColor(backgroundColor);
-
-   gApplyCut = new TGCheckButton(hframe, "", 10);
-   gApplyCut->SetBackgroundColor(backgroundColor);
-
-   hframe->AddFrame(gLabel, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
-   hframe->AddFrame(gMinValue, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-   hframe->AddFrame(gMaxValue, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-   hframe->AddFrame(gApplyCut, new TGLayoutHints(kLHintsRight, 4, 0, 0, 0));
-   hframe->SetBackgroundColor(backgroundColor);
-
-   vframe->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
-
-   hframe = new TGHorizontalFrame(vframe, 200, 20, kFixedWidth);
-
-   gDoubleSlider = new TGDoubleHSlider(hframe, sliderWidth, 1, -1, kHorizontalFrame, backgroundColor, kFALSE, kFALSE);
-   gDoubleSlider->SetRange(valMin, valMax);
-   gDoubleSlider->SetPosition(valMin, valMax);
-   gDoubleSlider->SetBackgroundColor(backgroundColor);
-
-   hframe->AddFrame(gDoubleSlider, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
-   hframe->SetBackgroundColor(backgroundColor);
-
-   vframe->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 10));
-
-   AddFrame(vframe, new TGLayoutHints(kLHintsCenterX));
-
-   SetBackgroundColor(backgroundColor);
-
-   Resize();
-
-   MapSubwindows();
-
-   SetWMSizeHints(GetDefaultWidth(), GetDefaultHeight(), 1000, 1000, 0 ,0);
-   SetWindowName("Double Slider");
-   MapRaised();
-
-}
-
-*/
 
 class SetCutsWindow : public TGMainFrame {
 
@@ -130,6 +56,7 @@ protected:
    TGTextButton* gPosColorButton;
    TGComboBox* gNegColorList;
    TGTextButton* gNegColorButton;
+   TGComboBox* gTrackColorScale;
    TGComboBox* gBkgColorList;
    TGTextButton* gBkgColorButton;
    TGLOverlayButton *gOverlayButton3D;
@@ -137,10 +64,6 @@ protected:
    TGLOverlayButton *gOverlayButtonRhoZ;
    Bool_t gDrawHistograms[12];
    
-//   CutsDoubleSlider *slajder1;
-//   CutsDoubleSlider *slajder2;
-//   CutsDoubleSlider *slajder3;
-
 public:
    SetCutsWindow();
    void MultNECallBack();
@@ -264,27 +187,27 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    // Draw Elements
 
    TGVerticalFrame *drawElements = new TGVerticalFrame(container1);
-   container1->AddFrame(drawElements, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));//, 5, 5, 5, 5));// | kLHintsExpandY
+   container1->AddFrame(drawElements, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
    // Track Cuts
    TGVerticalFrame *trackCuts = new TGVerticalFrame(container2);
-   container2->AddFrame(trackCuts, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));//, 5, 5, 5, 5));// | kLHintsExpandY
+   container2->AddFrame(trackCuts, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
    // Buttons
    TGVerticalFrame *buttons = new TGVerticalFrame(container3);
-   container3->AddFrame(buttons, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));//, 5, 5, 5, 5));// | kLHintsExpandY
+   container3->AddFrame(buttons, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
    // Geometry
    TGVerticalFrame *geometry = new TGVerticalFrame(container4);
-   container4->AddFrame(geometry, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));//, 5, 5, 5, 5));// | kLHintsExpandY
+   container4->AddFrame(geometry, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
    // Analysis
    TGVerticalFrame *analysis = new TGVerticalFrame(container5);
-   container5->AddFrame(analysis, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));//, 5, 5, 5, 5));// | kLHintsExpandY
+   container5->AddFrame(analysis, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
    // Momentum Vectors
    TGVerticalFrame *momentumVectors = new TGVerticalFrame(container6);
-   container6->AddFrame(momentumVectors, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));//, 5, 5, 5, 5));// | kLHintsExpandY
+   container6->AddFrame(momentumVectors, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
    // DRAW ELEMENTS
 
@@ -659,10 +582,6 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
 
    trackCuts->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX));
 
-//    trackCutsITS->SetMaxDCAToVertexXY(2.4);
-//    trackCutsITS->SetMaxDCAToVertexZ(3.2);
-
-
    // BUTTONS
 
    separator = new TGHorizontal3DLine(buttons);
@@ -676,9 +595,37 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    hframe->AddFrame(label, new TGLayoutHints(kLHintsExpandX));
 
    gPosColorList = new TGComboBox(hframe);
-   gPosColorList->AddEntry("Blue", 1);
-   gPosColorList->AddEntry("Red", 2);
-   gPosColorList->AddEntry("Mixed", 3);
+   gPosColorList->AddEntry("Mixed 1", 0);
+   gPosColorList->AddEntry("Mixed 2", 1);
+   gPosColorList->AddEntry("Cyan-Blue", 2);
+   gPosColorList->AddEntry("Yellow-Red", 3);
+   gPosColorList->AddEntry("Red 1", 4);
+   gPosColorList->AddEntry("Red 2", 5);
+   gPosColorList->AddEntry("Orange 1", 6);
+   gPosColorList->AddEntry("Orange 2", 7);
+   gPosColorList->AddEntry("Yellow 1", 8);
+   gPosColorList->AddEntry("Yellow 2", 9);
+   gPosColorList->AddEntry("Spring 1", 10);
+   gPosColorList->AddEntry("Spring 2", 11);
+   gPosColorList->AddEntry("Green 1", 12);
+   gPosColorList->AddEntry("Green 2", 13);
+   gPosColorList->AddEntry("Teal 1", 14);
+   gPosColorList->AddEntry("Teal 2", 15);
+   gPosColorList->AddEntry("Cyan 1", 16);
+   gPosColorList->AddEntry("Cyan 2", 17);
+   gPosColorList->AddEntry("Azure 1", 18);
+   gPosColorList->AddEntry("Azure 2", 19);
+   gPosColorList->AddEntry("Blue 1", 20);
+   gPosColorList->AddEntry("Blue 2", 21);
+   gPosColorList->AddEntry("Violet 1", 22);
+   gPosColorList->AddEntry("Violet 2", 23);
+   gPosColorList->AddEntry("Magenta 1", 24);
+   gPosColorList->AddEntry("Magenta 2", 25);
+   gPosColorList->AddEntry("Pink 1", 26);
+   gPosColorList->AddEntry("Pink 2", 27);
+
+   gPosColorList->Select(0, kFALSE);
+
    gPosColorList->Resize(100,20);
    gPosColorList->Connect("Selected(Int_t)", "SetCutsWindow", this, "PosTracksCallBack()");
    hframe->AddFrame(gPosColorList, new TGLayoutHints(kLHintsExpandX));
@@ -697,9 +644,37 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    hframe->AddFrame(label, new TGLayoutHints(kLHintsExpandX));
 
    gNegColorList = new TGComboBox(hframe);
-   gNegColorList->AddEntry("Blue", 1);
-   gNegColorList->AddEntry("Red", 2);
-   gNegColorList->AddEntry("Mixed", 3);
+   gNegColorList->AddEntry("Mixed 1", 0);
+   gNegColorList->AddEntry("Mixed 2", 1);
+   gNegColorList->AddEntry("Cyan-Blue", 2);
+   gNegColorList->AddEntry("Yellow-Red", 3);
+   gNegColorList->AddEntry("Red 1", 4);
+   gNegColorList->AddEntry("Red 2", 5);
+   gNegColorList->AddEntry("Orange 1", 6);
+   gNegColorList->AddEntry("Orange 2", 7);
+   gNegColorList->AddEntry("Yellow 1", 8);
+   gNegColorList->AddEntry("Yellow 2", 9);
+   gNegColorList->AddEntry("Spring 1", 10);
+   gNegColorList->AddEntry("Spring 2", 11);
+   gNegColorList->AddEntry("Green 1", 12);
+   gNegColorList->AddEntry("Green 2", 13);
+   gNegColorList->AddEntry("Teal 1", 14);
+   gNegColorList->AddEntry("Teal 2", 15);
+   gNegColorList->AddEntry("Cyan 1", 16);
+   gNegColorList->AddEntry("Cyan 2", 17);
+   gNegColorList->AddEntry("Azure 1", 18);
+   gNegColorList->AddEntry("Azure 2", 19);
+   gNegColorList->AddEntry("Blue 1", 20);
+   gNegColorList->AddEntry("Blue 2", 21);
+   gNegColorList->AddEntry("Violet 1", 22);
+   gNegColorList->AddEntry("Violet 2", 23);
+   gNegColorList->AddEntry("Magenta 1", 24);
+   gNegColorList->AddEntry("Magenta 2", 25);
+   gNegColorList->AddEntry("Pink 1", 26);
+   gNegColorList->AddEntry("Pink 2", 27);
+
+   gNegColorList->Select(0, kFALSE);
+
    gNegColorList->Resize(100,20);
    gNegColorList->Connect("Selected(Int_t)", "SetCutsWindow", this, "NegTracksCallBack()");
    hframe->AddFrame(gNegColorList, new TGLayoutHints(kLHintsExpandX));
@@ -708,6 +683,29 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    hframe->AddFrame(gNegColorButton, new TGLayoutHints(kLHintsNormal, 5, 5, 1, 1));
 
    buttons->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
+   // Color scale
+
+   hframe = new TGHorizontalFrame(buttons, 200, 20, kFixedWidth);
+
+   label = new TGLabel(hframe, "Color scale:");
+   hframe->AddFrame(label, new TGLayoutHints(kLHintsExpandX));
+
+   gTrackColorScale = new TGComboBox(hframe);
+   gTrackColorScale->AddEntry("Linear", 1);
+   gTrackColorScale->AddEntry("Logarithmic", 2);
+   gTrackColorScale->AddEntry("Power", 3);
+
+   gTrackColorScale->Select(1, kFALSE);
+
+   gTrackColorScale->Resize(100,20);
+   hframe->AddFrame(gTrackColorScale, new TGLayoutHints(kLHintsExpandX));
+
+   label = new TGLabel(hframe, "      ");
+   hframe->AddFrame(label, new TGLayoutHints(kLHintsNormal, 5, 5, 1, 1));
+
+   buttons->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
+
 
    // Background color
 
@@ -719,6 +717,9 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    gBkgColorList = new TGComboBox(hframe);
    gBkgColorList->AddEntry("White", 1);
    gBkgColorList->AddEntry("Black", 2);
+
+   gBkgColorList->Select(1, kFALSE);
+
    gBkgColorList->Resize(100,20);
    gBkgColorList->Connect("Selected(Int_t)", "SetCutsWindow", this, "BackgroundCallBack()");
    hframe->AddFrame(gBkgColorList, new TGLayoutHints(kLHintsExpandX));
@@ -796,18 +797,6 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
 
    geometry->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
 
-//   hframe = new TGHorizontalFrame(geometry, 200, 20, kFixedWidth);
-
-//   b = new TGTextButton(hframe, "Close Tab");
-//   b->Connect("Clicked()", "SetCutsWindow", this, "CloseTab()");
-//   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
-
-//   b = new TGTextButton(hframe, "Close Tab");
-//   b->Connect("Clicked()", "SetCutsWindow", this, "CloseTab()");
-//   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
-
-//   geometry->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
-
    // Snapshots
 
    separator = new TGHorizontal3DLine(geometry);
@@ -818,14 +807,6 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
 
    separator = new TGHorizontal3DLine(geometry);
    geometry->AddFrame(separator, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
-
-//   hframe = new TGHorizontalFrame(geometry, 200, 20, kFixedWidth);
-
-//   b = new TGTextButton(hframe, "Descriptions");
-//   b->Connect("Clicked()", "SetCutsWindow", this, "AddDescriptions()");
-//   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
-
-//   geometry->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 5, 5));
 
    hframe = new TGHorizontalFrame(geometry, 200, 20, kFixedWidth);
 
@@ -892,17 +873,17 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    b = new TGTextButton(hframe, "Pt");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawPtHisto()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    b = new TGTextButton(hframe, "Eta");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawEtaHisto()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    b = new TGTextButton(hframe, "Phi");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawPhiHisto()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    analysis->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 0, 0));
 
@@ -911,17 +892,17 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    b = new TGTextButton(hframe, "Phi-Pt");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawPhiPtHisto()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    b = new TGTextButton(hframe, "Pt-Y");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawPtYHisto()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    b = new TGTextButton(hframe, "Eta-Phi");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawEtaPhiHisto()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    analysis->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 0, 0));
 
@@ -949,17 +930,17 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    b = new TGTextButton(hframe, "Pt");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawPtHistoAll()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    b = new TGTextButton(hframe, "Eta");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawEtaHistoAll()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    b = new TGTextButton(hframe, "Phi");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawPhiHistoAll()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    analysis->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 0, 0));
 
@@ -968,17 +949,17 @@ SetCutsWindow::SetCutsWindow() : TGMainFrame(gClient->GetRoot(), 10, 10, kHorizo
    b = new TGTextButton(hframe, "Phi-Pt");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawPhiPtHistoAll()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    b = new TGTextButton(hframe, "Pt-Y");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawPtYHistoAll()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    b = new TGTextButton(hframe, "Eta-Phi");
    b->AllowStayDown(kTRUE);
    b->Connect("Clicked()", "SetCutsWindow", this, "DrawEtaPhiHistoAll()");
-   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));//, 5, 5, 5, 5));
+   hframe->AddFrame(b, new TGLayoutHints(kLHintsExpandX));
 
    analysis->AddFrame(hframe, new TGLayoutHints(kLHintsExpandX, 5, 5, 0, 0));
 
@@ -1189,25 +1170,149 @@ void SetCutsWindow::PosTracksCallBack()
 
    switch(gPosColorList->GetSelected())
    {
+      case 0:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(18)->GetPixel());
+         gPosColorButton->SetText("M 1");
+         break;
 
       case 1:
-         gPosColorButton->SetBackgroundColor(gROOT->GetColor(4)->GetPixel());
-         gPosColorButton->SetText("    ");
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(18)->GetPixel());
+         gPosColorButton->SetText("M 2");
          break;
 
       case 2:
-         gPosColorButton->SetBackgroundColor(gROOT->GetColor(2)->GetPixel());
-         gPosColorButton->SetText("    ");
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kAzure)->GetPixel());
+         gPosColorButton->SetText("   ");
          break;
 
       case 3:
-         gPosColorButton->SetBackgroundColor(gROOT->GetColor(18)->GetPixel());
-         gPosColorButton->SetText(" M ");
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kOrange)->GetPixel());
+         gPosColorButton->SetText("   ");
+         break;
+
+      case 4:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kRed)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 5:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kRed)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 6:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kOrange)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 7:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kOrange)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 8:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kYellow)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 9:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kYellow)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 10:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kSpring)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 11:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kSpring)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 12:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kGreen)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 13:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kGreen)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 14:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kTeal)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 15:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kTeal)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 16:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kCyan)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 17:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kCyan)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 18:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kAzure)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 19:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kAzure)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 20:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kBlue)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 21:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kBlue)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 22:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kViolet)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 23:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kViolet)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 24:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kMagenta)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 25:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kMagenta)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
+         break;
+
+      case 26:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kPink)->GetPixel());
+         gPosColorButton->SetText(" 1 ");
+         break;
+
+      case 27:
+         gPosColorButton->SetBackgroundColor(gROOT->GetColor(kPink)->GetPixel());
+         gPosColorButton->SetText(" 2 ");
          break;
 
       default:
          gPosColorButton->SetBackgroundColor(gROOT->GetColor(18)->GetPixel());
-         gPosColorButton->SetText("    ");
+         gPosColorButton->SetText("M 1");
          break;
 
    }
@@ -1221,25 +1326,149 @@ void SetCutsWindow::NegTracksCallBack()
 
    switch(gNegColorList->GetSelected())
    {
+      case 0:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(18)->GetPixel());
+         gNegColorButton->SetText("M 1");
+         break;
 
       case 1:
-         gNegColorButton->SetBackgroundColor(gROOT->GetColor(4)->GetPixel());
-         gNegColorButton->SetText("    ");
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(18)->GetPixel());
+         gNegColorButton->SetText("M 2");
          break;
 
       case 2:
-         gNegColorButton->SetBackgroundColor(gROOT->GetColor(2)->GetPixel());
-         gNegColorButton->SetText("    ");
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kAzure)->GetPixel());
+         gNegColorButton->SetText("   ");
          break;
 
       case 3:
-         gNegColorButton->SetBackgroundColor(gROOT->GetColor(18)->GetPixel());
-         gNegColorButton->SetText(" M ");
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kOrange)->GetPixel());
+         gNegColorButton->SetText("   ");
+         break;
+
+      case 4:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kRed)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 5:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kRed)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 6:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kOrange)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 7:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kOrange)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 8:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kYellow)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 9:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kYellow)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 10:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kSpring)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 11:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kSpring)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 12:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kGreen)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 13:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kGreen)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 14:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kTeal)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 15:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kTeal)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 16:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kCyan)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 17:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kCyan)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 18:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kAzure)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 19:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kAzure)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 20:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kBlue)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 21:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kBlue)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 22:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kViolet)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 23:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kViolet)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 24:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kMagenta)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 25:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kMagenta)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
+         break;
+
+      case 26:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kPink)->GetPixel());
+         gNegColorButton->SetText(" 1 ");
+         break;
+
+      case 27:
+         gNegColorButton->SetBackgroundColor(gROOT->GetColor(kPink)->GetPixel());
+         gNegColorButton->SetText(" 2 ");
          break;
 
       default:
          gNegColorButton->SetBackgroundColor(gROOT->GetColor(18)->GetPixel());
-         gNegColorButton->SetText("    ");
+         gNegColorButton->SetText("M 1");
          break;
 
    }
@@ -1289,10 +1518,6 @@ void SetCutsWindow::BackgroundCallBack()
 void SetCutsWindow::PMVSliderCallBack()
 {
 
-//   TGHSlider* gPMVRange;
-//   TGLabel* gPMVRangeLabel;
-
-
    Double_t entry;
 
    entry = gPMVRange->GetPosition();
@@ -1306,6 +1531,7 @@ void SetCutsWindow::PMVSliderCallBack()
 
 void SetCutsWindow::AddDescriptions()
 {
+
 /*
    if(gOverlayButton3D && gOverlayButtonRPhi && gOverlayButtonRhoZ)
    {
@@ -1336,6 +1562,7 @@ void SetCutsWindow::AddDescriptions()
 
    gEve->Redraw3D(kFALSE, kTRUE);
 */
+
    return;
 
 }
@@ -2186,20 +2413,37 @@ Int_t SetCutsWindow::GetTrackColorByMomentum(Double_t momentum, Int_t size)
 {
 
 
-   Double_t step = 2.0/size;
+   Double_t step = 3.0/size;
 
    for(Int_t i = 0; i < size; i++)
    {
 
-      if(momentum > i*step && momentum <= (i+1)*step)
+      switch(gTrackColorScale->GetSelected())
       {
-//         cout << "tutaj " << i <<endl;
-         return i;
+
+         case 1:
+            if(momentum > i*step && momentum <= (i+1)*step)
+               return i;
+            break;
+
+         case 2:
+            if(momentum > TMath::Log(1+i*step) && momentum <= TMath::Log(1+(i+1)*step))
+               return i;
+            break;
+
+         case 3:
+            if(momentum > TMath::Power(i*step,0.5) && momentum <= TMath::Power((i+1)*step,0.5))
+               return i;
+            break;
+
+         default:
+            if(momentum > i*step && momentum <= (i+1)*step)
+               return i;
+            break;
       }
 
    }
 
-//   cout << i <<endl;
    return i;
 
 }
@@ -2572,7 +2816,6 @@ void SetCutsWindow::AddMomentumVectors()
 
                   }
 
-//                  gEve->AddElement(momentumVectorList2);
                   momentumVectorList->AddElement(momentumVectorList2);
 
                   draw = kTRUE;
@@ -2651,7 +2894,6 @@ void SetCutsWindow::AddMomentumVectors()
 
                   }
 
-                  //gEve->AddElement(momentumVectorList3);
                   momentumVectorList->AddElement(momentumVectorList3);
 
                   draw = kTRUE;
@@ -2769,60 +3011,41 @@ void SetCutsWindow::SetCuts()
       if(gDrawTracks->IsOn())
       {
 
-//         Int_t colorPos[10] = {kRed, kBlue, kOrange, kCyan, kGreen, kGray, kViolet, kMagenta, kSpring, kYellow};
-
-Int_t colorNeg[10] = 
+Int_t colorNeg[27][10] =
 {
-kCyan-4,
-kCyan,
-kAzure+10,
-kAzure+8,
-kAzure+5,
-kAzure,
-kBlue,
-kBlue+1,
-kBlue+2,
-kBlue+3
-};
-
-Int_t colorPos[10] = 
-{
-kYellow-4,
-kYellow,
-kOrange+10,
-kOrange,
-kOrange+7,
-kOrange+10,
-kRed,
-kRed+1,
-kRed+2,
-kRed+3
+   { kRed, kBlue, kOrange, kCyan, kGreen, kGray, kViolet, kMagenta, kSpring, kYellow },
+   { kCyan-4, kCyan, kAzure+10, kAzure+8, kAzure+5, kAzure, kBlue, kBlue+1, kBlue+2, kBlue+3 },
+   { kYellow-4, kYellow, kOrange+10, kOrange, kOrange+7, kOrange+10, kRed, kRed+1, kRed+2, kRed+3 },
+   { kRed, kRed-1, kRed-2, kRed-3, kRed-4, kRed-5, kRed-6, kRed-7, kRed-8, kRed-9},
+   { kRed, kRed, kRed+1, kRed+1, kRed+2, kRed+2, kRed+3, kRed+3, kRed+4, kRed+4},
+   { kOrange, kOrange-1, kOrange-2, kOrange-3, kOrange-4, kOrange-5, kOrange-6, kOrange-7, kOrange-8, kOrange-9},
+   { kOrange, kOrange+1, kOrange+2, kOrange+3, kOrange+4, kOrange+5, kOrange+6, kOrange+7, kOrange+8, kOrange+9},
+   { kYellow, kYellow-1, kYellow-2, kYellow-3, kYellow-4, kYellow-5, kYellow-6, kYellow-7, kYellow-8, kYellow-9},
+   { kYellow, kYellow, kYellow+1, kYellow+1, kYellow+2, kYellow+2, kYellow+3, kYellow+3, kYellow+4, kYellow+4},
+   { kSpring, kSpring-1, kSpring-2, kSpring-3, kSpring-4, kSpring-5, kSpring-6, kSpring-7, kSpring-8, kSpring-9},
+   { kSpring, kSpring+1, kSpring+2, kSpring+3, kSpring+4, kSpring+5, kSpring+6, kSpring+7, kSpring+8, kSpring+9},
+   { kGreen, kGreen-1, kGreen-2, kGreen-3, kGreen-4, kGreen-5, kGreen-6, kGreen-7, kGreen-8, kGreen-9},
+   { kGreen, kGreen, kGreen+1, kGreen+1, kGreen+2, kGreen+2, kGreen+3, kGreen+3, kGreen+4, kGreen+4},
+   { kTeal, kTeal-1, kTeal-2, kTeal-3, kTeal-4, kTeal-5, kTeal-6, kTeal-7, kTeal-8, kTeal-9},
+   { kTeal, kTeal+1, kTeal+2, kTeal+3, kTeal+4, kTeal+5, kTeal+6, kTeal+7, kTeal+8, kTeal+9},
+   { kCyan, kCyan-1, kCyan-2, kCyan-3, kCyan-4, kCyan-5, kCyan-6, kCyan-7, kCyan-8, kCyan-9},
+   { kCyan, kCyan, kCyan+1, kCyan+1, kCyan+2, kCyan+2, kCyan+3, kCyan+3, kCyan+4, kCyan+4},
+   { kAzure, kAzure-1, kAzure-2, kAzure-3, kAzure-4, kAzure-5, kAzure-6, kAzure-7, kAzure-8, kAzure-9},
+   { kAzure, kAzure+1, kAzure+2, kAzure+3, kAzure+4, kAzure+5, kAzure+6, kAzure+7, kAzure+8, kAzure+9},
+   { kBlue, kBlue-1, kBlue-2, kBlue-3, kBlue-4, kBlue-5, kBlue-6, kBlue-7, kBlue-8, kBlue-9},
+   { kBlue, kBlue, kBlue+1, kBlue+1, kBlue+2, kBlue+2, kBlue+3, kBlue+3, kBlue+4, kBlue+4},
+   { kViolet, kViolet-1, kViolet-2, kViolet-3, kViolet-4, kViolet-5, kViolet-6, kViolet-7, kViolet-8, kViolet-9},
+   { kViolet, kViolet+1, kViolet+2, kViolet+3, kViolet+4, kViolet+5, kViolet+6, kViolet+7, kViolet+8, kViolet+9},
+   { kMagenta, kMagenta-1, kMagenta-2, kMagenta-3, kMagenta-4, kMagenta-5, kMagenta-6, kMagenta-7, kMagenta-8, kMagenta-9},
+   { kMagenta, kMagenta, kMagenta+1, kMagenta+1, kMagenta+2, kMagenta+2, kMagenta+3, kMagenta+3, kMagenta+4, kMagenta+4},
+   { kPink, kPink-1, kPink-2, kPink-3, kPink-4, kPink-5, kPink-6, kPink-7, kPink-8, kPink-9},
+   { kPink, kPink+1, kPink+2, kPink+3, kPink+4, kPink+5, kPink+6, kPink+7, kPink+8, kPink+9},
 };
 
 Int_t colorAll[22] = 
 {
-kBlue+4,
-kBlue+2,
-kBlue,
-kAzure,
-kAzure-3,
-kAzure+7,
-kCyan,
-kCyan-7,
-kGreen-7,
-kGreen-4,
-kGreen,
-kSpring,
-kSpring+7,
-kSpring+8,
-kYellow,
-kOrange,
-kOrange-3,
-kOrange+7,
-kOrange+4,
-kRed,
-kRed+2,
-kMagenta
+kBlue+4, kBlue+2, kBlue, kAzure, kAzure-3, kAzure+7, kCyan, kCyan-7, kGreen-7, kGreen-4, kGreen, kSpring,
+kSpring+7, kSpring+8, kYellow, kOrange, kOrange-3, kOrange+7, kOrange+4, kRed, kRed+2, kMagenta
 };
 
          if(str1.Contains("Tracks") || str1.Contains("tracks"))
@@ -2867,21 +3090,17 @@ kMagenta
 
                         if(trackSingle1->GetESDTrack()->GetSign() > 0)
                         {
-                           if(posTrackColor == 1)
-                              trackSingle1->SetLineColor(colorNeg[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(posTrackColor == 2)
-                              trackSingle1->SetLineColor(colorPos[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(posTrackColor == 3)
+                           if(posTrackColor == 0)
                               trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
                         }
                         else
                         {
-                           if(negTrackColor == 1)
-                              trackSingle1->SetLineColor(colorNeg[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(negTrackColor == 2)
-                              trackSingle1->SetLineColor(colorPos[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(negTrackColor == 3)
+                           if(negTrackColor == 0)
                               trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
                         }
 
                         trackSingle1->SetLineStyle(1);
@@ -2913,24 +3132,20 @@ kMagenta
 
                         if(trackSingle1->GetESDTrack()->GetSign() > 0)
                         {
-                           if(posTrackColor == 1)
-                              trackSingle1->SetLineColor(colorNeg[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(posTrackColor == 2)
-                              trackSingle1->SetLineColor(colorPos[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(posTrackColor == 3)
+                           if(posTrackColor == 0)
                               trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
                         }
                         else
                         {
-                           if(negTrackColor == 1)
-                              trackSingle1->SetLineColor(colorNeg[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(negTrackColor == 2)
-                              trackSingle1->SetLineColor(colorPos[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(negTrackColor == 3)
+                           if(negTrackColor == 0)
                               trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
                         }
 
-                        trackSingle1->SetLineStyle(1);
+                        trackSingle1->SetLineStyle(2);
                         trackSingle1->SetRnrSelf(kTRUE);
 
                      }
@@ -2956,24 +3171,20 @@ kMagenta
 
                         if(trackSingle1->GetESDTrack()->GetSign() > 0)
                         {
-                           if(posTrackColor == 1)
-                              trackSingle1->SetLineColor(colorNeg[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(posTrackColor == 2)
-                              trackSingle1->SetLineColor(colorPos[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(posTrackColor == 3)
+                           if(posTrackColor == 0)
                               trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[posTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
                         }
                         else
                         {
-                           if(negTrackColor == 1)
-                              trackSingle1->SetLineColor(colorNeg[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(negTrackColor == 2)
-                              trackSingle1->SetLineColor(colorPos[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
-                           if(negTrackColor == 3)
+                           if(negTrackColor == 0)
                               trackSingle1->SetLineColor(colorAll[GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),22)]);
+                           else
+                              trackSingle1->SetLineColor(colorNeg[negTrackColor-1][GetTrackColorByMomentum(trackSingle1->GetESDTrack()->Pt(),10)]);
                         }
 
-                        trackSingle1->SetLineStyle(1);
+                        trackSingle1->SetLineStyle(3);
                         trackSingle1->SetRnrSelf(kTRUE);
 
                      }
@@ -3640,7 +3851,6 @@ kMagenta
 
       }
 
-cout << "doszlo v0s" << endl;
 
       i = gEve->GetEventScene()->FirstChild()->FindChild("ESD cascade")->BeginChildren();
       j = gEve->GetEventScene()->FirstChild()->FindChild("ESD cascade")->EndChildren();
