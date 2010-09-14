@@ -951,7 +951,7 @@ TH1* AliUEHist::GetBias(CFStep step1, CFStep step2, Int_t region, const char* ax
   ResetBinLimits(tmp->GetGrid(step1));
   ResetBinLimits(tmp->GetGrid(step2));
   
-  if (region == -1 || region == kMin && fCombineMinMax)
+  if ((region == -1) || (region == kMin && fCombineMinMax))
     delete tmp;
   
   return measured;
