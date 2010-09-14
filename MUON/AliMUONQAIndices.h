@@ -15,54 +15,62 @@
 
 namespace AliMUONQAIndices
 {
+  /// Histogram indices common to raw and digits and/or recpoints.
+  ///
+  /// WARNING ! Those ones should not be reused anywhere else below.
+  /// Numbers from 1 to 50 are thus reserved for ECommon enum !
+  ///
+  enum ECommon {
+    kTrackerBusPatchOccupancy         =  1, ///< Bus patch occupancies
+    kTrackerBusPatchParityErrors      =  2, ///< Parity errors during readout of the tracker
+    kTrackerBusPatchTokenLostErrors   =  3, ///< Token lost errors during readout of the tracker
+    kTrackerBusPatchPaddingErrors     =  4, ///< Padding errors during readout of the tracker
+    kTrackerNofPhysicsEventsSeen      =  5, ///< Number of events seen 
+    kTrackerNofGoodPhysicsEventsUsed  =  6, ///< Number of good physics events seen (and used)
+    kTrackerBusPatchConfig            =  7, ///< Configuration of the tracker
+    kTrackerDDLOccupancy              =  8, ///< DDL occupancy in percent
+    kTrackerDDLNofEventsUsed          =  9, ///< nof of events per DDL (used) *WARNING* : same as above
+    kTrackerDDLNofEventsSeen          = 10,  ///< nof of events per DDL (seen)
+    kTrackerData                      = 11 ///< Accumulated data
+  };
+  
   /// Raw/digits histograms indices
   enum ERaw { 
     
-    kTrackerData                      =  3,  ///< Accumulated data
-    kTrackerBusPatchOccupancy         =  4, ///< Bus patch occupancies
-    kTrackerReadoutStatusPerEvent     =  6, ///< as kTrackerReadoutStatus but normalized by the number of events
-    kTrackerBusPatchConfig            =  7, ///< Configuration of the tracker
-    kTrackerBusPatchParityErrors      =  8, ///< Parity errors during readout of the tracker
-    kTrackerBusPatchTokenLostErrors   =  9, ///< Token lost errors during readout of the tracker
-    kTrackerBusPatchPaddingErrors     = 10, ///< Padding errors during readout of the tracker
-    kTrackerNofPhysicsEventsSeen      = 11, ///< Number of events seen 
-    kTrackerReadoutStatus             = 12,  ///< Status of readout (errors, missing pads, etc...)
-    kTrackerDDLOccupancy              = 13, ///< DDL occupancy in percent
-    kTrackerDDLNofEventsSeen          = 14, ///< nof of events per DDL (seen)
-    kTrackerDDLEventSize             = 300, ///< event size per DDL
-    kTrackerDDLEventSizePerEvent     =  15, ///< event size per DDL per event
-    kTrackerNofGoodPhysicsEventsUsed = 401, ///< Number of good physics events seen (and used) *WARNING* let 401 be unique in all levels, i.e. Raws,Digits,RecPoints
-    kTrackerDDLNofEventsUsed         = 402, ///< nof of events per DDL (used)
+    kTrackerReadoutStatusPerEvent     = 51, ///< as kTrackerReadoutStatus but normalized by the number of events
+    kTrackerReadoutStatus             = 52, ///< Status of readout (errors, missing pads, etc...)
+    kTrackerDDLEventSize             =  53, ///< event size per DDL
+    kTrackerDDLEventSizePerEvent     =  54, ///< event size per DDL per event
 
-    kTriggerScalersTime       = 22, ///< Trigger scalers acquisition time index
-    kTriggerScalers           = 23, ///< Trigger scalers histogram per plane index
-    kTriggerScalersDisplay    = 31, ///< Trigger scalers display histogram per plane index
-    kTriggerCalibSummary      = 40, ///< Number of responding strips/boards and noisy strips 
-    kTriggerCalibSummaryNorm  = 41, ///< Percentage of responding strips/boards and noisy strips
-    kTriggerErrorLocalXPos = 50, ///< Local board: Number of XPos Error vs Local Board Id
-    kTriggerErrorLocalYPos = 51, ///< Local board: Number of YPos Error vs Local Board Id
-    kTriggerErrorLocalDev  = 52, ///< Local board: Number of Deviation Error vs Local Board
-    kTriggerErrorLocalTriggerDec = 53, ///< Local board: Number of Trigger Decision (All Pt) Error vs Local Board Id
-    kTriggerErrorLocalLPtLSB = 54, ///< Local board: Number of LSB Low Pt Error vs Local Board Id
-    kTriggerErrorLocalLPtMSB = 55, ///< Local board: Number of MSB Low Pt Error vs Local Board Id
-    kTriggerErrorLocalHPtLSB = 56, ///< Local board: Number of LSB High Pt Error vs Local Board Id
-    kTriggerErrorLocalHPtMSB = 57, ///< Local board: Number of MSB High Pt Error vs Local Board Id
-    kTriggerErrorLocalTrigY  = 58, ///< Local board: Number of TrigY Error vs Local Board Id
-    kTriggerErrorLocal2RegionalLPtLSB  = 59, ///< Local to Regional: Number of LPt LSB error vs Local Board Id
-    kTriggerErrorLocal2RegionalLPtMSB  = 60, ///< Local to Regional: Number of LPt MSB error vs Local Board Id
-    kTriggerErrorLocal2RegionalHPtLSB  = 61, ///< Local to Regional: Number of HPt LSB error vs Local Board Id
-    kTriggerErrorLocal2RegionalHPtMSB  = 62, ///< Local to Regional: Number of HPt MSB error vs Local Board Id
-    kTriggerErrorOutGlobalFromInGlobal = 63, ///< Global board: Number of error vs output bit    with a re-reconstruction from Global inputs
-    kTriggerErrorOutGlobalFromInLocal = 64, ///< Global board: Number of error vs output bit  with a re-reconstruction from Local inputs
-    kTriggerErrorSummary      = 65,  ///< Number of errors for each trigger decision level (Local, Reg->Local, Reg, Reg->Glob, Global)
-    kTriggerErrorSummaryNorm  = 66,  ///< Percentage of errors for each trigger decision level
-    kTriggerErrorLocalYCopy     = 67, ///< Local board: Number of Y Copy Error vs Local Board Id
-    kTriggerErrorLocalYCopyTest = 68, ///< Local Board: Number of Y copy error tests (for normalization)
-    kTriggerErrorLocalYCopyNorm = 69, ///< Local Board: Number of Y Copy Error vs Local Board Id Normalized to the number of tests
-    kTriggeredBoards          = 70,  ///< Triggered boards histogram index
-    kTriggerBoardsDisplay     = 71,  ///< Triggered boards display histogram index
-    kTriggerReadOutErrors     = 80,  ///< Number of read-out errors
-    kTriggerReadOutErrorsNorm = 81,  ///< Percentage of read-out errors
+    kTriggerScalersTime       = 60, ///< Trigger scalers acquisition time index
+    kTriggerScalers           = 61, ///< Trigger scalers histogram per plane index
+    kTriggerScalersDisplay    = 62, ///< Trigger scalers display histogram per plane index
+    kTriggerCalibSummary      = 63, ///< Number of responding strips/boards and noisy strips 
+    kTriggerCalibSummaryNorm  = 64, ///< Percentage of responding strips/boards and noisy strips
+    kTriggerErrorLocalXPos = 65, ///< Local board: Number of XPos Error vs Local Board Id
+    kTriggerErrorLocalYPos = 66, ///< Local board: Number of YPos Error vs Local Board Id
+    kTriggerErrorLocalDev  = 67, ///< Local board: Number of Deviation Error vs Local Board
+    kTriggerErrorLocalTriggerDec = 68, ///< Local board: Number of Trigger Decision (All Pt) Error vs Local Board Id
+    kTriggerErrorLocalLPtLSB = 69, ///< Local board: Number of LSB Low Pt Error vs Local Board Id
+    kTriggerErrorLocalLPtMSB = 70, ///< Local board: Number of MSB Low Pt Error vs Local Board Id
+    kTriggerErrorLocalHPtLSB = 71, ///< Local board: Number of LSB High Pt Error vs Local Board Id
+    kTriggerErrorLocalHPtMSB = 72, ///< Local board: Number of MSB High Pt Error vs Local Board Id
+    kTriggerErrorLocalTrigY  = 73, ///< Local board: Number of TrigY Error vs Local Board Id
+    kTriggerErrorLocal2RegionalLPtLSB  = 74, ///< Local to Regional: Number of LPt LSB error vs Local Board Id
+    kTriggerErrorLocal2RegionalLPtMSB  = 75, ///< Local to Regional: Number of LPt MSB error vs Local Board Id
+    kTriggerErrorLocal2RegionalHPtLSB  = 76, ///< Local to Regional: Number of HPt LSB error vs Local Board Id
+    kTriggerErrorLocal2RegionalHPtMSB  = 77, ///< Local to Regional: Number of HPt MSB error vs Local Board Id
+    kTriggerErrorOutGlobalFromInGlobal = 78, ///< Global board: Number of error vs output bit    with a re-reconstruction from Global inputs
+    kTriggerErrorOutGlobalFromInLocal = 79, ///< Global board: Number of error vs output bit  with a re-reconstruction from Local inputs
+    kTriggerErrorSummary      = 80,  ///< Number of errors for each trigger decision level (Local, Reg->Local, Reg, Reg->Glob, Global)
+    kTriggerErrorSummaryNorm  = 81,  ///< Percentage of errors for each trigger decision level
+    kTriggerErrorLocalYCopy     = 82, ///< Local board: Number of Y Copy Error vs Local Board Id
+    kTriggerErrorLocalYCopyTest = 83, ///< Local Board: Number of Y copy error tests (for normalization)
+    kTriggerErrorLocalYCopyNorm = 84, ///< Local Board: Number of Y Copy Error vs Local Board Id Normalized to the number of tests
+    kTriggeredBoards          = 85,  ///< Triggered boards histogram index
+    kTriggerBoardsDisplay     = 86,  ///< Triggered boards display histogram index
+    kTriggerReadOutErrors     = 87,  ///< Number of read-out errors
+    kTriggerReadOutErrorsNorm = 88,  ///< Percentage of read-out errors
     kTriggerGlobalOutput      = 90,  ///< Number of Global outputs and Global algo errors
     kTriggerGlobalOutputNorm  = 91,  ///< Percentage of Global outputs and Global algo errors
     kTriggerRawNAnalyzedEvents= 100,  ///< Number of analyzed events per event specie
@@ -88,64 +96,64 @@ namespace AliMUONQAIndices
     kTrackerClusterChargePerChamber       = 300, ///< Tracker: cluster charge per chamber
     kTrackerClusterHitMapPerChamber       = 400, ///< Tracker: cluster position distribution per chamber
     
-    kTrackerNumberOfClustersPerDE        = 1000, ///< Tracker : number of clusters per DE		
-    kTrackerClusterMultiplicityPerDEMean = 1001, ///< cluster size per DE: mean
-    kTrackerClusterChargePerDEMean       = 1002, ///< cluster charge per DE: mean
+    kTrackerNumberOfClustersPerDE        = 500, ///< Tracker : number of clusters per DE		
+    kTrackerClusterMultiplicityPerDEMean = 501, ///< cluster size per DE: mean
+    kTrackerClusterChargePerDEMean       = 502, ///< cluster charge per DE: mean
     
     kTrackerClusterMultiplicityPerDE = 3000, ///< Tracker : cluster multiplicity per DE		
     kTrackerClusterChargePerDE       = 5000,  ///< Tracker : cluster charge per DE
     
-    kTriggerNAnalyzedEvents           = 0, ///< Number of analyzed events per event specie
-    kTriggerRPCtrips           = 1, ///< Trips in trigger chambers
-    kTriggerRPChv              = 2  ///< Trigger chamber HV index
+    kTriggerNAnalyzedEvents           = 50, ///< Number of analyzed events per event specie
+    kTriggerRPCtrips           = 51, ///< Trips in trigger chambers
+    kTriggerRPChv              = 52  ///< Trigger chamber HV index
     
   };
   
   /// ESD histograms indices
   enum EESD { 
-    kESDnTracks                 = 0,  ///< number of tracks
-    kESDMatchTrig               = 1,  ///< number of tracks matched with trigger
-    kESDMomentum                = 2,  ///< P distribution
-    kESDPt                      = 3,  ///< Pt distribution
-    kESDRapidity                = 4,  ///< rapidity distribution
-    kESDChi2                    = 5,  ///< normalized chi2 distribution
-    kESDProbChi2                = 6,  ///< distribution of probability of chi2
+    kESDnTracks                 =  50,  ///< number of tracks
+    kESDMatchTrig               =  51,  ///< number of tracks matched with trigger
+    kESDMomentum                =  52,  ///< P distribution
+    kESDPt                      =  53,  ///< Pt distribution
+    kESDRapidity                =  54,  ///< rapidity distribution
+    kESDChi2                    =  55,  ///< normalized chi2 distribution
+    kESDProbChi2                =  56,  ///< distribution of probability of chi2
     
-    kESDClusterHitMap           = 7,  ///< cluster position distribution in chamber i
-    kESDnClustersPerTrack       = 17, ///< number of clusters per track
-    kESDnClustersPerCh          = 18, ///< number of clusters per chamber per track
-    kESDnClustersPerDE          = 19, ///< number of clusters per DE per track
-    kESDClusterChargeInCh       = 20, ///< cluster charge distribution in chamber i
-    kESDClusterChargePerChMean  = 30, ///< cluster charge per Ch: mean
-    kESDClusterChargePerChSigma = 31, ///< cluster charge per Ch: dispersion
-    kESDClusterChargePerDE      = 32, ///< cluster charge per DE: mean
-    kESDClusterSizeInCh         = 33, ///< cluster size distribution in chamber i
-    kESDClusterSizePerChMean    = 43, ///< cluster size per Ch: mean
-    kESDClusterSizePerChSigma   = 44, ///< cluster size per Ch: dispersion
-    kESDClusterSizePerDE        = 45, ///< cluster size per DE: mean
+    kESDClusterHitMap           =  57,  ///< cluster position distribution in chamber i
+    kESDnClustersPerTrack       =  67, ///< number of clusters per track
+    kESDnClustersPerCh          =  68, ///< number of clusters per chamber per track
+    kESDnClustersPerDE          =  69, ///< number of clusters per DE per track
+    kESDClusterChargeInCh       =  70, ///< cluster charge distribution in chamber i
+    kESDClusterChargePerChMean  =  80, ///< cluster charge per Ch: mean
+    kESDClusterChargePerChSigma =  81, ///< cluster charge per Ch: dispersion
+    kESDClusterChargePerDE      =  82, ///< cluster charge per DE: mean
+    kESDClusterSizeInCh         =  83, ///< cluster size distribution in chamber i
+    kESDClusterSizePerChMean    =  93, ///< cluster size per Ch: mean
+    kESDClusterSizePerChSigma   =  94, ///< cluster size per Ch: dispersion
+    kESDClusterSizePerDE        =  95, ///< cluster size per DE: mean
     
-    kESDResidualXInCh           = 46, ///< cluster-track residual-X distribution in chamber i
-    kESDResidualYInCh           = 56, ///< cluster-track residual-Y distribution in chamber i
-    kESDResidualXPerChMean      = 66, ///< cluster-track residual-X per Ch: mean
-    kESDResidualYPerChMean      = 67, ///< cluster-track residual-Y per Ch: mean
-    kESDResidualXPerChSigma     = 68, ///< cluster-track residual-X per Ch: dispersion
-    kESDResidualYPerChSigma     = 69, ///< cluster-track residual-Y per Ch: dispersion
-    kESDResidualXPerDEMean      = 70, ///< cluster-track residual-X per DE: mean
-    kESDResidualYPerDEMean      = 71, ///< cluster-track residual-Y per DE: mean
-    kESDResidualXPerDESigma     = 72, ///< cluster-track residual-X per DE: dispersion
-    kESDResidualYPerDESigma     = 73, ///< cluster-track residual-Y per DE: dispersion
-    kESDLocalChi2XInCh          = 74, ///< local chi2-X distribution in chamber i
-    kESDLocalChi2YInCh          = 84, ///< local chi2-Y distribution in chamber i
-    kESDLocalChi2XPerChMean     = 94, ///< local chi2-X per Ch: mean
-    kESDLocalChi2YPerChMean     = 95, ///< local chi2-Y per Ch: mean
-    kESDLocalChi2XPerDEMean     = 96, ///< local chi2-X per DE: mean
-    kESDLocalChi2YPerDEMean     = 97, ///< local chi2-Y per DE: mean
-    kESDLocalChi2InCh           = 98, ///< local chi2-X distribution in chamber i
-    kESDLocalChi2PerChMean      = 108, ///< local chi2 per Ch: mean
-    kESDLocalChi2PerDEMean      = 109, ///< local chi2 per DE: mean
+    kESDResidualXInCh           =  96, ///< cluster-track residual-X distribution in chamber i
+    kESDResidualYInCh           = 106, ///< cluster-track residual-Y distribution in chamber i
+    kESDResidualXPerChMean      = 116, ///< cluster-track residual-X per Ch: mean
+    kESDResidualYPerChMean      = 117, ///< cluster-track residual-Y per Ch: mean
+    kESDResidualXPerChSigma     = 118, ///< cluster-track residual-X per Ch: dispersion
+    kESDResidualYPerChSigma     = 119, ///< cluster-track residual-Y per Ch: dispersion
+    kESDResidualXPerDEMean      = 120, ///< cluster-track residual-X per DE: mean
+    kESDResidualYPerDEMean      = 121, ///< cluster-track residual-Y per DE: mean
+    kESDResidualXPerDESigma     = 122, ///< cluster-track residual-X per DE: dispersion
+    kESDResidualYPerDESigma     = 123, ///< cluster-track residual-Y per DE: dispersion
+    kESDLocalChi2XInCh          = 124, ///< local chi2-X distribution in chamber i
+    kESDLocalChi2YInCh          = 134, ///< local chi2-Y distribution in chamber i
+    kESDLocalChi2XPerChMean     = 144, ///< local chi2-X per Ch: mean
+    kESDLocalChi2YPerChMean     = 145, ///< local chi2-Y per Ch: mean
+    kESDLocalChi2XPerDEMean     = 146, ///< local chi2-X per DE: mean
+    kESDLocalChi2YPerDEMean     = 147, ///< local chi2-Y per DE: mean
+    kESDLocalChi2InCh           = 148, ///< local chi2-X distribution in chamber i
+    kESDLocalChi2PerChMean      = 158, ///< local chi2 per Ch: mean
+    kESDLocalChi2PerDEMean      = 159, ///< local chi2 per DE: mean
     
-    kESDThetaX                  = 110, ///< thetaX distribution
-    kESDThetaY                  = 111, ///< thetaY distribution
+    kESDThetaX                  = 160, ///< thetaX distribution
+    kESDThetaY                  = 161, ///< thetaY distribution
     
     kESDnTotClustersPerCh       = 1000, ///< total number of associated clusters per chamber
     kESDnTotClustersPerDE       = 1001, ///< total number of associated clusters per DE
