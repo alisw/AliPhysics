@@ -113,6 +113,7 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
   // see header file for function documentation
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man) return NULL;
+  if (runNo<0) runNo=man->GetRun();
 
   const char* uri=man->GetURI(path);
   if (!uri) return NULL;
@@ -134,8 +135,8 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
     // there seems to be a problem with the caching of objects in the CDBManager
     // regardless what version is specified it returns the object from the cache
     AliCDBId id=entry->GetId();
-    if (id.GetVersion()==version &&
-	id.GetSubVersion()==subVersion) {
+    if ((version<0 || id.GetVersion()==version) &&
+	(subVersion<0 || id.GetSubVersion()==subVersion)) {
       // entry in the cache has the correct version
       return entry;
     }
