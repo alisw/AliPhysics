@@ -303,6 +303,8 @@ AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
       if ( sline.Contains("DUMMY") )
       {
         AliDebugClass(1,"Got a dummy file here");
+        delete [] runs;
+        delete [] dac;
         return kDummyFile;
       }
       if ( sline.Contains("* Run") )
@@ -358,6 +360,8 @@ AliMUONTrackerIO::DecodeGains(const char* data, AliMUONVStore& gainStore,
           {
             AliErrorClass(Form("Something went wrong, as I get too big nDAC = %d",nDAC));
             nDAC = 0;
+            delete [] runs;
+            delete [] dac;
             return kFormatError;
           }
         }

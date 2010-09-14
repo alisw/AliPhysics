@@ -527,6 +527,8 @@ void AliMUONLocalTriggerBoard::Module(char *mod)
    }
  
    strcpy(mod,fields[0]);
+   
+   delete [] fields;
 }
 
 //___________________________________________
@@ -1194,6 +1196,7 @@ Int_t AliMUONLocalTriggerBoard::GetI() const
 {
 /// old numbering
 ///
+
    const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
    char s[100]; strcpy(s, GetName());
@@ -1230,6 +1233,8 @@ Int_t AliMUONLocalTriggerBoard::GetI() const
    Int_t ic = 0;
 
    for (Int_t i=0; i<234; i++) if (fgkCircuitId[i] == code) {ic = i; break;}
+   
+   delete [] fields;
 
    return ic;
 }
