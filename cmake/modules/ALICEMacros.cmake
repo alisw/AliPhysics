@@ -105,6 +105,9 @@ Function (AddLibrary LIB SRCS DHDRS)
 
   CheckViols(${LIB} "${SRCS}")
   add_dependencies("${label}-all" ${LIB})
+  if(ALICE_STATIC_BUILD)
+    add_dependencies("${label}-all" "${LIB}_a")
+  endif(ALICE_STATIC_BUILD)
 EndFunction (AddLibrary)
 #_______________________________________________________________________________
 Function (AddHLTLibrary LIB SRCS DHDRS)
@@ -174,6 +177,9 @@ Function (AddHLTLibrary LIB SRCS DHDRS)
 
   CheckViols(${LIB} "${SRCS}")
   add_dependencies("${label}-all" ${LIB})
+  if(ALICE_STATIC_BUILD)
+    add_dependencies("${label}-all" "${LIB}_a")
+  endif(ALICE_STATIC_BUILD)
 EndFunction (AddHLTLibrary)
 
 #_______________________________________________________________________________
@@ -219,6 +225,9 @@ Function (AddExecutable BIN SRCS LIBS)
 
   CheckViols(${BIN} "${SRCS}")
   add_dependencies("${label}-all" ${BIN})
+  if(ALICE_STATIC_BUILD)
+    add_dependencies("${label}-all" "${BIN}_a")
+  endif(ALICE_STATIC_BUILD)
 EndFunction (AddExecutable)
 
 #_______________________________________________________________________________
