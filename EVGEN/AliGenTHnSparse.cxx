@@ -60,7 +60,8 @@ AliGenTHnSparse::AliGenTHnSparse(const AliGenTHnSparse& func):
   AliGenerator(),
   fHn(func.fHn),
   fFile(func.fFile),
-  fIpart(func.fIpart)
+  fIpart(func.fIpart),
+  fBoth(func.fBoth)
 {
     // Copy constructor
     SetNumberParticles(1);
@@ -74,6 +75,8 @@ AliGenTHnSparse & AliGenTHnSparse::operator=(const AliGenTHnSparse& func)
     fHn  = func.fHn;
     fFile  = func.fFile;
     fIpart  = func.fIpart;
+    fBoth   = func.fBoth;
+    
     return *this;
 }
 
