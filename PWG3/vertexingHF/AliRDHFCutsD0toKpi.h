@@ -40,16 +40,14 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
   Int_t IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const;
   void SetUseSpecialCuts(Bool_t useSpecialCuts) {fUseSpecialCuts=useSpecialCuts;}
-  void SetRemoveDaughtersFromPrim(Bool_t removeDaughtersPrim) {fRemoveDaughtersFromPrimary=removeDaughtersPrim;}
   Bool_t GetUseSpecialCuts() const {return fUseSpecialCuts;}
-  Bool_t GetIsPrimaryWithoutDaughters() const {return fRemoveDaughtersFromPrimary;}
   
   
  protected:
-  Bool_t fRemoveDaughtersFromPrimary;      // flag to switch on the removal of duaghters from the primary vertex computation
+
   Bool_t fUseSpecialCuts;           // flag to switch on/off special cuts
 
-  ClassDef(AliRDHFCutsD0toKpi,2);  // class for cuts on AOD reconstructed D0->Kpi
+  ClassDef(AliRDHFCutsD0toKpi,3);  // class for cuts on AOD reconstructed D0->Kpi
 };
 
 #endif
