@@ -10,11 +10,10 @@
 //  Utility class for PMD                              //
 //                                                     //
 //-----------------------------------------------------//
-// Author - B.K. Nandi
+// Author - 
 //
 #include "Rtypes.h"
 
-class TClonesArray;
 
 class AliPMDUtility:public TObject
 {
@@ -41,7 +40,7 @@ class AliPMDUtility:public TObject
 
   void ApplyVertexCorrection(Float_t vertex[], 
 			     Float_t xpos, Float_t ypos, Float_t zpos);
-  void ApplyAlignment();
+  void ApplyAlignment(Double_t sectr[][3]);
   void SetPxPyPz(Float_t px, Float_t py, Float_t pz);
   void SetXYZ(Float_t xpos, Float_t ypos, Float_t zpos);
   void SetWriteModule(Int_t wrmod);
@@ -55,14 +54,8 @@ class AliPMDUtility:public TObject
   Float_t GetX() const;
   Float_t GetY() const;
   Float_t GetZ() const;
-
-  TClonesArray *GetAlignObj() const;
-
-
   
  protected:
-
-  TClonesArray *fAlObj;     // Alignable objects
 
   Float_t fPx;     // Momentum along x
   Float_t fPy;     // Momentum along y
@@ -73,7 +66,7 @@ class AliPMDUtility:public TObject
   Float_t fSecTr[4][3]; // Sector alignement (translation)
   Int_t   fWriteModule;  // Module number writing 
   
-  ClassDef(AliPMDUtility,6) // Utility class for the detector set:PMD
+  ClassDef(AliPMDUtility,7) // Utility class for the detector set:PMD
 };
 
 #endif
