@@ -552,39 +552,55 @@ void AliEMCALRecPoint::EvalDistanceToBadChannels(AliCaloCalibPedestal* caloped)
 	//Get channels map of the supermodule where the cluster is.
 	TH2D* hMap  = caloped->GetDeadMap(fSuperModuleNumber);
 	
-	TVector3 dR;	
-	TVector3 cellpos;
-	Float_t  minDist = 100000;
-	Float_t  dist    = 0;
-	Int_t    absId   = -1;
-	
-	//Loop on tower status map 
+  Int_t dRrow, dReta;	
+	Float_t  minDist = 10000.;
+	Float_t  dist    = 0.;
+  Int_t nSupMod, nModule;
+  Int_t nIphi, nIeta;
+  Int_t iphi, ieta;
+  fDigitIndMax  = GetMaximalEnergyIndex();
+  fGeomPtr->GetCellIndex(fAbsIdList[fDigitIndMax], nSupMod,nModule,nIphi,nIeta);
+  fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
+
+  //	TVector3 dR;	
+  //	TVector3 cellpos;
+  //	Float_t  minDist = 100000;
+  //	Float_t  dist    = 0;
+  //	Int_t    absId   = -1;  
+  
+  //Loop on tower status map 
 	for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++){
 		for(Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++){
 			//Check if tower is bad.
 			if(hMap->GetBinContent(icol,irow)==AliCaloCalibPedestal::kAlive) continue;
-			//printf("AliEMCALRecPoint::EvalDistanceToBadChannels() - Bad channel in SM %d, col %d, row %d\n",iSM,icol, irow);
-			
-			//Tower is bad, get the absId of the index.
-			absId = fGeomPtr->GetAbsCellIdFromCellIndexes(fSuperModuleNumber, irow, icol); 
-			
-			//Get the position of this tower.
-			
-			//Calculate the distance in local coordinates
-			//fGeomPtr->RelPosCellInSModule(absId,cellpos);
-			//Calculate distance between this tower and cluster, set if is smaller than previous.
-			//dR = cellpos-fLocPos;
-			
-			//Calculate the distance in global coordinates
-			fGeomPtr->GetGlobal(absId,cellpos);
-			//Calculate distance between this tower and cluster, set if it is smaller than previous.
-			dR = cellpos-fGlobPos;
-			
-			dist = dR.Mag();
+      //printf("AliEMCALRecPoint::EvalDistanceToBadChannels() - Bad channel in SM %d, col %d, row %d\n",iSM,icol, irow);
+
+      dRrow=TMath::Abs(irow-iphi);
+      dReta=TMath::Abs(icol-ieta);
+      dist=TMath::Sqrt(dRrow*dRrow+dReta*dReta);
 			if(dist < minDist) minDist = dist;
+      
+      
+      //			//Tower is bad, get the absId of the index.
+      //			absId = fGeomPtr->GetAbsCellIdFromCellIndexes(fSuperModuleNumber, irow, icol); 
+      //			
+      //			//Get the position of this tower.
+      //			
+      //			//Calculate the distance in local coordinates
+      //			//fGeomPtr->RelPosCellInSModule(absId,cellpos);
+      //			//Calculate distance between this tower and cluster, set if is smaller than previous.
+      //			//dR = cellpos-fLocPos;
+      //			
+      //			//Calculate the distance in global coordinates
+      //			fGeomPtr->GetGlobal(absId,cellpos);
+      //			//Calculate distance between this tower and cluster, set if it is smaller than previous.
+      //			dR = cellpos-fGlobPos;
+      //			
+      //			dist = dR.Mag();
+      //			if(dist < minDist) minDist = dist;
+      
+      
 		}
-	}
-	
 	
 	//In case the cluster is shared by 2 SuperModules, need to check the map of the second Super Module
 	if (fSharedCluster) {
@@ -595,33 +611,44 @@ void AliEMCALRecPoint::EvalDistanceToBadChannels(AliCaloCalibPedestal* caloped)
 		if(fSuperModuleNumber%2) nSupMod2 = fSuperModuleNumber-1;
 		else                     nSupMod2 = fSuperModuleNumber+1;
 		hMap2  = caloped->GetDeadMap(nSupMod2);
-	
-	
+    
 		//Loop on tower status map of second super module
 		for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++){
 			for(Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++){
 				//Check if tower is bad.
 				if(hMap2->GetBinContent(icol,irow)==AliCaloCalibPedestal::kAlive) continue;
 				//printf("AliEMCALRecPoint::EvalDistanceToBadChannels() - Bad channel in SM %d, col %d, row %d\n",iSM,icol, irow);
-				
-				//Tower is bad, get the absId of the index.
-				absId = fGeomPtr->GetAbsCellIdFromCellIndexes(nSupMod2, irow, icol); 
-				
-				//Get the position of this tower.
-				
-				//Calculate the distance in global coordinates
-				fGeomPtr->GetGlobal(absId,cellpos);
-				//Calculate distance between this tower and cluster, set if it is smaller than previous.
-				dR = cellpos-fGlobPos;
-				
-				dist = dR.Mag();
-				if(dist < minDist) minDist = dist;
+        
+        dRrow=TMath::Abs(irow-iphi);
+
+        if(fSuperModuleNumber%2) {
+				  dReta=TMath::Abs(icol-(AliEMCALGeoParams::fgkEMCALCols+ieta));
+				}
+        else {
+          dReta=TMath::Abs(AliEMCALGeoParams::fgkEMCALCols+icol-ieta);
+				}                    
+        
+				dist=TMath::Sqrt(dRrow*dRrow+dReta*dReta);
+        if(dist < minDist) minDist = dist;        
+        
+//				
+//				//Tower is bad, get the absId of the index.
+//				absId = fGeomPtr->GetAbsCellIdFromCellIndexes(nSupMod2, irow, icol); 
+//				
+//				//Get the position of this tower.
+//				
+//				//Calculate the distance in global coordinates
+//				fGeomPtr->GetGlobal(absId,cellpos);
+//				//Calculate distance between this tower and cluster, set if it is smaller than previous.
+//				dR = cellpos-fGlobPos;
+//				
+//				dist = dR.Mag();
+//				if(dist < minDist) minDist = dist;
 			}
 		}
 	
 	}// shared cluster in 2 SuperModules
-	
-	
+		
 	fDistToBadTower = minDist;
 	//printf("AliEMCALRecPoint::EvalDistanceToBadChannel() - Distance to Bad is %f cm, shared cluster? %d \n",fDistToBadTower,fSharedCluster);
 }
