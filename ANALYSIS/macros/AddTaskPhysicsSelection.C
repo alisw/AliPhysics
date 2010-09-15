@@ -1,4 +1,4 @@
-AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE, Bool_t withBckgndRejection = kTRUE, Bool_t computeBG = kFALSE) 
+AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE, Bool_t withBckgndRejection = kTRUE, UInt_t computeBG = 0) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -28,7 +28,7 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
   if (mCAnalysisFlag)      
     physSel->SetAnalyzeMC();
   if (computeBG)
-    physSel->SetComputeBG();
+    physSel->SetComputeBG(computeBG);
 
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cstatsout",

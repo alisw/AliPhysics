@@ -19,6 +19,7 @@
 #include <AliAnalysisCuts.h>
 #include <TList.h>
 #include "TObjString.h"
+#include "AliVEvent.h"
 
 #define VERBOSE_STAT
 
@@ -29,6 +30,7 @@ class TCollection;
 class AliTriggerAnalysis;
 class AliAnalysisTaskSE;
 
+
 class AliPhysicsSelection : public AliAnalysisCuts
 {
 public:
@@ -37,9 +39,9 @@ public:
   enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatFMD,kStatFO1,kStatFO2,kStatV0A,kStatV0C,kStatSSD1,kStatFO1AndV0,kStatV0,kStatAny2Hits,kStatOffline,kStatBG,kStatAccepted};
 
 #ifdef VERBOSE_STAT
-  enum {kStatRowBG=5,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowErrGood,kStatRowGood};
+  enum {kStatRowBG=0,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowErrGood,kStatRowGood}; // offset wrt fBGStatOffset
 #else
-  enum {kStatRowBG=5,kStatRowAcc,kStatRowGood};
+  enum {kStatRowBG=0,kStatRowAcc,kStatRowGood}; // offset wrt fBGStatOffset
 #endif
 
   enum {kStatIdxAll=0,kStatIdxBin0=1};
@@ -79,21 +81,21 @@ public:
   const TH2F* GetStatisticsHistogram(Int_t idx=kStatIdxAll) const { return fHistStatistics[idx]; }
   const TH2F* GetBunchCrossingHistogram() const { return fHistBunchCrossing; }
     
-  void SetBIFactors(Int_t run);
+  void SetBIFactors(const AliESDEvent * aESD);
   
   void SetUseBXNumbers(Bool_t flag = kTRUE) {fUseBXNumbers = flag;}
-  void SetComputeBG   (Bool_t flag = kTRUE) {fComputeBG    = flag; if(flag) fUseBXNumbers = flag;}
+  void SetComputeBG   (UInt_t flag = AliVEvent::kMB) {fComputeBG    = flag; if(flag) fUseBXNumbers = flag;}
   void SetUseMuonTriggers(Bool_t) { Printf("ERROR: Use of AliPhysicsSelection::SetUseMuonTriggers is deprecated. Use AliVEvent::kMUON selection instead."); }
   void SetBin0Callback( const char * cb) {fBin0CallBack = cb;} 
   void SetBin0CallbackViaPointer( Bin0Callback_t cb) {fBin0CallBackPointer = cb;}// WARNING: THIS SHOULD NOT BE USED, WILL BE REMOVED SOON
   
-
 protected:
   UInt_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
   Int_t GetTriggerScheme(UInt_t runNumber) const;
   const char * GetBXIDs(UInt_t runNumber, const char * trigger ) ;
   const char * GetFillingScheme(UInt_t runNumber) ;
   TH2F * BookHistStatistics(const char * tag) ;
+  Int_t GetStatRow(const char * triggerBXClass, UInt_t offlineTriggerType, UInt_t ** rowIDs) const;
 
   Int_t fCurrentRun;      // run number for which the object is initialized
   Bool_t fMC;             // flag if MC is analyzed
@@ -114,9 +116,12 @@ protected:
 
   Float_t fBIFactorA;                 // ratio of interacting over non interacting bunch intensities for beam 1
   Float_t fBIFactorC;                 // ratio of interacting over non interacting bunch intensities for beam 2
+  Float_t fBIFactorAC;                // ratio of interacting over non interacting bunch intensities for beam 1&2: 
+                                      // for some trigger classes we do not distinguish betweem 1 and 2
 
 
-  Bool_t fComputeBG; // Switch on computation of background and filling of relevant stat table entries. If you enable this you can only process one run at a time (the relative bunch intensity used to compute this chages from run to run)
+  UInt_t fComputeBG; // Switch on computation of background and filling of relevant stat table entries. If you enable this you can only process one run at a time (the relative bunch intensity used to compute this chages from run to run); This is a mask of the trigger types to be used in the selection, as defined in AliVEvent
+  Int_t fBGStatOffset; // Offset of the BG statistics computed at the end of the processing. It depends on how many trigger classes you have selected
   Bool_t fUseBXNumbers;	// Explicitely select "good" bunch crossing numbers (exclude pilot, afterpulses and fakes). If you anable this you can only process  runs within the same filling scheme.
   Bool_t fUseMuonTriggers;	// if true, also use the muon triggers
   TString fFillingScheme; // stores the filling scheme of the current run.
@@ -124,7 +129,7 @@ protected:
   TString fBin0CallBack; // callback used to determine if an event is in the bin0 (name of the task where the callback is implemented);
   Bin0Callback_t fBin0CallBackPointer; //! don't stream this. TO BE REMOVED SOON
 
-  ClassDef(AliPhysicsSelection, 9)
+  ClassDef(AliPhysicsSelection, 10)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);
