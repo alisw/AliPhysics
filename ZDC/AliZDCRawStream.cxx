@@ -770,7 +770,7 @@ Bool_t AliZDCRawStream::Next()
       // *** ADC EOB
       else if((fBuffer & 0x07000000) == 0x04000000){
         fIsADCEOB = kTRUE;
-    	printf("  AliZDCRawStream -> EOB --------------------------\n");
+    	//printf("  AliZDCRawStream -> EOB --------------------------\n");
       }
     }//ADC module
     // ********************************* ADD ADC *********************************
