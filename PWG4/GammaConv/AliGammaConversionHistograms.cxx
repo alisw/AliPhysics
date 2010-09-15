@@ -215,7 +215,26 @@ void AliGammaConversionHistograms::AddTable(TString tableName,TString tableTitle
     cout << "Warning: Table ( "<<tableName.Data()<<" ) already exists " << endl;
   }
 }
+void AliGammaConversionHistograms::AddTable(TString tableName,TString tableTitle,Int_t nXBins,const char * axesXLabel[],Int_t nYBins,const char * axesYLabel[]){
+  //see header file for documentation
 
+  if( fHistogramMap->Contains(tableName.Data()) ==  kFALSE ){
+    TH2F *tmp = new TH2F(tableName,tableTitle,nXBins,0,nXBins,nYBins,0,nYBins);
+    for(Int_t xbin=1; xbin<=nXBins; xbin++){
+      tmp->GetXaxis()->SetBinLabel(xbin,axesXLabel[xbin-1]);
+    }
+    for(Int_t ybin=1; ybin<=nYBins; ybin++){
+      tmp->GetYaxis()->SetBinLabel(ybin,axesYLabel[ybin-1]);
+    }
+    tmp->SetStats(0);
+    
+    TObjString *tobjstring = new TObjString(tableName.Data());
+    fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+  }
+  else{
+    cout << "Warning: Table ( "<<tableName.Data()<<" ) already exists " << endl;
+  }
+}
 void AliGammaConversionHistograms::FillTable(TString tableName,Double_t xValue) const {
   //see header file for documentation
   TH1 *tmp = (TH1*)fHistogramMap->GetValue(tableName.Data());
@@ -223,7 +242,13 @@ void AliGammaConversionHistograms::FillTable(TString tableName,Double_t xValue) 
     tmp->Fill(xValue);
   }
 }
-
+void AliGammaConversionHistograms::FillTable(TString tableName,Double_t xValue,Double_t yValue) const {
+  //see header file for documentation
+  TH2 *tmp = (TH2*)fHistogramMap->GetValue(tableName.Data());
+  if(tmp){
+    tmp->Fill(xValue,yValue);
+  }
+}
 void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t xValue) const{
   //see header file for documentation
   TH1 *tmp = (TH1*)fHistogramMap->GetValue(histogramName.Data());
@@ -238,6 +263,13 @@ void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t
   if(tmp){
     tmp->Fill(xValue, yValue);
   }
+}
+
+
+TObject* AliGammaConversionHistograms::GetValue(const TString& name)
+{ 
+  //Get pointer to histogram with name
+  return fHistogramMap->GetValue(name.Data());
 }
 
 void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){

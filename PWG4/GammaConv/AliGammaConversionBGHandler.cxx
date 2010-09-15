@@ -31,11 +31,13 @@ AliGammaConversionBGHandler::AliGammaConversionBGHandler() :
   TObject(),
   fNEvents(10),
   fBGEventCounter(NULL),
+  fBGEventENegCounter(NULL),
   fNBinsZ(0),
   fNBinsMultiplicity(0),
   fBinLimitsArrayZ(NULL),
   fBinLimitsArrayMultiplicity(NULL),
-  fBGEvents()
+  fBGEvents(),
+  fBGEventsENeg()
 {
   // constructor
 }
@@ -44,11 +46,13 @@ AliGammaConversionBGHandler::AliGammaConversionBGHandler(UInt_t binsZ,UInt_t bin
   TObject(),
   fNEvents(nEvents),
   fBGEventCounter(NULL),
+  fBGEventENegCounter(NULL),
   fNBinsZ(binsZ),
   fNBinsMultiplicity(binsMultiplicity),
   fBinLimitsArrayZ(NULL),
   fBinLimitsArrayMultiplicity(NULL),
-  fBGEvents(binsZ,AliGammaConversionMultipicityVector(binsMultiplicity,AliGammaConversionBGEventVector(nEvents)))
+  fBGEvents(binsZ,AliGammaConversionMultipicityVector(binsMultiplicity,AliGammaConversionBGEventVector(nEvents))),
+  fBGEventsENeg(binsZ,AliGammaConversionMultipicityVector(binsMultiplicity,AliGammaConversionBGEventVector(nEvents)))
 {
   // constructor
 }
@@ -57,11 +61,13 @@ AliGammaConversionBGHandler::AliGammaConversionBGHandler(const AliGammaConversio
   TObject(original),
   fNEvents(original.fNEvents),
   fBGEventCounter(original.fBGEventCounter),
+  fBGEventENegCounter(original.fBGEventENegCounter),
   fNBinsZ(original.fNBinsZ),
   fNBinsMultiplicity(original.fNBinsMultiplicity),
   fBinLimitsArrayZ(original.fBinLimitsArrayZ),
   fBinLimitsArrayMultiplicity(original.fBinLimitsArrayMultiplicity),
-  fBGEvents(original.fBGEvents)
+  fBGEvents(original.fBGEvents),
+  fBGEventsENeg(original.fBGEventsENeg)
 {
   //copy constructor	
 }
@@ -82,7 +88,14 @@ AliGammaConversionBGHandler::~AliGammaConversionBGHandler(){
     delete[] fBGEventCounter;
     fBGEventCounter = NULL;
   }
-  
+   if(fBGEventENegCounter){
+    for(Int_t z=0;z<fNBinsZ;z++){
+      delete[] fBGEventENegCounter[z];
+    }
+    delete[] fBGEventENegCounter;
+    fBGEventENegCounter = NULL;
+  }
+
   if(fBinLimitsArrayZ){
     delete[] fBinLimitsArrayZ;
   }
@@ -118,6 +131,18 @@ void AliGammaConversionBGHandler::Initialize(Double_t * const zBinLimitsArray, D
   for(Int_t z=0;z<fNBinsZ;z++){
     for(Int_t m=0;m<fNBinsMultiplicity;m++){
       fBGEventCounter[z][m]=0;
+    }
+  }
+
+  if( fBGEventENegCounter == NULL){
+    fBGEventENegCounter = new Int_t*[fNBinsZ];
+  }
+  for(Int_t z=0; z < fNBinsZ; z++){
+    fBGEventENegCounter[z] = new Int_t[fNBinsMultiplicity];
+  }
+  for(Int_t z=0;z<fNBinsZ;z++){
+    for(Int_t m=0;m<fNBinsMultiplicity; m++){
+      fBGEventENegCounter[z][m] = 0;
     }
   }
 
@@ -181,7 +206,39 @@ void AliGammaConversionBGHandler::AddEvent(TClonesArray * const eventGammas, Dou
   }
   fBGEventCounter[z][m]++;
 }
+void AliGammaConversionBGHandler::AddElectronEvent(TClonesArray* const eventENeg, Double_t zvalue, Int_t multiplicity){
 
+  Int_t z = GetZBinIndex(zvalue);
+  Int_t m = GetMultiplicityBinIndex(multiplicity);
+
+  if(fBGEventENegCounter[z][m] >= fNEvents){
+     fBGEventENegCounter[z][m]=0;
+  }
+ 
+
+   Int_t eventENegCounter=fBGEventENegCounter[z][m];
+  
+  //first clear the vector
+  // cout<<"Size of vector: "<<fBGEvents[z][m][eventCounter].size()<<endl;
+  //  cout<<"Checking the entries: Z="<<z<<", M="<<m<<", eventCounter="<<eventCounter<<endl;
+
+  //  cout<<"The size of this vector is: "<<fBGEvents[z][m][eventCounter].size()<<endl;
+  for(UInt_t d=0;d<fBGEventsENeg[z][m][eventENegCounter].size();d++){
+    delete (AliKFParticle*)(fBGEventsENeg[z][m][eventENegCounter][d]);
+  }
+
+  fBGEventsENeg[z][m][eventENegCounter].clear();
+
+  // add the electron to the vector
+  for(Int_t i=0; i< eventENeg->GetEntriesFast();i++){
+    //    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
+    fBGEventsENeg[z][m][eventENegCounter].push_back(new AliKFParticle(*(AliKFParticle*)(eventENeg->At(i))));
+  }
+
+  fBGEventENegCounter[z][m]++;
+
+
+}
 AliGammaConversionKFVector* AliGammaConversionBGHandler::GetBGGoodV0s(Int_t event, Double_t zvalue, Int_t multiplicity){
   //see headerfile for documentation
   Int_t z = GetZBinIndex(zvalue);
@@ -189,7 +246,16 @@ AliGammaConversionKFVector* AliGammaConversionBGHandler::GetBGGoodV0s(Int_t even
 
   return &(fBGEvents[z][m][event]);
 }
+AliGammaConversionKFVector* AliGammaConversionBGHandler::GetBGGoodENeg(Int_t event, Double_t zvalue, Int_t multiplicity){
 
+
+  //see headerfile for documentation
+  Int_t z = GetZBinIndex(zvalue);
+  Int_t m = GetMultiplicityBinIndex(multiplicity);
+  return &(fBGEventsENeg[z][m][event]);
+
+
+}
 void AliGammaConversionBGHandler::PrintBGArray(){
   //see headerfile for documentation
   for(Int_t z=0;z<fNBinsZ;z++){
