@@ -134,7 +134,15 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
 
    jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cRadius));
 
-
+   TString cAdd = "";
+   if(filterMask==16){
+     // this is the standard mask do not add anything
+     // should be changed after current train over all data is finished 
+     // now needed for merging
+   }
+   else{
+     cAdd += Form("_Filter%05d",filterMask);
+   }
 
    TString c_jr(jr);
    c_jr.ToLower();
@@ -145,17 +153,24 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
      // do nothing, this is the standard jet finder R = 0.4, UA1 on AOD
    }
    else{
-     jetana->SetNonStdBranch(Form("jets%s_%s%s",jr,jf,cRadius));
+     jetana->SetNonStdBranch(Form("jets%s_%s%s%s",jr,jf,cRadius,cAdd.Data()));
    }
 
 
-   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist_%s_%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
-							     AliAnalysisManager::kOutputContainer, Form("%s:PWG4_jethist_%s_%s%s",AliAnalysisManager::GetCommonFileName(),
-							     c_jr.Data(),c_jf.Data(),cRadius));
-   /*
-   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist_%s_%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
-							     AliAnalysisManager::kOutputContainer,"ckb_test.root");
-   */
+   AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(
+							     Form("jethist_%s_%s%s%s",
+								  c_jr.Data(),
+								  c_jf.Data(),
+								  cRadius,
+								  cAdd.Data()), 
+							     TList::Class(),
+							     AliAnalysisManager::kOutputContainer, 
+							     Form("%s:PWG4_jethist_%s_%s%s",AliAnalysisManager::GetCommonFileName(),
+								  c_jr.Data(),
+								  c_jf.Data(),
+								  cRadius,
+								  cAdd.Data()));
+
    // Connect jet finder to task.
    jetana->SetJetFinder(jetFinder);
    jetana->SetConfigFile("");
