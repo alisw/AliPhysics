@@ -166,7 +166,7 @@ TString today = "";
 Bool_t convertToMT = 0;
 Bool_t sumCharge = kFALSE;
 Int_t whatToFit = kStatErrors; 
-Bool_t doPrint = 0;
+Bool_t doPrint = 1;
 Bool_t scaleKaons =  kFALSE;
 Bool_t drawStar =  kFALSE; // Overlay star when doing fits
 Bool_t correctSecondaries  = 1;
@@ -176,7 +176,7 @@ Int_t fitFuncID = kFitLevi;
 Bool_t showMC=kTRUE;
 Bool_t showE735=kTRUE;
 Bool_t useSecCorrFromDCA=kFALSE;
-const char * printFormats = "eps"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
+const char * printFormats = "png"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
 
 
 void CombineSpectra(Int_t analysisType=kDoHelp, Int_t  locfitFuncID = kFitLevi) {  //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
@@ -629,7 +629,8 @@ void LoadSpectra() {
     }
 
   // ITS + TPC (Marek)
-  f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons20100720.root");
+  //  f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons20100720.root");
+  f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons14092010new.root");
   TList * list = (TList*) gDirectory->Get("output");
   hSpectra[kITSTPC][kPion]  [kPos]= (TH1F*) list->FindObject("Pions");
   hSpectra[kITSTPC][kKaon]  [kPos]= (TH1F*) list->FindObject("Kaons");
@@ -645,7 +646,8 @@ void LoadSpectra() {
   f = new TFile("./Files/pionSpectra_20100615.root");
   hSpectra[kTPC][kPion][kPos]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("pionPosClassic"),htemplate);
   hSpectra[kTPC][kPion][kNeg]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("pionNegClassic"),htemplate);
-  f = new TFile("./Files/kaonSpectra_20100615.root");
+  //  f = new TFile("./Files/kaonSpectra_20100615.root");
+  f = new TFile("./Files/kaonsTPCcorr_2010_08_31.root");
   hSpectra[kTPC][kKaon][kPos]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("kaonPosClassic"),htemplate);
   hSpectra[kTPC][kKaon][kNeg]= AliBWTools::GetHistoFromGraph((TGraphErrors*)f->Get("kaonNegClassic"),htemplate);
 
@@ -1345,6 +1347,61 @@ void DrawAllAndKaons() {
       hRatioITSTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
       hRatioITSTPC[ipart][icharge]->Draw("");
       hRatioITSTPC[ipart][icharge]->Fit("pol0","","same");
+       
+    }
+    PrintCanvas(c1,printFormats);
+  }
+
+  // ITS/TPC
+  TH1F * hRatioITSGlobalTPC[kNPart][kNCharge];
+  for(Int_t icharge = 0; icharge < kNCharge; icharge++){ // loop over charges
+    // Create canvas
+    TCanvas * c1 = new TCanvas(TString("cITSGlobalTPCRatio_")+chargeFlag[icharge],TString("cITSGlobalTPCRatio_")+chargeFlag[icharge],1200,500);
+    c1->Divide(3,1);
+    c1->SetGridy();
+    TH2F * hempty = new TH2F(TString("hemptyR")+long(icharge),"ITS Global/TPC ",100,0.,1., 100, 0.5,1.5);
+    hempty->SetXTitle("p_{t} (GeV/c)");
+    hempty->SetYTitle("ITS Global / TPC");
+    // Loop over particles
+    for(Int_t ipart = 0; ipart < kNPart; ipart++) {
+      // Clone histo
+      hRatioITSGlobalTPC[ipart][icharge]=new TH1F(*hSpectra[kITSTPC][ipart][icharge]);
+      Int_t nBinsITS=hSpectra[kITSTPC][ipart][icharge]->GetNbinsX();
+      Int_t nBinsTPC=hSpectra[kTPC][ipart][icharge]->GetNbinsX();
+      // Loop over ITS bins, 
+      for(Int_t iBin=1; iBin<=nBinsITS; iBin++){
+	hRatioITSGlobalTPC[ipart][icharge]->SetBinContent(iBin,0.);
+	hRatioITSGlobalTPC[ipart][icharge]->SetBinContent(iBin,0.);
+	Float_t lowPtITS=hSpectra[kITSTPC][ipart][icharge]->GetBinLowEdge(iBin);
+	Float_t binWidITS=hSpectra[kITSTPC][ipart][icharge]->GetBinWidth(iBin);
+	// Loop over TPC bins and find overlapping bins to ITS
+	for(Int_t jBin=1; jBin<=nBinsTPC; jBin++){
+	  Float_t lowPtTPC=hSpectra[kTPC][ipart][icharge]->GetBinLowEdge(jBin);
+	  Float_t binWidTPC=hSpectra[kTPC][ipart][icharge]->GetBinWidth(jBin);
+	  if(TMath::Abs(lowPtITS-lowPtTPC)<0.001 && TMath::Abs(binWidTPC-binWidITS)<0.001){
+	    Float_t numer=hSpectra[kITSTPC][ipart][icharge]->GetBinContent(iBin);
+	    Float_t denom=hSpectra[kTPC][ipart][icharge]->GetBinContent(jBin);
+	    Float_t enumer=hSpectra[kITSTPC][ipart][icharge]->GetBinError(iBin);
+	    Float_t edenom=hSpectra[kTPC][ipart][icharge]->GetBinError(jBin);
+	    Double_t ratio=0.;
+	    Double_t eratio=0.;
+	    if(numer>0. && denom>0.){
+	      ratio=numer/denom;
+	      eratio=ratio*TMath::Sqrt((enumer/numer)*(enumer/numer)+(edenom/denom)*(edenom/denom));
+	    }
+	    hRatioITSGlobalTPC[ipart][icharge]->SetBinContent(iBin,ratio);
+	    hRatioITSGlobalTPC[ipart][icharge]->SetBinError(iBin,eratio);
+	    break;
+	  }
+	}
+      }
+      c1->cd(ipart+1);
+      // hempty->SetStats(1);
+      // hempty->Draw(); 
+      hRatioITSGlobalTPC[ipart][icharge]->SetStats(1);
+      hRatioITSGlobalTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
+      hRatioITSGlobalTPC[ipart][icharge]->Draw("");
+      hRatioITSGlobalTPC[ipart][icharge]->Fit("pol0","","same");
        
     }
     PrintCanvas(c1,printFormats);
