@@ -80,7 +80,11 @@ public:
   Int_t    GetSubVersionGainUsed() const                             { return fSubVersionGainUsed;     }
   Int_t    GetVersionVdriftUsed() const                              { return fVersionVdriftUsed;      }
   Int_t    GetSubVersionVdriftUsed() const                           { return fSubVersionVdriftUsed;   }
-  
+
+  void     SetMinStatsVdriftT0PH(Int_t minStatsVdriftT0PH)           { fMinStatsVdriftT0PH = minStatsVdriftT0PH; }  
+  void     SetMinStatsVdriftLinear(Int_t minStatsVdriftLinear)       { fMinStatsVdriftLinear = minStatsVdriftLinear; }  
+  void     SetMinStatsGain(Int_t minStatsGain)                       { fMinStatsGain = minStatsGain; }  
+  void     SetMinStatsPRF(Int_t minStatsPRF)                         { fMinStatsPRF = minStatsPRF; }  
   
  private:
   Bool_t fMethodSecond;                   // Second Method for drift velocity   
@@ -102,6 +106,11 @@ public:
   Bool_t   fSwitchOnValidation;           // Validation
   Bool_t   fVdriftValidated;              // Vdrift validation
   Bool_t   fT0Validated;                  // T0 validation
+  Int_t    fMinStatsVdriftT0PH;           // MinStats VdriftT0
+  Int_t    fMinStatsVdriftLinear;         // MinStats Vdrift Linear
+  Int_t    fMinStatsGain;                 // MinStats Gain
+  Int_t    fMinStatsPRF;                  // MinStats PRF
+
 
   Int_t GetSubVersion(TString name) const;
   Int_t GetVersion(TString name) const;
@@ -115,5 +124,4 @@ private:
 };
 
 #endif
-
 

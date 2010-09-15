@@ -66,6 +66,7 @@ class AliTRDCalibraFillHisto : public TObject {
 
   // Functions for initialising and filling with AliTRDtrackV1
           Bool_t  Init2Dhistos(Int_t nboftimebin = -1);
+	  Bool_t  InitCalDet();
 	  Bool_t  UpdateHistograms(const AliTRDtrack *t);
 	  Bool_t  UpdateHistogramsV1(const AliTRDtrackV1 *t);
  
@@ -107,6 +108,8 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetLinearFitterDebugOn(Bool_t debug = kTRUE)              { fLinearFitterDebugOn = debug;         }
 	  void     SetVersionGainUsed(Int_t versionGainUsed)                 { fVersionGainUsed = versionGainUsed;   }
 	  void     SetSubVersionGainUsed(Int_t subVersionGainUsed)           { fSubVersionGainUsed = subVersionGainUsed;   }
+	  void     SetVersionGainLocalUsed(Int_t versionGainLocalUsed)       { fVersionGainLocalUsed = versionGainLocalUsed;   }
+	  void     SetSubVersionGainLocalUsed(Int_t subVersionGainLocalUsed) { fSubVersionGainLocalUsed = subVersionGainLocalUsed;   }
 	  void     SetVersionVdriftUsed(Int_t versionVdriftUsed)             { fVersionVdriftUsed = versionVdriftUsed;   }
 	  void     SetSubVersionVdriftUsed(Int_t subVersionVdriftUsed)       { fSubVersionVdriftUsed = subVersionVdriftUsed;   }
 	
@@ -209,6 +212,8 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // Back correction
 	  Int_t    fVersionGainUsed;        // VersionGainUsed 
 	  Int_t    fSubVersionGainUsed;     // SubVersionGainUsed
+	  Int_t    fVersionGainLocalUsed;   // VersionGainUsed 
+	  Int_t    fSubVersionGainLocalUsed;// SubVersionGainUsed
 	  Int_t    fVersionVdriftUsed;      // VersionVdriftUsed 
 	  Int_t    fSubVersionVdriftUsed;   // SubVersionVdriftUsed
   // Calibration mode
@@ -273,6 +278,8 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	   
   //
   // A lot of internal functions......
+  // Init
+	  Bool_t   InitCalPad(Int_t detector);
   //
   // Create the 2D histo to be filled Online
           void     CreateCH2d(Int_t nn);
@@ -326,3 +333,4 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 };
   
 #endif
+

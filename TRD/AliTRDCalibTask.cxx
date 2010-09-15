@@ -68,6 +68,8 @@ using namespace std;
 #include "AliTRDCalibraVdriftLinearFit.h" 
 
 #include "AliTRDcalibDB.h"
+#include "AliCDBId.h"
+#include "AliLog.h"
 
 
 #include "AliTRDCalibTask.h"
@@ -126,10 +128,12 @@ ClassImp(AliTRDCalibTask)
       fNbMaxCluster(2),
       fOfflineTracks(kFALSE),
       fStandaloneTracks(kFALSE),
-      fVersionGainUsed(0),
-      fSubVersionGainUsed(0),
-      fVersionVdriftUsed(0), 
-      fSubVersionVdriftUsed(0),
+      fVersionGainUsed(-1),
+      fSubVersionGainUsed(-1),
+      fVersionGainLocalUsed(-1),
+      fSubVersionGainLocalUsed(-1),
+      fVersionVdriftUsed(-1), 
+      fSubVersionVdriftUsed(-1),
       fCalDetGain(0x0),
       fMaxEvent(0),
       fCounter(0),
@@ -246,7 +250,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
       fNbTimeBins = 30;
     }
   }
-  
+
   // instance calibration 
   fTRDCalibraFillHisto = AliTRDCalibraFillHisto::Instance();
   fTRDCalibraFillHisto->SetHisto2d(fHisto2d); // choose to use histograms
@@ -256,10 +260,6 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   fTRDCalibraFillHisto->SetPRF2dOn(); // choose to look at the PRF
   fTRDCalibraFillHisto->SetLinearFitterOn(fVdriftLinear); // Other possibility vdrift VDRIFT
   fTRDCalibraFillHisto->SetLinearFitterDebugOn(fVdriftLinear); // Other possibility vdrift
-  fTRDCalibraFillHisto->SetVersionGainUsed(fVersionGainUsed); // Gain Used
-  fTRDCalibraFillHisto->SetSubVersionGainUsed(fSubVersionGainUsed); // Gain Used
-  fTRDCalibraFillHisto->SetVersionVdriftUsed(fVersionVdriftUsed); // Vdrift Used
-  fTRDCalibraFillHisto->SetSubVersionVdriftUsed(fSubVersionVdriftUsed); // Vdrift Used
   for(Int_t k = 0; k < 3; k++){
     if(((fNz[k] != 10) && (fNrphi[k] != 10)) && ((fNz[k] != 100) && (fNrphi[k] != 100))) {
       fTRDCalibraFillHisto->SetNz(k,fNz[k]);                                    // Mode calibration
@@ -428,6 +428,27 @@ void AliTRDCalibTask::UserExec(Option_t *)
   // Filling of the histos
   //
   //cout << "AliTRDCalibTask::Exec() IN" << endl;
+  
+  // Init Versions and subversions used
+  if((fVersionGainUsed==-1) || (fSubVersionGainUsed==-1) || (fVersionGainLocalUsed==-1) || (fSubVersionGainLocalUsed==-1) || (fVersionVdriftUsed==-1) || (fSubVersionVdriftUsed==-1)) {
+    if(!SetVersionSubversion()) {
+      fVersionGainUsed=0;
+      fSubVersionGainUsed=0;
+      fVersionGainLocalUsed=0;
+      fSubVersionGainLocalUsed=0;
+      fVersionVdriftUsed=0;
+      fSubVersionVdriftUsed=0;
+    }
+  }
+  if(fCounter==0) {
+    fTRDCalibraFillHisto->SetVersionGainUsed(fVersionGainUsed); // Gain Used
+    fTRDCalibraFillHisto->SetSubVersionGainUsed(fSubVersionGainUsed); // Gain Used
+    fTRDCalibraFillHisto->SetVersionGainLocalUsed(fVersionGainLocalUsed); // Gain Used
+    fTRDCalibraFillHisto->SetSubVersionGainLocalUsed(fSubVersionGainLocalUsed); // Gain Used
+    fTRDCalibraFillHisto->SetVersionVdriftUsed(fVersionVdriftUsed); // Vdrift Used
+    fTRDCalibraFillHisto->SetSubVersionVdriftUsed(fSubVersionVdriftUsed); // Vdrift Used
+    fTRDCalibraFillHisto->InitCalDet();
+  }
   
   //  AliLog::SetGlobalLogLevel(AliLog::kError);
   //  cout << "AliTRDCalibTask::Exec() 1" << endl;
@@ -1341,4 +1362,64 @@ Long64_t AliTRDCalibTask::Merge(TCollection *li) {
   return 0;
   
 }
+//_____________________________________________________
+Bool_t AliTRDCalibTask::SetVersionSubversion(){
+  //
+  // Load Chamber Gain factors into the Tender supply
+  //
+  
+  printf("SetVersionSubversion\n");
+
+  //find previous entry from the UserInfo
+  TTree *tree=((TChain*)GetInputData(0))->GetTree();
+  if (!tree) {
+    AliError("Tree not found in ESDhandler");
+    return kFALSE;
+  }
+ 	 
+  TList *userInfo=(TList*)tree->GetUserInfo();
+  if (!userInfo) {
+    AliError("No UserInfo found in tree");
+    return kFALSE;
+  }
+
+  TList *cdbList=(TList*)userInfo->FindObject("cdbList");
+  if (!cdbList) {
+    AliError("No cdbList found in UserInfo");
+    if (AliLog::GetGlobalLogLevel()>=AliLog::kError) userInfo->Print();
+    return kFALSE;
+  }
+ 	
+  TIter nextCDB(cdbList);
+  TObjString *os=0x0;
+  while ( (os=(TObjString*)nextCDB()) ){
+    if(os->GetString().Contains("TRD/Calib/ChamberGainFactor")){
+      // Get Old gain calibration
+      AliCDBId *id=AliCDBId::MakeFromString(os->GetString());
+      fVersionGainUsed = id->GetVersion();
+      fSubVersionGainUsed = id->GetSubVersion();
+    } else if(os->GetString().Contains("TRD/Calib/ChamberVdrift")){
+      // Get Old drift velocity calibration
+      AliCDBId *id=AliCDBId::MakeFromString(os->GetString());
+      fVersionVdriftUsed = id->GetVersion();
+      fSubVersionVdriftUsed = id->GetSubVersion();
+    } else if(os->GetString().Contains("TRD/Calib/LocalGainFactor")){
+      // Get Old drift velocity calibration
+      AliCDBId *id=AliCDBId::MakeFromString(os->GetString());
+      fVersionGainLocalUsed = id->GetVersion();
+      fSubVersionGainLocalUsed = id->GetSubVersion();
+    }
+  }
+
+  //printf("VersionGain %d, SubversionGain %d, VersionLocalGain %d, Subversionlocalgain %d, Versionvdrift %d, Subversionvdrift %d\n",fVersionGainUsed,fSubVersionGainUsed,fVersionGainLocalUsed,fSubVersionGainLocalUsed,fVersionVdriftUsed,fSubVersionVdriftUsed);
+
+  // Check
+  if((fVersionGainUsed < 0) || (fVersionGainLocalUsed < 0)  || (fSubVersionGainUsed < 0) || (fSubVersionGainLocalUsed < 0) || (fVersionVdriftUsed < 0) || (fSubVersionVdriftUsed < 0)) {
+    AliError("No recent calibration found");
+    return kFALSE;
+  }
+  else return kTRUE;
+
+}
+
 

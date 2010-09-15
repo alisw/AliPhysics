@@ -81,7 +81,11 @@ AliTRDPreprocessorOffline::AliTRDPreprocessorOffline():
   fSubVersionVdriftUsed(0),
   fSwitchOnValidation(kTRUE),
   fVdriftValidated(kFALSE),
-  fT0Validated(kFALSE)
+  fT0Validated(kFALSE),
+  fMinStatsVdriftT0PH(800*20),
+  fMinStatsVdriftLinear(800),
+  fMinStatsGain(800),
+  fMinStatsPRF(600)
 {
   //
   // default constructor
@@ -370,7 +374,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
   //
 
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
-  calibra->SetMinEntries(800); // If there is less than 1000 entries in the histo: no fit
+  calibra->SetMinEntries(fMinStatsGain); // If there is less than 1000 entries in the histo: no fit
   calibra->AnalyseCH(fCH2d);
 
   Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(0))
@@ -411,7 +415,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
   //
 
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
-  calibra->SetMinEntries(800*20); // If there is less than 1000 entries in the histo: no fit
+  calibra->SetMinEntries(fMinStatsVdriftT0PH); // If there is less than 1000 entries in the histo: no fit
   calibra->AnalysePH(fPH2d);
 
   Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(1))
@@ -466,7 +470,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   //
 
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
-  calibra->SetMinEntries(800); // If there is less than 1000 entries in the histo: no fit
+  calibra->SetMinEntries(fMinStatsVdriftLinear); // If there is less than 1000 entries in the histo: no fit
   fAliTRDCalibraVdriftLinearFit->FillPEArray();
   calibra->AnalyseLinearFitters(fAliTRDCalibraVdriftLinearFit);
 
@@ -512,7 +516,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePRF(){
   //
 
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
-  calibra->SetMinEntries(600); // If there is less than 1000 entries in the histo: no fit
+  calibra->SetMinEntries(fMinStatsPRF); // If there is less than 1000 entries in the histo: no fit
   calibra->AnalysePRFMarianFit(fPRF2d);
 
   Int_t nbtg = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(2))
@@ -852,5 +856,4 @@ Int_t AliTRDPreprocessorOffline::GetSubVersion(TString name) const
   return -1;
 
 }
-
 

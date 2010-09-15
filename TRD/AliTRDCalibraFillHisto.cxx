@@ -68,6 +68,7 @@
 #include "AliRawReaderDate.h"
 #include "AliTRDgeometry.h"
 #include "./Cal/AliTRDCalROC.h"
+#include "./Cal/AliTRDCalPad.h"
 #include "./Cal/AliTRDCalDet.h"
 
 #include "AliTRDrawFastStream.h"
@@ -78,6 +79,8 @@
 
 #include "AliTRDrawStream.h"
 
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 
 #ifdef ALI_DATE
 #include "event.h"
@@ -147,6 +150,8 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fNbMaxCluster(0)
   ,fVersionGainUsed(0)
   ,fSubVersionGainUsed(0)
+  ,fVersionGainLocalUsed(0)
+  ,fSubVersionGainLocalUsed(0)
   ,fVersionVdriftUsed(0) 
   ,fSubVersionVdriftUsed(0)
   ,fCalibraMode(new AliTRDCalibraMode())
@@ -224,6 +229,8 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fNbMaxCluster(c.fNbMaxCluster)
   ,fVersionGainUsed(c.fVersionGainUsed)
   ,fSubVersionGainUsed(c.fSubVersionGainUsed)
+  ,fVersionGainLocalUsed(c.fVersionGainLocalUsed)
+  ,fSubVersionGainLocalUsed(c.fSubVersionGainLocalUsed)
   ,fVersionVdriftUsed(c.fVersionVdriftUsed) 
   ,fSubVersionVdriftUsed(c.fSubVersionVdriftUsed)
   ,fCalibraMode(0x0)
@@ -410,12 +417,6 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
     fLinearFitterTracklet->StoreData(kTRUE);
   }
 
-  //calib object from database used for reconstruction
-  if( fCalDetGain ){ 
-    fCalDetGain->~AliTRDCalDet();
-    new(fCalDetGain) AliTRDCalDet(*(cal->GetGainFactorDet()));
-  }else fCalDetGain = new AliTRDCalDet(*(cal->GetGainFactorDet()));
-  
   // Calcul Xbins Chambd0, Chamb2
   Int_t ntotal0 = CalculateTotalNumberOfBins(0);
   Int_t ntotal1 = CalculateTotalNumberOfBins(1);
@@ -512,6 +513,93 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
   return kTRUE;
 
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Bool_t AliTRDCalibraFillHisto::InitCalDet()
+{
+  //
+  // Init the Gain Cal Det 
+  //
+
+  // DB Setting
+  // Get cal
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor",AliCDBManager::Instance()->GetRun(),fVersionGainUsed,fSubVersionGainUsed);
+
+  if (entry) {
+  
+
+    if( fCalDetGain ){ 
+      fCalDetGain->~AliTRDCalDet();
+      new(fCalDetGain) AliTRDCalDet(*(dynamic_cast<AliTRDCalDet *>(entry->GetObject())));
+    }else fCalDetGain = new AliTRDCalDet(*(dynamic_cast<AliTRDCalDet *>(entry->GetObject())));
+  
+
+  } 
+  else {
+    
+    AliError("No new gain calibration entry found");
+    return kFALSE;
+  
+  }
+  
+  // title CH2d
+  TString name("Ver");
+  name += fVersionGainUsed;
+  name += "Subver";
+  name += fSubVersionGainUsed;
+  name += "Nz";
+  name += fCalibraMode->GetNz(0);
+  name += "Nrphi";
+  name += fCalibraMode->GetNrphi(0);
+
+  fCH2d->SetTitle(name);  
+  
+  // title PH2d
+  TString namee("Ver");
+  namee += fVersionVdriftUsed;
+  namee += "Subver";
+  namee += fSubVersionVdriftUsed;
+  namee += "Nz";
+  namee += fCalibraMode->GetNz(1);
+  namee += "Nrphi";
+  namee += fCalibraMode->GetNrphi(1);
+  
+  fPH2d->SetTitle(namee);  
+
+
+  return kTRUE;
+
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Bool_t AliTRDCalibraFillHisto::InitCalPad(Int_t detector)
+{
+  //
+  // Init the Gain Cal Pad 
+  //
+
+  // DB Setting
+  // Get cal
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/LocalGainFactor",AliCDBManager::Instance()->GetRun(),fVersionGainLocalUsed,fSubVersionGainLocalUsed);
+
+  if (entry) {
+  
+
+    if( fCalROCGain ){ 
+      fCalROCGain->~AliTRDCalROC();
+      new(fCalROCGain) AliTRDCalROC(*((dynamic_cast<AliTRDCalPad *>(entry->GetObject()))->GetCalROC(detector)));
+    }else fCalROCGain = new AliTRDCalROC(*((dynamic_cast<AliTRDCalPad *>(entry->GetObject()))->GetCalROC(detector)));
+  
+
+  } 
+  else {
+    
+    AliError("No new gain calibration entry found");
+    return kFALSE;
+  
+  }
+  
+  return kTRUE;
+
+}
 //____________Offline tracking in the AliTRDtracker____________________________
 Bool_t AliTRDCalibraFillHisto::UpdateHistograms(const AliTRDtrack *t)
 {
@@ -588,12 +676,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(const AliTRDtrack *t)
       }
       
       // Get calib objects
-      if( fCalROCGain ){ 
-	if(!fIsHLT){
-	  fCalROCGain->~AliTRDCalROC();
-	  new(fCalROCGain) AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
-	}
-      }else fCalROCGain = new AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+      if(!fIsHLT) InitCalPad(detector);
       
     }
     
@@ -705,13 +788,8 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
       //Localise the detector bin
       LocalisationDetectorXbins(detector);
       // Get calib objects
-      if( fCalROCGain ){ 
-	if(!fIsHLT){	
-	  fCalROCGain->~AliTRDCalROC();
-	  new(fCalROCGain) AliTRDCalROC(*(fCalibDB->GetGainFactorROC(detector)));
-	}
-      }else fCalROCGain = new AliTRDCalROC(*(fCalibDB->GetGainFactorROC(detector)));
-      
+      if(!fIsHLT) InitCalPad(detector);	
+            
       // reset
       fDetectorPreviousTrack = detector;
     }
@@ -3556,4 +3634,5 @@ void AliTRDCalibraFillHisto::AnalyseLinearFitter()
     }
   }
 }
+
 

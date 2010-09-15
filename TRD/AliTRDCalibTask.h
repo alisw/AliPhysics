@@ -66,6 +66,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetRangePrimaryVertexZ(Double_t rangePrimaryVertexZ)            {fRangePrimaryVertexZ = TMath::Abs(rangePrimaryVertexZ);};  
   void SetVersionGainUsed(Int_t versionGainUsed)                       { fVersionGainUsed = versionGainUsed;   }
   void SetSubVersionGainUsed(Int_t subVersionGainUsed)                 { fSubVersionGainUsed = subVersionGainUsed;   }
+  void SetVersionGainLocalUsed(Int_t versionGainLocalUsed)             { fVersionGainLocalUsed = versionGainLocalUsed;   }
+  void SetSubVersionGainLocalUsed(Int_t subVersionGainLocalUsed)       { fSubVersionGainLocalUsed = subVersionGainLocalUsed;   }
   void SetVersionVdriftUsed(Int_t versionVdriftUsed)                   { fVersionVdriftUsed = versionVdriftUsed;   }
   void SetSubVersionVdriftUsed(Int_t subVersionVdriftUsed)             { fSubVersionVdriftUsed = subVersionVdriftUsed;   }
   
@@ -84,6 +86,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetDebug(Int_t debug)                                           { fDebug = debug; };
 
  private:
+  Bool_t SetVersionSubversion();
+
   AliESDEvent  *fESD;                            //! ESD object
   AliESDfriend *fESDfriend;                      //! ESD friend
   const AliESDtrack *fkEsdTrack;                  //! ESD track
@@ -150,6 +154,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
 
   Int_t       fVersionGainUsed;                  // VersionGainUsed 
   Int_t       fSubVersionGainUsed;               // SubVersionGainUsed
+  Int_t       fVersionGainLocalUsed;             // VersionGainLocalUsed 
+  Int_t       fSubVersionGainLocalUsed;          // SubVersionGainLocalUsed
   Int_t       fVersionVdriftUsed;                // VersionVdriftUsed 
   Int_t       fSubVersionVdriftUsed;             // SubVersionVdriftUsed
 
