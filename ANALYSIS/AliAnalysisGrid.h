@@ -39,7 +39,8 @@ enum EPluginBits {
    kCheckCopy  = BIT(1),
    kKeepLogs   = BIT(2),
    kClearPackages = BIT(3),
-   kUseSubmitPolicy = BIT(4)
+   kUseSubmitPolicy = BIT(4),
+   kProofConnectGrid = BIT(5)
 };
 
    AliAnalysisGrid() : TNamed(), fSpecialBits(0) {}
@@ -120,7 +121,9 @@ enum EPluginBits {
    virtual const char *GetProofDataSet() const                           = 0;
    virtual void        SetProofReset(Int_t mode)                         = 0;
    virtual void        SetClearPackages(Bool_t flag=kTRUE) {SetSpecialBit(kClearPackages,flag);}
+   virtual void        SetProofConnectGrid(Bool_t flag=kTRUE) {SetSpecialBit(kProofConnectGrid,flag);}
    virtual void        SetNproofWorkers(Int_t nworkers)                  = 0;
+   virtual void        SetNproofWorkersPerSlave(Int_t nworkers)          = 0;
    virtual void        SetRootVersionForProof(const char *version)       = 0;
    virtual void        SetAliRootMode(const char *mode)                  = 0;
    // .txt file containing the list of files to be chained in test mode

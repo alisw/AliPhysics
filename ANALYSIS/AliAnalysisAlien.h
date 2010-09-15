@@ -118,6 +118,7 @@ public:
    virtual const char *GetProofDataSet() const                           {return fProofDataSet.Data();}
    virtual void        SetProofReset(Int_t mode)                         {fProofReset = mode;}
    virtual void        SetNproofWorkers(Int_t nworkers)                  {fNproofWorkers = nworkers;}
+   virtual void        SetNproofWorkersPerSlave(Int_t nworkers)          {fNproofWorkersPerSlave = nworkers;}
    virtual void        SetRootVersionForProof(const char *version)       {fRootVersionForProof = version;}
    virtual void        SetAliRootMode(const char *mode)                  {fAliRootMode = mode;}
    // .txt file containing the list of files to be chained in test mode
@@ -156,6 +157,7 @@ private:
    Int_t            fOverwriteMode;   // Overwrite existing files if any
    Int_t            fNreplicas;       // Number of replicas for the output files
    Int_t            fNproofWorkers;   // Number of workers in proof mode
+   Int_t            fNproofWorkersPerSlave; // Max number of workers per slave in proof mode
    Int_t            fProofReset;      // Proof reset mode: 0=no reset, 1=soft, 2=hard
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job

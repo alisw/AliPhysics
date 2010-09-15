@@ -66,6 +66,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fOverwriteMode(1),
                   fNreplicas(2),
                   fNproofWorkers(0),
+                  fNproofWorkersPerSlave(0),
                   fProofReset(0),
                   fRunNumbers(),
                   fExecutable(),
@@ -131,6 +132,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fOverwriteMode(1),
                   fNreplicas(2),
                   fNproofWorkers(0),
+                  fNproofWorkersPerSlave(0),
                   fProofReset(0),
                   fRunNumbers(),
                   fExecutable(),
@@ -196,6 +198,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fOverwriteMode(other.fOverwriteMode),
                   fNreplicas(other.fNreplicas),
                   fNproofWorkers(other.fNproofWorkers),
+                  fNproofWorkersPerSlave(other.fNproofWorkersPerSlave),
                   fProofReset(other.fProofReset),
                   fRunNumbers(other.fRunNumbers),
                   fExecutable(other.fExecutable),
@@ -291,6 +294,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fOverwriteMode           = other.fOverwriteMode;
       fNreplicas               = other.fNreplicas;
       fNproofWorkers           = other.fNproofWorkers;
+      fNproofWorkersPerSlave   = other.fNproofWorkersPerSlave;
       fProofReset              = other.fProofReset;
       fRunNumbers              = other.fRunNumbers;
       fExecutable              = other.fExecutable;
@@ -2192,9 +2196,12 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       }
       // Connect to PROOF and check the status
       Long_t proof = 0;
+      TString sworkers;
+      if (fNproofWorkersPerSlave) sworkers = Form("workers=%dx", fNproofWorkersPerSlave);
+      else if (fNproofWorkers) sworkers = Form("workers=%d", fNproofWorkers);
       if (!testMode) {
-         if (fNproofWorkers) 
-            proof = gROOT->ProcessLine(Form("TProof::Open(\"%s\", \"workers=%d\");", fProofCluster.Data(), fNproofWorkers));
+         if (!sworkers.IsNull()) 
+            proof = gROOT->ProcessLine(Form("TProof::Open(\"%s\", \"%s\");", fProofCluster.Data(), sworkers.Data()));
          else   
             proof = gROOT->ProcessLine(Form("TProof::Open(\"%s\");", fProofCluster.Data()));
       } else {
@@ -2208,6 +2215,8 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          Error("StartAnalysis", "Could not connect to PROOF cluster <%s>", fProofCluster.Data());
          return kFALSE;
       }   
+      if (fNproofWorkersPerSlave*fNproofWorkers > 0)
+         gROOT->ProcessLine(Form("gProof->SetParallel(%d);", fNproofWorkers));
       // Is dataset existing ?
       if (!testMode) {
          TString dataset = fProofDataSet;
@@ -2258,6 +2267,9 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             Info("StartAnalysis", "Adding extra includes: %s",includePath.Data()); 
             optionsList.Add(new TNamed("ALIROOT_EXTRA_INCLUDES",includePath.Data()));
          }
+         // Check if connection to grid is requested
+         if (TestSpecialBit(kProofConnectGrid)) 
+            optionsList.Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
          // Enable AliRoot par
          if (testMode) {
          // Enable proof lite package
@@ -2279,7 +2291,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
                Error("StartAnalysis", "There was an error trying to enable package VO_ALICE@AliRoot::%s", fAliROOTVersion.Data());
                return kFALSE;
             }         
-         }      
+         }
       } else {
          if (fAdditionalLibs.Contains(".so") && !testMode) {
             Error("StartAnalysis", "You request additional libs to be loaded but did not enabled any AliRoot mode. Please refer to: \
@@ -2293,7 +2305,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          TObject *package;
          while ((package=next())) {
             if (gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
-               if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\");", package->GetName()))) {
+               if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\",kTRUE);", package->GetName()))) {
                   Error("StartAnalysis", "There was an error trying to enable package %s", package->GetName());
                   return kFALSE;
                }
@@ -2326,11 +2338,8 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          }   
          TFileCollection *coll = new TFileCollection();
          coll->AddFromFile(fFileForTestMode);
-         gROOT->ProcessLine("if (gProof->ExistsDataSet(\"test_collection\")) gProof->RemoveDataSet(\"test_collection\");");
-         gROOT->ProcessLine(Form("gProof->RegisterDataSet(\"test_collection\", (TFileCollection*)0x%lx);", (ULong_t)coll));
-         gROOT->ProcessLine("gProof->VerifyDataSet(\"test_collection\");");
-         gROOT->ProcessLine("gProof->ShowDataSets();");
-         
+         gROOT->ProcessLine(Form("gProof->RegisterDataSet(\"test_collection\", (TFileCollection*)0x%lx, \"OV\");", (ULong_t)coll));
+         gROOT->ProcessLine("gProof->ShowDataSets()");
       }
       return kTRUE;
    }

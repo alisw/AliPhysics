@@ -1326,6 +1326,19 @@ void AliAnalysisManager::ResetAnalysis()
 }
 
 //______________________________________________________________________________
+Long64_t AliAnalysisManager::StartAnalysis(const char *type, Long64_t nentries, Long64_t firstentry)
+{
+// Start analysis having a grid handler.
+   if (!fGridHandler) {
+      Error("StartAnalysis", "Cannot start analysis providing just the analysis type without a grid handler.");
+      Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
+      return -1;
+   }
+   TTree *tree = NULL;
+   return StartAnalysis(type, tree, nentries, firstentry);
+}
+
+//______________________________________________________________________________
 Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree, Long64_t nentries, Long64_t firstentry)
 {
 // Start analysis for this manager. Analysis task can be: LOCAL, PROOF, GRID or
@@ -1397,7 +1410,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    TString line;
    SetEventLoop(kFALSE);
    // Enable event loop mode if a tree was provided
-   if (tree || fMode==kMixingAnalysis) SetEventLoop(kTRUE);
+   if (tree || fGridHandler || fMode==kMixingAnalysis) SetEventLoop(kTRUE);
 
    TChain *chain = 0;
    TString ttype = "TTree";
@@ -1426,7 +1439,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    
    switch (fMode) {
       case kLocalAnalysis:
-         if (!tree) {
+         if (!tree && !fGridHandler) {
             TIter nextT(fTasks);
             // Call CreateOutputObjects for all tasks
             Int_t itask = 0;
@@ -1448,9 +1461,27 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             Terminate();
             return 0;
          } 
+         fSelector = new AliAnalysisSelector(this);
+         // Check if a plugin handler is used
+         if (fGridHandler) {
+            // Get the chain from the plugin
+            TString dataType = "esdTree";
+            if (fInputEventHandler) {
+               dataType = fInputEventHandler->GetDataType();
+               dataType.ToLower();
+               dataType += "Tree";
+            }   
+            chain = fGridHandler->GetChainForTestMode(dataType);
+            if (!chain) {
+               Error("StartAnalysis", "No chain for test mode. Aborting.");
+               return -1;
+            }
+            cout << "===== RUNNING LOCAL ANALYSIS" << GetName() << " ON CHAIN " << chain->GetName() << endl;
+            retv = chain->Process(fSelector, "", nentries, firstentry);
+            break;
+         }
          // Run tree-based analysis via AliAnalysisSelector  
          cout << "===== RUNNING LOCAL ANALYSIS " << GetName() << " ON TREE " << tree->GetName() << endl;
-         fSelector = new AliAnalysisSelector(this);
          retv = tree->Process(fSelector, "", nentries, firstentry);
          break;
       case kProofAnalysis:
@@ -1477,8 +1508,39 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          }      
          break;
       case kGridAnalysis:
-         Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
-         break;
+         fIsRemote = kTRUE;
+         if (!anaType.Contains("terminate")) {
+            if (!fGridHandler) {
+               Error("StartAnalysis", "Cannot start grid analysis without a grid handler.");
+               Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
+               cdir->cd();
+               return -1;
+            }
+            // Write analysis manager in the analysis file
+            cout << "===== RUNNING GRID ANALYSIS: " << GetName() << endl;
+            // Start the analysis via the handler
+            if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
+               Info("StartAnalysis", "Grid analysis was stopped and cannot be terminated");
+               cdir->cd();
+               return -1;
+            }   
+
+            // Terminate grid analysis
+            if (fSelector && fSelector->GetStatus() == -1) {cdir->cd(); return -1;}
+            if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) {cdir->cd(); return 0;}
+            cout << "===== MERGING OUTPUTS REGISTERED BY YOUR ANALYSIS JOB: " << GetName() << endl;
+            if (!fGridHandler->MergeOutputs()) {
+               // Return if outputs could not be merged or if it alien handler
+               // was configured for offline mode or local testing.
+               cdir->cd();
+               return 0;
+            }
+         }   
+         cout << "===== TERMINATING GRID ANALYSIS JOB: " << GetName() << endl;
+         ImportWrappers(NULL);
+         Terminate();
+         cdir->cd();
+         return 0;
       case kMixingAnalysis:   
          // Run event mixing analysis
          if (!fEventPool) {
@@ -1540,21 +1602,6 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
       // Check if the plugin is in test mode
       if (fGridHandler->GetRunMode() == AliAnalysisGrid::kTest) {
          dataset = "test_collection";
-         // Get the chain to be used for test mode
-/*
-         TString dataType = "esdTree";
-         if (fInputEventHandler) {
-            dataType = fInputEventHandler->GetDataType();
-            dataType.ToLower();
-            dataType += "Tree";
-         }   
-         chain = fGridHandler->GetChainForTestMode(dataType);
-         if (!chain) {
-            Error("StartAnalysis", "No chain for test mode. Aborting.");
-            return -1;
-         }
-         fTree = chain;
-*/         
       } else {
          dataset = fGridHandler->GetProofDataSet();
       }
