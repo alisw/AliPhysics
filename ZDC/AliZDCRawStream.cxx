@@ -52,7 +52,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fIsADCEOB(kFALSE),
   fSODReading(kFALSE),
   fIsMapRead(kFALSE),
-  fReadCDH(kTRUE),
+  fReadCDH(kFALSE),
   fDeadfaceOffset(-1),
   fDeadbeefOffset(-1),
   fDataOffset(0),
@@ -388,17 +388,14 @@ Bool_t AliZDCRawStream::Next()
   for(Int_t kl=0; kl<4; kl++) fCPTInput[kl] = 0;
 
   fEvType = fRawReader->GetType();
-  if(fPosition==0 && fReadCDH){
-    //if(fEvType==7 || fEvType ==8){ //Physics or calibration event
-      ReadCDHHeader();
-    //}
+  if(fPosition==0){
+    ReadCDHHeader();
+    // Needed to read simulated raw data (temporary solution?)
+    if(!fReadCDH) fReadOutCard=1;
     fCurrentCh=0; fCurrScCh=0;  fCurrTDCCh=0;fNChannelsOn=0;
     // Ch. debug
     //printf("\n  AliZDCRawStream::Next() - ev. type %d",fEvType);
   }
-  // Needed to read simulated raw data (temporary solution?)
-  else if(fPosition==0 && !fReadCDH && fReadOutCard==-1) fReadOutCard=1;
-  
   // Ch. debug
   //printf("\n  AliZDCRawStream::Next() - fBuffer[%d] = %x\n",fPosition, fBuffer);
   
