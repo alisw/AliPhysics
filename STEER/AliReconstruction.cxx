@@ -3118,7 +3118,8 @@ AliVertexer* AliReconstruction::CreateVertexer()
 
   AliVertexer* vertexer = NULL;
   AliReconstructor* itsReconstructor = GetReconstructor(0);
-  if (itsReconstructor && ((fRunLocalReconstruction.Contains("ITS")) || fRunTracking.Contains("ITS"))) {
+  if (itsReconstructor && ((fRunLocalReconstruction.Contains("ITS")) || 
+			   fRunTracking.Contains("ITS") || fFillESD.Contains("ITS") )) {
     vertexer = itsReconstructor->CreateVertexer();
   }
   if (!vertexer) {
@@ -3137,7 +3138,8 @@ AliTrackleter* AliReconstruction::CreateMultFinder()
 
   AliTrackleter* trackleter = NULL;
   AliReconstructor* itsReconstructor = GetReconstructor(0);
-  if (itsReconstructor && ((fRunLocalReconstruction.Contains("ITS")) || fRunTracking.Contains("ITS"))) {
+  if (itsReconstructor && ((fRunLocalReconstruction.Contains("ITS")) || 
+			   fRunTracking.Contains("ITS") || fFillESD.Contains("ITS") )) {
     trackleter = itsReconstructor->CreateMultFinder();
   }
   else {
