@@ -37,39 +37,38 @@ const Int_t    minITSClusters = 5;
 
 AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* cutFile = "./D0toKpiCuts.root",Bool_t isKeepD0fromB=kFALSE, Bool_t isKeepD0fromBOnly=kFALSE)
 {
-  printf("Adding CF task using cuts from file %s\n",cutFile);
+	printf("Adding CF task using cuts from file %s\n",cutFile);
+	
+	TFile* fileCuts = new TFile(cutFile);
+	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCutsStandard");
+	
+	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
+	//  for now the binning is the same than for all D's
+	if(isKeepD0fromBOnly) isKeepD0fromB = true;
+	
+	Double_t ptmin_0_4;
+	Double_t ptmax_0_4;
+	Double_t ptmin_4_8;
+	Double_t ptmax_4_8;
+	Double_t ptmin_8_10;
+	Double_t ptmax_8_10;
+	
+	if(!isKeepD0fromB){
+		ptmin_0_4 =  0.0 ;
+		ptmax_0_4 =  4.0 ;
+		ptmin_4_8 =  4.0 ;
+		ptmax_4_8 =  8.0 ;
+		ptmin_8_10 =  8.0 ;
+		ptmax_8_10 =  10.0 ;
+	} else{
+		ptmin_0_4 =  0.0 ;
+		ptmax_0_4 =  3.0 ;
+		ptmin_4_8 =  3.0 ;
+		ptmax_4_8 =  5.0 ;
+		ptmin_8_10 =  5.0 ;
+		ptmax_8_10 =  10.0 ;
+	}
   
-  TFile* fileCuts = new TFile(cutFile);
-  AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCuts");
-
-  // check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
-  //  for now the binning is the same than for all D's
-  if(isKeepD0fromBOnly) isKeepD0fromB = true;
-
-  /*
-    Double_t ptmin_0_4;
-    Double_t ptmax_0_4;
-    Double_t ptmin_4_8;
-    Double_t ptmax_4_8;
-    Double_t ptmin_8_10;
-    Double_t ptmax_8_10;
-    
-    if(!isKeepD0fromB){
-    ptmin_0_4 =  0.0 ;
-    ptmax_0_4 =  4.0 ;
-    ptmin_4_8 =  4.0 ;
-    ptmax_4_8 =  8.0 ;
-    ptmin_8_10 =  8.0 ;
-    ptmax_8_10 =  10.0 ;
-    } else{
-    ptmin_0_4 =  0.0 ;
-    ptmax_0_4 =  3.0 ;
-    ptmin_4_8 =  3.0 ;
-    ptmax_4_8 =  5.0 ;
-    ptmin_8_10 =  5.0 ;
-    ptmax_8_10 =  10.0 ;
-    }
-  */
 
 	//CONTAINER DEFINITION
 	Info("AliCFHeavyFlavourTaskMultiVarMultiStep","SETUP CONTAINER");
@@ -87,103 +86,46 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	UInt_t ipointing  = 10;
 	UInt_t iphi  = 11;
 	UInt_t iz  = 12;
-
+	
 	const Double_t phimax = 2*TMath::Pi();
-
+	
 	//Setting up the container grid... 
 	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID 
 	const Int_t nvar   = 13 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
-// 	const Int_t nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
-// 	const Int_t nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
-// 	const Int_t nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
 
-/*
+	//Setting the bins: pt, ptPi, and ptK are considered seprately because for them you can either define the binning by hand, or using the cuts file
+
+	//arrays for the number of bins in each dimension
+	Int_t iBin[nvar];
+
+	//OPTION 1: defining the pt, ptPi, ptK bins by hand...		
 	Int_t nbin0_0_4;
 	Int_t nbin0_4_8;
 	Int_t nbin0_8_10;
 	if (!isKeepD0fromB){
-	  nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
-	  nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
-	  nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
+		nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
+		nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
+		nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
 	}else{
-	  nbin0_0_4  = 3 ; //bins in pt from 0 to 3 GeV
-	  nbin0_4_8  = 1 ; //bins in pt from 3 to 5 GeV
-	  nbin0_8_10  = 1 ; //bins in pt from 5 to 10 GeV
+		nbin0_0_4  = 3 ; //bins in pt from 0 to 3 GeV
+		nbin0_4_8  = 1 ; //bins in pt from 3 to 5 GeV
+		nbin0_8_10  = 1 ; //bins in pt from 5 to 10 GeV
 	}
-*/
-	const Int_t nbin0 = cutsD0toKpi->GetNPtBins(); // bins in pT
-	printf("pT: nbin (from cuts file) = %d\n",nbin0);
-	const Int_t nbin1  = 42 ; //bins in y
-	const Int_t nbin2  = 42 ; //bins in cosThetaStar 
 	const Int_t nbin3_0_4  = 8 ; //bins in ptPi from 0 to 4 GeV
 	const Int_t nbin3_4_8  = 4 ; //bins in ptPi from 4 to 8 GeV
 	const Int_t nbin3_8_10  = 1 ; //bins in ptPi from 8 to 10 GeV
 	const Int_t nbin4_0_4  = 8 ; //bins in ptKa from 0 to 4 GeV
 	const Int_t nbin4_4_8  = 4 ; //bins in ptKa from 4 to 8 GeV
 	const Int_t nbin4_8_10  = 1 ; //bins in ptKa from 8 to 10 GeV
-	const Int_t nbin5  = 24 ; //bins in cT
-	const Int_t nbin6  = 24 ; //bins in dca
-	const Int_t nbin7  = 100 ; //bins in d0pi
-	const Int_t nbin8  = 100 ; //bins in d0K
-	const Int_t nbin9  = 80 ; //bins in d0xd0
-	const Int_t nbin10  = 1050 ; //bins in cosPointingAngle
-	const Int_t nbin11  = 20 ; //bins in Phi
-	const Int_t nbin12  = 60 ; //bins in z vertex
-
-	//arrays for the number of bins in each dimension
-	Int_t iBin[nvar];
- 	//iBin[0]=nbin0_0_4+nbin0_4_8+nbin0_8_10;
-	iBin[0]=nbin0;
-	iBin[1]=nbin1;
-	iBin[2]=nbin2;
-	// 	iBin[3]=nbin3_0_4+nbin3_4_8+nbin3_8_10;
- 	//iBin[4]=nbin4_0_4+nbin4_4_8+nbin4_8_10;
- 	iBin[3]=nbin0;
- 	iBin[4]=nbin0;
-	iBin[5]=nbin5;
-	iBin[6]=nbin6;
-	iBin[7]=nbin7;
-	iBin[8]=nbin8;
-	iBin[9]=nbin9;
-	iBin[10]=nbin10;
-	iBin[11]=nbin11;
-	iBin[12]=nbin12;
-	
-	//arrays for lower bounds :
+ 	iBin[0]=nbin0_0_4+nbin0_4_8+nbin0_8_10;
+      	iBin[3]=nbin3_0_4+nbin3_4_8+nbin3_8_10;
+ 	iBin[4]=nbin4_0_4+nbin4_4_8+nbin4_8_10;
 	Double_t *binLim0=new Double_t[iBin[0]+1];
-	Double_t *binLim1=new Double_t[iBin[1]+1];
-	Double_t *binLim2=new Double_t[iBin[2]+1];
 	Double_t *binLim3=new Double_t[iBin[3]+1];
 	Double_t *binLim4=new Double_t[iBin[4]+1];
-	Double_t *binLim5=new Double_t[iBin[5]+1];
-	Double_t *binLim6=new Double_t[iBin[6]+1];
-	Double_t *binLim7=new Double_t[iBin[7]+1];
-	Double_t *binLim8=new Double_t[iBin[8]+1];
-	Double_t *binLim9=new Double_t[iBin[9]+1];
-	Double_t *binLim10=new Double_t[iBin[10]+1];
-	Double_t *binLim11=new Double_t[iBin[11]+1];
-	Double_t *binLim12=new Double_t[iBin[12]+1];
 
-	// checking limits
-	/*
-	if (ptmax_0_4 != ptmin_4_8) {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","max lim 1st range != min lim 2nd range, please check!");
-	}
-	if (ptmax_4_8 != ptmin_8_10) {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","max lim 2nd range != min lim 3rd range, please check!");
-	}
-	*/
 	// values for bin lower bounds
 	// pt
-	Float_t* floatbinLim0 = cutsD0toKpi->GetPtBinLimits();
-	for (Int_t ibin0 = 0 ; ibin0<iBin[0]+1; ibin0++){
-		binLim0[ibin0] = (Double_t)floatbinLim0[ibin0];
-		binLim3[ibin0] = (Double_t)floatbinLim0[ibin0];
-		binLim4[ibin0] = (Double_t)floatbinLim0[ibin0];
-	}
-	for(Int_t i=0; i<=nbin0; i++) printf("binLim0[%d]=%f\n",i,binLim0[i]);  
-
-	/*
 	for(Int_t i=0; i<=nbin0_0_4; i++) binLim0[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin0_0_4*(Double_t)i ; 
 	if (binLim0[nbin0_0_4] != ptmin_4_8)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
@@ -193,15 +135,6 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	}
 	for(Int_t i=0; i<=nbin0_8_10; i++) binLim0[i+nbin0_0_4+nbin0_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin0_8_10*(Double_t)i ; 
-	*/
-
-	// y
-	for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ymin  + (ymax-ymin)  /nbin1*(Double_t)i ;
-
-	// cosThetaStar
-	for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)cosmin  + (cosmax-cosmin)  /nbin2*(Double_t)i ;
-
-	/*
 	// ptPi
 	for(Int_t i=0; i<=nbin3_0_4; i++) binLim3[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin3_0_4*(Double_t)i ; 
 	if (binLim3[nbin3_0_4] != ptmin_4_8)  {
@@ -223,7 +156,67 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptKa - 2nd range - differs from expected!\n");
 	}
 	for(Int_t i=0; i<=nbin4_8_10; i++) binLim4[i+nbin4_0_4+nbin4_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin4_8_10*(Double_t)i ; 
-	*/
+	
+	
+	//OPTION 2: ...or from the cuts file
+
+	//const Int_t nbin0 = cutsD0toKpi->GetNPtBins(); // bins in pT
+	//iBin[0]=nbin0;
+ 	//iBin[3]=nbin0;
+ 	//iBin[4]=nbin0;
+	// values for bin lower bounds
+	//Float_t* floatbinLim0 = cutsD0toKpi->GetPtBinLimits();
+	//for (Int_t ibin0 = 0 ; ibin0<iBin[0]+1; ibin0++){
+	//	binLim0[ibin0] = (Double_t)floatbinLim0[ibin0];
+	//	binLim3[ibin0] = (Double_t)floatbinLim0[ibin0];
+	//	binLim4[ibin0] = (Double_t)floatbinLim0[ibin0];
+	//}
+	//for(Int_t i=0; i<=nbin0; i++) printf("binLim0[%d]=%f\n",i,binLim0[i]);  
+
+	//printf("pT: nbin (from cuts file) = %d\n",nbin0);
+
+	// defining now the binning for the other variables:
+
+	const Int_t nbin1  = 42 ; //bins in y
+	const Int_t nbin2  = 42 ; //bins in cosThetaStar 
+	const Int_t nbin5  = 24 ; //bins in cT
+	const Int_t nbin6  = 24 ; //bins in dca
+	const Int_t nbin7  = 100 ; //bins in d0pi
+	const Int_t nbin8  = 100 ; //bins in d0K
+	const Int_t nbin9  = 80 ; //bins in d0xd0
+	const Int_t nbin10  = 1050 ; //bins in cosPointingAngle
+	const Int_t nbin11  = 20 ; //bins in Phi
+	const Int_t nbin12  = 60 ; //bins in z vertex
+
+	iBin[1]=nbin1;
+	iBin[2]=nbin2;
+	iBin[5]=nbin5;
+	iBin[6]=nbin6;
+	iBin[7]=nbin7;
+	iBin[8]=nbin8;
+	iBin[9]=nbin9;
+	iBin[10]=nbin10;
+	iBin[11]=nbin11;
+	iBin[12]=nbin12;
+	
+	//arrays for lower bounds :
+	Double_t *binLim1=new Double_t[iBin[1]+1];
+	Double_t *binLim2=new Double_t[iBin[2]+1];
+	Double_t *binLim5=new Double_t[iBin[5]+1];
+	Double_t *binLim6=new Double_t[iBin[6]+1];
+	Double_t *binLim7=new Double_t[iBin[7]+1];
+	Double_t *binLim8=new Double_t[iBin[8]+1];
+	Double_t *binLim9=new Double_t[iBin[9]+1];
+	Double_t *binLim10=new Double_t[iBin[10]+1];
+	Double_t *binLim11=new Double_t[iBin[11]+1];
+	Double_t *binLim12=new Double_t[iBin[12]+1];
+
+	// y
+	for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ymin  + (ymax-ymin)  /nbin1*(Double_t)i ;
+
+	// cosThetaStar
+	for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)cosmin  + (cosmax-cosmin)  /nbin2*(Double_t)i ;
+	
 	// cT
 	for(Int_t i=0; i<=nbin5; i++) binLim5[i]=(Double_t)cTmin  + (cTmax-cTmin)  /nbin5*(Double_t)i ;
 
@@ -250,20 +243,6 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 		binLim12[i]=(Double_t)zmin  + (zmax-zmin)  /nbin12*(Double_t)i ;
 		//		Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim12[i]));
 	}
-
-	// debugging printings
-	//Info("AliCFHeavyFlavourTaskMultiVarMultiStep","Printing lower limits for bins in pt");
-	//for (Int_t i =0; i<= iBin[0]; i++){
-	//	Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim0[i]));
-	//}
-	//Info("Printing lower limits for bins in ptPi");
-	//for (Int_t i =0; i<= iBin[3]; i++){
-	//	Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim3[i]));
-	//}
-	//Info("Printing lower limits for bins in ptKa");
-	//for (Int_t i =0; i<= iBin[4]; i++){
-	//	Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim4[i]));
-	//	}
 
 	//one "container" for MC
 	TString nameContainer="";
@@ -376,6 +355,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	//CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK
 	printf("CREATE INTERFACE AND CUTS\n");
 	AliCFManager* man = new AliCFManager() ;
+	AliLog::SetClassDebugLevel("AliCFManager",AliLog::kError);
 	man->SetParticleContainer     (container);
 	man->SetParticleCutsList(0 , mcList); // MC, Limited Acceptance
 	man->SetParticleCutsList(1 , mcList); // MC
@@ -404,7 +384,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetKeepD0fromB(isKeepD0fromB);
 	task->SetKeepD0fromBOnly(isKeepD0fromBOnly);
-	
+	task->SetUseWeight(kFALSE);  // set to true if you want to filled a weight CF	
+
         //-----------------------------------------------------------//
         //   create correlation matrix for unfolding - only eta-pt   //
         //-----------------------------------------------------------//
@@ -462,7 +443,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	// ----- output data -----
 	
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="";
+	TString output1name="", output2name="", output3name="", output4name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
 	if(!isKeepD0fromB) {
@@ -478,6 +459,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	  output1name="CFHFchist0allD0";
 
 	}
+	output4name="Cuts";
 
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -486,6 +468,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(output2name, AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 	// Unfolding - correlation matrix
         AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(output3name, THnSparseD::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+        AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
 	mgr->AddTask(task);
 	
@@ -493,6 +476,7 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	mgr->ConnectOutput(task,1,coutput1);
 	mgr->ConnectOutput(task,2,coutput2);
         mgr->ConnectOutput(task,3,coutput3);
+        mgr->ConnectOutput(task,4,coutput4);
 	return task;
 }
 

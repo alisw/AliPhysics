@@ -60,6 +60,8 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
   void     UserCreateOutputObjects();
   void     UserExec(Option_t *option);
+  void     Init();
+  void     LocalInit() {Init();}
   void     Terminate(Option_t *);
 
  // UNFOLDING
@@ -84,6 +86,10 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
 
   void SetKeepD0fromB(Bool_t keepD0fromB){fKeepD0fromB=keepD0fromB;}
   void SetKeepD0fromBOnly(Bool_t keepD0fromBOnly){ fKeepD0fromBOnly=keepD0fromBOnly; }
+  void SetUseWeight(Bool_t useWeight){fUseWeight=useWeight;}
+  Bool_t GetUseWeight() const {return fUseWeight;}
+  Double_t GetWeight(Float_t pt);
+  Double_t dNdptFit(Float_t pt, Double_t* par);
 
  protected:
   Int_t           fPDG;         //  PDG code of searched V0's
@@ -108,8 +114,10 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   Bool_t fKeepD0fromB;          // flag to consider also D0 coming from B
   Bool_t fKeepD0fromBOnly;      // flag to consider _only_ D0 coming from B
   AliRDHFCutsD0toKpi* fCuts;    // cuts
+  Bool_t fUseWeight;            // flag to decide whether to use weights != 1 when filling the container or not
+  Double_t fWeight;             // weight used to fill the container
   
-  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,5); // class for HF corrections as a function of many variables
+  ClassDef(AliCFHeavyFlavourTaskMultiVarMultiStep,6); // class for HF corrections as a function of many variables
 };
 
 #endif
