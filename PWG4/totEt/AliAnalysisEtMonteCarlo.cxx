@@ -46,12 +46,12 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
 	  TParticlePDG *pdgCode =  part->GetPDG(0);
             if (
-                TMath::Abs(pdgCode->PdgCode()) == ProtonCode ||
-                TMath::Abs(pdgCode->PdgCode()) == NeutronCode ||
-                TMath::Abs(pdgCode->PdgCode()) == LambdaCode ||
-                TMath::Abs(pdgCode->PdgCode()) == XiCode ||
-                TMath::Abs(pdgCode->PdgCode()) == Xi0Code ||
-                TMath::Abs(pdgCode->PdgCode()) == OmegaCode
+                TMath::Abs(pdgCode->PdgCode()) == fProtonCode ||
+                TMath::Abs(pdgCode->PdgCode()) == fNeutronCode ||
+                TMath::Abs(pdgCode->PdgCode()) == fLambdaCode ||
+                TMath::Abs(pdgCode->PdgCode()) == fXiCode ||
+                TMath::Abs(pdgCode->PdgCode()) == fXi0Code ||
+                TMath::Abs(pdgCode->PdgCode()) == fOmegaCode
 	       )
             {
                 particleMassPart = -TMath::Sign(pdgCode->PdgCode(), pdgCode->PdgCode())*pdgCode->Mass();
