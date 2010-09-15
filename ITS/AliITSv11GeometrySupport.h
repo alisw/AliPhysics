@@ -46,16 +46,16 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
     void CreateSPDThermalShape(Double_t ina, Double_t inb, Double_t inr,
 			       Double_t oua, Double_t oub, Double_t our,
 			       Double_t   t, Double_t *x , Double_t *y );
-    void CreateSPDOmegaShape(Double_t *xin, Double_t *yin, Double_t  d,
+    void CreateSPDOmegaShape(const Double_t *xin, const Double_t *yin, Double_t  d,
 			     Double_t   *x, Double_t *y);
     void FillSPDXtruShape(Double_t a, Double_t  b, Double_t  r,
-			  Double_t t, Double_t *x, Double_t *y);
+			  Double_t t, Double_t *x, Double_t *y) const;
     void PointFromParallelLines(Double_t x1, Double_t y1,
 				Double_t x2, Double_t y2, Double_t d,
-				Double_t &x, Double_t &y);
+				Double_t &x, Double_t &y) const;
 
     void ReflectPoint(Double_t x1, Double_t y1, Double_t x2, Double_t y2,
-		      Double_t x3, Double_t y3, Double_t &x, Double_t &y);
+		      Double_t x3, Double_t y3, Double_t &x, Double_t &y) const;
 
     void  TraySupportsSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
     void SPDCableTraysSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);

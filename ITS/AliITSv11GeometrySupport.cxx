@@ -555,8 +555,8 @@ void AliITSv11GeometrySupport::CreateSPDThermalShape(
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::CreateSPDOmegaShape(
-                             Double_t *xin, Double_t *yin, Double_t  d,
-			     Double_t   *x, Double_t *y)
+                   const Double_t *xin, const Double_t *yin, Double_t  d,
+		   Double_t   *x, Double_t *y)
 {
 //
 // Creates the proper sequence of X and Y coordinates to determine
@@ -630,7 +630,7 @@ void AliITSv11GeometrySupport::CreateSPDOmegaShape(
 //______________________________________________________________________
 void AliITSv11GeometrySupport::FillSPDXtruShape(Double_t a, Double_t b,
 						Double_t r, Double_t t,
-						Double_t *x, Double_t *y)
+						Double_t *x, Double_t *y) const
 {
 //
 // Creates the partial sequence of X and Y coordinates to determine
@@ -670,7 +670,7 @@ void AliITSv11GeometrySupport::FillSPDXtruShape(Double_t a, Double_t b,
 //______________________________________________________________________
 void AliITSv11GeometrySupport::PointFromParallelLines(Double_t x1, Double_t y1,
 			      Double_t x2, Double_t y2, Double_t d,
-			      Double_t &x, Double_t &y)
+			      Double_t &x, Double_t &y) const
 {
 //
 // Determines the X and Y of the first internal point of the Omega shape
@@ -702,17 +702,17 @@ void AliITSv11GeometrySupport::PointFromParallelLines(Double_t x1, Double_t y1,
   Double_t b = (x1 - x2)*(y1 - y2);
   Double_t c = (y1 - y2)*(y1 - y2) - d*d;
 
-  // (Delta4 is Delta/4 because we use the reduced formula)
-  Double_t Delta4 = b*b - a*c;
+  // (delta4 is Delta/4 because we use the reduced formula)
+  Double_t delta4 = b*b - a*c;
 
   // Compute the slope of the two parallel lines
   // (one of the two possible slopes, the one with the smaller
   // absolute value is needed)
-  if (Delta4 < 0) { // Should never happen with our data, but just to be sure
+  if (delta4 < 0) { // Should never happen with our data, but just to be sure
     x = -1;         // x is expected positive, so this flags an error
     return;
   } else
-    m = (b + TMath::Sqrt(Delta4))/a;  // b is negative with our data
+    m = (b + TMath::Sqrt(delta4))/a;  // b is negative with our data
 
   // Finally compute the coordinates of the point
   x = x2 + (y1 - y2 - d)/m;
@@ -726,7 +726,7 @@ void AliITSv11GeometrySupport::PointFromParallelLines(Double_t x1, Double_t y1,
 void AliITSv11GeometrySupport::ReflectPoint(Double_t x1, Double_t y1,
 					    Double_t x2, Double_t y2,
 					    Double_t x3, Double_t y3,
-					    Double_t &x, Double_t &y)
+					    Double_t &x, Double_t &y) const
 {
 //
 // Given two points (x1,y1) and (x2,y2), determines the point (x,y)
@@ -3498,7 +3498,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 
   // The optical fibers inside the external tray: a Xtru
   TGeoXtru *optFibsExt = new TGeoXtru(2);
-  optFibsExt->SetName("ITSsuppSPDExtTrayOptFibs");
+  optFibsExt->SetName("ITSsuppSPDExtTrayoptFibs");
 
   yprof[0] = -kExternalTrayHigh + 2*kExternalTrayThick
 	   + 2*forwTrayWall->GetDY();
@@ -5229,239 +5229,239 @@ void AliITSv11GeometrySupport::SDDCableTraysSideA(TGeoVolume *moth,
   externTrayCover->SetFillColor(externTrayCover->GetLineColor());
   externTrayCover->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *POMCoolManif = new TGeoVolume("ITSsuppSDDSideACoolManifPOM",
+  TGeoVolume *pomCoolManif = new TGeoVolume("ITSsuppSDDSideACoolManifPOM",
 					    coolManifPOM, medPOM);
 
-  POMCoolManif->SetVisibility(kTRUE);
-  POMCoolManif->SetLineColor(kRed); // Red
-  POMCoolManif->SetLineWidth(1);
-  POMCoolManif->SetFillColor(POMCoolManif->GetLineColor());
-  POMCoolManif->SetFillStyle(4000); // 0% transparent
+  pomCoolManif->SetVisibility(kTRUE);
+  pomCoolManif->SetLineColor(kRed); // Red
+  pomCoolManif->SetLineWidth(1);
+  pomCoolManif->SetFillColor(pomCoolManif->GetLineColor());
+  pomCoolManif->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *SteelCoolManif = new TGeoVolume("ITSsuppSDDSideACoolManifSteel",
+  TGeoVolume *steelCoolManif = new TGeoVolume("ITSsuppSDDSideACoolManifSteel",
 					      coolManifSteel, medSteel);
 
-  SteelCoolManif->SetVisibility(kTRUE);
-  SteelCoolManif->SetLineColor(kBlue); // Blue
-  SteelCoolManif->SetLineWidth(1);
-  SteelCoolManif->SetFillColor(SteelCoolManif->GetLineColor());
-  SteelCoolManif->SetFillStyle(4000); // 0% transparent
+  steelCoolManif->SetVisibility(kTRUE);
+  steelCoolManif->SetLineColor(kBlue); // Blue
+  steelCoolManif->SetLineWidth(1);
+  steelCoolManif->SetFillColor(steelCoolManif->GetLineColor());
+  steelCoolManif->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *WaterCoolManif = new TGeoVolume("ITSsuppSDDSideACoolManifWater",
+  TGeoVolume *waterCoolManif = new TGeoVolume("ITSsuppSDDSideACoolManifWater",
 					      coolManifWater, medWater);
 
-  WaterCoolManif->SetVisibility(kTRUE);
-  WaterCoolManif->SetLineColor(33); // Light Blue
-  WaterCoolManif->SetLineWidth(1);
-  WaterCoolManif->SetFillColor(WaterCoolManif->GetLineColor());
-  WaterCoolManif->SetFillStyle(4000); // 0% transparent
+  waterCoolManif->SetVisibility(kTRUE);
+  waterCoolManif->SetLineColor(33); // Light Blue
+  waterCoolManif->SetLineWidth(1);
+  waterCoolManif->SetFillColor(waterCoolManif->GetLineColor());
+  waterCoolManif->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AlCoolManif = new TGeoVolume("ITSsuppSDDSideACoolManifAl",
+  TGeoVolume *alCoolManif = new TGeoVolume("ITSsuppSDDSideACoolManifAl",
 					   coolManifAl, medAl);
 
-  AlCoolManif->SetVisibility(kTRUE);
-  AlCoolManif->SetLineColor(6); // Purple
-  AlCoolManif->SetLineWidth(1);
-  AlCoolManif->SetFillColor(AlCoolManif->GetLineColor());
-  AlCoolManif->SetFillStyle(4000); // 0% transparent
+  alCoolManif->SetVisibility(kTRUE);
+  alCoolManif->SetLineColor(6); // Purple
+  alCoolManif->SetLineWidth(1);
+  alCoolManif->SetFillColor(alCoolManif->GetLineColor());
+  alCoolManif->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PURCoolTubes = new TGeoVolume("ITSsuppSDDSideACoolTubesPUR",
+  TGeoVolume *purCoolTubes = new TGeoVolume("ITSsuppSDDSideACoolTubesPUR",
 					    coolTubesPUR, medPUR);
 
-  PURCoolTubes->SetVisibility(kTRUE);
-  PURCoolTubes->SetLineColor(kRed); // Red
-  PURCoolTubes->SetLineWidth(1);
-  PURCoolTubes->SetFillColor(PURCoolTubes->GetLineColor());
-  PURCoolTubes->SetFillStyle(4000); // 0% transparent
+  purCoolTubes->SetVisibility(kTRUE);
+  purCoolTubes->SetLineColor(kRed); // Red
+  purCoolTubes->SetLineWidth(1);
+  purCoolTubes->SetFillColor(purCoolTubes->GetLineColor());
+  purCoolTubes->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *WaterCoolTubes = new TGeoVolume("ITSsuppSDDSideACoolTubesWater",
+  TGeoVolume *waterCoolTubes = new TGeoVolume("ITSsuppSDDSideACoolTubesWater",
 					      coolTubesWater, medWater);
 
-  WaterCoolTubes->SetVisibility(kTRUE);
-  WaterCoolTubes->SetLineColor(33); // Light Blue
-  WaterCoolTubes->SetLineWidth(1);
-  WaterCoolTubes->SetFillColor(WaterCoolTubes->GetLineColor());
-  WaterCoolTubes->SetFillStyle(4000); // 0% transparent
+  waterCoolTubes->SetVisibility(kTRUE);
+  waterCoolTubes->SetLineColor(33); // Light Blue
+  waterCoolTubes->SetLineWidth(1);
+  waterCoolTubes->SetFillColor(waterCoolTubes->GetLineColor());
+  waterCoolTubes->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AirCoolTubes = new TGeoVolume("ITSsuppSDDSideACoolTubesAir",
+  TGeoVolume *airCoolTubes = new TGeoVolume("ITSsuppSDDSideACoolTubesAir",
 					    coolTubesAir, medAir);
 
-  AirCoolTubes->SetVisibility(kTRUE);
-  AirCoolTubes->SetLineColor(41);
-  AirCoolTubes->SetLineWidth(1);
-  AirCoolTubes->SetFillColor(AirCoolTubes->GetLineColor());
-  AirCoolTubes->SetFillStyle(4000); // 0% transparent
+  airCoolTubes->SetVisibility(kTRUE);
+  airCoolTubes->SetLineColor(41);
+  airCoolTubes->SetLineWidth(1);
+  airCoolTubes->SetFillColor(airCoolTubes->GetLineColor());
+  airCoolTubes->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PBTOptConn = new TGeoVolume("ITSsuppSDDSideAOptConnPBT",
+  TGeoVolume *pbtOptConn = new TGeoVolume("ITSsuppSDDSideAOptConnPBT",
 					  optConnPBT, medPBT);
 
-  PBTOptConn->SetVisibility(kTRUE);
-  PBTOptConn->SetLineColor(kRed); // Red
-  PBTOptConn->SetLineWidth(1);
-  PBTOptConn->SetFillColor(PBTOptConn->GetLineColor());
-  PBTOptConn->SetFillStyle(4000); // 0% transparent
+  pbtOptConn->SetVisibility(kTRUE);
+  pbtOptConn->SetLineColor(kRed); // Red
+  pbtOptConn->SetLineWidth(1);
+  pbtOptConn->SetFillColor(pbtOptConn->GetLineColor());
+  pbtOptConn->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *SteelOptConn = new TGeoVolume("ITSsuppSDDSideAOptConnSteel",
+  TGeoVolume *steelOptConn = new TGeoVolume("ITSsuppSDDSideAOptConnSteel",
 					    optConnSteel, medSteel);
 
-  SteelOptConn->SetVisibility(kTRUE);
-  SteelOptConn->SetLineColor(kBlue); // Blue
-  SteelOptConn->SetLineWidth(1);
-  SteelOptConn->SetFillColor(SteelOptConn->GetLineColor());
-  SteelOptConn->SetFillStyle(4000); // 0% transparent
+  steelOptConn->SetVisibility(kTRUE);
+  steelOptConn->SetLineColor(kBlue); // Blue
+  steelOptConn->SetLineWidth(1);
+  steelOptConn->SetFillColor(steelOptConn->GetLineColor());
+  steelOptConn->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AlOptConn = new TGeoVolume("ITSsuppSDDSideAOptConnAl",
+  TGeoVolume *alOptConn = new TGeoVolume("ITSsuppSDDSideAOptConnAl",
 					 optConnAl, medAl);
 
-  AlOptConn->SetVisibility(kTRUE);
-  AlOptConn->SetLineColor(6); // Purple
-  AlOptConn->SetLineWidth(1);
-  AlOptConn->SetFillColor(AlOptConn->GetLineColor());
-  AlOptConn->SetFillStyle(4000); // 0% transparent
+  alOptConn->SetVisibility(kTRUE);
+  alOptConn->SetLineColor(6); // Purple
+  alOptConn->SetLineWidth(1);
+  alOptConn->SetFillColor(alOptConn->GetLineColor());
+  alOptConn->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *OptFibs = new TGeoVolume("ITSsuppSDDSideAOptFibs",
+  TGeoVolume *optFibs = new TGeoVolume("ITSsuppSDDSideAOptFibs",
 				       opticalFibs, medOptFib);
 
-  OptFibs->SetVisibility(kTRUE);
-  OptFibs->SetLineColor(kOrange+2); // Orange
-  OptFibs->SetLineWidth(1);
-  OptFibs->SetFillColor(OptFibs->GetLineColor());
-  OptFibs->SetFillStyle(4000); // 0% transparent
+  optFibs->SetVisibility(kTRUE);
+  optFibs->SetLineColor(kOrange+2); // Orange
+  optFibs->SetLineWidth(1);
+  optFibs->SetFillColor(optFibs->GetLineColor());
+  optFibs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *CuInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsCu",
+  TGeoVolume *cuInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsCu",
 					   inputCabsCu, medCu);
 
-  CuInputCabs->SetVisibility(kTRUE);
-  CuInputCabs->SetLineColor(kBlack); // Black
-  CuInputCabs->SetLineWidth(1);
-  CuInputCabs->SetFillColor(CuInputCabs->GetLineColor());
-  CuInputCabs->SetFillStyle(4000); // 0% transparent
+  cuInputCabs->SetVisibility(kTRUE);
+  cuInputCabs->SetLineColor(kBlack); // Black
+  cuInputCabs->SetLineWidth(1);
+  cuInputCabs->SetFillColor(cuInputCabs->GetLineColor());
+  cuInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PlastInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsPlast",
+  TGeoVolume *plastInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsPlast",
 					      inputCabsPlast, medPUR);
 
-  PlastInputCabs->SetVisibility(kTRUE);
-  PlastInputCabs->SetLineColor(kRed); // Red
-  PlastInputCabs->SetLineWidth(1);
-  PlastInputCabs->SetFillColor(PlastInputCabs->GetLineColor());
-  PlastInputCabs->SetFillStyle(4000); // 0% transparent
+  plastInputCabs->SetVisibility(kTRUE);
+  plastInputCabs->SetLineColor(kRed); // Red
+  plastInputCabs->SetLineWidth(1);
+  plastInputCabs->SetFillColor(plastInputCabs->GetLineColor());
+  plastInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AlInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsAl",
+  TGeoVolume *alInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsAl",
 					   inputCabsAl, medAl);
 
-  AlInputCabs->SetVisibility(kTRUE);
-  AlInputCabs->SetLineColor(6); // Purple
-  AlInputCabs->SetLineWidth(1);
-  AlInputCabs->SetFillColor(AlInputCabs->GetLineColor());
-  AlInputCabs->SetFillStyle(4000); // 0% transparent
+  alInputCabs->SetVisibility(kTRUE);
+  alInputCabs->SetLineColor(6); // Purple
+  alInputCabs->SetLineWidth(1);
+  alInputCabs->SetFillColor(alInputCabs->GetLineColor());
+  alInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *KaptonInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsKapton",
+  TGeoVolume *kaptonInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsKapton",
 					       inputCabsKapton, medKapton);
 
-  KaptonInputCabs->SetVisibility(kTRUE);
-  KaptonInputCabs->SetLineColor(14); // 
-  KaptonInputCabs->SetLineWidth(1);
-  KaptonInputCabs->SetFillColor(KaptonInputCabs->GetLineColor());
-  KaptonInputCabs->SetFillStyle(4000); // 0% transparent
+  kaptonInputCabs->SetVisibility(kTRUE);
+  kaptonInputCabs->SetLineColor(14); // 
+  kaptonInputCabs->SetLineWidth(1);
+  kaptonInputCabs->SetFillColor(kaptonInputCabs->GetLineColor());
+  kaptonInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *POLYAXInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsPOLYAX",
+  TGeoVolume *pOLYAXInputCabs = new TGeoVolume("ITSsuppSDDSideAInputCabsPOLYAX",
 					       inputCabsPOLYAX, medPOLYAX);
 
-  POLYAXInputCabs->SetVisibility(kTRUE);
-  POLYAXInputCabs->SetLineColor(34); // 
-  POLYAXInputCabs->SetLineWidth(1);
-  POLYAXInputCabs->SetFillColor(POLYAXInputCabs->GetLineColor());
-  POLYAXInputCabs->SetFillStyle(4000); // 0% transparent
+  pOLYAXInputCabs->SetVisibility(kTRUE);
+  pOLYAXInputCabs->SetLineColor(34); // 
+  pOLYAXInputCabs->SetLineWidth(1);
+  pOLYAXInputCabs->SetFillColor(pOLYAXInputCabs->GetLineColor());
+  pOLYAXInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *CuOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsCu",
+  TGeoVolume *cuOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsCu",
 					    outputCabsCu, medCu);
 
-  CuOutputCabs->SetVisibility(kTRUE);
-  CuOutputCabs->SetLineColor(kBlack); // Black
-  CuOutputCabs->SetLineWidth(1);
-  CuOutputCabs->SetFillColor(CuOutputCabs->GetLineColor());
-  CuOutputCabs->SetFillStyle(4000); // 0% transparent
+  cuOutputCabs->SetVisibility(kTRUE);
+  cuOutputCabs->SetLineColor(kBlack); // Black
+  cuOutputCabs->SetLineWidth(1);
+  cuOutputCabs->SetFillColor(cuOutputCabs->GetLineColor());
+  cuOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PlastOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsPlast",
+  TGeoVolume *plastOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsPlast",
 					       outputCabsPlast, medPUR);
 
-  PlastOutputCabs->SetVisibility(kTRUE);
-  PlastOutputCabs->SetLineColor(kRed); // Red
-  PlastOutputCabs->SetLineWidth(1);
-  PlastOutputCabs->SetFillColor(PlastOutputCabs->GetLineColor());
-  PlastOutputCabs->SetFillStyle(4000); // 0% transparent
+  plastOutputCabs->SetVisibility(kTRUE);
+  plastOutputCabs->SetLineColor(kRed); // Red
+  plastOutputCabs->SetLineWidth(1);
+  plastOutputCabs->SetFillColor(plastOutputCabs->GetLineColor());
+  plastOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AlOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsAl",
+  TGeoVolume *alOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsAl",
 					    outputCabsAl, medAl);
 
-  AlOutputCabs->SetVisibility(kTRUE);
-  AlOutputCabs->SetLineColor(6); // Purple
-  AlOutputCabs->SetLineWidth(1);
-  AlOutputCabs->SetFillColor(AlOutputCabs->GetLineColor());
-  AlOutputCabs->SetFillStyle(4000); // 0% transparent
+  alOutputCabs->SetVisibility(kTRUE);
+  alOutputCabs->SetLineColor(6); // Purple
+  alOutputCabs->SetLineWidth(1);
+  alOutputCabs->SetFillColor(alOutputCabs->GetLineColor());
+  alOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *KaptonOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsKapton",
+  TGeoVolume *kaptonOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsKapton",
 						outputCabsKapton, medKapton);
 
-  KaptonOutputCabs->SetVisibility(kTRUE);
-  KaptonOutputCabs->SetLineColor(14); // 
-  KaptonOutputCabs->SetLineWidth(1);
-  KaptonOutputCabs->SetFillColor(KaptonOutputCabs->GetLineColor());
-  KaptonOutputCabs->SetFillStyle(4000); // 0% transparent
+  kaptonOutputCabs->SetVisibility(kTRUE);
+  kaptonOutputCabs->SetLineColor(14); // 
+  kaptonOutputCabs->SetLineWidth(1);
+  kaptonOutputCabs->SetFillColor(kaptonOutputCabs->GetLineColor());
+  kaptonOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *POLYAXOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsPOLYAX",
+  TGeoVolume *pOLYAXOutputCabs = new TGeoVolume("ITSsuppSDDSideAOutputCabsPOLYAX",
 						outputCabsPOLYAX, medPOLYAX);
 
-  POLYAXOutputCabs->SetVisibility(kTRUE);
-  POLYAXOutputCabs->SetLineColor(34); // 
-  POLYAXOutputCabs->SetLineWidth(1);
-  POLYAXOutputCabs->SetFillColor(POLYAXOutputCabs->GetLineColor());
-  POLYAXOutputCabs->SetFillStyle(4000); // 0% transparent
+  pOLYAXOutputCabs->SetVisibility(kTRUE);
+  pOLYAXOutputCabs->SetLineColor(34); // 
+  pOLYAXOutputCabs->SetLineWidth(1);
+  pOLYAXOutputCabs->SetFillColor(pOLYAXOutputCabs->GetLineColor());
+  pOLYAXOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *CuPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsCu",
+  TGeoVolume *cuPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsCu",
 					   pcbBoardsCu, medCu);
 
-  CuPCBBoards->SetVisibility(kTRUE);
-  CuPCBBoards->SetLineColor(kBlack); // Black
-  CuPCBBoards->SetLineWidth(1);
-  CuPCBBoards->SetFillColor(CuPCBBoards->GetLineColor());
-  CuPCBBoards->SetFillStyle(4000); // 0% transparent
+  cuPCBBoards->SetVisibility(kTRUE);
+  cuPCBBoards->SetLineColor(kBlack); // Black
+  cuPCBBoards->SetLineWidth(1);
+  cuPCBBoards->SetFillColor(cuPCBBoards->GetLineColor());
+  cuPCBBoards->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *EpoxyPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsEpoxy",
+  TGeoVolume *epoxyPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsEpoxy",
 					      pcbBoardsEpoxy, medEpoxy);
 
-  EpoxyPCBBoards->SetVisibility(kTRUE);
-  EpoxyPCBBoards->SetLineColor(22); //
-  EpoxyPCBBoards->SetLineWidth(1);
-  EpoxyPCBBoards->SetFillColor(EpoxyPCBBoards->GetLineColor());
-  EpoxyPCBBoards->SetFillStyle(4000); // 0% transparent
+  epoxyPCBBoards->SetVisibility(kTRUE);
+  epoxyPCBBoards->SetLineColor(22); //
+  epoxyPCBBoards->SetLineWidth(1);
+  epoxyPCBBoards->SetFillColor(epoxyPCBBoards->GetLineColor());
+  epoxyPCBBoards->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PlastPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsPlast",
+  TGeoVolume *plastPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsPlast",
 					      pcbBoardsPlast, medPUR);
 
-  PlastPCBBoards->SetVisibility(kTRUE);
-  PlastPCBBoards->SetLineColor(kRed); // Red
-  PlastPCBBoards->SetLineWidth(1);
-  PlastPCBBoards->SetFillColor(PlastPCBBoards->GetLineColor());
-  PlastPCBBoards->SetFillStyle(4000); // 0% transparent
+  plastPCBBoards->SetVisibility(kTRUE);
+  plastPCBBoards->SetLineColor(kRed); // Red
+  plastPCBBoards->SetLineWidth(1);
+  plastPCBBoards->SetFillColor(plastPCBBoards->GetLineColor());
+  plastPCBBoards->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *SteelPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsSteel",
+  TGeoVolume *steelPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsSteel",
 					      pcbBoardsSteel, medSteel);
 
-  SteelPCBBoards->SetVisibility(kTRUE);
-  SteelPCBBoards->SetLineColor(kBlue); // Blue
-  SteelPCBBoards->SetLineWidth(1);
-  SteelPCBBoards->SetFillColor(SteelPCBBoards->GetLineColor());
-  SteelPCBBoards->SetFillStyle(4000); // 0% transparent
+  steelPCBBoards->SetVisibility(kTRUE);
+  steelPCBBoards->SetLineColor(kBlue); // Blue
+  steelPCBBoards->SetLineWidth(1);
+  steelPCBBoards->SetFillColor(steelPCBBoards->GetLineColor());
+  steelPCBBoards->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PPSPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsPPS",
+  TGeoVolume *pPSPCBBoards = new TGeoVolume("ITSsuppSDDSideAPCBBoardsPPS",
 					    pcbBoardsPPS, medPPS);
 
-  PPSPCBBoards->SetVisibility(kTRUE);
-  PPSPCBBoards->SetLineColor(kGreen); // Green
-  PPSPCBBoards->SetLineWidth(1);
-  PPSPCBBoards->SetFillColor(PPSPCBBoards->GetLineColor());
-  PPSPCBBoards->SetFillStyle(4000); // 0% transparent
+  pPSPCBBoards->SetVisibility(kTRUE);
+  pPSPCBBoards->SetLineColor(kGreen); // Green
+  pPSPCBBoards->SetLineWidth(1);
+  pPSPCBBoards->SetFillColor(pPSPCBBoards->GetLineColor());
+  pPSPCBBoards->SetFillStyle(4000); // 0% transparent
 
 
   // Now build up the tray
@@ -5489,116 +5489,116 @@ void AliITSv11GeometrySupport::SDDCableTraysSideA(TGeoVolume *moth,
 
   yloc = kForwardTrayThick + coolManifPOM->GetDY();
   zloc = coolManifPOM->GetDZ();
-  cableTrayA->AddNode(POMCoolManif, 1,
+  cableTrayA->AddNode(pomCoolManif, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc += coolManifPOM->GetDY() + coolManifSteel->GetDY();
-  cableTrayA->AddNode(SteelCoolManif, 1,
+  cableTrayA->AddNode(steelCoolManif, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc += coolManifSteel->GetDY() + coolManifWater->GetDY();
-  cableTrayA->AddNode(WaterCoolManif, 1,
+  cableTrayA->AddNode(waterCoolManif, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc += coolManifWater->GetDY() + coolManifAl->GetDY();
-  cableTrayA->AddNode(AlCoolManif, 1,
+  cableTrayA->AddNode(alCoolManif, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
-  cableTrayA->AddNode(PURCoolTubes,1,
+  cableTrayA->AddNode(purCoolTubes,1,
 		      new TGeoCombiTrans( 0, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
-  cableTrayA->AddNode(WaterCoolTubes,1,
+  cableTrayA->AddNode(waterCoolTubes,1,
 		      new TGeoCombiTrans( 0, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
-  cableTrayA->AddNode(AirCoolTubes,1,
+  cableTrayA->AddNode(airCoolTubes,1,
 		      new TGeoCombiTrans( 0, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
 
   xloc = coolManifPOM->GetDX() + optConnPBT->GetDX();
   yloc = kForwardTrayThick + optConnPBT->GetDY();
   zloc = optConnPBT->GetDZ();
-  cableTrayA->AddNode(PBTOptConn, 1,
+  cableTrayA->AddNode(pbtOptConn, 1,
 		      new TGeoTranslation( xloc, yloc, zloc) );
-  cableTrayA->AddNode(PBTOptConn, 2,
+  cableTrayA->AddNode(pbtOptConn, 2,
 		      new TGeoTranslation(-xloc, yloc, zloc) );
 
   yloc += optConnPBT->GetDY() + optConnSteel->GetDY();
-  cableTrayA->AddNode(SteelOptConn, 1,
+  cableTrayA->AddNode(steelOptConn, 1,
 		      new TGeoTranslation( xloc, yloc, zloc) );
-  cableTrayA->AddNode(SteelOptConn, 2,
+  cableTrayA->AddNode(steelOptConn, 2,
 		      new TGeoTranslation(-xloc, yloc, zloc) );
 
   yloc += optConnSteel->GetDY() + optConnAl->GetDY();
-  cableTrayA->AddNode(AlOptConn, 1,
+  cableTrayA->AddNode(alOptConn, 1,
 		      new TGeoTranslation( xloc, yloc, zloc) );
-  cableTrayA->AddNode(AlOptConn, 2,
+  cableTrayA->AddNode(alOptConn, 2,
 		      new TGeoTranslation(-xloc, yloc, zloc) );
 
 
   xloc = kSideACoolTubesWide/2 + kSideAOptFibsWide/2;
-  cableTrayA->AddNode(OptFibs,1,
+  cableTrayA->AddNode(optFibs,1,
 		      new TGeoCombiTrans( xloc, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
-  cableTrayA->AddNode(OptFibs,2,
+  cableTrayA->AddNode(optFibs,2,
 		      new TGeoCombiTrans(-xloc, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
 
   yloc = kForwardTrayTotalHeight - forwardCover->GetY(3) -
 	 kSideAInputCablesYTrans - inputCabsPOLYAX->GetDY();
   zloc = inputCabsPOLYAX->GetDZ();
-  cableTrayA->AddNode(POLYAXInputCabs, 1,
+  cableTrayA->AddNode(pOLYAXInputCabs, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc -= (inputCabsPOLYAX->GetDY() + inputCabsKapton->GetDY());
-  cableTrayA->AddNode(KaptonInputCabs, 1,
+  cableTrayA->AddNode(kaptonInputCabs, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc -= (inputCabsKapton->GetDY() + inputCabsAl->GetDY());
-  cableTrayA->AddNode(AlInputCabs, 1,
+  cableTrayA->AddNode(alInputCabs, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc -= (inputCabsAl->GetDY() + inputCabsPlast->GetDY());
-  cableTrayA->AddNode(PlastInputCabs, 1,
+  cableTrayA->AddNode(plastInputCabs, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc -= (inputCabsPlast->GetDY() + inputCabsCu->GetDY());
-  cableTrayA->AddNode(CuInputCabs, 1,
+  cableTrayA->AddNode(cuInputCabs, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc -= (inputCabsCu->GetDY()+pcbBoardsPPS->GetDY()+kSideAPCBBoardsYTrans);
   zloc += pcbBoardsPPS->GetDZ();
-  cableTrayA->AddNode(PPSPCBBoards, 1,
+  cableTrayA->AddNode(pPSPCBBoards, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc -= (pcbBoardsPPS->GetDY()+pcbBoardsSteel->GetDY());
-  cableTrayA->AddNode(SteelPCBBoards, 1,
+  cableTrayA->AddNode(steelPCBBoards, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc -= (pcbBoardsSteel->GetDY()+pcbBoardsPlast->GetDY());
-  cableTrayA->AddNode(PlastPCBBoards, 1,
+  cableTrayA->AddNode(plastPCBBoards, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc -= (pcbBoardsPlast->GetDY()+pcbBoardsEpoxy->GetDY());
-  cableTrayA->AddNode(EpoxyPCBBoards, 1,
+  cableTrayA->AddNode(epoxyPCBBoards, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
   yloc -= (pcbBoardsEpoxy->GetDY()+pcbBoardsCu->GetDY());
-  cableTrayA->AddNode(CuPCBBoards, 1,
+  cableTrayA->AddNode(cuPCBBoards, 1,
 		      new TGeoTranslation( 0, yloc, zloc) );
 
-  cableTrayA->AddNode(CuOutputCabs,1,
+  cableTrayA->AddNode(cuOutputCabs,1,
 		      new TGeoCombiTrans( 0, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
-  cableTrayA->AddNode(PlastOutputCabs,1,
+  cableTrayA->AddNode(plastOutputCabs,1,
 		      new TGeoCombiTrans( 0, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
-  cableTrayA->AddNode(AlOutputCabs,1,
+  cableTrayA->AddNode(alOutputCabs,1,
 		      new TGeoCombiTrans( 0, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
-  cableTrayA->AddNode(KaptonOutputCabs,1,
+  cableTrayA->AddNode(kaptonOutputCabs,1,
 		      new TGeoCombiTrans( 0, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
-  cableTrayA->AddNode(POLYAXOutputCabs,1,
+  cableTrayA->AddNode(pOLYAXOutputCabs,1,
 		      new TGeoCombiTrans( 0, 0, 0,
 		      new TGeoRotation("",-90, 90, 90)        ) );
 
@@ -6028,335 +6028,335 @@ void AliITSv11GeometrySupport::SDDCableTraysSideC(TGeoVolume *moth,
   TGeoMedium *medPPS    = mgr->GetMedium("ITS_PPS$");
   TGeoMedium *medEpoxy  = mgr->GetMedium("ITS_EPOXY$");
 
-  TGeoVolume *POMCoolManif = new TGeoVolume("ITSsuppSDDSideCCoolManifPOM",
+  TGeoVolume *pomCoolManif = new TGeoVolume("ITSsuppSDDSideCCoolManifPOM",
 					    coolManifPOM, medPOM);
 
-  POMCoolManif->SetVisibility(kTRUE);
-  POMCoolManif->SetLineColor(kRed); // Red
-  POMCoolManif->SetLineWidth(1);
-  POMCoolManif->SetFillColor(POMCoolManif->GetLineColor());
-  POMCoolManif->SetFillStyle(4000); // 0% transparent
+  pomCoolManif->SetVisibility(kTRUE);
+  pomCoolManif->SetLineColor(kRed); // Red
+  pomCoolManif->SetLineWidth(1);
+  pomCoolManif->SetFillColor(pomCoolManif->GetLineColor());
+  pomCoolManif->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *SteelCoolManif = new TGeoVolume("ITSsuppSDDSideCCoolManifSteel",
+  TGeoVolume *steelCoolManif = new TGeoVolume("ITSsuppSDDSideCCoolManifSteel",
 					      coolManifSteel, medSteel);
 
-  SteelCoolManif->SetVisibility(kTRUE);
-  SteelCoolManif->SetLineColor(kBlue); // Blue
-  SteelCoolManif->SetLineWidth(1);
-  SteelCoolManif->SetFillColor(SteelCoolManif->GetLineColor());
-  SteelCoolManif->SetFillStyle(4000); // 0% transparent
+  steelCoolManif->SetVisibility(kTRUE);
+  steelCoolManif->SetLineColor(kBlue); // Blue
+  steelCoolManif->SetLineWidth(1);
+  steelCoolManif->SetFillColor(steelCoolManif->GetLineColor());
+  steelCoolManif->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *WaterCoolManif = new TGeoVolume("ITSsuppSDDSideCCoolManifWater",
+  TGeoVolume *waterCoolManif = new TGeoVolume("ITSsuppSDDSideCCoolManifWater",
 					      coolManifWater, medWater);
 
-  WaterCoolManif->SetVisibility(kTRUE);
-  WaterCoolManif->SetLineColor(33); // Light Blue
-  WaterCoolManif->SetLineWidth(1);
-  WaterCoolManif->SetFillColor(WaterCoolManif->GetLineColor());
-  WaterCoolManif->SetFillStyle(4000); // 0% transparent
+  waterCoolManif->SetVisibility(kTRUE);
+  waterCoolManif->SetLineColor(33); // Light Blue
+  waterCoolManif->SetLineWidth(1);
+  waterCoolManif->SetFillColor(waterCoolManif->GetLineColor());
+  waterCoolManif->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AlCoolManif = new TGeoVolume("ITSsuppSDDSideCCoolManifAl",
+  TGeoVolume *alCoolManif = new TGeoVolume("ITSsuppSDDSideCCoolManifAl",
 					   coolManifAl, medAl);
 
-  AlCoolManif->SetVisibility(kTRUE);
-  AlCoolManif->SetLineColor(6); // Purple
-  AlCoolManif->SetLineWidth(1);
-  AlCoolManif->SetFillColor(AlCoolManif->GetLineColor());
-  AlCoolManif->SetFillStyle(4000); // 0% transparent
+  alCoolManif->SetVisibility(kTRUE);
+  alCoolManif->SetLineColor(6); // Purple
+  alCoolManif->SetLineWidth(1);
+  alCoolManif->SetFillColor(alCoolManif->GetLineColor());
+  alCoolManif->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PURCoolTubes = new TGeoVolume("ITSsuppSDDSideCCoolTubesPUR",
+  TGeoVolume *purCoolTubes = new TGeoVolume("ITSsuppSDDSideCCoolTubesPUR",
 					    coolTubesPUR, medPUR);
 
-  PURCoolTubes->SetVisibility(kTRUE);
-  PURCoolTubes->SetLineColor(kRed); // Red
-  PURCoolTubes->SetLineWidth(1);
-  PURCoolTubes->SetFillColor(PURCoolTubes->GetLineColor());
-  PURCoolTubes->SetFillStyle(4000); // 0% transparent
+  purCoolTubes->SetVisibility(kTRUE);
+  purCoolTubes->SetLineColor(kRed); // Red
+  purCoolTubes->SetLineWidth(1);
+  purCoolTubes->SetFillColor(purCoolTubes->GetLineColor());
+  purCoolTubes->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *WaterCoolTubes = new TGeoVolume("ITSsuppSDDSideCCoolTubesWater",
+  TGeoVolume *waterCoolTubes = new TGeoVolume("ITSsuppSDDSideCCoolTubesWater",
 					      coolTubesWater, medWater);
 
-  WaterCoolTubes->SetVisibility(kTRUE);
-  WaterCoolTubes->SetLineColor(33); // Light Blue
-  WaterCoolTubes->SetLineWidth(1);
-  WaterCoolTubes->SetFillColor(WaterCoolTubes->GetLineColor());
-  WaterCoolTubes->SetFillStyle(4000); // 0% transparent
+  waterCoolTubes->SetVisibility(kTRUE);
+  waterCoolTubes->SetLineColor(33); // Light Blue
+  waterCoolTubes->SetLineWidth(1);
+  waterCoolTubes->SetFillColor(waterCoolTubes->GetLineColor());
+  waterCoolTubes->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AirCoolTubes = new TGeoVolume("ITSsuppSDDSideCCoolTubesAir",
+  TGeoVolume *airCoolTubes = new TGeoVolume("ITSsuppSDDSideCCoolTubesAir",
 					    coolTubesAir, medAir);
 
-  AirCoolTubes->SetVisibility(kTRUE);
-  AirCoolTubes->SetLineColor(41);
-  AirCoolTubes->SetLineWidth(1);
-  AirCoolTubes->SetFillColor(AirCoolTubes->GetLineColor());
-  AirCoolTubes->SetFillStyle(4000); // 0% transparent
+  airCoolTubes->SetVisibility(kTRUE);
+  airCoolTubes->SetLineColor(41);
+  airCoolTubes->SetLineWidth(1);
+  airCoolTubes->SetFillColor(airCoolTubes->GetLineColor());
+  airCoolTubes->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PBTOptConn = new TGeoVolume("ITSsuppSDDSideCOptConnPBT",
+  TGeoVolume *pbtOptConn = new TGeoVolume("ITSsuppSDDSideCOptConnPBT",
 					  optConnPBT, medPBT);
 
-  PBTOptConn->SetVisibility(kTRUE);
-  PBTOptConn->SetLineColor(kRed); // Red
-  PBTOptConn->SetLineWidth(1);
-  PBTOptConn->SetFillColor(PBTOptConn->GetLineColor());
-  PBTOptConn->SetFillStyle(4000); // 0% transparent
+  pbtOptConn->SetVisibility(kTRUE);
+  pbtOptConn->SetLineColor(kRed); // Red
+  pbtOptConn->SetLineWidth(1);
+  pbtOptConn->SetFillColor(pbtOptConn->GetLineColor());
+  pbtOptConn->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *SteelOptConn = new TGeoVolume("ITSsuppSDDSideCOptConnSteel",
+  TGeoVolume *steelOptConn = new TGeoVolume("ITSsuppSDDSideCOptConnSteel",
 					    optConnSteel, medSteel);
 
-  SteelOptConn->SetVisibility(kTRUE);
-  SteelOptConn->SetLineColor(kBlue); // Blue
-  SteelOptConn->SetLineWidth(1);
-  SteelOptConn->SetFillColor(SteelOptConn->GetLineColor());
-  SteelOptConn->SetFillStyle(4000); // 0% transparent
+  steelOptConn->SetVisibility(kTRUE);
+  steelOptConn->SetLineColor(kBlue); // Blue
+  steelOptConn->SetLineWidth(1);
+  steelOptConn->SetFillColor(steelOptConn->GetLineColor());
+  steelOptConn->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AlOptConn = new TGeoVolume("ITSsuppSDDSideCOptConnAl",
+  TGeoVolume *alOptConn = new TGeoVolume("ITSsuppSDDSideCOptConnAl",
 					 optConnAl, medAl);
 
-  AlOptConn->SetVisibility(kTRUE);
-  AlOptConn->SetLineColor(6); // Purple
-  AlOptConn->SetLineWidth(1);
-  AlOptConn->SetFillColor(AlOptConn->GetLineColor());
-  AlOptConn->SetFillStyle(4000); // 0% transparent
+  alOptConn->SetVisibility(kTRUE);
+  alOptConn->SetLineColor(6); // Purple
+  alOptConn->SetLineWidth(1);
+  alOptConn->SetFillColor(alOptConn->GetLineColor());
+  alOptConn->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *OptFibs = new TGeoVolume("ITSsuppSDDSideCOptFibs",
+  TGeoVolume *optFibs = new TGeoVolume("ITSsuppSDDSideCOptFibs",
 				       opticalFibs, medOptFib);
 
-  OptFibs->SetVisibility(kTRUE);
-  OptFibs->SetLineColor(kOrange+2); // Orange
-  OptFibs->SetLineWidth(1);
-  OptFibs->SetFillColor(OptFibs->GetLineColor());
-  OptFibs->SetFillStyle(4000); // 0% transparent
+  optFibs->SetVisibility(kTRUE);
+  optFibs->SetLineColor(kOrange+2); // Orange
+  optFibs->SetLineWidth(1);
+  optFibs->SetFillColor(optFibs->GetLineColor());
+  optFibs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *CuInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsCu",
+  TGeoVolume *cuInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsCu",
 					   inputCabsCu, medCu);
 
-  CuInputCabs->SetVisibility(kTRUE);
-  CuInputCabs->SetLineColor(kBlack); // Black
-  CuInputCabs->SetLineWidth(1);
-  CuInputCabs->SetFillColor(CuInputCabs->GetLineColor());
-  CuInputCabs->SetFillStyle(4000); // 0% transparent
+  cuInputCabs->SetVisibility(kTRUE);
+  cuInputCabs->SetLineColor(kBlack); // Black
+  cuInputCabs->SetLineWidth(1);
+  cuInputCabs->SetFillColor(cuInputCabs->GetLineColor());
+  cuInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PlastInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsPlast",
+  TGeoVolume *plastInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsPlast",
 					      inputCabsPlast, medPUR);
 
-  PlastInputCabs->SetVisibility(kTRUE);
-  PlastInputCabs->SetLineColor(kRed); // Red
-  PlastInputCabs->SetLineWidth(1);
-  PlastInputCabs->SetFillColor(PlastInputCabs->GetLineColor());
-  PlastInputCabs->SetFillStyle(4000); // 0% transparent
+  plastInputCabs->SetVisibility(kTRUE);
+  plastInputCabs->SetLineColor(kRed); // Red
+  plastInputCabs->SetLineWidth(1);
+  plastInputCabs->SetFillColor(plastInputCabs->GetLineColor());
+  plastInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AlInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsAl",
+  TGeoVolume *alInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsAl",
 					   inputCabsAl, medAl);
 
-  AlInputCabs->SetVisibility(kTRUE);
-  AlInputCabs->SetLineColor(6); // Purple
-  AlInputCabs->SetLineWidth(1);
-  AlInputCabs->SetFillColor(AlInputCabs->GetLineColor());
-  AlInputCabs->SetFillStyle(4000); // 0% transparent
+  alInputCabs->SetVisibility(kTRUE);
+  alInputCabs->SetLineColor(6); // Purple
+  alInputCabs->SetLineWidth(1);
+  alInputCabs->SetFillColor(alInputCabs->GetLineColor());
+  alInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *KaptonInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsKapton",
+  TGeoVolume *kaptonInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsKapton",
 					       inputCabsKapton, medKapton);
 
-  KaptonInputCabs->SetVisibility(kTRUE);
-  KaptonInputCabs->SetLineColor(14); // 
-  KaptonInputCabs->SetLineWidth(1);
-  KaptonInputCabs->SetFillColor(KaptonInputCabs->GetLineColor());
-  KaptonInputCabs->SetFillStyle(4000); // 0% transparent
+  kaptonInputCabs->SetVisibility(kTRUE);
+  kaptonInputCabs->SetLineColor(14); // 
+  kaptonInputCabs->SetLineWidth(1);
+  kaptonInputCabs->SetFillColor(kaptonInputCabs->GetLineColor());
+  kaptonInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *POLYAXInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsPOLYAX",
+  TGeoVolume *pOLYAXInputCabs = new TGeoVolume("ITSsuppSDDSideCInputCabsPOLYAX",
 					       inputCabsPOLYAX, medPOLYAX);
 
-  POLYAXInputCabs->SetVisibility(kTRUE);
-  POLYAXInputCabs->SetLineColor(34); // 
-  POLYAXInputCabs->SetLineWidth(1);
-  POLYAXInputCabs->SetFillColor(POLYAXInputCabs->GetLineColor());
-  POLYAXInputCabs->SetFillStyle(4000); // 0% transparent
+  pOLYAXInputCabs->SetVisibility(kTRUE);
+  pOLYAXInputCabs->SetLineColor(34); // 
+  pOLYAXInputCabs->SetLineWidth(1);
+  pOLYAXInputCabs->SetFillColor(pOLYAXInputCabs->GetLineColor());
+  pOLYAXInputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *CuOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsCu",
+  TGeoVolume *cuOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsCu",
 					    outputCabsCu, medCu);
 
-  CuOutputCabs->SetVisibility(kTRUE);
-  CuOutputCabs->SetLineColor(kBlack); // Black
-  CuOutputCabs->SetLineWidth(1);
-  CuOutputCabs->SetFillColor(CuOutputCabs->GetLineColor());
-  CuOutputCabs->SetFillStyle(4000); // 0% transparent
+  cuOutputCabs->SetVisibility(kTRUE);
+  cuOutputCabs->SetLineColor(kBlack); // Black
+  cuOutputCabs->SetLineWidth(1);
+  cuOutputCabs->SetFillColor(cuOutputCabs->GetLineColor());
+  cuOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PlastOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsPlast",
+  TGeoVolume *plastOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsPlast",
 					       outputCabsPlast, medPUR);
 
-  PlastOutputCabs->SetVisibility(kTRUE);
-  PlastOutputCabs->SetLineColor(kRed); // Red
-  PlastOutputCabs->SetLineWidth(1);
-  PlastOutputCabs->SetFillColor(PlastOutputCabs->GetLineColor());
-  PlastOutputCabs->SetFillStyle(4000); // 0% transparent
+  plastOutputCabs->SetVisibility(kTRUE);
+  plastOutputCabs->SetLineColor(kRed); // Red
+  plastOutputCabs->SetLineWidth(1);
+  plastOutputCabs->SetFillColor(plastOutputCabs->GetLineColor());
+  plastOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *AlOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsAl",
+  TGeoVolume *alOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsAl",
 					    outputCabsAl, medAl);
 
-  AlOutputCabs->SetVisibility(kTRUE);
-  AlOutputCabs->SetLineColor(6); // Purple
-  AlOutputCabs->SetLineWidth(1);
-  AlOutputCabs->SetFillColor(AlOutputCabs->GetLineColor());
-  AlOutputCabs->SetFillStyle(4000); // 0% transparent
+  alOutputCabs->SetVisibility(kTRUE);
+  alOutputCabs->SetLineColor(6); // Purple
+  alOutputCabs->SetLineWidth(1);
+  alOutputCabs->SetFillColor(alOutputCabs->GetLineColor());
+  alOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *KaptonOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsKapton",
+  TGeoVolume *kaptonOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsKapton",
 						outputCabsKapton, medKapton);
 
-  KaptonOutputCabs->SetVisibility(kTRUE);
-  KaptonOutputCabs->SetLineColor(14); // 
-  KaptonOutputCabs->SetLineWidth(1);
-  KaptonOutputCabs->SetFillColor(KaptonOutputCabs->GetLineColor());
-  KaptonOutputCabs->SetFillStyle(4000); // 0% transparent
+  kaptonOutputCabs->SetVisibility(kTRUE);
+  kaptonOutputCabs->SetLineColor(14); // 
+  kaptonOutputCabs->SetLineWidth(1);
+  kaptonOutputCabs->SetFillColor(kaptonOutputCabs->GetLineColor());
+  kaptonOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *POLYAXOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsPOLYAX",
+  TGeoVolume *pOLYAXOutputCabs = new TGeoVolume("ITSsuppSDDSideCOutputCabsPOLYAX",
 						outputCabsPOLYAX, medPOLYAX);
 
-  POLYAXOutputCabs->SetVisibility(kTRUE);
-  POLYAXOutputCabs->SetLineColor(34); // 
-  POLYAXOutputCabs->SetLineWidth(1);
-  POLYAXOutputCabs->SetFillColor(POLYAXOutputCabs->GetLineColor());
-  POLYAXOutputCabs->SetFillStyle(4000); // 0% transparent
+  pOLYAXOutputCabs->SetVisibility(kTRUE);
+  pOLYAXOutputCabs->SetLineColor(34); // 
+  pOLYAXOutputCabs->SetLineWidth(1);
+  pOLYAXOutputCabs->SetFillColor(pOLYAXOutputCabs->GetLineColor());
+  pOLYAXOutputCabs->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *CuPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsCu",
+  TGeoVolume *cuPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsCu",
 					   pcbBoardsCu, medCu);
 
-  CuPCBBoards->SetVisibility(kTRUE);
-  CuPCBBoards->SetLineColor(kBlack); // Black
-  CuPCBBoards->SetLineWidth(1);
-  CuPCBBoards->SetFillColor(CuPCBBoards->GetLineColor());
-  CuPCBBoards->SetFillStyle(4000); // 0% transparent
+  cuPCBBoards->SetVisibility(kTRUE);
+  cuPCBBoards->SetLineColor(kBlack); // Black
+  cuPCBBoards->SetLineWidth(1);
+  cuPCBBoards->SetFillColor(cuPCBBoards->GetLineColor());
+  cuPCBBoards->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *EpoxyPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsEpoxy",
+  TGeoVolume *epoxyPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsEpoxy",
 					      pcbBoardsEpoxy, medEpoxy);
 
-  EpoxyPCBBoards->SetVisibility(kTRUE);
-  EpoxyPCBBoards->SetLineColor(22); //
-  EpoxyPCBBoards->SetLineWidth(1);
-  EpoxyPCBBoards->SetFillColor(EpoxyPCBBoards->GetLineColor());
-  EpoxyPCBBoards->SetFillStyle(4000); // 0% transparent
+  epoxyPCBBoards->SetVisibility(kTRUE);
+  epoxyPCBBoards->SetLineColor(22); //
+  epoxyPCBBoards->SetLineWidth(1);
+  epoxyPCBBoards->SetFillColor(epoxyPCBBoards->GetLineColor());
+  epoxyPCBBoards->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PlastPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsPlast",
+  TGeoVolume *plastPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsPlast",
 					      pcbBoardsPlast, medPUR);
 
-  PlastPCBBoards->SetVisibility(kTRUE);
-  PlastPCBBoards->SetLineColor(kRed); // Red
-  PlastPCBBoards->SetLineWidth(1);
-  PlastPCBBoards->SetFillColor(PlastPCBBoards->GetLineColor());
-  PlastPCBBoards->SetFillStyle(4000); // 0% transparent
+  plastPCBBoards->SetVisibility(kTRUE);
+  plastPCBBoards->SetLineColor(kRed); // Red
+  plastPCBBoards->SetLineWidth(1);
+  plastPCBBoards->SetFillColor(plastPCBBoards->GetLineColor());
+  plastPCBBoards->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *SteelPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsSteel",
+  TGeoVolume *steelPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsSteel",
 					      pcbBoardsSteel, medSteel);
 
-  SteelPCBBoards->SetVisibility(kTRUE);
-  SteelPCBBoards->SetLineColor(kBlue); // Blue
-  SteelPCBBoards->SetLineWidth(1);
-  SteelPCBBoards->SetFillColor(SteelPCBBoards->GetLineColor());
-  SteelPCBBoards->SetFillStyle(4000); // 0% transparent
+  steelPCBBoards->SetVisibility(kTRUE);
+  steelPCBBoards->SetLineColor(kBlue); // Blue
+  steelPCBBoards->SetLineWidth(1);
+  steelPCBBoards->SetFillColor(steelPCBBoards->GetLineColor());
+  steelPCBBoards->SetFillStyle(4000); // 0% transparent
 
-  TGeoVolume *PPSPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsPPS",
+  TGeoVolume *pPSPCBBoards = new TGeoVolume("ITSsuppSDDSideCPCBBoardsPPS",
 					    pcbBoardsPPS, medPPS);
 
-  PPSPCBBoards->SetVisibility(kTRUE);
-  PPSPCBBoards->SetLineColor(kGreen); // Green
-  PPSPCBBoards->SetLineWidth(1);
-  PPSPCBBoards->SetFillColor(PPSPCBBoards->GetLineColor());
-  PPSPCBBoards->SetFillStyle(4000); // 0% transparent
+  pPSPCBBoards->SetVisibility(kTRUE);
+  pPSPCBBoards->SetLineColor(kGreen); // Green
+  pPSPCBBoards->SetLineWidth(1);
+  pPSPCBBoards->SetFillColor(pPSPCBBoards->GetLineColor());
+  pPSPCBBoards->SetFillStyle(4000); // 0% transparent
 
 
   // Now fill the tray
   xloc = coolManifPOM->GetDX();
   yloc = 2*kSideCHalfThick + coolManifPOM->GetDY();
-  trayStructure->AddNode(POMCoolManif, 1,
+  trayStructure->AddNode(pomCoolManif, 1,
 			 new TGeoTranslation( xloc, yloc, 0) );
 
   yloc += coolManifPOM->GetDY() + coolManifSteel->GetDY();
-  trayStructure->AddNode(SteelCoolManif, 1,
+  trayStructure->AddNode(steelCoolManif, 1,
 			 new TGeoTranslation( xloc, yloc, 0) );
 
   yloc += coolManifSteel->GetDY() + coolManifWater->GetDY();
-  trayStructure->AddNode(WaterCoolManif, 1,
+  trayStructure->AddNode(waterCoolManif, 1,
 			 new TGeoTranslation( xloc, yloc, 0) );
 
   yloc += coolManifWater->GetDY() + coolManifAl->GetDY();
-  trayStructure->AddNode(AlCoolManif, 1,
+  trayStructure->AddNode(alCoolManif, 1,
 			 new TGeoTranslation( xloc, yloc, 0) );
 
   xloc = inputCabsCu->GetDX();
   yloc += coolManifWater->GetDY() + inputCabsCu->GetDY()
         + kSideCInputCablesTrans;
-  trayStructure->AddNode(CuInputCabs, 1,
+  trayStructure->AddNode(cuInputCabs, 1,
 			 new TGeoTranslation( xloc, yloc, 0) );
 
   yloc += inputCabsCu->GetDY() + inputCabsPlast->GetDY();
-  trayStructure->AddNode(PlastInputCabs, 1,
+  trayStructure->AddNode(plastInputCabs, 1,
 			 new TGeoTranslation( xloc, yloc, 0) );
 
   yloc += inputCabsPlast->GetDY() + inputCabsAl->GetDY();
-  trayStructure->AddNode(AlInputCabs, 1,
+  trayStructure->AddNode(alInputCabs, 1,
 			 new TGeoTranslation( xloc, yloc, 0) );
 
   yloc += inputCabsAl->GetDY() + inputCabsKapton->GetDY();
-  trayStructure->AddNode(KaptonInputCabs, 1,
+  trayStructure->AddNode(kaptonInputCabs, 1,
 			 new TGeoTranslation( xloc, yloc, 0) );
 
   yloc += inputCabsKapton->GetDY() + inputCabsPOLYAX->GetDY();
-  trayStructure->AddNode(POLYAXInputCabs, 1,
+  trayStructure->AddNode(pOLYAXInputCabs, 1,
 			 new TGeoTranslation( xloc, yloc, 0) );
 
-  trayStructure->AddNode(PURCoolTubes  , 1, 0);
-  trayStructure->AddNode(WaterCoolTubes, 1, 0);
-  trayStructure->AddNode(AirCoolTubes  , 1, 0);
+  trayStructure->AddNode(purCoolTubes  , 1, 0);
+  trayStructure->AddNode(waterCoolTubes, 1, 0);
+  trayStructure->AddNode(airCoolTubes  , 1, 0);
 
   xloc = optConnPBT->GetDX();
   yloc = 2*kSideCHalfThick + optConnPBT->GetDY();
   zloc = coolManifPOM->GetDZ() + optConnPBT->GetDZ();
-  trayStructure->AddNode(PBTOptConn, 1,
+  trayStructure->AddNode(pbtOptConn, 1,
 			 new TGeoTranslation( xloc, yloc, zloc) );
-  trayStructure->AddNode(PBTOptConn, 2,
+  trayStructure->AddNode(pbtOptConn, 2,
 			 new TGeoTranslation( xloc, yloc,-zloc) );
 
   yloc += optConnPBT->GetDY() + optConnSteel->GetDY();
-  trayStructure->AddNode(SteelOptConn, 1,
+  trayStructure->AddNode(steelOptConn, 1,
 			 new TGeoTranslation( xloc, yloc, zloc) );
-  trayStructure->AddNode(SteelOptConn, 2,
+  trayStructure->AddNode(steelOptConn, 2,
 			 new TGeoTranslation( xloc, yloc,-zloc) );
 
   yloc += optConnSteel->GetDY() + optConnAl->GetDY();
-  trayStructure->AddNode(AlOptConn, 1,
+  trayStructure->AddNode(alOptConn, 1,
 			 new TGeoTranslation( xloc, yloc, zloc) );
-  trayStructure->AddNode(AlOptConn, 2,
+  trayStructure->AddNode(alOptConn, 2,
 			 new TGeoTranslation( xloc, yloc,-zloc) );
 
-  trayStructure->AddNode(OptFibs, 1,
+  trayStructure->AddNode(optFibs, 1,
 			 new TGeoTranslation( 0, 0, zloc) );
-  trayStructure->AddNode(OptFibs, 2,
+  trayStructure->AddNode(optFibs, 2,
 			 new TGeoTranslation( 0, 0,-zloc) );
 
-  trayStructure->AddNode(CuOutputCabs    , 1, 0);
-  trayStructure->AddNode(PlastOutputCabs , 1, 0);
-  trayStructure->AddNode(AlOutputCabs    , 1, 0);
-  trayStructure->AddNode(KaptonOutputCabs, 1, 0);
-  trayStructure->AddNode(POLYAXOutputCabs, 1, 0);
+  trayStructure->AddNode(cuOutputCabs    , 1, 0);
+  trayStructure->AddNode(plastOutputCabs , 1, 0);
+  trayStructure->AddNode(alOutputCabs    , 1, 0);
+  trayStructure->AddNode(kaptonOutputCabs, 1, 0);
+  trayStructure->AddNode(pOLYAXOutputCabs, 1, 0);
 
   xloc = kXShiftBarCool + kBarCoolRmax + pcbBoardsCu->GetDX();
   yloc = outputCabsPOLYAX->GetY(5) + pcbBoardsCu->GetDY();
-  trayStructure->AddNode(CuPCBBoards, 1,
+  trayStructure->AddNode(cuPCBBoards, 1,
 			 new TGeoTranslation( xloc, yloc , 0) );
 
   yloc += pcbBoardsCu->GetDY() + pcbBoardsEpoxy->GetDY();
-  trayStructure->AddNode(EpoxyPCBBoards, 1,
+  trayStructure->AddNode(epoxyPCBBoards, 1,
 			 new TGeoTranslation( xloc, yloc , 0) );
 
   yloc += pcbBoardsEpoxy->GetDY() + pcbBoardsPlast->GetDY();
-  trayStructure->AddNode(PlastPCBBoards, 1,
+  trayStructure->AddNode(plastPCBBoards, 1,
 			 new TGeoTranslation( xloc, yloc , 0) );
 
   yloc += pcbBoardsPlast->GetDY() + pcbBoardsSteel->GetDY();
-  trayStructure->AddNode(SteelPCBBoards, 1,
+  trayStructure->AddNode(steelPCBBoards, 1,
 			 new TGeoTranslation( xloc, yloc , 0) );
 
   yloc += pcbBoardsSteel->GetDY() + pcbBoardsPPS->GetDY();
-  trayStructure->AddNode(PPSPCBBoards, 1,
+  trayStructure->AddNode(pPSPCBBoards, 1,
 			 new TGeoTranslation( xloc, yloc , 0) );
 
 
@@ -7031,9 +7031,8 @@ void AliITSv11GeometrySupport::SSDCableTraysSideC(TGeoVolume *moth,
   water->DefineSection(1,  kServicesWidth/2);
 
   // The poliurethane inside the tray: a Xtru
-  TGeoXtru *PUR = new TGeoXtru(2);
-  PUR->SetName("ITSsuppSSDTrayCPUR");
-
+  TGeoXtru *pUR = new TGeoXtru(2);
+  pUR->SetName("ITSsuppSSDTrayCPUR");
   xprof[0] = water->GetX(5);
   yprof[0] = water->GetY(5);
   xprof[1] = water->GetX(4);
@@ -7047,9 +7046,9 @@ void AliITSv11GeometrySupport::SSDCableTraysSideC(TGeoVolume *moth,
   xprof[5] = xprof[0];
   yprof[5] = yprof[0] + kPoliUrethaneHeight;
 
-  PUR->DefinePolygon(6, xprof, yprof);
-  PUR->DefineSection(0, -kServicesWidth/2);
-  PUR->DefineSection(1,  kServicesWidth/2);
+  pUR->DefinePolygon(6, xprof, yprof);
+  pUR->DefineSection(0, -kServicesWidth/2);
+  pUR->DefineSection(1,  kServicesWidth/2);
 
 
   // We have all shapes: now create the real volumes
@@ -7086,7 +7085,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideC(TGeoVolume *moth,
   trayWater->SetFillStyle(4000); // 0% transparent
 
   TGeoVolume *trayPolyUr = new TGeoVolume("ITSsuppSSDSideCPolyUr",
-					  PUR, medPUR);
+					  pUR, medPUR);
 
   trayPolyUr->SetVisibility(kTRUE);
   trayPolyUr->SetLineColor(kGray); // Gray
