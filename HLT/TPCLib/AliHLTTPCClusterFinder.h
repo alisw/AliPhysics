@@ -217,7 +217,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   
   vector<AliHLTTPCPadVector> fRowPadVector;	 //! transient
   
-  void FillMCClusterVector(vector<AliHLTTPCDigitData> digitData);
+  void FillMCClusterVector(vector<AliHLTTPCDigitData> *digitData);
 
   vector<AliHLTTPCClusterFinder::MCWeight> GetClusterMCInfo() const {return fClusterMCVector;}
 

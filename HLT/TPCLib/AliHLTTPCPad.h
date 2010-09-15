@@ -338,7 +338,7 @@ public:
   /**
    * Returns the digit vector belonging to the candidate
    */
-  vector<AliHLTTPCDigitData> GetCandidateDigits(Int_t candidateIndex);
+  vector<AliHLTTPCDigitData> *GetCandidateDigits(Int_t candidateIndex);
 
   void ClearCandidateDigits(){fCandidateDigitsVector.clear();}
 
