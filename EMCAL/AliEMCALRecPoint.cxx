@@ -1110,7 +1110,9 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
   
   AliEMCALDigit * digit =0;
   Int_t * primArray = new Int_t[fMaxTrack] ;
+  memset(primArray,-1,sizeof(Int_t)*fMaxTrack);
   Float_t * dEPrimArray = new Float_t[fMaxTrack] ;
+  memset(dEPrimArray,-1,sizeof(Int_t)*fMaxTrack);
   
   Int_t index ;  
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
@@ -1167,7 +1169,9 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
   
   AliEMCALDigit * digit=0 ;
   Int_t * parentArray = new Int_t[fMaxTrack] ;
+  memset(parentArray,-1,sizeof(Int_t)*fMaxTrack);
   Float_t * dEParentArray = new Float_t[fMaxTrack] ;
+  memset(dEParentArray,-1,sizeof(Int_t)*fMaxTrack);
   
   Int_t index ;  
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
