@@ -62,6 +62,7 @@
 #include <TLegend.h>
 #include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
+#include <TLinearFitter.h>
 #include <TMath.h>
 #include <TMatrixT.h>
 #include <TVectorT.h>
@@ -73,6 +74,7 @@
 #include "AliLog.h"
 #include "AliESDtrack.h"
 #include "AliMathBase.h"
+#include "AliTrackPointArray.h"
 
 #include "AliTRDresolution.h"
 #include "AliTRDgeometry.h"
@@ -224,8 +226,6 @@ void AliTRDresolution::UserExec(Option_t *opt)
 
   fCl->Delete();
   fMCcl->Delete();
-/*  fTrklt->Delete();
-  fMCtrklt->Delete();*/
   AliTRDrecoTask::UserExec(opt);
 }
 
@@ -321,9 +321,46 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
 
   Int_t sgm[3];
   Double_t covR[7], cov[3], dy[2], dz[2];
-  Float_t pt, x0, y0, z0, dydx, dzdx;
+  Float_t pt, x0, y0, z0, dydx, dzdx, tilt;
   const AliTRDgeometry *geo(AliTRDinfoGen::Geometry());
   AliTRDseedV1 *fTracklet(NULL);  TObjArray *clInfoArr(NULL);
+  // do LINEAR track refit if asked by the user
+  // it is the user responsibility to check if B=0T
+  Float_t param[10];  memset(param, 0, 10*sizeof(Float_t));
+  if(HasTrackRefit()){
+    Int_t np(0); AliTrackPoint clusters[300];
+    for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
+      if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
+      if(!fTracklet->IsOK()) continue;
+      x0   = fTracklet->GetX0();
+      tilt = fTracklet->GetTilt();
+      AliTRDcluster *c = NULL;
+      fTracklet->ResetClusterIter(kFALSE);
+      while((c = fTracklet->PrevCluster())){
+        Float_t xyz[3] = {c->GetX(), c->GetY(), c->GetZ()};
+        clusters[np].SetCharge(tilt);
+        clusters[np].SetClusterType(0);
+        clusters[np].SetXYZ(xyz);
+        np++;
+      }
+      if(fTracklet->IsRowCross()){
+        Float_t xcross(0.), zcross(0.);
+        if(fTracklet->GetEstimatedCrossPoint(xcross, zcross)){
+          clusters[np].SetCharge(tilt);
+          clusters[np].SetClusterType(1);
+          clusters[np].SetXYZ(xcross, 0., zcross);
+          np++;
+        }
+      }
+      if(fTracklet->IsPrimary()){
+        clusters[np].SetCharge(tilt);
+        clusters[np].SetClusterType(1);
+        clusters[np].SetXYZ(0., 0., 0.);
+        np++;
+      }
+    }
+    FitTrack(np, clusters, param);
+  }
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
     if(!fTracklet->IsOK()) continue;
@@ -334,13 +371,20 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     sgm[1] = sgm[0] * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(sgm[2]);
     
     // retrive the track angle with the chamber
-    y0   = fTracklet->GetYref(0);
-    z0   = fTracklet->GetZref(0);
-    dydx = fTracklet->GetYref(1);
-    dzdx = fTracklet->GetZref(1);
+    if(HasTrackRefit()){
+      dydx = param[3];
+      dzdx = param[4];
+      y0   = param[1] + dydx * (x0 - param[0]);
+      z0   = param[2] + dzdx * (x0 - param[0]);
+    } else {
+      y0   = fTracklet->GetYref(0);
+      z0   = fTracklet->GetZref(0);
+      dydx = fTracklet->GetYref(1);
+      dzdx = fTracklet->GetZref(1);
+    }
+    tilt = fTracklet->GetTilt();
     fTracklet->GetCovRef(covR);
-    Double_t tilt(fTracklet->GetTilt())
-            ,t2(tilt*tilt)
+    Double_t t2(tilt*tilt)
             ,corr(1./(1. + t2))
             ,cost(TMath::Sqrt(corr));
     AliTRDcluster *c = NULL;
@@ -2919,6 +2963,65 @@ Bool_t AliTRDresolution::GetGraphArray(Float_t *bb, ETRDresolutionPlot ip, Int_t
     legM->Draw();
     legS->Draw();
   }
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t AliTRDresolution::FitTrack(const Int_t np, AliTrackPoint *points, Float_t param[10])
+{
+//
+// Fit track with a staight line using the "np" clusters stored in the array "points".
+// The following particularities are stored in the clusters from points:
+//   1. pad tilt as cluster charge
+//   2. pad row cross or vertex constrain as fake cluster with cluster type 1
+// The parameters of the straight line fit are stored in the array "param" in the following order :
+//     param[0] - x0 reference radial position
+//     param[1] - y0 reference r-phi position @ x0
+//     param[2] - z0 reference z position @ x0
+//     param[3] - slope dy/dx
+//     param[4] - slope dz/dx
+//
+// Attention :
+// Function should be used to refit tracks for B=0T
+//
+
+  if(np<40){
+    if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>1) printf("D-AliTRDresolution::FitTrack: Not enough clusters to fit a track [%d].", np);
+    return kFALSE;
+  }
+  TLinearFitter yfitter(2, "pol1"), zfitter(2, "pol1");
+
+  Double_t x0(0.);
+  for(Int_t ip(0); ip<np; ip++) x0+=points[ip].GetX();
+  x0/=Float_t(np);
+
+  Double_t x, y, z, dx, tilt;
+  for(Int_t ip(0); ip<np; ip++){
+    x = points[ip].GetX(); z = points[ip].GetZ();
+    dx = x - x0;
+    zfitter.AddPoint(&dx, z, points[ip].GetClusterType()?1.e-3:1.);
+  }
+  if(zfitter.Eval() != 0) return kFALSE;
+
+  Double_t z0    = zfitter.GetParameter(0);
+  Double_t dzdx  = zfitter.GetParameter(1);
+  for(Int_t ip(0); ip<np; ip++){
+    if(points[ip].GetClusterType()) continue;
+    x    = points[ip].GetX();
+    dx   = x - x0;
+    y    = points[ip].GetY();
+    z    = points[ip].GetZ();
+    tilt = points[ip].GetCharge();
+    y -= tilt*(-dzdx*dx + z - z0);
+    Float_t xyz[3] = {x, y, z}; points[ip].SetXYZ(xyz);
+    yfitter.AddPoint(&dx, y, 1.);
+  }
+  if(yfitter.Eval() != 0) return kFALSE;
+  Double_t y0   = yfitter.GetParameter(0);
+  Double_t dydx = yfitter.GetParameter(1);
+
+  param[0] = x0; param[1] = y0; param[2] = z0; param[3] = dydx; param[4] = dzdx;
+  if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>3) printf("D-AliTRDresolution::FitTrack: x0[%f] y0[%f] z0[%f] dydx[%f] dzdx[%f]\n", x0, y0, z0, dydx, dzdx);
   return kTRUE;
 }
 

@@ -28,6 +28,7 @@ class TDatabasePDG;
 class AliTRDrecoParam;
 class AliTRDseedV1;
 class AliTRDtrackInfo;
+class AliTrackPoint;
 class AliTRDresolution : public AliTRDrecoTask
 {
 public:
@@ -46,8 +47,9 @@ public:
     ,kNprojs     = 70 // total number of projections for all views
   };
   enum ETRDresolutionSteer {
-    kVerbose  = BIT(18)
-    ,kVisual  = BIT(19)
+     kVerbose    = BIT(18) // switch verbosity
+    ,kVisual     = BIT(19) // show partial results during processing
+    ,kTrackRefit = BIT(20) // steer track refit
   };
   enum ETRDresolutionOutSlots {
      kClToTrk    = 2
@@ -61,6 +63,7 @@ public:
   AliTRDresolution(char* name);
   virtual ~AliTRDresolution();
   
+  static Bool_t  FitTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
   void    UserCreateOutputObjects();
   Float_t GetPtThreshold() const {return fPtThreshold;}
   Float_t GetSegmentationLevel() const {return fSegmentLevel;}
@@ -72,6 +75,7 @@ public:
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
   void    UserExec(Option_t * opt);
   void    InitExchangeContainers();
+  Bool_t  HasTrackRefit() const {return TestBit(kTrackRefit);}
   Bool_t  IsVerbose() const {return TestBit(kVerbose);}
   Bool_t  IsVisual() const {return TestBit(kVisual);}
   Bool_t  PostProcess();
@@ -87,6 +91,7 @@ public:
   void    SetPtThreshold(Float_t pt) {fPtThreshold = pt;}
   void    SetVerbose(Bool_t v = kTRUE) {SetBit(kVerbose, v);}
   void    SetVisual(Bool_t v = kTRUE) {SetBit(kVisual, v);}
+  void    SetTrackRefit(Bool_t v = kTRUE) {SetBit(kTrackRefit, v);}
 
   void    Terminate(Option_t * opt);
   Bool_t  GetGraph(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1, Bool_t kLEG=kTRUE, const Char_t *explain=NULL);
