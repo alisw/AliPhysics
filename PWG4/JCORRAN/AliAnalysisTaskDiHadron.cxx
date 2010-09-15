@@ -14,7 +14,7 @@
  **************************************************************************/
 //2- and 3-particle trigger particle correlation analysis
 //Author: Jason Glyndwr Ulery, ulery@uni-frankfurt.de
-
+//version: 3.4,  last revised: 2010/08/15
 
 #include "Riostream.h"
 #include "TChain.h"
@@ -56,7 +56,7 @@ ClassImp(AliAnalysisTaskDiHadron)
 
 //----------------------------------------
 AliAnalysisTaskDiHadron::AliAnalysisTaskDiHadron(const char *name):
-AliAnalysisTask(name,""), fESD(0), fMC(0), fOutput(0),fMinClustersTPC(0),fMinClusterRatio(0),fMaxTPCchi2(0),fMinClustersITS(0),fEtaCut(0),fTrigEtaCut(0),fNearPhiCut(0),fXECut(0),fMaxDCA(0),fMaxDCAXY(0),fMaxDCAZ(0),fDCA2D(0),fTPCRefit(0),fITSRefit(0),fSPDCut(0),fMinPtAssoc(0),fMaxPtAssoc(0),fVzCut(0),fEfficiencyCorr(0),DEBUG(0),fnBinPhi(0),fnBinEta(0),fnBinPhiEtaPhi(0),fnBinPhiEtaEta(0),fnBinPhi3(0),fnBinEta3(0),fPi(3.1415926535898),fdPhiMin(0),fdPhiMax(0),fNTPtBins(0),fNMix(0),fNCentBins(0),fNAPtBins(0),fNAPt3Bins(0),fNVertexBins(0),fNXEBins(0),fNIDs(0),fEffFitPt(0),fNFitLowParam(0),fNFitHighParam(0),fMCHistos(0),fNFitLow(0),fNFitHigh(0),fFitLow(NULL),fFitHigh(NULL),fFitLowParam(NULL),fFitHighParam(NULL),fPtTrigArray(NULL),fPtAssocArray(NULL),fPtAssoc3Array1(NULL),fPtAssoc3Array2(NULL),fCentArrayMin(NULL),fCentArrayMax(NULL),fXEArray(NULL),fTrigIDArray(NULL),tPhi(NULL),tEta(NULL),tPt(NULL),tCharge(NULL),tEff(NULL),tPtAssoc3(NULL),tNPtAssoc3(NULL)
+AliAnalysisTask(name,""), fESD(0), fMC(0), fOutput(0),fMinClustersTPC(0),fMinClusterRatio(0),fMaxTPCchi2(0),fMinClustersITS(0),fEtaCut(0),fTrigEtaCut(0),fNearPhiCut(0),fXECut(0),fMaxDCA(0),fMaxDCAXY(0),fMaxDCAZ(0),fDCA2D(0),fTPCRefit(0),fITSRefit(0),fSPDCut(0),fMinPtAssoc(0),fMaxPtAssoc(0),fVzCut(0),fEfficiencyCorr(0),fDEBUG(0),fnBinPhi(0),fnBinEta(0),fnBinPhiEtaPhi(0),fnBinPhiEtaEta(0),fnBinPhi3(0),fnBinEta3(0),fPi(3.1415926535898),fdPhiMin(0),fdPhiMax(0),fNTPtBins(0),fNMix(0),fNCentBins(0),fNAPtBins(0),fNAPt3Bins(0),fNVertexBins(0),fNXEBins(0),fNIDs(0),fEffFitPt(0),fNFitLowParam(0),fNFitHighParam(0),fMCHistos(0),fFitLow(NULL),fFitHigh(NULL),fFitLowParam(NULL),fFitHighParam(NULL),fPtTrigArray(NULL),fPtAssocArray(NULL),fPtAssoc3Array1(NULL),fPtAssoc3Array2(NULL),fCentArrayMin(NULL),fCentArrayMax(NULL),fXEArray(NULL),fTrigIDArray(NULL),ftPhi(NULL),ftEta(NULL),ftPt(NULL),ftCharge(NULL),ftEff(NULL),ftPtAssoc3(NULL),ftNPtAssoc3(NULL)
   
   {
  
@@ -84,7 +84,8 @@ AliAnalysisTask(name,""), fESD(0), fMC(0), fOutput(0),fMinClustersTPC(0),fMinClu
  
   }
 //--------------------------------------
-void AliAnalysisTaskDiHadron::SetCuts(Int_t MinClustersTPC,  Float_t MinClusterRatio, Float_t MaxTPCchi2, Int_t MinClustersITS, Float_t EtaCut, Float_t TrigEtaCut, Float_t NearPhiCut, Float_t XECut, Float_t MaxDCA, Float_t MaxDCAXY, Float_t MaxDCAZ, Int_t DCA2D, Int_t TPCRefit, Int_t ITSRefit, Int_t SPDCut, Float_t MinPtAssoc, Float_t MaxPtAssoc, Float_t VzCut, Int_t NIDs, char * TrigIDArray){
+void AliAnalysisTaskDiHadron::SetCuts(Int_t MinClustersTPC,  Float_t MinClusterRatio, Float_t MaxTPCchi2, Int_t MinClustersITS, Float_t EtaCut, Float_t TrigEtaCut, Float_t NearPhiCut, Float_t XECut, Float_t MaxDCA, Float_t MaxDCAXY, Float_t MaxDCAZ, Int_t DCA2D, Int_t TPCRefit, Int_t ITSRefit, Int_t SPDCut, Float_t MinPtAssoc, Float_t MaxPtAssoc, Float_t VzCut, Int_t NIDs, const char * TrigIDArray){
+//Sets the varibles for track and event cuts
   fMinClustersTPC=MinClustersTPC;
   fMinClusterRatio=MinClusterRatio;
   fMaxTPCchi2=MaxTPCchi2;
@@ -107,13 +108,15 @@ void AliAnalysisTaskDiHadron::SetCuts(Int_t MinClustersTPC,  Float_t MinClusterR
   fTrigIDArray=(char*)TrigIDArray;
 }
 //--------------------------------------------------------
-void AliAnalysisTaskDiHadron::SetOptions(Int_t EfficiencyCorr, Int_t fDEBUG,  Int_t MCHistos){
+void AliAnalysisTaskDiHadron::SetOptions(Int_t EfficiencyCorr, Int_t ffDEBUG,  Int_t MCHistos){
+//Sets some options
   fEfficiencyCorr=EfficiencyCorr;
-  DEBUG=fDEBUG;
+  fDEBUG=ffDEBUG;
   fMCHistos=MCHistos;
 }
 //------------------------------------------------------
 void AliAnalysisTaskDiHadron::SetBins(Int_t nBinPhi, Int_t nBinEta, Int_t nBinPhiEtaPhi, Int_t nBinPhiEtaEta, Int_t nBinPhi3, Int_t nBinEta3,Float_t dPhiMin, Float_t dPhiMax, Int_t NTPtBins, Int_t NMixBins, Int_t NCentBins,Int_t NAPtBins, Int_t NAPt3Bins, Int_t NVertexBins, Int_t NXEBins,Float_t *PtTrigArray, Float_t *PtAssocArray,Float_t *PtAssoc3Array1, Float_t *PtAssoc3Array2, Int_t *CentArrayMin, Int_t *CentArrayMax, Float_t *XEArray){
+//sets up the histogram binning
   fnBinPhi=nBinPhi;
   fnBinEta=nBinEta;
   fnBinPhiEtaPhi=nBinPhiEtaPhi;
@@ -146,7 +149,8 @@ void AliAnalysisTaskDiHadron::SetBins(Int_t nBinPhi, Int_t nBinEta, Int_t nBinPh
  for(int i=0;i<=fNVertexBins;i++)fVertexArray[i]=(2.*i/fNVertexBins-1)*fVzCut;
 }
 //-------------------------------------------------------
-void AliAnalysisTaskDiHadron::SetEfficiencies(Float_t EffFitPt, TF1 *FitLow, TF1 *FitHigh, Int_t NFitLowParam, Int_t NFitHighParam, Float_t *FitLowParam, Float_t *FitHighParam){
+void AliAnalysisTaskDiHadron::SetEfficiencies(Float_t EffFitPt, const TF1 *FitLow, const TF1 *FitHigh, Int_t NFitLowParam, Int_t NFitHighParam, Float_t *FitLowParam, Float_t *FitHighParam){
+//Sets up the efficiency corrections
   fEffFitPt=EffFitPt;
   fFitLow=(TF1*)FitLow;
   fFitHigh=(TF1*)FitHigh;
@@ -161,25 +165,25 @@ void AliAnalysisTaskDiHadron::SetEfficiencies(Float_t EffFitPt, TF1 *FitLow, TF1
 //-----------------------------------------------------------
 void AliAnalysisTaskDiHadron::ConnectInputData(Option_t *){
   //Connect to ESD
-  if(DEBUG)Printf("Connecting");
+  if(fDEBUG)Printf("Connecting");
    TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-   if (!tree&&DEBUG) {Printf("ERROR: Could not read chain from input slot 0");} 
+   if (!tree&&fDEBUG) {Printf("ERROR: Could not read chain from input slot 0");} 
   else {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!esdH&&DEBUG) Printf("ERROR: Could not get ESDInputHandler");
+    if (!esdH&&fDEBUG) Printf("ERROR: Could not get ESDInputHandler");
     else fESD = esdH->GetEvent();
     
     //MC Data handler (so one can calcualte eff)
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     if(mcH)fMC=mcH->MCEvent();
   }
-  if(DEBUG)Printf("Connected");
+  if(fDEBUG)Printf("Connected");
 }
   
 //---------------------------------------------------------  
 void AliAnalysisTaskDiHadron::CreateOutputObjects(){
-  if(DEBUG)Printf("Output");
   //Creates the histograms and list
+  if(fDEBUG)Printf("Output");
   fOutput=new TList();
   fOutput->SetName(GetName());
   char histname[100];
@@ -192,22 +196,22 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
   const char *sign2[3]={""," Like-Sign"," Unlike-Sign"};
   const char *sign31[4]={"","_LS","_ULT","_ULA"};
   const char *sign32[4]={""," Like-Sign"," Trigger-Diff"," Assoc-Diff"};
-  Float_t EtaEdge=fEtaCut+fTrigEtaCut;
-  Float_t PhiArray[fnBinPhi+1];
-  Float_t EtaArray[fnBinEta+1];
-  Float_t PhiEtaArrayPhi[fnBinPhiEtaPhi+1];
-  Float_t PhiEtaArrayEta[fnBinPhiEtaEta+1];
+  Float_t etaEdge=fEtaCut+fTrigEtaCut;
+  Float_t phiArray[fnBinPhi+1];
+  Float_t etaArray[fnBinEta+1];
+  Float_t phiEtaArrayPhi[fnBinPhiEtaPhi+1];
+  Float_t phiEtaArrayEta[fnBinPhiEtaEta+1];
   for(int iphi=0;iphi<=fnBinPhi;iphi++){
-    PhiArray[iphi]=fdPhiMin+iphi*2*fPi/fnBinPhi;
+    phiArray[iphi]=fdPhiMin+iphi*2*fPi/fnBinPhi;
   }
   for(int ieta=0;ieta<=fnBinEta;ieta++){
-    EtaArray[ieta]=-EtaEdge+ieta*2*EtaEdge/fnBinEta;
+    etaArray[ieta]=-etaEdge+ieta*2*etaEdge/fnBinEta;
   }
   for(int iphi=0;iphi<=fnBinPhiEtaPhi;iphi++){
-    PhiEtaArrayPhi[iphi]=fdPhiMin+iphi*2*fPi/fnBinPhiEtaPhi;
+    phiEtaArrayPhi[iphi]=fdPhiMin+iphi*2*fPi/fnBinPhiEtaPhi;
   }
   for(int ieta=0;ieta<=fnBinPhiEtaEta;ieta++){
-    PhiEtaArrayEta[ieta]=-EtaEdge+ieta*2*EtaEdge/fnBinPhiEtaEta;
+    phiEtaArrayEta[ieta]=-etaEdge+ieta*2*etaEdge/fnBinPhiEtaEta;
   }
   for(int imc=0;imc<=1;imc++){//MC loop
     if(imc==1&&!fMCHistos) continue;
@@ -242,7 +246,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       
       sprintf(histname,"fHistPhi_C%d%s",imult,cmc1[imc]);
       sprintf(histtitle,"#phi Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistPhi[imult][imc]=new TH2F(histname,histtitle,fnBinPhi,PhiArray,nptbins,fPtAssocArray);
+      fHistPhi[imult][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,nptbins,fPtAssocArray);
       fHistPhi[imult][imc]->Sumw2();
       fHistPhi[imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistPhi[imult][imc]->GetYaxis()->SetTitle("P_{T}");
@@ -250,7 +254,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       
       sprintf(histname,"fHistPhiPt_C%d%s",imult,cmc1[imc]);
       sprintf(histtitle,"P_{T} weighted #phi Distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistPhiPt[imult][imc]=new TH2F(histname,histtitle,fnBinPhi,PhiArray,nptbins,fPtAssocArray);
+      fHistPhiPt[imult][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,nptbins,fPtAssocArray);
       fHistPhiPt[imult][imc]->Sumw2();
       fHistPhiPt[imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistPhiPt[imult][imc]->GetYaxis()->SetTitle("P_{T}");
@@ -258,7 +262,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       
       sprintf(histname,"fHistEta_C%d%s",imult,cmc1[imc]);
       sprintf(histtitle,"#eta Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistEta[imult][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,nptbins,fPtAssocArray);
+      fHistEta[imult][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,nptbins,fPtAssocArray);
       fHistEta[imult][imc]->Sumw2();
       fHistEta[imult][imc]->GetXaxis()->SetTitle("#eta");
       fHistEta[imult][imc]->GetYaxis()->SetTitle("P_{T}");
@@ -266,7 +270,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       
       sprintf(histname,"fHistEtaPt_C%d%s",imult,cmc1[imc]);
       sprintf(histtitle,"P_{T} weighted #eta Distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistEtaPt[imult][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,nptbins,fPtAssocArray);
+      fHistEtaPt[imult][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,nptbins,fPtAssocArray);
       fHistEtaPt[imult][imc]->Sumw2();
       fHistEtaPt[imult][imc]->GetXaxis()->SetTitle("#eta");
       fHistEtaPt[imult][imc]->GetYaxis()->SetTitle("P_{T}");
@@ -306,7 +310,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       
       sprintf(histname,"fHistPhiEta_C%d%s",imult,cmc1[imc]);
       sprintf(histtitle,"#phi-#eta distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistPhiEta[imult][imc]=new TH3F(histname, histtitle,fnBinPhiEtaPhi,PhiEtaArrayPhi,fnBinPhiEtaEta,PhiEtaArrayEta,nptbins,fPtAssocArray);
+      fHistPhiEta[imult][imc]=new TH3F(histname, histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,nptbins,fPtAssocArray);
       fHistPhiEta[imult][imc]->Sumw2();
       fHistPhiEta[imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistPhiEta[imult][imc]->GetYaxis()->SetTitle("#eta");
@@ -315,21 +319,21 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       
       sprintf(histname,"fHistPhiEtaPt_C%d%s",imult,cmc1[imc]);
       sprintf(histtitle,"Pt Weighted #phi-#eta distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistPhiEtaPt[imult][imc]=new TH3F(histname, histtitle,fnBinPhiEtaPhi,PhiEtaArrayPhi,fnBinPhiEtaEta,PhiEtaArrayEta,nptbins,fPtAssocArray);
+      fHistPhiEtaPt[imult][imc]=new TH3F(histname, histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,nptbins,fPtAssocArray);
       fHistPhiEtaPt[imult][imc]->Sumw2();
       fHistPhiEtaPt[imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistPhiEtaPt[imult][imc]->GetYaxis()->SetTitle("#eta");
       fHistPhiEtaPt[imult][imc]->GetZaxis()->SetTitle("p_{T}");
       fOutput->Add(fHistPhiEtaPt[imult][imc]);
       
-      //if(DEBUG)Printf("OutPut2");
+      //if(fDEBUG)Printf("OutPut2");
       //Histograms with a trigger dependence
       
       for(int i=0;i<fNTPtBins;i++){
 	for(int j=1;j<fNAPtBins;j++){
-	  if(fPtTrigArray[i]==fPtAssocArray[j])lptbins=j;
+	  if(fabs(fPtTrigArray[i]-fPtAssocArray[j])<1E-5)lptbins=j;
 	}
-	//if(DEBUG)Printf("Loop: %d Pt %3.2f",i,fPtTrigArray[i]/fPtBinWidth);
+	//if(fDEBUG)Printf("Loop: %d Pt %3.2f",i,fPtTrigArray[i]/fPtBinWidth);
 	
 	//Ones with no centrality binning
 	if(imult==0){
@@ -351,7 +355,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	
 	sprintf(histname,"fHistPhiTrig_P%d_C%d%s",i,imult,cmc1[imc]);
 	sprintf(histtitle,"Phi Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-	fHistPhiTrig[i][imult][imc]=new TH2F(histname,histtitle,fnBinPhi,PhiArray,lptbins,fPtAssocArray);
+	fHistPhiTrig[i][imult][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	fHistPhiTrig[i][imult][imc]->Sumw2();
 	fHistPhiTrig[i][imult][imc]->GetXaxis()->SetTitle("#phi");
 	fHistPhiTrig[i][imult][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -359,7 +363,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	
 	sprintf(histname,"fHistPhiTrigPt_P%d_C%d%s",i,imult,cmc1[imc]);
 	sprintf(histtitle,"P_{T} Weighted Phi Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f%s",fPtTrigArray[i],fPtTrigArray[i+1],cmc2[imc]);
-	fHistPhiTrigPt[i][imult][imc]=new TH2F(histname,histtitle,fnBinPhi,PhiArray,lptbins,fPtAssocArray);
+	fHistPhiTrigPt[i][imult][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	fHistPhiTrigPt[i][imult][imc]->Sumw2();
 	fHistPhiTrigPt[i][imult][imc]->GetXaxis()->SetTitle("#phi");
 	fHistPhiTrigPt[i][imult][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -367,7 +371,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	
 	sprintf(histname,"fHistEtaTrig_P%d_C%d%s",i,imult,cmc1[imc]);
 	sprintf(histtitle,"Eta Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-	fHistEtaTrig[i][imult][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	fHistEtaTrig[i][imult][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	fHistEtaTrig[i][imult][imc]->Sumw2();
 	fHistEtaTrig[i][imult][imc]->GetXaxis()->SetTitle("#eta");
 	fHistEtaTrig[i][imult][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -375,7 +379,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	
 	sprintf(histname,"fHistEtaTrigPt_P%d_C%d%s",i,imult,cmc1[imc]);
 	sprintf(histtitle,"P_{T} Weighted Eta Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f%s",fPtTrigArray[i],fPtTrigArray[i+1],cmc2[imc]);
-	fHistEtaTrigPt[i][imult][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	fHistEtaTrigPt[i][imult][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	fHistEtaTrigPt[i][imult][imc]->Sumw2();
 	fHistEtaTrigPt[i][imult][imc]->GetXaxis()->SetTitle("#eta");
 	fHistEtaTrigPt[i][imult][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -383,7 +387,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	
 	sprintf(histname,"fHistPhiEtaTrig_P%d_C%d%s",i,imult,cmc1[imc]);
 	sprintf(histtitle,"#phi-#eta distribution in triggered events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-	fHistPhiEtaTrig[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,PhiEtaArrayPhi,fnBinPhiEtaEta,PhiEtaArrayEta,lptbins,fPtAssocArray);
+	fHistPhiEtaTrig[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
 	fHistPhiEtaTrig[i][imult][imc]->Sumw2();
 	fHistPhiEtaTrig[i][imult][imc]->GetXaxis()->SetTitle("#phi");
 	fHistPhiEtaTrig[i][imult][imc]->GetYaxis()->SetTitle("#eta");
@@ -422,7 +426,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	for(int isign=0;isign<3;isign++){
 	  sprintf(histname,"fHistDeltaPhi_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"#Delta#phi Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaPhi[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,PhiArray,lptbins,fPtAssocArray);
+	  fHistDeltaPhi[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	  fHistDeltaPhi[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaPhi[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#phi");
 	  fHistDeltaPhi[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -430,7 +434,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  
 	  sprintf(histname,"fHistDeltaPhiPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"P_{T} Weighted #Delta#phi Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaPhiPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,PhiArray,lptbins,fPtAssocArray);
+	  fHistDeltaPhiPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	  fHistDeltaPhiPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaPhiPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#phi");
 	  fHistDeltaPhiPt[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -438,7 +442,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  
 	  sprintf(histname,"fHistDeltaPhiMix_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"#Delta#phi Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaPhiMix[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,PhiArray,lptbins,fPtAssocArray);
+	  fHistDeltaPhiMix[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	  fHistDeltaPhiMix[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaPhiMix[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#phi");
 	  fHistDeltaPhiMix[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -446,7 +450,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  
 	  sprintf(histname,"fHistDeltaPhiMixPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"P_{T} Weighted #Delta#phi Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaPhiMixPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,PhiArray,lptbins,fPtAssocArray);
+	  fHistDeltaPhiMixPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	  fHistDeltaPhiMixPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaPhiMixPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#phi");
 	  fHistDeltaPhiMixPt[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -455,7 +459,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  //etaNear
 	  sprintf(histname,"fHistDeltaEtaN_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"Near-Side #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaEtaN[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	  fHistDeltaEtaN[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaN[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaN[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaN[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -463,7 +467,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  
 	  sprintf(histname,"fHistDeltaEtaNPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"Near-Side P_{T} Weighted #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaEtaNPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	  fHistDeltaEtaNPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaNPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaNPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaNPt[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -471,7 +475,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  
 	  sprintf(histname,"fHistDeltaEtaNMix_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"Near-Side #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaEtaNMix[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	  fHistDeltaEtaNMix[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaNMix[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaNMix[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaNMix[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -479,7 +483,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  
 	  sprintf(histname,"fHistDeltaEtaNMixPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"Near-Side P_{T} Weighted #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaEtaNMixPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	  fHistDeltaEtaNMixPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaNMixPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaNMixPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaNMixPt[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -488,7 +492,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  //Away Eta
 	  sprintf(histname,"fHistDeltaEtaA_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"Away-Side #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaEtaA[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	  fHistDeltaEtaA[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaA[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaA[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaA[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -496,7 +500,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  
 	  sprintf(histname,"fHistDeltaEtaAPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"Away-Side P_{T} Weighted #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaEtaAPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	  fHistDeltaEtaAPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaAPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaAPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaAPt[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -504,7 +508,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  
 	  sprintf(histname,"fHistDeltaEtaAMix_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"Away-Side #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaEtaAMix[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	  fHistDeltaEtaAMix[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaAMix[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaAMix[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaAMix[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -512,7 +516,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  
 	  sprintf(histname,"fHistDeltaEtaAMixPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
 	  sprintf(histtitle,"Away-Side P_{T} Weighted #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
-	  fHistDeltaEtaAMixPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,EtaArray,lptbins,fPtAssocArray);
+	  fHistDeltaEtaAMixPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaAMixPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaAMixPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaAMixPt[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
@@ -523,7 +527,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	}//end isignloop
       sprintf(histname,"fHistDeltaPhiEta_P%d_C%d%s",i,imult,cmc1[imc]);
       sprintf(histtitle,"#Delta#phi-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistDeltaPhiEta[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,PhiEtaArrayPhi,fnBinPhiEtaEta,PhiEtaArrayEta,lptbins,fPtAssocArray);
+      fHistDeltaPhiEta[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistDeltaPhiEta[i][imult][imc]->Sumw2();
       fHistDeltaPhiEta[i][imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistDeltaPhiEta[i][imult][imc]->GetYaxis()->SetTitle("#eta");
@@ -532,7 +536,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       
       sprintf(histname,"fHistDeltaPhiEtaMix_P%d_C%d%s",i,imult,cmc1[imc]);
       sprintf(histtitle,"#Delta#phi-#Delta#eta from Mixed Events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistDeltaPhiEtaMix[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,PhiEtaArrayPhi,fnBinPhiEtaEta,PhiEtaArrayEta,lptbins,fPtAssocArray);
+      fHistDeltaPhiEtaMix[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistDeltaPhiEtaMix[i][imult][imc]->Sumw2();
       fHistDeltaPhiEtaMix[i][imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistDeltaPhiEtaMix[i][imult][imc]->GetYaxis()->SetTitle("#eta");
@@ -541,7 +545,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       
       sprintf(histname,"fHistPhiEtaTrigPt_P%d_C%d%s",i,imult,cmc1[imc]);
       sprintf(histtitle,"P_{T}-Weighted #phi-#eta distribution in triggered events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistPhiEtaTrigPt[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,PhiEtaArrayPhi,fnBinPhiEtaEta,PhiEtaArrayEta,lptbins,fPtAssocArray);
+      fHistPhiEtaTrigPt[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistPhiEtaTrigPt[i][imult][imc]->Sumw2();
       fHistPhiEtaTrigPt[i][imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistPhiEtaTrigPt[i][imult][imc]->GetYaxis()->SetTitle("#eta");
@@ -550,7 +554,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
     
       sprintf(histname,"fHistDeltaPhiEtaPt_P%d_C%d%s",i,imult,cmc1[imc]);
       sprintf(histtitle,"P_{T}-Weighted #Delta#phi-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistDeltaPhiEtaPt[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,PhiEtaArrayPhi,fnBinPhiEtaEta,PhiEtaArrayEta,lptbins,fPtAssocArray);
+      fHistDeltaPhiEtaPt[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistDeltaPhiEtaPt[i][imult][imc]->Sumw2();
       fHistDeltaPhiEtaPt[i][imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistDeltaPhiEtaPt[i][imult][imc]->GetYaxis()->SetTitle("#eta");
@@ -559,7 +563,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       
       sprintf(histname,"fHistDeltaPhiEtaMixPt_P%d_C%d%s",i,imult,cmc1[imc]);
       sprintf(histtitle,"P_{T}-Weighted #Delta#phi-#Delta#eta from Mixed Events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
-      fHistDeltaPhiEtaMixPt[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,PhiEtaArrayPhi,fnBinPhiEtaEta,PhiEtaArrayEta,lptbins,fPtAssocArray);
+      fHistDeltaPhiEtaMixPt[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistDeltaPhiEtaMixPt[i][imult][imc]->Sumw2();
       fHistDeltaPhiEtaMixPt[i][imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistDeltaPhiEtaMixPt[i][imult][imc]->GetYaxis()->SetTitle("#eta");
@@ -595,7 +599,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 
 	  sprintf(histname,"fHistDeltaEtaEta_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
 	  sprintf(histtitle,"Raw #Delta#eta-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
-	  fHistDeltaEtaEta[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinEta3,-EtaEdge,EtaEdge,fnBinEta3,-EtaEdge,EtaEdge);
+	  fHistDeltaEtaEta[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinEta3,-etaEdge,etaEdge,fnBinEta3,-etaEdge,etaEdge);
 	  fHistDeltaEtaEta[i][ipt][imult][iSign][imc]->Sumw2();
 	  fHistDeltaEtaEta[i][ipt][imult][iSign][imc]->GetXaxis()->SetTitle("#Delta#eta_{1}");
 	  fHistDeltaEtaEta[i][ipt][imult][iSign][imc]->GetYaxis()->SetTitle("#Delta#eta_{2}");
@@ -603,7 +607,7 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 
 sprintf(histname,"fHistDeltaEtaEtaMix_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
 	  sprintf(histtitle,"Mixed #Delta#eta-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
-	  fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinEta3,-EtaEdge,EtaEdge,fnBinEta3,-EtaEdge,EtaEdge);
+	  fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinEta3,-etaEdge,etaEdge,fnBinEta3,-etaEdge,etaEdge);
 	  fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]->Sumw2();
 	  fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]->GetXaxis()->SetTitle("#Delta#eta_{1}");
 	  fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]->GetYaxis()->SetTitle("#Delta#eta_{2}");
@@ -611,7 +615,7 @@ sprintf(histname,"fHistDeltaEtaEtaMix_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign
 
 sprintf(histname,"fHistDeltaEtaEtaSS_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
 	  sprintf(histtitle,"Soft-Soft #Delta#eta-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
-	  fHistDeltaEtaEtaSS[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinEta3,-EtaEdge,EtaEdge,fnBinEta3,-EtaEdge,EtaEdge);
+	  fHistDeltaEtaEtaSS[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinEta3,-etaEdge,etaEdge,fnBinEta3,-etaEdge,etaEdge);
 	  fHistDeltaEtaEtaSS[i][ipt][imult][iSign][imc]->Sumw2();
 	  fHistDeltaEtaEtaSS[i][ipt][imult][iSign][imc]->GetXaxis()->SetTitle("#Delta#eta_{1}");
 	  fHistDeltaEtaEtaSS[i][ipt][imult][iSign][imc]->GetYaxis()->SetTitle("#Delta#eta_{2}");
@@ -622,85 +626,87 @@ sprintf(histname,"fHistDeltaEtaEtaSS_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign3
       }//pt loop (i) 
     }//centrality loop (imult)
   }//imc
-  if(DEBUG)Printf("OutPut Created");
+  if(fDEBUG)Printf("OutPut Created");
 }//CreateOutputObjects    
 
-Int_t AliAnalysisTaskDiHadron::CheckVertex(AliESDEvent *rESD){
+Int_t AliAnalysisTaskDiHadron::CheckVertex(const AliESDEvent *rESD){
+  //checks whether the vertex passes cuts
   Int_t rGood=-1;
-  Float_t Vtx[3];
-  Vtx[0]=rESD->GetPrimaryVertex()->GetX();
-  Vtx[1]=rESD->GetPrimaryVertex()->GetY();
-  Vtx[2]=rESD->GetPrimaryVertex()->GetZ();
-  if((Vtx[0]*Vtx[0]+Vtx[1]*Vtx[1])<9) rGood=0; //vertex out of beam pipe
-  if(fabs(Vtx[2])<fVzCut)rGood=0;//Vertex Z cut
-  if(DEBUG)Printf("VtxZ %f",Vtx[2]);
+  Float_t vtx[3];
+  vtx[0]=rESD->GetPrimaryVertex()->GetX();
+  vtx[1]=rESD->GetPrimaryVertex()->GetY();
+  vtx[2]=rESD->GetPrimaryVertex()->GetZ();
+  if((vtx[0]*vtx[0]+vtx[1]*vtx[1])<9) rGood=0; //vertex out of beam pipe
+  if(fabs(vtx[2])<fVzCut)rGood=0;//Vertex Z cut
+  if(fDEBUG)Printf("vtxZ %f",vtx[2]);
   for(int i=0;i<fNVertexBins;i++){
-    if(Vtx[2]>fVertexArray[i]&&Vtx[2]<=fVertexArray[i+1]&&rGood==0)rGood=i;
+    if(vtx[2]>fVertexArray[i]&&vtx[2]<=fVertexArray[i+1]&&rGood==0)rGood=i;
   }
   return rGood;
 }
 
-Int_t AliAnalysisTaskDiHadron::CheckTrigger(AliESDEvent *rESD){
+Int_t AliAnalysisTaskDiHadron::CheckTrigger(const AliESDEvent *rESD){
+  //checks whether the trigger passes cuts
   Int_t rGood=0;
   TString trigID=rESD->GetFiredTriggerClasses();
   int count=0;
-  char TrigID[50];
+  char trigID2[50];
   int stop=0;//in as a safety
 
   for(int i=0;i<fNIDs;i++){
     if(stop==1)continue;
     for(int j=0;j<50;j++){
-      if(fTrigIDArray[count]==',')TrigID[j]='\0';
-      else if(fTrigIDArray[count]=='\0'){TrigID[j]='\0';stop=1;}
-      else TrigID[j]=fTrigIDArray[count];
+      if(fTrigIDArray[count]==',')trigID2[j]='\0';
+      else if(fTrigIDArray[count]=='\0'){trigID2[j]='\0';stop=1;}
+      else trigID2[j]=fTrigIDArray[count];
       count++;
-      if(TrigID[j]=='\0') break;
+      if(trigID2[j]=='\0') break;
       }
-      if(trigID.Contains(TrigID)) rGood=1;
+      if(trigID.Contains(trigID2)) rGood=1;
   }
     return rGood;
 }
 
-Int_t AliAnalysisTaskDiHadron::TrackCuts(AliESDEvent *rESD, Float_t *rPt, Float_t *rEta, Float_t *rPhi, Short_t *rCharge, Float_t *rEff, Int_t **rPtAssoc3, Int_t *rNPtAssoc3, Int_t *rGoodTracks){
+Int_t AliAnalysisTaskDiHadron::TrackCuts(const AliESDEvent *rESD, Float_t *rPt, Float_t *rEta, Float_t *rPhi, Short_t *rCharge, Float_t *rEff, Int_t **rPtAssoc3, Int_t *rNPtAssoc3, Int_t *rGoodTracks){
     //fills arrays with all of the tracks passing cuts
   rGoodTracks[0]=0;
-  Int_t Lead=0;
-  Float_t LeadPt=0;
+  Int_t lead=0;
+  Float_t leadPt=0;
   Int_t rTrack=fESD->GetNumberOfTracks();
   Float_t sPt, sEta, sPhi, sChi, sb[2], sbCov[3];
   Int_t sNcls, sNclsF, sITScls;
   Short_t sCharge;
   for(int iTrack=0;iTrack<rTrack;iTrack++){
-    AliESDtrack *ESDtrack=rESD->GetTrack(iTrack);
-    const AliExternalTrackParam *ConTrack = ESDtrack->GetConstrainedParam();
-    if(!ConTrack)continue;
-    sPt=ConTrack->Pt();
-    //if(DEBUG)Printf("Pt%f",rPt);
-    sEta=ConTrack->Eta();
-    sPhi=ConTrack->Phi();
-    sCharge=ConTrack->Charge();
+    AliESDtrack *eSDtrack=rESD->GetTrack(iTrack);
+    const AliExternalTrackParam *conTrack = eSDtrack->GetConstrainedParam();
+    if(!conTrack)continue;
+    sPt=conTrack->Pt();
+    //if(fDEBUG)Printf("Pt%f",rPt);
+    sEta=conTrack->Eta();
+    sPhi=conTrack->Phi();
+    sCharge=conTrack->Charge();
     if(sPhi<fdPhiMin)sPhi+=2*fPi;
     if(sPhi>fdPhiMax)sPhi-=2*fPi;
     if(sPt<fMinPtAssoc||sPt>fMaxPtAssoc)continue;//set Pt range
     if(fabs(sEta)>fEtaCut)continue;//set Eta Range
     if(!sCharge)continue;
-    sNcls=ESDtrack->GetTPCNcls();
-    //if(DEBUG)Printf("NCLS%d",sNcls);
+    sNcls=eSDtrack->GetTPCNcls();
+    //if(fDEBUG)Printf("NCLS%d",sNcls);
     if(sNcls<fMinClustersTPC)continue;
-    sNclsF=ESDtrack->GetTPCNclsF();
+    sNclsF=eSDtrack->GetTPCNclsF();
     if((1.0*sNcls/sNclsF)<fMinClusterRatio)continue;//Clusters fit/ Possible
-    sChi=(ESDtrack->GetTPCchi2())/sNcls;
+    sChi=(eSDtrack->GetTPCchi2())/sNcls;
     if(sChi>fMaxTPCchi2)continue;
-    sITScls=ESDtrack->GetNcls(0);
+    sITScls=eSDtrack->GetNcls(0);
     if(sITScls<fMinClustersITS)continue;
-    ESDtrack->GetImpactParameters(sb,sbCov);
+    eSDtrack->GetImpactParameters(sb,sbCov);
     if(!fDCA2D&&(sb[0]*sb[0]+sb[1]*sb[1])>(fMaxDCA*fMaxDCA))continue;//DCA cut
     if(fDCA2D==1&&(sb[0]*sb[0]/fMaxDCAXY/fMaxDCAXY+sb[1]*sb[1]/fMaxDCAZ/fMaxDCAZ)>1)continue;
     if(fDCA2D==2&&(0.35+0.42*std::pow(double(sPt),-0.9))<(sb[0]*sb[0]))continue;
-    if(ESDtrack->GetKinkIndex(0)>0)continue;//removes kinked tracks
-    if(!ESDtrack->GetStatus()&AliESDtrack::kTPCrefit&&fTPCRefit)continue;//refit in TPC
-    if((fITSRefit==1||(fITSRefit==2&&sPt>5))&&!ESDtrack->GetStatus()&AliESDtrack::kITSrefit)continue;//refit of its tracks either for none,all, or >5 GeV/c
-    if(fSPDCut&&!ESDtrack->HasPointOnITSLayer(0)&&!ESDtrack->HasPointOnITSLayer(1))continue;
+    if(eSDtrack->GetKinkIndex(0)>0)continue;//removes kinked tracks
+    if(!eSDtrack->GetStatus()&AliESDtrack::kTPCrefit&&fTPCRefit)continue;//refit in TPC
+    if((fITSRefit==1||(fITSRefit==2&&sPt>5))&&!eSDtrack->GetStatus()&AliESDtrack::kITSrefit)continue;//refit of its tracks either for none,all, or >5 GeV/c
+    if(fSPDCut&&!eSDtrack->HasPointOnITSLayer(0)&&!eSDtrack->HasPointOnITSLayer(1))continue;
     rPt[rGoodTracks[0]]=sPt;
     rEta[rGoodTracks[0]]=sEta;
     rPhi[rGoodTracks[0]]=sPhi;
@@ -710,7 +716,7 @@ Int_t AliAnalysisTaskDiHadron::TrackCuts(AliESDEvent *rESD, Float_t *rPt, Float_
     else rEff[rGoodTracks[0]]=1./fFitHigh->Eval(sPt);
     }
     else rEff[rGoodTracks[0]]=1;
-    if(sPt>LeadPt)Lead=rGoodTracks[0];
+    if(sPt>leadPt)lead=rGoodTracks[0];
     //rPtAssoc3[rGoodTracks[0]]=new Int_t [10];
     rNPtAssoc3[rGoodTracks[0]]=0;
     for(int apt3=0;apt3<fNAPt3Bins;apt3++){
@@ -723,21 +729,22 @@ Int_t AliAnalysisTaskDiHadron::TrackCuts(AliESDEvent *rESD, Float_t *rPt, Float_
     rGoodTracks[0]++;
     
   }
-  return Lead;
+  return lead;
 }
 
-Int_t AliAnalysisTaskDiHadron::TrackCutsMC(AliMCEvent *rMC, Float_t *rPt, Float_t *rEta, Float_t *rPhi, Short_t *rCharge, Float_t *rEff, Int_t **rPtAssoc3, Int_t *rNPtAssoc3, Int_t *rGoodTracks){//Fills Arrays of MC particles
+Int_t AliAnalysisTaskDiHadron::TrackCutsMC(AliMCEvent *rMC, Float_t *rPt, Float_t *rEta, Float_t *rPhi, Short_t *rCharge, Float_t *rEff, Int_t **rPtAssoc3, Int_t *rNPtAssoc3, Int_t *rGoodTracks){
+//Fills Arrays of MC particles
   rGoodTracks[1]=0;
   AliStack *rStack=rMC->Stack();
   Int_t rTrack=rStack->GetNtrack();
   Float_t sPt, sEta, sPhi;
   Short_t sCharge;
-  Int_t Lead=0;
-  Float_t LeadPt=0;
+  Int_t lead=0;
+  Float_t leadPt=0;
   for(int iTrack=0;iTrack<rTrack;iTrack++){
     TParticle *rParticle=rStack->Particle(iTrack);
     sPt=rParticle->Pt();
-    //if(DEBUG)Printf("MCPt%f",rPt);
+    //if(fDEBUG)Printf("MCPt%f",rPt);
     sEta=rParticle->Eta();
     sPhi=rParticle->Phi();
     sCharge=rMC->GetTrack(iTrack)->Charge();
@@ -752,7 +759,7 @@ Int_t AliAnalysisTaskDiHadron::TrackCutsMC(AliMCEvent *rMC, Float_t *rPt, Float_
     rPhi[rGoodTracks[1]]=sPhi;
     rCharge[rGoodTracks[1]]=sCharge;
     rEff[rGoodTracks[1]]=1;
-    if(sPt>LeadPt)Lead=rGoodTracks[1];
+    if(sPt>leadPt)lead=rGoodTracks[1];
     rNPtAssoc3[rGoodTracks[1]]=0;
     for(int apt3=0;apt3<fNAPt3Bins;apt3++){
       if(sPt<fPtAssoc3Array2[apt3]&&sPt>=fPtAssoc3Array1[apt3]){
@@ -762,19 +769,20 @@ Int_t AliAnalysisTaskDiHadron::TrackCutsMC(AliMCEvent *rMC, Float_t *rPt, Float_
     }
     rGoodTracks[1]++;
   }
-  return Lead;
+  return lead;
 }
 //------------------------------------------------------------
 void AliAnalysisTaskDiHadron::Exec(Option_t *)
 { 
-  if(DEBUG)Printf("Exec");
+  //Main executable
+  if(fDEBUG)Printf("Exec");
 
-  const int NTPtBins=fNTPtBins;
-  const int NCentBins=fNCentBins;
+  const int nTPtBins=fNTPtBins;
+  const int nCentBins=fNCentBins;
   for(int ievent=0;ievent<=1;ievent++){
 
   if(!fESD&&ievent==0){
-    if(DEBUG)Printf("Error: fESD not found");
+    if(fDEBUG)Printf("Error: fESD not found");
     break;
   }
   if(!fMC&&ievent==1){
@@ -784,14 +792,14 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
   //Secondary check
   if(ievent==0){
     if(fESD->GetNumberOfTracks()<=0){
-      if(DEBUG)Printf("Error: no tracks");
+      if(fDEBUG)Printf("Error: no tracks");
       break;
     }
   }
   //The previous check doesn't seem to work as a fMC is bad not NULL
   if(ievent==1){
     if(fMC->GetNumberOfTracks()<=0){
-      if(DEBUG)Printf("<=0 MCTracks");
+      if(fDEBUG)Printf("<=0 MCTracks");
       break;
     }
   }
@@ -801,29 +809,29 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
     if(!CheckTrigger(fESD)) break;
   }
   //I'll only cut on the reconstructed vertex since these are the events that will be used
-  int VertexBin;
-  VertexBin=CheckVertex(fESD);
-  //else VertexBin=CheckVertex(fMC);
-  if(VertexBin<0)break;
+  int vertexBin;
+  vertexBin=CheckVertex(fESD);
+  //else vertexBin=CheckVertex(fMC);
+  if(vertexBin<0)break;
 
-  Int_t nGoodTracks[2]={0,0}, nTriggers[NTPtBins][NCentBins][2];
+  Int_t nGoodTracks[2]={0,0}, nTriggers[nTPtBins][nCentBins][2];
   Int_t nTrack;
   if(!ievent)nTrack=fESD->GetNumberOfTracks();
   else nTrack=fMC->Stack()->GetNtrack();
  
   Float_t tdPhi, tdEta, tXE;
   Float_t tdPhi2, tdEta2;
-  tPhi=new Float_t [nTrack];
-  tEta=new Float_t [nTrack];
-  tPt=new Float_t [nTrack];
-  tCharge=new Short_t [nTrack];
-  tEff=new Float_t [nTrack];
-  tPtAssoc3=new Int_t *[nTrack];
+  ftPhi=new Float_t [nTrack];
+  ftEta=new Float_t [nTrack];
+  ftPt=new Float_t [nTrack];
+  ftCharge=new Short_t [nTrack];
+  ftEff=new Float_t [nTrack];
+  ftPtAssoc3=new Int_t *[nTrack];
   for(int i=0;i<nTrack;i++){
-    tPtAssoc3[i]=new Int_t [10];
+    ftPtAssoc3[i]=new Int_t [10];
   }
-  tNPtAssoc3=new Int_t [nTrack];
-  Short_t Sign;
+  ftNPtAssoc3=new Int_t [nTrack];
+  Short_t sign;
 
   //will need to do something exta for the effieiency once it comes from embedding
   for(int i=0;i<fNTPtBins;i++){
@@ -832,114 +840,114 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
     }
   }
   Int_t tMult=fESD->GetMultiplicity()->GetNumberOfTracklets();//I think this is the correct multiplicity to use
-  if(DEBUG)Printf("Mult%d",tMult);
+  if(fDEBUG)Printf("Mult%d",tMult);
   
   //Decide what multiplicy bins are filled with this event, note set to max of 4 as I didn't think more then 2 overlapping bins likely at one time, easliy changed
-  Int_t MultArray[4]={0,0,0,0};
-  Int_t MaxArray=0;
+  Int_t multArray[4]={0,0,0,0};
+  Int_t maxArray=0;
   for(int imult=0;imult<fNCentBins;imult++){
     if(tMult>=fCentArrayMin[imult]&&tMult<fCentArrayMax[imult]){
-      MultArray[MaxArray]=imult;
-      MaxArray++;
+      multArray[maxArray]=imult;
+      maxArray++;
     }
   }
-  if(DEBUG)Printf("MaxArray%d",MaxArray);
+  if(fDEBUG)Printf("maxArray%d",maxArray);
   //Set Efficiency for the centrality bin (lowest bin used in array if multiple overlap)
   for(int ipar=0;ipar<fNFitLowParam;ipar++){
-    fFitLow->SetParameter(ipar,fFitLowParam[MultArray[0]*fNCentBins+ipar]);
+    fFitLow->SetParameter(ipar,fFitLowParam[multArray[0]*fNCentBins+ipar]);
   }
    for(int ipar=0;ipar<fNFitHighParam;ipar++){
-    fFitHigh->SetParameter(ipar,fFitHighParam[MultArray[0]*fNCentBins+ipar]);
+    fFitHigh->SetParameter(ipar,fFitHighParam[multArray[0]*fNCentBins+ipar]);
   }
   fHistMult[ievent]->Fill(tMult);
-  for(int c=0;c<MaxArray;c++){fHistNEvents[MultArray[c]][ievent]->Fill(0);}//count the number of events used
-  Int_t LeadPart;
+  for(int c=0;c<maxArray;c++){fHistNEvents[multArray[c]][ievent]->Fill(0);}//count the number of events used
+  Int_t leadPart;
   
   //returns arrays filled up to nGoodTracks with tracks passing cuts
-  if(!ievent)LeadPart=TrackCuts(fESD,tPt,tEta,tPhi,tCharge,tEff,tPtAssoc3,tNPtAssoc3,nGoodTracks);
-  else LeadPart=TrackCutsMC(fMC,tPt,tEta,tPhi,tCharge,tEff,tPtAssoc3,tNPtAssoc3,nGoodTracks);
-  int NearEta=0,NearXE=0;
-  int NearEta2=0;
-  if(DEBUG)Printf("Track Loop");
+  if(!ievent)leadPart=TrackCuts(fESD,ftPt,ftEta,ftPhi,ftCharge,ftEff,ftPtAssoc3,ftNPtAssoc3,nGoodTracks);
+  else leadPart=TrackCutsMC(fMC,ftPt,ftEta,ftPhi,ftCharge,ftEff,ftPtAssoc3,ftNPtAssoc3,nGoodTracks);
+  int nearEta=0,NearXE=0;
+  int nearEta2=0;
+  if(fDEBUG)Printf("Track Loop");
   for(int iTrack=0;iTrack<nGoodTracks[ievent];iTrack++){
-    if(DEBUG)Printf("Track%d Pt%f",iTrack,tPt[iTrack]);
-    //if(tPhi[iTrack]<fdPhiMin)tPhi[iTrack]+=2*fPi;
-    //if(tPhi[iTrack]>fdPhiMax)tPhi[iTrack]-=2*fPi;
-    for(int c=0;c<MaxArray;c++){
-      fHistPt[MultArray[c]][ievent]->Fill(tPt[iTrack],tEff[iTrack]);
-    fHistPtEff[MultArray[c]][ievent]->Fill(tPt[iTrack]);
-    fHistPhi[MultArray[c]][ievent]->Fill(tPhi[iTrack],tPt[iTrack],tEff[iTrack]);
-    fHistPhiPt[MultArray[c]][ievent]->Fill(tPhi[iTrack],tPt[iTrack],tPt[iTrack]*tEff[iTrack]);
-    fHistEta[MultArray[c]][ievent]->Fill(tEta[iTrack],tPt[iTrack],tEff[iTrack]);
-    fHistEtaPt[MultArray[c]][ievent]->Fill(tEta[iTrack],tPt[iTrack],tPt[iTrack]*tEff[iTrack]);
-    fHistPhiEta[MultArray[c]][ievent]->Fill(tPhi[iTrack],tEta[iTrack],tPt[iTrack],tEff[iTrack]);
-    fHistPhiEtaPt[MultArray[c]][ievent]->Fill(tPhi[iTrack],tEta[iTrack],tPt[iTrack],tPt[iTrack]*tEff[iTrack]);
+    if(fDEBUG)Printf("Track%d Pt%f",iTrack,ftPt[iTrack]);
+    //if(ftPhi[iTrack]<fdPhiMin)ftPhi[iTrack]+=2*fPi;
+    //if(ftPhi[iTrack]>fdPhiMax)ftPhi[iTrack]-=2*fPi;
+    for(int c=0;c<maxArray;c++){
+      fHistPt[multArray[c]][ievent]->Fill(ftPt[iTrack],ftEff[iTrack]);
+    fHistPtEff[multArray[c]][ievent]->Fill(ftPt[iTrack]);
+    fHistPhi[multArray[c]][ievent]->Fill(ftPhi[iTrack],ftPt[iTrack],ftEff[iTrack]);
+    fHistPhiPt[multArray[c]][ievent]->Fill(ftPhi[iTrack],ftPt[iTrack],ftPt[iTrack]*ftEff[iTrack]);
+    fHistEta[multArray[c]][ievent]->Fill(ftEta[iTrack],ftPt[iTrack],ftEff[iTrack]);
+    fHistEtaPt[multArray[c]][ievent]->Fill(ftEta[iTrack],ftPt[iTrack],ftPt[iTrack]*ftEff[iTrack]);
+    fHistPhiEta[multArray[c]][ievent]->Fill(ftPhi[iTrack],ftEta[iTrack],ftPt[iTrack],ftEff[iTrack]);
+    fHistPhiEtaPt[multArray[c]][ievent]->Fill(ftPhi[iTrack],ftEta[iTrack],ftPt[iTrack],ftPt[iTrack]*ftEff[iTrack]);
     }
     for(int i=0;i<fNTPtBins;i++){
-      if(tPt[iTrack]>fPtTrigArray[i]&&tPt[iTrack]<fPtTrigArray[i+1]&&fabs(tEta[iTrack])<fTrigEtaCut){
-	if(DEBUG)Printf("In %fpt%f",fPtTrigArray[i],fPtTrigArray[i+1]);
+      if(ftPt[iTrack]>fPtTrigArray[i]&&ftPt[iTrack]<fPtTrigArray[i+1]&&fabs(ftEta[iTrack])<fTrigEtaCut){
+	if(fDEBUG)Printf("In %fpt%f",fPtTrigArray[i],fPtTrigArray[i+1]);
 	fHistMultTrig[i][ievent]->Fill(tMult);
-	for(int c=0;c<MaxArray;c++){
-	  nTriggers[i][MultArray[c]][ievent]++;
-	  fHistNTrigger[MultArray[c]][ievent]->Fill(i);
-	  fHistNTriggerPt[MultArray[c]][ievent]->Fill(i,tPt[iTrack]);
+	for(int c=0;c<maxArray;c++){
+	  nTriggers[i][multArray[c]][ievent]++;
+	  fHistNTrigger[multArray[c]][ievent]->Fill(i);
+	  fHistNTriggerPt[multArray[c]][ievent]->Fill(i,ftPt[iTrack]);
 	}
-	if(DEBUG)Printf("Assiciated Particle Loop");
+	if(fDEBUG)Printf("Assiciated Particle Loop");
 	for(int iTrack2=0;iTrack2<nGoodTracks[ievent];iTrack2++){
 	  if(iTrack==iTrack2) continue;
-	  if(tPt[iTrack2]>tPt[iTrack])continue;
-	  tdPhi=tPhi[iTrack]-tPhi[iTrack2];
+	  if(ftPt[iTrack2]>ftPt[iTrack])continue;
+	  tdPhi=ftPhi[iTrack]-ftPhi[iTrack2];
 	  if(tdPhi<-fPi)tdPhi+=2*fPi;
 	  if(tdPhi>fPi)tdPhi-=2*fPi;
-	  if(fabs(tdPhi)<fNearPhiCut)NearEta=1;
-	  else NearEta=0;
+	  if(fabs(tdPhi)<fNearPhiCut)nearEta=1;
+	  else nearEta=0;
 	  if(fabs(tdPhi)<fXECut)NearXE=1;
 	  else NearXE=0;
-	  if(fabs(tdPhi)<(fPi/2))tdEta=tEta[iTrack]-tEta[iTrack2];
-	  else tdEta=tEta[iTrack]+tEta[iTrack2];
+	  if(fabs(tdPhi)<(fPi/2))tdEta=ftEta[iTrack]-ftEta[iTrack2];
+	  else tdEta=ftEta[iTrack]+ftEta[iTrack2];
 	  if(tdPhi<fdPhiMin)tdPhi+=2*fPi;
 	  if(tdPhi>fdPhiMax)tdPhi-=2*fPi;
-	  if((tCharge[iTrack]<0&&tCharge[iTrack2]<0)||(tCharge[iTrack]>0&&tCharge[iTrack2]>0))Sign=1;
-	  else Sign=2;
-	  if(DEBUG) Printf("dPhi %f  dEta %f",tdPhi,tdEta);
-	  for(int c=0;c<MaxArray;c++){//loop over multiplicity bins
-	    fHistPtTrig[i][MultArray[c]][ievent]->Fill(tPt[iTrack2],tEff[iTrack2]);
-	    fHistPhiTrig[i][MultArray[c]][ievent]->Fill(tPhi[iTrack2],tPt[iTrack2],tEff[iTrack2]);
-	    fHistPhiTrigPt[i][MultArray[c]][ievent]->Fill(tPhi[iTrack2],tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
-	    fHistEtaTrig[i][MultArray[c]][ievent]->Fill(tEta[iTrack2],tPt[iTrack2],tEff[iTrack2]);
-	    fHistEtaTrigPt[i][MultArray[c]][ievent]->Fill(tEta[iTrack2],tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
+	  if((ftCharge[iTrack]<0&&ftCharge[iTrack2]<0)||(ftCharge[iTrack]>0&&ftCharge[iTrack2]>0))sign=1;
+	  else sign=2;
+	  if(fDEBUG) Printf("dPhi %f  dEta %f",tdPhi,tdEta);
+	  for(int c=0;c<maxArray;c++){//loop over multiplicity bins
+	    fHistPtTrig[i][multArray[c]][ievent]->Fill(ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistPhiTrig[i][multArray[c]][ievent]->Fill(ftPhi[iTrack2],ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistPhiTrigPt[i][multArray[c]][ievent]->Fill(ftPhi[iTrack2],ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
+	    fHistEtaTrig[i][multArray[c]][ievent]->Fill(ftEta[iTrack2],ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistEtaTrigPt[i][multArray[c]][ievent]->Fill(ftEta[iTrack2],ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
 
-	    fHistPhiEtaTrig[i][MultArray[c]][ievent]->Fill(tPhi[iTrack2],tEta[iTrack2],tPt[iTrack2],tEff[iTrack2]);
-	    fHistPhiEtaTrigPt[i][MultArray[c]][ievent]->Fill(tPhi[iTrack2],tEta[iTrack2],tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
-	    fHistDeltaPhi[i][MultArray[c]][0][ievent]->Fill(tdPhi,tPt[iTrack2],tEff[iTrack2]);
-	    fHistDeltaPhiPt[i][MultArray[c]][0][ievent]->Fill(tdPhi,tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
-	    fHistDeltaPhi[i][MultArray[c]][Sign][ievent]->Fill(tdPhi,tPt[iTrack2],tEff[iTrack2]);
-	    fHistDeltaPhiPt[i][MultArray[c]][Sign][ievent]->Fill(tdPhi,tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
+	    fHistPhiEtaTrig[i][multArray[c]][ievent]->Fill(ftPhi[iTrack2],ftEta[iTrack2],ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistPhiEtaTrigPt[i][multArray[c]][ievent]->Fill(ftPhi[iTrack2],ftEta[iTrack2],ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
+	    fHistDeltaPhi[i][multArray[c]][0][ievent]->Fill(tdPhi,ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistDeltaPhiPt[i][multArray[c]][0][ievent]->Fill(tdPhi,ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
+	    fHistDeltaPhi[i][multArray[c]][sign][ievent]->Fill(tdPhi,ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistDeltaPhiPt[i][multArray[c]][sign][ievent]->Fill(tdPhi,ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
 
-	    if(NearEta){
-	    fHistDeltaEtaN[i][MultArray[c]][0][ievent]->Fill(tdEta,tPt[iTrack2],tEff[iTrack2]);
-	    fHistDeltaEtaNPt[i][MultArray[c]][0][ievent]->Fill(tdEta,tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
-	    fHistDeltaEtaN[i][MultArray[c]][Sign][ievent]->Fill(tdEta,tPt[iTrack2],tEff[iTrack2]);
-	    fHistDeltaEtaNPt[i][MultArray[c]][Sign][ievent]->Fill(tdEta,tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
+	    if(nearEta){
+	    fHistDeltaEtaN[i][multArray[c]][0][ievent]->Fill(tdEta,ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistDeltaEtaNPt[i][multArray[c]][0][ievent]->Fill(tdEta,ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
+	    fHistDeltaEtaN[i][multArray[c]][sign][ievent]->Fill(tdEta,ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistDeltaEtaNPt[i][multArray[c]][sign][ievent]->Fill(tdEta,ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
 	    }
 	    else{
-	    fHistDeltaEtaA[i][MultArray[c]][0][ievent]->Fill(tdEta,tPt[iTrack2],tEff[iTrack2]);
-	    fHistDeltaEtaAPt[i][MultArray[c]][0][ievent]->Fill(tdEta,tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
-	    fHistDeltaEtaA[i][MultArray[c]][Sign][ievent]->Fill(tdEta,tPt[iTrack2],tEff[iTrack2]);
-	    fHistDeltaEtaAPt[i][MultArray[c]][Sign][ievent]->Fill(tdEta,tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
+	    fHistDeltaEtaA[i][multArray[c]][0][ievent]->Fill(tdEta,ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistDeltaEtaAPt[i][multArray[c]][0][ievent]->Fill(tdEta,ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
+	    fHistDeltaEtaA[i][multArray[c]][sign][ievent]->Fill(tdEta,ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistDeltaEtaAPt[i][multArray[c]][sign][ievent]->Fill(tdEta,ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
 	    }
-	    fHistDeltaPhiEta[i][MultArray[c]][ievent]->Fill(tdPhi,tdEta,tPt[iTrack2],tEff[iTrack2]);
-	    fHistDeltaPhiEtaPt[i][MultArray[c]][ievent]->Fill(tdPhi,tdEta,tPt[iTrack2],tPt[iTrack2]*tEff[iTrack2]);
+	    fHistDeltaPhiEta[i][multArray[c]][ievent]->Fill(tdPhi,tdEta,ftPt[iTrack2],ftEff[iTrack2]);
+	    fHistDeltaPhiEtaPt[i][multArray[c]][ievent]->Fill(tdPhi,tdEta,ftPt[iTrack2],ftPt[iTrack2]*ftEff[iTrack2]);
 	    
 	    //only fill these if trigger particle is the leading particle
-	    if(iTrack==LeadPart){
+	    if(iTrack==leadPart){
 	      if(NearXE){
-		tXE=tPt[iTrack2]*cos(tdPhi)/tPt[iTrack];
-		fHistXEN[i][MultArray[c]][ievent]->Fill(tXE,tEff[iTrack2]);
+		tXE=ftPt[iTrack2]*cos(tdPhi)/ftPt[iTrack];
+		fHistXEN[i][multArray[c]][ievent]->Fill(tXE,ftEff[iTrack2]);
 	      }
 	      else{
-		tXE=tPt[iTrack2]*cos(tdPhi+fPi)/tPt[iTrack];
-		fHistXEA[i][MultArray[c]][ievent]->Fill(tXE,tEff[iTrack2]);
+		tXE=ftPt[iTrack2]*cos(tdPhi+fPi)/ftPt[iTrack];
+		fHistXEA[i][multArray[c]][ievent]->Fill(tXE,ftEff[iTrack2]);
 	      }
 	    }
 
@@ -948,33 +956,33 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
 	  //3-particle Correlations
 	  for(int iTrack3=0;iTrack3<nGoodTracks[ievent];iTrack3++){
 	    if(iTrack2==iTrack3)continue;
-	    if(tPt[iTrack3]>tPt[iTrack])continue;
-	    tdPhi2=tPhi[iTrack]-tPhi[iTrack3];
+	    if(ftPt[iTrack3]>ftPt[iTrack])continue;
+	    tdPhi2=ftPhi[iTrack]-ftPhi[iTrack3];
 	    if(tdPhi2<-fPi)tdPhi2+=2*fPi;
 	    if(tdPhi2>fPi)tdPhi2-=2*fPi;
-	    if(fabs(tdPhi2)<fNearPhiCut&&NearEta==1)NearEta2=1;
-	    else NearEta2=0;
+	    if(fabs(tdPhi2)<fNearPhiCut&&nearEta==1)nearEta2=1;
+	    else nearEta2=0;
 	    //if(fabs(tdPhi)<fXECut)NearXE=1;
 	    //else NearXE=0;
-	    if(fabs(tdPhi2)<(fPi/2))tdEta2=tEta[iTrack]-tEta[iTrack3];
-	    else tdEta2=tEta[iTrack]+tEta[iTrack3];
+	    if(fabs(tdPhi2)<(fPi/2))tdEta2=ftEta[iTrack]-ftEta[iTrack3];
+	    else tdEta2=ftEta[iTrack]+ftEta[iTrack3];
 	    if(tdPhi2<fdPhiMin)tdPhi2+=2*fPi;
 	    if(tdPhi2>fdPhiMax)tdPhi2-=2*fPi;
-	    // if((tCharge[iTrack]<0&&tCharge[iTrack2]<0)||(tCharge[iTrack]>0&&tCharge[iTrack2]>0))Sign=1;
-	    if((tCharge[iTrack]<0&&tCharge[iTrack2]<0&&tCharge[iTrack3]<0)||(tCharge[iTrack]>0&&tCharge[iTrack2]>0&&tCharge[iTrack3]>0))Sign=1;
-	    else if((tCharge[iTrack3]<0&&tCharge[iTrack2]<0)||(tCharge[iTrack3]>0&&tCharge[iTrack2]>0))Sign=2;
-	    else Sign=3;
-	    for(int e=0;e<tNPtAssoc3[iTrack2];e++){//check associated pT bin
-	      for(int f=0;f<tNPtAssoc3[iTrack3];f++){
-		if(tPtAssoc3[iTrack2][e]==tPtAssoc3[iTrack3][f]){
-		  for(int c=0;c<MaxArray;c++){//loop over multiplicity bins
-		    fHistDeltaPhiPhi[i][tPtAssoc3[iTrack2][e]][MultArray[c]][0][ievent]->Fill(tdPhi,tdPhi2,tEff[iTrack2]*tEff[iTrack3]);
-		    fHistDeltaPhiPhi[i][tPtAssoc3[iTrack2][e]][MultArray[c]][Sign][ievent]->Fill(tdPhi2,tdPhi,tEff[iTrack2]*tEff[iTrack3]);
+	    // if((ftCharge[iTrack]<0&&ftCharge[iTrack2]<0)||(ftCharge[iTrack]>0&&ftCharge[iTrack2]>0))sign=1;
+	    if((ftCharge[iTrack]<0&&ftCharge[iTrack2]<0&&ftCharge[iTrack3]<0)||(ftCharge[iTrack]>0&&ftCharge[iTrack2]>0&&ftCharge[iTrack3]>0))sign=1;
+	    else if((ftCharge[iTrack3]<0&&ftCharge[iTrack2]<0)||(ftCharge[iTrack3]>0&&ftCharge[iTrack2]>0))sign=2;
+	    else sign=3;
+	    for(int e=0;e<ftNPtAssoc3[iTrack2];e++){//check associated pT bin
+	      for(int f=0;f<ftNPtAssoc3[iTrack3];f++){
+		if(ftPtAssoc3[iTrack2][e]==ftPtAssoc3[iTrack3][f]){
+		  for(int c=0;c<maxArray;c++){//loop over multiplicity bins
+		    fHistDeltaPhiPhi[i][ftPtAssoc3[iTrack2][e]][multArray[c]][0][ievent]->Fill(tdPhi,tdPhi2,ftEff[iTrack2]*ftEff[iTrack3]);
+		    fHistDeltaPhiPhi[i][ftPtAssoc3[iTrack2][e]][multArray[c]][sign][ievent]->Fill(tdPhi2,tdPhi,ftEff[iTrack2]*ftEff[iTrack3]);
 		 
 
-		    if(NearEta2){
-		      fHistDeltaEtaEta[i][tPtAssoc3[iTrack2][e]][MultArray[c]][0][ievent]->Fill(tdEta,tdEta2,tEff[iTrack2]*tEff[iTrack3]);
-		      fHistDeltaEtaEta[i][tPtAssoc3[iTrack2][e]][MultArray[c]][Sign][ievent]->Fill(tdEta,tdEta2,tEff[iTrack2]*tEff[iTrack3]);
+		    if(nearEta2){
+		      fHistDeltaEtaEta[i][ftPtAssoc3[iTrack2][e]][multArray[c]][0][ievent]->Fill(tdEta,tdEta2,ftEff[iTrack2]*ftEff[iTrack3]);
+		      fHistDeltaEtaEta[i][ftPtAssoc3[iTrack2][e]][multArray[c]][sign][ievent]->Fill(tdEta,tdEta2,ftEff[iTrack2]*ftEff[iTrack3]);
 		    }
 		  }//multiplicity loop (c)
 		}
@@ -983,85 +991,85 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
 	  }//iTrack3
 	}//iTrack2 (associated track loop)
 	
-	if(DEBUG)Printf("Mixed Event Loop");
-	for(int c=0;c<MaxArray;c++){
-	  int d=MultArray[c];//Centrality bin we are in
-	  if(fMixEnd[d][VertexBin][ievent]>=0){//check if there are any mixed events for this bin
-	    for(int imix=0;imix<=fMixEnd[d][VertexBin][ievent];imix++){//loop over the stored mixed events
+	if(fDEBUG)Printf("Mixed Event Loop");
+	for(int c=0;c<maxArray;c++){
+	  int d=multArray[c];//Centrality bin we are in
+	  if(fMixEnd[d][vertexBin][ievent]>=0){//check if there are any mixed events for this bin
+	    for(int imix=0;imix<=fMixEnd[d][vertexBin][ievent];imix++){//loop over the stored mixed events
 	      fHistNMix[d][ievent]->Fill(i);
-	      for(int iTrack2=0;iTrack2<fMixTrack[imix][d][VertexBin][ievent];iTrack2++){
-		if(tPt[iTrack]<fMPt[imix][d][VertexBin][ievent][iTrack2])continue;
-		tdPhi=tPhi[iTrack]-fMPhi[imix][d][VertexBin][ievent][iTrack2];
+	      for(int iTrack2=0;iTrack2<fMixTrack[imix][d][vertexBin][ievent];iTrack2++){
+		if(ftPt[iTrack]<fMPt[imix][d][vertexBin][ievent][iTrack2])continue;
+		tdPhi=ftPhi[iTrack]-fMPhi[imix][d][vertexBin][ievent][iTrack2];
 		if(tdPhi<-fPi)tdPhi+=2*fPi;
 		if(tdPhi>fPi)tdPhi-=2*fPi;
-		if(fabs(tdPhi)<fNearPhiCut)NearEta=1;
-		else NearEta=0;
+		if(fabs(tdPhi)<fNearPhiCut)nearEta=1;
+		else nearEta=0;
 		if(fabs(tdPhi)<fXECut)NearXE=1;
 		else NearXE=0;
-		if(fabs(tdPhi)<(fPi/2))tdEta=tEta[iTrack]-fMEta[imix][d][VertexBin][ievent][iTrack2];
-		else tdEta=tEta[iTrack]+fMEta[imix][d][VertexBin][ievent][iTrack2];
+		if(fabs(tdPhi)<(fPi/2))tdEta=ftEta[iTrack]-fMEta[imix][d][vertexBin][ievent][iTrack2];
+		else tdEta=ftEta[iTrack]+fMEta[imix][d][vertexBin][ievent][iTrack2];
 		if(tdPhi<fdPhiMin)tdPhi+=2*fPi;	
 		if(tdPhi>fdPhiMax)tdPhi-=2*fPi;
-		if((tCharge[iTrack]<0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]<0)||(tCharge[iTrack]>0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]>0))Sign=1;
-		else Sign=2;
+		if((ftCharge[iTrack]<0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]<0)||(ftCharge[iTrack]>0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]>0))sign=1;
+		else sign=2;
 
-		fHistDeltaPhiMix[i][d][0][ievent]->Fill(tdPhi,fMPt[imix][d][VertexBin][ievent][iTrack2],fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaPhiMixPt[i][d][0][ievent]->Fill(tdPhi,fMPt[imix][d][VertexBin][ievent][iTrack2],fMPt[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaPhiMix[i][d][Sign][ievent]->Fill(tdPhi,fMPt[imix][d][VertexBin][ievent][iTrack2],fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaPhiMixPt[i][d][Sign][ievent]->Fill(tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMPt[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		if(NearEta){
-		  fHistDeltaEtaNMix[i][d][0][ievent]->Fill(tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaEtaNMixPt[i][d][0][ievent]->Fill(tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMPt[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaEtaNMix[i][d][Sign][ievent]->Fill(tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaEtaNMixPt[i][d][Sign][ievent]->Fill(tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMPt[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack2]);
+		fHistDeltaPhiMix[i][d][0][ievent]->Fill(tdPhi,fMPt[imix][d][vertexBin][ievent][iTrack2],fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaPhiMixPt[i][d][0][ievent]->Fill(tdPhi,fMPt[imix][d][vertexBin][ievent][iTrack2],fMPt[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaPhiMix[i][d][sign][ievent]->Fill(tdPhi,fMPt[imix][d][vertexBin][ievent][iTrack2],fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaPhiMixPt[i][d][sign][ievent]->Fill(tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMPt[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		if(nearEta){
+		  fHistDeltaEtaNMix[i][d][0][ievent]->Fill(tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaEtaNMixPt[i][d][0][ievent]->Fill(tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMPt[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaEtaNMix[i][d][sign][ievent]->Fill(tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaEtaNMixPt[i][d][sign][ievent]->Fill(tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMPt[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack2]);
 		}
 		else{
-		  fHistDeltaEtaAMix[i][d][0][ievent]->Fill(tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaEtaAMixPt[i][d][0][ievent]->Fill(tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMPt[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaEtaAMix[i][d][Sign][ievent]->Fill(tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaEtaAMixPt[i][d][Sign][ievent]->Fill(tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMPt[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack2]);
+		  fHistDeltaEtaAMix[i][d][0][ievent]->Fill(tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaEtaAMixPt[i][d][0][ievent]->Fill(tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMPt[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaEtaAMix[i][d][sign][ievent]->Fill(tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaEtaAMixPt[i][d][sign][ievent]->Fill(tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMPt[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack2]);
 		}	
 
-		fHistDeltaPhiEtaMix[i][d][ievent]->Fill(tdPhi,tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMEff[imix][d][VertexBin][ievent][iTrack2]);
-		fHistDeltaPhiEtaMixPt[i][d][ievent]->Fill(tdPhi,tdEta,fMPt[imix][d][VertexBin][ievent][iTrack2],fMPt[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack2]);
+		fHistDeltaPhiEtaMix[i][d][ievent]->Fill(tdPhi,tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMEff[imix][d][vertexBin][ievent][iTrack2]);
+		fHistDeltaPhiEtaMixPt[i][d][ievent]->Fill(tdPhi,tdEta,fMPt[imix][d][vertexBin][ievent][iTrack2],fMPt[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack2]);
 
-		if(iTrack==LeadPart){
+		if(iTrack==leadPart){
 		  if(NearXE){
-		    tXE=fMPt[imix][d][VertexBin][ievent][iTrack2]*cos(tdPhi)/tPt[iTrack];
-		    fHistXENMix[i][d][ievent]->Fill(tXE,fMEff[imix][d][VertexBin][ievent][iTrack2]);
+		    tXE=fMPt[imix][d][vertexBin][ievent][iTrack2]*cos(tdPhi)/ftPt[iTrack];
+		    fHistXENMix[i][d][ievent]->Fill(tXE,fMEff[imix][d][vertexBin][ievent][iTrack2]);
 		  }
 		  else{
-		    tXE=fMPt[imix][d][VertexBin][ievent][iTrack2]*cos(tdPhi+fPi)/tPt[iTrack];
-		    fHistXEAMix[i][MultArray[c]][ievent]->Fill(tXE,fMEff[imix][d][VertexBin][ievent][iTrack2]);
+		    tXE=fMPt[imix][d][vertexBin][ievent][iTrack2]*cos(tdPhi+fPi)/ftPt[iTrack];
+		    fHistXEAMix[i][multArray[c]][ievent]->Fill(tXE,fMEff[imix][d][vertexBin][ievent][iTrack2]);
 		  }
 		}
 		//3-particle correlation soft-soft term (both associated from the same event)
-		for(int iTrack3=0;iTrack3<fMixTrack[imix][d][VertexBin][ievent];iTrack3++){
+		for(int iTrack3=0;iTrack3<fMixTrack[imix][d][vertexBin][ievent];iTrack3++){
 		  if(iTrack3==iTrack2)continue;
-		  if(tPt[iTrack]<fMPt[imix][d][VertexBin][ievent][iTrack3])continue;
-		tdPhi2=tPhi[iTrack]-fMPhi[imix][d][VertexBin][ievent][iTrack3];
+		  if(ftPt[iTrack]<fMPt[imix][d][vertexBin][ievent][iTrack3])continue;
+		tdPhi2=ftPhi[iTrack]-fMPhi[imix][d][vertexBin][ievent][iTrack3];
 		if(tdPhi2<-fPi)tdPhi2+=2*fPi;
 		if(tdPhi2>fPi)tdPhi2-=2*fPi;
-		if(fabs(tdPhi2)<fNearPhiCut&&NearEta)NearEta2=1;
-		else NearEta2=0;
-		if(fabs(tdPhi2)<(fPi/2))tdEta2=tEta[iTrack]-fMEta[imix][d][VertexBin][ievent][iTrack3];
-		else tdEta2=tEta[iTrack]+fMEta[imix][d][VertexBin][ievent][iTrack3];
+		if(fabs(tdPhi2)<fNearPhiCut&&nearEta)nearEta2=1;
+		else nearEta2=0;
+		if(fabs(tdPhi2)<(fPi/2))tdEta2=ftEta[iTrack]-fMEta[imix][d][vertexBin][ievent][iTrack3];
+		else tdEta2=ftEta[iTrack]+fMEta[imix][d][vertexBin][ievent][iTrack3];
 		if(tdPhi2<fdPhiMin)tdPhi2+=2*fPi;	
 		if(tdPhi2>fdPhiMax)tdPhi2-=2*fPi;
-		//if((tCharge[iTrack]<0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]<0)||(tCharge[iTrack]>0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]>0))Sign=1;
-		//else Sign=2;
-		if((tCharge[iTrack]<0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]<0&&fMCharge[imix][d][VertexBin][ievent][iTrack3]<0)||(tCharge[iTrack]>0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]>0&&fMCharge[imix][d][VertexBin][ievent][iTrack3]>0))Sign=1;
-		else if((fMCharge[imix][d][VertexBin][ievent][iTrack3]<0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]<0)||(fMCharge[imix][d][VertexBin][ievent][iTrack3]>0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]>0))Sign=2;
-		else Sign=3;
-		for(int e=0;e<fMNPtAssoc3[imix][d][VertexBin][ievent][iTrack2];e++){//check associated pT bin
-		  for(int f=0;f<fMNPtAssoc3[imix][d][VertexBin][ievent][iTrack3];f++){
-		    if(fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]==fMPtAssoc3[imix][d][VertexBin][ievent][f][iTrack3]){
-		      fHistDeltaPhiPhiSS[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdPhi,tdPhi2,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack3]);
-		      fHistDeltaPhiPhiSS[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][Sign][ievent]->Fill(tdPhi,tdPhi2,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack3]); 
+		//if((ftCharge[iTrack]<0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]<0)||(ftCharge[iTrack]>0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]>0))sign=1;
+		//else sign=2;
+		if((ftCharge[iTrack]<0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]<0&&fMCharge[imix][d][vertexBin][ievent][iTrack3]<0)||(ftCharge[iTrack]>0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]>0&&fMCharge[imix][d][vertexBin][ievent][iTrack3]>0))sign=1;
+		else if((fMCharge[imix][d][vertexBin][ievent][iTrack3]<0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]<0)||(fMCharge[imix][d][vertexBin][ievent][iTrack3]>0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]>0))sign=2;
+		else sign=3;
+		for(int e=0;e<fMNPtAssoc3[imix][d][vertexBin][ievent][iTrack2];e++){//check associated pT bin
+		  for(int f=0;f<fMNPtAssoc3[imix][d][vertexBin][ievent][iTrack3];f++){
+		    if(fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]==fMPtAssoc3[imix][d][vertexBin][ievent][f][iTrack3]){
+		      fHistDeltaPhiPhiSS[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdPhi,tdPhi2,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack3]);
+		      fHistDeltaPhiPhiSS[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][sign][ievent]->Fill(tdPhi,tdPhi2,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack3]); 
 
-		      if(NearEta2){
-			fHistDeltaEtaEtaSS[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdEta,tdEta2,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack3]);
-			fHistDeltaEtaEtaSS[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][Sign][ievent]->Fill(tdEta,tdEta2,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix][d][VertexBin][ievent][iTrack3]);
+		      if(nearEta2){
+			fHistDeltaEtaEtaSS[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdEta,tdEta2,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack3]);
+			fHistDeltaEtaEtaSS[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][sign][ievent]->Fill(tdEta,tdEta2,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix][d][vertexBin][ievent][iTrack3]);
 		      }//near-side
 		    }
 		  }
@@ -1069,39 +1077,39 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
 		}//iTrack3
 
 		//3-particle mixed event (associated from different events)
-		//for(int imix2=0;imix2<=fMixEnd[d][VertexBin][ievent];imix2++){//loop over the stored mixed events
+		//for(int imix2=0;imix2<=fMixEnd[d][vertexBin][ievent];imix2++){//loop over the stored mixed events
 		//if(imix2==imix)continue;
 		  int imix2=imix+1;
-		  if(imix2>=fMixEnd[d][VertexBin][ievent])imix2=0;
+		  if(imix2>=fMixEnd[d][vertexBin][ievent])imix2=0;
 		  if(imix2==imix)continue;//will kill it when there is only 1 mixed event (remember to scale by 1 less then the number of mixed events in others (number of mixed-mixed is 2*(mixed-1)))
-		  for(int iTrack3=0;iTrack3<fMixTrack[imix2][d][VertexBin][ievent];iTrack3++){
-		    if(tPt[iTrack]<fMPt[imix2][d][VertexBin][ievent][iTrack3])continue;
-		    tdPhi2=tPhi[iTrack]-fMPhi[imix2][d][VertexBin][ievent][iTrack3];
+		  for(int iTrack3=0;iTrack3<fMixTrack[imix2][d][vertexBin][ievent];iTrack3++){
+		    if(ftPt[iTrack]<fMPt[imix2][d][vertexBin][ievent][iTrack3])continue;
+		    tdPhi2=ftPhi[iTrack]-fMPhi[imix2][d][vertexBin][ievent][iTrack3];
 		    if(tdPhi2<-fPi)tdPhi2+=2*fPi;
 		    if(tdPhi2>fPi)tdPhi2-=2*fPi;
-		    if(fabs(tdPhi2)<fNearPhiCut&&NearEta)NearEta2=1;
-		    else NearEta2=0;
-		    if(fabs(tdPhi2)<(fPi/2))tdEta2=tEta[iTrack]-fMEta[imix2][d][VertexBin][ievent][iTrack3];
-		    else tdEta2=tEta[iTrack]+fMEta[imix2][d][VertexBin][ievent][iTrack3];
+		    if(fabs(tdPhi2)<fNearPhiCut&&nearEta)nearEta2=1;
+		    else nearEta2=0;
+		    if(fabs(tdPhi2)<(fPi/2))tdEta2=ftEta[iTrack]-fMEta[imix2][d][vertexBin][ievent][iTrack3];
+		    else tdEta2=ftEta[iTrack]+fMEta[imix2][d][vertexBin][ievent][iTrack3];
 		    if(tdPhi2<fdPhiMin)tdPhi2+=2*fPi;	
 		    if(tdPhi2>fdPhiMax)tdPhi2-=2*fPi;
-		    //if((tCharge[iTrack]<0&&fMCharge[imix2][d][VertexBin][ievent][iTrack2]<0)||(tCharge[iTrack]>0&&fMCharge[imix2][d][VertexBin][ievent][iTrack2]>0))Sign=1;
-		    //else Sign=2;
-		    if((tCharge[iTrack]<0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]<0&&fMCharge[imix2][d][VertexBin][ievent][iTrack3]<0)||(tCharge[iTrack]>0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]>0&&fMCharge[imix2][d][VertexBin][ievent][iTrack3]>0))Sign=1;
-		    else if((fMCharge[imix2][d][VertexBin][ievent][iTrack3]<0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]<0)||(fMCharge[imix2][d][VertexBin][ievent][iTrack3]>0&&fMCharge[imix][d][VertexBin][ievent][iTrack2]>0))Sign=2;
-		    else Sign=3;
-		    for(int e=0;e<fMNPtAssoc3[imix][d][VertexBin][ievent][iTrack2];e++){//check associated pT bin
-		      for(int f=0;f<fMNPtAssoc3[imix2][d][VertexBin][ievent][iTrack3];f++){
-			if(fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]==fMPtAssoc3[imix2][d][VertexBin][ievent][f][iTrack3]){
-			  fHistDeltaPhiPhiMix[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdPhi,tdPhi2,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix2][d][VertexBin][ievent][iTrack3]);
-			  fHistDeltaPhiPhiMix[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][Sign][ievent]->Fill(tdPhi,tdPhi2,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix2][d][VertexBin][ievent][iTrack3]); 
-			  fHistDeltaPhiPhiMix[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdPhi2,tdPhi,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix2][d][VertexBin][ievent][iTrack3]);//free factor of 2 in statistics
-			  fHistDeltaPhiPhiMix[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][Sign][ievent]->Fill(tdPhi2,tdPhi,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix2][d][VertexBin][ievent][iTrack3]); 
-		      if(NearEta2){
-			fHistDeltaEtaEtaMix[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdEta,tdEta2,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix2][d][VertexBin][ievent][iTrack3]);
-			fHistDeltaEtaEtaMix[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][Sign][ievent]->Fill(tdEta,tdEta2,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix2][d][VertexBin][ievent][iTrack3]);
-			fHistDeltaEtaEtaMix[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdEta2,tdEta,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix2][d][VertexBin][ievent][iTrack3]);
-			fHistDeltaEtaEtaMix[i][fMPtAssoc3[imix][d][VertexBin][ievent][e][iTrack2]][d][Sign][ievent]->Fill(tdEta2,tdEta,fMEff[imix][d][VertexBin][ievent][iTrack2]*fMEff[imix2][d][VertexBin][ievent][iTrack3]);
+		    //if((ftCharge[iTrack]<0&&fMCharge[imix2][d][vertexBin][ievent][iTrack2]<0)||(ftCharge[iTrack]>0&&fMCharge[imix2][d][vertexBin][ievent][iTrack2]>0))sign=1;
+		    //else sign=2;
+		    if((ftCharge[iTrack]<0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]<0&&fMCharge[imix2][d][vertexBin][ievent][iTrack3]<0)||(ftCharge[iTrack]>0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]>0&&fMCharge[imix2][d][vertexBin][ievent][iTrack3]>0))sign=1;
+		    else if((fMCharge[imix2][d][vertexBin][ievent][iTrack3]<0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]<0)||(fMCharge[imix2][d][vertexBin][ievent][iTrack3]>0&&fMCharge[imix][d][vertexBin][ievent][iTrack2]>0))sign=2;
+		    else sign=3;
+		    for(int e=0;e<fMNPtAssoc3[imix][d][vertexBin][ievent][iTrack2];e++){//check associated pT bin
+		      for(int f=0;f<fMNPtAssoc3[imix2][d][vertexBin][ievent][iTrack3];f++){
+			if(fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]==fMPtAssoc3[imix2][d][vertexBin][ievent][f][iTrack3]){
+			  fHistDeltaPhiPhiMix[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdPhi,tdPhi2,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix2][d][vertexBin][ievent][iTrack3]);
+			  fHistDeltaPhiPhiMix[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][sign][ievent]->Fill(tdPhi,tdPhi2,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix2][d][vertexBin][ievent][iTrack3]); 
+			  fHistDeltaPhiPhiMix[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdPhi2,tdPhi,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix2][d][vertexBin][ievent][iTrack3]);//free factor of 2 in statistics
+			  fHistDeltaPhiPhiMix[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][sign][ievent]->Fill(tdPhi2,tdPhi,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix2][d][vertexBin][ievent][iTrack3]); 
+		      if(nearEta2){
+			fHistDeltaEtaEtaMix[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdEta,tdEta2,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix2][d][vertexBin][ievent][iTrack3]);
+			fHistDeltaEtaEtaMix[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][sign][ievent]->Fill(tdEta,tdEta2,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix2][d][vertexBin][ievent][iTrack3]);
+			fHistDeltaEtaEtaMix[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][0][ievent]->Fill(tdEta2,tdEta,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix2][d][vertexBin][ievent][iTrack3]);
+			fHistDeltaEtaEtaMix[i][fMPtAssoc3[imix][d][vertexBin][ievent][e][iTrack2]][d][sign][ievent]->Fill(tdEta2,tdEta,fMEff[imix][d][vertexBin][ievent][iTrack2]*fMEff[imix2][d][vertexBin][ievent][iTrack3]);
 		      }//near-side
 			}
 		      }
@@ -1117,44 +1125,44 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
     }//itrack    
   
   //now store this event for mixing (using these dynamic arrays instead of the other fix to save memory)
-    if(DEBUG)Printf("Store Event For Mixing");
-  for(int c=0;c<MaxArray;c++){//loops over centrality bins
-    int d=MultArray[c];//too many nested arrays looked confusing d=which centrality bin
-    if(fMixEnd[d][VertexBin][ievent]<(fNMix-1))fMixEnd[d][VertexBin][ievent]++;
-    if(fMixPointer[d][VertexBin][ievent]<(fNMix-1))fMixPointer[d][VertexBin][ievent]++;
-    else fMixPointer[d][VertexBin][ievent]=0;
-    int e=fMixPointer[d][VertexBin][ievent];//nested arrays (e is event number in pool)
-    delete [] fMPt[e][d][VertexBin][ievent];
-    delete [] fMPhi[e][d][VertexBin][ievent];
-    delete [] fMEta[e][d][VertexBin][ievent];
-    delete [] fMCharge[e][d][VertexBin][ievent];
-    delete [] fMEff[e][d][VertexBin][ievent];
-    delete [] fMNPtAssoc3[e][d][VertexBin][ievent];
+    if(fDEBUG)Printf("Store Event For Mixing");
+  for(int c=0;c<maxArray;c++){//loops over centrality bins
+    int d=multArray[c];//too many nested arrays looked confusing d=which centrality bin
+    if(fMixEnd[d][vertexBin][ievent]<(fNMix-1))fMixEnd[d][vertexBin][ievent]++;
+    if(fMixPointer[d][vertexBin][ievent]<(fNMix-1))fMixPointer[d][vertexBin][ievent]++;
+    else fMixPointer[d][vertexBin][ievent]=0;
+    int e=fMixPointer[d][vertexBin][ievent];//nested arrays (e is event number in pool)
+    delete [] fMPt[e][d][vertexBin][ievent];
+    delete [] fMPhi[e][d][vertexBin][ievent];
+    delete [] fMEta[e][d][vertexBin][ievent];
+    delete [] fMCharge[e][d][vertexBin][ievent];
+    delete [] fMEff[e][d][vertexBin][ievent];
+    delete [] fMNPtAssoc3[e][d][vertexBin][ievent];
     for(int jj=0;jj<10;jj++){
-    delete [] fMPtAssoc3[e][d][VertexBin][ievent][jj];
+    delete [] fMPtAssoc3[e][d][vertexBin][ievent][jj];
     }
-    fMPt[e][d][VertexBin][ievent]=new Float_t [nGoodTracks[ievent]];
-    fMPhi[e][d][VertexBin][ievent]=new Float_t [nGoodTracks[ievent]];
-    fMEta[e][d][VertexBin][ievent]=new Float_t [nGoodTracks[ievent]];
-    fMCharge[e][d][VertexBin][ievent]=new Short_t [nGoodTracks[ievent]];
-    fMEff[e][d][VertexBin][ievent]=new Float_t [nGoodTracks[ievent]];
-    fMixTrack[e][d][VertexBin][ievent]=nGoodTracks[ievent];
-    fMNPtAssoc3[e][d][VertexBin][ievent]=new Short_t [nGoodTracks[ievent]];
+    fMPt[e][d][vertexBin][ievent]=new Float_t [nGoodTracks[ievent]];
+    fMPhi[e][d][vertexBin][ievent]=new Float_t [nGoodTracks[ievent]];
+    fMEta[e][d][vertexBin][ievent]=new Float_t [nGoodTracks[ievent]];
+    fMCharge[e][d][vertexBin][ievent]=new Short_t [nGoodTracks[ievent]];
+    fMEff[e][d][vertexBin][ievent]=new Float_t [nGoodTracks[ievent]];
+    fMixTrack[e][d][vertexBin][ievent]=nGoodTracks[ievent];
+    fMNPtAssoc3[e][d][vertexBin][ievent]=new Short_t [nGoodTracks[ievent]];
     for(int jj=0;jj<10;jj++){
-    fMPtAssoc3[e][d][VertexBin][ievent][jj]=new Short_t [nGoodTracks[ievent]];
+    fMPtAssoc3[e][d][vertexBin][ievent][jj]=new Short_t [nGoodTracks[ievent]];
     }
 
     for(int iTrack=0;iTrack<nGoodTracks[ievent];iTrack++){
-      fMPt[e][d][VertexBin][ievent][iTrack]=tPt[iTrack];
-      fMPhi[e][d][VertexBin][ievent][iTrack]=tPhi[iTrack];
-      fMEta[e][d][VertexBin][ievent][iTrack]=tEta[iTrack];
-      fMCharge[e][d][VertexBin][ievent][iTrack]=tCharge[iTrack];
-      fMEff[e][d][VertexBin][ievent][iTrack]=tEff[iTrack];
-      fMNPtAssoc3[e][d][VertexBin][ievent][iTrack]=tNPtAssoc3[iTrack];
-      // fMPtAssoc3[e][d][VertexBin][ievent][iTrack]=new Int_t [tNPtAssoc3[iTrack]];
-      for(int jj=0;jj<tNPtAssoc3[iTrack];jj++){
-	//if(DEBUG) Printf("%d",tPtAssoc3[iTrack][jj]);
-	fMPtAssoc3[e][d][VertexBin][ievent][jj][iTrack]=tPtAssoc3[iTrack][jj];
+      fMPt[e][d][vertexBin][ievent][iTrack]=ftPt[iTrack];
+      fMPhi[e][d][vertexBin][ievent][iTrack]=ftPhi[iTrack];
+      fMEta[e][d][vertexBin][ievent][iTrack]=ftEta[iTrack];
+      fMCharge[e][d][vertexBin][ievent][iTrack]=ftCharge[iTrack];
+      fMEff[e][d][vertexBin][ievent][iTrack]=ftEff[iTrack];
+      fMNPtAssoc3[e][d][vertexBin][ievent][iTrack]=ftNPtAssoc3[iTrack];
+      // fMPtAssoc3[e][d][vertexBin][ievent][iTrack]=new Int_t [ftNPtAssoc3[iTrack]];
+      for(int jj=0;jj<ftNPtAssoc3[iTrack];jj++){
+	//if(fDEBUG) Printf("%d",ftPtAssoc3[iTrack][jj]);
+	fMPtAssoc3[e][d][vertexBin][ievent][jj][iTrack]=ftPtAssoc3[iTrack][jj];
       }
       
     }//iTracks
@@ -1165,25 +1173,26 @@ void AliAnalysisTaskDiHadron::Exec(Option_t *)
 
   PostData(0, fOutput);
   //get rid of these arrays from memory
-  delete [] tPhi;
-  delete [] tEta;
-  delete [] tPt;
-  delete [] tCharge;
-  delete [] tEff;
-  delete [] tNPtAssoc3;
-  delete [] tPtAssoc3;
-  tPhi=NULL;
-  tEta=NULL;
-  tPt=NULL;
-  tCharge=NULL;
-  tEff=NULL;
-  tNPtAssoc3=NULL;
-  tPtAssoc3=NULL;
+  delete [] ftPhi;
+  delete [] ftEta;
+  delete [] ftPt;
+  delete [] ftCharge;
+  delete [] ftEff;
+  delete [] ftNPtAssoc3;
+  delete [] ftPtAssoc3;
+  ftPhi=NULL;
+  ftEta=NULL;
+  ftPt=NULL;
+  ftCharge=NULL;
+  ftEff=NULL;
+  ftNPtAssoc3=NULL;
+  ftPtAssoc3=NULL;
 
 }//Exec
 
 //---------------------------------------------------
 void AliAnalysisTaskDiHadron::Terminate(Option_t *){
+  //Terminates the code, frees up memory
   for(int ii=0;ii<fNMix;ii++){
     for(int cc=0;cc<fNCentBins;cc++){
       for(int vtx=0;vtx<fNVertexBins;vtx++){
