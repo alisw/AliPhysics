@@ -4,63 +4,57 @@
 
 bool debug = true;
 
-void EventPool::PrintInfo()
+void EventPool::PrintInfo() const
 {
   cout << " --- --- --- " << endl;
   cout << Form("%20s: %d", "Pool capacity", fMixDepth) << endl;
   cout << Form("%20s: %d", "Current depth", Depth()) << endl;
-  cout << Form("%20s: %d-%d", "Mult. range", fMultMin, fMultMax) << endl;
-  cout << Form("%20s: %.1f-%.1f", "Z-vtx range", fZvtxMin, fZvtxMax) << endl;
+  cout << Form("%20s: %d to %d", "Mult. range", fMultMin, fMultMax) << endl;
+  cout << Form("%20s: %.1f to %.1f", "Z-vtx range", fZvtxMin, fZvtxMax) << endl;
 
   return;
 }
 
-Bool_t EventPool::IsPoolReady()
-{
-  return (Int_t)fEvents.size()==fMixDepth;
-}
-
-Bool_t EventPool::EventMatchesBin(Int_t mult, Short_t zvtx)
+Bool_t EventPool::EventMatchesBin(Int_t mult, Short_t zvtx) const
 {
   // N.B. Lower bin limit included; upper limit excluded.
+
   Bool_t multOK = (mult >= fMultMin && mult < fMultMax);
   Bool_t zvtxOK = (zvtx >= fZvtxMin && zvtx < fZvtxMax);
   return (multOK && zvtxOK);
 }
 
-Int_t EventPool::Depth()
+Int_t EventPool::TracksInPool() const
 {
-  return fEvents.size();
-}
-Int_t EventPool::TracksInPool()
-{
-  int ntrk=0;
-  for (int i=0; i<(int)fEvents.size(); i++) {
+  Int_t ntrk=0;
+  for (Int_t i=0; i<(Int_t)fEvents.size(); ++i) {
     ntrk += fNTracksInEvent.at(i);
   }
   return ntrk;
 }
 
-Int_t EventPool::SetEventMultRange(int multMin, int multMax)
+Int_t EventPool::SetEventMultRange(Int_t multMin, Int_t multMax)
 {
   fMultMin = multMin;
   fMultMax = multMax;
   return 0;
 }
-Int_t EventPool::SetEventZvtxRange(int zvtxMin, int zvtxMax)
+
+Int_t EventPool::SetEventZvtxRange(Int_t zvtxMin, Int_t zvtxMax)
 {
   fZvtxMin = zvtxMin;
   fZvtxMax = zvtxMax;
   return 0;
 }
 
-Int_t EventPool::UpdatePool(int iEvent, MyHeader* ev, TClonesArray* trk)
+Int_t EventPool::UpdatePool(Int_t iEvent, MyHeader *ev, TClonesArray *trk)
 {
   // Initialize at any chosen starting event
-  if (!fTracks) fTracks = new TClonesArray("MyPart", 1000);
+  if (!fTracks) 
+    fTracks = new TClonesArray("MyPart", 1000);
 
   fMult = trk->GetEntries();
-  fZvtx = ev->fVz; // Short_t. TODO: check--should fVc be used instead?
+  fZvtx = ev->fVz;
 
   if (!EventMatchesBin(fMult, fZvtx)) {
     fWasUpdated = false;
@@ -108,66 +102,33 @@ Int_t EventPool::UpdatePool(int iEvent, MyHeader* ev, TClonesArray* trk)
     cout << " Event " << fEventIndex.back();
     cout << " PoolDepth = " << Depth();
     cout << " NTracks = " << NTracksInCurrentEvent();
-    // for (int i=1; i<Depth(); i++) {
-    //   cout << " " << NTracksInEvent(iEvent-i);
-    // }
     cout << " TracksInPool = " << TracksInPool();
-    //    cout << endl;
   }
 
   return 0;
 }
 
-MyPart* EventPool::GetRandomTrack()
+MyPart* EventPool::GetRandomTrack() const
 {
   MyPart* trk = 0;
   TClonesArray* tca = 0;
-  
- // index of random event in the pool
   UInt_t ranEvt = gRandom->Integer(fEvents.size()-1);
   tca = fEvents.at(ranEvt);
-
- // index of random track in event
   UInt_t ranTrk = gRandom->Integer(tca->GetEntries());
-  
   trk = (MyPart*)tca->At(ranTrk);
-  
-  /*
-  if (debug) {
-    // loop over the event buffer
-    for (int i=0; i<(int)fEvents.size(); i++) {
-      TClonesArray* tca = fEvents.at(i);
-      cout << tca->GetEntries() << " ";
-    }
-    cout << endl;
-    // Get first track inside each
-    for (int i=0; i<(int)fEvents.size(); i++) {
-      TClonesArray* tca = fEvents.at(i);
-      trk = (MyPart*)tca->At(0);
-      cout << trk->Pt() << " ";
-    }
-    cout << endl;
-  }
-  */
-
   return trk;
-}
-
-Int_t EventPool::NTracksInCurrentEvent()
-{
-  return fNTracksInEvent.back();
 }
 
 // Important!! This fn. will break if selective filling is implemented
 // (i.e. pool is not updated for every single event)
 // TODO: Implement internal counters to fix this.
-Int_t EventPool::NTracksInEvent(int iEvent)
+Int_t EventPool::NTracksInEvent(Int_t iEvent) const
 {
   Int_t n = -1;
   Int_t curEvent = fEventIndex.back();
   Int_t offset = curEvent - iEvent;
   // pos = position of iEvent in rolling buffer
-  int pos = fEventIndex.size() - offset - 1;
+  Int_t pos = fEventIndex.size() - offset - 1;
 
   if (offset==0) // (iEvent == curEvent)
     n = fNTracksInEvent.back();
