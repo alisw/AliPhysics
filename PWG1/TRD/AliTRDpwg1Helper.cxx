@@ -54,6 +54,12 @@ const Char_t * AliTRDpwg1Helper::fgkTRDtaskOpt[AliTRDpwg1Helper::kNTRDTASKS+1] =
 };
 
 //______________________________________________________
+Bool_t AliTRDpwg1Helper::DoTask(Int_t idx, Int_t map)
+{
+  return TESTBIT(map, idx);
+}
+
+//______________________________________________________
 Int_t AliTRDpwg1Helper::ParseOptions(Char_t *trd)
 {
 // Parse space separated options.
