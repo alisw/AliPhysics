@@ -29,6 +29,7 @@ Int_t kGCnumberOfFilesToAnalyze=0;
 Bool_t kGCrunNeutralMeson = kTRUE;
 Bool_t kGCrunJet          = kFALSE;
 Bool_t kGCrunChic         = kFALSE;
+Bool_t kGCrunDalitz       = kFALSE;
 Bool_t kGCrunCF           = kFALSE;
 Bool_t kGCcalculateBackground = kTRUE;
 Bool_t kGCdoNeutralMesonV0MCCheck =kFALSE;
@@ -87,6 +88,31 @@ Double_t kGCetaWidth   = 0.01;
 Double_t kGCprobElectron = 0.000;
 
 Double_t kGCminOpeningAngleGhostCut = 0.005;
+
+/** ---------------------------------- define pi0 dalitz cuts here ------------------------------------*/
+
+Bool_t kGCRunStandalone    = kFALSE;
+Bool_t kGCUseBayesPID      = kFALSE;
+Bool_t kGCUseTrackIndexCut = kTRUE;
+Bool_t kGCUsePsiPairCut    = kTRUE;
+Bool_t kGCUseMassCut       = kFALSE;
+Bool_t kGCUseGammaCut      = kFALSE;
+Bool_t kGCReadMagFieldSign = kTRUE;
+Bool_t kGCUseAliKF         = kFALSE;
+
+Double_t kGCPsiPairCut                 = 0.45;
+Double_t kGCDeltaPhiCutMin             = 0.;
+Double_t kGCDeltaPhiCutMax             = 0.12;
+Double_t kGCMassCutMin                 = 0.;
+Double_t kGCMassCutMax                 = 0.1;
+Double_t kGCNSigmaBelowElecTPCbethe    = -2.;
+Double_t kGCNSigmaAboveElecTPCbethe    = 3.;
+Double_t kGCNSigmaAbovePionTPCbethe    = 2.;
+Double_t kGCNSigmaAboveKaonTPCbethe    = 2.;
+Double_t kGCNSigmaAboveProtonTPCbethe  = 2.;
+
+Int_t kGCTrkSelectionCriteria          = 1;     // kITSsaTrack=0, kGlobalTrack=1, kITSsaGlobalTrack=2
+// NOTE: for details in the track cuts and defined histograms see AddGammaConvDalitz.C
 
 /** ----------------------------------end define cuts here----------------------------------*/
 
@@ -700,6 +726,16 @@ Int_t kGCnXBinsTrackLength = 1000;
 Double_t kGCfirstXBinTrackLength = 0;
 Double_t kGClastXBinTrackLength = 500;
 
+/////////Pi0 Dalitz decay AnalysisTask ///////////////////////////////////
+
+Int_t kGCnXBinsDalitzMass = 4000;
+Double_t kGCfirstXBinDalitzMass = 0.;
+Double_t kGClastXBinDalitzMass = 4.;
+
+Int_t kGCnXBinsPi0DalitzMass = 4000;
+Double_t kGCfirstXBinPi0DalitzMass = 0.;
+Double_t kGClastXBinPi0DalitzMass = 4.;
+
 /////////Chic_Analysis///////////////////////////////////
 Int_t kGCnXBinsEPt = 1000;
 Double_t kGCfirstXBinEPt = 0.;
@@ -924,6 +960,10 @@ Bool_t scanArguments(TString arguments){
       else if (argument.CompareTo("-run-chic") == 0){
 	cout<<"Running Chi_c analysis"<<endl;
 	kGCrunChic = kTRUE;
+      }
+      else if (argument.CompareTo("-run-dalitz") == 0){
+	cout<<"Running Dalitz analysis"<<endl;
+	kGCrunDalitz = kTRUE;
       }
       else if (argument.CompareTo("-run-cf") == 0){
 	cout<<"Running CF"<<endl;
@@ -1449,6 +1489,13 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   }
 
 
+  if( kGCrunDalitz ){
+    
+   gROOT->LoadMacro("./AddGammaConvDalitz.C");
+   AddGammaConvDalitz( v0Reader, kGCcalculateBackground, kGCRunStandalone );
+
+		
+  }
 
   if(kGCrunOnTrain == kFALSE){
     if(kGCdataList.IsNull()){
@@ -1488,20 +1535,21 @@ void build() {
   gSystem->Load("libGeom");
 	
   ////
+  //Setting up STEERBase.par//
+  ////
+  cout<<"compiling STEERBase"<<endl;
+  setupPar("STEERBase");
+  gSystem->Load("libSTEERBase.so");
+
+
+   ////
   //Setting up ESD.par//
   ////
   cout<<"compiling ESD"<<endl;
   setupPar("ESD");
   gSystem->Load("libVMC.so");
   gSystem->Load("libESD.so");
-	
-  ////
-  ////
-  //Setting up STEERBase.par//
-  ////
-  cout<<"compiling STEERBase"<<endl;
-  setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
+
 	
   ////
   //Setting up AOD.par//
