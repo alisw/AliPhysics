@@ -1,19 +1,19 @@
 //Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
 //University of Tennessee at Knoxville
+//This class is designed for the analysis of the hadronic component of transverse energy.  It is used by AliAnalysisTaskHadEt.
 #ifndef ALIANALYSISHADET_H
 #define ALIANALYSISHADET_H
 
 #include "TString.h"
-#include "TDatabasePDG.h"
-#include "TParticle.h"
-#include "Rtypes.h"
-#include "TString.h"
-#include "AliESDtrackCuts.h"
 
 class TH2F;
 class TH1F;
 class AliVEvent;
 class TList;
+class AliESDtrackCuts;
+class Rtypes;
+class TParticle;
+class TDatabasePDG;
 
 class AliAnalysisHadEt
 {
@@ -44,114 +44,102 @@ public:
     virtual void ResetEventValues();
     
     /** Sum of the total Et for all events */
-    Double_t GetSumEt() { return fSumEt; }
+    Double_t GetSumEt() const { return fSumEt; }
 
     /** Sum of the total Et within our acceptance for all events */
-    Double_t GetSumEtAcc() { return fSumEtAcc; }
+    Double_t GetSumEtAcc() const { return fSumEtAcc; }
 
     /** Total Et in the event (without acceptance cuts) */
-    Double_t GetTotEt() { return fTotEt; }
+    Double_t GetTotEt() const { return fTotEt; }
 
     /** Total Et in the event within the acceptance cuts */
-    Double_t GetTotEtAcc() { return fTotEtAcc; }
+    Double_t GetTotEtAcc() const { return fTotEtAcc; }
 
    /** Total neutral Et in the event (without acceptance cuts) */
-    Double_t GetTotNeutralEt() { return fTotNeutralEt; }
+    Double_t GetTotNeutralEt() const { return fTotNeutralEt; }
 
     /** Total neutral Et in the event within the acceptance cuts */
-    Double_t GetTotNeutralEtAcc() { return fTotNeutralEtAcc; }
+    Double_t GetTotNeutralEtAcc() const { return fTotNeutralEtAcc; }
     
     /** Total charged Et in the event (without acceptance cuts) */
-    Double_t GetTotChargedEt() { return fTotChargedEt; }
+    Double_t GetTotChargedEt() const { return fTotChargedEt; }
 
     /** Total charged Et in the event within the acceptance cuts */
-    Double_t GetTotChargedEtAcc() { return fTotChargedEtAcc; }
+    Double_t GetTotChargedEtAcc() const { return fTotChargedEtAcc; }
 
 
-    void SetHistoList(TList *mylist){histoList = mylist;}
+    void SetHistoList(TList *mylist){fhistoList = mylist;}
 
-    void SetTPCITSTrackCuts(AliESDtrackCuts *cuts){ esdtrackCutsITSTPC = cuts;}
-    void SetTPCOnlyTrackCuts(AliESDtrackCuts *cuts){ esdtrackCutsTPC = cuts;}
-    void SetITSTrackCuts(AliESDtrackCuts *cuts){ esdtrackCutsITS = cuts;}
+    void SetTPCITSTrackCuts(AliESDtrackCuts *cuts){ ffesdtrackCutsITSTPC = cuts;}
+    void SetTPCOnlyTrackCuts(AliESDtrackCuts *cuts){ fesdtrackCutsTPC = cuts;}
+    void SetITSTrackCuts(AliESDtrackCuts *cuts){ fesdtrackCutsITS = cuts;}
 
 protected:
    
-    /** The suffix for the histogram names */
-    TString fHistogramNameSuffix;
+    
+    TString fHistogramNameSuffix; /** The suffix for the histogram names */
 
     /** PDG Database */
-    TDatabasePDG *fPdgDB;
-    Int_t PiPlusCode;
-    Int_t PiMinusCode;
-    Int_t KPlusCode;
-    Int_t KMinusCode;
-    Int_t ProtonCode;
-    Int_t AntiProtonCode;
-    Int_t LambdaCode;
-    Int_t AntiLambdaCode;
-    Int_t K0SCode;
-    Int_t OmegaCode;
-    Int_t AntiOmegaCode;
-    Int_t Xi0Code;
-    Int_t AntiXi0Code;
-    Int_t XiCode;
-    Int_t AntiXiCode;
-    Int_t SigmaCode;
-    Int_t AntiSigmaCode;
-    Int_t K0LCode;
-    Int_t NeutronCode;
-    Int_t AntiNeutronCode;
-    Int_t EPlusCode;
-    Int_t EMinusCode;
-    Float_t PionMass;
+    TDatabasePDG *fPdgDB;//data base used for looking up pdg codes
+    //these codes are stored as variables because otherwise there were issues using this with the plugin
+    Int_t fPiPlusCode;//pdg pi plus code
+    Int_t fPiMinusCode;//pdg pi minus code
+    Int_t fKPlusCode;// pdg k plus code
+    Int_t fKMinusCode;//pdg k minus code
+    Int_t fProtonCode;//pdg proton code
+    Int_t fAntiProtonCode;//pdg antiproton code
+    Int_t fLambdaCode;// pdg lambda code
+    Int_t fAntiLambdaCode;//pdg antilambda code
+    Int_t fK0SCode;//pdg k0 short code
+    Int_t fOmegaCode;//pdg omega code
+    Int_t fAntiOmegaCode;//pdg anti-omega code
+    Int_t fXi0Code;//pdg xi-0 code
+    Int_t fAntiXi0Code;//pdg anti-xi0 code
+    Int_t fXiCode;//pdg xi code
+    Int_t fAntiXiCode;//pdg anti-xi code
+    Int_t fSigmaCode;//pdg sigma code
+    Int_t fAntiSigmaCode;//pdg anti-sigma code
+    Int_t fK0LCode;//pdg k0 long code
+    Int_t fNeutronCode;//pdg neutron code
+    Int_t fAntiNeutronCode;//pdg anti-neutron code
+    Int_t fEPlusCode;//pdg positron code
+    Int_t fEMinusCode;//pdg electron code
+    Float_t fPionMass;//pdg pion mass
 
-    /** Sum of the total Et for all events */
-    Double_t fSumEt;
-
-    /** Sum of the total Et within our acceptance for all events */
-    Double_t fSumEtAcc;
-
-    /** Total Et in the event (without acceptance cuts) */
-    Double_t fTotEt;
-
-    /** Total Et in the event within the acceptance cuts */
-    Double_t fTotEtAcc;
-
-    /** Total neutral Et in the event */
-    Double_t fTotNeutralEt;
-
-    /** Total neutral Et in the event within the acceptance cuts */
-    Double_t fTotNeutralEtAcc;
-
-    /** Total charged Et in the event */
-    Double_t fTotChargedEt;
-
-    /** Total charged Et in the event within the acceptance cuts */
-    Double_t fTotChargedEtAcc;
-
-    /** Multiplicity of particles in the event */
-    Int_t fMultiplicity;
     
-    /** Multiplicity of charged particles in the event */
-    Int_t fChargedMultiplicity;
+    Double_t fSumEt;/** Sum of the total Et for all events */
+
+    Double_t fSumEtAcc;/** Sum of the total Et within our acceptance for all events */
+
     
-    /** Multiplicity of neutral particles in the event */
-    Int_t fNeutralMultiplicity; 
+    Double_t fTotEt;/** Total Et in the event (without acceptance cuts) */
     
-    /** Cut in eta ( normally |eta| < 0.5 */
-    Double_t fEtaCut;
+    Double_t fTotEtAcc;/** Total Et in the event within the acceptance cuts */
+    
+    Double_t fTotNeutralEt;/** Total neutral Et in the event */
+    
+    Double_t fTotNeutralEtAcc;/** Total neutral Et in the event within the acceptance cuts */
+    
+    Double_t fTotChargedEt;/** Total charged Et in the event */
+    
+    Double_t fTotChargedEtAcc;/** Total charged Et in the event within the acceptance cuts */
 
-    /** Eta cut for our acceptance */
-    Double_t fEtaCutAcc;
+    Int_t fMultiplicity;/** Multiplicity of particles in the event */
+    
+    Int_t fChargedMultiplicity;/** Multiplicity of charged particles in the event */
+    
+    Int_t fNeutralMultiplicity; /** Multiplicity of neutral particles in the event */
+        
+    Double_t fEtaCut;/** Cut in eta ( normally |eta| < 0.5 */
 
-    /** Vertex cuts */
-    Double_t fVertexXCut;
-    Double_t fVertexYCut;
-    Double_t fVertexZCut;
+    Double_t fEtaCutAcc;/** Eta cut for our acceptance */
 
-    /** Impact parameter cuts */
-    Double_t fIPxyCut;
-    Double_t fIPzCut;
+    Double_t fVertexXCut;/** Vertex cuts x direction */
+    Double_t fVertexYCut;/** Vertex cuts y direction*/
+    Double_t fVertexZCut;/** Vertex cuts z direction*/
+
+    Double_t fIPxyCut;    /** Impact parameter cuts x-y plane*/
+    Double_t fIPzCut;    /** Impact parameter cuts z*/
 
 
     void CreateEtaPtHisto2D(TString name, TString title);
@@ -164,15 +152,15 @@ protected:
     void FillHisto2D(TString histname, Float_t x, Float_t y, Float_t weight);
 
     Float_t Et(TParticle *part, float mass = -1000);
-    AliESDtrackCuts* esdtrackCutsITSTPC;
-    AliESDtrackCuts* esdtrackCutsTPC;
-    AliESDtrackCuts* esdtrackCutsITS;
+    AliESDtrackCuts* ffesdtrackCutsITSTPC;//esd track cuts for ITS+TPC tracks
+    AliESDtrackCuts* fesdtrackCutsTPC;//esd track cuts for TPC tracks (which may also contain ITS hits)
+    AliESDtrackCuts* fesdtrackCutsITS;//esd track cuts for ITS stand alone tracks
 
-    TList *histoList;
-    static Float_t etaAxis[47];
-    static Int_t numOfEtaBins;
-    static Float_t ptAxis[117];
-    static Int_t numOfPtBins;
+    TList *fhistoList;//list of histograms saved out to file
+    static Float_t fgEtaAxis[47];//bins for eta axis of histograms
+    static Int_t fgnumOfEtaBins;//number of eta bins
+    static Float_t fgPtAxis[117];//bins for pt axis of histograms
+    static Int_t fgNumOfPtBins;//number of pt bins
     
 
  private:

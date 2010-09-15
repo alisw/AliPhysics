@@ -103,9 +103,9 @@ private:
     
     EventVars *fRecEventVars;
     EventVars *fSimEventVars;
-    AliESDtrackCuts* esdtrackCutsITSTPC;
-    AliESDtrackCuts* esdtrackCutsTPC;
-    AliESDtrackCuts* esdtrackCutsITS;
+    AliESDtrackCuts* ffesdtrackCutsITSTPC;
+    AliESDtrackCuts* fesdtrackCutsTPC;
+    AliESDtrackCuts* fesdtrackCutsITS;
     
     ClassDef(AliAnalysisTaskHadEt, 1); // example of analysis
 };

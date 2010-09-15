@@ -48,9 +48,9 @@ AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name) :
         ,fPdgDB(0)
         ,fRecEventVars(0)
         ,fSimEventVars(0)
-        ,esdtrackCutsITSTPC(0)
-        ,esdtrackCutsTPC(0)
-        ,esdtrackCutsITS(0)
+        ,ffesdtrackCutsITSTPC(0)
+        ,fesdtrackCutsTPC(0)
+        ,fesdtrackCutsITS(0)
 {
     // Constructor
 
@@ -88,26 +88,26 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 
 
     Bool_t selectPrimaries=kTRUE;
-    esdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
-    esdtrackCutsITSTPC->SetName("fEsdTrackCuts");
-    esdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    esdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
+    ffesdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
+    ffesdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    fesdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fesdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
-    esdtrackCutsITS =  new AliESDtrackCuts;
-    esdtrackCutsITS->SetName("fEsdTrackCutsITS");
-    esdtrackCutsITS->SetRequireITSRefit(kTRUE);
-    esdtrackCutsITS->SetRequireITSStandAlone(kTRUE);
-    esdtrackCutsITS->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-    esdtrackCutsITS->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
-    esdtrackCutsITS->SetMaxDCAToVertexZ(1.e6);
-    esdtrackCutsITS->SetDCAToVertex2D(kFALSE);
-    esdtrackCutsITS->SetRequireSigmaToVertex(kFALSE);
-    esdtrackCutsITS->SetAcceptKinkDaughters(kFALSE);
+    fesdtrackCutsITS =  new AliESDtrackCuts;
+    fesdtrackCutsITS->SetName("fEsdTrackCutsITS");
+    fesdtrackCutsITS->SetRequireITSRefit(kTRUE);
+    fesdtrackCutsITS->SetRequireITSStandAlone(kTRUE);
+    fesdtrackCutsITS->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+    fesdtrackCutsITS->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
+    fesdtrackCutsITS->SetMaxDCAToVertexZ(1.e6);
+    fesdtrackCutsITS->SetDCAToVertex2D(kFALSE);
+    fesdtrackCutsITS->SetRequireSigmaToVertex(kFALSE);
+    fesdtrackCutsITS->SetAcceptKinkDaughters(kFALSE);
 
-    fOutputList->Add(esdtrackCutsITSTPC);
-    fOutputList->Add(esdtrackCutsTPC);
-    fOutputList->Add(esdtrackCutsITS);
-    if(esdtrackCutsITSTPC && esdtrackCutsTPC){
+    fOutputList->Add(ffesdtrackCutsITSTPC);
+    fOutputList->Add(fesdtrackCutsTPC);
+    fOutputList->Add(fesdtrackCutsITS);
+    if(ffesdtrackCutsITSTPC && fesdtrackCutsTPC){
       fRecAnalysis->SetITSTrackCuts( GetITSTrackCuts());
       fMCAnalysis->SetITSTrackCuts( GetITSTrackCuts());
       fRecAnalysis->SetTPCITSTrackCuts( GetTPCITSTrackCuts());

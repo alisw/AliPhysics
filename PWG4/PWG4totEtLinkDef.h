@@ -17,6 +17,7 @@
 #pragma link C++ class AliAnalysisHadEtMonteCarlo+;
 #pragma link C++ class AliAnalysisHadEtReconstructed+;
 #pragma link C++ class AliAnalysisTaskHadEt+;
+#pragma link C++ class AliAnalysisHadEtCorrections+;
 
       
 #endif

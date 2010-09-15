@@ -22,7 +22,7 @@ public:
     virtual void Init();
     
  private:
-    //AliESDtrackCuts* esdtrackCutsITSTPC;
+    //AliESDtrackCuts* ffesdtrackCutsITSTPC;
 };
 
 #endif // ALIANALYSISHADETMONTECARLO_H
