@@ -108,7 +108,6 @@ void run(Char_t *optList="ALL", const Char_t *files=NULL, Long64_t nev=123456789
   if(gSystem->Load("libTENDER.so")<0) return;
   if(gSystem->Load("libPWG1.so")<0) return;
 
-  printf("Reconstructor[%p]\n", AliTRDinfoGen::Reconstructor());
   Bool_t fHasMCdata = UseMC(optList);
   Bool_t fHasFriends = UseFriends(optList);
   

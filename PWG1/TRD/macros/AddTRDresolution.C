@@ -25,6 +25,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     res->SetPostProcess(kFALSE);
     res->SetDebugLevel(0);
     //if(itq==0) res->SetSegmentationLevel(1);
+    //res->SetTrackRefit(); // use if you know what you are doing !
     res->SetNameId(suffix[itq]);
     mgr->ConnectInput(res, 0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(res, 1, ci[itq]);
