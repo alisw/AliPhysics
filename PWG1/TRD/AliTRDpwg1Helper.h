@@ -47,6 +47,7 @@ public:
   AliTRDpwg1Helper();
   ~AliTRDpwg1Helper();
 
+  static Bool_t DoTask(Int_t idx, Int_t map);
   static Int_t  GetTaskIndex(const Char_t *name);
   static Bool_t HasReadMCData(Char_t *opt);
   static Bool_t HasReadFriendData(Char_t *opt);
