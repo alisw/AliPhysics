@@ -279,14 +279,15 @@ TH1* AliTRDresolution::PlotCharge(const AliTRDtrackV1 *track)
     if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
     if(!fTracklet->IsOK()) continue;
     Float_t x0 = fTracklet->GetX0();
-    Float_t dq, dl;
+    Float_t dqdl, dl;
     for(Int_t itb=AliTRDseedV1::kNtb; itb--;){
       if(!(c = fTracklet->GetClusters(itb))){ 
         if(!(c = fTracklet->GetClusters(AliTRDseedV1::kNtb+itb))) continue;
       }
-      dq = fTracklet->GetdQdl(itb, &dl);
+      dqdl = fTracklet->GetdQdl(itb, &dl);
+      if(dqdl<1.e-5) continue;
       dl /= 0.15; // dl/dl0, dl0 = 1.5 mm for nominal vd
-      (h = (TH3S*)arr->At(0))->Fill(dl, x0-c->GetX(), dq);
+      (h = (TH3S*)arr->At(0))->Fill(dl, x0-c->GetX(), dqdl);
     }
 
 //     if(!HasMCdata()) continue;
