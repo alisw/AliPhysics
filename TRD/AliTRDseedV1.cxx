@@ -498,6 +498,47 @@ Float_t AliTRDseedV1::GetCharge(Bool_t useOutliers)
 }
 
 //____________________________________________________________________
+Bool_t AliTRDseedV1::GetEstimatedCrossPoint(Float_t &x, Float_t &z) const
+{
+// Algorithm to estimate cross point in the x-z plane for pad row cross tracklets.
+// Returns true in case of success.
+  if(!IsRowCross()) return kFALSE;
+
+  x=0.; z=0.;
+  AliTRDcluster *c(NULL);
+  // Find radial range for first row
+  Float_t x1[] = {0., 1.e3};
+  for(int ic=0; ic<kNtb; ic++){
+    if(!(c=fClusters[ic])) continue;
+    if(!c->IsInChamber()) continue;
+    if(c->GetX() <= x1[1]) x1[1] = c->GetX();
+    if(c->GetX() >= x1[0]) x1[0] = c->GetX();
+    z=c->GetZ();
+  }
+  if((x1[0] - x1[1])<1.e-5) return kFALSE;
+
+  // Find radial range for second row
+  Bool_t kZ(kFALSE);
+  Float_t x2[] = {0., 1.e3};
+  for(int ic=kNtb; ic<kNclusters; ic++){
+    if(!(c=fClusters[ic])) continue;
+    if(!c->IsInChamber()) continue;
+    if(c->GetX() <= x2[1]) x2[1] = c->GetX();
+    if(c->GetX() >= x2[0]) x2[0] = c->GetX();
+    if(!kZ){
+      z+=c->GetZ();
+      z*=0.5;
+      kZ=kTRUE;
+    }
+  }
+  if((x2[0] - x2[1])<1.e-5) return kFALSE;
+
+  // Find intersection of the 2 radial regions
+  x = 0.5*((x1[0]+x1[1] > x2[0]+x2[1]) ? (x1[1]+x2[0]) : (x1[0]+x2[1]));
+  return kTRUE;
+}
+
+//____________________________________________________________________
 Float_t AliTRDseedV1::GetdQdl(Int_t ic, Float_t *dl) const
 {
 // Using the linear approximation of the track inside one TRD chamber (TRD tracklet) 
