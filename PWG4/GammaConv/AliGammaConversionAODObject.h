@@ -73,10 +73,13 @@ class AliGammaConversionAODObject : public TObject {
   Float_t Pt() const {return TMath::Sqrt(fPx* fPx + fPy*fPy);}
   
   ///Get Energy of particle
-  Float_t E() const {return TMath::Sqrt(fPx*fPx + fPy*fPy + fPz*fPz);}
+  Float_t E() const {return fE;}
 
   ///Get Phi of particle
   Float_t Phi() const {    return fPx == 0.0 && fPy == 0.0 ? 0.0 : TMath::ATan2(fPy,fPx); }
+
+  ///Get Invariant mass of particle
+  Float_t IMass() const { return fIMass; }
 
   /* This function returns the esd label of the first electron */
   Int_t GetLabel1() const{return fLabel1;}
