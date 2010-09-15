@@ -125,6 +125,8 @@ AliV0Reader::AliV0Reader() :
   fUseOnFlyV0Finder(kTRUE),
   fUpdateV0AlreadyCalled(kFALSE),
   fCurrentEventGoodV0s(NULL),
+  fV0Pindex(),
+  fV0Nindex(),
 //  fPreviousEventGoodV0s(),
   fCalculateBackground(kFALSE),
   fBGEventHandler(NULL),
@@ -213,6 +215,8 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fUseOnFlyV0Finder(original.fUseOnFlyV0Finder),
   fUpdateV0AlreadyCalled(original.fUpdateV0AlreadyCalled),
   fCurrentEventGoodV0s(original.fCurrentEventGoodV0s),
+  fV0Pindex(original.fV0Pindex),
+  fV0Nindex(original.fV0Nindex),
   //  fPreviousEventGoodV0s(original.fPreviousEventGoodV0s),
   fCalculateBackground(original.fCalculateBackground),
   fBGEventHandler(original.fBGEventHandler),
@@ -324,6 +328,9 @@ void AliV0Reader::Initialize(){
   if(fCurrentEventGoodV0s == NULL){
     fCurrentEventGoodV0s = new TClonesArray("AliKFParticle", 0);
   }
+
+  fV0Pindex.clear();
+  fV0Nindex.clear();
 
   if(fCalculateBackground == kTRUE){
     if(fBGEventInitialized == kFALSE){
@@ -874,6 +881,8 @@ Bool_t AliV0Reader::NextV0(){
     //    fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate);
 
     new((*fCurrentEventGoodV0s)[fCurrentEventGoodV0s->GetEntriesFast()])  AliKFParticle(*fCurrentMotherKFCandidate);
+    fV0Pindex.push_back(fCurrentV0->GetPindex());
+    fV0Nindex.push_back(fCurrentV0->GetNindex());
 
     iResult=kTRUE;//means we have a v0 who survived all the cuts applied
 		
@@ -1209,6 +1218,12 @@ void AliV0Reader::UpdateEventByEventData(){
   fCurrentEventGoodV0s->Delete();
   fCurrentV0IndexNumber=0;
   fNumberOfESDTracks=0;
+
+  fV0Pindex.clear();
+  fV0Nindex.clear();
+  
+
+
   //  fBGEventHandler->PrintBGArray(); // for debugging
 }
 

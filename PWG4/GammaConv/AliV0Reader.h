@@ -770,6 +770,10 @@ class AliV0Reader : public TObject {
   static void InitESDpid(Int_t type=0);
   static void SetESDpid(AliESDpid * const pid) {fgESDpid=pid;}
   static AliESDpid* GetESDpid() {return fgESDpid;}
+
+  
+  Int_t GetPindex(Int_t i) {return fV0Pindex.at(i);}
+  Int_t GetNindex(Int_t i) {return fV0Nindex.at(i);}
  
 
 
@@ -874,6 +878,9 @@ class AliV0Reader : public TObject {
   Bool_t fUpdateV0AlreadyCalled; //flag
 	
   TClonesArray* fCurrentEventGoodV0s; //vector of good v0s
+ 
+  vector<Int_t> fV0Pindex;
+  vector<Int_t> fV0Nindex;  
   //  vector<AliKFParticle> fPreviousEventGoodV0s; // vector of good v0s from prevous events
 
   Bool_t fCalculateBackground; //flag

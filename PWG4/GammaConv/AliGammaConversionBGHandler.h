@@ -45,24 +45,25 @@ class AliGammaConversionBGHandler : public TObject {
   Int_t GetMultiplicityBinIndex(Int_t mult) const;
 
   void AddEvent(TClonesArray * const eventGammas, Double_t zvalue, Int_t multiplicity);
+  void AddElectronEvent(TClonesArray* const eventENeg, Double_t zvalue, Int_t multiplicity);
 
   Int_t GetNBGEvents()const {return fNEvents;}
 
   AliGammaConversionKFVector* GetBGGoodV0s(Int_t event, Double_t zvalue, Int_t multiplicity);
-
+  AliGammaConversionKFVector* GetBGGoodENeg(Int_t event, Double_t zvalue, Int_t multiplicity);
   void PrintBGArray();
 
  private:
 
   Int_t fNEvents; // number of events
   Int_t ** fBGEventCounter; // bg counter
-  
+  Int_t ** fBGEventENegCounter;//bg electron counter
   Int_t fNBinsZ; //n z bins
   Int_t fNBinsMultiplicity; //n bins multiplicity
   Double_t *fBinLimitsArrayZ; //bin limits z array
   Double_t *fBinLimitsArrayMultiplicity; //bin limit multiplicity array
   AliGammaConversionBGVector fBGEvents; //gackground events
-
+  AliGammaConversionBGVector fBGEventsENeg; //background electron events
   ClassDef(AliGammaConversionBGHandler,0)
 };
 #endif

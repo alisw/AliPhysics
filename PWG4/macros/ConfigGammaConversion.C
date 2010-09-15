@@ -1491,10 +1491,9 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 
   if( kGCrunDalitz ){
     
-   gROOT->LoadMacro("./AddGammaConvDalitz.C");
-   AddGammaConvDalitz( v0Reader, kGCcalculateBackground, kGCRunStandalone );
+   gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddGammaConvDalitz.C");
+   gROOT->AddGammaConvDalitz( v0Reader, kGCcalculateBackground, kGCRunStandalone );
 
-		
   }
 
   if(kGCrunOnTrain == kFALSE){

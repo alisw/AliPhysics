@@ -58,7 +58,13 @@ class AliGammaConversionHistograms{
   /*
    *  Adds a TH1F Table to the table map and create a key for it
    */
-  void AddTable(TString tableName,TString tableTitle,Int_t nXBins, const char * axesLabel[]);	
+  void AddTable(TString tableName,TString tableTitle,Int_t nXBins, const char * axesLabel[]);
+    
+ /*
+  *  Adds a TH2F Table    
+  */  
+	
+  void AddTable(TString tableName,TString tableTitle,Int_t nXBins, const char * axesXLabel[],Int_t nYBins, const char* axesYLabel[]);
 
 
   /*
@@ -74,7 +80,18 @@ class AliGammaConversionHistograms{
   /*
    * Fills a TH1F table with the given name with the given value
    */			
-  void FillTable(TString tableName, Double_t xValue) const;		
+  void FillTable(TString tableName, Double_t xValue) const;
+
+  /*  
+   *  Fills a TH2F table with the given name with the given value
+   */	
+  void FillTable(TString tableName, Double_t xValue, Double_t yValue) const;
+
+  /*
+   *Returns a pointer to the histogram associated with name.
+   */
+   TObject* GetValue(const TString& name);
+
 
  private:
   TMap* fHistogramMap; // histogram map
