@@ -106,6 +106,10 @@ const AliHLTComponentDataType kAliHLTDataTypeGlobalVertexer = AliHLTComponentDat
 const char kAliHLTESDObjectDataTypeIDstring[8] = kAliHLTESDObjectDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDObject = AliHLTComponentDataTypeInitializer(kAliHLTESDObjectDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** ESD content specification */
+const char kAliHLTESDContentDataTypeIDstring[8] = kAliHLTESDContentDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeESDContent = AliHLTComponentDataTypeInitializer(kAliHLTESDContentDataTypeIDstring, kAliHLTDataOriginAny);
+
 /** ESD tree data specification */
 const char kAliHLTESDTreeDataTypeIDstring[8] = kAliHLTESDTreeDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDTree = AliHLTComponentDataTypeInitializer(kAliHLTESDTreeDataTypeIDstring, kAliHLTDataOriginAny);
@@ -157,6 +161,10 @@ const AliHLTComponentDataType kAliHLTDataTypeComponentStatistics = AliHLTCompone
 /** Component table */
 const char kAliHLTComponentTableDataTypeIDstring[8] = kAliHLTComponentTableDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeComponentTable = AliHLTComponentDataTypeInitializer(kAliHLTComponentTableDataTypeIDstring, kAliHLTDataOriginPrivate);
+
+/** Forwarded component table */
+const char kAliHLTComponentFwdTableDataTypeIDstring[8] = kAliHLTComponentFwdTableDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeComponentFwdTable = AliHLTComponentDataTypeInitializer(kAliHLTComponentFwdTableDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 /** general ROOT TObject */
 const char kAliHLTTObjectDataTypeIDstring[8] = kAliHLTTObjectDataTypeID;
