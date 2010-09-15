@@ -13,12 +13,12 @@
 #include <TRandom3.h>
 #include <TSystem.h>
 #include <TObjectTable.h>
-#include "MyTreeClasses.C"
+#include "TreeClasses.C"
 #endif
 
-//#define DUPLICATECHECK
+#define DUPLICATECHECK
 #ifdef DUPLICATECHECK
-//#define DUPLICATEVERBOSE
+#define DUPLICATEVERBOSE
 #endif
 
 struct EvInfo
@@ -178,9 +178,6 @@ void mergeCorr(Int_t nEvents,
 
     for (Int_t ev=0;ev<nent;++ev) {
       br->GetEntry(ev);
-      if (header->fPeriod!=0) // fix take period from runinfo block
-        cout << "--> Non-zero period found " << header->fRun << " " 
-             << header->fTime << " " << header->fPeriod << " " << header->fBx << endl;
       if (header->fRun==0) {
 #ifdef DUPLICATEVERBOSE
         cout << "--> Suspicious found for " << header->fRun << " " 
@@ -190,7 +187,8 @@ void mergeCorr(Int_t nEvents,
         continue;
       }
 
-      ULong64_t evtid = header->fTime;//header->GetEventId();
+      //ULong64_t evtid = header->fTime;
+      ULong64_t evtid = header->GetEventId();
 #ifdef DUPLICATECHECK
       if (einfos.find(evtid)!=einfos.end()) {
 #ifdef DUPLICATEVERBOSE        
@@ -234,7 +232,7 @@ void mergeCorr(Int_t nEvents,
       break;
   }
   cout << "Found total: " << totnent << endl;
-//  cout << "Found suspicious: " << totnsus << endl;
+  cout << "Found suspicious: " << totnsus << endl;
 #ifdef DUPLICATECHECK
   cout << "Found potential duplicates: " << totncan << endl;
 #ifdef DUPLICATEVERBOSE        
@@ -247,17 +245,22 @@ void mergeCorr(Int_t nEvents,
   std::vector<TTree*> trees(nfiles);
   std::vector<MyHeader*> headers(nfiles);
   std::vector<TClonesArray*> partas(nfiles);
+  std::vector<TClonesArray*> trklas(nfiles);
 
   MyHeader *newHeader = new MyHeader;
   if (TClass::GetClass("MyPart"))
     TClass::GetClass("MyPart")->IgnoreTObjectStreamer();
-  TClonesArray *newParts = new TClonesArray("MyPart",10000);
+  TClonesArray *newParts     = new TClonesArray("MyPart",10000);
+  if (TClass::GetClass("MyTracklet"))
+    TClass::GetClass("MyTracklet")->IgnoreTObjectStreamer();
+  TClonesArray *newTracklets = new TClonesArray("MyTracklet",10000);
 
   TFile *newFile = TFile::Open(outFileName,"recreate","Merged/Sorted MyTree created by mergeCorr.C",5);
   TDirectory::TContext cd(newFile);
   TTree *newTree = new TTree("MyTree", "MyTree created by MyAliTask.cxx");
   newTree->Branch("header",&newHeader, 32*1024, 99);
   newTree->Branch("parts",&newParts, 256*1024, 99);
+  newTree->Branch("tracklets",&newTracklets, 256*1024, 99);
   Int_t newEntries = 0;
   for (map<ULong64_t, EvInfo*>::iterator it = einfos.begin();it!=einfos.end();++it) {
     Short_t id = it->second->fArrId;
@@ -270,8 +273,12 @@ void mergeCorr(Int_t nEvents,
       TList *output = dynamic_cast<TList*>(file->Get("output"));
       TTree *tree = dynamic_cast<TTree*>(output->FindObject("MyTree"));
       trees[id] = tree;
+      output->Remove(tree);
+      output->SetOwner(1);
+      delete output;
       tree->SetBranchAddress("header",&headers[id]);
       tree->SetBranchAddress("parts",&partas[id]);
+      tree->SetBranchAddress("tracklets",&trklas[id]);
     }
     files[id]->cd();
     trees.at(id)->GetEntry(entry);
@@ -281,6 +288,11 @@ void mergeCorr(Int_t nEvents,
     for (Int_t p = 0; p < nparts; ++p) {
       MyPart *orig = dynamic_cast<MyPart*>(partas[id]->At(p));
       new((*newParts)[p]) MyPart(*orig);
+    }
+    Int_t ntrkls = trklas[id]->GetEntries();
+    for (Int_t p = 0; p < ntrkls; ++p) {
+      MyTracklet *orig = dynamic_cast<MyTracklet*>(trklas[id]->At(p));
+      new((*newTracklets)[p]) MyTracklet(*orig);
     }
     newFile->cd();
     newTree->Fill();
