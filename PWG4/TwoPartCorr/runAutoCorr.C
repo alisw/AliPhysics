@@ -12,16 +12,12 @@ void runAutoCorr()
 {
   const double PI = TMath::Pi();
 
-  //TFile* f = new TFile("output.root", "read");
-  //TList* l = (TList*)f->Get("output");
-  //TTree* tree = (TTree*)l->At(11); 
   TChain *tree = new TChain("MyTree");
   tree->Add("res_LHC10e_09132010/mergedruns/merged_*.root");
-  cout << "Entries " << tree->GetEntries() << endl;
+  cout << "Found " << tree->GetEntries() << " entries in tree!" << endl;
 
-  MyHeader* ev = 0;//new MyHeader();
-  TClonesArray* trk = 0;//new TClonesArray("MyPart");
-  AutoCorr* ac = new AutoCorr();
+  MyHeader* ev = 0;
+  TClonesArray* trk = 0;
 
   TBranch* evBranch = tree->GetBranch("header");
   evBranch->SetAddress(&ev);
@@ -29,14 +25,16 @@ void runAutoCorr()
   TBranch* trBranch = tree->GetBranch("parts");
   trBranch->SetAddress(&trk);
 
+  AutoCorr* ac = new AutoCorr();
+
   ////////////////////////
   // TEST DRIVE
   ////////////////////////
-  Int_t poolsize = 20;
-  const Int_t nMultBins = 3;
-  Double_t multbin[nMultBins+1] = {180,230, 280, 500}; 
-  const Int_t nZvtxBins = 3;
-  Double_t zvtxbin[nZvtxBins+1] = {-6, -2, 2, 6};
+  Int_t poolsize = 100;
+  const Int_t nMultBins = 1;
+  Double_t multbin[nMultBins+1] = {250, 350}; 
+  const Int_t nZvtxBins = 1;
+  Double_t zvtxbin[nZvtxBins+1] = {-10, 10};
   ac->InitEventPools(poolsize, nMultBins, multbin, nZvtxBins, zvtxbin);
 
   // TODO: encapsulate these in AutoCorr (pass arrays above to autocorr ctor)
@@ -97,31 +95,33 @@ void runAutoCorr()
   // ---------------------------------
 
   Int_t nEvents = tree->GetEntries();
-  //nEvents = 10000;
+
   for (int n=0; n<nEvents; n++) {
 
     // GetEntry fills "header" and "parts" branches, reinitializing ev
     // and trk instances for each event.
-    //tree->GetEntry(n); 
     evBranch->GetEntry(n);
     trBranch->GetEntry(n);
+    if (ev->fVc<50)
+      continue;
+    if (ev->fNTracklets>200)
+      continue;
 
-//    trk->Print("ls");
     if (n % 100 == 0) cout << n << endl;
 
     // tests...don't need
-    testPool->UpdatePool(n, ev, trk);
-    binnedPool->UpdatePool(n, ev, trk);
+    //testPool->UpdatePool(n, ev, trk);
+    //binnedPool->UpdatePool(n, ev, trk);
 
     ac->UpdatePools(n, ev, trk);
 
     int SignalEventMultBin = hMultBins->FindBin(ev->fNSelTracks) - 1;
     int SignalEventZvtxBin = hZvtxBins->FindBin(ev->fVz) - 1;
-    EventPool* pool = ac->GetEventPool(SignalEventMultBin,
-				       SignalEventZvtxBin);
 
-    if (!pool) continue;     // No mixing pool in range specified by arrays
-    if (!pool->IsPoolReady()) continue; // TODO: Figure out something better
+//    EventPool* pool = 0;//ac->GetEventPool(SignalEventMultBin,
+			//	       SignalEventZvtxBin);
+    //   if (!pool) continue;     // No mixing pool in range specified by arrays
+    //if (!pool->IsPoolReady()) continue; // TODO: Figure out something better
 
     for (int i=0; i<ev->fNSelTracks-1; i++) {
       MyPart* t1 = (MyPart*)trk->At(i);
@@ -147,8 +147,11 @@ void runAutoCorr()
 
       // --- Event mixing loop---
       // TODO: change 100 to f*<mult> of bkg. event where f is some fixed fraction
-      for (int j=i+1; j<0.2*ev->fNSelTracks; j++) { // TODO: update track selection
-	MyPart* tbg = pool->GetRandomTrack();
+      EventPool* pool1 = 0;//ac->GetEventPool(SignalEventMultBin,SignalEventZvtxBin);
+      if (!pool1)
+        continue;
+      for (int j=0; j<(int)(0.25*ev->fNSelTracks); j++) { // TODO: update track selection
+	MyPart* tbg = pool1->GetRandomTrack();
 	if (ac->IsMixedPairOk(t1, tbg)) {
 	  Double_t deta_bg = ac->DeltaEta(t1, tbg);
 	  Double_t dphi_bg = ac->DeltaPhi(t1, tbg);
