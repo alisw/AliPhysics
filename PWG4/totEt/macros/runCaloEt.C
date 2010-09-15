@@ -5,47 +5,52 @@
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
 void runCaloEt(bool submit = false, // true or false 
-	       const char *dataType="simPbPb/LHC10e18a", // "sim" or "real" or "simPbPb"
+	       const char *dataType="simPbPb/LHC10e18a", // "sim" or "real" etc.
+	       const char *pluginRunMode="full", // "test" or "full" or "terminate"
 	       const char *det = "EMCAL") // "PHOS" or "EMCAL"
 {
   TStopwatch timer;
   timer.Start();
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libXMLIO.so");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+
+  gSystem->Load("libMinuit");
+
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
   
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  
-  if (!submit) { // assume the stuff you need is compiled
+  gSystem->Load("libCORRFW");
+
+  if (!submit) { 
     cout << "local - no submitting" << endl;
-    gSystem->Load("libPWG4totEt");
   }
   else { 
     cout << "submitting to grid" << endl;
-    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-    gROOT->ProcessLine(".L AliAnalysisEt.cxx+g");
-    gROOT->ProcessLine(".L AliAnalysisEtMonteCarlo.cxx+g");
-    gROOT->ProcessLine(".L AliAnalysisEtMonteCarloPhos.cxx+g");
-    gROOT->ProcessLine(".L AliAnalysisEtMonteCarloEmcal.cxx+g");
-    gROOT->ProcessLine(".L AliAnalysisEtReconstructed.cxx+g");
-    gROOT->ProcessLine(".L AliAnalysisEtReconstructedPhos.cxx+g");
-    gROOT->ProcessLine(".L AliAnalysisEtReconstructedEmcal.cxx+g");
-    
-    gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
   }
+   
+  gROOT->ProcessLine(".L AliAnalysisEt.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtMonteCarlo.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtMonteCarloPhos.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtMonteCarloEmcal.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtReconstructed.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtReconstructedPhos.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtReconstructedEmcal.cxx+g");  
+  gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
+
   char *kTreeName = "esdTree" ;
   TChain * chain   = new TChain(kTreeName,"myESDTree") ;
   
   if(submit){      
-    gSystem->Load("libNetx.so") ; 
-    gSystem->Load("libgapiUI.so");
-    gSystem->Load("libRAliEn.so"); 
+    gSystem->Load("libNetx") ; 
+    gSystem->Load("libgapiUI");
+    gSystem->Load("libRAliEn"); 
     TGrid::Connect("alien://") ;
   }
   
@@ -66,7 +71,7 @@ void runCaloEt(bool submit = false, // true or false
 
   if (submit) {
     gROOT->LoadMacro("CreateAlienHandlerCaloEtSim.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName);  
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName, pluginRunMode);  
     if (!alienHandler) return;
     mgr->SetGridHandler(alienHandler);
   }
