@@ -17,53 +17,47 @@
 class EventPool : public TObject
 {
 public:
-  EventPool(Int_t d) : fMixDepth(d), fMultMin(-999), fMultMax(-999), 
-    fZvtxMin(-999), fZvtxMax(-999) {;}
+  EventPool(Int_t d) : 
+    fMixDepth(d), fMultMin(-999), fMultMax(+999), 
+    fZvtxMin(-999), fZvtxMax(+999) {;}
   EventPool(Int_t d, Int_t multMin, Int_t multMax, 
 	    Double_t zvtxMin, Double_t zvtxMax) : 
     fMixDepth(d), fMultMin(multMin), fMultMax(multMax), 
     fZvtxMin(zvtxMin), fZvtxMax(zvtxMax) {;}
-  ~EventPool(){;}
+  ~EventPool() {;}
 
-  // TODO: implement cleanup
-  // Int_t Drain();
-  Int_t SetEventMultRange(int multMin, int multMax);
-  Int_t SetEventZvtxRange(int zvtxMin, int zvtxMax);
-  
-  Int_t UpdatePool(int iEvent, MyHeader* ev, TClonesArray* trk);
-  Bool_t WasUpdated() { return fWasUpdated; }
-  Bool_t EventMatchesBin(Int_t mult, Short_t zvtx);
-  Bool_t IsPoolReady();              // Contains fMixDepth events? 
-  Int_t Depth();                     // Number of events in pool
-  Int_t TracksInPool();              // Total tracks in pool
-  Int_t NTracksInEvent(int iEvent);
-  Int_t NTracksInCurrentEvent();
-  MyPart* GetRandomTrack();
-  void PrintInfo();
-  Int_t MultBinIndex() { return fMultBinIndex; }
-  Int_t ZvtxBinIndex() { return fZvtxBinIndex; }
-  void SetMultBinIndex(Int_t iM) { fMultBinIndex = iM; }
-  void SetZvtxBinIndex(Int_t iZ) { fZvtxBinIndex = iZ; }
+  Bool_t   EventMatchesBin(Int_t mult, Short_t zvtx) const;
+  Bool_t   IsPoolReady()                const {return (Int_t)fEvents.size()==fMixDepth;}
+  Int_t    Depth()                      const {return fEvents.size();}
+  MyPart  *GetRandomTrack()             const;
+  Int_t    MultBinIndex()               const { return fMultBinIndex; }
+  Int_t    NTracksInEvent(Int_t iEvent) const;
+  Int_t    NTracksInCurrentEvent()      const { return fNTracksInEvent.back(); }
+  void     PrintInfo()                  const;
+  Int_t    TracksInPool()               const;
+  Bool_t   WasUpdated()                 const { return fWasUpdated; }
+  Int_t    ZvtxBinIndex()               const { return fZvtxBinIndex; }
+  Int_t    SetEventMultRange(Int_t multMin, Int_t multMax);
+  Int_t    SetEventZvtxRange(Int_t zvtxMin, Int_t zvtxMax);
+  void     SetMultBinIndex(Int_t iM) { fMultBinIndex = iM; }
+  void     SetZvtxBinIndex(Int_t iZ) { fZvtxBinIndex = iZ; }
+  Int_t    UpdatePool(int iEvent, MyHeader* ev, TClonesArray* trk);
 
 protected:
-  TClonesArray* fTracks; // Copy of trk array. Refreshes each event.
+  TClonesArray         *fTracks;              // Copy of trk array. Refreshes each event.
+  deque<TClonesArray*>  fEvents;              // The guts of the class. Holds TObjArrays of MyParts.
+  deque<int>            fNTracksInEvent;
+  deque<int>            fEventIndex;
+  Int_t                 fMixDepth;            // Number of evts. to mix with
+  Int_t                 fMultMin, fMultMax;   // Track multiplicity bin range
+  Double_t              fZvtxMin, fZvtxMax;   // Event z-vertex bin range
+  Int_t                 fMult;                // Tracks in current event
+  Short_t               fZvtx;                // Current z-vertex
+  Bool_t                fWasUpdated;          // Evt. succesfully passed selection?
+  Int_t                 fMultBinIndex;
+  Int_t                 fZvtxBinIndex;
 
-  //  Use as ring buffers
-  deque<TClonesArray*> fEvents; // The guts of the class. Holds TObjArrays of MyParts.
-  deque<int> fNTracksInEvent;
-  deque<int> fEventIndex;
-
-  Int_t fMixDepth;             // Number of evts. to mix with
-  Int_t fMultMin, fMultMax;    // Track multiplicity bin range
-  Double_t fZvtxMin, fZvtxMax; // Event z-vertex bin range
-  Int_t fMult;                 // Tracks in current event
-  Short_t fZvtx;               // Current z-vertex
-  Bool_t fWasUpdated;          // Evt. succesfully passed selection?
-
-  Int_t fMultBinIndex;
-  Int_t fZvtxBinIndex;
-
-  ClassDef(EventPool,1)
+  ClassDef(EventPool,1) // Event Pool class
 };
 #endif
 
