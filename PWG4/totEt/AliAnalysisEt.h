@@ -81,29 +81,29 @@ protected:
     /** PDG Database */
     TDatabasePDG *fPdgDB;
 
-    Int_t PiPlusCode;
-    Int_t PiMinusCode;
-    Int_t KPlusCode;
-    Int_t KMinusCode;
-    Int_t ProtonCode;
-    Int_t AntiProtonCode;
-    Int_t LambdaCode;
-    Int_t AntiLambdaCode;
-    Int_t K0SCode;
-    Int_t OmegaCode;
-    Int_t AntiOmegaCode;
-    Int_t Xi0Code;
-    Int_t AntiXi0Code;
-    Int_t XiCode;
-    Int_t AntiXiCode;
-    Int_t SigmaCode;
-    Int_t AntiSigmaCode;
-    Int_t K0LCode;
-    Int_t NeutronCode;
-    Int_t AntiNeutronCode;
-    Int_t EPlusCode;
-    Int_t EMinusCode;
-    Float_t PionMass;
+    Int_t fPiPlusCode;
+    Int_t fPiMinusCode;
+    Int_t fKPlusCode;
+    Int_t fKMinusCode;
+    Int_t fProtonCode;
+    Int_t fAntiProtonCode;
+    Int_t fLambdaCode;
+    Int_t fAntiLambdaCode;
+    Int_t fK0SCode;
+    Int_t fOmegaCode;
+    Int_t fAntiOmegaCode;
+    Int_t fXi0Code;
+    Int_t fAntiXi0Code;
+    Int_t fXiCode;
+    Int_t fAntiXiCode;
+    Int_t fSigmaCode;
+    Int_t fAntiSigmaCode;
+    Int_t fK0LCode;
+    Int_t fNeutronCode;
+    Int_t fAntiNeutronCode;
+    Int_t fEPlusCode;
+    Int_t fEMinusCode;
+    Float_t fPionMass;
 
     /** Sum of the total Et for all events */
     Double_t fSumEt;
