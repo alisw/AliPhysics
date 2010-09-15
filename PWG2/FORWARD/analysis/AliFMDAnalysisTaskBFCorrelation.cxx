@@ -360,8 +360,8 @@ void AliFMDAnalysisTaskBFCorrelation::ConnectInputData(Option_t */*option*/)
 void AliFMDAnalysisTaskBFCorrelation::Exec(Option_t */*option*/) {
 
   fEvent++;
-  if (fEvent % 1000 == 0) 
-    std::cout << "Event # " << fEvent << std::endl;
+  //if (fEvent % 1000 == 0) 
+  //  std::cout << "Event # " << fEvent << std::endl;
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
