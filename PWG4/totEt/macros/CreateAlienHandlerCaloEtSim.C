@@ -1,4 +1,4 @@
-AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputName)
+AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputName, const char * pluginRunMode)
 {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -9,8 +9,10 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   // Overwrite all generated files, datasets and output results from a previous session
   plugin->SetOverwriteMode();
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-  plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
-  //plugin->SetRunMode("test");  // VERY IMPORTANT - DECRIBED BELOW
+  // plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
+  // plugin->SetRunMode("test");  // VERY IMPORTANT - DECRIBED BELOW
+  plugin->SetRunMode(pluginRunMode);  // VERY IMPORTANT - DECRIBED BELOW
+
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
   plugin->SetROOTVersion("v5-27-05");
