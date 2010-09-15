@@ -387,12 +387,6 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   fV0Reader->Initialize();
   fDoMCTruth = fV0Reader->GetDoMCTruth();
 
-
-  //  if(fDoMCTruth){
-  //ConnectInputData("");
-    //}
-  //Each event needs an empty branch
-  //  fAODBranch->Clear();
   if(fAODGamma) fAODGamma->Delete();
   if(fAODPi0) fAODPi0->Delete();
   if(fAODOmega) fAODOmega->Delete();
@@ -1731,6 +1725,10 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
 	  Double_t widthOmegaCandidatePipPinPi0 = 0.;
 	  
 	  omegaCandidatePipPinPi0.GetMass(massOmegaCandidatePipPinPi0,widthOmegaCandidatePipPinPi0);
+
+	  if ( massOmegaCandidatePipPinPi0 > 733 && massOmegaCandidatePipPinPi0 < 833 ) {
+	    AddOmegaToAOD(&omegaCandidatePipPinPi0, massOmegaCandidatePipPinPi0, -1, -1);
+	  }
 	  
 	  fHistograms->FillHistogram("ESD_OmegaPipPinPi0_InvMass_vs_Pt",massOmegaCandidatePipPinPi0 ,omegaCandidatePipPinPi0.GetPt());
 	  fHistograms->FillHistogram("ESD_OmegaPipPinPi0_InvMass",massOmegaCandidatePipPinPi0);
@@ -1757,6 +1755,8 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
 	  Double_t widthOmegaBckCandidate = 0.;
 	  
 	  omegaBckCandidate->GetMass(massOmegaBckCandidate,widthOmegaBckCandidate);
+
+
 	  fHistograms->FillHistogram("ESD_Omega_Bck_InvMass_vs_Pt",massOmegaBckCandidate ,omegaBckCandidate->GetPt());
 	  fHistograms->FillHistogram("ESD_Omega_Bck_InvMass",massOmegaBckCandidate);
 
