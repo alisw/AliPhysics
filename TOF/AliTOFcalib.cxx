@@ -948,12 +948,10 @@ void AliTOFcalib::CreateTreeFromCDB(Int_t minrun, Int_t maxrun){
       AliInfo(Form("No entry found for run %i",irun));
     }
     else{
-      TTree *tree = new TTree();
-      tree = (TTree*)entry->GetObject();
+      TTree *tree = (TTree*)entry->GetObject();
       tree->SetBranchAddress("nentries",&nentries);
       tree->SetBranchAddress("TOFentries",p);      
       fTree->CopyEntries(tree);
-      delete tree;
       fNruns++;
     }
   }
@@ -1510,8 +1508,7 @@ Int_t AliTOFcalib::CalibrateFromProfile(Int_t ich, Option_t *optionSave, Option_
     return 2;
   }
 
-  TH1F * hProf = new TH1F();
-  hProf = Profile(ich);
+  TH1F * hProf = Profile(ich);
   hProf->Fit("pol5",optionFit,"",0,4);
   TF1 * calibfunc = (TF1*)hProf->GetFunction("pol5");
   Float_t par[6];    
