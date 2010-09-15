@@ -401,6 +401,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhReMod[imod]) ;
   }
   
+//  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
+//  
+//    printf("Histogram %d, name: %s\n ",i, outputContainer->At(i)->GetName());
+//  
+//  }
+  
   return outputContainer;
 }
 
@@ -756,8 +762,8 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   if(!fhMiInvPt1) fhMi1 = new TH3D*[fNCentrBin*fNPID] ;
   if(!fhMiInvPt2) fhMi2 = new TH3D*[fNCentrBin*fNPID] ;
   if(!fhMiInvPt3) fhMi3 = new TH3D*[fNCentrBin*fNPID] ;	
-  if(!fhReMod) fhReMod = new TH3D*[fNModules] ;	
-  
+  if(!fhReMod)  fhReMod = new TH3D*[fNModules] ;	
+    
   for(Int_t ic=0; ic<fNCentrBin; ic++){
     for(Int_t ipid=0; ipid<fNPID; ipid++){
       fhRe1[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);
@@ -777,8 +783,12 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
       fhMiInvPt3[ic*fNPID+ipid] = (TH3D*) outputList->At(index++);      
     }
   }
+  
   if(fMultiCutAna){
     
+    if(!fhRePtNCellAsymCuts) fhRePtNCellAsymCuts = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+    if(!fhRePIDBits)         fhRePIDBits         = new TH2D*[fNPIDBits];
+
     for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
       fhRePIDBits[ipid] = (TH2D*) outputList->At(index++);
     }// ipid loop
@@ -806,6 +816,7 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   
   for(Int_t imod=0; imod < fNModules; imod++)
     fhReMod[imod] = (TH3D*) outputList->At(index++);
+  
   
 }
 
