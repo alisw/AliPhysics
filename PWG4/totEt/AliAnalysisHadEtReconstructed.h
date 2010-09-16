@@ -1,5 +1,11 @@
-//Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies, charged hadrons
+//  Base class for ESD analysis
+//  - reconstruction output
+//
+//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
 //University of Tennessee at Knoxville
+//_________________________________________________________________________
 #ifndef ALIANALYSISHADETRECONSTRUCTED_H
 #define ALIANALYSISHADETRECONSTRUCTED_H
 
@@ -13,6 +19,7 @@ class AliAnalysisHadEtReconstructed : public AliAnalysisHadEt
 public:
    
     AliAnalysisHadEtReconstructed();
+    virtual ~AliAnalysisHadEtReconstructed();
    
     virtual Int_t AnalyseEvent(AliVEvent* event);
 
@@ -22,12 +29,6 @@ protected:
 
     bool CheckGoodVertex(AliVParticle *track);
     //virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField) = 0;
-
-    Int_t fNTpcClustersCut;
-    Int_t fNItsClustersCut;
-   
-    Double_t fTrackDistanceCut;
-    
 };
 
 #endif // ALIANALYSISHADETRECONSTRUCTED_H

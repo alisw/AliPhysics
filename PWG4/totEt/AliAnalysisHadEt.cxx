@@ -1,8 +1,13 @@
-//Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
 //University of Tennessee at Knoxville
-//This class is designed for the analysis of the hadronic component of transverse energy.  It is used by AliAnalysisTaskHadEt.
-//This gets information about the hadronic component of the transverse energy from tracks reconstructed in an event
-//it has daughters, AliAnalysisHadEtMonteCarlo and AliAnalysisHadEtReconstructed, which loop over either Monte Carlo data or real data to get Et
+//
+// This class is designed for the analysis of the hadronic component of 
+// transverse energy.  It is used by AliAnalysisTaskHadEt.
+// This gets information about the hadronic component of the transverse energy 
+// from tracks reconstructed in an event
+// it has daughters, AliAnalysisHadEtMonteCarlo and 
+// AliAnalysisHadEtReconstructed which loop over either Monte Carlo data or 
+// real data to get Et
 #include "AliAnalysisHadEt.h"
 #include "TMath.h"
 #include "TList.h"
@@ -85,9 +90,9 @@ AliAnalysisHadEt::AliAnalysisHadEt() :
 				  //,fSingleCellEnergyCut(0)
 				  //,fClusterEnergyCut(EtCommonCuts::kClusterEnergyCut)
 				  //,fTrackPtCut(EtCommonCuts::kTrackPtCut)
-        ,ffesdtrackCutsITSTPC(0)
-        ,fesdtrackCutsTPC(0)
-	,fesdtrackCutsITS(0)
+        ,fEsdtrackCutsITSTPC(0)
+        ,fEsdtrackCutsTPC(0)
+	,fEsdtrackCutsITS(0)
         ,fhistoList(0)
 {//default constructor
 
@@ -129,6 +134,12 @@ void AliAnalysisHadEt::FillOutputList()
 
 void AliAnalysisHadEt::Init()
 {//Initiate member vaiables to reasonable values
+  fVertexXCut = EtReconstructedCuts::kVertexXCut;
+  fVertexYCut = EtReconstructedCuts::kVertexYCut;
+  fVertexZCut = EtReconstructedCuts::kVertexZCut;
+  fIPxyCut = EtReconstructedCuts::kIPxyCut;
+  fIPzCut = EtReconstructedCuts::kIPzCut;
+
   if(!fPdgDB) fPdgDB = new TDatabasePDG();
   //the codes are defined in $ROOTSYS/etc/pdg_table.txt
   fPionMass = fPdgDB->GetParticle("pi+")->Mass();

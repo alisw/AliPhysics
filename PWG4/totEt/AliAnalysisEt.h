@@ -1,14 +1,21 @@
 #ifndef ALIANALYSISET_H
 #define ALIANALYSISET_H
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for ESD & MC analysis
+//  - reconstruction and MonteCarlo output
+//
+//*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
+//_________________________________________________________________________
 
 #include "TString.h"
-#include "TDatabasePDG.h"
-#include "Rtypes.h"
 
 class TH2F;
 class TH1F;
 class AliVEvent;
 class TList;
+class Rtypes;
+class TDatabasePDG;
 
 class AliAnalysisEt
 {
@@ -18,7 +25,7 @@ public:
     virtual ~AliAnalysisEt();
 
 private:
-  //Declare it private to avoid compilation warning
+  //Declare private to avoid compilation warning
   AliAnalysisEt & operator = (const AliAnalysisEt & g) ;//cpy assignment
   AliAnalysisEt(const AliAnalysisEt & g) ; // cpy ctor
   
@@ -49,127 +56,94 @@ public:
     virtual void SetParticleCodes();
     
     /** Sum of the total Et for all events */
-    Double_t GetSumEt() { return fSumEt; }
+    Double_t GetSumEt() const { return fSumEt; }
 
     /** Sum of the total Et within our acceptance for all events */
-    Double_t GetSumEtAcc() { return fSumEtAcc; }
+    Double_t GetSumEtAcc() const { return fSumEtAcc; }
 
     /** Total Et in the event (without acceptance cuts) */
-    Double_t GetTotEt() { return fTotEt; }
+    Double_t GetTotEt() const { return fTotEt; }
 
     /** Total Et in the event within the acceptance cuts */
-    Double_t GetTotEtAcc() { return fTotEtAcc; }
+    Double_t GetTotEtAcc() const { return fTotEtAcc; }
 
    /** Total neutral Et in the event (without acceptance cuts) */
-    Double_t GetTotNeutralEt() { return fTotNeutralEt; }
+    Double_t GetTotNeutralEt() const { return fTotNeutralEt; }
 
     /** Total neutral Et in the event within the acceptance cuts */
-    Double_t GetTotNeutralEtAcc() { return fTotNeutralEtAcc; }
+    Double_t GetTotNeutralEtAcc() const { return fTotNeutralEtAcc; }
     
     /** Total charged Et in the event (without acceptance cuts) */
-    Double_t GetTotChargedEt() { return fTotChargedEt; }
+    Double_t GetTotChargedEt() const { return fTotChargedEt; }
 
     /** Total charged Et in the event within the acceptance cuts */
-    Double_t GetTotChargedEtAcc() { return fTotChargedEtAcc; }
+    Double_t GetTotChargedEtAcc() const { return fTotChargedEtAcc; }
 
 
 protected:
-   
-    /** The suffix for the histogram names */
-    TString fHistogramNameSuffix;
+       
+    TString fHistogramNameSuffix; /** The suffix for the histogram names */
 
     /** PDG Database */
-    TDatabasePDG *fPdgDB;
+    TDatabasePDG *fPdgDB;//data base used for looking up pdg codes
+    //these codes are stored as variables because otherwise there were issues using this with the plugin
+    Int_t fPiPlusCode;//pdg pi plus code
+    Int_t fPiMinusCode;//pdg pi minus code
+    Int_t fKPlusCode;// pdg k plus code
+    Int_t fKMinusCode;//pdg k minus code
+    Int_t fProtonCode;//pdg proton code
+    Int_t fAntiProtonCode;//pdg antiproton code
+    Int_t fLambdaCode;// pdg lambda code
+    Int_t fAntiLambdaCode;//pdg antilambda code
+    Int_t fK0SCode;//pdg k0 short code
+    Int_t fOmegaCode;//pdg omega code
+    Int_t fAntiOmegaCode;//pdg anti-omega code
+    Int_t fXi0Code;//pdg xi-0 code
+    Int_t fAntiXi0Code;//pdg anti-xi0 code
+    Int_t fXiCode;//pdg xi code
+    Int_t fAntiXiCode;//pdg anti-xi code
+    Int_t fSigmaCode;//pdg sigma code
+    Int_t fAntiSigmaCode;//pdg anti-sigma code
+    Int_t fK0LCode;//pdg k0 long code
+    Int_t fNeutronCode;//pdg neutron code
+    Int_t fAntiNeutronCode;//pdg anti-neutron code
+    Int_t fEPlusCode;//pdg positron code
+    Int_t fEMinusCode;//pdg electron code
+    Float_t fPionMass;//pdg pion mass
 
-    Int_t fPiPlusCode;
-    Int_t fPiMinusCode;
-    Int_t fKPlusCode;
-    Int_t fKMinusCode;
-    Int_t fProtonCode;
-    Int_t fAntiProtonCode;
-    Int_t fLambdaCode;
-    Int_t fAntiLambdaCode;
-    Int_t fK0SCode;
-    Int_t fOmegaCode;
-    Int_t fAntiOmegaCode;
-    Int_t fXi0Code;
-    Int_t fAntiXi0Code;
-    Int_t fXiCode;
-    Int_t fAntiXiCode;
-    Int_t fSigmaCode;
-    Int_t fAntiSigmaCode;
-    Int_t fK0LCode;
-    Int_t fNeutronCode;
-    Int_t fAntiNeutronCode;
-    Int_t fEPlusCode;
-    Int_t fEMinusCode;
-    Float_t fPionMass;
-
-    /** Sum of the total Et for all events */
-    Double_t fSumEt;
-
-    /** Sum of the total Et within our acceptance for all events */
-    Double_t fSumEtAcc;
-
-    /** Total Et in the event (without acceptance cuts) */
-    Double_t fTotEt;
-
-    /** Total Et in the event within the acceptance cuts */
-    Double_t fTotEtAcc;
-
-    /** Total neutral Et in the event */
-    Double_t fTotNeutralEt;
-
-    /** Total neutral Et in the event within the acceptance cuts */
-    Double_t fTotNeutralEtAcc;
-
-    /** Total charged Et in the event */
-    Double_t fTotChargedEt;
-
-    /** Total charged Et in the event within the acceptance cuts */
-    Double_t fTotChargedEtAcc;
-
-    /** Multiplicity of particles in the event */
-    Int_t fMultiplicity;
+    Double_t fSumEt;/** Sum of the total Et for all events */
+    Double_t fSumEtAcc;/** Sum of the total Et within our acceptance for all events */    
+    Double_t fTotEt;/** Total Et in the event (without acceptance cuts) */    
+    Double_t fTotEtAcc;/** Total Et in the event within the acceptance cuts */
     
-    /** Multiplicity of charged particles in the event */
-    Int_t fChargedMultiplicity;
+    Double_t fTotNeutralEt;/** Total neutral Et in the event */    
+    Double_t fTotNeutralEtAcc;/** Total neutral Et in the event within the acceptance cuts */    
+    Double_t fTotChargedEt;/** Total charged Et in the event */    
+    Double_t fTotChargedEtAcc;/** Total charged Et in the event within the acceptance cuts */
+
+    Int_t fMultiplicity;/** Multiplicity of particles in the event */    
+    Int_t fChargedMultiplicity;/** Multiplicity of charged particles in the event */    
+    Int_t fNeutralMultiplicity; /** Multiplicity of neutral particles in the event */
+        
+    Double_t fEtaCut;/** Cut in eta ( normally |eta| < 0.5 */
+    Double_t fEtaCutAcc;/** Eta cut for our acceptance */
     
-    /** Multiplicity of neutral particles in the event */
-    Int_t fNeutralMultiplicity; 
+    Double_t fPhiCutAccMin; /** Min phi cut for our acceptance in radians */    
+    Double_t fPhiCutAccMax; /** Max phi cut for our acceptance in radians */
     
-    /** Cut in eta ( normally |eta| < 0.5 */
-    Double_t fEtaCut;
+    Double_t fDetectorRadius; /** Detector radius */
 
-    /** Eta cut for our acceptance */
-    Double_t fEtaCutAcc;
+    Double_t fVertexXCut;/** Vertex cuts x direction */
+    Double_t fVertexYCut;/** Vertex cuts y direction*/
+    Double_t fVertexZCut;/** Vertex cuts z direction*/
 
-    /** Min phi cut for our acceptance in radians */
-    Double_t fPhiCutAccMin;
+    Double_t fIPxyCut;    /** Impact parameter cuts x-y plane*/
+    Double_t fIPzCut;    /** Impact parameter cuts z*/
 
-    /** Max phi cut for our acceptance in radians */
-    Double_t fPhiCutAccMax;
-
-    /** Detector radius */
-    Double_t fDetectorRadius;
-
-    /** Vertex cuts */
-    Double_t fVertexXCut;
-    Double_t fVertexYCut;
-    Double_t fVertexZCut;
-
-    /** Impact parameter cuts */
-    Double_t fIPxyCut;
-    Double_t fIPzCut;
-
-    /** Cut on the cluster energy */
-    Double_t fClusterEnergyCut;
-
-    /** Cut on track pt */
-    Double_t fTrackPtCut;
-
-    /** Minimum energy to cut on single cell cluster */
-    Double_t fSingleCellEnergyCut;
+    
+    Double_t fClusterEnergyCut; /** Cut on the cluster energy */    
+    Double_t fTrackPtCut; /** Cut on track pt */
+    Double_t fSingleCellEnergyCut;  /** Minimum energy to cut on single cell cluster */
     
     // Declare the histograms
 
@@ -204,20 +178,16 @@ protected:
     TH2F *fHistPhivsPtPos; //phi vs pT plot for positive tracks
     TH2F *fHistPhivsPtNeg; //phi vs pT plot for negative tracks
 
-    /* PID plots */
-    TH1F *fHistBaryonEt;
-    TH1F *fHistAntiBaryonEt;
-    TH1F *fHistMesonEt;
+    /* PID plots, Et */
+    TH1F *fHistBaryonEt; // baryon
+    TH1F *fHistAntiBaryonEt; // anti-baryon
+    TH1F *fHistMesonEt; // meson
 
-    TH1F *fHistBaryonEtAcc;
-    TH1F *fHistAntiBaryonEtAcc;
-    TH1F *fHistMesonEtAcc;
+    TH1F *fHistBaryonEtAcc; // baryon, acc
+    TH1F *fHistAntiBaryonEtAcc; // anti-baryon, acc
+    TH1F *fHistMesonEtAcc; // meson, acc
 
-    /* Correction plots */
-    TH2F *fHistEtRecvsEtMC; //Reconstructed Et versus MC Et
-
-    /* Track matching plots */
-    TH1F *fHistTMDeltaR;
+    TH1F *fHistTMDeltaR;  /* Track matching plots */
 
     ClassDef(AliAnalysisEt, 0);
 };

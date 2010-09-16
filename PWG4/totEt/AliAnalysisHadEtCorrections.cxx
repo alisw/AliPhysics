@@ -1,13 +1,17 @@
-//Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
 //University of Tennessee at Knoxville
-//This is a container class for the correction factors for the hadronic component of transverse energy
-//It is filled by the output of AliAnalysisTaskHadEt from spinning over Monte Carlo data (using AliAnalysisHadEtMonteCarlo)
-//It is used by AliAnalysisTaskHadEt while spinning over reconstructed data (using AliAnalysisHadEtReconstructed)
+// This is a container class for the correction factors for the hadronic 
+// component of transverse energy
+// It is filled by the output of AliAnalysisTaskHadEt from spinning over Monte 
+// Carlo data (using AliAnalysisHadEtMonteCarlo)
+//It is used by AliAnalysisTaskHadEt while spinning over reconstructed data 
+// (using AliAnalysisHadEtReconstructed)
 //Please see https://twiki.cern.ch/twiki/bin/view/ALICE/ETCaloAnalysis
 #include "AliAnalysisHadEtCorrections.h"
 #include "TMath.h"
 #include <iostream>
 #include "Rtypes.h"
+#include "TNamed.h"
 
 using namespace std;
 

@@ -1,28 +1,33 @@
-
-//Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies, charged hadrons
+//  Base class for ESD analysis
+//  - reconstruction output
+// implementation file
+//
+//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
 //University of Tennessee at Knoxville
+//_________________________________________________________________________
 #include "AliAnalysisHadEtReconstructed.h"
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrack.h"
 #include "AliESDCaloCluster.h"
-#include "TVector3.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliVParticle.h"
 #include <iostream>
-#include "TH2F.h"
 
 AliAnalysisHadEtReconstructed::AliAnalysisHadEtReconstructed() :
         AliAnalysisHadEt()
-        ,fNTpcClustersCut(EtReconstructedCuts::kNTpcClustersCut)
-        ,fNItsClustersCut(EtReconstructedCuts::knItsClustersCut)
-        ,fTrackDistanceCut(0)
 {
 
 }
 
-Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
+AliAnalysisHadEtReconstructed::~AliAnalysisHadEtReconstructed() 
 {
+}
+
+Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
+{ // analyse ESD event
     ResetEventValues();
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(ev);
 
@@ -71,7 +76,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 }
 
 bool AliAnalysisHadEtReconstructed::CheckGoodVertex(AliVParticle* track)
-{
+{ // check vertex
 
     Float_t bxy = 999.;
     Float_t bz = 999.;
@@ -82,16 +87,8 @@ bool AliAnalysisHadEtReconstructed::CheckGoodVertex(AliVParticle* track)
 }
 
 void AliAnalysisHadEtReconstructed::Init()
-{
-
+{ // Init
     AliAnalysisHadEt::Init();
-
-    fVertexXCut = EtReconstructedCuts::kVertexXCut;
-    fVertexYCut = EtReconstructedCuts::kVertexYCut;
-    fVertexZCut = EtReconstructedCuts::kVertexZCut;
-    fIPxyCut = EtReconstructedCuts::kIPxyCut;
-    fIPzCut = EtReconstructedCuts::kIPzCut;
-
 }
 
 

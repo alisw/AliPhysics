@@ -1,27 +1,19 @@
-#include "TChain.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TNtuple.h"
-#include "TCanvas.h"
-#include "TMath.h"
-#include "TObjArray.h"
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Task for analysis
+//  - reconstruction and MC output
+// implementation file
+//
+//*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
+//_________________________________________________________________________
 
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
+#include "TChain.h"
+#include "TList.h"
+#include "TH2F.h"
 
 #include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliVEvent.h"
-#include "AliVTrack.h"
-#include "AliVParticle.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDCaloCells.h"
-#include "AliESDtrack.h"
-#include "AliESDInputHandler.h"
 #include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "TDatabasePDG.h"
+
 #include "AliAnalysisTaskTotEt.h"
 #include "AliAnalysisEtReconstructedPhos.h"
 #include "AliAnalysisEtReconstructedEmcal.h"
@@ -29,7 +21,6 @@
 #include "AliAnalysisEtMonteCarloEmcal.h"
 
 #include <iostream>
-#include "AliStack.h"
 
 using namespace std;
 
@@ -38,20 +29,10 @@ ClassImp(AliAnalysisTaskTotEt)
 //________________________________________________________________________
 AliAnalysisTaskTotEt::AliAnalysisTaskTotEt(const char *name) :
         AliAnalysisTaskSE(name)
-        ,fESD(0)
         ,fOutputList(0)
         ,fRecAnalysis(0)
         ,fMCAnalysis(0)
         ,fHistEtRecvsEtMC(0)
-        ,fTriggerSelection(false)
-        ,fCount(0)
-        ,fkPhotonPdg(22)
-        ,fkProtonMass(.938)
-        ,fPdgDB(0)
-        ,fRecEventVars(0)
-        ,fSimEventVars(0)
-        ,fRecParticleArray(0)
-        ,fSimParticleArray(0)
 {
     // Constructor
 
@@ -70,9 +51,6 @@ AliAnalysisTaskTotEt::AliAnalysisTaskTotEt(const char *name) :
 
     fRecAnalysis->Init();
     fMCAnalysis->Init();
-
-    fPdgDB = new TDatabasePDG();
-
 
     // Define input and output slots here
     // Input slot #0 works with a TChain
@@ -100,8 +78,8 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
 
 //________________________________________________________________________
 void AliAnalysisTaskTotEt::UserExec(Option_t *)
-{
-    AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+{ // execute method
+  AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!event) {
         Printf("ERROR: Could not retrieve event");
         return;

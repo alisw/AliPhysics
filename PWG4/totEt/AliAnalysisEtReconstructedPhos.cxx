@@ -1,3 +1,11 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for ESD analysis, for PHOS
+//  - reconstruction output
+// implementation file
+//
+//*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
+//_________________________________________________________________________
 #include "AliAnalysisEtReconstructedPhos.h"
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrack.h"
@@ -8,9 +16,12 @@ AliAnalysisEtReconstructed()
    fHistogramNameSuffix = TString("PhosRec");    
 }
 
+AliAnalysisEtReconstructedPhos::~AliAnalysisEtReconstructedPhos() 
+{
+}
 
 void AliAnalysisEtReconstructedPhos::Init()
-{
+{ // Init
     AliAnalysisEtReconstructed::Init();
     
     fClusterType = EtReconstructedCutsPhos::kClusterType;

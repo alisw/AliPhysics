@@ -1,5 +1,12 @@
 #ifndef ALIANALYSISETRECONSTRUCTED_H
 #define ALIANALYSISETRECONSTRUCTED_H
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for ESD analysis
+//  - reconstruction output
+//
+//*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
+//_________________________________________________________________________
 
 #include "AliAnalysisEt.h"
 
@@ -11,7 +18,8 @@ class AliAnalysisEtReconstructed : public AliAnalysisEt
 public:
    
     AliAnalysisEtReconstructed();
-   
+    virtual ~AliAnalysisEtReconstructed();
+
     virtual Int_t AnalyseEvent(AliVEvent* event);
 
     virtual void Init();
@@ -21,12 +29,10 @@ protected:
     bool CheckGoodVertex(AliVParticle *track);
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
 
-    Int_t fNTpcClustersCut;
-    Int_t fNItsClustersCut;
-   
-    Double_t fTrackDistanceCut;
-    
-    Char_t fClusterType;
+    Int_t fNTpcClustersCut; // cut on # of TPC clusters
+    Int_t fNItsClustersCut; // cut on # of ITS clusters
+    Double_t fTrackDistanceCut; // cut on track distance    
+    Char_t fClusterType; // selection on cluster type
     
 };
 

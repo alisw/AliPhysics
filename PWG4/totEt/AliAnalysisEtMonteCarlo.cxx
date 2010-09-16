@@ -1,12 +1,22 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for MC analysis
+//  - MC output
+//  implementation file
+//
+//*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
+//_________________________________________________________________________
+
 #include "AliAnalysisEtMonteCarlo.h"
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrack.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "TH2F.h"
+#include "TParticle.h"
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
-{
+{ // analyse MC event
      ResetEventValues();
      
     // Get us an mc event
@@ -34,6 +44,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
         // Check if it is a primary particle
         if (!stack->IsPhysicalPrimary(iPart)) continue;
+
+	// printf("MC: iPart %03d eta %4.3f phi %4.3f code %d charge %g \n", iPart, part->Eta(), part->Phi(), pc->PdgCode(), pc->Charge()); // tmp/debug printout
 
         // Check for reasonable (for now neutral and singly charged) charge on the particle
         //TODO:Maybe not only singly charged?
@@ -99,15 +111,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
 void AliAnalysisEtMonteCarlo::Init()
 {
-
     AliAnalysisEt::Init();
-
-    fVertexXCut = EtReconstructedCuts::kVertexXCut;
-    fVertexYCut = EtReconstructedCuts::kVertexYCut;
-    fVertexZCut = EtReconstructedCuts::kVertexZCut;
-    fIPxyCut = EtReconstructedCuts::kIPxyCut;
-    fIPzCut = EtReconstructedCuts::kIPzCut;
-
 }
 
 bool AliAnalysisEtMonteCarlo::TrackHitsCalorimeter(TParticle* part, Double_t magField)

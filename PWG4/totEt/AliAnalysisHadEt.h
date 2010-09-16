@@ -1,6 +1,10 @@
-//Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//_________________________________________________________________________
+//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
 //University of Tennessee at Knoxville
-//This class is designed for the analysis of the hadronic component of transverse energy.  It is used by AliAnalysisTaskHadEt.
+//
+// This class is designed for the analysis of the hadronic component of 
+// transverse energy.  It is used by AliAnalysisTaskHadEt.
+//_________________________________________________________________________
 #ifndef ALIANALYSISHADET_H
 #define ALIANALYSISHADET_H
 
@@ -68,14 +72,13 @@ public:
     Double_t GetTotChargedEtAcc() const { return fTotChargedEtAcc; }
 
 
-    void SetHistoList(TList *mylist){fhistoList = mylist;}
+    void SetHistoList(const TList *mylist){fhistoList = (TList *) mylist;}
 
-    void SetTPCITSTrackCuts(AliESDtrackCuts *cuts){ ffesdtrackCutsITSTPC = cuts;}
-    void SetTPCOnlyTrackCuts(AliESDtrackCuts *cuts){ fesdtrackCutsTPC = cuts;}
-    void SetITSTrackCuts(AliESDtrackCuts *cuts){ fesdtrackCutsITS = cuts;}
+    void SetTPCITSTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsITSTPC = (AliESDtrackCuts *) cuts;}
+    void SetTPCOnlyTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsTPC = (AliESDtrackCuts *) cuts;}
+    void SetITSTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsITS = (AliESDtrackCuts *) cuts;}
 
-protected:
-   
+protected:   
     
     TString fHistogramNameSuffix; /** The suffix for the histogram names */
 
@@ -108,30 +111,20 @@ protected:
 
     
     Double_t fSumEt;/** Sum of the total Et for all events */
-
     Double_t fSumEtAcc;/** Sum of the total Et within our acceptance for all events */
-
-    
     Double_t fTotEt;/** Total Et in the event (without acceptance cuts) */
-    
     Double_t fTotEtAcc;/** Total Et in the event within the acceptance cuts */
     
     Double_t fTotNeutralEt;/** Total neutral Et in the event */
-    
     Double_t fTotNeutralEtAcc;/** Total neutral Et in the event within the acceptance cuts */
-    
     Double_t fTotChargedEt;/** Total charged Et in the event */
-    
     Double_t fTotChargedEtAcc;/** Total charged Et in the event within the acceptance cuts */
 
     Int_t fMultiplicity;/** Multiplicity of particles in the event */
-    
     Int_t fChargedMultiplicity;/** Multiplicity of charged particles in the event */
-    
     Int_t fNeutralMultiplicity; /** Multiplicity of neutral particles in the event */
         
     Double_t fEtaCut;/** Cut in eta ( normally |eta| < 0.5 */
-
     Double_t fEtaCutAcc;/** Eta cut for our acceptance */
 
     Double_t fVertexXCut;/** Vertex cuts x direction */
@@ -152,9 +145,9 @@ protected:
     void FillHisto2D(TString histname, Float_t x, Float_t y, Float_t weight);
 
     Float_t Et(TParticle *part, float mass = -1000);
-    AliESDtrackCuts* ffesdtrackCutsITSTPC;//esd track cuts for ITS+TPC tracks
-    AliESDtrackCuts* fesdtrackCutsTPC;//esd track cuts for TPC tracks (which may also contain ITS hits)
-    AliESDtrackCuts* fesdtrackCutsITS;//esd track cuts for ITS stand alone tracks
+    AliESDtrackCuts* fEsdtrackCutsITSTPC;//esd track cuts for ITS+TPC tracks
+    AliESDtrackCuts* fEsdtrackCutsTPC;//esd track cuts for TPC tracks (which may also contain ITS hits)
+    AliESDtrackCuts* fEsdtrackCutsITS;//esd track cuts for ITS stand alone tracks
 
     TList *fhistoList;//list of histograms saved out to file
     static Float_t fgEtaAxis[47];//bins for eta axis of histograms

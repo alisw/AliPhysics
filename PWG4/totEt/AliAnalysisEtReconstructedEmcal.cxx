@@ -1,3 +1,11 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for ESD analysis, for EMCAL
+//  - reconstruction output
+//  implementation file 
+//
+//*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
+//_________________________________________________________________________
 #include "AliAnalysisEtReconstructedEmcal.h"
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrack.h"
@@ -8,9 +16,13 @@ AliAnalysisEtReconstructed()
    fHistogramNameSuffix = TString("EmcalRec");    
 }
 
+AliAnalysisEtReconstructedEmcal::~AliAnalysisEtReconstructedEmcal() 
+{
+}
+
 
 void AliAnalysisEtReconstructedEmcal::Init()
-{
+{ // Init
     AliAnalysisEtReconstructed::Init();
     
     fClusterType = EtReconstructedCutsEmcal::kClusterType;
