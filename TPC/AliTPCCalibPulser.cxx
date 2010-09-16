@@ -1007,11 +1007,12 @@ Bool_t AliTPCCalibPulser::IsEdgePad(Int_t sector, Int_t row, Int_t pad)
 //_____________________________________________________________________
 void AliTPCCalibPulser::Merge(AliTPCCalibPulser * const sig)
 {
-    //
-    //  Merge reference histograms of sig to the current AliTPCCalibPulser
-    //
-  
-    //merge histograms
+  //
+  //  Merge reference histograms of sig to the current AliTPCCalibPulser
+  //
+
+  MergeBase(sig);
+  //merge histograms
   for (Int_t iSec=0; iSec<72; ++iSec){
     TH2S *hRefQmerge   = sig->GetHistoQ(iSec);
     TH2S *hRefT0merge  = sig->GetHistoT0(iSec);

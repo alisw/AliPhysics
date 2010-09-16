@@ -162,6 +162,7 @@ public:
   static Double_t  GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
   static Double_t  GetVDriftTPC(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT=86400, Double_t deltaTLaser=3600, Int_t valType=0);
   static Double_t  GetVDriftTPCLaserTracks(Double_t &dist,Int_t run, Int_t timeStamp, Double_t deltaT=43200, Int_t side=2);
+  static Double_t  GetVDriftTPCLaserTracksOnline(Double_t &dist, Int_t /*run*/, Int_t timeStamp, Double_t deltaT=43200, Int_t side=2);
   static Double_t  GetVDriftTPCCE(Double_t &dist, Int_t run, Int_t timeStamp, Double_t deltaT=43200, Int_t side=2);
   static Double_t  GetVDriftTPCITS(Double_t &dist, Int_t run, Int_t timeStamp);
   static Double_t  GetTime0TPCITS(Double_t &dist, Int_t run, Int_t timeStamp);
@@ -241,6 +242,9 @@ private:
   AliTPCcalibDButil (const AliTPCcalibDButil& );
   AliTPCcalibDButil& operator= (const AliTPCcalibDButil& );
 
+  
+  static Double_t  GetVDriftTPCLaserTracksCommon(Double_t &dist, Int_t timeStamp, Double_t deltaT, Int_t side, TObjArray * const array);
+  
   
   ClassDef(AliTPCcalibDButil,0)
 };

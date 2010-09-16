@@ -84,7 +84,6 @@ AliTPCCalibRaw::AliTPCCalibRaw() :
   fPeakDetPlus(2),
   fNFailL1Phase(0),
   fNFailL1PhaseEvent(0),
-  fFirstTimeStamp(0),
   fNSecTime(600), //default 10 minutes
   fNBinsTime(60), //default 60*10 minutes = 10 hours
   fPadProcessed(kFALSE),
@@ -129,7 +128,6 @@ fPeakDetMinus(1),
 fPeakDetPlus(2),
 fNFailL1Phase(0),
 fNFailL1PhaseEvent(0),
-fFirstTimeStamp(0),
 fNSecTime(600), //default 10 minutes
 fNBinsTime(60), //default 60*10 minutes = 10 hours
 fPadProcessed(kFALSE),
@@ -201,7 +199,6 @@ Int_t AliTPCCalibRaw::Update(const Int_t isector, const Int_t iRow, const Int_t 
   if (iRow<0) return 0;
   if (iPad<0) return 0;
   if (iTimeBin<0) return 0;
-  if (!fFirstTimeStamp) fFirstTimeStamp=GetTimeStamp();
   //
   Int_t iChannel  = fROC->GetRowIndexes(isector)[iRow]+iPad; //  global pad position in sector
   //occupancy
@@ -660,7 +657,7 @@ void AliTPCCalibRaw::Merge(AliTPCCalibRaw * const sig)
   //
 
   if (!sig) return;
-
+  MergeBase(sig);
   //Add last time bin distribution histogram
   fHnDrift->Add(sig->fHnDrift);
 

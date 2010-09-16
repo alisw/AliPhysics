@@ -81,7 +81,6 @@ private:
   Int_t   fPeakDetPlus;              //  Consecutive timebins on falling edge to be regarded as a signal
   UInt_t  fNFailL1Phase;             //Number of failures in L1 phase
   UInt_t  fNFailL1PhaseEvent;        //Number of events with L1 phase failures
-  UInt_t  fFirstTimeStamp;           //Time Stamp from first event
   //binning dv hist
   UInt_t  fNSecTime;                 //Number of seconds per bin in time
   UInt_t  fNBinsTime;                //Number of bin in time
@@ -126,7 +125,7 @@ private:
   AliTPCCalibRaw(const AliTPCCalibRaw &calib);
   AliTPCCalibRaw& operator = (const  AliTPCCalibRaw &source);
 
-  ClassDef(AliTPCCalibRaw,3) //  Analysis of the Altro header information
+  ClassDef(AliTPCCalibRaw,4) //  Analysis of the Altro header information
 };
 
 //----------------------

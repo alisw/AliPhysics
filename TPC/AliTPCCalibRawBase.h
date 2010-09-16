@@ -55,6 +55,7 @@ public:
   virtual void Analyse(){ return; }
   
   virtual Long64_t Merge(TCollection * /*list*/) {return 0;}
+  void MergeBase(const AliTPCCalibRawBase *calib);
   
   //Setters
   void  SetRangeTime (Int_t firstTimeBin, Int_t lastTimeBin) { fFirstTimeBin=firstTimeBin;   fLastTimeBin=lastTimeBin;  } //Set range in which the signal is expected
@@ -74,9 +75,11 @@ public:
   Double_t GetL1PhaseTB() const {return fAltroL1PhaseTB;}
   Bool_t   GetUseL1Phase()const {return fUseL1Phase;}
 //
-  UInt_t GetRunNumber() const {return fRunNumber;}
-  UInt_t GetTimeStamp() const {return fTimeStamp;}
-  UInt_t GetEventType() const {return fEventType;}
+  UInt_t GetRunNumber()      const {return fRunNumber;}
+  UInt_t GetFirstTimeStamp() const {return fFirstTimeStamp;}
+  UInt_t GetLastTimeStamp()  const {return fLastTimeStamp;}
+  UInt_t GetTimeStamp()      const {return fTimeStamp;}
+  UInt_t GetEventType()      const {return fEventType;}
   //
   AliTPCAltroMapping **GetAltroMapping() { return fMapping; }
   const AliAltroRawStream *GetAltroRawStream() const {return fAltroRawStream;}
@@ -84,7 +87,7 @@ public:
   //
   void IncrementNevents(){++fNevents;}
   //
-  void DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
+  virtual void DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
   // debug and debug streamer support
   TTreeSRedirector *GetDebugStreamer();
   void       SetStreamLevel(Int_t streamLevel){fStreamLevel=streamLevel;}
@@ -102,6 +105,8 @@ protected:
   Int_t fStreamLevel;                 //! level of streamer output
   //
   UInt_t fRunNumber;                  // current run number from event header
+  UInt_t fFirstTimeStamp;             // First event time stamp
+  UInt_t fLastTimeStamp;              // Last event time stamp
   UInt_t fTimeStamp;                  //! time stamp from event header
   UInt_t fEventType;                  //! current event Type from event header
   //
@@ -124,9 +129,10 @@ protected:
   virtual void ResetEvent(){ return; }           //Reset Event counters
   
   
-  ClassDef(AliTPCCalibRawBase,2)      //  Calibration base class for raw data processing
+  ClassDef(AliTPCCalibRawBase,3)      //  Calibration base class for raw data processing
     
 };
+
 
 #endif
 

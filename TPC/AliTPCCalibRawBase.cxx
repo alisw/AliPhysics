@@ -53,6 +53,8 @@ AliTPCCalibRawBase::AliTPCCalibRawBase() :
   fDebugLevel(0),
   fStreamLevel(0),
   fRunNumber(0),
+  fFirstTimeStamp(0),
+  fLastTimeStamp(0),
   fTimeStamp(0),
   fEventType(0),
   fAltroL1Phase(0),
@@ -80,7 +82,9 @@ AliTPCCalibRawBase::AliTPCCalibRawBase(const AliTPCCalibRawBase &calib) :
   fNevents(calib.fNevents),
   fDebugLevel(calib.fDebugLevel),
   fStreamLevel(calib.fStreamLevel),
-  fRunNumber(0),
+  fRunNumber(calib.fRunNumber),
+  fFirstTimeStamp(calib.fFirstTimeStamp),
+  fLastTimeStamp(calib.fLastTimeStamp),
   fTimeStamp(0),
   fEventType(0),
   fAltroL1Phase(0),
@@ -161,6 +165,9 @@ Bool_t AliTPCCalibRawBase::ProcessEventFast(AliRawReader * const rawReader)
     fRunNumber = eventHeader->Get("RunNb");
     fEventType = eventHeader->Get("Type");
   }
+  if (!fFirstTimeStamp) fFirstTimeStamp=fTimeStamp;
+  fLastTimeStamp=fTimeStamp;
+  
   AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
   Bool_t res=ProcessEventFast(rawStreamFast);
   delete rawStreamFast;
@@ -227,8 +234,13 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(AliRawReader * const rawReader)
     fRunNumber = eventHeader->Get("RunNb");
     fEventType = eventHeader->Get("Type");
   }
+  if (!fFirstTimeStamp) fFirstTimeStamp=fTimeStamp;
+
   AliTPCRawStreamV3 *rawStreamV3 = new AliTPCRawStreamV3(rawReader, (AliAltroMapping**)fMapping);
   Bool_t res=ProcessEvent(rawStreamV3);
+  
+  fLastTimeStamp=fTimeStamp;
+  
   delete rawStreamV3;
   return res;
 }
@@ -295,6 +307,8 @@ Bool_t AliTPCCalibRawBase::ProcessEvent(eventHeaderStruct * const event)
 
   fRunNumber=event->eventRunNb;
   fTimeStamp=event->eventTimestamp;
+  if (!fFirstTimeStamp) fFirstTimeStamp=fTimeStamp;
+  fLastTimeStamp=fTimeStamp;
   fEventType=event->eventType;
   AliRawReader *rawReader = new AliRawReaderDate((void*)event);
   AliTPCRawStreamV3 *rawStreamV3 = new AliTPCRawStreamV3(rawReader, (AliAltroMapping**)fMapping);
@@ -346,3 +360,13 @@ TTreeSRedirector *AliTPCCalibRawBase::GetDebugStreamer(){
   fDebugStreamer = new TTreeSRedirector(dsName.Data());
   return fDebugStreamer;
 }
+//_____________________________________________________________________
+void AliTPCCalibRawBase::MergeBase(const AliTPCCalibRawBase *calib)
+{
+  //
+  // merge this with base
+  //
+  if (calib->fFirstTimeStamp<fFirstTimeStamp) fFirstTimeStamp=calib->fFirstTimeStamp;
+  if (calib->fLastTimeStamp>fLastTimeStamp)   fLastTimeStamp =calib->fLastTimeStamp;
+}
+

@@ -177,21 +177,31 @@ void AliTPCLaserTrack::LoadTracks()
   //
   
   if ( fgArrLaserTracks ) return;
+  TObjArray *arrLaserTracks = 0x0;
   
   AliCDBManager *man=AliCDBManager::Instance();
-  if (!man->GetDefaultStorage()) man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  if (man->GetRun()<0) man->SetRun(0);
-  AliCDBEntry *entry=man->Get(AliCDBPath("TPC/Calib/LaserTracks"));
-  TObjArray *arrLaserTracks = (TObjArray*)entry->GetObject();
-  arrLaserTracks->SetOwner();
-  entry->SetOwner(kTRUE);
-  
+  if (!man->GetDefaultStorage() && gSystem->Getenv("ALICE_ROOT")) man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  if (man->GetDefaultStorage()){
+    if (man->GetRun()<0) man->SetRun(0);
+    AliCDBEntry *entry=man->Get(AliCDBPath("TPC/Calib/LaserTracks"));
+    arrLaserTracks = (TObjArray*)entry->GetObject();
+    entry->SetOwner(kTRUE);
+  } else {
+    if (!gSystem->AccessPathName("LaserTracks.root")){
+      TFile f("LaserTracks.root");
+      arrLaserTracks=(TObjArray*)f.Get("arrLaserTracks");
+      f.Close();
+    }
+  }
   if ( !arrLaserTracks ) {
 //	AliWarning(Form("Could not get laser position data from file: '%s'",fgkDataFileName));
     return;
   }
   
+  arrLaserTracks->SetOwner();
+  
   fgArrLaserTracks = new TObjArray(fgkNLaserTracks);
+  fgArrLaserTracks->SetOwner();
   for (Int_t itrack=0; itrack<fgkNLaserTracks; itrack++){
     AliTPCLaserTrack *ltr = (AliTPCLaserTrack*)arrLaserTracks->At(itrack);
     if ( !ltr ){
@@ -201,6 +211,8 @@ void AliTPCLaserTrack::LoadTracks()
     ltr->UpdatePoints();
     fgArrLaserTracks->AddAt(new AliTPCLaserTrack(*ltr),itrack);
   }
+
+  delete arrLaserTracks;
 }
 
 

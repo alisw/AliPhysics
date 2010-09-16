@@ -260,20 +260,27 @@ END_HTML */
 
 //Root includes
 #include <TObjArray.h>
+#include <TH1.h>
 #include <TH1F.h>
 #include <TH2S.h>
+#include <TF1.h>
 #include <TString.h>
 #include <TVectorF.h>
 #include <TVectorD.h>
+#include <TVector3.h>
 #include <TMatrixD.h>
 #include <TMath.h>
 #include <TGraph.h>
+#include <TGraphErrors.h>
 #include <TString.h>
 #include <TMap.h>
 #include <TDirectory.h>
 #include <TSystem.h>
 #include <TFile.h>
 #include <TCollection.h>
+#include <TTimeStamp.h>
+#include <TList.h>
+#include <TKey.h>
 
 //AliRoot includes
 #include "AliLog.h"
@@ -283,15 +290,18 @@ END_HTML */
 #include "AliRawEventHeaderBase.h"
 #include "AliTPCRawStream.h"
 #include "AliTPCRawStreamFast.h"
-#include "AliTPCcalibDB.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCROC.h"
 #include "AliTPCParam.h"
 #include "AliTPCCalibCE.h"
 #include "AliMathBase.h"
+#include "AliTPCTransform.h"
+#include "AliTPCLaserTrack.h"
 #include "TTreeStream.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 //date
 #include "event.h"
 ClassImp(AliTPCCalibCE)
@@ -360,16 +370,28 @@ AliTPCCalibCE::AliTPCCalibCE() :
   fVTime0OffsetCounter(72),
   fVMeanQ(72),
   fVMeanQCounter(72),
-  fCurrentCETimeRef(0)
+  fCurrentCETimeRef(0),
+  fProcessOld(kTRUE),
+  fProcessNew(kFALSE),
+  fAnalyseNew(kTRUE),
+  fHnDrift(0x0),
+  fArrHnDrift(100),
+  fTimeBursts(100),
+  fArrFitGraphs(0x0)
 {
   //
   // AliTPCSignal default constructor
   //
   SetNameTitle("AliTPCCalibCE","AliTPCCalibCE");
   fFirstTimeBin=650;
-  fLastTimeBin=1000;
+  fLastTimeBin=1030;
   fParam->Update();
   for (Int_t i=0;i<1024;++i) fPadSignal[i]=0;
+  for (Int_t i=0;i<5;++i){
+    fPeaks[i]=0;
+    fPeakWidths[i]=0;
+  }
+  for (Int_t i=0; i<100; ++i) fBinsLastAna[i]=0;
 }
 //_____________________________________________________________________
 AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
@@ -435,7 +457,14 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
   fVTime0OffsetCounter(72),
   fVMeanQ(72),
   fVMeanQCounter(72),
-  fCurrentCETimeRef(0)
+  fCurrentCETimeRef(0),
+  fProcessOld(sig.fProcessOld),
+  fProcessNew(sig.fProcessNew),
+  fAnalyseNew(sig.fAnalyseNew),
+  fHnDrift(0x0),
+  fArrHnDrift(100),
+  fTimeBursts(100),
+  fArrFitGraphs(0x0)
 {
   //
   // AliTPCSignal copy constructor
@@ -510,6 +539,31 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
   fVEventNumber.SetElements(sig.fVEventNumber.GetMatrixArray());
 
   fParam->Update();
+
+  for (Int_t i=0; i<sig.fArrHnDrift.GetEntries();++i){
+    TObject *o=sig.fArrHnDrift.UncheckedAt(i);
+    if (o){
+      TObject *newo=o->Clone("fHnDrift");
+      fArrHnDrift.AddAt(newo,i);
+      if (sig.fHnDrift && o==sig.fHnDrift) fHnDrift=(THnSparseI*)newo;
+    }
+  }
+
+  for (Int_t i=0;i<sig.fTimeBursts.GetNrows();++i){
+    fTimeBursts[i]=sig.fTimeBursts[i];
+  }
+  
+  for (Int_t i=0;i<5;++i){
+    fPeaks[i]=sig.fPeaks[i];
+    fPeakWidths[i]=sig.fPeakWidths[i];
+  }
+  if (sig.fArrFitGraphs) {
+    fArrFitGraphs=(TObjArray*)sig.fArrFitGraphs->Clone();
+    fArrFitGraphs->SetOwner();
+  }
+
+  for (Int_t i=0; i<100; ++i) fBinsLastAna[i]=sig.fBinsLastAna[i];
+  
 }
 //_____________________________________________________________________
 AliTPCCalibCE::AliTPCCalibCE(const TMap *config) :
@@ -575,14 +629,21 @@ AliTPCCalibCE::AliTPCCalibCE(const TMap *config) :
   fVTime0OffsetCounter(72),
   fVMeanQ(72),
   fVMeanQCounter(72),
-  fCurrentCETimeRef(0)
+  fCurrentCETimeRef(0),
+  fProcessOld(kTRUE),
+  fProcessNew(kFALSE),
+  fAnalyseNew(kTRUE),
+  fHnDrift(0x0),
+  fArrHnDrift(100),
+  fTimeBursts(100),
+  fArrFitGraphs(0x0)
 {
   //
   // constructor which uses a tmap as input to set some specific parameters
   //
   SetNameTitle("AliTPCCalibCE","AliTPCCalibCE");
   fFirstTimeBin=650;
-  fLastTimeBin=1000;
+  fLastTimeBin=1030;
   if (config->GetValue("FirstTimeBin")) fFirstTimeBin = ((TObjString*)config->GetValue("FirstTimeBin"))->GetString().Atoi();
   if (config->GetValue("LastTimeBin")) fLastTimeBin = ((TObjString*)config->GetValue("LastTimeBin"))->GetString().Atoi();
   if (config->GetValue("NbinsT0")) fNbinsT0 = ((TObjString*)config->GetValue("NbinsT0"))->GetString().Atoi();
@@ -604,9 +665,18 @@ AliTPCCalibCE::AliTPCCalibCE(const TMap *config) :
   if (config->GetValue("UseL1Phase")) fUseL1Phase = (Bool_t)((TObjString*)config->GetValue("UseL1Phase"))->GetString().Atoi();
   if (config->GetValue("SecRejectRatio")) fSecRejectRatio = ((TObjString*)config->GetValue("SecRejectRatio"))->GetString().Atof();
 
+  if (config->GetValue("ProcessOld")) fProcessOld = (Bool_t)((TObjString*)config->GetValue("ProcessOld"))->GetString().Atoi();
+  if (config->GetValue("ProcessNew")) fProcessNew = (Bool_t)((TObjString*)config->GetValue("ProcessNew"))->GetString().Atoi();
+  if (config->GetValue("AnalyseNew")) fAnalyseNew = (Bool_t)((TObjString*)config->GetValue("AnalyseNew"))->GetString().Atoi();
+  
   for (Int_t i=0;i<1024;++i) fPadSignal[i]=0;
+  for (Int_t i=0;i<5;++i){
+    fPeaks[i]=0;
+    fPeakWidths[i]=0;
+  }
   
   fParam->Update();
+  for (Int_t i=0; i<100; ++i) fBinsLastAna[i]=0;
 }
 
 //_____________________________________________________________________
@@ -623,34 +693,39 @@ AliTPCCalibCE& AliTPCCalibCE::operator = (const  AliTPCCalibCE &source)
 //_____________________________________________________________________
 AliTPCCalibCE::~AliTPCCalibCE()
 {
-    //
-    // destructor
-    //
-
-    fCalRocArrayT0.Delete();
-    fCalRocArrayT0Err.Delete();
-    fCalRocArrayQ.Delete();
-    fCalRocArrayRMS.Delete();
-    fCalRocArrayOutliers.Delete();
-
-    fHistoQArray.Delete();
-    fHistoT0Array.Delete();
-    fHistoRMSArray.Delete();
-
-    fHistoTmean.Delete();
-
-    fParamArrayEventPol1.Delete();
-    fParamArrayEventPol2.Delete();
-    fTMeanArrayEvent.Delete();
-    fQMeanArrayEvent.Delete();
-
-    fPadTimesArrayEvent.Delete();
-    fPadQArrayEvent.Delete();
-    fPadRMSArrayEvent.Delete();
-    fPadPedestalArrayEvent.Delete();
-
-//    if ( fHTime0 ) delete fHTime0;
-    delete fParam;
+  //
+  // destructor
+  //
+  
+  fCalRocArrayT0.Delete();
+  fCalRocArrayT0Err.Delete();
+  fCalRocArrayQ.Delete();
+  fCalRocArrayRMS.Delete();
+  fCalRocArrayOutliers.Delete();
+  
+  fHistoQArray.Delete();
+  fHistoT0Array.Delete();
+  fHistoRMSArray.Delete();
+  
+  fHistoTmean.Delete();
+  
+  fParamArrayEventPol1.Delete();
+  fParamArrayEventPol2.Delete();
+  fTMeanArrayEvent.Delete();
+  fQMeanArrayEvent.Delete();
+  
+  fPadTimesArrayEvent.Delete();
+  fPadQArrayEvent.Delete();
+  fPadRMSArrayEvent.Delete();
+  fPadPedestalArrayEvent.Delete();
+  
+  fArrHnDrift.SetOwner();
+  fArrHnDrift.Delete();
+  
+  if (fArrFitGraphs){
+    fArrFitGraphs->SetOwner();
+    delete fArrFitGraphs;
+  }
 }
 //_____________________________________________________________________
 Int_t AliTPCCalibCE::Update(const Int_t icsector,
@@ -665,6 +740,7 @@ Int_t AliTPCCalibCE::Update(const Int_t icsector,
   // assumes that it is looped over consecutive time bins of one pad
   //
 
+  if (!fProcessOld) return 0;
   //temp
 
   if (icRow<0) return 0;
@@ -699,6 +775,99 @@ Int_t AliTPCCalibCE::Update(const Int_t icsector,
   }
   return 0;
 }
+
+//_____________________________________________________________________
+void AliTPCCalibCE::ProcessBunch(const Int_t sector, const Int_t row, const Int_t pad,
+                  const Int_t length, const UInt_t startTimeBin, const UShort_t* signal)
+{
+  //
+  // new filling method to fill the THnSparse histogram
+  //
+
+  //only in new processing mode
+  if (!fProcessNew) return;
+  //don't use the IROCs
+  if (sector<36) return;
+  //only bunches with reasonable length
+  if (length<3||length>10) return;
+  
+  UShort_t  timeBin    = (UShort_t)startTimeBin;
+  //skip first laser layer
+  if (timeBin<200) return;
+  Double_t timeBurst=SetBurstHnDrift();
+  
+  //after 1 event setup peak ranges
+  if (fNevents==1&&fPeaks[4]==0) {
+    // set time range
+    fHnDrift->GetAxis(4)->SetRangeUser(timeBurst-2*60,timeBurst+2*60);
+    FindLaserLayers();
+    // set time range
+    fHnDrift->GetAxis(4)->SetRangeUser(fHnDrift->GetAxis(4)->GetXmin(),fHnDrift->GetAxis(4)->GetXmax());
+  }
+  
+  // After the first event only fill every 5th  bin in a row with the CE information
+  Int_t padFill=pad;
+  if (fPeaks[4]>100&&TMath::Abs((Short_t)fPeaks[4]-(Short_t)timeBin)<(Short_t)fPeakWidths[4]){
+    Int_t mod=5;
+    Int_t n=pad/mod;
+    padFill=mod*n+mod/2;
+  }
+
+  //noise removal
+  if (!IsPeakInRange(timeBin+length/2)) return;
+  
+  Double_t x[kHnBinsDV]={(Double_t)sector,(Double_t)row,
+      (Double_t)padFill,(Double_t)timeBin,timeBurst};
+  
+  for (Int_t iTimeBin = 0; iTimeBin<length; iTimeBin++){
+    Float_t sig=(Float_t)signal[iTimeBin];
+    x[3]=timeBin;
+    fHnDrift->Fill(x,sig);
+    --timeBin;
+  }
+}
+//_____________________________________________________________________
+void AliTPCCalibCE::FindLaserLayers()
+{
+  //
+  // Find the laser layer positoins
+  //
+
+
+  //find CE signal position and width
+  TH1D *hproj=fHnDrift->Projection(3);
+  hproj->GetXaxis()->SetRangeUser(700,1030);
+  Int_t maxbin=hproj->GetMaximumBin();
+  Double_t binc=hproj->GetBinCenter(maxbin);
+  hproj->GetXaxis()->SetRangeUser(binc-10,binc+10);
+  
+  fPeaks[4]=(UShort_t)TMath::Nint(hproj->GetMean());
+//   fPeakWidths[4]=(UShort_t)TMath::Nint(4*hproj->GetRMS()+.5);
+  fPeakWidths[4]=(UShort_t)TMath::Nint(10.);
+  
+  //other peaks
+  Int_t timepos=fPeaks[4]-2*fPeakWidths[4];
+  Int_t width=100;
+  
+  for (Int_t i=3; i>=0; --i){
+    hproj->GetXaxis()->SetRangeUser(timepos-width,timepos);
+    fPeaks[i]=(UShort_t)TMath::Nint(hproj->GetMean());
+    fPeakWidths[i]=(UShort_t)TMath::Nint(4*hproj->GetRMS()+.5);
+    width=250;
+    timepos=fPeaks[i]-width/2;
+  }
+  
+  //check width and reset peak if >100
+  for (Int_t i=0; i<5; ++i){
+    if (fPeakWidths[i]>100) {
+      fPeaks[i]=0;
+      fPeakWidths[i]=0;
+    }
+  }
+
+  delete hproj;
+}
+
 //_____________________________________________________________________
 void AliTPCCalibCE::FindPedestal(Float_t part)
 {
@@ -958,7 +1127,11 @@ void AliTPCCalibCE::EndEvent()
   //  before the EndEvent function to set the event timestamp and number!!!
   //  This is automatically done if the ProcessEvent(AliRawReader *rawReader)
   //  function was called
-
+  if (!fProcessOld) {
+    if (fProcessNew) ++fNevents;
+    return;
+  }
+  
   //check if last pad has allready been processed, if not do so
   if ( fMaxTimeBin>-1 ) ProcessPad();
 
@@ -1186,7 +1359,7 @@ void AliTPCCalibCE::EndEvent()
   fVEventTime.GetMatrixArray()[fNevents] = fTimeStamp;
   fVEventNumber.GetMatrixArray()[fNevents] = fEventId;
 
-  fNevents++;
+  ++fNevents;
   fOldRunNumber = fRunNumber;
 
   delete calIroc;
@@ -1465,6 +1638,33 @@ TObjArray* AliTPCCalibCE::GetParamArrayPol2(Int_t sector, Bool_t force)
     TObjArray *arr = &fParamArrayEventPol2;
     return GetParamArray(sector, arr, force);
 }
+
+//_____________________________________________________________________
+void AliTPCCalibCE::CreateDVhist()
+{
+  //
+  // Setup the THnSparse for the drift velocity determination
+  //
+
+  //HnSparse bins
+  //roc, row, pad, timebin, timestamp
+  TTimeStamp begin(2010,01,01,0,0,0);
+  TTimeStamp end(2035,01,01,0,0,0);
+  Int_t nbinsTime=(end.GetSec()-begin.GetSec())/60; //Minutes resolution
+  
+  Int_t    bins[kHnBinsDV] = { 72,  96,  140,  1030, nbinsTime};
+  Double_t xmin[kHnBinsDV] = { 0.,  0.,   0.,    0., (Double_t)begin.GetSec()};
+  Double_t xmax[kHnBinsDV] = {72., 96., 140., 1030., (Double_t)end.GetSec()};
+  
+  fHnDrift=new THnSparseI("fHnDrift","Laser digits",kHnBinsDV, bins, xmin, xmax);
+  fHnDrift->GetAxis(0)->SetNameTitle("ROC","Read-out chamber number");
+  fHnDrift->GetAxis(1)->SetNameTitle("Row","Row number");
+  fHnDrift->GetAxis(2)->SetNameTitle("Pad","Pad number");
+  fHnDrift->GetAxis(3)->SetNameTitle("Timebin","Time bin [x100ns]");
+  fHnDrift->GetAxis(4)->SetNameTitle("EventTime","Event time");
+  
+}
+
 //_____________________________________________________________________
 void AliTPCCalibCE::ResetEvent()
 {
@@ -1509,118 +1709,135 @@ void AliTPCCalibCE::Merge(AliTPCCalibCE * const ce)
   //
   //  Merge ce to the current AliTPCCalibCE
   //
-  
-  //merge histograms
-  for (Int_t iSec=0; iSec<72; ++iSec){
-    TH2S *hRefQmerge   = ce->GetHistoQ(iSec);
-    TH2S *hRefT0merge  = ce->GetHistoT0(iSec);
-    TH2S *hRefRMSmerge = ce->GetHistoRMS(iSec);
-    
-    
-    if ( hRefQmerge ){
-      TDirectory *dir = hRefQmerge->GetDirectory(); hRefQmerge->SetDirectory(0);
-      TH2S *hRefQ   = GetHistoQ(iSec);
-      if ( hRefQ ) hRefQ->Add(hRefQmerge);
-      else {
-        TH2S *hist = new TH2S(*hRefQmerge);
-        hist->SetDirectory(0);
-        fHistoQArray.AddAt(hist, iSec);
-      }
-      hRefQmerge->SetDirectory(dir);
-    }
-    if ( hRefT0merge ){
-      TDirectory *dir = hRefT0merge->GetDirectory(); hRefT0merge->SetDirectory(0);
-      TH2S *hRefT0  = GetHistoT0(iSec);
-      if ( hRefT0 ) hRefT0->Add(hRefT0merge);
-      else {
-        TH2S *hist = new TH2S(*hRefT0merge);
-        hist->SetDirectory(0);
-        fHistoT0Array.AddAt(hist, iSec);
-      }
-      hRefT0merge->SetDirectory(dir);
-    }
-    if ( hRefRMSmerge ){
-      TDirectory *dir = hRefRMSmerge->GetDirectory(); hRefRMSmerge->SetDirectory(0);
-      TH2S *hRefRMS = GetHistoRMS(iSec);
-      if ( hRefRMS ) hRefRMS->Add(hRefRMSmerge);
-      else {
-        TH2S *hist = new TH2S(*hRefRMSmerge);
-        hist->SetDirectory(0);
-        fHistoRMSArray.AddAt(hist, iSec);
-      }
-      hRefRMSmerge->SetDirectory(dir);
-    }
-    
-  }
-  
-    // merge time information
-  
-  
+  MergeBase(ce);
   Int_t nCEevents = ce->GetNeventsProcessed();
-  for (Int_t iSec=0; iSec<72; ++iSec){
-    TObjArray *arrPol1CE  = ce->GetParamArrayPol1(iSec);
-    TObjArray *arrPol2CE  = ce->GetParamArrayPol2(iSec);
-    TVectorF *vMeanTimeCE = ce->GetTMeanEvents(iSec);
-    TVectorF *vMeanQCE    = ce->GetQMeanEvents(iSec);
-    
-    TObjArray *arrPol1  = 0x0;
-    TObjArray *arrPol2  = 0x0;
-    TVectorF *vMeanTime = 0x0;
-    TVectorF *vMeanQ    = 0x0;
-    
-  //resize arrays
-    if ( arrPol1CE && arrPol2CE ){
-      arrPol1 = GetParamArrayPol1(iSec,kTRUE);
-      arrPol2 = GetParamArrayPol2(iSec,kTRUE);
-      arrPol1->Expand(fNevents+nCEevents);
-      arrPol2->Expand(fNevents+nCEevents);
-    }
-    if ( vMeanTimeCE && vMeanQCE ){
-      vMeanTime = GetTMeanEvents(iSec,kTRUE);
-      vMeanQ    = GetQMeanEvents(iSec,kTRUE);
-      vMeanTime->ResizeTo(fNevents+nCEevents);
-      vMeanQ->ResizeTo(fNevents+nCEevents);
-    }
-    
-    
-    for (Int_t iEvent=0; iEvent<nCEevents; ++iEvent){
-      if ( arrPol1CE && arrPol2CE ){
-        TVectorD *paramPol1 = (TVectorD*)(arrPol1CE->UncheckedAt(iEvent));
-        TVectorD *paramPol2 = (TVectorD*)(arrPol2CE->UncheckedAt(iEvent));
-        if ( paramPol1 && paramPol2 ){
-          GetParamArrayPol1(iSec,kTRUE)->AddAt(new TVectorD(*paramPol1), fNevents+iEvent);
-          GetParamArrayPol2(iSec,kTRUE)->AddAt(new TVectorD(*paramPol2), fNevents+iEvent);
+  
+  if (fProcessOld&&ce->fProcessOld){
+  //merge histograms
+    for (Int_t iSec=0; iSec<72; ++iSec){
+      TH2S *hRefQmerge   = ce->GetHistoQ(iSec);
+      TH2S *hRefT0merge  = ce->GetHistoT0(iSec);
+      TH2S *hRefRMSmerge = ce->GetHistoRMS(iSec);
+      
+      
+      if ( hRefQmerge ){
+        TDirectory *dir = hRefQmerge->GetDirectory(); hRefQmerge->SetDirectory(0);
+        TH2S *hRefQ   = GetHistoQ(iSec);
+        if ( hRefQ ) hRefQ->Add(hRefQmerge);
+        else {
+          TH2S *hist = new TH2S(*hRefQmerge);
+          hist->SetDirectory(0);
+          fHistoQArray.AddAt(hist, iSec);
         }
+        hRefQmerge->SetDirectory(dir);
+      }
+      if ( hRefT0merge ){
+        TDirectory *dir = hRefT0merge->GetDirectory(); hRefT0merge->SetDirectory(0);
+        TH2S *hRefT0  = GetHistoT0(iSec);
+        if ( hRefT0 ) hRefT0->Add(hRefT0merge);
+        else {
+          TH2S *hist = new TH2S(*hRefT0merge);
+          hist->SetDirectory(0);
+          fHistoT0Array.AddAt(hist, iSec);
+        }
+        hRefT0merge->SetDirectory(dir);
+      }
+      if ( hRefRMSmerge ){
+        TDirectory *dir = hRefRMSmerge->GetDirectory(); hRefRMSmerge->SetDirectory(0);
+        TH2S *hRefRMS = GetHistoRMS(iSec);
+        if ( hRefRMS ) hRefRMS->Add(hRefRMSmerge);
+        else {
+          TH2S *hist = new TH2S(*hRefRMSmerge);
+          hist->SetDirectory(0);
+          fHistoRMSArray.AddAt(hist, iSec);
+        }
+        hRefRMSmerge->SetDirectory(dir);
+      }
+      
+    }
+    
+    // merge time information
+    
+    
+    for (Int_t iSec=0; iSec<72; ++iSec){
+      TObjArray *arrPol1CE  = ce->GetParamArrayPol1(iSec);
+      TObjArray *arrPol2CE  = ce->GetParamArrayPol2(iSec);
+      TVectorF *vMeanTimeCE = ce->GetTMeanEvents(iSec);
+      TVectorF *vMeanQCE    = ce->GetQMeanEvents(iSec);
+      
+      TObjArray *arrPol1  = 0x0;
+      TObjArray *arrPol2  = 0x0;
+      TVectorF *vMeanTime = 0x0;
+      TVectorF *vMeanQ    = 0x0;
+      
+  //resize arrays
+      if ( arrPol1CE && arrPol2CE ){
+        arrPol1 = GetParamArrayPol1(iSec,kTRUE);
+        arrPol2 = GetParamArrayPol2(iSec,kTRUE);
+        arrPol1->Expand(fNevents+nCEevents);
+        arrPol2->Expand(fNevents+nCEevents);
       }
       if ( vMeanTimeCE && vMeanQCE ){
-        vMeanTime->GetMatrixArray()[fNevents+iEvent]=vMeanTimeCE->GetMatrixArray()[iEvent];
-        vMeanQ->GetMatrixArray()[fNevents+iEvent]=vMeanQCE->GetMatrixArray()[iEvent];
+        vMeanTime = GetTMeanEvents(iSec,kTRUE);
+        vMeanQ    = GetQMeanEvents(iSec,kTRUE);
+        vMeanTime->ResizeTo(fNevents+nCEevents);
+        vMeanQ->ResizeTo(fNevents+nCEevents);
       }
+      
+      for (Int_t iEvent=0; iEvent<nCEevents; ++iEvent){
+        if ( arrPol1CE && arrPol2CE ){
+          TVectorD *paramPol1 = (TVectorD*)(arrPol1CE->UncheckedAt(iEvent));
+          TVectorD *paramPol2 = (TVectorD*)(arrPol2CE->UncheckedAt(iEvent));
+          if ( paramPol1 && paramPol2 ){
+            GetParamArrayPol1(iSec,kTRUE)->AddAt(new TVectorD(*paramPol1), fNevents+iEvent);
+            GetParamArrayPol2(iSec,kTRUE)->AddAt(new TVectorD(*paramPol2), fNevents+iEvent);
+          }
+        }
+        if ( vMeanTimeCE && vMeanQCE ){
+          vMeanTime->GetMatrixArray()[fNevents+iEvent]=vMeanTimeCE->GetMatrixArray()[iEvent];
+          vMeanQ->GetMatrixArray()[fNevents+iEvent]=vMeanQCE->GetMatrixArray()[iEvent];
+        }
+      }
+    }
+    
+    
+    
+    const TVectorD&  eventTimes  = ce->fVEventTime;
+    const TVectorD&  eventIds    = ce->fVEventNumber;
+    const TVectorF&  time0SideA  = ce->fVTime0SideA;
+    const TVectorF&  time0SideC  = ce->fVTime0SideC;
+    fVEventTime.ResizeTo(fNevents+nCEevents);
+    fVEventNumber.ResizeTo(fNevents+nCEevents);
+    fVTime0SideA.ResizeTo(fNevents+nCEevents);
+    fVTime0SideC.ResizeTo(fNevents+nCEevents);
+
+    for (Int_t iEvent=0; iEvent<nCEevents; ++iEvent){
+      Double_t evTime     = eventTimes.GetMatrixArray()[iEvent];
+      Double_t evId       = eventIds.GetMatrixArray()[iEvent];
+      Float_t  t0SideA    = time0SideA.GetMatrixArray()[iEvent];
+      Float_t  t0SideC    = time0SideC.GetMatrixArray()[iEvent];
+      
+      fVEventTime.GetMatrixArray()[fNevents+iEvent]   = evTime;
+      fVEventNumber.GetMatrixArray()[fNevents+iEvent] = evId;
+      fVTime0SideA.GetMatrixArray()[fNevents+iEvent]  = t0SideA;
+      fVTime0SideC.GetMatrixArray()[fNevents+iEvent]  = t0SideC;
+    }
+  }
+
+  if (fProcessNew&&ce->fProcessNew) {
+    if (fArrHnDrift.GetEntries() != ce->fArrHnDrift.GetEntries() ){
+      AliError("Number of bursts in the instances to merge are different. No merging done!");
+    } else {
+      for (Int_t i=0;i<fArrHnDrift.GetEntries();++i){
+        THnSparseI *h=(THnSparseI*)fArrHnDrift.UncheckedAt(i);
+        THnSparseI *hce=(THnSparseI*)ce->fArrHnDrift.UncheckedAt(i);
+        if (h && hce) h->Add(hce);
+        else AliError(Form("AliTPCCalibCE::Merge - one THnSparse missing in burst %d",i));
+      }
+      //TODO: What to do with fTimeBursts???
     }
   }
   
-  
-  
-  const TVectorD&  eventTimes  = ce->fVEventTime;
-  const TVectorD&  eventIds    = ce->fVEventNumber;
-  const TVectorF&  time0SideA  = ce->fVTime0SideA;
-  const TVectorF&  time0SideC  = ce->fVTime0SideC;
-  fVEventTime.ResizeTo(fNevents+nCEevents);
-  fVEventNumber.ResizeTo(fNevents+nCEevents);
-  fVTime0SideA.ResizeTo(fNevents+nCEevents);
-  fVTime0SideC.ResizeTo(fNevents+nCEevents);
-  
-  for (Int_t iEvent=0; iEvent<nCEevents; ++iEvent){
-    Double_t evTime     = eventTimes.GetMatrixArray()[iEvent];
-    Double_t evId       = eventIds.GetMatrixArray()[iEvent];
-    Float_t  t0SideA    = time0SideA.GetMatrixArray()[iEvent];
-    Float_t  t0SideC    = time0SideC.GetMatrixArray()[iEvent];
-    
-    fVEventTime.GetMatrixArray()[fNevents+iEvent]   = evTime;
-    fVEventNumber.GetMatrixArray()[fNevents+iEvent] = evId;
-    fVTime0SideA.GetMatrixArray()[fNevents+iEvent]  = t0SideA;
-    fVTime0SideC.GetMatrixArray()[fNevents+iEvent]  = t0SideC;
-  }
   fNevents+=nCEevents; //increase event counter
 }
 
@@ -1738,117 +1955,1223 @@ void AliTPCCalibCE::Analyse()
   //
   //  Calculate calibration constants
   //
-  
-  TVectorD paramQ(3);
-  TVectorD paramT0(3);
-  TVectorD paramRMS(3);
-  TMatrixD dummy(3,3);
-  
-  Float_t channelCounter=0;
-  fMeanT0rms=0;
-  fMeanQrms=0;
-  fMeanRMSrms=0;
-  
-  for (Int_t iSec=0; iSec<72; ++iSec){
-    TH2S *hT0 = GetHistoT0(iSec);
-    if (!hT0 ) continue;
+
+  if (fProcessOld){
+    TVectorD paramQ(3);
+    TVectorD paramT0(3);
+    TVectorD paramRMS(3);
+    TMatrixD dummy(3,3);
     
-    AliTPCCalROC *rocQ     = GetCalRocQ  (iSec,kTRUE);
-    AliTPCCalROC *rocT0    = GetCalRocT0 (iSec,kTRUE);
-    AliTPCCalROC *rocT0Err = GetCalRocT0Err (iSec,kTRUE);
-    AliTPCCalROC *rocRMS   = GetCalRocRMS(iSec,kTRUE);
-    AliTPCCalROC *rocOut   = GetCalRocOutliers(iSec,kTRUE);
+    Float_t channelCounter=0;
+    fMeanT0rms=0;
+    fMeanQrms=0;
+    fMeanRMSrms=0;
     
-    TH2S *hQ   = GetHistoQ(iSec);
-    TH2S *hRMS = GetHistoRMS(iSec);
-    
-    Short_t *arrayhQ   = hQ->GetArray();
-    Short_t *arrayhT0  = hT0->GetArray();
-    Short_t *arrayhRMS = hRMS->GetArray();
-    
-    UInt_t nChannels = fROC->GetNChannels(iSec);
-    
+    for (Int_t iSec=0; iSec<72; ++iSec){
+      TH2S *hT0 = GetHistoT0(iSec);
+      if (!hT0 ) continue;
+      
+      AliTPCCalROC *rocQ     = GetCalRocQ  (iSec,kTRUE);
+      AliTPCCalROC *rocT0    = GetCalRocT0 (iSec,kTRUE);
+      AliTPCCalROC *rocT0Err = GetCalRocT0Err (iSec,kTRUE);
+      AliTPCCalROC *rocRMS   = GetCalRocRMS(iSec,kTRUE);
+      AliTPCCalROC *rocOut   = GetCalRocOutliers(iSec,kTRUE);
+      
+      TH2S *hQ   = GetHistoQ(iSec);
+      TH2S *hRMS = GetHistoRMS(iSec);
+      
+      Short_t *arrayhQ   = hQ->GetArray();
+      Short_t *arrayhT0  = hT0->GetArray();
+      Short_t *arrayhRMS = hRMS->GetArray();
+      
+      UInt_t nChannels = fROC->GetNChannels(iSec);
+      
   //debug
-    Int_t row=0;
-    Int_t pad=0;
-    Int_t padc=0;
+      Int_t row=0;
+      Int_t pad=0;
+      Int_t padc=0;
   //! debug
-    
-    for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
       
-      
-      Float_t cogTime0 = -1000;
-      Float_t cogQ     = -1000;
-      Float_t cogRMS   = -1000;
-      Float_t cogOut   = 0;
-      Float_t rms      = 0;
-      Float_t rmsT0    = 0;
-      
-      
-      Int_t offsetQ = (fNbinsQ+2)*(iChannel+1)+1;
-      Int_t offsetT0 = (fNbinsT0+2)*(iChannel+1)+1;
-      Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
-      
-      cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ,&rms);
-      fMeanQrms+=rms;
-      cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0,&rmsT0);
-      fMeanT0rms+=rmsT0;
-      cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS,&rms);
-      fMeanRMSrms+=rms;
-      channelCounter++;
-      
+      for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
+        
+        
+        Float_t cogTime0 = -1000;
+        Float_t cogQ     = -1000;
+        Float_t cogRMS   = -1000;
+        Float_t cogOut   = 0;
+        Float_t rms      = 0;
+        Float_t rmsT0    = 0;
+        
+        
+        Int_t offsetQ = (fNbinsQ+2)*(iChannel+1)+1;
+        Int_t offsetT0 = (fNbinsT0+2)*(iChannel+1)+1;
+        Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
+        
+        cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ,&rms);
+        fMeanQrms+=rms;
+        cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0,&rmsT0);
+        fMeanT0rms+=rmsT0;
+        cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS,&rms);
+        fMeanRMSrms+=rms;
+        channelCounter++;
+        
       /*
              //outlier specifications
-      if ( (cogQ < ??) && (cogTime0 > ??) && (cogTime0<??) && ( cogRMS>??) ){
-    cogOut = 1;
-    cogTime0 = 0;
-    cogQ     = 0;
-    cogRMS   = 0;
+         if ( (cogQ < ??) && (cogTime0 > ??) && (cogTime0<??) && ( cogRMS>??) ){
+         cogOut = 1;
+          cogTime0 = 0;
+          cogQ     = 0;
+          cogRMS   = 0;
       }
-*/
-      rocQ->SetValue(iChannel, cogQ*cogQ);
-      rocT0->SetValue(iChannel, cogTime0);
-      rocT0Err->SetValue(iChannel, rmsT0);
-      rocRMS->SetValue(iChannel, cogRMS);
-      rocOut->SetValue(iChannel, cogOut);
-      
-      
+      */
+        rocQ->SetValue(iChannel, cogQ*cogQ);
+        rocT0->SetValue(iChannel, cogTime0);
+        rocT0Err->SetValue(iChannel, rmsT0);
+        rocRMS->SetValue(iChannel, cogRMS);
+        rocOut->SetValue(iChannel, cogOut);
+        
+        
       //debug
-      if ( GetStreamLevel() > 0 ){
-        TTreeSRedirector *streamer=GetDebugStreamer();
-        if ( streamer ) {
+        if ( GetStreamLevel() > 0 ){
+          TTreeSRedirector *streamer=GetDebugStreamer();
+          if ( streamer ) {
+            
+            while ( iChannel > (fROC->GetRowIndexes(iSec)[row]+fROC->GetNPads(iSec,row)-1) ) row++;
+            pad = iChannel-fROC->GetRowIndexes(iSec)[row];
+            padc = pad-(fROC->GetNPads(iSec,row)/2);
+            
+            (*streamer) << "DataEnd" <<
+              "Sector="  << iSec      <<
+              "Pad="     << pad       <<
+              "PadC="    << padc      <<
+              "Row="     << row       <<
+              "PadSec="  << iChannel   <<
+              "Q="       << cogQ      <<
+              "T0="      << cogTime0  <<
+              "RMS="     << cogRMS    <<
+              "\n";
+          }
+        }
+      //! debug
         
-          while ( iChannel > (fROC->GetRowIndexes(iSec)[row]+fROC->GetNPads(iSec,row)-1) ) row++;
-          pad = iChannel-fROC->GetRowIndexes(iSec)[row];
-          padc = pad-(fROC->GetNPads(iSec,row)/2);
+      }
+      
+    }
+    if ( channelCounter>0 ){
+      fMeanT0rms/=channelCounter;
+      fMeanQrms/=channelCounter;
+      fMeanRMSrms/=channelCounter;
+    }
+    //   if ( fDebugStreamer ) fDebugStreamer->GetFile()->Write();
+    //    delete fDebugStreamer;
+    //    fDebugStreamer = 0x0;
+    fVEventTime.ResizeTo(fNevents);
+    fVEventNumber.ResizeTo(fNevents);
+    fVTime0SideA.ResizeTo(fNevents);
+    fVTime0SideC.ResizeTo(fNevents);
+  }
+
+  if (fProcessNew&&fAnalyseNew){
+    AnalyseTrack();
+    for (Int_t iburst=0; iburst<fArrHnDrift.GetEntries(); ++iburst){
+      THnSparseI *h=(THnSparseI*)fArrHnDrift.UncheckedAt(iburst);
+      h->GetAxis(4)->SetRangeUser(fTimeBursts[iburst]-60*5,fTimeBursts[iburst]+60*5);
+    }
+  }
+}
+
+
+
+
+//
+// New functions that also use the laser tracks
+//
+
+
+
+//_____________________________________________________________________
+void AliTPCCalibCE::FindLocalMaxima(TObjArray * const arrObj, Double_t timestamp, Int_t burst)
+{
+  //
+  //Find the local maximums for the projections to each axis
+  //
+  
+  //find laser layer positoins
+  fHnDrift->GetAxis(4)->SetRangeUser(timestamp-2*60,timestamp+2*60);
+  FindLaserLayers();
+  THnSparse *hProj=fHnDrift;
+  Double_t posCE[4]={0.,0.,0.,0.};
+  Double_t widthCE[4]={0.,0.,0.,0.};
+  
+//   if(fPeaks[4]!=0){
+  // find central electrode position once more, separately for IROC, OROC, A-, C-Side
+  
+  for (Int_t i=0; i<4; ++i){
+    hProj->GetAxis(0)->SetRangeUser(i*18,(i+1)*18-1);
+    TH1 *h=fHnDrift->Projection(3);
+    h->GetXaxis()->SetRangeUser(fPeaks[4]-fPeakWidths[4],fPeaks[4]+fPeakWidths[4]);
+    Int_t nbinMax=h->GetMaximumBin();
+    Double_t maximum=h->GetMaximum();
+//     Double_t maxExpected=fNevents/fArrHnDrift->GetEntries()*556568./5./10.;
+//     if (nbinMax<700||maximum<maxExpected) continue;
+    Double_t xbinMax=h->GetBinCenter(nbinMax);
+    TF1 fgaus("gaus","gaus",xbinMax-10,xbinMax+10);
+    fgaus.SetParameters(maximum,xbinMax,2);
+    fgaus.SetParLimits(1,xbinMax-5.,xbinMax+5.);
+    fgaus.SetParLimits(2,0.2,4.);
+    h->Fit(&fgaus,"RQN");
+//     Double_t deltaX=4*fgaus.GetParameter(2);
+//     xbinMax=fgaus.GetParameter(1);
+    delete h;
+    posCE[i]=fgaus.GetParameter(1);
+    widthCE[i]=4*fgaus.GetParameter(2);
+    hProj->GetAxis(0)->SetRangeUser(0,72);
+  }
+//   }
+  //Current drift velocity
+  Float_t vdrift=2.61301900000000000e+06;//fParam->GetDriftV();
+//   cout<<"vdrift="<<vdrift<<endl;
+  
+  AliDebug(5,Form("Timestamp %f - default drift velocity %f",timestamp,vdrift));
+  //loop over all entries in the histogram
+  Int_t coord[5];
+  for(Long64_t ichunk=0;ichunk<hProj->GetNbins();ichunk++){
+    //get entry position and content
+    Double_t adc=hProj->GetBinContent(ichunk,coord);
+    
+    
+    Int_t sector = coord[0]-1;
+    Int_t row    = coord[1]-1;
+    Int_t pad    = coord[2]-1;
+    Int_t timeBin= coord[3]-1;
+    Double_t time   = fHnDrift->GetAxis(4)->GetBinCenter(coord[4]);
+    Int_t side   = (sector/18)%2;
+//     return;
+//     fPeaks[4]=(UInt_t)posCE[sector/18];
+//     fPeakWidths[4]=(UInt_t)widthCE[sector/18];
+    
+    //cuts
+    if (time<timestamp-120||time>timestamp+120) continue; //window of +- 2min
+    if (adc < 5 ) continue;
+    if (IsEdgePad(sector,row,pad)) continue;
+//     if (!IsPeakInRange(timeBin)) continue;
+//     if (isCE&&((row%2)||(row%2)||(sector%2))) continue;
+//     if (isCE&&(sector!=0)) continue;
+    
+    Int_t padmin=-2, padmax=2;
+    Int_t timemin=-2, timemax=2;
+    Int_t minsumperpad=2;
+    //CE or laser tracks
+    Bool_t isCE=kFALSE;
+    if (TMath::Abs((Short_t)timeBin-(Short_t)posCE[sector/18])<(Short_t)widthCE[sector/18]) {
+      isCE=kTRUE;
+      padmin=0;
+      padmax=0;
+      timemin=-3;
+      timemax=7;
+    }
+    
+    //
+    // Find local maximum and cogs
+    //
+    Bool_t isMaximum=kTRUE;
+    Float_t totalmass=0, tbcm=0, padcm=0, rmstb=0, rmspad=0;
+    Double_t cogY=0, rmsY=0;
+    Int_t npart=0;
+    
+    // for position calculation use
+    for(Int_t ipad=padmin;ipad<=padmax;++ipad){
+      Float_t lxyz[3];
+      fROC->GetPositionLocal(sector,row,pad+ipad,lxyz);
+      
+      for(Int_t itime=timemin;itime<=timemax;++itime){
         
-          (*streamer) << "DataEnd" <<
-            "Sector="  << iSec      <<
-            "Pad="     << pad       <<
-            "PadC="    << padc      <<
-            "Row="     << row       <<
-            "PadSec="  << iChannel   <<
-            "Q="       << cogQ      <<
-            "T0="      << cogTime0  <<
-            "RMS="     << cogRMS    <<
-            "\n";
+        Int_t a[5]={coord[0],coord[1],coord[2]+ipad,coord[3]+itime,coord[4]};
+        Double_t val=hProj->GetBinContent(a);
+        totalmass+=val;
+        
+        tbcm +=(timeBin+itime)*val;
+        padcm+=(pad+ipad)*val;
+        cogY +=lxyz[1]*val;
+        
+        rmstb +=(timeBin+itime)*(timeBin+itime)*val;
+        rmspad+=(pad+ipad)*(pad+ipad)*val;
+        rmsY  +=lxyz[1]*lxyz[1]*val;
+        
+        if (val>0) ++npart;
+        if (val>adc) {
+          isMaximum=kFALSE;
+          break;
         }
       }
-      //! debug
+      if (!isMaximum)  break;
+    }
+    
+    if (!isMaximum||!npart)  continue;
+    if (totalmass<npart*minsumperpad) continue;
+    if (!isCE&&rmspad<.1) continue; //most probably noise, since signal only in one pad,
+                                    //for CE we want only one pad by construction
+    
+    tbcm/=totalmass;
+    padcm/=totalmass;
+    cogY/=totalmass;
+    
+    rmstb/=totalmass;
+    rmspad/=totalmass;
+    rmsY/=totalmass;
+    
+    rmstb=TMath::Sqrt(TMath::Abs(tbcm*tbcm-rmstb));
+    rmspad=TMath::Sqrt(TMath::Abs(padcm*padcm-rmspad));
+    rmsY=TMath::Sqrt(TMath::Abs(cogY*cogY-rmsY));
+    
+    Int_t cog=TMath::Nint(padcm);
+    
+    // timebin --> z position
+    Float_t zlength=fParam->GetZLength(side);
+//     Float_t timePos=tbcm+(1000-fPeaks[4])
+    // drift velocity is in m/s we would like to have cm/100ns, so 100cm/(10^7*100ns)
+    Double_t gz=(zlength-(tbcm*vdrift*1.e-7))*TMath::Power(-1,side);
+    
+    // local to global transformation--> x and y positions
+    Float_t padlxyz[3];
+    fROC->GetPositionLocal(sector,row,pad,padlxyz);
+    
+    Double_t gxyz[3]={padlxyz[0],cogY,gz};
+    Double_t lxyz[3]={padlxyz[0],cogY,gz};
+    Double_t igxyz[3]={0,0,0};
+    AliTPCTransform t1;
+    t1.RotatedGlobal2Global(sector,gxyz);
+    
+    Double_t mindist=0;
+    Int_t trackID=-1;
+    Int_t trackID2=-1;
+    
+    //find track id and index of the position in the track (row)
+    Int_t index=0;
+    if (!isCE){
+      index=row+(sector>35)*fROC->GetNRows(0);
+      trackID=FindLaserTrackID(sector,index,gxyz,mindist,lxyz,trackID2);
+    } else {
+      trackID=336+((sector/18)%2);
+      index= fROC->GetRowIndexes(sector)[row]+pad; //  global pad position in sector
+      if (sector<36) {
+        index+=(sector%18)*fROC->GetNChannels(sector);
+      } else {
+        index+=18*fROC->GetNChannels(0);
+        index+=(sector%18)*fROC->GetNChannels(sector);
+      }
+      //TODO: find out about the multiple peaks in the CE
+//       mindist=TMath::Abs(fPeaks[4]-tbcm);
+      mindist=1.;
+    }
+    
+    // fill track vectors
+    if (trackID>0){
+      AliTPCLaserTrack *ltr=(AliTPCLaserTrack*)arrObj->UncheckedAt(trackID);
+      Double_t oldMinDist=ltr->fVecPhi->GetMatrixArray()[index];
+      
+      
+//      travel time effect of light includes
+      
+      Double_t raylength=ltr->GetRayLength();
+      Double_t globmir[3]={ltr->Xv(),ltr->Yv(),ltr->Zv()};
+      ltr->GetXYZ(globmir);
+      if(trackID<336){
+        if(side==0){
+          gxyz[2]=gxyz[2]-(TMath::Sqrt((gxyz[0]-globmir[0])*(gxyz[0]-globmir[0])
+                                       +(gxyz[1]-globmir[1])*(gxyz[1]-globmir[1])
+                                       +(gxyz[2]-globmir[2])*(gxyz[2]-globmir[3])+raylength))*vdrift*TMath::Power(10.,-6.)/30000;
+        }
+        else {
+          gxyz[2]=gxyz[2]-(TMath::Sqrt((gxyz[0]-globmir[0])*(gxyz[0]-globmir[0])
+                                       +(gxyz[1]-globmir[1])*(gxyz[1]-globmir[1])
+                                       +(gxyz[2]-globmir[2])*(gxyz[2]-globmir[3])+raylength))*vdrift*TMath::Power(10.,-6.)/30000;
+        }
+      }
+      
+      if (TMath::Abs(oldMinDist)<1.e-20||oldMinDist>mindist){
+        ltr->fVecSec->GetMatrixArray()[index]=sector;
+        ltr->fVecP2->GetMatrixArray()[index]=0;
+        ltr->fVecPhi->GetMatrixArray()[index]=mindist;
+        ltr->fVecGX->GetMatrixArray()[index]=gxyz[0];
+        ltr->fVecGY->GetMatrixArray()[index]=gxyz[1];
+        ltr->fVecGZ->GetMatrixArray()[index]=gxyz[2];
+        ltr->fVecLX->GetMatrixArray()[index]=lxyz[0];
+        ltr->fVecLY->GetMatrixArray()[index]=lxyz[1];
+        ltr->fVecLZ->GetMatrixArray()[index]=lxyz[2];
+//         ltr->SetUniqueID((UInt_t)(mindist*10000)); //distance in um
+      }
+      TObjArray *arr=AliTPCLaserTrack::GetTracks();
+      ltr=(AliTPCLaserTrack*)arr->UncheckedAt(trackID);
+      igxyz[0]=ltr->fVecGX->GetMatrixArray()[row];
+      igxyz[1]=ltr->fVecGY->GetMatrixArray()[row];
+      igxyz[2]=ltr->fVecGZ->GetMatrixArray()[row];
+    }
+    
+    
+    if (fStreamLevel>4){
+      (*GetDebugStreamer()) << "clusters" <<
+        "run="   << fRunNumber <<
+        "timestamp=" << timestamp <<
+        "burst="     << burst     <<
+        "side="      << side      <<
+        "sec="       << sector    <<
+        "row="       << row       <<
+        "pad="       << pad       <<
+        "padCog="    << cog       <<
+        "timebin="   << timeBin   <<
+        "cogCE="     << posCE[sector/18] <<
+        "withCE="    << widthCE[sector/18] <<
+        "index="     << index     <<
+        
+        "padcm="     << padcm     <<
+        "rmspad="    << rmspad    <<
+        
+        "cogtb="     << tbcm      <<
+        "rmstb="     << rmstb     <<
+        
+        "npad="      << npart     <<
+        
+        "lx="        << padlxyz[0]<<
+        "ly="        << cogY      <<
+        "lypad="     << padlxyz[1]<<
+        "rmsY="      << rmsY      <<
+        
+        "gx="        << gxyz[0]   <<
+        "gy="        << gxyz[1]   <<
+        "gz="        << gxyz[2]   <<
+        
+        "igx="        << igxyz[0] <<
+        "igy="        << igxyz[1] <<
+        "igz="        << igxyz[2] <<
+        
+        "mind="      << mindist   <<
+        "max="       << adc       <<
+        "trackid="   << trackID   <<
+        "trackid2="   << trackID2   <<
+        "npart="     << npart     <<
+        "\n";
+    } // end stream levelmgz.fElements
+    
+  }
+  
+}
+
+//_____________________________________________________________________
+void AliTPCCalibCE::AnalyseTrack()
+{
+  //
+  //  Analyse the tracks
+  //
+  
+  
+  AliTPCLaserTrack::LoadTracks();
+//   AliTPCParam *param=0x0;
+//   //cdb run number
+//   AliCDBManager *man=AliCDBManager::Instance();
+//   if (man->GetDefaultStorage()){
+//     AliCDBEntry *entry=man->Get("TPC/Calib/Parameters",fRunNumber);
+//     if (entry){
+//       entry->SetOwner(kTRUE);
+//       param = (AliTPCParam*)(entry->GetObject()->Clone());
+//     }
+//   }
+//   if (param){
+//     if (fParam) delete fParam;
+//     fParam=param;
+//   } else {
+//     AliError("Could not get updated AliTPCParam from OCDB!!!");
+//   }
+  
+  //Measured and ideal laser tracks
+  TObjArray* arrMeasured = SetupMeasured();
+  TObjArray* arrIdeal    = AliTPCLaserTrack::GetTracks();
+  AddCEtoIdeal(arrIdeal);
+  
+  //find bursts and loop over them
+  for (Int_t iburst=0; iburst<fArrHnDrift.GetEntries();++iburst){
+    Double_t timestamp=fTimeBursts[iburst];
+    AliDebug(5,Form("Burst: %d (%f)",iburst,timestamp));
+    fHnDrift=(THnSparseI*)fArrHnDrift.UncheckedAt(iburst);
+    if (!fHnDrift) continue;
+    UInt_t entries=(UInt_t)fHnDrift->GetEntries();
+    if (fBinsLastAna[iburst]>=entries) continue; //already analysed!!!
+    fBinsLastAna[iburst]=entries;
+    
+    for (Int_t iDim=0; iDim<fHnDrift->GetNdimensions(); ++iDim) fHnDrift->GetAxis(iDim)->SetRange(0,0);
+//     if (iburst==0) FindLaserLayers();
+    
+    //reset laser tracks
+    ResetMeasured(arrMeasured);
+    
+    //find clusters and associate to the tracks
+    FindLocalMaxima(arrMeasured, timestamp, iburst);
+    
+    //calculate drift velocity
+    CalculateDV(arrIdeal,arrMeasured,iburst);
+    
+    //Dump information to file if requested
+    if (fStreamLevel>2){
+      printf("make tree\n");
+      //laser track information
+      
+      for (Int_t itrack=0; itrack<338; ++itrack){
+        TObject *iltr=arrIdeal->UncheckedAt(itrack);
+        TObject *mltr=arrMeasured->UncheckedAt(itrack);
+        (*GetDebugStreamer()) << "tracks" <<
+          "run="   << fRunNumber <<
+          "time=" << timestamp <<
+          "burst="<< iburst <<
+          "iltr.=" << iltr <<
+          "mltr.=" << mltr <<
+          "\n";
+      }
+    }
+  }
+  if (fStreamLevel>0) GetDebugStreamer()->GetFile()->Write();
+}
+
+//_____________________________________________________________________
+Int_t AliTPCCalibCE::FindLaserTrackID(Int_t sector,Int_t row, const Double_t *peakpos,Double_t &mindist,
+                                      const Double_t *peakposloc, Int_t &itrackMin2)
+{
+  //
+  //  Find the tracks, which are closest to the ideal tracks, from clusters closest to the ideal tracks
+  //
+  
+  
+  TObjArray *arr=AliTPCLaserTrack::GetTracks();
+  TVector3 vP(peakpos[0],peakpos[1],peakpos[2]);
+  TVector3 vDir;
+  TVector3 vSt;
+  
+  Int_t firstbeam=0;
+  Int_t lastbeam=336/2;
+  if ( (sector/18)%2 ) {
+    firstbeam=336/2;
+    lastbeam=336;
+  }
+  
+  mindist=1000000;
+  Int_t itrackMin=-1;
+  for (Int_t itrack=firstbeam; itrack<lastbeam; ++itrack){
+    AliTPCLaserTrack *ltr=(AliTPCLaserTrack*)arr->At(itrack);  //get the track
+//     if (ltr->GetVecSec()->GetMatrixArray()[row]!=sector) continue;
+    vSt.SetXYZ(ltr->GetX(),ltr->GetY(),ltr->GetZ());
+    Double_t deltaZ=ltr->GetZ()-peakpos[2];
+    if (TMath::Abs(deltaZ)>40) continue;
+    vDir.SetMagThetaPhi(1,ltr->Theta(),TMath::ASin(ltr->GetSnp()));
+    vSt.RotateZ(ltr->GetAlpha());
+    vDir.RotateZ(ltr->GetAlpha());
+    
+    Double_t dist=(vDir.Cross(vSt-vP)).Mag()/vDir.Mag();
+    
+    if (dist<mindist){
+      mindist=dist;
+      itrackMin=itrack;
+    }
+    
+  }
+  itrackMin2=-1;
+  Float_t mindist2=10;
+  for (Int_t itrack=firstbeam; itrack<lastbeam; ++itrack){
+    AliTPCLaserTrack *ltr=(AliTPCLaserTrack*)arr->At(itrack);  //get the track
+    if ((ltr->fVecSec->GetMatrixArray())[row]!=sector) continue;
+    
+    Double_t deltaZ=ltr->GetZ()-peakpos[2];
+    if (TMath::Abs(deltaZ)>40) continue;
+    
+    Double_t dist=TMath::Abs((ltr->fVecLY->GetMatrixArray())[row]-peakposloc[1]);
+    if (dist>1) continue;
+    
+    if (dist<mindist2){
+      mindist2=dist;
+      itrackMin2=itrack;
+    }
+  }
+  mindist=mindist2;
+  return itrackMin2;
+  
+}
+
+//_____________________________________________________________________
+Bool_t AliTPCCalibCE::IsEdgePad(Int_t sector, Int_t row, Int_t pad) const
+{
+  //
+  // return true if pad is on the edge of a row
+  //
+  Int_t edge1   = 0;
+  if ( pad == edge1 ) return kTRUE;
+  Int_t edge2   = fROC->GetNPads(sector,row)-1;
+  if ( pad == edge2 ) return kTRUE;
+  
+  return kFALSE;
+}
+
+//_____________________________________________________________________
+TObjArray* AliTPCCalibCE::SetupMeasured()
+{
+  //
+  // setup array of measured laser tracks and CE
+  //
+  
+  TObjArray *arrIdeal    = AliTPCLaserTrack::GetTracks();
+  TObjArray *arrMeasured = new TObjArray(338);
+  arrMeasured->SetOwner();
+  for(Int_t itrack=0;itrack<336;itrack++){
+    arrMeasured->AddAt(new AliTPCLaserTrack(*((AliTPCLaserTrack*)arrIdeal->At(itrack))),itrack);
+  }
+  
+  //"tracks" for CE
+  AliTPCLaserTrack *ltrce=new AliTPCLaserTrack;
+  ltrce->SetId(336);
+  ltrce->SetSide(0);
+  ltrce->fVecSec=new TVectorD(557568/2);
+  ltrce->fVecP2=new TVectorD(557568/2);
+  ltrce->fVecPhi=new TVectorD(557568/2);
+  ltrce->fVecGX=new TVectorD(557568/2);
+  ltrce->fVecGY=new TVectorD(557568/2);
+  ltrce->fVecGZ=new TVectorD(557568/2);
+  ltrce->fVecLX=new TVectorD(557568/2);
+  ltrce->fVecLY=new TVectorD(557568/2);
+  ltrce->fVecLZ=new TVectorD(557568/2);
+  
+  arrMeasured->AddAt(ltrce,336); //CE A-Side
+  
+  ltrce=new AliTPCLaserTrack;
+  ltrce->SetId(337);
+  ltrce->SetSide(1);
+  ltrce->fVecSec=new TVectorD(557568/2);
+  ltrce->fVecP2=new TVectorD(557568/2);
+  ltrce->fVecPhi=new TVectorD(557568/2);
+  ltrce->fVecGX=new TVectorD(557568/2);
+  ltrce->fVecGY=new TVectorD(557568/2);
+  ltrce->fVecGZ=new TVectorD(557568/2);
+  ltrce->fVecLX=new TVectorD(557568/2);
+  ltrce->fVecLY=new TVectorD(557568/2);
+  ltrce->fVecLZ=new TVectorD(557568/2);
+  arrMeasured->AddAt(ltrce,337); //CE C-Side
+  
+  return arrMeasured;
+}
+
+//_____________________________________________________________________
+void AliTPCCalibCE::ResetMeasured(TObjArray * const arr)
+{
+  //
+  // reset array of measured laser tracks and CE
+  //
+  for(Int_t itrack=0;itrack<338;itrack++){
+    AliTPCLaserTrack *ltr=(AliTPCLaserTrack*)arr->UncheckedAt(itrack);
+    ltr->fVecSec->Zero();
+    ltr->fVecP2->Zero();
+    ltr->fVecPhi->Zero();
+    ltr->fVecGX->Zero();
+    ltr->fVecGY->Zero();
+    ltr->fVecGZ->Zero();
+    ltr->fVecLX->Zero();
+    ltr->fVecLY->Zero();
+    ltr->fVecLZ->Zero();
+  }
+}
+
+//_____________________________________________________________________
+void AliTPCCalibCE::AddCEtoIdeal(TObjArray *arr)
+{
+  //
+  // Add ideal CE positions to the ideal track data
+  //
+  
+  arr->Expand(338);
+  //"tracks" for CE
+  AliTPCLaserTrack *ltrceA=new AliTPCLaserTrack;
+  ltrceA->SetId(336);
+  ltrceA->SetSide(0);
+  ltrceA->fVecSec=new TVectorD(557568/2);
+  ltrceA->fVecP2=new TVectorD(557568/2);
+  ltrceA->fVecPhi=new TVectorD(557568/2);
+  ltrceA->fVecGX=new TVectorD(557568/2);
+  ltrceA->fVecGY=new TVectorD(557568/2);
+  ltrceA->fVecGZ=new TVectorD(557568/2);
+  ltrceA->fVecLX=new TVectorD(557568/2);
+  ltrceA->fVecLY=new TVectorD(557568/2);
+  ltrceA->fVecLZ=new TVectorD(557568/2);
+  arr->AddAt(ltrceA,336); //CE A-Side
+  
+  AliTPCLaserTrack *ltrceC=new AliTPCLaserTrack;
+  ltrceC->SetId(337);
+  ltrceC->SetSide(1);
+  ltrceC->fVecSec=new TVectorD(557568/2);
+  ltrceC->fVecP2=new TVectorD(557568/2);
+  ltrceC->fVecPhi=new TVectorD(557568/2);
+  ltrceC->fVecGX=new TVectorD(557568/2);
+  ltrceC->fVecGY=new TVectorD(557568/2);
+  ltrceC->fVecGZ=new TVectorD(557568/2);
+  ltrceC->fVecLX=new TVectorD(557568/2);
+  ltrceC->fVecLY=new TVectorD(557568/2);
+  ltrceC->fVecLZ=new TVectorD(557568/2);
+  arr->AddAt(ltrceC,337); //CE C-Side
+  
+  //Calculate ideal positoins
+  Float_t gxyz[3];
+  Float_t lxyz[3];
+  Int_t channelSideA=0;
+  Int_t channelSideC=0;
+  Int_t channelSide=0;
+  AliTPCLaserTrack *ltrce=0x0;
+  
+  for (Int_t isector=0; isector<72; ++isector){
+    Int_t side=((isector/18)%2);
+    for (UInt_t irow=0;irow<fROC->GetNRows(isector);++irow){
+      for (UInt_t ipad=0;ipad<fROC->GetNPads(isector,irow);++ipad){
+        fROC->GetPositionGlobal(isector,irow,ipad,gxyz);
+        fROC->GetPositionLocal(isector,irow,ipad,lxyz);
+        if (side==0) {
+          ltrce=ltrceA;
+          channelSide=channelSideA;
+        } else {
+          ltrce=ltrceC;
+          channelSide=channelSideC;
+        }
+        
+        ltrce->fVecSec->GetMatrixArray()[channelSide]=isector;
+        ltrce->fVecP2->GetMatrixArray()[channelSide]=0;
+        ltrce->fVecPhi->GetMatrixArray()[channelSide]=0;
+        ltrce->fVecGX->GetMatrixArray()[channelSide]=gxyz[0];
+        ltrce->fVecGY->GetMatrixArray()[channelSide]=gxyz[1];
+//         ltrce->fVecGZ->GetMatrixArray()[channelSide]=-1;
+        ltrce->fVecLX->GetMatrixArray()[channelSide]=lxyz[0];
+        ltrce->fVecLY->GetMatrixArray()[channelSide]=lxyz[1];
+//         ltrce->fVecLZ->GetMatrixArray()[channelSide]=-1;
+        
+        if (side==0){
+          ltrce->fVecGZ->GetMatrixArray()[channelSide]=-0.335;
+          ltrce->fVecLZ->GetMatrixArray()[channelSide]=-0.335;
+          ++channelSideA;
+        }
+        else {
+          ltrce->fVecGZ->GetMatrixArray()[channelSide]=0.15;
+          ltrce->fVecLZ->GetMatrixArray()[channelSide]=0.15;
+          ++channelSideC;
+        }
+      }
+    }
+  }
+  
+  
+}
+
+//_____________________________________________________________________
+void AliTPCCalibCE::CalculateDV(TObjArray * const arrIdeal, TObjArray * const arrMeasured, Int_t burst)
+{
+  //
+  // calculate the drift velocity from the reconstructed clusters associated
+  // to the ideal laser tracks
+  // use two different fit scenarios: Separate fit for A- and C-Side
+  //                                  Common fit for A- and C-Side
+  //
+  
+  if (!fArrFitGraphs){
+    fArrFitGraphs=new TObjArray;
+  }
+  
+//   static TLinearFitter fdriftA(5,"hyp4");
+//   static TLinearFitter fdriftC(5,"hyp4");
+//   static TLinearFitter fdriftAC(6,"hyp5");
+  Double_t timestamp=fTimeBursts[burst];
+  
+  static TLinearFitter fdriftA(4,"hyp3");
+  static TLinearFitter fdriftC(4,"hyp3");
+  static TLinearFitter fdriftAC(5,"hyp4");
+  TVectorD fitA(7),fitC(7),fitAC(8); //fit values+chi2+npoints
+  
+  Float_t chi2A = 10;
+  Float_t chi2C = 10;
+  Float_t chi2AC = 10;
+  Int_t npointsA=0;
+  Int_t npointsC=0;
+  Int_t npointsAC=0;
+  
+  Double_t minres[3]={20.,1,0.8};
+  //----
+  for(Int_t i=0;i<3;i++){
+    
+    fdriftA.ClearPoints();
+    fdriftC.ClearPoints();
+    fdriftAC.ClearPoints();
+    
+    chi2A = 10;
+    chi2C = 10;
+    chi2AC = 10;
+    npointsA=0;
+    npointsC=0;
+    npointsAC=0;
+    
+    for (Int_t itrack=0; itrack<338; ++itrack){
+      AliTPCLaserTrack *iltr=(AliTPCLaserTrack*)arrIdeal->UncheckedAt(itrack);
+      AliTPCLaserTrack *mltr=(AliTPCLaserTrack*)arrMeasured->UncheckedAt(itrack);
+
+      //-- Exclude the tracks which has the biggest inclanation angle
+      if ((itrack%7==0||itrack%7==6)&&itrack<336) continue;
+      Int_t clustercounter=0;
+      Int_t indexMax=159;
+      
+      //-- exclude the low intensity tracks
+      
+      for (Int_t index=0; index<indexMax; ++index){
+        
+        Double_t mGx=mltr->fVecGX->GetMatrixArray()[index];
+        Double_t mGy=mltr->fVecGY->GetMatrixArray()[index];
+        Double_t mGz=mltr->fVecGZ->GetMatrixArray()[index];
+        
+        if (TMath::Abs(mGz)<1e-20 && TMath::Abs(mGy)<1e-20 && TMath::Abs(mGx)<1e-20) clustercounter++;
+      }
+      if (clustercounter>130&&itrack<336) continue; // don't accept tracks with <= 159-130=29 clusters
+      clustercounter=0;
+
+      
+      //-- drift length
+      Double_t zlength = (iltr->GetSide()==0)? fParam->GetZLength(36): fParam->GetZLength(71);
+      
+      if (itrack>335) indexMax=557568/2;
+      for (Int_t index=0; index<indexMax; ++index){
+        Double_t iGx=iltr->fVecGX->GetMatrixArray()[index];
+        Double_t iGy=iltr->fVecGY->GetMatrixArray()[index];
+        Double_t iGz=iltr->fVecGZ->GetMatrixArray()[index];
+        Double_t iR=TMath::Sqrt(iGx*iGx+iGy*iGy);
+        
+        Double_t mGx=mltr->fVecGX->GetMatrixArray()[index];
+        Double_t mGy=mltr->fVecGY->GetMatrixArray()[index];
+        Double_t mGz=mltr->fVecGZ->GetMatrixArray()[index];
+        Double_t mR=TMath::Sqrt(mGx*mGx+mGy*mGy);
+        
+      //cut if no track info available
+        if (iltr->GetBundle()==0) continue;
+        if (iR<133||mR<133) continue;
+        if(mltr->fVecP2->GetMatrixArray()[index]>minres[i]) continue;
+        
+        Double_t ldrift  = (iltr->GetSide()==0)?zlength-iGz:iGz+zlength;
+        Double_t mdrift  = (iltr->GetSide()==0)?zlength-mGz:mGz+zlength;
+        
+        //Double_t xxx[4] = {ldrift,iGy*ldrift/(zlength*250.), 250.-mR, iltr->fVecSec->GetMatrixArray()[index]>35};
+        Double_t xxx[3] = {ldrift,iGy*ldrift/(zlength*250.), 250.-mR};
+        
+        if (iltr->GetSide()==0){
+          fdriftA.AddPoint(xxx,mdrift,1);
+        }else{
+          fdriftC.AddPoint(xxx,mdrift,1);
+        }
+//         Double_t xxx2[4] = { ldrift,iGy*ldrift/(zlength*250.), 250.-mR, iltr->fVecSec->GetMatrixArray()[index]>35, iltr->GetSide()};
+        Double_t xxx2[4] = { ldrift,iGy*ldrift/(zlength*250.), 250.-mR, iltr->GetSide()};
+        fdriftAC.AddPoint(xxx2,mdrift,1);
+        
+      }//end index loop
+    }//end laser track loop
+    
+  //perform fit
+    fdriftA.Eval();
+    fdriftC.Eval();
+    fdriftAC.Eval();
+    
+    
+    
+  //get fit values
+    fdriftA.GetParameters(fitA);
+    fdriftC.GetParameters(fitC);
+    fdriftAC.GetParameters(fitAC);
+    
+  //Parameters:  0 linear offset
+  //             1 mean drift velocity correction factor
+  //             2 relative global y gradient
+  //             3 radial deformation
+  //             4 IROC/OROC offset
+    
+//      FindResiduals(arrMeasured,arrIdeal,fitA,fitC);
+    
+    for (Int_t itrack=0; itrack<338; ++itrack){
+      AliTPCLaserTrack *iltr=(AliTPCLaserTrack*)arrIdeal->UncheckedAt(itrack);
+      AliTPCLaserTrack *mltr=(AliTPCLaserTrack*)arrMeasured->UncheckedAt(itrack);
+
+      //-- Exclude the tracks which has the biggest inclanation angle
+      if ((itrack%7==0||itrack%7==6)&&itrack<336) continue;
+      Int_t clustercounter=0;
+      Int_t indexMax=159;
+
+      //-- exclude the low intensity tracks
+
+      for (Int_t index=0; index<indexMax; ++index){
+        Double_t mGx=mltr->fVecGX->GetMatrixArray()[index];
+        Double_t mGy=mltr->fVecGY->GetMatrixArray()[index];
+        Double_t mGz=mltr->fVecGZ->GetMatrixArray()[index];
+        if (TMath::Abs(mGz)<1e-20 && TMath::Abs(mGy)<1e-20 && TMath::Abs(mGx)<1e-20) clustercounter++;
+      }
+      if (clustercounter>130&&itrack<336) continue; // don't accept tracks with <= 159-130=29 clusters
+      clustercounter=0;
+
+      //-- drift length
+      Double_t zlength = (iltr->GetSide()==0)? fParam->GetZLength(36): fParam->GetZLength(71);
+
+      if (itrack>335) indexMax=557568/2;
+      for (Int_t index=0; index<indexMax; ++index){
+        Double_t iGx=iltr->fVecGX->GetMatrixArray()[index];
+        Double_t iGy=iltr->fVecGY->GetMatrixArray()[index];
+        Double_t iGz=iltr->fVecGZ->GetMatrixArray()[index];
+        Double_t iR=TMath::Sqrt(iGx*iGx+iGy*iGy);
+        
+        Double_t mGx=mltr->fVecGX->GetMatrixArray()[index];
+        Double_t mGy=mltr->fVecGY->GetMatrixArray()[index];
+        Double_t mGz=mltr->fVecGZ->GetMatrixArray()[index];
+        Double_t mR=TMath::Sqrt(mGx*mGx+mGy*mGy);
+        
+      //cut if no track info available
+        if (iR<60||mR<60) continue;
+        
+        Double_t ldrift  = (iltr->GetSide()==0)?zlength-iGz:iGz+zlength;
+        Double_t mdrift  = (iltr->GetSide()==0)?zlength-mGz:mGz+zlength;
+        
+        TVectorD *v=&fitA;
+        if (iltr->GetSide()==1) v=&fitC;
+//         Double_t iCorr=(*v)[0]+(*v)[1]*ldrift+(*v)[2]*iGy*ldrift/(zlength*250.)+(*v)[3]*(250.-mR)+(*v)[4]*( iltr->fVecSec->GetMatrixArray()[index]>35);
+        Double_t iCorr=(*v)[0]+(*v)[1]*ldrift+(*v)[2]*iGy*ldrift/(zlength*250.)+(*v)[3]*(250.-mR);
+        
+        mltr->fVecP2->GetMatrixArray()[index]=mdrift-iCorr;
+        
+      }
+    }
+    
+    fitA.ResizeTo(7);
+    fitC.ResizeTo(7);
+    fitAC.ResizeTo(8);
+    
+//set statistics values
+
+    npointsA= fdriftA.GetNpoints();
+    if (npointsA>0) chi2A = fdriftA.GetChisquare()/fdriftA.GetNpoints();
+    fitA[5]=npointsA;
+    fitA[6]=chi2A;
+    
+    npointsC= fdriftC.GetNpoints();
+    if (npointsC>0) chi2C = fdriftC.GetChisquare()/fdriftC.GetNpoints();
+    fitC[5]=npointsC;
+    fitC[6]=chi2C;
+    
+    npointsAC= fdriftAC.GetNpoints();
+    if (npointsAC>0) chi2AC = fdriftAC.GetChisquare()/fdriftAC.GetNpoints();
+    fitAC[5]=npointsAC;
+    fitAC[6]=chi2AC;
+    
+    if (fStreamLevel>2){
+    //laser track information
+      (*GetDebugStreamer()) << "DriftV" <<
+        "iter="   << i <<
+        "run="    << fRunNumber <<
+        "time="   << timestamp <<
+        "fitA.="  << &fitA <<
+        "fitC.="  << &fitC <<
+        "fitAC.=" << &fitAC <<
+        "\n";
+      
       
     }
     
   }
-  if ( channelCounter>0 ){
-    fMeanT0rms/=channelCounter;
-    fMeanQrms/=channelCounter;
-    fMeanRMSrms/=channelCounter;
+//-----
+  
+  
+  //Parameters:  0 linear offset (global)
+  //             1 mean drift velocity correction factor
+  //             2 relative global y gradient
+  //             3 radial deformation
+  //             4 IROC/OROC offset
+  //             5 linear offset relative A-C
+  
+  //get graphs
+  TGraphErrors *grA[7];
+  TGraphErrors *grC[7];
+  TGraphErrors *grAC[8];
+  TString names("GRAPH_MEAN_DELAY_LASER_ALL_;GRAPH_MEAN_DRIFT_LASER_ALL_;GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_;GRAPH_MEAN_RGRADIENT_LASER_ALL_;GRAPH_MEAN_IROCOROCOFFSET_LASER_ALL_;GRAPH_MEAN_NPOINTS_LASER_ALL_;GRAPH_MEAN_CHI2_LASER_ALL_");
+  TString namesAC("GRAPH_MEAN_DELAY_LASER_ALL_;GRAPH_MEAN_DRIFT_LASER_ALL_;GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_;GRAPH_MEAN_RGRADIENT_LASER_ALL_;GRAPH_MEAN_IROCOROCOFFSET_LASER_ALL_;GRAPH_MEAN_NPOINTS_LASER_ALL_;GRAPH_MEAN_CHI2_LASER_ALL_;GRAPH_MEAN_DELAYC_LASER_ALL_");
+  
+  TObjArray *arrNames=names.Tokenize(";");
+  TObjArray *arrNamesAC=namesAC.Tokenize(";");
+  
+  //A-Side graphs
+  for (Int_t i=0; i<7; ++i){
+    TString grName=arrNames->UncheckedAt(i)->GetName();
+    grName+="A";
+    grA[i]=(TGraphErrors*)fArrFitGraphs->FindObject(grName.Data());
+    if (!grA[i]){
+      grA[i]=new TGraphErrors;
+      grA[i]->SetName(grName.Data());
+      grA[i]->SetTitle(grName.ReplaceAll("_"," ").Data());
+      fArrFitGraphs->Add(grA[i]);
+    }
+//     Int_t ipoint=grA[i]->GetN();
+    Int_t ipoint=burst;
+    grA[i]->SetPoint(ipoint,timestamp,fitA(i));
+    grA[i]->SetPointError(ipoint,60,.0001);
+    if (i<4) grA[i]->SetPointError(ipoint,60,fdriftA.GetCovarianceMatrixElement(i,i));
   }
-//   if ( fDebugStreamer ) fDebugStreamer->GetFile()->Write();
-//    delete fDebugStreamer;
-//    fDebugStreamer = 0x0;
-  fVEventTime.ResizeTo(fNevents); 
-  fVEventNumber.ResizeTo(fNevents);
-  fVTime0SideA.ResizeTo(fNevents);
-  fVTime0SideC.ResizeTo(fNevents);
+  
+  //C-Side graphs
+  for (Int_t i=0; i<7; ++i){
+    TString grName=arrNames->UncheckedAt(i)->GetName();
+    grName+="C";
+    grC[i]=(TGraphErrors*)fArrFitGraphs->FindObject(grName.Data());
+    if (!grC[i]){
+      grC[i]=new TGraphErrors;
+      grC[i]->SetName(grName.Data());
+      grC[i]->SetTitle(grName.ReplaceAll("_"," ").Data());
+      fArrFitGraphs->Add(grC[i]);
+    }
+//     Int_t ipoint=grC[i]->GetN();
+    Int_t ipoint=burst;
+    grC[i]->SetPoint(ipoint,timestamp,fitC(i));
+    grC[i]->SetPointError(ipoint,60,.0001);
+    if (i<4) grC[i]->SetPointError(ipoint,60,fdriftA.GetCovarianceMatrixElement(i,i));
+  }
+  
+  //AC-Side graphs
+  for (Int_t i=0; i<8; ++i){
+    TString grName=arrNamesAC->UncheckedAt(i)->GetName();
+    grName+="AC";
+    grAC[i]=(TGraphErrors*)fArrFitGraphs->FindObject(grName.Data());
+    if (!grAC[i]){
+      grAC[i]=new TGraphErrors;
+      grAC[i]->SetName(grName.Data());
+      grAC[i]->SetTitle(grName.ReplaceAll("_"," ").Data());
+      fArrFitGraphs->Add(grAC[i]);
+    }
+//     Int_t ipoint=grAC[i]->GetN();
+    Int_t ipoint=burst;
+    grAC[i]->SetPoint(ipoint,timestamp,fitAC(i));
+    grAC[i]->SetPointError(ipoint,60,.0001);
+    if (i<5) grAC[i]->SetPointError(ipoint,60,fdriftA.GetCovarianceMatrixElement(i,i));
+  }
+  
+  if (fDebugLevel>10){
+    printf("A side fit parameters:\n");
+    fitA.Print();
+    printf("\nC side fit parameters:\n");
+    fitC.Print();
+    printf("\nAC side fit parameters:\n");
+    fitAC.Print();
+  }
+  delete arrNames;
+  delete arrNamesAC;
+}
+
+//_____________________________________________________________________
+Double_t AliTPCCalibCE::SetBurstHnDrift()
+{
+  //
+  // Create a new THnSparse for the current burst
+  // return the time of the current burst
+  //
+  Int_t i=0;
+  for(i=0; i<fTimeBursts.GetNrows(); ++i){
+    if(fTimeBursts.GetMatrixArray()[i]<1.e-20) break;
+    if(TMath::Abs(fTimeBursts.GetMatrixArray()[i]-fTimeStamp)<300){
+      fHnDrift=(THnSparseI*)fArrHnDrift.UncheckedAt(i);
+      return fTimeBursts(i);
+    }
+  }
+  
+  CreateDVhist();
+  fArrHnDrift.AddAt(fHnDrift,i);
+  fTimeBursts.GetMatrixArray()[i]=fTimeStamp;
+//   fPeaks[4]=0;
+  return fTimeStamp;
+}
+
+//_____________________________________________________________________
+void AliTPCCalibCE::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t /*append*/)
+{
+  //
+  //  Write class to file
+  //  option can be specified in the dir option:
+  //  options:
+  //    name=<objname>: the name of the calibration object in file will be <objname>
+  //    type=<type>:    the saving type:
+  //                    0 - write the complte object
+  //                    1 - Store the histogram arrays separately to make the streamed object smaller, Analyse to be called
+  //                    2 - like 2, but in addition delete objects that will most probably not be used for calibration
+  //                    3 - store only calibration output, don't store the reference histograms
+  //                        and THnSparse (requires Analyse called before)
+  //
+  //  NOTE: to read the object back, the ReadFromFile function should be used
+  //
+  
+  TString sDir(dir);
+  TString objName=GetName();
+  Int_t type=0;
+  
+  //get options
+  TObjArray *arr=sDir.Tokenize(",");
+  TIter next(arr);
+  TObjString *s;
+  while ( (s=(TObjString*)next()) ){
+    TString optString=s->GetString();
+    optString.Remove(TString::kBoth,' ');
+    if (optString.BeginsWith("name=")){
+      objName=optString.ReplaceAll("name=","");
+    }
+    if (optString.BeginsWith("type=")){
+      optString.ReplaceAll("type=","");
+      type=optString.Atoi();
+    }
+  }
+
+  if (type==1||type==2) {
+    //delete most probably not needed stuff
+    //This requires Analyse to be called after reading the object from file
+    fCalRocArrayT0.Delete();
+    fCalRocArrayT0Err.Delete();
+    fCalRocArrayQ.Delete();
+    fCalRocArrayRMS.Delete();
+    fCalRocArrayOutliers.Delete();
+  }
+  if (type==2||type==3){
+    fParamArrayEventPol1.Delete();
+    fParamArrayEventPol2.Delete();
+  }
+  
+  TObjArray histoQArray(72);
+  TObjArray histoT0Array(72);
+  TObjArray histoRMSArray(72);
+  TObjArray arrHnDrift(fArrHnDrift.GetEntries());
+
+  //save all large 2D histograms in separte pointers
+  //to have a smaller memory print when saving the object
+  if (type==1||type==2||type==3){
+    for (Int_t i=0; i<72; ++i){
+      histoQArray.AddAt(fHistoQArray.UncheckedAt(i),i);
+      histoT0Array.AddAt(fHistoT0Array.UncheckedAt(i),i);
+      histoRMSArray.AddAt(fHistoRMSArray.UncheckedAt(i),i);
+    }
+    fHistoQArray.SetOwner(kFALSE);
+    fHistoT0Array.SetOwner(kFALSE);
+    fHistoRMSArray.SetOwner(kFALSE);
+    fHistoQArray.Clear();
+    fHistoT0Array.Clear();
+    fHistoRMSArray.Clear();
+    
+    for (Int_t i=0;i<fArrHnDrift.GetEntries();++i){
+      arrHnDrift.AddAt(fArrHnDrift.UncheckedAt(i),i);
+    }
+    fArrHnDrift.SetOwner(kFALSE);
+    fArrHnDrift.Clear();
+  }
+  
+  
+  TDirectory *backup = gDirectory;
+  
+  TFile f(filename,"recreate");
+  this->Write(objName.Data());
+  if (type==1||type==2) {
+    histoQArray.Write("histoQArray",TObject::kSingleKey);
+    histoT0Array.Write("histoT0Array",TObject::kSingleKey);
+    histoRMSArray.Write("histoRMSArray",TObject::kSingleKey);
+    arrHnDrift.Write("arrHnDrift",TObject::kSingleKey);
+  }
+
+  f.Save();
+  f.Close();
+
+  //move histograms back to the object
+  if (type==1||type==2){
+    for (Int_t i=0; i<72; ++i){
+      fHistoQArray.AddAt(histoQArray.UncheckedAt(i),i);
+      fHistoT0Array.AddAt(histoT0Array.UncheckedAt(i),i);
+      fHistoRMSArray.AddAt(histoRMSArray.UncheckedAt(i),i);
+    }
+    fHistoQArray.SetOwner(kTRUE);
+    fHistoT0Array.SetOwner(kTRUE);
+    fHistoRMSArray.SetOwner(kTRUE);
+
+    for (Int_t i=0;i<arrHnDrift.GetEntries();++i){
+      fArrHnDrift.AddAt(arrHnDrift.UncheckedAt(i),i);
+    }
+    fArrHnDrift.SetOwner(kTRUE);
+  }
+  
+  if ( backup ) backup->cd();
+}
+//_____________________________________________________________________
+AliTPCCalibCE* AliTPCCalibCE::ReadFromFile(const Char_t *filename)
+{
+  //
+  // Read object from file
+  // Handle properly if the histogram arrays were stored separately
+  // call Analyse to make sure to have the calibration relevant information in the object
+  //
+  
+  TFile f(filename);
+  if (!f.IsOpen() || f.IsZombie() ) return 0x0;
+  TList *l=f.GetListOfKeys();
+  TIter next(l);
+  TKey *key=0x0;
+  TObject *o=0x0;
+
+  AliTPCCalibCE *ce=0x0;
+  TObjArray *histoQArray=0x0;
+  TObjArray *histoT0Array=0x0;
+  TObjArray *histoRMSArray=0x0;
+  TObjArray *arrHnDrift=0x0;
+  
+  while ( (key=(TKey*)next()) ){
+    o=key->ReadObj();
+    if ( o->IsA()==AliTPCCalibCE::Class() ){
+      ce=(AliTPCCalibCE*)o;
+    } else if ( o->IsA()==TObjArray::Class() ){
+      TString name=key->GetName();
+      if ( name=="histoQArray") histoQArray=(TObjArray*)o;
+      if ( name=="histoT0Array") histoT0Array=(TObjArray*)o;
+      if ( name=="histoRMSArray") histoRMSArray=(TObjArray*)o;
+      if ( name=="arrHnDrift") arrHnDrift=(TObjArray*)o;
+    }
+  }
+
+  if (ce){
+  //move histograms back to the object
+    TH1* hist=0x0;
+    if (histoQArray){
+      for (Int_t i=0; i<72; ++i){
+        hist=(TH1*)histoQArray->UncheckedAt(i);
+        if (hist) hist->SetDirectory(0x0);
+        ce->fHistoQArray.AddAt(hist,i);
+      }
+      ce->fHistoQArray.SetOwner(kTRUE);
+    }
+    
+    if (histoT0Array) {
+      for (Int_t i=0; i<72; ++i){
+        hist=(TH1*)histoT0Array->UncheckedAt(i);
+        if (hist) hist->SetDirectory(0x0);
+        ce->fHistoT0Array.AddAt(hist,i);
+      }
+      ce->fHistoT0Array.SetOwner(kTRUE);
+    }
+    
+    if (histoRMSArray){
+      for (Int_t i=0; i<72; ++i){
+        hist=(TH1*)histoRMSArray->UncheckedAt(i);
+        if (hist) hist->SetDirectory(0x0);
+        ce->fHistoRMSArray.AddAt(hist,i);
+      }
+      ce->fHistoRMSArray.SetOwner(kTRUE);
+    }
+    
+    if (arrHnDrift){
+      for (Int_t i=0; i<arrHnDrift->GetEntries(); ++i){
+        THnSparseI *hSparse=(THnSparseI*)arrHnDrift->UncheckedAt(i);
+        ce->fArrHnDrift.AddAt(hSparse,i);
+      }
+    }
+    
+    ce->Analyse();
+  }
+  f.Close();
+  
+  return ce;
 }

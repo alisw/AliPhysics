@@ -66,6 +66,7 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetPadTime0() const {return fPadTime0;}
   AliTPCCalPad* GetDistortionMap(Int_t i) const;
   AliTPCCorrection * GetTPCComposedCorrection() const { return fComposedCorrection;}
+  TObjArray * GetTPCComposedCorrectionArray() const { return fComposedCorrectionArray;}
   void          SetTPCComposedCorrection(AliTPCCorrection *compCorr) { fComposedCorrection=compCorr;}
   AliTPCCorrection * GetTPCComposedCorrection(Float_t field) const;
 
@@ -96,6 +97,7 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetCEQmean()    const {return fCEData?static_cast<AliTPCCalPad*>(fCEData->FindObject("CEQmean")):0;}
   TObjArray*    GetCErocTtime() const {return fCEData?static_cast<TObjArray*>(fCEData->FindObject("rocTtime")):0;}
   TObjArray*    GetCErocQtime() const {return fCEData?static_cast<TObjArray*>(fCEData->FindObject("rocQtime")):0;}
+  TObjArray*    GetCEfitsDrift()const {return fCEData?static_cast<TObjArray*>(fCEData->FindObject("ceFitsDrift")):0;}
   TGraph*       GetCErocTgraph(const Int_t roc)const {return GetCErocTtime()?static_cast<TGraph*>(GetCErocTtime()->At(roc)):0;}
   TGraph*       GetCErocQgraph(const Int_t roc)const {return GetCErocQtime()?static_cast<TGraph*>(GetCErocQtime()->At(roc)):0;}
   static Float_t GetCEdriftTime(Int_t run, Int_t sector, Double_t timeStamp=-1., Int_t *entries=0);

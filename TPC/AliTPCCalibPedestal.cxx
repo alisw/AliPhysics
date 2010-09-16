@@ -529,7 +529,7 @@ void AliTPCCalibPedestal::Merge(AliTPCCalibPedestal * const ped)
   //
   //  Merge reference histograms of sig to the current AliTPCCalibSignal
   //
-
+  MergeBase(ped);
   // merge histograms
   for (Int_t iSec=0; iSec<72; ++iSec){
     TH2F *hRefPedMerge   = ped->GetHistoPedestal(iSec);

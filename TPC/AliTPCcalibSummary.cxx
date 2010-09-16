@@ -581,9 +581,10 @@ void AliTPCcalibSummary::ProcessDriftAll(Int_t run,Int_t timeStamp){
   // test of utils
   static Double_t vdriftCEA=0, vdriftCEC=0, vdriftCEM=0;
   static Double_t vdriftLTA=0, vdriftLTC=0, vdriftLTM=0;
+  static Double_t vdriftLTAon=0, vdriftLTCon=0, vdriftLTMon=0;
   static Double_t vdriftITS=0;
   static Double_t vdriftP=0;
-  static Double_t dcea=0, dcec=0, dcem=0,  dla=0,dlc=0,dlm=0,dp=0;
+  static Double_t dcea=0, dcec=0, dcem=0,  dla=0,dlc=0,dlm=0, dlaon=0,dlcon=0,dlmon=0, dp=0;
   static Double_t dits=0;
   static Double_t ltime0A;
   static Double_t ltime0C;
@@ -600,6 +601,10 @@ void AliTPCcalibSummary::ProcessDriftAll(Int_t run,Int_t timeStamp){
   vdriftLTA= fDButil->GetVDriftTPCLaserTracks(dla,run,timeStamp,36000,0);
   vdriftLTC= fDButil->GetVDriftTPCLaserTracks(dlc,run,timeStamp,36000,1);
   vdriftLTM= fDButil->GetVDriftTPCLaserTracks(dlm,run,timeStamp,36000,2);
+  //
+  vdriftLTAon= fDButil->GetVDriftTPCLaserTracksOnline(dlaon,run,timeStamp,36000,0);
+  vdriftLTCon= fDButil->GetVDriftTPCLaserTracksOnline(dlcon,run,timeStamp,36000,1);
+  vdriftLTMon= fDButil->GetVDriftTPCLaserTracksOnline(dlmon,run,timeStamp,36000,2);
   //
   vdriftITS= fDButil->GetVDriftTPCITS(dits, run,timeStamp);
   //
@@ -620,6 +625,12 @@ void AliTPCcalibSummary::ProcessDriftAll(Int_t run,Int_t timeStamp){
     "dla="<<dla<<
     "dlc="<<dlc<<
     "dlm="<<dlm<<
+    "vdriftLTAon="<<vdriftLTAon<<   // drift velocity laser tracks and CE from online algorithm
+    "vdriftLTCon="<<vdriftLTCon<<
+    "vdriftLTMon="<<vdriftLTMon<<
+    "dlaOn="<<dlaon<<
+    "dlcOn="<<dlcon<<
+    "dlmOn="<<dlmon<<
     //
     //
     "vdriftITS="<<vdriftITS<<

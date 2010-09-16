@@ -10,6 +10,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #include <TVectorT.h>
+#include <THnSparse.h>
+
 #include "AliTPCCalibRawBase.h"
 class TH1S;
 #include "TObjArray.h"
@@ -41,7 +43,11 @@ public:
   
   virtual Int_t Update(const Int_t isector, const Int_t iRow, const Int_t iPad,
                        const Int_t iTimeBin, const Float_t signal);
+  virtual void ProcessBunch(const Int_t sector, const Int_t row, const Int_t pad,
+                            const Int_t length, const UInt_t startTimeBin, const UShort_t* signal);
+  
   virtual void Analyse();
+  void AnalyseTrack();
   
     //
   AliTPCCalROC* GetCalRocT0  (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
@@ -59,7 +65,7 @@ public:
   TH2S* GetHistoQ  (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
   TH2S* GetHistoT0 (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
   TH2S* GetHistoRMS(Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
-  
+
   Float_t GetMeanT0rms() const {return fMeanT0rms;}
   Float_t GetMeanQrms() const {return fMeanQrms;}
   Float_t GetMeanRMSrms() const {return fMeanRMSrms;}
@@ -100,6 +106,9 @@ public:
   void  SetPedestalDatabase(AliTPCCalPad * const pedestalTPC, AliTPCCalPad * const padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
   void  SetIsZeroSuppressed(Bool_t zs=kTRUE) { fIsZeroSuppressed=zs; }
   void  SetSecRejectRatio(Float_t ratio) { fSecRejectRatio=ratio; }
+
+  void SetProcessOld(Bool_t process=kTRUE) {fProcessOld=process;}
+  void SetProcessNew(Bool_t process=kTRUE) {fProcessNew=process; if (process&&!fHnDrift) CreateDVhist(); }
   //Getters
   Int_t GetNeventsProcessed() const { return fNevents; }
   
@@ -116,6 +125,23 @@ public:
   virtual Long64_t Merge(TCollection * const list);
   
   TGraph *MakeGraphTimeCE(Int_t sector, Int_t xVariable=0, Int_t fitType=0, Int_t fitParameter=0);
+
+  //
+  // New functions using also the laser tracks
+  //
+  Bool_t IsEdgePad(Int_t sector, Int_t row, Int_t pad) const;
+  
+  void FindLocalMaxima(TObjArray * const arrObj, Double_t timestamp, Int_t burst);
+  Int_t FindLaserTrackID(Int_t sector,Int_t row, const Double_t *peakpos,Double_t &mindist, const Double_t *peakposloc, Int_t &itrackMin2);
+  
+  const THnSparseI *GetHnDrift() const {return fHnDrift;}
+  const TObjArray& GetArrHnDrift() const {return fArrHnDrift;}
+  const TVectorD&  GetTimeBursts() const {return fTimeBursts;}
+  const TObjArray  *GetArrFitGraphs() const {return fArrFitGraphs;}
+
+  virtual void DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
+  
+  static AliTPCCalibCE *ReadFromFile(const Char_t *filename);
   
 protected:
   virtual void EndEvent();
@@ -201,6 +227,22 @@ private:
   
   Float_t   fCurrentCETimeRef;      //! Time refernce of the current sector
   
+  // new part of the algorithm
+  Bool_t      fProcessOld;             // Whether to use the old algorithm
+  Bool_t      fProcessNew;             // Whether to use the new algorithm
+  Bool_t      fAnalyseNew;             //! Whether to analyse the new part of the algorithm.
+                                       //In the DA this needs to be switched off, in the Preprocessor on...
+  enum {kHnBinsDV=5};
+  THnSparseI *fHnDrift;                //! Histogram digits for each pad and timebin for several timestamps
+  TObjArray   fArrHnDrift;             // array of sparse histograms for each burst
+  TVectorD    fTimeBursts;             //  time stamps of bursts
+  UInt_t      fBinsLastAna[100];       // number of bin in the THnSparse during the last analysis
+  UShort_t    fPeaks[5];               //! Peak position: 4 laser layers and CE
+  UShort_t    fPeakWidths[5];          //! Peak window widths
+  TObjArray  *fArrFitGraphs;           // Fit resut graphs for each parameter
+  
+  
+  //
   void   FindPedestal(Float_t part=.6);
   void   UpdateCETimeRef(); //Get the time reference of the last valid measurement in sector
   void   FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF maxima);
@@ -222,12 +264,41 @@ private:
   
   void ResetPad();
   void ProcessPad();
+
+  // new part of the algorithm
+  void CreateDVhist();
+  
+  void   FindLaserLayers();
+  Bool_t IsPeakInRange(UShort_t timebin) const;
+
+  TObjArray *SetupMeasured();
+  void ResetMeasured(TObjArray * const arr);
+  
+  void AddCEtoIdeal(TObjArray *arr);
+
+  void CalculateDV(TObjArray * const arrIdeal, TObjArray * const arrMeasured, Int_t burst);
+  Double_t SetBurstHnDrift();
   //debug
   TVectorF* GetPadQEvent(Int_t sector, Bool_t force=kFALSE);
   TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
   TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
   
-  ClassDef(AliTPCCalibCE,8)  //Implementation of the TPC Central Electrode calibration
+  ClassDef(AliTPCCalibCE,9)  //Implementation of the TPC Central Electrode calibration
 };
+
+//Inline functions
+//_____________________________________________________________________
+inline Bool_t AliTPCCalibCE::IsPeakInRange(UShort_t timebin) const
+{
+  //
+  // Check whether timebin is in the range of a laser layer
+  //
+//   return kTRUE;
+  if (fPeaks[4]<2) return kTRUE; //not determined yet
+  for (Int_t i=0; i<5; ++i){
+    if (TMath::Abs((Short_t)timebin-(Short_t)fPeaks[i])<(Short_t)fPeakWidths[i]) return kTRUE;
+  }
+  return kFALSE;
+}
 
 #endif
