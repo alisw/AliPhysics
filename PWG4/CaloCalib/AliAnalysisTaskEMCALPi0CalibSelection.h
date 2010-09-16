@@ -60,6 +60,11 @@ public:
   void SetGeometryName(TString name)   { fEMCALGeoName = name ; }
   TString GeometryName() const { return fEMCALGeoName ; }
  
+  //Modules fiducial region
+  Bool_t CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells) ;
+  void   SetNumberOfCellsFromEMCALBorder(Int_t n) {fNCellsFromEMCALBorder = n; }
+  Int_t  GetNumberOfCellsFromEMCALBorder() const  {return fNCellsFromEMCALBorder; }
+  
   // Bad channels, copy from PWG4/PartCorrBase/AliCalorimeterUtils
   Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
   void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; InitEMCALBadChannelStatusMap();}
@@ -124,7 +129,8 @@ private:
   Bool_t  fSameSM;        // Combine clusters in channels on same SM
   Bool_t  fOldAOD;        // Reading Old AODs, created before release 4.20
   TString fEMCALGeoName;  // Name of geometry to use.
-	
+  Int_t   fNCellsFromEMCALBorder; //  Number of cells from EMCAL border the cell with maximum amplitude has to be.
+
   Bool_t     fRemoveBadChannels;         // Check the channel status provided and remove clusters with bad channels
   TObjArray *fEMCALBadChannelMap;        // Array of histograms with map of bad channels, EMCAL
   Bool_t     fRecalibration;             // Switch on or off the recalibration
@@ -144,7 +150,7 @@ private:
   TH1I*   fhNEvents;        //! Number of events counter histogram
   TList * fCuts ;           //! List with analysis cuts
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,4);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,5);
 
 };
 
