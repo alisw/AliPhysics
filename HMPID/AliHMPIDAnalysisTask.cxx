@@ -69,11 +69,13 @@ AliHMPIDAnalysisTask::AliHMPIDAnalysisTask() :
   fThetavsPiFromK(0x0),
   fThetapivsPesd(0x0),
   fThetaKvsPesd(0x0),
-  fThetaPvsPesd(0x0)
+  fThetaPvsPesd(0x0),
+  fTree(0x0)
 {
   //
   //Default ctor
   //
+  for (Int_t i=0; i<34; i++) fVar[i]=0;
 }
 
 //___________________________________________________________________________
@@ -104,13 +106,16 @@ AliHMPIDAnalysisTask::AliHMPIDAnalysisTask(const Char_t* name) :
   fThetavsPiFromK(0x0),
   fThetapivsPesd(0x0),
   fThetaKvsPesd(0x0),
-  fThetaPvsPesd(0x0)
+  fThetaPvsPesd(0x0),
+  fTree(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
   //
+  for (Int_t i=0; i<34; i++) fVar[i]=0;
 
   DefineOutput(1,TList::Class());
+  DefineOutput(2,TTree::Class());
 }
 
 //___________________________________________________________________________
@@ -156,6 +161,8 @@ AliHMPIDAnalysisTask& AliHMPIDAnalysisTask::operator=(const AliHMPIDAnalysisTask
     fThetapivsPesd   = c.fThetapivsPesd;
     fThetaKvsPesd    = c.fThetaKvsPesd;
     fThetaPvsPesd    = c.fThetaPvsPesd;
+    fTree            = c.fTree;
+    for (Int_t i=0; i<34; i++) fVar[i]=c.fVar[i];
   }
   return *this;
 }
@@ -188,11 +195,13 @@ AliHMPIDAnalysisTask::AliHMPIDAnalysisTask(const AliHMPIDAnalysisTask& c) :
   fThetavsPiFromK(c.fThetavsPiFromK),
   fThetapivsPesd(c.fThetapivsPesd),
   fThetaKvsPesd(c.fThetaKvsPesd),
-  fThetaPvsPesd(c.fThetaPvsPesd)
+  fThetaPvsPesd(c.fThetaPvsPesd),
+  fTree(c.fTree)
 {
   //
   // Copy Constructor
   //
+  for (Int_t i=0; i<34; i++) fVar[i]=c.fVar[i];
 }
  
 //___________________________________________________________________________
@@ -201,11 +210,11 @@ AliHMPIDAnalysisTask::~AliHMPIDAnalysisTask() {
   //destructor
   //
   Info("~AliHMPIDAnalysisTask","Calling Destructor");
-  if (fHmpHistList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fHmpHistList;
+  if (fHmpHistList /*&& !AliAnalysisManager::GetAnalysisManager()->IsProofMode()*/) delete fHmpHistList;
 }
 
 //___________________________________________________________________________
-void AliHMPIDAnalysisTask::UserConnectInputData(Option_t *)
+void AliHMPIDAnalysisTask::ConnectInputData(Option_t *)
 {
   // Connect ESD here
 
@@ -223,6 +232,7 @@ void AliHMPIDAnalysisTask::UserConnectInputData(Option_t *)
       fUseMC = kFALSE;
     } else
       fMC = mcH->MCEvent();
+      if (!fMC) AliDebug(2,Form("ERROR: Could not get MCEvent"));
   }
 }
 
@@ -266,7 +276,6 @@ void AliHMPIDAnalysisTask::UserExec(Option_t *)
     if(Equal(track->GetHMPIDsignal(),-20.,ktol)) continue;
     if(track->GetHMPIDcluIdx() < 0) continue;
 
-    //Int_t ch = track->GetHMPIDcluIdx()/1000000;
     Int_t q, nph;
     Float_t x, y;
     Float_t xpc, ypc, th, ph;
@@ -296,6 +305,10 @@ void AliHMPIDAnalysisTask::UserExec(Option_t *)
       thetaHmpTheorProt = TMath::ACos(TMath::Sqrt(pHmp3*pHmp3 + dGeVMass[4]*dGeVMass[4])/(n*pHmp3));
     }
 
+    Float_t b[2];
+    Float_t bCov[3];
+    track->GetImpactParameters(b,bCov);    
+
     track->GetHMPIDpid(probs);
     pPid->SetProbabilities(probs);
     if (fUseMC){
@@ -304,13 +317,13 @@ void AliHMPIDAnalysisTask::UserExec(Option_t *)
     }
 
     if(track->GetHMPIDsignal() > 0 ){
-      fHmpPesdPhmp->Fill(track->P(),pHmp3);
+      if (pHmp3) fHmpPesdPhmp->Fill(track->P(),pHmp3);
       if (dist<=1.0) fHmpMipCharge1cm->Fill(q);
       fHmpNumPhots->Fill(nph);
       fHmpCkovPesd->Fill(track->P(),track->GetHMPIDsignal());
-      fHmpCkovPhmp->Fill(pHmp3,track->GetHMPIDsignal());
+      if (pHmp3) fHmpCkovPhmp->Fill(pHmp3,track->GetHMPIDsignal());
 
-      if (fUseMC){
+      if (fUseMC && dist<0.5 && TMath::Abs(th)<0.13){
         if (!pStack->IsPhysicalPrimary(label)) continue;
         Int_t pdgCode = TMath::Abs(pPart->GetPdgCode());
         if (pdgCode==211){
@@ -357,12 +370,47 @@ void AliHMPIDAnalysisTask::UserExec(Option_t *)
         }
       }
     }//there is signal
+    fVar[0] = track->GetHMPIDcluIdx()/1000000;
+    fVar[1] = pHmp3;
+    fVar[2] = dPtr;
+    fVar[3] = xpc;
+    fVar[4] = ypc;
+    fVar[5] = x;
+    fVar[6] = y;
+    fVar[7] = thetaTheorPion;
+    fVar[8] = thetaTheorKaon;
+    fVar[9] = thetaTheorProt;
+    fVar[10] = thetaHmpTheorPion;
+    fVar[11] = thetaHmpTheorKaon;
+    fVar[12] = thetaHmpTheorProt;
+    fVar[13] = (Float_t)track->GetHMPIDsignal();
+    fVar[14] = q;
+    fVar[15] = th;
+    fVar[16] = ph;
+    fVar[17] = (Float_t)track->GetSign();
+    fVar[18] = (Float_t)nph;
+    fVar[19] = (Float_t)track->GetNcls(1);
+    fVar[20] = (Float_t)probs[0];
+    fVar[21] = (Float_t)probs[1];
+    fVar[22] = (Float_t)probs[2];
+    fVar[23] = (Float_t)probs[3];
+    fVar[24] = (Float_t)probs[4];
+    fVar[25] = (Float_t)track->GetTOFsignal();
+    fVar[26] = (Float_t)track->GetKinkIndex(0);
+    fVar[27] = (Float_t)track->Xv();
+    fVar[28] = (Float_t)track->Yv();
+    fVar[29] = (Float_t)track->Zv();
+    fVar[30] = (Float_t)track->GetTPCchi2();
+    fVar[31] = b[0];
+    fVar[32] = b[1];
+    fVar[33] = track->GetHMPIDcluIdx()%1000000/1000;
+    fTree->Fill();
   }//track loop
-
   delete pPid;
 
   /* PostData(0) is taken care of by AliAnalysisTaskSE */
   PostData(1,fHmpHistList);
+  PostData(2,fTree);
 }
 
 //___________________________________________________________________________
@@ -559,7 +607,44 @@ void AliHMPIDAnalysisTask::UserCreateOutputObjects() {
    fThetaPvsPesd  = new TH2F("ThetaPvsPesd","Theta of protons vs p of esd;p_esd (GeV/c);#Theta_C",100,0,10,110,0,1.1);
    fHmpHistList->Add(fThetaPvsPesd);
 
+   OpenFile(2);
+   fTree = new TTree("Tree","Tree with data");
+   fTree->Branch("Chamber",&fVar[0]);
+   fTree->Branch("pHmp3",&fVar[1]);
+   fTree->Branch("P",&fVar[2]);
+   fTree->Branch("Xpc",&fVar[3]);
+   fTree->Branch("Ypc",&fVar[4]);
+   fTree->Branch("X",&fVar[5]);
+   fTree->Branch("Y",&fVar[6]);
+   fTree->Branch("ThetaTheorPion",&fVar[7]);
+   fTree->Branch("ThetaTheorKaon",&fVar[8]);
+   fTree->Branch("ThetaTheorProt",&fVar[9]);
+   fTree->Branch("ThetaHmpTheorPion",&fVar[10]);
+   fTree->Branch("ThetaHmpTheorKaon",&fVar[11]);
+   fTree->Branch("ThetaHmpTheorProt",&fVar[12]);
+   fTree->Branch("HMPIDsignal",&fVar[13]);
+   fTree->Branch("Charge",&fVar[14]);
+   fTree->Branch("Theta",&fVar[15]);
+   fTree->Branch("Phi",&fVar[16]);
+   fTree->Branch("Sign",&fVar[17]);
+   fTree->Branch("NumPhotons",&fVar[18]);
+   fTree->Branch("NumTPCclust",&fVar[19]);
+   fTree->Branch("Prob0",&fVar[20]);
+   fTree->Branch("Prob1",&fVar[21]);
+   fTree->Branch("Prob2",&fVar[22]);
+   fTree->Branch("Prob3",&fVar[23]);
+   fTree->Branch("Prob4",&fVar[24]);
+   fTree->Branch("TOFsignal",&fVar[25]);
+   fTree->Branch("KinkIndex",&fVar[26]);
+   fTree->Branch("Xv",&fVar[27]);
+   fTree->Branch("Yv",&fVar[28]);
+   fTree->Branch("Zv",&fVar[29]);
+   fTree->Branch("TPCchi2",&fVar[30]);
+   fTree->Branch("b0",&fVar[31]);
+   fTree->Branch("b1",&fVar[32]);
+   fTree->Branch("ClustSize",&fVar[33]);
 }
+
 //____________________________________________________________________________________________________________________________________
 Bool_t AliHMPIDAnalysisTask::Equal(Double_t x, Double_t y, Double_t tolerance)
 {

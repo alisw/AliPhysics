@@ -42,7 +42,7 @@ class AliHMPIDAnalysisTask : public AliAnalysisTaskSE {
   AliHMPIDAnalysisTask(const AliHMPIDAnalysisTask& c);
   virtual ~AliHMPIDAnalysisTask();
   
-  virtual void   UserConnectInputData(Option_t *);
+  virtual void   ConnectInputData(Option_t *);
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
@@ -96,8 +96,10 @@ class AliHMPIDAnalysisTask : public AliAnalysisTaskSE {
   TH2F          *fThetaKvsPesd;    // theta chkov of kaons vs Pesd
   TH2F          *fThetaPvsPesd;    // theta chkov of protons vs Pesd
 
+  TTree         *fTree;            // tree with useful data for subsequent analysis
+  Float_t        fVar[34];         // array of data to fill the tree
 
-  ClassDef(AliHMPIDAnalysisTask,3);
+  ClassDef(AliHMPIDAnalysisTask,4);
 };
 
 #endif

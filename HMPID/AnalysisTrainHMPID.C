@@ -69,8 +69,8 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-26-00b-6";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-19-22-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-27-05";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-20-07-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kFALSE;  // merge via JDL
 Bool_t      kPluginFastReadOption    = kFALSE;  // use xrootd flags to reduce timeouts
 Bool_t      kPluginOverwriteMode     = kTRUE;  // overwrite existing collections
@@ -78,12 +78,12 @@ Int_t       kPluginOutputToRunNumber = 1;     // write the output to subdirs nam
 TString kPluginExecutableCommand = "root -b -q";
 
 // == grid plugin input and output variables
-TString     kGridDatadir      = "/alice/sim/LHC10d6";
+TString     kGridDatadir      = "/alice/sim/LHC10d4a";
 TString     kGridLocalRunList = "";
-TString     kGridWorkDir      = "HmpidAnalysis/LHC10d6";   // Alien working directory
+TString     kGridWorkDir      = "HmpidAnalysis/LHC10d4a";   // Alien working directory
 TString     kGridOutdir       = ""; // AliEn output directory. If blank will become output_<kTrainName>
 TString     kGridDataSet      = ""; // sub working directory not to confuse different run xmls 
-Int_t       kGridRunRange[2]       = {104316, 104316}; // Set the run range
+Int_t       kGridRunRange[2]       = {119841, 119844}; // Set the run range
 TString     kGridRunPattern        = "%03d"; // important for leading zeroes!!
 TString     kGridPassPattern       = "";
 TString     kGridExtraFiles        = ""; // files that will be added to the input list in the JDL...
