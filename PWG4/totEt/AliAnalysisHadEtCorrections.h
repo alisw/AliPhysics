@@ -1,16 +1,19 @@
-//Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
 //University of Tennessee at Knoxville
-//This is a container class for the correction factors for the hadronic component of transverse energy
-//It is filled by the output of AliAnalysisTaskHadEt from spinning over Monte Carlo data (using AliAnalysisHadEtMonteCarlo)
-//It is used by AliAnalysisTaskHadEt while spinning over reconstructed data (using AliAnalysisHadEtReconstructed)
+// This is a container class for the correction factors for the hadronic 
+// component of transverse energy
+// It is filled by the output of AliAnalysisTaskHadEt from spinning over Monte 
+// Carlo data (using AliAnalysisHadEtMonteCarlo)
+// It is used by AliAnalysisTaskHadEt while spinning over reconstructed data 
+// (using AliAnalysisHadEtReconstructed)
 //Please see https://twiki.cern.ch/twiki/bin/view/ALICE/ETCaloAnalysis
 #ifndef ALIANALYSISHADETCORRECTIONS_H
 #define ALIANALYSISHADETCORRECTIONS_H
 
-#include "Rtypes.h"
 #include "TString.h"
-#include "TNamed.h"
 #include "TH1D.h"
+class Rtypes;
+class TNamed;
 
 class AliAnalysisHadEtCorrections : public TNamed
 {
@@ -50,52 +53,52 @@ public:
     TH1D *GetBackgroundCorrectionITS() const {return fBackgroundITS;}
 
     //This is stored as the inverse of the correction
-    Float_t GetNotIDCorrectionTPC(float pT){return 1.0/(fnotIDTPC->GetBinContent(fnotIDTPC->FindBin(pT)));}
-    Float_t GetNotIDCorrectionITS(float pT){return 1.0/(fnotIDITS->GetBinContent(fnotIDITS->FindBin(pT)));}
-    Float_t GetNotIDCorrectionNoPID(float pT){return 1.0/(fnotIDNoID->GetBinContent(fnotIDNoID->FindBin(pT)));}
+    Float_t GetNotIDCorrectionTPC(const float pT){return 1.0/(fnotIDTPC->GetBinContent(fnotIDTPC->FindBin(pT)));}
+    Float_t GetNotIDCorrectionITS(const float pT){return 1.0/(fnotIDITS->GetBinContent(fnotIDITS->FindBin(pT)));}
+    Float_t GetNotIDCorrectionNoPID(const float pT){return 1.0/(fnotIDNoID->GetBinContent(fnotIDNoID->FindBin(pT)));}
     //As is this...
-    Float_t GetTPCEfficiencyCorrectionPion(float pT){return 1.0/(fEfficiencyPionTPC->GetBinContent(fEfficiencyPionTPC->FindBin(pT)));}
-    Float_t GetTPCEfficiencyCorrectionKaon(float pT){return 1.0/(fEfficiencyKaonTPC->GetBinContent(fEfficiencyKaonTPC->FindBin(pT)));}
-    Float_t GetTPCEfficiencyCorrectionProton(float pT){return 1.0/(fEfficiencyProtonTPC->GetBinContent(fEfficiencyProtonTPC->FindBin(pT)));}
-    Float_t GetTPCEfficiencyCorrectionHadron(float pT){return 1.0/(fEfficiencyHadronTPC->GetBinContent(fEfficiencyHadronTPC->FindBin(pT)));}
-    Float_t GetITSEfficiencyCorrectionPion(float pT){return 1.0/(fEfficiencyPionITS->GetBinContent(fEfficiencyPionITS->FindBin(pT)));}
-    Float_t GetITSEfficiencyCorrectionKaon(float pT){return 1.0/(fEfficiencyKaonITS->GetBinContent(fEfficiencyKaonITS->FindBin(pT)));}
-    Float_t GetITSEfficiencyCorrectionProton(float pT){return 1.0/(fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT)));}
-    Float_t GetITSEfficiencyCorrectionHadron(float pT){return 1.0/(fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT)));}
+    Float_t GetTPCEfficiencyCorrectionPion(const float pT){return 1.0/(fEfficiencyPionTPC->GetBinContent(fEfficiencyPionTPC->FindBin(pT)));}
+    Float_t GetTPCEfficiencyCorrectionKaon(const float pT){return 1.0/(fEfficiencyKaonTPC->GetBinContent(fEfficiencyKaonTPC->FindBin(pT)));}
+    Float_t GetTPCEfficiencyCorrectionProton(const float pT){return 1.0/(fEfficiencyProtonTPC->GetBinContent(fEfficiencyProtonTPC->FindBin(pT)));}
+    Float_t GetTPCEfficiencyCorrectionHadron(const float pT){return 1.0/(fEfficiencyHadronTPC->GetBinContent(fEfficiencyHadronTPC->FindBin(pT)));}
+    Float_t GetITSEfficiencyCorrectionPion(const float pT){return 1.0/(fEfficiencyPionITS->GetBinContent(fEfficiencyPionITS->FindBin(pT)));}
+    Float_t GetITSEfficiencyCorrectionKaon(const float pT){return 1.0/(fEfficiencyKaonITS->GetBinContent(fEfficiencyKaonITS->FindBin(pT)));}
+    Float_t GetITSEfficiencyCorrectionProton(const float pT){return 1.0/(fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT)));}
+    Float_t GetITSEfficiencyCorrectionHadron(const float pT){return 1.0/(fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT)));}
     //...and these guys are too
-    Float_t GetBackgroundCorrectionTPC(float pT){return 1.0/(fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
-    Float_t GetBackgroundCorrectionITS(float pT){return 1.0/(fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
+    Float_t GetBackgroundCorrectionTPC(const float pT){return 1.0/(fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
+    Float_t GetBackgroundCorrectionITS(const float pT){return 1.0/(fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
 
 
-    void SetEtaCut(Float_t val){fEtaCut=val;}
-    void SetAcceptanceCorrectionFull(Float_t val){fAcceptanceCorrectionFull=val;}
-    void SetAcceptanceCorrectionEMCAL(Float_t val){fAcceptanceCorrectionEMCAL=val;}
-    void SetAcceptanceCorrectionPHOS(Float_t val){fAcceptanceCorrectionPHOS=val;}
-    void SetNeutralCorrection(Float_t val){fNeutralCorrection=val;}
-    void SetNotHadronicCorrection(Float_t val){fNotHadronicCorrection=val;}
-    void SetpTCutCorrectionTPC(Float_t val){fpTcutCorrectionTPC=val;}
-    void SetpTCutCorrectionITS(Float_t val){fpTcutCorrectionITS=val;}
-    void SetNeutralCorrectionLowBound(Float_t val){fNeutralCorrectionLow=val;}
-    void SetNotHadronicCorrectionLowBound(Float_t val){fNotHadronicCorrectionLow=val;}
-    void SetpTCutCorrectionTPCLowBound(Float_t val){ffpTcutCorrectionTPCLow=val;}
-    void SetpTCutCorrectionITSLowBound(Float_t val){ffpTcutCorrectionITSLow=val;}
-    void SetNeutralCorrectionHighBound(Float_t val){fNeutralCorrectionHigh=val;}
-    void SetNotHadronicCorrectionHighBound(Float_t val){fNotHadronicCorrectionHigh=val;}
-    void SetpTCutCorrectionTPCHighBound(Float_t val){ffpTcutCorrectionTPCHigh=val;}
-    void SetpTCutCorrectionITSHighBound(Float_t val){ffpTcutCorrectionITSHigh=val;}
-    void SetNotIDCorrectionTPC(TH1D *histo){fnotIDTPC=histo;}
-    void SetNotIDCorrectionITS(TH1D *histo){fnotIDITS=histo;}
-    void SetNotIDCorrectionNoPID(TH1D *histo){fnotIDNoID=histo;}
-    void SetEfficiencyPionTPC(TH1D *histo){fEfficiencyPionTPC=histo;}
-    void SetEfficiencyKaonTPC(TH1D *histo){fEfficiencyKaonTPC=histo;}
-    void SetEfficiencyProtonTPC(TH1D *histo){fEfficiencyProtonTPC=histo;}
-    void SetEfficiencyHadronTPC(TH1D *histo){fEfficiencyHadronTPC=histo;}
-    void SetEfficiencyPionITS(TH1D *histo){fEfficiencyPionITS=histo;}
-    void SetEfficiencyKaonITS(TH1D *histo){fEfficiencyKaonITS=histo;}
-    void SetEfficiencyProtonITS(TH1D *histo){fEfficiencyProtonITS=histo;}
-    void SetEfficiencyHadronITS(TH1D *histo){fEfficiencyHadronITS=histo;}
-    void SetBackgroundCorrectionTPC(TH1D *histo){fBackgroundTPC=histo;}
-    void SetBackgroundCorrectionITS(TH1D *histo){fBackgroundITS=histo;}
+    void SetEtaCut(const Float_t val){fEtaCut=val;}
+    void SetAcceptanceCorrectionFull(const Float_t val){fAcceptanceCorrectionFull=val;}
+    void SetAcceptanceCorrectionEMCAL(const Float_t val){fAcceptanceCorrectionEMCAL=val;}
+    void SetAcceptanceCorrectionPHOS(const Float_t val){fAcceptanceCorrectionPHOS=val;}
+    void SetNeutralCorrection(const Float_t val){fNeutralCorrection=val;}
+    void SetNotHadronicCorrection(const Float_t val){fNotHadronicCorrection=val;}
+    void SetpTCutCorrectionTPC(const Float_t val){fpTcutCorrectionTPC=val;}
+    void SetpTCutCorrectionITS(const Float_t val){fpTcutCorrectionITS=val;}
+    void SetNeutralCorrectionLowBound(const Float_t val){fNeutralCorrectionLow=val;}
+    void SetNotHadronicCorrectionLowBound(const Float_t val){fNotHadronicCorrectionLow=val;}
+    void SetpTCutCorrectionTPCLowBound(const Float_t val){ffpTcutCorrectionTPCLow=val;}
+    void SetpTCutCorrectionITSLowBound(const Float_t val){ffpTcutCorrectionITSLow=val;}
+    void SetNeutralCorrectionHighBound(const Float_t val){fNeutralCorrectionHigh=val;}
+    void SetNotHadronicCorrectionHighBound(const Float_t val){fNotHadronicCorrectionHigh=val;}
+    void SetpTCutCorrectionTPCHighBound(const Float_t val){ffpTcutCorrectionTPCHigh=val;}
+    void SetpTCutCorrectionITSHighBound(const Float_t val){ffpTcutCorrectionITSHigh=val;}
+    void SetNotIDCorrectionTPC(const TH1D *histo){fnotIDTPC=(TH1D*) histo;}
+    void SetNotIDCorrectionITS(const TH1D *histo){fnotIDITS=(TH1D*) histo;}
+    void SetNotIDCorrectionNoPID(const TH1D *histo){fnotIDNoID=(TH1D*) histo;}
+    void SetEfficiencyPionTPC(const TH1D *histo){fEfficiencyPionTPC=(TH1D*) histo;}
+    void SetEfficiencyKaonTPC(const TH1D *histo){fEfficiencyKaonTPC=(TH1D*) histo;}
+    void SetEfficiencyProtonTPC(const TH1D *histo){fEfficiencyProtonTPC=(TH1D*) histo;}
+    void SetEfficiencyHadronTPC(const TH1D *histo){fEfficiencyHadronTPC=(TH1D*) histo;}
+    void SetEfficiencyPionITS(const TH1D *histo){fEfficiencyPionITS=(TH1D*) histo;}
+    void SetEfficiencyKaonITS(const TH1D *histo){fEfficiencyKaonITS=(TH1D*) histo;}
+    void SetEfficiencyProtonITS(const TH1D *histo){fEfficiencyProtonITS=(TH1D*) histo;}
+    void SetEfficiencyHadronITS(const TH1D *histo){fEfficiencyHadronITS=(TH1D*) histo;}
+    void SetBackgroundCorrectionTPC(const TH1D *histo){fBackgroundTPC=(TH1D*) histo;}
+    void SetBackgroundCorrectionITS(const TH1D *histo){fBackgroundITS=(TH1D*) histo;}
 
 
     AliAnalysisHadEtCorrections(const AliAnalysisHadEtCorrections *g) ; // cpy ctor

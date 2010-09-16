@@ -1,31 +1,26 @@
-//Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies; charged hadrons
+//  Task for analysis
+//  - reconstruction and MC output
+// implementation file
+//
+//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
 //University of Tennessee at Knoxville
-#include "TChain.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TNtuple.h"
-#include "TCanvas.h"
-#include "TMath.h"
-#include "TObjArray.h"
+//_________________________________________________________________________
 
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
+#include "TChain.h"
+#include "TList.h"
+#include "TH2F.h"
 
 #include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliVEvent.h"
-#include "AliVTrack.h"
-#include "AliVParticle.h"
-#include "AliESDtrack.h"
-#include "AliESDInputHandler.h"
 #include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "TDatabasePDG.h"
+#include "AliESDtrackCuts.h"
+
 #include "AliAnalysisTaskHadEt.h"
+#include "AliAnalysisHadEtReconstructed.h"
+#include "AliAnalysisHadEtMonteCarlo.h"
 
 #include <iostream>
-#include "AliStack.h"
 
 using namespace std;
 
@@ -36,21 +31,13 @@ ClassImp(AliAnalysisTaskHadEt)
 //________________________________________________________________________
 AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name) :
         AliAnalysisTaskSE(name)
-        ,fESD(0)
         ,fOutputList(0)
         ,fRecAnalysis(0)
         ,fMCAnalysis(0)
         ,fHistEtRecvsEtMC(0)
-        ,fTriggerSelection(false)
-        ,fCount(0)
-        ,fkPhotonPdg(22)
-        ,fkProtonMass(.938)
-        ,fPdgDB(0)
-        ,fRecEventVars(0)
-        ,fSimEventVars(0)
-        ,ffesdtrackCutsITSTPC(0)
-        ,fesdtrackCutsTPC(0)
-        ,fesdtrackCutsITS(0)
+        ,fEsdtrackCutsITSTPC(0)
+        ,fEsdtrackCutsTPC(0)
+        ,fEsdtrackCutsITS(0)
 {
     // Constructor
 
@@ -58,10 +45,6 @@ AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name) :
     fRecAnalysis->Init();
     fMCAnalysis = new AliAnalysisHadEtMonteCarlo();
     fMCAnalysis->Init();
-    if(!fPdgDB) fPdgDB = new TDatabasePDG();
-
-    fTriggerSelection = false;
-    fCount = 0;
 
     // Define input and output slots here
     // Input slot #0 works with a TChain
@@ -88,26 +71,26 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 
 
     Bool_t selectPrimaries=kTRUE;
-    ffesdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
-    ffesdtrackCutsITSTPC->SetName("fEsdTrackCuts");
-    fesdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fesdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
+    fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
+    fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
-    fesdtrackCutsITS =  new AliESDtrackCuts;
-    fesdtrackCutsITS->SetName("fEsdTrackCutsITS");
-    fesdtrackCutsITS->SetRequireITSRefit(kTRUE);
-    fesdtrackCutsITS->SetRequireITSStandAlone(kTRUE);
-    fesdtrackCutsITS->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-    fesdtrackCutsITS->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
-    fesdtrackCutsITS->SetMaxDCAToVertexZ(1.e6);
-    fesdtrackCutsITS->SetDCAToVertex2D(kFALSE);
-    fesdtrackCutsITS->SetRequireSigmaToVertex(kFALSE);
-    fesdtrackCutsITS->SetAcceptKinkDaughters(kFALSE);
+    fEsdtrackCutsITS =  new AliESDtrackCuts;
+    fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+    fEsdtrackCutsITS->SetRequireITSRefit(kTRUE);
+    fEsdtrackCutsITS->SetRequireITSStandAlone(kTRUE);
+    fEsdtrackCutsITS->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+    fEsdtrackCutsITS->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
+    fEsdtrackCutsITS->SetMaxDCAToVertexZ(1.e6);
+    fEsdtrackCutsITS->SetDCAToVertex2D(kFALSE);
+    fEsdtrackCutsITS->SetRequireSigmaToVertex(kFALSE);
+    fEsdtrackCutsITS->SetAcceptKinkDaughters(kFALSE);
 
-    fOutputList->Add(ffesdtrackCutsITSTPC);
-    fOutputList->Add(fesdtrackCutsTPC);
-    fOutputList->Add(fesdtrackCutsITS);
-    if(ffesdtrackCutsITSTPC && fesdtrackCutsTPC){
+    fOutputList->Add(fEsdtrackCutsITSTPC);
+    fOutputList->Add(fEsdtrackCutsTPC);
+    fOutputList->Add(fEsdtrackCutsITS);
+    if(fEsdtrackCutsITSTPC && fEsdtrackCutsTPC){
       fRecAnalysis->SetITSTrackCuts( GetITSTrackCuts());
       fMCAnalysis->SetITSTrackCuts( GetITSTrackCuts());
       fRecAnalysis->SetTPCITSTrackCuts( GetTPCITSTrackCuts());
@@ -124,7 +107,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 
 //________________________________________________________________________
 void AliAnalysisTaskHadEt::UserExec(Option_t *)
-{
+{ // execute method
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
 if (!event) {
   Printf("ERROR: Could not retrieve event");

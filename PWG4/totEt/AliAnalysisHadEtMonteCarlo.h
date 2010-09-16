@@ -1,11 +1,16 @@
-//Create by Christine Nattrass, Rebecca Scott, Irakli Martashvili
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies, charged hadrons
+//  Base class for MC analysis
+//  - MC output
+// 
+//Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
 //University of Tennessee at Knoxville
+//_________________________________________________________________________
 #ifndef ALIANALYSISHADETMONTECARLO_H
 #define ALIANALYSISHADETMONTECARLO_H
 
 #include "AliAnalysisHadEt.h"
-#include "AliESDtrackCuts.h"
-#include <iostream>
+class AliVEvent;
 
 class AliAnalysisHadEtMonteCarlo : public AliAnalysisHadEt
 {
@@ -13,6 +18,7 @@ class AliAnalysisHadEtMonteCarlo : public AliAnalysisHadEt
 public:
    
     AliAnalysisHadEtMonteCarlo() {}
+    virtual ~AliAnalysisHadEtMonteCarlo() {}
    
     virtual Int_t AnalyseEvent(AliVEvent* event);
     virtual Int_t AnalyseEvent(AliVEvent* event,AliVEvent* event2);
@@ -22,7 +28,7 @@ public:
     virtual void Init();
     
  private:
-    //AliESDtrackCuts* ffesdtrackCutsITSTPC;
+
 };
 
 #endif // ALIANALYSISHADETMONTECARLO_H

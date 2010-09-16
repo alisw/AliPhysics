@@ -1,3 +1,12 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for ESD & MC analysis
+//  - reconstruction and MonteCarlo output
+// implementation file
+//
+//*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
+//_________________________________________________________________________
+
 #include "AliAnalysisEt.h"
 #include "TMath.h"
 #include "TList.h"
@@ -6,6 +15,8 @@
 #include <iostream>
 #include "AliAnalysisEtCuts.h"
 #include "AliVEvent.h"
+#include "TDatabasePDG.h"
+#include "Rtypes.h"
 
 using namespace std;
 ClassImp(AliAnalysisEt);
@@ -78,7 +89,6 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fHistBaryonEtAcc(0)
         ,fHistAntiBaryonEtAcc(0)
         ,fHistMesonEtAcc(0)
-        ,fHistEtRecvsEtMC(0)
         ,fHistTMDeltaR(0)
 {
 
@@ -90,7 +100,7 @@ AliAnalysisEt::~AliAnalysisEt()
 }
 
 void AliAnalysisEt::FillOutputList(TList *list)
-{
+{ // histograms to be added to output
     list->Add(fHistEt);
     list->Add(fHistChargedEt);
     list->Add(fHistNeutralEt);
@@ -114,20 +124,23 @@ void AliAnalysisEt::FillOutputList(TList *list)
     list->Add(fHistAntiBaryonEtAcc);
     list->Add(fHistMesonEtAcc);
 
-    list->Add(fHistEtRecvsEtMC);
-
     list->Add(fHistTMDeltaR);
 }
 
 void AliAnalysisEt::Init()
-{
+{// set up cuts and PDG info
+  fVertexXCut = EtReconstructedCuts::kVertexXCut;
+  fVertexYCut = EtReconstructedCuts::kVertexYCut;
+  fVertexZCut = EtReconstructedCuts::kVertexZCut;
+  fIPxyCut = EtReconstructedCuts::kIPxyCut;
+  fIPzCut = EtReconstructedCuts::kIPzCut;
 
   if(!fPdgDB) fPdgDB = new TDatabasePDG();
   SetParticleCodes();
 }
 
 void AliAnalysisEt::CreateHistograms()
-{
+{ // create histograms..
   // histogram binning for E_T, p_T and Multiplicity: defaults for p+p
   Int_t nbinsEt = 1000;
   Double_t minEt = 0.0001;
@@ -208,16 +221,14 @@ void AliAnalysisEt::CreateHistograms()
     histname = "fHistMesonEtAcc" + fHistogramNameSuffix;
     fHistMesonEtAcc = new TH1F(histname.Data(), "E_{T} for mesons in calorimeter acceptance",  nbinsEt, minEt, maxEt);
 
-    histname = "fHistEtRecvsEtMC" + fHistogramNameSuffix;
-    fHistEtRecvsEtMC = new TH2F(histname.Data(), "Reconstructed E_{t} vs MC E_{t}", nbinsEt, minEt, maxEt, nbinsEt, minEt, maxEt);
-
+    //
     histname = "fHistTMDeltaR" + fHistogramNameSuffix;
     fHistTMDeltaR = new TH1F(histname.Data(), "#Delta R for calorimeter clusters", 200, 0, 50);
 
 }
 
 void AliAnalysisEt::FillHistograms()
-{
+{ // fill histograms..
     fHistEt->Fill(fTotEt);
     fHistChargedEt->Fill(fTotChargedEt);
     fHistNeutralEt->Fill(fTotNeutralEt);
@@ -253,7 +264,7 @@ Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)
 }
 
 void AliAnalysisEt::ResetEventValues()
-{
+{ // clear
     fTotEt = 0;
     fTotEtAcc = 0;
     fTotNeutralEt = 0;
@@ -272,7 +283,7 @@ void AliAnalysisEt::ResetEventValues()
 }
 
 void AliAnalysisEt::SetParticleCodes()
-{     
+{ // set PDG info    
   fPionMass = fPdgDB->GetParticle("pi+")->Mass();
   fPiPlusCode = fPdgDB->GetParticle("pi+")->PdgCode();
   fPiMinusCode = fPdgDB->GetParticle("pi-")->PdgCode();

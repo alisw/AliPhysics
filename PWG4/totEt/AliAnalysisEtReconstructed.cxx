@@ -1,3 +1,11 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for ESD analysis
+//  - reconstruction output
+//  implementation file
+//
+//*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
+//_________________________________________________________________________
 
 #include "AliAnalysisEtReconstructed.h"
 #include "AliAnalysisEtCuts.h"
@@ -20,8 +28,12 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 
 }
 
-Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
+AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed() 
 {
+}
+
+Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
+{ // analyse ESD event
     ResetEventValues();
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(ev);
 
@@ -62,6 +74,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         }
 
         Double_t et = track->E() * TMath::Sin(track->Theta()) + massPart;
+	// printf("Rec track: iTrack %03d eta %4.3f phi %4.3f nITSCl %d nTPCCl %d\n", iTrack, track->Eta(), track->Phi(), nItsClusters, nTPCClusters); // tmp/debug printout
 
         if (TMath::Abs(track->Eta()) < fEtaCut && CheckGoodVertex(track) && nItsClusters > fNItsClustersCut && nTPCClusters > fNTpcClustersCut)
         {
@@ -78,6 +91,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         {
 	  Double_t phi = track->Phi();
 	  Double_t pt = track->Pt();
+	  // printf("Rec track hit: iTrack %03d phi %4.3f pt %4.3f\n", iTrack, phi, pt); // tmp/debug printout
 	  if (track->Charge() > 0) fHistPhivsPtPos->Fill(phi, pt);
 	  else fHistPhivsPtNeg->Fill(phi, pt);
         }
@@ -92,6 +106,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             continue;
         }
 
+	// printf("Rec Cluster: iCluster %03d E %4.3f type %d NCells %d\n", iCluster, cluster->E(), (int)(cluster->GetType()), cluster->GetNCells()); // tmp/debug printout
         if (cluster->GetType() != fClusterType) continue;
 
         if (cluster->E() < fClusterEnergyCut) continue;
@@ -141,38 +156,32 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 }
 
 bool AliAnalysisEtReconstructed::CheckGoodVertex(AliVParticle* track)
-{
+{ // check vertex
 
     Float_t bxy = 999.;
     Float_t bz = 999.;
     dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
 
-    return TMath::Abs(track->Xv()) < fVertexXCut && TMath::Abs(track->Yv()) < fVertexYCut && TMath::Abs(track->Zv()) < fVertexZCut && TMath::Abs(bxy) < fIPxyCut && TMath::Abs(bz) < fIPzCut;;
+    // printf("Rec CheckGoodVertex: TMath::Abs(track->Xv()) %f fVertexXCut %f TMath::Abs(track->Yv()) %f fVertexYCut %f TMath::Abs(track->Zv()) %f fVertexZCut %f TMath::Abs(bxy) %f fIPxyCut %f TMath::Abs(bz) %f fIPzCut %f\n", TMath::Abs(track->Xv()), fVertexXCut, TMath::Abs(track->Yv()), fVertexYCut, TMath::Abs(track->Zv()), fVertexZCut, TMath::Abs(bxy), fIPxyCut, TMath::Abs(bz), fIPzCut); // tmp/debug printout
+
+    return TMath::Abs(track->Xv()) < fVertexXCut && TMath::Abs(track->Yv()) < fVertexYCut && TMath::Abs(track->Zv()) < fVertexZCut && TMath::Abs(bxy) < fIPxyCut && TMath::Abs(bz) < fIPzCut;
 
 }
 
 void AliAnalysisEtReconstructed::Init()
-{
-
+{ // Init
     AliAnalysisEt::Init();
-
-    fVertexXCut = EtReconstructedCuts::kVertexXCut;
-    fVertexYCut = EtReconstructedCuts::kVertexYCut;
-    fVertexZCut = EtReconstructedCuts::kVertexZCut;
-    fIPxyCut = EtReconstructedCuts::kIPxyCut;
-    fIPzCut = EtReconstructedCuts::kIPzCut;
-
 }
 
 bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)
-{
+{ // propagate track to detector radius
 
    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
-    // Printf("Propagating track: eta: %f, phi: %f, pt: %f", esdTrack->Eta(), esdTrack->Phi(), esdTrack->Pt());
+   // Printf("Propagating track: eta: %f, phi: %f, pt: %f", esdTrack->Eta(), esdTrack->Phi(), esdTrack->Pt());
 
     Bool_t prop = esdTrack->PropagateTo(fDetectorRadius, magField);
 
-    //if(prop)Printf("Track propagated, eta: %f, phi: %f, pt: %f", esdTrack->Eta(), esdTrack->Phi(), esdTrack->Pt());
+    // if (prop) Printf("Track propagated, eta: %f, phi: %f, pt: %f", esdTrack->Eta(), esdTrack->Phi(), esdTrack->Pt());
     return prop && 
 		   TMath::Abs(esdTrack->Eta()) < fEtaCutAcc && 
 		   esdTrack->Phi() > fPhiCutAccMin*TMath::Pi()/180. && 
