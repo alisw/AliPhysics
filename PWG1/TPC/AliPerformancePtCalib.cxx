@@ -259,8 +259,9 @@ AliPerformancePtCalib::~AliPerformancePtCalib() {
    if(fHistTPCMomentaPosPt) delete fHistTPCMomentaPosPt;fHistTPCMomentaPosPt=0; 
    if(fHistTPCMomentaNegPt) delete fHistTPCMomentaNegPt ;fHistTPCMomentaNegPt=0; 
    if(fHistUserPtShift)     delete fHistUserPtShift;fHistUserPtShift=0; 
+   if(fHistdedxPions)       delete fHistdedxPions;fHistdedxPions=0;
    //esd track cuts
-   if(fESDTrackCuts) delete fESDTrackCuts;
+   if(fESDTrackCuts) delete fESDTrackCuts;fESDTrackCuts=0;
    //pid
    if(fESDpid) delete fESDpid;fESDpid=0;
    //analysis folder 
@@ -327,7 +328,7 @@ void AliPerformancePtCalib::Init()
    fHistdedxPions = new TH2F ("fHistdedxPions","dEdx of pions ident. via kPID vs signed Pt",300,-15.05,15.05,200,0.0,400.0);
    fList->Add(fHistdedxPions);
    //pid
-   fESDpid = NULL;
+   fESDpid =  new AliESDpid();
 
    // esd track cuts  
    fESDTrackCuts =NULL;
@@ -402,7 +403,7 @@ void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *con
 
 	 // pid
 	 if(fPions){
-	   fESDpid= new AliESDpid();
+	  
 	   fESDpid->GetTPCResponse().SetBetheBlochParameters(0.0283086,2.63394e+01,5.04114e-11, 2.12543e+00,4.88663e+00);
 	   
 	   if( TMath::Abs(fESDpid->NumberOfSigmasTPC(esdTrack,AliPID::kPion)) >1) continue;
