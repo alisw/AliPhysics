@@ -9,23 +9,36 @@ EINCLUDE :=
 ELIBSDIR :=
 
 ELIBS    := EveBase EveHLT EveDet \
-  HLTbase HLTrec AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU AliHLTMUON \
-  TPCbase TPCsim TPCrec \
-  ITSbase ITSrec \
-  TRDbase TRDrec AliHLTTRD \
-  PHOSbase PHOSUtils \
-  EMCALbase EMCALUtils EMCALrec EMCALsim TRIGGERbase VZERObase VZEROrec VZEROsim TRIGGERbase \
-  MUONbase MUONevaluation MUONmapping MUONshuttle MUONcalib MUONgeometry \
-  MUONraw MUONsim MUONcore MUONgraphics MUONrec MUONtrigger \
-  STEERBase ESD AOD CDB STEER MONITOR \
-  ANALYSIS ANALYSISalice \
-  FASTSIM microcern \
-  RAWDatabase RAWDatarec RAWDatasim \
-  XMLParser STAT \
-  TOFbase TOFsim \
-  FMDbase FMDsim FMDrec \
-  PMDbase \
-  T0base
+	MONITOR \
+	HLTbase HLTrec AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU AliHLTMUON \
+	TPCsim TPCrec TPCbase\
+	ITSbase ITSrec \
+	TRDbase TRDrec AliHLTTRD \
+	PHOSbase PHOSUtils \
+	EMCALbase EMCALUtils EMCALrec EMCALsim TRIGGERbase VZERObase VZEROrec VZEROsim TRIGGERbase \
+	MUONmapping \
+	MUONevaluation \
+	MUONsim \
+	MUONrec \
+	MUONgeometry \
+	MUONcalib \
+	MUONbase \
+	MUONraw \
+	MUONtrigger \
+	MUONcore \
+	STEER \
+	CDB \
+	AOD \
+	ESD \
+	STEERBase \
+	ANALYSISalice ANALYSIS \
+	FASTSIM microcern \
+	RAWDatasim RAWDatarec RAWDatabase \
+	XMLParser STAT \
+	TOFbase TOFsim \
+	FMDbase FMDsim FMDrec \
+	PMDbase \
+	T0base
 
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL -lEve $(SYSLIBS)
 

@@ -82,7 +82,7 @@ struct payloadDescriptorStruct {
   int size;
   void *data;
 } *payloadsHead, *payloadsTail;
-int lineNo;
+int lineNmb;
 eventGdcIdType currGdcId;
 unsigned long32 currDetPattern; 
 eventLdcIdType currLdcId;
@@ -220,13 +220,13 @@ void getLine( char *line, const int maxSize ) {
   if ( read == maxSize && line[read] != '\n' ) {
     fprintf( stderr,
 	     "%s: Input line # %d too long (%d chars max)\n",
-	     myName, lineNo, maxSize-1 );
+	     myName, lineNmb, maxSize-1 );
     exit( 1 );
   }
   line[ read ] = 0;
   DBG_VERBOSE {
     if ( !( read == 0 && feof( stdin ) ) ) {
-      printf( "%d) [%3d] \"%s\"", lineNo, read, line );
+      printf( "%d) [%3d] \"%s\"", lineNmb, read, line );
     }
   }
   for ( c = 0; c != read; c++ ) {
@@ -359,7 +359,7 @@ void loadBuffer( struct payloadDescriptorStruct * const payload ) {
     fprintf( stderr,
 	     "%s: line:%d payload file \"%s\" not found or not readable, errno:%d. ",
 	     myName,
-	     lineNo,
+	     lineNmb,
 	     payload->fileName,
 	     errno );
     perror( "System-dependent error " );
@@ -369,7 +369,7 @@ void loadBuffer( struct payloadDescriptorStruct * const payload ) {
     fprintf( stderr,
 	     "%s: line:%d Failed to malloc for payload file \"%s\" size:%d errno:%d ",
 	     myName,
-	     lineNo,
+	     lineNmb,
 	     payload->fileName,
 	     payload->size,
 	     errno );
@@ -380,7 +380,7 @@ void loadBuffer( struct payloadDescriptorStruct * const payload ) {
     fprintf( stderr,
 	     "%s: line:%d Failed to read payload file \"%s\" size:%d requested:1 got:%d feof:%s ferror:%s errno:%d ",
 	     myName,
-	     lineNo,
+	     lineNmb,
 	     payload->fileName,
 	     payload->size,
 	     bytesRead,
@@ -442,7 +442,7 @@ void loadPayload( const char *fileName ) {
       fprintf( stderr,
 	       "%s: line:%d payload file \"%s\" not found or not readable, errno:%d. ",
 	       myName,
-	       lineNo,
+	       lineNmb,
 	       fileName,
 	       errno );
       perror( "System-dependent error " );
@@ -452,7 +452,7 @@ void loadPayload( const char *fileName ) {
       fprintf( stderr,
 	       "%s: line:%d Failed to seek payload file \"%s\" errno:%d ",
 	       myName,
-	       lineNo,
+	       lineNmb,
 	       fileName,
 	       errno );
       perror( "System-dependent error " );
@@ -462,7 +462,7 @@ void loadPayload( const char *fileName ) {
       fprintf( stderr,
 	       "%s: line:%d Failed to get file \"%s\" size size:%d errno:%d ",
 	       myName,
-	       lineNo,
+	       lineNmb,
 	       fileName,
 	       payload->size,
 	       errno );
@@ -490,7 +490,7 @@ void loadPayload( const char *fileName ) {
       int b, n;
 
       printf( "%d)       Payload \"%s\" loaded at %p\n",
-	      lineNo,
+	      lineNmb,
 	      fileName,
 	      (void*)payload );
       if ( bufferData ) {
@@ -650,7 +650,7 @@ void loadPayload( const char *fileName ) {
   } else {
     DBG_VERBOSE
       printf( "%d)       Payload \"%s\" already loaded at %p\n",
-	      lineNo,
+	      lineNmb,
 	      fileName,
 	      (void*)payload );
   }
@@ -679,7 +679,7 @@ void parseEquipment( char * const line ) {
   p = line;
   while ( (keyword = strtok_r( p, " \t", &p )) != NULL ) {
     DBG_VERBOSE printf( "%d)     Equipment - Keyword:\"%s\"\n",
-			lineNo,
+			lineNmb,
 			keyword );
     if ( strcasecmp( "id", keyword ) == 0 ) {
       char *idNum;
@@ -688,19 +688,19 @@ void parseEquipment( char * const line ) {
 	fprintf( stderr,
 		 "%s: line:%d EQUIPMENT declaration, ID needed",
 		 myName,
-		 lineNo );
+		 lineNmb );
 	exit( 1 );
       }
       if ( sscanf( idNum, "%d", &currEquipmentId ) != 1 ) {
 	fprintf( stderr,
 		 "%s: line:%d EQUIPMENT declaration, numeric ID needed (%s)",
 		 myName,
-		 lineNo,
+		 lineNmb,
 		 idNum );
 	exit( 1 );
       }
       DBG_VERBOSE printf( "%d)     EQUIPMENT - ID:%d\n",
-			  lineNo,
+			  lineNmb,
 			  currEquipmentId );
     } else if ( strncasecmp( "pay", keyword, 3 ) == 0 ) {
       char *fileName;
@@ -709,17 +709,17 @@ void parseEquipment( char * const line ) {
 	fprintf( stderr,
 		 "%s line:%d Payload without filename found\n",
 		 myName,
-		 lineNo );
+		 lineNmb );
 	exit( 1 );
       }
       DBG_VERBOSE printf( "%d)     Equipment - Payload:\"%s\"\n",
-			  lineNo,
+			  lineNmb,
 			  fileName );
       if ( payloadFound ) {
 	fprintf( stderr,
 		 "%s line:%d Payload with multiple filenames found\n",
 		 myName,
-		 lineNo );
+		 lineNmb );
 	exit( 1 );
       }
       loadPayload( fileName );
@@ -728,7 +728,7 @@ void parseEquipment( char * const line ) {
       fprintf( stderr,
 	       "%s: line:%d Equipment declaration, unknown keyword \"%s\"\n",
 	       myName,
-	       lineNo,
+	       lineNmb,
 	       keyword );
       exit( 1 );
     }
@@ -737,7 +737,7 @@ void parseEquipment( char * const line ) {
     fprintf( stderr,
 	     "%s: line:%d Equipment without payload found\n",
 	     myName,
-	     lineNo );
+	     lineNmb );
     exit( 1 );
   }
 
@@ -764,19 +764,19 @@ void parseGdc( char * const line ) {
 	fprintf( stderr,
 		 "%s: line:%d GDC declaration, ID needed",
 		 myName,
-		 lineNo );
+		 lineNmb );
 	exit( 1 );
       }
       if ( sscanf( idNum, "%d", (int*)&currGdcId ) != 1 ) {
 	fprintf( stderr,
 		 "%s: line:%d GDC declaration, numeric ID needed (%s)",
 		 myName,
-		 lineNo,
+		 lineNmb,
 		 idNum );
 	exit( 1 );
       }
       DBG_VERBOSE printf( "%d)     GDC - ID:%d\n",
-			  lineNo,
+			  lineNmb,
 			  currGdcId );
     } else if ( strcasecmp( "DetectorPattern", keyword ) == 0 ) {
       char *detPattern;
@@ -785,25 +785,25 @@ void parseGdc( char * const line ) {
 	fprintf( stderr,
 		 "%s: line:%d GDC declaration, DetectorPattern needed",
 		 myName,
-		 lineNo );
+		 lineNmb );
 	exit( 1 );
       }
       if ( sscanf( detPattern, "%u", &currDetPattern ) != 1 ) {
 	fprintf( stderr,
 		 "%s: line:%d GDC declaration, numeric DetectorPattern needed (%s)",
 		 myName,
-		 lineNo,
+		 lineNmb,
 		 detPattern );
 	exit( 1 );
       }
       DBG_VERBOSE printf( "%d)     GDC - DetectorPattern:%u\n",
-			  lineNo,
+			  lineNmb,
 			  currDetPattern );
     } else {
       fprintf( stderr,
 	       "%s: line:%d GDC declaration, unknown keyword \"%s\"\n",
 	       myName,
-	       lineNo,
+	       lineNmb,
 	       keyword );
       exit( 1 );
     }  
@@ -823,25 +823,25 @@ void parseLdc( char * const line ) {
 	fprintf( stderr,
 		 "%s: line:%d LDC declaration, ID needed",
 		 myName,
-		 lineNo );
+		 lineNmb );
 	exit( 1 );
       }
       if ( sscanf( idNum, "%d", (int*)&currLdcId ) != 1 ) {
 	fprintf( stderr,
 		 "%s: line:%d LDC declaration, numeric ID needed (%s)",
 		 myName,
-		 lineNo,
+		 lineNmb,
 		 idNum );
 	exit( 1 );
       }
       DBG_VERBOSE printf( "%d)     LDC - ID:%d\n",
-			  lineNo,
+			  lineNmb,
 			  currLdcId );
     } else {
       fprintf( stderr,
 	       "%s: line:%d LDC declaration, unknown keyword \"%s\"\n",
 	       myName,
-	       lineNo,
+	       lineNmb,
 	       keyword );
       exit( 1 );
     }  
@@ -855,19 +855,19 @@ void parseRules() {
   currGdcId = HOST_ID_MIN;
   currDetPattern = 0;
 
-  for ( lineNo = 1; !feof( stdin ); lineNo++ ) {
+  for ( lineNmb = 1; !feof( stdin ); lineNmb++ ) {
     getLine( line, sizeof(line) );
     if ( strlen(line) != 0 ) {
       char *p;
       char *keyword;
 
       if ( (keyword = strtok_r( line, " \t", &p )) != NULL ) {
-	DBG_VERBOSE printf( "%d)   Keyword:\"%s\"\n", lineNo, keyword );
+	DBG_VERBOSE printf( "%d)   Keyword:\"%s\"\n", lineNmb, keyword );
 	if ( strcasecmp( "gdc", keyword ) == 0 ) {
 	  if ( workingAs != gdc && workingAs != unknown ) {
 	    fprintf( stderr,
 		     "%s: line:%d GDC found when working in non-GDC mode (e.g. as a LDC)\n",
-		     myName, lineNo );
+		     myName, lineNmb );
 	    exit( 1 );
 	  }
 	  workingAs = gdc;
@@ -880,7 +880,7 @@ void parseRules() {
 	  if ( workingAs != gdc && workingAs != ldc && workingAs != unknown ) {
 	    fprintf( stderr,
 		     "%s: line:%d LDC found when working in non-LDC/GDC mode\n",
-		     myName, lineNo );
+		     myName, lineNmb );
 	    exit( 1 );
 	  }
 	  if ( workingAs == unknown ) workingAs = ldc;
@@ -901,7 +901,7 @@ void parseRules() {
 	    fprintf( stderr,
 		     "%s: line:%d Unexpected EQUIPMENT declaration (LDC or GDC needed first)\n",
 		     myName,
-		     lineNo );
+		     lineNmb );
 	    exit( 1 );
 	  }
 	  parseEquipment( p );
@@ -910,19 +910,19 @@ void parseRules() {
 	  fprintf( stderr,
 		   "%s: line:%d Parse error in \"%s\" unknown keyword\n",
 		   myName,
-		   lineNo,
+		   lineNmb,
 		   keyword );
 	  exit( 1 );
 	}
       }
     }
   } while ( !feof( stdin ) ) {}
-  lineNo -= 2;
+  lineNmb -= 2;
 
   DBG_VERBOSE {
     printf( "End of parse: %d line%s found\n",
-	    lineNo,
-	    lineNo != 1 ? "s" : "" );
+	    lineNmb,
+	    lineNmb != 1 ? "s" : "" );
     printf( "Working as %s\n",
 	    workingAs == gdc ? "GDC" :
 	     workingAs == ldc ? "LDC" :

@@ -213,13 +213,13 @@ Function (AddExecutable BIN SRCS LIBS)
     # There are no static libs for external libraries, so we have to filter
     # here. This is an ugly way how to do it, so this has to be improved.
     Foreach(_lib ${LIBS})
-      If(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser)
+      If(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser OR ${_lib} STREQUAL dim)
         Set(_ar_libs ${_ar_libs} ${_lib})
-      Else(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser)
+      Else(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser OR ${_lib} STREQUAL dim)
         Set(_ar_libs ${_ar_libs} ${_lib}_a)
-      EndIf(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser)
+      EndIf(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser OR ${_lib} STREQUAL dim)
     EndForeach(_lib ${LIBS})
-    Target_Link_Libraries(${BIN}_a ${ALIROOT_LIBRARIES} ${_ar_libs})
+    Target_Link_Libraries(${BIN}_a ${ALIROOT_LIBRARIES} ${_ar_libs} ${DMONLIBS})
     Install(TARGETS ${BIN}_a DESTINATION ${ALIROOT_INSTALL_DIR}/bin)
   EndIf(ALICE_STATIC_BUILD)
 

@@ -9,23 +9,37 @@ EINCLUDE :=
 ELIBSDIR :=
 
 ELIBS    := EveBase EveDet \
-  MUONbase MUONevaluation MUONmapping MUONshuttle MUONcalib MUONgeometry \
-  MUONraw MUONsim MUONcore MUONgraphics MUONrec MUONtrigger \
-  TPCbase TPCsim TPCrec TPCfast \
-  ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
-  TRDsim TRDrec TRDfast \
-  FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec \
-  ACORDEbase ACORDEsim ACORDErec \
-  HMPIDbase HMPIDrec HMPIDsim \
-  ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
-  EMCALUtils EMCALbase EMCALsim EMCALrec BCM \
-  STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER MONITOR \
-  ANALYSIS ANALYSISalice \
-  THijing \
-  hijing THbtp TEPEMGEN \
-  FASTSIM microcern \
-  RAWDatabase RAWDatarec RAWDatasim \
-  HLTbase XMLParser STAT
+	MONITOR \
+	MUONmapping \
+	MUONevaluation \
+	MUONsim \
+	MUONrec \
+	MUONgeometry \
+	MUONcalib \
+	MUONbase \
+	MUONraw \
+	MUONtrigger \
+	MUONcore \
+	TPCfast TPCsim TPCrec TPCbase \
+	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
+	TRDsim TRDrec TRDfast \
+	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec \
+	ACORDEbase ACORDEsim ACORDErec \
+	HMPIDbase HMPIDrec HMPIDsim \
+	ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
+	EMCALUtils EMCALbase EMCALsim EMCALrec BCM \
+	STRUCT T0base T0sim T0rec EVGEN \
+	STEER \
+	CDB \
+	AOD \
+	ESD \
+	STEERBase \
+	ANALYSISalice ANALYSIS \
+	THijing \
+	hijing THbtp TEPEMGEN \
+	FASTSIM microcern \
+	RAWDatasim RAWDatarec RAWDatabase \
+	HLTbase XMLParser STAT
 
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL -lEve $(SYSLIBS)
 

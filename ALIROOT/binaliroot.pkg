@@ -7,7 +7,18 @@ ELIBSDIR:=
 
 
 
-ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUONmapping \
+ELIBS:= MUONevaluation \
+	MUONmapping \
+	MUONshuttle \
+	MUONgraphics \
+	MUONsim \
+	MUONrec \
+	MUONgeometry \
+	MUONcalib \
+	MUONbase \
+	MUONraw \
+	MUONtrigger \
+	MUONcore \
         TPCbase TPCsim TPCrec TPCfast \
 	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
         TRDsim TRDrec TRDfast \
@@ -16,10 +27,16 @@ ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONc
         HMPIDbase HMPIDrec HMPIDsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALUtils EMCALbase EMCALsim EMCALrec BCM \
-        STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER \
-        FASTSIM microcern \
-	RAWDatabase RAWDatarec RAWDatasim \
-	HLTbase MUONevaluation TRIGGERbase STAT
+        STRUCT T0base T0sim T0rec EVGEN \
+	FASTSIM microcern \
+	HLTbase TRIGGERbase STAT \
+	STEER \
+	CDB \
+	AOD \
+	ESD \
+	STEERBase \
+	RAWDatasim RAWDatarec RAWDatabase 
+
 #       THijing hijing \
 #       THbtp TEPEMGEN \
 #	THerwig herwig TPHIC

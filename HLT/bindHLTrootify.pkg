@@ -20,10 +20,26 @@ EINCLUDE := HLT/BASE HLT/MUON MUON
 
 PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
-ELIBS := STEERBase ESD AOD RAWDatabase RAWDatarec RAWDatasim \
-	CDB STEER HLTbase MUONevaluation MUONsim MUONrec \
-	MUONbase MUONtrigger MUONgeometry MUONraw MUONcalib MUONmapping MUONcore \
-	AliHLTMUON
+ELIBS := AliHLTMUON \
+	HLTbase \
+ 	MUONmapping \
+	MUONevaluation \
+	MUONsim \
+	MUONrec \
+	MUONgeometry \
+	MUONcalib \
+	MUONbase \
+	MUONraw \
+	RAWDatasim \
+	MUONtrigger \
+	MUONcore \
+	STEER \
+	CDB \
+	AOD \
+	RAWDatarec \
+	ESD \
+	RAWDatabase \
+	STEERBase
 
 include $(MODDIR)/hlt.conf
 EDEFINE      := ${HLTDEFS}
