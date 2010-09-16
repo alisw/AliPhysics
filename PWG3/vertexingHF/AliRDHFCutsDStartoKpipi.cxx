@@ -29,6 +29,8 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
+#include "AliAODPid.h"
+#include "AliTPCPIDResponse.h"
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
 
@@ -38,8 +40,8 @@ ClassImp(AliRDHFCutsDStartoKpipi)
 
 //--------------------------------------------------------------------------
 AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) : 
-AliRDHFCuts(name),
-fTrackCutsSoftPi(0)
+  AliRDHFCuts(name),
+  fTrackCutsSoftPi(0)
 {
   //
   // Default Constructor
@@ -118,8 +120,8 @@ AliRDHFCutsDStartoKpipi &AliRDHFCutsDStartoKpipi::operator=(const AliRDHFCutsDSt
   if(&source == this) return *this;
 
   AliRDHFCuts::operator=(source);
-
   if(source.GetTrackCutsSoftPi()) AddTrackCutsSoftPi(source.GetTrackCutsSoftPi());
+
   return *this;
 }
 
@@ -268,20 +270,28 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   }
   
   Int_t returnvalue=1;
-  
+  Int_t returnvaluePID=3;
+
+  // selection on PID 
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kCandidate ||
+     selectionLevel==AliRDHFCuts::kPID) {
+    returnvaluePID = IsSelectedPID(dd);
+  }
+
+
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate) {
     
     Double_t pt=d->Pt();
     Int_t ptbin=PtBin(pt);
-
+ 
     // select D0 that passes D* cuts
     returnvalue = IsD0FromDStarSelected(pt,dd,selectionLevel);
-    //if(retunvalue==0) return 0;
 
     if((b->Charge()==+1 && returnvalue==2) || (b->Charge()==-1 && returnvalue==1)) return 0; 
-
+    
     // DStarMass and D0mass
     Double_t mDSPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -372,8 +382,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,I
     if (okD0bar) returnvalue=2; //cuts passed as D0bar
     if (okD0 && okD0bar) returnvalue=3; //both
   }
-
-  //if((Charge()==+1 && !okD0) || (Charge()==-1 && !okD0bar)) return kFALSE; 
+ 
   return returnvalue;
 }
 //----------------------------------------------------------------------------------
@@ -390,14 +399,27 @@ Bool_t AliRDHFCutsDStartoKpipi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
       return kFALSE;
     }
   } else {
+    
     // appliying smooth cut for pt < 5 GeV
-    Double_t maxFiducialY = -0.151/15*pt*pt+1.9/15*pt+0.4; 
-    Double_t minFiducialY = 0.151/15*pt*pt-1.9/15*pt-0.4;		
-    AliDebug(4,Form("pt of D* = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY)); 
+    Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5; 
+    Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;		
+    AliDebug(2,Form("pt of D* = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY)); 
     if (y < minFiducialY || y > maxFiducialY){
       return kFALSE;
     }
   }
 
+
   return kTRUE;
+}
+//_______________________________________________________________________________-
+Int_t AliRDHFCutsDStartoKpipi::IsSelectedPID(AliAODRecoDecayHF* dd) 
+{
+  //
+  //  here the PID
+
+  // Double_t cw = dd->Pt();
+
+  if(dd) return 1;
+  return 1;
 }
