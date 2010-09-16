@@ -267,7 +267,15 @@ void AliAnaVZEROQA::UserExec(Option_t */*option*/)
   }
 
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+  if (!esd) {
+    Printf("ERROR: No ESD event");
+    return;
+  }
   AliESDVZERO* esdV0 = esd->GetVZEROData();
+  if (!esdV0) {
+    Printf("ERROR: No ESD VZERO");
+    return;
+  }
 
   Float_t timeA = 0,timeC = 0;
   Int_t ntimeA = 0, ntimeC = 0;
@@ -374,122 +382,6 @@ void AliAnaVZEROQA::Terminate(Option_t *)
     return;
   }
 	
-  fhAdcNoTimeA = dynamic_cast<TH1F*>(fListOfHistos->At(0));
-  fhAdcWithTimeA = dynamic_cast<TH1F*>(fListOfHistos->At(1));
-  fhAdcNoTimeC = dynamic_cast<TH1F*>(fListOfHistos->At(2));
-  fhAdcWithTimeC = dynamic_cast<TH1F*>(fListOfHistos->At(3));
-
-  fhAdcPMTNoTime = dynamic_cast<TH2F*>(fListOfHistos->At(4));
-  fhAdcPMTWithTime = dynamic_cast<TH2F*>(fListOfHistos->At(5));
-
-  fhTimeA = dynamic_cast<TH1F*>(fListOfHistos->At(6));
-  fhTimeC = dynamic_cast<TH1F*>(fListOfHistos->At(7));
-
-  fhWidthA = dynamic_cast<TH1F*>(fListOfHistos->At(8));
-  fhWidthC = dynamic_cast<TH1F*>(fListOfHistos->At(9));
-
-  fhTimePMT = dynamic_cast<TH2F*>(fListOfHistos->At(10));
-  fhWidthPMT = dynamic_cast<TH2F*>(fListOfHistos->At(11));
-
-  fhAdcWidthA = dynamic_cast<TH2F*>(fListOfHistos->At(12));
-  fhAdcWidthC = dynamic_cast<TH2F*>(fListOfHistos->At(13));
-
-  fhTimeCorr = dynamic_cast<TH2F*>(fListOfHistos->At(14));
-
-  fhAdcTimeA = dynamic_cast<TH2F*>(fListOfHistos->At(15));
-  fhAdcTimeC = dynamic_cast<TH2F*>(fListOfHistos->At(16));
-
-  fV0a = dynamic_cast<TH1F*>(fListOfHistos->At(17));
-  fV0c = dynamic_cast<TH1F*>(fListOfHistos->At(18));
-  fV0multA = dynamic_cast<TH1F*>(fListOfHistos->At(19));
-  fV0multC = dynamic_cast<TH1F*>(fListOfHistos->At(20));
-  fV0ampl  = dynamic_cast<TH1F*>(fListOfHistos->At(21));
-
-  fhTimePMTCorr = dynamic_cast<TH2F*>(fListOfHistos->At(22));
-  fhEvents = dynamic_cast<TH2F*>(fListOfHistos->At(23));
-
-  fhVtxXYBB = dynamic_cast<TH2F*>(fListOfHistos->At(24));
-  fhVtxZBB = dynamic_cast<TH1F*>(fListOfHistos->At(25));
-  fhVtxXYBGA = dynamic_cast<TH2F*>(fListOfHistos->At(26));
-  fhVtxZBGA = dynamic_cast<TH1F*>(fListOfHistos->At(27));
-  fhVtxXYBGC = dynamic_cast<TH2F*>(fListOfHistos->At(28));
-  fhVtxZBGC = dynamic_cast<TH1F*>(fListOfHistos->At(29));
-
- // draw the histograms if not in batch mode
-  if (!gROOT->IsBatch()) {
-    new TCanvas;
-    fhTimePMT->DrawCopy();
-    new TCanvas;
-    fhAdcTimeA->DrawCopy();
-    new TCanvas;
-    fhAdcTimeC->DrawCopy();
-    new TCanvas;
-    fhAdcPMTNoTime->DrawCopy();
-    new TCanvas;
-    fhAdcPMTWithTime->DrawCopy();
-    new TCanvas;
-    fhTimeCorr->DrawCopy("E");
-    new TCanvas;
-    fV0ampl->DrawCopy("E");
-    new TCanvas;
-    fhTimePMTCorr->DrawCopy("colz");
-    new TCanvas;
-    fhEvents->DrawCopy("colz");
-  }
-
-  // write the output histograms to a file
-  TFile* outputFile = TFile::Open("VZEROQA.root", "recreate");
-  if (!outputFile || !outputFile->IsOpen())
-    {
-      Error("AliAnaVZEROQA", "opening output file VZEROQA.root failed");
-      return;
-    }
-
-  fhAdcNoTimeA->Write();
-  fhAdcWithTimeA->Write();
-  fhAdcNoTimeC->Write();
-  fhAdcWithTimeC->Write();
-
-  fhAdcPMTNoTime->Write();
-  fhAdcPMTWithTime->Write();
- 
-  fhTimeA->Write();
-  fhTimeC->Write();
-
-  fhWidthA->Write();
-  fhWidthC->Write();
-
-  fhTimePMT->Write();
-  fhWidthPMT->Write();
-
-  fhAdcWidthA->Write();
-  fhAdcWidthC->Write();
-
-  fhTimeCorr->Write();
-
-  fhAdcTimeA->Write();
-  fhAdcTimeC->Write();
-
-  fV0a->Write();
-  fV0c->Write();
-  fV0multA->Write();
-  fV0multC->Write();
-  fV0ampl->Write();
-
-  fhTimePMTCorr->Write();
-  fhEvents->Write();
-
-  fhVtxXYBB->Write();
-  fhVtxZBB->Write();
-  fhVtxXYBGA->Write();
-  fhVtxZBGA->Write();
-  fhVtxXYBGC->Write();
-  fhVtxZBGC->Write();
-
-  outputFile->Close();
-  delete outputFile;
-
-  //delete esd;
   Info("AliAnaVZEROQA", "Successfully finished");
 }
 
