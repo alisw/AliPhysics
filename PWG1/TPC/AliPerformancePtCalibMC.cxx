@@ -100,6 +100,7 @@ ClassImp(AliPerformancePtCalibMC)
       //options for cuts
       fOptTPC(0),
       fESDcuts(0),
+      fPions(0),
       fEtaAcceptance(0),
       fCutsRC(0),
       fCutsMC(0),
@@ -133,7 +134,7 @@ ClassImp(AliPerformancePtCalibMC)
       fHistESDMomentaPosPtMC(0), 
       fHistESDMomentaNegPtMC(0),
       fHistUserPtShift(0),
-      
+      fHistdedxPions(0),
       //esd track cuts
       fESDTrackCuts(0),
       // analysis folder 
@@ -148,6 +149,7 @@ ClassImp(AliPerformancePtCalibMC)
 
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
+   fPions = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
 
@@ -192,6 +194,7 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerforman
    //options for cuts
    fOptTPC(0),
    fESDcuts(0),
+   fPions(0),
    fEtaAcceptance(0),
    fCutsRC(0),
    fCutsMC(0),
@@ -225,7 +228,7 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerforman
    fHistESDMomentaPosPtMC(0), 
    fHistESDMomentaNegPtMC(0),
    fHistUserPtShift(0),
-      
+   fHistdedxPions(0),
    //esd track cuts
    fESDTrackCuts(0),
    // analysis folder 
@@ -240,6 +243,7 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerforman
 
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
+   fPions = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
 
@@ -298,7 +302,7 @@ AliPerformancePtCalibMC::~AliPerformancePtCalibMC() {
    if(fHistESDMomentaNegInvPtMC) delete fHistESDMomentaNegInvPtMC;fHistESDMomentaNegInvPtMC=0;
    if(fHistESDMomentaPosPtMC)    delete fHistESDMomentaPosPtMC;fHistESDMomentaPosPtMC=0;
    if(fHistESDMomentaNegPtMC)    delete fHistESDMomentaNegPtMC;fHistESDMomentaNegPtMC=0;
-   
+   if(fHistdedxPions)    delete fHistdedxPions;fHistdedxPions=0;
 
    
    //esd track cuts
@@ -400,7 +404,10 @@ void AliPerformancePtCalibMC::Init()
    //user pt shift check
    fHistUserPtShift = new TH1F("fHistUserPtShift","user defined shift in 1/pt",100,-0.5,1.5);
    fList->Add(fHistUserPtShift);
-   
+   // pid
+   fHistdedxPions = new TH2F ("fHistdedxPions","dEdx of pions ident. via PDG code vs signed Pt",300,-15.05,15.05,200,0.0,400.0);
+   fList->Add(fHistdedxPions);
+
    // esd track cuts  
    fESDTrackCuts =NULL;
    
@@ -487,6 +494,10 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
       Double_t mcPt = partMC->Pt();
       Double_t invPtMC = 1.0/mcPt;
       Int_t signMC = partMC->GetPdgCode();
+      
+      //pid
+      if(fPions && !(fabs(signMC)-211<0.001)) continue;// pions only
+      
       //MC only
       if(signMC>0) signMC = 1; 
       else signMC = -1;
@@ -556,8 +567,9 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
 	       fHistTPCMomentaNegInvPtMC->Fill(invPtDiffESD,invPtDiffTPC);
 	       fHistTPCMomentaNegPtMC->Fill(ptDiffESD,ptDiffTPC);
 	    }
-	    fHistMomresMCESD->Fill(fabs(mcPt),(fabs(mcPt)-fabs(ptESD))/fabs(mcPt));
-	    fHistMomresMCTPC->Fill(fabs(mcPt),(fabs(mcPt)-fabs(signedPt))/fabs(mcPt));
+	    fHistdedxPions->Fill(signedPt,esdTrack->GetTPCsignal());
+	    fHistMomresMCESD->Fill(fabs(mcPt),(fabs(ptESD)-fabs(mcPt))/fabs(mcPt));
+	    fHistMomresMCTPC->Fill(fabs(mcPt),(fabs(signedPt)-fabs(mcPt))/fabs(mcPt));
 	    count++;
 	 }
 	 else continue;
@@ -595,8 +607,8 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
 	  fHistESDMomentaNegInvPtMC->Fill(invPtdiffESD);
 	  fHistESDMomentaNegPtMC->Fill(ptDiffESD);
        }	
-	
-       fHistMomresMCESD->Fill(fabs(mcPt),(fabs(mcPt)-fabs(ptESD))/fabs(mcPt));
+       fHistdedxPions->Fill(ptESD,esdTrack->GetTPCsignal());
+       fHistMomresMCESD->Fill(fabs(mcPt),(fabs(ptESD)-fabs(mcPt))/fabs(mcPt));
        count++;
     }
  }
@@ -740,6 +752,7 @@ Long64_t AliPerformancePtCalibMC::Merge(TCollection* const list)
 	 fHistESDMomentaNegInvPtMC->Add(entry->fHistESDMomentaNegInvPtMC);
 	 fHistESDMomentaPosPtMC->Add(entry->fHistESDMomentaPosPtMC);
 	 fHistESDMomentaNegPtMC->Add(entry->fHistESDMomentaNegPtMC);
+	 fHistdedxPions->Add(entry->fHistdedxPions);
 	 count++;
       }
   
