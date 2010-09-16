@@ -2132,7 +2132,7 @@ Bool_t AliSimulation::RunQA()
 {
 	// run the QA on summable hits, digits or digits
 	
-  if(!gAlice) return kFALSE;
+    //if(!gAlice) return kFALSE;
 	AliQAManager::QAManager()->SetRunLoader(AliRunLoader::Instance()) ;
 
 	TString detectorsw("") ;  
