@@ -649,16 +649,14 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters) ;
 					icountRecoITSClusters++;   
 					AliDebug(2,Form("pT = %f, dca = %f, cosThetaStar = %f, pTpi = %f, pTK = %f, d0pi = %f, d0K = %f, d0xd0 = %f, cosPointingAngle = %f", pt, dca, cosThetaStar,pTpi, pTK, d0pi*1E4, d0K*1E4, d0xd0*1E8, cosPointingAngle));
-					AliInfo(Form("pT = %f, dca = %f, cosThetaStar = %f, pTpi = %f, pTK = %f, d0pi = %f, d0K = %f, d0xd0 = %f, cosPointingAngle = %f", pt, dca, cosThetaStar,pTpi, pTK, d0pi, d0K, d0xd0, cosPointingAngle));
 		
 					// setting the use of the PID cut when applying the selection to FALSE - whatever it was. Keeping track of the original value
 					Bool_t iscutusingpid=fCuts->GetIsUsePID();
 					Int_t isselcuts=-1,isselpid=-1;
 					fCuts->SetUsePID(kFALSE);	
-
 					isselcuts = fCuts->IsSelected(d0tokpi,AliRDHFCuts::kCandidate,aodEvent);
+					fCuts->SetUsePID(iscutusingpid); // restoring usage of the PID from the cuts object
 					if (isselcuts == 3 || isselcuts == isD0D0bar){
-						AliInfo(Form("Particle passed PPR cuts (actually cuts for D0 analysis!) with pt = %f",containerInput[0]));
 						AliDebug(2,"Particle passed PPR cuts (actually cuts for D0 analysis!)");
 						fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPPR,fWeight) ;   
 						icountRecoPPR++;
@@ -681,10 +679,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 							
 						}
 
-						fCuts->SetUsePID(iscutusingpid); // restoring usage of the PID from the cuts object
 						isselpid = fCuts->IsSelected(d0tokpi,AliRDHFCuts::kPID);
 						if((fCuts->CombineSelectionLevels(3,isselcuts,isselpid)==isD0D0bar)||(fCuts->CombineSelectionLevels(3,isselcuts,isselpid)==3)){
-							AliInfo(Form("Particle passed PID cuts with pt = %f",containerInput[0]));
 							AliDebug(2,"Particle passed PID cuts");
 							fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID,fWeight) ;   
 							icountRecoPID++;
