@@ -448,6 +448,8 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     pdgdaughters[2]=211;//pi
     nprongs=3;
     prongpdg=4122;
+    fReadMC=kFALSE;
+    printf("Warning! For the moment it is not allowed to use MC for the Lambdac\n");
     break;
   }
   Int_t prongPdgPlus=prongpdg;
@@ -519,7 +521,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
  	  pdgdaughters[2]=2212;
 	}
 
-	invMass=d->InvMass(nprongs,(UInt_t*)pdgdaughters);
+	invMassC=d->InvMass(nprongs,(UInt_t*)pdgdaughters);
 	fRDCuts->GetCutVarsForOpt(d,vars,nvars,pdgdaughters);
 	addresses = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetGlobalAddressesAboveCuts(vars,(Float_t)d->Pt(),nVals);
 	for(Int_t ivals=0;ivals<nVals;ivals++){
@@ -540,32 +542,6 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	  }
 	}
       }
-//inserisci qui
-    if(fDecChannel==AliAnalysisTaskSESignificance::kLambdactopKpi){ //repeat the cycle to checks cuts passed as Lambdacbar
-       pdgdaughters[0]=211;
-       pdgdaughters[1]=321;
-       pdgdaughters[2]=2212;
-       invMass=d->InvMass(nprongs,(UInt_t*)pdgdaughters);
-       fRDCuts->GetCutVarsForOpt(d,vars,nvars,pdgdaughters);
-       addresses = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetGlobalAddressesAboveCuts(vars,(Float_t)d->Pt(),nVals);
-       for(Int_t ivals=0;ivals<nVals;ivals++){
-        fMassHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
-        if(fReadMC){
-         Int_t lab=-1;
-         lab = d->MatchToMC(prongPdgMinus,arrayMC,nprongs,pdgdaughters);
-						                 //cambia il match
-	 if(lab>=0){ //signal
-	 AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(lab);
-	 Int_t pdgMC = dMC->GetPdgCode();
-	 if(pdgMC==prongPdgMinus) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
-	 else fRflHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
-	}
-	                                                                                 else{ //background
-	fBkgHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMassC);
-	}
-	}
-	}
-	}
   
     }// end if selected
 
