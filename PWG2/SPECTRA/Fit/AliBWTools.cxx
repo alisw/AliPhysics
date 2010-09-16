@@ -1110,3 +1110,41 @@ void AliBWTools::GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) {
   
 
 }
+
+TH1F * AliBWTools::DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2) {
+  // Divides 2 histos even if they have a different binning. Finds
+  // overlapping bins and divides them
+  
+  // 1. clone histo
+  TH1F * hRatio = new TH1F(*h1);
+  Int_t nBinsH1=h1->GetNbinsX();
+  Int_t nBinsH2=h2->GetNbinsX();
+  // Loop over H1 bins, 
+  for(Int_t iBin=1; iBin<=nBinsH1; iBin++){
+    hRatio->SetBinContent(iBin,0.);
+    hRatio->SetBinContent(iBin,0.);
+    Float_t lowPtH1=h1->GetBinLowEdge(iBin);
+    Float_t binWidH1=h1->GetBinWidth(iBin);
+    // Loop over H2 bins and find overlapping bins to H1
+    for(Int_t jBin=1; jBin<=nBinsH2; jBin++){
+      Float_t lowPtH2=h2->GetBinLowEdge(jBin);
+      Float_t binWidH2=h2->GetBinWidth(jBin);
+      if(TMath::Abs(lowPtH1-lowPtH2)<0.001 && TMath::Abs(binWidH2-binWidH1)<0.001){
+	Float_t numer=h1->GetBinContent(iBin);
+	Float_t denom=h2->GetBinContent(jBin);
+	Float_t enumer=h1->GetBinError(iBin);
+	Float_t edenom=h2->GetBinError(jBin);
+	Double_t ratio=0.;
+	Double_t eratio=0.;
+	if(numer>0. && denom>0.){
+	  ratio=numer/denom;
+	  eratio=ratio*TMath::Sqrt((enumer/numer)*(enumer/numer)+(edenom/denom)*(edenom/denom));
+	}
+	hRatio->SetBinContent(iBin,ratio);
+	hRatio->SetBinError(iBin,eratio);
+	break;
+      }
+    }
+  }
+  return hRatio;
+}

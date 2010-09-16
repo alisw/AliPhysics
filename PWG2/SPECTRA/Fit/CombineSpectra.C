@@ -47,7 +47,7 @@ enum {kStatErrors = 0, kSystErrors, kStatSystErrors}; // which errors do we put 
 
 // flags, labels and names
 const char * partFlag[] = {"Pion", "Kaon", "Proton"};
-const char * detFlag[]  = {"TPC", "TOF", "ITS", "ITS Global", "K0", "Kinks", "Combined TOF + TPC", "Combined TOF + TPC + ITS"};
+const char * detFlag[]  = {"TPC", "TOF", "ITS standalone", "ITS-TPC", "K0", "Kinks", "Combined TOF + TPC", "Combined TOF + TPC + ITS"};
 const char * chargeFlag[]  = {"Pos", "Neg"};
 const char * chargeLabel[]  = {"Positive", "Negative"};
 const char * partLabel[kNPart][kNCharge] = {{"#pi^{+}", "#pi^{-}"}, 
@@ -66,7 +66,8 @@ const char * funcName[] = { "Levi", "UA1", "PowerLaw", "Phojet", "AtlasCSC", "CM
 
 // Style
 //const Int_t marker[] = {25,24,28,20,21}; // set for highlithining marek
-const Int_t marker[] = {20,24,25,28,21}; // standard set
+//const Int_t marker[] = {20,24,25,28,21}; // standard set
+const Int_t marker[] = {24,25,28,27,21}; // No full symbols
 const Int_t color [] = {1,2,4};
 
 const Int_t mcLineColor[] = {kGreen,kRed,kBlue,kBlack};
@@ -166,7 +167,7 @@ TString today = "";
 Bool_t convertToMT = 0;
 Bool_t sumCharge = kFALSE;
 Int_t whatToFit = kStatErrors; 
-Bool_t doPrint = 1;
+Bool_t doPrint = 0;
 Bool_t scaleKaons =  kFALSE;
 Bool_t drawStar =  kFALSE; // Overlay star when doing fits
 Bool_t correctSecondaries  = 1;
@@ -711,7 +712,8 @@ void LoadSpectra() {
   // Apply correction factors
   // Secondaries for protons
 
-  f = new TFile ("./Files/corrFactorProtons_20100615.root");
+  //  f = new TFile ("./Files/corrFactorProtons_20100615.root");
+  f = new TFile ("./Files/corrFactorProtons_2010_09_15.root");
   TH1F * hCorrSecondaries = (TH1F*) gDirectory->Get("corrFactorProtons");
   if(correctSecondaries) {
     cout << "CORRECTING SECONDARIES" << endl;
@@ -1117,18 +1119,25 @@ void DrawWithModels() {
       hempty->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1}");
       hempty->Draw();
       c1->SetLogy();
+      
 
 
-      TLegend * l =new TLegend(       0.543624,  0.431818,  0.892617,0.629371);
+      TLegend * l =new TLegend(0.502874, 0.493056, 0.892241, 0.904762);
       l->SetFillColor(kWhite);
       hSpectra[iCombInStudy][ipart][icharge]->Draw("same");
-      l->AddEntry(hSpectra[kTOF][ipart][icharge],TString ("Data: ")+partLabel[ipart][icharge]);
+      l->AddEntry(hSpectra[kTOF][ipart][icharge],TString ("Data"));
       for(Int_t itune = 0; itune < kNTunes; itune++){      
 	l->AddEntry(hSpectraMC[itune][ipart][icharge],mcTuneName[itune]);
 	hSpectraMC[itune][ipart][icharge]->SetLineWidth(2);    
-	hSpectraMC[itune][ipart][icharge]->Draw("same,chist");    
+	AliBWTools::GetGraphFromHisto(hSpectraMC[itune][ipart][icharge])->Draw("CX");
       }
       l->Draw("same");
+     
+      TLatex * tex = new TLatex(0.6712643,2.353486,partLabel[ipart][icharge]);
+      tex->SetTextFont(42);
+      tex->SetTextSize(0.07936508);
+      tex->SetLineWidth(2);
+      tex->Draw();
 
       // Draw ratio
       p2->cd();
@@ -1140,6 +1149,7 @@ void DrawWithModels() {
       hemptyr->GetYaxis()->SetTitleSize(0.05*scaleFonts);
       hemptyr->GetYaxis()->SetTitleOffset(1.4/scaleFonts);
       hemptyr->GetXaxis()->SetTitleSize(0.05*scaleFonts);
+      hemptyr->GetXaxis()->SetTitleOffset(1.05);
       hemptyr->SetTickLength(0.03*scaleFonts, "X");
       hemptyr->SetTickLength(0.02*scaleFonts, "Y");
       //      hemptyr->GetXaxis()->SetTitleOffset(1.4/scaleFonts);
@@ -1155,7 +1165,7 @@ void DrawWithModels() {
 	hRatio->SetLineStyle(hSpectraMC[itune][ipart][icharge]->GetLineStyle());
 	hRatio->SetLineColor(hSpectraMC[itune][ipart][icharge]->GetLineColor());
 	hRatio->SetLineWidth(hSpectraMC[itune][ipart][icharge]->GetLineWidth());
-	hRatio->Draw("lhist,same");
+	AliBWTools::GetGraphFromHisto(hRatio)->Draw("CX");
       }
 
 
@@ -1238,13 +1248,13 @@ void DrawAllAndKaons() {
     TCanvas * c1 = new TCanvas(TString("cAll_")+chargeFlag[icharge],TString("cAll_")+chargeFlag[icharge],700,700);
     c1->SetLogy();
     c1->SetLeftMargin(0.14);
-    TH2F * hempty = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,4, 100, 1e-4,10);
+    TH2F * hempty = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,4, 100, 1e-3,10);
     hempty->SetXTitle("p_{t} (GeV/c)");
     hempty->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1}");
     hempty->GetYaxis()->SetTitleOffset(1.35);
     hempty->GetXaxis()->SetTitleOffset(1.1);
-    hempty->Draw();
-    leg = new TLegend(0.602011, 0.489583, 0.896552, 0.925595, NULL,"brNDC");
+    hempty->Draw();    
+    leg = new TLegend(0.482759, 0.489583, 0.896552, 0.925595, NULL,"brNDC");
     leg->SetFillColor(0);
     for(Int_t ipart = 0; ipart < kNPart; ipart++) {
       for(Int_t idet = 0; idet <= kITSTPC; idet++){
@@ -1706,6 +1716,15 @@ void DrawRatios() {
     }
   }
  
+  // Phenix ratio
+  TFile * fPhenix = new TFile("./Files/phenixdata.root");
+  TH1F * hPPiRatioPhenix = (TH1F*) fPhenix->Get("ProtonPHNX");
+  hPPiRatioPhenix->Add((TH1F*) fPhenix->Get("PbarPHNX"));
+  htmp = (TH1F*) fPhenix->Get("PiPlusPHNX");
+  htmp->Add((TH1F*) fPhenix->Get("PiMinusPHNX"));
+  hPPiRatioPhenix = AliBWTools::DivideHistosDifferentBins(hPPiRatioPhenix,htmp);
+  hPPiRatioPhenix->SetMarkerStyle(24);
+
   // Draw
 //   TH2F * hempty = new TH2F(TString("hempty"),"hempty",100,0.,1.5, 100, 0.001,1.8);
 //   hempty->SetXTitle("p_{t} (GeV/c)");
@@ -1749,8 +1768,8 @@ void DrawRatios() {
 
 
   TCanvas * c2 = new TCanvas(TString("cRatio_KPi"),TString("cRatio_KPi"));  
-  c2->SetGridy();
-  hKPiRatio->SetMaximum(0.8);
+  //  c2->SetGridy();
+  hKPiRatio->SetMaximum(0.62);
   hKPiRatio->Draw();
   TLegend * lMC = new TLegend(0.526846, 0.18007, 0.887584,0.407343);
   lMC->SetFillColor(kWhite);
@@ -1763,6 +1782,8 @@ void DrawRatios() {
     GetE735Ratios(0,3)->Draw("EX0,same");
   }
   hKPiRatio->SetMarkerStyle(20);
+  hKPiRatio->SetMarkerColor(kRed);
+  hKPiRatio->SetLineColor(kRed);
   hKPiRatio->Draw("same");
   
   if(showMC){
@@ -1788,7 +1809,10 @@ void DrawRatios() {
 
 
   TCanvas * c3 = new TCanvas(TString("cRatio_PPi"),TString("cRatio_PPi"));  
-  c3->SetGridy();
+  //  c3->SetGridy();
+  hPPiRatio->SetMarkerStyle(20);
+  hPPiRatio->SetMarkerColor(kRed);
+  hPPiRatio->SetLineColor(kRed);
   hPPiRatio->Draw();
   hPPiRatio->SetMaximum(0.39);
   if(showMC){
@@ -1803,6 +1827,16 @@ void DrawRatios() {
   
     lMC->Draw();
   }
+  hPPiRatioPhenix->Draw("same");
+
+  
+  TLegend * l = new TLegend(0.186242, 0.781469, 0.538591, 0.921329);
+  l->SetFillColor(kWhite);
+  l->AddEntry(hPPiRatio, "ALICE, #sqrt{s} = 900 GeV","lpf");
+  l->AddEntry(hPPiRatioPhenix, "PHENIX, #sqrt{s} = 200 GeV","lpf");
+  //  TLegend * l = new TLegend(0.206376, 0.77972, 0.600671, 0.909091);
+  l->Draw();
+
 
   if (doPrint) {
     c2->Update();
