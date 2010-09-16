@@ -1095,11 +1095,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   }
   
   if (rawReader->GetEventId() && fOutput ){
-    Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), fNclusters);
+    Info("Digits2Clusters", "File  %s Event\t%u\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), fNclusters);
   }
   
   if(rawReader->GetEventId()) {
-    Info("Digits2Clusters", "Event\t%d\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), fNclusters);
+    Info("Digits2Clusters", "Event\t%u\tNumber of found clusters : %d\n",*(rawReader->GetEventId()), fNclusters);
   }
   
   if(fBClonesArray) {

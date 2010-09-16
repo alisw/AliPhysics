@@ -3074,16 +3074,32 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const arrayP, TObjArra
   if (arrayP->GetEntries()<=0) return 0;
   if (!arrayM) return 0;
   if (arrayM->GetEntries()<=0) return 0;
+
   Int_t entries = arrayP->GetEntriesFast();
   TObjArray *array = new TObjArray(arrayP->GetEntriesFast()); 
+
   for (Int_t i=0; i<entries; i++){
      AliRelAlignerKalman * kalmanP = (AliRelAlignerKalman *) arrayP->UncheckedAt(i);
      AliRelAlignerKalman * kalmanM = (AliRelAlignerKalman *) arrayM->UncheckedAt(i);
      if (!kalmanP) continue;
      if (!kalmanM) continue;
-     AliRelAlignerKalman *kalman = new AliRelAlignerKalman(*kalmanP);
-     kalman->Merge(kalmanM);
+  
+     AliRelAlignerKalman *kalman = NULL;
+     if(kalmanP->GetRunNumber() != 0 && kalmanM->GetRunNumber() != 0) {
+       kalman = new AliRelAlignerKalman(*kalmanP);
+       kalman->Merge(kalmanM);
+     }
+     else if (kalmanP->GetRunNumber() == 0) {
+       kalman = new AliRelAlignerKalman(*kalmanM);
+     }
+     else if (kalmanM->GetRunNumber() == 0) {
+       kalman = new AliRelAlignerKalman(*kalmanP);
+     }
+     else 
+       continue;
+
      array->AddAt(kalman,i);
   }
+
   return array;
 }
