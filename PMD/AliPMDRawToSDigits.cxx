@@ -369,17 +369,12 @@ void AliPMDRawToSDigits::Raw2Digits(AliRunLoader *runLoader, AliRawReader *rawRe
 
 void AliPMDRawToSDigits::AdcToMeV(Int_t adc, Float_t &edep)
 {
-  // To be implemented, this is just for the test
+  // These constants are from Test Beam 2010
 
-  const Float_t kConstant   = 7.181;
-  //  const Float_t kErConstant = 0.6899;
-  const Float_t kSlope      = 35.93;
-  //  const Float_t kErSlope    = 0.306;
+  const Float_t kConstant   = 0.612796;
+  const Float_t kSlope      = 130.158;
 
-
-
-  Float_t adc10bit = (Float_t) adc/4;
-  edep     = (1000.0/kSlope)*(adc10bit - kConstant);
+  edep     = (1000.0/kSlope)*(adc - kConstant);
 }
 
 // ------------------------------------------------------------------------- //

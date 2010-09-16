@@ -261,16 +261,16 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 
   const Int_t kPi0 = 111;
   const Int_t kGamma = 22;
-  Int_t npmd;
-  Int_t trackno;
-  Int_t smnumber;
-  Int_t trackpid;
-  Int_t mtrackno;
-  Int_t mtrackpid;
+  Int_t npmd = 0;
+  Int_t trackno = 0;
+  Int_t smnumber = 0;
+  Int_t trackpid = 0;
+  Int_t mtrackno = 0;
+  Int_t mtrackpid = 0;
 
-  Float_t xPos, yPos, zPos;
+  Float_t xPos = 0., yPos = 0., zPos = 0.;
   Int_t xpad = -1, ypad = -1;
-  Float_t edep;
+  Float_t edep = 0.;
   Float_t vx = -999.0, vy = -999.0, vz = -999.0;
 
 
@@ -506,16 +506,16 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   //
   const Int_t kPi0 = 111;
   const Int_t kGamma = 22;
-  Int_t npmd;
-  Int_t trackno;
-  Int_t smnumber;
-  Int_t trackpid;
-  Int_t mtrackno;
-  Int_t mtrackpid;
+  Int_t npmd      = 0;
+  Int_t trackno   = 0;
+  Int_t smnumber  = 0;
+  Int_t trackpid  = 0;
+  Int_t mtrackno  = 0;
+  Int_t mtrackpid = 0;
 
-  Float_t xPos, yPos, zPos;
+  Float_t xPos = 0., yPos = 0., zPos = 0.;
   Int_t xpad = -1, ypad = -1;
-  Float_t edep;
+  Float_t edep = 0.;
   Float_t vx = -999.0, vy = -999.0, vz = -999.0;
 
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
@@ -676,18 +676,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		{
 		  fDetNo = 1;
 		}
-	      /*
-		if (zPos < fZPos)
-		{
-		// CPV
-		fDetNo = 1;
-		}
-		else if (zPos > fZPos)
-		{
-		// PMD
-		fDetNo = 0;
-		}
-	      */
+
 	      Int_t smn = smnumber;
 	      Int_t ixx = xpad     - 1;
 	      Int_t iyy = ypad     - 1;
@@ -714,12 +703,12 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   TrackAssignment2Cell();
   ResetCell();
 
-  Float_t gain1;
-  Float_t adc;
+  Float_t gain1  = 1.;
+  Float_t adc    = 0. ;
   Float_t deltaE = 0.;
-  Int_t detno = 0;
-  Int_t trno = 1;
-  Int_t trpid = -99;
+  Int_t detno    = 0;
+  Int_t trno     = 1;
+  Int_t trpid    = -99;
 
   for (Int_t idet = 0; idet < 2; idet++)
   {
@@ -818,9 +807,9 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
   treeD->Branch("PMDDigit", &fDigits, bufsize);
 
-  Int_t   trno, trpid, det, smn;
-  Int_t   irow, icol;
-  Float_t edep, adc;
+  Int_t   trno = 1, trpid = 0, det = 0, smn = 0;
+  Int_t   irow = 0, icol = 0;
+  Float_t edep = 0., adc = 0.;
 
   Int_t nmodules = (Int_t) treeS->GetEntries();
   AliDebug(1,Form("Number of modules = %d",nmodules));
@@ -911,7 +900,7 @@ void AliPMDDigitizer::Exec(Option_t *option)
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
   treeD->Branch("PMDDigit", &fDigits, bufsize);
 
-  Float_t adc;
+  Float_t adc    = 0.;
   Float_t deltaE = 0.;
   Int_t detno    = 0;
   Int_t trno     = 1;
@@ -990,7 +979,7 @@ void AliPMDDigitizer::TrackAssignment2CPVCell()
   // This method added by Ajay
   Bool_t jsort = false;
 
-  Int_t i, j, k;
+  Int_t i = 0, j = 0, k = 0;
 
   Int_t   *status1;
   Int_t   *status2;
@@ -1043,8 +1032,8 @@ void AliPMDDigitizer::TrackAssignment2CPVCell()
 
   Int_t nentries = fCPVCell.GetEntries();
  
-  Int_t   mtrackno, ism, ixp, iyp;
-  Float_t edep;
+  Int_t   mtrackno = 0, ism = 0, ixp = 0, iyp = 0;
+  Float_t edep = 0.;
   for (i = 0; i < nentries; i++)
     {
       AliPMDcell* cpvcell = (AliPMDcell*)fCPVCell.UncheckedAt(i);
@@ -1060,9 +1049,9 @@ void AliPMDDigitizer::TrackAssignment2CPVCell()
       fCPVCounter[ism][ixp][iyp]++;
     }
   
-  Int_t iz, il;
-  Int_t im, ix, iy;
-  Int_t nn;
+  Int_t iz = 0, il = 0;
+  Int_t im = 0, ix = 0, iy = 0;
+  Int_t nn = 0;
   for (im=0; im<fgkTotUM; im++)
     {
       for (ix=0; ix<fgkRow; ix++)
@@ -1195,9 +1184,9 @@ void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
   if (!fSDigits) fSDigits = new TClonesArray("AliPMDsdigit", 1000);
   branch->SetAddress(&fSDigits);
 
-  Int_t   itrackno, itrackpid, idet, ism;
-  Int_t   ixp, iyp;
-  Float_t edep;
+  Int_t   itrackno = 1, itrackpid = 0, idet = 0, ism = 0;
+  Int_t   ixp = 0, iyp = 0;
+  Float_t edep = 0.;
   Int_t nmodules = (Int_t) treeS->GetEntries();
   AliDebug(1,Form("Number of Modules in the treeS = %d",nmodules));
   AliDebug(1,Form("Track Offset = %d",troffset));
@@ -1248,7 +1237,7 @@ void AliPMDDigitizer::TrackAssignment2Cell()
   //
   Bool_t jsort = false;
 
-  Int_t i, j, k;
+  Int_t i = 0, j = 0, k = 0;
 
   Int_t   *status1;
   Int_t   *status2;
@@ -1320,9 +1309,9 @@ void AliPMDDigitizer::TrackAssignment2Cell()
       fPRECounter[ism][ixp][iyp]++;
     }
   
-  Int_t iz, il;
-  Int_t im, ix, iy;
-  Int_t nn;
+  Int_t iz = 0, il = 0;
+  Int_t im = 0, ix = 0, iy = 0;
+  Int_t nn = 0;
   
   for (im=0; im<fgkTotUM; im++)
     {
@@ -1450,26 +1439,28 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
   // KeV - ADC conversion for 12bit ADC
   // MPV data used for the fit and taken here
 
-  const Float_t kConstant   = 16.807;
-  const Float_t kErConstant = 6.62215;
-  const Float_t kSlope      = 128.875;
-  const Float_t kErSlope    = 6.21713;
+  // constants are from Test Beam 2010
   
-  Float_t cons   = gRandom->Gaus(kConstant,kErConstant);
-  Float_t slop   = gRandom->Gaus(kSlope,kErSlope);
+  const Float_t kConstant   = 0.612796;
+  const Float_t kSlope      = 130.158;
   
-  Float_t adc12bit = slop*mev*0.001 + cons;
-  
+  Float_t adc12bit = kSlope*mev*0.001 + kConstant;
   if (adc12bit < 0.) adc12bit = 0.;
-			   
-  if(adc12bit < 1600.0)
+
+  //Introducing Readout Resolution for ALICE-PMD
+
+  Float_t sigrr     = 0.605016 - 0.000273*adc12bit + 6.54e-8*adc12bit*adc12bit;
+  Float_t adcwithrr = gRandom->Gaus(adc12bit,sigrr);
+
+  if(adcwithrr < 1600.0)
     {
-      adc = (Float_t) adc12bit;
+      adc = (Float_t) adcwithrr;
     }
-  else if (adc12bit >= 1600.0)
+  else if (adcwithrr >= 1600.0)
     {
       adc = 1600.0;
     }
+
 }
 //____________________________________________________________________________
 void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t trpid, Int_t det,
