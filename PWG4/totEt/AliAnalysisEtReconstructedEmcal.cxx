@@ -23,16 +23,17 @@ AliAnalysisEtReconstructedEmcal::~AliAnalysisEtReconstructedEmcal()
 
 void AliAnalysisEtReconstructedEmcal::Init()
 { // Init
-    AliAnalysisEtReconstructed::Init();
+  AliAnalysisEtReconstructed::Init();
     
-    fClusterType = EtReconstructedCutsEmcal::kClusterType;
-    fDetectorRadius = EtGeometryCutsEmcal::kDetectorRadius;    
-    fEtaCutAcc = EtGeometryCutsEmcal::kEtaAccCut;
-    fPhiCutAccMax = EtGeometryCutsEmcal::kPhiAccMaxCut*TMath::Pi()/180.;
-    fPhiCutAccMin = EtGeometryCutsEmcal::kPhiAccMinCut*TMath::Pi()/180.;
-    fClusterEnergyCut = EtReconstructedCutsEmcal::kClusterEnergyCut;
-    fSingleCellEnergyCut = EtReconstructedCutsEmcal::kSingleCellEnergyCut;
-    fTrackDistanceCut = EtReconstructedCutsEmcal::kTrackDistanceCut;
+  fDetectorRadius = fCuts->GetGeometryEmcalDetectorRadius();
+  fEtaCutAcc = fCuts->GetGeometryEmcalEtaAccCut();
+  fPhiCutAccMax = fCuts->GetGeometryEmcalPhiAccMaxCut() * TMath::Pi()/180.;
+  fPhiCutAccMin = fCuts->GetGeometryEmcalPhiAccMinCut() * TMath::Pi()/180.;
+  fClusterEnergyCut = fCuts->GetReconstructedEmcalClusterEnergyCut();
+  fSingleCellEnergyCut = fCuts->GetReconstructedEmcalSingleCellEnergyCut();
+
+  fClusterType = fCuts->GetReconstructedEmcalClusterType();
+  fTrackDistanceCut = fCuts->GetReconstructedEmcalTrackDistanceCut();
 	 
 }
 

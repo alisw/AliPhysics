@@ -24,6 +24,7 @@ ClassImp(AliAnalysisEt);
 
 AliAnalysisEt::AliAnalysisEt() :
         fHistogramNameSuffix("")
+        ,fCuts(0)
         ,fPdgDB(0)
         ,fPiPlusCode(0)
         ,fPiMinusCode(0)
@@ -59,19 +60,12 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fMultiplicity(0)
         ,fChargedMultiplicity(0)
         ,fNeutralMultiplicity(0)
-        ,fEtaCut(EtCommonCuts::kEtaCut)
-        ,fEtaCutAcc(0)
-        ,fPhiCutAccMin(0)
-        ,fPhiCutAccMax(360.)
-        ,fDetectorRadius(460.)
-        ,fVertexXCut(0)
-        ,fVertexYCut(0)
-        ,fVertexZCut(0)
-        ,fIPxyCut(0)
-        ,fIPzCut(0)
-        ,fClusterEnergyCut(EtCommonCuts::kClusterEnergyCut)
-        ,fTrackPtCut(EtCommonCuts::kTrackPtCut)
-        ,fSingleCellEnergyCut(0)
+	,fEtaCutAcc(0)
+	,fPhiCutAccMin(0)
+	,fPhiCutAccMax(0)
+	,fDetectorRadius(0)
+	,fClusterEnergyCut(0) 
+	,fSingleCellEnergyCut(0)
         ,fHistEt(0)
         ,fHistChargedEt(0)
         ,fHistNeutralEt(0)
@@ -129,11 +123,7 @@ void AliAnalysisEt::FillOutputList(TList *list)
 
 void AliAnalysisEt::Init()
 {// set up cuts and PDG info
-  fVertexXCut = EtReconstructedCuts::kVertexXCut;
-  fVertexYCut = EtReconstructedCuts::kVertexYCut;
-  fVertexZCut = EtReconstructedCuts::kVertexZCut;
-  fIPxyCut = EtReconstructedCuts::kIPxyCut;
-  fIPzCut = EtReconstructedCuts::kIPzCut;
+  if (!fCuts) fCuts = new AliAnalysisEtCuts();
 
   if(!fPdgDB) fPdgDB = new TDatabasePDG();
   SetParticleCodes();

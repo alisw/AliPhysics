@@ -1,6 +1,7 @@
 #-*- Mode: Makefile -*-
 
-SRCS = totEt/AliAnalysisEt.cxx \
+SRCS = totEt/AliAnalysisEtCuts.cxx \
+totEt/AliAnalysisEt.cxx \
 totEt/AliAnalysisEtMonteCarlo.cxx \
 totEt/AliAnalysisEtMonteCarloEmcal.cxx \
 totEt/AliAnalysisEtMonteCarloPhos.cxx \

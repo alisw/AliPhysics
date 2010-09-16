@@ -4,6 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliAnalysisEtCuts+;
 #pragma link C++ class AliAnalysisEt+;
 #pragma link C++ class AliAnalysisEtMonteCarlo+;
 #pragma link C++ class AliAnalysisEtMonteCarloEmcal+;

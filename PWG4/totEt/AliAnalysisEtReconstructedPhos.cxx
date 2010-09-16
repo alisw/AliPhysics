@@ -22,17 +22,18 @@ AliAnalysisEtReconstructedPhos::~AliAnalysisEtReconstructedPhos()
 
 void AliAnalysisEtReconstructedPhos::Init()
 { // Init
-    AliAnalysisEtReconstructed::Init();
+  AliAnalysisEtReconstructed::Init();
     
-    fClusterType = EtReconstructedCutsPhos::kClusterType;
-    fDetectorRadius = EtGeometryCutsPhos::kDetectorRadius;
-    fEtaCutAcc = EtGeometryCutsPhos::kEtaAccCut;
-    fPhiCutAccMax = EtGeometryCutsPhos::kPhiAccMaxCut*TMath::Pi()/180.;
-    fPhiCutAccMin = EtGeometryCutsPhos::kPhiAccMinCut*TMath::Pi()/180.;
-    fClusterEnergyCut = EtReconstructedCutsPhos::kClusterEnergyCut;
-    fSingleCellEnergyCut = EtReconstructedCutsPhos::kSingleCellEnergyCut;
-    fTrackDistanceCut = EtReconstructedCutsPhos::kTrackDistanceCut;
-	 
+  fDetectorRadius = fCuts->GetGeometryPhosDetectorRadius();
+  fEtaCutAcc = fCuts->GetGeometryPhosEtaAccCut();
+  fPhiCutAccMax = fCuts->GetGeometryPhosPhiAccMaxCut() * TMath::Pi()/180.;
+  fPhiCutAccMin = fCuts->GetGeometryPhosPhiAccMinCut() * TMath::Pi()/180.;
+  fClusterEnergyCut = fCuts->GetReconstructedPhosClusterEnergyCut();
+  fSingleCellEnergyCut = fCuts->GetReconstructedPhosSingleCellEnergyCut();
+
+  fClusterType = fCuts->GetReconstructedPhosClusterType();
+  fTrackDistanceCut = fCuts->GetReconstructedPhosTrackDistanceCut();
+
 }
 
 bool AliAnalysisEtReconstructedPhos::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)

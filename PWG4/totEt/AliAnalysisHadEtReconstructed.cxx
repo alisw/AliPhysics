@@ -82,8 +82,13 @@ bool AliAnalysisHadEtReconstructed::CheckGoodVertex(AliVParticle* track)
     Float_t bz = 999.;
     dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
 
-    return TMath::Abs(track->Xv()) < fVertexXCut && TMath::Abs(track->Yv()) < fVertexYCut && TMath::Abs(track->Zv()) < fVertexZCut && TMath::Abs(bxy) < fIPxyCut && TMath::Abs(bz) < fIPzCut;;
+    bool status = (TMath::Abs(track->Xv()) < fCuts->GetReconstructedVertexXCut()) && 
+      (TMath::Abs(track->Yv()) < fCuts->GetReconstructedVertexYCut()) && 
+      (TMath::Abs(track->Zv()) < fCuts->GetReconstructedVertexZCut()) && 
+      (TMath::Abs(bxy) < fCuts->GetReconstructedIPxyCut()) && 
+      (TMath::Abs(bz) < fCuts->GetReconstructedIPzCut()); 
 
+    return status;
 }
 
 void AliAnalysisHadEtReconstructed::Init()

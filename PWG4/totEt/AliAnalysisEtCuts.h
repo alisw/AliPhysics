@@ -1,76 +1,149 @@
-#ifndef ALIANALYSISETCOMMONCUTS_H
-#define ALIANALYSISETCOMMONCUTS_H
+#ifndef ALIANALYSISETCUTS_H
+#define ALIANALYSISETCUTS_H
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Base class for ESD & MC analysis
+//  - cuts for reconstruction and MonteCarlo 
+//  
+//*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
+//_________________________________________________________________________
 
-#include "Rtypes.h"
+#include "TNamed.h"
 
-namespace EtCommonCuts
+class AliAnalysisEtCuts : public TNamed
 {
+ public:
    
-   const Double_t kEtaCut = 0.8;
-   const Double_t kClusterEnergyCut = 0.0;
-   const Double_t kTrackPtCut = 0.0;
-   
-   const Int_t kSingleCell = 1;
-   
+  AliAnalysisEtCuts();
+  virtual ~AliAnalysisEtCuts();
+
+  // Getters
+  // Common
+  Double_t GetCommonEtaCut() const { return fCommonEtaCut; }
+  Double_t GetCommonClusterEnergyCut() const { return fCommonClusterEnergyCut; }
+  Double_t GetCommonTrackPtCut() const { return fCommonTrackPtCut; }
+  Int_t GetCommonSingleCell() const { return fCommonSingleCell; }
+  // GeometryPhos
+  Double_t GetGeometryPhosEtaAccCut() const { return fGeometryPhosEtaAccCut; }
+  Double_t GetGeometryPhosPhiAccMinCut() const { return fGeometryPhosPhiAccMinCut; }
+  Double_t GetGeometryPhosPhiAccMaxCut() const { return fGeometryPhosPhiAccMaxCut; }
+  Double_t GetGeometryPhosDetectorRadius() const { return fGeometryPhosDetectorRadius; }
+  // GeometryEmcal
+  Double_t GetGeometryEmcalEtaAccCut() const { return fGeometryEmcalEtaAccCut; }
+  Double_t GetGeometryEmcalPhiAccMinCut() const { return fGeometryEmcalPhiAccMinCut; }
+  Double_t GetGeometryEmcalPhiAccMaxCut() const { return fGeometryEmcalPhiAccMaxCut; }
+  Double_t GetGeometryEmcalDetectorRadius() const { return fGeometryEmcalDetectorRadius; }
+  // Reconstructed
+  Double_t GetReconstructedVertexXCut() const { return fReconstructedVertexXCut; }
+  Double_t GetReconstructedVertexYCut() const { return fReconstructedVertexYCut; }
+  Double_t GetReconstructedVertexZCut() const { return fReconstructedVertexZCut; }
+  Double_t GetReconstructedIPxyCut() const { return fReconstructedIPxyCut; }
+  Double_t GetReconstructedIPzCut() const { return fReconstructedIPzCut; }
+  Int_t GetReconstructedNTpcClustersCut() const { return fReconstructedNTpcClustersCut; }
+  Int_t GetReconstructedNItsClustersCut() const { return fReconstructedNItsClustersCut; }
+  // ReconstructedPhos
+  Char_t GetReconstructedPhosClusterType() const { return fReconstructedPhosClusterType; }
+  Double_t GetReconstructedPhosClusterEnergyCut() const { return fReconstructedPhosClusterEnergyCut; }
+  Double_t GetReconstructedPhosSingleCellEnergyCut() const { return fReconstructedPhosSingleCellEnergyCut; }
+  Double_t GetReconstructedPhosTrackDistanceCut() const { return fReconstructedPhosTrackDistanceCut; }
+  // ReconstructedEmcal
+  Char_t GetReconstructedEmcalClusterType() const { return fReconstructedEmcalClusterType; }
+  Double_t GetReconstructedEmcalClusterEnergyCut() const { return fReconstructedEmcalClusterEnergyCut; }
+  Double_t GetReconstructedEmcalSingleCellEnergyCut() const { return fReconstructedEmcalSingleCellEnergyCut; }
+  Double_t GetReconstructedEmcalTrackDistanceCut() const { return fReconstructedEmcalTrackDistanceCut; }
+  // MonteCarlo
+  Double_t GetMonteCarloSingleChargedParticle() const { return fMonteCarloSingleChargedParticle; }
+  Double_t GetMonteCarloNeutralParticle() const { return fMonteCarloNeutralParticle; }
+
+  // Setters
+  // Common
+  void SetCommonEtaCut(const Double_t val) { fCommonEtaCut = val; }
+  void SetCommonClusterEnergyCut(const Double_t val) { fCommonClusterEnergyCut = val; }
+  void SetCommonTrackPtCut(const Double_t val) { fCommonTrackPtCut = val; }
+  void SetCommonSingleCell(const Int_t val) { fCommonSingleCell = val;}
+  // GeometryPhos
+  void SetGeometryPhosEtaAccCut(const Double_t val) { fGeometryPhosEtaAccCut = val; }
+  void SetGeometryPhosPhiAccMinCut(const Double_t val) { fGeometryPhosPhiAccMinCut = val; }
+  void SetGeometryPhosPhiAccMaxCut(const Double_t val) { fGeometryPhosPhiAccMaxCut = val; }
+  void SetGeometryPhosDetectorRadius(const Double_t val) { fGeometryPhosDetectorRadius = val; }
+  // GeometryEmcal
+  void SetGeometryEmcalEtaAccCut(const Double_t val) { fGeometryEmcalEtaAccCut = val; }
+  void SetGeometryEmcalPhiAccMinCut(const Double_t val) { fGeometryEmcalPhiAccMinCut = val; }
+  void SetGeometryEmcalPhiAccMaxCut(const Double_t val) { fGeometryEmcalPhiAccMaxCut = val; }
+  void SetGeometryEmcalDetectorRadius(const Double_t val) { fGeometryEmcalDetectorRadius = val; }
+  // Reconstructed
+  void SetReconstructedVertexXCut(const Double_t val) { fReconstructedVertexXCut = val; }
+  void SetReconstructedVertexYCut(const Double_t val) { fReconstructedVertexYCut = val; }
+  void SetReconstructedVertexZCut(const Double_t val) { fReconstructedVertexZCut = val; }
+  void SetReconstructedIPxyCut(const Double_t val) { fReconstructedIPxyCut = val; }
+  void SetReconstructedIPzCut(const Double_t val) { fReconstructedIPzCut = val; }
+  void SetReconstructedNTpcClustersCut(const Int_t val) { fReconstructedNTpcClustersCut = val; }
+  void SetReconstructedNItsClustersCut(const Int_t val) { fReconstructedNItsClustersCut = val; }
+  // ReconstructedPhos
+  void SetReconstructedPhosClusterType(const Char_t val) { fReconstructedPhosClusterType = val; }
+  void SetReconstructedPhosClusterEnergyCut(const Double_t val) { fReconstructedPhosClusterEnergyCut = val; }
+  void SetReconstructedPhosSingleCellEnergyCut(const Double_t val) { fReconstructedPhosSingleCellEnergyCut = val; }
+  void SetReconstructedPhosTrackDistanceCut(const Double_t val) { fReconstructedPhosTrackDistanceCut = val; }
+  // ReconstructedEmcal
+  void SetReconstructedEmcalClusterType(const Char_t val) { fReconstructedEmcalClusterType = val; }
+  void SetReconstructedEmcalClusterEnergyCut(const Double_t val) { fReconstructedEmcalClusterEnergyCut = val; }
+  void SetReconstructedEmcalSingleCellEnergyCut(const Double_t val) { fReconstructedEmcalSingleCellEnergyCut = val; }
+  void SetReconstructedEmcalTrackDistanceCut(const Double_t val) { fReconstructedEmcalTrackDistanceCut = val; }
+  // MonteCarlo
+  void SetMonteCarloSingleChargedParticle(const Double_t val) { fMonteCarloSingleChargedParticle = val; }
+  void SetMonteCarloNeutralParticle(const Double_t val) { fMonteCarloNeutralParticle = val; }
+
+ protected:
+
+  // Common   
+  Double_t fCommonEtaCut; // Eta cut
+  Double_t fCommonClusterEnergyCut; // Cluster Energy cut
+  Double_t fCommonTrackPtCut; // Track Pt
+  Int_t fCommonSingleCell; // Single Cell (1)
+
+  // GeometryPhos
+  Double_t fGeometryPhosEtaAccCut; // PHOS Eta Acc cut
+  Double_t fGeometryPhosPhiAccMinCut; // PHOS Phi Acc Min cut
+  Double_t fGeometryPhosPhiAccMaxCut; // PHOS Phi Acc Max cut
+  Double_t fGeometryPhosDetectorRadius; // PHOS Detector Radius 
+
+  // GeometryEmcal
+  Double_t fGeometryEmcalEtaAccCut; // EMCal Eta Acc cut
+  Double_t fGeometryEmcalPhiAccMinCut; // EMCal Phi Acc Min cut
+  Double_t fGeometryEmcalPhiAccMaxCut; // EMCal Phi Acc Max cut
+  Double_t fGeometryEmcalDetectorRadius; // EMCal Detector Radius
+
+  // Reconstructed
+  Double_t fReconstructedVertexXCut; // vertex X cut
+  Double_t fReconstructedVertexYCut; // vertex Y cut
+  Double_t fReconstructedVertexZCut; // vertex Z cut
+  Double_t fReconstructedIPxyCut; // IP xy cut
+  Double_t fReconstructedIPzCut; // IP z cut
+  Int_t fReconstructedNTpcClustersCut; // # of TPC clusters cut
+  Int_t fReconstructedNItsClustersCut; // # of ITS clusters cut
+
+  // ReconstructedPhos
+  Char_t fReconstructedPhosClusterType; // PHOS cluster type
+  Double_t fReconstructedPhosClusterEnergyCut; // PHOS cluster energy
+  Double_t fReconstructedPhosSingleCellEnergyCut; // PHOS single cell energy
+  Double_t fReconstructedPhosTrackDistanceCut; // PHOS track distance
+
+  // ReconstructedEmcal
+  Char_t fReconstructedEmcalClusterType; // EMCal cluster type
+  Double_t fReconstructedEmcalClusterEnergyCut; // EMCal cluster energy
+  Double_t fReconstructedEmcalSingleCellEnergyCut; // EMCal single cell energy
+  Double_t fReconstructedEmcalTrackDistanceCut; // EMCal track distance
+
+  // MonteCarlo
+  Double_t fMonteCarloSingleChargedParticle; // MC charged
+  Double_t fMonteCarloNeutralParticle; // MC neutral
+
+private:
+  //Declare private to avoid compilation warning
+  AliAnalysisEtCuts & operator = (const AliAnalysisEtCuts & g) ;//copy assignment
+  AliAnalysisEtCuts(const AliAnalysisEtCuts & g) ; // copy ctor
+
+  ClassDef(AliAnalysisEtCuts, 0);
 };
 
-namespace EtGeometryCutsPhos
-{
-   const Double_t kEtaAccCut = 0.12;
-   const Double_t kPhiAccMinCut = 260.0;
-   const Double_t kPhiAccMaxCut = 320.0;
-   const Double_t kDetectorRadius = 460.0;
-};
-
-namespace EtGeometryCutsEmcal
-{
-   const Double_t kEtaAccCut = 0.7;
-   const Double_t kPhiAccMinCut = 80.0; // rad 1.4
-   const Double_t kPhiAccMaxCut = 120.0; // rad 2.1
-   const Double_t kDetectorRadius = 440.0;
-};
-
-namespace EtReconstructedCuts
-{
-   const Double_t kVertexXCut = 0.5;
-   const Double_t kVertexYCut = 0.5;
-   const Double_t kVertexZCut = 12.0;
-   const Double_t kIPxyCut = 1.5;
-   const Double_t kIPzCut = 1.5;
-   
-   const Int_t kNTpcClustersCut = 30;
-   const Int_t knItsClustersCut = 3;
-   
-};
-
-namespace EtReconstructedCutsPhos
-{
-   const Char_t kClusterType = -1;
-   
-   const Double_t kClusterEnergyCut = 0.0;
-   const Double_t kSingleCellEnergyCut = 0.5;
-   
-   const Double_t kTrackDistanceCut = 15.0;
-   
-};
-
-namespace EtReconstructedCutsEmcal
-{
-   const Char_t kClusterType = -1;
-   
-   const Double_t kClusterEnergyCut = 0.1; // GeV
-   const Double_t kSingleCellEnergyCut = 0.5;
-   
-   const Double_t kTrackDistanceCut = 15.0;
-   
-};
-
-namespace EtMonteCarloCuts
-{
-   
-   const Double_t kSingleChargedParticle = 3;
-   const Double_t kNeutralParticle = 0;
-   
-};
-
-#endif
+#endif // ALIANALYSISETCUTS_H

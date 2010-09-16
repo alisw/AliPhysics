@@ -20,8 +20,6 @@
 
 AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         AliAnalysisEt()
-        ,fNTpcClustersCut(EtReconstructedCuts::kNTpcClustersCut)
-        ,fNItsClustersCut(EtReconstructedCuts::knItsClustersCut)
         ,fTrackDistanceCut(0)
         ,fClusterType(0)
 {
@@ -76,7 +74,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         Double_t et = track->E() * TMath::Sin(track->Theta()) + massPart;
 	// printf("Rec track: iTrack %03d eta %4.3f phi %4.3f nITSCl %d nTPCCl %d\n", iTrack, track->Eta(), track->Phi(), nItsClusters, nTPCClusters); // tmp/debug printout
 
-        if (TMath::Abs(track->Eta()) < fEtaCut && CheckGoodVertex(track) && nItsClusters > fNItsClustersCut && nTPCClusters > fNTpcClustersCut)
+        if (TMath::Abs(track->Eta()) < fCuts->GetCommonEtaCut() && CheckGoodVertex(track) && nItsClusters > fCuts->GetReconstructedNItsClustersCut() && nTPCClusters > fCuts->GetReconstructedNTpcClustersCut() )
         {
 	    fTotChargedEt +=  et;
             fChargedMultiplicity++;
@@ -127,7 +125,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 // 	    }
         }
 
-        if (cluster->E() >  fSingleCellEnergyCut && cluster->GetNCells() == EtCommonCuts::kSingleCell) continue;
+        if (cluster->E() >  fSingleCellEnergyCut && cluster->GetNCells() == fCuts->GetCommonSingleCell()) continue;
 
         cluster->GetPosition(pos);
       
@@ -162,10 +160,13 @@ bool AliAnalysisEtReconstructed::CheckGoodVertex(AliVParticle* track)
     Float_t bz = 999.;
     dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
 
-    // printf("Rec CheckGoodVertex: TMath::Abs(track->Xv()) %f fVertexXCut %f TMath::Abs(track->Yv()) %f fVertexYCut %f TMath::Abs(track->Zv()) %f fVertexZCut %f TMath::Abs(bxy) %f fIPxyCut %f TMath::Abs(bz) %f fIPzCut %f\n", TMath::Abs(track->Xv()), fVertexXCut, TMath::Abs(track->Yv()), fVertexYCut, TMath::Abs(track->Zv()), fVertexZCut, TMath::Abs(bxy), fIPxyCut, TMath::Abs(bz), fIPzCut); // tmp/debug printout
+    bool status = (TMath::Abs(track->Xv()) < fCuts->GetReconstructedVertexXCut()) && 
+      (TMath::Abs(track->Yv()) < fCuts->GetReconstructedVertexYCut()) && 
+      (TMath::Abs(track->Zv()) < fCuts->GetReconstructedVertexZCut()) && 
+      (TMath::Abs(bxy) < fCuts->GetReconstructedIPxyCut()) && 
+      (TMath::Abs(bz) < fCuts->GetReconstructedIPzCut()); 
 
-    return TMath::Abs(track->Xv()) < fVertexXCut && TMath::Abs(track->Yv()) < fVertexYCut && TMath::Abs(track->Zv()) < fVertexZCut && TMath::Abs(bxy) < fIPxyCut && TMath::Abs(bz) < fIPzCut;
-
+    return status;
 }
 
 void AliAnalysisEtReconstructed::Init()

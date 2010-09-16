@@ -22,14 +22,13 @@ AliAnalysisEtMonteCarloPhos::~AliAnalysisEtMonteCarloPhos()
 
 void AliAnalysisEtMonteCarloPhos::Init()
 { // Init
-    AliAnalysisEtMonteCarlo::Init();
+  AliAnalysisEtMonteCarlo::Init();
     
-    fDetectorRadius = EtGeometryCutsPhos::kDetectorRadius;
-    fEtaCutAcc = EtGeometryCutsPhos::kEtaAccCut;
-    fPhiCutAccMax = EtGeometryCutsPhos::kPhiAccMaxCut*TMath::Pi()/180.;
-    fPhiCutAccMin = EtGeometryCutsPhos::kPhiAccMinCut*TMath::Pi()/180.;
-    fDetectorRadius = EtGeometryCutsPhos::kDetectorRadius;
-    fClusterEnergyCut = EtReconstructedCutsPhos::kClusterEnergyCut;
-    fSingleCellEnergyCut = EtReconstructedCutsPhos::kSingleCellEnergyCut;
+  fDetectorRadius = fCuts->GetGeometryPhosDetectorRadius();
+  fEtaCutAcc = fCuts->GetGeometryPhosEtaAccCut();
+  fPhiCutAccMax = fCuts->GetGeometryPhosPhiAccMaxCut() * TMath::Pi()/180.;
+  fPhiCutAccMin = fCuts->GetGeometryPhosPhiAccMinCut() * TMath::Pi()/180.;
+  fClusterEnergyCut = fCuts->GetReconstructedPhosClusterEnergyCut();
+  fSingleCellEnergyCut = fCuts->GetReconstructedPhosSingleCellEnergyCut();
     
 }
