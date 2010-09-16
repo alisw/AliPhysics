@@ -49,7 +49,8 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
   AliAnalysisTaskSE(name),fEMCALGeo(0x0),//fCalibData(0x0), 
   fEmin(0.5), fEmax(15.), fMinNCells(2), fGroupNCells(0),
   fLogWeight(4.5), fCopyAOD(kFALSE), fSameSM(kFALSE), fOldAOD(kFALSE),
-  fEMCALGeoName("EMCAL_FIRSTYEAR"), fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(0x0),
+  fEMCALGeoName("EMCAL_FIRSTYEAR"), fNCellsFromEMCALBorder(0),
+  fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(0x0),
   fRecalibration(kFALSE),fEMCALRecalibrationFactors(), 
   fNbins(300), fMinBin(0.), fMaxBin(300.),
   fOutputContainer(0x0),fHmgg(0x0), fHmggDifferentSM(0x0), fhNEvents(0x0),fCuts(0x0)
@@ -112,6 +113,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::LocalInit()
 	snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; min number of cells %d;", fEmin,fEmax, fMinNCells) ;
 	fCuts->Add(new TObjString(onePar));
 	snprintf(onePar,buffersize, "Group %d cells;", fGroupNCells) ;
+	fCuts->Add(new TObjString(onePar));
+  snprintf(onePar,buffersize, "Cluster maximal cell away from border at least %d cells;", fNCellsFromEMCALBorder) ;
 	fCuts->Add(new TObjString(onePar));
 	snprintf(onePar,buffersize, "Histograms: bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
 	fCuts->Add(new TObjString(onePar));
@@ -665,15 +668,24 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       Float_t invmass = p12.M()*1000; 
       
       if(invmass < fMaxBin && invmass > fMinBin){
-        fHmgg->Fill(invmass,p12.Pt()); 
         
-        if(iSupMod1==iSupMod2) fHmggSM[iSupMod1]->Fill(invmass,p12.Pt()); 
-        else  fHmggDifferentSM->Fill(invmass,p12.Pt());
+        //Check if cluster is in fidutial region, not too close to borders
+        Bool_t in1 = CheckCellFiducialRegion(c1, aod->GetEMCALCells());
+        Bool_t in2 = CheckCellFiducialRegion(c2, aod->GetEMCALCells());
+
+        if(in1 && in2){
+          
+          fHmgg->Fill(invmass,p12.Pt()); 
         
-        if((iSupMod1==0 && iSupMod2==2) || (iSupMod1==2 && iSupMod2==0)) fHmggPairSM[0]->Fill(invmass,p12.Pt()); 
-        if((iSupMod1==1 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==1)) fHmggPairSM[1]->Fill(invmass,p12.Pt()); 
-        if((iSupMod1==0 && iSupMod2==1) || (iSupMod1==1 && iSupMod2==0)) fHmggPairSM[2]->Fill(invmass,p12.Pt()); 
-        if((iSupMod1==2 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==2)) fHmggPairSM[3]->Fill(invmass,p12.Pt()); 
+          if(iSupMod1==iSupMod2) fHmggSM[iSupMod1]->Fill(invmass,p12.Pt()); 
+          else                   fHmggDifferentSM ->Fill(invmass,p12.Pt());
+        
+          if((iSupMod1==0 && iSupMod2==2) || (iSupMod1==2 && iSupMod2==0)) fHmggPairSM[0]->Fill(invmass,p12.Pt()); 
+          if((iSupMod1==1 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==1)) fHmggPairSM[1]->Fill(invmass,p12.Pt()); 
+          if((iSupMod1==0 && iSupMod2==1) || (iSupMod1==1 && iSupMod2==0)) fHmggPairSM[2]->Fill(invmass,p12.Pt()); 
+          if((iSupMod1==2 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==2)) fHmggPairSM[3]->Fill(invmass,p12.Pt()); 
+        
+        }
         
         //In case of filling only channels with second cluster in same SM
         if(fSameSM && iSupMod1!=iSupMod2) continue;
@@ -712,6 +724,75 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   PostData(1,fOutputContainer);
   
 }
+
+
+//_______________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells) 
+{
+  
+	// Given the list of AbsId of the cluster, get the maximum cell and 
+	// check if there are fNCellsFromBorder from the calorimeter border
+	
+  //If the distance to the border is 0 or negative just exit accept all clusters
+	if(cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 ) return kTRUE;
+  
+  Int_t absIdMax	= -1;
+	Float_t ampMax  = -1;
+  
+  for(Int_t i = 0; i < cluster->GetNCells() ; i++){
+    Int_t absId = cluster->GetCellAbsId(i) ;
+    Float_t amp	= cells->GetCellAmplitude(absId);
+    if(amp > ampMax){
+      ampMax   = amp;
+      absIdMax = absId;
+    }
+  }
+	
+	if(DebugLevel() > 1)
+		printf("AliAnalysisTaskEMCALPi0CalibSelection::CheckCellFiducialRegion() - Cluster Max AbsId %d, Cell Energy %2.2f, Cluster Energy %2.2f\n", 
+           absIdMax, ampMax, cluster->E());
+	
+	if(absIdMax==-1) return kFALSE;
+	
+	//Check if the cell is close to the borders:
+	Bool_t okrow = kFALSE;
+	Bool_t okcol = kFALSE;
+  
+  Int_t iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1, iSM = -1; 
+  fEMCALGeo->GetCellIndex(absIdMax,iSM,iTower,iIphi,iIeta); 
+  fEMCALGeo->GetCellPhiEtaIndexInSModule(iSM,iTower,iIphi, iIeta,iphi,ieta);
+  if(iSM < 0 || iphi < 0 || ieta < 0 ) {
+    Fatal("CheckCellFidutialRegion","Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",iSM,ieta,iphi);
+  }
+  
+  //Check rows/phi
+  if(iSM < 10){
+    if(iphi >= fNCellsFromEMCALBorder && iphi < 24-fNCellsFromEMCALBorder) okrow =kTRUE; 
+  }
+  else{
+    if(iphi >= fNCellsFromEMCALBorder && iphi < 12-fNCellsFromEMCALBorder) okrow =kTRUE; 
+  }
+  
+  //Check collumns/eta
+  if(iSM%2==0){
+    if(ieta >= fNCellsFromEMCALBorder)     okcol = kTRUE;	
+  }
+  else {
+    if(ieta <  48-fNCellsFromEMCALBorder)  okcol = kTRUE;	
+  }
+  
+  if(DebugLevel() > 1)
+  {
+    printf("AliAnalysisTaskEMCALPi0CalibSelection::CheckCellFiducialRegion() - EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d ?",
+           fNCellsFromEMCALBorder, ieta, iphi, iSM);
+    if (okcol && okrow ) printf(" YES \n");
+    else  printf(" NO: column ok? %d, row ok? %d \n",okcol,okrow);
+  }
+	
+	if (okcol && okrow) return kTRUE; 
+	else                return kFALSE;
+	
+}	
 
 //__________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::MaxEnergyCellPos(AliAODCaloCells* const cells, AliAODCaloCluster* const clu, Int_t& iSupMod, Int_t& ieta, Int_t& iphi)
