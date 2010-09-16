@@ -113,15 +113,18 @@ AliEveFMDLoader::AliEveFMDLoader(const char* name, Bool_t useBoxes,
   
   
   // Initialize the FMD geometry manager 
-  AliEveEventManager::AssertGeometry();
+  TGeoManager* geoMan  = AliEveEventManager::AssertGeometry();
+  if (!geoMan) return;
+  geoMan->GetTopVolume()->cd(0);
+
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
   geom->InitTransformations();
 
   AliFMDParameters* pars = AliFMDParameters::Instance();
   // pars->UseRcuTrailer(!old);
-  pars->UseCompleteHeader(old);
-  pars->SetSampleRate(4);
+  // pars->UseCompleteHeader(old);
+  // pars->SetSampleRate(4);
   pars->Init(kFALSE, 0);
 
   // Get shapes
