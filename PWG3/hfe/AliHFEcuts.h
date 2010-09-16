@@ -20,8 +20,8 @@
 #ifndef ALIHFECUTS_H
 #define ALIHFECUTS_H
 
-#ifndef ROOT_TObject
-#include <TObject.h>
+#ifndef ROOT_TNamed
+#include <TNamed.h>
 #endif
 
 #ifndef ALIHFEEXTRACUTS_H
@@ -35,7 +35,7 @@ class AliMCParticle;
 class TObjArray;
 class TList;
 
-class AliHFEcuts : public TObject{
+class AliHFEcuts : public TNamed{
   public:
     typedef enum{
       kStepMCGenerated = 0,
@@ -50,17 +50,20 @@ class AliHFEcuts : public TObject{
     } CutStep_t;
     typedef enum{
       kEventStepGenerated = 0,
-      kEventStepReconstructed = 1
+      kEventStepRecNoCut = 1,
+      kEventStepReconstructed = 2
     } EventCutStep_t;
     enum{
-      kNcutStepsEvent = 2,
+      kNcutStepsEvent = 3,
       kNcutStepsTrack = 9,
       kNcutStepsESDtrack = 6 
     };    // Additional constants
 
     AliHFEcuts();
+    AliHFEcuts(const Char_t *name, const Char_t *title);
     AliHFEcuts(const AliHFEcuts &c);
     AliHFEcuts &operator=(const AliHFEcuts &c);
+    void Copy(TObject &o) const;
     ~AliHFEcuts();
     
     void Initialize(AliCFManager *cfm);
@@ -70,11 +73,11 @@ class AliHFEcuts : public TObject{
   
     TList *GetQAhistograms() const { return fHistQA; }
     
-    void SetDebugMode();
+    void SetQAOn() {SetBit(kDebugMode, kTRUE); };
+    void UnsetQA() {SetBit(kDebugMode, kFALSE); };
+    Bool_t IsQAOn() const { return TestBit(kDebugMode); };
     void SetAOD() { SetBit(kAOD, kTRUE); }
     void SetESD() { SetBit(kAOD, kFALSE); }
-    void UnsetDebugMode() { SetBit(kDebugMode, kFALSE); }
-    Bool_t IsInDebugMode() const { return TestBit(kDebugMode); };
     Bool_t IsAOD() const { return TestBit(kAOD); }
     Bool_t IsESD() const { return !TestBit(kAOD); }
     

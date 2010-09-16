@@ -52,7 +52,7 @@ class AliHFEsecVtx : public TObject {
     AliHFEsecVtx &operator=(const AliHFEsecVtx &); // assignment operator
     virtual ~AliHFEsecVtx();
 
-    void CreateHistograms(TList *qaList);
+    void CreateHistograms(TList * const qaList);
 
     void Process(AliVTrack *track);
 

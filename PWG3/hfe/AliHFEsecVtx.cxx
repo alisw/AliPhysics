@@ -239,13 +239,15 @@ void AliHFEsecVtx::Process(AliVTrack *signalTrack){
 }
 
 //_______________________________________________________________________________________________
-void AliHFEsecVtx::CreateHistograms(TList *qaList)
+void AliHFEsecVtx::CreateHistograms(TList * const qaList)
 { 
   //
   // create histograms
   //
+  
+  if(!qaList) return;
 
-  fSecVtxList = new TList;
+  fSecVtxList = qaList;
   fSecVtxList->SetName("SecVtx");
 
   MakeContainer();
@@ -267,7 +269,7 @@ void AliHFEsecVtx::CreateHistograms(TList *qaList)
   }
   */
 
-  qaList->AddLast(fSecVtxList);
+  //qaList->AddLast(fSecVtxList);
 }
 
 //_______________________________________________________________________________________________

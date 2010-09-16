@@ -93,8 +93,44 @@ AliHFEmcQA::~AliHFEmcQA()
 //_______________________________________________________________________________________________
 void AliHFEmcQA::PostAnalyze() const
 {
+        //
+        // Post analysis
+        //
 }
 
+//__________________________________________
+void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
+{      
+  //
+  // make default histograms
+  //
+  
+  if(!qaList) return;
+
+  fQAhistos = qaList;
+  fQAhistos->SetName("MCqa");
+
+  CreateHistograms(AliHFEmcQA::kCharm,0,"mcqa_");               // create histograms for charm
+  CreateHistograms(AliHFEmcQA::kBeauty,0,"mcqa_");              // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kOthers,0,"mcqa_");              // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kCharm,1,"mcqa_barrel_");        // create histograms for charm 
+  CreateHistograms(AliHFEmcQA::kBeauty,1,"mcqa_barrel_");       // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kOthers,1,"mcqa_barrel_");       // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kCharm,2,"mcqa_unitY_");         // create histograms for charm 
+  CreateHistograms(AliHFEmcQA::kBeauty,2,"mcqa_unitY_");        // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kOthers,2,"mcqa_unitY_");        // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kCharm,3,"mcqa_reccut_");        // create histograms for charm 
+  CreateHistograms(AliHFEmcQA::kBeauty,3,"mcqa_reccut_");       // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kOthers,3,"mcqa_reccut_");       // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kCharm,4,"mcqa_recpidcut_");     // create histograms for charm 
+  CreateHistograms(AliHFEmcQA::kBeauty,4,"mcqa_recpidcut_");    // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kOthers,4,"mcqa_recpidcut_");    // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kCharm,5,"mcqa_secvtxcut_");     // create histograms for charm 
+  CreateHistograms(AliHFEmcQA::kBeauty,5,"mcqa_secvtxcut_");    // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kOthers,5,"mcqa_secvtxcut_");    // create histograms for beauty
+ 
+}
+  
 //__________________________________________
 void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt) 
 {
@@ -999,23 +1035,108 @@ Int_t AliHFEmcQA::GetSource(TParticle * const mcpart)
 }
 
 //__________________________________________
-void AliHFEmcQA::MakeHistograms(){
-  //
-  // Create the QA histograms
-  //
-  fQAhistos = new TList;
-  fQAhistos->SetName("MCqa");
+Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
+{
+  // decay particle's origin 
 
-  CreateHistograms(AliHFEmcQA::kCharm,0,"mcqa_");               // create histograms for charm
-  CreateHistograms(AliHFEmcQA::kBeauty,0,"mcqa_");              // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kCharm,1,"mcqa_barrel_");        // create histograms for charm 
-  CreateHistograms(AliHFEmcQA::kBeauty,1,"mcqa_barrel_");       // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kCharm,2,"mcqa_unitY_");         // create histograms for charm 
-  CreateHistograms(AliHFEmcQA::kBeauty,2,"mcqa_unitY_");        // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kCharm,3,"mcqa_reccut_");        // create histograms for charm 
-  CreateHistograms(AliHFEmcQA::kBeauty,3,"mcqa_reccut_");       // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kCharm,4,"mcqa_recpidcut_");     // create histograms for charm 
-  CreateHistograms(AliHFEmcQA::kBeauty,4,"mcqa_recpidcut_");    // create histograms for beauty
+  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return -1;
+
+  Int_t origin = -1;
+  Bool_t isFinalOpenCharm = kFALSE;
+
+  if(!mcpart){
+    AliDebug(1, "no mcparticle, return\n");
+    return -1;
+  }
+
+  Int_t iLabel = mcpart->GetFirstMother();
+  if (iLabel<0){
+    AliDebug(1, "Stack label is negative, return\n");
+    return -1;
+  }
+
+  AliMCParticle *mctrack = NULL;
+  if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(iLabel))))) return -1; 
+  TParticle *partMother = mctrack->Particle();
+  Int_t maPdgcode = partMother->GetPdgCode();
+
+   // if the mother is charmed hadron  
+   if ( int(abs(maPdgcode)/100.) == kCharm || int(abs(maPdgcode)/1000.) == kCharm ) {
+
+     for (Int_t i=0; i<fNparents; i++){
+        if (abs(maPdgcode)==fParentSelect[0][i]){
+          isFinalOpenCharm = kTRUE;
+        }
+     }
+     if (!isFinalOpenCharm) return -1;
+
+     // iterate until you find B hadron as a mother or become top ancester 
+     for (Int_t i=1; i<fgkMaxIter; i++){
+
+        Int_t jLabel = partMother->GetFirstMother();
+        if (jLabel == -1){
+          origin = kDirectCharm;
+          return origin;
+        }
+        if (jLabel < 0){ // safety protection
+          AliDebug(1, "Stack label is negative, return\n");
+          return -1;
+        }
+
+        // if there is an ancester
+        if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))) return -1; 
+        TParticle* grandMa = mctrack->Particle();
+        Int_t grandMaPDG = grandMa->GetPdgCode();
+
+        for (Int_t j=0; j<fNparents; j++){
+           if (abs(grandMaPDG)==fParentSelect[1][j]){
+             origin = kBeautyCharm;
+             return origin;
+           }
+        }
+
+        partMother = grandMa;
+     } // end of iteration 
+   } // end of if
+   else if ( int(abs(maPdgcode)/100.) == kBeauty || int(abs(maPdgcode)/1000.) == kBeauty ) {
+     for (Int_t i=0; i<fNparents; i++){
+        if (abs(maPdgcode)==fParentSelect[1][i]){
+          origin = kDirectBeauty;
+          return origin;
+        }
+     }
+   } // end of if
+   else if ( abs(maPdgcode) == 22 ) {
+     origin = kGamma;
+     return origin;
+   } // end of if
+   else if ( abs(maPdgcode) == 111 ) {
+     origin = kPi0;
+     return origin;
+   } // end of if
+   else if ( abs(maPdgcode) == 221 ) {
+     origin = kEta;
+     return origin;
+   } // end of if
+   else if ( abs(maPdgcode) == 223 ) {
+     origin = kOmega;
+     return origin;
+   } // end of if
+   else if ( abs(maPdgcode) == 333 ) {
+     origin = kPhi;
+     return origin;
+   } // end of if
+   else if ( abs(maPdgcode) == 331 ) {
+     origin = kEtaPrime;
+     return origin;
+   } // end of if
+   else if ( abs(maPdgcode) == 113 ) {
+     origin = kRho0;
+     return origin;
+   } // end of if
+   else origin = kElse;
+
+   return origin;
 }
 
 //__________________________________________

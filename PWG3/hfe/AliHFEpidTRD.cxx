@@ -23,16 +23,19 @@
 // 
 #include <TH1F.h>
 #include <TH2F.h>
+#include <THnSparse.h>
 #include <TList.h>
 #include <TString.h>
 
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliESDtrack.h"
+#include "AliESDpid.h"
 #include "AliLog.h"
 #include "AliMCParticle.h"
 #include "AliPID.h"
 
+#include "AliHFEcollection.h"
 #include "AliHFEpidTRD.h"
 
 ClassImp(AliHFEpidTRD)
@@ -42,6 +45,7 @@ const Double_t AliHFEpidTRD::fgkVerySmall = 1e-12;
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD() :
     AliHFEpidBase()
+  , fMinP(1.)
   , fPIDMethod(kNN)
   , fContainer(0x0)
 {
@@ -54,6 +58,7 @@ AliHFEpidTRD::AliHFEpidTRD() :
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD(const char* name) :
     AliHFEpidBase(name)
+  , fMinP(1.)
   , fPIDMethod(kNN)
   , fContainer(0x0)
 {
@@ -66,6 +71,7 @@ AliHFEpidTRD::AliHFEpidTRD(const char* name) :
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD(const AliHFEpidTRD &ref):
     AliHFEpidBase("")
+  , fMinP(1.)
   , fPIDMethod(kLQ)
   , fContainer(0x0)
 {
@@ -94,9 +100,10 @@ void AliHFEpidTRD::Copy(TObject &ref) const {
   //
   AliHFEpidTRD &target = dynamic_cast<AliHFEpidTRD &>(ref);
 
+  target.fMinP = fMinP;
   target.fPIDMethod = fPIDMethod;
   memcpy(target.fThreshParams, fThreshParams, sizeof(Double_t) * kThreshParams);
-  if(fContainer) target.fContainer = dynamic_cast<TList *>(fContainer->Clone());
+  if(fContainer) target.fContainer = dynamic_cast<AliHFEcollection *>(fContainer->Clone());
   AliHFEpidBase::Copy(ref);
 }
 
@@ -105,10 +112,8 @@ AliHFEpidTRD::~AliHFEpidTRD(){
   //
   // Destructor
   //
-  if(fContainer){
-    fContainer->Clear();
+  if(fContainer)
     delete fContainer;
-  }
 }
 
 //______________________________________________________
@@ -117,7 +122,10 @@ Bool_t AliHFEpidTRD::InitializePID(){
   // InitializePID: Load TRD thresholds and create the electron efficiency axis
   // to navigate 
   //
-  InitParameters();
+  if(fPIDMethod == kLQ)
+    InitParameters1DLQ();
+  else
+    InitParameters();
   return kTRUE;
 }
 
@@ -156,16 +164,18 @@ Int_t AliHFEpidTRD::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle * /*mcTrack*
   // Does PID decision for ESD tracks as discribed above
   //
   Double_t p = esdTrack->GetOuterParam() ? esdTrack->GetOuterParam()->P() : esdTrack->P();
-  if(p < 2.0) return 0;
+  if(IsQAon())
+    FillStandardQA(0, esdTrack);
+  if(p < fMinP) return 0;
 
   Double_t pidProbs[AliPID::kSPECIES];
   esdTrack->GetTRDpid(pidProbs);
-  if(IsQAon())FillHistogramsLikelihood(0, p, pidProbs[AliPID::kElectron]);
-  Double_t threshold = GetTRDthresholds(0.91, p);
+  Double_t threshold = GetTRDthresholds(0.71, p);
   AliDebug(1, Form("Threshold: %f\n", threshold));
-  if(IsQAon()) (dynamic_cast<TH2F *>(fContainer->At(kHistTRDthresholds)))->Fill(p, threshold);
+  if(IsQAon()) fContainer->Fill("fTRDthresholds", p, threshold);
   if(pidProbs[AliPID::kElectron] > threshold){
-    if(IsQAon()) FillHistogramsLikelihood(1, p, pidProbs[AliPID::kElectron]);
+    if(IsQAon()) 
+      FillStandardQA(1, esdTrack);
     return 11;
   }
   return 211;
@@ -188,6 +198,7 @@ void AliHFEpidTRD::InitParameters(){
   // Fill the Parameters into an array
   //
 
+  AliDebug(2, "Loading threshold Parameter");
   // Parameters for 6 Layers
   fThreshParams[0] = -0.001839; // 0.7 electron eff
   fThreshParams[1] = 0.000276;
@@ -216,6 +227,41 @@ void AliHFEpidTRD::InitParameters(){
 }
 
 //___________________________________________________________________
+void AliHFEpidTRD::InitParameters1DLQ(){
+  //
+  // Init Parameters for 1DLQ PID (M. Fasel, Sept. 6th, 2010)
+  //
+
+  // Parameters for 6 Layers
+  AliDebug(2, Form("Loading threshold parameter for Method 1DLQ"));
+  fThreshParams[0] = -0.02241; // 0.7 electron eff
+  fThreshParams[1] = 0.05043;
+  fThreshParams[2] = 0.7925; 
+  fThreshParams[3] = 2.625;
+  fThreshParams[4] = 0.07438; // 0.75 electron eff
+  fThreshParams[5] = 0.05158;
+  fThreshParams[6] = 2.864;
+  fThreshParams[7] = 4.356;
+  fThreshParams[8] = 0.1977; // 0.8 electron eff
+  fThreshParams[9] = 0.05956;
+  fThreshParams[10] = 2.853;
+  fThreshParams[11] = 3.713;
+  fThreshParams[12] = 0.5206; // 0.85 electron eff
+  fThreshParams[13] = 0.03077;
+  fThreshParams[14] = 2.966;
+  fThreshParams[15] = 4.07;
+  fThreshParams[16] = 0.8808; // 0.9 electron eff
+  fThreshParams[17] = 0.002092;
+  fThreshParams[18] = 1.17;
+  fThreshParams[19] = 4.506;
+  fThreshParams[20] = 1.; // 0.95 electron eff
+  fThreshParams[21] = 0.;
+  fThreshParams[22] = 0.;
+  fThreshParams[23] = 0.;
+
+}
+
+//___________________________________________________________________
 void AliHFEpidTRD::GetParameters(Double_t electronEff, Double_t *parameters){
   //
   // return parameter set for the given efficiency bin
@@ -235,7 +281,7 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(AliESDtrack *track, Int_t mcPID){
   // Calculate mean over the last 2/3 slices
   //
   const Int_t kNSlices = 48;
-  AliDebug(2, Form("Number of Tracklets: %d\n", track->GetTRDpidQuality()));
+  AliDebug(3, Form("Number of Tracklets: %d\n", track->GetTRDpidQuality()));
   Double_t trdSlices[kNSlices], tmp[kNSlices];
   Int_t indices[48];
   Int_t icnt = 0;
@@ -253,8 +299,8 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(AliESDtrack *track, Int_t mcPID){
     trdSlices[ien] = tmp[indices[ien]];
   Double_t trdSignal = TMath::Mean(static_cast<Int_t>(static_cast<Double_t>(icnt) * 2./3.), trdSlices);
   Double_t mom = track->GetOuterParam() ? track->GetOuterParam()->P() : -1;
-  AliDebug(1, Form("PID Meth. 1: p[%f], TRDSignal[%f]", mom, trdSignal));
-  if(IsQAon() && mom > 0.) FillHistogramsTRDSignalV1(trdSignal, mom, mcPID);
+  AliDebug(3, Form("PID Meth. 1: p[%f], TRDSignal[%f]", mom, trdSignal));
+  if(IsQAon() && mom > 0.) FillHistogramsTRDSignal(trdSignal, mom, mcPID, 1);
   return trdSignal;
 }
 
@@ -274,10 +320,10 @@ Double_t AliHFEpidTRD::GetTRDSignalV2(AliESDtrack *track, Int_t mcPID){
     for(Int_t islice = 0; islice < 8; islice++){
       if(TMath::Abs(track->GetTRDslice(idet, islice)) < fgkVerySmall) continue;;
       if(islice < 5){
-        AliDebug(2, Form("Part 1, Det[%d], Slice[%d], TRDSlice: %f", idet, islice, track->GetTRDslice(idet, islice)));
+        AliDebug(3, Form("Part 1, Det[%d], Slice[%d], TRDSlice: %f", idet, islice, track->GetTRDslice(idet, islice)));
         trdSlicesLowTime[cntLowTime++] = track->GetTRDslice(idet, islice);
       } else{
-        AliDebug(2, Form("Part 1, Det[%d], Slice[%d], TRDSlice: %f", idet, islice, track->GetTRDslice(idet, islice)));
+        AliDebug(3, Form("Part 1, Det[%d], Slice[%d], TRDSlice: %f", idet, islice, track->GetTRDslice(idet, islice)));
         trdSlicesRemaining[cntRemaining++] = track->GetTRDslice(idet, islice);
       }
     }
@@ -288,29 +334,23 @@ Double_t AliHFEpidTRD::GetTRDSignalV2(AliESDtrack *track, Int_t mcPID){
     trdSlicesRemaining[cntRemaining++] = trdSlicesLowTime[indices[ien]];
   Double_t trdSignal = TMath::Mean(cntRemaining, trdSlicesRemaining);
   Double_t mom = track->GetOuterParam() ? track->GetOuterParam()->P() : -1;
-  AliDebug(1, Form("PID Meth. 2: p[%f], TRDSignal[%f]", mom, trdSignal));
-  if(IsQAon() && mom > 0.) FillHistogramsTRDSignalV2(trdSignal, mom, mcPID);
+  AliDebug(3, Form("PID Meth. 2: p[%f], TRDSignal[%f]", mom, trdSignal));
+  if(IsQAon() && mom > 0.) FillHistogramsTRDSignal(trdSignal, mom, mcPID, 2);
   return trdSignal;
 }
 
 //___________________________________________________________________
-void AliHFEpidTRD::FillHistogramsTRDSignalV1(Double_t signal, Double_t mom, Int_t species){
-  //
-  // Fill histograms for TRD Signal from Method 1 vs. p for different particle species
-  //
-  (dynamic_cast<TH2F *>(fContainer->At(kHistTRDSigV1)))->Fill(mom, signal);
-  if(species < 0 || species >= AliPID::kSPECIES) return;
-  (dynamic_cast<TH2F *>(fContainer->At(kHistOverallSpecies + species)))->Fill(mom, signal);
-}
-
-//___________________________________________________________________
-void AliHFEpidTRD::FillHistogramsTRDSignalV2(Double_t signal, Double_t mom, Int_t species){
+void AliHFEpidTRD::FillHistogramsTRDSignal(Double_t signal, Double_t p, Int_t species, UInt_t version){
   //
   // Fill histograms for TRD Signal from Method 2 vs. p for different particle species
+  // Non-standard QA content
   //
-  (dynamic_cast<TH2F *>(fContainer->At(kHistTRDSigV2)))->Fill(mom, signal);  
-  if(species < 0 || species >= AliPID::kSPECIES) return;
-  (dynamic_cast<TH2F *>(fContainer->At(kHistOverallSpecies + AliPID::kSPECIES + species)))->Fill(mom, signal);
+  if(version == 0 || version > 2) return;
+  if(species >= AliPID::kSPECIES || species < -1) species = -1;
+  Double_t content[3] = {species, p, signal};
+  Char_t histname[256]; sprintf(histname, "fTRDsignalV%d", version);
+  THnSparseF *hsig = dynamic_cast<THnSparseF *>(fContainer->Get(histname));
+  if(hsig) hsig->Fill(content);
 }
 
 //___________________________________________________________________
@@ -324,48 +364,54 @@ void AliHFEpidTRD::AddQAhistograms(TList *l){
   //    - TRD Signal from Meth. 1 vs p
   //    - TRD Signal from Meth. 2 vs p
   //
-  const Int_t kMomentumBins = 41;
+  const Int_t kMomentumBins = 100;
   const Double_t kPtMin = 0.1;
-  const Double_t kPtMax = 10.;
-  const Int_t kSigBinsMeth1 = 100; 
-  const Int_t kSigBinsMeth2 = 100;
-  const Double_t kMinSig = 0.;
-  const Double_t kMaxSigMeth1 = 10000.;
-  const Double_t kMaxSigMeth2 = 10000.;
+  const Double_t kPtMax = 20.;
   
-  if(!fContainer) fContainer = new TList;
-  fContainer->SetName("fTRDqaHistograms");
+  if(!fContainer) fContainer = new AliHFEcollection("fQAhistosTRD", "TRD QA histos");
+  fContainer->CreateTH2F("fTRDlikeBefore", "TRD Electron Likelihood before cut; p [GeV/c]; TRD Electron Likelihood", kMomentumBins, kPtMin, kPtMax, 1000, 0, 1);
+  fContainer->CreateTH2F("fTRDlikeAfter", "TRD Electron Likelihood after cut; p [GeV/c]; TRD Electron Likelihood", kMomentumBins, kPtMin, kPtMax, 1000, 0, 1);
+  fContainer->CreateTH2F("fTRDthresholds", "TRD Electron Thresholds; p [GeV/c]; Thresholds", kMomentumBins, kPtMin, kPtMax, 1000, 0., 1.);
+  fContainer->CreateTH2F("fTPCsignalBefore", "TPC dEdx Spectrum before TRD PID; p [GeV/c]; TPC Signal [a.u.]", kMomentumBins, kPtMin, kPtMax, 100, 0., 100.);
+  fContainer->CreateTH2F("fTPCsignalAfter", "TPC dEdx Spectrum before TRD PID; p [GeV/c]; TPC Signal [a.u.]", kMomentumBins, kPtMin, kPtMax, 100, 0., 100.);
+  fContainer->CreateTH2F("fTPCsigmaBefore", "TPC dEdx before TRD PID; p [GeV/c]; Normalized TPC distance to the electron line [n#sigma]", kMomentumBins, kPtMin, kPtMax, 100, -10., 10.);
+  fContainer->CreateTH2F("fTPCsigmaAfter", "TPC dEdx Spectrum before TRD PID; p [GeV/c]; Normalized TPC distance to the electron line [n#sigma]", kMomentumBins, kPtMin, kPtMax, 100, -10., 10.);
 
-  Double_t momentumBins[kMomentumBins];
-  for(Int_t ibin = 0; ibin < kMomentumBins; ibin++)
-    momentumBins[ibin] = static_cast<Double_t>(TMath::Power(10,TMath::Log10(kPtMin) + (TMath::Log10(kPtMax)-TMath::Log10(kPtMin))/(kMomentumBins-1)*static_cast<Double_t>(ibin)));
-  // Likelihood Histograms
-  fContainer->AddAt(new TH2F("fTRDlikeBefore", "TRD Electron Likelihood before cut", kMomentumBins - 1, momentumBins, 1000, 0, 1), kHistTRDlikeBefore);
-  fContainer->AddAt(new TH2F("fTRDlikeAfter", "TRD Electron Likelihood after cut", kMomentumBins - 1, momentumBins, 1000, 0, 1), kHistTRDlikeAfter);
-  fContainer->AddAt(new TH2F("fTRDthesholds", "TRD Electron thresholds", kMomentumBins - 1, momentumBins, 1000, 0, 1), kHistTRDthresholds);
-  // Signal Histograms
-  fContainer->AddAt(new TH2F("fTRDSigV1all", "TRD Signal (all particles, Method 1)", kMomentumBins - 1, momentumBins, kSigBinsMeth1, kMinSig, kMaxSigMeth1), kHistTRDSigV1);
-  fContainer->AddAt(new TH2F("fTRDSigV2all", "TRD Signal (all particles, Method 2)", kMomentumBins - 1, momentumBins, kSigBinsMeth2, kMinSig, kMaxSigMeth2), kHistTRDSigV2);
-  for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
-    fContainer->AddAt(new TH2F(Form("fTRDSigV1%s", AliPID::ParticleName(ispec)), Form("TRD Signal (%s, Method 1)", AliPID::ParticleName(ispec)), kMomentumBins - 1, momentumBins, kSigBinsMeth1, kMinSig, kMaxSigMeth1), kHistOverallSpecies + ispec);
-    fContainer->AddAt(new TH2F(Form("fTRDSigV2%s", AliPID::ParticleName(ispec)), Form("TRD Signal (%s, Method 2)", AliPID::ParticleName(ispec)), kMomentumBins - 1, momentumBins, kSigBinsMeth1, kMinSig, kMaxSigMeth2), kHistOverallSpecies + AliPID::kSPECIES + ispec);
-  }
-  l->AddLast(fContainer);
+  // Monitor THnSparse for TRD Signal
+  const Int_t kBinsTRDsignal = 3; 
+  Int_t nBins[kBinsTRDsignal] = {AliPID::kSPECIES +1, kMomentumBins, 100};
+  Double_t binMin[kBinsTRDsignal] = {-1, kPtMin, 0};
+  Double_t binMax[kBinsTRDsignal] = {AliPID::kSPECIES, kPtMax, 1000};
+  fContainer->CreateTHnSparse("fTRDsignalV1", "TRD Signal V1", kBinsTRDsignal, nBins, binMin, binMax);
+  fContainer->CreateTHnSparse("fTRDsignalV2", "TRD Signal V2", kBinsTRDsignal, nBins, binMin, binMax);
+
+  // Make logatithmic binning
+  TString hnames[7] = {"fTRDlikeBefore", "fTRDlikeAfter", "fTRDthresholds", "fTRDsignalBefore", "fTRDsignalAfter", "fTPCsigmaBefore", "fTPCsigmaAfter"};
+  for(Int_t ihist = 0; ihist < 7; ihist++)
+    fContainer->BinLogAxis(hnames[ihist].Data(), 0);
+  fContainer->BinLogAxis("fTRDsignalV1", 1);
+  fContainer->BinLogAxis("fTRDsignalV2", 1);
+
+  l->Add(fContainer->GetList());
 }
 
 //___________________________________________________________________
-void AliHFEpidTRD::FillHistogramsLikelihood(Int_t whenFilled, Float_t p, Float_t elProb){
+void AliHFEpidTRD::FillStandardQA(Int_t whenFilled, AliESDtrack *esdTrack){
   //
   // Fill Likelihood Histogram before respectively after decision
   //
-  TH2F *histo = NULL;
+  Double_t p =  esdTrack->P();
+  Double_t like[AliPID::kSPECIES];
+  esdTrack->GetTRDpid(like);
+  TString step;
   if(whenFilled)
-    histo = dynamic_cast<TH2F *>(fContainer->At(kHistTRDlikeAfter));
+    step = "After";
   else
-    histo = dynamic_cast<TH2F *>(fContainer->At(kHistTRDlikeBefore));
-  if(!histo){
-    AliError("QA histograms not found");
-    return;
-  }
-  histo->Fill(p, elProb);
+    step = "Before";
+  TString histos[3] = {"fTRDlike", "fTPCsignal", "fTPCsigma"};
+  for(Int_t ihist = 0; ihist < 3; ihist++) histos[ihist] += step;
+  fContainer->Fill(histos[0].Data(), esdTrack->P(), like[AliPID::kElectron]);
+  fContainer->Fill(histos[1].Data(), p, esdTrack->GetTPCsignal());
+  if(fESDpid)
+    fContainer->Fill(histos[2].Data(), p, fESDpid->NumberOfSigmasTPC(esdTrack, AliPID::kElectron));
 }

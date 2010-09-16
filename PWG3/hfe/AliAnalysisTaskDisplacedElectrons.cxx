@@ -89,7 +89,7 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons():
   // Initialize pid
   
   fDeDefaultPID = new AliESDpid;
-  fDePID = new AliHFEpid;
+  fDePID = new AliHFEpid("PIDforDisplacedElectronAnalysis");
   
 
 }
@@ -126,7 +126,7 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons(const char 
 
   // Initialize pid
   fDeDefaultPID = new AliESDpid;
-  fDePID = new AliHFEpid;
+  fDePID = new AliHFEpid("PIDforDisplacedElectronAnalysis");
 
 }
 

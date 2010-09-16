@@ -97,6 +97,7 @@ void AliHFEpidTOF::Copy(TObject &ref) const {
 
   target.fPID = fPID;          
   target.fQAList = fQAList;
+  target.fNsigmaTOF = fNsigmaTOF;
 
   AliHFEpidBase::Copy(ref);
 }
@@ -326,6 +327,7 @@ Int_t AliHFEpidTOF::MakePIDesdV3(AliESDtrack *track, AliMCParticle * /*mctrack*/
     return 0;
   }
   if(!(track->GetStatus() & AliESDtrack::kTOFpid)) return 0;
+
   Double_t t0 = fESDpid->GetTOFResponse().GetTimeZero();
   Double_t p = track->GetOuterParam() ? track->GetOuterParam()->P() : track->P();
 

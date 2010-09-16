@@ -72,6 +72,27 @@ ClassImp(AliHFEcuts)
 
 //__________________________________________________________________
 AliHFEcuts::AliHFEcuts():
+  TNamed(),
+  fRequirements(0),
+  fMinClustersTPC(0),
+  fMinTrackletsTRD(0),
+  fCutITSPixel(0),
+  fCheckITSLayerStatus(kTRUE),
+  fMaxChi2clusterTPC(0.),
+  fMinClusterRatioTPC(0.),
+  fSigmaToVtx(0.),
+  fHistQA(0x0),
+  fCutList(0x0),
+  fDebugLevel(0)
+{
+  //
+  // Dummy Constructor
+  //
+}
+
+//__________________________________________________________________
+AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
+  TNamed(name, title),
   fRequirements(0),
   fMinClustersTPC(0),
   fMinTrackletsTRD(0),
@@ -90,21 +111,19 @@ AliHFEcuts::AliHFEcuts():
   memset(fProdVtx, 0, sizeof(Double_t) * 4);
   memset(fDCAtoVtx, 0, sizeof(Double_t) * 2);
   memset(fPtRange, 0, sizeof(Double_t) * 2);
-  fCutList = new TObjArray();
-  fCutList->SetOwner();
 }
 
 //__________________________________________________________________
 AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
-  TObject(c),
+  TNamed(c),
   fRequirements(c.fRequirements),
-  fMinClustersTPC(c.fMinClustersTPC),
-  fMinTrackletsTRD(c.fMinTrackletsTRD),
-  fCutITSPixel(c.fCutITSPixel),
-  fCheckITSLayerStatus(c.fCheckITSLayerStatus),
-  fMaxChi2clusterTPC(c.fMaxChi2clusterTPC),
-  fMinClusterRatioTPC(c.fMinClusterRatioTPC),
-  fSigmaToVtx(c.fSigmaToVtx),
+  fMinClustersTPC(0),
+  fMinTrackletsTRD(0),
+  fCutITSPixel(0),
+  fCheckITSLayerStatus(0),
+  fMaxChi2clusterTPC(0),
+  fMinClusterRatioTPC(0),
+  fSigmaToVtx(0),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -112,11 +131,66 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   //
   // Copy Constructor
   //
-  memcpy(fProdVtx, c.fProdVtx, sizeof(Double_t) * 4);
-  memcpy(fDCAtoVtx, c.fDCAtoVtx, sizeof(Double_t) * 2);
-  memcpy(fPtRange, c.fPtRange, sizeof(Double_t) *2);
-  fCutList = dynamic_cast<TObjArray *>(c.fCutList->Clone());
-  fCutList->SetOwner();
+  c.Copy(*this);
+}
+
+//__________________________________________________________________
+AliHFEcuts &AliHFEcuts::operator=(const AliHFEcuts &c){
+  //
+  // Make assignment
+  //
+  if(&c != this) c.Copy(*this);
+  return *this;
+}
+
+//__________________________________________________________________
+void AliHFEcuts::Copy(TObject &c) const {
+  //
+  // Performing copy
+  //
+  AliHFEcuts &target = dynamic_cast<AliHFEcuts &>(c);
+
+  target.fRequirements = fRequirements;
+  target.fMinClustersTPC = fMinClustersTPC;
+  target.fMinTrackletsTRD = fMinTrackletsTRD;
+  target.fCutITSPixel = fCutITSPixel;
+  target.fCheckITSLayerStatus = fCheckITSLayerStatus;
+  target.fMaxChi2clusterTPC = fMaxChi2clusterTPC;
+  target.fMinClusterRatioTPC = fMinClusterRatioTPC;
+  target.fSigmaToVtx = fSigmaToVtx;
+  target.fDebugLevel = 0;
+
+  memcpy(target.fProdVtx, fProdVtx, sizeof(Double_t) * 4);
+  memcpy(target.fDCAtoVtx, fDCAtoVtx, sizeof(Double_t) * 2);
+  memcpy(target.fPtRange, fPtRange, sizeof(Double_t) *2);
+
+  // Copy cut List
+  if(target.fCutList){
+    target.fCutList->Clear();
+    delete target.fCutList;
+  }
+  if(fCutList){
+    target.fCutList = dynamic_cast<TObjArray *>(fCutList->Clone());
+    target.fCutList->SetOwner();
+  }
+  if(target.fHistQA){
+    target.fHistQA->Clear();
+    delete target.fHistQA;
+    target.fHistQA = NULL;
+  }
+  if(fHistQA){
+    // If the QA list was already produced, then we create it new, loop over the cuts and connect all the histos with this list
+    target.fHistQA = new TList;
+    target.fHistQA->SetName(Form("%s_CutQAhistograms", GetName()));
+    fHistQA->SetOwner(kFALSE);
+    TIter cit(target.fCutList);
+    TObjArray *clist = NULL;
+    AliCFCutBase *co = NULL;
+    while((clist = dynamic_cast<TObjArray *>(cit()))){
+      TIter cit1(clist);
+      while((co = dynamic_cast<AliCFCutBase *>(cit1()))) co->SetQAOn(target.fHistQA);
+    }
+  }
 }
 
 //__________________________________________________________________
@@ -140,9 +214,15 @@ void AliHFEcuts::Initialize(AliCFManager *cfm){
   // Publishes the cuts to the correction framework manager
   //
   AliDebug(2, "Called");
-  if(IsInDebugMode()){
-     fHistQA = new TList;
-    fHistQA->SetName("CutQAhistograms");
+  if(fCutList)
+    fCutList->Delete();
+  else{
+    fCutList = new TObjArray;
+    fCutList->SetOwner();
+  }
+  if(IsQAOn()){
+    fHistQA = new TList;
+    fHistQA->SetName(Form("%s_CutQAhistograms", GetName()));
     fHistQA->SetOwner(kFALSE);
   }
  
@@ -184,6 +264,17 @@ void AliHFEcuts::Initialize(AliCFManager *cfm){
 void AliHFEcuts::Initialize(){
   // Call all the setters for the cuts
   AliDebug(2, "Called\n");
+   if(fCutList)
+    fCutList->Delete();
+  else{
+    fCutList = new TObjArray;
+    fCutList->SetOwner();
+  }
+  if(IsQAOn()){
+    fHistQA = new TList;
+    fHistQA->SetName(Form("%s_CutQAhistograms", GetName()));
+    fHistQA->SetOwner(kFALSE);
+  }
   SetParticleGenCutList();
   SetAcceptanceCutList();
   SetRecKineITSTPCCutList();
@@ -251,7 +342,7 @@ void AliHFEcuts::SetParticleGenCutList(){
     genCuts->SetProdVtxRange2D(kTRUE);  // Use ellipse
   }
   genCuts->SetRequirePdgCode(11, kTRUE);
-  if(IsInDebugMode()) genCuts->SetQAOn(fHistQA);
+  if(IsQAOn()) genCuts->SetQAOn(fHistQA);
 
   // Add
   mcCuts->AddLast(genCuts);
@@ -261,7 +352,7 @@ void AliHFEcuts::SetParticleGenCutList(){
     AliCFTrackKineCuts *kineMCcuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineMC", (Char_t *)"MC Kine Cuts");
     kineMCcuts->SetPtRange(fPtRange[0], fPtRange[1]);
     kineMCcuts->SetEtaRange(-0.8, 0.8);
-    if(IsInDebugMode()) kineMCcuts->SetQAOn(fHistQA);
+    if(IsQAOn()) kineMCcuts->SetQAOn(fHistQA);
     mcCuts->AddLast(kineMCcuts);
   }
    
@@ -283,7 +374,7 @@ void AliHFEcuts::SetAcceptanceCutList(){
   accCuts->SetMinNHitITS(3);
   accCuts->SetMinNHitTPC(2);
   accCuts->SetMinNHitTRD(2*fMinTrackletsTRD);
-  if(IsInDebugMode()) accCuts->SetQAOn(fHistQA);
+  if(IsQAOn()) accCuts->SetQAOn(fHistQA);
   
   TObjArray *partAccCuts = new TObjArray();
   partAccCuts->SetName("fPartAccCuts");
@@ -329,7 +420,7 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   kineCuts->SetPtRange(fPtRange[0], fPtRange[1]);
   kineCuts->SetEtaRange(-0.8, 0.8);
   
-  if(IsInDebugMode()){
+  if(IsQAOn()){
     trackQuality->SetQAOn(fHistQA);
     hfecuts->SetQAOn(fHistQA);
     kineCuts->SetQAOn(fHistQA);
@@ -364,7 +455,7 @@ void AliHFEcuts::SetRecPrimaryCutList(){
     primaryCut->SetMaxNSigmaToVertex(fSigmaToVtx);
   }
   primaryCut->SetAcceptKinkDaughters(kFALSE);
-  if(IsInDebugMode()) primaryCut->SetQAOn(fHistQA);
+  if(IsQAOn()) primaryCut->SetQAOn(fHistQA);
   
   TObjArray *primCuts = new TObjArray;
   primCuts->SetName("fPartPrimCuts");
@@ -384,7 +475,7 @@ void AliHFEcuts::SetHFElectronITSCuts(){
     hfecuts->SetCheckITSstatus(fCheckITSLayerStatus);
   }
   
-  if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
+  if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
 
   TObjArray *hfeCuts = new TObjArray;
@@ -401,7 +492,7 @@ void AliHFEcuts::SetHFElectronTRDCuts(){
   AliDebug(2, "Called\n");
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTRD","Extra cuts from the HFE group");
   if(fMinTrackletsTRD > 0.) hfecuts->SetMinTrackletsTRD(fMinTrackletsTRD);
-  if(IsInDebugMode()) hfecuts->SetQAOn(fHistQA);
+  if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
   
   TObjArray *hfeCuts = new TObjArray;
@@ -411,21 +502,13 @@ void AliHFEcuts::SetHFElectronTRDCuts(){
 }
 
 //__________________________________________________________________
-void AliHFEcuts::SetDebugMode(){ 
-  //
-  // Switch on QA
-  //
-  SetBit(kDebugMode, kTRUE); 
-}
-
-//__________________________________________________________________
 Bool_t AliHFEcuts::CheckParticleCuts(CutStep_t step, TObject *o){
   //
   // Checks the cuts without using the correction framework manager
   // 
   AliDebug(2, "Called\n");
-  TString stepnames[kNcutStepsTrack] = {"fPartGenCuts", "fPartAccCuts", "fPartRecCuts", "fPartPrimCuts", "fPartHFECuts"};
-  TObjArray *cuts = dynamic_cast<TObjArray *>(fCutList->FindObject(stepnames[step].Data()));
+  TString stepnames[kNcutStepsTrack] = {"fPartGenCuts","fPartSignal","fPartAccCuts","fPartRecNoCuts","fPartRecKineITSTPCCuts", "fPartPrimCuts", "fPartHFECutsITS","fPartHFECutsTRD","fPartHFEPid"};
+ TObjArray *cuts = dynamic_cast<TObjArray *>(fCutList->FindObject(stepnames[step].Data()));
   if(!cuts) return kTRUE;
   TIterator *it = cuts->MakeIterator();
   AliCFCutBase *mycut;
