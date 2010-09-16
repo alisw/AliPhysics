@@ -74,7 +74,8 @@ public:
   static void GetValueAndError(TH1 * hdest, const TH1 * hvalue, const TH1 * herror, Bool_t isPercentError) ;  
   static void AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins = kFALSE);
   static void GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) ;
-  
+  static TH1F * DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2);
+
 
 private:
 
