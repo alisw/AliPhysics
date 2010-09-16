@@ -413,7 +413,7 @@ TGraphAsymmErrors* AliMUONTriggerChamberEfficiency::GetEfficiencyGraph(TH1* hist
   //
 
   TGraphAsymmErrors* auxGraph = 0x0;
-  if ( histoDen ) auxGraph = new TGraphAsymmErrors(histoNum,histoDen);
+  if ( histoDen ) auxGraph = new TGraphAsymmErrors(histoNum,histoDen,"cp");
   else auxGraph = new TGraphAsymmErrors(histoNum);
 
   Int_t npoints = histoNum->GetNbinsX();
