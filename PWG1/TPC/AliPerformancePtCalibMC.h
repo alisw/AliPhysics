@@ -64,7 +64,8 @@ public:
    void SetEtaRange(const Double_t eta)               {fEtaAcceptance =  eta ;}//sets eta window
    
    void SetAliESDtrackCuts( AliESDtrackCuts* esdTrackCuts) { fESDTrackCuts = esdTrackCuts;fESDcuts=kTRUE;}//esd track cuts
-    
+   // only pions
+   void SetAnalysePions(const Bool_t anaPions) {fPions = anaPions;}
    //user defined shift in charge/pt
    void SetPtShift(const Double_t shiftVal); //sets user defined shift in charge/pt
    
@@ -117,7 +118,8 @@ private:
    //options for cuts
    Bool_t fOptTPC;// flag for reading of TPC tracks in Exec
    Bool_t fESDcuts;//flag for usage of esd track cuts
-   
+   Bool_t fPions;// flag for analzsing pions instead of all charged particles
+    
    //ESD track cut values
    Double_t fEtaAcceptance;//sets value of eta window
    AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
@@ -160,9 +162,10 @@ private:
    TH1F        *fHistESDMomentaNegPtMC;//ESD-MC of pt of negative tracks
    
    TH1F        *fHistUserPtShift;// shows the shift value if set by user
+   TH2F        *fHistdedxPions;// dEdx vs cahrge*pt
    
    AliESDtrackCuts* fESDTrackCuts;// esd track cuts
-  
+ 
    // analysis folder 
    TFolder *fAnalysisFolder; // folder for analysed histograms
 
