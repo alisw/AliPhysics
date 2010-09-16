@@ -11,6 +11,10 @@
 
 #include "AliRDHFCuts.h"
 
+class AliAODEvent;
+class AliAODRecoCascadeHF;
+class AliAODRecoDecayHF;
+
 class AliRDHFCutsDStartoKpipi : public AliRDHFCuts 
 {
  public:
@@ -27,6 +31,7 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
   Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) const; 
+  virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(9,iPtBin)] : 1.e6);} // for the Dstar
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);} // for the D0
@@ -39,7 +44,7 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
 
   AliESDtrackCuts *fTrackCutsSoftPi; // cuts for soft pion (AOD converted to ESD on the flight!)
 
-  ClassDef(AliRDHFCutsDStartoKpipi,2);  // class for cuts on AOD reconstructed D0->Kpipi
+  ClassDef(AliRDHFCutsDStartoKpipi,3);  // class for cuts on AOD reconstructed D0->Kpipi
 };
 
 #endif
