@@ -911,118 +911,168 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
 {
  //
  //  Read Central Electrode file from file exchage server
- //  
  //
- AliTPCCalPad *ceTmean=0;
- AliTPCCalPad *ceTrms=0;
- AliTPCCalPad *ceQmean=0;
- TObjArray    *rocTtime=0;  
- TObjArray    *rocQtime=0;  
-
- TObjArray    *ceObjects= new TObjArray;
+ //
+  AliTPCCalPad *ceTmean=0;
+  AliTPCCalPad *ceTrms=0;
+  AliTPCCalPad *ceQmean=0;
+  TObjArray    *rocTtime=0;
+  TObjArray    *rocQtime=0;
   
+  TObjArray    *ceObjects= new TObjArray;
+  
+  
+  Int_t nSectors = fROC->GetNSectors();
+  
+  ceTmean = new AliTPCCalPad("CETmean","CETmean");
+  ceObjects->Add(ceTmean);
+  
+  ceTrms = new AliTPCCalPad("CETrms","CETrms");
+  ceObjects->Add(ceTrms);
+  
+  ceQmean = new AliTPCCalPad("CEQmean","CEQmean");
+  ceObjects->Add(ceQmean);
+  
+  rocTtime = new TObjArray(nSectors+2);   // also make room for A and C side average
+  rocTtime->SetName("rocTtime");
+  ceObjects->Add(rocTtime);
+  
+  rocQtime = new TObjArray(nSectors);
+  rocQtime->SetName("rocQtime");
+  ceObjects->Add(rocQtime);
 
- Int_t nSectors = fROC->GetNSectors();
-
- ceTmean = new AliTPCCalPad("CETmean","CETmean");
- ceObjects->Add(ceTmean);
-
- ceTrms = new AliTPCCalPad("CETrms","CETrms");
- ceObjects->Add(ceTrms);
-
- ceQmean = new AliTPCCalPad("CEQmean","CEQmean");
- ceObjects->Add(ceQmean);
- 
- rocTtime = new TObjArray(nSectors+2);   // also make room for A and C side average
- rocTtime->SetName("rocTtime");
- ceObjects->Add(rocTtime);
- 
- rocQtime = new TObjArray(nSectors);
- rocQtime->SetName("rocQtime");
- ceObjects->Add(rocQtime);
-
+  //=== new part
+  TObjArray *arrFitGraphs=new TObjArray;
+  arrFitGraphs->SetName("ceFitsDrift");
+  ceObjects->Add(arrFitGraphs);
+  
 // Temperature maps 
-
- if (fTemp) {
+  
+  if (fTemp) {
     AliTPCSensorTempArray *tempMap = new AliTPCSensorTempArray(*fTemp);
     tempMap->SetNameTitle("TempMap","TempMap");
     ceObjects->Add(tempMap);
- }
-
+  }
+  
 // Pressure maps
-
- if (fPressure) {
-   AliDCSSensor *sensor=0, *sensorCopy=0;
-   for (Int_t isensor=0; isensor<kNumPressureSensors; ++isensor ) {
+  
+  if (fPressure) {
+    AliDCSSensor *sensor=0, *sensorCopy=0;
+    for (Int_t isensor=0; isensor<kNumPressureSensors; ++isensor ) {
       sensor = fPressure->GetSensor(kPressureSensorNames[isensor]);
       if (sensor) {
-       sensorCopy = new AliDCSSensor(*sensor);
-       sensorCopy->SetNameTitle(kPressureSensorNames[isensor],kPressureSensorNames[isensor]);       
-       ceObjects->Add(sensorCopy);
+        sensorCopy = new AliDCSSensor(*sensor);
+        sensorCopy->SetNameTitle(kPressureSensorNames[isensor],kPressureSensorNames[isensor]);
+        ceObjects->Add(sensorCopy);
       }
-   }
- }   
-
- UInt_t result=0;
-
- TList* list = GetFileSources(sourceFXS,"CE");
- 
- if (list && list->GetEntries()>0) {
-
+    }
+  }
+  
+  UInt_t result=0;
+  
+  TList* list = GetFileSources(sourceFXS,"CE");
+  
+  if (list && list->GetEntries()>0) {
+    
 //  loop through all files from LDCs
-
+    
     UInt_t index = 0;
     while (list->At(index)!=NULL) {
-     TObjString* fileNameEntry = (TObjString*) list->At(index);
-     if (fileNameEntry!=NULL) {
+      TObjString* fileNameEntry = (TObjString*) list->At(index);
+      if (fileNameEntry!=NULL) {
         TString fileName = GetFile(sourceFXS, "CE",
-	                                 fileNameEntry->GetString().Data());
+                                   fileNameEntry->GetString().Data());
         TFile *f = TFile::Open(fileName);
         if (!f) {
-	  Log ("Error opening central electrode file.");
-	  result =2;
-	  break;
-	}
-        AliTPCCalibCE *calCE;
-	f->GetObject("tpcCalibCE",calCE);
-
-        if (!calCE) {
-	  Log ("No valid calibCE object.");
-	  result=2;
-	  break;
-	}
-        //  replace entries for the sectors available in the present file
-
-        for (Int_t sector=0; sector<nSectors; sector++) {
-           AliTPCCalROC *rocTmean=calCE->GetCalRocT0(sector);
-           if ( rocTmean )  ceTmean->SetCalROC(rocTmean,sector);
-           AliTPCCalROC *rocTrms=calCE->GetCalRocRMS(sector);
-           if ( rocTrms )  ceTrms->SetCalROC(rocTrms,sector);
-           AliTPCCalROC *rocQmean=calCE->GetCalRocQ(sector);
-	   if ( rocQmean )  ceQmean->SetCalROC(rocQmean,sector);
-	   TGraph *grT=calCE->MakeGraphTimeCE(sector,0,2); // T time graph
-           if ( grT ) rocTtime->AddAt(grT,sector);         
-	   TGraph *grQ=calCE->MakeGraphTimeCE(sector,0,3); // Q time graph
-           if ( grQ ) rocQtime->AddAt(grQ,sector);         
+          Log ("Error opening central electrode file.");
+          result =2;
+          break;
         }
-
-       TGraph *grT=calCE->MakeGraphTimeCE(-1,0,2); // A side average
-       if ( grT ) { 
-         rocTtime->AddAt(grT,nSectors);         
-       } else {
+        AliTPCCalibCE *calCE;
+        f->GetObject("tpcCalibCE",calCE);
+        
+        if (!calCE) {
+          Log ("No valid calibCE object.");
+          result=2;
+          break;
+        }
+        //  replace entries for the sectors available in the present file
+        
+        for (Int_t sector=0; sector<nSectors; sector++) {
+          AliTPCCalROC *rocTmean=calCE->GetCalRocT0(sector);
+          if ( rocTmean )  ceTmean->SetCalROC(rocTmean,sector);
+          AliTPCCalROC *rocTrms=calCE->GetCalRocRMS(sector);
+          if ( rocTrms )  ceTrms->SetCalROC(rocTrms,sector);
+          AliTPCCalROC *rocQmean=calCE->GetCalRocQ(sector);
+          if ( rocQmean )  ceQmean->SetCalROC(rocQmean,sector);
+          TGraph *grT=calCE->MakeGraphTimeCE(sector,0,2); // T time graph
+          if ( grT ) rocTtime->AddAt(grT,sector);
+          TGraph *grQ=calCE->MakeGraphTimeCE(sector,0,3); // Q time graph
+          if ( grQ ) rocQtime->AddAt(grQ,sector);
+        }
+        
+        TGraph *grT=calCE->MakeGraphTimeCE(-1,0,2); // A side average
+        if ( grT ) {
+          rocTtime->AddAt(grT,nSectors);
+        } else {
           result=10;
-       }
-       grT=calCE->MakeGraphTimeCE(-2,0,2); // C side average
-       if ( grT ) {
-         rocTtime->AddAt(grT,nSectors+1);         
-       } else {
+        }
+        grT=calCE->MakeGraphTimeCE(-2,0,2); // C side average
+        if ( grT ) {
+          rocTtime->AddAt(grT,nSectors+1);
+        } else {
           result=10;
-       }
-       delete calCE;
-       f->Close();
+        }
+        delete calCE;
+        f->Close();
       }
-     ++index;
+      ++index;
     }  // while(list)
+
+    //
+    //=== New CE part
+    //    if it is validated this part needs to be modified again
+    //    currently its only processed if there is a valid standard CE object
+    //
+    list = GetFileSources(sourceFXS,"CEnew");
+    
+    if (result==0 && list && list->GetEntries()>0) {
+      
+//  loop through all files from LDCs
+      
+      UInt_t index2 = 0;
+      while (list->At(index2)!=NULL) {
+        TObjString* fileNameEntry = (TObjString*) list->At(index2);
+        if (fileNameEntry!=NULL) {
+          TString fileName = GetFile(sourceFXS, "CEnew",
+                                     fileNameEntry->GetString().Data());
+          TFile *f = TFile::Open(fileName);
+          if (!f) {
+            Log ("Error opening new central electrode file.");
+//             result =2;
+            break;
+          }
+          AliTPCCalibCE *calCE;
+          f->GetObject("tpcCalibCE",calCE);
+          
+          if (!calCE) {
+            Log ("No valid new calibCE object.");
+//             result=2;
+            break;
+          }
+
+          TIter nextObj(calCE->GetArrFitGraphs());
+          TObject *obj=0x0;
+          while ( (obj=nextObj()) ){
+            arrFitGraphs->Add(obj->Clone());
+          }
+          delete calCE;
+	  f->Close();          
+        }
+        ++index2;
+      }
+    }
+    
 //
 //  Store updated pedestal entry to OCDB
 //
@@ -1031,18 +1081,18 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
     metaData.SetResponsible("Haavard Helstrup");
     metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
     metaData.SetComment("Preprocessor AliTPC data base entries.");
-
+    
     if ( result == 0 ) {
-     Bool_t storeOK = Store("Calib", "CE", ceObjects, &metaData, 0, kTRUE);
-     if ( !storeOK ) ++result;
+      Bool_t storeOK = Store("Calib", "CE", ceObjects, &metaData, 0, kTRUE);
+      if ( !storeOK ) ++result;
     } else {
-     Log ("Warning: Average time graphs not available - no OCDB entry written");
-    }   
+      Log ("Warning: Average time graphs not available - no OCDB entry written");
+    }
   } else {
     Log ("Error: no CE entries available from FXS!");
     result = 1;
   }
-
+  
   ceObjects->Delete();
   delete ceObjects;
   
