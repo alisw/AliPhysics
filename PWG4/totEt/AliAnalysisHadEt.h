@@ -18,6 +18,7 @@ class AliESDtrackCuts;
 class Rtypes;
 class TParticle;
 class TDatabasePDG;
+class AliAnalysisEtCuts;
 
 class AliAnalysisHadEt
 {
@@ -46,6 +47,14 @@ public:
 
     /** Reset event specific values (Et etc.) */
     virtual void ResetEventValues();
+
+    /** Set Particle codes/mass */
+    virtual void SetParticleCodes();
+
+    /** Cuts info */
+    AliAnalysisEtCuts * GetCuts() const { return fCuts; } 
+    virtual void SetCuts(const AliAnalysisEtCuts *cuts) 
+    { fCuts = (AliAnalysisEtCuts *) cuts; } 
     
     /** Sum of the total Et for all events */
     Double_t GetSumEt() const { return fSumEt; }
@@ -81,6 +90,8 @@ public:
 protected:   
     
     TString fHistogramNameSuffix; /** The suffix for the histogram names */
+
+    AliAnalysisEtCuts *fCuts; // keeper of basic cuts
 
     /** PDG Database */
     TDatabasePDG *fPdgDB;//data base used for looking up pdg codes
@@ -124,17 +135,6 @@ protected:
     Int_t fChargedMultiplicity;/** Multiplicity of charged particles in the event */
     Int_t fNeutralMultiplicity; /** Multiplicity of neutral particles in the event */
         
-    Double_t fEtaCut;/** Cut in eta ( normally |eta| < 0.5 */
-    Double_t fEtaCutAcc;/** Eta cut for our acceptance */
-
-    Double_t fVertexXCut;/** Vertex cuts x direction */
-    Double_t fVertexYCut;/** Vertex cuts y direction*/
-    Double_t fVertexZCut;/** Vertex cuts z direction*/
-
-    Double_t fIPxyCut;    /** Impact parameter cuts x-y plane*/
-    Double_t fIPzCut;    /** Impact parameter cuts z*/
-
-
     void CreateEtaPtHisto2D(TString name, TString title);
     void CreateEtaHisto1D(TString name, TString title);
     void CreateHisto2D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh,Int_t ybins,Float_t ylow,Float_t yhigh);
@@ -155,13 +155,10 @@ protected:
     static Float_t fgPtAxis[117];//bins for pt axis of histograms
     static Int_t fgNumOfPtBins;//number of pt bins
     
-
  private:
-
-private:
-  //Declare it private to avoid compilation warning
-  AliAnalysisHadEt & operator = (const AliAnalysisHadEt & g) ;//cpy assignment
-  AliAnalysisHadEt(const AliAnalysisHadEt & g) ; // cpy ctor
+    //Declare it private to avoid compilation warning
+    AliAnalysisHadEt & operator = (const AliAnalysisHadEt & g) ;//cpy assignment
+    AliAnalysisHadEt(const AliAnalysisHadEt & g) ; // cpy ctor
 
     ClassDef(AliAnalysisHadEt, 0);
 };

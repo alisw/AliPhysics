@@ -29,8 +29,6 @@ protected:
     bool CheckGoodVertex(AliVParticle *track);
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
 
-    Int_t fNTpcClustersCut; // cut on # of TPC clusters
-    Int_t fNItsClustersCut; // cut on # of ITS clusters
     Double_t fTrackDistanceCut; // cut on track distance    
     Char_t fClusterType; // selection on cluster type
     

@@ -129,7 +129,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  }
 	  else{//analysis
 	    if(stack->IsPhysicalPrimary(label)){
-	      if (TMath::Abs(simPart->Eta()) < fEtaCut)	    {
+	      if (TMath::Abs(simPart->Eta()) < fCuts->GetCommonEtaCut())	    {
 
 		Int_t pdgCode =  simPart->GetPDG(0)->PdgCode();
 		Int_t mypid = 0;
@@ -403,7 +403,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	  //if (TMath::Abs(pc->Charge()) != EtMonteCarloCuts::kSingleChargedParticle && pc->Charge() != EtMonteCarloCuts::kNeutralParticle) continue;
 
 
-	  if (TMath::Abs(part->Eta()) < fEtaCut)	    {
+	  if (TMath::Abs(part->Eta()) < fCuts->GetCommonEtaCut())	    {
 
 	    Int_t pdgCode =  part->GetPDG(0)->PdgCode();
 	    //cout<<pdgCode->PdgCode()<<" ";

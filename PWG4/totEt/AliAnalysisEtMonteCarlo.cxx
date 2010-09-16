@@ -49,11 +49,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
         // Check for reasonable (for now neutral and singly charged) charge on the particle
         //TODO:Maybe not only singly charged?
-        if (TMath::Abs(pc->Charge()) != EtMonteCarloCuts::kSingleChargedParticle && pc->Charge() != EtMonteCarloCuts::kNeutralParticle) continue;
+        if (TMath::Abs(pc->Charge()) != fCuts->GetMonteCarloSingleChargedParticle() && pc->Charge() != fCuts->GetMonteCarloNeutralParticle()) continue;
 
         fMultiplicity++;
 
-        if (TMath::Abs(part->Eta()) < fEtaCut)
+        if (TMath::Abs(part->Eta()) < fCuts->GetCommonEtaCut())
         {
 
 	  TParticlePDG *pdgCode =  part->GetPDG(0);
@@ -69,7 +69,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                 particleMassPart = -TMath::Sign(pdgCode->PdgCode(), pdgCode->PdgCode())*pdgCode->Mass();
             }
             
-            if (pdgCode->Charge() == EtMonteCarloCuts::kNeutralParticle)
+            if (pdgCode->Charge() == fCuts->GetMonteCarloNeutralParticle() )
             {
 	       fNeutralMultiplicity++;
                 fTotNeutralEt += part->Energy()*TMath::Sin(part->Theta());
@@ -80,7 +80,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                     fTotEtAcc += part->Energy()*TMath::Sin(part->Theta());
                 }
             }
-            else if (pdgCode->Charge() != EtMonteCarloCuts::kNeutralParticle)
+            else if (pdgCode->Charge() != fCuts->GetMonteCarloNeutralParticle() )
             {
 	       fChargedMultiplicity++;
                 fTotChargedEt += part->Energy()*TMath::Sin(part->Theta());

@@ -20,10 +20,6 @@ class AliAnalysisTaskTotEt : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskTotEt(const char *name = "AliAnalysisTaskTotEt");
   virtual ~AliAnalysisTaskTotEt() {}
-private:
-  //Declare it private to avoid compilation warning
-  AliAnalysisTaskTotEt & operator = (const AliAnalysisTaskTotEt & g) ;//cpy assignment
-  AliAnalysisTaskTotEt(const AliAnalysisTaskTotEt & g) ; // cpy ctor
   
 public:
   
@@ -31,16 +27,20 @@ public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  
-  
+    
 private:
   
+  //Declare private to avoid compilation warning
+  AliAnalysisTaskTotEt & operator = (const AliAnalysisTaskTotEt & g) ;//copy assignment
+  AliAnalysisTaskTotEt(const AliAnalysisTaskTotEt & g) ; // copy ctor
+
   TList *fOutputList; //output list
   
   AliAnalysisEtReconstructed *fRecAnalysis; // Rec 
   AliAnalysisEtMonteCarlo *fMCAnalysis; // MC
   
   TH2F *fHistEtRecvsEtMC; // Rec vs MC histo
+
   
   ClassDef(AliAnalysisTaskTotEt, 1); // example of analysis
 };

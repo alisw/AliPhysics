@@ -16,6 +16,7 @@ class AliVEvent;
 class TList;
 class Rtypes;
 class TDatabasePDG;
+class AliAnalysisEtCuts;
 
 class AliAnalysisEt
 {
@@ -23,11 +24,6 @@ public:
    
     AliAnalysisEt();
     virtual ~AliAnalysisEt();
-
-private:
-  //Declare private to avoid compilation warning
-  AliAnalysisEt & operator = (const AliAnalysisEt & g) ;//cpy assignment
-  AliAnalysisEt(const AliAnalysisEt & g) ; // cpy ctor
   
 public:
   
@@ -55,6 +51,11 @@ public:
     /** Set Particle codes/mass */
     virtual void SetParticleCodes();
     
+    /** Cuts info */
+    AliAnalysisEtCuts * GetCuts() const { return fCuts; } 
+    virtual void SetCuts(const AliAnalysisEtCuts *cuts) 
+    { fCuts = (AliAnalysisEtCuts *) cuts; } 
+
     /** Sum of the total Et for all events */
     Double_t GetSumEt() const { return fSumEt; }
 
@@ -83,6 +84,8 @@ public:
 protected:
        
     TString fHistogramNameSuffix; /** The suffix for the histogram names */
+
+    AliAnalysisEtCuts *fCuts; // keeper of basic cuts
 
     /** PDG Database */
     TDatabasePDG *fPdgDB;//data base used for looking up pdg codes
@@ -124,27 +127,15 @@ protected:
     Int_t fMultiplicity;/** Multiplicity of particles in the event */    
     Int_t fChargedMultiplicity;/** Multiplicity of charged particles in the event */    
     Int_t fNeutralMultiplicity; /** Multiplicity of neutral particles in the event */
-        
-    Double_t fEtaCut;/** Cut in eta ( normally |eta| < 0.5 */
+
     Double_t fEtaCutAcc;/** Eta cut for our acceptance */
-    
     Double_t fPhiCutAccMin; /** Min phi cut for our acceptance in radians */    
     Double_t fPhiCutAccMax; /** Max phi cut for our acceptance in radians */
-    
     Double_t fDetectorRadius; /** Detector radius */
-
-    Double_t fVertexXCut;/** Vertex cuts x direction */
-    Double_t fVertexYCut;/** Vertex cuts y direction*/
-    Double_t fVertexZCut;/** Vertex cuts z direction*/
-
-    Double_t fIPxyCut;    /** Impact parameter cuts x-y plane*/
-    Double_t fIPzCut;    /** Impact parameter cuts z*/
-
     
     Double_t fClusterEnergyCut; /** Cut on the cluster energy */    
-    Double_t fTrackPtCut; /** Cut on track pt */
     Double_t fSingleCellEnergyCut;  /** Minimum energy to cut on single cell cluster */
-    
+
     // Declare the histograms
 
     /** The full Et spectrum measured */
@@ -188,6 +179,11 @@ protected:
     TH1F *fHistMesonEtAcc; // meson, acc
 
     TH1F *fHistTMDeltaR;  /* Track matching plots */
+
+private:
+    //Declare private to avoid compilation warning
+    AliAnalysisEt & operator = (const AliAnalysisEt & g) ;//cpy assignment
+    AliAnalysisEt(const AliAnalysisEt & g) ; // cpy ctor
 
     ClassDef(AliAnalysisEt, 0);
 };

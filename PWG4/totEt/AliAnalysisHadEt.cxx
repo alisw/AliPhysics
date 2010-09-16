@@ -43,6 +43,7 @@ Float_t AliAnalysisHadEt::fgPtAxis[117]=
 
 AliAnalysisHadEt::AliAnalysisHadEt() :
         fHistogramNameSuffix("")
+	,fCuts(0)
         ,fPdgDB(0)
         ,fPiPlusCode(0)
         ,fPiMinusCode(0)
@@ -78,18 +79,6 @@ AliAnalysisHadEt::AliAnalysisHadEt() :
 	,fMultiplicity(0)
 	,fChargedMultiplicity(0)
 	,fNeutralMultiplicity(0)
-        ,fEtaCut(EtCommonCuts::kEtaCut)
-        ,fEtaCutAcc(0)
-				  //,fPhiCutAccMin(0)
-				  //,fPhiCutAccMax(360.)
-        ,fVertexXCut(0)
-        ,fVertexYCut(0)
-        ,fVertexZCut(0)
-				  ,fIPxyCut(0)
-				  ,fIPzCut(0)
-				  //,fSingleCellEnergyCut(0)
-				  //,fClusterEnergyCut(EtCommonCuts::kClusterEnergyCut)
-				  //,fTrackPtCut(EtCommonCuts::kTrackPtCut)
         ,fEsdtrackCutsITSTPC(0)
         ,fEsdtrackCutsTPC(0)
 	,fEsdtrackCutsITS(0)
@@ -134,37 +123,10 @@ void AliAnalysisHadEt::FillOutputList()
 
 void AliAnalysisHadEt::Init()
 {//Initiate member vaiables to reasonable values
-  fVertexXCut = EtReconstructedCuts::kVertexXCut;
-  fVertexYCut = EtReconstructedCuts::kVertexYCut;
-  fVertexZCut = EtReconstructedCuts::kVertexZCut;
-  fIPxyCut = EtReconstructedCuts::kIPxyCut;
-  fIPzCut = EtReconstructedCuts::kIPzCut;
+  if (!fCuts) fCuts = new AliAnalysisEtCuts();
 
   if(!fPdgDB) fPdgDB = new TDatabasePDG();
-  //the codes are defined in $ROOTSYS/etc/pdg_table.txt
-  fPionMass = fPdgDB->GetParticle("pi+")->Mass();
-  fPiPlusCode = fPdgDB->GetParticle("pi+")->PdgCode();
-    fPiMinusCode = fPdgDB->GetParticle("pi-")->PdgCode();
-    fKPlusCode = fPdgDB->GetParticle("K+")->PdgCode();
-    fKMinusCode = fPdgDB->GetParticle("K-")->PdgCode();
-    fProtonCode = fPdgDB->GetParticle("proton")->PdgCode();
-    fAntiProtonCode = fPdgDB->GetParticle("antiproton")->PdgCode();
-    fLambdaCode = fPdgDB->GetParticle("Lambda0")->PdgCode();
-    fAntiLambdaCode = fPdgDB->GetParticle("Lambda0_bar")->PdgCode();
-    fK0SCode = fPdgDB->GetParticle("K_S0")->PdgCode();
-    fOmegaCode = fPdgDB->GetParticle("Omega-")->PdgCode();
-    fAntiOmegaCode = fPdgDB->GetParticle("Omega+")->PdgCode();
-    fXi0Code = fPdgDB->GetParticle("Xi0")->PdgCode();
-    fAntiXi0Code = fPdgDB->GetParticle("Xi0_bar")->PdgCode();
-    fXiCode = fPdgDB->GetParticle("Xi-")->PdgCode();
-    fAntiXiCode = fPdgDB->GetParticle("Xi-_bar")->PdgCode();
-    fSigmaCode = fPdgDB->GetParticle("Sigma-")->PdgCode();
-    fAntiSigmaCode = fPdgDB->GetParticle("Sigma+")->PdgCode();
-    fK0LCode = fPdgDB->GetParticle("K_L0")->PdgCode();
-    fNeutronCode = fPdgDB->GetParticle("neutron")->PdgCode();
-    fAntiNeutronCode = fPdgDB->GetParticle("antineutron")->PdgCode();
-    fEPlusCode = fPdgDB->GetParticle("e+")->PdgCode();
-    fEMinusCode = fPdgDB->GetParticle("e-")->PdgCode();
+  SetParticleCodes();  
 }
 
 void AliAnalysisHadEt::CreateHistograms()
@@ -187,6 +149,34 @@ void AliAnalysisHadEt::ResetEventValues()
     fChargedMultiplicity = 0;
     fNeutralMultiplicity = 0;
 }
+
+void AliAnalysisHadEt::SetParticleCodes()
+{  //the codes are defined in $ROOTSYS/etc/pdg_table.txt
+  fPionMass = fPdgDB->GetParticle("pi+")->Mass();
+  fPiPlusCode = fPdgDB->GetParticle("pi+")->PdgCode();
+  fPiMinusCode = fPdgDB->GetParticle("pi-")->PdgCode();
+  fKPlusCode = fPdgDB->GetParticle("K+")->PdgCode();
+  fKMinusCode = fPdgDB->GetParticle("K-")->PdgCode();
+  fProtonCode = fPdgDB->GetParticle("proton")->PdgCode();
+  fAntiProtonCode = fPdgDB->GetParticle("antiproton")->PdgCode();
+  fLambdaCode = fPdgDB->GetParticle("Lambda0")->PdgCode();
+  fAntiLambdaCode = fPdgDB->GetParticle("Lambda0_bar")->PdgCode();
+  fK0SCode = fPdgDB->GetParticle("K_S0")->PdgCode();
+  fOmegaCode = fPdgDB->GetParticle("Omega-")->PdgCode();
+  fAntiOmegaCode = fPdgDB->GetParticle("Omega+")->PdgCode();
+  fXi0Code = fPdgDB->GetParticle("Xi0")->PdgCode();
+  fAntiXi0Code = fPdgDB->GetParticle("Xi0_bar")->PdgCode();
+  fXiCode = fPdgDB->GetParticle("Xi-")->PdgCode();
+  fAntiXiCode = fPdgDB->GetParticle("Xi-_bar")->PdgCode();
+  fSigmaCode = fPdgDB->GetParticle("Sigma-")->PdgCode();
+  fAntiSigmaCode = fPdgDB->GetParticle("Sigma+")->PdgCode();
+  fK0LCode = fPdgDB->GetParticle("K_L0")->PdgCode();
+  fNeutronCode = fPdgDB->GetParticle("neutron")->PdgCode();
+  fAntiNeutronCode = fPdgDB->GetParticle("antineutron")->PdgCode();
+  fEPlusCode = fPdgDB->GetParticle("e+")->PdgCode();
+  fEMinusCode = fPdgDB->GetParticle("e-")->PdgCode();
+}
+
 void AliAnalysisHadEt::CreateEtaPtHisto2D(TString name, TString title)
 {     //creates a 2-d histogram in eta and phi and adds it to the list of histograms to be saved
   TString *histoname   = new TString();
