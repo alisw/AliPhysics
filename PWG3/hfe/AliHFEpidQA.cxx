@@ -238,10 +238,10 @@ void AliHFEpidQA::Init(){
   //
   // event based histograms
   //
-  Int_t n_T0[2] = {10000, 100};
-  Double_t min_T0[2] = {114500, -1000};
-  Double_t max_T0[2] = {124500, 1000};
-  fOutput->CreateTHnSparse("hEvent_T0", "T0 as a function of run number; run number; T0 (ns)", 2, n_T0, min_T0, max_T0);
+  Int_t nT0[2] = {10000, 100};
+  Double_t minT0[2] = {114500, -1000};
+  Double_t maxT0[2] = {124500, 1000};
+  fOutput->CreateTHnSparse("hEvent_T0", "T0 as a function of run number; run number; T0 (ns)", 2, nT0, minT0, maxT0);
 
   //
   // test the tender V0 supply
@@ -517,7 +517,7 @@ void AliHFEpidQA::FillElectronLikelihoods(TObjArray * const particles, Int_t spe
   // pion and proton efficiency and the thresholds
   //
   Long_t status = 0;
-  const Char_t *detname[4] = {"ITS", "TPC", "TRD", "TOF"};
+  Char_t *detname[4] = {"ITS", "TPC", "TRD", "TOF"};
   Char_t specname[256];
 
   switch(species){
@@ -1019,14 +1019,19 @@ TObjArray * AliHFEpidQA::MakeCleanListElectrons(TObjArray *electrons) const {
   TIter candidates(electrons);
   AliESDEvent *esd; AliAODEvent *aod;
   AliHFEV0info *hfetrack;
+  // const Double_t kSigmaTight = 1.;
+  // const Double_t kSigmaLoose = 4.;
+  const Double_t kSigmaTight = 0.5;
+  const Double_t kSigmaLoose = 0.5;
+  const Double_t shift = 1.;
   if((esd = dynamic_cast<AliESDEvent *>(fEvent))){
     AliESDtrack *track = NULL, *partnerTrack = NULL;
     while((hfetrack = dynamic_cast<AliHFEV0info *>(candidates()))){
       track = dynamic_cast<AliESDtrack *>(hfetrack->GetTrack());
       partnerTrack = esd->GetTrack(hfetrack->GetPartnerID());
-      Double_t nSigmaTrack = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron));
-      Double_t nSigmaPartner = TMath::Abs(fESDpid->NumberOfSigmasTPC(partnerTrack, AliPID::kElectron));
-      if((nSigmaTrack < 1 && nSigmaPartner < 4) || (nSigmaTrack < 4 && nSigmaPartner < 1))
+      Double_t nSigmaTrack = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron) - shift);
+      Double_t nSigmaPartner = TMath::Abs(fESDpid->NumberOfSigmasTPC(partnerTrack, AliPID::kElectron) - shift);
+      if((nSigmaTrack < kSigmaTight && nSigmaPartner < kSigmaLoose) || (nSigmaTrack < kSigmaLoose && nSigmaPartner < kSigmaTight))
         tracks->Add(track);
     }
   } else {

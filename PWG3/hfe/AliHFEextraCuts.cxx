@@ -256,7 +256,8 @@ void AliHFEextraCuts::FillQAhistosESD(AliESDtrack *track, UInt_t when){
   (dynamic_cast<TH1F *>(container->At(3)))->Fill(track->GetTRDntrackletsPID());
   UChar_t itsPixel = track->GetITSClusterMap();
   TH1 *pixelHist = dynamic_cast<TH1F *>(container->At(4));
-  Int_t firstEntry = pixelHist->GetXaxis()->GetFirst();
+  //Int_t firstEntry = pixelHist->GetXaxis()->GetFirst();
+  Double_t firstEntry = 0.5;
   if(!((itsPixel & BIT(0)) || (itsPixel & BIT(1))))
     pixelHist->Fill(firstEntry + 3);
   else{
@@ -310,26 +311,26 @@ void AliHFEextraCuts::AddQAHistograms(TList *qaList){
   TH1 *histo1D = 0x0;
   TH2 *histo2D = 0x0;
   histos[0] = new TList();
-  histos[0]->SetName("BeforeCut");
+  histos[0]->SetName(Form("%s_BeforeCut",GetName()));
   histos[0]->SetOwner();
   histos[1] = new TList();
-  histos[1]->SetName("AfterCut");
+  histos[1]->SetName(Form("%s_AfterCut",GetName()));
   histos[1]->SetOwner();
   TString cutstr[2] = {"before", "after"};
   for(Int_t icond = 0; icond < 2; icond++){
-    histos[icond]->AddAt((histo1D = new TH1F(Form("impactParamR%s", cutstr[icond].Data()), "Radial Impact Parameter", 100, 0, 10)), 0);
+    histos[icond]->AddAt((histo1D = new TH1F(Form("%s_impactParamR%s",GetName(),cutstr[icond].Data()), "Radial Impact Parameter", 100, 0, 10)), 0);
     histo1D->GetXaxis()->SetTitle("Impact Parameter");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
-    histos[icond]->AddAt((histo1D = new TH1F(Form("impactParamZ%s", cutstr[icond].Data()), "Z Impact Parameter", 200, 0, 20)), 1);
+    histos[icond]->AddAt((histo1D = new TH1F(Form("%s_impactParamZ%s",GetName(),cutstr[icond].Data()), "Z Impact Parameter", 200, 0, 20)), 1);
     histo1D->GetXaxis()->SetTitle("Impact Parameter");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
-    histos[icond]->AddAt((histo1D = new TH1F(Form("tpcClr%s", cutstr[icond].Data()), "Cluster Ratio TPC", 10, 0, 1)), 2);
+    histos[icond]->AddAt((histo1D = new TH1F(Form("%s_tpcClr%s",GetName(),cutstr[icond].Data()), "Cluster Ratio TPC", 10, 0, 1)), 2);
     histo1D->GetXaxis()->SetTitle("Cluster Ratio TPC");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
-    histos[icond]->AddAt((histo1D = new TH1F(Form("trdTracklets%s", cutstr[icond].Data()), "Number of TRD tracklets", 7, 0, 7)), 3);
+    histos[icond]->AddAt((histo1D = new TH1F(Form("%s_trdTracklets%s",GetName(),cutstr[icond].Data()), "Number of TRD tracklets", 7, 0, 7)), 3);
     histo1D->GetXaxis()->SetTitle("Number of TRD Tracklets");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
-    histos[icond]->AddAt((histo1D = new TH1F(Form("itsPixel%s", cutstr[icond].Data()), "ITS Pixel Hits", 6, 0, 6)), 4);
+    histos[icond]->AddAt((histo1D = new TH1F(Form("%s_itsPixel%s",GetName(),cutstr[icond].Data()), "ITS Pixel Hits", 6, 0, 6)), 4);
     histo1D->GetXaxis()->SetTitle("ITS Pixel");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
     Int_t first = histo1D->GetXaxis()->GetFirst();
@@ -339,11 +340,11 @@ void AliHFEextraCuts::AddQAHistograms(TList *qaList){
   }
   fQAlist = new TList();
   fQAlist->SetOwner();
-  fQAlist->SetName("HFelectronExtraCuts");
+  fQAlist->SetName(Form("%s_HFelectronExtraCuts",GetName()));
   fQAlist->AddAt(histos[0], 0);
   fQAlist->AddAt(histos[1], 1);
   // Add cut correlation
-  fQAlist->AddAt((histo2D = new TH2F("cutcorrellation", "Cut Correlation", kNcuts, 0, kNcuts - 1, kNcuts, 0, kNcuts -1)), 2);
+  fQAlist->AddAt((histo2D = new TH2F(Form("%s_cutcorrelation",GetName()), "Cut Correlation", kNcuts, 0, kNcuts - 1, kNcuts, 0, kNcuts -1)), 2);
   TString labels[kNcuts] = {"MinImpactParamR", "MaxImpactParamR", "MinImpactParamZ", "MaxImpactParamZ", "ClusterRatioTPC", "MinTrackletsTRD", "ITSpixel"};
   Int_t firstx = histo2D->GetXaxis()->GetFirst(), firsty = histo2D->GetYaxis()->GetFirst();
   for(Int_t icut = 0; icut < kNcuts; icut++){

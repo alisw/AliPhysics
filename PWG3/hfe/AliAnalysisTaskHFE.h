@@ -80,17 +80,20 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t HasMCData() const { return TestBit(kHasMCdata); }
     Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fPlugins, plug); };
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
+    void SetHFECutsPreselect(AliHFEcuts * const cuts) { fCutspreselect = cuts; };
     void SetHFEElecBackGround(AliHFEelecbackground * const elecBackGround) { fElecBackGround = elecBackGround; };
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
     void SwitchOnPlugin(Int_t plug);
     void SetHasMCData(Bool_t hasMC = kTRUE) { SetBit(kHasMCdata, hasMC); };
     void SetPIDdetectors(Char_t * const detectors){ fPIDdetectors = detectors; }
     void SetPIDStrategy(UInt_t strategy) { fPIDstrategy = strategy; }
+    void SetPIDPreselect(AliHFEpid * const cuts) { fPIDpreselect = cuts; };
     void AddPIDdetector(TString detector);
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     void SetWeightFactors(TH3D * const weightFactors);
     void SetWeightFactorsFunction(TF1 * const weightFactorsFunction);
+    void SetBackGroundFactorsFunction(TF1 * const backGroundFactorsFunction) { fBackGroundFactorsFunction = backGroundFactorsFunction; };
     void PrintStatus() const;
  
   private:
@@ -127,6 +130,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void ProcessMC();
     void ProcessESD();
     void ProcessAOD();
+    void FilterTaggedTrack(AliESDtrack *track, Int_t species);
+    Bool_t PreSelectTrack(AliESDtrack *track) const;
     Bool_t ProcessMCtrack(AliVParticle *track);
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track, Double_t *container, Bool_t signal, Bool_t alreadyseen,Double_t weight);
     
@@ -138,13 +143,19 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t  fWeighting;                   // Weighting or not for the efficiency maps
     TH3D *fWeightFactors;                 // Weight factors
     TF1  *fWeightFactorsFunction;         // Weight factors
+    TF1  *fBackGroundFactorsFunction;     // BackGround factors
     AliCFManager *fCFM;                   //! Correction Framework Manager
+    AliCFManager *fV0CF;                  //! Correction Framework Manager for V0-tagged tracks
     AliCFContainer * fHadronicBackground; //! Container for hadronic Background
     TList *fCorrelation;                  //! response matrix for unfolding  
     THnSparseF *fPIDperformance;          //! info on contamination and yield of electron spectra
     THnSparseF *fSignalToBackgroundMC;    //! Signal To Background Studies on pure MC information
     AliHFEpid *fPID;                      //! PID
+    AliHFEpid *fPIDtagged;                // PID oject for tagged tracks (identical clone without QA)
+    AliHFEpid *fPIDpreselect;             // PID oject for pre-selected tracks (without QA)
     AliHFEcuts *fCuts;                    // Cut Collection
+    AliHFEcuts *fCutsTagged;              // Cut Collection for tagged tracks
+    AliHFEcuts *fCutspreselect;           // Cut Collection for pre-selected tracks
     AliHFEsecVtx *fSecVtx;                //! Secondary Vertex Analysis
     AliHFEelecbackground *fElecBackGround;//! Background analysis
     AliHFEmcQA *fMCQA;                    //! MC QA

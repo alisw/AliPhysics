@@ -91,7 +91,7 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA():
   DefineOutput(2, TList::Class());
 
   fDefaultPID = new AliESDpid;
-  fHFEpid = new AliHFEpid;
+  fHFEpid = new AliHFEpid("PIDforDCAanalysis");
 
 }
 
@@ -131,7 +131,7 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA(const char * name):
   DefineOutput(2, TList::Class());
   
   fDefaultPID = new AliESDpid;
-  fHFEpid = new AliHFEpid;
+  fHFEpid = new AliHFEpid("PIDforDCAanalysis");
 
 }
 

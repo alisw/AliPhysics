@@ -166,6 +166,7 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
     AliError("No ESD PID object available");
     return kFALSE;
   }
+  AliDebug(1, "Doing TPC PID based on n-Sigma cut approach");
   Float_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack, AliPID::kElectron);
   if(IsQAon()) FillTPChistograms(esdTrack, mctrack, kFALSE);
   // exclude crossing points:

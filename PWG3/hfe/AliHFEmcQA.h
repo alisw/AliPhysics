@@ -45,7 +45,7 @@ class AliHFEmcQA: public TObject {
   public: 
     enum heavyType {kCharm=4, kBeauty=5, kOthers=6, kElectronPDG=11};
     enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
-    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7};
+    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12};
     enum ProcessType {
       kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
     };
@@ -56,9 +56,9 @@ class AliHFEmcQA: public TObject {
 
     virtual ~AliHFEmcQA();
 
-    void MakeHistograms();
     TList *GetList() const { return fQAhistos; };
     void PostAnalyze() const;
+    void CreatDefaultHistograms(TList * const qaList); // create default histograms  
     void CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt=""); // create histograms for mc qa analysis
     void SetMCEvent(AliMCEvent* const mcEvent){fMCEvent = mcEvent;} 
     void SetGenEventHeader(AliGenEventHeader* const mcHeader){fMCHeader=mcHeader;} // set stack pointer
@@ -70,7 +70,8 @@ class AliHFEmcQA: public TObject {
     void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed, Int_t icut); // get decay electron kinematics distribution
 		void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut); // get decay electron kinematics for AOD 
     void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
-		Int_t GetSource(TParticle * const mcpart); // return electron source id 
+		Int_t GetSource(TParticle * const mcpart); // return source id 
+		Int_t GetElecSource(TParticle * const mcpart); // return electron source id 
 		Int_t GetSource(AliAODMCParticle * const mcpart); // return electron source id for AOD
 
   protected:
