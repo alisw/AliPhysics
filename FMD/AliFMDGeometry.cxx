@@ -76,6 +76,7 @@
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoNode.h>
+#include <TMath.h>
 static Int_t FindNodeDepth(const char* name, const char* volname);
 
 
@@ -357,6 +358,41 @@ AliFMDGeometry::XYZ2Detector(Double_t  x,
     }
   }
   return kFALSE;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDGeometry::XYZ2REtaPhiTheta(Double_t  x,   Double_t y, 
+				 Double_t  z, 
+				 Double_t& r,   Double_t& eta, 
+				 Double_t& phi, Double_t& theta)
+{
+  
+  // Service function to convert Cartisean XYZ to r, eta, phi, and theta.   
+  // 
+  // Note, that the z input should be corrected for the vertex location 
+  // if needed.
+  //
+  //     x      Cartisean X coordinate
+  //     y      Cartisean Y coordinate 
+  //     z      Cartisean Z coordinate 
+  //     r      On return, the radius
+  //     eta    On return, the pseudo-rapidity
+  //     phi    On return, the azimuthal angle
+  //     theta  On return, the polar angle;
+  // 
+  // Return:
+  //     kFALSE in case of problems. 
+
+  if (x == 0 && y == 0 && z == 0) return kFALSE;
+  
+  // Correct for vertex offset. 
+  phi   =  TMath::ATan2(y, x);
+  r     =  TMath::Sqrt(y * y + x * x);
+  theta =  TMath::ATan2(r, z);
+  eta   = -TMath::Log(TMath::Tan(theta / 2));
+
+  return kTRUE;
 }
 
 

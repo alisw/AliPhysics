@@ -74,6 +74,8 @@ public:
 				   Char_t   ring,
 				   UShort_t sec,
 				   UShort_t str) const;
+  Bool_t* Data() const { return fData; }
+  Int_t   Total() const { return fTotal; }
 protected:
   Int_t     MaxIndex()            const { return fTotal; }
   Bool_t    AtAsBool(Int_t idx)   const { return fData[idx]; }

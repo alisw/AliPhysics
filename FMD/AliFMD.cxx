@@ -145,7 +145,7 @@ AliFMD::AliFMD()
   fHits        = 0;
   fDigits      = 0;
   fIshunt      = 0;
-  fBad         = new TClonesArray("AliFMDHit");
+  // fBad         = new TClonesArray("AliFMDHit");
 }
 
 //____________________________________________________________________
@@ -162,15 +162,15 @@ AliFMD::AliFMD(const char *name, const char *title)
   // Standard constructor for Forward Multiplicity Detector
   //
   AliFMDDebug(10, ("\tStandard CTOR"));
-  fBad         = new TClonesArray("AliFMDHit");
+  // fBad         = new TClonesArray("AliFMDHit");
   
   // Initialise Hit array
-  HitsArray();
-  gAlice->GetMCApp()->AddHitList(fHits);
+  // HitsArray();
+  // gAlice->GetMCApp()->AddHitList(fHits);
 
   // (S)Digits for the detectors disk
-  DigitsArray();
-  SDigitsArray();
+  // DigitsArray();
+  // SDigitsArray();
   
   // CHC: What is this?
   fIshunt = 0;
@@ -736,7 +736,9 @@ AliFMD::AddHitByFields(Int_t    track,
 
   AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
   
-  AliTrackReference* trackRef = AddTrackReference(mcApplication->GetCurrentTrackNumber(), AliTrackReference::kFMD); 
+  AliTrackReference* trackRef = 
+    AddTrackReference(mcApplication->GetCurrentTrackNumber(), 
+		      AliTrackReference::kFMD); 
   UInt_t stripId = AliFMDStripIndex::Pack(detector,ring,sector,strip);
   trackRef->SetUserId(stripId);
   
@@ -898,6 +900,8 @@ AliFMD::HitsArray()
   if (!fHits) { 
     fHits = new TClonesArray("AliFMDHit", 1000);
     fNhits = 0;
+    if (gAlice && gAlice->GetMCApp() && gAlice->GetMCApp()->GetHitLists()) 
+      gAlice->GetMCApp()->AddHitList(fHits);
   }
   return fHits;
 }

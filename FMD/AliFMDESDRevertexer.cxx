@@ -21,6 +21,17 @@ AliFMDESDRevertexer::AliFMDESDRevertexer()
 Bool_t
 AliFMDESDRevertexer::Revertex(AliESDFMD* fmdEsd, Double_t vz) const
 {
+  // Recalculate the various quantities based on updated 
+  // primary vertex position. 
+  // 
+  // Parameters: 
+  //    fmdEsd    FMD ESD object 
+  //    vz        New vertex location (along the z-axis)
+  //
+  // Return:
+  //    true on success, false if there was an error during the 
+  //    recalculations.   Please inspect log output for details. 
+  // 
   if (!fmdEsd) return kFALSE;
   
   Bool_t ret = kTRUE;
@@ -94,17 +105,7 @@ AliFMDESDRevertexer::PhysicalCoordinates(UShort_t  det,
   Double_t x=0, y=0, z=0;
   geom->Detector2XYZ(det, rng, sec, str, x, y, z);
 
-  // Check that the conversion succeeded
-  if (x == 0 && y == 0 && z == 0) return kFALSE;
-  
-  // Correct for vertex offset. 
-  z     -= vz;
-  phi   =  TMath::ATan2(y, x);
-  r     =  TMath::Sqrt(y * y + x * x);
-  theta =  TMath::ATan2(r, z);
-  eta   = -TMath::Log(TMath::Tan(theta / 2));
-
-  return kTRUE;
+  return AliFMDGeometry::XYZ2REtaPhiTheta(x, y, z-vz, r, eta, phi, theta);
 }
 
 

@@ -57,14 +57,15 @@ AliFMDQADataMakerSim::AliFMDQADataMakerSim()
 AliFMDQADataMakerSim::AliFMDQADataMakerSim(const AliFMDQADataMakerSim& /*qadm*/) 
   : AliQADataMakerSim()
 {
-  //copy ctor 
-  
+  // copy ctor 
+  // 
   // Parameters: 
   //    qadm    Object to copy from
   
 }
 //_____________________________________________________________________
-AliFMDQADataMakerSim& AliFMDQADataMakerSim::operator = (const AliFMDQADataMakerSim& ) 
+AliFMDQADataMakerSim& 
+AliFMDQADataMakerSim::operator = (const AliFMDQADataMakerSim& ) 
 {
   
   return *this;
@@ -95,7 +96,9 @@ void AliFMDQADataMakerSim::InitSDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts;ADC counts;Entries",1024,0,1024);
+  TH1I* hADCCounts = new TH1I("hADCCounts",
+			      "Dist of ADC counts;ADC counts;Entries",
+			      1024,0,1024);
   hADCCounts->SetXTitle("ADC counts");
   Add2SDigitsList(hADCCounts, 0, !expert, image);
 }
@@ -107,7 +110,9 @@ void AliFMDQADataMakerSim::InitHits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F* hEnergyOfHits = new TH1F("hEnergyOfHits","Energy distribution;Energy [MeV];Counts",100,0,3);
+  TH1F* hEnergyOfHits = new TH1F("hEnergyOfHits",
+				 "Energy distribution;Energy [MeV];Counts",
+				 100,0,3);
   hEnergyOfHits->SetXTitle("Edep");
   hEnergyOfHits->SetYTitle("Counts");
   Add2HitsList(hEnergyOfHits, 0, !expert, image);
@@ -120,7 +125,9 @@ void AliFMDQADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts; ADC counts;Entries",1024,0,1024);
+  TH1I* hADCCounts = new TH1I("hADCCounts",
+			      "Dist of ADC counts; ADC counts;Entries",
+			      1024,0,1024);
   hADCCounts->SetXTitle("ADC counts");
   Add2DigitsList(hADCCounts, 0, !expert, image);
 }
@@ -142,11 +149,13 @@ void AliFMDQADataMakerSim::MakeHits()
 void AliFMDQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
-  
-  if (fHitsArray) 
-    fHitsArray->Clear() ; 
-  else
+  // 
+  // Parameters: 
+  //   hitTree    Hits container 
+  //
+  if (!fHitsArray) 
     fHitsArray = new TClonesArray("AliFMDHit", 1000) ; 
+  fHitsArray->Clear() ; 
   
   TBranch * branch = hitTree->GetBranch("FMD") ;
   if (!branch) {
@@ -167,6 +176,9 @@ void AliFMDQADataMakerSim::MakeHits(TTree * hitTree)
 void AliFMDQADataMakerSim::MakeDigits()
 {
   // makes data from Digits
+  // 
+  // Parameters: 
+  //    none
   if(!fDigitsArray) return;
   
   for(Int_t i = 0 ; i < fDigitsArray->GetEntriesFast() ; i++) {
@@ -179,11 +191,14 @@ void AliFMDQADataMakerSim::MakeDigits()
 //_____________________________________________________________________
 void AliFMDQADataMakerSim::MakeDigits(TTree * digitTree)
 {
+  // Make data from digits. 
+  // 
+  // Parameters: 
+  //    digitTree    Tree holding digits. 
   
-  if (fDigitsArray) 
-    fDigitsArray->Clear();
-  else 
+  if (!fDigitsArray) 
     fDigitsArray = new TClonesArray("AliFMDDigit", 1000) ; 
+  fDigitsArray->Clear();
   
   TBranch * branch = digitTree->GetBranch("FMD") ;
   if (!branch)    {
@@ -191,6 +206,9 @@ void AliFMDQADataMakerSim::MakeDigits(TTree * digitTree)
       return;
   } 
   branch->SetAddress(&fDigitsArray) ;
+
+  if (fDigitsArray) fDigitsArray->Clear();
+
   branch->GetEntry(0) ; 
   MakeDigits() ; 
 }
@@ -199,6 +217,9 @@ void AliFMDQADataMakerSim::MakeDigits(TTree * digitTree)
 void AliFMDQADataMakerSim::MakeSDigits()
 {
   // makes data from Digits
+  // 
+  // Parameters: 
+  //   none 
   if(!fSDigitsArray) return;
   
    for(Int_t i = 0 ; i < fSDigitsArray->GetEntriesFast() ; i++) {
@@ -211,11 +232,15 @@ void AliFMDQADataMakerSim::MakeSDigits()
 //_____________________________________________________________________
 void AliFMDQADataMakerSim::MakeSDigits(TTree * sdigitTree)
 {
+  // Make data from digits. 
+  // 
+  // Parameters: 
+  //    digitTree    Tree holding digits. 
   
-  if (fSDigitsArray) 
-    fSDigitsArray->Clear() ;
-  else 
+  if (!fSDigitsArray) 
     fSDigitsArray = new TClonesArray("AliFMDSDigit", 1000) ; 
+  fSDigitsArray->Clear() ;
+
   TBranch * branch = sdigitTree->GetBranch("FMD") ;
   if (!branch)    {
     AliWarning("FMD branch in SDigit Tree not found") ; 
@@ -229,7 +254,10 @@ void AliFMDQADataMakerSim::MakeSDigits(TTree * sdigitTree)
 //_____________________________________________________________________ 
 void AliFMDQADataMakerSim::StartOfDetectorCycle()
 {
-   
+  // Does 
+  // not 
+  // do 
+  // anything 
 }
 //_____________________________________________________________________ 
 //

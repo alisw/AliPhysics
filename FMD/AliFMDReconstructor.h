@@ -365,6 +365,14 @@ protected:
 				       Float_t& eta, 
 				       Float_t& phi) const;
   /** 
+   * Mark dead channels as invalid, and those that are marked as invalid 
+   * but are not dead, get the zero signal. 
+   * 
+   * @param esd ESD object to modify. 
+   */
+  void MarkDeadChannels(AliESDFMD* esd) const;
+
+  /** 
    * Set-up reconstructor to use values from reconstruction
    * parameters, if present, for this event.   If the argument @a set
    * is @c false, then restore preset values. 

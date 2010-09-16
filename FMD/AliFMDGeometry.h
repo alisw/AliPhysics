@@ -210,6 +210,29 @@ public:
   virtual Bool_t Impact(const TParticle* particle) const;
   /** Declare alignable volumes */
   virtual void SetAlignableVolumes() const;
+
+
+  /** 
+   * Service function to convert Cartisean XYZ to r, eta, phi, and theta.   
+   *
+   * Note, that the z input should be corrected for the vertex location 
+   * if needed.
+   * 
+   * @param x      Cartisean X coordinate
+   * @param y      Cartisean Y coordinate 
+   * @param z      Cartisean Z coordinate 
+   * @param r      On return, the radius
+   * @param eta    On return, the pseudo-rapidity
+   * @param phi    On return, the azimuthal angle
+   * @param theta  On return, the polar angle;
+   *
+   * @return kTRUE on success, kFALSE in case of problems
+   */     
+  static Bool_t XYZ2REtaPhiTheta(Double_t  x,   Double_t y, 
+				 Double_t  z, 
+				 Double_t& r,   Double_t& eta, 
+				 Double_t& phi, Double_t& theta);
+
 protected:
   Bool_t        fIsInitialized; // Whether singleton is initalized
   AliFMDRing*	fInner;		// Inner ring geometry information

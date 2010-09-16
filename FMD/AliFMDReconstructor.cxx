@@ -120,7 +120,7 @@ AliFMDReconstructor::Init()
   // Current vertex position
   fCurrentVertex = 0;
   // Create array of reconstructed strip multiplicities 
-  fMult = new TClonesArray("AliFMDRecPoint", 51200);
+  // fMult = new TClonesArray("AliFMDRecPoint", 51200);
   // Create ESD output object 
   fESDObj = new AliESDFMD;
   
@@ -162,9 +162,23 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
 {
   // Convert Raw digits to AliFMDDigit's in a tree 
   AliFMDDebug(1, ("Reading raw data into digits tree"));
+  if (!digitsTree) { 
+    AliError("No digits tree passed");
+    return;
+  }
+  static TClonesArray* array = new TClonesArray("AliFMDDigit");
+  digitsTree->Branch("FMD", &array);
+  
   AliFMDRawReader rawRead(reader, digitsTree);
   // rawRead.SetSampleRate(fFMD->GetSampleRate());
-  rawRead.Exec();
+  // rawRead.Exec();
+  rawRead.ReadAdcs(array);
+
+  Int_t nWrite = digitsTree->Fill();
+  AliFMDDebug(1, ("Got a grand total of %d digits, wrote %d bytes to tree", 
+		   array->GetEntriesFast(), nWrite));
+
+  
   AliFMDAltroMapping* map = AliFMDParameters::Instance()->GetAltroMap();
   for (size_t i = 1; i <= 3; i++) { 
     fZS[i-1]       = rawRead.IsZeroSuppressed(map->Detector2DDL(i));
@@ -240,6 +254,34 @@ AliFMDReconstructor::UseRecoParam(Bool_t set) const
 }
   
   
+//____________________________________________________________________
+void 
+AliFMDReconstructor::MarkDeadChannels(AliESDFMD* esd) const
+{
+  // Loop over all entries of the ESD and mark 
+  // those that are dead as such 
+  // - otherwise put in the zero signal. 
+  AliFMDParameters* param = AliFMDParameters::Instance();
+
+  for (UShort_t d = 1; d <= 3; d++) { 
+    UShort_t nR = (d == 1 ? 1 : 2);
+
+    for (UShort_t q = 0; q < nR; q++) {
+      Char_t   r  = (q == 0 ? 'I' : 'O');
+      UShort_t nS = (q == 0 ?  20 :  40);
+      UShort_t nT = (q == 0 ? 512 : 256);
+
+      for (UShort_t s = 0; s < nS; s++) { 
+	for (UShort_t t = 0; t < nT; t++) {
+	  if (param->IsDead(d, r, s, t)) 
+	    esd->SetMultiplicity(d, r, s, t, AliESDFMD::kInvalidMult);
+	  else if (esd->Multiplicity(d, r, s, t) == AliESDFMD::kInvalidMult) 
+	    esd->SetMultiplicity(d, r, s, t, 0);
+	}
+      }
+    }
+  }
+}
 
 //____________________________________________________________________
 void 
@@ -250,7 +292,7 @@ AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
   // 
   // Parameters: 
   //   reader	Raw event reader 
-  //   ctree    Not used. 
+  //   ctree    Not used - 'cluster tree' to store rec-points in. 
   AliFMDDebug(1, ("Reconstructing from raw reader"));
   AliFMDRawReader rawReader(reader, 0);
 
@@ -316,18 +358,22 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   //   digitsTree	Pointer to a tree containing digits 
   //   clusterTree	Pointer to output tree 
   // 
+  if (!fMult) fMult = new TClonesArray("AliFMDRecPoint");
+
   AliFMDDebug(1, ("Reconstructing from digits in a tree"));
   GetVertex(fESD);
 
+
+
   static TClonesArray* digits = new TClonesArray("AliFMDDigit");
-  TBranch *digitBranch = digitsTree->GetBranch("FMD");
+  TBranch*      digitBranch   = digitsTree->GetBranch("FMD");
   if (!digitBranch) {
     Error("Exec", "No digit branch for the FMD found");
     return;
   }
-  // TClonesArray* digits = new TClonesArray("AliFMDDigit");
   digitBranch->SetAddress(&digits);
 
+  if (digits)  digits->Clear();
   if (fMult)   fMult->Clear();
   if (fESDObj) fESDObj->Clear();
   
@@ -345,7 +391,7 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
 
   Int_t written = clusterTree->Fill();
   AliFMDDebug(10, ("Filled %d bytes into cluster tree", written));
-  digits->Delete();
+  // digits->Delete();
   // delete digits;
 }
  
@@ -758,14 +804,14 @@ AliFMDReconstructor::PhysicalCoordinates(UShort_t det,
   //    phi     On return, contains the azimuthal angle of the strip
   // 
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
-  Double_t x, y, z, r, theta;
+  Double_t x, y, z, r, theta, deta, dphi;
   geom->Detector2XYZ(det, rng, sec, str, x, y, z);
+
   // Correct for vertex offset. 
   z     -= fCurrentVertex;
-  phi   =  TMath::ATan2(y, x);
-  r     =  TMath::Sqrt(y * y + x * x);
-  theta =  TMath::ATan2(r, z);
-  eta   = -TMath::Log(TMath::Tan(theta / 2));
+  AliFMDGeometry::XYZ2REtaPhiTheta(x, y, z, r, deta, dphi, theta);
+  eta = deta;
+  phi = dphi;
 }
 
       
@@ -781,6 +827,9 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
   // so we may have to move some of that member function here. 
   AliFMDDebug(2, ("Calling FillESD with two trees and one ESD"));
   // fESDObj->Print();
+
+  // Fix up ESD so that only truely dead channels get the kInvalidMult flag. 
+  MarkDeadChannels(fESDObj);
 
   Double_t oldVz = fCurrentVertex;
   GetVertex(esd);
