@@ -41,6 +41,7 @@
 #pragma link C++ class AliMultiDimVector+;
 #pragma link C++ class AliSignificanceCalculator+;
 #pragma link C++ class AliHFMassFitter+;
+#pragma link C++ class AliHFPtSpectrum+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignJPSI+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignD0+;
 #pragma link C++ class AliAnalysisTaskSEJPSItoEle+;
