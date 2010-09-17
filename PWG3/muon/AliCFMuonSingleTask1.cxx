@@ -145,7 +145,7 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 
   fNevt++;
   fCFManager->SetEventInfo(fMCEvent);
-  Double_t containerInput[17] ;
+  Double_t containerInput[18] ;
 
 ////////
 //// MC
@@ -179,6 +179,11 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 	      Float_t chargemc=0;
 	      if(pdg==13) chargemc=-1;
 	      if(pdg==-13) chargemc=1;
+	      Float_t thetamc;
+	      thetamc = TMath::Abs(-TMath::Pi()+TMath::ASin(ptmc/pmc)); // convention for EVGEN
+	      Float_t ymc = part->Vy();
+	      Float_t xmc = part->Vx();
+	      Float_t rmc = TMath::Sqrt(xmc*xmc+ymc*ymc);   
       
 	      containerInput[0] = etamc ;   
 	      containerInput[1] = rapmc ;   
@@ -187,20 +192,23 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 	      containerInput[4] = pmc ;
 	      containerInput[14] = zmc ;
 	      containerInput[16] = chargemc ;
+	      containerInput[17] = thetamc ;
 
 	      // 10 var calculated only for ESD .i.e set at 1 in MC step
 	      for(Int_t i=5; i<=13; i++){
 		  containerInput[i] = 1;
 	      }
-	      containerInput[7]=3;	      
-	      containerInput[15] = 25 ; // rabsmc
+
+	      containerInput[7] = 3;
+	      containerInput[10] = rmc ; // radius at production      
+	      containerInput[15] = 45 ;  // rabsmc
 	      
 	      // fill the container at the first step
 	      fCFManager->GetParticleContainer()->Fill(containerInput,0);
 	  }
       }
   }
-  
+  	      
 
 ////////
 //// ESD
@@ -227,7 +235,7 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 
   Float_t vx = -200 , vy = -200 , vz = -200, vt=-200;
   
-  Double_t Ncont = 0.;  // mmmmmmmmmodified
+  Double_t Ncont = 0.; 
   AliESDVertex* vertex = (AliESDVertex*) fESD->GetVertex();
   if (vertex->GetNContributors()) {
       vz = vertex->GetZv();
@@ -262,6 +270,8 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 	Float_t zr = mu1->GetZ();
 	Float_t etar = mu1->Eta();
 	Float_t rabs = mu1->GetRAtAbsorberEnd();
+	Float_t thetar ;
+	thetar = TMath::Abs(-TMath::Pi()+TMath::ASin(ptr/pr)); 
   
 // rapidity and Pt cuts (default -4<y<-2.5 et 0<pt<20)
 	if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mu1)) continue;
@@ -283,6 +293,7 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
 	containerInput[14] = zr ;
 	containerInput[15] = rabs ;
 	containerInput[16] = charger ;
+	containerInput[17] = thetar ;
 
 // fill the container at the second step (for simu, first for data)
 	if(fIsMC){
@@ -332,15 +343,15 @@ void AliCFMuonSingleTask1::Terminate(Option_t *)
 
     AliCFContainer *cont = dynamic_cast<AliCFContainer*> (GetOutputData(2));
 
-    TH1D *kpt = cont->ShowProjection(3,0);
-//    TH1D *rpt = cont->ShowProjection(3,1);
+    TH1D *kpt = cont->ShowProjection(16,0);
+    TH1D *rpt = cont->ShowProjection(16,1);
 
     TCanvas *c1 = new TCanvas("AliCFMuonSingleTask1"," MC & ESD",10,10,510,510);
     c1->Divide(1,2);
     c1->cd(1);
     kpt->Draw("HIST");
-//    c1->cd(2);
-//    rpt->Draw("HIST");
+    c1->cd(2);
+    rpt->Draw("HIST");
 
 }
 //________________________________________________________________________
