@@ -334,12 +334,12 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
     if(usePhiWeights)
     {
       phiWeightsSub0 = dynamic_cast<TH1F *>(weightsList->FindObject("phi_weights_sub0"));
-      phiWeightsSub1 = dynamic_cast<TH1F *>(weightsList->FindObject("phi_weights_sub1"));
       if(phiWeightsSub0) {
-        iNbinsPhiSub0 = phiWeightsSub0->GetNbinsX();
+	iNbinsPhiSub0 = phiWeightsSub0->GetNbinsX();
       }
+      phiWeightsSub1 = dynamic_cast<TH1F *>(weightsList->FindObject("phi_weights_sub1"));
       if(phiWeightsSub1) {
-        iNbinsPhiSub1 = phiWeightsSub1->GetNbinsX();
+	iNbinsPhiSub1 = phiWeightsSub1->GetNbinsX();
       }
     }
     if(usePtWeights)
@@ -381,16 +381,25 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
 	    dWeight = pTrack->Weight();
 
             // determine Phi weight: (to be improved, I should here only access it + the treatment of gaps in the if statement)
-            if(s == 0) { //subevent 0
-	      if(phiWeightsSub0 && iNbinsPhiSub0){
-		dWphi = phiWeightsSub0->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNbinsPhiSub0/TMath::TwoPi())));
-	      } 
-	    } else if (s == 1) {
-	      if(phiWeightsSub1 && iNbinsPhiSub1){
-		dWphi = phiWeightsSub1->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*iNbinsPhiSub1/TMath::TwoPi())));
+	    //subevent 0
+	    if(s == 0)  { 
+	      if(phiWeightsSub0 && iNbinsPhiSub0)  {
+		Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNbinsPhiSub0/TMath::TwoPi()));
+		//use the phi value at the center of the bin
+		dPhi  = phiWeightsSub0->GetBinCenter(phiBin);
+		dWphi = phiWeightsSub0->GetBinContent(phiBin);
+	      }
+	    } 
+	    //subevent 1
+	    else if (s == 1) { 
+	      if(phiWeightsSub1 && iNbinsPhiSub1) {
+		Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNbinsPhiSub1/TMath::TwoPi()));
+		//use the phi value at the center of the bin
+		dPhi  = phiWeightsSub1->GetBinCenter(phiBin);
+		dWphi = phiWeightsSub1->GetBinContent(phiBin);
 	      } 
 	    }
-
+	    
             // determine v'(pt) weight:
             if(ptWeights && dBinWidthPt)
             {
