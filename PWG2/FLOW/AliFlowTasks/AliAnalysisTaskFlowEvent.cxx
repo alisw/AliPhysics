@@ -101,6 +101,10 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fEtaMax(5.),	     
   fQMin(0.),	     
   fQMax(3.),
+  fExcludedEtaMin(0.), 
+  fExcludedEtaMax(0.), 
+  fExcludedPhiMin(0.),
+  fExcludedPhiMax(0.),
   fAfterburnerOn(kFALSE),
   fNonFlowNumberOfTrackClones(0),
   fV1(0.),
@@ -145,6 +149,10 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fEtaMax(5.),	     
   fQMin(0.),	     
   fQMax(3.),
+  fExcludedEtaMin(0.), 
+  fExcludedEtaMax(0.), 
+  fExcludedPhiMin(0.),
+  fExcludedPhiMax(0.),
   fAfterburnerOn(kFALSE),
   fNonFlowNumberOfTrackClones(0),
   fV1(0.),
@@ -379,6 +387,10 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   {
     AliWarning("FlowEvent cut on multiplicity"); return;
   }
+
+  //define dead zone
+  flowEvent->DefineDeadZone(fExcludedEtaMin, fExcludedEtaMax, fExcludedPhiMin, fExcludedPhiMax );
+
 
   //////////////////////////////////////////////////////////////////////////////
   ///////////////////////////AFTERBURNER
