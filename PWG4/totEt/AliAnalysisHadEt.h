@@ -118,6 +118,9 @@ protected:
     Int_t fAntiNeutronCode;//pdg anti-neutron code
     Int_t fEPlusCode;//pdg positron code
     Int_t fEMinusCode;//pdg electron code
+    Int_t fGammaCode;//pdg gamma code
+    Int_t fPi0Code;//pdg neutral pion code
+    Int_t fEtaCode;//pdg eta code
     Float_t fPionMass;//pdg pion mass
 
     

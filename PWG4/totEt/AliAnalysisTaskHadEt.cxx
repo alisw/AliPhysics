@@ -76,16 +76,8 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
-    fEsdtrackCutsITS =  new AliESDtrackCuts;
+    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009();
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
-    fEsdtrackCutsITS->SetRequireITSRefit(kTRUE);
-    fEsdtrackCutsITS->SetRequireITSStandAlone(kTRUE);
-    fEsdtrackCutsITS->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-    fEsdtrackCutsITS->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
-    fEsdtrackCutsITS->SetMaxDCAToVertexZ(1.e6);
-    fEsdtrackCutsITS->SetDCAToVertex2D(kFALSE);
-    fEsdtrackCutsITS->SetRequireSigmaToVertex(kFALSE);
-    fEsdtrackCutsITS->SetAcceptKinkDaughters(kFALSE);
 
     fOutputList->Add(fEsdtrackCutsITSTPC);
     fOutputList->Add(fEsdtrackCutsTPC);

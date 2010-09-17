@@ -20,6 +20,7 @@ void runHadEt(bool submit = false) {
     gSystem->Load("libANALYSISalice");
 
     gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+   gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEt.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEtMonteCarlo.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisHadEtReconstructed.cxx+g");

@@ -9,12 +9,12 @@
 // Overwrite all generated files, datasets and output results from a previous session
    plugin->SetOverwriteMode();
 // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-   //plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
    plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
+   //plugin->SetRunMode("test");  // VERY IMPORTANT - DECRIBED BELOW
 // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-26-00b-6");
-   plugin->SetAliROOTVersion("v4-20-04-AN");
+   plugin->SetROOTVersion("v5-27-05");
+   plugin->SetAliROOTVersion("v4-20-08-AN");
 // Declare input data to be processed.
 
 // Method 1: Create automatically XML collections using alien 'find' command.
@@ -44,7 +44,7 @@
 // using ACLiC on the worker nodes.
    //plugin->SetAnalysisSource("AliAnalysisTaskHadEt.cxx");
    //plugin->SetAnalysisSource("AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisTaskTotEt.cxx");
-   plugin->SetAnalysisSource("AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx");
+   plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx");
 // Declare all libraries (other than the default ones for the framework. These will be
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
    plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h");
