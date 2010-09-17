@@ -57,13 +57,15 @@ fHistListName(NULL),
 fHarmonic(1),
 fAnalysisLabel(NULL),
 fAnalysisSettings(NULL),
-fNoOfMultipicityBins(10),
-fMultipicityBinWidth(2),
-fMinMultiplicity(1),
+fNoOfMultipicityBins(100),
+fMultipicityBinWidth(1),
+fMinMultiplicity(3),
 fOppositeChargesPOI(kFALSE),
 fEvaluateDifferential3pCorrelator(kFALSE),
-fCorrectForDetectorEffects(kTRUE),
+fCorrectForDetectorEffects(kFALSE),
 fPrintOnTheScreen(kTRUE),
+fCalculateVsM(kFALSE),
+fShowBinLabelsVsM(kFALSE),
 fCommonHists(NULL),
 fnBinsPhi(0),
 fPhiMin(0),
@@ -306,11 +308,8 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  if(anEvent->GetEventNSelTracksRP() >= 3) 
  {
   this->Calculate3pCorrelator();
- }             
- if(anEvent->GetEventNSelTracksRP() >= 0) // to be improved (is this correct if statement?)  
- {
   this->CalculateNonIsotropicTerms();                          
- }
+ }             
                  
  // f) Calculate differential 3-p azimuthal correlator cos[n(psi1+psi2-2*phi3)] in terms of Q_{2n} and p_{n}:
  if(fEvaluateDifferential3pCorrelator && anEvent->GetEventNSelTracksRP() >= 1)
@@ -336,12 +335,9 @@ void AliFlowAnalysisWithMixedHarmonics::Finish()
  
  this->CheckPointersUsedInFinish();
  this->AccessSettings();
- if(fCorrectForDetectorEffects) 
- {
-  this->CorrectForDetectorEffects();
-  this->CorrectForDetectorEffectsVsM();
- }
- if(fPrintOnTheScreen) {this->PrintOnTheScreen();}
+ this->CorrectForDetectorEffects();
+ if(fCalculateVsM){this->CorrectForDetectorEffectsVsM();}
+ if(fPrintOnTheScreen){this->PrintOnTheScreen();}
                                                                                                                                                                                                                                                                                                                
 } // end of AliFlowAnalysisWithMixedHarmonics::Finish()
 
@@ -593,7 +589,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookProfileHoldingSettings()
  // Book profile to hold all analysis settings.
 
  TString analysisSettingsName = "fAnalysisSettings";
- fAnalysisSettings = new TProfile(analysisSettingsName.Data(),"Settings for analysis with mixed harmonics",8,0,8);
+ fAnalysisSettings = new TProfile(analysisSettingsName.Data(),"Settings for analysis with mixed harmonics",10,0,10);
  fAnalysisSettings->SetStats(kFALSE);
  fAnalysisSettings->GetXaxis()->SetLabelSize(0.03);
  fAnalysisSettings->GetXaxis()->SetBinLabel(1,"Corr. for det. effects?");
@@ -612,6 +608,10 @@ void AliFlowAnalysisWithMixedHarmonics::BookProfileHoldingSettings()
  fAnalysisSettings->Fill(6.5,(Int_t)fOppositeChargesPOI); 
  fAnalysisSettings->GetXaxis()->SetBinLabel(8,"fEvaluateDifferential3pCorrelator");
  fAnalysisSettings->Fill(7.5,(Int_t)fOppositeChargesPOI); 
+ fAnalysisSettings->GetXaxis()->SetBinLabel(9,"fCalculateVsM");
+ fAnalysisSettings->Fill(8.5,(Int_t)fCalculateVsM);  
+ fAnalysisSettings->GetXaxis()->SetBinLabel(10,"fShowBinLabelsVsM");
+ fAnalysisSettings->Fill(9.5,(Int_t)fShowBinLabelsVsM); 
  fHistList->Add(fAnalysisSettings);
  
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookProfileHoldingSettings()
@@ -666,12 +666,28 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
 {
  // Book all all-event quantitites.
  
- // a) Book quantites without multiplicity binning;
+ // a) Book histos and profiles without any binning in multiplicity, pt or eta;
  // b) Book quantites with multiplicity binning;
- // c) Book quantities with binning in (p1+p2)/2, |p1-p2|, (eta1+eta2)/2 or |eta1-eta2|.
+ // c) Book quantites with binning in (p1+p2)/2 and |p1-p2|. 
   
- // a) Book quantites without multiplicity binning:
- // 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events:
+ this->BookDefault();
+ if(fCalculateVsM){this->BookVsM();}
+ if(fEvaluateDifferential3pCorrelator){this->BookDifferential();}  
+   
+} // end of void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
+
+//================================================================================================================
+
+void AliFlowAnalysisWithMixedHarmonics::BookDefault()
+{
+ // Book histos and profiles without any binning in multiplicity, pt or eta. 
+ 
+ // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects);
+ // b) Non-isotropic terms in the decomposition of <<cos[n(phi1+phi2-2phi3)]>>;
+ // c) 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects;
+ // d) Histogram which quantifies bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>.
+
+ // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects);
  TString s3pCorrelatorProName = "f3pCorrelatorPro";
  f3pCorrelatorPro = new TProfile(s3pCorrelatorProName.Data(),"",1,0,1);
  f3pCorrelatorPro->SetStats(kFALSE);
@@ -685,7 +701,8 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
     f3pCorrelatorPro->GetXaxis()->SetBinLabel(1,Form("#LT#LTcos[%i(#phi_{1}+#phi_{2}-2#phi_{3})]#GT#GT",fHarmonic));
    }
  fProfileList->Add(f3pCorrelatorPro);
- // Non-isotropic terms in the decomposition of <<cos[n(phi1+phi2-2phi3)]>>:
+ 
+ // b) Non-isotropic terms in the decomposition of <<cos[n(phi1+phi2-2phi3)]>>:
  TString nonIsotropicTermsProName = "fNonIsotropicTermsPro";
  fNonIsotropicTermsPro = new TProfile(nonIsotropicTermsProName.Data(),"",8,0,8);
  fNonIsotropicTermsPro->SetStats(kFALSE);
@@ -717,7 +734,8 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
     // fNonIsotropicTermsPro->GetXaxis()->SetBinLabel(10,Form("sin(%d(#phi_{1}-#phi_{2}-#phi_{3}))",fHarmonic)); // not needed
    } 
  fProfileList->Add(fNonIsotropicTermsPro);
- // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects:
+ 
+ // c) 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects:
  TString s3pCorrelatorHistName = "f3pCorrelatorHist";
  f3pCorrelatorHist = new TH1D(s3pCorrelatorHistName.Data(),"",1,0,1);
  f3pCorrelatorHist->SetStats(kFALSE);
@@ -731,7 +749,8 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
     f3pCorrelatorHist->GetXaxis()->SetBinLabel(1,Form("#LT#LTcos[%i(#phi_{1}+#phi_{2}-2#phi_{3})]#GT#GT",fHarmonic)); 
    }
  fResultsList->Add(f3pCorrelatorHist);
- // Quantified bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>:
+ 
+ // d) Histogram which quantifies bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>:
  TString detectorBiasHistName = "fDetectorBiasHist";
  fDetectorBiasHist = new TH1D(detectorBiasHistName.Data(),"Bias coming from detector inefficiences",1,0,1);
  fDetectorBiasHist->SetStats(kFALSE);
@@ -744,8 +763,20 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
    }  
  fResultsList->Add(fDetectorBiasHist);
  
- // b) Book quantites with multiplicity binning.
- // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> versus multiplicity:
+} // end of void AliFlowAnalysisWithMixedHarmonics::BookDefault()     
+      
+//================================================================================================================
+
+void AliFlowAnalysisWithMixedHarmonics::BookVsM()
+{
+ // Book histos and profiles holding results vs multiplicity. 
+
+ // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects) vs M;
+ // b) Non-isotropic terms in the decomposition of <<cos[n(phi1+phi2-2phi3)]>> vs M;
+ // c) 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects vs M;
+ // d) Histogram which quantifies bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs M.
+
+ // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects) vs M:
  TString s3pCorrelatorVsMProName = "f3pCorrelatorVsMPro";
  f3pCorrelatorVsMPro = new TProfile(s3pCorrelatorVsMProName.Data(),"",fNoOfMultipicityBins+2,0,fNoOfMultipicityBins+2);
  f3pCorrelatorVsMPro->SetStats(kFALSE); 
@@ -756,14 +787,21 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
    {
     f3pCorrelatorVsMPro->SetTitle(Form("#LT#LTcos[%d(#phi_{1}+#phi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} M",fHarmonic)); 
    }
- f3pCorrelatorVsMPro->GetXaxis()->SetBinLabel(1,Form("M < %d",(Int_t)fMinMultiplicity));
- for(Int_t b=2;b<=fNoOfMultipicityBins+1;b++)
+ if(fShowBinLabelsVsM)
  {
-  f3pCorrelatorVsMPro->GetXaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-2)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth)));
- }
- f3pCorrelatorVsMPro->GetXaxis()->SetBinLabel(fNoOfMultipicityBins+2,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
+  f3pCorrelatorVsMPro->GetXaxis()->SetBinLabel(1,Form("M < %d",(Int_t)fMinMultiplicity));
+  for(Int_t b=2;b<=fNoOfMultipicityBins+1;b++)
+  {
+   f3pCorrelatorVsMPro->GetXaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-2)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth)));
+  }
+  f3pCorrelatorVsMPro->GetXaxis()->SetBinLabel(fNoOfMultipicityBins+2,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
+ } else
+   {
+    f3pCorrelatorVsMPro->GetXaxis()->SetTitle("M");
+   }
  fProfileList->Add(f3pCorrelatorVsMPro); 
- // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> versus multiplicity corrected for detector effects:
+ 
+ // b) Non-isotropic terms in the decomposition of <<cos[n(phi1+phi2-2phi3)]>> vs M:
  TString s3pCorrelatorVsMHistName = "f3pCorrelatorVsMHist";
  f3pCorrelatorVsMHist = new TH1D(s3pCorrelatorVsMHistName.Data(),"",fNoOfMultipicityBins+2,0,fNoOfMultipicityBins+2);
  f3pCorrelatorVsMHist->SetStats(kFALSE); 
@@ -774,14 +812,21 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
    {
     f3pCorrelatorVsMHist->SetTitle(Form("cos[%d(#phi_{1}+#phi_{2}-2#phi_{3})] #font[72]{vs} M",fHarmonic)); 
    }
- f3pCorrelatorVsMHist->GetXaxis()->SetBinLabel(1,Form("M < %d",(Int_t)fMinMultiplicity));
- for(Int_t b=2;b<=fNoOfMultipicityBins+1;b++)
- {
-  f3pCorrelatorVsMHist->GetXaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-2)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth)));
- }
- f3pCorrelatorVsMHist->GetXaxis()->SetBinLabel(fNoOfMultipicityBins+2,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
+ if(fShowBinLabelsVsM)
+ {   
+  f3pCorrelatorVsMHist->GetXaxis()->SetBinLabel(1,Form("M < %d",(Int_t)fMinMultiplicity));
+  for(Int_t b=2;b<=fNoOfMultipicityBins+1;b++)
+  {
+   f3pCorrelatorVsMHist->GetXaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-2)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth)));
+  }
+  f3pCorrelatorVsMHist->GetXaxis()->SetBinLabel(fNoOfMultipicityBins+2,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
+ } else
+   {
+    f3pCorrelatorVsMHist->GetXaxis()->SetTitle("M");   
+   }
  fResultsList->Add(f3pCorrelatorVsMHist);
- // Non-isotropic terms in the decomposition of <<cos[n(phi1+phi2-2phi3)]>> vs multiplicity:
+ 
+ // c) 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects vs M:
  TString nonIsotropicTermsVsMProName = "fNonIsotropicTermsVsMPro";
  fNonIsotropicTermsVsMPro = new TProfile2D(nonIsotropicTermsVsMProName.Data(),"",8,0,8,fNoOfMultipicityBins+2,0,fNoOfMultipicityBins+2);
  fNonIsotropicTermsVsMPro->SetStats(kFALSE);
@@ -812,14 +857,21 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
     // fNonIsotropicTermsVsMPro->GetXaxis()->SetBinLabel(9,Form("cos(%d(#phi_{1}-#phi_{2}-#phi_{3}))",fHarmonic)); // not needed
     // fNonIsotropicTermsVsMPro->GetXaxis()->SetBinLabel(10,Form("sin(%d(#phi_{1}-#phi_{2}-#phi_{3}))",fHarmonic)); // not needed 
    } 
- fNonIsotropicTermsVsMPro->GetYaxis()->SetBinLabel(1,Form("M < %d",(Int_t)fMinMultiplicity));
- for(Int_t b=2;b<=fNoOfMultipicityBins+1;b++)
- {
-  fNonIsotropicTermsVsMPro->GetYaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-2)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth)));
- }
- fNonIsotropicTermsVsMPro->GetYaxis()->SetBinLabel(fNoOfMultipicityBins+2,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
+ if(fShowBinLabelsVsM)
+ {     
+  fNonIsotropicTermsVsMPro->GetYaxis()->SetBinLabel(1,Form("M < %d",(Int_t)fMinMultiplicity));
+  for(Int_t b=2;b<=fNoOfMultipicityBins+1;b++)
+  {
+   fNonIsotropicTermsVsMPro->GetYaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-2)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth)));
+  }
+  fNonIsotropicTermsVsMPro->GetYaxis()->SetBinLabel(fNoOfMultipicityBins+2,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
+ } else
+   {
+    fNonIsotropicTermsVsMPro->GetYaxis()->SetTitle("M");
+   }
  fProfileList->Add(fNonIsotropicTermsVsMPro); 
- // Quantified bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs multiplicity
+ 
+ // d) Histogram which quantifies bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs M:
  TString detectorBiasVsMHistName = "fDetectorBiasVsMHist";
  fDetectorBiasVsMHist = new TH1D(detectorBiasVsMHistName.Data(),"",fNoOfMultipicityBins+2,0,fNoOfMultipicityBins+2);
  fDetectorBiasVsMHist->SetStats(kFALSE);
@@ -830,16 +882,28 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
    {
     fDetectorBiasVsMHist->SetTitle(Form("#frac{corrected}{measured} #LT#LTcos[%d(#phi_{1}+#phi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} M",fHarmonic)); 
    }
- fDetectorBiasVsMHist->GetXaxis()->SetBinLabel(1,Form("M < %d",(Int_t)fMinMultiplicity));
- for(Int_t b=2;b<=fNoOfMultipicityBins+1;b++)
- {
-  fDetectorBiasVsMHist->GetXaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-2)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth)));
- }
- fDetectorBiasVsMHist->GetXaxis()->SetBinLabel(fNoOfMultipicityBins+2,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
+ if(fShowBinLabelsVsM)
+ {   
+  fDetectorBiasVsMHist->GetXaxis()->SetBinLabel(1,Form("M < %d",(Int_t)fMinMultiplicity));
+  for(Int_t b=2;b<=fNoOfMultipicityBins+1;b++)
+  {
+   fDetectorBiasVsMHist->GetXaxis()->SetBinLabel(b,Form("%d #leq M < %d",(Int_t)(fMinMultiplicity+(b-2)*fMultipicityBinWidth),(Int_t)(fMinMultiplicity+(b-1)*fMultipicityBinWidth)));
+  }
+  fDetectorBiasVsMHist->GetXaxis()->SetBinLabel(fNoOfMultipicityBins+2,Form(" M #geq %d",(Int_t)(fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)));
+ } else
+   {
+    fDetectorBiasVsMHist->GetXaxis()->SetTitle("M");
+   }
  fResultsList->Add(fDetectorBiasVsMHist);
+
+} // end of void AliFlowAnalysisWithMixedHarmonics::BookVsM()
+      
+//================================================================================================================
+
+void AliFlowAnalysisWithMixedHarmonics::BookDifferential()
+{
+ // Book histos and profiles holding results vs (p1+p2)/2 and |p1-p2|. 
  
- // c) Book quantities with binning in (p1+p2)/2, |p1-p2|, (eta1+eta2)/2 or |eta1-eta2|: 
- if(!fEvaluateDifferential3pCorrelator){return;}  
  TString psdFlag[2] = {"PtSum","PtDiff"};
  TString psdTitleFlag[2] = {"(p_{T,1}+ p_{T,2})/2","#left|p_{T,1}- p_{T,2}#right|"};
  //TString s3pCorrelatorVsPtSumDiffProName = "f3pCorrelatorVsPtSumDiffPro";
@@ -859,9 +923,9 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
   f3pCorrelatorVsPtSumDiffPro[sd]->GetXaxis()->SetTitle(psdTitleFlag[sd].Data());
   fProfileList->Add(f3pCorrelatorVsPtSumDiffPro[sd]);
  }  
-  
-} // end of void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
-
+       
+} // end of void AliFlowAnalysisWithMixedHarmonics::BookDifferential()     
+   
 //================================================================================================================
 
 void AliFlowAnalysisWithMixedHarmonics::AccessConstants()
@@ -1011,14 +1075,14 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
   cout<<endl;
   exit(0);
  } 
- if(!f3pCorrelatorVsMPro)
+ if(!f3pCorrelatorVsMPro && fCalculateVsM)
  {                        
   cout<<endl;
   cout<<" WARNING (MH): f3pCorrelatorVsMPro is NULL in CheckPointersUsedInMake() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
- if(!fNonIsotropicTermsVsMPro)
+ if(!fNonIsotropicTermsVsMPro && fCalculateVsM)
  {                        
   cout<<endl;
   cout<<" WARNING (MH): fNonIsotropicTermsVsMPro is NULL in CheckPointersUsedInMake() !!!!"<<endl;
@@ -1086,21 +1150,21 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   cout<<endl;
   exit(0);
  } 
- if(!f3pCorrelatorVsMPro)
+ if(!f3pCorrelatorVsMPro && fCalculateVsM)
  {                        
   cout<<endl;
   cout<<" WARNING (MH): f3pCorrelatorVsMPro is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
- if(!f3pCorrelatorVsMHist)
+ if(!f3pCorrelatorVsMHist && fCalculateVsM)
  {                        
   cout<<endl;
   cout<<" WARNING (MH): f3pCorrelatorVsMHist is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
- if(!fNonIsotropicTermsVsMPro)
+ if(!fNonIsotropicTermsVsMPro && fCalculateVsM)
  {                        
   cout<<endl;
   cout<<" WARNING (MH): fNonIsotropicTermsVsMPro is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
@@ -1122,7 +1186,7 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   exit(0);
  }   
  /* to be improved - enabled eventually
- if(!fDetectorBiasVsMHist)
+ if(!fDetectorBiasVsMHist && fCalculateVsM)
  {                        
   cout<<endl;
   cout<<" WARNING (MH): !fDetectorBiasVsMHist is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
@@ -1150,6 +1214,19 @@ void AliFlowAnalysisWithMixedHarmonics::PrintOnTheScreen()
 {
  // Print the final results on the screen.
  
+ // <<cos[n*(phi1+phi2-2phi3)]>>:
+ Double_t d3pCorrelator = 0.;
+ Double_t d3pCorrelatorError = 0.;
+ if(!fCorrectForDetectorEffects)
+ {
+  d3pCorrelator = f3pCorrelatorPro->GetBinContent(1);
+  d3pCorrelatorError = f3pCorrelatorPro->GetBinError(1);
+ } else
+   {
+    d3pCorrelator = f3pCorrelatorHist->GetBinContent(1);
+    d3pCorrelatorError = f3pCorrelatorHist->GetBinError(1); 
+   }
+ 
  cout<<endl;
  cout<<"*******************************************************"<<endl;
  cout<<"*******************************************************"<<endl;
@@ -1157,13 +1234,18 @@ void AliFlowAnalysisWithMixedHarmonics::PrintOnTheScreen()
  cout<<endl;
  if(fHarmonic!=1)
  {
-  cout<<"  cos["<<fHarmonic<<"(phi1+phi2-2phi3)] = "<<f3pCorrelatorHist->GetBinContent(1)<<
-  " +/- "<<f3pCorrelatorHist->GetBinError(1)<<endl;
+  cout<<"  cos["<<fHarmonic<<"(phi1+phi2-2phi3)] = "<<d3pCorrelator<<" +/- "<<d3pCorrelatorError<<endl;
  } else
    {
-    cout<<"  cos(phi1+phi2-2phi3) = "<<f3pCorrelatorHist->GetBinContent(1)<<" +/- "<<f3pCorrelatorHist->GetBinError(1)<<endl;
+    cout<<"  cos(phi1+phi2-2phi3) = "<<d3pCorrelator<<" +/- "<<d3pCorrelatorError<<endl;
    }
- cout<<"  Detector Bias = "<<fDetectorBiasHist->GetBinContent(1)<<endl;
+ if(!fCorrectForDetectorEffects)
+ {
+  cout<<"  Detector Bias = "<<fDetectorBiasHist->GetBinContent(1)<<" (not corrected for)"<<endl;
+ } else
+   {
+    cout<<"  Detector Bias = "<<fDetectorBiasHist->GetBinContent(1)<<" (corrected for)"<<endl; 
+   }
  cout<<endl;
  cout<<"             nEvts = "<<(Int_t)fCommonHists->GetHistMultRP()->GetEntries()<<", <M> = "<<(Double_t)fCommonHists->GetHistMultRP()->GetMean()<<endl; 
  cout<<"*******************************************************"<<endl;
@@ -1184,8 +1266,10 @@ void AliFlowAnalysisWithMixedHarmonics::AccessSettings()
  fPrintOnTheScreen = (Bool_t)fAnalysisSettings->GetBinContent(5);
  fHarmonic = (Int_t)fAnalysisSettings->GetBinContent(6);
  fOppositeChargesPOI = (Bool_t)fAnalysisSettings->GetBinContent(7);      
- fEvaluateDifferential3pCorrelator = (Bool_t)fAnalysisSettings->GetBinContent(8);                                                      
-                                                                                                                                                                                                                                                                                                                                   
+ fEvaluateDifferential3pCorrelator = (Bool_t)fAnalysisSettings->GetBinContent(8);    
+ fCalculateVsM = (Bool_t)fAnalysisSettings->GetBinContent(9);  
+ fShowBinLabelsVsM = (Bool_t)fAnalysisSettings->GetBinContent(10); 
+                                                                                                                                                                                                                                                                                                                                                                                      
 } // end of AliFlowAnalysisWithMixedHarmonics::AccessSettings()
 
 //================================================================================================================
@@ -1210,14 +1294,17 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
                        + 2.*nonIsotropicTerms[2]*(pow(nonIsotropicTerms[0],2.)-pow(nonIsotropicTerms[1],2.))                                       
                        + 4.*nonIsotropicTerms[3]*nonIsotropicTerms[0]*nonIsotropicTerms[1]; 
  // Store corrected correlator:
- f3pCorrelatorHist->SetBinContent(1,corrected3pCorrelator);
- f3pCorrelatorHist->SetBinError(1,f3pCorrelatorPro->GetBinError(1)); // to be improved (propagate error for non-isotropic terms)
+ if(fCorrectForDetectorEffects)
+ {
+  f3pCorrelatorHist->SetBinContent(1,corrected3pCorrelator);
+  f3pCorrelatorHist->SetBinError(1,f3pCorrelatorPro->GetBinError(1)); // to be improved (propagate error for non-isotropic terms)
+ }
  // Quantify bias from detector inefficiences to 3-p correlator. Remark: Bias is quantified as a 
  // ratio between corrected and measured 3-p correlator:
  //              bias = corrected/measured
  // This bias is stored in histogram fDetectorBias.
  Double_t bias = 0.;
- if(measured3pCorrelator)
+ if(TMath::Abs(measured3pCorrelator)>1.e-44)
  {
   bias = corrected3pCorrelator/measured3pCorrelator;
   fDetectorBiasHist->SetBinContent(1,bias);                                                          
@@ -1249,8 +1336,11 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffectsVsM()
                         + 2.*nonIsotropicTerms[2]*(pow(nonIsotropicTerms[0],2.)-pow(nonIsotropicTerms[1],2.))                                       
                         + 4.*nonIsotropicTerms[3]*nonIsotropicTerms[0]*nonIsotropicTerms[1]; 
   // Store corrected correlator:
-  f3pCorrelatorVsMHist->SetBinContent(b,corrected3pCorrelator);
-  f3pCorrelatorVsMHist->SetBinError(b,f3pCorrelatorVsMPro->GetBinError(b)); // to be improved (propagate error for non-isotropic terms)
+  if(fCorrectForDetectorEffects)
+  {
+   f3pCorrelatorVsMHist->SetBinContent(b,corrected3pCorrelator);
+   f3pCorrelatorVsMHist->SetBinError(b,f3pCorrelatorVsMPro->GetBinError(b)); // to be improved (propagate error for non-isotropic terms)
+  }
   // Quantify bias from detector inefficiences to 3-p correlator. Remark: Bias is quantified as a 
   // ratio between corrected and measured 3-p correlator:
   //              bias = corrected/measured
@@ -1269,7 +1359,7 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffectsVsM()
 
 void AliFlowAnalysisWithMixedHarmonics::ResetEventByEventQuantities()
 {
- // Reset all event by event quantities.
+ // Reset all event-by-event quantities.
  
  fReQnk->Zero();
  fImQnk->Zero();
@@ -1316,28 +1406,23 @@ void AliFlowAnalysisWithMixedHarmonics::Calculate3pCorrelator()
                        - (pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*dMult)
                        / (dMult*(dMult-1.)*(dMult-2.));                 
   
-  
-  /* 
-  Double_t reQ2nQ1nstarQ1nstar = pow(dReQ1n,2.)*dReQ2n + 2.*dReQ1n*dImQ1n*dImQ2n - pow(dImQ1n,2.)*dReQ2n; 
-  Double_t three2n1n1nQC = (reQ2nQ1nstarQ1nstar-2.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))
-              - (pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*dMult)
-              / (dMult*(dMult-1.)*(dMult-2.));                     
-  */
-  
   // Fill all-events profile:                     
   f3pCorrelatorPro->Fill(0.5,three1n1n2n,dMult*(dMult-1.)*(dMult-2.));
   
   // 3-particle azimuthal correlator <cos(n*(phi1+phi2-2phi3))> vs multiplicity:
-  if(dMult<fMinMultiplicity) 
+  if(fCalculateVsM)
   {
-   f3pCorrelatorVsMPro->Fill(0.5,three1n1n2n,dMult*(dMult-1.)*(dMult-2.));
-  } else if(dMult>=fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)
-    {
-     f3pCorrelatorVsMPro->Fill(0.5+fNoOfMultipicityBins+1,three1n1n2n,dMult*(dMult-1.)*(dMult-2.));  
-    } else
-      {
-       f3pCorrelatorVsMPro->Fill(1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),three1n1n2n,dMult*(dMult-1.)*(dMult-2.));
-      }
+   if(dMult<fMinMultiplicity) 
+   {
+    f3pCorrelatorVsMPro->Fill(0.5,three1n1n2n,dMult*(dMult-1.)*(dMult-2.));
+   } else if(dMult>=fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)
+     {
+      f3pCorrelatorVsMPro->Fill(0.5+fNoOfMultipicityBins+1,three1n1n2n,dMult*(dMult-1.)*(dMult-2.));  
+     } else
+       {
+        f3pCorrelatorVsMPro->Fill(1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),three1n1n2n,dMult*(dMult-1.)*(dMult-2.));
+       }
+  } // end of if(fCalculateVsM)
       
  } // end of if(!(fUsePhiWeights || fUsePtWeights || fUseEtaWeights)) 
 
@@ -1355,6 +1440,9 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateNonIsotropicTerms()
 {
  // Calculate non-isotropic terms which appear in the decomposition of 3-p correlator <cos[n(phi1+phi2-2phi3)]>.
  
+ // a) Calculate without using particle weights;
+ // b) Calculate using particle weights.
+ 
  // For detector with uniform acceptance all these terms vanish. These non-isotropic terms are stored in fNonIsotropicTermsPro.
  // Binning of fNonIsotropicTermsPro is organized as follows:
  //  1st bin: <<cos(n*phi1)>>
@@ -1366,12 +1454,9 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateNonIsotropicTerms()
  //  7th bin: <<cos(n*(2phi1-phi2)>>
  //  8th bin: <<sin(n*(2phi1-phi2)>>
  //  9th bin: <<cos(n*(phi1-phi2-phi3)>> // not needed
- // 10th bin: <<sin(n*(phi1-phi2-phi3)>> // not needed
+ // 10th bin: <<sin(n*(phi1-phi2-phi3)>> // not needed 
  
- // a) Calculate using particle weights; 
- // b) Calculate without using particle weights. 
- 
- // a) Calculate using particle weights: 
+ // a) Calculate without using particle weights:
  if(!(fUsePhiWeights || fUsePtWeights || fUseEtaWeights))
  {
   // Multiplicity (number of RPs):
@@ -1398,25 +1483,28 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateNonIsotropicTerms()
    fNonIsotropicTermsPro->Fill(2.5,cosP2n,dMult); // <<cos(2n*(phi1))>> 
    fNonIsotropicTermsPro->Fill(3.5,sinP2n,dMult); // <<sin(2n*(phi1))>>   
    // All-event avarages vs M:
-   if(dMult<fMinMultiplicity) 
+   if(fCalculateVsM)
    {
-    fNonIsotropicTermsVsMPro->Fill(0.5,0.5,cosP1n,dMult); // <<cos(n*(phi1))>> 
-    fNonIsotropicTermsVsMPro->Fill(1.5,0.5,sinP1n,dMult); // <<sin(n*(phi1))>>   
-    fNonIsotropicTermsVsMPro->Fill(2.5,0.5,cosP2n,dMult); // <<cos(2n*(phi1))>> 
-    fNonIsotropicTermsVsMPro->Fill(3.5,0.5,sinP2n,dMult); // <<sin(2n*(phi1))>>   
-   } else if(dMult>=fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)
-     {
-      fNonIsotropicTermsVsMPro->Fill(0.5,0.5+fNoOfMultipicityBins+1,cosP1n,dMult); // <<cos(n*(phi1))>> 
-      fNonIsotropicTermsVsMPro->Fill(1.5,0.5+fNoOfMultipicityBins+1,sinP1n,dMult); // <<sin(n*(phi1))>>   
-      fNonIsotropicTermsVsMPro->Fill(2.5,0.5+fNoOfMultipicityBins+1,cosP2n,dMult); // <<cos(2n*(phi1))>> 
-      fNonIsotropicTermsVsMPro->Fill(3.5,0.5+fNoOfMultipicityBins+1,sinP2n,dMult); // <<sin(2n*(phi1))>>       
-     } else
-       {
-        fNonIsotropicTermsVsMPro->Fill(0.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),cosP1n,dMult); // <<cos(n*(phi1))>> 
-        fNonIsotropicTermsVsMPro->Fill(1.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),sinP1n,dMult); // <<sin(n*(phi1))>>   
-        fNonIsotropicTermsVsMPro->Fill(2.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),cosP2n,dMult); // <<cos(2n*(phi1))>> 
-        fNonIsotropicTermsVsMPro->Fill(3.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),sinP2n,dMult); // <<sin(2n*(phi1))>>              
-       }    
+    if(dMult<fMinMultiplicity) 
+    {
+     fNonIsotropicTermsVsMPro->Fill(0.5,0.5,cosP1n,dMult); // <<cos(n*(phi1))>> 
+     fNonIsotropicTermsVsMPro->Fill(1.5,0.5,sinP1n,dMult); // <<sin(n*(phi1))>>   
+     fNonIsotropicTermsVsMPro->Fill(2.5,0.5,cosP2n,dMult); // <<cos(2n*(phi1))>> 
+     fNonIsotropicTermsVsMPro->Fill(3.5,0.5,sinP2n,dMult); // <<sin(2n*(phi1))>>   
+    } else if(dMult>=fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)
+      {
+       fNonIsotropicTermsVsMPro->Fill(0.5,0.5+fNoOfMultipicityBins+1,cosP1n,dMult); // <<cos(n*(phi1))>> 
+       fNonIsotropicTermsVsMPro->Fill(1.5,0.5+fNoOfMultipicityBins+1,sinP1n,dMult); // <<sin(n*(phi1))>>   
+       fNonIsotropicTermsVsMPro->Fill(2.5,0.5+fNoOfMultipicityBins+1,cosP2n,dMult); // <<cos(2n*(phi1))>> 
+       fNonIsotropicTermsVsMPro->Fill(3.5,0.5+fNoOfMultipicityBins+1,sinP2n,dMult); // <<sin(2n*(phi1))>>       
+      } else
+        {
+         fNonIsotropicTermsVsMPro->Fill(0.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),cosP1n,dMult); // <<cos(n*(phi1))>> 
+         fNonIsotropicTermsVsMPro->Fill(1.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),sinP1n,dMult); // <<sin(n*(phi1))>>   
+         fNonIsotropicTermsVsMPro->Fill(2.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),cosP2n,dMult); // <<cos(2n*(phi1))>> 
+         fNonIsotropicTermsVsMPro->Fill(3.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),sinP2n,dMult); // <<sin(2n*(phi1))>>    
+        }
+   } // end of if(fCalculateVsM)         
   } // end of if(dMult>0) 
   // 2-particle terms:
   Double_t cosP1nP1n = 0.; // <cos(n*(phi1+phi2))>
@@ -1435,25 +1523,28 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateNonIsotropicTerms()
    fNonIsotropicTermsPro->Fill(6.5,cosP2nM1n,dMult*(dMult-1.)); // <<cos(n*(2phi1-phi2))>> 
    fNonIsotropicTermsPro->Fill(7.5,sinP2nM1n,dMult*(dMult-1.)); // <<sin(n*(2phi1-phi2))>>   
    // All-event avarages vs M:  
-   if(dMult<fMinMultiplicity) 
+   if(fCalculateVsM)
    {
-    fNonIsotropicTermsVsMPro->Fill(4.5,0.5,cosP1nP1n,dMult*(dMult-1.)); // <<cos(n*(phi1+phi2))>> 
-    fNonIsotropicTermsVsMPro->Fill(5.5,0.5,sinP1nP1n,dMult*(dMult-1.)); // <<sin(n*(phi1+phi2))>>   
-    fNonIsotropicTermsVsMPro->Fill(6.5,0.5,cosP2nM1n,dMult*(dMult-1.)); // <<cos(n*(2phi1-phi2))>> 
-    fNonIsotropicTermsVsMPro->Fill(7.5,0.5,sinP2nM1n,dMult*(dMult-1.)); // <<sin(n*(2phi1-phi2))>>   
-   } else if(dMult>=fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)
-     {
-      fNonIsotropicTermsVsMPro->Fill(4.5,0.5+fNoOfMultipicityBins+1,cosP1nP1n,dMult*(dMult-1.)); // <<cos(n*(phi1+phi2))>> 
-      fNonIsotropicTermsVsMPro->Fill(5.5,0.5+fNoOfMultipicityBins+1,sinP1nP1n,dMult*(dMult-1.)); // <<sin(n*(phi1+phi2))>>   
-      fNonIsotropicTermsVsMPro->Fill(6.5,0.5+fNoOfMultipicityBins+1,cosP2nM1n,dMult*(dMult-1.)); // <<cos(n*(2phi1-phi2))>> 
-      fNonIsotropicTermsVsMPro->Fill(7.5,0.5+fNoOfMultipicityBins+1,sinP2nM1n,dMult*(dMult-1.)); // <<sin(n*(2phi1-phi2))>>    
-     } else
-       {
-        fNonIsotropicTermsVsMPro->Fill(4.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),cosP1nP1n,dMult*(dMult-1.)); // <<cos(n*(phi1+phi2))>> 
-        fNonIsotropicTermsVsMPro->Fill(5.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),sinP1nP1n,dMult*(dMult-1.)); // <<sin(n*(phi1+phi2))>>   
-        fNonIsotropicTermsVsMPro->Fill(6.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),cosP2nM1n,dMult*(dMult-1.)); // <<cos(n*(2phi1-phi2))>> 
-        fNonIsotropicTermsVsMPro->Fill(7.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),sinP2nM1n,dMult*(dMult-1.)); // <<sin(n*(2phi1-phi2))>>    
-       }  
+    if(dMult<fMinMultiplicity) 
+    {
+     fNonIsotropicTermsVsMPro->Fill(4.5,0.5,cosP1nP1n,dMult*(dMult-1.)); // <<cos(n*(phi1+phi2))>> 
+     fNonIsotropicTermsVsMPro->Fill(5.5,0.5,sinP1nP1n,dMult*(dMult-1.)); // <<sin(n*(phi1+phi2))>>   
+     fNonIsotropicTermsVsMPro->Fill(6.5,0.5,cosP2nM1n,dMult*(dMult-1.)); // <<cos(n*(2phi1-phi2))>> 
+     fNonIsotropicTermsVsMPro->Fill(7.5,0.5,sinP2nM1n,dMult*(dMult-1.)); // <<sin(n*(2phi1-phi2))>>   
+    } else if(dMult>=fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)
+      {
+       fNonIsotropicTermsVsMPro->Fill(4.5,0.5+fNoOfMultipicityBins+1,cosP1nP1n,dMult*(dMult-1.)); // <<cos(n*(phi1+phi2))>> 
+       fNonIsotropicTermsVsMPro->Fill(5.5,0.5+fNoOfMultipicityBins+1,sinP1nP1n,dMult*(dMult-1.)); // <<sin(n*(phi1+phi2))>>   
+       fNonIsotropicTermsVsMPro->Fill(6.5,0.5+fNoOfMultipicityBins+1,cosP2nM1n,dMult*(dMult-1.)); // <<cos(n*(2phi1-phi2))>> 
+       fNonIsotropicTermsVsMPro->Fill(7.5,0.5+fNoOfMultipicityBins+1,sinP2nM1n,dMult*(dMult-1.)); // <<sin(n*(2phi1-phi2))>>    
+      } else
+        {
+         fNonIsotropicTermsVsMPro->Fill(4.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),cosP1nP1n,dMult*(dMult-1.)); // <<cos(n*(phi1+phi2))>> 
+         fNonIsotropicTermsVsMPro->Fill(5.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),sinP1nP1n,dMult*(dMult-1.)); // <<sin(n*(phi1+phi2))>>   
+         fNonIsotropicTermsVsMPro->Fill(6.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),cosP2nM1n,dMult*(dMult-1.)); // <<cos(n*(2phi1-phi2))>> 
+         fNonIsotropicTermsVsMPro->Fill(7.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),sinP2nM1n,dMult*(dMult-1.)); // <<sin(n*(2phi1-phi2))>>    
+        }
+   } // end of if(fCalculateVsM)       
   } // end of if(dMult>1) 
   // 3-particle: correct and ready but not needed, hence commented out.
   /*
@@ -1469,26 +1560,29 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateNonIsotropicTerms()
    fNonIsotropicTermsPro->Fill(8.5,cosP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<cos(n*(phi1-phi2-phi3))>> 
    fNonIsotropicTermsPro->Fill(9.5,sinP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<sin(n*(phi1-phi2-phi3))>>    
    // All-events avarages vs M:  
-   if(dMult<fMinMultiplicity) 
+   if(fCalculateVsM)
    {
-    fNonIsotropicTermsVsMPro->Fill(8.5,0.5,cosP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<cos(n*(phi1-phi2-phi3))>> 
-    fNonIsotropicTermsVsMPro->Fill(9.5,0.5,sinP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<sin(n*(phi1-phi2-phi3))>>    
-   } else if(dMult>=fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)
-     {
-      fNonIsotropicTermsVsMPro->Fill(8.5,0.5+fNoOfMultipicityBins+1,cosP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<cos(n*(phi1-phi2-phi3))>> 
-      fNonIsotropicTermsVsMPro->Fill(9.5,0.5+fNoOfMultipicityBins+1,sinP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<sin(n*(phi1-phi2-phi3))>>    
-     } else
-       {
-        fNonIsotropicTermsVsMPro->Fill(8.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),
-                                       cosP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<cos(n*(phi1-phi2-phi3))>> 
-        fNonIsotropicTermsVsMPro->Fill(9.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),
-                                       sinP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<sin(n*(phi1-phi2-phi3))>>           
-       }  
+    if(dMult<fMinMultiplicity) 
+    {
+     fNonIsotropicTermsVsMPro->Fill(8.5,0.5,cosP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<cos(n*(phi1-phi2-phi3))>> 
+     fNonIsotropicTermsVsMPro->Fill(9.5,0.5,sinP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<sin(n*(phi1-phi2-phi3))>>    
+    } else if(dMult>=fMinMultiplicity+fNoOfMultipicityBins*fMultipicityBinWidth)
+      {
+       fNonIsotropicTermsVsMPro->Fill(8.5,0.5+fNoOfMultipicityBins+1,cosP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<cos(n*(phi1-phi2-phi3))>> 
+       fNonIsotropicTermsVsMPro->Fill(9.5,0.5+fNoOfMultipicityBins+1,sinP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<sin(n*(phi1-phi2-phi3))>>    
+      } else
+        {
+         fNonIsotropicTermsVsMPro->Fill(8.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),
+                                        cosP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<cos(n*(phi1-phi2-phi3))>> 
+         fNonIsotropicTermsVsMPro->Fill(9.5,1.5+(Int_t)((dMult-fMinMultiplicity)/fMultipicityBinWidth),
+                                        sinP1nM1nM1n,dMult*(dMult-1.)*(dMult-2.)); // <<sin(n*(phi1-phi2-phi3))>>           
+        }  
+   } // end of if(fCalculateVsM)
   } // end of if(dMult>2)
   */
  } // end of if(!(fUsePhiWeights || fUsePtWeights || fUseEtaWeights))
  
- // b) Calculate with using particle weights:
+ // b) Calculate using particle weights:
  if(fUsePhiWeights || fUsePtWeights || fUseEtaWeights)
  {
   // ...

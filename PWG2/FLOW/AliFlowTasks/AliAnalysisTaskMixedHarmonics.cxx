@@ -43,12 +43,15 @@ fEvent(NULL),
 fMH(NULL), 
 fListHistos(NULL),
 fHarmonic(1),
-fNoOfMultipicityBins(10),
-fMultipicityBinWidth(2.),
+fNoOfMultipicityBins(100),
+fMultipicityBinWidth(1.),
 fMinMultiplicity(3.),
 fOppositeChargesPOI(kFALSE),
 fEvaluateDifferential3pCorrelator(kFALSE),
-fCorrectForDetectorEffects(kTRUE),
+fCorrectForDetectorEffects(kFALSE),
+fPrintOnTheScreen(kTRUE),
+fCalculateVsM(kFALSE),
+fShowBinLabelsVsM(kFALSE),
 fUseParticleWeights(useParticleWeights),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
@@ -83,6 +86,9 @@ fMinMultiplicity(0),
 fOppositeChargesPOI(kFALSE),
 fEvaluateDifferential3pCorrelator(kFALSE),
 fCorrectForDetectorEffects(kFALSE),
+fPrintOnTheScreen(kFALSE),
+fCalculateVsM(kFALSE),
+fShowBinLabelsVsM(kFALSE),
 fUseParticleWeights(kFALSE),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
@@ -111,6 +117,9 @@ void AliAnalysisTaskMixedHarmonics::UserCreateOutputObjects()
  fMH->SetOppositeChargesPOI(fOppositeChargesPOI);
  fMH->SetEvaluateDifferential3pCorrelator(fEvaluateDifferential3pCorrelator); 
  fMH->SetCorrectForDetectorEffects(fCorrectForDetectorEffects);
+ fMH->SetPrintOnTheScreen(fPrintOnTheScreen); 
+ fMH->SetCalculateVsM(fCalculateVsM); 
+ fMH->SetShowBinLabelsVsM(fShowBinLabelsVsM);
  if(fUseParticleWeights)
  {
   // Pass the flags to class:
