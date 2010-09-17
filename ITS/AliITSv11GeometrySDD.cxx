@@ -107,7 +107,7 @@ const Double_t AliITSv11GeometrySDD::fgkBTBHolewidth       =  6 *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkBTBHoleRefX        = 10 *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkBTBHoleRefY        =  6.5 *fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLay3Rmin           = 145.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLay3Rmin           = 129.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay3Rmax           = 200.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay3Length         = (524.+0.)*fgkmm; // ladder+supporting rings (length of the virtual tube)
 const Double_t AliITSv11GeometrySDD::fgkLay3LadderLength   = 524.*fgkmm;
@@ -118,7 +118,7 @@ const Int_t    AliITSv11GeometrySDD::fgkLay3Ndet           =  6;
 const Int_t    AliITSv11GeometrySDD::fgkLay3Nladd          = 14;
 const Double_t AliITSv11GeometrySDD::fgkLay3CoolPipeSuppH  =  7.5*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLay4Rmin           = 234.8*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLay4Rmin           = 220.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay4Rmax           = 286.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay4Length         = (671.+0.)*fgkmm;    // ladder+supporting rings (length of the virtual tube)
 const Double_t AliITSv11GeometrySDD::fgkLay4LadderLength   = 671.*fgkmm;

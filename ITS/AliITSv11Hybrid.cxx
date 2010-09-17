@@ -977,7 +977,8 @@ void AliITSv11Hybrid::CreateGeometry() {
 
   CreateOldGeometry();
 
-  TGeoVolume *vITS  = geoManager->GetVolume("ITSV");
+  TGeoVolume *vITSV = geoManager->GetVolume("ITSV");
+  TGeoVolume *vITSS = geoManager->GetVolume("ITSS");
 
 
   const Char_t *cvsDate="$Date$";
@@ -985,42 +986,44 @@ void AliITSv11Hybrid::CreateGeometry() {
   const Int_t kLength=100;
   Char_t vstrng[kLength];
   if(fInitGeom.WriteVersionString(vstrng,kLength,(AliITSVersion_t)IsVersion(),
-			     fMinorVersion,cvsDate,cvsRevision))
-    vITS->SetTitle(vstrng);
+			     fMinorVersion,cvsDate,cvsRevision)) {
+    vITSV->SetTitle(vstrng);
+    vITSS->SetTitle(vstrng);
+  }
 
   if (AliITSInitGeometry::SPDIsTGeoNative()) {
-    fSPDgeom->SPDSector(vITS);
+    fSPDgeom->SPDSector(vITSV);
   }
 
   if (AliITSInitGeometry::SDDIsTGeoNative()) {
-    fSDDgeom->Layer3(vITS);
-    fSDDgeom->Layer4(vITS);
-    fSDDgeom->ForwardLayer3(vITS);
-    fSDDgeom->ForwardLayer4(vITS);
+    fSDDgeom->Layer3(vITSV);
+    fSDDgeom->Layer4(vITSV);
+    fSDDgeom->ForwardLayer3(vITSV);
+    fSDDgeom->ForwardLayer4(vITSV);
   }
 
   if (AliITSInitGeometry::SSDIsTGeoNative()) {
-    fSSDgeom->Layer5(vITS);
-    fSSDgeom->Layer6(vITS);
-    fSSDgeom->LadderSupportLayer5(vITS);
-    fSSDgeom->LadderSupportLayer6(vITS);
-    fSSDgeom->EndCapSupportSystemLayer6(vITS);
-    fSSDgeom->EndCapSupportSystemLayer5(vITS);
+    fSSDgeom->Layer5(vITSV);
+    fSSDgeom->Layer6(vITSV);
+    fSSDgeom->LadderSupportLayer5(vITSV);
+    fSSDgeom->LadderSupportLayer6(vITSV);
+    fSSDgeom->EndCapSupportSystemLayer6(vITSV);
+    fSSDgeom->EndCapSupportSystemLayer5(vITSV);
   }
 
   if (AliITSInitGeometry::SPDshieldIsTGeoNative())
-    fSupgeom->SPDCone(vITS);
+    fSupgeom->SPDCone(vITSV);
 
   if (AliITSInitGeometry::SDDconeIsTGeoNative())
-    fSupgeom->SDDCone(vITS);
+    fSupgeom->SDDCone(vITSV);
 
   if (AliITSInitGeometry::SSDconeIsTGeoNative())
-    fSupgeom->SSDCone(vITS);
+    fSupgeom->SSDCone(vITSV);
 
   if (AliITSInitGeometry::ServicesAreTGeoNative()) {
-    fSDDgeom->SDDCables(vITS);
-    fSSDgeom->SSDCables(vITS);
-    fSupgeom->ServicesCableSupport(vITS);
+    fSDDgeom->SDDCables(vITSV);
+    fSSDgeom->SSDCables(vITSV);
+    fSupgeom->ServicesCableSupport(vITSS);
   }
 }
 
@@ -1649,6 +1652,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
     dgh[50] = 85.;
 //    gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 51);
     new TGeoVolumeAssembly("ITSV");
+    new TGeoVolumeAssembly("ITSS");
 
     // --- Place the ghost volume in its mother volume (ALIC) and make it 
     //     invisible
@@ -1658,6 +1662,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
 
     //gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "MANY"); //=== LG
     gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY"); //=== LG
+    gMC->Gspos("ITSS", 1, "ALIC", 0., 0., 0., 0, "ONLY"); //=== MS
 
 
     // --- Define ghost volume containing the six layers and fill it with air 
@@ -4971,8 +4976,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[1] = 59.;
   dgh[2] = 0.6;    
   gMC->Gsvolu("ICYL", "TUBE", idtmed[210], dgh, 3);   
-  gMC->Gspos("ICYL", 1, "ITSV", 0., 0., -74.1,idrotm[199], "ONLY");   
-  gMC->Gspos("ICYL", 2, "ITSV", 0., 0., 74.1, 0, "ONLY"); 
+  gMC->Gspos("ICYL", 1, "ITSS", 0., 0., -74.1,idrotm[199], "ONLY");   
+  gMC->Gspos("ICYL", 2, "ITSS", 0., 0., 74.1, 0, "ONLY"); 
 
   // --- DEFINE SUPPORTS FOR RAILS ATTACHED TO THE CYLINDERS
 
@@ -4980,14 +4985,14 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[1] = 3.;
   dgh[2] = 5.;// 5. comes from the fact that the volume has to be 567.6/2 cm^3
   gMC->Gsvolu("ISR1", "TUBE", idtmed[284], dgh, 3);   
-  gMC->Gspos("ISR1", 1, "ITSV", 53.4292, 10.7053, -79.75,idrotm[199],"ONLY");    
-  gMC->Gspos("ISR1", 2, "ITSV", 53.4292, -10.7053, -79.75,idrotm[199],"ONLY");   
-  gMC->Gspos("ISR1", 3, "ITSV", -53.4292, 10.7053, -79.75,idrotm[199],"ONLY"); 
-  gMC->Gspos("ISR1", 4, "ITSV", -53.4292, -10.7053, -79.75,idrotm[199],"ONLY");  
-  gMC->Gspos("ISR1", 5, "ITSV", 53.4292, 10.7053, 79.75,idrotm[199],"ONLY");   
-  gMC->Gspos("ISR1", 6, "ITSV", 53.4292, -10.7053, 79.75,idrotm[199],"ONLY");   
-  gMC->Gspos("ISR1", 7, "ITSV", -53.4292, 10.7053, 79.75,idrotm[199],"ONLY"); 
-  gMC->Gspos("ISR1", 8, "ITSV", -53.4292, -10.7053, 79.75,idrotm[199],"ONLY");
+  gMC->Gspos("ISR1", 1, "ITSS", 53.4292, 10.7053, -79.75,idrotm[199],"ONLY");    
+  gMC->Gspos("ISR1", 2, "ITSS", 53.4292, -10.7053, -79.75,idrotm[199],"ONLY");   
+  gMC->Gspos("ISR1", 3, "ITSS", -53.4292, 10.7053, -79.75,idrotm[199],"ONLY"); 
+  gMC->Gspos("ISR1", 4, "ITSS", -53.4292, -10.7053, -79.75,idrotm[199],"ONLY");  
+  gMC->Gspos("ISR1", 5, "ITSS", 53.4292, 10.7053, 79.75,idrotm[199],"ONLY");   
+  gMC->Gspos("ISR1", 6, "ITSS", 53.4292, -10.7053, 79.75,idrotm[199],"ONLY");   
+  gMC->Gspos("ISR1", 7, "ITSS", -53.4292, 10.7053, 79.75,idrotm[199],"ONLY"); 
+  gMC->Gspos("ISR1", 8, "ITSS", -53.4292, -10.7053, 79.75,idrotm[199],"ONLY");
   
   // --- DEFINE SUPPORTS FOR RAILS ATTACHED TO THE ABSORBER
 
@@ -4995,9 +5000,9 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[1] = 12.;         
   dgh[2] = 5.;         
   gMC->Gsvolu("ISR2", "BOX ", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR2", 1, "ITSV", -53.5, 0., 125.5, 0, "ONLY");
+  gMC->Gspos("ISR2", 1, "ITSS", -53.5, 0., 125.5, 0, "ONLY");
   gMC->Gsvolu("ISR3", "BOX ", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR3", 1, "ITSV", 53.5, 0., 125.5, 0, "ONLY");  
+  gMC->Gspos("ISR3", 1, "ITSS", 53.5, 0., 125.5, 0, "ONLY");  
   
   dgh[0] = 5.-2.;        
   dgh[1] = 12.-2.;         
@@ -5013,9 +5018,9 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dgh[1] = 5.;         
   dgh[2] = 2.;         
   gMC->Gsvolu("ISR6", "TUBE", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR6", 1, "ITSV", 0., 54., 77., 0, "ONLY"); 
-  gMC->Gspos("ISR6", 2, "ITSV", 0., 54., -77., 0, "ONLY"); 
-  gMC->Gspos("ISR6", 3, "ITSV", 0., -54., -77., 0, "ONLY");                   
+  gMC->Gspos("ISR6", 1, "ITSS", 0., 54., 77., 0, "ONLY"); 
+  gMC->Gspos("ISR6", 2, "ITSS", 0., 54., -77., 0, "ONLY"); 
+  gMC->Gspos("ISR6", 3, "ITSS", 0., -54., -77., 0, "ONLY");                   
 
   }
 
