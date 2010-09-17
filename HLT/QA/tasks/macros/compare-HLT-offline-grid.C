@@ -106,7 +106,17 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
  
   //-------------- Compile the analysis tasks ---------- //
   if(bTPC)    gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
-  if(bPHOS) {
+  if(bPHOS && bEMCAL) {
+    AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
+    pHLT->LoadComponentLibraries("libHLTbase");
+    pHLT->LoadComponentLibraries("libAliHLTUtil");
+    pHLT->LoadComponentLibraries("libAliHLTGlobal");
+    gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
+    gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+");  
+    gROOT->LoadMacro("AliAnalysisTaskHLTEMCAL.cxx+");  
+    
+  }
+  else if(bPHOS) {
     AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
     pHLT->LoadComponentLibraries("libHLTbase");
     pHLT->LoadComponentLibraries("libAliHLTUtil");
@@ -114,7 +124,7 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
     gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
     gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+");  
   }
-  if(bEMCAL) {
+  else if(bEMCAL) {
      AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
     pHLT->LoadComponentLibraries("libHLTbase");
     pHLT->LoadComponentLibraries("libAliHLTUtil");

@@ -97,13 +97,18 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
     plugin->SetAdditionalLibs("AliAnalysisTaskHLTITS.h AliAnalysisTaskHLTITS.cxx");
     plugin->SetOutputFiles("HLT-OFFLINE-ITS-comparison.root");    
   }
-  if(bPHOS){  
+  if(bPHOS && bEMCAL) {
+    plugin->AddIncludePath("-I$ROOTSYS -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER -I$ALICE_ROOT/PHOS -I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/HLT/BASE/util -I$ALICE_ROOT/HLT/global/physics");
+    plugin->SetAnalysisSource("AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTPHOS.cxx AliAnalysisTaskHLTEMCAL.cxx");  
+    plugin->SetAdditionalLibs("libRAWDatabase.so libProof.so libGui.so libCDB.so libSTEER.so libHLTbase.so libAliHLTUtil.so libAliHLTGlobal.so AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTCalo.h AliAnalysisTaskHLTPHOS.cxx AliAnalysisTaskHLTPHOS.h AliAnalysisTaskHLTEMCAL.cxx AliAnalysisTaskHLTEMCAL.h");  
+    plugin->SetOutputFiles("HLT-OFFLINE-PHOS-comparison.root HLT-OFFLINE-EMCAL-comparison.root");    
+
+  } else if(bPHOS){  
     plugin->AddIncludePath("-I$ROOTSYS -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER -I$ALICE_ROOT/PHOS -I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/HLT/BASE/util -I$ALICE_ROOT/HLT/global/physics");
     plugin->SetAnalysisSource("AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTPHOS.cxx");  
     plugin->SetAdditionalLibs("libRAWDatabase.so libProof.so libGui.so libCDB.so libSTEER.so libHLTbase.so libAliHLTUtil.so libAliHLTGlobal.so AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTCalo.h AliAnalysisTaskHLTPHOS.cxx AliAnalysisTaskHLTPHOS.h");  
     plugin->SetOutputFiles("HLT-OFFLINE-PHOS-comparison.root");    
-  }
-  if(bEMCAL){  
+  } else if(bEMCAL){  
     plugin->AddIncludePath("-I$ROOTSYS -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/HLT/BASE/util -I$ALICE_ROOT/HLT/global/physics");
     plugin->SetAnalysisSource("AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTEMCAL.cxx");  
     plugin->SetAdditionalLibs("libRAWDatabase.so libProof.so libGui.so libCDB.so libSTEER.so libHLTbase.so libAliHLTUtil.so libAliHLTGlobal.so AliAnalysisTaskHLTCalo.cxx AliAnalysisTaskHLTCalo.h AliAnalysisTaskHLTEMCAL.cxx AliAnalysisTaskHLTEMCAL.h");  

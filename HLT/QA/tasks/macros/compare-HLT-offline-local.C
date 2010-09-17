@@ -22,7 +22,7 @@
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
  */
 
-void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
+void compare_HLT_offline_local(TString file="files.txt", const char* detectorTask="global"){
 
   TStopwatch timer;
   timer.Start();
