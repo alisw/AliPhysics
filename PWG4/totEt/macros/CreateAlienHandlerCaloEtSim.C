@@ -44,7 +44,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime IN THE SAME ORDER THEY ARE LISTED
   // using ACLiC on the worker nodes.
-  plugin->SetAnalysisSource("AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx");
+  plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx");
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
   plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisEt.h AliAnalysisEtMonteCarlo.h AliAnalysisEtMonteCarloPhos.h AliAnalysisEtMonteCarloEmcal.h AliAnalysisEtReconstructed.h AliAnalysisEtReconstructedPhos.h AliAnalysisEtReconstructedEmcal.h AliAnalysisTaskTotEt.h AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx");
