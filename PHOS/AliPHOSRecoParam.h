@@ -33,6 +33,10 @@ public:
   Bool_t  GetEMCEnergyCorrectionOn()  const { return fEMCEnergyCorrectionOn;   }
   Int_t   GetGlobalAltroOffset()      const { return fGlobalAltroOffset ;      }
   Int_t   GetGlobalAltroThreshold()   const { return fGlobalAltroThreshold ;   }
+  Float_t GetTimeGateAmpThresh()      const { return fTimeGateAmpThresh ;      }
+  Float_t GetTimeGateLow()            const { return fTimeGateLow ;            }
+  Float_t GetTimeGateHigh()           const { return fTimeGateHigh ;           }
+ 
 
   Float_t GetCPVClusteringThreshold() const { return fCPVClusteringThreshold;  }
   Float_t GetCPVLocalMaxCut()         const { return fCPVLocMaxCut;            }
@@ -54,6 +58,10 @@ public:
   void SetEMCEnergyCorrectionOn(Bool_t on=kTRUE)     { fEMCEnergyCorrectionOn =on;      }
   void SetGlobalAltroOffset(Int_t offset=5)          { fGlobalAltroOffset     =offset ; }
   void SetGlobalAltroThreshold(Int_t ZSth=5)         { fGlobalAltroThreshold  =ZSth;    }
+  void SetTimeGateAmpThresh(Float_t thrs=10)         { fTimeGateAmpThresh     = thrs ;  }
+  void SetTimeGateLow(Float_t gate=1.e-7)            { fTimeGateLow = gate ;            }
+  void SetTimeGateHigh(Float_t gate=1.e-8)           { fTimeGateHigh = gate;            }
+ 
 
   void SetCPVClusteringThreshold(Float_t cluth)      { fCPVClusteringThreshold=cluth;   }
   void SetCPVLocalMaxCut(Float_t cut)                { fCPVLocMaxCut          =cut;     }
@@ -74,6 +82,9 @@ protected:
   Float_t fEMCMinE;                // EMC: Min.E in the digits list associated with rec.point, in GeV
   Float_t fEMCW0;                  // EMC: Log.weight to evaluate a local coordinate of rec.point
   Float_t fEMCSampleQualityCut;    // EMC: Cut on pulse shape fit quality
+  Float_t fTimeGateAmpThresh ;     // EMC: Threshold for good/bad time calculation
+  Float_t fTimeGateLow ;           // EMC: Time difference between cells in PHOS cluster (bad time estimate)
+  Float_t fTimeGateHigh ;          // EMC: Time difference between cells in PHOS cluster (good time estimate)
   Float_t fEMCEcoreRadius;         // EMC: Radius within which the core energy is calculated, in cm
   Bool_t  fEMCEcore2ESD;           // EMC: true if Ecore is stored in ESD instead of Etot
   Bool_t  fEMCSubtractPedestals;   // EMC: true if pedestal should be subtracted (in non-ZS)

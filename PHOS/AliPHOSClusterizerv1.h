@@ -87,7 +87,6 @@ public:
   virtual Float_t GetEmcClusteringThreshold()const{ return fEmcClusteringThreshold;}
   virtual Float_t GetEmcLocalMaxCut()const        { return fEmcLocMaxCut;} 
   virtual Float_t GetEmcLogWeight()const          { return fW0;}  
-  virtual Float_t GetEmcTimeGate() const          { return fEmcTimeGate ; }
   virtual Float_t GetCpvClusteringThreshold()const{ return fCpvClusteringThreshold;  } 
   virtual Float_t GetCpvLocalMaxCut()const        { return fCpvLocMaxCut;} 
   virtual Float_t GetCpvLogWeight()const          { return fW0CPV;}  
@@ -101,7 +100,6 @@ public:
   virtual void SetEmcClusteringThreshold(Float_t cluth)  { fEmcClusteringThreshold = cluth ; }
   virtual void SetEmcLocalMaxCut(Float_t cut)            { fEmcLocMaxCut = cut ; }
   virtual void SetEmcLogWeight(Float_t w)                { fW0 = w ; }
-  virtual void SetEmcTimeGate(Float_t gate)              { fEmcTimeGate = gate ;}
   virtual void SetCpvClusteringThreshold(Float_t cluth)  { fCpvClusteringThreshold = cluth ; }
   virtual void SetCpvLocalMaxCut(Float_t cut)            { fCpvLocMaxCut = cut ; }
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
@@ -126,6 +124,7 @@ protected:
   void           SetDistancesToBadChannels();
   virtual Float_t Calibrate(Float_t amp, Int_t absId) const ;  // Tranforms ADC counts to energy   
   virtual Float_t CalibrateT(Float_t amp, Int_t absId) const ;  //Tranforms Sample counts to sec.
+  Bool_t CheckTimeGate(Float_t t1, Float_t amp1, Float_t t2, Float_t amp2)const ; //Checks if time difference is reasonable
    
 private:
   AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) ;
@@ -158,10 +157,13 @@ private:
   Float_t fW0 ;                      // logarithmic weight for the cluster center of gravity calculation
   Float_t fCpvLocMaxCut ;            // minimum energy difference to distinguish local maxima in a CPV cluster
   Float_t fW0CPV ;                   // logarithmic weight for the CPV cluster center of gravity calculation
-  Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
+  Float_t fTimeGateLowAmp ;          // Threshold for good/bad time measurement
+  Float_t fTimeGateLow ;             // Time difference between cells with low amplitude
+  Float_t fTimeGateHigh ;            // Time difference between cells with good time measurement
+ 
   Float_t fEcoreRadius ;             // Radius within which the core energy is calculated, in cm
 
-  ClassDef(AliPHOSClusterizerv1,7)   // Clusterizer implementation version 1
+  ClassDef(AliPHOSClusterizerv1,8)   // Clusterizer implementation version 1
 
 };
 

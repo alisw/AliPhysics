@@ -53,7 +53,6 @@ public:
   virtual Float_t GetEmcClusteringThreshold()const = 0;
   virtual Float_t GetEmcLocalMaxCut()const = 0;
   virtual Float_t GetEmcLogWeight()const = 0;
-  virtual Float_t GetEmcTimeGate() const = 0;
   virtual Float_t GetCpvClusteringThreshold()const = 0;
   virtual Float_t GetCpvLocalMaxCut()const = 0;
   virtual Float_t GetCpvLogWeight()const = 0;
@@ -64,7 +63,6 @@ public:
   virtual void SetEmcLocalMaxCut(Float_t )        = 0;
     
   virtual void SetEmcLogWeight(Float_t)           = 0;
-  virtual void SetEmcTimeGate(Float_t)            = 0;
   virtual void SetCpvClusteringThreshold(Float_t) = 0;
   virtual void SetCpvLocalMaxCut(Float_t)         = 0;
   virtual void SetCpvLogWeight(Float_t)           = 0;

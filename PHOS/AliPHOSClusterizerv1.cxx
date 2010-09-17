@@ -197,7 +197,9 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
   fNumberOfEmcClusters(0),    fNumberOfCpvClusters(0),
   fEmcClusteringThreshold(0), fCpvClusteringThreshold(0), 
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
-  fW0CPV(0),                  fEmcTimeGate(0),          fEcoreRadius(0)
+  fW0CPV(0),                 
+  fTimeGateLowAmp(0.),        fTimeGateLow(0.),         fTimeGateHigh(0.),  
+  fEcoreRadius(0)
 {
   // default ctor (to be used mainly by Streamer)
   
@@ -212,7 +214,9 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(AliPHOSGeometry *geom) :
   fNumberOfEmcClusters(0),    fNumberOfCpvClusters(0),
   fEmcClusteringThreshold(0), fCpvClusteringThreshold(0), 
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
-  fW0CPV(0),                  fEmcTimeGate(0),          fEcoreRadius(0)
+  fW0CPV(0),                  
+  fTimeGateLowAmp(0.),        fTimeGateLow(0.),         fTimeGateHigh(0.),  
+  fEcoreRadius(0) 
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
@@ -398,7 +402,10 @@ void AliPHOSClusterizerv1::InitParameters()
   fW0                      = recoParam->GetEMCLogWeight();
   fW0CPV                   = recoParam->GetCPVLogWeight();
 
-  fEmcTimeGate             = 1.e-6 ;  //10 sample steps
+  fTimeGateLowAmp          = recoParam->GetTimeGateAmpThresh() ;
+  fTimeGateLow             = recoParam->GetTimeGateLow() ;
+  fTimeGateHigh            = recoParam->GetTimeGateHigh() ;
+
   fEcoreRadius             = recoParam->GetEMCEcoreRadius();
   
   fToUnfold                = recoParam->EMCToUnfold() ;
@@ -429,7 +436,7 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)c
     
     if (( coldiff <= 1 )  && ( rowdiff <= 1 )){   //At least common vertex
       //    if (( relid1[2]==relid2[2] && coldiff <= 1 )  || ( relid1[3]==relid2[3] &&  rowdiff <= 1 )){ //common side
-      if((relid1[1] != 0) || (TMath::Abs(d1->GetTime() - d2->GetTime() ) < fEmcTimeGate))
+      if((relid1[1] != 0) || CheckTimeGate(d1->GetTime(),d1->GetEnergy(),d2->GetTime(),d2->GetEnergy())) 
       return 1 ; 
     }
     else {
@@ -450,6 +457,18 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)c
   }
 
   return 0 ; 
+}
+//____________________________________________________________________________
+Bool_t AliPHOSClusterizerv1::CheckTimeGate(Float_t t1, Float_t amp1, Float_t t2, Float_t amp2)const{
+  //Check if two cells have reasonable time difference
+  //Note that at low amplitude time is defined up to 1 tick == 100 ns.
+  if(amp1<fTimeGateLowAmp || amp2<fTimeGateLowAmp){
+   return (TMath::Abs(t1 - t2 ) < fTimeGateLow) ;
+  }
+  else{ //Time should be measured with good accuracy
+   return (TMath::Abs(t1 - t2 ) < fTimeGateHigh) ;
+  }
+
 }
 //____________________________________________________________________________
 Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit) const

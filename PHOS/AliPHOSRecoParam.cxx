@@ -38,6 +38,9 @@ AliPHOSRecoParam::AliPHOSRecoParam() :
   fEMCMinE(0.012),
   fEMCW0(4.5),
   fEMCSampleQualityCut(1.),
+  fTimeGateAmpThresh(10.),
+  fTimeGateLow(1.e-6),
+  fTimeGateHigh(1.e-6),    
   fEMCEcoreRadius(3.),
   fEMCEcore2ESD(kFALSE),
   fEMCSubtractPedestals(kTRUE),
@@ -64,6 +67,9 @@ AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& ):
   fEMCMinE(0.012),
   fEMCW0(4.5),
   fEMCSampleQualityCut(1.),
+  fTimeGateAmpThresh(10.),
+  fTimeGateLow(1.e-6),
+  fTimeGateHigh(1.e-6),    
   fEMCEcoreRadius(3.),
   fEMCEcore2ESD(kFALSE),
   fEMCSubtractPedestals(kTRUE),
@@ -93,6 +99,9 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
     fEMCMinE                = recoParam.fEMCMinE;
     fEMCW0                  = recoParam.fEMCW0;
     fEMCSampleQualityCut    = recoParam.fEMCSampleQualityCut;
+    fTimeGateAmpThresh      = recoParam.fTimeGateAmpThresh ;
+    fTimeGateLow            = recoParam.fTimeGateLow ;
+    fTimeGateHigh           = recoParam.fTimeGateHigh ;
     fEMCEcoreRadius         = recoParam.fEMCEcoreRadius;
     fEMCEcore2ESD           = recoParam.fEMCEcore2ESD;
     fEMCSubtractPedestals   = recoParam.fEMCSubtractPedestals;
