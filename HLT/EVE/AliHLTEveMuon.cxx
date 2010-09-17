@@ -53,6 +53,7 @@ AliHLTEveMuon::AliHLTEveMuon() :
   fClusters(NULL)
 {
   // Constructor.
+  SetMaxHistograms(6);
 }
 
 AliHLTEveMuon::~AliHLTEveMuon()
