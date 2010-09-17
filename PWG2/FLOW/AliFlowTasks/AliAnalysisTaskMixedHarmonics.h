@@ -52,6 +52,12 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Bool_t GetEvaluateDifferential3pCorrelator() const {return this->fEvaluateDifferential3pCorrelator;};       
   void SetCorrectForDetectorEffects(Bool_t const cfde) {this->fCorrectForDetectorEffects = cfde;};
   Bool_t GetCorrectForDetectorEffects() const {return this->fCorrectForDetectorEffects;}; 
+  void SetPrintOnTheScreen(Bool_t const pots) {this->fPrintOnTheScreen = pots;};
+  Bool_t GetPrintOnTheScreen() const {return this->fPrintOnTheScreen;};  
+  void SetCalculateVsM(Bool_t const cvm) {this->fCalculateVsM = cvm;};
+  Bool_t GetCalculateVsM() const {return this->fCalculateVsM;};  
+  void SetShowBinLabelsVsM(Bool_t const sblvm) {this->fShowBinLabelsVsM = sblvm;};
+  Bool_t GetShowBinLabelsVsM() const {return this->fShowBinLabelsVsM;};     
   // particle weights:
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
@@ -74,7 +80,10 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Double_t fMinMultiplicity; // minimal multiplicity
   Bool_t fOppositeChargesPOI; // two POIs, psi1 and psi2, in correlator <<cos[psi1+psi2-2phi3)]>> will be taken with opposite charges 
   Bool_t fEvaluateDifferential3pCorrelator; // evaluate <<cos[psi1+psi2-2phi3)]>>, where psi1 and psi2 are two POIs      
-  Bool_t fCorrectForDetectorEffects; // correct 3-p correlator for detector effects
+  Bool_t fCorrectForDetectorEffects; // correct 3-p correlator for detector effects  
+  Bool_t fPrintOnTheScreen; // print or not the final results on the screen
+  Bool_t fCalculateVsM; // calculate correlators vs multiplicity
+  Bool_t fShowBinLabelsVsM; // in histograms holding results vs multiplicity show bin labels in the format M_lowEdge \leq M < M_upperEdge  
   // particle weights:
   Bool_t fUseParticleWeights; // use any particle weights
   Bool_t fUsePhiWeights; // use phi weights

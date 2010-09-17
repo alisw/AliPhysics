@@ -54,6 +54,9 @@ class AliFlowAnalysisWithMixedHarmonics
     virtual void BookCommonHistograms();
     virtual void BookAllEventByEventQuantities();
     virtual void BookAllAllEventQuantities();
+      virtual void BookDefault(); // book histos and profiles without any binning in multiplicity, pt or eta
+      virtual void BookVsM();
+      virtual void BookDifferential();
     virtual void BookAndFillWeightsHistograms();
     virtual void StoreHarmonic();    
     // 2.) Method Make() and methods called within Make():
@@ -103,7 +106,11 @@ class AliFlowAnalysisWithMixedHarmonics
   void SetCorrectForDetectorEffects(Bool_t const cfde) {this->fCorrectForDetectorEffects = cfde;};
   Bool_t GetCorrectForDetectorEffects() const {return this->fCorrectForDetectorEffects;}; 
   void SetPrintOnTheScreen(Bool_t const pots) {this->fPrintOnTheScreen = pots;};
-  Bool_t GetPrintOnTheScreen() const {return this->fPrintOnTheScreen;};   
+  Bool_t GetPrintOnTheScreen() const {return this->fPrintOnTheScreen;};  
+  void SetCalculateVsM(Bool_t const cvm) {this->fCalculateVsM = cvm;};
+  Bool_t GetCalculateVsM() const {return this->fCalculateVsM;};  
+  void SetShowBinLabelsVsM(Bool_t const sblvm) {this->fShowBinLabelsVsM = sblvm;};
+  Bool_t GetShowBinLabelsVsM() const {return this->fShowBinLabelsVsM;};  
   void SetCommonHists(AliFlowCommonHist* const ch) {this->fCommonHists = ch;};
   AliFlowCommonHist* GetCommonHists() const {return this->fCommonHists;};
   void SetWeightsList(TList* const wl) {this->fWeightsList = (TList*)wl->Clone();}
@@ -161,6 +168,8 @@ class AliFlowAnalysisWithMixedHarmonics
   Bool_t fEvaluateDifferential3pCorrelator; // evaluate <<cos[psi1+psi2-2phi3)]>>, where psi1 and psi2 are two POIs 
   Bool_t fCorrectForDetectorEffects; // correct 3-p correlator for detector effects
   Bool_t fPrintOnTheScreen; // print or not the final results on the screen
+  Bool_t fCalculateVsM; // calculate correlators vs multiplicity
+  Bool_t fShowBinLabelsVsM; // in histograms holding results vs multiplicity show bin labels in the format M_lowEdge \leq M < M_upperEdge
   // 1.) Common:
   AliFlowCommonHist *fCommonHists; // common control histograms (filled only with events with 3 or more tracks for 3-p correlators) 
   Int_t fnBinsPhi; // number of phi bins
