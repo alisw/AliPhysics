@@ -32,6 +32,7 @@ class AliESDInputHandler : public AliInputEventHandler {
     virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
     virtual Bool_t       Notify(const char* path);
     virtual Bool_t       FinishEvent();
+    void                 CheckSelectionMask();
     AliESDEvent         *GetEvent()        const {return fEvent;}
     Option_t            *GetAnalysisType() const {return fAnalysisType;}
     Option_t            *GetDataType() const;

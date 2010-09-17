@@ -24,6 +24,11 @@ class AliTenderSupply;
 
 class AliTender : public AliAnalysisTaskSE {
 
+public:
+enum ETenderFlags {
+   kCheckEventSelection = BIT(18) // up to 18 used by AliAnalysisTask
+};
+   
 private:
   Int_t                     fRun;            //! Current run
   Bool_t                    fRunChanged;     //! Flag for run change.
@@ -49,6 +54,7 @@ public:
   AliESDInputHandler       *GetESDhandler() const {return fESDhandler;}
   AliESDEvent              *GetEvent() const {return fESD;}
   TObjArray                *GetSupplies() const {return fSupplies;}
+  void                      SetCheckEventSelection(Bool_t flag=kTRUE) {TObject::SetBit(kCheckEventSelection,flag);}
   Bool_t                    RunChanged() const {return fRunChanged;}
   // Configuration
   void                      SetDefaultCDBStorage(const char *dbString="local://$ALICE_ROOT/OCDB");

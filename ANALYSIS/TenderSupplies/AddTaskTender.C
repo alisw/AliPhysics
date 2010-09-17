@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskTender(){
+AliAnalysisTask *AddTaskTender(Bool_t checkEvtSelection=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -14,8 +14,15 @@ AliAnalysisTask *AddTaskTender(){
   
   //========= Add tender to the ANALYSIS manager and set default storage =====
   AliTender *tender=new AliTender("AnalysisTender");
+  tender->SetCheckEventSelection(checkEvtSelection);
   tender->SetDefaultCDBStorage("raw://");
   mgr->AddTask(tender);
+  if (checkEvtSelection) {
+     if (mgr->GetTasks()->First() != (TObject*)tender) {
+        ::Error("When setting the tender to check the event selection, it has to be the first wagon ! Aborting.");
+        return NULL;
+     }
+  }   
   
   //========= Attach TPC supply ======
   AliTPCTenderSupply *tpcSupply=new AliTPCTenderSupply("TPCtender");

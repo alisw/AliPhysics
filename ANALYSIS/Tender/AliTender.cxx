@@ -121,6 +121,13 @@ void AliTender::UserCreateOutputObjects()
 {
 // Nothing for the moment, but we may need ESD event replication here.
   if (fDebug > 1) Printf("AliTender::CreateOutputObjects()\n");
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) AliFatal("No tender without an analysis manager");
+  fESDhandler = dynamic_cast<AliESDInputHandler *>(mgr->GetInputEventHandler());
+  if (fESDhandler && TObject::TestBit(kCheckEventSelection)) {
+     fESDhandler->SetUserCallSelectionMask(kTRUE);
+     Info("UserCreateOutputObjects","The TENDER will check the event selection. Make sure you add the tender as FIRST wagon!");
+  }   
 }
 
 //______________________________________________________________________________
@@ -133,6 +140,7 @@ void AliTender::UserExec(Option_t* /*option*/)
     Printf("AliTender::Exec() %s ==> processing event %lld\n", fESDhandler->GetTree()->GetCurrentFile()->GetName(),entry);
   }  
   fESD = fESDhandler->GetEvent();
+  if (TObject::TestBit(kCheckEventSelection)) fESDhandler->CheckSelectionMask();
 
 // Call the user analysis
   // Unlock CDB

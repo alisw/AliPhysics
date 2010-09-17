@@ -80,6 +80,7 @@ AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
     // Constructor
 }
 
+//______________________________________________________________________________
 Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
 {
     //
@@ -98,10 +99,14 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     return kTRUE;
 }
 
+//______________________________________________________________________________
 Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
 {
     
     // Copy from old to new format if necessary
+  static Bool_t called = kFALSE;
+  if (!called && fEventCuts && IsUserCallSelectionMask())
+     AliInfo(Form("The ESD input handler expects that the first task calls AliESDInputHandler::CheckSelectionMask() %s", fEventCuts->ClassName()));
   AliESD* old = ((AliESDEvent*) fEvent)->GetAliESDOld();
   if (old) {
 	((AliESDEvent*)fEvent)->CopyFromOldESD();
@@ -116,14 +121,25 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   //
   // Event selection
   // 
-  if (fEventCuts)
-    fIsSelectedResult = fEventCuts->GetSelectionMask((AliESDEvent*)fEvent); 
+  fIsSelectedResult = 0;
+  if (fEventCuts && !IsUserCallSelectionMask())
+      fIsSelectedResult = fEventCuts->GetSelectionMask((AliESDEvent*)fEvent); 
   //
   // Friends
   ((AliESDEvent*)fEvent)->SetESDfriend(fFriend);
+  called = kTRUE;
   return kTRUE;
 }
 
+//______________________________________________________________________________
+void AliESDInputHandler::CheckSelectionMask()
+{
+// This method can be called by a task only if IsUserCallSelectionMask is true.
+   if (!fEventCuts || !IsUserCallSelectionMask()) return;
+   fEventCuts->GetSelectionMask((AliESDEvent*)fEvent);
+}
+   
+//______________________________________________________________________________
 Bool_t  AliESDInputHandler::FinishEvent()
 {
     // Finish the event 
@@ -131,6 +147,7 @@ Bool_t  AliESDInputHandler::FinishEvent()
     return kTRUE;
 } 
 
+//______________________________________________________________________________
 Bool_t AliESDInputHandler::Notify(const char* path)
 {
     // Notify a directory change
@@ -158,8 +175,6 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     SwitchOffBranches();
     SwitchOnBranches();
     fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
-    
-
     //
     if (fUseHLT) {
 	// Get HLTesdTree from current file
@@ -173,9 +188,6 @@ Bool_t AliESDInputHandler::Notify(const char* path)
 	  fHLTEvent->ReadFromTree(fHLTTree);
 	}
     }
-
-
-
 
     if (!fUseTags) return (kTRUE);
     
@@ -266,14 +278,14 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     return kTRUE;
 }
 
-
-
+//______________________________________________________________________________
 Option_t *AliESDInputHandler::GetDataType() const
 {
 // Returns handled data type.
    return gESDDataType;
 }
 
+//______________________________________________________________________________
 Int_t AliESDInputHandler::GetNEventAcceptedInFile()
 {
   // Get number of events in file accepted by the tag cuts
@@ -312,6 +324,8 @@ Int_t AliESDInputHandler::GetNEventAcceptedInFile()
 
   return iAcc;
 }
+
+//______________________________________________________________________________
 Int_t AliESDInputHandler::GetNEventRejectedInFile()
 {
   // Get number of events in file rejected by the tag cuts
@@ -351,6 +365,8 @@ Int_t AliESDInputHandler::GetNEventRejectedInFile()
 
   return iRej;
 }
+
+//______________________________________________________________________________
 Bool_t AliESDInputHandler::GetCutSummaryForChain(Int_t *aTotal, Int_t *aAccepted, Int_t *aRejected)
 {
   // Get number of events in the full chain
@@ -399,6 +415,7 @@ Bool_t AliESDInputHandler::GetCutSummaryForChain(Int_t *aTotal, Int_t *aAccepted
   return kTRUE;
 }
 
+//______________________________________________________________________________
 Int_t AliESDInputHandler::GetNFilesEmpty()
 {
   // Count number of files in which all events were de-selected
