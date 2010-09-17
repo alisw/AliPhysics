@@ -28,11 +28,11 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void SetAnalysisType(TString type) { this->fAnalysisType = type; }
-  TString GetAnalysisType() const    { return this->fAnalysisType; }
+  void    SetAnalysisType(TString type) { this->fAnalysisType = type; }
+  TString GetAnalysisType() const       { return this->fAnalysisType; }
 
-  void SetRPType(TString rptype) { this->fRPType = rptype; }
-  TString GetRPType() const    { return this->fRPType; }
+  void    SetRPType(TString rptype) { this->fRPType = rptype; }
+  TString GetRPType() const         { return this->fRPType; }
 
   void    SetMinMult(Int_t multmin)    {this->fMinMult = multmin; }
   Int_t   GetMinMult() const           {return this->fMinMult; }
@@ -46,6 +46,10 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t GetMinB() const {return this->fMinB;}
   Double_t GetMaxB() const {return this->fMaxB;}
   
+  void DefineDeadZone( Double_t etaMin, Double_t etaMax, Double_t phiMin, Double_t phiMax )
+  {this->fExcludedEtaMin = etaMin; this->fExcludedEtaMax = etaMax; 
+    this->fExcludedPhiMin = phiMin; this->fExcludedPhiMax = phiMax; }
+
   void          SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
   AliCFManager* GetCFManager1()           {return this->fCFManager1; }
   void          SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
@@ -125,6 +129,13 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t  fQMin;     // histogram limit
   Double_t  fQMax;     // histogram limit
   // end common constants
+
+  // Excluding a range
+  Double_t  fExcludedEtaMin;  // excluded region limit 
+  Double_t  fExcludedEtaMax;  // excluded region limit 
+  Double_t  fExcludedPhiMin;  // excluded region limit 
+  Double_t  fExcludedPhiMax;  // excluded region limit 
+  // End of excluding a range
 
   // values afterburner
   Bool_t    fAfterburnerOn;              // do we afterburn?

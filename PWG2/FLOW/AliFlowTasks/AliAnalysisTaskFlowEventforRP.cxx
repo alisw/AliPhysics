@@ -58,10 +58,10 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenGeVSimEventHeader.h"
+#include "AliGenEposEventHeader.h"
 
 // Interface to make the Flow Event Simple used in the flow analysis methods
-#include "AliFlowEventSimple.h"
-#include "AliFlowEventSimpleMaker.h"
+#include "AliFlowEvent.h"
 #include "AliFlowVector.h"
 #include "AliAnalysisTaskFlowEventforRP.h"
 
@@ -71,18 +71,13 @@ ClassImp(AliAnalysisTaskFlowEventforRP)
 //________________________________________________________________________
 AliAnalysisTaskFlowEventforRP::AliAnalysisTaskFlowEventforRP(const char *name) : 
   AliAnalysisTaskSE(name), 
-//  fOutputFile(NULL),
-  //fESD(NULL),
-  //fAOD(NULL),
-  fEventMaker(NULL),
   fAnalysisType("ESD"),
   fCFManager1(NULL),
   fCFManager2(NULL),
   fMinMult(0),
   fMaxMult(10000000),
   fMCReactionPlaneAngle(0.)
-  
-  
+    
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEventforRP::AliAnalysisTaskFlowEventforRP(const char *name)"<<endl;
@@ -97,10 +92,6 @@ AliAnalysisTaskFlowEventforRP::AliAnalysisTaskFlowEventforRP(const char *name) :
 
 //________________________________________________________________________
 AliAnalysisTaskFlowEventforRP::AliAnalysisTaskFlowEventforRP() : 
-  //  fOutputFile(NULL),
-  //fESD(NULL),
-  //fAOD(NULL),
-  fEventMaker(NULL),
   fAnalysisType("ESD"),
   fCFManager1(NULL),
   fCFManager2(NULL),
@@ -133,10 +124,7 @@ void AliAnalysisTaskFlowEventforRP::UserCreateOutputObjects()
     cout<<"WRONG ANALYSIS TYPE! only ESD for this method."<<endl;
     exit(1);
   }
-
-  // Flow Event maker
-  fEventMaker = new AliFlowEventSimpleMaker();
-  
+    
 }
 
 //________________________________________________________________________
@@ -145,76 +133,57 @@ void AliAnalysisTaskFlowEventforRP::UserExec(Option_t *)
   // Main loop
 
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  //AliESD*      old = esd->GetAliESDOld();
-
-  // Called for each event
-  AliFlowEventSimple* fEvent = NULL;
+  AliFlowEvent* fEvent = NULL;
+  AliMCEvent* mcEvent  = MCEvent();
   Double_t fRP = 0.; // the monte carlo reaction plane angle
   
-  AliMCEvent* mcEvent = NULL;
-  // See if we can get Monte Carlo Information and if so get the reaction plane
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (eventHandler) {
-  mcEvent = eventHandler->MCEvent();
-  if (mcEvent) {
-    //COCKTAIL with HIJING
-    if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Cocktail Header")) { //returns 0 if matches
-      AliGenCocktailEventHeader *headerC = dynamic_cast<AliGenCocktailEventHeader *> (mcEvent-> GenEventHeader()); 
-      if (headerC) {
-	TList *lhd = headerC->GetHeaders();
-	if (lhd) {
-	  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
-	  if (hdh) {
-	    fRP = hdh->ReactionPlaneAngle();
-	    //cout<<"The reactionPlane from Hijing (Cocktail) is: "<< fRP <<endl;
-	  }
-	}
-      }
-      //else { cout<<"headerC is NULL"<<endl; }
-    }
-    //GEVSIM
-    else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"GeVSim header")) { //returns 0 if matches
-      AliGenGeVSimEventHeader* headerG = (AliGenGeVSimEventHeader*)(mcEvent->GenEventHeader());
-      if (headerG) {
-	fRP = headerG->GetEventPlane();
-	//cout<<"The reactionPlane from GeVSim is: "<< fRP <<endl;
-      }
-      //else { cout<<"headerG is NULL"<<endl; }
-    }
-    //HIJING
-    else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Hijing")) { //returns 0 if matches
-      AliGenHijingEventHeader* headerH = (AliGenHijingEventHeader*)(mcEvent->GenEventHeader());
-      if (headerH) {
-	fRP = headerH->ReactionPlaneAngle();
-	//cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
-      }
-      //else { cout<<"headerH is NULL"<<endl; }
-    }
-  }
-  else {cout<<"No MC event!"<<endl; }
-  }
-  else {cout<<"No eventHandler!"<<endl; }
-
-  fEventMaker->SetMCReactionPlaneAngle(fRP);
-  
-  //setting event cuts
-  fEventMaker->SetMinMult(fMinMult);
-  fEventMaker->SetMaxMult(fMaxMult);
-  
   // Fill the FlowEventSimple for ESD input  
-  //else if (fAnalysisType == "ESD") {
   if (fAnalysisType == "ESD") {
-    if (!fCFManager1) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
-    if (!fCFManager2) {cout << "ERROR: No pointer to correction framework cuts! " << endl; return; }
+    if (!(fCFManager1&&fCFManager2))
+      {
+	cout << "ERROR: No pointer to correction framework cuts! " << endl; 
+	return; 
+      }
+    if (!esd)
+      {
+	AliError("ERROR: ESD not available");
+	return;
+      }
     
-    if (!esd) { Printf("ERROR: esd not available"); return;}
-    Printf("There are %d tracks in this event", esd->GetNumberOfTracks());
+    //check the offline trigger (check if the event has the correct trigger)
+    //AliInfo(Form("ESD has %d tracks", fInputEvent->GetNumberOfTracks()));
     
-    // analysis
-    fEvent = fEventMaker->FillTracks(esd,fCFManager1,fCFManager2);
-        
+    //check multiplicity
+    if (!fCFManager1->CheckEventCuts(AliCFManager::kEvtRecCuts,esd))
+      {
+	cout << "Event does not pass multiplicity cuts" << endl;
+	return;
+      }
+    
+    // make the flowevent
+    fEvent = new AliFlowEvent(esd,fCFManager1,fCFManager2);
+    
+    if (mcEvent && mcEvent->GenEventHeader()) 
+      {
+	fEvent->SetMCReactionPlaneAngle(mcEvent);
+	fRP = fEvent->GetMCReactionPlaneAngle();
+      }
+    
+    //check final event cuts
+    Int_t mult = fEvent->NumberOfTracks();
+    cout << "FlowEvent has "<<mult<<" tracks"<<endl;
+    if (mult<fMinMult || mult>fMaxMult)
+      {
+	cout << "FlowEvent cut on multiplicity" << endl;
+	return;
+      }
+
+  
+    // get the flow vector     
     AliFlowVector vQ = fEvent->GetQ();                      
-    Double_t dRP[1] = {0.0};                      // Phi is een Double_t, maar SetQTheta heeft een Double_t* nodig, dus een double in array vorm. 
+    Double_t dRP[1] = {0.0};   
+    // Phi is a Double_t, but SetQTheta() needs as input Double_t*, 
+    // an array of doubles. 
     dRP[0] = vQ.Phi()/2; 
       
     cout<<"The reaction plane from MC is "<<fRP<<endl;
@@ -229,6 +198,7 @@ void AliAnalysisTaskFlowEventforRP::UserExec(Option_t *)
   }
     
   PostData(0,fEvent);
+  
   
 } 
 
