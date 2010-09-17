@@ -395,13 +395,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
         TParticlePDG *pc = part->GetPDG(0);
 
         // Check if it is a primary particle
-        if (!stack->IsPhysicalPrimary(iPart)){//secondaries...
-	}
-	else{//primaries
-	  // Check for reasonable (for now neutral and singly charged) charge on the particle
-	  //note that the charge is stored in units of e/3
-	  //if (TMath::Abs(pc->Charge()) != EtMonteCarloCuts::kSingleChargedParticle && pc->Charge() != EtMonteCarloCuts::kNeutralParticle) continue;
-
+	if (stack->IsPhysicalPrimary(iPart)){//primaries
 
 	  if (TMath::Abs(part->Eta()) < fCuts->GetCommonEtaCut())	    {
 
@@ -716,10 +710,26 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtSimulatedEMinus",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
+	    //============neutrals===================================
+	    if(pdgCode == fGammaCode){
+	      float myEt = Et(part);
+	      FillHisto2D("EtSimulatedGamma",part->Pt(),part->Eta(),myEt);
+	      filled = true;
+	    }
+	    if(pdgCode == fEtaCode){
+	      float myEt = Et(part);
+	      FillHisto2D("EtSimulatedEta",part->Pt(),part->Eta(),myEt);
+	      filled = true;
+	    }
+	    if(pdgCode == fPi0Code){
+	      float myEt = Et(part);
+	      FillHisto2D("EtSimulatedPi0",part->Pt(),part->Eta(),myEt);
+	      filled = true;
+	    }
 	    if(!filled){
-	      if( strcmp(pc->ParticleClass(),"Baryon")==0 || strcmp(pc->ParticleClass(),"Meson")==0 ){
-		//cout<<"Did not find a place for "<<part->GetName()<<" "<<pdgCode<<" which is a "<<pc->ParticleClass()<<endl;
-	      }
+	      //if( strcmp(pc->ParticleClass(),"Baryon")==0 || strcmp(pc->ParticleClass(),"Meson")==0 ){
+		cout<<"Did not find a place for "<<part->GetName()<<" "<<pdgCode<<" which is a "<<pc->ParticleClass()<<endl;
+		//}
 	    }
 	  }
 	}
@@ -792,6 +802,11 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D("EtSimulatedAntiOmegaDaughters","Simulated E_{T} from #Omega^{+} Daughters");
   CreateEtaPtHisto2D("EtSimulatedXiDaughters","Simulated E_{T} from #Xi^{-} Daughters");
   CreateEtaPtHisto2D("EtSimulatedAntiXiDaughters","Simulated E_{T} from #Xi^{+} Daughters");
+
+
+  CreateEtaPtHisto2D("EtSimulatedGamma","Simulated E_{T} from #gamma");
+  CreateEtaPtHisto2D("EtSimulatedEta","Simulated E_{T} from #eta");
+  CreateEtaPtHisto2D("EtSimulatedPi0","Simulated E_{T} from #pi^{0}");
 
   TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
