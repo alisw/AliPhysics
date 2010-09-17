@@ -115,8 +115,8 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
   TClass *ctask = new TClass;
   AliAnalysisTask *task = 0x0;
   for(Int_t itask = AliTRDpwg1Helper::kNTRDQATASKS; itask--;){
-    if(!TESTBIT(fSteerTask, itask)) continue;
-    new(ctask) TClass(AliTRDpwg1Helper::fgkTRDtaskClassName[itask]);
+    if(!AliTRDpwg1Helper::DoTask(itask, fSteerTask)) continue;
+    new(ctask) TClass(AliTRDpwg1Helper::TaskClassName(itask));
     task = (AliAnalysisTask*)ctask->New();
     task->SetName(Form("%s%s", task->GetName(), cid));
     printf(" *** task %s, output file %s\n", task->GetName(), outputFile.Data());
