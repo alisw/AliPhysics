@@ -31,10 +31,16 @@ class AliFlowCommonHist: public TNamed {
   AliFlowCommonHist(const AliFlowCommonHist& aSetOfHists);
 
   Bool_t  IsFolder() const {return kTRUE;};
-  //make fill methods here
-  Bool_t FillControlHistograms(AliFlowEventSimple* anEvent);
-  void Browse(TBrowser *b); 
-  //make get methods here
+  void Browse(TBrowser *b);
+  //merge function
+  virtual Double_t  Merge(TCollection *aList);  
+  //method to print stats
+  void Print(Option_t* option = "") const;
+ 
+  //fill method
+  Bool_t FillControlHistograms(AliFlowEventSimple* anEvent,TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
+  
+  //getters
   Double_t GetEntriesInPtBinRP(Int_t iBin);   //gets entries from fHistPtRP
   Double_t GetEntriesInPtBinPOI(Int_t iBin);  //gets entries from fHistPtPOI
   Double_t GetEntriesInEtaBinRP(Int_t iBin);  //gets entries from fHistEtaRP
@@ -59,6 +65,7 @@ class AliFlowCommonHist: public TNamed {
   TH2F*     GetHistPhiEtaRP()        {return fHistPhiEtaRP;  } ; 
   TH2F*     GetHistPhiEtaPOI()       {return fHistPhiEtaPOI;  } ; 
   TProfile* GetHistProMeanPtperBin() {return fHistProMeanPtperBin; } ;
+  TH2F*     GetHistWeightvsPhi()     {return fHistWeightvsPhi; } ;
   TH1F*     GetHistQ()               {return fHistQ; } ;  
   TH1F*     GetHistAngleQ()          {return fHistAngleQ; }
   TH1F*     GetHistAngleQSub0()      {return fHistAngleQSub0; }
@@ -67,11 +74,7 @@ class AliFlowCommonHist: public TNamed {
   TProfile* GetRefMultVsNoOfRPs()    {return fRefMultVsNoOfRPs; } ;
   TList*    GetHistList()            {return fHistList;} ;  
 
-  virtual Double_t  Merge(TCollection *aList);  //merge function
-  //method to print stats
-  void Print(Option_t* option = "") const;
-
- 
+   
  private:
 
   AliFlowCommonHist& operator=(const AliFlowCommonHist& aSetOfHists);
@@ -96,6 +99,7 @@ class AliFlowCommonHist: public TNamed {
   TH2F*     fHistPhiEtaRP;        // eta vs phi for RP selection
   TH2F*     fHistPhiEtaPOI;       // eta vs phi for POI selection
   TProfile* fHistProMeanPtperBin; // mean pt for each pt bin (for POI selection)
+  TH2F*     fHistWeightvsPhi;     // particle weight vs particle phi
   TH1F*     fHistQ;               // Qvector distribution
   TH1F*     fHistAngleQ;          // distribution of angle of Q vector
   TH1F*     fHistAngleQSub0;      // distribution of angle of subevent 0 Q vector
