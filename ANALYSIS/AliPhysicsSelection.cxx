@@ -534,6 +534,9 @@ const char * AliPhysicsSelection::GetFillingScheme(UInt_t runNumber)  {
   else if (runNumber >= 130148 && runNumber <= 130375) {
     return "125n_48b_36_16_36";
   } 
+  else if (runNumber >= 130601 && runNumber <= 130640) {
+    return "1000ns_50b_35_14_35";
+  }
   else {
     AliError(Form("Unknown filling scheme (run %d)", runNumber));
   }
@@ -646,10 +649,19 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     // Printf("0x%x",returnString.Data());
     // Printf("%s",returnString.Data());
     return returnString.Data();
+  } 
+  else if (runNumber >= 130601 && runNumber <= 130640) {
+    TString triggerString = trigger;
+    static TString returnString = " ";
+    returnString = "";
+    if (triggerString.Contains("B")) returnString += "  #346  #386  #426  #466  #506  #546  #586  #1240  #1280  #1320  #1360  #1400  #1440  #1480 ";
+    if (triggerString.Contains("A")) returnString += "  #626  #666  #706  #746  #786  #826  #866  #1520  #1560  #1600  #1640  #1680  #1720  #1760  #2076  #2131  #2171  #2211  #2251  #2291  #2331  #2371  #2414  #2454  #2494  #2534  #2574  #2614  #2654  #2694  #2734  #2774  #2814 "; //#2854  #2894  #2934 not present in this run
+    if (triggerString.Contains("C")) returnString += "  #3019  #3059  #3099  #3139  #3179  #3219  #3259  #3299  #3339  #3379  #3419  #3459  #3499  #3539  #115  #629  #669  #709  #749  #789  #829  #869  #909  #949  #989  #1029  #1069  #1109  #1149  #1523  #1563  #1603  #1643 "; //#1683  #1723  #1763 not present in this run
+    return returnString.Data();
   }
 
   else {
-    AliError(Form("Unknown run %d, using all BXs!",runNumber));
+    AliWarning(Form("Unknown run %d, using all BXs!",runNumber));
   }
 
   return "";
@@ -1135,11 +1147,6 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 	    Int_t acc  = ratioToB[kClassE]*nEvents[kClassE]; 
 	    Double_t acc_err = TMath::Sqrt(ratioToB[kClassE]*ratioToB[kClassE]*nEvents[kClassE]);
 	    //      Int_t bg   = cint1A + cint1C - 2*acc;
-	    // cout << "-----------------------" << endl;
-	    // cout << "Factors: " << fBIFactorA << " " << fBIFactorC << " " << fBIFactorAC << endl;
-	    // cout << "Ratios: "  << ratioToB[kClassA] << " " << ratioToB[kClassC] << " " << ratioToB[kClassAC] << endl;
-	    // cout << "Evts:   "  << nEvents[kClassA] << " " << nEvents[kClassC] << " " << nEvents[kClassAC] << " " <<  nEvents[kClassB] << endl;
-	    // cout << "Acc: " << acc << endl;
 	    
 	     // Assuming that for a given class the triggers are either recorded as A+C or AC
 	    Float_t bg   = nEvents[kClassAC] > 0 ?
@@ -1147,6 +1154,11 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 	      fBIFactorA* (ratioToB[kClassA]*nEvents[kClassA]-acc) + 
 	      fBIFactorC* (ratioToB[kClassC]*nEvents[kClassC]-acc) ;
 
+	    // cout << "-----------------------" << endl;
+	    // cout << "Factors: " << fBIFactorA << " " << fBIFactorC << " " << fBIFactorAC << endl;
+	    // cout << "Ratios: "  << ratioToB[kClassA] << " " << ratioToB[kClassC] << " " << ratioToB[kClassAC] << endl;
+	    // cout << "Evts:   "  << nEvents[kClassA] << " " << nEvents[kClassC] << " " << nEvents[kClassAC] << " " <<  nEvents[kClassB] << endl;
+	    // cout << "Acc: " << acc << endl;
 	    // cout << "BG: " << bg << endl;
 	    // cout  << "  " <<   fBIFactorA* (ratioToB[kClassA]*nEvents[kClassA]-acc) <<endl;
 	    // cout  << "  " <<   fBIFactorC* (ratioToB[kClassC]*nEvents[kClassC]-acc) <<endl;
