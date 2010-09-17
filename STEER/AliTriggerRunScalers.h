@@ -37,7 +37,7 @@ public:
                     Int_t    FindNearestScalersRecord( const AliTimeStamp *stamp ) const;
      AliTriggerScalersESD*   GetScalersForEventClass(const AliTimeStamp* stamp,const Int_t classIndex) const;
  // Analysis		    
-                    Int_t    ConsistencyCheck(Int_t position,Bool_t correctOverflow);
+                    Int_t    ConsistencyCheck(Int_t position,Bool_t correctOverflow, UInt_t** overflow);
 		    Int_t    CorrectScalersOverflow();
 		    Int_t    CheckRunScalers(){return (fScalersRecord.GetEntriesFast()==fScalersRecordESD.GetEntriesFast());}
   //  Setters
@@ -62,7 +62,7 @@ private:
 
     
 
-   ClassDef( AliTriggerRunScalers, 2 )  // Define a Run Trigger Scalers (Scalers)
+   ClassDef( AliTriggerRunScalers, 3 )  // Define a Run Trigger Scalers (Scalers)
 };
 
 #endif

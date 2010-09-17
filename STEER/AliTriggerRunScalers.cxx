@@ -72,7 +72,12 @@ void AliTriggerRunScalers::AddTriggerScalers( AliTriggerScalersRecord* scaler )
 { 
   // Add scaler and check consistency
   fScalersRecord.AddLast( scaler );
-  if (AliTriggerRunScalers::ConsistencyCheck(fScalersRecord.GetEntriesFast()-1,kFALSE)){
+  UInt_t* overflow[6];
+  for(Int_t i=0; i<6; i++) {
+     overflow[i] = new UInt_t[fnClasses];
+     for(Int_t j=0; j<fnClasses; j++) overflow[i][j] = 0;
+  }
+  if (AliTriggerRunScalers::ConsistencyCheck(fScalersRecord.GetEntriesFast()-1,kFALSE,overflow)){
    AliErrorClass("Trigger counters not in the right order or decreasing!");
   //  scaler->Print();
   //  fScalersRecord.Sort(); 
@@ -282,7 +287,7 @@ Int_t  AliTriggerRunScalers::FindNearestScalersRecord( const AliTimeStamp *stamp
     return (result < 0 ) ? position-1 : position; // nearst < stamp   
 }
 //_____________________________________________________________________________
-Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverflow)
+Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverflow, UInt_t** overflow)
 {
    //Check if counters are consistent(increase). Example: lOCB(n) < lOCB(n+1) and lOCB > lOCA
    // scalers coding 0,1,2,3,4,5=0b,0a,1b,1a,2b,2a
@@ -298,8 +303,8 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    };
    UInt_t c2[6], c1[6];
    ULong64_t c64[6]; 
-   Bool_t increase[6], overflow[6];  
-   for(Int_t i=0;i<6;i++){increase[i]=0;overflow[i]=0;}
+   Bool_t increase[6];  
+   for(Int_t i=0;i<6;i++){increase[i]=0;}
    ULong64_t const max1 = 4294967295ul;  //32bit counters overflow after 4294967295
    ULong64_t const max2 = 1000000000ul;  //when counters overflow they seem to be decreasing. Assume decrease cannot be smaller than max2.
 
@@ -322,25 +327,25 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       counters1->GetAllScalers(c1);
       for(Int_t i=0;i<5;i++){
          if ( c2[i] >= c1[i] ) increase[i]=1;
-         else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) overflow[i]=1;
+         else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) overflow[i][ic]++;
          else return 2;
       }
       for(Int_t i=0;i<5;i++){
          if ((c2[i] - c1[i]) < (c2[i+1] - c1[i+1]) && increase[i] && increase[i+1] ) {
                  if ( ((c2[i+1] - c1[i+1]) - (c2[i] - c1[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else return 3; }
-         else if ( (max1 - c1[i]+c2[i]) < (c2[i+1] - c1[i+1]) && overflow[i] && increase[i+1] ) {
+         else if ( (max1 - c1[i]+c2[i]) < (c2[i+1] - c1[i+1]) && overflow[i][ic] && increase[i+1] ) {
                  if ( ((c2[i+1] - c1[i+1]) - (max1 - c1[i]+c2[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else return 3; }
-         else if ( (c2[i] - c1[i]) < (max1 - c1[i+1] + c2[i+1]) && increase[i] && overflow[i+1] ) {
+         else if ( (c2[i] - c1[i]) < (max1 - c1[i+1] + c2[i+1]) && increase[i] && overflow[i+1][ic] ) {
                  if ( ((max1 - c1[i+1] + c2[i+1]) - (c2[i] - c1[i])) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else return 3; }
-         else if ( (max1 - c1[i] + c2[i] ) < (max1 - c1[i+1] + c2[i+1]) && overflow[i] && overflow[i+1] ) {
+         else if ( (max1 - c1[i] + c2[i] ) < (max1 - c1[i+1] + c2[i+1]) && overflow[i][ic] && overflow[i+1][ic] ) {
                  if ( ((max1 - c1[i+1] + c2[i+1]) - (max1 - c1[i] + c2[i] )) < 16 ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else return 3; }
       }
       if(correctOverflow){ 
-        for(Int_t i=0;i<6;i++){ c64[i]=c2[i]+max1*overflow[i]; }
+        for(Int_t i=0;i<6;i++){ c64[i]=c2[i]+max1*overflow[i][ic]; }
         AliTriggerScalersESD* s= new AliTriggerScalersESD(iclass,c64);
         recESD->AddTriggerScalers(s);
          }
@@ -373,8 +378,15 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
     recESD->AddTriggerScalers(s);
  }
  fScalersRecordESD.AddLast(recESD);
+
+ UInt_t* overflow[6];
+ for(Int_t i=0; i<6; i++) {
+    overflow[i] = new UInt_t[fnClasses];
+    for(Int_t j=0; j<fnClasses; j++) overflow[i][j] = 0;
+ }
+
  for(Int_t i=1;i<fScalersRecord.GetEntriesFast(); i++){
-  if(ConsistencyCheck(i,kTRUE)){
+  if(ConsistencyCheck(i,kTRUE,overflow)){
     fScalersRecord.At(i)->Print();
     fScalersRecord.At(i-1)->Print();
     fScalersRecordESD.SetOwner(); 
