@@ -85,7 +85,6 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fHistMesonEtAcc(0)
         ,fHistTMDeltaR(0)
 {
-
 }
 
 AliAnalysisEt::~AliAnalysisEt()
@@ -122,11 +121,8 @@ void AliAnalysisEt::FillOutputList(TList *list)
 }
 
 void AliAnalysisEt::Init()
-{// set up cuts and PDG info
-  if (!fCuts) fCuts = new AliAnalysisEtCuts();
-
-  if(!fPdgDB) fPdgDB = new TDatabasePDG();
-  SetParticleCodes();
+{// clear variables, set up cuts and PDG info
+  ResetEventValues();
 }
 
 void AliAnalysisEt::CreateHistograms()
@@ -246,31 +242,44 @@ void AliAnalysisEt::FillHistograms()
     fHistTMDeltaR;
     */
 }
+
 Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)
-{
-  //this line is basically here to eliminate a compiler warning that event is not used.  Making it a virtual function did not work with the plugin.
-  cout<<"This event has "<<event->GetNumberOfTracks()<<" tracks"<<endl;
+{ //this line is basically here to eliminate a compiler warning that event is not used.  Making it a virtual function did not work with the plugin.
+  cout << "This event has " << event->GetNumberOfTracks() << " tracks" << endl;
+  ResetEventValues();
   return 0;
 }
 
 void AliAnalysisEt::ResetEventValues()
 { // clear
-    fTotEt = 0;
-    fTotEtAcc = 0;
-    fTotNeutralEt = 0;
-    fTotNeutralEtAcc = 0;
-    fTotChargedEt  = 0;
-    fTotChargedEtAcc = 0;
-    fMultiplicity = 0;
-    fChargedMultiplicity = 0;
-    fNeutralMultiplicity = 0;
-
-    if(!fPdgDB) fPdgDB = new TDatabasePDG();
-
-    if(fPiPlusCode==0){
+  fTotEt = 0;
+  fTotEtAcc = 0;
+  fTotNeutralEt = 0;
+  fTotNeutralEtAcc = 0;
+  fTotChargedEt  = 0;
+  fTotChargedEtAcc = 0;
+  fMultiplicity = 0;
+  fChargedMultiplicity = 0;
+  fNeutralMultiplicity = 0;
+  
+  if (!fCuts || !fPdgDB || fPiPlusCode==0) { // some Init's needed
+    cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
+    if (!fCuts) {
+      cout << " setting up Cuts " << endl;
+      fCuts = new AliAnalysisEtCuts();
+    }
+    if(!fPdgDB) {
+      cout << " setting up PdgDB " << endl;
+      fPdgDB = new TDatabasePDG();
+    }
+    
+    if (fPiPlusCode==0) {
       SetParticleCodes();
     }
+  }
+  return;
 }
+
 
 void AliAnalysisEt::SetParticleCodes()
 { // set PDG info    

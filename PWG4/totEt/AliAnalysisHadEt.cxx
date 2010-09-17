@@ -94,26 +94,8 @@ AliAnalysisHadEt::~AliAnalysisHadEt()
 
 Int_t AliAnalysisHadEt::AnalyseEvent(AliVEvent *event)
 { //this line is basically here to eliminate a compiler warning that event is not used.  Making it a virtual function did not work with the plugin.
-  cout<<"This event has "<<event->GetNumberOfTracks()<<" tracks"<<endl;
-     ResetEventValues();
-     AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(event);
-
-    // Let's play with the stack!
-    AliStack *stack = mcEvent->Stack();
-
-    Int_t nPrim = stack->GetNtrack();
-
-    for (Int_t iPart = 0; iPart < nPrim; iPart++)
-    {
-
-        TParticle *part = stack->Particle(iPart);
-
-        if (!part)
-	  {
-            Printf("ERROR: Could not get particle %d", iPart);
-            continue;
-	  }
-    }
+  cout << "This event has " << event->GetNumberOfTracks() << " tracks" << endl;
+  ResetEventValues();
   return 0;
 }
 
@@ -122,11 +104,8 @@ void AliAnalysisHadEt::FillOutputList()
 }
 
 void AliAnalysisHadEt::Init()
-{//Initiate member vaiables to reasonable values
-  if (!fCuts) fCuts = new AliAnalysisEtCuts();
-
-  if(!fPdgDB) fPdgDB = new TDatabasePDG();
-  SetParticleCodes();  
+{// clear variables, set up cuts and PDG info
+  ResetEventValues();
 }
 
 void AliAnalysisHadEt::CreateHistograms()
@@ -139,15 +118,31 @@ void AliAnalysisHadEt::FillHistograms()
 
 void AliAnalysisHadEt::ResetEventValues()
 {//Resets event values of et to zero
-    fTotEt = 0;
-    fTotEtAcc = 0;
-    fTotNeutralEt = 0;
-    fTotNeutralEtAcc = 0;
-    fTotChargedEt  = 0;
-    fTotChargedEtAcc = 0;
-    fMultiplicity = 0;
-    fChargedMultiplicity = 0;
-    fNeutralMultiplicity = 0;
+  fTotEt = 0;
+  fTotEtAcc = 0;
+  fTotNeutralEt = 0;
+  fTotNeutralEtAcc = 0;
+  fTotChargedEt  = 0;
+  fTotChargedEtAcc = 0;
+  fMultiplicity = 0;
+  fChargedMultiplicity = 0;
+  fNeutralMultiplicity = 0;
+  
+  if (!fCuts || !fPdgDB || fPiPlusCode==0) { // some Init's needed
+    cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
+    if (!fCuts) {
+      cout << " setting up Cuts " << endl;
+      fCuts = new AliAnalysisEtCuts();
+    }
+    if(!fPdgDB) {
+      cout << " setting up PdgDB " << endl;
+      fPdgDB = new TDatabasePDG();
+    }
+    
+    if (fPiPlusCode==0) {
+      SetParticleCodes();
+    }
+  }
 }
 
 void AliAnalysisHadEt::SetParticleCodes()
@@ -175,6 +170,10 @@ void AliAnalysisHadEt::SetParticleCodes()
   fAntiNeutronCode = fPdgDB->GetParticle("antineutron")->PdgCode();
   fEPlusCode = fPdgDB->GetParticle("e+")->PdgCode();
   fEMinusCode = fPdgDB->GetParticle("e-")->PdgCode();
+  cout << "Resetting Codes: Pion " << fPiPlusCode
+       << "," << fPiMinusCode 
+       << " Kaon " << fKPlusCode 
+       << "," << fKMinusCode << endl;
 }
 
 void AliAnalysisHadEt::CreateEtaPtHisto2D(TString name, TString title)
