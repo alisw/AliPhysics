@@ -104,58 +104,61 @@ void AliEMCALClusterizerNxN::Digits2Clusters(Option_t * option)
 {
   // Steering method to perform clusterization for the current event 
   // in AliEMCALLoader
-
+  
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALClusterizer"); 
   
   if(strstr(option,"print"))
     Print("") ; 
- 
+  
   //Get calibration parameters from file or digitizer default values.
   GetCalibrationParameters() ;
-
+  
   //Get dead channel map from file or digitizer default values.
   GetCaloCalibPedestal() ;
 	
   fNumberOfECAClusters = 0;
-
+  
   MakeClusters() ;  //only the real clusters
-
+  
   if(fToUnfold)
     MakeUnfolding() ;
-
+  
   Int_t index ;
-
+  
   //Evaluate position, dispersion and other RecPoint properties for EC section                      
   for(index = 0; index < fRecPoints->GetEntries(); index++) 
-    {
-      dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->EvalAll(fECAW0,fDigitsArr) ;
-      AliDebug(5, Form("MAX INDEX %d ", dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->GetMaximalEnergyIndex()));
+  { 
+    AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
+    if(rp){
+      rp->EvalAll(fECAW0,fDigitsArr) ;
+      AliDebug(5, Form("MAX INDEX %d ", rp->GetMaximalEnergyIndex()));
       //For each rec.point set the distance to the nearest bad crystal
-      dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->EvalDistanceToBadChannels(fCaloPed);
+      rp->EvalDistanceToBadChannels(fCaloPed);
     }
+  }
   
   fRecPoints->Sort() ;
-
+  
   for(index = 0; index < fRecPoints->GetEntries(); index++) 
-    {
-      (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->SetIndexInList(index) ;
-      (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->Print();
-    }
+  {
+    (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->SetIndexInList(index) ;
+    (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->Print();
+  }
   
   fTreeR->Fill();
   
   if(strstr(option,"deb") || strstr(option,"all"))  
     PrintRecPoints(option) ;
-
+  
   AliDebug(1,Form("EMCAL Clusterizer found %d Rec Points",fRecPoints->GetEntriesFast()));
-
+  
   fRecPoints->Delete();
-
+  
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALClusterizer");
     printf("Exec took %f seconds for Clusterizing", 
-	   gBenchmark->GetCpuTime("EMCALClusterizer"));
+           gBenchmark->GetCpuTime("EMCALClusterizer"));
   }    
 }
 
@@ -226,11 +229,11 @@ void AliEMCALClusterizerNxN::MakeClusters()
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
   // Mar 03, 2007 by PAI
-
+  
   if (fGeom==0) AliFatal("Did not get geometry from EMCALLoader");
-
+  
   fRecPoints->Clear();
-
+  
   // Set up TObjArray with pointers to digits to work on 
   //TObjArray *digitsC = new TObjArray();
   TObjArray digitsC;
@@ -239,111 +242,113 @@ void AliEMCALClusterizerNxN::MakeClusters()
   while ( (digit = dynamic_cast<AliEMCALDigit*>(nextdigit())) ) {
     digitsC.AddLast(digit);
   }
-
+  
   TIter nextdigitC(&digitsC);
-
+  
   AliDebug(1,Form("MakeClusters: Number of digits %d  -> (e %f)\n",
-		  fDigitsArr->GetEntries(),fMinECut));
-
+                  fDigitsArr->GetEntries(),fMinECut));
+  
   Bool_t bDone = kFALSE;
   while ( bDone != kTRUE )
-    {
-      //first sort the digits:
-      Int_t iMaxEnergyDigit = -1;
-      Float_t dMaxEnergyDigit = -1;
-      AliEMCALDigit *pMaxEnergyDigit = 0;
-      nextdigitC.Reset();
-      while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) 
-	{ // scan over the list of digitsC
-	  Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
-	  //AliDebug(5, Form("-> Digit ENERGY: %1.5f", dEnergyCalibrated));
-	  
-	  //if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > fECAClusteringThreshold  )
-	  if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0) // no threshold!
+  {
+    //first sort the digits:
+    Int_t iMaxEnergyDigit = -1;
+    Float_t dMaxEnergyDigit = -1;
+    AliEMCALDigit *pMaxEnergyDigit = 0;
+    nextdigitC.Reset();
+    while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) 
+    { // scan over the list of digitsC
+      Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
+      //AliDebug(5, Form("-> Digit ENERGY: %1.5f", dEnergyCalibrated));
+      
+      //if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > fECAClusteringThreshold  )
+      if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0) // no threshold!
 	    {
 	      if (dEnergyCalibrated > dMaxEnergyDigit)
-		{
-		  dMaxEnergyDigit = dEnergyCalibrated;
-		  iMaxEnergyDigit = digit->GetId();
-		  pMaxEnergyDigit = digit;
-		}
+        {
+          dMaxEnergyDigit = dEnergyCalibrated;
+          iMaxEnergyDigit = digit->GetId();
+          pMaxEnergyDigit = digit;
+        }
 	    }
-	}
-
-      if (iMaxEnergyDigit < 0 || digitsC.GetEntries() <= 0) 
-	{
-	  bDone = kTRUE;
-	  continue;
-	}
-
-      AliDebug (2, Form("Max digit found: %1.2f AbsId: %d", dMaxEnergyDigit, iMaxEnergyDigit));
-      AliDebug(5, Form("Max Digit ENERGY: %1.5f", dMaxEnergyDigit));
-
-      // keep the candidate digits in a list
-      TList clusterDigitList;
-      clusterDigitList.SetOwner(kFALSE);
-      clusterDigitList.AddLast(pMaxEnergyDigit);	 
-
-      Double_t clusterCandidateEnergy = dMaxEnergyDigit;
-
-      // now loop over the resto of the digits and cluster into NxN cluster 
-      // we do not actually cluster yet: we keep them in the list clusterDigitList
-      nextdigitC.Reset();
-      while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) 
-	{ // scan over the list of digitsC
-	  if (digit == pMaxEnergyDigit) continue;
-	  Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
-	  AliDebug(5, Form("-> Digit ENERGY: %1.5f", dEnergyCalibrated));
-	  //if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > fECAClusteringThreshold  )
-	  if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0  )
+    }
+    
+    if (iMaxEnergyDigit < 0 || digitsC.GetEntries() <= 0) 
+    {
+      bDone = kTRUE;
+      continue;
+    }
+    
+    AliDebug (2, Form("Max digit found: %1.2f AbsId: %d", dMaxEnergyDigit, iMaxEnergyDigit));
+    AliDebug(5, Form("Max Digit ENERGY: %1.5f", dMaxEnergyDigit));
+    
+    // keep the candidate digits in a list
+    TList clusterDigitList;
+    clusterDigitList.SetOwner(kFALSE);
+    clusterDigitList.AddLast(pMaxEnergyDigit);	 
+    
+    Double_t clusterCandidateEnergy = dMaxEnergyDigit;
+    
+    // now loop over the resto of the digits and cluster into NxN cluster 
+    // we do not actually cluster yet: we keep them in the list clusterDigitList
+    nextdigitC.Reset();
+    while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) 
+    { // scan over the list of digitsC
+      if (digit == pMaxEnergyDigit) continue;
+      Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
+      AliDebug(5, Form("-> Digit ENERGY: %1.5f", dEnergyCalibrated));
+      //if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > fECAClusteringThreshold  )
+      if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0  )
 	    {
 	      Float_t time = pMaxEnergyDigit->GetTime(); //Time or TimeR?
 	      if(TMath::Abs(time - digit->GetTime()) > fTimeCut ) continue; //Time or TimeR?
 	      Bool_t shared = kFALSE; //cluster shared by 2 SuperModules?
 	      if (AreNeighbours(pMaxEnergyDigit, digit, shared) == 1) // call (digit,digitN) in THAT order !!!!! 
-		{      
-		  clusterDigitList.AddLast(digit) ;
-		  clusterCandidateEnergy += dEnergyCalibrated;
-		}
+        {      
+          clusterDigitList.AddLast(digit) ;
+          clusterCandidateEnergy += dEnergyCalibrated;
+        }
 	    }
-	}// loop over the next digits
-
-      // start a cluster here only if a cluster energy is larger than clustering threshold
-      //if (clusterCandidateEnergy > 0.1)
-      AliDebug(5, Form("Clusterization threshold is %f MeV", fECAClusteringThreshold));
-      if (clusterCandidateEnergy > fECAClusteringThreshold)
-	{
-	  if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
+    }// loop over the next digits
+    
+    // start a cluster here only if a cluster energy is larger than clustering threshold
+    //if (clusterCandidateEnergy > 0.1)
+    AliDebug(5, Form("Clusterization threshold is %f MeV", fECAClusteringThreshold));
+    if (clusterCandidateEnergy > fECAClusteringThreshold)
+    {
+      if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
       
-	  AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint("") ; 
-	  fRecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
-	  recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
-	  fNumberOfECAClusters++ ;       
-	  recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
-
-	  AliDebug(9, Form("Number of cells per cluster (max is 9!): %d", clusterDigitList.GetEntries()));
-	  for (Int_t idig = 0; idig < clusterDigitList.GetEntries(); idig++)
-	    {
-
-	      digit = (AliEMCALDigit*)clusterDigitList.At(idig);
-	      Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
-	      AliDebug(5, Form(" Adding digit %d", digit->GetId()));
-	      // note: this way the sharing info is lost!
-	      recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE) ; //Time or TimeR?
-	      digitsC.Remove(digit); 		  
-	    }
-	}
-      else
-	{
-	  // we do not want to start clustering in the same spot!
-	  // but in this case we may NOT reuse this seed for another cluster!
-	  // need a better bookeeping?
-	  digitsC.Remove(pMaxEnergyDigit);
-	}
-
-      AliDebug (2, Form("Number of digits left: %d", digitsC.GetEntries()));      
-    } // while ! done 
-
+      AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint("") ; 
+      fRecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
+      recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
+      if(recPoint){
+        fNumberOfECAClusters++ ;       
+        recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
+        
+        AliDebug(9, Form("Number of cells per cluster (max is 9!): %d", clusterDigitList.GetEntries()));
+        for (Int_t idig = 0; idig < clusterDigitList.GetEntries(); idig++)
+        {
+          
+          digit = (AliEMCALDigit*)clusterDigitList.At(idig);
+          Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
+          AliDebug(5, Form(" Adding digit %d", digit->GetId()));
+          // note: this way the sharing info is lost!
+          recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE) ; //Time or TimeR?
+          digitsC.Remove(digit); 		  
+        }
+      }// recpoint
+    }
+    else
+    {
+      // we do not want to start clustering in the same spot!
+      // but in this case we may NOT reuse this seed for another cluster!
+      // need a better bookeeping?
+      digitsC.Remove(pMaxEnergyDigit);
+    }
+    
+    AliDebug (2, Form("Number of digits left: %d", digitsC.GetEntries()));      
+  } // while ! done 
+  
   //delete digitsC ; //nope we use an object
   
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 

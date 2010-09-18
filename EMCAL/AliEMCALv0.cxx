@@ -72,6 +72,7 @@ AliEMCALv0::AliEMCALv0()
     fSampleWidth(0),fSmodPar0(0),fSmodPar1(0),fSmodPar2(0),fCalFrame(0)
 {
   //default ctor
+  for(Int_t i = 0; i < 5 ; i++) fParEMOD[i]=0.0;
 }
 
 //______________________________________________________________________
@@ -83,6 +84,8 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title)
   // ctor : title is used to identify the layout
   // Apr 25, 2006
   // Nov 22, 2006 - case of 1X1  
+  
+  for(Int_t i = 0; i < 5 ; i++) fParEMOD[i]=0.0;
   TString ntmp(GetTitle());
   ntmp.ToUpper();
 
@@ -846,7 +849,8 @@ void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t pa
   double xpos = 0.0, ypos = 0.0, zpos = 0.0, ztmp=0;;
   double tanx = (parPBMO[1] -  parPBMO[0]) / (2.*parPBMO[4]); //  tanx =  tany now
   double tany = (parPBMO[3] -  parPBMO[2]) / (2.*parPBMO[4]);
-  char name[10], named[10], named2[10];
+  const Int_t buffersize = 10;
+  char name[buffersize], named[buffersize], named2[buffersize];
 
   AliDebug(2,Form(" PBMO par = "));
   for(int i=0; i<5; i++) AliDebug(2,Form(" %9.5f ", parPBMO[i]));
@@ -860,17 +864,17 @@ void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t pa
     parSC[0] =  parPBMO[0] + tanx*ztmp;
     parSC[1] =  parPBMO[2] + tany*ztmp;
 
-    sprintf(name,"SC%2.2i", iz+1);
+    snprintf(name,buffersize,"SC%2.2i", iz+1);
     gMC->Gsvolu(name, "BOX", fIdTmedArr[kIdSC], parSC, 3);
     gMC->Gspos(name, 1, "PBMO", xpos, ypos, zpos, 0, "ONLY") ;
     AliDebug(2,Form("%s | zpos %6.3f | parSC[0,1]=(%7.5f,%7.5f) -> ", 
 		    name, zpos, parSC[0], parSC[1]));
     
-    sprintf(named,"SY%2.2i", iz+1);
+    snprintf(named,buffersize,"SY%2.2i", iz+1);
     printf(" %s -> ", named);
     gMC->Gsdvn(named,name, 2, 2);
 
-    sprintf(named2,"SX%2.2i", iz+1);
+    snprintf(named2,buffersize,"SX%2.2i", iz+1);
     printf(" %s \n", named2);
     gMC->Gsdvn(named2,named, 2, 1);
 

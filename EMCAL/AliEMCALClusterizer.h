@@ -47,7 +47,7 @@ public:
   virtual Float_t GetTimeMin()           const { return fTimeMin ; }
   virtual Float_t GetTimeMax()           const { return fTimeMax ; }
   virtual Float_t GetTimeCut()           const { return fTimeCut ; }
-  virtual void    GetNumberOfClustersFound(int numb )const { numb = fNumberOfECAClusters ;} 
+  //virtual void    GetNumberOfClustersFound(int numb )const { numb = fNumberOfECAClusters ;} 
   virtual Float_t GetECAClusteringThreshold()        const { return fECAClusteringThreshold;}  
   virtual Float_t GetECALocalMaxCut()                const { return fECALocMaxCut;} 
   virtual Float_t GetECALogWeight()                  const { return fECAW0;}

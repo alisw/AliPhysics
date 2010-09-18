@@ -332,11 +332,12 @@ void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
   gMC->Gdopt("shad", optShad);
 
   gROOT->ProcessLine("TGeant3 *g3 = (TGeant3*)gMC");
-  char cmd[200];
-  sprintf(cmd,"g3->Gdrawc(\"XEN1\", %i, %5.1f, 12., 8., %3.2f, %3.2f)\n", axis, dcut, cxy,cxy);
+  const Int_t buffersize = 255;
+  char cmd[buffersize];
+  snprintf(cmd,buffersize,"g3->Gdrawc(\"XEN1\", %i, %5.1f, 12., 8., %3.2f, %3.2f)\n", axis, dcut, cxy,cxy);
   printf("\n%s\n",cmd); gROOT->ProcessLine(cmd);
 
-  sprintf(cmd,"gMC->Gdhead(1111, \"%s\")\n", st.Data());
+  snprintf(cmd,buffersize,"gMC->Gdhead(1111, \"%s\")\n", st.Data());
   printf("%s\n",cmd); gROOT->ProcessLine(cmd);
 }
 
@@ -372,11 +373,12 @@ void AliEMCALv2::DrawSuperModuleCut(const char *name, int axis, double dcut, int
   st += tit[axis-1];;
 
   gROOT->ProcessLine("TGeant3 *g3 = (TGeant3*)gMC");
-  char cmd[200];
-  sprintf(cmd,"g3->Gdrawc(\"SMOD\", %i, %6.3f, %5.1f, %5.1f, %5.3f, %5.3f)\n",axis,dcut,x0,y0,cxy,cxy);
+  const Int_t buffersize = 255;
+  char cmd[buffersize];
+  snprintf(cmd,buffersize,"g3->Gdrawc(\"SMOD\", %i, %6.3f, %5.1f, %5.1f, %5.3f, %5.3f)\n",axis,dcut,x0,y0,cxy,cxy);
   printf("\n%s\n",cmd); gROOT->ProcessLine(cmd);
 
-  sprintf(cmd,"gMC->Gdhead(1111, \"%s\")\n", st.Data());
+  snprintf(cmd,buffersize,"gMC->Gdhead(1111, \"%s\")\n", st.Data());
   printf("%s\n",cmd); gROOT->ProcessLine(cmd);
   // hint for testing
   printf("Begin of super module\n");
@@ -424,15 +426,16 @@ void AliEMCALv2::DrawTowerCut(const char *name, int axis, double dcut, int fill,
   if (mn.Contains("EMOD")) {
     cx = cy = 0.5;
   }
-  char cmd[200];
+  const Int_t buffersize = 255;
+  char cmd[buffersize];
 
   gMC->Gdopt("hide", optShad);
   gMC->Gdopt("shad", optShad);
 
-  sprintf(cmd,"g3->Gdrawc(\"%s\", %i, %6.2f, 10., 10., %5.3f, %5.3f)\n",name, axis,dcut,cx,cy);
+  snprintf(cmd,buffersize,"g3->Gdrawc(\"%s\", %i, %6.2f, 10., 10., %5.3f, %5.3f)\n",name, axis,dcut,cx,cy);
   printf("\n%s\n",cmd); gROOT->ProcessLine(cmd);
 
-  sprintf(cmd,"gMC->Gdhead(1111, \"%s\")\n", st.Data());
+  snprintf(cmd,buffersize,"gMC->Gdhead(1111, \"%s\")\n", st.Data());
   printf("%s\n",cmd); gROOT->ProcessLine(cmd);
 }
 

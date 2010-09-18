@@ -90,55 +90,63 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
 {
   // Steering method to perform clusterization for the current event 
   // in AliEMCALLoader
-
+  
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALClusterizer"); 
   
   if(strstr(option,"print"))
     Print("") ; 
- 
+  
   //Get calibration parameters from file or digitizer default values.
   GetCalibrationParameters() ;
-
+  
   //Get dead channel map from file or digitizer default values.
   GetCaloCalibPedestal() ;
 	
   fNumberOfECAClusters = 0;
-
+  
   MakeClusters() ;  //only the real clusters
-
+  
   if(fToUnfold)
     MakeUnfolding() ;
-
+  
   Int_t index ;
-
+  
   //Evaluate position, dispersion and other RecPoint properties for EC section                      
   for(index = 0; index < fRecPoints->GetEntries(); index++) {
-      dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->EvalAll(fECAW0,fDigitsArr) ;
-	  //For each rec.point set the distance to the nearest bad crystal
-	  dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->EvalDistanceToBadChannels(fCaloPed);
+    AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
+    if(rp){
+      rp->EvalAll(fECAW0,fDigitsArr) ;
+      //For each rec.point set the distance to the nearest bad crystal
+	    rp->EvalDistanceToBadChannels(fCaloPed);
+    }
+    else AliFatal("Null rec point in list!");
   }
-
+  
   fRecPoints->Sort() ;
-
+  
   for(index = 0; index < fRecPoints->GetEntries(); index++) {
-    (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->SetIndexInList(index) ;
-    (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->Print();
+    AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
+    if(rp){
+      rp->SetIndexInList(index) ;
+      rp->Print();
+    }
+    else AliFatal("Null rec point in list!");
   }
-
+  
   fTreeR->Fill();
   
   if(strstr(option,"deb") || strstr(option,"all"))  
     PrintRecPoints(option) ;
-
+  
   AliDebug(1,Form("EMCAL Clusterizer found %d Rec Points",fRecPoints->GetEntriesFast()));
-
+  
   fRecPoints->Delete();
-
+  
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALClusterizer");
     printf("Exec took %f seconds for Clusterizing", 
-	   gBenchmark->GetCpuTime("EMCALClusterizer"));
+           gBenchmark->GetCpuTime("EMCALClusterizer"));
   }    
 }
 
@@ -299,11 +307,11 @@ void AliEMCALClusterizerv1::MakeClusters()
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
   // Mar 03, 2007 by PAI
-
+  
   if (fGeom==0) AliFatal("Did not get geometry from EMCALLoader");
-
+  
   fRecPoints->Clear();
-
+  
   // Set up TObjArray with pointers to digits to work on 
   TObjArray *digitsC = new TObjArray();
   TIter nextdigit(fDigitsArr);
@@ -311,7 +319,7 @@ void AliEMCALClusterizerv1::MakeClusters()
   while ( (digit = dynamic_cast<AliEMCALDigit*>(nextdigit())) ) {
     digitsC->AddLast(digit);
   }
-
+  
   double e = 0.0, ehs = 0.0;
   TIter nextdigitC(digitsC);
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // clean up digits
@@ -322,55 +330,57 @@ void AliEMCALClusterizerv1::MakeClusters()
       ehs += e;
   } 
   AliDebug(1,Form("MakeClusters: Number of digits %d  -> (e %f), ehs %f\n",
-		  fDigitsArr->GetEntries(),fMinECut,ehs));
-
+                  fDigitsArr->GetEntries(),fMinECut,ehs));
+  
   nextdigitC.Reset();
-
+  
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // scan over the list of digitsC
     TArrayI clusterECAdigitslist(fDigitsArr->GetEntries());
-
+    
     if(fGeom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()) > fECAClusteringThreshold  ) ){
       // start a new Tower RecPoint
       if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
-
+      
       AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint("") ; 
       fRecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
       recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
-      fNumberOfECAClusters++ ; 
-
-      recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
-
-      recPoint->AddDigit(*digit, Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()),kFALSE) ; //Time or TimeR?
-      TObjArray clusterDigits;
-      clusterDigits.AddLast(digit);	
-      digitsC->Remove(digit) ; 
-
-      AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , cell.th. = %f \n", digit->GetId(),
-      Calibrate(digit->GetAmplitude(),digit->GetTime(),digit->GetId()), fECAClusteringThreshold));  //Time or TimeR?
-	  Float_t time = digit->GetTime();//Time or TimeR?
-      // Grow cluster by finding neighbours
-      TIter nextClusterDigit(&clusterDigits);
-      while ( (digit = dynamic_cast<AliEMCALDigit*>(nextClusterDigit())) ) { // scan over digits in cluster 
-        TIter nextdigitN(digitsC); 
-        AliEMCALDigit *digitN = 0; // digi neighbor
-        while ( (digitN = (AliEMCALDigit *)nextdigitN()) ) { // scan over all digits to look for neighbours
-			
-			//Do not add digits with too different time 
-			Bool_t shared = kFALSE;//cluster shared by 2 SuperModules?
-			if(TMath::Abs(time - digitN->GetTime()) > fTimeCut ) continue; //Time or TimeR?
-			if (AreNeighbours(digit, digitN, shared)==1) {      // call (digit,digitN) in THAT order !!!!! 
-				recPoint->AddDigit(*digitN, Calibrate(digitN->GetAmplitude(), digitN->GetTime(), digitN->GetId()),shared) ;//Time or TimeR?
-				clusterDigits.AddLast(digitN) ; 
-				digitsC->Remove(digitN) ; 
-			} // if(ineb==1)
-		} // scan over digits
-      } // scan over digits already in cluster
-	
-      if(recPoint)
+      if(recPoint){
+        fNumberOfECAClusters++ ; 
+        
+        recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
+        
+        recPoint->AddDigit(*digit, Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()),kFALSE) ; //Time or TimeR?
+        TObjArray clusterDigits;
+        clusterDigits.AddLast(digit);	
+        digitsC->Remove(digit) ; 
+        
+        AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , cell.th. = %f \n", digit->GetId(),
+                        Calibrate(digit->GetAmplitude(),digit->GetTime(),digit->GetId()), fECAClusteringThreshold));  //Time or TimeR?
+        Float_t time = digit->GetTime();//Time or TimeR?
+        // Grow cluster by finding neighbours
+        TIter nextClusterDigit(&clusterDigits);
+        while ( (digit = dynamic_cast<AliEMCALDigit*>(nextClusterDigit())) ) { // scan over digits in cluster 
+          TIter nextdigitN(digitsC); 
+          AliEMCALDigit *digitN = 0; // digi neighbor
+          while ( (digitN = (AliEMCALDigit *)nextdigitN()) ) { // scan over all digits to look for neighbours
+            
+            //Do not add digits with too different time 
+            Bool_t shared = kFALSE;//cluster shared by 2 SuperModules?
+            if(TMath::Abs(time - digitN->GetTime()) > fTimeCut ) continue; //Time or TimeR?
+            if (AreNeighbours(digit, digitN, shared)==1) {      // call (digit,digitN) in THAT order !!!!! 
+              recPoint->AddDigit(*digitN, Calibrate(digitN->GetAmplitude(), digitN->GetTime(), digitN->GetId()),shared) ;//Time or TimeR?
+              clusterDigits.AddLast(digitN) ; 
+              digitsC->Remove(digitN) ; 
+            } // if(ineb==1)
+          } // scan over digits
+        } // scan over digits already in cluster
+        
         AliDebug(2,Form("MakeClusters: %d digitd, energy %f \n", clusterDigits.GetEntries(), recPoint->GetEnergy())); 
+      }//recpoint
+      else AliFatal("Null recpoint in array!");
     } // If seed found
   } // while digit 
-
+  
   delete digitsC ;
   
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 
@@ -381,44 +391,46 @@ void AliEMCALClusterizerv1::MakeUnfolding()
 {
   // Unfolds clusters using the shape of an ElectroMagnetic shower
   // Performs unfolding of all clusters
-		
+  
   if(fNumberOfECAClusters > 0){
     if (fGeom==0)
       AliFatal("Did not get geometry from EMCALLoader") ;
     Int_t nModulesToUnfold = fGeom->GetNCells();
-
+    
     Int_t numberofNotUnfolded = fNumberOfECAClusters ;
     Int_t index ;
     for(index = 0 ; index < numberofNotUnfolded ; index++){
-
+      
       AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(index) ) ;
-
-      TVector3 gpos;
-      Int_t absId = -1;
-      recPoint->GetGlobalPosition(gpos);
-      fGeom->GetAbsCellIdFromEtaPhi(gpos.Eta(),gpos.Phi(),absId);
-      if(absId > nModulesToUnfold)
-        break ;
-
-      Int_t nMultipl = recPoint->GetMultiplicity() ;
-      AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMultipl] ;
-      Float_t * maxAtEnergy = new Float_t[nMultipl] ;
-      Int_t nMax = recPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
-
-      if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0
-        UnfoldCluster(recPoint, nMax, maxAt, maxAtEnergy) ;
-        fRecPoints->Remove(recPoint);
-        fRecPoints->Compress() ;
-        index-- ;
-        fNumberOfECAClusters-- ;
-        numberofNotUnfolded-- ;
+      if(recPoint){
+        TVector3 gpos;
+        Int_t absId = -1;
+        recPoint->GetGlobalPosition(gpos);
+        fGeom->GetAbsCellIdFromEtaPhi(gpos.Eta(),gpos.Phi(),absId);
+        if(absId > nModulesToUnfold)
+          break ;
+        
+        Int_t nMultipl = recPoint->GetMultiplicity() ;
+        AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMultipl] ;
+        Float_t * maxAtEnergy = new Float_t[nMultipl] ;
+        Int_t nMax = recPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
+        
+        if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0
+          UnfoldCluster(recPoint, nMax, maxAt, maxAtEnergy) ;
+          fRecPoints->Remove(recPoint);
+          fRecPoints->Compress() ;
+          index-- ;
+          fNumberOfECAClusters-- ;
+          numberofNotUnfolded-- ;
+        }
+        else{
+          recPoint->SetNExMax(1) ; //Only one local maximum
+        }
+        
+        delete[] maxAt ;
+        delete[] maxAtEnergy ;
       }
-      else{
-        recPoint->SetNExMax(1) ; //Only one local maximum
-      }
-
-      delete[] maxAt ;
-      delete[] maxAtEnergy ;
+      else AliFatal("Null recpoint in Array!");
     }
   }
   // End of Unfolding of clusters
@@ -446,10 +458,10 @@ void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALRecPoint * iniTower,
   // Performs the unfolding of a cluster with nMax overlapping showers 
   Int_t nPar = 3 * nMax ;
   Float_t * fitparameters = new Float_t[nPar] ;
-
+  
   if (fGeom==0)
     AliFatal("Did not get geometry from EMCALLoader") ;
-
+  
   Bool_t rv = FindFit(iniTower, maxAt, maxAtEnergy, nPar, fitparameters) ;
   if( !rv ) {
     // Fit failed, return and remove cluster
@@ -457,18 +469,18 @@ void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALRecPoint * iniTower,
     delete[] fitparameters ;
     return ;
   }
-
+  
   // create unfolded rec points and fill them with new energy lists
   // First calculate energy deposited in each sell in accordance with
   // fit (without fluctuations): efit[]
   // and later correct this number in acordance with actual energy
   // deposition
-
+  
   Int_t nDigits = iniTower->GetMultiplicity() ;
   Float_t * efit = new Float_t[nDigits] ;
   Double_t xDigit=0.,yDigit=0.,zDigit=0. ;
   Float_t xpar=0.,zpar=0.,epar=0.  ;
-
+  
   AliEMCALDigit * digit = 0 ;
   Int_t * digitsList = iniTower->GetDigitsList() ;
   
@@ -476,57 +488,65 @@ void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALRecPoint * iniTower,
   Int_t iDigit ;
   for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
     digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At(digitsList[iDigit] ) ) ;
-    fGeom->RelPosCellInSModule(digit->GetId(), yDigit, xDigit, zDigit);
-    efit[iDigit] = 0;
-
-    while(iparam < nPar ){
-      xpar = fitparameters[iparam] ;
-      zpar = fitparameters[iparam+1] ;
-      epar = fitparameters[iparam+2] ;
-      iparam += 3 ;
-      efit[iDigit] += epar * ShowerShape(xDigit - xpar,zDigit - zpar) ;
+    if(digit){
+      fGeom->RelPosCellInSModule(digit->GetId(), yDigit, xDigit, zDigit);
+      efit[iDigit] = 0;
+      
+      while(iparam < nPar ){
+        xpar = fitparameters[iparam] ;
+        zpar = fitparameters[iparam+1] ;
+        epar = fitparameters[iparam+2] ;
+        iparam += 3 ;
+        efit[iDigit] += epar * ShowerShape(xDigit - xpar,zDigit - zpar) ;
+      }
     }
+    else AliFatal("Null digit in array!");
   }
-
-
+  
   // Now create new RecPoints and fill energy lists with efit corrected to fluctuations
   // so that energy deposited in each cell is distributed between new clusters proportionally
   // to its contribution to efit
-
+  
   Float_t * energiesList = iniTower->GetEnergiesList() ;
   Float_t ratio = 0 ;
-
+  
   iparam = 0 ;
   while(iparam < nPar ){
     xpar = fitparameters[iparam] ;
     zpar = fitparameters[iparam+1] ;
     epar = fitparameters[iparam+2] ;
     iparam += 3 ;
-
+    
     AliEMCALRecPoint * recPoint = 0 ;
-
+    
     if(fNumberOfECAClusters >= fRecPoints->GetSize())
       fRecPoints->Expand(2*fNumberOfECAClusters) ;
-
+    
     (*fRecPoints)[fNumberOfECAClusters] = new AliEMCALRecPoint("") ;
     recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
-    fNumberOfECAClusters++ ;
-    recPoint->SetNExMax((Int_t)nPar/3) ;
-
-    Float_t eDigit = 0. ;
-    for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-      digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
-      fGeom->RelPosCellInSModule(digit->GetId(), yDigit, xDigit, zDigit);
-
-      ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar) / efit[iDigit] ;
-      eDigit = energiesList[iDigit] * ratio ;
-      recPoint->AddDigit( *digit, eDigit, kFALSE ) ; //FIXME, need to study the shared case
+    if(recPoint){
+      fNumberOfECAClusters++ ;
+      recPoint->SetNExMax((Int_t)nPar/3) ;
+      
+      Float_t eDigit = 0. ;
+      for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
+        digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
+        if(digit){
+          fGeom->RelPosCellInSModule(digit->GetId(), yDigit, xDigit, zDigit);
+          
+          ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar) / efit[iDigit] ;
+          eDigit = energiesList[iDigit] * ratio ;
+          recPoint->AddDigit( *digit, eDigit, kFALSE ) ; //FIXME, need to study the shared case
+        }
+        else AliFatal("Null digit in array!");
+      }
     }
+    else AliFatal("Null recpoint in array!");
   }
-
+  
   delete[] fitparameters ;
   delete[] efit ;
-
+  
 }
 
 //_____________________________________________________________________________
@@ -536,88 +556,99 @@ void AliEMCALClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad,
 {
   // Calculates the Chi square for the cluster unfolding minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
-
+  
   TList * toMinuit = dynamic_cast<TList*>( gMinuit->GetObjectFit() ) ;
-
+  if(!toMinuit){
+    printf("Unfolding not possible!\n");
+    return;
+  }
+  
   AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint*>( toMinuit->At(0) )  ;
   TClonesArray * digits = dynamic_cast<TClonesArray*>( toMinuit->At(1) )  ;
   // A bit buggy way to get an access to the geometry
   // To be revised!
   AliEMCALGeometry *geom = dynamic_cast<AliEMCALGeometry *>(toMinuit->At(2));
-
+  
+  if(!recPoint || !digits || !geom){
+    printf("Unfolding not possible!\n");
+    return;
+  }
+  
   Int_t * digitsList     = recPoint->GetDigitsList() ;
-
+  
   Int_t nOdigits = recPoint->GetDigitsMultiplicity() ;
-
+  
   Float_t * energiesList = recPoint->GetEnergiesList() ;
-
+  
   fret = 0. ;
   Int_t iparam ;
-
+  
   if(iflag == 2)
     for(iparam = 0 ; iparam < nPar ; iparam++)
       Grad[iparam] = 0 ; // Will evaluate gradient
-
+  
   Double_t efit = 0. ;
-
+  
   AliEMCALDigit * digit ;
   Int_t iDigit ;
-
+  
   for( iDigit = 0 ; iDigit < nOdigits ; iDigit++) {
-
+    
     digit = dynamic_cast<AliEMCALDigit*>( digits->At( digitsList[iDigit] ) );
-
-    Double_t xDigit=0 ;
-    Double_t zDigit=0 ;
-    Double_t yDigit=0 ;//not used yet, assumed to be 0
-
-    geom->RelPosCellInSModule(digit->GetId(), yDigit, xDigit, zDigit);
-
-    if(iflag == 2){  // calculate gradient
-      Int_t iParam = 0 ;
-      efit = 0. ;
-      while(iParam < nPar ){
-        Double_t dx = (xDigit - x[iParam]) ;
-        iParam++ ;
-        Double_t dz = (zDigit - x[iParam]) ;
-        iParam++ ;
-        efit += x[iParam] * ShowerShape(dx,dz) ;
-        iParam++ ;
+    if (digit) {
+      
+      Double_t xDigit=0 ;
+      Double_t zDigit=0 ;
+      Double_t yDigit=0 ;//not used yet, assumed to be 0
+      
+      geom->RelPosCellInSModule(digit->GetId(), yDigit, xDigit, zDigit);
+      
+      if(iflag == 2){  // calculate gradient
+        Int_t iParam = 0 ;
+        efit = 0. ;
+        while(iParam < nPar ){
+          Double_t dx = (xDigit - x[iParam]) ;
+          iParam++ ;
+          Double_t dz = (zDigit - x[iParam]) ;
+          iParam++ ;
+          efit += x[iParam] * ShowerShape(dx,dz) ;
+          iParam++ ;
+        }
+        Double_t sum = 2. * (efit - energiesList[iDigit]) / energiesList[iDigit] ; // Here we assume, that sigma = sqrt(E)
+        iParam = 0 ;
+        while(iParam < nPar ){
+          Double_t xpar = x[iParam] ;
+          Double_t zpar = x[iParam+1] ;
+          Double_t epar = x[iParam+2] ;
+          Double_t dr = TMath::Sqrt( (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar) );
+          Double_t shape = sum * ShowerShape(xDigit - xpar,zDigit - zpar) ;
+          Double_t r133 =  TMath::Power(dr, 1.33);
+          Double_t r669 = TMath::Power(dr,6.69);
+          Double_t deriv =-1.33 * TMath::Power(dr,0.33)*dr * ( 1.57 / ( (1.57 + 0.0860 * r133) * (1.57 + 0.0860 * r133) )
+                                                              - 0.55 / (1 + 0.000563 * r669) / ( (1 + 0.000563 * r669) * (1 + 0.000563 * r669) ) ) ;
+          
+          Grad[iParam] += epar * shape * deriv * (xpar - xDigit) ;  // Derivative over x
+          iParam++ ;
+          Grad[iParam] += epar * shape * deriv * (zpar - zDigit) ;  // Derivative over z
+          iParam++ ;
+          Grad[iParam] += shape ;                                  // Derivative over energy
+          iParam++ ;
+        }
       }
-      Double_t sum = 2. * (efit - energiesList[iDigit]) / energiesList[iDigit] ; // Here we assume, that sigma = sqrt(E)
-      iParam = 0 ;
-      while(iParam < nPar ){
-        Double_t xpar = x[iParam] ;
-        Double_t zpar = x[iParam+1] ;
-        Double_t epar = x[iParam+2] ;
-        Double_t dr = TMath::Sqrt( (xDigit - xpar) * (xDigit - xpar) + (zDigit - zpar) * (zDigit - zpar) );
-        Double_t shape = sum * ShowerShape(xDigit - xpar,zDigit - zpar) ;
-        Double_t r133 =  TMath::Power(dr, 1.33);
-        Double_t r669 = TMath::Power(dr,6.69);
-        Double_t deriv =-1.33 * TMath::Power(dr,0.33)*dr * ( 1.57 / ( (1.57 + 0.0860 * r133) * (1.57 + 0.0860 * r133) )
-                                                             - 0.55 / (1 + 0.000563 * r669) / ( (1 + 0.000563 * r669) * (1 + 0.000563 * r669) ) ) ;
-
-        Grad[iParam] += epar * shape * deriv * (xpar - xDigit) ;  // Derivative over x
-        iParam++ ;
-        Grad[iParam] += epar * shape * deriv * (zpar - zDigit) ;  // Derivative over z
-        iParam++ ;
-        Grad[iParam] += shape ;                                  // Derivative over energy
-	iParam++ ;
+      efit = 0;
+      iparam = 0 ;
+      
+      
+      while(iparam < nPar ){
+        Double_t xpar = x[iparam] ;
+        Double_t zpar = x[iparam+1] ;
+        Double_t epar = x[iparam+2] ;
+        iparam += 3 ;
+        efit += epar * ShowerShape(xDigit - xpar,zDigit - zpar) ;
       }
+      
+      fret += (efit-energiesList[iDigit])*(efit-energiesList[iDigit])/energiesList[iDigit] ;
+      // Here we assume, that sigma = sqrt(E) 
     }
-    efit = 0;
-    iparam = 0 ;
-
-
-    while(iparam < nPar ){
-      Double_t xpar = x[iparam] ;
-      Double_t zpar = x[iparam+1] ;
-      Double_t epar = x[iparam+2] ;
-      iparam += 3 ;
-      efit += epar * ShowerShape(xDigit - xpar,zDigit - zpar) ;
-    }
-
-    fret += (efit-energiesList[iDigit])*(efit-energiesList[iDigit])/energiesList[iDigit] ;
-    // Here we assume, that sigma = sqrt(E) 
   }
 }

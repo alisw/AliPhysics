@@ -259,7 +259,7 @@ void AliEMCALClusterizer::Init()
   // Attach the Clusterizer task to the list of EMCAL tasks
   
   AliRunLoader *rl = AliRunLoader::Instance();
-  if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
+  if (rl->GetAliRun() && dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL")))
     fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   else 
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
@@ -350,24 +350,26 @@ void AliEMCALClusterizer::PrintRecPoints(Option_t * option)
     Int_t index; 
     for (index =  0 ; index < fRecPoints->GetEntries() ; index++) {
       AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint * >(fRecPoints->At(index)) ; 
-      TVector3  globalpos;  
-      //rp->GetGlobalPosition(globalpos);
-      TVector3  localpos;  
-      rp->GetLocalPosition(localpos);
-      Float_t lambda[2]; 
-      rp->GetElipsAxis(lambda);
-      
-      Int_t nprimaries=0;
-      Int_t * primaries = rp->GetPrimaries(nprimaries);
-      
-      if(strstr(option,"deb")) 
-        printf("\n%6d  %8.4f  %3d     %4.1f    %4.1f %4.1f  %4.1f %4.1f %4.1f    %4.1f   %4f  %4f    %2d     : ", 
-               rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(),
-               globalpos.X(), globalpos.Y(), globalpos.Z(), localpos.X(), localpos.Y(), localpos.Z(), 
-               rp->GetDispersion(), lambda[0], lambda[1], nprimaries) ; 
-      if(strstr(option,"deb")){ 
-        for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-          printf("%d ", primaries[iprimary] ) ; 
+      if(rp){
+        TVector3  globalpos;  
+        //rp->GetGlobalPosition(globalpos);
+        TVector3  localpos;  
+        rp->GetLocalPosition(localpos);
+        Float_t lambda[2]; 
+        rp->GetElipsAxis(lambda);
+        
+        Int_t nprimaries=0;
+        Int_t * primaries = rp->GetPrimaries(nprimaries);
+        
+        if(strstr(option,"deb")) 
+          printf("\n%6d  %8.4f  %3d     %4.1f    %4.1f %4.1f  %4.1f %4.1f %4.1f    %4.1f   %4f  %4f    %2d     : ", 
+                 rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(),
+                 globalpos.X(), globalpos.Y(), globalpos.Z(), localpos.X(), localpos.Y(), localpos.Z(), 
+                 rp->GetDispersion(), lambda[0], lambda[1], nprimaries) ; 
+        if(strstr(option,"deb")){ 
+          for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
+            printf("%d ", primaries[iprimary] ) ; 
+          }
         }
       }
     }
