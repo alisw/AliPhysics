@@ -87,7 +87,7 @@ AliEveFMDLoader* AliEveFMDLoader::Instance()
 
 //____________________________________________________________________
 AliEveFMDLoader::AliEveFMDLoader(const char* name, Bool_t useBoxes, 
-				 Bool_t old)
+				 Bool_t /* old */)
   : TEveElementList(name, 0), 
     fHitPalette(0, 1000),
     fDigitPalette(0, 1023), 
