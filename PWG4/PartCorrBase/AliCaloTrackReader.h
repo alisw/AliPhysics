@@ -125,15 +125,16 @@ public:
   virtual TClonesArray*   GetAODMCParticles(Int_t input = 0) const ;
   virtual AliAODMCHeader* GetAODMCHeader(Int_t input = 0)    const ;
 	
-  virtual AliVEvent*   GetInputEvent()  const {return fInputEvent;}
-  virtual AliAODEvent* GetOutputEvent() const {return fOutputEvent;}
-  virtual AliMCEvent*  GetMC()          const {return fMC;}
-  virtual void         GetVertex(Double_t *) const {;}
-  virtual void         GetSecondInputAODVertex(Double_t *) const {;}
-  virtual Double_t     GetBField() const { return 0.;}
+  virtual AliVEvent*     GetInputEvent()  const {return fInputEvent;}
+  virtual AliAODEvent*   GetOutputEvent() const {return fOutputEvent;}
+  virtual AliMCEvent*    GetMC()          const {return fMC;}
+  virtual AliMixedEvent* GetMixedEvent()  const {return fMixedEvent;}
+  virtual Int_t          GetNMixedEvent() const {return fNMixedEvent ; } 
+
+  virtual Double_t       GetBField() const { return 0.;}
 	
   virtual void Init();
-	
+
 //  virtual void SetInputEvent(AliVEvent* const input)  {fInputEvent  = input;}
   virtual void SetInputEvent(AliVEvent* const input) ;
   virtual void SetOutputEvent(AliAODEvent* const aod) {fOutputEvent = aod;}
@@ -196,8 +197,12 @@ public:
   AliCalorimeterUtils * GetCaloUtils() const {return fCaloUtils ; }
   void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
   
-  Double_t * GetVertex() ;  
-    
+  virtual void GetVertex(Double_t v[3]) const ;
+  virtual Double_t* GetVertex(const Int_t evtIndex) const {return fVertex[evtIndex];}
+  virtual void GetVertex(Double_t vertex[3], const Int_t evtIndex) const ;
+  virtual void FillVertexArray();
+ // virtual void       GetSecondInputAODVertex(Double_t *) const {;}
+  
   void SwitchOnWriteDeltaAOD()  {fWriteOutputDeltaAOD = kTRUE ;  }
   void SwitchOffWriteDeltaAOD() {fWriteOutputDeltaAOD = kFALSE ; }
   Bool_t WriteDeltaAODToFile() const {return fWriteOutputDeltaAOD ; } 

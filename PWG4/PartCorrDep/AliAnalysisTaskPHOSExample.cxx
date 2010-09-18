@@ -259,7 +259,7 @@ void AliAnalysisTaskPHOSExample::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
   
-  Bool_t problem = kFALSE ; 
+//  Bool_t problem = kFALSE ; 
   AliInfo(Form(" *** %s Report:", GetName())) ; 
   printf("        PHOSEnergy Mean         : %5.3f , RMS : %5.3f \n", fhPHOSEnergy->GetMean(),         fhPHOSEnergy->GetRMS()         ) ;
   printf("        PHOSDigits Mean         : %5.3f , RMS : %5.3f \n", fhPHOSDigits->GetMean(),         fhPHOSDigits->GetRMS()         ) ;
@@ -311,18 +311,18 @@ void AliAnalysisTaskPHOSExample::Terminate(Option_t *)
   cPHOS->Print("PHOS.eps");
  
   char line[1024] ; 
-  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
+  snprintf(line,1024, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
-  sprintf(line, ".!rm -fR *.eps"); 
+  snprintf(line,1024, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);
  
   AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
 
-  char * report = 0x0 ; 
-  if(problem)
-    sprintf(report,"Problems found, please check!!!");  
-  else 
-    sprintf(report,"OK");
+//  char * report = 0x0 ; 
+// if(problem)
+//    sprintf(report,"Problems found, please check!!!");  
+//  else 
+//    sprintf(report,"OK");
 
-  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
+//  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
 }

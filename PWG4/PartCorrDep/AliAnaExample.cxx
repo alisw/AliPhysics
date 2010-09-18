@@ -161,16 +161,27 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   if(fDetector == "EMCAL" || fDetector == "PHOS"){
     
     //Get vertex for photon momentum calculation
-    Double_t v[3] ; //vertex ;
-    GetReader()->GetVertex(v);
+
     
     TLorentzVector mom ;
     for(Int_t i = 0; i < partList->GetEntriesFast(); i++){
       
       AliVCluster * calo =  (AliVCluster*) (partList->At(i));
       
+      //Get the index where the cluster comes, to retrieve the corresponding vertex
+      Int_t evtIndex = 0 ; 
+      if (GetMixedEvent()) {
+        evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
+      }
+
       //Fill AODParticle after some selection
-      calo->GetMomentum(mom,v);
+      if(GetReader()->GetDataType() != AliCaloTrackReader::kMC){
+        calo->GetMomentum(mom,GetVertex(evtIndex)) ;}//Assume that come from vertex in straight line
+      else{
+        Double_t vertex[]={0,0,0};
+        calo->GetMomentum(mom,vertex) ;
+      }
+      
       Int_t pdg = fPdg;
       
       if(IsCaloPIDOn()){
@@ -330,11 +341,12 @@ void  AliAnaExample::Terminate(TList* outputList)
   fhEta->Draw();
  
   c->Print("Example.eps");
- 
-  char line[1024] ; 
-  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
+  
+  const Int_t buffersize = 1024;
+  char line[buffersize] ; 
+  snprintf(line,buffersize, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
-  sprintf(line, ".!rm -fR *.eps"); 
+  snprintf(line,buffersize, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);
  
   printf("AliAnaExample::Terminate() - !! All the eps files are in %s.tar.gz !!!", GetName());

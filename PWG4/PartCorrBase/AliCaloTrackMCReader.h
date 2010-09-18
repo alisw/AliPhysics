@@ -64,7 +64,10 @@ public:
   Bool_t KeepParticleWithStatus(Int_t status) const ;
   
   void GetVertex(Double_t v[3]) const ;
-
+  Double_t* GetVertex(const Int_t evtIndex) const {return fVertex[evtIndex];}
+  void GetVertex(Double_t vertex[3], const Int_t evtIndex) const 
+    {vertex[0]=fVertex[evtIndex][0];  vertex[1]=fVertex[evtIndex][1];  vertex[2]=fVertex[evtIndex][2];}   
+  
   Bool_t FillInputEvent(const Int_t iEntry, const char * currentFileName) ;
   AliVEvent*  GetInputEvent() const {return (AliVEvent *) GetMC();}
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;

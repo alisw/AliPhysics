@@ -36,6 +36,7 @@
 #include "AliAODTrack.h"
 #include "AliVCluster.h"
 #include "AliCaloTrackReader.h"
+#include "AliMixedEvent.h"
 
 ClassImp(AliIsolationCut)
   
@@ -180,29 +181,35 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   if(plNe && (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged)){
 	  
     //Get vertex for photon momentum calculation
-    Double_t vertex[]  = {0,0,0} ; //vertex ;
-    Double_t vertex2[] = {0,0,0} ; //vertex second AOD input ;
-    if(reader->GetDataType()!= AliCaloTrackReader::kMC) 
-    {
-      reader->GetVertex(vertex);
+    //Double_t vertex2[] = {0,0,0} ; //vertex second AOD input ;
+    //if(reader->GetDataType()!= AliCaloTrackReader::kMC) 
+    //{
       //if(reader->GetSecondInputAODTree()) reader->GetSecondInputAODVertex(vertex2);
-    }
+    //}
     TLorentzVector mom ;
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ ){
       AliVCluster * calo = (AliVCluster *)(plNe->At(ipr)) ;
+      
+      //Get the index where the cluster comes, to retrieve the corresponding vertex
+      Int_t evtIndex = 0 ; 
+      if (reader->GetMixedEvent()) {
+        evtIndex=reader->GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
+      }
       
       //Do not count the candidate (photon or pi0) or the daughters of the candidate
       if(calo->GetID() == pCandidate->GetCaloLabel(0) || calo->GetID() == pCandidate->GetCaloLabel(1)) continue ;      //Skip matched clusters with tracks
       
       if(calo->GetNTracksMatched() > 0) continue ; 
+      
       //Input from second AOD?
-      Int_t input = 0;
+      //Int_t input = 0;
       //      if     (pCandidate->GetDetector() == "EMCAL" && reader->GetAODEMCALNormalInputEntries() <= ipr) input = 1 ;
       //      else if(pCandidate->GetDetector() == "PHOS"  && reader->GetAODPHOSNormalInputEntries()  <= ipr) input = 1;
       
       //Get Momentum vector, 
-      if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
-      else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+      //if     (input == 0) 
+      calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;//Assume that come from vertex in straight line
+      //else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
       
       pt   = mom.Pt();
       eta  = mom.Eta();
@@ -234,7 +241,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   //Add reference arrays to AOD when filling AODs only
   if(fillAOD) {
     if(refclusters)	pCandidate->AddObjArray(refclusters);
-    if(reftracks)	pCandidate->AddObjArray(reftracks);
+    if(reftracks)	  pCandidate->AddObjArray(reftracks);
   }
   
   //Check isolation, depending on method.

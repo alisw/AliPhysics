@@ -569,7 +569,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     // get the event index in the mixed buffer where the photon comes from 
     // in case of mixing with analysis frame, not own mixing
     evtIndex1 = GetEventIndex(p1, vert) ; 
-    if(vert[2]<-fZvtxCut || vert[2]> fZvtxCut) return ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
     if ( evtIndex1 == -1 )
       return ; 
     if ( evtIndex1 == -2 )
@@ -584,6 +583,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       currentEvtIndex = evtIndex1 ; 
     }
     
+    //printf("AliAnaPi0::MakeAnalysisFillHistograms(): Photon 1 Evt %d  Vertex : %f,%f,%f\n",evtIndex1, GetVertex(evtIndex1)[0] ,GetVertex(evtIndex1)[1],GetVertex(evtIndex1)[2]);
+
     TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
     //Get Module number
     module1 = GetModuleNumber(p1);
@@ -596,6 +597,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         continue ;    
       if (GetMixedEvent() && (evtIndex1 == evtIndex2))
         continue ;
+      //printf("AliAnaPi0::MakeAnalysisFillHistograms(): Photon 2 Evt %d  Vertex : %f,%f,%f\n",evtIndex2, GetVertex(evtIndex2)[0] ,GetVertex(evtIndex2)[1],GetVertex(evtIndex2)[2]);
       TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
       //Get module number
       module2 = GetModuleNumber(p2);
@@ -756,12 +758,12 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   if(!fhMi1) fhMi1 = new TH3D*[fNCentrBin*fNPID] ;
   if(!fhMi2) fhMi2 = new TH3D*[fNCentrBin*fNPID] ;
   if(!fhMi3) fhMi3 = new TH3D*[fNCentrBin*fNPID] ;	
-  if(!fhReInvPt1) fhRe1 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhReInvPt2) fhRe2 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhReInvPt3) fhRe3 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhMiInvPt1) fhMi1 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhMiInvPt2) fhMi2 = new TH3D*[fNCentrBin*fNPID] ;
-  if(!fhMiInvPt3) fhMi3 = new TH3D*[fNCentrBin*fNPID] ;	
+  if(!fhReInvPt1) fhReInvPt1 = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhReInvPt2) fhReInvPt2 = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhReInvPt3) fhReInvPt3 = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhMiInvPt1) fhMiInvPt1 = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhMiInvPt2) fhMiInvPt2 = new TH3D*[fNCentrBin*fNPID] ;
+  if(!fhMiInvPt3) fhMiInvPt3 = new TH3D*[fNCentrBin*fNPID] ;	
   if(!fhReMod)  fhReMod = new TH3D*[fNModules] ;	
     
   for(Int_t ic=0; ic<fNCentrBin; ic++){
@@ -932,35 +934,37 @@ void AliAnaPi0::Terminate(TList* outputList)
   //____________________________________________________________________________________________________________________________________________________
 Int_t AliAnaPi0::GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  
 {
-    // retieves the event index and checks the vertex
-    //    in the mixed buffer returns -2 if vertex NOK
-    //    for normal events   returns 0 if vertex OK and -1 if vertex NOK
+  // retieves the event index and checks the vertex
+  //    in the mixed buffer returns -2 if vertex NOK
+  //    for normal events   returns 0 if vertex OK and -1 if vertex NOK
   
-  Int_t rv = -1 ; 
-  if (GetMixedEvent()){
-    TObjArray * pl = 0x0; 
-    if (part->GetDetector().Contains("PHOS")) {
-      pl = GetAODPHOS();
-    } else if (part->GetDetector().Contains("EMCAL")) {
-      pl = GetAODEMCAL();
-    } else {
-      AliFatal(Form("%s is an unknown calorimeter", part->GetDetector().Data())) ; 
+  Int_t evtIndex = -1 ; 
+  if(GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
+    
+    if (GetMixedEvent()){
+      
+      evtIndex = GetMixedEvent()->EventIndexForCaloCluster(part->GetCaloLabel(0)) ;
+      GetVertex(vert,evtIndex); 
+      
+      if(vert[2] < -fZvtxCut || vert[2] > fZvtxCut)
+        evtIndex = -2 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
+    } else {// Single event
+      
+      GetVertex(vert);
+      
+      if(vert[2] < -fZvtxCut || vert[2] > fZvtxCut)
+        evtIndex = -1 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
+      else 
+        evtIndex = 0 ;
     }
-    rv = GetMixedEvent()->EventIndexForCaloCluster(part->GetCaloLabel(0)) ;
-    GetMixedEvent()->GetVertexOfEvent(rv)->GetXYZ(vert); 
-    if(vert[2] < -fZvtxCut || vert[2] > fZvtxCut)
-      rv = -2 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
-  } else if(GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
-    Double_t * tempo = GetReader()->GetVertex() ;
-    vert[0] = tempo[0] ; 
-    vert[1] = tempo[1] ; 
-    vert[2] = tempo[2] ; 
-    if(vert[2] < -fZvtxCut || vert[2] > fZvtxCut)
-      rv = -1 ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
-    else 
-      rv = 0 ;
   }//No MC reader
-  else rv = 0;
+  else {
+    evtIndex = 0;
+    vert[0] = 0. ; 
+    vert[1] = 0. ; 
+    vert[2] = 0. ; 
+  }
   
-  return rv ; 
+  return evtIndex ; 
 }
+

@@ -160,42 +160,44 @@ TList * AliAnaPartCorrMaker::FillAndGetAODBranchList()
 //________________________________________________________________________
 TList *AliAnaPartCorrMaker::GetOutputContainer()
 {
-// Fill the output list of histograms during the CreateOutputObjects stage.
+  // Fill the output list of histograms during the CreateOutputObjects stage.
+  
+  //Initialize calorimeters  geometry pointers
+  GetCaloUtils()->InitPHOSGeometry();
+  GetCaloUtils()->InitEMCALGeometry();
+  
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0){
     printf("AliAnaPartCorrMaker::GetOutputContainer() - Analysis job list not initialized!!!\n");
     //abort();
   }
-
-  //Initialize calorimeters  geometry pointers
-  GetCaloUtils()->InitPHOSGeometry();
-  GetCaloUtils()->InitEMCALGeometry();
-
-  char newname[128];
-  for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
-    AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-    if(fMakeHisto){// Analysis with histograms as output on
-      //Fill container with appropriate histograms			
-      TList * templist =  ana ->GetCreateOutputObjects(); 
-	  templist->SetOwner(kFALSE); //Owner is fOutputContainer.
-      for(Int_t i = 0; i < templist->GetEntries(); i++){
-
-	//Add only  to the histogram name the name of the task
-	if(   strcmp((templist->At(i))->ClassName(),"TObjString")   ) {
-	  sprintf(newname,"%s%s", (ana->GetAddedHistogramsStringToName()).Data(), (templist->At(i))->GetName());  
-	  ((TH1*) templist->At(i))->SetName(newname);
-	}
-	//Add histogram to general container
-	fOutputContainer->Add(templist->At(i)) ;
-      }
-		delete templist;
-    }// Analysis with histograms as output on
-  }//Loop on analysis defined
-  
+  else{
+    const Int_t buffersize = 255;
+    char newname[255];
+    for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
+      AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+      if(fMakeHisto){// Analysis with histograms as output on
+        //Fill container with appropriate histograms			
+        TList * templist =  ana ->GetCreateOutputObjects(); 
+        templist->SetOwner(kFALSE); //Owner is fOutputContainer.
+        for(Int_t i = 0; i < templist->GetEntries(); i++){
+          
+          //Add only  to the histogram name the name of the task
+          if(   strcmp((templist->At(i))->ClassName(),"TObjString")   ) {
+            snprintf(newname,buffersize, "%s%s", (ana->GetAddedHistogramsStringToName()).Data(), (templist->At(i))->GetName());  
+            ((TH1*) templist->At(i))->SetName(newname);
+          }
+          //Add histogram to general container
+          fOutputContainer->Add(templist->At(i)) ;
+        }
+        delete templist;
+      }// Analysis with histograms as output on
+    }//Loop on analysis defined
+  }//Analysis list available
   fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
   fOutputContainer->Add(fhNEvents);
 	
   return fOutputContainer;
-
+  
 }
 
 //________________________________________________________________________
@@ -203,26 +205,28 @@ void AliAnaPartCorrMaker::Init()
 {  
   //Init container histograms and other common variables
   // Fill the output list of histograms during the CreateOutputObjects stage.
- 
-  if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0){
-    printf("AliAnaPartCorrMaker::GetOutputInit() - Analysis job list not initialized!!!\n");
-    //abort();
-  }
-	
+  
   //Initialize reader
   GetReader()->Init();
   GetReader()->SetCaloUtils(GetCaloUtils()); // pass the calo utils pointer to the reader
 	
-  //fCaloUtils->Init();
-  for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
-    
-    AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-    ana->SetReader(fReader); //SetReader for each analysis
-    ana->SetCaloUtils(fCaloUtils); //Set CaloUtils for each analysis
+  
+  if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0){
+    printf("AliAnaPartCorrMaker::GetOutputInit() - Analysis job list not initialized!!!\n");
+    //abort();
+  }
+	else{
 
-    ana->Init();
-    
-  }//Loop on analysis defined
+    for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
+      
+      AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
+      ana->SetReader(fReader); //SetReader for each analysis
+      ana->SetCaloUtils(fCaloUtils); //Set CaloUtils for each analysis
+      
+      ana->Init();
+      
+    }//Loop on analysis defined
+  }//Analysis list available
 }
 
 //____________________________________________________________________________
@@ -297,7 +301,7 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   }
 	
   fCaloUtils->SetGeometryTransformationMatrices(fReader->GetInputEvent());	
-	
+  
   //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
   //gObjectTable->Print();
   //Loop on analysis algorithms

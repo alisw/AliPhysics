@@ -309,39 +309,40 @@ TObjString *  AliAnaElectron::GetAnalysisCuts()
 {
 	//Save parameters used for analysis
 	 TString parList ; //this will be list of parameters used for this analysis.
-	 char onePar[500] ;
+  const Int_t buffersize = 255; 
+	 char onePar[buffersize] ;
 	 
-	 sprintf(onePar,"--- AliAnaElectron ---\n") ;
+	 snprintf(onePar,buffersize,"--- AliAnaElectron ---\n") ;
 	 parList+=onePar ;	
-	 sprintf(onePar,"fCalorimeter: %s\n",fCalorimeter.Data()) ;
+	 snprintf(onePar,buffersize,"fCalorimeter: %s\n",fCalorimeter.Data()) ;
 	 parList+=onePar ;  
-	 sprintf(onePar,"fpOverEmin: %f\n",fpOverEmin) ;
+	 snprintf(onePar,buffersize,"fpOverEmin: %f\n",fpOverEmin) ;
 	 parList+=onePar ;  
-	 sprintf(onePar,"fpOverEmax: %f\n",fpOverEmax) ;
+	 snprintf(onePar,buffersize,"fpOverEmax: %f\n",fpOverEmax) ;
 	 parList+=onePar ;  
-	 sprintf(onePar,"fResidualCut: %f\n",fResidualCut) ;
+	 snprintf(onePar,buffersize,"fResidualCut: %f\n",fResidualCut) ;
 	 parList+=onePar ;  
-	 sprintf(onePar,"fMinClusEne: %f\n",fMinClusEne) ;
+	 snprintf(onePar,buffersize,"fMinClusEne: %f\n",fMinClusEne) ;
 	 parList+=onePar ;
-	 sprintf(onePar,"---DVM Btagging\n");
+	 snprintf(onePar,buffersize,"---DVM Btagging\n");
 	 parList+=onePar ;
-	 sprintf(onePar,"max IP-cut (e,h): %f\n",fImpactCut);
+	 snprintf(onePar,buffersize,"max IP-cut (e,h): %f\n",fImpactCut);
 	 parList+=onePar ;
-	 sprintf(onePar,"min ITS-hits: %d\n",fITSCut);
+	 snprintf(onePar,buffersize,"min ITS-hits: %d\n",fITSCut);
 	 parList+=onePar ;
-	 sprintf(onePar,"max dR (e,h): %f\n",fDrCut);
+	 snprintf(onePar,buffersize,"max dR (e,h): %f\n",fDrCut);
 	 parList+=onePar ;
-	 sprintf(onePar,"max pairDCA: %f\n",fPairDcaCut);
+	 snprintf(onePar,buffersize,"max pairDCA: %f\n",fPairDcaCut);
 	 parList+=onePar ;
-	 sprintf(onePar,"max decaylength: %f\n",fDecayLenCut);
+	 snprintf(onePar,buffersize,"max decaylength: %f\n",fDecayLenCut);
 	 parList+=onePar ;
-	 sprintf(onePar,"min Associated Pt: %f\n",fAssocPtCut);
+	 snprintf(onePar,buffersize,"min Associated Pt: %f\n",fAssocPtCut);
 	 parList+=onePar ;
-	 sprintf(onePar,"---IPSig Btagging\n");
+	 snprintf(onePar,buffersize,"---IPSig Btagging\n");
 	 parList+=onePar ;
-	 sprintf(onePar,"min tag track: %d\n",fNTagTrkCut);
+	 snprintf(onePar,buffersize,"min tag track: %d\n",fNTagTrkCut);
 	 parList+=onePar ;
-	 sprintf(onePar,"min IP significance: %f\n",fIPSigCut);
+	 snprintf(onePar,buffersize,"min IP significance: %f\n",fIPSigCut);
 	 parList+=onePar ;
 	//
 	 //Get parameters set in base class.
@@ -1392,7 +1393,7 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
 
   Double_t vertex[3] = {-999.,-999.,-999}; //vertex
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
-    GetReader()->GetVertex(vertex); //If only one file, get the vertex from there
+    GetVertex(vertex); //If only one file, get the vertex from there
     //FIXME:  Add a check for whether file 2 is PYTHIA or HIJING
     //If PYTHIA, then set the vertex from file 2, if not, use the
     //vertex from file 1
@@ -1813,16 +1814,16 @@ Int_t AliAnaElectron::GetNumAODMCParticles()
 {
   //Get the number of AliAODMCParticles, if any
   Int_t num = 0;
-
+  Int_t npart0 = 0;
   TClonesArray * mcparticles0 = 0x0;
-  TClonesArray * mcparticles1 = 0x0;
+//  TClonesArray * mcparticles1 = 0x0;
 
   if(GetReader()->ReadAODMCParticles()){
     //Get the list of MC particles
     //                                                                                                 
     mcparticles0 = GetReader()->GetAODMCParticles(0);
-    if(!mcparticles0 && GetDebug() > 0) {
-      printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+    if(!mcparticles0) {
+     if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
     }
 //    if(GetReader()->GetSecondInputAODTree()){
 //      mcparticles1 = GetReader()->GetAODMCParticles(1);
@@ -1830,12 +1831,13 @@ Int_t AliAnaElectron::GetNumAODMCParticles()
 //        printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
 //      }
 //    }
-
-    Int_t npart0 = mcparticles0->GetEntriesFast();
-    Int_t npart1 = 0;
-    if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
-    Int_t npart = npart0+npart1;
-    return npart;
+    else{
+      npart0 = mcparticles0->GetEntriesFast();
+    }
+    //Int_t npart1 = 0;
+    //if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
+    //Int_t npart = npart0;//+npart1;
+    return npart0;
 
   }
 
@@ -1845,39 +1847,39 @@ Int_t AliAnaElectron::GetNumAODMCParticles()
 AliAODMCParticle* AliAnaElectron::GetMCParticle(Int_t ipart) 
 {
   //Get the MC particle at position ipart
-
+  
   AliAODMCParticle* aodprimary = 0x0;
   TClonesArray * mcparticles0 = 0x0;
-  TClonesArray * mcparticles1 = 0x0;
-
+  //TClonesArray * mcparticles1 = 0x0;
+  
   if(GetReader()->ReadAODMCParticles()){
     //Get the list of MC particles                                                                                                                           
     mcparticles0 = GetReader()->GetAODMCParticles(0);
-    if(!mcparticles0 && GetDebug() > 0) {
-      printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+    if(!mcparticles0) {
+      if (GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
     }
-//    if(GetReader()->GetSecondInputAODTree()){
-//      mcparticles1 = GetReader()->GetAODMCParticles(1);
-//      if(!mcparticles1 && GetDebug() > 0) {
-//	printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
-//      }
-//    }
-
-    Int_t npart0 = mcparticles0->GetEntriesFast();
-    Int_t npart1 = 0;
-    if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
-    if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
-    else aodprimary = (AliAODMCParticle*)mcparticles1->At(ipart-npart0);
-    if(!aodprimary) {
-      printf("AliAnaElectron::GetMCParticle() *** no primary ***:  label %d \n", ipart);
-      return 0x0;
+    //    if(GetReader()->GetSecondInputAODTree()){
+    //      mcparticles1 = GetReader()->GetAODMCParticles(1);
+    //      if(!mcparticles1 && GetDebug() > 0) {
+    //	printf("AliAnaElectron::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
+    //      }
+    //    }
+    else{
+      Int_t npart0 = mcparticles0->GetEntriesFast();
+      //Int_t npart1 = 0;
+      //if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
+      if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
+      //else aodprimary = (AliAODMCParticle*)mcparticles1->At(ipart-npart0);
+      if(!aodprimary) {
+        printf("AliAnaElectron::GetMCParticle() *** no primary ***:  label %d \n", ipart);
+        return 0x0;
+      }
     }
-
   } else {
     printf("AliAnaElectron::GetMCParticle() - Asked for AliAODMCParticle but we have a stack reader.\n");
   }
   return aodprimary;
-
+  
 }
 
 //__________________________________________________________________

@@ -269,6 +269,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - No input calo photons in AOD with name branch < %s >, STOP \n",GetInputAODName().Data());
     abort();
   }
+  
   for(Int_t iphoton = 0; iphoton < GetInputAODBranch()->GetEntriesFast(); iphoton++){
     AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
     
@@ -277,7 +278,6 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       evtIndex1 = GetMixedEvent()->EventIndexForCaloCluster(photon1->GetCaloLabel(0)) ;
     
     mom1 = *(photon1->Momentum());
-    
     
     for(Int_t jphoton = iphoton+1; jphoton < GetInputAODBranch()->GetEntriesFast()-1; jphoton++){
       
@@ -289,9 +289,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         continue ; 
       
       mom2 = *(photon2->Momentum());
-      Int_t input = -1;	//if -1 photons come from different files, not a pi0
-      if(photon1->GetInputFileIndex() == photon2->GetInputFileIndex()) 
-        input = photon1->GetInputFileIndex();
+      //Int_t input = -1;	//if -1 photons come from different files, not a pi0
+      //if(photon1->GetInputFileIndex() == photon2->GetInputFileIndex()) 
+        //input = photon1->GetInputFileIndex();
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2))
@@ -320,7 +320,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
               label2 = mother2->GetFirstMother();
               //mother2 = GetMCStack()->Particle(label2);//pi0
             }
-            else if(GetReader()->ReadAODMCParticles() && (input > -1)){
+            else if(GetReader()->ReadAODMCParticles()){//&& (input > -1)){
               AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
               label1 = mother1->GetMother();
               //mother1 = GetMCStack()->Particle(label1);//pi0
@@ -354,7 +354,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         pi0.SetTag(tag);  
         //Set the indeces of the original caloclusters  
         pi0.SetCaloLabel(photon1->GetCaloLabel(0), photon2->GetCaloLabel(0));
-        pi0.SetInputFileIndex(input);
+        //pi0.SetInputFileIndex(input);
         AddAODParticle(pi0);
       }//pi0
       else{
@@ -416,8 +416,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (fInputAODGammaConv->At(jphoton));
       mom2 = *(photon2->Momentum());
       
-      Int_t input = -1;	//if -1 photons come from different files, not a pi0
-      if(photon1->GetInputFileIndex() == photon2->GetInputFileIndex()) input = photon1->GetInputFileIndex();
+      //Int_t input = -1;	//if -1 photons come from different files, not a pi0
+      //if(photon1->GetInputFileIndex() == photon2->GetInputFileIndex()) input = photon1->GetInputFileIndex();
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2)){
@@ -441,7 +441,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
               label2 = mother2->GetFirstMother();
               //mother2 = GetMCStack()->Particle(label2);//pi0
             }
-            else if(GetReader()->ReadAODMCParticles() && (input > -1)){
+            else if(GetReader()->ReadAODMCParticles()){ //&& (input > -1)){
               AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
               label1 = mother1->GetMother();
               //mother1 = GetMCStack()->Particle(label1);//pi0
@@ -466,7 +466,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         //Set the indeces of the original tracks or caloclusters  
         pi0.SetCaloLabel(photon1->GetCaloLabel(0), -1);
         pi0.SetTrackLabel(photon2->GetTrackLabel(0), photon2->GetTrackLabel(1));
-        pi0.SetInputFileIndex(input);
+        //pi0.SetInputFileIndex(input);
         AddAODParticle(pi0);
       }//pi0
     }//2n photon loop
@@ -496,28 +496,37 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   }  
   
   //Get vertex for photon momentum calculation
-  Double_t vertex[]  = {0,0,0} ; //vertex 
   //Double_t vertex2[] = {0,0,0} ; //vertex from second aod input
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
-  {
-	  GetReader()->GetVertex(vertex);
-	  //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
-  }
+  //if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
+  //{
+  //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
+  //}
 	
   
   TLorentzVector mom ;
   for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
     AliVCluster * calo = (AliVCluster*) (pl->At(icalo));	
     
+    Int_t evtIndex = 0 ; 
+    if (GetMixedEvent()) {
+      evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
+    }
+    
     //Cluster selection, not charged, with pi0 id and in fiducial cut
 	  
     //Input from second AOD?
-    Int_t input = 0;
+    //Int_t input = 0;
     //	if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
     //	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
 	  
     //Get Momentum vector, 
-    if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+    //if     (input == 0) 
+    if(GetReader()->GetDataType() != AliCaloTrackReader::kMC){
+      calo->GetMomentum(mom,GetVertex(evtIndex)) ;}//Assume that come from vertex in straight line
+    else{
+      Double_t vertex[]={0,0,0};
+      calo->GetMomentum(mom,vertex) ;
+    }
     //else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
 	  
     //If too small or big pt, skip it
@@ -590,7 +599,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     if(IsDataMC()){
       if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
          GetReader()->GetDataType() != AliCaloTrackReader::kMC){
-        aodpi0.SetInputFileIndex(input);
+        //aodpi0.SetInputFileIndex(input);
         Int_t tag	=0;
         tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(),GetReader(), aodpi0.GetInputFileIndex());
         //GetMCAnalysisUtils()->CheckMultipleOrigin(calo->GetLabels(),calo->GetNLabels(), GetReader(), aodpi0.GetInputFileIndex(), tag);

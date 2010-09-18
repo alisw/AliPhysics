@@ -247,7 +247,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     return;
   }
     
-  if(!GetInputAODBranch()){
+  if(!GetInputAODBranch() || !event){
     printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
     abort();
   }
@@ -300,7 +300,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     return;
   }
   
-  if(!GetInputAODBranch()){
+  if(!GetInputAODBranch() || !event){
     printf("AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms() - No input particles in AOD with name branch < %s > \n",GetInputAODName().Data());
     abort();
   }
@@ -353,7 +353,6 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     Float_t	 rad = 0, pt = 0, eta = 0, phi = 0;
     Int_t	 npartcone = 0;
     TVector3 p3;
-    AliAODTrack* track = new AliAODTrack ;
     
     Int_t ntracks =  0;
     if(!fUseJetRefTracks)
@@ -361,6 +360,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     else //If you want to use jet tracks from JETAN
       ntracks =  (jet->GetRefTracks())->GetEntriesFast();
     
+    AliAODTrack* track = 0x0 ;
     for(Int_t ipr = 0;ipr < ntracks ; ipr ++ ){
       if(!fUseJetRefTracks)
         track = (AliAODTrack *) (GetAODCTS()->At(ipr)) ; 
