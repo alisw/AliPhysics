@@ -1161,7 +1161,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     Double_t bFrac=0., bFracC=0., bFracA=0.;
     for(Int_t ibbin=1; ibbin<hbDist->GetNbinsX(); ibbin++){
       bFrac += (hbDist->GetBinContent(ibbin))/(hbDist->GetEntries());
-      if((1.-bFrac) < xSecPerc){
+      if(bFrac > xSecPerc){
    	b = hbDist->GetBinLowEdge(ibbin);
    	break;
       }
@@ -1169,15 +1169,15 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     //
     for(Int_t ibbin=1; ibbin<hbDist->GetNbinsX(); ibbin++){
       bFracC += (hbDist->GetBinContent(ibbin))/(hbDist->GetEntries());
-      if((1.-bFracC) < xSecPercC){
+      if(bFracC > xSecPercC){
    	bC = hbDist->GetBinLowEdge(ibbin);
    	break;
       }
     }
     //
     for(Int_t ibbin=1; ibbin<hbDist->GetNbinsX(); ibbin++){
-      bFracA += (hbDist->GetBinContent(ibbin))/(hNpartDist->GetEntries());
-      if((1.-bFracA) < xSecPercA){
+      bFracA += (hbDist->GetBinContent(ibbin))/(hbDist->GetEntries());
+      if(bFracA > xSecPercA){
    	bA = hbDist->GetBinLowEdge(ibbin);
    	break;
       }
