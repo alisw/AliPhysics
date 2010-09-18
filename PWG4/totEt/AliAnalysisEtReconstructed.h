@@ -23,15 +23,48 @@ public:
     virtual Int_t AnalyseEvent(AliVEvent* event);
 
     virtual void Init();
+
+    /** Fill the objects you want to output, classes which add new histograms should overload this. */
+    virtual void FillOutputList(TList *list);
+
+    /** Create the histograms, must be overloaded if you want to add your own */
+    virtual void CreateHistograms();
     
 protected:
 
     bool CheckGoodVertex(AliVParticle *track);
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
 
+    Int_t fNTpcClustersCut;
+    Int_t fNItsClustersCut;
+
     Double_t fTrackDistanceCut; // cut on track distance    
+    
+    Double_t fPidCut; // cut on the pid probability
+    
     Char_t fClusterType; // selection on cluster type
     
+    /** Energy deposited in calorimeter by charged pions */
+    TH2F *fHistChargedPionEnergyDeposit;
+    
+    /** Energy deposited in calorimeter by protons */
+    TH2F *fHistProtonEnergyDeposit;
+    
+    /** Energy deposited in calorimeter by anti-protons */
+    TH2F *fHistAntiProtonEnergyDeposit;
+
+    /** Energy deposited in calorimeter by charged kaons */
+    TH2F *fHistChargedKaonEnergyDeposit;
+    
+    /** Energy deposited in calorimeter by muons */
+    TH2F *fHistMuonEnergyDeposit;
+    
+  private:
+    
+    AliAnalysisEtReconstructed(const AliAnalysisEtReconstructed& g);
+    AliAnalysisEtReconstructed & operator=(const AliAnalysisEtReconstructed&);
+    
+   
 };
 
 #endif // ALIANALYSISETRECONSTRUCTED_H

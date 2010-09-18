@@ -60,6 +60,21 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fMultiplicity(0)
         ,fChargedMultiplicity(0)
         ,fNeutralMultiplicity(0)
+        ,fBaryonEt(0)
+        ,fAntiBaryonEt(0)
+        ,fMesonEt(0)
+        ,fBaryonEtAcc(0)
+        ,fAntiBaryonEtAcc(0)
+        ,fMesonEtAcc(0)
+        ,fProtonEt(0)
+        ,fChargedKaonEt(0)
+        ,fMuonEt(0)
+        ,fElectronEt(0)
+        ,fProtonEtAcc(0)
+        ,fChargedKaonEtAcc(0)
+        ,fMuonEtAcc(0)
+        ,fElectronEtAcc(0)
+        ,fEtaCut(0)
 	,fEtaCutAcc(0)
 	,fPhiCutAccMin(0)
 	,fPhiCutAccMax(0)
@@ -83,6 +98,15 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fHistBaryonEtAcc(0)
         ,fHistAntiBaryonEtAcc(0)
         ,fHistMesonEtAcc(0)
+        ,fHistProtonEt(0)
+        ,fHistChargedKaonEt(0)
+        ,fHistMuonEt(0)
+        ,fHistElectronEt(0)
+        ,fHistProtonEtAcc(0)
+        ,fHistChargedKaonEtAcc(0)
+        ,fHistMuonEtAcc(0)
+        ,fHistElectronEtAcc(0)
+        ,fHistEtRecvsEtMC(0)
         ,fHistTMDeltaR(0)
 {
 }
@@ -116,6 +140,13 @@ void AliAnalysisEt::FillOutputList(TList *list)
     list->Add(fHistBaryonEtAcc);
     list->Add(fHistAntiBaryonEtAcc);
     list->Add(fHistMesonEtAcc);
+
+    list->Add(fHistProtonEtAcc);
+    list->Add(fHistChargedKaonEtAcc);
+    list->Add(fHistMuonEtAcc);
+    list->Add(fHistElectronEtAcc);
+
+    list->Add(fHistEtRecvsEtMC);
 
     list->Add(fHistTMDeltaR);
 }
@@ -207,6 +238,33 @@ void AliAnalysisEt::CreateHistograms()
     histname = "fHistMesonEtAcc" + fHistogramNameSuffix;
     fHistMesonEtAcc = new TH1F(histname.Data(), "E_{T} for mesons in calorimeter acceptance",  nbinsEt, minEt, maxEt);
 
+    histname = "fHistProtonEt" + fHistogramNameSuffix;
+    fHistProtonEt = new TH1F(histname.Data(), "E_{T} for (anti-)protons", nbinsEt, minEt, maxEt);
+
+    histname = "fHistKaonEt" + fHistogramNameSuffix;
+    fHistChargedKaonEt = new TH1F(histname.Data(), "E_{T} for charged kaons", nbinsEt, minEt, maxEt);
+
+    histname = "fHistMuonEt" + fHistogramNameSuffix;
+    fHistMuonEt = new TH1F(histname.Data(), "E_{T} for muons", nbinsEt, minEt, maxEt);
+
+    histname = "fHistElectronEt" + fHistogramNameSuffix;
+    fHistElectronEt = new TH1F(histname.Data(), "E_{T} for electrons/positrons", nbinsEt, minEt, maxEt);
+
+    histname = "fHistProtonEtAcc" + fHistogramNameSuffix;
+    fHistProtonEtAcc = new TH1F(histname.Data(), "E_{T} for (anti-)protons in calorimeter acceptance", nbinsEt, minEt, maxEt);
+
+    histname = "fHistKaonEtAcc" + fHistogramNameSuffix;
+    fHistChargedKaonEtAcc = new TH1F(histname.Data(), "E_{T} for charged kaons in calorimeter acceptance", nbinsEt, minEt, maxEt);
+
+    histname = "fHistMuonEtAcc" + fHistogramNameSuffix;
+    fHistMuonEtAcc = new TH1F(histname.Data(), "E_{T} for muons in calorimeter acceptance", nbinsEt, minEt, maxEt);
+
+    histname = "fHistElectronEtAcc" + fHistogramNameSuffix;
+    fHistElectronEtAcc = new TH1F(histname.Data(), "E_{T} for electrons/positrons in calorimeter acceptance", nbinsEt, minEt, maxEt);
+
+    histname = "fHistEtRecvsEtMC" + fHistogramNameSuffix;
+    fHistEtRecvsEtMC = new TH2F(histname.Data(), "Reconstructed E_{t} vs MC E_{t}", nbinsEt, minEt, maxEt, nbinsEt, minEt, maxEt);
+
     //
     histname = "fHistTMDeltaR" + fHistogramNameSuffix;
     fHistTMDeltaR = new TH1F(histname.Data(), "#Delta R for calorimeter clusters", 200, 0, 50);
@@ -241,6 +299,15 @@ void AliAnalysisEt::FillHistograms()
 
     fHistTMDeltaR;
     */
+    fHistProtonEt->Fill(fProtonEt);
+    fHistChargedKaonEt->Fill(fChargedKaonEt);
+    fHistMuonEt->Fill(fMuonEt);
+    fHistElectronEt->Fill(fElectronEt);
+    
+    fHistProtonEtAcc->Fill(fProtonEtAcc);
+    fHistChargedKaonEtAcc->Fill(fChargedKaonEtAcc);
+    fHistMuonEtAcc->Fill(fMuonEtAcc);
+    fHistElectronEtAcc->Fill(fElectronEtAcc);
 }
 
 Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)
@@ -261,7 +328,20 @@ void AliAnalysisEt::ResetEventValues()
   fMultiplicity = 0;
   fChargedMultiplicity = 0;
   fNeutralMultiplicity = 0;
-  
+  fBaryonEt = 0;
+  fAntiBaryonEt = 0;
+  fMesonEt = 0;
+  fBaryonEtAcc = 0;
+  fAntiBaryonEtAcc = 0;
+  fMesonEtAcc = 0;
+  fProtonEt = 0;
+  fChargedKaonEt = 0;
+  fMuonEt = 0;
+  fElectronEt = 0;
+  fProtonEtAcc = 0;
+  fChargedKaonEtAcc = 0;
+  fMuonEtAcc = 0;
+    
   if (!fCuts || !fPdgDB || fPiPlusCode==0) { // some Init's needed
     cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
     if (!fCuts) {

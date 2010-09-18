@@ -127,6 +127,51 @@ protected:
     Int_t fMultiplicity;/** Multiplicity of particles in the event */    
     Int_t fChargedMultiplicity;/** Multiplicity of charged particles in the event */    
     Int_t fNeutralMultiplicity; /** Multiplicity of neutral particles in the event */
+    
+    /** Et of identified baryons */
+    Double_t fBaryonEt;
+    
+    /** Et of identified anti-baryons */
+    Double_t fAntiBaryonEt;
+    
+    /** Et of identified mesons */
+    Double_t fMesonEt;
+
+    /** Et of identified baryons in calorimeter acceptance */
+    Double_t fBaryonEtAcc;
+
+    /** Et of identified anti-baryons in calorimeter acceptance */
+    Double_t fAntiBaryonEtAcc;
+    
+    /** Et of identified mesons in calorimeter acceptance */
+    Double_t fMesonEtAcc;
+
+    /** Et of identified protons */
+    Double_t fProtonEt;
+    
+    /** Et of identified charged kaons */
+    Double_t fChargedKaonEt;
+    
+    /** Et of identified muons */
+    Double_t fMuonEt;
+    
+    /** Et of identified electrons */
+    Double_t fElectronEt;
+    
+    /** Et of identified protons in calorimeter acceptance */
+    Double_t fProtonEtAcc;
+
+    /** Et of identified charged kaons in calorimeter acceptance */
+    Double_t fChargedKaonEtAcc;
+
+    /** Et of identified muons in calorimeter acceptance */
+    Double_t fMuonEtAcc;
+
+    /** Et of identified electrons in calorimeter acceptance */
+    Double_t fElectronEtAcc;
+    
+    /** Cut in eta (standard |eta| < 0.5 )*/
+    Double_t fEtaCut;
 
     Double_t fEtaCutAcc;/** Eta cut for our acceptance */
     Double_t fPhiCutAccMin; /** Min phi cut for our acceptance in radians */    
@@ -169,17 +214,31 @@ protected:
     TH2F *fHistPhivsPtPos; //phi vs pT plot for positive tracks
     TH2F *fHistPhivsPtNeg; //phi vs pT plot for negative tracks
 
-    /* PID plots, Et */
-    TH1F *fHistBaryonEt; // baryon
-    TH1F *fHistAntiBaryonEt; // anti-baryon
-    TH1F *fHistMesonEt; // meson
+    /* PID plots */
+    TH1F *fHistBaryonEt;
+    TH1F *fHistAntiBaryonEt;
+    TH1F *fHistMesonEt;
 
-    TH1F *fHistBaryonEtAcc; // baryon, acc
-    TH1F *fHistAntiBaryonEtAcc; // anti-baryon, acc
-    TH1F *fHistMesonEtAcc; // meson, acc
+    TH1F *fHistBaryonEtAcc;
+    TH1F *fHistAntiBaryonEtAcc;
+    TH1F *fHistMesonEtAcc;
 
-    TH1F *fHistTMDeltaR;  /* Track matching plots */
+    TH1F *fHistProtonEt;
+    TH1F *fHistChargedKaonEt;
+    TH1F *fHistMuonEt;
+    TH1F *fHistElectronEt;
+    
+    TH1F *fHistProtonEtAcc;
+    TH1F *fHistChargedKaonEtAcc;
+    TH1F *fHistMuonEtAcc;
+    TH1F *fHistElectronEtAcc;
+    
+    /* Correction plots */
+    TH2F *fHistEtRecvsEtMC; //Reconstructed Et versus MC Et
 
+    /* Track matching plots */
+    TH1F *fHistTMDeltaR;
+    
 private:
     //Declare private to avoid compilation warning
     AliAnalysisEt & operator = (const AliAnalysisEt & g) ;//cpy assignment
