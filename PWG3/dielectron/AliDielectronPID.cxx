@@ -28,7 +28,7 @@ Detailed description
 #include <TMath.h>
 #include <TF1.h>
 
-#include <AliVParticle.h>
+#include <AliVTrack.h>
 #include <AliLog.h>
 #include <AliESDtrack.h>
 
@@ -180,7 +180,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
   //
 
   //loop over all cuts
-  AliVParticle *part=static_cast<AliVParticle*>(track);
+  AliVTrack *part=static_cast<AliVTrack*>(track);
   //TODO: Which momentum to use?
   //      Different momenta for different detectors?
   Double_t mom=part->P();
@@ -220,7 +220,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedITS(AliVParticle * const part, Int_t icut) const
+Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut) const
 {
   //
   // ITS part of the PID check
@@ -228,11 +228,12 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVParticle * const part, Int_t icut) co
   //
   Float_t numberOfSigmas=-1000.;
   
+  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliESDtrack::kITSpid)) return kFALSE;
+  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliESDtrack::kITSpid)) return kTRUE;
+  
   if (part->IsA()==AliESDtrack::Class()){
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
-    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(track->GetStatus()&AliESDtrack::kITSpid)) return kFALSE;
-    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(track->GetStatus()&AliESDtrack::kITSpid)) return kTRUE;
     
     numberOfSigmas=fESDpid->NumberOfSigmasITS(track, fPartType[icut]);
   }else{
@@ -246,7 +247,7 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVParticle * const part, Int_t icut) co
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTPC(AliVParticle * const part, Int_t icut) const
+Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut) const
 {
   //
   // TPC part of the PID check
@@ -273,7 +274,7 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVParticle * const part, Int_t icut) co
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTRD(AliVParticle * const /*part*/, Int_t /*icut*/) const
+Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const /*part*/, Int_t /*icut*/) const
 {
   //   
   // TRD part of the pid check
@@ -282,7 +283,7 @@ Bool_t AliDielectronPID::IsSelectedTRD(AliVParticle * const /*part*/, Int_t /*ic
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTOF(AliVParticle * const part, Int_t icut) const
+Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut) const
 {
   //
   // TOF part of the PID check
@@ -388,8 +389,8 @@ void AliDielectronPID::SetDefaults(Int_t def){
     // TOF 5 sigma inclusion if TOFpid available
     // this should reduce K,p,Pi to a large extent
     TF1 *lowerCut=new TF1("lowerCut", "[0] * TMath::Exp([1]*x)", 0, 100);
-    lowerCut->SetParameters(-2.7,-0.4357);
-    AddCut(kTPC,AliPID::kElectron,lowerCut,3.);
+    lowerCut->SetParameters(-2.65,-0.6757);
+    AddCut(kTPC,AliPID::kElectron,lowerCut,4.);
     AddCut(kTOF,AliPID::kElectron,-5,5,0,200,kFALSE,AliDielectronPID::kIfAvailable);
   } else if (def==10) {
     AddCut(kTOF,AliPID::kElectron,-5,5,0,200,kFALSE,AliDielectronPID::kIfAvailable);

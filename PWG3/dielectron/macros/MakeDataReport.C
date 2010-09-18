@@ -726,7 +726,7 @@ c->SetAlias("TPCcut","(Leg1_TPC_signal>70*(1-exp(-1*(Leg1_P_InnerParam+2))))&&(L
 c->SetAlias("NClcut","Leg1_NclsTPC>120&&Leg2_NclsTPC>120");
 
 c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-2.65*exp(-0.6757*Leg1_P_InnerParam)&&Leg2_TPC_nSigma_Electrons>-2.65*exp(-0.6757*Leg2_P_InnerParam)")
-c->SetAlias("cut","PairType==1&&eleParam")
+c->SetAlias("cut","PairType==1&&eleParam&&Run<127719")
 c->SetAlias("cut","1==1")
 c->SetAlias("cut","NClcut")
 

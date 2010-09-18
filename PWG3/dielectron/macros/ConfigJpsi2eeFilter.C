@@ -1,56 +1,75 @@
+void SetupTrackCuts(AliDielectron *fDiele);
+void SetupPairCuts(AliDielectron *fDiele);
 
-void InitHistograms(AliDielectron *die);
-void InitCF(AliDielectron* die);
-
-void SetupTrackCuts(AliDielectron *die);
-void SetupPairCuts(AliDielectron *die);
+void InitHistograms();
 
 AliESDtrackCuts *SetupESDtrackCuts();
 
-AliDielectron* ConfigJpsi2eeFilter()
+Bool_t *fIsAOD=kFALSE;
+AliDielectron *fDiele=0x0;
+
+AliDielectron* ConfigJpsi2eeFilter(Bool_t isAOD=kFALSE)
 {
   //
   // Setup the instance of AliDielectron
   //
+
+  fIsAOD=isAOD;
   
   // create the actual framework object
-  TString name="trackQ+Pt>0.5+60<dEdx<100";
-  AliDielectron *die =
-    new AliDielectron(Form("%s",name.Data()),
-                      Form("Track cuts: %s",name.Data()));
+  TString name="trackQ+Pt>0.6+60<dEdx<100";
+  fDiele = new AliDielectron(Form("%s",name.Data()),
+                             Form("Track cuts: %s",name.Data()));
   
   // cut setup
-  SetupTrackCuts(die);
-  SetupPairCuts(die);
+  SetupTrackCuts();
+  SetupPairCuts();
   
   //
   // QA histogram setup
   //
-  InitHistograms(die);
+  InitHistograms();
   
-  return die;
+  return fDiele;
 }
 
 //______________________________________________________________________________________
-void SetupTrackCuts(AliDielectron *die)
+void SetupTrackCuts()
 {
   //
   // Setup the track cuts
   //
   
-  //ESD quality cuts
-  die->GetTrackFilter().AddCuts(SetupESDtrackCuts());
+  //ESD quality cuts DielectronTrackCuts
+  if (!fIsAOD) {
+    fDiele->GetTrackFilter().AddCuts(SetupESDtrackCuts());
+  } else {
+    AliDielectronTrackCuts *trackCuts=new AliDielectronTrackCuts("trackCuts","trackCuts");
+    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    trackCuts->SetRequireTPCRefit(kTRUE);
+    trackCuts->SetRequireITSRefit(kTRUE);
+    fDiele->GetTrackFilter().AddCuts(trackCuts);
+  }
   
   //Pt cut
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("Pt>.5+60<dEdx<100","Pt>.6 && 60<dEdx<100");
   pt->AddCut(AliDielectronVarManager::kPt,.6,1e30);
   pt->AddCut(AliDielectronVarManager::kTPCsignal,60.,100.);
+
+  if (fIsAOD){
+      // TPC #clusteres cut
+    pt->AddCut(AliDielectronVarManager::kNclsTPC,90.,160.);
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
+    //TODO: DCA cuts to be investigated!!!
+//     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
+//     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
+  }
   
-  die->GetTrackFilter().AddCuts(pt);
+  fDiele->GetTrackFilter().AddCuts(pt);
 }
 
 //______________________________________________________________________________________
-void SetupPairCuts(AliDielectron *die)
+void SetupPairCuts()
 {
   //
   // Setup the pair cuts
@@ -61,7 +80,7 @@ void SetupPairCuts(AliDielectron *die)
   AliDielectronVarCuts *invMassCut=new AliDielectronVarCuts("InvMass","2<M<4");
   invMassCut->AddCut(AliDielectronVarManager::kM,2.,1e30);
 //   invMassCut->AddCut(AliDielectronVarManager::kPairType,1.);
-  die->GetPairFilter().AddCuts(invMassCut);
+  fDiele->GetPairFilter().AddCuts(invMassCut);
 
 }
 
@@ -88,7 +107,7 @@ AliESDtrackCuts *SetupESDtrackCuts()
 
 
 //______________________________________________________________________________________
-void InitHistograms(AliDielectron *die)
+void InitHistograms()
 {
   //
   // Initialise the histograms
@@ -96,12 +115,11 @@ void InitHistograms(AliDielectron *die)
   
 //Setup histogram classes
   AliDielectronHistos *histos=
-    new AliDielectronHistos(die->GetName(),
-                            die->GetTitle());
+    new AliDielectronHistos(fDiele->GetName(),
+                            fDiele->GetTitle());
   
   //Initialise histogram classes
   histos->SetReservedWords("Track;Pair");
-  
   
   //Track classes
   //to fill also track info from 2nd event loop until 2
@@ -137,5 +155,5 @@ void InitHistograms(AliDielectron *die)
   histos->UserHistogram("Pair","OpeningAngle","Opening angle;angle",
                         100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
   
-  die->SetHistogramManager(histos);
+  fDiele->SetHistogramManager(histos);
 }

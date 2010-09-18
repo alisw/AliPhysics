@@ -51,6 +51,7 @@ AliDielectronHistos::AliDielectronHistos() :
 //   TCollection(),
   TNamed("AliDielectronHistos","Dielectron Histogram Container"),
   fHistoList(),
+  fList(0x0),
   fReservedWords(new TString)
 {
   //
@@ -65,6 +66,7 @@ AliDielectronHistos::AliDielectronHistos(const char* name, const char* title) :
 //   TCollection(),
   TNamed(name, title),
   fHistoList(),
+  fList(0x0),
   fReservedWords(new TString)
 {
   //
@@ -389,6 +391,22 @@ TH1* AliDielectronHistos::GetHistogram(const char* histClass, const char* name) 
 }
 
 //_____________________________________________________________________________
+TH1* AliDielectronHistos::GetHistogram(const char* cutClass, const char* histClass, const char* name) const
+{
+  //
+  // return histogram from list of list of histograms
+  // this function is thought for retrieving histograms if a list of AliDielectronHistos is set
+  //
+  
+  if (!fList) return 0x0;
+  THashList *h=dynamic_cast<THashList*>(fList->FindObject(cutClass));
+  if (!h)return 0x0;
+  THashList *classTable=dynamic_cast<THashList*>(h->FindObject(histClass));
+  if (!classTable) return 0x0;
+  return (TH1*)classTable->FindObject(name);
+}
+
+//_____________________________________________________________________________
 void AliDielectronHistos::Draw(const Option_t* option)
 {
   //
@@ -418,7 +436,7 @@ void AliDielectronHistos::Draw(const Option_t* option)
 
   delete arr;
   drawStr.ToLower();
-  //options
+  //optionsfList
 //   Bool_t same=drawOpt.Contains("same"); //FIXME not yet implemented
 
   TCanvas *c=0x0;
@@ -509,20 +527,37 @@ void AliDielectronHistos::PrintStructure() const
   //
   // Print classes and histograms in the class to stdout
   //
-  TIter nextClass(&fHistoList);
-  THashList *classTable=0;
-  while ( (classTable=(THashList*)nextClass()) ){
-    TIter nextHist(classTable);
-    TObject *o=0;
-    printf("+ %s\n",classTable->GetName());
-    while ( (o=nextHist()) )
-      printf("| ->%s\n",o->GetName());
+  if (!fList){
+    TIter nextClass(&fHistoList);
+    THashList *classTable=0;
+    while ( (classTable=(THashList*)nextClass()) ){
+      TIter nextHist(classTable);
+      TObject *o=0;
+      printf("+ %s\n",classTable->GetName());
+      while ( (o=nextHist()) )
+        printf("| ->%s\n",o->GetName());
+    }
+  } else {
+    TIter nextCutClass(fList);
+    THashList *cutClass=0x0;
+    while ( (cutClass=(THashList*)nextCutClass()) ) {
+      printf("+ %s\n",cutClass->GetName());
+      TIter nextClass(cutClass);
+      THashList *classTable=0;
+      while ( (classTable=(THashList*)nextClass()) ){
+        TIter nextHist(classTable);
+        TObject *o=0;
+        printf("|  + %s\n",classTable->GetName());
+        while ( (o=nextHist()) )
+          printf("|  | ->%s\n",o->GetName());
+      }
+      
+    }
   }
-  
 }
 
 //_____________________________________________________________________________
-void AliDielectronHistos::SetHistogramList(THashList &list)
+void AliDielectronHistos::SetHistogramList(THashList &list, Bool_t setOwner/*=kTRUE*/)
 {
   //
   // set histogram classes and histograms to this instance. It will take onwnership!
@@ -535,8 +570,28 @@ void AliDielectronHistos::SetHistogramList(THashList &list)
   while ( (o=next()) ){
     fHistoList.Add(o);
   }
-  list.SetOwner(kFALSE);
-  fHistoList.SetOwner(kTRUE);
+  if (setOwner){
+    list.SetOwner(kFALSE);
+    fHistoList.SetOwner(kTRUE);
+  }
+}
+
+//_____________________________________________________________________________
+Bool_t AliDielectronHistos::SetCutClass(const char* cutClass)
+{
+  //
+  // Assign histogram list according to cutClass
+  //
+
+  if (!fList) return kFALSE;
+  ResetHistogramList();
+  THashList *h=dynamic_cast<THashList*>(fList->FindObject(cutClass));
+  if (!h) {
+    Warning("SetCutClass","cutClass '%s' not found", cutClass);
+    return kFALSE;
+  }
+  SetHistogramList(*h,kFALSE);
+  return kTRUE;
 }
 
 //_____________________________________________________________________________

@@ -18,6 +18,7 @@
 #pragma link C++ class AliAnalysisTaskDielectronEfficiency+;
 #pragma link C++ class AliAnalysisTaskMultiDielectron+;
 #pragma link C++ class AliDielectronVarCuts+;
+#pragma link C++ class AliDielectronTrackCuts+;
 #pragma link C++ class AliDielectronPairLegCuts+;
 #pragma link C++ class AliDielectronSignalBase+;
 #pragma link C++ class AliDielectronSignalFunc+;
