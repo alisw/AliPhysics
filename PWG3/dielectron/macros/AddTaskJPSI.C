@@ -11,10 +11,7 @@ AliAnalysisTask *AddTaskJPSI(const char* config=""){
   }
 
   TString configFile("$ALICE_ROOT/PWG3/dielectron/macros/ConfigJpsi2eeData.C");
-//   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-//     ::Info("AddTaskJPSI", "Using AOD configuration");
-//     configFile="$ALICE_ROOT/PWG3/dielectron/macros/ConfigJpsi2eeDataAOD.C";
-//   }
+  Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDie");
@@ -25,7 +22,7 @@ AliAnalysisTask *AddTaskJPSI(const char* config=""){
   
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsi2ee(i);
+    AliDielectron *jpsi=ConfigJpsi2ee(i,isAOD);
     task->AddDielectron(jpsi);
   }
   

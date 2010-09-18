@@ -82,7 +82,6 @@ AliDielectronCF::AliDielectronCF() :
     fNBinsLeg[i]=0;
     fVarLoLimitLeg[i]=0.;
     fVarUpLimitLeg[i]=0.;
-    fVarBinLimits[i]=0x0;
     fStepMasks[i]=0xFFFFFF;
   }
 }

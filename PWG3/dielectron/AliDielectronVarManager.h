@@ -255,7 +255,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
 
   Double_t pidProbs[AliPID::kSPECIES];
   // Fill AliESDtrack interface specific information
-  Double_t tpcNcls=particle->GetNcls(1);
+  Double_t tpcNcls=particle->GetTPCNcls();
   values[AliDielectronVarManager::kNclsITS]       = particle->GetNcls(0); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNclsTPC]       = tpcNcls; // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNFclsTPC]      = particle->GetTPCNclsF();
@@ -351,7 +351,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   
   // Reset AliESDtrack interface specific information
   values[AliDielectronVarManager::kNclsITS]       = 0;
-  values[AliDielectronVarManager::kNclsTPC]       = 0;
+  values[AliDielectronVarManager::kNclsTPC]       = particle->GetTPCNcls();
   values[AliDielectronVarManager::kNFclsTPC]      = 0;
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
@@ -366,7 +366,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTRDprobPio]    = 0;
   
   //TODO: This is only an approximation!!!
-  values[AliDielectronVarManager::kTPCsignalN]    = particle->GetTPCClusterMap().CountBits();
+  values[AliDielectronVarManager::kTPCsignalN]    = values[AliDielectronVarManager::kNclsTPC];
   
 // Fill AliAODTrack interface information
   // ...
@@ -399,7 +399,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     Double_t tpcNsigmaPro=fgESDpid->GetTPCResponse().GetNumberOfSigmas(mom,pid->GetTPCsignal(),
       TMath::Nint(values[AliDielectronVarManager::kTPCsignalN]),AliPID::kProton);
     
-    values[AliDielectronVarManager::kPIn]=pid->GetTPCmomentum();
+    values[AliDielectronVarManager::kPIn]=mom;
     values[AliDielectronVarManager::kTPCsignal]=pid->GetTPCsignal();
 
     values[AliDielectronVarManager::kTPCnSigmaEle]=tpcNsigmaEle;

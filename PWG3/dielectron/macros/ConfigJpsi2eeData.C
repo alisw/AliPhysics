@@ -1,11 +1,11 @@
 
-void InitHistograms(AliDielectron *die, Int_t cutDefinition);
-void InitCF(AliDielectron* die, Int_t cutDefinition);
 
-void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
-void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
+void SetupTrackCuts();
+void SetupPairCuts();
+void InitHistograms();
+void InitCF();
 
-AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition);
+AliESDtrackCuts *SetupESDtrackCuts();
 
 TString names=("basicQ+SPDfirst+pt>.6+PID");
 
@@ -13,79 +13,103 @@ TObjArray *arrNames=names.Tokenize(";");
 
 const Int_t nDie=arrNames->GetEntries();
 
-AliDielectron* ConfigJpsi2ee(Int_t cutDefinition)
+AliDielectron *fDiele=0x0;
+Int_t          fCutDefinition=0;
+Bool_t         fIsAOD=kFALSE;
+
+AliDielectron* ConfigJpsi2ee(Int_t fCutDefinition, Bool_t isAOD)
 {
   //
   // Setup the instance of AliDielectron
   //
   
-  // create the actual framework object
-  TString name=Form("%02d",cutDefinition);
-  if (cutDefinition<arrNames->GetEntriesFast()){
-    name=arrNames->At(cutDefinition)->GetName();
-  }
-  AliDielectron *die =
-    new AliDielectron(Form("%s",name.Data()),
-                      Form("Track cuts: %s",name.Data()));
-
+  fCutDefinition=fCutDefinition;
+  fIsAOD=isAOD;
   
+  // create the actual framework object
+  TString name=Form("%02d",fCutDefinition);
+  if (fCutDefinition<arrNames->GetEntriesFast()){
+    name=arrNames->At(fCutDefinition)->GetName();
+  }
+  fDiele = new AliDielectron(Form("%s",name.Data()),
+                             Form("Track cuts: %s",name.Data()));
+
   // cut setup
-  SetupTrackCuts(die,cutDefinition);
-  SetupPairCuts(die,cutDefinition);
+  SetupTrackCuts();
+  SetupPairCuts();
   
   //
   // histogram setup
   // only if an AliDielectronHistos object is attached to the
-  // dielectron framework histograms will be filled
+  // fDielelectron framework histograms will be filled
   //
-  InitHistograms(die,cutDefinition);
+  InitHistograms();
 
   // the last definition uses no cuts and only the QA histograms should be filled!
-//   if (cutDefinition<nDie-1)
-  InitCF(die,cutDefinition);
+//   if (fCutDefinition<nDie-1)
+  InitCF();
 
-  return die;
+  return fDiele;
 }
 
 //______________________________________________________________________________________
-void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
+void SetupTrackCuts()
 {
   //
   // Setup the track cuts
   //
   
-  //ESD quality cuts
-  die->GetTrackFilter().AddCuts(SetupESDtrackCuts(cutDefinition));
+  //ESD quality cuts DielectronTrackCuts
+  if (!fIsAOD) {
+    fDiele->GetTrackFilter().AddCuts(SetupESDtrackCuts());
+  } else {
+    AliDielectronTrackCuts *trackCuts=new AliDielectronTrackCuts("trackCuts","trackCuts");
+    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    trackCuts->SetRequireTPCRefit(kTRUE);
+    trackCuts->SetRequireITSRefit(kTRUE);
+    fDiele->GetTrackFilter().AddCuts(trackCuts);
+  }
 
-  if(cutDefinition==0) {
+  if(fCutDefinition==0) {
     //Pt cut ----------------------------------------------------------
     AliDielectronVarCuts *pt = new AliDielectronVarCuts("ptCut","pt cut");
     pt->AddCut(AliDielectronVarManager::kPt,0.6,1e30);
-    die->GetTrackFilter().AddCuts(pt);
+
+    //AOD additions since there are no AliESDtrackCuts -----------------
+    //
+    if (fIsAOD){
+      // TPC #clusteres cut
+      pt->AddCut(AliDielectronVarManager::kNclsTPC,90.,160.);
+      pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
+      //TODO: DCA cuts to be investigated!!!
+//       pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
+//       pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
+    }
+    fDiele->GetTrackFilter().AddCuts(pt);
     
     // PID cuts --------------------------------------------------------
     AliDielectronPID *pid = new AliDielectronPID("PID10","TPC nSigma |e|<3 + |Pi|>3 + |P|>3 + TOF nSigma |e|<3");
     pid->SetDefaults(10);
-    die->GetTrackFilter().AddCuts(pid);
+    fDiele->GetTrackFilter().AddCuts(pid);
   }
 }
 
 //______________________________________________________________________________________
-void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
+void SetupPairCuts()
 {
   //
   // Setup the pair cuts
   //
   
-  //Invariant mass selection
-  AliDielectronVarCuts *invMassCut=new AliDielectronVarCuts("2<M<4+|Y|<.8","2<M<4 + |Y|<.8");
-  invMassCut->AddCut(AliDielectronVarManager::kM,2.,4.);
-  invMassCut->AddCut(AliDielectronVarManager::kY,-0.8,0.8);
-  die->GetPairFilter().AddCuts(invMassCut);
+  //Invariant mass and rapidity selection
+  AliDielectronVarCuts *pairCut=new AliDielectronVarCuts("2<M<4+|Y|<.8","2<M<4 + |Y|<.8");
+  pairCut->AddCut(AliDielectronVarManager::kM,2.,4.);
+  pairCut->AddCut(AliDielectronVarManager::kY,-0.8,0.8);
+  fDiele->GetPairFilter().AddCuts(pairCut);
 }
 
 //______________________________________________________________________________________
-AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition)
+AliESDtrackCuts *SetupESDtrackCuts()
 {
   //
   // Setup default AliESDtrackCuts
@@ -112,14 +136,14 @@ AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition)
 
 
 //______________________________________________________________________________________
-void InitHistograms(AliDielectron *die, Int_t cutDefinition)
+void InitHistograms()
 {
   //
   // Initialise the histograms
   //
   
   //Setup histogram Manager
-  AliDielectronHistos *histos=new AliDielectronHistos(die->GetName(),die->GetTitle());
+  AliDielectronHistos *histos=new AliDielectronHistos(fDiele->GetName(),fDiele->GetTitle());
   
   //Initialise histogram classes
   histos->SetReservedWords("Track;Pair");
@@ -163,17 +187,17 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Pair","OpeningAngle","Opening angle;angle",
                         100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
   
-  die->SetHistogramManager(histos);
+  fDiele->SetHistogramManager(histos);
 }
 
 
-void InitCF(AliDielectron* die, Int_t cutDefinition)
+void InitCF()
 {
   //
   // Setupd the CF Manager if needed
   //
   
-  AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
+  AliDielectronCF *cf=new AliDielectronCF(fDiele->GetName(),fDiele->GetTitle());
   
   //pair variables
   TVectorD *binLimPt=new TVectorD(6);
@@ -186,7 +210,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   cf->AddVariable(AliDielectronVarManager::kPt,2,0.8,1.2,kTRUE);
   cf->AddVariable(AliDielectronVarManager::kNclsTPC,3,90,120,kTRUE);
   
-  die->SetCFManagerPair(cf);
+  fDiele->SetCFManagerPair(cf);
   
 }
 

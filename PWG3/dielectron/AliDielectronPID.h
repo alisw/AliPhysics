@@ -27,8 +27,8 @@
 #include <AliAnalysisCuts.h>
 
 class TF1;
-
 class TList;
+class AliVTrack;
 
 class AliDielectronPID : public AliAnalysisCuts {
 public:
@@ -78,10 +78,10 @@ private:
   AliESDpid *fESDpid;             //! esd pid object
 
   
-  Bool_t IsSelectedITS(AliVParticle * const part, Int_t icut) const;
-  Bool_t IsSelectedTPC(AliVParticle * const part, Int_t icut) const;
-  Bool_t IsSelectedTRD(AliVParticle * const part, Int_t icut) const;
-  Bool_t IsSelectedTOF(AliVParticle * const part, Int_t icut) const;
+  Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut) const;
+  Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut) const;
+  Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut) const;
+  Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut) const;
 
   Float_t NumberOfSigmasITS(const AliAODTrack *track, AliPID::EParticleType type) const;
   Float_t NumberOfSigmasTPC(const AliAODTrack *track, AliPID::EParticleType type) const;

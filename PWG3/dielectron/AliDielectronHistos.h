@@ -20,6 +20,7 @@
 
 class TH1;
 class TString;
+class TList;
 // class TVectorT<double>;
 
 class AliDielectronHistos : public TNamed {
@@ -56,11 +57,15 @@ public:
 
   
   TH1* GetHistogram(const char* histClass, const char* name) const;
-
-  void SetHistogramList(THashList &list);
+  TH1* GetHistogram(const char* cutClass, const char* histClass, const char* name) const;
+  
+  void SetHistogramList(THashList &list, Bool_t setOwner=kTRUE);
   void ResetHistogramList(){fHistoList.Clear();}
   const THashList* GetHistogramList() const {return &fHistoList;}
-  
+
+  void SetList(TList * const list) { fList=list; }
+  TList *GetList() const { return fList; }
+
   void AddClass(const char* histClass);
 
   void DumpToFile(const char* file="histos.root");
@@ -78,8 +83,11 @@ public:
 //   virtual TIterator *MakeIterator(Bool_t dir = kIterForward) const ;
 //   virtual TObject   *Remove(TObject *obj) { return 0; }
 
+  Bool_t SetCutClass(const char* cutClass);
+  
 private:
   THashList fHistoList;             //-> list of histograms
+  TList    *fList;                  //! List of list of histograms
 
   TString *fReservedWords;          //! list of reserved words
   void UserHistogramReservedWords(const char* histClass, TH1 *hist, UInt_t valTypes);
@@ -98,7 +106,7 @@ private:
   AliDielectronHistos(const AliDielectronHistos &hist);
   AliDielectronHistos& operator = (const AliDielectronHistos &hist);
 
-  ClassDef(AliDielectronHistos,1)
+  ClassDef(AliDielectronHistos,2)
 };
 
 #endif

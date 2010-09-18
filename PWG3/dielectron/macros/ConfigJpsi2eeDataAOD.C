@@ -105,13 +105,10 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
   // Setup the pair cuts
   //
   
-  
-  // reject conversions
-  // and select mass region
-  AliDielectronVarCuts *openingAngleCut=new AliDielectronVarCuts("OpeningAngle","Opening angle > 35mrad");
-  openingAngleCut->AddCut(AliDielectronVarManager::kOpeningAngle,.035,4.);
-  openingAngleCut->AddCut(AliDielectronVarManager::kM,2.,4.);
-  die->GetPairFilter().AddCuts(openingAngleCut);
+  //Invariant mass and rapidity selection
+  AliDielectronVarCuts *pairCut=new AliDielectronVarCuts("2<M<4+|Y|<.8","2<M<4 + |Y|<.8");
+  pairCut->AddCut(AliDielectronVarManager::kM,2.,4.);
+  pairCut->AddCut(AliDielectronVarManager::kY,-0.8,0.8);
 }
 
 //______________________________________________________________________________________
