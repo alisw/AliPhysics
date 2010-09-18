@@ -42,6 +42,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fReconstructedIPzCut(1.5)
   ,fReconstructedNTpcClustersCut(30)
   ,fReconstructedNItsClustersCut(3)
+  ,fReconstructedPidCut(0.0)
 				    //
   ,fReconstructedPhosClusterType(-1)
   ,fReconstructedPhosClusterEnergyCut(0.0)
