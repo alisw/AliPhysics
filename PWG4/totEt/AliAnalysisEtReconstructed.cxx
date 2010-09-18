@@ -267,7 +267,7 @@ void AliAnalysisEtReconstructed::Init()
     AliAnalysisEt::Init();
     fNItsClustersCut = fCuts->GetReconstructedNItsClustersCut();
     fNTpcClustersCut = fCuts->GetReconstructedNTpcClustersCut();
-    fPidCut = fCuts->GetCommonPidCut();
+    fPidCut = fCuts->GetReconstructedPidCut();
 }
 
 bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)
