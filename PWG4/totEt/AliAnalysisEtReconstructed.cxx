@@ -15,13 +15,23 @@
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliVParticle.h"
+#include "TDatabasePDG.h"
+#include "TList.h"
 #include <iostream>
 #include "TH2F.h"
 
 AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         AliAnalysisEt()
+        ,fNTpcClustersCut(0)
+        ,fNItsClustersCut(0)
         ,fTrackDistanceCut(0)
+        ,fPidCut(0)
         ,fClusterType(0)
+        ,fHistChargedPionEnergyDeposit(0)
+        ,fHistProtonEnergyDeposit(0)
+        ,fHistAntiProtonEnergyDeposit(0)
+        ,fHistChargedKaonEnergyDeposit(0)
+        ,fHistMuonEnergyDeposit(0)
 {
 
 }
@@ -34,6 +44,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 { // analyse ESD event
     ResetEventValues();
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(ev);
+
+    Double_t protonMass = fPdgDB->GetParticle("proton")->Mass();
 
     for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++)
     {
@@ -52,10 +64,11 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         Float_t massPart = 0;
 
         const Double_t *pidWeights = track->PID();
+	Int_t maxpid = -1;
+        Double_t maxpidweight = 0;
+            
         if (pidWeights)
         {
-            Int_t maxpid = -1;
-            Float_t maxpidweight = 0;
             for (Int_t p =0; p < AliPID::kSPECIES; p++)
             {
                 if (pidWeights[p] > maxpidweight)
@@ -66,7 +79,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             }
             if (maxpid == AliPID::kProton)
             {
-                //     massPart = -0.938*track->Charge();
+	      //by definition of ET
+		massPart = -protonMass*track->Charge();
             }
 
         }
@@ -78,10 +92,49 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         {
 	    fTotChargedEt +=  et;
             fChargedMultiplicity++;
+	    if (maxpid != -1)
+            {
+                if (maxpid == AliPID::kPion)
+                {
+                    fProtonEt += et;
+                }
+                if (maxpid == AliPID::kKaon)
+                {
+                    fChargedKaonEt += et;
+                }
+                if (maxpid == AliPID::kMuon)
+                {
+                    fMuonEt += et;
+                }
+                if (maxpid == AliPID::kElectron)
+                {
+                    fElectronEt += et;
+                }
+            }
 
             if (TMath::Abs(track->Eta()) < fEtaCutAcc && track->Phi() < fPhiCutAccMax && track->Phi() > fPhiCutAccMin)
             {
                 fTotChargedEtAcc += track->E()*TMath::Sin(track->Theta()) + massPart;
+		if (maxpid != -1)
+                {
+                    if (maxpid == AliPID::kPion)
+                    {
+                        fProtonEtAcc += et;
+                    }
+                    if (maxpid == AliPID::kKaon)
+                    {
+                        fChargedKaonEtAcc += et;
+                    }
+                    if (maxpid == AliPID::kMuon)
+                    {
+                        fMuonEtAcc += et;
+                    }
+                    if (maxpid == AliPID::kElectron)
+                    {
+                        fElectronEtAcc += et;
+                    }
+                }
+           
             }
         }
 
@@ -104,25 +157,67 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             continue;
         }
 
-	// printf("Rec Cluster: iCluster %03d E %4.3f type %d NCells %d\n", iCluster, cluster->E(), (int)(cluster->GetType()), cluster->GetNCells()); // tmp/debug printout
-        if (cluster->GetType() != fClusterType) continue;
-
+	if (cluster->GetType() != fClusterType) continue;
+	if(cluster->GetTracksMatched() > 0)
+	//printf("Rec Cluster: iCluster %03d E %4.3f type %d NCells %d, nmatched: %d, distance to closest: %f\n", iCluster, cluster->E(), (int)(cluster->GetType()), cluster->GetNCells(), cluster->GetNTracksMatched(), cluster->GetEmcCpvDistance()); // tmp/debug printout
+	       
+        
         if (cluster->E() < fClusterEnergyCut) continue;
         Float_t pos[3];
         TVector3 cp(pos);
         cluster->GetPosition(pos);
-        //if (pos[0] < -(32.0*2.2)) continue; //Ensure that modules 0 and 1 are not used
-        // if(cp.Phi() < 260.*TMath::Pi()/180.) continue;
-        fHistTMDeltaR->Fill(cluster->GetEmcCpvDistance());
+
+	fHistTMDeltaR->Fill(cluster->GetEmcCpvDistance());
         if (cluster->GetEmcCpvDistance() < fTrackDistanceCut)
         {
+            if (cluster->GetNTracksMatched() == 1)
+            {
+                AliVTrack *track = event->GetTrack(cluster->GetTrackMatchedIndex());
+                const Double_t *pidWeights = track->PID();
+                
+		Double_t maxpidweight = 0;
+		Int_t maxpid = 0;
+                
+		if (pidWeights)
+                {
+                    for (Int_t p =0; p < AliPID::kSPECIES; p++)
+                    {
+                        if (pidWeights[p] > maxpidweight)
+                        {
+                            maxpidweight = pidWeights[p];
+                            maxpid = p;
+                        }
+                    }
+                    if(maxpidweight > fPidCut)
+		    {
+		       if(maxpid == AliPID::kProton)
+		       {
+			  if(track->Charge() == 1)
+			  {
+			     fHistProtonEnergyDeposit->Fill(cluster->E(), track->E());
+			  }
+			  else if(track->Charge() == -1)
+			  {
+			     fHistAntiProtonEnergyDeposit->Fill(cluster->E(), track->E());
+			  }
+		       }
+		       else if(maxpid == AliPID::kPion)
+		       {
+			  fHistChargedPionEnergyDeposit->Fill(cluster->E(), track->E());
+		       }
+		       else if(maxpid == AliPID::kKaon)
+		       {
+			  fHistChargedKaonEnergyDeposit->Fill(cluster->E(), track->E());
+		       }   
+		       else if(maxpid == AliPID::kMuon)
+		       {
+			  fHistMuonEnergyDeposit->Fill(cluster->E(), track->E());
+		       }
+		    }
+                }
+            }
+
             continue;
-            //AliVParticle *matchedTrack = event->GetTrack(cluster->GetTrackMatched());
-// 	    if(CheckGoodVertex(matchedTrack))
-// 	    {
-// 	       totChargedEnergy +=  matchedTrack->E();;
-// 	       totChargedEt += matchedTrack->E()*TMath::Sin(matchedTrack);
-// 	    }
         }
 
         if (cluster->E() >  fSingleCellEnergyCut && cluster->GetNCells() == fCuts->GetCommonSingleCell()) continue;
@@ -142,11 +237,9 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     }
 
     fTotNeutralEtAcc = fTotNeutralEt;
-
     fTotEt = fTotChargedEt + fTotNeutralEt;
     fTotEtAcc = fTotChargedEtAcc + fTotNeutralEtAcc;
 
-    std::cout << fTotChargedEtAcc << std::endl;
     // Fill the histograms...
     FillHistograms();
 
@@ -172,6 +265,9 @@ bool AliAnalysisEtReconstructed::CheckGoodVertex(AliVParticle* track)
 void AliAnalysisEtReconstructed::Init()
 { // Init
     AliAnalysisEt::Init();
+    fNItsClustersCut = fCuts->GetReconstructedNItsClustersCut();
+    fNTpcClustersCut = fCuts->GetReconstructedNTpcClustersCut();
+    fPidCut = fCuts->GetCommonPidCut();
 }
 
 bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)
@@ -189,3 +285,46 @@ bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Doubl
 		   esdTrack->Phi() < fPhiCutAccMax*TMath::Pi()/180.;
 }
 
+void AliAnalysisEtReconstructed::FillOutputList(TList* list)
+{
+    AliAnalysisEt::FillOutputList(list);
+
+    list->Add(fHistChargedPionEnergyDeposit);
+    list->Add(fHistProtonEnergyDeposit);
+    list->Add(fHistAntiProtonEnergyDeposit);
+    list->Add(fHistChargedKaonEnergyDeposit);
+    list->Add(fHistMuonEnergyDeposit);
+}
+
+void AliAnalysisEtReconstructed::CreateHistograms()
+{
+    AliAnalysisEt::CreateHistograms();
+
+    TString histname;
+    histname = "fHistChargedPionEnergyDeposit" + fHistogramNameSuffix;
+    fHistChargedPionEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by #pi^{+/-}", 1000, 0, 10, 1000, 0, 10);
+    fHistChargedPionEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
+    fHistChargedPionEnergyDeposit->SetYTitle("Energy of track");
+    
+    histname = "fHistProtonEnergyDeposit" + fHistogramNameSuffix;
+    fHistProtonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by protons", 1000, 0, 10, 1000, 0, 10);
+    fHistProtonEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
+    fHistProtonEnergyDeposit->SetYTitle("Energy of track");
+    
+    histname = "fHistAntiProtonEnergyDeposit" + fHistogramNameSuffix;
+    fHistAntiProtonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by anti-protons", 1000, 0, 10, 1000, 0, 10);
+    fHistAntiProtonEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
+    fHistAntiProtonEnergyDeposit->SetYTitle("Energy of track");
+    
+    histname = "fHistChargedKaonEnergyDeposit" + fHistogramNameSuffix;
+    fHistChargedKaonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by K^{+/-}", 1000, 0, 10, 1000, 0, 10);
+    fHistChargedKaonEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
+    fHistChargedKaonEnergyDeposit->SetYTitle("Energy of track");
+    
+    histname = "fHistMuonEnergyDeposit" + fHistogramNameSuffix;
+    fHistMuonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by #mu^{+/-}", 1000, 0, 10, 1000, 0, 10);
+    fHistMuonEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
+    fHistMuonEnergyDeposit->SetYTitle("Energy of track");
+    
+
+}
