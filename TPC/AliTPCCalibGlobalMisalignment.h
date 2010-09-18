@@ -18,17 +18,19 @@
 #include "AliTPCCorrection.h"
 #include "TVectorD.h"
 class TGeoMatrix;
+class TObjArray;
+class TTreeSRedirector;
 
 
 class AliTPCCalibGlobalMisalignment : public AliTPCCorrection {
 public:
   AliTPCCalibGlobalMisalignment();
   virtual ~AliTPCCalibGlobalMisalignment();
-
+  
   // initialization and update functions
   //  virtual void Init();
   //  virtual void Update(const TTimeStamp &timeStamp);
-
+  void AddAlign(const  AliTPCCalibGlobalMisalignment & add);
   // setters and getters for misalignments
   void SetXShift(Float_t xShift) {fXShift=xShift;}
   void SetYShift(Float_t yShift) {fYShift=yShift;}
@@ -37,7 +39,6 @@ public:
   void SetRotPhiC(Float_t rotPhiC) {fRotPhiC=rotPhiC;}
   void SetdRPhiOffsetA(Float_t dRPhiOffsetA) {fdRPhiOffsetA=dRPhiOffsetA;}
   void SetdRPhiOffsetC(Float_t dRPhiOffsetC) {fdRPhiOffsetC=dRPhiOffsetC;}
-  void SetUseGeoManager(Bool_t useGeomanager) {fUseGeomanager = useGeomanager;}
   
   Float_t GetXShift() const {return fXShift;}
   Float_t GetYShift() const {return fYShift;}
@@ -46,10 +47,20 @@ public:
   Float_t GetRotPhiC() const {return fRotPhiC;}
   Float_t GetdRPhiOffsetA() const {return fdRPhiOffsetA;}
   Float_t GetdRPhiOffsetC() const {return fdRPhiOffsetC;}
-  Bool_t  GetUseGeoManager() const { return fUseGeomanager;}
   virtual void Print(Option_t* option="") const;
   void SetQuadranAlign(const TVectorD *dq1, const TVectorD *dq2, const TVectorD *q2); 
-  void SetGlobalAlign(const TGeoMatrix * matrixGlobal, const TGeoMatrix *matrixA, const TGeoMatrix *matrixC );
+  // 
+  // Alignment manipulation using TGeoMatrix
+  
+  void SetAlignGlobal(const TGeoMatrix * matrixGlobal);
+  void SetAlignSectors(const TObjArray *arraySector);
+  TGeoMatrix* GetAlignGlobal() const  {return fMatrixGlobal;}
+  TObjArray * GetAlignSectors() const {return fArraySector;}
+  //
+  static AliTPCCalibGlobalMisalignment*  CreateOCDBAlign();
+  static AliTPCCalibGlobalMisalignment*  CreateMeanAlign(const AliTPCCalibGlobalMisalignment *alignIn);
+  static void DumpAlignment( AliTPCCalibGlobalMisalignment* align, TTreeSRedirector *pcstream, const char *name);
+  //
 protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
@@ -72,10 +83,8 @@ private:
   // Global alignment - use native ROOT representation
   //
   TGeoMatrix * fMatrixGlobal; // global Alignment common
-  TGeoMatrix * fMatrixASide; // global Alignment A side
-  TGeoMatrix * fMatrixCSide; // global Alignment C side
+  TObjArray   * fArraySector; //  local Alignmnet Sector
   //
-  Bool_t  fUseGeomanager;  // switch to use GeoManager - for visualization purposes
   AliTPCCalibGlobalMisalignment& operator=(const AliTPCCalibGlobalMisalignment&);
   AliTPCCalibGlobalMisalignment(const AliTPCCalibGlobalMisalignment&);
   ClassDef(AliTPCCalibGlobalMisalignment,2);

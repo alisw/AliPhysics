@@ -34,7 +34,11 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
 #include <TGeoPhysicalNode.h>
-
+//
+#include "AliAlignObjParams.h"
+#include "AliGeomManager.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 AliTPCCalibGlobalMisalignment::AliTPCCalibGlobalMisalignment()
   : AliTPCCorrection("mialign","Misalignment"),
@@ -42,8 +46,7 @@ AliTPCCalibGlobalMisalignment::AliTPCCalibGlobalMisalignment()
     fRotPhiA(0.),fRotPhiC(0.),
     fdRPhiOffsetA(0.), fdRPhiOffsetC(0.), 
     fQuadrantDQ1(0), fQuadrantDQ2(0), fQuadrantQ2(0), fMatrixGlobal(0),
-    fMatrixASide(0), fMatrixCSide(0),
-    fUseGeomanager(kFALSE)
+    fArraySector(0)
 {
   //
   // default constructor
@@ -70,13 +73,24 @@ void AliTPCCalibGlobalMisalignment::SetQuadranAlign(const TVectorD *dq1, const T
   fQuadrantQ2  = new TVectorD(*q2);;    //OROC long   pads - OROC medium pads
 }
 
-void AliTPCCalibGlobalMisalignment::SetGlobalAlign(const TGeoMatrix * matrixGlobal, const TGeoMatrix *matrixA, const TGeoMatrix *matrixC ){
+void AliTPCCalibGlobalMisalignment::SetAlignGlobal(const TGeoMatrix * matrixGlobal){
   //
-  // Set global misalignment as TGeoMatrix
+  // Set global misalignment
+  // Object is OWNER 
   // 
+  if (fMatrixGlobal) delete fMatrixGlobal;
+  fMatrixGlobal=0;
   if (matrixGlobal) fMatrixGlobal = new TGeoHMatrix(*matrixGlobal);
-  if (matrixA) fMatrixASide = new TGeoHMatrix(*matrixA);
-  if (matrixC) fMatrixCSide = new TGeoHMatrix(*matrixC);
+}
+
+void AliTPCCalibGlobalMisalignment::SetAlignSectors(const TObjArray *arraySector){
+  //
+  // Set misalignment TObjArray of TGeoMatrices  - for each sector
+  // Object is OWNER
+  // 
+  if (fArraySector) delete fArraySector;
+  fArraySector=0;
+  if (arraySector) fArraySector = (TObjArray*)arraySector->Clone();
 }
 
 
@@ -168,29 +182,7 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
   dx[0] += (posQG[0]-x[0]);
   dx[1] += (posQG[1]-x[1]);
   //
-  // alignment matrix in local frame
   //
-  if (fUseGeomanager){ //loading from the OCDB
-    Double_t posC[3] ={pos[0],pos[1],pos[2]};
-    //
-    //2. correct the point in the local frame
-    AliTPCParam *param = AliTPCcalibDB::Instance()->GetParameters();
-    if (!param){
-      //AliFatal("OCDB not initialized");
-    }
-    TGeoHMatrix  *mat = param->GetClusterMatrix(isec);
-    //
-    if (mat) mat->LocalToMaster(pos,posC);
-    Double_t posCG[3]={posC[0],posC[1],posC[2]};
-    //3. tranform the corrected point to the global frame
-    posCG[0]=  TMath::Cos(alpha)*posC[0]-TMath::Sin(alpha)*posC[1];
-    posCG[1]=  TMath::Sin(alpha)*posC[0]+TMath::Cos(alpha)*posC[1];
-    posCG[2]=  posC[2];
-    //4. Add delta
-    dx[0]+=posCG[0]-x[0];
-    dx[1]+=posCG[1]-x[1];
-    dx[2]+=posCG[2]-x[2];
-  }
   if (fMatrixGlobal){
     // apply global alignment matrix
     Double_t ppos[3]={x[0],x[1],x[2]};
@@ -201,23 +193,17 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
     dx[2]+=pposC[2]-ppos[2];
   }
 
-  if (fMatrixASide && roc%36<18){
+  if (fArraySector){
     // apply global alignment matrix
-    Double_t ppos[3]={x[0],x[1],x[2]};
-    Double_t pposC[3]={x[0],x[1],x[2]};
-    fMatrixASide->LocalToMaster(ppos,pposC);
-    dx[0]+=pposC[0]-ppos[0];
-    dx[1]+=pposC[1]-ppos[1];
-    dx[2]+=pposC[2]-ppos[2];
-  }
-  if (fMatrixCSide && roc%36>=18){
-    // apply global alignment matrix
-    Double_t ppos[3]={x[0],x[1],x[2]};
-    Double_t pposC[3]={x[0],x[1],x[2]};
-    fMatrixCSide->LocalToMaster(ppos,pposC);
-    dx[0]+=pposC[0]-ppos[0];
-    dx[1]+=pposC[1]-ppos[1];
-    dx[2]+=pposC[2]-ppos[2];
+    TGeoMatrix  *mat = (TGeoMatrix*)fArraySector->At(isec);
+    if (mat){
+      Double_t ppos[3]={x[0],x[1],x[2]};
+      Double_t pposC[3]={x[0],x[1],x[2]};
+      mat->LocalToMaster(ppos,pposC);
+      dx[0]+=pposC[0]-ppos[0];
+      dx[1]+=pposC[1]-ppos[1];
+      dx[2]+=pposC[2]-ppos[2];
+    }
   }
 }
 
@@ -232,4 +218,188 @@ void AliTPCCalibGlobalMisalignment::Print(Option_t* /*option*/ ) const {
   printf(" - dRPhi offsets: A side: %1.5f cm, C side: %1.5f cm\n",fdRPhiOffsetA,fdRPhiOffsetC);
  
  
+}
+
+void AliTPCCalibGlobalMisalignment::AddAlign(const  AliTPCCalibGlobalMisalignment & add){
+  //
+  // Add the alignmnet to current object
+  //
+  fXShift+=add.fXShift;               // Shift in global X [cm]
+  fYShift+=add.fYShift;               // Shift in global Y [cm]
+  fZShift+=add.fZShift;               // Shift in global Z [cm]
+
+  fRotPhiA+=add.fRotPhiA;      // simple rotation of A side read-out plane around the Z axis [rad]
+  fRotPhiC+=add.fRotPhiC;      // simple rotation of C side read-out plane around the Z axis [rad]
+  fdRPhiOffsetA+=add.fdRPhiOffsetA;  // add a constant offset of dRPhi (or local Y) in [cm]: purely for calibration purposes!
+  fdRPhiOffsetC+=add.fdRPhiOffsetC;  // add a constant offset of dRPhi (or local Y) in [cm]: purely for calibration purposes!
+  //
+  // Quadrant alignment
+  //
+  if (fQuadrantDQ1&&add.fQuadrantDQ1) fQuadrantDQ1->Add(*(add.fQuadrantDQ1));   //OROC medium pads delta ly+ - ly-
+  if (fQuadrantDQ2&&add.fQuadrantDQ2) fQuadrantDQ2->Add(*(add.fQuadrantDQ2));   //OROC long   pads delta ly+ - ly-
+  if (fQuadrantQ2&&add.fQuadrantQ2) fQuadrantQ2->Add(*(add.fQuadrantQ2));       //OROC long   pads - OROC medium pads
+  if (!fQuadrantDQ1&&add.fQuadrantDQ1) fQuadrantDQ1= new TVectorD(*add.fQuadrantDQ1);   //OROC medium pads delta ly+ - ly-
+  if (!fQuadrantDQ2&&add.fQuadrantDQ2) fQuadrantDQ2 = new TVectorD(*add.fQuadrantDQ2);   //OROC long   pads delta ly+ - ly-
+  if (!fQuadrantQ2&&add.fQuadrantQ2) fQuadrantQ2= new TVectorD(*add.fQuadrantQ2);       //OROC long   pads - OROC medium pads
+  //
+  // Global alignment - use native ROOT representation
+  //
+  if (add.fMatrixGlobal){
+    if (!fMatrixGlobal)  fMatrixGlobal = new TGeoHMatrix(*(add.fMatrixGlobal)); 
+    if (fMatrixGlobal)   ((TGeoHMatrix*)fMatrixGlobal)->Multiply(add.fMatrixGlobal); 
+  }
+  if (add.fArraySector){
+    if (!fArraySector) {SetAlignSectors(add.fArraySector);
+    }else{
+      for (Int_t isec=0; isec<72; isec++){
+	TGeoHMatrix *mat0= (TGeoHMatrix*)fArraySector->At(isec);
+	TGeoHMatrix *mat1= (TGeoHMatrix*)add.fArraySector->At(isec);
+	if (mat0&&mat1) mat0->Multiply(mat1);
+      }
+    }
+  }
+}
+
+
+AliTPCCalibGlobalMisalignment *  AliTPCCalibGlobalMisalignment::CreateOCDBAlign(){
+  //
+  // Create  AliTPCCalibGlobalMisalignment from OCDB Alignment entry
+  // OCDB has to be initialized before in user code
+  // All storages (defualt and specific)  and run number 
+  //
+  AliCDBEntry * entry = AliCDBManager::Instance()->Get("TPC/Align/Data");
+  if (!entry){
+    printf("Missing alignmnet entry. OCDB not initialized?\n");
+    return 0;
+  }
+  TClonesArray * array = (TClonesArray*)entry->GetObject();
+  Int_t entries = array->GetEntries();
+  TGeoHMatrix matrixGlobal;
+  TObjArray *alignArrayOCDB= new TObjArray(73);  // sector misalignment + global misalignment
+  //                                            // global is number 72
+  //
+  { for (Int_t i=0;i<entries; i++){
+      //
+      //
+      TGeoHMatrix matrix;
+      AliAlignObjParams *alignP = (AliAlignObjParams*)array->UncheckedAt(i);
+      alignP->GetMatrix(matrix);
+      Int_t imod;
+      AliGeomManager::ELayerID ilayer;
+      alignP->GetVolUID(ilayer, imod);
+      if (ilayer==AliGeomManager::kInvalidLayer) {
+	alignArrayOCDB->AddAt(matrix.Clone(),72);
+	alignP->GetMatrix(matrixGlobal);
+      }else{
+	Int_t sector=imod;
+	if (ilayer==AliGeomManager::kTPC2) sector+=36;
+	alignArrayOCDB->AddAt(matrix.Clone(),sector);
+      }
+    }
+  }
+  AliTPCCalibGlobalMisalignment *align = new  AliTPCCalibGlobalMisalignment;
+  align->SetAlignGlobal(&matrixGlobal);
+  align->SetAlignSectors(alignArrayOCDB);
+  return align;
+}
+
+
+AliTPCCalibGlobalMisalignment *  AliTPCCalibGlobalMisalignment::CreateMeanAlign(const AliTPCCalibGlobalMisalignment *alignIn){
+  //
+  // Create new object, disantangle common mean alignmnet and sector alignment
+  //
+  // 1. Try to get mean alignment
+  // 2. Remove mean alignment from sector alignment
+  // 3. Create new object
+  //
+  TObjArray * array = alignIn->GetAlignSectors();
+  TObjArray * arrayNew = new TObjArray(72);
+  //
+  //Get mean transformation
+  TGeoHMatrix matrix;  
+  {for (Int_t isec=0; isec<72; isec++){
+      const TGeoMatrix* cmatrix=(TGeoMatrix*)array->At(isec);
+      if (!cmatrix) continue;
+      matrix.Multiply(cmatrix);
+    }}
+  TGeoHMatrix matrixMean(matrix);
+  matrixMean.SetDx(matrix.GetTranslation()[0]/72.);
+  matrixMean.SetDy(matrix.GetTranslation()[1]/72.);
+  matrixMean.SetDz(matrix.GetTranslation()[2]/72.);
+  Double_t rotation[12];
+  {for (Int_t i=0; i<12; i++) {
+      rotation[i]=1.0;
+      if (TMath::Abs(matrix.GetRotationMatrix()[i]-1.)>0.1){
+      rotation[i]=matrix.GetRotationMatrix()[i]/72.;
+      }
+    }}
+  matrixMean.SetRotation(rotation);
+  TGeoHMatrix matrixInv = matrixMean.Inverse();
+  //
+  {for (Int_t isec=0; isec<72; isec++){
+      TGeoHMatrix* amatrix=(TGeoHMatrix*)(array->At(isec)->Clone());
+      if (!amatrix) continue;
+      amatrix->Multiply(&matrixInv);
+      arrayNew->AddAt(amatrix,isec);
+    }}
+  if (alignIn->GetAlignGlobal()) matrixMean.Multiply((alignIn->GetAlignGlobal()));
+  AliTPCCalibGlobalMisalignment *alignOut = new  AliTPCCalibGlobalMisalignment;
+  alignOut->SetAlignGlobal(&matrixMean);  
+  alignOut->SetAlignSectors(arrayNew);  
+  /*
+    Checks transformation:   
+    AliTPCCalibGlobalMisalignment *  alignIn =  AliTPCCalibGlobalMisalignment::CreateOCDBAlign()
+    AliTPCCalibGlobalMisalignment * alignOut =  AliTPCCalibGlobalMisalignment::CreateMeanAlign(alignIn)
+    alignOutM= (AliTPCCalibGlobalMisalignment*)alignOut->Clone();
+    alignOutS= (AliTPCCalibGlobalMisalignment*)alignOut->Clone();
+    alignOutS->SetAlignGlobal(0);  
+    alignOutM->SetAlignSectors(0);  
+    //
+    AliTPCCorrection::AddVisualCorrection(alignOut,0);
+    AliTPCCorrection::AddVisualCorrection(alignOutM,1);
+    AliTPCCorrection::AddVisualCorrection(alignOutS,2);
+    AliTPCCorrection::AddVisualCorrection(alignIn,3);
+    
+    TF1 f0("f0","AliTPCCorrection::GetCorrSector(x,85,0.9,1,0)",0,18);
+    TF1 f1("f1","AliTPCCorrection::GetCorrSector(x,85,0.9,1,1)",0,18);
+    TF1 f2("f2","AliTPCCorrection::GetCorrSector(x,85,0.9,1,2)",0,18);
+    TF1 f3("f3","AliTPCCorrection::GetCorrSector(x,85,0.9,1,3)",0,18);
+    f0->SetLineColor(1);
+    f1->SetLineColor(2);
+    f2->SetLineColor(3);
+    f3->SetLineColor(4);
+    f0->Draw();
+    f1->Draw("same");
+    f2->Draw("same");
+    f3->Draw("same");
+
+    TF2 f2D("f2D","AliTPCCorrection::GetCorrSector(x,y,0.9,1,0)-AliTPCCorrection::GetCorrSector(x,y,0.9,1,3)",0,18,85,245);
+  */
+  return alignOut;
+}
+
+
+void AliTPCCalibGlobalMisalignment::DumpAlignment( AliTPCCalibGlobalMisalignment* align, TTreeSRedirector *pcstream, const char *name){
+  //
+  // Dump alignment into tree
+  //
+  TObjArray * array = align->GetAlignSectors();
+  if (!array) return;
+  //
+  //Get mean transformation
+  TGeoHMatrix matrix;  
+  {for (Int_t isec=0; isec<72; isec++){
+      TGeoHMatrix* cmatrix=(TGeoHMatrix*)array->At(isec);
+      TGeoHMatrix* cmatrixDown=(TGeoHMatrix*)array->At(isec%36);
+      TGeoHMatrix* cmatrixUp=(TGeoHMatrix*)array->At(isec%36+36);
+      TGeoHMatrix diff(*cmatrixDown);
+      diff.Multiply(&(cmatrixUp->Inverse()));
+      (*pcstream)<<name<<
+	"isec="<<isec<<
+	"m0.="<<cmatrix<<
+	"diff.="<<&diff<<
+	"\n";
+    }
+  }
+  
 }
