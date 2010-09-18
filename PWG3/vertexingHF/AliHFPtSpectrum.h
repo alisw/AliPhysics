@@ -55,7 +55,7 @@ class AliHFPtSpectrum: public TNamed
   // Set the calculation option flag for feed-down correction: 0=none, 1=fc , 2=Nb 
   void SetFeedDownCalculationOption(Int_t option){ fFeedDownOption = option; }
   // Set if the calculation has to consider asymmetric uncertaInt_ties or not
-  void SetComputeAsymmetricUncertainties(bool flag){ fAsymUncertainties = flag; }
+  void SetComputeAsymmetricUncertainties(Bool_t flag){ fAsymUncertainties = flag; }
   // Set the luminosity and its uncertainty
   void SetLuminosity(Double_t luminosity, Double_t unc){
     fLuminosity[0]=luminosity;  fLuminosity[1]=unc;
@@ -69,31 +69,32 @@ class AliHFPtSpectrum: public TNamed
   // Getters
   //
   // Return the TGraphAsymmErrors of the feed-down correction
-  TGraphAsymmErrors * GetFeedDownCorrection_fc() { return (fgFc ?  fgFc : NULL); }
+  TGraphAsymmErrors * GetFeedDownCorrectionFc() { return (fgFc ?  fgFc : NULL); }
   // Return the histogram of the feed-down correction
-  TH1 * GetHistoFeedDownCorrection_fc() { return (fhFc ?  fhFc : NULL); }
+  TH1 * GetHistoFeedDownCorrectionFc() { return (fhFc ?  fhFc : NULL); }
   // Return the histograms of the feed-down correction bounds
-  TH1 * GetHistoUpperLimitFeedDownCorrection_fc() { return (fhFc_max ? fhFc_max : NULL); }
-  TH1 * GetHistoLowerLimitFeedDownCorrection_fc() { return (fhFc_min ? fhFc_min : NULL); }
+  TH1 * GetHistoUpperLimitFeedDownCorrectionFc() { return (fhFcMax ? fhFcMax : NULL); }
+  TH1 * GetHistoLowerLimitFeedDownCorrectionFc() { return (fhFcMin ? fhFcMin : NULL); }
   // Return the TGraphAsymmErrors of the yield after feed-down correction 
   TGraphAsymmErrors * GetFeedDownCorrectedSpectrum() { return (fgYieldCorr ? fgYieldCorr : NULL); }
   // Return the histogram of the yield after feed-down correction 
   TH1 * GetHistoFeedDownCorrectedSpectrum() { return (fhYieldCorr ? fhYieldCorr : NULL); }
   // Return the histogram of the yield after feed-down correction bounds
-  TH1 * GetHistoUpperLimitFeedDownCorrectedSpectrum() { return (fhYieldCorr_max ? fhYieldCorr_max : NULL); }
-  TH1 * GetHistoLowerLimitFeedDownCorrectedSpectrum() { return (fhYieldCorr_min ? fhYieldCorr_min : NULL); }
+  TH1 * GetHistoUpperLimitFeedDownCorrectedSpectrum() { return (fhYieldCorrMax ? fhYieldCorrMax : NULL); }
+  TH1 * GetHistoLowerLimitFeedDownCorrectedSpectrum() { return (fhYieldCorrMin ? fhYieldCorrMin : NULL); }
   // Return the equivalent invariant cross-section TGraphAsymmErrors
   TGraphAsymmErrors * GetCrossSectionFromYieldSpectrum() { return (fgSigmaCorr ? fgSigmaCorr : NULL); }
   // Return the equivalent invariant cross-section histogram
   TH1 * GetHistoCrossSectionFromYieldSpectrum() { return (fhSigmaCorr ? fhSigmaCorr : NULL); }
   // Return the equivalent invariant cross-section histogram bounds
-  TH1 * GetHistoUpperLimitCrossSectionFromYieldSpectrum() { return (fhSigmaCorr_max ? fhSigmaCorr_max : NULL); }
-  TH1 * GetHistoLowerLimitCrossSectionFromYieldSpectrum() { return (fhSigmaCorr_min ? fhSigmaCorr_min : NULL); }
+  TH1 * GetHistoUpperLimitCrossSectionFromYieldSpectrum() { return (fhSigmaCorrMax ? fhSigmaCorrMax : NULL); }
+  TH1 * GetHistoLowerLimitCrossSectionFromYieldSpectrum() { return (fhSigmaCorrMin ? fhSigmaCorrMin : NULL); }
 
   //
   // Main function:
   //    Compute the invariant cross-section from the yield (correct it)
-  void ComputeHFPtSpectrum(Double_t delta_y=1.0, Double_t BR_c=1.0, Double_t BR_b_decay=1.0);
+  // variables : analysed delta_y, BR for the final correction, BR b --> decay (relative to the input theoretical prediction)
+  void ComputeHFPtSpectrum(Double_t deltaY=1.0, Double_t branchingRatioC=1.0, Double_t branchingRatioBintoFinalDecay=1.0);
 
   //
   // Functions to  reweight histograms for testing purposes: 
@@ -111,11 +112,11 @@ class AliHFPtSpectrum: public TNamed
   // Basic functions
   //
   // Compute the feed-down correction via fc-method
-  void CalculateFeedDownCorrection_fc(); 
+  void CalculateFeedDownCorrectionFc(); 
   // Correct the yield for feed-down correction via fc-method
-  void CalculateFeedDownCorrectedSpectrum_fc(); 
+  void CalculateFeedDownCorrectedSpectrumFc(); 
   // Correct the yield for feed-down correction via Nb-method
-  void CalculateFeedDownCorrectedSpectrum_Nb(Float_t delta_y, Double_t BR_b_decay); 
+  void CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Double_t branchingRatioBintoFinalDecay); 
 
   // Check histograms consistency function
   Bool_t CheckHistosConsistency(TH1 *h1, TH1 *h2);
@@ -125,10 +126,10 @@ class AliHFPtSpectrum: public TNamed
   //
   TH1 *fhDirectMCpt;            // Input MC c-->D spectra
   TH1 *fhFeedDownMCpt;          // Input MC b-->D spectra
-  TH1 *fhDirectMCpt_max;        // Input MC maximum c-->D spectra
-  TH1 *fhDirectMCpt_min;        // Input MC minimum c-->D spectra
-  TH1 *fhFeedDownMCpt_max;      // Input MC maximum b-->D spectra
-  TH1 *fhFeedDownMCpt_min;      // Input MC minimum b-->D spectra
+  TH1 *fhDirectMCptMax;         // Input MC maximum c-->D spectra
+  TH1 *fhDirectMCptMin;         // Input MC minimum c-->D spectra
+  TH1 *fhFeedDownMCptMax;       // Input MC maximum b-->D spectra
+  TH1 *fhFeedDownMCptMin;       // Input MC minimum b-->D spectra
   TH1 *fhDirectEffpt;           // c-->D Acceptance and efficiency correction
   TH1 *fhFeedDownEffpt;         // b-->D Acceptance and efficiency correction
   TH1 *fhRECpt;                 // all reconstructed D
@@ -141,16 +142,16 @@ class AliHFPtSpectrum: public TNamed
   // Output spectra
   //
   TH1 *fhFc;                            // Correction histo fc = 1 / ( 1 + (eff_b/eff_c)*(N_b/N_c) ) 
-  TH1 *fhFc_max;                        // Maximum fc histo
-  TH1 *fhFc_min;                        // Minimum fc histo
+  TH1 *fhFcMax;                         // Maximum fc histo
+  TH1 *fhFcMin;                         // Minimum fc histo
   TGraphAsymmErrors * fgFc;             // Correction as TGraphAsymmErrors
   TH1 *fhYieldCorr;                     // Corrected yield  
-  TH1 *fhYieldCorr_max;                 // Maximum corrected yield  
-  TH1 *fhYieldCorr_min;                 // Minimum corrected yield  
+  TH1 *fhYieldCorrMax;                  // Maximum corrected yield  
+  TH1 *fhYieldCorrMin;                  // Minimum corrected yield  
   TGraphAsymmErrors * fgYieldCorr;      // Corrected yield as TGraphAsymmErrors
   TH1 *fhSigmaCorr;                     // Corrected cross-section  
-  TH1 *fhSigmaCorr_max;                 // Maximum corrected cross-section  
-  TH1 *fhSigmaCorr_min;                 // Minimum corrected cross-section
+  TH1 *fhSigmaCorrMax;                  // Maximum corrected cross-section  
+  TH1 *fhSigmaCorrMin;                  // Minimum corrected cross-section
   TGraphAsymmErrors * fgSigmaCorr;      // Corrected cross-section as TGraphAsymmErrors
 
   //
