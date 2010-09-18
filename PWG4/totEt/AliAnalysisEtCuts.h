@@ -23,6 +23,7 @@ class AliAnalysisEtCuts : public TNamed
   Double_t GetCommonClusterEnergyCut() const { return fCommonClusterEnergyCut; }
   Double_t GetCommonTrackPtCut() const { return fCommonTrackPtCut; }
   Int_t GetCommonSingleCell() const { return fCommonSingleCell; }
+
   // GeometryPhos
   Double_t GetGeometryPhosEtaAccCut() const { return fGeometryPhosEtaAccCut; }
   Double_t GetGeometryPhosPhiAccMinCut() const { return fGeometryPhosPhiAccMinCut; }
@@ -41,6 +42,7 @@ class AliAnalysisEtCuts : public TNamed
   Double_t GetReconstructedIPzCut() const { return fReconstructedIPzCut; }
   Int_t GetReconstructedNTpcClustersCut() const { return fReconstructedNTpcClustersCut; }
   Int_t GetReconstructedNItsClustersCut() const { return fReconstructedNItsClustersCut; }
+  Double_t GetReconstructedPidCut() const { return fReconstructedPidCut; }
   // ReconstructedPhos
   Char_t GetReconstructedPhosClusterType() const { return fReconstructedPhosClusterType; }
   Double_t GetReconstructedPhosClusterEnergyCut() const { return fReconstructedPhosClusterEnergyCut; }
@@ -79,6 +81,7 @@ class AliAnalysisEtCuts : public TNamed
   void SetReconstructedIPzCut(const Double_t val) { fReconstructedIPzCut = val; }
   void SetReconstructedNTpcClustersCut(const Int_t val) { fReconstructedNTpcClustersCut = val; }
   void SetReconstructedNItsClustersCut(const Int_t val) { fReconstructedNItsClustersCut = val; }
+  void SetReconstrucedPidCut(const Double_t val) { fReconstructedPidCut = val; }
   // ReconstructedPhos
   void SetReconstructedPhosClusterType(const Char_t val) { fReconstructedPhosClusterType = val; }
   void SetReconstructedPhosClusterEnergyCut(const Double_t val) { fReconstructedPhosClusterEnergyCut = val; }
@@ -100,7 +103,7 @@ class AliAnalysisEtCuts : public TNamed
   Double_t fCommonClusterEnergyCut; // Cluster Energy cut
   Double_t fCommonTrackPtCut; // Track Pt
   Int_t fCommonSingleCell; // Single Cell (1)
-
+  
   // GeometryPhos
   Double_t fGeometryPhosEtaAccCut; // PHOS Eta Acc cut
   Double_t fGeometryPhosPhiAccMinCut; // PHOS Phi Acc Min cut
@@ -121,6 +124,7 @@ class AliAnalysisEtCuts : public TNamed
   Double_t fReconstructedIPzCut; // IP z cut
   Int_t fReconstructedNTpcClustersCut; // # of TPC clusters cut
   Int_t fReconstructedNItsClustersCut; // # of ITS clusters cut
+  Double_t fReconstructedPidCut; // cut on pid prob
 
   // ReconstructedPhos
   Char_t fReconstructedPhosClusterType; // PHOS cluster type

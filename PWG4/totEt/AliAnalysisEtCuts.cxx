@@ -48,7 +48,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fReconstructedPhosSingleCellEnergyCut(0.5)
   ,fReconstructedPhosTrackDistanceCut(15.0)
 				    //
-  ,fReconstructedEmcalClusterType(-1)
+  ,fReconstructedEmcalClusterType(1)
   ,fReconstructedEmcalClusterEnergyCut(0.1) // GeV
   ,fReconstructedEmcalSingleCellEnergyCut(0.5)
   ,fReconstructedEmcalTrackDistanceCut(15.0)
