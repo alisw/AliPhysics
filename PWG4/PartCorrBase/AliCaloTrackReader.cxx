@@ -508,16 +508,12 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 //    
 //  }
 	
-
-  for (Int_t iev = 0; iev < fNMixedEvent; iev++) {
-    if (!fMixedEvent) {
-      GetVertex() ;
-    }      
-    else 
-      fMixedEvent->GetVertexOfEvent(iev)->GetXYZ(fVertex[iev]);     
-  }
+  //Fill Vertex array
   
-  if(fFillEMCALCells) 
+  FillVertexArray();
+  
+  //Fill the arrays with cluster/tracks/cells data
+   if(fFillEMCALCells) 
     FillInputEMCALCells();
   if(fFillPHOSCells)  
     FillInputPHOSCells();
@@ -571,18 +567,66 @@ void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
 }
 
 //____________________________________________________________________________
-Double_t * AliCaloTrackReader::GetVertex() {
-    //Return vertex position
-  if (fMixedEvent)
-    return NULL ; 
-  if(fInputEvent->GetPrimaryVertex())
-    fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]); 
-  else {
-    printf("AliCaloTrackReader::GetVertex() - No vertex available, InputEvent()->GetPrimaryVertex() = 0, return (0,0,0)\n");
-    fVertex[0][0]=0.0; fVertex[0][1]=0.0; fVertex[0][2]=0.0;
-  }
-  return fVertex[0] ; 
+void AliCaloTrackReader::GetVertex(Double_t vertex[3]) const {
+  //Return vertex position to be used for single event analysis
+  vertex[0]=fVertex[0][0];  
+  vertex[1]=fVertex[0][1];  
+  vertex[2]=fVertex[0][2];
 }
+
+//____________________________________________________________________________
+void AliCaloTrackReader::GetVertex(Double_t vertex[3], const Int_t evtIndex) const {
+  //Return vertex position for mixed event, recover the vertex in a particular event.
+  
+  //Int_t evtIndex = 0; // for single events only one vertex stored in position 0, default value
+  //if (fMixedEvent && clusterID >=0) {
+  //  evtIndex=GetMixedEvent()->EventIndexForCaloCluster(clusterID) ; 
+  //}
+  
+  vertex[0]=fVertex[evtIndex][0];  vertex[1]=fVertex[evtIndex][1];  vertex[2]=fVertex[evtIndex][2];
+  
+}
+//
+
+
+//____________________________________________________________________________
+void AliCaloTrackReader::FillVertexArray() {
+  
+  //Fill data member with vertex
+  //In case of Mixed event, multiple vertices
+  
+  //Delete previous vertex
+  if(fVertex){
+    for (Int_t i = 0; i < fNMixedEvent; i++) {
+      delete [] fVertex[i] ; 
+    }
+    delete [] fVertex ;  
+  }
+  
+  fVertex = new Double_t*[fNMixedEvent] ; 
+  for (Int_t i = 0; i < fNMixedEvent; i++) {
+    fVertex[i] = new Double_t[3] ; 
+    fVertex[i][0] = 0.0 ; 
+    fVertex[i][1] = 0.0 ; 
+    fVertex[i][2] = 0.0 ; 
+  }          
+  
+  if (!fMixedEvent) { //Single event analysis
+    fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]); 
+    if(fDebug > 1)
+      printf("AliCaloTrackReader::FillVertexArray() - Single Event Vertex : %f,%f,%f\n",fVertex[0][0],fVertex[0][1],fVertex[0][2]);
+
+  } else { // MultiEvent analysis
+    for (Int_t iev = 0; iev < fNMixedEvent; iev++) {
+      fMixedEvent->GetVertexOfEvent(iev)->GetXYZ(fVertex[iev]);
+      if(fDebug > 1)
+        printf("AliCaloTrackReader::FillVertexArray() - Multi Event %d Vertex : %f,%f,%f\n",iev,fVertex[iev][0],fVertex[iev][1],fVertex[iev][2]);
+
+    }
+  }
+  
+}
+
 
 //____________________________________________________________________________
 void AliCaloTrackReader::FillInputCTS() {
@@ -869,6 +913,4 @@ Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const {
   }
   
 }
-
-
 

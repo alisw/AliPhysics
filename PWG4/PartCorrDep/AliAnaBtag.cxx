@@ -567,9 +567,9 @@ Int_t AliAnaBtag::GetDVMBtag(AliAODTrack * tr )
   if (TMath::Abs(imp[0])   > fImpactCut ) return 0;
   if (TMath::Abs(imp[1])   > fImpactCut ) return 0;
 
-  Int_t nvtx1 = 0;
+//  Int_t nvtx1 = 0;
   Int_t nvtx2 = 0;
-  Int_t nvtx3 = 0;
+//  Int_t nvtx3 = 0;
 
   for (Int_t k2 =0; k2 < GetAODCTS()->GetEntriesFast() ; k2++) {
     //loop over assoc
@@ -612,13 +612,10 @@ Int_t AliAnaBtag::GetDVMBtag(AliAODTrack * tr )
   } //loop over hadrons
 
   if(GetDebug() > 0) {
-    if (nvtx1>0) printf("result1 of btagging: %d \n",nvtx1);
+//    if (nvtx1>0) printf("result1 of btagging: %d \n",nvtx1);
     if (nvtx2>0) printf("result2 of btagging: %d \n",nvtx2);
-    if (nvtx3>0) printf("result3 of btagging: %d \n",nvtx3);
+//    if (nvtx3>0) printf("result3 of btagging: %d \n",nvtx3);
   }
-
-
-
 
   return nvtx2;
 
@@ -639,7 +636,7 @@ Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , float ma
 
   Double_t vertex[3] = {-999.,-999.,-999}; //vertex
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
-    GetReader()->GetVertex(vertex); //If only one file, get the vertex from there
+    GetVertex(vertex); //If only one file, get the vertex from there
     //FIXME:  Add a check for whether file 2 is PYTHIA or HIJING
     //If PYTHIA, then set the vertex from file 2, if not, use the
     //vertex from file 1
@@ -807,39 +804,40 @@ Bool_t AliAnaBtag::CheckIfBjet(const AliAODTrack* track)
 AliAODMCParticle* AliAnaBtag::GetMCParticle(Int_t ipart) 
 {
   //Get the MC particle at position ipart
-
+  
   AliAODMCParticle* aodprimary = 0x0;
   TClonesArray * mcparticles0 = 0x0;
-  TClonesArray * mcparticles1 = 0x0;
-
+  //TClonesArray * mcparticles1 = 0x0;
+  
   if(GetReader()->ReadAODMCParticles()){
     //Get the list of MC particles                                                                                                                           
     mcparticles0 = GetReader()->GetAODMCParticles(0);
-    if(!mcparticles0 && GetDebug() > 0) {
-      printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+    if(!mcparticles0) {
+      if(GetDebug() > 0)printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
     }
-//    if(GetReader()->GetSecondInputAODTree()){
-//      mcparticles1 = GetReader()->GetAODMCParticles(1);
-//      if(!mcparticles1 && GetDebug() > 0) {
-//	printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
-//      }
-//    }
-
-    Int_t npart0 = mcparticles0->GetEntriesFast();
-    Int_t npart1 = 0;
-    if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
-    if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
-    else aodprimary = (AliAODMCParticle*)mcparticles1->At(ipart-npart0);
-    if(!aodprimary) {
-      printf("AliAnaBtag::GetMCParticle() *** no primary ***:  label %d \n", ipart);
-      return 0x0;
+    //    if(GetReader()->GetSecondInputAODTree()){
+    //      mcparticles1 = GetReader()->GetAODMCParticles(1);
+    //      if(!mcparticles1 && GetDebug() > 0) {
+    //	printf("AliAnaBtag::MakeAnalysisFillHistograms() -  Second input MCParticles not available!\n");
+    //      }
+    //    }
+    
+    else{
+      Int_t npart0 = mcparticles0->GetEntriesFast();
+      //Int_t npart1 = 0;
+      //if(mcparticles1) npart1 = mcparticles1->GetEntriesFast();
+      if(ipart < npart0) aodprimary = (AliAODMCParticle*)mcparticles0->At(ipart);
+      //else aodprimary = (AliAODMCParticle*)mcparticles1->At(ipart-npart0);
+      if(!aodprimary) {
+        printf("AliAnaBtag::GetMCParticle() *** no primary ***:  label %d \n", ipart);
+        return 0x0;
+      }
     }
-
   } else {
     printf("AliAnaBtag::GetMCParticle() - Asked for AliAODMCParticle but we have a stack reader.\n");
   }
   return aodprimary;
-
+  
 }
 
 //__________________________________________________________________

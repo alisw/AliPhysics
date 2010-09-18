@@ -216,9 +216,12 @@ public:
   virtual Float_t GetHistoAsymmetryMin()   const { return fHistoAsymMin ; }
   virtual Float_t GetHistoAsymmetryMax()   const { return fHistoAsymMax ; }	
   
-  virtual AliMixedEvent * GetMixedEvent() ; 
-  Int_t       GetNMixedEvent() const { return fNMixedEvent ; } 
-  Double_t *  GetVertex(Int_t i) const { return fVertex[i] ; } 
+  virtual AliMixedEvent * GetMixedEvent()          { return GetReader()->GetMixedEvent() ; } 
+  virtual Int_t           GetNMixedEvent()   const { return GetReader()->GetNMixedEvent() ; } 
+  
+  virtual void      GetVertex(Double_t vertex[3])   const { GetReader()->GetVertex(vertex) ; } 
+  virtual void      GetVertex(Double_t vertex[3],const Int_t evtIndex) const { GetReader()->GetVertex(vertex,evtIndex) ; } 
+  virtual Double_t* GetVertex(const Int_t evtIndex) const { return GetReader()->GetVertex(evtIndex) ; } 
 
 	virtual Bool_t IsTrackMatched(const AliVCluster * cluster) const { return fCaloPID->IsTrackMatched(cluster); } 
   
@@ -269,13 +272,7 @@ private:
   Float_t fHistoAsymMax  ;  // Maximum value of asymmetry histogram range
   Float_t fHistoAsymMin  ;  // Minimum value of asymmetry histogram range
   
-  AliMixedEvent * fMixedEvent ;  //! mixed event object
-  Int_t           fNMixedEvent ; //! number of events in mixed event buffer
-  Double_t **     fVertex ;      //! vertex array 3 dim for each mixed event buffer
-
-  
-	
-  ClassDef(AliAnaPartCorrBaseClass,8)
+  ClassDef(AliAnaPartCorrBaseClass,9)
 } ;
 
 

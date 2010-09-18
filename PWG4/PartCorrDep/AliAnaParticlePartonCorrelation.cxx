@@ -212,17 +212,23 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
     }
     
     //Fill AOD reference only with partons
-    TParticle * parton = new TParticle ;
 
     //Array with reference to partons, initialize
-    TObjArray * objarray  = new TObjArray;
-
+    TObjArray * objarray  = NULL;
+    Int_t nrefs = 0;
+    
+    TParticle * parton    = NULL ;
     for(Int_t ipr = 0;ipr < 8; ipr ++ ){
       parton = stack->Particle(ipr) ;
-	  objarray->Add(parton);
+      nrefs++;
+      if(nrefs==1){
+        objarray = new TObjArray(0);
+        objarray->SetName(GetAODObjArrayName());
+        objarray->SetOwner(kFALSE);
+      }
+      objarray->Add(parton);
     }//parton loop
 	
-    objarray->SetName(GetAODObjArrayName());
     if(objarray->GetEntriesFast() > 0) particle->AddObjArray(objarray);
 
   }//Aod branch loop

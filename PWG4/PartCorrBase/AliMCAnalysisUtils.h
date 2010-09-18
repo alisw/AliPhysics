@@ -65,8 +65,7 @@ class AliMCAnalysisUtils : public TObject {
 		// Check if in tag the bit test (mcTypes) is set.
 		if (tag & (1<<test) ) return  kTRUE ;    
 		else return kFALSE ;
-   }
-  
+  }
 	
 	void Print(const Option_t * opt)const;
   	
@@ -78,7 +77,7 @@ class AliMCAnalysisUtils : public TObject {
 
 private:
 	Int_t   fCurrentEvent;        // Current Event
-	Int_t	fDebug;               // Debug level
+	Int_t	  fDebug;               // Debug level
 	TList * fJetsList;            // List of jets
 	TString fMCGenerator;         // MC geneator used to generate data in simulation
 	

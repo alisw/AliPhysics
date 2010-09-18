@@ -94,18 +94,22 @@ void AliAnaScale::Exec(Option_t *)
   // Do the Scaling
 
   if(fDebug > 0 ) printf(">>>>> Scaling factor %e, do Sumw2 %d <<<<< \n",fScale,fSumw2) ;
+  
+  const Int_t buffersize = 255;
+  char name[buffersize] ; 
 
   TIter next(fInputList) ; 	
   TObject * h ; 
   while ( (h = next()) ) { 
     if(h){
       if ( !strncmp(h->ClassName(),"TH",2) ) {
-      char name[128] ; 
-      sprintf(name, "%sScaled", h->GetName()) ; 
+      snprintf(name, buffersize, "%sScaled", h->GetName()) ; 
       TH1 * hout = dynamic_cast<TH1*> (h->Clone(name)) ; 
-      if(fSumw2) hout->Sumw2();
-      hout->Scale(fScale) ;  
-      fOutputList->Add(hout) ; 
+      if(hout){
+        if(fSumw2) hout->Sumw2();
+        hout->Scale(fScale) ;  
+        fOutputList->Add(hout) ;
+        }// casting not null
       } 
       else  fOutputList->Add(h) ; 
     }
