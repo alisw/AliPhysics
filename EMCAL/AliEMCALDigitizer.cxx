@@ -302,15 +302,15 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   
   // Load Geometry
   AliEMCALGeometry *geom = 0;
-  if (rl->GetAliRun()) {
+  if (!rl->GetAliRun()) {
+    AliFatal("Could not get AliRun from runLoader");
+  }
+  else{
     AliEMCAL * emcal  = (AliEMCAL*)rl->GetAliRun()->GetDetector("EMCAL");
     geom = emcal->GetGeometry();
+    nEMC = geom->GetNCells();
+    AliDebug(1,Form("nEMC %i (number cells in EMCAL) | %s \n", nEMC, geom->GetName()));
   }
-  else 
-    AliFatal("Could not get AliRun from runLoader");
-  
-  nEMC = geom->GetNCells();
-  AliDebug(1,Form("nEMC %i (number cells in EMCAL) | %s \n", nEMC, geom->GetName()));
   
   Int_t absID = -1 ;
   
@@ -349,7 +349,8 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       if(rl2->GetDetectorLoader("EMCAL"))
       {
         AliEMCALLoader *emcalLoader2 = dynamic_cast<AliEMCALLoader*>(rl2->GetDetectorLoader("EMCAL"));
-        sdigArray->AddAt(emcalLoader2->SDigits(), i) ;
+        if(emcalLoader2) sdigArray->AddAt(emcalLoader2->SDigits(), i) ;
+        else             AliFatal("EMCAL Loader of second event not available!");
       }
       else Fatal("Digitize", "Loader of second input not found");
     }
@@ -362,13 +363,13 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
       if(sdigits){
         if (sdigits->GetEntriesFast() ){
-          if(sdigits->At(0)){
-
-          Int_t curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(0))->GetId() ;
-          if(curNext < nextSig) 
-            nextSig = curNext ;
-          AliDebug(1,Form("input %i : #sdigits %i \n",
-                          i, sdigits->GetEntriesFast()));
+          if(dynamic_cast<AliEMCALDigit *>(sdigits->At(0))){
+            
+            Int_t curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(0))->GetId() ;
+            if(curNext < nextSig) 
+              nextSig = curNext ;
+            AliDebug(1,Form("input %i : #sdigits %i \n",
+                            i, sdigits->GetEntriesFast()));
             
           }//First entry is not NULL
           else {
@@ -428,7 +429,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
           
           // loop over input
           for(i = 0; i< fInput ; i++){  //loop over (possible) merge sources
-            if(sdigArray->At(i)) {
+            if(dynamic_cast<TClonesArray *>(sdigArray->At(i))) {
               Int_t sDigitEntries = dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast();
               
               if(sDigitEntries > index[i] )
@@ -483,13 +484,13 @@ void AliEMCALDigitizer::Digitize(Int_t event)
             sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
             if(sdigits){
               Int_t curNext = nextSig ;
-              if(sdigits->GetEntriesFast() > index[i] && sdigits->At(index[i])){
+              if(sdigits->GetEntriesFast() > index[i] && dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]))){
                 curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]))->GetId() ;	  
               }
               if(curNext < nextSig) nextSig = curNext ;
             }// sdigits exist
           } // input loop       
-        
+          
         }//absID==nextSig
         
         // add the noise now
@@ -719,31 +720,31 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
     // and xfer to the corresponding TRU input (mapping)
     
     TClonesArray* digits = emcalLoader->Digits();
-
+    
     TIter NextDigit(digits);
     while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
+    {
+      Int_t id = digit->GetId();
+      
+      Int_t trgid;
+      if (geom && geom->GetFastORIndexFromCellIndex(id , trgid)) 
       {
-	Int_t id = digit->GetId();
-	
-	Int_t trgid;
-	if (geom->GetFastORIndexFromCellIndex(id , trgid)) 
-	  {
-	    AliDebug(1,Form("trigger digit id: %d from cell id: %d\n",trgid,id));
-	    
-	    AliEMCALDigit* d = static_cast<AliEMCALDigit*>(digitsTMP->At(trgid));
-	    
-	    if (!d)
+        AliDebug(1,Form("trigger digit id: %d from cell id: %d\n",trgid,id));
+        
+        AliEMCALDigit* d = static_cast<AliEMCALDigit*>(digitsTMP->At(trgid));
+        
+        if (!d)
 	      {
-		new((*digitsTMP)[trgid]) AliEMCALDigit(*digit);
-		d = (AliEMCALDigit*)digitsTMP->At(trgid);
-		d->SetId(trgid);
+          new((*digitsTMP)[trgid]) AliEMCALDigit(*digit);
+          d = (AliEMCALDigit*)digitsTMP->At(trgid);
+          d->SetId(trgid);
 	      }	
-	    else
+        else
 	      {
-		*d = *d + *digit;
+          *d = *d + *digit;
 	      }
-	  }
       }
+    }
     
     if (AliDebugLevel()) printf("Number of TRG digits: %d\n",digitsTMP->GetEntriesFast());
     
@@ -752,31 +753,31 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
     
     NextDigit = TIter(digitsTMP);
     while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
+    {
+      if (digit)
       {
-	if (digit)
-	  {
-	    Int_t     id = digit->GetId();
-	    Float_t time = digit->GetTime();
-	    
-	    Double_t depositedEnergy = 0.;
-	    for (Int_t j = 1; j <= digit->GetNprimary(); j++) depositedEnergy += digit->GetDEPrimary(j);
-	    
-	    if (AliDebugLevel()) printf("Deposited Energy: %f\n", depositedEnergy);
-	    
-	    // FIXME: Check digit time!
-	    if (depositedEnergy)
+        Int_t     id = digit->GetId();
+        Float_t time = digit->GetTime();
+        
+        Double_t depositedEnergy = 0.;
+        for (Int_t j = 1; j <= digit->GetNprimary(); j++) depositedEnergy += digit->GetDEPrimary(j);
+        
+        if (AliDebugLevel()) printf("Deposited Energy: %f\n", depositedEnergy);
+        
+        // FIXME: Check digit time!
+        if (depositedEnergy)
 	      {
-		DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
-		
-		for (Int_t j=0;j<nSamples;j++) 
-		  {
-		    timeSamples[j] = ((j << 12) & 0xFF000) | (timeSamples[j] & 0xFFF);
-		  }
-		
-		new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
+          DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
+          
+          for (Int_t j=0;j<nSamples;j++) 
+          {
+            timeSamples[j] = ((j << 12) & 0xFF000) | (timeSamples[j] & 0xFFF);
+          }
+          
+          new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
 	      }
-	  }
       }
+    }
     
     delete [] timeSamples;
     
@@ -946,7 +947,7 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
   // looking for the file which contains SDigits
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   
-  if(emcalLoader){
+  if(!emcalLoader){
     AliFatal("Did not get the  Loader");
   }
   else{
