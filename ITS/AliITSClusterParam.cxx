@@ -358,8 +358,8 @@ Int_t AliITSClusterParam::GetErrorParamAngle(Int_t layer,
   Double_t sigmax=1000.0,sigmaz=1000.0;
   
   Int_t volId = (Int_t)cl->GetVolumeId();
-  Double_t tra[3]; AliGeomManager::GetOrigTranslation(volId,tra);
-  Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
+  Double_t tra[3]; AliGeomManager::GetTranslation(volId,tra);
+  Double_t rot[9]; AliGeomManager::GetRotation(volId,rot);
 
 
   Double_t phitr = TMath::ATan(tgphitr);
@@ -369,30 +369,35 @@ Int_t AliITSClusterParam::GetErrorParamAngle(Int_t layer,
   p[0] = TMath::Cos(phiglob);
   p[1] = TMath::Sin(phiglob);
   p[2] = tgl;
-  TVector3 pvec(p[0],p[1],p[2]);
-  TVector3 normvec(rot[1],rot[4],rot[7]);
-  Double_t angle = pvec.Angle(normvec);
-  if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
-  Double_t angleDeg = angle*180./TMath::Pi();
+  TVector3 pvecXY(p[0],p[1],0.);
+  TVector3 normvecXY(rot[1],rot[4],0.);
+
+
+  Double_t angleAzi = pvecXY.Angle(normvecXY);
+  Double_t anglePol = TMath::Abs(TMath::ATan(tgl));
+  if(angleAzi>0.5*TMath::Pi()) angleAzi = TMath::Pi()-angleAzi;
+  if(anglePol>0.5*TMath::Pi()) anglePol = TMath::Pi()-anglePol;
+  Double_t angleAziDeg = angleAzi*180./TMath::Pi();
+  Double_t anglePolDeg = anglePol*180./TMath::Pi();
   
   if(layer==0 || layer==1) { // SPD
 
-    sigmax = TMath::Exp(angleDeg*paramSPDx[1]+paramSPDx[0])+paramSPDx[2];
-    sigmaz = paramSPDz[0]+paramSPDz[1]*angleDeg;
+    sigmax = TMath::Exp(angleAziDeg*paramSPDx[1]+paramSPDx[0])+paramSPDx[2];
+    sigmaz = paramSPDz[0]+paramSPDz[1]*anglePolDeg;
     if(sigmax > maxSigmaSPDx) sigmax = maxSigmaSPDx;
     if(sigmaz > maxSigmaSPDz) sigmax = maxSigmaSPDz;
 
   } else if(layer==2 || layer==3) { // SDD
 
-    sigmax = angleDeg*paramSDDx[1]+paramSDDx[0];
-    sigmaz = paramSDDz[0]+paramSDDz[1]*angleDeg;
+    sigmax = angleAziDeg*paramSDDx[1]+paramSDDx[0];
+    sigmaz = paramSDDz[0]+paramSDDz[1]*anglePolDeg;
     if(sigmax > maxSigmaSDDx) sigmax = maxSigmaSDDx;
     if(sigmaz > maxSigmaSDDz) sigmax = maxSigmaSDDz;
     
   } else if(layer==4 || layer==5) { // SSD
 
-    sigmax = angleDeg*paramSSDx[1]+paramSSDx[0];
-    sigmaz = paramSSDz[0]+paramSSDz[1]*angleDeg;
+    sigmax = angleAziDeg*paramSSDx[1]+paramSSDx[0];
+    sigmaz = paramSSDz[0]+paramSSDz[1]*anglePolDeg;
     if(sigmax > maxSigmaSSDx) sigmax = maxSigmaSSDx;
     if(sigmaz > maxSigmaSSDz) sigmax = maxSigmaSSDz;
     
