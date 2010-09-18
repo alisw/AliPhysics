@@ -1,7 +1,6 @@
 #-*-Mode: Makefile-*-
 
 SRCS = \
-AliEMCALGeometry.cxx \
 AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
 AliEMCALWsuCosmicRaySetUp.cxx \

@@ -5,6 +5,7 @@ AliEMCALGeoParams.cxx \
 AliEMCALGeoUtils.cxx \
 AliEMCALEMCGeometry.cxx  \
 AliEMCALShishKebabTrd1Module.cxx \
+AliEMCALGeometry.cxx  \
 AliEMCALPIDUtils.cxx \
 AliCaloNeuralFit.cxx \
 AliCaloRawAnalyzer.cxx \
@@ -15,13 +16,13 @@ AliCaloRawAnalyzerCrude.cxx \
 AliCaloRawAnalyzerLMS.cxx \
 AliCaloRawAnalyzerNN.cxx \
 AliCaloPeakFinderVectors.cxx \
-AliEMCALHistoUtilities.cxx
+AliEMCALHistoUtilities.cxx 
 
 HDRS:= $(SRCS:.cxx=.h)  AliCaloPeakFinderConstants.h 
 
 DHDR= EMCALUtilsLinkDef.h
 
-EXPORT:=AliEMCALGeoParams.h AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h AliCaloNeuralFit.h AliCaloRawAnalyzer.h AliCaloBunchInfo.h AliCaloFitResults.h AliCaloRawAnalyzerCrude.h AliCaloRawAnalyzerLMS.h AliCaloRawAnalyzerPeakFinder.h AliCaloRawAnalyzerNN.h 
+EXPORT:=AliEMCALGeoParams.h AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h AliCaloNeuralFit.h AliCaloRawAnalyzer.h AliCaloBunchInfo.h AliCaloFitResults.h AliCaloRawAnalyzerCrude.h AliCaloRawAnalyzerLMS.h AliCaloRawAnalyzerPeakFinder.h AliCaloRawAnalyzerNN.h AliEMCALGeometry.h
 
 CXXFLAGS+=-D__EMCALUTIL__
 
