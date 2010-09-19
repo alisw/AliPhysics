@@ -65,15 +65,16 @@ AliPHOSCalibData * AliPHOSReconstructor::fgCalibData  = 0 ;
 
 //____________________________________________________________________________
 AliPHOSReconstructor::AliPHOSReconstructor() :
-  fGeom(NULL),fClusterizer(NULL),fTSM(NULL),fPID(NULL)
+  fGeom(NULL),fClusterizer(NULL),fTSM(NULL),fPID(NULL),fTmpDigLG(NULL)
 {
   // ctor
-  fGeom        = AliPHOSGeometry::GetInstance("IHEP","");
-  fClusterizer = new AliPHOSClusterizerv1      (fGeom);
-  fTSM         = new AliPHOSTrackSegmentMakerv1(fGeom);
-  fPID         = new AliPHOSPIDv1              (fGeom);
-  fgDigitsArray = new TClonesArray("AliPHOSDigit",100);
-  fgEMCRecPoints= new TObjArray(100) ;
+  fGeom          = AliPHOSGeometry::GetInstance("IHEP","");
+  fClusterizer   = new AliPHOSClusterizerv1      (fGeom);
+  fTSM           = new AliPHOSTrackSegmentMakerv1(fGeom);
+  fPID           = new AliPHOSPIDv1              (fGeom);
+  fTmpDigLG      = new TClonesArray("AliPHOSDigit",100);
+  fgDigitsArray  = new TClonesArray("AliPHOSDigit",100);
+  fgEMCRecPoints = new TObjArray(100) ;
   if (!fgCalibData)
     fgCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
 
@@ -83,13 +84,14 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
 }
 
 //____________________________________________________________________________
-  AliPHOSReconstructor::~AliPHOSReconstructor()
+AliPHOSReconstructor::~AliPHOSReconstructor()
 {
   // dtor
   delete fGeom;
   delete fClusterizer;
   delete fTSM;
   delete fPID;
+  delete fTmpDigLG;
   delete fgDigitsArray;
   delete fgEMCRecPoints;
 } 
@@ -342,9 +344,9 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     delete [] fracList;
     delete [] absIdList;
   }
-  fgDigitsArray ->Delete();
-  fgEMCRecPoints->Delete();
-  recParticles  ->Delete();
+  fgDigitsArray ->Clear();
+  fgEMCRecPoints->Clear("C");
+  recParticles  ->Clear();
 
   //Store PHOS misalignment matrixes
   FillMisalMatrixes(esd) ;
@@ -399,7 +401,7 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   rdp.SetEmcMinAmp(GetRecoParam()->GetEMCRawDigitThreshold()); // in ADC
   rdp.SetCpvMinAmp(GetRecoParam()->GetCPVMinE());
   rdp.SetSampleQualityCut(GetRecoParam()->GetEMCSampleQualityCut());
-  rdp.MakeDigits(digits,fitter);
+  rdp.MakeDigits(digits,fTmpDigLG,fitter);
 
   delete fitter ;
 

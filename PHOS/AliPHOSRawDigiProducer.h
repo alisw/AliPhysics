@@ -31,6 +31,7 @@ public:
   virtual ~AliPHOSRawDigiProducer(); 
 
   void MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0* fitter);
+  void MakeDigits(TClonesArray *digits, TClonesArray *tmpDigLG, AliPHOSRawFitterv0* fitter);
 
   void SetEmcMinAmp(Float_t emcMin) { fEmcMinE=emcMin; }
   void SetCpvMinAmp(Float_t cpvMin) { fCpvMinE=cpvMin; }

@@ -155,8 +155,18 @@ AliPHOSRawDigiProducer::~AliPHOSRawDigiProducer()
 //--------------------------------------------------------------------------------------
 void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0* fitter) 
 {
+  // Create a temporary array of LG digits and then make digits from raw data
+
+  TClonesArray *tmpLG = new TClonesArray("AliPHOSDigit",10000) ;
+  MakeDigits(digits, tmpLG, fitter);
+  tmpLG->Delete();
+  delete tmpLG;
+}
+//--------------------------------------------------------------------------------------
+void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpDigLG, AliPHOSRawFitterv0* fitter) 
+{
   //Makes the job.
-  //TClonesArray *digits and raw data fitter should be provided by calling function.
+  //TClonesArray *digits, *tmpDigLG and raw data fitter should be provided by calling function.
 
   digits->Clear();
  
@@ -173,8 +183,8 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
   else
     fSampleToSec=fRawStream->GetTSample() ;
   
-  //Temporary array for LowGain digits
-  TClonesArray tmpLG("AliPHOSDigit",10000) ;
+  // Clear a temporary array for LowGain digits
+  tmpDigLG->Clear();
   Int_t ilgDigit=0 ;
 
   //Let fitter subtract pedestals in case of ZS
@@ -258,9 +268,9 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
 	continue;
       
       if (caloFlag == AliCaloRawStreamV3::kLowGain) {
-	new(tmpLG[ilgDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
+	new((*tmpDigLG)[ilgDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
 	if (sigLength>0 && fADCValuesLG!=0)
-	  dynamic_cast<AliPHOSDigit*>(tmpLG.At(ilgDigit))->SetALTROSamplesLG(sigLength,fADCValuesLG);
+	  dynamic_cast<AliPHOSDigit*>(tmpDigLG->At(ilgDigit))->SetALTROSamplesLG(sigLength,fADCValuesLG);
 	ilgDigit++ ; 
       }
       else if (caloFlag == AliCaloRawStreamV3::kHighGain) {
@@ -279,17 +289,17 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawFitterv0
     //replace energy of HighGain digits only if there is overflow
     //negative energy (overflow)
     digits->Sort() ;
-    tmpLG.Sort() ;
+    tmpDigLG->Sort() ;
     Int_t iLG = 0;
-    Int_t nLG1 = tmpLG.GetEntriesFast()-1 ;
+    Int_t nLG1 = tmpDigLG->GetEntriesFast()-1 ;
     
     for(Int_t iDig=0 ; iDig < digits->GetEntriesFast() ; iDig++) { 
       AliPHOSDigit * digHG = dynamic_cast<AliPHOSDigit*>(digits->At(iDig)) ;
       if (!digHG) continue;
-      AliPHOSDigit * digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
+      AliPHOSDigit * digLG = dynamic_cast<AliPHOSDigit*>(tmpDigLG->At(iLG)) ;
       while(digLG && iLG<nLG1 && digHG->GetId()> digLG->GetId()){
 	iLG++ ;
-	digLG = dynamic_cast<AliPHOSDigit*>(tmpLG.At(iLG)) ;
+	digLG = dynamic_cast<AliPHOSDigit*>(tmpDigLG->At(iLG)) ;
       }
       absId=digHG->GetId() ;
       fGeom->AbsToRelNumbering(absId,relId) ;

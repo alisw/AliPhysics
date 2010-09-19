@@ -94,7 +94,7 @@ Int_t AliPHOSTracker::LoadClusters(TTree *cTree) {
   }
   branch->SetAddress(&arr);
 
-  for(Int_t m=0;m<5; m++) fModules[m]->Clear() ;
+  for(Int_t m=0;m<5; m++) fModules[m]->Clear("C") ;
 
   Int_t nclusters=0;
   Int_t nentr=(Int_t)branch->GetEntries();

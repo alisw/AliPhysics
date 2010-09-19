@@ -33,6 +33,8 @@ class AliPHOSRecPoint : public AliCluster {
   
   virtual ~AliPHOSRecPoint();
 
+  virtual void Clear(const Option_t* /*option*/ ="") { delete[] fDigitsList; fDigitsList=0; delete[] fTracksList; fTracksList=0; }
+
 //  virtual  void   AddDigit(AliDigitNew &){
 //   Fatal("AddDigit", "use AddDigit(AliPHOSDigit & digit, Float_t Energy)") ; 
 //  }

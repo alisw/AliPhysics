@@ -44,6 +44,8 @@ public:
  
   virtual ~AliPHOSEmcRecPoint() ;  
 
+  virtual void Clear(const Option_t* /*option*/ ="") { delete[] fEnergyList; fEnergyList=0; AliPHOSRecPoint::Clear(); }
+
   //This virtual function has signature different from AliPHOSRecPoint::AddDigit
   //it hides, not overrides. using - declaration should fix the problem, at least for
   //g++
