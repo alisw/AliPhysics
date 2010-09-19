@@ -1,3 +1,5 @@
+// $Id$
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TFile.h>
@@ -6,6 +8,7 @@
 #include <TRandom3.h>
 #include <TChain.h>
 #include <TH2F.h>
+#include <TTimeStamp.h>
 #include "TreeClasses.C"
 #include "EventPool.C"
 #endif
@@ -147,14 +150,21 @@ void anaCorr(Int_t nEvents,
   hSig->Draw("surf1");
   TCanvas *c2 = new TCanvas("cBkg");
   hBkg->Draw("surf1");
-  TH2F *mix1=(TH2F*)hSig->Clone("mix1");
-  mix1->Divide(hSig,hBkg,nmix,1);
+  TH2F *hMix1=(TH2F*)hSig->Clone("mix1");
+  hMix1->Divide(hSig,hBkg,nmix,1);
   TCanvas *c3 = new TCanvas("cMix1");
-  mix1->Draw("surf1");
-  TH2F *mix2=(TH2F*)hSig->Clone("mix2");
-  mix2->Divide(hSig,hBkg,hBkg->Integral(),hSig->Integral());
+  hMix1->Draw("surf1");
+  TH2F *hMix2=(TH2F*)hSig->Clone("mix2");
+  hMix2->Divide(hSig,hBkg,hBkg->Integral(),hSig->Integral());
   TCanvas *c4 = new TCanvas("cMix2");
-  mix2->Draw("surf1");
+  hMix2->Draw("surf1");
+  TTimeStamp t;
+  TString fname(Form("histout-%d.root",t.GetSec()));
+  TFile outfile(fname,"recreate");
+  hSig->Write();
+  hBkg->Write();
+  hMix1->Write();
+  hMix2->Write();
 }
 
 //-----------------------------------------------------------------------------------------------------
