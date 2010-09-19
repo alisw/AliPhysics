@@ -1,22 +1,8 @@
-// $Id:$
+// $Id$
 
-#include <Riostream.h>
-#include <TTree.h>
-#include <TChain.h>
-#include <TCanvas.h>
-#include <TClonesArray.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include "Rtypes.h"
-#include "TMath.h"
-#include "TFile.h"
-#include "TSystem.h"
-#include "TROOT.h"
-#include <vector>
-#include <deque>
-#include "TRandom.h"
-#include "TreeClasses.h"
 #include "AutoCorr.h"
+
+ClassImp(AutoCorr)
 
 Int_t AutoCorr::InitEventPools(Int_t depth, 
 			       Int_t nMultBins, Double_t multbin[], 
@@ -60,7 +46,7 @@ Int_t AutoCorr::InitEventPools(Int_t depth,
   return 0;
 }
 
-EventPool* AutoCorr::GetEventPool(int iMult, int iZvtx)
+EventPool* AutoCorr::GetEventPool(int iMult, int iZvtx) const
 {
   if (iMult < 0 || iMult >= fNMultBins) return 0x0;
   if (iZvtx < 0 || iZvtx >= fNZvtxBins) return 0x0;
@@ -77,16 +63,13 @@ Int_t AutoCorr::UpdatePools(int iEvent, MyHeader* ev, TClonesArray* trk)
   return 0;
 }
 
-
-Double_t AutoCorr::DeltaPhi(MyPart* t1, MyPart* t2,
-			    double rangeMin, double rangeMax)
+Double_t AutoCorr::DeltaPhi(const MyPart &t1, const MyPart &t2,
+			    Double_t rangeMin, Double_t rangeMax) const
 {
   Double_t dphi = -999;
   Double_t pi = TMath::Pi();
-  
-  if (!t1 || !t2) return -99.;
-  double phia = t1->Phi();  
-  double phib = t2->Phi();  
+  Double_t phia = t1.Phi();  
+  Double_t phib = t2.Phi();  
   
   if (phia < 0)         phia += 2*pi;
   else if (phia > 2*pi) phia -= 2*pi;
@@ -99,44 +82,82 @@ Double_t AutoCorr::DeltaPhi(MyPart* t1, MyPart* t2,
   return dphi;
 }
 
-Double_t AutoCorr::DeltaEta(MyPart* t1, MyPart* t2)
+Double_t AutoCorr::DeltaEta(const MyPart &t1, const MyPart &t2) const
 {
-  if (!t1 || !t2) return -99.;
-  return t1->Eta() - t2->Eta();
+  return t1.Eta() - t2.Eta();
 }
 
-Bool_t AutoCorr::IsTrackOk(MyPart* t)
+Bool_t AutoCorr::InBounds(Double_t val, Double_t min, Double_t max) const
 {
-  if (!t) return false;
-  return fabs(t->Eta()) <= 1.2;    
+  if (val<min)
+    return 0;
+  if (val>max)
+    return 0;
+  return 1;
 }
 
-Bool_t AutoCorr::IsPairOk(MyPart* t1, MyPart* t2)
+Bool_t AutoCorr::InBounds(Int_t val, Int_t min, Int_t max) const
 {
-  if (!t1 || !t2) return false;
-  if (!IsTrackOk(t1) || !IsTrackOk(t2)) return false;
+  if (val<min)
+    return 0;
+  if (val>max)
+    return 0;
+  return 1;
+}
 
-  double deta = DeltaEta(t1, t2);
-  double dphi = DeltaPhi(t1, t2);
-  double dpmax = 0.03;
-  double demax = 0.01;
+Bool_t AutoCorr::IsEventOk(const MyHeader &ev, Int_t minVc, 
+			   Int_t maxNTracklets, Double_t zMin, Double_t zMax) const
+{
+  Bool_t VcOk = ev.fVc >= minVc;
+  Bool_t NTrackletsOK = ev.fNTracklets <= maxNTracklets;
+  Bool_t zOk = InBounds(ev.fVz, zMin, zMax);
+  return (!ev.fIsPileupSPD && VcOk && NTrackletsOK && zOk);
+}
 
-  double dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
+Bool_t AutoCorr::IsTrackOk(const MyPart &t, Double_t etaMin, Double_t etaMax) const
+{
+  return InBounds(t.Eta(), etaMin, etaMax);    
+}
+
+Bool_t AutoCorr::IsTrackOk(const MyPart &t, Double_t etaMin, Double_t etaMax,
+			   Double_t ptMin, Double_t ptMax) const
+{
+  Bool_t etaOk = InBounds(t.Eta(), etaMin, etaMax);
+  Bool_t ptOk  = InBounds(t.Pt(), ptMin, ptMax);    
+  return  etaOk && ptOk;
+}
+
+Bool_t AutoCorr::IsPairOk(const MyPart &t1, const MyPart &t2) const
+{
+  Double_t deta = DeltaEta(t1, t2);
+  Double_t dphi = DeltaPhi(t1, t2);
+  Double_t dpmax = 0.03;
+  Double_t demax = 0.01;
+  Double_t dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
   return (dr > 1);
 }
 
-// So far same as IsPairOk()
-Bool_t AutoCorr::IsMixedPairOk(MyPart* t1, MyPart* t2)
+Bool_t AutoCorr::IsMixedPairOk(const MyPart &t1, const MyPart &t2) const
 {
-  if (!t1 || !t2) return false;
-  if (!IsTrackOk(t1) || !IsTrackOk(t2)) return false;
-
-  double deta = DeltaEta(t1, t2);
-  double dphi = DeltaPhi(t1, t2);
-  double dpmax = 0.03;
-  double demax = 0.01;
-
-  double dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
+  Double_t deta = DeltaEta(t1, t2);
+  Double_t dphi = DeltaPhi(t1, t2);
+  Double_t dpmax = 0.04;
+  Double_t demax = 0.04;
+  Double_t dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
   return (dr > 1);
 }
 
+Double_t AutoCorr::InvMass(const MyPart &p1, const MyPart &p2) const
+{
+  Double_t px1 = p1.Px();
+  Double_t py1 = p1.Py();
+  Double_t pz1 = p1.Pz();
+  Double_t px2 = p2.Px();
+  Double_t py2 = p2.Py();
+  Double_t pz2 = p2.Pz();
+  Double_t pm1 = TMath::Sqrt(px1*px1+py1*py1+pz1*pz1);
+  Double_t pm2 = TMath::Sqrt(px2*px2+py2*py2+pz1*pz2);
+  Double_t p12 = px1*px2+py1*py2+pz1*pz2;
+  Double_t m = TMath::Sqrt(pm1*pm2-p12);
+  return m;
+}
