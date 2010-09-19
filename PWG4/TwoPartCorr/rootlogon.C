@@ -1,4 +1,14 @@
 {
+  if (0) {
+    cout << "Loading " << gSystem->Getenv("PWD") 
+         << "/rootlogon.C" << endl;
+    cout << "Using ROOT version " 
+         << gROOT->GetVersion() << endl;
+  }
+
+  gROOT->SetStyle("Plain");
+  gStyle->SetPalette(1);
+
   gSystem->Load("libTree.so");
   if (gSystem->Getenv("TMPDIR")) 
     gSystem->SetBuildDir(gSystem->Getenv("TMPDIR"));
