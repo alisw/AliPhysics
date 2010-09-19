@@ -1,8 +1,8 @@
-// $Id:$
+// $Id$
 
 #include "EventPool.h"
 
-bool debug = true;
+ClassImp(EventPool)
 
 void EventPool::PrintInfo() const
 {
@@ -97,8 +97,8 @@ Int_t EventPool::UpdatePool(Int_t iEvent, MyHeader *ev, TClonesArray *trk)
 
   fWasUpdated = true;
 
-  bool print = false;
-  if (debug && print) {
+  bool print = 1;
+  if (fDebug && print) {
     cout << " Event " << fEventIndex.back();
     cout << " PoolDepth = " << Depth();
     cout << " NTracks = " << NTracksInCurrentEvent();
@@ -112,7 +112,7 @@ MyPart* EventPool::GetRandomTrack() const
 {
   MyPart* trk = 0;
   TClonesArray* tca = 0;
-  UInt_t ranEvt = gRandom->Integer(fEvents.size()-1);
+  UInt_t ranEvt = gRandom->Integer(fEvents.size());
   tca = fEvents.at(ranEvt);
   UInt_t ranTrk = gRandom->Integer(tca->GetEntries());
   trk = (MyPart*)tca->At(ranTrk);
@@ -142,5 +142,3 @@ Int_t EventPool::NTracksInEvent(Int_t iEvent) const
     cout << "Event info no longer in memory" << endl;
   return n;
 }
-
-
