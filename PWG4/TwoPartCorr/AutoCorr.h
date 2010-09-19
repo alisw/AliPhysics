@@ -5,18 +5,8 @@
 
 #include <Rtypes.h>
 #include <Riostream.h>
-//#include <TTree.h>
-//#include <TChain.h>
-//#include <TCanvas.h>
-//#include <TClonesArray.h>
-//#include <TH1F.h>
-//#include <TH2F.h>
 #include <TMath.h>
-//#include "TFile.h"
-//#include "TSystem.h"
-//#include "TROOT.h"
 #include <vector>
-//#include <deque>
 #include <TRandom.h>
 #include "TreeClasses.h"
 #include "EventPool.h"
