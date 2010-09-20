@@ -26,7 +26,7 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   //
   // You have to provide:
   // - file: file name 
-  // - histo: histogram name name (assumend to be in the mail folder of the file)
+  // - histo: histogram name name (assumend to be in the main folder of the file)
   // - partName: it is used to get the mass of the particle from
   //   TDatabasePDG. If you are not sure, just use a part of the name: a
   //   list of names matching it is printed on screen
@@ -74,6 +74,8 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
     
   }
   Double_t mass = TDatabasePDG::Instance()->GetParticle(partName)->Mass();
+  cout << "Fitting ["<<partName<<"], mass: " << mass << endl;
+  
   TF1* func = 0;
   Int_t normPar = -1;
   if (fitFunc == kFitLevi)   {

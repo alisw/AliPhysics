@@ -177,7 +177,13 @@ TF1 * AliBWFunc::GetLevi(Double_t mass, Double_t T, Double_t n, Double_t norm, c
     return GetLevidNdpt(mass,T,n,norm,name);
     break;
   case kOneOverMtdNdmt:
-    return GetLevidNdmt(mass,T,n,norm,name);
+    return GetLevidNdmt(mass,T,n,norm,name,kOneOverMtdNdmt);
+    break;
+  case kdNdmt:
+    return GetLevidNdmt(mass,T,n,norm,name,kdNdmt);
+    break;
+  case kOneOverMtdNdmtMinusM:
+    return GetLevidNdmt(mass,T,n,norm,name,kOneOverMtdNdmtMinusM);
     break;
   default:
     AliFatal("Not implemented");
@@ -643,13 +649,18 @@ TF1 * AliBWFunc::GetLevidNdpt(Double_t mass, Double_t temp, Double_t n, Double_t
 
 }
 
-TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name){
+TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t temp, Double_t n, Double_t norm, const char * name, VarType_t var){
 
-  // Levi function, dNdmt
+  // Levi function, 1/mt dNdmt
   char formula[500];
+  if (var == kOneOverMtdNdmt)
+    sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x -[3])/([1]*[2])  )^(-[1])");
+  else if (var == kdNdmt) 
+    sprintf(formula,"( x*[0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x-[3])/([1]*[2])  )^(-[1])");
+  if (var == kOneOverMtdNdmtMinusM)
+    sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x)/([1]*[2])  )^(-[1])");
 
-  //  sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x -[3])/([1]*[2])  )^(-[1])");
-  sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + x/([1]*[2])  )^(-[1])");
+  //sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + x/([1]*[2])  )^(-[1])");
   //  sprintf(formula,"[0] * ( 1 + x/([1]*[2])  )^(-[1])");
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, n, temp,mass);
@@ -661,6 +672,7 @@ TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t temp, Double_t n, Double_t
 
 
 }
+
 
 
 

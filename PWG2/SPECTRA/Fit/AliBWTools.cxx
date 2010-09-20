@@ -39,9 +39,9 @@ TH1 * AliBWTools::GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass) {
   Float_t * xbins = new Float_t[nbins+1];
   for(Int_t ibins = 0; ibins <= nbins; ibins++){
     xbins[ibins] = TMath::Sqrt(hpt->GetBinLowEdge(ibins+1)*hpt->GetBinLowEdge(ibins+1) +
-			       mass *mass) - mass;
-//     xbins[ibins] = TMath::Sqrt(hpt->GetBinLowEdge(ibins+1)*hpt->GetBinLowEdge(ibins+1) +
-// 			       mass *mass);
+    			       mass *mass) - mass;
+    // xbins[ibins] = TMath::Sqrt(hpt->GetBinLowEdge(ibins+1)*hpt->GetBinLowEdge(ibins+1) +
+    // 			       mass *mass);
     //    cout << ibins << " "<< xbins[ibins]  << endl;
 
   }
@@ -57,7 +57,10 @@ TH1 * AliBWTools::GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass) {
 
   hmt->SetXTitle("m_{t} - m_{0} (GeV/c^{2})");
   hmt->SetYTitle("1/m_{t} dN/dm_{t} (a.u.)");
-  
+  hmt->SetMarkerStyle(hpt->GetMarkerStyle());
+  hmt->SetMarkerColor(hpt->GetMarkerColor());
+  hmt->SetLineColor(hpt->GetLineColor());
+
   return hmt;
 
 }
