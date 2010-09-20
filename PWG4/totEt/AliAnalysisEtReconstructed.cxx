@@ -10,8 +10,11 @@
 #include "AliAnalysisEtReconstructed.h"
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrack.h"
+#include "AliEMCALTrack.h"
 #include "AliESDCaloCluster.h"
 #include "TVector3.h"
+#include "TGeoGlobalMagField.h"
+#include "AliMagF.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliVParticle.h"
@@ -158,7 +161,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         }
 
 	if (cluster->GetType() != fClusterType) continue;
-	if(cluster->GetTracksMatched() > 0)
+	//if(cluster->GetTracksMatched() > 0) 
 	//printf("Rec Cluster: iCluster %03d E %4.3f type %d NCells %d, nmatched: %d, distance to closest: %f\n", iCluster, cluster->E(), (int)(cluster->GetType()), cluster->GetNCells(), cluster->GetNTracksMatched(), cluster->GetEmcCpvDistance()); // tmp/debug printout
 	       
         
@@ -167,12 +170,18 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         TVector3 cp(pos);
         cluster->GetPosition(pos);
 
-	fHistTMDeltaR->Fill(cluster->GetEmcCpvDistance());
-        if (cluster->GetEmcCpvDistance() < fTrackDistanceCut)
+	Double_t distance = cluster->GetEmcCpvDistance();
+	Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();
+	if ( cluster->IsEMCAL() ) {
+	  distance = CalcTrackClusterDistance(pos, &trackMatchedIndex, event);
+	}
+
+	fHistTMDeltaR->Fill(distance);
+        if (distance < fTrackDistanceCut)
         {
-            if (cluster->GetNTracksMatched() == 1)
+            if (cluster->GetNTracksMatched() == 1 && trackMatchedIndex>0)
             {
-                AliVTrack *track = event->GetTrack(cluster->GetTrackMatchedIndex());
+                AliVTrack *track = event->GetTrack(trackMatchedIndex);
                 const Double_t *pidWeights = track->PID();
                 
 		Double_t maxpidweight = 0;
@@ -218,7 +227,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             }
 
             continue;
-        }
+        } // distance
 
         if (cluster->E() >  fSingleCellEnergyCut && cluster->GetNCells() == fCuts->GetCommonSingleCell()) continue;
 
@@ -268,6 +277,8 @@ void AliAnalysisEtReconstructed::Init()
     fNItsClustersCut = fCuts->GetReconstructedNItsClustersCut();
     fNTpcClustersCut = fCuts->GetReconstructedNTpcClustersCut();
     fPidCut = fCuts->GetReconstructedPidCut();
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
+
 }
 
 bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)
@@ -327,4 +338,51 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistMuonEnergyDeposit->SetYTitle("Energy of track");
     
 
+}
+
+Double_t 
+AliAnalysisEtReconstructed::CalcTrackClusterDistance(Float_t clsPos[3],
+						     Int_t *trkMatchId,
+						     AliESDEvent *event)
+{ // calculate distance between cluster and closest track
+
+  Double_t trkPos[3] = {0,0,0};
+
+  Int_t bestTrkMatchId = -1;
+  Double_t distance = 9999; // init to a big number
+
+  Double_t dist = 0;
+  Double_t distX = 0, distY = 0, distZ = 0;
+ 
+  for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
+    AliESDtrack *track = event->GetTrack(iTrack);
+    if (!track) {
+      Printf("ERROR: Could not get track %d", iTrack);
+      continue;
+    }
+
+    // check for approx. eta and phi range before we propagate..
+    // TBD
+
+    AliEMCALTrack *emctrack = new AliEMCALTrack(*track);
+    if (!emctrack->PropagateToGlobal(clsPos[0],clsPos[1],clsPos[2],0.,0.) ) {
+      continue;
+    }
+    emctrack->GetXYZ(trkPos);
+    if (emctrack) delete emctrack;
+
+    distX = clsPos[0]-trkPos[0];
+    distY = clsPos[1]-trkPos[1];
+    distZ = clsPos[2]-trkPos[2];
+    dist = TMath::Sqrt(distX*distX + distY*distY + distZ*distZ);
+
+    if (dist < distance) {
+      distance = dist;
+      bestTrkMatchId = iTrack;
+    }
+  } // iTrack
+
+  //  printf("CalcTrackClusterDistance: bestTrkMatch %d origTrkMatch %d distance %f\n", bestTrkMatchId, *trkMatchId, distance);
+  *trkMatchId = bestTrkMatchId;
+  return distance;
 }
