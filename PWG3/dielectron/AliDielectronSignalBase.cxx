@@ -30,29 +30,49 @@ resulting from single and mixed events, as defined in AliDielectron.cxx
 
 #include "TPaveText.h"
 #include "AliDielectronSignalBase.h"
+#include <TH1F.h>
 
 ClassImp(AliDielectronSignalBase)
 
 AliDielectronSignalBase::AliDielectronSignalBase() :
   TNamed(),
+  fHistSignal(0),
+  fHistBackground(0),
+  fHistDataPM(0),
+  fHistDataPP(0),
+  fHistDataMM(0),
   fValues(6),
   fErrors(6),
-  fIntMin(3.01),
-  fIntMax(3.19)
+  fIntMin(0),
+  fIntMax(0),
+  fFitMin(0),
+  fFitMax(0),
+  fRebin(1),
+  fMethod(kLikeSign),
+  fProcessed(kFALSE)
 {
   //
   // Default Constructor
   //
-  
 }
 
 //______________________________________________
 AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* title) :
   TNamed(name, title),
+  fHistSignal(0),
+  fHistBackground(0),
+  fHistDataPM(0),
+  fHistDataPP(0),
+  fHistDataMM(0),
   fValues(6),
   fErrors(6),
-  fIntMin(3.01),
-  fIntMax(3.19)
+  fIntMin(0),
+  fIntMax(0),
+  fFitMin(0),
+  fFitMax(0),
+  fRebin(1),
+  fMethod(kLikeSign),
+  fProcessed(kFALSE)
 {
   //
   // Named Constructor
@@ -65,7 +85,8 @@ AliDielectronSignalBase::~AliDielectronSignalBase()
   //
   // Default Destructor
   //
-  
+  if(fHistSignal) delete fHistSignal;
+  if(fHistBackground) delete fHistBackground;
 }
 
 //______________________________________________
@@ -85,13 +106,14 @@ TPaveText* AliDielectronSignalBase::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=
   t->SetFillColor(kWhite);
   t->SetBorderSize(1);
   t->SetTextAlign(12);
-  t->AddText(Form("Signal : %.5g #pm %.5g",GetSignal(),GetSignalError()));
-  t->AddText(Form("Backgnd: %.5g #pm %.5g",GetBackground(),GetBackgroundError()));
-  t->AddText(Form("Signif.: %.5g #pm %.5g",GetSignificance(),GetSignificanceError()));
-  t->AddText(Form("SoB    : %.5g #pm %.5g",GetSignalOverBackground(),GetSignalOverBackgroundError()));
-  if (GetMass()>0){
-    t->AddText(Form("Mass: %.5g #pm %.5g", GetMass(), GetMassError()));
-    t->AddText(Form("Mass res.: %.5g #pm %.5g", GetMassWidth(), GetMassWidthError()));
+  t->AddText(Form("Range  : %.2f - %.2f GeV/c^{2}", fIntMin, fIntMax));
+  t->AddText(Form("Signal : %.1f #pm %.1f", fValues(0), fErrors(0)));
+  t->AddText(Form("Backgnd: %.1f #pm %.1f", fValues(1), fErrors(1)));
+  t->AddText(Form("Signif.: %.2f #pm %.2f", fValues(2), fErrors(2)));
+  t->AddText(Form("S/B    : %.2f #pm %.2f", fValues(3), fErrors(3)));
+  if(fValues(4)>0) {
+    t->AddText(Form("Mass: %.2f #pm %.2f GeV/c^{2}", fValues(4), fErrors(4)));
+    t->AddText(Form("Mass res.: %.1f #pm %.1f MeV/c^{2}", 1000*fValues(5), 1000*fErrors(5)));
   }
   t->Draw();
 
@@ -104,16 +126,12 @@ void AliDielectronSignalBase::Print(Option_t */*option*/) const
   //
   // Print the statistics
   //
-  printf("Signal : %.5g #pm %.5g\n",GetSignal(),GetSignalError());
-  printf("Backgnd: %.5g #pm %.5g\n",GetBackground(),GetBackgroundError());
-  printf("Signif.: %.5g #pm %.5g\n",GetSignificance(),GetSignificanceError());
-  printf("SoB    : %.5g #pm %.5g\n",GetSignalOverBackground(),GetSignalOverBackgroundError());
-  if (GetMass()>0){
-    printf("Mass: %.5g #pm %.5g\n", GetMass(), GetMassError());
-    printf("Mass res.: %.5g #pm %.5g\n", GetMassWidth(), GetMassWidthError());
+  printf("Signal : %.5g #pm %.5g\n",fValues(0), fErrors(0));
+  printf("Backgnd: %.5g #pm %.5g\n",fValues(1), fErrors(1));
+  printf("Signif.: %.5g #pm %.5g\n",fValues(2), fErrors(2));
+  printf("SoB    : %.5g #pm %.5g\n",fValues(3), fErrors(3));
+  if(fValues(4)>0){
+    printf("Mass: %.5g #pm %.5g\n", fValues(4), fErrors(4));
+    printf("Mass res.: %.5g #pm %.5g\n", fValues(5), fErrors(5));
   }
 }
-
-
-
-

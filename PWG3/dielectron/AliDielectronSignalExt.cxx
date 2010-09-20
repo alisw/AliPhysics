@@ -27,12 +27,15 @@ can be used.
 */
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
-
 #include <TF1.h>
 #include <TH1.h>
+#include <TH2F.h>
+#include <TLatex.h>
+#include <TLegend.h>
 #include <TCanvas.h>
 #include <TMath.h>
 #include <TString.h>
+#include <TLine.h>
 
 #include <AliLog.h>
 
@@ -41,41 +44,16 @@ can be used.
 ClassImp(AliDielectronSignalExt)
 
 AliDielectronSignalExt::AliDielectronSignalExt() :
-  AliDielectronSignalBase(),
-  fSignPM(0x0),
-  fSignPP(0x0),
-  fSignMM(0x0),
-  fBackground(0x0),
-  fSignal(0x0),
-  fMethod(1),
-  fRebin(1),
-  fBins(0),
-  fDrawMin(0.),
-  fDrawMax(0.),
-  fFitMin(2.5),
-  fFitMax(4)
+  AliDielectronSignalBase()
 {
   //
   // Default Constructor
   //
-  
 }
 
 //______________________________________________
 AliDielectronSignalExt::AliDielectronSignalExt(const char* name, const char* title) :
-  AliDielectronSignalBase(name, title),
-  fSignPM(0x0),
-  fSignPP(0x0),
-  fSignMM(0x0),
-  fBackground(0x0),
-  fSignal(0x0),
-  fMethod(1),
-  fRebin(1),
-  fBins(0),
-  fDrawMin(0.),
-  fDrawMax(0.),
-  fFitMin(2.5),
-  fFitMax(4)
+  AliDielectronSignalBase(name, title)
 {
   //
   // Named Constructor
@@ -88,22 +66,6 @@ AliDielectronSignalExt::~AliDielectronSignalExt()
   //
   // Default Destructor
   //
-  if (fSignPM)     delete fSignPM;
-  if (fSignPP)     delete fSignPP;
-  if (fSignMM)     delete fSignMM;
-  if (fBackground) delete fBackground;
-  if (fSignal)     delete fSignal;
-}
-
-//______________________________________________
-void AliDielectronSignalExt::SetHistograms(TH1F* const unlike, TH1F* const backg, TH1F* const signal)
-{
-  //
-  // set histograms 
-  //
-  fSignPM = (TH1F*)unlike->Clone("fSignPM");
-  fBackground = backg;
-  fSignal = signal;
 }
 
 //______________________________________________
@@ -113,11 +75,11 @@ void AliDielectronSignalExt::Process(TObjArray* const arrhist)
   // signal subtraction. support like-sign subtraction and event mixing method
   //
   switch ( fMethod ){
-    case 1 :
+    case kLikeSign :
       ProcessLS(arrhist);    // process like-sign subtraction method
       break;
 
-    case 2 : 
+    case kEventMixing : 
       ProcessEM(arrhist);    // process event mixing method
       break;
 
@@ -132,53 +94,55 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   //
   // signal subtraction 
   //
-  fSignPP = (TH1F*)arrhist->At(0);  // like sign   : plus-plus
-  fSignPM = (TH1F*)arrhist->At(1);  // unlike-sign : plus-minus
-  fSignMM = (TH1F*)arrhist->At(2);  // like sign   : minus-minus
-  fSignPP->Sumw2();
-  fSignPM->Sumw2();
-  fSignMM->Sumw2();
+  fHistDataPP = (TH1F*)(arrhist->At(0))->Clone("histPP");  // ++    SE
+  fHistDataPM = (TH1F*)(arrhist->At(1))->Clone("histPM");  // +-    SE
+  fHistDataMM = (TH1F*)(arrhist->At(2))->Clone("histMM");  // --    SE   
+  fHistDataPP->Sumw2();
+  fHistDataPM->Sumw2();
+  fHistDataMM->Sumw2();
   
-  if ( fRebin>1 ){ Rebin(fRebin); }       // rebinning of histogram
+  // rebin the histograms
+  if (fRebin>1) { 
+    fHistDataPP->Rebin(fRebin);
+    fHistDataPM->Rebin(fRebin);
+    fHistDataMM->Rebin(fRebin);
+  }       
 
-  fBins = fSignPM->GetNbinsX();            // number of bins
-  Double_t minX  = fSignPM->GetBinLowEdge(1);       // minimum X value in axis
-  Double_t maxX  = fSignPM->GetBinLowEdge(fBins+1); // maximum X value in axis
-  
-  AliDebug(10,Form("histogram #bin = %d , min = %f , max = %f\n",fBins,minX,maxX));
-  TH1F* hBackground = new TH1F("hBackground","Like-sign background",fBins,minX,maxX); 
-  TH1F* hSubtracted = new TH1F("hSubtracted","Background subtracted",fBins,minX,maxX);
+  fHistSignal = new TH1F("HistSignal", "Like-Sign substracted signal", 
+			 fHistDataPM->GetXaxis()->GetNbins(),
+			 fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  fHistBackground = new TH1F("HistBackground", "Like-sign contribution", 
+			     fHistDataPM->GetXaxis()->GetNbins(),
+			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
 
   // fill out background and subtracted histogram
-  for ( Int_t ibin=1; ibin<fBins+1; ibin++ ){
-    Double_t mass  = ibin*(maxX-minX)/(Double_t)fBins;
-    Double_t backgr = 2.*sqrt( fSignPP->GetBinContent(ibin) * fSignMM->GetBinContent(ibin) );
-    Double_t signal = fSignPM->GetBinContent(ibin) - backgr;
+  for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
+    Float_t pm = fHistDataPM->GetBinContent(ibin);
+    Float_t pp = fHistDataPP->GetBinContent(ibin);
+    Float_t mm = fHistDataMM->GetBinContent(ibin);
+    Float_t epm = fHistDataPM->GetBinError(ibin);
 
-    hBackground->Fill(mass, backgr);
-    hSubtracted->Fill(mass, signal);
+    Float_t background = 2*TMath::Sqrt(pp*mm);
+    Float_t ebackground = TMath::Sqrt(mm+pp);
+    Float_t signal = pm - background;
+    Float_t error = TMath::Sqrt(epm*epm+mm+pp);
+
+    fHistSignal->SetBinContent(ibin, signal);
+    fHistSignal->SetBinError(ibin, error);
+    fHistBackground->SetBinContent(ibin, background);
+    fHistBackground->SetBinError(ibin, ebackground);
   }
-  SetHistograms(fSignPM, hBackground, hSubtracted);
-
-
-  Double_t signal=0, signal_err=0;
-  Double_t background=0, background_err=0;
-  
-  signal     = fSignal->IntegralAndError(fSignal->FindBin(GetIntegralMin()),
-                                         fSignal->FindBin(GetIntegralMax()), signal_err);
-  background = fBackground->IntegralAndError(fBackground->FindBin(GetIntegralMin()),
-                                             fBackground->FindBin(GetIntegralMax()), background_err);
-
-  //reset result arrays
-  Reset();
-  //set values
-  SetSignal(signal,signal_err);
-  SetBackground(background,background_err);
+  // signal
+  fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
+	  			             fHistSignal->FindBin(fIntMax), fErrors(0));
+  // background
+  fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
+						  fHistBackground->FindBin(fIntMax), 
+						  fErrors(1));
+  // S/B and significance
   SetSignificanceAndSOB();
 
-  // cleanup
-  //delete hBackground;
-  //delete hSubtracted;
+  fProcessed = kTRUE;
 }
 
 //______________________________________________
@@ -192,17 +156,6 @@ void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
 }
 
 //______________________________________________
-void AliDielectronSignalExt::Rebin(Int_t rebin)
-{
-  // 
-  // rebinning of histograms
-  //
-  fSignPM->Rebin(rebin);
-  fSignPP->Rebin(rebin);
-  fSignMM->Rebin(rebin);
-}
-
-//______________________________________________
 void AliDielectronSignalExt::Draw(const Option_t* option)
 {
   //
@@ -211,38 +164,124 @@ void AliDielectronSignalExt::Draw(const Option_t* option)
   TString drawOpt(option); 
   drawOpt.ToLower();   
 
+  Float_t minY = 0.001;
+  Float_t maxY = 1.2*fHistDataPM->GetMaximum();
+  Float_t minX = 1.001*fHistDataPM->GetXaxis()->GetXmin();
+  Float_t maxX = 0.999*fHistDataPM->GetXaxis()->GetXmax();
+  Int_t binSize = Int_t(1000*fHistDataPM->GetBinWidth(1));   // in MeV
+  Float_t minMinY = fHistSignal->GetMinimum();
+
   TCanvas *cSub = new TCanvas("cSub","signal, background subtracted",1400,1000);
-  cSub->Divide(2,2);
+  cSub->SetLeftMargin(0.15);
+  cSub->SetRightMargin(0.0);
+  cSub->SetTopMargin(0.002);
+  cSub->SetBottomMargin(0.0);
+  cSub->Divide(2,2,0.,0.);
   cSub->Draw();
 
-  Double_t minX  = fSignPM->GetBinLowEdge(1);       // minimum X value in axis
-  Double_t maxX  = fSignPM->GetBinLowEdge(fBins+1); // maximum X value in axis
-  if ( TMath::Abs(fDrawMin)<1.e-30 ) fDrawMin = minX;
-  if ( TMath::Abs(fDrawMax)<1.e-30 ) fDrawMax = maxX;
+  TVirtualPad* pad = cSub->cd(1);
+  pad->SetLeftMargin(0.15);
+  pad->SetRightMargin(0.0);
+  pad->SetTopMargin(0.005);
+  pad->SetBottomMargin(0.0);
+  TH2F *range1=new TH2F("range1","",10,minX,maxX,10,minY,maxY);
+  range1->SetStats(kFALSE);
+  range1->GetYaxis()->SetTitle(Form("entries [counts per %d MeV bin]", binSize));
+  range1->GetYaxis()->CenterTitle();
+  range1->GetYaxis()->SetLabelSize(0.05);
+  range1->GetYaxis()->SetTitleSize(0.06);
+  range1->GetYaxis()->SetTitleOffset(0.8);
+  range1->Draw();
+  fHistDataPM->SetLineColor(1);
+  fHistDataPM->SetLineWidth(2);
+  //  fHistDataPM->SetMarkerStyle(21);
+  fHistDataPM->Draw("Psame");
+  TLatex *latex = new TLatex();
+  latex->SetNDC();
+  latex->SetTextSize(0.05);
+  latex->DrawLatex(0.2, 0.95, "Background un-substracted");
+  TLine line;
+  line.SetLineWidth(1);
+  line.SetLineStyle(2);
+  line.DrawLine(fIntMin, minY, fIntMin, maxY);
+  line.DrawLine(fIntMax, minY, fIntMax, maxY);
+
+  pad = cSub->cd(2);
+  pad->SetLeftMargin(0.);
+  pad->SetRightMargin(0.005);
+  pad->SetTopMargin(0.005);
+  pad->SetBottomMargin(0.0);
+  TH2F *range2=new TH2F("range2","",10,minX,maxX,10,minY,maxY);
+  range2->SetStats(kFALSE);
+  range2->Draw();
+  fHistBackground->SetLineColor(4);
+  fHistBackground->SetLineWidth(2);
+  //  fHistBackground->SetMarkerColor(4);
+  //  fHistBackground->SetMarkerStyle(6);
+  fHistBackground->Draw("Psame");
+  latex->DrawLatex(0.05, 0.95, "Like-sign background");
+  line.DrawLine(fIntMin, minY, fIntMin, maxY);
+  line.DrawLine(fIntMax, minY, fIntMax, maxY);
+  TLegend *legend = new TLegend(0.65, 0.70, 0.98, 0.98);
+  legend->SetFillColor(0);
+  legend->SetMargin(0.15);
+  legend->AddEntry(fHistDataPM, "N_{+-}", "l");
+  legend->AddEntry(fHistDataPP, "N_{++}", "l");
+  legend->AddEntry(fHistDataMM, "N_{--}", "l");
+  legend->AddEntry(fHistSignal, "N_{+-} - 2 #sqrt{N_{++} #times N_{--}}", "l");
+  legend->AddEntry(fHistBackground, "2 #sqrt{N_{++} #times N_{--}}", "l");
+  legend->Draw();
+
   
-  cSub->cd(4);
-  fSignPM->GetXaxis()->SetRangeUser(fDrawMin, fDrawMax);
-  fSignPM->SetLineColor(1);
-  fSignPM->SetLineWidth(2);
-  fSignPM->SetMarkerStyle(6);
-  fSignPM->DrawCopy("P");
+  pad = cSub->cd(3);
+  pad->SetLeftMargin(0.15);
+  pad->SetRightMargin(0.0);
+  pad->SetTopMargin(0.0);
+  pad->SetBottomMargin(0.15);
+  TH2F *range3=new TH2F("range3","",10,minX,maxX,10,minMinY,maxY);
+  range3->SetStats(kFALSE);
+  range3->GetYaxis()->SetTitle(Form("entries [counts per %d MeV bin]", binSize));
+  range3->GetYaxis()->CenterTitle();
+  range3->GetYaxis()->SetLabelSize(0.05);
+  range3->GetYaxis()->SetTitleSize(0.06);
+  range3->GetYaxis()->SetTitleOffset(0.8);
+  range3->GetXaxis()->SetTitle("inv. mass [GeV/c^{2}]");
+  range3->GetXaxis()->CenterTitle();
+  range3->GetXaxis()->SetLabelSize(0.05);
+  range3->GetXaxis()->SetTitleSize(0.06);
+  range3->GetXaxis()->SetTitleOffset(1.0);
+  range3->Draw();
+  fHistDataPM->Draw("Psame");
+  fHistDataPP->SetLineWidth(2);
+  fHistDataPP->SetLineColor(6);
+  fHistDataMM->SetLineWidth(2);
+  fHistDataMM->SetLineColor(8);
+  fHistDataPP->Draw("Psame");
+  fHistDataMM->Draw("Psame");
+  line.DrawLine(minX, 0.,maxX, 0.);
+  line.DrawLine(fIntMin, minMinY, fIntMin, maxY);
+  line.DrawLine(fIntMax, minMinY, fIntMax, maxY);
 
-  fBackground->SetLineColor(4);
-  fBackground->SetMarkerColor(4);
-  fBackground->SetMarkerStyle(6);
-  fBackground->DrawCopy("Psame");
-
-  fSignal->SetMarkerStyle(20);
-  fSignal->SetMarkerColor(2);
-  fSignal->DrawCopy("Psame");
-
-  cSub->cd(1);
-  fSignal->DrawCopy("P");
-
-  cSub->cd(2);
-  fSignPM->DrawCopy("P");
-
-  cSub->cd(3);
-  fSignPP->DrawCopy("P");
+  pad = cSub->cd(4);
+  pad->SetLeftMargin(0.0);
+  pad->SetRightMargin(0.005);
+  pad->SetTopMargin(0.0);
+  pad->SetBottomMargin(0.15);
+  TH2F *range4=new TH2F("range4","",10,minX,maxX,10,minMinY,maxY);
+  range4->SetStats(kFALSE);
+  range4->GetXaxis()->SetTitle("inv. mass [GeV/c^{2}]");
+  range4->GetXaxis()->CenterTitle();
+  range4->GetXaxis()->SetLabelSize(0.05);
+  range4->GetXaxis()->SetTitleSize(0.06);
+  range4->GetXaxis()->SetTitleOffset(1.0);
+  range4->Draw();
+  fHistSignal->SetLineWidth(2);
+  fHistSignal->SetLineColor(2);
+  fHistSignal->Draw("Psame");
+  latex->DrawLatex(0.05, 0.95, "Like-sign background substracted");
+  if(fProcessed) DrawStats(0.05, 0.6, 0.5, 0.9);
+  line.DrawLine(minX, 0.,maxX, 0.);
+  line.DrawLine(fIntMin, minMinY, fIntMin, maxY);
+  line.DrawLine(fIntMax, minMinY, fIntMax, maxY);
 }
 

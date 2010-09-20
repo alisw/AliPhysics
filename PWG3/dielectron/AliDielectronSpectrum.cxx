@@ -226,8 +226,8 @@ void AliDielectronSpectrum::CreateCFSpectrum()
   for (Int_t iMethod=0; iMethod<fSignalMethods.GetEntries(); ++iMethod){
     TString name(fSignalMethods.UncheckedAt(iMethod)->GetName());
     if (fStepSignal){
-      fCFSpectrum->SetStepTitle(steps++,(name+" (Siganl)").Data());
-      fCFSpectrum->SetStepTitle(steps++,(name+" (Corrected Siganl)").Data());
+      fCFSpectrum->SetStepTitle(steps++,(name+" (Signal)").Data());
+      fCFSpectrum->SetStepTitle(steps++,(name+" (Corrected Signal)").Data());
     }
     if (fStepSignificance){
       fCFSpectrum->SetStepTitle(steps++,(name+" (Significance)").Data());
