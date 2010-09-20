@@ -21,15 +21,17 @@ class AliAODRecoDecayHF2Prong;
 class AliAODRecoDecayHF;
 class AliAODMCParticle;
 class AliAnalysisVertexingHF;
+class AliRDHFCutsD0toKpi;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskSECharmFraction();
   AliAnalysisTaskSECharmFraction(const char *name);
-  AliAnalysisTaskSECharmFraction(const char *name,Int_t nptbins,Double_t *ptbins);
-  
+  AliAnalysisTaskSECharmFraction(const char *name,AliRDHFCutsD0toKpi *cutsA,AliRDHFCutsD0toKpi *cutsB);
+
   virtual ~AliAnalysisTaskSECharmFraction(); 
+
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -37,7 +39,11 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);  
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
-  void SetNPtBins(Int_t nbins,const Double_t *ptbins);
+  void SetUsePID(Bool_t pid){fusePID=pid;}
+  void SetAnalyzeLikeSign(Bool_t likesign=kFALSE){fLikeSign=likesign;}
+  void SetNMaxTrForVtx(const Int_t ntrMaxforVtx){fNtrMaxforVtx=ntrMaxforVtx;}
+  Int_t GetNMaxTrForVtx(){return fNtrMaxforVtx;}
+  void SetPtBins(Int_t nbins,const Float_t *ptbins);
   void SetSignalInvMassCut(const Double_t signalInvMassCut=0.027){fsignalInvMassCut=signalInvMassCut;}
   void SetLargeInvMassCut(const Double_t largeInvMassCut=2.){flargeInvMassCut=largeInvMassCut;}
   void SetSideBandInvMassCut(const Double_t sidebandInvMassCut=0.054){// default value ~ 2x3 times inv mass resol.: a factor 2 is applied w.r.t. 3sigma, should be safe enough to exclude most of the reflections 
@@ -46,40 +52,62 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   void SetSideBandInvMassWindow(const Double_t sidebandInvMassWindow=0.108){//~ 6 times inv. mass resol.
     fsidebandInvMassWindow=sidebandInvMassWindow;
   }  
-  void SetAcceptanceCut(const Double_t eta=0.9,const Double_t nITSpoints=5.,const Double_t nSPDpoints=2.){fAcceptanceCuts[0]=eta;fAcceptanceCuts[1]=nITSpoints;fAcceptanceCuts[2]=nSPDpoints;}
+  void SetAcceptanceCut(const Double_t eta=0.8,const Double_t nITSpoints=5.,const Double_t nSPDpoints=2.){fAcceptanceCuts[0]=eta;fAcceptanceCuts[1]=nITSpoints;fAcceptanceCuts[2]=nSPDpoints;}
   void SetStandardMassSelection();
   Int_t SetStandardCuts(Double_t pt,Double_t invMassCut);
+  Int_t SetStandardCuts(Float_t *&ptbinlimits);
   void CheckInvMassD0(AliAODRecoDecayHF2Prong *d,Double_t &invMassD0,Double_t &invMassD0bar,Bool_t &isPeakD0,Bool_t &isPeakD0bar,Bool_t &isSideBandD0,Bool_t &isSideBandD0bar);
   AliAODRecoDecayHF *GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx);
   AliAODRecoDecayHF* ConstructFakeTrueSecVtx(const AliAODMCParticle *b1,const AliAODMCParticle *b2,const AliAODMCParticle *mum,Double_t *primaryVtxTrue);
   void SetUseMC(Bool_t useMC){fUseMC=useMC;}
-  //#################
-   /* ######### THE FOLLOWING IS FOR FURTHER IMPLEMENATION ############
-    Int_t GetPtBin(Double_t pt)const;
-    void SetD0Cuts(Int_t ptbin,Double_t &*d0cutsLoose,Double_t &*d0cutsTight);
-
-  //  void InvMassSelection();
-  
-  void SetCheckMC(Bool_t checkMC){fcheckMC=checkMC;}
-  void SetCheckMC_D0(Bool_t check_D0){fcheckMCD0=check_D0;}
-  void SetCheckMC_2prongs(Bool_t check2prongs){fcheckMC2prongs=check2prongs;}
-  void SetCheckMC_prompt(Bool_t checkprompt){fcheckMCprompt=checkprompt;}
-  void SetCheckMC_fromB(Bool_t checkfromB){fcheckMCfromB=checkfromB;}
-  void SetCheckMC_fromDstar(Bool_t skipD0star){fSkipD0star=skipD0star;}
-  void SetUseCuts(Bool_t usecuts){fD0usecuts=usecuts;}
-  void SetSideBands(Double_t sideband){fSideBands=sideband;}
-  void SetStudyPureBackground(Bool_t back){fStudyPureBackground=back;}
+  Bool_t SpecialSelD0(AliAODRecoDecayHF2Prong *d,Int_t &nusedforVtx);
+  AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *d);
+ 
+  /* ######### THE FOLLOWING IS FOR FURTHER IMPLEMENATION ############
+     Int_t GetPtBin(Double_t pt)const;
+     void SetD0Cuts(Int_t ptbin,Double_t &*d0cutsLoose,Double_t &*d0cutsTight);
+     
+     //  void InvMassSelection();
+     
+     void SetCheckMC(Bool_t checkMC){fcheckMC=checkMC;}
+     void SetCheckMC_D0(Bool_t check_D0){fcheckMCD0=check_D0;}
+     void SetCheckMC_2prongs(Bool_t check2prongs){fcheckMC2prongs=check2prongs;}
+     void SetCheckMC_prompt(Bool_t checkprompt){fcheckMCprompt=checkprompt;}
+     void SetCheckMC_fromB(Bool_t checkfromB){fcheckMCfromB=checkfromB;}
+     void SetCheckMC_fromDstar(Bool_t skipD0star){fSkipD0star=skipD0star;}
+     void SetUseCuts(Bool_t usecuts){fD0usecuts=usecuts;}
+     void SetSideBands(Double_t sideband){fSideBands=sideband;}
+     void SetStudyPureBackground(Bool_t back){fStudyPureBackground=back;}
   */
-
+  AliRDHFCutsD0toKpi* GetLooseCut(){
+    return fCutsLoose;
+  }
+  AliRDHFCutsD0toKpi* GetTightCut(){
+    return fCutsTight;
+  }
+  /* void SetCutFunction(Int_t (*setcuts)(AliAnalysisTaskSECharmFraction*,Double_t,Double_t)){
+     fSetCuts=setcuts;
+     fStandCuts=kFALSE;
+     }
+  */
+  //  Int_t SetCuts(AliAnalysisTaskSECharmFraction *alchfr,Double_t pt,Double_t invMassCut);
+  
  private:
   Bool_t FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBand,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue);
- 
-  AliAnalysisVertexingHF *fVHFloose;        // Vertexer heavy flavour
-  AliAnalysisVertexingHF *fVHFtight;        // Vertexer heavy flavour
+  void FillHistoMCproperties(TClonesArray *arrayMC);
+
+  AliRDHFCutsD0toKpi *fCutsLoose;        // Loose cuts object
+  AliRDHFCutsD0toKpi *fCutsTight;      // Vertexer heavy flavour
   Bool_t  fReadMC;                          // Flag To switch on/off access to MC 
+  Bool_t  fLikeSign;                        // Flag to analyse Like Sign array
+  Bool_t  fusePID;                          // Flag to use PID
   Double_t    fmD0PDG;                      //  MC D0 mass
   Int_t        fnbins;                      // Number of pt bins
-  Double_t *fptbins;                        //[fnbins] ptbins 
+  Float_t *fptbins;                        //[fnbins] ptbins 
+  Int_t fNtrMaxforVtx;                      // N Max acceptable tracks used for vertex (0,1,2)
+  Double_t fptAll;                          //!Sum of pt of the reco tracks
+  Double_t fptAllSq;                        //!Sum of the square of the pt of the reco tracks
+  Double_t fptMax[3];                       //!Three largest track pt in the event
   Double_t fAcceptanceCuts[3];                // array with acceptance cuts
   Double_t fsignalInvMassCut;               // invariant mass cut to define signal region
   Double_t flargeInvMassCut;                // invariant mass cut to accept all inv mass window
@@ -90,21 +118,22 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   TH1F *fSignalType;                        //!histo for the type of MC signal , container 2
   TH1F *fSignalTypeLsCuts;                 //!histo for the type of MC signal with loose cuts , container 3
   TH1F *fSignalTypeTghCuts;                //!histo for the type of MC signal with tight cuts, container 4
-  TList *flistNoCutsSignal;               //!TList for signal (D prompt) with nocuts, container 5
-  TList *flistNoCutsBack;               //!TList for background with nocuts, container 6
-  TList *flistNoCutsFromB;               //!TList for D from B or D from Dstar from Bwith nocuts, container 7
-  TList *flistNoCutsFromDstar;               //!TList for D from Dstar with nocuts, container 8
-  TList *flistNoCutsOther;               //!TList for others with nocuts, container 9
-  TList *flistLsCutsSignal;               //!TList for signal (D prompt) with loose cuts, container 10
-  TList *flistLsCutsBack;               //!TList for background with loose cuts, container 11
-  TList *flistLsCutsFromB;               //!TList for D from B or D from Dstar from B with loose cuts, container 12
-  TList *flistLsCutsFromDstar;               //!TList for D from Dstar with loose cuts, container 13
-  TList *flistLsCutsOther;               //!TList for others with loose cuts, container 14
-  TList *flistTghCutsSignal;               //!TList for signal (D prompt) with tight cuts, container 15
-  TList *flistTghCutsBack;               //!TList for backgrnd with tight cuts, container 16
-  TList *flistTghCutsFromB;               //!TList for D from B or D from Dstar from Bwith tight cuts, container 17
-  TList *flistTghCutsFromDstar;               //!TList for D from Dstar Dstar with tight cuts, container 18
-  TList *flistTghCutsOther;               //!TList for others with tight cuts, container 19
+  TList *flistMCproperties;               //!TLists for MC properties of D0 w.r.t. B mesons and c quarks cntainer 5
+  TList *flistNoCutsSignal;               //!TList for signal (D prompt) with nocuts, container 6
+  TList *flistNoCutsBack;               //!TList for background with nocuts, container 7
+  TList *flistNoCutsFromB;               //!TList for D from B or D from Dstar from Bwith nocuts, container 8
+  TList *flistNoCutsFromDstar;               //!TList for D from Dstar with nocuts, container 9
+  TList *flistNoCutsOther;               //!TList for others with nocuts, container 10
+  TList *flistLsCutsSignal;               //!TList for signal (D prompt) with loose cuts, container 11
+  TList *flistLsCutsBack;               //!TList for background with loose cuts, container 12
+  TList *flistLsCutsFromB;               //!TList for D from B or D from Dstar from B with loose cuts, container 13
+  TList *flistLsCutsFromDstar;               //!TList for D from Dstar with loose cuts, container 14
+  TList *flistLsCutsOther;               //!TList for others with loose cuts, container 15
+  TList *flistTghCutsSignal;               //!TList for signal (D prompt) with tight cuts, container 16
+  TList *flistTghCutsBack;               //!TList for backgrnd with tight cuts, container 17
+  TList *flistTghCutsFromB;               //!TList for D from B or D from Dstar from Bwith tight cuts, container 18
+  TList *flistTghCutsFromDstar;               //!TList for D from Dstar Dstar with tight cuts, container 19
+  TList *flistTghCutsOther;               //!TList for others with tight cuts, container 20
   /*  Bool_t       fD0usecuts;            // Switch on the use of the cuts             TO BE IMPLEMENTED 
       Bool_t       fcheckMC;              //  Switch on MC check: minimum check is same mother  TO BE IMPLEMENTED
       Bool_t       fcheckMCD0;           //  check the mother is a D0                  TO BE IMPLEMENTED

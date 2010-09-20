@@ -80,10 +80,12 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
   }
 
   if(addPromptD0) {
-    taskName="AddTaskCharmFraction.C"; taskName.Prepend(loadMacroPath.Data());
+    taskName="AddTaskSECharmFraction.C"; 
+    taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
-    Int_t switchMC[5]={1,1,1,1,1};
-    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0.root",switchMC,readMC);
+    Int_t switchMC[5]={0,0,0,0,0};
+    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskSECharmFraction("standard",switchMC,readMC);
+    // arguments: filename,switchMC,readmc,usepid,likesign,cutfilename,containerprefix
     ntasks++;
   }
 

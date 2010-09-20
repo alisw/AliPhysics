@@ -223,10 +223,13 @@ void RunAnalysisAODVertexingHF()
     gROOT->LoadMacro(taskName.Data());
     AliCFHeavyFlavourTaskMultiVarMultiStep *cfmvmsTask = AddTaskCFMultiVarMultiStep();
     
-    taskName="AddTaskCharmFraction.C"; taskName.Prepend(loadMacroPath.Data());
+
+    taskName="AddTaskSECharmFraction.C"; 
+    taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
-    Int_t switchMC[5]={1,1,1,1,1};
-    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskCharmFraction("d0D0",switchMC);
+    Int_t switchMC[5]={0,0,0,0,0};
+    // arguments: filename,switchMC,readmc,usepid,likesign,cutfilename,containerprefix
+    AliAnalysisTaskSECharmFraction *cFractTask = AddTaskSECharmFraction("standard",switchMC);
     
     // attach a private task (not committed)
     // (the files MyTask.h MyTask.cxx AddMyTask.C have to be declared in plugin
