@@ -1481,31 +1481,19 @@ Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetWeight(Float_t pt){
 	//
 
 	// FNOLL central:
-	// p0 = 0.2149
-	// p1 = 2.433
-	// p2 = 2.102
-	// p3 = 2.5
-
-	// FNOLL min:
-	// p0 = 0.06947
-	// p1 = 4.795
-	// p2 = 2.878
-	// p3 = 2.5
-
-	// FNOLL max:
-	// p0 = 0.2739
-	// p1 = 2.136
-	// p2 = 2.066
-	// p3 = 2.5
+	// p0 = 1.63297e-01 --> 0.322643
+	// p1 = 2.96275e+00
+	// p2 = 2.30301e+00
+	// p3 = 2.50000e+00
 
 	// PYTHIA
-	// p0 = 3.63832E-2
-	// p1 = 1.88238
-	// p2 = 1.34854
-	// p3 = 2.5
+	// p0 = 1.85906e-01 --> 0.36609
+	// p1 = 1.94635e+00
+	// p2 = 1.40463e+00
+	// p3 = 2.50000e+00
 
-	Double_t func1[4] = {0.2149,2.433,2.102,2.5};
-	Double_t func2[4] = {3.63832E-2,1.88238,1.34854,2.5};
+	Double_t func1[4] = {0.322643,2.96275,2.30301,2.5};
+	Double_t func2[4] = {0.36609,1.94635,1.40463,2.5};
 
 	Double_t dndpt_func1 = dNdptFit(pt,func1);
 	Double_t dndpt_func2 = dNdptFit(pt,func2);
