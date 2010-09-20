@@ -44,9 +44,16 @@ AliTPCCalibGlobalMisalignment::AliTPCCalibGlobalMisalignment()
   : AliTPCCorrection("mialign","Misalignment"),
     fXShift(0.),fYShift(0.),fZShift(0.),
     fRotPhiA(0.),fRotPhiC(0.),
-    fdRPhiOffsetA(0.), fdRPhiOffsetC(0.), 
-    fQuadrantDQ1(0), fQuadrantDQ2(0), fQuadrantQ2(0), fMatrixGlobal(0),
-    fArraySector(0)
+    fdRPhiOffsetA(0.), 
+    fdRPhiOffsetC(0.), 
+    fQuadrantQ0(0),   //OROC medium pads -delta ly+ - ly - shift
+    fQuadrantRQ0(0),  //OROC medium pads -delta ly+ - ly - rotation 
+    fQuadrantQ1(0),   //OROC long   pads -delta ly+ - ly - shift
+    fQuadrantQ2(0),   //OROC long   pads -shift
+    fQuadrantRQ1(0),  //OROC long   pads -delta ly+ - ly - rotation
+    fQuadrantRQ2(0),  //OROC long   pads -rotation
+    fMatrixGlobal(0), // global Alignment common
+    fArraySector(0)   // fArraySector
 {
   //
   // default constructor
@@ -55,23 +62,33 @@ AliTPCCalibGlobalMisalignment::AliTPCCalibGlobalMisalignment()
 
 AliTPCCalibGlobalMisalignment::~AliTPCCalibGlobalMisalignment() {
   //
-  // default destructor
+  // destructor
   //
-  delete fQuadrantDQ1;   //OROC medium pads delta ly+ - ly-
-  delete fQuadrantDQ2;   //OROC long   pads delta ly+ - ly-
-  delete fQuadrantQ2;    //OROC long   pads - OROC medium pads
-
+  delete fQuadrantQ0;   //OROC medium pads -delta ly+ - ly - shift
+  delete fQuadrantRQ0;  //OROC medium pads -delta ly+ - ly - rotation 
+  delete fQuadrantQ1;   //OROC long   pads -delta ly+ - ly - shift
+  delete fQuadrantQ2;   //OROC long   pads -shift
+  delete fQuadrantRQ1;  //OROC long   pads -delta ly+ - ly - rotation
+  delete fQuadrantRQ2;  //OROC long   pads -rotation
+  delete fMatrixGlobal; // global matrix
+  delete fArraySector;  // sector matrices
 }
  
-void AliTPCCalibGlobalMisalignment::SetQuadranAlign(const TVectorD *dq1, const TVectorD *dq2, const TVectorD *q2){
+void AliTPCCalibGlobalMisalignment::SetQuadranAlign(const TVectorD *quadrantQ0, const TVectorD *quadrantRQ0, const TVectorD *quadrantQ1,const TVectorD *quadrantRQ1,  const TVectorD *quadrantQ2,  const TVectorD *quadrantRQ2){
   //
   // Set quadrant alignment
-  // 3 vectors for 36 (super) sectors
+  // 6 vectors for 36 (super) sectors
   //
-  fQuadrantDQ1 = new TVectorD(*dq1);    //OROC medium pads delta ly+ - ly-
-  fQuadrantDQ2 = new TVectorD(*dq2);;   //OROC long   pads delta ly+ - ly-
-  fQuadrantQ2  = new TVectorD(*q2);;    //OROC long   pads - OROC medium pads
+  if (quadrantQ0) fQuadrantQ0   = new TVectorD(*quadrantQ0);
+  if (quadrantRQ0) fQuadrantRQ0 = new TVectorD(*quadrantRQ0);
+  //
+  if (quadrantQ1) fQuadrantQ1   = new TVectorD(*quadrantQ1);
+  if (quadrantQ1) fQuadrantRQ1  = new TVectorD(*quadrantRQ1);
+  if (quadrantQ2) fQuadrantQ2   = new TVectorD(*quadrantQ2);
+  if (quadrantQ2) fQuadrantRQ2  = new TVectorD(*quadrantRQ2);
 }
+
+
 
 void AliTPCCalibGlobalMisalignment::SetAlignGlobal(const TGeoMatrix * matrixGlobal){
   //
@@ -119,6 +136,8 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
   // Calculates the simple correction due to a shift (in x,y,z) or an rotation of the TPC (around z)
   //  
   static AliTPCROC *tpcRoc =AliTPCROC::Instance();  
+  Double_t xref  = ( tpcRoc->GetPadRowRadii(0,0)+tpcRoc->GetPadRowRadii(36,tpcRoc->GetNRows(36)-1))*0.5;
+    
   Double_t r=0, phi=0;
   r   = TMath::Sqrt( x[0]*x[0] + x[1]*x[1] );
   phi = TMath::ATan2(x[1],x[0]);
@@ -139,19 +158,22 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
   //
   // apply quadrant alignment if available - in local coordinate frame
   //
+  //
   Double_t posQG[3]={x[0],x[1],x[2]};
-  if (fQuadrantDQ1){
+  {
     Double_t dly=0;
-    Bool_t isQ1 = TMath::Abs(pos[0]-161)<28;
-    Bool_t isQ2 = (pos[0]>189);
-    if (isQ1){
-      if (pos[1]>0.) dly+=(*fQuadrantDQ1)[isec];
-      if (pos[1]<0.) dly-=(*fQuadrantDQ1)[isec];      
+    Bool_t isQ0 = TMath::Abs(pos[0]-161)<28;
+    Bool_t isQ1 = (pos[0]>189);
+    Double_t  sign = (pos[1]>0)? 1.: -1.;
+    if (isQ0){
+      if (fQuadrantQ0)  dly+=sign*(*fQuadrantQ0)[isec%36];  // shift in cm
+      if (fQuadrantRQ0) dly+=sign*(*fQuadrantRQ0)[isec%36]*(pos[0]-xref);      
     }
-    if (isQ2){
-      dly+=(*fQuadrantQ2)[isec];
-      if (pos[1]>0.) dly+=(*fQuadrantDQ2)[isec];
-      if (pos[1]<0.) dly-=(*fQuadrantDQ2)[isec];
+    if (isQ1){
+      if (fQuadrantQ1)  dly+=sign*(*fQuadrantQ1)[isec%36];  // shift in cm
+      if (fQuadrantRQ1) dly+=sign*(*fQuadrantRQ1)[isec%36]*(pos[0]-xref);      
+      if (fQuadrantQ2)  dly+=(*fQuadrantQ2)[isec%36];  // shift in cm
+      if (fQuadrantRQ2) dly+=(*fQuadrantRQ2)[isec%36]*(pos[0]-xref);      
     }
     // Tranform the corrected point to the global frame
     posQG[0]=  TMath::Cos(alpha)*pos[0]-TMath::Sin(alpha)*(pos[1]+dly);
@@ -235,12 +257,32 @@ void AliTPCCalibGlobalMisalignment::AddAlign(const  AliTPCCalibGlobalMisalignmen
   //
   // Quadrant alignment
   //
-  if (fQuadrantDQ1&&add.fQuadrantDQ1) fQuadrantDQ1->Add(*(add.fQuadrantDQ1));   //OROC medium pads delta ly+ - ly-
-  if (fQuadrantDQ2&&add.fQuadrantDQ2) fQuadrantDQ2->Add(*(add.fQuadrantDQ2));   //OROC long   pads delta ly+ - ly-
-  if (fQuadrantQ2&&add.fQuadrantQ2) fQuadrantQ2->Add(*(add.fQuadrantQ2));       //OROC long   pads - OROC medium pads
-  if (!fQuadrantDQ1&&add.fQuadrantDQ1) fQuadrantDQ1= new TVectorD(*add.fQuadrantDQ1);   //OROC medium pads delta ly+ - ly-
-  if (!fQuadrantDQ2&&add.fQuadrantDQ2) fQuadrantDQ2 = new TVectorD(*add.fQuadrantDQ2);   //OROC long   pads delta ly+ - ly-
-  if (!fQuadrantQ2&&add.fQuadrantQ2) fQuadrantQ2= new TVectorD(*add.fQuadrantQ2);       //OROC long   pads - OROC medium pads
+  if (add.fQuadrantQ0) {
+    if (fQuadrantQ0) fQuadrantQ0->Add(*(add.fQuadrantQ0));
+    if (!fQuadrantQ0) fQuadrantQ0 = (TVectorD*)(add.fQuadrantQ0->Clone());
+  }
+  if (add.fQuadrantRQ0) {
+    if (fQuadrantRQ0) fQuadrantRQ0->Add(*(add.fQuadrantRQ0));
+    if (!fQuadrantRQ0) fQuadrantRQ0 = (TVectorD*)(add.fQuadrantRQ0->Clone());
+  }
+  //
+  if (add.fQuadrantQ1) {
+    if (fQuadrantQ1) fQuadrantQ1->Add(*(add.fQuadrantQ1));
+    if (!fQuadrantQ1) fQuadrantQ1 = (TVectorD*)(add.fQuadrantQ1->Clone());
+  }
+  if (add.fQuadrantRQ1) {
+    if (fQuadrantRQ1) fQuadrantRQ1->Add(*(add.fQuadrantRQ1));
+    if (!fQuadrantRQ1) fQuadrantRQ1 = (TVectorD*)(add.fQuadrantRQ1->Clone());
+  }
+  //
+  if (add.fQuadrantQ2) {
+    if (fQuadrantQ2) fQuadrantQ2->Add(*(add.fQuadrantQ2));
+    if (!fQuadrantQ2) fQuadrantQ2 = (TVectorD*)(add.fQuadrantQ2->Clone());
+  }
+  if (add.fQuadrantRQ2) {
+    if (fQuadrantRQ2) fQuadrantRQ2->Add(*(add.fQuadrantRQ2));
+    if (!fQuadrantRQ2) fQuadrantRQ2 = (TVectorD*)(add.fQuadrantRQ2->Clone());
+  }
   //
   // Global alignment - use native ROOT representation
   //
@@ -381,7 +423,7 @@ AliTPCCalibGlobalMisalignment *  AliTPCCalibGlobalMisalignment::CreateMeanAlign(
 
 void AliTPCCalibGlobalMisalignment::DumpAlignment( AliTPCCalibGlobalMisalignment* align, TTreeSRedirector *pcstream, const char *name){
   //
-  // Dump alignment into tree
+  // Dump alignment per sector into tree
   //
   TObjArray * array = align->GetAlignSectors();
   if (!array) return;

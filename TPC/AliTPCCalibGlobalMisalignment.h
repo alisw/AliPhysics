@@ -48,7 +48,7 @@ public:
   Float_t GetdRPhiOffsetA() const {return fdRPhiOffsetA;}
   Float_t GetdRPhiOffsetC() const {return fdRPhiOffsetC;}
   virtual void Print(Option_t* option="") const;
-  void SetQuadranAlign(const TVectorD *dq1, const TVectorD *dq2, const TVectorD *q2); 
+  void SetQuadranAlign(const TVectorD *quadrantQ0, const TVectorD *quadrantRQ0, const TVectorD *quadrantQ1,const TVectorD *quadrantRQ1,  const TVectorD *quadrantQ2,  const TVectorD *quadrantRQ2);
   // 
   // Alignment manipulation using TGeoMatrix
   
@@ -76,9 +76,13 @@ private:
   //
   // Quadrant alignment
   //
-  TVectorD *fQuadrantDQ1;   //OROC medium pads delta ly+ - ly-
-  TVectorD *fQuadrantDQ2;   //OROC long   pads delta ly+ - ly-
-  TVectorD *fQuadrantQ2;   //OROC long   pads - OROC medium pads
+  TVectorD *fQuadrantQ0;   //OROC medium pads -delta ly+ - ly - shift (cm)
+  TVectorD *fQuadrantRQ0;  //OROC medium pads -delta ly+ - ly - rotation (rad) 
+  TVectorD *fQuadrantQ1;   //OROC long   pads -delta ly+ - ly - shift
+  TVectorD *fQuadrantQ2;   //OROC long   pads -shift
+  TVectorD *fQuadrantRQ1;  //OROC long   pads -delta ly+ - ly - rotation
+  TVectorD *fQuadrantRQ2;  //OROC long   pads -rotation
+  // 
   //
   // Global alignment - use native ROOT representation
   //
