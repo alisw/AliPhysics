@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskCharmFraction(TString fileout="d0D0",Int_t switchMC[5],Bool_t readMC=kTRUE)
+AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c")
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -20,19 +20,38 @@ AliAnalysisTaskSECharmFraction* AddTaskCharmFraction(TString fileout="d0D0",Int_
     ::Error("AddTaskCharmFraction", "No analysis manager to connect to.");
     return NULL;
   }   
-
-  TString str=fileout,containername;
-  str.ReplaceAll(".root","");
+  
+  TString str,containername;
+  if(fileout=="standard"){
+    fileout=AliAnalysisManager::GetCommonFileName();
+    fileout+=":PWG3_D2H_";
+    fileout+="d0D0";
+    if(containerprefix!="c")fileout+=containerprefix;
+    str="d0D0";
+  }
+  else {
+    str=fileout;
+    str.ReplaceAll(".root","");
+  }
   str.Prepend("_");
 
-  TString outfile=AliAnalysisManager::GetCommonFileName();
-  outfile += ":PWG3_D2H";
-  outfile += str.Data();
-
   AliAnalysisTaskSECharmFraction *hfTask;
- 
-  hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction");
-  hfTask->SetReadMC(readMC);    
+  if(!gSystem->AccessPathName(cutfile.Data(),kFileExists)){
+    TFile *f=TFile::Open(cutfile.Data());
+    AliRDHFCutsD0toKpi *cutTight= (AliRDHFCutsD0toKpi*)f->Get("D0toKpiCutsStandard");
+    cutTight->PrintAll();
+    AliRDHFCutsD0toKpi *cutLoose= (AliRDHFCutsD0toKpi*)f->Get("D0toKpiCutsLoose");
+    cutLoose->PrintAll();
+    hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction",cutTight,cutLoose);
+  }
+  else hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction");
+  
+  hfTask->SetReadMC(readmc);
+  hfTask->SetNMaxTrForVtx(2);
+  hfTask->SetAnalyzeLikeSign(likesign);
+  hfTask->SetUsePID(usepid);
+  hfTask->SetStandardMassSelection();
+  // hfTask->SignalInvMassCut(0.27);
 
   /*  ############### HERE THE POSSIBILITY TO SWITCH ON/OFF THE TLISTS AND MC SELECTION WILL BE SET #########à
 
@@ -57,177 +76,217 @@ AliAnalysisTaskSECharmFraction* AddTaskCharmFraction(TString fileout="d0D0",Int_
   
 
   //Now container for general properties histograms
-  containername="coutputNentries";
+  containername="outputNentries";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *coutputNentries = mgr->CreateContainer(containername.Data(),TH1F::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   
   mgr->ConnectOutput(hfTask,1,coutputNentries);
 
-  containername="coutputSignalType";
+  containername="outputSignalType";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *coutputSignalType = mgr->CreateContainer(containername.Data(),TH1F::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   
   mgr->ConnectOutput(hfTask,2,coutputSignalType);
 
 
-  containername="coutputSignalType_LsCuts";
+  containername="outputSignalType_LsCuts";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *coutputSignalType_LsCuts = mgr->CreateContainer(containername.Data(),TH1F::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   
   mgr->ConnectOutput(hfTask,3,coutputSignalType_LsCuts);
 
 
- containername="coutputSignalType_TghCuts";
+  containername="outputSignalType_TghCuts";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *coutputSignalType_TghCuts = mgr->CreateContainer(containername.Data(),TH1F::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   
   mgr->ConnectOutput(hfTask,4,coutputSignalType_TghCuts);
-
+ //Now Container for MC TList
+  containername="listMCproperties";
+  containername.Prepend(containerprefix.Data());
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *clistMCprop = mgr->CreateContainer(containername.Data(),TList::Class(),
+							       AliAnalysisManager::kOutputContainer, 
+							       fileout.Data());
+  mgr->ConnectOutput(hfTask,5,clistMCprop);
+  
   // Now container for TLists 
-  last=5;
+  last=6;
   //##########  NO CUTS TLISTS CONTAINER ##############à
-  containername="clistNCsign";
+  containername="listNCsign";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistNCsign = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistNCsign);
   last++;
 
 
-  containername="clistNCback";
+  containername="listNCback";  
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistNCback = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistNCback);
   last++;
 
-  containername="clistNCfromB";
+  containername="listNCfromB";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistNCfromB = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistNCfromB);
   last++;
 
 
-  containername="clistNCfromDstar";
+  containername="listNCfromDstar";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistNCfromDstar = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistNCfromDstar);
   last++;
 
 
-  containername="clistNCother";
+  containername="listNCother";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistNCother = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistNCother);
   last++;
 
 
   //######### LOOSE CUTS TLISTS CONTAINER #############
-  containername="clistLSCsign";
+  containername="listLSCsign";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistLSCsign = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistLSCsign);
   last++;
 
 
-  containername="clistLSCback";
+  containername="listLSCback";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistLSCback = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistLSCback);
   last++;
 
-  containername="clistLSCfromB";
+  containername="listLSCfromB";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistLSCfromB = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistLSCfromB);
   last++;
 
 
-  containername="clistLSCfromDstar";
+  containername="listLSCfromDstar";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistLSCfromDstar = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistLSCfromDstar);
   last++;
 
 
-  containername="clistLSCother";
+  containername="listLSCother";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistLSCother = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistLSCother);
   last++;
 
 
 
   //######### TIGHT CUTS TLISTS CONTAINER #############
-    containername="clistTGHCsign";
+    containername="listTGHCsign";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistTGHCsign = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistTGHCsign);
   last++;
 
 
-  containername="clistTGHCback";
+  containername="listTGHCback";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistTGHCback = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistTGHCback);
   last++;
 
-  containername="clistTGHCfromB";
+  containername="listTGHCfromB";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistTGHCfromB = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistTGHCfromB);
   last++;
 
 
-  containername="clistTGHCfromDstar";
+  containername="listTGHCfromDstar";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistTGHCfromDstar = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistTGHCfromDstar);
   last++;
 
 
-  containername="clistTGHCother";
+  containername="listTGHCother";
+  containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistTGHCother = mgr->CreateContainer(containername.Data(),TList::Class(),
 							   AliAnalysisManager::kOutputContainer, 
-							   outfile.Data());
+							   fileout.Data());
   mgr->ConnectOutput(hfTask,last,clistTGHCother);
+  last++;
   
-
+  // Container for Cuts Objects
+  containername="cutsObjectTight";
+  containername.Prepend(containerprefix.Data());
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *cCutsObjectTight = mgr->CreateContainer(containername,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer,fileout.Data()); //cuts
+  mgr->ConnectOutput(hfTask,last,cCutsObjectTight);
+  last++;
+  
+  containername="cutsObjectLoose";
+  containername.Prepend(containerprefix.Data());
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *cCutsObjectLoose = mgr->CreateContainer(containername,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer,fileout.Data()); //cuts
+  mgr->ConnectOutput(hfTask,last,cCutsObjectLoose);
 
   return hfTask;
 }
