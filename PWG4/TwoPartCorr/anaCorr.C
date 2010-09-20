@@ -9,8 +9,8 @@
 #include <TChain.h>
 #include <TH2F.h>
 #include <TTimeStamp.h>
-#include "TreeClasses.C"
-#include "EventPool.C"
+#include "TreeClasses.h"
+#include "EventPool.h"
 #endif
 
 void anaCorr(Int_t nEvents=-1,
