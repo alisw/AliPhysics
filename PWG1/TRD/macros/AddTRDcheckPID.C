@@ -45,8 +45,8 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer
     mgr->ConnectInput( ref, 1, ci[0]);
     mgr->ConnectInput( ref, 2, ci[1]);
     mgr->ConnectInput( ref, 3, co[0]);
-    mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorNN", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker",mgr->GetCommonFileName())));
-    mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
+    mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorNN", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration",mgr->GetCommonFileName())));
+    mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration", mgr->GetCommonFileName())));
   
     // TRD pid reference maker LQ 
     mgr->AddTask(ref = new AliTRDpidRefMakerLQ((char*)"TRDrefMakerLQ"));
@@ -57,9 +57,9 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer
     mgr->ConnectInput(ref, 1, ci[0]);
     mgr->ConnectInput(ref, 2, ci[1]);
     mgr->ConnectInput(ref, 3, co[0]);
-    mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorLQ", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
-    mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
-    mgr->ConnectOutput(ref, 3, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMakerLQ", mgr->GetCommonFileName())));
+    mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorLQ", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration", mgr->GetCommonFileName())));
+    mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration", mgr->GetCommonFileName())));
+    mgr->ConnectOutput(ref, 3, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration", mgr->GetCommonFileName())));
   }
 }
 
