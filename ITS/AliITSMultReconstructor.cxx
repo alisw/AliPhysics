@@ -113,6 +113,7 @@ fPhiShift(0),
 fRemoveClustersFromOverlaps(0),
 fPhiOverlapCut(0),
 fZetaOverlapCut(0),
+fPhiRotationAngle(0),
 //
 fCutPxDrSPDin(0.1),
 fCutPxDrSPDout(0.15),
@@ -161,6 +162,7 @@ fhphiClustersLay1(0){
     SetRemoveClustersFromOverlaps(AliITSReconstructor::GetRecoParam()->GetTrackleterRemoveClustersFromOverlaps());
     SetPhiOverlapCut(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiOverlapCut());
     SetZetaOverlapCut(AliITSReconstructor::GetRecoParam()->GetTrackleterZetaOverlapCut());
+    SetPhiRotationAngle(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiRotationAngle());
     //
     SetCutPxDrSPDin(AliITSReconstructor::GetRecoParam()->GetMultCutPxDrSPDin());
     SetCutPxDrSPDout(AliITSReconstructor::GetRecoParam()->GetMultCutPxDrSPDout());
@@ -190,6 +192,8 @@ fhphiClustersLay1(0){
     SetRemoveClustersFromOverlaps();
     SetPhiOverlapCut();
     SetZetaOverlapCut();
+    SetPhiRotationAngle();
+
     //
     SetCutPxDrSPDin();
     SetCutPxDrSPDout();
@@ -266,6 +270,7 @@ fPhiShift(0),
 fRemoveClustersFromOverlaps(0),
 fPhiOverlapCut(0),
 fZetaOverlapCut(0),
+fPhiRotationAngle(0),
 //
 fCutPxDrSPDin(0.1),
 fCutPxDrSPDout(0.15),
@@ -419,7 +424,8 @@ void AliITSMultReconstructor::FindTracklets(const Float_t *vtx)
   // - calls LoadClusterArrays that finds the position of the clusters
   //   (in global coord) 
   // - convert the cluster coordinates to theta, phi (seen from the
-  //   interaction vertex). 
+  //   interaction vertex). Clusters in the inner layer can be now
+  //   rotated for combinatorial studies 
   // - makes an array of tracklets 
   //   
   // After this method has been called, the clusters of the two layers
@@ -483,7 +489,7 @@ void AliITSMultReconstructor::FindTracklets(const Float_t *vtx)
     
     clPar[kClTh] = TMath::ACos(z/r);                   // Store Theta
     clPar[kClPh] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi
-    
+    clPar[kClPh] = clPar[kClPh] + fPhiRotationAngle;//rotation of inner layer for comb studies  
     if (fHistOn) {
       Float_t eta = clPar[kClTh];
       eta= TMath::Tan(eta/2.);
@@ -751,7 +757,6 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree)
   // RS: This method was strongly modified wrt original. In order to have the same numbering 
   // of clusters as in the ITS reco I had to introduce sorting in Z
   // Also note that now the clusters data are stored not in float[6] attached to float**, but in 1-D array
-  
   AliDebug(1,"Loading clusters and cluster-fired chips ...");
   
   fNClustersLay1 = 0;

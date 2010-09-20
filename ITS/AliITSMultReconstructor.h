@@ -61,6 +61,7 @@ public:
   void SetRemoveClustersFromOverlaps(Bool_t b = kFALSE) {fRemoveClustersFromOverlaps = b;}
   void SetPhiOverlapCut(Float_t w=0.005) {fPhiOverlapCut=w;}
   void SetZetaOverlapCut(Float_t w=0.05) {fZetaOverlapCut=w;}
+  void SetPhiRotationAngle(Float_t w=0.0) {fPhiRotationAngle=w;}
 
   Int_t GetNClustersLayer1() const {return fNClustersLay1;}
   Int_t GetNClustersLayer2() const {return fNClustersLay2;}
@@ -156,6 +157,7 @@ protected:
   Bool_t        fRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
   Float_t       fPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t       fZetaOverlapCut;               // Fiducial window in eta for overlap cut
+  Float_t       fPhiRotationAngle;             // Angle to rotate the inner layer cluster for combinatorial reco only 
 
   // cuts for secondaries identification
   Float_t       fCutPxDrSPDin;                 // max P*DR for primaries involving at least 1 SPD
@@ -200,7 +202,7 @@ protected:
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSMultReconstructor,8)
+  ClassDef(AliITSMultReconstructor,9)
 };
 
 #endif

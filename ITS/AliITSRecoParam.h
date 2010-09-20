@@ -349,6 +349,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void    SetTrackleterZetaOverlapCut(Float_t w=0.05) {fTrackleterZetaOverlapCut=w;}
   Float_t GetTrackleterPhiOverlapCut() const {return fTrackleterPhiOverlapCut;}
   Float_t GetTrackleterZetaOverlapCut() const {return fTrackleterZetaOverlapCut;}
+  void    SetTrackleterPhiRotationAngle(Float_t w=0.0) {fTrackleterPhiRotationAngle=w;}
+  Float_t GetTrackleterPhiRotationAngle() const {return fTrackleterPhiRotationAngle;}
 
   //
   void   SetSPDRemoveNoisyFlag(Bool_t value) {fSPDRemoveNoisyFlag = value;}
@@ -627,6 +629,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t  fTrackleterRemoveClustersFromOverlaps;   // Option to skip clusters in the overlaps
   Float_t fTrackleterPhiOverlapCut;                // Fiducial window in phi for overlap cut
   Float_t fTrackleterZetaOverlapCut;               // Fiducial window in eta for overlap cut
+  Float_t fTrackleterPhiRotationAngle;             // Angle to rotate cluster in the SPD inner layer for combinatorial reco only
   Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
 
@@ -687,8 +690,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,30) // ITS reco parameters
+  ClassDef(AliITSRecoParam,31) // ITS reco parameters
 };
 
 #endif
-
