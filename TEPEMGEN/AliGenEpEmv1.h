@@ -12,6 +12,8 @@
 // 9 October 2002
 
 #include "AliGenMC.h"
+#include "AliGenEventHeader.h"
+
 class TEpEmGen;
 
 //-------------------------------------------------------------
@@ -33,6 +35,7 @@ public:
   TEpEmGen * fEpEmGen; // e+e- generator
   Int_t      fDebug;   // debug level
   Int_t      fEvent;   // internal event number
+  AliGenEventHeader fHeader; // Event Header
 ClassDef(AliGenEpEmv1,1) // Generator of single e+e- pair production in PbPb ultra-peripheral collisions
 };
 #endif

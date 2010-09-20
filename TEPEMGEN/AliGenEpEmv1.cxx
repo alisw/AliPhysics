@@ -83,7 +83,8 @@ AliGenEpEmv1::AliGenEpEmv1():
   fMass(0),
   fEpEmGen(0),
   fDebug(0),
-  fEvent(0)
+  fEvent(0),
+  fHeader(AliGenEventHeader())
 {
   // Default constructor
   // Avoid zero pt
@@ -184,5 +185,7 @@ void AliGenEpEmv1::Generate()
     printf("=====> AliGenEpEmv1::Generate(): \n   Event %d, sigma=%f +- %f kb\n",
   	   fEvent,fEpEmGen->GetXsection(),fEpEmGen->GetDsection());
   }
+  fHeader.SetEventWeight(weight);
+  AddHeader(&fHeader);
 }
 
