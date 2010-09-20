@@ -78,8 +78,6 @@ ClassImp(AliT0Reconstructor)
   if (!entry4) AliFatal("LHC clock-phase shift is not found in OCDB !");
   AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
 
-  printf("@@@@ GRP/Calib/LHCClockPhase %f\n",phase->GetMeanPhase());
-
   fGRPdelays = l1Delay - phase->GetMeanPhase();
 
   fParam = AliT0Parameters::Instance();
@@ -98,7 +96,7 @@ ClassImp(AliT0Reconstructor)
   fLatencyL1A = fParam->GetLatencyL1A();
   fLatencyL1C = fParam->GetLatencyL1C();
   fLatencyHPTDC = fParam->GetLatencyHPTDC();
-  AliDebug(0,Form(" LatencyL1 %f latencyL1A %f latencyL1C %f latencyHPTDC %f \n",fLatencyL1, fLatencyL1A, fLatencyL1C, fLatencyHPTDC));
+  AliDebug(2,Form(" LatencyL1 %f latencyL1A %f latencyL1C %f latencyHPTDC %f \n",fLatencyL1, fLatencyL1A, fLatencyL1C, fLatencyHPTDC));
   
   // fdZonC = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
   //fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
@@ -444,15 +442,14 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     }
 	 }
        if(besttimeA < 999999) 
-	 frecpoints->SetTimeBestA(besttimeA * channelWidth - 1000.*fLatencyHPTDC + 1000.*fLatencyL1A /*+ 1000.*fGRPdelays*/);
+	 frecpoints->SetTimeBestA(besttimeA * channelWidth - 1000.*fLatencyHPTDC + 1000.*fLatencyL1A - 1000.*fGRPdelays);
        if( besttimeC < 999999 ) 
-	 frecpoints->SetTimeBestC(besttimeC * channelWidth - 1000.*fLatencyHPTDC +1000.*fLatencyL1C/* + 1000.*fGRPdelays*/);
+	 frecpoints->SetTimeBestC(besttimeC * channelWidth - 1000.*fLatencyHPTDC +1000.*fLatencyL1C - 1000.*fGRPdelays);
        AliDebug(10,Form(" pmtA %i besttimeA %f ps, pmtC %i besttimeC %f ps",
 		       pmtBestA,besttimeA, pmtBestC,  besttimeC));
         if(besttimeA <999999 && besttimeC < 999999 ){
 	 timeDiff = ( besttimeA - besttimeC)* 0.001* channelWidth + fLatencyL1A - fLatencyL1C;
-	 timeclock = channelWidth * Float_t( besttimeA+besttimeC)/2. - 1000.*fLatencyHPTDC + 1000.*fLatencyL1/* + 1000.*fGRPdelays*/;  
-	 printf(" @@@ fGRPdelays %f\n",fGRPdelays);
+	 timeclock = channelWidth * Float_t( besttimeA+besttimeC)/2. - 1000.*fLatencyHPTDC + 1000.*fLatencyL1 - 1000.*fGRPdelays;  
 	 meanTime = (besttimeA+besttimeC-2.*Float_t(ref))/2.;
 	 vertex =  meanVertex - c*(timeDiff)/2. ; //+ (fdZonA - fdZonC)/2; 
 	}
@@ -511,7 +508,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     //  cout<<"@@ spdver "<<spdver<<" ncont "<<ncont<<endl;
     if(ncont>2 ) {
       shift = currentVertex/c;
-      cout<<" @@@ vertex shif "<<shift<<" vertex "<<currentVertex<<endl;
     }
   }
   TTree *treeR = clustersTree;
