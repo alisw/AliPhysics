@@ -1,4 +1,14 @@
 // $Id$
+
+#if !defined(__CINT__)
+#include "TString.h"
+#include "TGrid.h"
+#include "AliCDBManager.h"
+#include "AliSimulation.h"
+#include <iostream>
+using namespace std;
+#endif
+
 /**
  * @file simhlt.C
  * @brief Run HLT reconstruction embedded into AliSimulation
@@ -21,6 +31,11 @@
  *     nofEvents=-1              -> take event count from simulated sample
  *     runNo=-1                  -> take run number from simulated sample
  *     cdbUri="local://$ALICE_ROOT/OCDB"
+ *
+ * Running with precompiled macro:
+ *     gSystem->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include");
+ *     gROOT->LoadMacro("$ALICE_ROOT/HLT/exa/simhlt.C++");
+ *     simhlt("loglevel=0x7c");
  *
  * </pre>
  *

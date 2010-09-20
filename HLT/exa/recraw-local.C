@@ -108,6 +108,7 @@ void recraw_local(const char *filename,
   // AliReconstruction settings
   rec.SetWriteESDfriend(kTRUE);
   rec.SetRunVertexFinder(strModules.Contains("ITS"));
+  rec.SetRunMultFinder(strModules.Contains("ITS"));
   rec.SetInput(filename);
   rec.SetOption("HLT", hltOptions);
 

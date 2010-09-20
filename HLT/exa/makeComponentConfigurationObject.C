@@ -4,7 +4,9 @@
  * @brief Creation of HLT component configuration objects in OCDB
  *
  * <pre>
- * Usage: aliroot -b -q makeComponentConfigurationObject.C'("path", "param", "uri", runmin, runmax)'
+ * Usage:
+ *  aliroot -b -q makeComponentConfigurationObject.C'("path", "param", "uri", runmin, runmax)'
+ *  aliroot -b -q makeComponentConfigurationObject.C'("path", "key", "param", "uri", runmin, runmax)'
  * </pre>
  *
  * Create an OCDB entry with a TObjString containing param.
@@ -12,6 +14,8 @@
  * arguments and parameters just like the command line arguments.
  * This macro facilitates the creation of an appropriate object
  * from a parameter string.
+ * As another approach the TObjString parameters are stored in a TMap
+ * associated to a key. A TMap object is generated if 'key' is specified.
  *
  * Parameters: <br>
  * - path           path of the entry within the OCDB
@@ -27,10 +31,13 @@
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_tutorial
  */
-void makeComponentConfigurationObject(const char* path, const char* param="",
-				      const char* cdbUri=NULL,
+void makeComponentConfigurationObject(const char* path, 
+				      const char* key,
+				      const char* param,
+				      const char* cdbUri,
 				      int runmin=0,
-				      int runmax=999999999)
+				      int runmax=999999999,
+				      int runNo=0)
 {
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man) {
@@ -52,19 +59,63 @@ void makeComponentConfigurationObject(const char* path, const char* param="",
     storage = man->GetDefaultStorage()->GetURI();
   }
 
+  TMap* pMap=NULL;
+
+  // load existing object and init TMap
+  AliCDBEntry* pExisting=NULL;
+  AliCDBStorage* pStorage=AliCDBManager::Instance()->GetDefaultStorage();
+  if (key && pStorage->GetLatestVersion(path, runNo)>=0) {
+    pExisting=pStorage->Get(path, runNo);
+    if (pExisting->GetObject()->IsA() == TMap::Class()) {
+      pMap=(TMap*)pExisting->GetObject()->Clone();
+    }
+  }  
+
+  if (key && !pMap) pMap=new TMap;
+
   // here is the actual content of the configuration object
-  TObjString obj=param;
+  TObject* obj=new TObjString(param);
+  if (pMap) {
+    if (pMap->FindObject(key)) {
+      pMap->Remove(new TObjString(key));
+    }
+    pMap->Add(new TObjString(key), obj);
+    obj=pMap;
+  }
+
   AliCDBPath cdbPath(path);
   AliCDBId cdbId(cdbPath, runmin, runmax);
-  AliCDBMetaData cdbMetaData;
-  man->Put(&obj, cdbId, &cdbMetaData);
-  cout << "adding TObjString type OCDB object " << path << " (" << (param[0]==0?"<empty>":param) << ") [" << runmin << "," << runmax << "] in " << storage << endl;
+  AliCDBMetaData* cdbMetaData=pExisting?pExisting->GetMetaData():(new AliCDBMetaData);
+  man->Put(obj, cdbId, cdbMetaData);
+}
+
+void makeComponentConfigurationObject(const char* path, const char* param="",
+				      const char* cdbUri=NULL,
+				      int runmin=0,
+				      int runmax=999999999)
+{
+  makeComponentConfigurationObject(path, param, NULL, cdbUri, runmin, runmax);
+}
+
+void makeComponentConfigurationObject(const char* path, 
+				      int runNo,
+				      const char* key,
+				      const char* param)
+{
+  makeComponentConfigurationObject(path, key, param, NULL, 0, 999999999, runNo);
 }
 
 void makeComponentConfigurationObject()
 {
   cout << "===============================================================" << endl;
   cout << "usage: aliroot -b -q -l makeComponentConfigurationObject.C'(\"path\", \"param\", \"uri\", rangemin, rangemax)'" << endl << endl;
+  cout << "  path           path of the entry within the OCDB" << endl;
+  cout << "  param (opt)    string to be stored in the TObjSting, default empty" << endl;
+  cout << "  uri   (opt)    the OCDB URI, default $ALICE_ROOT/OCDB   " << endl;
+  cout << "  rangemin (opt) default 0" << endl;
+  cout << "  rangemax (opt) default 999999999" << endl;
+  cout << "===============================================================" << endl;
+  cout << "usage: aliroot -b -q -l makeComponentConfigurationObject.C'(\"path\", \"key\", \"param\", \"uri\", rangemin, rangemax)'" << endl << endl;
   cout << "  path           path of the entry within the OCDB" << endl;
   cout << "  param (opt)    string to be stored in the TObjSting, default empty" << endl;
   cout << "  uri   (opt)    the OCDB URI, default $ALICE_ROOT/OCDB   " << endl;
