@@ -66,6 +66,8 @@ class AliShuttleInterface : public TObject
     static const char* GetShuttleLogDir() {return fgkShuttleLogDir.Data();}
     static const char* GetShuttleTempDir() {return fgkShuttleTempDir.Data();}
 
+    virtual void SendMLFromDet(const char* value) = 0;
+
   protected:
 
     static const char* fkSystemNames[3];  		// names of the systems providing data to the shuttle

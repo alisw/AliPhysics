@@ -509,3 +509,12 @@ TList* AliPreprocessor::GetForeignFileSources(const char* detector, Int_t system
 	return fShuttle->GetFileSources(system, detector, id);
 }
 
+//______________________________________________________________________________________________
+void AliPreprocessor::SendToML(const char* value)
+{
+	//
+	// Sending to ML the information coming from the current detector
+	//
+
+	return fShuttle->SendMLFromDet(value);
+}

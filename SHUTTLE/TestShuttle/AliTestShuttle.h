@@ -69,6 +69,8 @@ class AliTestShuttle : public AliShuttleInterface
     static void SetShuttleTempDir (const char* tmpDir);
     static void SetShuttleLogDir (const char* logDir);
 
+    virtual void SendMLFromDet(const char* value);
+
   protected:
 
     Int_t fRun;             // run that is simulated with the AliTestShuttle

@@ -64,6 +64,8 @@ class AliPreprocessor : public TNamed
     
     void AddRunType(const char* runType);
 
+    void SendToML(const char*);
+
     Int_t fRun;         // current run
     UInt_t fStartTime;  // starttime of current run
     UInt_t fEndTime;    // endtime of current run
