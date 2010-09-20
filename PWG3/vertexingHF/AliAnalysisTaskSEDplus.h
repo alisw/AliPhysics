@@ -18,6 +18,7 @@
 #include <TSystem.h>
 #include <TNtuple.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TArrayD.h>
 
 #include "AliRDHFCutsDplustoKpipi.h"
@@ -84,6 +85,12 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F *fPtMaxHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 5 (LC)
   TH1F *fDCAHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 6 (LC)
   TH1F *fMassHistLSTC[5*kMaxPtBins];//!hist. for LS inv mass (TC)
+  TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
+  TH2F *fPtVsMassTC;  //! hist. of pt vs. mass (analysis cuts)
+  TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
+  TH2F *fYVsPtTC;     //! hist. of Y vs. Pt (analysis cuts)
+  TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH2F *fYVsPtSigTC;    //! hist. of Y vs. Pt (MC, only sig, analysis cuts)
   TNtuple *fNtupleDplus; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
   Float_t fLowmasslimit; //lower inv mass limit for histos
@@ -97,7 +104,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fReadMC;    //flag for access to MC
   Bool_t fDoLS;      //flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,6); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,7); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
