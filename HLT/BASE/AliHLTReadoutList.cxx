@@ -110,30 +110,6 @@ AliHLTReadoutList::AliHLTReadoutList(const char* enabledList) :
   TString str(enabledList);
   str.ToUpper();
   Int_t enabledDetectors = 0;
-  if (str.Contains("ITSSPD")) enabledDetectors |= kITSSPD;
-  if (str.Contains("ITSSDD")) enabledDetectors |= kITSSDD;
-  if (str.Contains("ITSSSD")) enabledDetectors |= kITSSSD;
-  if (str.Contains("TPC")) enabledDetectors |= kTPC;
-  if (str.Contains("TRD")) enabledDetectors |= kTRD;
-  if (str.Contains("TOF")) enabledDetectors |= kTOF;
-  if (str.Contains("HMPID")) enabledDetectors |= kHMPID;
-  if (str.Contains("PHOS")) enabledDetectors |= kPHOS;
-  if (str.Contains("CPV")) enabledDetectors |= kCPV;
-  if (str.Contains("PMD")) enabledDetectors |= kPMD;
-  if (str.Contains("MUONTRK")) enabledDetectors |= kMUONTRK;
-  if (str.Contains("MUONTRG")) enabledDetectors |= kMUONTRG;
-  if (str.Contains("FMD")) enabledDetectors |= kFMD;
-  if (str.Contains("T0")) enabledDetectors |= kT0;
-  if (str.Contains("V0")) enabledDetectors |= kV0;
-  if (str.Contains("ZDC")) enabledDetectors |= kZDC;
-  if (str.Contains("ACORDE")) enabledDetectors |= kACORDE;
-  if (str.Contains("TRG")) enabledDetectors |= kTRG;
-  if (str.Contains("EMCAL")) enabledDetectors |= kEMCAL;
-  if (str.Contains("DAQTEST")) enabledDetectors |= kDAQTEST;
-  if (str.Contains("HLT")) enabledDetectors |= kHLT;
-  if (str.Contains("ALL")) enabledDetectors |= kALLDET;
-  Enable(enabledDetectors);
-  
   TObjArray* list = str.Tokenize(" ");
   TIter next(list);
   const TObjString* objstr = NULL;
@@ -141,8 +117,31 @@ AliHLTReadoutList::AliHLTReadoutList(const char* enabledList) :
   {
     str = objstr->GetString();
     if (str.IsDigit()) EnableDDLBit(str.Atoi());
+    if (str == "ITSSPD") enabledDetectors |= kITSSPD;
+    if (str == "ITSSDD") enabledDetectors |= kITSSDD;
+    if (str == "ITSSSD") enabledDetectors |= kITSSSD;
+    if (str == "TPC") enabledDetectors |= kTPC;
+    if (str == "TRD") enabledDetectors |= kTRD;
+    if (str == "TOF") enabledDetectors |= kTOF;
+    if (str == "HMPID") enabledDetectors |= kHMPID;
+    if (str == "PHOS") enabledDetectors |= kPHOS;
+    if (str == "CPV") enabledDetectors |= kCPV;
+    if (str == "PMD") enabledDetectors |= kPMD;
+    if (str == "MUONTRK") enabledDetectors |= kMUONTRK;
+    if (str == "MUONTRG") enabledDetectors |= kMUONTRG;
+    if (str == "FMD") enabledDetectors |= kFMD;
+    if (str == "T0") enabledDetectors |= kT0;
+    if (str == "V0") enabledDetectors |= kV0;
+    if (str == "ZDC") enabledDetectors |= kZDC;
+    if (str == "ACORDE") enabledDetectors |= kACORDE;
+    if (str == "TRG") enabledDetectors |= kTRG;
+    if (str == "EMCAL") enabledDetectors |= kEMCAL;
+    if (str == "DAQTEST") enabledDetectors |= kDAQTEST;
+    if (str == "HLT") enabledDetectors |= kHLT;
+    if (str == "ALL") enabledDetectors |= kALLDET;
   }
   delete list;
+  Enable(enabledDetectors);
 }
 
 
