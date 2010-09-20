@@ -25,6 +25,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliCFVertexingHF2Prong.h"
+//#include "AliCFVertexingHF3Prong.h"
 #include "AliCFVertexingHF.h"
 
 class TH1I;
@@ -36,8 +37,9 @@ class AliAODRecoDecay;
 class AliAODRecoDecayHF2Prong;
 class AliAODMCParticle;
 class THnSparse;
-class AliRDHFCutsD0toKpi;
+class AliRDHFCuts;
 class AliCFVertexingHF2Prong;
+//class AliCFVertexingHF3Prong;
 
 class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 public:
@@ -56,7 +58,7 @@ public:
 	};
 	
 	AliCFTaskVertexingHF();
-	AliCFTaskVertexingHF(const Char_t* name, AliRDHFCutsD0toKpi* cuts);
+	AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts);
 	AliCFTaskVertexingHF& operator= (const AliCFTaskVertexingHF& c);
 	AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c);
  	virtual ~AliCFTaskVertexingHF();
@@ -64,6 +66,8 @@ public:
 	// ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
 	void     UserCreateOutputObjects();
 	void     UserExec(Option_t *option);
+	void     Init();
+	void     LocalInit() {Init();}
 	void     Terminate(Option_t *);
 	
 	// UNFOLDING
@@ -78,17 +82,19 @@ public:
 	
 	void     SetPDG(Int_t code) {fPDG = code; }     // defines the PDG code of searched HF
 
-	//	Setters for teh config macro
-	void   SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
-	Bool_t GetFillFromGenerated() const {return fFillFromGenerated;}
-
-
+	// Setters (and getters) for the config macro
+	void    SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
+	Bool_t  GetFillFromGenerated() const {return fFillFromGenerated;}
+	void    SetDecayChannel (Int_t decayChannel) {fDecayChannel = decayChannel;}
+	void     SetUseWeight(Bool_t useWeight){fUseWeight=useWeight;}
+	Bool_t   GetUseWeight() const {return fUseWeight;}
+	Double_t GetWeight(Float_t pt);
+	Double_t dNdptFit(Float_t pt, Double_t* par);
+ 	
 	//void   SetDselection(UShort_t originDselection);
 	 
 protected:
 	Int_t           fPDG;         //  PDG code of searched V0's
-
-
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
 	THnSparse* fCorrelation;      //  response matrix for unfolding
@@ -102,13 +108,16 @@ protected:
 	Int_t fCountRecoPPR;          //  Reco particle found that satisfy cuts in PPR
 	Int_t fCountRecoPID;          //Reco PID step 
 	Int_t fEvents;                //  n. of events
+	Int_t fDecayChannel;          // decay channel to configure the task
 	Bool_t fFillFromGenerated;    //  flag to indicate whether data container should be filled with generated values also for reconstructed particles
 	UShort_t fOriginDselection;      // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty
 	Bool_t fAcceptanceUnf;        //  flag for unfolding before or after cuts.
-	AliRDHFCutsD0toKpi* fCuts;    // cuts
-
+	AliRDHFCuts* fCuts;            // cuts
+	Bool_t fUseWeight;             //flag to decide whether to use weights != 1 when filling the container or not
+	Double_t fWeight;              //weight used to fill the container
+	Int_t fNvar;                   // number of variables for the container
 	
-	ClassDef(AliCFTaskVertexingHF,1); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,2); // class for HF corrections as a function of many variables
 };
 
 #endif

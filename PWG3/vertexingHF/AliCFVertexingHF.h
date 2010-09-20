@@ -42,7 +42,9 @@ class AliESDtrackCuts;
 
 class AliCFVertexingHF : public TObject {
 	public:
-	
+
+        enum DecayChannel{kD0toKpi = 2, kDStartoKpipi = 21, kDplustoKpipi = 31, kLctopKpi = 32, kDstoKKpi = 33, kD0toKpipipi = 4};
+
 	AliCFVertexingHF() ;
 	AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselection);
 	AliCFVertexingHF(const AliCFVertexingHF& c);
@@ -53,6 +55,9 @@ class AliCFVertexingHF : public TObject {
 	virtual Bool_t GetGeneratedValuesFromMCParticle(Double_t* /*vectorMC*/) {return kFALSE;} 
 	virtual Bool_t GetRecoValuesFromCandidate(Double_t* /*vectorReco*/) const {return kFALSE;}
 	virtual Bool_t CheckMCChannelDecay() const {return kFALSE;}
+	virtual Bool_t SetRecoCandidateParam(AliAODRecoDecayHF* /*recoCand*/) {return kFALSE;}
+
+        virtual void SetDecay3Prong(Int_t /*decay*/){};
 	
 	void   SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
 	Bool_t GetFillFromGenerated() const {return fFillFromGenerated;}
@@ -65,7 +70,6 @@ class AliCFVertexingHF : public TObject {
 	Int_t GetMCLabel () const {return  fmcLabel;}
 		
 	void   SetMCCandidateParam(Int_t label);
-
 
 	Int_t  MCcquarkCounting(AliAODMCParticle* mcPart) const; 
 	Bool_t CheckMCPartFamily(AliAODMCParticle */*mcPart*/, TClonesArray */*mcArray*/) const;
@@ -90,6 +94,7 @@ class AliCFVertexingHF : public TObject {
 	
 	void SetNProngs(Int_t nProngs){fProngs = nProngs;}
 	void SetDselection(UShort_t originDselection); 
+	Int_t CheckReflexion();
 
 	protected:
 	
