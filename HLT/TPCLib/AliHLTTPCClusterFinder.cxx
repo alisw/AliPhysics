@@ -345,13 +345,14 @@ void AliHLTTPCClusterFinder::ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned 
 	  // The same is true for the function ReadDataUnsorted() above.
 	  // In addition the signals are organized in the opposite direction
 	  if(f32BitFormat){
-	    indexInBunchData = fDigitReader->GetBunchSize();
+	    indexInBunchData = fDigitReader->GetBunchSize()-1;
 	    const UShort_t *bunchData= fDigitReader->GetSignalsShort();
-	    
+
 	    do{
 	      AliHLTTPCClusters candidate;
 	      //for(Int_t i=indexInBunchData;i<fDigitReader->GetBunchSize();i++){
 	      for(Int_t i=indexInBunchData;i>=0;i--){
+
 		// Checks if one need to deconvolute the signals
 		if(bunchData[i]>prevSignal && signalFalling==kTRUE){
 		  if(i<fDigitReader->GetBunchSize()-1){ // means there are more than one signal left in the bunch
@@ -421,7 +422,6 @@ void AliHLTTPCClusterFinder::ReadDataUnsortedDeconvoluteTime(void* ptr,unsigned 
 		if(prevSignal>bunchData[i]){//means the peak of the signal has been reached and deconvolution will happen if the signal rise again.
 		  signalFalling=kTRUE;
 		}
-
 		candidate.fTotalCharge+=bunchData[i];	
 		candidate.fTime += time*bunchData[i];
 		candidate.fTime2 += time*time*bunchData[i];

@@ -276,11 +276,8 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	      }
 	      else{
 		const  UInt_t* bunchData=pReader->GetSignals();
-		
-		// bunch data is printed in 'reverse' order in order to produce
-		// the same output as in stream reading mode
 		dump << "                     Time " << pReader->GetTime()+bunchLength-1 << ":  ";
-		for (int bin=bunchLength-1; bin>=0; bin--) {
+		for (int bin=0; bin<bunchLength; bin++) {
 		  dump << "  " << bunchData[bin];
 		}
 		dump << "    -> Time: " << pReader->GetTime() << endl;
