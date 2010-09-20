@@ -25,7 +25,9 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     res->SetPostProcess(kFALSE);
     res->SetDebugLevel(0);
     //if(itq==0) res->SetSegmentationLevel(1);
-    //res->SetTrackRefit(); // use if you know what you are doing !
+    // use these settings if you know what you are doing !
+    //res->SetTrackRefit(); 
+    //res->SetPtThreshold(0.);
     res->SetNameId(suffix[itq]);
     mgr->ConnectInput(res, 0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(res, 1, ci[itq]);
@@ -49,14 +51,14 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
         taskCl->SetDebugLevel(0);
         mgr->ConnectInput(taskCl,  0, mgr->GetCommonInputContainer());  
         mgr->ConnectInput(taskCl,  1, (AliAnalysisDataContainer*)coa->FindObject(Form("%sCl2Trk%s", res->GetName(), suffix[itq])));
-        mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibClErrParam", mgr->GetCommonFileName())));
+        mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration", mgr->GetCommonFileName())));
         if(mgr->GetMCtruthEventHandler()){
           mgr->AddTask(taskCl = new AliTRDclusterResolution(Form("ClErrCalibMC%03d", idet)));
           taskCl->SetCalibrationRegion(idet);
           taskCl->SetDebugLevel(0);
           mgr->ConnectInput(taskCl,  0, mgr->GetCommonInputContainer());  
           mgr->ConnectInput(taskCl,  1, (AliAnalysisDataContainer*)coa->FindObject(Form("%sCl2MC%s", res->GetName(), suffix[itq])));
-          mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibClErrParam", mgr->GetCommonFileName())));
+          mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration", mgr->GetCommonFileName())));
         }
       }
     }
@@ -71,7 +73,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     mgr->ConnectInput(taskAlign,  0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(taskAlign,  1, ci[0]);
     mgr->ConnectOutput(taskAlign, 1, mgr->CreateContainer(Form("h%s", taskAlign->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer));
-    mgr->ConnectOutput(taskAlign, 2, mgr->CreateContainer(taskAlign->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.Calib%s",mgr->GetCommonFileName(), taskAlign->GetName())));
+    mgr->ConnectOutput(taskAlign, 2, mgr->CreateContainer(taskAlign->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Alignment",mgr->GetCommonFileName())));
   }
 }
 

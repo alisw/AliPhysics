@@ -41,6 +41,6 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
   //AliLog::SetClassDebugLevel("AliTRDmultiplicity", 5);  
   mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  
   mgr->ConnectInput(eff, 1, ci[0]);
-  mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.Calib%s", mgr->GetCommonFileName(),eff->GetName())));
+  mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Calibration", mgr->GetCommonFileName())));
 }
 
