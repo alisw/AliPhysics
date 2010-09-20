@@ -20,6 +20,7 @@
 
 class AliESDEvent;
 class AliMCEvent;
+class AliESDpid;
 class TH1;
 class TH2;
 class TH1F;
@@ -64,6 +65,10 @@ public:
    ,kNTrackletsTRD          // (TRD tracklets per track, P) distribution, after cuts from kPt4pos or kPt4neg
    ,kNClsTrackTRD           // (TRD clusters per track, P) distribution, after cuts from kPt4pos or kPt4neg
    ,kPHSlice                // (slicePH,sliceNo) distribution, after cuts from kPt4pos or kPt4neg
+   ,kPHSliceTPCpions        // (slicePH,sliceNo) distribution for TPC pions, after cuts from kPt4pos or kPt4neg 
+   ,kTPCdedxPions           // (TPC dedx,P) for selected TPC pions
+   ,kPHSliceTPCelectrons    // (slicePH,sliceNo) distribution for TPC electrons, after cuts from kPt4pos or kPt4neg
+   ,kTPCdedxElectrons       // (TPC dedx,P) for selected TPC electrons
    ,kQtotP                  // (total Q from slices, momentum) distribution, after cuts from kPt4pos or kPt4neg
    ,kPropagXYvsP            // (X,Y,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
    ,kPropagRZvsP            // (R,Z,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
@@ -75,8 +80,8 @@ public:
    ,kTRDEtaDeltaPhiAvNtrkl  // (eta, delta-phi) profile of average number of tracklets
                             // delta-phi is the angle made by the track with the normal to the chamber entrance plane
    ,kTRDEtaPhiAvQtot        // (eta, detector phi) profile of total tracklet charge from slices			    
-   ,kNhistos = 43 // number of histograms
-   ,kNrefs   = 6  // number of reference plots
+   ,kNhistos = 49 // number of histograms
+   ,kNrefs   = 7  // number of reference plots
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
@@ -116,12 +121,14 @@ private:
   void          Process2D(TH2 * const h, TGraphErrors **g);
   void          PrintStatus(ULong_t s);
   TH2F*         Proj3D(TH3F* hist, TH2F* accMap, Int_t binLow, Int_t binHigh, Float_t &entries);
+  TH1F*         Proj2D(TH2F* hist);
   TH1F*         EfficiencyTRD(Short_t positives=1);
   
   Int_t            fStatus;            // bit mask for controlling the task
   Int_t            fNRefFigures;       // number of current ref plots
   AliESDEvent      *fESD;              //! ESD event
   AliMCEvent       *fMC;               //! MC event
+  AliESDpid        *fESDpid;           //  ESD pid object 
   TObjArray        *fHistos;           //! QA histos
   TObjArray        *fResults;          // QA graphs
   static FILE      *fgFile;            //! trend file streamer
