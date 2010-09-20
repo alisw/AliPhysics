@@ -7,35 +7,7 @@ ELIBSDIR:=
 
 
 
-ELIBS:= MUONevaluation \
-	MUONmapping \
-	MUONshuttle \
-	MUONgraphics \
-	MUONsim \
-	MUONrec \
-	MUONgeometry \
-	MUONcalib \
-	MUONbase \
-	MUONraw \
-	MUONtrigger \
-	MUONcore \
-        TPCbase TPCsim TPCrec TPCfast \
-	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
-        TRDsim TRDrec TRDfast \
-	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec \
-	ACORDEbase ACORDEsim ACORDErec \
-        HMPIDbase HMPIDrec HMPIDsim \
-        ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
-        EMCALUtils EMCALbase EMCALsim EMCALrec BCM \
-        STRUCT T0base T0sim T0rec EVGEN \
-	FASTSIM microcern \
-	HLTbase TRIGGERbase STAT \
-	STEER \
-	CDB \
-	AOD \
-	ESD \
-	STEERBase \
-	RAWDatasim RAWDatarec RAWDatabase 
+ELIBS:= MUONevaluation 	MUONmapping MUONshuttle MUONgraphics MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCbase TPCsim TPCrec TPCfast ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec TRDfast FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec BCM STRUCT T0base T0sim T0rec EVGEN FASTSIM microcern HLTbase TRIGGERbase STAT STEER CDB AOD ESD STEERBase RAWDatasim RAWDatarec RAWDatabase 
 
 #       THijing hijing \
 #       THbtp TEPEMGEN \

@@ -91,18 +91,15 @@ Function (AddLibrary LIB SRCS DHDRS)
   Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES} ${DMONLIBS})
   Set_Target_Properties(${LIB} PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES})
 #  message("${LIB}-${label}")
-  Install(TARGETS ${LIB} DESTINATION ${ALIROOT_INSTALL_DIR}/lib
-    COMPONENT shared)
+  Install(TARGETS ${LIB} DESTINATION $ENV{ALICE_INSTALL}/lib/tgt_$ENV{ALICE_TARGET}  COMPONENT shared)
 
   If(ALICE_STATIC_BUILD)
     Add_Library(${LIB}_a STATIC ${STATIC_ASRCS})
-    Install(TARGETS ${LIB}_a DESTINATION ${ALIROOT_INSTALL_DIR}/lib/static)
+    Install(TARGETS ${LIB}_a DESTINATION $ENV{ALICE_INSTALL}/lib/tgt_$ENV{ALICE_TARGET})
   EndIf(ALICE_STATIC_BUILD)
-
-  If(ARGV3)
-    Install(FILES ${ARGV3} DESTINATION ${ALIROOT_INSTALL_DIR}/include)
-  Endif(ARGV3)
-
+  if(DHDRS)
+    Install(FILES ${DHDRS} DESTINATION $ENV{ALICE_INSTALL}/include)
+  endif(DHDRS)
   CheckViols(${LIB} "${SRCS}")
   add_dependencies("${label}-all" ${LIB})
   if(ALICE_STATIC_BUILD)
@@ -163,17 +160,17 @@ Function (AddHLTLibrary LIB SRCS DHDRS)
   Target_Link_Libraries(${LIB} ${ALIROOT_LIBRARIES} ${DMONLIBS})
   Set_Target_Properties(${LIB} PROPERTIES ${ALIROOT_LIBRARY_PROPERTIES})
 #  message("${LIB}-${label}")  
-  Install(TARGETS ${LIB} DESTINATION ${ALIROOT_INSTALL_DIR}/lib
+  Install(TARGETS ${LIB} DESTINATION $ENV{ALICE_INSTALL}/lib/tgt_$ENV{ALICE_TARGET}
     COMPONENT shared)
 
   If(ALICE_STATIC_BUILD)
     Add_Library(${LIB}_a STATIC ${STATIC_ASRCS})
-    Install(TARGETS ${LIB}_a DESTINATION ${ALIROOT_INSTALL_DIR}/lib/static)
+    Install(TARGETS ${LIB}_a DESTINATION $ENV{ALICE_INSTALL}/lib/tgt_$ENV{ALICE_TARGET})
   EndIf(ALICE_STATIC_BUILD)
 
-  If(ARGV3)
-    Install(FILES ${ARGV3} DESTINATION ${ALIROOT_INSTALL_DIR}/include)
-  Endif(ARGV3)
+  If(DHDRS)
+    Install(FILES ${DHDRS} DESTINATION $ENV{ALICE_INSTALL}/include)
+  Endif(DHDRS)
 
   CheckViols(${LIB} "${SRCS}")
   add_dependencies("${label}-all" ${LIB})
@@ -195,18 +192,31 @@ EndMacro(SetModule)
 Function (AddExecutable BIN SRCS LIBS)
 
 # Adds an AliRoot executable as a target
-    
+
   string(REGEX REPLACE "$ENV{ALICE_ROOT}/?([^/]*)/?.*" "\\1" label ${CMAKE_CURRENT_SOURCE_DIR})
   String(REGEX REPLACE "(.*)exe" "\\1" executable_name "${BIN}")
-  # MESSAGE("EXECUTABLE: ${executable_name}")
-
   Add_Executable(${BIN} ${SRCS})
   set_property(TARGET ${BIN} PROPERTY LABELS ${label})
-#  message("${BIN}-${label}")
   Target_Link_Libraries(${BIN} ${ROOT_LIBRARIES} ${LIBS} ${DMONLIBS})
   set_target_properties(${BIN} PROPERTIES OUTPUT_NAME ${executable_name})
-  Install(TARGETS ${BIN} DESTINATION ${ALIROOT_INSTALL_DIR}/bin)
-
+  Install(TARGETS ${BIN} DESTINATION $ENV{ALICE_INSTALL}/bin/tgt_$ENV{ALICE_TARGET})
+  set(GFILES)
+  foreach(_lib ${LIBS})
+    execute_process(COMMAND pwd OUTPUT_VARIABLE pwd OUTPUT_STRIP_TRAILING_WHITESPACE)
+    
+    file(GLOB _Gfiles "$ENV{ALICE_ROOT}/*/lib${_lib}.pkg")
+    foreach(_gfile ${_Gfiles})
+      string(REGEX REPLACE "$ENV{ALICE_ROOT}/(.*)/lib(.*)\\.pkg" "${pwd}/\\1/CMakeFiles/\\2_a.dir/G__\\2_a.cxx.o" gfile ${_gfile} )
+      string(REGEX MATCH "MICROCERN" test ${gfile})
+      if(test)
+      else()
+      list(APPEND GFILES ${gfile})
+      endif(test)
+    endforeach(_gfile)
+ 
+   list(REMOVE_DUPLICATES GFILES)  
+  endforeach(_lib)
+  
   If(ALICE_STATIC_BUILD)
     Add_Executable(${BIN}_a ${SRCS})
     Set(_ar_libs)
@@ -219,8 +229,8 @@ Function (AddExecutable BIN SRCS LIBS)
         Set(_ar_libs ${_ar_libs} ${_lib}_a)
       EndIf(${_lib} STREQUAL GLU OR ${_lib} STREQUAL XMLParser OR ${_lib} STREQUAL dim)
     EndForeach(_lib ${LIBS})
-    Target_Link_Libraries(${BIN}_a ${ALIROOT_LIBRARIES} ${_ar_libs} ${DMONLIBS})
-    Install(TARGETS ${BIN}_a DESTINATION ${ALIROOT_INSTALL_DIR}/bin)
+    Target_Link_Libraries(${BIN}_a ${ALIROOT_LIBRARIES} ${GFILES} ${_ar_libs} ${DMONLIBS})
+    Install(TARGETS ${BIN}_a DESTINATION $ENV{ALICE_INSTALL}/bin/tgt_${ALICE_TARGET})
   EndIf(ALICE_STATIC_BUILD)
 
   CheckViols(${BIN} "${SRCS}")

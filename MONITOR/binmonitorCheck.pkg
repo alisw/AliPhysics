@@ -7,7 +7,32 @@ EINCLUDE+= TPC ITS RAW
 
 PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
-ELIBS:= MONITOR STEERBase ESD AOD CDB STEER RAWDatabase RAWDatarec RAWDatasim TPCbase TPCsim TPCrec ITSbase ITSsim ITSrec HLTbase MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONcalib MUONmapping MUONtrigger MUONevaluation MUONcore
+ELIBS:=  MONITOR \
+	TPCbase \
+	TPCsim \
+	TPCrec \
+	HLTbase \
+	ITSbase \
+	ITSsim \
+	ITSrec \
+	MUONmapping \
+	MUONevaluation \
+	MUONsim \
+	MUONrec \
+	MUONgeometry \
+	MUONcalib \
+	MUONbase \
+	MUONraw \
+	RAWDatasim \
+	MUONtrigger \
+	MUONcore \
+	STEER \
+	CDB \
+	AOD \
+	RAWDatarec \
+	ESD \
+	RAWDatabase \
+	STEERBase
 
 ifdef DATE_ROOT
 

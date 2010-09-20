@@ -63,7 +63,7 @@ Function(CheckViols LIB SRCS)
 	Add_Custom_Command(
 	  OUTPUT ${_violFile}
 	  COMMAND src2srcml 
-          ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkFile} ${_srcxml}
+          ARGS "--language=C++" ${CMAKE_CURRENT_SOURCE_DIR}/${_checkFile} "-o" ${_srcxml}
 	  COMMAND java -jar
 	  ARGS ${_FactExt} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
 	  COMMAND java -Xmx500m -jar ${RULE_CHECKER_JAR} 
@@ -74,7 +74,7 @@ Function(CheckViols LIB SRCS)
 	Add_Custom_Command(
 	  OUTPUT ${_violFile}
 	  COMMAND src2srcml 
-          ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkHead} ${_hdrxml}
+          ARGS "--language=C++" ${CMAKE_CURRENT_SOURCE_DIR}/${_checkHead} "-o" ${_hdrxml}
 	  COMMAND java -jar
 	  ARGS ${_FactExt} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
 	  COMMAND java -Xmx500m -jar ${RULE_CHECKER_JAR} 
@@ -85,9 +85,9 @@ Function(CheckViols LIB SRCS)
 	Add_Custom_Command(
 	  OUTPUT ${_violFile}
 	  COMMAND src2srcml 
-          ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkFile} ${_srcxml}
+          ARGS "--language=C++" ${CMAKE_CURRENT_SOURCE_DIR}/${_checkFile} "-o" ${_srcxml}
 	  COMMAND src2srcml 
-          ARGS ${CMAKE_CURRENT_SOURCE_DIR}/${_checkHead} ${_hdrxml}
+          ARGS "--language=C++" ${CMAKE_CURRENT_SOURCE_DIR}/${_checkHead} "-o" ${_hdrxml}
 	  COMMAND java -jar
 	  ARGS ${_FactExt} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
 	  COMMAND java -Xmx500m -jar ${RULE_CHECKER_JAR} 

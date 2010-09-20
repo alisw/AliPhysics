@@ -30,7 +30,7 @@ message("ALICE_ROOT: ${ALICE_ROOT}")
 
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ 
-set(PROJECT_BINARY_DIR ${ALICE_INSTALL})
+#set(PROJECT_BINARY_DIR ${ALICE_INSTALL})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/tgt_${ALICE_TARGET})
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/tgt_${ALICE_TARGET})
 set(CMAKE_MODULE_PATH "${ALICE_ROOT}/cmake/modules")
@@ -60,7 +60,6 @@ Check_out_of_Source_Build()
 
 # searches for needed packages
 
-Set(ALIROOT_INSTALL_DIR ${ALICE_INSTALL}/${ALICE_TARGET})
 
 # Setup GEANT3
 find_package(GEANT3)
@@ -78,8 +77,9 @@ Include(CreateSubCMakeFiles)
 CreateSubCMakeFiles()
 
 
-# Set the library version in the main CMakeLists.txt
 
+
+# Set the library version in the main CMakeLists.txt
 set(ALIROOT_MAJOR_VERSION 0)
 set(ALIROOT_MINOR_VERSION 0)
 set(ALIROOT_PATCH_VERSION 0)
@@ -195,7 +195,7 @@ add_custom_target(HERWIG-all)
 add_custom_target(PYTHIA6-all)
 add_custom_target(ALIROOT-all)
 
-
+set(MODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS ACORDE HMPID T0 BCM STRUCT EVGEN RALICE VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT LHC ESDCheck STAT TTherminator CORRFW DPMJET TDPMjet PWG0 PWG1 PWG2 PWG3 PWG4 TRIGGER TUHKMgen EPOS)
 
 # Recurse into the given subdirectories.  This does not actually
 # cause another cmake executable to run.  The same process will walk through
@@ -247,28 +247,39 @@ Add_subdirectory(TUHKMgen)
 Add_subdirectory(EPOS) 
 if(PYTHIA8)
 Add_subdirectory(PYTHIA8) 
+list(APPEND MODULES PYTHIA8)
 endif(PYTHIA8)
 if(OPENGL)
 Add_subdirectory(EVE) 
+list(APPEND MODULES EVE)
 endif(OPENGL)
 if(TFLUKA)
 Add_subdirectory(TFluka)
+list(APPEND MODULES TFluka)
 endif(TFLUKA)
 if(THYDJET)	
 Add_subdirectory(THydjet)
+list(APPEND MODULES THydjet)
 endif(THYDJET)
 if(SHUTTLE)
 Add_subdirectory(SHUTTLE)
+list(APPEND MODULES SHUTTLE)
 endif(SHUTTLE)	
 Add_subdirectory(LHAPDF) 
 Add_subdirectory(HIJING) 
 Add_subdirectory(MICROCERN) 
 Add_subdirectory(HERWIG) 
+list(APPEND MODULES LHAPDF HIJING MICROCERN HERWIG)
 if(PYTHIA6)
 Add_subdirectory(PYTHIA6)
+list(APPEND MODULES PYTHIA6)
 endif(PYTHIA6)
 Add_subdirectory(ALIROOT)
 add_subdirectory(test)
 add_test ("Aliroot_executable" aliroot -q) 
 #copy testing files
 configure_file("CTestCustom.ctest" "${PROJECT_BINARY_DIRECTORY}" COPYONLY)
+
+if(DA)
+include(cmakeDA)
+endif(DA)
