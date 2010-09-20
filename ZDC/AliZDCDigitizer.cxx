@@ -431,14 +431,18 @@ void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
   Int_t nAlpha = frag.GetNalpha();
 
   // Attach neutrons
+  frag.AttachNeutrons();
   Int_t ztot = frag.GetZtot();
   Int_t ntot = frag.GetNtot();
-  frag.AttachNeutrons();
+  
+  // Removing fragments and alpha pcs
   freeSpecN = specN-ntot-2*nAlpha;
   freeSpecP = specP-ztot-2*nAlpha;
+  
   // Removing deuterons
   Int_t ndeu = (Int_t) (freeSpecN*frag.DeuteronNumber());
   freeSpecN -= ndeu;
+  freeSpecP -= ndeu;
   //
   if(freeSpecN<0) freeSpecN=0;
   if(freeSpecP<0) freeSpecP=0;
