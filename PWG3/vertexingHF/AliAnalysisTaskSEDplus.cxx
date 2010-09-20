@@ -50,19 +50,25 @@ ClassImp(AliAnalysisTaskSEDplus)
 //________________________________________________________________________
 AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
 AliAnalysisTaskSE(),
-fOutput(0), 
-fHistNEvents(0),
-fNtupleDplus(0),
-fUpmasslimit(1.965),
-fLowmasslimit(1.765),
-fNPtBins(0),
-fBinWidth(0.002),
-fListCuts(0),
-fRDCutsProduction(0),
-fRDCutsAnalysis(0),
-fFillNtuple(kFALSE),
-fReadMC(kFALSE),
-fDoLS(kFALSE)
+  fOutput(0), 
+  fHistNEvents(0),
+  fPtVsMass(0),
+  fPtVsMassTC(0),
+  fYVsPt(0),
+  fYVsPtTC(0),
+  fYVsPtSig(0),
+  fYVsPtSigTC(0),
+  fNtupleDplus(0),
+  fUpmasslimit(1.965),
+  fLowmasslimit(1.765),
+  fNPtBins(0),
+  fBinWidth(0.002),
+  fListCuts(0),
+  fRDCutsProduction(0),
+  fRDCutsAnalysis(0),
+  fFillNtuple(kFALSE),
+  fReadMC(kFALSE),
+  fDoLS(kFALSE)
 {
    // Default constructor
 }
@@ -72,6 +78,12 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
 AliAnalysisTaskSE(name),
 fOutput(0),
 fHistNEvents(0),
+fPtVsMass(0),
+fPtVsMassTC(0),
+fYVsPt(0),
+fYVsPtTC(0),
+fYVsPtSig(0),
+fYVsPtSigTC(0),
 fNtupleDplus(0),
 fUpmasslimit(1.965),
 fLowmasslimit(1.765),
@@ -318,7 +330,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
       fPtMaxHistLS[indexcut]->Fill(ptmax);
       fDCAHistLS[indexcut]->Fill(dca);
       
-      if(passTightCuts==1){
+      if(passTightCuts){
 	fMassHistLSTC[index]->Fill(invMass,wei);
 	fMassHistLSTC[index+1]->Fill(invMass);
 	fMassHistLSTC[index+2]->Fill(invMass,wei2);
@@ -606,8 +618,20 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
-  
-  
+
+  fPtVsMass=new TH2F("hPtVsMass","PtVsMass (prod. cuts)",nbins,fLowmasslimit,fUpmasslimit,40,0.,20.);
+  fPtVsMassTC=new TH2F("hPtVsMassTC","PtVsMass (analysis cuts)",nbins,fLowmasslimit,fUpmasslimit,40,0.,20.);  
+  fYVsPt=new TH2F("hYVsPt","YvsPt (prod. cuts)",40,0.,20.,80,-2.,2.);
+  fYVsPtTC=new TH2F("hYVsPtTC","YvsPt (analysis cuts)",40,0.,20.,80,-2.,2.);
+  fYVsPtSig=new TH2F("hYVsPtSig","YvsPt (MC, only sig., prod. cuts)",40,0.,20.,80,-2.,2.);
+  fYVsPtSigTC=new TH2F("hYVsPtSigTC","YvsPt (MC, only Sig, analysis cuts)",40,0.,20.,80,-2.,2.);
+
+  fOutput->Add(fPtVsMass);
+  fOutput->Add(fPtVsMassTC);
+  fOutput->Add(fYVsPt);
+  fOutput->Add(fYVsPtTC);
+  fOutput->Add(fYVsPtSig);
+  fOutput->Add(fYVsPtSigTC);
 
   if(fFillNtuple){
     OpenFile(2); // 2 is the slot number of the ntuple
@@ -746,7 +770,14 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	}
       }
       Double_t invMass=d->InvMassDplus();
-
+      Double_t rapid=d->YDplus();
+      fYVsPt->Fill(ptCand,rapid);
+      if(passTightCuts) fYVsPtTC->Fill(ptCand,rapid);
+      Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
+      if(isFidAcc){
+	fPtVsMass->Fill(invMass,ptCand);
+	if(passTightCuts) fPtVsMassTC->Fill(invMass,ptCand);
+      }
       Float_t tmp[24];
       if(fFillNtuple){  	  
 	tmp[0]=pdgCode;
@@ -788,49 +819,54 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       if(iPtBin>=0){
       
 	index=GetHistoIndex(iPtBin);
-	fMassHist[index]->Fill(invMass);
-	fCosPHist[index]->Fill(cosp);
-	fDLenHist[index]->Fill(dlen);
-	fSumd02Hist[index]->Fill(sumD02);
-	fSigVertHist[index]->Fill(sigvert);
-	fPtMaxHist[index]->Fill(ptmax);
-	fDCAHist[index]->Fill(dca);
-	
-	if(passTightCuts==1){
-	  fMassHistTC[index]->Fill(invMass);
+	if(isFidAcc){
+	  fMassHist[index]->Fill(invMass);
+	  fCosPHist[index]->Fill(cosp);
+	  fDLenHist[index]->Fill(dlen);
+	  fSumd02Hist[index]->Fill(sumD02);
+	  fSigVertHist[index]->Fill(sigvert);
+	  fPtMaxHist[index]->Fill(ptmax);
+	  fDCAHist[index]->Fill(dca);
+	  
+	  if(passTightCuts){
+	    fMassHistTC[index]->Fill(invMass);
+	  }
 	}
 	
 	if(fReadMC){
 	  if(labDp>=0) {
 	    index=GetSignalHistoIndex(iPtBin);
-	    fMassHist[index]->Fill(invMass);
-	    fCosPHist[index]->Fill(cosp);
-	    fDLenHist[index]->Fill(dlen);
-	    fSumd02Hist[index]->Fill(sumD02);
-	    fSigVertHist[index]->Fill(sigvert);
-	    fPtMaxHist[index]->Fill(ptmax);
-	    fDCAHist[index]->Fill(dca);
-	    if(passTightCuts==1){
-	      fMassHistTC[index]->Fill(invMass);
-
-	    }
-	    
+	    if(isFidAcc){
+	      fMassHist[index]->Fill(invMass);
+	      fCosPHist[index]->Fill(cosp);
+	      fDLenHist[index]->Fill(dlen);
+	      fSumd02Hist[index]->Fill(sumD02);
+	      fSigVertHist[index]->Fill(sigvert);
+	      fPtMaxHist[index]->Fill(ptmax);
+	      fDCAHist[index]->Fill(dca);
+	      if(passTightCuts){
+		fMassHistTC[index]->Fill(invMass);	      
+	      }
+	    }	    
+	    fYVsPtSig->Fill(ptCand,rapid);
+	    if(passTightCuts) fYVsPtSigTC->Fill(ptCand,rapid);
 	  }else{
 	    index=GetBackgroundHistoIndex(iPtBin);
-	    fMassHist[index]->Fill(invMass);
-	    fCosPHist[index]->Fill(cosp);
-	    fDLenHist[index]->Fill(dlen);
-	    fSumd02Hist[index]->Fill(sumD02);
-	    fSigVertHist[index]->Fill(sigvert);
-	    fPtMaxHist[index]->Fill(ptmax);
-	    fDCAHist[index]->Fill(dca);
-	    if(passTightCuts==1){
-	      fMassHistTC[index]->Fill(invMass);
-
+	    if(isFidAcc){
+	      fMassHist[index]->Fill(invMass);
+	      fCosPHist[index]->Fill(cosp);
+	      fDLenHist[index]->Fill(dlen);
+	      fSumd02Hist[index]->Fill(sumD02);
+	      fSigVertHist[index]->Fill(sigvert);
+	      fPtMaxHist[index]->Fill(ptmax);
+	      fDCAHist[index]->Fill(dca);
+	      if(passTightCuts){
+		fMassHistTC[index]->Fill(invMass);
+	      }
 	    }	
 	  }
 	}
-      }
+      }    
     }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
@@ -856,31 +892,37 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     printf("ERROR: fOutput not available\n");
     return;
   }
- fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
+  fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
+  fYVsPt = dynamic_cast<TH2F*>(fOutput->FindObject("hYVsPt"));
+  fYVsPtTC = dynamic_cast<TH2F*>(fOutput->FindObject("hYVsPtTC"));
+  fYVsPtSig = dynamic_cast<TH2F*>(fOutput->FindObject("hYVsPtSig"));
+  fYVsPtSigTC = dynamic_cast<TH2F*>(fOutput->FindObject("hYVsPtSigTC"));
+  fPtVsMass = dynamic_cast<TH2F*>(fOutput->FindObject("hPtVsMass"));
+  fPtVsMassTC = dynamic_cast<TH2F*>(fOutput->FindObject("hPtVsMassTC"));
 
- TString hisname;
- Int_t index=0;
+  TString hisname;
+  Int_t index=0;
  
 
- Int_t indexLS=0;
- for(Int_t i=0;i<fNPtBins;i++){
+  Int_t indexLS=0;
+  for(Int_t i=0;i<fNPtBins;i++){
     index=GetHistoIndex(i);
     if(fDoLS)indexLS=GetLSHistoIndex(i);
     hisname.Form("hMassPt%d",i);
     fMassHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-     hisname.Form("hCosPAllPt%d",i);
+    hisname.Form("hCosPAllPt%d",i);
     fCosPHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-     hisname.Form("hDLenAllPt%d",i);
+    hisname.Form("hDLenAllPt%d",i);
     fDLenHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-     hisname.Form("hSumd02AllPt%d",i);
-     fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-     hisname.Form("hSigVertAllPt%d",i);
-     fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-     hisname.Form("hPtMaxAllPt%d",i);
-     fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-     hisname.Form("hDCAAllPt%d",i);
-     fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-     hisname.Form("hMassPt%dTC",i);
+    hisname.Form("hSumd02AllPt%d",i);
+    fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hSigVertAllPt%d",i);
+    fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hPtMaxAllPt%d",i);
+    fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hDCAAllPt%d",i);
+    fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hMassPt%dTC",i);
     fMassHistTC[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
     if(fDoLS){
       hisname.Form("hLSPt%dLC",i);
@@ -940,7 +982,7 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
 
       hisname.Form("hLSPt%dTCnw",i);
       fMassHistLSTC[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-         }
+    }
     
     index=GetBackgroundHistoIndex(i); 
     if(fDoLS)indexLS++;
@@ -998,7 +1040,7 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
       fMassHistLSTC[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
     }
  
- }
+  }
 
   if(fFillNtuple){
     fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(3));
@@ -1011,5 +1053,5 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
   hMassPt->SetXTitle("M[GeV/c^{2}]"); 
   hMassPt->Draw();
  
- return;
+  return;
 }

@@ -251,9 +251,9 @@ Bool_t AliRDHFCutsDplustoKpipi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
 Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)
 {
   //
-  // PID selection
+  // PID selection, returns 3 if accepted, 0 if not accepted
   // 
-  if(!fUsePID || !rd) return 1;
+  if(!fUsePID || !rd) return 3;
   //if(fUsePID)printf("i am inside the pid \n");
   Int_t nkaons=0;
   Int_t nNotKaons=0;
@@ -280,7 +280,7 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)
   if(nkaons>1)return 0;
   if(nNotKaons==3)return 0;
   
-  return 1;   
+  return 3;   
 }
 
 
@@ -288,7 +288,7 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod) {
   //
-  // Apply selection
+  // Apply selection, returns 3 if accepted, 0 if not accepted
   //
 
   if(!fCutsRD){
@@ -313,8 +313,8 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
   }
   
   // PID selection
-  Int_t returnvaluePID=1;  
-  Int_t returnvalueCuts=1;
+  Int_t returnvaluePID=3;
+  Int_t returnvalueCuts=3;
                                           
 
   //if(selectionLevel==AliRDHFCuts::kAll || 
@@ -405,6 +405,6 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     return returnvalueCuts;
   }
 
-  return 1;
+  return 3;
 }
 //---------------------------------------------------------------------------
