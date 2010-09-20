@@ -33,7 +33,7 @@ class AliBWFunc : public TObject {
 
 public:
   // define the variables used for the function
-  typedef enum {kdNdpt,kOneOverPtdNdpt,kOneOverMtdNdmt} VarType_t;
+  typedef enum {kdNdpt,kOneOverPtdNdpt,kOneOverMtdNdmt,kdNdmt,kOneOverMtdNdmtMinusM} VarType_t;
 
   AliBWFunc();
   ~AliBWFunc();
@@ -134,8 +134,7 @@ protected:
   // 1/mt dNdmt
   
   // Levi
-  TF1 * GetLevidNdmt(Double_t mass, Double_t T, Double_t n, Double_t norm, const char * name = "fLeviMt");
-
+  TF1 * GetLevidNdmt(Double_t mass, Double_t T, Double_t n, Double_t norm, const char * name = "fLeviMt", VarType_t var = kOneOverMtdNdmt);
 
   // gereral setters
   void SetLineWidth(Width_t width) { fLineWidth = width;}

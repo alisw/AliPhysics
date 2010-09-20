@@ -165,9 +165,9 @@ TString today = "";
 
 // Switches
 Bool_t convertToMT = 0;
-Bool_t sumCharge = kFALSE;
+Bool_t sumCharge = 1;
 Int_t whatToFit = kStatErrors; 
-Bool_t doPrint = 0;
+Bool_t doPrint = 1;
 Bool_t scaleKaons =  kFALSE;
 Bool_t drawStar =  kFALSE; // Overlay star when doing fits
 Bool_t correctSecondaries  = 1;
@@ -177,7 +177,7 @@ Int_t fitFuncID = kFitLevi;
 Bool_t showMC=kTRUE;
 Bool_t showE735=kTRUE;
 Bool_t useSecCorrFromDCA=kFALSE;
-const char * printFormats = "png"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
+const char * printFormats = "eps"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
 
 
 void CombineSpectra(Int_t analysisType=kDoHelp, Int_t  locfitFuncID = kFitLevi) {  //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
@@ -421,10 +421,6 @@ void FitCombined() {
 	AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
       }
       AliBWTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, 0.,100.);
-      // FIXME CANCELLAMI
-      mean = AliBWTools::GetMean      (hToFit, 0.,100., &meane);
-      AliBWTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, AliBWTools::GetLowestNotEmptyBinEdge(hToFit),AliBWTools::GetHighestNotEmptyBinEdge(hToFit));      
-      // --
       table.SetNextCol(mean,   meane  ,-4);
       table.SetNextCol(meanDF, meanDFe,-4);
       
@@ -450,8 +446,8 @@ void FitCombined() {
     c2r->cd();
     ALICEWorkInProgress(c2r,"","ALICE Preliminary");
     l->Draw();
-    PrintCanvas(c2,"eps,root,png");
-    PrintCanvas(c2r,"eps,root,png");
+    PrintCanvas(c2,printFormats);
+    PrintCanvas(c2r,printFormats);
     
     
   }
@@ -630,7 +626,7 @@ void LoadSpectra() {
     }
 
   // ITS + TPC (Marek)
-  //  f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons20100720.root");
+  //f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons20100720.root");
   f = TFile::Open("./Files/SpectraCorrectedITSBeforeProtons14092010new.root");
   TList * list = (TList*) gDirectory->Get("output");
   hSpectra[kITSTPC][kPion]  [kPos]= (TH1F*) list->FindObject("Pions");
@@ -662,6 +658,10 @@ void LoadSpectra() {
 	hSpectra[kTPC][kKaon][icharge]->SetBinContent(ibin,0);
 	hSpectra[kTPC][kKaon][icharge]->SetBinError  (ibin,0);	
       }      
+    }
+    if (pt < 0.25) {
+      hSpectra[kTPC][kKaon][kNeg]->SetBinContent(ibin,0);
+      hSpectra[kTPC][kKaon][kNeg]->SetBinError  (ibin,0);	
     }
     if (pt < 0.45) {
       for(Int_t icharge = 0; icharge < kNCharge; icharge++){
@@ -712,7 +712,7 @@ void LoadSpectra() {
   // Apply correction factors
   // Secondaries for protons
 
-  //  f = new TFile ("./Files/corrFactorProtons_20100615.root");
+  //f = new TFile ("./Files/corrFactorProtons_20100615.root");
   f = new TFile ("./Files/corrFactorProtons_2010_09_15.root");
   TH1F * hCorrSecondaries = (TH1F*) gDirectory->Get("corrFactorProtons");
   if(correctSecondaries) {
