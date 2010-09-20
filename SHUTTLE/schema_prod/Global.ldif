@@ -25,7 +25,7 @@ dcsTimeOut: 1100
 shuttleAdmin: chiara.zampolli@cern.ch
 shuttleAdmin: raffaele.grosso@cern.ch
 shuttleAdmin: Jan.Fiete.Grosse-Oetringhaus@cern.ch
-shuttleAdmin: alina.grigoras@cern.ch
+shuttleAdmin: agrigora@cern.ch
 amandaAdmin: Peter.Chochula@cern.ch
 nDCSretries: 5
 passwdFilePath: /home/shuttle/.shuttle_prod

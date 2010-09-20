@@ -20,7 +20,7 @@ mode: test
 shuttleAdmin: chiara.zampolli@cern.ch
 shuttleAdmin: Jan.Fiete.Grosse-Oetringhaus@cern.ch
 shuttleAdmin: Raffaele.Grosso@cern.ch
-shuttleAdmin: alina.grigoras@cern.ch
+shuttleAdmin: agrigora@cern.ch
 nDCSretries: 5
 passwdFilePath: /home/shuttle/.shuttle
 AliEnPath: /alice/testdata/
