@@ -7,7 +7,7 @@ void InitCF();
 
 AliESDtrackCuts *SetupESDtrackCuts();
 
-TString names=("basicQ+SPDfirst+pt>.6+PID");
+TString names=("basicQ+SPDfirst+pt>.6+PID;basicQ+SPDany+pt>.6+PID");
 
 TObjArray *arrNames=names.Tokenize(";");
 
@@ -17,13 +17,13 @@ AliDielectron *fDiele=0x0;
 Int_t          fCutDefinition=0;
 Bool_t         fIsAOD=kFALSE;
 
-AliDielectron* ConfigJpsi2ee(Int_t fCutDefinition, Bool_t isAOD)
+AliDielectron* ConfigJpsi2ee(Int_t cutDefinition, Bool_t isAOD)
 {
   //
   // Setup the instance of AliDielectron
   //
   
-  fCutDefinition=fCutDefinition;
+  fCutDefinition=cutDefinition;
   fIsAOD=isAOD;
   
   // create the actual framework object
@@ -64,34 +64,35 @@ void SetupTrackCuts()
     fDiele->GetTrackFilter().AddCuts(SetupESDtrackCuts());
   } else {
     AliDielectronTrackCuts *trackCuts=new AliDielectronTrackCuts("trackCuts","trackCuts");
-    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    if (fCutDefinition==0)
+      trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    else if (fCutDefinition==1)
+      trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     trackCuts->SetRequireTPCRefit(kTRUE);
     trackCuts->SetRequireITSRefit(kTRUE);
     fDiele->GetTrackFilter().AddCuts(trackCuts);
   }
 
-  if(fCutDefinition==0) {
-    //Pt cut ----------------------------------------------------------
-    AliDielectronVarCuts *pt = new AliDielectronVarCuts("ptCut","pt cut");
-    pt->AddCut(AliDielectronVarManager::kPt,0.6,1e30);
+  //Pt cut ----------------------------------------------------------
+  AliDielectronVarCuts *pt = new AliDielectronVarCuts("ptCut","pt cut");
+  pt->AddCut(AliDielectronVarManager::kPt,0.6,1e30);
 
-    //AOD additions since there are no AliESDtrackCuts -----------------
-    //
-    if (fIsAOD){
-      // TPC #clusteres cut
-      pt->AddCut(AliDielectronVarManager::kNclsTPC,90.,160.);
-      pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
-      //TODO: DCA cuts to be investigated!!!
+  //AOD additions since there are no AliESDtrackCuts -----------------
+  //
+  if (fIsAOD){
+    // TPC #clusteres cut
+    pt->AddCut(AliDielectronVarManager::kNclsTPC,90.,160.);
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
+    //TODO: DCA cuts to be investigated!!!
 //       pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
 //       pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
-    }
-    fDiele->GetTrackFilter().AddCuts(pt);
-    
-    // PID cuts --------------------------------------------------------
-    AliDielectronPID *pid = new AliDielectronPID("PID10","TPC nSigma |e|<3 + |Pi|>3 + |P|>3 + TOF nSigma |e|<3");
-    pid->SetDefaults(10);
-    fDiele->GetTrackFilter().AddCuts(pid);
   }
+  fDiele->GetTrackFilter().AddCuts(pt);
+    
+  // PID cuts --------------------------------------------------------
+  AliDielectronPID *pid = new AliDielectronPID("PID10","TPC nSigma |e|<3 + |Pi|>3 + |P|>3 + TOF nSigma |e|<3");
+  pid->SetDefaults(10);
+  fDiele->GetTrackFilter().AddCuts(pid);
 }
 
 //______________________________________________________________________________________
@@ -129,7 +130,10 @@ AliESDtrackCuts *SetupESDtrackCuts()
   esdTrackCuts->SetMinNClustersTPC(90);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  if (fCutDefinition==0)
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  else if (fCutDefinition==1)
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   
   return esdTrackCuts;
 }
@@ -172,12 +176,12 @@ void InitHistograms()
   histos->UserHistogram("Track","dXY","dXY;dXY [cm];#tracks",500,-1.,1.,AliDielectronVarManager::kImpactParXY);
   histos->UserHistogram("Track","dZ","dZ;dZ [cm];#tracks",600,-3.,3.,AliDielectronVarManager::kImpactParZ);
   histos->UserHistogram("Track","Eta_Phi","Eta Phi Map; Eta; Phi;#tracks",
-                        200,-1,1,200,0,6.285,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
+                        100,-1,1,144,0,6.285,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
   histos->UserHistogram("Track","dEdx_P","dEdx;P [GeV];TPC signal (arb units);#tracks",
-                        400,0.2,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
+                        200,0.2,20.,100,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
   histos->UserHistogram("Track","TPCnSigmaEle_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;#tracks",
-                        400,0.2,20.,200,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
+                        200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
       
   //add histograms to Pair classes
   histos->UserHistogram("Pair","InvMass","Inv.Mass;Inv. Mass [GeV];#pairs",

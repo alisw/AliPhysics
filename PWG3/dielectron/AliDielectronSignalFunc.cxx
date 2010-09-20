@@ -34,6 +34,9 @@ can be used.
 #include <TMath.h>
 #include <TString.h>
 #include <TPaveText.h>
+#include <TList.h>
+#include <TFitResult.h>
+#include <../hist/hist/src/TF1Helper.h>
 
 #include <AliLog.h>
 
@@ -43,17 +46,13 @@ ClassImp(AliDielectronSignalFunc)
 
 AliDielectronSignalFunc::AliDielectronSignalFunc() :
   AliDielectronSignalBase(),
-  fSignal(0x0),
-  fBackground(0x0),
-  fSigBack(0x0),
-  fVInitParam(0),
-  fFitOpt("MNQE"),
-  fUseIntegral(kFALSE),
-  fFitMin(2.5),
-  fFitMax(4),
-  fParM(-1),
-  fParMres(-1),
-  fSignalHist(0x0)
+  fFuncSignal(0x0),
+  fFuncBackground(0x0),
+  fFuncSigBack(0x0),
+  fParMass(1),
+  fParMassWidth(2),
+  fFitOpt("SMNQE"),
+  fUseIntegral(kFALSE)
 {
   //
   // Default Constructor
@@ -64,17 +63,13 @@ AliDielectronSignalFunc::AliDielectronSignalFunc() :
 //______________________________________________
 AliDielectronSignalFunc::AliDielectronSignalFunc(const char* name, const char* title) :
   AliDielectronSignalBase(name, title),
-  fSignal(0x0),
-  fBackground(0x0),
-  fSigBack(0x0),
-  fVInitParam(0),
-  fFitOpt("MNQ"),
-  fUseIntegral(kFALSE),
-  fFitMin(2.5),
-  fFitMax(4),
-  fParM(-1),
-  fParMres(-1),
-  fSignalHist(0x0)
+  fFuncSignal(0x0),
+  fFuncBackground(0x0),
+  fFuncSigBack(0x0),
+  fParMass(1),
+  fParMassWidth(2),
+  fFitOpt("SMNQE"),
+  fUseIntegral(kFALSE)
 {
   //
   // Named Constructor
@@ -87,98 +82,248 @@ AliDielectronSignalFunc::~AliDielectronSignalFunc()
   //
   // Default Destructor
   //
-  if (fSigBack) delete fSigBack;
+  if(fFuncSignal) delete fFuncSignal;
+  if(fFuncBackground) delete fFuncBackground;
+  if(fFuncSigBack) delete fFuncSigBack;
 }
 
-
-//______________________________________________
-void AliDielectronSignalFunc::Process(TH1 * const hist)
-{
-  //
-  // Fit the mass histogram with the function and retrieve the parameters
-  //
-  
-  //reset result arrays
-  Reset();
-
-  //sanity check
-  if (!fSigBack) {
-    AliError("Use 'SetFunctions(TF1*,TF1*)' or 'SetDefaults(Int_t)' to setup the signal functions first'!");
-    return;
-  }
-  
-  //set current signal hist pointer
-  fSignalHist=hist;
-  
-  //initial the fit function to its default parameters
-  if (fVInitParam.GetMatrixArray()) fSigBack->SetParameters(fVInitParam.GetMatrixArray());
-
-  //Perform fit and retrieve values
-  hist->Fit(fSigBack,fFitOpt.Data(),"",fFitMin,fFitMax);
-
-  //retrieve values and errors
-  //TODO: perhpas implement different methods to retrieve the valus
-  fSignal->SetParameters(fSigBack->GetParameters());
-  fBackground->SetParameters(fSigBack->GetParameters()+fSignal->GetNpar());
-
-  //TODO: proper error estimate?!?
-  //      perhaps this is not possible in a general way?
-  
-  // signal and background histograms
-  TH1 *hSignal=(TH1*)hist->Clone("DieleSignalHist");
-  TH1 *hBackground=(TH1*)hist->Clone("DieleBackgroundHist");
-
-  fSignal->SetRange(hist->GetXaxis()->GetXmin(),hist->GetXaxis()->GetXmax());
-  fBackground->SetRange(hist->GetXaxis()->GetXmin(),hist->GetXaxis()->GetXmax());
-  
-  hSignal->Add(fBackground,-1);
-  hBackground->Add(fSignal,-1);
-
-  
-  //get values and errors signal and background
-  Double_t signal=0, signal_err=0;
-  Double_t background=0, background_err=0;
-  Double_t sigPlusBack=0, sigPlusBack_err=0;
-
-  if (!fUseIntegral){
-    signal=hSignal->IntegralAndError(hSignal->FindBin(GetIntegralMin()),
-                                     hSignal->FindBin(GetIntegralMax()), signal_err);
-    background=hBackground->IntegralAndError(hBackground->FindBin(GetIntegralMin()),
-                                             hBackground->FindBin(GetIntegralMax()), background_err);
-    sigPlusBack=hist->IntegralAndError(hist->FindBin(GetIntegralMin()),
-                                       hist->FindBin(GetIntegralMax()), sigPlusBack_err);
-  } else {
-    signal=fSignal->Integral(GetIntegralMin(),GetIntegralMax())/hist->GetBinWidth(hist->FindBin((GetIntegralMax()-GetIntegralMin())/2.));
-    background=fBackground->Integral(GetIntegralMin(),GetIntegralMax())/hist->GetBinWidth(hist->FindBin((GetIntegralMax()-GetIntegralMin())/2.));
-    sigPlusBack=fSigBack->Integral(GetIntegralMin(),GetIntegralMax())/hist->GetBinWidth(hist->FindBin((GetIntegralMax()-GetIntegralMin())/2.));
-    //TODO: Error calculation
-  }
-  
-  //set values
-  SetSignal(signal,signal_err);
-  SetBackground(background,background_err);
-  SetSignificanceAndSOB();
-  if (fParM>-1){
-    SetMass(fSigBack->GetParameter(fParM), fSigBack->GetParError(fParM));
-    SetMassWidth(fSigBack->GetParameter(fParMres), fSigBack->GetParError(fParMres));
-  }
-  //cleanup
-  delete hSignal;
-  delete hBackground;
-}
 
 //______________________________________________
 void AliDielectronSignalFunc::Process(TObjArray * const arrhist)
 {
   //
-  // Fit the mass histogram with the function and retrieve the parameters
+  // Fit the invariant mass histograms and retrieve the signal and background
   //
-  
-  TH1 *hist=(TH1*)arrhist->At(1);
-  Process(hist);
+  switch(fMethod) {
+  case kFitted :
+    ProcessFit(arrhist);
+    break;
+
+  case kLikeSign :
+    ProcessLS(arrhist);
+    break;
+
+  case kEventMixing :
+      //ProcessEM(arrhist); //yet to be implemented...
+    break;
+
+  default :
+    AliError("Background substraction method not known!");
+  }
 }
+
+
 //______________________________________________
-void AliDielectronSignalFunc::SetFunctions(TF1 * const sig, TF1 * const back, TF1 * const combined,
+void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
+  //
+  // Fit the +- invariant mass distribution only
+  // Here we assume that the combined fit function is a sum of the signal and background functions
+  //    and that the signal function is always the first term of this sum
+  //
+
+  fHistDataPM = (TH1F*)(arrhist->At(1))->Clone("histPM");  // +-    SE
+  fHistDataPM->Sumw2();
+  if(fRebin>1)
+    fHistDataPM->Rebin(fRebin);
+
+  fHistSignal = new TH1F("HistSignal", "Like-Sign substracted signal", 
+			 fHistDataPM->GetXaxis()->GetNbins(),
+			 fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  fHistBackground = new TH1F("HistBackground", "Like-sign contribution", 
+			     fHistDataPM->GetXaxis()->GetNbins(),
+			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  
+  // the starting parameters of the fit function and their limits can be tuned 
+  // by the user in its macro
+  fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
+  TFitResultPtr pmFitPtr = fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
+  TFitResult *pmFitResult = pmFitPtr.Get();  
+  fFuncSignal->SetParameters(fFuncSigBack->GetParameters());
+  fFuncBackground->SetParameters(fFuncSigBack->GetParameters()+fFuncSignal->GetNpar());
+  
+  for(Int_t iBin=1; iBin<=fHistDataPM->GetXaxis()->GetNbins(); iBin++) {
+    Double_t m = fHistDataPM->GetBinCenter(iBin);
+    Double_t pm = fHistDataPM->GetBinContent(iBin);
+    Double_t epm = fHistDataPM->GetBinError(iBin);
+    Double_t bknd = fFuncBackground->Eval(m);
+    Double_t ebknd = 0;
+    for(Int_t iPar=fFuncSignal->GetNpar(); iPar<fFuncSigBack->GetNpar(); iPar++) {
+      for(Int_t jPar=iPar; jPar<fFuncSigBack->GetNpar(); jPar++) {
+        TF1 gradientIpar("gradientIpar",
+	ROOT::TF1Helper::TGradientParFunction(iPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
+        TF1 gradientJpar("gradientJpar",
+	ROOT::TF1Helper::TGradientParFunction(jPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
+	ebknd += pmFitResult->CovMatrix(iPar,jPar)*
+	         gradientIpar.Eval(m)*gradientJpar.Eval(m)*
+	         (iPar==jPar ? 1.0 : 2.0);
+      }
+    }
+    Double_t signal = pm-bknd;
+    Double_t error = TMath::Sqrt(epm*epm+ebknd);
+    fHistSignal->SetBinContent(iBin, signal);
+    fHistSignal->SetBinError(iBin, error);
+    fHistBackground->SetBinContent(iBin, bknd);
+    fHistBackground->SetBinError(iBin, TMath::Sqrt(ebknd));
+  }
+
+  if(fUseIntegral) {
+    // signal
+    fValues(0) = fFuncSignal->Integral(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);
+    fErrors(0) = 0;
+    for(Int_t iPar=0; iPar<fFuncSignal->GetNpar(); iPar++) {
+      for(Int_t jPar=iPar; jPar<fFuncSignal->GetNpar(); jPar++) {
+        TF1 gradientIpar("gradientIpar",
+	ROOT::TF1Helper::TGradientParFunction(iPar,fFuncSignal),0,0,0);
+        TF1 gradientJpar("gradientJpar",
+	ROOT::TF1Helper::TGradientParFunction(jPar,fFuncSignal),0,0,0);
+	fErrors(0) += pmFitResult->CovMatrix(iPar,jPar)*
+	  gradientIpar.Integral(fIntMin,fIntMax)*gradientJpar.Integral(fIntMin,fIntMax)*
+	  (iPar==jPar ? 1.0 : 2.0);
+      }
+    } 
+    // background
+    fValues(1) = fFuncBackground->Integral(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);
+    fErrors(1) = 0;
+    for(Int_t iPar=fFuncSignal->GetNpar(); iPar<fFuncSigBack->GetNpar(); iPar++) {
+      for(Int_t jPar=iPar; jPar<fFuncSigBack->GetNpar(); jPar++) {
+        TF1 gradientIpar("gradientIpar",
+	ROOT::TF1Helper::TGradientParFunction(iPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
+        TF1 gradientJpar("gradientJpar",
+	ROOT::TF1Helper::TGradientParFunction(jPar-fFuncSignal->GetNpar(),fFuncBackground),0,0,0);
+	fErrors(1) += pmFitResult->CovMatrix(iPar,jPar)*
+	  gradientIpar.Integral(fIntMin, fIntMax)*gradientJpar.Integral(fIntMin, fIntMax)*
+	  (iPar==jPar ? 1.0 : 2.0);
+      }
+    }
+  }
+  else {
+    // signal
+    fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
+					    fHistSignal->FindBin(fIntMax), fErrors(0));
+    // background
+    fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
+						    fHistBackground->FindBin(fIntMax), 
+						    fErrors(1));
+  }
+  // S/B and significance
+  SetSignificanceAndSOB();
+  fValues(4) = fFuncSigBack->GetParameter(fParMass);
+  fErrors(4) = fFuncSigBack->GetParError(fParMass);
+  fValues(5) = fFuncSigBack->GetParameter(fParMassWidth);
+  fErrors(5) = fFuncSigBack->GetParError(fParMassWidth);
+
+  fProcessed = kTRUE;
+}
+
+//______________________________________________
+void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
+  //
+  // Substract background using the like-sign spectrum
+  //
+  fHistDataPP = (TH1F*)(arrhist->At(0))->Clone("histPP");  // ++    SE
+  fHistDataPM = (TH1F*)(arrhist->At(1))->Clone("histPM");  // +-    SE
+  fHistDataMM = (TH1F*)(arrhist->At(2))->Clone("histMM");  // --    SE 
+  if (fRebin>1) { 
+    fHistDataPP->Rebin(fRebin);
+    fHistDataPM->Rebin(fRebin);
+    fHistDataMM->Rebin(fRebin);
+  }   
+  fHistDataPP->Sumw2();
+  fHistDataPM->Sumw2();
+  fHistDataMM->Sumw2();
+
+  fHistSignal = new TH1F("HistSignal", "Like-Sign substracted signal", 
+			 fHistDataPM->GetXaxis()->GetNbins(),
+			 fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  fHistBackground = new TH1F("HistBackground", "Like-sign contribution", 
+			     fHistDataPM->GetXaxis()->GetNbins(),
+			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+
+  // fit the +- mass distribution
+  fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
+  fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
+  // declare the variables where the like-sign fit results will be stored
+  TFitResult *ppFitResult = 0x0;
+  TFitResult *mmFitResult = 0x0;
+  // fit the like sign background
+  TF1 *funcClonePP = (TF1*)fFuncBackground->Clone("funcClonePP");
+  TF1 *funcCloneMM = (TF1*)fFuncBackground->Clone("funcCloneMM");
+  fHistDataPP->Fit(funcClonePP, fFitOpt.Data(), "", fFitMin, fFitMax);
+  TFitResultPtr ppFitPtr = fHistDataPP->Fit(funcClonePP, fFitOpt.Data(), "", fFitMin, fFitMax);
+  ppFitResult = ppFitPtr.Get();
+  fHistDataMM->Fit(funcCloneMM, fFitOpt.Data(), "", fFitMin, fFitMax);
+  TFitResultPtr mmFitPtr = fHistDataMM->Fit(funcCloneMM, fFitOpt.Data(), "", fFitMin, fFitMax);
+  mmFitResult = mmFitPtr.Get();
+
+  for(Int_t iBin=1; iBin<=fHistDataPM->GetXaxis()->GetNbins(); iBin++) {
+    Double_t m = fHistDataPM->GetBinCenter(iBin);
+    Double_t pm = fHistDataPM->GetBinContent(iBin);
+    Double_t pp = funcClonePP->Eval(m);
+    Double_t mm = funcCloneMM->Eval(m);
+    Double_t epm = fHistDataPM->GetBinError(iBin);
+    Double_t epp = 0;
+    for(Int_t iPar=0; iPar<funcClonePP->GetNpar(); iPar++) {
+      for(Int_t jPar=iPar; jPar<funcClonePP->GetNpar(); jPar++) {
+        TF1 gradientIpar("gradientIpar",
+	ROOT::TF1Helper::TGradientParFunction(iPar,funcClonePP),0,0,0);
+        TF1 gradientJpar("gradientJpar",
+	ROOT::TF1Helper::TGradientParFunction(jPar,funcClonePP),0,0,0);
+	epp += ppFitResult->CovMatrix(iPar,jPar)*
+	       gradientIpar.Eval(m)*gradientJpar.Eval(m)*
+	       (iPar==jPar ? 1.0 : 2.0);
+      }
+    }
+    Double_t emm = 0;
+    for(Int_t iPar=0; iPar<funcCloneMM->GetNpar(); iPar++) {
+      for(Int_t jPar=iPar; jPar<funcCloneMM->GetNpar(); jPar++) {
+        TF1 gradientIpar("gradientIpar",
+	ROOT::TF1Helper::TGradientParFunction(iPar,funcCloneMM),0,0,0);
+        TF1 gradientJpar("gradientJpar",
+	ROOT::TF1Helper::TGradientParFunction(jPar,funcCloneMM),0,0,0);
+	emm += mmFitResult->CovMatrix(iPar,jPar)*
+	       gradientIpar.Eval(m)*gradientJpar.Eval(m)*
+	       (iPar==jPar ? 1.0 : 2.0);
+      }
+    }
+
+    Double_t signal = pm-2.0*TMath::Sqrt(pp*mm);
+    Double_t background = 2.0*TMath::Sqrt(pp*mm);
+    // error propagation on the signal calculation above
+    Double_t esignal = TMath::Sqrt(epm*epm+(mm/pp)*epp+(pp/mm)*emm);
+    Double_t ebackground = TMath::Sqrt((mm/pp)*epp+(pp/mm)*emm);
+    fHistSignal->SetBinContent(iBin, signal);
+    fHistSignal->SetBinError(iBin, esignal);
+    fHistBackground->SetBinContent(iBin, background);
+    fHistBackground->SetBinError(iBin, ebackground);
+  }
+
+  // signal
+  fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
+					  fHistSignal->FindBin(fIntMax), fErrors(0));
+  // background
+  fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
+						  fHistBackground->FindBin(fIntMax), 
+						  fErrors(1));
+  // S/B and significance
+  SetSignificanceAndSOB();
+  fValues(4) = fFuncSigBack->GetParameter(fParMass);
+  fErrors(4) = fFuncSigBack->GetParError(fParMass);
+  fValues(5) = fFuncSigBack->GetParameter(fParMassWidth);
+  fErrors(5) = fFuncSigBack->GetParError(fParMassWidth);
+
+  fProcessed = kTRUE;
+}
+
+//______________________________________________
+//void AliDielectronSignalFunc::ProcessEM(TObjArray * const arrhist) {
+  //
+  // Substract background with the event mixing technique
+  //
+  //AliError("Event mixing for background substraction method not implemented!");
+//}
+
+//______________________________________________
+void AliDielectronSignalFunc::SetFunctions(TF1 * const combined, TF1 * const sig, TF1 * const back,
                                            Int_t parM, Int_t parMres)
 {
   //
@@ -186,30 +331,16 @@ void AliDielectronSignalFunc::SetFunctions(TF1 * const sig, TF1 * const back, TF
   // Note: The process method assumes that the first n parameters in the
   //       combined fit function correspond to the n parameters of the signal function
   //       and the n+1 to n+m parameters to the m parameters of the background function!!!
-  // if parM and parMres are set this information can be used in the drawing function
-  //   to also show in the statistics box the mass and mass resolution
-
+  
   if (!sig||!back||!combined) {
     AliError("Both, signal and background function need to be set!");
     return;
   }
-  fSignal=sig;
-  fBackground=back;
-  fSigBack=combined;
-
-  InitParams();
-  fParM=parM;
-  fParMres=parMres;
-}
-
-//______________________________________________
-void AliDielectronSignalFunc::InitParams()
-{
-  //
-  // initilise common fit parameters
-  //
-  fVInitParam.ResizeTo(fSigBack->GetNpar());
-  fVInitParam.SetElements(fSigBack->GetParameters());
+  fFuncSignal=sig;
+  fFuncBackground=back;
+  fFuncSigBack=combined;
+  fParMass=parM;
+  fParMassWidth=parMres;
 }
 
 //______________________________________________
@@ -223,49 +354,41 @@ void AliDielectronSignalFunc::SetDefaults(Int_t type)
   // type = 3: Crystal-Ball function
   // type = 4: Crystal-Ball signal + exponential background
   //
-
   
   if (type==0){
-    fSignal=new TF1("DieleSignal","gaus",2.5,4);
-    fBackground=new TF1("DieleBackground","pol1",2.5,4);
-    fSigBack=new TF1("DieleCombined","gaus+pol1(3)",2.5,4);
+    fFuncSignal=new TF1("DieleSignal","gaus",2.5,4);
+    fFuncBackground=new TF1("DieleBackground","pol1",2.5,4);
+    fFuncSigBack=new TF1("DieleCombined","gaus+pol1(3)",2.5,4);
     
-    fSigBack->SetParameters(1,3.1,.05,2.5,1);
-    fSigBack->SetParLimits(0,0,10000000);
-    fSigBack->SetParLimits(1,3.05,3.15);
-    fSigBack->SetParLimits(2,.02,.1);
+    fFuncSigBack->SetParameters(1,3.1,.05,2.5,1);
+    fFuncSigBack->SetParLimits(0,0,10000000);
+    fFuncSigBack->SetParLimits(1,3.05,3.15);
+    fFuncSigBack->SetParLimits(2,.02,.1);
+  } 
+  else if (type==1){
+    fFuncSignal=new TF1("DieleSignal","gaus",2.5,4);
+    fFuncBackground=new TF1("DieleBackground","[0]*exp(-(x-[1])/[2])",2.5,4);
+    fFuncSigBack=new TF1("DieleCombined","gaus+[3]*exp(-(x-[4])/[5])",2.5,4);
     
-    SetFunctions(fSignal,fBackground,fSigBack,1,2);
-
-  } else if (type==1){
-    fSignal=new TF1("DieleSignal","gaus",2.5,4);
-    fBackground=new TF1("DieleBackground","[0]*exp(-(x-[1])/[2])",2.5,4);
-    fSigBack=new TF1("DieleCombined","gaus+[3]*exp(-(x-[4])/[5])",2.5,4);
-    
-    fSigBack->SetParameters(1,3.1,.05,1,2.5,1);
-    fSigBack->SetParLimits(0,0,10000000);
-    fSigBack->SetParLimits(1,3.05,3.15);
-    fSigBack->SetParLimits(2,.02,.1);
-    
-    SetFunctions(fSignal,fBackground,fSigBack,1,2);
-
-  } else if (type==2){
+    fFuncSigBack->SetParameters(1,3.1,.05,1,2.5,1);
+    fFuncSigBack->SetParLimits(0,0,10000000);
+    fFuncSigBack->SetParLimits(1,3.05,3.15);
+    fFuncSigBack->SetParLimits(2,.02,.1);
+  } 
+  else if (type==2){
     // half gaussian, half exponential signal function
     // exponential background
-    fSignal = new     TF1("DieleSignal","(x<[1])*([0]*(exp(-0.5*((x-[1])/[2])^2)+exp((x-[1])/[3])*(1-exp(-0.5*((x-[1])/[2])^2))))+(x>=[1])*([0]*exp(-0.5*((x-[1])/[2])^2))",2.5,4);
-    fBackground=new TF1("DieleBackground","[0]*exp(-(x-[1])/[2])+[3]",2.5,4);
-    fSigBack=new TF1("DieleCombined","(x<[1])*([0]*(exp(-0.5*((x-[1])/[2])^2)+exp((x-[1])/[3])*(1-exp(-0.5*((x-[1])/[2])^2))))+(x>=[1])*([0]*exp(-0.5*((x-[1])/[2])^2))+[4]*exp(-(x-[5])/[6])+[7]",2.5,4);
-    fSigBack->SetParameters(1.,3.1,.05,.1,1,2.5,1,0);
+    fFuncSignal = new TF1("DieleSignal","(x<[1])*([0]*(exp(-0.5*((x-[1])/[2])^2)+exp((x-[1])/[3])*(1-exp(-0.5*((x-[1])/[2])^2))))+(x>=[1])*([0]*exp(-0.5*((x-[1])/[2])^2))",2.5,4);
+    fFuncBackground = new TF1("DieleBackground","[0]*exp(-(x-[1])/[2])+[3]",2.5,4);
+    fFuncSigBack = new TF1("DieleCombined","(x<[1])*([0]*(exp(-0.5*((x-[1])/[2])^2)+exp((x-[1])/[3])*(1-exp(-0.5*((x-[1])/[2])^2))))+(x>=[1])*([0]*exp(-0.5*((x-[1])/[2])^2))+[4]*exp(-(x-[5])/[6])+[7]",2.5,4);
+    fFuncSigBack->SetParameters(1.,3.1,.05,.1,1,2.5,1,0);
     
-    fSigBack->SetParLimits(0,0,10000000);
-    fSigBack->SetParLimits(1,3.05,3.15);
-    fSigBack->SetParLimits(2,.02,.1);
-    fSigBack->FixParameter(6,2.5);
-    fSigBack->FixParameter(7,0);
-    SetFunctions(fSignal,fBackground,fSigBack,1,2);
-
+    fFuncSigBack->SetParLimits(0,0,10000000);
+    fFuncSigBack->SetParLimits(1,3.05,3.15);
+    fFuncSigBack->SetParLimits(2,.02,.1);
+    fFuncSigBack->FixParameter(6,2.5);
+    fFuncSigBack->FixParameter(7,0);
   }
-  
 }
 
 
@@ -275,22 +398,22 @@ void AliDielectronSignalFunc::Draw(const Option_t* option)
   //
   // Draw the fitted function
   //
-
+  
   TString drawOpt(option);
   drawOpt.ToLower();
 
   Bool_t optStat=drawOpt.Contains("stat");
   
-  fSigBack->SetNpx(200);
-  fSigBack->SetRange(GetIntegralMin(),GetIntegralMax());
-  fBackground->SetNpx(200);
-  fBackground->SetRange(GetIntegralMin(),GetIntegralMax());
+  fFuncSigBack->SetNpx(200);
+  fFuncSigBack->SetRange(fIntMin,fIntMax);
+  fFuncBackground->SetNpx(200);
+  fFuncBackground->SetRange(fIntMin,fIntMax);
   
-  TGraph *grSig=new TGraph(fSigBack);
+  TGraph *grSig=new TGraph(fFuncSigBack);
   grSig->SetFillColor(kGreen);
   grSig->SetFillStyle(3001);
 
-  TGraph *grBack=new TGraph(fBackground);
+  TGraph *grBack=new TGraph(fFuncBackground);
   grBack->SetFillColor(kRed);
   grBack->SetFillStyle(3001);
 
@@ -300,12 +423,12 @@ void AliDielectronSignalFunc::Draw(const Option_t* option)
   grBack->SetPoint(0,grBack->GetX()[0],0.);
   grBack->SetPoint(grBack->GetN()-1,grBack->GetX()[grBack->GetN()-1],0.);
   
-  fSigBack->SetRange(fFitMin,fFitMax);
-  fBackground->SetRange(fFitMin,fFitMax);
+  fFuncSigBack->SetRange(fFitMin,fFitMax);
+  fFuncBackground->SetRange(fFitMin,fFitMax);
   
   if (!drawOpt.Contains("same")){
-    if (fSignalHist){
-      fSignalHist->Draw();
+    if (fHistDataPM){
+      fHistDataPM->Draw();
       grSig->Draw("f");
     } else {
       grSig->Draw("af");
@@ -313,11 +436,21 @@ void AliDielectronSignalFunc::Draw(const Option_t* option)
   } else {
     grSig->Draw("f");
   }
-  grBack->Draw("f");
-  fSigBack->Draw("same");
-  fBackground->Draw("same");
+  if(fMethod==kFitted) grBack->Draw("f");
+  fFuncSigBack->Draw("same");
+  fFuncSigBack->SetLineWidth(2);
+  if(fMethod==kLikeSign) {
+    fHistDataPP->SetLineWidth(2);
+    fHistDataPP->SetLineColor(6);
+    fHistDataPP->Draw("same");
+    fHistDataMM->SetLineWidth(2);
+    fHistDataMM->SetLineColor(8); 
+    fHistDataMM->Draw("same");
+  }
+
+  if(fMethod==kFitted) 
+    fFuncBackground->Draw("same");
 
   if (optStat) DrawStats();
-    
+  
 }
-

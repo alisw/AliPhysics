@@ -19,6 +19,27 @@
 //#                                                           #
 //#############################################################
 
+/*
+  Class used for extracting the signal from an invariant mass spectrum.
+  It implements the AliDielectronSignalBase class and uses the like-sign
+  substraction method for estimating the signal and background.
+  There is no fitting in this class, only bin counting.
+
+  Example usage:
+   AliDielectronSignalExt *signalProcess = new AliDielectronSignalExt();
+   TObjArray *histoArray = new TObjArray();
+   histoArray->Add(signalPP);                  // the order of putting the histograms in the array is important!!
+   histoArray->Add(signalPM);
+   histoArray->Add(signalMM);
+   signalProcess->SetMethod(AliDielectronSignalBase::kLikeSign);  // or kEventMixing
+   signalProcess->SetIntegralRange(3.0,3.15);   // J/Psi peak
+   signalProcess->SetRebin(2);                  // rebin the histograms
+   signalProcess->Process(histoArray);
+   signalProcess->Draw("stat");
+   signalProcess->Print();
+
+*/
+
 #include <TVectorT.h>
 #include <TString.h>
 #include <TH1.h>
@@ -28,6 +49,7 @@
 class AliDielectronSignalExt : public AliDielectronSignalBase {
 
 public:
+ 
   AliDielectronSignalExt();
   AliDielectronSignalExt(const char*name, const char* title);
 
@@ -37,46 +59,14 @@ public:
   void ProcessLS(TObjArray* const arrhist);  // like-sign method
   void ProcessEM(TObjArray* const arrhist);  // event mixing method
   
-  // getters
-  TH1F* GetHistogramSignal()     const { return fSignal; } 
-  TH1F* GetHistogramBackground() const { return fBackground; }
-
-  // setters
-  void SetMethod(Int_t method){ fMethod=method; }
-  void SetHistograms(TH1F* const unlike, TH1F* const backg, TH1F* const signal);
-  void SetRebin(Int_t rebin) {fRebin = rebin;}
-  void SetDrawRange(Double_t min, Double_t max){fDrawMin=min; fDrawMax=max;}
-  void SetFitRange(Double_t min, Double_t max) {fFitMin=min;fFitMax=max;}
-
-  Double_t GetFitMin()      const { return fFitMin; }
-  Double_t GetFitMax()      const { return fFitMax; }
-  void Rebin(Int_t rebin);
-  
   virtual void Draw(const Option_t* option = "");
 
-
 private:
-  
-  TH1F *fSignPM;              // histogram of unlike sign (plus-minus)
-  TH1F *fSignPP;              // histogram of like sign (plus-plus)
-  TH1F *fSignMM;              // histogram of like sign (minus-minus)
-  TH1F *fBackground;          // histogram of like-sign background
-  TH1F *fSignal;              // histogram of subtracted signal
-  
-  Int_t    fMethod;           // subtraction method. 1(like-sign), 2(event mixing)
-  Int_t    fRebin;            // number of histogram rebin iteration
-  Int_t    fBins;             // number of bins in X axis
-  Double_t fDrawMin;          // minimum X when drawing 
-  Double_t fDrawMax;          // maximum X when drawing
-  Double_t fFitMin;           // fit range min
-  Double_t fFitMax;           // fit range max
 
   AliDielectronSignalExt(const AliDielectronSignalExt &c);
   AliDielectronSignalExt &operator=(const AliDielectronSignalExt &c);
 
-  ClassDef(AliDielectronSignalExt,1)         // Dielectron SignalFunc
+  ClassDef(AliDielectronSignalExt,2)    // Dielectron SignalFunc
 };
-
-
 
 #endif
