@@ -36,78 +36,77 @@ ClassImp(AliCFVertexingHF2Prong)
 
 //_________________________________________
   AliCFVertexingHF2Prong::AliCFVertexingHF2Prong(TClonesArray *mcArray, UShort_t originDselection):
-  AliCFVertexingHF(mcArray, originDselection)
- 
+	  AliCFVertexingHF(mcArray, originDselection)
 {	
-	
-  SetNProngs(2);
+	//
+	// constructor
+	//
+
+	SetNProngs(2);
 }
 
 
 //_____________________________________
-AliCFVertexingHF2Prong& AliCFVertexingHF2Prong::operator=(const AliCFVertexingHF2Prong& c){
- 
-  if  (this != &c) {
+AliCFVertexingHF2Prong& AliCFVertexingHF2Prong::operator=(const AliCFVertexingHF2Prong& c)
+{
+	//
+	// copy constructor	
+	//
 
-	  AliCFVertexingHF::operator=(c);
-   
-  }
-    return *this;
-
-
+	if  (this != &c) {		
+		AliCFVertexingHF::operator=(c);		
+	}
+	return *this;
 }
 
 //__________________________________________
-Bool_t AliCFVertexingHF2Prong::SetRecoCandidateParam(AliAODRecoDecayHF *recoCand){
-  
-  Bool_t bSignAssoc = kFALSE;
+Bool_t AliCFVertexingHF2Prong::SetRecoCandidateParam(AliAODRecoDecayHF *recoCand)
+{  
+	//
+	// setting the recontructed candidate
+	//
+	
+	Bool_t bSignAssoc = kFALSE;	
+	fRecoCandidate = recoCand;
+	if (!fRecoCandidate) {
+		AliError("fRecoCandidate not found, problem in assignement\n");
+		return bSignAssoc;
+	}
+	
+	if (fRecoCandidate->GetPrimaryVtx()) AliDebug(3,"fReco Candidate has a pointer to PrimVtx\n");
+	if (recoCand->GetPrimaryVtx()) AliDebug(3,"Reco Cand has a pointer to PrimVtx\n");
+	
+	Int_t pdgCand = 421;
+	Int_t pdgDgD0toKpi[2]={321,211};
+	Int_t nentries = fmcArray->GetEntriesFast();	
 
-  fRecoCandidate = recoCand;
-
-  if (!fRecoCandidate) {
-    printf("fRecoCandidate not found, problem in assignement\n");
-    return bSignAssoc;
-  }
-  
-  if (fRecoCandidate->GetPrimaryVtx()) printf("fReco Candidate has a pointer to PrimVtx\n");
-  if (recoCand->GetPrimaryVtx()) printf("Reco Cand has a pointer to PrimVtx\n");
-  
-  Int_t pdgCand = 421;
-  Int_t pdgDgD0toKpi[2]={321,211};
-  Int_t nentries = fmcArray->GetEntriesFast();
-
-  printf ("nentries = %d\n", nentries);
+	AliDebug(3,Form("nentries = %d\n", nentries));
  
-  Int_t mcLabel = fRecoCandidate->MatchToMC(pdgCand,fmcArray,2,pdgDgD0toKpi);
-  
-  if (mcLabel == -1) return bSignAssoc;
-  SetMCLabel(mcLabel);
-  fmcPartCandidate = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fmcLabel));
-    
-  if (!fmcPartCandidate){
-    AliDebug(3,"No part candidate");
-    return bSignAssoc;
-  }
-
-
-  bSignAssoc = kTRUE;
-  return bSignAssoc;
+	Int_t mcLabel = fRecoCandidate->MatchToMC(pdgCand,fmcArray,2,pdgDgD0toKpi);
+	if (mcLabel == -1) return bSignAssoc;
+	SetMCLabel(mcLabel);
+	fmcPartCandidate = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fmcLabel));
+	if (!fmcPartCandidate){
+		AliDebug(3,"No part candidate");
+		return bSignAssoc;
+	}	
+	bSignAssoc = kTRUE;
+	return bSignAssoc;
 }
 
 //______________________________________________
-Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vectorMC) {
+Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vectorMC) 
+{
 	// 
 	// collecting all the necessary info (pt, y, cosThetaStar, ptPi, ptKa, cT) from MC particle
 	//
 	
 	Bool_t bGenValues = kFALSE;
-	
 	Double_t vtx1[3] = {0,0,0};   // primary vertex		
 	Double_t vtx2daughter0[3] = {0,0,0};   // secondary vertex from daughter 0
 	Double_t vtx2daughter1[3] = {0,0,0};   // secondary vertex from daughter 1
 	fmcPartCandidate->XvYvZv(vtx1);  // cm
 
-	
 	Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
 	Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
 	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
@@ -117,8 +116,8 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	mcPartDaughter0->XvYvZv(vtx2daughter0);  // cm
 	mcPartDaughter1->XvYvZv(vtx2daughter1);  //cm
 	if (vtx2daughter0[0] != vtx2daughter1[0] && vtx2daughter0[1] != vtx2daughter1[1] && vtx2daughter0[2] != vtx2daughter1[2]) {
-	  AliError("Daughters have different secondary vertex, skipping the track");
-	  return bGenValues;
+		AliError("Daughters have different secondary vertex, skipping the track");
+		return bGenValues;
 	}
 	
 	Int_t nprongs = 2;
@@ -146,20 +145,20 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	cosThetaStarD0 = decay->CosThetaStar(1,421,211,321);
 	cosThetaStarD0bar = decay->CosThetaStar(0,421,321,211);
 	if (fmcPartCandidate->GetPdgCode() == 421){  // D0
-	  AliDebug(3, Form("D0, with pdgprong0 = %d, pdgprong1 = %d",mcPartDaughter0->GetPdgCode(),mcPartDaughter1->GetPdgCode()));
-	  cosThetaStar = cosThetaStarD0;
+		AliDebug(3, Form("D0, with pdgprong0 = %d, pdgprong1 = %d",mcPartDaughter0->GetPdgCode(),mcPartDaughter1->GetPdgCode()));
+		cosThetaStar = cosThetaStarD0;
 	}
 	else if (fmcPartCandidate->GetPdgCode() == -421){  // D0bar{
-	  AliDebug(3, Form("D0bar, with pdgprong0 = %d, pdgprong1 = %d",mcPartDaughter0->GetPdgCode(),mcPartDaughter1->GetPdgCode()));
-	  cosThetaStar = cosThetaStarD0bar;
+		AliDebug(3, Form("D0bar, with pdgprong0 = %d, pdgprong1 = %d",mcPartDaughter0->GetPdgCode(),mcPartDaughter1->GetPdgCode()));
+		cosThetaStar = cosThetaStarD0bar;
 	}
 	else{
-	  AliWarning("There are problems!! particle was expected to be either a D0 or a D0bar, check...");
-	  return vectorMC;
+		AliWarning("There are problems!! particle was expected to be either a D0 or a D0bar, check...");
+		return vectorMC;
 	}
 	if (cosThetaStar < -1 || cosThetaStar > 1) {
-	  AliWarning("Invalid value for cosine Theta star, returning");
-	  return bGenValues;
+		AliWarning("Invalid value for cosine Theta star, returning");
+		return bGenValues;
 	}
 		
 	//ct
@@ -190,103 +189,102 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	vectorMC[10] = 1.01;    // dummy value, meaningless in MC
 	vectorMC[11] = fmcPartCandidate->Phi(); 
 	vectorMC[12] = fzMCVertex;    // z of reconstructed of primary vertex
+	delete decay;
 	bGenValues = kTRUE;
 	return bGenValues;
 }
-
-
-
 //____________________________________________
 Bool_t AliCFVertexingHF2Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) const
-{ 
-  Bool_t bFillRecoValues=kFALSE;
-  
-  AliAODRecoDecayHF2Prong *d0toKpi = (AliAODRecoDecayHF2Prong*)fRecoCandidate;
- 
-  if (d0toKpi->GetPrimaryVtx())printf("d0toKpi has primary vtx\n");
-  if (fRecoCandidate->GetPrimaryVtx())printf("fRecoCandidate has primary vtx\n");
-  
-  Double_t pt = d0toKpi->Pt();
-  Double_t rapidity = d0toKpi->YD0();
-  Double_t invMass=0.;
-  Double_t cosThetaStar = 9999.;
-  Double_t pTpi = 0.;
-  Double_t pTK = 0.;
-  Double_t dca = d0toKpi->GetDCA();
-  Double_t d0pi = 0.;
-  Double_t d0K = 0.;
-  Double_t d0xd0 = d0toKpi->Prodd0d0();
-  Double_t cosPointingAngle = d0toKpi->CosPointingAngle();
-  Double_t phi = d0toKpi->Phi();
-  Int_t pdgCode = fmcPartCandidate->GetPdgCode();
- 
+{
+	//
+	// Getting the reconstructed values from the candidate
+	// 
+	
+	Bool_t bFillRecoValues=kFALSE;
+	
+	AliAODRecoDecayHF2Prong *d0toKpi = (AliAODRecoDecayHF2Prong*)fRecoCandidate;
+	
+	if (d0toKpi->GetPrimaryVtx())AliDebug(3,"d0toKpi has primary vtx\n");
+	if (fRecoCandidate->GetPrimaryVtx())AliDebug(3,"fRecoCandidate has primary vtx\n");
+	
+	Double_t pt = d0toKpi->Pt();
+	Double_t rapidity = d0toKpi->YD0();
+	Double_t invMass=0.;
+	Double_t cosThetaStar = 9999.;
+	Double_t pTpi = 0.;
+	Double_t pTK = 0.;
+	Double_t dca = d0toKpi->GetDCA();
+	Double_t d0pi = 0.;
+	Double_t d0K = 0.;
+	Double_t d0xd0 = d0toKpi->Prodd0d0();
+	Double_t cosPointingAngle = d0toKpi->CosPointingAngle();
+	Double_t phi = d0toKpi->Phi();
+	Int_t pdgCode = fmcPartCandidate->GetPdgCode();
+       
+	if (pdgCode > 0){
+		cosThetaStar = d0toKpi->CosThetaStarD0();
+		pTpi = d0toKpi->PtProng(0);
+		pTK = d0toKpi->PtProng(1);
+		d0pi = d0toKpi->Getd0Prong(0);
+		d0K = d0toKpi->Getd0Prong(1);
+		invMass=d0toKpi->InvMassD0();
+	}
+	else {
+		cosThetaStar = d0toKpi->CosThetaStarD0bar();
+		pTpi = d0toKpi->PtProng(1);
+		pTK = d0toKpi->PtProng(0);
+		d0pi = d0toKpi->Getd0Prong(1);
+		d0K = d0toKpi->Getd0Prong(0);
+		invMass= d0toKpi->InvMassD0bar();
+	}
+	
+	Double_t cT = d0toKpi->CtD0();	
+	
+	vectorReco[0] = pt;
+	vectorReco[1] = rapidity;
+	vectorReco[2] = cosThetaStar;
+	vectorReco[3] = pTpi;
+	vectorReco[4] = pTK;
+	vectorReco[5] = cT*1.E4;  // in micron
+	vectorReco[6] = dca*1.E4;  // in micron
+	vectorReco[7] = d0pi*1.E4;  // in micron
+	vectorReco[8] = d0K*1.E4;  // in micron
+	vectorReco[9] = d0xd0*1.E8;  // in micron^2
+	vectorReco[10] = cosPointingAngle;  // in micron
+	vectorReco[11] = phi;  
+	vectorReco[12] = fzPrimVertex;    // z of reconstructed of primary vertex
+	bFillRecoValues = kTRUE;
 
-  if (pdgCode > 0){
-    cosThetaStar = d0toKpi->CosThetaStarD0();
-    pTpi = d0toKpi->PtProng(0);
-    pTK = d0toKpi->PtProng(1);
-    d0pi = d0toKpi->Getd0Prong(0);
-    d0K = d0toKpi->Getd0Prong(1);
-    invMass=d0toKpi->InvMassD0();
-  }
-  else {
-    cosThetaStar = d0toKpi->CosThetaStarD0bar();
-    pTpi = d0toKpi->PtProng(1);
-    pTK = d0toKpi->PtProng(0);
-    d0pi = d0toKpi->Getd0Prong(1);
-    d0K = d0toKpi->Getd0Prong(0);
-    invMass= d0toKpi->InvMassD0bar();
-  }
-  
-  Double_t cT = d0toKpi->CtD0();
-  
-  
-  vectorReco[0] = pt;
-  vectorReco[1] = rapidity;
-  vectorReco[2] = cosThetaStar;
-  vectorReco[3] = pTpi;
-  vectorReco[4] = pTK;
-  vectorReco[5] = cT*1.E4;  // in micron
-  vectorReco[6] = dca*1.E4;  // in micron
-  vectorReco[7] = d0pi*1.E4;  // in micron
-  vectorReco[8] = d0K*1.E4;  // in micron
-  vectorReco[9] = d0xd0*1.E8;  // in micron^2
-  vectorReco[10] = cosPointingAngle;  // in micron
-  vectorReco[11] = phi;  
-  vectorReco[12] = fzPrimVertex;    // z of reconstructed of primary vertex
-  
-  bFillRecoValues = kTRUE;
-
-
-  return bFillRecoValues;
+	return bFillRecoValues;
 }
-
 
 //_____________________________________________________________
 Bool_t AliCFVertexingHF2Prong::CheckMCChannelDecay() const
 { 
-  Bool_t checkCD = kFALSE;
-  Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
-  Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
-  AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
-  AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1));
-
-  if (!mcPartDaughter0 || !mcPartDaughter1) {
-    AliDebug (2,"Problems in the MC Daughters\n");
-    return checkCD;
-  }
-
-  if (!(TMath::Abs(mcPartDaughter0->GetPdgCode())==321 &&
-	TMath::Abs(mcPartDaughter1->GetPdgCode())==211) && 
-      !(TMath::Abs(mcPartDaughter0->GetPdgCode())==211 &&
-	TMath::Abs(mcPartDaughter1->GetPdgCode())==321)) {
-    AliDebug(2, "The D0 MC doesn't come from a Kpi decay, skipping!!");
-    return checkCD;  
-  }
-  
-  checkCD = kTRUE;
-  return checkCD;
-  
+	//
+	// checking the MC decay channel
+	//
+	Bool_t checkCD = kFALSE;
+	Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
+	Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
+	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
+	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1));
+	
+	if (!mcPartDaughter0 || !mcPartDaughter1) {
+		AliDebug (2,"Problems in the MC Daughters\n");
+		return checkCD;
+	}
+	
+	if (!(TMath::Abs(mcPartDaughter0->GetPdgCode())==321 &&
+	      TMath::Abs(mcPartDaughter1->GetPdgCode())==211) && 
+	    !(TMath::Abs(mcPartDaughter0->GetPdgCode())==211 &&
+	      TMath::Abs(mcPartDaughter1->GetPdgCode())==321)) {
+		AliDebug(2, "The D0 MC doesn't come from a Kpi decay, skipping!!");
+		return checkCD;  
+	}
+	
+	checkCD = kTRUE;
+	return checkCD;
+	
 }
 
-//_______________________________________________

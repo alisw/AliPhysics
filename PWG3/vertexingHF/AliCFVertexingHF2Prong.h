@@ -37,26 +37,25 @@ class TDatabasePDG;
 class AliCFVertexingHF2Prong : public AliCFVertexingHF{
 	public:
 		
-  AliCFVertexingHF2Prong(){};
-  AliCFVertexingHF2Prong(TClonesArray *mcArray, UShort_t originDselection);
+	AliCFVertexingHF2Prong(){};
+	AliCFVertexingHF2Prong(TClonesArray *mcArray, UShort_t originDselection);
 	
-  virtual ~AliCFVertexingHF2Prong(){};
-  
-  
-  Bool_t GetGeneratedValuesFromMCParticle(Double_t* /*vectorMC*/);
-  Bool_t GetRecoValuesFromCandidate(Double_t* /*vectorReco*/ ) const;
-  Bool_t CheckMCChannelDecay()const;
-  
-  Bool_t SetRecoCandidateParam(AliAODRecoDecayHF *recoCand);
-  
+	//  virtual ~AliCFVertexingHF2Prong(){};
+	
+ 	Bool_t GetGeneratedValuesFromMCParticle(Double_t* /*vectorMC*/);
+	Bool_t GetRecoValuesFromCandidate(Double_t* /*vectorReco*/ ) const;
+	Bool_t CheckMCChannelDecay()const;
+	
+	Bool_t SetRecoCandidateParam(AliAODRecoDecayHF *recoCand);
+	
  protected:
   
   
  private:	
-  AliCFVertexingHF2Prong(const AliCFVertexingHF2Prong& c);
-  AliCFVertexingHF2Prong& operator= (const AliCFVertexingHF2Prong& other);
-  
-  ClassDef(AliCFVertexingHF2Prong, 1);
+	AliCFVertexingHF2Prong(const AliCFVertexingHF2Prong& c);
+	AliCFVertexingHF2Prong& operator= (const AliCFVertexingHF2Prong& other);
+	
+	ClassDef(AliCFVertexingHF2Prong, 1);
   
 };
 

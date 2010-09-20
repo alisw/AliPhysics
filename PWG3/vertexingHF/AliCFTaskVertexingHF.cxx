@@ -48,6 +48,9 @@
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODRecoDecayHF3Prong.h"
+#include "AliAODRecoDecayHF4Prong.h"
+#include "AliAODRecoCascadeHF.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliESDtrack.h"
@@ -55,69 +58,86 @@
 #include "THnSparse.h"
 #include "TH2D.h"
 #include "AliESDtrackCuts.h"
+#include "AliRDHFCuts.h"
 #include "AliRDHFCutsD0toKpi.h"
+#include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
+#include "AliRDHFCutsDstoKKpi.h"
+#include "AliRDHFCutsLctopKpi.h"
+#include "AliRDHFCutsD0toKpipipi.h"
 #include "AliCFVertexingHF2Prong.h"
+//#include "AliCFVertexingHF3Prong.h"
 #include "AliCFVertexingHF.h"
+#include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
 
 //__________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
-AliAnalysisTaskSE(),
-fPDG(0),
-fCFManager(0x0),
-fHistEventsProcessed(0x0),
-fCorrelation(0x0),
-fCountMC(0),
-fCountAcc(0),
-fCountVertex(0),
-fCountRefit(0),
-fCountReco(0),
-fCountRecoAcc(0),
-fCountRecoITSClusters(0),
-fCountRecoPPR(0),
-fCountRecoPID(0),
-fEvents(0),
-fFillFromGenerated(kFALSE),
-fOriginDselection(0),
-fAcceptanceUnf(kTRUE),
-fCuts(0)
+	AliAnalysisTaskSE(),
+	fPDG(0),
+	fCFManager(0x0),
+	fHistEventsProcessed(0x0),
+	fCorrelation(0x0),
+	fCountMC(0),
+	fCountAcc(0),
+	fCountVertex(0),
+	fCountRefit(0),
+	fCountReco(0),
+	fCountRecoAcc(0),
+	fCountRecoITSClusters(0),
+	fCountRecoPPR(0),
+	fCountRecoPID(0),
+	fEvents(0),
+	fDecayChannel(0),
+	fFillFromGenerated(kFALSE),
+	fOriginDselection(0),
+	fAcceptanceUnf(kTRUE),
+	fCuts(0),
+	fUseWeight(kFALSE),
+	fWeight(1.),
+	fNvar(0)
 {
 	//
 	//Default ctor
 	//
 }
 //___________________________________________________________________________
-AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCutsD0toKpi* cuts) :
-AliAnalysisTaskSE(name),
-fPDG(0),
-fCFManager(0x0),
-fHistEventsProcessed(0x0),
-fCorrelation(0x0),
-fCountMC(0),
-fCountAcc(0),
-fCountVertex(0),
-fCountRefit(0),
-fCountReco(0),
-fCountRecoAcc(0),
-fCountRecoITSClusters(0),
-fCountRecoPPR(0),
-fCountRecoPID(0),
-fEvents(0),
-fFillFromGenerated(kFALSE),
-fOriginDselection(0),
-fAcceptanceUnf(kTRUE),
-fCuts(cuts)
+AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts) :
+	AliAnalysisTaskSE(name),
+	fPDG(0),
+	fCFManager(0x0),
+	fHistEventsProcessed(0x0),
+	fCorrelation(0x0),
+	fCountMC(0),
+	fCountAcc(0),
+	fCountVertex(0),
+	fCountRefit(0),
+	fCountReco(0),
+	fCountRecoAcc(0),
+	fCountRecoITSClusters(0),
+	fCountRecoPPR(0),
+	fCountRecoPID(0),
+	fEvents(0),
+	fDecayChannel(0),
+	fFillFromGenerated(kFALSE),
+	fOriginDselection(0),
+	fAcceptanceUnf(kTRUE),
+	fCuts(cuts), 
+	fUseWeight(kFALSE),
+	fWeight(1.),
+	fNvar(0)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
 	//
-	Info("AliCFTaskVertexingHF","Calling Constructor");
 	/*
-	 DefineInput(0) and DefineOutput(0)
-	 are taken care of by AliAnalysisTaskSE constructor
-	 */
+	  DefineInput(0) and DefineOutput(0)
+	  are taken care of by AliAnalysisTaskSE constructor
+	*/
 	DefineOutput(1,TH1I::Class());
 	DefineOutput(2,AliCFContainer::Class());
 	DefineOutput(3,THnSparseD::Class());
+	DefineOutput(4,AliRDHFCuts::Class());
 	
 	fCuts->PrintAll();
 }
@@ -130,7 +150,6 @@ AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF
 	//
 	if (this!=&c) {
 		AliAnalysisTaskSE::operator=(c) ;
-		fPDG      = c.fPDG;
 		fCFManager  = c.fCFManager;
 		fHistEventsProcessed = c.fHistEventsProcessed;
 		fCuts = c.fCuts;
@@ -140,25 +159,29 @@ AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF
 
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
-AliAnalysisTaskSE(c),
-fPDG(c.fPDG),
-fCFManager(c.fCFManager),
-fHistEventsProcessed(c.fHistEventsProcessed),
-fCorrelation(c.fCorrelation),
-fCountMC(c.fCountMC),
-fCountAcc(c.fCountAcc),
-fCountVertex(c.fCountVertex),
-fCountRefit(c.fCountRefit),
-fCountReco(c.fCountReco),
-fCountRecoAcc(c.fCountRecoAcc),
-fCountRecoITSClusters(c.fCountRecoITSClusters),
-fCountRecoPPR(c.fCountRecoPPR),
-fCountRecoPID(c.fCountRecoPID),
-fEvents(c.fEvents),
-fFillFromGenerated(c.fFillFromGenerated),
-fOriginDselection(c.fOriginDselection),
-fAcceptanceUnf(c.fAcceptanceUnf),
-fCuts(c.fCuts)
+	AliAnalysisTaskSE(c),
+	fPDG(c.fPDG),
+	fCFManager(c.fCFManager),
+	fHistEventsProcessed(c.fHistEventsProcessed),
+	fCorrelation(c.fCorrelation),
+	fCountMC(c.fCountMC),
+	fCountAcc(c.fCountAcc),
+	fCountVertex(c.fCountVertex),
+	fCountRefit(c.fCountRefit),
+	fCountReco(c.fCountReco),
+	fCountRecoAcc(c.fCountRecoAcc),
+	fCountRecoITSClusters(c.fCountRecoITSClusters),
+	fCountRecoPPR(c.fCountRecoPPR),
+	fCountRecoPID(c.fCountRecoPID),
+	fEvents(c.fEvents),
+	fDecayChannel(c.fDecayChannel),
+	fFillFromGenerated(c.fFillFromGenerated),
+	fOriginDselection(c.fOriginDselection),
+	fAcceptanceUnf(c.fAcceptanceUnf),
+	fCuts(c.fCuts),
+	fUseWeight(c.fUseWeight),
+	fWeight(c.fWeight),
+	fNvar(c.fNvar)
 {
 	//
 	// Copy Constructor
@@ -166,20 +189,76 @@ fCuts(c.fCuts)
 }
 
 //___________________________________________________________________________
-AliCFTaskVertexingHF::~AliCFTaskVertexingHF() {
+AliCFTaskVertexingHF::~AliCFTaskVertexingHF() 
+{
 	//
 	//destructor
 	//
 	if (fCFManager)           delete fCFManager ;
 	if (fHistEventsProcessed) delete fHistEventsProcessed ;
-	if (fCorrelation)		  delete fCorrelation ;
+	if (fCorrelation)	  delete fCorrelation ;
 	if (fCuts)                delete fCuts;
+}
+
+//_________________________________________________________________________-
+void AliCFTaskVertexingHF::Init()
+{
+	//
+	// Initialization
+	//
+	
+	if (fDebug>1) printf("AliCFTaskVertexingHF::Init()");
+	AliRDHFCuts *copyfCuts = 0x0;
+	
+
+	switch (fDecayChannel){
+	case 2:{
+		copyfCuts = new AliRDHFCutsD0toKpi(*(dynamic_cast<AliRDHFCutsD0toKpi*>(fCuts)));
+		fNvar = 13;
+		break;
+	}
+	case 21:{ 
+		copyfCuts = new AliRDHFCutsDStartoKpipi(*(dynamic_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
+		fNvar = 13;
+		break;
+	}
+	case 31:{
+		copyfCuts = new AliRDHFCutsDplustoKpipi(*(dynamic_cast<AliRDHFCutsDplustoKpipi*>(fCuts)));
+		fNvar = 12;
+		break;
+	}
+	case 32:{
+		copyfCuts = new AliRDHFCutsLctopKpi(*(dynamic_cast<AliRDHFCutsLctopKpi*>(fCuts)));
+		fNvar = 13;
+		break;
+	}
+	case 33:{
+		copyfCuts = new AliRDHFCutsDstoKKpi(*(dynamic_cast<AliRDHFCutsDstoKKpi*>(fCuts)));
+		fNvar = 13;
+		break;
+	}
+	case 4:{
+		copyfCuts = new AliRDHFCutsD0toKpipipi(*(dynamic_cast<AliRDHFCutsD0toKpipipi*>(fCuts)));
+		fNvar = 13;
+		break;
+	}
+	default:
+		AliFatal("The decay channel MUST be defined according to AliCFVertexing::DecayChannel - Exiting...");
+		break;
+	}  
+	
+	const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
+	copyfCuts->SetName(nameoutput);
+	
+	//Post the data
+	PostData(4, copyfCuts);
+	
+	return;
 }
 
 //_________________________________________________
 void AliCFTaskVertexingHF::UserExec(Option_t *)
 {
-	
 	//
 	// Main loop function
 	//
@@ -201,32 +280,75 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	
 	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
 	
-	TClonesArray *arrayD0toKpi=0;
-	//TClonesArray *arrayBranch=0;
+	TClonesArray *arrayBranch=0;
 	
 	if(!aodEvent && AODEvent() && IsStandardAOD()) {
-	  // In case there is an AOD handler writing a standard AOD, use the AOD 
-	  // event in memory rather than the input (ESD) event.    
-	  aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
-	  // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
-	  // have to taken from the AOD event hold by the AliAODExtension
-	  AliAODHandler* aodHandler = (AliAODHandler*) 
-	    ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-	  if(aodHandler->GetExtensions()) {
-	    AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
-	    AliAODEvent *aodFromExt = ext->GetAOD();
-	    arrayD0toKpi=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
-	  }
-	} else {
-	  arrayD0toKpi=(TClonesArray*)aodEvent->GetList()->FindObject("D0toKpi");
+		// In case there is an AOD handler writing a standard AOD, use the AOD 
+		// event in memory rather than the input (ESD) event.    
+		aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
+		// in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+		// have to taken from the AOD event hold by the AliAODExtension
+		AliAODHandler* aodHandler = (AliAODHandler*) 
+			((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+		if(aodHandler->GetExtensions()) {
+			AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+			AliAODEvent *aodFromExt = ext->GetAOD();
+			
+			switch (fDecayChannel){
+			case 2:{
+				arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+				break;
+			}
+			case 21:{ 
+				arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+				break;
+			}
+			case 31:
+			case 32:
+			case 33:{
+				arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
+				break;
+			}
+			case 4:{
+				arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm4Prong");
+				break;
+			}
+			default:
+				break;
+			}
+		}
+	} 
+	else {
+		switch (fDecayChannel){
+		case 2:{
+			arrayBranch=(TClonesArray*)aodEvent->GetList()->FindObject("D0toKpi");
+			break;
+		}
+		case 21:{ 
+			arrayBranch=(TClonesArray*)aodEvent->GetList()->FindObject("Dstar");
+			break;
+		}
+		case 31:
+		case 32:
+		case 33:{
+			arrayBranch=(TClonesArray*)aodEvent->GetList()->FindObject("Charm3Prong");
+			break;
+		}
+		case 4:{
+			arrayBranch=(TClonesArray*)aodEvent->GetList()->FindObject("Charm4Prong");
+			break;
+		}
+		default:
+			break;
+		}
 	}
 	
 	AliAODVertex *aodVtx = (AliAODVertex*)aodEvent->GetPrimaryVertex();
 	if (!aodVtx) return;
-
-	if (!arrayD0toKpi) {
-	  AliError("Could not find array of HF vertices");
-	  return;
+	
+	if (!arrayBranch) {
+		AliError("Could not find array of HF vertices");
+		return;
 	}
 	
 	fEvents++;
@@ -235,12 +357,11 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	fCFManager->SetRecEventInfo(aodEvent);
 	fCFManager->SetMCEventInfo(aodEvent);
 	
-	
 	//******** DEFINE number of variables of the container***** for now set at 13, in the future in the config macro.
-	Int_t nVar = 13;
+	//	Int_t nVar = 13;
 	
-	Double_t* containerInput = new Double_t[nVar];
-	Double_t* containerInputMC = new Double_t[nVar]; 
+	Double_t* containerInput = new Double_t[fNvar];
+	Double_t* containerInputMC = new Double_t[fNvar]; 
 	
 	//loop on the MC event
 	
@@ -258,229 +379,280 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	Int_t icountRecoITSClusters = 0;
 	Int_t icountRecoPPR = 0;
 	Int_t icountRecoPID = 0;
-	
 	Int_t cquarks = 0;
-
-	// These flgs will be setted i the config macro
 	UShort_t originDselection = 0;
-	
-	
+		
 	AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 	if (!mcHeader) {
 		AliError("Could not find MC Header in AOD");
 		return;
 	}
-
-
-	AliCFVertexingHF2Prong *cfVtxHF = new AliCFVertexingHF2Prong(mcArray, originDselection);
-
+       
+       	AliCFVertexingHF* cfVtxHF=0x0;
+	switch (fDecayChannel){
+	case 2:{
+		cfVtxHF = new AliCFVertexingHF2Prong(mcArray, originDselection);
+		break;
+	}
+	case 21:{ 
+		//	  cfVtxHF = new AliCFVertexingHFCascade(mcArray, originDselection);  // not there yet
+		break;
+	}
+	case 31:
+	case 32:
+	case 33:{
+	       //cfVtxHF = new AliCFVertexingHF3Prong(mcArray, originDselection, fDecayChannel); 
+		break;
+	}
+	case 4:{
+		//cfVtxHF = new AliCFVertexingHF4Prong(mcArray, originDselection);  // not there yet
+		break;
+	}
+	default:
+		break;
+	}
+	
 	Double_t zPrimVertex = aodVtx ->GetZ();
 	Double_t zMCVertex = mcHeader->GetVtxZ();
-
+	
 	//General settings: vertex, feed down and fill reco container with generated values.  			
 	cfVtxHF->SetRecoPrimVertex(zPrimVertex);
 	cfVtxHF->SetMCPrimaryVertex(zMCVertex);
 	cfVtxHF->SetFillFromGenerated(fFillFromGenerated);
-
-	//      cfVtxHF->SetKeepD0fromBOnly(fKeepD0fromBOnly);
-       	//	cfVtxHF->SetKeepD0fromB(fKeepD0fromB);
-
+	
 	for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
-
-	  AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
-
-	  // check the MC-level cuts, must be a D0
-	  if (!fCFManager->CheckParticleCuts(0, mcPart)) continue;  // 0 stands for MC level
-	  
-	  cfVtxHF->SetMCCandidateParam(iPart);
-	  cfVtxHF->SetNVar(nVar);
-	  //counting c quarks
-	  cquarks += cfVtxHF->MCcquarkCounting(mcPart);
-	 
-	  //check the candiate family at MV level
-	  if (!(cfVtxHF->CheckMCPartFamily(mcPart, mcArray))) continue;
-
-	  //Fill the MC container
-	  Bool_t mcContainerFilled = cfVtxHF -> FillMCContainer(containerInputMC);
-	  
-	  if (!fCuts->IsInFiducialAcceptance(containerInputMC[0],containerInputMC[1])) continue;
-	  if (TMath::Abs(containerInputMC[1]) < 0.5) {
-	    fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGeneratedLimAcc);
-	  }
-	    
-	  if (mcContainerFilled) {
-	    
-	    //MC 
-	    fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepGenerated);
-	    icountMC++;
-	    printf("MC cointainer filled \n");
-	    
-	      // MC in acceptance
-	      // check the MC-Acceptance level cuts
-	      // since standard CF functions are not applicable, using Kine Cuts on daughters
-	      Bool_t mcAccepStep = cfVtxHF-> MCAcceptanceStep();
-	      if (mcAccepStep){	
-			  fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance);
-			  printf("MC acceptance cut passed\n");
-			  icountAcc++;
 		
-			  //MC Vertex step
-			  if (fCuts->IsEventSelected(aodEvent)){
-				  // filling the container if the vertex is ok
-				  fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepVertex) ;
-				  printf("Vertex cut passed and container filled\n");
-				  icountVertex++;
-		  
-				  //mc Refit requirement	
-				  Bool_t mcRefitStep = cfVtxHF->MCRefitStep(aodEvent, trackCuts);
-				  if (mcRefitStep){
-					  fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit);
-					  printf("MC Refit cut passed and container filled\n");
-					  icountRefit++;
-				  }
-				  else{
-					  AliDebug(3,"MC Refit cut not passed\n");
-					  continue;
-				  }
-		  
-			  }
-			  else{
+		AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
+		
+		// check the MC-level cuts, must be the desidered particle
+		if (!fCFManager->CheckParticleCuts(0, mcPart)) continue;  // 0 stands for MC level
+		
+		cfVtxHF->SetMCCandidateParam(iPart);
+		cfVtxHF->SetNVar(fNvar);
+		//counting c quarks
+		cquarks += cfVtxHF->MCcquarkCounting(mcPart);
+		
+		//check the candiate family at MC level
+		if (!(cfVtxHF->CheckMCPartFamily(mcPart, mcArray))) {
+			Printf("Check on the family wrong!!! (decaychannel = %d)",fDecayChannel);
+			continue;
+		}
+		else{
+			Printf("Check on the family OK!!! (decaychannel = %d)",fDecayChannel);
+		}
+		
+		//Fill the MC container
+		Bool_t mcContainerFilled = cfVtxHF -> FillMCContainer(containerInputMC);
+		
+		if (mcContainerFilled) {
+			if (fUseWeight)fWeight = GetWeight(containerInputMC[0]);
+			if (!fCuts->IsInFiducialAcceptance(containerInputMC[0],containerInputMC[1])) continue;
+			//MC Limited Acceptance
+			if (TMath::Abs(containerInputMC[1]) < 0.5) {
+				fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepGeneratedLimAcc, fWeight);
+				AliDebug(3,"MC Lim Acc container filled\n");
+			}	    
+			
+			//MC 
+			fCFManager->GetParticleContainer()->Fill(containerInputMC, kStepGenerated, fWeight);
+			icountMC++;
+			AliDebug(3,"MC cointainer filled \n");
+			
+			// MC in acceptance
+			// check the MC-Acceptance level cuts
+			// since standard CF functions are not applicable, using Kine Cuts on daughters
+			Bool_t mcAccepStep = cfVtxHF-> MCAcceptanceStep();
+			if (mcAccepStep){	
+				fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance, fWeight);
+				AliDebug(3,"MC acceptance cut passed\n");
+				icountAcc++;
+				
+				//MC Vertex step
+				if (fCuts->IsEventSelected(aodEvent)){
+					// filling the container if the vertex is ok
+					fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepVertex, fWeight) ;
+					AliDebug(3,"Vertex cut passed and container filled\n");
+					icountVertex++;
+					
+					//mc Refit requirement	
+					Bool_t mcRefitStep = cfVtxHF->MCRefitStep(aodEvent, trackCuts);
+					if (mcRefitStep){
+						fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
+						AliDebug(3,"MC Refit cut passed and container filled\n");
+						icountRefit++;
+					}
+					else{
+						AliDebug(3,"MC Refit cut not passed\n");
+						continue;
+					}					
+				}
+				else{
 				  AliDebug (3, "MC vertex step not passed\n");
 				  continue;
-			  }
-		  }
-		  else{
-			  AliDebug (3, "MC in acceptance step not passed\n");
-			  continue;
-		  }
-		
-	  }
-	  else {
-		  AliDebug (3, "MC container not filled\n");
+				}
+			}
+			else{
+				AliDebug (3, "MC in acceptance step not passed\n");
+				continue;
+			}			
+		}
+		else {
+			AliDebug (3, "MC container not filled\n");
 		}
 	}
-		
-	if (cquarks<2) AliDebug(2,Form("Eveith %d c-quarks", cquarks));
+	
+	if (cquarks<2) AliDebug(2,Form("Event with %d c-quarks", cquarks));
 	AliDebug(2,Form("Found %i MC particles that are D0!!",icountMC));
 	AliDebug(2,Form("Found %i MC particles that are D0 and satisfy Acc cuts!!",icountAcc));
 	AliDebug(2,Form("Found %i MC particles that are D0 and satisfy Vertex cuts!!",icountVertex));
 	AliDebug(2,Form("Found %i MC particles that are D0 and satisfy Refit cuts!!",icountRefit));
-	
+
 	// Now go to rec level
 	fCountMC += icountMC;
 	fCountAcc += icountAcc;
 	fCountVertex+= icountVertex;
 	fCountRefit+= icountRefit;
-	
-	AliDebug(2, Form("Found %d vertices",arrayD0toKpi->GetEntriesFast()));
-	
 
-	for (Int_t iD0toKpi = 0; iD0toKpi<arrayD0toKpi->GetEntriesFast(); iD0toKpi++) {
-	  
-	  AliAODRecoDecayHF2Prong* d0tokpi = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->At(iD0toKpi);
+	AliDebug(2,Form("Found %d vertices",arrayBranch->GetEntriesFast()));
+	AliInfo(Form("Found %d vertices for decay channel %d",arrayBranch->GetEntriesFast(),fDecayChannel));
+	
+	for(Int_t iCandid = 0; iCandid<arrayBranch->GetEntriesFast();iCandid++){
+		Printf("iCandid = %d", iCandid);
+
+		AliAODRecoDecayHF* charmCandidate=0x0;
+		switch (fDecayChannel){
+		case 2:{
+			charmCandidate = (AliAODRecoDecayHF2Prong*)arrayBranch->At(iCandid);
+			break;
+		}
+		case 21:{ 
+			charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
+			break;
+		}
+		case 31:
+		case 32:
+		case 33:{
+			charmCandidate = (AliAODRecoDecayHF3Prong*)arrayBranch->At(iCandid);
+			break;
+		}
+		case 4:{
+			charmCandidate = (AliAODRecoDecayHF4Prong*)arrayBranch->At(iCandid);
+			break;
+		}
+		default:
+			break;
+		}
+		
 		Bool_t unsetvtx=kFALSE;
-		if(!d0tokpi->GetOwnPrimaryVtx()) {
-			d0tokpi->SetOwnPrimaryVtx(aodVtx); // needed to compute all variables
+		if(!charmCandidate->GetOwnPrimaryVtx()) {
+			charmCandidate->SetOwnPrimaryVtx(aodVtx); // needed to compute all variables
 			unsetvtx=kTRUE;
 		}
-	  
-		if (d0tokpi->GetPrimaryVtx()) printf("candidate has prim vtx \n");	 
-		if (aodEvent->GetPrimaryVertex()) printf ("aod event vertex\n");
-	  
-		Bool_t signAssociation = cfVtxHF->SetRecoCandidateParam((AliAODRecoDecayHF*)d0tokpi);
+		
+		Bool_t signAssociation = cfVtxHF->SetRecoCandidateParam((AliAODRecoDecayHF*)charmCandidate);
 		if (!signAssociation){
-			d0tokpi = 0x0;
+			charmCandidate = 0x0;
 			continue;
 		}
-	
+		
+		Int_t isPartOrAntipart = cfVtxHF->CheckReflexion();
+
 		Bool_t recoContFilled = cfVtxHF->FillRecoContainer(containerInput);
 		if (recoContFilled){
-
+			
 			if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])) continue;	   
-
+			
 			//Reco Step
 			Bool_t recoStep = cfVtxHF->RecoStep();
 			Bool_t vtxCheck = fCuts->IsEventSelected(aodEvent);
-	    
+			
 			if (recoStep && recoContFilled && vtxCheck){
-				fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed) ;   
+				fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed, fWeight) ;   
 				icountReco++;
-				printf("Reco step  passed and container filled\n");
-	    
-	    
+				AliDebug(3,"Reco step  passed and container filled\n");
+			  			  
 				//Reco in the acceptance -- take care of UNFOLDING!!!!
 				Bool_t recoAcceptanceStep = cfVtxHF->RecoAcceptStep(trackCuts);
 				if (recoAcceptanceStep) {
-					fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance) ;
+					fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance, fWeight) ;
 					icountRecoAcc++; 
-					printf("Reco acceptance cut passed and container filled\n");
-		
+					AliDebug(3,"Reco acceptance cut passed and container filled\n");
+				  
 					if(fAcceptanceUnf){
 						Double_t fill[4]; //fill response matrix
 						Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fill);
 						if (bUnfolding) fCorrelation->Fill(fill);
-						}
-		
+					}
+					
 					//Number of ITS cluster requirements	
-					Int_t recoITSnCluster = fCuts->IsSelected(d0tokpi, AliRDHFCuts::kTracks);
+					Int_t recoITSnCluster = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kTracks);
 					if (recoITSnCluster){
-						fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters) ;
+						fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters, fWeight) ;
 						icountRecoITSClusters++;   
-						printf("Reco n ITS cluster cut passed and container filled\n");
-	    
+						AliDebug(3,"Reco n ITS cluster cut passed and container filled\n");
+						
+						Bool_t iscutsusingpid = fCuts->GetIsUsePID(); 
+						Int_t recoAnalysisCuts = -1, recoPidSelection = -1;
+						fCuts->SetUsePID(kFALSE);
+						recoAnalysisCuts = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kCandidate, aodEvent);
 
-						Int_t recoAnalysisCuts = fCuts->IsSelected(d0tokpi, AliRDHFCuts::kCandidate);
-						if(recoAnalysisCuts){
-						  fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPPR);
-						  icountRecoPPR++;
-						  printf ("Reco Analysis cuts passed and container filled \n");
-						  
-						  
-						  //pid selection	
-						  Int_t recoPidSelection = fCuts->IsSelected(d0tokpi, AliRDHFCuts::kPID);
-						  if (recoPidSelection > 0){
-						    fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID);
-						    icountRecoPID++;
-						    printf ("Reco PID cuts passed and container filled \n");
-						    
-						    
-						    if(!fAcceptanceUnf){
-						      Double_t fill[4]; //fill response matrix
-						      Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fill);
-						      if (bUnfolding) fCorrelation->Fill(fill);
-						    }
-						  }
-						  else {
-						    AliDebug(3, "Analysis Cuts step not passed \n");
-						    continue;
-						  }
+						if (recoAnalysisCuts > 3){ // Ds case, where more possibilities are considered
+							if (recoAnalysisCuts >= 8){
+								recoAnalysisCuts -= 8; // removing K0star mass
+							}
+							if (recoAnalysisCuts >= 4){
+								recoAnalysisCuts -= 4; // removing Phi mass
+							}
+						}
+
+						fCuts->SetUsePID(iscutsusingpid); //restoring usage of the PID from the cuts object	
+						if (recoAnalysisCuts == 3 || recoAnalysisCuts == isPartOrAntipart){
+							fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPPR, fWeight);
+							icountRecoPPR++;
+							AliDebug(3,"Reco Analysis cuts passed and container filled \n");
+							//pid selection
+							//recoPidSelection = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kPID);
+							//if((fCuts->CombineSelectionLevels(3,recoAnalysisCuts,recoPidSelection)==isPartOrAntipart)||(fCuts->CombineSelectionLevels(3,recoAnalysisCuts,recoPidSelection)==3)){
+							recoPidSelection = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kCandidate, aodEvent);
+							if (recoPidSelection == 3 || recoPidSelection == isPartOrAntipart){
+								fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight);
+								icountRecoPID++;
+								AliDebug(3,"Reco PID cuts passed and container filled \n");
+								if(!fAcceptanceUnf){
+									Double_t fill[4]; //fill response matrix
+									Bool_t bUnfolding = cfVtxHF -> FillUnfoldingMatrix(fill);
+									if (bUnfolding) fCorrelation->Fill(fill);
+								}
+							}
+							else {
+								AliDebug(3, "Analysis Cuts step not passed \n");
+								continue;
+							}
 						}
 						else {
-						  AliDebug(3, "PID selection not passed \n");
-						  continue;
+							AliDebug(3, "PID selection not passed \n");
+							continue;
 						}
 					}
 					else{
-					  AliDebug(3, "Number of ITS cluster step not passed\n");
-					  continue;
+						AliDebug(3, "Number of ITS cluster step not passed\n");
+						continue;
 					}
 				}
 				else{
-				  AliDebug(3, "Reco acceptance step not passed\n");
-				  continue;
+					AliDebug(3, "Reco acceptance step not passed\n");
+					continue;
 				}
 			}
 			else {
-			  AliDebug(3, "Reco step not passed\n");
-			  continue;
+				AliDebug(3, "Reco step not passed\n");
+				continue;
 			}
 		}
 		
-		if(unsetvtx) d0tokpi->UnsetOwnPrimaryVtx();
-	} // end loop on D0->Kpi
-	
-	AliDebug(2, Form("Found %i Reco particles that are D0!!",icountReco));
-	
+		if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+	} // end loop on candidate
+		
 	fCountReco+= icountReco;
        	fCountRecoAcc+= icountRecoAcc;
 	fCountRecoITSClusters+= icountRecoITSClusters;
@@ -488,6 +660,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	fCountRecoPID+= icountRecoPID;
 	
 	fHistEventsProcessed->Fill(0);
+
+	delete[] containerInput;
+	containerInput = 0x0;
+	delete[] containerInputMC;
+	containerInputMC = 0x0;
+	delete cfVtxHF;
+
 }
 
 //___________________________________________________________________________
@@ -960,7 +1139,8 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 }
 
 //___________________________________________________________________________
-void AliCFTaskVertexingHF::UserCreateOutputObjects() {
+void AliCFTaskVertexingHF::UserCreateOutputObjects() 
+{
 	//HERE ONE CAN CREATE OUTPUT OBJECTS, IN PARTICULAR IF THE OBJECT PARAMETERS DON'T NEED
 	//TO BE SET BEFORE THE EXECUTION OF THE TASK
 	//
@@ -971,3 +1151,44 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects() {
 	fHistEventsProcessed = new TH1I("CFHFchist0","",1,0,1) ;
 }
 
+
+//_________________________________________________________________________
+Double_t AliCFTaskVertexingHF::GetWeight(Float_t pt)
+{
+	//
+	// calculating the weight to fill the container
+	//
+	
+	// FNOLL central:
+	// p0 = 1.63297e-01 --> 0.322643
+	// p1 = 2.96275e+00
+	// p2 = 2.30301e+00
+	// p3 = 2.50000e+00
+
+	// PYTHIA
+	// p0 = 1.85906e-01 --> 0.36609
+	// p1 = 1.94635e+00
+	// p2 = 1.40463e+00
+	// p3 = 2.50000e+00
+
+	Double_t func1[4] = {0.322643,2.96275,2.30301,2.5};
+	Double_t func2[4] = {0.36609,1.94635,1.40463,2.5};
+
+	Double_t dndpt_func1 = dNdptFit(pt,func1);
+	Double_t dndpt_func2 = dNdptFit(pt,func2);
+	AliDebug(2,Form("pt = %f, FONLL = %f, Pythia = %f, ratio = %f",pt,dndpt_func1,dndpt_func2,dndpt_func1/dndpt_func2));
+	return dndpt_func1/dndpt_func2;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliCFTaskVertexingHF::dNdptFit(Float_t pt, Double_t* par)
+{	
+	// 
+	// calculating dNdpt
+	//
+	
+	Double_t denom =  TMath::Power((pt/par[1]), par[3] );
+	Double_t dNdpt = par[0]*pt/TMath::Power(1.+denom, par[2]);
+	
+	return dNdpt;
+}
