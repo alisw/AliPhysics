@@ -108,7 +108,10 @@ public:
   // Delegated methods for fESDRun
   void     SetRunNumber(Int_t n) {if(fESDRun) fESDRun->SetRunNumber(n);}
   Int_t    GetRunNumber() const {return fESDRun?fESDRun->GetRunNumber():-1;}
-  void     SetPeriodNumber(UInt_t n){if(fESDRun) fESDRun->SetPeriodNumber(n);}
+  void     SetPeriodNumber(UInt_t n){
+    if(fESDRun) fESDRun->SetPeriodNumber(n);
+    if(fHeader) fHeader->SetPeriodNumber(n);
+  }
   UInt_t   GetPeriodNumber() const {return fESDRun?fESDRun->GetPeriodNumber():0;}
   void     SetMagneticField(Double_t mf){if(fESDRun) fESDRun->SetMagneticField(mf);}
   Double_t GetMagneticField() const {return fESDRun?fESDRun->GetMagneticField():0;}
