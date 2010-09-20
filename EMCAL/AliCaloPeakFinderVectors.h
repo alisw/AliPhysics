@@ -1,3 +1,4 @@
+// -*- mode: c++ -*-
 #ifndef ALICALOPEAKFINDERVECTORS_H
 #define ALICALOPEAKFINDERVECTORS_H
 
@@ -21,8 +22,10 @@
 //Container class for Peak Finder vectors
 
 #include "TObject.h"
-#include "AliCaloPeakFinderConstants.h"
-using namespace PeakFinderConstants;
+//#include "AliCaloPeakFinderConstants.h"
+//using namespace PeakFinderConstants;
+
+#include "AliCaloConstants.h"
 
 
 class AliCaloPeakFinderVector;
@@ -41,12 +44,12 @@ class  AliCaloPeakFinderVectors : public TObject
   void ResetVectors();
 
  private:
-  Double_t fPFAmpVC[MAXSTART][SAMPLERANGE][100]; // Vectors for Amplitude extraction, first iteration 
-  Double_t fPFTofVC[MAXSTART][SAMPLERANGE][100]; // Vectors for TOF extraction, first iteration
-  Double_t fPFAmpV[MAXSTART][SAMPLERANGE][100];  // Vectors for Amplitude extraction, second iteration 
-  Double_t fPFTofV[MAXSTART][SAMPLERANGE][100];  // Vectors for TOF extraction, second iteration  
- 
-  ClassDef( AliCaloPeakFinderVectors, 1 )
+  Double_t fPFAmpVC[PF::MAXSTART][PF::SAMPLERANGE][100]; // Vectors for Amplitude extraction, first iteration 
+  Double_t fPFTofVC[PF::MAXSTART][PF::SAMPLERANGE][100]; // Vectors for TOF extraction, first iteration
+  Double_t fPFAmpV[PF::MAXSTART][PF::SAMPLERANGE][100];  // Vectors for Amplitude extraction, second iteration 
+  Double_t fPFTofV[PF::MAXSTART][PF::SAMPLERANGE][100];  // Vectors for TOF extraction, second iteration  
+  
+  ClassDef( AliCaloPeakFinderVectors, 2 )
     
 };
 

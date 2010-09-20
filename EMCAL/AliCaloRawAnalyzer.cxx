@@ -1,3 +1,4 @@
+// -*- mode: c++ -*-
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -35,15 +36,16 @@ using namespace std;
 ClassImp(AliCaloRawAnalyzer)  
 
 AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) :  TObject(),
-										   fMinTimeIndex(-1),
-										   fMaxTimeIndex(-1),
-										   fFitArrayCut(5),
-										   fAmpCut(4),
-										   fNsampleCut(5),
-										   fOverflowCut(950),
-										   fNsamplePed(3),
-										   fIsZerosupressed( false ),
-										   fVerbose( false )
+  fMinTimeIndex(-1),
+  fMaxTimeIndex(-1),
+  fFitArrayCut(5),
+  fAmpCut(4),
+  fNsampleCut(5),
+  fOverflowCut(950),
+  fNsamplePed(3),
+  fIsZerosupressed( false ),
+  fVerbose( false ),
+  fAlgo(Algo::kNONE)
 {
   //Comment 
   sprintf(fName, "%s", name);
@@ -332,7 +334,7 @@ AliCaloRawAnalyzer::CalculateChi2(const Double_t amp, const Double_t time,
 
   if (first == last || first<0 ) { // signal consists of single sample, chi2 estimate (0) not too well defined.. 
     // or, first is negative, the indices are not valid
-    return AliCaloFitResults::kDummy;
+    return Ret::kDummy;
   }
 
   int nsamples =  last - first + 1;
@@ -372,8 +374,8 @@ AliCaloRawAnalyzer::CalculateMeanAndRMS(const Int_t first, const Int_t last,
   //
   // To possibly be used to differentiate good signals from bad before fitting
   // 
-  mean = AliCaloFitResults::kDummy;
-  rms = AliCaloFitResults::kDummy;
+  mean = Ret::kDummy;
+  rms =  Ret::kDummy;
 
   if (first == last || first<0 ) { // signal consists of single sample, chi2 estimate (0) not too well defined.. 
     // or, first is negative, the indices are not valid
@@ -401,12 +403,17 @@ AliCaloRawAnalyzer::CalculateMeanAndRMS(const Int_t first, const Int_t last,
   return;
 }
 
-AliCaloFitResults
-AliCaloRawAnalyzer::Evaluate( const vector<AliCaloBunchInfo>  &/*bunchvector*/, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
-{ // method to do the selection of what should possibly be fitted
-  // not implemented for base class
-  return AliCaloFitResults( 0, 0 );
-}
+
+
+// AliCaloFitResults
+// AliCaloRawAnalyzer::Evaluate( const vector<AliCaloBunchInfo>  &/*bunchvector*/, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
+// { // method to do the selection of what should possibly be fitted
+//   // not implemented for base class
+//   cout << __FILE__ << ":" << __LINE__ << " " << endl;
+  
+//   return AliCaloFitResults( 0, 0 );
+// }
+
 
 
 int

@@ -1,3 +1,4 @@
+// -*- mode: c++ -*-
 #ifndef ALIEMCALRAWUTILS_H
 #define ALIEMCALRAWUTILS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -19,7 +20,8 @@
 //
 #include "TObject.h" // for ROOT types
 #include <TString.h>
-//#include "AliCaloRawStreamV3.h"
+
+
 class AliCaloRawStreamV3;
 class AliAltroMapping;
 class TGraph;
@@ -29,13 +31,14 @@ class AliCaloCalibPedestal;
 class AliCaloRawAnalyzer;
 class AliEMCALTriggerRawDigitMaker;
 class AliEMCALTriggerData;
+#include "AliCaloConstants.h"
 
 class AliEMCALRawUtils : public TObject {
  public:
-  enum fitAlgorithm {kStandard = 0, kFastFit= 1, kNeuralNet = 2, kLogFit = 3, kLMS = 4, kPeakFinder = 5, kCrude = 6};
+  // enum fitAlgorithm {kStandard = 0, kFastFit= 1, kNeuralNet = 2, kLogFit = 3, kLMS = 4, kPeakFinder = 5, kCrude = 6};
 	
- AliEMCALRawUtils(fitAlgorithm fitAlgo = kStandard);
-  AliEMCALRawUtils(AliEMCALGeometry *pGeometry, fitAlgorithm fitAlgo = kStandard);
+  AliEMCALRawUtils(Algo::fitAlgorithm fitAlgo = Algo::kStandard);
+  AliEMCALRawUtils(AliEMCALGeometry *pGeometry, Algo::fitAlgorithm fitAlgo = Algo::kStandard);
   virtual ~AliEMCALRawUtils();
 	
   AliEMCALRawUtils(const AliEMCALRawUtils& rawUtils);  //copy ctor

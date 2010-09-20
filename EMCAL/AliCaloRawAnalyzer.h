@@ -1,3 +1,4 @@
+// -*- mode: c++ -*-
 #ifndef ALICALORAWANALYZER_H
 #define ALICALORAWANALYZER_H
 /**************************************************************************
@@ -23,13 +24,14 @@
 //of signal amplitude and peak position
 //From CALO Calorimeter RAW data
 
-
 #include "Rtypes.h"
 #include "TObject.h"
-
 #define MAXSAMPLES 1008 //CRAP PTH
-
 #include <vector>
+#include "AliCaloConstants.h"
+
+//using  namespace CaloConstants::FitAlgorithm;
+//using  CaloConstants::ReturnCodes;
 
 class AliCaloBunchInfo;
 class AliCaloFitResults;
@@ -40,11 +42,11 @@ class  AliCaloRawAnalyzer : public TObject
   AliCaloRawAnalyzer(const char *name="AliCaloRawAnalyzer", const char *nameshort="RawAna");
   virtual ~AliCaloRawAnalyzer();
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
-				      const UInt_t altrocfg1,  const UInt_t altrocfg2 );
- 
+				      const UInt_t altrocfg1,  const UInt_t altrocfg2 ) = 0;
+  //enum fitAlgorithm {kCrude, kPeakFinder, kLMS, kFastFit, kNeuralNet, kNONE};
   void PrintBunches( const std::vector<AliCaloBunchInfo> &bunchvector ) const;
   void PrintBunch( const AliCaloBunchInfo &bunch ) const ;
-
+  
   virtual int PreFitEvaluateSamples( const std::vector<AliCaloBunchInfo>  &bunchvector, 
 				     const UInt_t altrocfg1,  const UInt_t altrocfg2, Int_t & index, 
 				     Float_t & maxf, short & maxamp, short & maxampindex, Float_t & ped, int & first, int & last);
@@ -68,6 +70,7 @@ class  AliCaloRawAnalyzer : public TObject
   Double_t GetReversed(const int i) const { return fReversed[i]; }
   const char * GetAlgoName() const { return fName;  };
   const char * GetAlgoAbbr() const { return fNameShort;  };
+  Algo::fitAlgorithm GetAlgo() const { return fAlgo; };
 
   Double_t CalculateChi2(const Double_t amp, const Double_t time,
 			 const Int_t first, const Int_t last,
@@ -102,7 +105,11 @@ class  AliCaloRawAnalyzer : public TObject
 
   char fName[256]; // Name of the algorithm
   char fNameShort[256]; // Abbrevation for the name
+ 
 
+  //  CaloConstants  fAlgo;
+  Algo::fitAlgorithm fAlgo;
+  
   ClassDef(AliCaloRawAnalyzer, 2)  
 
 };

@@ -1,3 +1,4 @@
+// -*- mode: c++ -*-
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -16,8 +17,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include "AliCaloFitResults.h"
+#include "AliCaloConstants.h"
 
 AliCaloFitResults::AliCaloFitResults() : fMaxSig(-1),
 					 fPed(-1), 
@@ -48,7 +49,7 @@ AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Float_t ped,
 				     const Short_t fitstatus, const Float_t  amp,  
 				     const Float_t time,  const Int_t maxTimebin, const Float_t chi,  
 				     const Int_t ndf, Int_t minSig,
-				     const AliCaloFitSubarray fitSubarray) : 
+				     const AliCaloFitSubarray fitSubarray ) : 
   fMaxSig(maxSig),
   fPed(ped), 
   fStatus(fitstatus),
@@ -60,6 +61,7 @@ AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Float_t ped,
   fMinSig(minSig),
   fFitSubarray(fitSubarray) 
 {
+
 }
 
 
@@ -76,8 +78,9 @@ AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Float_t ped,
   fChi2Sig(chi),
   fNdfSig(ndf),
   fMinSig(minSig),
-  fFitSubarray(kDummy)  
+  fFitSubarray(Ret::kDummy)  
 {
+  
 }
 
 
@@ -90,25 +93,27 @@ AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Float_t ped,
   fAmpSig(amp),
   fTime(maxTimebin),
   fMaxTimebin(maxTimebin),
-  fChi2Sig( kNoFit ),
-  fNdfSig( kNoFit ),
-  fMinSig( kNoFit ),
-  fFitSubarray( kNoFit ) 
+  fChi2Sig( Ret::kNoFit ),
+  fNdfSig( Ret::kNoFit ),
+  fMinSig( Ret::kNoFit ),
+  fFitSubarray( Ret::kNoFit ) 
 {
+
 }
+
 
 
 AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Int_t minSig) : 
   fMaxSig(maxSig),
-  fPed( kInvalid ),
-  fStatus( kInvalid ),
-  fAmpSig( kInvalid ), 
-  fTime( kInvalid ),
-  fMaxTimebin( kInvalid ),
-  fChi2Sig( kInvalid ),
-  fNdfSig( kInvalid),
+  fPed( Ret::kInvalid ),
+  fStatus( Ret::kInvalid ),
+  fAmpSig( Ret::kInvalid ), 
+  fTime( Ret::kInvalid ),
+  fMaxTimebin( Ret::kInvalid ),
+  fChi2Sig( Ret::kInvalid ),
+  fNdfSig( Ret::kInvalid),
   fMinSig (minSig),
-  fFitSubarray(kInvalid)  
+  fFitSubarray( Ret::kInvalid )  
 {
 
 }

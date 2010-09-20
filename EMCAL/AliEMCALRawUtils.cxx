@@ -1,3 +1,4 @@
+// -*- mode: c++ -*-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -78,7 +79,7 @@ Int_t    AliEMCALRawUtils::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
 Int_t    AliEMCALRawUtils::fgPedestalValue     = 0;  // pedestal value for digits2raw, default generate ZS data
 Double_t AliEMCALRawUtils::fgFEENoise          = 3.; // 3 ADC channels of noise (sampled)
 
-AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
+AliEMCALRawUtils::AliEMCALRawUtils( Algo::fitAlgorithm fitAlgo)
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
     fNPedSamples(0), fGeom(0), fOption(""),
     fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),  
@@ -130,7 +131,7 @@ AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
 }
 
 //____________________________________________________________________________
-AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry, fitAlgorithm fitAlgo)
+AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry, Algo::fitAlgorithm fitAlgo)
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
     fNPedSamples(0), fGeom(pGeometry), fOption(""),
     fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),
@@ -404,18 +405,19 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
         bunchlist.push_back( AliCaloBunchInfo(in.GetStartTimeBin(), in.GetBunchLength(), in.GetSignals() ) );
       } // loop over bunches
       
-      
-      if ( caloFlag < 2 ){ // ALTRO
-        
-        Float_t time = 0; 
-        Float_t amp  = 0; 
-        short timeEstimate  = 0;
-        Float_t ampEstimate = 0;
-        Bool_t fitDone = kFALSE;
-        Float_t chi2 = 0;
-        Int_t ndf = 0;
-        
-        if ( fFittingAlgorithm == kFastFit || fFittingAlgorithm == kNeuralNet || fFittingAlgorithm == kLMS || fFittingAlgorithm == kPeakFinder || fFittingAlgorithm == kCrude) {
+      if ( caloFlag < 2 )
+	{ // ALTRO
+	  Float_t time = 0; 
+	  Float_t amp  = 0; 
+	  short timeEstimate  = 0;
+	  Float_t ampEstimate = 0;
+	  Bool_t fitDone = kFALSE;
+	  Float_t chi2 = 0;
+	  Int_t ndf = 0;
+	  
+	  if ( fFittingAlgorithm == Algo::kFastFit || fFittingAlgorithm == Algo::kNeuralNet || 
+	       fFittingAlgorithm == Algo::kLMS || fFittingAlgorithm == Algo::kPeakFinder || 
+	       fFittingAlgorithm == Algo::kCrude) {
           // all functionality to determine amp and time etc is encapsulated inside the Evaluate call for these methods 
           AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
           
@@ -425,7 +427,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
           ampEstimate  = fitResults.GetMaxSig();
           chi2 = fitResults.GetChi2();
           ndf = fitResults.GetNdf();
-          if (fitResults.GetStatus() == AliCaloFitResults::kFitPar) {
+          if (fitResults.GetStatus() == Ret::kFitPar) {
             fitDone = kTRUE;
           }
         }
@@ -610,7 +612,7 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
   fitDone = kFALSE;
   
   switch(fFittingAlgorithm) {
-    case kStandard:
+  case Algo::kStandard:
     {
       if (nsamples < 3) { return; } // nothing much to fit
       //printf("Standard fitter \n");
@@ -655,7 +657,7 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
       break;
     }//kStandard Fitter
       //----------------------------
-    case kLogFit:
+  case Algo::kLogFit:
     {
       if (nsamples < 3) { return; } // nothing much to fit
       //printf("LogFit \n");
@@ -935,23 +937,24 @@ void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)
 		fFittingAlgorithm = fitAlgo; 
 		if (fRawAnalyzer) delete fRawAnalyzer;  // delete prev. analyzer if existed.
 		
-		if (fitAlgo == kFastFit) {
+		if (fitAlgo == Algo::kFastFit) {
 			fRawAnalyzer = new AliCaloRawAnalyzerFastFit();
 		}
-		else if (fitAlgo == kNeuralNet) {
+		else if (fitAlgo == Algo::kNeuralNet) {
 			fRawAnalyzer = new AliCaloRawAnalyzerNN();
 		}
-		else if (fitAlgo == kLMS) {
+		else if (fitAlgo == Algo::kLMS) {
 			fRawAnalyzer = new AliCaloRawAnalyzerLMS();
 		}
-		else if (fitAlgo == kPeakFinder) {
+		else if (fitAlgo == Algo::kPeakFinder) {
 			fRawAnalyzer = new AliCaloRawAnalyzerPeakFinder();
 		}
-		else if (fitAlgo == kCrude) {
+		else if (fitAlgo == Algo::kCrude) {
 			fRawAnalyzer = new AliCaloRawAnalyzerCrude();
 		}
 		else {
-			fRawAnalyzer = new AliCaloRawAnalyzer();
+		  //			fRawAnalyzer = new AliCaloRawAnalyzer();
+		  fRawAnalyzer = 0;
 		}
 	}
 	

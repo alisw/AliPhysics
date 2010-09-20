@@ -28,6 +28,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include <iostream>
 #include "TF1.h"
 #include "TGraph.h"
+#include "AliCaloConstants.h"
 
 using namespace std;
 
@@ -85,7 +86,7 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
       short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
 	{
-	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
+	  return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset);
  	}            
       else if ( maxf >= fAmpCut )
 	{
@@ -118,8 +119,8 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
 	      }
 	      catch (const std::exception & e) {
 		AliError( Form("TGraph Fit exception %s", e.what()) ); 
-		return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, timebinOffset,
-					  timebinOffset, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
+		return AliCaloFitResults( maxamp, ped, Ret::kNoFit, maxf, timebinOffset,
+					  timebinOffset, Ret::kDummy, Ret::kDummy,  Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 	      }
 
 	      if( fVerbose == true )
@@ -132,13 +133,13 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
 		+ fTf1->GetParameter(2); // +tau, makes sum tmax
 	      
 	        delete graph;
-		return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kFitPar,
+		return AliCaloFitResults( maxamp, ped , Ret::kFitPar,
 					  fTf1->GetParameter(0)/fkEulerSquared, 
 					  tmax,
 					  timebinOffset,  
 					  fTf1->GetChisquare(), 
 					  fTf1->GetNDF(),
-					  AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
+					  Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 				
 		//     delete graph;
 	
@@ -147,12 +148,12 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
 	    {
 	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
-	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset,
-					timebinOffset, chi2, ndf, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset,
+					timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	    }
         } // ampcut
     }
-  return AliCaloFitResults( AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid );
+  return AliCaloFitResults(  Ret::kInvalid,  Ret::kInvalid );
   
 }
 

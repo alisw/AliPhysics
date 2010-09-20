@@ -1,3 +1,4 @@
+// -*- mode: c++ -*-
 /**************************************************************************
  * This file is property of and copyright by the Relativistic Heavy Ion   *
  * Group (RHIG),  Department of Physics Yale University, US, 2010         *
@@ -45,11 +46,11 @@ void
 AliCaloPeakFinderVectors::ResetVectors()
 {
   // As implied by function name
-  for(int i=0; i < MAXSTART; i++ )
+  for(int i=0; i < PF::MAXSTART; i++ )
     {
-      for(int j=0; j < SAMPLERANGE; j++)
+      for(int j=0; j < PF::SAMPLERANGE; j++)
 	{
-	  if(i < MAXSTART  && j < SAMPLERANGE )
+	  if(i < PF::MAXSTART  && j < PF::SAMPLERANGE )
 	    {
 	      for(int k = 0;  k < 100; k++)
 		{
@@ -69,7 +70,7 @@ AliCaloPeakFinderVectors::SetVector(const int i, const int j, const Double_t  *c
 				    const Double_t *const ac, const Double_t *const tc )
 {
   // As implied by function name
-  if(i < MAXSTART  && j < SAMPLERANGE )
+  if(i < PF::MAXSTART  && j < PF::SAMPLERANGE )
     {
       for(int k = 0;  k < 100; k++)
 	{
@@ -87,7 +88,7 @@ AliCaloPeakFinderVectors::GetVector(const int i, const int j, Double_t *const a,
 				    Double_t *const ac, Double_t *const tc ) const
 {
   // As implied by function name
-  if(i < MAXSTART  && j < SAMPLERANGE )
+  if(i < PF::MAXSTART  && j < PF::SAMPLERANGE )
     {
       for( int k = 0;  k < 100; k++)
 	{
@@ -105,9 +106,9 @@ AliCaloPeakFinderVectors::PrintVectors() const
 {
   // As implied by function name
   cout << __FILE__ << __LINE__ << __FUNCTION__ << endl;
-  for(int i= 0; i < MAXSTART; i++ )
+  for(int i= 0; i < PF::MAXSTART; i++ )
     {
-      for(int j=0; j < SAMPLERANGE; j++ )
+      for(int j=0; j < PF::SAMPLERANGE; j++ )
 	{
 	  for(int k=0; k < 10; k++ )
 	    {

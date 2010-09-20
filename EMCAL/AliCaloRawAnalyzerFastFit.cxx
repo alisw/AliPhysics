@@ -1,3 +1,4 @@
+// -*- mode: c++ -*-
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -30,13 +31,19 @@
 #include "TMath.h"
 #include <iostream>
 
+
 using namespace std;
+
+#include "AliCaloConstants.h"
+//using namespace CaloConstants::FitAlgorithm;
+//using namespace CaloConstants::ReturnCodes;
 
 ClassImp( AliCaloRawAnalyzerFastFit )
 
 AliCaloRawAnalyzerFastFit::AliCaloRawAnalyzerFastFit() : AliCaloRawAnalyzer("Fast Fit (Alexei)", "FF")
 {
   // Comment
+  fAlgo= Algo::kFastFit;
 
   for(int i=0; i <  1008; i++)
     {
@@ -69,7 +76,7 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
 	{
-	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
+	  return  AliCaloFitResults( maxamp, ped, Algo::kCrude, maxf, timebinOffset);
  	}
       else if ( maxf >= fAmpCut ) // no if statement needed really; keep for readability
 	{
@@ -102,18 +109,22 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 	   
 	      Double_t dTimeMax = dTime0 + timebinOffset - (maxrev - first) // abs. t0
 		+ dTau; // +tau, makes sum tmax
-	      return AliCaloFitResults(maxamp, ped, AliCaloFitResults::kFitPar,  dAmp, dTimeMax, timebinOffset, chi2,  AliCaloFitResults::kDummy,
-				       AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
+	      return AliCaloFitResults(maxamp, ped, Ret::kFitPar,  dAmp, dTimeMax, timebinOffset, chi2,  Ret::kDummy,
+				       Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 	    } // samplecut
 	  else 
 	    {
 	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
-	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset,
-					timebinOffset, chi2, ndf, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset,
+					timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	    }
 	} // ampcut
     } // bunch index    
 
-  return AliCaloFitResults(AliCaloFitResults::kInvalid , AliCaloFitResults::kInvalid);
+  return AliCaloFitResults( Ret::kInvalid , Ret::kInvalid );
+
+  //  return AliCaloFitResults( kInvalid , kInvalid, 
+  //			    kInvalid, kInvalid, kInvalid );
+  
 }

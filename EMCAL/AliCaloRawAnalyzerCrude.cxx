@@ -26,15 +26,16 @@
 #include "AliCaloFitResults.h"
 #include "AliCaloBunchInfo.h"
 #include "TMath.h"
-
 using namespace std;
+
+#include "AliCaloConstants.h"
 
 ClassImp(AliCaloRawAnalyzerCrude)  
 
 
 AliCaloRawAnalyzerCrude::AliCaloRawAnalyzerCrude() : AliCaloRawAnalyzer("Crude", "Crude")
 {
-
+  fAlgo=Algo::kCrude;
 }
 
 
@@ -60,7 +61,7 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
 
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
 	{
-	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
+	  return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset);
 	}
       else if ( maxf >= fAmpCut ) // no if statement needed really; keep for readability
 	{
@@ -71,12 +72,12 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
 
 	  Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	  Int_t ndf = last - first - 1; // nsamples - 2
-	  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset,
-				    timebinOffset, chi2, ndf, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	  return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset,
+				    timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	} // ampcut
     } // bunch index    
 
-  return AliCaloFitResults(AliCaloFitResults::kInvalid , AliCaloFitResults::kInvalid);
+  return AliCaloFitResults( Ret::kInvalid , Ret::kInvalid);
 
 } //end Crude
 

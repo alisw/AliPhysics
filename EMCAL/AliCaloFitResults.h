@@ -21,6 +21,10 @@
 
 #include "Rtypes.h"
 #include "AliCaloFitSubarray.h"
+#include "AliCaloConstants.h"
+
+//using namespace CaloConstants::ReturnCodes;
+// using CaloConstants::FitAlgorithm;
 
 // Container class to hold results from fitting 
 // as well as other methods for
@@ -28,7 +32,7 @@
 class  AliCaloFitResults
 {
  public:
-  enum kReturnCode {kFitPar=1, kDummy=-1, kCrude=-9, kNoFit=-99, kInvalid=-9999};// possible return values
+  //  enum kReturnCode {kFitPar=1, kDummy=-1, kCrude=-9, kNoFit=-99, kInvalid=-9999};// possible return values
   // kFitPar: method fit or parametrization was used
   // kDummy: just a filler parameter, if e.g. chi2 not available
   // kCrude: maximum was used
@@ -54,7 +58,9 @@ class  AliCaloFitResults
 			      const Int_t maxTimebin,
 			      const Float_t chi, 
 			      const Int_t ndf, 
-			      const Int_t minSig = kDummy); 
+			      const Int_t minSig = Ret::kDummy);  
+  //			      const Int_t minSig = CaloConstants::ReturnCodes::kDummy); 
+
 
   // shorter interface when no fit is done
   explicit AliCaloFitResults( const Int_t maxSig, 

@@ -1,7 +1,6 @@
+// -*- mode: c++ -*-
 #ifndef ALICALORAWANALYZERPEAKFINDER_H
 #define ALICALORAWANALYZERPEAKFINDER_H
-
-
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -26,13 +25,10 @@
 // best possible weights.
 
 #include "AliCaloRawAnalyzer.h"
-#include "AliCaloPeakFinderConstants.h"
-
-using namespace PeakFinderConstants;
+#include "AliCaloConstants.h"
 
 class AliCaloBunchInfo;
 class AliCaloPeakFinderVectors;
-
 
 class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
 {
@@ -51,17 +47,16 @@ class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
   void     ResetVectors();
   void     InitOCDB(bool alien) const;
   void     WriteRootFile() const;
+  void PrintVectors();
   Double_t ScanCoarse(const Double_t *const array, const int length ) const ; // Find a rough estimate of peak position and t0
-
-  Double_t fPFAmpVectorsCoarse[MAXSTART][SAMPLERANGE][100];  // Vectors for Amplitude extraction, first iteration
-  Double_t fPFTofVectorsCoarse[MAXSTART][SAMPLERANGE][100];  // Vectors for TOF extraction, first iteration
-  Double_t fPFAmpVectors[MAXSTART][SAMPLERANGE][100];        // Vectors for Amplitude extraction, second iteration
-  Double_t fPFTofVectors[MAXSTART][SAMPLERANGE][100];        // Vectors for TOF extraction, second iteration
+  Double_t fPFAmpVectorsCoarse[PF::MAXSTART][PF::SAMPLERANGE][100];  // Vectors for Amplitude extraction, first iteration
+  Double_t fPFTofVectorsCoarse[PF::MAXSTART][PF::SAMPLERANGE][100];  // Vectors for TOF extraction, first iteration
+  Double_t fPFAmpVectors[PF::MAXSTART][PF::SAMPLERANGE][100];        // Vectors for Amplitude extraction, second iteration
+  Double_t fPFTofVectors[PF::MAXSTART][PF::SAMPLERANGE][100];        // Vectors for TOF extraction, second iteration
   Double_t fAmp; // The amplitude in entities of ADC counts
   AliCaloPeakFinderVectors  *fPeakFinderVectors; // Collection of Peak-Fincer vectors
-  
   bool fRunOnAlien; // Wether or not we are running on the GRID
-
+  bool fIsInitialized;
   ClassDef( AliCaloRawAnalyzerPeakFinder, 1 )
 };
 
