@@ -11,6 +11,7 @@
 #include "AliAnalysisEt.h"
 
 class AliVParticle;
+class AliESDEvent;
 
 class AliAnalysisEtReconstructed : public AliAnalysisEt
 {
@@ -64,7 +65,8 @@ protected:
     AliAnalysisEtReconstructed(const AliAnalysisEtReconstructed& g);
     AliAnalysisEtReconstructed & operator=(const AliAnalysisEtReconstructed&);
     
-   
+    Double_t CalcTrackClusterDistance(Float_t pos[3],Int_t *trkMatchId, AliESDEvent *event);
+
 };
 
 #endif // ALIANALYSISETRECONSTRUCTED_H
