@@ -105,7 +105,7 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     virtual TGeoVolumeAssembly* CreateStave(Int_t layer, TArrayD &sizes,
              /*Bool_t addClips = kFALSE,*/TGeoManager *mgr = gGeoManager);
     // the complete Carbon Fiber sector (support + staves)
-    virtual void CarbonFiberSector(TGeoVolume *moth, Double_t &xAAtubeCenter0,
+    virtual void CarbonFiberSector(TGeoVolume *moth, Int_t sect, Double_t &xAAtubeCenter0,
                      Double_t &yAAtubeCenter0, TGeoManager *mgr = gGeoManager);
     // the whole SPD barrel (the 10 sectors at once)
     virtual void SPDSector(TGeoVolume *moth, TGeoManager *mgr = gGeoManager);
