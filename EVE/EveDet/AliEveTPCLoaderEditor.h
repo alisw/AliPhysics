@@ -19,6 +19,7 @@ class TGColorSelect;
 class TGTextEntry;
 
 class TEveGValuator;
+class TEveGDoubleValuator;
 
 class AliEveTPCLoader;
 
@@ -55,6 +56,8 @@ public:
   void DoReloadSectors();
   void DoCreateSectors3D();
   void DoDeleteSectors3D();
+  void DoShowSectors2D();
+  void DoHideSectors2D();
 
 protected:
   AliEveTPCLoader *fM;                  // Model object.
@@ -74,6 +77,9 @@ protected:
   TGTextButton    *fReloadSectors;      // Button to reload sectors.
   TGTextButton    *fCreateSectors3D;    // Button to create 3D sectors.
   TGTextButton    *fDeleteSectors3D;    // Button to delete 3D sectors.
+
+  TEveGDoubleValuator *gEtaRange;       // Slider to set eta cuts
+  TGCheckButton *gCutOnEta;             // Checkbutton to apply eta cuts
 
   ClassDef(AliEveTPCLoaderEditor, 0); // Editor for AliEveTPCLoader.
 };

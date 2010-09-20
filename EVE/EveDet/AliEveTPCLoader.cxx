@@ -46,7 +46,8 @@ AliEveTPCLoader::AliEveTPCLoader(const Text_t* n, const Text_t* t) :
   fSec3Ds(36),
 
   fSetInitSectorParams(kFALSE),
-  fInitMinTime(0), fInitMaxTime(460), fInitThreshold(5), fInitMaxVal(128)
+  fInitMinTime(0), fInitMaxTime(460), fInitThreshold(5), fInitMaxVal(128),
+  fCutOnEta(kFALSE), fEtaMax(1.5), fEtaMin(-1.5)
 {
   // Constructor.
 
@@ -267,6 +268,9 @@ void AliEveTPCLoader::UpdateSectors(Bool_t dropNonPresent)
 	gEve->RemoveElement(fSec3Ds[i], this);
 	fSec3Ds[i] = 0;
       } else {
+        fSec3Ds[i]->SetCutOnEta(fCutOnEta);
+        fSec3Ds[i]->SetEtaMax(fEtaMax);
+        fSec3Ds[i]->SetEtaMin(fEtaMin);
 	fSec3Ds[i]->IncRTS();
         fSec3Ds[i]->ElementChanged();
       }
@@ -296,6 +300,9 @@ void AliEveTPCLoader::CreateSectors3D()
       fSec3Ds[i] = s;
       s->SetSectorID(i);
       s->SetDataSource(fData);
+      s->SetCutOnEta(fCutOnEta);
+      s->SetEtaMax(fEtaMax);
+      s->SetEtaMin(fEtaMin);
 
       if (fDoubleSR)
 	s->SetDriftVel(2.273);

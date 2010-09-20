@@ -12,8 +12,10 @@
 #include <EveDet/AliEveTPCLoader.h>
 #include <EveDet/AliEveTPCData.h>
 
+#include <TEveScene.h>
 #include <TEveManager.h>
 #include <TEveGValuators.h>
+#include <TGDoubleSlider.h>
 
 #include <TSystem.h>
 #include <TVirtualPad.h>
@@ -53,7 +55,11 @@ AliEveTPCLoaderEditor::AliEveTPCLoaderEditor(const TGWindow *p,
   fUpdateSectors   (0),
   fReloadSectors   (0),
   fCreateSectors3D (0),
-  fDeleteSectors3D (0)
+  fDeleteSectors3D (0),
+
+  gEtaRange(0),
+  gCutOnEta(0)
+  
 {
   // Constructor.
 
@@ -163,6 +169,41 @@ AliEveTPCLoaderEditor::AliEveTPCLoaderEditor(const TGWindow *p,
 			      "AliEveTPCLoaderEditor", this, "DoDeleteSectors3D()");
     AddFrame(f, new TGLayoutHints(kLHintsExpandX, 8,8,8,0));
   }
+  {
+    TGHorizontalFrame* f = new TGHorizontalFrame(this);
+    fCreateSectors3D = new TGTextButton(f, "Show 2D");
+    f->AddFrame(fCreateSectors3D, new TGLayoutHints(kLHintsExpandX, 0,4,0,0));
+    fCreateSectors3D->Connect("Clicked()",
+			      "AliEveTPCLoaderEditor", this, "DoShowSectors2D()");
+    fDeleteSectors3D = new TGTextButton(f, "Hide 2D");
+    f->AddFrame(fDeleteSectors3D, new TGLayoutHints(kLHintsExpandX, 4,0,0,0));
+    fDeleteSectors3D->Connect("Clicked()",
+			      "AliEveTPCLoaderEditor", this, "DoHideSectors2D()");
+    AddFrame(f, new TGLayoutHints(kLHintsExpandX, 8,8,8,0));
+  }
+
+   // Eta cuts slider
+
+  {
+   TGHorizontalFrame* f = new TGHorizontalFrame(this);
+
+   gEtaRange = new TEveGDoubleValuator(f,"Eta range:", 40, 0);
+   gEtaRange->SetNELength(6);
+   gEtaRange->SetLabelWidth(50);
+   gEtaRange->Build();
+   gEtaRange->GetSlider()->SetWidth(180);
+   gEtaRange->SetLimits(-1.5, 1.5, TGNumberFormat::kNESRealTwo);
+   gEtaRange->SetValues(-1.5, 1.5, TGNumberFormat::kNESRealTwo);
+
+   gCutOnEta = new TGCheckButton(f, "Set", 10);
+   gCutOnEta->SetEnabled(kTRUE);
+
+   f->AddFrame(gEtaRange, new TGLayoutHints(kLHintsExpandX, 10, 10, 10, 10));
+   f->AddFrame(gCutOnEta, new TGLayoutHints(kLHintsNormal, 10, 10, 10, 10));
+
+   AddFrame(f, new TGLayoutHints(kLHintsExpandX, 8,8,8,0));
+  }
+
 }
 
 /******************************************************************************/
@@ -282,6 +323,15 @@ void AliEveTPCLoaderEditor::DoUpdateSectors()
 {
   // Slot for UpdateSectors.
 
+  if(gCutOnEta)
+    fM->SetCutOnEta(gCutOnEta->IsOn());
+
+  if(gEtaRange)
+  {
+    fM->SetEtaMin(gEtaRange->GetMin());
+    fM->SetEtaMax(gEtaRange->GetMax());
+  }
+
   fM->UpdateSectors();
 }
 
@@ -289,12 +339,31 @@ void AliEveTPCLoaderEditor::DoReloadSectors()
 {
   // Slot for ReloadSectors.
 
+  if(gCutOnEta)
+    fM->SetCutOnEta(gCutOnEta->IsOn());
+
+  if(gEtaRange)
+  {
+    fM->SetEtaMin(gEtaRange->GetMin());
+    fM->SetEtaMax(gEtaRange->GetMax());
+  }
+
+
   fM->ReloadSectors();
 }
 
 void AliEveTPCLoaderEditor::DoCreateSectors3D()
 {
   // Slot for CreateSectors3D.
+
+  if(gCutOnEta)
+    fM->SetCutOnEta(gCutOnEta->IsOn());
+
+  if(gEtaRange)
+  {
+    fM->SetEtaMin(gEtaRange->GetMin());
+    fM->SetEtaMax(gEtaRange->GetMax());
+  }
 
   fM->CreateSectors3D();
 }
@@ -306,3 +375,32 @@ void AliEveTPCLoaderEditor::DoDeleteSectors3D()
 
   fM->DeleteSectors3D();
 }
+
+void AliEveTPCLoaderEditor::DoShowSectors2D()
+{
+
+   for(Int_t i = 0; i< 36; i++)
+   {
+      if(gEve->GetEventScene()->FirstChild()->FindChild("AliEveTPCLoader")->FindChild(Form("Sector2D %d",i)))
+      {
+         gEve->GetEventScene()->FirstChild()->FindChild("AliEveTPCLoader")->FindChild(Form("Sector2D %d",i))->SetRnrSelf(kTRUE);
+         gEve->GetEventScene()->FirstChild()->FindChild("AliEveTPCLoader")->FindChild(Form("Sector2D %d",i))->SetRnrChildren(kTRUE);
+      }
+   }
+
+}
+
+void AliEveTPCLoaderEditor::DoHideSectors2D()
+{
+
+   for(Int_t i = 0; i< 36; i++)
+   {
+      if(gEve->GetEventScene()->FirstChild()->FindChild("AliEveTPCLoader")->FindChild(Form("Sector2D %d",i)))
+      {
+         gEve->GetEventScene()->FirstChild()->FindChild("AliEveTPCLoader")->FindChild(Form("Sector2D %d",i))->SetRnrSelf(kFALSE);
+         gEve->GetEventScene()->FirstChild()->FindChild("AliEveTPCLoader")->FindChild(Form("Sector2D %d",i))->SetRnrChildren(kFALSE);
+      }
+   }
+
+}
+

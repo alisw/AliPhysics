@@ -36,6 +36,14 @@ public:
   void SetDriftVel(Float_t v) { fDriftVel = v; IncRTS(); }
   void SetZStep(Float_t step) { fZStep = step; IncRTS(); }
 
+  void SetCutOnEta(Bool_t cut) { fCutOnEta = cut; IncRTS(); }
+  void SetEtaMax(Float_t max) { fEtaMax = max; IncRTS(); }
+  void SetEtaMin(Float_t min) { fEtaMin = min; IncRTS(); }
+
+  Float_t GetCutOnEta() { return fCutOnEta; }
+  Float_t GetEtaMax() { return fEtaMax; }
+  Float_t GetEtaMin() { return fEtaMin; }
+
   virtual void SetRnrFrame(Bool_t rf);
 
   virtual void ComputeBBox();
@@ -56,6 +64,10 @@ protected:
 
   Float_t             fDriftVel;        // Drift velocity for 'z' coordinate.
   Float_t             fZStep;           // Z width of a time-bin.
+
+  Bool_t              fCutOnEta;        // Bool used to apply eta cut
+  Float_t             fEtaMin;          // Minimum eta value for eta cut
+  Float_t             fEtaMax;          // Maximum eta value for eta cut
 
   ClassDef(AliEveTPCSector3D, 0); // Visualization of TPC raw-data in 3D.
 };

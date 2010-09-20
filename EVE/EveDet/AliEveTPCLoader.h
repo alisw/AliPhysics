@@ -59,6 +59,14 @@ public:
 
   void SetInitParams(Int_t mint, Int_t maxt, Int_t thr, Int_t maxval=128);
 
+  void SetCutOnEta(Bool_t cut) { fCutOnEta = cut; }
+  void SetEtaMax(Float_t max) { fEtaMax = max; }
+  void SetEtaMin(Float_t min) { fEtaMin = min; }
+
+  Float_t GetCutOnEta() { return fCutOnEta; }
+  Float_t GetEtaMax() { return fEtaMax; }
+  Float_t GetEtaMin() { return fEtaMin; }
+
 protected:
   TString           fFile;      // File holding raw-data.
   Int_t             fEvent;     // Current event.
@@ -76,6 +84,10 @@ protected:
   Int_t    fInitMaxTime;         // Max time for display.
   Int_t    fInitThreshold;       // Threshold.
   Int_t    fInitMaxVal;          // Maximum-signal value (all signals above mapped to saturation color).
+
+  Bool_t fCutOnEta;              // Bool for apply eta cut
+  Float_t fEtaMax;               // Maximum eta value for cut
+  Float_t fEtaMin;               // Minimum eta value for cut
 
 private:
   AliEveTPCLoader(const AliEveTPCLoader&);            // Not implemented

@@ -42,11 +42,15 @@ AliEveTPCSector3D::AliEveTPCSector3D(const Text_t* n, const Text_t* t) :
   fPointSetMaxVal (0),
 
   fDriftVel  (1.07),
-  fZStep     (250.0/900)
+  fZStep     (250.0/900),
+  fCutOnEta  (kFALSE),
+  fEtaMin    (-1.5),
+  fEtaMax    (1.5)
+
 {
   // Constructor.
 
-  fRnrFrame = kFALSE;
+  fRnrFrame = kTRUE;
   ComputeBBox();
 }
 
@@ -93,6 +97,9 @@ void AliEveTPCSector3D::Paint(Option_t* /*option*/)
 
   TBuffer3D buffer(TBuffer3DTypes::kGeneric);
 
+  SetMainColor(36);
+  SetMainTransparency(100);
+
   // Section kCore
   buffer.fID           = this;
   buffer.fColor        = GetMainColor();
@@ -121,6 +128,7 @@ void AliEveTPCSector3D::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
   Float_t x0, z0;
   Float_t ym = ys + 0.5*ph;
   Float_t zs = fZStep/fDriftVel;
+  Float_t eta, x1, y1, z1, x, y, z, c, s, zL;
 
   while (iter.NextPad())
   {
@@ -132,6 +140,37 @@ void AliEveTPCSector3D::LoadPadrow(AliEveTPCSectorData::RowIterator& iter,
 
       if (val <= fThreshold || time < fMinTime || time > fMaxTime)
 	continue;
+
+      if (fCutOnEta)
+      {
+
+        x1 = xs + (pad+0.5)*pw;
+        y1 = ym;
+        z1 = (time+0.5)*zs;
+
+        c = TMath::Cos((fSectorID + 0.5)*20*TMath::Pi()/180 - TMath::PiOver2());
+        s = TMath::Sin((fSectorID + 0.5)*20*TMath::Pi()/180 - TMath::PiOver2());
+        zL = AliEveTPCSectorData::GetZLength();
+
+        if (fSectorID < 18)
+        {
+          x = -c*x1-s*y1;
+          y = -s*x1+c*y1;
+          z = -z1+zL;
+        } 
+        else
+        {
+          x = c*x1+s*y1;
+          y = -s*x1+c*y1;
+          z = z1-zL;
+        }
+
+        eta = -TMath::Log(TMath::Tan(0.5*TMath::ACos(z/TMath::Sqrt(x*x + y*y + z*z))));
+
+        if(!(eta < fEtaMax && eta > fEtaMin) && !(-eta < fEtaMax && -eta > fEtaMin))
+	  continue;
+
+      }
 
       if (fPointSetOn && val <= fPointSetMaxVal)
       {
