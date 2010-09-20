@@ -36,6 +36,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   // XML collections added via this method can be combined with the first method if
   // the content is compatible (using or not tags)
   plugin->AddDataFile("tag.xml");
+  //  plugin->AddDataFile("wn.xml"); // test
   // file generated with:  find -x tag /alice/sim/LHC10d1/117222/* AliESDs.root > tag.xml
 
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
@@ -47,7 +48,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx");
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisEt.h AliAnalysisEtMonteCarlo.h AliAnalysisEtMonteCarloPhos.h AliAnalysisEtMonteCarloEmcal.h AliAnalysisEtReconstructed.h AliAnalysisEtReconstructedPhos.h AliAnalysisEtReconstructedEmcal.h AliAnalysisTaskTotEt.h AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx");
+  plugin->SetAdditionalLibs("AliAnalysisEtCuts.h AliAnalysisEt.h AliAnalysisEtMonteCarlo.h AliAnalysisEtMonteCarloPhos.h AliAnalysisEtMonteCarloEmcal.h AliAnalysisEtReconstructed.h AliAnalysisEtReconstructedPhos.h AliAnalysisEtReconstructedEmcal.h AliAnalysisTaskTotEt.h AliAnalysisEtCuts.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTotEt.cxx");
 
   // No need for output file names. Procedure is automatic. <-- not true
   plugin->SetDefaultOutputs(kFALSE);
