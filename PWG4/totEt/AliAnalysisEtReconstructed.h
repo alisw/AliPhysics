@@ -36,36 +36,23 @@ protected:
     bool CheckGoodVertex(AliVParticle *track);
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
 
-    Int_t fNTpcClustersCut;
-    Int_t fNItsClustersCut;
-
     Double_t fTrackDistanceCut; // cut on track distance    
-    
     Double_t fPidCut; // cut on the pid probability
     
     Char_t fClusterType; // selection on cluster type
-    
-    /** Energy deposited in calorimeter by charged pions */
-    TH2F *fHistChargedPionEnergyDeposit;
-    
-    /** Energy deposited in calorimeter by protons */
-    TH2F *fHistProtonEnergyDeposit;
-    
-    /** Energy deposited in calorimeter by anti-protons */
-    TH2F *fHistAntiProtonEnergyDeposit;
-
-    /** Energy deposited in calorimeter by charged kaons */
-    TH2F *fHistChargedKaonEnergyDeposit;
-    
-    /** Energy deposited in calorimeter by muons */
-    TH2F *fHistMuonEnergyDeposit;
+        
+    TH2F *fHistChargedPionEnergyDeposit; /** Energy deposited in calorimeter by charged pions */    
+    TH2F *fHistProtonEnergyDeposit; /** Energy deposited in calorimeter by protons */    
+    TH2F *fHistAntiProtonEnergyDeposit; /** Energy deposited in calorimeter by anti-protons */    
+    TH2F *fHistChargedKaonEnergyDeposit; /** Energy deposited in calorimeter by charged kaons */    
+    TH2F *fHistMuonEnergyDeposit; /** Energy deposited in calorimeter by muons */
     
   private:
     
     AliAnalysisEtReconstructed(const AliAnalysisEtReconstructed& g);
     AliAnalysisEtReconstructed & operator=(const AliAnalysisEtReconstructed&);
     
-    Double_t CalcTrackClusterDistance(Float_t pos[3],Int_t *trkMatchId, AliESDEvent *event);
+    Double_t CalcTrackClusterDistance(const Float_t pos[3],Int_t *trkMatchId, const AliESDEvent *event);
 
 };
 

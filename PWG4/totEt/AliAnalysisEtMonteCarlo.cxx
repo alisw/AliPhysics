@@ -14,6 +14,22 @@
 #include "AliMCEvent.h"
 #include "TH2F.h"
 #include "TParticle.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
+
+// ctor
+AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo() :
+  AliAnalysisEt()
+  ,fImpactParameter(0)
+  ,fNcoll(0)
+  ,fNpart(0)
+{
+}
+
+// dtor
+AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo() 
+{
+}
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 { // analyse MC event
@@ -21,6 +37,33 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
      
     // Get us an mc event
     AliMCEvent *event = dynamic_cast<AliMCEvent*>(ev);
+
+    // Hijing header
+    AliGenEventHeader* genHeader = event->GenEventHeader();
+    AliGenHijingEventHeader* hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+    if (hijingGenHeader) {
+      fImpactParameter = hijingGenHeader->ImpactParameter();
+      fNcoll = hijingGenHeader->HardScatters(); // or should this be some combination of NN() NNw() NwN() NwNw() ?
+      fNpart = hijingGenHeader->ProjectileParticipants() + hijingGenHeader->TargetParticipants(); 
+      /*
+      printf("Hijing: ImpactParameter %g ReactionPlaneAngle %g \n",
+	     hijingGenHeader->ImpactParameter(), hijingGenHeader->ReactionPlaneAngle());
+      printf("HardScatters %d ProjecileParticipants %d TargetParticipants %d\n",
+	     hijingGenHeader->HardScatters(), hijingGenHeader->ProjectileParticipants(), hijingGenHeader->TargetParticipants()); 
+      printf("ProjSpectatorsn %d ProjSpectatorsp %d TargSpectatorsn %d TargSpectatorsp %d\n",
+	     hijingGenHeader->ProjSpectatorsn(), hijingGenHeader->ProjSpectatorsp(), hijingGenHeader->TargSpectatorsn(), hijingGenHeader->TargSpectatorsp());
+      printf("NN %d NNw %d NwN %d, NwNw %d\n",
+	     hijingGenHeader->NN(), hijingGenHeader->NNw(), hijingGenHeader->NwN(), hijingGenHeader->NwNw());
+      */
+    }
+
+    /* // placeholder if we want to get some Pythia info later
+    AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+    if (pythiaGenHeader) { // not Hijing; try with Pythia      
+      printf("Pythia: ProcessType %d  GetPtHard %g \n",
+	     pythiaGenHeader->ProcessType(), pythiaGenHeader->GetPtHard());
+    }
+    */
 
     // Let's play with the stack!
     AliStack *stack = event->Stack();
@@ -110,8 +153,28 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 }
 
 void AliAnalysisEtMonteCarlo::Init()
-{
+{ // init
     AliAnalysisEt::Init();
+}
+
+void AliAnalysisEtMonteCarlo::ResetEventValues()
+{ // reset event values
+  AliAnalysisEt::ResetEventValues();
+
+  // collision geometry defaults for p+p:
+  fImpactParameter = 0;
+  fNcoll = 1;
+  fNpart = 2;  
+}
+
+void AliAnalysisEtMonteCarlo::CreateHistograms()
+{ // histogram related additions
+  AliAnalysisEt::CreateHistograms();
+  if (fTree) {
+    fTree->Branch("fImpactParameter",&fImpactParameter,"fImpactParameter/D");
+    fTree->Branch("fNcoll",&fNcoll,"fNcoll/I");
+    fTree->Branch("fNpart",&fNpart,"fNpart/I");
+  }
 }
 
 bool AliAnalysisEtMonteCarlo::TrackHitsCalorimeter(TParticle* part, Double_t magField)

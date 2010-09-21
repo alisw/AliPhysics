@@ -84,7 +84,7 @@ void runCaloEt(bool submit = false, // true or false
     cout << " MC " << endl;
     if ( dataStr.Contains("PbPb") ) { // a la: simPbPb/LHC10e18a
       cout << " PbPb " << endl;
-      TString fileLocation = "/home/dsilverm/data/E_T/" + dataStr + "/198000/001/AliESDs.root";
+      TString fileLocation = "/home/dsilverm/data/E_T/" + dataStr + "/dir/AliESDs.root";
       cout << "fileLocation " << fileLocation.Data() << endl; 
       chain->Add(fileLocation.Data()); // link to local test file
     }

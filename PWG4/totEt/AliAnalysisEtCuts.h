@@ -56,6 +56,8 @@ class AliAnalysisEtCuts : public TNamed
   // MonteCarlo
   Double_t GetMonteCarloSingleChargedParticle() const { return fMonteCarloSingleChargedParticle; }
   Double_t GetMonteCarloNeutralParticle() const { return fMonteCarloNeutralParticle; }
+  // Hist: TTree and histogram info
+  Bool_t GetHistMakeTree() const { return fHistMakeTree; }
 
   // Setters
   // Common
@@ -95,6 +97,8 @@ class AliAnalysisEtCuts : public TNamed
   // MonteCarlo
   void SetMonteCarloSingleChargedParticle(const Double_t val) { fMonteCarloSingleChargedParticle = val; }
   void SetMonteCarloNeutralParticle(const Double_t val) { fMonteCarloNeutralParticle = val; }
+  // Hist: TTree and histogram info
+  void SetHistMakeTree(const Bool_t val) { fHistMakeTree = val; }
 
  protected:
 
@@ -141,6 +145,9 @@ class AliAnalysisEtCuts : public TNamed
   // MonteCarlo
   Double_t fMonteCarloSingleChargedParticle; // MC charged
   Double_t fMonteCarloNeutralParticle; // MC neutral
+
+  // Hist: TTree and histogram info
+  Bool_t fHistMakeTree; // whether to make a summary tree or not
 
 private:
   //Declare private to avoid compilation warning

@@ -25,8 +25,6 @@
 
 AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         AliAnalysisEt()
-        ,fNTpcClustersCut(0)
-        ,fNItsClustersCut(0)
         ,fTrackDistanceCut(0)
         ,fPidCut(0)
         ,fClusterType(0)
@@ -274,8 +272,6 @@ bool AliAnalysisEtReconstructed::CheckGoodVertex(AliVParticle* track)
 void AliAnalysisEtReconstructed::Init()
 { // Init
     AliAnalysisEt::Init();
-    fNItsClustersCut = fCuts->GetReconstructedNItsClustersCut();
-    fNTpcClustersCut = fCuts->GetReconstructedNTpcClustersCut();
     fPidCut = fCuts->GetReconstructedPidCut();
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
 
@@ -297,7 +293,7 @@ bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Doubl
 }
 
 void AliAnalysisEtReconstructed::FillOutputList(TList* list)
-{
+{ // add some extra histograms to the ones from base class
     AliAnalysisEt::FillOutputList(list);
 
     list->Add(fHistChargedPionEnergyDeposit);
@@ -308,7 +304,7 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
 }
 
 void AliAnalysisEtReconstructed::CreateHistograms()
-{
+{ // add some extra histograms to the ones from base class
     AliAnalysisEt::CreateHistograms();
 
     TString histname;
@@ -341,9 +337,9 @@ void AliAnalysisEtReconstructed::CreateHistograms()
 }
 
 Double_t 
-AliAnalysisEtReconstructed::CalcTrackClusterDistance(Float_t clsPos[3],
+AliAnalysisEtReconstructed::CalcTrackClusterDistance(const Float_t clsPos[3],
 						     Int_t *trkMatchId,
-						     AliESDEvent *event)
+						     const AliESDEvent *event)
 { // calculate distance between cluster and closest track
 
   Double_t trkPos[3] = {0,0,0};

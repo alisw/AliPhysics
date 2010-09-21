@@ -12,6 +12,7 @@
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TTree.h"
 #include <iostream>
 #include "AliAnalysisEtCuts.h"
 #include "AliVEvent.h"
@@ -49,8 +50,6 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fEPlusCode(0)
         ,fEMinusCode(0)
         ,fPionMass(0)
-        ,fSumEt(0)
-        ,fSumEtAcc(0)
         ,fTotEt(0)
         ,fTotEtAcc(0)
         ,fTotNeutralEt(0)
@@ -108,6 +107,7 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fHistElectronEtAcc(0)
         ,fHistEtRecvsEtMC(0)
         ,fHistTMDeltaR(0)
+        ,fTree(0)
 {
 }
 
@@ -149,6 +149,13 @@ void AliAnalysisEt::FillOutputList(TList *list)
     list->Add(fHistEtRecvsEtMC);
 
     list->Add(fHistTMDeltaR);
+
+    if (fCuts) {
+      if (fCuts->GetHistMakeTree()) {
+	list->Add(fTree);
+      }
+    }
+
 }
 
 void AliAnalysisEt::Init()
@@ -168,6 +175,13 @@ void AliAnalysisEt::CreateHistograms()
   Int_t nbinsMult = 200;
   Double_t minMult = -0.5; // offset -0.5 to have integer bins centered around 0
   Double_t maxMult = nbinsMult + minMult; // 1 bin per integer value
+
+  // see if we should change histogram limits etc, and possibly create a tree
+  if (fCuts) {
+    if (fCuts->GetHistMakeTree()) {
+      CreateTree();
+    }
+  }
 
     TString histname = "fHistEt" + fHistogramNameSuffix;
     fHistEt = new TH1F(histname.Data(), "Total E_{T} Distribution", nbinsEt, minEt, maxEt);
@@ -271,6 +285,37 @@ void AliAnalysisEt::CreateHistograms()
 
 }
 
+void AliAnalysisEt::CreateTree()
+{ // create tree..
+  TString treename = "fTree" + fHistogramNameSuffix;
+  fTree = new TTree(treename, treename);
+  fTree->Branch("fTotEt",&fTotEt,"fTotEt/D");
+  fTree->Branch("fTotEtAcc",&fTotEtAcc,"fTotEtAcc/D");
+  fTree->Branch("fTotNeutralEt",&fTotNeutralEt,"fTotNeutralEt/D");
+  fTree->Branch("fTotNeutralEtAcc",&fTotNeutralEtAcc,"fTotNeutralEtAcc/D");
+  fTree->Branch("fTotChargedEt",&fTotChargedEt,"fTotChargedEt/D");
+  fTree->Branch("fTotChargedEtAcc",&fTotChargedEtAcc,"fTotChargedEtAcc/D");
+  fTree->Branch("fMultiplicity",&fMultiplicity,"fMultiplicity/I");
+  fTree->Branch("fChargedMultiplicity",&fChargedMultiplicity,"fChargedMultiplicity/I");
+  fTree->Branch("fNeutralMultiplicity",&fNeutralMultiplicity,"fNeutralMultiplicity/I");
+  fTree->Branch("fBaryonEt",&fBaryonEt,"fBaryonEt/D");
+  fTree->Branch("fAntiBaryonEt",&fAntiBaryonEt,"fAntiBaryonEt/D");
+  fTree->Branch("fMesonEt",&fMesonEt,"fMesonEt/D");
+  fTree->Branch("fBaryonEtAcc",&fBaryonEtAcc,"fBaryonEtAcc/D");
+  fTree->Branch("fAntiBaryonEtAcc",&fAntiBaryonEtAcc,"fAntiBaryonEtAcc/D");
+  fTree->Branch("fMesonEtAcc",&fMesonEtAcc,"fMesonEtAcc/D");
+  fTree->Branch("fProtonEt",&fProtonEt,"fProtonEt/D");
+  fTree->Branch("fChargedKaonEt",&fChargedKaonEt,"fChargedKaonEt/D");
+  fTree->Branch("fMuonEt",&fMuonEt,"fMuonEt/D");
+  fTree->Branch("fElectronEt",&fElectronEt,"fElectronEt/D");
+  fTree->Branch("fProtonEtAcc",&fProtonEtAcc,"fProtonEtAcc/D");
+  fTree->Branch("fChargedKaonEtAcc",&fChargedKaonEtAcc,"fChargedKaonEtAcc/D");
+  fTree->Branch("fMuonEtAcc",&fMuonEtAcc,"fMuonEtAcc/D");
+  fTree->Branch("fElectronEtAcc",&fElectronEtAcc,"fElectronEtAcc/D");
+
+  return;
+}
+
 void AliAnalysisEt::FillHistograms()
 { // fill histograms..
     fHistEt->Fill(fTotEt);
@@ -285,20 +330,14 @@ void AliAnalysisEt::FillHistograms()
     fHistChargedMult->Fill(fChargedMultiplicity);
     fHistNeutralMult->Fill(fNeutralMultiplicity);
 
-    /* // DS commented out non-fills to prevent compilation warnings
-    fHistPhivsPtPos;
-    fHistPhivsPtNeg;
+    fHistBaryonEt->Fill(fBaryonEt);
+    fHistAntiBaryonEt->Fill(fAntiBaryonEt);
+    fHistMesonEt->Fill(fMesonEt);
 
-    fHistBaryonEt;
-    fHistAntiBaryonEt;
-    fHistMesonEt;
-
-    fHistBaryonEtAcc;
-    fHistAntiBaryonEtAcc;
-    fHistMesonEtAcc;
-
-    fHistTMDeltaR;
-    */
+    fHistBaryonEtAcc->Fill(fBaryonEtAcc);
+    fHistAntiBaryonEtAcc->Fill(fAntiBaryonEtAcc);
+    fHistMesonEtAcc->Fill(fMesonEtAcc);
+ 
     fHistProtonEt->Fill(fProtonEt);
     fHistChargedKaonEt->Fill(fChargedKaonEt);
     fHistMuonEt->Fill(fMuonEt);
@@ -308,6 +347,13 @@ void AliAnalysisEt::FillHistograms()
     fHistChargedKaonEtAcc->Fill(fChargedKaonEtAcc);
     fHistMuonEtAcc->Fill(fMuonEtAcc);
     fHistElectronEtAcc->Fill(fElectronEtAcc);
+
+    if (fCuts) {
+      if (fCuts->GetHistMakeTree()) {
+	fTree->Fill();
+      }
+    }
+
 }
 
 Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)
@@ -341,6 +387,7 @@ void AliAnalysisEt::ResetEventValues()
   fProtonEtAcc = 0;
   fChargedKaonEtAcc = 0;
   fMuonEtAcc = 0;
+  fElectronEtAcc = 0;
     
   if (!fCuts || !fPdgDB || fPiPlusCode==0) { // some Init's needed
     cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
