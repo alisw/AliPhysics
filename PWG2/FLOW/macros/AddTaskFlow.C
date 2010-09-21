@@ -32,6 +32,13 @@ Double_t v3=0.0;
 Double_t v4=0.0;
 Int_t numberOfTrackClones=0; //non-flow
 
+// Define a range of the detector to exclude
+Bool_t ExcludeRegion = kFALSE;
+Double_t excludeEtaMin = -0.;
+Double_t excludeEtaMax = 0.;
+Double_t excludePhiMin = 0.;
+Double_t excludePhiMax = 0.;
+
 // use physics selection class
 Bool_t  UsePhysicsSelection = kTRUE;
 
@@ -48,8 +55,8 @@ const Double_t vertexXmin = -1.e99;
 const Double_t vertexXmax = 1.e99;
 const Double_t vertexYmin = -1.e99;
 const Double_t vertexYmax = 1.e99;
-const Double_t vertexZmin = -1.e99; 
-const Double_t vertexZmax = 1.e99; 
+const Double_t vertexZmin = -10.; 
+const Double_t vertexZmax = 10.; 
 const Int_t vertexNContributorsmin = 1;
 const Int_t vertexNContributorsmax = 10000;
 
@@ -69,7 +76,7 @@ const TString rptype = "Global";
 //const TString rptype = "FMD";
 
 //KINEMATICS (on generated and reconstructed tracks)
-Bool_t UseKineforRP =  kTRUE;
+Bool_t UseKineforRP =  kFALSE;
 const Double_t ptminRP = 0.0;
 const Double_t ptmaxRP = 10.0;
 const Double_t etaminRP  = -0.9;
@@ -83,7 +90,7 @@ const Int_t PdgRP = 211;
 
 //TRACK QUALITY (on reconstructed tracks only)
 //see /CORRFW/AliCFTrackQualityCuts class
-Bool_t UseTrackQualityforRP =  kTRUE;
+Bool_t UseTrackQualityforRP =  kFALSE;
 const Int_t    minClustersTpcRP = 80;           //default = -1; 
 const Double_t maxChi2PerClusterTpcRP = 4.0;    //default = 1.e+09;
 const UShort_t minDedxClusterTpcRP = 0;
@@ -97,7 +104,7 @@ const ULong_t  statusRP = AliESDtrack::kTPCrefit;   //AliESDtrack::kTPCrefit &  
 
 //PRIMARY (on reconstructed tracks only)
 //see /CORRFW/AliCFTrackIsPrimaryCuts class
-Bool_t UsePrimariesforRP = kTRUE;
+Bool_t UsePrimariesforRP = kFALSE;
 const Bool_t   spdVertexRP = kFALSE;
 const Bool_t   tpcVertexRP = kFALSE;
 const Float_t  minDcaToVertexXyRP = 0.;
@@ -328,8 +335,12 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   
       AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
       pars->Init();
-      pars->SetProcessPrimary(kTRUE);
+      pars->SetProcessPrimary(kTRUE); //for MC only
       pars->SetProcessHits(kFALSE);
+
+      //pars->SetRealData(kTRUE); //for real data
+      //pars->SetProcessPrimary(kFALSE); //for real data
+
     }
   }
   
@@ -352,6 +363,10 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
       taskFE->SetMinMult(multmin);
       taskFE->SetMaxMult(multmax);
     }
+    if (ExcludeRegion) {
+      taskFE->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 
+    }
+
     taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
     if (UsePhysicsSelection) {
       taskFE->SelectCollisionCandidates();
@@ -369,9 +384,13 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     }
     else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",rptype,kFALSE); }
     taskFE->SetAnalysisType(type);
+    taskFE->SetRPType(rptype); //only for ESD
     if (UseMultCut) {
       taskFE->SetMinMult(multmin);
       taskFE->SetMaxMult(multmax);
+    }
+    if (ExcludeRegion) {
+      taskFE->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 
     }
     taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
     if (UsePhysicsSelection) {
