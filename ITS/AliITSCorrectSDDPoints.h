@@ -19,7 +19,9 @@
 class AliITSCorrectSDDPoints : public TObject {
  public:
   AliITSCorrectSDDPoints();
+  AliITSCorrectSDDPoints(TObjArray* maps);
   AliITSCorrectSDDPoints(TString filname);
+  void    SetCorrectionMaps(TObjArray *arr);
   ~AliITSCorrectSDDPoints();
   Float_t GetCorrection(Int_t modId, Float_t zloc, Float_t xloc) const;
   Float_t GetCorrectedXloc(Int_t modId, Float_t zloc, Float_t xloc) const{

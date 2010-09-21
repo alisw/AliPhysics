@@ -43,7 +43,7 @@ ClassImp(AliITSAlignMille2Module)
 #define CORHW_
 
 AliAlignObjParams AliITSAlignMille2Module::fgTempAlignObj;
-const Float_t AliITSAlignMille2Module::fgkDummyConstraint = 1.E3;
+const Float_t AliITSAlignMille2Module::fgkDummyConstraint = 1e-2;//1.E3;
     
 //-------------------------------------------------------------
 AliITSAlignMille2Module::AliITSAlignMille2Module() : 
@@ -219,6 +219,7 @@ AliITSAlignMille2Module& AliITSAlignMille2Module::operator=(const AliITSAlignMil
   if (fNParTot) {
     fParVals = new Float_t[fNParTot];
     fParErrs = new Float_t[fNParTot];
+    fParCstr = new Float_t[fNParTot];
     for (int i=m.GetNParTot();i--;) {
       fParVals[i] = m.fParVals[i];
       fParErrs[i] = m.fParErrs[i];

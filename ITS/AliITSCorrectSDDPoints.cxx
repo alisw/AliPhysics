@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:$ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -30,6 +30,7 @@
 #include "AliITSCorrectSDDPoints.h"
 
 ClassImp(AliITSCorrectSDDPoints)
+
 //______________________________________________________________________
 AliITSCorrectSDDPoints::AliITSCorrectSDDPoints():
   TObject(),
@@ -45,6 +46,16 @@ AliITSCorrectSDDPoints::AliITSCorrectSDDPoints():
   AliInfo(Form("%d AliITSCorrMapSDD objects in file %s",fArrayOfMaps->GetEntries(),fil->GetName()));
   fSegmentationSDD=new AliITSsegmentationSDD();
 }
+
+//______________________________________________________________________
+AliITSCorrectSDDPoints::AliITSCorrectSDDPoints(TObjArray* maps):
+  TObject(),
+  fArrayOfMaps(maps),
+  fSegmentationSDD(new AliITSsegmentationSDD())
+{
+  // constructor from external array
+}
+
 //______________________________________________________________________
 AliITSCorrectSDDPoints::AliITSCorrectSDDPoints(TString filname):
   TObject(),
@@ -60,11 +71,21 @@ AliITSCorrectSDDPoints::AliITSCorrectSDDPoints(TString filname):
   AliInfo(Form("%d AliITSCorrMapSDD objects in file %s",fArrayOfMaps->GetEntries(),fil->GetName()));
   fSegmentationSDD=new AliITSsegmentationSDD();
 }
+
 //______________________________________________________________________
 AliITSCorrectSDDPoints::~AliITSCorrectSDDPoints(){
   //
   if(fArrayOfMaps) delete fArrayOfMaps;
 }
+
+//______________________________________________________________________
+void AliITSCorrectSDDPoints::SetCorrectionMaps(TObjArray *arr)
+{
+  // replace the maps
+  delete fArrayOfMaps;
+  fArrayOfMaps = (TObjArray*)arr;
+}
+
 //______________________________________________________________________
 Float_t AliITSCorrectSDDPoints::GetCorrection(Int_t modId, Float_t zloc, Float_t xloc) const{
   // returns correction to SDD drift corrdinate in cm

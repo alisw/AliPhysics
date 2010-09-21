@@ -45,7 +45,7 @@ class AliITSTPArrayFit : public TObject
 	kCosmicsBit=BIT(16),kELossBit=BIT(17),
 	kIgnoreCovBit=BIT(18),
 	kMask=BIT(24)-1};
-  enum {kXX=0,kXY=1,kXZ=2,kYX=kXY,kYY=3,kYZ=4,kZX=kXZ,kZY=kYZ,kZZ=5};
+  enum {kXX=0,kXY=1,kXZ=2,kYX=kXY,kYY=3,kYZ=4,kZX=kXZ,kZY=kYZ,kZZ=5,kScl=6,kNCov};
   enum {kA0,kB0,kA1,kB1};                // line params
   enum {kD0,kPhi0,kR0,kDZ,kDip};         // helix params
   enum {kX,kY,kZ};
@@ -72,8 +72,8 @@ class AliITSTPArrayFit : public TObject
   Int_t         GetCharge()                                 const {return fCharge;}
   Int_t         GetSignQB()                                 const {return fBz<0 ? -fCharge:fCharge;}
   void          GetResiduals(Double_t *res, Int_t ipnt)     const;
-  void          GetResiduals(Double_t *resPCA, const Double_t* xyz, const Double_t* covI=0)  const;
-  Double_t      GetPosition( Double_t *xyzPCA, const Double_t* xyz, const Double_t* covI=0)  const;
+  void          GetResiduals(Double_t *resPCA, const Double_t* xyz, const Double_t* covI=0, Double_t sclCovI=-1)  const;
+  Double_t      GetPosition( Double_t *xyzPCA, const Double_t* xyz, const Double_t* covI=0, Double_t sclCovI=-1)  const;
   Double_t      GetPosition( Double_t *xyzPCA, const AliTrackPoint *pntCovInv,Bool_t useErr=kFALSE) const;
   void          GetResiduals(Double_t *xyzPCA, const AliTrackPoint *pntCovInv,Bool_t useErr=kFALSE) const;
   void          GetPosition(Double_t *xyz, Double_t t)      const;
@@ -83,18 +83,18 @@ class AliITSTPArrayFit : public TObject
   void          GetT0Info(Double_t *xyz, Double_t *dir=0)   const;
   Double_t      CalcChi2NDF()                               const;
   Double_t      GetChi2NDF()                                const {return fChi2NDF;}
-  Double_t      GetParPCA(const double *xyz, const double *covI=0)        const;
+  Double_t      GetParPCA(const double *xyz, const double *covI=0, Double_t sclCovI=-1)        const;
   Double_t      CalcParPCA(Int_t ipnt)                      const;
   Bool_t        CalcErrorMatrix();
   //
-  void          GetDResDParamsLine (Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0) const;
+  void          GetDResDParamsLine (Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0/*,Double_t sclCovI=-1*/) const;
   void          GetDResDParamsLine (Double_t *dXYZdP, Int_t ipnt) const;
-  void          GetDResDParams(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0);
+  void          GetDResDParams(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0, Double_t sclCovI=-1);
   void          GetDResDParams(Double_t *dXYZdP, Int_t ipnt);
   //
-  void          GetDResDPosLine (Double_t *dXYZdP,/*const Double_t *xyz,*/ const Double_t *covI=0) const;
+  void          GetDResDPosLine (Double_t *dXYZdP,/*const Double_t *xyz,*/ const Double_t *covI=0/*,Double_t sclCovI=-1*/) const;
   void          GetDResDPosLine (Double_t *dXYZdP, Int_t ipnt) const;
-  void          GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0);
+  void          GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0, Double_t sclCovI=-1);
   void          GetDResDPos(Double_t *dXYZdP, Int_t ipnt);
   //
   Double_t*     GetPoint(int ip)                            const;
@@ -118,7 +118,8 @@ class AliITSTPArrayFit : public TObject
   Int_t*        GetElsId() const {return fElsId;}
   Double_t*     GetElsDR() const {return fElsDR;}
   //
-  Double_t*     GetCovI(Int_t ip)                           const {return fCovI + ip*6;}
+  Double_t      GetCovIScale(Int_t ip)                      const {return ip<fNPBooked ? fCovI[ip*kNCov+kScl] : -1.0;}
+  Double_t*     GetCovI(Int_t ip)                           const {return fCovI + kNCov*ip;}
   Double_t*     GetCovI()                                   const {return fCovI;}
   Double_t*     GetParams()                                 const {return (Double_t*)&fParams[0];}
   Double_t      GetParam(Int_t ip)                          const {return fParams[ip];}
@@ -156,21 +157,23 @@ class AliITSTPArrayFit : public TObject
   void          SetMass(Double_t m=0.13957)                       {fMass = m<5E-4 ? 5E-4 : m;}
   void          Reset();
   void          BuildMaterialLUT(Int_t ntri=3000);
+  void          SetCovIScale(Int_t ip, Double_t scl=-1.0);
+  void          ResetCovIScale(Double_t scl=-1.0)                 {for (int i=fNPBooked;i--;) SetCovIScale(i,scl);}
   //
-  virtual void  Print(Option_t *opt="")                                     const;
+  virtual void  Print(Option_t *opt="")                    const;
   //
   static void   GetNormal(Double_t *norm,const Float_t *covMat);
   //
  protected:
   void          InitAux();
   Int_t         ChoseParAxis()                                              const;
-  Double_t      GetParPCALine(const Double_t *xyz, const Double_t *covI=0)  const;
-  Double_t      GetParPCAHelix(const Double_t *xyz, const Double_t *covI=0) const;
+  Double_t      GetParPCALine(const Double_t *xyz, const Double_t *covI=0/*, Double_t sclCovI=-1*/)  const;
+  Double_t      GetParPCAHelix(const Double_t *xyz, const Double_t *covI=0, Double_t sclCovI=-1) const;
   Double_t      GetParPCACircle(Double_t x, Double_t y)                     const;
   Double_t      GetHelixParAtR(Double_t r)                                  const;
   //
-  void          GetDtDPosLine(Double_t *dtpos,/*const Double_t *xyz,*/  const Double_t *covI=0)  const;
-  Double_t      GetDtDParamsLine(Double_t *dtparam,const Double_t *xyz, const Double_t *covI=0)  const;
+  void          GetDtDPosLine(Double_t *dtpos,/*const Double_t *xyz,*/  const Double_t *covI=0/*, Double_t sclCovI=-1*/)  const;
+  Double_t      GetDtDParamsLine(Double_t *dtparam,const Double_t *xyz, const Double_t *covI=0/*, Double_t sclCovI=-1*/)  const;
   //
   Double_t      GetDRofELoss(Double_t t,Double_t cdip,Double_t rhoL,
 			     const Double_t *normS, Double_t &p,Double_t &e) const;
@@ -231,16 +234,17 @@ inline void AliITSTPArrayFit::GetPosition(Double_t *xyz, Int_t pnt) const
 }
 
 //____________________________________________________
-inline Double_t AliITSTPArrayFit::GetParPCA(const double *xyz, const double *covI) const
+inline Double_t AliITSTPArrayFit::GetParPCA(const double *xyz, const double *covI, Double_t sclCovI) const
 {
   // get parameter for the point with least weighted distance to the point
-  if (IsFieldON()) return GetParPCAHelix(xyz,covI);
-  else             return GetParPCALine(xyz,covI);
+  if (IsFieldON()) return GetParPCAHelix(xyz,covI,sclCovI);
+  else             return GetParPCALine(xyz,covI/*,sclCovI*/);
 }
 
 //____________________________________________________
 inline Double_t* AliITSTPArrayFit::GetPoint(Int_t ip) const
 {
+  // get point xyz
   static double xyz[3];
   xyz[kX] = fkPoints->GetX()[ip];
   xyz[kY] = fkPoints->GetY()[ip];
@@ -251,10 +255,19 @@ inline Double_t* AliITSTPArrayFit::GetPoint(Int_t ip) const
 //____________________________________________________
 inline Double_t AliITSTPArrayFit::Fit(Int_t extQ,Double_t extPT,Double_t extPTerr)
 {
+  // perform the fit
   if (IsFieldON()) return FitHelix(extQ,extPT,extPTerr);
   else             return FitLine();
 }
 
+//____________________________________________________
+inline void  AliITSTPArrayFit::SetCovIScale(Int_t ip, Double_t scl) 
+{
+  // rescale inverted error matrix of specific point
+  if (ip>=fNPBooked) return;
+  if (TMath::Abs(scl-GetCovIScale(ip))<1e-7) ResetBit(kFitDoneBit); 
+  fCovI[ip*kNCov+kScl] = scl;
+}
 
 #endif
 

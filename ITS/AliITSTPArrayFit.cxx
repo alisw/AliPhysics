@@ -124,7 +124,7 @@ AliITSTPArrayFit::AliITSTPArrayFit(const AliITSTPArrayFit &src) :
 {
   // copy constructor
   InitAux();
-  memcpy(fCovI,src.fCovI,fNPBooked*6*sizeof(Double_t));
+  memcpy(fCovI,src.fCovI,fNPBooked*kNCov*sizeof(Double_t));
   for (int i=kMaxParam;i--;)   fParams[i] = src.fParams[i];
   for (int i=kMaxParamSq;i--;) fParamsCov[i] = src.fParamsCov[i];
   memcpy(fCurT,src.fCurT,fNPBooked*sizeof(Double_t));
@@ -148,7 +148,7 @@ AliITSTPArrayFit &AliITSTPArrayFit::operator =(const AliITSTPArrayFit& src)
   fPntFirst = src.fPntFirst;
   fPntLast  = src.fPntLast;
   InitAux();
-  memcpy(fCovI,src.fCovI,fNPBooked*6*sizeof(Double_t));
+  memcpy(fCovI,src.fCovI,fNPBooked*kNCov*sizeof(Double_t));
   for (int i=kMaxParam;i--;)   fParams[i] = src.fParams[i];
   for (int i=kMaxParamSq;i--;) fParamsCov[i] = src.fParamsCov[i];
   SetParAxis(src.fParAxis);
@@ -211,6 +211,7 @@ void AliITSTPArrayFit::AttachPoints(const AliTrackPointArray* points, Int_t pfir
   for (int i=kMaxParamSq;i--;) fParamsCov[i] = 0;
   //
   InvertPointsCovMat();
+  ResetCovIScale();
   //
 }
 
@@ -309,12 +310,13 @@ void AliITSTPArrayFit::InitAux()
   if (fCovI) delete[] fCovI;
   if (fCurT) delete[] fCurT;
   //
-  fCovI   = new Double_t[6*fNPBooked];
+  fCovI   = new Double_t[kNCov*fNPBooked];
   fCurT   = new Double_t[fNPBooked+kMaxLrITS];
   fElsId  = new Int_t[fNPBooked+kMaxLrITS];
   fElsDR  = new Double_t[fNPBooked+kMaxLrITS];
   memset(fElsDR,0,(fNPBooked+kMaxLrITS)*sizeof(Double_t));
-  memset(fCovI,0,fNPBooked*6*sizeof(Double_t));
+  memset(fCovI,0,fNPBooked*kNCov*sizeof(Double_t));
+  ResetCovIScale();
   //
 }
 
@@ -407,10 +409,10 @@ Int_t AliITSTPArrayFit::ChoseParAxis() const
 }
 
 //____________________________________________________
-Double_t AliITSTPArrayFit::GetPosition(Double_t *xyzPCA, const Double_t *xyz, const Double_t *covI) const
+Double_t AliITSTPArrayFit::GetPosition(Double_t *xyzPCA, const Double_t *xyz, const Double_t *covI, Double_t sclCovI) const
 {
   // calculate the position of the track at PCA to xyz
-  Double_t t = GetParPCA(xyz,covI);
+  Double_t t = GetParPCA(xyz,covI,sclCovI);
   GetPosition(xyzPCA,t);
   return t;
 }
@@ -444,17 +446,17 @@ void AliITSTPArrayFit::GetResiduals(Double_t *resPCA, const AliTrackPoint *pntCo
 }
 
 //____________________________________________________
-void AliITSTPArrayFit::GetResiduals(Double_t *resPCA, const Double_t *xyz, const Double_t *covI) const
+void AliITSTPArrayFit::GetResiduals(Double_t *resPCA, const Double_t *xyz, const Double_t *covI, Double_t sclCovI) const
 {
   // calculate the residuals of the track at PCA to xyz
-  GetPosition(resPCA,xyz,covI);
+  GetPosition(resPCA,xyz,covI,sclCovI);
   resPCA[kX] -= xyz[kX];
   resPCA[kY] -= xyz[kY];
   resPCA[kZ] -= xyz[kZ];
 }
 
 //____________________________________________________
-Double_t AliITSTPArrayFit::GetParPCALine(const Double_t *xyz, const Double_t *covI) const
+Double_t AliITSTPArrayFit::GetParPCALine(const Double_t *xyz, const Double_t *covI/*, Double_t sclCovI*/) const
 {
   // get parameter for the point with least weighted distance to the point
   //
@@ -480,13 +482,13 @@ Double_t AliITSTPArrayFit::GetParPCALine(const Double_t *xyz, const Double_t *co
 }
 
 //____________________________________________________
-void AliITSTPArrayFit::GetDResDPosLine(Double_t *dXYZdP, /*const Double_t *xyz,*/ const Double_t *covI) const
+void AliITSTPArrayFit::GetDResDPosLine(Double_t *dXYZdP, /*const Double_t *xyz,*/ const Double_t *covI/*,Double_t sclCovI*/) const
 {
   // calculate detivative of the PCA residuals vs point position and fill in user provide
   // array in the format {dXdXp,dY/dXp,dZdXp, ... dXdZp,dYdZp,dZdZp}
   //
   Double_t dTdP[3];
-  GetDtDPosLine(dTdP, /*xyz,*/ covI); // derivative of the t-param over point position
+  GetDtDPosLine(dTdP, /*xyz,*/ covI/*,sclCovI*/); // derivative of the t-param over point position
   //
   for (int i=3;i--;) {
     int var = fkAxID[i];
@@ -500,13 +502,13 @@ void AliITSTPArrayFit::GetDResDPosLine(Double_t *dXYZdP, /*const Double_t *xyz,*
 }
 
 //____________________________________________________
-void AliITSTPArrayFit::GetDResDParamsLine(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI) const
+void AliITSTPArrayFit::GetDResDParamsLine(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI/*,Double_t sclCovI*/) const
 {
   // calculate detivative of the PCA residuals vs line parameters and fill in user provide
   // array in the format {dXdP0,dYdP0,dZdP0, ... dXdPn,dYdPn,dZdPn}
   //
   Double_t dTdP[4];
-  Double_t t = GetDtDParamsLine(dTdP, xyz, covI); // derivative of the t-param over line params
+  Double_t t = GetDtDParamsLine(dTdP, xyz, covI /*,sclCovI*/); // derivative of the t-param over line params
   //
   Double_t *curd = dXYZdP + kA0*3; // d/dA0
   curd[ fkAxID[kX] ] = fParams[kB0]*dTdP[kA0] + 1.;
@@ -642,7 +644,7 @@ void AliITSTPArrayFit::GetDResDPosLine(Double_t *dXYZdP, Int_t ipnt) const
     AliError(Form("Attempt to access the point %d not in the fitted points [%d:%d]",ipnt,fPntFirst,fPntLast));
     return;
   }
-  GetDResDPosLine(dXYZdP,IsCovIgnored() ? 0 : GetCovI(ipnt));
+  GetDResDPosLine(dXYZdP,IsCovIgnored() ? 0 : GetCovI(ipnt)/*,GetCovIScale(ipnt)*/);
 }
 
 //____________________________________________________
@@ -655,7 +657,7 @@ void AliITSTPArrayFit::GetDResDParams(Double_t *dXYZdP, Int_t ipnt)
     AliError(Form("Attempt to access the point %d not in the fitted points [%d:%d]",ipnt,fPntFirst,fPntLast));
     return;
   }
-  GetDResDParams(dXYZdP, GetPoint(ipnt) , IsCovIgnored() ? 0 : GetCovI(ipnt));
+  GetDResDParams(dXYZdP, GetPoint(ipnt) , IsCovIgnored() ? 0 : GetCovI(ipnt),GetCovIScale(ipnt));
 }
 
 //____________________________________________________
@@ -668,16 +670,16 @@ void AliITSTPArrayFit::GetDResDPos(Double_t *dXYZdP, Int_t ipnt)
     AliError(Form("Attempt to access the point %d not in the fitted points [%d:%d]",ipnt,fPntFirst,fPntLast));
     return;
   }
-  GetDResDPos(dXYZdP, GetPoint(ipnt), IsCovIgnored() ? 0 : GetCovI(ipnt));
+  GetDResDPos(dXYZdP, GetPoint(ipnt), IsCovIgnored() ? 0 : GetCovI(ipnt), GetCovIScale(ipnt));
 }
 
 //____________________________________________________
-void AliITSTPArrayFit::GetDResDParams(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI) 
+void AliITSTPArrayFit::GetDResDParams(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI, Double_t sclCovI) 
 {
   // get residual detivatives over the track parameters for the point with least weighted distance to the point
   //
   if (!IsHelix()) { // for the straight line calculate analytically
-    GetDResDParamsLine(dXYZdP, xyz, covI);
+    GetDResDParamsLine(dXYZdP, xyz, covI /*,sclCovI*/);
     return;
   }
   //
@@ -688,13 +690,13 @@ void AliITSTPArrayFit::GetDResDParams(Double_t *dXYZdP, const Double_t *xyz, con
   for (int ipar = 5;ipar--;) {
     double sav = fParams[ipar];
     fParams[ipar] -= delta;
-    GetPosition(xyzVar[0],xyz,covI);
+    GetPosition(xyzVar[0],xyz,covI,sclCovI);
     fParams[ipar] += delta/2;
-    GetPosition(xyzVar[1],xyz,covI);
+    GetPosition(xyzVar[1],xyz,covI,sclCovI);
     fParams[ipar] += delta;
-    GetPosition(xyzVar[2],xyz,covI);
+    GetPosition(xyzVar[2],xyz,covI,sclCovI);
     fParams[ipar] += delta/2;
-    GetPosition(xyzVar[3],xyz,covI);
+    GetPosition(xyzVar[3],xyz,covI,sclCovI);
     fParams[ipar] = sav;  // restore
     //
     double *curd = dXYZdP + 3*ipar;
@@ -705,13 +707,13 @@ void AliITSTPArrayFit::GetDResDParams(Double_t *dXYZdP, const Double_t *xyz, con
 
 
 //____________________________________________________
-void AliITSTPArrayFit::GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI) 
+void AliITSTPArrayFit::GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI,Double_t sclCovI) 
 {
   // get residuals detivative over the point position for the point with least weighted distance to the point
   //
 
   if (!IsHelix()) { // for the straight line calculate analytically
-    GetDResDPosLine(dXYZdP, /*xyz,*/ covI);
+    GetDResDPosLine(dXYZdP, /*xyz,*/ covI /*,sclCovI*/);
     return;
   }
   //
@@ -723,13 +725,13 @@ void AliITSTPArrayFit::GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const 
   for (int ipar = 3;ipar--;) {
     double sav = xyzv[ipar];
     xyzv[ipar] -= delta;
-    GetPosition(xyzVar[0],xyzv,covI);
+    GetPosition(xyzVar[0],xyzv,covI,sclCovI);
     xyzv[ipar] += delta/2;
-    GetPosition(xyzVar[1],xyzv,covI);
+    GetPosition(xyzVar[1],xyzv,covI,sclCovI);
     xyzv[ipar] += delta;
-    GetPosition(xyzVar[2],xyzv,covI);
+    GetPosition(xyzVar[2],xyzv,covI,sclCovI);
     xyzv[ipar] += delta/2;
-    GetPosition(xyzVar[3],xyzv,covI);
+    GetPosition(xyzVar[3],xyzv,covI,sclCovI);
     xyzv[ipar] = sav;  // restore
     //
     double *curd = dXYZdP + 3*ipar;
@@ -740,7 +742,7 @@ void AliITSTPArrayFit::GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const 
 }
 
 //________________________________________________________________________________________________________
-Double_t AliITSTPArrayFit::GetParPCAHelix(const Double_t* xyz, const Double_t* covI) const
+Double_t AliITSTPArrayFit::GetParPCAHelix(const Double_t* xyz, const Double_t* covI,Double_t sclCovI) const
 {
   // find track parameter t (eq.2) corresponding to point of closest approach to xyz
   //
@@ -784,6 +786,7 @@ Double_t AliITSTPArrayFit::GetParPCAHelix(const Double_t* xyz, const Double_t* c
       dchi2  = dxD*tx  + dyD*ty  + dzD*tz;
       ddchi2 = dxDD*tx + dyDD*ty           + dxD *ttx + dyD *tty + dzD *ttz;
       //
+      if (sclCovI>0) {dchi2 *= sclCovI; ddchi2 *= sclCovI;}
     }
     else {
       // chi2   = dx*dx + dy*dy + dz*dz;
@@ -831,9 +834,11 @@ Double_t AliITSTPArrayFit::CalcChi2NDF() const
   for (int ipnt=fPntFirst;ipnt<=fPntLast;ipnt++) {
     GetResiduals(dr,ipnt);
     Double_t* covI = GetCovI(ipnt);
-    chi2 += dr[kX]*(dr[kX]*covI[ kXX ]+dr[kY]*covI[ kXY ]+dr[kZ]*covI[ kXZ ])
-      +     dr[kY]*(dr[kX]*covI[ kXY ]+dr[kY]*covI[ kYY ]+dr[kZ]*covI[ kYZ ])
-      +     dr[kZ]*(dr[kX]*covI[ kXZ ]+dr[kY]*covI[ kYZ ]+dr[kZ]*covI[ kZZ ]);
+    Double_t chi2p = dr[kX]*(dr[kX]*covI[ kXX ]+dr[kY]*covI[ kXY ]+dr[kZ]*covI[ kXZ ])
+      +              dr[kY]*(dr[kX]*covI[ kXY ]+dr[kY]*covI[ kYY ]+dr[kZ]*covI[ kYZ ])
+      +              dr[kZ]*(dr[kX]*covI[ kXZ ]+dr[kY]*covI[ kYZ ]+dr[kZ]*covI[ kZZ ]);
+    if (covI[kScl]>0) chi2p *= covI[kScl]; // rescaling was requested for this point's errors
+    chi2 += chi2p;
   }
   int ndf = (fPntLast-fPntFirst+1)*3 - GetNParams();
   chi2 /= ndf;
@@ -1077,7 +1082,7 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
       // track direction vector as a - diference between the closest and the next to closest to origin points
       double v0X = x[minRId1] - x[minRId];
       double v0Y = y[minRId1] - y[minRId];
-      sqb = (yc*v0X - xc*v0Y)<0 ? -1:1;
+      sqb = (yc*v0X - xc*v0Y)>0 ? -1:1;
     }
     SetCharge( fBz<0 ? -sqb : sqb);
   }
@@ -1577,7 +1582,7 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
       //      */
       //      dXYZdLoc[0] = dXYZdLoc[1] = dXYZdLoc[2] = 0;
       //
-      fParSol->AddEquation(dXYZdGlo,dXYZdLoc,xyzRes,GetCovI(ip));
+      fParSol->AddEquation(dXYZdGlo,dXYZdLoc,xyzRes,GetCovI(ip),GetCovIScale(ip));
     }
     //
     if (extPT>0) { // add constraint on pt
@@ -1682,7 +1687,7 @@ Double_t AliITSTPArrayFit::FitLine()
       dXYZdLoc[ fkAxID[kY] ] =  fParams[kB1];  // dY/dt
       dXYZdLoc[ fParAxis   ] =  1;
       //
-      fParSol->AddEquation(dXYZdGlo,dXYZdLoc,xyzRes,GetCovI(ip));
+      fParSol->AddEquation(dXYZdGlo,dXYZdLoc,xyzRes,GetCovI(ip),GetCovIScale(ip));
     }
     //
     if (!fParSol->Solve()) { AliError("Failed to fit line"); return -1; }
@@ -1926,10 +1931,13 @@ Bool_t AliITSTPArrayFit::CalcErrorMatrix()
     GetDResDParams(&dres[0][0],ip);
     Double_t* covI = GetCovI(ip);
     for (int i=npar;i--;) 
-      for (int j=i+1;j--;)
-	cv(i,j) += dres[i][kX]*(dres[j][kX]*covI[ kXX ] + dres[j][kY]*covI[ kXY ] + dres[j][kZ]*covI[ kXZ ])
-	  +        dres[i][kY]*(dres[j][kX]*covI[ kXY ] + dres[j][kY]*covI[ kYY ] + dres[j][kZ]*covI[ kYZ ])
-	  +        dres[i][kZ]*(dres[j][kX]*covI[ kXZ ] + dres[j][kY]*covI[ kYZ ] + dres[j][kZ]*covI[ kZZ ]);
+      for (int j=i+1;j--;) {
+	double cvadd = dres[i][kX]*(dres[j][kX]*covI[ kXX ] + dres[j][kY]*covI[ kXY ] + dres[j][kZ]*covI[ kXZ ])
+	  +            dres[i][kY]*(dres[j][kX]*covI[ kXY ] + dres[j][kY]*covI[ kYY ] + dres[j][kZ]*covI[ kYZ ])
+	  +            dres[i][kZ]*(dres[j][kX]*covI[ kXZ ] + dres[j][kY]*covI[ kYZ ] + dres[j][kZ]*covI[ kZZ ]);
+	if (covI[kScl]>0) cvadd *= covI[kScl];
+	cv(i,j) += cvadd;
+      }
   }
   cv.SetSizeUsed(npar);
   if (cv.InvertChol()) {
@@ -1948,8 +1956,8 @@ Double_t AliITSTPArrayFit::CalcParPCA(Int_t ipnt) const
   // get parameter for the point with least weighted distance to the point
   const double *xyz  = GetPoint(ipnt);
   const double *covI = GetCovI(ipnt);
-  if (IsHelix()) return GetParPCAHelix(xyz,covI);
-  else             return GetParPCALine(xyz,covI);
+  if (IsHelix()) return GetParPCAHelix(xyz,covI,covI[kScl]);
+  else           return GetParPCALine(xyz,covI/*,covI[kScl]*/);
 }
 
 //____________________________________________________

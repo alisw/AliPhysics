@@ -37,21 +37,31 @@ class AliITSresponseSDD;
 class AliITSTPArrayFit;
 class AliITSsegmentationSDD;
 class AliITSDriftSpeedArraySDD;
+class AliITSCorrectSDDPoints;
 class AliCDBEntry;
+class AliESDVertex;
 
 class AliITSAlignMille2: public TObject
 {
  public:
   enum {kX,kY,kZ};
   enum {kCosmics, kCollision, kNDataType};
-  enum {kNLocal=5,kMaxPoints=100,
+  enum {kNLocal=5,kMaxPoints=20,
 	kNParChGeom = AliITSAlignMille2Module::kMaxParGeom,
 	kNParCh     = AliITSAlignMille2Module::kMaxParTot,
 	kMaxITSSensID=2197,kVtxSensID=kMaxITSSensID+1,kMaxITSSensVID=14300,kVtxSensVID=14371,
 	kMinITSSupeModuleID=14336,
 	kSDDoffsID=240,kNSDDmod=260};
   //
-  enum {kSameInitDeltasBit=BIT(14),kSameInitSDDRespBit=BIT(15),kSameInitSDDVDriftBit=BIT(16),kSameDiamondBit=BIT(17)};
+  enum {kCovIScaleBit=BIT(9),
+	kSameInitDeltasBit=BIT(14),
+	kSameInitSDDRespBit=BIT(15),
+	kSameInitSDDVDriftBit=BIT(16),
+	kSameDiamondBit=BIT(17),
+	kSameInitSDDCorrMapBit=BIT(18),
+	kSameInitGeomBit=BIT(19) };
+  //
+  enum {kDiamondIgnore,kDiamondCheckIfPrompt,kDiamondUse};
  public:
   //
   AliITSAlignMille2(const Char_t *configFilename="AliITSAlignMille.conf",TList* userInfo=0);
@@ -123,6 +133,15 @@ class AliITSAlignMille2: public TObject
   Int_t     FitTrack();
   Int_t     CheckCurrentTrack();
   //
+  // methods for point unbiasing (via scaling its inverted cov.matrix)
+  Bool_t    IsCovIScaleTouched()                     const {return TestBit(kCovIScaleBit);}
+  void      TouchCovIScale(Bool_t v=kTRUE)                 {SetBit(kCovIScaleBit,v);}
+  Float_t   GetCovIScale(Int_t ip)                   const {return ip<kMaxPoints ? fCovIScale[ip]:-1.;}
+  Float_t*  GetCovIScale()                           const {return (Float_t*)fCovIScale;}
+  void      SetCovIScale(Int_t ip, Float_t v=-1.)          {if (ip<kMaxPoints) fCovIScale[ip] = v; TouchCovIScale();}
+  void      SetCovIScale(Float_t *v, Int_t np)             {for (int i=TMath::Min(np,kMaxPoints);i--;) fCovIScale[i]=v[i]; TouchCovIScale();}
+  void      ResetCovIScale()                               {for (int i=kMaxPoints;i--;) fCovIScale[i]=-1; TouchCovIScale(kFALSE);}
+  //
   Int_t     CalcIntersectionPoint(Double_t *lpar, Double_t *gpar);
   Int_t     CalcDerivatives(Int_t paridx, Bool_t islpar);
   void      JacobianPosGloLoc(int locid,double* jacobian);
@@ -144,6 +163,8 @@ class AliITSAlignMille2: public TObject
   void      ConstrainHelixFitPT(  Int_t q=0,Double_t pt=-1, Double_t err=-1);
   void      ConstrainHelixFitCurv(Int_t q=0,Double_t crv=-1,Double_t crverr=-1);
   void      RemoveHelixFitConstraint();
+  void      SetVertexConstraint(const AliESDVertex* vtx);
+  void      RemoveVertexConstraint()                                    {fVertexSet = kFALSE;}
   Double_t  GetHelixContraintCharge()                             const {return fConstrCharge;}
   Double_t  GetHelixContraintPT()                                 const {return fConstrPT;}
   Double_t  GetHelixContraintPTErr()                              const {return fConstrPTErr;}
@@ -206,6 +227,9 @@ class AliITSAlignMille2: public TObject
   Double_t   GetBField()                                         const {return fBField;}
   Bool_t     IsFieldON()                                         const {return fBOn;}
   Bool_t     IsDiamondUsed()                                     const {return fUseDiamond;}
+  Int_t      GetCheckDiamondPoint()                              const {return fCheckDiamondPoint;}
+  void       SetCheckDiamondPoint(Int_t m=kDiamondCheckIfPrompt)       {fCheckDiamondPoint = m;}
+  Bool_t     IsVertexUsed()                                      const {return fUseVertex;}
   Double_t  *GetLocalInitParam()                                 const {return (Double_t*)fLocalInitParam;}
   Double_t  *GetLocalInitParEr()                                 const {return (Double_t*)fLocalInitParEr;}
   Double_t   GetLocalDif(int par, int coor)                      const {return fDerivativeLoc[par][coor];}
@@ -233,6 +257,11 @@ class AliITSAlignMille2: public TObject
   Bool_t    InitRiemanFit();
   void      SetMinNPtsPerTrack(Int_t pts=3)  {fMinNPtsPerTrack=pts;}
   //
+  Int_t     GetRunID()                                            const {return fRunID;}
+  void      SetRunID(int run)                                           {fRunID = run;}
+  //
+  AliITSCorrectSDDPoints * GetPreCorrMapSDD()                    const {return fPreCorrMapSDD;}
+  AliITSCorrectSDDPoints * GetIniCorrMapSDD()                    const {return fIniCorrMapSDD;}
   static Bool_t    IsZero(Double_t v,Double_t threshold = 1e-15)       { return TMath::Abs(v)<threshold; }
   static void      SetWordBit(UInt_t word,Int_t bitID)                 { word |= (1<<bitID);}
   static void      ResetWordBit(UInt_t word,Int_t bitID)               { word &= ~(1<<bitID);}
@@ -255,6 +284,7 @@ class AliITSAlignMille2: public TObject
   Int_t     CacheMatricesOrig();
   Int_t     CacheMatricesCurr();
   Int_t     ProcessUserInfo(TList *userInfo=0);
+  Int_t     GetPathFromUserInfo(TList* cdbList,const char* calib,TString& path, Int_t useBit);
   Int_t     LoadConfig(const Char_t *cfile="AliITSAlignMille.conf");
   TObjArray* GetConfigRecord(FILE* stream, TString& recTitle, TString& recOpt, Bool_t rew);
   Int_t     CheckConfigRecords(FILE* stream);
@@ -263,12 +293,13 @@ class AliITSAlignMille2: public TObject
   //
   void      BuildHierarchy();
   Int_t     LoadSuperModuleFile(const Char_t *cfile="ITSMilleSuperModules.root");
+  Int_t     LoadGeometry(TString& path);
   Int_t     LoadSDDResponse(TString& path, AliITSresponseSDD *&resp);
   Int_t     LoadSDDVDrift(TString& path, TObjArray *&arr);
+  Int_t     LoadSDDCorrMap(TString& path, AliITSCorrectSDDPoints *&map);
   Int_t     LoadDeltas(TString& path, TClonesArray *&arr);
   Int_t     LoadDiamond(TString& path);
   void      ResetLocalEquation();
-  Int_t     InitGeometry();
   Int_t     ApplyToGeometry();
   //
   void      ConstrainModuleSubUnits(Int_t idm, Double_t val=0, UInt_t pattern=0xff);
@@ -294,6 +325,11 @@ class AliITSAlignMille2: public TObject
   void      SetAllowPseudoParents(Bool_t v=kTRUE)                       {fAllowPseudoParents = v;} 
   Int_t     SetConstraintWrtRef(const char* reffname);
   //
+  void      ConvertDeltas();
+  void      ConvSortHierarchically(TObjArray& matArr);
+  Bool_t    ConvIsJParentOfI(const TGeoHMatrix* matI,const TGeoHMatrix* matJ) const;
+  AliAlignObjParams* ConvFindDelta(const TClonesArray* arrDelta,const TString& algname) const;
+
   AliITSAlignMille2(const AliITSAlignMille2& rhs);
   AliITSAlignMille2& operator=(const AliITSAlignMille2& rhs);
   //
@@ -308,9 +344,12 @@ class AliITSAlignMille2: public TObject
     kPreDeltaFile,
     kPreCalSDDFile,
     kPreVDriftSDDFile,
+    kPreCorrMapSDDFile,
+    kInitCorrMapSDDFile,
     kInitCalSDDFile,
     kInitVDriftSDDFile,
     kInitDeltaFile,
+    kInitGeomFile,
     kGlobalDeltas,
     kConstrLocal,
     kModVolID,
@@ -337,6 +376,8 @@ class AliITSAlignMille2: public TObject
     kSDDVDCorrMult,
     kWeightPt,
     kUseDiamond,
+    kCorrectDiamond,
+    kUseVertex,
     kSameSDDT0,
     //
     kNKeyWords
@@ -379,6 +420,7 @@ class AliITSAlignMille2: public TObject
   Double_t      fConstrPT;                      // optional PT constraint for helix (abs value)
   Double_t      fConstrPTErr;                   // error on this constraint (0 - exact)
   Int_t         fConstrCharge;                  // optional constraint on charge of Helix track (0 - no constraint)
+  Int_t         fRunID;                         // current runID
   //
   Double_t      fDerivativeLoc[kNLocal][3];     // XYZ deriv. over local params
   Double_t      fDerivativeGlo[kNParCh][3];     // XYZ deriv. over global params
@@ -400,16 +442,21 @@ class AliITSAlignMille2: public TObject
   Int_t         fNReqDetDown[kNDataType][3];    // number of points required in Detector[n] with Y<0
   Int_t         fNReqDet[kNDataType][3];        // number of points required in Detector[n]
   Int_t         fTempExcludedModule; /// single module temporary excluded from initial fit
+  UInt_t        fUserProvided;                  // settings which user provided: not to update from the UserUnfo
   // << new members
   //
   // OCDB stuff
   TList        *fIniUserInfo;                   // initial user info (validity is not guaranteed after initialization)
+  TString       fIniGeomPath;                   // where to take the ideal geometry used to produce the points
   TString       fIniDeltaPath;                  // where to take the deltas used to produce the points
   TString       fIniSDDRespPath;                // where to take the initial SDD response used to produce the points
   TString       fPreCalSDDRespPath;             // precalibration SDD response file name
   TString       fIniSDDVDriftPath;              // initial SDD vdrift file name
-  TString       fPreSDDVDriftPath;              // initial SDD vdrift file name
+  TString       fPreSDDVDriftPath;              // precalibration SDD vdrift file name
+  TString       fIniSDDCorrMapPath;             // initial SDD corr.map file name
+  TString       fPreSDDCorrMapPath;             // precalibration SDD corr.map file name
   // geometry stuffs
+  Bool_t        fConvertPreDeltas;              // when the prealignment deltas come from UserInfo, convert them from UserInfo geometry to target one
   TString       fGeometryPath;                  // Geometry file name
   TString       fPreDeltaPath;                  // file with prealigned objects
   TString       fConstrRefPath;                 // file with prealigned objects wrt which constraints are defined
@@ -422,6 +469,8 @@ class AliITSAlignMille2: public TObject
   AliITSresponseSDD* fPreRespSDD;               // array of SDD t0/vdrift calib params
   TObjArray*         fIniVDriftSDD;             // array of AliITSDriftSpeedArraySDD objects used for original reco
   TObjArray*         fPreVDriftSDD;             // array of AliITSDriftSpeedArraySDD objects to be used as a starting point instead of fIniVDriftSDD
+  AliITSCorrectSDDPoints* fIniCorrMapSDD;       // SDD initial correction map
+  AliITSCorrectSDDPoints* fPreCorrMapSDD;       // SDD precalibration correction map
   AliITSsegmentationSDD* fSegmentationSDD;      // extraction of SDD segmentation params
   TClonesArray* fPrealignment; // array of prealignment global deltas
   TClonesArray* fConstrRef;    // array of refererence deltas with respect to which the constraint are defined (survey?)
@@ -452,9 +501,16 @@ class AliITSAlignMille2: public TObject
   Double_t      fExtClusterPar[9];                 //array to store the parameters of the externally imposed cluster
   AliTrackPoint fDiamond;                          //optional constraint on the vertex
   AliTrackPoint fDiamondI;                         //constraint on the vertex with inverted error matrix
+  Double_t      fCorrDiamond[3];                   //diamond correction
   Bool_t        fUseDiamond;                       //use diamond as a vertex constraint
+  Bool_t        fUseVertex;                        //use vertex for constraint
+  Bool_t        fVertexSet;                        //vertex is set for current track
   Int_t         fDiamondPointID;                   //ID of the diamond point in the track
   Int_t         fDiamondModID;                     //id of the fake diamond module
+  Int_t         fCheckDiamondPoint;                // kDiamondIgnore: ignore in this event, kDiamondCheckIfPrompt: verify if track is prompt, kDiamondUse: use w/o verification
+  Float_t       fCovIScale[kMaxPoints];            //optional scaling for inv.cov matrix (debiasing). MANAGED BY THE USER EXTERNALLY
+  //
+  TObjArray     fConvAlgMatOld;                    //array to keep matrices of alignables for deltas conversion
   //
   static AliITSAlignMille2* fgInstance;         // global pointer on itself
   static Int_t              fgInstanceID;       // global counter of the instances

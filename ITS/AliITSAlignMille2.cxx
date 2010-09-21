@@ -57,6 +57,7 @@
 #include "AliCDBEntry.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
+#include "AliITSCorrectSDDPoints.h"
 #include "AliESDVertex.h"
 
 ClassImp(AliITSAlignMille2)
@@ -70,9 +71,12 @@ const Char_t* AliITSAlignMille2::fgkRecKeys[] = {
   "PREALIGNMENT_FILE",
   "PRECALIBSDD_FILE",
   "PREVDRIFTSDD_FILE",
+  "PRECORRMAPSDD_FILE",
+  "INITCORRMAPSDD_FILE",
   "INITCALBSDD_FILE",
   "INITVDRIFTSDD_FILE",
   "INITDELTA_FILE",
+  "INITGEOM_FILE",
   "SET_GLOBAL_DELTAS",
   "CONSTRAINT_LOCAL",
   "MODULE_VOLUID",
@@ -99,6 +103,8 @@ const Char_t* AliITSAlignMille2::fgkRecKeys[] = {
   "SET_USE_SDDVDCORRMULT",
   "SET_WEIGHT_PT",
   "SET_USE_DIAMOND",
+  "CORRECT_DIAMOND",
+  "SET_USE_VERTEX",
   "SET_SAME_SDDT0"
 };
 
@@ -139,6 +145,7 @@ AliITSAlignMille2::AliITSAlignMille2(const Char_t *configFilename,TList *userInf
   fConstrPT(-1),
   fConstrPTErr(-1),
   fConstrCharge(0),
+  fRunID(0),
   //
   fMinNPtsPerTrack(3),
   fIniTrackParamsMeth(1),
@@ -151,13 +158,18 @@ AliITSAlignMille2::AliITSAlignMille2(const Char_t *configFilename,TList *userInf
   //
   fUseGlobalDelta(kFALSE),
   fTempExcludedModule(-1),
+  fUserProvided(0),
   //
   fIniUserInfo(userInfo),
+  fIniGeomPath(""),
   fIniDeltaPath(""),
   fIniSDDRespPath(""),
   fPreCalSDDRespPath(""),
   fIniSDDVDriftPath(""),
   fPreSDDVDriftPath(""),
+  fIniSDDCorrMapPath(""),
+  fPreSDDCorrMapPath(""),
+  fConvertPreDeltas(kFALSE),
   fGeometryPath(""),
   fPreDeltaPath(""),
   fConstrRefPath(""),
@@ -170,6 +182,8 @@ AliITSAlignMille2::AliITSAlignMille2(const Char_t *configFilename,TList *userInf
   fPreRespSDD(0),
   fIniVDriftSDD(0),
   fPreVDriftSDD(0),
+  fIniCorrMapSDD(0),
+  fPreCorrMapSDD(0),
   fSegmentationSDD(0),
   fPrealignment(0),
   fConstrRef(0),
@@ -192,15 +206,19 @@ AliITSAlignMille2::AliITSAlignMille2(const Char_t *configFilename,TList *userInf
   fDiamond(),
   fDiamondI(),
   fUseDiamond(kFALSE),
+  fUseVertex(kFALSE),
+  fVertexSet(kFALSE),
   fDiamondPointID(-1),
-  fDiamondModID(-1)
+  fDiamondModID(-1),
+  fCheckDiamondPoint(kDiamondCheckIfPrompt),
+  fConvAlgMatOld(100)
 {
   /// main constructor that takes input from configuration file
   for (int i=3;i--;) fSigmaFactor[i] = 1.0;
   //
   // new RS
   for (int i=0;i<3;i++) {
-    
+    fCorrDiamond[i] = 0;
   }
   for (int itp=0;itp<kNDataType;itp++) {
     fRequirePoints[itp] = kFALSE;
@@ -235,6 +253,7 @@ AliITSAlignMille2::AliITSAlignMille2(const Char_t *configFilename,TList *userInf
   fMillepede = new AliMillePede2();  
   fgInstance = this;
   fgInstanceID++;
+  ResetCovIScale();
   //
 }
 
@@ -252,6 +271,8 @@ AliITSAlignMille2::~AliITSAlignMille2()
   delete fSegmentationSDD;
   delete fIniVDriftSDD;
   delete fPreVDriftSDD;
+  delete fIniCorrMapSDD;
+  delete fPreCorrMapSDD;
   delete fTPAFitter;
   fCacheMatrixOrig.Delete();
   fCacheMatrixCurr.Delete();
@@ -368,7 +389,7 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
     //  
     recTitle = fgkRecKeys[kGeomFile];
     if ( GetConfigRecord(pfc,recTitle,recOpt,1) ) fGeometryPath = gSystem->ExpandPathName(recOpt.Data()); 
-    if ( InitGeometry() ) { AliError("Failed to find/load Geometry"); stopped = kTRUE; break;}
+    if ( LoadGeometry(fGeometryPath) ) { AliError("Failed to find/load target ideal Geometry"); stopped = kTRUE; break;}
     //
     // Do we use new TrackPointArray fitter ?
     recTitle = fgkRecKeys[kTPAFitter];
@@ -392,18 +413,25 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       }
     }
     //
+    recTitle = fgkRecKeys[kInitGeomFile];
+    if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1))  && !recOpt.IsNull() ) {
+      for (int i=2;i<=recArr->GetLast();i++) {recOpt += " "; recOpt += recArr->At(i)->GetName();} // in case of OCDB string
+      fIniGeomPath = recOpt;
+      gSystem->ExpandPathName(fIniGeomPath);
+      fUserProvided |= kSameInitGeomBit;
+      AliInfo(Form("Configuration sets Production Geometry to %s",fIniGeomPath.Data()));
+    }
+    if (fIniGeomPath.IsNull()) fIniGeomPath = fGeometryPath;
     //	 
     recTitle = fgkRecKeys[kInitDeltaFile];
     if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1))  && !recOpt.IsNull() ) {
       for (int i=2;i<=recArr->GetLast();i++) {recOpt += " "; recOpt += recArr->At(i)->GetName();} // in case of OCDB string
       fIniDeltaPath = recOpt;
       gSystem->ExpandPathName(fIniDeltaPath);
+      fUserProvided |= kSameInitDeltasBit;
       AliInfo(Form("Configuration sets Production Deltas to %s",fIniDeltaPath.Data()));
     }
     //
-    // if initial deltas were provided, load them, apply to geometry and store are "original" matrices
-    if (CacheMatricesOrig()) {stopped = kTRUE; break;}
-    //	 
     recTitle = fgkRecKeys[kPreDeltaFile];
     if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1)) ) {
       if (!recOpt.IsNull()) {
@@ -412,12 +440,21 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
 	gSystem->ExpandPathName(fPreDeltaPath);
       }
       else if (!fIniDeltaPath.IsNull()) {
-	AliInfo("PreAlignment Deltas keyword is present but empty, will set to Init Deltas");
+	AliInfo("PreAlignment Deltas keyword is present but empty, will set to Init Deltas of the first tree");
 	fPreDeltaPath = fIniDeltaPath;	
+	if (fIniGeomPath != fGeometryPath) fConvertPreDeltas = kTRUE; // production and target geometries are different, request conversion
       }
       AliInfo(Form("Configuration sets PreAlignment Deltas to %s",fPreDeltaPath.Data()));
     }
-    if (LoadDeltas(fPreDeltaPath,fPrealignment)) {stopped = kTRUE; break;}
+    //
+    // if initial deltas were provided, load them, apply to geometry and store are "original" matrices
+    if (CacheMatricesOrig()) {stopped = kTRUE; break;}
+    //	 
+    // then load prealignment deltas
+    if (!fPreDeltaPath.IsNull()) {
+      if (fConvertPreDeltas) ConvertDeltas();   // Prealignment deltas are the same as production ones, but need conversion to new geometry
+      else if (LoadDeltas(fPreDeltaPath,fPrealignment)) {stopped = kTRUE; break;} // read deltas from the file
+    }
     if (fPrealignment && ApplyToGeometry()) {stopped = kTRUE; break;}
     //
     recTitle = fgkRecKeys[ kInitCalSDDFile ];
@@ -425,9 +462,21 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       for (int i=2;i<=recArr->GetLast();i++) {recOpt += " "; recOpt += recArr->At(i)->GetName();} // in case of OCDB string
       fIniSDDRespPath = recOpt;
       gSystem->ExpandPathName(fIniSDDRespPath);
+      fUserProvided |= kSameInitSDDRespBit;
       AliInfo(Form("Configuration sets Production SDD Response to %s",fIniSDDRespPath.Data()));
     }
     if (LoadSDDResponse(fIniSDDRespPath, fIniRespSDD) ) {stopped = kTRUE; break;}
+    //
+    //
+    recTitle = fgkRecKeys[ kInitCorrMapSDDFile ];
+    if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1)) && !recOpt.IsNull()) {
+      for (int i=2;i<=recArr->GetLast();i++) {recOpt += " "; recOpt += recArr->At(i)->GetName();} // in case of OCDB string
+      fIniSDDCorrMapPath = recOpt;
+      gSystem->ExpandPathName(fIniSDDCorrMapPath);
+      fUserProvided |= kSameInitSDDCorrMapBit;
+      AliInfo(Form("Configuration sets Production SDD Correction Map to %s",fIniSDDCorrMapPath.Data()));
+    }
+    if (LoadSDDCorrMap(fIniSDDCorrMapPath, fIniCorrMapSDD) ) {stopped = kTRUE; break;}
     //
     recTitle = fgkRecKeys[kPreCalSDDFile];
     if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1)) ) {
@@ -445,12 +494,28 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
     //
     if (LoadSDDResponse(fPreCalSDDRespPath, fPreRespSDD) ) {stopped = kTRUE; break;}
     //
+    recTitle = fgkRecKeys[kPreCorrMapSDDFile];
+    if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1)) ) {
+      if (!recOpt.IsNull()) {
+	for (int i=2;i<=recArr->GetLast();i++) {recOpt += " "; recOpt += recArr->At(i)->GetName();} // in case of OCDB string
+	fPreSDDCorrMapPath = recOpt;
+	gSystem->ExpandPathName(fPreSDDCorrMapPath);
+      }
+      else if (!fIniSDDCorrMapPath.IsNull()) {
+	AliInfo("PreCalibration SDD Correction Map keyword is present but empty, will set to Init SDD Correction Map");
+	fPreSDDCorrMapPath = fIniSDDCorrMapPath;
+      }
+      AliInfo(Form("Configuration sets PreCalibration SDD Correction Map to %s",fPreSDDCorrMapPath.Data()));
+    }
     //
+    if (LoadSDDCorrMap(fPreSDDCorrMapPath, fPreCorrMapSDD) ) {stopped = kTRUE; break;}
+    //    //
     recTitle = fgkRecKeys[ kInitVDriftSDDFile ];
     if ( (recArr = GetConfigRecord(pfc,recTitle,recOpt,1)) && !recOpt.IsNull()) {
       for (int i=2;i<=recArr->GetLast();i++) {recOpt += " "; recOpt += recArr->At(i)->GetName();} // in case of OCDB string
       fIniSDDVDriftPath = recOpt;
       gSystem->ExpandPathName(fIniSDDVDriftPath);
+      fUserProvided |= kSameInitSDDVDriftBit;
       AliInfo(Form("Configuration sets Production SDD VDrift to %s",fIniSDDVDriftPath.Data()));
     }
     if (LoadSDDVDrift(fIniSDDVDriftPath, fIniVDriftSDD) ) {stopped = kTRUE; break;}
@@ -478,8 +543,25 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
       if (!recOpt.IsNull()) {
 	fDiamondPath = recOpt;
 	gSystem->ExpandPathName(fDiamondPath);
+	fUserProvided |= kSameDiamondBit;
 	AliInfo(Form("Configuration sets Diamond constraint to %s",fDiamondPath.Data()));
       }
+    }
+    //
+    recTitle = fgkRecKeys[ kUseVertex ];
+    if ( GetConfigRecord(pfc,recTitle,recOpt,1) ) {
+      if (!GetUseGlobalDelta()) {
+	AliError("Vertex constraint is supported only for Global Frame mode");
+	stopped = kTRUE; 
+	break;
+      }
+      fUseVertex = kTRUE;
+      if (fUseDiamond) {
+	AliError("Cannot use Vertex and Diamond constraints at the same time");
+	stopped = kTRUE; 
+	break;
+      }
+      AliInfo("Will use Vertex constraint when available");
     }
     // =========== 2: see if there are local gaussian constraints defined =====================
     //            Note that they should be loaded before the modules declaration
@@ -961,6 +1043,12 @@ Int_t AliITSAlignMille2::LoadConfig(const Char_t *cfile)
 	pths->SetUniqueID(1); // mark as set by user
       }
       //
+      else if (recTitle == fgkRecKeys[ kCorrectDiamond ] && fUseDiamond) {         //-------------------------
+	if (nrecElems<4) {stopped = kTRUE; break;}
+	for (int i=0;i<3;i++) fCorrDiamond[i] = ((TObjString*)recArr->At(i+1))->GetString().Atof();
+	AliInfo(Form("Correction %+.4f %+.4f %+.4f will be applied to diamond",fCorrDiamond[0],fCorrDiamond[1],fCorrDiamond[2]));
+      }
+      //
       else continue; // already processed record
       //
     } // end of while loop 4 over the various params 
@@ -1178,16 +1266,48 @@ UShort_t AliITSAlignMille2::GetModuleVolumeID(Int_t index)
 }
 
 //________________________________________________________________________________________________________
-Int_t AliITSAlignMille2::InitGeometry() 
+Int_t AliITSAlignMille2::LoadGeometry(TString& path) 
 {
-  /// initialize geometry
-  AliInfo("Loading initial geometry");
-  if (!fGeometryPath.IsNull() && gSystem->AccessPathName(fGeometryPath.Data()) ) {
-    AliError(Form("Explicitly provided geometry file %s is not accessible",fGeometryPath.Data()));
+  // initialize ideal geometry
+  AliInfo(Form("Loading ideal geometry %s",path.Data()));
+  if (path.IsNull()) {
+    AliError("Path to geometry is not provided");
     return -1;
   }
   //
-  AliGeomManager::LoadGeometry(fGeometryPath.Data());
+  AliCDBEntry *entry = 0;
+  TGeoManager *gm = 0;
+  while(1) {
+    if (path.BeginsWith("path: ")) { // must load from OCDB
+      entry = GetCDBEntry(path.Data());
+      if (!entry) break;
+      gm = (TGeoManager*) entry->GetObject();
+      entry->SetObject(NULL);
+      entry->SetOwner(kTRUE);
+      //      AliCDBManager::Instance()->UnloadFromCache(path); // don't want cached object, read new copy
+      //      delete cdbId;
+      //      delete entry;
+      break;
+    }
+    //
+    if (gSystem->AccessPathName(path.Data())) break;
+    TFile* precf = TFile::Open(path.Data());
+    if (precf->FindKey("ALICE")) gm = (TGeoManager*)precf->Get("ALICE");
+    else if (precf->FindKey("AliCDBEntry") && (entry=(AliCDBEntry*)precf->Get("AliCDBEntry"))) {
+      gm = (TGeoManager*) entry->GetObject();
+      if (gm && gm->InheritsFrom(TGeoManager::Class())) entry->SetObject(NULL);
+      else gm = 0;
+      entry->SetObject(NULL);
+      entry->SetOwner(kTRUE);
+      delete entry;
+    }
+    precf->Close();
+    delete precf;
+    break;
+  } 
+  //
+  if (!gm) {AliError(Form("Failed to load geometry from %s",path.Data())); return -1;}
+  AliGeomManager::SetGeometry(gm);
   fGeoManager = AliGeomManager::GetGeometry();
   if (!fGeoManager) {
     AliInfo("Couldn't initialize geometry");
@@ -1251,8 +1371,8 @@ Int_t AliITSAlignMille2::SetConstraintWrtRef(const char* reffname)
   //
   // we need to reload the geometry spoiled by this reference deltas...
   delete fGeoManager;
-  AliInfo("Reloading initial geometry");
-  return InitGeometry();
+  AliInfo("Reloading target ideal geometry");
+  return LoadGeometry(fGeometryPath);
   //
 }
 
@@ -1295,6 +1415,7 @@ void AliITSAlignMille2::Init()
     // init millepede, decide which parameters are to be fitted explicitly
     for (int imd=fNModules;imd--;) {
       AliITSAlignMille2Module* mod = GetMilleModule(imd);
+      if (mod->IsNotInConf()) continue; // dummy module
       int npar = mod->GetNParTot();
       // the parameter may have max 1 free instance, otherwise the equations are underdefined
       for (int ipar=0;ipar<npar;ipar++) {
@@ -1311,6 +1432,7 @@ void AliITSAlignMille2::Init()
 	// 2) the same applies to all of its parents
 	// 3) it has at least 1 unconstrained direct child
 	while(parent) {
+	  if (parent->IsNotInConf()) {parent = parent->GetParent(); continue;}
 	  if (!parent->IsFreeDOF(ipar)) {parent = parent->GetParent(); continue;}
 	  nFreeInstances++;
 	  if (IsParModConstrained(parent,ipar, cstMeanMed, cstGauss)) nFreeInstances--;
@@ -1361,9 +1483,11 @@ void AliITSAlignMille2::Init()
     }
   }
   //
+  ResetCovIScale();
   // Set iterations
   if (fStartFac>1) fMillepede->SetIterations(fStartFac);    
   if (fFinalFac>1) fMillepede->SetChi2CutRef(fFinalFac);    
+  fTrackBuff.Expand(24);
   //
 }
 
@@ -1443,15 +1567,15 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
 {
   /// create a new AliTrackPointArray keeping only defined modules
   /// move points according to a given prealignment, if any
-  /// sort alitrackpoints w.r.t. global Y direction, if selected
+  /// sort alitrackpoints w.r.t. global Y direction, if cosmics
   const Double_t kRad2L[6] = {5*5,10*10,18*18,30*30,40*40,60*60};
   const Float_t kSensSigY2[6] = {200e-4*200e-4/12, 200e-4*200e-4/12, 
 				 300e-4*300e-4/12, 300e-4*300e-4/12, 
 				 300e-4*300e-4/12, 300e-4*300e-4/12}; // thickness^2/12
   //
   fTrack = NULL;
-  Int_t   idx[20];
-  Short_t lrID[20];
+  Int_t   idx[20] = {0};
+  Short_t lrID[20] = {0};
   Int_t npts=atp->GetNPoints();
   if (npts<fMinNPtsPerTrack) return NULL;
   TGeoHMatrix hcov;
@@ -1616,7 +1740,7 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
   // build a new track with (sorted) (prealigned) good points
   // pepo200709
   //fTrack = (AliTrackPointArray*)fTrackBuff[ngoodpts-fMinNPtsPerTrack];
-  Int_t addVertex = IsTypeCollision()&&IsDiamondUsed() ? 1 : 0;
+  Int_t addVertex = IsTypeCollision()&&((fUseDiamond&&(fCheckDiamondPoint!=kDiamondIgnore))||(fUseVertex&&fVertexSet)) ? 1 : 0;
   fTrack = (AliTrackPointArray*)fTrackBuff[ngoodpts + addVertex ];
   if (!fTrack) {
     fTrack = new AliTrackPointArray(ngoodpts + addVertex);
@@ -1629,7 +1753,7 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
   //
   for (int i=0; i<npts; i++) idx[i]=i;
   // sort track if required
-  TMath::Sort(npts,atp->GetY(),idx); // sort descending...
+  if (IsTypeCosmics()) TMath::Sort(npts,atp->GetY(),idx); // sort descending...
   //
   Int_t npto=0;
   if (fClusLoc.GetSize()<3*npts)    fClusLoc.Set(3*npts);
@@ -1683,6 +1807,16 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     // now hcov is LOCAL COVARIANCE MATRIX
     // apply sigma scaling
     Double_t *hcovscl = hcov.GetRotationMatrix();
+    /*
+    const float *cv = p.GetCov();
+    printf("## %d %d  %+.3e %+.3e %+.3e   %+.3e %+.3e %+.3e   %+.3e %+.3e %+.3e %+.3e %+.3e %+.3e   %+.3e %+.3e %+.3e\n",
+	   sid,p.GetClusterType(),
+	   fMeasGlo[0],fMeasGlo[1],fMeasGlo[2],
+	   fMeasLoc[0],fMeasLoc[1],fMeasLoc[2],
+	   cv[0],cv[1],cv[2],cv[3],cv[4],cv[5],
+	   hcovscl[0],hcovscl[4],hcovscl[8]);
+
+    */
     if (AliLog::GetGlobalDebugLevel()>=2) {
       AliInfo("Original Local Cov Matrix");
       printf("%+.4e %+.4e %+.4e\n%+.4e %+.4e\n%+.4e\n",hcovscl[0],hcovscl[1],hcovscl[2],hcovscl[4],hcovscl[5],hcovscl[8]);
@@ -1735,6 +1869,14 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     pcov[3]=hcovscl[4];
     pcov[4]=hcovscl[5];
     pcov[5]=hcovscl[8];
+    // 
+    // make sure the matrix is positive definite
+    {
+      enum {kXX=0,kXY=1,kXZ=2,kYX=kXY,kYY=3,kYZ=4,kZX=kXZ,kZY=kYZ,kZZ=5};
+      if (pcov[kXX]*pcov[kYY]*0.999<pcov[kXY]*pcov[kXY]) pcov[kXY] = 0.999*TMath::Sign((float)TMath::Sqrt(pcov[kXX]*pcov[kYY]),pcov[kXY]);
+      if (pcov[kXX]*pcov[kZZ]*0.999<pcov[kXZ]*pcov[kXZ]) pcov[kXZ] = 0.999*TMath::Sign((float)TMath::Sqrt(pcov[kXX]*pcov[kZZ]),pcov[kXZ]);
+      if (pcov[kYY]*pcov[kZZ]*0.999<pcov[kYZ]*pcov[kYZ]) pcov[kYZ] = 0.999*TMath::Sign((float)TMath::Sqrt(pcov[kYY]*pcov[kZZ]),pcov[kYZ]);
+    }
     //
     p.SetXYZ(fMeasGlo[0],fMeasGlo[1],fMeasGlo[2],pcov);
     //    printf("New Gl coordinates of measured point : X=%f  Y=%f  Z=%f \n",fMeasGlo[0],fMeasGlo[1],fMeasGlo[2]);
@@ -1755,9 +1897,9 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     fMeasLoc[0] = fMeasGlo[0] = fDiamond.GetX();
     fMeasLoc[1] = fMeasGlo[1] = fDiamond.GetY();
     fMeasLoc[2] = fMeasGlo[2] = fDiamond.GetZ();
-    fSigmaLoc[0] = fDiamond.GetCov()[0];
-    fSigmaLoc[1] = fDiamond.GetCov()[3];
-    fSigmaLoc[2] = fDiamond.GetCov()[5];
+    fSigmaLoc[0] = TMath::Sqrt(fDiamond.GetCov()[0]);
+    fSigmaLoc[1] = TMath::Sqrt(fDiamond.GetCov()[3]);
+    fSigmaLoc[2] = TMath::Sqrt(fDiamond.GetCov()[5]);
     fDiamondPointID = npto++;
   }
   //
@@ -1876,6 +2018,7 @@ Int_t AliITSAlignMille2::InitModuleParams()
   // set minimum value for SigmaLoc to 10 micron 
   if (fSigmaLoc[0]<0.0010) fSigmaLoc[0]=0.0010;
   if (fSigmaLoc[2]<0.0010) fSigmaLoc[2]=0.0010;
+  if (fCurrentSensID==kVtxSensID || fUseLocalYErr) if (fSigmaLoc[1]<0.0010) fSigmaLoc[1]=0.0010;
   //
   AliDebug(2,Form("Local coordinates of measured point : X=%+f  Y=%+f  Z=%+f \n",fMeasLoc[0] ,fMeasLoc[1] ,fMeasLoc[2] ));
   AliDebug(2,Form("Setting StDev from CovMat : fSigmaLocX=%g  fSigmaLocY=%g fSigmaLocZ=%g \n",fSigmaLoc[0] ,fSigmaLoc[1] ,fSigmaLoc[2] ));
@@ -2262,6 +2405,7 @@ Int_t AliITSAlignMille2::ProcessTrack(const AliTrackPointArray *track, Double_t 
   fTrack=PrepareTrack(track);
   if (!fTrack) {
     RemoveHelixFitConstraint();
+    RemoveVertexConstraint();
     return -1;
   }
   npts = fTrack->GetNPoints();
@@ -2318,7 +2462,7 @@ Int_t AliITSAlignMille2::FitTrack()
   if (fTPAFitter) {  // use dediacted fitter
     //
     // if the diamond point is attached, for the moment don't include it in the fit
-    fTPAFitter->AttachPoints(fTrack,0, fDiamondPointID>0 ? fDiamondPointID-1 : npts-1); 
+    fTPAFitter->AttachPoints(fTrack,0, npts-1); 
     fTPAFitter->SetBz(fBField);
     fTPAFitter->SetTypeCosmics(IsTypeCosmics());
     if (fIniTrackParamsMeth==1) fTPAFitter->SetIgnoreCov();
@@ -2328,7 +2472,10 @@ Int_t AliITSAlignMille2::FitTrack()
     double dca2err;
     double dca2 = 0.;
     Bool_t fitIsDone = kFALSE;
-    if (fDiamondPointID>0) { // vertex constraint was added, check if the track looks like prompt
+    if (fUseDiamond && fDiamondPointID>0 && fCheckDiamondPoint==kDiamondCheckIfPrompt) { // diamond constraint was added, check if the track looks like prompt
+      fTPAFitter->SetFirstLast(0,fDiamondPointID-1);
+      if (IsCovIScaleTouched()) for (int i=npts;i--;) fTPAFitter->SetCovIScale(i,GetCovIScale(i));
+      //
       chi2f = fTPAFitter->Fit(fConstrCharge,fConstrPT,fConstrPTErr);
       if ( chi2f<0 || (chi2f>fNStdDev*fStartFac && fTPAFitter->GetNIterations()>=fTPAFitter->GetMaxIterations()) ) { //RRR
 	AliInfo(Form("Track fit failed on checking if it is prompt! skipping this track... Chi2:%+e",chi2f));
@@ -2352,13 +2499,17 @@ Int_t AliITSAlignMille2::FitTrack()
       else fTPAFitter->SetFirstLast(0,fDiamondPointID); // fit with diamond
     }
     //    fTPAFitter->SetParAxis(1);
-    if (!fitIsDone) chi2 = fTPAFitter->Fit(fConstrCharge,fConstrPT,fConstrPTErr);
+    if (!fitIsDone) {
+      if (IsCovIScaleTouched()) for (int i=npts;i--;) fTPAFitter->SetCovIScale(i,GetCovIScale(i));
+      chi2 = fTPAFitter->Fit(fConstrCharge,fConstrPT,fConstrPTErr);
+    }
     //
     RemoveHelixFitConstraint();  // suppress eventual constraints to not affect fit of the next track
+    RemoveVertexConstraint(); // same ...
     //
     if ( !fitIsDone && (chi2<0 || (chi2>fNStdDev*fStartFac && fTPAFitter->GetNIterations()>=fTPAFitter->GetMaxIterations())) ) { //RRR
       AliInfo(Form("Track fit failed! skipping this track... Chi2:%+e",chi2));
-      if (fDiamondPointID>0) AliInfo(Form("VertexFree fit gave Chi2:%+e with residual %+e",chi2f,TMath::Sqrt(dca2)));
+      if (fUseDiamond && fDiamondPointID>0 && fCheckDiamondPoint==kDiamondCheckIfPrompt) AliInfo(Form("VertexFree fit gave Chi2:%+e with residual %+e",chi2f,TMath::Sqrt(dca2)));
       /*
 	fTrack->Print("");
 	fTPAFitter->FitHelixCrude();
@@ -2795,6 +2946,10 @@ Int_t AliITSAlignMille2::AddLocalEquationTPA(Mille2Data &m)
   ///         0 if no free global parameters were found but local eq is built
   ///         1 if both local and global eqs are built
   //
+  static int cnt = 0;
+  Bool_t dbg = kFALSE;//kTRUE;
+  if (++cnt>100000) dbg = kFALSE;
+
   int curpoint = fCluster.GetUniqueID()-1;
   TGeoHMatrix *tempHMat = GetSensorCurrMatrixSID(fCurrentSensID);// fCurrentModule->GetSensitiveVolumeMatrix(fCluster.GetVolumeID());
   //
@@ -2807,12 +2962,24 @@ Int_t AliITSAlignMille2::AddLocalEquationTPA(Mille2Data &m)
   Double_t dRdP[3][3]; // derivative of local residuals vs local position
   Double_t dPdG[AliITSAlignMille2Module::kMaxParGeom][3]; // derivatives of local position vs global params
   fTPAFitter->GetDResDPos(&fDerivativeGlo[0][0], curpoint);
-  for (int i=3;i--;) tempHMat->MasterToLocalVect(fDerivativeGlo[i],dRdP[i]);
+  if (fCurrentSensID!=kVtxSensID) for (int i=3;i--;) tempHMat->MasterToLocalVect(fDerivativeGlo[i],dRdP[i]);
+  else for (int i=3;i--;) for (int j=3;j--;) dRdP[i][j] = fDerivativeGlo[i][j];  // vertex constraint is in lab
   //
+  if (dbg) {
+    printf("\nCurrentMod: %s Sens:%d\n",fCurrentModule->GetName(),fCurrentSensID); //RRR
+    printf("Module Matrix: ");
+    fCurrentModule->GetMatrix()->Print(); //RRR
+    for (int i=0;i<3;i++) {
+      printf("dRdP[M%d][resI] ",i); for (int j=0;j<3;j++) printf(":[%d] %+.3e ",j,dRdP[i][j]); printf("\n");
+    }//RRR
+    printf("Sensor Matrix: "); tempHMat->Print();
+  }
   UInt_t ifill=0, dfDone = 0;
   m.fNModFilled = 0;
   // 
   AliITSAlignMille2Module* endModule = fCurrentModule;
+  //
+  m.fModuleID[0] = fCurrentModule->GetUniqueID(); // always register id of the base module, even if it has no DOF
   //
   do {
     if (fCurrentModule->GetNParFree()==0) continue;
@@ -2825,8 +2992,18 @@ Int_t AliITSAlignMille2::AddLocalEquationTPA(Mille2Data &m)
       //
       if (!TestWordBit(dfDone,i)) {                    // need to calculate new derivative
 	if (!jacobOK) {
-	  if (fCurrentSensID!=kVtxSensID) fCurrentModule->CalcDerivDPosDPar(fCluster.GetVolumeID(),fMeasLoc,&dPdG[0][0]); 
-	  else for (int ip=AliITSAlignMille2Module::kMaxParGeom;ip--;) for (int jp=3;jp--;) dPdG[ip][jp] = (ip==jp) ? 1:0;	  
+	  if (fCurrentSensID!=kVtxSensID) {
+	    fCurrentModule->CalcDerivDPosDPar(fCluster.GetVolumeID(),fMeasLoc,&dPdG[0][0]); 
+	    if (dbg) {
+	      for (int i1=0;i1<3;i1++) {
+		printf("Jacob:dPdG[gpar%d][Mj]",i1); for (int j1=0;j1<3;j1++) printf(":[%d] %+.3e ",j1,dPdG[i1][j1]); printf("\n");//RRR
+	      }
+	    }
+	  }
+	  else {
+	    // this is a vertex constraint: only lateral shifts are allowed, no rotations
+	    for (int ip=AliITSAlignMille2Module::kMaxParGeom;ip--;) for (int jp=3;jp--;) dPdG[ip][jp] = (ip==jp) ? 1:0;	  
+	  }
 	  jacobOK = kTRUE;
 	}	
 	// dRes_j/dGlo_i = \sum_{k=1:3}  dRes_j/dPos_k * dPos_k/dGlo_i
@@ -2836,6 +3013,10 @@ Int_t AliITSAlignMille2::AddLocalEquationTPA(Mille2Data &m)
 	SetWordBit(dfDone,i);
       }
       //
+      if (dbg) {
+	printf("Level %s DGlob[par%d][resJ] ",fCurrentModule->GetName(),i); //RRR
+	for (int k=0;k<3;k++) printf(":[%d] %+.3e ",k, fDerivativeGlo[i][k]); printf("\n");//RRR
+      }
       m.fDerGlo[ifill][kX] = fDerivativeGlo[i][kX];
       m.fDerGlo[ifill][kY] = fDerivativeGlo[i][kY];
       m.fDerGlo[ifill][kZ] = fDerivativeGlo[i][kZ];
@@ -2907,7 +3088,12 @@ Int_t AliITSAlignMille2::AddLocalEquationTPA(Mille2Data &m)
   // store first local residuals
   fTPAFitter->GetResiduals(fPintLoc , curpoint);       // lab residuals
   for (int i=3;i--;) fPintLoc[i] = -fPintLoc[i];
-  tempHMat->MasterToLocalVect(fPintLoc,m.fMeas);       // local residuals 
+  if   (fCurrentSensID!=kVtxSensID) tempHMat->MasterToLocalVect(fPintLoc,m.fMeas);       // local residuals 
+  else for (int i=3;i--;) m.fMeas[i] = fPintLoc[i];
+  if (dbg) {
+    printf("res(meas-loc) "); for (int k=0;k<3;k++) printf(":[%d] %+.3e ",k,m.fMeas[k]); printf("\n");
+    printf("Fin:%s %+e %+e\n",endModule->GetName(), fDerivativeGlo[kZ][kZ], fPintLoc[kZ]);
+  }//RRR
   m.fSigma[kX] = fSigmaLoc[kX];
   m.fSigma[kY] = fSigmaLoc[kY];
   m.fSigma[kZ] = fSigmaLoc[kZ];
@@ -2956,6 +3142,7 @@ void AliITSAlignMille2::SetLocalEquations(const Mille2Data *marr, Int_t neq)
     if (GetWeightPt()>0) wgh = TMath::Power(wgh,GetWeightPt());
   }
   fMillepede->SetRecordWeight(wgh*fTrackWeight);
+  fMillepede->SetRecordRun(fRunID);
   //
 }
 
@@ -3353,6 +3540,7 @@ void AliITSAlignMille2::ApplyPostConstraints()
     //
     if (imd>=0) {
       AliITSAlignMille2Module* mod = GetMilleModule(imd);
+      if (mod->IsNotInConf()) continue;
       UInt_t pattern = 0;
       for (int ipar=mod->GetNParTot();ipar--;) {
 	if (cstr->IsApplied(ipar))      continue;
@@ -3418,7 +3606,10 @@ void AliITSAlignMille2::ConstrainOrphans(Double_t val, UInt_t pattern)
     int nadd = 0;
     for (int imd=fNModules;imd--;) {
       AliITSAlignMille2Module* mod = GetMilleModule(imd);
-      if (mod->GetParent()) continue; // this is not an orphan
+      if (mod->IsNotInConf()) continue; // dummy module
+      AliITSAlignMille2Module* par = mod->GetParent();
+      while (par && par->IsNotInConf() ) par = par->GetParent(); // use only decalred parents
+      if (par) continue; // this is not an orphan
       int idpar = mod->GetParOffset(ip);
       if (idpar<0) continue;
       fGlobalDerivatives[idpar] = 1.0;
@@ -3497,9 +3688,15 @@ void AliITSAlignMille2::PostConstrainOrphans(Int_t type,Double_t val, UInt_t pat
   int nc = fNModules;
   //
   int norph = 0;
-  for (int ich=nc;ich--;) if (!GetMilleModule(ich)->GetParent()) norph ++;
+  for (int ich=nc;ich--;) {
+    AliITSAlignMille2Module *par= GetMilleModule(ich)->GetParent();    
+    while (par && par->IsNotInConf()) par = par->GetParent(); // use only decalred parents
+    if (!par) norph ++;
+  }
+  //
   if (!norph) return;
   double *tmpArr = new double[norph]; 
+  for (int i=norph;i--;) tmpArr[i] = 0;
   //
   for (int ip=0;ip<kNParCh;ip++) {
     int npc = 0;
@@ -3508,8 +3705,11 @@ void AliITSAlignMille2::PostConstrainOrphans(Int_t type,Double_t val, UInt_t pat
     int nfree = 0;
     for (int ich=nc;ich--;) {
       AliITSAlignMille2Module* child = GetMilleModule(ich);
+      if (child->IsNotInConf()) continue; // dummy module
       //      if (child->GetParent() || !child->IsFreeDOF(ip)) continue; 
-      if (child->GetParent()) continue; 
+      AliITSAlignMille2Module* par = child->GetParent();
+      while (par && par->IsNotInConf()) par = par->GetParent(); // count only declared parents
+      if (par) continue; 
       tmpArr[nfree++] = child->GetParVal(ip);
     }
     double median=0,mean=0;
@@ -3527,8 +3727,11 @@ void AliITSAlignMille2::PostConstrainOrphans(Int_t type,Double_t val, UInt_t pat
     //
     for (int ich=nc;ich--;) {
       AliITSAlignMille2Module* child = GetMilleModule(ich);
+      if (child->IsNotInConf()) continue; // dummy module
       //      if (child->GetParent() || !child->IsFreeDOF(ip)) continue; 
-      if (child->GetParent()) continue; 
+      AliITSAlignMille2Module* par = child->GetParent();
+      while (par && par->IsNotInConf()) par = par->GetParent(); // count only declared parents
+      if (par) continue; 
       child->SetParVal(ip, child->GetParVal(ip) + shift);
       npc++;
     }
@@ -3640,6 +3843,7 @@ Bool_t AliITSAlignMille2::FixedOrphans() const
   }
   for (int i=0;i<fNModules;i++) {
     AliITSAlignMille2Module* md = GetMilleModule(i);
+    if (md->IsNotInConf()) continue;
     if (md->GetParent()==0 && md->GetNParFree()==0) return kTRUE;
   }
   return kFALSE;
@@ -3704,6 +3908,7 @@ Int_t AliITSAlignMille2::ProcessUserInfo(TList* userInfo)
   man->SetCacheFlag(kFALSE);
   //
   int run = userInfo->GetUniqueID();
+  if (run>0) SetRunID(run);
   AliInfo(Form("UserInfo corresponds to run#%d",run));
   cdbMap  = (TMap*)userInfo->FindObject("cdbMap");
   const TMap *curMap = man->GetStorageMap();
@@ -3742,84 +3947,63 @@ Int_t AliITSAlignMille2::ProcessUserInfo(TList* userInfo)
   cdbList = (TList*)userInfo->FindObject("cdbList");  
   if (!cdbList) {AliInfo("No CDB List found in UserInfo");}
   else {
-    // Deltas used for TrackPointArray production
-    TIter itList(cdbList);
-    ResetBit(kSameInitDeltasBit);
-    while( (objStr=(TObjString*)itList.Next()) )
-      if (objStr->GetString().Contains("ITS/Align/Data")) {
-	TString newpath = objStr->GetString();
-	AliInfo(Form("Production Misalignment from UserInfo: %s",newpath.Data()));
-	if (newpath !=  fIniDeltaPath) fIniDeltaPath = newpath;
-	else {
-	  AliInfo("Production Misalignment is the same as already loaded");
-	  SetBit(kSameInitDeltasBit);
-	}
-	break;
-      }
-    // SDD response (time0 and drift speed correction) used for TrackPointArray production
-    itList.Reset();
-    ResetBit(kSameInitSDDRespBit);
-    while( (objStr=(TObjString*)itList.Next()) )
-      if (objStr->GetString().Contains("ITS/Calib/RespSDD")) {
-	TString newpath = objStr->GetString();
-	AliInfo(Form("Production SDD Response from UserInfo: %s",newpath.Data()));
-	if (newpath != fIniSDDRespPath) fIniSDDRespPath = newpath; 
-	else {
-	  AliInfo("Production SDD Response is the same as already loaded");
-	  SetBit(kSameInitSDDRespBit);
-	}
-	break;
-      }
-    //
-    // SDD vdrift used for TrackPointArray production
-    itList.Reset();
-    ResetBit(kSameInitSDDVDriftBit);
-    while( (objStr=(TObjString*)itList.Next()) )
-      if (objStr->GetString().Contains("ITS/Calib/DriftSpeedSDD")){
-	TString newpath = objStr->GetString();
-	AliInfo(Form("Production SDD VDrift from UserInfo: %s",newpath.Data()));
-	if (newpath != fIniSDDVDriftPath) fIniSDDVDriftPath = newpath; 
-	else {
-	  AliInfo("Production SDD VDrift is the same as already loaded");
-	  SetBit(kSameInitSDDVDriftBit);
-	}
-	break;
-      }
-    // Diamond constraint    
-    itList.Reset();
-    ResetBit(kSameDiamondBit);
-    while( (objStr=(TObjString*)itList.Next()) )
-      if (objStr->GetString().Contains("GRP/Calib/MeanVertexSPD")){
-	TString newpath = objStr->GetString();
-	AliInfo(Form("Diamond constraint from UserInfo: %s",newpath.Data()));
-	if (newpath != fDiamondPath) fDiamondPath = newpath; 
-	else {
-	  AliInfo("Production Diamond Constraint is the same as already loaded");
-	  SetBit(kSameDiamondBit);
-	}
-	break;
-      }
-    //
+    // Objects used for TrackPointArray production
+    GetPathFromUserInfo(cdbList,"GRP/Geometry/Data",fIniGeomPath ,kSameInitGeomBit);
+    GetPathFromUserInfo(cdbList,"ITS/Align/Data"   ,fIniDeltaPath,kSameInitDeltasBit);
+    GetPathFromUserInfo(cdbList,"ITS/Calib/RespSDD",fIniSDDRespPath,kSameInitSDDRespBit);
+    GetPathFromUserInfo(cdbList,"ITS/Calib/DriftSpeedSDD",fIniSDDVDriftPath,kSameInitSDDVDriftBit);
+    GetPathFromUserInfo(cdbList,"ITS/Calib/MapsTimeSDD",fIniSDDCorrMapPath,kSameInitSDDCorrMapBit);
+    GetPathFromUserInfo(cdbList,"GRP/Calib/MeanVertexSPD",fDiamondPath,kSameDiamondBit);
   }  
   //
   TList *bzlst = (TList*)userInfo->FindObject("BzkGauss");
   if (bzlst && bzlst->At(0)) {
     objStr = (TObjString*)bzlst->At(0);
     SetBField( objStr->GetString().Atof() );
-    AliInfo(Form("Magentic field from UserInfo: %+.2e",GetBField()));
+    AliInfo(Form("Magnetic field from UserInfo: %+.2e",GetBField()));
   }
   return 0;
 }
 
 //________________________________________________________________________________________________________
+Int_t AliITSAlignMille2::GetPathFromUserInfo(TList* cdbList,const char* calib,TString& path, Int_t useBit)
+{
+  // extract the path for specific CDB path from user info. If it is the same as already loaded, set corresponing bit
+  TIter itList(cdbList);
+  if (useBit>=0) ResetBit(useBit);
+  TObjString* objStr;
+  while( (objStr=(TObjString*)itList.Next()) )
+    if (objStr->GetString().Contains(calib)) {
+      TString newpath = objStr->GetString();
+      AliInfo(Form("Found path in UserInfo: %s",newpath.Data()));
+      if ( useBit>=0 && (fUserProvided&useBit) ) {
+	AliInfo(Form("Will use the one provided in config: %s",path.Data()));
+	SetBit(useBit);       
+      }
+      else if ( useBit>=0 && (newpath == path) ) {
+	AliInfo(Form("Path %s is the same as already loaded",path.Data()));
+	SetBit(useBit);       
+      }
+      else path = newpath; 
+      //
+      return 0;
+    }
+  AliInfo(Form("Did not find path for %s in UserInfo",calib));
+  path = "";
+  return -1;
+}
+
+//________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::LoadSDDResponse(TString& path, AliITSresponseSDD *&resp)
 {
+  // load SDD response
   if (path.IsNull()) return 0;
   AliInfo(Form("Loading SDD response from %s",path.Data()));
   //
   AliCDBEntry *entry = 0;
   delete resp;
   resp = 0;
+  //
   while(1) {
     if (path.BeginsWith("path: ")) { // must load from OCDB
       entry = GetCDBEntry(path.Data());
@@ -3827,7 +4011,7 @@ Int_t AliITSAlignMille2::LoadSDDResponse(TString& path, AliITSresponseSDD *&resp
       resp = (AliITSresponseSDD*) entry->GetObject();
       entry->SetObject(NULL);
       entry->SetOwner(kTRUE);
-      //      AliCDBManager::Instance()->UnloadFromCache(cdbId->GetPath()); // don't want cached object, read new copy
+      //      AliCDBManager::Instance()->UnloadFromCache(path); // don't want cached object, read new copy
       //      delete cdbId;
       //      delete entry;
       break;
@@ -3857,6 +4041,7 @@ Int_t AliITSAlignMille2::LoadSDDResponse(TString& path, AliITSresponseSDD *&resp
 //________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::LoadSDDVDrift(TString& path, TObjArray *&arr)
 {
+  // load VDrift object
   if (path.IsNull()) return 0;
   AliInfo(Form("Loading SDD VDrift from %s",path.Data()));
   //
@@ -3870,7 +4055,7 @@ Int_t AliITSAlignMille2::LoadSDDVDrift(TString& path, TObjArray *&arr)
       arr = (TObjArray*) entry->GetObject();
       entry->SetObject(NULL);
       entry->SetOwner(kTRUE);
-      //      AliCDBManager::Instance()->UnloadFromCache(cdbId->GetPath()); // don't want cached object, read new copy
+      //      AliCDBManager::Instance()->UnloadFromCache(path); // don't want cached object, read new copy
       //      delete cdbId;
       //      delete entry;
       break;
@@ -3899,8 +4084,58 @@ Int_t AliITSAlignMille2::LoadSDDVDrift(TString& path, TObjArray *&arr)
 }
 
 //________________________________________________________________________________________________________
+Int_t AliITSAlignMille2::LoadSDDCorrMap(TString& path, AliITSCorrectSDDPoints *&map)
+{
+  // Load SDD correction map
+  //
+  if (path.IsNull()) return 0;
+  AliInfo(Form("Loading SDD Correction Maps from %s",path.Data()));
+  //
+  AliCDBEntry *entry = 0;
+  delete map;
+  map = 0;
+  TObjArray* arr = 0;
+  while(1) {
+    if (path.BeginsWith("path: ")) { // must load from OCDB
+      entry = GetCDBEntry(path.Data());
+      if (!entry) break;
+      arr = (TObjArray*) entry->GetObject();
+      entry->SetObject(NULL);
+      entry->SetOwner(kTRUE);
+      //      AliCDBManager::Instance()->UnloadFromCache(path); // don't want cached object, read new copy
+      //      delete cdbId;
+      //      delete entry;
+      break;
+    }
+    //
+    if (gSystem->AccessPathName(path.Data())) break;
+    TFile* precf = TFile::Open(path.Data());
+    if (precf->FindKey("TObjArray")) arr = (TObjArray*)precf->Get("TObjArray");
+    else if (precf->FindKey("AliCDBEntry") && (entry=(AliCDBEntry*)precf->Get("AliCDBEntry"))) {
+      arr = (TObjArray*) entry->GetObject();
+      if (arr && arr->InheritsFrom(TObjArray::Class())) entry->SetObject(NULL);
+      else arr = 0;
+      entry->SetObject(NULL);
+      entry->SetOwner(kTRUE);
+      delete entry;
+    }
+    //
+    precf->Close();
+    delete precf;
+    break;
+  } 
+  //
+  if (!arr) {AliError(Form("Failed to load SDD Correction Map from %s",path.Data())); return -1;}
+  arr->SetOwner(kTRUE);
+  map = new AliITSCorrectSDDPoints(arr);
+  
+  return 0;
+}
+
+//________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::LoadDiamond(TString& path)
 {
+  // load vertex constraint
   if (path.IsNull()) return 0;
   AliInfo(Form("Loading Diamond Constraint from %s",path.Data()));
   //
@@ -3913,7 +4148,7 @@ Int_t AliITSAlignMille2::LoadDiamond(TString& path)
       vtx = (AliESDVertex*) entry->GetObject();
       entry->SetObject(NULL);
       entry->SetOwner(kTRUE);
-      //      AliCDBManager::Instance()->UnloadFromCache(cdbId->GetPath()); // don't want cached object, read new copy
+      //      AliCDBManager::Instance()->UnloadFromCache(path); // don't want cached object, read new copy
       //      delete cdbId;
       //      delete entry;
       break;
@@ -3938,43 +4173,11 @@ Int_t AliITSAlignMille2::LoadDiamond(TString& path)
   //
   if (!vtx) {AliError(Form("Failed to load Diamond constraint from %s",path.Data())); return -1;}
   //
-  double cmat[6];
-  float cmatF[6];
-  vtx->GetCovMatrix(cmat);
-  AliITSAlignMille2Module* diamMod = GetMilleModuleByVID(kVtxSensVID);
-  if (diamMod) {
-    cmat[0] *= diamMod->GetSigmaXFactor()*diamMod->GetSigmaXFactor();
-    cmat[2] *= diamMod->GetSigmaYFactor()*diamMod->GetSigmaYFactor();
-    cmat[5] *= diamMod->GetSigmaZFactor()*diamMod->GetSigmaZFactor();
-    cmat[1] *= diamMod->GetSigmaXFactor()*diamMod->GetSigmaYFactor();
-    cmat[3] *= diamMod->GetSigmaXFactor()*diamMod->GetSigmaZFactor();
-    cmat[4] *= diamMod->GetSigmaYFactor()*diamMod->GetSigmaZFactor();
-  }
-  cmatF[0] = cmat[0]; // xx
-  cmatF[1] = cmat[1]; // xy
-  cmatF[2] = cmat[3]; // xz
-  cmatF[3] = cmat[2]; // yy
-  cmatF[4] = cmat[4]; // yz
-  cmatF[5] = cmat[5]; // zz
-  fDiamond.SetXYZ(vtx->GetX(),vtx->GetY(),vtx->GetZ(), cmatF);
-  //
-  Double_t t0 = cmatF[3]*cmatF[5] - cmatF[4]*cmatF[4];
-  Double_t t1 = cmatF[1]*cmatF[5] - cmatF[2]*cmatF[4];
-  Double_t t2 = cmatF[1]*cmatF[4] - cmatF[2]*cmatF[3];
-  Double_t det = cmatF[0]*t0 - cmatF[1]*t1 + cmatF[2]*t2;
-  float cmatFI[6];
-  if (TMath::Abs(det)<1e-36) {
-    AliError("Diamond constraint cov.matrix is singular");
-    vtx->Print();
-    exit(1);
-  }
-  cmatFI[0] =  t0/det;
-  cmatFI[1] = -t1/det;
-  cmatFI[2] =  t2/det;
-  cmatFI[3] =  (cmatF[0]*cmatF[5] - cmatF[2]*cmatF[2])/det;
-  cmatFI[4] =  (cmatF[1]*cmatF[2] - cmatF[0]*cmatF[4])/det;
-  cmatFI[5] =  (cmatF[0]*cmatF[3] - cmatF[1]*cmatF[1])/det;
-  fDiamondI.SetXYZ(vtx->GetX(),vtx->GetY(),vtx->GetZ(), cmatFI);
+  double vtxXYZ[3];
+  vtx->GetXYZ(vtxXYZ);
+  for (int i=3;i--;) vtxXYZ[i] -= fCorrDiamond[i];
+  vtx->SetXYZ(vtxXYZ);
+  SetVertexConstraint(vtx);
   AliInfo("Will use following Diamond Constraint (errors inverted):");
   fDiamondI.Print("");
   delete vtx;
@@ -3984,6 +4187,7 @@ Int_t AliITSAlignMille2::LoadDiamond(TString& path)
 //________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::LoadDeltas(TString& path, TClonesArray *&arr)
 {
+  // load ITS geom deltas
   if (path.IsNull()) return 0;
   AliInfo(Form("Loading Alignment Deltas from %s",path.Data()));
   //
@@ -3997,7 +4201,7 @@ Int_t AliITSAlignMille2::LoadDeltas(TString& path, TClonesArray *&arr)
       arr = (TClonesArray*) entry->GetObject();
       entry->SetObject(NULL);
       entry->SetOwner(kTRUE);
-      //      AliCDBManager::Instance()->UnloadFromCache(cdbId->GetPath()); // don't want cached object, read new copy
+      //      AliCDBManager::Instance()->UnloadFromCache(path); // don't want cached object, read new copy
       //      delete cdbId;
       //      delete entry;
       break;
@@ -4056,6 +4260,8 @@ Int_t AliITSAlignMille2::CacheMatricesOrig()
   TGeoHMatrix mdel;
   AliInfo("Building sensors original matrices cache");
   //
+  /*if (fIniGeomPath!=fGeometryPath)*/ if (LoadGeometry(fIniGeomPath)) {AliInfo("Failed to re-load ideal geometry");exit(1);}
+  //
   fCacheMatrixOrig.Delete();
   if (!fIniDeltaPath.IsNull()) {
     TClonesArray* prealSav = fPrealignment;
@@ -4073,6 +4279,22 @@ Int_t AliITSAlignMille2::CacheMatricesOrig()
     fCacheMatrixOrig.AddAtAndExpand(morig,idx);
   }
   //
+  if (fConvertPreDeltas) { 
+    // in order to convert deltas from old to new geometry we need the final matrices for all alignable objects
+    int nmat = fGeoManager->GetNAlignable();
+    fConvAlgMatOld.Delete();
+    int nmatSel = 0;
+    for (int i=0;i<nmat;i++) {
+      TString nm = fGeoManager->GetAlignableEntry(i)->GetName();
+      if (!nm.BeginsWith("ITS")) continue;
+      TGeoHMatrix *mo = new TGeoHMatrix();
+      (*mo) = *(AliGeomManager::GetMatrix(nm));
+      fConvAlgMatOld.AddAtAndExpand(mo,nmatSel++);
+      mo->SetTitle(nm);
+      mo->SetName(nm);
+    }
+    ConvSortHierarchically(fConvAlgMatOld);
+  }
   //
   TGeoHMatrix *mcurr = new TGeoHMatrix();
   fCacheMatrixOrig.AddAtAndExpand(mcurr,kVtxSensID); // special unit matrix for diamond constraint
@@ -4080,7 +4302,7 @@ Int_t AliITSAlignMille2::CacheMatricesOrig()
   fCacheMatrixOrig.SetOwner(kTRUE);
 
   fUsePreAlignment = 0; 
-  InitGeometry();
+  LoadGeometry(fGeometryPath);   // reload target geometry
   //
   return 0;
 }
@@ -4116,8 +4338,8 @@ void AliITSAlignMille2::ConstrainHelixFitCurv(Int_t q,Double_t crv,Double_t crve
     fConstrPTErr = -1;
   }
   else {
-    fConstrPT    = 1./crv*fBField*kCQConv;
-    fConstrPTErr = crverr>1e-10 ? fConstrPT/crv*crverr : 0.;
+    fConstrPT    = TMath::Abs(1./crv*fBField*kCQConv);
+    fConstrPTErr = crverr>1e-10 ? TMath::Abs(fConstrPT/crv*crverr) : 0.;
   }
 }
 
@@ -4161,6 +4383,15 @@ TClonesArray* AliITSAlignMille2::CreateDeltas()
     //
     AliITSAlignMille2Module* md     = GetMilleModuleBySymName(algname); // explicitly varied?
     AliITSAlignMille2Module* parent = md ? md->GetParent(): GetMilleModuleIfContained(algname);
+    if (md && parent) {
+      TString mdName = md->GetName();
+      TString prName = parent->GetName();
+      // SPD Sector -> Layer parentship is fake, need special treatment
+      if ( mdName.CountChar('/')==2 && mdName.BeginsWith("ITS/SPD") && // SPD sector
+	   prName.CountChar('/')==1 && mdName.BeginsWith("ITS/SPD") )  // SPD Layer
+	parent = parent ? parent->GetParent(): GetMilleModuleIfContained(prName.Data());
+    }
+    //
     AliAlignObjParams*       preob  = GetPrealignedObject(algname);  // was it prealigned ?
     //
     if (!preob && !md && (!parent || parent->IsAlignable())) continue; // noting to do 
@@ -4315,21 +4546,18 @@ Int_t AliITSAlignMille2::ReloadInitCalib()
   // Can be used if set of data was processed with different calibration
   //
   // 1st cache original matrices
-  if (!TestBit(kSameInitDeltasBit)) { // need to reload geometry
-    if (InitGeometry()) {
-      AliInfo("Failed to re-load ideal geometry");
-      exit(1);
-    }
+  if (!(TestBit(kSameInitDeltasBit) && TestBit(kSameInitGeomBit))) { // need to reload geometry
+    //
     if (CacheMatricesOrig()) {
       AliInfo("Failed to cache new initial geometry");
       exit(1);
     }
-    //
-    // then reload the prealignment geometry
-    if (LoadDeltas(fPreDeltaPath,fPrealignment)) {
-      AliInfo(Form("Failed to reload the prealigned geometry %s",fPreDeltaPath.Data()));
-      exit(1);
-    }
+    // RS : commented because we don't need to reload prealignment deltas, they are already loaded
+    // then reload the prealignment geometry 
+    //    if (LoadDeltas(fPreDeltaPath,fPrealignment)) {
+    //      AliInfo(Form("Failed to reload the prealigned geometry %s",fPreDeltaPath.Data()));
+    //      exit(1);
+    //    }
     //
     if (fPrealignment && ApplyToGeometry()) {
       AliInfo(Form("Failed re-apply prealigned geometry %s",fPreDeltaPath.Data()));
@@ -4363,6 +4591,15 @@ Int_t AliITSAlignMille2::ReloadInitCalib()
   }
   else ResetBit(kSameInitSDDRespBit);
   //
+  // reload SDD corr.map
+  if (!TestBit(kSameInitSDDCorrMapBit)) {
+    if (LoadSDDCorrMap(fIniSDDCorrMapPath, fIniCorrMapSDD) ) {
+      AliInfo(Form("Failed to load new SDD Correction Map %s",fIniSDDCorrMapPath.Data()));
+      exit(1);
+    }
+  }
+  else ResetBit(kSameInitSDDRespBit);
+  //
   // reload diamond info
   if (!TestBit(kSameDiamondBit)) {
     if (LoadDiamond(fDiamondPath) ) {
@@ -4372,8 +4609,6 @@ Int_t AliITSAlignMille2::ReloadInitCalib()
   }
   else ResetBit(kSameInitSDDRespBit);
   //
-  
-
   return 0;
 }
 
@@ -4400,8 +4635,8 @@ void AliITSAlignMille2::TieSDDVDriftsLR(AliITSAlignMille2Module* mod)
     mod->Print();
     return;
   }
-  SetGlobalDerivative(mod->GetParOffset(AliITSAlignMille2Module::kDOFDVL),  1.);
-  SetGlobalDerivative(mod->GetParOffset(AliITSAlignMille2Module::kDOFDVR), -1.);
+  if (mod->GetParOffset(AliITSAlignMille2Module::kDOFDVL)>=0) SetGlobalDerivative(mod->GetParOffset(AliITSAlignMille2Module::kDOFDVL),  1.);
+  if (mod->GetParOffset(AliITSAlignMille2Module::kDOFDVR)>=0) SetGlobalDerivative(mod->GetParOffset(AliITSAlignMille2Module::kDOFDVR), -1.);
   AddConstraint(fGlobalDerivatives, 0, 1e-12);
   //
 }
@@ -4489,6 +4724,11 @@ void AliITSAlignMille2::ProcessSDDPointInfo(const AliTrackPoint* pnt,Int_t sID, 
     if (sddSide) fMeasLoc[0] = -fMeasLoc[0];
     fDriftTime0[pntID] =  t0Upd;
   }
+  //
+  if (fPreCorrMapSDD) { // apply correction map
+    fMeasLoc[0] += fPreCorrMapSDD->GetCorrection(sID,fMeasLoc[2],fMeasLoc[0]);
+  }
+
   // TEMPORARY CORRECTION (if provided) --------------<<<
   fDriftSpeed[pntID]  = sddSide ? -vdrift  : vdrift;
   fDriftSpeed0[pntID] = sddSide ? -vdrift0 : vdrift0;
@@ -4526,12 +4766,13 @@ AliCDBEntry* AliITSAlignMille2::GetCDBEntry(const char* path)
   //
   AliCDBStorage* stor = man->GetDefaultStorage();
   if (!stor && !man->GetRaw()) man->SetDefaultStorage("raw://");
-  if (man->GetRaw()) man->SetRun(cdbId->GetFirstRun());
+  if (man->GetRaw()) man->SetRun(fRunID>0 ? fRunID : cdbId->GetFirstRun());
   if (stor) {
     TString tp = stor->GetType();
     if (tp.Contains("alien",TString::kIgnoreCase) && !gGrid) TGrid::Connect("alien:"); 
   } 
-  entry = man->Get( *cdbId );
+  entry = man->Get(cdbId->GetPath(),cdbId->GetFirstRun(),cdbId->GetVersion(),cdbId->GetSubVersion());
+  //  entry = man->Get( *cdbId );
   man->ClearCache();
   //
   delete cdbId;
@@ -4539,3 +4780,169 @@ AliCDBEntry* AliITSAlignMille2::GetCDBEntry(const char* path)
   //
 }
 
+//_______________________________________________________________________________________
+void AliITSAlignMille2::SetVertexConstraint(const AliESDVertex* vtx)
+{
+  // set vertex for constraint
+  if (!vtx) return;
+  //
+  double cmat[6];
+  float cmatF[6];
+  vtx->GetCovMatrix(cmat);
+  AliITSAlignMille2Module* diamMod = GetMilleModuleByVID(kVtxSensVID);
+  if (diamMod) {
+    cmat[0] *= diamMod->GetSigmaXFactor()*diamMod->GetSigmaXFactor();
+    cmat[2] *= diamMod->GetSigmaYFactor()*diamMod->GetSigmaYFactor();
+    cmat[5] *= diamMod->GetSigmaZFactor()*diamMod->GetSigmaZFactor();
+    cmat[1] *= diamMod->GetSigmaXFactor()*diamMod->GetSigmaYFactor();
+    cmat[3] *= diamMod->GetSigmaXFactor()*diamMod->GetSigmaZFactor();
+    cmat[4] *= diamMod->GetSigmaYFactor()*diamMod->GetSigmaZFactor();
+  }
+  cmatF[0] = cmat[0]; // xx
+  cmatF[1] = cmat[1]; // xy
+  cmatF[2] = cmat[3]; // xz
+  cmatF[3] = cmat[2]; // yy
+  cmatF[4] = cmat[4]; // yz
+  cmatF[5] = cmat[5]; // zz
+
+  fDiamond.SetXYZ(vtx->GetX(),vtx->GetY(),vtx->GetZ(), cmatF);
+  //
+  Double_t t0 = cmat[2]*cmat[5] - cmat[4]*cmat[4];
+  Double_t t1 = cmat[1]*cmat[5] - cmat[3]*cmat[4];
+  Double_t t2 = cmat[1]*cmat[4] - cmat[2]*cmat[3];
+  Double_t det = cmat[0]*t0 - cmat[1]*t1 + cmat[3]*t2;
+  if (TMath::Abs(det)<1e-36) {
+    vtx->Print();
+    AliFatal("Vertex constraint cov.matrix is singular");
+  }
+  cmatF[0] =  t0/det;
+  cmatF[1] = -t1/det;
+  cmatF[2] =  t2/det;
+  cmatF[3] =  (cmat[0]*cmat[5] - cmat[3]*cmat[3])/det;
+  cmatF[4] =  (cmat[1]*cmat[3] - cmat[0]*cmat[4])/det;
+  cmatF[5] =  (cmat[0]*cmat[2] - cmat[1]*cmat[1])/det;
+  fDiamondI.SetXYZ(vtx->GetX(),vtx->GetY(),vtx->GetZ(), cmatF);
+  fVertexSet = kTRUE;
+  //
+}
+
+//_______________________________________________________________________________________
+void AliITSAlignMille2::ConvertDeltas()
+{
+  // convert prealignment deltas from old geometry to new one
+  // NOTE: the target geometry must be loaded at time this method is called
+  //
+  // NOTE: This method can be ONLY used when as a prealignment deltas those used for the production
+  // of trackpoints (e.g. extracted from the UserInfo).
+  // The prealignment deltas provided by user via config file must be already converted to target geometry:
+  // this can be done externally using the macro ConvertDeltas.C
+  //
+  // delta_j_new = delta_j_old * Xj_old * Xj_new^-1
+  // where X = Prod{delta_i,i=j-1:0} M_j
+  // with j - the level of the alignable volume in the hierarchy, M - corresponding ideal matrix
+  // Note that delta_j * Xj is equal to final (misaligned) matrix of corresponding geometry, G_j.
+  // Since this method is used ONLY in the case where the prealignment deltas are equal to production deltas,
+  // we have already loaded G_j_old in the fConvAlgMatOld (filled in the CacheMatricesOrig) 
+  // Hence, delta_j_new = G_j_old * Xj_new^-1
+  //
+  AliInfo("Converting deltas from initial to target geometry");
+  int nMatOld = fConvAlgMatOld.GetEntriesFast(); // number of alignable matrices
+  TClonesArray* deltArrNew = new TClonesArray("AliAlignObjParams",10);
+  //
+  TGeoHMatrix dmPar;
+  int nDelNew = 0;
+  //
+  for (int im=0;im<nMatOld;im++) {
+    TGeoHMatrix* mtGjold = (TGeoHMatrix*)fConvAlgMatOld[im];
+    TString algname = mtGjold->GetTitle();
+    UShort_t vID = AliITSAlignMille2Module::GetVolumeIDFromSymname(algname.Data());
+    //
+    // build X_new >>>
+    TGeoHMatrix* parent = mtGjold;
+    TGeoHMatrix xNew;
+    int parID;
+    while ( (parID=parent->GetUniqueID()-1)>=0 ) {
+      parent = (TGeoHMatrix*)fConvAlgMatOld[parID];
+      AliAlignObjParams* deltaPar = ConvFindDelta(deltArrNew,parent->GetTitle());
+      if (deltaPar) deltaPar->GetMatrix(dmPar); xNew *= dmPar;
+    }
+    AliGeomManager::GetOrigGlobalMatrix(algname,dmPar); // ideal matrix of new geometry
+    xNew *= dmPar;
+    // build X_new <<<
+    //
+    dmPar  = *mtGjold; 
+    dmPar *= xNew.Inverse();
+    new((*deltArrNew)[nDelNew++]) AliAlignObjParams(algname.Data(),vID,dmPar,kTRUE);
+    //
+  }
+  delete fPrealignment;
+  fPrealignment = deltArrNew;
+  //
+  // we don't need anymore old matrices
+  fConvAlgMatOld.Delete();
+  //
+}
+
+//_______________________________________________________________________________________
+void AliITSAlignMille2::ConvSortHierarchically(TObjArray& matArr)
+{
+  // Used only for the deltas conversion from one geometry to another
+  // Sort the matrices according to hiearachy (coarse -> fine)
+  //
+  int nmat = matArr.GetEntriesFast();
+  //
+  for (int i=0;i<nmat;i++) {
+    for (int j=i+1;j<nmat;j++) {
+      TGeoHMatrix* matI = (TGeoHMatrix*) matArr[i];
+      TGeoHMatrix* matJ = (TGeoHMatrix*) matArr[j];
+      if (ConvIsJParentOfI(matI,matJ)) { // swap
+	matArr[i] = matJ;
+	matArr[j] = matI;
+      }
+    }
+  }
+  //
+  // set direct parent id's in the UniqueID's
+  for (int i=nmat;i--;) {
+    TGeoHMatrix* matI = (TGeoHMatrix*) matArr[i];
+    matI->SetUniqueID(0);
+    for (int j=i;j--;) {
+      TGeoHMatrix* matJ = (TGeoHMatrix*) matArr[j];
+      if (ConvIsJParentOfI(matI,matJ)) { matI->SetUniqueID(j+1); break; }
+    }
+  }
+}
+
+//_______________________________________________________________________________________
+Bool_t AliITSAlignMille2::ConvIsJParentOfI(const TGeoHMatrix* matI,const TGeoHMatrix* matJ) const
+{
+  // Used only for the deltas conversion from one geometry to another
+  // True if matJ is higher in hierarchy than 
+  // 
+  TString nmI = matI->GetTitle();
+  TString nmJ = matJ->GetTitle();
+  //
+  int nlrI = nmI.CountChar('/');
+  int nlrJ = nmJ.CountChar('/');
+  if (nlrJ>=nlrI) return kFALSE;
+  //
+  // special case of SPD sectors
+  if (nmI.BeginsWith("ITS/SPD1") && nmJ.BeginsWith("ITS/SPD0") && nlrJ==2) nmJ.ReplaceAll("SPD0","SPD1");
+  return (nmI.BeginsWith(nmJ)) ? kTRUE:kFALSE;
+  //
+}
+
+//_______________________________________________________________________________________
+AliAlignObjParams* AliITSAlignMille2::ConvFindDelta(const TClonesArray* arrDelta,const TString& algname) const
+{
+  // find the delta for given module
+  if (!arrDelta) return 0;
+  AliAlignObjParams* delta = 0;
+  int nDeltas = arrDelta->GetEntries();
+  for (int id=0;id<nDeltas;id++) {
+    delta = (AliAlignObjParams*)arrDelta->At(id);
+    if (algname==delta->GetSymName()) break;
+    delta = 0;
+  }
+  return delta;
+}
