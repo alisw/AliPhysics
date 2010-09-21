@@ -36,7 +36,9 @@ class AliFlowAnalysisWithScalarProduct {
    virtual  ~AliFlowAnalysisWithScalarProduct();  //destructor
  
    void    Init();                                          //defines variables and histograms
-   void    Make(AliFlowEventSimple* anEvent);               //calculates variables and fills histograms
+   void    Make(AliFlowEventSimple* anEvent);               //calls FillSP and FillmuQ
+   void    FillSP(AliFlowEventSimple* anEvent);             //calculates variables and fills histograms for v2
+   void    FillmuQ(AliFlowEventSimple* anEvent);            //calculates variables and fills histograms for uQ
    void    GetOutputHistograms(TList *outputListHistos);    //get pointers to all output histograms (called before Finish()) 
    void    Finish();                                        //saves histograms
    void    WriteHistograms(TString* outputFileName);        //writes histograms locally
@@ -64,7 +66,7 @@ class AliFlowAnalysisWithScalarProduct {
    void    SetUsePhiWeights(Bool_t const aPhiW)       {this->fUsePhiWeights = aPhiW;}
    Bool_t  GetUsePhiWeights() const                   {return this->fUsePhiWeights;}
    
-   // correction for non-uniforma acceptance:
+   // correction for non-uniform acceptance:
    void   SetApplyCorrectionForNUA(Bool_t const acfNUA) {this->fApplyCorrectionForNUA = acfNUA;}
    Bool_t GetApplyCorrectionForNUA() const              {return this->fApplyCorrectionForNUA;}        
 
@@ -74,8 +76,11 @@ class AliFlowAnalysisWithScalarProduct {
    TProfile* GetHistProFlags() const    {return this->fHistProFlags;};   
    TProfile* GetHistProUQetaRP() const  {return this->fHistProUQetaRP;} 
    TProfile* GetHistProUQetaPOI() const {return this->fHistProUQetaPOI;}
+   TProfile* GetHistProUQetaAllEventsPOI() const {return this->fHistProUQetaAllEventsPOI;}
    TProfile* GetHistProUQPtRP() const   {return this->fHistProUQPtRP;} 
    TProfile* GetHistProUQPtPOI() const  {return this->fHistProUQPtPOI;}
+   TProfile* GetHistProUQPtAllEventsPOI() const  {return this->fHistProUQPtAllEventsPOI;}
+   TProfile* GetHistProQNorm() const    {return this->fHistProQNorm;}
    TProfile* GetHistProQaQb() const     {return this->fHistProQaQb;}
    TProfile* GetHistProQaQbNorm() const {return this->fHistProQaQbNorm;}
    TProfile* GetHistProQaQbReImNorm() const {return this->fHistProQaQbReImNorm;} 
@@ -93,11 +98,14 @@ class AliFlowAnalysisWithScalarProduct {
    TH1D*     GetHistSumOfWeightsPtPOI(Int_t i) const   {return this->fHistSumOfWeightsPtPOI[i];}
    TH1D*     GetHistSumOfWeightsEtaPOI(Int_t i) const  {return this->fHistSumOfWeightsEtaPOI[i];}
 
-   AliFlowCommonHist*        GetCommonHists() const    {return this->fCommonHists; }
-   AliFlowCommonHistResults* GetCommonHistsRes() const {return this->fCommonHistsRes; }
-
+   AliFlowCommonHist*        GetCommonHistsSP() const    {return this->fCommonHistsSP; }
+   AliFlowCommonHistResults* GetCommonHistsResSP() const {return this->fCommonHistsResSP; }
+   AliFlowCommonHist*        GetCommonHistsmuQ() const    {return this->fCommonHistsmuQ; }
+   
+   TH1D* GetHistQNorm() const      {return this->fHistQNorm;}
    TH1D* GetHistQaQb() const       {return this->fHistQaQb;}
    TH1D* GetHistQaQbNorm() const   {return this->fHistQaQbNorm;}
+   TH2D* GetHistQNormvsQaQbNorm() const {return this->fHistQNormvsQaQbNorm;}
    TH1D* GetHistQaQbCos() const    {return this->fHistQaQbCos;}
    TH1D* GetHistResolution() const {return this->fHistResolution;}
    TH1D* GetHistQaNorm() const     {return this->fHistQaNorm;}
@@ -109,15 +117,21 @@ class AliFlowAnalysisWithScalarProduct {
    //histogram setters   
    void SetHistProFlags(TProfile* const aHistProFlags) 
      {this->fHistProFlags = aHistProFlags;};  
-   void SetHistProUQetaRP(TProfile* const aHistProUQetaRP)   
+   void SetHistProUQetaRP(TProfile* const aHistProUQetaRP) 
      {this->fHistProUQetaRP = aHistProUQetaRP;}
-   void SetHistProUQetaPOI(TProfile* const aHistProUQetaPOI) 
+   void SetHistProUQetaPOI(TProfile* const aHistProUQetaPOI)
      {this->fHistProUQetaPOI = aHistProUQetaPOI;}
-   void SetHistProUQPtRP(TProfile* const aHistProUQPtRP)     
+   void SetHistProUQetaAllEventsPOI(TProfile* const aHistProUQetaAllEventsPOI) 
+     {this->fHistProUQetaAllEventsPOI = aHistProUQetaAllEventsPOI;}
+   void SetHistProUQPtRP(TProfile* const aHistProUQPtRP)   
      {this->fHistProUQPtRP = aHistProUQPtRP;}
-   void SetHistProUQPtPOI(TProfile* const aHistProUQPtPOI)   
+   void SetHistProUQPtPOI(TProfile* const aHistProUQPtPOI) 
      {this->fHistProUQPtPOI = aHistProUQPtPOI;}
-   void SetHistProQaQb(TProfile* const aHistProQaQb)         
+   void SetHistProUQPtAllEventsPOI(TProfile* const aHistProUQPtAllEventsPOI)   
+     {this->fHistProUQPtAllEventsPOI = aHistProUQPtAllEventsPOI;}
+   void SetHistProQNorm(TProfile* const aHistProQNorm)
+     {this->fHistProQNorm = aHistProQNorm;}
+   void SetHistProQaQb(TProfile* const aHistProQaQb)       
      {this->fHistProQaQb = aHistProQaQb;}
    void SetHistProQaQbNorm(TProfile* const aHistProQaQbNorm)         
      {this->fHistProQaQbNorm = aHistProQaQbNorm;}     
@@ -148,15 +162,22 @@ class AliFlowAnalysisWithScalarProduct {
    void SetHistSumOfWeightsEtaPOI(TH1D* const aHistSumOfWeightsEtaPOI, Int_t const i) 
      {this->fHistSumOfWeightsEtaPOI[i] = aHistSumOfWeightsEtaPOI;}   
 
-   void SetCommonHists(AliFlowCommonHist* const someCommonHists)              
-     {this->fCommonHists = someCommonHists; }
-   void SetCommonHistsRes(AliFlowCommonHistResults* const someCommonHistsRes) 
-     {this->fCommonHistsRes = someCommonHistsRes; }
+   void SetCommonHistsSP(AliFlowCommonHist* const someCommonHists)              
+     {this->fCommonHistsSP = someCommonHists; }
+   void SetCommonHistsResSP(AliFlowCommonHistResults* const someCommonHistsRes) 
+     {this->fCommonHistsResSP = someCommonHistsRes; }
+   void SetCommonHistsmuQ(AliFlowCommonHist* const someCommonHists)              
+     {this->fCommonHistsmuQ = someCommonHists; }
+   
 
+   void SetHistQNorm(TH1D* const aHistQNorm)
+     {this->fHistQNorm = aHistQNorm;}
    void SetHistQaQb(TH1D* const aHistQaQb)
      {this->fHistQaQb = aHistQaQb;}
    void SetHistQaQbNorm(TH1D* const aHistQaQbNorm)
      {this->fHistQaQbNorm = aHistQaQbNorm;}
+   void SetHistQNormvsQaQbNorm(TH2D* const aHistQNormvsQaQbNorm)
+   {this->fHistQNormvsQaQbNorm = aHistQNormvsQaQbNorm;}
    void SetHistQaQbCos(TH1D* const aHistQaQbCos)
      {this->fHistQaQbCos = aHistQaQbCos;}
    void SetHistResolution(TH1D* const aHistResolution)
@@ -188,10 +209,13 @@ class AliFlowAnalysisWithScalarProduct {
    TH1F*      fPhiWeightsSub1;   // histogram holding phi weights for subevent 1
 
    TProfile*  fHistProFlags;        // profile to hold all boolean flags needed in Finish()
-   TProfile*  fHistProUQetaRP;      // uQ(eta) for RP
-   TProfile*  fHistProUQetaPOI;     // uQ(eta) for POI
-   TProfile*  fHistProUQPtRP;       // uQ(pt) for RP
-   TProfile*  fHistProUQPtPOI;      // uQ(pt) for POI
+   TProfile*  fHistProUQetaRP;      // uQ(eta) for RP (for events where both subevents are filled)
+   TProfile*  fHistProUQetaPOI;     // uQ(eta) for POI (for events where both subevents are filled)
+   TProfile*  fHistProUQetaAllEventsPOI; //uQ(eta) for POI (for events where 1 subevent may be empty)
+   TProfile*  fHistProUQPtRP;       // uQ(pt) for RP (for events where both subevents are filled)
+   TProfile*  fHistProUQPtPOI;      // uQ(pt) for POI (for events where both subevents are filled)
+   TProfile*  fHistProUQPtAllEventsPOI;  // uQ(pt) for POI (for events where 1 subevent may be empty)
+   TProfile*  fHistProQNorm;        // average of (Qa+Qb).Mod()
    TProfile*  fHistProQaQb;         // average of QaQb 
    TProfile*  fHistProQaQbNorm;     // average of QaQb/MaMb
    TProfile*  fHistProQaQbReImNorm; // average of Im[Qa/Ma], Re[Qa/Ma], Im[Qb/Mb], Re[Qb/Mb] 
@@ -209,11 +233,14 @@ class AliFlowAnalysisWithScalarProduct {
    TH1D*      fHistSumOfWeightsPtPOI[3];  //holds sums of 0: Mq-1, 1: (Mq-1)^2, 2: (Mq-1)*Ma*Mb for each bin
    TH1D*      fHistSumOfWeightsEtaPOI[3]; //holds sums of 0: Mq-1, 1: (Mq-1)^2, 2: (Mq-1)*Ma*Mb for each bin
     
-   AliFlowCommonHist*        fCommonHists;    // control histograms
-   AliFlowCommonHistResults* fCommonHistsRes; // results histograms
-   
+   AliFlowCommonHist*        fCommonHistsSP;    // control histograms
+   AliFlowCommonHistResults* fCommonHistsResSP; // results histograms
+   AliFlowCommonHist*        fCommonHistsmuQ;    // control histograms
+     
+   TH1D*      fHistQNorm;        // distribution of (Qa+Qb)/(Ma+Mb)
    TH1D*      fHistQaQb;         // distribution of QaQb
    TH1D*      fHistQaQbNorm;     // distribution of QaQb/MaMb
+   TH2D*      fHistQNormvsQaQbNorm; // distribution of (Qa+Qb)/(Ma+Mb) vs QaQb/MaMb
    TH1D*      fHistQaQbCos;      // distribution of the angle between Qa and Qb (from Acos (va*vb))
    TH1D*      fHistResolution;   // distribution of cos(2(phi_a - phi_b))
    TH1D*      fHistQaNorm;       // distribution of Qa/Ma
