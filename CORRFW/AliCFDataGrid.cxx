@@ -145,7 +145,7 @@ void AliCFDataGrid::ApplyBGCorrection(const AliCFDataGrid &c)
     AliInfo("Different number of variables, cannot apply correction");
     return;
   }
-  Add(&c);
+  Add(&c,-1);
   AliInfo(Form("background %s subtracted from data %s.",c.GetName(),GetName()));
 }
 
