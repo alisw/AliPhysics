@@ -17,6 +17,8 @@ class AliAnalysisEtCuts : public TNamed
   AliAnalysisEtCuts();
   virtual ~AliAnalysisEtCuts();
 
+  virtual void SetPbPbDefaults();
+
   // Getters
   // Common
   Double_t GetCommonEtaCut() const { return fCommonEtaCut; }
@@ -58,6 +60,22 @@ class AliAnalysisEtCuts : public TNamed
   Double_t GetMonteCarloNeutralParticle() const { return fMonteCarloNeutralParticle; }
   // Hist: TTree and histogram info
   Bool_t GetHistMakeTree() const { return fHistMakeTree; }
+  //
+  Int_t GetHistNbinsMult() const { return fHistNbinsMult; }
+  Double_t GetHistMinMult() const { return fHistMinMult; }
+  Double_t GetHistMaxMult() const { return fHistMinMult; }
+  //
+  Int_t GetHistNbinsTotEt() const { return fHistNbinsTotEt; }
+  Double_t GetHistMinTotEt() const { return fHistMinTotEt; }
+  Double_t GetHistMaxTotEt() const { return fHistMaxTotEt; }
+  //
+  Int_t GetHistNbinsParticleEt() const { return fHistNbinsParticleEt; }
+  Double_t GetHistMinParticleEt() const { return fHistMinParticleEt; }
+  Double_t GetHistMaxParticleEt() const { return fHistMaxParticleEt; }
+  //
+  Int_t GetHistNbinsParticlePt() const { return fHistNbinsParticlePt; }
+  Double_t GetHistMinParticlePt() const { return fHistMaxParticlePt; }
+  Double_t GetHistMaxParticlePt() const { return fHistMaxParticlePt; }
 
   // Setters
   // Common
@@ -99,6 +117,23 @@ class AliAnalysisEtCuts : public TNamed
   void SetMonteCarloNeutralParticle(const Double_t val) { fMonteCarloNeutralParticle = val; }
   // Hist: TTree and histogram info
   void SetHistMakeTree(const Bool_t val) { fHistMakeTree = val; }
+  //
+  void SetHistNbinsMult(const Int_t val) { fHistNbinsMult = val; }
+  void SetHistMinMult(const Double_t val) { fHistMinMult = val; }
+  void SetHistMaxMult(const Double_t val) { fHistMaxMult = val; }
+  //
+  void SetHistNbinsTotEt(const Int_t val) { fHistNbinsTotEt = val; }
+  void SetHistMinTotEt(const Double_t val) { fHistMinTotEt = val; }
+  void SetHistMaxTotEt(const Double_t val) { fHistMaxTotEt = val; }
+  //
+  void SetHistNbinsParticleEt(const Int_t val) { fHistNbinsParticleEt = val; }
+  void SetHistMinParticleEt(const Double_t val) { fHistMinParticleEt = val; }
+  void SetHistMaxParticleEt(const Double_t val) { fHistMaxParticleEt = val; }
+  //
+  void SetHistNbinsParticlePt(const Int_t val) { fHistNbinsParticlePt = val; }
+  void SetHistMinParticlePt(const Double_t val) { fHistMinParticlePt = val; }
+  void SetHistMaxParticlePt(const Double_t val) { fHistMaxParticlePt = val; }
+
 
  protected:
 
@@ -148,6 +183,22 @@ class AliAnalysisEtCuts : public TNamed
 
   // Hist: TTree and histogram info
   Bool_t fHistMakeTree; // whether to make a summary tree or not
+  //
+  Int_t fHistNbinsMult; // number of bins in multiplicity histograms
+  Double_t fHistMinMult; // minimum value in multiplicity histograms
+  Double_t fHistMaxMult; // maximum value in multiplicity histograms
+
+  Int_t fHistNbinsTotEt; // number of bins in event Et histograms
+  Double_t fHistMinTotEt; // minimum value in event Et histograms
+  Double_t fHistMaxTotEt; // maximum value in event Et histograms
+
+  Int_t fHistNbinsParticleEt; // number of bins in particle Et histograms
+  Double_t fHistMinParticleEt; // minimum value in particle Et histograms
+  Double_t fHistMaxParticleEt; // maximum value in particle Et histograms
+
+  Int_t fHistNbinsParticlePt; // number of bins in particle Pt histograms
+  Double_t fHistMinParticlePt; // minimum value in particle Pt histograms
+  Double_t fHistMaxParticlePt; // maximum value in particle Pt histograms
 
 private:
   //Declare private to avoid compilation warning

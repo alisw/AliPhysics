@@ -58,11 +58,30 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fMonteCarloNeutralParticle(0)
 
   ,fHistMakeTree(kTRUE)
+  ,fHistNbinsMult(200)
+  ,fHistMinMult(-0.5)
+  ,fHistMaxMult(199.5)
+  ,fHistNbinsTotEt(1000)
+  ,fHistMinTotEt(0.0001)
+  ,fHistMaxTotEt(100)
+  ,fHistNbinsParticleEt(1000)
+  ,fHistMinParticleEt(0)
+  ,fHistMaxParticleEt(10)
+  ,fHistNbinsParticlePt(200) 
+  ,fHistMinParticlePt(0)
+  ,fHistMaxParticlePt(20)
 { // ctor
 }
 
 AliAnalysisEtCuts::~AliAnalysisEtCuts()
 { // dtor
+}
+
+void AliAnalysisEtCuts::SetPbPbDefaults()
+{ // just increase seom histogram max values for now
+  // enough to multiply conservative p+p defaults by a factor 100?
+  fHistMaxMult = 20000;
+  fHistMaxTotEt = 10000;
 }
 
 

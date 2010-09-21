@@ -181,6 +181,18 @@ void AliAnalysisEt::CreateHistograms()
     if (fCuts->GetHistMakeTree()) {
       CreateTree();
     }
+
+    nbinsMult = fCuts->GetHistNbinsMult();
+    minMult = fCuts->GetHistMinMult();
+    maxMult = fCuts->GetHistMaxMult();
+
+    nbinsEt = fCuts->GetHistNbinsTotEt();
+    minEt = fCuts->GetHistMinTotEt();
+    maxEt = fCuts->GetHistMaxTotEt();
+
+    nbinsPt = fCuts->GetHistNbinsParticlePt();
+    minPt = fCuts->GetHistMinParticlePt();
+    maxPt = fCuts->GetHistMaxParticlePt();
   }
 
     TString histname = "fHistEt" + fHistogramNameSuffix;
