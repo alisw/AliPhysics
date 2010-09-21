@@ -57,6 +57,8 @@ public:
   enum {kInvalidADC   =  -1024,
         kInvalidTime  =  -1024};
 
+  AliESDVZERO*    GetESDVZERO() { return fESDVZERO; }
+
 protected:
   AliESDVZERO*        fESDVZERO;       // ESD output object  
   AliESDEvent*             fESD;       // ESD object

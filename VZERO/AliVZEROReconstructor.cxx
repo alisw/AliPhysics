@@ -112,8 +112,11 @@ AliVZEROReconstructor::~AliVZEROReconstructor()
 {
 // destructor
 
-   delete fESDVZERO;
+  if(fESDVZERO)
+    delete fESDVZERO;
+  if(fESDVZEROfriend)
    delete fESDVZEROfriend;
+  if(fDigitsArray)
    delete fDigitsArray;
 }
 
@@ -333,14 +336,16 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
         time[pmNumber]  =  CorrectLeadingTime(pmNumber,digit->Time(),adc[pmNumber]);
 	width[pmNumber] =  digit->Width();
 
-	if (adc[pmNumber] > 0) AliDebug(1,Form("PM = %d ADC = %f TDC %f (%f)   Int %d (%d %d %d %d %d)    %f %f   %f %f    %d %d",pmNumber, adc[pmNumber],
-					       digit->Time(),time[pmNumber],
-					       integrator,
-					       digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
-					       digit->ChargeADC(11),digit->ChargeADC(12),
-					       fCalibData->GetPedestal(pmNumber),fCalibData->GetSigma(pmNumber),
-					       fCalibData->GetPedestal(pmNumber+64),fCalibData->GetSigma(pmNumber+64),
-					       aBBflag[pmNumber],aBGflag[pmNumber]));
+	if (adc[pmNumber] > 0) {
+	  AliDebug(1,Form("PM = %d ADC = %f TDC %f (%f)   Int %d (%d %d %d %d %d)    %f %f   %f %f    %d %d",pmNumber, adc[pmNumber],
+			  digit->Time(),time[pmNumber],
+			  integrator,
+			  digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
+			  digit->ChargeADC(11),digit->ChargeADC(12),
+			  fCalibData->GetPedestal(pmNumber),fCalibData->GetSigma(pmNumber),
+			  fCalibData->GetPedestal(pmNumber+64),fCalibData->GetSigma(pmNumber+64),
+			  aBBflag[pmNumber],aBGflag[pmNumber]));
+	    };
 
 	mult[pmNumber] = adc[pmNumber]*fCalibData->GetMIPperADC(pmNumber);
 
