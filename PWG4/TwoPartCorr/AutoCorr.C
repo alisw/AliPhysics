@@ -12,9 +12,9 @@ Int_t AutoCorr::InitEventPools(Int_t depth,
   fNMultBins = nMultBins;
   fNZvtxBins = nZvtxBins;
 
-  for (int iM=0; iM<nMultBins; iM++) {
+  for (Int_t iM=0; iM<nMultBins; iM++) {
     std::vector<EventPool*> evp;
-    for (int iZ=0; iZ<nZvtxBins; iZ++) {
+    for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
       evp.push_back(new EventPool(depth, 
 				  multbin[iM], multbin[iM+1], 
 				  zvtxbin[iZ], zvtxbin[iZ+1] ));
@@ -22,8 +22,8 @@ Int_t AutoCorr::InitEventPools(Int_t depth,
     fEvPool.push_back(evp);
   }
   
-  for (int iM=0; iM<nMultBins; iM++) {
-    for (int iZ=0; iZ<nZvtxBins; iZ++) {
+  for (Int_t iM=0; iM<nMultBins; iM++) {
+    for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
       fEvPool.at(iM).at(iZ)->SetMultBinIndex(iM);
       fEvPool.at(iM).at(iZ)->SetZvtxBinIndex(iZ);
     }
@@ -32,8 +32,8 @@ Int_t AutoCorr::InitEventPools(Int_t depth,
   bool print_this = false;
   if (print_this) {
     cout << "fEvPool outer size: " << fEvPool.size() << endl;
-    for (int iM=0; iM<nMultBins; iM++) {
-      for (int iZ=0; iZ<nZvtxBins; iZ++) {
+    for (Int_t iM=0; iM<nMultBins; iM++) {
+      for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
 	if(fEvPool.at(iM).at(iZ)) {
 	  cout << "multiplicity bin: " << iM;
 	  cout << ", z-vertex bin: " << iZ;
@@ -46,17 +46,17 @@ Int_t AutoCorr::InitEventPools(Int_t depth,
   return 0;
 }
 
-EventPool* AutoCorr::GetEventPool(int iMult, int iZvtx) const
+EventPool* AutoCorr::GetEventPool(Int_t iMult, Int_t iZvtx) const
 {
   if (iMult < 0 || iMult >= fNMultBins) return 0x0;
   if (iZvtx < 0 || iZvtx >= fNZvtxBins) return 0x0;
   return fEvPool.at(iMult).at(iZvtx);
 }
 
-Int_t AutoCorr::UpdatePools(int iEvent, MyHeader* ev, TClonesArray* trk)
+Int_t AutoCorr::UpdatePools(Int_t iEvent, const MyHeader* ev, TClonesArray* trk)
 {
-  for (int iM=0; iM<fNMultBins; iM++) {
-    for (int iZ=0; iZ<fNZvtxBins; iZ++) {
+  for (Int_t iM=0; iM<fNMultBins; iM++) {
+    for (Int_t iZ=0; iZ<fNZvtxBins; iZ++) {
       fEvPool.at(iM).at(iZ)->UpdatePool(iEvent, ev, trk);
     }
   }  
@@ -106,12 +106,16 @@ Bool_t AutoCorr::InBounds(Int_t val, Int_t min, Int_t max) const
 }
 
 Bool_t AutoCorr::IsEventOk(const MyHeader &ev, Int_t minVc, 
-			   Int_t maxNTracklets, Double_t zMin, Double_t zMax) const
+			   Int_t maxNTracklets, Double_t zMin, Double_t zMax,
+                           Int_t trbit) const
 {
   Bool_t VcOk = ev.fVc >= minVc;
   Bool_t NTrackletsOK = ev.fNTracklets <= maxNTracklets;
   Bool_t zOk = InBounds(ev.fVz, zMin, zMax);
-  return (!ev.fIsPileupSPD && VcOk && NTrackletsOK && zOk);
+  Bool_t trOk = 1;
+  if (trbit) 
+    trOk = (ev.fTrClassMask>>trbit&1);
+  return (!ev.fIsPileupSPD && VcOk && NTrackletsOK && zOk && trOk);
 }
 
 Bool_t AutoCorr::IsTrackOk(const MyPart &t, Double_t etaMin, Double_t etaMax) const
