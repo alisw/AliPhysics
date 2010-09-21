@@ -670,5 +670,5 @@ void AliHLTTPCPad::AddCandidateDigits(vector<AliHLTTPCDigitData> candidateDigits
 }
 
 vector<AliHLTTPCDigitData> *AliHLTTPCPad::GetCandidateDigits(Int_t candidateIndex){
-  return (candidateIndex<= fCandidateDigitsVector.size()) ? &fCandidateDigitsVector.at(candidateIndex) :0;
+  return (size_t(candidateIndex) < fCandidateDigitsVector.size()) ? &fCandidateDigitsVector.at(candidateIndex) :0;
 }
