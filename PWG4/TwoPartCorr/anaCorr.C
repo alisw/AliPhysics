@@ -104,15 +104,15 @@ void anaCorr(Int_t nEvents,
       Int_t ntracks = tracks->GetEntries();
       for (Int_t t1=0;t1<ntracks;++t1) {
         MyPart *part1 = (MyPart*)tracks->At(t1);
-        if (!InBounds(part1->Pt(),ptmin1,ptmax1))
+        if (!InBounds(part1->fPt,ptmin1,ptmax1))
           continue;
-        if (!InBounds(part1->Eta(),etamin1,etamax1))
+        if (!InBounds(part1->fEta,etamin1,etamax1))
           continue;
         for (Int_t t2=t1+1;t2<ntracks;++t2) {
           MyPart *part2 = (MyPart*)tracks->At(t2);
-          if (!InBounds(part2->Pt(),ptmin2,ptmax2))
+          if (!InBounds(part2->fPt,ptmin2,ptmax2))
             continue;
-          if (!InBounds(part2->Eta(),etamin2,etamax2))
+          if (!InBounds(part2->fEta,etamin2,etamax2))
             continue;
           //if (InvMass(*part1,*part2)<0.001)
           //  continue;
@@ -125,9 +125,9 @@ void anaCorr(Int_t nEvents,
           Int_t mtracks = nmix;
           for (Int_t t3=0;t3<mtracks;) {
             MyPart *part2 = pool->GetRandomTrack();
-            if (!InBounds(part2->Pt(),ptmin2,ptmax2))
+            if (!InBounds(part2->fPt,ptmin2,ptmax2))
               continue;
-            if (!InBounds(part2->Eta(),etamin2,etamax2))
+            if (!InBounds(part2->fEta,etamin2,etamax2))
               continue;
             //if (InvMass(*part1,*part2)<0.001)
             //  continue;
@@ -159,7 +159,7 @@ void anaCorr(Int_t nEvents,
   TCanvas *c4 = new TCanvas("cMix2");
   hMix2->Draw("surf1");
   TTimeStamp t;
-  TString fname(Form("histout-%d.root",t.GetSec()));
+  TString fname(Form("histout-%d.root",(Int_t)t.GetSec()));
   TFile outfile(fname,"recreate");
   hSig->Write();
   hBkg->Write();
@@ -183,8 +183,8 @@ Double_t DeltaPhi(const MyPart &t1, const MyPart &t2,
 {
   Double_t dphi = -999;
   Double_t pi = TMath::Pi();
-    Double_t phia = t1.Phi();  
-  Double_t phib = t2.Phi();  
+    Double_t phia = t1.fPhi;  
+  Double_t phib = t2.fPhi;  
   
   if (phia < 0)         phia += 2*pi;
   else if (phia > 2*pi) phia -= 2*pi;
@@ -199,7 +199,7 @@ Double_t DeltaPhi(const MyPart &t1, const MyPart &t2,
 
 Double_t DeltaEta(const MyPart &t1, const MyPart &t2)
 {
-  return t1.Eta() - t2.Eta();
+  return t1.fEta - t2.fEta;
 }
 
 Double_t InvMass(const MyPart &p1, const MyPart &p2)
