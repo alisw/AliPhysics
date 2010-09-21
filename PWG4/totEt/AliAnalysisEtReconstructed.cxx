@@ -307,29 +307,40 @@ void AliAnalysisEtReconstructed::CreateHistograms()
 { // add some extra histograms to the ones from base class
     AliAnalysisEt::CreateHistograms();
 
+    Int_t nbinsEt = 1000;
+    Double_t minEt = 0;
+    Double_t maxEt = 10;
+
+    // possibly change histogram limits
+    if (fCuts) {
+      nbinsEt = fCuts->GetHistNbinsParticleEt();
+      minEt = fCuts->GetHistMinParticleEt();
+      maxEt = fCuts->GetHistMaxParticleEt();
+    }
+
     TString histname;
     histname = "fHistChargedPionEnergyDeposit" + fHistogramNameSuffix;
-    fHistChargedPionEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by #pi^{+/-}", 1000, 0, 10, 1000, 0, 10);
+    fHistChargedPionEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by #pi^{+/-}", nbinsEt, minEt, maxEt, nbinsEt, minEt, maxEt);
     fHistChargedPionEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
     fHistChargedPionEnergyDeposit->SetYTitle("Energy of track");
     
     histname = "fHistProtonEnergyDeposit" + fHistogramNameSuffix;
-    fHistProtonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by protons", 1000, 0, 10, 1000, 0, 10);
+    fHistProtonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by protons", nbinsEt, minEt, maxEt, nbinsEt, minEt, maxEt);
     fHistProtonEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
     fHistProtonEnergyDeposit->SetYTitle("Energy of track");
     
     histname = "fHistAntiProtonEnergyDeposit" + fHistogramNameSuffix;
-    fHistAntiProtonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by anti-protons", 1000, 0, 10, 1000, 0, 10);
+    fHistAntiProtonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by anti-protons", nbinsEt, minEt, maxEt, nbinsEt, minEt, maxEt);
     fHistAntiProtonEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
     fHistAntiProtonEnergyDeposit->SetYTitle("Energy of track");
     
     histname = "fHistChargedKaonEnergyDeposit" + fHistogramNameSuffix;
-    fHistChargedKaonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by K^{+/-}", 1000, 0, 10, 1000, 0, 10);
+    fHistChargedKaonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by K^{+/-}", nbinsEt, minEt, maxEt, nbinsEt, minEt, maxEt);
     fHistChargedKaonEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
     fHistChargedKaonEnergyDeposit->SetYTitle("Energy of track");
     
     histname = "fHistMuonEnergyDeposit" + fHistogramNameSuffix;
-    fHistMuonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by #mu^{+/-}", 1000, 0, 10, 1000, 0, 10);
+    fHistMuonEnergyDeposit = new TH2F(histname.Data(), "Energy deposited by #mu^{+/-}", nbinsEt, minEt, maxEt, nbinsEt, minEt, maxEt);
     fHistMuonEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
     fHistMuonEnergyDeposit->SetYTitle("Energy of track");
     
