@@ -14,16 +14,6 @@
 #include <TSystem.h>
 #include "TreeClasses.h"
 
-  Int_t                 fMixDepth;            // Number of evts. to mix with
-  Int_t                 fMultMin, fMultMax;   // Track multiplicity bin range
-  Double_t              fZvtxMin, fZvtxMax;   // Event z-vertex bin range
-  Int_t                 fMult;                // Tracks in current event
-  Short_t               fZvtx;                // Current z-vertex
-  Bool_t                fWasUpdated;          // Evt. succesfully passed selection?
-  Int_t                 fMultBinIndex;        // Multiplicity bin
-  Int_t                 fZvtxBinIndex;        // Zvertex bin
-  Int_t                 fDebug;               // if 1 then debug on
-
 class EventPool : public TObject
 {
 public:
@@ -52,7 +42,7 @@ public:
   Int_t    SetEventZvtxRange(Int_t zvtxMin, Int_t zvtxMax);
   void     SetMultBinIndex(Int_t iM) { fMultBinIndex = iM; }
   void     SetZvtxBinIndex(Int_t iZ) { fZvtxBinIndex = iZ; }
-  Int_t    UpdatePool(int iEvent, MyHeader* ev, TClonesArray* trk);
+  Int_t    UpdatePool(int iEvent, const MyHeader *ev, TClonesArray* trk);
   
 protected:
   TClonesArray         *fTracks;              // Copy of trk array. Refreshes each event.
