@@ -76,7 +76,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
-    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009();
+    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
 
     fOutputList->Add(fEsdtrackCutsITSTPC);

@@ -87,14 +87,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    continue;
 	  }
 	else{
-	  bool isGood = true;
-	  if(cutset==1){//if these are ITS stand alone tracks, apply some specific cuts
-	    ULong_t trStatus=track->GetStatus();
-	    if(trStatus&AliESDtrack::kTPCin) isGood=false; // reject tracks found in TPC
-	    if(trStatus&AliESDtrack::kITSpureSA) isGood=false; // reject "pure standalone" ITS tracks
-	    if(!(trStatus&AliESDtrack::kITSrefit)) isGood = false; // require proper refit in ITS 
-	  }
-	  if(!isGood) continue;
 	  Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
 	  if(cutset!=1){
 	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
@@ -712,9 +704,29 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    //============neutrals===================================
 	    if(pdgCode == fGammaCode){
-	      float myEt = Et(part);
-	      FillHisto2D("EtSimulatedGamma",part->Pt(),part->Eta(),myEt);
-	      filled = true;
+	      TParticle *mom = stack->Particle(part->GetFirstMother());
+	      Int_t pdgCodeMom =  mom->GetPDG(0)->PdgCode();
+	      //cout<<"I am a gamma and my mom is "<<mom->GetName()<<endl;
+	      if(pdgCodeMom == fEtaCode){
+		float myEt = Et(mom);
+		FillHisto2D("EtSimulatedEta",mom->Pt(),mom->Eta(),myEt);
+		filled = true;
+	      }
+	      if(pdgCodeMom == fPi0Code){
+		float myEt = Et(mom);
+		FillHisto2D("EtSimulatedPi0",mom->Pt(),mom->Eta(),myEt);
+		filled = true;
+	      }
+	      if(pdgCodeMom == fOmega0Code){
+		float myEt = Et(mom);
+		FillHisto2D("EtSimulatedOmega0",mom->Pt(),mom->Eta(),myEt);
+		filled = true;
+	      }
+	      if(!filled){
+		float myEt = Et(part);
+		FillHisto2D("EtSimulatedGamma",part->Pt(),part->Eta(),myEt);
+		filled = true;
+	      }
 	    }
 	    if(pdgCode == fEtaCode){
 	      float myEt = Et(part);
@@ -724,6 +736,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    if(pdgCode == fPi0Code){
 	      float myEt = Et(part);
 	      FillHisto2D("EtSimulatedPi0",part->Pt(),part->Eta(),myEt);
+	      filled = true;
+	    }
+	    if(pdgCode == fOmega0Code){
+	      float myEt = Et(part);
+	      FillHisto2D("EtSimulatedOmega0",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(!filled){
@@ -807,6 +824,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D("EtSimulatedGamma","Simulated E_{T} from #gamma");
   CreateEtaPtHisto2D("EtSimulatedEta","Simulated E_{T} from #eta");
   CreateEtaPtHisto2D("EtSimulatedPi0","Simulated E_{T} from #pi^{0}");
+  CreateEtaPtHisto2D("EtSimulatedOmega0","Simulated E_{T} from #omega");
 
   TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");

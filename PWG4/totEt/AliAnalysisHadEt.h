@@ -121,6 +121,7 @@ protected:
     Int_t fGammaCode;//pdg gamma code
     Int_t fPi0Code;//pdg neutral pion code
     Int_t fEtaCode;//pdg eta code
+    Int_t fOmega0Code;//pdg eta code
     Float_t fPionMass;//pdg pion mass
 
     
