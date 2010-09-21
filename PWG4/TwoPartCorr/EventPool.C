@@ -47,7 +47,7 @@ Int_t EventPool::SetEventZvtxRange(Int_t zvtxMin, Int_t zvtxMax)
   return 0;
 }
 
-Int_t EventPool::UpdatePool(Int_t iEvent, MyHeader *ev, TClonesArray *trk)
+Int_t EventPool::UpdatePool(Int_t iEvent, const MyHeader *ev, TClonesArray *trk)
 {
   // Initialize at any chosen starting event
   if (!fTracks) 
