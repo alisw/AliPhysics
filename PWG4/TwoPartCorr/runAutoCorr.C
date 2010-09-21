@@ -23,38 +23,38 @@ void runAutoCorr(const char* dataFile =
   const double PI = TMath::Pi();
   Int_t poolsize = 50;
   Int_t nMix = 5;
-  const Int_t nMultBins = 2;
-  Double_t multbin[nMultBins+1] = {100, 200, 400}; 
-  const Int_t nZvtxBins = 2;
-  Double_t zvtxbin[nZvtxBins+1] = {-15, 0, 15};
-  const Int_t nPtBins = 3;
-  Double_t ptbin[nPtBins+1] = {0.15, 0.50, 2.0, 10.};
+  const Int_t nMultBins = 1;
+  Double_t multbin[nMultBins+1] = {100, 400}; 
+  const Int_t nZvtxBins = 3;
+  Double_t zvtxbin[nZvtxBins+1] = {-10, -3, 4, 11};
+  const Int_t nPtBins = 1;
+  Double_t ptbin[nPtBins+1] = {1.0, 2.0};
   Double_t etaMin = -1.4; // for track cuts
   Double_t etaMax = 1.4;
-  Double_t ptMin = 0.150; // for track cuts
+  Double_t ptMin = 0.40; // for track cuts
   Double_t ptMax = 10.0;
-  Double_t dEtaMax = 2.5; // for histogram limits
+  Double_t dEtaMax = 3.0; // for histogram limits
   TString sDataSet = "res_LHC10e_09122010";
 
   // Event cuts
   Int_t minVc = 25;
   Int_t maxNTracklets = 200;
-  Double_t zMin = -15.0;
-  Double_t zMax = 15.0;
+  Double_t zMin = zvtxbin[0];
+  Double_t zMax = zvtxbin[nZvtxBins];
   Int_t runNumber = -1;
   Int_t firstRunNumber = -1;
 
   TString sMultBins(""), sZvtxBins(""), sPtBins("");
-  for (int i=0; i<nMultBins+1; i++) sMultBins.Append(Form("%d ", (Int_t)multbin[i]));
-  for (int i=0; i<nZvtxBins+1; i++) sZvtxBins.Append(Form("%d ", (Int_t)zvtxbin[i]));
-  for (int i=0; i<nPtBins+1;   i++)   sPtBins.Append(Form("%d ", (Int_t)ptbin[i]));
+  for (int i=0; i<nMultBins+1; i++) sMultBins.Append(Form("%.0f ", multbin[i]));
+  for (int i=0; i<nZvtxBins+1; i++) sZvtxBins.Append(Form("%.1f ", zvtxbin[i]));
+  for (int i=0; i<nPtBins+1;   i++)   sPtBins.Append(Form("%.2f ", ptbin[i]));
 
   // Document the applied cuts, get quick look with cuts->Print()
   TList* cuts = new TList();
   cuts->Add(new TNamed("data_sample", sDataSet.Data()));
   cuts->Add(new TNamed("mult_bins", sMultBins.Data()));
   cuts->Add(new TNamed("zvtx_bins", sZvtxBins.Data()));
-  cuts->Add(new TNamed("mult_bins", sPtBins.Data()));
+  cuts->Add(new TNamed("pt_bins", sPtBins.Data()));
   cuts->Add(new TNamed("mass_cut", "No mass cut"));
   cuts->Add(new TNamed("eta_range", Form("%.1f < #eta < %.1f", etaMin, etaMax)));
   cuts->Add(new TNamed("z_vtx_range", Form("%.1f < z-vtx < %.1f", zMin, zMax)));
@@ -118,31 +118,51 @@ void runAutoCorr(const char* dataFile =
   TH1F* hZvtx = new TH1F("hZvtx", "Event Z-vertex", 60, -30, 30);
   TH1F* hMass = new TH1F("hMass", "hMass", 1000, 0, 10);
   TH1F* hMassBg = new TH1F("hMassBg", "hMassBg", 1000, 0, 10);
+  TH1F* hNevts = new TH1F("hNevts", "# events: available, sampled, accepted", 3, 0, 3);
+
+  //----------------------
+ TString sMultBin[nMultBins];
+  for (int i=0; i<nMultBins; i++) {
+    double m1 = hMultBins->GetBinLowEdge(i+1);
+    double m2 = m1 + hMultBins->GetBinWidth(i+1);
+    sMultBin[i] = Form("%.0f - %.0f tracks", m1, m2);
+  }
+  TString sPtBin[nPtBins];
+  for (int i=0; i<nPtBins; i++) {
+    double pt1 = hPtBins->GetBinLowEdge(i+1);
+    double pt2 = pt1 + hPtBins->GetBinWidth(i+1);
+    sPtBin[i] = Form("%.2f - %.2f GeV/c", pt1, pt2);
+  }
+  //---------------------
 
   for (int iM=0; iM<nMultBins; iM++) {
     char* name;
+    char* title;
     name = Form("hMult_%i", iM);
-    hMult[iM] = new TH1F(name, name, 1000, 0, 1000);
+    title = Form("%s, %.2f - %.2f GeV/c", sMultBin[iM].Data(), ptMin, ptMax);
+
+    hMult[iM] = new TH1F(name, title, 1000, 0, 1000);
 
     name = Form("hSig_%i", iM);
-    hSig[iM] = new TH2F(name, name, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
+    hSig[iM] = new TH2F(name, title, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
     hSig[iM]->Sumw2();
     name = Form("hBkg_%i", iM);
-    hBkg[iM] = new TH2F(name, name, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
+    hBkg[iM] = new TH2F(name, title, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
     hBkg[iM]->Sumw2();
     name = Form("hSB_%i", iM);
-    hSB[iM] = new TH2F(name, name, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
+    hSB[iM] = new TH2F(name, title, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
     hSB[iM]->Sumw2();
 
     for (int iPt=0; iPt<nPtBins; iPt++) {
       name = Form("hSigPt_%i_%i", iM, iPt);
-      hSigPt[iM][iPt] = new TH2F(name, name, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
+      title = Form("%s, %s", sMultBin[iM].Data(), sPtBin[iPt].Data());
+      hSigPt[iM][iPt] = new TH2F(name, title, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
       hSigPt[iM][iPt]->Sumw2();
       name = Form("hBkgPt_%i_%i", iM, iPt);
-      hBkgPt[iM][iPt] = new TH2F(name, name, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
+      hBkgPt[iM][iPt] = new TH2F(name, title, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
       hBkgPt[iM][iPt]->Sumw2();
       name = Form("hSBPt_%i_%i", iM, iPt);
-      hSBPt[iM][iPt] = new TH2F(name, name, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
+      hSBPt[iM][iPt] = new TH2F(name, title, 60, -PI/2, 3*PI/2, 60, -dEtaMax, dEtaMax);
       hSBPt[iM][iPt]->Sumw2();
     }
     
@@ -160,7 +180,7 @@ void runAutoCorr(const char* dataFile =
 		    "accepted/sampled tracks");
   // ---------------------------------
 
-  Int_t nEvents = tree->GetEntries();
+  Int_t nEvents = 400;//tree->GetEntries();
   Int_t nAcceptedEvents = 0;
 
   TStopwatch* watch = new TStopwatch();
@@ -202,13 +222,13 @@ void runAutoCorr(const char* dataFile =
     if (pool->IsPoolReady()) {
       for (int i=0; i<ntracks; i++) {
 	MyPart* t1 = (MyPart*)trk->At(i);
-	hPtAll->Fill(t1->Pt());
+	hPtAll->Fill(t1->fPt);
 	if (!ac->IsTrackOk(*t1, etaMin, etaMax, ptMin, ptMax))
 	  continue;
 	
-	hEta->Fill(t1->Eta());
-	hPtSel->Fill(t1->Pt());
-	Int_t ptBin1 = hPtBins->FindBin(t1->Pt()) - 1;
+	hEta->Fill(t1->fEta);
+	hPtSel->Fill(t1->fPt);
+	Int_t ptBin1 = hPtBins->FindBin(t1->fPt) - 1;
 
 	// --- Same-event correlation loop ---
 	for (int j=i+1; j<ntracks; j++) {
@@ -228,7 +248,7 @@ void runAutoCorr(const char* dataFile =
 	    hDRcut->Fill(dphi, deta); // Show elliptical hole from cut 
 	    hMass->Fill(ac->InvMass(*t1, *t2));
 
-	    Int_t ptBin2 = hPtBins->FindBin(t2->Pt()) - 1;
+	    Int_t ptBin2 = hPtBins->FindBin(t2->fPt) - 1;
 	    if (ptBin1==ptBin2)
 	      hSigPt[multBin][ptBin1]->Fill(dphi, deta);
 	  }
@@ -251,7 +271,7 @@ void runAutoCorr(const char* dataFile =
 	      Double_t dphi_bg = ac->DeltaPhi(*t1, *tbg);
 	      hBkg[multBin]->Fill(dphi_bg, deta_bg);
 
-	      Int_t ptBin3 = hPtBins->FindBin(tbg->Pt()) - 1;
+	      Int_t ptBin3 = hPtBins->FindBin(tbg->fPt) - 1;
 	      if (ptBin1==ptBin3)
 		hBkgPt[multBin][ptBin3]->Fill(dphi_bg, deta_bg);
 	      
@@ -293,7 +313,10 @@ void runAutoCorr(const char* dataFile =
       hSBPt[iM][iPt]->Divide(hSigPt[iM][iPt], hBkgPt[iM][iPt]);  
     }
   }
-  
+  hNevts->SetBinContent(1, tree->GetEntries());
+  hNevts->SetBinContent(2, nEvents);
+  hNevts->SetBinContent(3, nAcceptedEvents);
+
   outFile->Write();
   cuts->Write("cuts", TObject::kSingleKey);
   outFile->Close();

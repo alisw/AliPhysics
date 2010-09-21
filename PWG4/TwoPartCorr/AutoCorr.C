@@ -68,8 +68,8 @@ Double_t AutoCorr::DeltaPhi(const MyPart &t1, const MyPart &t2,
 {
   Double_t dphi = -999;
   Double_t pi = TMath::Pi();
-  Double_t phia = t1.Phi();  
-  Double_t phib = t2.Phi();  
+  Double_t phia = t1.fPhi;  
+  Double_t phib = t2.fPhi;  
   
   if (phia < 0)         phia += 2*pi;
   else if (phia > 2*pi) phia -= 2*pi;
@@ -84,7 +84,7 @@ Double_t AutoCorr::DeltaPhi(const MyPart &t1, const MyPart &t2,
 
 Double_t AutoCorr::DeltaEta(const MyPart &t1, const MyPart &t2) const
 {
-  return t1.Eta() - t2.Eta();
+  return t1.fEta - t2.fEta;
 }
 
 Bool_t AutoCorr::InBounds(Double_t val, Double_t min, Double_t max) const
@@ -116,14 +116,14 @@ Bool_t AutoCorr::IsEventOk(const MyHeader &ev, Int_t minVc,
 
 Bool_t AutoCorr::IsTrackOk(const MyPart &t, Double_t etaMin, Double_t etaMax) const
 {
-  return InBounds(t.Eta(), etaMin, etaMax);    
+  return InBounds(t.fEta, etaMin, etaMax);    
 }
 
 Bool_t AutoCorr::IsTrackOk(const MyPart &t, Double_t etaMin, Double_t etaMax,
 			   Double_t ptMin, Double_t ptMax) const
 {
-  Bool_t etaOk = InBounds(t.Eta(), etaMin, etaMax);
-  Bool_t ptOk  = InBounds(t.Pt(), ptMin, ptMax);    
+  Bool_t etaOk = InBounds(t.fEta, etaMin, etaMax);
+  Bool_t ptOk  = InBounds(t.fPt, ptMin, ptMax);    
   return  etaOk && ptOk;
 }
 
