@@ -17,7 +17,6 @@ public:
   AutoCorr(){;}
   ~AutoCorr(){;}
   
-  
   Double_t   DeltaPhi(const MyPart &t1, const MyPart &t2, 
                       Double_t rangeMin = -TMath::Pi()/2, 
                       Double_t rangeMax = 3*TMath::Pi()/2)      const;
@@ -32,7 +31,7 @@ public:
   Double_t   InvMass(const MyPart &p1, const MyPart &p2)        const;
   Bool_t     IsEventOk(const MyHeader &ev, Int_t minVc, 
                        Int_t maxNTracklets, Double_t zMin,
-                       Double_t zMax)                           const;
+                       Double_t zMax, Int_t trmask = -1)        const;
   Bool_t     InBounds(Double_t val, Double_t min, Double_t max) const;
   Bool_t     InBounds(Int_t val, Int_t min, Int_t max)          const;
 
@@ -40,7 +39,7 @@ public:
   Int_t      InitEventPools(Int_t depth, 
                             Int_t nmultbins, Double_t multbins[], 
                             Int_t nzvtxbins, Double_t zvtxbins[]);
-  Int_t      UpdatePools(int iEvent, MyHeader* ev, TClonesArray* trk);
+  Int_t      UpdatePools(Int_t iEvent, const MyHeader *ev, TClonesArray *trk);
 
 protected:
   Int_t      fNMultBins;                         // mult bins
