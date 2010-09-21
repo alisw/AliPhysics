@@ -168,6 +168,7 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
   }
   static TClonesArray* array = new TClonesArray("AliFMDDigit");
   digitsTree->Branch("FMD", &array);
+  array->Clear();
   
   AliFMDRawReader rawRead(reader, digitsTree);
   // rawRead.SetSampleRate(fFMD->GetSampleRate());
@@ -222,14 +223,22 @@ AliFMDReconstructor::GetVertex(AliESDEvent* esd) const
 Int_t
 AliFMDReconstructor::GetIdentifier() const
 {
-  return AliReconstruction::GetDetIndex(GetDetectorName());
+  // Get the detector identifier. 
+  // Note the actual value is cached so that we do not 
+  // need to do many expensive string comparisons. 
+  static Int_t idx = AliReconstruction::GetDetIndex(GetDetectorName());
+  return idx;
 }
 
 //____________________________________________________________________
 const AliFMDRecoParam*
 AliFMDReconstructor::GetParameters() const
 {
-  Int_t iDet = 12; // GetIdentifier();
+  // Get the reconstruction parameters. 
+  // 
+  // Return: 
+  //   Pointer to reconstruction parameters or null if not found or wrong type
+  Int_t iDet = GetIdentifier(); // Was 12 - but changed on Cvetans request
   const AliDetectorRecoParam* params = AliReconstructor::GetRecoParam(iDet);
   if (!params || params->IsA() != AliFMDRecoParam::Class()) return 0;
   return static_cast<const AliFMDRecoParam*>(params);
@@ -273,10 +282,15 @@ AliFMDReconstructor::MarkDeadChannels(AliESDFMD* esd) const
 
       for (UShort_t s = 0; s < nS; s++) { 
 	for (UShort_t t = 0; t < nT; t++) {
-	  if (param->IsDead(d, r, s, t)) 
+	  if (param->IsDead(d, r, s, t)) { 
+	    AliDebug(5, Form("Marking FMD%d%c[%2d,%3d] as dead", d, r, s, t));
 	    esd->SetMultiplicity(d, r, s, t, AliESDFMD::kInvalidMult);
-	  else if (esd->Multiplicity(d, r, s, t) == AliESDFMD::kInvalidMult) 
+	    esd->SetEta(d, r, s, t, AliESDFMD::kInvalidEta);
+	  }
+	  else if (esd->Multiplicity(d, r, s, t) == AliESDFMD::kInvalidMult) {
+	    AliDebug(10, Form("Setting null signal in FMD%d%c[%2d,%3d]", d, r, s, t));
 	    esd->SetMultiplicity(d, r, s, t, 0);
+	  }
 	}
       }
     }
@@ -814,7 +828,21 @@ AliFMDReconstructor::PhysicalCoordinates(UShort_t det,
   phi = dphi;
 }
 
-      
+namespace { 
+  class ESDPrinter : public AliESDFMD::ForOne
+  {
+  public:
+    ESDPrinter() {}
+    Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
+		      Float_t m, Float_t e)
+    {
+      if (m > 0 && m != AliESDFMD::kInvalidMult) 
+	printf("  FMD%d%c[%2d,%3d] = %6.3f / %6.3f\n", d, r, s, t, m, e);
+      return kTRUE;
+    }
+  };
+}
+
 
 //____________________________________________________________________
 void 
@@ -838,6 +866,11 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
 		    fCurrentVertex, oldVz));
     AliFMDESDRevertexer revertexer;
     revertexer.Revertex(fESDObj, fCurrentVertex);
+  }
+  
+  if (AliDebugLevel() > 10) { 
+    ESDPrinter p;
+    fESDObj->ForEach(p);
   }
 
   if (esd) { 

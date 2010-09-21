@@ -45,7 +45,7 @@ AliFMDESDRevertexer::Revertex(AliESDFMD* fmdEsd, Double_t vz) const
 	Double_t phi, r, theta;
 	Double_t eta      = AliESDFMD::kInvalidEta;
 	Double_t oldEta   = fmdEsd->Eta(det, rng, 0, str);
-	if (oldEta == AliESDFMD::kInvalidEta) continue;
+	// if (oldEta == AliESDFMD::kInvalidEta) continue;
 
 	Double_t oldTheta = Eta2Theta(oldEta);
 	Bool_t   ret1     = PhysicalCoordinates(det, rng, 0, str, vz, 
@@ -64,12 +64,14 @@ AliFMDESDRevertexer::Revertex(AliESDFMD* fmdEsd, Double_t vz) const
 	}
 
 	Double_t corr = TMath::Abs(TMath::Cos(theta));
-	if (fmdEsd->IsAngleCorrected()) 
-	  corr /= TMath::Abs(TMath::Cos(oldTheta));
-	for (UShort_t sec = 0; sec < nsec; sec++) { 
-	  Double_t mult = fmdEsd->Multiplicity(det, rng, sec, str);
-	  if (mult == AliESDFMD::kInvalidMult) continue;
-	  fmdEsd->SetMultiplicity(det, rng, sec, str, corr * mult);
+	if (fmdEsd->IsAngleCorrected()) {
+	  if (oldEta != AliESDFMD::kInvalidMult)
+	    corr /= TMath::Abs(TMath::Cos(oldTheta));
+	  for (UShort_t sec = 0; sec < nsec; sec++) { 
+	    Double_t mult = fmdEsd->Multiplicity(det, rng, sec, str);
+	    if (mult == AliESDFMD::kInvalidMult) continue;
+	    fmdEsd->SetMultiplicity(det, rng, sec, str, corr * mult);
+	  }
 	}
       }
     }
@@ -82,6 +84,7 @@ AliFMDESDRevertexer::Revertex(AliESDFMD* fmdEsd, Double_t vz) const
 Double_t
 AliFMDESDRevertexer::Eta2Theta(Double_t eta) const
 {
+  if (eta == AliESDFMD::kInvalidEta) return 0;
   return 2 * TMath::ATan(TMath::Exp(-eta));
 }
 
