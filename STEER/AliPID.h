@@ -20,8 +20,7 @@ class AliPID : public TObject {
  public:
   enum {
     kSPECIES = 5,    // Number of particle species recognized by the PID
-    kSPECIESN = 10,  // Number of charged+neutral particle species recognized by the PHOS/EMCAL PID
-    kSPECIESLN = 4   // Number of light nuclei: deuteron, triton, helium-3 and alpha
+    kSPECIESN = 10   // Number of charged+neutral particle species recognized by the PHOS/EMCAL PID
   };
   enum EParticleType {
     kElectron = 0, 
@@ -34,11 +33,7 @@ class AliPID : public TObject {
     kNeutron = 7, 
     kKaon0 = 8, 
     kEleCon = 9,
-    kDeuteron = 10,
-    kTriton = 11,
-    kHe3 = 12,
-    kAlpha = 13,
-    kUnknown = 14
+    kUnknown = 10
   };
   static Float_t       ParticleMass(Int_t iType) {
      if(!fgkParticleMass[0]) Init(); 
@@ -85,13 +80,13 @@ class AliPID : public TObject {
   Double_t             fProbDensity[kSPECIESN];    // probability densities
   static Double_t      fgPrior[kSPECIESN];         // a priori probabilities
 
-  static /*const*/ Float_t fgkParticleMass[kSPECIESN+kSPECIESLN+1]; // particle masses
-  static const char*   fgkParticleName[kSPECIESN+kSPECIESLN+1]; // particle names
-  static const char*   fgkParticleShortName[kSPECIESN+kSPECIESLN+1]; // particle names
-  static const char*   fgkParticleLatexName[kSPECIESN+kSPECIESLN+1]; // particle names
-  static const Int_t   fgkParticleCode[kSPECIESN+kSPECIESLN+1]; // particle codes
+  static /*const*/ Float_t fgkParticleMass[kSPECIESN+1]; // particle masses
+  static const char*   fgkParticleName[kSPECIESN+1]; // particle names
+  static const char*   fgkParticleShortName[kSPECIESN+1]; // particle names
+  static const char*   fgkParticleLatexName[kSPECIESN+1]; // particle names
+  static const Int_t   fgkParticleCode[kSPECIESN+1]; // particle codes
 
-  ClassDef(AliPID, 3)    // particle id probability densities
+  ClassDef(AliPID, 2)    // particle id probability densities
 };
 
 
