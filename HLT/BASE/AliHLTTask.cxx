@@ -450,7 +450,8 @@ int AliHLTTask::EndRun()
   return iResult;
 }
 
-int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt64_t trgMask, AliHLTUInt32_t timestamp)
+int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt64_t trgMask,
+			    AliHLTUInt32_t timestamp, AliHLTUInt32_t participatingDetectors)
 {
   // see header file for function documentation
   int iResult=0;
@@ -580,7 +581,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
       trigData.fStructSize=sizeof(trigData);
       trigData.fDataSize=sizeof(AliHLTEventTriggerData);
       memset(&evtTrigData, 0, trigData.fDataSize);
-      // Setup the CDH in the trigger data, based on the event type and CTP trigger.
+      // Setup the CDH in the trigger data, based on the event type, CTP trigger
+      // mask and participating detectors.
       evtTrigData.fCommonHeaderWordCnt=gkAliHLTCommonHeaderCount;
       AliHLTUInt8_t l1msg = 0x0;
       switch (eventType)
@@ -593,6 +595,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
       case gkAliEventTypeSoftware:    l1msg = 0x01; break;
       }
       evtTrigData.fCommonHeader[1] = AliHLTUInt32_t(l1msg) << 14;
+      evtTrigData.fCommonHeader[3] = ((l1msg & 0x1) == 0x1) ? (participatingDetectors & 0xFFFFFF) : 0x0;
       evtTrigData.fCommonHeader[5]=trgMask&0xffffffff;
       trgMask>>=32;
       evtTrigData.fCommonHeader[6]=trgMask&0x3ffff;

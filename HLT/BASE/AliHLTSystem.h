@@ -206,10 +206,14 @@ class AliHLTSystem : public AliHLTLogging {
    * @param trgMask    ctp trigger mask from the rawreader
    * @param timestamp  timestamp of the event, read from the rawreader
    * @param eventtype  event type, read from the rawreader
+   * @param participatingDetectors  the bit flags of the participating detectors
+   *           as will we inserted into the Common Data Header. This should only
+   *           be used for software event types.
    * @return number of reconstructed events, neg error code if failed
    */
   int Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask,
-	  AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype);
+	  AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
+	  AliHLTUInt32_t participatingDetectors = 0);
 
   /**
    * Run the tasklist
@@ -274,7 +278,8 @@ class AliHLTSystem : public AliHLTLogging {
    * @return neg error code if failed
    */
   int ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask,
-		   AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype);
+		   AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
+		   AliHLTUInt32_t participatingDetectors = 0);
 
   /**
    * Stop task list.

@@ -340,7 +340,8 @@ void AliHLTSystem::PrintTaskList()
 }
 
 int AliHLTSystem::Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask,
-		      AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype)
+		      AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
+		      AliHLTUInt32_t participatingDetectors)
 {
   // see header file for class documentation
   int iResult=0;
@@ -366,8 +367,9 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask,
 	}
 	if (eventtype == 0) {
 	  eventtype = gkAliEventTypeData;
+	  participatingDetectors = 0x0;
 	}
-	if ((iResult=ProcessTasks(i, trgMask, timestamp, eventtype))>=0) {
+	if ((iResult=ProcessTasks(i, trgMask, timestamp, eventtype, participatingDetectors))>=0) {
 	  fGoodEvents++;
 	  iCount++;
 	} else {
@@ -580,7 +582,8 @@ int AliHLTSystem::StartTasks()
 }
 
 int AliHLTSystem::ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask,
-	  AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype)
+	  AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
+	  AliHLTUInt32_t participatingDetectors)
 {
   // see header file for class documentation
   int iResult=0;
@@ -590,7 +593,7 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask,
     TObject* obj=lnk->GetObject();
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
-      iResult=pTask->ProcessTask(eventNo, eventtype, trgMask, timestamp);
+      iResult=pTask->ProcessTask(eventNo, eventtype, trgMask, timestamp, participatingDetectors);
 //       ProcInfo_t ProcInfo;
 //       gSystem->GetProcInfo(&ProcInfo);
 //       HLTInfo("task %s processed (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
