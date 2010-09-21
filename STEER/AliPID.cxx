@@ -49,7 +49,7 @@
 
 ClassImp(AliPID)
 
-const char* AliPID::fgkParticleName[AliPID::kSPECIESN+1] = {
+const char* AliPID::fgkParticleName[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
   "electron",
   "muon",
   "pion",
@@ -60,10 +60,14 @@ const char* AliPID::fgkParticleName[AliPID::kSPECIESN+1] = {
   "neutron",
   "kaon0",
   "eleCon",
+  "deuteron",
+  "triton",
+  "helium-3",
+  "alpha",
   "unknown"
 };
 
-const char* AliPID::fgkParticleShortName[AliPID::kSPECIESN+1] = {
+const char* AliPID::fgkParticleShortName[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
   "e",
   "mu",
   "pi",
@@ -74,10 +78,14 @@ const char* AliPID::fgkParticleShortName[AliPID::kSPECIESN+1] = {
   "n",
   "K0",
   "eleCon",
+  "d",
+  "t",
+  "he3",
+  "alpha",
   "unknown"
 };
 
-const char* AliPID::fgkParticleLatexName[AliPID::kSPECIESN+1] = {
+const char* AliPID::fgkParticleLatexName[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
   "e",
   "#mu",
   "#pi",
@@ -88,10 +96,14 @@ const char* AliPID::fgkParticleLatexName[AliPID::kSPECIESN+1] = {
   "n",
   "K_{0}",
   "eleCon",
+  "d",
+  "t",
+  "he3",
+  "#alpha",
   "unknown"
 };
 
-const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+1] = {
+const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
   ::kElectron, 
   ::kMuonMinus, 
   ::kPiPlus, 
@@ -102,11 +114,15 @@ const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+1] = {
   ::kNeutron,
   ::kK0,
   ::kElectron,
+  1000010020,
+  1000010030,
+  1000020030,
+  1000020040,
   0
 };
 
-/*const*/ Float_t AliPID::fgkParticleMass[AliPID::kSPECIESN+1] = {
-  0,0,0,0,0,0,0,0,0,0,0
+/*const*/ Float_t AliPID::fgkParticleMass[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   /*
   M(kElectron),  // electron
   M(kMuon), // muon
@@ -118,6 +134,10 @@ const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+1] = {
   M(kNeutron),   // neutron
   M(kKaon0),        // kaon0
   M(kEleCon),     // electron conversion
+  M(kDeuteron), // deuteron
+  M(kTriton),   // triton
+  M(kHe3),      // he3
+  M(kAlpha),    // alpha
   0.00000        // unknown
   */
 };
@@ -218,8 +238,8 @@ void AliPID::Init()
   // Initialise the masses
   //
   // Initialise only once... 
-  if(!fgkParticleMass[0]) 
-    for (Int_t i = 0; i < kSPECIESN; i++) 
+  if(!fgkParticleMass[0])
+    for (Int_t i = 0; i < kSPECIESN + kSPECIESLN; i++) 
       fgkParticleMass[i] = M(i);
 }
 
