@@ -91,6 +91,8 @@ public:
 	static void SetShuttleTempDir (const char* tmpDir);
 	static void SetShuttleLogDir (const char* logDir);
 
+	virtual void SendMLFromDet(const char* value);
+
 private:
 	AliShuttle(const AliShuttle& other);
 	AliShuttle& operator= (const AliShuttle& other);
