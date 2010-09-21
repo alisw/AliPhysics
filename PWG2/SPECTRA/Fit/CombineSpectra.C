@@ -27,6 +27,8 @@
 #include "GetE735Ratios.C"
 #include "TString.h"
 #include "TObjString.h"
+#include "TGraphAsymmErrors.h"
+
 #endif
 
 
@@ -42,7 +44,7 @@ enum {kPhojet=0,kPyTuneAtlasCSC, kPyTuneCMS6D6T, kPyTunePerugia0, kNTunes} ;
 enum {kFitLevi=0, kFitUA1, kFitPowerLaw,
       kFitPhojet, kFitAtlasCSC, kFitCMS6D6T, kFitPerugia0,
       kNFit};
-enum {kDoFits=0, kDoRatios, kDoSuperposition, kDoDrawWithModels, kDoCompareToStar, kDoDrawSyst, kDoHelp};
+enum {kDoFits=0, kDoRatios, kDoSuperposition, kDoDrawWithModels, kDoCompareToStar, kDoDrawSyst, kDoCompareToAllCharged, kDoHelp};
 enum {kStatErrors = 0, kSystErrors, kStatSystErrors}; // which errors do we put in the histo that we fit? stat,syst or stat+syst?
 
 // flags, labels and names
@@ -165,7 +167,7 @@ TString today = "";
 
 // Switches
 Bool_t convertToMT = 0;
-Bool_t sumCharge = 1;
+Bool_t sumCharge = 0;
 Int_t whatToFit = kStatErrors; 
 Bool_t doPrint = 1;
 Bool_t scaleKaons =  kFALSE;
@@ -176,8 +178,8 @@ Int_t iCombInStudy = kCombAll; //kCombTOFTPC
 Int_t fitFuncID = kFitLevi;
 Bool_t showMC=kTRUE;
 Bool_t showE735=kTRUE;
-Bool_t useSecCorrFromDCA=kFALSE;
-const char * printFormats = "eps"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
+Bool_t useSecCorrFromDCA=kTRUE;
+const char * printFormats = "png"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
 
 
 void CombineSpectra(Int_t analysisType=kDoHelp, Int_t  locfitFuncID = kFitLevi) {  //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
@@ -214,7 +216,7 @@ void CombineSpectra(Int_t analysisType=kDoHelp, Int_t  locfitFuncID = kFitLevi) 
   //  GetITSResiduals();
   if(analysisType==kDoSuperposition) DrawAllAndKaons();  
   else if(analysisType==kDoDrawWithModels)  DrawWithModels() ;
-  //DrawWithJacek();
+  else if(analysisType==kDoCompareToAllCharged) DrawWithJacek();
   else if(analysisType==kDoCompareToStar) DrawRatioToStar();
   else if(analysisType==kDoRatios) DrawRatios();
   else if(analysisType==kDoDrawSyst) DrawWithSyst();
@@ -609,9 +611,9 @@ void LoadSpectra() {
   }
 
   if(useSecCorrFromDCA){
-    TFile* fseccorr = new TFile("./Files/CorrFac-SecProtonsFromDCA-ITSsa.root");
-    TH1F* hcorrp=(TH1F*)fseccorr->Get("hSecPCorrFromDCA");
-    TH1F* hcorrpbar=(TH1F*)fseccorr->Get("hSecPbarCorrFromDCA");
+    TFile* fseccorr = new TFile("./Files/CorrFac-SecProtons3Meth-ITSsa.root");
+    TH1F* hcorrp=(TH1F*)fseccorr->Get("hSecPCorrFromDCAexpo");
+    TH1F* hcorrpbar=(TH1F*)fseccorr->Get("hSecPbarCorrFromDCAexpo");
     hSpectra[kITS][kProton][kPos]->Multiply(hcorrp);
     hSpectra[kITS][kProton][kNeg]->Multiply(hcorrpbar);
     fseccorr->Close();
@@ -815,7 +817,9 @@ void LoadSpectra() {
     }
       
     
-    f = new TFile ("./Files/correctionForCrossSection_20100615.root");
+
+    //f = new TFile ("./Files/correctionForCrossSection_20100615.root");
+    f = new TFile ("./Files/correctionForCrossSection_20100920.root");
     TH2D * hCorrFluka[kNCharge];
     hCorrFluka[kPos] = (TH2D*)gDirectory->Get("gHistCorrectionForCrossSectionProtons");
     hCorrFluka[kNeg] = (TH2D*)gDirectory->Get("gHistCorrectionForCrossSectionAntiProtons");
@@ -832,11 +836,13 @@ void LoadSpectra() {
 // 	      h->GetBinCenter(ibin);
 	    Float_t pt = h->GetBinCenter(ibin);
 	    Float_t minPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(1);
-	    Float_t maxPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(h->GetNbinsY()+1);
+	    Float_t maxPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(hCorrFluka[icharge]->GetNbinsY()+1);
+	    cout << "pt " << pt << " " <<minPtCorrection << "-" << maxPtCorrection << endl;
 	    if (pt < minPtCorrection) pt = minPtCorrection+0.0001;
 	    if (pt > maxPtCorrection) pt = maxPtCorrection;
 	    Float_t correction = hCorrFluka[icharge]->GetBinContent(1,hCorrFluka[icharge]->GetYaxis()->FindBin(pt));
-
+	    cout << "pt " << pt << " Corr " << correction  << endl;
+	    
 	    // already in the efficiency correction (F. Noferini)
 	    if (idet == kTOF) {
 	      if (icharge == kNeg)  correction = 1; // antiprotons already corrected in efficiency
@@ -844,6 +850,8 @@ void LoadSpectra() {
 	      else correction = TMath::Power(correction,0.07162/0.03471);
 	    }	    
 	    if (correction != 0) {// If the bin is empty this is a  0
+	      cout << "CORR: " << detFlag[idet]<< " " << chargeFlag[icharge]<<", bin: "<<ibin << " " << correction << endl;
+	      
 	      h->SetBinContent(ibin,h->GetBinContent(ibin)*correction);
 	      h->SetBinError  (ibin,h->GetBinError  (ibin)*correction);
 	    } else if (h->GetBinContent(ibin) > 0) { // If we are skipping a non-empty bin, we notify the user
@@ -1510,16 +1518,18 @@ void DrawWithJacek() {
 
 
   // Load Jacek and Draw both:  
-//   new TFile ("./Files/dNdPt_Data_Points_ALICE_900GeV.root");
-//   TGraphErrors * gJacek = (TGraphErrors*) gDirectory->Get("inel");
-//   gJacek->Draw("AP");
-//   hsum->Draw("same");
+  new TFile ("./Files/pt_allcharged_published.root");
+  TGraphErrors * gJacek = (TGraphErrors*) gDirectory->Get("dndpt");
+  gJacek->SetMarkerStyle(20);
+  gJacek->SetMarkerColor(kGray);
+  gJacek->Draw("AP");
+  gJacek->GetHistogram()->SetXTitle("p_{t} (GeV)");
+  gJacek->GetHistogram()->SetYTitle("d^{2}N/dp_{t}d#eta (GeV^{-1})");
+  hsum->Draw("same");
 
-//   TGraphErrors * gRatio = AliBWTools::DivideGraphByHisto(gJacek,hsum);
-  
- 
-//   new TCanvas();
-//   gRatio->Draw("AP");
+  TGraphErrors * gRatio = AliBWTools::DivideGraphByHisto(gJacek,hsum);  
+  new TCanvas();
+  gRatio->Draw("AP");
 
   
 
@@ -1914,6 +1924,7 @@ void Help() {
   cout << "    kDoCompareStar:    Compare combined spectra to star results" << endl;
   cout << "    kDoDrawWithModels: Compare combined spectra and models" << endl;
   cout << "    kDoDrawSyst:       Draws spectra from individual detectors with their systematic error" << endl;
+  cout << "    kDoCompareToAllCharged:       convert to dn/deta/dpt, sum up and compare to all charged" << endl;
   cout << "    kDoHelp:           This help" << endl;
   cout << "- fitFuncID, function used to extrapolate and compute yields" << endl;
   cout << "    An analitic fit function [kFitLevi, kFitUA1, kFitPowerLaw]" << endl;

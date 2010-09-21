@@ -40,8 +40,8 @@ TH1 * AliBWTools::GetdNdmtFromdNdpt(const TH1 * hpt, Double_t mass) {
   for(Int_t ibins = 0; ibins <= nbins; ibins++){
     xbins[ibins] = TMath::Sqrt(hpt->GetBinLowEdge(ibins+1)*hpt->GetBinLowEdge(ibins+1) +
     			       mass *mass) - mass;
-    // xbins[ibins] = TMath::Sqrt(hpt->GetBinLowEdge(ibins+1)*hpt->GetBinLowEdge(ibins+1) +
-    // 			       mass *mass);
+    // // xbins[ibins] = TMath::Sqrt(hpt->GetBinLowEdge(ibins+1)*hpt->GetBinLowEdge(ibins+1) +
+    // // 			       mass *mass);
     //    cout << ibins << " "<< xbins[ibins]  << endl;
 
   }
@@ -1090,9 +1090,9 @@ void AliBWTools::AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins)
 	break;
       }
     }
-    if (!found){
-      Printf("Error: cannot find matching source bin for destination %d",iBinDest);
-    }
+    // if (!found){
+    //   Printf("Error: cannot find matching source bin for destination %d",iBinDest);
+    // }
   }
 
 
