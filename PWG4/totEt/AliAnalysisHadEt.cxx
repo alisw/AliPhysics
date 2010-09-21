@@ -70,6 +70,7 @@ AliAnalysisHadEt::AliAnalysisHadEt() :
 	,fGammaCode(0)
 	,fPi0Code(0)
 	,fEtaCode(0)
+	,fOmega0Code(0)
         ,fPionMass(0)
 	,fSumEt(0)
 	,fSumEtAcc(0)
@@ -176,6 +177,7 @@ void AliAnalysisHadEt::SetParticleCodes()
     fGammaCode =  fPdgDB->GetParticle("gamma")->PdgCode();
     fPi0Code =  fPdgDB->GetParticle("pi0")->PdgCode();
     fEtaCode =  fPdgDB->GetParticle("eta")->PdgCode();
+    fOmega0Code =  fPdgDB->GetParticle("omega")->PdgCode();
     cout << "Resetting Codes: Pion " << fPiPlusCode
 	 << "," << fPiMinusCode 
 	 << " Kaon " << fKPlusCode 
@@ -183,6 +185,7 @@ void AliAnalysisHadEt::SetParticleCodes()
 	 << " Gamma "<<fGammaCode
 	 << " Pi0 "<<fPi0Code
 	 << " Eta "<<fEtaCode
+	 << " omega "<<fOmega0Code
 	 << endl;
 }
 
