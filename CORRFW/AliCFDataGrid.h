@@ -18,9 +18,10 @@ class AliCFDataGrid : public AliCFGridSparse
 {
  public:
   AliCFDataGrid();
-  AliCFDataGrid(const Char_t* name,const Char_t* title);
-  AliCFDataGrid(const Char_t* name,const Char_t* title, const AliCFContainer &c);
-  AliCFDataGrid(const Char_t* name,const Char_t* title, const Int_t nVarIn, const Int_t* nBinIn);
+  AliCFDataGrid(const Char_t* name,const Char_t* title);    // deprecated
+  AliCFDataGrid(const Char_t* name,const Char_t* title, const AliCFContainer &c);                  //deprecated !!!!
+  AliCFDataGrid(const Char_t* name,const Char_t* title, const AliCFContainer &c, Int_t step);      //create data grid from container
+  AliCFDataGrid(const Char_t* name,const Char_t* title, const Int_t nVarIn, const Int_t* nBinIn);  //create empty data grid to fill it yourself
   AliCFDataGrid(const AliCFDataGrid& c);
   AliCFDataGrid& operator=(const AliCFDataGrid& c);
   virtual ~AliCFDataGrid();
@@ -29,11 +30,11 @@ class AliCFDataGrid : public AliCFGridSparse
 
   // Methods for handling/correcting data 
 
-  virtual void  SetMeasured(Int_t istep);
+  virtual void  SetMeasured(Int_t istep); // deprecated
   virtual const AliCFGridSparse*  GetData() {return fContainer->GetGrid(fSelData);};
   virtual void  ApplyEffCorrection(const AliCFEffGrid &eff);
   virtual void  ApplyBGCorrection(const AliCFDataGrid &c);
-  virtual void  SetContainer(const AliCFContainer &c) {fContainer=&c;};
+  /*   virtual void  SetContainer(const AliCFContainer &c) {fContainer=&c;}; */
   //basic operations
   virtual void   Copy(TObject& data) const;
  
