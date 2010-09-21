@@ -10,6 +10,7 @@
 
 #include "TString.h"
 
+class TTree;
 class TH2F;
 class TH1F;
 class AliVEvent;
@@ -41,6 +42,7 @@ public:
     * Uses the fHistogramNameSuffix to create proper histogram names
     */
     virtual void CreateHistograms();
+    virtual void CreateTree();
     
     /** Fills the histograms, must be overloaded if you want to add your own */
     virtual void FillHistograms();
@@ -55,12 +57,6 @@ public:
     AliAnalysisEtCuts * GetCuts() const { return fCuts; } 
     virtual void SetCuts(const AliAnalysisEtCuts *cuts) 
     { fCuts = (AliAnalysisEtCuts *) cuts; } 
-
-    /** Sum of the total Et for all events */
-    Double_t GetSumEt() const { return fSumEt; }
-
-    /** Sum of the total Et within our acceptance for all events */
-    Double_t GetSumEtAcc() const { return fSumEtAcc; }
 
     /** Total Et in the event (without acceptance cuts) */
     Double_t GetTotEt() const { return fTotEt; }
@@ -114,8 +110,6 @@ protected:
     Int_t fEMinusCode;//pdg electron code
     Float_t fPionMass;//pdg pion mass
 
-    Double_t fSumEt;/** Sum of the total Et for all events */
-    Double_t fSumEtAcc;/** Sum of the total Et within our acceptance for all events */    
     Double_t fTotEt;/** Total Et in the event (without acceptance cuts) */    
     Double_t fTotEtAcc;/** Total Et in the event within the acceptance cuts */
     
@@ -128,50 +122,25 @@ protected:
     Int_t fChargedMultiplicity;/** Multiplicity of charged particles in the event */    
     Int_t fNeutralMultiplicity; /** Multiplicity of neutral particles in the event */
     
-    /** Et of identified baryons */
-    Double_t fBaryonEt;
-    
-    /** Et of identified anti-baryons */
-    Double_t fAntiBaryonEt;
-    
-    /** Et of identified mesons */
-    Double_t fMesonEt;
+    Double_t fBaryonEt;     /** Et of identified baryons */    
+    Double_t fAntiBaryonEt; /** Et of identified anti-baryons */
+    Double_t fMesonEt;     /** Et of identified mesons */
 
-    /** Et of identified baryons in calorimeter acceptance */
-    Double_t fBaryonEtAcc;
-
-    /** Et of identified anti-baryons in calorimeter acceptance */
-    Double_t fAntiBaryonEtAcc;
+    Double_t fBaryonEtAcc;    /** Et of identified baryons in calorimeter acceptance */    
+    Double_t fAntiBaryonEtAcc; /** Et of identified anti-baryons in calorimeter acceptance */       
+    Double_t fMesonEtAcc; /** Et of identified mesons in calorimeter acceptance */
     
-    /** Et of identified mesons in calorimeter acceptance */
-    Double_t fMesonEtAcc;
-
-    /** Et of identified protons */
-    Double_t fProtonEt;
+    Double_t fProtonEt; /** Et of identified protons */
+    Double_t fChargedKaonEt; /** Et of identified charged kaons */
+    Double_t fMuonEt; /** Et of identified muons */
+    Double_t fElectronEt; /** Et of identified electrons */
     
-    /** Et of identified charged kaons */
-    Double_t fChargedKaonEt;
-    
-    /** Et of identified muons */
-    Double_t fMuonEt;
-    
-    /** Et of identified electrons */
-    Double_t fElectronEt;
-    
-    /** Et of identified protons in calorimeter acceptance */
-    Double_t fProtonEtAcc;
-
-    /** Et of identified charged kaons in calorimeter acceptance */
-    Double_t fChargedKaonEtAcc;
-
-    /** Et of identified muons in calorimeter acceptance */
-    Double_t fMuonEtAcc;
-
-    /** Et of identified electrons in calorimeter acceptance */
-    Double_t fElectronEtAcc;
-    
-    /** Cut in eta (standard |eta| < 0.5 )*/
-    Double_t fEtaCut;
+    Double_t fProtonEtAcc; /** Et of identified protons in calorimeter acceptance */    
+    Double_t fChargedKaonEtAcc; /** Et of identified charged kaons in calorimeter acceptance */    
+    Double_t fMuonEtAcc; /** Et of identified muons in calorimeter acceptance */
+    Double_t fElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
+        
+    Double_t fEtaCut;/** Cut in eta (standard |eta| < 0.5 )*/
 
     Double_t fEtaCutAcc;/** Eta cut for our acceptance */
     Double_t fPhiCutAccMin; /** Min phi cut for our acceptance in radians */    
@@ -215,29 +184,30 @@ protected:
     TH2F *fHistPhivsPtNeg; //phi vs pT plot for negative tracks
 
     /* PID plots */
-    TH1F *fHistBaryonEt;
-    TH1F *fHistAntiBaryonEt;
-    TH1F *fHistMesonEt;
+    TH1F *fHistBaryonEt; /** Et of identified baryons */    
+    TH1F *fHistAntiBaryonEt; /** Et of identified anti-baryons */
+    TH1F *fHistMesonEt; /** Et of identified mesons */
 
-    TH1F *fHistBaryonEtAcc;
-    TH1F *fHistAntiBaryonEtAcc;
-    TH1F *fHistMesonEtAcc;
+    TH1F *fHistBaryonEtAcc; /** Et of identified baryons in calorimeter acceptance */    
+    TH1F *fHistAntiBaryonEtAcc; /** Et of identified anti-baryons in calorimeter acceptance */       
+    TH1F *fHistMesonEtAcc; /** Et of identified mesons in calorimeter acceptance */
 
-    TH1F *fHistProtonEt;
-    TH1F *fHistChargedKaonEt;
-    TH1F *fHistMuonEt;
-    TH1F *fHistElectronEt;
+    TH1F *fHistProtonEt; /** Et of identified protons */
+    TH1F *fHistChargedKaonEt; /** Et of identified charged kaons */
+    TH1F *fHistMuonEt; /** Et of identified muons */
+    TH1F *fHistElectronEt; /** Et of identified electrons */
     
-    TH1F *fHistProtonEtAcc;
-    TH1F *fHistChargedKaonEtAcc;
-    TH1F *fHistMuonEtAcc;
-    TH1F *fHistElectronEtAcc;
+    TH1F *fHistProtonEtAcc; /** Et of identified protons in calorimeter acceptance */    
+    TH1F *fHistChargedKaonEtAcc; /** Et of identified charged kaons in calorimeter acceptance */    
+    TH1F *fHistMuonEtAcc; /** Et of identified muons in calorimeter acceptance */
+    TH1F *fHistElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
     
     /* Correction plots */
     TH2F *fHistEtRecvsEtMC; //Reconstructed Et versus MC Et
+    
+    TH1F *fHistTMDeltaR; /* Track matching plots */
 
-    /* Track matching plots */
-    TH1F *fHistTMDeltaR;
+    TTree *fTree; // optional TTree
     
 private:
     //Declare private to avoid compilation warning

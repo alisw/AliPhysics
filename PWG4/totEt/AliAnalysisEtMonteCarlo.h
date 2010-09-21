@@ -16,16 +16,24 @@ class AliAnalysisEtMonteCarlo : public AliAnalysisEt
 
 public:
    
-    AliAnalysisEtMonteCarlo() {}
-    virtual ~AliAnalysisEtMonteCarlo() {}
+  AliAnalysisEtMonteCarlo();
+  virtual ~AliAnalysisEtMonteCarlo();
 
     virtual Int_t AnalyseEvent(AliVEvent* event);
 
     virtual void Init();
+    virtual void ResetEventValues();
+    virtual void CreateHistograms();
 
 protected:
 
     virtual bool TrackHitsCalorimeter(TParticle *part, Double_t magField=0.5);
+
+protected:
+
+    Double_t fImpactParameter; // b(fm), for Hijing; 0 otherwise
+    Int_t fNcoll; // Ncoll, for Hijing; 1 otherwise
+    Int_t fNpart; // Ncoll, for Hijing; 2 otherwise
 
 };
 

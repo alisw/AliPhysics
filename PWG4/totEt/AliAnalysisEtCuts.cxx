@@ -56,6 +56,8 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   
   ,fMonteCarloSingleChargedParticle(3)
   ,fMonteCarloNeutralParticle(0)
+
+  ,fHistMakeTree(kTRUE)
 { // ctor
 }
 
