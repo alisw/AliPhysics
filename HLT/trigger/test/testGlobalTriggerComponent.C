@@ -246,6 +246,110 @@ void CallRunTrigger(
 }
 
 /**
+ * Runs a global trigger test chain to test L0 software triggers.
+ * \param config  The configuration version to pass to TriggerConfig.C
+ * \param usecint  If true then the global trigger component uses CINT to interpret
+ *     the code rather than compiling it.
+ * \param debug  If true then the global trigger component generates extra debug
+ *     statements in the on the fly AliHLTGlobalTriggerImp_*.cxx file.
+ * \param customClass  Names the custom class that should be loaded from the file
+ *     <i>\<customClass\>.cxx</i>. This is useful for debugging only. i.e. you can
+ *     edit a generated logic file and test it by hand.
+ */
+void RunTriggerSW(int config = 0, bool usecint = false, bool debug = false, const char* customClass = NULL)
+{
+	AliHLTSystem sys;
+	sys.ScanOptions("ECS=CTP_TRIGGER_CLASS=00:TRIGGER-ALL:00-01-02-03-04-05-06-07-08-09-10-11-12-13-14-15-16-17");
+	sys.LoadComponentLibraries("libAliHLTUtil.so");
+	sys.LoadComponentLibraries("libAliHLTTRD.so");
+	sys.LoadComponentLibraries("libAliHLTMUON.so");
+	sys.LoadComponentLibraries("libAliHLTTrigger.so");
+	if (debug)
+	{
+		AliLog::SetGlobalLogLevel(AliLog::kMaxType);
+		sys.SetGlobalLoggingLevel(kHLTLogAll);
+	}
+	
+	TString cmdline = "-datatype ROOTTOBJ 'HLT ' ";
+	for (int i = 1; i <= 8; i++)
+	{
+		if (i > 1) cmdline += " -nextevent";
+		cmdline += Form(" -datafile testInputFile%d.root", i);
+	}
+	AliHLTConfiguration pub("pub", "ROOTFilePublisher", NULL, cmdline.Data());
+	
+	cmdline = Form("-config $ALICE_ROOT/HLT/trigger/test/TriggerConfig.C(%d)"
+		" -includepath $ALICE_ROOT/include -includepath $ALICE_ROOT/HLT/BASE"
+		" -includepath $ALICE_ROOT/HLT/trigger -include AliHLTEventSummary.h"
+		" -process-all-events",
+		config
+		);
+	if (customClass != NULL) cmdline += Form(" -usecode %s.cxx %s", customClass, customClass);
+	if (usecint) cmdline += " -cint";
+	if (debug) cmdline += " -debug";
+	AliHLTConfiguration proc("proc", "HLTGlobalTrigger", "pub", cmdline.Data());
+	
+	AliHLTConfiguration sink("sink", "ROOTFileWriter", "proc", "-datafile testOutputFile.root -concatenate-events");
+	
+	sys.BuildTaskList("sink");
+	sys.Run(
+		1,   // Number of events to process.
+		0,   // Stop chain at end of run.
+		0x1, // Active CTP trigger mask.
+		0,   // Time stamp.
+		gkAliEventTypeSoftware  // Event type.
+	);
+	sys.Run(
+		1,   // Number of events to process.
+		0,   // Stop chain at end of run.
+		0x1, // Active CTP trigger mask.
+		0,   // Time stamp.
+		gkAliEventTypeCalibration  // Event type.
+	);
+	sys.Run(
+		1,   // Number of events to process.
+		1,   // Stop chain at end of run.
+		0x1, // Active CTP trigger mask.
+		0,   // Time stamp.
+		0    // Event type.
+	);
+}
+
+/**
+ * This method calls the RunTriggerSW method in an independant aliroot process.
+ * This is necessary since we get memory corruption if we run too many instances of
+ * AliHLTSystem in the same process.
+ */
+void CallRunTriggerSW(
+		int config = 0, bool usecint = false, bool debug = false,
+		const char* customClass = NULL, bool showOutput = false
+	)
+{
+	const char* redirection = "> /dev/null";
+	const char* classNameString = "NULL";
+	if (showOutput) redirection = "";
+	if (customClass != NULL) classNameString = Form("\"%s\"", customClass);
+	const char* command = Form(
+			"aliroot %s <<EOF\n"
+			"gSystem->Load(\"libAliHLTUtil.so\");\n"
+			"gSystem->Load(\"libAliHLTTRD.so\");\n"
+			"gSystem->Load(\"libAliHLTMUON.so\");\n"
+			"gSystem->Load(\"libAliHLTTrigger.so\");\n"
+			"gSystem->SetIncludePath(\"-I${ALICE_ROOT}/include"
+			" -I${ALICE_ROOT}/HLT/BASE -I${ALICE_ROOT}/HLT/trigger\");\n"
+			".L $ALICE_ROOT/HLT/trigger/test/testGlobalTriggerComponent.C+\n"
+			"RunTriggerSW(%d,%d,%d,%s);\n"
+			"EOF\n",
+			redirection,
+			config,
+			usecint,
+			debug,
+			classNameString
+		);
+	gSystem->Exec(command);
+}
+
+/**
  * Checks that a particular decision is as expected and prints error messages
  * if it is not.
  * \param testName  The name of the test being run.
@@ -680,6 +784,153 @@ bool CheckDifferentModes(
 }
 
 /**
+ * This routine is used to check if the global Trigger counters are correct.
+ * \param testName  The name of the test being run.
+ * \param eventNum  The number of the event being checked.
+ * \param decision  The global trigger decision being checked.
+ * \param expectedCounters  The expected counters.
+ * \returns true if the decision is as expected.
+ */
+bool CheckCounters(
+		const char* testName,
+		int eventNum,
+		AliHLTGlobalTriggerDecision* decision,
+		const TArrayL64& expectedCounters
+	)
+{
+	if (decision->Counters().GetSize() != expectedCounters.GetSize())
+	{
+		cerr << "ERROR (Test: " << testName
+		     << "): The result does not have the required number of counters for event "
+		     << eventNum << ". Got " << decision->Counters().GetSize() << " but expected "
+		     << expectedCounters.GetSize() << "." << endl;
+		return false;
+	}
+	for (Int_t i = 0; i < expectedCounters.GetSize(); ++i)
+	{
+		if (decision->Counters()[i] != expectedCounters[i])
+		{
+			cerr << "ERROR (Test: " << testName
+			     << "): The result does not have the correct counter value for event "
+			     << eventNum << ". Got a value " << decision->Counters()[i]
+			     << " for counter " << i << ", but expected a value of "
+			     << expectedCounters[i] << "." << endl;
+			return false;
+		}
+	}
+	return true;
+}
+
+/// Routine for checking the result of the SoftwareTriggersTestConfig() config in TriggerConfig.C
+bool CheckSoftwareTriggerTestConfig(const char* testName = "Software trigger config")
+{
+	AliHLTGlobalTriggerDecision* decision = NULL;
+	bool result = false;
+	
+	AliHLTTriggerDomain domainPHOS("*******:PHOS");
+	domainPHOS.Remove(AliHLTReadoutList("PHOS"));
+	AliHLTTriggerDomain domainSPD("*******:SPD");
+	domainSPD.Remove(AliHLTReadoutList("ITSSPD"));
+	AliHLTTriggerDomain domainMUON("TRACKS:MUON");
+	domainMUON.Add(AliHLTReadoutList("MUONTRK MUONTRG"));
+
+	TFile* file = new TFile("testOutputFile.root", "READ");
+	TArrayL64 expectedCounters;
+	expectedCounters.Set(6);
+	
+	decision = dynamic_cast<AliHLTGlobalTriggerDecision*>(file->Get("HLTGlobalTrigger;1"));
+	result = Check(testName, 1, decision, true, AliHLTTriggerDomain(), "Start of data");
+	if (! result) goto cleanup;
+	expectedCounters[0] = 1; expectedCounters[5] = 1;
+	result = CheckCounters(testName, 1, decision, expectedCounters);
+	if (! result) goto cleanup;
+	
+	decision = dynamic_cast<AliHLTGlobalTriggerDecision*>(file->Get("HLTGlobalTrigger;2"));
+	result = Check(testName, 2, decision, true, domainSPD, "Software trigger");
+	if (! result) goto cleanup;
+	expectedCounters[2] = 1; expectedCounters[5] = 2;
+	result = CheckCounters(testName, 2, decision, expectedCounters);
+	if (! result) goto cleanup;
+	
+	decision = dynamic_cast<AliHLTGlobalTriggerDecision*>(file->Get("HLTGlobalTrigger;3"));
+	result = Check(testName, 3, decision, true, domainPHOS, "Calibration trigger");
+	if (! result) goto cleanup;
+	expectedCounters[3] = 1; expectedCounters[5] = 3;
+	result = CheckCounters(testName, 3, decision, expectedCounters);
+	if (! result) goto cleanup;
+	
+	decision = dynamic_cast<AliHLTGlobalTriggerDecision*>(file->Get("HLTGlobalTrigger;4"));
+	result = Check(testName, 4, decision, true, domainMUON, "MUON trigger");
+	if (! result) goto cleanup;
+	expectedCounters[4] = 1; expectedCounters[5] = 4;
+	result = CheckCounters(testName, 4, decision, expectedCounters);
+	if (! result) goto cleanup;
+	
+	decision = dynamic_cast<AliHLTGlobalTriggerDecision*>(file->Get("HLTGlobalTrigger;5"));
+	result = Check(testName, 5, decision, true, AliHLTTriggerDomain(), "End of data");
+	if (! result) goto cleanup;
+	expectedCounters[1] = 1; expectedCounters[5] = 5;
+	result = CheckCounters(testName, 5, decision, expectedCounters);
+	if (! result) goto cleanup;
+	
+	delete file;
+	return true;
+	
+cleanup:
+	if (decision != NULL)
+	{
+		cout << "========== Dumping incorrect decision ========== " << endl;
+		decision->Print();
+	}
+	delete file;
+	return false;
+}
+
+/**
+ * This method performs the same task as for CheckDifferentModes, but trying to
+ * test the behaviour of the global HLT trigger component with L0 software triggers.
+ * \param version  The trigger menu configuration version to use in <i>RunTrigger</i>.
+ * \param testName  The name of the test being run.
+ * \param customClass  Name of the custom class as passed to <i>RunTrigger</i>.
+ * \param showOutput  If true then the output from the RunTriggerSW method is not suppressed.
+ * \returns true if the different checks succeeded and false otherwise.
+ */
+bool CheckDifferentSWTestModes(
+		int version, const char* testName,
+		const char* customClass = NULL, bool showOutput = false
+	)
+{
+	TString name = testName;
+	name += " in debug mode";
+	cout << "#################### Running test: " << name.Data() << " ####################" << endl;
+	CallRunTriggerSW(version, false, true, customClass, showOutput);
+	if (! CheckSoftwareTriggerTestConfig(testName)) return false;
+	gSystem->Exec("rm -f testOutputFile.root");  // Cleanup output file for next test.
+	
+	name = testName;
+	cout << "#################### Running test: " << name.Data() << " ####################" << endl;
+	CallRunTriggerSW(version, false, false, customClass, showOutput);
+	if (! CheckSoftwareTriggerTestConfig(testName)) return false;
+	gSystem->Exec("rm -f testOutputFile.root");  // Cleanup output file for next test.
+	
+	name = testName;
+	name += " interpreted with CINT in debug mode";
+	cout << "#################### Running test: " << name.Data() << " ####################" << endl;
+	CallRunTriggerSW(version, true, true, customClass, showOutput);
+	if (! CheckSoftwareTriggerTestConfig(testName)) return false;
+	gSystem->Exec("rm -f testOutputFile.root");  // Cleanup output file for next test.
+	
+	name = testName;
+	name += " interpreted with CINT";
+	cout << "#################### Running test: " << name.Data() << " ####################" << endl;
+	CallRunTriggerSW(version, true, false, customClass, showOutput);
+	if (! CheckSoftwareTriggerTestConfig(testName)) return false;
+	gSystem->Exec("rm -f testOutputFile.root");  // Cleanup output file for next test.
+	
+	return true;
+}
+
+/**
  * Runs several tests for the AliHLTGlobalTriggerComponent class.
  * We specifically test if the global trigger menu configuration is interpreted
  * correctly and the trigger logic generated correctly on the fly.
@@ -704,18 +955,32 @@ bool testGlobalTriggerComponent(int configVersion = -1, const char* customClass 
 		case 2: function = CheckPrescalarTestConfig; break;
 		case 3: function = CheckSymbolTestConfig; break;
 		case 4: function = CheckComplexTestConfig; break;
+		case 5: break;
 		default:
 			cerr << "ERROR: Invalid value for configVersion specified." << endl;
 			return false;
 		}
-		bool result = CheckDifferentModes(
-				function,
-				configVersion,
-				Form("Config version %d", configVersion),
-				numOfEvents,
-				customClass,
-				true
-			);
+		bool result = false;
+		if (configVersion != 5)
+		{
+			result = CheckDifferentModes(
+					function,
+					configVersion,
+					Form("Config version %d", configVersion),
+					numOfEvents,
+					customClass,
+					true
+				);
+		}
+		else
+		{
+			result = CheckDifferentSWTestModes(
+					configVersion,
+					Form("Config version %d", configVersion),
+					customClass,
+					true
+				);
+		}
 		return result;
 	}
 	
@@ -724,6 +989,7 @@ bool testGlobalTriggerComponent(int configVersion = -1, const char* customClass 
 	if (! CheckDifferentModes(CheckPrescalarTestConfig, 2, "Prescalar config", numOfEvents, customClass)) return false;
 	if (! CheckDifferentModes(CheckSymbolTestConfig, 3, "Symbol config", numOfEvents, customClass)) return false;
 	if (! CheckDifferentModes(CheckComplexTestConfig, 4, "Complex config", numOfEvents, customClass)) return false;
+	if (! CheckDifferentSWTestModes(5, "Software trigger config", customClass)) return false;
 	
 	// Cleanup all temporary files generated.
 	gSystem->Exec("rm -f testOutputFile.root testInputFile*.root AliHLTGlobalTriggerImpl*");

@@ -233,6 +233,7 @@ AliHLTUInt64_t AliHLTCTPData::ActiveTriggers(const AliHLTComponentTriggerData& t
 
   const AliRawDataHeader* cdh = NULL;
   if (AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL) != 0) return (AliHLTUInt64_t)0;
+  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return 0x0;  // invalid for software triggers.
   // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
   AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
   return triggerMask;
@@ -244,6 +245,7 @@ bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, const AliHLT
   
   const AliRawDataHeader* cdh = NULL;
   if (AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL, true) != 0) return false;
+  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return false;  // invalid for software triggers.
   // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
   AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
 
@@ -361,6 +363,7 @@ int AliHLTCTPData::Increment(AliHLTComponentTriggerData& trigData)
   const AliRawDataHeader* cdh = NULL;
   int result = AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL, true);
   if (result != 0) return result;
+  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return 0;  // invalid for software triggers.
   // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
   AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
 
@@ -425,6 +428,7 @@ AliHLTReadoutList AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& t
 
   const AliRawDataHeader* cdh = NULL;
   if (AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL, true) != 0) return AliHLTReadoutList();
+  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return AliHLTReadoutList();  // invalid for software triggers.
   // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
   AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
 

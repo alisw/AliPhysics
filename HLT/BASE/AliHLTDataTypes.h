@@ -65,6 +65,7 @@
  *  14       Adding new data block type for HLT global trigger counters.
  *           Adding data block type for ESD content
  *           Adding data block type for forwarded component table blocks
+ *           Adding new event type for software triggers.
  */
 #define ALIHLT_DATA_TYPES_VERSION 14
 
@@ -873,6 +874,8 @@ extern "C" {
   const AliHLTUInt32_t gkAliEventTypeCorruptID=8;
   /** Calibration eventType specification */ 
   const AliHLTUInt32_t gkAliEventTypeCalibration=16;
+  /** Software eventType specification */ 
+  const AliHLTUInt32_t gkAliEventTypeSoftware=24;
   /** DataReplay eventType specification */
   const AliHLTUInt32_t gkAliEventTypeDataReplay=32;
   /** Configuration eventType specification */

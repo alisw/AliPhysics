@@ -364,12 +364,10 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask,
 	  // reset and prepare for new data
 	  fpHLTOUTTask->Reset();
 	}
-	if (eventtype) {
-	  // TODO: translate RawReader event types into the HLT event types
-	  // this needs to be done after the analysis framework has been extended to
-	  // handle all different cases correctly
+	if (eventtype == 0) {
+	  eventtype = gkAliEventTypeData;
 	}
-	if ((iResult=ProcessTasks(i, trgMask, timestamp, gkAliEventTypeData))>=0) {
+	if ((iResult=ProcessTasks(i, trgMask, timestamp, eventtype))>=0) {
 	  fGoodEvents++;
 	  iCount++;
 	} else {

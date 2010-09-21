@@ -746,7 +746,7 @@ class AliHLTComponent : public AliHLTLogging {
    *     AliRawDataHeader* cdh;
    *     ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL);
    *   \endcode
-   * @return the zero on success and one of the following error codes on failure.
+   * @return zero on success or one of the following error codes on failure.
    *   if a non-zero error code is returned then none of the output parameters are
    *   modified.
    *    \li -ENOENT  The <i>trigData</i> structure size is wrong.
@@ -771,7 +771,7 @@ class AliHLTComponent : public AliHLTLogging {
    * [out] @param list  The output readout list to fill.
    * [in] @param printErrors  If true then error messages are generated as necessary
    *                          and suppressed otherwise.
-   * @return the zero on success or one of the error codes returned by ExtractTriggerData.
+   * @return zero on success or one of the error codes returned by ExtractTriggerData.
    */
   static int GetReadoutList(
       const AliHLTComponentTriggerData& trigData, AliHLTReadoutList& list,
@@ -780,6 +780,13 @@ class AliHLTComponent : public AliHLTLogging {
   {
     return ExtractTriggerData(trigData, NULL, NULL, NULL, &list, printErrors);
   }
+
+  /**
+   * Extracts the event type from the given Common Data Header.
+   * [in] @param cdh  The Common Data Header to extract the event type from.
+   * @return the event type code from the CDH.
+   */
+  static AliHLTUInt32_t ExtractEventTypeFromCDH(const AliRawDataHeader* cdh);
   
   /**
    * Stopwatch type for benchmarking.

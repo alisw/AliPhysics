@@ -580,7 +580,19 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
       trigData.fStructSize=sizeof(trigData);
       trigData.fDataSize=sizeof(AliHLTEventTriggerData);
       memset(&evtTrigData, 0, trigData.fDataSize);
+      // Setup the CDH in the trigger data, based on the event type and CTP trigger.
       evtTrigData.fCommonHeaderWordCnt=gkAliHLTCommonHeaderCount;
+      AliHLTUInt8_t l1msg = 0x0;
+      switch (eventType)
+      {
+      case gkAliEventTypeData:        l1msg = 0x00; break;
+      case gkAliEventTypeDataReplay:  l1msg = 0x00; break;
+      case gkAliEventTypeStartOfRun:  l1msg = (0xE << 2) | 0x01; break;
+      case gkAliEventTypeEndOfRun:    l1msg = (0xF << 2) | 0x01; break;
+      case gkAliEventTypeCalibration: l1msg = (0x1 << 6) | 0x01; break;
+      case gkAliEventTypeSoftware:    l1msg = 0x01; break;
+      }
+      evtTrigData.fCommonHeader[1] = AliHLTUInt32_t(l1msg) << 14;
       evtTrigData.fCommonHeader[5]=trgMask&0xffffffff;
       trgMask>>=32;
       evtTrigData.fCommonHeader[6]=trgMask&0x3ffff;

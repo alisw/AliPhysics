@@ -103,6 +103,21 @@ void ComplexTestConfig()
 }
 
 /**
+ * This will make a configuration that will test software triggers.
+ */
+void SoftwareTriggersTestConfig()
+{
+	AliHLTGlobalTriggerConfig config("Software triggers test config");
+	config.AddSymbol("domainPHOS", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:PHOS\")");
+	config.AddSymbol("domainSPD", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:SPD\")");
+	config.AddItem(5, "START_OF_DATA", "START_OF_DATA", "Start of data");
+	config.AddItem(4, "END_OF_DATA", "END_OF_DATA", "End of data");
+	config.AddItem(3, "SOFTWARE", "domainSPD", "Software trigger");
+	config.AddItem(2, "CALIBRATION", "domainPHOS", "Calibration trigger");
+	config.AddItem(1, "triggerMUON", "triggerMUON", "MUON trigger");
+}
+
+/**
  * Top level configuration routine for the global trigger component tests.
  */
 void TriggerConfig(int version = 0)
@@ -114,6 +129,7 @@ void TriggerConfig(int version = 0)
 	case 2: PrescalarTestConfig(); break;
 	case 3: SymbolTestConfig(); break;
 	case 4: ComplexTestConfig(); break;
+	case 5: SoftwareTriggersTestConfig(); break;
 	default: AliHLTGlobalTriggerConfig config("Empty test config");
 	}
 }

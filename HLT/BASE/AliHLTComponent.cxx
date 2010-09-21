@@ -1785,6 +1785,18 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	indexUpdtDCSEvent=i;
       } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeEvent) {
 	fEventType=fpInputBlocks[i].fSpecification;
+	if (fEventType != gkAliEventTypeConfiguration and
+	    fEventType != gkAliEventTypeReadPreprocessor
+	   )
+	{
+	  // We can actually get the event type from the CDH if it is valid.
+	  // Otherwise just use the specification of the input block.
+	  const AliRawDataHeader* cdh;
+	  if (ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL) == 0)
+	  {
+	    fEventType = ExtractEventTypeFromCDH(cdh);
+	  }
+	}
 
 	// skip always in case of gkAliEventTypeConfiguration
 	if (fpInputBlocks[i].fSpecification==gkAliEventTypeConfiguration) bSkipDataProcessing|=skipModeForce;
@@ -2345,8 +2357,7 @@ bool AliHLTComponent::IsDataEvent(AliHLTUInt32_t* pTgt) const
   // see header file for function documentation
   if (pTgt) *pTgt=fEventType;
   return (fEventType==gkAliEventTypeData ||
-	  fEventType==gkAliEventTypeDataReplay ||
-	  fEventType==gkAliEventTypeCalibration);
+	  fEventType==gkAliEventTypeDataReplay);
 }
 
 int AliHLTComponent::CopyStruct(void* pStruct, unsigned int iStructSize, unsigned int iBlockNo,
@@ -2595,6 +2606,21 @@ int AliHLTComponent::ExtractTriggerData(
     *readoutlist = AliHLTReadoutList(evtData->fReadoutList);
   }
   return 0;
+}
+
+AliHLTUInt32_t AliHLTComponent::ExtractEventTypeFromCDH(const AliRawDataHeader* cdh)
+{
+  // see header file for function documentation
+  
+  UChar_t l1msg = cdh->GetL1TriggerMessage();
+  if ((l1msg & 0x1) == 0x0) return gkAliEventTypeData;
+  // The L2SwC bit must be one if we got here, i.e. l1msg & 0x1 == 0x1.
+  if (((l1msg >> 2) & 0xF) == 0xE) return gkAliEventTypeStartOfRun;
+  if (((l1msg >> 2) & 0xF) == 0xF) return gkAliEventTypeEndOfRun;
+  // Check the C1T bit to see if this is a calibration event,
+  // if not then it must be some other software trigger event.
+  if (((l1msg >> 6) & 0x1) == 0x1) return gkAliEventTypeCalibration;
+  return gkAliEventTypeSoftware;
 }
 
 int AliHLTComponent::LoggingVarargs(AliHLTComponentLogSeverity severity, 

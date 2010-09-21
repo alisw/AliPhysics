@@ -84,6 +84,15 @@
  * just one trigger menu item in a priority group then the groups expressions are
  * explicit. On the other hand, for multiple items in a group they form implicit
  * expression fragments.
+ *
+ * \note CTP trigger class names can be used in the trigger menu since the global
+ *   trigger will generate and add corresponding trigger decision objects to the
+ *   logic on the fly.
+ *   In addition, for software triggers, a special SOFTWARE trigger decision is
+ *   generated and the SOFTWARE name can be used in the trigger menu for this.
+ *   If the software trigger is a calibration event then a trigger decision with
+ *   the name CALIBRATION is generated instead. START_OF_DATA and END_OF_DATA
+ *   symbols are similarly defined for the start and end of data events respectively.
  */
 class AliHLTTriggerMenu : public TObject
 {

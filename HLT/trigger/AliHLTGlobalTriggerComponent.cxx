@@ -32,6 +32,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
+#include "AliRawDataHeader.h"
 #include "TUUID.h"
 #include "TROOT.h"
 #include "TSystem.h"
@@ -72,6 +73,7 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fDebugMode(false),
 	fRuntimeCompile(true),
 	fDeleteCodeFile(false),
+	fMakeSoftwareTriggers(true),
 	fCodeFileName(),
 	fClassName(),
 	fCTPDecisions(NULL),
@@ -83,7 +85,9 @@ AliHLTGlobalTriggerComponent::AliHLTGlobalTriggerComponent() :
 	fBits(0),
 	fDataEventsOnly(true),
 	fMonitorPeriod(-1),
-	fUniqueID(0)
+	fUniqueID(0),
+	fSoftwareTrigger(true, "SOFTWARE"),
+	fTotalEventCounter(0)
 {
   // Default constructor.
   
@@ -128,6 +132,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   fClassName = "";
   fCodeFileName = "";
   fDeleteCodeFile = false;
+  fMakeSoftwareTriggers = true;
   const char* configFileName = NULL;
   const char* codeFileName = NULL;
   fIncludePaths.Clear();
@@ -314,6 +319,12 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
       }
       continue;
     }
+
+    if (strcmp(argv[i], "-dont-make-software-triggers") == 0)
+    {
+      fMakeSoftwareTriggers = false;
+      continue;
+    }
     
     HLTError("Unknown option '%s'.", argv[i]);
     return -EINVAL;
@@ -378,6 +389,7 @@ Int_t AliHLTGlobalTriggerComponent::DoInit(int argc, const char** argv)
   SetDescription(menu->DefaultDescription());
   SetTriggerDomain(menu->DefaultTriggerDomain());
   
+  fTotalEventCounter = 0;
   return 0;
 }
 
@@ -472,7 +484,13 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   if (pCTPData) {
     AddCTPDecisions(fTrigger, pCTPData, GetTriggerData());
   }
-
+  
+  bool softwareTriggerIsValid = FillSoftwareTrigger();
+  if (softwareTriggerIsValid)
+  {
+    fTrigger->Add(&fSoftwareTrigger, kAliHLTDataTypeTriggerDecision, kAliHLTVoidDataSpec);
+  }
+  
   // Calculate the global trigger result and trigger domain, then create and push
   // back the new global trigger decision object.
   TString description;
@@ -488,7 +506,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     );
 
   decision.SetUniqueID(fUniqueID);
-  decision.SetCounters(fTrigger->GetCounters(), GetEventCount()+1);
+  decision.SetCounters(fTrigger->GetCounters(), fTotalEventCounter+1);
   if (fTrigger->CallFailed()) return -EPROTO;
   
   TClonesArray shortInfo(TNamed::Class(), GetNumberOfInputBlocks());
@@ -544,6 +562,8 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   // modifies the kCanDelete bit and nothing else.
   if (!TestBit(kSkipCTP) && CTPData()) decision.AddInputObjectRef(const_cast<AliHLTCTPData*>(CTPData()));
   
+  if (softwareTriggerIsValid and TestBit(kIncludeInput)) decision.AddTriggerInput(fSoftwareTrigger);
+  
   static UInt_t lastTime=0;
   TDatime time;
   if (time.Get()-lastTime>60) {
@@ -587,6 +607,8 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     if (fTrigger->CallFailed()) return -EPROTO;
     return -ENOSPC;
   }
+  
+  ++fTotalEventCounter;
   return 0;
 }
 
@@ -1660,6 +1682,40 @@ bool AliHLTGlobalTriggerComponent::ExtractedOperator(TString& expr, TString& op)
   }
   
   return false;
+}
+
+
+bool AliHLTGlobalTriggerComponent::FillSoftwareTrigger()
+{
+  // Fills the fSoftwareTrigger structure.
+  const AliRawDataHeader* cdh;
+  if (ExtractTriggerData(*GetTriggerData(), NULL, NULL, &cdh, NULL) != 0) return false;
+  UChar_t l1msg = cdh->GetL1TriggerMessage();
+  if ((l1msg & 0x1) == 0x0) return false;  // skip physics events.
+  // From here on everything must be a software trigger.
+  if (((l1msg >> 2) & 0xF) == 0xE)
+  {
+    fSoftwareTrigger.Name("START_OF_DATA");
+    fSoftwareTrigger.Description("Generated internal start of data trigger.");
+  }
+  else if (((l1msg >> 2) & 0xF) == 0xF)
+  {
+    fSoftwareTrigger.Name("END_OF_DATA");
+    fSoftwareTrigger.Description("Generated internal end of data trigger.");
+  }
+  else if (((l1msg >> 6) & 0x1) == 0x1)
+  {
+    fSoftwareTrigger.Name("CALIBRATION");
+    fSoftwareTrigger.Description("Generated internal calibration trigger.");
+  }
+  else
+  {
+    fSoftwareTrigger.Name("SOFTWARE");
+    fSoftwareTrigger.Description("Generated internal software trigger.");
+  }
+  UInt_t detectors = cdh->GetSubDetectors();
+  fSoftwareTrigger.ReadoutList( AliHLTReadoutList(Int_t(detectors)) );
+  return true;
 }
 
 
