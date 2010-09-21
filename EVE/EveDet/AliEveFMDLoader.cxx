@@ -175,9 +175,12 @@ AliEveFMDLoader::AliEveFMDLoader(const char* name, Bool_t useBoxes,
 	er->AddElement(em);
 	em->SetTransMatrix(*(detector->FindTransform(ring->GetId(), 2*m)));
 	em->SetShape(ring->GetId() == 'I' ? inner : outer);
-	em->SetMainColor(Color_t(kRed));
+	em->SetMainColor(Color_t(kGray));
 	em->SetMainTransparency(32);
 	em->IncDenyDestroy();
+	ModuleData* data = new ModuleData;
+	data->fScaledSum = 0;
+	em->SetUserData(data);
 
 #if 0
 	for (UShort_t s = 2*m; s < 2*m+2 && s < nsec; s++) { 
@@ -277,6 +280,9 @@ AliEveFMDLoader::ClearDigitSets(const char* type)
 	 ri != (*di)->EndChildren(); ++ri) { 
       for (TEveElement::List_i mi = (*ri)->BeginChildren();
 	   mi != (*ri)->EndChildren(); ++mi) { 
+	ModuleData* data = static_cast<ModuleData*>((*mi)->GetUserData());
+	data->fScaledSum = 0;
+	(*mi)->SetMainColor(Color_t(kGray));
 	if (stype == "All") {
 	  (*mi)->RemoveElements();
 	  continue;
@@ -340,7 +346,7 @@ AliEveFMDLoader::FindDigitSet(const char* t, UShort_t d, Char_t r, UShort_t s)
     else if (t == kESD) {
       signal->SetPalette(&fMultPalette);
       signal->SetOwnIds(kTRUE);
-    }
+    }    
   }
   return signal;
 }
@@ -404,10 +410,16 @@ AliEveFMDLoader::AddSignal(const char* t,
   }
   
   Float_t  scaled = TMath::Min((signal - min) / (max - min) * 10., 10.);
+  if ((scaled - min) < 1e-6) { 
+    // Very small (scalled) signals are ignored 
+    AliDebug(10, Form("Skipping small %s signal at FMD%d%c[%02d,%03d]=%f (s-min=%f<1e-6)", 
+		      t, det, rng, sec, str, signal, scaled-min));
+    return;
+  }
   Double_t w      = 2*ring->GetPitch();
   Int_t    value  = int(TMath::Nint(signal));
-  AliDebug(1, Form("New signal at FMD%d%c[%02d,%03d]=%f (v=%d, s=%f)", 
-		   det, rng, sec, str, signal, value, scaled));
+  AliDebug(5, Form("New %s signal at FMD%d%c[%02d,%03d]=%f (v=%d, s=%f)", 
+		   t, det, rng, sec, str, signal, value, scaled));
   AddDigit(signals, x, y, z, w, scaled, value, ref);
 }
 
@@ -459,15 +471,88 @@ AliEveFMDLoader::AddDigit(TEveDigitSet* signals,
     quads->QuadValue(value);
     if (ref) quads->QuadId(ref);
   }
+  TEveElement* par  = *(signals->BeginParents());
+  ModuleData*  data = static_cast<ModuleData*>(par->GetUserData());
+  int          maxD = 0;
+  switch (signals->GetName()[4]) { 
+  case 'I': case 'i': maxD = 2 * 512; break;
+  case 'O': case 'o': maxD = 2 * 256; break;
+  default:  return;
+  }
+  data->fScaledSum += scaled / maxD;
+}
+//____________________________________________________________________
+void
+AliEveFMDLoader::SummarizeModule(TEveElement* module)
+{
+  // Modify color of module according to the summed signal
+  ModuleData*  data = static_cast<ModuleData*>(module->GetUserData());
+  Float_t      sum  = data->fScaledSum / module->NumChildren();
+  if (sum <= 1e-6) {
+    module->SetMainColor(Color_t(kGray));
+    module->SetMainAlpha(0);
+    return;
+  }
+
+
+  /* The sum stored is 
+   * 
+   *  1/N 1/M_max   S_i^N S_j^M_i x_ij 
+   *
+   * where i runs over the number (N) of digit sets in the module 
+   * (zero or more of  Hits, Digits, Raw, ESD, i.e., in the range from
+   * 0 to 4), j runs over the number of digits (M_i) in a single digit
+   * set, M_max is the possible number of digits sets in each module 
+   * (2*256 for outer rings, 2*512 for inner rings), and x_ij is the 
+   * scaled signal (according to the colour palette for the signal in 
+   * question) multiplied by 10 i.e., 
+   * 
+   *   x_ij = 10 * (s_ij - s_min,i) / (s_max,i - s_min,i)
+   * 
+   * Here, s_ij is the basic signal (E-loss, ADC, or multiplicity), 
+   * and s_min,i and s_max,i are the corresponding limits. 
+   *
+   * Hence, the scaled sum above is in the range from 0 to 10.  
+   *
+   * To use one of the palettes, we need to scale this number to the 
+   * range set in the palette and cast it to an integer. 
+   */
+  int min  = fMultPalette.GetMinVal();
+  int max  = fMultPalette.GetMaxVal();
+  int cidx = sum/10 * (max-min) + min;
+  UChar_t pix[3];
+  fMultPalette.ColorFromValue(cidx, pix, false);
+  module->SetMainColorRGB(pix[0], pix[1], pix[2]);
+  module->SetMainAlpha(0.33);
 }
 
+//____________________________________________________________________
+void
+AliEveFMDLoader::SummarizeModules()
+{
+  // Summarize the signals in the all the modules, and modify 
+  // the module colour accordingly 
+  
+  for (TEveElement::List_i di = BeginChildren(); 
+       di != EndChildren(); ++di) { 
+    for (TEveElement::List_i ri = (*di)->BeginChildren(); 
+	 ri != (*di)->EndChildren(); ++ri) { 
+      for (TEveElement::List_i mi = (*ri)->BeginChildren();
+	   mi != (*ri)->EndChildren(); ++mi) { 
 
+	TEveElement* module = *mi;
+	SummarizeModule(module);
+      }
+    }
+  }
+}
 //____________________________________________________________________
 void
 AliEveFMDLoader::CheckAdd()
 {
   // check if we shoul re-add ourselves to the current event node 
   TEveElement* event = gEve->GetCurrentEvent();
+  SummarizeModules();
   if (event && event->FindChild(GetName())) return;
   gEve->AddElement(this);
 }
@@ -639,11 +724,6 @@ AliEveFMDLoader::LoadESD()
   }
   CheckAdd();
 }
-
-
-	
-      
-
   
 //____________________________________________________________________
 //

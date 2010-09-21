@@ -71,6 +71,10 @@ public:
   virtual ~AliEveFMDLoader();
   /** @} */
 protected:
+  struct ModuleData 
+  {
+    Float_t  fScaledSum;
+  };
   /** Constructor 
       @param name     Name of the folder. 
       @param useBoxes Whether to use boxes or Quads for the signals 
@@ -168,7 +172,10 @@ protected:
       @name Various service functions */
   /** check if we shoul re-add ourselves to the current event node */
   virtual void CheckAdd();
+  void SummarizeModule(TEveElement* module);
+  void SummarizeModules();
   /** @} */
+
 
   /** @{ 
       @name Palettes */
