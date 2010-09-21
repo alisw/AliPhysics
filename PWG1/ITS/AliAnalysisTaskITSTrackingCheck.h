@@ -141,6 +141,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistPtITSTPCsel; //! output hist
   TH1F         *fHistPtITSTPCselP; //! output hist
   TH1F         *fHistPtITSTPCselS; //! output hist
+  TH1F         *fHistPtITSTPCselFake; //! output hist
   TH1F         *fHistPtITSTPCselPfromStrange; //! output hist
   TH1F         *fHistPtITSTPCselSfromStrange; //! output hist
   TH1F         *fHistPtITSTPCselSfromMat; //! output hist
@@ -220,6 +221,12 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F     *fHistPDGMoth500700; //! output hist
   TH1F     *fHistPDGMoth10001500; //! output hist
   TH1F     *fHistPDGTrk; //! output hist
+  TH1F     *fHistITSRedChi2NonFakePt02; //! output hist
+  TH1F     *fHistITSRedChi2FakePt02; //! output hist
+  TH1F     *fHistITSRedChi2NonFakePt05; //! output hist
+  TH1F     *fHistITSRedChi2FakePt05; //! output hist
+  TH1F     *fHistITSRedChi2NonFakePt1; //! output hist
+  TH1F     *fHistITSRedChi2FakePt1; //! output hist
   TNtuple      *fNtupleESDTracks; //! output ntuple
   TNtuple      *fNtupleITSAlignExtra; //! output ntuple
   TNtuple      *fNtupleITSAlignSPDTracklets; //! output ntuple
@@ -239,7 +246,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   Bool_t SelectPt(Double_t pt);
   Int_t MakeITSflag(AliESDtrack *track) const;
 
-  ClassDef(AliAnalysisTaskITSTrackingCheck,9); // ITS tracks analysis
+  ClassDef(AliAnalysisTaskITSTrackingCheck,10); // ITS tracks analysis
 };
 
 #endif

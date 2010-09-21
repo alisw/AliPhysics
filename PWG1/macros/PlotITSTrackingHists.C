@@ -16,19 +16,20 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
 
   TList *list=(TList*)f->Get("cOutputITS");
   TList *listSPD=0;
+  TDirectoryFile *dir=0;
   if(!list) {
-    TDirectoryFile *dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
+    dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
     if(dir) list = (TList*)dir->Get("cOutputITS");
     // count active SPD HSs
     dir=(TDirectoryFile*)f->GetDirectory("SPD_Performance");
     if(dir) listSPD = (TList*)dir->Get("coutput1");
   }
 
-  if(!list || !dir) return kFALSE;
+  if(!list) return kFALSE;
 
   TH1F *hnHSsSPD=new TH1F("hnHSsSPD","Active HSs in SPD layers 1 and 2; layer; HSs",2,0.5,2.5);
   if(listSPD) {
-    listSPD->Print();
+    //listSPD->Print();
     TH1F *hFiredChip = (TH1F*)listSPD->FindObject("hFiredChip");
     Int_t nHSsInner=0,nHSsOuter=0;
     for(Int_t i=0;i<400;i++) if(hFiredChip->GetBinContent(i)>0) nHSsInner++;
@@ -92,6 +93,13 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
   TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
   TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPtITSMI6InAccFake = (TH1F*)list->FindObject("fHistPtITSMI6InAccFake");
+  TH1F *fHistPtITSMI5InAccFake = (TH1F*)list->FindObject("fHistPtITSMI5InAccFake");
+  TH1F *fHistPtITSMI4InAccFake = (TH1F*)list->FindObject("fHistPtITSMI4InAccFake");
+  TH1F *fHistPtITSMI3InAccFake = (TH1F*)list->FindObject("fHistPtITSMI3InAccFake");
+  TH1F *fHistPtITSMI2InAccFake = (TH1F*)list->FindObject("fHistPtITSMI2InAccFake");
+  TH1F *fHistPtITSMISPDInAccFake = (TH1F*)list->FindObject("fHistPtITSMISPDInAccFake");
+  TH1F *fHistPtITSMIoneSPDInAccFake = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAccFake");
   TH1F *fHistPtITSMIoneSPDthreeSDDSSDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDthreeSDDSSDInAcc");
   TH1F *fHistPtITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz6InAcc");
   TH1F *fHistPtITSMIokbadoutinz5InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz5InAcc");
@@ -124,11 +132,13 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtITSTPCsel = (TH1F*)list->FindObject("fHistPtITSTPCsel");
   TH1F *fHistPtITSTPCselP = (TH1F*)list->FindObject("fHistPtITSTPCselP");
   TH1F *fHistPtITSTPCselS = (TH1F*)list->FindObject("fHistPtITSTPCselS");
+  TH1F *fHistPtITSTPCselFake = (TH1F*)list->FindObject("fHistPtITSTPCselFake");
   TH1F *fHistPtITSTPCselPfromStrange = (TH1F*)list->FindObject("fHistPtITSTPCselSfromStrange");
   TH1F *fHistPtITSTPCselSfromStrange = (TH1F*)list->FindObject("fHistPtITSTPCselSfromStrange");
   TH1F *fHistPtITSTPCselSfromMat = (TH1F*)list->FindObject("fHistPtITSTPCselSfromMat");
 
   TH1F *fHistPtTPCInAccSfromMat = (TH1F*)list->FindObject("fHistPtTPCInAccSfromMat");
+
 
   //ReweightStrange(fHistPtTPCInAcc,fHistPtTPCInAccPfromStrange,fHistPtTPCInAccSfromStrange);
   //ReweightStrange(fHistPtITSTPCsel,fHistPtITSTPCselPfromStrange,fHistPtITSTPCselSfromStrange);
@@ -139,6 +149,14 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI2InAcc);
+  TH1F *fHistPtITSMIge2InAccFake = 0;
+  if(fHistPtITSMI6InAccFake) {
+    fHistPtITSMIge2InAccFake=(TH1F*)fHistPtITSMI6InAccFake->Clone("fHistPtITSMIge2InAccFake");
+    fHistPtITSMIge2InAccFake->Add(fHistPtITSMI5InAccFake);
+    fHistPtITSMIge2InAccFake->Add(fHistPtITSMI4InAccFake);
+    fHistPtITSMIge2InAccFake->Add(fHistPtITSMI3InAccFake);
+    fHistPtITSMIge2InAccFake->Add(fHistPtITSMI2InAccFake);
+  }
   TH1F *fHistPtITSMIge2InAccP = (TH1F*)fHistPtITSMI6InAccP->Clone("fHistPtITSMIge2InAccP");
   fHistPtITSMIge2InAccP->Add(fHistPtITSMI5InAccP);
   fHistPtITSMIge2InAccP->Add(fHistPtITSMI4InAccP);
@@ -149,6 +167,19 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIge2InAccS->Add(fHistPtITSMI4InAccS);
   fHistPtITSMIge2InAccS->Add(fHistPtITSMI3InAccS);
   fHistPtITSMIge2InAccS->Add(fHistPtITSMI2InAccS);
+
+  // fake fraction
+  if(fHistPtITSMIge2InAccFake) {
+    fHistPtITSMIge2InAccFake->Divide(fHistPtITSMIge2InAccFake,fHistPtITSMIge2InAcc,1,1,"B");
+    fHistPtITSMI2InAccFake->Divide(fHistPtITSMI2InAccFake,fHistPtITSMI2InAcc,1,1,"B");
+    fHistPtITSMI3InAccFake->Divide(fHistPtITSMI3InAccFake,fHistPtITSMI3InAcc,1,1,"B");
+    fHistPtITSMI4InAccFake->Divide(fHistPtITSMI4InAccFake,fHistPtITSMI4InAcc,1,1,"B");
+    fHistPtITSMI5InAccFake->Divide(fHistPtITSMI5InAccFake,fHistPtITSMI5InAcc,1,1,"B");
+    fHistPtITSMI6InAccFake->Divide(fHistPtITSMI6InAccFake,fHistPtITSMI6InAcc,1,1,"B");
+    fHistPtITSMISPDInAccFake->Divide(fHistPtITSMISPDInAccFake,fHistPtITSMISPDInAcc,1,1,"B");
+    fHistPtITSMIoneSPDInAccFake->Divide(fHistPtITSMIoneSPDInAccFake,fHistPtITSMIoneSPDInAcc,1,1,"B");
+    if (fHistPtITSTPCselFake)fHistPtITSTPCselFake->Divide(fHistPtITSTPCselFake,fHistPtITSTPCsel,1,1,"B");
+  }
 
   TH1F* fHistPtITSMISPDInAccMC=(TH1F*)fHistPtITSMISPDInAcc->Clone("fHistPtITSMISPDInAccMC");
   TH1F* fHistPtITSMIoneSPDInAccMC=(TH1F*)fHistPtITSMIoneSPDInAcc->Clone("fHistPtITSMIoneSPDInAccMC");
@@ -459,6 +490,37 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   l4->AddEntry(fHistPtITSMIokbadoutinz5InAcc,"5 layers","l");
   l4->AddEntry(fHistPtITSMIokbadoutinz4InAcc,"4 layers","l");
   l4->Draw();
+
+  if(fHistPtITSMIge2InAccFake) {
+    TCanvas *c5f =new TCanvas("c5f","c5f",10,10,600,600);
+    c5f->SetGridy();
+    c5f->SetLogx();
+    fHistPtITSMIge2InAccFake->SetMaximum(1.5);
+    fHistPtITSMIge2InAccFake->SetMinimum(0);
+    fHistPtITSMIge2InAccFake->SetTitle("Fraction of fake tracks with N ITS points");
+    fHistPtITSMIge2InAccFake->SetYTitle("Fraction of fakes");
+    fHistPtITSMIge2InAccFake->Draw();
+    fHistPtITSMI6InAccFake->SetLineColor(2);
+    fHistPtITSMI6InAccFake->Draw("same");
+    fHistPtITSMI5InAccFake->SetLineColor(3);
+    //fHistPtITSMI5InAccFake->Draw("same");
+    fHistPtITSMI4InAccFake->SetLineColor(4);
+    //fHistPtITSMI4InAccFake->Draw("same");
+    fHistPtITSMI3InAccFake->SetLineColor(6);
+    //fHistPtITSMI3InAccFake->Draw("same");
+    fHistPtITSMI2InAccFake->SetLineColor(7);
+    //fHistPtITSMI2InAccFake->Draw("same");
+    fHistPtITSMISPDInAccFake->SetLineColor(9);
+    fHistPtITSMISPDInAccFake->Draw("same");
+    fHistPtITSMIoneSPDInAccFake->SetLineColor(15);
+    fHistPtITSMIoneSPDInAccFake->Draw("same");
+    if(fHistPtITSTPCselFake) {
+      fHistPtITSTPCselFake->SetLineColor(kAzure+1);
+      fHistPtITSTPCselFake->Draw("same");
+    }
+    fHistPtITSMIge2InAccFake->Draw("same");
+    l3->Draw();
+  }
 
 
   TLegend *l4d=new TLegend(0.5,0.5,0.9,0.9);
@@ -2645,7 +2707,9 @@ void ReweightStrange(TH1F *hPt,TH1F* hPtPfromStrange,TH1F* hPtSfromStrange) {
 //--------------------------------------------------------------------------
 void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
 			 TString pathBeforeRun="/alice/data/2010/LHC10c/000",
-			 TString pathAfterRun="/ESDs/pass2/QA13/QAresults.root") {
+			 TString pathAfterRun="/ESDs/pass2/QA13/QAresults.root",
+			 TString pathAfterRun2="") 
+{
   //
   // Make ITS efficiency trending plots from QAresults.root files
   //
@@ -2725,7 +2789,14 @@ void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
     path.Append(pathAfterRun.Data());
     path.Prepend("alien://");
 
-    if(!PlotITSTrackingHists(path.Data(),ioValues,ioErrors)) continue;
+    if(!PlotITSTrackingHists(path.Data(),ioValues,ioErrors)) {
+      if(pathAfterRun2.Data()=="") continue;
+      TString path2=pathBeforeRun;
+      path2+=irun;
+      path2.Append(pathAfterRun2.Data());
+      path2.Prepend("alien://");
+      if(!PlotITSTrackingHists(path2.Data(),ioValues,ioErrors)) continue;
+    }
 
     Int_t bin=hEffge2Pt1->FindBin(irun);
 
@@ -2833,16 +2904,174 @@ Bool_t KeepRun(Int_t irun) {
 
 
   // LHC10c good runs
-  Int_t nruns=46;
-  Int_t goodruns[46]={121040, 121039, 120829, 120825, 120824, 120823, 120822, 120821, 120820, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120504, 120503, 120244, 120079, 120076, 120073, 120072, 120069, 120067, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 119163, 119161, 119159, 118561, 118560, 118558, 118556, 118518, 118512, 118507, 118506};
+  Int_t nruns10c=46;
+  Int_t goodruns10c[46]={121040, 121039, 120829, 120825, 120824, 120823, 120822, 120821, 120820, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120504, 120503, 120244, 120079, 120076, 120073, 120072, 120069, 120067, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 119163, 119161, 119159, 118561, 118560, 118558, 118556, 118518, 118512, 118507, 118506};
   //
+
+  // LHC10d good runs
+  Int_t nruns10d=80;
+  Int_t goodruns10d[80]={126437, 126432, 126425, 126424, 126422, 126409, 126408, 126407, 126406, 126405, 126404, 126403, 126359, 126352, 126351, 126350, 126285, 126284, 126283, 126168, 126167, 126160, 126158, 126097, 126090, 126088, 126082, 126081, 126078, 126073, 126008, 126007, 126004, 125855, 125851, 125850, 125849, 125848, 125847, 125844, 125843, 125842, 125633, 125632, 125630, 125628, 125296, 125295, 125186, 125156, 125140, 125139, 125134, 125133, 125101, 125100, 125097, 125085, 125083, 125023, 124751, 124750, 124746, 124702, 124608, 124607, 124606, 124605, 124604, 124381, 124380, 124378, 124367, 124362, 124358, 124355, 124191, 124187, 122375, 122374};
+  //
+
+  // LHC10e good runs
+  Int_t nruns10e=158;
+  Int_t goodruns10e[158]={130369, 130365, 130360, 130358, 130356, 130354, 130353, 130348, 130343, 130342, 130179, 130178, 130172, 130170, 130168, 130158, 130157, 130156, 130151, 130149, 130148, 129983, 129966, 129962, 129961, 129960, 129959, 129763, 129760, 129750, 129748, 129747, 129745, 129744, 129742, 129738, 129736, 129735, 129734, 129731, 129729, 129726, 129725, 129723, 129667, 129666, 129659, 129655, 129654, 129653, 129652, 129651, 129650, 129649, 129648, 129647, 129641, 129639, 129599, 129598, 129597, 129587, 129586, 129541, 129540, 129536, 129529, 129528, 129527, 129526, 129525, 129524, 129523, 129522, 129521, 129520, 129519, 129516, 129515, 129514, 129513, 129512, 129510, 129508, 129042, 129041, 128913, 128912, 128911, 128910, 128855, 128853, 128850, 128849, 128843, 128836, 128835, 128833, 128824, 128823, 128820, 128819, 128817, 128813, 128777, 128776, 128678, 128677, 128621, 128615, 128611, 128609, 128605, 128596, 128594, 128592, 128590, 128582, 128581, 128507, 128506, 128505, 128504, 128503, 128498, 128495, 128494, 128486, 128483, 128452, 128366, 128260, 128257, 128192, 128191, 128189, 128186, 128185, 128182, 128180, 128175, 128053, 127942, 127941, 127937, 127936, 127935, 127933, 127932, 127931, 127822, 127817, 127815, 127814, 127730, 127729, 127724, 127719};
 
 
   Bool_t found=kFALSE;
-  for(Int_t i=0; i<nruns; i++) {
-    if(irun==goodruns[i]) {found=kTRUE; break;}
-  }
-  
+  Int_t i=0;
+
+  for(i=0; i<nruns10c; i++) {
+    if(irun==goodruns10c[i]) {found=kTRUE; break;}
+  }  
   if(found) return kTRUE;
+
+  for(i=0; i<nruns10d; i++) {
+    if(irun==goodruns10d[i]) {found=kTRUE; break;}
+  }  
+  if(found) return kTRUE;
+
+  for(i=0; i<nruns10e; i++) {
+    if(irun==goodruns10e[i]) {found=kTRUE; break;}
+  }  
+  if(found) return kTRUE;
+
+
   return kFALSE;
+}
+//-------------------------------------------------------------------------
+void FakesWithChi2Cut(TString fname) {
+
+  gStyle->SetOptStat(0);
+
+  TFile *f= TFile::Open(fname.Data());
+  if(!f) return kFALSE;
+
+  TList *list=(TList*)f->Get("cOutputITS");
+  TDirectoryFile *dir=0;
+  if(!list) {
+    dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
+    if(dir) list = (TList*)dir->Get("cOutputITS");
+  }
+
+  if(!list) return kFALSE;
+
+
+
+
+  TH1F *fHistRedChi2AllPt02 = (TH1F*)list->FindObject("fHistITSRedChi2NonFakePt02");
+  TH1F *fHistRedChi2FakesPt02 = (TH1F*)list->FindObject("fHistITSRedChi2FakePt02");
+  TH1F *fHistRedChi2NonFakesPt02 = (TH1F*)fHistRedChi2AllPt02->Clone("fHistITSRedChi2NonFakePt02");
+  fHistRedChi2NonFakesPt02->Add(fHistRedChi2FakesPt02,-1.);
+
+  TH1F *fHistFakeFracVSChi2CutPt02 = (TH1F*)fHistRedChi2AllPt02->Clone("fHistFakeFracVSChi2CutPt02");
+  fHistFakeFracVSChi2CutPt02->SetLineColor(2);
+  fHistFakeFracVSChi2CutPt02->SetLineWidth(2);
+  TH1F *fHistNonFakeEffVSChi2CutPt02 = (TH1F*)fHistRedChi2AllPt02->Clone("fHistFakeEffVSChi2CutPt02");
+  fHistNonFakeEffVSChi2CutPt02->SetLineColor(4);
+  fHistNonFakeEffVSChi2CutPt02->SetLineWidth(2);
+
+  for(Int_t bin=1;bin<=fHistFakeFracVSChi2CutPt02->GetNbinsX();bin++) {
+    Float_t fakesBelowCut=fHistRedChi2FakesPt02->Integral(1,bin);
+    Float_t nonfakesBelowCut=fHistRedChi2NonFakesPt02->Integral(1,bin);
+    Float_t allBelowCut=fHistRedChi2AllPt02->Integral(1,bin);
+    Float_t nonfakesNoCut=fHistRedChi2NonFakesPt02->Integral();
+    fHistFakeFracVSChi2CutPt02->SetBinContent(bin,fakesBelowCut/allBelowCut);
+    fHistNonFakeEffVSChi2CutPt02->SetBinContent(bin,nonfakesBelowCut/nonfakesNoCut);
+  }
+
+  TH1F *fHistRedChi2AllPt05 = (TH1F*)list->FindObject("fHistITSRedChi2NonFakePt05");
+  TH1F *fHistRedChi2FakesPt05 = (TH1F*)list->FindObject("fHistITSRedChi2FakePt05");
+  TH1F *fHistRedChi2NonFakesPt05 = (TH1F*)fHistRedChi2AllPt05->Clone("fHistITSRedChi2NonFakePt05");
+  fHistRedChi2NonFakesPt05->Add(fHistRedChi2FakesPt05,-1.);
+
+  TH1F *fHistFakeFracVSChi2CutPt05 = (TH1F*)fHistRedChi2AllPt05->Clone("fHistFakeFracVSChi2CutPt05");
+  fHistFakeFracVSChi2CutPt05->SetLineColor(2);
+  fHistFakeFracVSChi2CutPt05->SetLineWidth(2);
+  TH1F *fHistNonFakeEffVSChi2CutPt05 = (TH1F*)fHistRedChi2AllPt05->Clone("fHistFakeEffVSChi2CutPt05");
+  fHistNonFakeEffVSChi2CutPt05->SetLineColor(4);
+  fHistNonFakeEffVSChi2CutPt05->SetLineWidth(2);
+
+  for(Int_t bin=1;bin<=fHistFakeFracVSChi2CutPt05->GetNbinsX();bin++) {
+    Float_t fakesBelowCut=fHistRedChi2FakesPt05->Integral(1,bin);
+    Float_t nonfakesBelowCut=fHistRedChi2NonFakesPt05->Integral(1,bin);
+    Float_t allBelowCut=fHistRedChi2AllPt05->Integral(1,bin);
+    Float_t nonfakesNoCut=fHistRedChi2NonFakesPt05->Integral();
+    fHistFakeFracVSChi2CutPt05->SetBinContent(bin,fakesBelowCut/allBelowCut);
+    fHistNonFakeEffVSChi2CutPt05->SetBinContent(bin,nonfakesBelowCut/nonfakesNoCut);
+  }
+
+  TH1F *fHistRedChi2AllPt1 = (TH1F*)list->FindObject("fHistITSRedChi2NonFakePt1");
+  TH1F *fHistRedChi2FakesPt1 = (TH1F*)list->FindObject("fHistITSRedChi2FakePt1");
+  TH1F *fHistRedChi2NonFakesPt1 = (TH1F*)fHistRedChi2AllPt1->Clone("fHistITSRedChi2NonFakePt1");
+  fHistRedChi2NonFakesPt1->Add(fHistRedChi2FakesPt1,-1.);
+
+  TH1F *fHistFakeFracVSChi2CutPt1 = (TH1F*)fHistRedChi2AllPt1->Clone("fHistFakeFracVSChi2CutPt1");
+  fHistFakeFracVSChi2CutPt1->SetLineColor(2);
+  fHistFakeFracVSChi2CutPt1->SetLineWidth(2);
+  TH1F *fHistNonFakeEffVSChi2CutPt1 = (TH1F*)fHistRedChi2AllPt1->Clone("fHistFakeEffVSChi2CutPt1");
+  fHistNonFakeEffVSChi2CutPt1->SetLineColor(4);
+  fHistNonFakeEffVSChi2CutPt1->SetLineWidth(2);
+
+  for(Int_t bin=1;bin<=fHistFakeFracVSChi2CutPt1->GetNbinsX();bin++) {
+    Float_t fakesBelowCut=fHistRedChi2FakesPt1->Integral(1,bin);
+    Float_t nonfakesBelowCut=fHistRedChi2NonFakesPt1->Integral(1,bin);
+    Float_t allBelowCut=fHistRedChi2AllPt1->Integral(1,bin);
+    Float_t nonfakesNoCut=fHistRedChi2NonFakesPt1->Integral();
+    fHistFakeFracVSChi2CutPt1->SetBinContent(bin,fakesBelowCut/allBelowCut);
+    fHistNonFakeEffVSChi2CutPt1->SetBinContent(bin,nonfakesBelowCut/nonfakesNoCut);
+  }
+
+
+  TCanvas *c=new TCanvas("c","c",0,0,1000,500);
+  c->Divide(3,1);
+  c->cd(1);
+  fHistRedChi2NonFakesPt02->Scale(1./fHistRedChi2NonFakesPt02->Integral());
+  fHistRedChi2NonFakesPt02->SetLineColor(4);
+  fHistRedChi2NonFakesPt02->Draw();
+  fHistRedChi2FakesPt02->Scale(1./fHistRedChi2FakesPt02->Integral());
+  fHistRedChi2FakesPt02->SetLineColor(2);
+  fHistRedChi2FakesPt02->Draw("same");
+  c->cd(2);
+  fHistRedChi2NonFakesPt05->Scale(1./fHistRedChi2NonFakesPt05->Integral());
+  fHistRedChi2NonFakesPt05->SetLineColor(4);
+  fHistRedChi2NonFakesPt05->Draw();
+  fHistRedChi2FakesPt05->Scale(1./fHistRedChi2FakesPt05->Integral());
+  fHistRedChi2FakesPt05->SetLineColor(2);
+  fHistRedChi2FakesPt05->Draw("same");
+  c->cd(3);
+  fHistRedChi2NonFakesPt1->Scale(1./fHistRedChi2NonFakesPt1->Integral());
+  fHistRedChi2NonFakesPt1->SetLineColor(4);
+  fHistRedChi2NonFakesPt1->Draw();
+  fHistRedChi2FakesPt1->Scale(1./fHistRedChi2FakesPt1->Integral());
+  fHistRedChi2FakesPt1->SetLineColor(2);
+  fHistRedChi2FakesPt1->Draw("same");
+
+  TCanvas *cc=new TCanvas("cc","cc",0,0,1000,500);
+  cc->Divide(3,1);
+  cc_1->SetLogx();
+  cc_2->SetLogx();
+  cc_3->SetLogx();
+  cc->cd(1);
+  fHistFakeFracVSChi2CutPt02->SetXTitle("maximum ITS #chi^{2}/nclusters");
+  fHistFakeFracVSChi2CutPt02->SetMinimum(0);
+  fHistFakeFracVSChi2CutPt02->SetMaximum(1);
+  fHistFakeFracVSChi2CutPt02->Draw();
+  fHistNonFakeEffVSChi2CutPt02->Draw("same");
+  cc->cd(2);
+  fHistFakeFracVSChi2CutPt05->SetXTitle("maximum ITS #chi^{2}/nclusters");
+  fHistFakeFracVSChi2CutPt05->SetMinimum(0);
+  fHistFakeFracVSChi2CutPt05->SetMaximum(1);
+  fHistFakeFracVSChi2CutPt05->Draw();
+  fHistNonFakeEffVSChi2CutPt05->Draw("same");
+  cc->cd(3);
+  fHistFakeFracVSChi2CutPt1->SetXTitle("maximum ITS #chi^{2}/nclusters");
+  fHistFakeFracVSChi2CutPt1->SetMinimum(0);
+  fHistFakeFracVSChi2CutPt1->SetMaximum(1);
+  fHistFakeFracVSChi2CutPt1->Draw();
+  fHistNonFakeEffVSChi2CutPt1->Draw("same");
+
+
+
+  return;
 }

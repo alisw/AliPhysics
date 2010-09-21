@@ -161,6 +161,7 @@ fHistPtITSMIoneSPDthreeSDDSSDInAcc(0),
 fHistPtITSTPCsel(0),
 fHistPtITSTPCselP(0),
 fHistPtITSTPCselS(0),
+fHistPtITSTPCselFake(0),
 fHistPtITSTPCselPfromStrange(0),
 fHistPtITSTPCselSfromStrange(0),
 fHistPtITSTPCselSfromMat(0),
@@ -240,6 +241,12 @@ fHistPDGMoth150200(0),
 fHistPDGMoth500700(0),
 fHistPDGMoth10001500(0),
 fHistPDGTrk(0),
+fHistITSRedChi2NonFakePt02(0),
+fHistITSRedChi2FakePt02(0),
+fHistITSRedChi2NonFakePt05(0),
+fHistITSRedChi2FakePt05(0),
+fHistITSRedChi2NonFakePt1(0),
+fHistITSRedChi2FakePt1(0),
 fNtupleESDTracks(0),
 fNtupleITSAlignExtra(0),
 fNtupleITSAlignSPDTracklets(0),
@@ -351,6 +358,7 @@ fHistPtITSMIoneSPDthreeSDDSSDInAcc(0),
 fHistPtITSTPCsel(0),
 fHistPtITSTPCselP(0),
 fHistPtITSTPCselS(0),
+fHistPtITSTPCselFake(0),
 fHistPtITSTPCselPfromStrange(0),
 fHistPtITSTPCselSfromStrange(0),
 fHistPtITSTPCselSfromMat(0),
@@ -430,6 +438,12 @@ fHistPDGMoth150200(0),
 fHistPDGMoth500700(0),
 fHistPDGMoth10001500(0),
 fHistPDGTrk(0),
+fHistITSRedChi2NonFakePt02(0),
+fHistITSRedChi2FakePt02(0),
+fHistITSRedChi2NonFakePt05(0),
+fHistITSRedChi2FakePt05(0),
+fHistITSRedChi2NonFakePt1(0),
+fHistITSRedChi2FakePt1(0),
 fNtupleESDTracks(0),
 fNtupleITSAlignExtra(0),
 fNtupleITSAlignSPDTracklets(0),
@@ -904,6 +918,11 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistPtITSTPCselS->SetMinimum(0);
   fOutput->Add(fHistPtITSTPCselS);
 
+  fHistPtITSTPCselFake = new TH1F("fHistPtITSTPCselFake","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSTPCselFake->Sumw2();
+  fHistPtITSTPCselFake->SetMinimum(0);
+  fOutput->Add(fHistPtITSTPCselFake);
+
   fHistPtITSTPCselSfromStrange = new TH1F("fHistPtITSTPCselSfromStrange","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSTPCselSfromStrange->Sumw2();
   fHistPtITSTPCselSfromStrange->SetMinimum(0);
@@ -1289,6 +1308,19 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistd0zITSMIoneSPDInAccS10001500->SetMinimum(0);
   fOutput->Add(fHistd0zITSMIoneSPDInAccS10001500);
 
+  fHistITSRedChi2NonFakePt02 = new TH1F("fHistITSRedChi2NonFakePt02","ITS chi2/cluster; ITS #chi^{2}/nclusters; tracks",500,0,100);
+  fOutput->Add(fHistITSRedChi2NonFakePt02);
+  fHistITSRedChi2FakePt02 = new TH1F("fHistITSRedChi2FakePt02","ITS chi2/cluster; ITS #chi^{2}/nclusters; tracks",500,0,100);
+  fOutput->Add(fHistITSRedChi2FakePt02);
+  fHistITSRedChi2NonFakePt05 = new TH1F("fHistITSRedChi2NonFakePt05","ITS chi2/cluster; ITS #chi^{2}/nclusters; tracks",500,0,100);
+  fOutput->Add(fHistITSRedChi2NonFakePt05);
+  fHistITSRedChi2FakePt05 = new TH1F("fHistITSRedChi2FakePt05","ITS chi2/cluster; ITS #chi^{2}/nclusters; tracks",500,0,100);
+  fOutput->Add(fHistITSRedChi2FakePt05);
+  fHistITSRedChi2NonFakePt1 = new TH1F("fHistITSRedChi2NonFakePt1","ITS chi2/cluster; ITS #chi^{2}/nclusters; tracks",500,0,100);
+  fOutput->Add(fHistITSRedChi2NonFakePt1);
+  fHistITSRedChi2FakePt1 = new TH1F("fHistITSRedChi2FakePt1","ITS chi2/cluster; ITS #chi^{2}/nclusters; tracks",500,0,100);
+  fOutput->Add(fHistITSRedChi2FakePt1);
+
 
   // ntuples
   //
@@ -1364,7 +1396,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     }
     AliGenEventHeader* genHeader = header->GenEventHeader();
     genHeader->PrimaryVertex(mcVertex);
-
+    printf("MC vertex: %f %f %f\n",mcVertex[0],mcVertex[1],mcVertex[2]);
 
     Int_t ngenpart = (Int_t)stack->GetNtrack();
     //printf("# generated particles = %d\n",ngenpart);
@@ -1375,6 +1407,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       Int_t apdg = TMath::Abs(part->GetPdgCode());
       if(apdg!=11 && apdg!=13 && apdg!=211 && apdg!=321 && apdg!=2212) continue;      
       // reject secondaries
+      //if(TMath::Sqrt((part->Vx()-mcVertex[0])*(part->Vx()-mcVertex[0])+(part->Vy()-mcVertex[1])*(part->Vy()-mcVertex[1]))<.01) printf("%f\n",TMath::Sqrt((part->Vx()-mcVertex[0])*(part->Vx()-mcVertex[0])+(part->Vy()-mcVertex[1])*(part->Vy()-mcVertex[1])));
       if(TMath::Sqrt((part->Vx()-mcVertex[0])*(part->Vx()-mcVertex[0])+(part->Vy()-mcVertex[1])*(part->Vy()-mcVertex[1]))>0.0010) continue;
       // reject incoming protons
       Double_t energy  = part->Energy();
@@ -1383,7 +1416,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       Double_t y = 0.5*TMath::Log((energy+pz+1.e-13)/(energy-pz+1.e-13));
       if(TMath::Abs(y)<1.0) dNchdy += 0.5; // count 1/2 of particles in |y|<1
     }
-    //printf("# primary particles = %7.1f\n",dNchdy);
+    printf("# primary particles = %7.1f\n",dNchdy);
   } 
   // ***********  MC info ***************
   Double_t mcVtxPos[3]={mcVertex[0],mcVertex[1],mcVertex[2]},mcVtxSigma[3]={0,0,0};
@@ -1470,12 +1503,12 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     delete esdtrackCutsITSTPC; esdtrackCutsITSTPC=0;
     return;
   }
-
+  spdv->Print();
 
   //
   // Tracks vertex
   const AliESDVertex *vertexESD = fESD->GetPrimaryVertexTracks();
-
+  vertexESD->Print();
 
   if(spdvtitle.Contains("3D")) {
     fHistNEvents->Fill(1);
@@ -1502,6 +1535,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
   // loop on tracks
   for(Int_t itr=0; itr<ntracks; itr++) {
     AliESDtrack *track = fESD->GetTrack(itr);
+    //if(track->Charge()>0) continue;
     // remove kink daughters
     if(track->GetKinkIndex(0)>0) continue;
 
@@ -1817,7 +1851,16 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	}
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) {
 	  fHistPtITSMIoneSPDInAcc->Fill(track->Pt());
-	  if(isFake) fHistPtITSMIoneSPDInAccFake->Fill(track->Pt());
+	  Float_t chi2redITS = track->GetITSchi2()/track->GetNcls(0);
+	  if(track->Pt()>0.18 && track->Pt()<0.25)  fHistITSRedChi2NonFakePt02->Fill(chi2redITS);
+	  if(track->Pt()>0.4 && track->Pt()<0.6)  fHistITSRedChi2NonFakePt05->Fill(chi2redITS);
+	  if(track->Pt()>0.9 && track->Pt()<1.5)  fHistITSRedChi2NonFakePt1->Fill(chi2redITS);
+	  if(isFake) {
+	    fHistPtITSMIoneSPDInAccFake->Fill(track->Pt());
+	    if(track->Pt()>0.18 && track->Pt()<0.25)  fHistITSRedChi2FakePt02->Fill(chi2redITS);
+	    if(track->Pt()>0.4 && track->Pt()<0.6)  fHistITSRedChi2FakePt05->Fill(chi2redITS);
+	    if(track->Pt()>0.9 && track->Pt()<1.5)  fHistITSRedChi2FakePt1->Fill(chi2redITS);
+	  }
 	  if(nclsSDDSSD>=3) fHistPtITSMIoneSPDthreeSDDSSDInAcc->Fill(track->Pt());
 
 	  if(isPrimary) {fHistPtITSMIoneSPDInAccP->Fill(track->Pt());} else {fHistPtITSMIoneSPDInAccS->Fill(track->Pt());}  
@@ -1858,6 +1901,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     // track that passes final ITS+TPC cuts
     if(itsfindableAcc && fESDtrackCutsITSTPC->AcceptTrack(track)) {
       fHistPtITSTPCsel->Fill(track->Pt());
+      if(isFake) fHistPtITSTPCselFake->Fill(track->Pt());
       fHistdEdxVSPtITSTPCsel->Fill(track->Pt(),track->GetITSsignal());
       if(isPrimary) {
 	fHistPtITSTPCselP->Fill(track->Pt());
