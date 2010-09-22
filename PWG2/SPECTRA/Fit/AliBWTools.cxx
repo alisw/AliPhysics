@@ -379,7 +379,7 @@ void AliBWTools::GetMeanDataAndExtrapolation(const TH1 * hData, TF1 * fExtrapola
   cout << " Data "<< mean << " " << integral << endl;
   
   mean = mean/integral;
-  error = TMath::Sqrt(err2);
+  error = TMath::Sqrt(err2)/integral;
 
 
 }
