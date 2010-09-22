@@ -13,6 +13,7 @@
 
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliAnalysisTaskTotEt.h"
 #include "AliAnalysisEtReconstructedPhos.h"
@@ -33,6 +34,7 @@ AliAnalysisTaskTotEt::AliAnalysisTaskTotEt(const char *name) :
         ,fRecAnalysis(0)
         ,fMCAnalysis(0)
         ,fHistEtRecvsEtMC(0)
+        ,fEsdtrackCutsTPC(0)
 {
     // Constructor
 
@@ -74,6 +76,19 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
     fMCAnalysis->FillOutputList(fOutputList);
     fHistEtRecvsEtMC = new TH2F("fHistEtRecvsEtMC", "Reconstructed E_{t} vs MC E_{t}", 1000, 0.000, 100, 1000, 0.0001, 100);
     fOutputList->Add(fHistEtRecvsEtMC);
+
+
+    fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
+    fOutputList->Add(fEsdtrackCutsTPC);
+    if(fEsdtrackCutsTPC){
+      fRecAnalysis->SetTPCOnlyTrackCuts( GetTPCOnlyTrackCuts());
+      fMCAnalysis->SetTPCOnlyTrackCuts( GetTPCOnlyTrackCuts());
+    }
+    else{
+      Printf("Error: no track cuts!");
+    }
+
 }
 
 //________________________________________________________________________

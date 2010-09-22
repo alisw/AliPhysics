@@ -10,6 +10,7 @@
 
 class AliAnalysisEtReconstructed;
 class AliAnalysisEtMonteCarlo;
+class AliESDtrackCuts;
 class TH2F;
 class TList;
 
@@ -28,6 +29,8 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
     
+  AliESDtrackCuts* GetTPCOnlyTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCutsTPCOnly");}
+
 private:
   
   //Declare private to avoid compilation warning
@@ -41,6 +44,7 @@ private:
   
   TH2F *fHistEtRecvsEtMC; // Rec vs MC histo
 
+  AliESDtrackCuts* fEsdtrackCutsTPC; // track cuts TPC
   
   ClassDef(AliAnalysisTaskTotEt, 1); // example of analysis
 };

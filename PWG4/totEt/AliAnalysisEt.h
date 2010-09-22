@@ -15,6 +15,7 @@ class TH2F;
 class TH1F;
 class AliVEvent;
 class TList;
+class AliESDtrackCuts;
 class Rtypes;
 class TDatabasePDG;
 class AliAnalysisEtCuts;
@@ -76,6 +77,7 @@ public:
     /** Total charged Et in the event within the acceptance cuts */
     Double_t GetTotChargedEtAcc() const { return fTotChargedEtAcc; }
 
+    void SetTPCOnlyTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsTPC = (AliESDtrackCuts *) cuts;}
 
 protected:
        
@@ -209,6 +211,9 @@ protected:
 
     TTree *fTree; // optional TTree
     
+
+    AliESDtrackCuts* fEsdtrackCutsTPC;//esd track cuts for TPC tracks (which may also contain ITS hits)
+
 private:
     //Declare private to avoid compilation warning
     AliAnalysisEt & operator = (const AliAnalysisEt & g) ;//cpy assignment
