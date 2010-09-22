@@ -137,6 +137,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 
   void MoveParticleAccordingToVertex(AliKFParticle *particle,AliGammaConversionBGHandler::GammaConversionVertex *vertex);
 
+  void SetApplyChi2Cut(Bool_t flag){fApplyChi2Cut = flag;}
+
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -265,10 +267,11 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fDoNeutralMesonV0MCCheck; //flag
   Bool_t fUseTrackMultiplicityForBG;
   Bool_t fMoveParticleAccordingToVertex;
+  Bool_t fApplyChi2Cut;
 
   vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
 
-  ClassDef(AliAnalysisTaskGammaConversion, 10); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 11); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

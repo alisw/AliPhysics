@@ -123,6 +123,7 @@ AliAnalysisTaskSE(),
   fDoNeutralMesonV0MCCheck(kFALSE),
   fUseTrackMultiplicityForBG(kTRUE),
   fMoveParticleAccordingToVertex(kFALSE),
+  fApplyChi2Cut(kFALSE),
   fKFReconstructedGammasV0Index()
 {
   // Default constructor
@@ -206,6 +207,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fDoNeutralMesonV0MCCheck(kFALSE),
   fUseTrackMultiplicityForBG(kTRUE),
   fMoveParticleAccordingToVertex(kFALSE),
+  fApplyChi2Cut(kFALSE),
   fKFReconstructedGammasV0Index()
 {
   // Common I/O in slot 0
@@ -264,7 +266,6 @@ AliAnalysisTaskGammaConversion::~AliAnalysisTaskGammaConversion()
     delete fAODOmega;
   }
   fAODOmega = NULL;
-
 
 }
 
@@ -1875,7 +1876,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
       chi2TwoGammaCandidate = twoGammaCandidate->GetChi2();
 				
 	fHistograms->FillHistogram("ESD_Mother_Chi2",chi2TwoGammaCandidate);
-	//if(chi2TwoGammaCandidate>0 && chi2TwoGammaCandidate<fV0Reader->GetChi2CutMeson()){
+	if((chi2TwoGammaCandidate>0 && chi2TwoGammaCandidate<fV0Reader->GetChi2CutMeson()) || fApplyChi2Cut == kFALSE){
 					
 	  TVector3 momentumVectorTwoGammaCandidate(twoGammaCandidate->GetPx(),twoGammaCandidate->GetPy(),twoGammaCandidate->GetPz());
 	  TVector3 spaceVectorTwoGammaCandidate(twoGammaCandidate->GetX(),twoGammaCandidate->GetY(),twoGammaCandidate->GetZ());
@@ -2091,7 +2092,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	    AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
           }
 
-	  //        }
+	}
 	  //}
 	  delete twoGammaCandidate;
     }
@@ -2288,7 +2289,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	  //	if(backgroundCandidate->GetNDF()>0){
 	  //	  chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
 	  chi2BG = backgroundCandidate->GetChi2();
-	  //	  if(chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()){
+	  if((chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()) || fApplyChi2Cut == kFALSE){
 					
 	  TVector3 momentumVectorbackgroundCandidate(backgroundCandidate->GetPx(),backgroundCandidate->GetPy(),backgroundCandidate->GetPz());
 	  TVector3 spaceVectorbackgroundCandidate(backgroundCandidate->GetX(),backgroundCandidate->GetY(),backgroundCandidate->GetZ());
@@ -2358,7 +2359,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	    fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
 	  }
 	  //	  }
-	  //	}
+	  }
 	  delete backgroundCandidate;      
 	}
       }
@@ -2393,7 +2394,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	    Double_t widthBG = 0.;
 	    Double_t chi2BG =10000.;	
 	    backgroundCandidate->GetMass(massBG,widthBG);
-	    if(backgroundCandidate->GetNDF()>0){
+	    /*	    if(backgroundCandidate->GetNDF()>0){
 	      chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
 	      {//remember to remove
 		TVector3 momentumVectorbackgroundCandidate(backgroundCandidate->GetPx(),backgroundCandidate->GetPy(),backgroundCandidate->GetPz());
@@ -2402,7 +2403,9 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 		Double_t openingAngleBG = currentEventGoodV0.GetAngle(previousGoodV0);
 		fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle_nochi2", openingAngleBG);
 	      }
-	      if(chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()){
+	    */
+	      chi2BG = backgroundCandidate->GetChi2();
+	      if((chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson()) || fApplyChi2Cut == kFALSE){
 		TVector3 momentumVectorbackgroundCandidate(backgroundCandidate->GetPx(),backgroundCandidate->GetPy(),backgroundCandidate->GetPz());
 		TVector3 spaceVectorbackgroundCandidate(backgroundCandidate->GetX(),backgroundCandidate->GetY(),backgroundCandidate->GetZ());
 					
@@ -2471,8 +2474,8 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 		  fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
 		  fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
 		}
+		//  }
 	      }
-	    }
 	    delete backgroundCandidate;      
 	  }
 	}
