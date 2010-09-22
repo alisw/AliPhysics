@@ -48,8 +48,6 @@ private:
   Float_t *fHighSPDValue;        // lower limits for QA bit settings
   TCanvas **    fImage;          //[AliRecoParam::kNSpecies]
 
-  TPaveText * fDisplayStatus[6]; //Online Comments for the DQM-shifter histos 
-
   ClassDef(AliITSQASPDChecker,4)  // description 
 
 };
