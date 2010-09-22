@@ -66,6 +66,7 @@ public:
   
   static Bool_t  FitTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
   void    UserCreateOutputObjects();
+  Float_t GetDyRange() const {return fDyRange;}
   Float_t GetPtThreshold() const {return fPtThreshold;}
   Float_t GetSegmentationLevel() const {return fSegmentLevel;}
   Bool_t  GetRefFigure(Int_t ifig);
@@ -89,6 +90,7 @@ public:
   TH1*    PlotTrackOut(const AliTRDtrackV1 *t=NULL);
   TH1*    PlotMC(const AliTRDtrackV1 *t=NULL);
 
+  void    SetDyRange(Float_t dy) {fDyRange = dy;}
   void    SetSegmentationLevel(Int_t l=0);
   void    SetPtThreshold(Float_t pt) {fPtThreshold = pt;}
   void    SetVerbose(Bool_t v = kTRUE) {SetBit(kVerbose, v);}
@@ -128,6 +130,7 @@ private:
   UShort_t            fNcomp[kNprojs];  // number of projections per task
   Char_t              *fAxTitle[kNprojs][4]; //! Title for all ref histos
   Float_t             fPtThreshold;     // pt threshold for some performance plots
+  Float_t             fDyRange;         // min/max dy
   static Char_t const *fgPerformanceName[kNviews]; //! name of performance plot
   static Char_t const *fgParticle[11];    //! latex name of particles/sign 
   static UChar_t const fgNproj[kNviews]; //! number of projections per task
@@ -143,6 +146,6 @@ private:
 /*  TObjArray           *fTrklt;  //! tracklet2track calib
   TObjArray           *fMCtrklt;//! tracklet2mc calib*/
   
-  ClassDef(AliTRDresolution, 8) // TRD tracking resolution task
+  ClassDef(AliTRDresolution, 9) // TRD tracking resolution task
 };
 #endif

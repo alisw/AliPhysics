@@ -130,6 +130,7 @@ AliTRDresolution::AliTRDresolution()
   ,fIdxPlot(0)
   ,fIdxFrame(0)
   ,fPtThreshold(1.)
+  ,fDyRange(1.5)
   ,fDBPDG(NULL)
   ,fGraphS(NULL)
   ,fGraphM(NULL)
@@ -152,6 +153,7 @@ AliTRDresolution::AliTRDresolution(char* name)
   ,fIdxPlot(0)
   ,fIdxFrame(0)
   ,fPtThreshold(1.)
+  ,fDyRange(1.5)
   ,fDBPDG(NULL)
   ,fGraphS(NULL)
   ,fGraphM(NULL)
@@ -2275,7 +2277,9 @@ TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool
     Int_t nybins=fgkNresYsegm[fSegmentLevel];
     if(expand) nybins*=2;
     h = new TH3S(hname, htitle, 
-                 48, -.48, .48, 60, -1.5, 1.5, nybins, -0.5, nybins-0.5);
+                 48, -.48, .48,            // phi
+                 60, -fDyRange, fDyRange,  // dy
+                 nybins, -0.5, nybins-0.5);// segment
   } else h->Reset();
   arr->AddAt(h, 0);
   sprintf(hname, "%s_%s_YZpull", GetNameId(), name);
