@@ -628,9 +628,20 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   }
   
   // run fast jet
+  // employ setters for these...
+
+  double ghostEtamax = 0.9;
+  double ghostArea   = 0.01;
+  int    activeAreaRepeats = 1;
+  // now create the object that holds info about ghosts                         
+  fastjet::GhostedAreaSpec ghostSpec(ghostEtamax, activeAreaRepeats, ghostArea)\
+;
+  fastjet::AreaType areaType =   fastjet::active_area;
+  fastjet::AreaDefinition areaDef = fastjet::AreaDefinition(areaType,ghostSpec);
+  
   fastjet::JetDefinition jetDef(fAlgorithm, fRparam, fRecombScheme, fStrategy);
   vector <fastjet::PseudoJet> inclusiveJets, sortedJets;
-  fastjet::ClusterSequence clustSeq(inputParticlesRec, jetDef);
+  fastjet::ClusterSequenceArea clustSeq(inputParticlesRec, jetDef,areaDef);
   
   inclusiveJets = clustSeq.inclusive_jets();
   sortedJets    = sorted_by_pt(inclusiveJets);
@@ -703,6 +714,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      if(tmpPt>fJetOutputMinPt&&jarray){
        aodOutJet =  new ((*jarray)[nAodOutJets++]) AliAODJet(tmpRec);
        Double_t area=clustSeq.area(sortedJets[j]);
+       
        aodOutJet->SetEffArea(area,0);
      }
 
