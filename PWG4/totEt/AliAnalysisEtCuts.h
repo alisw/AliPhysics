@@ -205,7 +205,7 @@ private:
   AliAnalysisEtCuts & operator = (const AliAnalysisEtCuts & g) ;//copy assignment
   AliAnalysisEtCuts(const AliAnalysisEtCuts & g) ; // copy ctor
 
-  ClassDef(AliAnalysisEtCuts, 0);
+  ClassDef(AliAnalysisEtCuts, 1);
 };
 
 #endif // ALIANALYSISETCUTS_H

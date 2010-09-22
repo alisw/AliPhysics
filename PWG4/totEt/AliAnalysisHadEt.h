@@ -164,7 +164,7 @@ protected:
     AliAnalysisHadEt & operator = (const AliAnalysisHadEt & g) ;//cpy assignment
     AliAnalysisHadEt(const AliAnalysisHadEt & g) ; // cpy ctor
 
-    ClassDef(AliAnalysisHadEt, 0);
+    ClassDef(AliAnalysisHadEt, 1);
 };
 
 #endif // ALIANALYSISHADET_H

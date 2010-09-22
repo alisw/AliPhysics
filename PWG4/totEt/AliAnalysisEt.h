@@ -219,7 +219,7 @@ private:
     AliAnalysisEt & operator = (const AliAnalysisEt & g) ;//cpy assignment
     AliAnalysisEt(const AliAnalysisEt & g) ; // cpy ctor
 
-    ClassDef(AliAnalysisEt, 0);
+    ClassDef(AliAnalysisEt, 1);
 };
 
 #endif // ALIANALYSISET_H
