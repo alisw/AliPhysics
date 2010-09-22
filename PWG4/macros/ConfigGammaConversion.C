@@ -41,7 +41,7 @@ Bool_t kGCMoveParticlesAccordingToVertex = kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="900356200010030"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="900110204010001"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=10;
 
@@ -50,11 +50,13 @@ Int_t kGCpidOfPositiveTrack=-11;
 
 Double_t kGCmaxVertexZ   = 10.;
 Double_t kGCmaxRCut   = 180.;
+Double_t kGCminRCut   = 2.8;
 Double_t kGCetaCut    = 0.9;
 Double_t kGCptCut     = 0.02;
 Double_t kGCsingleptCut = 0.02;
 Double_t kGCmaxZCut     = 240.;
 Double_t kGCminClsTPCCut= 0.;
+Double_t kGCminClsTPCCutToF= 0.;
 Double_t kGCchi2CutConversion   = 30.;
 Double_t kGCchi2CutMeson   = 50.;
 Double_t kGCalphaCutMeson   = 0.7;
@@ -203,6 +205,8 @@ Bool_t kGCplotMCMotherPtvsRapidWithinAcceptance            = kTRUE;
 Bool_t kGCplotMCMotherPtvsEtaConvGammaWithinAcceptance     = kTRUE;
 Bool_t kGCplotMCMotherPtvsRapidConvGammaWithinAcceptance   = kTRUE;
 Bool_t kGCplotMCMotherSpectra				= kTRUE;
+
+Bool_t kGCplotMCPhysicalPrimaryChargedPt                = kTRUE;
 
 Bool_t kGCplotMCPi0Eta			        	= kTRUE;
 Bool_t kGCplotMCPi0Rapid                                   = kTRUE;
@@ -438,9 +442,11 @@ Bool_t kGCplotESDCutProtonRejectionLowP=kTRUE;
 Bool_t kGCplotESDCutKaonRejectionLowP  =kTRUE;
 Bool_t kGCplotESDCutQtGammaSelection=kTRUE;
 Bool_t kGCplotESDCutR             = kTRUE;
+Bool_t kGCplotESDCutMinR          = kTRUE;
 Bool_t kGCplotESDCutLine          = kTRUE;
 Bool_t kGCplotESDCutZ             = kTRUE;
 Bool_t kGCplotESDCutMinClsTPC     = kTRUE;
+Bool_t kGCplotESDCutMinClsTPCToF  = kTRUE;
 Bool_t kGCplotESDGoodV0s          = kTRUE;
 Bool_t kGCplotESDAllV0s           = kTRUE;
 Bool_t kGCplotESDAllV0sCurrentFinder = kTRUE;
@@ -1361,6 +1367,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetNegativeTrackPID(kGCpidOfNegativeTrack);
   v0Reader->SetPositiveTrackPID(kGCpidOfPositiveTrack);
   v0Reader->SetMaxRCut(kGCmaxRCut);
+  v0Reader->SetMinRCut(kGCminRCut);
   v0Reader->SetEtaCut(kGCetaCut);
   v0Reader->SetPtCut(kGCptCut);
   v0Reader->SetSinglePtCut(kGCsingleptCut);
@@ -1368,6 +1375,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetLineCutZValue(kGCLineCutZValue);	
   v0Reader->SetMaxZCut(kGCmaxZCut);	
   v0Reader->SetMinClsTPCCut(kGCminClsTPCCut);	
+  v0Reader->SetMinClsTPCCutToF(kGCminClsTPCCutToF);	
   v0Reader->SetChi2CutConversion(kGCchi2CutConversion);
   v0Reader->SetChi2CutMeson(kGCchi2CutMeson);
   v0Reader->SetAlphaCutMeson(kGCalphaCutMeson);
@@ -2008,6 +2016,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 
     if(kGCplotESDCutProtonRejectionLowP==kTRUE){histograms->AddHistogram("ESD_CutProtonRejectionLowP_InvMass" ,"dedx ProtonRejection LowP" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutR == kTRUE){histograms->AddHistogram("ESD_CutR_InvMass" ,"Above RMax" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
+    if(kGCplotESDCutMinR == kTRUE){histograms->AddHistogram("ESD_CutMinR_InvMass" ,"Above RMax" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutNDF == kTRUE){histograms->AddHistogram("ESD_CutNDF_InvMass" ,"NDF <= 0" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutChi2 == kTRUE){histograms->AddHistogram("ESD_CutChi2_InvMass" ,"#chi^{2} > Max" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutEta == kTRUE){histograms->AddHistogram("ESD_CutEta_InvMass" ,"Above #eta max" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
@@ -2016,6 +2025,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDCutLine == kTRUE){histograms->AddHistogram("ESD_CutLine_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutZ == kTRUE){histograms->AddHistogram("ESD_CutZ_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutMinClsTPC == kTRUE){histograms->AddHistogram("ESD_CutMinNClsTPC_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
+    if(kGCplotESDCutMinClsTPCToF == kTRUE){histograms->AddHistogram("ESD_CutMinNClsTPCToF_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
 
     if(kGCplotESDGoodV0s == kTRUE){histograms->AddHistogram("ESD_GoodV0s_InvMass" ,"Good V0s" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDAllV0s == kTRUE){histograms->AddHistogram("ESD_AllV0s_InvMass" ,"All V0s" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
@@ -2069,6 +2079,10 @@ histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt_alpha" ,"Invariant Mass vs Pt
 
 
       //      if(kGCdoNeutralMesonV0MCCheck == kTRUE){
+      histograms->AddHistogram("ESD_TrueBckGG_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+      histograms->AddHistogram("ESD_TrueBckCont_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+      histograms->AddHistogram("ESD_TruePi0Sec_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+
 	histograms->AddHistogram("ESD_TruePi0_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_1212","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_0912","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
@@ -2191,7 +2205,7 @@ histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha" ,"Invariant Mass vs P
 	histograms->AddHistogram("MC_Mother_InvMass_vs_Pt_ConvGamma_withinAcceptance" ,"" ,kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra, kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra, "", "");
       }
 		
-		
+      if(kGCplotMCPhysicalPrimaryChargedPt == kTRUE){ histograms->AddHistogram("MC_PhysicalPrimaryCharged_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCPi0Eta == kTRUE){ histograms->AddHistogram("MC_Pi0_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}	
       if(kGCplotMCPi0Rapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Rapid" ,"" , kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");}	
       if(kGCplotMCPi0Phi == kTRUE){ histograms->AddHistogram("MC_Pi0_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
@@ -2507,6 +2521,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 3:  // 100 
     kGCminClsTPCCut= 100.;
+    break;
+  case 4:  // 60% of findable clusters
+    kGCminClsTPCCutToF= 0.6;
     break;
   default:
     return iResult;
