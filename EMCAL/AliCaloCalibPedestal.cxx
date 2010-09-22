@@ -520,6 +520,8 @@ Bool_t AliCaloCalibPedestal::AddInfo(AliCaloCalibPedestal *ped)
   for (int i = 0; i < fModules; i++) {
     GetPedProfileLowGain(i)->Add( ped->GetPedProfileLowGain(i) );
     GetPedProfileHighGain(i)->Add( ped->GetPedProfileHighGain(i) );
+    GetPedLEDRefProfileLowGain(i)->Add( ped->GetPedLEDRefProfileLowGain(i) );
+    GetPedLEDRefProfileHighGain(i)->Add( ped->GetPedLEDRefProfileHighGain(i) );
     GetPeakProfileLowGain(i)->Add( ped->GetPeakProfileLowGain(i) );
     GetPeakProfileHighGain(i)->Add( ped->GetPeakProfileHighGain(i) );
     GetPeakHighGainHisto(i)->Add( ped->GetPeakHighGainHisto(i) );
