@@ -321,14 +321,15 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
 
   Int_t sgm[3];
   Double_t covR[7], cov[3], dy[2], dz[2];
-  Float_t pt, x0, y0, z0, dydx, dzdx, tilt;
+  Float_t pt, x0, y0, z0, dydx, dzdx, tilt(0.);
   const AliTRDgeometry *geo(AliTRDinfoGen::Geometry());
   AliTRDseedV1 *fTracklet(NULL);  TObjArray *clInfoArr(NULL);
   // do LINEAR track refit if asked by the user
   // it is the user responsibility to check if B=0T
   Float_t param[10];  memset(param, 0, 10*sizeof(Float_t));
   if(HasTrackRefit()){
-    Int_t np(0); AliTrackPoint clusters[300];
+    Bool_t kPrimary(kFALSE);
+    Int_t np(0), nrc(0); AliTrackPoint clusters[300];
     for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
       if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
       if(!fTracklet->IsOK()) continue;
@@ -350,16 +351,30 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
           clusters[np].SetClusterType(1);
           clusters[np].SetXYZ(xcross, 0., zcross);
           np++;
+          nrc++;
         }
       }
-      if(fTracklet->IsPrimary()){
-        clusters[np].SetCharge(tilt);
-        clusters[np].SetClusterType(1);
-        clusters[np].SetXYZ(0., 0., 0.);
-        np++;
+      if(fTracklet->IsPrimary()) kPrimary = kTRUE;
+    }
+    if(kPrimary){
+      clusters[np].SetCharge(tilt);
+      clusters[np].SetClusterType(1);
+      clusters[np].SetXYZ(0., 0., 0.);
+      np++;
+    }
+    if(!FitTrack(np, clusters, param)) {
+      AliDebug(1, "Linear track Fit failed.");
+      return NULL;
+    }
+    if(HasTrackSelection()){
+      Bool_t kReject(kFALSE);
+      if(fkTrack->GetNumberOfTracklets() != AliTRDgeometry::kNlayer)  kReject = kTRUE; 
+      if(!kReject && !UseTrack(np, clusters, param)) kReject = kTRUE;
+      if(kReject){
+        AliDebug(1, "Reject track for residuals analysis.");
+        return NULL;
       }
     }
-    FitTrack(np, clusters, param);
   }
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
@@ -382,6 +397,10 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       dydx = fTracklet->GetYref(1);
       dzdx = fTracklet->GetZref(1);
     }
+    /*printf("RC[%c] Primary[%c]\n"
+           "  Fit : y0[%f] z0[%f] dydx[%f] dzdx[%f]\n"
+           "  Ref:  y0[%f] z0[%f] dydx[%f] dzdx[%f]\n", fTracklet->IsRowCross()?'y':'n', fTracklet->IsPrimary()?'y':'n', y0, z0, dydx, dzdx
+           ,fTracklet->GetYref(0),fTracklet->GetZref(0),fTracklet->GetYref(1),fTracklet->GetZref(1));*/
     tilt = fTracklet->GetTilt();
     fTracklet->GetCovRef(covR);
     Double_t t2(tilt*tilt)
@@ -451,6 +470,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     }
   }
   if(clInfoArr) delete clInfoArr;
+
   return (TH3S*)arr->At(0);
 }
 
@@ -540,8 +560,6 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
         << "\n";
     }
   }
-
-
   return (TH2I*)arr->At(0);
 }
 
@@ -2995,7 +3013,7 @@ Bool_t AliTRDresolution::FitTrack(const Int_t np, AliTrackPoint *points, Float_t
   for(Int_t ip(0); ip<np; ip++) x0+=points[ip].GetX();
   x0/=Float_t(np);
 
-  Double_t x, y, z, dx, tilt;
+  Double_t x, y, z, dx, tilt(0.);
   for(Int_t ip(0); ip<np; ip++){
     x = points[ip].GetX(); z = points[ip].GetZ();
     dx = x - x0;
@@ -3022,6 +3040,33 @@ Bool_t AliTRDresolution::FitTrack(const Int_t np, AliTrackPoint *points, Float_t
 
   param[0] = x0; param[1] = y0; param[2] = z0; param[3] = dydx; param[4] = dzdx;
   if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>3) printf("D-AliTRDresolution::FitTrack: x0[%f] y0[%f] z0[%f] dydx[%f] dzdx[%f]\n", x0, y0, z0, dydx, dzdx);
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t AliTRDresolution::UseTrack(const Int_t np, AliTrackPoint *points, Float_t param[10])
+{
+//
+// Global selection mechanism of tracksbased on cluster to fit residuals
+// The parameters are the same as used ni function FitTrack().
+
+  const Float_t kS(0.6), kM(0.2);
+  TH1S h("h1", "", 100, -5.*kS, 5.*kS);
+  Float_t dy, dz, s, m;
+  for(Int_t ip(0); ip<np; ip++){
+    if(points[ip].GetClusterType()) continue;
+    Float_t x0(points[ip].GetX())
+          ,y0(param[1] + param[3] * (x0 - param[0]))
+          ,z0(param[2] + param[4] * (x0 - param[0]));
+    dy=points[ip].GetY() - y0; h.Fill(dy);
+    dz=points[ip].GetZ() - z0;
+  }
+  TF1 fg("fg", "gaus", -5.*kS, 5.*kS);
+  fg.SetParameter(1, 0.);
+  fg.SetParameter(2, 2.e-2);
+  h.Fit(&fg, "QN");
+  m=fg.GetParameter(1); s=fg.GetParameter(2);
+  if(s>kS || TMath::Abs(m)>kM) return kFALSE;
   return kTRUE;
 }
 
