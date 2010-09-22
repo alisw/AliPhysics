@@ -42,11 +42,6 @@ AliITSQASPDChecker::AliITSQASPDChecker() :
  fHighSPDValue(NULL),
  fImage(NULL) 
  {
- for(Int_t i=0; i<6 ; i++) { 
-  fDisplayStatus[i] = new TPaveText(0.2,0.23,0.7,0.5,"NDC");
-  fDisplayStatus[i]->SetFillColor(kGreen);
-  fDisplayStatus[i]->AddText("OK");
-  } 
  }
 //__________________________________________________________________
 AliITSQASPDChecker& AliITSQASPDChecker::operator = (const AliITSQASPDChecker& qac ) 
@@ -62,9 +57,6 @@ if(fStepBitSPD) delete[] fStepBitSPD ;
 if(fLowSPDValue)delete[]fLowSPDValue;
 if(fHighSPDValue) delete[]fHighSPDValue;
 if(fImage) delete[]fImage;
-for(Int_t i=0; i<6; i++){
-delete fDisplayStatus[i];
-}
 } 
 
 //__________________________________________________________________
@@ -184,81 +176,69 @@ while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
         if(!histName.Contains("SPD")) continue;
         totalHistos++;
         // data format error
-        if(histName.Contains("SPDErrorsAll")){
-	if(hdata->GetListOfFunctions()->GetEntries()<1) hdata->GetListOfFunctions()->Add(fDisplayStatus[0]);
-        if(hdata->Integral(0,hdata->GetNbinsX())>0){
+       if(histName.Contains("SPDErrorsAll")){
+	if(hdata->GetListOfFunctions()->GetEntries()<1) hdata->GetListOfFunctions()->Add(new TPaveText(0.2,0.23,0.7,0.5,"NDC"));
+
 	   for(Int_t i=0; i<hdata->GetListOfFunctions()->GetEntries(); i++){
 	   TString funcName = hdata->GetListOfFunctions()->At(i)->ClassName();
 	   if(funcName.Contains("TPaveText")){
-	     TPaveText *p = (TPaveText*)hdata->GetListOfFunctions()->At(i);
+	    TPaveText *p = (TPaveText*)hdata->GetListOfFunctions()->At(i);
+             p->Clear();
+
+            if(hdata->Integral(0,hdata->GetNbinsX())>0){
 	     Bool_t isHighMult = kFALSE;
 	     for(Int_t ieq=0; ieq<20; ieq++){
 	      if(hdata->GetBinContent(ieq+1,17+1)>0 && hdata->GetBinContent(ieq+1,20+1)>0) isHighMult = kTRUE;
 	     }
 	     if(isHighMult) {
-              p->Clear();
 	      p->SetFillColor(kOrange);
 	      p->AddText("High occupancy in a chip detected (-> errors type 17,20 and 0 are present). ");
 	      p->AddText("ONLY IF OTHER error types are present CALL the expert");
-	      }
-	     else {
-             p->Clear();
+	      } else {
 	     p->SetFillColor(kRed);
 	     p->AddText("Data Format NOT OK. Please call the expert!");
 	     }
-	     
-	    }
-	   }
-           response = fHighSPDValue[AliQAv1::kFATAL];
-	   fatalProblem=kTRUE;
-           break;
-         } else {  
-	  for(Int_t i=0; i<hdata->GetListOfFunctions()->GetEntries(); i++){
-	   TString funcName = hdata->GetListOfFunctions()->At(i)->ClassName();
-	   if(funcName.Contains("TPaveText")){
-	     TPaveText *p = (TPaveText*)hdata->GetListOfFunctions()->At(i);
-	     p->Clear();
-	     p->SetFillColor(kGreen);
-	     p->AddText("OK");
-	   
-	   }
-          }
-	 }
-        }
+            response = fHighSPDValue[AliQAv1::kFATAL];
+            fatalProblem=kTRUE;
+            continue;
+	    } // if errors 
+           else {
+             p->Clear();
+             p->SetFillColor(kGreen);
+             p->AddText("OK");
+            }
+	   } // TPaveText
+         } // list entries   
+        } // data format error
+
         // MEB error
         else if(histName.Contains("MEB")){
-	if(hdata->GetListOfFunctions()->GetEntries()<1) hdata->GetListOfFunctions()->Add(fDisplayStatus[1]);
-          if(hdata->GetEntries()>0){
-	      for(Int_t i=0; i<hdata->GetListOfFunctions()->GetEntries(); i++){
+	  if(hdata->GetListOfFunctions()->GetEntries()<1) hdata->GetListOfFunctions()->Add(new TPaveText(0.2,0.23,0.7,0.5,"NDC"));
+
+	   for(Int_t i=0; i<hdata->GetListOfFunctions()->GetEntries(); i++){
 	   TString funcName = hdata->GetListOfFunctions()->At(i)->ClassName();
 	   if(funcName.Contains("TPaveText")){
 	     TPaveText *p = (TPaveText*)hdata->GetListOfFunctions()->At(i);
 	     p->Clear();
+
+          if(hdata->GetEntries()>0){
 	     p->SetFillColor(kRed);
 	     p->AddText("MEB problem could be present. Please check if SPD is in READY state.");
 	     p->AddText("If SPD is in -READY- state, please notify it to the expert."); 
-	    }
-	   } 
-	  
-	  
-           response = fHighSPDValue[AliQAv1::kFATAL];
-	   fatalProblem=kTRUE;
-           break;
-          } else {  
-	  for(Int_t i=0; i<hdata->GetListOfFunctions()->GetEntries(); i++){
-	   TString funcName = hdata->GetListOfFunctions()->At(i)->ClassName();
-	   if(funcName.Contains("TPaveText")){
-	     TPaveText *p = (TPaveText*)hdata->GetListOfFunctions()->At(i);
-	     p->Clear();
+            response = fHighSPDValue[AliQAv1::kFATAL];
+            fatalProblem=kTRUE;
+            continue;
+
+           } else {
 	     p->SetFillColor(kGreen);
 	     p->AddText("OK");
-	   
-	   }
-          }
-	 }      
-        }
+              }   
+
+	    } // pave text
+	   } // list 
+         }
 	goodHistos++;
-      }
+        }
      }
     if(!fatalProblem) response = goodHistos/totalHistos;
    // printf("n histos %f - good ones %f ----> ratio %f , fatal response %i\n",totalHistos,goodHistos,goodHistos/totalHistos,(Int_t)fatalProblem);
