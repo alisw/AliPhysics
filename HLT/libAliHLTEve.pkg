@@ -6,6 +6,8 @@
 # and linking process. For further information refer to the 
 # README.
 
+ifneq ($(shell $(ROOTCONFIG) --has-opengl), no)
+
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS:= 	AliHLTEveBase.h \
@@ -70,3 +72,6 @@ PACKCXXFLAGS := $(filter-out -ansi,$(filter-out -pedantic-errors, $(CXXFLAGS)))
 PACKCFLAGS   := $(filter-out -ansi, $(filter-out -pedantic-errors, $(CFLAGS)))
 PACKDCXXFLAGS:= $(filter-out -pedantic-errors, $(CXXFLAGS))
 PACKSOFLAGS  := $(HLTSOFLAGS)
+
+endif
+
