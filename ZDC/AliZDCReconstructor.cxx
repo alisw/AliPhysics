@@ -63,7 +63,8 @@ AliZDCReconstructor:: AliZDCReconstructor() :
   fNRun(0),
   fIsCalibrationMB(kFALSE),
   fPedSubMode(0),
-  fSignalThreshold(7)
+  fSignalThreshold(7),
+  fESDZDC(NULL)
 {
   // **** Default constructor
 }
@@ -77,7 +78,8 @@ AliZDCReconstructor::~AliZDCReconstructor()
    if(fPedData)      delete fPedData;    
    if(fEnCalibData)  delete fEnCalibData;
    if(fTowCalibData) delete fTowCalibData;
-   if(fgMBCalibData)  delete fgMBCalibData;
+   if(fgMBCalibData) delete fgMBCalibData;
+   if(fESDZDC)       delete fESDZDC;
 }
 
 //____________________________________________________________________________
@@ -115,6 +117,35 @@ void AliZDCReconstructor::Init()
     
   if(fIsCalibrationMB==kFALSE)  
     printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
+    	beamType.Data(), fBeamEnergy, fBeamEnergy);
+  
+  fESDZDC = new AliESDZDC();
+
+}
+
+
+//____________________________________________________________________________
+void AliZDCReconstructor::Init(TString beamType, Float_t beamEnergy)
+{
+  // Setting reconstruction mode
+  // Needed to work in the HLT framework
+  
+  fIsCalibrationMB = kFALSE;
+     
+  fBeamEnergy = beamEnergy;
+  
+  if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
+     ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
+    fRecoMode=1;
+  }
+  else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
+    fRecoMode=2;
+  }
+    
+  
+  fESDZDC = new AliESDZDC();
+  
+  printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
     	beamType.Data(), fBeamEnergy, fBeamEnergy);
   
 }
@@ -342,7 +373,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   //Int_t kTrigScales=30, kTrigHistory=31;
 
   // loop over raw data
-  rawReader->Reset();
+  //rawReader->Reset();
   AliZDCRawStream rawData(rawReader);
   while(rawData.Next()){
    
@@ -969,9 +1000,9 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     nDetSpecPRight = (Int_t) (calibSumZP2[0]/fBeamEnergy);
   }
   else AliWarning(" ATTENTION!!! fBeamEnergy=0 -> N_spec will be ZERO!!! \n");
-  printf("\n\t AliZDCReconstructor -> fBeamEnergy %1.0f: nDetSpecNsideA %d, nDetSpecPsideA %d,"
+  /*printf("\n\t AliZDCReconstructor -> fBeamEnergy %1.0f: nDetSpecNsideA %d, nDetSpecPsideA %d,"
     " nDetSpecNsideC %d, nDetSpecPsideC %d\n",fBeamEnergy,nDetSpecNLeft, nDetSpecPLeft, 
-    nDetSpecNRight, nDetSpecPRight);
+    nDetSpecNRight, nDetSpecPRight);*/
   
   Int_t nGenSpec=0, nGenSpecA=0, nGenSpecC=0;
   Int_t nPart=0, nPartA=0, nPartC=0;
@@ -1219,10 +1250,8 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   AliZDCReco reco;
   AliZDCReco* preco = &reco;
   clustersTree->SetBranchAddress("ZDC", &preco);
-
   clustersTree->GetEntry(0);
   //
-  AliESDZDC * esdzdc = esd->GetESDZDC();
   Float_t tZN1Ene[5], tZN2Ene[5], tZP1Ene[5], tZP2Ene[5];
   Float_t tZN1EneLR[5], tZN2EneLR[5], tZP1EneLR[5], tZP2EneLR[5];
   for(Int_t i=0; i<5; i++){
@@ -1237,15 +1266,15 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
      tZP2EneLR[i] = reco.GetZP2LREnTow(i);
   }
   //
-  esdzdc->SetZN1TowerEnergy(tZN1Ene);
-  esdzdc->SetZN2TowerEnergy(tZN2Ene);
-  esdzdc->SetZP1TowerEnergy(tZP1Ene);
-  esdzdc->SetZP2TowerEnergy(tZP2Ene);
+  fESDZDC->SetZN1TowerEnergy(tZN1Ene);
+  fESDZDC->SetZN2TowerEnergy(tZN2Ene);
+  fESDZDC->SetZP1TowerEnergy(tZP1Ene);
+  fESDZDC->SetZP2TowerEnergy(tZP2Ene);
   //
-  esdzdc->SetZN1TowerEnergyLR(tZN1EneLR);
-  esdzdc->SetZN2TowerEnergyLR(tZN2EneLR);
-  esdzdc->SetZP1TowerEnergyLR(tZP1EneLR);
-  esdzdc->SetZP2TowerEnergyLR(tZP2EneLR);
+  fESDZDC->SetZN1TowerEnergyLR(tZN1EneLR);
+  fESDZDC->SetZN2TowerEnergyLR(tZN2EneLR);
+  fESDZDC->SetZP1TowerEnergyLR(tZP1EneLR);
+  fESDZDC->SetZP2TowerEnergyLR(tZP2EneLR);
   // 
   Int_t nPart  = reco.GetNParticipants();
   Int_t nPartA = reco.GetNPartSideA();
@@ -1254,23 +1283,26 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   Double_t bA = reco.GetImpParSideA();
   Double_t bC = reco.GetImpParSideC();
   UInt_t recoFlag = reco.GetRecoFlag();
-  //
-  esd->SetZDC(reco.GetZN1HREnergy(), reco.GetZP1HREnergy(), reco.GetZEM1HRsignal(), 
-  	      reco.GetZEM2HRsignal(), reco.GetZN2HREnergy(), reco.GetZP2HREnergy(), 
-	      nPart, nPartA, nPartC, b, bA, bC, recoFlag);
+  
+  fESDZDC->SetZDC(reco.GetZN1HREnergy(), reco.GetZP1HREnergy(), 
+  	reco.GetZEM1HRsignal(), reco.GetZEM2HRsignal(), 
+	reco.GetZN2HREnergy(), reco.GetZP2HREnergy(), 
+	nPart, nPartA, nPartC, b, bA, bC, recoFlag);
   
   // Writing ZDC scaler for cross section calculation
   // ONLY IF the scaler has been read during the event
   if(reco.IsScalerOn()==kTRUE){
     UInt_t counts[32];
     for(Int_t jk=0; jk<32; jk++) counts[jk] = reco.GetZDCScaler(jk);
-    esd->SetZDCScaler(counts);
+    fESDZDC->SetZDCScaler(counts);
   }
   
   // Writing TDC data into ZDC ESDs
   Int_t tdcValues[32];
   for(Int_t jk=0; jk<32; jk++) tdcValues[jk] = reco.GetZDCTDCData(jk);
-  esd->SetZDCTDC(tdcValues);
+  fESDZDC->SetZDCTDC(tdcValues);
+  
+  if(esd) esd->SetZDCData(fESDZDC);
 }
 
 //_____________________________________________________________________________

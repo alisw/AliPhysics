@@ -174,6 +174,7 @@ public:
 
   // ZDC CKB: put this in the header?
   AliESDZDC*    GetESDZDC() const {return fESDZDC;}
+  void SetZDCData(AliESDZDC * obj);
 
   // Delegated methods for fESDZDC
   Double_t GetZDCN1Energy() const {return fESDZDC?fESDZDC->GetZDCN1Energy():0;}
@@ -187,8 +188,6 @@ public:
 	 	  Int_t nPartC, Double_t b, Double_t bA, Double_t bC, UInt_t recoflag)
   {if(fESDZDC) fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, 
             participants, nPartA, nPartC, b, bA, bC,  recoflag);}
-  void     SetZDCScaler(UInt_t *counts) {if(fESDZDC) fESDZDC->SetZDCScaler(counts);}
-  void     SetZDCTDC(Int_t *values) {if(fESDZDC) fESDZDC->SetZDCTDC(values);}
 
 
   // FMD

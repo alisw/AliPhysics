@@ -937,6 +937,13 @@ void  AliESDEvent::AddRawDataErrorLog(const AliRawDataErrorLog *log) const {
   new(errlogs[errlogs.GetEntriesFast()])  AliRawDataErrorLog(*log);
 }
 
+void AliESDEvent::SetZDCData(AliESDZDC * obj)
+{ 
+  // use already allocated space
+  if(fESDZDC)
+    *fESDZDC = *obj;
+}
+
 void  AliESDEvent::SetPrimaryVertexTPC(const AliESDVertex *vertex) 
 {
   // Set the TPC vertex
