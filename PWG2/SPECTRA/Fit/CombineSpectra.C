@@ -169,7 +169,7 @@ TString today = "";
 Bool_t convertToMT = 0;
 Bool_t sumCharge = 0;
 Int_t whatToFit = kStatErrors; 
-Bool_t doPrint = 1;
+Bool_t doPrint = 0;
 Bool_t scaleKaons =  kFALSE;
 Bool_t drawStar =  kFALSE; // Overlay star when doing fits
 Bool_t correctSecondaries  = 1;
@@ -422,6 +422,7 @@ void FitCombined() {
 	AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
 	AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
       }
+      //      AliBWTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, 0.,100.);
       AliBWTools::GetMeanDataAndExtrapolation(hToFit, func, meanDF, meanDFe, 0.,100.);
       table.SetNextCol(mean,   meane  ,-4);
       table.SetNextCol(meanDF, meanDFe,-4);
@@ -837,11 +838,9 @@ void LoadSpectra() {
 	    Float_t pt = h->GetBinCenter(ibin);
 	    Float_t minPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(1);
 	    Float_t maxPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(hCorrFluka[icharge]->GetNbinsY()+1);
-	    cout << "pt " << pt << " " <<minPtCorrection << "-" << maxPtCorrection << endl;
 	    if (pt < minPtCorrection) pt = minPtCorrection+0.0001;
 	    if (pt > maxPtCorrection) pt = maxPtCorrection;
 	    Float_t correction = hCorrFluka[icharge]->GetBinContent(1,hCorrFluka[icharge]->GetYaxis()->FindBin(pt));
-	    cout << "pt " << pt << " Corr " << correction  << endl;
 	    
 	    // already in the efficiency correction (F. Noferini)
 	    if (idet == kTOF) {
@@ -850,7 +849,6 @@ void LoadSpectra() {
 	      else correction = TMath::Power(correction,0.07162/0.03471);
 	    }	    
 	    if (correction != 0) {// If the bin is empty this is a  0
-	      cout << "CORR: " << detFlag[idet]<< " " << chargeFlag[icharge]<<", bin: "<<ibin << " " << correction << endl;
 	      
 	      h->SetBinContent(ibin,h->GetBinContent(ibin)*correction);
 	      h->SetBinError  (ibin,h->GetBinError  (ibin)*correction);
