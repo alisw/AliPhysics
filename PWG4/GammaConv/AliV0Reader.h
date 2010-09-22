@@ -467,6 +467,11 @@ class AliV0Reader : public TObject {
    * Gets the MaxRCut value.
    */
   Double_t GetMaxRCut() const{return fMaxR;}
+
+   /*
+    * Gets the MinRCut value.
+    */
+   Double_t GetMinRCut() const{return fMinR;}
 	
   /*
    * Gets the Eta cut value.
@@ -490,6 +495,12 @@ class AliV0Reader : public TObject {
    */
   Double_t GetMinClsTPCCut() const{return fMinClsTPC;}
 	
+  /*
+   * Gets the MinClsTPC value.
+   */
+  Double_t GetMinClsTPCCutToF() const{return fMinClsTPCToF;}
+	
+
 
   /*
    * Gets the line cut values.
@@ -532,7 +543,11 @@ class AliV0Reader : public TObject {
    * Sets the MaxRCut value.
    */
   void SetMaxRCut(Double_t maxR){fMaxR=maxR;}
-	
+  /*	
+   * Sets the MinRCut value.
+   */
+  void SetMinRCut(Double_t minR){fMinR=minR;}
+
   /*
    * Sets the EtaCut value.
    */
@@ -554,11 +569,17 @@ class AliV0Reader : public TObject {
    */
   void SetMaxZCut(Double_t maxZ){fMaxZ=maxZ;}
 	
- /*
+  /*
    * Sets the MinClsTPC value.
    */
   void SetMinClsTPCCut(Double_t minClsTPC){fMinClsTPC=minClsTPC;}
+
+  /*
+   * Sets the MinClsTPC value.
+   */
+  void SetMinClsTPCCutToF(Double_t minClsTPCToF){fMinClsTPCToF=minClsTPCToF;}
 	
+
   /*
    * Sets the LineCut values.
    */
@@ -862,11 +883,13 @@ class AliV0Reader : public TObject {
   Double_t fMaxVertexZ;
   //cuts
   Double_t fMaxR; //r cut
+  Double_t fMinR; //r cut
   Double_t fEtaCut; //eta cut
   Double_t fPtCut; // pt cut
   Double_t fSinglePtCut; // pt cut for electron/positron
   Double_t fMaxZ; //z cut
   Double_t fMinClsTPC;
+  Double_t fMinClsTPCToF;
   Double_t fLineCutZRSlope; //linecut
   Double_t fLineCutZValue; //linecut
   Double_t fChi2CutConversion; //chi2cut
@@ -930,7 +953,7 @@ class AliV0Reader : public TObject {
   Bool_t fUseChargedTrackMultiplicityForBG;
   Int_t fNumberOfGoodV0s;
 
-  ClassDef(AliV0Reader,14)
+  ClassDef(AliV0Reader,15)
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)
