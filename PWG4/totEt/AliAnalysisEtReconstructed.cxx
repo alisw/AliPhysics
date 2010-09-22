@@ -17,9 +17,11 @@
 #include "AliMagF.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
+#include "AliESDtrackCuts.h"
 #include "AliVParticle.h"
 #include "TDatabasePDG.h"
 #include "TList.h"
+#include "AliESDpid.h"
 #include <iostream>
 #include "TH2F.h"
 
@@ -48,9 +50,15 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
     Double_t protonMass = fPdgDB->GetParticle("proton")->Mass();
 
-    for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++)
-    {
-        AliVParticle *track = event->GetTrack(iTrack);
+    AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev);
+    //for PID
+    AliESDpid *pID = new AliESDpid();
+    pID->MakePID(realEvent);
+    TObjArray* list = fEsdtrackCutsTPC->GetAcceptedTracks(realEvent);
+    Int_t nGoodTracks = list->GetEntries();
+    for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++)
+      {
+	AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
         if (!track)
         {
             Printf("ERROR: Could not get track %d", iTrack);
@@ -58,6 +66,18 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         }
 
         fMultiplicity++;
+
+
+	Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
+	nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
+	nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
+	nSigmaKaon = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kKaon));
+	nSigmaElectron = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kElectron));
+	bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
+	bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
+	bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
+	bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
+
 
         Int_t nItsClusters = dynamic_cast<AliESDtrack*>(track)->GetNcls(0);
         Int_t nTPCClusters = dynamic_cast<AliESDtrack*>(track)->GetNcls(1);

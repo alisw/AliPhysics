@@ -108,6 +108,7 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fHistEtRecvsEtMC(0)
         ,fHistTMDeltaR(0)
         ,fTree(0)
+        ,fEsdtrackCutsTPC(0)
 {
 }
 
