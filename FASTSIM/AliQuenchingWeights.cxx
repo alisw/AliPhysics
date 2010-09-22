@@ -40,7 +40,6 @@
 #include <TGraph.h>
 #include <TROOT.h>
 #include <TSystem.h>
-#include <TString.h>
 #include <TLegend.h>
 #include "AliQuenchingWeights.h"
 
@@ -75,7 +74,9 @@ AliQuenchingWeights::AliQuenchingWeights()
       fTablesLoaded(kFALSE)
 {
   //default constructor 
-  fHisto = new TH1F(Form("hhistoqw_%d",fInstanceNumber),"",fgkBins,0.,fgkMaxBin);
+  Char_t name[100];
+  sprintf(name,"hhistoqw_%d",fInstanceNumber);
+  fHisto = new TH1F(name,"",fgkBins,0.,fgkMaxBin);
   for(Int_t bin=1;bin<=fgkBins;bin++) 
     fHisto->SetBinContent(bin,0.);
 }
@@ -106,7 +107,9 @@ AliQuenchingWeights::AliQuenchingWeights(const AliQuenchingWeights& a)
   fECMethod=(kECMethod)a.GetECMethod();
   fLengthMax=a.GetLengthMax();
   fInstanceNumber=fgCounter++;
-  fHisto = new TH1F(Form("hhistoqw_%d",fInstanceNumber),"",fgkBins,0.,fgkMaxBin);
+  Char_t name[100];
+  sprintf(name,"hhistoqw_%d",fInstanceNumber);
+  fHisto = new TH1F(name,"",fgkBins,0.,fgkMaxBin);
   for(Int_t bin=1;bin<=fgkBins;bin++) 
       fHisto->SetBinContent(bin,0.);
 
@@ -154,8 +157,10 @@ Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall)
   fTablesLoaded = kFALSE;
   fMultSoft=kTRUE;
   
+  Char_t fname[1024];
+  sprintf(fname,"%s",gSystem->ExpandPathName(contall));
   //PH  ifstream fincont(fname);
-  fstream fincont(Form("%s",gSystem->ExpandPathName(contall)),ios::in);
+  fstream fincont(fname,ios::in);
 #if defined(__HP_aCC) || defined(__DECCXX)
   if(!fincont.rdbuf()->is_open()) return -1;
 #else
@@ -189,8 +194,9 @@ Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall)
   }
   fincont.close();
 
+  sprintf(fname,"%s",gSystem->ExpandPathName(discall));
   //PH  ifstream findisc(fname); 
-  fstream findisc(Form("%s",gSystem->ExpandPathName(discall)),ios::in); 
+  fstream findisc(fname,ios::in); 
 #if defined(__HP_aCC) || defined(__DECCXX)
   if(!findisc.rdbuf()->is_open()) return -1;
 #else
@@ -497,8 +503,10 @@ Int_t AliQuenchingWeights::InitSingleHard(const Char_t *contall,const Char_t *di
   fTablesLoaded = kFALSE;
   fMultSoft=kFALSE;
   
+  Char_t fname[1024];
+  sprintf(fname,"%s",gSystem->ExpandPathName(contall));
   //PH  ifstream fincont(fname);
-  fstream fincont(Form("%s",gSystem->ExpandPathName(contall)),ios::in);
+  fstream fincont(fname,ios::in);
 #if defined(__HP_aCC) || defined(__DECCXX)
   if(!fincont.rdbuf()->is_open()) return -1;
 #else
@@ -539,8 +547,9 @@ Int_t AliQuenchingWeights::InitSingleHard(const Char_t *contall,const Char_t *di
   }
   fincont.close();
 
+  sprintf(fname,"%s",gSystem->ExpandPathName(discall));
   //PH  ifstream findisc(fname); 
-  fstream findisc(Form("%s",gSystem->ExpandPathName(discall)),ios::in); 
+  fstream findisc(fname,ios::in); 
 #if defined(__HP_aCC) || defined(__DECCXX)
   if(!findisc.rdbuf()->is_open()) return -1;
 #else
