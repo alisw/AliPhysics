@@ -159,7 +159,9 @@ class AliCaloCalibPedestal : public TObject {
 
   //Saving functions
   Bool_t SaveHistograms(TString fileName, Bool_t saveEmptyHistos = kFALSE); //Saves the histograms to a .root file
-  
+
+  void Init() { ValidateProfiles(); } // do basic setup
+
  private:
   
   void ValidateProfiles(); //Makes sure that basic histos/profiles exist

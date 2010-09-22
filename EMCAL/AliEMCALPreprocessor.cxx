@@ -312,7 +312,8 @@ UInt_t AliEMCALPreprocessor::ExtractPedestals(Int_t sourceFXS)
   //  Only store if new pedestal info is available
   //
   AliCaloCalibPedestal *calibPed = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal);
-  
+  calibPed->Init();
+
   TList* list = GetFileSources(sourceFXS,"pedestals");
   if (list && list->GetEntries()>0) {
     
