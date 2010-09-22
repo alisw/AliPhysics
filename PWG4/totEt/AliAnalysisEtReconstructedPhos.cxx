@@ -10,6 +10,11 @@
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrack.h"
 
+using namespace std;
+
+ClassImp(AliAnalysisEtReconstructedPhos);
+
+
 AliAnalysisEtReconstructedPhos::AliAnalysisEtReconstructedPhos() :
 AliAnalysisEtReconstructed()
 {

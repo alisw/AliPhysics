@@ -10,6 +10,11 @@
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrack.h"
 
+using namespace std;
+
+ClassImp(AliAnalysisEtMonteCarloPhos);
+
+
 AliAnalysisEtMonteCarloPhos::AliAnalysisEtMonteCarloPhos()
 {
    fHistogramNameSuffix = TString("PhosMC");

@@ -16,6 +16,11 @@
 #include "AliVParticle.h"
 #include <iostream>
 
+using namespace std;
+
+ClassImp(AliAnalysisHadEtReconstructed);
+
+
 AliAnalysisHadEtReconstructed::AliAnalysisHadEtReconstructed() :
         AliAnalysisHadEt()
 {

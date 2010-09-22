@@ -10,6 +10,11 @@
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrack.h"
 
+using namespace std;
+
+ClassImp(AliAnalysisEtMonteCarloEmcal);
+
+
 AliAnalysisEtMonteCarloEmcal::AliAnalysisEtMonteCarloEmcal()
 {
    fHistogramNameSuffix = TString("EmcalMC");

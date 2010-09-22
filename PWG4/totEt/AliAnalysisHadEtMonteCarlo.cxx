@@ -16,7 +16,10 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDpid.h"
 #include <iostream>
+
 using namespace std;
+
+ClassImp(AliAnalysisHadEtMonteCarlo);
 
 
 Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)

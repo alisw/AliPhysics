@@ -54,6 +54,7 @@ protected:
     
     Double_t CalcTrackClusterDistance(const Float_t pos[3],Int_t *trkMatchId, const AliESDEvent *event);
 
+    ClassDef(AliAnalysisEtReconstructed, 1);
 };
 
 #endif // ALIANALYSISETRECONSTRUCTED_H

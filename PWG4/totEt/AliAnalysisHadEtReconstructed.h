@@ -29,6 +29,8 @@ protected:
 
     bool CheckGoodVertex(AliVParticle *track);
     //virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField) = 0;
+
+    ClassDef(AliAnalysisHadEtReconstructed, 1);
 };
 
 #endif // ALIANALYSISHADETRECONSTRUCTED_H
