@@ -50,6 +50,7 @@ public:
      kVerbose    = BIT(18) // switch verbosity
     ,kVisual     = BIT(19) // show partial results during processing
     ,kTrackRefit = BIT(20) // steer track refit
+    ,kTrackSelect= BIT(21) // steer track selection
   };
   enum ETRDresolutionOutSlots {
      kClToTrk    = 2
@@ -76,6 +77,7 @@ public:
   void    UserExec(Option_t * opt);
   void    InitExchangeContainers();
   Bool_t  HasTrackRefit() const {return TestBit(kTrackRefit);}
+  Bool_t  HasTrackSelection() const {return TestBit(kTrackSelect);}
   Bool_t  IsVerbose() const {return TestBit(kVerbose);}
   Bool_t  IsVisual() const {return TestBit(kVisual);}
   Bool_t  PostProcess();
@@ -92,11 +94,13 @@ public:
   void    SetVerbose(Bool_t v = kTRUE) {SetBit(kVerbose, v);}
   void    SetVisual(Bool_t v = kTRUE) {SetBit(kVisual, v);}
   void    SetTrackRefit(Bool_t v = kTRUE) {SetBit(kTrackRefit, v);}
+  void    SetTrackSelection(Bool_t v = kTRUE) {SetBit(kTrackSelect, v);}
 
   void    Terminate(Option_t * opt);
   Bool_t  GetGraph(Float_t *bb, ETRDresolutionPlot ip, Int_t idx=-1, Bool_t kLEG=kTRUE, const Char_t *explain=NULL);
   Bool_t  GetGraphArray(Float_t *bb, ETRDresolutionPlot ip, Int_t idx, Bool_t kLEG=kTRUE, Int_t n=0, Int_t *sel=NULL, const Char_t *explain=NULL);
-  
+  static Bool_t  UseTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
+    
 private:
   AliTRDresolution(const AliTRDresolution&);
   AliTRDresolution& operator=(const AliTRDresolution&);
