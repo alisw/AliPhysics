@@ -702,6 +702,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      
      if(tmpPt>fJetOutputMinPt&&jarray){
        aodOutJet =  new ((*jarray)[nAodOutJets++]) AliAODJet(tmpRec);
+       Double_t area=clustSeq.area(sortedJets[j]);
+       aodOutJet->SetEffArea(area,0);
      }
 
      
