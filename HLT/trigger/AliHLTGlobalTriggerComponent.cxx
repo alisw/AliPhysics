@@ -733,9 +733,13 @@ void AliHLTGlobalTriggerComponent::GenerateFileName(TString& name, TString& file
   // Creates a unique file name for the generated code.
   
   TUUID guid = GenerateGUID();
-  UChar_t buf[16];
+  union
+  {
+    UChar_t buf[16];
+    UInt_t bufAsInt[4];
+  };
   guid.GetUUID(buf);
-  fUniqueID = *reinterpret_cast<UInt_t*>(buf);
+  fUniqueID = bufAsInt[0];
   TString guidstr = guid.AsString();
   // Replace '-' with '_' in string.
   for (int i = 0; i < guidstr.Length(); ++i)
