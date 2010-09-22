@@ -22,7 +22,9 @@
 //  - Correction framework container for background coming from data
 //  - Correction framework container for background coming from MC
 //
-//  Author: Markus Fasel <M.Fasel@gsi.de>
+//  Author: 
+//            Raphaelle Bailhache <R.Bailhache@gsi.de>
+//            Markus Fasel <M.Fasel@gsi.de>
 //
 
 #include <TArrayD.h>
@@ -336,7 +338,8 @@ AliCFDataGrid* AliHFEspectrum::SubtractBackground(Int_t dimensions, Bool_t setBa
   }
 
 
-  AliCFDataGrid *spectrumSubtracted = new AliCFDataGrid("spectrumSubtracted", "Data Grid for spectrum after Background subtraction");
+  AliCFDataGrid *spectrumSubtracted = new AliCFDataGrid("spectrumSubtracted", "Data Grid for spectrum after Background subtraction", *spectrumSliced);
+  
   spectrumSubtracted->ApplyBGCorrection(*backgroundGrid);
   if(setBackground){
     if(fBackground) delete fBackground;
@@ -403,15 +406,13 @@ TList *AliHFEspectrum::Unfold(Int_t dimensions,AliCFDataGrid* const bgsubpectrum
     }
 
     AliCFContainer *dataContainerD = GetSlicedContainer(dataContainer, dimensions, dims);
-    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainerD);
-    dataGrid->SetMeasured(fStepData);
+    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainerD, fStepData);
     
   } 
   
   
   // Guessed
-  AliCFDataGrid* guessedGrid = new AliCFDataGrid("guessed","",*mcContainerD);
-  guessedGrid->SetMeasured(fStepGuessedUnfolding);
+  AliCFDataGrid* guessedGrid = new AliCFDataGrid("guessed","",*mcContainerD, fStepGuessedUnfolding);
   THnSparse* guessedTHnSparse = ((AliCFGridSparse*)guessedGrid->GetData())->GetGrid();
 
   // Efficiency
@@ -492,8 +493,7 @@ AliCFDataGrid *AliHFEspectrum::CorrectForEfficiency(Int_t dimensions,AliCFDataGr
     }
 
     AliCFContainer *dataContainerD = GetSlicedContainer(dataContainer, dimensions, dims);
-    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainerD);
-    dataGrid->SetMeasured(fStepData);
+    dataGrid = new AliCFDataGrid("dataGrid","dataGrid",*dataContainerD, fStepData);
     
   } 
 
@@ -647,8 +647,7 @@ AliCFDataGrid *AliHFEspectrum::MakeBackgroundEstimateFromData(Int_t nDim){
   // Create Efficiency Grid and data grid
   AliCFEffGrid backgroundRatio("backgroundRatio", "BackgroundRatio", *slicedBackground);
   backgroundRatio.CalculateEfficiency(2, 1);
-  AliCFDataGrid *backgroundEstimate = new AliCFDataGrid("backgroundEstimate", "Grid for Background Estimate", *slicedData);
-  backgroundEstimate->SetMeasured(fStepData);
+  AliCFDataGrid *backgroundEstimate = new AliCFDataGrid("backgroundEstimate", "Grid for Background Estimate", *slicedData, fStepData);
   backgroundEstimate->ApplyEffCorrection(backgroundRatio);
 
   return backgroundEstimate;
@@ -695,8 +694,7 @@ AliCFDataGrid *AliHFEspectrum::MakeBackgroundEstimateFromMC(Int_t nDim){
   // Create Efficiency Grid and data grid
   AliCFEffGrid backgroundRatio("backgroundRatio", "BackgroundRatio", *slicedBackground);
   backgroundRatio.CalculateEfficiency(1, 0);
-  AliCFDataGrid *backgroundEstimate = new AliCFDataGrid("backgroundEstimate", "Grid for Background Estimate", *slicedData);
-  backgroundEstimate->SetMeasured(fStepData);
+  AliCFDataGrid *backgroundEstimate = new AliCFDataGrid("backgroundEstimate", "Grid for Background Estimate", *slicedData, fStepData);
   backgroundEstimate->ApplyEffCorrection(backgroundRatio);
 
   return backgroundEstimate;
@@ -803,8 +801,7 @@ void AliHFEspectrum::ClearObject(TObject *o){
 }
 //_________________________________________________________________________
 TObject* AliHFEspectrum::GetSpectrum(AliCFContainer * const c, Int_t step) {
-  AliCFDataGrid* data = new AliCFDataGrid("data","",*c);
-  data->SetMeasured(step);
+  AliCFDataGrid* data = new AliCFDataGrid("data","",*c, step);
   return data;
 }
 //_________________________________________________________________________
