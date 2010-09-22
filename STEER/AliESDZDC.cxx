@@ -230,7 +230,7 @@ Bool_t AliESDZDC::GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Dou
       denZNC += wZNC;
     }
     if(fZN2TowerEnergy[i+1]>0.) {
-      wZNA = TMath::Power(fZN1TowerEnergy[i+1], alpha);
+      wZNA = TMath::Power(fZN2TowerEnergy[i+1], alpha);
       numXZNA += x[i]*wZNA;
       numYZNA += y[i]*wZNA;
       denZNA += wZNA;
