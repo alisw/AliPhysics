@@ -422,6 +422,17 @@ class AliV0Reader : public TObject {
    */
   Int_t GetPositiveTracknTPCClusters() const{return fCurrentPositiveESDTrack->GetNcls(1);}
 	
+
+  /*
+   * Gets the Number of the TPC findable clusters of the negative track.
+   */
+  Int_t GetNegativeTracknTPCFClusters() const{return fCurrentNegativeESDTrack->GetTPCNclsF();}
+
+  /*
+   * Gets the Number of the TPC findable clusters of the positive track.
+   */
+  Int_t GetPositiveTracknTPCFClusters() const{return fCurrentPositiveESDTrack->GetTPCNclsF();}
+
   /*
    * Gets the Number of the ITS clusters of the negative track.
    */
@@ -431,6 +442,16 @@ class AliV0Reader : public TObject {
    * Gets the Number of the ITS clusters of the positive track.
    */
   Int_t GetPositiveTracknITSClusters() const{return fCurrentPositiveESDTrack->GetNcls(0);}
+
+  /*
+   * Gets the chi2 of the TPC  negative track.
+   */
+  Double_t GetNegativeTrackTPCchi2() const{return fCurrentNegativeESDTrack->GetTPCchi2();}
+
+  /*
+   * Gets the chi2 of the TPC  the positive track.
+   */
+  Double_t GetPositiveTrackTPCchi2() const{return fCurrentPositiveESDTrack->GetTPCchi2();}
 	
   /*
    * Update data which need to be updated every event.
@@ -703,7 +724,13 @@ class AliV0Reader : public TObject {
    * Resets the V0 index.
    */
   void ResetV0IndexNumber(){fCurrentV0IndexNumber=0;}
-	
+  
+
+  /*
+   * Returns number of good v0s in the event
+   */
+  Int_t GetNGoodV0s() const {return fNumberOfGoodV0s;}
+
   /*
    * Sets the histograms.
    */
@@ -731,6 +758,8 @@ class AliV0Reader : public TObject {
   //  vector<AliKFParticle> GetPreviousEventGoodV0s() const{return fPreviousEventGoodV0s;}
 
   void SetUseOwnXYZCalculation(Bool_t flag){fUseOwnXYZCalculation=flag;}
+
+  void SetUseConstructGamma(Bool_t flag){fUseConstructGamma=flag;}
 
   Bool_t GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, Double_t center[2]);
 	
@@ -771,10 +800,12 @@ class AliV0Reader : public TObject {
   static void SetESDpid(AliESDpid * const pid) {fgESDpid=pid;}
   static AliESDpid* GetESDpid() {return fgESDpid;}
 
+  void SetUseChargedTracksMultiplicityForBG(Bool_t flag){fUseChargedTrackMultiplicityForBG = flag;}
   
   Int_t GetPindex(Int_t i) {return fV0Pindex.at(i);}
   Int_t GetNindex(Int_t i) {return fV0Nindex.at(i);}
- 
+
+  void ResetNGoodV0s(){fNumberOfGoodV0s=0;}
 
 
  private:
@@ -871,6 +902,8 @@ class AliV0Reader : public TObject {
 
   Bool_t fUseOwnXYZCalculation; //flag that determines if we use our own calculation of xyz (markus)
 
+  Bool_t fUseConstructGamma; //flag that determines if we use ConstructGamma method from AliKF
+
   Bool_t fDoCF; //flag
 
   Bool_t fUseOnFlyV0Finder; //flag
@@ -893,8 +926,11 @@ class AliV0Reader : public TObject {
   static AliESDpid* fgESDpid;                 // ESD pid object
 
   Int_t nEventsForBGCalculation;
+  
+  Bool_t fUseChargedTrackMultiplicityForBG;
+  Int_t fNumberOfGoodV0s;
 
-  ClassDef(AliV0Reader,13)
+  ClassDef(AliV0Reader,14)
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)

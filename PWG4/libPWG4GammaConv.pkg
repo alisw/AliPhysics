@@ -6,7 +6,8 @@ SRCS = GammaConv/AliV0Reader.cxx \
 	GammaConv/AliGammaConversionAODObject.cxx \
 	GammaConv/AliGammaConversionBGHandler.cxx \
 	GammaConv/AliAnalysisTaskCaloConv.cxx \
-	GammaConv/AliAnalysisTaskGammaJet.cxx
+	GammaConv/AliAnalysisTaskGammaJet.cxx \
+	GammaConv/AliAnalysisTaskGammaConvDalitz.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

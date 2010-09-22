@@ -11,5 +11,6 @@
 #pragma link C++ class AliGammaConversionAODObject+;
 #pragma link C++ class AliGammaConversionBGHandler+;
 #pragma link C++ class AliAnalysisTaskGammaJet+;
+#pragma link C++ class AliAnalysisTaskGammaConvDalitz+;
 
 #endif
