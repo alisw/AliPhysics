@@ -36,6 +36,8 @@ Bool_t kGCdoNeutralMesonV0MCCheck =kFALSE;
 Bool_t kGCrunOmegaMeson = kFALSE;
 Bool_t kGCrunRES = kFALSE;
 Bool_t kGCRecalculateV0ForGamma = kFALSE;
+Bool_t kGCUseTrackMultiplicityForBG = kTRUE;
+Bool_t kGCMoveParticlesAccordingToVertex = kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
@@ -127,6 +129,7 @@ Double_t kGCmaxPhi      = TMath::Pi();
 /** ------------------------------- end Phi/R Mapping ------------------------------------*/
 
 Bool_t kGCdoOwnXYZCalculation = kFALSE;
+Bool_t kGCdoConstructGamma = kFALSE;
 
 /** -------------AOD stuff ---------------------------------------------------------------*/
 TString kGCDeltaAODFilename = "AliAODGammaConversion.root";  //If empty, writes to standard common aod file.
@@ -285,13 +288,17 @@ Bool_t kGCplotESDEEta    = kTRUE;
 Bool_t kGCplotESDEPhi    = kTRUE;
 Bool_t kGCplotESDENTPCClusters = kTRUE;
 Bool_t kGCplotESDENITSClusters = kTRUE;
+Bool_t kGCplotESDENTPCClustersToFP = kTRUE;
+Bool_t kGCplotESDETPCchi2 = kTRUE;
 
 Bool_t kGCplotESDPEnergy = kFALSE;
 Bool_t kGCplotESDPPt     = kTRUE;
 Bool_t kGCplotESDPEta    = kTRUE;
 Bool_t kGCplotESDPPhi    = kTRUE;
-Bool_t kGCplotESDPNTPCClusters = kTRUE;
+Bool_t kGCplotESDPNTPCClusters = kTRUE; 
 Bool_t kGCplotESDPNITSClusters = kTRUE;
+Bool_t kGCplotESDPNTPCClustersToFP = kTRUE;
+Bool_t kGCplotESDPTPCchi2 = kTRUE;
 
 Bool_t kGCplotESDConvGammaEnergy = kFALSE;
 Bool_t kGCplotESDConvGammaPt     = kTRUE;
@@ -620,6 +627,15 @@ Int_t kGCnXBinsNITSClusters = 7;
 Double_t kGCfirstXBinNITSClusters = -0.5;
 Double_t kGClastXBinNITSClusters = 6.5;
 
+//TPCcluster to Findable-plots
+Int_t kGCnYBinsClsToF = 120;
+Double_t kGCfirstYBinClsToF = 0.;
+Double_t kGClastYBinClsToF = 1.2;
+
+//TPCchi2 -plots
+Int_t kGCnXBinsTPCchi2 = 100;
+Double_t kGCfirstXBinTPCchi2 = 0.;
+Double_t kGClastXBinTPCchi2 = 10;
 
 
 //Mapping-plots
@@ -710,7 +726,7 @@ Double_t kGCfirstXBinGammaNDF = 0.;
 Double_t kGClastXBinGammaNDF = 10.;
 
 //Spectra-plots
-Int_t kGCnXBinsSpectra = 1000;
+Int_t kGCnXBinsSpectra = 500;
 Double_t kGCfirstXBinSpectra = 0.;
 Double_t kGClastXBinSpectra = 1.;
 Int_t kGCnYBinsSpectra = 250;
@@ -915,6 +931,12 @@ Bool_t scanArguments(TString arguments){
       else if (argument.CompareTo("-bg-off") == 0){
 	kGCcalculateBackground =kFALSE;
       }
+      else if (argument.CompareTo("-use-v0-multiplicity") == 0){
+	kGCUseTrackMultiplicityForBG = kFALSE;
+      }
+      else if (argument.CompareTo("-move-bg-vertex") == 0){
+	kGCMoveParticlesAccordingToVertex = kTRUE;
+      }
       else if (argument.CompareTo("-check-neutralmeson-pi0s") == 0){
 	kGCdoNeutralMesonV0MCCheck=kTRUE;
       }
@@ -1004,6 +1026,11 @@ Bool_t scanArguments(TString arguments){
       else if (argument.CompareTo("-use-own-xyz") == 0){
 	cout<<"Switching on use own xyz calculation"<<endl;
 	kGCdoOwnXYZCalculation = kTRUE;
+      }
+      else if (argument.CompareTo("-use-ConstructGamma") == 0){
+	cout<<"Switching on use ConstructGamma and OFF own xyz calculation"<<endl;
+	kGCdoOwnXYZCalculation = kFALSE;
+	kGCdoConstructGamma = kTRUE;
       }
       else if (argument.CompareTo("-no-aod") == 0){
 	cout<<"Turning off AOD"<<endl;
@@ -1353,7 +1380,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetUseImprovedVertex(kGCuseImprovedVertex);
   v0Reader->SetDoMCTruth(kGCdoMCTruth);
   v0Reader->SetUseOwnXYZCalculation(kGCdoOwnXYZCalculation);
-
+  v0Reader->SetUseChargedTracksMultiplicityForBG(kGCUseTrackMultiplicityForBG);
   // for CF
   v0Reader->SetCFManager(man);
 	
@@ -1430,6 +1457,8 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetDoChic(kGCrunChic);
   gammaconversion->SetDoOmegaMeson(kGCrunOmegaMeson);
   gammaconversion->SetRecalculateV0ForGamma(kGCRecalculateV0ForGamma);
+  gammaconversion->SetUseChargedTracksMultiplicityForBG(kGCUseTrackMultiplicityForBG);
+  gammaconversion->SetMoveParticleAccordingToVertex(kGCMoveParticlesAccordingToVertex);
   // for CF
   gammaconversion->SetCFManager(man);
   gammaconversion->SetDoCF(kGCrunCF);
@@ -1705,6 +1734,9 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDEPhi == kTRUE){ histograms->AddHistogram("ESD_E_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
     if(kGCplotESDENTPCClusters == kTRUE){ histograms->AddHistogram("ESD_E_nTPCClusters" ,"" , kGCnXBinsNTPCClusters, kGCfirstXBinNTPCClusters, kGClastXBinNTPCClusters, "", "");}
     if(kGCplotESDENITSClusters == kTRUE){ histograms->AddHistogram("ESD_E_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNITSClusters, kGClastXBinNITSClusters, "", "");}
+    if(kGCplotESDENTPCClustersToFP== kTRUE){ histograms->AddHistogram("ESD_E_nTPCClustersToFP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}
+    if(kGCplotESDETPCchi2 == kTRUE){ histograms->AddHistogram("ESD_E_TPCchi2" ,"" , kGCnXBinsTPCchi2, kGCfirstXBinTPCchi2, kGClastXBinTPCchi2, "", "");}
+
 		
     if(kGCplotESDPEnergy == kTRUE){ histograms->AddHistogram("ESD_P_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
     if(kGCplotESDPPt == kTRUE){ histograms->AddHistogram("ESD_P_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
@@ -1712,7 +1744,9 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDPPhi == kTRUE){ histograms->AddHistogram("ESD_P_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
     if(kGCplotESDPNTPCClusters == kTRUE){ histograms->AddHistogram("ESD_P_nTPCClusters" ,"" , kGCnXBinsNTPCClusters, kGCfirstXBinNTPCClusters, kGClastXBinNTPCClusters, "", "");}
     if(kGCplotESDPNITSClusters == kTRUE){ histograms->AddHistogram("ESD_P_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNITSClusters, kGClastXBinNITSClusters, "", "");}
-		
+    if(kGCplotESDPNTPCClustersToFP== kTRUE){ histograms->AddHistogram("ESD_P_nTPCClustersToFP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}	
+    if(kGCplotESDPTPCchi2 == kTRUE){ histograms->AddHistogram("ESD_P_TPCchi2" ,"" , kGCnXBinsTPCchi2, kGCfirstXBinTPCchi2, kGClastXBinTPCchi2, "", "");}
+
     if(kGCplotESDConvGammaEnergy == kTRUE){ histograms->AddHistogram("ESD_ConvGamma_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
     if(kGCplotESDConvGammaPt == kTRUE){ histograms->AddHistogram("ESD_ConvGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
     if(kGCplotESDConvGammaEta == kTRUE){ histograms->AddHistogram("ESD_ConvGamma_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}
@@ -2006,6 +2040,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotPi0Spectra == kTRUE){
       histograms->AddHistogram("ESD_Mother_alfa","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinAlpha, kGClastXBinAlpha,"#alpha","Counts");
 
+      //      histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
       histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt_alpha" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
       histograms->AddHistogram("ESD_Mother_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
@@ -2060,6 +2095,8 @@ histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha" ,"Invariant Mass vs P
       }
       for(Int_t z=0;z<8;z++){
 	for(Int_t m=0;m<6;m++){
+	  histograms->AddHistogram(Form("%d%dESD_Mother_InvMass_vs_Pt",z,m) ,"ESD Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
+
 	  histograms->AddHistogram(Form("%d%dESD_Background_InvMass_vs_Pt",z,m) ,"Background Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 
 	  
@@ -2425,6 +2462,12 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 7:
     kGCchi2CutConversion = 10.;
     break;
+  case 8:
+    kGCchi2CutConversion = 20.;
+    break;
+  case 9:
+    kGCchi2CutConversion = 15.;
+    break;
   default:
     return iResult;
   }
@@ -2441,6 +2484,12 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 3:  // 0.200 GeV
     kGCsingleptCut = 0.200;
+    break;
+  case 4:  // 0.075 GeV
+    kGCsingleptCut = 0.075;
+    break;
+  case 5:  // 0.125 GeV
+    kGCsingleptCut = 0.125;
     break;
   default:
     return iResult;

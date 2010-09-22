@@ -17,6 +17,7 @@
 #include <TObject.h> 
 #include "AliKFParticle.h"
 #include "TClonesArray.h"
+#include "AliESDVertex.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -27,7 +28,14 @@ typedef vector<AliKFParticle*> AliGammaConversionKFVector;
 class AliGammaConversionBGHandler : public TObject {
 
  public: 
-  
+  struct GammaConversionVertex
+  {
+    Double_t fX;
+    Double_t fY;
+    Double_t fZ;
+  };
+  typedef struct GammaConversionVertex GammaConversionVertex; //!
+
   typedef vector<AliGammaConversionKFVector> AliGammaConversionBGEventVector;
   typedef vector<AliGammaConversionBGEventVector> AliGammaConversionMultipicityVector;
   typedef vector<AliGammaConversionMultipicityVector> AliGammaConversionBGVector;
@@ -44,26 +52,29 @@ class AliGammaConversionBGHandler : public TObject {
 
   Int_t GetMultiplicityBinIndex(Int_t mult) const;
 
-  void AddEvent(TClonesArray * const eventGammas, Double_t zvalue, Int_t multiplicity);
+  void AddEvent(TClonesArray * const eventGammas, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity);
   void AddElectronEvent(TClonesArray* const eventENeg, Double_t zvalue, Int_t multiplicity);
 
   Int_t GetNBGEvents()const {return fNEvents;}
 
-  AliGammaConversionKFVector* GetBGGoodV0s(Int_t event, Double_t zvalue, Int_t multiplicity);
+  AliGammaConversionKFVector* GetBGGoodV0s(Int_t zbin, Int_t mbin, Int_t event);
   AliGammaConversionKFVector* GetBGGoodENeg(Int_t event, Double_t zvalue, Int_t multiplicity);
   void PrintBGArray();
+
+  GammaConversionVertex * GetBGEventVertex(Int_t zbin, Int_t mbin, Int_t event){return &fBGEventVertex[zbin][mbin][event];}
 
  private:
 
   Int_t fNEvents; // number of events
   Int_t ** fBGEventCounter; // bg counter
   Int_t ** fBGEventENegCounter;//bg electron counter
+  GammaConversionVertex *** fBGEventVertex;//array of event vertex
   Int_t fNBinsZ; //n z bins
   Int_t fNBinsMultiplicity; //n bins multiplicity
   Double_t *fBinLimitsArrayZ; //bin limits z array
   Double_t *fBinLimitsArrayMultiplicity; //bin limit multiplicity array
   AliGammaConversionBGVector fBGEvents; //gackground events
   AliGammaConversionBGVector fBGEventsENeg; //background electron events
-  ClassDef(AliGammaConversionBGHandler,0)
+  ClassDef(AliGammaConversionBGHandler,1)
 };
 #endif

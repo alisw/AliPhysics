@@ -13,6 +13,7 @@
 #include "AliAnalysisTaskSE.h"
 #include <vector>
 #include "AliV0Reader.h"
+#include "AliGammaConversionBGHandler.h"
 //#include "AliCFManager.h"  // for CF
 //#include "AliCFContainer.h"   // for CF
 
@@ -129,7 +130,13 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   ///////////////////////////////////////////////////////////////
 
   void SetDoCF(Bool_t flag){fDoCF = flag;}
-		
+
+  void SetUseChargedTracksMultiplicityForBG(Bool_t flag){fUseTrackMultiplicityForBG = flag;}		
+
+  void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
+
+  void MoveParticleAccordingToVertex(AliKFParticle *particle,AliGammaConversionBGHandler::GammaConversionVertex *vertex);
+
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -256,10 +263,12 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fKFForceAOD;  //Set the Analysis Manager FillAOD variable to true every event
   TString fKFDeltaAODFileName; //! File name for delta AOD (if any)
   Bool_t fDoNeutralMesonV0MCCheck; //flag
+  Bool_t fUseTrackMultiplicityForBG;
+  Bool_t fMoveParticleAccordingToVertex;
 
   vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
 
-  ClassDef(AliAnalysisTaskGammaConversion, 9); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 10); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H
