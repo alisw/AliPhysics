@@ -25,6 +25,11 @@
 #include <iostream>
 #include "TH2F.h"
 
+using namespace std;
+
+ClassImp(AliAnalysisEtReconstructed);
+
+
 AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         AliAnalysisEt()
         ,fTrackDistanceCut(0)
@@ -73,11 +78,12 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
 	nSigmaKaon = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kKaon));
 	nSigmaElectron = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kElectron));
+	/*
 	bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
 	bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
 	bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
 	bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
-
+	*/
 
         Int_t nItsClusters = dynamic_cast<AliESDtrack*>(track)->GetNcls(0);
         Int_t nTPCClusters = dynamic_cast<AliESDtrack*>(track)->GetNcls(1);

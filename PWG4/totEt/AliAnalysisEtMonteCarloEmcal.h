@@ -19,7 +19,10 @@ public:
     virtual ~AliAnalysisEtMonteCarloEmcal();
 
     virtual void Init();
-    
+
+ private:
+
+    ClassDef(AliAnalysisEtMonteCarloEmcal, 1);
 };
 
 #endif // ALIANALYSISETRECONSTRUCTEDEMCAL_H

@@ -20,7 +20,10 @@ public:
     virtual ~AliAnalysisEtMonteCarloPhos();
 
     virtual void Init();
-    
+
+ private:
+
+   ClassDef(AliAnalysisEtMonteCarloPhos, 1); 
 };
 
 #endif // ALIANALYSISETRECONSTRUCTEDPHOS_H

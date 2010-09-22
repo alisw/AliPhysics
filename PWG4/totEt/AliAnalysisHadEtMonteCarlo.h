@@ -29,6 +29,7 @@ public:
     
  private:
 
+    ClassDef(AliAnalysisHadEtMonteCarlo, 1);
 };
 
 #endif // ALIANALYSISHADETMONTECARLO_H

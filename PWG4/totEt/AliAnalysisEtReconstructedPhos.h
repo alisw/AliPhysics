@@ -25,6 +25,9 @@ public:
    protected:
       
       virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
+ private:
+
+      ClassDef(AliAnalysisEtReconstructedPhos, 1);
 };
 
 #endif // ALIANALYSISETRECONSTRUCTEDPHOS_H

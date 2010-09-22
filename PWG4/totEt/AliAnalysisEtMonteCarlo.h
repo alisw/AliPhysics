@@ -35,6 +35,9 @@ protected:
     Int_t fNcoll; // Ncoll, for Hijing; 1 otherwise
     Int_t fNpart; // Ncoll, for Hijing; 2 otherwise
 
+ private:
+
+    ClassDef(AliAnalysisEtMonteCarlo, 1);
 };
 
 #endif // ALIANALYSISETMONTECARLO_H

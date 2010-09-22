@@ -23,6 +23,9 @@ public:
    protected:
       
       virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
+ private:
+
+      ClassDef(AliAnalysisEtReconstructedEmcal, 1);
 };
 
 #endif // ALIANALYSISETRECONSTRUCTEDEMCAL_H

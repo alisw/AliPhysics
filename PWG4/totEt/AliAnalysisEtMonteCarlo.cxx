@@ -17,6 +17,11 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 
+using namespace std;
+
+ClassImp(AliAnalysisEtMonteCarlo);
+
+
 // ctor
 AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo() :
   AliAnalysisEt()
