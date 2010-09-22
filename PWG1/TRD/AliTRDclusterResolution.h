@@ -21,16 +21,21 @@ class AliTRDclusterResolution : public AliTRDrecoTask
 {
 public:
   enum EAxisBinning { // bins in z and x direction
-    kND  = 25
+    kND  = 1
   };
   enum EResultContainer { // results container type
     kCenter = 0   // cluster2center pad calibration
    ,kQRes   = 1   // resolution on charge dependence
    ,kSigm   = 2   // sigma cluster as func of x and z
    ,kMean   = 3   // shift cluster as func of x and z
-   ,kNtasks = 4   // total number os sub tasks
+   ,kNtasks = 4   // total number of subtasks
   };
-  enum ECheckBits { 
+  enum ECalibrationParam { // calibration parameters to be used from OCDB
+    kVdrift = 0
+   ,kT0     = 1
+   ,kGain   = 2
+  };
+  enum ECheckBits {
     kSaveAs     = BIT(22) // save intermediary results
    ,kCalibrated = BIT(23) // load calibration
   };
@@ -48,8 +53,9 @@ public:
   inline Float_t GetGain() const;
   Float_t       GetDyRange() const {return fDyRange;}
   Bool_t        GetRefFigure(Int_t ifig);
-  Bool_t        HasProcess(EResultContainer bit) const {return TESTBIT(fStatus, bit);}
+  Bool_t        HasProcess(EResultContainer bit) const {return TESTBIT(fSubTaskMap, bit);}
   Bool_t        IsCalibrated() const { return TestBit(kCalibrated);}
+  Bool_t        IsUsingCalibParam(ECalibrationParam par) const {return TESTBIT(fUseCalib, par);}
 
   TObjArray*    Histos(); 
   TObjArray*    Results() const {return fResults;}; 
@@ -61,8 +67,9 @@ public:
   void          SetCalibrationRegion(Int_t det, Int_t col=-1, Int_t row=-1);
   void          SetVisual();
   void          SetDyRange(Float_t dy) {if(dy>0) fDyRange = dy;}
-  void          SetProcess(EResultContainer bit, Bool_t v = kTRUE) {v ? SETBIT(fStatus, bit) : CLRBIT(fStatus, bit);}
+  void          SetProcess(EResultContainer bit, Bool_t v = kTRUE) {v ? SETBIT(fSubTaskMap, bit) : CLRBIT(fSubTaskMap, bit);}
   void          SetSaveAs(Bool_t v = kTRUE) {SetBit(kSaveAs, v);}
+  void          SetUseCalibParam(ECalibrationParam par, Bool_t v = kTRUE) {v ? SETBIT(fUseCalib, par) : CLRBIT(fUseCalib, par);}
   inline void   ResetProcesses();
 
 protected:
@@ -79,7 +86,8 @@ private:
   TCanvas    *fCanvas; //! visualization canvas 
   TObjArray  *fInfo;   //! list of cluster info
   TObjArray  *fResults;// list of result graphs/histos/trees
-  UChar_t    fStatus;  // steer parameter of the task
+  UChar_t    fSubTaskMap;  // steer map for subtasks
+  UChar_t    fUseCalib;    // steer map for calibration params
   Short_t    fDet;     // detector (-1 for all)
   Char_t     fCol;     // pad column (-1 for all)
   Char_t     fRow;     // pad row (-1 for all)
@@ -99,7 +107,7 @@ private:
   Float_t    fR[4];    // mean/sgm resolution
   Float_t    fP[4];    // mean/sgm pulls
   
-  ClassDef(AliTRDclusterResolution, 4)  // cluster resolution
+  ClassDef(AliTRDclusterResolution, 5)  // cluster resolution
 };
 
 //___________________________________________________
@@ -133,10 +141,10 @@ inline Float_t AliTRDclusterResolution::GetGain() const
 //___________________________________________________
 inline void AliTRDclusterResolution::ResetProcesses()
 {
-  CLRBIT(fStatus, kQRes);
-  CLRBIT(fStatus, kCenter);
-  CLRBIT(fStatus, kSigm);
-  CLRBIT(fStatus, kMean);
+  CLRBIT(fSubTaskMap, kQRes);
+  CLRBIT(fSubTaskMap, kCenter);
+  CLRBIT(fSubTaskMap, kSigm);
+  CLRBIT(fSubTaskMap, kMean);
 }
 
 #endif

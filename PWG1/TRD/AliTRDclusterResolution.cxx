@@ -207,7 +207,8 @@ AliTRDclusterResolution::AliTRDclusterResolution()
   ,fCanvas(NULL)
   ,fInfo(NULL)
   ,fResults(NULL)
-  ,fStatus(0)
+  ,fSubTaskMap(0)
+  ,fUseCalib(7)
   ,fDet(-1)
   ,fCol(-1)
   ,fRow(-1)
@@ -234,7 +235,8 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
   ,fCanvas(NULL)
   ,fInfo(NULL)
   ,fResults(NULL)
-  ,fStatus(0)
+  ,fSubTaskMap(0)
+  ,fUseCalib(7)
   ,fDet(-1)
   ,fCol(-1)
   ,fRow(-1)
@@ -669,20 +671,14 @@ Bool_t AliTRDclusterResolution::LoadCalibration()
 // Retrieve calibration parameters from OCDB, drift velocity and t0 for the detector region specified by
 // a previous call to AliTRDclusterResolution::SetCalibrationRegion().
 
-  AliCDBManager *cdb = AliCDBManager::Instance(); // init OCDB
+  AliCDBManager *cdb = AliCDBManager::Instance(); // check access OCDB
   if(cdb->GetRun() < 0){
     AliError("OCDB manager not properly initialized");
     return kFALSE;
   }
-
   // check magnetic field
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if(!esd){
-    AliError("Failed retrieving ESD event");
-    return kFALSE;
-  }
-  if(!TGeoGlobalMagField::Instance()->IsLocked() && !esd->InitMagneticField()){
-    AliError("Magnetic field failed initialization.");
+  if(!TGeoGlobalMagField::Instance() || !TGeoGlobalMagField::Instance()->IsLocked()){
+    AliError("Magnetic field not available.");
     return kFALSE;
   }
 
@@ -703,15 +699,20 @@ Bool_t AliTRDclusterResolution::LoadCalibration()
   const AliTRDCalDet  *fCalVdriftDet = fCalibration->GetVdriftDet();
   const AliTRDCalDet  *fCalT0Det = fCalibration->GetT0Det();
 
-  fVdrift = fCalVdriftDet->GetValue(fDet>=0?fDet:0);
-  if(fCol>=0 && fRow>=0) fVdrift*= fCalVdriftROC->GetValue(fCol, fRow);
+  if(IsUsingCalibParam(kVdrift)){
+    fVdrift = fCalVdriftDet->GetValue(fDet>=0?fDet:0);
+    if(fCol>=0 && fRow>=0) fVdrift*= fCalVdriftROC->GetValue(fCol, fRow);
+  }
   fExB    = AliTRDCommonParam::Instance()->GetOmegaTau(fVdrift);
-  fT0     = fCalT0Det->GetValue(fDet>=0?fDet:0);
-  if(fCol>=0 && fRow>=0) fT0 *= fCalT0ROC->GetValue(fCol, fRow);
-  fGain = (fCol>=0 && fRow>=0)?fCalibration-> GetGainFactor(fDet, fCol, fRow):fCalibration-> GetGainFactorAverage(fDet);
+  if(IsUsingCalibParam(kT0)){
+    fT0     = fCalT0Det->GetValue(fDet>=0?fDet:0);
+    if(fCol>=0 && fRow>=0) fT0 *= fCalT0ROC->GetValue(fCol, fRow);
+  }
+  if(IsUsingCalibParam(kGain)) fGain = (fCol>=0 && fRow>=0)?fCalibration-> GetGainFactor(fDet, fCol, fRow):fCalibration-> GetGainFactorAverage(fDet);
+
   SetBit(kCalibrated);
 
-  AliDebug(1, Form("Calibrate for Det[%3d] Col[%3d] Row[%2d] : \n   t0[%5.3f] vd[%5.3f] gain[%5.3f] ExB[%f]", fDet, fCol, fRow, fT0, fVdrift, fGain, fExB));
+  AliInfo(Form("Calibrate for Det[%3d] Col[%3d] Row[%2d] : \n   t0[%5.3f] vd[%5.3f] gain[%5.3f] ExB[%f]", fDet, fCol, fRow, fT0, fVdrift, fGain, fExB));
 
   return kTRUE;
 }

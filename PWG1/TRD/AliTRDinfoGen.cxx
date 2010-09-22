@@ -303,11 +303,17 @@ void AliTRDinfoGen::UserExec(Option_t *){
     AliGeomManager::GetNalignable("TRD");
     AliGeomManager::ApplyAlignObjsFromCDB("TRD");
     fgGeo = new AliTRDgeometry;
+    //init magnetic field
+    if(!TGeoGlobalMagField::Instance()->IsLocked() &&
+       !fESDev->InitMagneticField()){
+      AliWarning("Magnetic field failed initialization.");
+    }
 
     // set no of time bins
     AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS());
     AliInfo(Form("OCDB :  Loc[%s] Run[%d] TB[%d]", fOCDB.Data(), ocdb->GetRun(), AliTRDtrackerV1::GetNTimeBins()));
 
+    // set reco param valid for this run/event
     AliInfo(Form("Initializing TRD reco params for EventSpecie[%d]...",
       fESDev->GetEventSpecie()));
     fgReconstructor = new AliTRDReconstructor();
