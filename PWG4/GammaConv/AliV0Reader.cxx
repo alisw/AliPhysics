@@ -85,11 +85,13 @@ AliV0Reader::AliV0Reader() :
   fDoMC(kFALSE),
   fMaxVertexZ(100.),// 100 cm(from the 0)
   fMaxR(10000),// 100 meter(outside of ALICE)
+  fMinR(0),// 100 meter(outside of ALICE)
   fEtaCut(0.),
   fPtCut(0.),
   fSinglePtCut(0.),
   fMaxZ(0.),
   fMinClsTPC(0.),
+  fMinClsTPCToF(0.),
   fLineCutZRSlope(0.),
   fLineCutZValue(0.),
   fChi2CutConversion(0.),
@@ -178,11 +180,13 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fDoMC(kFALSE),
   fMaxVertexZ(original.fMaxVertexZ),
   fMaxR(original.fMaxR),
+  fMinR(original.fMinR),
   fEtaCut(original.fEtaCut),
   fPtCut(original.fPtCut),
   fSinglePtCut(original.fSinglePtCut),
   fMaxZ(original.fMaxZ),
   fMinClsTPC(original.fMinClsTPC),
+  fMinClsTPCToF(original.fMinClsTPCToF),
   fLineCutZRSlope(original.fLineCutZRSlope),
   fLineCutZValue(original.fLineCutZValue),
   fChi2CutConversion(original.fChi2CutConversion),
@@ -768,7 +772,15 @@ Bool_t AliV0Reader::NextV0(){
     if(fDoCF){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepR);			// for CF
     }
+    if(GetXYRadius()<fMinR){ // cuts on distance from collision point
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutMinR_InvMass",GetMotherCandidateMass());
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }
 		
+
 		
     if((TMath::Abs(fCurrentZValue)*fLineCutZRSlope)-fLineCutZValue > GetXYRadius() ){ // cuts out regions where we do not reconstruct
       if(fHistograms != NULL){
@@ -808,6 +820,25 @@ Bool_t AliV0Reader::NextV0(){
     if(fDoCF){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepMinClsTPC);		// for CF	
     }
+    Double_t NegclsToF = 0.;
+    if(fCurrentNegativeESDTrack->GetTPCNclsF()!=0  ){
+      NegclsToF = (Double_t)fCurrentNegativeESDTrack->GetNcls(1)/(Double_t)fCurrentNegativeESDTrack->GetTPCNclsF();
+    }
+
+    Double_t PosclsToF = 0.;
+    if(fCurrentPositiveESDTrack->GetTPCNclsF()!=0  ){
+      PosclsToF = (Double_t)fCurrentPositiveESDTrack->GetNcls(1)/(Double_t)fCurrentPositiveESDTrack->GetTPCNclsF();
+    }
+
+    if( NegclsToF < fMinClsTPCToF ||  PosclsToF < fMinClsTPCToF ){
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutMinNClsTPCToF_InvMass",GetMotherCandidateMass());
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }
+
+
 
 		
     if(fUseKFParticle){

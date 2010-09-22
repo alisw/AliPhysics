@@ -568,10 +568,14 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
   if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
     return; // aborts if the primary vertex does not have contributors.
   }
-	
+
+  AliMCParticle *mcTrack = 0x0;	
   for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
     TParticle* particle = (TParticle *)fStack->Particle(iTracks);
-		
+
+    if(mcTrack)mcTrack = 0x0;
+    mcTrack= dynamic_cast<AliMCParticle*>(fGCMCEvent->GetTrack(iTracks));	
+
     if (!particle) {
       //print warning here
       continue;
@@ -663,6 +667,11 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       rapidity = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())));
     }	
 		
+    if( fStack->IsPhysicalPrimary(mcTrack->GetLabel()) && TMath::Abs(mcTrack->Charge())>0 ){
+      fHistograms->FillHistogram("MC_PhysicalPrimaryCharged_Pt", mcTrack->Pt());
+    }
+ 
+
     //process the gammas
     if (particle->GetPdgCode() == 22){
       
@@ -1442,7 +1451,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
       if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
 	continue;
       }
-      if(negativeMC->GetUniqueID() == 4 && positiveMC->GetUniqueID() ==4){// fill r distribution for Dalitz decays 
+      if( (negativeMC->GetUniqueID() == 4 && positiveMC->GetUniqueID() ==4) ||
+	  (negativeMC->GetUniqueID() == 0 && positiveMC->GetUniqueID() ==0) ){// fill r distribution for Dalitz decays 
 	if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 111){ //pi0
 	  fHistograms->FillHistogram("ESD_TrueDalitzContamination_R", fV0Reader->GetXYRadius());
 	}
@@ -1998,6 +2008,14 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 		    }
 		  }
+		  if(!isRealPi0 && !isRealEta){
+		    if(gamma1MotherLabel>-1 && gamma2MotherLabel>-1){
+		      fHistograms->FillHistogram("ESD_TrueBckGG_InvMass",massTwoGammaCandidate);
+		    }else{
+		      fHistograms->FillHistogram("ESD_TrueBckCont_InvMass",massTwoGammaCandidate);
+		    }
+		  }
+
 		}
 		else if(TMath::Abs(eta1)>0.9 || TMath::Abs(eta2)>0.9){
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_0912",massTwoGammaCandidate);
@@ -2012,6 +2030,13 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 		    }
 		  }
+		  if(!isRealPi0 && !isRealEta){
+		    if(gamma1MotherLabel>-1 && gamma2MotherLabel>-1){
+		      fHistograms->FillHistogram("ESD_TrueBckGG_InvMass",massTwoGammaCandidate);
+		    }else{
+		      fHistograms->FillHistogram("ESD_TrueBckCont_InvMass",massTwoGammaCandidate);
+		    }
+		  }
 		}
 		else{
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_0909",massTwoGammaCandidate);
@@ -2024,6 +2049,16 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		    fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
 		    if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
 		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+		    }
+		    if(gamma1MotherLabel > fV0Reader->GetMCStack()->GetNprimary()){
+		      fHistograms->FillHistogram("ESD_TruePi0Sec_InvMass",massTwoGammaCandidate);
+		    }
+		  }
+		  if(!isRealPi0 && !isRealEta){
+		    if(gamma1MotherLabel>-1 && gamma2MotherLabel>-1){
+		      fHistograms->FillHistogram("ESD_TrueBckGG_InvMass",massTwoGammaCandidate);
+		    }else{
+		      fHistograms->FillHistogram("ESD_TrueBckCont_InvMass",massTwoGammaCandidate);
 		    }
 		  }
 		}
