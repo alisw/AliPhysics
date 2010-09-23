@@ -1232,6 +1232,36 @@ AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIJET_LIBS])
 
 dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_VZERO],[hlt vzero library])
+
+ALIVZERO_LIBS=
+CHECK_HLTMODULE([vzero],
+		[], [$ALIROOT_CPPFLAGS],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...header.missing"
+  enable_vzero=$enable_module
+elif test "x$enable_module" = "xforce"; then
+  enable_vzero="yes"
+else
+  enable_vzero=$enable_module
+fi
+
+if test "x$enable_vzero" = "xyes" ; then 
+  AC_DEFINE(HLT_VZERO)
+  ALIVZERO_LIBS=$ALIHLTMODULE_LIBS
+else
+  enable_module=$enable_vzero
+fi
+AM_CONDITIONAL(EN_HLT_VZERO, test x$enable_vzero = xyes)
+AC_MSG_CHECKING([whether to compile VZERO library])
+AC_MSG_RESULT([$enable_module])
+AC_SUBST([ALIVZERO_LIBS])
+
+dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_ITS],[hlt its library])
 
 ALIITS_LIBS=
@@ -1524,6 +1554,11 @@ fi
 AC_MSG_NOTICE([compile jet library: $enable_jet])
 if test "x$enable_jet" = "xyes"; then 
   AC_CONFIG_FILES([JET/Makefile])
+fi
+
+AC_MSG_NOTICE([compile vzero library: $enable_vzero])
+if test "x$enable_vzero" = "xyes"; then 
+  AC_CONFIG_FILES([VZERO/Makefile])
 fi
 
 AC_MSG_NOTICE([compile comp library: $enable_comp])

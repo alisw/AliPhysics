@@ -65,6 +65,10 @@ if EN_HLT_JET
 JET_DIR=JET
 endif
 
+if EN_HLT_VZERO
+VZERO_DIR=VZERO
+endif
+
 if EN_HLT_QA
 QA_DIR=QA
 endif
@@ -85,6 +89,7 @@ SUBDIRS 		= BASE \
                           $(ITS_DIR) \
                           $(GLOBAL_DIR) \
 			  $(JET_DIR) \
+			  $(VZERO_DIR) \
 			  $(QA_DIR) \
 			  doc
 
@@ -110,6 +115,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTEMCAL.pkg \
 			  libAliHLTGlobal.pkg \
 			  libAliHLTJet.pkg \
+			  libAliHLTVZERO.pkg \
 			  exa/sample-component1.C \
 			  exa/monitoring.C \
 			  hlt.conf \
