@@ -174,7 +174,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	  if (track->Charge() > 0) fHistPhivsPtPos->Fill(phi, pt);
 	  else fHistPhivsPtNeg->Fill(phi, pt);
         }
-    }
+      }
+    delete pID;
 
     for (Int_t iCluster = 0; iCluster < event->GetNumberOfCaloClusters(); iCluster++)
     {
