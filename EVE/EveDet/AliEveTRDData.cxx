@@ -98,7 +98,7 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
         stk   = AliTRDgeometry::GetStack(det),
         sec   = AliTRDgeometry::GetSector(det),
         vid   = AliGeomManager::LayerToVolUID(AliGeomManager::kTRD1 + ly, stk + AliTRDgeometry::Nstack() * sec);
-  SetNameTitle(Form("digits%03d", det), Form("det %03d [%02d_%d_%d]", sec, stk, ly));
+  SetNameTitle(Form("digits%03d", det), Form("D-%03d [%02d_%d_%d]", det, sec, stk, ly));
   Short_t sig[7]={0,0,0,10,0,0,0};
 
   AliTRDtransform transform(det);
@@ -120,7 +120,7 @@ void AliEveTRDDigits::SetData(AliTRDdigitsManager *digits)
       scale = adc[time] < 512 ? adc[time]/512. : 1.;
       AddQuad(c.GetY()-0.5*dy, c.GetZ()-0.5*dz*scale, c.GetX(), dy*0.95, dz*scale);
       QuadValue(Float_t(adc[time]));
-      QuadId(new TNamed(Form("ADC %d", adc[time]), Form("det[%3d  [%02d_%d_%d]] col[%3d] row[%2d] tb[%2d]", det, sec, stk, ly, col, row, time)));
+      QuadId(new TNamed(Form("ADC %d", adc[time]), Form("det[%3d(%02d_%d_%d)] col[%3d] row[%2d] tb[%2d]", det, sec, stk, ly, col, row, time)));
     } 
   }
 
