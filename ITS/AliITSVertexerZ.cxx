@@ -188,6 +188,9 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(TTree *itsClusterTree){
 void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   // Defines the AliESDVertex for the current event
   fCurrentVertex = 0;
+  Double_t startPos[3]={GetNominalPos()[0],GetNominalPos()[1],GetNominalPos()[2]};
+  Double_t startCov[6]={GetNominalCov()[0],GetNominalCov()[1],GetNominalCov()[2],
+			GetNominalCov()[3],GetNominalCov()[4],GetNominalCov()[5]};
   ResetVertex();
   TClonesArray *itsRec  = 0;
   // lc1 and gc1 are local and global coordinates for layer 1
@@ -199,7 +202,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   if(!rpcont->IsSPDActive()){
     AliWarning("Null pointer for RecPoints branch, vertex not calculated");
     ResetHistograms();
-    fCurrentVertex = new AliESDVertex(0.,5.3,-2);
+    fCurrentVertex = new AliESDVertex(startPos,startCov,99999.,-2);
     return;
   }
 
@@ -211,7 +214,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   if(nrpL1 == 0 || nrpL2 == 0){
     AliDebug(1,Form("No RecPoints in at least one SPD layer (%d %d)",nrpL1,nrpL2));
     ResetHistograms();
-    fCurrentVertex = new AliESDVertex(0.,5.3,-2);
+    fCurrentVertex = new AliESDVertex(startPos,startCov,99999.,-2);
     return;
   }
   // Force a coarse bin size of 200 microns if the number of clusters on layer 2
@@ -308,7 +311,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   if(contents<1.){
     //    Warning("FindVertexForCurrentEvent","Insufficient number of rec. points\n");
     ResetHistograms();
-    fCurrentVertex = new AliESDVertex(0.,5.3,-1);
+    fCurrentVertex = new AliESDVertex(startPos,startCov,99999.,-1);
     points.Clear();
     return;
   }
@@ -359,7 +362,9 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
     niter++;
   } while(niter<10 && TMath::Abs((zm-lim1)-(lim2-zm))>fTolerance);
   if(nPeaks==2) ezm=widthSR;
-  fCurrentVertex = new AliESDVertex(zm,ezm,ncontr);
+  Double_t position[3]={GetNominalPos()[0],GetNominalPos()[1],zm};
+  Double_t covmatrix[6]={GetNominalCov()[0],0.,GetNominalCov()[2],0.,0.,ezm};
+  fCurrentVertex = new AliESDVertex(position,covmatrix,99999.,ncontr);
   fCurrentVertex->SetTitle("vertexer: Z");
   fCurrentVertex->SetDispersion(fDiffPhiMax);
   fNoVertices=1;

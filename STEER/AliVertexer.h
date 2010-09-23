@@ -40,6 +40,7 @@ class AliVertexer : public TObject {
     // with size=novertices
     virtual  AliESDVertex* GetAllVertices(Int_t &novertices) const {novertices = 0; return NULL;}
     const Double_t* GetNominalPos() const {return fNominalPos;}
+    const Double_t* GetNominalCov() const {return fNominalCov;}
 
  protected:
     AliESDVertex *fCurrentVertex; //! pointer to the current vertex
