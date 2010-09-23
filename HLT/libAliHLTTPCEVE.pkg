@@ -1,8 +1,6 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-ifneq ($(shell $(ROOTCONFIG) --has-opengl), no)
-
 CLASS_HDRS:=  	AliHLTTPCEVE.h
 
 MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
@@ -36,5 +34,3 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 PACKSOFLAGS  := $(HLTSOFLAGS)
-
-endif
