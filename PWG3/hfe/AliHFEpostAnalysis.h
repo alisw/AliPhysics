@@ -40,7 +40,7 @@ class AliHFEpostAnalysis : public TObject{
     void DrawMCSignal2Background();
     void DrawEfficiency();
     void DrawPIDperformance();
-    void DrawCutEfficiency();
+    void DrawCutEfficiency(Bool_t MC = kTRUE, Int_t source = -1);
   private:
     enum{
       kCFC,

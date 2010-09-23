@@ -32,6 +32,10 @@
 #include <TArrayD.h>
 #endif
 
+class TArrayF;
+template <class X>
+class THnSparseT;
+typedef class THnSparseT<TArrayF> THnSparseF;
 class TCollection;
 class TList;
 class THashList;
@@ -50,7 +54,10 @@ class AliHFEcontainer : public TNamed{
     virtual Long64_t Merge(TCollection *coll);
 
     void CreateContainer(const Char_t *name, const Char_t *title, UInt_t nStep);
-    AliCFContainer *GetCFContainer(const Char_t *name);
+    void CreateCorrelationMatrix(const Char_t *name, const Char_t *title);
+    AliCFContainer *GetCFContainer(const Char_t *name) const;
+    THnSparseF *GetCorrelationMatrix(const Char_t *name) const;
+    THashList *GetListOfCorrelationMatrices() const { return fCorrelationMatrices; }
     void FillCFContainer(const Char_t *name, UInt_t step, Double_t *content);
     AliCFContainer *MakeMergedCFContainer(const Char_t *name, const Char_t *title, const Char_t *contnames);
 
@@ -86,7 +93,8 @@ class AliHFEcontainer : public TNamed{
     };
 
   private:
-    THashList*fContainers;      // TObjArray for Containers
+    THashList *fContainers;     // TObjArray for Containers
+    THashList *fCorrelationMatrices; // Container for Correlation Matrices
     TObjArray *fVariables;      // Variable Information
     UInt_t fNVars;              // Number of Variables
     Int_t fNEvents;             // Number of Events

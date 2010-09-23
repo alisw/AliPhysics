@@ -48,9 +48,10 @@ class AliHFEspectrum : public TNamed{
     AliHFEspectrum(const char* name);
     ~AliHFEspectrum();
 
-    void Correct(AliCFContainer *datacontainer,AliCFContainer *mccontainer,THnSparseF *mccorrelation);
+    void Correct(AliCFContainer *datacontainer,AliCFContainer *mccontainer,THnSparseF *mccorrelation,AliCFContainer *contaminationcontainer=0x0);
     AliCFDataGrid *SubtractBackground(Int_t dimensions, Bool_t setBackground = kFALSE);
-    
+    AliCFDataGrid *TakeBackgroundFromData(Int_t nDim);    
+
     TList *Unfold(Int_t dimensions, AliCFDataGrid* const bgsubpectrum = 0x0);
     AliCFDataGrid *CorrectForEfficiency(Int_t dimensions, AliCFDataGrid* const bgsubpectrum = 0x0);
  
@@ -70,7 +71,6 @@ class AliHFEspectrum : public TNamed{
   
 
   protected:
-    AliCFDataGrid *MakeBackgroundEstimateFromData(Int_t nDimensions);
     AliCFDataGrid *MakeBackgroundEstimateFromMC(Int_t nDimensions);
     
     AliCFContainer *GetContainer(AliHFEspectrum::CFContainer_t contt);

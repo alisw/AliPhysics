@@ -46,8 +46,9 @@ const Double_t AliHFEpidTRD::fgkVerySmall = 1e-12;
 AliHFEpidTRD::AliHFEpidTRD() :
     AliHFEpidBase()
   , fMinP(1.)
+  , fElectronEfficiency(0.91)
   , fPIDMethod(kNN)
-  , fContainer(0x0)
+  , fContainer(NULL)
 {
   //
   // default  constructor
@@ -59,8 +60,9 @@ AliHFEpidTRD::AliHFEpidTRD() :
 AliHFEpidTRD::AliHFEpidTRD(const char* name) :
     AliHFEpidBase(name)
   , fMinP(1.)
+  , fElectronEfficiency(0.91)
   , fPIDMethod(kNN)
-  , fContainer(0x0)
+  , fContainer(NULL)
 {
   //
   // default  constructor
@@ -71,9 +73,10 @@ AliHFEpidTRD::AliHFEpidTRD(const char* name) :
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD(const AliHFEpidTRD &ref):
     AliHFEpidBase("")
-  , fMinP(1.)
-  , fPIDMethod(kLQ)
-  , fContainer(0x0)
+  , fMinP(ref.fMinP)
+  , fElectronEfficiency(ref.fElectronEfficiency)
+  , fPIDMethod(ref.fPIDMethod)
+  , fContainer(NULL)
 {
   //
   // Copy constructor
@@ -102,6 +105,7 @@ void AliHFEpidTRD::Copy(TObject &ref) const {
 
   target.fMinP = fMinP;
   target.fPIDMethod = fPIDMethod;
+  target.fElectronEfficiency = fElectronEfficiency;
   memcpy(target.fThreshParams, fThreshParams, sizeof(Double_t) * kThreshParams);
   if(fContainer) target.fContainer = dynamic_cast<AliHFEcollection *>(fContainer->Clone());
   AliHFEpidBase::Copy(ref);
@@ -170,7 +174,7 @@ Int_t AliHFEpidTRD::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle * /*mcTrack*
 
   Double_t pidProbs[AliPID::kSPECIES];
   esdTrack->GetTRDpid(pidProbs);
-  Double_t threshold = GetTRDthresholds(0.71, p);
+  Double_t threshold = GetTRDthresholds(fElectronEfficiency, p);
   AliDebug(1, Form("Threshold: %f\n", threshold));
   if(IsQAon()) fContainer->Fill("fTRDthresholds", p, threshold);
   if(pidProbs[AliPID::kElectron] > threshold){
@@ -412,6 +416,7 @@ void AliHFEpidTRD::FillStandardQA(Int_t whenFilled, AliESDtrack *esdTrack){
   for(Int_t ihist = 0; ihist < 3; ihist++) histos[ihist] += step;
   fContainer->Fill(histos[0].Data(), esdTrack->P(), like[AliPID::kElectron]);
   fContainer->Fill(histos[1].Data(), p, esdTrack->GetTPCsignal());
+  const Double_t sigmaShift = 1.;
   if(fESDpid)
-    fContainer->Fill(histos[2].Data(), p, fESDpid->NumberOfSigmasTPC(esdTrack, AliPID::kElectron));
+    fContainer->Fill(histos[2].Data(), p, fESDpid->NumberOfSigmasTPC(esdTrack, AliPID::kElectron) - sigmaShift);
 }

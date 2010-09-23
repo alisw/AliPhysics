@@ -338,10 +338,11 @@ Int_t AliHFEpidTOF::MakePIDesdV3(AliESDtrack *track, AliMCParticle * /*mctrack*/
   if(TMath::Abs(sigEle) < fNsigmaTOF)
     pdg = 11;
   if(IsQAon()){
+    // Draw TPC cleanup
+    Double_t nsigTPC = fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron);
+    if(nsigTPC > -3 && nsigTPC < 5) fQAList->Fill("hTOFsigmaTPCcleanup", p, sigEle);
+    // Draw TOF signal
     Double_t hcontent[3] = {p, sigEle, 0};
-    hcontent[0] = p;
-    hcontent[1] = sigEle;
-    hcontent[2] = 0;
     THnSparseF * hptr = dynamic_cast<THnSparseF *>(fQAList->Get("hTOFsigmaElectron"));
     hptr->Fill(hcontent);
     if(pdg == 11){
@@ -413,6 +414,7 @@ void AliHFEpidTOF::AddQAhistograms(TList *qaList){
   Double_t binMin[kNdim] = {0.1, -12., 0};
   Double_t binMax[kNdim] = {20, 12., 2};
   fQAList->CreateTHnSparse("hTOFsigmaElectron", "TOF N#sigma around the Electron Line for all tracks; p (GeV/c); N sigma; Selection Step", kNdim, nBins, binMin, binMax);
+  fQAList->CreateTH2F("hTOFsigmaTPCcleanup", "TOF N#sigma around the Electron Line for all tracks after TPC cleanup; p (GeV/c); N sigma;", 100, 0.1, 20, 140, -12, 12);
 
   qaList->AddLast(fQAList->GetList());
 }

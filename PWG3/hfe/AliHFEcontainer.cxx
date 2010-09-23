@@ -25,6 +25,7 @@
 #include <TClass.h>
 #include <TCollection.h>
 #include <THashList.h>
+#include <THnSparse.h>
 #include <TList.h>
 #include <TObjArray.h>
 #include <TObjString.h>
@@ -41,6 +42,7 @@ ClassImp(AliHFEcontainer::AliHFEvarInfo)
 AliHFEcontainer::AliHFEcontainer():
   TNamed("HFEcontainer", ""),
   fContainers(NULL),
+  fCorrelationMatrices(NULL),
   fVariables(NULL),
   fNVars(0),
   fNEvents(0)
@@ -55,6 +57,7 @@ AliHFEcontainer::AliHFEcontainer():
 AliHFEcontainer::AliHFEcontainer(const Char_t *name):
   TNamed(name, ""),
   fContainers(NULL),
+  fCorrelationMatrices(NULL),
   fVariables(NULL),
   fNVars(0),
   fNEvents(0)
@@ -69,6 +72,7 @@ AliHFEcontainer::AliHFEcontainer(const Char_t *name):
 AliHFEcontainer::AliHFEcontainer(const Char_t *name, UInt_t nVar):
   TNamed(name, ""),
   fContainers(NULL),
+  fCorrelationMatrices(NULL),
   fVariables(NULL),
   fNVars(0),
   fNEvents(0)
@@ -85,21 +89,34 @@ AliHFEcontainer::AliHFEcontainer(const Char_t *name, UInt_t nVar):
 AliHFEcontainer::AliHFEcontainer(const AliHFEcontainer &ref):
   TNamed(ref),
   fContainers(NULL),
+  fCorrelationMatrices(NULL),
   fVariables(NULL),
   fNVars(ref.fNVars),
   fNEvents(ref.fNEvents)
 {
   //
   // Copy constructor
-  // creates a new object with new containers
+  // creates a new object with new (empty) containers
   //
-  fContainers = new THashList;
-  for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++)
-    fContainers->Add(new AliCFContainer(*dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien))));
   if(fNVars){
     fVariables = new TObjArray(fNVars);
     for(UInt_t ivar = 0; ivar < fNVars; ivar++)
       fVariables->AddAt(new AliHFEvarInfo(*dynamic_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar))), ivar);
+  }
+  fContainers = new THashList;
+  AliCFContainer *ctmp = NULL;
+  for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++){
+    ctmp = dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien));
+    CreateContainer(ctmp->GetName(), ctmp->GetTitle(), ctmp->GetNStep());
+  }
+  // Copy also correlation matrices
+  if(ref.fCorrelationMatrices){
+    THnSparseF *htmp = NULL;
+    fCorrelationMatrices = new THashList;
+    for(Int_t ien = 0; ien < ref.fCorrelationMatrices->GetEntries(); ien++){
+      htmp = dynamic_cast<THnSparseF *>(ref.fCorrelationMatrices->At(ien));
+      CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
+    }
   }
 }
 
@@ -161,6 +178,12 @@ Long64_t AliHFEcontainer::Merge(TCollection *coll){
     containers.Add(cont->fContainers);
     fContainers->Merge(&containers);
 
+    if(fCorrelationMatrices && cont->fCorrelationMatrices){
+      containers.Clear();
+      containers.Add(cont->fCorrelationMatrices);
+      fCorrelationMatrices->Merge(&containers);
+    }
+
     fNEvents += cont->GetNumberOfEvents();
     count++;
   }
@@ -206,11 +229,52 @@ void AliHFEcontainer::CreateContainer(const Char_t *name, const Char_t *title, U
 }
 
 //__________________________________________________________________
-AliCFContainer *AliHFEcontainer::GetCFContainer(const Char_t *name){
+void AliHFEcontainer::CreateCorrelationMatrix(const Char_t *name, const Char_t *title){
+  //
+  // Create Correlation Matrix
+  //
+  if(!fCorrelationMatrices){
+    fCorrelationMatrices = new THashList;
+    fCorrelationMatrices->SetName("fCorrelationMatrices");
+  }
+
+  Int_t *nBins = new Int_t[2*fNVars];
+  Double_t *binMin = new Double_t[2*fNVars];
+  Double_t *binMax = new Double_t[2*fNVars];
+  AliHFEvarInfo *var = NULL;
+  for(UInt_t ivar = 0; ivar < fNVars; ivar++){
+    var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
+    nBins[ivar] = var->GetNumberOfBins();
+    binMin[ivar] = var->GetBinning()[0];
+    binMax[ivar] = var->GetBinning()[var->GetNumberOfBins()];
+  }
+
+  THnSparseF * hTmp = new THnSparseF(name, title, 2*fNVars, nBins, binMin, binMax);
+  for(UInt_t ivar = 0; ivar < fNVars; ivar++){
+    var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
+    hTmp->GetAxis(ivar)->Set(var->GetNumberOfBins(), var->GetBinning());
+    hTmp->GetAxis(ivar)->SetTitle(var->GetVarName()->Data());
+    hTmp->GetAxis(ivar + fNVars)->Set(var->GetNumberOfBins(), var->GetBinning());
+    hTmp->GetAxis(ivar + fNVars)->SetTitle(Form("%s_{MC}", var->GetVarName()->Data()));
+  }
+  hTmp->Sumw2();
+  fCorrelationMatrices->AddLast(hTmp);
+}
+
+//__________________________________________________________________
+AliCFContainer *AliHFEcontainer::GetCFContainer(const Char_t *name) const{
   //
   // Find a given container 
   //
   return dynamic_cast<AliCFContainer *>(fContainers->FindObject(name));
+}
+
+//__________________________________________________________________
+THnSparseF *AliHFEcontainer::GetCorrelationMatrix(const Char_t *name) const{
+  //
+  // Find Correlation Matrix
+  //
+  return dynamic_cast<THnSparseF *>(fCorrelationMatrices->FindObject(name));
 }
 
 //__________________________________________________________________
