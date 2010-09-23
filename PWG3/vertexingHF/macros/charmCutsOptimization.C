@@ -14,7 +14,7 @@
 #include <TDatabasePDG.h>
 
 #include <AliMultiDimVector.h>
-#include <AliHFMassFitter.h>
+#include "AliHFMassFitter.h"
 #include <AliSignificanceCalculator.h>
 
 #include <fstream>
@@ -27,7 +27,7 @@
 //- 4 = kD0toKpipipi
 //- 5 = kLambdactopKpi
 
-Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decCh=1,Int_t fitbtype=1,Int_t minentries=50,TString hname="hMass_"){
+Bool_t charmCutsOptimization(Double_t nsigma=2,Int_t decCh=1,Int_t fitbtype=0,Int_t rebin=2,Double_t sigma=0.012,Int_t minentries=50,Double_t *rangefit=0x0,TString hname="hMass_"){
 
   TString filename="AnalysisResults.root",dirname="PWG3_D2H_Significance",listname="coutputSig",mdvlistname="coutputmv";
 
@@ -81,8 +81,10 @@ Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decC
 
   Int_t countFitFail=0,countSgnfFail=0,countNoHist=0,countBkgOnly=0;
   ofstream outcheck("output.dat");
+  ofstream outdetail("discarddetails.dat");
 
   outcheck<<"ptbin\tmdvGlobAddr\thistIndex\tSignif\tS\tB"<<endl;
+  outdetail<<"ptbin\tmdvGlobAddr\thistIndex\trelErrS\t\tmean_F-mass"<<endl;
   TFile *fin=new TFile(filename.Data());
   if(!fin->IsOpen()){
     cout<<"File "<<filename.Data()<<" not found"<<endl;
@@ -214,8 +216,9 @@ Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decC
 	  max=rangefit[1];
 	}
 
-	AliHFMassFitter fitter(h,min, max,2,fitbtype);
+	AliHFMassFitter fitter(h,min, max,rebin,fitbtype);
 	fitter.SetInitialGaussianMean(mass);
+	fitter.SetInitialGaussianSigma(sigma);
 
 	if(ih==0) fitter.InitNtuParam(Form("ntuPtbin%d",i));
 	// fitter.SetHisto(h);
@@ -225,30 +228,31 @@ Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decC
 	//fitter.SetType(fitbtype,0);
 
 	Bool_t ok=fitter.MassFitter(kFALSE);
-	if(!ok){
-	  ok=fitter.RefitWithBkgOnly(kFALSE);
-	  if (ok){ //onlybkg
-	    countBkgOnly++;
-	    Double_t bkg=0,errbkg=0.;
-	    fitter.Background(nsigma,bkg,errbkg); 
-	    outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t 0\t "<<bkg <<"\t bkgonly"<<endl;
-	    mdvSgnf->SetElement(ih,0);
-	    mdvSgnferr->SetElement(ih,0);
-	    mdvS->SetElement(ih,0);
-	    mdvSerr->SetElement(ih,0);
-	    mdvB->SetElement(ih,bkg);
-	    mdvBerr->SetElement(ih,errbkg);
-	  }else{ //bkg fit failed
-	    cout<<"Setting to 0"<<endl;
-	    outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t fit failed also with only bkg"<<endl;
-	    countFitFail++;
-	    mdvSgnf->SetElement(ih,0);
-	    mdvSgnferr->SetElement(ih,0);
-	    mdvS->SetElement(ih,0);
-	    mdvSerr->SetElement(ih,0);
-	    mdvB->SetElement(ih,0);
-	    mdvBerr->SetElement(ih,0);
-	  }
+        if(!ok){
+	  cout<<"FIT NOT OK!"<<endl;
+	//   ok=fitter.RefitWithBkgOnly(kFALSE);
+	//   if (ok){ //onlybkg
+	  countBkgOnly++;
+	//     Double_t bkg=0,errbkg=0.;
+	//     fitter.Background(nsigma,bkg,errbkg); 
+	  outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t 0\t xxx"<<"\t bkgonly"<<endl;
+	//     mdvSgnf->SetElement(ih,0);
+	//     mdvSgnferr->SetElement(ih,0);
+	//     mdvS->SetElement(ih,0);
+	//     mdvSerr->SetElement(ih,0);
+	//     mdvB->SetElement(ih,bkg);
+	//     mdvBerr->SetElement(ih,errbkg);
+	//   }else{ //bkg fit failed
+	//     cout<<"Setting to 0"<<endl;
+	//     outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t fit failed also with only bkg"<<endl;
+	//     countFitFail++;
+	//     mdvSgnf->SetElement(ih,0);
+	//     mdvSgnferr->SetElement(ih,0);
+	//     mdvS->SetElement(ih,0);
+	//     mdvSerr->SetElement(ih,0);
+	//     mdvB->SetElement(ih,0);
+	//     mdvBerr->SetElement(ih,0);
+	//   }
 	}else{ //fit ok!
 
 	  Double_t signif=0, signal=0, background=0, errSignif=0, errSignal=0, errBackground=0;
@@ -261,7 +265,9 @@ Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decC
 	    //refit
 	    fitter.Reset();
 	    fitter.SetHisto(h);
-	    fitter.SetRangeFit(1.8,1.93); //change
+	    fitter.SetRangeFit(1.8,1.93); //WARNING!! this is candidate dependant!! (change)
+	    fitter.SetInitialGaussianMean(mass);
+	    fitter.SetInitialGaussianSigma(sigma);
 	    ok=fitter.MassFitter(kFALSE);
 	    if(ok){
 	      meanfit=fitter.GetMean();
@@ -274,7 +280,7 @@ Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decC
 	  if(ok==kTRUE && sigmafit < 0.03 && signal > 0 && background > 0){
 	    fitter.Significance(nsigma,signif,errSignif);
 	    if(signif >0){
-	    if(errSignal/signal < 0.3 && TMath::Abs(meanfit-mass)<0.01){
+	    if(errSignal/signal < 0.35 && TMath::Abs(meanfit-mass)<0.01){
 	      outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t"<<signif<<" +- "<<errSignif<<"\t"<<signal<<" +- "<<errSignal<<"\t"<<background<<" +- "<<errBackground<<endl;
 	      mdvSgnf->SetElement(ih,signif);
 	      mdvSgnferr->SetElement(ih,errSignif);
@@ -288,8 +294,10 @@ Bool_t charmCutsOptimization(Double_t *rangefit=0x0,Double_t nsigma=2,Int_t decC
 	      if (ok){
 		countBkgOnly++;
 		Double_t bkg=0,errbkg=0.;
-		fitter.Background(nsigma,bkg,errbkg); 
+		Double_t nsigmarange[2]={mass-nsigma*sigma,mass+nsigma*sigma};
+		fitter.Background(nsigmarange[0],nsigmarange[1],bkg,errbkg); 
 		outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t 0\t "<<bkg <<"\t bkgonly"<<endl;
+		outdetail<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t"<<errSignal/signal<<"\t\t "<<meanfit-mass<<endl;
 		mdvSgnf->SetElement(ih,0);
 		mdvSgnferr->SetElement(ih,0);
 		mdvS->SetElement(ih,0);
@@ -358,6 +366,7 @@ return kTRUE;
 // which=0 plot significance
 //      =1 plot signal
 //      =2 plot background
+//      =3 plot S/B
 // maximize = kTRUE (default) if you want to fix the step of the variables not shown to the value that maximize the significance. Note that these values are saved in fixedvars.dat
 // readfromfile = kTRUE (default is kFALSE) if you want to read the value fixed in a previous run of this function (e.g. significance or signal maximization)
 
@@ -386,28 +395,33 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t maximize=kTRUE,Bool_t re
     return;
   }
 
-  TString name,title;
+  TString name,title,namebis,shorttitle;
   switch (which){
   case 0:
     name="SgfmultiDimVectorPtBin";
     title="Significance";
+    shorttitle="Sgnf";
     break;
   case 1:
     name="SmultiDimVectorPtBin";
     title="Signal";
+    shorttitle="S";
     break;
   case 2:
     name="BmultiDimVectorPtBin";
     title="Background";
+    shorttitle="B";
     break;
   case 3:
-    name="errSmultiDimVectorPtBin";
-    title="Signal (error) ";
+    name="SmultiDimVectorPtBin";
+    namebis="BmultiDimVectorPtBin";
+    title="Signal over Background ";
+    shorttitle="SoB";
     break;
-  case 4:
-    name="errBmultiDimVectorPtBin";
-    title="Background (error)";
-    break;
+  // case 4:
+  //   name="errBmultiDimVectorPtBin";
+  //   title="Background (error)";
+  //   break;
   }
  
   Int_t nptbins=0;
@@ -425,13 +439,14 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t maximize=kTRUE,Bool_t re
   cout<<"Projecting "<<title.Data()<<" with respect to the maximization variable(s) [chose]"<<endl;
  
   Int_t variable[2]; //no more than 2D
-  TString mdvname=Form("%s0",name.Data()), mdverrname="";
+  TString mdvname=Form("%s0",name.Data()), mdverrname="";//, mdvnamebis="", mdverrnamebis="";
   AliMultiDimVector* mdv=(AliMultiDimVector*)fin->Get(mdvname);
   AliMultiDimVector* mdverr=0x0;
   if(!mdv){
     cout<<mdvname.Data()<<" not found"<<endl;
     return;
   }
+  
 
   Int_t nvarsopt=mdv->GetNVariables();
   //Int_t nfixed=nvarsopt-n;
@@ -531,25 +546,36 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t maximize=kTRUE,Bool_t re
     printf("Significance = %f +- %f\n",sigMax0,mvess->GetElement(maxInd,0));
     printf("Purity       = %f +- %f\n",mvpur->GetElement(maxInd,0),mvepur->GetElement(maxInd,i));
 
-    //multidimvector
-    mdvname=Form("%s%d",name.Data(),i);   
-    mdv=(AliMultiDimVector*)fin->Get(mdvname);
-    if(!mdv)cout<<mdvname.Data()<<" not found"<<endl;
+    if(which==3){
+      //mdv=0x0;
+      mdv=cal->CalculateSOverB();
+      if(!mdv)cout<<mdv->GetName()<<" null"<<endl;
+      //mdverr=0x0;
+      mdverr=cal->CalculateSOverBError();
+      if(!mdverr)cout<<mdverr->GetName()<<" null"<<endl;
+    }else{
 
-    //multidimvector of errors
-    mdverrname=Form("err%s%d",name.Data(),i);   
-    mdverr=(AliMultiDimVector*)fin->Get(mdverrname);
-    if(!mdverr)cout<<mdverrname.Data()<<" not found"<<endl;
-    
+      //multidimvector
+      mdvname=Form("%s%d",name.Data(),i);   
+      mdv=(AliMultiDimVector*)fin->Get(mdvname);
+      if(!mdv)cout<<mdvname.Data()<<" not found"<<endl;
+      
+      //multidimvector of errors
+      mdverrname=Form("err%s%d",name.Data(),i);   
+      mdverr=(AliMultiDimVector*)fin->Get(mdverrname);
+      if(!mdverr)cout<<mdverrname.Data()<<" not found"<<endl;
+    }
     TString ptbinrange=Form("%.0f < p_{t} < %.0f GeV/c",mdv->GetPtLimit(0),mdv->GetPtLimit(1));
 
     if(n==2) {
       gStyle->SetPalette(1);
       TH2F* hproj=mdv->Project(variable[0],variable[1],fixedvars,0);
       hproj->SetTitle(Form("%s wrt %s vs %s (Ptbin%d);%s;%s",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i,(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data()));
+
       TCanvas* cvpj=new TCanvas(Form("proj%d%dpt%d",variable[0],variable[1],i),Form("%s wrt %s vs %s (Ptbin%d)",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i));
       cvpj->cd();
       hproj->DrawClone("COLZtext");
+      cvpj->SaveAs(Form("%s%s.png",shorttitle.Data(),cvpj->GetName()));
       delete hproj;
     }
 
@@ -574,7 +600,9 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t maximize=kTRUE,Bool_t re
 	
 	y[k]=mdv->GetElement(fixedvars,0);
 	erry[k]=mdverr->GetElement(fixedvars,0);
+	if(which==3){
 
+	}
 	cout<<mdv->GetAxisTitle(variable[0])<<" step "<<k<<" = "<<x[k]<<":"<<" y = "<<y[k]<<endl;
       }
             
@@ -594,6 +622,7 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t maximize=kTRUE,Bool_t re
     cvpj->cd();
     mg->Draw("A");
     leg->Draw();
+    cvpj->SaveAs(Form("%s%s.png",shorttitle.Data(),cvpj->GetName()));
   } else delete cvpj;
 }
 
