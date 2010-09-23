@@ -187,7 +187,7 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 						}
 						else
 						{
-							AliError("L0: Trying to update trigger info of a non-existent digit!");
+							AliDebug(100,"L0: Trying to update trigger info of a non-existent digit!");
 							
 							fRawDigitIndex[idx] = fRawDigits->GetEntriesFast();
 							new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
@@ -332,13 +332,13 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 						dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
 						
 						if (!dig->GetNSamples())
-							AliWarning(Form("TRG digit of id: %4d found in STU but has 0 sample in F-ALTRO!",idx));
+							AliDebug(10,Form("TRG digit of id: %4d found in STU but has 0 sample in F-ALTRO!",idx));
 							
 						dig->SetL1TimeSum(adc[j]);
 					}
 					else
 					{
-						AliWarning(Form("TRG digit of id: %4d found in STU but not in F-ALTRO! Create a new digit!",idx));
+						AliDebug(10,Form("TRG digit of id: %4d found in STU but not in F-ALTRO! Create a new digit!",idx));
 						
 						fRawDigitIndex[idx] = fRawDigits->GetEntriesFast();
 						new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
