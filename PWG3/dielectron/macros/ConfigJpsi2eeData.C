@@ -90,8 +90,8 @@ void SetupTrackCuts()
   fDiele->GetTrackFilter().AddCuts(pt);
     
   // PID cuts --------------------------------------------------------
-  AliDielectronPID *pid = new AliDielectronPID("PID10","TPC nSigma |e|<3 + |Pi|>3 + |P|>3 + TOF nSigma |e|<3");
-  pid->SetDefaults(10);
+  AliDielectronPID *pid = new AliDielectronPID("PID10","TPC nSigma 2.5<e<4. + |Pi|>3 + |P|>3");
+  pid->SetDefaults(2);
   fDiele->GetTrackFilter().AddCuts(pid);
 }
 
@@ -204,15 +204,14 @@ void InitCF()
   AliDielectronCF *cf=new AliDielectronCF(fDiele->GetName(),fDiele->GetTitle());
   
   //pair variables
-  TVectorD *binLimPt=new TVectorD(6);
-  (*binLimPt)[0]=0.0; (*binLimPt)[1]=0.8; (*binLimPt)[2]=1.4; (*binLimPt)[3]=2.8; (*binLimPt)[4]=4.2; (*binLimPt)[5]=9.9;
-  cf->AddVariable(AliDielectronVarManager::kPt,binLimPt);
+  cf->AddVariable(AliDielectronVarManager::kPt,"0.0, 0.8, 1.4, 2.8, 4.2, 9.9, 100.0");
+  
   cf->AddVariable(AliDielectronVarManager::kY,40,-2,2);
-  cf->AddVariable(AliDielectronVarManager::kM,150,0.,150*.027); //27Mev Steps
+  cf->AddVariable(AliDielectronVarManager::kM,50,1.98,1.98+50*.04); //40Mev Steps
   cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
   //leg variables
-  cf->AddVariable(AliDielectronVarManager::kPt,2,0.8,1.2,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kNclsTPC,3,90,120,kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kPt,"0.0, 0.8, 1.2, 100.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kNclsTPC,"0, 100, 120, 160",kTRUE);
   
   fDiele->SetCFManagerPair(cf);
   

@@ -99,6 +99,7 @@ public:
     kITSsignalSSD2,	     // SSD2 dE/dx signal
     kITSsignalSDD1,	     // SDD1 dE/dx signal
     kITSsignalSDD2,	     // SDD2 dE/dx signal
+    kITSclusterMap,      // ITS cluster map
     kITSnSigmaEle,           // number of sigmas to the dE/dx electron line in the ITS
     kITSnSigmaPio,           // number of sigmas to the dE/dx pion line in the ITS
     kITSnSigmaMuo,           // number of sigmas to the dE/dx muon line in the ITS
@@ -309,7 +310,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kITSsignalSSD2]   =   itsdEdx[1];
   values[AliDielectronVarManager::kITSsignalSDD1]   =   itsdEdx[2];
   values[AliDielectronVarManager::kITSsignalSDD2]   =   itsdEdx[3];
-
+  values[AliDielectronVarManager::kITSclusterMap]   =   particle->GetITSClusterMap();
+  
   values[AliDielectronVarManager::kTrackLength]   = particle->GetIntegratedLength();
   //dEdx information
   Double_t mom = particle->GetP();
@@ -382,6 +384,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTPCnSigmaKao]=0;
   values[AliDielectronVarManager::kTPCnSigmaPro]=0;
 
+  values[AliDielectronVarManager::kITSclusterMap]   =   particle->GetITSClusterMap();
   
   AliAODPid *pid=particle->GetDetPid();
   if (pid){

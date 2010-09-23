@@ -340,9 +340,9 @@ void AliDielectronPID::SetDefaults(Int_t def){
     // include 2sigma e TPC
     // 3sigma bands TOF
     // - exclude K,P
-    AddCut(kTPC,AliPID::kElectron,2.);
-    AddCut(kTOF,AliPID::kKaon,-3.,3.,0.,0.,kTRUE);
-    AddCut(kTOF,AliPID::kProton,-3.,3.,0.,0.,kTRUE);
+    AddCut(kTPC,AliPID::kElectron,-2.5,4.);
+    AddCut(kTPC,AliPID::kPion,-3.,3.,0.,0.,kTRUE);
+    AddCut(kTPC,AliPID::kProton,-3.,3.,0.,0.,kTRUE);
 
   } else if (def==3) {
     // include 2sigma e TPC

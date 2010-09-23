@@ -47,13 +47,17 @@ AliDielectronMC* AliDielectronMC::Instance()
   if (fgInstance) return fgInstance;
   
   AnalysisType type=kUNSET;
-  if (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()) type=kESD;
-  else if (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliAODHandler::Class()) type=kAOD;
+  Bool_t hasMC=kFALSE;
+  if (AliAnalysisManager::GetAnalysisManager()){
+    if (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()) type=kESD;
+    else if (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliAODHandler::Class()) type=kAOD;
 
-  AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-
+    AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    hasMC=mcHandler!=0x0;
+  }
+  
   fgInstance=new AliDielectronMC(type);
-  fgInstance->SetHasMC(mcHandler!=0x0);
+  fgInstance->SetHasMC(hasMC);
   
   return fgInstance;
 }
