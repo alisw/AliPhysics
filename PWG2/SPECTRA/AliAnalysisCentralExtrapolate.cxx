@@ -139,10 +139,10 @@ void AliAnalysisCentralExtrapolate::ApplyEff(){
 // 	ccorrdata->cd(1)->SetLogy();
 
  
-    AliCFDataGrid *corrdata = new AliCFDataGrid("corrdata","corrected data",*data);
+    AliCFDataGrid *corrdata = new AliCFDataGrid("corrdata","corrected data",*data, stepRec);
 
 //correct selection step "reconstructed"
-    corrdata->SetMeasured(stepRec); //set data to be corrected
+//    corrdata->SetMeasured(stepRec); //set data to be corrected
     corrdata->ApplyEffCorrection(*eff);//apply the correction for efficiency
 
 //     TH1D *hPtMC = data->ShowProjection(0,0); //MC distribution ShowProjection(ivar, istep)
