@@ -46,6 +46,7 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
 
+  void SetTrackType(Int_t trackType) {fTrackType = trackType;}
   void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
   Float_t GetPtMax()           {return fPtMax;}
 
@@ -61,6 +62,8 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
  
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global reconstructed vs MC comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
+
+  Int_t fTrackType;               // 0: global track; 1:TPConly track
 
   Float_t fPtMax;                 // Maximum pT for histograms
 

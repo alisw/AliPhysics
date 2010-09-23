@@ -51,6 +51,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(): AliAnalysisTask("AliPWG4HighPtQAMC", "")
   fMC(0),
   fTrackCuts(0), 
   fTrackCutsITS(0),
+  fTrackType(0),
   fPtMax(100.),
   fNEventAll(0),
   fNEventSel(0),
@@ -90,6 +91,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fMC(0),
   fTrackCuts(),
   fTrackCutsITS(),
+  fTrackType(0),
   fPtMax(100.),
   fNEventAll(0),
   fNEventSel(0),
@@ -391,33 +393,63 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
   int nMCtracks = stack->GetNtrack();
 
+  Float_t pt      = 0.;
+  Float_t ptMC    = 0.;
+  Float_t phi     = 0.;
+  Float_t dca2D   = 0.;
+  Float_t dcaZ    = 0.;
+  Int_t nPointITS = 0;
+  Float_t chi2C   = 0.;
+  Float_t nSigmaToVertex    = 0.;
+  Float_t relUncertainty1Pt = 0.;
+
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     
-    AliESDtrack *track = fESD->GetTrack(iTrack);
+    AliESDtrack *track;
+    AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
+    if(!esdtrack) continue;
+    AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)esdtrack->GetTPCInnerParam();
+
+    if(fTrackType==1)
+      track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+    else
+      track = esdtrack;
+
+    
     if(!track) continue;
+
     Int_t label = TMath::Abs(track->GetLabel());
     if(label>=nMCtracks)continue;
     TParticle *particle = stack->Particle(label) ;
     if(!particle) continue;
 
-    Float_t pt = track->Pt();
-    Float_t ptMC = particle->Pt();
-    Float_t phi = track->Phi();
-    Float_t dca2D, dcaZ;
-    track->GetImpactParameters(dca2D,dcaZ);
+    ptMC = particle->Pt();
+
+    if(fTrackType==0) {       //Global
+      pt  = track->Pt();
+      phi = track->Phi();
+      track->GetImpactParameters(dca2D,dcaZ);
+    }
+    else if(fTrackType==1) {  //TPConly
+      pt  = trackTPC->Pt();
+      phi = trackTPC->Phi();
+      track->GetImpactParametersTPC(dca2D,dcaZ);
+    }
+    else {continue;}
+
+    
     UChar_t itsMap = track->GetITSClusterMap();
-    Int_t nPointITS = 0;
     for (Int_t i=0; i < 6; i++) {
       if (itsMap & (1 << i))
 	nPointITS ++;
     }
-    Float_t nSigmaToVertex = fTrackCuts->GetSigmaToVertex(track);// Calculates the number of sigma to the vertex for a track.
-    Float_t chi2C = track->GetConstrainedChi2();
-    Float_t relUncertainty1Pt = TMath::Sqrt(track->GetSigma1Pt2())*pt;
-
+    nSigmaToVertex = fTrackCuts->GetSigmaToVertex(track);// Calculates the number of sigma to the vertex for a track.
+    chi2C = track->GetConstrainedChi2();
+    relUncertainty1Pt = TMath::Sqrt(track->GetSigma1Pt2())*pt;
+    
     fPtAll->Fill(pt);
     fPtAllMC->Fill(ptMC);
-    
+
     if (fTrackCuts->AcceptTrack(track)) {
 
       fPtSel->Fill(pt);
@@ -435,8 +467,9 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     }//fTrackCuts selection
     
     
+    
     //ITSrefit selection
-    if (fTrackCutsITS->AcceptTrack(track)) {
+    if (fTrackCutsITS->AcceptTrack(track) && fTrackType==0) {
       
       fPtSelITS->Fill(pt);
       fPtSelMCITS->Fill(ptMC);
@@ -450,7 +483,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       fPtITSminPtMCvsPtITSChi2C->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),chi2C);
       fPtITSminPtMCvsPtITSRel1PtUncertainty->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),relUncertainty1Pt);
     }//fTrackCutsITS loop
-      
+    
   }//ESD track loop
    
   // Post output data
