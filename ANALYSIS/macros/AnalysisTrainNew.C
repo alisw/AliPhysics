@@ -627,9 +627,13 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskGammaConversion.C");
       TString cdir = gSystem->WorkingDirectory();
       gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT/PWG4/macros/"));
-      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
+      TString gcArguments = "-run-on-train   -use-own-xyz  -run-jet  -run-neutralmeson -no-aod  -apply-chi2-cut -low-memory -use-v0-multiplicity -move-bg-vertex ";
+      TString kGCAnalysisCutSelectionId="900110204010001";
+      gcArguments.Append(Form(" -set-cut-selection %s",kGCAnalysisCutSelectionId.Data()));
+      if(!useMC)gcArguments += " -mc-off";
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
       gSystem->ChangeDirectory(cdir);
+      taskGammaConversion->SelectCollisionCandidates();
       if (!taskGammaConversion) ::Warning("AnalysisTrainNew", "AliAnalysisTaskGammaConversion cannot run for these train conditions - EXCLUDED");
    }   
 
