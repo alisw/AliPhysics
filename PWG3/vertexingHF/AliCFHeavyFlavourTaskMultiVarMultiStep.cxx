@@ -265,7 +265,6 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 	if(!aodEvent->GetPrimaryVertex()) return;
 
 	fEvents++;
-	if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
 
 	fCFManager->SetRecEventInfo(aodEvent);
 	fCFManager->SetMCEventInfo(aodEvent);
@@ -335,6 +334,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 
 		// fill the container for Gen-level selection
 		Double_t vectorMC[7] = {9999.,9999.,9999.,9999.,9999.,9999.,9999.};
+
 		if (GetGeneratedValuesFromMCParticle(mcPart, mcArray, vectorMC)){
 			containerInputMC[0] = vectorMC[0];
 			containerInputMC[1] = vectorMC[1] ;
@@ -410,7 +410,8 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 						Int_t foundDaughters = 0;
 						for (Int_t iaod =0; iaod<aodEvent->GetNumberOfTracks(); iaod++){
 							AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iaod);
-							if ((track->GetLabel() == daughter0) || (track->GetLabel() == daughter1)) {
+							if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
+								if ((track->GetLabel() == daughter0) || (track->GetLabel() == daughter1)) {
 								foundDaughters++;
 								if (trackCuts->GetRequireTPCRefit()) {
 									    if(!(track->GetStatus()&AliESDtrack::kTPCrefit)){
@@ -654,7 +655,10 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 					Bool_t iscutusingpid=fCuts->GetIsUsePID();
 					Int_t isselcuts=-1,isselpid=-1;
 					fCuts->SetUsePID(kFALSE);	
+					//Bool_t origFlag = fCuts->GetIsPrimaryWithoutDaughters();
+					//fCuts->SetRemoveDaughtersFromPrim(kFALSE);
 					isselcuts = fCuts->IsSelected(d0tokpi,AliRDHFCuts::kCandidate,aodEvent);
+					//fCuts->SetRemoveDaughtersFromPrim(origFlag);
 					fCuts->SetUsePID(iscutusingpid); // restoring usage of the PID from the cuts object
 					if (isselcuts == 3 || isselcuts == isD0D0bar){
 						AliDebug(2,"Particle passed PPR cuts (actually cuts for D0 analysis!)");
@@ -727,6 +731,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	AliInfo(Form("Among the above, found %i reco D0 that are decaying in K+pi and are in the requested acceptance, in %d events",fCountRecoAcc,fEvents));
 	AliInfo(Form("Among the above, found %i reco D0 that are decaying in K+pi and have at least %d clusters in ITS, in %d events",fCountRecoITSClusters,fMinITSClusters,fEvents));
 	AliInfo(Form("Among the above, found %i reco D0 that are decaying in K+pi and satisfy PPR cuts, in %d events",fCountRecoPPR,fEvents));
+	AliInfo(Form("Among the above, found %i reco D0 that are decaying in K+pi and satisfy PID cuts, in %d events",fCountRecoPID,fEvents));
 	
 	// draw some example plots....
 	

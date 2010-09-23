@@ -25,7 +25,6 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliCFVertexingHF2Prong.h"
-//#include "AliCFVertexingHF3Prong.h"
 #include "AliCFVertexingHF.h"
 
 class TH1I;
@@ -39,7 +38,7 @@ class AliAODMCParticle;
 class THnSparse;
 class AliRDHFCuts;
 class AliCFVertexingHF2Prong;
-//class AliCFVertexingHF3Prong;
+class AliCFVertexingHF3Prong;
 
 class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 public:
@@ -80,8 +79,6 @@ public:
 	void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
 	AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
 	
-	void     SetPDG(Int_t code) {fPDG = code; }     // defines the PDG code of searched HF
-
 	// Setters (and getters) for the config macro
 	void    SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
 	Bool_t  GetFillFromGenerated() const {return fFillFromGenerated;}
@@ -91,10 +88,9 @@ public:
 	Double_t GetWeight(Float_t pt);
 	Double_t dNdptFit(Float_t pt, Double_t* par);
  	
-	//void   SetDselection(UShort_t originDselection);
+	void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
 	 
 protected:
-	Int_t           fPDG;         //  PDG code of searched V0's
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
 	THnSparse* fCorrelation;      //  response matrix for unfolding

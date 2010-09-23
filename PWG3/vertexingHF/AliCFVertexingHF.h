@@ -94,7 +94,9 @@ class AliCFVertexingHF : public TObject {
 	
 	void SetNProngs(Int_t nProngs){fProngs = nProngs;}
 	void SetDselection(UShort_t originDselection); 
+	UShort_t GetDselection() {return fOriginDselection;}; 
 	Int_t CheckReflexion();
+	Bool_t SetLabelArray();
 
 	protected:
 	
@@ -113,7 +115,9 @@ class AliCFVertexingHF : public TObject {
 	Bool_t fKeepDfromBOnly;       // flag to keep only the charm particles that comes from beauty decays
 	Int_t fmcLabel;              // results of the MatchToMC()
 	Int_t fProngs;               // n. of prongs	
-	ClassDef(AliCFVertexingHF, 1);
+	Int_t* fLabelArray;          //[fProngs]  array of labels
+
+	ClassDef(AliCFVertexingHF, 2);
 	
 };
 

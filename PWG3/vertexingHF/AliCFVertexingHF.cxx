@@ -49,11 +49,13 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fKeepDfromB(kFALSE),
 	fKeepDfromBOnly(kFALSE),
 	fmcLabel(0),
-	fProngs(-1)
+	fProngs(-1),
+	fLabelArray(0x0)
 {
 	//
 	// constructor
 	//
+
 
 	return;
 }
@@ -74,7 +76,8 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fKeepDfromB(kFALSE),
 	fKeepDfromBOnly(kFALSE),
 	fmcLabel(0),
-	fProngs(-1)
+	fProngs(-1),
+	fLabelArray(0x0)
 {
 	//
 	// constructor with mcArray
@@ -94,6 +97,10 @@ AliCFVertexingHF::~AliCFVertexingHF()
 	if (fmcArray) fmcArray = 0x0;
 	if (fRecoCandidate) fRecoCandidate = 0x0;
 	if (fmcPartCandidate) fmcPartCandidate = 0x0;
+	if (fLabelArray){
+		delete [] fLabelArray;
+		fLabelArray = 0x0;
+	}	
 }
 
 //_____________________________________________________
@@ -117,7 +124,11 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 		fKeepDfromB = c.fKeepDfromB;
 		fKeepDfromBOnly = c.fKeepDfromBOnly;
 		fmcLabel = c.fmcLabel;
-		
+		fProngs=c.fProngs;
+		if (fProngs > 0){
+			fLabelArray = new Int_t[fProngs];
+			for(Int_t iP=0; iP<fProngs; iP++)fLabelArray[iP]=c.fLabelArray[iP];
+		}
 	}
 	
 	return *this;
@@ -138,11 +149,16 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fKeepDfromB (c.fKeepDfromB),
 	fKeepDfromBOnly (c.fKeepDfromBOnly),
 	fmcLabel(c.fmcLabel),
-	fProngs(c.fProngs)
+	fProngs(c.fProngs),
+	fLabelArray(0x0)
 {  
 	//
 	//copy constructor
 	//
+	if (fProngs > 0){
+		fLabelArray = new Int_t[fProngs];
+		if (c.fLabelArray) memcpy(fLabelArray,c.fLabelArray,fProngs*sizeof(Int_t));
+	}
 }
 
 //___________________________________________________________
@@ -213,22 +229,20 @@ Bool_t AliCFVertexingHF::CheckMCPartFamily(AliAODMCParticle */*mcPart*/, TClones
 	Int_t pdgGranma = CheckOrigin();
 	if (pdgGranma == -9999){
 		AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
-		AliInfo("This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
 		return kFALSE;
 	}	
 	
 	if (pdgGranma == -999){
 		AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");	
-		AliInfo("This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");	
 		return kFALSE;
 	}	
 	
 	if (!CheckMCDaughters()) {
-		Printf("CheckMCDaughters false");
+		AliDebug(3, "CheckMCDaughters false");
 		return kFALSE;
 	}
 	if (!CheckMCChannelDecay()) {
-		Printf("CheckMCChannelDecay false");
+		AliDebug(3,"CheckMCChannelDecay false");
 		return kFALSE;
 	}
 	return kTRUE;
@@ -277,28 +291,23 @@ Bool_t AliCFVertexingHF::CheckMCDaughters()const
 	// checking the daughters
 	// at MC level
 
-	Printf("CheckMCDaughters");
-	
 	AliAODMCParticle *mcPartDaughter;
 	Bool_t checkDaughters = kFALSE;
 	
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
-	Printf("label0 = %d, label1 = %d",label0,label1);
+	AliDebug(3,Form("label0 = %d, label1 = %d",label0,label1));
 	if (label1==0 || label0 == 0){
-		AliDebug(2, Form("The MC particle doesn't jave correct daughters, skipping!!"));
-		AliInfo(Form("The MC particle doesn't jave correct daughters, skipping!!"));
+		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
 		return checkDaughters;  
 	}
 	
-	if (label1 - label0 != fProngs-1){
-		AliDebug(2, Form("The MC particle doesn't come from a %d-prong decay, skipping!!", fProngs));
-		AliInfo(Form("The MC particle doesn't come from a %d-prong decay, skipping!!", fProngs));
-		return checkDaughters;  
-	}
-	
+	if (fLabelArray == 0x0) {
+		return checkDaughters;
+	}  
+
 	for (Int_t iProng = 0; iProng<fProngs; iProng++){
-		mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label0+iProng));    
+		mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[iProng]));    
 		if (!mcPartDaughter) {
 			AliWarning("At least one Daughter Particle not found in tree, skipping"); 
 			return checkDaughters;  
@@ -392,13 +401,12 @@ Bool_t AliCFVertexingHF::MCAcceptanceStep() const
 		return bMCAccStep;  
 	}
 	
-	if (label1 - label0 != fProngs-1){
-		AliDebug(2, Form("The MC particle doesn't come from a %d-prong decay, skipping!!", fProngs));
-		return bMCAccStep;  
-	}
-	
+	if (fLabelArray == 0x0) {
+		return bMCAccStep;
+	}  
+
 	for (Int_t iProng = 0; iProng<fProngs; iProng++){
-		mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label0+iProng));    
+		mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[iProng]));    
 		if (!mcPartDaughter) {
 			AliWarning("At least one Daughter Particle not found in tree, skipping"); 
 			return bMCAccStep;  
@@ -416,76 +424,6 @@ Bool_t AliCFVertexingHF::MCAcceptanceStep() const
 	return bMCAccStep; 
 	
 }
-
-//_____________________________________________________
-/*
-  Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *trackCuts) const
-  {		
-  // check on the kTPCrefit and kITSrefit conditions of the daughters
-  Bool_t bRefitStep = kTRUE;
-  
-  Int_t label0 = fmcPartCandidate->GetDaughter(0);
-  Int_t label1 = fmcPartCandidate->GetDaughter(1);
-  
-  if (label1==0 || label0 == 0){
-  AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
-  AliInfo(Form("The MC particle doesn't have correct daughters, skipping!! **** THIS SHOULD NOT HAPPEN 1"));
-  return kFALSE;  
-  }
-  
-  if (label1 - label0 != fProngs-1){
-  AliDebug(2, Form("The MC particle doesn't come from a %d-prong decay, skipping!!", fProngs));
-  AliInfo(Form("The MC particle doesn't come from a %d-prong decay, skipping!! **** THIS SHOULD NOT HAPPEN 1", fProngs));
-  return kFALSE;  
-  }
-  
-  Int_t foundDaughters = 0;
-  
-  if (trackCuts->GetRequireTPCRefit() || trackCuts->GetRequireITSRefit()){
-  
-  for(Int_t iaod =0; iaod<aodEvent->GetNumberOfTracks(); iaod++){
-  AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iaod);
-  if (track->GetLabel()>= label0 && track->GetLabel()<=label1){
-  foundDaughters++;
-  printf("daughter %d \n",foundDaughters);
-  if(trackCuts->GetRequireTPCRefit()){
-  if(!(track->GetStatus()&AliESDtrack::kTPCrefit)) {
-  bRefitStep = kFALSE;
-  AliDebug(3, "Refit cut not passed , missing TPC refit\n");
-  AliInfo( "Refit cut not passed , missing TPC refit\n");
-  break;
-  }
-  else {
-  AliDebug(3, "TPC Refit cut passed\n");
-  AliInfo( "TPC Refit cut passed\n");
-  }
-  }
-  
-  if (trackCuts->GetRequireITSRefit()) {
-  if(!(track->GetStatus()&AliESDtrack::kITSrefit)){
-  bRefitStep = kFALSE;
-  AliDebug(3, "Refit cut not passed , missing ITS refit\n");
-  AliInfo("Refit cut not passed , missing ITS refit\n");
-  break;
-  }
-  else {
-  AliDebug(3, "ITS Refit cut passed\n");
-  AliInfo("ITS Refit cut passed\n");
-  }
-  }
-  }      	
-  if (foundDaughters == fProngs){	
-  break;
-  }
-  
-  }
-  
-  } 
-  if (foundDaughters==fProng) return bRefitStep;
-  else return kFALSE;
-  }
-*/
-
  //_____________________________________________________
 Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *trackCuts) const
 {		
@@ -502,19 +440,31 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *tra
 		return bRefitStep;  
 	}
 	
-	if (label1 - label0 != fProngs-1){
-		AliDebug(2, Form("The MC particle doesn't come from a %d-prong decay, skipping!!", fProngs));
-		//AliInfo(Form("The MC particle doesn't come from a %d-prong decay, skipping!!", fProngs));
-		return bRefitStep;  
-	}
+	if (fLabelArray == 0x0) {
+		return bRefitStep;
+	}  
 	
 	Int_t foundDaughters = 0;
-	
+	Int_t* temp = new Int_t[fProngs];
+	for (Int_t ilabel = 0; ilabel<fProngs; ilabel++){
+		temp[ilabel] = fLabelArray[ilabel];
+	}
+
 	if (trackCuts->GetRequireTPCRefit() || trackCuts->GetRequireITSRefit()){
 		
 		for(Int_t iaod =0; iaod<aodEvent->GetNumberOfTracks(); iaod++){
 			AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iaod);
-			if (track->GetLabel()>= label0 && track->GetLabel()<=label1){
+			if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
+			Bool_t foundTrack = kFALSE;
+			for (Int_t ilabel = 0; ilabel<fProngs; ilabel++){
+				AliDebug(3,Form("fLabelArray[%d] = %d, track->GetLabel() = %d",ilabel,fLabelArray[ilabel],track->GetLabel()));
+				if (track->GetLabel() == temp[ilabel]) {
+					foundTrack = kTRUE;
+					temp[ilabel] = -1;
+					break;
+				}
+			}
+			if (foundTrack){
 				foundDaughters++;
 				AliDebug(4,Form("daughter %d \n",foundDaughters));
 				if(trackCuts->GetRequireTPCRefit()){
@@ -523,6 +473,8 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *tra
 					}
 					else {
 						AliDebug(3, "Refit cut not passed , missing TPC refit\n");
+						delete [] temp;
+						temp = 0x0;
 						return kFALSE;
 					}
 				}
@@ -533,7 +485,9 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *tra
 					}
 					else {
 						AliDebug(3, "Refit cut not passed , missing ITS refit\n");
-	    return kFALSE;
+						delete [] temp;
+						temp = 0x0;
+						return kFALSE;
 					}
 				}
 			}      	
@@ -541,7 +495,9 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *tra
 				break;
 			}			
 		}    
-	} 
+	} 						
+	delete [] temp;
+	temp = 0x0;
 	if (foundDaughters== fProngs)  return bRefitStep;
 	else return kFALSE;
 }
@@ -693,4 +649,77 @@ Int_t AliCFVertexingHF::CheckReflexion()
 	if(fmcPartCandidate->GetPdgCode()>0) return 1;  // particle
 	else if(fmcPartCandidate->GetPdgCode()<0) return 2;  // antiparticle
 	else return 0;  // ....shouldn't be...
+}
+//___________________________________________________________
+
+Bool_t AliCFVertexingHF::SetLabelArray()
+{
+	//
+	// setting the label arrays
+	//
+
+	Bool_t bLabelArray = kFALSE;
+
+	fLabelArray = new Int_t[fProngs];
+
+	AliAODMCParticle *mcPartDaughter;
+	Int_t label0 = fmcPartCandidate->GetDaughter(0);
+	Int_t label1 = fmcPartCandidate->GetDaughter(1);
+	AliDebug(2,Form("label0 = %d, label1 = %d",label0,label1));
+	if (label1==0 || label0 == 0){
+		AliDebug(2, Form("The MC particle doesn't jave correct daughters, skipping!!"));
+		delete [] fLabelArray; 
+		fLabelArray = 0x0;  
+		return bLabelArray;
+	}
+	
+	if (label1 - label0 == fProngs-1){
+		for (Int_t iProng = 0; iProng<fProngs; iProng++){
+			mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label0+iProng));    
+			fLabelArray[iProng] =  mcPartDaughter->GetLabel();
+		}
+
+	}
+	// resonant decay channel
+	else if (label1 - label0 == fProngs-2 && fProngs > 2){
+		Int_t labelFirstDau = fmcPartCandidate->GetDaughter(0);
+		Int_t foundDaughters = 0;
+		for(Int_t iDau=0; iDau<fProngs-1; iDau++){
+			Int_t iLabelDau = labelFirstDau+iDau;
+			AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDau));
+			Int_t pdgCode=TMath::Abs(part->GetPdgCode());
+			if(pdgCode==211 || pdgCode==321 || pdgCode==2212){
+				fLabelArray[foundDaughters] = part->GetLabel();
+				foundDaughters++;
+			}
+			else{
+				Int_t nDauRes=part->GetNDaughters();
+				if(nDauRes!=2) {
+					delete [] fLabelArray; 
+					fLabelArray = 0x0;  
+					return bLabelArray;
+				}
+				Int_t labelFirstDauRes = part->GetDaughter(0); 
+				for(Int_t iDauRes=0; iDauRes<fProngs-1; iDauRes++){
+					Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
+					AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
+					fLabelArray[foundDaughters] = dauRes->GetLabel();
+					foundDaughters++;
+				}
+			}
+		}
+		if (foundDaughters != fProngs){
+			delete [] fLabelArray; 
+			fLabelArray = 0x0;  
+			return bLabelArray;
+		}
+	}
+	// wrong correspondance label <--> prongs
+	else{
+		delete [] fLabelArray; 
+		fLabelArray = 0x0;  
+		return bLabelArray;
+	}
+	bLabelArray = kTRUE;
+	return bLabelArray;
 }
