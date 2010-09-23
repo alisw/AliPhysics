@@ -16,8 +16,8 @@
 //    root[1] AnalysisTrainNew(ana_mode, plugin_mode, "train_default_<date>/ConfigTrain.C")
 
 //==================   TRAIN NAME   ============================================
-TString     train_name         = "TR020_LHC10b1ESD"; // *CHANGE ME* (no blancs or special characters)
-TString     job_tag            = "TR020: ESD+MC -> AODMC + delta AOD"; // *CHANGE ME*
+TString     train_name         = "FILTER_DATA"; // *CHANGE ME* (no blancs or special characters)
+TString     job_tag            = "FILTER_DATA: data ESD + PhysSel + Tender -> AOD + Muons + Vertices"; // *CHANGE ME*
 //==============================================================================
 
 // ### Settings that make sense in PROOF only
@@ -31,7 +31,7 @@ TString     proof_outdir       = "";
 
 // ### Settings that make sense when using the Alien plugin
 //==============================================================================
-Int_t       runOnData          = 0;       // Set to 1 if processing real data
+Int_t       runOnData          = 1;       // Set to 1 if processing real data
 Int_t       iCollision         = 0;       // 0=pp, 1=Pb-Pb
 Bool_t      usePLUGIN          = kTRUE;   // do not change
 Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
@@ -41,29 +41,30 @@ Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
 // AliRoot.
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
-TString     root_version       = "v5-26-00b-2";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     aliroot_version    = "v4-19-09-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     root_version       = "v5-27-05";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     aliroot_version    = "v4-20-06-AN-1";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here
-TString     alien_datadir      = " /alice/sim/LHC10b1";
+TString     alien_datadir      = "/alice/data/2010/LHC10d";
 // AliEn output directory. If blank will become output_<train_name>
-TString     alien_outdir       = "/alice/sim/LHC10b1/AOD1";
-// TString     alien_outdir       = "";
+//TString     alien_outdir       = "/alice/data/2010/LHC10b/AOD1";
+TString     alien_outdir       = "";
 // Output folder to write delta AOD's. Considered if not null.
 TString     outputSingleFolder = "";
 //TString     outputSingleFolder = "deltas";
 // Number of files merged in a chunk
 Int_t       maxMergeFiles      = 20;
 // Files that should not be merged
-TString     mergeExclude       = "AliAOD.root AliAOD.VertexingHF.root AliAOD.Jets.root deltaAODPartCorr.root AliAOD.Muons.root resonances.root forward.root";
+TString     mergeExclude       = "AliAOD.root AliAOD.VertexingHF.root AliAOD.Jets.root deltaAODPartCorr.root AliAOD.Muons.root AliAOD.Dimuons.root";
 // Make replicas on the storages below
 TString     outputStorages      = "disk=4";
 // Number of runs per master job
 Int_t       nRunsPerMaster     = 10;
 // Maximum number of files per job (gives size of AOD)
-Int_t       nFilesPerJob       = 100;
+Int_t       nFilesPerJob       = 50;
 // Int_t       nFilesPerJob       = 1; (AOD->delta AOD production case)
 // Set the run range
-Int_t       run_range[2]       =  {114786, 114949};  // LHC09a7   *CHANGE ME*
+Int_t run_numbers[10] = {126432}; // **********************!!!!!!!
+//Int_t       run_range[2]       =  {114786, 114949};  // LHC09a7   *CHANGE ME*
 // ### Settings that make sense only for local analysis
 //==============================================================================
 // Change local xml dataset for local interactive analysis
@@ -72,19 +73,20 @@ TString     local_xmldataset   = "";
 // ### Other flags to steer the analysis
 //==============================================================================
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
+Bool_t      useTender           = kTRUE; // use tender wagon
 Bool_t      useMergeViaJDL      = kTRUE;  // merge via JDL
-Bool_t      useFastReadOption   = kFALSE;  // use xrootd tweaks
+Bool_t      useFastReadOption   = kTRUE;  // use xrootd tweaks
 Bool_t      useOverwriteMode    = kTRUE;  // overwrite existing collections
 Bool_t      useDATE             = kFALSE; // use date in train name
 Bool_t      useDBG              = kTRUE;  // activate debugging
-Bool_t      useMC               = kTRUE;  // use MC info
-Bool_t      useTAGS             = kTRUE;  // use ESD tags for selection
-Bool_t      useKFILTER          = kTRUE;  // use Kinematics filter
-Bool_t      useTR               = kTRUE;  // use track references
+Bool_t      useMC               = kFALSE;  // use MC info
+Bool_t      useTAGS             = kFALSE;  // use ESD tags for selection
+Bool_t      useKFILTER          = kFALSE;  // use Kinematics filter
+Bool_t      useTR               = kFALSE;  // use track references
 Bool_t      useCORRFW           = kFALSE; // do not change
 Bool_t      useAODTAGS          = kFALSE; // use AOD tags
 Bool_t      saveTrain           = kTRUE;  // save train configuration as: 
-Bool_t      saveCanvases        = kTRUE;  // save canvases created in Terminate
+Bool_t      saveCanvases        = kFALSE;  // save canvases created in Terminate
 Bool_t      saveProofToAlien    = kFALSE; // save proof outputs in AliEn
 
 // ### Analysis modules to be included. Some may not be yet fully implemented.
@@ -94,8 +96,8 @@ Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
 Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4)
-Int_t       iJETANdelta        = 1;      // Jet delta AODs
-Int_t       iPWG4partcorr      = 1;      // Gamma-hadron correlations task (PWG4)
+Int_t       iJETANdelta        = 0;      // Jet delta AODs
+Int_t       iPWG4partcorr      = 0;      // Gamma-hadron correlations task (PWG4)
 Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG3)
@@ -108,7 +110,7 @@ Int_t        iPWG3LSd0         = 1;      // LS D0 analysis (PWG3D2H)
 Int_t        iPWG3LSjpsi       = 1;      // LS J/Psi analysis (PWG3D2H)                                                                    
 Int_t        iPWG3CFd0         = 1;      // CF D0 analysis (PWG3D2H)                                                                       
 Int_t        iPWG3promptd0     = 1;      // prompt D0 analysis (PWG3D2H)                                                                   
-Int_t       iPWG3MuonTrain     = 1;      // Muon analysis train
+Int_t       iPWG3MuonTrain     = 0;      // Muon analysis train
 Int_t       iPWG2femto         = 0;      // Femtoscopy task (PWG2)
 Int_t       iPWG2spectra       = 0;      // Spectra tasks (PWG2
 Int_t        iPWG2protons      = 1;         // Proton-antiproton analysis
@@ -139,8 +141,7 @@ Int_t       iPWG2forward       = 0;      // FMD analysis (PWG2)
 //==============================================================================
 TString     configPWG2femto    = "$ALICE_ROOT/PWG2/FEMTOSCOPY/macros/Train/Train3/ConfigFemtoAnalysis.C";
 //TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF_highmult.C";
-//TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C";
-TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF_pp2009.C";
+TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C";
 // Temporaries.
 TString anaPars = "";
 TString anaLibs = "";
@@ -167,6 +168,8 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    printf("=  Configuring analysis train for:                               =\n");
    if (iAODanalysis) printf("=  AOD analysis                                                  =\n");
    else              printf("=  ESD analysis                                                  =\n");
+   if (usePhysicsSelection)   printf("=  Physics selection                                                =\n");
+   if (useTender)    printf("=  TENDER                                                        =\n");
    if (iESDfilter)   printf("=  ESD filter                                                    =\n");
    if (iMUONcopyAOD) printf("=  MUON copy AOD                                                 =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
@@ -289,7 +292,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
       } 
    }
    // Debugging if needed
-   if (useDBG) mgr->SetDebugLevel(1);
+   if (useDBG) mgr->SetDebugLevel(3);
    if (saveCanvases) mgr->SetSaveCanvases(kTRUE);
 
    //==========================================================================
@@ -340,11 +343,20 @@ void AddAnalysisTasks()
 // Add all analysis task wagons to the train                                                                                               
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();                                                                     
 
+  //
+  // Tender and supplies
+  //
+   if (useTender) {
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+      AliAnalysisTaskSE *tender = AddTaskTender(kTRUE);
+//      tender->SelectCollisionCandidates();
+      tender->SetDebugLevel(2);
+   }
    if (usePhysicsSelection) {
    // Physics selection task
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       mgr->RegisterExtraFile("event_stat.root");
-      AddTaskPhysicsSelection(useMC);
+      AliPhysicsSelectionTask *physSel = AddTaskPhysicsSelection(useMC);
    }
 
    if (iESDfilter && !iAODanalysis) {
@@ -384,7 +396,7 @@ void AddAnalysisTasks()
       // cascades
       if (iPWG2checkcascade) {
         gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskCheckCascade.C");
-        AliAnalysisTaskCheckCascade *taskcheckcascade = AddTaskCheckCascade(iCollision);
+        AliAnalysisTaskCheckCascade *taskcheckcascade = AddTaskCheckCascade(iCollision,runOnData);
         if (!taskcheckcascade) ::Warning("AnalysisTrainNew", "AliAnalysisTaskCheckCascade cannot run for this train conditions - EXCLUDED");
       }  
       // v0's
@@ -542,7 +554,7 @@ void AddAnalysisTasks()
            
    // PWG3 vertexing
    if (iPWG3vertexing) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskVertexingHF.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/AddTaskVertexingHF.C");
       if (!iPWG3d2h) TFile::Cp(gSystem->ExpandPathName(configPWG3d2h.Data()), Form("%s/ConfigVertexingHF.C", train_name.Data()));
       AliAnalysisTaskSEVertexingHF *taskvertexingHF = AddTaskVertexingHF();
       if (!taskvertexingHF) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSEVertexingHF cannot run for this train conditions - EXCLUDED");
@@ -594,7 +606,7 @@ void AddAnalysisTasks()
       } else {
          // AOD-based analysis. Add all reconstructors to write into delta AOD's
          if (iJETANdelta) {
-            Int_t ntasksjets = AddTaskJetsDelta("AliAOD.Jets.root");
+            Int_t ntasksjets = AddTaskJetsDelta("AliAOD.Jets.root",0,kFALSE);
             if (ntasksjets) printf("Added %d jet reconstructors\n", ntasksjets);
          }
       }      
@@ -907,6 +919,10 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 {
 // Load common analysis libraries.
    Bool_t success = kTRUE;
+   if (useTender) {
+      if (!LoadLibrary("TENDER", mode, kTRUE) ||
+          !LoadLibrary("TENDERSupplies", mode, kTRUE)) return kFALSE;
+   }       
    if (iESDfilter || iPWG3MuonTrain) {
       if (!LoadLibrary("PWG3base", mode, kTRUE) ||
           !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
@@ -1185,7 +1201,10 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(plugin_mode);
    if (useProductionMode) plugin->SetProductionMode();
-   if (!outputSingleFolder.IsNull()) plugin->SetOutputSingleFolder(outputSingleFolder);
+   if (!outputSingleFolder.IsNull()) {
+      plugin->SetOutputSingleFolder(outputSingleFolder);
+      plugin->SetOutputToRunNo();
+   }   
    plugin->SetJobTag(job_tag);
    plugin->SetNtestFiles(1);
 //   plugin->SetPreferedSE("ALICE::NIHAM::File");
@@ -1199,14 +1218,18 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Define production directory LFN
    plugin->SetGridDataDir(alien_datadir);
 // Set data search pattern
-   if (iAODanalysis) plugin->SetDataPattern("*AliAOD.root");
-   else              plugin->SetDataPattern("*AliESDs.root");
+   if (runOnData) {
+      plugin->SetRunPrefix("000");
+      plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
+   } else {
+      plugin->SetDataPattern("*ESDs.root");
+   }   
 // ...then add run numbers to be considered
-   if (!iAODanalysis) plugin->SetRunRange(run_range[0], run_range[1]);
-//   for (Int_t i=0; i<10; i++) {
-//      if (run_numbers[i]==0) break;
-//      plugin->AddRunNumber(run_numbers[i]);
-//   }   
+//   if (!iAODanalysis) plugin->SetRunRange(run_range[0], run_range[1]);
+   for (Int_t i=0; i<10; i++) {
+      if (run_numbers[i]==0) break;
+      plugin->AddRunNumber(run_numbers[i]);
+   }   
 // Method 2: Declare existing data files (raw collections, xml collections, root file)
 // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
 // XML collections added via this method can be combined with the first method if
@@ -1300,7 +1323,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Set friends
 //   if (iAODanalysis && iPWG3d2h) 
 //      plugin->SetFriendChainName("AliAOD.VertexingHF.root");
-   plugin->SetOutputArchive(outputArchive);
+//   plugin->SetOutputArchive(outputArchive);
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro(Form("%s.C", train_name.Data()));
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
@@ -1325,8 +1348,9 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetFastReadOption(useFastReadOption);
 // UseOverwrite mode
    plugin->SetOverwriteMode(useOverwriteMode);   
+   plugin->SetExecutableCommand("aliroot -b -q");
 // Optionally modify split mode (default 'se')    
-//   plugin->SetSplitMode("se");
+   plugin->SetSplitMode("se");
    return plugin;
 }
 
@@ -1346,9 +1370,7 @@ void WriteConfig()
       fdate.getline(date,64);
       fdate.close();
       gSystem->Exec("rm date.tmp");
-      train_name = Form("train_%s_%s", train_name.Data(), date);
-   } else {
-      train_name = Form("train_%s", train_name.Data());
+      train_name = Form("%s_%s", train_name.Data(), date);
    }   
    TString cdir = gSystem->WorkingDirectory();
    gSystem->MakeDirectory(train_name);
@@ -1382,9 +1404,10 @@ void WriteConfig()
 //      if (run_numbers[i]) 
 //         out << "   run_numbers[" << i << "]  = " << run_numbers[i] << ";" << endl;
 //   }
-   out << "   run_range[0]    = " << run_range[0] << ";" << endl;
-   out << "   run_range[1]    = " << run_range[1] << ";" << endl;
+//   out << "   run_range[0]    = " << run_range[0] << ";" << endl;
+//   out << "   run_range[1]    = " << run_range[1] << ";" << endl;
    out << "   usePhysicsSelection = " << usePhysicsSelection << ";" << endl;
+   out << "   useTender       = " << useTender << ";" << endl;
    out << "   useMergeViaJDL  = " << useMergeViaJDL << ";" << endl;
    out << "   useOverwriteMode  = " << useOverwriteMode << ";" << endl;
    out << "   useFastReadOption = " << useFastReadOption << ";" << endl;
