@@ -124,21 +124,71 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     delete fOutput;
     fOutput = 0;
   }
+  if(fHistNEvents){
+    delete fHistNEvents;
+    fHistNEvents=0;
+  }  
+  for(Int_t i=0;i<3*fNPtBins;i++){
+    if(fMassHist[i]){ delete fMassHist[i]; fMassHist[i]=0;}
+    if(fCosPHist[i]){ delete fCosPHist[i]; fCosPHist[i]=0;}
+    if(fDLenHist[i]){ delete fDLenHist[i]; fDLenHist[i]=0;}
+    if(fSumd02Hist[i]){ delete fSumd02Hist[i]; fSumd02Hist[i]=0;}
+    if(fSigVertHist[i]){ delete fSigVertHist[i]; fSigVertHist[i]=0;}
+    if(fPtMaxHist[i]){ delete fPtMaxHist[i]; fPtMaxHist[i]=0;}
+    if(fDCAHist[i]){ delete fDCAHist[i]; fDCAHist[i]=0;}
+    if(fMassHistTC[i]){ delete fMassHistTC[i]; fMassHistTC[i]=0;}
 
+    if(fMassHistLS[i]){ delete fMassHistLS[i]; fMassHistLS[i]=0;}
+    if(fCosPHistLS[i]){ delete fCosPHistLS[i]; fCosPHistLS[i]=0;}
+    if(fDLenHistLS[i]){ delete fDLenHistLS[i]; fDLenHistLS[i]=0;}
+    if(fSumd02HistLS[i]){ delete fSumd02HistLS[i]; fSumd02HistLS[i]=0;}
+    if(fSigVertHistLS[i]){ delete fSigVertHistLS[i]; fSigVertHistLS[i]=0;}
+    if(fPtMaxHistLS[i]){ delete fPtMaxHistLS[i]; fPtMaxHistLS[i]=0;}
+    if(fDCAHistLS[i]){ delete fDCAHistLS[i]; fDCAHistLS[i]=0;}
+    if(fMassHistLSTC[i]){ delete fMassHistLSTC[i]; fMassHistLSTC[i]=0;}
+  }
+  if(fPtVsMass){
+    delete fPtVsMass;
+    fPtVsMass=0;
+  }
+  if(fPtVsMassTC){
+    delete fPtVsMassTC;
+    fPtVsMassTC=0;
+  }
+  if(fYVsPt){
+    delete fYVsPt;
+    fYVsPt=0;
+  }
+  if(fYVsPtTC){
+    delete fYVsPtTC;
+    fYVsPtTC=0;
+  }
+  if(fYVsPtSig){
+    delete fYVsPtSig;
+    fYVsPtSig=0;
+  }
+  if(fYVsPtSigTC){
+    delete fYVsPtSigTC;
+    fYVsPtSigTC=0;
+  }
+  if(fNtupleDplus){
+    delete fNtupleDplus;
+    fNtupleDplus=0;
+  }
   if (fListCuts) {
     delete fListCuts;
     fListCuts = 0;
   }
-
   if(fRDCutsProduction){
     delete fRDCutsProduction;
     fRDCutsProduction = 0;
   }
-
-   if(fRDCutsAnalysis){
+  if(fRDCutsAnalysis){
     delete fRDCutsAnalysis;
     fRDCutsAnalysis = 0;
   }
+
+
 
 }  
 //_________________________________________________________________
