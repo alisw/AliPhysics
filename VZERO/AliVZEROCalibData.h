@@ -42,7 +42,7 @@ class AliVZEROCalibData: public TNamed {
   Bool_t   IsChannelDead(Int_t channel)	const {return fDeadChannel[channel];}
   Bool_t*  GetDeadMap()   const {return (bool*)fDeadChannel;} 
    
-  Float_t  GetGain(Int_t channel)	const;
+  Float_t  GetGain(Int_t channel);
   Float_t  GetTimeOffset(Int_t channel)	const {return fTimeOffset[channel];}
   Float_t* GetTimeOffset()   const {return (float*)fTimeOffset;}
   Float_t  GetTimeGain(Int_t channel)	const {return fTimeGain[channel];}
@@ -104,13 +104,18 @@ class AliVZEROCalibData: public TNamed {
   void     SetDiscriThr(Float_t thr, Int_t board, Int_t channel);
   void     SetDiscriThr(const Float_t* thresholds);
 
-  Float_t  GetMIPperADC(Int_t channel) const;
+  Float_t  GetMIPperADC(Int_t channel);
 
   static Int_t GetOfflineChannelNumber(Int_t board, Int_t channel);
   static Int_t GetBoardNumber(Int_t channel);
   static Int_t GetFEEChannelNumber(Int_t channel);
 
+  Float_t  GetLightYields(Int_t channel);
+
  protected:
+  void     InitLightYields();
+  void     InitPMGains();
+
   Float_t  fPedestal[128];     // Mean pedestal values
   Float_t  fSigma[128];        // Sigmas of pedestal peaks
   Float_t  fADCmean[128];      // ADC mean values
@@ -131,7 +136,11 @@ class AliVZEROCalibData: public TNamed {
 
   Float_t  fDiscriThr[64];     // Discriminator thresholds
 
-  ClassDef(AliVZEROCalibData,7)    // VZERO Calibration data
+  Float_t *fLightYields;       //! Light Yields channel by channel (read from separate OCDB entry)
+  Float_t *fPMGainsA;          //! PM gain factors channel by channel (read from separate OCDB entry)
+  Float_t *fPMGainsB;          //! PM gain factors channel by channel (read from separate OCDB entry)
+
+  ClassDef(AliVZEROCalibData,8)    // VZERO Calibration data
 };
 
 #endif

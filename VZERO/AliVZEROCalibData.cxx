@@ -24,16 +24,24 @@
 #include <TMath.h>
 #include <TObjString.h>
 #include <TMap.h>
+#include <TH1F.h>
+#include <TH2F.h>
 
 #include "AliDCSValue.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliVZEROCalibData.h"
 #include "AliVZERODataDCS.h"
+#include "AliVZEROConst.h"
 #include "AliLog.h"
 
 ClassImp(AliVZEROCalibData)
 
 //________________________________________________________________
-AliVZEROCalibData::AliVZEROCalibData()
+AliVZEROCalibData::AliVZEROCalibData():
+  fLightYields(NULL),
+  fPMGainsA(NULL),
+  fPMGainsB(NULL)
 {
   // default constructor
   
@@ -69,7 +77,10 @@ void AliVZEROCalibData::Reset()
 }
 
 //________________________________________________________________
-AliVZEROCalibData::AliVZEROCalibData(const char* name)
+AliVZEROCalibData::AliVZEROCalibData(const char* name):
+  fLightYields(NULL),
+  fPMGainsA(NULL),
+  fPMGainsB(NULL)
 {
   // Constructor
    TString namst = "Calib_";
@@ -103,7 +114,10 @@ AliVZEROCalibData::AliVZEROCalibData(const char* name)
 
 //________________________________________________________________
 AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
-  TNamed(calibda)
+  TNamed(calibda),
+  fLightYields(NULL),
+  fPMGainsA(NULL),
+  fPMGainsB(NULL)
 {
 // copy constructor
 
@@ -175,6 +189,12 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
 AliVZEROCalibData::~AliVZEROCalibData()
 {
   // destructor
+  if (fLightYields)
+    delete [] fLightYields;
+  if (fPMGainsA)
+    delete [] fPMGainsA;
+  if (fPMGainsB)
+    delete [] fPMGainsB;
 }
 //_____________________________________________________________________________
 void AliVZEROCalibData::FillDCSData(AliVZERODataDCS * data){
@@ -301,66 +321,28 @@ void AliVZEROCalibData::SetTimeGain(const Float_t* TimeGain)
 }
 
 //_____________________________________________________________________________
-Float_t AliVZEROCalibData::GetMIPperADC(Int_t channel) const {
+Float_t AliVZEROCalibData::GetMIPperADC(Int_t channel) {
 	
 	// Computes the MIP conversion factor - MIP per ADC channel - 
 	// Argument passed is the PM number (aliroot numbering)
 	
-	Float_t p0[64] = {
-		7.094891, 7.124938, 7.089708, 7.098169, 7.094482, 7.147250, 7.170978, 7.183392, 
-		7.145760, 7.148096, 7.153840, 7.143544, 7.186069, 7.194580, 7.203516, 7.195176, 
-		7.188333, 7.198607, 7.209412, 7.226565, 7.221695, 7.205132, 7.191238, 7.227724, 
-		7.232810, 7.252655, 7.230309, 7.140891, 7.273518, 7.242969, 7.252859, 7.252655, 
-		7.026802, 7.079913, 7.134147, 7.092387, 7.079561, 7.072848, 7.123192, 7.003141, 
-		7.024667, 7.124784, 7.123442, 7.129744, 7.110671, 7.143031, 7.139439, 7.178109, 
-		7.247803, 7.139396, 7.293809, 7.094454, 6.992198, 7.206448, 7.244765, 7.056197, 
-		7.263595, 7.138569, 7.089582, 7.215683, 7.266183, 7.165123, 7.243276, 7.235135 };
-	Float_t p1[64] = {
-		0.135569, 0.146405, 0.142425, 0.144278, 0.142307, 0.141648, 0.128477, 0.138239, 
-		0.144173, 0.143419, 0.143572, 0.144482, 0.138024, 0.136542, 0.135955, 0.138537, 
-		0.148521, 0.141999, 0.139627, 0.130014, 0.134970, 0.135635, 0.139094, 0.140634, 
-		0.137971, 0.142080, 0.142793, 0.136054, 0.142778, 0.146045, 0.139133, 0.142080, 
-		0.144121, 0.142311, 0.136564, 0.142686, 0.138792, 0.166285, 0.136387, 0.155391, 
-		0.176082, 0.140408, 0.164738, 0.144270, 0.142766, 0.147486, 0.141951, 0.138012, 
-		0.132394, 0.142849, 0.140477, 0.144592, 0.141558, 0.157646, 0.143758, 0.173385, 
-		0.146489, 0.143279, 0.145230, 0.147203, 0.147333, 0.144979, 0.148597, 0.138985 };
-	
-	// High Voltage retrieval from Calibration Data Base:  
-	Float_t  hv = fMeanHV[channel];  
-	Float_t mip = -1;
-	if (hv>0)
-	  mip = 0.6/TMath::Exp((TMath::Log(hv) - p0[channel] )/p1[channel]);
-	return mip; 
+  Float_t nPhPerMIP = (channel < 32) ? 6950 : 33690; 
+  return 1./(nPhPerMIP*GetLightYields(channel)*0.18*TMath::Qe()*GetGain(channel)/kChargePerADC);
 	
 }
 
 //________________________________________________________________
-Float_t AliVZEROCalibData::GetGain(Int_t channel) const
+Float_t AliVZEROCalibData::GetGain(Int_t channel)
 {
-  // Computes the PM gain factors
+  // Computes the PM gains
   // Argument passed is the PM number (aliroot numbering)
-  Float_t a[64] = {-39.68,-35.83,-36.92,-36.42,-37.02,-37.50,-43.05,-39.39,
-		   -36.62,-36.93,-37.30,-36.46,-39.51,-40.32,-39.92,-39.20,
-		   -35.39,-37.95,-38.85,-42.76,-40.68,-40.32,-39.00,-37.36,
-		   -39.64,-38.86,-37.59,-39.59,-37.97,-36.32,-38.88,-41.35,
-		   -36.01,-36.82,-39.48,-36.86,-38.22,-32.55,-39.44,-35.08,
-		   -29.91,-37.88,-33.25,-36.49,-37.25,-35.89,-40.31,-39.15,
-		   -41.71,-37.07,-38.94,-36.04,-36.62,-32.96,-36.99,-30.71,
-		   -36.66,-37.23,-35.98,-36.56,-35.64,-36.97,-35.88,-38.78};
-  Float_t b[64] = {  7.40,  6.83,  7.02,  6.94,  7.03,  7.04,  7.79,  7.27,
-		     6.92,  6.96,  7.01,  6.90,  7.28,  7.38,  7.33,  7.23,
-		     6.71,  7.05,  7.17,  7.69,  7.41,  7.38,  7.21,  7.11,
-		     7.26,  7.12,  6.98,  7.35,  6.99,  6.79,  7.13,  7.58,
-		     6.95,  7.01,  7.33,  7.01,  7.21,  6.01,  7.34,  6.44,
-		     5.68,  7.12,  6.07,  6.92,  7.04,  6.82,  7.04,  7.24,
-		     7.53,  6.99,  7.10,  6.89,  7.07,  6.35,  6.88,  5.77,
-		     6.81,  7.01,  6.89,  6.84,  6.68,  6.95,  6.73,  7.14};
+  if (!fPMGainsA) InitPMGains();
 
   // High Voltage retrieval from Calibration Data Base:  
   Float_t hv = fMeanHV[channel];
   Float_t gain = 0;
   if (hv>0)
-    gain = TMath::Exp(a[channel]+b[channel]*TMath::Log(hv));
+    gain = TMath::Exp(fPMGainsA[channel]+fPMGainsB[channel]*TMath::Log(hv));
   return gain;
 }
 
@@ -621,4 +603,52 @@ Int_t AliVZEROCalibData::GetFEEChannelNumber(Int_t channel)
 
   AliErrorClass(Form("Wrong channel index: %d",channel));
   return -1;
+}
+
+Float_t AliVZEROCalibData::GetLightYields(Int_t channel)
+{
+  // Get the light yield efficiency
+  // for a given channel
+  if (!fLightYields) InitLightYields();
+
+  if (channel >= 0 && channel < 64) {
+    return fLightYields[channel];
+  }
+
+  AliError(Form("Wrong channel index: %d",channel));
+  return 0;
+}
+
+void  AliVZEROCalibData::InitLightYields()
+{
+  // Initialize the light yield factors
+  // Read from a separate OCDB entry
+  if (fLightYields) return;
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("VZERO/Calib/LightYields");
+  if (!entry) AliFatal("VZERO light yields are not found in OCDB !");
+  TH1F *yields = (TH1F*)entry->GetObject();
+
+  fLightYields = new Float_t[64];
+  for(Int_t i = 0 ; i < 64; ++i) {
+    fLightYields[i] = yields->GetBinContent(i+1);
+  }
+}
+
+void  AliVZEROCalibData::InitPMGains()
+{
+  // Initialize the PM gain factors
+  // Read from a separate OCDB entry
+  if (fPMGainsA) return;
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("VZERO/Calib/PMGains");
+  if (!entry) AliFatal("VZERO PM gains are not found in OCDB !");
+  TH2F *gains = (TH2F*)entry->GetObject();
+
+  fPMGainsA = new Float_t[64];
+  fPMGainsB = new Float_t[64];
+  for(Int_t i = 0 ; i < 64; ++i) {
+    fPMGainsA[i] = gains->GetBinContent(i+1,1);
+    fPMGainsB[i] = gains->GetBinContent(i+1,2);
+  }
 }
