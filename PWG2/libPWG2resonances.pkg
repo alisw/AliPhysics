@@ -3,6 +3,8 @@
 SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnMother.cxx \
       RESONANCES/AliRsnEvent.cxx \
+      RESONANCES/AliRsnValue.cxx \
+      RESONANCES/AliRsnFunction.cxx \
       RESONANCES/AliRsnExpression.cxx \
       RESONANCES/AliRsnVariableExpression.cxx \
       RESONANCES/AliRsnCut.cxx \
@@ -14,9 +16,8 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnCutDaughterType.cxx \
       RESONANCES/AliRsnCutESD2010.cxx \
       RESONANCES/AliRsnCutSet.cxx \
+      RESONANCES/AliRsnCutValue.cxx \
       RESONANCES/AliRsnCutManager.cxx \
-      RESONANCES/AliRsnValue.cxx \
-      RESONANCES/AliRsnFunction.cxx \
       RESONANCES/AliRsnPairDef.cxx \
       RESONANCES/AliRsnPair.cxx \
       RESONANCES/AliRsnPairFunctions.cxx \

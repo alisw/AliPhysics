@@ -25,22 +25,19 @@
 #include "AliCDBManager.h"
 #include "AliITSPIDResponse.h"
 #include "AliRsnMonitorTrack.h"
+#include "AliRsnDaughter.h"
+#include "AliRsnEvent.h"
 
 #include "AliRsnAnalysisMonitorTask.h"
 
 //__________________________________________________________________________________________________
 AliRsnAnalysisMonitorTask::AliRsnAnalysisMonitorTask(const char *name) :
   AliAnalysisTaskSE(name),
+  fEventOK(kFALSE),
   fEventType(2),
   fNTracks(0),
   fOut(0x0),
   fTracks(0x0),
-  fMaxITSband(1E6),
-  fTPCpLimit(0.35),
-  fLargeTPCband(-1E6),
-  fSmallTPCband( 1E6),
-  fESDtrackCutsTPC(),
-  fESDtrackCutsITS(),
   fESDpid(0x0),
   fTOFmaker(0x0),
   fTOFcalib(0x0),
@@ -48,7 +45,9 @@ AliRsnAnalysisMonitorTask::AliRsnAnalysisMonitorTask(const char *name) :
   fTOFcorrectTExp(kFALSE),
   fTOFuseT0(kFALSE),
   fTOFtuneMC(kFALSE),
-  fTOFresolution(0.0)
+  fTOFresolution(0.0),
+  fEventCuts("eventCuts", AliRsnCut::kEvent),
+  fTrackCuts("trackCuts", AliRsnCut::kDaughter)
   
 {
 //
@@ -61,16 +60,11 @@ AliRsnAnalysisMonitorTask::AliRsnAnalysisMonitorTask(const char *name) :
 //__________________________________________________________________________________________________
 AliRsnAnalysisMonitorTask::AliRsnAnalysisMonitorTask(const AliRsnAnalysisMonitorTask& copy) :
   AliAnalysisTaskSE(copy),
+  fEventOK(kFALSE),
   fEventType(2),
   fNTracks(0),
   fOut(0x0),
   fTracks(0x0),
-  fMaxITSband(copy.fMaxITSband),
-  fTPCpLimit(copy.fTPCpLimit),
-  fLargeTPCband(copy.fLargeTPCband),
-  fSmallTPCband(copy.fSmallTPCband),
-  fESDtrackCutsTPC(copy.fESDtrackCutsTPC),
-  fESDtrackCutsITS(copy.fESDtrackCutsITS),
   fESDpid(0x0),
   fTOFmaker(0x0),
   fTOFcalib(0x0),
@@ -78,7 +72,9 @@ AliRsnAnalysisMonitorTask::AliRsnAnalysisMonitorTask(const AliRsnAnalysisMonitor
   fTOFcorrectTExp(kFALSE),
   fTOFuseT0(kFALSE),
   fTOFtuneMC(kFALSE),
-  fTOFresolution(0.0)
+  fTOFresolution(0.0),
+  fEventCuts(copy.fEventCuts),
+  fTrackCuts(copy.fTrackCuts)
 {
 //
 // Copy constructor
@@ -92,15 +88,6 @@ AliRsnAnalysisMonitorTask& AliRsnAnalysisMonitorTask::operator=(const AliRsnAnal
 // Assignment operator
 //
 
-  fMaxITSband = copy.fMaxITSband;
-  
-  fTPCpLimit    = copy.fTPCpLimit;
-  fLargeTPCband = copy.fSmallTPCband;
-  fSmallTPCband = copy.fLargeTPCband;
-  
-  fESDtrackCutsTPC = copy.fESDtrackCutsTPC;
-  fESDtrackCutsITS = copy.fESDtrackCutsITS;
-  
   fTOFcalibrateESD = copy.fTOFcalibrateESD;
   fTOFcorrectTExp = copy.fTOFcorrectTExp;
   fTOFuseT0 = copy.fTOFuseT0;
@@ -147,7 +134,8 @@ void AliRsnAnalysisMonitorTask::UserCreateOutputObjects()
   // link branches
   fOut->Branch("ntracks", &fNTracks     , "ntracks/I"   );
   fOut->Branch("evtype" , &fEventType   , "evtype/I"    );
-  fOut->Branch("vertex" , &fVertex      , "vertex[3]/F");
+  fOut->Branch("evok"   , &fEventOK     , "evok/O"      );
+  fOut->Branch("vertex" , &fVertex      , "vertex[3]/F" );
   fOut->Branch("tracks" , "TClonesArray", &fTracks      );
 }
 
@@ -248,6 +236,14 @@ void AliRsnAnalysisMonitorTask::ProcessESD
 // TClonesArray which is one of the branches of the output TTree.
 //
 
+  // create interfacr objects
+  AliRsnEvent    event;
+  AliRsnDaughter daughter;
+  event.SetRef(esd, fMCEvent);
+  
+  // check event cuts and track cuts
+  fEventOK = fEventCuts.IsSelected(&event);
+
   // clear array
   fTracks->Delete();
   fTracks->Clear();
@@ -278,33 +274,31 @@ void AliRsnAnalysisMonitorTask::ProcessESD
     fTOFmaker->ApplyT0TOF(esd);
     fESDpid->MakePID(esd, kFALSE, 0.);
   }
-  // TOF stuff #4: define fixed functions for compatibility range
-  Double_t a1 = 0.01, a2 = -0.03;
-  Double_t b1 = 0.25, b2 =  0.25;
-  Double_t c1 = 0.05, c2 = -0.03;
-  Double_t ymax, ymin;
   
   // loop on all tracks
-  Int_t               i, k, size, nITS;
-  Double_t            tpcMaxNSigma, itsdedx[4], tofRef, tofRel;
-  Bool_t              okTOF, okTrack, isTPC, isITSSA, matchedTOF;
-  UChar_t             itsCluMap;
+  Int_t               i, k, size;
+  Double_t            itsdedx[4];
+  Bool_t              isTPC, isITSSA;
   Float_t             b[2], bCov[3];
   AliRsnMonitorTrack  mon;
   
   for (i = 0; i < fNTracks; i++)
   {
     AliESDtrack *track = esd->GetTrack(i);
+    event.SetDaughter(daughter, i, AliRsnDaughter::kTrack);
     
+    // reset the output object
+    // 'usable' flag will need to be set to 'ok'
+    mon.Reset();
+    
+    // check cuts
+    mon.CutsPassed() = fTrackCuts.IsSelected(&daughter);
+        
     // skip NULL pointers, kink daughters and tracks which
     // cannot be propagated to primary vertex
     if (!track) continue;
     if ((Int_t)track->GetKinkIndex(0) > 0) continue;
     if (!track->RelateToVertex(v, esd->GetMagneticField(), kVeryBig)) continue;
-    
-    // reset the output object
-    // 'usable' flag will need to be set to 'ok'
-    mon.Reset();
     
     // get MC info if possible
     if (stack) mon.AdoptMC(TMath::Abs(track->GetLabel()), stack);
@@ -320,7 +314,6 @@ void AliRsnAnalysisMonitorTask::ProcessESD
     // evaluate some flags from the status to decide what to do next in some points
     isTPC      = ((mon.Status() & AliESDtrack::kTPCin)  != 0);
     isITSSA    = ((mon.Status() & AliESDtrack::kTPCin)  == 0 && (mon.Status() & AliESDtrack::kITSrefit) != 0 && (mon.Status() & AliESDtrack::kITSpureSA) == 0 && (mon.Status() & AliESDtrack::kITSpid) != 0);
-    matchedTOF = ((mon.Status() & AliESDtrack::kTOFout) != 0 && (mon.Status() & AliESDtrack::kTIME) != 0);
     
     // accept only tracks which are TPC+ITS or ITS standalone
     if (!isTPC && !isITSSA) continue;
@@ -372,51 +365,6 @@ void AliRsnAnalysisMonitorTask::ProcessESD
     
     // if we are here, the track is usable
     mon.SetUsable();
-    
-    // now check the track against its cuts
-    // and update the flag related to it
-    // first, assume that cuts were passed
-    // and if they aren't, just update the flag accordingly
-    mon.CutsPassed() = kTRUE;
-    if (TMath::Abs(mon.DCAz()) > 3.0) mon.CutsPassed() = kFALSE;
-    
-    if (isTPC)
-    {
-      // check standard ESD cuts
-      if (!fESDtrackCutsTPC.IsSelected(track)) mon.CutsPassed() = kFALSE;
-      
-      // check TPC dE/dx
-      if (mon.Ptpc() > fTPCpLimit) tpcMaxNSigma = fSmallTPCband; else tpcMaxNSigma = fLargeTPCband;
-      if (TMath::Abs(mon.TPCnsigma()) > tpcMaxNSigma) mon.CutsPassed() = kFALSE;
-      
-      // check TOF (only if momentum is large than function asymptote and flags are OK)
-      okTOF = kTRUE;
-      if (matchedTOF && mon.Prec() > TMath::Max(b1, b2))
-      {
-        tofRef = mon.TOFref(AliPID::kKaon);
-        if (tofRef > 0.0)
-        {
-          tofRel   = (mon.TOFsignal() - tofRef) / tofRef;
-          ymax     = a1 / (mon.Prec() - b1) + c1;
-          ymin     = a2 / (mon.Prec() - b2) + c2;
-          okTOF    = (tofRel >= ymin && tofRel <= ymax);
-        }
-      }
-      if (!okTOF) mon.CutsPassed() = kFALSE;
-    }
-    else
-    {
-      // check standard ESD cuts
-      if (!fESDtrackCutsITS.IsSelected(track)) mon.CutsPassed() = kFALSE;
-      
-      // check dE/dx
-      itsCluMap = track->GetITSClusterMap();
-      nITS      = 0;
-      for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITS;
-      if (nITS < 3) okTrack = kFALSE; // track not good for PID
-      mon.ITSnsigma() = itsrsp.GetNumberOfSigmas(mon.Prec(), mon.ITSsignal(), AliPID::kKaon, nITS, kTRUE);
-      if (TMath::Abs(mon.ITSnsigma()) > fMaxITSband) mon.CutsPassed() = kFALSE;
-    }
     
     // collect only tracks which are declared usable
     if (mon.IsUsable())
