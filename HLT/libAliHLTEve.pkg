@@ -23,15 +23,10 @@ CLASS_HDRS:= 	AliHLTEveBase.h \
 		AliHLTEveAny.h
 
 
-# library sources, generated from the class headers
-MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
-
-# library headers
-# in most cases you might have already added all the header files to
-# the CLASS_HDRS variable. So we just use the content of this. You
-# can simply add more header files which don't contain classes with
-# ROOT dictionary support
-MODULE_HDRS:= 	$(CLASS_HDRS)
+# library sources and headers are set in hlteve.conf according to
+# availability of ROOT opengl
+MODULE_SRCS:=
+MODULE_HDRS:=
 
 # The LinkDef file required by the ROOT dictionary generation can be
 # generated automatically. For the all header files specified in
@@ -57,7 +52,7 @@ LIBRARY_DEP := -lHLTbase -lCDB -lSTEERBase -AliHLTTPC -lMUONbase -lAliHLTMUON -l
 #
 # do not change anything below this line
 #
-include $(MODDIR)/hlt.conf
+include $(MODDIR)/hlteve.conf
 
 SRCS:=$(patsubst %,EVE/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,EVE/%,$(CLASS_HDRS))

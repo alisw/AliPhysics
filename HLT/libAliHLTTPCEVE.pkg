@@ -3,9 +3,10 @@
 
 CLASS_HDRS:=  	AliHLTTPCEVE.h
 
-MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
-
-MODULE_HDRS:= 	$(CLASS_HDRS)
+# library sources and headers are set in hlteve.conf according to
+# availability of ROOT opengl
+MODULE_SRCS:=
+MODULE_HDRS:=
 
 MODULE_DHDR:=
 
@@ -21,7 +22,7 @@ LIBRARY_DEP := -lHLTbase -lAliHLTTPC
 #
 # do not change anything below this line
 #
-include $(MODDIR)/hlt.conf
+include $(MODDIR)/hlteve.conf
 
 SRCS:=$(patsubst %,TPCLib/EVE/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,TPCLib/EVE/%,$(CLASS_HDRS))

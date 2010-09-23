@@ -149,7 +149,8 @@ AC_DEFUN([ROOT_PATH],
   else 
    rootbin=$PATH
   fi
-  AC_PATH_PROG(ROOTCONF, root-config , no, $rootbin)
+  AC_PATH_PROG(ROOTCONF, root-config , no, $rootbin)   # used by HLT build system
+  AC_PATH_PROG(ROOTCONFIG, root-config , no, $rootbin) # used by AliRoot build system
   AC_PATH_PROG(ROOTEXEC, root , no, $rootbin)
   AC_PATH_PROG(ROOTCINT, rootcint , no, $rootbin)
 	
