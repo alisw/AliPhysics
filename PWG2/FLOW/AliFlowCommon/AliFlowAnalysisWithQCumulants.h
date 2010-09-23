@@ -116,15 +116,10 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateCovariancesIntFlow();  
     virtual void CalculateCovariancesNUAIntFlow();  
     virtual void CalculateCumulantsIntFlow(); 
-    virtual void CalculateIntFlow(); 
+    virtual void CalculateReferenceFlow(); 
     virtual void FillCommonHistResultsIntFlow();
     // nua:   
-    //virtual void CalculateCorrectionsForNUAForIntQcumulants();
     virtual void CalculateQcumulantsCorrectedForNUAIntFlow(); 
-    virtual void CalculateIntFlowCorrectedForNUA(); 
-    virtual void CalculateDetectorEffectsForTrueCorrelations();
-    //virtual void ApplyCorrectionForNonUniformAcceptanceToCumulantsForIntFlow(Bool_t useParticleWeights, TString eventWeights); 
-    //virtual void PrintQuantifyingCorrectionsForNonUniformAcceptance(Bool_t useParticleWeights, TString eventWeights);
     virtual void PrintFinalResultsForIntegratedFlow(TString type);
     virtual void CrossCheckIntFlowCorrelations();
     virtual void CrossCheckIntFlowExtraCorrelations(); // extra correlations which appear only when particle weights are used
@@ -227,8 +222,8 @@ class AliFlowAnalysisWithQCumulants{
   Double_t GetMinMult() const {return this->fMinMult;};
   void SetMaxMult(Double_t const maxm) {this->fMaxMult = maxm;};
   Double_t GetMaxMult() const {return this->fMaxMult;};
-  void SetPropagateErrorFromCorrelations(Bool_t const pefc) {this->fPropagateErrorFromCorrelations = pefc;};
-  Bool_t GetPropagateErrorFromCorrelations() const {return this->fPropagateErrorFromCorrelations;};  
+  void SetPropagateErrorAlsoFromNUATerms(Bool_t const pefc) {this->fPropagateErrorAlsoFromNUATerms = pefc;};
+  Bool_t GetPropagateErrorAlsoFromNUATerms() const {return this->fPropagateErrorAlsoFromNUATerms;};  
   void SetCalculateCumulantsVsM(Bool_t const ccvm) {this->fCalculateCumulantsVsM = ccvm;};
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};   
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
@@ -289,7 +284,9 @@ class AliFlowAnalysisWithQCumulants{
   void SetIntFlowQcumulantsVsM(TH1D* const intFlowQcumulantsVsM, Int_t co) {this->fIntFlowQcumulantsVsM[co] = intFlowQcumulantsVsM;};
   TH1D* GetIntFlowQcumulantsVsM(Int_t co) const {return this->fIntFlowQcumulantsVsM[co];};  
   void SetIntFlowQcumulantsRebinnedInM(TH1D* const ifqcrim) {this->fIntFlowQcumulantsRebinnedInM = ifqcrim;};
-  TH1D* GetIntFlowQcumulantsRebinnedInM() const {return this->fIntFlowQcumulantsRebinnedInM;};  
+  TH1D* GetIntFlowQcumulantsRebinnedInM() const {return this->fIntFlowQcumulantsRebinnedInM;};    
+  void SetIntFlowQcumulantsErrorSquaredRatio(TH1D* const ifqcesr) {this->fIntFlowQcumulantsErrorSquaredRatio = ifqcesr;};
+  TH1D* GetIntFlowQcumulantsErrorSquaredRatio() const {return this->fIntFlowQcumulantsErrorSquaredRatio;}; 
   void SetIntFlow(TH1D* const intFlow) {this->fIntFlow = intFlow;};
   TH1D* GetIntFlow() const {return this->fIntFlow;};
   void SetIntFlowVsM(TH1D* const intFlowVsM, Int_t co) {this->fIntFlowVsM[co] = intFlowVsM;};
@@ -440,7 +437,7 @@ class AliFlowAnalysisWithQCumulants{
   Int_t fnBinsMult; // number of multiplicity bins for flow analysis versus multiplicity  
   Double_t fMinMult; // minimal multiplicity for flow analysis versus multiplicity  
   Double_t fMaxMult; // maximal multiplicity for flow analysis versus multiplicity  
-  Bool_t fPropagateErrorFromCorrelations; // propagate error for v_n from correlations (kTRUE) or from cumulants (kFALSE) (used only for debugging/cross-checking) 
+  Bool_t fPropagateErrorAlsoFromNUATerms; // propagate error by taking into account also non-isotrpic terms
   Bool_t fCalculateCumulantsVsM; // calculate cumulants versus multiplicity  
   Bool_t fMinimumBiasReferenceFlow; // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)   
   //  3c.) event-by-event quantities:
@@ -485,6 +482,7 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fIntFlowQcumulants; // final results for integrated Q-cumulants QC{2}, QC{4}, QC{6} and QC{8}
   TH1D *fIntFlowQcumulantsVsM[4]; // final results for integrated Q-cumulants QC{2}, QC{4}, QC{6} and QC{8} versus multiplicity
   TH1D *fIntFlowQcumulantsRebinnedInM; // final results for reference Q-cumulants QC{2}, QC{4}, QC{6} and QC{8} rebinned in M
+  TH1D *fIntFlowQcumulantsErrorSquaredRatio; // ratio between error squared: with/without non-isotropic terms
   TH1D *fIntFlow; // final results for integrated flow estimates v_n{2,QC}, v_n{4,QC}, v_n{6,QC} and v_n{8,QC}
   TH1D *fIntFlowVsM[4]; // final results for integrated flow estimates v_n{2,QC}, v_n{4,QC}, v_n{6,QC} and v_n{8,QC} versus multiplicity 
   TH1D *fIntFlowRebinnedInM; // final results for ref. flow estimates v_n{2,QC}, v_n{4,QC}, v_n{6,QC} and v_n{8,QC} rebinned in M
