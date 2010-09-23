@@ -257,6 +257,30 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
 }
 
 //_____________________________________________________________________________
+Bool_t AliRsnValue::Eval(AliRsnDaughter * const daughter, AliRsnEvent * const event)
+{
+//
+// Evaluation of the required value.
+// Checks that the passed object is of the right type
+// and if this check is successful, returns the required value.
+// The output of the function tells if it was successful,
+// and the values must be taken with GetValue().
+//
+
+  // avoid segfaults
+  if (!daughter) return kFALSE;
+
+  switch (fType)
+  {
+    default:
+      AliWarning("Invalid value type");
+      return kFALSE;
+  }
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 void AliRsnValue::Print(Option_t *) const
 {
 //

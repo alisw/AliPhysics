@@ -66,8 +66,12 @@ class AliRsnValue : public TNamed
     void        SetBins(Int_t n, Double_t min, Double_t max);
     void        SetBins(Double_t min, Double_t max, Double_t step);
     void        SetBins(Int_t n, Double_t *array);
+    void        Set(EValueType type, Int_t n = 0, Double_t min = 0.0, Double_t max = 0.0) {fType = type; SetBins(n, min, max);}
+    void        Set(EValueType type, Double_t min, Double_t max, Double_t step) {fType = type; SetBins(min, max, step);}
+    void        Set(EValueType type, Int_t n, Double_t *array) {fType = type; SetBins(n, array);}
     
     Bool_t      Eval(AliRsnMother * const mother, AliRsnPairDef * const pairDef, AliRsnEvent * const event);
+    Bool_t      Eval(AliRsnDaughter * const daughter, AliRsnEvent * const event);
     void        Print(Option_t *option = "") const;
 
   protected:
