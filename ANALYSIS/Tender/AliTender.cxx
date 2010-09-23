@@ -140,7 +140,6 @@ void AliTender::UserExec(Option_t* /*option*/)
     Printf("AliTender::Exec() %s ==> processing event %lld\n", fESDhandler->GetTree()->GetCurrentFile()->GetName(),entry);
   }  
   fESD = fESDhandler->GetEvent();
-  if (TObject::TestBit(kCheckEventSelection)) fESDhandler->CheckSelectionMask();
 
 // Call the user analysis
   // Unlock CDB
@@ -155,6 +154,9 @@ void AliTender::UserExec(Option_t* /*option*/)
   AliTenderSupply *supply;
   while ((supply=(AliTenderSupply*)next())) supply->ProcessEvent();
   fRunChanged = kFALSE;
+
+  if (TObject::TestBit(kCheckEventSelection)) fESDhandler->CheckSelectionMask();
+
   // Lock CDB
   fCDBkey = fCDB->SetLock(kTRUE, fCDBkey);
   PostData(1, fESD);
