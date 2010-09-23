@@ -63,13 +63,13 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONGeometryTransformer* t
   
     for (Int_t i = 1; i < AliMpConstants::NofLocalBoards()+1; ++i) {
       fXpos11[i].Set(16); 
-      fYpos11[i].Set(31);
-      fYpos21[i].Set(63);
-      fZpos11[i].Set(31);
-      fZpos21[i].Set(63);
+      fYpos11[i].Set(32);
+      fYpos21[i].Set(64);
+      fZpos11[i].Set(32);
+      fZpos21[i].Set(64);
       fXwidth11[i].Set(16); 
-      fYwidth11[i].Set(31);
-      fYwidth21[i].Set(63);
+      fYwidth11[i].Set(32);
+      fYwidth21[i].Set(64);
     }
 
     for (Int_t i = 1; i < AliMpConstants::NofLocalBoards()+1; ++i) { // board begins at 1
@@ -84,7 +84,24 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONGeometryTransformer* t
 
     LoadXPos(localBoard);
     LoadYPos(localBoard);
-
+    /*
+    printf("LocalBoard %03d \n",i);
+    printf("fXpos11 \n");
+    for (Int_t i1 = 0; i1 < 16; i1++) 
+      printf("%02d   %7.2f \n",i1,fXpos11[i][i1]);
+    printf("fYpos11 \n");
+    for (Int_t i2 = 0; i2 < 32; i2++) 
+      printf("%02d   %7.2f \n",i2,fYpos11[i][i2]);
+    printf("fYpos21 \n");
+    for (Int_t i3 = 0; i3 < 64; i3++) 
+      printf("%02d   %7.2f \n",i3,fYpos21[i][i3]);
+    printf("fZpos11 \n");
+    for (Int_t i4 = 0; i4 < 32; i4++) 
+      printf("%02d   %8.2f \n",i4,fZpos11[i][i4]);
+    printf("fZpos21 \n");
+    for (Int_t i5 = 0; i5 < 64; i5++) 
+      printf("%02d   %8.2f \n",i5,fZpos21[i][i5]);
+    */
   }
 
 }
@@ -524,7 +541,6 @@ Float_t AliMUONTriggerCircuit::PtCal(Int_t localBoardId, Int_t istripX, Int_t id
 /// returns calculated pt for circuit/istripX/idev/istripY according 
 /// to the formula of the TRD. Note : idev (input) is in [0+30]
 
-  //  Int_t jdev = idev - 15;        // jdev in [-15+15]
   Int_t istripX2=istripX+idev+1; // find istripX2 using istripX and idev
 
   Float_t yPosX1=fYpos11[localBoardId][istripX];
@@ -532,11 +548,11 @@ Float_t AliMUONTriggerCircuit::PtCal(Int_t localBoardId, Int_t istripX, Int_t id
   Float_t xPosY1=fXpos11[localBoardId][istripY];
 
 // Z distance between IP and center of dipole
-  Float_t zf= TMath::Abs(0.5 *(AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ()));
-  Float_t z1=AliMUONConstants::DefaultChamberZ(10);
-  Float_t z2=AliMUONConstants::DefaultChamberZ(12);
-  Float_t thetaDev=(1./zf)*(yPosX1*z2-yPosX2*z1)/(z2-z1);
+  Float_t zf= 0.5 *(AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ());
+  Float_t z1=fZpos11[localBoardId][istripX];
+  Float_t z2=fZpos21[localBoardId][istripX2];
+  Float_t thetaDev=(1./TMath::Abs(zf))*(yPosX1*z2-yPosX2*z1)/(z2-z1);
   Float_t xf=xPosY1*zf/z1; 
   Float_t yf=yPosX2-((yPosX2-yPosX1)*(z2-zf))/(z2-z1);
-  return (3.*0.3/TMath::Abs(thetaDev)) * TMath::Sqrt(xf*xf+yf*yf)/zf;
+  return (3.*0.3/TMath::Abs(thetaDev)) * TMath::Sqrt(xf*xf+yf*yf)/TMath::Abs(zf);
 }
