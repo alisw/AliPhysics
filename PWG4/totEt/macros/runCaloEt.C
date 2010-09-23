@@ -19,7 +19,8 @@ void runCaloEt(bool submit = false, // true or false
   gSystem->Load("libMinuit");
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  
+  gSystem->AddIncludePath("-I. -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS");
+
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libAOD");

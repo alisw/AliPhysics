@@ -55,12 +55,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
     Double_t protonMass = fPdgDB->GetParticle("proton")->Mass();
 
-    AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev);
     //for PID
     AliESDpid *pID = new AliESDpid();
-    pID->MakePID(realEvent);
-    TObjArray* list = fEsdtrackCutsTPC->GetAcceptedTracks(realEvent);
+    pID->MakePID(event);
+    TObjArray* list = fEsdtrackCutsTPC->GetAcceptedTracks(event);
     Int_t nGoodTracks = list->GetEntries();
+    // printf("nGoodTracks %d nCaloClusters %d\n", nGoodTracks, event->GetNumberOfCaloClusters());
+
     for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++)
       {
 	AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
@@ -113,7 +114,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         }
 
         Double_t et = track->E() * TMath::Sin(track->Theta()) + massPart;
-	// printf("Rec track: iTrack %03d eta %4.3f phi %4.3f nITSCl %d nTPCCl %d\n", iTrack, track->Eta(), track->Phi(), nItsClusters, nTPCClusters); // tmp/debug printout
+	//printf("Rec track: iTrack %03d eta %4.3f phi %4.3f nITSCl %d nTPCCl %d\n", iTrack, track->Eta(), track->Phi(), nItsClusters, nTPCClusters); // tmp/debug printout
 
         if (TMath::Abs(track->Eta()) < fCuts->GetCommonEtaCut() && CheckGoodVertex(track) && nItsClusters > fCuts->GetReconstructedNItsClustersCut() && nTPCClusters > fCuts->GetReconstructedNTpcClustersCut() )
         {
@@ -186,7 +187,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
 	if (cluster->GetType() != fClusterType) continue;
 	//if(cluster->GetTracksMatched() > 0) 
-	//printf("Rec Cluster: iCluster %03d E %4.3f type %d NCells %d, nmatched: %d, distance to closest: %f\n", iCluster, cluster->E(), (int)(cluster->GetType()), cluster->GetNCells(), cluster->GetNTracksMatched(), cluster->GetEmcCpvDistance()); // tmp/debug printout
+	// printf("Rec Cluster: iCluster %03d E %4.3f type %d NCells %d, nmatched: %d, distance to closest: %f\n", iCluster, cluster->E(), (int)(cluster->GetType()), cluster->GetNCells(), cluster->GetNTracksMatched(), cluster->GetEmcCpvDistance()); // tmp/debug printout
 	       
         
         if (cluster->E() < fClusterEnergyCut) continue;
@@ -415,7 +416,7 @@ AliAnalysisEtReconstructed::CalcTrackClusterDistance(const Float_t clsPos[3],
     }
   } // iTrack
 
-  //  printf("CalcTrackClusterDistance: bestTrkMatch %d origTrkMatch %d distance %f\n", bestTrkMatchId, *trkMatchId, distance);
+  // printf("CalcTrackClusterDistance: bestTrkMatch %d origTrkMatch %d distance %f\n", bestTrkMatchId, *trkMatchId, distance);
   *trkMatchId = bestTrkMatchId;
   return distance;
 }
