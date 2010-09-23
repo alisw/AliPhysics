@@ -28,6 +28,9 @@ public:
     virtual void Init();
     
  private:
+    //Declare it private to avoid compilation warning
+    AliAnalysisHadEtMonteCarlo & operator = (const AliAnalysisHadEtMonteCarlo & g) ;//cpy assignment
+    AliAnalysisHadEtMonteCarlo(const AliAnalysisHadEtMonteCarlo & g) ; // cpy ctor
 
     ClassDef(AliAnalysisHadEtMonteCarlo, 1);
 };

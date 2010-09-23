@@ -66,8 +66,8 @@ public:
     Float_t GetITSEfficiencyCorrectionProton(const float pT){return 1.0/(fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT)));}
     Float_t GetITSEfficiencyCorrectionHadron(const float pT){return 1.0/(fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT)));}
     //...and these guys are too
-    Float_t GetBackgroundCorrectionTPC(const float pT){return 1.0/(fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
-    Float_t GetBackgroundCorrectionITS(const float pT){return 1.0/(fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
+    Float_t GetBackgroundCorrectionTPC(const float pT){return 1.0/(1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
+    Float_t GetBackgroundCorrectionITS(const float pT){return 1.0/(1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
 
 
     void SetEtaCut(const Float_t val){fEtaCut=val;}
@@ -99,6 +99,9 @@ public:
     void SetEfficiencyHadronITS(const TH1D *histo){fEfficiencyHadronITS=(TH1D*) histo;}
     void SetBackgroundCorrectionTPC(const TH1D *histo){fBackgroundTPC=(TH1D*) histo;}
     void SetBackgroundCorrectionITS(const TH1D *histo){fBackgroundITS=(TH1D*) histo;}
+
+    //Returns the factor one needs to multiply by to get the corrected et for all constant (not pt dependent) factors
+    Float_t GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type);
 
 
     AliAnalysisHadEtCorrections(const AliAnalysisHadEtCorrections *g) ; // cpy ctor

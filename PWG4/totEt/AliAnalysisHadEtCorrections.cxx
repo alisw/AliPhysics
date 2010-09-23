@@ -130,6 +130,50 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections(const AliAnalysisHadEtC
   fBackgroundITS = new TH1D(*(g->fBackgroundITS));
 }
 
+
+Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type){
+  Float_t acceptance = 0.0;
+  Float_t neutral = 0.0;
+  Float_t ptcorr = 0.0;
+  float correction = 0.0;
+
+  //TString *type = new TString(mytype);
+
+  if(type.Contains("Full")) acceptance = fAcceptanceCorrectionFull;
+  if(type.Contains("EMCAL")) acceptance = fAcceptanceCorrectionEMCAL;
+  if(type.Contains("PHOS")) acceptance = fAcceptanceCorrectionPHOS;
+
+  if(type.Contains("High")){//high bound
+    if(totEt) neutral = fNotHadronicCorrectionHigh;
+    else{neutral = fNeutralCorrectionHigh;}
+    if(ptcut>0.12){ptcorr = ffpTcutCorrectionTPCHigh;}
+    else{ptcorr = ffpTcutCorrectionITSHigh;}
+    cout<<"Setting correction factor to "<<correction<<endl;
+    return correction;
+  }
+  if(type.Contains("Low")){//high bound
+    if(totEt) neutral = fNotHadronicCorrectionLow;
+    else{neutral = fNeutralCorrectionLow;}
+    if(ptcut>0.12){ptcorr = ffpTcutCorrectionTPCLow;}
+    else{ptcorr = ffpTcutCorrectionITSLow;}
+    cout<<"Setting correction factor to "<<correction<<endl;
+    return correction;
+  }
+
+  if(totEt) neutral = fNotHadronicCorrection;
+  else{neutral = fNeutralCorrection;}
+  if(ptcut>0.12){ptcorr = fpTcutCorrectionTPC;}
+  else{ptcorr = fpTcutCorrectionITS;}
+
+  correction = acceptance*neutral*ptcorr;
+  cout<<"Setting correction factor for ";
+  if(totEt) cout<<"total et";
+  else{cout<<"hadronic et";}
+  cout<<" with the pt cut off "<<ptcut<<" for "<<type<<" acceptance to "<<correction<<endl;
+  //cout<<"Acceptance "<<acceptance<<" neutral "<<neutral<<" ptcorr "<<ptcorr<<endl;
+  return correction;
+
+}
 // AliAnalysisHadEtCorrections & operator = (const AliAnalysisHadEtCorrections & g) {
 
 //   fEtaCut=g->fEtaCut;

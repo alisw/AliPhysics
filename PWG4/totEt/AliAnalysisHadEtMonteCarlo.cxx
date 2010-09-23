@@ -915,14 +915,5 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateIntHisto1D("NEvents","Number of events","number of events","Number of events",1,0,1);
 
   //CreateHisto1D("MisidentifiedPIDs","PIDs for particles misidentified that are not a #pi,K,p","PID","number of entries",3000,0.5,3000.5);
-
-
-
-//     list->Add(fHistEt);
-//     TString histname = "fHistEt" + fHistogramNameSuffix;
-
-//     fHistEt = new TH1F(histname.Data(), "Total E_{T} Distribution", 1000, 0.00, 99);
-//     fHistEt->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
-//     fHistEt->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
 }
 
