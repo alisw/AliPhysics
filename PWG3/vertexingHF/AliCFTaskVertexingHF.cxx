@@ -74,7 +74,6 @@
 //__________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	AliAnalysisTaskSE(),
-	fPDG(0),
 	fCFManager(0x0),
 	fHistEventsProcessed(0x0),
 	fCorrelation(0x0),
@@ -104,7 +103,6 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts) :
 	AliAnalysisTaskSE(name),
-	fPDG(0),
 	fCFManager(0x0),
 	fHistEventsProcessed(0x0),
 	fCorrelation(0x0),
@@ -160,7 +158,6 @@ AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	AliAnalysisTaskSE(c),
-	fPDG(c.fPDG),
 	fCFManager(c.fCFManager),
 	fHistEventsProcessed(c.fHistEventsProcessed),
 	fCorrelation(c.fCorrelation),
@@ -352,13 +349,11 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	}
 	
 	fEvents++;
-	if (fEvents%10000 == 0) AliDebug(2,Form("Event %d",fEvents));
-	
+
 	fCFManager->SetRecEventInfo(aodEvent);
 	fCFManager->SetMCEventInfo(aodEvent);
 	
 	//******** DEFINE number of variables of the container***** for now set at 13, in the future in the config macro.
-	//	Int_t nVar = 13;
 	
 	Double_t* containerInput = new Double_t[fNvar];
 	Double_t* containerInputMC = new Double_t[fNvar]; 
@@ -380,7 +375,6 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	Int_t icountRecoPPR = 0;
 	Int_t icountRecoPID = 0;
 	Int_t cquarks = 0;
-	UShort_t originDselection = 0;
 		
 	AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 	if (!mcHeader) {
@@ -391,7 +385,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
        	AliCFVertexingHF* cfVtxHF=0x0;
 	switch (fDecayChannel){
 	case 2:{
-		cfVtxHF = new AliCFVertexingHF2Prong(mcArray, originDselection);
+		cfVtxHF = new AliCFVertexingHF2Prong(mcArray, fOriginDselection);
 		break;
 	}
 	case 21:{ 
@@ -401,7 +395,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	case 31:
 	case 32:
 	case 33:{
-	       //cfVtxHF = new AliCFVertexingHF3Prong(mcArray, originDselection, fDecayChannel); 
+		//		cfVtxHF = new AliCFVertexingHF3Prong(mcArray, originDselection, fDecayChannel); 
 		break;
 	}
 	case 4:{
@@ -432,18 +426,22 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		//counting c quarks
 		cquarks += cfVtxHF->MCcquarkCounting(mcPart);
 		
+		if (!(cfVtxHF->SetLabelArray())){
+			AliDebug(2,Form("Impossible to set the label array (decaychannel = %d)",fDecayChannel));
+			continue;
+		}		   
+
 		//check the candiate family at MC level
 		if (!(cfVtxHF->CheckMCPartFamily(mcPart, mcArray))) {
-			Printf("Check on the family wrong!!! (decaychannel = %d)",fDecayChannel);
+			AliDebug(2,Form("Check on the family wrong!!! (decaychannel = %d)",fDecayChannel));
 			continue;
 		}
 		else{
-			Printf("Check on the family OK!!! (decaychannel = %d)",fDecayChannel);
+			AliDebug(2,Form("Check on the family OK!!! (decaychannel = %d)",fDecayChannel));
 		}
 		
 		//Fill the MC container
 		Bool_t mcContainerFilled = cfVtxHF -> FillMCContainer(containerInputMC);
-		
 		if (mcContainerFilled) {
 			if (fUseWeight)fWeight = GetWeight(containerInputMC[0]);
 			if (!fCuts->IsInFiducialAcceptance(containerInputMC[0],containerInputMC[1])) continue;
@@ -513,12 +511,9 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	fCountVertex+= icountVertex;
 	fCountRefit+= icountRefit;
 
-	AliDebug(2,Form("Found %d vertices",arrayBranch->GetEntriesFast()));
-	AliInfo(Form("Found %d vertices for decay channel %d",arrayBranch->GetEntriesFast(),fDecayChannel));
+	AliDebug(2,Form("Found %d vertices for decay channel %d",arrayBranch->GetEntriesFast(),fDecayChannel));
 	
 	for(Int_t iCandid = 0; iCandid<arrayBranch->GetEntriesFast();iCandid++){
-		Printf("iCandid = %d", iCandid);
-
 		AliAODRecoDecayHF* charmCandidate=0x0;
 		switch (fDecayChannel){
 		case 2:{
@@ -556,7 +551,6 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		}
 		
 		Int_t isPartOrAntipart = cfVtxHF->CheckReflexion();
-
 		Bool_t recoContFilled = cfVtxHF->FillRecoContainer(containerInput);
 		if (recoContFilled){
 			
