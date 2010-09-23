@@ -1,1 +1,0 @@
-../macros/test/ConfigTaskRsnTest.C
