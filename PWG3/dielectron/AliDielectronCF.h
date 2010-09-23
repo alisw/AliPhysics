@@ -51,8 +51,10 @@ public:
   
   void AddStepMask(UInt_t mask)                  { fStepMasks[fNStepMasks++]=mask; }
   
-  void AddVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins, Double_t min, Double_t max, Bool_t leg=kFALSE);
-  void AddVariable(AliDielectronVarManager::ValueTypes type, TVectorD * const binLimits);
+  void AddVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins,
+                   Double_t min, Double_t max, Bool_t leg=kFALSE, Bool_t log=kFALSE);
+  void AddVariable(AliDielectronVarManager::ValueTypes type, const char* binLimitStr, Bool_t leg=kFALSE);
+  void AddVariable(AliDielectronVarManager::ValueTypes type, TVectorD *binLimits, Bool_t leg=kFALSE);
   
   void InitialiseContainer(const AliAnalysisFilter& filter);
   
@@ -69,15 +71,10 @@ private:
   Int_t           fNSteps;                     // number of selection steps
   
   Int_t           fNVars;                      // number of variables
-  Int_t           fNBins[kNmaxAddSteps];       // array of numbers ob bins of the vars
-  Double_t        fVarLoLimit[kNmaxAddSteps];  // array of the lower limits of the vars
-  Double_t        fVarUpLimit[kNmaxAddSteps];  // array of the upper limits of the vars
-  TObjArray      *fVarBinLimits;               // alternative array of bin limits
-
-  Int_t           fNVarsLeg;                      // number of variables for the legs
-  Int_t           fNBinsLeg[kNmaxAddSteps];       // array of numbers ob bins of the vars for the legs
-  Double_t        fVarLoLimitLeg[kNmaxAddSteps];  // array of the lower limits of the vars for the legs
-  Double_t        fVarUpLimitLeg[kNmaxAddSteps];  // array of the upper limits of the vars for the legs
+  TObjArray      *fVarBinLimits;               // array of bin limits
+  
+  Int_t           fNVarsLeg;                   // number of variables for the legs
+  TObjArray      *fVarBinLimitsLeg;            //  array of bin limits of the legs
   
   Int_t           fNCuts;                         // Number of cuts in the filter concerned
 
@@ -100,11 +97,14 @@ private:
 
   Bool_t fHasMC;                         //if MC info is available
   Int_t  fNAddSteps;                     //number of additional MC related steps per cut step
+
+  TVectorD* MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax) const;
+  TVectorD* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax) const;
   
   AliDielectronCF(const AliDielectronCF &c);
   AliDielectronCF &operator=(const AliDielectronCF &c);
   
-  ClassDef(AliDielectronCF,3)  //Dielectron Correction Framework handler
+  ClassDef(AliDielectronCF,4)  //Dielectron Correction Framework handler
 };
 
 #endif

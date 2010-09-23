@@ -85,7 +85,7 @@ public:
   virtual void Process(TObjArray * const arrhist);
   void ProcessFit(TObjArray * const arrhist);      // fit the SE +- distribution
   void ProcessLS(TObjArray * const arrhist);       // substract the fitted SE like-sign background
-  //void ProcessEM(TObjArray * const arrhist);       // substract the fitted SE+ME like-sign background ...not yet implemented
+  void ProcessEM(TObjArray * const arrhist);       // substract the fitted SE+ME like-sign background
   
   void SetUseIntegral(Bool_t flag=kTRUE) {fUseIntegral = flag;};
   void SetFunctions(TF1 * const combined, TF1 * const sig=0, TF1 * const back=0, Int_t parM=1, Int_t parMres=2);
@@ -96,9 +96,9 @@ public:
   }
   void SetDefaults(Int_t type);
     
-  TF1*  GetSignalFunction()     { return fFuncSignal;        }
-  TF1*  GetBackgroundFunction() { return fFuncBackground;    }
-  TF1*  GetCombinedFunction()   { return fFuncSigBack;       }
+  TF1*  GetSignalFunction()     const { return fFuncSignal;        }
+  TF1*  GetBackgroundFunction() const { return fFuncBackground;    }
+  TF1*  GetCombinedFunction()   const { return fFuncSigBack;       }
   
   virtual void Draw(const Option_t* option = "");
   

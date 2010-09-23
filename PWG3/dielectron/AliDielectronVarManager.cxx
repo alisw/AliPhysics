@@ -69,6 +69,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "SSD2_signal",
   "SDD1_signal",
   "SDD2_signal",
+  "ITS_clusterMap",
   "ITS_nSigma_Electrons",
   "ITS_nSigma_Pions",
   "ITS_nSigma_Muons",

@@ -492,7 +492,7 @@ h.AddClass("TPCsignal");
 h.UserHistogram("TPCsignal","sigTPC","TPC signal;P [GeV];TPC signal [arb. Units]",400,.3,40,400,0.,200.,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","sigTPC")->SetDirectory(gDirectory)
 
-h.UserHistogram("TPCsignal","nSigE","TPC n #sigma Electrons;P [GeV];TPC n #sigma Electrons",400,.3,40.,400,-4.,4.,0,0,kTRUE,kFALSE)
+h.UserHistogram("TPCsignal","nSigE","TPC n #sigma Electrons;P [GeV];TPC n #sigma Electrons",200,.3,40.,100,-4.,4.,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","nSigE")->SetDirectory(gDirectory)
 h.UserHistogram("TPCsignal","nSigMu","TPC n #sigma Muons;P [GeV];TPC n #sigma Muons",400,.3,40.,400,-4.,4.,0,0,kTRUE,kFALSE)
 h.GetHistogram("TPCsignal","nSigMu")->SetDirectory(gDirectory)
