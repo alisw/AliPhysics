@@ -873,7 +873,7 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
     for(Int_t rp=0;rp<2;rp++) {
       for(Int_t pe=0;pe<2;pe++)	{
 	for(Int_t sc=0;sc<2;sc++) {      
-	  pHistProNonIsotropicTermsU[rp][pe][sc] = dynamic_cast<TProfile*>(outputListHistos->FindObject(Form("Flow_NonIsotropicTerms_%s_%s_%s_SP",rpPoi[rp].Data(),ptEta[pe].Data(),sinCos[sc].Data())));   
+	  pHistProNonIsotropicTermsU[rp][pe][sc] = dynamic_cast<TProfile*>(outputListHistos->FindObject(Form("FlowPro_NonIsotropicTerms_%s_%s_%s_SP",rpPoi[rp].Data(),ptEta[pe].Data(),sinCos[sc].Data())));   
 	} 
       }
     }   
@@ -891,22 +891,43 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
     TH2D*     pHistMavsMb = dynamic_cast<TH2D*>(outputListHistos->FindObject("Flow_MavsMb_SP"));
 
     //pass the pointers to the task
-    if (pCommonHistSP && pCommonHistResultsSP && pCommonHistmuQ &&
-	pHistProQNorm && pHistProQaQb && 
-	pHistProQaQbNorm && pHistProQaQbReImNorm && 
+    if (pCommonHistSP && 
+	pCommonHistResultsSP && 
+	pCommonHistmuQ &&
+	pHistProQNorm && 
+	pHistProQaQb && 
+	pHistProQaQbNorm && 
+	pHistProQaQbReImNorm && 
 	pHistProNonIsotropicTermsQ &&
 	pHistSumOfLinearWeights && 
 	pHistSumOfQuadraticWeights && 
-	pHistQNorm && pHistQaQb && 
-	pHistQaQbNorm && pHistQNormvsQaQbNorm &&
-	pHistQaQbCos && pHistResolution &&
-	pHistQaNorm && pHistQaNormvsMa && 
-	pHistQbNorm && pHistQbNormvsMb && 
-	pHistMavsMb && pHistProFlags &&
-	pHistProUQetaRP	&& pHistProUQetaPOI && 
-	pHistProUQPtRP && pHistProUQPtPOI &&  
-	pHistProUQQaQbPtRP && pHistProUQQaQbEtaRP && 
-	pHistProUQQaQbPtPOI && pHistProUQQaQbEtaPOI) {
+	pHistProFlags &&
+	pHistProUQetaRP	&& 
+	pHistProUQetaPOI && 
+	pHistProUQPtRP && 
+	pHistProUQPtPOI &&  
+	pHistProUQQaQbPtRP && 
+	pHistProUQQaQbEtaRP && 
+	pHistProUQQaQbPtPOI && 
+	pHistProUQQaQbEtaPOI &&
+	pHistSumOfWeightsPtRP[0] && pHistSumOfWeightsPtRP[1] && pHistSumOfWeightsPtRP[2] &&
+	pHistSumOfWeightsEtaRP[0] && pHistSumOfWeightsEtaRP[1] && pHistSumOfWeightsEtaRP[2] &&
+	pHistSumOfWeightsPtPOI[0] && pHistSumOfWeightsPtPOI[1] && pHistSumOfWeightsPtPOI[2] &&
+	pHistSumOfWeightsEtaPOI[0] && pHistSumOfWeightsEtaPOI[1] && pHistSumOfWeightsEtaPOI[2] && 
+	pHistProNonIsotropicTermsU[0][0][0] && pHistProNonIsotropicTermsU[1][0][0] && pHistProNonIsotropicTermsU[0][1][0] && pHistProNonIsotropicTermsU[0][0][1] && 
+	pHistProNonIsotropicTermsU[1][1][0] && pHistProNonIsotropicTermsU[1][0][1] && pHistProNonIsotropicTermsU[0][1][1] && pHistProNonIsotropicTermsU[1][1][1] &&
+	pHistQNorm && 
+	pHistQaQb && 
+	pHistQaQbNorm && 
+	pHistQNormvsQaQbNorm &&
+	pHistQaQbCos && 
+	pHistResolution &&
+	pHistQaNorm && 
+	pHistQaNormvsMa && 
+	pHistQbNorm && 
+	pHistQbNormvsMb && 
+	pHistMavsMb 
+	) {
 
       this -> SetCommonHistsSP(pCommonHistSP);
       this -> SetCommonHistsResSP(pCommonHistResultsSP);
@@ -918,6 +939,30 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
       this -> SetHistProNonIsotropicTermsQ(pHistProNonIsotropicTermsQ);
       this -> SetHistSumOfLinearWeights(pHistSumOfLinearWeights);
       this -> SetHistSumOfQuadraticWeights(pHistSumOfQuadraticWeights); 
+      this -> SetHistProFlags(pHistProFlags);
+      this -> SetHistProUQetaRP(pHistProUQetaRP);
+      this -> SetHistProUQetaPOI(pHistProUQetaPOI);
+      this -> SetHistProUQPtRP(pHistProUQPtRP);
+      this -> SetHistProUQPtPOI(pHistProUQPtPOI);
+      this -> SetHistProUQQaQbPtRP(pHistProUQQaQbPtRP);
+      this -> SetHistProUQQaQbEtaRP(pHistProUQQaQbEtaRP);
+      this -> SetHistProUQQaQbPtPOI(pHistProUQQaQbPtPOI);
+      this -> SetHistProUQQaQbEtaPOI(pHistProUQQaQbEtaPOI); 
+      for(Int_t i=0;i<3;i++) {
+	if(pHistSumOfWeightsPtRP[i]) this -> SetHistSumOfWeightsPtRP(pHistSumOfWeightsPtRP[i],i);      
+	if(pHistSumOfWeightsEtaRP[i]) this -> SetHistSumOfWeightsEtaRP(pHistSumOfWeightsEtaRP[i],i);      
+	if(pHistSumOfWeightsPtPOI[i]) this -> SetHistSumOfWeightsPtPOI(pHistSumOfWeightsPtPOI[i],i);      
+	if(pHistSumOfWeightsEtaPOI[i]) this -> SetHistSumOfWeightsEtaPOI(pHistSumOfWeightsEtaPOI[i],i);      
+      }
+      for(Int_t rp=0;rp<2;rp++)  {
+	for(Int_t pe=0;pe<2;pe++) {
+	  for(Int_t sc=0;sc<2;sc++) {
+	    if(pHistProNonIsotropicTermsU[rp][pe][sc]) {
+	      this->SetHistProNonIsotropicTermsU(pHistProNonIsotropicTermsU[rp][pe][sc],rp,pe,sc);
+	    }
+	  }
+	}
+      }        
       this -> SetHistQNorm(pHistQNorm);
       this -> SetHistQaQb(pHistQaQb);
       this -> SetHistQaQbNorm(pHistQaQbNorm);
@@ -929,31 +974,6 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
       this -> SetHistQbNorm(pHistQbNorm);
       this -> SetHistQbNormvsMb(pHistQbNormvsMb);
       this -> SetHistMavsMb(pHistMavsMb);
-      this -> SetHistProFlags(pHistProFlags);
-      this -> SetHistProUQetaRP(pHistProUQetaRP);
-      this -> SetHistProUQetaPOI(pHistProUQetaPOI);
-      this -> SetHistProUQPtRP(pHistProUQPtRP);
-      this -> SetHistProUQPtPOI(pHistProUQPtPOI);
-      this -> SetHistProUQQaQbPtRP(pHistProUQQaQbPtRP);
-      this -> SetHistProUQQaQbEtaRP(pHistProUQQaQbEtaRP);
-      this -> SetHistProUQQaQbPtPOI(pHistProUQQaQbPtPOI);
-      this -> SetHistProUQQaQbEtaPOI(pHistProUQQaQbEtaPOI);      
-         
-      for(Int_t i=0;i<3;i++) {
-	if(pHistSumOfWeightsPtRP[i]) this -> SetHistSumOfWeightsPtRP(pHistSumOfWeightsPtRP[i],i);      
-	if(pHistSumOfWeightsEtaRP[i]) this -> SetHistSumOfWeightsEtaRP(pHistSumOfWeightsEtaRP[i],i);      
-	if(pHistSumOfWeightsPtPOI[i]) this -> SetHistSumOfWeightsPtPOI(pHistSumOfWeightsPtPOI[i],i);      
-	if(pHistSumOfWeightsEtaPOI[i]) this -> SetHistSumOfWeightsEtaPOI(pHistSumOfWeightsEtaPOI[i],i);      
-      } 
-      for(Int_t rp=0;rp<2;rp++)  {
-	for(Int_t pe=0;pe<2;pe++) {
-	  for(Int_t sc=0;sc<2;sc++) {
-	    if(pHistProNonIsotropicTermsU[rp][pe][sc]) {
-	      this->SetHistProNonIsotropicTermsU(pHistProNonIsotropicTermsU[rp][pe][sc],rp,pe,sc);
-	    }
-	  }
-	}
-      }        
 
     } else {
       cout<<"WARNING: Histograms needed to run Finish() in SP are not accessable!"<<endl; }
