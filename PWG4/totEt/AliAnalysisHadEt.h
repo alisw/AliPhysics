@@ -123,6 +123,9 @@ protected:
     Int_t fEtaCode;//pdg eta code
     Int_t fOmega0Code;//pdg eta code
     Float_t fPionMass;//pdg pion mass
+    Float_t fKaonMass;//pdg kaon mass
+    Float_t fProtonMass;//pdg proton mass
+    Float_t fElectronMass;//pdg electron mass
 
     
     Double_t fSumEt;/** Sum of the total Et for all events */
@@ -149,6 +152,7 @@ protected:
     void FillHisto2D(TString histname, Float_t x, Float_t y, Float_t weight);
 
     Float_t Et(TParticle *part, float mass = -1000);
+    Float_t Et(Float_t p, Float_t theta, Int_t pid, Short_t charge);
     AliESDtrackCuts* fEsdtrackCutsITSTPC;//esd track cuts for ITS+TPC tracks
     AliESDtrackCuts* fEsdtrackCutsTPC;//esd track cuts for TPC tracks (which may also contain ITS hits)
     AliESDtrackCuts* fEsdtrackCutsITS;//esd track cuts for ITS stand alone tracks
@@ -159,6 +163,8 @@ protected:
     static Float_t fgPtAxis[117];//bins for pt axis of histograms
     static Int_t fgNumOfPtBins;//number of pt bins
     
+
+
  private:
     //Declare it private to avoid compilation warning
     AliAnalysisHadEt & operator = (const AliAnalysisHadEt & g) ;//cpy assignment

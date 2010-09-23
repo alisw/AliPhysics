@@ -8,6 +8,7 @@
 // it has daughters, AliAnalysisHadEtMonteCarlo and 
 // AliAnalysisHadEtReconstructed which loop over either Monte Carlo data or 
 // real data to get Et
+
 #include "AliAnalysisHadEt.h"
 #include "TMath.h"
 #include "TList.h"
@@ -72,6 +73,9 @@ AliAnalysisHadEt::AliAnalysisHadEt() :
 	,fEtaCode(0)
 	,fOmega0Code(0)
         ,fPionMass(0)
+        ,fKaonMass(0)
+        ,fProtonMass(0)
+        ,fElectronMass(0)
 	,fSumEt(0)
 	,fSumEtAcc(0)
 	,fTotEt(0)
@@ -110,6 +114,7 @@ void AliAnalysisHadEt::FillOutputList()
 void AliAnalysisHadEt::Init()
 {// clear variables, set up cuts and PDG info
   ResetEventValues();
+
 }
 
 void AliAnalysisHadEt::CreateHistograms()
@@ -152,6 +157,9 @@ void AliAnalysisHadEt::ResetEventValues()
 void AliAnalysisHadEt::SetParticleCodes()
 {  //the codes are defined in $ROOTSYS/etc/pdg_table.txt
     fPionMass = fPdgDB->GetParticle("pi+")->Mass();
+    fKaonMass = fPdgDB->GetParticle("K+")->Mass();
+    fProtonMass = fPdgDB->GetParticle("proton")->Mass();
+    fElectronMass = fPdgDB->GetParticle("e+")->Mass();
     fPiPlusCode = fPdgDB->GetParticle("pi+")->PdgCode();
     fPiMinusCode = fPdgDB->GetParticle("pi-")->PdgCode();
     fKPlusCode = fPdgDB->GetParticle("K+")->PdgCode();
@@ -350,5 +358,26 @@ Float_t AliAnalysisHadEt::Et(TParticle *part, float mass){//function to calculat
   else{//otherwise use the mass that was given
     return (TMath::Sqrt(TMath::Power(part->P(),2.0)+TMath::Power(mass,2.0)))*TMath::Sin(part->Theta());
   }
+  return 0.0;
+}
+Float_t AliAnalysisHadEt::Et(Float_t p, Float_t theta, Int_t pid, Short_t charge){//function to calculate et in the same way as it would be calculated in a calorimeter
+  if(pid==fPiPlusCode || pid==fPiMinusCode){//Nothing special for pions
+    return TMath::Sqrt(p*p + fPionMass*fPionMass) * TMath::Sin(theta);
+  }
+  if(pid==fKPlusCode || pid==fKMinusCode){//Nothing special for kaons
+    return TMath::Sqrt(p*p + fKaonMass*fKaonMass) * TMath::Sin(theta);
+  }
+  if(pid==fEPlusCode || pid==fEMinusCode){//Nothing special for electrons
+    return TMath::Sqrt(p*p + fElectronMass*fElectronMass) * TMath::Sin(theta);
+  }
+  if(pid==fProtonCode || pid==fAntiProtonCode){//But for protons we must be careful...
+    if(charge<0.0){//antiprotns: kinetic energy plus twice the rest mass
+      return (TMath::Sqrt(p*p + fProtonMass*fProtonMass) + fProtonMass) * TMath::Sin(theta);
+    }
+    if(charge>0.0){//antiprotns: kinetic energy only
+      return (TMath::Sqrt(p*p + fProtonMass*fProtonMass) - fProtonMass) * TMath::Sin(theta);
+    }
+  }
+  cerr<<"Uh-oh!  Et not set properly!"<<endl;
   return 0.0;
 }
