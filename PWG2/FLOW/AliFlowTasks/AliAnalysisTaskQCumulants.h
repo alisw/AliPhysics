@@ -42,6 +42,10 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Int_t GetHarmonic() const {return this->fHarmonic;};
   void SetApplyCorrectionForNUA(Bool_t const applyCorrectionForNUA) {this->fApplyCorrectionForNUA = applyCorrectionForNUA;};
   Bool_t GetApplyCorrectionForNUA() const {return this->fApplyCorrectionForNUA;};
+  void SetApplyCorrectionForNUAVsM(Bool_t const applyCorrectionForNUAVsM) {this->fApplyCorrectionForNUAVsM = applyCorrectionForNUAVsM;};
+  Bool_t GetApplyCorrectionForNUAVsM() const {return this->fApplyCorrectionForNUAVsM;};      
+  void SetPropagateErrorAlsoFromNUATerms(Bool_t const pefc) {this->fPropagateErrorAlsoFromNUATerms = pefc;};
+  Bool_t GetPropagateErrorAlsoFromNUATerms() const {return this->fPropagateErrorAlsoFromNUATerms;};  
   void SetCalculate2DFlow(Bool_t const calculate2DFlow) {this->fCalculate2DFlow = calculate2DFlow;};
   Bool_t GetCalculate2DFlow() const {return this->fCalculate2DFlow;};
   void SetStoreDistributions(Bool_t const storeDistributions) {this->fStoreDistributions = storeDistributions;};
@@ -75,12 +79,14 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   AliFlowAnalysisWithQCumulants *fQC; // Q-cumulant object
   TList *fListHistos;                 // collection of output 
   // Common:
-  Int_t fHarmonic;                    // harmonic  
-  Bool_t fApplyCorrectionForNUA;      // apply correction for non-uniform acceptance 
-  Bool_t fCalculate2DFlow;            // calculate differential flow in (pt,eta) (Remark: this is very expensive in terms of CPU time)
-  Bool_t fStoreDistributions;         // store or not distributions of correlations
-  Bool_t fCalculateCumulantsVsM;      // calculate cumulants versus multiplicity  
-  Bool_t fMinimumBiasReferenceFlow;   // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     
+  Int_t fHarmonic;                        // harmonic  
+  Bool_t fApplyCorrectionForNUA;          // apply correction for non-uniform acceptance 
+  Bool_t fApplyCorrectionForNUAVsM;       // apply correction for non-uniform acceptance versus M    
+  Bool_t fPropagateErrorAlsoFromNUATerms; // propagate error by taking into account also non-isotrpic terms  
+  Bool_t fCalculate2DFlow;                // calculate differential flow in (pt,eta) (Remark: this is very expensive in terms of CPU time)
+  Bool_t fStoreDistributions;             // store or not distributions of correlations
+  Bool_t fCalculateCumulantsVsM;          // calculate cumulants versus multiplicity  
+  Bool_t fMinimumBiasReferenceFlow;       // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     
   // Multiparticle correlations vs multiplicity:
   Int_t fnBinsMult;                   // number of multiplicity bins for flow analysis versus multiplicity  
   Double_t fMinMult;                  // minimal multiplicity for flow analysis versus multiplicity  
