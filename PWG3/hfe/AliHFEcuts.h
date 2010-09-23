@@ -105,11 +105,11 @@ class AliHFEcuts : public TNamed{
     inline void CreateStandardCuts();
     
     // Requirements
-    void SetRequireDCAToVertex() { SETBIT(fRequirements, kDCAToVertex); };
+    void SetRequireDCAToVertex() { SETBIT(fRequirements, kDCAToVertex); CLRBIT(fRequirements, kSigmaToVertex); };
     void SetRequireIsPrimary() { SETBIT(fRequirements, kPrimary); };
     void SetRequireITSPixel() { SETBIT(fRequirements, kITSPixel); }
     void SetRequireProdVertex() { SETBIT(fRequirements, kProductionVertex); };
-    void SetRequireSigmaToVertex() { SETBIT(fRequirements, kSigmaToVertex); };
+    void SetRequireSigmaToVertex() { SETBIT(fRequirements, kSigmaToVertex); CLRBIT(fRequirements, kDCAToVertex); };
     void SetRequireKineMCCuts() { SETBIT(fRequirements, kKineMCCuts); };
 
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };

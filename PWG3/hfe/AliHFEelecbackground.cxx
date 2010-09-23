@@ -243,43 +243,43 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
   // bins
   /////////
 
-  Int_t nBinsPt = 25;
+  const Int_t nBinsPt = 25;
   Double_t minPt = 0.01;
   Double_t maxPt = 10.0;
   
-  Int_t nBinsPtMore = 100;
+  const Int_t nBinsPtMore = 100;
   Double_t minPtMore = 0.01;
   Double_t maxPtMore = 10.0;
   
-  Int_t nBinsInv = 50;
+  const Int_t nBinsInv = 50;
   Double_t minInv = 0.0;
   Double_t maxInv = 0.2;
   
-  Int_t nBinsOp = 50;
+  const Int_t nBinsOp = 50;
   Double_t minOp = 0.0;
   Double_t maxOp = 2;
 
-  Int_t nBinsCh = 4;
+  const Int_t nBinsCh = 4;
   Double_t minCh = 0.0;
   Double_t maxCh = 4.0;
   
-  Double_t *binLimLogPt = new Double_t[nBinsPt+1];
-  Double_t *binLimPt    = new Double_t[nBinsPt+1];
+  Double_t binLimLogPt[nBinsPt+1];
+  Double_t binLimPt[nBinsPt+1];
   for(Int_t i=0; i<=nBinsPt; i++) binLimLogPt[i]=(Double_t)TMath::Log10(minPt) + (TMath::Log10(maxPt)-TMath::Log10(minPt))/nBinsPt*(Double_t)i ;
   for(Int_t i=0; i<=nBinsPt; i++) binLimPt[i]=(Double_t)TMath::Power(10,binLimLogPt[i]);
 
-  Double_t *binLimLogPtMore = new Double_t[nBinsPtMore+1];
-  Double_t *binLimPtMore    = new Double_t[nBinsPtMore+1];
+  Double_t binLimLogPtMore[nBinsPtMore+1];
+  Double_t binLimPtMore[nBinsPtMore+1];
   for(Int_t i=0; i<=nBinsPtMore; i++) binLimLogPtMore[i]=(Double_t)TMath::Log10(minPtMore) + (TMath::Log10(maxPtMore)-TMath::Log10(minPtMore))/nBinsPtMore*(Double_t)i ;
   for(Int_t i=0; i<=nBinsPtMore; i++) binLimPtMore[i]=(Double_t)TMath::Power(10,binLimLogPtMore[i]);
 
-  Double_t *binLimInv    = new Double_t[nBinsInv+1];
+  Double_t binLimInv[nBinsInv+1];
   for(Int_t i=0; i<=nBinsInv; i++) binLimInv[i]=(Double_t)minInv  + (maxInv-minInv)  /nBinsInv*(Double_t)i ;
   
-  Double_t *binLimOp    = new Double_t[nBinsOp+1];
+  Double_t binLimOp[nBinsOp+1];
   for(Int_t i=0; i<=nBinsOp; i++) binLimOp[i]=(Double_t)minOp  + (maxOp-minOp) /nBinsOp*(Double_t)i ;
   
-  Double_t *binLimCh    = new Double_t[nBinsCh+1];
+  Double_t binLimCh[nBinsCh+1];
   for(Int_t i=0; i<=nBinsCh; i++) binLimCh[i]=(Double_t)minCh  + (maxCh-minCh) /nBinsCh*(Double_t)i ;
   
   const Int_t nvarData = 5;
@@ -301,11 +301,11 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
   //
   
   THnSparseF *hsSparseData = new THnSparseF("OpeningangleinvmassData","",nvarData,iBinData);
-  hsSparseData->SetBinEdges(0,binLimPt);
-  hsSparseData->SetBinEdges(1,binLimPt);
-  hsSparseData->SetBinEdges(2,binLimOp);
-  hsSparseData->SetBinEdges(3,binLimInv);
-  hsSparseData->SetBinEdges(4,binLimCh);
+  hsSparseData->SetBinEdges(0,&binLimPt[0]);
+  hsSparseData->SetBinEdges(1,&binLimPt[0]);
+  hsSparseData->SetBinEdges(2,&binLimOp[0]);
+  hsSparseData->SetBinEdges(3,&binLimInv[0]);
+  hsSparseData->SetBinEdges(4,&binLimCh[0]);
   hsSparseData->Sumw2();
 
   fList->AddAt(hsSparseData,kDatai);
@@ -339,18 +339,18 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
     // MCSplitted: 0-not, 1-splittedOs, 2-ksplittedSs
     
 
-    Int_t nBinsMCOrigin = 6;
+    const Int_t nBinsMCOrigin = 6;
     Double_t minMCOrigin = 0.0;
     Double_t maxMCOrigin = 6.0;
     
-    Double_t *binLimMCOrigin = new Double_t[nBinsMCOrigin+1];
+    Double_t binLimMCOrigin[nBinsMCOrigin+1];
     for(Int_t i=0; i<=nBinsMCOrigin; i++) binLimMCOrigin[i]=(Double_t)minMCOrigin  + (maxMCOrigin-minMCOrigin) /nBinsMCOrigin*(Double_t)i ;
 
-    Int_t nBinsMCSplitted = 3;
+    const Int_t nBinsMCSplitted = 3;
     Double_t minMCSplitted = 0.0;
     Double_t maxMCSplitted = 3.0;
     
-    Double_t *binLimMCSplitted = new Double_t[nBinsMCSplitted+1];
+    Double_t binLimMCSplitted[nBinsMCSplitted+1];
     for(Int_t i=0; i<=nBinsMCSplitted; i++) binLimMCSplitted[i]=(Double_t)minMCSplitted  + (maxMCSplitted-minMCSplitted) /nBinsMCSplitted*(Double_t)i ;
     
     Int_t iBinMCo[nvarMCo];
@@ -362,12 +362,12 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
     iBinMCo[5]=nBinsMCSplitted;
         
     THnSparseF *hsSparseMCo = new THnSparseF("OpeningangleinvmassMC","",nvarMCo,iBinMCo);
-    hsSparseMCo->SetBinEdges(0,binLimPt);
-    hsSparseMCo->SetBinEdges(1,binLimPt);
-    hsSparseMCo->SetBinEdges(2,binLimOp);
-    hsSparseMCo->SetBinEdges(3,binLimInv);
-    hsSparseMCo->SetBinEdges(4,binLimMCOrigin);
-    hsSparseMCo->SetBinEdges(5,binLimMCSplitted);
+    hsSparseMCo->SetBinEdges(0,&binLimPt[0]);
+    hsSparseMCo->SetBinEdges(1,&binLimPt[0]);
+    hsSparseMCo->SetBinEdges(2,&binLimOp[0]);
+    hsSparseMCo->SetBinEdges(3,&binLimInv[0]);
+    hsSparseMCo->SetBinEdges(4,&binLimMCOrigin[0]);
+    hsSparseMCo->SetBinEdges(5,&binLimMCSplitted[0]);
     hsSparseMCo->Sumw2();
 
     fList->AddAt(hsSparseMCo,kMCo);
@@ -398,11 +398,11 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
 	// cut passed: 0-all, 1-Partner tracked, 2-Opposite-sign, 3-SingleTrackCutPart, 4-ShareCluster, 5-PID, 6-DCA, 7-chi2Ndf AliKF, 8-Openingangle, 9-Invmass
 	// MC: 0-FromBackground, 1-FromGamma, 2-FromPi0, 3-FromEta, 4-FromC, 5-FromB
       
-      Int_t nBinsMCCutPassed = 10;
+      const Int_t nBinsMCCutPassed = 10;
       Double_t minMCCutPassed = -0.5;
       Double_t maxMCCutPassed = 9.5;
       
-      Double_t *binLimMCCutPassed = new Double_t[nBinsMCCutPassed+1];
+      Double_t binLimMCCutPassed[nBinsMCCutPassed+1];
       for(Int_t i=0; i<=nBinsMCCutPassed; i++) binLimMCCutPassed[i]=(Double_t)minMCCutPassed  + (maxMCCutPassed-minMCCutPassed) /nBinsMCCutPassed*(Double_t)i ;
       
       Int_t iBinMCe[nvarMCe];
@@ -411,9 +411,9 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
       iBinMCe[2]=nBinsMCOrigin;
       
       THnSparseF *hsSparseMCe = new THnSparseF("CutPassedMC","",nvarMCe,iBinMCe);
-      hsSparseMCe->SetBinEdges(0,binLimPt);
-      hsSparseMCe->SetBinEdges(1,binLimMCCutPassed);
-      hsSparseMCe->SetBinEdges(2,binLimMCOrigin);
+      hsSparseMCe->SetBinEdges(0,&binLimPt[0]);
+      hsSparseMCe->SetBinEdges(1,&binLimMCCutPassed[0]);
+      hsSparseMCe->SetBinEdges(2,&binLimMCOrigin[0]);
       hsSparseMCe->Sumw2();
       
       fList->AddAt(hsSparseMCe,kMCe); 
@@ -455,11 +455,11 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
 	/////////////////////////////////////////////////////
 	const Int_t nvarITSsignal = 5;
 	
-	Int_t nBinsITSsignal  = 100;
+	const Int_t nBinsITSsignal  = 100;
 	Double_t minITSsignal = 0.0;
 	Double_t maxITSsignal = 350.0;
 	
-	Double_t *binLimITSsignal = new Double_t[nBinsITSsignal+1];
+	Double_t binLimITSsignal[nBinsITSsignal+1];
 	for(Int_t i=0; i<=nBinsITSsignal; i++) binLimITSsignal[i]=(Double_t)minITSsignal  + (maxITSsignal-minITSsignal) /nBinsITSsignal*(Double_t)i ;
 	
 	Int_t iBinITSsignal[nvarITSsignal];
@@ -470,11 +470,11 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
 	iBinITSsignal[4]=nBinsITSsignal;
 	
 	THnSparseF *hsSparseITSpid = new THnSparseF("SparseITSsignal","",nvarITSsignal,iBinITSsignal);
-	hsSparseITSpid->SetBinEdges(0,binLimPt);
-	hsSparseITSpid->SetBinEdges(1,binLimITSsignal);
-	hsSparseITSpid->SetBinEdges(2,binLimITSsignal);
-	hsSparseITSpid->SetBinEdges(3,binLimITSsignal);
-	hsSparseITSpid->SetBinEdges(4,binLimITSsignal);
+	hsSparseITSpid->SetBinEdges(0,&binLimPt[0]);
+	hsSparseITSpid->SetBinEdges(1,&binLimITSsignal[0]);
+	hsSparseITSpid->SetBinEdges(2,&binLimITSsignal[0]);
+	hsSparseITSpid->SetBinEdges(3,&binLimITSsignal[0]);
+	hsSparseITSpid->SetBinEdges(4,&binLimITSsignal[0]);
 	hsSparseITSpid->Sumw2();
 	
 	fList->AddAt(hsSparseITSpid,kMCcutPart2); 
@@ -484,19 +484,19 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
 	///////////////////////////////////////////////////////////////////////////////////////
 	const Int_t nvarITSsignalSplit = 5;
 
-	Int_t nBinsITSSplit  = 2;
+	const Int_t nBinsITSSplit  = 2;
 	Double_t minITSSplit = 0.0;
 	Double_t maxITSSplit = 2.0;
 	
-	Double_t *binLimITSSplit = new Double_t[nBinsITSSplit+1];
+	Double_t binLimITSSplit[nBinsITSSplit+1];
 	for(Int_t i=0; i<=nBinsITSSplit; i++) binLimITSSplit[i]=(Double_t)minITSSplit  + (maxITSSplit-minITSSplit) /nBinsITSSplit*(Double_t)i ;
 
 
-	Int_t nBinsITSsignalSplit  = 50;
+	const Int_t nBinsITSsignalSplit  = 50;
 	Double_t minITSsignalSplit = -25.0;
 	Double_t maxITSsignalSplit = 25.0;
 	
-	Double_t *binLimITSsignalSplit = new Double_t[nBinsITSsignalSplit+1];
+	Double_t binLimITSsignalSplit[nBinsITSsignalSplit+1];
 	for(Int_t i=0; i<=nBinsITSsignalSplit; i++) binLimITSsignalSplit[i]=(Double_t)minITSsignalSplit  + (maxITSsignalSplit-minITSsignalSplit) /nBinsITSsignalSplit*(Double_t)i ;
 	
 	Int_t iBinITSsignalSplit[nvarITSsignalSplit];
@@ -506,9 +506,9 @@ void AliHFEelecbackground::CreateHistograms(TList * const qaList)
 	}
 	
 	THnSparseF *hsSparseITSpidSplit = new THnSparseF("SparseITSsignalSplit","",nvarITSsignalSplit,iBinITSsignalSplit);
-	hsSparseITSpidSplit->SetBinEdges(0,binLimITSSplit);
+	hsSparseITSpidSplit->SetBinEdges(0,&binLimITSSplit[0]);
 	for(Int_t k = 1; k < 5; k++) {
-	  hsSparseITSpidSplit->SetBinEdges(k,binLimITSsignalSplit);
+	  hsSparseITSpidSplit->SetBinEdges(k,&binLimITSsignalSplit[0]);
 	}
 	hsSparseITSpidSplit->Sumw2();
 	
@@ -534,8 +534,8 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
   // pt tagged
   //////////////////////
   TVector3 v3Dtagged;
-  Double_t *pxyz = new Double_t[3];
-  track->PxPyPz(pxyz);
+  Double_t pxyz[3];
+  track->PxPyPz(&pxyz[0]);
   v3Dtagged.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
   fPtESD = TMath::Sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]); 
   
@@ -625,7 +625,7 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
       cuteffect[1] = 0.0;
       cuteffect[2] = fIsFrom;
       if(!fCuts[0]) {
-	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[0] = kTRUE;
       }
     }
@@ -640,7 +640,7 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner) {
       cuteffect[1] = 1.0;
       if(!fCuts[1]) {
-	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[1] = kTRUE;
       }
     }
@@ -654,7 +654,7 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner && (sign == kOs)) {
       cuteffect[1] = 2.0;
       if(!fCuts[2]) {
-	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[2] = kTRUE;
       }
     }
@@ -669,7 +669,7 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner && (sign==kOs)) {
       cuteffect[1] = 3.0;
       if(!fCuts[3]) {
-	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[3] = kTRUE;
       }
     }
@@ -684,7 +684,7 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner && (sign==kOs)) {
       cuteffect[1] = 4.0;
       if(!fCuts[4]) {
-	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[4] = kTRUE;
       }
     } 
@@ -699,7 +699,7 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner && (sign==kOs)) {
       cuteffect[1] = 5.0;
       if(!fCuts[5]) {
-	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[5] = kTRUE;
       }
     }
@@ -716,9 +716,9 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
   if(HasMCData()) {
     //printf("has MC data for DCA\n");
     //printf("IsPartner %d and isfrom %d\n",fIsPartner,fIsFrom);
-    if(fIsFrom==kElectronFromBackground) (dynamic_cast<TH2F *>(fList->At(kMCdca)))->Fill(dca,fIsFrom);
+    if((fIsFrom==kElectronFromBackground) && (fList->At(kMCdca))) (dynamic_cast<TH2F *>(fList->At(kMCdca)))->Fill(dca,fIsFrom);
     else {
-      if(fIsPartner) (dynamic_cast<TH2F *>(fList->At(kMCdca)))->Fill(dca,fIsFrom);
+      if(fIsPartner && (fList->At(kMCdca))) (dynamic_cast<TH2F *>(fList->At(kMCdca)))->Fill(dca,fIsFrom);
     }
   }
   if(TMath::Abs(dca) > 3.0) return;
@@ -727,7 +727,7 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner && (sign==kOs)) {
       cuteffect[1] = 6.0;
       if(!fCuts[6]) {
-	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[6] = kTRUE;
       }
     }
@@ -772,7 +772,7 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
       if(HasMCData() && fIsPartner && (sign==kOs)) {
 	cuteffect[1] = 7.0;
 	if(!fCuts[7]) {
-	  (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	  if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	  fCuts[7] = kTRUE;
 	}
       }
@@ -793,13 +793,13 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
 	
 	cuteffect[1] = 8.0;
 	if(!fCuts[8]) {
-	  (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	 if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	  fCuts[8] = kTRUE;
 	}
 	if(TMath::Abs(results[1]) < fInvMassCut) {
 	  cuteffect[1] = 9.0;
 	  if(!fCuts[9]) {
-	    (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	    if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	    fCuts[9] = kTRUE;
 	  }
 	}
@@ -825,12 +825,12 @@ Bool_t AliHFEelecbackground::CalculateMotherVariable(AliESDtrack* const track, A
     TVector3 v3Dtagged;
     TVector3 v3Dpart;
     
-    Double_t *pxyz = new Double_t[3];
-    track->PxPyPz(pxyz);
+    Double_t pxyz[3];
+    track->PxPyPz(&pxyz[0]);
     v3Dtagged.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
     
-    Double_t *pxyzpart = new Double_t[3];
-    trackpart->PxPyPz(pxyzpart);
+    Double_t pxyzpart[3];
+    trackpart->PxPyPz(&pxyzpart[0]);
     v3Dpart.SetXYZ(pxyzpart[0],pxyzpart[1],pxyzpart[2]);
     
     
@@ -906,20 +906,20 @@ Bool_t AliHFEelecbackground::CalculateMotherVariable(AliESDtrack* const track, A
     results[4] = openingangle;
 
     // chi2Ndf cut
-    (dynamic_cast<TH1F *>(fList->At(kDatachi2Ndf)))->Fill(chi2ndf);
+    if(fList->At(kDatachi2Ndf)) (dynamic_cast<TH1F *>(fList->At(kDatachi2Ndf)))->Fill(chi2ndf);
     if(HasMCData()){
-      if(fIsFrom==kElectronFromBackground) (dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))->Fill(chi2ndf,fIsFrom);
+      if((fIsFrom==kElectronFromBackground) && (fList->At(kMCchi2Ndf))) (dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))->Fill(chi2ndf,fIsFrom);
       else {
-	if(fIsPartner) (dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))->Fill(chi2ndf,fIsFrom);
+	if(fIsPartner && (fList->At(kMCchi2Ndf))) (dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))->Fill(chi2ndf,fIsFrom);
       }
     }
     if(chi2ndf > fChi2NdfCut) return kFALSE;
     else {
-      (dynamic_cast<TH1F *>(fList->At(kDatar)))->Fill(radius);
+      if(fList->At(kDatar)) (dynamic_cast<TH1F *>(fList->At(kDatar)))->Fill(radius);
       if(HasMCData()) {
-	if(fIsFrom==kElectronFromBackground) (dynamic_cast<TH2F *>(fList->At(kMCr)))->Fill(radius,fIsFrom);
+	if((fIsFrom==kElectronFromBackground) && (fList->At(kMCr))) (dynamic_cast<TH2F *>(fList->At(kMCr)))->Fill(radius,fIsFrom);
 	else {
-	  if(fIsPartner) (dynamic_cast<TH2F *>(fList->At(kMCr)))->Fill(radius,fIsFrom);
+	  if(fIsPartner && (fList->At(kMCr))) (dynamic_cast<TH2F *>(fList->At(kMCr)))->Fill(radius,fIsFrom);
 	}
       }
       return kTRUE;
@@ -943,11 +943,11 @@ void AliHFEelecbackground::CalculateMotherVariableR(AliESDtrack* const track, Al
     TVector3 v3Dtagged;
     TVector3 v3Dpart;
     
-    Double_t *pxyz = new Double_t[3];
-    track->PxPyPz(pxyz);
+    Double_t pxyz[3];
+    track->PxPyPz(&pxyz[0]);
     v3Dtagged.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
-    Double_t *pxyzpart = new Double_t[3];
-    trackpart->PxPyPz(pxyzpart);
+    Double_t pxyzpart[3];
+    trackpart->PxPyPz(&pxyzpart[0]);
     v3Dpart.SetXYZ(pxyzpart[0],pxyzpart[1],pxyzpart[2]);
     
     // rotate the partner
@@ -1004,7 +1004,7 @@ void AliHFEelecbackground::FillOutput(Double_t *results, Double_t *resultsr, Int
   co[4] = sign;
   co[5] = 0.0;
 
-  (dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
+  if(fList->At(kDatai))(dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
 
   if((sign==kOs) && (!fUseAliKFCode)) {
     
@@ -1014,7 +1014,7 @@ void AliHFEelecbackground::FillOutput(Double_t *results, Double_t *resultsr, Int
     co[4] = kR;
     co[5] = 0.0;
 
-    (dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
+    if(fList->At(kDatai)) (dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
     
   }
   
@@ -1040,7 +1040,7 @@ void AliHFEelecbackground::FillOutput(Double_t *results, Double_t *resultsr, Int
       }
     }
 
-    (dynamic_cast<THnSparseF *>(fList->At(kMCo)))->Fill(co);
+    if(fList->At(kMCo)) (dynamic_cast<THnSparseF *>(fList->At(kMCo)))->Fill(co);
 
   }
  
@@ -1123,7 +1123,7 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
     Double_t p = trackPart->P();
     
     if(fDebugLevel > 1) {        
-      (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,itsSignal);
+      if(fList->At(kMCcutPart0)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,itsSignal);
     }
 
     ///////////
@@ -1150,8 +1150,8 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
 	entries[3] = dEdxSamplesPart[2];
 	entries[4] = dEdxSamplesPart[3];
 
-	(dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,itsSignal);
-	(dynamic_cast<THnSparseF *>(fList->At(kMCcutPart2)))->Fill(entries);
+	if(fList->At(kMCcutPart1)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,itsSignal);
+	if(fList->At(kMCcutPart2)) (dynamic_cast<THnSparseF *>(fList->At(kMCcutPart2)))->Fill(entries);
 	
       }
       
@@ -1169,7 +1169,7 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
 
     if(fDebugLevel > 1) {        
       //printf("tpcSignal %f\n",tpcSignal);
-      (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,tpcSignal);
+      if(fList->At(kMCcutPart0)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,tpcSignal);
     }
 
     // PID
@@ -1182,7 +1182,7 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
       if(!fPIDMethodPartner->IsSelected(&hfetrack)) return kFALSE;
       
       if(fDebugLevel > 1) {  
-	(dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,tpcSignal);
+	if(fList->At(kMCcutPart1)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,tpcSignal);
       }
     }   
     
@@ -1289,7 +1289,7 @@ Bool_t AliHFEelecbackground::ShareCluster(AliESDtrack * const track1,AliESDtrack
 	}
 	else entriesSplit[layer+1] = -100.0;
       }
-      (dynamic_cast<THnSparseF *>(fList->At(kMCcutPart3)))->Fill(entriesSplit);
+      if(fList->At(kMCcutPart3)) (dynamic_cast<THnSparseF *>(fList->At(kMCcutPart3)))->Fill(entriesSplit);
     }
 
     // Return

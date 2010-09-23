@@ -503,6 +503,7 @@ void AliHFEpid::InitStrategy4(){
   InitStrategy1();
   AliHFEpidTRD *trdpid = dynamic_cast<AliHFEpidTRD *>(fDetectorPID[kTRDpid]);
   trdpid->SetPIDMethod(AliHFEpidTRD::kLQ);
+  trdpid->SetElectronEfficiency(0.71);
   SwitchOnDetector(kTRDpid);
 }
 
@@ -526,12 +527,14 @@ void AliHFEpid::InitStrategy6(){
   tofpid->SetTOFnSigma(3);
   //TF1 *upperCut = new TF1("upperCut", "[0] * TMath::Exp([1]*x)", 0, 20);
   TF1 *upperCut = new TF1("upperCut", "[0]", 0, 20); // Use constant upper cut
-  TF1 *lowerCut = new TF1("lowerCut", "[0] * TMath::Exp([1]*x)", 0, 20);
+  TF1 *lowerCut = new TF1("lowerCut", "[0] * TMath::Exp([1]*x) + [2]", 0, 20);
   upperCut->SetParameter(0, 5.);
   //upperCut->SetParameter(0, 2.7);
   //upperCut->SetParameter(1, -0.4357);
   lowerCut->SetParameter(0, -2.65);
   lowerCut->SetParameter(1, -0.6757);
+  if(HasMCData()) lowerCut->SetParameter(2, -1);
+  else lowerCut->SetParameter(2, 0);
   tpcpid->SetUpperSigmaCut(upperCut);
   tpcpid->SetLowerSigmaCut(lowerCut);
   AddCommonObject(upperCut);
@@ -564,6 +567,7 @@ void AliHFEpid::InitStrategy8(){
   tpcpid->SetTPCnSigma(3);
   tofpid->SetTOFnSigma(3);
   trdpid->SetPIDMethod(AliHFEpidTRD::kLQ);
+  trdpid->SetElectronEfficiency(0.71);
   SwitchOnDetector(kTPCpid);
   SwitchOnDetector(kTOFpid);
   SwitchOnDetector(kTRDpid);

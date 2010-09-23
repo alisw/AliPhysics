@@ -65,6 +65,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
 
     Bool_t IsCalculateTRDSignals() const { return TestBit(kTRDsignals); }
     void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
+    void SetElectronEfficiency(Double_t electronEfficiency) { fElectronEfficiency = electronEfficiency; }
     void SetMinP(Double_t p) { fMinP = p; }
     void CalculateTRDSignals(Bool_t docalc) { SetBit(kTRDsignals, docalc); } 
 
@@ -87,6 +88,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
   private:
     static const Double_t fgkVerySmall;                       // Check for 0
     Double_t fMinP;                                         // Minimum momentum above which TRD PID is applied
+    Double_t fElectronEfficiency;                           // Cut on electron efficiency
     PIDMethodTRD_t fPIDMethod;                              // PID Method: 2D Likelihood or Neural Network
     Double_t fThreshParams[kThreshParams];                  // Threshold parametrisation
     AliHFEcollection *fContainer;                                      // QA  Histogram Container

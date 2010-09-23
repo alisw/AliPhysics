@@ -181,13 +181,14 @@ AliESDpid* AliHFEtools::GetDefaultPID(Bool_t isMC){
       alephParameters[4] = 4.88663e+00;
     }
     fgDefaultPID->GetTPCResponse().SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2], alephParameters[3],alephParameters[4]);
+    fgDefaultPID->GetTPCResponse().SetSigma(3.79301e-03, 2.21280e+04);
 
   }
   if(fgLogLevel){
-    printf("Error - You are using the default PID: You should use the PID coming from the tender");
-    printf("Error - Arrrrrrrrr...");
-    printf("Error - Please rethink your program logic. Using default PID is really dangerous");
-    printf("Error - TOF PID is adapted to Monte Carlo");
+    printf("Error - You are using the default PID: You should use the PID coming from the tender\n");
+    printf("Error - Arrrrrrrrr...\n");
+    printf("Error - Please rethink your program logic. Using default PID is really dangerous\n");
+    printf("Error - TOF PID is adapted to Monte Carlo\n");
   }
   return fgDefaultPID;
 }

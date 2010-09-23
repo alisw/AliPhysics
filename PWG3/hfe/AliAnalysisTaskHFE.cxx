@@ -645,7 +645,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   Double_t container[10];
   memset(container, 0, sizeof(Double_t) * 10);
   // container for the output THnSparse
-  Double_t dataE[5]; // [pT, eta, Phi, type, 'C' or 'B']
+  Double_t dataE[6]; // [pT, eta, Phi, type, 'C' or 'B']
   Int_t nElectronCandidates = 0;
   AliESDtrack *track = NULL, *htrack = NULL;
   AliMCParticle *mctrack = NULL;
@@ -810,16 +810,17 @@ void AliAnalysisTaskHFE::ProcessESD(){
     // Fill Containers
     if(signal) {
       // Apply weight for background contamination
-      Double_t weightBackGround = 1.0;
       if(fBackGroundFactorsFunction) {
-	weightBackGround = weightBackGround - fBackGroundFactorsFunction->Eval(TMath::Abs(track->P()));
-	if(weightBackGround < 0.0) weightBackGround = 1.0;
+	      Double_t weightBackGround = fBackGroundFactorsFunction->Eval(TMath::Abs(track->P()));
+	      if(weightBackGround < 0.0) weightBackGround = 0.0;
+        else if(weightBackGround > 1.0) weightBackGround = 0.0;
+        fHadronicBackground->Fill(container, 1, weight * weightBackGround);
       }
       //      
-      fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepPID + 2*AliHFEcuts::kNcutStepsESDtrack,weight*weightBackGround);
-      fCFM->GetParticleContainer()->Fill(&container[5], AliHFEcuts::kStepPID,weight*weightBackGround);
+      fCFM->GetParticleContainer()->Fill(container, AliHFEcuts::kStepPID + 2*AliHFEcuts::kNcutStepsESDtrack, weight);
+      fCFM->GetParticleContainer()->Fill(&container[5], AliHFEcuts::kStepPID, weight);
       if(alreadyseen) {
-        fCFM->GetParticleContainer()->Fill(&container[5], (AliHFEcuts::kStepPID + (AliHFEcuts::kNcutStepsESDtrack)),weight*weightBackGround);
+        fCFM->GetParticleContainer()->Fill(&container[5], (AliHFEcuts::kStepPID + (AliHFEcuts::kNcutStepsESDtrack)),weight);
       }
       // dimensions 3&4&5 : pt,eta,phi (MC)
       ((THnSparseF *)fCorrelation->At(1))->Fill(container);
@@ -1217,7 +1218,7 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
 
   //one "container" for MC
   AliCFContainer* container = new AliCFContainer("trackContainer", "Container for tracks", (AliHFEcuts::kNcutStepsTrack + 2*AliHFEcuts::kNcutStepsESDtrack), kNvar, iBin);
-  fHadronicBackground = new AliCFContainer("hadronicBackground", "Container for hadronic Background", 1, kNvar, iBin);
+  fHadronicBackground = new AliCFContainer("hadronicBackground", "Container for hadronic Background", 2, kNvar, iBin);
 
   //setting the bin limits
   for(Int_t ivar = 0; ivar < kNvar; ivar++){
