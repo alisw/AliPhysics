@@ -59,6 +59,8 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   TCanvas *c0=0x0;
   if(!kNoDraw)c0=new TCanvas("c0","Module Drift Speed",700,1000);
 
+  TGraph *tempvsmod0=new TGraph(0);
+  TGraph *tempvsmod1=new TGraph(0);
   TGraph *vvsmod0=new TGraph(0);
   TGraph *vvsmod1=new TGraph(0);
   TGraph *poldegvsmod0=new TGraph(0); 
@@ -71,6 +73,11 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   TGraph *dveevsmod1=new TGraph(0);
 
   char tit0[100];
+  sprintf(tit0,"Temperature vs. mod. number");
+  if(nrun!=0)sprintf(tit0,"Temperature vs. mod. number - Run %d",nrun);
+  tempvsmod0->SetTitle(tit0);
+  tempvsmod1->SetTitle(tit0);
+
   sprintf(tit0,"Drift Speed vs. mod. number");
   if(nrun!=0)sprintf(tit0,"Drift Speed vs. mod. number - Run %d",nrun);
   vvsmod0->SetTitle(tit0);
@@ -218,6 +225,13 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
       vel1=vdrift1->GetDriftSpeedAtAnode(128);
       pd1=vdrift1->GetDegreeofPoly();
     }
+    Float_t Edrift=(1800-45)/291/0.012;  
+    Float_t mob0=vel0*1.E5/Edrift;  
+    Float_t temper0=293.15*TMath::Power((mob0/1350.),-1/2.4); 
+    Float_t mob1=vel1*1.E5/Edrift;  
+    Float_t temper1=293.15*TMath::Power((mob1/1350.),-1/2.4); 
+    tempvsmod0->SetPoint(tempvsmod0->GetN(),(Float_t)iMod,temper0);
+    tempvsmod1->SetPoint(tempvsmod1->GetN(),(Float_t)iMod,temper1);
     vvsmod0->SetPoint(vvsmod0->GetN(),(Float_t)iMod,vel0);
     vvsmod1->SetPoint(vvsmod1->GetN(),(Float_t)iMod,vel1);
     poldegvsmod0->SetPoint(poldegvsmod0->GetN(),(Float_t)iMod,pd0);
@@ -299,6 +313,18 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   vvsmod1->SetMarkerStyle(21);
   vvsmod1->SetMarkerColor(2);
   vvsmod1->Draw("SAMEP");
+  tleft->Draw();
+  tright->Draw();
+
+  TCanvas* c2t;
+  c2t=new TCanvas("c2t","Temper vs. mod",1000,700);
+  tempvsmod0->SetMarkerStyle(20);
+  tempvsmod0->Draw("AP");
+  tempvsmod0->GetXaxis()->SetTitle("Module Number");
+  tempvsmod0->GetYaxis()->SetTitle("Temperature (K)");
+  tempvsmod1->SetMarkerStyle(21);
+  tempvsmod1->SetMarkerColor(2);
+  tempvsmod1->Draw("SAMEP");
   tleft->Draw();
   tright->Draw();
 
