@@ -1,6 +1,7 @@
+
 //DEFINITION OF A FEW CONSTANTS
 
-AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14")
+AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", int trackType = 0)
 {
   // Creates HighPtQAMC analysis task and adds it to the analysis manager.
   
@@ -29,7 +30,10 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14")
   //Use AliESDtrackCuts
   AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
   //Standard Cuts
-  trackCuts=trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
+  //Set track cuts for global tracks
+  if(trackType==0) trackCuts = trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
+  //Set track cuts for TPConly tracks
+  if(trackType==1) trackCuts = trackCuts->GetStandardTPCOnlyTrackCuts(); 
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
   trackCuts->SetRequireITSRefit(kFALSE);
@@ -42,9 +46,10 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14")
   trackCutsITS->SetRequireITSRefit(kTRUE);
 
   //Create the task
-  AliPWG4HighPtQAMC *taskPWG4QAMC = new AliPWG4HighPtQAMC("AliPWG4HighPtQAMC");
+  AliPWG4HighPtQAMC *taskPWG4QAMC = new AliPWG4HighPtQAMC(Form("AliPWG4HighPtQAMC%d",trackType));
   taskPWG4QAMC->SetCuts(trackCuts);
   taskPWG4QAMC->SetCutsITS(trackCutsITS);
+  taskPWG4QAMC->SetTrackType(trackType);
   if(!strcmp(prodType, "LHC10e14")  || !strcmp(prodType, "PbPb")) taskPWG4QAMC->SetPtMax(500.);
   else taskPWG4QAMC->SetPtMax(100.);
  
@@ -56,10 +61,10 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14")
   //  AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
   printf("Create output containers \n");
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  outputfile += ":PWG4_HighPtQAMC"; 
-  //char *outputfile = "outputAliPWG4HighPtQAMCTestTrain.root";
-  AliAnalysisDataContainer *cout_hist0 = mgr->CreateContainer("qa_histsMC", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-  AliAnalysisDataContainer *cout_hist2 = mgr->CreateContainer("qa_histsMCITS", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
+  outputfile += Form(":PWG4_HighPtQAMC%d",trackType);
+  
+  AliAnalysisDataContainer *cout_hist0 = mgr->CreateContainer(Form("qa_histsMC%d",trackType), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *cout_hist2 = mgr->CreateContainer(Form("qa_histsMCITS%d",trackType), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
 
   mgr->AddTask(taskPWG4QAMC);
   mgr->ConnectInput(taskPWG4QAMC,0,mgr->GetCommonInputContainer());

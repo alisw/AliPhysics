@@ -30,7 +30,6 @@ class TList;
 class AliESDEvent;
 class AliESDfriend;
 class AliESDfriendTrack;
-class AliMCEvent;
 class AliVEvent;
 class AliESDtrackCuts;
 class AliESDtrack;
@@ -66,7 +65,6 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
 
   AliESDEvent *fESD;              //! ESD object
   AliESDfriend *fESDfriend;       //! ESD friend object
-  AliMCEvent *fMC;                //! MC event object
   Int_t fCutType;                 // Cut Type set in AddTask*
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global vs TPConly comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit

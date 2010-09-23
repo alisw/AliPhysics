@@ -596,7 +596,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
    if(iPWG4PtQAMC){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQAMC.C");
-     AliPWG4HighPtQAMC *taskQAMC = AddTaskPWG4HighPtQAMC(kGridDataSet.Data());
+     AliPWG4HighPtQAMC *taskQAMC = AddTaskPWG4HighPtQAMC(kGridDataSet.Data(),0);
+     if(kUseMC)taskQAMC = AddTaskPWG4HighPtQAMC(kGridDataSet.Data());
      if (!taskQAMC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQAMC cannot run for this train conditions - EXCLUDED");
    }
 

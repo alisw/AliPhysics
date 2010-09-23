@@ -48,11 +48,7 @@
 #include "AliLog.h"
 //#include "AliAnalysisHelperJetTasks.h"
 
-#include "AliStack.h"
-#include "TParticle.h"
 #include "TH1I.h"
-#include "AliMCEvent.h"
-#include "AliMCEventHandler.h"
 
 using namespace std; //required for resolving the 'cout' symbol
 
@@ -61,7 +57,6 @@ ClassImp(AliPWG4HighPtQATPConly)
 AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPtQATPConly", ""), 
   fESD(0), 
   fESDfriend(0), 
-  fMC(0),
   fCutType(1),
   fTrackCuts(0), 
   fTrackCutsITS(0),
@@ -152,7 +147,6 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   AliAnalysisTask(name, ""), 
   fESD(0),
   fESDfriend(0), 
-  fMC(0),
   fCutType(1),  
   fTrackCuts(),
   fTrackCutsITS(),
@@ -280,14 +274,7 @@ void AliPWG4HighPtQATPConly::ConnectInputData(Option_t *)
     return;
   } else
     fESD = esdH->GetEvent();
-  
- AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
- if (!eventHandler) {
-    AliDebug(2,Form( "ERROR: Could not retrieve MC event handler \n"));
-  }
-  else
-    fMC = eventHandler->MCEvent();
-
+ 
   fESDfriend = esdH->GetESDfriend();
 
 }
@@ -852,24 +839,6 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
      PostData(2, fHistListITS);
     return;
   }
-
-  AliStack* stack = 0x0;
-  
-  if(fMC) {
-    AliDebug(2,Form("MC particles: %d", fMC->GetNumberOfTracks()));
-    
-    stack = fMC->Stack();                //Particles Stack
-    
-    AliDebug(2,Form("MC particles stack: %d", stack->GetNtrack()));
-  }
-  else {
-      AliDebug(2,Form("ERROR: Could not retrieve MC event"));
-      PostData(0, fHistList);
-      PostData(1, fHistListTPC);
-      PostData(2, fHistListITS);
-      return;
-    }
-      
 
   const AliESDVertex *vtx = fESD->GetPrimaryVertexTracks();
   // Need vertex cut
