@@ -1402,26 +1402,30 @@ Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
   TH1 *h, *h1, *h2;
   TObjArray *arr = (TObjArray*)fContainer->FindObject("<PH>");
   h = (TH1F*)arr->At(0);
-  h->SetMarkerStyle(24);
-  h->SetMarkerColor(kBlack);
-  h->SetLineColor(kBlack);
-  h->GetYaxis()->SetTitleOffset(1.5);
-  h->Draw("e1");
-  // Trending for the pulse height: plateau value, slope and timebin of the maximum
-  TLinearFitter fit(1,"pol1");
-  Double_t time = 0.;
-  for(Int_t itime = 10; itime <= 20; itime++){
-    time = static_cast<Double_t>(itime);
-    fit.AddPoint(&time, h->GetBinContent(itime + 1), h->GetBinError(itime + 1));
+  if((Int_t)h->GetEntries()){
+    h->SetMarkerStyle(24);
+    h->SetMarkerColor(kBlack);
+    h->SetLineColor(kBlack);
+    h->GetYaxis()->SetTitleOffset(1.5);
+    h->Draw("e1");
+    // Trending for the pulse height: plateau value, slope and timebin of the maximum
+    TLinearFitter fit(1,"pol1");
+    Double_t time = 0.;
+    for(Int_t itime = 10; itime <= 20; itime++){
+      time = Double_t(itime);
+      Double_t err(h->GetBinError(itime + 1));
+      if(err>1.e-10) fit.AddPoint(&time, h->GetBinContent(itime + 1), err);
+    }
+    if(!fit.Eval()){
+      Double_t plateau = fit.GetParameter(0) + 12 * fit.GetParameter(1);
+      Double_t slope = fit.GetParameter(1);
+      PutTrendValue("PHplateau", plateau);
+      PutTrendValue("PHslope", slope);
+      PutTrendValue("PHamplificationPeak", static_cast<Double_t>(h->GetMaximumBin()-1));
+      AliDebug(1, Form("plateau %f, slope %f, MaxTime %f", plateau, slope, static_cast<Double_t>(h->GetMaximumBin()-1)));
+    }
   }
-  fit.Eval();
-  Double_t plateau = fit.GetParameter(0) + 12 * fit.GetParameter(1);
-  Double_t slope = fit.GetParameter(1);
-  PutTrendValue("PHplateau", plateau);
-  PutTrendValue("PHslope", slope);
-  PutTrendValue("PHamplificationPeak", static_cast<Double_t>(h->GetMaximumBin()-1));
-  AliDebug(1, Form("plateau %f, slope %f, MaxTime %f", plateau, slope, static_cast<Double_t>(h->GetMaximumBin()-1)));
-//   copy the second histogram in a new one with the same x-dimension as the phs with respect to time
+  //   copy the second histogram in a new one with the same x-dimension as the phs with respect to time
   h1 = (TH1F *)arr->At(1);
   h2 = new TH1F("hphs1","Average PH", 31, -0.5, 30.5);
   for(Int_t ibin = h1->GetXaxis()->GetFirst(); ibin < h1->GetNbinsX(); ibin++) 
@@ -1431,6 +1435,7 @@ Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
   h2->SetLineColor(kBlue);
   h2->Draw("e1same");
   gPad->Update();
+  
 //   create axis according to the histogram dimensions of the original second histogram
   TGaxis *axis = new TGaxis(gPad->GetUxmin(),
                     gPad->GetUymax(),
