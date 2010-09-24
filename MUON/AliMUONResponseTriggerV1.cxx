@@ -100,6 +100,7 @@ void AliMUONResponseTriggerV1::SetParameters(Float_t hv)
 {
 /// initialize parameters accoring to HV
 /// (see V.Barret B.Espagnon and P.Rosnet Alice/note xxx)
+/// this parametrisation is valid only for the "streamer" mode
   fA = 6.089 * hv - 52.70;
   fB = 2.966;
   fC = 4.3e-4 * hv - 3.5e-3;
@@ -120,6 +121,7 @@ const
 /// parametrisation of the probability that a strip neighbour of the main 
 /// strip is fired (V.Barret B.Espagnon and P.Rosnet INT/DIM/01-04 (2001)
 /// WARNING : need to convert x4 from cm to mm
+/// this parametrisation is valid only for the "streamer" mode
 
  return 
      (TMath::Cos(theta)*fA/(fA+TMath::Cos(theta)*TMath::Power(x4*10.,fB))+fC)/
@@ -136,7 +138,7 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
   
   Float_t xhit = hit.X();
   Float_t yhit = hit.Y();
-  Float_t zhit = 0; // FIXME : should it be hit.Z() ?
+  Float_t zhit = hit.Z();
   Int_t detElemId = hit.DetElemId();  
   
   Double_t x,y,z;
@@ -161,6 +163,17 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
     Int_t ix = pad.GetIx();
     Int_t iy = pad.GetIy();
     
+    AliDebug(1,Form("xhit,yhit=%e,%e lx,ly,lz=%e,%e,%e ix,iy=%d,%d",
+                    xhit,yhit,x,y,z,ix,iy));
+    
+    if ( !pad.IsValid() )
+    {
+      AliWarning(Form("hit w/o strip %d-%d xhit,yhit=%e,%e local x,y,z "
+                      "%e,%e,%e ix,iy=%d,%d",detElemId,
+                      cath,
+                      xhit,yhit,x,y,z,ix,iy));
+      continue;
+    }
     AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocalBoardId(0),
                                        pad.GetLocalBoardChannel(0),
                                        cath);
