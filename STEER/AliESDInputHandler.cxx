@@ -136,7 +136,7 @@ void AliESDInputHandler::CheckSelectionMask()
 {
 // This method can be called by a task only if IsUserCallSelectionMask is true.
    if (!fEventCuts || !IsUserCallSelectionMask()) return;
-   fEventCuts->GetSelectionMask((AliESDEvent*)fEvent);
+   fIsSelectedResult = fEventCuts->GetSelectionMask((AliESDEvent*)fEvent);
 }
    
 //______________________________________________________________________________
