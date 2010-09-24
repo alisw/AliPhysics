@@ -479,7 +479,7 @@ void AliAnalysisManager::PackOutput(TList *target)
       while ((output=(AliAnalysisDataContainer*)next())) {
          // Do not consider outputs of post event loop tasks
          isManagedByHandler = kFALSE;
-         if (output->GetProducer()->IsPostEventLoop()) continue;
+         if (output->GetProducer() && output->GetProducer()->IsPostEventLoop()) continue;
          const char *filename = output->GetFileName();
          if (!(strcmp(filename, "default")) && fOutputEventHandler) {
             isManagedByHandler = kTRUE;
