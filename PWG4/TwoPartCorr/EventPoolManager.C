@@ -15,7 +15,7 @@ void GenericEventPool::PrintInfo() const
   return;
 }
 
-Bool_t GenericEventPool::EventMatchesBin(Int_t mult, Short_t zvtx) const
+Bool_t GenericEventPool::EventMatchesBin(Int_t mult, Double_t zvtx) const
 {
   // N.B. Lower bin limit included; upper limit excluded.
 
@@ -40,7 +40,7 @@ Int_t GenericEventPool::SetEventMultRange(Int_t multMin, Int_t multMax)
   return 0;
 }
 
-Int_t GenericEventPool::SetEventZvtxRange(Int_t zvtxMin, Int_t zvtxMax)
+Int_t GenericEventPool::SetEventZvtxRange(Double_t zvtxMin, Double_t zvtxMax)
 {
   fZvtxMin = zvtxMin;
   fZvtxMax = zvtxMax;
@@ -59,9 +59,6 @@ Int_t GenericEventPool::UpdatePool(Int_t iEvent, const MyHeader *ev, TObjArray *
     return -1;
   }
 
-  fMult = mult;
-  fZvtx = zvtx;
-
   // Should see evsize = trsize (= fMixDepth once full).
   Int_t evsize = fEvents.size();
   Int_t ntsize = fNTracksInEvent.size();
@@ -76,9 +73,10 @@ Int_t GenericEventPool::UpdatePool(Int_t iEvent, const MyHeader *ev, TObjArray *
   if (evsize == fMixDepth - 1) 
     firstReachedCapacity = true;
 
-  // Remove 0th element before appending this event
+  // remove 0th element before appending this event
   if (evsize >= fMixDepth) {
     TObjArray *fa = fEvents.front();
+    fa->Delete();
     delete fa;
     fEvents.pop_front();         // remove first track array 
     fNTracksInEvent.pop_front(); // remove first int
@@ -117,6 +115,13 @@ TObject* GenericEventPool::GetRandomTrack() const
   return trk;
 }
 
+TObjArray* GenericEventPool::GetRandomEvent() const
+{
+  UInt_t ranEvt = gRandom->Integer(fEvents.size());
+  TObjArray *tca = fEvents.at(ranEvt);
+  return tca;
+}
+
 Int_t GenericEventPool::NTracksInEvent(Int_t iEvent) const
 {
   Int_t n = -1;
@@ -140,7 +145,7 @@ Int_t GenericEventPool::NTracksInEvent(Int_t iEvent) const
 ClassImp(EventPoolManager)
 
 Int_t EventPoolManager::InitEventPools(Int_t depth, 
-                                       Int_t nMultBins, Double_t *multbin, 
+                                       Int_t nMultBins, Int_t *multbin, 
                                        Int_t nZvtxBins, Double_t *zvtxbin)
 {
   // First assign EventPoolManager members
