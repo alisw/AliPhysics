@@ -135,6 +135,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(cutset==1) dEdx = track->GetITSsignal();
 	    FillHisto2D(Form("dEdxDataAll%s",cutName->Data()),track->P(),dEdx,1.0);
 
+	    //if(!(corrections->GetEfficiencyPionTPC())) cerr<<"Uh-oh!  No histogram!"<<endl;
+
 	    Float_t corrBkgd=0.0;
 	    Float_t corrNotID=0.0;
 	    Float_t corrNoID = corrections->GetNotIDCorrectionNoPID(track->Pt());
@@ -142,7 +144,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    Float_t corrEffNoID = 0.0;
 	    if(cutset==0){//TPC
 	      corrBkgd = corrections->GetBackgroundCorrectionTPC(track->Pt());
-	      //corrEffNoID = corrections->GetTPCEfficiencyCorrectionHadron(track->Pt());
+	      corrEffNoID = corrections->GetTPCEfficiencyCorrectionHadron(track->Pt());
 	      corrNotID = corrections->GetNotIDCorrectionTPC(track->Pt());
 	    }
 	    if(cutset==1){//ITS
@@ -158,7 +160,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(isPion){
 	      FillHisto2D(Form("dEdxDataPion%s",cutName->Data()),track->P(),dEdx,1.0);
 	      et = Et(track->P(),track->Theta(),fPiPlusCode,track->Charge());
-	      //if(cutset==0){corrEff = corrections->GetTPCEfficiencyCorrectionPion(track->Pt());}
+	      if(cutset==0){corrEff = corrections->GetTPCEfficiencyCorrectionPion(track->Pt());}
 	      //else{corrEff = corrections->GetITSEfficiencyCorrectionPion(track->Pt());}
 	      etpartialcorrected = et*corrBkgd*corrEff;
 	      
@@ -174,7 +176,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(isKaon){
 	      FillHisto2D(Form("dEdxDataKaon%s",cutName->Data()),track->P(),dEdx,1.0);
 	      et = Et(track->P(),track->Theta(),fKPlusCode,track->Charge());
-	      //if(cutset==0){corrEff = corrections->GetTPCEfficiencyCorrectionKaon(track->Pt());}
+	      if(cutset==0){corrEff = corrections->GetTPCEfficiencyCorrectionKaon(track->Pt());}
 	      //else{corrEff = corrections->GetITSEfficiencyCorrectionKaon(track->Pt());}
 	      etpartialcorrected = et*corrBkgd*corrEff;
 	      
@@ -190,7 +192,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(isProton){
 	      FillHisto2D(Form("dEdxDataProton%s",cutName->Data()),track->P(),dEdx,1.0);
 	      et = Et(track->P(),track->Theta(),fProtonCode,track->Charge());
-	      //if(cutset==0){corrEff = corrections->GetTPCEfficiencyCorrectionProton(track->Pt());}
+	      if(cutset==0){corrEff = corrections->GetTPCEfficiencyCorrectionProton(track->Pt());}
 	      //else{corrEff = corrections->GetITSEfficiencyCorrectionProton(track->Pt());}
 	      etpartialcorrected = et*corrBkgd*corrEff;
 	      

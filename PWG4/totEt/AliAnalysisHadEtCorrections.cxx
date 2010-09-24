@@ -207,3 +207,51 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
 //   fBackgroundTPC = g->fBackgroundTPC;
 //   fBackgroundITS = g->fBackgroundITS;
 // }
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionPion(const float pT){
+  if(!fEfficiencyPionTPC){cerr<<"No histogram fEfficiencyPionTPC!"<<endl; return -1.0;}
+  float eff = fEfficiencyPionTPC->GetBinContent(fEfficiencyPionTPC->FindBin(pT));
+  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  return 1.0/eff;
+}
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionKaon(const float pT){
+  if(!fEfficiencyKaonTPC){cerr<<"No histogram fEfficiencyKaonTPC!"<<endl; return -1.0;}
+  float eff = fEfficiencyKaonTPC->GetBinContent(fEfficiencyKaonTPC->FindBin(pT));
+  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  return 1.0/eff;
+}
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionProton(const float pT){
+  if(!fEfficiencyProtonTPC){cerr<<"No histogram fEfficiencyProtonTPC!"<<endl; return -1.0;}
+  float eff = fEfficiencyProtonTPC->GetBinContent(fEfficiencyProtonTPC->FindBin(pT));
+  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  return 1.0/eff;
+}
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionHadron(const float pT){
+  if(!fEfficiencyHadronTPC){cerr<<"No histogram fEfficiencyHadronTPC!"<<endl; return -1.0;}
+  float eff = fEfficiencyHadronTPC->GetBinContent(fEfficiencyHadronTPC->FindBin(pT));
+  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  return 1.0/eff;
+}
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionPion(const float pT){
+  if(!fEfficiencyPionITS){cerr<<"No histogram fEfficiencyPionITS!"<<endl; return -1.0;}
+  float eff = fEfficiencyPionITS->GetBinContent(fEfficiencyPionITS->FindBin(pT));
+  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  return 1.0/eff;
+}
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionKaon(const float pT){
+  if(!fEfficiencyKaonITS){cerr<<"No histogram fEfficiencyKaonITS!"<<endl; return -1.0;}
+  float eff = fEfficiencyKaonITS->GetBinContent(fEfficiencyKaonITS->FindBin(pT));
+  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  return 1.0/eff;
+}
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionProton(const float pT){
+  if(!fEfficiencyProtonITS){cerr<<"No histogram fEfficiencyProtonITS!"<<endl; return -1.0;}
+  float eff = fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT));
+  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  return 1.0/eff;
+}
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionHadron(const float pT){
+  if(!fEfficiencyHadronITS){cerr<<"No histogram fEfficiencyHadronITS!"<<endl; return -1.0;}
+  float eff = fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT));
+  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  return 1.0/eff;
+}
