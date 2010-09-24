@@ -110,6 +110,7 @@ protected:
     Int_t fAntiNeutronCode;//pdg anti-neutron code
     Int_t fEPlusCode;//pdg positron code
     Int_t fEMinusCode;//pdg electron code
+    Int_t fGammaCode; // pdg gamma code
     Float_t fPionMass;//pdg pion mass
 
     Double_t fTotEt;/** Total Et in the event (without acceptance cuts) */    
@@ -133,24 +134,39 @@ protected:
     Double_t fMesonEtAcc; /** Et of identified mesons in calorimeter acceptance */
     
     Double_t fProtonEt; /** Et of identified protons */
+    Double_t fPionEt; /** Et of identified pions */
     Double_t fChargedKaonEt; /** Et of identified charged kaons */
     Double_t fMuonEt; /** Et of identified muons */
     Double_t fElectronEt; /** Et of identified electrons */
-    
+    Double_t fNeutronEt; /** Et of neutrons (MC only for now) */
+    Double_t fAntiNeutronEt; /** Et of anti-neutrons (MC only for now) */
+    Double_t fGammaEt; /** Et of identified electrons (MC only for now) */
+   
     Double_t fProtonEtAcc; /** Et of identified protons in calorimeter acceptance */    
+    Double_t fPionEtAcc; /** Et of identified pions in calorimeter acceptance */    
     Double_t fChargedKaonEtAcc; /** Et of identified charged kaons in calorimeter acceptance */    
     Double_t fMuonEtAcc; /** Et of identified muons in calorimeter acceptance */
     Double_t fElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
         
     Double_t fEtaCut;/** Cut in eta (standard |eta| < 0.5 )*/
 
-    Double_t fEtaCutAcc;/** Eta cut for our acceptance */
-    Double_t fPhiCutAccMin; /** Min phi cut for our acceptance in radians */    
-    Double_t fPhiCutAccMax; /** Max phi cut for our acceptance in radians */
-    Double_t fDetectorRadius; /** Detector radius */
+    /** Eta cut for our acceptance */
+    Double_t fEtaCutAcc; // Eta cut for our acceptance
     
-    Double_t fClusterEnergyCut; /** Cut on the cluster energy */    
-    Double_t fSingleCellEnergyCut;  /** Minimum energy to cut on single cell cluster */
+    /** Min phi cut for our acceptance in radians */    
+    Double_t fPhiCutAccMin; // Min phi cut for our acceptance in radians     
+    
+    /** Max phi cut for our acceptance in radians */
+    Double_t fPhiCutAccMax; // Max phi cut for our acceptance in radians 
+    
+    /** Detector radius */
+    Double_t fDetectorRadius; // Detector radius 
+    
+    /** Cut on the cluster energy */    
+    Double_t fClusterEnergyCut; // Cut on the cluster energy 
+    
+    /** Minimum energy to cut on single cell cluster */
+    Double_t fSingleCellEnergyCut;  // Minimum energy to cut on single cell cluster
 
     // Declare the histograms
 
@@ -195,11 +211,16 @@ protected:
     TH1F *fHistMesonEtAcc; /** Et of identified mesons in calorimeter acceptance */
 
     TH1F *fHistProtonEt; /** Et of identified protons */
+    TH1F *fHistPionEt; /** Et of identified protons */
     TH1F *fHistChargedKaonEt; /** Et of identified charged kaons */
     TH1F *fHistMuonEt; /** Et of identified muons */
     TH1F *fHistElectronEt; /** Et of identified electrons */
+    TH1F *fHistNeutronEt; /** Et of neutrons (MC only for now) */
+    TH1F *fHistAntiNeutronEt; /** Et of anti-neutrons (MC only for now) */
+    TH1F *fHistGammaEt; /** Et of gammas (MC only for now) */
     
     TH1F *fHistProtonEtAcc; /** Et of identified protons in calorimeter acceptance */    
+    TH1F *fHistPionEtAcc; /** Et of identified protons in calorimeter acceptance */    
     TH1F *fHistChargedKaonEtAcc; /** Et of identified charged kaons in calorimeter acceptance */    
     TH1F *fHistMuonEtAcc; /** Et of identified muons in calorimeter acceptance */
     TH1F *fHistElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
@@ -210,7 +231,6 @@ protected:
     TH1F *fHistTMDeltaR; /* Track matching plots */
 
     TTree *fTree; // optional TTree
-    
 
     AliESDtrackCuts* fEsdtrackCutsTPC;//esd track cuts for TPC tracks (which may also contain ITS hits)
 

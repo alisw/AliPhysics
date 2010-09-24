@@ -115,8 +115,19 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	       )
             {
                 particleMassPart = -TMath::Sign(pdgCode->PdgCode(), pdgCode->PdgCode())*pdgCode->Mass();
-            }
-            
+	    }
+	    if(pdgCode->PdgCode() == fNeutronCode)
+	    {
+	      fNeutronEt += part->Energy()*TMath::Sin(part->Theta()) - pdgCode->Mass();
+	    }
+            if(pdgCode->PdgCode() == fAntiNeutronCode)
+	    {
+	      fAntiNeutronEt += part->Energy()*TMath::Sin(part->Theta()) + pdgCode->Mass();
+	    }
+	    if(pdgCode->PdgCode() == fGammaCode)
+	    {
+	      fGammaEt += part->Energy()*TMath::Sin(part->Theta());
+	    }
             if (pdgCode->Charge() == fCuts->GetMonteCarloNeutralParticle() )
             {
 	       fNeutralMultiplicity++;

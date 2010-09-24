@@ -56,9 +56,10 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     Double_t protonMass = fPdgDB->GetParticle("proton")->Mass();
 
     //for PID
-    AliESDpid *pID = new AliESDpid();
-    pID->MakePID(event);
+    AliESDpid pID;
+    pID.MakePID(event);
     TObjArray* list = fEsdtrackCutsTPC->GetAcceptedTracks(event);
+
     Int_t nGoodTracks = list->GetEntries();
     // printf("nGoodTracks %d nCaloClusters %d\n", nGoodTracks, event->GetNumberOfCaloClusters());
 
@@ -75,10 +76,10 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
 
 	Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
-	nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
-	nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
-	nSigmaKaon = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kKaon));
-	nSigmaElectron = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kElectron));
+	nSigmaPion = TMath::Abs(pID.NumberOfSigmasTPC(track,AliPID::kPion));
+	nSigmaProton = TMath::Abs(pID.NumberOfSigmasTPC(track,AliPID::kProton));
+	nSigmaKaon = TMath::Abs(pID.NumberOfSigmasTPC(track,AliPID::kKaon));
+	nSigmaElectron = TMath::Abs(pID.NumberOfSigmasTPC(track,AliPID::kElectron));
 	/*
 	bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
 	bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
@@ -122,9 +123,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             fChargedMultiplicity++;
 	    if (maxpid != -1)
             {
-                if (maxpid == AliPID::kPion)
+                if (maxpid == AliPID::kProton)
                 {
                     fProtonEt += et;
+                }
+                if (maxpid == AliPID::kPion)
+                {
+                    fPionEt += et;
                 }
                 if (maxpid == AliPID::kKaon)
                 {
@@ -145,9 +150,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                 fTotChargedEtAcc += track->E()*TMath::Sin(track->Theta()) + massPart;
 		if (maxpid != -1)
                 {
-                    if (maxpid == AliPID::kPion)
+                    if (maxpid == AliPID::kProton)
                     {
                         fProtonEtAcc += et;
+                    }
+                    if (maxpid == AliPID::kPion)
+                    {
+                        fPionEtAcc += et;
                     }
                     if (maxpid == AliPID::kKaon)
                     {
@@ -175,7 +184,6 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	  else fHistPhivsPtNeg->Fill(phi, pt);
         }
       }
-    delete pID;
 
     for (Int_t iCluster = 0; iCluster < event->GetNumberOfCaloClusters(); iCluster++)
     {
@@ -225,23 +233,33 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                     }
                     if(maxpidweight > fPidCut)
 		    {
+		      Float_t dist = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
+
+		      Float_t theta = TMath::ATan(pos[2]/dist)+TMath::Pi()/2;
+
+		       Float_t et = cluster->E() * TMath::Sin(theta);
 		       if(maxpid == AliPID::kProton)
 		       {
+			 
 			  if(track->Charge() == 1)
 			  {
+			    fBaryonEt += et;
 			     fHistProtonEnergyDeposit->Fill(cluster->E(), track->E());
 			  }
 			  else if(track->Charge() == -1)
 			  {
+			    fAntiBaryonEt += et;
 			     fHistAntiProtonEnergyDeposit->Fill(cluster->E(), track->E());
 			  }
 		       }
 		       else if(maxpid == AliPID::kPion)
 		       {
+			 fMesonEt += et;
 			  fHistChargedPionEnergyDeposit->Fill(cluster->E(), track->E());
 		       }
 		       else if(maxpid == AliPID::kKaon)
 		       {
+			 fMesonEt += et;
 			  fHistChargedKaonEnergyDeposit->Fill(cluster->E(), track->E());
 		       }   
 		       else if(maxpid == AliPID::kMuon)
