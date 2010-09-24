@@ -1857,7 +1857,7 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   // use TPC-ITS if present
   TGraphErrors *gr= (TGraphErrors*)array->FindObject("ALIGN_ITSB_TPC_VDGY");
   if(gr) { 
-    result = (gr->Eval(timeStamp));
+    result = AliTPCcalibDButil::EvalGraphConst(gr,timeStamp);
 
     // transform from [(cm/mus)/ m] to [1/cm]
     result /= (fParam->GetDriftV()/1000000.);
