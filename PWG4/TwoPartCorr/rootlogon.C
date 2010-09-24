@@ -1,5 +1,5 @@
 {
-  if (0) {
+  if (1) {
     cout << "Loading " << gSystem->Getenv("PWD") 
          << "/rootlogon.C" << endl;
     cout << "Using ROOT version " 
@@ -21,7 +21,7 @@
   gROOT->LoadMacro("AutoCorr.C+g");
   if (0) {
     gROOT->LoadMacro("EventPoolManager.C+g");
-    gROOT->LoadMacro("anaCorr+g");
+    gROOT->LoadMacro("anaCorr.C+g");
   }
 }
 

@@ -15,14 +15,12 @@
 
 void anaCorr(const char *inFileNames,
              Int_t    nEvents=-1,
-             Int_t    nmin=10,
-             Int_t    nmax=100,
-             Double_t vzmin=-8,
-             Double_t vzmax=+8,
-             Int_t    vzbins=8,
+             Double_t vzmin=-10,
+             Double_t vzmax=+10,
+             Int_t    vzbins=40,
              Int_t    vcmin=10,
-             Int_t    psize=100,
-             Double_t nmix=10,
+             Int_t    vcmax=500,
+             Int_t    psize=5,
              Double_t ptmin=0.4, 
              Double_t ptmax=10, 
              Double_t etamin=-1.4, 
@@ -52,19 +50,21 @@ protected:
 
 void anaCorr(const char *inFileNames,
              Int_t    nEvents,
-             Int_t    nmin,
-             Int_t    nmax,
              Double_t vzmin,
              Double_t vzmax,
              Int_t    vzbins,
              Int_t    vcmin,
+             Int_t    vcmax,
              Int_t    psize,
-             Double_t nmix,
              Double_t ptmin,
              Double_t ptmax,
              Double_t etamin,
              Double_t etamax)
 {
+  Bool_t doExclCut = 0;
+  Double_t dpmax = 0.03;
+  Double_t demax = 0.01;
+
   Noti *nme = new Noti;
   TChain *tree = new TChain("MyTree");
   tree->Add(inFileNames);
@@ -89,26 +89,35 @@ void anaCorr(const char *inFileNames,
   TBranch      *hBranch = 0;
   TBranch      *tBranch = 0;
 
-  Double_t *multbinsa = new Double_t[2]; multbinsa[0] = nmin;  multbinsa[1] = nmax; 
+  Int_t multbinsa[] = {1,2,3,5,10,20,30,40,50,60,70,80,90,100,120,150,200,500};
+  Int_t multbins=17;
+  Double_t *multbinsa2 = new Double_t[multbins];
+  for(Int_t i=0;i<multbins;++i) {
+    multbinsa2[i] = multbinsa[i];
+  }
+
+  TH1F* hMultBins = new TH1F("hMultBins", "Event multiplicity binning", 
+			     multbins-1, multbinsa2);
   Double_t *vzbinsa = new Double_t[vzbins+1];
   Double_t vzbinwidth = Double_t(vzmax-vzmin)/vzbins;
   for(Int_t i=0;i<vzbins+1;++i) {
     vzbinsa[i] = vzmin+i*vzbinwidth;
   }
-  TH1F* hMultBins = new TH1F("hMultBins", "Event multiplicity binning", 
-			     1, multbinsa);
   TH1F* hZvtxBins = new TH1F("hZvtxBins", "Event Z-vertex binning", 
 			     vzbins, vzbinsa);
 
-
   EventPoolManager *pm = new EventPoolManager;
-  pm->InitEventPools(psize, 1, multbinsa, vzbins, vzbinsa);
+  pm->InitEventPools(psize, multbins, multbinsa, vzbins, vzbinsa);
 
-  TH2F *hSig = new TH2F("hSig",";#Delta#eta;#Delta#phi",60,-3,3,64,-TMath::Pi()/2,3*TMath::Pi()/2);
-  TH2F *hBkg = new TH2F("hBgk",";#Delta#eta;#Delta#phi",60,-3,3,64,-TMath::Pi()/2,3*TMath::Pi()/2);
 
-  Double_t dpmax = 0.03;
-  Double_t demax = 0.01;
+  TH2F **hSig = new TH2F*[multbins];
+  TH2F **hBkg = new TH2F*[multbins];
+  TH1F **hMul = new TH1F*[multbins];
+  for (Int_t i = 0; i<multbins; ++i) {
+    hSig[i] = new TH2F(Form("hSig%d",i),";#Delta#eta;#Delta#phi",60,-3,3,64,-TMath::Pi()/2,3*TMath::Pi()/2);
+    hBkg[i] = new TH2F(Form("hBgk%d",i),"#;Delta#eta;#Delta#phi",60,-3,3,64,-TMath::Pi()/2,3*TMath::Pi()/2);
+    hMul[i] = new TH1F(Form("hMul%d",i),"#;sel tracks",500,0,500);
+  }
 
   for (Int_t i=0;i<nents;++i) {
     Int_t li = tree->LoadTree(i);
@@ -127,24 +136,26 @@ void anaCorr(const char *inFileNames,
         (header->fVz>vzmax) )
       continue;
     if ((header->fVc<vcmin) ||
-        (header->fVc>nmax) )
+        (header->fVc>vcmax) )
       continue;
 
     tBranch->GetEntry(li);
     Int_t ntracks = tracks->GetEntries();
     TClonesArray *seltracks = new TClonesArray("MyPart",ntracks);
     Int_t nseltracks = 0;
-    for (Int_t t1=0;t1<ntracks;++t1) {
-      MyPart *part1 = (MyPart*)tracks->At(t1);
-      if (!InBounds(part1->fPt,ptmin,ptmax))
+    for (Int_t t=0;t<ntracks;++t) {
+      MyPart *part = (MyPart*)tracks->At(t);
+      if (part->IsITSRefit() && !part->IsTPCRefit())
         continue;
-      if (!InBounds(part1->fEta,etamin,etamax))
+      if (!InBounds(part->fPt,ptmin,ptmax))
         continue;
-      if (TMath::Abs(part1->fD)>3)
+      if (!InBounds(part->fEta,etamin,etamax))
         continue;
-      if (TMath::Abs(part1->fZ)>3)
+      if (TMath::Abs(part->fD)>0.3)
         continue;
-      new((*seltracks)[nseltracks]) MyPart(*part1);
+      if (TMath::Abs(part->fZ)>0.3)
+        continue;
+      new((*seltracks)[nseltracks]) MyPart(*part);
       ++nseltracks;
     }
 
@@ -156,28 +167,73 @@ void anaCorr(const char *inFileNames,
     }
 
     if (pool->IsReady()) {
-      cout << "Working on event " << i << " from " << header->fRun << endl;
+      if (i%100==0)
+        cout << "Working on event " << i << " from " << header->fRun << endl;
 
+      hMul[mBin]->Fill(nseltracks);
+
+      Int_t sigpairs = 0; // count pairs
       for (Int_t t1=0;t1<nseltracks;++t1) {
         MyPart *part1 = (MyPart*)seltracks->At(t1);
         for (Int_t t2=t1+1;t2<nseltracks;++t2) {
           MyPart *part2 = (MyPart*)seltracks->At(t2);
-
           Double_t dphi = DeltaPhi(*part1,*part2);
           Double_t deta = DeltaEta(*part1,*part2);
-          Double_t dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
-          if(dr>1)
-            hSig->Fill(deta,dphi);
+          Double_t dr = 1e10;
+          if (doExclCut)
+            dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
+          if(dr>1) {
+            ++sigpairs;
+          }
+        }
+      }
+      Double_t weight = 1./sigpairs;
+      for (Int_t t1=0;t1<nseltracks;++t1) {
+        MyPart *part1 = (MyPart*)seltracks->At(t1);
+        for (Int_t t2=t1+1;t2<nseltracks;++t2) {
+          MyPart *part2 = (MyPart*)seltracks->At(t2);
+          Double_t dphi = DeltaPhi(*part1,*part2);
+          Double_t deta = DeltaEta(*part1,*part2);
+          Double_t dr = 1e10;
+          if (doExclCut)
+            dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
+          if(dr>1) {
+            ++sigpairs;
+            hSig[mBin]->Fill(deta,dphi,weight);
+          }
+        }
+      }
 
-          Int_t mtracks = nmix;
-          for (Int_t t3=0;t3<mtracks;) {
-            MyPart *part2 = (MyPart*)pool->GetRandomTrack();
-            Double_t dphi = DeltaPhi(*part1,*part2);
-            Double_t deta = DeltaEta(*part1,*part2);
-            Double_t dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
-            if(dr>1)
-              hBkg->Fill(deta,dphi);
-            ++t3;
+      TObjArray *mseltracks = pool->GetRandomEvent();
+      Int_t nmseltracks = mseltracks->GetEntries();
+      Int_t mixpairs = 0; // count mix pairs
+      for (Int_t t1=0;t1<nseltracks;++t1) {
+        MyPart *part1 = (MyPart*)seltracks->At(t1);
+        for (Int_t t2=1;t2<nmseltracks;++t2) {
+          MyPart *part2 = (MyPart*)mseltracks->At(t2);
+          Double_t dphi = DeltaPhi(*part1,*part2);
+          Double_t deta = DeltaEta(*part1,*part2);
+          Double_t dr = 1e10;
+          if (doExclCut)
+            dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
+          if(dr>1) {
+            ++mixpairs;
+          }
+        }
+      }
+      Double_t weight2 = 1./mixpairs;
+      for (Int_t t1=0;t1<nseltracks;++t1) {
+        MyPart *part1 = (MyPart*)seltracks->At(t1);
+        for (Int_t t2=1;t2<nmseltracks;++t2) {
+          MyPart *part2 = (MyPart*)mseltracks->At(t2);
+          Double_t dphi = DeltaPhi(*part1,*part2);
+          Double_t deta = DeltaEta(*part1,*part2);
+          Double_t dr = 1e10;
+          if (doExclCut)
+            dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
+          if(dr>1) {
+            ++sigpairs;
+            hBkg[mBin]->Fill(deta,dphi,weight2);
           }
         }
       }
@@ -187,25 +243,27 @@ void anaCorr(const char *inFileNames,
       pool->PrintInfo();
   }
 
-  TCanvas *c1 = new TCanvas("cSig");
-  hSig->Draw("surf1");
-  TCanvas *c2 = new TCanvas("cBkg");
-  hBkg->Draw("surf1");
-  TH2F *hMix1=(TH2F*)hSig->Clone("mix1");
-  hMix1->Divide(hSig,hBkg,nmix,1);
-  TCanvas *c3 = new TCanvas("cMix1");
-  hMix1->Draw("surf1");
-  TH2F *hMix2=(TH2F*)hSig->Clone("mix2");
-  hMix2->Divide(hSig,hBkg,hBkg->Integral(),hSig->Integral());
-  TCanvas *c4 = new TCanvas("cMix2");
-  hMix2->Draw("surf1");
   TTimeStamp t;
   TString fname(Form("histout-%d.root",(Int_t)t.GetSec()));
   TFile outfile(fname,"recreate");
-  hSig->Write();
-  hBkg->Write();
-  hMix1->Write();
-  hMix2->Write();
+  for (Int_t i = 0; i<multbins; ++i) {
+    hSig[i]->Write();
+    hBkg[i]->Write();
+    hMul[i]->Write();
+    TH2F *hMix=(TH2F*)hSig[i]->Clone(Form("hMix%d",i));
+    hMix->Divide(hSig[i],hBkg[i],1.,1.);
+    hMix->Write();
+    TH2F *hMix2=(TH2F*)hSig[i]->Clone(Form("hMix2%d",i));
+    for(Int_t x=1;x<=hMix->GetNbinsX();++x) {
+      for(Int_t y=1;y<=hMix->GetNbinsY();++y) {
+        Int_t bin = hMix->GetBin(x,y);
+        Double_t val = hMix->GetBinContent(bin);
+        val = hMul[i]->GetMean()*(val-1);
+        hMix2->SetBinContent(bin,val);
+      }
+    }
+    hMix2->Write();
+  }
 }
 
 //-----------------------------------------------------------------------------------------------------
