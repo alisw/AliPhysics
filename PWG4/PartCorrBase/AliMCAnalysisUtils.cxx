@@ -181,6 +181,11 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
           pPdg = TMath::Abs(parent->GetPdgCode());
           pStatus = parent->GetStatusCode();  
         }
+        else {// in case of gun/box simulations
+          pPdg    = 0;
+          pStatus = 0;
+          break;
+        }
       }//while	  
       if(fDebug > 2 ) {
         printf("AliMCAnalysisUtils::CheckOriginInStack() - Converted photon/electron: \n");
