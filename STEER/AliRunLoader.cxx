@@ -146,7 +146,6 @@ AliRunLoader::~AliRunLoader()
   
   //fEventFolder is deleted by the way of removing - TopAliceFolder owns it
   if( fCTrigger ) delete  fCTrigger;
-  delete fHeader;
   delete fStack;
   delete fGAFile;
 }
