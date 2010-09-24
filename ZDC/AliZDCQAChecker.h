@@ -13,6 +13,8 @@
 #include "AliQAv1.h"
 #include "AliQACheckerBase.h"
 
+class TObjArray;
+
 class AliZDCQAChecker: public AliQACheckerBase {
 
 public:
@@ -24,6 +26,7 @@ public:
 
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list,
       const AliDetectorRecoParam * /*recoParam*/); 
+  void SetupHisto(const TObjArray& messages, TH1& histo, Float_t& code);
   
   ClassDef(AliZDCQAChecker,1)  // description 
 

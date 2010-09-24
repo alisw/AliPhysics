@@ -18,6 +18,9 @@
 #include <TH1F.h> 
 #include <TIterator.h> 
 #include <TString.h> 
+#include <TPaveText.h> 
+#include <TObjArray.h>
+#include "TList.h"
 
 // --- Standard library ---
 
@@ -38,6 +41,9 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
   //
   Int_t ihitHisto=0, idigHisto=0;
   Int_t irecHisto=0, irawHisto=0, esdInd=0;
+
+  TObjArray messages;
+  messages.SetOwner(kTRUE);
 
   for(Int_t specie = 0; specie<AliRecoParam::kNSpecies; specie++){
     Int_t count = 0; 
@@ -187,57 +193,79 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	  else if(index == AliQAv1::kRAW) {
 	    //
             // Check RAW HIGH GAIN CHAIN histos
-            if(hdata->GetEntries()>0){
-	      if(irawHisto==0)      sumADCZNC = hdata->GetMean();
-	      else if(irawHisto==1) sumADCZNA = hdata->GetMean();
-	      else if(irawHisto==2) sumADCZPC = hdata->GetMean();
-	      else if(irawHisto==3) sumADCZPA = hdata->GetMean();
-	      else if(irawHisto==6) adcQZNC = hdata->GetMean();
-	      else if(irawHisto==7) adcQZNA = hdata->GetMean();
-	      else if(irawHisto==8) adcQZPC = hdata->GetMean();
-	      else if(irawHisto==9) adcQZPA = hdata->GetMean();
-	      else if(irawHisto==10) adcCZNC = hdata->GetMean();
-	      else if(irawHisto==11) adcCZNA = hdata->GetMean();
-	      else if(irawHisto==12) adcCZPC = hdata->GetMean();
-	      else if(irawHisto==13) adcCZPA = hdata->GetMean();
+            
+      	    messages.Clear();
+	    
+	    Bool_t iDetPM = kTRUE;
+	    // --- Checks
+	    if(irawHisto==22){ 
+	      Float_t resADC=0.;
+	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
+		 if((hdata->GetBinContent(ibin))>10.){
+		   res=1.;
+		 }
+		 else if((hdata->GetBinContent(ibin))<10. && 
+		   (ibin==1 || ibin==6 || ibin==11 || ibin==12 || ibin==13 || ibin==18)){
+		   res=0.5;
+		   iDetPM = kFALSE;
+		 }
+		 //
+		 resADC += res;
+            	 test[specie] += res;
+            	 count++;
+	      }
+	      Float_t rv=1.;
+	      if(hdata->GetNbinsX() != 0) rv = resADC/hdata->GetNbinsX();
+	      if(rv == 1.) messages.Add(new TObjString("ADCs are OK!")); 
+	      else if(iDetPM==kFALSE){
+	        messages.Add(new TObjString("Problem with ADCs!"));
+                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
+	      }
+	      else if(iDetPM==kTRUE) messages.Add(new TObjString("Minor problem with ADCs"));
+	      SetupHisto(messages, *hdata, rv);
 	    }
-	    //
-	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
-	    if(irawHisto==13){
-	      if(TMath::Abs(sumADCZNC)>1.e-10){
-            	if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
+	    else if(irawHisto==23){
+	      Double_t refTDCs[6] = {-83.0,-78.1,-80.2,-79.3,-81.0,-80.9};
+	      Float_t resTDC=0.;
+	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
+		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<4.){
+		   res=1.;
+		 }
+		 else{
+		   res=0.5;
+            	 }
+		 //
+		 resTDC += res;
+		 test[specie] += res;
+            	 count++;
 	      }
-	      if(TMath::Abs(sumADCZNA)>1.e-10){
-            	if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
+	      Float_t rv=1.;
+	      if(hdata->GetNbinsX() != 0) rv = resTDC/hdata->GetNbinsX();
+	      if(rv == 1.) messages.Add(new TObjString("TDCs are OK!")); 
+	      else if(rv<1 && rv>0.9) messages.Add(new TObjString("Minor problem with TDCs"));
+	      else{
+	        messages.Add(new TObjString("Serious problem in ZDC timing"));
+                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
 	      }
-	      if(TMath::Abs(sumADCZPC)>1.e-10){
-            	if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
-	      }
-	      if(TMath::Abs(sumADCZPA)>1.e-10){
-            	if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
-	      }
+	      SetupHisto(messages, *hdata, rv);
 	    }
-	    irawHisto++;	    
+	    else if(irawHisto==26){
+	      Double_t yZNC=hdata->GetBinContent(2);
+	      Double_t yZNA=hdata->GetBinContent(4);
+	      if(TMath::Abs(yZNC)<0.4 && TMath::Abs(yZNA)<0.4) res=1.;
+	      else res=0.7;
+	      test[specie] += res;
+              count++;
+	      //
+	      if(res == 1.) messages.Add(new TObjString("ZN positions are OK!")); 
+	      else{
+	        messages.Add(new TObjString("Problem in ZN positions!")); 
+                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
+	      }
+	      SetupHisto(messages, *hdata, res);
+	    }
+	    irawHisto++;
+	    
           } 
           // -------------------------------------------------------------------
 	  else if(index == AliQAv1::kREC) {
@@ -539,77 +567,80 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
           else if(index == AliQAv1::kRAW){
 	    //
             // Check RAW HIGH GAIN CHAIN histos
-            if(hdata->GetEntries()>0){
-	      if(irawHisto==0)      sumADCZNC = hdata->GetMean();
-	      else if(irawHisto==1) sumADCZNA = hdata->GetMean();
-	      else if(irawHisto==2) sumADCZPC = hdata->GetMean();
-	      else if(irawHisto==3) sumADCZPA = hdata->GetMean();
-	      else if(irawHisto==6) adcQZNC = hdata->GetMean();
-	      else if(irawHisto==7) adcQZNA = hdata->GetMean();
-	      else if(irawHisto==8) adcQZPC = hdata->GetMean();
-	      else if(irawHisto==9) adcQZPA = hdata->GetMean();
-	      else if(irawHisto==10) adcCZNC = hdata->GetMean();
-	      else if(irawHisto==11) adcCZNA = hdata->GetMean();
-	      else if(irawHisto==12) adcCZPC = hdata->GetMean();
-	      else if(irawHisto==13) adcCZPA = hdata->GetMean();
+            
+      	    messages.Clear();
+	    
+	    Bool_t iDetPM = kTRUE;
+	    // --- Checks
+	    if(irawHisto==22){ 
+	      Float_t resADC=0.;
+	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
+		 if((hdata->GetBinContent(ibin))>10.){
+		   res=1.;
+		 }
+		 else if((hdata->GetBinContent(ibin))<10. && 
+		   (ibin==1 || ibin==6 || ibin==11 || ibin==12 || ibin==13 || ibin==18)){
+		   res=0.5;
+		   iDetPM = kFALSE;
+		 }
+		 //
+		 resADC += res;
+            	 test[specie] += res;
+            	 count++;
+	      }
+	      Float_t rv=1.;
+	      if(hdata->GetNbinsX() != 0) rv = resADC/hdata->GetNbinsX();
+	      if(rv == 1.) messages.Add(new TObjString("ADCs are OK!")); 
+	      else if(iDetPM==kFALSE){
+	        messages.Add(new TObjString("Problem with ADCs!"));
+                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
+	      }
+	      else if(iDetPM==kTRUE) messages.Add(new TObjString("Minor problem with ADCs"));
+	      SetupHisto(messages, *hdata, rv);
 	    }
-            //
-	    // --- Check whether 2*|Mean ZNA - Mean ZNC|/(Mean ZNA + Mean ZNC) < percentageDiff
-	    // --- and 2*|Mean ZPA - Mean ZPC|/(Mean ZPA + Mean ZPC) < 2*percentageDiff
-	    if(irawHisto==3){
-	      if(TMath::Abs(sumADCZNC)>1.e-10 && TMath::Abs(sumADCZNA)>1.e-10){
-            	if((2*TMath::Abs(sumADCZNC-sumADCZNA)/(sumADCZNA+sumADCZNC))<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
+	    else if(irawHisto==23){
+	      Double_t refTDCs[6] = {-83.0,-78.1,-80.2,-79.3,-81.0,-80.9};
+	      Float_t resTDC=0.;
+	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
+		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<4.){
+		   res=1.;
+		 }
+		 else{
+		   res=0.5;
+            	 }
+		 //
+		 resTDC += res;
+		 test[specie] += res;
+            	 count++;
 	      }
-	      if(TMath::Abs(sumADCZPC)>1.e-10 && TMath::Abs(sumADCZPA)>1.e-10){
-            	if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
+	      Float_t rv=1.;
+	      if(hdata->GetNbinsX() != 0) rv = resTDC/hdata->GetNbinsX();
+	      if(rv == 1.) messages.Add(new TObjString("TDCs are OK!")); 
+	      else if(rv<1 && rv>0.9) messages.Add(new TObjString("Minor problem with TDCs"));
+	      else{
+	        messages.Add(new TObjString("Serious problem in ZDC timing"));
+                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
 	      }
-            }
-	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
-	    if(irawHisto==13){
-	      if(TMath::Abs(sumADCZNC)>1.e-10){
-            	if((TMath::Abs(adcQZNC-adcCZNC)/adcCZNC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
-	      }
-	      if(TMath::Abs(sumADCZNA)>1.e-10){
-            	if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
-	      }
-	      if(TMath::Abs(sumADCZPC)>1.e-10){
-            	if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
-	      }
-	      if(TMath::Abs(sumADCZPA)>1.e-10){
-            	if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
-            	  res=1.;
-            	else 
-            	  res=.5;
-            	test[specie] += res;
-            	count++;
-	      }
+	      SetupHisto(messages, *hdata, rv);
 	    }
-	    irawHisto++;	 
+	    else if(irawHisto==26){
+	      Double_t yZNC=hdata->GetBinContent(2);
+	      Double_t yZNA=hdata->GetBinContent(4);
+	      if(TMath::Abs(yZNC)<0.4 && TMath::Abs(yZNA)<0.4) res=1.;
+	      else res=0.5;
+	      test[specie] += res;
+              count++;
+	      //
+	      printf(" yZNC = %1.2f yZNA = %1.2f -> res %1.2f\n",yZNC, yZNA,res);
+	      if(res == 1.) messages.Add(new TObjString("ZN positions are OK!")); 
+	      else{
+	        messages.Add(new TObjString("Problem in ZN positions!")); 
+                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
+	      }
+	      SetupHisto(messages, *hdata, res);
+	    }
+	    irawHisto++;
+	    
 	  }   
           // -------------------------------------------------------------------
           else if(index == AliQAv1::kREC){
@@ -789,3 +820,52 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
     AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\t ZDC QA check result = %1.2f\n",test[specie]));
   } // Loop on species
 }  
+
+//___________________________________________________________________ 
+void AliZDCQAChecker::SetupHisto(const TObjArray& messages, TH1& histo, Float_t& code)
+{
+  //
+  /// Add text to histos
+  //
+
+  Double_t y1 = 0.97 - (messages.GetLast()+2)*0.075;
+  TPaveText* text = new TPaveText(0.6,y1,0.99,0.99,"NDC");
+    
+  TIter next(&messages);
+  TObjString* str;
+    
+  while ( ( str = static_cast<TObjString*>(next()) ) ){
+    text->AddText(str->String());
+  }
+
+  TString defaultText = "";
+
+  Int_t color = 0;
+  if(code==1.){
+    color = kGreen;
+    defaultText = "Everything is fine!";
+  }  
+  else if(code<1. && code>=0.9){  
+    color = kYellow;
+    defaultText = "To be monitored in next runs";
+  }
+  else if(code<0.9 && code>=0.6){
+    color = kOrange;
+    defaultText = "notify the expert DURING THE DAY!";
+  }
+  else{
+    color = kRed;
+    defaultText = "CALL THE EXPERT!!!!";
+  }
+
+
+  text->AddText(defaultText.Data());
+  text->SetFillColor(color);
+                      
+  //histo.SetFillStyle(1001);
+  //histo.SetFillColor(color);
+
+  histo.SetStats(kFALSE);
+    
+  histo.GetListOfFunctions()->Add(text);
+}
