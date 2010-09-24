@@ -44,18 +44,6 @@ AliCFDataGrid::AliCFDataGrid() :
 }
 
 //____________________________________________________________________
-AliCFDataGrid::AliCFDataGrid(const Char_t* name,const Char_t* title) : 
-  AliCFGridSparse(name,title),
-  fSelData(-1),
-  fContainer(0x0)
-{
-  //
-  // named constructor
-  //
-  AliInfo("Deprecated, will be removed soon !!");
-}
-
-//____________________________________________________________________
 AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_t nVarIn, const Int_t * nBinIn) :
   AliCFGridSparse(name,title,nVarIn,nBinIn),
   fSelData(-1),
@@ -65,18 +53,6 @@ AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const Int_
   // main constructor
   //
   SumW2();// errors saved
-}
-
-//____________________________________________________________________
-AliCFDataGrid::AliCFDataGrid(const Char_t* name, const Char_t* title, const AliCFContainer &c) :  
-  AliCFGridSparse(name,title),
-  fSelData(-1),
-  fContainer(&c)
-{
-  //
-  // main constructor
-  //
-  AliInfo("Deprecated, will be removed soon !!\nUse AliCFDataGrid(name,title,container,step) instead");
 }
 
 //____________________________________________________________________
@@ -126,20 +102,6 @@ AliCFDataGrid &AliCFDataGrid::operator=(const AliCFDataGrid &c)
   return *this;
 } 
 
-//____________________________________________________________________
-void AliCFDataGrid::SetMeasured(Int_t istep)
-{
-  //
-  // Deposit observed data over the grid
-  //
-  AliInfo("Deprecated, will be removed soon !!\nPlease specify selection step in constructor.");
-  
-  fSelData = istep ;
-  //simply clones the container's data at specified step
-  fData = (THnSparse*) fContainer->GetGrid(istep)->GetGrid()->Clone();
-  SumW2();
-  AliInfo(Form("retrieving measured data from Container %s at selection step %i.",fContainer->GetName(),fSelData));
-} 
 //____________________________________________________________________
 void AliCFDataGrid::ApplyEffCorrection(const AliCFEffGrid &c)
 {
