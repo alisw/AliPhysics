@@ -57,14 +57,14 @@ public:
     Float_t GetNotIDCorrectionITS(const float pT){return 1.0/(fnotIDITS->GetBinContent(fnotIDITS->FindBin(pT)));}
     Float_t GetNotIDCorrectionNoPID(const float pT){return 1.0/(fnotIDNoID->GetBinContent(fnotIDNoID->FindBin(pT)));}
     //As is this...
-    Float_t GetTPCEfficiencyCorrectionPion(const float pT){return 1.0/(fEfficiencyPionTPC->GetBinContent(fEfficiencyPionTPC->FindBin(pT)));}
-    Float_t GetTPCEfficiencyCorrectionKaon(const float pT){return 1.0/(fEfficiencyKaonTPC->GetBinContent(fEfficiencyKaonTPC->FindBin(pT)));}
-    Float_t GetTPCEfficiencyCorrectionProton(const float pT){return 1.0/(fEfficiencyProtonTPC->GetBinContent(fEfficiencyProtonTPC->FindBin(pT)));}
-    Float_t GetTPCEfficiencyCorrectionHadron(const float pT){return 1.0/(fEfficiencyHadronTPC->GetBinContent(fEfficiencyHadronTPC->FindBin(pT)));}
-    Float_t GetITSEfficiencyCorrectionPion(const float pT){return 1.0/(fEfficiencyPionITS->GetBinContent(fEfficiencyPionITS->FindBin(pT)));}
-    Float_t GetITSEfficiencyCorrectionKaon(const float pT){return 1.0/(fEfficiencyKaonITS->GetBinContent(fEfficiencyKaonITS->FindBin(pT)));}
-    Float_t GetITSEfficiencyCorrectionProton(const float pT){return 1.0/(fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT)));}
-    Float_t GetITSEfficiencyCorrectionHadron(const float pT){return 1.0/(fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT)));}
+    Float_t GetTPCEfficiencyCorrectionPion(const float pT);
+    Float_t GetTPCEfficiencyCorrectionKaon(const float pT);
+    Float_t GetTPCEfficiencyCorrectionProton(const float pT);
+    Float_t GetTPCEfficiencyCorrectionHadron(const float pT);
+    Float_t GetITSEfficiencyCorrectionPion(const float pT);
+    Float_t GetITSEfficiencyCorrectionKaon(const float pT);
+    Float_t GetITSEfficiencyCorrectionProton(const float pT);
+    Float_t GetITSEfficiencyCorrectionHadron(const float pT);
     //...and these guys are too
     Float_t GetBackgroundCorrectionTPC(const float pT){return 1.0/(1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
     Float_t GetBackgroundCorrectionITS(const float pT){return 1.0/(1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
