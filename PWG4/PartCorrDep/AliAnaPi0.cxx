@@ -650,12 +650,24 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         //Get the number of cells
         Int_t ncell1 = 0;
         Int_t ncell2 = 0;
-        if(GetReader()->GetInputEvent()){
-          AliVCluster *cluster1 = (GetReader()->GetInputEvent())->GetCaloCluster(p1->GetCaloLabel(0));
-          ncell1 = cluster1->GetNCells();
-          AliVCluster *cluster2 = (GetReader()->GetInputEvent())->GetCaloCluster(p2->GetCaloLabel(0));
-          ncell2 = cluster2->GetNCells();
-          //printf("e 1: %2.2f - %2.2f, e 2: %2.2f - %2.2f, ncells: %d, %d\n",cluster1->E(),p1->E(),cluster2->E(), p2->E(),ncell1,ncell2);
+        AliVEvent * event = GetReader()->GetInputEvent();
+        if(event){
+          for(Int_t iclus = 0; iclus < event->GetNumberOfCaloClusters(); iclus++){
+            AliVCluster *cluster = event->GetCaloCluster(iclus);
+            
+            Bool_t is = kFALSE;
+            if     (fCalorimeter == "EMCAL" && GetReader()->IsEMCALCluster(cluster)) is = kTRUE;
+            else if(fCalorimeter == "PHOS"  && GetReader()->IsPHOSCluster (cluster)) is = kTRUE;
+            
+            if(is){
+              if      (p1->GetCaloLabel(0) == cluster->GetID()) ncell1 = cluster->GetNCells();
+              else if (p2->GetCaloLabel(0) == cluster->GetID()) ncell2 = cluster->GetNCells();
+            } // PHOS or EMCAL cluster as requested in analysis
+            
+            if(ncell2 > 0 &&  ncell1 > 0) break; // No need to continue the iteration
+            
+          }
+          //printf("e 1: %2.2f, e 2: %2.2f, ncells: n1 %d, n2 %d\n", p1->E(), p2->E(),ncell1,ncell2);
         }
         for(Int_t ipt=0; ipt<fNPtCuts; ipt++){          
           for(Int_t icell=0; icell<fNCellNCuts; icell++){
