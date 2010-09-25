@@ -140,7 +140,7 @@ void AliPerformanceTask::UserCreateOutputObjects()
     fOutput->Add(pObj);
     count++;
   }
-  Printf("CreateOutputObjects(): Number of output comparison objects: %d \n", count);
+  Printf("UserCreateOutputObjects(): Number of output comparison objects: %d \n", count);
 }
 
 //_____________________________________________________________________________
