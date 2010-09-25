@@ -18,6 +18,7 @@
 // comparison of reconstructed and MC particle tracks. 
 //
 // Author: J.Otwinowski 14/04/2008 
+// Changes by M.Knichel 24/09/2010
 //------------------------------------------------------------------------------
 
 #include <iostream>
@@ -25,6 +26,7 @@
 #include "TCanvas.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TAxis.h"
 #include "TPostScript.h"
 #include "TList.h"
@@ -44,7 +46,8 @@ AliPerformanceObject::AliPerformanceObject():
   fAnalysisMode(-1),
   fHptGenerator(kFALSE),
   fTriggerClass(0),
-  fUseTrackVertex(kFALSE)
+  fUseTrackVertex(kFALSE),
+  fHighMultiplicity(kFALSE)
 {
   // constructor
 }
@@ -55,7 +58,8 @@ AliPerformanceObject::AliPerformanceObject(const char* name, const char* title):
   fAnalysisMode(-1),
   fHptGenerator(kFALSE),
   fTriggerClass(0),
-  fUseTrackVertex(kFALSE)
+  fUseTrackVertex(kFALSE),
+   fHighMultiplicity(kFALSE)
 {
   // constructor
 }
@@ -147,4 +151,81 @@ Double_t * AliPerformanceObject::CreateLogAxis(Int_t nbins, Double_t xmin, Doubl
   }
 
 return xbins;
+}
+
+//_____________________________________________________________________________
+void AliPerformanceObject::InitHighMult() {
+
+  fHighMultiplicity = kTRUE;
+  Init();
+
+}
+
+
+//_____________________________________________________________________________
+void AliPerformanceObject::AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse* hSparse, Int_t xDim, TString* selString) 
+{
+  TH1 *h1=0;  
+  TString name = "h_tpc_" + nameSparse + '_';
+  if (selString) { name += *selString + '_'; }
+  name.ToLower();
+  name += xDim;
+  TString title = hSparse->GetAxis(xDim)->GetTitle();  
+  if (selString) { title += " (" + *selString + ")"; }
+  h1 = hSparse->Projection(xDim);
+  h1->SetName(name.Data());
+  h1->GetXaxis()->SetTitle(hSparse->GetAxis(xDim)->GetTitle());
+  h1->SetTitle(title.Data());  
+  aFolderObj->Add(h1);
+}
+
+
+//_____________________________________________________________________________
+void AliPerformanceObject::AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t yDim, Int_t xDim, TString* selString)
+{
+  TH2 *h2=0;  
+  TString name = "h_tpc_" + nameSparse + '_';
+  if (selString) { name += *selString + '_'; }
+  name.ToLower();
+  name += yDim;
+  name += '_';
+  name += xDim;
+  TString title = hSparse->GetAxis(yDim)->GetTitle();
+  title += " vs ";
+  title += hSparse->GetAxis(xDim)->GetTitle();
+  if (selString) { title += " (" + *selString + ")"; }  
+  h2 = hSparse->Projection(yDim,xDim);
+  h2->SetName(name.Data());
+  h2->GetXaxis()->SetTitle(hSparse->GetAxis(xDim)->GetTitle());
+  h2->GetYaxis()->SetTitle(hSparse->GetAxis(yDim)->GetTitle());
+  h2->SetTitle(title.Data());  
+  aFolderObj->Add(h2);
+}
+
+
+//_____________________________________________________________________________
+void AliPerformanceObject::AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, Int_t yDim, Int_t zDim, TString* selString)
+{
+  TH3 *h3=0;  
+  TString name = "h_tpc_" + nameSparse + '_';
+  if (selString) { name += *selString + '_'; }
+  name.ToLower();
+  name += xDim;
+  name += '_';
+  name += yDim;
+  name += '_';
+  name += zDim;
+  TString title = hSparse->GetAxis(xDim)->GetTitle();
+  title += " vs ";
+  title += hSparse->GetAxis(yDim)->GetTitle();
+  title += " vs ";
+  title += hSparse->GetAxis(zDim)->GetTitle();
+  if (selString) { title += " (" + *selString + ")"; }
+  h3 = hSparse->Projection(xDim,yDim,zDim);
+  h3->SetName(name.Data());
+  h3->GetXaxis()->SetTitle(hSparse->GetAxis(xDim)->GetTitle());
+  h3->GetYaxis()->SetTitle(hSparse->GetAxis(yDim)->GetTitle());
+  h3->GetZaxis()->SetTitle(hSparse->GetAxis(zDim)->GetTitle());
+  h3->SetTitle(title.Data());  
+  aFolderObj->Add(h3);
 }

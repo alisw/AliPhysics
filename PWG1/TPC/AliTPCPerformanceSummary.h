@@ -5,7 +5,7 @@
 // Class to extract some TPC Performance parameters from AliPerformanceTPC and
 // AliPerformanceDEdx objects and produce trend graphs.  
 // 
-// Author: M.Knichel 2010-08-24
+// Author: M.Knichel 2010-09-24
 //------------------------------------------------------------------------------
 
 class TTree;
