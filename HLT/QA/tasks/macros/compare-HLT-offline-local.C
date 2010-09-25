@@ -41,50 +41,64 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libHLTbase.so");
  
-  gROOT->ProcessLine(".include $ALICE_ROOT/include");
-
+  gSystem->AddIncludePath("-I$ALICE_ROOT/PWG1/TPC -I.");
   
-  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bEMCAL = kFALSE;
+  gSystem->Load("libTPCcalib.so");
+  gSystem->Load("libTRDbase.so");
+  gSystem->Load("libTRDrec.so");
+  gSystem->Load("libITSbase.so");
+  gSystem->Load("libITSrec.so");
+  gSystem->Load("libTENDER.so");
+  gSystem->Load("libPWG1.so");
+ 
+  gROOT->ProcessLine(".include $ALICE_ROOT/include");
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  
+  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
  
   TObjArray *pTokens = allArgs.Tokenize(" ");
   if(pTokens){
-     for(int i=0; i<pTokens->GetEntries(); i++){
-         argument=((TObjString*)pTokens->At(i))->GetString();
-         if(argument.IsNull()) continue;
+    for(int i=0; i<pTokens->GetEntries(); i++){
+      argument=((TObjString*)pTokens->At(i))->GetString();
+      if(argument.IsNull()) continue;
 
-         if(argument.CompareTo("tpc", TString::kIgnoreCase)==0){
-	    bTPC = kTRUE;
-	    continue;
-         }        
-         if(argument.CompareTo("phos", TString::kIgnoreCase)==0){
-  	    bPHOS = kTRUE;
-	    continue;
-         }         
-         else if(argument.CompareTo("emcal", TString::kIgnoreCase)==0){
-	   bEMCAL = kTRUE;
-	   continue;
-         }         
+      if(argument.CompareTo("tpc", TString::kIgnoreCase)==0){
+	bTPC = kTRUE;
+	continue;
+      }        
+      if(argument.CompareTo("phos", TString::kIgnoreCase)==0){
+	bPHOS = kTRUE;
+	continue;
+      }         
+      else if(argument.CompareTo("emcal", TString::kIgnoreCase)==0){
+	bEMCAL = kTRUE;
+	continue;
+      }         
 
-	  if(argument.CompareTo("its", TString::kIgnoreCase)==0){
-  	    bITS = kTRUE;
-	    continue;
-         }	
-	  if(argument.CompareTo("global", TString::kIgnoreCase)==0){
-  	    bGLOBAL = kTRUE;
-	    continue;
-         }        
-	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
-	    bTPC    = kTRUE;
-	    bPHOS   = kTRUE;
-	    bEMCAL  = kTRUE;
-	    bITS    = kTRUE;
-	    bGLOBAL = kTRUE;    
-	    continue;
-         }
-         else break;
+      if(argument.CompareTo("its", TString::kIgnoreCase)==0){
+	bITS = kTRUE;
+	continue;
+      }	
+      if(argument.CompareTo("global", TString::kIgnoreCase)==0){
+	bGLOBAL = kTRUE;
+	continue;
+      }      
+      if(argument.CompareTo("pwg1", TString::kIgnoreCase)==0){
+	bPWG1 = kTRUE;
+	continue;
+      }
+      if(argument.CompareTo("all",TString::kIgnoreCase)==0){
+	bTPC    = kTRUE;
+	bPHOS   = kTRUE;
+	bEMCAL  = kTRUE;
+	bITS    = kTRUE;
+	bGLOBAL = kTRUE;    
+	continue;
+      }
+      else break;
     }
   }
     
@@ -112,6 +126,7 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
   
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
+  if(bPWG1)   gROOT->LoadMacro("AddTaskPerformance.C");
   
   //if(!AliAnalysisGrid::CreateToken()) return NULL;
   
@@ -140,52 +155,69 @@ void compare_HLT_offline_local(TString file="files.txt", const char* detectorTas
  
   AliAnalysisManager *mgr  = new AliAnalysisManager("TestManager");
   AliESDInputHandler *esdH = new AliESDInputHandler;
-  esdH->SetReadHLT();
+  //For PWG1-task, setting HLT is handled inside AliPerformanceTask.C
+  if(!bPWG1)
+    esdH->SetReadHLT();
   esdH->SetReadFriends(kFALSE);
   mgr->SetInputEventHandler(esdH);  
   mgr->SetNSysInfo(1000);
+
+  AliPhysicsSelectionTask* physSelTask =AddTaskPhysicsSelection(kFALSE,kTRUE);
  
   //-------------- define the tasks ------------//
   
   if(bTPC){ 
-     AliAnalysisTaskHLTTPC *taskTPC = new AliAnalysisTaskHLTTPC("offhlt_comparison_TPC");
-     mgr->AddTask(taskTPC);
-     AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer("tpc_histograms", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-TPC-comparison.root");  
-     mgr->ConnectInput(taskTPC,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskTPC,1,coutput1);
+    AliAnalysisTaskHLTTPC *taskTPC = new AliAnalysisTaskHLTTPC("offhlt_comparison_TPC");
+    mgr->AddTask(taskTPC);
+    AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer("tpc_histograms", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-TPC-comparison.root");  
+    mgr->ConnectInput(taskTPC,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(taskTPC,1,coutput1);
   }
 
   if(bPHOS){
-     AliAnalysisTaskHLTPHOS *taskPHOS = new AliAnalysisTaskHLTPHOS("offhlt_comparison_PHOS");
-     mgr->AddTask(taskPHOS);
-     AliAnalysisDataContainer *coutput2 =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
-     mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskPHOS,1,coutput2);
+    AliAnalysisTaskHLTPHOS *taskPHOS = new AliAnalysisTaskHLTPHOS("offhlt_comparison_PHOS");
+    mgr->AddTask(taskPHOS);
+    AliAnalysisDataContainer *coutput2 =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
+    mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(taskPHOS,1,coutput2);
   }
 
   if(bEMCAL){
-     AliAnalysisTaskHLTEMCAL *taskEMCAL = new AliAnalysisTaskHLTEMCAL("offhlt_comparison_EMCAL");
-     mgr->AddTask(taskEMCAL);
-     AliAnalysisDataContainer *coutput5 =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
-     mgr->ConnectInput(taskEMCAL,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskEMCAL,1,coutput5);
+    AliAnalysisTaskHLTEMCAL *taskEMCAL = new AliAnalysisTaskHLTEMCAL("offhlt_comparison_EMCAL");
+    mgr->AddTask(taskEMCAL);
+    AliAnalysisDataContainer *coutput5 =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
+    mgr->ConnectInput(taskEMCAL,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(taskEMCAL,1,coutput5);
   }
   
   if(bITS){
-     AliAnalysisTaskHLTITS *taskITS = new AliAnalysisTaskHLTITS("offhlt_comparison_ITS");
-     mgr->AddTask(taskITS);
-     AliAnalysisDataContainer *coutput3 =  mgr->CreateContainer("its_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-ITS-comparison.root");  
-     mgr->ConnectInput(taskITS,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskITS,1,coutput3);
+    AliAnalysisTaskHLTITS *taskITS = new AliAnalysisTaskHLTITS("offhlt_comparison_ITS");
+    mgr->AddTask(taskITS);
+    AliAnalysisDataContainer *coutput3 =  mgr->CreateContainer("its_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-ITS-comparison.root");  
+    mgr->ConnectInput(taskITS,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(taskITS,1,coutput3);
   }
  
   if(bGLOBAL){
-     AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL");
-     mgr->AddTask(taskGLOBAL);
-     AliAnalysisDataContainer *coutput4 =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
-     mgr->ConnectInput(taskGLOBAL,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(taskGLOBAL,1,coutput4);
+    AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL");
+    taskGLOBAL->SelectCollisionCandidates();
+    mgr->AddTask(taskGLOBAL);
+    AliAnalysisDataContainer *coutput4 =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
+    mgr->ConnectInput(taskGLOBAL,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(taskGLOBAL,1,coutput4);
   }
+
+  if(bPWG1){
+    Bool_t hasMC=kFALSE;  
+    // -- Add Task for HLT and Offline
+    AliPerformanceTask *HLTtpcQA = AddTaskPerformance(hasMC,kFALSE,kTRUE);
+    AliPerformanceTask *tpcQA = AddTaskPerformance(hasMC,kFALSE); 
+    if(!HLTtpcQA || !tpcQA) {
+      Error("RunPerformanceTrain","AliPerformanceTask not created!");
+      return;
+    }
+  }
+  
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();

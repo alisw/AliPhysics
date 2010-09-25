@@ -8,7 +8,7 @@
  *
  * Usage:
  * <pre>
- *   aliroot -q compare-HLT-offline-grid.C'("000115322","/alice/data/2010/LHC10b","ESDcomparison","output","full","global")' 2>&1 | tee log
+ *   aliroot -q compare-HLT-offline-grid.C'("000115322","/alice/data/2010/LHC10b","ESDcomparison","output","full","global")'
  * </pre>
  * - run number
  * - GRID input directory, where you define in which LHC period the run number belongs to
@@ -41,6 +41,7 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libHLTbase");
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
 
   
   Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
@@ -95,6 +96,9 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
   esdH->SetReadFriends(kFALSE);
   mgr->SetInputEventHandler(esdH);  
   mgr->SetNSysInfo(1000);
+
+  //To use Physics Selection
+  AliPhysicsSelectionTask* physSelTask =AddTaskPhysicsSelection(kFALSE,kTRUE);
   
   // Create and configure the alien handler plugin
   gROOT->LoadMacro("CreateAlienHandler.C");
@@ -171,6 +175,7 @@ void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWo
  
   if(bGLOBAL){
      AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL");
+     taskGLOBAL->SelectCollisionCandidates();
      mgr->AddTask(taskGLOBAL);
      AliAnalysisDataContainer *coutput4 =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
      mgr->ConnectInput(taskGLOBAL,0,mgr->GetCommonInputContainer());
