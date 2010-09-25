@@ -23,8 +23,8 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   
   // check the versions available on alien with the command 'packages'
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-26-00b-6");
-  plugin->SetAliROOTVersion("v4-20-01-AN");
+  plugin->SetROOTVersion("v5-27-05-build1");
+  plugin->SetAliROOTVersion("v4-20-09-AN-build1");
 
   //Allow non-default outputs
   plugin->SetDefaultOutputs(kFALSE);
