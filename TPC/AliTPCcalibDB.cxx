@@ -1781,7 +1781,7 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_
   if (mode==1) {
     const Double_t kEpsilon=0.00000000001;
     const Double_t kdeltaT=360.; // 10 minutes
-    if(TMath::Abs(driftITS) < 12*kdeltaT) {
+    if(TMath::Abs(deltaITS) < 12*kdeltaT) {
       result = driftITS;
     } else {
     wITS  = 64.*kdeltaT/(deltaITS +kdeltaT);
