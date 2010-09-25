@@ -63,7 +63,7 @@ class AliAnalysisEtCuts : public TNamed
   //
   Int_t GetHistNbinsMult() const { return fHistNbinsMult; }
   Double_t GetHistMinMult() const { return fHistMinMult; }
-  Double_t GetHistMaxMult() const { return fHistMinMult; }
+  Double_t GetHistMaxMult() const { return fHistMaxMult; }
   //
   Int_t GetHistNbinsTotEt() const { return fHistNbinsTotEt; }
   Double_t GetHistMinTotEt() const { return fHistMinTotEt; }
@@ -74,7 +74,7 @@ class AliAnalysisEtCuts : public TNamed
   Double_t GetHistMaxParticleEt() const { return fHistMaxParticleEt; }
   //
   Int_t GetHistNbinsParticlePt() const { return fHistNbinsParticlePt; }
-  Double_t GetHistMinParticlePt() const { return fHistMaxParticlePt; }
+  Double_t GetHistMinParticlePt() const { return fHistMinParticlePt; }
   Double_t GetHistMaxParticlePt() const { return fHistMaxParticlePt; }
 
   // Setters
