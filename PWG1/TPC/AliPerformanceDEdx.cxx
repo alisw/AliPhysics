@@ -8,6 +8,7 @@
 // a data of AliPerformanceDEdx.
 //  
 // Author: J.Otwinowski 04/02/2008 
+// Changes by M.Knichel 24/09/2010
 //------------------------------------------------------------------------------
 
 /*
@@ -59,12 +60,15 @@ using namespace std;
 
 ClassImp(AliPerformanceDEdx)
 
+Bool_t AliPerformanceDEdx::fgMergeTHnSparse = kFALSE;
+
 //_____________________________________________________________________________
 AliPerformanceDEdx::AliPerformanceDEdx():
   AliPerformanceObject("AliPerformanceDEdx"),
 
   // dEdx 
   fDeDxHisto(0),
+  fFolderObj(0),
   
   // Cuts 
   fCutsRC(0), 
@@ -83,6 +87,7 @@ AliPerformanceDEdx::AliPerformanceDEdx(Char_t* name="AliPerformanceDEdx", Char_t
 
   // dEdx 
   fDeDxHisto(0),
+  fFolderObj(0),
   
   // Cuts 
   fCutsRC(0), 
@@ -158,7 +163,7 @@ void AliPerformanceDEdx::Init()
    fDeDxHisto->GetAxis(5)->SetTitle("tan#lambda");
    fDeDxHisto->GetAxis(6)->SetTitle("ncls");
    fDeDxHisto->GetAxis(7)->SetTitle("p (GeV/c)");
-   fDeDxHisto->Sumw2();
+   //fDeDxHisto->Sumw2();
 
    // Init cuts
    if(!fCutsMC) 
@@ -274,17 +279,28 @@ Long64_t AliPerformanceDEdx::Merge(TCollection* const list)
 
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
+  TObjArray* objArrayList = 0;
+  objArrayList = new TObjArray();
 
   // collection of generated histograms
   Int_t count=0;
   while((obj = iter->Next()) != 0) 
   {
     AliPerformanceDEdx* entry = dynamic_cast<AliPerformanceDEdx*>(obj);
-    if (entry == 0) continue;
+    if (entry == 0) continue; 
+    if (fgMergeTHnSparse) {
+        if ((fDeDxHisto) && (entry->fDeDxHisto)) { fDeDxHisto->Add(entry->fDeDxHisto); }        
+    }
+    // the analysisfolder is only merged if present
+    if (entry->fFolderObj) { objArrayList->Add(entry->fFolderObj); }
 
-    fDeDxHisto->Add(entry->fDeDxHisto);
     count++;
   }
+  if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
+  // to signal that track histos were not merged: reset
+  if (!fgMergeTHnSparse) { fDeDxHisto->Reset(); }
+  // delete
+  if (objArrayList)  delete objArrayList;  objArrayList=0;  
 
 return count;
 }
@@ -385,26 +401,17 @@ void AliPerformanceDEdx::Analyse()
   // in the folder "folderDEdx"
   //
   TH1::AddDirectory(kFALSE);
+  TH1::SetDefaultSumw2(kFALSE);
   TH1F *h1D=0;
   TH2F *h2D=0;
   TObjArray *aFolderObj = new TObjArray;
+  TString selString;
 
   char name[256];
   char title[256];
 
   for(Int_t i=1; i<8; i++) { 
-    //
-    h2D = (TH2F*)fDeDxHisto->Projection(0,i);
-
-    sprintf(name,"h_dedx_%d_vs_%d",0,i);
-    h2D->SetName(name);
-    sprintf(title,"%s vs %s",fDeDxHisto->GetAxis(0)->GetTitle(),fDeDxHisto->GetAxis(i)->GetTitle());
-    h2D->SetTitle(title);
-    h2D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
-    h2D->GetYaxis()->SetTitle(fDeDxHisto->GetAxis(0)->GetTitle());
-
-    if(i==7) h2D->SetBit(TH1::kLogX);
-    aFolderObj->Add(h2D);
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, i);
   }
 
   // resolution histograms for mips
@@ -415,13 +422,10 @@ void AliPerformanceDEdx::Analyse()
   fDeDxHisto->GetAxis(5)->SetRangeUser(-0.9,0.89);
   fDeDxHisto->GetAxis(6)->SetRangeUser(60.,160.);
   fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.499);
-
-  h1D=(TH1F*)fDeDxHisto->Projection(0);
-  h1D->SetName("dedx_mips");
-
-  h1D->SetTitle("dedx_mips");
-  h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(0)->GetTitle());
-  aFolderObj->Add(h1D);
+  
+  
+  selString = "mipsres";
+  AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
 
   //
   TObjArray *arr[7] = {0};
@@ -462,12 +466,43 @@ void AliPerformanceDEdx::Analyse()
 
     aFolderObj->Add(h1D);
   }
-
-  // export objects to analysis folder
-  fAnalysisFolder = ExportToFolder(aFolderObj);
-
-  // delete only TObjArray
-  if(aFolderObj) delete aFolderObj;
+    // select MIPs (version from AliTPCPerfomanceSummary)
+    fDeDxHisto->GetAxis(0)->SetRangeUser(35,60);
+    fDeDxHisto->GetAxis(2)->SetRangeUser(-20,20);
+    fDeDxHisto->GetAxis(3)->SetRangeUser(-250,250);
+    fDeDxHisto->GetAxis(4)->SetRangeUser(-1, 1);
+    fDeDxHisto->GetAxis(5)->SetRangeUser(-1,1);
+    fDeDxHisto->GetAxis(6)->SetRangeUser(80,160);
+    fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.55);
+    
+    selString = "mips";
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
+    
+    selString = "mips_C";
+    fDeDxHisto->GetAxis(5)->SetRangeUser(-3,0);
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 5, &selString);
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 1, &selString);
+    
+    selString = "mips_A";
+    fDeDxHisto->GetAxis(5)->SetRangeUser(0,3);
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 5, &selString);    
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 1, &selString);
+    
+    //restore cuts
+    fDeDxHisto->GetAxis(0)->SetRangeUser(0,300);
+    fDeDxHisto->GetAxis(2)->SetRangeUser(-20,20);
+    fDeDxHisto->GetAxis(3)->SetRangeUser(-250,250);
+    fDeDxHisto->GetAxis(4)->SetRangeUser(-1, 1);
+    fDeDxHisto->GetAxis(5)->SetRangeUser(-3,3);
+    fDeDxHisto->GetAxis(6)->SetRangeUser(0,160);
+    fDeDxHisto->GetAxis(7)->SetRangeUser(1e-2,10);    
+  
+    printf("exportToFolder\n");
+    // export objects to analysis folder
+    fAnalysisFolder = ExportToFolder(aFolderObj);
+    if (fFolderObj) delete fFolderObj;
+    fFolderObj = aFolderObj;
+    aFolderObj=0;
 }
 
 //_____________________________________________________________________________

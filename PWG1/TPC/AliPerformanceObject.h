@@ -6,10 +6,12 @@
 // reconstructed and MC particle tracks.   
 // 
 // Author: J.Otwinowski 04/14/2008 
+// Changes by M.Knichel 24/09/2010
 //------------------------------------------------------------------------------
 
 #include "TNamed.h"
 #include "TFolder.h"
+#include "THnSparse.h"
 
 class AliMCEvent;
 class AliESDEvent;
@@ -27,7 +29,11 @@ public :
   // Init data members
   // call once before event loop
   virtual void Init() = 0;
-
+  
+  // init for high multiplicity (PbPb) 
+  // to be called instead of Init()
+  virtual void InitHighMult();
+  
   // Execute analysis
   // call in the event loop 
   virtual void Exec(AliMCEvent* const infoMC=0, AliESDEvent* const infoRC=0, AliESDfriend* const infoFriend=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseESDfriend=kFALSE) = 0;
@@ -66,8 +72,14 @@ public :
   // use track vertex
   void SetUseTrackVertex(Bool_t trackVtx = kTRUE) { fUseTrackVertex = trackVtx; }
   Bool_t IsUseTrackVertex() { return fUseTrackVertex; }
+  
+  Bool_t IsHighMultiplicity() { return fHighMultiplicity; }  
 
 protected: 
+
+  void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, TString* selString = 0);
+  void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, Int_t yDim, TString* selString = 0);
+  void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, Int_t yDim, Int_t zDim, TString* selString = 0);
 
   // analysis mode
   Int_t fAnalysisMode;  // 0-TPC, 1-TPCITS, 2-Constrained, 3-TPC inner wall, 4-TPC outer wall
@@ -80,11 +92,14 @@ protected:
 
   // use track vertex
   Bool_t fUseTrackVertex; // use track vertex
+  
+  // PbPb mode?
+  Bool_t fHighMultiplicity; // flag to switch between pp and PbPb  
 
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
-  ClassDef(AliPerformanceObject,1);
+  ClassDef(AliPerformanceObject,2);
 };
 
 #endif

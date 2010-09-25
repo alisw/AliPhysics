@@ -6,7 +6,7 @@
 // reconstructed and MC particle tracks (TPC resolution).   
 // 
 // Author: J.Otwinowski 04/02/2008 
-// Changes by M.Knichel 16/08/2010
+// Changes by M.Knichel 24/09/2010
 //------------------------------------------------------------------------------
 
 class TString;
@@ -71,7 +71,9 @@ public :
   THnSparse *GetTPCClustHisto() const  { return fTPCClustHisto; }
   THnSparse *GetTPCEventHisto() const  { return fTPCEventHisto; }
   THnSparse *GetTPCTrackHisto() const  { return fTPCTrackHisto; }
-  TObjArray* GetTPCHistos() const { return fFolderObj; }
+  
+  TObjArray* GetHistos() const { return fFolderObj; }
+  
   static Bool_t GetMergeTHnSparse() { return fgMergeTHnSparse; }
   static void SetMergeTHnSparse(Bool_t mergeTHnSparse) { fgMergeTHnSparse = mergeTHnSparse; }
   void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
@@ -81,9 +83,7 @@ public :
 private:
 
   static Bool_t fgMergeTHnSparse;
-  void AddProjection(TObjArray* aFolderObj, THnSparse *hSparse, Int_t xDim, TString* selString = 0);
-  void AddProjection(TObjArray* aFolderObj, THnSparse *hSparse, Int_t xDim, Int_t yDim, TString* selString = 0);
-  void AddProjection(TObjArray* aFolderObj, THnSparse *hSparse, Int_t xDim, Int_t yDim, Int_t zDim, TString* selString = 0);
+
   // TPC histogram
   THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCSide
   THnSparseF *fTPCEventHisto;  //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
@@ -102,7 +102,7 @@ private:
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,6);
+  ClassDef(AliPerformanceTPC,7);
 };
 
 #endif

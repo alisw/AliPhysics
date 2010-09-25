@@ -6,6 +6,7 @@
 // reconstructed and MC particle tracks (TPC dE/dx).   
 // 
 // Author: J.Otwinowski 04/02/2008 
+// Changes by M.Knichel 24/09/2010
 //------------------------------------------------------------------------------
 
 class TCanvas;
@@ -45,6 +46,9 @@ public :
 
   // Get analysis folder
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
+  
+  static Bool_t GetMergeTHnSparse() { return fgMergeTHnSparse; }
+  static void SetMergeTHnSparse(Bool_t mergeTHnSparse) { fgMergeTHnSparse = mergeTHnSparse; }
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderDEdx",TString title = "Analysed DEdx histograms");
@@ -62,18 +66,22 @@ public :
   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
   void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0)   {fCutsMC = cuts;} 
 
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}      
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}     
+  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
+  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
 
   //
   // TPC dE/dx 
   //
   THnSparse* GetDeDxHisto() const {return fDeDxHisto;}
+  TObjArray* GetHistos() const { return fFolderObj; }
 
 private:
 
+  static Bool_t fgMergeTHnSparse;
+  
   // TPC dE/dx 
-  THnSparseF *fDeDxHisto; //-> signal:alpha:y:z:snp:tgl:ncls:pid:p
+  THnSparseF *fDeDxHisto; //-> signal:phi:y:z:snp:tgl:ncls:p
+  TObjArray* fFolderObj; // array of analysed histograms
   
   // Selection cuts
   AliRecInfoCuts*  fCutsRC; // selection cuts for reconstructed tracks
@@ -81,11 +89,12 @@ private:
 
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
+  
 
   AliPerformanceDEdx(const AliPerformanceDEdx&); // not implemented
   AliPerformanceDEdx& operator=(const AliPerformanceDEdx&); // not implemented
 
-  ClassDef(AliPerformanceDEdx,1);
+  ClassDef(AliPerformanceDEdx,2);
 };
 
 #endif
