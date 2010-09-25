@@ -36,7 +36,7 @@ can be used.
 #include <TPaveText.h>
 #include <TList.h>
 #include <TFitResult.h>
-#include <../hist/hist/src/TF1Helper.h>
+//#include <../hist/hist/src/TF1Helper.h> //not supposed to be used!
 
 #include <AliLog.h>
 
@@ -137,7 +137,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
   // by the user in its macro
   fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
   TFitResultPtr pmFitPtr = fHistDataPM->Fit(fFuncSigBack, fFitOpt.Data(), "", fFitMin, fFitMax);
-  TFitResult *pmFitResult = pmFitPtr.Get();
+  //TFitResult *pmFitResult = pmFitPtr.Get(); //not used when TF1Helper out
   fFuncSignal->SetParameters(fFuncSigBack->GetParameters());
   fFuncBackground->SetParameters(fFuncSigBack->GetParameters()+fFuncSignal->GetNpar());
   
@@ -147,6 +147,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
     Double_t epm = fHistDataPM->GetBinError(iBin);
     Double_t bknd = fFuncBackground->Eval(m);
     Double_t ebknd = 0;
+    /* to be revised ... TF1Helper
     for(Int_t iPar=fFuncSignal->GetNpar(); iPar<fFuncSigBack->GetNpar(); iPar++) {
       for(Int_t jPar=iPar; jPar<fFuncSigBack->GetNpar(); jPar++) {
         TF1 gradientIpar("gradientIpar",
@@ -158,6 +159,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
           (iPar==jPar ? 1.0 : 2.0);
       }
     }
+    */ // TF1Helper
     Double_t signal = pm-bknd;
     Double_t error = TMath::Sqrt(epm*epm+ebknd);
     fHistSignal->SetBinContent(iBin, signal);
@@ -170,6 +172,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
     // signal
     fValues(0) = fFuncSignal->Integral(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);
     fErrors(0) = 0;
+    /* to be revised ... TF1Helper
     for(Int_t iPar=0; iPar<fFuncSignal->GetNpar(); iPar++) {
       for(Int_t jPar=iPar; jPar<fFuncSignal->GetNpar(); jPar++) {
         TF1 gradientIpar("gradientIpar",
@@ -181,9 +184,11 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
           (iPar==jPar ? 1.0 : 2.0);
       }
     }
+    */ //TF1Helper
     // background
     fValues(1) = fFuncBackground->Integral(fIntMin, fIntMax)/fHistDataPM->GetBinWidth(1);
     fErrors(1) = 0;
+    /* to be revised... TF1Helper
     for(Int_t iPar=fFuncSignal->GetNpar(); iPar<fFuncSigBack->GetNpar(); iPar++) {
       for(Int_t jPar=iPar; jPar<fFuncSigBack->GetNpar(); jPar++) {
         TF1 gradientIpar("gradientIpar",
@@ -195,6 +200,7 @@ void AliDielectronSignalFunc::ProcessFit(TObjArray * const arrhist) {
           (iPar==jPar ? 1.0 : 2.0);
       }
     }
+    */ // TF1Helper
   }
   else {
     // signal
@@ -255,6 +261,7 @@ void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
   TFitResultPtr mmFitPtr = fHistDataMM->Fit(funcCloneMM, fFitOpt.Data(), "", fFitMin, fFitMax);
   mmFitResult = mmFitPtr.Get();
   
+  /* to be revised ... TF1Helper
   for(Int_t iBin=1; iBin<=fHistDataPM->GetXaxis()->GetNbins(); iBin++) {
     Double_t m = fHistDataPM->GetBinCenter(iBin);
     Double_t pm = fHistDataPM->GetBinContent(iBin);
@@ -273,6 +280,7 @@ void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
           (iPar==jPar ? 1.0 : 2.0);
       }
     }
+    
     Double_t emm = 0;
     for(Int_t iPar=0; iPar<funcCloneMM->GetNpar(); iPar++) {
       for(Int_t jPar=iPar; jPar<funcCloneMM->GetNpar(); jPar++) {
@@ -296,7 +304,8 @@ void AliDielectronSignalFunc::ProcessLS(TObjArray * const arrhist) {
     fHistBackground->SetBinContent(iBin, background);
     fHistBackground->SetBinError(iBin, ebackground);
   }
-  
+  */  // TF1Helper
+
   // signal
   fValues(0) = fHistSignal->IntegralAndError(fHistSignal->FindBin(fIntMin),
                                              fHistSignal->FindBin(fIntMax), fErrors(0));
