@@ -66,7 +66,7 @@
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliRDHFCutsD0toKpipipi.h"
 #include "AliCFVertexingHF2Prong.h"
-//#include "AliCFVertexingHF3Prong.h"
+#include "AliCFVertexingHF3Prong.h"
 #include "AliCFVertexingHF.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
@@ -395,7 +395,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	case 31:
 	case 32:
 	case 33:{
-		//		cfVtxHF = new AliCFVertexingHF3Prong(mcArray, originDselection, fDecayChannel); 
+	  cfVtxHF = new AliCFVertexingHF3Prong(mcArray, fOriginDselection, fDecayChannel); 
 		break;
 	}
 	case 4:{
