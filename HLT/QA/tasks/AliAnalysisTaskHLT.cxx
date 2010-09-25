@@ -280,11 +280,11 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   (fHistTrigger->GetXaxis())->SetBinLabel(8,"onlTrkThruCE"); 
   */
 
-  fHistTrigger = new TH1F("fHistTrigger", "CTP trigger counter",12 , 0, 12);
+  fHistTrigger = new TH1F("fHistTrigger", "CTP trigger counter",21 , 0, 21);
   fHistTrigger->GetXaxis()->SetTitle("");  
   fHistTrigger->GetYaxis()->SetTitle("#Events"); 
 
-  fHistHLTTrigger = new TH1F("fHistHLTTrigger", "HLT CTP trigger counter", 12, 0, 12); 
+  fHistHLTTrigger = new TH1F("fHistHLTTrigger", "HLT CTP trigger counter", 21, 0, 21); 
   fHistHLTTrigger->GetXaxis()->SetTitle("");
   fHistHLTTrigger->GetYaxis()->SetTitle("#Events");
 
@@ -525,9 +525,6 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
       fHistHLTTrigger->Fill(i);
   }
 
-  //Select only beam-interaction
-  if(!(esdHLT->GetFiredTriggerClasses()).Contains("CINT1B-ABCE-NOPF-ALL"))
-   return;
 
   Double_t DCAcut = 7.0;
   Double_t Momcut= 0.3;
