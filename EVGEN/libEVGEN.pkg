@@ -8,8 +8,8 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
                 AliGenHaloProtvino.cxx \
                 AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \
                 AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
-		AliGenGSIlib.cxx AliGenPMDlib.cxx\
-	        AliGenMC.cxx\
+		AliGenGSIlib.cxx AliGenEMlib.cxx \
+		AliGenPMDlib.cxx AliGenMC.cxx\
 		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx \
                 AliGenReaderEcalHijing.cxx AliGenReaderEcalJets.cxx\
 		AliGenHIJINGparaBa.cxx AliGeVSimParticle.cxx AliGenGeVSim.cxx\
@@ -17,7 +17,8 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenAfterBurnerFlow.cxx \
 		AliGenSlowNucleons.cxx \
 		AliSlowNucleonModel.cxx AliSlowNucleonModelExp.cxx \
-		AliGenMUONCocktail.cxx AliGenMUONCocktailpp.cxx AliGenHBTosl.cxx \
+		AliGenMUONCocktail.cxx AliGenMUONCocktailpp.cxx \
+		AliGenEMCocktail.cxx AliGenHBTosl.cxx \
 		AliGenReaderEMD.cxx AliDecayerPolarized.cxx AliGenCorrHF.cxx AliGenCosmicsParam.cxx \
 		AliGenKrypton.cxx AliGenThermalPhotons.cxx AliGenPromptPhotons.cxx\
 		AliGenPileup.cxx AliGenFunction.cxx AliGenTHnSparse.cxx\

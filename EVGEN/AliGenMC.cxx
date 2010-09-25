@@ -121,6 +121,8 @@ void AliGenMC::Init()
     case kDiElectron:
     case kBJpsiDiElectron:
     case kBPsiPrimeDiElectron:
+    case kElectronEM:
+    case kDiElectronEM:
 	fChildSelect[0] = kElectron;	
 	break;
     case kHardMuons:	
@@ -163,9 +165,12 @@ void AliGenMC::Init()
         fChildSelect[1]= 211;
 	break;
     case kPsiPrimeJpsiDiElectron:
-      fChildSelect[0]= 211;
-      fChildSelect[1]= 11;
-      break;
+        fChildSelect[0]= 211;
+        fChildSelect[1]= 11;
+	break;
+    case kGammaEM:
+        fChildSelect[0] = kGamma;	
+        break;
     case kOmega:
     case kAll:
     case kAllMuonic:
