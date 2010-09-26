@@ -398,7 +398,8 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
   Double_t  nsigma     = simpar->GetNSigmaIntegration(); //
   Int_t     nlookups   = simpar->GetGausNLookUp();       //
   Float_t   jitter     = simpar->GetSDDJitterError(); // 
-  
+  Float_t   trigDelay  = simpar->GetSDDTrigDelay();
+
   // Piergiorgio's part (apart for few variables which I made float
   // when i thought that can be done
   // Fill detector maps with GEANT hits
@@ -516,6 +517,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
       sigT       = sigA/driftSpeed;
 
       drTime+=tof; // take into account Time Of Flight from production point
+      drTime+=trigDelay; 
       timeSample = (Int_t) (fScaleSize*drTime/timeStep + 1.001); // time bin in range 1-256 !!!
       if(zAnode>nofAnodes) zAnode-=nofAnodes;  // to have the anode number between 0. and 256.
       iAnode = (Int_t) (1.001+zAnode); // iAnode in range 1-256 !!!!

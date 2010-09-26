@@ -93,6 +93,9 @@ class AliITSSimuParam : public TObject {
   void    SetSDDChargeLoss(Double_t p1) {fSDDChargeLoss=p1;}
   Float_t GetSDDChargeLoss() const {return fSDDChargeLoss;}
 
+  void    SetSDDTrigDelay(Double_t p1) {fSDDTrigDelay=p1;}
+  Float_t GetSDDTrigDelay() const {return fSDDTrigDelay;}
+
   void    SetSDDRawDataFormatCarlos() {fSDDRawFormat=7;}
   void    SetSDDRawDataFormatFixLen8bitEncoded() {fSDDRawFormat=0;}
   Char_t  GetSDDRawDataFormat() const {return fSDDRawFormat;}
@@ -189,6 +192,7 @@ class AliITSSimuParam : public TObject {
   static const Float_t fgkSDDDynamicRangeDefault; // default for fSDDDynamicRange
   static const Int_t fgkSDDMaxAdcDefault; // default for fSDDMaxAdc
   static const Float_t fgkSDDChargeLossDefault; // default for fSDDChargeLoss
+  static const Float_t fgkSDDTrigDelayDefault; // default for fSDDTrigDelay
 
   static const Double_t fgkSSDCouplingPRDefault;  // default values
   static const Double_t fgkSSDCouplingPLDefault;  // for the
@@ -225,6 +229,7 @@ class AliITSSimuParam : public TObject {
   Float_t  fSDDDynamicRange; // SDD Dynamic Range 
   Float_t  fSDDMaxAdc;       // SDD ADC saturation value
   Float_t  fSDDChargeLoss;   // Set Linear Coefficient for Charge Loss 
+  Float_t  fSDDTrigDelay;    // SDD time-zero
   Char_t   fSDDRawFormat;    // Index for SDD RawFormat
   
   Double_t fSSDCouplingPR;  // SSD couplings
@@ -241,6 +246,6 @@ class AliITSSimuParam : public TObject {
   Double_t fN;  // the impurity concentration of the material in #/cm^3  (NOT USED!)
   Float_t fT;   // The temperature of the Si in Degree K.
 
-  ClassDef(AliITSSimuParam,4);
+  ClassDef(AliITSSimuParam,5);
 };
 #endif
