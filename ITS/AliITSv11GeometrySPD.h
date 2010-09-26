@@ -56,6 +56,8 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     virtual TGeoMedium* GetMedium(const char* mediumName,
                                   TGeoManager *mgr = gGeoManager) const;
     // retrieve the mounting location and rotation needed to mount an SPD stave
+    virtual Int_t GetSPDsectorX0Size() const
+        {return fSPDsectorX0.GetSize();}
     virtual Bool_t GetSectorMountingPoints(Int_t index, Double_t &x0,
                                Double_t &y0, Double_t &x1, Double_t &y1) const;
     // displace the staves on the carbon fiber sector
