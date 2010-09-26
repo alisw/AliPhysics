@@ -14,6 +14,8 @@
 //   2) Subtract the feed-down with the "Nb" method
 //       Yield = Reco - Feed-down (exact formula on the function implementation)
 //
+//  (the corrected yields per bin are divided by the bin-width)
+//
 // Author: Z.Conesa, zconesa@in2p3.fr
 //***********************************************************************
 
@@ -96,6 +98,12 @@ class AliHFPtSpectrum: public TNamed
   // variables : analysed delta_y, BR for the final correction, BR b --> decay (relative to the input theoretical prediction)
   void ComputeHFPtSpectrum(Double_t deltaY=1.0, Double_t branchingRatioC=1.0, Double_t branchingRatioBintoFinalDecay=1.0);
 
+  //
+  // Basic functions
+  // 
+  TH1 * EstimateAndSetDirectEfficiencyRecoBin(TH1 *hSimu, TH1 *hReco);
+  TH1 * EstimateAndSetFeedDownEfficiencyRecoBin(TH1 *hSimu, TH1 *hReco);
+  
   //
   // Functions to  reweight histograms for testing purposes: 
   //   to reweight the simulation: hToReweight is reweighted as hReference/hToReweight

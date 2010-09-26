@@ -24,12 +24,17 @@
 //  4) Set the feed-down calculation option flag: 0=none, 1=fc only, 2=Nb only
 //  5) Set the luminosity
 //  6) Set the trigger efficiency
+//  7-14) If the efficiency histos do not have the right bin width, set the files & histo-names, they'll be computed, if the efficiencies are in file (6), don't set this parameters
 //
-void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
-		  const char *efffilename="Efficiencies.root",
-		  const char *recofilename="Reconstructed.root",
-		  const char *outfilename="HFPtSpectrum.root",
-		  int option=1, double lumi=1.0, double effTrig=1.0){
+void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
+		    const char *efffilename="Efficiencies.root",
+		    const char *recofilename="Reconstructed.root",
+		    const char *outfilename="HFPtSpectrum.root",
+		    int option=1, double lumi=1.0, double effTrig=1.0,
+		    const char *directsimufilename="", const char *directsimuhistoname="CFHFccontainer0_New_3Prong_SelStep0_proj-pt", 
+		    const char *directrecofilename="", const char *directrecohistoname="CFHFccontainer0_New_3Prong_SelStep8_proj-pt", 
+		    const char *feeddownsimufilename="", const char *feeddownsimuhistoname="CFHFccontainer0allD_New_3Prong_SelStep0_proj-pt", 
+		    const char *feeddownrecofilename="", const char *feeddownrecohistoname="CFHFccontainer0allD_New_3Prong_SelStep8_proj-pt") {
 
   //  Set if calculation considers asymmetric uncertainties or not 
   bool asym = true;
@@ -61,6 +66,12 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
   TH1D *hDirectEffpt;           // c-->D Acceptance and efficiency correction
   TH1D *hFeedDownEffpt;         // b-->D Acceptance and efficiency correction
   TH1D *hRECpt;                 // all reconstructed D
+  //
+  TH1D *hDirectSimulationpt;       // Simulated c--D spectra (used to re-compute the efficiency)
+  TH1D *hDirectReconstructionpt;   // Reconstructed c--D spectra (used to re-compute the efficiency)
+  TH1D *hFeedDownSimulationpt;     // Simulated b--D spectra (used to re-compute the efficiency)
+  TH1D *hFeedDownReconstructionpt; // Reconstructed b--D spectra (used to re-compute the efficiency)
+  //
 
   //
   // Define/Get the input histograms
@@ -90,11 +101,38 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
   hFeedDownMCptMax->SetNameTitle("hFeedDownMCptMax","max feed-down MC spectra");
   hFeedDownMCptMin->SetNameTitle("hFeedDownMCptMin","min feed-down MC spectra");
   //
-  TFile * efffile = new TFile(efffilename,"read");
-  hDirectEffpt = (TH1D*)efffile->Get("hDirectEffpt");
-  hDirectEffpt->SetNameTitle("hDirectEffpt","direct acc x eff");
-  hFeedDownEffpt = (TH1D*)efffile->Get("hFeedDownEffpt");
-  hFeedDownEffpt->SetNameTitle("hFeedDownEffpt","feed-down acc x eff");
+  //
+  if (strcmp(directsimufilename,"")!=0 && strcmp(directrecofilename,"")!=0 &&
+      strcmp(feeddownsimufilename,"")!=0 && strcmp(feeddownrecofilename,"")!=0 ) {
+    if (strcmp(directsimufilename,"")!=0){
+      TFile *directSimufile = new TFile(directsimufilename,"read");
+      hDirectSimulationpt = (TH1D*)directSimufile->Get(directsimuhistoname);
+      hDirectSimulationpt->SetNameTitle("hDirectSimulationpt","hDirectSimulationpt");
+    }
+    if (strcmp(directrecofilename,"")!=0){
+      TFile *directRecofile = new TFile(directrecofilename,"read");
+      hDirectReconstructionpt = (TH1D*)directRecofile->Get(directrecohistoname);
+      hDirectReconstructionpt->SetNameTitle("hDirectReconstructionpt","hDirectReconstructionpt");
+    }
+    if (strcmp(feeddownsimufilename,"")!=0){
+      TFile *feeddownSimufile = new TFile(feeddownsimufilename,"read");
+      hFeedDownSimulationpt = (TH1D*)feeddownSimufile->Get(feeddownsimuhistoname);
+      hFeedDownSimulationpt->SetNameTitle("hFeedDownSimulationpt","hFeedDownSimulationpt");
+    }
+    if (strcmp(feeddownrecofilename,"")!=0){
+      TFile *feeddownRecofile = new TFile(feeddownrecofilename,"read");
+      hFeedDownReconstructionpt = (TH1D*)feeddownRecofile->Get(feeddownrecohistoname);
+      hFeedDownReconstructionpt->SetNameTitle("hFeedDownReconstructionpt","hFeedDownReconstructionpt");
+    }
+  }
+  else {
+    TFile * efffile = new TFile(efffilename,"read");
+    hDirectEffpt = (TH1D*)efffile->Get("hDirectEffpt");
+    hDirectEffpt->SetNameTitle("hDirectEffpt","direct acc x eff");
+    hFeedDownEffpt = (TH1D*)efffile->Get("hFeedDownEffpt");
+    hFeedDownEffpt->SetNameTitle("hFeedDownEffpt","feed-down acc x eff");
+  }
+  //
   //
   TFile * recofile = new TFile(recofilename,"read");
   hRECpt = (TH1D*)recofile->Get("hRecoAll");
@@ -121,6 +159,10 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
   TH1D *histoSigmaCorr = (TH1D*)hRECpt->Clone();
   histoSigmaCorr->SetNameTitle("histoSigmaCorr","corrected invariant cross-section");
   histoSigmaCorr->Reset();
+  TH1D *histoSigmaCorrMax = (TH1D*)histoSigmaCorr->Clone();
+  histoSigmaCorrMax->SetNameTitle("histoSigmaCorrMax","max corrected invariant cross-section");
+  TH1D *histoSigmaCorrMin = (TH1D*)histoSigmaCorr->Clone();
+  histoSigmaCorrMin->SetNameTitle("histoSigmaCorrMin","min corrected invariant cross-section");
   //
   int nbins = hRECpt->GetNbinsX();
   TGraphAsymmErrors * gFc = new TGraphAsymmErrors(nbins);
@@ -138,9 +180,28 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
   spectra->SetComputeAsymmetricUncertainties(asym);
 
   // Feed the input histograms
-  spectra->SetAccEffCorrection(hDirectEffpt,hFeedDownEffpt);
+  //  reconstructed spectra
+  cout << " Setting the reconstructed spectrum,";
   spectra->SetReconstructedSpectrum(hRECpt);
-  // option specific histos
+  // acceptance and efficiency corrections
+  cout << " the files to compute the efficiency,";
+  if (strcmp(directsimufilename,"")!=0 && strcmp(directrecofilename,"")!=0 &&
+      strcmp(feeddownsimufilename,"")!=0 && strcmp(feeddownrecofilename,"")!=0 ) {
+    hDirectEffpt = (TH1D*)spectra->EstimateAndSetDirectEfficiencyRecoBin(hDirectSimulationpt,hDirectReconstructionpt);
+    hFeedDownEffpt = (TH1D*)spectra->EstimateAndSetFeedDownEfficiencyRecoBin(hFeedDownSimulationpt,hFeedDownReconstructionpt);
+    TCanvas *ceff = new TCanvas("ceff","efficiency drawing");
+    ceff->Divide(1,2);
+    ceff->cd(1);
+    hDirectEffpt->Draw();
+    ceff->cd(2);
+    hFeedDownEffpt->Draw();
+    ceff->Update();
+  }
+  else {
+    spectra->SetAccEffCorrection(hDirectEffpt,hFeedDownEffpt);
+  }
+  // option specific histos (theory)
+  cout << " the theoretical spectra";
   if(option==1){
     spectra->SetMCptSpectra(hDirectMCpt,hFeedDownMCpt);
     if(asym) spectra->SetMCptDistributionsBounds(hDirectMCptMax,hDirectMCptMin,hFeedDownMCptMax,hFeedDownMCptMin);
@@ -149,7 +210,8 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
     spectra->SetFeedDownMCptSpectra(hFeedDownMCpt);
     if(asym) spectra->SetFeedDownMCptDistributionsBounds(hFeedDownMCptMax,hFeedDownMCptMin);
   }
-  
+
+  cout << " and the normalization" <<endl;
   // Set normalization factors (uncertainties set to 0. as example)
   spectra->SetLuminosity(lumi,0.);
   spectra->SetTriggerEfficiency(effTrig,0.);
@@ -170,6 +232,8 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
   histoSigmaCorr = (TH1D*)spectra->GetHistoCrossSectionFromYieldSpectrum();
   histoYieldCorrMax = (TH1D*)spectra->GetHistoUpperLimitFeedDownCorrectedSpectrum(); 
   histoYieldCorrMin = (TH1D*)spectra->GetHistoLowerLimitFeedDownCorrectedSpectrum(); 
+  histoSigmaCorrMax = (TH1D*)spectra->GetHistoUpperLimitCrossSectionFromYieldSpectrum();
+  histoSigmaCorrMin = (TH1D*)spectra->GetHistoLowerLimitCrossSectionFromYieldSpectrum();
   if (asym) {
     gSigmaCorr = spectra->GetCrossSectionFromYieldSpectrum();
     gYieldCorr = spectra->GetFeedDownCorrectedSpectrum(); 
@@ -252,6 +316,20 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
   cresult->SetLogy();
   cresult->Update();
 
+  TCanvas * cresult2 = new TCanvas("cresult2","corrected yield & sigma");
+  histoSigmaCorr->SetMarkerStyle(21);
+  histoSigmaCorr->SetMarkerColor(2);
+  histoSigmaCorr->Draw("p");
+  histoYieldCorr->SetMarkerStyle(22);
+  histoYieldCorr->SetMarkerColor(6);
+  histoYieldCorr->Draw("psame");
+  hRECpt->SetMarkerStyle(23);
+  hRECpt->SetMarkerColor(3);
+  hRECpt->Draw("psame");
+  cresult2->SetLogy();
+  cresult2->Update();
+
+
   if (asym) { 
 
       TH2F *histoDraw = new TH2F("histoDraw","histo (for drawing)",100,0,33.25,100,50.,1e7);
@@ -269,7 +347,7 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
       gYieldCorr->SetMarkerStyle(20);
       gYieldCorr->SetFillColor(3);
       histoDraw->Draw();
-      gYieldCorr->Draw("3Csame");
+      gYieldCorr->Draw("3LPsame");
       gYieldCorr->Draw("Xsame");
       cyieldAsym->SetLogy();
       cyieldAsym->Update();
@@ -289,7 +367,7 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
       gSigmaCorr->SetMarkerStyle(21);
       gSigmaCorr->SetFillColor(4);
       histo2Draw->Draw();
-      gSigmaCorr->Draw("3Csame");
+      gSigmaCorr->Draw("3LPsame");
       gSigmaCorr->Draw("Xsame");
       csigmaAsym->SetLogy();
       csigmaAsym->Update();
@@ -311,6 +389,7 @@ void HFPtSpectrum(const char *mcfilename="FeedDownCorrectionMC.root",
   histoYieldCorr->Write();
   histoYieldCorrMax->Write();     histoYieldCorrMin->Write();   
   histoSigmaCorr->Write();
+  histoSigmaCorrMax->Write();     histoSigmaCorrMin->Write();
 
   if(asym){
     gYieldCorr->Write();
