@@ -79,6 +79,12 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fChargedKaonEtAcc(0)
         ,fMuonEtAcc(0)
         ,fElectronEtAcc(0)
+        ,fEnergyDeposited(0)
+        ,fEnergyTPC(0)
+        ,fCharge(0)
+        ,fParticlePid(0)
+        ,fPidProb(0)
+        ,fTrackPassedCut(kFALSE)
         ,fEtaCut(0)
 	,fEtaCutAcc(0)
 	,fPhiCutAccMin(0)
@@ -119,6 +125,7 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fHistEtRecvsEtMC(0)
         ,fHistTMDeltaR(0)
         ,fTree(0)
+        ,fTreeDeposit(0)
         ,fEsdtrackCutsTPC(0)
 {
 }
@@ -178,6 +185,7 @@ void AliAnalysisEt::FillOutputList(TList *list)
 	list->Add(fTree);
       }
     }
+    list->Add(fTreeDeposit);
 
 }
 
@@ -201,9 +209,9 @@ void AliAnalysisEt::CreateHistograms()
 
   // see if we should change histogram limits etc, and possibly create a tree
   if (fCuts) {
-    if (fCuts->GetHistMakeTree()) {
-      CreateTree();
-    }
+    //if (fCuts->GetHistMakeTree()) {
+      CreateTrees();
+    //}
 
     nbinsMult = fCuts->GetHistNbinsMult();
     minMult = fCuts->GetHistMinMult();
@@ -335,37 +343,53 @@ void AliAnalysisEt::CreateHistograms()
 
 }
 
-void AliAnalysisEt::CreateTree()
+void AliAnalysisEt::CreateTrees()
 { // create tree..
   TString treename = "fTree" + fHistogramNameSuffix;
-  fTree = new TTree(treename, treename);
-  fTree->Branch("fTotEt",&fTotEt,"fTotEt/D");
-  fTree->Branch("fTotEtAcc",&fTotEtAcc,"fTotEtAcc/D");
-  fTree->Branch("fTotNeutralEt",&fTotNeutralEt,"fTotNeutralEt/D");
-  fTree->Branch("fTotNeutralEtAcc",&fTotNeutralEtAcc,"fTotNeutralEtAcc/D");
-  fTree->Branch("fTotChargedEt",&fTotChargedEt,"fTotChargedEt/D");
-  fTree->Branch("fTotChargedEtAcc",&fTotChargedEtAcc,"fTotChargedEtAcc/D");
-  fTree->Branch("fMultiplicity",&fMultiplicity,"fMultiplicity/I");
-  fTree->Branch("fChargedMultiplicity",&fChargedMultiplicity,"fChargedMultiplicity/I");
-  fTree->Branch("fNeutralMultiplicity",&fNeutralMultiplicity,"fNeutralMultiplicity/I");
-  fTree->Branch("fBaryonEt",&fBaryonEt,"fBaryonEt/D");
-  fTree->Branch("fAntiBaryonEt",&fAntiBaryonEt,"fAntiBaryonEt/D");
-  fTree->Branch("fMesonEt",&fMesonEt,"fMesonEt/D");
-  fTree->Branch("fBaryonEtAcc",&fBaryonEtAcc,"fBaryonEtAcc/D");
-  fTree->Branch("fAntiBaryonEtAcc",&fAntiBaryonEtAcc,"fAntiBaryonEtAcc/D");
-  fTree->Branch("fMesonEtAcc",&fMesonEtAcc,"fMesonEtAcc/D");
-  fTree->Branch("fProtonEt",&fProtonEt,"fProtonEt/D");
-  fTree->Branch("fChargedKaonEt",&fChargedKaonEt,"fChargedKaonEt/D");
-  fTree->Branch("fMuonEt",&fMuonEt,"fMuonEt/D");
-  fTree->Branch("fElectronEt",&fElectronEt,"fElectronEt/D");
-  fTree->Branch("fProtonEtAcc",&fProtonEtAcc,"fProtonEtAcc/D");
-  fTree->Branch("fChargedKaonEtAcc",&fChargedKaonEtAcc,"fChargedKaonEtAcc/D");
-  fTree->Branch("fMuonEtAcc",&fMuonEtAcc,"fMuonEtAcc/D");
-  fTree->Branch("fElectronEtAcc",&fElectronEtAcc,"fElectronEtAcc/D");
-
+  if(fCuts->GetHistMakeTree())
+  {
+  
+    fTree = new TTree(treename, treename);
+    fTree->Branch("fTotEt",&fTotEt,"fTotEt/D");
+    fTree->Branch("fTotEtAcc",&fTotEtAcc,"fTotEtAcc/D");
+    fTree->Branch("fTotNeutralEt",&fTotNeutralEt,"fTotNeutralEt/D");
+    fTree->Branch("fTotNeutralEtAcc",&fTotNeutralEtAcc,"fTotNeutralEtAcc/D");
+    fTree->Branch("fTotChargedEt",&fTotChargedEt,"fTotChargedEt/D");
+    fTree->Branch("fTotChargedEtAcc",&fTotChargedEtAcc,"fTotChargedEtAcc/D");
+    fTree->Branch("fMultiplicity",&fMultiplicity,"fMultiplicity/I");
+    fTree->Branch("fChargedMultiplicity",&fChargedMultiplicity,"fChargedMultiplicity/I");
+    fTree->Branch("fNeutralMultiplicity",&fNeutralMultiplicity,"fNeutralMultiplicity/I");
+    fTree->Branch("fBaryonEt",&fBaryonEt,"fBaryonEt/D");
+    fTree->Branch("fAntiBaryonEt",&fAntiBaryonEt,"fAntiBaryonEt/D");
+    fTree->Branch("fMesonEt",&fMesonEt,"fMesonEt/D");
+    fTree->Branch("fBaryonEtAcc",&fBaryonEtAcc,"fBaryonEtAcc/D");
+    fTree->Branch("fAntiBaryonEtAcc",&fAntiBaryonEtAcc,"fAntiBaryonEtAcc/D");
+    fTree->Branch("fMesonEtAcc",&fMesonEtAcc,"fMesonEtAcc/D");
+    fTree->Branch("fProtonEt",&fProtonEt,"fProtonEt/D");
+    fTree->Branch("fChargedKaonEt",&fChargedKaonEt,"fChargedKaonEt/D");
+    fTree->Branch("fMuonEt",&fMuonEt,"fMuonEt/D");
+    fTree->Branch("fElectronEt",&fElectronEt,"fElectronEt/D");
+    fTree->Branch("fProtonEtAcc",&fProtonEtAcc,"fProtonEtAcc/D");
+    fTree->Branch("fChargedKaonEtAcc",&fChargedKaonEtAcc,"fChargedKaonEtAcc/D");
+    fTree->Branch("fMuonEtAcc",&fMuonEtAcc,"fMuonEtAcc/D");
+    fTree->Branch("fElectronEtAcc",&fElectronEtAcc,"fElectronEtAcc/D");
+  }
+  
+  if(fCuts->GetHistMakeTreeDeposit())
+  {
+    treename = "fTreeDeposit" + fHistogramNameSuffix;
+    fTreeDeposit = new TTree(treename, treename);
+  
+    fTreeDeposit->Branch("fEnergyDeposited", &fEnergyDeposited, "fEnergyDeposited/F");
+    fTreeDeposit->Branch("fEnergyTPC", &fEnergyTPC, "fEnergyTPC/F");
+    fTreeDeposit->Branch("fCharge", &fCharge, "fCharge/S");
+    fTreeDeposit->Branch("fParticlePid", &fParticlePid, "fParticlePid/S");
+    fTreeDeposit->Branch("fPidProb", &fPidProb, "fPidProb/F");
+    fTreeDeposit->Branch("fTrackPassedCut", &fTrackPassedCut, "fTrackPassedCut/B");
+ 
+  }
   return;
 }
-
 void AliAnalysisEt::FillHistograms()
 { // fill histograms..
     fHistEt->Fill(fTotEt);

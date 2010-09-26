@@ -43,7 +43,7 @@ public:
     * Uses the fHistogramNameSuffix to create proper histogram names
     */
     virtual void CreateHistograms();
-    virtual void CreateTree();
+    virtual void CreateTrees();
     
     /** Fills the histograms, must be overloaded if you want to add your own */
     virtual void FillHistograms();
@@ -147,6 +147,14 @@ protected:
     Double_t fChargedKaonEtAcc; /** Et of identified charged kaons in calorimeter acceptance */    
     Double_t fMuonEtAcc; /** Et of identified muons in calorimeter acceptance */
     Double_t fElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
+    
+    Float_t fEnergyDeposited; /** Energy deposited in calorimeter */
+    Float_t fEnergyTPC; /** Energy measured in TPC */
+    Short_t fCharge; /** Charge of the particle */
+    Short_t fParticlePid; /** Particle PID */
+    Float_t fPidProb; /** Probability of PID */
+    Bool_t fTrackPassedCut; /** The track is accepted by ESDTrackCuts */
+   
         
     Double_t fEtaCut;/** Cut in eta (standard |eta| < 0.5 )*/
 
@@ -174,7 +182,7 @@ protected:
     TH1F *fHistEt; //Et spectrum
 
     /** The full charged Et spectrum measured */
-    TH1F *fHistChargedEt; //Charged Et spectrum
+    TH1F *fHistChargedEt; //Charged Et spectrum 
 
     /** The full neutral Et spectrum measured */
     TH1F *fHistNeutralEt; //Neutral Et spectrum
@@ -231,6 +239,7 @@ protected:
     TH1F *fHistTMDeltaR; /* Track matching plots */
 
     TTree *fTree; // optional TTree
+    TTree *fTreeDeposit; // optional TTree for energy deposit measurements
 
     AliESDtrackCuts* fEsdtrackCutsTPC;//esd track cuts for TPC tracks (which may also contain ITS hits)
 
