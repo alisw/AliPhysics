@@ -196,7 +196,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
 	if (cluster->GetType() != fClusterType) continue;
 	//if(cluster->GetTracksMatched() > 0) 
-	// printf("Rec Cluster: iCluster %03d E %4.3f type %d NCells %d, nmatched: %d, distance to closest: %f\n", iCluster, cluster->E(), (int)(cluster->GetType()), cluster->GetNCells(), cluster->GetNTracksMatched(), cluster->GetEmcCpvDistance()); // tmp/debug printout
+//	printf("Rec Cluster: iCluster %03d E %4.3f type %d NCells %d, nmatched: %d, distance to closest: %f\n", iCluster, cluster->E(), (int)(cluster->GetType()), cluster->GetNCells(), cluster->GetNTracksMatched(), cluster->GetEmcCpvDistance()); // tmp/debug printout
 	       
         
         if (cluster->E() < fClusterEnergyCut) continue;
@@ -231,6 +231,17 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                             maxpid = p;
                         }
                     }
+                    if(fCuts->GetHistMakeTreeDeposit() && fTreeDeposit)
+		    {
+		      fEnergyDeposited = cluster->E();
+		      fEnergyTPC = track->E();
+		      fCharge = track->Charge();
+		      fParticlePid = maxpid;
+		      fPidProb = maxpidweight;
+		      fTrackPassedCut = fEsdtrackCutsTPC->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
+		      fTreeDeposit->Fill();
+		    }
+			 
                     if(maxpidweight > fPidCut)
 		    {
 		      Float_t dist = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);

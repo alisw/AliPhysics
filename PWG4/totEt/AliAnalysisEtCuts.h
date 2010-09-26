@@ -60,6 +60,7 @@ class AliAnalysisEtCuts : public TNamed
   Double_t GetMonteCarloNeutralParticle() const { return fMonteCarloNeutralParticle; }
   // Hist: TTree and histogram info
   Bool_t GetHistMakeTree() const { return fHistMakeTree; }
+  Bool_t GetHistMakeTreeDeposit() const { return fHistMakeTreeDeposit; }
   //
   Int_t GetHistNbinsMult() const { return fHistNbinsMult; }
   Double_t GetHistMinMult() const { return fHistMinMult; }
@@ -117,6 +118,7 @@ class AliAnalysisEtCuts : public TNamed
   void SetMonteCarloNeutralParticle(const Double_t val) { fMonteCarloNeutralParticle = val; }
   // Hist: TTree and histogram info
   void SetHistMakeTree(const Bool_t val) { fHistMakeTree = val; }
+  void SetHistMakeTreeDeposit(const Bool_t val) { fHistMakeTreeDeposit = val; }
   //
   void SetHistNbinsMult(const Int_t val) { fHistNbinsMult = val; }
   void SetHistMinMult(const Double_t val) { fHistMinMult = val; }
@@ -183,7 +185,8 @@ class AliAnalysisEtCuts : public TNamed
 
   // Hist: TTree and histogram info
   Bool_t fHistMakeTree; // whether to make a summary tree or not
-  //
+  Bool_t fHistMakeTreeDeposit; // whether to make a summary tree of energy deposit or not
+  
   Int_t fHistNbinsMult; // number of bins in multiplicity histograms
   Double_t fHistMinMult; // minimum value in multiplicity histograms
   Double_t fHistMaxMult; // maximum value in multiplicity histograms

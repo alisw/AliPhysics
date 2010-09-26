@@ -35,7 +35,7 @@ void AliAnalysisEtReconstructedPhos::Init()
   fPhiCutAccMin = fCuts->GetGeometryPhosPhiAccMinCut() * TMath::Pi()/180.;
   fClusterEnergyCut = fCuts->GetReconstructedPhosClusterEnergyCut();
   fSingleCellEnergyCut = fCuts->GetReconstructedPhosSingleCellEnergyCut();
-
+  
   fClusterType = fCuts->GetReconstructedPhosClusterType();
   fTrackDistanceCut = fCuts->GetReconstructedPhosTrackDistanceCut();
 
