@@ -700,7 +700,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 					return bLabelArray;
 				}
 				Int_t labelFirstDauRes = part->GetDaughter(0); 
-				for(Int_t iDauRes=0; iDauRes<fProngs-1; iDauRes++){
+				for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
 					Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
 					AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
 					fLabelArray[foundDaughters] = dauRes->GetLabel();
