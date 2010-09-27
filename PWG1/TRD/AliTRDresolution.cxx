@@ -329,9 +329,9 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
   // do LINEAR track refit if asked by the user
   // it is the user responsibility to check if B=0T
   Float_t param[10];  memset(param, 0, 10*sizeof(Float_t));
+  Int_t np(0), nrc(0); AliTrackPoint clusters[300];
   if(HasTrackRefit()){
     Bool_t kPrimary(kFALSE);
-    Int_t np(0), nrc(0); AliTrackPoint clusters[300];
     for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
       if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
       if(!fTracklet->IsOK()) continue;
@@ -343,6 +343,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
         Float_t xyz[3] = {c->GetX(), c->GetY(), c->GetZ()};
         clusters[np].SetCharge(tilt);
         clusters[np].SetClusterType(0);
+        clusters[np].SetVolumeID(ily);
         clusters[np].SetXYZ(xyz);
         np++;
       }
@@ -351,6 +352,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
         if(fTracklet->GetEstimatedCrossPoint(xcross, zcross)){
           clusters[np].SetCharge(tilt);
           clusters[np].SetClusterType(1);
+          clusters[np].SetVolumeID(ily);
           clusters[np].SetXYZ(xcross, 0., zcross);
           np++;
           nrc++;
@@ -361,6 +363,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     if(kPrimary){
       clusters[np].SetCharge(tilt);
       clusters[np].SetClusterType(1);
+      clusters[np].SetVolumeID(-1);
       clusters[np].SetXYZ(0., 0., 0.);
       np++;
     }
@@ -389,9 +392,11 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     
     // retrive the track angle with the chamber
     if(HasTrackRefit()){
-      dydx = param[3];
+      Float_t par[3];
+      if(!FitTracklet(ily, np, clusters, param, par)) continue;
+      dydx = par[2];//param[3];
       dzdx = param[4];
-      y0   = param[1] + dydx * (x0 - param[0]);
+      y0   = par[1] + dydx * (x0 - par[0]);//param[1] + dydx * (x0 - param[0]);
       z0   = param[2] + dzdx * (x0 - param[0]);
     } else {
       y0   = fTracklet->GetYref(0);
@@ -399,10 +404,10 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       dydx = fTracklet->GetYref(1);
       dzdx = fTracklet->GetZref(1);
     }
-    /*printf("RC[%c] Primary[%c]\n"
+    printf("RC[%c] Primary[%c]\n"
            "  Fit : y0[%f] z0[%f] dydx[%f] dzdx[%f]\n"
            "  Ref:  y0[%f] z0[%f] dydx[%f] dzdx[%f]\n", fTracklet->IsRowCross()?'y':'n', fTracklet->IsPrimary()?'y':'n', y0, z0, dydx, dzdx
-           ,fTracklet->GetYref(0),fTracklet->GetZref(0),fTracklet->GetYref(1),fTracklet->GetZref(1));*/
+           ,fTracklet->GetYref(0),fTracklet->GetZref(0),fTracklet->GetYref(1),fTracklet->GetZref(1));
     tilt = fTracklet->GetTilt();
     fTracklet->GetCovRef(covR);
     Double_t t2(tilt*tilt)
@@ -1882,7 +1887,9 @@ void AliTRDresolution::MakeSummary()
 
   cOut->SaveAs(Form("%s.gif", cOut->GetName()));
 
-  if(!HasMCdata()){
+  if(!HasMCdata() ||
+    (!fGraphS->At(kMCcluster) || !fGraphM->At(kMCcluster) ||
+     !fGraphS->At(kMCtracklet) || !fGraphM->At(kMCtracklet))){
     delete cOut;
     return;
   }
@@ -3044,6 +3051,65 @@ Bool_t AliTRDresolution::FitTrack(const Int_t np, AliTrackPoint *points, Float_t
 
   param[0] = x0; param[1] = y0; param[2] = z0; param[3] = dydx; param[4] = dzdx;
   if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>3) printf("D-AliTRDresolution::FitTrack: x0[%f] y0[%f] z0[%f] dydx[%f] dzdx[%f]\n", x0, y0, z0, dydx, dzdx);
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t AliTRDresolution::FitTracklet(const Int_t ly, const Int_t np, AliTrackPoint *points, const Float_t param[10], Float_t par[3])
+{
+//
+// Fit tracklet with a staight line using the coresponding subset of clusters out of the total "np" clusters stored in the array "points".
+// See function FitTrack for the data stored in the "clusters" array
+
+// The parameters of the straight line fit are stored in the array "param" in the following order :
+//     par[0] - x0 reference radial position
+//     par[1] - y0 reference r-phi position @ x0
+//     par[2] - slope dy/dx
+//
+// Attention :
+// Function should be used to refit tracks for B=0T
+//
+
+  TLinearFitter yfitter(2, "pol1");
+
+  // grep data for tracklet
+  Double_t x0(0.), x[60], y[60], dy[60];
+  Int_t nly(0);
+  for(Int_t ip(0); ip<np; ip++){
+    if(points[ip].GetClusterType()) continue;
+    if(points[ip].GetVolumeID() != ly) continue;
+    Float_t xt(points[ip].GetX())
+           ,yt(param[1] + param[3] * (xt - param[0]));
+    x[nly] = xt;
+    y[nly] = points[ip].GetY();
+    dy[nly]= y[nly]-yt;
+    x0    += xt;
+    nly++;
+  }
+  if(nly<10){
+    if(AliLog::GetDebugLevel("PWG1", "AliTRDresolution")>1) printf("D-AliTRDresolution::FitTracklet: Not enough clusters to fit a tracklet [%d].", nly);
+    return kFALSE;
+  }
+  // set radial reference for fit
+  x0 /= Float_t(nly);
+
+  // find tracklet core
+  Double_t mean(0.), sig(1.e3);
+  AliMathBase::EvaluateUni(nly, dy, mean, sig, 0);
+
+  // simple cluster error parameterization
+  Float_t kSigCut = TMath::Sqrt(5.e-4 + param[3]*param[3]*0.018);
+
+  // fit tracklet core
+  for(Int_t jly(0); jly<nly; jly++){
+    if(TMath::Abs(dy[jly]-mean)>kSigCut) continue;
+    Double_t dx(x[jly]-x0);
+    yfitter.AddPoint(&dx, y[jly], 1.);
+  }
+  if(yfitter.Eval() != 0) return kFALSE;
+  par[0] = x0;
+  par[1] = yfitter.GetParameter(0);
+  par[2] = yfitter.GetParameter(1);
   return kTRUE;
 }
 

@@ -65,6 +65,7 @@ public:
   virtual ~AliTRDresolution();
   
   static Bool_t  FitTrack(const Int_t np, AliTrackPoint *points, Float_t params[10]);
+  static Bool_t  FitTracklet(const Int_t ly, const Int_t np, AliTrackPoint *points, const Float_t trackPars[10], Float_t trackletPars[3]);
   void    UserCreateOutputObjects();
   Float_t GetDyRange() const {return fDyRange;}
   Float_t GetPtThreshold() const {return fPtThreshold;}
