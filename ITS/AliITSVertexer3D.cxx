@@ -63,7 +63,9 @@ AliITSVertexer3D::AliITSVertexer3D():
   fBinSizeR(0.),
   fBinSizeZ(0.),
   fPileupAlgo(0),
-  fMaxNumOfCl(fgkMaxNumOfClDefault)
+  fMaxNumOfCl(fgkMaxNumOfClDefault),
+  fDoDownScale(kFALSE),
+  fGenerForDownScale(0)
 {
   // Default constructor
   SetCoarseDiffPhiCut();
@@ -86,6 +88,7 @@ AliITSVertexer3D::AliITSVertexer3D():
   Double_t binsize=0.02; // default 200 micron
   Int_t nbins=static_cast<Int_t>(1+2*fZCutDiamond/binsize);
   fZHisto=new TH1F("hz","",nbins,-fZCutDiamond,-fZCutDiamond+binsize*nbins);
+  fGenerForDownScale=new TRandom3(987654321);
 }
 
 //______________________________________________________________________
@@ -93,6 +96,7 @@ AliITSVertexer3D::~AliITSVertexer3D() {
   // Destructor
   fLines.Clear("C");
   if(fZHisto) delete fZHisto;
+  if(fGenerForDownScale) delete fGenerForDownScale;
 }
 
 //______________________________________________________________________
@@ -522,9 +526,23 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
     return -1;
   }
   AliDebug(1,Form("RecPoints on Layer 1,2 = %d, %d\n",nrpL1,nrpL2));
+  fDoDownScale=kFALSE;
+  Float_t factDownScal=1.;
+  Int_t origLaddersOnLayer2=fLadOnLay2;
+
   if(nrpL1>fMaxNumOfCl || nrpL2>fMaxNumOfCl){
-    AliWarning(Form("Too many recpoints on SPD(%d %d ), call vertexerZ",nrpL1,nrpL2));
-    return -1;
+    SetLaddersOnLayer2(2);
+    fDoDownScale=kTRUE;
+    factDownScal=(Float_t)fMaxNumOfCl*(Float_t)fMaxNumOfCl/(Float_t)nrpL1/(Float_t)nrpL2;
+    if(optCuts==1){
+      factDownScal*=(fCoarseDiffPhiCut/fDiffPhiMax)*10;
+      if(factDownScal>1.){
+	fDoDownScale=kFALSE;
+	SetLaddersOnLayer2(origLaddersOnLayer2);
+      }
+    }
+    else if(optCuts==2) return -1;
+    if(fDoDownScale)AliDebug(1,Form("Too many recpoints on SPD(%d %d ), downscale by %f",nrpL1,nrpL2,factDownScal));
   }
 
   Double_t a[3]={xbeam,ybeam,0.}; 
@@ -539,6 +557,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   Int_t lastL1 = AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;
   for(Int_t modul1= firstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
     if(!fUseModule[modul1]) continue;
+    
     UShort_t ladder=modul1/4+1; // ladders are numbered starting from 1
     TClonesArray *prpl1=rpcont->UncheckedGetClusters(modul1);
     Int_t nrecp1 = prpl1->GetEntries();
@@ -546,6 +565,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
       if(j>kMaxCluPerMod) continue;
       UShort_t idClu1=modul1*kMaxCluPerMod+j;
       if(fUsedCluster.TestBitNumber(idClu1)) continue;
+      if(fDoDownScale && fGenerForDownScale->Rndm()>factDownScal) continue;
       AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1->At(j);
       recp1->GetGlobalXYZ(gc1f);
       for(Int_t ico=0;ico<3;ico++)gc1[ico]=gc1f[ico];
@@ -564,6 +584,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    if(j2>kMaxCluPerMod) continue;
 	    UShort_t idClu2=modul2*kMaxCluPerMod+j2;
 	    if(fUsedCluster.TestBitNumber(idClu2)) continue;
+
 	    AliITSRecPoint *recp2 = (AliITSRecPoint*)itsRec->At(j2);
 	    recp2->GetGlobalXYZ(gc2f);
 	    for(Int_t ico=0;ico<3;ico++)gc2[ico]=gc2f[ico];
@@ -589,6 +610,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 	    if(dca>deltaR)continue;
 	    Double_t deltaZ=cp[2]-zvert;
 	    if(TMath::Abs(deltaZ)>dZmax)continue;
+
 
 	    if(nolines == 0){
 	      if(fLines.GetEntriesFast()>0)fLines.Clear("C");
@@ -639,6 +661,12 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
       }
     }
   }
+
+  if(fDoDownScale){
+    SetLaddersOnLayer2(origLaddersOnLayer2);
+  }
+
+
   if(nolines == 0)return -2;
   return nolines;
 }
@@ -667,6 +695,13 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     xbeam=fVert3D.GetXv();
     ybeam=fVert3D.GetYv();
     deltaR=fMaxRCut;
+  }
+
+  Double_t origBinSizeR=fBinSizeR;
+  Double_t origBinSizeZ=fBinSizeZ;
+  if(fDoDownScale){
+    SetBinSizeR(0.05);
+    SetBinSizeZ(0.05);
   }
 
   Double_t rl=-fCoarseMaxRCut;
@@ -750,6 +785,47 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     if(ntrkl==1 || ntimes>1){delete h3dcs; return retcode;}
   }
   delete h3dcs;
+
+  // Finer Histo in limited range in case of high mult.
+  if(fDoDownScale){
+    SetBinSizeR(0.01);
+    SetBinSizeZ(0.01);
+    Double_t xl=peak[0]-0.3;
+    Double_t xh=peak[0]+0.3;
+    Double_t yl=peak[1]-0.3;
+    Double_t yh=peak[1]+0.3;
+    zl=peak[2]-0.5;
+    zh=peak[2]+0.5;
+    Int_t nbxfs=(Int_t)((xh-xl)/fBinSizeR+0.0001);
+    Int_t nbyfs=(Int_t)((yh-yl)/fBinSizeR+0.0001);
+    Int_t nbzfs=(Int_t)((zh-zl)/fBinSizeZ+0.0001);
+
+    TH3F *h3dfs = new TH3F("h3dfs","xyz distribution",nbxfs,xl,xh,nbyfs,yl,yh,nbzfs,zl,zh);
+    for(Int_t i=0; i<fLines.GetEntriesFast()-1;i++){
+      AliStrLine *l1 = (AliStrLine*)fLines.At(i);
+      for(Int_t j=i+1;j<fLines.GetEntriesFast();j++){
+	AliStrLine *l2 = (AliStrLine*)fLines.At(j);
+	Double_t point[3];
+	Int_t retc = l1->Cross(l2,point);
+	if(retc<0)continue;
+	h3dfs->Fill(point[0],point[1],point[2]);
+      }
+    }
+    ntrkl=0;
+    ntimes=0;
+
+    Double_t newpeak[3]={0.,0.,0.};
+    FindPeaks(h3dfs,newpeak,ntrkl,ntimes);  
+    if(ntimes==1){
+      for(Int_t iCoo=0; iCoo<3; iCoo++) peak[iCoo]=newpeak[iCoo];
+      binsizer=fBinSizeR;
+      binsizez=fBinSizeZ;
+    }
+    delete h3dfs;
+    SetBinSizeR(origBinSizeR);
+    SetBinSizeZ(origBinSizeZ);
+  }
+
 
   //         Second selection loop
 

@@ -12,6 +12,7 @@
 /* $Id$ */
 
 #include <TClonesArray.h>
+#include <TRandom3.h>
 #include <AliESDVertex.h>
 #include <TH3F.h>
 #include <TBits.h>
@@ -100,10 +101,12 @@ protected:
                            // 0->VertexerZ pileup algo
                            // 1->Unused RecPoints algo
   Int_t fMaxNumOfCl;       // max number of clusters on L1 or L2
+  Bool_t fDoDownScale;     // Control downscaling of tracklets in high mult
+  TRandom3 *fGenerForDownScale; // randomnumber generator fordownscaling
 
   static const Int_t fgkMaxNumOfClDefault; // Default max number of clusters
 
-  ClassDef(AliITSVertexer3D,13);
+  ClassDef(AliITSVertexer3D,14);
 
 };
 
