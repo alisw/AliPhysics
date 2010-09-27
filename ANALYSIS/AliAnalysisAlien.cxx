@@ -2833,9 +2833,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "// fast xrootd reading enabled" << endl;
          out << "   printf(\"!!! You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !!!\");" << endl;
          out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",10);" << endl;
-         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",20);" << endl;
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
-         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",50);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }   
       out << "// connect to AliEn and make the chain" << endl;
@@ -2866,7 +2866,10 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>3) {
             out << "   gEnv->SetValue(\"XNet.Debug\", \"1\");" << endl;
          } else {
-            out << "   AliLog::SetGlobalLogLevel(AliLog::kError);" << endl;
+            if (TestBit(AliAnalysisGrid::kTest))            
+               out << "   AliLog::SetGlobalLogLevel(AliLog::kWarning);" << endl;
+            else
+               out << "   AliLog::SetGlobalLogLevel(AliLog::kError);" << endl;
          }
       }   
       out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
@@ -3160,9 +3163,9 @@ void AliAnalysisAlien::WriteMergingMacro()
          out << "// fast xrootd reading enabled" << endl;
          out << "   printf(\"!!! You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !!!\");" << endl;
          out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",10);" << endl;
-         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",20);" << endl;
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
-         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",50);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }
       // Change temp directory to current one
@@ -3226,10 +3229,14 @@ void AliAnalysisAlien::WriteMergingMacro()
          if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>3) {
             out << "   gEnv->SetValue(\"XNet.Debug\", \"1\");" << endl;
          } else {
-            out << "   AliLog::SetGlobalLogLevel(AliLog::kError);" << endl;
+            if (TestBit(AliAnalysisGrid::kTest))            
+               out << "   AliLog::SetGlobalLogLevel(AliLog::kWarning);" << endl;
+            else
+               out << "   AliLog::SetGlobalLogLevel(AliLog::kError);" << endl;
          }
       }   
-      out << "   mgr->StartAnalysis(\"gridterminate\");" << endl;
+      out << "   TTree *tree = NULL;" << endl;
+      out << "   mgr->StartAnalysis(\"gridterminate\", tree);" << endl;
       out << "}" << endl << endl;
       if (hasANALYSISalice) {
          out <<"//________________________________________________________________________________" << endl;
