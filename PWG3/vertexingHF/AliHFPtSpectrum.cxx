@@ -33,7 +33,6 @@
 #include "TMath.h"
 #include "TH1.h"
 #include "TH1D.h"
-#include "TCanvas.h"
 #include "TGraphAsymmErrors.h"
 #include "TNamed.h"
 
@@ -170,6 +169,56 @@ AliHFPtSpectrum::~AliHFPtSpectrum(){
   
 
 //_________________________________________________________________________________________________________
+TH1 * AliHFPtSpectrum::RebinTheoreticalSpectra(TH1 *hTheory) {
+  //
+  // Function to rebin the theoretical spectrum 
+  //  with respect to the real-data reconstructed spectrum binning 
+  //
+  
+  if (!hTheory || !fhRECpt) {
+    AliError("Feed-down or reconstructed spectra don't exist");
+    return NULL;
+  }
+
+  //
+  // Get the reconstructed spectra bins & limits
+  Int_t nbins = fhRECpt->GetNbinsX();
+  Int_t nbinsMC = hTheory->GetNbinsX();
+  Double_t *limits = new Double_t[nbins+1];
+  Double_t xlow=0., binwidth=0.;
+  for (Int_t i=0; i<=nbins; i++) {
+    binwidth = fhRECpt->GetBinWidth(i);
+    xlow = fhRECpt->GetBinLowEdge(i);
+    limits[i-1] = xlow;
+  }
+  limits[nbins] = xlow + binwidth;
+
+  //
+  // Define a new histogram with the real-data reconstructed spectrum binning 
+  TH1D * hTheoryRebin = new TH1D("hTheoryRebin"," theoretical rebinned prediction",nbins,limits);
+
+  Double_t sum[nbins], items[nbins];
+  for (Int_t ibin=0; ibin<=nbinsMC; ibin++){
+    
+    for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++){
+      if( hTheory->GetBinCenter(ibin)>limits[ibinrec] && 
+	  hTheory->GetBinCenter(ibin)<limits[ibinrec+1]){
+	sum[ibinrec]+=hTheory->GetBinContent(ibin);
+	items[ibinrec]+=1.;
+      }
+    }
+    
+  }
+
+  // set the theoretical rebinned spectra to ( sum-bins / n-bins ) per new bin
+  for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++) {
+    hTheoryRebin->SetBinContent(ibinrec+1,sum[ibinrec]/items[ibinrec]);
+  }
+  
+  return (TH1*)hTheoryRebin;
+}
+
+//_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetMCptSpectra(TH1 *hDirect, TH1 *hFeedDown){
   //
   // Set the MonteCarlo or Theoretical spectra
@@ -189,22 +238,8 @@ void AliHFPtSpectrum::SetMCptSpectra(TH1 *hDirect, TH1 *hFeedDown){
   }
 
   //
-  // Get the reconstructed spectra bins & limits
-  Int_t nbins = fhRECpt->GetNbinsX();
-  Double_t *limits = new Double_t[nbins+1];
-  Double_t xlow=0., binwidth=0.;
-  for (Int_t i=0; i<=nbins; i++) {
-    binwidth = fhRECpt->GetBinWidth(i);
-    xlow = fhRECpt->GetBinLowEdge(i);
-    limits[i-1] = xlow;
-    //    cout <<" bin = " << i <<", bin width = "<< binwidth << ", low edge = " << xlow << ", high edge = " << xlow+binwidth <<endl;
-  }
-  limits[nbins] = xlow + binwidth;
-
-  //
   // If the predictions shape do not have the same
   //  bin width (check via number of bins) as the reconstructed spectra, change them 
-  Int_t nbinsMC = hDirect->GetNbinsX();
   if (hDirect->GetBinWidth(1) == fhRECpt->GetBinWidth(1)) {
 
     fhDirectMCpt = hDirect;
@@ -213,51 +248,11 @@ void AliHFPtSpectrum::SetMCptSpectra(TH1 *hDirect, TH1 *hFeedDown){
   } 
   else {
 
-    fhDirectMCpt = new TH1D("fhDirectMCpt"," direct theoretical prediction",nbins,limits);
-    fhFeedDownMCpt = new TH1D("fhFeedDownMCpt"," feed-down theoretical prediction",nbins,limits);
+    fhDirectMCpt = RebinTheoreticalSpectra(hDirect);
+    fhDirectMCpt->SetNameTitle("fhDirectMCpt"," direct theoretical prediction");
+    fhFeedDownMCpt = RebinTheoreticalSpectra(hFeedDown);
+    fhFeedDownMCpt->SetNameTitle("fhFeedDownMCpt"," feed-down theoretical prediction");
 
-    Double_t sumd[nbins], sumf[nbins], itemsd[nbins], itemsf[nbins];
-    for (Int_t ibinrec=0; ibinrec<=nbins; ibinrec++){
-      sumd[ibinrec]=0.; sumf[ibinrec]=0.; itemsd[ibinrec]=0.; itemsf[ibinrec]=0.;
-    }
-    for (Int_t ibin=0; ibin<=nbinsMC; ibin++){
-
-      for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++){
-	if( hDirect->GetBinCenter(ibin)>limits[ibinrec] && 
-	    hDirect->GetBinCenter(ibin)<limits[ibinrec+1]){
-	  sumd[ibinrec]+=hDirect->GetBinContent(ibin);
-	  itemsd[ibinrec]+=1.;
-	  //	  cout << " binrec="<< ibinrec << " sumd="<< sumd[ibinrec] << endl;
-	}
-	if( hFeedDown->GetBinCenter(ibin)>limits[ibinrec] && 
-	    hFeedDown->GetBinCenter(ibin)<limits[ibinrec+1]){
-	  sumf[ibinrec]+=hFeedDown->GetBinContent(ibin);
-	  itemsf[ibinrec]+=1.;
-	  //	  cout << " binrec="<< ibinrec << ", sumf=" << sumf[ibinrec] << endl;
-	}
-      }
-
-    }
-
-    // set the theoretical rebinned spectra to ( sum-bins / n-bins ) per new bin
-    for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++) {
-      fhDirectMCpt->SetBinContent(ibinrec+1,sumd[ibinrec]/itemsd[ibinrec]);
-      fhFeedDownMCpt->SetBinContent(ibinrec+1,sumf[ibinrec]/itemsf[ibinrec]);
-      //      cout << " Setting: binrec="<< ibinrec <<", at x="<<fhDirectMCpt->GetBinCenter(ibinrec)<< " sumd="<< sumd[ibinrec] << ", sumf=" << sumf[ibinrec] << endl;
-    }
-
-    // control plot
-    TCanvas *cTheoryRebin = new TCanvas("cTheoryRebin","control the theoretical spectra rebin");
-    cTheoryRebin->Divide(1,2);
-    cTheoryRebin->cd(1);
-    hDirect->Draw("");
-    fhDirectMCpt->SetLineColor(2);
-    fhDirectMCpt->Draw("same");
-    cTheoryRebin->cd(2);
-    hFeedDown->Draw("");
-    fhFeedDownMCpt->SetLineColor(2);
-    fhFeedDownMCpt->Draw("same");
-    cTheoryRebin->Update();
   }
 
 }
@@ -275,21 +270,8 @@ void AliHFPtSpectrum::SetFeedDownMCptSpectra(TH1 *hFeedDown){
   }
 
   //
-  // Get the reconstructed spectra bins & limits
-  Int_t nbins = fhRECpt->GetNbinsX();
-  Double_t *limits = new Double_t[nbins+1];
-  Double_t xlow=0., binwidth=0.;
-  for (Int_t i=0; i<=nbins; i++) {
-    binwidth = fhRECpt->GetBinWidth(i);
-    xlow = fhRECpt->GetBinLowEdge(i);
-    limits[i-1] = xlow;
-  }
-  limits[nbins] = xlow + binwidth;
-
-  //
   // If the predictions shape do not have the same
   //  bin width (check via number of bins) as the reconstructed spectra, change them 
-  Int_t nbinsMC = hFeedDown->GetNbinsX();
   if (hFeedDown->GetBinWidth(1) == fhRECpt->GetBinWidth(1)) {
 
     fhFeedDownMCpt = hFeedDown;
@@ -297,32 +279,9 @@ void AliHFPtSpectrum::SetFeedDownMCptSpectra(TH1 *hFeedDown){
   } 
   else {
 
-    fhFeedDownMCpt = new TH1D("fhFeedDownMCpt"," feed-down theoretical prediction",nbins,limits);
+    fhFeedDownMCpt = RebinTheoreticalSpectra(hFeedDown);
+    fhFeedDownMCpt->SetNameTitle("fhFeedDownMCpt"," feed-down theoretical prediction");
 
-    Double_t sumf[nbins], itemsf[nbins];
-    for (Int_t ibin=0; ibin<=nbinsMC; ibin++){
-
-      for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++){
-	if( hFeedDown->GetBinCenter(ibin)>limits[ibinrec] && 
-	    hFeedDown->GetBinCenter(ibin)<limits[ibinrec+1]){
-	  sumf[ibinrec]+=hFeedDown->GetBinContent(ibin);
-	  itemsf[ibinrec]+=1.;
-	}
-      }
-
-    }
-
-    // set the theoretical rebinned spectra to ( sum-bins / n-bins ) per new bin
-    for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++) {
-      fhFeedDownMCpt->SetBinContent(ibinrec+1,sumf[ibinrec]/itemsf[ibinrec]);
-    }
-
-    // control plot
-    TCanvas *cTheoryRebin = new TCanvas("cTheoryRebin","control the theoretical spectra rebin");
-    hFeedDown->Draw("");
-    fhFeedDownMCpt->SetLineColor(2);
-    fhFeedDownMCpt->Draw("same");
-    cTheoryRebin->Update();
   }
 
 }
@@ -349,22 +308,10 @@ void AliHFPtSpectrum::SetMCptDistributionsBounds(TH1 *hDirectMax, TH1 *hDirectMi
     return;
   }
 
-  //
-  // Get the reconstructed spectra bins & limits
-  Int_t nbins = fhRECpt->GetNbinsX();
-  Double_t *limits = new Double_t[nbins+1];
-  Double_t xlow=0., binwidth=0.;
-  for (Int_t i=0; i<=nbins; i++) {
-    binwidth = fhRECpt->GetBinWidth(i);
-    xlow = fhRECpt->GetBinLowEdge(i);
-    limits[i-1] = xlow;
-  }
-  limits[nbins] = xlow + binwidth;
 
   //
   // If the predictions shape do not have the same
   //  bin width (check via number of bins) as the reconstructed spectra, change them 
-  Int_t nbinsMC =  hDirectMax->GetNbinsX();
   if (hFeedDownMax->GetBinWidth(1) == fhRECpt->GetBinWidth(1)) {
     
     fhDirectMCptMax = hDirectMax;
@@ -375,66 +322,15 @@ void AliHFPtSpectrum::SetMCptDistributionsBounds(TH1 *hDirectMax, TH1 *hDirectMi
   } 
   else {
 
-    fhDirectMCptMax = new TH1D("fhDirectMCptMax"," maximum direct theoretical prediction",nbins,limits);
-    fhDirectMCptMin = new TH1D("fhDirectMCptMin"," minimum direct theoretical prediction",nbins,limits);
-    fhFeedDownMCptMax = new TH1D("fhFeedDownMCptMax"," maximum feed-down theoretical prediction",nbins,limits);
-    fhFeedDownMCptMin = new TH1D("fhFeedDownMCptMin"," minimum feed-down theoretical prediction",nbins,limits);
+    fhDirectMCptMax = RebinTheoreticalSpectra(hDirectMax);
+    fhDirectMCptMax->SetNameTitle("fhDirectMCptMax"," maximum direct theoretical prediction");
+    fhDirectMCptMin = RebinTheoreticalSpectra(hDirectMin);
+    fhDirectMCptMin->SetNameTitle("fhDirectMCptMin"," minimum direct theoretical prediction");
+    fhFeedDownMCptMax = RebinTheoreticalSpectra(hFeedDownMax);
+    fhFeedDownMCptMax->SetNameTitle("fhFeedDownMCptMax"," maximum feed-down theoretical prediction");
+    fhFeedDownMCptMin = RebinTheoreticalSpectra(hFeedDownMin);
+    fhFeedDownMCptMin->SetNameTitle("fhFeedDownMCptMin"," minimum feed-down theoretical prediction");
 
-    Double_t sumdmax[nbins], sumfmax[nbins], itemsdmax[nbins], itemsfmax[nbins];
-    Double_t sumdmin[nbins], sumfmin[nbins], itemsdmin[nbins], itemsfmin[nbins];
-    for (Int_t ibin=0; ibin<=nbinsMC; ibin++){
-
-      for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++){
-	if( hDirectMax->GetBinCenter(ibin)>limits[ibinrec] && 
-	    hDirectMax->GetBinCenter(ibin)<limits[ibinrec+1]){
-	  sumdmax[ibinrec]+=hDirectMax->GetBinContent(ibin);
-	  itemsdmax[ibinrec]+=1.;
-	}
-	if( hDirectMin->GetBinCenter(ibin)>limits[ibinrec] && 
-	    hDirectMin->GetBinCenter(ibin)<limits[ibinrec+1]){
-	  sumdmin[ibinrec]+=hDirectMin->GetBinContent(ibin);
-	  itemsdmin[ibinrec]+=1.;
-	}
-	if( hFeedDownMax->GetBinCenter(ibin)>limits[ibinrec] && 
-	    hFeedDownMax->GetBinCenter(ibin)<limits[ibinrec+1]){
-	  sumfmax[ibinrec]+=hFeedDownMax->GetBinContent(ibin);
-	  itemsfmax[ibinrec]+=1.;
-	}
-	if( hFeedDownMin->GetBinCenter(ibin)>limits[ibinrec] && 
-	    hFeedDownMin->GetBinCenter(ibin)<limits[ibinrec+1]){
-	  sumfmin[ibinrec]+=hFeedDownMin->GetBinContent(ibin);
-	  itemsfmin[ibinrec]+=1.;
-	}
-      }
-
-    }
-
-    // set the theoretical rebinned spectra to ( sum-bins / n-bins ) per new bin
-    for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++) {
-      fhDirectMCptMax->SetBinContent(ibinrec+1,sumdmax[ibinrec]/itemsdmax[ibinrec]);
-      fhDirectMCptMin->SetBinContent(ibinrec+1,sumdmin[ibinrec]/itemsdmin[ibinrec]);
-      fhFeedDownMCptMax->SetBinContent(ibinrec+1,sumfmax[ibinrec]/itemsfmax[ibinrec]);
-      fhFeedDownMCptMin->SetBinContent(ibinrec+1,sumfmin[ibinrec]/itemsfmin[ibinrec]);
-    }
-
-    // control plot
-    TCanvas *cTheoryRebinLimits = new TCanvas("cTheoryRebinLimits","control the theoretical spectra limits rebin");
-    cTheoryRebinLimits->Divide(1,2);
-    cTheoryRebinLimits->cd(1);
-    hDirectMax->Draw("");
-    fhDirectMCptMax->SetLineColor(2);
-    fhDirectMCptMax->Draw("same");
-    hDirectMin->Draw("same");
-    fhDirectMCptMin->SetLineColor(2);
-    fhDirectMCptMin->Draw("same");
-    cTheoryRebinLimits->cd(2);
-    hFeedDownMax->Draw("");
-    fhFeedDownMCptMax->SetLineColor(2);
-    fhFeedDownMCptMax->Draw("same");
-    hFeedDownMin->Draw("same");
-    fhFeedDownMCptMin->SetLineColor(2);
-    fhFeedDownMCptMin->Draw("same");
-    cTheoryRebinLimits->Update();
   }
 
 }
@@ -459,22 +355,10 @@ void AliHFPtSpectrum::SetFeedDownMCptDistributionsBounds(TH1 *hFeedDownMax, TH1 
     return;
   }
 
-  //
-  // Get the reconstructed spectra bins & limits
-  Int_t nbins = fhRECpt->GetNbinsX();
-  Double_t *limits = new Double_t[nbins+1];
-  Double_t xlow=0., binwidth=0.;
-  for (Int_t i=0; i<=nbins; i++) {
-    binwidth = fhRECpt->GetBinWidth(i);
-    xlow = fhRECpt->GetBinLowEdge(i);
-    limits[i-1] = xlow;
-  }
-  limits[nbins] = xlow + binwidth;
 
   //
   // If the predictions shape do not have the same
   //  bin width (check via number of bins) as the reconstructed spectra, change them 
-  Int_t nbinsMC = hFeedDownMax->GetNbinsX();
   if (hFeedDownMax->GetBinWidth(1) == fhRECpt->GetBinWidth(1)) {
     
     fhFeedDownMCptMax = hFeedDownMax;
@@ -483,43 +367,11 @@ void AliHFPtSpectrum::SetFeedDownMCptDistributionsBounds(TH1 *hFeedDownMax, TH1 
   } 
   else {
 
-    fhFeedDownMCptMax = new TH1D("fhFeedDownMCptMax"," maximum feed-down theoretical prediction",nbins,limits);
-    fhFeedDownMCptMin = new TH1D("fhFeedDownMCptMin"," minimum feed-down theoretical prediction",nbins,limits);
+    fhFeedDownMCptMax = RebinTheoreticalSpectra(hFeedDownMax);
+    fhFeedDownMCptMax->SetNameTitle("fhFeedDownMCptMax"," maximum feed-down theoretical prediction");
+    fhFeedDownMCptMin = RebinTheoreticalSpectra(hFeedDownMin);
+    fhFeedDownMCptMin->SetNameTitle("fhFeedDownMCptMin"," minimum feed-down theoretical prediction");
 
-    Double_t sumfmax[nbins], itemsfmax[nbins];
-    Double_t sumfmin[nbins], itemsfmin[nbins];
-    for (Int_t ibin=0; ibin<=nbinsMC; ibin++){
-
-      for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++){
-	if( hFeedDownMax->GetBinCenter(ibin)>limits[ibinrec] && 
-	    hFeedDownMax->GetBinCenter(ibin)<limits[ibinrec+1]){
-	  sumfmax[ibinrec]+=hFeedDownMax->GetBinContent(ibin);
-	  itemsfmax[ibinrec]+=1.;
-	}
-	if( hFeedDownMin->GetBinCenter(ibin)>limits[ibinrec] && 
-	    hFeedDownMin->GetBinCenter(ibin)<limits[ibinrec+1]){
-	  sumfmin[ibinrec]+=hFeedDownMin->GetBinContent(ibin);
-	  itemsfmin[ibinrec]+=1.;
-	}
-      }
-
-    }
-
-    // set the theoretical rebinned spectra to ( sum-bins / n-bins ) per new bin
-    for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++) {
-      fhFeedDownMCptMax->SetBinContent(ibinrec+1,sumfmax[ibinrec]/itemsfmax[ibinrec]);
-      fhFeedDownMCptMin->SetBinContent(ibinrec+1,sumfmin[ibinrec]/itemsfmin[ibinrec]);
-    }
-
-    // control plot
-    TCanvas *cTheoryRebinLimits = new TCanvas("cTheoryRebinLimits","control the theoretical spectra limits rebin");
-    hFeedDownMax->Draw("");
-    fhFeedDownMCptMax->SetLineColor(2);
-    fhFeedDownMCptMax->Draw("same");
-    hFeedDownMin->Draw("same");
-    fhFeedDownMCptMin->SetLineColor(2);
-    fhFeedDownMCptMin->Draw("same");
-    cTheoryRebinLimits->Update();
   }
 
 }
@@ -703,9 +555,9 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
 }
 
 //_________________________________________________________________________________________________________
-TH1 * AliHFPtSpectrum::EstimateAndSetDirectEfficiencyRecoBin(TH1 *hSimu, TH1 *hReco) {
+TH1 * AliHFPtSpectrum::EstimateEfficiencyRecoBin(TH1 *hSimu, TH1 *hReco) {
   //
-  // Function that computes the Direct  acceptance and efficiency correction
+  // Function that computes the acceptance and efficiency correction
   //  based on the simulated and reconstructed spectra
   //  and using the reconstructed spectra bin width
   //
@@ -727,7 +579,7 @@ TH1 * AliHFPtSpectrum::EstimateAndSetDirectEfficiencyRecoBin(TH1 *hSimu, TH1 *hR
   }
   limits[nbins] = xlow + binwidth;
 
-  fhDirectEffpt = new TH1D("fhDirectEffpt"," direct acceptance #times efficiency",nbins,limits);
+  TH1D * hEfficiency = new TH1D("hEfficiency"," acceptance #times efficiency",nbins,limits);
   
   Double_t sumSimu[nbins], sumReco[nbins];
   for (Int_t ibin=0; ibin<=hSimu->GetNbinsX(); ibin++){
@@ -751,9 +603,30 @@ TH1 * AliHFPtSpectrum::EstimateAndSetDirectEfficiencyRecoBin(TH1 *hSimu, TH1 *hR
   for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++) {
     eff = sumReco[ibinrec] / sumSimu[ibinrec] ;
     erreff = TMath::Sqrt( eff * (1.0 - eff) ) / TMath::Sqrt( sumSimu[ibinrec] );
-    fhDirectEffpt->SetBinContent(ibinrec+1,eff);
-    fhDirectEffpt->SetBinError(ibinrec+1,erreff);
+    hEfficiency->SetBinContent(ibinrec+1,eff);
+    hEfficiency->SetBinError(ibinrec+1,erreff);
   }
+
+  return (TH1*)hEfficiency;
+}
+
+//_________________________________________________________________________________________________________
+TH1 * AliHFPtSpectrum::EstimateAndSetDirectEfficiencyRecoBin(TH1 *hSimu, TH1 *hReco) {
+  //
+  // Function that computes the Direct  acceptance and efficiency correction
+  //  based on the simulated and reconstructed spectra
+  //  and using the reconstructed spectra bin width
+  //
+  //  eff = reco/sim ; err_eff = sqrt( eff*(1-eff) )/ sqrt( sim )
+  // 
+
+  if(!fhRECpt){
+    AliInfo("Hey, the reconstructed histogram was not set yet !"); 
+    return NULL;
+  }
+
+  fhDirectEffpt = EstimateEfficiencyRecoBin(hSimu,hReco);
+  fhDirectEffpt->SetNameTitle("fhDirectEffpt"," direct acceptance #times efficiency");
 
   return (TH1*)fhDirectEffpt;
 }
@@ -773,43 +646,8 @@ TH1 * AliHFPtSpectrum::EstimateAndSetFeedDownEfficiencyRecoBin(TH1 *hSimu, TH1 *
     return NULL;
   }
 
-  Int_t nbins = fhRECpt->GetNbinsX();
-  Double_t *limits = new Double_t[nbins+1];
-  Double_t xlow=0.,binwidth=0.;
-  for (Int_t i=0; i<=nbins; i++) {
-    binwidth = fhRECpt->GetBinWidth(i);
-    xlow = fhRECpt->GetBinLowEdge(i);
-    limits[i-1] = xlow;
-  }
-  limits[nbins] = xlow + binwidth;
-
-  fhFeedDownEffpt = new TH1D("fhFeedDownEffpt"," feed-down acceptance #times efficiency",nbins,limits);
-  
-  Double_t sumSimu[nbins], sumReco[nbins];
-  for (Int_t ibin=0; ibin<=hSimu->GetNbinsX(); ibin++){
-
-    for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++){
-      if ( hSimu->GetBinCenter(ibin)>limits[ibinrec] && 
-	   hSimu->GetBinCenter(ibin)<limits[ibinrec+1] ) {
-	sumSimu[ibinrec]+=hSimu->GetBinContent(ibin);
-      }
-      if ( hReco->GetBinCenter(ibin)>limits[ibinrec] && 
-	   hReco->GetBinCenter(ibin)<limits[ibinrec+1] ) {
-	sumReco[ibinrec]+=hReco->GetBinContent(ibin);
-      }
-    }
-    
-  }
-  
-  // the efficiency is computed as reco/sim (in each bin)
-  //  its uncertainty is err_eff = sqrt( eff*(1-eff) )/ sqrt( sim )
-  Double_t eff=0., erreff=0.;
-  for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++) {
-    eff = sumReco[ibinrec] / sumSimu[ibinrec] ;
-    erreff = TMath::Sqrt( eff * (1.0 - eff) ) / TMath::Sqrt( sumSimu[ibinrec] );
-    fhFeedDownEffpt->SetBinContent(ibinrec+1,eff);
-    fhFeedDownEffpt->SetBinError(ibinrec+1,erreff);
-  }
+  fhFeedDownEffpt = EstimateEfficiencyRecoBin(hSimu,hReco);
+  fhFeedDownEffpt->SetNameTitle("fhFeedDownEffpt"," feed-down acceptance #times efficiency");
 
   return (TH1*)fhFeedDownEffpt;
 }

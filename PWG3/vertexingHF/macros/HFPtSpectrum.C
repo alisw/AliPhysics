@@ -28,7 +28,7 @@
 //
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
-		    const char *recofilename="Reconstructed.root",
+		    const char *recofilename="Reconstructed.root", const char *recohistoname="hRawSpectrumD0",
 		    const char *outfilename="HFPtSpectrum.root",
 		    int option=1, double lumi=1.0, double effTrig=1.0,
 		    const char *directsimufilename="", const char *directsimuhistoname="CFHFccontainer0_New_3Prong_SelStep0_proj-pt", 
@@ -135,7 +135,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   //
   //
   TFile * recofile = new TFile(recofilename,"read");
-  hRECpt = (TH1D*)recofile->Get("hRecoAll");
+  hRECpt = (TH1D*)recofile->Get(recohistoname);
   hRECpt->SetNameTitle("hRECpt","Reconstructed spectra");
 
   //
@@ -268,6 +268,49 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 
   cout << " Drawing the results ! " << endl;
 
+  // control plots
+  TCanvas *cTheoryRebin = new TCanvas("cTheoryRebin","control the theoretical spectra rebin");
+  cTheoryRebin->Divide(1,2);
+  cTheoryRebin->cd(1);
+  hDirectMCpt->Draw("");
+  TH1D *hDirectMCptRebin = (TH1D*)spectra->GetDirectTheoreticalSpectrum();
+  hDirectMCptRebin->SetNameTitle("hDirectMCptRebin","hDirectMCptRebin");
+  hDirectMCptRebin->SetLineColor(2);
+  hDirectMCptRebin->Draw("same");
+  cTheoryRebin->cd(2);
+  hFeedDownMCpt->Draw("");
+  TH1D *hFeedDownRebin = (TH1D*)spectra->GetFeedDownTheoreticalSpectrum();
+  hFeedDownRebin->SetNameTitle("hFeedDownRebin","hFeedDownRebin");
+  hFeedDownRebin->SetLineColor(2);
+  hFeedDownRebin->Draw("same");
+  cTheoryRebin->Update();
+
+  TCanvas *cTheoryRebinLimits = new TCanvas("cTheoryRebinLimits","control the theoretical spectra limits rebin");
+  cTheoryRebinLimits->Divide(1,2);
+  cTheoryRebinLimits->cd(1);
+  hDirectMCptMax->Draw("");
+  TH1D *hDirectMCptMaxRebin = (TH1D*)spectra->GetDirectTheoreticalUpperLimitSpectrum();
+  hDirectMCptMaxRebin->SetNameTitle("hDirectMCptMaxRebin","hDirectMCptMaxRebin");
+  hDirectMCptMaxRebin->SetLineColor(2);
+  hDirectMCptMaxRebin->Draw("same");
+  hDirectMCptMin->Draw("same");
+  TH1D *hDirectMCptMinRebin = (TH1D*)spectra->GetDirectTheoreticalLowerLimitSpectrum();
+  hDirectMCptMinRebin->SetNameTitle("hDirectMCptMinRebin","hDirectMCptMinRebin");
+  hDirectMCptMinRebin->SetLineColor(2);
+  hDirectMCptMinRebin->Draw("same");
+  cTheoryRebinLimits->cd(2);
+  hFeedDownMCptMax->Draw("");
+  TH1D *hFeedDownMaxRebin = (TH1D*)spectra->GetFeedDownTheoreticalUpperLimitSpectrum();
+  hFeedDownMaxRebin->SetNameTitle("hFeedDownMaxRebin","hFeedDownMaxRebin");
+  hFeedDownMaxRebin->SetLineColor(2);
+  hFeedDownMaxRebin->Draw("same");
+  hFeedDownMCptMin->Draw("same");
+  TH1D *hFeedDownMinRebin = (TH1D*)spectra->GetFeedDownTheoreticalLowerLimitSpectrum();
+  hFeedDownMinRebin->SetNameTitle("hFeedDownMinRebin","hFeedDownMinRebin");
+  hFeedDownMinRebin->SetLineColor(2);
+  hFeedDownMinRebin->Draw("same");
+  cTheoryRebinLimits->Update();
+  
   if (option==1) {
 
     TCanvas * cfc = new TCanvas("cfc","Fc");
@@ -378,6 +421,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   //
   // Write the histograms to the output file
   //
+  cout << " Saving the results ! " << endl<< endl;
+
   out->cd();
   //
   hDirectMCpt->Write();         hFeedDownMCpt->Write();
@@ -402,6 +447,6 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     if(asym) gFc->Write();
   }
 
-  // out->Close();
+  //  out->Close();
 
 }

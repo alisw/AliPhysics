@@ -70,6 +70,16 @@ class AliHFPtSpectrum: public TNamed
   //
   // Getters
   //
+  // Return the theoretical predictions used for the calculation (rebinned if needed)
+  TH1 * GetDirectTheoreticalSpectrum() { return (fhDirectMCpt ? fhDirectMCpt : NULL); }
+  TH1 * GetDirectTheoreticalUpperLimitSpectrum() { return (fhDirectMCptMax ? fhDirectMCptMax : NULL); }
+  TH1 * GetDirectTheoreticalLowerLimitSpectrum() { return (fhDirectMCptMin ? fhDirectMCptMin : NULL); }
+  TH1 * GetFeedDownTheoreticalSpectrum() { return (fhFeedDownMCpt ? fhFeedDownMCpt : NULL); }
+  TH1 * GetFeedDownTheoreticalUpperLimitSpectrum() { return (fhFeedDownMCptMax ? fhFeedDownMCptMax : NULL); }
+  TH1 * GetFeedDownTheoreticalLowerLimitSpectrum() { return (fhFeedDownMCptMin ? fhFeedDownMCptMin : NULL); }
+  // Return the acceptance and efficiency corrections (rebinned if needed)
+  TH1 * GetDirectAccEffCorrection() { return (fhDirectEffpt ? fhDirectEffpt : NULL); }
+  TH1 * GetFeedDownAccEffCorrection() { return (fhFeedDownEffpt ? fhFeedDownEffpt : NULL); }
   // Return the TGraphAsymmErrors of the feed-down correction
   TGraphAsymmErrors * GetFeedDownCorrectionFc() { return (fgFc ?  fgFc : NULL); }
   // Return the histogram of the feed-down correction
@@ -128,6 +138,10 @@ class AliHFPtSpectrum: public TNamed
 
   // Check histograms consistency function
   Bool_t CheckHistosConsistency(TH1 *h1, TH1 *h2);
+  // Function to rebin the theoretical spectra in the data-reconstructed spectra binning
+  TH1 * RebinTheoreticalSpectra(TH1 *hTheory);
+  // Function to estimate the efficiency in the data-reconstructed spectra binning
+  TH1 * EstimateEfficiencyRecoBin(TH1 *hSimu, TH1 *hReco);
 
   //
   // Input spectra
