@@ -35,6 +35,7 @@
 #include "AliHLTGlobalOfflineVertexerComponent.h"
 #include "AliHLTV0HistoComponent.h"
 #include "AliHLTGlobalVertexerHistoComponent.h"
+#include "AliHLTGlobalHistoComponent.h"
 #include "AliHLTGlobalHistoCollector.h"
 #include "AliHLTGlobalDCSPublisherComponent.h"
 
@@ -70,6 +71,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTGlobalVertexerComponent);
   pHandler->AddComponent(new AliHLTGlobalOfflineVertexerComponent);
   pHandler->AddComponent(new AliHLTGlobalVertexerHistoComponent);
+  pHandler->AddComponent(new AliHLTGlobalHistoComponent);
   pHandler->AddComponent(new AliHLTV0HistoComponent );
   pHandler->AddComponent(new AliHLTGlobalHistoCollector );
   pHandler->AddComponent(new AliHLTGlobalDCSPublisherComponent );

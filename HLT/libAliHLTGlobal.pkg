@@ -11,6 +11,7 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		AliHLTGlobalTrackMatcher.h \
 		AliHLTGlobalTrackMatcherComponent.h \
 		AliHLTGlobalVertexerHistoComponent.h \
+		AliHLTGlobalHistoComponent.h \
 		AliHLTGlobalHistoCollector.h \
 		physics/AliHLTV0HistoComponent.h \
 		physics/AliHLTCaloHistoComponent.h \
