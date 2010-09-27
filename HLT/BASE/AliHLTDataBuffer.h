@@ -181,27 +181,27 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * Get the number of segments including the forwarded data blocks.
    * @return number of segments
    */
-  int GetNofSegments();
+  int GetNofSegments() const;
 
   /**
    * Get the total number of consumers.
    * This gives the number of consumers regardless of their state.
    * @return number of consumers
    */
-  int GetNofConsumers();
+  int GetNofConsumers() const;
 
   /**
    * Get the number of consumers which still need to be processed during
    * the current event.
    * @return number of consumers
    */
-  int GetNofPendingConsumers();
+  int GetNofPendingConsumers() const;
 
   /**
    * Get the number of consumers currently under processing.
    * @return number of active consumers
    */
-  int GetNofActiveConsumers();
+  int GetNofActiveConsumers() const;
 
   /**
    * Check if a consumer is already in the list
@@ -218,6 +218,11 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * an external reset should not be necessary.
    */
   int Reset();
+
+  /**
+   * Print info about the buffer
+   */
+  virtual void Print(const char* option) const;
 
   /**
    * Set local logging level
@@ -286,6 +291,30 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     {
     }
 
+    AliHLTDataSegment(const AliHLTDataSegment& src)
+      :
+      fDataType(src.fDataType),
+      fPtr(src.fPtr),
+      fSegmentOffset(src.fSegmentOffset),
+      fSegmentSize(src.fSegmentSize),
+      fSpecification(src.fSpecification)
+    {
+      // AliHLTDataSegment just stores external pointers and properties
+    }
+
+    AliHLTDataSegment& operator=(const AliHLTDataSegment& src)
+    {
+      // AliHLTDataSegment just stores external pointers and properties
+      fDataType=src.fDataType;
+      fPtr=src.fPtr;
+      fSegmentOffset=src.fSegmentOffset;
+      fSegmentSize=src.fSegmentSize;
+      fSpecification=src.fSpecification;
+      return *this;
+    }
+
+    virtual ~AliHLTDataSegment() {}
+
     AliHLTUInt8_t* GetPtr() const {return (AliHLTUInt8_t*)*this;}
 
     AliHLTUInt32_t GetSize() const {return fSegmentSize;}
@@ -295,6 +324,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
       return (fPtr+fSegmentOffset==seg.fPtr+seg.fSegmentOffset) && (fSegmentSize==seg.fSegmentSize);
     }
     operator AliHLTUInt8_t*() const {return fPtr+fSegmentOffset;}
+
+    virtual void Print(const char* option) const;
 
   private:
     /** the data type of this segment */
@@ -308,6 +339,57 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     /** data specification */
     AliHLTUInt32_t fSpecification;                                 // see above
 
+  };
+
+  /**
+   * @class AliHLTForwardedDataSegment
+   * @brief  Descriptor of a forwarded data segment.
+   * Contains in addition information about the parent of this forwarded
+   * block and the original data type and specification
+   */
+  class AliHLTForwardedDataSegment : public AliHLTDataSegment {
+    friend class AliHLTDataBuffer; // TODO: implement some getters/setters
+  public:
+    AliHLTForwardedDataSegment()
+      : AliHLTDataSegment()
+      , fParentSegment()
+      , fParentTask(NULL)
+    {
+    }
+
+    AliHLTForwardedDataSegment(AliHLTDataSegment& mySegment, AliHLTDataSegment& parentSegment, AliHLTTask* parentTask)
+      : AliHLTDataSegment(mySegment)
+      , fParentSegment(parentSegment)
+      , fParentTask(parentTask)
+    {
+    }
+
+    AliHLTForwardedDataSegment(const AliHLTForwardedDataSegment& src)
+      : AliHLTDataSegment(src),
+      fParentSegment(src.fParentSegment),
+      fParentTask(src.fParentTask)
+    {
+      // AliHLTForwardedDataSegment just stores external pointers and properties
+    }
+
+    AliHLTForwardedDataSegment& operator=(const AliHLTForwardedDataSegment& src)
+    {
+      // AliHLTForwardedDataSegment just stores external pointers and properties
+      AliHLTDataSegment::operator=(src);
+      fParentSegment=src.fParentSegment;
+      fParentTask=src.fParentTask;
+      return *this;
+    }
+
+    virtual ~AliHLTForwardedDataSegment() {}
+
+    virtual void Print(const char* option) const;
+
+  private:
+    /// description of the original segment
+    AliHLTDataSegment fParentSegment;                              // see above
+    /// the parent task
+    AliHLTTask* fParentTask;                                       //!transient
   };
 
   class AliHLTRawBuffer;
@@ -355,7 +437,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     /**
      * Print page information
      */
-    void Print(const char* option);
+    virtual void Print(const char* option);
 
   private:
     /** copy constructor prohibited */
@@ -457,7 +539,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     /**
      * Print buffer information
      */
-    void Print(const char* option);
+    virtual void Print(const char* option) const;
 
     int operator==(void* ptr) const;
     int operator==(AliHLTUInt8_t* ptr) const {return fPtr==ptr;}

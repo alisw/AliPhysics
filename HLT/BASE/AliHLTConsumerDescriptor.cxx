@@ -112,3 +112,16 @@ int AliHLTConsumerDescriptor::ReleaseActiveDataSegment(AliHLTDataBuffer::AliHLTD
   }
   return iResult;
 }
+
+void AliHLTConsumerDescriptor::Print(const char* /*option*/) const
+{
+  // print info about this descriptor
+  cout << "AliHLTConsumerDescriptor " << this
+       << " component ID " << (fpConsumer?fpConsumer->GetComponentID():"NULL")
+    //<< " chain ID " << (fpConsumer?fpConsumer->GetChainId():"NULL")
+       << endl;
+  for (unsigned i=0; i<fSegments.size(); i++) {
+    cout << "     ";
+    fSegments[i].Print("");
+  }
+}

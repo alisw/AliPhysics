@@ -151,6 +151,8 @@ int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
   iResult=tgtList.size();
   return iResult;
   
+  // NOTE: the remaining code is disabled
+  // to be deleted at cleanup
   if (pConsumer) {
     AliHLTComponentDataTypeList dtlist;
     ((AliHLTComponent*)pConsumer)->GetInputDataTypes(dtlist);
@@ -433,28 +435,28 @@ int AliHLTDataBuffer::IsEmpty()
   return iResult;
 }
 
-int AliHLTDataBuffer::GetNofSegments()
+int AliHLTDataBuffer::GetNofSegments() const
 {
   // see header file for function documentation
   int iResult=fSegments.size() + fForwardedSegments.size();
   return iResult;
 }
 
-int AliHLTDataBuffer::GetNofConsumers()
+int AliHLTDataBuffer::GetNofConsumers() const
 {
   // see header file for function documentation
   int iResult=fConsumers.size() + GetNofActiveConsumers() + fReleasedConsumers.size();
   return iResult;
 }
 
-int AliHLTDataBuffer::GetNofPendingConsumers()
+int AliHLTDataBuffer::GetNofPendingConsumers() const
 {
   // see header file for function documentation
   int iResult=fConsumers.size();
   return iResult;
 }
 
-int AliHLTDataBuffer::GetNofActiveConsumers()
+int AliHLTDataBuffer::GetNofActiveConsumers() const
 {
   // see header file for function documentation
   int iResult=fActiveConsumers.size();
@@ -1027,7 +1029,7 @@ int AliHLTDataBuffer::AliHLTRawBuffer::Merge(const AliHLTDataBuffer::AliHLTRawBu
   return -EINVAL;
 }
 
-void AliHLTDataBuffer::AliHLTRawBuffer::Print(const char* option)
+void AliHLTDataBuffer::AliHLTRawBuffer::Print(const char* option) const
 {
   /// print buffer information
   if (strcmp(option, "min")!=0) {
@@ -1360,4 +1362,71 @@ AliHLTDataBuffer::AliHLTRawPage* AliHLTDataBuffer::AliHLTRawPage::NextPage(const
     break;
   }
   return NULL;
+}
+
+void AliHLTDataBuffer::AliHLTDataSegment::Print(const char* /*option*/) const
+{
+  // print info for data segment
+  cout << "AliHLTDataSegment " << this 
+       << " " << AliHLTComponent::DataType2Text(fDataType)
+       << " " << hex << fSpecification << dec
+       << " Ptr " << (void*)fPtr
+       << " offset " << fSegmentOffset
+       << " size " << fSegmentSize
+       << endl;
+}
+
+void AliHLTDataBuffer::AliHLTForwardedDataSegment::Print(const char* option) const
+{
+  // print info for data segment
+  cout << "AliHLTForwardeDataSegment " << this << endl;
+  cout << "    my    : "; AliHLTDataSegment::Print(option);
+  cout << "    parent: "; fParentSegment.Print(option);
+  cout << "    task  : "; 
+  if (fParentTask) fParentTask->Print("");
+  else cout << "nil" << endl;
+}
+
+void AliHLTDataBuffer::Print(const char* option) const
+{
+  // print info for data buffer
+  unsigned i=0;
+  cout << "AliHLTDataBuffer " << this << endl;
+  cout << " raw buffer " << fpBuffer << endl;
+  if (fpBuffer) {
+    cout << " ";
+    fpBuffer->Print(option);
+  }
+
+  cout << " total segments: " << GetNofSegments() << endl;
+  cout << "   data segments: " << fSegments.size() << endl;
+  for (i=0; i<fSegments.size(); i++) {
+    cout << "     ";
+    fSegments[i].Print(option);
+  }
+
+  cout << "   forwarded segments: " << fForwardedSegments.size() << endl;
+  for (i=0; i<fForwardedSegments.size(); i++) {
+    cout << "     ";
+    fForwardedSegments[i].Print(option);
+  }
+
+  cout << " consumers: " << GetNofConsumers() << endl;
+  for (i=0; i<fConsumers.size(); i++) {
+    cout << "   ";
+    fConsumers[i]->Print(option);
+  }
+
+  cout << " active consumers: " << GetNofActiveConsumers() << endl;
+  for (i=0; i<fActiveConsumers.size(); i++) {
+    cout << "   ";
+    fActiveConsumers[i]->Print(option);
+  }
+
+  cout << " released consumers: " << fReleasedConsumers.size() << endl;
+  for (i=0; i<fReleasedConsumers.size(); i++) {
+    cout << "   ";
+    fReleasedConsumers[i]->Print(option);
+  }
+
 }

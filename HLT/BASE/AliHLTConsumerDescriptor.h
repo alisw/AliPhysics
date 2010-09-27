@@ -1,16 +1,17 @@
-// @(#) $Id$
+//-*- Mode: C++ -*-
+// $Id$
 
 #ifndef ALIHLTCONSUMERDESCRIPTOR_H
 #define ALIHLTCONSUMERDESCRIPTOR_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTConsumerDescriptor.h
-    @author Matthias Richter
-    @date   
-    @brief  Helper class to describe a consumer component.
-    @note   The class is used in Offline (AliRoot) context
-*/
+/// @file   AliHLTConsumerDescriptor.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Helper class to describe a consumer component.
+/// @note   The class is used in Offline (AliRoot) context
 
 #include "AliHLTDataBuffer.h"
 
@@ -79,6 +80,8 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
    */
   int ReleaseActiveDataSegment(AliHLTDataBuffer::AliHLTDataSegment segment);
 
+  virtual void Print(const char* option) const;
+
  private:
   /** copy constructor prohibited */
   AliHLTConsumerDescriptor(const AliHLTConsumerDescriptor&);
@@ -94,4 +97,4 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
   ClassDef(AliHLTConsumerDescriptor, 0)
 };
 
-#endif // ALIHLTDATABUFFER_H
+#endif // ALIHLTCONSUMERDESCRIPTOR_H

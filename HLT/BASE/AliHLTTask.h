@@ -258,6 +258,11 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   void PrintStatus();
 
   /**
+   * Overloaded from TObject
+   */
+  void Print(const char* options) const;
+
+  /**
    * Search task dependency list recursively to find a dependency.
    * @param id              id of the task to search for
    * @param pTgtList        (optional) target list to receive dependency tree

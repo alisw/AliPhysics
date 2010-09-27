@@ -1,26 +1,25 @@
 // $Id$
-// splitted from AliHLTConfiguration.cxx,v 1.25 2007/10/12 13:24:47
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
-/** @file   AliHLTTask.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Implementation of HLT tasks.
-*/
+/// @file   AliHLTTask.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Implementation of HLT tasks.
+///
 
 // see header file for class documentation
 // or
@@ -43,6 +42,7 @@ using namespace std;
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
 #include "TList.h"
+#include "AliHLTErrorGuard.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTask)
@@ -615,6 +615,19 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
 	eventTypeBlock.fSpecification=eventType;
 	fBlockDataArray.push_back(eventTypeBlock);
 
+	if (CheckFilter(kHLTLogDebug)) Print("proc");
+
+	AliHLTUInt32_t iblock=0;
+	// check input and output buffers for consistency
+	// to be enabled after fixing bug with DataBuffer and forwarded SOR/EOR
+	//for (iblock=0; iblock<fBlockDataArray.size(); iblock++) {
+	//  if ((AliHLTUInt8_t*)fBlockDataArray[iblock].fPtr >= pTgtBuffer+size) continue;
+	//  if (pTgtBuffer >= (AliHLTUInt8_t*)fBlockDataArray[iblock].fPtr+fBlockDataArray[iblock].fSize) continue;
+	//  HLTFatal("input and output buffer overlap for block descriptor %d (ptr %p size %d): output buffer %p %d",
+	//	   iblock, fBlockDataArray[iblock].fPtr, fBlockDataArray[iblock].fSize,
+	//	   pTgtBuffer, size);
+	//}	
+
 	// process
 	evtData.fBlockCnt=fBlockDataArray.size();
 	iResult=pComponent->ProcessEvent(evtData, &fBlockDataArray[0], trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
@@ -650,6 +663,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
 	      }
 
 	      // check for duplicates in the output
+	      // this check applies for forwarded data blocks where
+	      // the ptr is not inside the target buffer
 	      AliHLTUInt32_t checkblock=0;
 	      for (; checkblock<oblock; checkblock++) {
 		if (outputBlocks[oblock].fPtr!=NULL && outputBlocks[oblock].fPtr!=pTgtBuffer &&
@@ -657,7 +672,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
 		  if (outputBlocks[checkblock].fSize!=outputBlocks[oblock].fSize ||
 		      outputBlocks[checkblock].fDataType!=outputBlocks[oblock].fDataType) {
 		    HLTWarning("output blocks %d (%s 0x%08x) and %d (%s 0x%08x) have identical data references ptr=%p "
-			       "but differ in data type and/or size: %d vs. %d",
+			       "but differ in data type and/or size: %d vs. %d, ignoring block %d",
 			       oblock,
 			       AliHLTComponent::DataType2Text(outputBlocks[oblock].fDataType).c_str(),
 			       outputBlocks[oblock].fSpecification,
@@ -666,7 +681,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
 			       outputBlocks[checkblock].fSpecification,
 			       outputBlocks[oblock].fPtr,
 			       outputBlocks[oblock].fSize,
-			       outputBlocks[checkblock].fSize);
+			       outputBlocks[checkblock].fSize,
+			       checkblock);
 		  }
 		  // ignore from the second copy
 		  break;
@@ -679,15 +695,23 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
 	      // to the publisher task. The publisher task of a forwarded data block is
 	      // removed from the list in order to keep the buffer open. It will be releases
 	      // when the subscribing task releases it
-	      AliHLTUInt32_t iblock=0;
+	      iblock=0;
 	      for (; iblock<fBlockDataArray.size(); iblock++) {
 		if (outputBlocks[oblock].fDataType==kAliHLTDataTypeEvent) {
-		  // the event type data block is ignored if it was forwarded
+		  // the event type data block is an artificial data block
+		  // ignore if it was forwarded
 		  break;
 		}
 		if (fBlockDataArray[iblock].fPtr==outputBlocks[oblock].fPtr) {
 		  assert(subscribedTaskList[iblock]!=NULL);
-		  if (subscribedTaskList[iblock]==NULL) continue;
+		  if (subscribedTaskList[iblock]==NULL) {
+		    ALIHLTERRORGUARD(1, "missing parent task for forwarded data block %s 0x%08x, original data block %s 0x%08x, subsequent errors are suppressed",
+				     AliHLTComponent::DataType2Text(outputBlocks[oblock].fDataType).c_str(),
+				     outputBlocks[oblock].fSpecification,
+				     AliHLTComponent::DataType2Text(outputBlocks[iblock].fDataType).c_str(),
+				     outputBlocks[iblock].fSpecification);
+		    continue;
+		  }
 		  HLTDebug("forward segment %d (source task %s %p) to data buffer %p", iblock, pSrcTask->GetName(), pSrcTask, fpDataBuffer);
 		  fpDataBuffer->Forward(subscribedTaskList[iblock], &fBlockDataArray[iblock]);
 		  subscribedTaskList[iblock]=NULL; // not to be released in the loop further down
@@ -720,7 +744,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
 	    subscribedTaskList[iEOR]=NULL; // not to be released in the loop further down
 	  }
 	  if (iECS>=0 && subscribedTaskList[iECS]!=NULL) {
-	    HLTDebug("forward EOR event (%s) segment %d (source task %s %p) to data buffer %p", AliHLTComponent::DataType2Text(fBlockDataArray[iECS].fDataType).c_str(), iECS, pSrcTask->GetName(), pSrcTask, fpDataBuffer);
+	    HLTDebug("forward ECS event (%s) segment %d (source task %s %p) to data buffer %p", AliHLTComponent::DataType2Text(fBlockDataArray[iECS].fDataType).c_str(), iECS, pSrcTask->GetName(), pSrcTask, fpDataBuffer);
 	    fpDataBuffer->Forward(subscribedTaskList[iECS], &fBlockDataArray[iECS]);
 	    subscribedTaskList[iECS]=NULL; // not to be released in the loop further down
 	  }
@@ -731,6 +755,9 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
       }
     } while (iResult==-ENOSPC && iNofTrial++<1);
     }
+
+    fBlockDataArray.clear();
+    if (CheckFilter(kHLTLogDebug)) Print("proc");
 
     // now release all buffers which we have subscribed to
     iSourceDataBlock=0;
@@ -861,6 +888,37 @@ void AliHLTTask::PrintStatus()
     HLTMessage("     task not initialized");
   }
 }
+
+void AliHLTTask::Print(const char* options) const
+{
+  // Overloaded from TObject
+  if (strcmp(options, "proc")==0) {
+    // print processing info
+    HLTMessage("**********************************************");
+    HLTMessage("******* AliHLTTask Processing info ***********");
+    HLTMessage(" component: %p %s", fpComponent, (fpComponent?fpComponent->GetComponentID():""));
+    HLTMessage(" data buffer: %p", fpDataBuffer);
+    if (fpDataBuffer) fpDataBuffer->Print("");
+    HLTMessage(" input block descriptors: %d", fBlockDataArray.size());
+    for (unsigned i=0; i<fBlockDataArray.size(); i++) {
+      HLTMessage("  %d: %s 0x%08x %p %d", i,
+		 AliHLTComponent::DataType2Text(fBlockDataArray[i].fDataType).c_str(),
+		 fBlockDataArray[i].fSpecification,
+		 fBlockDataArray[i].fPtr,
+		 fBlockDataArray[i].fSize
+		 );
+    }
+    HLTMessage("**** end of AliHLTTask Processing info *******");
+    HLTMessage("**********************************************");
+    return;
+  }
+
+  cout << "AliHLTTask " << GetName() << " " << this
+       << " component " << fpComponent << " "
+       << (fpComponent?fpComponent->GetComponentID():"")
+       << endl;
+}
+
 
 int AliHLTTask::CustomInit(AliHLTComponentHandler* /*pCH*/)
 {
