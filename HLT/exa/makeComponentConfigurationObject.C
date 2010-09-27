@@ -85,7 +85,9 @@ void makeComponentConfigurationObject(const char* path,
 
   AliCDBPath cdbPath(path);
   AliCDBId cdbId(cdbPath, runmin, runmax);
-  AliCDBMetaData* cdbMetaData=pExisting?pExisting->GetMetaData():(new AliCDBMetaData);
+  AliCDBMetaData* cdbMetaData=NULL;
+  if (pExisting) cdbMetaData=pExisting->GetMetaData();
+  else cdbMetaData=new AliCDBMetaData;
   man->Put(obj, cdbId, cdbMetaData);
 }
 
@@ -94,7 +96,7 @@ void makeComponentConfigurationObject(const char* path, const char* param="",
 				      int runmin=0,
 				      int runmax=999999999)
 {
-  makeComponentConfigurationObject(path, param, NULL, cdbUri, runmin, runmax);
+  makeComponentConfigurationObject(path, NULL, param, cdbUri, runmin, runmax);
 }
 
 void makeComponentConfigurationObject(const char* path, 
