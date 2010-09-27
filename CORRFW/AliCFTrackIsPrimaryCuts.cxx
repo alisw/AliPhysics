@@ -847,11 +847,15 @@ void AliCFTrackIsPrimaryCuts::FillHistograms(TObject* obj, Bool_t f)
       fhQA[kDcaXYnorm][f]->Fill(fDCA[0]);
 
     fhQA[kCutNSigmaToVertex][f]->Fill(fDCA[5]);
-    if (fDCA[5]<0 && fRequireSigmaToVertex) fhQA[kCutRequireSigmaToVertex][f]->Fill(0.);
-    if (!(fDCA[5]<0 && fRequireSigmaToVertex)) fhQA[kCutRequireSigmaToVertex][f]->Fill(1.);
+    if (fDCA[5]<0 && fRequireSigmaToVertex) 
+      fhQA[kCutRequireSigmaToVertex][f]->Fill(0.);
+    else 
+      fhQA[kCutRequireSigmaToVertex][f]->Fill(1.);
 
-    if (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
-    if (!(!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)) fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
+    if (!fAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)
+      fhQA[kCutAcceptKinkDaughters][f]->Fill(0.);
+    else 
+      fhQA[kCutAcceptKinkDaughters][f]->Fill(1.);
   }
 
   // fill cut statistics and cut correlation histograms with information from the bitmap
