@@ -9,15 +9,15 @@ AliAnalysisTask *AddTaskHFE(){
     ::Error("AddTaskHFE", "This task requires an input event handler");
     return NULL;
   }  
-  Bool_t MCthere=kTRUE;
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
-  if(!mcH){
-    MCthere=kFALSE;
-  }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   if (type=="AOD"){
     ::Error("AddTaskHFE", "The tasks exits because AODs are in input");
     return NULL;
+  }
+  Bool_t MCthere=kTRUE;
+  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthE    ventHandler());
+  if(!mcH){
+    MCthere=kFALSE;
   }
 
   //============= Set Task Name ===================
@@ -46,10 +46,10 @@ AliAnalysisTask *AddTaskHFE(){
   task->SetHFECuts(hfecuts);
   if(!MCthere){
     TF1 *hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0, 20);
-    hBackground->SetParameter(0, 0.3336);
-    hBackground->SetParameter(1, 0.3306);
-    hBackground->SetParameter(2, 1.1255);
-    hBackground->SetParameter(3, -3.3747);
+    hBackground->SetParameter(0, 0.2194);
+    hBackground->SetParameter(1, 0.217);
+    hBackground->SetParameter(2, 0.6829);
+    hBackground->SetParameter(3, -2.697);
     task->SetBackGroundFactorsFunction(hBackground);
   }
 
