@@ -410,7 +410,16 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
         if ( ! cln.Contains("TH") )
           continue ; 
         if(hist->TestBit(AliQAv1::GetImageBit())) {
-          hist->Draw() ; 
+          TString opts = hist->GetDrawOption();
+          if (opts.Contains("logy",TString::kIgnoreCase)) {
+            gPad->SetLogy();
+            opts.ReplaceAll("logy", "");
+          }
+          if (opts.Contains("logx", TString::kIgnoreCase)) {
+            gPad->SetLogx();
+            opts.ReplaceAll("logx", "");
+          }
+          hist->DrawCopy() ; 
           fImage[esIndex]->cd(++npad) ; 
         }
       }
