@@ -9,6 +9,11 @@ AliAnalysisTask *AddTaskHFE(){
     ::Error("AddTaskHFE", "This task requires an input event handler");
     return NULL;
   }  
+  Bool_t MCthere=kTRUE;
+  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
+  if(!mcH){
+    MCthere=kFALSE;
+  }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   if (type=="AOD"){
     ::Error("AddTaskHFE", "The tasks exits because AODs are in input");
