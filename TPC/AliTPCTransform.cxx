@@ -164,7 +164,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   Double_t xx[3];
   //  Apply Time0 correction - Pad by pad fluctuation
   //
-  //x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
+  x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
   //
   // Tranform from pad - time coordinate system to the rotated global (tracking) system
   //
