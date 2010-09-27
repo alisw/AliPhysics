@@ -110,6 +110,8 @@ protected:
     Int_t fAntiNeutronCode;//pdg anti-neutron code
     Int_t fEPlusCode;//pdg positron code
     Int_t fEMinusCode;//pdg electron code
+    Int_t fMuPlusCode; // pdg muon + code
+    Int_t fMuMinusCode; // pdg muon - code
     Int_t fGammaCode; // pdg gamma code
     Float_t fPionMass;//pdg pion mass
 
@@ -125,14 +127,10 @@ protected:
     Int_t fChargedMultiplicity;/** Multiplicity of charged particles in the event */    
     Int_t fNeutralMultiplicity; /** Multiplicity of neutral particles in the event */
     
-    Double_t fBaryonEt;     /** Et of identified baryons */    
-    Double_t fAntiBaryonEt; /** Et of identified anti-baryons */
-    Double_t fMesonEt;     /** Et of identified mesons */
+    Double_t fBaryonEt;     /** Et of identified baryons; calo based (Rec only for now) */    
+    Double_t fAntiBaryonEt; /** Et of identified anti-baryons; calo based (Rec only for now) */
+    Double_t fMesonEt;     /** Et of identified mesons; calo based (Rec only for now) */
 
-    Double_t fBaryonEtAcc;    /** Et of identified baryons in calorimeter acceptance */    
-    Double_t fAntiBaryonEtAcc; /** Et of identified anti-baryons in calorimeter acceptance */       
-    Double_t fMesonEtAcc; /** Et of identified mesons in calorimeter acceptance */
-    
     Double_t fProtonEt; /** Et of identified protons */
     Double_t fPionEt; /** Et of identified pions */
     Double_t fChargedKaonEt; /** Et of identified charged kaons */
@@ -214,10 +212,6 @@ protected:
     TH1F *fHistAntiBaryonEt; /** Et of identified anti-baryons */
     TH1F *fHistMesonEt; /** Et of identified mesons */
 
-    TH1F *fHistBaryonEtAcc; /** Et of identified baryons in calorimeter acceptance */    
-    TH1F *fHistAntiBaryonEtAcc; /** Et of identified anti-baryons in calorimeter acceptance */       
-    TH1F *fHistMesonEtAcc; /** Et of identified mesons in calorimeter acceptance */
-
     TH1F *fHistProtonEt; /** Et of identified protons */
     TH1F *fHistPionEt; /** Et of identified protons */
     TH1F *fHistChargedKaonEt; /** Et of identified charged kaons */
@@ -234,9 +228,7 @@ protected:
     TH1F *fHistElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
     
     /* Correction plots */
-    TH2F *fHistEtRecvsEtMC; //Reconstructed Et versus MC Et
-    
-    TH1F *fHistTMDeltaR; /* Track matching plots */
+    TH1F *fHistTMDeltaR; /* Track matching plots; Rec only for now */
 
     TTree *fTree; // optional TTree
     TTree *fTreeDeposit; // optional TTree for energy deposit measurements

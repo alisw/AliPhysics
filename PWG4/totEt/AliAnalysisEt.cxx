@@ -49,6 +49,8 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fAntiNeutronCode(0)
         ,fEPlusCode(0)
         ,fEMinusCode(0)
+        ,fMuPlusCode(0)
+        ,fMuMinusCode(0)
         ,fGammaCode(0)
         ,fPionMass(0)
         ,fTotEt(0)
@@ -63,9 +65,6 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fBaryonEt(0)
         ,fAntiBaryonEt(0)
         ,fMesonEt(0)
-        ,fBaryonEtAcc(0)
-        ,fAntiBaryonEtAcc(0)
-        ,fMesonEtAcc(0)
         ,fProtonEt(0)
         ,fPionEt(0)
         ,fChargedKaonEt(0)
@@ -106,9 +105,6 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fHistBaryonEt(0)
         ,fHistAntiBaryonEt(0)
         ,fHistMesonEt(0)
-        ,fHistBaryonEtAcc(0)
-        ,fHistAntiBaryonEtAcc(0)
-        ,fHistMesonEtAcc(0)
         ,fHistProtonEt(0)
         ,fHistPionEt(0)
         ,fHistChargedKaonEt(0)
@@ -122,7 +118,6 @@ AliAnalysisEt::AliAnalysisEt() :
         ,fHistChargedKaonEtAcc(0)
         ,fHistMuonEtAcc(0)
         ,fHistElectronEtAcc(0)
-        ,fHistEtRecvsEtMC(0)
         ,fHistTMDeltaR(0)
         ,fTree(0)
         ,fTreeDeposit(0)
@@ -156,10 +151,6 @@ void AliAnalysisEt::FillOutputList(TList *list)
     list->Add(fHistAntiBaryonEt);
     list->Add(fHistMesonEt);
 
-    list->Add(fHistBaryonEtAcc);
-    list->Add(fHistAntiBaryonEtAcc);
-    list->Add(fHistMesonEtAcc);
-
     list->Add(fHistProtonEt);
     list->Add(fHistPionEt);
     list->Add(fHistChargedKaonEt);
@@ -175,8 +166,6 @@ void AliAnalysisEt::FillOutputList(TList *list)
     list->Add(fHistChargedKaonEtAcc);
     list->Add(fHistMuonEtAcc);
     list->Add(fHistElectronEtAcc);
-
-    list->Add(fHistEtRecvsEtMC);
 
     list->Add(fHistTMDeltaR);
 
@@ -286,15 +275,6 @@ void AliAnalysisEt::CreateHistograms()
     histname = "fHistMesonEt" + fHistogramNameSuffix;
     fHistMesonEt = new TH1F(histname.Data(), "E_{T} for mesons",  nbinsEt, minEt, maxEt);
 
-    histname = "fHistBaryonEtAcc" + fHistogramNameSuffix;
-    fHistBaryonEtAcc = new TH1F(histname.Data(), "E_{T} for baryons in calorimeter acceptance",  nbinsEt, minEt, maxEt);
-
-    histname = "fHistAntiBaryonEtAcc" + fHistogramNameSuffix;
-    fHistAntiBaryonEtAcc = new TH1F(histname.Data(), "E_{T} for anti baryons in calorimeter acceptance",  nbinsEt, minEt, maxEt);
-
-    histname = "fHistMesonEtAcc" + fHistogramNameSuffix;
-    fHistMesonEtAcc = new TH1F(histname.Data(), "E_{T} for mesons in calorimeter acceptance",  nbinsEt, minEt, maxEt);
-
     histname = "fHistProtonEt" + fHistogramNameSuffix;
     fHistProtonEt = new TH1F(histname.Data(), "E_{T} for (anti-)protons", nbinsEt, minEt, maxEt);
 
@@ -334,9 +314,6 @@ void AliAnalysisEt::CreateHistograms()
     histname = "fHistElectronEtAcc" + fHistogramNameSuffix;
     fHistElectronEtAcc = new TH1F(histname.Data(), "E_{T} for electrons/positrons in calorimeter acceptance", nbinsEt, minEt, maxEt);
 
-    histname = "fHistEtRecvsEtMC" + fHistogramNameSuffix;
-    fHistEtRecvsEtMC = new TH2F(histname.Data(), "Reconstructed E_{t} vs MC E_{t}", nbinsEt, minEt, maxEt, nbinsEt, minEt, maxEt);
-
     //
     histname = "fHistTMDeltaR" + fHistogramNameSuffix;
     fHistTMDeltaR = new TH1F(histname.Data(), "#Delta R for calorimeter clusters", 200, 0, 50);
@@ -362,9 +339,6 @@ void AliAnalysisEt::CreateTrees()
     fTree->Branch("fBaryonEt",&fBaryonEt,"fBaryonEt/D");
     fTree->Branch("fAntiBaryonEt",&fAntiBaryonEt,"fAntiBaryonEt/D");
     fTree->Branch("fMesonEt",&fMesonEt,"fMesonEt/D");
-    fTree->Branch("fBaryonEtAcc",&fBaryonEtAcc,"fBaryonEtAcc/D");
-    fTree->Branch("fAntiBaryonEtAcc",&fAntiBaryonEtAcc,"fAntiBaryonEtAcc/D");
-    fTree->Branch("fMesonEtAcc",&fMesonEtAcc,"fMesonEtAcc/D");
     fTree->Branch("fProtonEt",&fProtonEt,"fProtonEt/D");
     fTree->Branch("fChargedKaonEt",&fChargedKaonEt,"fChargedKaonEt/D");
     fTree->Branch("fMuonEt",&fMuonEt,"fMuonEt/D");
@@ -388,6 +362,7 @@ void AliAnalysisEt::CreateTrees()
     fTreeDeposit->Branch("fTrackPassedCut", &fTrackPassedCut, "fTrackPassedCut/B");
  
   }
+
   return;
 }
 void AliAnalysisEt::FillHistograms()
@@ -408,10 +383,6 @@ void AliAnalysisEt::FillHistograms()
     fHistAntiBaryonEt->Fill(fAntiBaryonEt);
     fHistMesonEt->Fill(fMesonEt);
 
-    fHistBaryonEtAcc->Fill(fBaryonEtAcc);
-    fHistAntiBaryonEtAcc->Fill(fAntiBaryonEtAcc);
-    fHistMesonEtAcc->Fill(fMesonEtAcc);
- 
     fHistProtonEt->Fill(fProtonEt);
     fHistPionEt->Fill(fPionEt);
     fHistChargedKaonEt->Fill(fChargedKaonEt);
@@ -456,20 +427,19 @@ void AliAnalysisEt::ResetEventValues()
   fBaryonEt = 0;
   fAntiBaryonEt = 0;
   fMesonEt = 0;
-  fBaryonEtAcc = 0;
-  fAntiBaryonEtAcc = 0;
-  fMesonEtAcc = 0;
   fProtonEt = 0;
+  fPionEt = 0;
   fChargedKaonEt = 0;
   fMuonEt = 0;
   fElectronEt = 0;
-  fProtonEtAcc = 0;
-  fChargedKaonEtAcc = 0;
-  fMuonEtAcc = 0;
-  fElectronEtAcc = 0;
   fNeutronEt = 0;
   fAntiNeutronEt = 0;
   fGammaEt = 0;
+  fProtonEtAcc = 0;
+  fPionEtAcc = 0;
+  fChargedKaonEtAcc = 0;
+  fMuonEtAcc = 0;
+  fElectronEtAcc = 0;
   
   if (!fCuts || !fPdgDB || fPiPlusCode==0) { // some Init's needed
     cout << __FILE__ << ":" << __LINE__ << " : Init " << endl;
@@ -514,6 +484,8 @@ void AliAnalysisEt::SetParticleCodes()
   fAntiNeutronCode = fPdgDB->GetParticle("antineutron")->PdgCode();
   fEPlusCode = fPdgDB->GetParticle("e+")->PdgCode();
   fEMinusCode = fPdgDB->GetParticle("e-")->PdgCode();
+  fMuPlusCode = fPdgDB->GetParticle("mu+")->PdgCode();
+  fMuMinusCode = fPdgDB->GetParticle("mu-")->PdgCode();
   fGammaCode = fPdgDB->GetParticle("gamma")->PdgCode();
   
   cout << "Resetting Codes: Pion " << fPiPlusCode
