@@ -7,45 +7,53 @@
 // of generating functions (GFC). 
 
 // Set how many output analysis files in total you want to access:
-const Int_t nFiles = 3;
+const Int_t nFiles = 2;
  
 // Set how many of those output analysis files you want to represent with a mesh (usually used to represent results of simulations):
-const Int_t nSim = 1;
+const Int_t nSim = 0;
 
 // Set paths of all output analysis files (first the ones to be represented with mesh (simulations), then the ones to be represented with markers (real data))
-TString files[nFiles] = {"all","plusPlus","minusMinus"};
+TString files[nFiles] = {"2","4"};
 
 // Set analysis types for all output analysis files (can be "ESD","AOD","MC",""):
-TString type[nFiles] = {"ESD","ESD","ESD"};
+TString type[nFiles] = {"",""};
  
 // Set mesh color:
-Int_t meshColor[nSim] = {kGray};
+Int_t meshColor[nSim] = {};
 
 // Set marker styles:
-Int_t markerStyle[nFiles-nSim] = {kFullSquare,kFullSquare};
+Int_t markerStyle[nFiles-nSim] = {kStar,kStar};
 
 // Set marker colors:
-Int_t markerColor[nFiles-nSim] = {kRed,kBlue};
+Int_t markerColor[nFiles-nSim] = {kBlack,kRed};
 
 // Set legend entries:
-TString legendEntry[nFiles] = {"all","+ vs +","- vs -"};
+TString legendEntry[nFiles] = {"k = 2","k = 4"};
  
 // Set if you want to rebin the histograms into wider multiplicity bins (set for each cumulant order separately):
-Bool_t rebin = kTRUE;
+Bool_t rebin = kFALSE;
 Int_t nMergedBins[4] = {1,4,4,4}; // set how many original multiplicity bins will be merged into 1 new one 
  
 // Set if you whish to plot cumulants versus <reference multiplicity> (by default they are plotted versus # of RPs):
-Bool_t plotCumulantsVsReferenceMultiplicity = kTRUE;
-Bool_t showReferenceMultiplicityVsNoOfRPs = kTRUE; 
+Bool_t plotCumulantsVsReferenceMultiplicity = kFALSE;
+Bool_t showReferenceMultiplicityVsNoOfRPs = kFALSE; 
 
 // Set flow values whose theoretical contribution to cumulants will be shown on the plots with the straight coloured lines: 
-Bool_t showTheoreticalLines = kTRUE;
+Bool_t showTheoreticalLines = kFALSE;
 const Int_t nFlowValues = 1;
 Double_t v[nFlowValues] = {0.05};
 Int_t lineColor[nFlowValues] = {kRed}; 
 
 // If the statistical error of 6th and 8th order cumulant is huge you may prefer not to show them:
 Bool_t plotOnly2ndAnd4thOrderCumulant = kTRUE;
+
+// Set if you want to show theoretical curves for the toy model:
+Bool_t showToyModel = kFALSE;
+const Int_t nToyModels = 2; // number of toy models with different parameters k, vn, v2n
+Double_t k[nToyModels] = {2.,4.};
+Double_t vn[nToyModels] = {0.25,0.25};
+Double_t v2n[nToyModels] = {0.0,0.0};
+Int_t lineColorToyModel[nToyModels] = {kBlack,kRed};
 
 // For comparison sake show also GFC results with dotted line:
 Bool_t showAlsoGFCResults = kFALSE;
@@ -54,7 +62,7 @@ Int_t gfcLineStyle = 3;
 // For comparison sake show also Monte Carlo QC results with coloured mesh:
 Bool_t showAlsoMCEPResults = kFALSE; 
 Bool_t showOnlyMCEPResults = kFALSE;
-Int_t mcepMeshColor[nSim] = {kGray};
+Int_t mcepMeshColor[nSim] = {};
 
 // Set method names which calculate cumulants vs multiplicity (do not touch these settings unless you are looking for a trouble):
 const Int_t nMethods = 3;
@@ -65,6 +73,7 @@ TList *lists[nFiles][nMethods] = {{NULL}}; // lists cobj<method> holding objects
 TH1D *cumulantsVsM[nFiles][nMethods][4] = {{{NULL}}}; // histograms with results for cumulants vs multiplicity (4 stands for 4 cumulant orders)
 TGraph *lines[nFlowValues][4] = {{NULL}}; // lines denoting theoretical flow contribution to cumulants
 TProfile *refMultVsNoOfRPs[nFiles] = {NULL}; // <reference multipicity> versus # of RPs
+TF1 *toyModel[2][nToyModels] = {{NULL}}; // [cumulant order][number of toy models]
 
 // Ranges for plots:
 Double_t xMin[4]={0.};
@@ -130,7 +139,7 @@ void Plot()
     c = new TCanvas("c","cumulants",1200,500);
     c->Divide(2,1);  
     coMax = 2; 
-   } 
+   }  
    
  TLegend *legend = new TLegend(0.1,0.7,0.33,0.9);
  legend->SetFillStyle(0);
@@ -142,6 +151,37 @@ void Plot()
  {
   c->cd(co+1);
   StyleHist(qcFlag[co].Data(),co)->Draw(); 
+  if(co==0)
+  {
+   if(showToyModel)
+   {
+    for(Int_t ntm=0;ntm<nToyModels;ntm++)
+    {
+     TF1 *tm = ToyModel(co,k[ntm],vn[ntm],v2n[ntm]);
+     if(tm)
+     {
+      tm->SetLineColor(lineColorToyModel[ntm]);
+      tm->Draw("same");
+     }
+    } // for(Int_t ntm=0;ntm<nToyModels;ntm++)
+   } // end of if(showToyModel)
+  } // end of if(co==0)
+  if(co==1)
+  {    
+   if(showToyModel)
+   {
+    for(Int_t ntm=0;ntm<nToyModels;ntm++)
+    {
+     TF1 *tm = ToyModel(co,k[ntm],vn[ntm],v2n[ntm]);
+     if(tm)
+     {
+      tm->SetLineColor(lineColorToyModel[ntm]);
+      tm->Draw("same");
+     }
+    } // for(Int_t ntm=0;ntm<nToyModels;ntm++)
+   } // end of if(showToyModel)   
+  } // end of if(co==1)
+  
   // simulations:
   for(Int_t s=0;s<nSim;s++) 
   {
@@ -183,7 +223,7 @@ void Plot()
     cumulantsVsM[f][0][co]->Draw("e1same"); 
     cumulantsVsM[f][0][co]->SetMarkerStyle(markerStyle[f-nSim]);  
     cumulantsVsM[f][0][co]->SetMarkerColor(markerColor[f-nSim]); 
-    if(co==0)
+    if(co==1)
     {
      if(showAlsoGFCResults)
      {
@@ -203,7 +243,7 @@ void Plot()
    }
   } 
   // Draw legend:
-  if(co==0){legend->Draw("same");}
+  if(co==1){legend->Draw("same");}
  } // end of for(Int_t co=0;co<4;co++) // cumulant order
  
  // Plot also <reference multiplicity> vs # of RPs:
@@ -281,6 +321,32 @@ void Lines()
  }
 
 } // end of void Lines()
+
+// =====================================================================================
+
+TF1* ToyModel(Int_t co, Double_t k, Double_t vn, Double_t v2n)
+{
+ // Make theoretical curves for the toy model.
+ 
+ TF1 *function = NULL;
+ 
+ if(co==0) 
+ {
+  function = new TF1("function","([1]*[1]*(x-0.5-[0])+[0]-1)/((x-0.5)-1)",1.5,1000);
+  function->SetParameter(0,k);
+  function->SetParameter(1,vn);
+ } 
+ else if(co==1)
+ {
+  function = new TF1("function","-1.*([1]*[1]*[1]*[1]*([0]-(x-0.5))*(12.*[0]-6.*[0]*[0]-12.*(x-0.5)-5.*[0]*(x-0.5)+6.*[0]*[0]*(x-0.5)+9.*(x-0.5)*(x-0.5)-3.*[0]*(x-0.5)*(x-0.5)-(x-0.5)*(x-0.5)*(x-0.5))+[1]*[1]*4.*([0]-1.)*(x-0.5-[0])*([0]*(x-0.5-1.)-2.*(x-0.5-2.))-[1]*[1]*[2]*2.*(x-0.5-1.)*([0]-1.)*(x-0.5-[0])*(x-0.5-2.*[0])-[2]*[2]*([0]-1.)*([0]-1.)*((x-0.5)-[0])*(x-0.5-1.)+([0]-1.)*(-6.+9*[0]-[0]*[0]+2.*(x-0.5)-5.*[0]*(x-0.5)+[0]*[0]*(x-0.5)))/((x-0.5-1.)*(x-0.5-1.)*(x-0.5-2.)*(x-0.5-3.))",3.5,100);         
+  function->SetParameter(0,k);
+  function->SetParameter(1,vn);
+  function->SetParameter(2,v2n); 
+ }
+ 
+ return function;
+ 
+} // end of TF1* ToyModel(Int_t co)
 
 // =====================================================================================
 
