@@ -404,10 +404,10 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       dydx = fTracklet->GetYref(1);
       dzdx = fTracklet->GetZref(1);
     }
-    printf("RC[%c] Primary[%c]\n"
+    /*printf("RC[%c] Primary[%c]\n"
            "  Fit : y0[%f] z0[%f] dydx[%f] dzdx[%f]\n"
            "  Ref:  y0[%f] z0[%f] dydx[%f] dzdx[%f]\n", fTracklet->IsRowCross()?'y':'n', fTracklet->IsPrimary()?'y':'n', y0, z0, dydx, dzdx
-           ,fTracklet->GetYref(0),fTracklet->GetZref(0),fTracklet->GetYref(1),fTracklet->GetZref(1));
+           ,fTracklet->GetYref(0),fTracklet->GetZref(0),fTracklet->GetYref(1),fTracklet->GetZref(1));*/
     tilt = fTracklet->GetTilt();
     fTracklet->GetCovRef(covR);
     Double_t t2(tilt*tilt)
