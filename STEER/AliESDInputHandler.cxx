@@ -161,14 +161,18 @@ Bool_t AliESDInputHandler::Notify(const char* path)
       esdTreeFName = (fTree->GetCurrentFile())->GetName();
       esdFriendTreeFName = esdTreeFName;
       esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
-      
-      TTree* cTree = fTree->GetTree();
-      if (!cTree) cTree = fTree;
-      
-      cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
-      cTree->SetBranchStatus("ESDfriend.", 1);
-      fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
-      cTree->SetBranchAddress("ESDfriend.", &fFriend);
+      // Added protection in case friend is not available (missing protection in TTree::LoadEvent)
+      TFile *esdfriendFile = TFile::Open(fFriendFileName);
+      if (esdfriendFile) {
+        TTree* cTree = fTree->GetTree();
+        if (!cTree) cTree = fTree;      
+        cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
+        cTree->SetBranchStatus("ESDfriend.", 1);
+        fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
+        cTree->SetBranchAddress("ESDfriend.", &fFriend);
+      } else {
+        fFriend = 0;
+      }    
     } 
     //
     //
