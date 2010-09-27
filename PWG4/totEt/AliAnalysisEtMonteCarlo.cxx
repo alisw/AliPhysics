@@ -75,8 +75,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
     Int_t nPrim = stack->GetNtrack();
 
-    Double_t particleMassPart = 0; //The mass part in the Et calculation for this particle
-
     for (Int_t iPart = 0; iPart < nPrim; iPart++)
     {
 
@@ -88,78 +86,127 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
             continue;
         }
 
-        TParticlePDG *pc = part->GetPDG(0);
+        TParticlePDG *pdg = part->GetPDG(0);
+
+	Double_t particleMassPart = 0; //The mass part in the Et calculation for this particle
 
         // Check if it is a primary particle
         if (!stack->IsPhysicalPrimary(iPart)) continue;
 
-	// printf("MC: iPart %03d eta %4.3f phi %4.3f code %d charge %g \n", iPart, part->Eta(), part->Phi(), pc->PdgCode(), pc->Charge()); // tmp/debug printout
+	// printf("MC: iPart %03d eta %4.3f phi %4.3f code %d charge %g \n", iPart, part->Eta(), part->Phi(), pdg->PdgCode(), pdg->Charge()); // tmp/debug printout
 
         // Check for reasonable (for now neutral and singly charged) charge on the particle
         //TODO:Maybe not only singly charged?
-        if (TMath::Abs(pc->Charge()) != fCuts->GetMonteCarloSingleChargedParticle() && pc->Charge() != fCuts->GetMonteCarloNeutralParticle()) continue;
+        if (TMath::Abs(pdg->Charge()) != fCuts->GetMonteCarloSingleChargedParticle() && pdg->Charge() != fCuts->GetMonteCarloNeutralParticle()) continue;
 
         fMultiplicity++;
 
         if (TMath::Abs(part->Eta()) < fCuts->GetCommonEtaCut())
         {
 
-	  TParticlePDG *pdgCode =  part->GetPDG(0);
             if (
-                TMath::Abs(pdgCode->PdgCode()) == fProtonCode ||
-                TMath::Abs(pdgCode->PdgCode()) == fNeutronCode ||
-                TMath::Abs(pdgCode->PdgCode()) == fLambdaCode ||
-                TMath::Abs(pdgCode->PdgCode()) == fXiCode ||
-                TMath::Abs(pdgCode->PdgCode()) == fXi0Code ||
-                TMath::Abs(pdgCode->PdgCode()) == fOmegaCode
+                TMath::Abs(pdg->PdgCode()) == fProtonCode ||
+                TMath::Abs(pdg->PdgCode()) == fNeutronCode ||
+                TMath::Abs(pdg->PdgCode()) == fLambdaCode ||
+                TMath::Abs(pdg->PdgCode()) == fXiCode ||
+                TMath::Abs(pdg->PdgCode()) == fXi0Code ||
+                TMath::Abs(pdg->PdgCode()) == fOmegaCode
 	       )
             {
-                particleMassPart = -TMath::Sign(pdgCode->PdgCode(), pdgCode->PdgCode())*pdgCode->Mass();
+	      if (pdg->PdgCode() > 0) { particleMassPart = - pdg->Mass();}
+	      if (pdg->PdgCode() < 0) { particleMassPart = pdg->Mass();}
 	    }
-	    if(pdgCode->PdgCode() == fNeutronCode)
+	    Double_t et = part->Energy() * TMath::Sin(part->Theta()) + particleMassPart;
+	    	      
+	    if (pdg->PdgCode() == fProtonCode || pdg->PdgCode() == fAntiProtonCode)
+	      {
+		fProtonEt += et;
+	      }
+	    if (pdg->PdgCode() == fPiPlusCode || pdg->PdgCode() == fPiMinusCode)
+	      {
+		fPionEt += et;
+	      }
+	    if (pdg->PdgCode() == fKPlusCode || pdg->PdgCode() == fKMinusCode)
+	      {
+		fChargedKaonEt += et;
+	      }
+	    if (pdg->PdgCode() == fMuPlusCode || pdg->PdgCode() == fMuMinusCode)
+	      {
+		fMuonEt += et;
+	      }
+	    if (pdg->PdgCode() == fEPlusCode || pdg->PdgCode() == fEMinusCode)
+	      {
+		fElectronEt += et;
+	      }
+
+	    // some neutrals also
+	    if(pdg->PdgCode() == fNeutronCode)
 	    {
-	      fNeutronEt += part->Energy()*TMath::Sin(part->Theta()) - pdgCode->Mass();
+	      fNeutronEt += et;
 	    }
-            if(pdgCode->PdgCode() == fAntiNeutronCode)
+            if(pdg->PdgCode() == fAntiNeutronCode)
 	    {
-	      fAntiNeutronEt += part->Energy()*TMath::Sin(part->Theta()) + pdgCode->Mass();
+	      fAntiNeutronEt += et;
 	    }
-	    if(pdgCode->PdgCode() == fGammaCode)
+	    if(pdg->PdgCode() == fGammaCode)
 	    {
-	      fGammaEt += part->Energy()*TMath::Sin(part->Theta());
+	      fGammaEt += et;
 	    }
-            if (pdgCode->Charge() == fCuts->GetMonteCarloNeutralParticle() )
+
+            if (pdg->Charge() == fCuts->GetMonteCarloNeutralParticle() )
             {
 	       fNeutralMultiplicity++;
-                fTotNeutralEt += part->Energy()*TMath::Sin(part->Theta());
+	       fTotNeutralEt += et;
 
                 if (TMath::Abs(part->Eta()) < fEtaCutAcc && part->Phi() < fPhiCutAccMax && part->Phi() > fPhiCutAccMin)
                 {
-                    fTotNeutralEtAcc += part->Energy()*TMath::Sin(part->Theta());
-                    fTotEtAcc += part->Energy()*TMath::Sin(part->Theta());
+		  fTotNeutralEtAcc += et;
+		  fTotEtAcc += et;
                 }
             }
-            else if (pdgCode->Charge() != fCuts->GetMonteCarloNeutralParticle() )
+            else if (pdg->Charge() != fCuts->GetMonteCarloNeutralParticle() )
             {
 	       fChargedMultiplicity++;
-                fTotChargedEt += part->Energy()*TMath::Sin(part->Theta());
+	       fTotChargedEt += et;
                 if (TMath::Abs(part->Eta()) < fEtaCutAcc && part->Phi() < fPhiCutAccMax && part->Phi() > fPhiCutAccMin)
                 {
-                    fTotChargedEtAcc += part->Energy()*TMath::Sin(part->Theta());
-                    fTotEtAcc += part->Energy()*TMath::Sin(part->Theta());
+		  fTotChargedEtAcc += et;
+		  fTotEtAcc += et;
+
+
+		    if (pdg->PdgCode() == fProtonCode || pdg->PdgCode() == fAntiProtonCode)
+		      {
+			fProtonEtAcc += et;
+		      }
+		    if (pdg->PdgCode() == fPiPlusCode || pdg->PdgCode() == fPiMinusCode)
+		      {
+			fPionEtAcc += et;
+		      }
+		    if (pdg->PdgCode() == fKPlusCode || pdg->PdgCode() == fKMinusCode)
+		      {
+			fChargedKaonEtAcc += et;
+		      }
+		    if (pdg->PdgCode() == fMuPlusCode || pdg->PdgCode() == fMuMinusCode)
+		      {
+			fMuonEtAcc += et;
+		      }
+		    if (pdg->PdgCode() == fEPlusCode || pdg->PdgCode() == fEMinusCode)
+		      {
+			fElectronEtAcc += et;
+		      }
+		    
                 }
 
 		//	  if (TrackHitsCalorimeter(part, event->GetMagneticField()))
 		if (TrackHitsCalorimeter(part)) // magnetic field info not filled?
 		  {
-		    if (pdgCode->Charge() > 0) fHistPhivsPtPos->Fill(part->Phi(),part->Pt());
+		    if (pdg->Charge() > 0) fHistPhivsPtPos->Fill(part->Phi(),part->Pt());
 		    else fHistPhivsPtNeg->Fill(part->Phi(), part->Pt());
 		  }
 	    }
 	}
     }
     
-    fTotNeutralEtAcc = fTotNeutralEt;
     fTotEt = fTotChargedEt + fTotNeutralEt;
     fTotEtAcc = fTotChargedEtAcc + fTotNeutralEtAcc;
     
