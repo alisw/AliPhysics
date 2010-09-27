@@ -3,10 +3,6 @@ const Float_t phimin = 0.;
 const Float_t phimax = 2.*TMath::Pi();
 const Float_t etamin = -0.9;
 const Float_t etamax = 0.9;
-const Float_t dcarmin = -0.2;
-const Float_t dcarmax = 0.2;
-const Float_t chi2TPCmin = 0.0;
-const Float_t chi2TPCmax = 4.;
 
 const Int_t   mintrackrefsTPC = 1;
 const Int_t   mintrackrefsITS = 1;
@@ -42,16 +38,15 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
   UInt_t ipt   = 0;
   UInt_t iphi  = 1;
   UInt_t ieta  = 2;
-  UInt_t idcar = 3;
-  UInt_t ichi2TPC = 4;
 
   //Setting up the container grid... 
-  UInt_t nstep = 5; //Steps/Modes for containers
+  UInt_t nstep = 6; //Steps/Modes for containers
   Int_t kStepReconstructed = 0;
   Int_t kStepReconstructedTPCOnly = 1;
   Int_t kStepSecondaries = 2;
   Int_t kStepReconstructedMC = 3;
   Int_t kStepMCAcceptance = 4;
+  Int_t kStepReconstructedTPCOnlyMC = 5;
 
   //redefine pt ranges in case of Jet-Jet production
   Float_t ptBinEdges[2][2];
@@ -78,31 +73,25 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
     binWidth3 = 5.;
   }
     
-  const Int_t nvar   = 5; //number of variables on the grid: pt:phi:eta:DCAR:Chi2/NClusTPC
+  const Int_t nvar   = 3; //number of variables on the grid: pt:phi:eta
   const Int_t nbin11 = (int)((ptBinEdges[0][0]-ptmin)/ptBinEdges[0][1]);
   const Int_t nbin12 = (int)((ptBinEdges[1][0]-ptBinEdges[0][0])/ptBinEdges[1][1])+nbin11;
   const Int_t nbin13 = (int)((ptmax-ptBinEdges[1][0])/binWidth3)+nbin12;
   const Int_t nbin1  = nbin13; //bins in pt 
   const Int_t nbin2  =  18;//36; //bins in phi
   const Int_t nbin3  =  8; //bins in eta
-  const Int_t nbin4  =  40; //bins in DCAR
-  const Int_t nbin5  =  20; //bins in Chi2/#NclusTPC
 
   //arrays for the number of bins in each dimension
   Int_t iBin[nvar];
   iBin[0]=nbin1;
   iBin[1]=nbin2;
   iBin[2]=nbin3;
-  iBin[3]=nbin4;
-  iBin[4]=nbin5;
-  
+   
   //arrays for lower bounds :
   Double_t *binLim1=new Double_t[nbin1+1];
   Double_t *binLim2=new Double_t[nbin2+1];
   Double_t *binLim3=new Double_t[nbin3+1];
-  Double_t *binLim4=new Double_t[nbin4+1];
-  Double_t *binLim5=new Double_t[nbin5+1];
-
+  
   //values for bin lower bounds 
   for(Int_t i=0; i<=nbin1; i++) {
     if(i<=nbin11) binLim1[i]=(Double_t)ptmin + (ptBinEdges[0][0]-ptmin)/nbin11*(Double_t)i ;  
@@ -111,8 +100,6 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
   }
   for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)phimin + (phimax-phimin)/nbin2*(Double_t)i ;
   for(Int_t i=0; i<=nbin3; i++) binLim3[i]=(Double_t)etamin + (etamax-etamin)/nbin3*(Double_t)i ;  
-  for(Int_t i=0; i<=nbin4; i++) binLim4[i]=(Double_t)dcarmin + (dcarmax-dcarmin)/nbin4*(Double_t)i ;
-  for(Int_t i=0; i<=nbin5; i++) binLim5[i]=(Double_t)chi2TPCmin + (chi2TPCmax-chi2TPCmin)/nbin5*(Double_t)i ;
   
 
   AliCFContainer* containerPos = new AliCFContainer("containerPos","container for positive tracks",nstep,nvar,iBin);
@@ -120,31 +107,27 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
   containerPos -> SetBinLimits(ipt,binLim1);
   containerPos -> SetBinLimits(iphi,binLim2);
   containerPos -> SetBinLimits(ieta,binLim3);
-  containerPos -> SetBinLimits(idcar,binLim4);
-  containerPos -> SetBinLimits(ichi2TPC,binLim5);
 
   AliCFContainer* containerNeg = new AliCFContainer("containerNeg","container for negative tracks",nstep,nvar,iBin);
   //setting the bin limits
   containerNeg -> SetBinLimits(ipt,binLim1);
   containerNeg -> SetBinLimits(iphi,binLim2);
   containerNeg -> SetBinLimits(ieta,binLim3);
-  containerNeg -> SetBinLimits(idcar,binLim4);
-  containerNeg -> SetBinLimits(ichi2TPC,binLim5);
   
   //CREATE THE  CUTS -----------------------------------------------
   //Use AliESDtrackCuts
   AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
+  trackCuts = trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Quality Selection for Global tracks
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
-  trackCuts = trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Quality Selection for Global tracks
 
   AliESDtrackCuts *trackCutsTPConly = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts TPC only tracks");
+  trackCutsTPConly = trackCutsTPConly->GetStandardTPCOnlyTrackCuts();//TPC only Track Quality Cuts
   trackCutsTPConly->SetEtaRange(-0.9,0.9);
   trackCutsTPConly->SetPtRange(0.15, 1e10);
-  trackCutsTPConly = trackCutsTPConly->GetStandardTPCOnlyTrackCuts();//TPC only Track Quality Cuts
+  trackCutsTPConly->SetMinNClustersTPC(70);
 
-
- // Gen-Level kinematic cuts
+  // Gen-Level kinematic cuts
   AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
   mcKineCuts->SetPtRange(0.15,1e10);
   mcKineCuts->SetRapidityRange(-0.9,0.9);//-0.5,0.5);
@@ -159,6 +142,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
   TObjArray* recTPConlyList = new TObjArray(0);
   TObjArray* secList = new TObjArray(0) ;
   TObjArray* recMCList = new TObjArray(0);
+  TObjArray* recTPConlyMCList = new TObjArray(0);
 
   printf("CREATE MC KINE CUTS\n");
   TObjArray* mcList = new TObjArray(0) ;
@@ -174,7 +158,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
   manPos->SetParticleCutsList(kStepSecondaries,secList);
   manPos->SetParticleCutsList(kStepReconstructedMC,recMCList);
   manPos->SetParticleCutsList(kStepMCAcceptance,mcList);
-
+  manPos->SetParticleCutsList(kStepReconstructedTPCOnlyMC,recTPConlyMCList);
 
   AliCFManager* manNeg = new AliCFManager("manNeg","Manager for Negative tracks") ;
   manNeg->SetParticleContainer(containerNeg);
@@ -183,7 +167,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14")
   manNeg->SetParticleCutsList(kStepSecondaries,secList);
   manNeg->SetParticleCutsList(kStepReconstructedMC,recMCList);
   manNeg->SetParticleCutsList(kStepMCAcceptance,mcList);
-
+  manNeg->SetParticleCutsList(kStepReconstructedTPCOnlyMC,recTPConlyMCList);
 
 
   printf("Create task AliPWG4HighPtSpectra\n");

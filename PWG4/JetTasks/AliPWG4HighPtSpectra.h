@@ -35,11 +35,12 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
  public:
 
   enum {
-    kStepReconstructed        = 0,
-    kStepReconstructedTPCOnly = 1,
-    kStepSecondaries          = 2,
-    kStepReconstructedMC      = 3,
-    kStepMCAcceptance         = 4
+    kStepReconstructed          = 0,
+    kStepReconstructedTPCOnly   = 1,
+    kStepSecondaries            = 2,
+    kStepReconstructedMC        = 3,
+    kStepMCAcceptance           = 4,
+    kStepReconstructedTPCOnlyMC = 5
   };
 
   AliPWG4HighPtSpectra();
