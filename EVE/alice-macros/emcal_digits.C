@@ -23,8 +23,9 @@
 #include <AliCluster.h>
 #include <EMCAL/AliEMCALGeometry.h>
 #include <EMCAL/AliEMCALDigit.h>
+#include <AliLog.h>
 
-#include <Riostream.h>
+// #include <Riostream.h>
 #endif
 
 void emcal_digits()
@@ -114,7 +115,8 @@ void emcal_digits()
       amp  = dig->GetAmp(); //amplitude in cell (digit)
       time = dig->GetTime();//time of creation of digit after collision
 
-      cout<<"Cell ID "<<id<<" Amp "<<amp<<endl;//" time "<<time<<endl;
+      AliDebugGeneral("emcal_digits", 5, Form("Cell ID %3d, Amplitude: %f", id, amp));
+      // cout<<"Cell ID "<<id<<" Amp "<<amp<<endl;//" time "<<time<<endl;
 
       //Geometry methods
       geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta);
@@ -123,12 +125,15 @@ void emcal_digits()
 					iIphi, iIeta,iphi,ieta);
       //Gives label of cell in eta-phi position per each supermodule
 
-      cout<< "SModule "<<iSupMod<<"; Tower "<<iTower
-	  <<"; Eta "<<iIeta<<"; Phi "<<iIphi
-	  <<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
+      AliDebugGeneral("emcal_digits", 5, Form("SModule %3d; Tover %3d; Eta %3d; Phi %3d; Cell Eta %3d; Cell Phi %3d",
+		       iSupMod, iTower, iIeta, iIphi, ieta, iphi));
+      // cout<< "SModule "<<iSupMod<<"; Tower "<<iTower
+      //     <<"; Eta "<<iIeta<<"; Phi "<<iIphi
+      //     <<"; Cell Eta "<<ieta<<"; Cell Phi "<<iphi<<endl;
 
       geom->RelPosCellInSModule(id, x, y, z);
-      cout << x <<" "<< y <<" "<< z <<endl;
+      // cout << x <<" "<< y <<" "<< z <<endl;
+      AliDebugGeneral("emcal_digits", 5, Form("(x,y,z)=(%8.3f,%8.3f,%8.3f)", x, y, z));
 
       TEveQuadSet* q = smodules[iSupMod];
       if (q) {
@@ -137,7 +142,8 @@ void emcal_digits()
 	q->QuadId(new AliEMCALDigit(*dig));
       }
     } else {
-      cout<<"Digit pointer 0x0"<<endl;
+      AliDebugGeneral("emcal_digits", 1, Form("Digit pointer 0x0"));
+      // cout<<"Digit pointer 0x0"<<endl;
     }
   }
 
