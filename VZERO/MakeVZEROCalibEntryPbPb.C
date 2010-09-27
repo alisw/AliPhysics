@@ -1,5 +1,5 @@
 
-void MakeVZEROCalibEntryPbPb(Int_t run,const char *inputCDB = "raw://"){
+void MakeVZEROCalibEntryPbPb(Int_t run, Int_t scale = 1, const char *inputCDB = "raw://"){
 
   AliCDBManager *man = AliCDBManager::Instance();
 
@@ -10,36 +10,30 @@ void MakeVZEROCalibEntryPbPb(Int_t run,const char *inputCDB = "raw://"){
   AliVZEROCalibData *calibdaorg = (AliVZEROCalibData*)entry->GetObject();
   AliVZEROCalibData *calibda = new AliVZEROCalibData(*calibdaorg);
 
-  for (Int_t i = 0; i < 64; ++i) {
-    calibda->SetTimeOffset(5.0,i);
-  }
-  for (Int_t i = 0; i < 8; ++i) {
-    calibda->SetWidthResolution(2,i);
-  }
+  Float_t b[64] = {  7.40,  6.83,  7.02,  6.94,  7.03,  7.04,  7.79,  7.27,
+		     6.92,  6.96,  7.01,  6.90,  7.28,  7.38,  7.33,  7.23,
+		     6.71,  7.05,  7.17,  7.69,  7.41,  7.38,  7.21,  7.11,
+		     7.26,  7.12,  6.98,  7.35,  6.99,  6.79,  7.13,  7.58,
+		     6.95,  7.01,  7.33,  7.01,  7.21,  6.01,  7.34,  6.44,
+		     5.68,  7.12,  6.07,  6.92,  7.04,  6.82,  7.04,  7.24,
+		     7.53,  6.99,  7.10,  6.89,  7.07,  6.35,  6.88,  5.77,
+		     6.81,  7.01,  6.89,  6.84,  6.68,  6.95,  6.73,  7.14};
 
-  Float_t p0[64] = {
-    7.094891, 7.124938, 7.089708, 7.098169, 7.094482, 7.147250, 7.170978, 7.183392, 
-    7.145760, 7.148096, 7.153840, 7.143544, 7.186069, 7.194580, 7.203516, 7.195176, 
-    7.188333, 7.198607, 7.209412, 7.226565, 7.221695, 7.205132, 7.191238, 7.227724, 
-    7.232810, 7.252655, 7.230309, 7.140891, 7.273518, 7.242969, 7.252859, 7.252655, 
-    7.026802, 7.079913, 7.134147, 7.092387, 7.079561, 7.072848, 7.123192, 7.003141, 
-    7.024667, 7.124784, 7.123442, 7.129744, 7.110671, 7.143031, 7.139439, 7.178109, 
-    7.247803, 7.139396, 7.293809, 7.094454, 6.992198, 7.206448, 7.244765, 7.056197, 
-    7.263595, 7.138569, 7.089582, 7.215683, 7.266183, 7.165123, 7.243276, 7.235135 };
-  Float_t p1[64] = {
-    0.135569, 0.146405, 0.142425, 0.144278, 0.142307, 0.141648, 0.128477, 0.138239, 
-    0.144173, 0.143419, 0.143572, 0.144482, 0.138024, 0.136542, 0.135955, 0.138537, 
-    0.148521, 0.141999, 0.139627, 0.130014, 0.134970, 0.135635, 0.139094, 0.140634, 
-    0.137971, 0.142080, 0.142793, 0.136054, 0.142778, 0.146045, 0.139133, 0.142080, 
-    0.144121, 0.142311, 0.136564, 0.142686, 0.138792, 0.166285, 0.136387, 0.155391, 
-    0.176082, 0.140408, 0.164738, 0.144270, 0.142766, 0.147486, 0.141951, 0.138012, 
-    0.132394, 0.142849, 0.140477, 0.144592, 0.141558, 0.157646, 0.143758, 0.173385, 
-    0.146489, 0.143279, 0.145230, 0.147203, 0.147333, 0.144979, 0.148597, 0.138985 };
+  Float_t lightYieldCorr[64] = {0.01051, 0.00955, 0.00861, 0.00948, 0.01082, 0.00870, 0.01023, 0.01012, 0.01270, 0.01184, 0.01110, 0.01266, 0.00956, 0.00826, 0.00966, 0.00891, 0.01358, 0.01543, 0.01516, 0.01337, 0.01908, 0.01641, 0.01767, 0.01512, 0.01664, 0.01326, 0.01536, 0.00586, 0.01439, 0.01445, 0.01504, 0.01079, 0.00105, 0.00110, 0.00143, 0.00093, 0.00072, 0.01919, 0.00073, 0.02580, 0.02911, 0.00148, 0.03176, 0.00126, 0.00158, 0.00111, 0.02804, 0.00109, 0.00157, 0.00158, 0.00104, 0.00120, 0.00123, 0.00188, 0.00193, 0.03442, 0.00200, 0.00185, 0.00143, 0.00257, 0.00201, 0.00151, 0.00197, 0.00282};
 
-  Float_t mipperadc = 0.5;
   for (Int_t i = 0; i < 64; ++i) {
-    Float_t hv = TMath::Exp(p1[i]*TMath::Log(0.6/mipperadc)+p0[i]);
+    Float_t hv = calibdaorg->GetMeanHV(i)*TMath::Exp(-TMath::Log((Float_t)scale)/b[i]);
     calibda->SetMeanHV(hv,i);
+    Float_t mip = (i < 32) ? 6950 : 33690; 
+    printf("%d   %.1f %.1f %.1f   %.1f %.1f %.1f  %.1f\n",
+	   i,
+	   calibdaorg->GetMeanHV(i),
+	   1./calibdaorg->GetMIPperADC(i),
+	   mip*lightYieldCorr[i]*0.18*TMath::Qe()*calibdaorg->GetGain(i)/0.6e-12,
+	   calibda->GetMeanHV(i),
+	   1./calibda->GetMIPperADC(i),
+	   mip*lightYieldCorr[i]*0.18*TMath::Qe()*calibda->GetGain(i)/0.6e-12,
+	   calibdaorg->GetMIPperADC(i)/calibda->GetMIPperADC(i));
   }
 
   // Creation of the object VZERO Calibration as a MetaData
@@ -50,7 +44,7 @@ void MakeVZEROCalibEntryPbPb(Int_t run,const char *inputCDB = "raw://"){
   md->SetComment("Pb-Pb VZERO Calibration from RAW OCDB");
   AliCDBId id("VZERO/Calib/Data",0,AliCDBRunRange::Infinity());
 
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB/VZERO/PbPb");
+  man->SetDefaultStorage(Form("local://$ALICE_ROOT/OCDB/VZERO/PbPb_%d",scale));
   AliCDBStorage *storLoc = man->GetDefaultStorage();
   storLoc->Put(calibda, id, md);
 
