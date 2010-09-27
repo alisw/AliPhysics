@@ -116,15 +116,13 @@ Bool_t AliRsnCutBetheBloch::IsSelected(TObject *obj1, TObject* /*obj2*/)
 // Cut checker.
 //
 
-  // coherence check
-  if (!AliRsnCut::TargetOK(obj1))
-  {
-    AliError(Form("Wrong target '%s'. Skipping cut", GetName()));
-    return kTRUE;
-  }
-  
   // dynamic cast the object into AliRsnDaughter
   AliRsnDaughter *track = dynamic_cast<AliRsnDaughter*>(obj1);
+  if (!track)
+  {
+    AliError(Form("[%s]: this cut works only with AliRsnDaughter objects", GetName()));
+    return kTRUE;
+  }
 
   // retrieve the TPC signal
   AliESDtrack *esd = track->GetRefESDtrack();

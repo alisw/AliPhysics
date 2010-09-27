@@ -262,7 +262,8 @@ Bool_t AliRsnFunction::Fill()
   AliRsnValue *fcnAxis = 0;
   for (i = 0; i < fSize; i++) {
     fcnAxis = (AliRsnValue*)fAxisList.At(i);
-    if (!fcnAxis) {
+    if (!fcnAxis) 
+    {
       values[i] = 0.0;
       continue;
     }
@@ -274,7 +275,8 @@ Bool_t AliRsnFunction::Fill()
   {
     // check presence of output histogram
     if (!fH1) {
-      AliError("Required a TH1 whish is not initialized");
+      AliError("Required a TH1 which is not initialized");
+      delete [] values;
       return kFALSE;
     }
     
@@ -301,6 +303,7 @@ Bool_t AliRsnFunction::Fill()
         break;
       default:
         AliError(Form("Wrong size : %d", fSize));
+        delete [] values;
         return kFALSE;
     }
   }

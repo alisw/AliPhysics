@@ -257,16 +257,14 @@ Bool_t AliRsnCutPID::IsSelected(TObject *obj1, TObject* /*obj2*/)
 //
 // Cut checker.
 //
-
-  // coherence check
-  if (!AliRsnCut::TargetOK(obj1))
-  {
-    AliError(Form("Wrong target '%s'. Skipping cut", GetName()));
-    return kTRUE;
-  }
   
   // convert the object into the unique correct type
   AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(obj1);
+  if (!daughter)
+  {
+    AliError(Form("[%s]: this cut works only with AliRsnDaughter objects", GetName()));
+    return kTRUE;
+  }
   
   // depending on the PID type, recalls the appropriate method:
   // in case of perfect PID, checks only if the PID type is 

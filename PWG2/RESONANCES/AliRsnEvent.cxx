@@ -95,7 +95,6 @@ Bool_t AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i, AliRsnDaughter::ER
       return kFALSE;
     }
     AliVTrack *track = (AliVTrack*)fRef->GetTrack(i);
-    label = TMath::Abs(track->GetLabel());
     if (!track)
     {
       out.SetBad();
@@ -103,6 +102,7 @@ Bool_t AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i, AliRsnDaughter::ER
     }
     else
     {
+      label = TMath::Abs(track->GetLabel());
       out.SetRef(track);
       out.SetLabel(label);
       if (fRefMC)
