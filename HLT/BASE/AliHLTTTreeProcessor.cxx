@@ -103,7 +103,7 @@ int AliHLTTTreeProcessor::DoInit(int argc, const char** argv)
       if (iResult < 0)
         return iResult;
       //Stage 3: command line arguments.
-      if (argc && (iResult = ConfigureFromArgumentString(argc, argv)) <= 0)
+      if (argc && (iResult = ConfigureFromArgumentString(argc, argv)) < 0)
         return iResult;
 
       ptr->SetCircular(fMaxEntries);
@@ -130,6 +130,9 @@ int AliHLTTTreeProcessor::DoDeinit()
 int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
 {
   //Process event and publish histograms.
+  AliHLTUInt32_t eventType=0;
+  if (!IsDataEvent(&eventType) && eventType!=gkAliEventTypeEndOfRun) return 0;
+
   //I'm pretty sure, that if fTree == 0 (DoInit failed) DoEvent is not called.
   //But interface itself does not force you to call DoInit before DoEvent, so,
   //I make this check explicit.
@@ -139,18 +142,24 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
   }
 
   // process input data blocks and fill the tree
-  const int iResult = FillTree(fTree, evtData, trigData);
+  int iResult = 0;
+  if (eventType!=gkAliEventTypeEndOfRun) {
+    iResult=FillTree(fTree, evtData, trigData);
+  }
 
   if (iResult < 0)
     return iResult;
 
   const TDatime time;
 
-  if (fLastTime - time.Get() > fPublishInterval) {
+  if (fLastTime - time.Get() > fPublishInterval ||
+      eventType==gkAliEventTypeEndOfRun) {
     for (list_const_iterator i = fDefinitions.begin(); i != fDefinitions.end(); ++i) {
       if (TH1* h = CreateHistogram(*i)) {
         //I do not care about errors here - since I'm not able
         //to rollback changes.
+	// TODO: in case of -ENOSPC et the size of the last object by calling
+	// GetLastObjectSize() and accumulate the necessary output buffer size
         PushBack(h, GetOriginDataType(), GetDataSpec());
       }
     }
