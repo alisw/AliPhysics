@@ -190,7 +190,8 @@ TString AliMUONGeometryModuleTransformer::GetMotherVolumeName() const
   
   std::string volPath = fVolumePath.Data();
   std::string::size_type first = volPath.rfind('/');
-  volPath = volPath.substr(0, first);
+  if ( first != std::string::npos )
+    volPath = volPath.substr(0, first);
 
   std::string::size_type next = volPath.rfind('/')+1;
   std::string::size_type last = volPath.rfind('_');
