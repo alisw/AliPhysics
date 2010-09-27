@@ -112,8 +112,9 @@ protected:
 	Bool_t fUseWeight;             //flag to decide whether to use weights != 1 when filling the container or not
 	Double_t fWeight;              //weight used to fill the container
 	Int_t fNvar;                   // number of variables for the container
-	
-	ClassDef(AliCFTaskVertexingHF,2); // class for HF corrections as a function of many variables
+	TString fPartName;    // D meson name
+	TString fDauNames;    // daughter in fin state
+	ClassDef(AliCFTaskVertexingHF,3); // class for HF corrections as a function of many variables
 };
 
 #endif

@@ -94,7 +94,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fCuts(0),
 	fUseWeight(kFALSE),
 	fWeight(1.),
-	fNvar(0)
+	fNvar(0),
+	fPartName(""),
+	fDauNames("")
 {
 	//
 	//Default ctor
@@ -123,7 +125,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fCuts(cuts), 
 	fUseWeight(kFALSE),
 	fWeight(1.),
-	fNvar(0)
+	fNvar(0),
+	fPartName(""),
+	fDauNames("")
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -178,7 +182,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fCuts(c.fCuts),
 	fUseWeight(c.fUseWeight),
 	fWeight(c.fWeight),
-	fNvar(c.fNvar)
+	fNvar(c.fNvar),
+	fPartName(c.fPartName),
+	fDauNames(c.fDauNames)
 {
 	//
 	// Copy Constructor
@@ -207,36 +213,47 @@ void AliCFTaskVertexingHF::Init()
 	if (fDebug>1) printf("AliCFTaskVertexingHF::Init()");
 	AliRDHFCuts *copyfCuts = 0x0;
 	
-
 	switch (fDecayChannel){
 	case 2:{
 		copyfCuts = new AliRDHFCutsD0toKpi(*(dynamic_cast<AliRDHFCutsD0toKpi*>(fCuts)));
 		fNvar = 13;
+		fPartName="D0";
+		fDauNames="K+pi";
 		break;
 	}
 	case 21:{ 
 		copyfCuts = new AliRDHFCutsDStartoKpipi(*(dynamic_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
 		fNvar = 13;
+		fPartName="Dstar";
+		fDauNames="K+pi+pi";
 		break;
 	}
 	case 31:{
 		copyfCuts = new AliRDHFCutsDplustoKpipi(*(dynamic_cast<AliRDHFCutsDplustoKpipi*>(fCuts)));
 		fNvar = 12;
+		fPartName="Dplus";
+		fDauNames="K+pi+pi";
 		break;
 	}
 	case 32:{
 		copyfCuts = new AliRDHFCutsLctopKpi(*(dynamic_cast<AliRDHFCutsLctopKpi*>(fCuts)));
-		fNvar = 13;
+		fNvar = 12;
+		fPartName="Lambdac";
+		fDauNames="p+K+pi";
 		break;
 	}
 	case 33:{
 		copyfCuts = new AliRDHFCutsDstoKKpi(*(dynamic_cast<AliRDHFCutsDstoKKpi*>(fCuts)));
-		fNvar = 13;
+		fNvar = 12;
+		fPartName="Ds";
+		fDauNames="K+K+pi";
 		break;
 	}
 	case 4:{
 		copyfCuts = new AliRDHFCutsD0toKpipipi(*(dynamic_cast<AliRDHFCutsD0toKpipipi*>(fCuts)));
 		fNvar = 13;
+		fPartName="D0";
+		fDauNames="K+pi+pi+pi";
 		break;
 	}
 	default:
@@ -500,10 +517,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	}
 	
 	if (cquarks<2) AliDebug(2,Form("Event with %d c-quarks", cquarks));
-	AliDebug(2,Form("Found %i MC particles that are D0!!",icountMC));
-	AliDebug(2,Form("Found %i MC particles that are D0 and satisfy Acc cuts!!",icountAcc));
-	AliDebug(2,Form("Found %i MC particles that are D0 and satisfy Vertex cuts!!",icountVertex));
-	AliDebug(2,Form("Found %i MC particles that are D0 and satisfy Refit cuts!!",icountRefit));
+	AliDebug(2,Form("Found %i MC particles that are %s!!",icountMC,fPartName.Data()));
+	AliDebug(2,Form("Found %i MC particles that are %s and satisfy Acc cuts!!",icountAcc,fPartName.Data()));
+	AliDebug(2,Form("Found %i MC particles that are %s and satisfy Vertex cuts!!",icountVertex,fPartName.Data()));
+	AliDebug(2,Form("Found %i MC particles that are %s and satisfy Refit cuts!!",icountRefit,fPartName.Data()));
 
 	// Now go to rec level
 	fCountMC += icountMC;
@@ -671,15 +688,16 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	// the results graphically or save the results to file.
 	
 	AliAnalysisTaskSE::Terminate();
-	
-	AliInfo(Form("Found %i MC particles that are D0 in MC, in %d events",fCountMC,fEvents));
-	AliInfo(Form("Found %i MC particles that are D0 in MC and satisfy Acc cuts, in %d events",fCountAcc,fEvents));
-	AliInfo(Form("Found %i MC particles that are D0 in MC and satisfy Acc cuts, and satisfy Vertex requirement in %d events",fCountVertex,fEvents));
-	AliInfo(Form("Found %i MC particles that are D0 in MC and satisfy Acc cuts, and satisfy ITS+TPC refit requirementin %d events",fCountRefit,fEvents));
-	AliInfo(Form("Found %i reco D0 that are decaying in K+pi, in %d events",fCountReco,fEvents));
-	AliInfo(Form("Among the above, found %i reco D0 that are decaying in K+pi and are in the requested acceptance, in %d events",fCountRecoAcc,fEvents));
-	AliInfo(Form("Among the above, found %i reco D0 that are decaying in K+pi and have at least 5 clusters in ITS, in %d events",fCountRecoITSClusters,fEvents));
-	AliInfo(Form("Among the above, found %i reco D0 that are decaying in K+pi and satisfy PPR cuts, in %d events",fCountRecoPPR,fEvents));
+
+	AliInfo(Form("Found %i MC particles that are %s in MC, in %d events",fCountMC,fPartName.Data(),fEvents));
+	AliInfo(Form("Found %i MC particles that are %s in MC and satisfy Acc cuts, in %d events",fCountAcc,fPartName.Data(),fEvents));
+	AliInfo(Form("Found %i MC particles that are %s in MC and satisfy Acc cuts, and satisfy Vertex requirement in %d events",fCountVertex,fPartName.Data(),fEvents));
+	AliInfo(Form("Found %i MC particles that are %s in MC and satisfy Acc cuts, and satisfy ITS+TPC refit requirementin %d events",fCountRefit,fPartName.Data(),fEvents));
+	AliInfo(Form("Found %i reco %s that are decaying in %s, in %d events",fCountReco,fPartName.Data(),fDauNames.Data(),fEvents));
+	AliInfo(Form("Among the above, found %i reco %s that are decaying in %s and are in the requested acceptance, in %d events",fCountRecoAcc,fPartName.Data(),fDauNames.Data(),fEvents));
+	AliInfo(Form("Among the above, found %i reco %s that are decaying in %s and have at least 5 clusters in ITS, in %d events",fCountRecoITSClusters,fPartName.Data(),fDauNames.Data(),fEvents));
+	AliInfo(Form("Among the above, found %i reco %s that are decaying in %s and satisfy PPR cuts, in %d events",fCountRecoPPR,fPartName.Data(),fDauNames.Data(),fEvents));
+	AliInfo(Form("Among the above, found %i reco %s that are decaying in %s and satisfy PPR+PID cuts, in %d events",fCountRecoPID,fPartName.Data(),fDauNames.Data(),fEvents));
 	
 	// draw some example plots....
 	
@@ -691,242 +709,58 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	// projecting the containers to obtain histograms
 	// first argument = variable, second argument = step
 	
-	// MC-level
-	TH1D* h00 =   cont->ShowProjection(0,0) ;   // pt
-	TH1D* h10 =   cont->ShowProjection(1,0) ;   // rapidity
-	TH1D* h20 =   cont->ShowProjection(2,0) ;   // cosThetaStar
-	TH1D* h30 =   cont->ShowProjection(3,0) ;   // pTpi
-	TH1D* h40 =   cont->ShowProjection(4,0) ;   // pTK
-	TH1D* h50 =   cont->ShowProjection(5,0) ;   // cT
-	TH1D* h60 =   cont->ShowProjection(6,0) ;   // dca
-	TH1D* h70 =   cont->ShowProjection(7,0) ;   // d0pi
-	TH1D* h80 =   cont->ShowProjection(8,0) ;   // d0K
-	TH1D* h90 =   cont->ShowProjection(9,0) ;   // d0xd0
-	TH1D* h100 =   cont->ShowProjection(10,0) ;   // cosPointingAngle
-	TH1D* h110 =   cont->ShowProjection(11,0) ;   // phi
+	TH1D* h[3][12];
+	for(Int_t iC=0;iC<12; iC++){ 
+	  // MC-level
+	  h[0][iC] =   cont->ShowProjection(iC,0);
+	  // MC-Acceptance level
+	  h[1][iC] =   cont->ShowProjection(iC,1);
+	  // Reco-level
+	  h[2][iC] =   cont->ShowProjection(iC,4);
+	}	
+	TString titles[12];
+	if(fDecayChannel==31){
+	  titles[0]="pT_Dplus (GeV/c)";
+	  titles[1]="rapidity";
+	  titles[2]="phi (rad)";
+	  titles[3]="cT (#mum)";
+	  titles[4]="cosPointingAngle";
+	  titles[5]="pT_1 (GeV/c)";
+	  titles[6]="pT_2 (GeV/c)";
+	  titles[7]="pT_3 (GeV/c)";
+	  titles[8]="d0_1 (#mum)";
+	  titles[9]="d0_2 (#mum)";
+	  titles[10]="d0_3 (#mum)";
+	  titles[11]="zVertex (cm)";
+	}else{
+	  titles[0]="pT_D0 (GeV/c)";
+	  titles[1]="rapidity";
+	  titles[2]="cosThetaStar";
+	  titles[3]="pT_pi (GeV/c)";
+	  titles[4]="pT_K (Gev/c)";
+	  titles[5]="cT (#mum)";
+	  titles[6]="dca (#mum)";
+	  titles[7]="d0_pi (#mum)";
+	  titles[8]="d0_K (#mum)";
+	  titles[9]="d0xd0 (#mum^2)";
+	  titles[10]="cosPointingAngle";
+	  titles[11]="phi (rad)";
+	}
+	Int_t markers[12]={20,24,21,25,27,28,
+			   20,24,21,25,27,28};
+	Int_t colors[3]={2,8,4};
+	for(Int_t iC=0;iC<12; iC++){ 
+	  for(Int_t iStep=0;iStep<3;iStep++){
+	    h[iStep][iC]->SetTitle(titles[iC].Data());
+	    h[iStep][iC]->GetXaxis()->SetTitle(titles[iC].Data());
+	    Double_t maxh=h[iStep][iC]->GetMaximum();
+	    h[iStep][iC]->GetYaxis()->SetRangeUser(0,maxh*1.2);
+	    h[iStep][iC]->SetMarkerStyle(markers[iC]);
+	    h[iStep][iC]->SetMarkerColor(colors[iStep]);	    
+	  }
+	}
+
 	
-	// MC-Acceptance level
-	TH1D* h01 =   cont->ShowProjection(0,1) ;   // pt
-	TH1D* h11 =   cont->ShowProjection(1,1) ;   // rapidity
-	TH1D* h21 =   cont->ShowProjection(2,1) ;   // cosThetaStar
-	TH1D* h31 =   cont->ShowProjection(3,1) ;   // pTpi
-	TH1D* h41 =   cont->ShowProjection(4,1) ;   // pTK
-	TH1D* h51 =   cont->ShowProjection(5,1) ;   // cT
-	TH1D* h61 =   cont->ShowProjection(6,1) ;   // dca
-	TH1D* h71 =   cont->ShowProjection(7,1) ;   // d0pi
-	TH1D* h81 =   cont->ShowProjection(8,1) ;   // d0K
-	TH1D* h91 =   cont->ShowProjection(9,1) ;   // d0xd0
-	TH1D* h101 =   cont->ShowProjection(10,1) ;   // cosPointingAngle
-	TH1D* h111 =   cont->ShowProjection(11,1) ;   // phi
-	
-	// Reco-level
-	TH1D* h04 =   cont->ShowProjection(0,4) ;   // pt
-	TH1D* h14 =   cont->ShowProjection(1,4) ;   // rapidity
-	TH1D* h24 =   cont->ShowProjection(2,4) ;   // cosThetaStar
-	TH1D* h34 =   cont->ShowProjection(3,4) ;   // pTpi
-	TH1D* h44 =   cont->ShowProjection(4,4) ;   // pTK
-	TH1D* h54 =   cont->ShowProjection(5,4) ;   // cT
-	TH1D* h64 =   cont->ShowProjection(6,4) ;   // dca
-	TH1D* h74 =   cont->ShowProjection(7,4) ;   // d0pi
-	TH1D* h84 =   cont->ShowProjection(8,4) ;   // d0K
-	TH1D* h94 =   cont->ShowProjection(9,4) ;   // d0xd0
-	TH1D* h104 =   cont->ShowProjection(10,4) ;   // cosPointingAngle
-	TH1D* h114 =   cont->ShowProjection(11,4) ;   // phi
-	
-	h00->SetTitle("pT_D0 (GeV/c)");
-	h10->SetTitle("rapidity");
-	h20->SetTitle("cosThetaStar");
-	h30->SetTitle("pT_pi (GeV/c)");
-	h40->SetTitle("pT_K (Gev/c)");
-	h50->SetTitle("cT (#mum)");
-	h60->SetTitle("dca (#mum)");
-	h70->SetTitle("d0_pi (#mum)");
-	h80->SetTitle("d0_K (#mum)");
-	h90->SetTitle("d0xd0 (#mum^2)");
-	h100->SetTitle("cosPointingAngle");
-	h100->SetTitle("phi (rad)");
-	
-	h00->GetXaxis()->SetTitle("pT_D0 (GeV/c)");
-	h10->GetXaxis()->SetTitle("rapidity");
-	h20->GetXaxis()->SetTitle("cosThetaStar");
-	h30->GetXaxis()->SetTitle("pT_pi (GeV/c)");
-	h40->GetXaxis()->SetTitle("pT_K (Gev/c)");
-	h50->GetXaxis()->SetTitle("cT (#mum)");
-	h60->GetXaxis()->SetTitle("dca (#mum)");
-	h70->GetXaxis()->SetTitle("d0_pi (#mum)");
-	h80->GetXaxis()->SetTitle("d0_K (#mum)");
-	h90->GetXaxis()->SetTitle("d0xd0 (#mum^2)");
-	h100->GetXaxis()->SetTitle("cosPointingAngle");
-	h110->GetXaxis()->SetTitle("phi (rad)");
-	
-	h01->SetTitle("pT_D0 (GeV/c)");
-	h11->SetTitle("rapidity");
-	h21->SetTitle("cosThetaStar");
-	h31->SetTitle("pT_pi (GeV/c)");
-	h41->SetTitle("pT_K (Gev/c)");
-	h51->SetTitle("cT (#mum)");
-	h61->SetTitle("dca (#mum)");
-	h71->SetTitle("d0_pi (#mum)");
-	h81->SetTitle("d0_K (#mum)");
-	h91->SetTitle("d0xd0 (#mum^2)");
-	h101->SetTitle("cosPointingAngle");
-	h111->GetXaxis()->SetTitle("phi (rad)");
-	
-	h01->GetXaxis()->SetTitle("pT_D0 (GeV/c)");
-	h11->GetXaxis()->SetTitle("rapidity");
-	h21->GetXaxis()->SetTitle("cosThetaStar");
-	h31->GetXaxis()->SetTitle("pT_pi (GeV/c)");
-	h41->GetXaxis()->SetTitle("pT_K (Gev/c)");
-	h51->GetXaxis()->SetTitle("cT (#mum)");
-	h61->GetXaxis()->SetTitle("dca (#mum)");
-	h71->GetXaxis()->SetTitle("d0_pi (#mum)");
-	h81->GetXaxis()->SetTitle("d0_K (#mum)");
-	h91->GetXaxis()->SetTitle("d0xd0 (#mum^2)");
-	h101->GetXaxis()->SetTitle("cosPointingAngle");
-	h111->GetXaxis()->SetTitle("phi (rad)");
-	
-	h04->SetTitle("pT_D0 (GeV/c)");
-	h14->SetTitle("rapidity");
-	h24->SetTitle("cosThetaStar");
-	h34->SetTitle("pT_pi (GeV/c)");
-	h44->SetTitle("pT_K (Gev/c)");
-	h54->SetTitle("cT (#mum)");
-	h64->SetTitle("dca (#mum)");
-	h74->SetTitle("d0_pi (#mum)");
-	h84->SetTitle("d0_K (#mum)");
-	h94->SetTitle("d0xd0 (#mum^2)");
-	h104->SetTitle("cosPointingAngle");
-	h114->GetXaxis()->SetTitle("phi (rad)");
-	
-	h04->GetXaxis()->SetTitle("pT_D0 (GeV/c)");
-	h14->GetXaxis()->SetTitle("rapidity");
-	h24->GetXaxis()->SetTitle("cosThetaStar");
-	h34->GetXaxis()->SetTitle("pT_pi (GeV/c)");
-	h44->GetXaxis()->SetTitle("pT_K (Gev/c)");
-	h54->GetXaxis()->SetTitle("cT (#mum)");
-	h64->GetXaxis()->SetTitle("dca (#mum)");
-	h74->GetXaxis()->SetTitle("d0_pi (#mum)");
-	h84->GetXaxis()->SetTitle("d0_K (#mum)");
-	h94->GetXaxis()->SetTitle("d0xd0 (#mum^2)");
-	h104->GetXaxis()->SetTitle("cosPointingAngle");
-	h114->GetXaxis()->SetTitle("phi (rad)");
-	
-	Double_t max0 = h00->GetMaximum();
-	Double_t max1 = h10->GetMaximum();
-	Double_t max2 = h20->GetMaximum();
-	Double_t max3 = h30->GetMaximum();
-	Double_t max4 = h40->GetMaximum();
-	Double_t max5 = h50->GetMaximum();
-	Double_t max6 = h60->GetMaximum();
-	Double_t max7 = h70->GetMaximum();
-	Double_t max8 = h80->GetMaximum();
-	Double_t max9 = h90->GetMaximum();
-	Double_t max10 = h100->GetMaximum();
-	Double_t max11 = h110->GetMaximum();
-	
-	h00->GetYaxis()->SetRangeUser(0,max0*1.2);
-	h10->GetYaxis()->SetRangeUser(0,max1*1.2);
-	h20->GetYaxis()->SetRangeUser(0,max2*1.2);
-	h30->GetYaxis()->SetRangeUser(0,max3*1.2);
-	h40->GetYaxis()->SetRangeUser(0,max4*1.2);
-	h50->GetYaxis()->SetRangeUser(0,max5*1.2);
-	h60->GetYaxis()->SetRangeUser(0,max6*1.2);
-	h70->GetYaxis()->SetRangeUser(0,max7*1.2);
-	h80->GetYaxis()->SetRangeUser(0,max8*1.2);
-	h90->GetYaxis()->SetRangeUser(0,max9*1.2);
-	h100->GetYaxis()->SetRangeUser(0,max10*1.2);
-	h110->GetYaxis()->SetRangeUser(0,max11*1.2);
-	
-	h01->GetYaxis()->SetRangeUser(0,max0*1.2);
-	h11->GetYaxis()->SetRangeUser(0,max1*1.2);
-	h21->GetYaxis()->SetRangeUser(0,max2*1.2);
-	h31->GetYaxis()->SetRangeUser(0,max3*1.2);
-	h41->GetYaxis()->SetRangeUser(0,max4*1.2);
-	h51->GetYaxis()->SetRangeUser(0,max5*1.2);
-	h61->GetYaxis()->SetRangeUser(0,max6*1.2);
-	h71->GetYaxis()->SetRangeUser(0,max7*1.2);
-	h81->GetYaxis()->SetRangeUser(0,max8*1.2);
-	h91->GetYaxis()->SetRangeUser(0,max9*1.2);
-	h101->GetYaxis()->SetRangeUser(0,max10*1.2);
-	h111->GetYaxis()->SetRangeUser(0,max11*1.2);
-	
-	h00->SetMarkerStyle(20);
-	h10->SetMarkerStyle(24);
-	h20->SetMarkerStyle(21);
-	h30->SetMarkerStyle(25);
-	h40->SetMarkerStyle(27);
-	h50->SetMarkerStyle(28);
-	h60->SetMarkerStyle(20);
-	h70->SetMarkerStyle(24);
-	h80->SetMarkerStyle(21);
-	h90->SetMarkerStyle(25);
-	h100->SetMarkerStyle(27);
-	h110->SetMarkerStyle(28);
-	
-	h00->SetMarkerColor(2);
-	h10->SetMarkerColor(2);
-	h20->SetMarkerColor(2);
-	h30->SetMarkerColor(2);
-	h40->SetMarkerColor(2);
-	h50->SetMarkerColor(2);
- 	h60->SetMarkerColor(2);
-	h70->SetMarkerColor(2);
-	h80->SetMarkerColor(2);
-	h90->SetMarkerColor(2);
-	h100->SetMarkerColor(2);
-	h110->SetMarkerColor(2);
-	
-	h01->SetMarkerStyle(20) ;
-	h11->SetMarkerStyle(24) ;
-	h21->SetMarkerStyle(21) ;
-	h31->SetMarkerStyle(25) ;
-	h41->SetMarkerStyle(27) ;
-	h51->SetMarkerStyle(28) ;
-	h61->SetMarkerStyle(20);
-	h71->SetMarkerStyle(24);
-	h81->SetMarkerStyle(21);
-	h91->SetMarkerStyle(25);
-	h101->SetMarkerStyle(27);
-	h111->SetMarkerStyle(28);
-	
-	h01->SetMarkerColor(8);
-	h11->SetMarkerColor(8);
-	h21->SetMarkerColor(8);
-	h31->SetMarkerColor(8);
-	h41->SetMarkerColor(8);
-	h51->SetMarkerColor(8);
- 	h61->SetMarkerColor(8);
-	h71->SetMarkerColor(8);
-	h81->SetMarkerColor(8);
-	h91->SetMarkerColor(8);
-	h101->SetMarkerColor(8);
-	h111->SetMarkerColor(8);
-	
-	h04->SetMarkerStyle(20) ;
-	h14->SetMarkerStyle(24) ;
-	h24->SetMarkerStyle(21) ;
-	h34->SetMarkerStyle(25) ;
-	h44->SetMarkerStyle(27) ;
-	h54->SetMarkerStyle(28) ;
-	h64->SetMarkerStyle(20);
-	h74->SetMarkerStyle(24);
-	h84->SetMarkerStyle(21);
-	h94->SetMarkerStyle(25);
-	h104->SetMarkerStyle(27);
-	h114->SetMarkerStyle(28);
-	
-	h04->SetMarkerColor(4);
-	h14->SetMarkerColor(4);
-	h24->SetMarkerColor(4);
-	h34->SetMarkerColor(4);
-	h44->SetMarkerColor(4);
-	h54->SetMarkerColor(4);
-	h64->SetMarkerColor(4);
-	h74->SetMarkerColor(4);
-	h84->SetMarkerColor(4);
-	h94->SetMarkerColor(4);
-	h104->SetMarkerColor(4);
-	h114->SetMarkerColor(4);
 	
 	gStyle->SetCanvasColor(0);
 	gStyle->SetFrameFillColor(0);
@@ -934,130 +768,56 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	gStyle->SetStatColor(0);
 	
 	// drawing in 2 separate canvas for a matter of clearity
-	TCanvas * c1 =new TCanvas("c1New","pT, rapidiy, cosThetaStar",1100,1600);
+	TCanvas * c1 =new TCanvas("c1New","Vars 0,1,2",1100,1600);
 	c1->Divide(3,3);
+	Int_t iPad=1;
+	for(Int_t iVar=0; iVar<3; iVar++){
+	  c1->cd(iPad++);
+	  h[0][iVar]->Draw("p");
+	  c1->cd(iPad++);
+	  h[1][iVar]->Draw("p");
+	  c1->cd(iPad++);
+	  h[2][iVar]->Draw("p");
+	}
 	
-	c1->cd(1);
-	h00->Draw("p");
-	c1->cd(1);
-	c1->cd(2);
-	h01->Draw("p");
-	c1->cd(2);
-	c1->cd(3);
-	h04->Draw("p");
-	c1->cd(3);
-	c1->cd(4);
-	h10->Draw("p");
-	c1->cd(4);
-	c1->cd(5);
-	h11->Draw("p");
-	c1->cd(5);
-	c1->cd(6);
-	h14->Draw("p");
-	c1->cd(6);
-	c1->cd(7);
-	h20->Draw("p");
-	c1->cd(7);
-	c1->cd(8);
-	h21->Draw("p");
-	c1->cd(8);
-	c1->cd(9);
-	h24->Draw("p");
-	c1->cd(9);
-	c1->cd();
-	
-	TCanvas * c2 =new TCanvas("c2New","pTpi, pTK, cT",1100,1600);
+	TCanvas * c2 =new TCanvas("c2New","Vars 3,4,5",1100,1600);
 	c2->Divide(3,3);
-	c2->cd(1);
-	h30->Draw("p");
-	c2->cd(1);
-	c2->cd(2);
-	h31->Draw("p");
-	c2->cd(2);
-	c2->cd(3);
-	h34->Draw("p");
-	c2->cd(3);
-	c2->cd(4);
-	h40->Draw("p");
-	c2->cd(4);
-	c2->cd(5);
-	h41->Draw("p");
-	c2->cd(5);
-	c2->cd(6);
-	h44->Draw("p");
-	c2->cd(6);
-	c2->cd(7);
-	h50->Draw("p");
-	c2->cd(7);
-	c2->cd(8);
-	h51->Draw("p");
-	c2->cd(8);
-	c2->cd(9);
-	h54->Draw("p");
-	c2->cd(9);
-	c2->cd();
+	iPad=1;
+	for(Int_t iVar=3; iVar<6; iVar++){
+	  c2->cd(iPad++);
+	  h[0][iVar]->Draw("p");
+	  c2->cd(iPad++);
+	  h[1][iVar]->Draw("p");
+	  c2->cd(iPad++);
+	  h[2][iVar]->Draw("p");
+	}
+
 	
-	TCanvas * c3 =new TCanvas("c3New","dca, d0pi, d0K",1100,1600);
+	TCanvas * c3 =new TCanvas("c3New","Vars 6,7,8",1100,1600);
 	c3->Divide(3,3);
-	c3->cd(1);
-	h60->Draw("p");
-	c3->cd(1);
-	c3->cd(2);
-	h61->Draw("p");
-	c3->cd(2);
-	c3->cd(3);
-	h64->Draw("p");
-	c3->cd(3);
-	c3->cd(4);
-	h70->Draw("p");
-	c3->cd(4);
-	c3->cd(5);
-	h71->Draw("p");
-	c3->cd(5);
-	c3->cd(6);
-	h74->Draw("p");
-	c3->cd(6);
-	c3->cd(7);
-	h80->Draw("p");
-	c3->cd(7);
-	c3->cd(8);
-	h81->Draw("p");
-	c3->cd(8);
-	c3->cd(9);
-	h84->Draw("p");
-	c3->cd(9);
-	c3->cd();
+	iPad=1;
+	for(Int_t iVar=6; iVar<9; iVar++){
+	  c3->cd(iPad++);
+	  h[0][iVar]->Draw("p");
+	  c3->cd(iPad++);
+	  h[1][iVar]->Draw("p");
+	  c3->cd(iPad++);
+	  h[2][iVar]->Draw("p");
+	}
+
 	
-	TCanvas * c4 =new TCanvas("c4New","d0xd0, cosPointingAngle, phi",1100,1600);
+	TCanvas * c4 =new TCanvas("c4New","Vars 9,10,11",1100,1600);
 	c4->Divide(3,3);
-	c4->cd(1);
-	h90->Draw("p");
-	c4->cd(1);
-	c4->cd(2);
-	h91->Draw("p");
-	c4->cd(2);
-	c4->cd(3);
-	h94->Draw("p");
-	c4->cd(3);
-	c4->cd(4);
-	h100->Draw("p");
-	c4->cd(4);
-	c4->cd(5);
-	h101->Draw("p");
-	c4->cd(5);
-	c4->cd(6);
-	h104->Draw("p");
-	c4->cd(6);
-	c4->cd(7);
-	h110->Draw("p");
-	c4->cd(7);
-	c4->cd(8);
-	h111->Draw("p");
-	c4->cd(8);
-	c4->cd(9);
-	h114->Draw("p");
-	c4->cd(9);
-	c4->cd();
+	iPad=1;
+	for(Int_t iVar=9; iVar<11; iVar++){
+	  c4->cd(iPad++);
+	  h[0][iVar]->Draw("p");
+	  c4->cd(iPad++);
+	  h[1][iVar]->Draw("p");
+	  c4->cd(iPad++);
+	  h[2][iVar]->Draw("p");
+	}
+
 	
 	THnSparseD* hcorr = dynamic_cast<THnSparseD*> (GetOutputData(3));
 	
@@ -1076,45 +836,11 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	
 	corr1->Write();
 	corr2->Write();
-	h00->Write("pT_D0_step0");
-	h10->Write("rapidity_step0");
-	h20->Write("cosThetaStar_step0");
-	h30->Write("pT_pi_step0");
-	h40->Write("pT_K_step0");
-	h50->Write("cT_step0");
-	h60->Write("dca_step0");
-	h70->Write("d0_pi_step0");
-	h80->Write("d0_K_step0");
-	h90->Write("d0xd0_step0");
-	h100->Write("cosPointingAngle_step0");
-	h110->Write("phi_step0");
-	
-	h01->Write("pT_D0_step1");
-	h11->Write("rapidity_step1");
-	h21->Write("cosThetaStar_step1");
-	h31->Write("pT_pi_step1");
-	h41->Write("pT_K_step1");
-	h51->Write("cT_step1");
-	h61->Write("dca_step1");
-	h71->Write("d0_pi_step1");
-	h81->Write("d0_K_step1");
-	h91->Write("d0xd0_step1");
-	h101->Write("cosPointingAngle_step1");
-	h111->Write("phi_step1");
-	
-	h04->Write("pT_D0_step2");
-	h14->Write("rapidity_step2");
-	h24->Write("cosThetaStar_step2");
-	h34->Write("pT_pi_step2");
-	h44->Write("pT_K_step2");
-	h54->Write("cT_step2");
-	h64->Write("dca_step2");
-	h74->Write("d0_pi_step2");
-	h80->Write("d0_K_step2");
-	h94->Write("d0xd0_step2");
-	h104->Write("cosPointingAngle_step2");
-	h114->Write("phi_step2");
-	
+	for(Int_t iC=0;iC<12; iC++){ 
+	  for(Int_t iStep=0;iStep<3;iStep++){
+	    h[iStep][iC]->Write(Form("Step%d_%s",iStep,titles[iC].Data()));
+	  }
+	}
 	file_projection->Close();
 	
     
