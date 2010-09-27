@@ -85,7 +85,7 @@ Bool_t RsnConfigTask(AliRsnAnalysisSE* &task, const char *dataLabel)
   cuts2010->GetCutsTPC()->SetDCAToVertex2D(kFALSE); // each DCA is checked separately
   cuts2010->GetCutsTPC()->SetRequireSigmaToVertex(kFALSE);
   // ----> set standard quality cuts for ITS standalone tracks
-  cuts2010->GetCutsITS()->SetRequireITSStandAlone(kTRUE, kTRUE);
+  cuts2010->GetCutsITS()->SetRequireITSStandAlone(kTRUE);
   cuts2010->GetCutsITS()->SetRequireITSRefit(kTRUE);
   cuts2010->GetCutsITS()->SetMinNClustersITS(4);
   cuts2010->GetCutsITS()->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);

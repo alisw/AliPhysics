@@ -111,7 +111,7 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   AliDebug(AliLog::kDebug+2,"<-");
 
   // get number of steps and axes
-  Int_t iaxis;
+  Int_t iaxis  = 0;
   Int_t nAxes  = fAxisList.GetEntries();
   Int_t nSteps = (Int_t)fStepListMC.GetEntries() + (Int_t)fStepListESD.GetEntries();
 
@@ -128,14 +128,11 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   fVar.Set(nAxes);
 
   // retrieve number of bins for each axis
-  Int_t   *nBins = new Int_t[nAxes];
-  TArrayD *array = new TArrayD[nAxes];
+  Int_t *nBins = new Int_t[nAxes];
   for (iaxis = 0; iaxis < nAxes; iaxis++) 
   {
     AliRsnValue *fcnAxis = (AliRsnValue*)fAxisList.At(iaxis);
-    fcnAxis->Print(); 
-    array[iaxis] = fcnAxis->GetArray();
-    nBins[iaxis] = array[iaxis].GetSize() - 1;
+    nBins[iaxis] = fcnAxis->GetArray().GetSize() - 1;
   }
 
   // create ouput list of containers
@@ -149,13 +146,17 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   fOutList->SetOwner();
 
   // create the containers
-  Int_t i, nDef = (Int_t)fPairDefList.GetEntries();
+  Int_t i = 0, nDef = (Int_t)fPairDefList.GetEntries();
   for (i = 0; i < nDef; i++) 
   {
     AliRsnPairDef *def = (AliRsnPairDef*)fPairDefList[i];
     AliCFContainer *cont = new AliCFContainer(Form("%s", def->GetPairName()), "", nSteps, nAxes, nBins);
     // set the bin limits for each axis
-    for (iaxis = 0; iaxis < nAxes; iaxis++) cont->SetBinLimits(iaxis, array[iaxis].GetArray());
+    for (iaxis = 0; iaxis < nAxes; iaxis++) 
+    {
+      AliRsnValue *fcnAxis = (AliRsnValue*)fAxisList.At(iaxis);
+      cont->SetBinLimits(iaxis, fcnAxis->GetArray().GetArray());
+    }
     // add the container to output list
     fContainerList->Add(cont);
   }
@@ -164,6 +165,9 @@ void AliRsnAnalysisEffSE::RsnUserCreateOutputObjects()
   fOutList->Print();
 
   PostData(2, fOutList);
+  
+  // clear heap
+  delete [] nBins;
 
   AliDebug(AliLog::kDebug+2,"->");
 }

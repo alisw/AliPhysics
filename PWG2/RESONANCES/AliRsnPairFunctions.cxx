@@ -118,15 +118,18 @@ void AliRsnPairFunctions::Init(const char *prefix, TList *list)
   AliDebug(AliLog::kDebug+2,"<-");
 
   Int_t  i;
-  Char_t hName[255];
+  TString hName("");
   AliRsnFunction *fcn = 0;
   for (i = 0; i < fFunctions.GetEntries(); i++)
   {
     fcn = (AliRsnFunction*)fFunctions.At(i);
-    sprintf(hName, "%s_%s_%s", prefix, GetName(), fcn->GetName());
-
-    if (fcn->IsUsingTH1()) list->Add(fcn->CreateHistogram(hName, ""));
-    else list->Add(fcn->CreateHistogramSparse(hName, ""));
+    hName += prefix;
+    hName += '_';
+    hName += GetName();
+    hName += '_';
+    hName += fcn->GetName();
+    if (fcn->IsUsingTH1()) list->Add(fcn->CreateHistogram(hName.Data(), ""));
+    else list->Add(fcn->CreateHistogramSparse(hName.Data(), ""));
   }
 
   AliDebug(AliLog::kDebug+2,"->");

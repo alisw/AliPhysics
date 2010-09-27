@@ -128,14 +128,14 @@ void AliRsnDaughter::Print(Option_t * const /*option*/) const
 //
   
   Char_t type[50], source[50];
-  if (IsTrack()) sprintf(type, "track");
-  else if (IsV0()) sprintf(type, "V0");
-  else sprintf(type, "none");
+  if (IsTrack()) snprintf(type, 5, "track");
+  else if (IsV0()) snprintf(type, 2, "V0");
+  else snprintf(type, 4, "none");
   
-  if (IsESD()) sprintf(source, "ESD");
-  else if (IsAOD()) sprintf(source, "AOD");
-  else if (fRefMC != 0x0) sprintf(source, "MC only");
-  else sprintf(source, "none");
+  if (IsESD()) snprintf(source, 3, "ESD");
+  else if (IsAOD()) snprintf(source, 3, "AOD");
+  else if (fRefMC != 0x0) snprintf(source, 7, "MC only");
+  else snprintf(source, 4, "none");
   
   AliInfo("===== ALIRSNDAUGHTER INFORMATION ==============================================");
   AliInfo(Form(".......Index                  : %d", GetID()));

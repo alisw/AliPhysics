@@ -224,14 +224,23 @@ Bool_t AliRsnValue::Eval(AliRsnMother * const mother, AliRsnPairDef * const pair
     	  while(fValue >= TMath::Pi()) fValue -= 2*TMath::Pi();
     	  while(fValue < -0.5*TMath::Pi()) fValue += 2*TMath::Pi();
     	  //Printf("%g", fValue);
-
       }
       break;
     case kEventMult:
-      if (!event) fValue = 0.0;
-      fValue = (Double_t)event->GetMultiplicity();
+      if (!event) 
+      {
+        fValue = 0.0;
+        return kFALSE;
+      }
+      else fValue = (Double_t)event->GetMultiplicity();
       break;
     case kLeadingPt:
+      if (!event) 
+      {
+        fValue = 0.0;
+        return kFALSE;
+      }
+      else
       {
     	  int leadingID = event->SelectLeadingParticle(0);
     	  if(leadingID >= 0) {
@@ -272,6 +281,31 @@ Bool_t AliRsnValue::Eval(AliRsnDaughter * const daughter, AliRsnEvent * const ev
 
   switch (fType)
   {
+    case kEventMult:
+      if (!event) 
+      {
+        fValue = 0.0;
+        return kFALSE;
+      }
+      else fValue = (Double_t)event->GetMultiplicity();
+      break;
+    case kLeadingPt:
+      if (!event) 
+      {
+        fValue = 0.0;
+        return kFALSE;
+      }
+      else
+      {
+    	  int leadingID = event->SelectLeadingParticle(0);
+    	  if(leadingID >= 0) {
+    		  AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
+    		  AliVParticle *ref = leadingPart.GetRef();
+    		  fValue = ref->Pt();
+    	  }
+    	  else fValue = 0;
+      }
+      break;
     default:
       AliWarning("Invalid value type");
       return kFALSE;

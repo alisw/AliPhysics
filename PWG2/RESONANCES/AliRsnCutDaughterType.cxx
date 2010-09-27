@@ -65,7 +65,7 @@ Bool_t AliRsnCutDaughterType::IsSelected(TObject *obj1, TObject* /*obj2*/)
     case kTrackTPC:
       return ((status & AliESDtrack::kTPCin)  != 0);
     case kTrackITSSA:
-      if (esdT)
+      if (esdT && track)
       {
         UChar_t itsCluMap = track->GetITSClusterMap();
         Int_t   k, nITS   = 0;

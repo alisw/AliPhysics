@@ -156,7 +156,11 @@ void AliRsnAnalysisMonitorTask::UserExec(Option_t *)
 
   // retrieve ESD event and related stack (if available)
   AliESDEvent *esd   = dynamic_cast<AliESDEvent*>(fInputEvent);
-  AliStack    *stack = (fMCEvent ? fMCEvent->Stack() : 0x0);
+  AliStack    *stack = 0x0;
+  
+  // skip NULL events
+  if (!esd) return;
+  if (fMCEvent) stack = fMCEvent->Stack();
   
   // check the event
   EventEval(esd);
