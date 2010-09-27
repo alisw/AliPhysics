@@ -238,9 +238,12 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   fNEventSel->Fill(0.);
   
   
-  Double_t containerInputRec[5] ;
-  Double_t containerInputTPConly[5];
-  Double_t containerInputMC[5];
+  Double_t containerInputRec[3]       = {0.,0.,0.};
+  Double_t containerInputTPConly[3]   = {0.,0.,0.};
+  Double_t containerInputMC[3]        = {0.,0.,0.};
+  Double_t containerInputRecMC[3]     = {0.,0.,0.};
+  Double_t containerInputTPConlyMC[3] = {0.,0.,0.};
+
   //Now go to rec level
   for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
     {   
@@ -250,36 +253,43 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)track->GetTPCInnerParam();
       if(!track || !trackTPC) continue;
 
-      Float_t dca2D, dcaZ;
-      track->GetImpactParameters(dca2D,dcaZ);
-      Float_t dca2DTPC, dcaZTPC;
-      track->GetImpactParametersTPC(dca2DTPC,dcaZTPC); 
-      Float_t chi2PerClusterTPC = -1.;
-      Float_t nClustersTPC = track->GetTPCNcls();//track->GetTPCclusters(0);
-      if(nClustersTPC>0.) chi2PerClusterTPC = track->GetTPCchi2()/(2.*nClustersTPC-5.);
-      Float_t chi2PerClusterTPCIter1 = -1.;
-      Float_t nClustersTPCIter1 = track->GetTPCNclsIter1();   
-      if(nClustersTPCIter1>0.) chi2PerClusterTPCIter1 = track->GetTPCchi2Iter1()/(2.*nClustersTPCIter1-5.);
-
       //fill the container
       containerInputRec[0] = track->Pt();
       containerInputRec[1] = track->Phi();
       containerInputRec[2] = track->Eta();
-      containerInputRec[3] = dca2D;
-      containerInputRec[4] = chi2PerClusterTPC;
-
+    
       //Store TPC Inner Params for TPConly tracks
       containerInputTPConly[0] = trackTPC->Pt();
       containerInputTPConly[1] = trackTPC->Phi();
       containerInputTPConly[2] = trackTPC->Eta();
-      containerInputTPConly[3] = dca2DTPC/10.; //Divide by 10 in order to store in same container. Should be corrected back when looking at output.
-      containerInputTPConly[4] = chi2PerClusterTPCIter1;//TPC;
 
       AliESDtrack* trackTPCESD = fTrackCutsTPConly->GetTPCOnlyTrack(fESD, iTrack);
       if(trackTPCESD) {
 	if (fTrackCutsTPConly->AcceptTrack(trackTPCESD)) {
 	  if(trackTPC->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
 	  if(trackTPC->GetSign()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
+
+	  //Only fill the MC containers if MC information is available
+	  if(eventHandler) {
+	    Int_t label = TMath::Abs(track->GetLabel());
+	    TParticle *particle = stack->Particle(label) ;
+	    if(!particle) continue;
+	    
+	    containerInputTPConlyMC[0] = particle->Pt();      
+	    containerInputTPConlyMC[1] = particle->Phi();      
+	    containerInputTPConlyMC[2] = particle->Eta();  
+	    
+	    //Container with primaries
+	    if(stack->IsPhysicalPrimary(label)) {
+	      if(particle->GetPDG()->Charge()>0.) {
+		fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedTPCOnlyMC);
+	      }
+	      if(particle->GetPDG()->Charge()<0.) {
+		fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedTPCOnlyMC);
+	      }
+	    }
+	  }
+	  
 	}
       }
 
@@ -294,19 +304,17 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  TParticle *particle = stack->Particle(label) ;
 	  if(!particle) continue;
 
-	  containerInputMC[0] = particle->Pt();      
-	  containerInputMC[1] = particle->Phi();      
-	  containerInputMC[2] = particle->Eta();  
-	  containerInputMC[3] = 0.0;      
-	  containerInputMC[4] = 0.0;  
+	  containerInputRecMC[0] = particle->Pt();      
+	  containerInputRecMC[1] = particle->Phi();      
+	  containerInputRecMC[2] = particle->Eta();  
 
 	  //Container with primaries
 	  if(stack->IsPhysicalPrimary(label)) {
 	    if(particle->GetPDG()->Charge()>0.) {
-	      fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
+	      fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
 	    }
 	    if(particle->GetPDG()->Charge()<0.) {
-	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
+	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
 	    }
 	  }
 
@@ -337,8 +345,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	containerInputMC[0] = mcPart->Pt();
 	containerInputMC[1] = mcPart->Phi();      
 	containerInputMC[2] = mcPart->Eta();  
-	containerInputMC[3] = 0.0;
-	containerInputMC[4] = 0.0;
 
 	if(stack->IsPhysicalPrimary(iPart)) {
 	  if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
