@@ -1248,6 +1248,24 @@ elif test "x$enable_module" = "xforce"; then
   enable_vzero="yes"
 else
   enable_vzero=$enable_module
+
+  if test "x$enable_vzero" = "xyes" ; then
+    AC_LANG_PUSH(C++)
+    save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/VZERO"
+
+    # AliVZEROReconstructor::GetESDVZERO() is needed, requires revision 43718, Tue Sep 21 2010
+    AC_MSG_CHECKING([checking for AliVZEROReconstructor::GetESDVZERO() r43718])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliVZEROReconstructor.h>], 
+                                       [AliVZEROReconstructor rec;
+				        rec.GetESDVZERO()])],
+                                       [], 
+  				       [enable_vzero="no...requires.r43718"])
+    AC_MSG_RESULT([$enable_vzero])       
+
+    AC_LANG_POP(C++)
+    CPPFLAGS="$save_CPPFLAGS"
+  fi
 fi
 
 if test "x$enable_vzero" = "xyes" ; then 
