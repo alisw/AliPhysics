@@ -320,7 +320,8 @@ Double_t AliESDv0::AlphaV0() const {
   Double_t lQlNeg = momNeg.Dot(momTot)/momTot.Mag();
   Double_t lQlPos = momPos.Dot(momTot)/momTot.Mag();
 
-  return 1.-2./(1.+lQlNeg/lQlPos);
+  //return 1.-2./(1.+lQlNeg/lQlPos);
+  return (lQlPos - lQlNeg)/(lQlPos + lQlNeg);
 }
 
 Double_t AliESDv0::PtArmV0() const {
