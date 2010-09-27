@@ -877,7 +877,7 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
   detxy[1] = det.GetR()*TMath::Sin(det.GetPhi());
   Double_t alpha = t->GetAlpha();
   Double_t xdetintrackframe = detxy[0]*TMath::Cos(alpha)+detxy[1]*TMath::Sin(alpha);
-  Float_t phi = TMath::ASin(t->GetSnpAt(xdetintrackframe,GetBz()));
+  Float_t phi = TMath::ASin(t->GetSnpAt(xdetintrackframe+cl->GetX(),GetBz()));
   phi += alpha-det.GetPhi();
   Float_t tgphi = TMath::Tan(phi);
 
@@ -3744,15 +3744,15 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   //
   // Compute predicted chi2
   //
-  Float_t erry,errz,covyz;
-  Float_t theta = track->GetTgl();
-  Float_t phi   = track->GetSnp();
-  phi = TMath::Abs(phi)*TMath::Sqrt(1./((1.-phi)*(1.+phi)));
-  AliITSClusterParam::GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz,covyz);
-  AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
   // Take into account the mis-alignment (bring track to cluster plane)
   Double_t xTrOrig=track->GetX();
   if (!track->Propagate(xTrOrig+cluster->GetX())) return 1000.;
+  Float_t erry,errz,covyz;
+  Float_t theta = track->GetTgl();
+  Float_t phi   = track->GetSnp();
+  phi *= TMath::Sqrt(1./((1.-phi)*(1.+phi)));
+  AliITSClusterParam::GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz,covyz);
+  AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
   AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
   Double_t chi2 = track->GetPredictedChi2MI(cluster->GetY(),cluster->GetZ(),erry,errz,covyz);
   // Bring the track back to detector plane in ideal geometry

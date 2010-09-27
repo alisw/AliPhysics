@@ -358,23 +358,14 @@ Int_t AliITSClusterParam::GetErrorParamAngle(Int_t layer,
   Double_t sigmax=1000.0,sigmaz=1000.0;
   
   Int_t volId = (Int_t)cl->GetVolumeId();
-  Double_t tra[3]; AliGeomManager::GetTranslation(volId,tra);
-  Double_t rot[9]; AliGeomManager::GetRotation(volId,rot);
-
-
-  Double_t phitr = TMath::ATan(tgphitr);
-  Double_t alpha = TMath::ATan2(tra[1],tra[0]);
-  Double_t phiglob = alpha+phitr;
-  Double_t p[3]; 
-  p[0] = TMath::Cos(phiglob);
-  p[1] = TMath::Sin(phiglob);
-  p[2] = tgl;
-  TVector3 pvecXY(p[0],p[1],0.);
-  TVector3 normvecXY(rot[1],rot[4],0.);
-
-
-  Double_t angleAzi = pvecXY.Angle(normvecXY);
+  Double_t rotMA[9]; AliGeomManager::GetRotation(volId,rotMA);      // misaligned rotation
+  Double_t rotOR[9]; AliGeomManager::GetOrigRotation(volId,rotOR);  // original rotation
+  // difference in phi of original and misaligned sensors
+  double cross = rotOR[1]*rotMA[4]-rotOR[4]*rotMA[1];
+  cross /= TMath::Sqrt( (1.-rotOR[7]*rotOR[7]) * (1.-rotMA[7]*rotMA[7]) );
+  Double_t angleAzi = TMath::Abs(TMath::ATan(tgphitr) - TMath::ASin(cross) );
   Double_t anglePol = TMath::Abs(TMath::ATan(tgl));
+
   if(angleAzi>0.5*TMath::Pi()) angleAzi = TMath::Pi()-angleAzi;
   if(anglePol>0.5*TMath::Pi()) anglePol = TMath::Pi()-anglePol;
   Double_t angleAziDeg = angleAzi*180./TMath::Pi();
