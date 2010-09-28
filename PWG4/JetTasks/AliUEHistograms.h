@@ -27,6 +27,9 @@ class AliUEHistograms : public TObject
   void Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
+  void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType);
+  
+  void CopyReconstructedData(AliUEHistograms* from);
   
   AliUEHist* GetNumberDensitypT() { return fNumberDensitypT; }
   AliUEHist* GetSumpT() { return fSumpT; }

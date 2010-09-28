@@ -43,6 +43,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   TObject(),
   fkRegions(4),
   fEventHist(0),
+  fTrackHistEfficiency(0),
   fEtaMin(0),
   fEtaMax(0),
   fPtMin(0),
@@ -105,6 +106,10 @@ AliUEHist::AliUEHist(const char* reqHist) :
   for (Int_t i=0; i<=kNMultiplicityBins; i++)
     multiplicityBins[i] = -0.5 + i;
   multiplicityBins[kNMultiplicityBins] = 200;
+
+  // particle species
+  const Int_t kNSpeciesBins = 4; // pi, K, p, rest
+  Double_t speciesBins[] = { -0.5, 0.5, 1.5, 2.5, 3.5 };
   
   trackBins[3] = multiplicityBins;
   iTrackBin[3] = kNMultiplicityBins;
@@ -176,6 +181,16 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fEventHist->SetVarTitle(1, trackAxisTitle[3]);
   
   SetStepNames(fEventHist);
+  
+  iTrackBin[2] = kNSpeciesBins;
+
+  fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 3, 3, iTrackBin);
+  fTrackHistEfficiency->SetBinLimits(0, trackBins[0]);
+  fTrackHistEfficiency->SetVarTitle(0, trackAxisTitle[0]);
+  fTrackHistEfficiency->SetBinLimits(1, trackBins[1]);
+  fTrackHistEfficiency->SetVarTitle(1, trackAxisTitle[1]);
+  fTrackHistEfficiency->SetBinLimits(2, speciesBins);
+  fTrackHistEfficiency->SetVarTitle(2, "particle species");
 }
 
 //_____________________________________________________________________________
@@ -183,6 +198,7 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   TObject(),
   fkRegions(4),
   fEventHist(0),
+  fTrackHistEfficiency(0),
   fEtaMin(0),
   fEtaMax(0),
   fPtMin(0),
@@ -227,6 +243,12 @@ AliUEHist::~AliUEHist()
     fEventHist = 0;
   }
   
+  if (fTrackHistEfficiency)
+  {
+    delete fTrackHistEfficiency;
+    fTrackHistEfficiency = 0;
+  }
+
   if (fCache)
   {
     delete fCache;
@@ -258,6 +280,9 @@ void AliUEHist::Copy(TObject& c) const
 
   if (fEventHist)
     target.fEventHist = dynamic_cast<AliCFContainer*> (fEventHist->Clone());
+  
+  if (fTrackHistEfficiency)
+    target.fTrackHistEfficiency = dynamic_cast<AliCFContainer*> (fTrackHistEfficiency->Clone());
 }
 
 //____________________________________________________________________
@@ -277,7 +302,7 @@ Long64_t AliUEHist::Merge(TCollection* list)
   TObject* obj;
 
   // collections of objects
-  const Int_t kMaxLists = fkRegions+1;
+  const Int_t kMaxLists = fkRegions+2;
   TList** lists = new TList*[kMaxLists];
   
   for (Int_t i=0; i<kMaxLists; i++)
@@ -295,6 +320,7 @@ Long64_t AliUEHist::Merge(TCollection* list)
         lists[i]->Add(entry->fTrackHist[i]);
     
     lists[fkRegions]->Add(entry->fEventHist);
+    lists[fkRegions+1]->Add(entry->fTrackHistEfficiency);
 
     count++;
   }
@@ -303,6 +329,7 @@ Long64_t AliUEHist::Merge(TCollection* list)
       fTrackHist[i]->Merge(lists[i]);
   
   fEventHist->Merge(lists[fkRegions]);
+  fTrackHistEfficiency->Merge(lists[fkRegions+1]);
 
   for (Int_t i=0; i<kMaxLists; i++)
     delete lists[i];
@@ -656,10 +683,12 @@ void AliUEHist::Correct(AliUEHist* corrections)
       vertexCorrectionObs->SetBinContent(i, vertexCorrection->Interpolate(xPos));
   }
  
+  #if 0
   new TCanvas;
   vertexCorrection->DrawCopy();
   vertexCorrectionObs->SetLineColor(2);
   vertexCorrectionObs->DrawCopy("same");
+  #endif
   
   CorrectTracks(kCFStepVertex, kCFStepTriggered, vertexCorrectionObs, 3);
   CorrectEvents(kCFStepVertex, kCFStepTriggered, vertexCorrectionObs, 1);
@@ -672,33 +701,51 @@ void AliUEHist::Correct(AliUEHist* corrections)
 }
 
 //____________________________________________________________________
-TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2)
+TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2, Int_t source)
 {
   // creates a track-level efficiency by dividing step2 by step1
   // projected to axis1 and axis2 (optional if >= 0)
+  //
+  // source: 0 = fTrackHist; 1 = fTrackHistEfficiency
   
   // integrate over regions
   // cache it for efficiency (usually more than one efficiency is requested)
-  if (!fCache)
+  
+  AliCFContainer* sourceContainer = 0;
+  
+  if (source == 0)
   {
-    fCache = (AliCFContainer*) fTrackHist[0]->Clone();
-    for (Int_t i = 1; i < fkRegions; i++)
-      if (fTrackHist[i])
-        fCache->Add(fTrackHist[i]);
+    if (!fCache)
+    {
+      fCache = (AliCFContainer*) fTrackHist[0]->Clone();
+      for (Int_t i = 1; i < fkRegions; i++)
+        if (fTrackHist[i])
+          fCache->Add(fTrackHist[i]);
+    }
+    sourceContainer = fCache;
   }
-      
+  else if (source == 1)
+  {
+    sourceContainer = fTrackHistEfficiency;
+    // step offset because we start with kCFStepAnaTopology
+    step1 = (CFStep) ((Int_t) step1 - (Int_t) kCFStepAnaTopology);
+    step2 = (CFStep) ((Int_t) step2 - (Int_t) kCFStepAnaTopology);
+  }
+  else
+    return 0;
+        
   // reset all limits and set the right ones except those in axis1 and axis2
-  ResetBinLimits(fCache->GetGrid(step1));
-  ResetBinLimits(fCache->GetGrid(step2));
+  ResetBinLimits(sourceContainer->GetGrid(step1));
+  ResetBinLimits(sourceContainer->GetGrid(step2));
   if (fEtaMax > fEtaMin && axis1 != 0 && axis2 != 0)
   {
-    fCache->GetGrid(step1)->SetRangeUser(0, fEtaMin, fEtaMax);
-    fCache->GetGrid(step2)->SetRangeUser(0, fEtaMin, fEtaMax);
+    sourceContainer->GetGrid(step1)->SetRangeUser(0, fEtaMin, fEtaMax);
+    sourceContainer->GetGrid(step2)->SetRangeUser(0, fEtaMin, fEtaMax);
   }
   if (fPtMax > fPtMin && axis1 != 1 && axis2 != 1)
   {
-    fCache->GetGrid(step1)->SetRangeUser(1, fPtMin, fPtMax);
-    fCache->GetGrid(step2)->SetRangeUser(1, fPtMin, fPtMax);
+    sourceContainer->GetGrid(step1)->SetRangeUser(1, fPtMin, fPtMax);
+    sourceContainer->GetGrid(step2)->SetRangeUser(1, fPtMin, fPtMax);
   }
   
   TH1* measured = 0;
@@ -706,13 +753,13 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
     
   if (axis2 >= 0)
   {
-    generated = fCache->Project(axis1, axis2, step1);
-    measured = fCache->Project(axis1, axis2, step2);
+    generated = sourceContainer->Project(axis1, axis2, step1);
+    measured = sourceContainer->Project(axis1, axis2, step2);
   }
   else
   {
-    generated = fCache->Project(axis1, step1);
-    measured = fCache->Project(axis1, step2);
+    generated = sourceContainer->Project(axis1, step1);
+    measured = sourceContainer->Project(axis1, step2);
   }
   
   // check for bins with less than 100 entries, print warning
@@ -796,6 +843,9 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
   measured->Divide(measured, generated, 1, 1, "B");
   
   delete generated;
+  
+  ResetBinLimits(sourceContainer->GetGrid(step1));
+  ResetBinLimits(sourceContainer->GetGrid(step2));
   
   return measured;
 }
@@ -1087,4 +1137,24 @@ const char* AliUEHist::GetStepTitle(CFStep step)
   }
   
   return 0;
+}
+
+//____________________________________________________________________
+void AliUEHist::CopyReconstructedData(AliUEHist* from)
+{
+  // copies those histograms extracted from ESD to this object
+  
+  // TODO at present only the pointers are copied
+  
+  for (Int_t region=0; region<4; region++)
+  {
+    if (!fTrackHist[region])
+      continue;
+  
+    fTrackHist[region]->SetGrid(AliUEHist::kCFStepReconstructed, from->fTrackHist[region]->GetGrid(AliUEHist::kCFStepReconstructed));
+    fTrackHist[region]->SetGrid(AliUEHist::kCFStepBiasStudy,     from->fTrackHist[region]->GetGrid(AliUEHist::kCFStepBiasStudy));
+  }
+    
+  fEventHist->SetGrid(AliUEHist::kCFStepReconstructed, from->fEventHist->GetGrid(AliUEHist::kCFStepReconstructed));
+  fEventHist->SetGrid(AliUEHist::kCFStepBiasStudy,     from->fEventHist->GetGrid(AliUEHist::kCFStepBiasStudy));
 }
