@@ -28,8 +28,8 @@ MakeCalibration(const char* base="local://$ALICE_ROOT/OCDB")
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libFMDanalysis.so");
   gSystem->Load("libFMDutil.so");
-  AliFMDCalibFaker f(AliFMDCalibFaker::kAll, 0);
-  f.SetRunRange(0,999999);
+  AliFMDCalibFaker f(1<<AliFMDCalibFaker::kPulseGain, 0);
+  f.SetRunRange(0,999999999);
   f.SetGainSeed(AdcPerMip2Gain(60)); // From astrid test beam 
   f.SetThresholdFactor(3);
   f.SetPedestalRange(80,130); // From ASTRID test-beam

@@ -257,22 +257,22 @@ AliFMDFancy::Begin(Int_t event)
     MakeCanvas(which);
 
     AliFMDGeometry* geom = AliFMDGeometry::Instance();
-    AliFMDDetector* det;
-    if ((det = geom->GetDetector(1))) {
+    // AliFMDDetector* det;
+    if ((/*det =*/ geom->GetDetector(1))) {
       fPad->cd();
       fFMD1Pad = new TPad("FMD1", "FMD1", 0.0, 0.50, 0.5, 1.0, 0, 0);
       fFMD1Pad->Draw();
       fFMD1Pad->cd();
       fFMD1.Begin(event);
     }
-    if ((det = geom->GetDetector(2))) {
+    if ((/*det =*/ geom->GetDetector(2))) {
       fPad->cd();
       fFMD2Pad = new TPad("FMD2", "FMD2", 0.5, 0.50, 1.0, 1.0, 0, 0);
       fFMD2Pad->Draw();
       fFMD2Pad->cd();
       fFMD2.Begin(event);
     }
-    if ((det = geom->GetDetector(3))) {
+    if ((/*det =*/ geom->GetDetector(3))) {
       fPad->cd();
       fFMD3Pad = new TPad("FMD3", "FMD3", 0.0, 0.05, .5, .5, 0, 0);
       fFMD3Pad->Draw();
@@ -332,16 +332,16 @@ AliFMDFancy::End()
 {
   // Called at the end of an event 
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
-  AliFMDDetector* det;
+  // AliFMDDetector* det;
   Int_t total = 0;
-  if ((det = geom->GetDetector(1))) {
+  if ((/*det =*/ geom->GetDetector(1))) {
     fFMD1Pad->cd();
     fFMD1.End();
     fFMD1Pad->Modified();
     fFMD1IHits.SetTitle(Form("# hits in FMD1I:  %5d", fFMD1.fNInnerHits));
     total += fFMD1.fNInnerHits;
   }
-  if ((det = geom->GetDetector(2))) {
+  if ((/*det =*/ geom->GetDetector(2))) {
     fFMD2Pad->cd();
     fFMD2.End();
     fFMD2Pad->Modified();
@@ -350,7 +350,7 @@ AliFMDFancy::End()
     total += fFMD2.fNInnerHits;
     total += fFMD2.fNOuterHits;    
   }
-  if ((det = geom->GetDetector(3))) {
+  if ((/*det =*/ geom->GetDetector(3))) {
     fFMD3Pad->cd();
     fFMD3.End();
     fFMD3Pad->Modified();

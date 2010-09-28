@@ -41,7 +41,7 @@ MakeRecoParam(AliRecoParam::EventSpecie_t thedefault=AliRecoParam::kLowMult)
   for(Int_t i =0; i < recoParamArray->GetEntriesFast(); i++) {
     AliDetectorRecoParam *param = (AliDetectorRecoParam *)recoParamArray->UncheckedAt(i);
     if (!param) continue;
-    if (thedefault & param->GetEventSpecie()) {
+    if (thedefault == param->GetEventSpecie()) {
       param->SetAsDefault();
       defaultIsSet = kTRUE;
     }
@@ -54,7 +54,7 @@ MakeRecoParam(AliRecoParam::EventSpecie_t thedefault=AliRecoParam::kLowMult)
 
   //AliFMDRecoParam param;
   //param.SetEventSpecie(AliRecoParam::kLowMult) ;
-  AliCDBId        id("FMD/Calib/RecoParam",0,999999);
+  AliCDBId        id("FMD/Calib/RecoParam",0,999999999);
   AliCDBMetaData  meta;
   
   meta = new AliCDBMetaData;					    

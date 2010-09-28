@@ -265,7 +265,8 @@ AliFMDCalibDeadMap*
 AliFMDCalibFaker::MakeDeadMap() const
 {
   // Make the actual data
-  AliFMDCalibDeadMap*  deadmap  = new AliFMDCalibDeadMap;
+  AliFMDCalibDeadMap*  deadmap  = new AliFMDCalibDeadMap(0);
+  TRandom* random = new TRandom(0);
   for (UShort_t det = 1; det <= 3; det++) {
     Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
     for (Char_t* ring = rings; *ring != '\0'; ring++) {
@@ -274,11 +275,12 @@ AliFMDCalibFaker::MakeDeadMap() const
       for (UShort_t sec = 0; sec < nSec; sec++) {
         for (UShort_t str = 0; str < nStr; str++) {
           deadmap->operator()(det, *ring, sec, str) = 
-	    gRandom->Uniform(0, 1) < fDeadChance;
+	    random->Uniform(0, 1) < fDeadChance;
         }
       }
     }
   }
+  if (AliDebugLevel() > 20) deadmap->Print();
   return deadmap;
 }
 
@@ -287,7 +289,7 @@ AliFMDCalibZeroSuppression*
 AliFMDCalibFaker::MakeZeroSuppression() const
 {
   // Make the actual data
-  AliFMDCalibZeroSuppression*  zs  = new AliFMDCalibZeroSuppression;
+  AliFMDCalibZeroSuppression*  zs  = new AliFMDCalibZeroSuppression(0);
   for (UShort_t det = 1; det <= 3; det++) {
     Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
     for (Char_t* ring = rings; *ring != '\0'; ring++) {

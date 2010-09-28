@@ -211,7 +211,7 @@ ClassImp(AliFMDHitDigitizer)
 
 //____________________________________________________________________
 AliFMDHitDigitizer::AliFMDHitDigitizer(AliFMD* fmd, Output_t  output)
-  : AliFMDBaseDigitizer("FMD", (fOutput == kDigits ? 
+  : AliFMDBaseDigitizer("FMD", (output == kDigits ? 
 				"FMD Hit->Digit digitizer" :
 				"FMD Hit->SDigit digitizer")),
     fOutput(output), 

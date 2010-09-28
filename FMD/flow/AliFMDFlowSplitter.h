@@ -25,6 +25,9 @@
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif
+#ifndef ROOT_TRandom
+# include <TRandom.h>
+#endif
 class AliFMDFlowAxis;
 class TProfile;
 //
@@ -46,10 +49,15 @@ class AliFMDFlowSplitter : public TObject
 public:
   /** Constructor 
       @param axis Axis object */
-  AliFMDFlowSplitter() {}
+  AliFMDFlowSplitter() : fRandom(0) {}
+  /** Constructor 
+      @param axis Axis object */
+  AliFMDFlowSplitter(ULong_t seed) : fRandom(seed) {}
   /** Copy constructor 
       @param o Other splitter to copy from */
-  AliFMDFlowSplitter(const AliFMDFlowSplitter& o) : TObject(o) {}
+  AliFMDFlowSplitter(const AliFMDFlowSplitter& o) 
+    : TObject(o), fRandom(o.fRandom) 
+  {}
 
   /** Destructor */
   virtual ~AliFMDFlowSplitter() {}
@@ -72,6 +80,7 @@ public:
   /** Called at the end of an event */
   virtual void End() {}
 protected:
+  mutable TRandom fRandom;
   /** Reference to axis object */
   ClassDef(AliFMDFlowSplitter,1) // Split events
 };

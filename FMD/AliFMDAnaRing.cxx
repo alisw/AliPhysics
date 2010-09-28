@@ -61,6 +61,7 @@ AliFMDAnaRing::AliFMDAnaRing()
   // Default constructor.  
   // Do not use.  
   // Used by ROOT I/O
+  for (int i = 0; i < 6; i++) fName[i] = '\0';
 }
 
 //____________________________________________________________________
@@ -162,6 +163,7 @@ AliFMDAnaRing::AliFMDAnaRing(const AliFMDAnaRing& o)
   fMult.SetXTitle("#eta");
   fMult.SetYTitle("#varphi");
   fMult.SetZTitle("dM_{ch}/d#eta");
+  for (int i = 0; i < 6; i++) fName[i] = o.fName[i];
 }
 
 //____________________________________________________________________

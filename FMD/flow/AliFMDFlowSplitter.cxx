@@ -37,7 +37,8 @@ AliFMDFlowSplitter::Select(ULong_t) const
   //   entry	The entry number 
   // Return 
   //   true if this should go in sub-event A 
-  return (Float_t(rand()) / RAND_MAX > 0.5);
+  // return (Float_t(rand()) / RAND_MAX > 0.5);
+  return fRandom.Uniform(0,1);
 }
 
 

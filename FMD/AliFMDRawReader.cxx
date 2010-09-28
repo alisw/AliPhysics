@@ -573,7 +573,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
     Int_t detID = fReader->GetDetectorID();
     if (detectors) detectors[map->DDL2Detector(ddl)-1] = kTRUE;
     AliFMDDebug(0, (" From reader: DDL number is %d , det ID is %d",ddl,detID));
-
+    
     ULong_t  nPayloadWords = streamer.GetRCUPayloadSizeInSOD();
     UChar_t* payloadData   = streamer.GetRCUPayloadInSOD();
     UInt_t*  payloadWords  = reinterpret_cast<UInt_t*>(payloadData);
@@ -717,7 +717,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       case 0x25: // FMD: Shift clk 
 	shift_clk[board] = ((data >> 8 ) & 0xFF); 
 	AliFMDDebug(30, ("Read shift_clk=%d for board 0x%02x", 
-			shift_clk[board], board));
+			 shift_clk[board], board));
 	break; 
       case 0x26: // FMD: Strips 
 	strip_low[board]  = ((data >> 0 ) & 0xFF); 
@@ -732,7 +732,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       case 0x2B: // FMD: Sample clk 
 	sample_clk[board] = ((data >> 8 ) & 0xFF); 
 	AliFMDDebug(30, ("Read sample_clk=%d for board 0x%02x", 
-			sample_clk[board], board));
+			 sample_clk[board], board));
 	break; 
       case 0x2C: break; // FMD: Commands
       case 0x4B: // FMD: Cal events 
@@ -745,9 +745,10 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
 		       instruction,dataWord));
     } // End of loop over Result memory event
     
-    UShort_t det,sector;
-    Short_t strip;
-    Char_t ring;
+    UShort_t det    = 0;
+    UShort_t sector = 0;
+    Short_t  strip  = -1;
+    Char_t   ring   = '\0';
    
     const UInt_t boards[4] = {0,1,16,17};
     for(Int_t i=0;i<4;i++) {

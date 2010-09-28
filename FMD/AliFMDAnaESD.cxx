@@ -139,7 +139,9 @@ AliFMDAnaESD::AddRing(AliFMDAnaRing* ring)
   // Parameters:
   //     ring Ring object 
   //
-  fRing[FindRing(ring->Detector(),ring->Ring())] = ring;
+  Int_t idx = FindRing(ring->Detector(),ring->Ring());
+  if (idx < 0) return;
+  fRing[idx] = ring;
 }
 //____________________________________________________________________
 Int_t
