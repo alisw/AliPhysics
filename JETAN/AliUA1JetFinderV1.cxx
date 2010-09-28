@@ -219,6 +219,7 @@ void AliUA1JetFinderV1::FindJets()
   TRefArray *refs = 0;
   Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
   if (fromAod) refs = fReader->GetReferences();
+  Float_t rc= header->GetRadius();
   for(Int_t kj=0; kj<nj; kj++){
      if ((etaJet[kj] > (header->GetJetEtaMax())) ||
           (etaJet[kj] < (header->GetJetEtaMin())) ||
@@ -239,6 +240,22 @@ void AliUA1JetFinderV1::FindJets()
       
       //jet.Print("");
       
+      // calculate the area of the jet
+      Float_t detamax = etaJet[kj] + rc;
+      Float_t detamin = etaJet[kj] - rc;
+      Float_t accmax = 0.0; Float_t accmin = 0.0;
+      if(detamax > header->GetLegoEtaMax()){ // sector outside etamax
+         Float_t h = header->GetLegoEtaMax() - etaJet[kj];
+         accmax = rc*rc*TMath::ACos(h/rc) - h*TMath::Sqrt(rc*rc - h*h);
+      }
+      if(detamin < header->GetLegoEtaMin()){ // sector outside etamin
+         Float_t h = header->GetLegoEtaMax() + etaJet[kj];
+         accmin = rc*rc*TMath::ACos(h/rc) - h*TMath::Sqrt(rc*rc - h*h);
+      }
+      Float_t areaJet = rc*rc*TMath::Pi() - accmax - accmin;
+      // set both areas
+      jet.SetEffArea(areaJet,areaJet);
+
       AddJet(jet);
       
       idxjets[nselectj] = kj;
