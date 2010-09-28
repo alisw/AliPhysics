@@ -619,10 +619,11 @@ Bool_t AliTRD::Raw2SDigits(AliRawReader *rawReader)
 
   // Create the s-digits manager
   AliTRDdigitsManager *sdigitsManager = new AliTRDdigitsManager();
-  sdigitsManager->SetSDigits(kTRUE);
-  sdigitsManager->CreateArrays();
 
   if (sdigitsManager) {
+
+    sdigitsManager->SetSDigits(kTRUE);
+    sdigitsManager->CreateArrays();
 
     // Convert the digits into s-digits
     digitizer.Digits2SDigits(digitsManager,sdigitsManager);
