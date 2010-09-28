@@ -10,7 +10,6 @@
 ClassImp(AliRsnMonitorTrack)
 
 AliRsnMonitorTrack::AliRsnMonitorTrack() :
-  fUsable(kFALSE),
   fCutsPassed(kFALSE),
   fPrim(kFALSE),
   fPDG(0),
@@ -20,13 +19,12 @@ AliRsnMonitorTrack::AliRsnMonitorTrack() :
   fLength(0.0),
   fCharge(0),
   fITSsa(kFALSE),
+  fTOFok(kFALSE),
   fITSchi2(1E10),
   fITSsignal(0.0),
-  fITSnsigma(1E10),
-  fTPCchi2(1E10),
-  fTPCdedx(1E10),
   fTPCcount(0),
-  fTPCnsigma(1E10),
+  fTPCchi2(1E10),
+  fTPCsignal(1E10),
   fTOFsignal(0.0)
 {
 //
@@ -36,7 +34,6 @@ AliRsnMonitorTrack::AliRsnMonitorTrack() :
 
 AliRsnMonitorTrack::AliRsnMonitorTrack(const AliRsnMonitorTrack& copy) :
   TObject(copy),
-  fUsable(copy.fUsable),
   fCutsPassed(copy.fCutsPassed),
   fPrim(copy.fPrim),
   fPDG(copy.fPDG),
@@ -46,13 +43,12 @@ AliRsnMonitorTrack::AliRsnMonitorTrack(const AliRsnMonitorTrack& copy) :
   fLength(copy.fLength),
   fCharge(copy.fCharge),
   fITSsa(copy.fITSsa),
+  fTOFok(copy.fTOFok),
   fITSchi2(copy.fITSchi2),
   fITSsignal(copy.fITSsignal),
-  fITSnsigma(copy.fITSnsigma),
-  fTPCchi2(copy.fTPCchi2),
-  fTPCdedx(copy.fTPCdedx),
   fTPCcount(copy.fTPCcount),
-  fTPCnsigma(copy.fTPCnsigma),
+  fTPCchi2(copy.fTPCchi2),
+  fTPCsignal(copy.fTPCsignal),
   fTOFsignal(copy.fTOFsignal)
 {
 //
@@ -63,12 +59,12 @@ AliRsnMonitorTrack::AliRsnMonitorTrack(const AliRsnMonitorTrack& copy) :
 
   for (k = 0; k < 2; k++) fDCA[k] = copy.fDCA[k];
   for (k = 0; k < 6; k++) fITSmap[k] = copy.fITSmap[k];
-  for (k = 0; k < 4; k++) fITSdedx[k] = copy.fITSdedx[k];
   for (k = 0; k < AliPID::kSPECIES; k++)
   {
-		fTPCref  [k] = copy.fTPCref  [k];
-    fTOFref  [k] = copy.fTOFref  [k];
-    fTOFsigma[k] = copy.fTOFsigma[k];
+    fITSnsigma[k] = copy.fITSnsigma[k];
+    fTPCnsigma[k] = copy.fTPCnsigma[k];
+    fTOFref   [k] = copy.fTOFref   [k];
+    fTOFsigma [k] = copy.fTOFsigma [k];
   } 
   for (k = 0; k < 3; k++)
   {
@@ -87,9 +83,9 @@ void AliRsnMonitorTrack::Reset()
   
   Int_t k;
   
-  fUsable     = kFALSE;
   fCutsPassed = kFALSE;
   fITSsa      = kFALSE;
+  fTOFok      = kFALSE;
   fPrim       = kFALSE;
   fPDG        = 0;
   fMother     = -1;
@@ -102,22 +98,20 @@ void AliRsnMonitorTrack::Reset()
   
   for (k = 0; k < 6; k++) fITSmap[k] = kFALSE;
   fITSchi2   = 1E10;
-  for (k = 0; k < 4; k++) fITSdedx[k] = 0.0;
   fITSsignal = 0.0;
-  fITSnsigma = 1E10;
-  
+    
   fTPCchi2   = 1E10;
-  fTPCdedx   = 1E10;
+  fTPCsignal = 1E10;
   fTPCcount  =    0;
-  fTPCnsigma = 1E10;
-  
+    
   fTOFsignal = 1E10;
   
   for (k = 0; k < AliPID::kSPECIES; k++)
   {
-		fTPCref  [k] = 1E10;
-    fTOFref  [k] = 1E10;
-    fTOFsigma[k] = 1E10;
+		fITSnsigma[k] = 1E10;
+    fTPCnsigma[k] = 1E10;
+    fTOFref   [k] = 1E10;
+    fTOFsigma [k] = 1E10;
   } 
   
   for (k = 0; k < 3; k++) fPsim[k] = fPrec[k] = fPtpc[k] = 0.0;
