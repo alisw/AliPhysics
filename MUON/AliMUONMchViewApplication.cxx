@@ -87,7 +87,7 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
   /// (w,h) is the size in pixel (if 0,0 it will be computed as 70%,90% of display size)
   /// (ox,oy) is the offset from the top-left of the display
 
-  if (!w | !h)
+  if (!w || !h)
   {
     w = (UInt_t)(gClient->GetDisplayWidth()*0.7);
     h = (UInt_t)(gClient->GetDisplayHeight()*0.9); 

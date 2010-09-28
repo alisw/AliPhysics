@@ -71,8 +71,8 @@ int main(int argc, char** argv)
   
   TObjArray filesToOpen;
   Bool_t isGeometryFixed(kFALSE);
-  Int_t gix, giy;
-  Int_t gox,goy;
+  Int_t gix(0),giy(0);
+  Int_t gox(0),goy(0);
   Bool_t ASCIImapping(kFALSE);
   TString defaultOCDB("local://$ALICE_ROOT/OCDB");
   
@@ -162,20 +162,16 @@ int main(int argc, char** argv)
   gStyle->SetPalette(n+2,colors);
   delete[] colors;
 
-  UInt_t w(0);
-  UInt_t h(0);
-  UInt_t ox(0);
-  UInt_t oy(0);
+  AliMUONMchViewApplication* theApp(0x0);
 
   if ( isGeometryFixed )
   {
-    w = gix;
-    h = giy;
-    ox = gox;
-    oy = goy;
+    theApp = new AliMUONMchViewApplication("mchview", &argc, argv,gix,giy,gox,goy);
   }
-  
-  AliMUONMchViewApplication* theApp = new AliMUONMchViewApplication("mchview", &argc, argv, w,h,gox,goy);
+  else
+  {
+    theApp = new AliMUONMchViewApplication("mchview",&argc,argv);
+  }
    
   TIter next(&filesToOpen);
   TObjString* s;
