@@ -643,7 +643,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  nextLine = nextLine(nextLine.Last('/') + 1, nextLine.Length() - nextLine.Last('/') + 1);
 	  
 	  Int_t sscanftmp = 0;
-	  if (1 != sscanf(nextLine.Data(), "%d", &sscanftmp)) {
+	  if (1 != sscanf(nextLine.Data(), "%08d", &sscanftmp)) {
 	    AliError("Survey text file sintax error! (incorrectly formatted Report URL)");
 	    lines->Delete();
 	    delete lines; lines = NULL;
