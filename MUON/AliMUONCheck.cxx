@@ -63,12 +63,15 @@
 ClassImp(AliMUONCheck)
 /// \endcond
 
+const TString AliMUONCheck::fgkDefaultOutFileName = "output.txt"; //!< default output file name 
+
 AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* esdFile,Int_t firstEvent, Int_t lastEvent,const char* outDir) 
 : TObject(),
 fFileName(galiceFile),
 fFileNameSim(),
 fesdFileName(esdFile),
 fkOutDir(outDir),
+fOutFileName(fgkDefaultOutFileName),
 fFirstEvent(firstEvent),
 fLastEvent(lastEvent)
 {
@@ -84,6 +87,7 @@ fFileName(galiceFile),
 fFileNameSim(galiceFileSim),
 fesdFileName(esdFile),
 fkOutDir(outDir),
+fOutFileName(fgkDefaultOutFileName),
 fFirstEvent(firstEvent),
 fLastEvent(lastEvent)
 {
@@ -336,8 +340,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
   
   gSystem->cd(fkOutDir);
   
-  FILE *outtxt=fopen("output.txt","a");
-  freopen("output.txt","a",outtxt);
+  FILE *outtxt=fopen(fOutFileName.Data(),"a");
   
   if(pdc06TriggerResponse){
     fprintf(outtxt,"                                                   \n");
@@ -518,8 +521,7 @@ AliMUONCheck::CheckKine()
   printf("**************************************************************** \n");
   
   gSystem->cd(fkOutDir);
-  FILE *outtxt=fopen("output.txt","a");
-  freopen("output.txt","a",outtxt);
+  FILE *outtxt=fopen(fOutFileName.Data(),"a");
   fprintf(outtxt,"                                                   \n");
   fprintf(outtxt,"=================================================================\n");
   fprintf(outtxt,"================         MUONkine SUMMARY        ================\n");
