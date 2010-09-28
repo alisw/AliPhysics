@@ -164,7 +164,6 @@ Int_t AliMUONRawWriter::Digits2Raw(const AliMUONVDigitStore* digitStore,
   AliCodeTimerAuto("",0)
   
   Int_t idDDL;
-  Char_t name[255];
 
   // tracking chambers
   
@@ -205,12 +204,10 @@ Int_t AliMUONRawWriter::Digits2Raw(const AliMUONVDigitStore* digitStore,
     
     // open files
     idDDL = 0;// MUTR
-    strcpy(name,AliDAQ::DdlFileName("MUONTRG",idDDL));
-    file[0] = new AliFstream(name);
+    file[0] = new AliFstream(AliDAQ::DdlFileName("MUONTRG",idDDL));
     
     idDDL = 1;// MUTR
-    strcpy(name,AliDAQ::DdlFileName("MUONTRG",idDDL));
-    file[1] = new AliFstream(name);
+    file[1] = new AliFstream(AliDAQ::DdlFileName("MUONTRG",idDDL));
       
     WriteTriggerDDL(*triggerStore,file);
       
