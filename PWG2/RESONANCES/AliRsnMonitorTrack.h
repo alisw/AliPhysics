@@ -28,9 +28,7 @@ class AliRsnMonitorTrack : public TObject
     
     void       Reset();
     Bool_t     AdoptMC(Int_t label, AliStack *stack);
-    
-    Bool_t&    IsUsable()       {return fUsable;}
-    void       SetUsable()      {fUsable = kTRUE;}
+
     Bool_t&    CutsPassed()     {return fCutsPassed;}
     
     Double_t&  PsimX()          {return fPsim[0];}
@@ -58,28 +56,29 @@ class AliRsnMonitorTrack : public TObject
     Int_t&     PDGM()           {return fPDGM;}
     Int_t&     Mother()         {return fMother;}
 
+    Bool_t     OkFlag(UInt_t f) {return ((fStatus & f) != 0);}
     UInt_t&    Status()         {return fStatus;}
     Double_t&  Length()         {return fLength;}
     Int_t&     Charge()         {return fCharge;}
-    Bool_t&    ITSsa()          {return fITSsa;}
     Double_t&  DCAr()           {return fDCA[0];}
     Double_t&  DCAz()           {return fDCA[1];}
     
-    Bool_t&    ITSmap(Int_t i)  {if (i>=0 && i<6) return fITSmap[i]; else return fITSmap[0];}
-    Int_t      ITScount()       {return (SPDcount() + SDDcount() + SSDcount());}
-    Int_t      SPDcount()       {Int_t count=0; if (fITSmap[0]) count++; if (fITSmap[1]) count++; return count;}
-    Int_t      SDDcount()       {Int_t count=0; if (fITSmap[2]) count++; if (fITSmap[3]) count++; return count;}
-    Int_t      SSDcount()       {Int_t count=0; if (fITSmap[4]) count++; if (fITSmap[5]) count++; return count;}
-    Double_t&  ITSchi2()        {return fITSchi2;}
-    Double_t&  ITSdedx(Int_t i) {if (i>=0 && i<4) return fITSdedx[i]; else return fITSdedx[0];}
-    Double_t&  ITSsignal()      {return fITSsignal;}
-    Double_t&  ITSnsigma()      {return fITSnsigma;}
+    Bool_t&    ITSsa()          {return fITSsa;}
+    Bool_t&    TOFok()          {return fTOFok;}
     
-    Double_t&  TPCdedx()        {return fTPCdedx;}
-    Int_t&     TPCcount()       {return fTPCcount;}
-    Double_t&  TPCref(Int_t i)  {if (i>=0 && i<AliPID::kSPECIES) return fTPCref[i]; else return fTPCref[0];}
-    Double_t&  TPCchi2()        {return fTPCchi2;}
-    Double_t&  TPCnsigma()      {return fTPCnsigma;}
+    Bool_t&    ITSmap(Int_t i)    {if (i>=0 && i<6) return fITSmap[i]; else return fITSmap[0];}
+    Int_t      ITScount()         {return (SPDcount() + SDDcount() + SSDcount());}
+    Int_t      SPDcount()         {Int_t count=0; if (fITSmap[0]) count++; if (fITSmap[1]) count++; return count;}
+    Int_t      SDDcount()         {Int_t count=0; if (fITSmap[2]) count++; if (fITSmap[3]) count++; return count;}
+    Int_t      SSDcount()         {Int_t count=0; if (fITSmap[4]) count++; if (fITSmap[5]) count++; return count;}
+    Double_t&  ITSchi2()          {return fITSchi2;}
+    Double_t&  ITSsignal()        {return fITSsignal;}
+    Double_t&  ITSnsigma(Int_t i) {if (i>=0 && i<AliPID::kSPECIES) return fITSnsigma[i]; else return fITSnsigma[0];}
+    
+    Int_t&     TPCcount()         {return fTPCcount;}
+    Double_t&  TPCchi2()          {return fTPCchi2;}
+    Double_t&  TPCsignal()        {return fTPCsignal;}
+    Double_t&  TPCnsigma(Int_t i) {if (i>=0 && i<AliPID::kSPECIES) return fTPCnsigma[i]; else return fTPCnsigma[0];}
     
     Double_t&  TOFsignal()      {return fTOFsignal;}
     Double_t&  TOFsigma(Int_t i){if (i>=0 && i<AliPID::kSPECIES) return fTOFsigma[i]; else return fTOFsigma[0];}
@@ -87,39 +86,38 @@ class AliRsnMonitorTrack : public TObject
 
   private:
   
-    Bool_t       fUsable;                     // utility flag
-    Bool_t       fCutsPassed;                 // did it pass all defined cuts?
+    Bool_t       fCutsPassed;                     // did it pass all defined cuts?
     
-    Bool_t       fPrim;                       // is physical primary?
-    Int_t        fPDG;                        // true PDG code
-    Int_t        fPDGM;                       // PDG code of mother (if any)
-    Int_t        fMother;                     // label of mother (if any)
+    Bool_t       fPrim;                           // is physical primary?
+    Int_t        fPDG;                            // true PDG code
+    Int_t        fPDGM;                           // PDG code of mother (if any)
+    Int_t        fMother;                         // label of mother (if any)
 
-    UInt_t       fStatus;                     // 'status' flag of track in ESD (0 = none)
-    Double_t     fLength;                     // integrated length
-    Int_t        fCharge;                     // track charge
-    Bool_t       fITSsa;                      // to know if its is ITS standalone
-    Double_t     fDCA[2];                     // DCA ([0] = xy, [1] = z)
+    UInt_t       fStatus;                         // 'status' flag of track in ESD (0 = none)
+    Double_t     fLength;                         // integrated length
+    Int_t        fCharge;                         // track charge
+    Double_t     fDCA[2];                         // DCA ([0] = xy, [1] = z)
         
-    Bool_t       fITSmap[6];                  // ITS cluster map
-    Double_t     fITSchi2;                    // chi2 in ITS
-    Double_t     fITSdedx[4];                 // ITS dEdx signal in the 4 analog layers
-    Double_t     fITSsignal;                  // ITS signal used for PID
-    Double_t     fITSnsigma;                  // number of sigmas ITS
+    Bool_t       fITSsa;                          // to know if its is ITS standalone (otherwise it is TPC)
+    Bool_t       fTOFok;                          // to know if track has a TOF match
     
-    Double_t     fTPCchi2;                    // TPC chi 2
-    Double_t     fTPCdedx;                    // TPC dEdx signal
-    Int_t        fTPCcount;                   // # TPC clusters
-    Double_t     fTPCref[AliPID::kSPECIES];   // ALEPH Bethe-Bloch count for: e, mu, pi, K, p
-    Double_t     fTPCnsigma;                  // number of sigmas TPC
+    Bool_t       fITSmap[6];                      // ITS cluster map
+    Double_t     fITSchi2;                        // chi2 in ITS
+    Double_t     fITSsignal;                      // ITS signal used for PID
+    Double_t     fITSnsigma[AliPID::kSPECIES];    // number of sigmas ITS
     
-    Double_t     fTOFsignal;                  // TOF signal
-    Double_t     fTOFsigma[AliPID::kSPECIES]; // TOF sigma for: e, mu, pi, K, p
-    Double_t     fTOFref[AliPID::kSPECIES];   // expected times for: e, mu, pi, K, p
+    Int_t        fTPCcount;                       // # TPC clusters
+    Double_t     fTPCchi2;                        // TPC chi 2
+    Double_t     fTPCsignal;                      // TPC dEdx signal
+    Double_t     fTPCnsigma[AliPID::kSPECIES];    // number of sigmas TPC for: e, mu, pi, K, p
     
-    Double_t     fPsim[3];                    // simulated momentum
-    Double_t     fPrec[3];                    // reconstructed momentum
-    Double_t     fPtpc[3];                    // reconstructed momentum at the TPC inner wall
+    Double_t     fTOFsignal;                      // TOF signal
+    Double_t     fTOFsigma[AliPID::kSPECIES];     // TOF sigma for: e, mu, pi, K, p
+    Double_t     fTOFref[AliPID::kSPECIES];       // expected times for: e, mu, pi, K, p
+    
+    Double_t     fPsim[3];                        // simulated momentum
+    Double_t     fPrec[3];                        // reconstructed momentum
+    Double_t     fPtpc[3];                        // reconstructed momentum at the TPC inner wall
 
     ClassDef(AliRsnMonitorTrack, 1)
 };
