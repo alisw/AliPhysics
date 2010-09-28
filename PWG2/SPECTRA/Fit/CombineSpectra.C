@@ -169,7 +169,6 @@ TString today = "";
 Bool_t convertToMT = 0;
 Bool_t sumCharge = 0;
 Int_t whatToFit = kStatErrors; 
-Bool_t doPrint = 0;
 Bool_t scaleKaons =  kFALSE;
 Bool_t drawStar =  kFALSE; // Overlay star when doing fits
 Bool_t correctSecondaries  = 1;
@@ -179,7 +178,9 @@ Int_t fitFuncID = kFitLevi;
 Bool_t showMC=kTRUE;
 Bool_t showE735=kTRUE;
 Bool_t useSecCorrFromDCA=kTRUE;
-const char * printFormats = "png"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
+Bool_t flagPreliminary=kFALSE; // Add "preliminary" flag and logo to the plots
+Bool_t doPrint = 0;
+TString printFormats = "C,eps,root"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
 
 
 void CombineSpectra(Int_t analysisType=kDoHelp, Int_t  locfitFuncID = kFitLevi) {  //kDoSuperposition;//kDoDrawWithModels;// kDoFits; //kDoRatios;  
@@ -249,7 +250,8 @@ void FitCombined() {
   tempTable.InsertCustomRow("Part & Yield &  $\\langle p_{t} \\rangle$ \\\\");
   tempTable.InsertHline();
 
-  TH1F* hRatiosToFit[kNPart][kNCharge];
+  TH1F* hRatiosToFit[kNPart][kNCharge]; // Ratio data/fit function, stat error by default
+  TH1F* hRatiosToFitSyst[kNPart][kNCharge]; // Ratio data/fit, stat + syst
   //  Fit all 
   Int_t chargeLoop = sumCharge ? 1 : 2; 
   for(Int_t icharge = 0; icharge < chargeLoop; icharge++){
@@ -366,12 +368,16 @@ void FitCombined() {
       fitfunc->SetLineColor(hSpectra[iCombInStudy][ipart][icharge]->GetLineColor());
       if(drawStar)    DrawStar(icharge);
       hRatiosToFit[ipart][icharge]=(TH1F*)hToFit->Clone(Form("hRatio%s%s",chargeFlag[icharge],partFlag[icharge])); // Ratio data/fit
+      hRatiosToFitSyst[ipart][icharge]=(TH1F*)hsyststat->Clone(Form("hRatioSyst%s%s",chargeFlag[icharge],partFlag[icharge])); // Ratio data/fit
       for(Int_t iBin=1; iBin<hToFit->GetNbinsX(); iBin++){
 	Double_t lowLim=hToFit->GetBinLowEdge(iBin);
 	Double_t highLim=hToFit->GetBinLowEdge(iBin+1);
 	Double_t contFunc=fitfunc->Integral(lowLim,highLim)/(highLim-lowLim);
 	Double_t ratio=hToFit->GetBinContent(iBin)/contFunc;
 	Double_t eratio=hToFit->GetBinError(iBin)/contFunc;
+	Double_t eratioSyst=hsyststat->GetBinError(iBin)/contFunc;
+	hRatiosToFitSyst[ipart][icharge]->SetBinContent(iBin,ratio);
+	hRatiosToFitSyst[ipart][icharge]->SetBinError(iBin,eratioSyst);
 	hRatiosToFit[ipart][icharge]->SetBinContent(iBin,ratio);
 	hRatiosToFit[ipart][icharge]->SetBinError(iBin,eratio);
       }
@@ -439,15 +445,16 @@ void FitCombined() {
       //      tempTable.SetNextCol(yieldAbove/yield,-2);
       tempTable.InsertRow();
       c2r->cd();
+      hRatiosToFitSyst[ipart][icharge]->Draw("e2same");
       hRatiosToFit[ipart][icharge]->Draw("esame");
 
     }
     c2->cd();
-    ALICEWorkInProgress(c2,"","ALICE Preliminary");
+    if (flagPreliminary) ALICEWorkInProgress(c2,"","ALICE Preliminary");
     l->Draw();
-    tf->Draw();
+    if (flagPreliminary) tf->Draw();
     c2r->cd();
-    ALICEWorkInProgress(c2r,"","ALICE Preliminary");
+    if(flagPreliminary) ALICEWorkInProgress(c2r,"","ALICE Preliminary");
     l->Draw();
     PrintCanvas(c2,printFormats);
     PrintCanvas(c2r,printFormats);
@@ -581,7 +588,7 @@ void LoadSpectra() {
   
   
   // ITS SA 
-  f = new TFile("./Files/ITSsaSpectraCorr_20100727.root");
+  f = new TFile("./Files/ITSsaSpectraCorr-28Sep10.root");
   hSpectra[kITS][kPion]  [kPos]= (TH1F*) f->Get("hSpectraPos0");
   hSpectra[kITS][kKaon]  [kPos]= (TH1F*) f->Get("hSpectraPos1");
   hSpectra[kITS][kProton][kPos]= (TH1F*) f->Get("hSpectraPos2");
@@ -591,8 +598,8 @@ void LoadSpectra() {
 
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
     for(Int_t icharge = 0; icharge < kNCharge; icharge++){
-      Int_t nbin = hSpectra[kITS][ipart][icharge]->GetNbinsX();
-      for(Int_t ibin = 1; ibin <= nbin; ibin++){
+      Int_t nbinITS = hSpectra[kITS][ipart][icharge]->GetNbinsX();
+      for(Int_t ibin = 1; ibin <= nbinITS; ibin++){
 	if(hSpectra[kITS][ipart][icharge]->GetBinContent(ibin) < 0 ) {
 	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
 	  hSpectra[kITS][ipart][icharge]->SetBinError  (ibin,0);
@@ -621,7 +628,8 @@ void LoadSpectra() {
   }
 
   // Load ITS sa systematics, only pt dependent ones
-  f = TFile::Open("./Files/ITSsa-systematics.root");
+  //  f = TFile::Open("./Files/ITSsa-systematics.root");
+  f = TFile::Open("./Files/ITSsa-systematics_20100928.root");
   for(Int_t ipart = 0; ipart < kNPart; ipart++){
       for(Int_t icharge = 0; icharge < kNCharge; icharge++){
 	AliBWTools::AddHisto(hSystError[kITS][ipart][icharge], (TH1*) gDirectory->Get(Form("hSystTot%s%s",chargeFlag[icharge],partFlag[ipart]))); // Using total error
@@ -716,7 +724,7 @@ void LoadSpectra() {
   // Secondaries for protons
 
   //f = new TFile ("./Files/corrFactorProtons_20100615.root");
-  f = new TFile ("./Files/corrFactorProtons_2010_09_15.root");
+  f = new TFile ("./Files/corrFactorProtons_2010_09_24.root");
   TH1F * hCorrSecondaries = (TH1F*) gDirectory->Get("corrFactorProtons");
   if(correctSecondaries) {
     cout << "CORRECTING SECONDARIES" << endl;
@@ -837,16 +845,20 @@ void LoadSpectra() {
 // 	      h->GetBinCenter(ibin);
 	    Float_t pt = h->GetBinCenter(ibin);
 	    Float_t minPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(1);
-	    Float_t maxPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(hCorrFluka[icharge]->GetNbinsY()+1);
+	    //	    hCorrFluka[icharge]->Draw();
+	    TH1D * htmpFluka=hCorrFluka[icharge]->ProjectionY();
+	    Float_t maxPtCorrection = AliBWTools::GetHighestNotEmptyBinEdge(htmpFluka);//->GetYaxis()->GetBinLowEdge(hCorrFluka[icharge]->GetNbinsY()+1);
 	    if (pt < minPtCorrection) pt = minPtCorrection+0.0001;
-	    if (pt > maxPtCorrection) pt = maxPtCorrection;
+	    if (pt > maxPtCorrection) pt = maxPtCorrection-0.0001;
 	    Float_t correction = hCorrFluka[icharge]->GetBinContent(1,hCorrFluka[icharge]->GetYaxis()->FindBin(pt));
 	    
 	    // already in the efficiency correction (F. Noferini)
 	    if (idet == kTOF) {
 	      if (icharge == kNeg)  correction = 1; // antiprotons already corrected in efficiency
 	      // Scale correction for the different material budget. Recipe by Francesco Noferini
-	      else correction = TMath::Power(correction,0.07162/0.03471);
+	      else {
+		correction = TMath::Power(correction,0.07162/0.03471);
+	      }
 	    }	    
 	    if (correction != 0) {// If the bin is empty this is a  0
 	      
@@ -912,8 +924,8 @@ void LoadSpectra() {
   for(Int_t ipart = 0; ipart <= kNPart ; ipart++){
     for(Int_t idet = 0; idet <= kITS ; idet++){
       hWeights[idet][ipart] = (TH1F*) hSpectra[idet][ipart][kPos]->Clone();
-      Int_t nbin = hWeights[idet][ipart]->GetNbinsX();
-      for(Int_t ibin = 1; ibin <= nbin; ibin++){
+      Int_t nbinW = hWeights[idet][ipart]->GetNbinsX();
+      for(Int_t ibin = 1; ibin <= nbinW; ibin++){
 	hWeights[idet][ipart]->SetBinError(ibin, kWeights[idet][ipart]);
       }    
     }
@@ -1251,15 +1263,15 @@ void DrawAllAndKaons() {
 
   // Draw all "stable" hadrons
   for(Int_t icharge = 0; icharge < kNCharge; icharge++){
-    TCanvas * c1 = new TCanvas(TString("cAll_")+chargeFlag[icharge],TString("cAll_")+chargeFlag[icharge],700,700);
-    c1->SetLogy();
-    c1->SetLeftMargin(0.14);
-    TH2F * hempty = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,4, 100, 1e-3,10);
-    hempty->SetXTitle("p_{t} (GeV/c)");
-    hempty->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1}");
-    hempty->GetYaxis()->SetTitleOffset(1.35);
-    hempty->GetXaxis()->SetTitleOffset(1.1);
-    hempty->Draw();    
+    TCanvas * c1h = new TCanvas(TString("cAll_")+chargeFlag[icharge],TString("cAll_")+chargeFlag[icharge],700,700);
+    c1h->SetLogy();
+    c1h->SetLeftMargin(0.14);
+    TH2F * hemptyLoc = new TH2F(TString("hempty")+long(icharge),"hempty",100,0.,4, 100, 1e-3,10);
+    hemptyLoc->SetXTitle("p_{t} (GeV/c)");
+    hemptyLoc->SetYTitle("1/N_{ev} d^{2}N / dydp_{t} (GeV/c)^{-1}");
+    hemptyLoc->GetYaxis()->SetTitleOffset(1.35);
+    hemptyLoc->GetXaxis()->SetTitleOffset(1.1);
+    hemptyLoc->Draw();    
     leg = new TLegend(0.482759, 0.489583, 0.896552, 0.925595, NULL,"brNDC");
     leg->SetFillColor(0);
     for(Int_t ipart = 0; ipart < kNPart; ipart++) {
@@ -1273,8 +1285,8 @@ void DrawAllAndKaons() {
       //      leg->AddLine();
     }    
     leg->Draw();
-    //    ALICEWorkInProgress(c1,today.Data(),"#splitline{ALICE Preliminary}{Statistical Error Only}");
-    PrintCanvas(c1,printFormats);
+    //    ALICEWorkInProgress(c1h,today.Data(),"#splitline{ALICE Preliminary}{Statistical Error Only}");
+    PrintCanvas(c1h,printFormats);
   }
  
 
@@ -1317,12 +1329,12 @@ void DrawAllAndKaons() {
   TH1F * hRatioITSTPC[kNPart][kNCharge];
   for(Int_t icharge = 0; icharge < kNCharge; icharge++){ // loop over charges
     // Create canvas
-    TCanvas * c1 = new TCanvas(TString("cITSTPCRatio_")+chargeFlag[icharge],TString("cITSTPCRatio_")+chargeFlag[icharge],1200,500);
-    c1->Divide(3,1);
-    c1->SetGridy();
-    TH2F * hempty = new TH2F(TString("hemptyR")+long(icharge),"ITSsa/TPC ",100,0.,1., 100, 0.5,1.5);
-    hempty->SetXTitle("p_{t} (GeV/c)");
-    hempty->SetYTitle("ITSsa / TPC");
+    TCanvas * c1h = new TCanvas(TString("cITSTPCRatio_")+chargeFlag[icharge],TString("cITSTPCRatio_")+chargeFlag[icharge],1200,500);
+    c1h->Divide(3,1);
+    c1h->SetGridy();
+    TH2F * hemptyLoc = new TH2F(TString("hemptyR")+long(icharge),"ITSsa/TPC ",100,0.,1., 100, 0.5,1.5);
+    hemptyLoc->SetXTitle("p_{t} (GeV/c)");
+    hemptyLoc->SetYTitle("ITSsa / TPC");
     // Loop over particles
     for(Int_t ipart = 0; ipart < kNPart; ipart++) {
       // Clone histo
@@ -1356,28 +1368,29 @@ void DrawAllAndKaons() {
 	  }
 	}
       }
-      c1->cd(ipart+1);
-      // hempty->SetStats(1);
-      // hempty->Draw(); 
+      c1h->cd(ipart+1);
+      // hemptyLoc->SetStats(1);
+      // hemptyLoc->Draw(); 
+      hRatioITSTPC[ipart][icharge]->SetYTitle("ITSsa/TPC");
       hRatioITSTPC[ipart][icharge]->SetStats(1);
       hRatioITSTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
       hRatioITSTPC[ipart][icharge]->Draw("");
       hRatioITSTPC[ipart][icharge]->Fit("pol0","","same");
        
     }
-    PrintCanvas(c1,printFormats);
+    PrintCanvas(c1h,printFormats);
   }
 
   // ITS/TPC
   TH1F * hRatioITSGlobalTPC[kNPart][kNCharge];
   for(Int_t icharge = 0; icharge < kNCharge; icharge++){ // loop over charges
     // Create canvas
-    TCanvas * c1 = new TCanvas(TString("cITSGlobalTPCRatio_")+chargeFlag[icharge],TString("cITSGlobalTPCRatio_")+chargeFlag[icharge],1200,500);
-    c1->Divide(3,1);
-    c1->SetGridy();
-    TH2F * hempty = new TH2F(TString("hemptyR")+long(icharge),"ITS Global/TPC ",100,0.,1., 100, 0.5,1.5);
-    hempty->SetXTitle("p_{t} (GeV/c)");
-    hempty->SetYTitle("ITS Global / TPC");
+    TCanvas * c1h = new TCanvas(TString("cITSGlobalTPCRatio_")+chargeFlag[icharge],TString("cITSGlobalTPCRatio_")+chargeFlag[icharge],1200,500);
+    c1h->Divide(3,1);
+    c1h->SetGridy();
+    TH2F * hemptyLoc = new TH2F(TString("hemptyR")+long(icharge),"ITS Global/TPC ",100,0.,1., 100, 0.5,1.5);
+    hemptyLoc->SetXTitle("p_{t} (GeV/c)");
+    hemptyLoc->SetYTitle("ITS Global / TPC");
     // Loop over particles
     for(Int_t ipart = 0; ipart < kNPart; ipart++) {
       // Clone histo
@@ -1411,16 +1424,17 @@ void DrawAllAndKaons() {
 	  }
 	}
       }
-      c1->cd(ipart+1);
-      // hempty->SetStats(1);
-      // hempty->Draw(); 
+      c1h->cd(ipart+1);
+      // hemptyLoc->SetStats(1);
+      // hemptyLoc->Draw(); 
+      hRatioITSGlobalTPC[ipart][icharge]->SetYTitle("ITS Global/TPC");
       hRatioITSGlobalTPC[ipart][icharge]->SetStats(1);
       hRatioITSGlobalTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
       hRatioITSGlobalTPC[ipart][icharge]->Draw("");
       hRatioITSGlobalTPC[ipart][icharge]->Fit("pol0","","same");
        
     }
-    PrintCanvas(c1,printFormats);
+    PrintCanvas(c1h,printFormats);
   }
 
   // TOF/TPC
@@ -1467,6 +1481,7 @@ void DrawAllAndKaons() {
 	}
       }
       c1t->cd(ipart+1);
+      hRatioTOFTPC[ipart][icharge]->SetYTitle("TOF/TPC");
       hRatioTOFTPC[ipart][icharge]->SetStats(1);
       hRatioTOFTPC[ipart][icharge]->GetYaxis()->SetRangeUser(0.5,1.5);
       hRatioTOFTPC[ipart][icharge]->Draw("");
@@ -1696,9 +1711,9 @@ void DrawRatios() {
     for(Int_t itune = 0; itune < kNTunes; itune++){
       hKPiRatioMC[itune] = (TH1F*) hSpectraMC[itune][kKaon][kPos]->Clone();
       hKPiRatioMC[itune]->Add(hSpectraMC[itune][kKaon][kNeg]);
-      TH1F * htmp = (TH1F*) hSpectraMC[itune][kPion][kPos]->Clone();
-      htmp->Add(hSpectraMC[itune][kPion][kNeg]);
-      hKPiRatioMC[itune]->Divide(htmp);
+      TH1F * htmpLoc = (TH1F*) hSpectraMC[itune][kPion][kPos]->Clone();
+      htmpLoc->Add(hSpectraMC[itune][kPion][kNeg]);
+      hKPiRatioMC[itune]->Divide(htmpLoc);
       hKPiRatioMC[itune]->SetYTitle("(K^{+}+K^{-})/(#pi^{+}+#pi^{-})");    
     }
   }
@@ -1717,9 +1732,9 @@ void DrawRatios() {
     for(Int_t itune = 0; itune < kNTunes; itune++){
       hPPiRatioMC[itune] = (TH1F*) hSpectraMC[itune][kProton][kPos]->Clone();
       hPPiRatioMC[itune]->Add(hSpectraMC[itune][kProton][kNeg]);
-      TH1F * htmp = (TH1F*) hSpectraMC[itune][kPion][kPos]->Clone();
-      htmp->Add(hSpectraMC[itune][kPion][kNeg]);
-      hPPiRatioMC[itune]->Divide(htmp);
+      TH1F * htmpLoc = (TH1F*) hSpectraMC[itune][kPion][kPos]->Clone();
+      htmpLoc->Add(hSpectraMC[itune][kPion][kNeg]);
+      hPPiRatioMC[itune]->Divide(htmpLoc);
       hPPiRatioMC[itune]->SetYTitle("(p+#bar{p})/(#pi^{+}+#pi^{-})");    
     }
   }
@@ -1890,7 +1905,7 @@ void DrawWithSyst() {
 	Int_t lowBin = hSystError[idet][ipart][icharge]->FindBin(lowEdge);
 	Int_t hiBin = hSystError[idet][ipart][icharge]->FindBin(hiEdge);
 	Int_t nbin = 	hSystError[idet][ipart][icharge]->GetNbinsX();
-	for(Int_t ibin = 1; ibin <= lowBin; ibin++){
+	for(Int_t ibin = 1; ibin < lowBin; ibin++){
 	  hSystError[idet][ipart][icharge]->SetBinContent(ibin,0);	  
 	  hSystError[idet][ipart][icharge]->SetBinError(ibin,0);	  
 	}
