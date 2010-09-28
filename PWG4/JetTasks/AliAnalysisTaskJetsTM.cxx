@@ -248,7 +248,6 @@ void AliAnalysisTaskJetsTM::UserExec(Option_t *)
 	  
 	  Float_t ppjX = pPerp.Dot(ppJ2);
 	  Float_t ppjY = pPerp.Dot(ppJ3);
-	  Float_t ppjT = TMath::Sqrt(ppjX * ppjX + ppjY * ppjY);
 	    
 	  TVector2 vr(ppjX, ppjY) ;
 	  Float_t phistr = evec.DeltaPhi(vr);
