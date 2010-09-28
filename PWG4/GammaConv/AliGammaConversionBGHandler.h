@@ -63,11 +63,14 @@ class AliGammaConversionBGHandler : public TObject {
 
   GammaConversionVertex * GetBGEventVertex(Int_t zbin, Int_t mbin, Int_t event){return &fBGEventVertex[zbin][mbin][event];}
 
+  Double_t GetBGProb(Int_t z, Int_t m){return fBGProbability[z][m];}
+
  private:
 
   Int_t fNEvents; // number of events
   Int_t ** fBGEventCounter; //! bg counter
   Int_t ** fBGEventENegCounter;//! bg electron counter
+  Double_t ** fBGProbability; //! prob per bin
   GammaConversionVertex *** fBGEventVertex;//array of event vertex
   Int_t fNBinsZ; //n z bins
   Int_t fNBinsMultiplicity; //n bins multiplicity
@@ -75,6 +78,6 @@ class AliGammaConversionBGHandler : public TObject {
   Double_t *fBinLimitsArrayMultiplicity;//! bin limit multiplicity array
   AliGammaConversionBGVector fBGEvents; //gackground events
   AliGammaConversionBGVector fBGEventsENeg; //background electron events
-  ClassDef(AliGammaConversionBGHandler,1)
+  ClassDef(AliGammaConversionBGHandler,2)
 };
 #endif

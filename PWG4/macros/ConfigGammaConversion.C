@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 15;
+const int c_array_size = 16;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -40,10 +40,15 @@ Bool_t kGCUseTrackMultiplicityForBG = kTRUE;
 Bool_t kGCMoveParticlesAccordingToVertex = kFALSE;
 Bool_t kGCLowMemoryConsumption = kFALSE;
 Bool_t kGCApplyChi2Cut = kFALSE;
+
+Bool_t kGCUseRotationMethodInBG=kTRUE;
+Int_t kGCnDegreeRotationPMForBG=15;
+Int_t kGCnumberOfRotationEventsForBG=15;
+Bool_t kGCdoBGProbablity=kTRUE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="900110204010001"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="9001102040100010"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=10;
 
@@ -939,11 +944,25 @@ Bool_t scanArguments(TString arguments){
       else if (argument.CompareTo("-bg-off") == 0){
 	kGCcalculateBackground =kFALSE;
       }
+      else if (argument.CompareTo("-bg-prob-off") == 0){
+	kGCdoBGProbablity = kFALSE;
+      }
+      else if (argument.CompareTo("-bg-rotation-off") == 0){
+	kGCUseRotationMethodInBG = kFALSE;
+      }
       else if (argument.CompareTo("-use-v0-multiplicity") == 0){
 	kGCUseTrackMultiplicityForBG = kFALSE;
       }
       else if (argument.CompareTo("-apply-chi2-cut") == 0){
 	kGCApplyChi2Cut = kTRUE;
+      }
+      else if(argument.CompareTo("-set-number-of-rotations") == 0){
+	if((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	kGCnumberOfRotationEventsForBG = ((TObjString*)pTokens->At(i))->GetString().Atoi();
+      }
+      else if(argument.CompareTo("-set-number-of-degrees") == 0){
+	if((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+	kGCnDegreeRotationPMForBG = ((TObjString*)pTokens->At(i))->GetString().Atoi();
       }
       else if (argument.CompareTo("-low-memory") == 0){
 	kGCLowMemoryConsumption	= kTRUE;
@@ -1476,6 +1495,11 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetUseChargedTracksMultiplicityForBG(kGCUseTrackMultiplicityForBG);
   gammaconversion->SetMoveParticleAccordingToVertex(kGCMoveParticlesAccordingToVertex);
   gammaconversion->SetApplyChi2Cut(kGCApplyChi2Cut);
+  gammaconversion->SetPMDegreesBG(kGCnDegreeRotationPMForBG);
+  gammaconversion->SetDoRotation(kGCUseRotationMethodInBG);
+  gammaconversion->SetNumberOfRotationsBG(kGCnumberOfRotationEventsForBG);
+  gammaconversion->SetCheckBGProbability(kGCdoBGProbablity);
+
   // for CF
   gammaconversion->SetCFManager(man);
   gammaconversion->SetDoCF(kGCrunCF);
@@ -2342,7 +2366,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t QtMaxCut=array[12];
   Int_t piMaxMomdedxSigmaCut=array[13];
   Int_t alphaMesonCut=array[14];
+  Int_t minRCut=array[15];
 
+  cout<<"minRCut"<<minRCut<<endl;
   cout<<"alphaMesonCut"<<alphaMesonCut<<endl;	
   cout<<"piMaxMomdedxSigmaCut::"<<piMaxMomdedxSigmaCut<<endl;
   cout<<"QtMaxCut:"<<QtMaxCut<<endl;
@@ -2537,6 +2563,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 4:  // 60% of findable clusters
     kGCminClsTPCCutToF= 0.6;
     break;
+  case 5:  // 0% of findable clusters
+    kGCminClsTPCCutToF= 0.0;
+    break;
   default:
     return iResult;
   }
@@ -2681,7 +2710,20 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     return iResult;
   }
   
- 
+  switch(minRCut){
+  case 0:
+    kGCminRCut=0;
+    break;
+  case 1:
+    kGCminRCut=2.8;
+    break;
+  case 2:
+    kGCminRCut=5.;
+    break;
+  default:
+    return iResult;
+  }
+  
   iResult=1;
   return iResult;
 }

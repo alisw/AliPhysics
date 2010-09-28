@@ -14,6 +14,7 @@
 #include <vector>
 #include "AliV0Reader.h"
 #include "AliGammaConversionBGHandler.h"
+#include "TRandom.h"
 //#include "AliCFManager.h"  // for CF
 //#include "AliCFContainer.h"   // for CF
 
@@ -138,6 +139,16 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void MoveParticleAccordingToVertex(AliKFParticle *particle,AliGammaConversionBGHandler::GammaConversionVertex *vertex);
 
   void SetApplyChi2Cut(Bool_t flag){fApplyChi2Cut = flag;}
+
+  void SetDoRotation(Bool_t flag){fDoRotation = flag;}
+
+  void SetPMDegreesBG(Int_t deg){nDegreesPMBackground=deg;}
+
+  void SetNumberOfRotationsBG(Int_t nRot){nRandomEventsForBG=nRot;}
+
+  void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle);
+
+  void SetCheckBGProbability(Bool_t flag){fCheckBGProbability = flag;}
 
  private:
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
@@ -268,10 +279,13 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fUseTrackMultiplicityForBG;
   Bool_t fMoveParticleAccordingToVertex;
   Bool_t fApplyChi2Cut;
-
+  Int_t nRandomEventsForBG;
+  Int_t nDegreesPMBackground;
+  Bool_t fDoRotation;
+  Bool_t fCheckBGProbability;
   vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
 
-  ClassDef(AliAnalysisTaskGammaConversion, 11); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 12); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H
