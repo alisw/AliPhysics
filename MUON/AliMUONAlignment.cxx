@@ -83,6 +83,8 @@ AliMUONAlignment::AliMUONAlignment()
   fSigma[0] = 1.0e-1;
   fSigma[1] = 1.0e-2;
 
+  AliInfo(Form("fSigma[0]: %f\t fSigma[1]: %f",fSigma[0],fSigma[1]));
+
   fDoF[0] = kTRUE;  fDoF[1] = kTRUE;  fDoF[2] = kTRUE;  fDoF[3] = kTRUE;
   fAllowVar[0] = 0.05;  fAllowVar[1] = 0.05;  fAllowVar[2] = 0.001;  fAllowVar[3] = 0.5;
   
@@ -772,6 +774,14 @@ void AliMUONAlignment::SetNonLinear(Int_t iPar  /* set non linear flag */ ) {
   AliInfo(Form("Parameter %i set to non linear", iPar));
 }
 
+
+void AliMUONAlignment::SetSigmaXY(Double_t sigmaX, Double_t sigmaY) {
+  /// Set expected measurement resolution
+  fSigma[0] = sigmaX;   fSigma[1] = sigmaY;
+  AliInfo(Form("Using fSigma[0]=%f and fSigma[1]=%f",fSigma[0],fSigma[1]));
+}
+
+
 void AliMUONAlignment::LocalEquationX() {
   /// Define local equation for current track and cluster in x coor. measurement
   // set local derivatives
@@ -1009,7 +1019,7 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
   // Adds the new module transformer to a new geometry transformer
   // Returns the new geometry transformer
 
-  Double_t lModuleMisAlignment[3] = {0.,0.,0.};
+  Double_t lModuleMisAlignment[4] = {0.,0.,0.,0.};
   Double_t lDetElemMisAlignment[4] = {0.,0.,0.,0.};
   Int_t iDetElemId = 0;
   Int_t iDetElemNumber = 0;

@@ -63,6 +63,7 @@ public:
   void SetNonLinear(Int_t param);
   void AddConstraint(Double_t *factor, Double_t value );
   void InitGlobalParameters(Double_t *par);   
+  void SetSigmaXY(Double_t sigmaX, Double_t sigmaY);
   /// Set array of local derivatives
   void SetLocalDerivative(Int_t index, Double_t value) {      
     fLocalDerivatives[index] = value;
