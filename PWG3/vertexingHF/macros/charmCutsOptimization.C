@@ -27,7 +27,9 @@
 //- 4 = kD0toKpipipi
 //- 5 = kLambdactopKpi
 
-Bool_t charmCutsOptimization(Double_t nsigma=2,Int_t decCh=1,Int_t fitbtype=0,Int_t rebin=2,Double_t sigma=0.012,Int_t minentries=50,Double_t *rangefit=0x0,TString hname="hMass_"){
+//Note: writefit=kTRUE writes the root files with the fit performed but it also draw all the canvas, so if your computer is not powerfull enough I suggest to run it in batch mode (root -b)
+
+Bool_t charmCutsOptimization(Double_t nsigma=2,Int_t decCh=1,Int_t fitbtype=0,Int_t rebin=2,Bool_t writefit=kFALSE,Double_t sigma=0.012,Int_t minentries=50,Double_t *rangefit=0x0,TString hname="hMass_"){
 
   TString filename="AnalysisResults.root",dirname="PWG3_D2H_Significance",listname="coutputSig",mdvlistname="coutputmv";
 
@@ -173,7 +175,7 @@ Bool_t charmCutsOptimization(Double_t nsigma=2,Int_t decCh=1,Int_t fitbtype=0,In
     
     setname=Form("S%s",name.Data());
     mdvS->SetName(setname.Data());
-
+    outcheck<<"\n"<<mdvS->GetPtLimit(0)<<" < Pt <"<<mdvS->GetPtLimit(1)<<endl;
     AliMultiDimVector *mdvSerr=(AliMultiDimVector*)mdvS->Clone(setname.Data());
     setname=Form("%sS%s",nameErr.Data(),name.Data());
     mdvSerr->SetName(setname.Data());
@@ -255,6 +257,7 @@ Bool_t charmCutsOptimization(Double_t nsigma=2,Int_t decCh=1,Int_t fitbtype=0,In
 	//   }
 	}else{ //fit ok!
 
+	  if(writefit) fitter.WriteCanvas(Form("h%d",ih+i*nhistforptbin),"./",nsigma);
 	  Double_t signif=0, signal=0, background=0, errSignif=0, errSignal=0, errBackground=0;
 	  fitter.Signal(nsigma,signal,errSignal);
 	  fitter.Background(nsigma,background,errBackground);
@@ -424,9 +427,9 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t maximize=kTRUE,Bool_t re
   //   break;
   }
  
-  Int_t nptbins=0;
+  Int_t nptbins=25;
   
-  for(Int_t ip=0;ip<=10;ip++){
+  for(Int_t ip=0;ip<=nptbins;ip++){
     TString mdvname=Form("%s%d",name.Data(),ip);
     AliMultiDimVector* mdv=(AliMultiDimVector*)fin->Get(mdvname);
     if(!mdv){
@@ -624,5 +627,6 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t maximize=kTRUE,Bool_t re
     leg->Draw();
     cvpj->SaveAs(Form("%s%s.png",shorttitle.Data(),cvpj->GetName()));
   } else delete cvpj;
+
 }
 
