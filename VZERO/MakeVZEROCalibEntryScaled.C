@@ -48,7 +48,7 @@ void MakeVZEROCalibEntryScaled(Int_t run, Int_t scale = 1, const char *inputCDB 
   md->SetBeamPeriod(0);
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetComment(Form("VZERO Calibration from RAW OCDB (HV gains are scaled down by factor of %d)",scale));
-  AliCDBId id("VZERO/Calib/Data",0,AliCDBRunRange::Infinity());
+  AliCDBId id("VZERO/Calib/Data",run,run);
 
   man->SetDefaultStorage(outputCDB);
   AliCDBStorage *storLoc = man->GetDefaultStorage();
