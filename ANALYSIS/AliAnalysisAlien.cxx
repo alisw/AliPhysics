@@ -75,6 +75,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fExecutableArgs(),
                   fAnalysisMacro(),
                   fAnalysisSource(),
+                  fValidationScript(),
                   fAdditionalRootLibs(),
                   fAdditionalLibs(),
                   fSplitMode(),
@@ -92,6 +93,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fInputFormat(),
                   fDatasetName(),
                   fJDLName(),
+                  fTerminateFiles(),
 		            fMergeExcludes(),
                   fIncludePath(),
                   fCloseSE(),
@@ -141,6 +143,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fExecutableArgs(),
                   fAnalysisMacro(),
                   fAnalysisSource(),
+                  fValidationScript(),
                   fAdditionalRootLibs(),
                   fAdditionalLibs(),
                   fSplitMode(),
@@ -158,6 +161,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fInputFormat(),
                   fDatasetName(),
                   fJDLName(),
+                  fTerminateFiles(),
                   fMergeExcludes(),
                   fIncludePath(),
                   fCloseSE(),
@@ -207,6 +211,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fExecutableArgs(other.fExecutableArgs),
                   fAnalysisMacro(other.fAnalysisMacro),
                   fAnalysisSource(other.fAnalysisSource),
+                  fValidationScript(other.fValidationScript),
                   fAdditionalRootLibs(other.fAdditionalRootLibs),
                   fAdditionalLibs(other.fAdditionalLibs),
                   fSplitMode(other.fSplitMode),
@@ -224,6 +229,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fInputFormat(other.fInputFormat),
                   fDatasetName(other.fDatasetName),
                   fJDLName(other.fJDLName),
+                  fTerminateFiles(other.fTerminateFiles),
                   fMergeExcludes(other.fMergeExcludes),
                   fIncludePath(other.fIncludePath),
                   fCloseSE(other.fCloseSE),
@@ -303,6 +309,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fExecutableArgs          = other.fExecutableArgs;
       fAnalysisMacro           = other.fAnalysisMacro;
       fAnalysisSource          = other.fAnalysisSource;
+      fValidationScript        = other.fValidationScript;
       fAdditionalRootLibs      = other.fAdditionalRootLibs;
       fAdditionalLibs          = other.fAdditionalLibs;
       fSplitMode               = other.fSplitMode;
@@ -320,6 +327,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fInputFormat             = other.fInputFormat;
       fDatasetName             = other.fDatasetName;
       fJDLName                 = other.fJDLName;
+      fTerminateFiles          = other.fTerminateFiles;
       fMergeExcludes           = other.fMergeExcludes;
       fIncludePath             = other.fIncludePath;
       fCloseSE                 = other.fCloseSE;
@@ -397,6 +405,7 @@ Bool_t AliAnalysisAlien::Connect()
 {
 // Try to connect to AliEn. User needs a valid token and /tmp/gclient_env_$UID sourced.
    if (gGrid && gGrid->IsConnected()) return kTRUE;
+   if (fProductionMode) return kTRUE;
    if (!gGrid) {
       Info("Connect", "Trying to connect to AliEn ...");
       TGrid::Connect("alien://");
@@ -428,9 +437,9 @@ void AliAnalysisAlien::CdWork()
    gGrid->Cd(homedir);
    if (gGrid->Mkdir(workdir, "-p")) {
       gGrid->Cd(fGridWorkingDir);
-      Info("CreateJDL", "\n#####   Created alien working directory %s", fGridWorkingDir.Data());
+      Info("CdWork", "\n#####   Created alien working directory %s", fGridWorkingDir.Data());
    } else {
-      Warning("CreateJDL", "Working directory %s cannot be created.\n Using %s instead.",
+      Warning("CdWork", "Working directory %s cannot be created.\n Using %s instead.",
               workdir.Data(), homedir.Data());
       fGridWorkingDir = "";
    }          
@@ -440,6 +449,7 @@ void AliAnalysisAlien::CdWork()
 Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
 {
 // Check if file copying is possible.
+   if (fProductionMode) return kTRUE;
    if (!Connect()) {
       Error("CheckFileCopy", "Not connected to AliEn. File copying cannot be tested.");
       return kFALSE;
@@ -488,6 +498,7 @@ Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
 Bool_t AliAnalysisAlien::CheckInputData()
 {
 // Check validity of input data. If necessary, create xml files.
+   if (fProductionMode) return kTRUE;
    if (!fInputFiles && !fRunNumbers.Length() && !fRunRange[0]) {
       if (!fGridDataDir.Length()) {
          Error("CkeckInputData", "AliEn path to base data directory must be set.\n = Use: SetGridDataDir()");
@@ -503,7 +514,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
    Bool_t isXml = kFALSE;
    Bool_t useTags = kFALSE;
    Bool_t checked = kFALSE;
-   CdWork();
+   if (!TestBit(AliAnalysisGrid::kTest)) CdWork();
    TString file;
    TString workdir = gGrid->GetHomeDirectory();
    workdir += fGridWorkingDir;
@@ -645,14 +656,14 @@ Bool_t AliAnalysisAlien::CheckInputData()
 Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
 {
 // Create dataset for the grid data directory + run number.
-   if (TestBit(AliAnalysisGrid::kOffline)) return kTRUE;
+   if (fProductionMode || TestBit(AliAnalysisGrid::kOffline)) return kTRUE;
    if (!Connect()) {
       Error("CreateDataset", "Cannot create dataset with no grid connection");
       return kFALSE;
    }   
 
    // Cd workspace
-   CdWork();
+   if (!TestBit(AliAnalysisGrid::kTest)) CdWork();
    TString workdir = gGrid->GetHomeDirectory();
    workdir += fGridWorkingDir;
 
@@ -923,7 +934,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
    Bool_t error = kFALSE;
    TObjArray *arr = 0;
    Bool_t copy = kTRUE;
-   if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
+   if (fProductionMode || TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
    Bool_t generate = kTRUE;
    if (TestBit(AliAnalysisGrid::kTest) || TestBit(AliAnalysisGrid::kSubmit)) generate = kFALSE;
    if (!Connect()) {
@@ -931,8 +942,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
       return kFALSE;
    }   
    // Check validity of alien workspace
-   CdWork();
-   TString workdir = gGrid->GetHomeDirectory();
+   TString workdir;
+   if (!fProductionMode && !fGridWorkingDir.BeginsWith("/alice")) workdir = gGrid->GetHomeDirectory();
+   if (!fProductionMode &&  !TestBit(AliAnalysisGrid::kTest)) CdWork();
    workdir += fGridWorkingDir;
    if (generate) {
       TObjString *os;
@@ -951,16 +963,18 @@ Bool_t AliAnalysisAlien::CreateJDL()
          Error("CreateJDL", "You must define AliEn output directory");
          error = kTRUE;
       } else {
-         if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s", workdir.Data(), fGridOutputDir.Data());
-         if (!DirectoryExists(fGridOutputDir)) {
-            if (gGrid->Mkdir(fGridOutputDir,"-p")) {
-               Info("CreateJDL", "\n#####   Created alien output directory %s", fGridOutputDir.Data());
-            } else {
-               Error("CreateJDL", "Could not create alien output directory %s", fGridOutputDir.Data());
-               // error = kTRUE;
-            }
-         }
-         gGrid->Cd(workdir);
+         if (!fProductionMode) {
+            if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s", workdir.Data(), fGridOutputDir.Data());
+            if (!DirectoryExists(fGridOutputDir)) {
+               if (gGrid->Mkdir(fGridOutputDir,"-p")) {
+                  Info("CreateJDL", "\n#####   Created alien output directory %s", fGridOutputDir.Data());
+               } else {
+                  Error("CreateJDL", "Could not create alien output directory %s", fGridOutputDir.Data());
+                  // error = kTRUE;
+               }
+            }   
+            gGrid->Cd(workdir);
+         }   
       }   
       // Exit if any error up to now
       if (error) return kFALSE;   
@@ -977,7 +991,8 @@ Bool_t AliAnalysisAlien::CreateJDL()
       fMergingJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),mergeExec.Data()), "List of input files to be uploaded to workers");
       if (!fArguments.IsNull())
          fGridJDL->SetArguments(fArguments, "Arguments for the executable command");
-      fMergingJDL->SetArguments("$1 $2 $3"); 
+      if (IsOneStageMerging()) fMergingJDL->SetArguments(fGridOutputDir);
+      else fMergingJDL->SetArguments("$1 $2 $3"); 
       fGridJDL->SetValue("TTL", Form("\"%d\"",fTTL));
       fGridJDL->SetDescription("TTL", Form("Time after which the job is killed (%d min.)", fTTL/60));
       fMergingJDL->SetValue("TTL", Form("\"%d\"",fTTL));
@@ -1072,6 +1087,11 @@ Bool_t AliAnalysisAlien::CreateJDL()
             }
             delete arr;
          }
+         if (!fTerminateFiles.IsNull()) {
+            fTerminateFiles.Strip();
+            fTerminateFiles.ReplaceAll(" ", ",");
+            outputArchive.ReplaceAll("root_archive.zip:", Form("root_archive.zip:%s,", fTerminateFiles.Data()));
+         }
          arr = outputArchive.Tokenize(" ");
          TIter next2(arr);
          comment = comment1;
@@ -1080,9 +1100,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
             if (!first) comment = NULL;
             TString currentfile = os->GetString();
             currentfile.ReplaceAll(".root", "*.root");
-            currentfile.ReplaceAll(".zip", "-Stage$2_$3.zip");
+            if (!IsOneStageMerging()) currentfile.ReplaceAll(".zip", "-Stage$2_$3.zip");
             if (!currentfile.Contains("@") && fCloseSE.Length())
-               fMergingJDL->AddToOutputArchive(Form("%s@%s",currentfile.Data(), fCloseSE.Data()), comment); 
+               fMergingJDL->AddToOutputArchive(Form("%s@%s",currentfile.Data(), fCloseSE.Data()), comment);
             else
                fMergingJDL->AddToOutputArchive(currentfile, comment);
             first = kFALSE;   
@@ -1138,11 +1158,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
       }
       fGridJDL->SetPrice((UInt_t)fPrice, "AliEn price for this job");
       fMergingJDL->SetPrice((UInt_t)fPrice, "AliEn price for this job");
-      TString validationScript = fExecutable;
-      validationScript.ReplaceAll(".sh", "_validation.sh");
+      TString validationScript = fValidationScript;
       fGridJDL->SetValidationCommand(Form("%s/%s", workdir.Data(),validationScript.Data()), "Validation script to be run for each subjob");
-      validationScript = fExecutable;
-      validationScript.ReplaceAll(".sh", "_mergevalidation.sh");
+      validationScript.ReplaceAll(".sh", "_merge.sh");
       fMergingJDL->SetValidationCommand(Form("%s/%s", workdir.Data(),validationScript.Data()), "Validation script to be run for each subjob");
       if (fMasterResubmitThreshold) {
          fGridJDL->SetValue("MasterResubmitThreshold", Form("\"%d%%\"", fMasterResubmitThreshold));
@@ -1219,34 +1237,42 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
 // all run numbers are considered in one go (jdl). For non-negative indices
 // they correspond to the indices in the array fInputFiles.
    if (!fInputFiles) return kFALSE;
-   TObjString *os;
-   TString workdir = gGrid->GetHomeDirectory();
+   TObject *os;
+   TString workdir;
+   if (!fProductionMode && !fGridWorkingDir.BeginsWith("/alice")) workdir = gGrid->GetHomeDirectory();
    workdir += fGridWorkingDir;
    
-   if (!fRunNumbers.Length() && !fRunRange[0]) {
-      // One jdl with no parameters in case input data is specified by name.
+   if (fProductionMode) {
       TIter next(fInputFiles);
-      while ((os=(TObjString*)next()))
-         fGridJDL->AddToInputDataCollection(Form("LF:%s,nodownload", os->GetString().Data()), "Input xml collections");
-      if (!fOutputSingle.IsNull())
-         fGridJDL->SetOutputDirectory(Form("#alienfulldir#/../%s",fOutputSingle.Data()), "Output directory");
-      else {
-         fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_03i#", fGridOutputDir.Data()), "Output directory");
-         fMergingJDL->SetOutputDirectory(fGridOutputDir);         
-      }   
-   } else {
-      // One jdl to be submitted with 2 input parameters: data collection name and output dir prefix
-      fGridJDL->AddToInputDataCollection(Form("LF:%s/$1,nodownload", workdir.Data()), "Input xml collections");
-      if (!fOutputSingle.IsNull()) {
-         if (!fOutputToRunNo) fGridJDL->SetOutputDirectory(Form("#alienfulldir#/%s",fOutputSingle.Data()), "Output directory");
-         else fGridJDL->SetOutputDirectory(Form("%s/$2",fGridOutputDir.Data()), "Output directory");
-      } else {   
-         fGridJDL->SetOutputDirectory(Form("%s/$2/#alien_counter_03i#", fGridOutputDir.Data()), "Output directory");
-         fMergingJDL->SetOutputDirectory("$1", "Output directory");
-      }   
+      while ((os=next()))
+         fGridJDL->AddToInputDataCollection(Form("LF:%s,nodownload", os->GetName()), "Input xml collections");
+      fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_04i#", fGridOutputDir.Data()));
+      fMergingJDL->SetOutputDirectory(fGridOutputDir);  
+   } else {            
+      if (!fRunNumbers.Length() && !fRunRange[0]) {
+         // One jdl with no parameters in case input data is specified by name.
+         TIter next(fInputFiles);
+         while ((os=next()))
+            fGridJDL->AddToInputDataCollection(Form("LF:%s,nodownload", os->GetName()), "Input xml collections");
+         if (!fOutputSingle.IsNull())
+            fGridJDL->SetOutputDirectory(Form("#alienfulldir#/../%s",fOutputSingle.Data()), "Output directory");
+         else {
+            fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_03i#", fGridOutputDir.Data()), "Output directory");
+            fMergingJDL->SetOutputDirectory(fGridOutputDir);         
+         }   
+      } else {
+         // One jdl to be submitted with 2 input parameters: data collection name and output dir prefix
+         fGridJDL->AddToInputDataCollection(Form("LF:%s/$1,nodownload", workdir.Data()), "Input xml collections");
+         if (!fOutputSingle.IsNull()) {
+            if (!fOutputToRunNo) fGridJDL->SetOutputDirectory(Form("#alienfulldir#/%s",fOutputSingle.Data()), "Output directory");
+            else fGridJDL->SetOutputDirectory(Form("%s/$2",fGridOutputDir.Data()), "Output directory");
+         } else {   
+            fGridJDL->SetOutputDirectory(Form("%s/$2/#alien_counter_03i#", fGridOutputDir.Data()), "Output directory");
+            fMergingJDL->SetOutputDirectory("$1", "Output directory");
+         }   
+      }
    }
       
-
    // Generate the JDL as a string
    TString sjdl = fGridJDL->Generate();
    TString sjdl1 = fMergingJDL->Generate();
@@ -1273,7 +1299,11 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    if (index >= 0) sjdl.Insert(index, "\n# JDL variables\n");
    sjdl += "Workdirectorysize = {\"5000MB\"};";
    sjdl1 += "JDLVariables = \n{\n   \"Packages\",\n   \"OutputDir\"\n};\n";
-   sjdl1.Prepend(Form("Jobtag = {\n   \"comment:%s_Merging\"\n};\n", fJobTag.Data()));
+   index = fJobTag.Index(":");
+   if (index < 0) index = fJobTag.Length();
+   TString jobTag = fJobTag;
+   jobTag.Insert(index, "_Merging");
+   sjdl1.Prepend(Form("Jobtag = {\n   \"comment:%s_Merging\"\n};\n", jobTag.Data()));
    sjdl1.Prepend("# Generated merging jdl\n# $1 = full alien path to output directory to be merged\n# $2 = merging stage\n# $3 = merged chunk\n");
    index = sjdl1.Index("JDLVariables");
    if (index >= 0) sjdl1.Insert(index, "\n# JDL variables\n");
@@ -1282,7 +1312,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
    ofstream out;
    out.open(fJDLName.Data(), ios::out);
    if (out.bad()) {
-      Error("CreateJDL", "Bad file name: %s", fJDLName.Data());
+      Error("WriteJDL", "Bad file name: %s", fJDLName.Data());
       return kFALSE;
    }
    out << sjdl << endl;
@@ -1292,7 +1322,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
       ofstream out1;
       out1.open(mergeJDLName.Data(), ios::out);
       if (out.bad()) {
-         Error("CreateJDL", "Bad file name: %s", mergeJDLName.Data());
+         Error("WriteJDL", "Bad file name: %s", mergeJDLName.Data());
          return kFALSE;
       }
       out1 << sjdl1 << endl;
@@ -1300,7 +1330,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
 
    // Copy jdl to grid workspace   
    if (!copy) {
-      Info("CreateJDL", "\n#####   You may want to review jdl:%s and analysis macro:%s before running in <submit> mode", fJDLName.Data(), fAnalysisMacro.Data());
+      Info("WriteJDL", "\n#####   You may want to review jdl:%s and analysis macro:%s before running in <submit> mode", fJDLName.Data(), fAnalysisMacro.Data());
    } else {
       TString locjdl = Form("%s/%s", fGridOutputDir.Data(),fJDLName.Data());
       TString locjdl1 = Form("%s/%s", fGridOutputDir.Data(),mergeJDLName.Data());
@@ -1310,10 +1340,10 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
       }   
       if (FileExists(locjdl)) gGrid->Rm(locjdl);
       if (FileExists(locjdl1)) gGrid->Rm(locjdl1);
-      Info("CreateJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
+      Info("WriteJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
       TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
       if (fMergeViaJDL) {
-         Info("CreateJDL", "\n#####   Copying merging JDL file <%s> to your AliEn output directory", mergeJDLName.Data());
+         Info("WriteJDL", "\n#####   Copying merging JDL file <%s> to your AliEn output directory", mergeJDLName.Data());
          TFile::Cp(Form("file:%s",mergeJDLName.Data()), Form("alien://%s", locjdl1.Data()));
       }   
    } 
@@ -1579,6 +1609,45 @@ void AliAnalysisAlien::Print(Option_t *) const
 {
 // Print current plugin settings.
    printf("### AliEn analysis plugin current settings ###\n");
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (mgr && mgr->IsProofMode()) {
+      TString proofType = "=   PLUGIN IN PROOF MODE ON CLUSTER:_________________";
+      if (TestBit(AliAnalysisGrid::kTest))
+         proofType = "=   PLUGIN IN PROOF LITE MODE ON CLUSTER:____________";
+      printf("%s %s\n", proofType.Data(), fProofCluster.Data());
+      if (!fProofDataSet.IsNull())
+      printf("=   Requested data set:___________________________ %s\n", fProofDataSet.Data());
+      if (fProofReset==1)
+      printf("=   Soft reset signal will be send to master______ CHANGE BEHAVIOR AFTER COMPLETION\n");      
+      if (fProofReset>1)   
+      printf("=   Hard reset signal will be send to master______ CHANGE BEHAVIOR AFTER COMPLETION\n");      
+      if (!fRootVersionForProof.IsNull())
+      printf("=   ROOT version requested________________________ %s\n", fRootVersionForProof.Data());
+      else
+      printf("=   ROOT version requested________________________ default\n");
+      printf("=   AliRoot version requested_____________________ %s\n", fAliROOTVersion.Data());
+      if (!fAliRootMode.IsNull())
+      printf("=   Requested AliRoot mode________________________ %s\n", fAliRootMode.Data());  
+      if (fNproofWorkers)
+      printf("=   Number of PROOF workers limited to____________ %d\n", fNproofWorkers);
+      if  (fNproofWorkersPerSlave)
+      printf("=   Maximum number of workers per slave___________ %d\n", fNproofWorkersPerSlave);
+      if (TestSpecialBit(kClearPackages))
+      printf("=   ClearPackages requested...\n");
+      if (fIncludePath.Data())
+      printf("=   Include path for runtime task compilation: ___ %s\n", fIncludePath.Data());
+      printf("=   Additional libs to be loaded or souces to be compiled runtime: <%s>\n",fAdditionalLibs.Data());
+      if (fPackages && fPackages->GetEntries()) {
+         TIter next(fPackages);
+         TObject *obj;
+         TString list;
+         while ((obj=next())) list += obj->GetName();
+         printf("=   Par files to be used: ________________________ %s\n", list.Data());
+      } 
+      if (TestSpecialBit(kProofConnectGrid))
+      printf("=   Requested PROOF connection to grid\n");
+      return;
+   }
    printf("=   OverwriteMode:________________________________ %d\n", fOverwriteMode);
    if (fOverwriteMode) {
       printf("***** NOTE: Overwrite mode will overwrite the input generated datasets and partial results from previous analysis. \
@@ -1613,6 +1682,7 @@ void AliAnalysisAlien::Print(Option_t *) const
    printf("=   List of output files to be registered: _______ %s\n", fOutputFiles.Data());
    printf("=   List of outputs going to be archived: ________ %s\n", fOutputArchive.Data());
    printf("=   List of outputs that should not be merged: ___ %s\n", fMergeExcludes.Data());
+   printf("=   List of outputs produced during Terminate: ___ %s\n", fTerminateFiles.Data());
    printf("=====================================================================\n");
    printf("=   Job price: ___________________________________ %d\n", fPrice);
    printf("=   Time to live (TTL): __________________________ %d\n", fTTL);
@@ -1644,7 +1714,7 @@ void AliAnalysisAlien::Print(Option_t *) const
    printf("=   Force job outputs to storage element: ________ %s\n", fCloseSE.Data());
    if (fFriendChainName.Length())
    printf("=   Open friend chain file on worker: ____________ %s\n", fFriendChainName.Data());
-   if (fPackages) {
+   if (fPackages && fPackages->GetEntries()) {
       TIter next(fPackages);
       TObject *obj;
       TString list;
@@ -2396,7 +2466,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       Error("StartAnalysis", "Cannot start grid analysis without grid connection");
       return kFALSE;
    }
-   if (IsCheckCopy()) CheckFileCopy(gGrid->GetHomeDirectory());
+   if (IsCheckCopy() && gGrid) CheckFileCopy(gGrid->GetHomeDirectory());
    if (!CheckInputData()) {
       Error("StartAnalysis", "There was an error in preprocessing your requested input data");
       return kFALSE;
@@ -2668,12 +2738,12 @@ void AliAnalysisAlien::WriteAnalysisFile()
       Info("WriteAnalysisFile", "\n#####   Analysis manager: %s wrote to file <%s>\n", mgr->GetName(),analysisFile.Data());
    }   
    Bool_t copy = kTRUE;
-   if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
+   if (fProductionMode || TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
       workdir += fGridWorkingDir;
-      Info("CreateJDL", "\n#####   Copying file <%s> containing your initialized analysis manager to your alien workspace", analysisFile.Data());
+      Info("WriteAnalysisFile", "\n#####   Copying file <%s> containing your initialized analysis manager to your alien workspace", analysisFile.Data());
       if (FileExists(analysisFile)) gGrid->Rm(analysisFile);
       TFile::Cp(Form("file:%s",analysisFile.Data()), Form("alien://%s/%s", workdir.Data(),analysisFile.Data()));
    }   
@@ -3000,7 +3070,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       Info("WriteAnalysisMacro", "\n#####   Analysis macro to run on worker nodes <%s> written",fAnalysisMacro.Data());
    }   
    Bool_t copy = kTRUE;
-   if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
+   if (fProductionMode || TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
@@ -3280,7 +3350,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       }
    }   
    Bool_t copy = kTRUE;
-   if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
+   if (fProductionMode || TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
@@ -3373,7 +3443,7 @@ void AliAnalysisAlien::WriteExecutable()
       out << "free -m" << endl;
    }   
    Bool_t copy = kTRUE;
-   if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
+   if (fProductionMode || TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
@@ -3382,7 +3452,7 @@ void AliAnalysisAlien::WriteExecutable()
       workdir += fGridWorkingDir;
       TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), fExecutable.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
-      Info("CreateJDL", "\n#####   Copying executable file <%s> to your AliEn bin directory", fExecutable.Data());
+      Info("WriteExecutable", "\n#####   Copying executable file <%s> to your AliEn bin directory", fExecutable.Data());
       TFile::Cp(Form("file:%s",fExecutable.Data()), Form("alien://%s", executable.Data()));
    } 
 }
@@ -3431,7 +3501,7 @@ void AliAnalysisAlien::WriteMergeExecutable()
       out << "free -m" << endl;
    }   
    Bool_t copy = kTRUE;
-   if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
+   if (fProductionMode || TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
@@ -3440,7 +3510,7 @@ void AliAnalysisAlien::WriteMergeExecutable()
       workdir += fGridWorkingDir;
       TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), mergeExec.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
-      Info("CreateJDL", "\n#####   Copying executable file <%s> to your AliEn bin directory", mergeExec.Data());
+      Info("WriteMergeExecutable", "\n#####   Copying executable file <%s> to your AliEn bin directory", mergeExec.Data());
       TFile::Cp(Form("file:%s",mergeExec.Data()), Form("alien://%s", executable.Data()));
    } 
 }
@@ -3458,7 +3528,9 @@ void AliAnalysisAlien::WriteProductionFile(const char *filename) const
       Error("WriteProductionFile", "Bad file name: %s", filename);
       return;
    }
-   TString workdir = gGrid->GetHomeDirectory();
+   TString workdir;
+   if (!fProductionMode && !fGridWorkingDir.BeginsWith("/alice"))
+      workdir = gGrid->GetHomeDirectory();
    workdir += fGridWorkingDir;
    Int_t njobspermaster = 1000*fNrunsPerMaster/fSplitMaxInputFileNumber;
    TString locjdl = Form("%s/%s", workdir.Data(),fJDLName.Data());
@@ -3472,9 +3544,11 @@ void AliAnalysisAlien::WriteProductionFile(const char *filename) const
       else
          out << Form("%s", fInputFiles->At(i)->GetName()) << " " << Form("%03d", i) << endl;
    }
-   Info("WriteProductionFile", "\n#####   Copying production file <%s> to your work directory", filename);
-   if (FileExists(filename)) gGrid->Rm(filename);
-   TFile::Cp(Form("file:%s",filename), Form("alien://%s/%s", workdir.Data(),filename));   
+   if (gGrid) {
+      Info("WriteProductionFile", "\n#####   Copying production file <%s> to your work directory", filename);
+      if (FileExists(filename)) gGrid->Rm(filename);
+      TFile::Cp(Form("file:%s",filename), Form("alien://%s/%s", workdir.Data(),filename));
+   }   
 }
 
 //______________________________________________________________________________
@@ -3483,13 +3557,20 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
 // Generate the alien validation script.
    // Generate the validation script
    TObjString *os;
-   TString validationScript = fExecutable;
-   if (merge) validationScript.ReplaceAll(".sh", "_mergevalidation.sh");
-   else       validationScript.ReplaceAll(".sh", "_validation.sh");
+   if (fValidationScript.IsNull()) {
+      fValidationScript = fExecutable;
+      fValidationScript.ReplaceAll(".sh", "_validation.sh");
+   }   
+   TString validationScript = fValidationScript;
+   if (merge) validationScript.ReplaceAll(".sh", "_merge.sh");
    if (!Connect()) {
       Error("WriteValidationScript", "Alien connection required");
       return;
    }
+   if (!fTerminateFiles.IsNull()) {
+      fTerminateFiles.Strip();
+      fTerminateFiles.ReplaceAll(" ",",");
+   }   
    TString outStream = "";
    if (!TestBit(AliAnalysisGrid::kTest)) outStream = " >> stdout";
    if (!TestBit(AliAnalysisGrid::kSubmit)) {  
@@ -3561,16 +3642,21 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
 
       // Part dedicated to the specific analyses running into the train
 
-      TObjArray *arr = fOutputFiles.Tokenize(",");
+      TString outputFiles = fOutputFiles;
+      if (merge && !fTerminateFiles.IsNull()) {
+         outputFiles += ",";
+         outputFiles += fTerminateFiles;
+      }
+      TObjArray *arr = outputFiles.Tokenize(",");
       TIter next1(arr);
       TString outputFile;
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       TString extra = mgr->GetExtraFiles();
       while ((os=(TObjString*)next1())) { 
-         if (merge) break;
          outputFile = os->GetString();
          Int_t index = outputFile.Index("@");
          if (index > 0) outputFile.Remove(index);
+         if (!merge && fTerminateFiles.Contains(outputFile)) continue;
          if (merge && fMergeExcludes.Contains(outputFile)) continue;
          if (extra.Contains(outputFile)) continue;
          if (outputFile.Contains("*")) continue;
@@ -3602,12 +3688,12 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       out << "exit $error" << endl;
    }    
    Bool_t copy = kTRUE;
-   if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
+   if (fProductionMode || TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
    if (copy) {
       CdWork();
       TString workdir = gGrid->GetHomeDirectory();
       workdir += fGridWorkingDir;
-      Info("CreateJDL", "\n#####   Copying validation script <%s> to your AliEn working space", validationScript.Data());
+      Info("WriteValidationScript", "\n#####   Copying validation script <%s> to your AliEn working space", validationScript.Data());
       if (FileExists(validationScript)) gGrid->Rm(validationScript);
       TFile::Cp(Form("file:%s",validationScript.Data()), Form("alien://%s/%s", workdir.Data(),validationScript.Data()));
    } 

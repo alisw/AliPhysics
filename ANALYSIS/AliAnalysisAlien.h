@@ -45,6 +45,7 @@ public:
    virtual void        SetExecutableArgs(const char *name="")            {fExecutableArgs = name;}
    virtual void        SetAnalysisMacro(const char *name="myAnalysis.C") {fAnalysisMacro = name;}
    virtual void        SetAnalysisSource(const char *name="myAnalysisClass.cxx") {fAnalysisSource = name;}
+   virtual void        SetValidationScript(const char *name="validation.sh") {fValidationScript = name;}
    virtual void        SetAdditionalLibs(const char *list)               {fAdditionalLibs = list;}
    virtual void        SetAdditionalRootLibs(const char *list)           {fAdditionalRootLibs = list;}
    virtual void        SetPrice(Int_t price=1)                           {fPrice = price;}
@@ -70,6 +71,7 @@ public:
    virtual void        SetOutputToRunNo(Int_t mode=1)                    {fOutputToRunNo = mode;}
    virtual void        SetInputFormat(const char *format="xml-single")   {fInputFormat = format;}
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   {fMaxInitFailed = nfail;}
+   virtual void        SetTerminateFiles(const char *list)               {fTerminateFiles = list;}
    virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list;};
    virtual void        SetMergeViaJDL(Bool_t on=kTRUE)                   {fMergeViaJDL = on ? 1 : 0;}
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      {fMasterResubmitThreshold = percentage;}
@@ -166,6 +168,7 @@ private:
    TString          fExecutableArgs;  // arguments added to the executable script after the analysis macro
    TString          fAnalysisMacro;   // Root macro steering the analysis
    TString          fAnalysisSource;  // User analysis implementation (.cxx) file(s)
+   TString          fValidationScript; // Name of the validation script
    TString          fAdditionalRootLibs;  // List (separated by blacs) of additional libraries needed for/before analysis libs/par file compilation
    TString          fAdditionalLibs;  // List (separated by blacs) of additional libraries needed for the analysis loaded AFTER all par files
    TString          fSplitMode;       // Job split mode
@@ -183,6 +186,7 @@ private:
    TString          fInputFormat;     // Input format (xml-single)
    TString          fDatasetName;     // Dataset xml file to be created
    TString          fJDLName;         // JDL file to be generated
+   TString          fTerminateFiles;  // List of output files produced during Terminate
    TString          fMergeExcludes;   // List of output files excluded from merging
    TString          fIncludePath;     // Include path
    TString          fCloseSE;         // Preffered storage element. Taken from alien_CLOSE_SE environment.
@@ -198,6 +202,6 @@ private:
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 14)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 15)   // Class providing some AliEn utilities
 };
 #endif

@@ -40,7 +40,8 @@ enum EPluginBits {
    kKeepLogs   = BIT(2),
    kClearPackages = BIT(3),
    kUseSubmitPolicy = BIT(4),
-   kProofConnectGrid = BIT(5)
+   kProofConnectGrid = BIT(5),
+   kOneStageMerging = BIT(6)
 };
 
    AliAnalysisGrid() : TNamed(), fSpecialBits(0) {}
@@ -60,6 +61,7 @@ enum EPluginBits {
    virtual void        SetArguments(const char *name="")                 = 0;
    virtual void        SetAnalysisMacro(const char *name="myAnalysis.C") = 0;
    virtual void        SetAnalysisSource(const char *name="myAnalysisClass.cxx") = 0;
+   virtual void        SetValidationScript(const char *name="validation.sh")     = 0;
    virtual void        SetAdditionalLibs(const char *list)               = 0;
    virtual void        SetPrice(Int_t price=1)                           = 0;
    virtual void        SetJobTag(const char *tag="")                     = 0;
@@ -79,6 +81,7 @@ enum EPluginBits {
    virtual void        SetOutputFiles(const char *list)                  = 0;
    virtual void        SetInputFormat(const char *format="xml-single")   = 0;
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   = 0;
+   virtual void        SetTerminateFiles(const char *list)               = 0;
    virtual void        SetMergeExcludes(const char *list)                = 0;
    virtual void        SetMergeViaJDL(Bool_t on=kTRUE)                   = 0;
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      = 0;
@@ -114,6 +117,8 @@ enum EPluginBits {
    void                SetKeepLogs(Bool_t flag=kTRUE) {SetSpecialBit(kKeepLogs,flag);}   
    Bool_t              IsUseSubmitPolicy() const {return TestSpecialBit(kUseSubmitPolicy);}
    void                SetUseSubmitPolicy(Bool_t flag=kTRUE) {SetSpecialBit(kUseSubmitPolicy,flag);}   
+   Bool_t              IsOneStageMerging() const {return TestSpecialBit(kOneStageMerging);}
+   void                SetOneStageMerging(Bool_t flag) {SetSpecialBit(kOneStageMerging,flag);}
 
 // PROOF mode
    virtual void        SetProofCluster(const char *cluster)              = 0;
