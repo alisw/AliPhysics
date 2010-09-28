@@ -38,17 +38,22 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
 
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPIDdefault(AliAODRecoDecayHF *rd);
   Int_t IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const;
   void SetUseSpecialCuts(Bool_t useSpecialCuts) {fUseSpecialCuts=useSpecialCuts;}
+  void SetLowPt(Bool_t lowpt) {fLowPt=lowpt;}
   Bool_t GetUseSpecialCuts() const {return fUseSpecialCuts;}
+  void SetUseDefaultPID(Bool_t defPID){fDefaultPID=defPID;}
+  Bool_t GetIsUsedDefPID(){return fDefaultPID;}
   
   
  protected:
-
   Bool_t fUseSpecialCuts;           // flag to switch on/off special cuts
-
-  ClassDef(AliRDHFCutsD0toKpi,3);  // class for cuts on AOD reconstructed D0->Kpi
+  Bool_t fLowPt;           // flag to switch on/off different pid for low pt D0
+  Bool_t fDefaultPID;      // flag to switch on/off the default pid
+  ClassDef(AliRDHFCutsD0toKpi,2);  // class for cuts on AOD reconstructed D0->Kpi
 };
 
 #endif
+
 
