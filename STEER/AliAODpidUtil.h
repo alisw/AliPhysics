@@ -55,11 +55,12 @@ private:
 
 inline Float_t AliAODpidUtil::NumberOfSigmasTPC(const AliAODTrack *track, AliPID::EParticleType type) const {
   
+  UShort_t nTPCClus=track->GetTPCNcls();
   Double_t mom = track->P();
   AliAODPid *pidObj = track->GetDetPid();
   if (pidObj)
     mom = pidObj->GetTPCmomentum();
-  return fTPCResponse.GetNumberOfSigmas(mom,pidObj->GetTPCsignal(),0,type); 
+  return fTPCResponse.GetNumberOfSigmas(mom,pidObj->GetTPCsignal(),nTPCClus,type); 
 }
 
 inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type) const {
