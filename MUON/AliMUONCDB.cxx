@@ -558,7 +558,15 @@ AliMUONCDB::MakeTriggerDCSStore(TMap& aliasMap, Bool_t defaultValues)
 
     TObjArray* valueSet = new TObjArray;
     valueSet->SetOwner(kTRUE);
+
     Int_t measureType = triggerDCSNamer.DCSvariableFromDCSAlias(aliasName.Data());
+    if ( measureType < 0 ) {
+      AliErrorGeneralStream("AliMUONCDB") 
+        << "Failed to get DCS variable from an alias (trigger): "
+        << aliasName.Data() << endl;
+      return 0;
+    }
+        
     for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
     {
       Float_t value = 

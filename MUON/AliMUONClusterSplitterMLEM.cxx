@@ -756,7 +756,13 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
       
       cluster1->SetCharge(coef*fQtot,coef*fQtot);
       cluster1->SetPosition(TVector2(parOk[indx],parOk[indx+1]),TVector2(sigCand[0][0],sigCand[0][1]));
-      cluster1->SetChi2(dist[TMath::LocMin(nfit,dist)]);
+      //cluster1->SetChi2(dist[TMath::LocMin(nfit,dist)]);
+      Int_t idx = TMath::LocMin(nfit,dist);
+      if ( idx < 0 || idx > 2 ) {
+        AliErrorStream() << "Wrong index value: " << idx << endl;
+        return nfit;
+      }  
+      cluster1->SetChi2(dist[idx]);
       
       // FIXME: we miss some information in this cluster, as compared to 
       // the original AddRawCluster code.

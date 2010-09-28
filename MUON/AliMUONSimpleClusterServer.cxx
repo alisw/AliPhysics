@@ -244,7 +244,12 @@ AliMUONSimpleClusterServer::Global2Local(Int_t detElemId, const AliMpArea& globa
   
   Double_t xl,yl,zl;
   
-  Double_t zg = AliMUONConstants::DefaultChamberZ(AliMpDEManager::GetChamberId(detElemId));
+  Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+  if ( chamberId < 0 ) {
+    AliErrorStream() << "Cannot get chamberId from detElemId=" << detElemId << endl;
+    return;
+  }  
+  Double_t zg = AliMUONConstants::DefaultChamberZ(chamberId);
   
   fkTransformer.Global2Local(detElemId,
                              globalArea.GetPositionX(),globalArea.GetPositionY(),zg,

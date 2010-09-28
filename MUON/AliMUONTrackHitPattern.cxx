@@ -449,7 +449,13 @@ Int_t AliMUONTrackHitPattern::FindPadMatchingTrig(Int_t &detElemId,
 	minMatchDist[cath] = fkMaxDistance/10.;
 	padsInCheckArea[cath] = 0;
     }
-    Int_t iChamber = AliMpDEManager::GetChamberId(detElemId);
+    
+    Int_t iChamber = AliMpDEManager::GetChamberId(detElemId);  
+    if ( iChamber < 0 ) {
+      AliErrorStream() << "Cannot get chamberId from detElemId=" << detElemId << endl;
+      return -1;
+    }  
+
     Int_t ch = iChamber-10;
     Float_t oldDeltaZ = AliMUONConstants::DefaultChamberZ(iChamber) - AliMUONConstants::DefaultChamberZ(10);
     Float_t y = coor[1];
