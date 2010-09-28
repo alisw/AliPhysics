@@ -54,7 +54,11 @@ class AliESDInputHandler : public AliInputEventHandler {
     // Tag analysis
     void SetReadTags() {fUseTags = kTRUE;}
     AliRunTag           *GetRunTag() const {return fRunTag;}
-    
+    // Mixing
+    void SetMixingHandler(AliInputEventHandler* mixing) 
+    {fMixingHandler = mixing;}
+    AliInputEventHandler* MixingHandler()
+    {return fMixingHandler;}
  private:
     AliESDInputHandler(const AliESDInputHandler& handler);             
     AliESDInputHandler& operator=(const AliESDInputHandler& handler);  
@@ -79,8 +83,6 @@ class AliESDInputHandler : public AliInputEventHandler {
     // Friends
     Bool_t          fReadFriends;   //  Flag for friends reading 
     TString         fFriendFileName;//  Name of the file containing the frien tree (branch)
-    
-
     ClassDef(AliESDInputHandler, 6);
 };
 

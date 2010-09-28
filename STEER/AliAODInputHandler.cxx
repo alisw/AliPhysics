@@ -70,7 +70,7 @@ AliAODInputHandler::~AliAODInputHandler()
 }
 
 
-Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
+Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* opt)
 {
     // Initialisation necessary for each new tree
     if (!fMergeEvents) {
@@ -118,6 +118,8 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
     if (!fEvent) fEvent = new AliAODEvent();
 
     fEvent->ReadFromTree(fTree);
+    
+    if (fMixingHandler) fMixingHandler->Init(tree, opt);
 
     return kTRUE;
 }
@@ -130,8 +132,24 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
     if (fTreeToMerge) fTreeToMerge->GetEntry(entry + fMergeOffset);
     
     fIsSelectedResult = fEvent->GetHeader()->GetOfflineTrigger();
+
+    if (fMixingHandler) fMixingHandler->BeginEvent(entry);
     
     return kTRUE;
+}
+
+Bool_t AliAODInputHandler::Notify(const char* path)
+{
+  // Notifaction of directory change
+  if (fMixingHandler) fMixingHandler->Notify(path);
+  return kTRUE;
+}
+
+Bool_t AliAODInputHandler::FinishEvent()
+{
+  // Finish event
+  if (fMixingHandler) fMixingHandler->FinishEvent();
+  return kTRUE;
 }
 
 void AliAODInputHandler::AddFriend(char* filename)

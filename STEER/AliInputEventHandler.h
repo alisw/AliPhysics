@@ -70,6 +70,7 @@ class AliInputEventHandler : public AliVEventHandler {
     Bool_t          fNewEvent;     //  New event flag 
     AliVCuts*       fEventCuts;    //  Cuts on the event level
     UInt_t          fIsSelectedResult; //  Selection result
+    AliInputEventHandler* fMixingHandler; // Optionla plugin for mixing 
     ClassDef(AliInputEventHandler, 4);
 };
 

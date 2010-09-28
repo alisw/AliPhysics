@@ -29,6 +29,9 @@ class AliAODInputHandler : public AliInputEventHandler {
     AliMCEvent          *MCEvent()  const {return fMCEvent;}
     virtual void         AddFriend(char* filename);
     virtual Bool_t       BeginEvent(Long64_t entry);
+    virtual Bool_t       Notify() { return AliVEventHandler::Notify();};
+    virtual Bool_t       Notify(const char* path);
+    virtual Bool_t       FinishEvent();
     Option_t            *GetDataType() const;
     // Provisions for event merging
     void                 SetMergeEvents(Bool_t flag) {fMergeEvents = flag;}

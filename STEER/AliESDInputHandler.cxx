@@ -96,6 +96,9 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     if (!fEvent) fEvent = new AliESDEvent();
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();
+
+    if (fMixingHandler) fMixingHandler->Init(tree,  opt);
+
     return kTRUE;
 }
 
@@ -128,6 +131,9 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   // Friends
   ((AliESDEvent*)fEvent)->SetESDfriend(fFriend);
   called = kTRUE;
+  
+  if (fMixingHandler) fMixingHandler->BeginEvent(entry);
+      
   return kTRUE;
 }
 
@@ -143,8 +149,11 @@ void AliESDInputHandler::CheckSelectionMask()
 Bool_t  AliESDInputHandler::FinishEvent()
 {
     // Finish the event 
-    if(fEvent)fEvent->Reset();
-    return kTRUE;
+  if(fEvent)fEvent->Reset();
+  
+  if (fMixingHandler) fMixingHandler->FinishEvent();
+
+  return kTRUE;
 } 
 
 //______________________________________________________________________________
@@ -279,6 +288,9 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     }
     fChainT->SetBranchAddress("AliTAG",&fRunTag);
     fChainT->GetEntry(0);
+
+    if (fMixingHandler) fMixingHandler->Notify(path);
+  
     return kTRUE;
 }
 
