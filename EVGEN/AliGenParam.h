@@ -26,8 +26,8 @@ class AliGenParam : public AliGenMC
 {
  public:
     AliGenParam();
-    AliGenParam(Int_t npart, AliGenLib * Library, Int_t param, char* tname = 0);
-    AliGenParam(Int_t npart, Int_t param, const char* tname = 0, const char* name = 0);
+    AliGenParam(Int_t npart, AliGenLib * Library, Int_t param,   const char*  tname = 0);
+    AliGenParam(Int_t npart, Int_t param, const char* tname = 0, const char*  name  = 0);
     AliGenParam(Int_t npart, Int_t param,
 		Double_t (*PtPara)(const Double_t*, const Double_t*),
 		Double_t (*YPara )(const Double_t*, const Double_t*),
