@@ -119,7 +119,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   // assembly of the global ESD
 
   // define the inputs to the global ESD
-  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-tracker GLOBAL-vertexer TPC-dEdx";
+  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-tracker GLOBAL-vertexer TPC-dEdx VZERO-RECO";
 
   // check for the availibility
   pTokens=esdInputs.Tokenize(" ");
