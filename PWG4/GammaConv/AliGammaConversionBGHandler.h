@@ -66,13 +66,13 @@ class AliGammaConversionBGHandler : public TObject {
  private:
 
   Int_t fNEvents; // number of events
-  Int_t ** fBGEventCounter; // bg counter
-  Int_t ** fBGEventENegCounter;//bg electron counter
+  Int_t ** fBGEventCounter; //! bg counter
+  Int_t ** fBGEventENegCounter;//! bg electron counter
   GammaConversionVertex *** fBGEventVertex;//array of event vertex
   Int_t fNBinsZ; //n z bins
   Int_t fNBinsMultiplicity; //n bins multiplicity
-  Double_t *fBinLimitsArrayZ; //bin limits z array
-  Double_t *fBinLimitsArrayMultiplicity; //bin limit multiplicity array
+  Double_t *fBinLimitsArrayZ;//! bin limits z array
+  Double_t *fBinLimitsArrayMultiplicity;//! bin limit multiplicity array
   AliGammaConversionBGVector fBGEvents; //gackground events
   AliGammaConversionBGVector fBGEventsENeg; //background electron events
   ClassDef(AliGammaConversionBGHandler,1)
