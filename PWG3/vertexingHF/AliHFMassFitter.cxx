@@ -1910,6 +1910,7 @@ void AliHFMassFitter::Significance(Double_t min, Double_t max, Double_t &signifi
     cout<<"Cannot calculate significance because of div by 0!"<<endl;
     significance=-1;
     errsignificance=0;
+    return;
   }
 
   significance =  signal/TMath::Sqrt(signal+background);
