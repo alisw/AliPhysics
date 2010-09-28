@@ -95,7 +95,16 @@ class AliHFMassFitter : public TNamed {
   Bool_t   MassFitter(Bool_t draw=kTRUE);
   Bool_t   RefitWithBkgOnly(Bool_t draw=kTRUE);
   void     RebinMass(Int_t bingroup=1);
-  
+  TF1*     GetBackgroundFullRangeFunc(){
+    return fhistoInvMass->GetFunction("funcbkgFullRange");
+  }
+  TF1*     GetBackgroundRecalcFunc(){
+    return fhistoInvMass->GetFunction("funcbkgRecalc");
+  }
+  TF1*     GetMassFunc(){
+    return fhistoInvMass->GetFunction("funcmass");
+  }
+
 
  private:
 
