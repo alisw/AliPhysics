@@ -708,15 +708,7 @@ void AliTestShuttle::SendMLFromDet(const char* value)
 	// Sending an information coming from the current detector to ML
 	//
 	
-	TMonaLisaText  mlText(Form("%s_RunCondition", fCurrentDetector.Data()), value);
-
-	TList mlList;
-	mlList.Add(&mlText);
-
-	TString mlID;
-	mlID.Form("%d", GetCurrentRun());
-	fMonaLisa->SendParameters(&mlList, mlID);
-
+	Printf("%s will be sent to monalisa in the $currentdetector_RunCondition tag",value); 
 	return;
 }
 
