@@ -55,7 +55,7 @@
 #include "AliJetKineReaderHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliInputEventHandler.h"
-
+#include "AliAODJetEventBackground.h"
 
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequenceArea.hh"
@@ -94,6 +94,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fStrategy(fastjet::Best),
   fRecombScheme(fastjet::BIpt_scheme),
   fAreaType(fastjet::active_area), 
+  fGhostArea(0.01),
+  fActiveAreaRepeats(1),
+  fGhostEtamax(1.5),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -171,6 +174,9 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fStrategy(fastjet::Best),
   fRecombScheme(fastjet::BIpt_scheme),
   fAreaType(fastjet::active_area), 
+  fGhostArea(0.01),
+  fActiveAreaRepeats(1),
+  fGhostEtamax(1.5),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -250,7 +256,7 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 
   if (fDebug > 1) printf("AnalysisTaskJetCluster::UserCreateOutputObjects() \n");
 
-
+  
 
   if(fNonStdBranch.Length()!=0)
     {
@@ -262,6 +268,20 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       TClonesArray *tca = new TClonesArray("AliAODJet", 0);
       tca->SetName(fNonStdBranch.Data());
       AddAODBranch("TClonesArray",&tca,fNonStdFile.Data());
+
+   
+      TClonesArray *tcaran = new TClonesArray("AliAODJet", 0);
+      tcaran->SetName(Form("%s_%s",fNonStdBranch.Data(),"random"));
+      AddAODBranch("TClonesArray",&tcaran,fNonStdFile.Data());
+
+
+     if(!AODEvent() || !AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
+	AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
+	evBkg->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
+	AddAODBranch("AliAODJetEventBackground",&evBkg,fNonStdFile.Data());
+       
+     }
+
       if(fNonStdFile.Length()!=0){
 	// 
 	// case that we have an AOD extension we need to fetch the jets from the extended output
@@ -509,12 +529,24 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   // handle and reset the output jet branch 
   // only need this once
   TClonesArray* jarray = 0;  
+  TClonesArray* jarrayran = 0;  
+  AliAODJetEventBackground*  evBkg = 0;
   if(fNonStdBranch.Length()!=0) {
     if(AODEvent())jarray = (TClonesArray*)(AODEvent()->FindListObject(fNonStdBranch.Data()));
     if(!jarray)jarray = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data()));
     if(jarray)jarray->Delete();    // this is our responsibility, clear before filling again
+    if(AODEvent())jarrayran = (TClonesArray*)(AODEvent()->FindListObject(Form("%s_%s",fNonStdBranch.Data(),"random")));
+    if(!jarrayran)jarrayran = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",fNonStdBranch.Data(),"random")));
+    if(jarrayran)jarrayran->Delete();    // this is our responsibility, clear before filling again
+
+    if(AODEvent())evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
+    if(!evBkg)  evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
+    if(evBkg)evBkg->Reset(); 
+
   }
 
+
+ 
   //
   // Execute analysis for current event
   //
@@ -630,19 +662,25 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   // run fast jet
   // employ setters for these...
 
-  double ghostEtamax = 0.9;
-  double ghostArea   = 0.01;
-  int    activeAreaRepeats = 1;
+ 
   // now create the object that holds info about ghosts                         
-  fastjet::GhostedAreaSpec ghostSpec(ghostEtamax, activeAreaRepeats, ghostArea)\
-;
+  fastjet::GhostedAreaSpec ghostSpec(fGhostEtamax, fActiveAreaRepeats, fGhostArea);
   fastjet::AreaType areaType =   fastjet::active_area;
   fastjet::AreaDefinition areaDef = fastjet::AreaDefinition(areaType,ghostSpec);
-  
-  fastjet::JetDefinition jetDef(fAlgorithm, fRparam, fRecombScheme, fStrategy);
+    fastjet::JetDefinition jetDef(fAlgorithm, fRparam, fRecombScheme, fStrategy);
   vector <fastjet::PseudoJet> inclusiveJets, sortedJets;
   fastjet::ClusterSequenceArea clustSeq(inputParticlesRec, jetDef,areaDef);
   
+  //range where to compute background
+  Double_t phiMin = 0, phiMax = 0, rapMin = 0, rapMax = 0;
+  phiMin = 0;
+  phiMax = 2*TMath::Pi();
+  rapMax = fGhostEtamax - fRparam;
+  rapMin = - fGhostEtamax + fRparam;
+  fastjet::RangeDefinition range(rapMin,rapMax, phiMin, phiMax);
+ 
+
+
   inclusiveJets = clustSeq.inclusive_jets();
   sortedJets    = sorted_by_pt(inclusiveJets);
  
@@ -759,6 +797,27 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      fh2JetsLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
    }
    delete recIter;
+
+      //background estimates:all bckg jets(0) & wo the 2 hardest(1)
+ 
+   if(evBkg){
+     vector<fastjet::PseudoJet> jets2=sortedJets;
+     if(jets2.size()>2) jets2.erase(jets2.begin(),jets2.begin()+2); 
+     Double_t bkg1=0;
+     Double_t sigma1=0.;
+     Double_t meanarea1=0.;
+     Double_t bkg2=0;
+     Double_t sigma2=0.;
+     Double_t meanarea2=0.;
+         
+     clustSeq.get_median_rho_and_sigma(sortedJets, range, false, bkg1, sigma1, meanarea1, false);
+     evBkg->SetBackground(0,bkg1,sigma1,meanarea1);
+     clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, false);
+     evBkg->SetBackground(1,bkg2,sigma2,meanarea2);
+   }
+     
+
+
   }
  
  // fill track information
@@ -815,7 +874,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
  // find the random jets
  vector <fastjet::PseudoJet> inclusiveJetsRan, sortedJetsRan;
- fastjet::ClusterSequence clustSeqRan(inputParticlesRecRan, jetDef);
+ fastjet::ClusterSequenceArea clustSeqRan(inputParticlesRecRan, jetDef, areaDef);
   
  inclusiveJetsRan = clustSeqRan.inclusive_jets();
  sortedJetsRan    = sorted_by_pt(inclusiveJetsRan);
@@ -864,8 +923,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	fh2TracksLeadingJetPhiPtWRan->Fill(dPhi,pt,tmpPt);
       }  
 
-
-
+    Int_t nAodOutJetsRan = 0;
+     AliAODJet *aodOutJetRan = 0;
     for(int j = 0; j < nRecRan;j++){
       AliAODJet tmpRec (sortedJetsRan[j].px(), sortedJetsRan[j].py(), sortedJetsRan[j].pz(), sortedJetsRan[j].E());
       Float_t tmpPt = tmpRec.Pt();
@@ -876,6 +935,27 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fh2NConstPtRan->Fill(tmpPt,constituents.size());
       fh2PtNchRan->Fill(nCh,tmpPt);
       fh2PtNchNRan->Fill(nCh,tmpPt,constituents.size());
+
+
+     if(tmpPt>fJetOutputMinPt&&jarrayran){
+       aodOutJetRan =  new ((*jarrayran)[nAodOutJetsRan++]) AliAODJet(tmpRec);
+       Double_t arearan=clustSeqRan.area(sortedJetsRan[j]);
+       
+       aodOutJetRan->SetEffArea(arearan,0);    }
+
+
+
+     
+     for(unsigned int ic = 0; ic < constituents.size();ic++){
+       // AliVParticle *part = (AliVParticle*)recParticles.At(constituents[ic].user_index());
+       // fh1PtJetConstRec->Fill(part->Pt());
+       if(aodOutJetRan){
+	 aodOutJetRan->AddTrack(fRef->At(constituents[ic].user_index()));
+       }}
+      
+
+
+
       // correlation
       Float_t tmpPhi =  tmpRec.Phi();
       if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
@@ -887,6 +967,18 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	continue;
       }
     }  
+
+     
+    if(evBkg){
+     Double_t bkg3=0.;
+     Double_t sigma3=0.;
+     Double_t meanarea3=0.;
+     clustSeqRan.get_median_rho_and_sigma(sortedJetsRan ,range, false, bkg3, sigma3, meanarea3, false);
+     evBkg->SetBackground(2,bkg3,sigma3,meanarea3);
+    }
+
+
+
  }
  
 

@@ -123,7 +123,7 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    
    if(TMath::Abs(radius-0.4)<0.01){
      pwg4spec->SetJetOutputBranch(Form("clusters%s_%s%s",bRec,jf,cRadius));
-     pwg4spec->SetJetOutputMinPt(1); // store only jets / clusters above a certain threshold
+     pwg4spec->SetJetOutputMinPt(0); // store only jets / clusters above a certain threshold
    }
 
    pwg4spec->SetNSkipLeadingRan(nSkip);

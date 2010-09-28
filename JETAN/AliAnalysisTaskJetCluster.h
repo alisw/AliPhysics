@@ -23,7 +23,8 @@ class AliAODExtension;
 class AliAODJet;
 class AliGenPythiaEventHeader;
 class AliCFManager;
-
+class AliAODJetEventBackground;
+class AliJetFinder;
 class TList;
 class TChain;
 class TH2F;
@@ -47,6 +48,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void Terminate(Option_t *option);
     virtual Bool_t Notify();
 
+    
+
     virtual void SetUseGlobalSelection(Bool_t b){fUseGlobalSelection = b;}
     virtual void SetAODTrackInput(Bool_t b){fUseAODTrackInput = b;}
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
@@ -55,7 +58,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetTrackPtCut(Float_t x){fTrackPtCut = x;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
-
+    
     virtual void SetNSkipLeadingRan(Int_t x){fNSkipLeadingRan = x;}
 
     virtual void SetJetOutputBranch(const char *c){fNonStdBranch = c;}
@@ -73,6 +76,11 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     void SetStrategy(fastjet::Strategy f)                {fStrategy = f;}
     void SetRecombScheme(fastjet::RecombinationScheme f) {fRecombScheme = f;}
     void SetAreaType(fastjet::AreaType f)                {fAreaType = f;}
+    void SetGhostArea(Double_t f) {fGhostArea = f;}
+    void SetActiveAreaRepeats(Int_t f) {fActiveAreaRepeats = f;}
+    void SetGhostEtamax(Double_t f) {fGhostEtamax = f;}
+
+
 
     // Helper
     //
@@ -121,64 +129,66 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     fastjet::Strategy fStrategy;  //= fastjet::Best;
     fastjet::RecombinationScheme fRecombScheme; // = fastjet::BIpt_scheme;
     fastjet::AreaType fAreaType; 
+    Double_t fGhostArea;
+    Int_t fActiveAreaRepeats;
+    Double_t fGhostEtamax;
+    TProfile*     fh1Xsec;   //! pythia cross section and trials
+    TH1F*         fh1Trials; //! trials are added
+    TH1F*         fh1PtHard;  //! Pt har of the event...       
+    TH1F*         fh1PtHardNoW;  //! Pt har of the event without weigt       
+    TH1F*         fh1PtHardTrials;  //! Number of trials 
 
-    TProfile*     fh1Xsec;   // pythia cross section and trials
-    TH1F*         fh1Trials; // trials are added
-    TH1F*         fh1PtHard;  // Pt har of the event...       
-    TH1F*         fh1PtHardNoW;  // Pt har of the event without weigt       
-    TH1F*         fh1PtHardTrials;  // Number of trials 
-
-    TH1F*         fh1NJetsRec; // number of reconstructed jets
-    TH1F*         fh1NConstRec;// number of constiutens in leading jet
-    TH1F*         fh1NConstLeadingRec;// number of constiutens in leading jet
-    TH1F*         fh1PtJetsRecIn;  // Jet pt for all jets
-    TH1F*         fh1PtJetsLeadingRecIn;  // Jet pt for all jets
-    TH1F*         fh1PtJetConstRec;// pt of constituents
+    TH1F*         fh1NJetsRec; //! number of reconstructed jets
+    TH1F*         fh1NConstRec;//! number of constiutens in leading jet
+    TH1F*         fh1NConstLeadingRec;//! number of constiutens in leading jet
+    TH1F*         fh1PtJetsRecIn;  //! Jet pt for all jets
+    TH1F*         fh1PtJetsLeadingRecIn;  //! Jet pt for all jets
+    TH1F*         fh1PtJetConstRec;//! pt of constituents
     TH1F*         fh1PtJetConstLeadingRec;// pt of constituents
-    TH1F*         fh1PtTracksRecIn;  // track pt for all tracks
-    TH1F*         fh1PtTracksLeadingRecIn;  // track pt for all tracks
+    TH1F*         fh1PtTracksRecIn;  //! track pt for all tracks
+    TH1F*         fh1PtTracksLeadingRecIn;  //! track pt for all tracks
 
     // Randomized track histos
-    TH1F*         fh1NJetsRecRan; // number of reconstructed jets from randomized
-    TH1F*         fh1NConstRecRan;// number of constiutens in leading jet
-    TH1F*         fh1PtJetsLeadingRecInRan;  // Jet pt for all jets
-    TH1F*         fh1NConstLeadingRecRan;// number of constiutens in leading jet
-    TH1F*         fh1PtJetsRecInRan;  // Jet pt for all jets
+    TH1F*         fh1NJetsRecRan; //! number of reconstructed jets from randomized
+    TH1F*         fh1NConstRecRan;//! number of constiutens in leading jet
+    TH1F*         fh1PtJetsLeadingRecInRan;  //! Jet pt for all jets
+    TH1F*         fh1NConstLeadingRecRan;//! number of constiutens in leading jet
+    TH1F*         fh1PtJetsRecInRan;  //! Jet pt for all jets
 
-    TH1F*         fh1PtTracksGenIn;  // track pt for all tracks
-    TH1F*         fh1Nch;            // charged particle mult
+    TH1F*         fh1PtTracksGenIn;  //! track pt for all tracks
+    TH1F*         fh1Nch;            //! charged particle mult
 
-    TH2F*         fh2NRecJetsPt;            // Number of found jets above threshold
-    TH2F*         fh2NRecTracksPt;          // Number of found tracks above threshold
-    TH2F*         fh2NConstPt;           // number of constituents vs. pt
-    TH2F*         fh2NConstLeadingPt;           // number of constituents vs. pt
-    TH2F*         fh2JetPhiEta;             // jet phi eta
-    TH2F*         fh2LeadingJetPhiEta;      // leading jet phi eta
-    TH2F*         fh2JetEtaPt;              // leading jet eta
-    TH2F*         fh2LeadingJetEtaPt;              // leading jet eta
-    TH2F*         fh2TrackEtaPt;              // track eta
-    TH2F*         fh2LeadingTrackEtaPt;       // leading track eta
-    TH2F*         fh2JetsLeadingPhiEta;     // jet phi eta
-    TH2F*         fh2JetsLeadingPhiPt;      // jet correlation with leading jet
-    TH2F*         fh2TracksLeadingPhiEta;   // track correlation with leading track
-    TH2F*         fh2TracksLeadingPhiPt;    // track correlation with leading track
-    TH2F*         fh2TracksLeadingJetPhiPt; // track correlation with leading Jet
-    TH2F*         fh2JetsLeadingPhiPtW;      // jet correlation with leading jet
-    TH2F*         fh2TracksLeadingPhiPtW;   // track correlation with leading track
-    TH2F*         fh2TracksLeadingJetPhiPtW; // track correlation with leading Jet
-    TH2F*         fh2NRecJetsPtRan;            // Number of found jets above threshold
-    TH2F*         fh2NConstPtRan;           // number of constituents vs. pt
-    TH2F*         fh2NConstLeadingPtRan;           // number of constituents vs. pt
-    TH2F*         fh2PtNch;               // p_T of cluster vs. multiplicity,
-    TH2F*         fh2PtNchRan;            // p_T of cluster vs. multiplicity,random
-    TH2F*         fh2PtNchN;               // p_T of cluster vs. multiplicity, weigthed with constituents
-    TH2F*         fh2PtNchNRan;            // p_T of cluster vs. multiplicity, weigthed with constituents random
-    TH2F*         fh2TracksLeadingJetPhiPtRan; // track correlation with leading Jet
-    TH2F*         fh2TracksLeadingJetPhiPtWRan; // track correlation with leading Jet
+    TH2F*         fh2NRecJetsPt;            //! Number of found jets above threshold
+    TH2F*         fh2NRecTracksPt;          //! Number of found tracks above threshold
+    TH2F*         fh2NConstPt;           //! number of constituents vs. pt
+    TH2F*         fh2NConstLeadingPt;           //! number of constituents vs. pt
+    TH2F*         fh2JetPhiEta;             //! jet phi eta
+    TH2F*         fh2LeadingJetPhiEta;      //! leading jet phi eta
+    TH2F*         fh2JetEtaPt;              //! leading jet eta
+    TH2F*         fh2LeadingJetEtaPt;              //! leading jet eta
+    TH2F*         fh2TrackEtaPt;              //! track eta
+    TH2F*         fh2LeadingTrackEtaPt;       //! leading track eta
+    TH2F*         fh2JetsLeadingPhiEta;     //! jet phi eta
+    TH2F*         fh2JetsLeadingPhiPt;      //! jet correlation with leading jet
+    TH2F*         fh2TracksLeadingPhiEta;   //! track correlation with leading track
+    TH2F*         fh2TracksLeadingPhiPt;    //! track correlation with leading track
+    TH2F*         fh2TracksLeadingJetPhiPt; //! track correlation with leading Jet
+    TH2F*         fh2JetsLeadingPhiPtW;      //! jet correlation with leading jet
+    TH2F*         fh2TracksLeadingPhiPtW;   //! track correlation with leading track
+    TH2F*         fh2TracksLeadingJetPhiPtW; //! track correlation with leading Jet
+    TH2F*         fh2NRecJetsPtRan;            //! Number of found jets above threshold
+    TH2F*         fh2NConstPtRan;           //! number of constituents vs. pt
+    TH2F*         fh2NConstLeadingPtRan;           //! number of constituents vs. pt
+    TH2F*         fh2PtNch;               //! p_T of cluster vs. multiplicity,
+    TH2F*         fh2PtNchRan;            //! p_T of cluster vs. multiplicity,random
+    TH2F*         fh2PtNchN;               //! p_T of cluster vs. multiplicity, weigthed with constituents
+    TH2F*         fh2PtNchNRan;            //! p_T of cluster vs. multiplicity, weigthed with constituents random
+    TH2F*         fh2TracksLeadingJetPhiPtRan; //! track correlation with leading Jet
+    TH2F*         fh2TracksLeadingJetPhiPtWRan; //! track correlation with leading Jet
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 4) 
+    ClassDef(AliAnalysisTaskJetCluster, 5) 
 };
  
 #endif
