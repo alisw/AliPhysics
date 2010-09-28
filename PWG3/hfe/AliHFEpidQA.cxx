@@ -517,7 +517,7 @@ void AliHFEpidQA::FillElectronLikelihoods(TObjArray * const particles, Int_t spe
   // pion and proton efficiency and the thresholds
   //
   Long_t status = 0;
-  Char_t *detname[4] = {"ITS", "TPC", "TRD", "TOF"};
+  const Char_t *detname[4] = {"ITS", "TPC", "TRD", "TOF"};
   Char_t specname[256];
 
   switch(species){
