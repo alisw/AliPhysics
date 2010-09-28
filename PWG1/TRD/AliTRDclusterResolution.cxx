@@ -438,9 +438,9 @@ TObjArray* AliTRDclusterResolution::Histos()
   // add resolution/pulls plots for dydx=ExB
   fContainer->AddAt(arr = new TObjArray(2), kCenter);
   arr->SetName("Center");
-  if(!(h3=(TH3S*)gROOT->FindObject(Form("hCenRes%03d",fDet)))) {
+  if(!(h3=(TH3S*)gROOT->FindObject(Form("hRes%s%03d", (HasMCdata()?"MC":"") ,fDet)))) {
     h3 = new TH3S(
-      Form("hCenRes%03d",fDet),
+      Form("hRes%s%03d", (HasMCdata()?"MC":""),fDet),
       Form(" Det[%d] Col[%d] Row[%d];t [bin];y [pw];#Delta y[cm]", fDet, fCol, fRow),
       AliTRDseedV1::kNtb, -.5, AliTRDseedV1::kNtb-0.5,   // x
       51, -.51, .51, // y
@@ -448,9 +448,9 @@ TObjArray* AliTRDclusterResolution::Histos()
   } h3->Reset();
   arr->AddAt(h3, 0);
   // add Pull plot for each layer
-  if(!(h3=(TH3S*)gROOT->FindObject(Form("hCenPull%03d", fDet)))){
+  if(!(h3=(TH3S*)gROOT->FindObject(Form("hPull%s%03d", (HasMCdata()?"MC":""), fDet)))){
     h3 = new TH3S(
-      Form("hCenPull%03d", fDet),
+      Form("hPull%s%03d", (HasMCdata()?"MC":""), fDet),
       Form(" Det[%d] Col[%d] Row[%d];t [bin];y [pw];#Delta y[cm]/#sigma_{y}", fDet, fCol, fRow),
       AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb-0.5,   // x
       51, -.51, .51, // y
@@ -458,8 +458,8 @@ TObjArray* AliTRDclusterResolution::Histos()
   } h3->Reset();
   arr->AddAt(h3, 1);
 
-  if(!(h3 = (TH3S*)gROOT->FindObject(Form("Charge%03d", fDet)))){
-    h3 = new TH3S(Form("Charge%03d", fDet),
+  if(!(h3 = (TH3S*)gROOT->FindObject(Form("Charge%s%03d", (HasMCdata()?"MC":""), fDet)))){
+    h3 = new TH3S(Form("Charge%s%03d", (HasMCdata()?"MC":""), fDet),
     "dy=f(q);log(q) [a.u.];#Delta y[cm];#Delta y/#sigma_{y}",
     50, 2.2, 7.5, 60, -fDyRange, fDyRange, 60, -4., 4.);
   }
@@ -468,9 +468,9 @@ TObjArray* AliTRDclusterResolution::Histos()
   fContainer->AddAt(arr = new TObjArray(AliTRDseedV1::kNtb), kSigm);
   arr->SetName("Resolution");
   for(Int_t it=0; it<AliTRDseedV1::kNtb; it++){
-    if(!(h3=(TH3S*)gROOT->FindObject(Form("hr%03d_t%02d", fDet, it)))){
+    if(!(h3=(TH3S*)gROOT->FindObject(Form("hr%s%03d_t%02d", (HasMCdata()?"MC":""), fDet, it)))){
       h3 = new TH3S(
-        Form("hr%03d_t%02d", fDet, it),
+        Form("hr%s%03d_t%02d", (HasMCdata()?"MC":""), fDet, it),
         Form(" Det[%d] t_{drift}(%2d)[bin];z [mm];tg#phi;#Delta y[cm]", fDet, it), 
         kND, 0., 2.5,   // z 
         35, -.35, .35, // tgp 
@@ -482,9 +482,9 @@ TObjArray* AliTRDclusterResolution::Histos()
   fContainer->AddAt(arr = new TObjArray(AliTRDseedV1::kNtb), kMean);
   arr->SetName("Systematics");
   for(Int_t it=0; it<AliTRDseedV1::kNtb; it++){
-    if(!(h3=(TH3S*)gROOT->FindObject(Form("hs%03d_t%02d", fDet, it)))){
+    if(!(h3=(TH3S*)gROOT->FindObject(Form("hs%s%03d_t%02d", (HasMCdata()?"MC":""), fDet, it)))){
       h3 = new TH3S(
-        Form("hs%03d_t%02d", fDet, it),
+        Form("hs%s%03d_t%02d", (HasMCdata()?"MC":""), fDet, it),
         Form(" Det[%d] t_{drift}(%2d)[bin];z [mm];tg#phi - h*tg(#theta);#Delta y[cm]", fDet, it), 
         kND, 0., 2.5,   // z 
         35, -.35, .35, // tgp-h tgt 
