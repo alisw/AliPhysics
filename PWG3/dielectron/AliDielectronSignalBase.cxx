@@ -28,9 +28,10 @@ resulting from single and mixed events, as defined in AliDielectron.cxx
 ///////////////////////////////////////////////////////////////////////////
 
 
-#include "TPaveText.h"
-#include "AliDielectronSignalBase.h"
+#include <TVectorT.h>
+#include <TPaveText.h>
 #include <TH1F.h>
+#include "AliDielectronSignalBase.h"
 
 ClassImp(AliDielectronSignalBase)
 

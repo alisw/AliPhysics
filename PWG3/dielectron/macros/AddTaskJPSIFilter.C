@@ -8,7 +8,7 @@ AliAnalysisTask *AddTaskJPSIFilter(){
   
   //check for output aod handler
   if (!mgr->GetOutputEventHandler()||mgr->GetOutputEventHandler()->IsA()!=AliAODHandler::Class()) {
-    Warning("AddTaskJPSIFilter","No AOD output handler available. Not adding the task!");
+    Error("AddTaskJPSIFilter","No AOD output handler available. Cannot Proceed!");
     return 0;
   }
 

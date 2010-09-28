@@ -65,8 +65,8 @@ public:
   Double_t GetMassWidth()            const { return fValues(5);}
   Double_t GetMassWidthError()       const { return fErrors(5);}
 
-  TH1F* GetSignalHistogram()        {return fHistSignal;}
-  TH1F* GetBackgroundHistogram()    {return fHistBackground;}
+  TH1F* GetSignalHistogram()      const {return fHistSignal;}
+  TH1F* GetBackgroundHistogram()  const {return fHistBackground;}
 
   virtual void Print(Option_t *option="") const;
 

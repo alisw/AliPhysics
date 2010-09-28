@@ -137,8 +137,8 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
 	  			             fHistSignal->FindBin(fIntMax), fErrors(0));
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
-						  fHistBackground->FindBin(fIntMax), 
-						  fErrors(1));
+						 fHistBackground->FindBin(fIntMax), 
+						 fErrors(1));
   // S/B and significance
   SetSignificanceAndSOB();
 
@@ -171,7 +171,7 @@ void AliDielectronSignalExt::Draw(const Option_t* option)
   Int_t binSize = Int_t(1000*fHistDataPM->GetBinWidth(1));   // in MeV
   Float_t minMinY = fHistSignal->GetMinimum();
 
-  TCanvas *cSub = new TCanvas("cSub","signal, background subtracted",1400,1000);
+  TCanvas *cSub = new TCanvas(Form("%s", fName.Data()),Form("%s", fTitle.Data()),1400,1000);
   cSub->SetLeftMargin(0.15);
   cSub->SetRightMargin(0.0);
   cSub->SetTopMargin(0.002);
@@ -283,5 +283,7 @@ void AliDielectronSignalExt::Draw(const Option_t* option)
   line.DrawLine(minX, 0.,maxX, 0.);
   line.DrawLine(fIntMin, minMinY, fIntMin, maxY);
   line.DrawLine(fIntMax, minMinY, fIntMax, maxY);
+
+  cSub->SaveAs(Form("%s_summary.png", fName.Data()));
 }
 

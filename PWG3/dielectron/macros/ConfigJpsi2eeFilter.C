@@ -1,12 +1,11 @@
-void SetupTrackCuts(AliDielectron *fDiele);
-void SetupPairCuts(AliDielectron *fDiele);
+void SetupTrackCutsDieleFilter(AliDielectron *diele, Bool_t isAOD);
+void SetupPairCutsDieleFilter(AliDielectron *diele, Bool_t isAOD);
+void SetupEventCutsDieleFilter(AliDielectron *diele, Int_t cutDefinition);
 
-void InitHistograms();
+void InitHistogramsDieleFilter(AliDielectron *diele);
 
-AliESDtrackCuts *SetupESDtrackCuts();
+AliESDtrackCuts *SetupESDtrackCutsDieleFilter();
 
-Bool_t *fIsAOD=kFALSE;
-AliDielectron *fDiele=0x0;
 
 AliDielectron* ConfigJpsi2eeFilter(Bool_t isAOD=kFALSE)
 {
@@ -14,41 +13,52 @@ AliDielectron* ConfigJpsi2eeFilter(Bool_t isAOD=kFALSE)
   // Setup the instance of AliDielectron
   //
 
-  fIsAOD=isAOD;
-  
   // create the actual framework object
   TString name="trackQ+Pt>0.6+60<dEdx<100";
-  fDiele = new AliDielectron(Form("%s",name.Data()),
+  AliDielectron *diele = new AliDielectron(Form("%s",name.Data()),
                              Form("Track cuts: %s",name.Data()));
   
   // cut setup
-  SetupTrackCuts();
-  SetupPairCuts();
+  SetupEventCutsDieleFilter(diele);
+  
+  SetupTrackCutsDieleFilter(diele, isAOD);
+  SetupPairCutsDieleFilter(diele, isAOD);
   
   //
   // QA histogram setup
   //
-  InitHistograms();
+  InitHistogramsDieleFilter(diele, isAOD);
   
-  return fDiele;
+  return diele;
 }
 
 //______________________________________________________________________________________
-void SetupTrackCuts()
+void SetupEventCutsDieleFilter(AliDielectron *diele)
+{
+  //
+  // Setup the event cuts
+  //
+  AliDielectronVarCuts *vtxZ = new AliDielectronVarCuts("vtxZ","Vertex z cut");
+  vtxZ->AddCut(AliDielectronVarManager::kZvPrim,-15.,15.);
+  diele->GetEventFilter().AddCuts(vtxZ);
+}
+
+//______________________________________________________________________________________
+void SetupTrackCutsDieleFilter(AliDielectron *diele, Bool_t isAOD)
 {
   //
   // Setup the track cuts
   //
   
   //ESD quality cuts DielectronTrackCuts
-  if (!fIsAOD) {
-    fDiele->GetTrackFilter().AddCuts(SetupESDtrackCuts());
+  if (!isAOD) {
+    diele->GetTrackFilter().AddCuts(SetupESDtrackCutsDieleFilter());
   } else {
     AliDielectronTrackCuts *trackCuts=new AliDielectronTrackCuts("trackCuts","trackCuts");
     trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     trackCuts->SetRequireTPCRefit(kTRUE);
     trackCuts->SetRequireITSRefit(kTRUE);
-    fDiele->GetTrackFilter().AddCuts(trackCuts);
+    diele->GetTrackFilter().AddCuts(trackCuts);
   }
   
   //Pt cut
@@ -56,20 +66,20 @@ void SetupTrackCuts()
   pt->AddCut(AliDielectronVarManager::kPt,.6,1e30);
   pt->AddCut(AliDielectronVarManager::kTPCsignal,60.,100.);
 
-  if (fIsAOD){
+  if (isAOD){
       // TPC #clusteres cut
     pt->AddCut(AliDielectronVarManager::kNclsTPC,90.,160.);
-    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
+//     pt->AddCut(AliDielectronVarManager::kEta,-0.88,0.88);
     //TODO: DCA cuts to be investigated!!!
 //     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
 //     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   }
   
-  fDiele->GetTrackFilter().AddCuts(pt);
+  diele->GetTrackFilter().AddCuts(pt);
 }
 
 //______________________________________________________________________________________
-void SetupPairCuts()
+void SetupPairCutsDieleFilter(AliDielectron *diele, Bool_t isAOD)
 {
   //
   // Setup the pair cuts
@@ -80,12 +90,12 @@ void SetupPairCuts()
   AliDielectronVarCuts *invMassCut=new AliDielectronVarCuts("InvMass","2<M<4");
   invMassCut->AddCut(AliDielectronVarManager::kM,2.,1e30);
 //   invMassCut->AddCut(AliDielectronVarManager::kPairType,1.);
-  fDiele->GetPairFilter().AddCuts(invMassCut);
+  diele->GetPairFilter().AddCuts(invMassCut);
 
 }
 
 //______________________________________________________________________________________
-AliESDtrackCuts *SetupESDtrackCuts()
+AliESDtrackCuts *SetupESDtrackCutsDieleFilter()
 {
   //
   // Setup default AliESDtrackCuts
@@ -107,7 +117,7 @@ AliESDtrackCuts *SetupESDtrackCuts()
 
 
 //______________________________________________________________________________________
-void InitHistograms()
+void InitHistogramsDieleFilter(AliDielectron *diele, Bool_t isAOD)
 {
   //
   // Initialise the histograms
@@ -115,12 +125,13 @@ void InitHistograms()
   
 //Setup histogram classes
   AliDielectronHistos *histos=
-    new AliDielectronHistos(fDiele->GetName(),
-                            fDiele->GetTitle());
+    new AliDielectronHistos(diele->GetName(),
+                            diele->GetTitle());
   
   //Initialise histogram classes
   histos->SetReservedWords("Track;Pair");
-  
+
+  histos->AddClass("Event");
   //Track classes
   //to fill also track info from 2nd event loop until 2
   for (Int_t i=0; i<2; ++i){
@@ -133,6 +144,9 @@ void InitHistograms()
     histos->AddClass(Form("Pair_%s",AliDielectron::PairClassName(i)));
   }
 
+  //add histograms to event class
+  histos->UserHistogram("Event","VtxZ","Vertex Z;Z[cm]",300,-15.,15.,AliDielectronVarManager::kZvPrim);
+  
   //add histograms to Track classes
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",400,0,20.,AliDielectronVarManager::kPt);
   histos->UserHistogram("Track","TPCnCls","Number of Clusters TPC;TPC number clusteres;#tracks",160,-0.5,159.5,AliDielectronVarManager::kNclsTPC);
@@ -155,5 +169,5 @@ void InitHistograms()
   histos->UserHistogram("Pair","OpeningAngle","Opening angle;angle",
                         100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
   
-  fDiele->SetHistogramManager(histos);
+  diele->SetHistogramManager(histos);
 }

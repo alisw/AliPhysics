@@ -83,6 +83,7 @@ AliDielectronHistos::~AliDielectronHistos()
   // Destructor
   //
   fHistoList.Clear();
+  if (fList) fList->Clear();
   delete fReservedWords;
 }
 

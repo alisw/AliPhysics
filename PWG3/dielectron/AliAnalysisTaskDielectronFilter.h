@@ -25,6 +25,8 @@ Add a sattelite AOD with the array of candidates.
 
 #include "AliAnalysisTaskSE.h"
 
+#include "AliDielectronPID.h"
+
 class AliDielectron;
 class TH1D;
 
@@ -39,7 +41,9 @@ public:
   virtual void Init();
   virtual void UserCreateOutputObjects();
   virtual void LocalInit() {Init();}
-
+  //temporary
+  virtual void NotifyRun(){AliDielectronPID::SetCorrVal((Double_t)fCurrentRunNumber);}
+  
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
   void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
   UInt_t GetTriggerMask() const { return fTriggerMask; }

@@ -323,7 +323,7 @@ void DrawUnbinned(){
 Int_t baseColors[5]={kRed, kGreen+1, kAzure-4, kMagenta, kCyan+1};
   Int_t sigmaColorOffset=0;
 
-  Double_t sigmas[5]={2,2,2,2,2};
+  Double_t sigmas[5]={3,3,3,3,3};
   Double_t masses[5];
 
   for (Int_t i=0; i<AliPID::kSPECIES; ++i) masses[i]=AliPID::ParticleMass(i);
@@ -372,8 +372,8 @@ for (Int_t i=0; i<5; ++i){
 
 for (Int_t i=0; i<5; ++i){
   fBethe[i]->Draw("same");
-  fBetheP[i]->Draw("same");
-  fBetheM[i]->Draw("same");
+//   fBetheP[i]->Draw("same");
+//   fBetheM[i]->Draw("same");
 }
 }
 
