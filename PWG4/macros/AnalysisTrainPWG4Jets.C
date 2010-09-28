@@ -170,6 +170,7 @@ TString     kLocalXMLDataset   = ""; // Change local xml dataset for local inter
 TString     kLocalDataList   = "local_deltaaod.txt"; // Change local xml dataset for local interactive analysis
 // == local process variables
 
+TString kPluginMode;
 
 
 // Temporaries.
@@ -188,13 +189,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 // Main analysis train macro. If a configuration file is provided, all parameters
 // are taken from there but may be altered by CheckModuleFlags.
 
-   if (strlen(config_file) && !LoadConfig(config_file)) return;
+  // these flag may be needed by the config file
+  kPluginMode = plugin_mode;
+  
+  if (strlen(config_file) && !LoadConfig(config_file)) return;
 
    if(iOffset)kProofOffset = iOffset;
    TString smode(analysis_mode);
    smode.ToUpper();
    if (kSaveTrain)WriteConfig();
-   // Check compatibility of selected modules
+   // Check compatibility of selected modules 
    CheckModuleFlags(smode);
    //     gROOT->ProcessLine(".trace");
 
@@ -399,7 +403,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCluster.C");
      AliAnalysisTaskJetCluster *taskCl = 0;
      if(iPWG4Cluster&1){
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT");
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT",0.4,0,1); // this one is for the background jets
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT",0.5,0,1); // this one is for the background jets
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT",0.6,0,1); // this one is for the background jets
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT",0.7,0,1); // this one is for the background jets
+
        if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
      }
      if(iPWG4Cluster&2){
@@ -417,7 +425,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
        AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"ANTIKT",selection);
-       AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"ANTIKT",0.4,1);
+       //       AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"ANTIKT",0.4,0,1);
 
      }
    }

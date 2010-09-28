@@ -98,13 +98,18 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    */
    AliESDtrackCuts* esdTrackCutsH1 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009();
    esdTrackCutsH1->SetName("StandardFromAliESDTrackCutsMaxRelPt");
-   esdTrackCutsH1->SetMaxRel1PtUncertainty(0.08); // new 
+   esdTrackCutsH1->SetMaxRel1PtUncertainty(0.4); // new 
 
 
    AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009();
-   esdTrackCutsH2->SetName("StandardFromAliESDTrackCutsNoSPDRequirement");
-   esdTrackCutsH2->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
- 
+   esdTrackCutsH2->SetName("StandardFromAliESDTrackCutsExtraDCA");
+   esdTrackCutsH2->SetMaxDCAToVertexZ(2);
+
+   AliESDtrackCuts* esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009();
+   esdTrackCutsH2->SetName("StandardFromAliESDTrackCutsExtraDCANoITS");
+   esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+   esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
+   esdTrackCutsH3->SetMaxDCAToVertexZ(2);
 
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
@@ -123,6 +128,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // 32
    trackFilter->AddCuts(esdTrackCutsH1);
    // 64
+   trackFilter->AddCuts(esdTrackCutsH2);
+   // 128
    trackFilter->AddCuts(esdTrackCutsH2);
  
    // Filter with cuts on V0s

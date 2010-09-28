@@ -1,86 +1,48 @@
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* bBkg="jeteventbackground_jetsAOD_FASTKT04",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1,UInt_t iEventSelectionMask = 0,Bool_t kBackground=kFALSE);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* bBkg="jeteventbackground_clustersAOD_KT06",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1,UInt_t iEventSelectionMask = 0,Bool_t kBackground=kTRUE);
 
 
 AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,Bool_t kBackground = kFALSE){
   AliAnalysisTaskJetSpectrum2 *js = 0;
 
- if(!kBackground){
+  TString cBack = "";
+  if(kBackground)cBack = "jeteventbackground_clustersAOD_KT06";
+
   if(kUseAODMC){
-    if(iFlag&(1<<0))js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104","",filterMask,iPhysicsSelection, iEventSelectionMask);
-    if(iFlag&(1<<1))js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104","",filterMask,iPhysicsSelection, iEventSelectionMask);
-
-    if(iFlag&(1<<2))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04","",filterMask,iPhysicsSelection, iEventSelectionMask);
-    if(iFlag&(1<<3))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04","",filterMask,iPhysicsSelection,  iEventSelectionMask);
-
+    if(iFlag&(1<<0))js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
+    if(iFlag&(1<<1))js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
+    
+    if(iFlag&(1<<2))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
+    if(iFlag&(1<<3))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",cBack.Data(),filterMask,iPhysicsSelection,  iEventSelectionMask,kBackground);
+    
     if(iFlag&(1<<4)){
-      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04","",filterMask,iPhysicsSelection,iEventSelectionMask);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",cBack.Data(),filterMask,iPhysicsSelection,iEventSelectionMask,kBackground);
     }
-    if(iFlag&(1<<5))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04","",filterMask,iPhysicsSelection, iEventSelectionMask);
-    if(iFlag&(1<<6))js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107","",filterMask,iPhysicsSelection, iEventSelectionMask);
+    if(iFlag&(1<<5))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
+    if(iFlag&(1<<6))js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
   }
-
-  if(iFlag&(1<<7))js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04","",filterMask,iPhysicsSelection, iEventSelectionMask);
-
-  if(iFlag&(1<<8))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","","",filterMask,iPhysicsSelection, iEventSelectionMask);
-  if(iFlag&(1<<9))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","","",filterMask,iPhysicsSelection, iEventSelectionMask);
-  if(iFlag&(1<<10))js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","","",filterMask,iPhysicsSelection, iEventSelectionMask);
+  
+  if(iFlag&(1<<7))js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
+  
+  if(iFlag&(1<<8))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
+  if(iFlag&(1<<9))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
+  if(iFlag&(1<<10))js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
   
   if(iFlag&(1<<11)){
-    js = AddTaskJetSpectrum2("jetsAOD_UA107","","",filterMask,iPhysicsSelection, iEventSelectionMask);
+    js = AddTaskJetSpectrum2("jetsAOD_UA107","",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
     js->SetRecEtaWindow(0.2);
   }
   if(iFlag&(1<<12)){
-    js = AddTaskJetSpectrum2("jetsAOD_FASTJET07","","",filterMask,iPhysicsSelection, iEventSelectionMask);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTJET07","",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
     js->SetRecEtaWindow(0.2);
   }
   if(iFlag&(1<<13)){
-    js = AddTaskJetSpectrum2("jetsAOD_FASTKT07","","",filterMask,iPhysicsSelection, iEventSelectionMask);
+    js = AddTaskJetSpectrum2("jetsAOD_FASTKT07","",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
     js->SetRecEtaWindow(0.2);
   }
   if(iFlag&(1<<14)){
-    js = AddTaskJetSpectrum2("jetsAOD_SISCONE07","","",filterMask,iPhysicsSelection, iEventSelectionMask);
-    js->SetRecEtaWindow(0.2);
-  }}
-
-
-  if(kBackground){
-  if(kUseAODMC){
-    if(iFlag&(1<<0))js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-    if(iFlag&(1<<1))js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-
-    if(iFlag&(1<<2))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-    if(iFlag&(1<<3))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection,  iEventSelectionMask,kBackground);
-
-    if(iFlag&(1<<4)){
-      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection,iEventSelectionMask,kBackground);
-    }
-    if(iFlag&(1<<5))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-    if(iFlag&(1<<6))js = AddTaskJetSpectrum2("jetsAOD_UA107","jetsAODMC_UA107","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-  }
-
-  if(iFlag&(1<<7))js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-
-  if(iFlag&(1<<8))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-  if(iFlag&(1<<9))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-  if(iFlag&(1<<10))js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-  
-  if(iFlag&(1<<11)){
-    js = AddTaskJetSpectrum2("jetsAOD_UA107","","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
+    js = AddTaskJetSpectrum2("jetsAOD_SISCONE07","",cBack.Data(),filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
     js->SetRecEtaWindow(0.2);
   }
-  if(iFlag&(1<<12)){
-    js = AddTaskJetSpectrum2("jetsAOD_FASTJET07","","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-    js->SetRecEtaWindow(0.2);
-  }
-  if(iFlag&(1<<13)){
-    js = AddTaskJetSpectrum2("jetsAOD_FASTKT07","","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-    js->SetRecEtaWindow(0.2);
-  }
-  if(iFlag&(1<<14)){
-    js = AddTaskJetSpectrum2("jetsAOD_SISCONE07","","jeteventbackground_jetsAOD_FASTKT04",filterMask,iPhysicsSelection, iEventSelectionMask,kBackground);
-    js->SetRecEtaWindow(0.2);
-  }}
-
 
   return js;
 }
@@ -121,13 +83,15 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
 
    pwg4spec->SetBranchGen(bGen); 
    pwg4spec->SetBranchRec(bRec); 
-   pwg4spec->SetBranchBkg(bBkg);
+   if(strlen(bBkg)>0)pwg4spec->SetBranchBkg(bBkg);
 
    pwg4spec->SetFilterMask(filterMask); 
    pwg4spec->SetUseGlobalSelection(kTRUE); 
    pwg4spec->SetMinJetPt(5.);
-   if(kBackground) pwg4spec->SetBkgSubtraction(kTRUE);
-  
+   if(kBackground&&strlen(bBkg)>0){
+     pwg4spec->SetBkgSubtraction(kTRUE);
+   }  
+
    if(type == "AOD"){
      // Assume all jet are produced already
      pwg4spec->SetAODJetInput(kTRUE);

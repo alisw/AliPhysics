@@ -1,4 +1,4 @@
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0);
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, Int_t iPhysicsSelection = 1,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD);
 
 
 AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1,Char_t *jf = "KT", UInt_t iFlag){
@@ -16,7 +16,7 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
     if(iFlag&(1<<0))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.00001);
     if(iFlag&(1<<1))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.1);
     if(iFlag&(1<<2))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.2);
-    if(iFlag&(1<<4))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.4);
+    if(iFlag&(1<<4))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.4,0,1);
     if(iFlag&(1<<6))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.6);
     if(iFlag&(1<<8))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,0.8);
     if(iFlag&(1<<10))js = AddTaskJetCluster("AOD","",filterMask,iPhysicsSelection,jf,1.0);
@@ -26,7 +26,7 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
 }
 
 
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,Int_t iPhysicsSelection,Char_t *jf,Float_t radius,Int_t nSkip)
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,Int_t iPhysicsSelection,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD)
 {
 // Creates a jet fider task, configures it and adds it to the analysis manager.
 
@@ -121,7 +121,7 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    }
 
    
-   if(TMath::Abs(radius-0.4)<0.01){
+   if(kWriteAOD){
      pwg4spec->SetJetOutputBranch(Form("clusters%s_%s%s",bRec,jf,cRadius));
      pwg4spec->SetJetOutputMinPt(0); // store only jets / clusters above a certain threshold
    }
