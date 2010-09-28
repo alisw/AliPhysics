@@ -223,7 +223,7 @@ void AliUEHistograms::Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle
     FillRegion(AliUEHist::kAway,   step, leading, away, multiplicity);
     FillRegion(AliUEHist::kMin,    step, leading, min, multiplicity);
     FillRegion(AliUEHist::kMax,    step, leading, max, multiplicity);
-  
+ 
     Double_t vars[2];
     vars[0] = leading->Pt();
     vars[1] = multiplicity;
@@ -301,6 +301,39 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
   }
 }
   
+//____________________________________________________________________
+void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType)
+{
+  // fills the tracking efficiency objects
+  //
+  // mc: all primary MC particles
+  // recoPrim: reconstructed primaries (again MC particles)
+  // recoAll: reconstructed (again MC particles)
+  // particleType is: 0 for pion, 1 for kaon, 2 for proton, 3 for others
+  
+  for (Int_t step=0; step<3; step++)
+  {
+    TObjArray* list = mc;
+    if (step == 1)
+      list = recoPrim;
+    else if (step == 2)
+      list = recoAll;
+      
+    for (Int_t i=0; i<list->GetEntries(); i++)
+    {
+      AliVParticle* particle = (AliVParticle*) list->At(i);
+      Double_t vars[2];
+      vars[0] = particle->Eta();
+      vars[1] = particle->Pt();
+      vars[2] = particleType;
+      
+      fNumberDensitypT->GetTrackHistEfficiency()->Fill(vars, step);
+      fSumpT->GetTrackHistEfficiency()->Fill(vars, step);
+      fNumberDensityPhi->GetTrackHistEfficiency()->Fill(vars, step);
+    }
+  }
+}
+
 //____________________________________________________________________
 void AliUEHistograms::FillEvent(Int_t eventType, Int_t step)
 {
@@ -479,4 +512,13 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     delete lists[i];
 
   return count+1;
+}
+
+void AliUEHistograms::CopyReconstructedData(AliUEHistograms* from)
+{
+  // copies those histograms extracted from ESD to this object
+  
+  fNumberDensitypT->CopyReconstructedData(from->fNumberDensitypT);
+  fSumpT->CopyReconstructedData(from->fSumpT);
+  fNumberDensityPhi->CopyReconstructedData(from->fNumberDensityPhi);
 }

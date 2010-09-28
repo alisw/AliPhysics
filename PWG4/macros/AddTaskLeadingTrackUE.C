@@ -47,9 +47,12 @@ void ConfigTaskUE(AliAnalysisTaskLeadingTrackUE * ueana){
   ueana->SetDebugLevel(0); 
   ueana->SetPtRangeInHist(100, 0., 100.);
   ueana->SetFilterBit(16);  
+  //ueana->SetFilterBit(16+32);  
   ueana->SetTrackEtaCut(0.8);
   ueana->SetLeadingTrackEtaCut(0.8);
-  
+  ueana->SetEventSelectionBit(AliAnalysisHelperJetTasks::kIsPileUp);
+  //ueana->SetReduceMemoryFootprint(kTRUE);
+ 
   if (1)
   {
     file = TFile::Open("$ALICE_ROOT/PWG4/JetTasks/inputFiles/ue_trackingefficiency.root");

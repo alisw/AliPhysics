@@ -36,13 +36,16 @@ class AliUEHist : public TObject
   
   AliCFContainer* GetTrackHist(Region region) { return fTrackHist[region]; }
   AliCFContainer* GetEventHist() { return fEventHist; }
+  AliCFContainer* GetTrackHistEfficiency()     { return fTrackHistEfficiency; }
   
   void SetTrackHist(Region region, AliCFContainer* hist) { fTrackHist[region] = hist; }
   void SetEventHist(AliCFContainer* hist) { fEventHist = hist; }
   
+  void CopyReconstructedData(AliUEHist* from);
+  
   TH1D* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1);
   
-  TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1);
+  TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Int_t source = 1);
   TH1* GetEventEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1);
   TH1* GetBias(CFStep step1, CFStep step2, Int_t region, const char* axis, Float_t leadPtMin = 0, Float_t leadPtMax = 0);
   
@@ -86,6 +89,7 @@ protected:
 
   AliCFContainer* fTrackHist[4];      // container for track level distributions in four regions (toward, away, min, max) and at four analysis steps
   AliCFContainer* fEventHist;         // container for event level distribution at four analysis steps
+  AliCFContainer* fTrackHistEfficiency; // container for tracking efficiency and contamination (all particles filled including leading one): axes: eta, pT, particle species
   
   Float_t fEtaMin;                    // eta min for projections
   Float_t fEtaMax;                    // eta max for projections
@@ -98,7 +102,7 @@ protected:
   
   AliCFContainer* fCache;             //! cache variable for GetTrackEfficiency
   
-  ClassDef(AliUEHist, 2) // underlying event histogram container
+  ClassDef(AliUEHist, 3) // underlying event histogram container
 };
 
 #endif

@@ -46,7 +46,7 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
   {
   public:
     AliAnalysisTaskLeadingTrackUE(const char* name="AliAnalysisTaskLeadingTrackUE");
-    virtual           ~AliAnalysisTaskLeadingTrackUE() {if ( fListOfHistos ) delete fListOfHistos; }
+    virtual           ~AliAnalysisTaskLeadingTrackUE();
        
       
     // Implementation of interace methods
@@ -62,6 +62,7 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
     // general configuration
     virtual     void    SetDebugLevel( Int_t level )  { fDebug = level; }
     virtual     void    SetMode(Int_t mode)           { fMode  = mode;  }
+    virtual     void    SetReduceMemoryFootprint(Bool_t flag) { fReduceMemoryFootprint = flag; }
     
     // histogram settings
     void   		SetPtRangeInHist( Int_t bin, Double_t min, Double_t max ) {
@@ -100,6 +101,7 @@ class  AliAnalysisTaskLeadingTrackUE : public AliAnalysisTask
     Int_t               fDebug;           //  Debug flag
     Int_t 	        fMode;            //  fMode = 0: data-like analysis 
     				          //  fMode = 1: corrections analysis	
+    Bool_t              fReduceMemoryFootprint; // reduce memory consumption by writing less debug histograms
     
     // Pointers to external UE classes
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms

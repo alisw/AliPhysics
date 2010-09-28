@@ -167,6 +167,34 @@ TObjArray*  AliAnalyseLeadingTrackUE::FindLeadingObjects(TObject *obj)
 
 
 //-------------------------------------------------------------------
+TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies)
+{
+  // Returns an array of particles that pass the cuts, if arrayMC is given each reconstructed particle is replaced by its corresponding MC particles, depending on the parameter onlyprimaries only for primaries 
+  // particleSpecies: -1 all particles are returned
+  //                  0 (pions) 1 (kaons) 2 (protons) 3 (others) particles
+
+  Int_t nTracks = NParticles(obj);
+  TObjArray* tracks = new TObjArray;
+ 
+  // Loop over tracks or jets
+  for (Int_t ipart=0; ipart<nTracks; ++ipart) {
+    AliVParticle* part = ParticleWithCuts( obj, ipart, onlyprimaries, particleSpecies );
+    if (!part) continue;
+    
+    if (arrayMC && arrayMC->InheritsFrom("TClonesArray") && obj->InheritsFrom("AliAODEvent")) {
+      Int_t label = ((AliAODTrack*)part)->GetLabel();
+      // re-define part as the matched MC particle
+      part = (AliAODMCParticle*)ParticleWithCuts(arrayMC, TMath::Abs(label),onlyprimaries, particleSpecies);
+      if (!part)continue;
+    }
+    
+    tracks->Add(part);
+  }
+
+  return tracks;
+}
+
+//-------------------------------------------------------------------
 TObjArray* AliAnalyseLeadingTrackUE::GetMinMaxRegion(TList *transv1, TList *transv2)
 {
   
@@ -231,9 +259,11 @@ Int_t  AliAnalyseLeadingTrackUE::NParticles(TObject* obj)
 
 
 //-------------------------------------------------------------------
-AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries)
+AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries, Int_t particleSpecies)
 {
   // Returns track or MC particle at position "ipart" if passes selection criteria
+  // particleSpecies: -1 all particles are returned
+  //                  0 (pions) 1 (kaons) 2 (protons) 3 (others) particles
   AliVParticle *part=0;
   
   if (obj->InheritsFrom("TClonesArray")){ // AOD-MC PARTICLE
@@ -250,6 +280,35 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
   	                          TMath::Abs(pdgCode)==321;    // Kaon
                 if (!isHadron) return 0;				  
 		}
+        if (particleSpecies != -1) {
+                // find the primary mother
+                AliVParticle* mother = part;
+                while (!((AliAODMCParticle*)mother)->IsPhysicalPrimary())
+                {
+                  if (((AliAODMCParticle*)mother)->GetMother() < 0)
+                  {
+                    mother = 0;
+                    break;
+                  }
+                    
+                  mother = (AliVParticle*) arrayMC->At(((AliAODMCParticle*)mother)->GetMother());
+                  if (!mother)
+                    break;
+                }
+                
+                if (mother)
+                {
+                  Int_t pdgCode = ((AliAODMCParticle*)mother)->GetPdgCode();
+                  if (particleSpecies == 0 && TMath::Abs(pdgCode)!=211)
+                          return 0;
+                  if (particleSpecies == 1 && TMath::Abs(pdgCode)!=321)
+                          return 0;
+                  if (particleSpecies == 2 && TMath::Abs(pdgCode)!=2212)
+                          return 0;
+                  if (particleSpecies == 3 && (TMath::Abs(pdgCode)==211 || TMath::Abs(pdgCode)==321 || TMath::Abs(pdgCode)==2212))
+                          return 0;
+                }
+        }
   
   }else if (obj->InheritsFrom("TObjArray")){ // list of AliVParticle
   	TObjArray *array = dynamic_cast<TObjArray*>(obj);
@@ -409,7 +468,7 @@ TObjArray*  AliAnalyseLeadingTrackUE::SortRegions(const AliVParticle* leading, T
   	if (TMath::Abs(leadVect.DeltaPhi(partVect)) > k120rad ) region = -2;  //backward
   	
   	// skip leading particle 
-  	if (leading == part)
+        if (leading == part)
   	  continue;
   	
 	if (!region)continue;
