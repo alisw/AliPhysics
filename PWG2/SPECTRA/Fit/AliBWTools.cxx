@@ -161,6 +161,8 @@ TGraphErrors * AliBWTools::GetGraphFromHisto(const TH1F * h, Bool_t binWidth) {
   g->SetMarkerStyle(h->GetMarkerStyle());
   g->SetMarkerColor(h->GetMarkerColor());
   g->SetLineColor(h->GetLineColor());
+  g->SetLineStyle(h->GetLineStyle());
+  g->SetLineWidth(h->GetLineWidth());
 
   g->SetTitle(h->GetTitle());
   g->SetName(TString("g_")+h->GetName());
