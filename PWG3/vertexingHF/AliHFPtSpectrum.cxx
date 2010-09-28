@@ -485,11 +485,13 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   Int_t nbins = fhRECpt->GetNbinsX();
   Double_t binwidth = fhRECpt->GetBinWidth(1);
   Double_t *limits = new Double_t[nbins+1]; 
+  Double_t *binwidths = new Double_t[nbins+1]; 
   Double_t xlow=0.;
   for (Int_t i=0; i<=nbins; i++) {
     binwidth = fhRECpt->GetBinWidth(i);
     xlow = fhRECpt->GetBinLowEdge(i);
     limits[i-1] = xlow;
+    binwidths[i] = binwidth;
   }
   limits[nbins] = xlow + binwidth;
 
@@ -544,7 +546,7 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
     if (fAsymUncertainties) {
       Double_t x = fhYieldCorr->GetBinCenter(ibin);
       fgSigmaCorr->SetPoint(ibin,x,value); // i,x,y
-      fgSigmaCorr->SetPointError(ibin,(binwidth/2.),(binwidth/2.),valueMin,valueMax); // i,xl,xh,yl,yh
+      fgSigmaCorr->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),valueMin,valueMax); // i,xl,xh,yl,yh
     }
     
   }
@@ -770,11 +772,13 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
   Int_t nbins = fhRECpt->GetNbinsX();
   Double_t binwidth = fhRECpt->GetBinWidth(1);
   Double_t *limits = new Double_t[nbins+1];
+  Double_t *binwidths = new Double_t[nbins];
   Double_t xlow=0.;
   for (Int_t i=0; i<=nbins; i++) {
     binwidth = fhRECpt->GetBinWidth(i);
     xlow = fhRECpt->GetBinLowEdge(i);
     limits[i-1] = xlow;
+    binwidths[i] = binwidth;
   }
   limits[nbins] = xlow + binwidth;
 
@@ -840,7 +844,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
     if (fAsymUncertainties) {
       Double_t x = fhDirectMCpt->GetBinCenter(ibin);
       fgFc->SetPoint(ibin,x,correction); // i,x,y
-      fgFc->SetPointError(ibin,(binwidth/2.),(binwidth/2.),correctionMin,correctionMax); // i,xl,xh,yl,yh
+      fgFc->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),correctionMin,correctionMax); // i,xl,xh,yl,yh
     }
 
   }
@@ -869,11 +873,13 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumFc(){
   Double_t value = 0., valueDmax= 0., valueDmin= 0.;
   Double_t binwidth = fhRECpt->GetBinWidth(1);
   Double_t *limits = new Double_t[nbins+1];
+  Double_t *binwidths = new Double_t[nbins];
   Double_t xlow=0.;
   for (Int_t i=0; i<=nbins; i++) {
     binwidth = fhRECpt->GetBinWidth(i);
     xlow = fhRECpt->GetBinLowEdge(i);
     limits[i-1] = xlow;
+    binwidths[i] = binwidth;
   }
  limits[nbins] = xlow + binwidth;
   
@@ -923,7 +929,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumFc(){
     if (fAsymUncertainties) {
       Double_t center = hYield->GetBinCenter(ibin);
       fgYieldCorr->SetPoint(ibin,center,value); // i,x,y
-      fgYieldCorr->SetPointError(ibin,(binwidth/2.),(binwidth/2.),valueDmin,valueDmax); // i,xl,xh,yl,yh
+      fgYieldCorr->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),valueDmin,valueDmax); // i,xl,xh,yl,yh
     }
 
   }
@@ -948,11 +954,13 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
   Double_t binwidth = fhRECpt->GetBinWidth(1);
   Double_t value = 0., valueDmax = 0., valueDmin = 0., kfactor = 0.;
   Double_t *limits = new Double_t[nbins+1];
+  Double_t *binwidths = new Double_t[nbins+1];
   Double_t xlow=0.;
   for (Int_t i=0; i<=nbins; i++) {
     binwidth = fhRECpt->GetBinWidth(i);
     xlow = fhRECpt->GetBinLowEdge(i);
     limits[i-1] = xlow;
+    binwidths[i] = binwidth;
   }
  limits[nbins] = xlow + binwidth;
   
@@ -1003,7 +1011,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     if (fAsymUncertainties) {
       Double_t x = hYield->GetBinCenter(ibin);
       fgYieldCorr->SetPoint(ibin,x,value); // i,x,y
-      fgYieldCorr->SetPointError(ibin,(binwidth/2.),(binwidth/2.),valueDmin,valueDmax); // i,xl,xh,yl,yh
+      fgYieldCorr->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),valueDmin,valueDmax); // i,xl,xh,yl,yh
     }
 
   }
