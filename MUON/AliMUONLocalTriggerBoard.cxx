@@ -1247,7 +1247,7 @@ void AliMUONLocalTriggerBoard::Mask(Int_t index, UShort_t mask)
   if ( index >= 0 && index < 2*4 )
   {
     Int_t i = index/4;
-    Int_t j = index - i*4;
+    Int_t j = index%4;
     fMask[i][j]=mask;
   }
   else

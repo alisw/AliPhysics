@@ -408,7 +408,11 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   if (fDebug) cout << xyCand[0][0] << " " << xyCand[0][1] << " " << sigCand[0][0] << " " << sigCand[0][1] << endl;
   
   Int_t nDof, maxSeed[3];//, nMax = 0;
-    
+
+  if ( nfit0 < 0 || nfit0 > 3 ) {
+     AliErrorStream() << "Wrong nfit0 value: " << nfit0 << endl;
+     return nfit;
+  }   
   TMath::Sort(nfit0, qseed, maxSeed, kTRUE); // in decreasing order
     
   Double_t step[3]={0.01,0.002,0.02}, fmin, chi2o = 9999, chi2n;

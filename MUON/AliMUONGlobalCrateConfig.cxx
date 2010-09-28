@@ -360,7 +360,7 @@ TString AliMUONGlobalCrateConfig::GetJtagCrateName(Int_t jtagLine, Int_t index) 
 UInt_t AliMUONGlobalCrateConfig::GetGlobalRegister(Int_t index) const       
 {
   /// return global register for a given index
-  if (index > fgkGlobalNofRegisters) {
+  if (index >= fgkGlobalNofRegisters) {
     AliWarning("Index size too big for Global Register");
     return 0;
   } else 
@@ -371,7 +371,7 @@ UInt_t AliMUONGlobalCrateConfig::GetGlobalRegister(Int_t index) const
 void AliMUONGlobalCrateConfig::SetGlobalRegister(Int_t index, UInt_t reg) 
 {
   /// set Global register for a given index
-  if (index > fgkGlobalNofRegisters) {
+  if (index >= fgkGlobalNofRegisters) {
     AliWarning("Index size too big for Global Register");
     return;
   } 
@@ -419,7 +419,7 @@ Bool_t AliMUONGlobalCrateConfig::GetMasksOn() const
 UInt_t AliMUONGlobalCrateConfig::GetFetRegister(Int_t index) const       
 {
   /// return global register for a given index
-  if (index > fgkFetNofRegisters) {
+  if (index >= fgkFetNofRegisters) {
     AliWarning("Index size too big for Fet Register");
     return 0;
   } else 
@@ -430,7 +430,7 @@ UInt_t AliMUONGlobalCrateConfig::GetFetRegister(Int_t index) const
 void AliMUONGlobalCrateConfig::SetFetRegister(Int_t index, UInt_t reg) 
 {
   /// set Global register for a given index
-  if (index > fgkFetNofRegisters) {
+  if (index >= fgkFetNofRegisters) {
     AliWarning("Index size too big for Global Register");
     return;
   } 
