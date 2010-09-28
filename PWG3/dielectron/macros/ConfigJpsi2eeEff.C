@@ -5,18 +5,18 @@ void InitCF(AliDielectron* die, Int_t cutDefinition);
 void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
 void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
 
-AliESDtrackCuts *SetupESDtrackCuts();
+AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition);
 
-TString names=("no_cuts;track_quality;tq+mcPIDele;tq+4#sigma_dEdx_E");
+TString names=("nocut;TPCrefit;ESDcuts;ESDcuts+SPDany+TPCpid;ESDcuts+SPDfirst+TPCpid");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 
-AliDielectron* ConfigJpsi2ee(Int_t cutDefinition=1)
+AliDielectron* ConfigJpsi2ee(Int_t cutDefinition, Bool_t isAOD=kFALSE)
 {
   //
   // Setup the instance of AliDielectron
   //
-  
+  if (isAOD) return 0x0;
   // create the actual framework object
   TString name=Form("%02d",cutDefinition);
   if (cutDefinition<arrNames->GetEntriesFast()){
@@ -47,30 +47,25 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   //
   // Setup the track cuts
   //
-  
+
   //ESD quality cuts
   if (cutDefinition>0){
-    die->GetTrackFilter().AddCuts(SetupESDtrackCuts());
+    die->GetTrackFilter().AddCuts(SetupESDtrackCuts(cutDefinition));
   }
-  
-  //MC pid
-  if (cutDefinition==2){
-    //MC pid
-    AliDielectronVarCuts *mcpid=new AliDielectronVarCuts("legMCpid","Leg MC pid");
-    mcpid->SetCutOnMCtruth();
-    mcpid->SetCutType(AliDielectronVarCuts::kAny);
-    mcpid->AddCut(AliDielectronVarManager::kPdgCode, 11);
-    mcpid->AddCut(AliDielectronVarManager::kPdgCode, -11);
-    die->GetTrackFilter().AddCuts(mcpid);
-  }
-  
+
   if (cutDefinition>=3){
-    //ESD pid cuts (TPC nSigma)
-    AliDielectronVarCuts *pid = new AliDielectronVarCuts("TPCnSigma","TPC nSigma cut");
-    pid->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -4., 4.);
+    //ESD pid cuts
+    AliDielectronPID *pid=new AliDielectronPID("MC_Prod_Data","MC to reproduce data");
+    //proton cut to reproduce data parametrisation
+    Double_t resolution=0.058;
+    Double_t nSigma=3.;
+    TF1 *ff=new TF1(Form("fBethe%d",AliPID::kProton), Form("(%f*%f+(AliExternalTrackParam::BetheBlochAleph(x/%f,[0],[1],[2],[3],[4])-AliExternalTrackParam::BetheBlochAleph(x/%f,[0],[1],[2],[3],[4])))/%f", nSigma,resolution, AliPID::ParticleMass(AliPID::kProton), AliPID::ParticleMass(AliPID::kElectron), resolution), 0.05,200.);
+    ff->SetParameters(0.0283086/0.97,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,3);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,ff,10,0,3);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3,3,kTRUE);
     die->GetTrackFilter().AddCuts(pid);
-  }
-  
+  } 
 }
 
 //______________________________________________________________________________________
@@ -79,79 +74,41 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
   //
   // Setup the pair cuts
   //
-  
-  
-  if (cutDefinition>0){
-    //MC mother in y +-.9
-    AliDielectronVarCuts *etaMC=new AliDielectronVarCuts("|MC Y|<.9","|MC Y|<.9");
-    etaMC->AddCut(AliDielectronVarManager::kY,-.8,.8);
-    etaMC->SetCutOnMCtruth();
-    die->GetPairFilter().AddCuts(etaMC);
-    
-    //reject conversions
-    AliDielectronVarCuts *openingAngleCut=new AliDielectronVarCuts("OpeningAngle","Opening angle > .35rad");
-    openingAngleCut->AddCut(AliDielectronVarManager::kOpeningAngle,.35,4.);
-    die->GetPairFilter().AddCuts(openingAngleCut);
-    
-  }
 
-  if (cutDefinition==3){
-    //
-    //ESD pid cuts (TPC nSigma Pions)
-    //
-    AliDielectronPairLegCuts *tpcNSigmaPi = new AliDielectronPairLegCuts("|n#sigma#pi|>2","|n#sigma#pi|>2");
-    
-    AliDielectronVarCuts *pidPiM = new AliDielectronVarCuts("TPCnSigmaPi-","TPC nSigma- pi cut");
-    pidPiM->AddCut(AliDielectronVarManager::kTPCnSigmaPio, -10., -2.);
-    
-    AliDielectronVarCuts *pidPiP = new AliDielectronVarCuts("TPCnSigmaPi+","TPC nSigma+ pi cut");
-    pidPiP->AddCut(AliDielectronVarManager::kTPCnSigmaPio, 2., 10.);
-    
-    tpcNSigmaPi->GetLeg1Filter().AddCuts(pidPiM);
-    tpcNSigmaPi->GetLeg1Filter().AddCuts(pidPiP);
-    
-    tpcNSigmaPi->GetLeg2Filter().AddCuts(pidPiM);
-    tpcNSigmaPi->GetLeg2Filter().AddCuts(pidPiP);
-    
-    die->GetPairFilter().AddCuts(tpcNSigmaPi);
-    
-    //
-    //TRD pid quality cuts
-    //
-    AliDielectronVarCuts *trdNtrklet = new AliDielectronVarCuts("TRDpidQuality","TRD pid quality");
-    trdNtrklet->AddCut(AliDielectronVarManager::kTRDpidQuality, 3.5, 8.);
-    
-    AliDielectronPairLegCuts *trdNtrkletAny = new AliDielectronPairLegCuts("TRDntrlt>=4 any","TRDntrlt>=4 any");
-    trdNtrkletAny->GetLeg1Filter().AddCuts(trdNtrklet);
-    trdNtrkletAny->GetLeg2Filter().AddCuts(trdNtrklet);
-    trdNtrkletAny->SetCutType(AliDielectronPairLegCuts::kAnyLeg);
-    die->GetPairFilter().AddCuts(trdNtrkletAny);
-    
-    AliDielectronPairLegCuts *trdNtrkletBoth = new AliDielectronPairLegCuts("TRDntrlt>=4 both","TRDntrlt>=4 both");
-    trdNtrkletBoth->GetLeg1Filter().AddCuts(trdNtrklet);
-    trdNtrkletBoth->GetLeg2Filter().AddCuts(trdNtrklet);
-    die->GetPairFilter().AddCuts(trdNtrkletBoth);
-  }
+  //reject conversions
+  AliDielectronVarCuts *openingAngleCut=new AliDielectronVarCuts("OpeningAngle","Opening angle>0.35rad");
+  openingAngleCut->AddCut(AliDielectronVarManager::kOpeningAngle,.035,4.);
+  if(cutDefinition>1)
+    die->GetPairFilter().AddCuts(openingAngleCut);  
 }
 
 //______________________________________________________________________________________
-AliESDtrackCuts *SetupESDtrackCuts()
+AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition)
 {
   //
   // Setup default AliESDtrackCuts
   //
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts;
-  
-  esdTrackCuts->SetMaxDCAToVertexZ(3.0);
-  esdTrackCuts->SetMaxDCAToVertexXY(1); 
-  esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  
-  esdTrackCuts->SetMinNClustersTPC(75);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-  
+  if(cutDefinition==1) {
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  }
+  if(cutDefinition>1) {
+    //    esdTrackCuts->SetEtaRange(-0.9,0.9);
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetMaxDCAToVertexZ(3.0);
+    esdTrackCuts->SetMaxDCAToVertexXY(1);
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCuts->SetMinNClustersTPC(80);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  }
+  if(cutDefinition==3) {
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  }
+  if(cutDefinition==4) {
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  }
+
   return esdTrackCuts;
 }
 
@@ -216,39 +173,55 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   //
   
   AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
-  
-  //pair variables
-  cf->AddVariable(AliDielectronVarManager::kPt,50,0,10);
-  cf->AddVariable(AliDielectronVarManager::kEta,40,-2,2);
-  cf->AddVariable(AliDielectronVarManager::kY,40,-2,2);
-  cf->AddVariable(AliDielectronVarManager::kM,100,0,4);
-  cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
-  cf->AddVariable(AliDielectronVarManager::kOpeningAngle,10,0,3.15);
-  //leg variables
-  cf->AddVariable(AliDielectronVarManager::kEta,40,-2,2,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kImpactParXY,50,-.1,.1,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,12,-3,3,kTRUE);
-  
-  //no cuts
-  //only in this case write MC truth info
-  if (cutDefinition==0){
+
+  //pair variables **********************************************************
+  // j/psi pt ------------------
+  TVectorD *binLimPt=new TVectorD(14);
+  (*binLimPt)[0]=0.0; (*binLimPt)[1]=0.4; (*binLimPt)[2]=0.8; (*binLimPt)[3]=1.4;
+  (*binLimPt)[4]=2.0; (*binLimPt)[5]=2.8; (*binLimPt)[6]=3.5; (*binLimPt)[7]=4.2;
+  (*binLimPt)[8]=5.0; (*binLimPt)[9]=6.0; (*binLimPt)[10]=7.0; (*binLimPt)[11]=8.0;
+  (*binLimPt)[12]=9.0; (*binLimPt)[13]=10.0;
+  cf->AddVariable(AliDielectronVarManager::kPt,          binLimPt);
+  // j/psi y -------------------
+  TVectorD *binLimY=new TVectorD(13);
+  (*binLimY)[0]=-1.0; (*binLimY)[1]=-0.88; (*binLimY)[2]=-0.8;
+  (*binLimY)[3]=-0.6; (*binLimY)[4]=-0.4; (*binLimY)[5]=-0.2; (*binLimY)[6]=0.0;
+  (*binLimY)[7]=0.2; (*binLimY)[8]=0.4; (*binLimY)[9]=0.6; (*binLimY)[10]=0.8;
+  (*binLimY)[11]=0.88; (*binLimY)[12]=1.0;
+  cf->AddVariable(AliDielectronVarManager::kY,            binLimY);
+  // pair type -----------------
+  cf->AddVariable(AliDielectronVarManager::kPairType,      3,  0.0, 3.0);  
+  //leg variables **********************************************************
+  // leg pseudo-rapidity --------------------------
+  cf->AddVariable(AliDielectronVarManager::kEta,          binLimY, kTRUE);
+  // leg TPC n-sigma electron ---------------------
+  //  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle, 12, -3.0,   3.0, kTRUE);
+  // leg pt ---------------------------------------
+  TVectorD *binLimPtLeg=new TVectorD(7);
+  (*binLimPtLeg)[0]=0.0; (*binLimPtLeg)[1]=0.8; (*binLimPtLeg)[2]=0.9;
+  (*binLimPtLeg)[3]=1.0; (*binLimPtLeg)[4]=1.1; (*binLimPtLeg)[5]=1.2;
+  (*binLimPtLeg)[6]=20.0;
+  cf->AddVariable(AliDielectronVarManager::kPt,            binLimPtLeg, kTRUE);
+  // leg Ncls TPC ---------------------------------
+  TVectorD *binLimNclsTPC=new TVectorD(7);
+  (*binLimNclsTPC)[0]=0.0;   (*binLimNclsTPC)[1]=80.0;  (*binLimNclsTPC)[2]=90.0;
+  (*binLimNclsTPC)[3]=100.0; (*binLimNclsTPC)[4]=110.0; (*binLimNclsTPC)[5]=120.0;
+  (*binLimNclsTPC)[6]=160.0;
+  cf->AddVariable(AliDielectronVarManager::kNclsTPC,       binLimNclsTPC, kTRUE);
+  // -------------------------------------------------------------------------------
+
+  if(cutDefinition==0) {
     cf->SetStepForMCtruth();
-    cf->SetStepForNoCutsMCmotherPid();
     cf->SetStepForAfterAllCuts(kFALSE);
+    cf->SetStepsForSignal(kFALSE);
   }
-  
-  if (cutDefinition==1){
-    cf->SetStepForNoCutsMCmotherPid();
+  if(cutDefinition>0){
+    //    cf->SetStepForNoCutsMCmotherPid();
+    cf->SetStepForAfterAllCuts();
+    //    cf->SetStepsForEachCut();
+    cf->SetStepsForSignal();
+    //    cf->SetStepsForBackground();
   }
-  
-  if (cutDefinition>1){
-    cf->SetStepsForEachCut();
-  }
-  
-  if (cutDefinition>2){
-    cf->SetStepsForCutsIncreasing();
-  }
-  
   die->SetCFManagerPair(cf);
   
 }

@@ -90,10 +90,16 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
     if (die->GetCFManagerPair()) fListCF.Add(const_cast<AliCFContainer*>(die->GetCFManagerPair()->GetContainer()));
   }
 
+  Int_t cuts=fListDielectron.GetEntries();
+  Int_t nbins=2+2*cuts;
   if (!fEventStat){
-    fEventStat=new TH1D("hEventStat","Event statistics",5,0,5);
+    fEventStat=new TH1D("hEventStat","Event statistics",nbins,0,nbins);
     fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
     fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
+    for (Int_t i=0; i<cuts; ++i){
+      fEventStat->GetXaxis()->SetBinLabel(3+2*i,Form("#splitline{1 candidate}{%s}",fListDielectron.At(i)->GetName()));
+      fEventStat->GetXaxis()->SetBinLabel(4+2*i,Form("#splitline{With >1 candidate}{%s}",fListDielectron.At(i)->GetName()));
+    }
   }
   
   PostData(1, &fListHistos);
@@ -150,8 +156,15 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   //Process event in all AliDielectron instances
   TIter nextDie(&fListDielectron);
   AliDielectron *die=0;
+  Int_t idie=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
     die->Process(InputEvent());
+    if (die->HasCandidates()){
+      Int_t ncandidates=die->GetPairArray(1)->GetEntriesFast();
+      if (ncandidates==1) fEventStat->Fill(3+2*idie);
+      else if (ncandidates>1) fEventStat->Fill(4+2*idie);
+    }
+    ++idie;
   }
   
   PostData(1, &fListHistos);

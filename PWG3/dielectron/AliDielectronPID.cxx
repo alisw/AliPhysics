@@ -27,6 +27,7 @@ Detailed description
 
 #include <TMath.h>
 #include <TF1.h>
+#include <TGraph.h>
 
 #include <AliVTrack.h>
 #include <AliLog.h>
@@ -37,6 +38,9 @@ Detailed description
 #include "AliDielectronPID.h"
 
 ClassImp(AliDielectronPID)
+
+TGraph *AliDielectronPID::fgFitCorr=0x0;
+Double_t AliDielectronPID::fgCorr=0.0;
 
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
@@ -234,7 +238,6 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut) const
   if (part->IsA()==AliESDtrack::Class()){
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
-    
     numberOfSigmas=fESDpid->NumberOfSigmasITS(track, fPartType[icut]);
   }else{
     // AOD case
@@ -255,12 +258,12 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut) const
   //
   Float_t numberOfSigmas=-1000.;
   
+  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliESDtrack::kTPCpid)) return kFALSE;
+  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliESDtrack::kTPCpid)) return kTRUE;
+
   if (part->IsA()==AliESDtrack::Class()){
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
-    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(track->GetStatus()&AliESDtrack::kTPCpid)) return kFALSE;
-    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(track->GetStatus()&AliESDtrack::kTPCpid)) return kTRUE;
-    
     numberOfSigmas=fESDpid->NumberOfSigmasTPC(track, fPartType[icut]);
   }else{
     // AOD case
@@ -268,7 +271,9 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut) const
     AliAODTrack *track=static_cast<AliAODTrack*>(part);
     numberOfSigmas=NumberOfSigmasTPC(track, fPartType[icut]);
   }
-  
+//   if (fPartType[icut]==AliPID::kElectron){
+//     numberOfSigmas-=fgCorr;
+//   }
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
   return selected;
 }
@@ -291,12 +296,12 @@ Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut) const
   //
   Float_t numberOfSigmas=-1000.;
   
+  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(part->GetStatus()&AliESDtrack::kTOFpid)) return kFALSE;
+  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(part->GetStatus()&AliESDtrack::kTOFpid)) return kTRUE;
+
   if (part->IsA()==AliESDtrack::Class()){
     // ESD case in case the PID bit is not set, don't use this track!
     AliESDtrack *track=static_cast<AliESDtrack*>(part);
-    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&!(track->GetStatus()&AliESDtrack::kTOFpid)) return kFALSE;
-    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&!(track->GetStatus()&AliESDtrack::kTOFpid)) return kTRUE;
-    
     numberOfSigmas=fESDpid->NumberOfSigmasTOF(track, fPartType[icut], fESDpid->GetTOFResponse().GetTimeZero());
   }else{
     // AOD case
@@ -340,7 +345,7 @@ void AliDielectronPID::SetDefaults(Int_t def){
     // include 2sigma e TPC
     // 3sigma bands TOF
     // - exclude K,P
-    AddCut(kTPC,AliPID::kElectron,-2.5,4.);
+    AddCut(kTPC,AliPID::kElectron,-3.,3.);
     AddCut(kTPC,AliPID::kPion,-3.,3.,0.,0.,kTRUE);
     AddCut(kTPC,AliPID::kProton,-3.,3.,0.,0.,kTRUE);
 
@@ -399,5 +404,19 @@ void AliDielectronPID::SetDefaults(Int_t def){
     AddCut(kTPC,AliPID::kProton,-3.,3.,0.,0.,kTRUE);
     
   }
+}
+
+//______________________________________________
+void AliDielectronPID::SetCorrVal(Double_t run)
+{
+  //
+  // set correction value for run
+  //
+  fgCorr=0;
+  if (!fgFitCorr) return;
+  fgCorr=fgFitCorr->Eval(run);
+  if (run<fgFitCorr->GetX()[0]) fgCorr=fgFitCorr->GetY()[0];
+  if (run>fgFitCorr->GetX()[fgFitCorr->GetN()-1]) fgCorr=fgFitCorr->GetY()[fgFitCorr->GetN()-1];
+//   printf("Corr: %f\n",fgCorr);
 }
 

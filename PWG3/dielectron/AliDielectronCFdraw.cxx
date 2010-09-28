@@ -521,7 +521,7 @@ TObjArray* AliDielectronCFdraw::CollectHistosEff(Int_t dim, Int_t *vars, const c
         Float_t eff=0;
         if (entriesDen>0) eff=hproj->GetEffectiveEntries()/entriesDen;
         fVdata(istep)=eff;
-        hproj->Divide(hDen);
+        hproj->Divide(hproj,hDen,1,1,"B");
         hproj->SetName(Form("eff_%02d/%02d",istep,denominator));
         hproj->SetTitle(Form("%s (%.3f)",fCfContainer->GetStepTitle(istep),eff));
         arrHists->Add(hproj);
@@ -539,7 +539,7 @@ TObjArray* AliDielectronCFdraw::CollectHistosEff(Int_t dim, Int_t *vars, const c
         Float_t eff=0;
         if (entriesDen>0) eff=hproj->GetEffectiveEntries()/entriesDen;
         fVdata(count++)=eff;
-        hproj->Divide(hDen);
+        hproj->Divide(hproj,hDen,1,1,"B");
         hproj->SetName(Form("eff_%02d/%02d",istep,denominator));
         hproj->SetTitle(Form("%s (%.3f)",fCfContainer->GetStepTitle(istep),eff));
         arrHists->Add(hproj);

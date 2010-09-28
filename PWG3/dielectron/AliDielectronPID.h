@@ -29,6 +29,7 @@
 class TF1;
 class TList;
 class AliVTrack;
+class TGraph;
 
 class AliDielectronPID : public AliAnalysisCuts {
 public:
@@ -59,6 +60,11 @@ public:
   //const
   virtual Bool_t IsSelected(TObject* track);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
+
+  static void SetCorrGraph(TGraph * const gr) { fgFitCorr=gr; }
+  static void SetCorrVal(Double_t run);
+  static Double_t GetCorrVal()   { return fgCorr; }
+  static TGraph *GetCorrGraph()  { return fgFitCorr; }
   
 private:
   enum {kNmaxPID=10};
@@ -77,6 +83,10 @@ private:
 
   AliESDpid *fESDpid;             //! esd pid object
 
+                                  
+  static TGraph *fgFitCorr;       //spline fit object to correct the nsigma deviation in the TPC electron band
+  static Double_t fgCorr;         //!correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
+                                  // was called
   
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut) const;
   Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut) const;
@@ -90,7 +100,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,2)         // Dielectron PID
+  ClassDef(AliDielectronPID,3)         // Dielectron PID
 };
 
 
