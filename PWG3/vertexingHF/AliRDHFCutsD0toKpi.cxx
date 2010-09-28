@@ -36,7 +36,9 @@ ClassImp(AliRDHFCutsD0toKpi)
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) : 
 AliRDHFCuts(name),
-fUseSpecialCuts(kFALSE)
+fUseSpecialCuts(kFALSE),
+fLowPt(kTRUE),
+fDefaultPID(kTRUE)
 {
   //
   // Default Constructor
@@ -75,12 +77,13 @@ fUseSpecialCuts(kFALSE)
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 
-  SetRemoveDaughtersFromPrim(kTRUE);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
-  AliRDHFCuts(source),  
-  fUseSpecialCuts(source.fUseSpecialCuts)
+  AliRDHFCuts(source),   
+  fUseSpecialCuts(source.fUseSpecialCuts),
+  fLowPt(source.fLowPt),
+  fDefaultPID(source.fDefaultPID)
 {
   //
   // Copy constructor
@@ -95,8 +98,10 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
   //
   if(&source == this) return *this;
 
-  AliRDHFCuts::operator=(source);
+  AliRDHFCuts::operator=(source); 
   fUseSpecialCuts=source.fUseSpecialCuts;
+  fLowPt=source.fLowPt;
+  fDefaultPID=source.fDefaultPID;
 
   return *this;
 }
@@ -229,11 +234,12 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
     //recalculate vertex w/o daughters
     AliAODVertex *origownvtx=0x0;
     AliAODVertex *recvtx=0x0;
+  
     if(fRemoveDaughtersFromPrimary) {
       if(!aod) {
 	AliError("Can not remove daughters from vertex without AOD event");
 	return 0;
-      }
+      }   
       if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
       recvtx=d->RemoveDaughtersFromPrimaryVtx(aod);
       if(!recvtx){
@@ -358,6 +364,140 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
   // Apply PID selection
   //
   //
+  // ############################################################
+
+  if(!fUsePID) return 3;
+  if(fDefaultPID) return IsSelectedPIDdefault(d);
+  fWhyRejection=0;
+  Int_t isD0D0barPID[2]={1,2};
+  Int_t combinedPID[2][2];// CONVENTION: [daught][isK,IsPi]; [0][0]=(prong 1, isK)=value [0][1]=(prong 1, isPi)=value; 
+  //                                                                                                 same for prong 2
+  //                                               values convention -1 = discarded 
+  //                                                                  0 = not identified (but compatible) || No PID (->hasPID flag)
+  //                                                                  1 = identified
+  // PID search:   pion (TPC) or not K (TOF), Kaon hypothesis for both 
+  // Initial hypothesis: unknwon (but compatible) 
+  combinedPID[0][0]=0;  // prima figlia, Kaon
+  combinedPID[0][1]=0;  // prima figlia, pione
+  combinedPID[1][0]=0;  // seconda figlia, Kaon
+  combinedPID[1][1]=0;  // seconda figlia, pion
+  
+  Bool_t checkPIDInfo[2]={kTRUE,kTRUE};
+  Double_t sigma_tmp[3]={fPidHF->GetSigma(0),fPidHF->GetSigma(1),fPidHF->GetSigma(2)};
+  for(Int_t daught=0;daught<2;daught++){
+    //Loop con prongs
+    AliAODTrack *aodtrack=(AliAODTrack*)d->GetDaughter(daught);
+    
+    if(!(fPidHF->CheckStatus(aodtrack,"TPC")) && !(fPidHF->CheckStatus(aodtrack,"TOF"))) {
+    checkPIDInfo[daught]=kFALSE; 
+    continue;
+    }
+
+    // identify kaon
+    combinedPID[daught][0]=fPidHF->MakeRawPid(aodtrack,3);
+
+    // identify pion
+
+    if(!(fPidHF->CheckStatus(aodtrack,"TPC"))) {
+     combinedPID[daught][1]=0;
+    }else{
+      fPidHF->SetTOF(kFALSE);
+      combinedPID[daught][1]=fPidHF->MakeRawPid(aodtrack,2);
+      fPidHF->SetTOF(kTRUE);
+      fPidHF->SetCompat(kTRUE);
+     }
+
+
+   if(combinedPID[daught][0]<=-1&&combinedPID[daught][1]<=-1){ // if not a K- and not a pi- both D0 and D0bar excluded
+    isD0D0barPID[0]=0;
+    isD0D0barPID[1]=0;
+   }
+   else if(combinedPID[daught][0]==2&&combinedPID[daught][1]>=1){
+    if(aodtrack->Charge()==-1)isD0D0barPID[1]=0;//if K- D0bar excluded
+    else isD0D0barPID[0]=0;// if K+ D0 excluded
+   }
+   else if(combinedPID[daught][0]==1&&combinedPID[daught][1]>=1){
+    isD0D0barPID[0]=0;
+    isD0D0barPID[1]=0;
+   }
+   else if(combinedPID[daught][0]>=1||combinedPID[daught][1]<=-1){ 
+   if(aodtrack->Charge()==-1)isD0D0barPID[1]=0;// not a D0bar if K- or if pi- excluded
+   else isD0D0barPID[0]=0;//  not a D0 if K+ or if pi+ excluded
+        }
+   else if(combinedPID[daught][0]<=-1||combinedPID[daught][1]>=1){
+    if(aodtrack->Charge()==-1)isD0D0barPID[0]=0;// not a D0 if pi- or if K- excluded
+    else isD0D0barPID[1]=0;// not a D0bar if pi+ or if K+ excluded
+   }
+
+    if(fLowPt && d->Pt()<2.){
+     Double_t sigmaTPC[3]={3.,2.,0.};
+     fPidHF->SetSigmaForTPC(sigmaTPC);
+    // identify kaon
+    combinedPID[daught][0]=fPidHF->MakeRawPid(aodtrack,3);
+
+    Double_t ptProng=aodtrack->P();
+
+    if(ptProng<0.6){
+     fPidHF->SetCompat(kFALSE);
+     combinedPID[daught][0]=fPidHF->MakeRawPid(aodtrack,3);
+     fPidHF->SetCompat(kTRUE);
+    }
+
+    if(!(fPidHF->CheckStatus(aodtrack,"TPC"))) {
+     combinedPID[daught][1]=0;
+    }else{
+      fPidHF->SetTOF(kFALSE);
+      Double_t sigmaTPCpi[3]={3.,3.,0.};
+      fPidHF->SetSigmaForTPC(sigmaTPCpi);
+      combinedPID[daught][1]=fPidHF->MakeRawPid(aodtrack,2);
+      fPidHF->SetTOF(kTRUE);
+       if(ptProng<0.8){
+        Bool_t isTPCpion=fPidHF->IsPionRaw(aodtrack,"TPC");
+        if(isTPCpion){
+         combinedPID[daught][1]=1;
+        }else{
+         combinedPID[daught][1]=-1;
+        }
+      }
+    }
+
+   }
+   fPidHF->SetSigmaForTPC(sigma_tmp);
+  }// END OF LOOP ON DAUGHTERS
+
+   if(!checkPIDInfo[0] && !checkPIDInfo[1]) {
+    if(fLowPt) fPidHF->SetSigmaForTPC(sigma_tmp);
+    return 0;
+   }
+
+
+  // FURTHER PID REQUEST (both daughter info is needed)
+  if(combinedPID[0][0]<=-1&&combinedPID[1][0]<=-1){
+    fWhyRejection=31;// reject cases in which no kaon-compatible tracks are found
+    if(fLowPt) fPidHF->SetSigmaForTPC(sigma_tmp);
+    return 0;
+  }
+
+  if(d->Pt()<2.){
+    if(fLowPt) fPidHF->SetSigmaForTPC(sigma_tmp);
+    if(combinedPID[0][0]<=0&&combinedPID[1][0]<=0){
+      fWhyRejection=32;// reject cases where the Kaon is not identified
+      return 0;
+    }
+  }
+    if(fLowPt) fPidHF->SetSigmaForTPC(sigma_tmp);
+
+  //  cout<<"Why? "<<fWhyRejection<<endl;  
+  return isD0D0barPID[0]+isD0D0barPID[1];
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpi::IsSelectedPIDdefault(AliAODRecoDecayHF* d) 
+{
+  // ############################################################
+  //
+  // Apply PID selection
+  //
+  //
   // temporary selection: PID AS USED FOR D0 by Andrea Rossi (up to 28/06/2010)
   //
   // d must be a AliAODRecoDecayHF2Prong object
@@ -447,15 +587,19 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
      }
      else {
        static AliTPCPIDResponse theTPCpid;
-       nsigmaTPCpi = theTPCpid.GetNumberOfSigmas((Float_t)aodtrack->P(),(Float_t)pid->GetTPCsignal(),(Int_t)aodtrack->GetTPCClusterMap().CountBits(),AliPID::kPion);
-       nsigmaTPCK =  theTPCpid.GetNumberOfSigmas((Float_t)aodtrack->P(),(Float_t)pid->GetTPCsignal(),(Int_t)aodtrack->GetTPCClusterMap().CountBits(),AliPID::kKaon);
-       if(ptrack<0.6){
+       AliAODPid *pidObj = aodtrack->GetDetPid();
+       Double_t ptProng=pidObj->GetTPCmomentum();
+       nsigmaTPCpi = theTPCpid.GetNumberOfSigmas(ptProng,(Float_t)pid->GetTPCsignal(),(Int_t)aodtrack->GetTPCClusterMap().CountBits(),AliPID::kPion);
+       nsigmaTPCK =  theTPCpid.GetNumberOfSigmas(ptProng,(Float_t)pid->GetTPCsignal(),(Int_t)aodtrack->GetTPCClusterMap().CountBits(),AliPID::kKaon);
+       //if(ptrack<0.6){
+       if(ptProng<0.6){
 	 if(TMath::Abs(nsigmaTPCK)<2.)isKaonPionTPC[daught][0]=1;
 	 else if(TMath::Abs(nsigmaTPCK)>3.)isKaonPionTPC[daught][0]=-1;
 	 if(TMath::Abs(nsigmaTPCpi)<2.)isKaonPionTPC[daught][1]=1;
 	 else if(TMath::Abs(nsigmaTPCpi)>3.)isKaonPionTPC[daught][1]=-1;
        }
-       else if(ptrack<.8){
+       //else if(ptrack<.8){
+       else if(ptProng<.8){
 	 if(TMath::Abs(nsigmaTPCK)<1.)isKaonPionTPC[daught][0]=1;
 	 else if(TMath::Abs(nsigmaTPCK)>3.)isKaonPionTPC[daught][0]=-1;
 	 if(TMath::Abs(nsigmaTPCpi)<1.)isKaonPionTPC[daught][1]=1;
@@ -523,13 +667,17 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
      if(d->Pt()<2.){
        isKaonPionTPC[daught][0]=0;
        isKaonPionTPC[daught][1]=0;
-       if(ptrack<0.6){
+       AliAODPid *pidObj = aodtrack->GetDetPid();
+       Double_t ptProng=pidObj->GetTPCmomentum();
+       //if(ptrack<0.6){
+       if(ptProng<0.6){
 	 if(TMath::Abs(nsigmaTPCK)<3.)isKaonPionTPC[daught][0]=1;
 	 else if(TMath::Abs(nsigmaTPCK)>3.)isKaonPionTPC[daught][0]=-1;
 	 if(TMath::Abs(nsigmaTPCpi)<3.)isKaonPionTPC[daught][1]=1;
 	 else if(TMath::Abs(nsigmaTPCpi)>3.)isKaonPionTPC[daught][1]=-1;
      }
-       else if(ptrack<.8){
+       //else if(ptrack<.8){
+       else if(ptProng<.8){
 	 if(TMath::Abs(nsigmaTPCK)<2.)isKaonPionTPC[daught][0]=1;
 	 else if(TMath::Abs(nsigmaTPCK)>3.)isKaonPionTPC[daught][0]=-1;
 	 if(TMath::Abs(nsigmaTPCpi)<3.)isKaonPionTPC[daught][1]=1;
@@ -573,6 +721,8 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
   //  cout<<"Why? "<<fWhyRejection<<endl;  
   return isD0D0barPID[0]+isD0D0barPID[1];
 }
+
+
 
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsD0toKpi::CombineSelectionLevels(Int_t selectionvalTrack,
@@ -630,3 +780,4 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const
 
   return returnvalue;
 }
+
