@@ -981,6 +981,8 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
       tmpy4dto16[2*i+1] = (y4d[i]&GetSwitch(0)) | (y4d[2*i+1]&!GetSwitch(0));
    }
   
+   for (i=0; i<16; i++) ch3[i] = ch4[i] = 0;
+
    if (GetSwitch(3)==0&&GetSwitch(4)==0){
       for (i=0; i<16; i++){
          ch3[i] = tmpy3to16[i];

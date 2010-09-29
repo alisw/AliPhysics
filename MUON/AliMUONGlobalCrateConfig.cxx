@@ -231,8 +231,8 @@ Int_t AliMUONGlobalCrateConfig::ReadData(const TString& fileName)
         in.getline(line, 255);
         tmp = AliMpHelper::Normalize(line);
         ULong_t addr;
-        if (addr) nDarc++;
         sscanf(tmp.Data(), "%lx", &addr);
+        if (addr) nDarc++;
         SetSecondDarcVmeAddr(addr);
         AliDebug(1, Form("Second Darc Vme Address: 0x%lx", addr));
         

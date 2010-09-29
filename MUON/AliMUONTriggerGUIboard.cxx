@@ -234,7 +234,7 @@ void AliMUONTriggerGUIboard::MakeGeometry()
 
   Float_t minX, maxX, minY, maxY;
   Float_t dx, dy;
-  Float_t xloc, yloc, xglo, yglo, zglo;
+  Float_t xloc, yloc, xglo=0., yglo=0., zglo=0.;
   for (Int_t ich = 0; ich < kNMT; ich++) {
     minX = +9999; maxX = -9999;
     minY = +9999; maxY = -9999;
