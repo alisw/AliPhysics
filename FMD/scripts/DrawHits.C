@@ -50,7 +50,8 @@ public:
   DrawHits(const char* pdgName="pi+",
 	   Int_t m=1000, Double_t emin=1, Double_t emax=1000, 
 	   Int_t n=900, Double_t tmin=1e-2, Double_t tmax=1e3) 
-    : fPdg(0), 
+    : AliFMDInput("galice.root"),
+      fPdg(0), 
       fRho(2.33),
       fBetaGammaMip(3.4601)
   { 
@@ -92,6 +93,7 @@ public:
     }
     // if (!p->IsPrimary()) return kTRUE;
     if (hit->IsStop()) return kTRUE;
+    if (hit->Length() == 0) return kTRUE;
 
     Float_t x = hit->P();
     Float_t y = hit->Edep()/hit->Length();
@@ -103,7 +105,7 @@ public:
     y /= q * q;
     fElossVsPMQ->Fill(x, y);
     fEloss->Fill(y);
-    fNHits++;
+    // fNHits++;
     return kTRUE;
   }
   //__________________________________________________________________
@@ -178,8 +180,8 @@ public:
     
     l = new TLegend(.6, .6, .89, .89);
     l->AddEntry(fEloss, fEloss->GetTitle(), "lf");
-    l->AddEntry(land,   "Landau fit", "l");
-    l->AddEntry(resp,   "f(#Delta_{p}/x) [RPP fig 27.8]", "l");
+    // l->AddEntry(land,   "Landau fit", "l");
+    // l->AddEntry(resp,   "f(#Delta_{p}/x) [RPP fig 27.8]", "l");
     l->Draw("same");
 
     return kTRUE;

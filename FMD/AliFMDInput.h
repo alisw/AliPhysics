@@ -114,7 +114,6 @@ public:
     kESD,             // Load ESD's
     kRaw,             // Read raw data 
     kGeometry,        // Not really a tree 
-    kTracks,	      // Hits and tracs - for BG study	
     kTrackRefs,       // Track references - also for BG study
     kRawCalib,        // Read raws and calibrate them
     kUser
@@ -173,6 +172,10 @@ public:
       that track
       @return @c false on error  */
   virtual Bool_t ProcessTracks();
+  /** Loop over all tracks, and call ProcessTrack with each hit for
+      that track
+      @return @c false on error  */
+  virtual Bool_t ProcessStack();
   /** Loop over all digits, and call ProcessDigit for each digit.
       @return @c false on error  */
   virtual Bool_t ProcessDigits();
@@ -218,6 +221,11 @@ public:
       @param h Associated Hit
       @return  @c false on error   */
   virtual Bool_t ProcessTrack(Int_t i, TParticle* p, AliFMDHit* h);
+  /** Process stack particle 
+      @param i Track number 
+      @param p Track  
+      @return  @c false on error   */
+  virtual Bool_t ProcessParticle(Int_t i , TParticle* p);
   /** Process one digit.  Users should over this to process each
       digit. 
       @param digit Digit
@@ -366,6 +374,7 @@ inline Bool_t AliFMDInput::ProcessTrackRef(AliTrackReference*,
 					   TParticle*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessTrack(Int_t,TParticle*,
 					AliFMDHit*) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessParticle(Int_t,TParticle*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessDigit(AliFMDDigit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessSDigit(AliFMDSDigit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessRawDigit(AliFMDDigit*) { return kTRUE; }

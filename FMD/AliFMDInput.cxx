@@ -44,6 +44,7 @@
 #include "AliFMDSDigit.h"	// ALIFMDDigit_H
 #include "AliFMDRecPoint.h"	// ALIFMDRECPOINT_H
 #include "AliFMDRawReader.h"    // ALIFMDRAWREADER_H
+#include "AliFMDGeometry.h"
 #include <AliESD.h>
 #include <AliESDFMD.h>
 #include <AliESDEvent.h>
@@ -191,7 +192,6 @@ AliFMDInput::Init()
        "\tRaw:           %d\n"
        "\tRawCalib:      %d\n"
        "\tGeometry:      %d\n"
-       "\tTracks:        %d\n"
        "\tTracksRefs:    %d",
        fTreeMask,
        TESTBIT(fTreeMask, kHits),
@@ -204,14 +204,12 @@ AliFMDInput::Init()
        TESTBIT(fTreeMask, kRaw),
        TESTBIT(fTreeMask, kRawCalib),
        TESTBIT(fTreeMask, kGeometry),
-       TESTBIT(fTreeMask, kTracks),
        TESTBIT(fTreeMask, kTrackRefs));
   // Get the run 
   if (TESTBIT(fTreeMask, kDigits)     ||
       TESTBIT(fTreeMask, kSDigits)    || 
       TESTBIT(fTreeMask, kKinematics) || 
       TESTBIT(fTreeMask, kTrackRefs)  || 
-      TESTBIT(fTreeMask, kTracks)     || 
       TESTBIT(fTreeMask, kHeader)) {
     if (!gSystem->FindFile(".:/", fGAliceFile)) {
       AliWarning(Form("Cannot find file %s in .:/", fGAliceFile.Data()));
@@ -293,23 +291,21 @@ AliFMDInput::Init()
   
   // Optionally, get the geometry 
   if (TESTBIT(fTreeMask, kGeometry)) {
+    TString fname;
     if (fRun) {
-      TString fname(""/*fRun->GetGeometryFileName()*/);
-      //   if (fname.IsNull()) {
-	Warning("Init", "No file name for the geometry from AliRun");
-	fname = gSystem->DirName(fGAliceFile);
-	fname.Append("/geometry.root");
-	//      }
-      fGeoManager = TGeoManager::Import(fname.Data());
-      if (!fGeoManager) {
-	Fatal("Init", "No geometry manager found");
-	return kFALSE;
-      }
+      fname = gSystem->DirName(fGAliceFile);
+      fname.Append("/geometry.root");
     }
-    else { 
-      AliGeomManager::LoadGeometry();
-    }
+    if (!gSystem->AccessPathName(fname.Data())) 
+      fname = "";
     AliCDBManager* cdb   = AliCDBManager::Instance();
+    if (!cdb->IsDefaultStorageSet()) {
+      cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+      cdb->SetRun(0);
+    }
+
+    AliGeomManager::LoadGeometry(fname.IsNull() ? 0 : fname.Data());
+
     AliCDBEntry*   align = cdb->Get("FMD/Align/Data");
     if (align) {
       AliInfo("Got alignment data from CDB");
@@ -328,6 +324,9 @@ AliFMDInput::Init()
 	}
       }
     }
+    AliFMDGeometry* geom = AliFMDGeometry::Instance();
+    geom->Init();
+    geom->InitTransformations();
   }
 
   fEventCount = 0;
@@ -355,14 +354,14 @@ AliFMDInput::Begin(Int_t event)
   AliInfo(Form("Now in event %8d/%8d", event, NEvents()));
 
   // Possibly load global kinematics information 
-  if (TESTBIT(fTreeMask, kKinematics) || TESTBIT(fTreeMask, kTracks)) {
+  if (TESTBIT(fTreeMask, kKinematics)) {
     // AliInfo("Getting kinematics");
     if (fLoader->LoadKinematics("READ")) return kFALSE;
     fStack = fLoader->Stack();
   }
 
   // Possibly load FMD Hit information 
-  if (TESTBIT(fTreeMask, kHits) || TESTBIT(fTreeMask, kTracks)) {
+  if (TESTBIT(fTreeMask, kHits)) {
     // AliInfo("Getting FMD hits");
     if (!fFMDLoader || fFMDLoader->LoadHits("READ")) return kFALSE;
     fTreeH = fFMDLoader->TreeH();
@@ -370,7 +369,7 @@ AliFMDInput::Begin(Int_t event)
   }
   
   // Possibly load FMD TrackReference information 
-  if (TESTBIT(fTreeMask, kTrackRefs) || TESTBIT(fTreeMask, kTracks)) {
+  if (TESTBIT(fTreeMask, kTrackRefs)) {
     // AliInfo("Getting FMD hits");
     if (!fLoader || fLoader->LoadTrackRefs("READ")) return kFALSE;
     fTreeTR = fLoader->TreeTR();
@@ -426,18 +425,6 @@ AliFMDInput::Begin(Int_t event)
     if (read <= 0) return kFALSE;
     fESD = fESDEvent->GetFMDData();
     if (!fESD) return kFALSE;
-#if 0
-    TFile* f = fChainE->GetFile();
-    if (f) {
-      TObject* o = f->GetStreamerInfoList()->FindObject("AliFMDMap");
-      if (o) {
-	TStreamerInfo* info = static_cast<TStreamerInfo*>(o);
-	std::cout << "AliFMDMap class version read is " 
-		  <<  info->GetClassVersion() << std::endl;
-      }
-    }
-    // fESD->CheckNeedUShort(fChainE->GetFile());
-#endif
   }
 
   // Possibly load FMD Digit information 
@@ -481,26 +468,18 @@ AliFMDInput::Event()
   //   -  ProcessRecPoints  if the reconstructed points are loaded. 
   //   -  ProcessESD        if the event summary data is loaded
   // 
-  if (TESTBIT(fTreeMask, kHits)) 
-    if (!ProcessHits()) return kFALSE; 
-  if (TESTBIT(fTreeMask, kTrackRefs)) 
-    if (!ProcessTrackRefs()) return kFALSE; 
-  if (TESTBIT(fTreeMask, kTracks)) 
-    if (!ProcessTracks()) return kFALSE; 
-  if (TESTBIT(fTreeMask, kSDigits)) 
-    if (!ProcessSDigits()) return kFALSE;
-  if (TESTBIT(fTreeMask, kDigits)) 
-    if (!ProcessDigits()) return kFALSE;
-  if (TESTBIT(fTreeMask, kRaw)) 
-    if (!ProcessRawDigits()) return kFALSE;
-  if (TESTBIT(fTreeMask, kRawCalib)) 
-    if (!ProcessRawCalibDigits()) return kFALSE;
-  if (TESTBIT(fTreeMask, kRecPoints)) 
-    if (!ProcessRecPoints()) return kFALSE;
-  if (TESTBIT(fTreeMask, kESD))
-    if (!ProcessESDs()) return kFALSE;
-  if (TESTBIT(fTreeMask, kUser))
-    if (!ProcessUsers()) return kFALSE;
+  if (TESTBIT(fTreeMask, kHits))     if (!ProcessHits())      return kFALSE; 
+  if (TESTBIT(fTreeMask, kTrackRefs))if (!ProcessTrackRefs()) return kFALSE; 
+  if (TESTBIT(fTreeMask, kKinematics) && 
+      TESTBIT(fTreeMask, kHits))     if (!ProcessTracks())    return kFALSE; 
+  if (TESTBIT(fTreeMask, kKinematics))if (!ProcessStack())     return kFALSE; 
+  if (TESTBIT(fTreeMask, kSDigits))  if (!ProcessSDigits())   return kFALSE;
+  if (TESTBIT(fTreeMask, kDigits))   if (!ProcessDigits())    return kFALSE;
+  if (TESTBIT(fTreeMask, kRaw))      if (!ProcessRawDigits()) return kFALSE;
+  if (TESTBIT(fTreeMask, kRawCalib)) if (!ProcessRawCalibDigits())return kFALSE;
+  if (TESTBIT(fTreeMask, kRecPoints))if (!ProcessRecPoints()) return kFALSE;
+  if (TESTBIT(fTreeMask, kESD))      if (!ProcessESDs())      return kFALSE;
+  if (TESTBIT(fTreeMask, kUser))     if (!ProcessUsers())     return kFALSE;
   
   return kTRUE;
 }
@@ -563,9 +542,10 @@ AliFMDInput::ProcessTrackRefs()
     if (trRead <= 0) continue;
     Int_t nTrackRefs = fArrayTR->GetEntries();
     for (Int_t j = 0; j < nTrackRefs; j++) {
-      AliTrackReference* trackRef = static_cast<AliTrackReference*>(fArrayTR->At(j));
+      AliTrackReference* trackRef = 
+	static_cast<AliTrackReference*>(fArrayTR->At(j));
       if (!trackRef) continue;
-      if (trackRef->DetectorId() != AliTrackReference::kFMD) continue;
+      // if (trackRef->DetectorId() != AliTrackReference::kFMD) continue;
       TParticle* track = 0;
       if (TESTBIT(fTreeMask, kKinematics) && fStack) {
 	Int_t trackno = trackRef->GetTrack();
@@ -619,7 +599,26 @@ AliFMDInput::ProcessTracks()
   }
   return kTRUE;
 }
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessStack()
+{
+  // Read the hit tree, and pass each hit to the member function
+  // ProcessTrack.
+  if (!fStack) {
+    AliError("No track tree defined");
+    return kFALSE;
+  }
+  Int_t nTracks = fStack->GetNtrack();
+  for (Int_t i = 0; i < nTracks; i++) {
+    Int_t      trackno = nTracks - i - 1;
+    TParticle* track   = fStack->Particle(trackno);
+    if (!track) continue;
 
+    if (!ProcessParticle(trackno, track)) return kFALSE;
+  }
+  return kTRUE;
+}
 //____________________________________________________________________
 Bool_t 
 AliFMDInput::ProcessDigits()
@@ -822,13 +821,13 @@ AliFMDInput::End()
     return fIsInit;
   }
   // Possibly unload global kinematics information 
-  if (TESTBIT(fTreeMask, kKinematics) || TESTBIT(fTreeMask, kTracks)) {
+  if (TESTBIT(fTreeMask, kKinematics)) {
     fLoader->UnloadKinematics();
     // fTreeK = 0;
     fStack = 0;
   }
   // Possibly unload FMD Hit information 
-  if (TESTBIT(fTreeMask, kHits) || TESTBIT(fTreeMask, kTracks)) {
+  if (TESTBIT(fTreeMask, kHits)) {
     fFMDLoader->UnloadHits();
     fTreeH = 0;
   }
