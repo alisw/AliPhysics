@@ -340,6 +340,14 @@ void AliRDHFCuts::PrintAll() const {
   //
   // print all cuts values
   // 
+
+  printf("Minimum vtx type %d\n",fMinVtxType);
+  printf("Minimum vtx contr %d\n",fMinVtxContr);
+  printf("Max vtx red chi2 %f\n",fMaxVtxRedChi2);
+  printf("Min SPD mult %d\n",fMinSPDMultiplicity);
+  printf("Use PID %d\n",(Int_t)fUsePID);
+  printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
+
   if(fVarNames){
     cout<<"Array of variables"<<endl;
     for(Int_t iv=0;iv<fnVars;iv++){
@@ -450,4 +458,44 @@ Float_t AliRDHFCuts::GetCutValue(Int_t iVar,Int_t iPtBin) const {
   }
   return fCutsRD[GetGlobalIndex(iVar,iPtBin)];
 }
+//-------------------------------------------------------------------
+Bool_t AliRDHFCuts::CompareCuts(const AliRDHFCuts *obj) const {
+  //
+  // Compare two cuts objects
+  //
 
+  Bool_t areEqual=kTRUE;
+
+  if(fMinVtxType!=obj->fMinVtxType) { printf("Minimum vtx type %d  %d\n",fMinVtxType,obj->fMinVtxType); areEqual=kFALSE;}
+
+  if(fMinVtxContr!=obj->fMinVtxContr) { printf("Minimum vtx contr %d  %d\n",fMinVtxContr,obj->fMinVtxContr); areEqual=kFALSE;}
+
+  if(TMath::Abs(fMaxVtxRedChi2-obj->fMaxVtxRedChi2)>1.e-10) {   printf("Max vtx red chi2 %f  %f\n",fMaxVtxRedChi2,obj->fMaxVtxRedChi2);areEqual=kFALSE;}
+
+  if(fMinSPDMultiplicity!=obj->fMinSPDMultiplicity) {  printf("Min SPD mult %d\n  %d",fMinSPDMultiplicity,obj->fMinSPDMultiplicity);areEqual=kFALSE;}
+
+  if(fUsePID!=obj->fUsePID) { printf("Use PID %d  %d\n",(Int_t)fUsePID,(Int_t)obj->fUsePID); areEqual=kFALSE;}
+
+  if(fRemoveDaughtersFromPrimary!=obj->fRemoveDaughtersFromPrimary) {printf("Remove daughters from vtx %d  %d\n",(Int_t)fRemoveDaughtersFromPrimary,(Int_t)obj->fRemoveDaughtersFromPrimary); areEqual=kFALSE;}
+
+  if(fTrackCuts->GetMinNClusterTPC()!=obj->fTrackCuts->GetMinNClusterTPC()) {printf("MinNClsTPC %d  %d\n",fTrackCuts->GetMinNClusterTPC(),obj->fTrackCuts->GetMinNClusterTPC()); areEqual=kFALSE;}
+
+  if(fTrackCuts->GetMinNClustersITS()!=obj->fTrackCuts->GetMinNClustersITS()) {printf("MinNClsITS %d  %d\n",fTrackCuts->GetMinNClustersITS(),obj->fTrackCuts->GetMinNClustersITS()); areEqual=kFALSE;}
+
+  if(TMath::Abs(fTrackCuts->GetMaxChi2PerClusterTPC()-obj->fTrackCuts->GetMaxChi2PerClusterTPC())>1.e-10) {printf("MaxChi2ClsTPC %f  %f\n",fTrackCuts->GetMaxChi2PerClusterTPC(),obj->fTrackCuts->GetMaxChi2PerClusterTPC()); areEqual=kFALSE;}
+
+  if(fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)!=obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)) {printf("ClusterReq SPD %d  %d\n",fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD),obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)); areEqual=kFALSE;}
+
+  if(fCutsRD) {
+   for(Int_t iv=0;iv<fnVars;iv++) {
+     for(Int_t ib=0;ib<fnPtBins;ib++) {
+       if(TMath::Abs(fCutsRD[GetGlobalIndex(iv,ib)]-obj->fCutsRD[GetGlobalIndex(iv,ib)])>1.e-10) {
+	 cout<<"fCutsRD["<<iv<<"]["<<ib<<"] = "<<fCutsRD[GetGlobalIndex(iv,ib)]<<"   "<<obj->fCutsRD[GetGlobalIndex(iv,ib)]<<"\n";
+	 areEqual=kFALSE;
+       }
+     }
+   }
+  }
+
+  return areEqual;
+}
