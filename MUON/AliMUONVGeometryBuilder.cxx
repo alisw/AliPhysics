@@ -457,7 +457,7 @@ void  AliMUONVGeometryBuilder::RebuildSVMaps(Bool_t withEnvelopes) const
 	 std::string ePath = ComposePath(eName, envelope->GetCopyNo()).Data();
          std::string::size_type ePathPos = path0.find(ePath);
          if ( ePathPos != std::string::npos )
-           path0.erase(path0.find(ePath), ePath.size());
+           path0.erase(ePathPos, ePath.size());
       }
 
       if ( ! envelope->IsVirtual() )
