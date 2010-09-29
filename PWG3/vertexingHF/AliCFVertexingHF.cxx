@@ -233,7 +233,7 @@ Bool_t AliCFVertexingHF::CheckMCPartFamily(AliAODMCParticle */*mcPart*/, TClones
 	}	
 	
 	if (pdgGranma == -999){
-		AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");	
+		AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
 		return kFALSE;
 	}	
 	
@@ -259,30 +259,29 @@ Int_t AliCFVertexingHF::CheckOrigin() const
 	Int_t mother = 0;
 	mother = fmcPartCandidate->GetMother();
 	Int_t istep = 0;
+	Int_t abspdgGranma =0;
 	while (mother >0 ){
 		istep++;
 		AliDebug(2,Form("mother at step %d = %d", istep, mother));
 		AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(fmcArray->At(mother));
 		pdgGranma = mcGranma->GetPdgCode();
 		AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
-		Int_t abspdgGranma = TMath::Abs(pdgGranma);
+		abspdgGranma = TMath::Abs(pdgGranma);
 		if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
 			if (!fKeepDfromB) return -9999; //skip particle if come from a B meson.
 			
 			else{
-				return pdgGranma;
+				break;
 			}
 		}
-		else {
-			if (fKeepDfromBOnly) return -999;
-		}
-		
 		mother = mcGranma->GetMother();
 	}
-	
+	if (!((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000))){
+		if (fKeepDfromBOnly) return -999;
+	}
+
 	return pdgGranma;
 }
-
 
 //___________________________________________
 Bool_t AliCFVertexingHF::CheckMCDaughters()const 
@@ -460,7 +459,7 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *tra
 				AliDebug(3,Form("fLabelArray[%d] = %d, track->GetLabel() = %d",ilabel,fLabelArray[ilabel],track->GetLabel()));
 				if (track->GetLabel() == temp[ilabel]) {
 					foundTrack = kTRUE;
-					temp[ilabel] = -1;
+					temp[ilabel] = 0;
 					break;
 				}
 			}
@@ -667,7 +666,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 	Int_t label1 = fmcPartCandidate->GetDaughter(1);
 	AliDebug(2,Form("label0 = %d, label1 = %d",label0,label1));
 	if (label1==0 || label0 == 0){
-		AliDebug(2, Form("The MC particle doesn't jave correct daughters, skipping!!"));
+		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
 		delete [] fLabelArray; 
 		fLabelArray = 0x0;  
 		return bLabelArray;
