@@ -53,6 +53,8 @@
 #include <TSystem.h>
 #include <TMath.h>
 
+#include <limits>
+
 #if !defined(__HP_aCC) && !defined(__alpha)
   #include <sstream>
 #endif
@@ -129,7 +131,8 @@ void  AliMpSectorReader::ReadSectorData(istream& in)
 
   AliDebugStream(2) << nofZones << " " <<  nofRows << endl;
   
-  if ( nofZones < 0 || nofRows < 0 ) {
+  if ( nofZones < 0 || nofZones >= std::numeric_limits<Int_t>::max() ||
+       nofRows < 0  || nofRows >= std::numeric_limits<Int_t>::max() ) {
     AliErrorStream() << "Wrong nofZones/nofRows value." << endl;
     return;
   }         
