@@ -21,7 +21,16 @@ using namespace std;
 
 ClassImp(AliAnalysisHadEtMonteCarlo);
 
-
+AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
+			    ,fSimHadEt(0)
+			    ,fSimTotEt(0) 
+{
+}
+void AliAnalysisHadEtMonteCarlo::ResetEventValues(){
+  AliAnalysisHadEt::ResetEventValues();
+    fSimHadEt=0.0;
+    fSimTotEt=0.0;
+}
 Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 { // analyse MC and real event info
   FillHisto1D("NEvents",0.5,1);
@@ -402,6 +411,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    if(pdgCode == fPiPlusCode){
 	      //cout<<"I'm a simulated primary "<<part->GetName()<<"! "<<"my label is "<<part->GetFirstMother()<<" pt "<<part->Pt()<<endl;
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedPiPlus",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedPiPlus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -412,6 +423,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(pdgCode == fPiMinusCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedPiMinus",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedPiMinus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -423,6 +436,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    if(pdgCode == fKPlusCode){
 	      float myEt = Et(part);
 	      float myEtPi = Et(part,fPionMass);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedKPlus",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedKPlus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -435,6 +450,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    if(pdgCode == fKMinusCode){
 	      float myEt = Et(part);
 	      float myEtPi = Et(part,fPionMass);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedKMinus",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedKMinus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -447,6 +464,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    if(pdgCode == fProtonCode){
 	      float myEt = Et(part);
 	      float myEtPi = Et(part,fPionMass);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedProton",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedProton",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -459,6 +478,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    if(pdgCode == fAntiProtonCode){
 	      float myEt = Et(part);
 	      float myEtPi = Et(part,fPionMass);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedAntiProton",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedAntiProton",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
@@ -472,18 +493,24 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
 	    if(pdgCode == fNeutronCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedNeutron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(pdgCode == fAntiNeutronCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedAntiNeutron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(pdgCode == fLambdaCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      //cout<<"I am a simulated lambda! pt "<<part->Pt()<<" eta "<<part->Eta()<<endl;
 	      FillHisto2D("EtSimulatedLambda",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
@@ -510,6 +537,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(pdgCode == fAntiLambdaCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedAntiLambda",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      Int_t ndaughters = part->GetNDaughters();
@@ -535,6 +564,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(pdgCode == fK0SCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedK0S",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      Int_t ndaughters = part->GetNDaughters();
@@ -561,12 +592,16 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(pdgCode == fK0LCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedK0L",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(pdgCode == fOmegaCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedOmega",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      Int_t ndaughters = part->GetNDaughters();
@@ -593,6 +628,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(pdgCode == fAntiOmegaCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedOmega",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      Int_t ndaughters = part->GetNDaughters();
@@ -619,18 +656,24 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    //There are two codes for Sigmas
 	    if(pdgCode == fSigmaCode || pdgCode == -3222){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedSigma",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(pdgCode == fAntiSigmaCode || pdgCode == 3222){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedAntiSigma",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(pdgCode == fXiCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedXi",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      Int_t ndaughters = part->GetNDaughters();
@@ -658,6 +701,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(pdgCode == fAntiXiCode){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedAntiXi",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      Int_t ndaughters = part->GetNDaughters();
@@ -683,12 +728,16 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    if(pdgCode == fXi0Code){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedXi0",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(pdgCode == fAntiXi0Code){
 	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedAntiXi0",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      filled = true;
@@ -697,11 +746,13 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
 	    if(pdgCode == fEPlusCode){
 	      float myEt = Et(part);
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedEPlus",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(pdgCode == fEMinusCode){
 	      float myEt = Et(part);
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedEMinus",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
@@ -712,37 +763,44 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      //cout<<"I am a gamma and my mom is "<<mom->GetName()<<endl;
 	      if(pdgCodeMom == fEtaCode){
 		float myEt = Et(mom);
+	      fSimTotEt += myEt;
 		FillHisto2D("EtSimulatedEta",mom->Pt(),mom->Eta(),myEt);
 		filled = true;
 	      }
 	      if(pdgCodeMom == fPi0Code){
 		float myEt = Et(mom);
+	      fSimTotEt += myEt;
 		FillHisto2D("EtSimulatedPi0",mom->Pt(),mom->Eta(),myEt);
 		filled = true;
 	      }
 	      if(pdgCodeMom == fOmega0Code){
 		float myEt = Et(mom);
+	      fSimTotEt += myEt;
 		FillHisto2D("EtSimulatedOmega0",mom->Pt(),mom->Eta(),myEt);
 		filled = true;
 	      }
 	      if(!filled){
 		float myEt = Et(part);
+	      fSimTotEt += myEt;
 		FillHisto2D("EtSimulatedGamma",part->Pt(),part->Eta(),myEt);
 		filled = true;
 	      }
 	    }
 	    if(pdgCode == fEtaCode){
 	      float myEt = Et(part);
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedEta",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(pdgCode == fPi0Code){
 	      float myEt = Et(part);
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedPi0",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
 	    if(pdgCode == fOmega0Code){
 	      float myEt = Et(part);
+	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedOmega0",part->Pt(),part->Eta(),myEt);
 	      filled = true;
 	    }
@@ -911,7 +969,30 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateHisto2D(Form("dEdxElectron%s",cutName->Data()),"dE/dx for e^{#pm}","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
     CreateHisto2D(Form("dEdxUnidentified%s",cutName->Data()),"dE/dx for unidentified particles","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
   }
-
+  CreateHisto2D("SimTotEtVsRecoTotEtFullAcceptanceTPC","Simulated total E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.15 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (Full acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceTPC","Simulated total E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.15 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (EMCAL acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceTPC","Simulated total E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.15 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (PHOS acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtFullAcceptanceTPC","Simulated hadronic E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.15 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (Full acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceTPC","Simulated hadronic E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.15 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (EMCAL acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceTPC","Simulated hadronic E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.15 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (PHOS acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtFullAcceptanceITS","Simulated total E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.10 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (Full acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceITS","Simulated total E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.10 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (EMCAL acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceITS","Simulated total E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.10 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (PHOS acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtFullAcceptanceITS","Simulated hadronic E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.10 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (Full acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceITS","Simulated hadronic E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.10 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (EMCAL acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceITS","Simulated hadronic E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.10 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (PHOS acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtFullAcceptanceTPCNoPID","Simulated total E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.15 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (Full acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceTPCNoPID","Simulated total E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.15 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (EMCAL acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceTPCNoPID","Simulated total E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.15 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (PHOS acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtFullAcceptanceTPCNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.15 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (Full acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceTPCNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.15 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (EMCAL acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceTPCNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.15 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (PHOS acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtFullAcceptanceITSNoPID","Simulated total E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.10 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (Full acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceITSNoPID","Simulated total E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.10 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (EMCAL acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceITSNoPID","Simulated total E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.10 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (PHOS acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtFullAcceptanceITSNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.10 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (Full acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceITSNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.10 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (EMCAL acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+  CreateHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceITSNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.10 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (PHOS acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
   CreateIntHisto1D("NEvents","Number of events","number of events","Number of events",1,0,1);
 
   //CreateHisto1D("MisidentifiedPIDs","PIDs for particles misidentified that are not a #pi,K,p","PID","number of entries",3000,0.5,3000.5);

@@ -162,6 +162,8 @@ protected:
     static Int_t fgnumOfEtaBins;//number of eta bins
     static Float_t fgPtAxis[117];//bins for pt axis of histograms
     static Int_t fgNumOfPtBins;//number of pt bins
+    static Float_t fgPtTPCCutOff;//cut off for tracks in TPC
+    static Float_t fgPtITSCutOff;//cut off for tracks in ITS
     
 
 

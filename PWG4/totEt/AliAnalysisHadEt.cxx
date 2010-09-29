@@ -42,6 +42,9 @@ Float_t AliAnalysisHadEt::fgPtAxis[117]=
    5.0, 5.5, 6.0, 6.5, 7.0, 7.50, 8.00, 8.5, 9.0, 9.5, 10.0,12.0,14.0,16.0,18.0,
   20.0,25.0,30.0,35.0,40.0, 45.0, 50.0}; 
 
+Float_t AliAnalysisHadEt::fgPtTPCCutOff = 0.15;
+Float_t AliAnalysisHadEt::fgPtITSCutOff = 0.10;
+
 AliAnalysisHadEt::AliAnalysisHadEt() :
         fHistogramNameSuffix("")
 	,fCuts(0)
