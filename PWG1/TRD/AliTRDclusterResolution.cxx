@@ -471,8 +471,8 @@ TObjArray* AliTRDclusterResolution::Histos()
     if(!(h3=(TH3S*)gROOT->FindObject(Form("hr%s%03d_t%02d", (HasMCdata()?"MC":""), fDet, it)))){
       h3 = new TH3S(
         Form("hr%s%03d_t%02d", (HasMCdata()?"MC":""), fDet, it),
-        Form(" Det[%d] t_{drift}(%2d)[bin];z [mm];tg#phi;#Delta y[cm]", fDet, it), 
-        kND, 0., 2.5,   // z 
+        Form(" Det[%d] t_{drift}(%2d)[bin];h*tg(#theta);tg(#phi);#Delta y[cm]", fDet, it),
+        35, -0.035, 0.035,   // tgt
         35, -.35, .35, // tgp 
         60, -fDyRange, fDyRange); // dy
     }
@@ -485,9 +485,9 @@ TObjArray* AliTRDclusterResolution::Histos()
     if(!(h3=(TH3S*)gROOT->FindObject(Form("hs%s%03d_t%02d", (HasMCdata()?"MC":""), fDet, it)))){
       h3 = new TH3S(
         Form("hs%s%03d_t%02d", (HasMCdata()?"MC":""), fDet, it),
-        Form(" Det[%d] t_{drift}(%2d)[bin];z [mm];tg#phi - h*tg(#theta);#Delta y[cm]", fDet, it), 
+        Form(" Det[%d] t_{drift}(%2d)[bin];z [mm];tg(#phi) - h*tg(#theta) %s;#Delta y[cm]", fDet, it, fExB>1.e-5?"- tg(#alpha_{L})":""),
         kND, 0., 2.5,   // z 
-        35, -.35, .35, // tgp-h tgt 
+        35, -.35, .35, // tgp-h tgt-tg(aL) 
         60, -fDyRange, fDyRange); // dy
     }
     arr->AddAt(h3, it);
@@ -566,10 +566,11 @@ void AliTRDclusterResolution::UserExec(Option_t *)
     Int_t it(((TH3S*)arr0->At(0))->GetXaxis()->FindBin(t));
 
     // fill histo for resolution (sigma)
-    ((TH3S*)arr1->At(it-1))->Fill(10.*cli->GetAnisochronity(), dydx, dy);
+    Float_t tilt(cli->GetTilt());
+    ((TH3S*)arr1->At(it-1))->Fill(tilt*dzdx, dydx, dy);
 
     // fill histo for systematic (mean)
-    ((TH3S*)arr2->At(it-1))->Fill(10.*cli->GetAnisochronity(), dydx-cli->GetTilt()*dzdx, dy);  
+    ((TH3S*)arr2->At(it-1))->Fill(10.*cli->GetAnisochronity(), tilt*dzdx-fExB, dy);
   }
 }
 
