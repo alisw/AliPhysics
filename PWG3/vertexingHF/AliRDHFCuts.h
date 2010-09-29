@@ -87,6 +87,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetWhyRejection(Int_t why) {fWhyRejection=why; return;}
   Int_t GetWhyRejection() const {return fWhyRejection;}
 
+  Bool_t CompareCuts(const AliRDHFCuts *obj) const;
+
   enum{kAll,kTracks,kPID,kCandidate};
 
  protected:
