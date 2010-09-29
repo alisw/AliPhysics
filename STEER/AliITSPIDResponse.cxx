@@ -55,11 +55,11 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBtpcits[2]=1.00;
     fBBtpcits[3]=0.964;
     fBBtpcits[4]=2.59;
-    fBBsa[0]=139.1;
-    fBBsa[1]=23.36;
-    fBBsa[2]=0.06052;
-    fBBsa[3]=0.2043;
-    fBBsa[4]=-0.0004999;
+    fBBsa[0]=-2.48;
+    fBBsa[1]=23.13;
+    fBBsa[2]=1.161;
+    fBBsa[3]=0.93;
+    fBBsa[4]=-1.2973;
     for(Int_t i=0; i<5;i++) fResolSA[i]=0.15;
     for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
   }
