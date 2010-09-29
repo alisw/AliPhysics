@@ -24,8 +24,8 @@ public:
     kND  = 1
   };
   enum EResultContainer { // results container type
-    kCenter = 0   // cluster2center pad calibration
-   ,kQRes   = 1   // resolution on charge dependence
+    kYSys = 0   // cluster2center pad calibration
+   ,kYRes   = 1   // resolution on charge dependence
    ,kSigm   = 2   // sigma cluster as func of x and z
    ,kMean   = 3   // shift cluster as func of x and z
    ,kNtasks = 4   // total number of subtasks
@@ -141,8 +141,8 @@ inline Float_t AliTRDclusterResolution::GetGain() const
 //___________________________________________________
 inline void AliTRDclusterResolution::ResetProcesses()
 {
-  CLRBIT(fSubTaskMap, kQRes);
-  CLRBIT(fSubTaskMap, kCenter);
+  CLRBIT(fSubTaskMap, kYRes);
+  CLRBIT(fSubTaskMap, kYSys);
   CLRBIT(fSubTaskMap, kSigm);
   CLRBIT(fSubTaskMap, kMean);
 }
