@@ -2532,7 +2532,8 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
 
   for (Int_t i=0; i<72;i++){
     TGraph *graph= (TGraph*)arrT->At(i);
-    if (!graph) continue;
+    if (!graph) continue; 
+    graph->Sort();
     if (graph->GetN()<kMinPoints){
       arrT->AddAt(0,i);
       delete graph;  // delete empty graph
@@ -2580,7 +2581,8 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
     Double_t median = (isec%36<18) ? medianA: medianC;
     Double_t rms    = (isec%36<18) ? rmsA:    rmsC;
     Int_t naccept=0;
-    for (Int_t ipoint=kMinPoints-1; ipoint<graph->GetN();ipoint++){
+    //    for (Int_t ipoint=kMinPoints-1; ipoint<graph->GetN();ipoint++){ //not neccessary to remove first points
+    for (Int_t ipoint=0; ipoint<graph->GetN();ipoint++){
       if (TMath::Abs(graph->GetY()[ipoint]-median)>cutAbs) continue;
       if (TMath::Abs(graph->GetY()[ipoint]-median)>cutSigma*rms) continue;
       vecX[naccept]= graph->GetX()[ipoint];
