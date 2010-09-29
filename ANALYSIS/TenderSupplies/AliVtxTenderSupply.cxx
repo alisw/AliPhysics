@@ -84,5 +84,7 @@ void AliVtxTenderSupply::ProcessEvent()
     vertexer.SetVtxStart(fDiamond);
     AliESDVertex *pvertex = vertexer.FindPrimaryVertex(event);
     event->SetPrimaryVertexTracks(pvertex);
+    // write the diamond parameters
+    event->SetDiamond(fDiamond);
   }  
 }
