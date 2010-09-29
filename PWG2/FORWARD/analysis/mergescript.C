@@ -33,7 +33,7 @@ alienmerge(const char* path,
     TString test(result->GetKey(i,"turl"));
     test.ToLower();
     if(test.Contains(blacklist1) || test.Contains(blacklist2) ) {
-      i++:
+      i++;
       continue;
     }
     m.AddFile(result->GetKey(i,"turl"));
