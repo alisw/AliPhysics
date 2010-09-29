@@ -298,6 +298,7 @@ void AliHFEcuts::SetEventCutList(Int_t istep){
     evGenCuts->SetVertexXCut(-1, 1);
     evGenCuts->SetVertexYCut(-1, 1);
     evGenCuts->SetVertexZCut(-10, 10);
+    if(IsQAOn()) evGenCuts->SetQAOn(fHistQA);
 
     arr->SetName("fEvGenCuts");
     arr->AddLast(evGenCuts);
@@ -308,7 +309,7 @@ void AliHFEcuts::SetEventCutList(Int_t istep){
     evRecCuts->SetVertexXCut(-1, 1);
     evRecCuts->SetVertexYCut(-1, 1);
     evRecCuts->SetVertexZCut(-30, 30);
-
+    if(IsQAOn()) evRecCuts->SetQAOn(fHistQA);
 
     arr->SetName("fEvRecCuts");
     arr->AddLast(evRecCuts);

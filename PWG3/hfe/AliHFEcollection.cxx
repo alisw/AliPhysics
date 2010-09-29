@@ -41,7 +41,7 @@ ClassImp(AliHFEcollection)
 //___________________________________________________________________
 AliHFEcollection::AliHFEcollection():
   TNamed()
-  , fList(0x0)
+  , fList(NULL)
 {
 
   //
@@ -63,7 +63,7 @@ AliHFEcollection::AliHFEcollection():
 //___________________________________________________________________
 AliHFEcollection::AliHFEcollection(const char* name, const char* title):
   TNamed(name, title)
-  , fList(0x0)
+  , fList(NULL)
 {
  
   //
@@ -84,7 +84,7 @@ AliHFEcollection::AliHFEcollection(const char* name, const char* title):
 //___________________________________________________________________
 AliHFEcollection::AliHFEcollection(const AliHFEcollection &c) :
   TNamed(c)
-  , fList(0x0)
+  , fList(NULL)
 {
 
   //
@@ -313,10 +313,10 @@ Bool_t AliHFEcollection::Fill(const char* name, Double_t v){
     return kFALSE;
   }
 
-
+  TH1 *htmp = dynamic_cast<TH1F*>(fList->FindObject(name));
   // chack the possible object types
-  if(fList->FindObject(name)->InheritsFrom("TH1")){
-    (dynamic_cast<TH1F*>(fList->FindObject(name)))->Fill(v);
+  if(htmp){
+    htmp->Fill(v);
     return kTRUE;
   }
   
@@ -392,7 +392,8 @@ Bool_t AliHFEcollection::Fill(const char* name, Double_t v1, Double_t v2){
 
   // chack the possible object types
   if(fList->FindObject(name)->InheritsFrom("TH2")){
-    (dynamic_cast<TH2F*>(fList->FindObject(name)))->Fill(v1, v2);
+    TH2 *h2 = dynamic_cast<TH2F*>(fList->FindObject(name));
+    if(h2) h2->Fill(v1, v2);
     return kTRUE;
   }  
   if(fList->FindObject(name)->InheritsFrom("TProfile")){
@@ -414,8 +415,9 @@ Bool_t AliHFEcollection::Fill(const char* name, Double_t* entry, Double_t weight
     return kFALSE;
   }
   
-   if(fList->FindObject(name)->InheritsFrom("THnSparse")){
-     (dynamic_cast<THnSparseF*>(fList->FindObject(name)))->Fill(entry, weight);
+  THnSparseF *htmp = dynamic_cast<THnSparseF*>(fList->FindObject(name));
+   if(htmp){
+     htmp->Fill(entry, weight);
      return kTRUE;
    }
    return kFALSE;
@@ -449,8 +451,9 @@ Bool_t AliHFEcollection::Sumw2(const char* name){
   }
 
   TObject *o = Get(name);
-  if(o->InheritsFrom("THnSparse")){
-    (dynamic_cast<THnSparse*>(o))->Sumw2();
+  THnSparse *htmp = dynamic_cast<THnSparse*>(o);
+  if(htmp){
+    htmp->Sumw2();
   }
   return kTRUE;
 }
@@ -468,23 +471,28 @@ Bool_t AliHFEcollection::BinLogAxis(const char* name, Int_t dim){
   }
 
   TObject *o = Get(name);
-  TAxis *axis = 0x0;
+  TAxis *axis = NULL;
   if(o->InheritsFrom("TH1")){
-    axis = (dynamic_cast<TH1F*>(o))->GetXaxis();
+    TH1 *h1 = dynamic_cast<TH1F*>(o);
+    if(h1) axis = h1->GetXaxis();
   }
   if(o->InheritsFrom("TH2")){
-    if(0 == dim){
-      axis = (dynamic_cast<TH2F*>(o))->GetXaxis();
+    TH2 *h2 = dynamic_cast<TH2F*>(o);
+    if(h2){
+      if(0 == dim){
+        axis = h2->GetXaxis();
+      }
+      else if(1 == dim){
+        axis = h2->GetYaxis();
+      }
+      else{
+         AliError("Only dim = 0 or 1 possible for TH2F");
+      }
     }
-    else if(1 == dim){
-      axis = (dynamic_cast<TH2F*>(o))->GetYaxis();
-    }
-     else{
-       AliError("Only dim = 0 or 1 possible for TH2F");
-     }
   }
   if(o->InheritsFrom("THnSparse")){
-    axis = (dynamic_cast<THnSparse*>(o))->GetAxis(dim);
+    THnSparse *hs = dynamic_cast<THnSparse*>(o);
+    if(hs) axis = hs->GetAxis(dim);
   }
   
   if(!axis){
@@ -507,7 +515,7 @@ Bool_t AliHFEcollection::BinLogAxis(const char* name, Int_t dim){
     newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete[] newBins;
 
   return kTRUE;
 

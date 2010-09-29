@@ -89,7 +89,7 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons():
   // Initialize pid
   
   fDeDefaultPID = new AliESDpid;
-  fDePID = new AliHFEpid("PIDforDisplacedElectronAnalysis");
+  fDePID = new AliHFEpid;
   
 
 }
@@ -126,7 +126,7 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons(const char 
 
   // Initialize pid
   fDeDefaultPID = new AliESDpid;
-  fDePID = new AliHFEpid("PIDforDisplacedElectronAnalysis");
+  fDePID = new AliHFEpid;
 
 }
 
@@ -311,24 +311,10 @@ void AliAnalysisTaskDisplacedElectrons::UserExec(Option_t *){
   //  
   AliESDInputHandler *inH = dynamic_cast<AliESDInputHandler *>(fInputHandler);
   
-  // pure MC analysis: 
-
-  if(HasMCData()){
-    // Protect against missing MC trees
-    AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if(!mcH->InitOk()) return;
-    if(!mcH->TreeK()) return;
-    if(!mcH->TreeTR()) return;            
-    
-    AliDebug(4, Form("MC Event: %p", fMCEvent));
-    if(!fMCEvent){
-      AliError("No MC Event, but MC Data required");
-      return;
-    }
-    
-    ProcessMC();
+  if(!inH){
+    AliError("AliESDInputHandler dynamic cast failed!");
+    return;
   }
-
   
   // from now on, only ESD are analyzed
   // using HFE pid, using HFE cuts
@@ -348,27 +334,31 @@ void AliAnalysisTaskDisplacedElectrons::UserExec(Option_t *){
     return;
   }
 
-  // ESD case with MC
-  if(HasMCData() && IsESDanalysis()) {
+  // ---- CHOICE OF ANALYSIS ----
+  if(HasMCData()){
     // Protect against missing MC trees
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if(!mcH){
+      AliError("MC handler cuts not available");
+      return;
+    }
+
     if(!mcH->InitOk()) return;
     if(!mcH->TreeK()) return;
-    if(!mcH->TreeTR()) return;
-
+    if(!mcH->TreeTR()) return;            
+    
     AliDebug(4, Form("MC Event: %p", fMCEvent));
     if(!fMCEvent){
       AliError("No MC Event, but MC Data required");
       return;
     }
-
-    ProcessESD();
-  } 
+    
+    ProcessMC(); // PURE MC
+    
+    if(IsESDanalysis()) ProcessESD(); // ESD WITH MC
+    
+  }else if(IsESDanalysis()) ProcessData(); // PURE ESD
   
-  // now only for data ESDs without MC
-  if(!HasMCData() && IsESDanalysis()) {    
-    ProcessData();
-  }
 
   fDeNEvents->Fill(1);  
   PostData(1, fHistDisplacedElectrons);
@@ -380,11 +370,15 @@ void AliAnalysisTaskDisplacedElectrons::UserExec(Option_t *){
 //____________________________________________________________
 void AliAnalysisTaskDisplacedElectrons::ProcessMC(){
   //
-  // handel pure MC analysis
+  // handle pure MC analysis
   //
 
   Int_t nMCelectrons = 0;
   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+  if(!fESD){
+    AliError("ESD event not available");
+    return;
+  }
 
   Double_t mcContainer[4];   // container for the output in THnSparse
   memset(mcContainer, 0, sizeof(Double_t) * 4);
@@ -412,8 +406,9 @@ void AliAnalysisTaskDisplacedElectrons::ProcessMC(){
 
   for(Int_t itrack = 0; itrack<nTracks; itrack++){
     if(!(stack->Particle(itrack))) continue;
-    if(mcTrack)mcTrack = 0x0;
-    mcTrack= dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(itrack));
+    if(mcTrack) mcTrack = 0x0;
+    mcTrack = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(itrack));
+    if(!mcTrack) continue;
     //TParticle *mcPart = stack->Particle(itrack);
         
     mcContainer[0] = mcTrack->Pt();
@@ -458,7 +453,7 @@ void AliAnalysisTaskDisplacedElectrons::ProcessMC(){
 //____________________________________________________________
 void AliAnalysisTaskDisplacedElectrons::ProcessESD(){
   
-  // this is to handel ESD tracks with MC information
+  // this is to handle ESD tracks with MC information
   // MC pid is only used when HFE pid is implemented, for comparison
   // corrections are taken into account
   
@@ -467,6 +462,10 @@ void AliAnalysisTaskDisplacedElectrons::ProcessESD(){
   Double_t esdContainer[4];   // container for the output in THnSparse
   memset(esdContainer, 0, sizeof(Double_t) * 4);
   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+  if(!fESD){
+    AliError("No ESD event available");
+    return;
+  }
 
   fDeCFM->SetRecEventInfo(fESD);
   Double_t nContrib = fESD->GetPrimaryVertex()->GetNContributors();
@@ -474,11 +473,11 @@ void AliAnalysisTaskDisplacedElectrons::ProcessESD(){
   Bool_t alreadyseen = kFALSE;
   LabelContainer cont(fESD->GetNumberOfTracks());
   
-  Int_t nHFEelectrons=0;  
+  Int_t nHFEelectrons = 0;  
   AliESDtrack *track = 0x0;    
   AliStack *stack = 0x0;
 
-  if(!(stack = fMCEvent->Stack()))return;
+  if(!(stack = fMCEvent->Stack())) return;
   
   //
   // cut at ESD event level
@@ -533,7 +532,6 @@ void AliAnalysisTaskDisplacedElectrons::ProcessESD(){
       //      if(HasMCData())hfetrack.fMCtrack = mctrack;
       
       if(!fDePID->IsSelected(&hfetrack)) continue;
-      
       else if(fDeDebugLevel>=10)
 	AliInfo("ESD info: this particle is identified as electron by HFEpid method \n");
       if(GetPlugin(kCorrection)) fDeCFM->GetParticleContainer()->Fill(esdContainer, 1+AliHFEcuts::kStepPID);
@@ -560,6 +558,10 @@ void AliAnalysisTaskDisplacedElectrons::ProcessData(){
   // HFE pid is used
 
   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+  if(!fESD){
+    AliError("No ESD event available");
+    return;
+  }
 
   Double_t dataContainer[4];   // container for the output in THnSparse
   memset(dataContainer, 0, sizeof(Double_t) * 4);

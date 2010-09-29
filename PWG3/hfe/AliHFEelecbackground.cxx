@@ -52,6 +52,7 @@
 #include "AliCFContainer.h"
 #include "AliHFEpid.h"
 #include "AliESDpid.h"
+#include "AliLog.h"
 #include "AliITSPIDResponse.h"
 #include "AliTPCPIDResponse.h"
 
@@ -62,7 +63,10 @@ const Double_t    AliHFEelecbackground::fgkMe = 0.00051099892;
 
 //___________________________________________________________________________________________
 AliHFEelecbackground::AliHFEelecbackground():
-  fESD1(0x0)
+  fhtmp(0x0)
+  ,fhtmpf(0x0)
+  ,fhtmpp(0x0)
+  ,fESD1(0x0)
   ,fAOD1(0x0)
   ,fMCEvent(0x0)
   ,fBz(0)
@@ -98,12 +102,18 @@ AliHFEelecbackground::AliHFEelecbackground():
   //
   // Default constructor
   //
+  for(Int_t k =0; k < 10; k++) {
+    fCuts[k] = kFALSE;
+  }
   
 }
 
 //_______________________________________________________________________________________________
 AliHFEelecbackground::AliHFEelecbackground(const AliHFEelecbackground &p):
   TObject(p)
+  ,fhtmp(0x0)
+  ,fhtmpf(0x0)
+  ,fhtmpp(0x0)
   ,fESD1(0x0)
   ,fAOD1(0x0)
   ,fMCEvent(0x0)
@@ -140,6 +150,9 @@ AliHFEelecbackground::AliHFEelecbackground(const AliHFEelecbackground &p):
   //
   // Copy constructor
   //
+  for(Int_t k =0; k < 10; k++) {
+    fCuts[k] = kFALSE;
+  }
 }
 
 //_______________________________________________________________________________________________
@@ -624,8 +637,9 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
       cuteffect[0] = fPtESD;
       cuteffect[1] = 0.0;
       cuteffect[2] = fIsFrom;
-      if(!fCuts[0]) {
-	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+      if(!fCuts[0]){
+	if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	//if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[0] = kTRUE;
       }
     }
@@ -640,7 +654,8 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner) {
       cuteffect[1] = 1.0;
       if(!fCuts[1]) {
-	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	//if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[1] = kTRUE;
       }
     }
@@ -654,7 +669,8 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner && (sign == kOs)) {
       cuteffect[1] = 2.0;
       if(!fCuts[2]) {
-	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	//if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[2] = kTRUE;
       }
     }
@@ -669,7 +685,8 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner && (sign==kOs)) {
       cuteffect[1] = 3.0;
       if(!fCuts[3]) {
-	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	//if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[3] = kTRUE;
       }
     }
@@ -684,7 +701,8 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner && (sign==kOs)) {
       cuteffect[1] = 4.0;
       if(!fCuts[4]) {
-	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	//if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[4] = kTRUE;
       }
     } 
@@ -699,7 +717,8 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(HasMCData() && fIsPartner && (sign==kOs)) {
       cuteffect[1] = 5.0;
       if(!fCuts[5]) {
-	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	//if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[5] = kTRUE;
       }
     }
@@ -712,22 +731,28 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
   
   Double_t xthis,xp;
   Double_t dca = track->GetDCA(trackPart,fBz,xthis,xp);
-  (dynamic_cast<TH1F *>(fList->At(kDatadca)))->Fill(dca);
+  if((fhtmpp = dynamic_cast<TH1F *>(fList->At(kDatadca)))) fhtmpp->Fill(dca);
   if(HasMCData()) {
     //printf("has MC data for DCA\n");
     //printf("IsPartner %d and isfrom %d\n",fIsPartner,fIsFrom);
-    if((fIsFrom==kElectronFromBackground) && (fList->At(kMCdca))) (dynamic_cast<TH2F *>(fList->At(kMCdca)))->Fill(dca,fIsFrom);
+    if(fIsFrom==kElectronFromBackground) {
+      if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCdca)))) fhtmpf->Fill(dca,fIsFrom);
+    }
     else {
-      if(fIsPartner && (fList->At(kMCdca))) (dynamic_cast<TH2F *>(fList->At(kMCdca)))->Fill(dca,fIsFrom);
+      if(fIsPartner){
+	if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCdca)))) fhtmpf->Fill(dca,fIsFrom);
+      }
     }
   }
+   
   if(TMath::Abs(dca) > 3.0) return;
-
+  
   if(fDebugLevel > 0) {  
     if(HasMCData() && fIsPartner && (sign==kOs)) {
       cuteffect[1] = 6.0;
       if(!fCuts[6]) {
-	if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	//if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	fCuts[6] = kTRUE;
       }
     }
@@ -772,7 +797,8 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
       if(HasMCData() && fIsPartner && (sign==kOs)) {
 	cuteffect[1] = 7.0;
 	if(!fCuts[7]) {
-	  if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	  if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	  //if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	  fCuts[7] = kTRUE;
 	}
       }
@@ -793,13 +819,15 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
 	
 	cuteffect[1] = 8.0;
 	if(!fCuts[8]) {
-	 if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	  if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	  //if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	  fCuts[8] = kTRUE;
 	}
 	if(TMath::Abs(results[1]) < fInvMassCut) {
 	  cuteffect[1] = 9.0;
 	  if(!fCuts[9]) {
-	    if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	    if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCe)))) fhtmp->Fill(cuteffect);
+	    //if(fList->At(kMCe)) (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
 	    fCuts[9] = kTRUE;
 	  }
 	}
@@ -906,20 +934,31 @@ Bool_t AliHFEelecbackground::CalculateMotherVariable(AliESDtrack* const track, A
     results[4] = openingangle;
 
     // chi2Ndf cut
-    if(fList->At(kDatachi2Ndf)) (dynamic_cast<TH1F *>(fList->At(kDatachi2Ndf)))->Fill(chi2ndf);
+    if((fhtmpp = dynamic_cast<TH1F *>(fList->At(kDatachi2Ndf)))) fhtmpp->Fill(chi2ndf);
+    //if(fList->At(kDatachi2Ndf)) (dynamic_cast<TH1F *>(fList->At(kDatachi2Ndf)))->Fill(chi2ndf);
     if(HasMCData()){
-      if((fIsFrom==kElectronFromBackground) && (fList->At(kMCchi2Ndf))) (dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))->Fill(chi2ndf,fIsFrom);
+      if(fIsFrom==kElectronFromBackground) {
+	if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))) fhtmpf->Fill(chi2ndf,fIsFrom); 
+      }
       else {
-	if(fIsPartner && (fList->At(kMCchi2Ndf))) (dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))->Fill(chi2ndf,fIsFrom);
+	if(fIsPartner){
+	  if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))) fhtmpf->Fill(chi2ndf,fIsFrom); 
+	}
       }
     }
     if(chi2ndf > fChi2NdfCut) return kFALSE;
     else {
-      if(fList->At(kDatar)) (dynamic_cast<TH1F *>(fList->At(kDatar)))->Fill(radius);
+      if((fhtmpp = dynamic_cast<TH1F *>(fList->At(kDatar)))) fhtmpp->Fill(radius); 
+      //if(fList->At(kDatar)) (dynamic_cast<TH1F *>(fList->At(kDatar)))->Fill(radius);
       if(HasMCData()) {
-	if((fIsFrom==kElectronFromBackground) && (fList->At(kMCr))) (dynamic_cast<TH2F *>(fList->At(kMCr)))->Fill(radius,fIsFrom);
+	if(fIsFrom==kElectronFromBackground) {
+	  if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCr)))) fhtmpf->Fill(radius,fIsFrom); 
+	  //if(fList->At(kMCr))) (dynamic_cast<TH2F *>(fList->At(kMCr)))->Fill(radius,fIsFrom);
+	}
 	else {
-	  if(fIsPartner && (fList->At(kMCr))) (dynamic_cast<TH2F *>(fList->At(kMCr)))->Fill(radius,fIsFrom);
+	  if(fIsPartner) {
+	    if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCr)))) fhtmpf->Fill(radius,fIsFrom); 
+	  }
 	}
       }
       return kTRUE;
@@ -1004,7 +1043,8 @@ void AliHFEelecbackground::FillOutput(Double_t *results, Double_t *resultsr, Int
   co[4] = sign;
   co[5] = 0.0;
 
-  if(fList->At(kDatai))(dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
+  if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kDatai)))) fhtmp->Fill(co);
+  //if(fList->At(kDatai))(dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
 
   if((sign==kOs) && (!fUseAliKFCode)) {
     
@@ -1014,7 +1054,8 @@ void AliHFEelecbackground::FillOutput(Double_t *results, Double_t *resultsr, Int
     co[4] = kR;
     co[5] = 0.0;
 
-    if(fList->At(kDatai)) (dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
+    if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kDatai)))) fhtmp->Fill(co);
+    //if(fList->At(kDatai)) (dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
     
   }
   
@@ -1040,7 +1081,8 @@ void AliHFEelecbackground::FillOutput(Double_t *results, Double_t *resultsr, Int
       }
     }
 
-    if(fList->At(kMCo)) (dynamic_cast<THnSparseF *>(fList->At(kMCo)))->Fill(co);
+    if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCo)))) fhtmp->Fill(co);
+    //if(fList->At(kMCo)) (dynamic_cast<THnSparseF *>(fList->At(kMCo)))->Fill(co);
 
   }
  
@@ -1122,8 +1164,9 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
     Double_t itsSignal = trackPart->GetITSsignal();
     Double_t p = trackPart->P();
     
-    if(fDebugLevel > 1) {        
-      if(fList->At(kMCcutPart0)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,itsSignal);
+    if(fDebugLevel > 1) {    
+      if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))) fhtmpf->Fill(p,itsSignal);     
+      //if(fList->At(kMCcutPart0)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,itsSignal);
     }
 
     ///////////
@@ -1150,8 +1193,10 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
 	entries[3] = dEdxSamplesPart[2];
 	entries[4] = dEdxSamplesPart[3];
 
-	if(fList->At(kMCcutPart1)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,itsSignal);
-	if(fList->At(kMCcutPart2)) (dynamic_cast<THnSparseF *>(fList->At(kMCcutPart2)))->Fill(entries);
+	//if(fList->At(kMCcutPart1)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,itsSignal);
+	if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))) fhtmpf->Fill(p,itsSignal); 
+	if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCcutPart2)))) fhtmp->Fill(entries);
+	//if(fList->At(kMCcutPart2)) (dynamic_cast<THnSparseF *>(fList->At(kMCcutPart2)))->Fill(entries);
 	
       }
       
@@ -1169,7 +1214,8 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
 
     if(fDebugLevel > 1) {        
       //printf("tpcSignal %f\n",tpcSignal);
-      if(fList->At(kMCcutPart0)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,tpcSignal);
+      //if(fList->At(kMCcutPart0)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,tpcSignal);
+      if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))) fhtmpf->Fill(p,tpcSignal); 
     }
 
     // PID
@@ -1182,7 +1228,8 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
       if(!fPIDMethodPartner->IsSelected(&hfetrack)) return kFALSE;
       
       if(fDebugLevel > 1) {  
-	if(fList->At(kMCcutPart1)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,tpcSignal);
+	if((fhtmpf = dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))) fhtmpf->Fill(p,tpcSignal); 
+	//if(fList->At(kMCcutPart1)) (dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,tpcSignal);
       }
     }   
     
@@ -1192,7 +1239,7 @@ Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
 
 }
 //__________________________________________________________________________________________
-Bool_t AliHFEelecbackground::ShareCluster(AliESDtrack * const track1,AliESDtrack * const track2) const
+Bool_t AliHFEelecbackground::ShareCluster(AliESDtrack * const track1,AliESDtrack * const track2) 
 {
   //
   // Look if the two tracks shared clusters in the TPC or in the ITS depending on the method
@@ -1289,7 +1336,8 @@ Bool_t AliHFEelecbackground::ShareCluster(AliESDtrack * const track1,AliESDtrack
 	}
 	else entriesSplit[layer+1] = -100.0;
       }
-      if(fList->At(kMCcutPart3)) (dynamic_cast<THnSparseF *>(fList->At(kMCcutPart3)))->Fill(entriesSplit);
+      if((fhtmp = dynamic_cast<THnSparseF *>(fList->At(kMCcutPart3)))) fhtmp->Fill(entriesSplit);
+      //if(fList->At(kMCcutPart3)) (dynamic_cast<THnSparseF *>(fList->At(kMCcutPart3)))->Fill(entriesSplit);
     }
 
     // Return
@@ -1537,6 +1585,7 @@ void AliHFEelecbackground::PostProcess()
   /////////////////////////////////
   // Cuts on the opening angle
   ////////////////////////////////
+  if(!hsSparseData) return;
   TAxis *axisOpeningAngleData = hsSparseData->GetAxis(2);
   Int_t binCutData = axisOpeningAngleData->FindBin(fOpeningAngleCut);
   hsSparseData->GetAxis(2)->SetRange(1,binCutData);
@@ -1663,10 +1712,10 @@ void AliHFEelecbackground::PostProcess()
     Double_t yieldf = invmassdiffptproj[k-1]->Integral();
     if(invmassetaptproj[k-1] && invmasspi0ptproj[k-1] && invmassgammaptproj[k-1] && invmassCptproj[k-1] && invmassBptproj[k-1]) {
       Double_t yieldg = invmassetaptproj[k-1]->Integral() + invmasspi0ptproj[k-1]->Integral() + invmassgammaptproj[k-1]->Integral();
-      yieldPtSourcesMC->SetBinContent(k,yieldg);
+      if(yieldPtSourcesMC) yieldPtSourcesMC->SetBinContent(k,yieldg);
       
       Double_t yieldsignal = invmassCptproj[k-1]->Integral() + invmassBptproj[k-1]->Integral();
-      yieldPtSignalCutMC->SetBinContent(k,yieldsignal);
+      if(yieldPtSignalCutMC) yieldPtSignalCutMC->SetBinContent(k,yieldsignal);
     }
 
     yieldPtFound->SetBinContent(k,yieldf);
@@ -1782,6 +1831,7 @@ void AliHFEelecbackground::Plot() const
   /////////////////////////
   THnSparseF *hsSparseData = dynamic_cast<THnSparseF *>(fList->FindObject("OpeningangleinvmassData")); 
   THnSparseF *hsSparseMC = dynamic_cast<THnSparseF *>(fList->FindObject("OpeningangleinvmassMC")); 
+  if(!hsSparseData) return;
   
   ////////////////////
   // Opening angle
