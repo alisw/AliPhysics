@@ -112,6 +112,32 @@ AliMCEvent* mcEvent = MCEvent();
 if (mcEvent)
   {
     ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)event);
+    //cout<<"Simulated Hadronic Et "<<fMCAnalysis->GetSimulatedHadronicEt()<<" Reconstructed Hadronic Et "<<fRecAnalysis->GetCorrectedHadEtFullAcceptanceITS()<<endl;
+    //cout<<"Simulated Total Et "<<fMCAnalysis->GetSimulatedTotalEt()<<" Reconstructed Total Et "<<fRecAnalysis->GetCorrectedTotEtFullAcceptanceITS()<<endl;
+    fMCAnalysis->FillSimTotEtVsRecoTotEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPC() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtFullAcceptanceITS( fRecAnalysis->GetCorrectedTotEtFullAcceptanceITS() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtEMCALAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtEMCALAcceptanceTPC() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtEMCALAcceptanceITS( fRecAnalysis->GetCorrectedTotEtEMCALAcceptanceITS() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtPHOSAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtPHOSAcceptanceTPC() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtPHOSAcceptanceITS( fRecAnalysis->GetCorrectedTotEtPHOSAcceptanceITS() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtFullAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPCNoPID() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtFullAcceptanceITSNoPID( fRecAnalysis->GetCorrectedTotEtFullAcceptanceITSNoPID() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtEMCALAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedTotEtEMCALAcceptanceTPCNoPID() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtEMCALAcceptanceITSNoPID( fRecAnalysis->GetCorrectedTotEtEMCALAcceptanceITSNoPID() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtPHOSAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedTotEtPHOSAcceptanceTPCNoPID() );
+    fMCAnalysis->FillSimTotEtVsRecoTotEtPHOSAcceptanceITSNoPID( fRecAnalysis->GetCorrectedTotEtPHOSAcceptanceITSNoPID() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedHadEtFullAcceptanceTPC() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceITS( fRecAnalysis->GetCorrectedHadEtFullAcceptanceITS() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtEMCALAcceptanceTPC( fRecAnalysis->GetCorrectedHadEtEMCALAcceptanceTPC() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtEMCALAcceptanceITS( fRecAnalysis->GetCorrectedHadEtEMCALAcceptanceITS() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtPHOSAcceptanceTPC( fRecAnalysis->GetCorrectedHadEtPHOSAcceptanceTPC() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtPHOSAcceptanceITS( fRecAnalysis->GetCorrectedHadEtPHOSAcceptanceITS() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedHadEtFullAcceptanceTPCNoPID() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtFullAcceptanceITSNoPID( fRecAnalysis->GetCorrectedHadEtFullAcceptanceITSNoPID() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtEMCALAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedHadEtEMCALAcceptanceTPCNoPID() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtEMCALAcceptanceITSNoPID( fRecAnalysis->GetCorrectedHadEtEMCALAcceptanceITSNoPID() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtPHOSAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedHadEtPHOSAcceptanceTPCNoPID() );
+    fMCAnalysis->FillSimHadEtVsRecoHadEtPHOSAcceptanceITSNoPID( fRecAnalysis->GetCorrectedHadEtPHOSAcceptanceITSNoPID() );
   }
 
 // Post output data.
