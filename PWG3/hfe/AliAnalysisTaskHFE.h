@@ -38,6 +38,7 @@ class AliCFManager;
 class AliVEvent;
 class AliMCEvent;
 class AliVParticle;
+class AliTriggerAnalysis;
 class TH1I; 
 class TList;
 class TH3D;
@@ -146,6 +147,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     TF1  *fBackGroundFactorsFunction;     // BackGround factors
     AliCFManager *fCFM;                   //! Correction Framework Manager
     AliCFManager *fV0CF;                  //! Correction Framework Manager for V0-tagged tracks
+    AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
     AliCFContainer * fHadronicBackground; //! Container for hadronic Background
     TList *fCorrelation;                  //! response matrix for unfolding  
     THnSparseF *fPIDperformance;          //! info on contamination and yield of electron spectra
@@ -166,7 +168,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     TList *fHistMCQA;                     //! Output container for MC QA histograms 
     TList *fHistSECVTX;                   //! Output container for sec. vertexing results
     TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
-//    AliHFEcollection *fQAcoll;            //! collection class for basic QA histograms
+    AliHFEcollection *fQACollection;      //! Tasks own QA collection
 
     ClassDef(AliAnalysisTaskHFE, 2)       // The electron Analysis Task
 };

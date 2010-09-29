@@ -127,6 +127,10 @@ class AliHFEdisplacedElectrons : public TObject{
     kNKineVar = 3
   };   // several constant to be used
  
+
+  Int_t CheckCharm(AliStack *const stack, Int_t eleLabel);
+  Bool_t IsB(Int_t pdg);
+  Bool_t IsC(Int_t pdg);
  
   Int_t ElectronFromSource(AliStack *stack, Int_t eleLabel) const;
   Int_t ElePhotonDirect(AliStack *stack, Int_t label) const;

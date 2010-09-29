@@ -288,7 +288,11 @@ void AliAnalysisTaskDCA::UserCreateOutputObjects(){
   
   // Automatic determination of the analysis mode
   AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
+  if(!inputHandler){
+    AliError("NoEvent Handler available");
+    return;
+  }
+
   if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
     SetAODAnalysis();
   } else {
@@ -426,6 +430,10 @@ void AliAnalysisTaskDCA::UserExec(Option_t *){
   if(IsESDanalysis() && HasMCData()){
     // Protect against missing MC trees
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if(!mcH){
+      AliError("No MC Event Handler available");
+      return;
+    }
     if(!mcH->InitOk()) return;
     if(!mcH->TreeK()) return;
     if(!mcH->TreeTR()) return;
@@ -433,6 +441,10 @@ void AliAnalysisTaskDCA::UserExec(Option_t *){
 
   if(!IsAODanalysis()) {
     AliESDInputHandler *inH = dynamic_cast<AliESDInputHandler *>(fInputHandler);
+    if(!inH){
+      AliError("No ESD Event Handler available");
+      return;
+    }
     AliESDpid *workingPID = inH->GetESDpid();
     if(workingPID){
       AliDebug(1, "Using ESD PID from the input handler");
@@ -456,13 +468,21 @@ void AliAnalysisTaskDCA::ProcessDcaAnalysis(){
   //
   
   AliMCEvent *fMC = 0x0;
-  AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
-  if(HasMCData())fMC = dynamic_cast<AliMCEvent*>(fMCEvent);
 
+  AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
   if(!fESD){
-    AliError("ESD Event required for ESD Analysis")
+    AliError("ESD Event required for ESD Analysis");
       return;
   }
+
+  if(HasMCData()){
+    fMC = dynamic_cast<AliMCEvent*>(fMCEvent);
+    if(!fMC){
+      AliError("MC Event required for Analysis");
+      return;
+    }
+  }
+
 
   fNEvents->Fill(1);  // original event number before cut
   fDCA->ApplyExtraCuts(fESD,fMinNprimVtxContrbutor);  // cut on primVtx contributors

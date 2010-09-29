@@ -534,7 +534,7 @@ void AliHFEpid::InitStrategy6(){
   lowerCut->SetParameter(0, -2.65);
   lowerCut->SetParameter(1, -0.8757);
 //  lowerCut->SetParameter(2, -1);
-  if(HasMCData()) lowerCut->SetParameter(2, -1);
+  if(HasMCData()) lowerCut->SetParameter(2, -0.997);
   else lowerCut->SetParameter(2, -0.9);
   tpcpid->SetUpperSigmaCut(upperCut);
   tpcpid->SetLowerSigmaCut(lowerCut);

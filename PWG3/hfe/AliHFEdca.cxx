@@ -123,6 +123,22 @@ AliHFEdca::AliHFEdca():
 {
  // default constructor
 
+ for(Int_t j=0; j<kNParticles; j++){
+   fHistMcPid[j] = new TH1F();
+   fHistEsdPid[j] = new TH1F();
+   fHistDataEsdPid[j] = new TH1F();
+ }
+
+ for(Int_t i=0; i<3; i++){
+   fHistMCvertex[i] = new TH1F();
+   fHistESDvertex[i] = new TH1F();
+   fHistDatavertex[i] = new TH1F();   
+ }
+ 
+ for(Int_t iEle=0; iEle<2; iEle++){
+   fHistDataHfePid[iEle] = new TH1F();
+ }
+
 }
 
 //________________________________________________________________________
@@ -132,6 +148,22 @@ AliHFEdca::AliHFEdca(const AliHFEdca &ref):
 {
  // copy constructor
 
+ for(Int_t j=0; j<kNParticles; j++){
+   fHistMcPid[j] = ref.fHistMcPid[j];
+   fHistEsdPid[j] = ref.fHistEsdPid[j];
+   fHistDataEsdPid[j] = ref.fHistDataEsdPid[j];
+ }
+
+ for(Int_t i=0; i<3; i++){
+   fHistMCvertex[i] = ref.fHistMCvertex[i];
+   fHistESDvertex[i] = ref.fHistESDvertex[i];
+   fHistDatavertex[i] = ref.fHistDatavertex[i];
+ }
+ 
+ for(Int_t iEle=0; iEle<2; iEle++){
+   fHistDataHfePid[iEle] = ref.fHistDataHfePid[iEle];
+ }
+
 }
 //_______________________________________________________________________________________________
 AliHFEdca&AliHFEdca::operator=(const AliHFEdca &ref)
@@ -140,10 +172,10 @@ AliHFEdca&AliHFEdca::operator=(const AliHFEdca &ref)
  // Assignment operator
  //
 
-
  if(this == &ref) return *this;
  TObject::operator=(ref);
  return *this;
+
 }
 
 //________________________________________________________________________
@@ -207,9 +239,9 @@ AliHFEdca::~AliHFEdca()
      if(fHistHPDcaZPull[iEle][iPt]) delete fHistHPDcaZPull[iEle][iPt];  
      if(fHistHPDcaXY[iEle][iPt]) delete fHistHPDcaXY[iEle][iPt];     
      if(fHistHPDcaZ[iEle][iPt]) delete fHistHPDcaZ[iEle][iPt];      
-
-
- // Data
+     
+     
+     // Data
      if(fHistHPDataDcaXY[iEle][iPt]) delete fHistHPDataDcaXY[iEle][iPt];   
      if(fHistHPDataDcaZ[iEle][iPt]) delete fHistHPDataDcaZ[iEle][iPt];   
      if(fHistHPDataDcaXYPull[iEle][iPt]) delete fHistHPDataDcaXYPull[iEle][iPt];   
@@ -226,6 +258,7 @@ AliHFEdca::~AliHFEdca()
  if(fStat) delete fStat;
 
  Printf("analysis done\n");
+
 }
 
 //________________________________________________________________________
@@ -251,11 +284,10 @@ void AliHFEdca::CreateHistogramsResidual(TList *residualList){
  // 1. residual
 
  // for residuals
- fHistDcaXYRes[kNParticles][kNPtBins]=0x0;
- fHistDcaZRes[kNParticles][kNPtBins]=0x0;
-
- fHistEPDcaXYRes[kNParticles-2][kNPtBins]=0x0;
- fHistEPDcaZRes[kNParticles-2][kNPtBins]=0x0;
+  // fHistDcaXYRes[kNParticles][kNPtBins]=0x0;
+  // fHistDcaZRes[kNParticles][kNPtBins]=0x0;
+  // fHistEPDcaXYRes[kNParticles-2][kNPtBins]=0x0;
+ // fHistEPDcaZRes[kNParticles-2][kNPtBins]=0x0;
 
  const Int_t nBins = 1000;
  const Float_t maxXYBin = 1000.;
@@ -278,14 +310,14 @@ void AliHFEdca::CreateHistogramsResidual(TList *residualList){
 	  fHistDcaXYRes[j][i]->SetLineColor((const int)fgkColorPart[j]);
 	  if(j<(kNParticles-2)){
 	    fHistEPDcaXYRes[j][i] = new TH1F((const char*)histEPName, (const char*)histTitle, nBins, -maxXYBin, maxXYBin);
-	    fHistEPDcaXYRes[j][i]->SetLineColor((const int)fgkColorPart[j]);}
+	    fHistEPDcaXYRes[j][i]->SetLineColor((int)fgkColorPart[j]);}
 	}	    
 	if(k==1){
 	  fHistDcaZRes[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, -maxZBin, maxZBin);
-	  fHistDcaZRes[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDcaZRes[j][i]->SetLineColor((int)fgkColorPart[j]);
 	  if(j<(kNParticles-2)){
 	    fHistEPDcaZRes[j][i] = new TH1F((const char*)histEPName, (const char*)histTitle, nBins, -maxZBin, maxZBin);
-	    fHistEPDcaZRes[j][i]->SetLineColor((const int)fgkColorPart[j]); }
+	    fHistEPDcaZRes[j][i]->SetLineColor((int)fgkColorPart[j]); }
 	}   
      } // 50 pt bins
    } //12 nparticles
@@ -321,11 +353,10 @@ void AliHFEdca::CreateHistogramsPull(TList *pullList){
 
 
  // for pull -----------------------------------------------------------------------
- fHistDcaXYPull[kNParticles][kNPtBins]=0x0;
- fHistDcaZPull[kNParticles][kNPtBins]=0x0;
-
- fHistEPDcaXYPull[kNParticles-2][kNPtBins]=0x0;
- fHistEPDcaZPull[kNParticles-2][kNPtBins]=0x0;
+ // fHistDcaXYPull[kNParticles][kNPtBins]=0x0;
+ // fHistDcaZPull[kNParticles][kNPtBins]=0x0;
+ // fHistEPDcaXYPull[kNParticles-2][kNPtBins]=0x0;
+ // fHistEPDcaZPull[kNParticles-2][kNPtBins]=0x0;
 
 
  for(Int_t k=0; k<kNDcaVar; k++){
@@ -341,17 +372,17 @@ void AliHFEdca::CreateHistogramsPull(TList *pullList){
 	
 	if(k==0){
 	  fHistDcaXYPull[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, 1-maxXYBin, 1+maxXYBin);
-	  fHistDcaXYPull[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDcaXYPull[j][i]->SetLineColor((int)fgkColorPart[j]);
 	  if(j<(kNParticles-2))    {
 	    fHistEPDcaXYPull[j][i] = new TH1F((const char*)histEPName, (const char*)histTitle, nBins, 1-maxXYBin, 1+maxXYBin);
-	    fHistEPDcaXYPull[j][i]->SetLineColor((const int)fgkColorPart[j]);}
+	    fHistEPDcaXYPull[j][i]->SetLineColor((int)fgkColorPart[j]);}
 	}	    
 	if(k==1){
 	  fHistDcaZPull[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, 1-maxZBin, 1+maxZBin);
-	  fHistDcaZPull[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDcaZPull[j][i]->SetLineColor((int)fgkColorPart[j]);
 	  if(j<(kNParticles-2))    {
 	    fHistEPDcaZPull[j][i] = new TH1F((const char*)histEPName, (const char*)histTitle, nBins, 1-maxZBin, 1+maxZBin);
-	    fHistEPDcaZPull[j][i]->SetLineColor((const int)fgkColorPart[j]);}
+	    fHistEPDcaZPull[j][i]->SetLineColor((int)fgkColorPart[j]);}
 	}   
      } // 50 pt bins
    } //6 nparticles
@@ -387,11 +418,10 @@ void AliHFEdca::CreateHistogramsDca(TList *dcaList){
  fStat->SetMarkerSize(1); 
 
  // for dca
- fHistDcaXY[kNParticles][kNPtBins]=0x0;
- fHistDcaZ[kNParticles][kNPtBins]=0x0;
-
- fHistEPDcaXY[kNParticles-2][kNPtBins]=0x0;
- fHistEPDcaZ[kNParticles-2][kNPtBins]=0x0;
+ // fHistDcaXY[kNParticles][kNPtBins]=0x0;
+ // fHistDcaZ[kNParticles][kNPtBins]=0x0;
+ // fHistEPDcaXY[kNParticles-2][kNPtBins]=0x0;
+ // fHistEPDcaZ[kNParticles-2][kNPtBins]=0x0;
 
  const Int_t nBins = 1000;
  const Float_t maxXYBin = 1000.;
@@ -412,18 +442,18 @@ void AliHFEdca::CreateHistogramsDca(TList *dcaList){
 
 	if(k==0){
 	  fHistDcaXY[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, -maxXYBin, maxXYBin);
-	  fHistDcaXY[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDcaXY[j][i]->SetLineColor((int)fgkColorPart[j]);
 	  
 	  if(j<(kNParticles-2)){
 	    fHistEPDcaXY[j][i] = new TH1F((const char*)histNameEP, (const char*)histTitle, nBins, -maxXYBin, maxXYBin);
-	    fHistEPDcaXY[j][i]->SetLineColor((const int)fgkColorPart[j]);}
+	    fHistEPDcaXY[j][i]->SetLineColor((int)fgkColorPart[j]);}
 	}	    
 	if(k==1){
 	  fHistDcaZ[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, -maxZBin, maxZBin);
-	  fHistDcaZ[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDcaZ[j][i]->SetLineColor((int)fgkColorPart[j]);
 	  if(j<(kNParticles-2)){
 	    fHistEPDcaZ[j][i] = new TH1F((const char*)histNameEP, (const char*)histTitle, nBins, -maxZBin, maxZBin);
-	    fHistEPDcaZ[j][i]->SetLineColor((const int)fgkColorPart[j]);}
+	    fHistEPDcaZ[j][i]->SetLineColor((int)fgkColorPart[j]);}
 	}   
      } // 50 pt bins
    } //12 nparticles
@@ -460,8 +490,8 @@ void AliHFEdca::CreateHistogramsKfDca(TList *kfDcaList){
  fStat->SetMarkerSize(1); 
 
  // for kf dca
- fHistKFDcaXY[kNParticles][kNPtBins]=0x0;
- fHistKFDcaZ[kNParticles][kNPtBins]=0x0;
+ // fHistKFDcaXY[kNParticles][kNPtBins]=0x0;
+ // fHistKFDcaZ[kNParticles][kNPtBins]=0x0;
 
  const Int_t nBins = 1000;
  const Float_t maxXYBin = 1000.;
@@ -478,11 +508,11 @@ void AliHFEdca::CreateHistogramsKfDca(TList *kfDcaList){
 	
 	if(k==0){
 	  fHistKFDcaXY[j][i] = new TH1F((const char*)histNameKF, (const char*)histTitle, nBins, -maxXYBin, maxXYBin);
-	  fHistKFDcaXY[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistKFDcaXY[j][i]->SetLineColor((int)fgkColorPart[j]);
 	}	    
 	if(k==1){
 	  fHistKFDcaZ[j][i] = new TH1F((const char*)histNameKF, (const char*)histTitle, nBins, -maxZBin, maxZBin);
-	  fHistKFDcaZ[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistKFDcaZ[j][i]->SetLineColor((int)fgkColorPart[j]);
 	}   
      } // 50 pt bins
    } //12 nparticles
@@ -509,11 +539,10 @@ void AliHFEdca::CreateHistogramsDataDca(TList *dataDcaList){
  //
 
  // for dca
- fHistDataDcaXY[kNParticles][kNPtBins]=0x0;
- fHistDataDcaZ[kNParticles][kNPtBins]=0x0;
-
- fHistDataWoDcaXY[kNParticles][kNPtBins]=0x0;
- fHistDataWoDcaZ[kNParticles][kNPtBins]=0x0;
+//  fHistDataDcaXY[kNParticles][kNPtBins]=0x0;
+//  fHistDataDcaZ[kNParticles][kNPtBins]=0x0;
+//  fHistDataWoDcaXY[kNParticles][kNPtBins]=0x0;
+//  fHistDataWoDcaZ[kNParticles][kNPtBins]=0x0;
 
  const Int_t nBins = 1000;
  const Float_t maxXYBin = 1000.;
@@ -532,17 +561,17 @@ void AliHFEdca::CreateHistogramsDataDca(TList *dataDcaList){
 	
 	if(k==0){
 	  fHistDataDcaXY[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, -maxXYBin, maxXYBin);
-	  fHistDataDcaXY[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDataDcaXY[j][i]->SetLineColor((int)fgkColorPart[j]);
 
 	  fHistDataWoDcaXY[j][i] = new TH1F((const char*)histNameWo, (const char*)histTitle, nBins, -maxXYBin, maxXYBin);
-	  fHistDataWoDcaXY[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDataWoDcaXY[j][i]->SetLineColor((int)fgkColorPart[j]);
 	}	    
 	if(k==1){
 	  fHistDataDcaZ[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, -maxZBin, maxZBin);
-	  fHistDataDcaZ[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDataDcaZ[j][i]->SetLineColor((int)fgkColorPart[j]);
 
 	  fHistDataWoDcaZ[j][i] = new TH1F((const char*)histNameWo, (const char*)histTitle, nBins, -maxZBin, maxZBin);
-	  fHistDataWoDcaZ[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDataWoDcaZ[j][i]->SetLineColor((int)fgkColorPart[j]);
 	}   
      } // 50 pt bins
    } //12 nparticles
@@ -575,11 +604,11 @@ void AliHFEdca::CreateHistogramsDataPull(TList *dataPullList){
  const Float_t maxZBin = 20.;
 
  // for pull -----------------------------------------------------------------------
- fHistDataDcaXYPull[kNParticles][kNPtBins]=0x0;
- fHistDataDcaZPull[kNParticles][kNPtBins]=0x0;
+//  fHistDataDcaXYPull[kNParticles][kNPtBins]=0x0;
+//  fHistDataDcaZPull[kNParticles][kNPtBins]=0x0;
 
- fHistDataWoDcaXYPull[kNParticles][kNPtBins]=0x0;
- fHistDataWoDcaZPull[kNParticles][kNPtBins]=0x0;
+//  fHistDataWoDcaXYPull[kNParticles][kNPtBins]=0x0;
+//  fHistDataWoDcaZPull[kNParticles][kNPtBins]=0x0;
 
 
  for(Int_t k=0; k<kNDcaVar; k++){
@@ -596,17 +625,17 @@ void AliHFEdca::CreateHistogramsDataPull(TList *dataPullList){
 	
 	if(k==0){
 	  fHistDataDcaXYPull[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, 1-maxXYBin, 1+maxXYBin);
-	  fHistDataDcaXYPull[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDataDcaXYPull[j][i]->SetLineColor((int)fgkColorPart[j]);
 
 	  fHistDataWoDcaXYPull[j][i] = new TH1F((const char*)histNameWo, (const char*)histTitle, nBins, 1-maxXYBin, 1+maxXYBin);
-	  fHistDataWoDcaXYPull[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDataWoDcaXYPull[j][i]->SetLineColor((int)fgkColorPart[j]);
 	}	    
 	if(k==1){
 	  fHistDataDcaZPull[j][i] = new TH1F((const char*)histName, (const char*)histTitle, nBins, 1-maxZBin, 1+maxZBin);
-	  fHistDataDcaZPull[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDataDcaZPull[j][i]->SetLineColor((int)fgkColorPart[j]);
 
 	  fHistDataWoDcaZPull[j][i] = new TH1F((const char*)histNameWo, (const char*)histTitle, nBins, 1-maxZBin, 1+maxZBin);
-	  fHistDataWoDcaZPull[j][i]->SetLineColor((const int)fgkColorPart[j]);
+	  fHistDataWoDcaZPull[j][i]->SetLineColor((int)fgkColorPart[j]);
 	}   
      } // 50 pt bins
    } //6 nparticles
@@ -634,8 +663,8 @@ void AliHFEdca::CreateHistogramsVertex(TList *vertexList){
  //
  // for  vertex
 
- fHistMCvertex[kNVertexVar]=0x0;
- fHistESDvertex[kNVertexVar]=0x0;
+//  fHistMCvertex[kNVertexVar]=0x0;
+//  fHistESDvertex[kNVertexVar]=0x0;
 
  const Int_t nBins = 1000;
  const Float_t minXBin = -0.2e4;
@@ -681,7 +710,7 @@ void AliHFEdca::CreateHistogramsDataVertex(TList *dataVertexList){
  //
  // for data vertex
 
- fHistDatavertex[kNVertexVar]=0x0;
+//  fHistDatavertex[kNVertexVar]=0x0;
 
  const Int_t nBins = 1000;
  const Float_t minXBin = -0.2e4;
@@ -813,7 +842,8 @@ void AliHFEdca::FillHistogramsDca(AliESDEvent * const esdEvent, AliESDtrack * co
  if(!track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz)) return;  // protection
  track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz);
 
- AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));  
+ AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel()))); 
+ if(!mctrack) return;
  TParticle *part = mctrack->Particle();
 
  Float_t vx = part->Vx();  // in cm
@@ -931,6 +961,7 @@ void AliHFEdca::FillHistogramsKfDca(AliESDEvent * const esdEvent, AliESDtrack * 
  track->PropagateToDCA(primVtx,magneticField,  beampiperadius, dz, covardz);
 
  AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));  
+ if(!mctrack) return;
  TParticle *part = mctrack->Particle();    
  Int_t pdg = part->GetPdgCode();
 
@@ -1061,6 +1092,7 @@ void AliHFEdca::FillHistogramsPid(AliESDtrack * const track, AliMCEvent * const 
  Float_t esdpt = TMath::Sqrt(esdpx*esdpx+esdpy*esdpy);    
 
  AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));  
+ if(!mctrack) return;
  TParticle *part = mctrack->Particle();
 
  Float_t mcpx = part->Px();
@@ -1249,10 +1281,17 @@ void AliHFEdca::ApplyExtraCuts(AliESDEvent * const esdEvent, Int_t nMinPrimVtxCo
 Int_t AliHFEdca::GetCombinedPid(AliESDtrack *const track) 
 {
 
- //combined detector pid             
+ // combined detector pid             
  Double_t prob[AliPID::kSPECIES];
  track->GetESDpid(prob);
- Double_t priors[5] = {0.01, 0.01, 0.85, 0.10, 0.05};
+
+ // setting priors!
+ Double_t priors[AliPID::kSPECIESN];
+ priors[0] = 0.01;
+ priors[1] = 0.01;
+ priors[2] = 0.85;
+ priors[3] = 0.10;
+ priors[4] = 0.05;
 
  Int_t charge = track->Charge();
  Int_t esdPid = -1; 
@@ -1317,12 +1356,12 @@ void AliHFEdca::CreateHistogramsHfeDca(TList *hfeDcaList){
 
  const Char_t *mcOResd[2]={"mcPt", "esdPt"};
 
- fHistHPDcaXY[2][kNPtBins]=0x0;
- fHistHPDcaZ[2][kNPtBins]=0x0;
- fHistHPDcaXYRes[2][kNPtBins]=0x0;
- fHistHPDcaZRes[2][kNPtBins]=0x0;
- fHistHPDcaXYPull[2][kNPtBins]=0x0;
- fHistHPDcaZPull[2][kNPtBins]=0x0;
+//  fHistHPDcaXY[2][kNPtBins]=0x0;
+//  fHistHPDcaZ[2][kNPtBins]=0x0;
+//  fHistHPDcaXYRes[2][kNPtBins]=0x0;
+//  fHistHPDcaZRes[2][kNPtBins]=0x0;
+//  fHistHPDcaXYPull[2][kNPtBins]=0x0;
+//  fHistHPDcaZPull[2][kNPtBins]=0x0;
 
 
  for(Int_t k=0; k<kNDcaVar; k++){
@@ -1342,26 +1381,26 @@ void AliHFEdca::CreateHistogramsHfeDca(TList *hfeDcaList){
 	
 	if(k==0){
 	  fHistHPDcaXY[iPart][i] = new TH1F((const char*)histHPName, (const char*)histTitleDca, nBinsDca, 1-maxXYBinDca, 1+maxXYBinDca);
-	  fHistHPDcaXY[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDcaXY[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	  fHistHPDcaXYRes[iPart][i] = new TH1F((const char*)histHPNameRes, (const char*)histTitleRes, nBinsDca, 1-maxXYBinDca, 1+maxXYBinDca);
-	  fHistHPDcaXYRes[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDcaXYRes[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	  fHistHPDcaXYPull[iPart][i] = new TH1F((const char*)histHPNamePull, (const char*)histTitlePull, nBinsPull, 1-maxXYBinPull, 1+maxXYBinPull);
-	  fHistHPDcaXYPull[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDcaXYPull[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	}
 	
 	if(k==1){
 	  fHistHPDcaZ[iPart][i] = new TH1F((const char*)histHPName, (const char*)histTitleDca, nBinsDca, 1-maxZBinDca, 1+maxZBinDca);
-	  fHistHPDcaZ[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDcaZ[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	  fHistHPDcaZRes[iPart][i] = new TH1F((const char*)histHPNameRes, (const char*)histTitleRes, nBinsDca, 1-maxZBinDca, 1+maxZBinDca);
-	  fHistHPDcaZRes[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDcaZRes[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	  fHistHPDcaZPull[iPart][i] = new TH1F((const char*)histHPNamePull, (const char*)histTitlePull, nBinsPull, 1-maxZBinPull, 1+maxZBinPull);
-	  fHistHPDcaZPull[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDcaZPull[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	}
      } // 50 pt bins
    } //2 nparticles
  } // 2 dca var
 
- fHistHfePid[2][2] = 0x0; //!  HFE pid  
+ // fHistHfePid[2][2] = 0x0; //!  HFE pid  
  for(Int_t id=0; id<2; id++){
    for(Int_t iPart=0; iPart<2; iPart++){
      TString histTitleHfe((const char*)fgkParticles[iPart*5]);
@@ -1405,10 +1444,10 @@ void AliHFEdca::CreateHistogramsHfeDataDca(TList *hfeDataDcaList){
  const Float_t maxZBinPull = 20.;
 
 
- fHistHPDataDcaXY[2][kNPtBins]=0x0;
- fHistHPDataDcaZ[2][kNPtBins]=0x0;
- fHistHPDataDcaXYPull[2][kNPtBins]=0x0;
- fHistHPDataDcaZPull[2][kNPtBins]=0x0;
+//  fHistHPDataDcaXY[2][kNPtBins]=0x0;
+//  fHistHPDataDcaZ[2][kNPtBins]=0x0;
+//  fHistHPDataDcaXYPull[2][kNPtBins]=0x0;
+//  fHistHPDataDcaZPull[2][kNPtBins]=0x0;
 
  for(Int_t k=0; k<kNDcaVar; k++){
    TString histTitleDca((const char*)fgkDcaVarTitle[k]);
@@ -1422,16 +1461,16 @@ void AliHFEdca::CreateHistogramsHfeDataDca(TList *hfeDataDcaList){
 	
 	if(k==0){
 	  fHistHPDataDcaXY[iPart][i] = new TH1F((const char*)histHPName, (const char*)histTitleDca, nBinsDca, 1-maxXYBinDca, 1+maxXYBinDca);
-	  fHistHPDataDcaXY[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDataDcaXY[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	  fHistHPDataDcaXYPull[iPart][i] = new TH1F((const char*)histHPNamePull, (const char*)histTitlePull, nBinsPull, 1-maxXYBinPull, 1+maxXYBinPull);
-	  fHistHPDataDcaXYPull[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDataDcaXYPull[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	}
 	
 	if(k==1){
 	  fHistHPDataDcaZ[iPart][i] = new TH1F((const char*)histHPName, (const char*)histTitleDca, nBinsDca, 1-maxZBinDca, 1+maxZBinDca);
-	  fHistHPDataDcaZ[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDataDcaZ[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	  fHistHPDataDcaZPull[iPart][i] = new TH1F((const char*)histHPNamePull, (const char*)histTitlePull, nBinsDca, 1-maxZBinPull, 1+maxZBinPull);
-	  fHistHPDataDcaZPull[iPart][i]->SetLineColor((const int)fgkColorPart[iPart*5]);
+	  fHistHPDataDcaZPull[iPart][i]->SetLineColor((int)fgkColorPart[iPart*5]);
 	}
 	
      } // 50 pt bins
@@ -1501,6 +1540,7 @@ void AliHFEdca::FillHistogramsHfeDca(AliESDEvent * const esdEvent, AliESDtrack *
  track->PropagateToDCA(primVtx,magneticField, beampiperadius, dz, covardz);
 
  AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));  
+ if(!mctrack) return;
  TParticle *part = mctrack->Particle();
 
  Float_t vx = part->Vx();  // in cm

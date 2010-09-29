@@ -37,7 +37,7 @@
 ClassImp(AliHFEtools)
 
 AliESDpid *AliHFEtools::fgDefaultPID = NULL;
-Int_t AliHFEtools::fgLogLevel = 1;
+Int_t AliHFEtools::fgLogLevel = 0;
 
 //__________________________________________
 AliHFEtools::AliHFEtools():
