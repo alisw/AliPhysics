@@ -36,6 +36,9 @@
 #include "AliGammaConversionBGHandler.h"
 #include "AliESDCaloCluster.h" // for combining PHOS and GammaConv
 #include "AliKFVertex.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenEventHeader.h"
 #include <AliMCEventHandler.h>
 class AliESDTrackCuts;
 class AliCFContainer;
@@ -357,6 +360,7 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   // Execute analysis for current event
 
   //  Load the esdpid from the esdhandler if exists (tender was applied) otherwise set the Bethe Bloch parameters
+  Int_t eventQuality=-1;
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliESDInputHandler *esdHandler=0x0;
@@ -389,10 +393,28 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     // To avoid crashes due to unzip errors. Sometimes the trees are not there.
 
     AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!mcHandler){ AliError("Could not retrive MC event handler!"); return; }
-    if (!mcHandler->InitOk() ) return;
-    if (!mcHandler->TreeK() )  return;
-    if (!mcHandler->TreeTR() ) return;
+    if (!mcHandler){ 
+      AliError("Could not retrive MC event handler!"); 
+      return; 
+
+      eventQuality=0;
+      fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+    }
+    if (!mcHandler->InitOk() ){
+      eventQuality=0;
+      fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+      return;
+    }
+    if (!mcHandler->TreeK() ){
+      eventQuality=0;
+      fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+      return;
+    }
+    if (!mcHandler->TreeTR() ) {
+      eventQuality=0;
+      fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+      return;
+    }
   }
 
   fV0Reader->SetInputAndMCEvent(InputEvent(), MCEvent());
@@ -474,15 +496,25 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 
   if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
     //    cout<< "Event not taken"<< endl;
+    eventQuality=1;
+    fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+    if(fDoMCTruth){
+      CheckMesonProcessTypeEventQuality(eventQuality);
+    }
     return; // aborts if the primary vertex does not have contributors.
   }
 
 
   if(!fV0Reader->CheckForPrimaryVertexZ() ){
+    eventQuality=2;
+    fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+    if(fDoMCTruth){
+      CheckMesonProcessTypeEventQuality(eventQuality);
+    }
     return;
   }
-
-
+  eventQuality=3;
+  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
 
   // Process the MC information
   if(fDoMCTruth){
@@ -552,7 +584,55 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 //   fDoMCTruth = fV0Reader->GetDoMCTruth();
 // }
 
+void AliAnalysisTaskGammaConversion::CheckMesonProcessTypeEventQuality(Int_t evtQ){
+  fStack= MCEvent()->Stack();
+  fGCMCEvent=MCEvent();
 
+  for (Int_t iTracks = 0; iTracks < fStack->GetNprimary(); iTracks++) {
+    TParticle* particle = (TParticle *)fStack->Particle(iTracks);
+    if (!particle) {
+      //print warning here
+      continue;
+    }
+    if(particle->GetPdgCode()!=111){     //Pi0
+      continue;
+    }
+    if(TMath::Abs(particle->Eta())> fV0Reader->GetEtaCut() )	continue;
+    if(evtQ==1){
+      switch(GetProcessType(fGCMCEvent)){
+      case  kProcSD:
+	fHistograms->FillHistogram("MC_SD_EvtQ1_Pi0_Pt", particle->Pt());
+	break;
+      case  kProcDD:
+	fHistograms->FillHistogram("MC_DD_EvtQ1_Pi0_Pt", particle->Pt());
+	break;
+      case  kProcND:
+	fHistograms->FillHistogram("MC_ND_EvtQ1_Pi0_Pt", particle->Pt());
+	break;
+      default:
+	AliError("Unknown Process");
+      }
+    }
+    if(evtQ==2){
+      switch(GetProcessType(fGCMCEvent)){
+      case  kProcSD:
+	fHistograms->FillHistogram("MC_SD_EvtQ2_Pi0_Pt", particle->Pt());
+	break;
+      case  kProcDD:
+	fHistograms->FillHistogram("MC_DD_EvtQ2_Pi0_Pt", particle->Pt());
+	break;
+      case  kProcND:
+	fHistograms->FillHistogram("MC_ND_EvtQ2_Pi0_Pt", particle->Pt());
+	break;
+      default:
+	AliError("Unknown Process");
+      }
+    }
+
+
+  }
+
+}
 
 void AliAnalysisTaskGammaConversion::ProcessMCData(){
   // see header file for documentation
@@ -579,7 +659,6 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
   }
 
   for (Int_t iTracks = 0; iTracks < fStack->GetNtrack(); iTracks++) {
-    //for (Int_t iTracks = 0; iTracks < fStack->GetNprimary(); iTracks++) {
     TParticle* particle = (TParticle *)fStack->Particle(iTracks);
 
 
@@ -681,8 +760,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       if ( particle->GetPdgCode()== -211 ||  particle->GetPdgCode()== 211 ||
            particle->GetPdgCode()== 2212 ||  particle->GetPdgCode()==-2212 ||
            particle->GetPdgCode()== 321  ||  particle->GetPdgCode()==-321 ){
-	
-	//	fHistograms->FillHistogram("MC_PhysicalPrimaryCharged_Pt", mcTrack->Pt());
+	fHistograms->FillHistogram("MC_PhysicalPrimaryCharged_Pt", particle->Pt());
       }
     }
 
@@ -1025,6 +1103,20 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	  fHistograms->FillHistogram("MC_Pi0_GammaDaughter_OpeningAngle", GetMCOpeningAngle(daughter0,daughter1));
 	  fHistograms->FillHistogram("MC_Pi0_XY", particle->Vx(), particle->Vy());//only fill from one daughter to avoid multiple filling
 	  if(TMath::Abs(particle->Eta())<0.9)fHistograms->FillHistogram("MC_Pi0_Pt_Fiducial", particle->Pt());
+
+	  switch(GetProcessType(fGCMCEvent)){
+	  case  kProcSD:
+	    fHistograms->FillHistogram("MC_SD_EvtQ3_Pi0_Pt", particle->Pt());
+	    break;
+	  case  kProcDD:
+	    fHistograms->FillHistogram("MC_DD_EvtQ3_Pi0_Pt", particle->Pt());
+	    break;
+	  case  kProcND:
+	    fHistograms->FillHistogram("MC_ND_EvtQ3_Pi0_Pt", particle->Pt());
+	    break;
+	  default:
+	    AliError("Unknown Process");
+	  }
 			
 	  if(gammaEtaCut && gammaRCut){
 	    //	  if(TMath::Abs(daughter0->Eta()) <= fV0Reader->GetEtaCut() && TMath::Abs(daughter1->Eta()) <= fV0Reader->GetEtaCut() ){
@@ -1931,6 +2023,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
 	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 	  }
+	  if(alfa<0.1){
+	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_E_alpha",massTwoGammaCandidate ,twoGammaCandidate->GetE());
+	  }
 	  fHistograms->FillHistogram("ESD_Mother_InvMass",massTwoGammaCandidate);
 
 	  if(fCalculateBackground){
@@ -2323,7 +2418,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
   }
 
   if(fDoRotation == kTRUE){
-    TRandom *random = new TRandom();
+    TRandom3 *random = new TRandom3();
     for(Int_t iCurrent=0;iCurrent<currentEventV0s->GetEntriesFast();iCurrent++){
       AliKFParticle currentEventGoodV0 = *(AliKFParticle *)(currentEventV0s->At(iCurrent)); 
       for(Int_t iCurrent2=iCurrent+1;iCurrent2<currentEventV0s->GetEntriesFast();iCurrent2++){
@@ -2396,6 +2491,10 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	    if(alfa>fV0Reader->GetAlphaMinCutMeson() &&   alfa<fV0Reader->GetAlphaCutMeson()){
 	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
 	    }
+	    if(alfa<0.1){
+	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_E_alpha",massBG ,backgroundCandidate->GetE());
+	    }
+
 	    if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(currentEventGoodV02.GetEta())<0.9 ){
 	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
 	      fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
@@ -2508,6 +2607,10 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	      if(alfa>fV0Reader->GetAlphaMinCutMeson() &&   alfa<fV0Reader->GetAlphaCutMeson()){
 		fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
 	      }
+	      if(alfa<0.1){
+		fHistograms->FillHistogram("ESD_Background_InvMass_vs_E_alpha",massBG ,backgroundCandidate->GetE());
+	      }
+
 	      if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
 		fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
 		fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
@@ -2618,6 +2721,10 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 		if(alfa>fV0Reader->GetAlphaMinCutMeson() &&   alfa<fV0Reader->GetAlphaCutMeson()){
 		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
 		}
+		if(alfa<0.1){
+		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_E_alpha",massBG ,backgroundCandidate->GetE());
+		}
+
 		if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
 		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
 		  fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
@@ -3835,3 +3942,58 @@ TClonesArray AliAnalysisTaskGammaConversion::GetTLorentzVector(TClonesArray *con
   //  return tlVtrack;
 }
 
+Int_t AliAnalysisTaskGammaConversion::GetProcessType(AliMCEvent * mcEvt) {
+
+  // Determine if the event was generated with pythia or phojet and return the process type
+
+  // Check if mcEvt is fine
+  if (!mcEvt) {
+    AliFatal("NULL mc event");
+  } 
+
+  // Determine if it was a pythia or phojet header, and return the correct process type
+  AliGenPythiaEventHeader * headPy  = 0;
+  AliGenDPMjetEventHeader * headPho = 0;
+  AliGenEventHeader * htmp = mcEvt->GenEventHeader();
+  if(!htmp) {
+    AliFatal("Cannot Get MC Header!!");
+  }
+  if( TString(htmp->IsA()->GetName()) == "AliGenPythiaEventHeader") {
+    headPy =  (AliGenPythiaEventHeader*) htmp;
+  } else if (TString(htmp->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
+    headPho = (AliGenDPMjetEventHeader*) htmp;
+  } else {
+    AliError("Unknown header");
+  }
+
+  // Determine process type
+  if(headPy)   {
+    if(headPy->ProcessType() == 92 || headPy->ProcessType() == 93) {
+      // single difractive
+      return kProcSD;
+    } else if (headPy->ProcessType() == 94) {
+      // double diffractive
+      return kProcDD;
+    }
+    else if(headPy->ProcessType() != 92 && headPy->ProcessType() != 93 && headPy->ProcessType() != 94) {    
+      // non difractive
+      return kProcND; 
+    }
+  } else if (headPho) {
+    if(headPho->ProcessType() == 5 || headPho->ProcessType() == 6 ) {
+      // single difractive
+      return kProcSD;
+    } else if (headPho->ProcessType() == 7) { 
+      // double diffractive
+      return kProcDD;      
+    } else if(headPho->ProcessType() != 5 && headPho->ProcessType() != 6  && headPho->ProcessType() != 7 ) {
+      // non difractive
+      return kProcND; 
+    }       
+  }
+  
+
+  // no process type found?
+  AliError(Form("Unknown header: %s", htmp->IsA()->GetName()));
+  return kProcUnknown;
+}

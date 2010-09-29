@@ -14,7 +14,7 @@
 #include <vector>
 #include "AliV0Reader.h"
 #include "AliGammaConversionBGHandler.h"
-#include "TRandom.h"
+#include "TRandom3.h"
 //#include "AliCFManager.h"  // for CF
 //#include "AliCFContainer.h"   // for CF
 
@@ -39,6 +39,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 {
 	
  public:
+  typedef enum { kProcSD, kProcDD, kProcND, kProcUnknown, kNProcs } ProcType_t; 
   AliAnalysisTaskGammaConversion();
   AliAnalysisTaskGammaConversion(const char* name);
   virtual ~AliAnalysisTaskGammaConversion() ;// virtual destructor
@@ -50,7 +51,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   //virtual void ConnectInputData(Option_t * option);
-		
+  void CheckMesonProcessTypeEventQuality(Int_t );
+  Int_t GetProcessType(AliMCEvent * mcEvt) ;
   void ProcessMCData();
   void ProcessV0sNoCut();
   void ProcessV0s();
