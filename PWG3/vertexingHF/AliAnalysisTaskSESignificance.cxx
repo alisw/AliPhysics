@@ -469,7 +469,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     Double_t invMass=d->InvMass(nprongs,(UInt_t*)pdgdaughters);
     Double_t invMassC=0;
     
-    Int_t isSelected=fRDCuts->IsSelected(d,fSelectionlevel);
+    Int_t isSelected=fRDCuts->IsSelected(d,fSelectionlevel,aod);
     
     if(isSelected) {
       fHistNEvents->Fill(2); // count selected with loosest cuts
@@ -500,7 +500,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	    Int_t pdgMC = dMC->GetPdgCode();
 	    
 	    if(pdgMC==prongPdgPlus) fSigHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
-	    else fRflHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
+	    else if(fDecChannel==AliAnalysisTaskSESignificance::kD0toKpi) fRflHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass); //temporary! an implementation of the reflections for 3 prongs is in progress
 	  }
 	  else{ //background
 	    fBkgHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
