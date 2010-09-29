@@ -924,7 +924,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	lCableY = ySlat3;
 
 	// Cables going out from the start of slat
-	if(kNPCB3[i]>=4){ // Only if 4 or more pcb
+	if(kNPCB3[i]>=4 && i<kNslats3-2){ // Only if 4 or more pcb
 	  // First top cables
 	  cablepar[0] = supporthlength/2.;
 	  lCableX = 0.;
@@ -1537,7 +1537,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       lCableY8 = ySlat42;
 
       // Cables going out from the start of slat
-      if(kNPCB4[i]>=4){ // Only if 4 or more pcb
+      if(kNPCB4[i]>=4 && i<kNslats4-2){ // Only if 4 or more pcb
 	// First top cables
 	cablepar[0] = (supporthlength-kXpos4[i])/2.;
 	lCableX = kXpos4[i]/2.;
