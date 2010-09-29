@@ -517,7 +517,7 @@ void AliTRDclusterResolution::UserExec(Option_t *)
   TH3S *h3 = NULL;
 
   // define limits around ExB for which x contribution is negligible
-  const Float_t kDtgPhi = 3.5e-2; //(+- 2 deg)
+  const Float_t kAroundZero = 3.5e-2; //(+- 2 deg)
 
   TObjArray *arr0 = (TObjArray*)fContainer->At(kCenter);
   TObjArray *arr1 = (TObjArray*)fContainer->At(kSigm);
@@ -540,10 +540,11 @@ void AliTRDclusterResolution::UserExec(Option_t *)
     AliDebug(4, Form("det[%d] tb[%2d] q[%4.0f Log[%6.4f]] dy[%7.2f][um] ypull[%5.2f]", det, t, q, TMath::Log(q), 1.e4*dy, dy/TMath::Sqrt(covcl[0])));
     
     cli->GetGlobalPosition(y, z, dydx, dzdx, &cov[0]);
+    Float_t tilt(cli->GetTilt());
 
     // resolution as a function of cluster charge
     // only for phi equal exB 
-    if(TMath::Abs(dydx-fExB) < kDtgPhi){
+    if(TMath::Abs(dydx-fExB-tilt*dzdx) < kAroundZero){
       h3 = (TH3S*)fContainer->At(kQRes);
       h3->Fill(TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
     }
@@ -556,7 +557,7 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 
     // resolution as a function of y displacement from pad center
     // only for phi equal exB
-    if(TMath::Abs(dydx-fExB) < kDtgPhi){
+    if(TMath::Abs(dydx-fExB-tilt*dzdx) < kAroundZero){
       h3 = (TH3S*)arr0->At(0);
       h3->Fill(t, cli->GetYDisplacement(), dy);
       h3 = (TH3S*)arr0->At(1);
@@ -566,7 +567,6 @@ void AliTRDclusterResolution::UserExec(Option_t *)
     Int_t it(((TH3S*)arr0->At(0))->GetXaxis()->FindBin(t));
 
     // fill histo for resolution (sigma)
-    Float_t tilt(cli->GetTilt());
     ((TH3S*)arr1->At(it-1))->Fill(tilt*dzdx, dydx, dy);
 
     // fill histo for systematic (mean)
