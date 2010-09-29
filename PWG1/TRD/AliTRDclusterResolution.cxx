@@ -258,8 +258,8 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
 
   // By default register all analysis
   // The user can switch them off in his steering macro
-  SetProcess(kQRes);
-  SetProcess(kCenter);
+  SetProcess(kYRes);
+  SetProcess(kYSys);
   SetProcess(kMean);
   SetProcess(kSigm);
 }
@@ -296,8 +296,8 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
   TH2 *h2 = NULL;TH1 *h1 = NULL;
   TGraphErrors *gm(NULL), *gs(NULL), *gp(NULL);
   switch(ifig){
-  case kQRes:
-    if(!(arr = (TObjArray*)fResults->At(kQRes))) break;
+  case kYRes:
+    if(!(arr = (TObjArray*)fResults->At(kYRes))) break;
     if(!(gm = (TGraphErrors*)arr->At(0))) break;
     if(!(gs = (TGraphErrors*)arr->At(1))) break;
     if(!(gp = (TGraphErrors*)arr->At(2))) break;
@@ -311,8 +311,8 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
     gp->Draw("pl");leg->AddEntry(gp, "Abundance / Probability", "pl");
     leg->Draw();
     return kTRUE;
-  case kCenter:
-    if(!(arr = (TObjArray*)fResults->At(kCenter))) break;
+  case kYSys:
+    if(!(arr = (TObjArray*)fResults->At(kYSys))) break;
     gPad->Divide(2, 1); l = gPad->GetListOfPrimitives();
     ((TVirtualPad*)l->At(0))->cd();
     ((TTree*)arr->At(0))->Draw(Form("y:t>>h(%d, -0.5, %f, 51, -.51, .51)",AliTRDseedV1::kNtb, AliTRDseedV1::kNtb-0.5),
@@ -435,35 +435,68 @@ TObjArray* AliTRDclusterResolution::Histos()
   TH3S *h3 = NULL;
   TObjArray *arr = NULL;
 
-  // add resolution/pulls plots for dydx=ExB
-  fContainer->AddAt(arr = new TObjArray(2), kCenter);
-  arr->SetName("Center");
-  if(!(h3=(TH3S*)gROOT->FindObject(Form("hRes%s%03d", (HasMCdata()?"MC":"") ,fDet)))) {
+  // add systematic/pulls plots for dydx=ExB+h*dzdx
+  fContainer->AddAt(arr = new TObjArray(3), kYSys);
+  arr->SetName("SysY");
+  // systematic plot on pw and tb
+  if(!(h3=(TH3S*)gROOT->FindObject(Form("Sys%s%03d", (HasMCdata()?"MC":"") ,fDet)))) {
     h3 = new TH3S(
-      Form("hRes%s%03d", (HasMCdata()?"MC":""),fDet),
+      Form("Sys%s%03d", (HasMCdata()?"MC":""),fDet),
       Form(" Det[%d] Col[%d] Row[%d];t [bin];y [pw];#Delta y[cm]", fDet, fCol, fRow),
       AliTRDseedV1::kNtb, -.5, AliTRDseedV1::kNtb-0.5,   // x
       51, -.51, .51, // y
       60, -fDyRange, fDyRange); // dy
   } h3->Reset();
   arr->AddAt(h3, 0);
-  // add Pull plot for each layer
-  if(!(h3=(TH3S*)gROOT->FindObject(Form("hPull%s%03d", (HasMCdata()?"MC":""), fDet)))){
+  // Pull plot on pw and tb
+  if(!(h3=(TH3S*)gROOT->FindObject(Form("PullS%s%03d", (HasMCdata()?"MC":""), fDet)))){
     h3 = new TH3S(
-      Form("hPull%s%03d", (HasMCdata()?"MC":""), fDet),
+      Form("PullS%s%03d", (HasMCdata()?"MC":""), fDet),
       Form(" Det[%d] Col[%d] Row[%d];t [bin];y [pw];#Delta y[cm]/#sigma_{y}", fDet, fCol, fRow),
       AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb-0.5,   // x
       51, -.51, .51, // y
       60, -4., 4.); // dy/sy
   } h3->Reset();
   arr->AddAt(h3, 1);
-
-  if(!(h3 = (TH3S*)gROOT->FindObject(Form("Charge%s%03d", (HasMCdata()?"MC":""), fDet)))){
-    h3 = new TH3S(Form("Charge%s%03d", (HasMCdata()?"MC":""), fDet),
-    "dy=f(q);log(q) [a.u.];#Delta y[cm];#Delta y/#sigma_{y}",
+  // systematic/pull plot on q
+  if(!(h3 = (TH3S*)gROOT->FindObject(Form("SysCh%s%03d", (HasMCdata()?"MC":""), fDet)))){
+    h3 = new TH3S(Form("SysCh%s%03d", (HasMCdata()?"MC":""), fDet),
+    Form(" Det[%d] Col[%d] Row[%d];log(q) [a.u.];#Delta y[cm];#Delta y/#sigma_{y}", fDet, fCol, fRow),
     50, 2.2, 7.5, 60, -fDyRange, fDyRange, 60, -4., 4.);
-  }
-  fContainer->AddAt(h3, kQRes);
+  } h3->Reset();
+  arr->AddAt(h3, 2);
+
+  // add resolution/pulls plots for dydx=0
+  // filled only for B=0 and stack 2 (h*dzdx=0)
+  fContainer->AddAt(arr = new TObjArray(3), kYRes);
+  arr->SetName("ResY");
+  // resolution plot on pw and tb
+  if(!(h3=(TH3S*)gROOT->FindObject(Form("Res%s%03d", (HasMCdata()?"MC":"") ,fDet)))) {
+    h3 = new TH3S(
+      Form("Res%s%03d", (HasMCdata()?"MC":""),fDet),
+      Form(" Det[%d] Col[%d] Row[%d];t [bin];y [pw];#Delta y[cm]", fDet, fCol, fRow),
+      AliTRDseedV1::kNtb, -.5, AliTRDseedV1::kNtb-0.5,   // x
+      51, -.51, .51, // y
+      60, -fDyRange, fDyRange); // dy
+  } h3->Reset();
+  arr->AddAt(h3, 0);
+  // Pull plot on pw and tb
+  if(!(h3=(TH3S*)gROOT->FindObject(Form("PullR%s%03d", (HasMCdata()?"MC":""), fDet)))){
+    h3 = new TH3S(
+      Form("PullR%s%03d", (HasMCdata()?"MC":""), fDet),
+      Form(" Det[%d] Col[%d] Row[%d];t [bin];y [pw];#Delta y[cm]/#sigma_{y}", fDet, fCol, fRow),
+      AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb-0.5,   // x
+      51, -.51, .51, // y
+      60, -4., 4.); // dy/sy
+  } h3->Reset();
+  arr->AddAt(h3, 1);
+  // resolution/pull plot on q
+  if(!(h3 = (TH3S*)gROOT->FindObject(Form("ResCh%s%03d", (HasMCdata()?"MC":""), fDet)))){
+    h3 = new TH3S(Form("ResCh%s%03d", (HasMCdata()?"MC":""), fDet),
+    Form(" Det[%d] Col[%d] Row[%d];log(q) [a.u.];#Delta y[cm];#Delta y/#sigma_{y}", fDet, fCol, fRow),
+    50, 2.2, 7.5, 60, -fDyRange, fDyRange, 60, -4., 4.);
+  } h3->Reset();
+  arr->AddAt(h3, 2);
 
   fContainer->AddAt(arr = new TObjArray(AliTRDseedV1::kNtb), kSigm);
   arr->SetName("Resolution");
@@ -519,9 +552,10 @@ void AliTRDclusterResolution::UserExec(Option_t *)
   // define limits around ExB for which x contribution is negligible
   const Float_t kAroundZero = 3.5e-2; //(+- 2 deg)
 
-  TObjArray *arr0 = (TObjArray*)fContainer->At(kCenter);
-  TObjArray *arr1 = (TObjArray*)fContainer->At(kSigm);
-  TObjArray *arr2 = (TObjArray*)fContainer->At(kMean);
+  TObjArray *arr0 = (TObjArray*)fContainer->At(kYSys);
+  TObjArray *arr1 = (TObjArray*)fContainer->At(kYRes);
+  TObjArray *arr2 = (TObjArray*)fContainer->At(kSigm);
+  TObjArray *arr3 = (TObjArray*)fContainer->At(kMean);
 
   const AliTRDclusterInfo *cli = NULL;
   TIterator *iter=fInfo->MakeIterator();
@@ -536,16 +570,25 @@ void AliTRDclusterResolution::UserExec(Option_t *)
       if(TMath::Abs(fCol-c) > 5) continue;
       if(TMath::Abs(fRow-r) > 2) continue;
     }
+    Int_t stk(AliTRDgeometry::GetStack(fDet));
     dy = cli->GetResolution();
     AliDebug(4, Form("det[%d] tb[%2d] q[%4.0f Log[%6.4f]] dy[%7.2f][um] ypull[%5.2f]", det, t, q, TMath::Log(q), 1.e4*dy, dy/TMath::Sqrt(covcl[0])));
     
     cli->GetGlobalPosition(y, z, dydx, dzdx, &cov[0]);
     Float_t tilt(cli->GetTilt());
 
-    // resolution as a function of cluster charge
-    // only for phi equal exB 
+    // systematics as a function of cluster charge
+    // only for dydx = exB + h*dzdx
     if(TMath::Abs(dydx-fExB-tilt*dzdx) < kAroundZero){
-      h3 = (TH3S*)fContainer->At(kQRes);
+      h3 = (TH3S*)arr0->At(2);
+      h3->Fill(TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
+    }
+    // resolution as a function of cluster charge
+    // only for dydx = 0, ExB=0, stack=2
+    if(stk==2 &&
+       TMath::Abs(dydx) < kAroundZero &&
+       TMath::Abs(fExB) < kAroundZero){
+      h3 = (TH3S*)arr1->At(2);
       h3->Fill(TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
     }
 
@@ -555,22 +598,30 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 
     //x = (t+.5)*fgkTimeBinLength; // conservative approach !!
 
-    // resolution as a function of y displacement from pad center
-    // only for phi equal exB
+    // systematic as a function of y displacement from pad center and time bin
+    // only for dydx = exB + h*dzdx
     if(TMath::Abs(dydx-fExB-tilt*dzdx) < kAroundZero){
       h3 = (TH3S*)arr0->At(0);
       h3->Fill(t, cli->GetYDisplacement(), dy);
       h3 = (TH3S*)arr0->At(1);
       h3->Fill(t, cli->GetYDisplacement(), dy/TMath::Sqrt(covcl[0]));
     }
+    // resolution as a function of y displacement from pad center and time bin
+    // only for dydx = 0, ExB=0, stack=2
+    if(stk==2 &&
+       TMath::Abs(dydx) < kAroundZero &&
+       TMath::Abs(fExB) < kAroundZero){
+      h3 = (TH3S*)arr1->At(0);
+      h3->Fill(t, cli->GetYDisplacement(), dy);
+      h3 = (TH3S*)arr1->At(1);
+      h3->Fill(t, cli->GetYDisplacement(), dy/TMath::Sqrt(covcl[0]));
+    }
 
     Int_t it(((TH3S*)arr0->At(0))->GetXaxis()->FindBin(t));
 
-    // fill histo for resolution (sigma)
-    ((TH3S*)arr1->At(it-1))->Fill(tilt*dzdx, dydx, dy);
-
-    // fill histo for systematic (mean)
-    ((TH3S*)arr2->At(it-1))->Fill(10.*cli->GetAnisochronity(), tilt*dzdx-fExB, dy);
+    // fill histo for general systematic/resolution
+    ((TH3S*)arr2->At(it-1))->Fill(tilt*dzdx, dydx, dy);
+    ((TH3S*)arr3->At(it-1))->Fill(10.*cli->GetAnisochronity(), tilt*dzdx-fExB, dy);
   }
 }
 
@@ -581,9 +632,9 @@ Bool_t AliTRDclusterResolution::PostProcess()
 // Steer processing of various cluster resolution dependences :
 //
 //   - process resolution dependency cluster charge
-//   if(HasProcess(kQRes)) ProcessCharge();
+//   if(HasProcess(kYRes)) ProcessCharge();
 //   - process resolution dependency on y displacement
-//   if(HasProcess(kCenter)) ProcessCenterPad();
+//   if(HasProcess(kYSys)) ProcessCenterPad();
 //   - process resolution dependency on drift legth and drift cell width
 //   if(HasProcess(kSigm)) ProcessSigma();
 //   - process systematic shift on drift legth and drift cell width
@@ -600,7 +651,7 @@ Bool_t AliTRDclusterResolution::PostProcess()
     TGraphErrors *g = NULL;
     fResults = new TObjArray(kNtasks);
     fResults->SetOwner();
-    fResults->AddAt(arr = new TObjArray(3), kQRes);
+    fResults->AddAt(arr = new TObjArray(3), kYRes);
     arr->SetOwner();
     arr->AddAt(g = new TGraphErrors(), 0);
     g->SetLineColor(kBlue); g->SetMarkerColor(kBlue);
@@ -613,7 +664,7 @@ Bool_t AliTRDclusterResolution::PostProcess()
     g->SetMarkerStyle(7); 
 
     // pad center dependence
-    fResults->AddAt(arr = new TObjArray(AliTRDgeometry::kNlayer+1), kCenter);
+    fResults->AddAt(arr = new TObjArray(AliTRDgeometry::kNlayer+1), kYSys);
     arr->SetOwner();
     arr->AddAt(
     t = new TTree("cent", "dy=f(y,x,ly)"), 0);
@@ -652,10 +703,10 @@ Bool_t AliTRDclusterResolution::PostProcess()
   }
   
   // process resolution dependency on charge
-  if(HasProcess(kQRes)) ProcessCharge();
+  if(HasProcess(kYRes)) ProcessCharge();
   
   // process resolution dependency on y displacement
-  if(HasProcess(kCenter)) ProcessCenterPad();
+  if(HasProcess(kYSys)) ProcessCenterPad();
 
   // process resolution dependency on drift legth and drift cell width
   if(HasProcess(kSigm)) ProcessSigma();
@@ -771,7 +822,7 @@ void AliTRDclusterResolution::ProcessCharge()
 // Alexandru Bercuci <A.Bercuci@gsi.de>
 
   TH3S *h3(NULL);
-  if(!(h3 = (TH3S*)fContainer->At(kQRes))) {
+  if(!(h3 = (TH3S*)fContainer->At(kYRes))) {
     AliWarning("Missing dy=f(Q) histo");
     return;
   }
@@ -788,7 +839,7 @@ void AliTRDclusterResolution::ProcessCharge()
   s2x /= (AliTRDseedV1::kNtb-5); s2x *= s2x;
   //Double_t exb2 = fExB*fExB;
 
-  TObjArray *arr = (TObjArray*)fResults->At(kQRes);
+  TObjArray *arr = (TObjArray*)fResults->At(kYRes);
   TGraphErrors *gqm = (TGraphErrors*)arr->At(0);
   TGraphErrors *gqs = (TGraphErrors*)arr->At(1);
   TGraphErrors *gqp = (TGraphErrors*)arr->At(2);
@@ -870,7 +921,7 @@ void AliTRDclusterResolution::ProcessCenterPad()
 // Author
 // Alexandru Bercuci <A.Bercuci@gsi.de>
 
-  TObjArray *arr = (TObjArray*)fContainer->At(kCenter);
+  TObjArray *arr = (TObjArray*)fContainer->At(kYSys);
   if(!arr) {
     AliWarning("Missing dy=f(y | x, ly) container");
     return;
@@ -881,7 +932,7 @@ void AliTRDclusterResolution::ProcessCenterPad()
   TF1 fp("fp", "gaus", -3.5, 3.5);
 
   TH1D *h1 = NULL; TH2F *h2 = NULL; TH3S *h3r=NULL, *h3p=NULL;
-  TObjArray *arrRes = (TObjArray*)fResults->At(kCenter);
+  TObjArray *arrRes = (TObjArray*)fResults->At(kYSys);
   TTree *t = (TTree*)arrRes->At(0);
   TGraphErrors *gs = NULL;
   TAxis *ax = NULL;
