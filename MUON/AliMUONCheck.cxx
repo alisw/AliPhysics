@@ -781,7 +781,7 @@ AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
   
   // Output values
   
-  for ( Int_t ichamber = 0; ichamber < 14; ++ichamber ) 
+  for ( Int_t ichamber = 0; ichamber < nchambers; ++ichamber ) 
   {
     printf(">>> Chamber %2d  nChannels Bending %5d  nChannels NonBending %5d \n", 
          ichamber+1, 
