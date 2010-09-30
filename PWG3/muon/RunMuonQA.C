@@ -62,7 +62,6 @@ void RunMuonQA(TString inputFileName = "AliESDs.root", Bool_t selectPhysics = kT
     Error("RunMuonQA","AliPhysicsSelectionTask not created!");
     return;
   }
-  physicsSelection->GetPhysicsSelection()->SetUseMuonTriggers();
   
   // Muon QA analysis
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/AddTaskMuonQA.C");
