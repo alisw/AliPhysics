@@ -15,12 +15,11 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////////
-//  Stand alone tracker class                     //
-//  Origin:  Elisabetta Crescio                   //
-//  e-mail:  crescio@to.infn.it                   //
-//  tracks are saved as AliITStrackV2 objects     //
-////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+//  Stand alone ITS tracker class                        //
+//  Origin:  Elisabetta Crescio - crescio@to.infn.it     //
+//  Updated: Francesco Prino    - prino@to.infn.it       //
+///////////////////////////////////////////////////////////
 
 #include <stdlib.h>
 
@@ -613,11 +612,12 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   
   const Int_t kMaxClu=AliITStrackSA::kMaxNumberOfClusters;
 
-  static Int_t firstmod[AliITSgeomTGeo::kNLayers];
-  
+  static Int_t firstmod[AliITSgeomTGeo::kNLayers];  
   static Int_t clind[AliITSgeomTGeo::kNLayers][kMaxClu];
   static Int_t clmark[AliITSgeomTGeo::kNLayers][kMaxClu];
   static Int_t end[AliITSgeomTGeo::kNLayers];
+  static Int_t indices[AliITSgeomTGeo::kNLayers];
+
   static AliITSRecPoint *listlayer[AliITSgeomTGeo::kNLayers][kMaxClu];
 
   for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++) {
@@ -668,102 +668,47 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   TClonesArray &arrSA= *fListOfSATracks;
   Int_t nFoundTracks=0;
 
+
   for(Int_t l0=0;l0<end[0];l0++){ //loop on layer 1
-    AliITSRecPoint* cl0 = (AliITSRecPoint*)listlayer[0][l0];
+    indices[0]=l0;
     for(Int_t l1=0;l1<end[1];l1++){ //loop on layer 2
-      AliITSRecPoint* cl1 = (AliITSRecPoint*)listlayer[1][l1];
+      indices[1]=l1;
       for(Int_t l2=0;l2<end[2];l2++){  //loop on layer 3
-        AliITSRecPoint* cl2 = (AliITSRecPoint*)listlayer[2][l2];
+	indices[2]=l2;
         for(Int_t l3=0;l3<end[3];l3++){ //loop on layer 4   
-          AliITSRecPoint* cl3 = (AliITSRecPoint*)listlayer[3][l3];
+	  indices[3]=l3;
           for(Int_t l4=0;l4<end[4];l4++){ //loop on layer 5
-            AliITSRecPoint* cl4 = (AliITSRecPoint*)listlayer[4][l4];
+	    indices[4]=l4;
             for(Int_t l5=0;l5<end[5];l5++){ //loop on layer 6  
-              AliITSRecPoint* cl5 = (AliITSRecPoint*)listlayer[5][l5];
+	      indices[5]=l5;
 
+	      // estimate curvature from 2 innermost points (or innermost point + vertex)
 
-	      Double_t x1,y1,z1,sx1,sy1,sz1;
-	      Double_t x2,y2,z2,sx2,sy2,sz2;
-	      AliITSRecPoint* p1=0;
-	      AliITSRecPoint* p2=0;
-	      Int_t index1=0,index2=0;
-	      Int_t mrk1=0,mrk2=0;
+	      Int_t iFirstLay=indices[firstLay];
+	      Int_t mrk1=clmark[firstLay][iFirstLay];
 
-	      switch(firstLay) {
-	      case 0:
-		p1=cl0;
-		index1=clind[0][l0];mrk1=clmark[0][l0];
-		break;
-	      case 1:
-		p1=cl1;
-		index1=clind[1][l1];mrk1=clmark[1][l1];
-		break;
-	      case 2:
-		p1=cl2;
-		index1=clind[2][l2];mrk1=clmark[2][l2];
-		break;
-	      case 3:
-		p1=cl3;
-		index1=clind[3][l3];mrk1=clmark[3][l3];
-		break;
-	      case 4:
-		p1=cl4;
-		index1=clind[4][l4];mrk1=clmark[4][l4];
-		break;
-	      }
-
-	      switch(secondLay) {
-	      case 1:
-		p2=cl1;
-		index2=clind[1][l1];mrk2=clmark[1][l1];
-		break;
-	      case 2:
-		p2=cl2;
-		index2=clind[2][l2];mrk2=clmark[2][l2];
-		break;
-	      case 3:
-		p2=cl3;
-		index2=clind[3][l3];mrk2=clmark[3][l3];
-		break;
-	      case 4:
-		p2=cl4;
-		index2=clind[4][l4];mrk2=clmark[4][l4];
-		break;
-	      case 5:
-		p2=cl5;
-		index2=clind[5][l5];mrk2=clmark[5][l5];
-		break;
-	      default:
-		p2=0;
-		index2=-1;mrk2=-1;
-		break;
-	      }
-
+	      AliITSRecPoint* p1=(AliITSRecPoint*)listlayer[firstLay][iFirstLay];
 	      Int_t module1 = p1->GetDetectorIndex()+firstmod[firstLay]; 
 	      Int_t layer,ladder,detector;
 	      AliITSgeomTGeo::GetModuleId(module1,layer,ladder,detector);
 	      Float_t yclu1 = p1->GetY();
 	      Float_t zclu1 = p1->GetZ();
+
+	      Double_t x1,y1,z1;
+	      Double_t x2,y2,z2;
 	      Double_t cv=0,tgl2=0,phi2=0;
-	      
-	      Int_t cln1=mrk1;
-	      AliITSclusterTable* arr1 = (AliITSclusterTable*)GetClusterCoord(firstLay,cln1);
+	      AliITSclusterTable* arr1 = (AliITSclusterTable*)GetClusterCoord(firstLay,mrk1);
 	      x1 = arr1->GetX();
 	      y1 = arr1->GetY();
 	      z1 = arr1->GetZ();
-	      sx1 = arr1->GetSx();
-	      sy1 = arr1->GetSy();
-	      sz1 = arr1->GetSz();
 
 	      if(secondLay>0) {
-		Int_t cln2=mrk2;
-		AliITSclusterTable* arr2 = (AliITSclusterTable*)GetClusterCoord(secondLay,cln2);
+		Int_t iSecondLay=indices[secondLay];	      
+		Int_t mrk2=clmark[secondLay][iSecondLay];
+		AliITSclusterTable* arr2 = (AliITSclusterTable*)GetClusterCoord(secondLay,mrk2);
 		x2 = arr2->GetX();
 		y2 = arr2->GetY();
 		z2 = arr2->GetZ();
-		sx2 = arr2->GetSx();
-		sy2 = arr2->GetSy();
-		sz2 = arr2->GetSz();
 		cv = Curvature(primaryVertex[0],primaryVertex[1],x1,y1,x2,y2);
 		tgl2 = (z2-z1)/TMath::Sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
 		phi2 = TMath::ATan2((y2-y1),(x2-x1));
@@ -776,33 +721,15 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 		phi2 = TMath::ATan2((y1-y2),(x1-x2));
 	      }
 
-
+	      // create track and attach it the RecPoints
               AliITStrackSA trac(layer,ladder,detector,yclu1,zclu1,phi2,tgl2,cv,1);
-
-
-              if(cl5!=0) {
-		trac.AddClusterV2(5,(clind[5][l5] & 0x0fffffff)>>0);
-		trac.AddClusterMark(5,clmark[5][l5]);
-	      }
-              if(cl4!=0){
-		trac.AddClusterV2(4,(clind[4][l4] & 0x0fffffff)>>0);
-		trac.AddClusterMark(4,clmark[4][l4]);
-	      }
-              if(cl3!=0){
-		trac.AddClusterV2(3,(clind[3][l3] & 0x0fffffff)>>0);
-		trac.AddClusterMark(3,clmark[3][l3]);
-	      }
-              if(cl2!=0){
-		trac.AddClusterV2(2,(clind[2][l2] & 0x0fffffff)>>0);
-		trac.AddClusterMark(2,clmark[2][l2]);
-	      }
-              if(cl1!=0){
-		trac.AddClusterV2(1,(clind[1][l1] & 0x0fffffff)>>0);
-		trac.AddClusterMark(1,clmark[1][l1]);
-	      }
-              if(cl0!=0){
-		trac.AddClusterV2(0,(clind[0][l0] & 0x0fffffff)>>0);
-		trac.AddClusterMark(0,clmark[0][l0]);
+	      for(Int_t iLay=5; iLay>=0; iLay--){
+		Int_t iInLay=indices[iLay];
+		AliITSRecPoint* cl=(AliITSRecPoint*)listlayer[iLay][iInLay];
+		if(cl!=0){
+		  trac.AddClusterV2(iLay,(clind[iLay][iInLay] & 0x0fffffff)>>0);
+		  trac.AddClusterMark(iLay,clmark[iLay][iInLay]);
+		}
 	      }
 
               //fit with Kalman filter using AliITStrackerMI::RefitAt()
@@ -926,7 +853,6 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
      Int_t orind = arr->GetOrInd();
      trs->AddClusterSA(layer,orind);
      trs->AddClusterMark(layer,index);
-       
      nc++;
      fLambdac=lambda;
      fPhiEstimate=phi;
