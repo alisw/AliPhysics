@@ -272,6 +272,43 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 //       <<fCorrTotEtFullAcceptanceTPC<<", "<<fCorrTotEtFullAcceptanceITS<<", "<<fCorrHadEtFullAcceptanceTPC<<", "<<fCorrHadEtFullAcceptanceITS<<","
 //       <<fCorrTotEtEMCALAcceptanceTPC<<", "<<fCorrTotEtEMCALAcceptanceITS<<", "<<fCorrHadEtEMCALAcceptanceTPC<<", "<<fCorrHadEtEMCALAcceptanceITS<<","
 //       <<fCorrTotEtPHOSAcceptanceTPC<<", "<<fCorrTotEtPHOSAcceptanceITS<<", "<<fCorrHadEtPHOSAcceptanceTPC<<", "<<fCorrHadEtPHOSAcceptanceITS<<endl;
+    FillHisto1D("RecoHadEtFullAcceptanceTPC",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPC",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoHadEtEMCALAcceptanceTPC",GetCorrectedHadEtEMCALAcceptanceTPC(),1.0);
+    FillHisto1D("RecoTotEtEMCALAcceptanceTPC",GetCorrectedTotEtEMCALAcceptanceTPC(),1.0);
+    FillHisto1D("RecoHadEtPHOSAcceptanceTPC",GetCorrectedHadEtPHOSAcceptanceTPC(),1.0);
+    FillHisto1D("RecoTotEtPHOSAcceptanceTPC",GetCorrectedTotEtPHOSAcceptanceTPC(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceTPCNoPID",GetCorrectedHadEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCNoPID",GetCorrectedTotEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoHadEtEMCALAcceptanceTPCNoPID",GetCorrectedHadEtEMCALAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoTotEtEMCALAcceptanceTPCNoPID",GetCorrectedTotEtEMCALAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoHadEtPHOSAcceptanceTPCNoPID",GetCorrectedHadEtPHOSAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoTotEtPHOSAcceptanceTPCNoPID",GetCorrectedTotEtPHOSAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceITS",GetCorrectedHadEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceITS",GetCorrectedTotEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoHadEtEMCALAcceptanceITS",GetCorrectedHadEtEMCALAcceptanceITS(),1.0);
+    FillHisto1D("RecoTotEtEMCALAcceptanceITS",GetCorrectedTotEtEMCALAcceptanceITS(),1.0);
+    FillHisto1D("RecoHadEtPHOSAcceptanceITS",GetCorrectedHadEtPHOSAcceptanceITS(),1.0);
+    FillHisto1D("RecoTotEtPHOSAcceptanceITS",GetCorrectedTotEtPHOSAcceptanceITS(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceITSNoPID",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceITSNoPID",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoHadEtEMCALAcceptanceITSNoPID",GetCorrectedHadEtEMCALAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoTotEtEMCALAcceptanceITSNoPID",GetCorrectedTotEtEMCALAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoHadEtPHOSAcceptanceITSNoPID",GetCorrectedHadEtPHOSAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoTotEtPHOSAcceptanceITSNoPID",GetCorrectedTotEtPHOSAcceptanceITSNoPID(),1.0);
+
+    FillHisto1D("RecoRawEtFullAcceptanceTPC",GetRawEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoRawEtEMCALAcceptanceTPC",GetRawEtEMCALAcceptanceTPC(),1.0);
+    FillHisto1D("RecoRawEtPHOSAcceptanceTPC",GetRawEtPHOSAcceptanceTPC(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCNoPID",GetRawEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoRawEtEMCALAcceptanceTPCNoPID",GetRawEtEMCALAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoRawEtPHOSAcceptanceTPCNoPID",GetRawEtPHOSAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITS",GetRawEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoRawEtEMCALAcceptanceITS",GetRawEtEMCALAcceptanceITS(),1.0);
+    FillHisto1D("RecoRawEtPHOSAcceptanceITS",GetRawEtPHOSAcceptanceITS(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSNoPID",GetRawEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoRawEtEMCALAcceptanceITSNoPID",GetRawEtEMCALAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoRawEtPHOSAcceptanceITSNoPID",GetRawEtPHOSAcceptanceITSNoPID(),1.0);
     return 1;
 }
 void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL) {
@@ -475,4 +512,89 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){
     CreateHisto2D(Form("dEdxDataElectron%s",cutName->Data()),"dE/dx for e^{#pm}","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
     CreateHisto2D(Form("dEdxDataUnidentified%s",cutName->Data()),"dE/dx for unidentified particles","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
   }
+
+  Float_t minEt = 0.0;
+  Float_t maxEt = 100.0;
+  Int_t nbinsEt = 200;
+  char histoname[200];
+  char histotitle[200];
+  char xtitle[50];
+  TString *ytitle = new TString("Number of events");
+  TString *TPC = new TString("TPC");
+  TString *ITS = new TString("ITS");
+  TString *TPCpt = new TString("0.15");
+  TString *ITSpt = new TString("0.10");
+  TString *PID = new TString("");
+  TString *NoPID = new TString("NoPID");
+  TString *NoPIDString = new TString(", No PID");
+  TString *HadEt = new TString("HadEt");
+  TString *RawEt = new TString("RawEt");
+  TString *TotEt = new TString("TotEt");
+  TString *TotEtString = new TString("total E_{T}");
+  TString *HadEtString = new TString("hadronic E_{T}");
+  TString *RawEtString = new TString("raw E_{T}");
+  TString *Full = new TString("Full");
+  TString *EMCAL = new TString("EMCAL");
+  TString *PHOS = new TString("PHOS");
+  
+  for(int tpc = 0;tpc<2;tpc++){
+    for(int hadet = 0;hadet<3;hadet++){
+      for(int type = 0;type<3;type++){
+	for(int pid = 0;pid<2;pid++){
+	  TString *detector;
+	  TString *partid;
+	  TString *et = HadEt;
+	  TString *acceptance;
+	  TString *ptstring;
+	  TString *partidstring;
+	  TString *etstring = HadEtString;
+	  if(tpc==1) {detector = TPC; ptstring = TPCpt;}
+	  else{detector = ITS; ptstring = ITSpt;}
+	  if(pid==1){partid = PID; partidstring = PID;}
+	  else{partid = NoPID; partidstring = NoPIDString;}
+	  if(hadet==1) {et = HadEt; etstring = HadEtString;}
+	  if(hadet==0){et = TotEt; etstring = TotEtString;}
+	  if(hadet==2){et = RawEt; etstring = RawEtString;}
+	  switch(type){
+	  case 0:
+	    acceptance = Full;
+	    break;
+	  case 1:
+	    acceptance = EMCAL;
+	    break;
+	  case 2:
+	    acceptance = PHOS;
+	    break;
+	  default:
+	    acceptance = Full;
+	  }
+	  sprintf(histoname,"Reco%s%sAcceptance%s%s",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	  sprintf(histotitle,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	  sprintf(xtitle,"Reconstructed %s",etstring->Data());
+	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt,minEt,maxEt);
+// 	  sprintf(histoname,"RecoRaw%s%sAcceptance%s%s",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+// 	  sprintf(histotitle,"Raw Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+// 	  sprintf(xtitle,"Reconstructed Raw %s",etstring->Data());
+// 	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt,minEt,maxEt);
+	  //cout<<"I want to make "<<histoname<<" with the title "<<histotitle<<endl;
+	}
+      }
+    }
+  }
+
+  delete TPC;
+  delete ITS;
+  delete TPCpt;
+  delete ITSpt;
+  delete PID;
+  delete NoPID;
+  delete NoPIDString;
+  delete HadEt;
+  delete TotEt;
+  delete TotEtString;
+  delete HadEtString;
+  delete Full;
+  delete EMCAL;
+  delete PHOS;
+
 }
