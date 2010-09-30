@@ -55,7 +55,7 @@ AliAnalysisTask *AddTaskTender(Bool_t checkEvtSelection=kFALSE){
  
   //           connect containers
   mgr->ConnectInput  (tender,  0, mgr->GetCommonInputContainer() );
-  mgr->ConnectOutput (tender,  0, coutput1);
+  mgr->ConnectOutput (tender,  1, coutput1);
  
   return tender;
 }
