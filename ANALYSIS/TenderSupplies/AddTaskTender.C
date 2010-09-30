@@ -24,6 +24,10 @@ AliAnalysisTask *AddTaskTender(Bool_t checkEvtSelection=kFALSE){
      }
   }   
   
+  //========= Attach VZERO supply ======
+  AliVZEROTenderSupply *vzeroSupply=new AliVZEROTenderSupply("VZEROtender");
+  vzeroSupply->SetDebug(kFALSE);
+  tender->AddSupply(vzeroSupply);
   //========= Attach TPC supply ======
   AliTPCTenderSupply *tpcSupply=new AliTPCTenderSupply("TPCtender");
   tpcSupply->SetDebugLevel(2);
