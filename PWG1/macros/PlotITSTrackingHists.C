@@ -992,9 +992,17 @@ void PlotEffOfficial(Bool_t drawRatio=kTRUE) {
 void PlotImpPar_rphi(Int_t rebin=1) {
 
 
-  TFile *fMC= new TFile("ITS.Performance_lhc10b2.root");
+  TFile *fMC= new TFile("AnalysisResults_onlynonfakes.root");
 
   TList *list=(TList*)fMC->Get("cOutputITS");
+  TDirectoryFile *dir=0;
+  if(!list) {
+    dir=(TDirectoryFile*)fMC->GetDirectory("ITS_Performance");
+    if(dir) list = (TList*)dir->Get("cOutputITS");
+  }
+
+  if(!list) return kFALSE;
+
   TH1F *fHistd0rphiITSMIoneSPDInAccP150200MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP150200");
   TH1F *fHistd0rphiITSMIoneSPDInAccS150200MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200");
   TH1F *fHistd0rphiITSMIoneSPDInAccS150200fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200fromStrange");
@@ -1045,9 +1053,15 @@ void PlotImpPar_rphi(Int_t rebin=1) {
   fHistd0rphiITSMIoneSPDInAcc40008000MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc40008000MC->GetEntries());
   
 
-  TFile *f= new TFile("ITS.Performance_117048_117223_pass1.root");
+  TFile *f= new TFile("AnalysisResults_onlynonfakes.root");
+  list=(TList*)f->Get("cOutputITS");
+  if(!list) {
+    dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
+    if(dir) list = (TList*)dir->Get("cOutputITS");
+  }
 
-  TList *list=(TList*)f->Get("cOutputITS");
+  if(!list) return kFALSE;
+
   TH1F *fHistd0rphiITSMIoneSPDInAccP150200 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP150200");
   TH1F *fHistd0rphiITSMIoneSPDInAccS150200 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200");
   TH1F *fHistd0rphiITSMIoneSPDInAccP350450 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP350450");
@@ -2706,8 +2720,10 @@ void ReweightStrange(TH1F *hPt,TH1F* hPtPfromStrange,TH1F* hPtSfromStrange) {
 }
 //--------------------------------------------------------------------------
 void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
-			 TString pathBeforeRun="/alice/data/2010/LHC10c/000",
-			 TString pathAfterRun="/ESDs/pass2/QA13/QAresults.root",
+			 TString pathBeforeRun="/alice/sim/LHC10d1/",
+			 TString pathAfterRun="/QA14/QAresults.root",
+			 //TString pathBeforeRun="/alice/data/2010/LHC10b/000",
+			 //TString pathAfterRun="/ESDs/pass2/QA9/QAresults.root",
 			 TString pathAfterRun2="") 
 {
   //
@@ -2903,6 +2919,11 @@ void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
 Bool_t KeepRun(Int_t irun) {
 
 
+
+  // LHC10c good runs
+  Int_t nruns10b=33;
+  Int_t goodruns10b[33]={117222, 117220, 117116, 117112, 117109, 117099, 117092, 117086, 117077, 117065, 117063, 117060, 117059, 117054, 117053, 117052, 117050, 117048, 116645, 116643, 116574, 116571, 116562, 116403, 116402, 116288, 116102, 115414, 115401, 115393, 115193, 115186, 114931};
+
   // LHC10c good runs
   Int_t nruns10c=46;
   Int_t goodruns10c[46]={121040, 121039, 120829, 120825, 120824, 120823, 120822, 120821, 120820, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120504, 120503, 120244, 120079, 120076, 120073, 120072, 120069, 120067, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 119163, 119161, 119159, 118561, 118560, 118558, 118556, 118518, 118512, 118507, 118506};
@@ -2920,6 +2941,11 @@ Bool_t KeepRun(Int_t irun) {
 
   Bool_t found=kFALSE;
   Int_t i=0;
+
+  for(i=0; i<nruns10b; i++) {
+    if(irun==goodruns10b[i]) {found=kTRUE; break;}
+  }  
+  if(found) return kTRUE;
 
   for(i=0; i<nruns10c; i++) {
     if(irun==goodruns10c[i]) {found=kTRUE; break;}
