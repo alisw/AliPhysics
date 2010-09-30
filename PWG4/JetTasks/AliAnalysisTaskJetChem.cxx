@@ -137,6 +137,7 @@ fhV0Radius(0x0),
 fhV0DCAToVertex(0x0),
 fhV0DCAToVertexK0(0x0),
 fhV0InvMassK0(0x0),
+fhV0PtVsInvMassK0(0x0),
 fhV0InvMassK0JetEvt(0x0),
 fhV0InvMassLambda(0x0),
 fhV0InvMassAntiLambda(0x0),
@@ -151,6 +152,7 @@ fhdNdptK0(0x0),
 fhPtVsEtaK0(0x0),
 fhV0InvMassK0DCA(0x0),
 fhV0InvMassK0DCAdEdx(0x0),
+fhV0PtVsInvMassK0DCAdEdx(0x0),
 fhV0InvMassK0DCAPID(0x0),
 fhV0InvMassLambdaDCAdEdx(0x0), 
 fhV0InvMassAntiLambdaDCAdEdx(0x0),
@@ -1657,6 +1659,12 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   fhV0InvMassK0->Sumw2();
   fListOfHistos->Add(fhV0InvMassK0); 
 
+  fhV0PtVsInvMassK0 = new TH2F("hV0PtVsInvMassK0","",100,0.45,0.55,100,0.,50.);
+  fhV0PtVsInvMassK0->SetXTitle("inv mass (GeV)");
+  fhV0PtVsInvMassK0->SetYTitle("p_{T} (GeV)");
+  fhV0PtVsInvMassK0->Sumw2();
+  fListOfHistos->Add(fhV0PtVsInvMassK0); 
+
   fhV0InvMassK0JetEvt = new TH1F("hV0InvMassK0JetEvt","",2000,0,2);
   fhV0InvMassK0JetEvt->SetXTitle("inv mass (GeV)");
   fhV0InvMassK0JetEvt->Sumw2();
@@ -1730,6 +1738,12 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   fhV0InvMassK0DCAdEdx->SetXTitle("inv mass (GeV)");
   fhV0InvMassK0DCAdEdx->Sumw2();
   fListOfHistos->Add(fhV0InvMassK0DCAdEdx); 
+
+  fhV0PtVsInvMassK0DCAdEdx = new TH2F("hV0PtVsInvMassK0DCAdEdx","",100,0.45,0.55,100,0.,50.);
+  fhV0PtVsInvMassK0DCAdEdx->SetXTitle("inv mass (GeV)");
+  fhV0PtVsInvMassK0DCAdEdx->SetYTitle("p_{T} (GeV)");
+  fhV0PtVsInvMassK0DCAdEdx->Sumw2();
+  fListOfHistos->Add(fhV0PtVsInvMassK0DCAdEdx); 
 
   fhV0InvMassK0DCAPID = new TH1F("hV0InvMassK0DCAPID","",2000,0,2);
   fhV0InvMassK0DCAPID->SetXTitle("inv mass (GeV)");
@@ -2783,6 +2797,8 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
       fhV0DCAToVertex->Fill(fDCAV0ToVertex);
       fhdNdptV0->Fill(ptV0);
 
+      fhV0PtVsInvMassK0->Fill(massK0,ptV0); 
+
 
       // K0 signal before cuts 
 
@@ -2810,6 +2826,7 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	   IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){ 
 	  
 	  fhV0InvMassK0DCAdEdx->Fill(massK0);
+	  fhV0PtVsInvMassK0DCAdEdx->Fill(massK0,ptV0); 
 
 	  if(IsK0InvMass(massK0)){
 	    fhdNdptK0DCAdEdx->Fill(ptV0);

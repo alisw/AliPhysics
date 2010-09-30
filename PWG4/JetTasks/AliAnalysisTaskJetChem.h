@@ -215,6 +215,7 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     TH1F* fhV0DCAToVertexK0;          //!
     
     TH1F* fhV0InvMassK0;               //!
+    TH2F* fhV0PtVsInvMassK0;           //!
     TH1F* fhV0InvMassK0JetEvt;         //!       
     TH1F* fhV0InvMassLambda;           //!
     TH1F* fhV0InvMassAntiLambda;       //!
@@ -232,6 +233,8 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
 
     TH1F* fhV0InvMassK0DCA;              //!
     TH1F* fhV0InvMassK0DCAdEdx;          //!
+    TH2F* fhV0PtVsInvMassK0DCAdEdx;      //!
+
     TH1F* fhV0InvMassK0DCAPID;           //!
     TH1F* fhV0InvMassLambdaDCAdEdx;      //!
     TH1F* fhV0InvMassAntiLambdaDCAdEdx;  //!
@@ -427,7 +430,7 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     enum PIDHistoBin{kPDGpm311Bin=48,kPDG333Bin=49,kPDGpm313Bin=50,kPDGp323Bin=51,kPDGm323Bin=52,
 		     kPDGNeutrinoBin=53,kPDGCharmedBaryonBin=54,kPDGQuarkBin=55,kPDGDiQuarkBin=56};
    
-    ClassDef( AliAnalysisTaskJetChem, 1); // Analysis task for jet chemistry analysis 
+    ClassDef( AliAnalysisTaskJetChem, 2); // Analysis task for jet chemistry analysis 
   };
 
 #endif
