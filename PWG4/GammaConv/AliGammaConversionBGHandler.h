@@ -71,7 +71,7 @@ class AliGammaConversionBGHandler : public TObject {
   Int_t ** fBGEventCounter; //! bg counter
   Int_t ** fBGEventENegCounter;//! bg electron counter
   Double_t ** fBGProbability; //! prob per bin
-  GammaConversionVertex *** fBGEventVertex;//array of event vertex
+  GammaConversionVertex *** fBGEventVertex;//! array of event vertex
   Int_t fNBinsZ; //n z bins
   Int_t fNBinsMultiplicity; //n bins multiplicity
   Double_t *fBinLimitsArrayZ;//! bin limits z array
