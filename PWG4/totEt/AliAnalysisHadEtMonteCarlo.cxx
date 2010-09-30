@@ -761,27 +761,28 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      TParticle *mom = stack->Particle(part->GetFirstMother());
 	      Int_t pdgCodeMom =  mom->GetPDG(0)->PdgCode();
 	      //cout<<"I am a gamma and my mom is "<<mom->GetName()<<endl;
+	      //We want to separate the gammas by pi0, eta, omega0 but we don't want to double count energy so we get the et from the gamma daughter
 	      if(pdgCodeMom == fEtaCode){
-		float myEt = Et(mom);
-	      fSimTotEt += myEt;
+		float myEt = Et(part);
+		fSimTotEt += myEt;
 		FillHisto2D("EtSimulatedEta",mom->Pt(),mom->Eta(),myEt);
 		filled = true;
 	      }
 	      if(pdgCodeMom == fPi0Code){
-		float myEt = Et(mom);
-	      fSimTotEt += myEt;
+		float myEt = Et(part);
+		fSimTotEt += myEt;
 		FillHisto2D("EtSimulatedPi0",mom->Pt(),mom->Eta(),myEt);
 		filled = true;
 	      }
 	      if(pdgCodeMom == fOmega0Code){
-		float myEt = Et(mom);
-	      fSimTotEt += myEt;
+		float myEt = Et(part);
+		fSimTotEt += myEt;
 		FillHisto2D("EtSimulatedOmega0",mom->Pt(),mom->Eta(),myEt);
 		filled = true;
 	      }
 	      if(!filled){
 		float myEt = Et(part);
-	      fSimTotEt += myEt;
+		fSimTotEt += myEt;
 		FillHisto2D("EtSimulatedGamma",part->Pt(),part->Eta(),myEt);
 		filled = true;
 	      }
@@ -813,14 +814,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	}
     }
 
+    FillHisto1D("SimTotEt",fSimTotEt,1.0);
+    FillHisto1D("SimHadEt",fSimHadEt,1.0);
 
-
-
-//     fTotNeutralEtAcc = fTotNeutralEt;
-//     fTotEt = fTotChargedEt + fTotNeutralEt;
-//     fTotEtAcc = fTotChargedEtAcc + fTotNeutralEtAcc;
-    
-//     FillHistograms();
 
     return 1;
     
@@ -969,32 +965,92 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateHisto2D(Form("dEdxElectron%s",cutName->Data()),"dE/dx for e^{#pm}","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
     CreateHisto2D(Form("dEdxUnidentified%s",cutName->Data()),"dE/dx for unidentified particles","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
   }
-  CreateHisto2D("SimTotEtVsRecoTotEtFullAcceptanceTPC","Simulated total E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.15 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (Full acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceTPC","Simulated total E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.15 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (EMCAL acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceTPC","Simulated total E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.15 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (PHOS acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtFullAcceptanceTPC","Simulated hadronic E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.15 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (Full acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceTPC","Simulated hadronic E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.15 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (EMCAL acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceTPC","Simulated hadronic E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.15 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (PHOS acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtFullAcceptanceITS","Simulated total E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.10 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (Full acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceITS","Simulated total E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.10 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (EMCAL acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceITS","Simulated total E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.10 GeV/c","Simulated total E_{T}","Reconstructed total E_{T} (PHOS acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtFullAcceptanceITS","Simulated hadronic E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.10 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (Full acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceITS","Simulated hadronic E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.10 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (EMCAL acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceITS","Simulated hadronic E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.10 GeV/c","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (PHOS acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtFullAcceptanceTPCNoPID","Simulated total E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.15 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (Full acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceTPCNoPID","Simulated total E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.15 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (EMCAL acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceTPCNoPID","Simulated total E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.15 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (PHOS acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtFullAcceptanceTPCNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.15 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (Full acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceTPCNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.15 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (EMCAL acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceTPCNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.15 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (PHOS acc., p_{T}>0.15 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtFullAcceptanceITSNoPID","Simulated total E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.10 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (Full acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtEMCALAcceptanceITSNoPID","Simulated total E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.10 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (EMCAL acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimTotEtVsRecoTotEtPHOSAcceptanceITSNoPID","Simulated total E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.10 GeV/c, no PID","Simulated total E_{T}","Reconstructed total E_{T} (PHOS acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtFullAcceptanceITSNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with full acceptance for p_{T}>0.10 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (Full acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceITSNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with EMCAL acceptance for p_{T}>0.10 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (EMCAL acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
-  CreateHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceITSNoPID","Simulated hadronic E_{T} vs reconstructed E_{T} with PHOS acceptance for p_{T}>0.10 GeV/c, no PID","Simulated hadronic E_{T}","Reconstructed hadronic E_{T} (PHOS acc., p_{T}>0.10 GeV/c)",100,0.0,100.0,100,0.0,100.0);
+
+  Float_t minEt = 0.0;
+  Float_t maxEt = 100.0;
+  Int_t nbinsEt = 200;
+  char histoname[200];
+  char histotitle[200];
+  char xtitle[50];
+  char ytitle[50];
+  TString *TPC = new TString("TPC");
+  TString *ITS = new TString("ITS");
+  TString *TPCpt = new TString("0.15");
+  TString *ITSpt = new TString("0.10");
+  TString *PID = new TString("");
+  TString *NoPID = new TString("NoPID");
+  TString *NoPIDString = new TString(", No PID");
+  TString *HadEt = new TString("HadEt");
+  TString *TotEt = new TString("TotEt");
+  TString *TotEtString = new TString("total E_{T}");
+  TString *HadEtString = new TString("hadronic E_{T}");
+  TString *Full = new TString("Full");
+  TString *EMCAL = new TString("EMCAL");
+  TString *PHOS = new TString("PHOS");
+  
+  for(int tpc = 0;tpc<2;tpc++){
+    for(int hadet = 0;hadet<2;hadet++){
+      for(int type = 0;type<3;type++){
+	for(int pid = 0;pid<2;pid++){
+	  TString *detector;
+	  TString *partid;
+	  TString *et;
+	  TString *acceptance;
+	  TString *ptstring;
+	  TString *partidstring;
+	  TString *etstring;
+	  if(tpc==1) {detector = TPC; ptstring = TPCpt;}
+	  else{detector = ITS; ptstring = ITSpt;}
+	  if(pid==1){partid = PID; partidstring = PID;}
+	  else{partid = NoPID; partidstring = NoPIDString;}
+	  if(hadet==1) {et = HadEt; etstring = HadEtString;}
+	  else{et = TotEt; etstring = TotEtString;}
+	  switch(type){
+	  case 0:
+	    acceptance = Full;
+	    break;
+	  case 1:
+	    acceptance = EMCAL;
+	    break;
+	  case 2:
+	    acceptance = PHOS;
+	    break;
+	  default:
+	    acceptance = Full;
+	  }
+	  sprintf(histoname,"Sim%sVsReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	  sprintf(histotitle,"Simulated %s vs reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	  sprintf(xtitle,"Simulated %s",etstring->Data());
+	  sprintf(ytitle,"Reconstructed %s (%s acc., p_{T}>%s GeV/c,%s)",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,minEt,maxEt);
+
+	  sprintf(histoname,"Sim%sMinusReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	  sprintf(histotitle,"(Simulated %s - reconstructed %s)/(Simulated %s) with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	  sprintf(ytitle,"(Simulated %s - reconstructed %s)/(Simulated %s)",etstring->Data(),etstring->Data(),etstring->Data());
+	  sprintf(xtitle,"Simulated %s",etstring->Data());
+	  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-maxEt/10.0,maxEt/10.0);
+	  //cout<<"I want to make "<<histoname<<" with the title "<<histotitle<<endl;
+	}
+      }
+    }
+  }
+  CreateHisto1D("SimTotEt","Simulated Total E_{T}","Simulated Total E_{T}","Number of events",nbinsEt,minEt,maxEt);
+  CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt,minEt,maxEt);
+  delete TPC;
+  delete ITS;
+  delete TPCpt;
+  delete ITSpt;
+  delete PID;
+  delete NoPID;
+  delete NoPIDString;
+  delete HadEt;
+  delete TotEt;
+  delete TotEtString;
+  delete HadEtString;
+  delete Full;
+  delete EMCAL;
+  delete PHOS;
   CreateIntHisto1D("NEvents","Number of events","number of events","Number of events",1,0,1);
 
-  //CreateHisto1D("MisidentifiedPIDs","PIDs for particles misidentified that are not a #pi,K,p","PID","number of entries",3000,0.5,3000.5);
 }
 

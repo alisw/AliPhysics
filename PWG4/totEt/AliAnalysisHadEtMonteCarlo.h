@@ -54,6 +54,31 @@ public:
     void FillSimHadEtVsRecoHadEtEMCALAcceptanceITSNoPID(Float_t et){FillHisto2D("SimHadEtVsRecoHadEtEMCALAcceptanceITSNoPID",fSimHadEt,et,1.0);}
     void FillSimHadEtVsRecoHadEtPHOSAcceptanceTPCNoPID(Float_t et){FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceTPCNoPID",fSimHadEt,et,1.0);}
     void FillSimHadEtVsRecoHadEtPHOSAcceptanceITSNoPID(Float_t et){FillHisto2D("SimHadEtVsRecoHadEtPHOSAcceptanceITSNoPID",fSimHadEt,et,1.0);}
+
+    void FillSimTotEtMinusRecoTotEtFullAcceptanceTPC(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtFullAcceptanceTPC",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtFullAcceptanceITS(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtFullAcceptanceITS",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtEMCALAcceptanceTPC(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtEMCALAcceptanceTPC",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtEMCALAcceptanceITS(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtEMCALAcceptanceITS",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtPHOSAcceptanceTPC(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtPHOSAcceptanceTPC",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtPHOSAcceptanceITS(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtPHOSAcceptanceITS",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtFullAcceptanceTPCNoPID(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtFullAcceptanceTPCNoPID",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtFullAcceptanceITSNoPID(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtFullAcceptanceITSNoPID",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtEMCALAcceptanceTPCNoPID(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtEMCALAcceptanceTPCNoPID",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtEMCALAcceptanceITSNoPID(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtEMCALAcceptanceITSNoPID",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtPHOSAcceptanceTPCNoPID(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtPHOSAcceptanceTPCNoPID",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimTotEtMinusRecoTotEtPHOSAcceptanceITSNoPID(Float_t et){if(fSimTotEt>0.0)FillHisto2D("SimTotEtMinusRecoTotEtPHOSAcceptanceITSNoPID",(fSimTotEt-et)/fSimTotEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtFullAcceptanceTPC(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtFullAcceptanceTPC",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtFullAcceptanceITS(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtFullAcceptanceITS",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtEMCALAcceptanceTPC(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtEMCALAcceptanceTPC",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtEMCALAcceptanceITS(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtEMCALAcceptanceITS",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtPHOSAcceptanceTPC(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtPHOSAcceptanceTPC",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtPHOSAcceptanceITS(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtPHOSAcceptanceITS",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtFullAcceptanceTPCNoPID(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtFullAcceptanceTPCNoPID",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtFullAcceptanceITSNoPID(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtFullAcceptanceITSNoPID",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtEMCALAcceptanceTPCNoPID(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtEMCALAcceptanceTPCNoPID",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtEMCALAcceptanceITSNoPID(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtEMCALAcceptanceITSNoPID",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtPHOSAcceptanceTPCNoPID(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtPHOSAcceptanceTPCNoPID",(fSimHadEt-et)/fSimHadEt,et,1.0);}
+    void FillSimHadEtMinusRecoHadEtPHOSAcceptanceITSNoPID(Float_t et){if(fSimHadEt>0.0)FillHisto2D("SimHadEtMinusRecoHadEtPHOSAcceptanceITSNoPID",(fSimHadEt-et)/fSimHadEt,et,1.0);}
  private:
     //Declare it private to avoid compilation warning
     AliAnalysisHadEtMonteCarlo & operator = (const AliAnalysisHadEtMonteCarlo & g) ;//cpy assignment
