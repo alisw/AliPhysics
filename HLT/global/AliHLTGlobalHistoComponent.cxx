@@ -183,8 +183,7 @@ int AliHLTGlobalHistoComponent::AliHLTGlobalHistoVariables::Init(int capacity, c
     fArrays.resize(entries);
     fCount.resize(entries);
     for (int i=0; i<entries; i++) {
-      const char* key=((TObjString*)pTokens->At(i))->GetString().Data();
-      fKeys[key]=i;
+      fKeys[pTokens->At(i)->GetName()]=i;
       fArrays[i]=new float[fCapacity];
     }
     delete pTokens;
