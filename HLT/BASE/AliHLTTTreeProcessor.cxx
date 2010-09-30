@@ -257,7 +257,15 @@ TH1* AliHLTTTreeProcessor::CreateHistogram(const AliHLTHistogramDefinition& d)
     return 0;
   }
 
-  const Long64_t rez = fTree->Project(d.GetName().Data(), d.GetExpression().Data(), d.GetCut().Data(), d.GetDrawOption().Data()); 
+  TString histName(d.GetName());
+  if (!histName.Contains("(")) {
+    //Without number of bins, the histogram will be "fixed"
+    //and most of values can go to underflow/overflow bins,
+    //since kCanRebin will be false.
+    histName += TString::Format("(%d)", Int_t(kDefaultNBins));
+  }
+
+  const Long64_t rez = fTree->Project(histName.Data(), d.GetExpression().Data(), d.GetCut().Data(), d.GetDrawOption().Data());
 
   if (rez == -1) {
     HLTError("TTree::Project failed");

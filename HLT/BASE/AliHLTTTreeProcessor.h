@@ -44,6 +44,7 @@ class AliHLTTTreeProcessor : public AliHLTProcessor {
 private:
   enum EDefaults {
     kMaxEntries = 1000,
+    kDefaultNBins = 200,
     kInterval = 5
   };
 public:
