@@ -901,6 +901,11 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
     if(IsDataMC()){
       //Get the tag from AliMCAnalysisUtils for PID
       Int_t tag =ph->GetTag();
+      if ( ph->GetLabel() < 0){
+        if(GetDebug() > 0) 
+          printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - Label is -1; problem in the MC ESD? ");
+        continue;
+      }
       
       //Check if the tag matches on of the different particle types and fill the corresponding histograms
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)&&!(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))) //kMCPhoton; making sure that this is not a Pi0 cluster (it should not happen).
@@ -909,9 +914,9 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
         fhPhiMCPhoton ->Fill(ecluster,phicluster);
         fhEtaMCPhoton ->Fill(ecluster,etacluster);
         fhLambdaMCPhoton ->Fill(ecluster,lambdaMainCluster,iNumCell);
-        Int_t iCurrent = ph->GetLabel();
         Double_t ePhot;
         //Get the true energy of the photon
+        Int_t iCurrent = ph->GetLabel();
         TParticle* pCurrent = stack->Particle(iCurrent);
         ePhot = pCurrent->Energy(); 	  
         fhPhotTrueE->Fill(ecluster,ePhot,lambdaMainCluster);
@@ -921,7 +926,8 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
       }//kMCPhoton
       
       if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)) //kMCPi0 : single cluster created by 2 photons from the same Pi0 decay
-      {         
+      {     
+        
         //Fill the basic information about the Pi0 cluster
         fhEMCPi0  ->Fill(ecluster);
         fhPhiMCPi0 ->Fill(ecluster,phicluster);

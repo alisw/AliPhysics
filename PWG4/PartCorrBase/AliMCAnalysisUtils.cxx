@@ -149,7 +149,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
     TParticle * parent = new TParticle ;
     Int_t pPdg = -1;
     Int_t pStatus =-1;
-    if(iParent > 0){
+    if(iParent >= 0){
       parent = stack->Particle(iParent);
       pPdg = TMath::Abs(parent->GetPdgCode());
       pStatus = parent->GetStatusCode();  
