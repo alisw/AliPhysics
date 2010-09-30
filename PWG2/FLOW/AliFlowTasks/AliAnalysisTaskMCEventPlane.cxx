@@ -43,6 +43,7 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane(const char *name) :
   fEvent(NULL),
   fMc(NULL),
   fListHistos(NULL),
+  fHarmonic(2),
   fEvaluateMixedHarmonics(kFALSE),
   fnBinsMult(10000),
   fMinMult(0.),  
@@ -67,6 +68,7 @@ AliAnalysisTaskMCEventPlane::AliAnalysisTaskMCEventPlane() :
   fEvent(NULL),
   fMc(NULL),
   fListHistos(NULL),
+  fHarmonic(0),
   fEvaluateMixedHarmonics(kFALSE),
   fnBinsMult(0),
   fMinMult(0.0),  
@@ -96,6 +98,8 @@ void AliAnalysisTaskMCEventPlane::UserCreateOutputObjects()
 
   //Analyser
   fMc  = new AliFlowAnalysisWithMCEventPlane() ;
+  
+  fMc->SetHarmonic(fHarmonic);
   
   // Setters for mixed harmonics study:
   fMc->SetEvaluateMixedHarmonics(fEvaluateMixedHarmonics);

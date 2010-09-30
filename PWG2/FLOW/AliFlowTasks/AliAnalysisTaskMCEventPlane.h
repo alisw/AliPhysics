@@ -29,6 +29,9 @@ class AliAnalysisTaskMCEventPlane : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   
+  void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
+  Int_t GetHarmonic() const {return this->fHarmonic;};
+  
   // Objects needed for mixed harmonics study:
   void SetEvaluateMixedHarmonics(Bool_t const emh) {this->fEvaluateMixedHarmonics = emh;};
   Bool_t GetEvalauteMixedHarmonics() const {return this->fEvaluateMixedHarmonics;};
@@ -50,10 +53,10 @@ class AliAnalysisTaskMCEventPlane : public AliAnalysisTaskSE {
   AliAnalysisTaskMCEventPlane(const AliAnalysisTaskMCEventPlane& aAnalysis);
   AliAnalysisTaskMCEventPlane& operator=(const AliAnalysisTaskMCEventPlane& aAnalysis);
   
-  AliFlowEventSimple*               fEvent;        //input event
-  AliFlowAnalysisWithMCEventPlane*  fMc;           // MC EP analysis object
-  TList*                            fListHistos;   // collection of output
-  
+  AliFlowEventSimple*               fEvent;      //input event
+  AliFlowAnalysisWithMCEventPlane*  fMc;         // MC EP analysis object
+  TList*                            fListHistos; // collection of output
+  Int_t                             fHarmonic;   // harmonic 
   // Objects needed for mixed harmonics study:
   Bool_t fEvaluateMixedHarmonics; // evaluate and store objects relevant for mixed harmonics
   Int_t fnBinsMult; // number of multiplicity bins for mixed harmonics analysis versus multiplicity  
