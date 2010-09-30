@@ -233,7 +233,7 @@ void AliRDHFCuts::SetPtBins(Int_t nPtBinLimits,Float_t *ptBinLimits) {
 
   fnPtBinLimits = nPtBinLimits;
   SetGlobalIndex();
-  cout<<"Changing also Global Index -> "<<fGlobalIndex<<endl;
+  //cout<<"Changing also Global Index -> "<<fGlobalIndex<<endl;
   fPtBinLimits = new Float_t[fnPtBinLimits];
   for(Int_t ib=0; ib<nPtBinLimits; ib++) fPtBinLimits[ib]=ptBinLimits[ib];
 
@@ -246,7 +246,7 @@ void AliRDHFCuts::SetVarNames(Int_t nVars,TString *varNames,Bool_t *isUpperCut){
   if(fVarNames) {
     delete [] fVarNames;
     fVarNames = NULL;
-    printf("Changing the variable names\n");
+    //printf("Changing the variable names\n");
   }
   if(nVars!=fnVars){
     printf("Wrong number of variables: it has to be %d\n",fnVars);
@@ -269,7 +269,7 @@ void AliRDHFCuts::SetVarsForOpt(Int_t nVars,Bool_t *forOpt) {
   if(fVarsForOpt) {
     delete [] fVarsForOpt;
     fVarsForOpt = NULL;
-    printf("Changing the variables for cut optimization\n");
+    //printf("Changing the variables for cut optimization\n");
   }
   
   if(nVars==0){//!=fnVars) {
