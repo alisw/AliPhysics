@@ -33,7 +33,7 @@ TString     train_tag          = "";        // Train special tag appended to
 TString     visible_name       = Form("QA$2_$3%s", train_tag.Data()); //# FIXED #
 TString     job_comment        = "PWG1 QA train"; // Can add observations here
                // Job tag (DON'T CHANGE)
-TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());;
+TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
                // Package versions - Modify as needed
 TString     root_version       = "v5-27-05";
 TString     aliroot_version    = "v4-20-07-AN";
