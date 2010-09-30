@@ -213,6 +213,8 @@ AliTRDclusterResolution::AliTRDclusterResolution()
   ,fCol(-1)
   ,fRow(-1)
   ,fExB(0.)
+  ,fDt(0.)
+  ,fDl(0.)
   ,fVdrift(1.5)
   ,fT0(0.)
   ,fGain(1.)
@@ -241,6 +243,8 @@ AliTRDclusterResolution::AliTRDclusterResolution(const char *name)
   ,fCol(-1)
   ,fRow(-1)
   ,fExB(0.)
+  ,fDt(0.)
+  ,fDl(0.)
   ,fVdrift(1.5)
   ,fT0(0.)
   ,fGain(1.)
@@ -756,6 +760,7 @@ Bool_t AliTRDclusterResolution::LoadCalibration()
     if(fCol>=0 && fRow>=0) fVdrift*= fCalVdriftROC->GetValue(fCol, fRow);
   }
   fExB    = AliTRDCommonParam::Instance()->GetOmegaTau(fVdrift);
+  AliTRDCommonParam::Instance()->GetDiffCoeff(fDt, fDl, fVdrift);
   if(IsUsingCalibParam(kT0)){
     fT0     = fCalT0Det->GetValue(fDet>=0?fDet:0);
     if(fCol>=0 && fRow>=0) fT0 *= fCalT0ROC->GetValue(fCol, fRow);
@@ -764,7 +769,7 @@ Bool_t AliTRDclusterResolution::LoadCalibration()
 
   SetBit(kCalibrated);
 
-  AliInfo(Form("Calibrate for Det[%3d] Col[%3d] Row[%2d] : \n   t0[%5.3f] vd[%5.3f] gain[%5.3f] ExB[%f]", fDet, fCol, fRow, fT0, fVdrift, fGain, fExB));
+  AliInfo(Form("Calibrate for Det[%3d] Col[%3d] Row[%2d] : \n   t0[%5.3f] vd[%5.3f] gain[%5.3f] ExB[%f] DiffT[%f] DiffL[%f]", fDet, fCol, fRow, fT0, fVdrift, fGain, fExB, fDt, fDl));
 
   return kTRUE;
 }
