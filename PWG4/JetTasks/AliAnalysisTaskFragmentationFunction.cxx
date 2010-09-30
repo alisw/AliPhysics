@@ -3227,7 +3227,7 @@ void  AliAnalysisTaskFragmentationFunction::AssociateGenRec(TList* tracksAODMCCh
       
     AliAODTrack* rectrack = dynamic_cast<AliAODTrack*>(tracksRec->At(iRec)); 
 
-    Int_t label = rectrack->GetLabel();
+    Int_t label = TMath::Abs(rectrack->GetLabel());
 
     // find MC track in our list
     AliAODMCParticle* gentrack = 0x0;
