@@ -80,9 +80,10 @@ class AliRsnMonitorTrack : public TObject
     Double_t&  TPCsignal()        {return fTPCsignal;}
     Double_t&  TPCnsigma(Int_t i) {if (i>=0 && i<AliPID::kSPECIES) return fTPCnsigma[i]; else return fTPCnsigma[0];}
     
-    Double_t&  TOFsignal()      {return fTOFsignal;}
-    Double_t&  TOFsigma(Int_t i){if (i>=0 && i<AliPID::kSPECIES) return fTOFsigma[i]; else return fTOFsigma[0];}
-    Double_t&  TOFref(Int_t i)  {if (i>=0 && i<AliPID::kSPECIES) return fTOFref[i]; else return fTOFref[0];}
+    Double_t&  TOFsignal()        {return fTOFsignal;}
+    Double_t&  TOFsigma(Int_t i)  {if (i>=0 && i<AliPID::kSPECIES) return fTOFsigma[i]; else return fTOFsigma[0];}
+    Double_t&  TOFref(Int_t i)    {if (i>=0 && i<AliPID::kSPECIES) return fTOFref[i]; else return fTOFref[0];}
+    Double_t   TOFnsigma(Int_t i) {if (i>=0 && i<AliPID::kSPECIES) return ((fTOFsignal - fTOFref[i]) / fTOFsigma[i]); return 1E6;}
 
   private:
   
