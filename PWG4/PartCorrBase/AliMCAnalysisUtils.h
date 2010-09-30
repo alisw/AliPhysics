@@ -40,7 +40,7 @@ class AliMCAnalysisUtils : public TObject {
 	//followed by other and unknown on line 4                                                                              
 	enum mcTypes {kMCPhoton, kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCConversion,
 			kMCElectron, kMCEFromCFromB, kMCEFromC, kMCEFromB, kMCZDecay, kMCWDecay,
-			kMCMuon, kMCPion, kMCPi0, kMCKaon, kMCEta, kMCProton,
+			kMCMuon, kMCPion, kMCPi0, kMCKaon, kMCEta, kMCProton, kMCAntiProton, kMCNeutron,
 			kMCOther, kMCUnknown};
 	
 	//Check only the label of the most significant particle
