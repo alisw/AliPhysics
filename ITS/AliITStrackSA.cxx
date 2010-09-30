@@ -101,6 +101,26 @@ fNSA(0)
 
   Double_t sX=TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 
+  Init(sAlpha,sX,Ycoor,Zcoor,phi,tanlambda,curv,lab);
+
+}
+//____________________________________________________
+AliITStrackSA::AliITStrackSA(Double_t alpha, Double_t radius, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ):
+fNSA(0) 
+{
+  // standard constructor. Used for ITS standalone tracking
+
+  // get the azimuthal angle of the detector containing the innermost
+  // cluster of this track (data member fAlpha)
+
+  if (alpha<0) alpha+=TMath::TwoPi();
+  else if (alpha>=TMath::TwoPi()) alpha-=TMath::TwoPi();
+  Init(alpha,radius,Ycoor,Zcoor,phi,tanlambda,curv,lab);
+}
+//____________________________________________________
+  void AliITStrackSA::Init(Double_t alpha, Double_t radius, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ){
+    // initialize parameters
+
   fdEdx = 0;
 
   Double_t conv=GetBz()*kB2C;
@@ -122,7 +142,7 @@ fNSA(0)
 
   Double_t sP[] = {Ycoor,
 		   Zcoor,
-                   TMath::Sin(phi-sAlpha),
+                   TMath::Sin(phi-alpha),
 		   tanlambda,
 		   curv/conv};
 
@@ -134,7 +154,7 @@ fNSA(0)
   sP[4] = w0*p0 + w1*sP[4];
   sC[14]*=w1;
                                                                               
-  Set(sX,sAlpha,sP,sC);
+  Set(radius,alpha,sP,sC);
 
   for(Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fIndex[i] = 0;  // to be set explicitely
 

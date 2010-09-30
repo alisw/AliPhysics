@@ -24,6 +24,10 @@ class AliITStrackSA : public AliITStrackMI {
   AliITStrackSA(Int_t layer, Int_t ladder, Int_t detector, 
                 Double_t Ycoor, Double_t Zcoor, Double_t phi, 
                 Double_t tanlambda, Double_t curv, Int_t lab);
+  AliITStrackSA(Double_t alpha, Double_t radius,
+                Double_t Ycoor, Double_t Zcoor, Double_t phi, 
+                Double_t tanlambda, Double_t curv, Int_t lab);
+
   Int_t GetClusterIndexSA(Int_t i) const {return fSain[i];}
   Int_t GetClusterMark(Int_t layer,Int_t i) const {return fCluMark[layer][i];}
   Int_t GetNumberOfClustersSA() const {return fNSA;}
@@ -38,7 +42,10 @@ class AliITStrackSA : public AliITStrackMI {
   enum {kMaxNumberOfClusters = 15};// Max. number of clusters
 
  protected: 
-
+  
+  void Init(Double_t alpha, Double_t radius,
+	    Double_t Ycoor, Double_t Zcoor, Double_t phi, 
+	    Double_t tanlambda, Double_t curv, Int_t lab);
   void SetNumberOfClustersSA(Int_t n){fNSA = n;}
   void SetNumberOfMarked(Int_t lay,Int_t n) {fNM[lay] = n;}
   void ResetIndexSA(){for(Int_t k=0; k<kMaxNumberOfClusters; k++) fSain[k]=0;}
