@@ -1626,8 +1626,8 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
   pd->cd();
   hdraw->SetMarkerStyle(20);
   hdraw->DrawClone("PE");
-  if(hdraw->GetFunction("funcbkgFullRange")) hdraw->GetFunction("funcbkgFullRange")->DrawClone("same");
-  if(hdraw->GetFunction("funcbkgRecalc")) hdraw->GetFunction("funcbkgRecalc")->DrawClone("same");
+//   if(hdraw->GetFunction("funcbkgFullRange")) hdraw->GetFunction("funcbkgFullRange")->DrawClone("same");
+//   if(hdraw->GetFunction("funcbkgRecalc")) hdraw->GetFunction("funcbkgRecalc")->DrawClone("same");
   if(hdraw->GetFunction("funcmass")) hdraw->GetFunction("funcmass")->DrawClone("same");
 
   if(writeFitInfo > 0){
