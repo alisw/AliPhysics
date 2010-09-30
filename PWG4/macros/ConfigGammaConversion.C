@@ -44,7 +44,7 @@ Bool_t kGCApplyChi2Cut = kFALSE;
 Bool_t kGCUseRotationMethodInBG=kTRUE;
 Int_t kGCnDegreeRotationPMForBG=15;
 Int_t kGCnumberOfRotationEventsForBG=15;
-Bool_t kGCdoBGProbablity=kTRUE;
+Bool_t kGCdoBGProbablity=kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
@@ -954,6 +954,9 @@ Bool_t scanArguments(TString arguments){
       }
       else if (argument.CompareTo("-bg-prob-off") == 0){
 	kGCdoBGProbablity = kFALSE;
+      }
+      else if (argument.CompareTo("-bg-prob-on") == 0){
+	kGCdoBGProbablity = kTRUE;
       }
       else if (argument.CompareTo("-bg-rotation-off") == 0){
 	kGCUseRotationMethodInBG = kFALSE;
