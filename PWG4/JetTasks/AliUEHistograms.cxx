@@ -322,7 +322,7 @@ void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim,
     for (Int_t i=0; i<list->GetEntries(); i++)
     {
       AliVParticle* particle = (AliVParticle*) list->At(i);
-      Double_t vars[2];
+      Double_t vars[3];
       vars[0] = particle->Eta();
       vars[1] = particle->Pt();
       vars[2] = particleType;
