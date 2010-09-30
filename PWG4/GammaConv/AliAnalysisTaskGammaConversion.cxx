@@ -2425,6 +2425,20 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	for(Int_t nRandom=0;nRandom<nRandomEventsForBG;nRandom++){
 	
 	  AliKFParticle currentEventGoodV02 = *(AliKFParticle *)(currentEventV0s->At(iCurrent2));
+
+	  if(fCheckBGProbability == kTRUE){
+	    Double_t massBGprob =0.;
+	    Double_t widthBGprob = 0.;
+	    AliKFParticle *backgroundCandidateProb = new AliKFParticle(currentEventGoodV0,currentEventGoodV02);
+	    backgroundCandidateProb->GetMass(massBGprob,widthBGprob);
+	    if(massBGprob>0.1 && massBGprob<0.14){
+	      if(random->Rndm()>bgHandler->GetBGProb(zbin,mbin)){
+		delete backgroundCandidateProb;
+		continue;
+	      }
+	    }
+	    delete backgroundCandidateProb;
+	  }
 	
 	  Double_t nRadiansPM = nDegreesPMBackground*TMath::Pi()/180;
 	  
@@ -2438,15 +2452,6 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	  Double_t widthBG = 0.;
 	  Double_t chi2BG =10000.;	
 	  backgroundCandidate->GetMass(massBG,widthBG);
-
-	  if(fCheckBGProbability == kTRUE){
-	    if(massBG>0.1 && massBG<1.4){
-	      if(random->Rndm()>bgHandler->GetBGProb(zbin,mbin)){
-		delete backgroundCandidate;
-		continue;
-	      }
-	    }
-	  }
 
 	  //	  if(backgroundCandidate->GetNDF()>0){
 	  chi2BG = backgroundCandidate->GetChi2();
