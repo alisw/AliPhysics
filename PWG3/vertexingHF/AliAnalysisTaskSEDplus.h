@@ -77,6 +77,8 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F*   fPtMaxHist[3*kMaxPtBins]; //!hist. for Pt Max (LC)
   TH1F*   fDCAHist[3*kMaxPtBins]; //!hist. for DCA (LC)
   TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
+  TH1F *fMassHistTCPlus[3*kMaxPtBins]; //!hist. for D+ inv mass (TC)
+  TH1F *fMassHistTCMinus[3*kMaxPtBins]; //!hist. for D- inv mass (TC)
   TH1F *fMassHistLS[5*kMaxPtBins];//!hist. for LS inv mass (LC)
   TH1F *fCosPHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 1 (LC)
   TH1F *fDLenHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 2 (LC)
@@ -104,7 +106,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fReadMC;    //flag for access to MC
   Bool_t fDoLS;      //flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,7); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,8); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif

@@ -137,6 +137,8 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     if(fPtMaxHist[i]){ delete fPtMaxHist[i]; fPtMaxHist[i]=0;}
     if(fDCAHist[i]){ delete fDCAHist[i]; fDCAHist[i]=0;}
     if(fMassHistTC[i]){ delete fMassHistTC[i]; fMassHistTC[i]=0;}
+    if(fMassHistTCPlus[i]){ delete fMassHistTCPlus[i]; fMassHistTCPlus[i]=0;}
+    if(fMassHistTCMinus[i]){ delete fMassHistTCMinus[i]; fMassHistTCMinus[i]=0;}
 
     if(fMassHistLS[i]){ delete fMassHistLS[i]; fMassHistLS[i]=0;}
     if(fCosPHistLS[i]){ delete fCosPHistLS[i]; fCosPHistLS[i]=0;}
@@ -469,7 +471,12 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     hisname.Form("hMassPt%dTC",i);
     fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistTC[index]->Sumw2();
-
+    hisname.Form("hMassPt%dTCPlus",i);
+    fMassHistTCPlus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistTCPlus[index]->Sumw2();
+    hisname.Form("hMassPt%dTCMinus",i);
+    fMassHistTCMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistTCMinus[index]->Sumw2();
 
 
 
@@ -533,6 +540,12 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     hisname.Form("hSigPt%dTC",i);
     fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistTC[index]->Sumw2();
+    hisname.Form("hSigPt%dTCPlus",i);
+    fMassHistTCPlus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistTCPlus[index]->Sumw2();
+    hisname.Form("hSigPt%dTCMinus",i);
+    fMassHistTCMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistTCMinus[index]->Sumw2();
 
     hisname.Form("hLSPt%dLCnw",i);
     fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
@@ -594,6 +607,12 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     hisname.Form("hBkgPt%dTC",i);
     fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistTC[index]->Sumw2();
+    hisname.Form("hBkgPt%dTCPlus",i);
+    fMassHistTCPlus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistTCPlus[index]->Sumw2();
+    hisname.Form("hBkgPt%dTCMinus",i);
+    fMassHistTCMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
+    fMassHistTCMinus[index]->Sumw2();
 
     hisname.Form("hLSPt%dLCntrip",i);
     fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
@@ -649,6 +668,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     fOutput->Add(fPtMaxHist[i]);
     fOutput->Add(fDCAHist[i]);
     fOutput->Add(fMassHistTC[i]);
+    fOutput->Add(fMassHistTCPlus[i]);
+    fOutput->Add(fMassHistTCMinus[i]);
   }
   for(Int_t i=0; i<3*fNPtBins&&fDoLS; i++){
     fOutput->Add(fCosPHistLS[i]);
@@ -880,6 +901,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  
 	  if(passTightCuts){
 	    fMassHistTC[index]->Fill(invMass);
+	    if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
+	    else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
 	  }
 	}
 	
@@ -896,6 +919,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	      fDCAHist[index]->Fill(dca);
 	      if(passTightCuts){
 		fMassHistTC[index]->Fill(invMass);	      
+		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
+		else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
 	      }
 	    }	    
 	    fYVsPtSig->Fill(ptCand,rapid);
@@ -912,6 +937,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	      fDCAHist[index]->Fill(dca);
 	      if(passTightCuts){
 		fMassHistTC[index]->Fill(invMass);
+		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
+		else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
 	      }
 	    }	
 	  }
@@ -974,6 +1001,10 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
     hisname.Form("hMassPt%dTC",i);
     fMassHistTC[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hMassPt%dTCPlus",i);
+    fMassHistTCPlus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hMassPt%dTCMinus",i);
+    fMassHistTCMinus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
     if(fDoLS){
       hisname.Form("hLSPt%dLC",i);
       fMassHistLS[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
@@ -1014,6 +1045,10 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     
     hisname.Form("hSigPt%dTC",i);
     fMassHistTC[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hSigPt%dTCPlus",i);
+    fMassHistTCPlus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hSigPt%dTCMinus",i);
+    fMassHistTCMinus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
     if(fDoLS){
       hisname.Form("hLSPt%dLCnw",i);
       fMassHistLS[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
@@ -1052,6 +1087,10 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
     hisname.Form("hBkgPt%dTC",i);
     fMassHistTC[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hBkgPt%dTCPlus",i);
+    fMassHistTCPlus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    hisname.Form("hBkgPt%dTCMinus",i);
+    fMassHistTCMinus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
     if(fDoLS){
       hisname.Form("hLSPt%dLCntrip",i);
       fMassHistLS[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
