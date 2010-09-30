@@ -2236,7 +2236,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
    }
    // Are we in PROOF mode ?
    if (mgr->IsProofMode()) {
-      Info("StartAnalysis", "##### Starting PROOF analysis on via the plugin #####");
+      Info("StartAnalysis", "##### Starting PROOF analysis on cluster <%s> via the plugin #####", fProofCluster.Data());
       if (fProofCluster.IsNull()) {
          Error("StartAnalysis", "You need to specify the proof cluster name via SetProofCluster");
          return kFALSE;
@@ -2643,7 +2643,7 @@ Bool_t AliAnalysisAlien::SubmitNext()
    if (!fNsubmitted) {
       ntosubmit = 1;
       if (!IsUseSubmitPolicy()) {
-         if (ntosubmit>5)
+         if (nmasterjobs>5)
             Info("SubmitNext","### Warning submit policy not used ! Submitting too many jobs at a time may be prohibitted. \
                 \n### You can use SetUseSubmitPolicy() to enable if you have problems.");
          ntosubmit = nmasterjobs;

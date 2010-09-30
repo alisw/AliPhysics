@@ -31,6 +31,8 @@ class AliAODHandler : public AliVEventHandler {
     virtual ~AliAODHandler();
     virtual void         SetOutputFileName(const char* fname);
     virtual const char*  GetOutputFileName();
+    // Extra outputs as a string separated by commas
+    virtual const char*  GetExtraOutputs() const;
     virtual Bool_t       Init(Option_t* option);
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
     virtual Bool_t       BeginEvent(Long64_t /*entry*/) {fFillAOD=kFALSE; return kTRUE;}

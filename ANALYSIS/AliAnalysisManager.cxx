@@ -823,8 +823,10 @@ void AliAnalysisManager::Terminate()
       for (icont=0; icont<fParamCont->GetEntriesFast(); icont++) allOutputs->Add(fParamCont->At(icont));
    TIter next1(allOutputs);
    TString handlerFile = "";
+   TString extraOutputs = "";
    if (fOutputEventHandler) {
       handlerFile = fOutputEventHandler->GetOutputFileName();
+      extraOutputs = fOutputEventHandler->GetExtraOutputs();
    }
    icont = 0;
    TList filestmp;
@@ -846,7 +848,7 @@ void AliAnalysisManager::Terminate()
       if (!file) {
 	      //if (handlerFile == filename && !gSystem->AccessPathName(filename)) openoption = "UPDATE";
          Bool_t firsttime = kTRUE;
-         if (filestmp.FindObject(filename)) {
+         if (filestmp.FindObject(filename) || extraOutputs.Contains(filename)) {
             firsttime = kFALSE;
          } else {   
             filestmp.Add(new TNamed(filename,""));

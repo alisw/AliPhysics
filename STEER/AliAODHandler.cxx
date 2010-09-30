@@ -587,6 +587,30 @@ const char *AliAODHandler::GetOutputFileName()
 }
 
 //______________________________________________________________________________
+const char *AliAODHandler::GetExtraOutputs() const
+{
+// Get extra outputs as a string separated by commas.
+   static TString eoutputs;
+   eoutputs = "";
+   TObject *obj;
+   if (fExtensions) {
+      TIter next1(fExtensions);
+      while ((obj=next1())) {
+         if (!eoutputs.IsNull()) eoutputs += ",";
+         eoutputs += obj->GetName();
+      }
+   }
+   if (fFilters) {
+      TIter next2(fFilters);
+      while ((obj=next2())) {
+         if (!eoutputs.IsNull()) eoutputs += ",";
+         eoutputs += obj->GetName();
+      }
+   }
+   return eoutputs.Data();
+}
+
+//______________________________________________________________________________
 void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader *genHeader){
 
 
