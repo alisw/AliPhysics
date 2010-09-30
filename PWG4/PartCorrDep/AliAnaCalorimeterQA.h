@@ -8,7 +8,7 @@
 // Class to check results from simulations or reconstructed real data. 
 // Fill few histograms and do some checking plots
 //
-//-- Author: Gustavo Conesa (INFN-LNF)a
+//-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- Root system ---
 class TH3F;
@@ -24,32 +24,32 @@ class AliVTrack;
  
 class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   
- public: 
+public: 
   AliAnaCalorimeterQA() ; // default ctor	
   virtual ~AliAnaCalorimeterQA() {;} //virtual dtor
- private:
+private:
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
   AliAnaCalorimeterQA(const AliAnaCalorimeterQA & g) ; // cpy ctor
   
 public:
   
   void ClusterHistograms(const TLorentzVector mom, const Double_t tof, Float_t *pos, Float_t * showerShape, 
-						 const Int_t nCaloCellsPerCluster, const Int_t nModule,
-						 const Int_t nTracksMatched, const AliVTrack* track, 
-						 const Int_t * labels, const Int_t nLabels);
+                         const Int_t nCaloCellsPerCluster, const Int_t nModule,
+                         const Int_t nTracksMatched, const AliVTrack* track, 
+                         const Int_t * labels, const Int_t nLabels);
 	
   TObjString * GetAnalysisCuts();
   TList * GetCreateOutputObjects();
-
+  
   void Init();
   void InitParameters();
   
   void Print(const Option_t * opt) const;
-    
+  
   void MakeAnalysisFillHistograms() ; 
   
   void MCHistograms(const TLorentzVector mom, const Int_t pdg);
-
+  
   TString GetCalorimeter() const {return fCalorimeter ;}
   void SetCalorimeter( TString calo ) {fCalorimeter = calo; }
   TString GetStyleMacro() const {return fStyleMacro ;}
@@ -67,26 +67,32 @@ public:
   void SwitchOnCalorimetersCorrelation()  {fCorrelateCalos = kTRUE  ;}
   void SwitchOffCalorimetersCorrelation() {fCorrelateCalos = kFALSE ;}
   //void CorrelateCalorimeters(TRefArray* caloClusters);
-	void CorrelateCalorimeters();
+  void CorrelateCalorimeters();
   
   void Terminate(TList * outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 	
   void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
-
+  
   void SetTimeCut(Double_t min, Double_t max) {fTimeCutMin = min; fTimeCutMax = max;}
   Double_t GetTimeCutMin() const {return fTimeCutMin;}
   Double_t GetTimeCutMax() const {return fTimeCutMax;}
-
+  
+  //Minimum cell amplitude setters and getters 
+  Float_t  GetEMCALCellAmpMin() const { return fEMCALCellAmpMin  ; }
+  Float_t  GetPHOSCellAmpMin()  const { return fPHOSCellAmpMin   ; }
+  void SetEMCALCellAmpMin(Float_t  amp) { fEMCALCellAmpMin = amp ; }
+  void SetPHOSCellAmpMin(Float_t  amp)  { fPHOSCellAmpMin  = amp ; }
+  
   //Histogram binning setters
-
+  
   Int_t GetNewRebinForRePlotting(TH1D*histo, const Float_t newXmin, const Float_t newXmax,
-				 const Int_t newNbins) const;
-
+                                 const Int_t newNbins) const;
+  
   virtual void SetHistoPOverERangeAndNBins(Float_t min, Float_t max, Int_t n) {
-	fHistoPOverEBins  = n ;
-	fHistoPOverEMax   = max ;
-	fHistoPOverEMin   = min ;
+    fHistoPOverEBins  = n ;
+    fHistoPOverEMax   = max ;
+    fHistoPOverEMin   = min ;
   }
 	
   Int_t   GetHistoPOverEBins()  const { return fHistoPOverEBins ; }
@@ -103,122 +109,120 @@ public:
   Float_t GetHistoFinePtMin()   const { return fHistoFinePtMin ; }
   Float_t GetHistoFinePtMax()   const { return fHistoFinePtMax ; }	
 	
+
+  virtual void SetHistodEdxRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistodEdxBins  = n ;
+    fHistodEdxMax   = max ;
+    fHistodEdxMin   = min ;
+  }
+  
+  Int_t   GetHistodEdxBins()  const { return fHistodEdxBins ; }
+  Float_t GetHistodEdxMin()   const { return fHistodEdxMin ; }
+  Float_t GetHistodEdxMax()   const { return fHistodEdxMax ; }	
+  
+  virtual void SetHistodRRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistodRBins  = n ;
+    fHistodRMax   = max ;
+    fHistodRMin   = min ;
+  }
+  
+  Int_t   GetHistodRBins()  const { return fHistodRBins ; }
+  Float_t GetHistodRMin()   const { return fHistodRMin ; }
+  Float_t GetHistodRMax()   const { return fHistodRMax ; }	
+  
+  virtual void SetHistoTimeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoTimeBins  = n ;
+    fHistoTimeMax   = max ;
+    fHistoTimeMin   = min ;
+  }	
+  
+  Int_t   GetHistoTimeBins()  const { return fHistoTimeBins ; }
+  Float_t GetHistoTimeMin()   const { return fHistoTimeMin ; }
+  Float_t GetHistoTimeMax()   const { return fHistoTimeMax ; }	
+  
+  virtual void SetHistoNClusterCellRangeAndNBins(Int_t min, Int_t max, Int_t n) {
+    fHistoNBins  = n ;
+    fHistoNMax   = max ;
+    fHistoNMin   = min ;
+  }
+  
+  Int_t GetHistoNClusterCellBins()  const { return fHistoNBins ; }
+  Int_t GetHistoNClusterCellMin()   const { return fHistoNMin ; }
+  Int_t GetHistoNClusterCellMax()   const { return fHistoNMax ; }	
+  
+  virtual void SetHistoRatioRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoRatioBins  = n ;
+    fHistoRatioMax   = max ;
+    fHistoRatioMin   = min ;
+  }
+  
+  Int_t   GetHistoRatioBins()  const { return fHistoRatioBins ; }
+  Float_t GetHistoRatioMin()   const { return fHistoRatioMin ; }
+  Float_t GetHistoRatioMax()   const { return fHistoRatioMax ; }	
+  
+  virtual void SetHistoVertexDistRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoVertexDistBins = n ;
+    fHistoVertexDistMax   = max ;
+    fHistoVertexDistMin   = min ;
+  }
+  
+  Int_t   GetHistoVertexDistBins()  const { return fHistoVertexDistBins ; }
+  Float_t GetHistoVertexDistMin()   const { return fHistoVertexDistMin ; }
+  Float_t GetHistoVertexDistMax()   const { return fHistoVertexDistMax ; }	
   
   
-	virtual void SetHistodEdxRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistodEdxBins  = n ;
-		fHistodEdxMax   = max ;
-		fHistodEdxMin   = min ;
-	}
-	
-	Int_t   GetHistodEdxBins()  const { return fHistodEdxBins ; }
-	Float_t GetHistodEdxMin()   const { return fHistodEdxMin ; }
-	Float_t GetHistodEdxMax()   const { return fHistodEdxMax ; }	
-
-	virtual void SetHistodRRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistodRBins  = n ;
-		fHistodRMax   = max ;
-		fHistodRMin   = min ;
-	}
-	
-	Int_t   GetHistodRBins()  const { return fHistodRBins ; }
-	Float_t GetHistodRMin()   const { return fHistodRMin ; }
-	Float_t GetHistodRMax()   const { return fHistodRMax ; }	
-
-	virtual void SetHistoTimeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistoTimeBins  = n ;
-		fHistoTimeMax   = max ;
-		fHistoTimeMin   = min ;
-	}	
-	
-	Int_t   GetHistoTimeBins()  const { return fHistoTimeBins ; }
-	Float_t GetHistoTimeMin()   const { return fHistoTimeMin ; }
-	Float_t GetHistoTimeMax()   const { return fHistoTimeMax ; }	
-
-	virtual void SetHistoNClusterCellRangeAndNBins(Int_t min, Int_t max, Int_t n) {
-		fHistoNBins  = n ;
-		fHistoNMax   = max ;
-		fHistoNMin   = min ;
-	}
-	
-	Int_t GetHistoNClusterCellBins()  const { return fHistoNBins ; }
-	Int_t GetHistoNClusterCellMin()   const { return fHistoNMin ; }
-	Int_t GetHistoNClusterCellMax()   const { return fHistoNMax ; }	
-
-	virtual void SetHistoRatioRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistoRatioBins  = n ;
-		fHistoRatioMax   = max ;
-		fHistoRatioMin   = min ;
-	}
-	
-	Int_t   GetHistoRatioBins()  const { return fHistoRatioBins ; }
-	Float_t GetHistoRatioMin()   const { return fHistoRatioMin ; }
-	Float_t GetHistoRatioMax()   const { return fHistoRatioMax ; }	
-
-	virtual void SetHistoVertexDistRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistoVertexDistBins = n ;
-		fHistoVertexDistMax   = max ;
-		fHistoVertexDistMin   = min ;
-	}
-	
-	Int_t   GetHistoVertexDistBins()  const { return fHistoVertexDistBins ; }
-	Float_t GetHistoVertexDistMin()   const { return fHistoVertexDistMin ; }
-	Float_t GetHistoVertexDistMax()   const { return fHistoVertexDistMax ; }	
-	
-	
-	virtual void SetHistoXRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistoXBins  = n ;
-		fHistoXMax   = max ;
-		fHistoXMin   = min ;
-	}
-	
-	Int_t   GetHistoXBins()  const { return fHistoXBins ; }
-	Float_t GetHistoXMin()   const { return fHistoXMin ; }
-	Float_t GetHistoXMax()   const { return fHistoXMax ; }	
-
-	
-	virtual void SetHistoYRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistoYBins  = n ;
-		fHistoYMax   = max ;
-		fHistoYMin   = min ;
-	}
-	
-	Int_t   GetHistoYBins()  const { return fHistoYBins ; }
-	Float_t GetHistoYMin()   const { return fHistoYMin ; }
-	Float_t GetHistoYMax()   const { return fHistoYMax ; }	
-
-	
-	virtual void SetHistoZRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistoZBins  = n ;
-		fHistoZMax   = max ;
-		fHistoZMin   = min ;
-	}
-	
-	Int_t   GetHistoZBins()  const { return fHistoZBins ; }
-	Float_t GetHistoZMin()   const { return fHistoZMin ; }
-	Float_t GetHistoZMax()   const { return fHistoZMax ; }	
-	
-	virtual void SetHistoRRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistoRBins  = n ;
-		fHistoRMax   = max ;
-		fHistoRMin   = min ;
-	}
-	
-	Int_t   GetHistoRBins()  const { return fHistoRBins ; }
-	Float_t GetHistoRMin()   const { return fHistoRMin ; }
-	Float_t GetHistoRMax()   const { return fHistoRMax ; }	
-	
-	virtual void SetHistoShowerShapeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-		fHistoSSBins  = n ;
-		fHistoSSMax   = max ;
-		fHistoSSMin   = min ;
-	}
-	
-	Int_t   GetHistoShowerShapeBins()  const { return fHistoSSBins ; }
-	Float_t GetHistoShowerShapeMin()   const { return fHistoSSMin ; }
-	Float_t GetHistoShowerShapeMax()   const { return fHistoSSMax ; }	
-	
-	
+  virtual void SetHistoXRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoXBins  = n ;
+    fHistoXMax   = max ;
+    fHistoXMin   = min ;
+  }
+  
+  Int_t   GetHistoXBins()  const { return fHistoXBins ; }
+  Float_t GetHistoXMin()   const { return fHistoXMin ; }
+  Float_t GetHistoXMax()   const { return fHistoXMax ; }	
+  
+  
+  virtual void SetHistoYRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoYBins  = n ;
+    fHistoYMax   = max ;
+    fHistoYMin   = min ;
+  }
+  
+  Int_t   GetHistoYBins()  const { return fHistoYBins ; }
+  Float_t GetHistoYMin()   const { return fHistoYMin ; }
+  Float_t GetHistoYMax()   const { return fHistoYMax ; }	
+  
+  
+  virtual void SetHistoZRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoZBins  = n ;
+    fHistoZMax   = max ;
+    fHistoZMin   = min ;
+  }
+  
+  Int_t   GetHistoZBins()  const { return fHistoZBins ; }
+  Float_t GetHistoZMin()   const { return fHistoZMin ; }
+  Float_t GetHistoZMax()   const { return fHistoZMax ; }	
+  
+  virtual void SetHistoRRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoRBins  = n ;
+    fHistoRMax   = max ;
+    fHistoRMin   = min ;
+  }
+  
+  Int_t   GetHistoRBins()  const { return fHistoRBins ; }
+  Float_t GetHistoRMin()   const { return fHistoRMin ; }
+  Float_t GetHistoRMax()   const { return fHistoRMax ; }	
+  
+  virtual void SetHistoShowerShapeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoSSBins  = n ;
+    fHistoSSMax   = max ;
+    fHistoSSMin   = min ;
+  }
+  
+  Int_t   GetHistoShowerShapeBins()  const { return fHistoSSBins ; }
+  Float_t GetHistoShowerShapeMin()   const { return fHistoSSMin ; }
+  Float_t GetHistoShowerShapeMax()   const { return fHistoSSMax ; }	
+  
  private:
   
   TString  fCalorimeter ;    // Calorimeter selection
@@ -231,7 +235,8 @@ public:
   Int_t    fNRCU        ;    // Number of EMCAL/PHOS RCU, set as many histogras as RCU 
   Double_t fTimeCutMin  ;    // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;    // Remove clusters/cells with time larger than this value, in ns
-
+  Float_t  fEMCALCellAmpMin; // amplitude Threshold on emcal cells
+  Float_t  fPHOSCellAmpMin ; // amplitude Threshold on phos cells
   
   //Histograms
   //Histogram Bins
@@ -309,7 +314,7 @@ public:
   TH3F * fhNCellsPerCluster;           //! N cells per cluster vs cluster energy vs eta of cluster	
   TH3F * fhNCellsPerClusterMIP;        //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search.
   TH3F * fhNCellsPerClusterMIPCharged; //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search, cluster matched with track.	
-  	
+  
   TH1F * fhNClusters; //! Number of clusters
 	
   TH2F * fhClusterTimeEnergy;   //! Cluster Time vs Energy 
@@ -332,7 +337,7 @@ public:
   TH2F * fhYCellE ; //! Y (cm) cell distribution vs cell energy
   TH2F * fhZCellE ; //! Z (cm) cell distribution vs cell energy
   TH3F * fhXYZCell; //! cell X vs Y vs Z (cm)
-		
+  
   TH2F * fhDeltaCellClusterRNCells ; //! R cluster - R cell distribution (cm) vs N cells in cluster
   TH2F * fhDeltaCellClusterXNCells ; //! X cluster - X cell distribution (cm) vs N cells in cluster
   TH2F * fhDeltaCellClusterYNCells ; //! Y cluster - Y cell distribution (cm) vs N cells in cluster
@@ -349,15 +354,15 @@ public:
   TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
   TH2F * fhAmpId;     //! Amplitude measured in towers/crystals vs id of tower.	
   TH3F * fhEtaPhiAmp; //! eta vs phi vs amplitude, cells
-
+  
   TH1F * fhTime;      //! Time measured in towers/crystals
   TH2F * fhTimeId;    //! Time vs Absolute cell Id
   TH2F * fhTimeAmp;   //! Time vs Amplitude 
-//  TH1F * fhT0Time;    //! T0 - EMCAL Time measured in towers/crystals
-//  TH2F * fhT0TimeId;  //! T0 - EMCAL Time vs Absolute cell Id
-//  TH2F * fhT0TimeAmp; //! T0 - EMCAL Time vs Amplitude 
-
-
+  //  TH1F * fhT0Time;    //! T0 - EMCAL Time measured in towers/crystals
+  //  TH2F * fhT0TimeId;  //! T0 - EMCAL Time vs Absolute cell Id
+  //  TH2F * fhT0TimeAmp; //! T0 - EMCAL Time vs Amplitude 
+  
+  
   //Calorimeters Correlation
   TH2F * fhCaloCorrNClusters; // EMCAL vs PHOS, number of clusters	
   TH2F * fhCaloCorrEClusters; // EMCAL vs PHOS, total measured cluster energy
@@ -403,7 +408,7 @@ public:
   //TH3F * fhHaVxyz    ; // Hadron production vertex
   TH2F * fhHaVxyz    ; // Hadron production vertex
   TH2F * fhHaR       ; // Hadron distance to vertex vs rec energy  
-
+  
   TH2F * fhGamE  ; //! E distribution of generated photons, Reco
   TH2F * fhGamPt ; //! pT distribution of generated photons, Reco
   TH2F * fhGamPhi; //! phi distribution of generated photon, Reco 
@@ -432,7 +437,7 @@ public:
   TH2F * fhChHadPt ; //! pT distribution of generated charged hadron, Reco
   TH2F * fhChHadPhi; //! phi distribution of generated charged hadron, Reco 
   TH2F * fhChHadEta; //! eta distribution of generated charged hadron, Reco 
-
+  
   TH2F * fhGamECharged  ; //! E distribution of generated photons, Reco, track matched cluster
   TH2F * fhGamPtCharged ; //! pT distribution of generated photons, Reco, track matched cluster
   TH2F * fhGamPhiCharged; //! phi distribution of generated photon, Reco, track matched cluster 
@@ -486,7 +491,7 @@ public:
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,10)
+  ClassDef(AliAnaCalorimeterQA,11)
 } ;
 
 
