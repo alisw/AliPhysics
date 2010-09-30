@@ -47,6 +47,7 @@ public:
   void          UserExec(Option_t *);
   Int_t         GetDetector() const { return fDet; }
   void          GetPad(Int_t &c, Int_t &r) const { c=fCol, r=fRow; return;}
+  inline void   GetDiffCoeff(Float_t &dt, Float_t &dl) const;
   inline Float_t GetExB() const;
   inline Float_t GetVdrift() const;
   inline Float_t GetT0() const;
@@ -92,6 +93,8 @@ private:
   Char_t     fCol;     // pad column (-1 for all)
   Char_t     fRow;     // pad row (-1 for all)
   Float_t    fExB;     // tg of the Lorentz angle
+  Float_t    fDt;      // diffusion coeff. transversal
+  Float_t    fDl;      // diffusion coeff. longitudinal
   Float_t    fVdrift;  // mean drift velocity
   Float_t    fT0;      // time 0
   Float_t    fGain;    // gain
@@ -107,8 +110,17 @@ private:
   Float_t    fR[4];    // mean/sgm resolution
   Float_t    fP[4];    // mean/sgm pulls
   
-  ClassDef(AliTRDclusterResolution, 5)  // cluster resolution
+  ClassDef(AliTRDclusterResolution, 6)  // cluster resolution
 };
+
+//___________________________________________________
+inline void AliTRDclusterResolution::GetDiffCoeff(Float_t &dt, Float_t &dl) const
+{
+  if(!IsCalibrated()) AliWarning("Instance not calibrated.");
+  dt=fDt; dl=fDl;
+  return;
+}
+
 
 //___________________________________________________
 inline Float_t AliTRDclusterResolution::GetExB() const
