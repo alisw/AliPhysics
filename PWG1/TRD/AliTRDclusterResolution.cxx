@@ -574,7 +574,6 @@ void AliTRDclusterResolution::UserExec(Option_t *)
       if(TMath::Abs(fCol-c) > 5) continue;
       if(TMath::Abs(fRow-r) > 2) continue;
     }
-    Int_t stk(AliTRDgeometry::GetStack(fDet));
     dy = cli->GetResolution();
     AliDebug(4, Form("det[%d] tb[%2d] q[%4.0f Log[%6.4f]] dy[%7.2f][um] ypull[%5.2f]", det, t, q, TMath::Log(q), 1.e4*dy, dy/TMath::Sqrt(covcl[0])));
     
@@ -588,9 +587,8 @@ void AliTRDclusterResolution::UserExec(Option_t *)
       h3->Fill(TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
     }
     // resolution as a function of cluster charge
-    // only for dydx = 0, ExB=0, stack=2
-    if(stk==2 &&
-       TMath::Abs(dydx) < kAroundZero &&
+    // only for dydx = 0, ExB=0
+    if(TMath::Abs(dydx) < kAroundZero &&
        TMath::Abs(fExB) < kAroundZero){
       h3 = (TH3S*)arr1->At(2);
       h3->Fill(TMath::Log(q), dy, dy/TMath::Sqrt(covcl[0]));
@@ -612,8 +610,7 @@ void AliTRDclusterResolution::UserExec(Option_t *)
     }
     // resolution as a function of y displacement from pad center and time bin
     // only for dydx = 0, ExB=0, stack=2
-    if(stk==2 &&
-       TMath::Abs(dydx) < kAroundZero &&
+    if(TMath::Abs(dydx) < kAroundZero &&
        TMath::Abs(fExB) < kAroundZero){
       h3 = (TH3S*)arr1->At(0);
       h3->Fill(t, cli->GetYDisplacement(), dy);
@@ -625,7 +622,7 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 
     // fill histo for general systematic/resolution
     ((TH3S*)arr2->At(it-1))->Fill(tilt*dzdx, dydx, dy);
-    ((TH3S*)arr3->At(it-1))->Fill(10.*cli->GetAnisochronity(), tilt*dzdx-fExB, dy);
+    ((TH3S*)arr3->At(it-1))->Fill(10.*cli->GetAnisochronity(), dydx-tilt*dzdx-fExB, dy);
   }
 }
 
