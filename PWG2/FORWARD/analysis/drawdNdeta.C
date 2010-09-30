@@ -5,7 +5,7 @@ void drawdNdeta(const Char_t* filename="fmdana.root",
 		Float_t v2 = 10, 
 		Bool_t realdata=kTRUE, 
 		Float_t energy = 900, 
-		Int_t magfield=0){
+		Int_t magfield=1){
   
   gSystem->Load("libANALYSIS"); 
   gSystem->Load("libANALYSISalice"); 
