@@ -8,6 +8,8 @@
 /// \brief Quality assurance of MUON ESDs
 //Author: Philippe Pillot - SUBATECH Nantes
 
+class TMap;
+class TList;
 class TObjArray;
 class AliCounterCollection;
 
@@ -28,9 +30,10 @@ public:
   /// Select events passing the physics selection to fill histograms
   void SelectPhysics(Bool_t flag = kTRUE) {fSelectPhysics = flag;}
   
-  /// Select events passing the trigger selection (CINT1B/CMUS1B) to fill histograms
-  /// (activated only if the physics selection is not)
-  void SelectTrigger(Bool_t flag = kTRUE) {fSelectTrigger = flag;}
+  /// Select events belonging to at least one of the trigger classes selected by the mask to fill histograms:
+  /// - if the physics selection is used, apply the mask to the trigger word returned by the physics selection
+  /// - if not, apply the mask to the trigger word built by looking for triggers listed in "fSelectTriggerClass"
+  void SelectTrigger(Bool_t flag = kTRUE, UInt_t mask = AliVEvent::kMUON) {fSelectTrigger = flag; fTriggerMask = mask;}
   
 private:
   
@@ -41,38 +44,53 @@ private:
   
   Double_t ChangeThetaRange(Double_t theta);
   
+  UInt_t BuildTriggerWord(TString& FiredTriggerClasses);
+  
+  TList* BuildListOfTriggerCases(TString& FiredTriggerClasses);
+  
 private:
   
-  enum EESD { 
+  enum eList {
     kNTracks                 = 0,  ///< number of tracks
     kMatchTrig               = 1,  ///< number of tracks matched with trigger
     kSign                    = 2,  ///< track sign
     kDCA                     = 3,  ///< DCA distribution
     kP                       = 4,  ///< P distribution
-    kPt                      = 5,  ///< Pt distribution
-    kRapidity                = 6,  ///< rapidity distribution
-    kThetaX                  = 7,  ///< thetaX distribution
-    kThetaY                  = 8,  ///< thetaY distribution
-    kChi2                    = 9,  ///< normalized chi2 distribution
-    kProbChi2                = 10, ///< distribution of probability of chi2
-    
-    kNClustersPerTrack       = 11, ///< number of clusters per track
-    kNChamberHitPerTrack     = 12, ///< number of chamber hit per track
-    kNClustersPerCh          = 13, ///< number of clusters per chamber per track
-    kNClustersPerDE          = 14, ///< number of clusters per DE per track
-    kClusterHitMapInCh       = 15, ///< cluster position distribution in chamber i
-    kClusterChargeInCh       = 25, ///< cluster charge distribution in chamber i
-    kClusterChargePerChMean  = 35, ///< cluster charge per Ch: mean
-    kClusterChargePerChSigma = 36, ///< cluster charge per Ch: dispersion
-    kClusterChargePerDE      = 37, ///< cluster charge distribution per DE
-    kClusterChargePerDEMean  = 38, ///< cluster charge per DE: mean
-    kClusterChargePerDESigma = 39, ///< cluster charge per DE: dispersion
-    kClusterSizeInCh         = 40, ///< cluster size distribution in chamber i
-    kClusterSizePerChMean    = 50, ///< cluster size per Ch: mean
-    kClusterSizePerChSigma   = 51, ///< cluster size per Ch: dispersion
-    kClusterSizePerDE        = 52, ///< cluster size distribution per DE
-    kClusterSizePerDEMean    = 53, ///< cluster size per DE: mean
-    kClusterSizePerDESigma   = 54  ///< cluster size per DE: dispersion
+    kPMuPlus                 = 5,  ///< P distribution of mu+
+    kPMuMinus                = 6,  ///< P distribution of mu-
+    kPt                      = 7,  ///< Pt distribution
+    kPtMuPlus                = 8,  ///< Pt distribution of mu+
+    kPtMuMinus               = 9,  ///< Pt distribution of mu-
+    kRapidity                = 10, ///< rapidity distribution
+    kThetaX                  = 11, ///< thetaX distribution
+    kThetaY                  = 12, ///< thetaY distribution
+    kChi2                    = 13, ///< normalized chi2 distribution
+    kProbChi2                = 14, ///< distribution of probability of chi2
+    kNClustersPerTrack       = 15, ///< number of clusters per track
+    kNChamberHitPerTrack     = 16  ///< number of chamber hit per track
+  };
+  
+  enum eListExpert {
+    kNClustersPerCh          = 0,  ///< number of clusters per chamber
+    kNClustersPerDE          = 1,  ///< number of clusters per DE
+    kClusterHitMapInCh       = 2,  ///< cluster position distribution in chamber i
+    kClusterChargeInCh       = 12, ///< cluster charge distribution in chamber i
+    kClusterChargePerDE      = 22, ///< cluster charge distribution per DE
+    kClusterSizeInCh         = 23, ///< cluster size distribution in chamber i
+    kClusterSizePerDE        = 33  ///< cluster size distribution per DE
+  };
+  
+  enum eListNorm {
+    kClusterChargePerChMean  = 0,  ///< cluster charge per Ch: mean
+    kClusterChargePerChSigma = 1,  ///< cluster charge per Ch: dispersion
+    kClusterChargePerDEMean  = 2,  ///< cluster charge per DE: mean
+    kClusterChargePerDESigma = 3,  ///< cluster charge per DE: dispersion
+    kClusterSizePerChMean    = 4,  ///< cluster size per Ch: mean
+    kClusterSizePerChSigma   = 5,  ///< cluster size per Ch: dispersion
+    kClusterSizePerDEMean    = 6,  ///< cluster size per DE: mean
+    kClusterSizePerDESigma   = 7,  ///< cluster size per DE: dispersion
+    kNClustersPerChPerTrack  = 8,  ///< number of clusters per chamber per track
+    kNClustersPerDEPerTrack  = 9   ///< number of clusters per DE per track
   };
   
   TObjArray*  fList;       //!< List of output object for everybody
@@ -85,15 +103,16 @@ private:
   Short_t fSelectCharge;  ///< Fill histograms only with negative/position tracks (0=all)
   Bool_t  fSelectPhysics; ///< Fill histograms only with track passing the physics selection
   Bool_t  fSelectTrigger; ///< Fill histograms only with track passing the trigger selection
+  UInt_t  fTriggerMask;   ///< trigger mask to be used when selecting tracks
+  
+  TMap*  fTriggerClass;       //!< map of trigger class name associated to short name
+  TList* fSelectTriggerClass; //!< list of trigger class that can be selected to fill histograms
   
   static const Int_t nCh;       ///< number of tracking chambers
   static const Int_t nDE;       ///< number of DE
   static const Float_t dMax[5]; ///< maximum diameter of each station
-  static const Int_t fgkNTriggerClass;        ///< number of trigger class we consider
-  static const char* fgkTriggerClass[10];     ///< full trigger class name
-  static const char* fgkTriggerShortName[11]; ///< short trigger class name for counters
   
-  ClassDef(AliAnalysisTaskMuonQA, 3);
+  ClassDef(AliAnalysisTaskMuonQA, 4);
 };
 
 #endif

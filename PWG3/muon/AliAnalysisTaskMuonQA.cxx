@@ -24,6 +24,10 @@
 #include "TObjArray.h"
 #include "TMath.h"
 #include "TFile.h"
+#include "TRegexp.h"
+#include "TMap.h"
+#include "TList.h"
+#include "TObjString.h"
 
 // STEER includes
 #include "AliESDEvent.h"
@@ -46,37 +50,6 @@ const Int_t AliAnalysisTaskMuonQA::nDE = 1100;
 
 const Float_t AliAnalysisTaskMuonQA::dMax[5] = {176.6, 229.0, 308.84, 418.2,  522.0}; // cm
 
-const Int_t AliAnalysisTaskMuonQA::fgkNTriggerClass = 10;
-
-const char* AliAnalysisTaskMuonQA::fgkTriggerClass[10] =
-{
-  "CBEAMB-ABCE-NOPF-ALL",
-  "CSMBB-ABCE-NOPF-ALL",
-  "CINT1A-ABCE-NOPF-ALL",
-  "CINT1B-ABCE-NOPF-ALL",
-  "CINT1C-ABCE-NOPF-ALL",
-  "CINT1-E-NOPF-ALL",
-  "CMUS1A-ABCE-NOPF-MUON",
-  "CMUS1B-ABCE-NOPF-MUON",
-  "CMUS1C-ABCE-NOPF-MUON",
-  "CMUS1-E-NOPF-MUON"
-};
-
-const char* AliAnalysisTaskMuonQA::fgkTriggerShortName[11] =
-{
-  "CBEAMB",
-  "CSMBB",
-  "CINT1A",
-  "CINT1B",
-  "CINT1C",
-  "CINT1-E",
-  "CMUS1A",
-  "CMUS1B",
-  "CMUS1C",
-  "CMUS1-E",
-  "Other"
-};
-
 //________________________________________________________________________
 AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
   AliAnalysisTaskSE(), 
@@ -87,7 +60,10 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
   fEventCounters(0x0),
   fSelectCharge(0),
   fSelectPhysics(kFALSE),
-  fSelectTrigger(kFALSE)
+  fSelectTrigger(kFALSE),
+  fTriggerMask(0),
+  fTriggerClass(0x0),
+  fSelectTriggerClass(0x0)
 {
 // Dummy constructor
 }
@@ -102,7 +78,10 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
   fEventCounters(0x0),
   fSelectCharge(0),
   fSelectPhysics(kFALSE),
-  fSelectTrigger(kFALSE)
+  fSelectTrigger(kFALSE),
+  fTriggerMask(0),
+  fTriggerClass(0x0),
+  fSelectTriggerClass(0x0)
 {
   /// Constructor
   
@@ -127,6 +106,8 @@ AliAnalysisTaskMuonQA::~AliAnalysisTaskMuonQA()
   delete fListNorm;
   delete fTrackCounters;
   delete fEventCounters;
+  delete fTriggerClass;
+  delete fSelectTriggerClass;
 }
 
 //___________________________________________________________________________
@@ -134,6 +115,36 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
 {
   /// Create histograms and counters
   
+  // set the list of trigger classes with corresponding short names
+  fTriggerClass = new TMap(20);
+  fTriggerClass->SetOwnerKeyValue();
+  fTriggerClass->Add(new TObjString(" CBEAMB"), new TObjString("CBEAMB"));
+  fTriggerClass->Add(new TObjString(" CINT1B-ABCE-NOPF-ALL "), new TObjString("CINT1B"));
+  fTriggerClass->Add(new TObjString(" CMUS1B-ABCE-NOPF-MUON "), new TObjString("CMUS1B"));
+  fTriggerClass->Add(new TObjString(" CINT1B-ABCE-NOPF-ALL  CMUS1B-ABCE-NOPF-MUON "), new TObjString("CINT1B+CMUS1B"));
+  fTriggerClass->Add(new TObjString(" CINT1[AC]-"), new TObjString("CINT1AC"));
+  fTriggerClass->Add(new TObjString(" CINT1-E-"), new TObjString("CINT1E"));
+  fTriggerClass->Add(new TObjString(" CMUS1[AC]-"), new TObjString("CMUS1AC"));
+  fTriggerClass->Add(new TObjString(" CMUS1-E-"), new TObjString("CMUS1E"));
+  fTriggerClass->Add(new TObjString(" CINT1-B-"), new TObjString("CINT1B"));
+  fTriggerClass->Add(new TObjString(" CMUS1-B-"), new TObjString("CMUS1B"));
+  fTriggerClass->Add(new TObjString(" CINT1-AC-"), new TObjString("CINT1AC"));
+  fTriggerClass->Add(new TObjString(" CMUS1-AC-"), new TObjString("CMUS1AC"));
+  fTriggerClass->Add(new TObjString(" CSH1-B-"), new TObjString("CSH1B"));
+  
+  // set the corresponding list of trigger key words for counters
+  TString triggerKeys = "CBEAMB/CINT1B/CMUS1B/CINT1B+CMUS1B/CINT1AC/CINT1E/CMUS1AC/CMUS1E/CSH1B/other/any";
+  
+  // set the list of trigger classes that can be selected to fill histograms (in case the physics selection is not used)
+  fSelectTriggerClass = new TList();
+  fSelectTriggerClass->SetOwner();
+  fSelectTriggerClass->AddLast(new TObjString(" CINT1B-ABCE-NOPF-ALL ")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString(" CMUS1B-ABCE-NOPF-MUON ")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
+  fSelectTriggerClass->AddLast(new TObjString(" CINT1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString(" CMUS1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
+  fSelectTriggerClass->AddLast(new TObjString(" CSH1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kHighMult);
+  
+  // create histograms
   fList = new TObjArray(2000);
   fList->SetOwner();
   fListExpert = new TObjArray(2000);
@@ -155,8 +166,20 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   TH1F* hP = new TH1F("hP", "momentum distribution;p (GeV/c)", 300, 0., 300.);
   fList->AddAtAndExpand(hP, kP);
   
+  TH1F* hPMuPlus = new TH1F("hPMuPlus", "momentum distribution of #mu^{+};p (GeV/c)", 300, 0., 300.);
+  fList->AddAtAndExpand(hPMuPlus, kPMuPlus);
+  
+  TH1F* hPMuMinus = new TH1F("hPMuMinus", "momentum distribution of #mu^{-};p (GeV/c)", 300, 0., 300.);
+  fList->AddAtAndExpand(hPMuMinus, kPMuMinus);
+  
   TH1F* hPt = new TH1F("hPt", "transverse momentum distribution;p_{t} (GeV/c)", 300, 0., 30);
   fList->AddAtAndExpand(hPt, kPt);
+  
+  TH1F* hPtMuPlus = new TH1F("hPtMuPlus", "transverse momentum distribution of #mu^{+};p_{t} (GeV/c)", 300, 0., 30);
+  fList->AddAtAndExpand(hPtMuPlus, kPtMuPlus);
+  
+  TH1F* hPtMuMinus = new TH1F("hPtMuMinus", "transverse momentum distribution of #mu^{-};p_{t} (GeV/c)", 300, 0., 30);
+  fList->AddAtAndExpand(hPtMuMinus, kPtMuMinus);
   
   TH1F* hRapidity = new TH1F("hRapidity", "rapidity distribution;rapidity", 200, -4.5, -2.);
   fList->AddAtAndExpand(hRapidity, kRapidity);
@@ -215,21 +238,19 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   
   // initialize track counters
   fTrackCounters = new AliCounterCollection("trackCounters");
-  fTrackCounters->AddRubric("track", "tracker/trigger/matched/any");
-  TString triggerClassNames = "/";
-  for (Int_t i=0; i<=AliAnalysisTaskMuonQA::fgkNTriggerClass; i++)
-    triggerClassNames += Form("%s/",AliAnalysisTaskMuonQA::fgkTriggerShortName[i]);
-  triggerClassNames += "any/";
-  fTrackCounters->AddRubric("trigger", triggerClassNames.Data());
+  fTrackCounters->AddRubric("track", "trackeronly/triggeronly/matched");
+  fTrackCounters->AddRubric("trigger", triggerKeys.Data());
   fTrackCounters->AddRubric("run", 1000000);
   fTrackCounters->AddRubric("selected", "yes/no");
   fTrackCounters->AddRubric("triggerRO", "good/bad");
+  fTrackCounters->AddRubric("charge", "pos/neg/any");
+  fTrackCounters->AddRubric("pt", "low/high/any");
   fTrackCounters->Init();
   
   // initialize event counters
   fEventCounters = new AliCounterCollection("eventCounters");
   fEventCounters->AddRubric("event", "muon/any");
-  fEventCounters->AddRubric("trigger", triggerClassNames.Data());
+  fEventCounters->AddRubric("trigger", triggerKeys.Data());
   fEventCounters->AddRubric("run", 1000000);
   fEventCounters->AddRubric("selected", "yes/no");
   fEventCounters->AddRubric("triggerRO", "good/bad");
@@ -247,52 +268,118 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
 {
   /// Called for each event
   
-  // check physics selection
-  Bool_t isPhysicsSelected = (fInputHandler && fInputHandler->IsEventSelected());
-  TString selected = isPhysicsSelected ? "selected:yes" : "selected:no";
-  
   AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     Printf("ERROR: fESD not available");
     return;
   }
   
-  // check trigger selection
-  Bool_t isTriggerSelected = (fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL") || fESD->IsTriggerClassFired("CMUS1B-ABCE-NOPF-MUON"));
+  // check physics selection
+  UInt_t triggerWord = (fInputHandler) ? fInputHandler->IsEventSelected() : 0;
+  Bool_t isPhysicsSelected = (triggerWord != 0);
+  TString selected = isPhysicsSelected ? "selected:yes" : "selected:no";
   
-  Int_t nTracks = (Int_t) fESD->GetNumberOfMuonTracks(); 
-  Int_t nTrackerTracks = 0;
-  Int_t nSelectedTrackerTracks = 0;
+  // check trigger selection 
+  TString FiredTriggerClasses = fESD->GetFiredTriggerClasses();
+  if (!fSelectPhysics) triggerWord = BuildTriggerWord(FiredTriggerClasses);
+  Bool_t isTriggerSelected = ((triggerWord & fTriggerMask) != 0);
+  
+  // first loop over tracks to check for trigger readout problem
+  Int_t nTracks = (Int_t) fESD->GetNumberOfMuonTracks();
   Int_t nTriggerTracks = 0;
-  Int_t nTrackMatchTrig = 0;
-  Int_t nSelectedTrackMatchTrig = 0;
+  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack)
+    if (fESD->GetMuonTrack(iTrack)->ContainTriggerData()) nTriggerTracks++;
+  TString triggerRO = (nTriggerTracks < 10) ? "triggerRO:good" : "triggerRO:bad";
   
-  // loop over tracks and fill histograms
+  // --- fill event counters ---
+  
+  // build the list of trigger cases
+  TList* triggerCases = BuildListOfTriggerCases(FiredTriggerClasses);
+  
+  // loop over trigger cases
+  TObjString* triggerKey = 0x0;
+  TIter nextTriggerCase(triggerCases);
+  while ((triggerKey = static_cast<TObjString*>(nextTriggerCase()))) {
+    
+    // any event
+    fEventCounters->Count(Form("event:any/%s/run:%d/%s/%s", triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
+    
+    // muon event
+    if (nTracks > 0) fEventCounters->Count(Form("event:muon/%s/run:%d/%s/%s", triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
+      
+  }
+  
+  // second loop over tracks to fill histograms and track counters
+  Int_t nSelectedTrackerTracks = 0;
+  Int_t nSelectedTrackMatchTrig = 0;
+  Int_t nPVTracks = fESD->GetPrimaryVertex()->GetNContributors();
   for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
     
-    // --- fill counters for all tracks ---
-    
-    // get the ESD track and skip "ghosts"
+    // get the ESD track
     AliESDMuonTrack* esdTrack = fESD->GetMuonTrack(iTrack);
-    if (!esdTrack->ContainTrackerData()) {
-      nTriggerTracks++;
-      continue;
+    
+    // --- fill track counters ---
+    
+    // define the key words
+    TString trackKey = "track:";
+    TString chargeKey = "charge:";
+    Bool_t lowPt = kFALSE;
+    Bool_t highPt = kFALSE;
+    if (esdTrack->ContainTrackerData()) {
+      
+      if (esdTrack->ContainTriggerData()) trackKey += "matched";
+      else  trackKey += "trackeronly";
+      
+      Short_t trackCharge = esdTrack->Charge();
+      if (trackCharge < 0) chargeKey += "neg";
+      else chargeKey += "pos";
+      
+      Double_t thetaTrackAbsEnd = TMath::ATan(esdTrack->GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
+      Double_t trackPt = esdTrack->Pt();
+      if (trackPt > 1. && nPVTracks>0 && thetaTrackAbsEnd>2. ) lowPt = kTRUE;
+      if (trackPt > 2. && nPVTracks>0 && thetaTrackAbsEnd>2. ) highPt = kTRUE;
+      
+    } else {
+      
+      trackKey += "triggeronly";
+      chargeKey = "";
+      
     }
     
-    nTrackerTracks++;
-    
-    if (esdTrack->ContainTriggerData()) {
-      nTriggerTracks++;
-      nTrackMatchTrig++;
+    // loop over trigger cases and fill counters
+    nextTriggerCase.Reset();
+    while ((triggerKey = static_cast<TObjString*>(nextTriggerCase()))) {
+      
+      // any charge / any pt
+      fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:any", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
+      
+      // any charge / specific pt
+      if (lowPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:low", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
+      if (highPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/charge:any/pt:high", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data()));
+      
+      if (!chargeKey.IsNull()) {
+	
+	// specific charge / any pt
+	fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:any", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data()));
+	
+	// specific charge / specific pt
+	if (lowPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:low", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data()));
+	if (highPt) fTrackCounters->Count(Form("%s/%s/run:%d/%s/%s/%s/pt:high", trackKey.Data(), triggerKey->GetName(), fCurrentRunNumber, selected.Data(), triggerRO.Data(), chargeKey.Data()));
+	
+      }
+      
     }
     
     // --- apply selections and fill histograms with selected tracks ---
     
+    // remove "ghost"
+    if (!esdTrack->ContainTrackerData()) continue;
+    
     // select on "physics" before filling histograms
     if (fSelectPhysics && !isPhysicsSelected) continue;
     
-    // or select on trigger before filling histograms
-    if (!fSelectPhysics && fSelectTrigger && !isTriggerSelected) continue;
+    // select on trigger before filling histograms
+    if (fSelectTrigger && !isTriggerSelected) continue;
     
     // select on track charge
     if (fSelectCharge*esdTrack->Charge() < 0) continue;
@@ -300,8 +387,18 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     nSelectedTrackerTracks++;
     if (esdTrack->ContainTriggerData()) nSelectedTrackMatchTrig++;
     
-    ((TH1F*)fList->UncheckedAt(kP))->Fill(esdTrack->P());
-    ((TH1F*)fList->UncheckedAt(kPt))->Fill(esdTrack->Pt());
+    Double_t trackP = esdTrack->P();
+    Double_t trackPt = esdTrack->Pt();
+    Short_t trackCharge = esdTrack->Charge();
+    ((TH1F*)fList->UncheckedAt(kP))->Fill(trackP);
+    ((TH1F*)fList->UncheckedAt(kPt))->Fill(trackPt);
+    if (trackCharge < 0) {
+      ((TH1F*)fList->UncheckedAt(kPMuMinus))->Fill(trackP);
+      ((TH1F*)fList->UncheckedAt(kPtMuMinus))->Fill(trackPt);
+    } else {
+      ((TH1F*)fList->UncheckedAt(kPMuPlus))->Fill(trackP);
+      ((TH1F*)fList->UncheckedAt(kPtMuPlus))->Fill(trackPt);
+    }
     ((TH1F*)fList->UncheckedAt(kRapidity))->Fill(esdTrack->Y());
     Int_t ndf = 2 * esdTrack->GetNHit() - 5;
     ((TH1F*)fList->UncheckedAt(kChi2))->Fill(esdTrack->GetChi2()/ndf);
@@ -309,7 +406,7 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     ((TH1F*)fList->UncheckedAt(kThetaX))->Fill(ChangeThetaRange(esdTrack->GetThetaXUncorrected()));
     ((TH1F*)fList->UncheckedAt(kThetaY))->Fill(ChangeThetaRange(esdTrack->GetThetaYUncorrected()));
     ((TH1F*)fList->UncheckedAt(kNClustersPerTrack))->Fill(esdTrack->GetNHit());
-    ((TH1F*)fList->UncheckedAt(kSign))->Fill(esdTrack->Charge());
+    ((TH1F*)fList->UncheckedAt(kSign))->Fill(trackCharge);
     ((TH1F*)fList->UncheckedAt(kDCA))->Fill(esdTrack->GetDCA());
     
     Int_t nChamberHit = 0;
@@ -343,72 +440,13 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     
   }
   
-  if ((!fSelectPhysics || isPhysicsSelected) && (fSelectPhysics || !fSelectTrigger || isTriggerSelected)) {
+  if ((!fSelectPhysics || isPhysicsSelected) && (!fSelectTrigger || isTriggerSelected)) {
     ((TH1F*)fList->UncheckedAt(kNTracks))->Fill(nSelectedTrackerTracks);
     ((TH1F*)fList->UncheckedAt(kMatchTrig))->Fill(nSelectedTrackMatchTrig);
   }
   
-  // fill event counters
-  TString triggerRO = (nTriggerTracks < 10) ? "triggerRO:good" : "triggerRO:bad";
-  
-  fEventCounters->Count(Form("event:any/trigger:any/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-  
-  Bool_t triggerFired = kFALSE;
-  for (Int_t i=0; i<10; i++) {
-    if (fESD->IsTriggerClassFired(AliAnalysisTaskMuonQA::fgkTriggerClass[i])) {
-      fEventCounters->Count(Form("event:any/trigger:%s/run:%d/%s/%s", AliAnalysisTaskMuonQA::fgkTriggerShortName[i], fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-      triggerFired = kTRUE;
-    }
-  }
-  if (!triggerFired) {
-    fEventCounters->Count(Form("event:any/trigger:other/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-  }
-  
-  if (nTracks > 0) {
-    
-    // fill event counters
-    fEventCounters->Count(Form("event:muon/trigger:any/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-    
-    // fill track counters
-    fTrackCounters->Count(Form("track:tracker/trigger:any/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTrackerTracks);
-    fTrackCounters->Count(Form("track:trigger/trigger:any/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTriggerTracks);
-    fTrackCounters->Count(Form("track:matched/trigger:any/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTrackMatchTrig);
-    fTrackCounters->Count(Form("track:any/trigger:any/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTrackerTracks+nTriggerTracks);
-    
-    Bool_t triggerFiredForTrack = kFALSE;
-    for (Int_t i=0; i<AliAnalysisTaskMuonQA::fgkNTriggerClass; i++) {
-      
-      if (fESD->IsTriggerClassFired(AliAnalysisTaskMuonQA::fgkTriggerClass[i])) {
-	
-	// fill event counters
-	fEventCounters->Count(Form("event:muon/trigger:%s/run:%d/%s/%s", AliAnalysisTaskMuonQA::fgkTriggerShortName[i], fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-	
-	// fill track counters
-	fTrackCounters->Count(Form("track:tracker/trigger:%s/run:%d/%s/%s", AliAnalysisTaskMuonQA::fgkTriggerShortName[i], fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTrackerTracks);
-	fTrackCounters->Count(Form("track:trigger/trigger:%s/run:%d/%s/%s", AliAnalysisTaskMuonQA::fgkTriggerShortName[i], fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTriggerTracks);
-	fTrackCounters->Count(Form("track:matched/trigger:%s/run:%d/%s/%s", AliAnalysisTaskMuonQA::fgkTriggerShortName[i], fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTrackMatchTrig);
-	fTrackCounters->Count(Form("track:any/trigger:%s/run:%d/%s/%s", AliAnalysisTaskMuonQA::fgkTriggerShortName[i], fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTrackerTracks+nTriggerTracks);
-	
-	triggerFiredForTrack = kTRUE;
-	
-      }
-      
-    }
-    
-    if (!triggerFiredForTrack) {
-      
-      // fill event counters
-      fEventCounters->Count(Form("event:muon/trigger:other/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()));
-      
-      // fill track counters
-      fTrackCounters->Count(Form("track:tracker/trigger:Other/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTrackerTracks);
-      fTrackCounters->Count(Form("track:trigger/trigger:Other/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTriggerTracks);
-      fTrackCounters->Count(Form("track:matched/trigger:Other/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTrackMatchTrig);
-      fTrackCounters->Count(Form("track:any/trigger:Other/run:%d/%s/%s", fCurrentRunNumber, selected.Data(), triggerRO.Data()), nTrackerTracks+nTriggerTracks);
-      
-    }
-    
-  }
+  // clean memory
+  delete triggerCases;
   
   // Post final data. It will be written to a file with option "RECREATE"
   PostData(1, fList);
@@ -510,8 +548,8 @@ void AliAnalysisTaskMuonQA::Terminate(Option_t *)
   if (nTracks > 0.) {
     ((TH1F*)fListExpert->UncheckedAt(kNClustersPerCh))->Scale(1./nTracks);
     ((TH1F*)fListExpert->UncheckedAt(kNClustersPerDE))->Scale(1./nTracks);
-    fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerCh))->Clone(), kNClustersPerCh);
-    fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerDE))->Clone(), kNClustersPerDE);
+    fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerCh))->Clone(), kNClustersPerChPerTrack);
+    fListNorm->AddAtAndExpand(((TH1F*)fListExpert->UncheckedAt(kNClustersPerDE))->Clone(), kNClustersPerDEPerTrack);
   }
   
   // fill summary plots per chamber
@@ -563,8 +601,61 @@ void AliAnalysisTaskMuonQA::Terminate(Option_t *)
 //________________________________________________________________________
 Double_t AliAnalysisTaskMuonQA::ChangeThetaRange(Double_t theta)
 {
+  /// set theta range from -180 to +180 degrees
   if(theta < -2.5) return (theta / TMath::Pi() + 1.) * 180.;
   else if(theta > 2.5) return (theta / TMath::Pi() - 1.) * 180.;
   else return theta / TMath::Pi() * 180.;
+}
+
+//________________________________________________________________________
+UInt_t AliAnalysisTaskMuonQA::BuildTriggerWord(TString& FiredTriggerClasses)
+{
+  /// build the trigger word from the fired trigger classes and the list of selectable trigger
+  
+  UInt_t word = 0;
+  
+  TObjString* trigClasseName = 0x0;
+  TIter nextTrigger(fSelectTriggerClass);
+  while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
+    
+    TRegexp GenericTriggerClasseName(trigClasseName->String());
+    if (FiredTriggerClasses.Contains(GenericTriggerClasseName)) word |= trigClasseName->GetUniqueID();
+    
+  }
+  
+  return word;
+}
+
+//________________________________________________________________________
+TList* AliAnalysisTaskMuonQA::BuildListOfTriggerCases(TString& FiredTriggerClasses)
+{
+  /// build the list of trigger for the counters from the fired trigger classes and the list of trigger classes
+  /// returned TList must be deleted by user
+  
+  TList* list = new TList();
+  list->SetOwner();
+  
+  // add case any
+  list->AddLast(new TObjString("trigger:any"));
+  
+  TObjString* trigClasseName = 0x0;
+  TIter nextTrigger(fTriggerClass);
+  while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
+    
+    TRegexp GenericTriggerClasseName(trigClasseName->String());
+    if (FiredTriggerClasses.Contains(GenericTriggerClasseName)) {
+      
+      // add specific trigger case
+      TObjString* trigShortName = static_cast<TObjString*>(fTriggerClass->GetValue(trigClasseName));
+      list->AddLast(new TObjString(Form("trigger:%s",trigShortName->GetName())));
+      
+    }
+    
+  }
+  
+  // add case other if no specific trigger was found
+  if (list->GetSize() == 1) list->AddLast(new TObjString("trigger:other"));
+  
+  return list;
 }
 
