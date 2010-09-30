@@ -21,11 +21,11 @@ public:
                fTrClassMask(0), fTrCluster(0), fEvNumberInFile(-1), fFileId(-1),
                fVxSPD(0), fVySPD(0), fVzSPD(0), fVcSPD(-1) {;}
   virtual ~MyHeader() {;}
-  ULong64_t     GetEventId() const {
-                  return ((ULong64_t)fBx+
-                          (ULong64_t)fOrbit*3564+
-                          (ULong64_t)fPeriod*16777215*3564);
-                }
+  ULong64_t    GetEventId() const {
+                 return (((ULong64_t)fPeriod << 36) |
+                         ((ULong64_t)fOrbit  << 12) |
+                         (ULong64_t)fBx); 
+               }
 
 public:
   Int_t         fRun;
@@ -96,12 +96,12 @@ public:
   Double_t    Px()         const { return fPt*TMath::Cos(fPhi);  }
   Double_t    Py()         const { return fPt*TMath::Sin(fPhi);  }
   Double_t    Pz()         const { return fPt*TMath::SinH(fEta); }
-  Bool_t      IsITSRefit() const { return (fSt&kITSrefit)==0;    }
-  Bool_t      IsTPCIn()    const { return (fSt&kTPCin)==0;       }
-  Bool_t      IsTPCRefit() const { return (fSt&kITSrefit)==0;    }
+  Bool_t      IsITSRefit() const { return (fSt&(ULong64_t)kITSrefit);    }
+  Bool_t      IsTPCIn()    const { return (fSt&(ULong64_t)kTPCin);       }
+  Bool_t      IsTPCRefit() const { return (fSt&(ULong64_t)kITSrefit);    }
 
 public:
-  ULong_t     fSt;
+  ULong64_t   fSt;
   Char_t      fC;
   Double32_t  fPt;           //[0,0,16]
   Double32_t  fEta;          //[0,0,10]
@@ -111,14 +111,14 @@ public:
   Short_t     fNClTPCShared;
   Char_t      fNClITS;
   Double32_t  fChi2TPC;      //[0,0,10]
-  Double32_t  fChi2TPC1;      //[0,0,10]
+  Double32_t  fChi2TPC1;     //[0,0,10]
   Double32_t  fChi2ITS;      //[0,0,10]
   Double32_t  fD;            //[0,0,16]
   Double32_t  fZ;            //[0,0,16]
   Double32_t  fDTPC;         //[0,0,16]
   Double32_t  fZTPC;         //[0,0,16]
 
-  ClassDef(MyPart,2) // My particle class in cylindrical coordinates
+  ClassDef(MyPart,3) // My particle class in cylindrical coordinates
 };
 
 class MyTracklet : public TObject
