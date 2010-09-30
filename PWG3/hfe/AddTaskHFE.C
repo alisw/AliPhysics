@@ -15,7 +15,7 @@ AliAnalysisTask *AddTaskHFE(){
     return NULL;
   }
   Bool_t MCthere=kTRUE;
-  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthE    ventHandler());
+  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
   if(!mcH){
     MCthere=kFALSE;
   }
