@@ -128,7 +128,7 @@ void AliAnalysisTaskSEBkgLikeSignD0::Init()
   gROOT->LoadMacro("ConfigVertexingHF.C");
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");
-  fVHF->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
+  //fVHF->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
   fVHF->PrintStatus();
 
   return;
@@ -286,7 +286,8 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
         unsetvtx=kTRUE;
     }
     Int_t okD0ls=0; Int_t okD0barls=0;
-    if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0ls,okD0barls)) {
+    //if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0ls,okD0barls)) {
+    if(d) {
        AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
        AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
        if(!trk0 || !trk1) {
@@ -333,8 +334,9 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
       unsetvtx=kTRUE;
     }
-    Int_t okD0=0; Int_t okD0bar=0;
-    if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
+    //Int_t okD0=0; Int_t okD0bar=0;
+    //if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
+    if(d) {
       fHistMassD0->Fill(d->InvMassD0());
       fHistMassD0->Fill(d->InvMassD0bar());
       fHistCtsD0->Fill(d->CosThetaStarD0());

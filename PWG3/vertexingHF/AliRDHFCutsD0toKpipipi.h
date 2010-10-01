@@ -29,6 +29,7 @@ class AliRDHFCutsD0toKpipipi : public AliRDHFCuts
   
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
+  Bool_t GetUsePID(Int_t iPtBin=0) const { return (GetCuts() ? (Bool_t)(fCutsRD[GetGlobalIndex(8,iPtBin)]) : kFALSE);}
 
  protected:
 

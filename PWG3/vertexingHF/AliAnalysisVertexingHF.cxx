@@ -97,15 +97,6 @@ fFindVertexForDstar(kTRUE),
 fFindVertexForCascades(kTRUE)
 {
   // Default constructor
-
-  SetD0toKpiCuts();
-  SetBtoJPSICuts();
-  SetDplusCuts();
-  SetDsCuts();
-  SetLcCuts();
-  SetDstarCuts();
-  SetD0to4ProngsCuts();
-  SetLctoV0Cuts();
 }
 //--------------------------------------------------------------------------
 AliAnalysisVertexingHF::AliAnalysisVertexingHF(const AliAnalysisVertexingHF &source) : 
@@ -143,14 +134,6 @@ fFindVertexForCascades(source.fFindVertexForCascades)
   //
   // Copy constructor
   //
-  for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
-  for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
-  for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
-  for(Int_t i=0; i<14; i++) fDsCuts[i]=source.fDsCuts[i];
-  for(Int_t i=0; i<12; i++) fLcCuts[i]=source.fLcCuts[i];
-  for(Int_t i=0; i<8; i++)  fLctoV0Cuts[i]=source.fLctoV0Cuts[i];
-  for(Int_t i=0; i<5; i++)  fDstarCuts[i]=source.fDstarCuts[i];
-  for(Int_t i=0; i<9; i++)  fD0to4ProngsCuts[i]=source.fD0to4ProngsCuts[i];
 }
 //--------------------------------------------------------------------------
 AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVertexingHF &source)
@@ -187,15 +170,6 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fListOfCuts = source.fListOfCuts;
   fFindVertexForDstar = source.fFindVertexForDstar;
   fFindVertexForCascades = source.fFindVertexForCascades;
-
-  for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
-  for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
-  for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
-  for(Int_t i=0; i<14; i++) fDsCuts[i]=source.fDsCuts[i];
-  for(Int_t i=0; i<12; i++) fLcCuts[i]=source.fLcCuts[i];
-  for(Int_t i=0; i<8; i++)  fLctoV0Cuts[i]=source.fLctoV0Cuts[i];
-  for(Int_t i=0; i<5; i++)  fDstarCuts[i]=source.fDstarCuts[i];
-  for(Int_t i=0; i<9; i++)  fD0to4ProngsCuts[i]=source.fD0to4ProngsCuts[i];
 
   return *this;
 }
@@ -390,12 +364,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   AliESDtrack *trackPi   = 0;
   //   AliESDtrack *posV0track = 0;
   //   AliESDtrack *negV0track = 0;
-  /*
-  Double_t dcaMax = fD0toKpiCuts[1];
-  if(dcaMax < fBtoJPSICuts[1]) dcaMax=fBtoJPSICuts[1];
-  if(dcaMax < fDplusCuts[11])  dcaMax=fDplusCuts[11];
-  if(dcaMax < fD0to4ProngsCuts[1])  dcaMax=fD0to4ProngsCuts[1];
-  */
   Float_t dcaMax = fCutsD0toKpi->GetDCACut();
   if(fCutsJpsitoee) dcaMax=TMath::Max(dcaMax,fCutsJpsitoee->GetDCACut());
   if(fCutsDplustoKpipi) dcaMax=TMath::Max(dcaMax,fCutsDplustoKpipi->GetDCACut());
@@ -892,8 +860,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	   // don't make 4 prong with like-sign pairs and triplets
 	   && !isLikeSign2Prong && !isLikeSign3Prong
 	   // track-to-track dca cuts already now
-	   && dcap1n1 < fD0to4ProngsCuts[1]
-	   && dcap2n1 < fD0to4ProngsCuts[1]) {
+	   && dcap1n1 < fCutsD0toKpipipi->GetDCACut()
+	   && dcap2n1 < fCutsD0toKpipipi->GetDCACut()) {
 
 	  // back to primary vertex
 	  postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
@@ -933,9 +901,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
 	    negtrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
 	    dcap1n2 = postrack1->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
-	    if(dcap1n2 > fD0to4ProngsCuts[1]) { negtrack2=0; continue; }
+	    if(dcap1n2 > fCutsD0toKpipipi->GetDCACut()) { negtrack2=0; continue; }
             dcap2n2 = postrack2->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
-            if(dcap2n2 > fD0to4ProngsCuts[1]) { negtrack2=0; continue; }
+            if(dcap2n2 > fCutsD0toKpipipi->GetDCACut()) { negtrack2=0; continue; }
 
 	    // Vertexing
 	    fourTrackArray->AddAt(postrack1,0);
@@ -1210,8 +1178,6 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   }
   // select D*->D0pi
   if(fDstar) {
-    //Bool_t testD0=kTRUE;
-    //okDstar = tmpCascade->SelectDstar(fDstarCuts,fD0fromDstarCuts,testD0);
     okDstar = (Bool_t)fCutsDStartoKpipi->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
   }
   tmpCascade->GetSecondaryVtx()->RemoveDaughters();
@@ -1270,13 +1236,10 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   // select Cascades
   Bool_t okLcksp=0, okLcLpi=0;
   if(fCascades && fInputAOD){
-    if(fCutsLctoV0) {
-      okCascades = (Bool_t)fCutsLctoV0->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
-      if(okCascades==1) okLcksp=1;
-      if(okCascades==2) okLcLpi=1;
-      if(okCascades==3) { okLcksp=1; okLcLpi=1;}
-    }
-    else okCascades = tmpCascade->SelectLctoV0(fLctoV0Cuts,okLcksp,okLcLpi);
+    okCascades = (Bool_t)fCutsLctoV0->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
+    if(okCascades==1) okLcksp=1;
+    if(okCascades==2) okLcLpi=1;
+    if(okCascades==3) { okLcksp=1; okLcLpi=1;}
   }
   else { AliDebug(2,Form("The cascade is contructed from ESDs, no cuts are applied")); okCascades=kTRUE; }// no cuts implemented from ESDs
   tmpCascade->GetSecondaryVtx()->RemoveDaughters();
@@ -1348,17 +1311,12 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
  
   if(postrack->Charge()!=0 && negtrack->Charge()!=0) { // don't apply these cuts if it's a Dstar 
     // select D0->Kpi
-    //Int_t checkD0,checkD0bar;
-    //if(fD0toKpi)   okD0 = the2Prong->SelectD0(fD0toKpiCuts,checkD0,checkD0bar);
     if(fD0toKpi)   okD0 = (Bool_t)fCutsD0toKpi->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
     //if(fDebug && fD0toKpi) printf("   %d\n",(Int_t)okD0);
     // select J/psi from B
-    //Int_t checkJPSI;
-    //if(fJPSItoEle) okJPSI        = the2Prong->SelectBtoJPSI(fBtoJPSICuts,checkJPSI);
     if(fJPSItoEle)   okJPSI = (Bool_t)fCutsJpsitoee->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
     //if(fDebug && fJPSItoEle) printf("   %d\n",(Int_t)okJPSI);
     // select D0->Kpi from Dstar
-    //if(fDstar)     okD0fromDstar = the2Prong->SelectD0(fD0fromDstarCuts,checkD0,checkD0bar);
     if(fDstar)   okD0fromDstar = (Bool_t)fCutsDStartoKpipi->IsD0FromDStarSelected(the2Prong->Pt(),the2Prong,AliRDHFCuts::kCandidate);
     //if(fDebug && fDstar) printf("   %d\n",(Int_t)okD0fromDstar);
   }
@@ -1457,11 +1415,6 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   // select D+->Kpipi, Ds->KKpi, Lc->pKpi
   if(f3Prong) {
     ok3Prong = kFALSE;
-    //Int_t ok1,ok2;
-    //Int_t dum1,dum2;
-    //if(the3Prong->SelectDplus(fDplusCuts))   ok3Prong = kTRUE;
-    //if(the3Prong->SelectDs(fDsCuts,ok1,ok2,dum1,dum2)) ok3Prong = kTRUE;
-    //if(the3Prong->SelectLc(fLcCuts,ok1,ok2)) ok3Prong = kTRUE;
     
     if(fCutsDplustoKpipi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) ok3Prong = kTRUE;
     if(fCutsDstoKKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) ok3Prong = kTRUE;
@@ -1533,7 +1486,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
 
   // invariant mass cut for rho or D0 (try to improve coding here..)
   Bool_t okMassCut=kFALSE;
-  if(!okMassCut && TMath::Abs(fD0to4ProngsCuts[8])<1.e-13){      //no PID, to be implemented with PID
+  if(!okMassCut && !(fCutsD0toKpipipi->GetUsePID())) {      //no PID, to be implemented with PID
     if(SelectInvMass(4,4,px,py,pz)) okMassCut=kTRUE;
   }
   if(!okMassCut) {
@@ -1575,8 +1528,6 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
 
   delete primVertexAOD; primVertexAOD=NULL;
 
-  //Int_t checkD0,checkD0bar;
-  //ok4Prong=the4Prong->SelectD0(fD0to4ProngsCuts,checkD0,checkD0bar);
   ok4Prong=(Bool_t)fCutsD0toKpipipi->IsSelected(the4Prong,AliRDHFCuts::kCandidate);
 
 
@@ -1845,74 +1796,61 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       pdg2[0]=211; pdg2[1]=321;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg2);
-      //if(TMath::Abs(minv-mPDG)<fD0toKpiCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsD0toKpi->GetMassCut()) retval=kTRUE;
       pdg2[0]=321; pdg2[1]=211;
       minv = rd->InvMass(nprongs,pdg2);
-      //if(TMath::Abs(minv-mPDG)<fD0toKpiCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsD0toKpi->GetMassCut()) retval=kTRUE;
       break;
     case 1:                  // JPSI->ee
       pdg2[0]=11; pdg2[1]=11;
       mPDG=TDatabasePDG::Instance()->GetParticle(443)->Mass();
       minv = rd->InvMass(nprongs,pdg2);
-      //if(TMath::Abs(minv-mPDG)<fBtoJPSICuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsJpsitoee->GetMassCut()) retval=kTRUE;
       break;
     case 2:                  // D+->Kpipi
       pdg3[0]=211; pdg3[1]=321; pdg3[2]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(411)->Mass();
       minv = rd->InvMass(nprongs,pdg3);
-      //if(TMath::Abs(minv-mPDG)<fDplusCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsDplustoKpipi->GetMassCut()) retval=kTRUE;
                             // Ds+->KKpi
       pdg3[0]=321; pdg3[1]=321; pdg3[2]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(431)->Mass();
       minv = rd->InvMass(nprongs,pdg3);
-      //if(TMath::Abs(minv-mPDG)<fDsCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsDstoKKpi->GetMassCut()) retval=kTRUE;
       pdg3[0]=211; pdg3[1]=321; pdg3[2]=321;
       minv = rd->InvMass(nprongs,pdg3);
-      //if(TMath::Abs(minv-mPDG)<fDsCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsDstoKKpi->GetMassCut()) retval=kTRUE;
                             // Lc->pKpi
       pdg3[0]=2212; pdg3[1]=321; pdg3[2]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(4122)->Mass();
       minv = rd->InvMass(nprongs,pdg3);
-      //if(TMath::Abs(minv-mPDG)<fLcCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsLctopKpi->GetMassCut()) retval=kTRUE;
       pdg3[0]=211; pdg3[1]=321; pdg3[2]=2212;
       minv = rd->InvMass(nprongs,pdg3);
-      //if(TMath::Abs(minv-mPDG)<fLcCuts[0]) retval=kTRUE; 
       if(TMath::Abs(minv-mPDG)<fCutsLctopKpi->GetMassCut()) retval=kTRUE;
       break;
     case 3:                  // D*->D0pi
       pdg2[0]=211; pdg2[1]=421; // in twoTrackArrayCasc we put the pion first
       mPDG=TDatabasePDG::Instance()->GetParticle(413)->Mass();
       minv = rd->InvMass(nprongs,pdg2);
-      //if(TMath::Abs(minv-mPDG)<fDstarCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsDStartoKpipi->GetMassCut()) retval=kTRUE;
       break;
     case 4:                 // D0->Kpipipi without PID
       pdg4[0]=321; pdg4[1]=211; pdg4[2]=211; pdg4[3]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg4);
-      //if(TMath::Abs(minv-mPDG)<fD0to4ProngsCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
       pdg4[0]=211; pdg4[1]=321; pdg4[2]=211; pdg4[3]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg4);
-      //if(TMath::Abs(minv-mPDG)<fD0to4ProngsCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
       pdg4[0]=211; pdg4[1]=211; pdg4[2]=321; pdg4[3]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg4);
-      //if(TMath::Abs(minv-mPDG)<fD0to4ProngsCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
       pdg4[0]=211; pdg4[1]=211; pdg4[2]=211; pdg4[3]=321;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg4);
-      //if(TMath::Abs(minv-mPDG)<fD0to4ProngsCuts[0]) retval=kTRUE;
       if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
       break;
     default:
@@ -2039,273 +1977,6 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
   }
   if(indices) { delete [] indices; indices=NULL; }
 
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetD0toKpiCuts(Double_t cut0,Double_t cut1,
-				   Double_t cut2,Double_t cut3,Double_t cut4,
-				   Double_t cut5,Double_t cut6,
-				   Double_t cut7,Double_t cut8) 
-{
-  // Set the cuts for D0 selection
-  fD0toKpiCuts[0] = cut0;
-  fD0toKpiCuts[1] = cut1;
-  fD0toKpiCuts[2] = cut2;
-  fD0toKpiCuts[3] = cut3;
-  fD0toKpiCuts[4] = cut4;
-  fD0toKpiCuts[5] = cut5;
-  fD0toKpiCuts[6] = cut6;
-  fD0toKpiCuts[7] = cut7;
-  fD0toKpiCuts[8] = cut8;
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetD0toKpiCuts(const Double_t cuts[9]) 
-{
-  // Set the cuts for D0 selection
-
-  for(Int_t i=0; i<9; i++) fD0toKpiCuts[i] = cuts[i];
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetD0fromDstarCuts(Double_t cut0,Double_t cut1,
-				   Double_t cut2,Double_t cut3,Double_t cut4,
-				   Double_t cut5,Double_t cut6,
-				   Double_t cut7,Double_t cut8) 
-{
-  // Set the cuts for D0 from D* selection
-  fD0fromDstarCuts[0] = cut0;
-  fD0fromDstarCuts[1] = cut1;
-  fD0fromDstarCuts[2] = cut2;
-  fD0fromDstarCuts[3] = cut3;
-  fD0fromDstarCuts[4] = cut4;
-  fD0fromDstarCuts[5] = cut5;
-  fD0fromDstarCuts[6] = cut6;
-  fD0fromDstarCuts[7] = cut7;
-  fD0fromDstarCuts[8] = cut8;
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetD0fromDstarCuts(const Double_t cuts[9]) 
-{
-  // Set the cuts for D0 from D* selection
-
-  for(Int_t i=0; i<9; i++) fD0fromDstarCuts[i] = cuts[i];
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetDstarCuts(Double_t cut0,Double_t cut1,
-                                          Double_t cut2,Double_t cut3,
-                                          Double_t cut4)
-{
-  // Set the cuts for D* selection
-  fDstarCuts[0] = cut0;
-  fDstarCuts[1] = cut1;
-  fDstarCuts[2] = cut2;
-  fDstarCuts[3] = cut3;
-  fDstarCuts[4] = cut4;
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetDstarCuts(const Double_t cuts[5])
-{
-  // Set the cuts for D* selection
-
-  for(Int_t i=0; i<5; i++) fDstarCuts[i] = cuts[i];
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetBtoJPSICuts(Double_t cut0,Double_t cut1,
-				   Double_t cut2,Double_t cut3,Double_t cut4,
-				   Double_t cut5,Double_t cut6,
-				   Double_t cut7,Double_t cut8) 
-{
-  // Set the cuts for J/psi from B selection
-  fBtoJPSICuts[0] = cut0;
-  fBtoJPSICuts[1] = cut1;
-  fBtoJPSICuts[2] = cut2;
-  fBtoJPSICuts[3] = cut3;
-  fBtoJPSICuts[4] = cut4;
-  fBtoJPSICuts[5] = cut5;
-  fBtoJPSICuts[6] = cut6;
-  fBtoJPSICuts[7] = cut7;
-  fBtoJPSICuts[8] = cut8;
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetBtoJPSICuts(const Double_t cuts[9]) 
-{
-  // Set the cuts for J/psi from B selection
-
-  for(Int_t i=0; i<9; i++) fBtoJPSICuts[i] = cuts[i];
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetDplusCuts(Double_t cut0,Double_t cut1,
-				   Double_t cut2,Double_t cut3,Double_t cut4,
-				   Double_t cut5,Double_t cut6,
-				   Double_t cut7,Double_t cut8,
-				   Double_t cut9,Double_t cut10,Double_t cut11)
-{
-  // Set the cuts for Dplus->Kpipi selection
-  fDplusCuts[0] = cut0;
-  fDplusCuts[1] = cut1;
-  fDplusCuts[2] = cut2;
-  fDplusCuts[3] = cut3;
-  fDplusCuts[4] = cut4;
-  fDplusCuts[5] = cut5;
-  fDplusCuts[6] = cut6;
-  fDplusCuts[7] = cut7;
-  fDplusCuts[8] = cut8;
-  fDplusCuts[9] = cut9;
-  fDplusCuts[10] = cut10;
-  fDplusCuts[11] = cut11;
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetDplusCuts(const Double_t cuts[12]) 
-{
-  // Set the cuts for Dplus->Kpipi selection
-
-  for(Int_t i=0; i<12; i++) fDplusCuts[i] = cuts[i];
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetDsCuts(Double_t cut0,Double_t cut1,
-				       Double_t cut2,Double_t cut3,
-				       Double_t cut4,Double_t cut5,
-				       Double_t cut6,Double_t cut7,
-				       Double_t cut8,Double_t cut9,
-				       Double_t cut10,Double_t cut11,
-				       Double_t cut12,Double_t cut13)
-{
-  // Set the cuts for Ds->KKpi selection
-  fDsCuts[0] = cut0;
-  fDsCuts[1] = cut1;
-  fDsCuts[2] = cut2;
-  fDsCuts[3] = cut3;
-  fDsCuts[4] = cut4;
-  fDsCuts[5] = cut5;
-  fDsCuts[6] = cut6;
-  fDsCuts[7] = cut7;
-  fDsCuts[8] = cut8;
-  fDsCuts[9] = cut9;
-  fDsCuts[10] = cut10;
-  fDsCuts[11] = cut11;
-  fDsCuts[12] = cut12;
-  fDsCuts[13] = cut13;
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetDsCuts(const Double_t cuts[13]) 
-{
-  // Set the cuts for Ds->KKpi selection
-
-  for(Int_t i=0; i<14; i++) fDsCuts[i] = cuts[i];
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetLcCuts(Double_t cut0,Double_t cut1,
-				   Double_t cut2,Double_t cut3,Double_t cut4,
-				   Double_t cut5,Double_t cut6,
-				   Double_t cut7,Double_t cut8,
-				   Double_t cut9,Double_t cut10,Double_t cut11)
-{
-  // Set the cuts for Lc->pKpi selection
-  fLcCuts[0] = cut0;
-  fLcCuts[1] = cut1;
-  fLcCuts[2] = cut2;
-  fLcCuts[3] = cut3;
-  fLcCuts[4] = cut4;
-  fLcCuts[5] = cut5;
-  fLcCuts[6] = cut6;
-  fLcCuts[7] = cut7;
-  fLcCuts[8] = cut8;
-  fLcCuts[9] = cut9;
-  fLcCuts[10] = cut10;
-  fLcCuts[11] = cut11;
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetLcCuts(const Double_t cuts[12]) 
-{
-  // Set the cuts for Lc->pKpi selection
-
-  for(Int_t i=0; i<12; i++) fLcCuts[i] = cuts[i];
-
-  return;
-}
-
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetLctoV0Cuts(Double_t cut0,Double_t cut1,
-					   Double_t cut2,Double_t cut3,Double_t cut4,
-					   Double_t cut5,Double_t cut6,
-					   Double_t cut7,Double_t cut8)
-{
-  // Set the cuts for Lc->V0+bachelor selection
-  fLctoV0Cuts[0] = cut0;
-  fLctoV0Cuts[1] = cut1;
-  fLctoV0Cuts[2] = cut2;
-  fLctoV0Cuts[3] = cut3;
-  fLctoV0Cuts[4] = cut4;
-  fLctoV0Cuts[5] = cut5;
-  fLctoV0Cuts[6] = cut6;
-  fLctoV0Cuts[7] = cut7;
-  fLctoV0Cuts[8] = cut8;
-
-  return;
-}
-
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetLctoV0Cuts(const Double_t cuts[8]) 
-{
-  // Set the cuts for Lc-> V0 + bachelor selection
-
-  for(Int_t i=0; i<8; i++) fLctoV0Cuts[i] = cuts[i];
-
-  return;
-}
-
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetD0to4ProngsCuts(Double_t cut0,Double_t cut1,
-                                   Double_t cut2,Double_t cut3,Double_t cut4,
-                                   Double_t cut5,Double_t cut6,
-                                   Double_t cut7,Double_t cut8)
-{
-  // Set the cuts for D0->Kpipipi selection
-
-  fD0to4ProngsCuts[0] = cut0;
-  fD0to4ProngsCuts[1] = cut1;
-  fD0to4ProngsCuts[2] = cut2;
-  fD0to4ProngsCuts[3] = cut3;
-  fD0to4ProngsCuts[4] = cut4;
-  fD0to4ProngsCuts[5] = cut5;
-  fD0to4ProngsCuts[6] = cut6;
-  fD0to4ProngsCuts[7] = cut7;
-  fD0to4ProngsCuts[8] = cut8;
-
-  return;
-}
-//-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetD0to4ProngsCuts(const Double_t cuts[9])
-{
-  // Set the cuts for D0->Kpipipi selection
-
-  for(Int_t i=0; i<9; i++) fD0to4ProngsCuts[i] = cuts[i];
 
   return;
 }
