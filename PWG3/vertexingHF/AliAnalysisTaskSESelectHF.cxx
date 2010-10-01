@@ -169,8 +169,9 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       dIn->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
       unsetvtx=kTRUE;
     }
-    Int_t okD0=0,okD0bar=0; 
-    if(dIn->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
+    //Int_t okD0=0,okD0bar=0; 
+    //if(dIn->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
+    if(dIn) {
       // get daughter AOD tracks
       AliAODTrack *trk0 = (AliAODTrack*)dIn->GetDaughter(0);
       AliAODTrack *trk1 = (AliAODTrack*)dIn->GetDaughter(1);

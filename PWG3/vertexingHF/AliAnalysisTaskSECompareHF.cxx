@@ -261,26 +261,25 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	  d2->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
 	  unsetvtx=kTRUE;
 	}
-	okD0=0; okD0bar=0; 
-	if(d2->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) { // beware: cuts may bias the resolution!
-	  AliAODMCParticle *dMC = (AliAODMCParticle*)mcArray->At(lab);
-	  pdg = dMC->GetPdgCode();
-	  invmass = (pdg==421 ? d2->InvMassD0() : d2->InvMassD0bar());
-	  // get a daughter for true pos of decay vertex
-	  AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
-	  dg0MC->XvYvZv(posTrue);
-	  fHistMass->Fill(invmass);
-	  // Post the data already here
-	  PostData(1,fOutput);
-	  Float_t tmp[16]={(Float_t)pdg,(Float_t)nprongs,
-			   (Float_t)posRec[0],(Float_t)posTrue[0],(Float_t)errx,
-			   (Float_t)posRec[1],(Float_t)posTrue[1],(Float_t)erry,
-			   (Float_t)posRec[2],(Float_t)posTrue[2],(Float_t)errz,
-			   (Float_t)d2->GetReducedChi2(),(Float_t)d2->Pt(),(Float_t)invmass,
-			   (Float_t)d2->CosPointingAngle(),(Float_t)d2->Prodd0d0()};
-	  fNtupleCmp->Fill(tmp);
-	  PostData(2,fNtupleCmp);
-	}
+	okD0=1; okD0bar=1; 
+	AliAODMCParticle *dMC = (AliAODMCParticle*)mcArray->At(lab);
+	pdg = dMC->GetPdgCode();
+	invmass = (pdg==421 ? d2->InvMassD0() : d2->InvMassD0bar());
+	// get a daughter for true pos of decay vertex
+	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
+	dg0MC->XvYvZv(posTrue);
+	fHistMass->Fill(invmass);
+	// Post the data already here
+	PostData(1,fOutput);
+	Float_t tmp[16]={(Float_t)pdg,(Float_t)nprongs,
+			 (Float_t)posRec[0],(Float_t)posTrue[0],(Float_t)errx,
+			 (Float_t)posRec[1],(Float_t)posTrue[1],(Float_t)erry,
+			 (Float_t)posRec[2],(Float_t)posTrue[2],(Float_t)errz,
+			 (Float_t)d2->GetReducedChi2(),(Float_t)d2->Pt(),(Float_t)invmass,
+			 (Float_t)d2->CosPointingAngle(),(Float_t)d2->Prodd0d0()};
+	fNtupleCmp->Fill(tmp);
+	PostData(2,fNtupleCmp);
+      
 	if(unsetvtx) d2->UnsetOwnPrimaryVtx();
       }
       break;
