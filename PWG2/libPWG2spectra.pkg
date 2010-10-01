@@ -25,7 +25,8 @@ SRCS= SPECTRA/AliProtonAnalysisBase.cxx \
       SPECTRA/AliAnalysisTaskSEITSsaSpectra.cxx \
       SPECTRA/Fit/AliBWTools.cxx \
       SPECTRA/Fit/AliBWFunc.cxx \
-      SPECTRA/Fit/AliLatexTable.cxx 
+      SPECTRA/Fit/AliLatexTable.cxx \
+      SPECTRA/AliAnalysisChargedHadronSpectraITSTruncatedMeanTask.cxx	 
 
 HDRS= $(SRCS:.cxx=.h) 
 
