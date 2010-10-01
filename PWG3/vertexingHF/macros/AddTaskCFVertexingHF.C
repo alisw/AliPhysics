@@ -36,11 +36,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	// isSign = 2 --> D0 + D0bar
 
 	TString expected;
-	if (isSign == 0 && pdgCode != 421){
+	if (isSign == 0 && pdgCode < 0){
 		AliError(Form("Error setting PDG code (%d) and sign (0 --> D0 only): they are not compatible, returning"));
 		return 0x0;
 	}
-	else if (isSign == 1 && pdgCode != -421){
+	else if (isSign == 1 && pdgCode > 0){
 		AliError(Form("Error setting PDG code (%d) and sign (1 --> D0bar only): they are not compatible, returning"));
 		return 0x0;
 	}
@@ -50,7 +50,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	}
 
 	TFile* fileCuts = new TFile(cutFile);
-	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCuts");
+	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCutsStandard");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
