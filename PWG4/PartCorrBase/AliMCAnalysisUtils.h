@@ -41,7 +41,7 @@ class AliMCAnalysisUtils : public TObject {
 	enum mcTypes {kMCPhoton, kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCConversion,
 			kMCElectron, kMCEFromCFromB, kMCEFromC, kMCEFromB, kMCZDecay, kMCWDecay,
 			kMCMuon, kMCPion, kMCPi0, kMCKaon, kMCEta, kMCProton, kMCAntiProton, kMCNeutron,
-			kMCOther, kMCUnknown};
+			kMCOther, kMCUnknown, kMCBadLabel};
 	
 	//Check only the label of the most significant particle
 	Int_t   CheckOrigin(const Int_t label, AliCaloTrackReader * reader, const Int_t input) ;

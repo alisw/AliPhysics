@@ -70,8 +70,14 @@ void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* a
 
   if ( strcmp(esd->GetName(), "AliMixedEvent") == 0 ) {
     AliMultiEventInputHandler* multiEH = dynamic_cast<AliMultiEventInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    if (multiEH->GetFormat() == 0 ) {
-      tesd = kTRUE ; 
+    if(multiEH){
+      if (multiEH->GetFormat() == 0 ) {
+        tesd = kTRUE ; 
+      }
+    }
+    else{
+      printf("AliCaloTrackESDReader::SetInputOutputMCEvent() - MultiEventHandler is NULL");
+      abort();
     }
   }
   if (strcmp(esd->GetName(),"AliESDEvent") == 0) {

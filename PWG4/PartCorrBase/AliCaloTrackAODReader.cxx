@@ -74,16 +74,22 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent*
   // Connect the data pointers
   // If input is AOD, do analysis with input, if not, do analysis with the output aod.
 
-	  //printf("AODInputHandler %p, MergeEvents %d \n",aodIH, aodIH->GetMergeEvents());
+  //printf("AODInputHandler %p, MergeEvents %d \n",aodIH, aodIH->GetMergeEvents());
 
   Bool_t tesd = kFALSE ; 
   Bool_t taod = kTRUE ; 
   if ( strcmp(input->GetName(), "AliMixedEvent") == 0 ) {
     AliMultiEventInputHandler* multiEH = dynamic_cast<AliMultiEventInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    if (multiEH->GetFormat() == 0 ) {
-      tesd = kTRUE ; 
-    } else if (multiEH->GetFormat() == 1) {
-      taod = kTRUE ; 
+    if(multiEH){
+      if (multiEH->GetFormat() == 0 ) {
+        tesd = kTRUE ; 
+      } else if (multiEH->GetFormat() == 1) {
+        taod = kTRUE ; 
+      }
+    }
+    else{
+      printf("AliCaloTrackAODReader::SetInputOutputMCEvent() - MultiEventHandler is NULL");
+      abort();
     }
   }
   if (strcmp(input->GetName(),"AliESDEvent") == 0) {

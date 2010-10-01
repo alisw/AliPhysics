@@ -233,13 +233,13 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(){
 	if(!fReadStack) return kTRUE; //Information not filtered to AOD
 	
 	if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader")){
-		TParticle * jet =  new TParticle;
+		TParticle * jet =  0;
 		AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
 		Int_t nTriggerJets =  pygeh->NTriggerJets();
 		Float_t ptHard = pygeh->GetPtHard();
 		
 		//if(fDebug > 1) printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %f\n",nTriggerJets, ptHard);
-	    Float_t tmpjet[]={0,0,0,0};
+    Float_t tmpjet[]={0,0,0,0};
 		for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
 			pygeh->TriggerJet(ijet, tmpjet);
 			jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
@@ -251,8 +251,9 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(){
 				return kFALSE;
 			}
 		}
+    if(jet) delete jet; 
 	}
-	
+	  
 	return kTRUE ;
 	
 }

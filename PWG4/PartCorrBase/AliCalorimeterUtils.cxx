@@ -113,25 +113,33 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
       cellsCumul =  mixEvent->GetPHOSCellsCumul() ; 
       numberOfCells = mixEvent->GetNumberOfPHOSCells() ;
     } 
-    Int_t startCell = cellsCumul[iev] ; 
-    Int_t endCell   = (iev+1 < nMixedEvents)?cellsCumul[iev+1]:numberOfCells;
+    
+    if(cellsCumul){
+      
+      Int_t startCell = cellsCumul[iev] ; 
+      Int_t endCell   = (iev+1 < nMixedEvents)?cellsCumul[iev+1]:numberOfCells;
       //Find cells with maximum amplitude
-    for(Int_t i = 0; i < cluster->GetNCells() ; i++){
-      Int_t absId = cluster->GetCellAbsId(i) ;
-      for (Int_t j = startCell; j < endCell ;  j++) {
-        Short_t cellNumber; 
-        Double_t amp ; 
-        Double_t time; 
-        cells->GetCell(j, cellNumber, amp, time) ; 
-        if (absId == cellNumber) {
-          if(amp > ampMax){
-            ampMax   = amp;
-            absIdMax = absId;
-          }        
+      for(Int_t i = 0; i < cluster->GetNCells() ; i++){
+        Int_t absId = cluster->GetCellAbsId(i) ;
+        for (Int_t j = startCell; j < endCell ;  j++) {
+          Short_t cellNumber; 
+          Double_t amp ; 
+          Double_t time; 
+          cells->GetCell(j, cellNumber, amp, time) ; 
+          if (absId == cellNumber) {
+            if(amp > ampMax){
+              ampMax   = amp;
+              absIdMax = absId;
+            }        
+          }
         }
-      }
+      }//loop on cluster cells
+    }// cells cumul available
+    else {
+      printf("AliCalorimeterUtils::CheckCellFiducialRegion() - CellsCumul is NULL!!!\n");
+      abort();
     }
-  } else {
+  } else {//Normal SE Events
     for(Int_t i = 0; i < cluster->GetNCells() ; i++){
       Int_t absId = cluster->GetCellAbsId(i) ;
       Float_t amp	= cells->GetCellAmplitude(absId);
@@ -285,8 +293,13 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
       else {
         Fatal("GetModuleNumber(PWG4AOD)", "Stack not available, stop!");
       }
-        
-      fPHOSGeo->ImpactOnEmc(primary,mod,z,x) ;
+      
+      if(primary){
+        fPHOSGeo->ImpactOnEmc(primary,mod,z,x) ;
+      }
+      else{
+        Fatal("GetModuleNumber(PWG4AOD)", "Primary not available, stop!");
+      }
       return mod;
     }
     // Input are ESDs or AODs, get the PHOS module number like this.
@@ -562,20 +575,20 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
 Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, AliVCaloCells * cells){
 	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
 
-	if(!cells) {
-		Fatal("RecalibrateClusterEnergy()","Cells pointer does not exist!");
-	}
+  //Initialize some used variables
+	Float_t energy   = 0;
+	Int_t absId      = -1;
+	Int_t icol = -1, irow = -1, iRCU = -1, module=1;
+	Float_t factor = 1, frac = 0;  
+  
+	if(cells) {
+	
 	//Get the cluster number of cells and list of absId, check what kind of cluster do we have.
 	UShort_t * index    = cluster->GetCellsAbsId() ;
 	Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
 	Int_t ncells     = cluster->GetNCells();	
 	TString calo     = "EMCAL";
 	if(cluster->IsPHOS()) calo = "PHOS";
-	//Initialize some used variables
-	Float_t energy   = 0;
-	Int_t absId      = -1;
-	Int_t icol = -1, irow = -1, iRCU = -1, module=1;
-	Float_t factor = 1, frac = 0;
 	
 	//Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
 	for(Int_t icell = 0; icell < ncells; icell++){
@@ -594,7 +607,12 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, Ali
 	
 	if(fDebug>1)
 		printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - Energy before %f, after %f\n",cluster->E(),energy);
-	
+    
+	}// cells available
+  else{
+    Fatal("RecalibrateClusterEnergy()","Cells pointer does not exist!");
+  }
+  
 	return energy;
 }
 
