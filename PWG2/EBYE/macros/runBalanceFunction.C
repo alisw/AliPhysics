@@ -12,18 +12,18 @@ void runLocal(const char* mode) {
   //____________________________________________________//
   //_____________Setting up the par files_______________//
   //____________________________________________________//
-  setupPar("STEERBase");
+  //setupPar("STEERBase");
   gSystem->Load("libSTEERBase.so");
-  setupPar("ESD");
+  //setupPar("ESD");
   gSystem->Load("libVMC.so");
   gSystem->Load("libESD.so");
-  setupPar("AOD");
+  //setupPar("AOD");
   gSystem->Load("libAOD.so");
-  setupPar("ANALYSIS");
+  //setupPar("ANALYSIS");
   gSystem->Load("libANALYSIS.so");
-  setupPar("ANALYSISalice");
+  //setupPar("ANALYSISalice");
   gSystem->Load("libANALYSISalice.so");
-  setupPar("PWG2ebye");
+  //setupPar("PWG2ebye");
   gSystem->Load("libPWG2ebye.so");
 
   //___________________________________________________//
@@ -41,7 +41,6 @@ void runLocal(const char* mode) {
   mgr->SetInputEventHandler(esdH);
 
   // Create task
-  gROOT->LoadMacro("AliAnalysisTaskBF.cxx+g");
   AliAnalysisTaskBF *taskBF = new AliAnalysisTaskBF("TaskBF");
   taskBF->SetAnalysisObject(analysis);
   // Add task
