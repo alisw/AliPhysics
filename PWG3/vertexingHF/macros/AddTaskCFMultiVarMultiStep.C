@@ -1,12 +1,6 @@
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ymin  = -2.1 ;
 const Double_t ymax  =  2.1 ;
-// const Double_t ptmin_0_4 =  0.0 ;
-// const Double_t ptmax_0_4 =  4.0 ;
-// const Double_t ptmin_4_8 =  4.0 ;
-// const Double_t ptmax_4_8 =  8.0 ;
-// const Double_t ptmin_8_10 =  8.0 ;
-// const Double_t ptmax_8_10 =  10.0 ;
 const Double_t cosmin = -1.05;
 const Double_t cosmax =  1.05;
 const Double_t cTmin = 0;  // micron
@@ -18,11 +12,9 @@ const Double_t d0max = 1000;  // micron
 const Double_t d0xd0min = -100000;  // micron
 const Double_t d0xd0max = 100000;  // micron
 const Double_t phimin = 0.0;  
-//const Double_t phimax = 2Pi;  // defined in the macro!!!!!!!!!!!!!!  
 const Int_t    mintrackrefsTPC = 2 ;
 const Int_t    mintrackrefsITS = 3 ;
 const Int_t    charge  = 1 ;
-const Int_t    PDG = 421; 
 const Int_t    minclustersTPC = 50 ;
 // cuts
 const Double_t ptmin = 0.1;
@@ -31,12 +23,31 @@ const Double_t etamin = -0.9;
 const Double_t etamax = 0.9;
 const Double_t zmin = -15;
 const Double_t zmax = 15;
-const Int_t    minITSClusters = 5;
+//const Int_t    minITSClusters = 5;
 
 //----------------------------------------------------
 
-AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* cutFile = "./D0toKpiCuts.root",Bool_t isKeepD0fromB=kFALSE, Bool_t isKeepD0fromBOnly=kFALSE)
+AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* cutFile = "./D0toKpiCuts.root",Bool_t isKeepD0fromB=kFALSE, Bool_t isKeepD0fromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2)
 {
+	// isSign = 0 --> D0 only
+	// isSign = 1 --> D0bar only
+	// isSign = 2 --> D0 + D0bar
+
+	TString expected;
+	if (isSign == 0 && pdgCode != 421){
+		AliError(Form("Error setting PDG code (%d) and sign (0 --> D0 only): they are not compatible, returning"));
+		return 0x0;
+	}
+	else if (isSign == 1 && pdgCode != -421){
+		AliError(Form("Error setting PDG code (%d) and sign (1 --> D0bar only): they are not compatible, returning"));
+		return 0x0;
+	}
+	else if (isSign > 2 || isSign < 0){
+		AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning"));
+		return 0x0;
+	}
+
+
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	
 	TFile* fileCuts = new TFile(cutFile);
@@ -46,29 +57,23 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	//  for now the binning is the same than for all D's
 	if(isKeepD0fromBOnly) isKeepD0fromB = true;
 	
-	Double_t ptmin_0_4;
-	Double_t ptmax_0_4;
-	Double_t ptmin_4_8;
-	Double_t ptmax_4_8;
-	Double_t ptmin_8_10;
-	Double_t ptmax_8_10;
+	Double_t ptmin_0_6;
+	Double_t ptmax_0_6;
+	Double_t ptmin_6_8;
+	Double_t ptmax_6_8;
+	Double_t ptmin_8_16;
+	Double_t ptmax_8_16;
+	Double_t ptmin_16_24;
+	Double_t ptmax_16_24;
 	
-	if(!isKeepD0fromB){
-		ptmin_0_4 =  0.0 ;
-		ptmax_0_4 =  4.0 ;
-		ptmin_4_8 =  4.0 ;
-		ptmax_4_8 =  8.0 ;
-		ptmin_8_10 =  8.0 ;
-		ptmax_8_10 =  10.0 ;
-	} else{
-		ptmin_0_4 =  0.0 ;
-		ptmax_0_4 =  3.0 ;
-		ptmin_4_8 =  3.0 ;
-		ptmax_4_8 =  5.0 ;
-		ptmin_8_10 =  5.0 ;
-		ptmax_8_10 =  10.0 ;
-	}
-  
+	ptmin_0_6 =  0.0 ;
+	ptmax_0_6 =  6.0 ;
+	ptmin_6_8 =  6.0 ;
+	ptmax_6_8 =  8.0 ;
+	ptmin_8_16 =  8.0 ;
+	ptmax_8_16 =  16.0 ;
+	ptmin_16_24 =  16.0 ;
+	ptmax_16_24 =  24.0 ;
 
 	//CONTAINER DEFINITION
 	Info("AliCFHeavyFlavourTaskMultiVarMultiStep","SETUP CONTAINER");
@@ -99,65 +104,71 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	Int_t iBin[nvar];
 
 	//OPTION 1: defining the pt, ptPi, ptK bins by hand...		
-	Int_t nbin0_0_4;
-	Int_t nbin0_4_8;
-	Int_t nbin0_8_10;
-	if (!isKeepD0fromB){
-		nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
-		nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
-		nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
-	}else{
-		nbin0_0_4  = 3 ; //bins in pt from 0 to 3 GeV
-		nbin0_4_8  = 1 ; //bins in pt from 3 to 5 GeV
-		nbin0_8_10  = 1 ; //bins in pt from 5 to 10 GeV
-	}
-	const Int_t nbin3_0_4  = 8 ; //bins in ptPi from 0 to 4 GeV
-	const Int_t nbin3_4_8  = 4 ; //bins in ptPi from 4 to 8 GeV
-	const Int_t nbin3_8_10  = 1 ; //bins in ptPi from 8 to 10 GeV
-	const Int_t nbin4_0_4  = 8 ; //bins in ptKa from 0 to 4 GeV
-	const Int_t nbin4_4_8  = 4 ; //bins in ptKa from 4 to 8 GeV
-	const Int_t nbin4_8_10  = 1 ; //bins in ptKa from 8 to 10 GeV
- 	iBin[0]=nbin0_0_4+nbin0_4_8+nbin0_8_10;
-      	iBin[3]=nbin3_0_4+nbin3_4_8+nbin3_8_10;
- 	iBin[4]=nbin4_0_4+nbin4_4_8+nbin4_8_10;
+	const Int_t nbin0_0_6  = 6 ; //bins in pt from 0 to 6 GeV
+	const Int_t nbin0_6_8  = 1 ; //bins in pt from 6 to 8 GeV
+	const Int_t nbin0_8_16  = 2 ; //bins in pt from 8 to 16 GeV
+	const Int_t nbin0_16_24  = 1 ; //bins in pt from 16 to 24 GeV
+	const Int_t nbin3_0_6  = 6 ; //bins in ptPi from 0 to 6 GeV
+	const Int_t nbin3_6_8  = 1 ; //bins in ptPi from 6 to 8 GeV
+	const Int_t nbin3_8_16  = 2 ; //bins in ptPi from 8 to 16 GeV
+	const Int_t nbin3_16_24  = 1 ; //bins in ptPi from 16 to 24 GeV
+	const Int_t nbin4_0_6  = 6 ; //bins in ptK from 0 to 6 GeV
+	const Int_t nbin4_6_8  = 1 ; //bins in ptK from 6 to 8 GeV
+	const Int_t nbin4_8_16  = 2 ; //bins in ptK from 8 to 16 GeV
+	const Int_t nbin4_16_24  = 1 ; //bins in ptK from 16 to 24 GeV
+ 	iBin[0]=nbin0_0_6+nbin0_6_8+nbin0_8_16+nbin0_16_24;
+      	iBin[3]=nbin3_0_6+nbin3_6_8+nbin3_8_16+nbin3_16_24;
+ 	iBin[4]=nbin4_0_6+nbin4_6_8+nbin4_8_16+nbin4_16_24;
 	Double_t *binLim0=new Double_t[iBin[0]+1];
 	Double_t *binLim3=new Double_t[iBin[3]+1];
 	Double_t *binLim4=new Double_t[iBin[4]+1];
 
 	// values for bin lower bounds
 	// pt
-	for(Int_t i=0; i<=nbin0_0_4; i++) binLim0[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin0_0_4*(Double_t)i ; 
-	if (binLim0[nbin0_0_4] != ptmin_4_8)  {
+	for(Int_t i=0; i<=nbin0_0_6; i++) binLim0[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbin0_0_6*(Double_t)i ; 
+	if (binLim0[nbin0_0_6] != ptmin_6_8)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbin0_4_8; i++) binLim0[i+nbin0_0_4]=(Double_t)ptmin_4_8 + (ptmax_4_8-ptmin_4_8)/nbin0_4_8*(Double_t)i ; 
-	if (binLim0[nbin0_0_4+nbin0_4_8] != ptmin_8_10)  {
+	for(Int_t i=0; i<=nbin0_6_8; i++) binLim0[i+nbin0_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbin0_6_8*(Double_t)i ; 
+	if (binLim0[nbin0_0_6+nbin0_6_8] != ptmin_8_16)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbin0_8_10; i++) binLim0[i+nbin0_0_4+nbin0_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin0_8_10*(Double_t)i ; 
+	for(Int_t i=0; i<=nbin0_8_16; i++) binLim0[i+nbin0_0_6+nbin0_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbin0_8_16*(Double_t)i ; 
+	if (binLim0[nbin0_0_6+nbin0_6_8+nbin0_8_16] != ptmin_16_24)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbin0_16_24; i++) binLim0[i+nbin0_0_6+nbin0_6_8+nbin0_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbin0_16_24*(Double_t)i ; 
+
 	// ptPi
-	for(Int_t i=0; i<=nbin3_0_4; i++) binLim3[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin3_0_4*(Double_t)i ; 
-	if (binLim3[nbin3_0_4] != ptmin_4_8)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptPi - 1st range - differs from expected!");
+	for(Int_t i=0; i<=nbin3_0_6; i++) binLim3[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbin3_0_6*(Double_t)i ; 
+	if (binLim3[nbin3_0_6] != ptmin_6_8)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbin3_4_8; i++) binLim3[i+nbin3_0_4]=(Double_t)ptmin_4_8 + (ptmax_4_8-ptmin_4_8)/nbin3_4_8*(Double_t)i ; 
-	if (binLim3[nbin3_0_4+nbin3_4_8] != ptmin_8_10)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptPi - 2nd range - differs from expected!\n");
+	for(Int_t i=0; i<=nbin3_6_8; i++) binLim3[i+nbin3_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbin3_6_8*(Double_t)i ; 
+	if (binLim3[nbin3_0_6+nbin3_6_8] != ptmin_8_16)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbin3_8_10; i++) binLim3[i+nbin3_0_4+nbin3_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin3_8_10*(Double_t)i ; 
+	for(Int_t i=0; i<=nbin3_8_16; i++) binLim3[i+nbin3_0_6+nbin0_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbin3_8_16*(Double_t)i ; 
+	if (binLim3[nbin3_0_6+nbin3_6_8+nbin3_8_16] != ptmin_16_24)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbin3_16_24; i++) binLim3[i+nbin3_0_6+nbin3_6_8+nbin3_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbin3_16_24*(Double_t)i ; 
 
 	// ptKa
-	for(Int_t i=0; i<=nbin4_0_4; i++) binLim4[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin4_0_4*(Double_t)i ; 
-	if (binLim4[nbin4_0_4] != ptmin_4_8)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptKa - 1st range - differs from expected!");
+	for(Int_t i=0; i<=nbin4_0_6; i++) binLim4[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbin4_0_6*(Double_t)i ; 
+	if (binLim4[nbin4_0_6] != ptmin_6_8)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbin4_4_8; i++) binLim4[i+nbin4_0_4]=(Double_t)ptmin_4_8 + (ptmax_4_8-ptmin_4_8)/nbin4_4_8*(Double_t)i ; 
-	if (binLim4[nbin4_0_4+nbin4_4_8] != ptmin_8_10)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptKa - 2nd range - differs from expected!\n");
+	for(Int_t i=0; i<=nbin4_6_8; i++) binLim4[i+nbin4_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbin4_6_8*(Double_t)i ; 
+	if (binLim4[nbin4_0_6+nbin4_6_8] != ptmin_8_16)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbin4_8_10; i++) binLim4[i+nbin4_0_4+nbin4_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin4_8_10*(Double_t)i ; 
-	
-	
+	for(Int_t i=0; i<=nbin4_8_16; i++) binLim4[i+nbin4_0_6+nbin0_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbin4_8_16*(Double_t)i ; 
+	if (binLim4[nbin4_0_6+nbin4_6_8+nbin4_8_16] != ptmin_16_24)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbin4_16_24; i++) binLim4[i+nbin4_0_6+nbin4_6_8+nbin4_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbin4_16_24*(Double_t)i ; 
+			
 	//OPTION 2: ...or from the cuts file
 
 	//const Int_t nbin0 = cutsD0toKpi->GetNPtBins(); // bins in pT
@@ -319,7 +330,11 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	
 	//Particle-Level cuts:  
 	AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
-	mcGenCuts->SetRequirePdgCode(PDG, kTRUE);  // kTRUE set in order to include D0_bar
+	Bool_t useAbsolute = kTRUE;
+	if (isSign != 2){
+		useAbsolute = kFALSE;
+	}
+	mcGenCuts->SetRequirePdgCode(pdgCode, useAbsolute);  // kTRUE set in order to include particle AND antiparticle
 	mcGenCuts->SetAODMC(1); //special flag for reading MC in AOD tree (important)
 	
 	// Acceptance cuts:
@@ -380,11 +395,19 @@ AliCFHeavyFlavourTaskMultiVarMultiStep *AddTaskCFMultiVarMultiStep(const char* c
 	// create the task
 	AliCFHeavyFlavourTaskMultiVarMultiStep *task = new AliCFHeavyFlavourTaskMultiVarMultiStep("AliCFHeavyFlavourTaskMultiVarMultiStep",cutsD0toKpi);
 	task->SetFillFromGenerated(kFALSE);
-	task->SetMinITSClusters(minITSClusters);
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetKeepD0fromB(isKeepD0fromB);
 	task->SetKeepD0fromBOnly(isKeepD0fromBOnly);
 	task->SetUseWeight(kFALSE);  // set to true if you want to filled a weight CF	
+	task->SetSign(isSign);
+
+	Printf("***************** CONTAINER SETTINGS *****************");
+	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
+	Printf("keepD0fromB = %d",(Int_t)task->GetKeepD0fromB());
+	Printf("keepD0fromBOnly = %d",(Int_t)task->GetKeepD0fromBOnly());
+	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
+	Printf("Sign = %d",(Int_t)task->GetSign());
+	Printf("***************END CONTAINER SETTINGS *****************\n");
 
         //-----------------------------------------------------------//
         //   create correlation matrix for unfolding - only eta-pt   //

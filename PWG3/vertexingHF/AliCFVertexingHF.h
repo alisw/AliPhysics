@@ -95,7 +95,7 @@ class AliCFVertexingHF : public TObject {
 	void SetNProngs(Int_t nProngs){fProngs = nProngs;}
 	void SetDselection(UShort_t originDselection); 
 	UShort_t GetDselection() {return fOriginDselection;}; 
-	Int_t CheckReflexion();
+	Int_t CheckReflexion(Char_t isSign);
 	Bool_t SetLabelArray();
 
 	protected:

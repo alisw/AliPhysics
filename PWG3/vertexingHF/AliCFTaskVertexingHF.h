@@ -83,12 +83,16 @@ public:
 	void    SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
 	Bool_t  GetFillFromGenerated() const {return fFillFromGenerated;}
 	void    SetDecayChannel (Int_t decayChannel) {fDecayChannel = decayChannel;}
+	Int_t   GetDecayChannel () {return fDecayChannel;}
 	void     SetUseWeight(Bool_t useWeight){fUseWeight=useWeight;}
 	Bool_t   GetUseWeight() const {return fUseWeight;}
 	Double_t GetWeight(Float_t pt);
 	Double_t dNdptFit(Float_t pt, Double_t* par);
  	
 	void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
+	UShort_t GetDselection (){return fOriginDselection;}
+	void SetSign(Char_t isSign) {fSign = isSign;}
+	Char_t GetSign() {return fSign;}
 	 
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
@@ -114,7 +118,9 @@ protected:
 	Int_t fNvar;                   // number of variables for the container
 	TString fPartName;    // D meson name
 	TString fDauNames;    // daughter in fin state
-	ClassDef(AliCFTaskVertexingHF,3); // class for HF corrections as a function of many variables
+	Char_t fSign;                 // flag to decide wheter to keep D0 only (0), D0bar only (1), or both D0 and D0bar (2)
+
+	ClassDef(AliCFTaskVertexingHF,4); // class for HF corrections as a function of many variables
 };
 
 #endif
