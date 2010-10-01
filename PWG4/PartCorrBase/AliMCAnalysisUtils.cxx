@@ -89,6 +89,11 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, const Int_t nlabels, 
 	//Play with the montecarlo particles if available
 	Int_t tag = 0;
 	
+  if(nlabels<=0) {
+    printf("AliMCAnalysisUtils::CheckOrigin(nlabel<=0) - No MC labels available, please check!!!");
+    return kMCUnknown;
+  }
+
 	//Select where the information is, ESD-galice stack or AOD mcparticles branch
 	if(reader->ReadStack()){
 		tag = CheckOriginInStack(label, nlabels, reader->GetStack());
@@ -104,6 +109,12 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, const Int_t nlabels, 
 Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliCaloTrackReader* reader, const Int_t input = 0) {
 	//Play with the montecarlo particles if available
 	Int_t tag = 0;
+  
+  if(label<0) {
+    printf("AliMCAnalysisUtils::CheckOrigin(label<0) - No MC labels available, please check!!!");
+    return kMCUnknown;
+  }
+  
 	Int_t labels[]={label};
 	
 	//Select where the information is, ESD-galice stack or AOD mcparticles branch
