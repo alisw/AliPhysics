@@ -62,7 +62,13 @@ AliAnalysisTaskTotEt::AliAnalysisTaskTotEt(const char *name) :
     DefineOutput(1, TList::Class());
 
 }
-
+AliAnalysisTaskTotEt::~AliAnalysisTaskTotEt(){
+  fOutputList->Clear();
+  delete fOutputList;
+  delete fRecAnalysis;
+  delete fMCAnalysis;
+  delete fEsdtrackCutsTPC;
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskTotEt::UserCreateOutputObjects()
@@ -72,6 +78,7 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
     fMCAnalysis->CreateHistograms();
     fRecAnalysis->CreateHistograms();
     fOutputList = new TList;
+    fOutputList->SetOwner();
     fRecAnalysis->FillOutputList(fOutputList);
     fMCAnalysis->FillOutputList(fOutputList);
     fHistEtRecvsEtMC = new TH2F("fHistEtRecvsEtMC", "Reconstructed E_{t} vs MC E_{t}", 1000, 0.000, 100, 1000, 0.0001, 100);

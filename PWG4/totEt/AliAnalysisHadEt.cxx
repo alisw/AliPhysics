@@ -100,7 +100,16 @@ AliAnalysisHadEt::AliAnalysisHadEt() :
 
 AliAnalysisHadEt::~AliAnalysisHadEt()
 {//destructor
-
+  delete fCuts;
+  delete fPdgDB;
+  delete fEsdtrackCutsITSTPC;
+  delete fEsdtrackCutsITS;
+  delete fEsdtrackCutsTPC;
+  //histoList doesn't really belong to this class - it's passed in
+  //fhistoList->Clear();
+  //delete fhistoList;
+  //delete [] fgEtaAxis;
+  //delete [] fgPtAxis;
 }
 
 Int_t AliAnalysisHadEt::AnalyseEvent(AliVEvent *event)

@@ -21,7 +21,7 @@ class TList;
 class AliAnalysisTaskHadEt : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskHadEt(const char *name = "AliAnalysisTaskHadEt");
-    virtual ~AliAnalysisTaskHadEt() {}
+    virtual ~AliAnalysisTaskHadEt();
 
     //  virtual void   ConnectInputData(Option_t *);
     virtual void   UserCreateOutputObjects();

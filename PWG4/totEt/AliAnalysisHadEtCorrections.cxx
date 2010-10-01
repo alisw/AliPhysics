@@ -56,6 +56,19 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 AliAnalysisHadEtCorrections::~AliAnalysisHadEtCorrections()
 {//destructor
   //Clear();
+    fnotIDTPC->Clear();
+    fnotIDITS->Clear();
+    fnotIDNoID->Clear();
+    fEfficiencyPionTPC->Clear();
+    fEfficiencyKaonTPC->Clear();
+    fEfficiencyProtonTPC->Clear();
+    fEfficiencyHadronTPC->Clear();
+    fEfficiencyPionITS->Clear();
+    fEfficiencyKaonITS->Clear();
+    fEfficiencyProtonITS->Clear();
+    fEfficiencyHadronITS->Clear();
+    fBackgroundTPC->Clear();
+    fBackgroundITS->Clear();
     delete fnotIDTPC;
     delete fnotIDITS;
     delete fnotIDNoID;
@@ -69,19 +82,6 @@ AliAnalysisHadEtCorrections::~AliAnalysisHadEtCorrections()
     delete fEfficiencyHadronITS;
     delete fBackgroundTPC;
     delete fBackgroundITS;
-//     fnotIDTPC->Clear();
-//     fnotIDITS->Clear();
-//     fnotIDNoID->Clear();
-//     fEfficiencyPionTPC->Clear();
-//     fEfficiencyKaonTPC->Clear();
-//     fEfficiencyProtonTPC->Clear();
-//     fEfficiencyHadronTPC->Clear();
-//     fEfficiencyPionITS->Clear();
-//     fEfficiencyKaonITS->Clear();
-//     fEfficiencyProtonITS->Clear();
-//     fEfficiencyHadronITS->Clear();
-//     fBackgroundTPC->Clear();
-//     fBackgroundITS->Clear();
 }
 AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections(const AliAnalysisHadEtCorrections *g): TNamed(),
   fEtaCut(g->fEtaCut)

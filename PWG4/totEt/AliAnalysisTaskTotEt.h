@@ -20,7 +20,7 @@ class AliAnalysisTaskTotEt : public AliAnalysisTaskSE {
   
 public:
   AliAnalysisTaskTotEt(const char *name = "AliAnalysisTaskTotEt");
-  virtual ~AliAnalysisTaskTotEt() {}
+  virtual ~AliAnalysisTaskTotEt();
   
 public:
   
