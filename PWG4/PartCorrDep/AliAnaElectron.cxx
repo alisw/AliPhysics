@@ -941,46 +941,47 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 void  AliAnaElectron::MakeAnalysisFillHistograms() 
 {
   //Do analysis and fill histograms
-
+  
   AliStack * stack = 0x0;
   TParticle * primary = 0x0;
   AliAODMCParticle * aodprimary = 0x0;
-
+  
   Int_t ph1 = 0;  //photonic 1 count
   Int_t ph2 = 0;  //photonic 2 count
   Int_t phB = 0;  //both count
-
+  
   if(IsDataMC()) {
     if(GetReader()->ReadStack()){
       stack =  GetMCStack() ;      
-      if(!stack)
-	printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no stack ***: \n");
+      if(!stack){
+        printf("AliAnaElectron::MakeAnalysisFillHistograms() *** no stack ***: \n");
+      }
       
     }
   }// is data and MC
-
+  
   ////////////////////////////////////
   //Loop over jets and check for b-tag
   ////////////////////////////////////
   Int_t njets = (GetReader()->GetOutputEvent())->GetNJets();
   if(njets > 0) {
     if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms() - Jet AOD branch has %d jets.  Performing b-jet tag analysis\n",njets);
-
+    
     for(Int_t ijet = 0; ijet < njets ; ijet++) {
       AliAODJet * jet = (AliAODJet*)(GetReader()->GetOutputEvent())->GetJet(ijet) ;
       //Only consider jets with pt > 10 GeV (the rest have to be junk)
       //printf("AODJet<%d> pt = %2.2f\n",ijet,jet->Pt());
       if(jet->Pt() < 10.) continue;
-
+      
       if(GetDebug() > 3) {
-	printf("AliAODJet ijet = %d\n",ijet);
-	jet->Print("");
+        printf("AliAODJet ijet = %d\n",ijet);
+        jet->Print("");
       }
       //Skip jets not inside a smaller fiducial volume to ensure that
       //they are completely contained in the EMCAL
       if(TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
       if(jet->Phi() < fJetPhiMin || jet->Phi() > fJetPhiMax) continue;
-
+      
       //To "tag" the jet, we will look for it to pass our various criteria
       //For e jet tag, we just look to see which ones have NPEs
       //For DVM jet tag, we will look for DVM electrons
@@ -998,59 +999,59 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       Int_t trackCounter[4] = {0,0,0,0}; //for ipsig
       for(Int_t itrk = 0; itrk < ntrk; itrk++) {
       	AliAODTrack* jetTrack = (AliAODTrack*)jet->GetTrack(itrk);
-	if( GetIPSignificance(jetTrack, jet->Phi()) > fIPSigCut) trackCounter[0]++;
+        if( GetIPSignificance(jetTrack, jet->Phi()) > fIPSigCut) trackCounter[0]++;
         if( GetIPSignificance(jetTrack, jet->Phi()) > 4.) trackCounter[1]++;
         if( GetIPSignificance(jetTrack, jet->Phi()) > 3.) trackCounter[2]++;
         if( GetIPSignificance(jetTrack, jet->Phi()) > 2.) trackCounter[3]++;
-	Bool_t isNPE = CheckTrack(jetTrack,"NPE");
-	if(isNPE) eJet = kTRUE;
-	if ( isNPE && jetTrack->Pt()>10.0 ) eJet2  =kTRUE;
+        Bool_t isNPE = CheckTrack(jetTrack,"NPE");
+        if(isNPE) eJet = kTRUE;
+        if ( isNPE && jetTrack->Pt()>10.0 ) eJet2  =kTRUE;
         if (!isNPE && jetTrack->Pt()>10.0) hadJet =kTRUE;
-	Bool_t isDVM = CheckTrack(jetTrack,"DVM");
-	if(isDVM) dvmJet = kTRUE;
+        Bool_t isDVM = CheckTrack(jetTrack,"DVM");
+        if(isDVM) dvmJet = kTRUE;
       }
       fhIPSigBtagQA1->Fill(trackCounter[0]);
       if(trackCounter[1]>0) fhTagJetPt1x4->Fill(jet->Pt());
       if(trackCounter[2]>1) fhTagJetPt2x3->Fill(jet->Pt());
       if(trackCounter[3]>2) fhTagJetPt3x2->Fill(jet->Pt());
-
+      
       if(trackCounter[1]>0 && eJet) fhePlusTagJetPt1x4->Fill(jet->Pt());
       if(trackCounter[2]>1 && eJet) fhePlusTagJetPt2x3->Fill(jet->Pt());
       if(trackCounter[3]>2 && eJet) fhePlusTagJetPt3x2->Fill(jet->Pt());
-
+      
       if(trackCounter[0] > fNTagTrkCut) ipsigJet = kTRUE;
-
+      
       if(IsDataMC()) {
-	//determine tagging efficiency & mis-tagging rate
-	//using b-quarks from stack
-	Bool_t isTrueBjet = IsMcBJet(jet->Eta(), jet->Phi());
-	Bool_t isTrueDjet = IsMcDJet(jet->Eta(), jet->Phi());
-	if (isTrueBjet && GetDebug() > 0) printf("== True Bjet==\n");
-	if (isTrueDjet && GetDebug() > 0) printf("== True Charm-jet==\n");
-	if (dvmJet && GetDebug() > 0)     printf("== found DVM jet==\n");
-
-	if(isTrueBjet && dvmJet) fhDVMJet->Fill(0.,jet->Pt()); // good tagged
-	if(isTrueBjet && !dvmJet) fhDVMJet->Fill(1.,jet->Pt()); // missed tagged
-	if(!isTrueBjet && dvmJet) fhDVMJet->Fill(2.,jet->Pt());  // fake tagged
-	if(!isTrueBjet && !dvmJet) fhDVMJet->Fill(3.,jet->Pt());  // others
+        //determine tagging efficiency & mis-tagging rate
+        //using b-quarks from stack
+        Bool_t isTrueBjet = IsMcBJet(jet->Eta(), jet->Phi());
+        Bool_t isTrueDjet = IsMcDJet(jet->Eta(), jet->Phi());
+        if (isTrueBjet && GetDebug() > 0) printf("== True Bjet==\n");
+        if (isTrueDjet && GetDebug() > 0) printf("== True Charm-jet==\n");
+        if (dvmJet && GetDebug() > 0)     printf("== found DVM jet==\n");
+        
+        if(isTrueBjet && dvmJet) fhDVMJet->Fill(0.,jet->Pt()); // good tagged
+        if(isTrueBjet && !dvmJet) fhDVMJet->Fill(1.,jet->Pt()); // missed tagged
+        if(!isTrueBjet && dvmJet) fhDVMJet->Fill(2.,jet->Pt());  // fake tagged
+        if(!isTrueBjet && !dvmJet) fhDVMJet->Fill(3.,jet->Pt());  // others
         if(isTrueDjet && !isTrueBjet &&   dvmJet) fhDVMJet->Fill(4.,jet->Pt()); // charm-tagged
         if(isTrueDjet && !isTrueBjet &&  !dvmJet) fhDVMJet->Fill(5.,jet->Pt()); // charm -not tagged
         if(!(isTrueDjet||isTrueBjet ) &&  dvmJet) fhDVMJet->Fill(6.,jet->Pt()); // light flavor -tagged
         if(!(isTrueDjet||isTrueBjet ) && !dvmJet) fhDVMJet->Fill(7.,jet->Pt()); // light flavor -not tagged
-	if(isTrueBjet &&  eJet && dvmJet) fhDVMJet->Fill(8.,jet->Pt()); // bjet with electron
+        if(isTrueBjet &&  eJet && dvmJet) fhDVMJet->Fill(8.,jet->Pt()); // bjet with electron
         if(isTrueBjet && !eJet && dvmJet) fhDVMJet->Fill(9.,jet->Pt()); // needs more thought
-
-	if(isTrueBjet) {
-	  if(trackCounter[1]>0) fhBJetPt1x4->Fill(jet->Pt());
-	  if(trackCounter[2]>1) fhBJetPt2x3->Fill(jet->Pt());
-	  if(trackCounter[3]>2) fhBJetPt3x2->Fill(jet->Pt());
-	} else {
-	  if(trackCounter[1]>0) fhFakeJetPt1x4->Fill(jet->Pt());
-	  if(trackCounter[2]>1) fhFakeJetPt2x3->Fill(jet->Pt());
-	  if(trackCounter[3]>2) fhFakeJetPt3x2->Fill(jet->Pt());
-	}
+        
+        if(isTrueBjet) {
+          if(trackCounter[1]>0) fhBJetPt1x4->Fill(jet->Pt());
+          if(trackCounter[2]>1) fhBJetPt2x3->Fill(jet->Pt());
+          if(trackCounter[3]>2) fhBJetPt3x2->Fill(jet->Pt());
+        } else {
+          if(trackCounter[1]>0) fhFakeJetPt1x4->Fill(jet->Pt());
+          if(trackCounter[2]>1) fhFakeJetPt2x3->Fill(jet->Pt());
+          if(trackCounter[3]>2) fhFakeJetPt3x2->Fill(jet->Pt());
+        }
       }
-
+      
       //Fill bjet histograms here
       if(!(eJet || ipsigJet || dvmJet)) fhJetType->Fill(0.,jet->Pt()); //none
       if(eJet && !(ipsigJet || dvmJet)) fhJetType->Fill(1.,jet->Pt()); //only ejet
@@ -1065,13 +1066,13 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       if(dvmJet)    fhJetType->Fill(10.,jet->Pt()); //any of them
       if(eJet2 )    fhJetType->Fill(11.,jet->Pt()); //any of them
       if(hadJet)    fhJetType->Fill(12.,jet->Pt()); //any of them
-
+      
       if(eJet || ipsigJet || dvmJet) fhBJetEtaPhi->Fill(jet->Eta(),jet->Phi());
       else fhNonBJetEtaPhi->Fill(jet->Eta(),jet->Phi());
-
+      
       //leading jets
       if (leadJet) {
-	fhLeadJetType->Fill(0.,jet->Pt()); //all
+        fhLeadJetType->Fill(0.,jet->Pt()); //all
         if(eJet   )    fhLeadJetType->Fill(1.,jet->Pt());
         if(eJet2  )    fhLeadJetType->Fill(2.,jet->Pt());
         if(hadJet )    fhLeadJetType->Fill(3.,jet->Pt());
@@ -1079,21 +1080,21 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
         if(eJet2  && (dvmJet || ipsigJet) )    fhLeadJetType->Fill(5.,jet->Pt());
         if(hadJet && (dvmJet || ipsigJet) )    fhLeadJetType->Fill(6.,jet->Pt());
       }
-
+      
       for(Int_t itrk = 0; itrk < ntrk; itrk++) {
-	AliAODTrack* jetTrack = (AliAODTrack*)jet->GetTrack(itrk);
-	Double_t xsi = TMath::Log(jet->Pt()/jetTrack->Pt());
-	if(eJet || ipsigJet || dvmJet) {
-	  if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms - We have a bjet!\n");
-	  fhBJetXsiFF->Fill(xsi,jet->Pt());
-	  fhBJetPtFF->Fill(jetTrack->Pt(),jet->Pt());
-	} else {
-	  //Fill non-bjet histograms here
-	  fhNonBJetXsiFF->Fill(xsi,jet->Pt());
-	  fhNonBJetPtFF->Fill(jetTrack->Pt(),jet->Pt());
-	}
+        AliAODTrack* jetTrack = (AliAODTrack*)jet->GetTrack(itrk);
+        Double_t xsi = TMath::Log(jet->Pt()/jetTrack->Pt());
+        if(eJet || ipsigJet || dvmJet) {
+          if(GetDebug() > 0) printf("AliAnaElectron::MakeAnalysisFillHistograms - We have a bjet!\n");
+          fhBJetXsiFF->Fill(xsi,jet->Pt());
+          fhBJetPtFF->Fill(jetTrack->Pt(),jet->Pt());
+        } else {
+          //Fill non-bjet histograms here
+          fhNonBJetXsiFF->Fill(xsi,jet->Pt());
+          fhNonBJetPtFF->Fill(jetTrack->Pt(),jet->Pt());
+        }
       }
-
+      
     } //jet loop
   } //jets exist
   
@@ -1114,10 +1115,10 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     
     if(GetDebug() > 1) 
       printf("AliAnaElectron::MakeAnalysisFillHistograms() - ID Electron: pt %f, phi %f, eta %f\n", ele->Pt(),ele->Phi(),ele->Eta()) ;
-
+    
     //MC tag of this electron
     Int_t mctag = ele->GetTag();
-
+    
     //Filter for photonic electrons based on opening angle and Minv
     //cuts, also fill histograms
     Bool_t photonic = kFALSE;
@@ -1129,12 +1130,12 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
     if(photonic2) ph2++;
     if(photonic1 && photonic2) phB++;
     if(photonic1 || photonic2) photonic = kTRUE;
-
+    
     //Fill electron histograms 
     Float_t ptele = ele->Pt();
     Float_t phiele = ele->Phi();
     Float_t etaele = ele->Eta();
-
+    
     //"Best reconstructed electron spectrum" = EMCAL or tracking
     //detectors say it is an electron and it does not form a V0
     //with Minv near a relevant resonance
@@ -1142,21 +1143,21 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       fhPtNPEleTTE->Fill(ptele,0); //0 = no MC info
       if(ele->GetDetector() == fCalorimeter) fhPtNPEleEMCAL->Fill(ptele,0);
       if(IsDataMC()) {
-	fhPtNPEleTTE->Fill(ptele,GetMCSource(mctag));
-	if(ele->GetDetector() == "EMCAL") fhPtNPEleEMCAL->Fill(ptele,GetMCSource(mctag));
-	if(GetMCSource(mctag) == 1) { //it's a bottom electron, now
-				      //get the parent's pt
-	  Double_t ptbHadron = GetBParentPt(ele->GetLabel());
-	  fhPtNPEBHadron->Fill(ptele,ptbHadron);
-	} //mctag
+        fhPtNPEleTTE->Fill(ptele,GetMCSource(mctag));
+        if(ele->GetDetector() == "EMCAL") fhPtNPEleEMCAL->Fill(ptele,GetMCSource(mctag));
+        if(GetMCSource(mctag) == 1) { //it's a bottom electron, now
+          //get the parent's pt
+          Double_t ptbHadron = GetBParentPt(ele->GetLabel());
+          fhPtNPEBHadron->Fill(ptele,ptbHadron);
+        } //mctag
       } //isdatamc
     } //!photonic
-
+    
     //kept for historical reasons?
     fhPtElectron  ->Fill(ptele);
     fhPhiElectron ->Fill(ptele,phiele);
     fhEtaElectron ->Fill(ptele,etaele);
-
+    
     if(photonic) {
       fhPtPE->Fill(ptele);
       fhPhiPE->Fill(ptele,phiele);
@@ -1166,21 +1167,21 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       fhPhiNPE->Fill(ptele,phiele);
       fhEtaNPE->Fill(ptele,etaele);
     }
-
+    
     if(IsDataMC()){
       if(GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion)){
-	fhPhiConversion ->Fill(ptele,phiele);
-	fhEtaConversion ->Fill(ptele,etaele);
+        fhPhiConversion ->Fill(ptele,phiele);
+        fhEtaConversion ->Fill(ptele,etaele);
       }
     }//Histograms with MC
     
   }// aod loop
-
+  
   ////////////////////////////////////////////////////////
   //Fill histograms of pure MC kinematics from the stack//
   ////////////////////////////////////////////////////////
-  if(IsDataMC()) {
-
+  if(IsDataMC() && stack) {
+    
     //MC Jets
     TVector3 bjetVect[4];
     Int_t nPythiaGenJets = 0;
@@ -1190,70 +1191,70 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       nPythiaGenJets = pythiaGenHeader->NTriggerJets();
       Int_t iCount = 0;
       for(int ip = 0;ip < nPythiaGenJets;++ip){
-	if (iCount>3) break;
-	Float_t p[4];
-	pythiaGenHeader->TriggerJet(ip,p);
-	TVector3 tempVect(p[0],p[1],p[2]);
-	if ( TMath::Abs(tempVect.Eta())>fJetEtaCut || tempVect.Phi() < fJetPhiMin || tempVect.Phi() > fJetPhiMax) continue;
-	//Only store it if it has a b-quark within dR < 0.2 of jet axis ?
-	if(IsMcBJet(tempVect.Eta(),tempVect.Phi())) {
-	  bjetVect[iCount].SetXYZ(p[0], p[1], p[2]);
-	  iCount++;
-	}
+        if (iCount>3) break;
+        Float_t p[4];
+        pythiaGenHeader->TriggerJet(ip,p);
+        TVector3 tempVect(p[0],p[1],p[2]);
+        if ( TMath::Abs(tempVect.Eta())>fJetEtaCut || tempVect.Phi() < fJetPhiMin || tempVect.Phi() > fJetPhiMax) continue;
+        //Only store it if it has a b-quark within dR < 0.2 of jet axis ?
+        if(IsMcBJet(tempVect.Eta(),tempVect.Phi())) {
+          bjetVect[iCount].SetXYZ(p[0], p[1], p[2]);
+          iCount++;
+        }
       }
     }
-
+    
     Int_t nPart = GetNumAODMCParticles();
     if(GetReader()->ReadStack()) nPart = stack->GetNtrack();
-
+    
     for(Int_t ipart = 0; ipart < nPart; ipart++) {
-
+      
       //All the variables we want from MC particles
       Double_t px = 0.; Double_t py = 0.; Double_t pz = 0.; Double_t e = 0.;
       Double_t vx = -999.; Double_t vy = -999.; Double_t vz = -999.; Double_t vt = -999.;
       Int_t pdg = 0; Int_t mpdg = 0; Double_t mpt = 0.;
-
+      
       if(GetReader()->ReadStack()) {
-	primary = stack->Particle(ipart);
-	pdg = primary->GetPdgCode();
-	px = primary->Px(); py = primary->Py(); pz = primary->Pz(); e = primary->Energy();
-	vx = primary->Vx(); vy = primary->Vy(); vz = primary->Vz(); vt = primary->T();
-	if(primary->GetMother(0)>=0) {
-	  TParticle *parent = stack->Particle(primary->GetMother(0));
-	  if (parent) {
-	    mpdg = parent->GetPdgCode();
-	    mpt = parent->Pt();
-	  }
-	}
+        primary = stack->Particle(ipart);
+        pdg = primary->GetPdgCode();
+        px = primary->Px(); py = primary->Py(); pz = primary->Pz(); e = primary->Energy();
+        vx = primary->Vx(); vy = primary->Vy(); vz = primary->Vz(); vt = primary->T();
+        if(primary->GetMother(0)>=0) {
+          TParticle *parent = stack->Particle(primary->GetMother(0));
+          if (parent) {
+            mpdg = parent->GetPdgCode();
+            mpt = parent->Pt();
+          }
+        }
       } else if(GetReader()->ReadAODMCParticles()) {
-	aodprimary =  (AliAODMCParticle*)GetMCParticle(ipart);
-	pdg = aodprimary->GetPdgCode();
-	px = aodprimary->Px(); py = aodprimary->Py(); pz = aodprimary->Pz(); e = aodprimary->E();
-	vx = aodprimary->Xv(); vy = aodprimary->Yv(); vz = aodprimary->Zv(); vt = aodprimary->T();
-	Int_t parentId = aodprimary->GetMother();
-	if(parentId>=0) {
-	  AliAODMCParticle *parent = (AliAODMCParticle*)GetMCParticle(parentId);
-	  if (parent) {
-	    mpdg = parent->GetPdgCode();
-	    mpt = parent->Pt();
-	  }
-	}	
+        aodprimary =  (AliAODMCParticle*)GetMCParticle(ipart);
+        pdg = aodprimary->GetPdgCode();
+        px = aodprimary->Px(); py = aodprimary->Py(); pz = aodprimary->Pz(); e = aodprimary->E();
+        vx = aodprimary->Xv(); vy = aodprimary->Yv(); vz = aodprimary->Zv(); vt = aodprimary->T();
+        Int_t parentId = aodprimary->GetMother();
+        if(parentId>=0) {
+          AliAODMCParticle *parent = (AliAODMCParticle*)GetMCParticle(parentId);
+          if (parent) {
+            mpdg = parent->GetPdgCode();
+            mpt = parent->Pt();
+          }
+        }	
       }
-
+      
       TLorentzVector mom(px,py,pz,e);
       TLorentzVector pos(vx,vy,vz,vt);
       Bool_t in = kFALSE;
       if(mom.Phi()*180./TMath::Pi() > 80. && mom.Phi()*180./TMath::Pi() < 190. &&
-	 mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
+         mom.Eta() > -0.7 && mom.Eta() < 0.7) in = kTRUE;
       /////////////////////////////////
       //THIS HAS A MEM LEAK JLK 24-Oct-09
       //Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter);
       ////////////////////////////////
       if(mom.Pt() < GetMinPt()) continue;
       if(!in) continue;
-
+      
       if(TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 2212)
-	fhPtMCHadron->Fill(mom.Pt());
+        fhPtMCHadron->Fill(mom.Pt());
       
       //we only care about electrons
       if(TMath::Abs(pdg) != 11) continue;
@@ -1261,41 +1262,41 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       if(pos.Rho() > 200.) continue;
       //Ignore low pt electrons
       if(mom.Pt() < 0.2) continue;
-	
+      
       //find out what the ancestry of this electron is
       Int_t mctag = -1;
       Int_t input = 0;
       mctag = GetMCAnalysisUtils()->CheckOrigin(ipart,GetReader(),input);
       
       if(GetMCSource(mctag)==1) { //bottom electron
-	//See if it is within dR < 0.4 of a bjet
-	for(Int_t ij = 0; ij < nPythiaGenJets; ij++) {
-	  Double_t deta = primary->Eta() - bjetVect[ij].Eta();
-	  Double_t dphi = primary->Phi() - bjetVect[ij].Phi();
-	  Double_t dR = TMath::Sqrt(deta*deta + dphi*dphi);
-	  if(dR < 0.4) {
-	    fhMCBJetElePt->Fill(primary->Pt(),bjetVect[ij].Pt());
-	  }
-	}
+        //See if it is within dR < 0.4 of a bjet
+        for(Int_t ij = 0; ij < nPythiaGenJets; ij++) {
+          Double_t deta = primary->Eta() - bjetVect[ij].Eta();
+          Double_t dphi = primary->Phi() - bjetVect[ij].Phi();
+          Double_t dR = TMath::Sqrt(deta*deta + dphi*dphi);
+          if(dR < 0.4) {
+            fhMCBJetElePt->Fill(primary->Pt(),bjetVect[ij].Pt());
+          }
+        }
       }
-
+      
       if ((TMath::Abs(mpdg) >500  && TMath::Abs(mpdg) <600 ) ||
-	  (TMath::Abs(mpdg) >5000 && TMath::Abs(mpdg) <6000 ) )
-	{
-	  fhMCBHadronElePt->Fill(mom.Pt(), mpt); 
-	}
+          (TMath::Abs(mpdg) >5000 && TMath::Abs(mpdg) <6000 ) )
+      {
+        fhMCBHadronElePt->Fill(mom.Pt(), mpt); 
+      }
       //CHECK THAT THIS IS CORRECTLY FILLED - SHOULD WE USE MCSOURCE HERE?
       fhPtMCElectron->Fill(mom.Pt(),0);  //0 = unfiltered
       fhPtMCElectron->Fill(mom.Pt(),GetMCSource(mctag));
-
+      
       if(GetMCSource(mctag) == 4) {//conversion
-	fhMCXYConversion->Fill(vx,vy);
-	fhMCRadPtConversion->Fill(TMath::Sqrt(vx*vx+vy*vy),mom.Pt());
+        fhMCXYConversion->Fill(vx,vy);
+        fhMCRadPtConversion->Fill(TMath::Sqrt(vx*vx+vy*vy),mom.Pt());
       }
-	
+      
       //fill ntuple
       if(fWriteNtuple) {
-	fMCEleNtuple->Fill(mctag,mom.Pt(),mom.Phi(),mom.Eta(),vx,vy,vz);
+        fMCEleNtuple->Fill(mctag,mom.Pt(),mom.Phi(),mom.Eta(),vx,vy,vz);
       }
     }
   } //MC loop
@@ -1701,25 +1702,25 @@ Bool_t AliAnaElectron::CheckTrack(const AliAODTrack* track, const char* type)
 {
   //Check this track to see if it is also tagged as an electron in the
   //AliAODPWG4Particle list and if it is non-photonic
-
+  
   Bool_t pass = kFALSE;
-
+  
   Int_t trackId = track->GetID(); //get the index in the reader
-
+  
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   if(GetDebug() > 3) printf("AliAnaElectron::CheckTrack() - aod branch entries %d\n", naod);
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4Particle* ele =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t label = ele->GetTrackLabel(0);
     if(label != trackId) continue;  //skip to the next one if they don't match
-
+    
     if(strcmp(type,"DVM")==0) { 
       if(ele->CheckBTagBit(ele->GetBtag(),AliAODPWG4Particle::kDVMTag1) ||
-	 ele->CheckBTagBit(ele->GetBtag(),AliAODPWG4Particle::kDVMTag2))
-	pass = kTRUE;
-
+         ele->CheckBTagBit(ele->GetBtag(),AliAODPWG4Particle::kDVMTag2))
+        pass = kTRUE;
+      
     } else if (strcmp(type,"NPE")==0) {
-
+      
       Bool_t photonic = kFALSE;
       Bool_t photonic1 = kFALSE;
       photonic1 = PhotonicPrim(ele); //check against primaries
@@ -1728,14 +1729,14 @@ Bool_t AliAnaElectron::CheckTrack(const AliAODTrack* track, const char* type)
       if(photonic1 || photonic2) photonic = kTRUE;
       
       if(!photonic) pass = kTRUE;
-
+      
     } else {
       return kFALSE;
     }
   }
-
+  
   return pass;
-
+  
 }
 
 //__________________________________________________________________
@@ -1752,21 +1753,25 @@ Double_t AliAnaElectron::GetBParentPt(Int_t ipart)
     if(prim->GetMother(0)>=0) {
       Int_t mpdg = 0;
       TParticle *parent = stack->Particle(prim->GetMother(0));
-      if(parent) mpdg = parent->GetPdgCode();
-
-      if ((TMath::Abs(mpdg) >500  && TMath::Abs(mpdg) <600 ) ||
-	  (TMath::Abs(mpdg) >5000 && TMath::Abs(mpdg) <6000 ) )
-	return parent->Pt();
+      if(parent){
+        mpdg = parent->GetPdgCode();
+      
+        if ((TMath::Abs(mpdg) >500  && TMath::Abs(mpdg) <600 ) ||
+            (TMath::Abs(mpdg) >5000 && TMath::Abs(mpdg) <6000 ) )
+          return parent->Pt();
+      }
     }
   } else if(GetReader()->ReadAODMCParticles()){
     AliAODMCParticle* prim = (AliAODMCParticle*)GetMCParticle(ipart);
     if(prim->GetMother()>=0) {
       Int_t mpdg = 0;
       AliAODMCParticle* parent = (AliAODMCParticle*)GetMCParticle(prim->GetMother());
-      if(parent) mpdg = parent->GetPdgCode();
-      if ((TMath::Abs(mpdg) >500  && TMath::Abs(mpdg) <600 ) ||
+      if(parent){
+        mpdg = parent->GetPdgCode();
+        if ((TMath::Abs(mpdg) >500  && TMath::Abs(mpdg) <600 ) ||
           (TMath::Abs(mpdg) >5000 && TMath::Abs(mpdg) <6000 ) )
-        return parent->Pt();
+          return parent->Pt();
+      }
     }
   }
   return 0.;

@@ -257,7 +257,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
  
   //Loop on stored AOD particles
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
-  TParticle *  mom =new TParticle ;
+  TParticle *  mom = NULL ;
   
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
@@ -279,14 +279,19 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     if(imom < 8 ) iparent = imom ;   //mother is already a parton
     else if (imom <  stack->GetNtrack()) {
       mom =  stack->Particle(imom);
-      iparent=mom->GetFirstMother();
-      //cout<<" iparent "<<iparent<<endl;
-      while(iparent > 7 ){
-	mom = stack->Particle(iparent);
-	imom = iparent ; //Mother label is of the inmediate parton daughter
-	iparent = mom->GetFirstMother();
-	//cout<<" while iparent "<<iparent<<endl;
-      }   
+      if(mom){
+        iparent=mom->GetFirstMother();
+        //cout<<" iparent "<<iparent<<endl;
+        while(iparent > 7 ){
+          mom = stack->Particle(iparent);
+          if (mom) {
+            imom = iparent ; //Mother label is of the inmediate parton daughter
+            iparent = mom->GetFirstMother();
+          }
+          else iparent = -1;
+        //cout<<" while iparent "<<iparent<<endl;
+        } 
+      }
     }
     
     if(GetDebug() > 1) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - N reference partons %d; labels:  mother %d, parent %d \n", objarray->GetEntriesFast(), imom, iparent);

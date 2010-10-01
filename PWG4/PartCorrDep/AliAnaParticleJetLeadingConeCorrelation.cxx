@@ -436,7 +436,8 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
   
   for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ ){
     AliAODTrack* track = dynamic_cast<AliAODTrack *>(pl->At(ipr)) ;
-    p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+    if(track)p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+    else printf("AliAnaParticleJetLeadingConeCorrelation::FillJetHistos() - Track not available\n");
     
     //Recheck if particle is in jet cone
     if(fReMakeJet || fSeveralConeAndPtCuts)
@@ -444,20 +445,19 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
     
     nTracksInCone++; 
     
-    TH2F *ha = 0x0;
-    ha =dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFz%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
+    TH2F *ha =dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFz%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
     if(ha) ha->Fill(ptTrig,p3.Pt()/ptTrig);
-    TH2F *hb = 0x0;
-    hb =dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFxi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
+    TH2F *hb  =dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFxi%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
     if(hb) hb->Fill(ptTrig,TMath::Log(ptTrig/p3.Pt()));
-    TH2F *hc = 0x0;
-    hc =dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFpt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
+    TH2F *hc =dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sFFpt%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
     if(hc) hc->Fill(ptTrig,p3.Pt());
     
   }//track loop
   
-  if(nTracksInCone > 0) dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sNTracksInCone%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())))
-    ->Fill(ptTrig, nTracksInCone);
+  if(nTracksInCone > 0) {
+    TH2F *hd = dynamic_cast<TH2F*>(GetOutputContainer()->FindObject(Form("%s%sNTracksInCone%s",GetAddedHistogramsStringToName().Data(),type.Data(),lastname.Data())));
+    hd->Fill(ptTrig, nTracksInCone);
+  }
   
 }
 

@@ -2644,8 +2644,9 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
   //printf(" AliAnaCalorimeterQA::Terminate()  *** %s Report:", GetName()) ; 
   //printf(" AliAnaCalorimeterQA::Terminate()        pt         : %5.3f , RMS : %5.3f \n", fhPt->GetMean(),   fhPt->GetRMS() ) ;
   
-	char name[128];
-	char cname[128];
+  const Int_t buffersize = 255;
+	char name[buffersize];
+	char cname[buffersize];
 	
   //In case terminate is executed after the analysis, in a second step, and we want to rebin or to change the range of the histograms for plotting
 	Int_t nptbins     = GetHistoPtBins(); 	        Float_t ptmax     = GetHistoPtMax();           Float_t ptmin     = GetHistoPtMin();
@@ -2671,7 +2672,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
   //--------------------------------------------------
   // Cluster energy distributions, module dependence
   //--------------------------------------------------
-	sprintf(cname,"QA_%s_ClusterEnergy",fCalorimeter.Data());
+	snprintf(cname,buffersize,"QA_%s_ClusterEnergy",fCalorimeter.Data());
 	TCanvas  * c = new TCanvas(cname, "Energy distributions", 800, 400) ;
 	c->Divide(2, 1);
 	Int_t rbE = GetNewRebinForRePlotting((TH1D*)fhE, ptmin, ptmax,nptbins) ;
@@ -2723,13 +2724,13 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	pLegendER.Draw();
 	
-	sprintf(name,"QA_%s_ClusterEnergy.eps",fCalorimeter.Data());
+	snprintf(name,buffersize,"QA_%s_ClusterEnergy.eps",fCalorimeter.Data());
 	c->Print(name); printf("Plot: %s\n",name);
 	
   //--------------------------------------------------
   // Cell energy distributions, module dependence
   //--------------------------------------------------
-	sprintf(cname,"%s_QA_CellEnergy",fCalorimeter.Data());
+	snprintf(cname,buffersize,"%s_QA_CellEnergy",fCalorimeter.Data());
 	TCanvas  * ca = new TCanvas(cname, "Cell Energy distributions", 800, 400) ;
 	ca->Divide(2, 1);
 	
@@ -2781,7 +2782,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	}
 	
 	pLegendAR.Draw();
-	sprintf(name,"QA_%s_CellEnergy.eps",fCalorimeter.Data());
+	snprintf(name,buffersize,"QA_%s_CellEnergy.eps",fCalorimeter.Data());
 	ca->Print(name); printf("Plot: %s\n",name);	
   
   //----------------------------------------------------------
@@ -2790,7 +2791,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
   //---------------------------------------------------------	
 	if(fCalorimeter=="EMCAL"){
     //Close To Eta 0 
-		sprintf(cname,"%s_QA_SMThirds",fCalorimeter.Data());
+		snprintf(cname,buffersize,"%s_QA_SMThirds",fCalorimeter.Data());
 		TCanvas  * cfrac = new TCanvas(cname, "SM Thirds ratios", 800, 1200) ;
 		cfrac->Divide(2, 3);
 		cfrac->cd(1) ; 
@@ -2923,7 +2924,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		}
     //pLegend3.Draw();
 		
-		sprintf(name,"QA_%s_CellEnergyModuleFraction.eps",fCalorimeter.Data());
+		snprintf(name,buffersize,"QA_%s_CellEnergyModuleFraction.eps",fCalorimeter.Data());
 		cfrac->Print(name); printf("Create plot %s\n",name);
 	}//EMCAL	
 	
@@ -2932,7 +2933,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
   // Cluster eta and phi distributions, energy cut dependence
   //---------------------------------------------------------	
 	
-	sprintf(cname,"%s_QA_EtaPhiCluster",fCalorimeter.Data());
+	snprintf(cname,buffersize,"%s_QA_EtaPhiCluster",fCalorimeter.Data());
 	TCanvas  * cetaphic = new TCanvas(cname, "Eta-Phi Reconstructed distributions", 1200, 400) ;
 	cetaphic->Divide(3, 1);
 	Int_t binmin = 0;
@@ -2981,7 +2982,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cetaphic->cd(2) ; 
 	gPad->SetLogy();
 	gPad->SetGridy();
-	
+  
 	htmp = fhEtaPhiE->ProjectionX("heta_cluster_nocut",0,-1,0,-1);
 	htmp ->SetLineColor(1);
 	rbEta =  GetNewRebinForRePlotting(htmp,etamin, etamax,netabins) ;
@@ -3009,14 +3010,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	hEtaPhiCl->SetAxisRange(phimin,phimax,"Y");
 	hEtaPhiCl->Draw("colz");
   
-	sprintf(name,"QA_%s_ClusterEtaPhi.eps",fCalorimeter.Data());
+	snprintf(name,buffersize,"QA_%s_ClusterEtaPhi.eps",fCalorimeter.Data());
 	cetaphic->Print(name); printf("Create plot %s\n",name);
   
   //----------------------------------------------------------
   // Cell eta and phi distributions, energy cut dependence
   //---------------------------------------------------------	
 	
-	sprintf(cname,"%s_QA_EtaPhiCell",fCalorimeter.Data());
+	snprintf(cname,buffersize,"%s_QA_EtaPhiCell",fCalorimeter.Data());
 	TCanvas  * cetaphicell = new TCanvas(cname, "Eta-Phi Cells distributions", 1200, 400) ;
 	cetaphicell->Divide(3, 1);
 	
@@ -3083,7 +3084,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	hEtaPhiCell->SetAxisRange(phimin,phimax,"Y");
 	hEtaPhiCell->Draw("colz");
 	
-	sprintf(name,"QA_%s_CellEtaPhi.eps",fCalorimeter.Data());
+	snprintf(name,buffersize,"QA_%s_CellEtaPhi.eps",fCalorimeter.Data());
 	cetaphicell->Print(name); printf("Create plot %s\n",name);
 	
   
@@ -3097,7 +3098,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
   Int_t rbZ = 1;
   //if(fFillAllPosHisto)
   {
-    sprintf(cname,"%s_QA_ClusterXY",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_ClusterXY",fCalorimeter.Data());
     TCanvas  * cxyz = new TCanvas(cname, "Cluster XY distributions", 1200, 400) ;
     cxyz->Divide(3, 1);
     
@@ -3117,10 +3118,10 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     hXZ->GetYaxis()->SetTitleOffset(1.6);
     hXZ->Draw("colz");
     
-    sprintf(name,"QA_%s_ClusterXY_YZ_XZ.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_ClusterXY_YZ_XZ.eps",fCalorimeter.Data());
     cxyz->Print(name); printf("Create plot %s\n",name);
     
-    sprintf(cname,"QA_%s_ClusterX",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_ClusterX",fCalorimeter.Data());
     TCanvas  * cx = new TCanvas(cname, "Cluster X distributions", 1200, 400) ;
     cx->Divide(3, 1);
     
@@ -3158,13 +3159,13 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     hZ->SetAxisRange(zmin,zmax);
     hZ->Draw("HE");
     
-    sprintf(name,"QA_%s_ClusterX_Y_Z.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_ClusterX_Y_Z.eps",fCalorimeter.Data());
     cx->Print(name); printf("Create plot %s\n",name);
   }
     //CELLS
   if(fFillAllPosHisto)
   { 
-    sprintf(cname,"%s_QA_CellXY",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_CellXY",fCalorimeter.Data());
     TCanvas  * cellxyz = new TCanvas(cname, "Cell XY distributions", 1200, 400) ;
     cellxyz->Divide(3, 1);
     
@@ -3184,11 +3185,11 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     hXZCell->GetYaxis()->SetTitleOffset(1.6);
     hXZCell->Draw("colz");
     
-    sprintf(name,"QA_%s_CellXY_YZ_XZ.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_CellXY_YZ_XZ.eps",fCalorimeter.Data());
     cellxyz->Print(name); printf("Create plot %s\n",name);
     
     
-    sprintf(cname,"%s_QA_CellX",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_CellX",fCalorimeter.Data());
     TCanvas  * cellx = new TCanvas(cname, "Cell X distributions", 1200, 400) ;
     cellx->Divide(3, 1);
     
@@ -3221,7 +3222,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     hZCell->SetMinimum(hZCell->GetMaximum()/2);
     hZCell->Draw("HE");
     
-    sprintf(name,"QA_%s_CellX_Y_Z.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_CellX_Y_Z.eps",fCalorimeter.Data());
     cellx->Print(name); printf("Create plot %s\n",name);
     
     
@@ -3229,7 +3230,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     // Cluster X, Y, Z, R, energy cut dependence
     //---------------------------------------------------------	
     
-    sprintf(cname,"%s_QA_ClusterX_Y_Z_R_ECut",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_ClusterX_Y_Z_R_ECut",fCalorimeter.Data());
     TCanvas  * cxe = new TCanvas(cname, "Cluster X Y Z R, E cut", 800, 800) ;
     cxe->Divide(2, 2);		
     //R
@@ -3331,7 +3332,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       }
     }
     
-    sprintf(name,"QA_%s_ClusterX_Y_Z_R_ECut.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_ClusterX_Y_Z_R_ECut.eps",fCalorimeter.Data());
     cxe->Print(name); printf("Create plot %s\n",name);
     
     
@@ -3340,7 +3341,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     //---------------------------------------------------------	
     Int_t ncellcut[]={2, 3, 4};
     Int_t ncellcuts = 3;
-    sprintf(cname,"%s_QA_ClusterX_Y_Z_R_NCellsCut",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_ClusterX_Y_Z_R_NCellsCut",fCalorimeter.Data());
     TCanvas  * cxn = new TCanvas(cname, "Cluster X Y Z R, NCells cut", 800, 800) ;
     cxn->Divide(2, 2);		
     //R
@@ -3437,7 +3438,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       }
     }
     
-    sprintf(name,"QA_%s_ClusterX_Y_Z_R_NCellsCut.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_ClusterX_Y_Z_R_NCellsCut.eps",fCalorimeter.Data());
     cxn->Print(name); printf("Create plot %s\n",name);
     
     
@@ -3445,7 +3446,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     // Cell X, Y, Z, R, energy cut dependence
     //---------------------------------------------------------	
     
-    sprintf(cname,"%s_QA_CellX_Y_Z_R_ECut",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_CellX_Y_Z_R_ECut",fCalorimeter.Data());
     TCanvas  * cxecell = new TCanvas(cname, "Cell X Y Z R, E cut", 800, 800) ;
     cxecell->Divide(2, 2);		
     //R
@@ -3543,7 +3544,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
         htmp->Draw("same HE"); 
       }
     }
-    sprintf(name,"QA_%s_CellX_Y_Z_R_ECut.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_CellX_Y_Z_R_ECut.eps",fCalorimeter.Data());
     cxecell->Print(name); printf("Create plot %s\n",name);
     
     
@@ -3555,7 +3556,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     Int_t rbDY= 1;//rbY;
     Int_t rbDZ= 1;//rbZ;
     
-    sprintf(cname,"%s_QA_DeltaClusterCellX_Y_Z_R_ECut",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_DeltaClusterCellX_Y_Z_R_ECut",fCalorimeter.Data());
     TCanvas  * cxde = new TCanvas(cname, "Cluster-Cell X, Y, Z, R, E cut", 800, 800) ;
     cxde->Divide(2, 2);		
     //R
@@ -3657,14 +3658,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       }
     }
     
-    sprintf(name,"QA_%s_DeltaClusterCellX_Y_Z_R_ECut.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_DeltaClusterCellX_Y_Z_R_ECut.eps",fCalorimeter.Data());
     cxde->Print(name); printf("Create plot %s\n",name);
     
     
     //----------------------------------------------------------
     // Cluster-Cell X, Y, Z, R, NCells in cluster dependence
     //---------------------------------------------------------	
-    sprintf(cname,"%s_QA_DeltaClusterCellX_Y_Z_R_NCellsCut",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_DeltaClusterCellX_Y_Z_R_NCellsCut",fCalorimeter.Data());
     TCanvas  * cxdn = new TCanvas(cname, "Cluster-Cell X Y Z R, NCells cut", 800, 800) ;
     cxdn->Divide(2, 2);		
     //R
@@ -3764,7 +3765,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       }
     }
     
-    sprintf(name,"QA_%s_DeltaClusterCellX_Y_Z_R_NCellsCut.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_DeltaClusterCellX_Y_Z_R_NCellsCut.eps",fCalorimeter.Data());
     cxdn->Print(name); printf("Create plot %s\n",name);
     
 	}
@@ -3782,7 +3783,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     hEtaChargedClone = (TH1F*)   fhEtaCharged->Clone(Form("%sClone",fhEtaCharged->GetName()));
     hPhiChargedClone = (TH1F*)   fhPhiCharged->Clone(Form("%sClone",fhPhiCharged->GetName()));
     
-    sprintf(cname,"QA_%s_rectrackmatch",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_rectrackmatch",fCalorimeter.Data());
     TCanvas  * ccltm = new TCanvas(cname, "Reconstructed clusters E-Phi-Eta, matched with tracks", 1200, 400) ;
     ccltm->Divide(3, 1);
     
@@ -3807,14 +3808,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     fhEtaCharged->Draw();
     fhEtaCharged->Draw();
     
-    sprintf(name,"QA_%s_ClusterEnergyPhiEta_TrackMatched.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_ClusterEnergyPhiEta_TrackMatched.eps",fCalorimeter.Data());
     ccltm->Print(name); printf("Plot: %s\n",name);
     
     //----------------------------------------------------------
     // Ratio  of reconstructed clusters energy-eta-phi distributions, matched with tracks over all
     //----------------------------------------------------------
     
-    sprintf(cname,"%s_QA_ChargedRatio",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_ChargedRatio",fCalorimeter.Data());
     TCanvas  * ccharge = new TCanvas(cname, "Charged clusters over all clusters", 1200, 400) ;
     ccharge->Divide(3, 1);
     
@@ -3847,13 +3848,13 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     fhEtaCharged->SetYTitle("track-matched clusters / all clusters");
     fhEtaCharged->Draw("HE");
     
-    sprintf(name,"QA_%s_ClustersMatchedToAllRatios.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_ClustersMatchedToAllRatios.eps",fCalorimeter.Data());
     ccharge->Print(name); printf("Create plot %s\n",name);
 	}
   //-------------------------------------------	
   // N Cells - N Clusters - N Cells per cluster
   //-------------------------------------------
-	sprintf(cname,"QA_%s_nclustercells",fCalorimeter.Data());
+	snprintf(cname,buffersize,"QA_%s_nclustercells",fCalorimeter.Data());
 	TCanvas  * cN = new TCanvas(cname, " Number of CaloClusters and CaloCells", 800, 1200) ;
 	cN->Divide(2, 3);
 	
@@ -3961,8 +3962,10 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		else 
 			htmp->Draw("same HE");
 		
+    delete [] hNCellsCluster1D;
+    
 	}
-	sprintf(name,"QA_%s_NumberCaloClustersAndCaloCells.eps",fCalorimeter.Data());
+	snprintf(name,buffersize,"QA_%s_NumberCaloClustersAndCaloCells.eps",fCalorimeter.Data());
 	cN->Print(name); printf("Print plot %s\n",name);
 	
   //----------------------------------------------------	
@@ -3970,7 +3973,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
   //----------------------------------------------------
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
     
-		sprintf(cname,"QA_%s_cellstime",fCalorimeter.Data());
+		snprintf(cname,buffersize,"QA_%s_cellstime",fCalorimeter.Data());
 		TCanvas  * ctime = new TCanvas(cname, " Cells time", 1200, 400) ;
 		ctime->Divide(3, 1);
 		
@@ -3995,7 +3998,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		fhTimeAmp->SetAxisRange(ptmin,ptmax,"X");		
 		fhTimeAmp->Draw("colz");
     
-		sprintf(name,"QA_%s_CellsTime.eps",fCalorimeter.Data());
+		snprintf(name,buffersize,"QA_%s_CellsTime.eps",fCalorimeter.Data());
 		ctime->Print(name); printf("Plot: %s\n",name);
 	}
 	
@@ -4006,7 +4009,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	{
     //Number of entries per cell
     gStyle->SetPadRightMargin(0.15);
-    sprintf(cname,"%s_QA_GridCellEntries",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_GridCellEntries",fCalorimeter.Data());
     TCanvas *cgrid   = new TCanvas("cgrid","Number of entries per cell", 12,12,800,400);
     if(fNModules%2 == 0)
       cgrid->Divide(fNModules/2,2); 
@@ -4024,10 +4027,10 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       //fhGridCellsMod[imod]->SetLabelSize(0.025,"z");
       fhGridCellsMod[imod]->Draw("colz");
     }
-    sprintf(name,"QA_%s_GridCellsEntries.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_GridCellsEntries.eps",fCalorimeter.Data());
     cgrid->Print(name); printf("Create plot %s\n",name);
     
-    sprintf(cname,"%s_QA_GridCellAccumEnergy",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_GridCellAccumEnergy",fCalorimeter.Data());
     TCanvas *cgridE   = new TCanvas("cgridE","Summed energy per cell", 12,12,800,400);
     if(fNModules%2 == 0)
       cgridE->Divide(fNModules/2,2); 
@@ -4043,11 +4046,11 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       fhGridCellsEMod[imod]->SetYTitle("row (phi direction)    ");
       fhGridCellsEMod[imod]->Draw("colz");
     }
-    sprintf(name,"QA_%s_GridCellsAccumEnergy.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_GridCellsAccumEnergy.eps",fCalorimeter.Data());
     cgridE->Print(name); printf("Create plot %s\n",name);
     
     //Accumulated energy per cell
-    sprintf(cname,"%s_QA_GridCellAverageEnergy",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_GridCellAverageEnergy",fCalorimeter.Data());
     TCanvas *cgridEA   = new TCanvas("cgridEA","Average energy per cell", 12,12,800,400);
     if(fNModules%2 == 0)	  
       cgridEA->Divide(fNModules/2,2);
@@ -4063,12 +4066,12 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       fhGridCellsEMod[imod]->Divide(fhGridCellsMod[imod]);
       fhGridCellsEMod[imod]->Draw("colz");
     }
-    sprintf(name,"QA_%s_GridCellsAverageEnergy.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_GridCellsAverageEnergy.eps",fCalorimeter.Data());
     cgridEA->Print(name); printf("Create plot %s\n",name);
 		
     //Accumulated Time per cell, E > 0.5 GeV
 		
-    sprintf(cname,"%s_QA_GridCellAccumTime",fCalorimeter.Data());
+    snprintf(cname,buffersize,"%s_QA_GridCellAccumTime",fCalorimeter.Data());
     TCanvas *cgridT   = new TCanvas("cgridT","Summed time per cell", 12,12,800,400);
     if(fNModules%2 == 0)
       cgridT->Divide(fNModules/2,2); 
@@ -4084,7 +4087,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       fhGridCellsTimeMod[imod]->SetYTitle("row (phi direction)    ");
       fhGridCellsTimeMod[imod]->Draw("colz");
     }
-    sprintf(name,"QA_%s_GridCellsAccumTime.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_GridCellsAccumTime.eps",fCalorimeter.Data());
     cgridT->Print(name); printf("Create plot %s\n",name);
 		
 	}
@@ -4094,7 +4097,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
   //---------------------------------------------
 	if(fCorrelateCalos){
 		
-		sprintf(cname,"QA_%s_CaloCorr_EMCALvsPHOS",fCalorimeter.Data());
+		snprintf(cname,buffersize,"QA_%s_CaloCorr_EMCALvsPHOS",fCalorimeter.Data());
 		TCanvas  * ccorr = new TCanvas(cname, " EMCAL vs PHOS", 400, 400) ;
 		ccorr->Divide(2, 2);
     
@@ -4125,7 +4128,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		fhCaloCorrECells->SetAxisRange(ptmin,ptmax,"Y");		
 		fhCaloCorrECells->Draw();
     
-		sprintf(name,"QA_%s_CaloCorr_EMCALvsPHOS.eps",fCalorimeter.Data());
+		snprintf(name,buffersize,"QA_%s_CaloCorr_EMCALvsPHOS.eps",fCalorimeter.Data());
 		ccorr->Print(name); printf("Plot: %s\n",name);
 	}
   
@@ -4143,7 +4146,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		if (emin != 0 ) printf("emin != 0 \n");
     //printf("IM: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
 		
-		sprintf(cname,"QA_%s_IM",fCalorimeter.Data());
+		snprintf(cname,buffersize,"QA_%s_IM",fCalorimeter.Data());
     //	printf("c5\n");
 		TCanvas  * c5 = new TCanvas(cname, "Invariant mass", 600, 400) ;
 		c5->Divide(2, 3);
@@ -4236,7 +4239,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 			pyim10->Draw("same");
 		}
 		
-		sprintf(name,"QA_%s_InvariantMass.eps",fCalorimeter.Data());
+		snprintf(name,buffersize,"QA_%s_InvariantMass.eps",fCalorimeter.Data());
 		c5->Print(name); printf("Plot: %s\n",name);
 	}
 	
@@ -4250,7 +4253,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		if (emin != 0 ) printf("emin != 0 \n");
     //printf("IMCellCut: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
 		
-		sprintf(cname,"QA_%s_IMCellCut",fCalorimeter.Data());
+		snprintf(cname,buffersize,"QA_%s_IMCellCut",fCalorimeter.Data());
     //	printf("c5cc\n");
 		TCanvas  * c5cc = new TCanvas(cname, "Invariant mass, Cell Cut", 600, 400) ;
 		c5cc->Divide(2, 3);
@@ -4343,7 +4346,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 			pyimcc10->Draw("same");
 		}
 		
-		sprintf(name,"QA_%s_InvariantMass_CellCut.eps",fCalorimeter.Data());
+		snprintf(name,buffersize,"QA_%s_InvariantMass_CellCut.eps",fCalorimeter.Data());
 		c5cc->Print(name); printf("Plot: %s\n",name);
 	}
 	
@@ -4356,7 +4359,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		if (emin != 0 ) printf("emin != 0 \n");
     //printf("Asym: nBinsX %d, emin %2.2f, emax %2.2f\n",nebins,emin,emax);
 		
-		sprintf(cname,"QA_%s_Asym",fCalorimeter.Data());
+		snprintf(cname,buffersize,"QA_%s_Asym",fCalorimeter.Data());
     //	printf("c5\n");
 		TCanvas  * c5b = new TCanvas(cname, "Asymmetry", 400, 400) ;
 		c5b->Divide(2, 2);
@@ -4390,7 +4393,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 		pyAsym10->SetLineColor(4);
 		pyAsym10->Draw();
 		
-		sprintf(name,"QA_%s_Asymmetry.eps",fCalorimeter.Data());
+		snprintf(name,buffersize,"QA_%s_Asymmetry.eps",fCalorimeter.Data());
 		c5b->Print(name); printf("Plot: %s\n",name);
 	}
 	
@@ -4398,7 +4401,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	if(IsDataMC()){
     //Reconstructed vs MC distributions
     //printf("c6\n");
-    sprintf(cname,"QA_%s_recvsmc",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_recvsmc",fCalorimeter.Data());
     TCanvas  * c6 = new TCanvas(cname, "Reconstructed vs MC distributions", 400, 400) ;
     c6->Divide(2, 2);
     
@@ -4422,12 +4425,12 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     fh2Eta->SetLineColor(4);
     fh2Eta->Draw();
     
-    sprintf(name,"QA_%s_ReconstructedVSMCDistributions.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_ReconstructedVSMCDistributions.eps",fCalorimeter.Data());
     c6->Print(name); printf("Plot: %s\n",name);	
     
     //Reconstructed vs MC distributions
     //printf("c6\n");
-    sprintf(cname,"QA_%s_gamrecvsmc",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_gamrecvsmc",fCalorimeter.Data());
     TCanvas  * c6Gam = new TCanvas(cname, "Reconstructed vs MC distributions", 400, 400) ;
     c6Gam->Divide(2, 2);
     
@@ -4443,12 +4446,12 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     c6Gam->cd(4) ; 
     fhGamEta->Draw();
     
-    sprintf(name,"QA_%s_GammaReconstructedVSMCDistributions.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_GammaReconstructedVSMCDistributions.eps",fCalorimeter.Data());
     c6->Print(name); printf("Plot: %s\n",name);	
     
     //Generated - reconstructed  
     //printf("c7\n");
-    sprintf(cname,"QA_%s_diffgenrec",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_diffgenrec",fCalorimeter.Data());
     TCanvas  * c7 = new TCanvas(cname, "generated - reconstructed", 400, 400) ;
     c7->Divide(2, 2);
     
@@ -4482,12 +4485,12 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     fhDeltaEta->Draw();
     fhGamDeltaEta->Draw("same");
     
-    sprintf(name,"QA_%s_DiffGeneratedReconstructed.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_DiffGeneratedReconstructed.eps",fCalorimeter.Data());
     c7->Print(name); printf("Plot: %s\n",name);
     
     // Reconstructed / Generated 
     //printf("c8\n");
-    sprintf(cname,"QA_%s_ratiorecgen",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_ratiorecgen",fCalorimeter.Data());
     TCanvas  * c8 = new TCanvas(cname, " reconstructed / generated", 400, 400) ;
     c8->Divide(2, 2);
     
@@ -4521,14 +4524,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     fhRatioEta->Draw();
     fhGamRatioEta->Draw("same");
     
-    sprintf(name,"QA_%s_ReconstructedDivGenerated.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_ReconstructedDivGenerated.eps",fCalorimeter.Data());
     c8->Print(name); printf("Plot: %s\n",name);
     
     //MC
     
     //Generated distributions
     //printf("c1\n");
-    sprintf(cname,"QA_%s_gen",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_gen",fCalorimeter.Data());
     TCanvas  * c10 = new TCanvas(cname, "Generated distributions", 600, 200) ;
     c10->Divide(3, 1);
     
@@ -4644,13 +4647,13 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     fhGenOmegaPhi->Draw("same");
     fhGenElePhi->Draw("same");
     
-    sprintf(name,"QA_%s_GeneratedDistributions.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_GeneratedDistributions.eps",fCalorimeter.Data());
     c10->Print(name); printf("Plot: %s\n",name);
     
     
     //Reconstructed clusters depending on its original particle.
     //printf("c1\n");
-    sprintf(cname,"QA_%s_recgenid",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_recgenid",fCalorimeter.Data());
     TCanvas  * c11 = new TCanvas(cname, "Reconstructed particles, function of their original particle ID", 400, 400) ;
     c11->Divide(2, 2);
     
@@ -4828,7 +4831,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     hChHadPhi->Draw("same");
     hElePhi->Draw("same");
     
-    sprintf(name,"QA_%s_RecDistributionsGenID.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_RecDistributionsGenID.eps",fCalorimeter.Data());
     c11->Print(name); printf("Plot: %s\n",name);
     
     
@@ -4844,7 +4847,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     TH1F *	hPi0PhiClone = (TH1F*)   hPi0Phi->Clone(Form("%s_Clone",fhPi0Phi->GetName()));
     TH1F *	hGamPhiClone = (TH1F*)   hGamPhi->Clone(Form("%s_Clone",fhGamPhi->GetName()));	
     
-    sprintf(cname,"QA_%s_recgenidratio",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_recgenidratio",fCalorimeter.Data());
     TCanvas  * c12 = new TCanvas(cname, "Ratio reconstructed clusters / generated particles in acceptance, for different particle ID", 400, 400) ;
     c12->Divide(2, 2);
     
@@ -4910,14 +4913,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     hPi0PhiClone->Draw("same");
     hGamPhiClone->Draw("same");
     
-    sprintf(name,"QA_%s_EfficiencyGenID.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_EfficiencyGenID.eps",fCalorimeter.Data());
     c12->Print(name); printf("Plot: %s\n",name);
     
     
     
     //Reconstructed distributions
     //printf("c1\n");
-    sprintf(cname,"QA_%s_vertex",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_vertex",fCalorimeter.Data());
     TCanvas  * c13 = new TCanvas(cname, "Particle vertex", 400, 400) ;
     c13->Divide(2, 2);
     
@@ -4944,7 +4947,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     hHaR->Draw();
     
     
-    sprintf(name,"QA_%s_ParticleVertex.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_ParticleVertex.eps",fCalorimeter.Data());
     c13->Print(name); printf("Plot: %s\n",name);
     
     
@@ -4952,7 +4955,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     if(fFillAllTH12){
       //Reconstructed distributions, matched with tracks, generated particle dependence
       //printf("c2\n");
-      sprintf(cname,"QA_%s_rectrackmatchGenID",fCalorimeter.Data());
+      snprintf(cname,buffersize,"QA_%s_rectrackmatchGenID",fCalorimeter.Data());
       TCanvas  * c22ch = new TCanvas(cname, "Reconstructed distributions, matched with tracks, for different particle ID", 400, 400) ;
       c22ch->Divide(2, 2);
       
@@ -5056,7 +5059,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       hElePhiCharged->Draw("same");
       
       
-      sprintf(name,"QA_%s_ReconstructedDistributions_TrackMatchedGenID.eps",fCalorimeter.Data());
+      snprintf(name,buffersize,"QA_%s_ReconstructedDistributions_TrackMatchedGenID.eps",fCalorimeter.Data());
       c22ch->Print(name); printf("Plot: %s\n",name);
       
       TH1F *	hGamEChargedClone   = (TH1F*)   hGamECharged->Clone(Form("%s_Clone",fhGamECharged->GetName()));
@@ -5086,7 +5089,7 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       
       //Ratio: reconstructed track matched/ all reconstructed
       //printf("c3\n");
-      sprintf(cname,"QA_%s_rectrackmatchratGenID",fCalorimeter.Data());
+      snprintf(cname,buffersize,"QA_%s_rectrackmatchratGenID",fCalorimeter.Data());
       TCanvas  * c3ch = new TCanvas(cname, "Ratio: reconstructed track matched/ all reconstructed, for different particle ID", 400, 400) ;
       c3ch->Divide(2, 2);
       
@@ -5170,14 +5173,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
       hNeHadPhiChargedClone->Draw("same");
       hChHadPhiChargedClone->Draw("same");
       
-      sprintf(name,"QA_%s_RatioReconstructedMatchedDistributionsGenID.eps",fCalorimeter.Data());
+      snprintf(name,buffersize,"QA_%s_RatioReconstructedMatchedDistributionsGenID.eps",fCalorimeter.Data());
       c3ch->Print(name); printf("Plot: %s\n",name);
       
     }	
   }
   //Track-matching distributions
   
-	sprintf(cname,"QA_%s_trkmatch",fCalorimeter.Data());
+	snprintf(cname,buffersize,"QA_%s_trkmatch",fCalorimeter.Data());
 	TCanvas *cme = new TCanvas(cname,"Track-matching distributions", 400, 400);
 	cme->Divide(2,2);
   
@@ -5207,11 +5210,11 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
 	cme->cd(4);
 	fh2EledEdx->Draw();
 	
-	sprintf(name,"QA_%s_TrackMatchingEleDist.eps",fCalorimeter.Data());
+	snprintf(name,buffersize,"QA_%s_TrackMatchingEleDist.eps",fCalorimeter.Data());
 	cme->Print(name); printf("Plot: %s\n",name);       
 	
 	if(IsDataMC()){
-    sprintf(cname,"QA_%s_trkmatchMCEle",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_trkmatchMCEle",fCalorimeter.Data());
     TCanvas *cmemc = new TCanvas(cname,"Track-matching distributions from MC electrons", 600, 200);
     cmemc->Divide(3,1);
     
@@ -5230,11 +5233,11 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cmemc->cd(3);
     fhMCEle2MatchdEdx->Draw();
 		
-    sprintf(name,"QA_%s_TrackMatchingDistMCEle.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_TrackMatchingDistMCEle.eps",fCalorimeter.Data());
     cmemc->Print(name); printf("Plot: %s\n",name);  
     
 		
-    sprintf(cname,"QA_%s_trkmatchMCChHad",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_trkmatchMCChHad",fCalorimeter.Data());
     TCanvas *cmemchad = new TCanvas(cname,"Track-matching distributions from MC charged hadrons", 600, 200);
     cmemchad->Divide(3,1);
 		
@@ -5253,10 +5256,10 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cmemchad->cd(3);
     fhMCChHad2MatchdEdx->Draw();
 		
-    sprintf(name,"QA_%s_TrackMatchingDistMCChHad.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_TrackMatchingDistMCChHad.eps",fCalorimeter.Data());
     cmemchad->Print(name); printf("Plot: %s\n",name);       
     
-    sprintf(cname,"QA_%s_trkmatchMCNeutral",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_trkmatchMCNeutral",fCalorimeter.Data());
     TCanvas *cmemcn = new TCanvas(cname,"Track-matching distributions from MC neutrals", 600, 200);
     cmemcn->Divide(3,1);
 		
@@ -5275,10 +5278,10 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     cmemcn->cd(3);
     fhMCNeutral2MatchdEdx->Draw();
 		
-    sprintf(name,"QA_%s_TrackMatchingDistMCNeutral.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_TrackMatchingDistMCNeutral.eps",fCalorimeter.Data());
     cmemcn->Print(name); printf("Plot: %s\n",name);       
     
-    sprintf(cname,"QA_%s_trkmatchpE",fCalorimeter.Data());
+    snprintf(cname,buffersize,"QA_%s_trkmatchpE",fCalorimeter.Data());
     TCanvas *cmpoe = new TCanvas(cname,"Track-matching distributions, p/E", 400, 200);
     cmpoe->Divide(2,1);
 		
@@ -5324,14 +5327,14 @@ void  AliAnaCalorimeterQA::Terminate(TList* outputList)
     //		pLegendpE2.SetBorderSize(1);
     //		pLegendpE2.Draw();
     
-    sprintf(name,"QA_%s_TrackMatchingPOverE.eps",fCalorimeter.Data());
+    snprintf(name,buffersize,"QA_%s_TrackMatchingPOverE.eps",fCalorimeter.Data());
     cmpoe->Print(name); printf("Plot: %s\n",name);       			
 	}
 	
-	char line[1024] ; 
-	sprintf(line, ".!tar -zcf QA_%s_%s.tar.gz *%s*.eps", fCalorimeter.Data(), GetName(),fCalorimeter.Data()) ; 
+	char line[buffersize] ; 
+	snprintf(line, buffersize,".!tar -zcf QA_%s_%s.tar.gz *%s*.eps", fCalorimeter.Data(), GetName(),fCalorimeter.Data()) ; 
 	gROOT->ProcessLine(line);
-	sprintf(line, ".!rm -fR *.eps"); 
+	snprintf(line, buffersize,".!rm -fR *.eps"); 
 	gROOT->ProcessLine(line);
 	
 	printf("AliAnaCalorimeterQA::Terminate() - !! All the eps files are in QA_%s_%s.tar.gz !!!\n",  fCalorimeter.Data(), GetName());
