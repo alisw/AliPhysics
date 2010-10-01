@@ -54,6 +54,15 @@ AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name) :
     DefineOutput(1, TList::Class());
 
 }
+AliAnalysisTaskHadEt::~AliAnalysisTaskHadEt(){
+  fOutputList->Clear();
+  delete fOutputList;
+  delete fRecAnalysis;
+  delete fMCAnalysis;
+  delete fEsdtrackCutsITSTPC;
+  delete fEsdtrackCutsTPC;
+  delete fEsdtrackCutsITS;
+}
 
 
 //________________________________________________________________________
@@ -62,6 +71,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     // Create histograms
     // Called once
   fOutputList = new TList;
+  fOutputList->SetOwner();
   fMCAnalysis->SetHistoList(fOutputList);
   fRecAnalysis->SetHistoList(fOutputList);
   fMCAnalysis->CreateHistograms();

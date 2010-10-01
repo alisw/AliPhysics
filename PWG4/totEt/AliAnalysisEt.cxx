@@ -15,6 +15,7 @@
 #include "TTree.h"
 #include <iostream>
 #include "AliAnalysisEtCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliVEvent.h"
 #include "TDatabasePDG.h"
 #include "Rtypes.h"
@@ -127,6 +128,17 @@ AliAnalysisEt::AliAnalysisEt() :
 
 AliAnalysisEt::~AliAnalysisEt()
 {
+  delete fCuts;
+  delete fPdgDB;
+  if(fTreeDeposit){
+    fTreeDeposit->Clear();
+    delete fTreeDeposit; // optional TTree
+  }
+  if(fTree){
+    fTree->Clear();
+    delete fTree; // optional TTree
+  }
+  delete fEsdtrackCutsTPC;
 
 }
 
