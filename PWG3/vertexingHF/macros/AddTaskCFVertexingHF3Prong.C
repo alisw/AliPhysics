@@ -43,11 +43,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	// isSign = 2 --> D0 + D0bar
 	
 	TString expected;
-	if (isSign == 0 && pdgCode > 0){
+	if (isSign == 0 && pdgCode < 0){
 		AliError(Form("Error setting PDG code (%d) and sign (0 --> particle (%d) only): they are not compatible, returning",pdgCode));
 		return 0x0;
 	}
-	else if (isSign == 1 && pdgCode < 0){
+	else if (isSign == 1 && pdgCode > 0){
 		AliError(Form("Error setting PDG code (%d) and sign (1 --> antiparticle (%d) only): they are not compatible, returning",pdgCode));
 		return 0x0;
 	}
