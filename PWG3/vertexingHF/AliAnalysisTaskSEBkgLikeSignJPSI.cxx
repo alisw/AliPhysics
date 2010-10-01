@@ -268,8 +268,9 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
         d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
         unsetvtx=kTRUE;
     }
-    Int_t okBtoJPSIls=0;
-    if(d->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSIls)) {
+    //Int_t okBtoJPSIls=0;
+    //if(d->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSIls)) {
+    if(d) {
        AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
        fHistMassLS->Fill(d->InvMassJPSIee());
        fHistCPtaLS->Fill(d->CosPointingAngle());
@@ -313,8 +314,9 @@ void AliAnalysisTaskSEBkgLikeSignJPSI::UserExec(Option_t */*option*/)
       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
       unsetvtx=kTRUE;
     }
-    Int_t okBtoJPSI=0;
-    if(d->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSI)) {
+    ///Int_t okBtoJPSI=0;
+    //if(d->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSI)) {
+    if(d) {
       fHistMassJPSI->Fill(d->InvMassJPSIee());
       fHistCtsJPSI->Fill(d->CosThetaStarJPSI());
       fHistd0d0JPSI->Fill(1e8*d->Prodd0d0());
