@@ -251,6 +251,9 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * cur
 	if(!ComparePtHardAndJetPt()) return kFALSE ;
   }
 	
+  //Fill Vertex array
+  FillVertexArray();
+  
   Int_t iParticle = 0 ;
   Double_t charge = 0.;
 	
