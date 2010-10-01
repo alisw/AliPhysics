@@ -107,6 +107,21 @@ void AliFMDAnaCalibBackgroundCorrection::SetSPDDeadCorrection(Int_t vtxbin,
   hCorrection->SetName(Form("hSPDDeadCorrection_vtx%d",vtxbin));
   fListOfDoubleHitCorrection.Add(hCorrection);    
 }
+
+//____________________________________________________________________
+TH1F* AliFMDAnaCalibBackgroundCorrection::GetFMDDeadCorrection(Int_t  vtxbin) {
+  
+  TH1F* hCorrection    = (TH1F*)fListOfDoubleHitCorrection.FindObject(Form("hFMDDeadCorrection_vtx%d",vtxbin));
+  return hCorrection;
+}
+
+//____________________________________________________________________
+void AliFMDAnaCalibBackgroundCorrection::SetFMDDeadCorrection(Int_t vtxbin, 
+							      TH1F* hCorrection) {
+  hCorrection->SetName(Form("hFMDDeadCorrection_vtx%d",vtxbin));
+  fListOfDoubleHitCorrection.Add(hCorrection);    
+}
+
 //____________________________________________________________________
 void AliFMDAnaCalibBackgroundCorrection::SetRefAxis(TAxis* axis) {
   
