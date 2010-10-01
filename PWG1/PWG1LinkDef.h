@@ -116,4 +116,7 @@
 // Background and luminosity studies
 #pragma link C++ class  AliAnalysisTaskBGvsTime+;
 #pragma link C++ class  AliHistoListWrapper+;
+// CDB connect
+#pragma link C++ class  AliTaskCDBconnect+;
+
 #endif
