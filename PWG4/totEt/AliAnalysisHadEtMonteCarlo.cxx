@@ -368,6 +368,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
       }
     delete list;
   }
+  delete pID;
+  delete strTPC;
+  delete strITS;
+  delete strTPCITS;
   //delete AliESDpid;
   return 1;
 }
@@ -965,6 +969,9 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateHisto2D(Form("dEdxElectron%s",cutName->Data()),"dE/dx for e^{#pm}","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
     CreateHisto2D(Form("dEdxUnidentified%s",cutName->Data()),"dE/dx for unidentified particles","momentum (GeV/c)","dE/dx",400,0.0,maxPtdEdx,200,mindEdx,maxdEdx);
   }
+  delete strTPC;
+  delete strITS;
+  delete strTPCITS;
 
   Float_t minEt = 0.0;
   Float_t maxEt = 100.0;
@@ -973,20 +980,20 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   char histotitle[200];
   char xtitle[50];
   char ytitle[50];
-  TString *TPC = new TString("TPC");
-  TString *ITS = new TString("ITS");
-  TString *TPCpt = new TString("0.15");
-  TString *ITSpt = new TString("0.10");
-  TString *PID = new TString("");
-  TString *NoPID = new TString("NoPID");
-  TString *NoPIDString = new TString(", No PID");
-  TString *HadEt = new TString("HadEt");
-  TString *TotEt = new TString("TotEt");
-  TString *TotEtString = new TString("total E_{T}");
-  TString *HadEtString = new TString("hadronic E_{T}");
-  TString *Full = new TString("Full");
-  TString *EMCAL = new TString("EMCAL");
-  TString *PHOS = new TString("PHOS");
+  TString *sTPC = new TString("TPC");
+  TString *sITS = new TString("ITS");
+  TString *sTPCpt = new TString("0.15");
+  TString *sITSpt = new TString("0.10");
+  TString *sPID = new TString("");
+  TString *sNoPID = new TString("NoPID");
+  TString *sNoPIDString = new TString(", No PID");
+  TString *sHadEt = new TString("HadEt");
+  TString *sTotEt = new TString("TotEt");
+  TString *sTotEtString = new TString("total E_{T}");
+  TString *sHadEtString = new TString("hadronic E_{T}");
+  TString *sFull = new TString("Full");
+  TString *sEMCAL = new TString("EMCAL");
+  TString *sPHOS = new TString("PHOS");
   
   for(int tpc = 0;tpc<2;tpc++){
     for(int hadet = 0;hadet<2;hadet++){
@@ -999,24 +1006,24 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 	  TString *ptstring;
 	  TString *partidstring;
 	  TString *etstring;
-	  if(tpc==1) {detector = TPC; ptstring = TPCpt;}
-	  else{detector = ITS; ptstring = ITSpt;}
-	  if(pid==1){partid = PID; partidstring = PID;}
-	  else{partid = NoPID; partidstring = NoPIDString;}
-	  if(hadet==1) {et = HadEt; etstring = HadEtString;}
-	  else{et = TotEt; etstring = TotEtString;}
+	  if(tpc==1) {detector = sTPC; ptstring = sTPCpt;}
+	  else{detector = sITS; ptstring = sITSpt;}
+	  if(pid==1){partid = sPID; partidstring = sPID;}
+	  else{partid = sNoPID; partidstring = sNoPIDString;}
+	  if(hadet==1) {et = sHadEt; etstring = sHadEtString;}
+	  else{et = sTotEt; etstring = sTotEtString;}
 	  switch(type){
 	  case 0:
-	    acceptance = Full;
+	    acceptance = sFull;
 	    break;
 	  case 1:
-	    acceptance = EMCAL;
+	    acceptance = sEMCAL;
 	    break;
 	  case 2:
-	    acceptance = PHOS;
+	    acceptance = sPHOS;
 	    break;
 	  default:
-	    acceptance = Full;
+	    acceptance = sFull;
 	  }
 	  sprintf(histoname,"Sim%sVsReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
 	  sprintf(histotitle,"Simulated %s vs reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
@@ -1036,20 +1043,20 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   }
   CreateHisto1D("SimTotEt","Simulated Total E_{T}","Simulated Total E_{T}","Number of events",nbinsEt,minEt,maxEt);
   CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt,minEt,maxEt);
-  delete TPC;
-  delete ITS;
-  delete TPCpt;
-  delete ITSpt;
-  delete PID;
-  delete NoPID;
-  delete NoPIDString;
-  delete HadEt;
-  delete TotEt;
-  delete TotEtString;
-  delete HadEtString;
-  delete Full;
-  delete EMCAL;
-  delete PHOS;
+  delete sTPC;
+  delete sITS;
+  delete sTPCpt;
+  delete sITSpt;
+  delete sPID;
+  delete sNoPID;
+  delete sNoPIDString;
+  delete sHadEt;
+  delete sTotEt;
+  delete sTotEtString;
+  delete sHadEtString;
+  delete sFull;
+  delete sEMCAL;
+  delete sPHOS;
   CreateIntHisto1D("NEvents","Number of events","number of events","Number of events",1,0,1);
 
 }

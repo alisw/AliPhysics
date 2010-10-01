@@ -152,7 +152,7 @@ protected:
     void FillHisto2D(TString histname, Float_t x, Float_t y, Float_t weight);
 
     Float_t Et(TParticle *part, float mass = -1000);
-    Float_t Et(Float_t p, Float_t theta, Int_t pid, Short_t charge);
+    Float_t Et(Float_t p, Float_t theta, Int_t pid, Short_t charge) const;
     AliESDtrackCuts* fEsdtrackCutsITSTPC;//esd track cuts for ITS+TPC tracks
     AliESDtrackCuts* fEsdtrackCutsTPC;//esd track cuts for TPC tracks (which may also contain ITS hits)
     AliESDtrackCuts* fEsdtrackCutsITS;//esd track cuts for ITS stand alone tracks

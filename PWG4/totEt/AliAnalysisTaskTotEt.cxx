@@ -62,7 +62,7 @@ AliAnalysisTaskTotEt::AliAnalysisTaskTotEt(const char *name) :
     DefineOutput(1, TList::Class());
 
 }
-AliAnalysisTaskTotEt::~AliAnalysisTaskTotEt(){
+AliAnalysisTaskTotEt::~AliAnalysisTaskTotEt(){//Destructor
   fOutputList->Clear();
   delete fOutputList;
   delete fRecAnalysis;

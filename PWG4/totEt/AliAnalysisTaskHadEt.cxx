@@ -54,7 +54,7 @@ AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name) :
     DefineOutput(1, TList::Class());
 
 }
-AliAnalysisTaskHadEt::~AliAnalysisTaskHadEt(){
+AliAnalysisTaskHadEt::~AliAnalysisTaskHadEt(){//Destructor
   fOutputList->Clear();
   delete fOutputList;
   delete fRecAnalysis;

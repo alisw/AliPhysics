@@ -32,7 +32,7 @@ ClassImp(AliAnalysisHadEtReconstructed);
 
 AliAnalysisHadEtReconstructed::AliAnalysisHadEtReconstructed() :
         AliAnalysisHadEt()
-	,corrections(0)
+	,fCorrections(0)
 	,fConfigFile("ConfigHadEtAnalysis.C")
     ,fCorrTotEtFullAcceptanceTPC(0)
     ,fCorrTotEtFullAcceptanceITS(0)
@@ -76,6 +76,7 @@ AliAnalysisHadEtReconstructed::AliAnalysisHadEtReconstructed() :
 
 AliAnalysisHadEtReconstructed::~AliAnalysisHadEtReconstructed() 
 {
+  delete fCorrections;
 }
 
 Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
@@ -125,7 +126,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      continue;
 	    }
 	  else{
-	    if(TMath::Abs(track->Eta())>corrections->GetEtaCut()) continue;
+	    if(TMath::Abs(track->Eta())>fCorrections->GetEtaCut()) continue;
 	    Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
 	    
 	    if(cutset!=1){
@@ -153,22 +154,22 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
 	    bool inPHOS = IsInPHOS(track);
 	    bool inEMCAL = IsInEMCAL(track);
-	    //if(!(corrections->GetEfficiencyPionTPC())) cerr<<"Uh-oh!  No histogram!"<<endl;
+	    //if(!(fCorrections->GetEfficiencyPionTPC())) cerr<<"Uh-oh!  No histogram!"<<endl;
 
 	    Float_t corrBkgd=0.0;
 	    Float_t corrNotID=0.0;
-	    Float_t corrNoID = corrections->GetNotIDCorrectionNoPID(track->Pt());
+	    Float_t corrNoID = fCorrections->GetNotIDCorrectionNoPID(track->Pt());
 	    Float_t corrEff = 0.0;
 	    Float_t corrEffNoID = 0.0;
 	    if(cutset==0){//TPC
-	      corrBkgd = corrections->GetBackgroundCorrectionTPC(track->Pt());
-	      corrEffNoID = corrections->GetTPCEfficiencyCorrectionHadron(track->Pt());
-	      corrNotID = corrections->GetNotIDCorrectionTPC(track->Pt());
+	      corrBkgd = fCorrections->GetBackgroundCorrectionTPC(track->Pt());
+	      corrEffNoID = fCorrections->GetTPCEfficiencyCorrectionHadron(track->Pt());
+	      corrNotID = fCorrections->GetNotIDCorrectionTPC(track->Pt());
 	    }
 	    if(cutset==1){//ITS
-	      corrBkgd = corrections->GetBackgroundCorrectionITS(track->Pt());
-	      //corrEffNoID = corrections->GetITSEfficiencyCorrectionHadron(track->Pt());
-	      corrNotID = corrections->GetNotIDCorrectionITS(track->Pt());
+	      corrBkgd = fCorrections->GetBackgroundCorrectionITS(track->Pt());
+	      //corrEffNoID = fCorrections->GetITSEfficiencyCorrectionHadron(track->Pt());
+	      corrNotID = fCorrections->GetNotIDCorrectionITS(track->Pt());
 	    }
 	    Float_t et = 0.0;
 	    Float_t etNoID = Et(track->P(),track->Theta(),fPiPlusCode,track->Charge());
@@ -179,8 +180,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(isPion){
 	      FillHisto2D(Form("dEdxDataPion%s",cutName->Data()),track->P(),dEdx,1.0);
 	      et = Et(track->P(),track->Theta(),fPiPlusCode,track->Charge());
-	      if(cutset==0){corrEff = corrections->GetTPCEfficiencyCorrectionPion(track->Pt());}
-	      //else{corrEff = corrections->GetITSEfficiencyCorrectionPion(track->Pt());}
+	      if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionPion(track->Pt());}
+	      //else{corrEff = fCorrections->GetITSEfficiencyCorrectionPion(track->Pt());}
 	      etpartialcorrected = et*corrBkgd*corrEff;
 	      
 	      if(track->Charge()>0.0){
@@ -195,8 +196,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(isKaon){
 	      FillHisto2D(Form("dEdxDataKaon%s",cutName->Data()),track->P(),dEdx,1.0);
 	      et = Et(track->P(),track->Theta(),fKPlusCode,track->Charge());
-	      if(cutset==0){corrEff = corrections->GetTPCEfficiencyCorrectionKaon(track->Pt());}
-	      //else{corrEff = corrections->GetITSEfficiencyCorrectionKaon(track->Pt());}
+	      if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionKaon(track->Pt());}
+	      //else{corrEff = fCorrections->GetITSEfficiencyCorrectionKaon(track->Pt());}
 	      etpartialcorrected = et*corrBkgd*corrEff;
 	      
 	      if(track->Charge()>0.0){
@@ -211,8 +212,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(isProton){
 	      FillHisto2D(Form("dEdxDataProton%s",cutName->Data()),track->P(),dEdx,1.0);
 	      et = Et(track->P(),track->Theta(),fProtonCode,track->Charge());
-	      if(cutset==0){corrEff = corrections->GetTPCEfficiencyCorrectionProton(track->Pt());}
-	      //else{corrEff = corrections->GetITSEfficiencyCorrectionProton(track->Pt());}
+	      if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionProton(track->Pt());}
+	      //else{corrEff = fCorrections->GetITSEfficiencyCorrectionProton(track->Pt());}
 	      etpartialcorrected = et*corrBkgd*corrEff;
 	      
 	      if(track->Charge()>0.0){
@@ -309,9 +310,13 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
     FillHisto1D("RecoRawEtFullAcceptanceITSNoPID",GetRawEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoRawEtEMCALAcceptanceITSNoPID",GetRawEtEMCALAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoRawEtPHOSAcceptanceITSNoPID",GetRawEtPHOSAcceptanceITSNoPID(),1.0);
+    delete pID;
+    delete strTPC;
+    delete strITS;
+    delete strTPCITS;
     return 1;
 }
-void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL) {
+void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL) {//Adding Et to each of the variables that tracks et event by event
   if(pt>=AliAnalysisHadEt::fgPtTPCCutOff && IsTPC){//TPC tracks
     //adding to the raw Et
     //if(InEMCAL) cout<<"Adding "<<rawEt<<" to the raw Et"<<endl;
@@ -381,24 +386,24 @@ void AliAnalysisHadEtReconstructed::Init()
 
   if (fConfigFile.Length()) {
     gROOT->LoadMacro(fConfigFile);
-    corrections = (AliAnalysisHadEtCorrections *) gInterpreter->ProcessLine("ConfigHadEtAnalysis()");
-    fCorrTotEtFullAcceptanceTPC = corrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"Full");
-    fCorrTotEtFullAcceptanceITS = corrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"Full");
-    fCorrHadEtFullAcceptanceTPC = corrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"Full");
-    fCorrHadEtFullAcceptanceITS = corrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"Full");
-    fCorrTotEtEMCALAcceptanceTPC = corrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"EMCAL");
-    fCorrTotEtEMCALAcceptanceITS = corrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"EMCAL");
-    fCorrHadEtEMCALAcceptanceTPC = corrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"EMCAL");
-    fCorrHadEtEMCALAcceptanceITS = corrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"EMCAL");
-    fCorrTotEtPHOSAcceptanceTPC = corrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"PHOS");
-    fCorrTotEtPHOSAcceptanceITS = corrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"PHOS");
-    fCorrHadEtPHOSAcceptanceTPC = corrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"PHOS");
-    fCorrHadEtPHOSAcceptanceITS = corrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"PHOS");
+    fCorrections = (AliAnalysisHadEtCorrections *) gInterpreter->ProcessLine("ConfigHadEtAnalysis()");
+    fCorrTotEtFullAcceptanceTPC = fCorrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"Full");
+    fCorrTotEtFullAcceptanceITS = fCorrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"Full");
+    fCorrHadEtFullAcceptanceTPC = fCorrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"Full");
+    fCorrHadEtFullAcceptanceITS = fCorrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"Full");
+    fCorrTotEtEMCALAcceptanceTPC = fCorrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"EMCAL");
+    fCorrTotEtEMCALAcceptanceITS = fCorrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"EMCAL");
+    fCorrHadEtEMCALAcceptanceTPC = fCorrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"EMCAL");
+    fCorrHadEtEMCALAcceptanceITS = fCorrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"EMCAL");
+    fCorrTotEtPHOSAcceptanceTPC = fCorrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"PHOS");
+    fCorrTotEtPHOSAcceptanceITS = fCorrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"PHOS");
+    fCorrHadEtPHOSAcceptanceTPC = fCorrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"PHOS");
+    fCorrHadEtPHOSAcceptanceITS = fCorrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"PHOS");
 
   }
 }
 
-void AliAnalysisHadEtReconstructed::ResetEventValues(){
+void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by event et's
   AliAnalysisHadEt::ResetEventValues();
      fCorrectedHadEtFullAcceptanceTPCNoPID=0.0;
      fCorrectedHadEtFullAcceptanceITSNoPID=0.0;
@@ -427,27 +432,27 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){
 
      if(TMath::Abs(fCorrTotEtFullAcceptanceTPC)<1e-3){
        if (fConfigFile.Length()) {
-	 cout<<"Rereading corrections file..."<<endl;
+	 cout<<"Rereading fCorrections file..."<<endl;
 	 gROOT->LoadMacro(fConfigFile);
-	 corrections = (AliAnalysisHadEtCorrections *) gInterpreter->ProcessLine("ConfigHadEtAnalysis()");
-	 fCorrTotEtFullAcceptanceTPC = corrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"Full");
-	 fCorrTotEtFullAcceptanceITS = corrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"Full");
-	 fCorrHadEtFullAcceptanceTPC = corrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"Full");
-	 fCorrHadEtFullAcceptanceITS = corrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"Full");
-	 fCorrTotEtEMCALAcceptanceTPC = corrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"EMCAL");
-	 fCorrTotEtEMCALAcceptanceITS = corrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"EMCAL");
-	 fCorrHadEtEMCALAcceptanceTPC = corrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"EMCAL");
-	 fCorrHadEtEMCALAcceptanceITS = corrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"EMCAL");
-	 fCorrTotEtPHOSAcceptanceTPC = corrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"PHOS");
-	 fCorrTotEtPHOSAcceptanceITS = corrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"PHOS");
-	 fCorrHadEtPHOSAcceptanceTPC = corrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"PHOS");
-	 fCorrHadEtPHOSAcceptanceITS = corrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"PHOS");
+	 fCorrections = (AliAnalysisHadEtCorrections *) gInterpreter->ProcessLine("ConfigHadEtAnalysis()");
+	 fCorrTotEtFullAcceptanceTPC = fCorrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"Full");
+	 fCorrTotEtFullAcceptanceITS = fCorrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"Full");
+	 fCorrHadEtFullAcceptanceTPC = fCorrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"Full");
+	 fCorrHadEtFullAcceptanceITS = fCorrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"Full");
+	 fCorrTotEtEMCALAcceptanceTPC = fCorrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"EMCAL");
+	 fCorrTotEtEMCALAcceptanceITS = fCorrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"EMCAL");
+	 fCorrHadEtEMCALAcceptanceTPC = fCorrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"EMCAL");
+	 fCorrHadEtEMCALAcceptanceITS = fCorrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"EMCAL");
+	 fCorrTotEtPHOSAcceptanceTPC = fCorrections->GetConstantCorrections(kTRUE,fgPtTPCCutOff,"PHOS");
+	 fCorrTotEtPHOSAcceptanceITS = fCorrections->GetConstantCorrections(kTRUE,fgPtITSCutOff,"PHOS");
+	 fCorrHadEtPHOSAcceptanceTPC = fCorrections->GetConstantCorrections(kFALSE,fgPtTPCCutOff,"PHOS");
+	 fCorrHadEtPHOSAcceptanceITS = fCorrections->GetConstantCorrections(kFALSE,fgPtITSCutOff,"PHOS");
        }
        else{cerr<<"Uh-oh!  Unable to open configuration file!"<<endl;}
      }
 
 }
-void AliAnalysisHadEtReconstructed::CreateHistograms(){
+void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and adding them to the output TList
 
   TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
@@ -520,22 +525,22 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){
   char histotitle[200];
   char xtitle[50];
   TString *ytitle = new TString("Number of events");
-  TString *TPC = new TString("TPC");
-  TString *ITS = new TString("ITS");
-  TString *TPCpt = new TString("0.15");
-  TString *ITSpt = new TString("0.10");
-  TString *PID = new TString("");
-  TString *NoPID = new TString("NoPID");
-  TString *NoPIDString = new TString(", No PID");
-  TString *HadEt = new TString("HadEt");
-  TString *RawEt = new TString("RawEt");
-  TString *TotEt = new TString("TotEt");
-  TString *TotEtString = new TString("total E_{T}");
-  TString *HadEtString = new TString("hadronic E_{T}");
-  TString *RawEtString = new TString("raw E_{T}");
-  TString *Full = new TString("Full");
-  TString *EMCAL = new TString("EMCAL");
-  TString *PHOS = new TString("PHOS");
+  TString *sTPC = new TString("TPC");
+  TString *sITS = new TString("ITS");
+  TString *sTPCpt = new TString("0.15");
+  TString *sITSpt = new TString("0.10");
+  TString *sPID = new TString("");
+  TString *sNoPID = new TString("NoPID");
+  TString *sNoPIDString = new TString(", No PID");
+  TString *sHadEt = new TString("HadEt");
+  TString *sRawEt = new TString("RawEt");
+  TString *sTotEt = new TString("TotEt");
+  TString *sTotEtString = new TString("total E_{T}");
+  TString *sHadEtString = new TString("hadronic E_{T}");
+  TString *sRawEtString = new TString("raw E_{T}");
+  TString *sFull = new TString("Full");
+  TString *sEMCAL = new TString("EMCAL");
+  TString *sPHOS = new TString("PHOS");
   
   for(int tpc = 0;tpc<2;tpc++){
     for(int hadet = 0;hadet<3;hadet++){
@@ -543,58 +548,53 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){
 	for(int pid = 0;pid<2;pid++){
 	  TString *detector;
 	  TString *partid;
-	  TString *et = HadEt;
+	  TString *et = sHadEt;
 	  TString *acceptance;
 	  TString *ptstring;
 	  TString *partidstring;
-	  TString *etstring = HadEtString;
-	  if(tpc==1) {detector = TPC; ptstring = TPCpt;}
-	  else{detector = ITS; ptstring = ITSpt;}
-	  if(pid==1){partid = PID; partidstring = PID;}
-	  else{partid = NoPID; partidstring = NoPIDString;}
-	  if(hadet==1) {et = HadEt; etstring = HadEtString;}
-	  if(hadet==0){et = TotEt; etstring = TotEtString;}
-	  if(hadet==2){et = RawEt; etstring = RawEtString;}
+	  TString *etstring = sHadEtString;
+	  if(tpc==1) {detector = sTPC; ptstring = sTPCpt;}
+	  else{detector = sITS; ptstring = sITSpt;}
+	  if(pid==1){partid = sPID; partidstring = sPID;}
+	  else{partid = sNoPID; partidstring = sNoPIDString;}
+	  if(hadet==1) {et = sHadEt; etstring = sHadEtString;}
+	  if(hadet==0){et = sTotEt; etstring = sTotEtString;}
+	  if(hadet==2){et = sRawEt; etstring = sRawEtString;}
 	  switch(type){
 	  case 0:
-	    acceptance = Full;
+	    acceptance = sFull;
 	    break;
 	  case 1:
-	    acceptance = EMCAL;
+	    acceptance = sEMCAL;
 	    break;
 	  case 2:
-	    acceptance = PHOS;
+	    acceptance = sPHOS;
 	    break;
 	  default:
-	    acceptance = Full;
+	    acceptance = sFull;
 	  }
 	  sprintf(histoname,"Reco%s%sAcceptance%s%s",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
 	  sprintf(histotitle,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
 	  sprintf(xtitle,"Reconstructed %s",etstring->Data());
 	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt,minEt,maxEt);
-// 	  sprintf(histoname,"RecoRaw%s%sAcceptance%s%s",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
-// 	  sprintf(histotitle,"Raw Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
-// 	  sprintf(xtitle,"Reconstructed Raw %s",etstring->Data());
-// 	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt,minEt,maxEt);
-	  //cout<<"I want to make "<<histoname<<" with the title "<<histotitle<<endl;
 	}
       }
     }
   }
 
-  delete TPC;
-  delete ITS;
-  delete TPCpt;
-  delete ITSpt;
-  delete PID;
-  delete NoPID;
-  delete NoPIDString;
-  delete HadEt;
-  delete TotEt;
-  delete TotEtString;
-  delete HadEtString;
-  delete Full;
-  delete EMCAL;
-  delete PHOS;
+  delete sTPC;
+  delete sITS;
+  delete sTPCpt;
+  delete sITSpt;
+  delete sPID;
+  delete sNoPID;
+  delete sNoPIDString;
+  delete sHadEt;
+  delete sTotEt;
+  delete sTotEtString;
+  delete sHadEtString;
+  delete sFull;
+  delete sEMCAL;
+  delete sPHOS;
 
 }

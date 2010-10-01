@@ -108,6 +108,7 @@ AliAnalysisHadEt::~AliAnalysisHadEt()
   //histoList doesn't really belong to this class - it's passed in
   //fhistoList->Clear();
   //delete fhistoList;
+  //constants don't get deleted
   //delete [] fgEtaAxis;
   //delete [] fgPtAxis;
 }
@@ -372,7 +373,7 @@ Float_t AliAnalysisHadEt::Et(TParticle *part, float mass){//function to calculat
   }
   return 0.0;
 }
-Float_t AliAnalysisHadEt::Et(Float_t p, Float_t theta, Int_t pid, Short_t charge){//function to calculate et in the same way as it would be calculated in a calorimeter
+Float_t AliAnalysisHadEt::Et(Float_t p, Float_t theta, Int_t pid, Short_t charge) const {//function to calculate et in the same way as it would be calculated in a calorimeter
   if(pid==fPiPlusCode || pid==fPiMinusCode){//Nothing special for pions
     return TMath::Sqrt(p*p + fPionMass*fPionMass) * TMath::Sin(theta);
   }

@@ -131,7 +131,7 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections(const AliAnalysisHadEtC
 }
 
 
-Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type){
+Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type) const {//Get the correction values that are not pt dependent
   Float_t acceptance = 0.0;
   Float_t neutral = 0.0;
   Float_t ptcorr = 0.0;
@@ -207,49 +207,49 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
 //   fBackgroundTPC = g->fBackgroundTPC;
 //   fBackgroundITS = g->fBackgroundITS;
 // }
-Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionPion(const float pT){
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionPion(const float pT){//Get the efficiency for reconstructing a pion in the TPC
   if(!fEfficiencyPionTPC){cerr<<"No histogram fEfficiencyPionTPC!"<<endl; return -1.0;}
   float eff = fEfficiencyPionTPC->GetBinContent(fEfficiencyPionTPC->FindBin(pT));
   if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionKaon(const float pT){
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionKaon(const float pT){//Get the efficiency for reconstructing a kaon in the TPC
   if(!fEfficiencyKaonTPC){cerr<<"No histogram fEfficiencyKaonTPC!"<<endl; return -1.0;}
   float eff = fEfficiencyKaonTPC->GetBinContent(fEfficiencyKaonTPC->FindBin(pT));
   if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionProton(const float pT){
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionProton(const float pT){//Get the efficiency for reconstructing a proton in the TPC
   if(!fEfficiencyProtonTPC){cerr<<"No histogram fEfficiencyProtonTPC!"<<endl; return -1.0;}
   float eff = fEfficiencyProtonTPC->GetBinContent(fEfficiencyProtonTPC->FindBin(pT));
   if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionHadron(const float pT){
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionHadron(const float pT){//Get the efficiency for reconstructing a hadron in the TPC
   if(!fEfficiencyHadronTPC){cerr<<"No histogram fEfficiencyHadronTPC!"<<endl; return -1.0;}
   float eff = fEfficiencyHadronTPC->GetBinContent(fEfficiencyHadronTPC->FindBin(pT));
   if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionPion(const float pT){
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionPion(const float pT){//Get the efficiency for reconstructing a pion in the ITS
   if(!fEfficiencyPionITS){cerr<<"No histogram fEfficiencyPionITS!"<<endl; return -1.0;}
   float eff = fEfficiencyPionITS->GetBinContent(fEfficiencyPionITS->FindBin(pT));
   if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionKaon(const float pT){
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionKaon(const float pT){//Get the efficiency for reconstructing a kaon in the ITS
   if(!fEfficiencyKaonITS){cerr<<"No histogram fEfficiencyKaonITS!"<<endl; return -1.0;}
   float eff = fEfficiencyKaonITS->GetBinContent(fEfficiencyKaonITS->FindBin(pT));
   if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionProton(const float pT){
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionProton(const float pT){//Get the efficiency for reconstructing a proton in the ITS
   if(!fEfficiencyProtonITS){cerr<<"No histogram fEfficiencyProtonITS!"<<endl; return -1.0;}
   float eff = fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT));
   if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionHadron(const float pT){
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionHadron(const float pT){//Get the efficiency for reconstructing a hadron in the ITS
   if(!fEfficiencyHadronITS){cerr<<"No histogram fEfficiencyHadronITS!"<<endl; return -1.0;}
   float eff = fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT));
   if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
