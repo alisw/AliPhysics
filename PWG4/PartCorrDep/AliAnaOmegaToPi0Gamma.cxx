@@ -791,7 +791,7 @@ void AliAnaOmegaToPi0Gamma::Terminate(TList * outputList)
   ReadHistograms(outputList);
   const Int_t buffersize = 255;
   char cvs1[buffersize];  
-  sprintf(cvs1, "Neutral_%s_IVM",fInputAODGammaName.Data());
+  snprintf(cvs1, buffersize, "Neutral_%s_IVM",fInputAODGammaName.Data());
 
   TCanvas * cvsIVM = new TCanvas(cvs1, cvs1, 400, 10, 600, 700) ;
   cvsIVM->Divide(2, 2);

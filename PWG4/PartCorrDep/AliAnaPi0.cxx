@@ -930,7 +930,7 @@ void AliAnaPi0::Terminate(TList* outputList)
   hPtIM3->SetTitle("0.11 < M_{#gamma#gamma} < 0.15 GeV/c^{2}");
   hPtIM3->Draw();
    
-  char namePtF[128];
+  char namePtF[buffersize];
   snprintf(namePtF,buffersize,"AliAnaPi0_%s_Pt.eps",fCalorimeter.Data());
   cPt->Print(namePtF);
 

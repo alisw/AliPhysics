@@ -92,19 +92,20 @@ TObjString *  AliAnaShowerParameter::GetAnalysisCuts()
 {  	
   //Save parameters used for analysis
   TString parList ; //this will be list of parameters used for this analysis.
-  char onePar[255] ;
+  const Int_t buffersize = 255;
+  char onePar[buffersize] ;
   
-  sprintf(onePar,"--- AliAnaShowerParameter ---\n") ;
+  snprintf(onePar,buffersize,"--- AliAnaShowerParameter ---\n") ;
   parList+=onePar ;	
-  sprintf(onePar,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+  snprintf(onePar,buffersize,"Calorimeter: %s\n",fCalorimeter.Data()) ;
   parList+=onePar ;
-  sprintf(onePar,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+  snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
   parList+=onePar ;
-  sprintf(onePar,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+  snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
   parList+=onePar ;
-  sprintf(onePar,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+  snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
   parList+=onePar ;
-  sprintf(onePar,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
+  snprintf(onePar,buffersize,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
   parList+=onePar ;  
   
   //Get parameters set in base class.
@@ -642,6 +643,11 @@ void  AliAnaShowerParameter::MakeAnalysisFillAOD()
   else if (fCalorimeter == "EMCAL")
     pl = GetAODEMCAL();
   
+  if(!pl){
+    printf("AliAnaShowerParameter::MakeAnalysisFillAOD() - Careful cluster array NULL!!\n");
+    return;
+  }
+  
   //Fill AODCaloClusters and AODParticle with PHOS/EMCAL aods
   TLorentzVector mom, mom2 ; 
   Int_t nCaloClusters = pl->GetEntriesFast();   
@@ -798,7 +804,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
   AliStack * stack = 0x0;
   TParticle * primary = 0x0;   
   TClonesArray * mcparticles0 = 0x0;
-  TClonesArray * mcparticles1 = 0x0;
+  //TClonesArray * mcparticles1 = 0x0;
   AliAODMCParticle * aodprimary = 0x0; 
   TObjArray * pl = 0x0;
   Int_t iNumCell=0;
@@ -850,17 +856,18 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
       pl = GetAODPHOS();
     else if (fCalorimeter == "EMCAL")
       pl = GetAODEMCAL();
-    
-    //Some values are stored in AliAODCaloCluster objects only; we need to fetch them.
-    for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
-      AliAODCaloCluster * calo =  (AliAODCaloCluster*) (pl->At(icalo));
-      if (calo->GetLabel()==ph->GetLabel()) {  //The Cluster is the right one for this particle
-        lambdaMainCluster = calo->GetM02();   //lambda_0
-        lambdaSecondCluster = calo->GetM20();     //lambda_1
-        dispcluster = calo->GetDispersion();    //Dispersion
-        iNumCell = calo->GetNCells();	
-        if(GetDebug() > 2) 
-          printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - Cluster Lambda0: %3.2f, Lambda1: %3.2f, Dispersion: %3.2f, NCells: %d \n",lambdaMainCluster,lambdaSecondCluster,dispcluster,iNumCell) ;
+    if(pl){
+      //Some values are stored in AliAODCaloCluster objects only; we need to fetch them.
+      for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
+        AliAODCaloCluster * calo =  (AliAODCaloCluster*) (pl->At(icalo));
+        if (calo->GetLabel()==ph->GetLabel()) {  //The Cluster is the right one for this particle
+          lambdaMainCluster = calo->GetM02();   //lambda_0
+          lambdaSecondCluster = calo->GetM20();     //lambda_1
+          dispcluster = calo->GetDispersion();    //Dispersion
+          iNumCell = calo->GetNCells();	
+          if(GetDebug() > 2) 
+            printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - Cluster Lambda0: %3.2f, Lambda1: %3.2f, Dispersion: %3.2f, NCells: %d \n",lambdaMainCluster,lambdaSecondCluster,dispcluster,iNumCell) ;
+        }
       }
     }
     
@@ -1101,15 +1108,15 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
           aodprimary = (AliAODMCParticle*) mcparticles0->At(label);
           
         }
-        else {//Second input
-          if(!mcparticles1) continue;
-          if(label >=  mcparticles1->GetEntriesFast()) {
-            if(GetDebug() > 2)  printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n",label, mcparticles1->GetEntriesFast());
-            continue ;
-          }
-          //Get the particle
-          aodprimary = (AliAODMCParticle*) mcparticles1->At(label); 
-        }//second input
+//        else {//Second input
+//          if(!mcparticles1) continue;
+//          if(label >=  mcparticles1->GetEntriesFast()) {
+//            if(GetDebug() > 2)  printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n",label, mcparticles1->GetEntriesFast());
+//            continue ;
+//          }
+//          //Get the particle
+//          aodprimary = (AliAODMCParticle*) mcparticles1->At(label); 
+//        }//second input
         
         if(!aodprimary){
           printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
