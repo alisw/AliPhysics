@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Mass *AddTaskD0Mass(TString finname="D0toKpiCuts.root",Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t cutOnDistr=kFALSE)
+AliAnalysisTaskSED0Mass *AddTaskD0Mass(TString finname="D0toKpiCutsNew.root",Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t cutOnDistr=kFALSE)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -23,44 +23,44 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(TString finname="D0toKpiCuts.root",Int_t 
     filename+="D0InvMass";
     if(cutOnDistr) filename+="C"; 
     //list mass
-    out1name="coutputmassD0Mass";
+    out1name="coutputmassD0MassN";
     if(cutOnDistr) out1name+="C"; 
     //list distr
-    out2name="coutputmassD0distr";
+    out2name="coutputmassD0distrN";
     if(cutOnDistr) out2name+="C"; 
     //hist entries
-    out3name="nEntriesD0";
+    out3name="nEntriesD0N";
     if(cutOnDistr) out3name+="C"; 
     //list checks
-    out4name="checksD0";
+    out4name="checksD0N";
     if(cutOnDistr) out4name+="C"; 
     //cuts object
-    out5name="cutsD0";
+    out5name="cutsD0N";
     if(cutOnDistr) out5name+="C"; 
 
-    inname="cinputmassD0_0";
+    inname="cinputmassD0_0N";
     if(cutOnDistr) inname+="C"; 
 
   } else {
     filename+="D0InvMassLikeSign";
     if(cutOnDistr) filename+="C"; 
     //list mass
-    out1name="coutputmassLSMass";
+    out1name="coutputmassLSMassN";
     if(cutOnDistr) out1name+="C"; 
     //list distr
-    out2name="coutputmassLSdistr";
+    out2name="coutputmassLSdistrN";
     if(cutOnDistr) out2name+="C"; 
     //hist entries
-    out3name="nEntriesLS";
+    out3name="nEntriesLSN";
     if(cutOnDistr) out3name+="C"; 
     //list checks
-    out4name="checksLS";
+    out4name="checksLSN";
     if(cutOnDistr) out4name+="C"; 
     //cuts object
-    out5name="cutsLS";
+    out5name="cutsLSN";
     if(cutOnDistr) out5name+="C"; 
 
-    inname="cinputmassD0_1";
+    inname="cinputmassD0_1N";
     if(cutOnDistr) inname+="C"; 
   }
 
@@ -102,6 +102,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(TString finname="D0toKpiCuts.root",Int_t 
   massD0Task->SetArray(flag);
   massD0Task->SetReadMC(readMC);
   massD0Task->SetCutOnDistr(cutOnDistr);
+  massD0Task->SetUsePid4Distr(kFALSE);
   mgr->AddTask(massD0Task);
   
   //
