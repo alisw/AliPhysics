@@ -1,4 +1,4 @@
-AliAnalysisTaskProtons *AddTaskBalanceFunction() {
+AliAnalysisTaskBF *AddTaskBalanceFunction() {
   // Creates a proton analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
