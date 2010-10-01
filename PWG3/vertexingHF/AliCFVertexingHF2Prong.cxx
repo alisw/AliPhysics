@@ -115,7 +115,7 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	// getting vertex from daughters
 	mcPartDaughter0->XvYvZv(vtx2daughter0);  // cm
 	mcPartDaughter1->XvYvZv(vtx2daughter1);  //cm
-	if (vtx2daughter0[0] != vtx2daughter1[0] && vtx2daughter0[1] != vtx2daughter1[1] && vtx2daughter0[2] != vtx2daughter1[2]) {
+	if (TMath::Abs(vtx2daughter0[0] - vtx2daughter1[0]) > 1E-5 || TMath::Abs(vtx2daughter0[1] - vtx2daughter1[1]) > 1E-5 || TMath::Abs(vtx2daughter0[2] - vtx2daughter1[2])>1E-5) {
 		AliError("Daughters have different secondary vertex, skipping the track");
 		return bGenValues;
 	}
