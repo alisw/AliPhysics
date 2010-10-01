@@ -88,9 +88,12 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   //To make sure we match with the geometry in a simulation file,
   //let's try to get it first.  If not, take the default geometry
   AliRunLoader *rl = AliRunLoader::Instance();
-  if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
-    fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-  } else {
+  if (rl->GetAliRun()){
+    AliEMCAL * emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
+    if(emcal) fGeom = emcal->GetGeometry();
+  }
+  
+  if(!fGeom) {
     AliInfo(Form("Using default geometry in reconstruction"));
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
   }
@@ -176,22 +179,24 @@ void AliEMCALReconstructor::InitClusterizer()
   
   AliEMCALRecParam *recParam = NULL;
   AliCDBEntry *entry = (AliCDBEntry*) 
-    AliCDBManager::Instance()->Get("EMCAL/Calib/RecoParam");
+  AliCDBManager::Instance()->Get("EMCAL/Calib/RecoParam");
   //Get The reco param for the default event specie
   if (entry) 
     recParam = (AliEMCALRecParam*)((TObjArray *) entry->GetObject())->At(0);
   
-  if(!recParam)  
+  if(!recParam){  
     AliFatal("RecoParam not found in CDB!");
-  
-  if (recParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
+  }
+  else{
+    if (recParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
     {
       fgClusterizer = new AliEMCALClusterizerv1(fGeom, fCalibData,fPedestalData); 
     }
-  else
+    else
     {
       fgClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData,fPedestalData); 
     }
+  }
   
 }
 
@@ -559,11 +564,12 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
 		return ;
 	}
 	//Note, that owner of copied marixes will be header
-	char path[255] ;
+  const Int_t bufsize = 255;
+	char path[bufsize] ;
 	TGeoHMatrix * m = 0x0;
 	for(Int_t sm = 0; sm < fGeom->GetNumberOfSuperModules(); sm++){
-		sprintf(path,"/ALIC_1/XEN1_1/SMOD_%d",sm+1) ; //In Geometry modules numbered 1,2,.,5
-		if(sm >= 10) sprintf(path,"/ALIC_1/XEN1_1/SM10_%d",sm-10+1) ;
+		snprintf(path,bufsize,"/ALIC_1/XEN1_1/SMOD_%d",sm+1) ; //In Geometry modules numbered 1,2,.,5
+		if(sm >= 10) snprintf(path,bufsize,"/ALIC_1/XEN1_1/SM10_%d",sm-10+1) ;
 		
 		if (gGeoManager->CheckPath(path)){
 			gGeoManager->cd(path);

@@ -211,21 +211,22 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
       printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
       if(fText){
         fText->Clear() ; 
-      }      
-      fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100));     
-      if (rv < 0.9) {
-        test[specie] = 0.9 ;
-        // 2 lines text info for quality         
-        fText->SetFillColor(2) ;
-        fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
-      }
-      else {
-        test[specie] = 0.1 ;
-        fText->SetFillColor(3) ;
-        fText->AddText(Form("EMCAL = OK, ENJOY...")); 
-      }
-      //hdata->Reset("ICE");
-     //ratio->Reset("ICE");
+        
+        fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100));     
+        if (rv < 0.9) {
+          test[specie] = 0.9 ;
+          // 2 lines text info for quality         
+          fText->SetFillColor(2) ;
+          fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
+        }
+        else {
+          test[specie] = 0.1 ;
+          fText->SetFillColor(3) ;
+          fText->AddText(Form("EMCAL = OK, ENJOY...")); 
+        }
+        //hdata->Reset("ICE");
+        //ratio->Reset("ICE");
+      }//fText
      } 
     } //finish the checking
 }

@@ -142,8 +142,12 @@ void AliEMCALClusterizerNxN::Digits2Clusters(Option_t * option)
   
   for(index = 0; index < fRecPoints->GetEntries(); index++) 
   {
-    (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->SetIndexInList(index) ;
-    (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->Print();
+    AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
+    if(rp){
+      rp->SetIndexInList(index) ;
+      rp->Print();
+    }
+    else AliFatal("RecPoint NULL!!");
   }
   
   fTreeR->Fill();
@@ -359,45 +363,51 @@ void AliEMCALClusterizerNxN::MakeUnfolding()
 {
   // Unfolds clusters using the shape of an ElectroMagnetic shower
   // Performs unfolding of all clusters
-		
+  
   if(fNumberOfECAClusters > 0){
-    if (fGeom==0)
-      AliFatal("Did not get geometry from EMCALLoader") ;
-    Int_t nModulesToUnfold = fGeom->GetNCells();
-
-    Int_t numberofNotUnfolded = fNumberOfECAClusters ;
-    Int_t index ;
-    for(index = 0 ; index < numberofNotUnfolded ; index++){
-
-      AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(index) ) ;
-
-      TVector3 gpos;
-      Int_t absId;
-      recPoint->GetGlobalPosition(gpos);
-      fGeom->GetAbsCellIdFromEtaPhi(gpos.Eta(),gpos.Phi(),absId);
-      if(absId > nModulesToUnfold)
-        break ;
-
-      Int_t nMultipl = recPoint->GetMultiplicity() ;
-      AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMultipl] ;
-      Float_t * maxAtEnergy = new Float_t[nMultipl] ;
-      Int_t nMax = recPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
-
-      if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0
-        //UnfoldCluster(recPoint, nMax, maxAt, maxAtEnergy) ;
-        fRecPoints->Remove(recPoint);
-        fRecPoints->Compress() ;
-        index-- ;
-        fNumberOfECAClusters-- ;
-        numberofNotUnfolded-- ;
-      }
-      else{
-        recPoint->SetNExMax(1) ; //Only one local maximum
-      }
-
-      delete[] maxAt ;
-      delete[] maxAtEnergy ;
+    
+    if (fGeom){
+      
+      Int_t nModulesToUnfold = fGeom->GetNCells();
+      
+      Int_t numberofNotUnfolded = fNumberOfECAClusters ;
+      Int_t index ;
+      for(index = 0 ; index < numberofNotUnfolded ; index++){
+        
+        AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(index) ) ;
+        if(recPoint){
+          TVector3 gpos;
+          Int_t absId;
+          recPoint->GetGlobalPosition(gpos);
+          fGeom->GetAbsCellIdFromEtaPhi(gpos.Eta(),gpos.Phi(),absId);
+          if(absId > nModulesToUnfold)
+            break ;
+          
+          Int_t nMultipl = recPoint->GetMultiplicity() ;
+          AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMultipl] ;
+          Float_t * maxAtEnergy = new Float_t[nMultipl] ;
+          Int_t nMax = recPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
+          
+          if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0
+            //UnfoldCluster(recPoint, nMax, maxAt, maxAtEnergy) ;
+            fRecPoints->Remove(recPoint);
+            fRecPoints->Compress() ;
+            index-- ;
+            fNumberOfECAClusters-- ;
+            numberofNotUnfolded-- ;
+          }
+          else{
+            recPoint->SetNExMax(1) ; //Only one local maximum
+          }
+          
+          delete[] maxAt ;
+          delete[] maxAtEnergy ;
+        }
+        else AliFatal("Could not get RecPoint!") ;
+      }//loop
     }
+    else AliFatal("Could not get geometry from EMCALLoader!") ;
+
   }
   // End of Unfolding of clusters
 }

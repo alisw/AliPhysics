@@ -1270,13 +1270,14 @@ const TGeoHMatrix * AliEMCALGeoUtils::GetMatrixForSuperModule(Int_t smod) const 
 	//    TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
 	
 	if(gGeoManager){
-		char path[255] ;
-		sprintf(path,"/ALIC_1/XEN1_1/SMOD_%d",smod+1) ;
+    const Int_t buffersize = 255;
+		char path[buffersize] ;
+		snprintf(path,buffersize,"/ALIC_1/XEN1_1/SMOD_%d",smod+1) ;
 		//TString volpath = "ALIC_1/XEN1_1/SMOD_";
 	    //volpath += smod+1;
 
 		if(fKey110DEG && smod >= 10){
-			  sprintf(path,"/ALIC_1/XEN1_1/SM10_%d",smod-10+1) ;
+			  snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM10_%d",smod-10+1) ;
 			//volpath = "ALIC_1/XEN1_1/SM10_";
 			//volpath += smod-10+1;
 		}

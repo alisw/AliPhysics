@@ -411,9 +411,10 @@ void AliEMCALPIDUtils::SetLowFluxParam()
       fGamma[i][j]      = fHadron[i][j] =  fPiZero[i][j] = 0.;
       fGamma1to10[i][j] = fHadron1to10[i][j] = 0.;
     }
-       fGammaEnergyProb[i]  =  fGammaEnergyProb[i];
-       fPiZeroEnergyProb[i] = fPiZeroEnergyProb[i];
-       fHadronEnergyProb[i] = fHadronEnergyProb[i];
+       //Why we had the next 3 lines?
+       //fGammaEnergyProb[i]  =  fGammaEnergyProb[i];
+       //fPiZeroEnergyProb[i] = fPiZeroEnergyProb[i];
+       //fHadronEnergyProb[i] = fHadronEnergyProb[i];
   }
   
   // New parameterization for lambda0^2 (=x): f(x) = normLandau*TMath::Landau(x,mpvLandau,widthLandau)+normgaus*TMath::Gaus(x,meangaus,sigmagaus)

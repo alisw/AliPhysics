@@ -67,8 +67,7 @@ void AliEMCALAodCluster::Recalibrate(AliEMCALCalibData * calibData, AliAODCaloCe
     return ;
 
   AliEMCALGeometry * emcalgeo =  AliEMCALGeometry::GetInstance(emcalGeoName) ;
-  if(!emcalgeo)
-    AliFatal("AliEMCALGeometry was not constructed\n") ;
+  if(emcalgeo){
 	
   Double32_t * cellsAmpFraction = GetCellsAmplitudeFraction(); 
   Int_t iSupMod = -1;
@@ -94,6 +93,10 @@ void AliEMCALAodCluster::Recalibrate(AliEMCALCalibData * calibData, AliAODCaloCe
 	
   SetCellsAmplitudeFraction(cellsAmpFraction);
   fRecalibrated=kTRUE; 
+    
+  }
+  else  AliFatal("AliEMCALGeometry was not constructed\n") ;
+
 }
 //____________________________________________________________________________
 void  AliEMCALAodCluster::EvalAll(Float_t logWeight, TString geoname){
@@ -177,8 +180,7 @@ void AliEMCALAodCluster::EvalPositionAndShowerShape(Float_t logWeight, TString e
   Double_t zmean = 0.;
 
   AliEMCALGeometry * emcalgeo =  AliEMCALGeometry::GetInstance(emcalGeoName) ;
-  if(!emcalgeo)
-    AliFatal("AliEMCALGeometry was not constructed\n") ;
+  if(emcalgeo){
 	
   Double_t dist  = TmaxInCm(E(),0);
   for(Int_t iDigit=0; iDigit < GetNCells(); iDigit++) {
@@ -268,6 +270,11 @@ void AliEMCALAodCluster::EvalPositionAndShowerShape(Float_t logWeight, TString e
 	  SetDispersion(TMath::Sqrt(d)) ;
   else    
 	  SetDispersion(0) ;
+  }
+  else {
+    AliFatal("AliEMCALGeometry was not constructed\n") ;
+  }
+
 
 }
 

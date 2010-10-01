@@ -288,6 +288,8 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   
   AliRunLoader *rl = AliRunLoader::Instance();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+  
+  if(emcalLoader){
   Int_t readEvent = event ; 
   // fManager is data member from AliDigitizer
   if (fManager) 
@@ -295,7 +297,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   AliDebug(1,Form("Adding event %d from input stream 0 %s %s", 
                   readEvent, GetTitle(), fEventFolderName.Data())) ; 
   rl->GetEvent(readEvent);
-  
+    
   TClonesArray * digits = emcalLoader->Digits() ; 
   digits->Delete() ;  //correct way to clear array when memory is
   //allocated by objects stored in array
@@ -363,9 +365,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
       if(sdigits){
         if (sdigits->GetEntriesFast() ){
-          if(dynamic_cast<AliEMCALDigit *>(sdigits->At(0))){
-            
-            Int_t curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(0))->GetId() ;
+          AliEMCALDigit *sd = dynamic_cast<AliEMCALDigit *>(sdigits->At(0));
+          if(sd){
+            Int_t curNext = sd->GetId() ;
             if(curNext < nextSig) 
               nextSig = curNext ;
             AliDebug(1,Form("input %i : #sdigits %i \n",
@@ -429,11 +431,12 @@ void AliEMCALDigitizer::Digitize(Int_t event)
           
           // loop over input
           for(i = 0; i< fInput ; i++){  //loop over (possible) merge sources
-            if(dynamic_cast<TClonesArray *>(sdigArray->At(i))) {
-              Int_t sDigitEntries = dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast();
+            TClonesArray* sdtclarr = dynamic_cast<TClonesArray *>(sdigArray->At(i));
+            if(sdtclarr) {
+              Int_t sDigitEntries = sdtclarr->GetEntriesFast();
               
               if(sDigitEntries > index[i] )
-                curSDigit = dynamic_cast<AliEMCALDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
+                curSDigit = dynamic_cast<AliEMCALDigit*>(sdtclarr->At(index[i])) ; 	
               else
                 curSDigit = 0 ;
               
@@ -461,7 +464,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
                 
                 index[i]++ ;
                 if( sDigitEntries > index[i] )
-                  curSDigit = dynamic_cast<AliEMCALDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ;
+                  curSDigit = dynamic_cast<AliEMCALDigit*>(sdtclarr->At(index[i])) ;
                 else
                   curSDigit = 0 ;
               }// while
@@ -484,8 +487,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
             sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
             if(sdigits){
               Int_t curNext = nextSig ;
-              if(sdigits->GetEntriesFast() > index[i] && dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]))){
-                curNext = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]))->GetId() ;	  
+              AliEMCALDigit * tmpdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]));
+              if(sdigits->GetEntriesFast() > index[i] && tmpdigit){
+                curNext = tmpdigit->GetId() ;	  
               }
               if(curNext < nextSig) nextSig = curNext ;
             }// sdigits exist
@@ -554,6 +558,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     }//Digit loop
     
   }//SDigitizer not null
+  }
+  else AliFatal("EMCALLoader is NULL!") ;
+
 }
 
 // //_____________________________________________________________________
@@ -714,73 +721,76 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
     AliFatal("Did not get the  Loader");
   }
   else {
-    AliEMCALGeometry* geom = dynamic_cast<AliEMCAL*>(run->GetDetector("EMCAL"))->GetGeometry();
-    
-    // build FOR from simulated digits
-    // and xfer to the corresponding TRU input (mapping)
-    
-    TClonesArray* digits = emcalLoader->Digits();
-    
-    TIter NextDigit(digits);
-    while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
-    {
-      Int_t id = digit->GetId();
+    AliEMCAL* emcal = dynamic_cast<AliEMCAL*>(run->GetDetector("EMCAL"));
+    if(emcal){
+      AliEMCALGeometry* geom = emcal->GetGeometry();
       
-      Int_t trgid;
-      if (geom && geom->GetFastORIndexFromCellIndex(id , trgid)) 
+      // build FOR from simulated digits
+      // and xfer to the corresponding TRU input (mapping)
+      
+      TClonesArray* digits = emcalLoader->Digits();
+      
+      TIter NextDigit(digits);
+      while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
       {
-        AliDebug(1,Form("trigger digit id: %d from cell id: %d\n",trgid,id));
+        Int_t id = digit->GetId();
         
-        AliEMCALDigit* d = static_cast<AliEMCALDigit*>(digitsTMP->At(trgid));
-        
-        if (!d)
-	      {
-          new((*digitsTMP)[trgid]) AliEMCALDigit(*digit);
-          d = (AliEMCALDigit*)digitsTMP->At(trgid);
-          d->SetId(trgid);
-	      }	
-        else
-	      {
-          *d = *d + *digit;
-	      }
-      }
-    }
-    
-    if (AliDebugLevel()) printf("Number of TRG digits: %d\n",digitsTMP->GetEntriesFast());
-    
-    Int_t    nSamples = 32;
-    Int_t *timeSamples = new Int_t[nSamples];
-    
-    NextDigit = TIter(digitsTMP);
-    while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
-    {
-      if (digit)
-      {
-        Int_t     id = digit->GetId();
-        Float_t time = digit->GetTime();
-        
-        Double_t depositedEnergy = 0.;
-        for (Int_t j = 1; j <= digit->GetNprimary(); j++) depositedEnergy += digit->GetDEPrimary(j);
-        
-        if (AliDebugLevel()) printf("Deposited Energy: %f\n", depositedEnergy);
-        
-        // FIXME: Check digit time!
-        if (depositedEnergy)
-	      {
-          DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
+        Int_t trgid;
+        if (geom && geom->GetFastORIndexFromCellIndex(id , trgid)) 
+        {
+          AliDebug(1,Form("trigger digit id: %d from cell id: %d\n",trgid,id));
           
-          for (Int_t j=0;j<nSamples;j++) 
+          AliEMCALDigit* d = static_cast<AliEMCALDigit*>(digitsTMP->At(trgid));
+          
+          if (!d)
           {
-            timeSamples[j] = ((j << 12) & 0xFF000) | (timeSamples[j] & 0xFFF);
+            new((*digitsTMP)[trgid]) AliEMCALDigit(*digit);
+            d = (AliEMCALDigit*)digitsTMP->At(trgid);
+            d->SetId(trgid);
+          }	
+          else
+          {
+            *d = *d + *digit;
           }
-          
-          new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
-	      }
+        }
       }
-    }
-    
-    delete [] timeSamples;
-    
+      
+      if (AliDebugLevel()) printf("Number of TRG digits: %d\n",digitsTMP->GetEntriesFast());
+      
+      Int_t    nSamples = 32;
+      Int_t *timeSamples = new Int_t[nSamples];
+      
+      NextDigit = TIter(digitsTMP);
+      while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
+      {
+        if (digit)
+        {
+          Int_t     id = digit->GetId();
+          Float_t time = digit->GetTime();
+          
+          Double_t depositedEnergy = 0.;
+          for (Int_t j = 1; j <= digit->GetNprimary(); j++) depositedEnergy += digit->GetDEPrimary(j);
+          
+          if (AliDebugLevel()) printf("Deposited Energy: %f\n", depositedEnergy);
+          
+          // FIXME: Check digit time!
+          if (depositedEnergy)
+          {
+            DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
+            
+            for (Int_t j=0;j<nSamples;j++) 
+            {
+              timeSamples[j] = ((j << 12) & 0xFF000) | (timeSamples[j] & 0xFFF);
+            }
+            
+            new((*digitsTRG)[digitsTRG->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);
+          }
+        }
+      }
+      
+      delete [] timeSamples;
+    }// AliEMCAL exists
+    else AliFatal("Could not get AliEMCAL");
   }// loader exists
   
 }
