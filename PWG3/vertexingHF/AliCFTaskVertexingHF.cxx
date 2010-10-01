@@ -96,7 +96,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fWeight(1.),
 	fNvar(0),
 	fPartName(""),
-	fDauNames("")
+	fDauNames(""),
+	fSign(2)
 {
 	//
 	//Default ctor
@@ -127,7 +128,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fWeight(1.),
 	fNvar(0),
 	fPartName(""),
-	fDauNames("")
+	fDauNames(""),
+	fSign(2)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -184,7 +186,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fWeight(c.fWeight),
 	fNvar(c.fNvar),
 	fPartName(c.fPartName),
-	fDauNames(c.fDauNames)
+	fDauNames(c.fDauNames),
+	fSign(c.fSign)
 {
 	//
 	// Copy Constructor
@@ -566,8 +569,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 			charmCandidate = 0x0;
 			continue;
 		}
-		
-		Int_t isPartOrAntipart = cfVtxHF->CheckReflexion();
+
+		Int_t isPartOrAntipart = cfVtxHF->CheckReflexion(fSign);
+		if (isPartOrAntipart == 0){
+			AliDebug(2, Form("The candidate pdg code doesn't match the requirement set in the task (fSign = %d)",fSign));
+			continue;
+		}
+
 		Bool_t recoContFilled = cfVtxHF->FillRecoContainer(containerInput);
 		if (recoContFilled){
 			

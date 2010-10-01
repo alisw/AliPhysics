@@ -22,7 +22,6 @@ const Double_t phimin = 0.0;
 const Int_t    mintrackrefsTPC = 2 ;
 const Int_t    mintrackrefsITS = 3 ;
 const Int_t    charge  = 1 ;
-const Int_t    PDG = 411; 
 const Int_t    minclustersTPC = 50 ;
 // cuts
 const Double_t ptmin = 0.1;
@@ -35,9 +34,27 @@ const Int_t    minITSClusters = 5;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root",Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root",Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
+
+	// isSign = 0 --> D0 only
+	// isSign = 1 --> D0bar only
+	// isSign = 2 --> D0 + D0bar
+	
+	TString expected;
+	if (isSign == 0 && pdgCode > 0){
+		AliError(Form("Error setting PDG code (%d) and sign (0 --> particle (%d) only): they are not compatible, returning",pdgCode));
+		return 0x0;
+	}
+	else if (isSign == 1 && pdgCode < 0){
+		AliError(Form("Error setting PDG code (%d) and sign (1 --> antiparticle (%d) only): they are not compatible, returning",pdgCode));
+		return 0x0;
+	}
+	else if (isSign > 2 || isSign < 0){
+		AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning"));
+		return 0x0;
+	}
 
 	TFile* fileCuts = new TFile(cutFile);
 	AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("DplustoKpipiCuts");
@@ -345,7 +362,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	
 	//Particle-Level cuts:  
 	AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
-	mcGenCuts->SetRequirePdgCode(PDG, kTRUE);  // kTRUE set in order to include D0_bar
+	Bool_t useAbsolute = kTRUE;
+	if (isSign != 2){
+		useAbsolute = kFALSE;
+	}
+	mcGenCuts->SetRequirePdgCode(pdgCode, useAbsolute);  // kTRUE set in order to include antiparticle
 	mcGenCuts->SetAODMC(1); //special flag for reading MC in AOD tree (important)
 	
 	// Acceptance cuts:
@@ -405,14 +426,20 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 
 	// create the task
 	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsDplustoKpipi);
-	// task->SetFillFromGenerated(kFALSE);
-	//task->SetMinITSClusters(minITSClusters);
+	task->SetFillFromGenerated(kFALSE);
 	task->SetDecayChannel(31);
 	task->SetUseWeight(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
+	task->SetSign(isSign);
+	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
+	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
 
-	//	task->SetFeedDownExclusion(isKeepDfromB);
-	
+	Printf("***************** CONTAINER SETTINGS *****************");
+	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
+	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
+	Printf("Dselection = %d",(Int_t)task->GetDselection());
+	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
+	Printf("Sign = %d",(Int_t)task->GetSign());
 
         //-----------------------------------------------------------//
         //   create correlation matrix for unfolding - only eta-pt   //
@@ -434,7 +461,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	if(!isKeepDfromB) {
 	  nameCorr="CFHFcorr0_New_3Prong";
 	}
-	else  if(isKeepD0fromBOnly){
+	else  if(isKeepDfromBOnly){
 	  nameCorr= "CFHFcorr0KeepDfromBOnly_3Prong";
 	}
 	else  {

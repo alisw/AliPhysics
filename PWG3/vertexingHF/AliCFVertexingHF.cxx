@@ -279,7 +279,6 @@ Int_t AliCFVertexingHF::CheckOrigin() const
 	if (!((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000))){
 		if (fKeepDfromBOnly) return -999;
 	}
-
 	return pdgGranma;
 }
 
@@ -625,7 +624,7 @@ Bool_t AliCFVertexingHF::FillUnfoldingMatrix(Double_t *fill) const
 }
 //___________________________________________________________
 
-Int_t AliCFVertexingHF::CheckReflexion()
+Int_t AliCFVertexingHF::CheckReflexion(Char_t isSign)
 {
 	//
 	// check for reflexion (particle/antiparticle)
@@ -645,9 +644,22 @@ Int_t AliCFVertexingHF::CheckReflexion()
 		}    
 	}
 	
-	if(fmcPartCandidate->GetPdgCode()>0) return 1;  // particle
-	else if(fmcPartCandidate->GetPdgCode()<0) return 2;  // antiparticle
+	if(fmcPartCandidate->GetPdgCode()>0) {
+		if (isSign == 1){ // I ask for antiparticle only
+			AliDebug(2,"candidate is particle, I ask for antiparticle only");
+			return 0;
+		}
+		return 1;  // particle
+	}
+	else if(fmcPartCandidate->GetPdgCode()<0) {
+		if (isSign == 0){ // I ask for particle only
+			AliDebug(2,"candidate is antiparticle, I ask for particle only");
+			return 0;
+		}
+		return 2;  // antiparticle
+	}
 	else return 0;  // ....shouldn't be...
+
 }
 //___________________________________________________________
 

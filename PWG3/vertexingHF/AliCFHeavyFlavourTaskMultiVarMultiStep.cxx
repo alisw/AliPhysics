@@ -81,7 +81,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep()
 	fKeepD0fromBOnly(kFALSE),
 	fCuts(0),
 	fUseWeight(kFALSE),
-	fWeight(1.)
+	fWeight(1.),
+	fSign(2)
 {
 	//
 	//Default ctor
@@ -111,7 +112,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
         fKeepD0fromBOnly(kFALSE),
 	fCuts(cuts),
 	fUseWeight(kFALSE),
-	fWeight(1.)
+	fWeight(1.),
+	fSign(2)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -169,7 +171,8 @@ AliCFHeavyFlavourTaskMultiVarMultiStep::AliCFHeavyFlavourTaskMultiVarMultiStep(c
         fKeepD0fromBOnly(c.fKeepD0fromBOnly),
 	fCuts(c.fCuts),
 	fUseWeight(c.fUseWeight),
-	fWeight(c.fWeight)
+	fWeight(c.fWeight),
+	fSign(c.fSign)
 {
 	//
 	// Copy Constructor
@@ -196,6 +199,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Init(){
 
 	if(fDebug > 1) printf("AliCFHeavyFlavourTaskMultiVarMultiStep::Init() \n");
 	
+	fMinITSClusters = fCuts->GetTrackCuts()->GetMinNClustersITS();
 	AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(*fCuts);
 	const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
 	copyfCuts->SetName(nameoutput);
@@ -494,9 +498,27 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 				AliWarning("Could not find associated MC in AOD MC tree");
 				continue;
 			}
-			if(mcVtxHF->GetPdgCode()==421)isD0D0bar=1;
-			else if(mcVtxHF->GetPdgCode()==-421)isD0D0bar=2;
+
+			if (mcVtxHF->GetPdgCode() == 421){  // particle is D0
+				if (fSign == 1){ // I ask for D0bar only
+					AliDebug(2,"particle is D0, I ask for D0bar only");
+					continue;
+				}
+				else{
+					isD0D0bar=1;
+				}
+			}
+			else if (mcVtxHF->GetPdgCode()== -421){ // particle is D0bar
+				if (fSign == 0){ // I ask for D0 only
+					AliDebug(2,"particle is D0bar, I ask for D0 only");
+					continue;
+				}
+				else{
+					isD0D0bar=2;
+				}
+			} 
 			else continue;
+
 			// check whether the daughters have kTPCrefit and kITSrefit set
 			AliAODTrack *track0 = (AliAODTrack*)d0tokpi->GetDaughter(0);
 			AliAODTrack *track1 = (AliAODTrack*)d0tokpi->GetDaughter(1);
