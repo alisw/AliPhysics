@@ -157,13 +157,14 @@ void AliRsnCutESD2010::InitializeToDefaults(Bool_t isSim)
   
   // ----> set standard quality cuts for TPC global tracks
   fESDtrackCutsTPC.SetRequireTPCStandAlone(kTRUE); // require to have the projection at inner TPC wall
-  fESDtrackCutsTPC.SetMinNClustersTPC(70);
+  fESDtrackCutsTPC.SetMinNClustersTPC(80);
   fESDtrackCutsTPC.SetMaxChi2PerClusterTPC(4);
   fESDtrackCutsTPC.SetAcceptKinkDaughters(kFALSE);
   fESDtrackCutsTPC.SetRequireTPCRefit(kTRUE);
   fESDtrackCutsTPC.SetRequireITSRefit(kTRUE);
   fESDtrackCutsTPC.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  fESDtrackCutsTPC.SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9"); // DCA pt dependent: 7*(0.0050+0.0060/pt0.9)
+  //fESDtrackCutsTPC.SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9"); // DCA pt dependent: 7*(0.0050+0.0060/pt0.9)
+  fESDtrackCutsTPC.SetMaxDCAToVertexXYPtDep("0.035+0.03/pt^0.9"); // DCA pt dependent: 5*(0.0050+0.0060/pt0.9)
   fESDtrackCutsTPC.SetMaxDCAToVertexZ(1e6); // disabled
   fESDtrackCutsTPC.SetDCAToVertex2D(kFALSE); // each DCA is checked separately
   fESDtrackCutsTPC.SetRequireSigmaToVertex(kFALSE);
@@ -173,8 +174,9 @@ void AliRsnCutESD2010::InitializeToDefaults(Bool_t isSim)
   fESDtrackCutsITS.SetRequireITSRefit(kTRUE);
   fESDtrackCutsITS.SetMinNClustersITS(4);
   fESDtrackCutsITS.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  fESDtrackCutsITS.SetMaxChi2PerClusterITS(1.);
-  fESDtrackCutsITS.SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55"); // DCA pt dependent
+  fESDtrackCutsITS.SetMaxChi2PerClusterITS(2.);
+  // fESDtrackCutsITS.SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55"); // DCA pt dependent (7 sigma)
+  fESDtrackCutsITS.SetMaxDCAToVertexXYPtDep("0.0425+0.013/pt^1.55"); // DCA pt dependent (5 sigma)
   fESDtrackCutsITS.SetMaxDCAToVertexZ(1e6); // disabled
   fESDtrackCutsITS.SetDCAToVertex2D(kFALSE); // each DCA is checked separately
   
@@ -385,6 +387,6 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
     return kTRUE;
   }
   
-  // if we are here, the track is surel bad
+  // if we are here, the track is surely bad
   return kFALSE;
 }

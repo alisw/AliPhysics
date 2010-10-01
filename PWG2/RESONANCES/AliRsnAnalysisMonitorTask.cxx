@@ -302,12 +302,12 @@ void AliRsnAnalysisMonitorTask::ProcessESD
     fTrack->DCAz() = (Double_t)b[1];
     
     // get ITS info
+    for (k = 0; k < 6; k++)
+    {
+      fTrack->ITSmap(k) = track->HasPointOnITSLayer(k);
+    }
     if (isITSSA)
     {
-      for (k = 0; k < 6; k++)
-      {
-        fTrack->ITSmap(k) = track->HasPointOnITSLayer(k);
-      }
       fTrack->ITSchi2() = track->GetITSchi2();
       fTrack->ITSsignal() = track->GetITSsignal();
       nITS = fTrack->SSDcount() + fTrack->SDDcount();
