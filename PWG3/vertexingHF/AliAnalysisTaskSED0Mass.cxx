@@ -64,6 +64,7 @@ fCuts(0),
 fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
+fUsePid4Distr(0),
 fNPtBins(1),
 fTotPosPairs(0),
 fTotNegPairs(0),
@@ -85,6 +86,7 @@ fCuts(0),
 fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
+fUsePid4Distr(0),
 fNPtBins(1),
 fTotPosPairs(0),
 fTotNegPairs(0),
@@ -265,6 +267,22 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     namedistr+=i;
     TH1F *hd0p0B = new TH1F(namedistr.Data(), "Impact parameter distribution (prong +);d0 [cm]",200,-0.1,0.1);
 
+    namedistr="hd0moresB_";
+    namedistr+=i;
+    TH1F *hd0moresB = new TH1F(namedistr.Data(), "Impact parameter distribution (both);d0 [cm]",200,-0.1,0.1);
+
+    namedistr="hd0d0moresB_";
+    namedistr+=i;
+    TH1F *hd0d0moresB = new TH1F(namedistr.Data(), "Impact parameter distribution (prong +);d0 [cm]",200,-0.001,0.001);
+
+    namedistr="hd0vmoresB_";
+    namedistr+=i;
+    TH1F *hd0vmoresB = new TH1F(namedistr.Data(), "Impact parameter distribution (both);d0 [cm]",200,-0.1,0.1);
+
+    namedistr="hd0d0vmoresB_";
+    namedistr+=i;
+    TH1F *hd0d0vmoresB = new TH1F(namedistr.Data(), "Impact parameter distribution (prong +);d0 [cm]",200,-0.001,0.001);
+
     namedistr="hd0p1B_";
     namedistr+=i;
     TH1F *hd0p1B = new TH1F(namedistr.Data(), "Impact parameter distribution (prong -);d0 [cm]",200,-0.1,0.1);
@@ -305,19 +323,19 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     //decay lenght
     namedistr="hdeclS_";
     namedistr+=i;
-    TH1F *hdeclengthS = new TH1F(namedistr.Data(), "Decay Length distribution;Decay Length [cm]",200,0,0.6);
+    TH1F *hdeclengthS = new TH1F(namedistr.Data(), "Decay Length distribution;Decay Length [cm]",200,0,0.15);
 
     namedistr="hdeclB_";
     namedistr+=i;
-    TH1F *hdeclengthB = new TH1F(namedistr.Data(), "Decay Length distribution;Decay Length [cm]",200,0,0.6);
+    TH1F *hdeclengthB = new TH1F(namedistr.Data(), "Decay Length distribution;Decay Length [cm]",200,0,0.15);
 
     namedistr="hnormdeclS_";
     namedistr+=i;
-    TH1F *hnormdeclengthS = new TH1F(namedistr.Data(), "Normalized Decay Length distribution;Decay Length/Err ",200,0,10.);
+    TH1F *hnormdeclengthS = new TH1F(namedistr.Data(), "Normalized Decay Length distribution;Decay Length/Err ",200,0,6.);
 
     namedistr="hnormdeclB_";
     namedistr+=i;
-    TH1F *hnormdeclengthB = new TH1F(namedistr.Data(), "Normalized Decay Length distribution;Decay Length/Err ",200,0,10.);
+    TH1F *hnormdeclengthB = new TH1F(namedistr.Data(), "Normalized Decay Length distribution;Decay Length/Err ",200,0,6.);
 
     namedistr="hdeclvS_";
     namedistr+=i;
@@ -342,6 +360,10 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     namedistr="hcosthetapointB_";
     namedistr+=i;
     TH1F *hcosthetapointB = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
+
+    namedistr="hcosthetapointmoresB_";
+    namedistr+=i;
+    TH1F *hcosthetapointmoresB = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
 
    //  costhetapoint vs d0 or d0d0
     namedistr="hcosthpointd0S_";
@@ -375,6 +397,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     fDistr->Add(hd0KS);
     fDistr->Add(hd0B);
     fDistr->Add(hd0p0B);
+    fDistr->Add(hd0moresB);
     fDistr->Add(hd0p1B);
 
     fDistr->Add(hd0vpiS);
@@ -382,18 +405,22 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     fDistr->Add(hd0vB);
     fDistr->Add(hd0vp0B);
     fDistr->Add(hd0vp1B);
+    fDistr->Add(hd0vmoresB);
 
     fDistr->Add(hd0d0S);
     fDistr->Add(hd0d0B);
+    fDistr->Add(hd0d0moresB);
 
     fDistr->Add(hd0d0vS);
     fDistr->Add(hd0d0vB);
+    fDistr->Add(hd0d0vmoresB);
 
     fDistr->Add(hcosthetastarS);
     fDistr->Add(hcosthetastarB);
 
     fDistr->Add(hcosthetapointS);
     fDistr->Add(hcosthetapointB);
+    fDistr->Add(hcosthetapointmoresB);
 
     fDistr->Add(hdeclengthS);
     fDistr->Add(hdeclengthB);
@@ -478,8 +505,17 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   checkname="hTOFsig";
   TH1F* hTOFsig=new TH1F(checkname.Data(),"Distribution of TOF signal;TOF time [ps];Entries", 100, -2.e3,40.e3);
 
+  checkname="hTPCsig";
+  TH1F* hTPCsig=new TH1F(checkname.Data(),"Distribution of TPC signal;TPC sig;Entries", 100, 35.,100.);
+
   checkname="hTOFtimeKaonHyptime";
-  TH2F* hTOFtimeKaonHyptime=new TH2F(checkname.Data(),"TOFtime - timeHypothesisForKaon;p_{t}[GeV/c];TOFtime - timeHypothesisForKaon [ps]",200,0.,4.,1000,-20000.,20000.);
+  TH2F* hTOFtimeKaonHyptime=new TH2F(checkname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",200,0.,4.,1000,-20000.,20000.);
+
+  checkname="hTOFtimeKaonHyptimeAC";
+  TH2F* hTOFtimeKaonHyptimeAC=new TH2F(checkname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",200,0.,4.,1000,-20000.,20000.);
+
+  checkname="hTPCsigvsp";
+  TH2F* hTPCsigvsp=new TH2F(checkname.Data(),"TPCsig vs p;p[GeV/c];TPCsig",200,0.,4.,1000,35.,100.);
  
  checkname="hTOFtime";
   TH1F* hTOFtime=new TH1F(checkname.Data(),"Distribution of TOF time Kaon;TOF time(Kaon) [ps];Entries", 1000, 0.,50000.);
@@ -488,22 +524,30 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fChecks->Add(hptGoodTr);
   fChecks->Add(hdistrGoodTr);
   fChecks->Add(hTOFsig);
+  fChecks->Add(hTPCsig);
   fChecks->Add(hTOFtimeKaonHyptime);
+  fChecks->Add(hTOFtimeKaonHyptimeAC);
+  fChecks->Add(hTPCsigvsp);
   fChecks->Add(hTOFtime);
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 8,0.,8.);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 14,-0.5,13.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
   fNentries->GetXaxis()->SetBinLabel(3,"nD0Selected");
-  fNentries->GetXaxis()->SetBinLabel(4,"nEventsGoodVtx");
+  fNentries->GetXaxis()->SetBinLabel(4,"nEventsGoodVtxS");
   fNentries->GetXaxis()->SetBinLabel(5,"nEventsGoodVtx+>2tracks");
   fNentries->GetXaxis()->SetBinLabel(6,"ptbin = -1");
   fNentries->GetXaxis()->SetBinLabel(7,"no daughter");
   fNentries->GetXaxis()->SetBinLabel(8,"nCandSel(Tr)");
-
+  fNentries->GetXaxis()->SetBinLabel(9,"PID=0");
+  fNentries->GetXaxis()->SetBinLabel(10,"PID=1");
+  fNentries->GetXaxis()->SetBinLabel(11,"PID=2");
+  fNentries->GetXaxis()->SetBinLabel(12,"PID=3");
+  fNentries->GetXaxis()->SetBinLabel(13,"K");
+  fNentries->GetXaxis()->SetBinLabel(14,"Lambda");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
  
@@ -575,8 +619,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     return;
   }
   
-  
-  // fix for temporary bug in ESDfilter 
+  // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex()) return;
 
@@ -604,14 +647,10 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
     
-
+  if(!fCuts->IsEventSelected(aod)) return;
   
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-  if(!vtx1) { 
-    AliError("There is no primary vertex !"); 
-    return; 
-  }
 
   Bool_t isGoodVtx=kFALSE;
 
@@ -622,6 +661,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     fNentries->Fill(3);
   }
 
+  
   //cout<<"Start checks"<<endl;
   Int_t ntracks=0,isGoodTrack=0;
 
@@ -632,9 +672,9 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //loop on tracks in the event
   for (Int_t k=0;k<ntracks;k++){
     AliAODTrack* track=aod->GetTrack(k);
-
+    //cout<<"track n = "<<k<<endl;
+ 
     //check TOF
-
     if(!(track->GetStatus()&AliESDtrack::kTPCrefit &&
 	 track->GetStatus()&AliESDtrack::kITSrefit && 
 	 track->GetTPCNcls() >=70 &&
@@ -651,8 +691,9 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     ((TH1F*)fChecks->FindObject("hTOFtimeKaonHyptime"))->Fill(track->P(),pid->GetTOFsignal()-times[3]); //3 is kaon
 
     ((TH1F*)fChecks->FindObject("hTOFsig"))->Fill(pid->GetTOFsignal());
+    ((TH1F*)fChecks->FindObject("hTPCsig"))->Fill(pid->GetTPCsignal());
+    ((TH1F*)fChecks->FindObject("hTPCsigvsp"))->Fill(track->P(),pid->GetTPCsignal());
     if (pid->GetTOFsignal()< 0) ((TH1F*)fChecks->FindObject("hTOFsig"))->Fill(-1);
-
 
     //check clusters of the tracks
     Int_t nclsTot=0,nclsSPD=0;
@@ -662,7 +703,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	nclsTot++; if(l<2) nclsSPD++;
       }
     }
-    
+
     if (track->Pt()>0.3 &&
 	track->GetStatus()&AliESDtrack::kTPCrefit &&
 	track->GetStatus()&AliESDtrack::kITSrefit &&
@@ -677,11 +718,13 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   }
   //number of events with good vertex and at least 2 good tracks
   if (isGoodTrack>=2 && isGoodVtx) fNentries->Fill(4);
-
-
+  
   // loop over candidates
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
   if(fDebug>2) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
+
+  // FILE *f=fopen("4display.txt","a");
+  // fprintf(f,"Number of D0->Kpi: %d\n",nInD0toKpi);
 
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     //Int_t nPosPairs=0, nNegPairs=0;
@@ -695,11 +738,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       return;
     }
 
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()) {
-      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-      unsetvtx=kTRUE;
-    }
+    // Bool_t unsetvtx=kFALSE;
+    // if(!d->GetOwnPrimaryVtx()) {
+    //   d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+    //   unsetvtx=kTRUE;
+    // }
   
     
     //check reco daughter in acceptance
@@ -711,16 +754,19 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       //if( TMath::Abs(eta0)<0.9 && TMath::Abs(eta1)<0.9 ){
        //apply cuts on tracks
       Int_t isSelected = fCuts->IsSelected(d,AliRDHFCuts::kTracks);
+
       if(((AliAODTrack*)d->GetDaughter(0))->GetTPCNcls() < 70 || ((AliAODTrack*)d->GetDaughter(1))->GetTPCNcls() < 70) isSelected=kFALSE;
       if (!isSelected) return;
       fNentries->Fill(7);       
       if(fDebug>2) cout<<"tracks selected"<<endl;
 
+      Int_t ptbin=fCuts->PtBin(d->Pt());
+      if(ptbin==-1) {fNentries->Fill(5); return;} //out of bounds
       FillVarHists(aod,d,mcArray,fCuts,fDistr);
-      FillMassHists(d,mcArray,fCuts,fOutputMass);
+      FillMassHists(aod,d,mcArray,fCuts,fOutputMass);
     }
   
-    if(unsetvtx) d->UnsetOwnPrimaryVtx();
+    //if(unsetvtx) d->UnsetOwnPrimaryVtx();
   } //end for prongs
 
 
@@ -755,11 +801,19 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   Int_t lab=-9999;
   if(fReadMC) lab=part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
   //Double_t pt = d->Pt(); //mother pt
-  Bool_t isSelected=kFALSE;
+  Int_t isSelected=3;
+  Int_t isSelectedPID=99;
 
+  //isSelectedPID = cuts->IsSelected(part,AliRDHFCuts::kPID); //0 rejected,1 D0,2 Dobar, 3 both
+  isSelectedPID = cuts->IsSelectedPID(part); //0 rejected,1 D0,2 Dobar, 3 both
+  if (isSelectedPID==0)fNentries->Fill(8);
+  if (isSelectedPID==1)fNentries->Fill(9);
+  if (isSelectedPID==2)fNentries->Fill(10);
+  if (isSelectedPID==3)fNentries->Fill(11);
+    //fNentries->Fill(8+isSelectedPID);
 
   if(fCutOnDistr){
-    isSelected = cuts->IsSelected(part,AliRDHFCuts::kCandidate);
+    isSelected = cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod); //cuts with variables recalculated with new vertex (w/o daughters)
     if (!isSelected){
       //cout<<"Not Selected"<<endl;
       return;
@@ -771,7 +825,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   TString fillthispi="",fillthisK="",fillthis="";
 
   Int_t ptbin=cuts->PtBin(part->Pt());
-  if(ptbin==-1) {fNentries->Fill(5); return;} //out of bounds
+
 
   //recalculate vertex
   AliAODVertex *vtxProp=0x0;
@@ -786,16 +840,22 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
     AliESDtrack *esdtrack2=new AliESDtrack((AliVTrack*)part->GetDaughter(1));
     esdtrack1->PropagateToDCA(vtxProp,aod->GetMagneticField(),1.,dz1,covar1);
     esdtrack2->PropagateToDCA(vtxProp,aod->GetMagneticField(),1.,dz2,covar2);
+    delete vtxProp; vtxProp=NULL;
     delete esdtrack1;
     delete esdtrack2;
   }
 
   Double_t d0[2]={dz1[0],dz2[0]};
+  Double_t decl[2]={part->DecayLength(),part->NormalizedDecayLength()};
+  part->UnsetOwnPrimaryVtx();
 
   if(!fCutOnDistr || (fCutOnDistr && isSelected)){ //if no cuts or cuts passed 
     //printf("\nif no cuts or cuts passed\n");
-    if(lab>=0 && fReadMC){ //signal
 
+    //disable the PID
+    if(!fUsePid4Distr) isSelectedPID=0;
+    if((lab>=0 && fReadMC) || (!fReadMC && isSelectedPID)){ //signal (from MC or PID)
+      //if(!vtxProp) fNentries->Fill(3);
       //check pdg of the prongs
       AliAODTrack *prong0=(AliAODTrack*)part->GetDaughter(0);
       AliAODTrack *prong1=(AliAODTrack*)part->GetDaughter(1);
@@ -803,15 +863,20 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	return;
       }
       Int_t labprong[2];
-      labprong[0]=prong0->GetLabel();
-      labprong[1]=prong1->GetLabel();
+      if(fReadMC){
+	labprong[0]=prong0->GetLabel();
+	labprong[1]=prong1->GetLabel();
+      }
       AliAODMCParticle *mcprong=0;
       Int_t pdgProng[2]={0,0};
-      
+
       for (Int_t iprong=0;iprong<2;iprong++){
-	if(labprong[iprong]>=0)  mcprong= (AliAODMCParticle*)arrMC->At(labprong[iprong]);
-	pdgProng[iprong]=mcprong->GetPdgCode();
+	if(fReadMC && labprong[iprong]>=0) {
+	  mcprong= (AliAODMCParticle*)arrMC->At(labprong[iprong]);
+	  pdgProng[iprong]=mcprong->GetPdgCode();
+	}
       }
+    
 
       //no mass cut ditributions: ptbis
 	
@@ -821,24 +886,28 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       fillthisK="hptKSnoMcut_";
       fillthisK+=ptbin;
 
-      if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
+      if ((TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321)
+          || (isSelectedPID==1 || isSelectedPID==3)){
 	((TH1F*)listout->FindObject(fillthispi))->Fill(part->PtProng(0));
 	((TH1F*)listout->FindObject(fillthisK))->Fill(part->PtProng(1));
-      }else {
-	if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
-	  ((TH1F*)listout->FindObject(fillthisK))->Fill(part->PtProng(0));
-	  ((TH1F*)listout->FindObject(fillthispi))->Fill(part->PtProng(1));
-	}
+      }
+
+      if ((TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211)
+          || (isSelectedPID==2 || isSelectedPID==3)){
+	((TH1F*)listout->FindObject(fillthisK))->Fill(part->PtProng(0));
+	((TH1F*)listout->FindObject(fillthispi))->Fill(part->PtProng(1));
       }
       
       //no mass cut ditributions: mass
       fillthis="hMassS_";
       fillthis+=ptbin;
       
-      if (((AliAODMCParticle*)arrMC->At(lab))->GetPdgCode() == 421){//D0
+      if ((fReadMC && ((AliAODMCParticle*)arrMC->At(lab))->GetPdgCode() == 421)
+	  || (!fReadMC && (isSelectedPID==1 || isSelectedPID==3))){//D0
 	((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
       }
       else { //D0bar
+	if(fReadMC || (!fReadMC && isSelectedPID > 1))
 	((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
       }
 
@@ -848,13 +917,18 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	if(fArray==1) cout<<"LS signal: ERROR"<<endl;
 	for (Int_t iprong=0; iprong<2; iprong++){
 	  AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(iprong);
-	  labprong[iprong]=prong->GetLabel();
+	  if (fReadMC) labprong[iprong]=prong->GetLabel();
 	  
 	  //cout<<"prong name = "<<prong->GetName()<<" label = "<<prong->GetLabel()<<endl;
-	  if(labprong[iprong]>=0)  mcprong= (AliAODMCParticle*)arrMC->At(labprong[iprong]);
-	  Int_t pdgprong=mcprong->GetPdgCode();
-	  
-	  if(TMath::Abs(pdgprong)==211) {
+	  Int_t pdgprong=0;
+	  if(fReadMC && labprong[iprong]>=0) {
+	    mcprong= (AliAODMCParticle*)arrMC->At(labprong[iprong]);
+	    pdgprong=mcprong->GetPdgCode();
+	  }
+
+	  Bool_t isPionHere[2]={(isSelectedPID==1 || isSelectedPID==3) ? kTRUE : kFALSE,(isSelectedPID==2 || isSelectedPID==3) ? kTRUE : kFALSE};
+
+	  if(TMath::Abs(pdgprong)==211 || isPionHere[iprong]) {
 	    //cout<<"pi"<<endl;
 	    
 	    fillthispi="hptpiS_";
@@ -872,7 +946,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
 	  }
 	  
-	  if(TMath::Abs(pdgprong)==321) {
+	  if(TMath::Abs(pdgprong)==321 || !isPionHere[iprong]) {
 	    //cout<<"kappa"<<endl;
 	    
 	    fillthisK="hptKS_";
@@ -908,9 +982,11 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	  
 	fillthis="hcosthetastarS_";
 	fillthis+=ptbin;
-	if (((AliAODMCParticle*)arrMC->At(lab))->GetPdgCode() == 421)((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
-	else ((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0bar());
-
+	if ((fReadMC && ((AliAODMCParticle*)arrMC->At(lab))->GetPdgCode() == 421)) ((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
+	else {
+	  if (fReadMC || isSelectedPID>1)((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0bar());
+	  if(isSelectedPID==1 || isSelectedPID==3)((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
+	}
 	fillthis="hd0d0S_";
 	fillthis+=ptbin;
 	((TH1F*)listout->FindObject(fillthis))->Fill(part->Prodd0d0());
@@ -932,15 +1008,16 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	if(vtxProp) {
 	  fillthis="hdeclvS_";
 	  fillthis+=ptbin;
-	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->AliAODRecoDecay::DecayLength(vtxProp));
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(decl[0]);
 
 	  fillthis="hnormdeclvS_";
 	  fillthis+=ptbin;
-	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->AliAODRecoDecay::NormalizedDecayLength(vtxProp));
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(decl[1]);
 	}
-     } //end mass cut
+      } //end mass cut
     
     } else{ //Background or LS
+      //if(!fReadMC){
       //cout<<"is background"<<endl;
      
       //no mass cut distributions: mass, ptbis
@@ -964,13 +1041,13 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       if(TMath::Abs(minvD0-mPDG)<invmasscut || TMath::Abs(minvD0bar-mPDG)<invmasscut){
 
 
-	AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(0);
-	if(!prong) {
+	AliAODTrack *prongg=(AliAODTrack*)part->GetDaughter(0);
+	if(!prongg) {
 	  if(fDebug>2) cout<<"No daughter found";
 	  return;
 	}
 	else{
-	  if(prong->Charge()==1) {fTotPosPairs[ptbin]++;} else {fTotNegPairs[ptbin]++;}
+	  if(prongg->Charge()==1) {fTotPosPairs[ptbin]++;} else {fTotNegPairs[ptbin]++;}
 	}
 	
 	//normalise pt distr to half afterwards
@@ -989,6 +1066,61 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	fillthis+=ptbin;
 	((TH1F*)listout->FindObject(fillthis))->Fill(part->Getd0Prong(0));
 	((TH1F*)listout->FindObject(fillthis))->Fill(part->Getd0Prong(1));
+
+	if(fReadMC){
+	  Int_t pdgMother[2]={0,0};
+	  Double_t factor[2]={1,1};
+
+	  for(Int_t iprong=0;iprong<2;iprong++){
+	    AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(iprong);
+	    lab=prong->GetLabel();
+	    if(lab>=0){
+	      AliAODMCParticle* mcprong=(AliAODMCParticle*)arrMC->At(lab);
+	      if(mcprong){
+		Int_t labmom=mcprong->GetMother();
+		if(labmom>=0){
+		  AliAODMCParticle* mcmother=(AliAODMCParticle*)arrMC->At(labmom);
+		  if(mcmother) pdgMother[iprong]=mcmother->GetPdgCode();
+		}
+	      }
+	    }
+
+	    fillthis="hd0moresB_";
+	    fillthis+=ptbin;
+	  
+	    if(TMath::Abs(pdgMother[iprong])==310 || TMath::Abs(pdgMother[iprong])==130 || TMath::Abs(pdgMother[iprong])==321){ //K^0_S, K^0_L, K^+-
+	      if(part->PtProng(iprong)<=1)factor[iprong]=1./.7;
+	      else factor[iprong]=1./.6;
+	      fNentries->Fill(12);
+	    }
+	    
+	    if(TMath::Abs(pdgMother[iprong])==3122) { //Lambda
+	      factor[iprong]=1./0.25;
+	      fNentries->Fill(13);
+	    }
+	    fillthis="hd0moresB_";
+	    fillthis+=ptbin;
+
+	    ((TH1F*)listout->FindObject(fillthis))->Fill(part->Getd0Prong(iprong),factor[iprong]);
+
+	    fillthis="hd0vmoresB_";
+	    fillthis+=ptbin;
+	    ((TH1F*)listout->FindObject(fillthis))->Fill(d0[iprong],factor[iprong]);
+
+	  }
+
+	  fillthis="hd0d0moresB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->Prodd0d0(),factor[0]*factor[1]);
+
+	  fillthis="hd0d0vmoresB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(d0[0]*d0[1],factor[0]*factor[1]);
+	
+	  fillthis="hcosthetapointmoresB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),factor[0]*factor[1]);
+	}
 
 	fillthis="hd0vp0B_";
 	fillthis+=ptbin;
@@ -1047,20 +1179,20 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	if(vtxProp) {
 	  fillthis="hdeclvB_";
 	  fillthis+=ptbin;
-	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->AliAODRecoDecay::DecayLength(vtxProp));
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(decl[0]);
 
 	  fillthis="hnormdeclvB_";
 	  fillthis+=ptbin;
-	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->AliAODRecoDecay::NormalizedDecayLength(vtxProp));
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(decl[1]);
 	}
-     }//mass cut	
+      }//mass cut	
     }//else (background)
   }
   return;
 }
 //____________________________________________________________________________
 
-void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi* cuts, TList *listout){
+void AliAnalysisTaskSED0Mass::FillMassHists(AliAODEvent* aod,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi* cuts, TList *listout){
   //
   // function used in UserExec to fill mass histograms:
   //
@@ -1068,15 +1200,18 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 
   Double_t mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
 
-  Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kCandidate); //selected
+  Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod); //selected
+
   //cout<<"is selected = "<<isSelected<<endl;
 
   //cout<<"check cuts = "<<endl;
   //cuts->PrintAll();
   if (!isSelected){
     //cout<<"Not Selected"<<endl;
+    //cout<<"Rejected because "<<cuts->GetWhy()<<endl;
     return;
   }
+
 
   if(fDebug>2)  cout<<"Candidate selected"<<endl;
 
@@ -1092,6 +1227,25 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   else{
     if(prong->Charge()==1) {fTotPosPairs[ptbin]++;} else {fTotNegPairs[ptbin]++;}
   }
+
+  for(Int_t it=0;it<2;it++){
+    //fill TOFsig-kaontime
+    AliAODTrack* track=(AliAODTrack*)part->GetDaughter(it);
+    AliAODPid *pid = track->GetDetPid();
+    Double_t times[5];
+    pid->GetIntegratedTimes(times);
+    ((TH2F*)fChecks->FindObject("hTOFtimeKaonHyptimeAC"))->Fill(track->P(),pid->GetTOFsignal()-times[3]);
+  }
+
+  //request on spd points to be addes
+  if(/*nSPD==2 && */part->Pt() > 5. && (TMath::Abs(invmassD0-mPDG)<0.01 || TMath::Abs(invmassD0bar-mPDG)<0.01)){
+    FILE *f=fopen("4display.txt","a");
+    fprintf(f,"pt: %f \n Rapidity: %f \t Period Number: %x \t Run Number: %d \t BunchCrossNumb: %d \t OrbitNumber: %d\n",part->Pt(),part->Y(421),aod->GetPeriodNumber(),aod->GetRunNumber(),aod->GetBunchCrossNumber(),aod->GetOrbitNumber());
+    fclose(f);
+    //printf("PrimVtx NContributors: %d \n Prongs Rel Angle: %f \n \n",ncont,relangle);
+  }
+ 
+
 
   TString fillthis="";
   Int_t pdgDgD0toKpi[2]={321,211};
@@ -1181,10 +1335,6 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 AliAODVertex* AliAnalysisTaskSED0Mass::GetPrimaryVtxSkipped(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *d){
   //Calculate the primary vertex w/o the daughter tracks of the candidate
   
-  AliESDVertex *vertexESD=0x0;
-  AliAODVertex *vertexAOD=0x0;
-  AliVertexerTracks *vertexer = new AliVertexerTracks(aodev->GetMagneticField());
-  
   Int_t skipped[2];
   Int_t nTrksToSkip=2;
   AliAODTrack *dgTrack = (AliAODTrack*)d->GetDaughter(0);
@@ -1200,7 +1350,10 @@ AliAODVertex* AliAnalysisTaskSED0Mass::GetPrimaryVtxSkipped(AliAODEvent *aodev,A
   }
   skipped[1]=dgTrack->GetID();
 
- 
+  AliESDVertex *vertexESD=0x0;
+  AliAODVertex *vertexAOD=0x0;
+  AliVertexerTracks *vertexer = new AliVertexerTracks(aodev->GetMagneticField());
+  
   //
   vertexer->SetSkipTracks(nTrksToSkip,skipped);
   vertexer->SetMinClusters(4);  
