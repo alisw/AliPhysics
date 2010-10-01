@@ -76,6 +76,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F*   fDalitz[4*kMaxPtBins];      //! dalitz plot (sig,bkg,tot)
   TH2F*   fDalitzPhi[4*kMaxPtBins];   //! dalitz plot via phi (sig,bkg,tot)
   TH2F*   fDalitzK0st[4*kMaxPtBins];   //! dalitz plot via K0* (sig,bkg,tot)
+  TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
+  TH2F *fPtVsMassAC;  //! hist. of pt vs. mass (analysis cuts)
+  TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
+  TH2F *fYVsPtAC;     //! hist. of Y vs. Pt (analysis cuts)
+  TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH2F *fYVsPtSigAC;    //! hist. of Y vs. Pt (MC, only sig, analysis cuts)
+  
   Bool_t  fReadMC;                    //  flag for access to MC
   UChar_t fNPtBins;                   // number of Pt bins
   TList *fListCuts; //list of cuts
@@ -86,7 +93,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliRDHFCutsDstoKKpi *fProdCuts;     // Cuts for Analysis
   AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,5);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,6);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif
