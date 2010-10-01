@@ -613,7 +613,12 @@ void AliCaloTrackReader::FillVertexArray() {
   }          
   
   if (!fMixedEvent) { //Single event analysis
-    fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]); 
+    
+    if(fDataType!=kMC)fInputEvent->GetPrimaryVertex()->GetXYZ(fVertex[0]); 
+    else { 
+      fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
+    }
+      
     if(fDebug > 1)
       printf("AliCaloTrackReader::FillVertexArray() - Single Event Vertex : %f,%f,%f\n",fVertex[0][0],fVertex[0][1],fVertex[0][2]);
 

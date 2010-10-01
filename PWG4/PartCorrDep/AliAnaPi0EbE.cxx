@@ -336,15 +336,16 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         }//Work with stack also   
         
         //Fill some histograms about shower shape
-        //Photon1
-        AliVCluster *cluster1 = (GetReader()->GetInputEvent())->GetCaloCluster(photon1->GetCaloLabel(0));        
-        fhPtDispPi0  ->Fill(photon1->Pt(), cluster1->GetDispersion());    
-        fhPtLambdaPi0->Fill(photon1->Pt(), cluster1->GetM20(), cluster1->GetM02());    
-        //Photon2
-        AliVCluster *cluster2 = (GetReader()->GetInputEvent())->GetCaloCluster(photon2->GetCaloLabel(0));        
-        fhPtDispPi0  ->Fill(photon2->Pt(), cluster2->GetDispersion());    
-        fhPtLambdaPi0->Fill(photon2->Pt(), cluster2->GetM20(), cluster2->GetM02());  
-        
+        if(GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
+          //Photon1 
+          AliVCluster *cluster1 = (GetReader()->GetInputEvent())->GetCaloCluster(photon1->GetCaloLabel(0)); 
+          fhPtDispPi0  ->Fill(photon1->Pt(), cluster1->GetDispersion());    
+          fhPtLambdaPi0->Fill(photon1->Pt(), cluster1->GetM20(), cluster1->GetM02());    
+          //Photon2
+          AliVCluster *cluster2 = (GetReader()->GetInputEvent())->GetCaloCluster(photon2->GetCaloLabel(0));        
+          fhPtDispPi0  ->Fill(photon2->Pt(), cluster2->GetDispersion());    
+          fhPtLambdaPi0->Fill(photon2->Pt(), cluster2->GetM20(), cluster2->GetM02());  
+        }
         //Create AOD for analysis
         mom = mom1+mom2;
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
@@ -363,14 +364,16 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         fhPtEtaPhiBkg ->Fill((mom1+mom2).Pt(),(mom1+mom2).Eta(),(mom1+mom2).Phi());
         
         //Fill some histograms about shower shape
-        //Photon1
-        AliVCluster *cluster1 = (GetReader()->GetInputEvent())->GetCaloCluster(photon1->GetCaloLabel(0));        
-        fhPtDispBkg  ->Fill(photon1->Pt(), cluster1->GetDispersion());    
-        fhPtLambdaBkg->Fill(photon1->Pt(), cluster1->GetM20(), cluster1->GetM02());    
-        //Photon2
-        AliVCluster *cluster2 = (GetReader()->GetInputEvent())->GetCaloCluster(photon2->GetCaloLabel(0));        
-        fhPtDispBkg  ->Fill(photon2->Pt(), cluster2->GetDispersion());    
-        fhPtLambdaBkg->Fill(photon2->Pt(), cluster2->GetM20(), cluster2->GetM02());  
+        if(GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
+          //Photon1
+          AliVCluster *cluster1 = (GetReader()->GetInputEvent())->GetCaloCluster(photon1->GetCaloLabel(0));        
+          fhPtDispBkg  ->Fill(photon1->Pt(), cluster1->GetDispersion());    
+          fhPtLambdaBkg->Fill(photon1->Pt(), cluster1->GetM20(), cluster1->GetM02());    
+          //Photon2
+          AliVCluster *cluster2 = (GetReader()->GetInputEvent())->GetCaloCluster(photon2->GetCaloLabel(0));        
+          fhPtDispBkg  ->Fill(photon2->Pt(), cluster2->GetDispersion());    
+          fhPtLambdaBkg->Fill(photon2->Pt(), cluster2->GetM20(), cluster2->GetM02()); 
+        }
         
       }//bkg pair
       
