@@ -101,7 +101,7 @@ public:
     void SetBackgroundCorrectionITS(const TH1D *histo){fBackgroundITS=(TH1D*) histo;}
 
     //Returns the factor one needs to multiply by to get the corrected et for all constant (not pt dependent) factors
-    Float_t GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type);
+    Float_t GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type) const;
 
 
     AliAnalysisHadEtCorrections(const AliAnalysisHadEtCorrections *g) ; // cpy ctor
@@ -127,7 +127,7 @@ protected:
     Float_t ffpTcutCorrectionTPCHigh;//the high bound on the TPC momentum cut correction
     Float_t ffpTcutCorrectionITSHigh;//the high bound on the ITS momentum cut correction
 
-    //Histograms with the pT dependent corrections
+    //Histograms with the pT dependent fCorrections
     TH1D *fnotIDTPC;//correction for unidentified tracks in the TPC
     TH1D *fnotIDITS;//correction for unidentified tracks in the ITS
     TH1D *fnotIDNoID;//correction for unidentified tracks assuming no ID

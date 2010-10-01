@@ -127,7 +127,7 @@ AliAnalysisEt::AliAnalysisEt() :
 }
 
 AliAnalysisEt::~AliAnalysisEt()
-{
+{//Destructor
   delete fCuts;
   delete fPdgDB;
   if(fTreeDeposit){

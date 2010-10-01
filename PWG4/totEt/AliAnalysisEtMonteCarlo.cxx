@@ -97,7 +97,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
         // Check for reasonable (for now neutral and singly charged) charge on the particle
         //TODO:Maybe not only singly charged?
-        if (TMath::Abs(pdg->Charge()) != fCuts->GetMonteCarloSingleChargedParticle() && pdg->Charge() != fCuts->GetMonteCarloNeutralParticle()) continue;
+        if (TMath::Abs(TMath::Abs(pdg->Charge()) - fCuts->GetMonteCarloSingleChargedParticle())<1e-3 && TMath::Abs(TMath::Abs(pdg->Charge()) - fCuts->GetMonteCarloNeutralParticle())<1e-3) continue;
 
         fMultiplicity++;
 
@@ -153,7 +153,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      fGammaEt += et;
 	    }
 
-            if (pdg->Charge() == fCuts->GetMonteCarloNeutralParticle() )
+            if (TMath::Abs(pdg->Charge() - fCuts->GetMonteCarloNeutralParticle()) <1e-3 )
             {
 	       fNeutralMultiplicity++;
 	       fTotNeutralEt += et;
@@ -164,7 +164,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		  fTotEtAcc += et;
                 }
             }
-            else if (pdg->Charge() != fCuts->GetMonteCarloNeutralParticle() )
+            else if (TMath::Abs( pdg->Charge() - fCuts->GetMonteCarloNeutralParticle())<1e-3 )
             {
 	       fChargedMultiplicity++;
 	       fTotChargedEt += et;

@@ -27,8 +27,8 @@ public:
     void CreateHistograms();
     virtual void Init();
 
-    Float_t GetSimulatedHadronicEt(){return fSimHadEt;}
-    Float_t GetSimulatedTotalEt(){return fSimTotEt;}
+    Float_t GetSimulatedHadronicEt() const {return fSimHadEt;}
+    Float_t GetSimulatedTotalEt() const {return fSimTotEt;}
 
     void FillSimTotEtVsRecoTotEtFullAcceptanceTPC(Float_t et){FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceTPC",fSimTotEt,et,1.0);}
     void FillSimTotEtVsRecoTotEtFullAcceptanceITS(Float_t et){FillHisto2D("SimTotEtVsRecoTotEtFullAcceptanceITS",fSimTotEt,et,1.0);}
@@ -84,8 +84,8 @@ public:
     AliAnalysisHadEtMonteCarlo & operator = (const AliAnalysisHadEtMonteCarlo & g) ;//cpy assignment
     AliAnalysisHadEtMonteCarlo(const AliAnalysisHadEtMonteCarlo & g) ; // cpy ctor
 
-    Float_t fSimHadEt;
-    Float_t fSimTotEt;
+    Float_t fSimHadEt;//simulated Et event by event
+    Float_t fSimTotEt;//total et event by event
 
     void ResetEventValues();
     ClassDef(AliAnalysisHadEtMonteCarlo, 1);

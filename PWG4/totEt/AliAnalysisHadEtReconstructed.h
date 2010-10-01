@@ -27,43 +27,43 @@ public:
     virtual void SetConfigFile(const char *c) {fConfigFile = c;}
     virtual Int_t AnalyseEvent(AliVEvent* event);
 
-    //the "Corrected" variables are only corrected for the track-by-track corrections
-    Float_t GetCorrectedHadEtFullAcceptanceTPC(){return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPC;}
-    Float_t GetCorrectedHadEtFullAcceptanceITS(){return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPC+fCorrectedHadEtFullAcceptanceITS);}
-    Float_t GetCorrectedHadEtEMCALAcceptanceTPC(){return fCorrHadEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPC;}
-    Float_t GetCorrectedHadEtEMCALAcceptanceITS(){return fCorrHadEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPC+fCorrectedHadEtEMCALAcceptanceITS);}
-    Float_t GetCorrectedHadEtPHOSAcceptanceTPC(){return fCorrHadEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPC;}
-    Float_t GetCorrectedHadEtPHOSAcceptanceITS(){return fCorrHadEtPHOSAcceptanceITS*(fCorrectedHadEtPHOSAcceptanceTPC+fCorrectedHadEtPHOSAcceptanceITS);}
-    Float_t GetCorrectedTotEtFullAcceptanceTPC(){return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPC;}
-    Float_t GetCorrectedTotEtFullAcceptanceITS(){return fCorrTotEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPC+fCorrectedHadEtFullAcceptanceITS);}
-    Float_t GetCorrectedTotEtEMCALAcceptanceTPC(){return fCorrTotEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPC;}
-    Float_t GetCorrectedTotEtEMCALAcceptanceITS(){return fCorrTotEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPC+fCorrectedHadEtEMCALAcceptanceITS);}
-    Float_t GetCorrectedTotEtPHOSAcceptanceTPC(){return fCorrTotEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPC;}
-    Float_t GetCorrectedTotEtPHOSAcceptanceITS(){return fCorrTotEtPHOSAcceptanceTPC*(fCorrectedHadEtPHOSAcceptanceTPC+fCorrectedHadEtPHOSAcceptanceITS);}
-    Float_t GetRawEtFullAcceptanceTPC(){return fRawEtFullAcceptanceTPC;}
-    Float_t GetRawEtFullAcceptanceITS(){return fRawEtFullAcceptanceITS+fRawEtFullAcceptanceTPC;}
-    Float_t GetRawEtEMCALAcceptanceTPC(){return fRawEtEMCALAcceptanceTPC;}
-    Float_t GetRawEtEMCALAcceptanceITS(){return fRawEtEMCALAcceptanceITS+fRawEtEMCALAcceptanceTPC;}
-    Float_t GetRawEtPHOSAcceptanceTPC(){return fRawEtPHOSAcceptanceTPC;}
-    Float_t GetRawEtPHOSAcceptanceITS(){return fRawEtPHOSAcceptanceITS+fRawEtPHOSAcceptanceTPC;}
-    Float_t GetCorrectedHadEtFullAcceptanceTPCNoPID(){return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNoPID;}
-    Float_t GetCorrectedHadEtFullAcceptanceITSNoPID(){return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPCNoPID+fCorrectedHadEtFullAcceptanceITSNoPID);}
-    Float_t GetCorrectedHadEtEMCALAcceptanceTPCNoPID(){return fCorrHadEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPCNoPID;}
-    Float_t GetCorrectedHadEtEMCALAcceptanceITSNoPID(){return fCorrHadEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPCNoPID+fCorrectedHadEtEMCALAcceptanceITSNoPID);}
-    Float_t GetCorrectedHadEtPHOSAcceptanceTPCNoPID(){return fCorrHadEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPCNoPID;}
-    Float_t GetCorrectedHadEtPHOSAcceptanceITSNoPID(){return fCorrHadEtPHOSAcceptanceITS*(fCorrectedHadEtPHOSAcceptanceTPCNoPID+fCorrectedHadEtPHOSAcceptanceITSNoPID);}
-    Float_t GetCorrectedTotEtFullAcceptanceTPCNoPID(){return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNoPID;}
-    Float_t GetCorrectedTotEtFullAcceptanceITSNoPID(){return fCorrTotEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPCNoPID+fCorrectedHadEtFullAcceptanceITSNoPID);}
-    Float_t GetCorrectedTotEtEMCALAcceptanceTPCNoPID(){return fCorrTotEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPCNoPID;}
-    Float_t GetCorrectedTotEtEMCALAcceptanceITSNoPID(){return fCorrTotEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPCNoPID+fCorrectedHadEtEMCALAcceptanceITSNoPID);}
-    Float_t GetCorrectedTotEtPHOSAcceptanceTPCNoPID(){return fCorrTotEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPCNoPID;}
-    Float_t GetCorrectedTotEtPHOSAcceptanceITSNoPID(){return fCorrTotEtPHOSAcceptanceITS*(fCorrectedHadEtPHOSAcceptanceTPCNoPID+fCorrectedHadEtPHOSAcceptanceITSNoPID);}
-    Float_t GetRawEtFullAcceptanceTPCNoPID(){return fRawEtFullAcceptanceTPCNoPID;}
-    Float_t GetRawEtFullAcceptanceITSNoPID(){return fRawEtFullAcceptanceITSNoPID+fRawEtFullAcceptanceTPCNoPID;}
-    Float_t GetRawEtEMCALAcceptanceTPCNoPID(){return fRawEtEMCALAcceptanceTPCNoPID;}
-    Float_t GetRawEtEMCALAcceptanceITSNoPID(){return fRawEtEMCALAcceptanceITSNoPID+fRawEtEMCALAcceptanceTPCNoPID;}
-    Float_t GetRawEtPHOSAcceptanceTPCNoPID(){return fRawEtPHOSAcceptanceTPCNoPID;}
-    Float_t GetRawEtPHOSAcceptanceITSNoPID(){return fRawEtPHOSAcceptanceITSNoPID+fRawEtPHOSAcceptanceTPCNoPID;}
+    //the "Corrected" variables are only corrected for the track-by-track fCorrections
+    Float_t GetCorrectedHadEtFullAcceptanceTPC() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPC;}
+    Float_t GetCorrectedHadEtFullAcceptanceITS() const {return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPC+fCorrectedHadEtFullAcceptanceITS);}
+    Float_t GetCorrectedHadEtEMCALAcceptanceTPC() const{return fCorrHadEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPC;}
+    Float_t GetCorrectedHadEtEMCALAcceptanceITS() const {return fCorrHadEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPC+fCorrectedHadEtEMCALAcceptanceITS);}
+    Float_t GetCorrectedHadEtPHOSAcceptanceTPC() const {return fCorrHadEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPC;}
+    Float_t GetCorrectedHadEtPHOSAcceptanceITS() const {return fCorrHadEtPHOSAcceptanceITS*(fCorrectedHadEtPHOSAcceptanceTPC+fCorrectedHadEtPHOSAcceptanceITS);}
+    Float_t GetCorrectedTotEtFullAcceptanceTPC() const {return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPC;}
+    Float_t GetCorrectedTotEtFullAcceptanceITS() const {return fCorrTotEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPC+fCorrectedHadEtFullAcceptanceITS);}
+    Float_t GetCorrectedTotEtEMCALAcceptanceTPC() const {return fCorrTotEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPC;}
+    Float_t GetCorrectedTotEtEMCALAcceptanceITS() const {return fCorrTotEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPC+fCorrectedHadEtEMCALAcceptanceITS);}
+    Float_t GetCorrectedTotEtPHOSAcceptanceTPC() const {return fCorrTotEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPC;}
+    Float_t GetCorrectedTotEtPHOSAcceptanceITS() const {return fCorrTotEtPHOSAcceptanceTPC*(fCorrectedHadEtPHOSAcceptanceTPC+fCorrectedHadEtPHOSAcceptanceITS);}
+    Float_t GetRawEtFullAcceptanceTPC() const {return fRawEtFullAcceptanceTPC;}
+    Float_t GetRawEtFullAcceptanceITS() const {return fRawEtFullAcceptanceITS+fRawEtFullAcceptanceTPC;}
+    Float_t GetRawEtEMCALAcceptanceTPC() const {return fRawEtEMCALAcceptanceTPC;}
+    Float_t GetRawEtEMCALAcceptanceITS() const {return fRawEtEMCALAcceptanceITS+fRawEtEMCALAcceptanceTPC;}
+    Float_t GetRawEtPHOSAcceptanceTPC() const {return fRawEtPHOSAcceptanceTPC;}
+    Float_t GetRawEtPHOSAcceptanceITS()const {return fRawEtPHOSAcceptanceITS+fRawEtPHOSAcceptanceTPC;}
+    Float_t GetCorrectedHadEtFullAcceptanceTPCNoPID() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNoPID;}
+    Float_t GetCorrectedHadEtFullAcceptanceITSNoPID() const {return fCorrHadEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPCNoPID+fCorrectedHadEtFullAcceptanceITSNoPID);}
+    Float_t GetCorrectedHadEtEMCALAcceptanceTPCNoPID() const {return fCorrHadEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPCNoPID;}
+    Float_t GetCorrectedHadEtEMCALAcceptanceITSNoPID() const {return fCorrHadEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPCNoPID+fCorrectedHadEtEMCALAcceptanceITSNoPID);}
+    Float_t GetCorrectedHadEtPHOSAcceptanceTPCNoPID() const {return fCorrHadEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPCNoPID;}
+    Float_t GetCorrectedHadEtPHOSAcceptanceITSNoPID() const {return fCorrHadEtPHOSAcceptanceITS*(fCorrectedHadEtPHOSAcceptanceTPCNoPID+fCorrectedHadEtPHOSAcceptanceITSNoPID);}
+    Float_t GetCorrectedTotEtFullAcceptanceTPCNoPID() const {return fCorrTotEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPCNoPID;}
+    Float_t GetCorrectedTotEtFullAcceptanceITSNoPID() const {return fCorrTotEtFullAcceptanceITS*(fCorrectedHadEtFullAcceptanceTPCNoPID+fCorrectedHadEtFullAcceptanceITSNoPID);}
+    Float_t GetCorrectedTotEtEMCALAcceptanceTPCNoPID() const {return fCorrTotEtEMCALAcceptanceTPC*fCorrectedHadEtEMCALAcceptanceTPCNoPID;}
+    Float_t GetCorrectedTotEtEMCALAcceptanceITSNoPID() const {return fCorrTotEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPCNoPID+fCorrectedHadEtEMCALAcceptanceITSNoPID);}
+    Float_t GetCorrectedTotEtPHOSAcceptanceTPCNoPID() const {return fCorrTotEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPCNoPID;}
+    Float_t GetCorrectedTotEtPHOSAcceptanceITSNoPID() const {return fCorrTotEtPHOSAcceptanceITS*(fCorrectedHadEtPHOSAcceptanceTPCNoPID+fCorrectedHadEtPHOSAcceptanceITSNoPID);}
+    Float_t GetRawEtFullAcceptanceTPCNoPID() const {return fRawEtFullAcceptanceTPCNoPID;}
+    Float_t GetRawEtFullAcceptanceITSNoPID() const {return fRawEtFullAcceptanceITSNoPID+fRawEtFullAcceptanceTPCNoPID;}
+    Float_t GetRawEtEMCALAcceptanceTPCNoPID() const {return fRawEtEMCALAcceptanceTPCNoPID;}
+    Float_t GetRawEtEMCALAcceptanceITSNoPID() const {return fRawEtEMCALAcceptanceITSNoPID+fRawEtEMCALAcceptanceTPCNoPID;}
+    Float_t GetRawEtPHOSAcceptanceTPCNoPID() const {return fRawEtPHOSAcceptanceTPCNoPID;}
+    Float_t GetRawEtPHOSAcceptanceITSNoPID() const {return fRawEtPHOSAcceptanceITSNoPID+fRawEtPHOSAcceptanceTPCNoPID;}
 
     void CreateHistograms();
     virtual void Init();
@@ -71,7 +71,7 @@ public:
 protected:
 
     Bool_t CheckGoodVertex(AliVParticle *track);
-    AliAnalysisHadEtCorrections *corrections;
+    AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
 
     TString       fConfigFile;        // the name of the ConfigFile
     //virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField) = 0;
