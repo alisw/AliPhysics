@@ -66,7 +66,7 @@ public:
   
   enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kNOCTP, kEMPTY , kNSD};
   
-  enum Energy { k900 , k10000, k14000 , k7000, k2400, k5500, k1380};
+  enum Energy { k900 , k10000, k14000 , k7000, k2400, k5500, k2750};
   
   enum MagField {k0G, k5G, k5Gnegative};
   
@@ -101,6 +101,7 @@ public:
   TH2F* GetBackgroundCorrectionNSD(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetDoubleHitCorrection(Int_t det, Char_t ring);
   TH1F* GetSPDDeadCorrection(Int_t vtxbin);
+  TH1F* GetFMDDeadCorrection(Int_t vtxbin);
   
   TH1F* GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetSharingEfficiencyTrVtx(Int_t det, Char_t ring, Int_t vtxbin);

@@ -256,13 +256,13 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
 	TH1F* hSharingEff = pars->GetSharingEfficiencyTrVtx(det,ringChar,vtxbin); 
 	TH1F* hSharingEffTrVtx = pars->GetSharingEfficiencyTrVtx(det,ringChar,vtxbin);	
       
-	for(Int_t nx=1; nx<hMult->GetNbinsX(); nx++) {
+	for(Int_t nx=1; nx<=hMult->GetNbinsX(); nx++) {
 	  Float_t correction      = hSharingEff->GetBinContent(nx);
 	  Float_t correctionTrVtx = hSharingEffTrVtx->GetBinContent(nx);
 	  //FIXME : This should be for NSD events
 	  Float_t correctionNSD   = hSharingEff->GetBinContent(nx);
 	  
-	  for(Int_t ny=1; ny<hMult->GetNbinsY(); ny++) {
+	  for(Int_t ny=1; ny<=hMult->GetNbinsY(); ny++) {
 	    
 	    if(correction != 0){
 	      hMult->SetBinContent(nx,ny,hMult->GetBinContent(nx,ny)/correction);

@@ -33,6 +33,8 @@ class AliFMDAnaCalibBackgroundCorrection : public TObject
   void    SetDoubleHitCorrection(Int_t det, Char_t ring, TH1F* hCorrection);
   TH1F*   GetSPDDeadCorrection(Int_t vtxbin);
   void    SetSPDDeadCorrection(Int_t vtxbin, TH1F* hCorrection);
+  TH1F*   GetFMDDeadCorrection(Int_t vtxbin);
+  void    SetFMDDeadCorrection(Int_t vtxbin, TH1F* hCorrection);
   void    SetRefAxis(TAxis* axis);
   Int_t   GetNvtxBins();
   Float_t GetVtxCutZ();

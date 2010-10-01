@@ -283,7 +283,7 @@ void AliFMDAnaParameters::SetParametersFromESD(AliESDEvent* esd) {
   
   if(TMath::Abs(energy - 450.) < 1)  fEnergy = k900;
   if(TMath::Abs(energy - 3500.) < 1) fEnergy = k7000;
-  if(TMath::Abs(energy - 1380.) < 20) fEnergy = k1380;
+  if(TMath::Abs(energy - 2750.) < 20) fEnergy = k2750;
   
   
   if(TMath::Abs(magfield - 30000.) < 10 ) fMagField = k5G;
@@ -312,6 +312,8 @@ void AliFMDAnaParameters::PrintStatus() const
     energystring.Form("10000 GeV"); break;
   case k14000:
     energystring.Form("14000 GeV"); break;
+  case k2750:
+    energystring.Form("2750 GeV"); break;
   default:
     energystring.Form("invalid energy"); break;
   }
@@ -334,8 +336,10 @@ void AliFMDAnaParameters::PrintStatus() const
     magstring.Form("5 kGaus");   break;
   case k0G:
     magstring.Form("0 kGaus");   break;
+  case k5Gnegative:
+    magstring.Form("-5 kGaus");   break;
   default:
-    magstring.Form("invalid mag field"); break;
+    magstring.Form("invalid mag field %d", fMagField); break;
   }
   TString collsystemstring;
   switch(fSpecies) {
@@ -596,6 +600,17 @@ TH1F* AliFMDAnaParameters::GetSPDDeadCorrection(Int_t vtxbin) {
   }
   
   return fBackground->GetSPDDeadCorrection(vtxbin);
+}
+//_____________________________________________________________________
+TH1F* AliFMDAnaParameters::GetFMDDeadCorrection(Int_t vtxbin) {
+						
+  //Get correction for several hits in strips for p+p
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  return fBackground->GetFMDDeadCorrection(vtxbin);
 }
 //_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin) {

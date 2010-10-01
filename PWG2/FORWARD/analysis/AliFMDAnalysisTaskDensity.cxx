@@ -97,6 +97,7 @@ void AliFMDAnalysisTaskDensity::CreateOutputObjects()
 			      hBg->GetXaxis()->GetXmin(),
 			      hBg->GetXaxis()->GetXmax(),
 			      nSec, 0, 2*TMath::Pi());
+	    hMult->Sumw2();
 	    
 	    fOutputList->Add(hMult);
 	  }
@@ -234,6 +235,13 @@ void AliFMDAnalysisTaskDensity::Exec(Option_t */*option*/)
 	      correction = correction*hDoubleHitCorrection->GetBinContent(hDoubleHitCorrection->FindBin(eta));
 	    
 	  }
+	  
+	  //Dead channel correction:
+	  TH1F* hFMDDeadCorrection = pars->GetFMDDeadCorrection(vtxbin);
+	  if(hFMDDeadCorrection)
+	    if(hFMDDeadCorrection->GetBinContent(hFMDDeadCorrection->FindBin(eta)) != 0)
+	      correction = correction*hFMDDeadCorrection->GetBinContent(hFMDDeadCorrection->FindBin(eta));
+	  
 	  
 	  //std::cout<<det<<"   "<<ring<<"    "<<sec<<"    "<<strip<<"    "<<vertex[2]<<"   "<<eta<<std::endl;
 	  

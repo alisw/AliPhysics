@@ -84,6 +84,19 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
     hSPDhits->Sumw2();
     fListOfHits.Add(hSPDhits);
     
+    TH1F* hReadChannels  = new TH1F(Form("hFMDReadChannels_vtx%d",v),
+				    Form("hFMDReadChannels_vtx%d",v),
+				    fNbinsEta,-4,6);
+    hReadChannels->Sumw2();
+    fListOfHits.Add(hReadChannels);
+    TH1F* hAllChannels  = new TH1F(Form("hFMDAllChannels_vtx%d",v),
+				   Form("hFMDAllChannels_vtx%d",v),
+				   fNbinsEta,-4,6);
+    hAllChannels->Sumw2();
+    fListOfHits.Add(hAllChannels);
+    
+    
+    
     for(Int_t iring = 0; iring<2;iring++) {
       Char_t ringChar = (iring == 0 ? 'I' : 'O');
       Int_t nSec = (iring == 1 ? 40 : 20);
@@ -237,6 +250,10 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   Double_t esdvertex[3];
   Bool_t vtxStatus =  pars->GetVertex(esdevent,esdvertex);
   
+  /* Double_t deltaEsd           = 2*fZvtxCut/fNvtxBins;
+  Double_t vertexBinDoubleEsd = (esdvertex[2] + fZvtxCut) / deltaEsd;
+  Int_t    vertexBinEsd       = (Int_t)vertexBinDoubleEsd;*/
+  
   AliMCParticle* particle = 0;
   AliStack* stack = mcevent->Stack();
   
@@ -326,8 +343,32 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   hEventsAll->Fill(vertexBin);
   if(nsd) hEventsAllNSD->Fill(vertexBin);
   
-  //if(!vtxFound || !isTriggered) return; //Not important for FMD but crucial for SPD since maps are done from ESD
+  // FMD dead channels
   
+  TH1F* hFMDReadChannels  = (TH1F*)fListOfHits.FindObject(Form("hFMDReadChannels_vtx%d",vertexBin));
+  TH1F* hFMDAllChannels   = (TH1F*)fListOfHits.FindObject(Form("hFMDAllChannels_vtx%d",vertexBin));
+  
+  AliESDFMD* fmd = esdevent->GetFMDData();
+  
+  for(UShort_t d=1;d<=3;d++) {
+    Int_t nRings = (d==1 ? 1 : 2);
+    for (UShort_t ir = 0; ir < nRings; ir++) {
+      Char_t   r = (ir == 0 ? 'I' : 'O');
+      UShort_t nsec = (ir == 0 ? 20  : 40);
+      UShort_t nstr = (ir == 0 ? 512 : 256);
+      for(UShort_t s =0; s < nsec;  s++) {
+	for(UShort_t str = 0; str < nstr; str++) {
+	  Float_t mult = fmd->Multiplicity(d,r,s,str);
+	  
+	  hFMDAllChannels->Fill(pars->GetEtaFromStrip(d,r,s,str,esdvertex[2]));
+	  
+	  if(mult != AliESDFMD::kInvalidMult)
+	    hFMDReadChannels->Fill(pars->GetEtaFromStrip(d,r,s,str,esdvertex[2]));
+	}
+      }
+    }
+  }
+  // End, FMD dead channels
 
   for(Int_t i = 0 ;i<nTracks;i++) {
     particle = (AliMCParticle*) mcevent->GetTrack(i);
@@ -512,6 +553,17 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
     fEventSelectionEff->SetCorrection("NSD",v,'I',hAnalysedNSDInner);
     fEventSelectionEff->SetCorrection("NSD",v,'O',hAnalysedNSDOuter);
     
+    //FMD dead channels
+    TH1F* hFMDReadChannels   = (TH1F*)fListOfHits.FindObject(Form("hFMDReadChannels_vtx%d",v));
+    
+    TH1F* hFMDAllChannels    = (TH1F*)fListOfHits.FindObject(Form("hFMDAllChannels_vtx%d",v));
+    if(hFMDReadChannels) {
+      TH1F* hFMDDeadCorrection = (TH1F*)hFMDReadChannels->Clone("hFMDDeadCorrection");
+      hFMDDeadCorrection->Divide(hFMDAllChannels);
+      fBackground->SetFMDDeadCorrection(v,hFMDDeadCorrection);
+      fListOfCorrection.Add(hFMDDeadCorrection);
+    }
+    else AliWarning("No Dead Channel Correction generated");
     
   }
   
@@ -600,7 +652,7 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
     hCorrection->SetTitle(hCorrection->GetName());
     fListOfCorrection.Add(hCorrection);
     hCorrection->Divide(hPrimary);
-    fBackground->SetBgCorrection(0,'Q',vertexBin,hCorrection);
+
     
     TH1F* hAlive = new TH1F(Form("hAliveSPD_vtxbin%d",vertexBin),Form("hAliveSPD_vtxbin%d",vertexBin),hSPDMult->GetNbinsX(),hSPDMult->GetXaxis()->GetXmin(), hSPDMult->GetXaxis()->GetXmax());
     TH1F* hPresent = new TH1F(Form("hPresentSPD_vtxbin%d",vertexBin),Form("hPresentSPD_vtxbin%d",vertexBin),hSPDMult->GetNbinsX(),hSPDMult->GetXaxis()->GetXmin(), hSPDMult->GetXaxis()->GetXmax());
@@ -630,11 +682,9 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
     hDeadCorrection->Divide(hPresent);
     fBackground->SetSPDDeadCorrection(vertexBin,hDeadCorrection);
     fListOfCorrection.Add(hDeadCorrection);
+  
+    fBackground->SetBgCorrection(0,'Q',vertexBin,hCorrection);
   }
-  
-  
-  
-  
   
   
   TAxis refAxis(fNvtxBins,-1*fZvtxCut,fZvtxCut);
@@ -701,7 +751,13 @@ void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, 
   for(Int_t v=0; v<fNvtxBins;v++) {
     TH2F* hSPDHits          = (TH2F*)listOfHits->FindObject(Form("hSPDhits_vtx%d", v));   
     fListOfHits.Add(hSPDHits);
+    TH1F* hFMDReadChannels  = (TH1F*)listOfHits->FindObject(Form("hFMDReadChannels_vtx%d",v));
+    TH1F* hFMDAllChannels   = (TH1F*)listOfHits->FindObject(Form("hFMDAllChannels_vtx%d",v));
     
+    if(hFMDReadChannels && hFMDAllChannels) {
+      fListOfHits.Add(hFMDReadChannels);
+      fListOfHits.Add(hFMDAllChannels);
+    }
     for(Int_t iring = 0; iring<2;iring++) {
       Char_t ringChar = (iring == 0 ? 'I' : 'O');
       
