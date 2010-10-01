@@ -170,15 +170,40 @@ AliTRDcluster &AliTRDcluster::operator=(const AliTRDcluster &c)
 {
   //
   // Assignment operator
-  // 
+  //
 
-  if (this != &c) {
-    ((AliTRDcluster &) c).Copy(*this);
+  if (&c == this) {
+     return *this;
+  }
+
+  // Call the assignment operator of the base class
+  AliCluster::operator=(c);
+
+  fPadCol         = c.fPadCol;
+  fPadRow         = c.fPadRow;
+  fPadTime        = c.fPadTime;
+  fLocalTimeBin   = c.fLocalTimeBin;
+  fNPads          = c.fNPads;
+  fClusterMasking = c.fClusterMasking;
+  fDetector       = c.fDetector;
+  fQ              = c.fQ;
+  fCenter         = c.fCenter;
+
+  SetLabel(c.GetLabel(0),0);
+  SetLabel(c.GetLabel(1),1);
+  SetLabel(c.GetLabel(2),2);
+
+  SetY(c.GetY());
+  SetZ(c.GetZ());
+  SetSigmaZ2(c.GetSigmaZ2());
+
+  for (Int_t i = 0; i < 7; i++) {
+    fSignals[i] = c.fSignals[i];
   }
 
   return *this;
 
-}
+} 
 
 //_____________________________________________________________________________
 void AliTRDcluster::AddTrackIndex(const Int_t * const track)
