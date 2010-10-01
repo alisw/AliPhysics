@@ -65,7 +65,7 @@ class AliHFMassFitter : public TNamed {
   void     GetSideBandsBounds(Int_t& lb, Int_t& hb) const;
   Bool_t*  GetFixParam()const {return fFixPar;}
   Bool_t   GetFixThisParam(Int_t thispar)const;
-  TVirtualPad* GetPad(Double_t nsigma=2,Int_t writeFitInfo=1)const;
+  TVirtualPad* GetPad(Double_t nsigma=3,Int_t writeFitInfo=1)const;
 
   void     PrintParTitles() const;
 
@@ -75,9 +75,9 @@ class AliHFMassFitter : public TNamed {
   TNtuple* NtuParamOneShot(char *ntuname="ntupar"); // the three functions above all together
   void     WriteHisto(TString path="./") const; // write the histogram
   void     WriteNtuple(TString path="./") const; // write the TNtuple
-  void     WriteCanvas(TString userIDstring="",TString path="./",Double_t nsigma=2,Int_t writeFitInfo=1,Bool_t draw=kFALSE) const; //write the canvas in a root file
-  void     DrawHere(TVirtualPad* pd,Double_t nsigma=2,Int_t writeFitInfo=1) const;
-  void     DrawFit(Double_t nsigma=2) const;
+  void     WriteCanvas(TString userIDstring="",TString path="./",Double_t nsigma=3,Int_t writeFitInfo=1,Bool_t draw=kFALSE) const; //write the canvas in a root file
+  void     DrawHere(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1) const;
+  void     DrawFit(Double_t nsigma=3) const;
   void     Reset();
 
   void     IntS(Float_t *valuewitherror) const;    // integral of signal given my the fit with error
@@ -108,7 +108,7 @@ class AliHFMassFitter : public TNamed {
 
  private:
 
-  void     PlotFit(TVirtualPad* pd,Double_t nsigma=2,Int_t writeFitInfo=1)const;
+  void     PlotFit(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1)const;
 
   void     ComputeParSize();
   void     ComputeNFinalPars();
@@ -119,8 +119,8 @@ class AliHFMassFitter : public TNamed {
   TH1F*     fhistoInvMass;     // histogram to fit
   Double_t  fminMass;          // lower mass limit
   Double_t  fmaxMass;          // upper mass limit
-  Int_t     fminBinMass;
-  Int_t     fmaxBinMass;
+  Int_t     fminBinMass;       // bin corresponding to fminMass
+  Int_t     fmaxBinMass;       // bin corresponding to fmaxMass
   Int_t     fNbin;             // number of bins
   Int_t     fParsSize;         // size of fFitPars array
   Int_t     fNFinalPars;       // number of parameters of the final function
