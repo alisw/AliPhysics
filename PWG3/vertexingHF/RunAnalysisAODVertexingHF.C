@@ -289,29 +289,35 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    plugin->SetROOTVersion("v5-26-00b-6");
    plugin->SetAliROOTVersion("v4-19-18-AN");
    // Declare input data to be processed.
-   // Method 1: Create automatically XML collections using alien 'find' command.
-   // Define production directory LFN
-   //  plugin->SetGridDataDir("/alice/cern.ch/user/r/rbala/data_pass4_good_runCINT1B_8thfeb/");
-   //plugin->SetGridDataDir("/alice/sim/PDC_09/LHC09a4/AOD3/");
-   // Set data search pattern
-   plugin->SetGridDataDir("/alice/data/2010/LHC10b");
-   plugin->SetDataPattern("pass2/AOD001/*AliAOD.root");
+   //************************************************
+   // Set data search pattern for DATA
+   //************************************************
+   plugin->SetGridDataDir("/alice/data/2010/LHC10b"); // specify LHC period
+   plugin->SetDataPattern("pass2/AOD001/*AliAOD.root"); // specify reco pass and AOD set
    plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
-   //plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
+   // OR plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
    // Adds only the good runs from the Monalisa Run Condition Table
-   AddGoodRuns(plugin,"LHC10b");
-   // ...then add run numbers to be considered
+   // More than one period can be added but the period name has to be removed from GridDataDir (to be tested)
+   Int_t totruns=0;
+   totruns += AddGoodRuns(plugin,"LHC10b"); // specify LHC period
+   //totruns += AddGoodRuns(plugin,"LHC10c"); // specify LHC period
+   plugin->SetNrunsPerMaster(totruns);
+   //************************************************
+   // Set data search pattern for MONTECARLO
+   //************************************************
+   plugin->SetGridDataDir("/alice/sim/LHC10d3"); // specify MC sample
+   plugin->SetDataPattern("AOD001/*AliAOD.root"); // specify AOD set
+   plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
+   // OR plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
+   // Adds only the good runs from the Monalisa Run Condition Table 
+   // More than one period can be added!
+   Int_t totruns=0;
+   totruns += AddGoodRuns(plugin,"LHC10b",kTRUE); // specify LHC period for anchor runs; the kTRUE is needed for MC!
+   totruns += AddGoodRuns(plugin,"LHC10c",kTRUE); // specify LHC period for anchor runs; the kTRUE is needed for MC!
+   //totruns += AddGoodRuns(plugin,"LHC10d",kTRUE); // specify LHC period for anchor runs; the kTRUE is needed for MC!
+   plugin->SetNrunsPerMaster(totruns);
+   //
    // plugin->SetMaxMergeFiles(100);
-   plugin->SetNrunsPerMaster(100);
-   //plugin->SetNumberOfReplicas(2);
-   //  or
-   //plugin->SetRunRange(529000,529007);
-   // Method 2: Declare existing data files (raw collections, xml collections, root file)
-   // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
-   // XML collections added via this method can be combined with the first method if
-   // the content is compatible (using or not tags)
-   //plugin->AddDataFile("/alice/cern.ch/user/r/rbala/newtrain/collection/collection_aod_lhc08w.xml");
-   //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
    // Define alien work directory where all files will be copied. Relative to alien $HOME.
    plugin->SetGridWorkingDir("myHFanalysis");
    // Declare alien output directory. Relative to working directory.
@@ -365,14 +371,16 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    return plugin;
 }
 //----------------------------------------------------------------------------
-void AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod) {
+Int_t AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod,Bool_t isMC=kFALSE) {
   //
   // Adds good runs from the Monalisa Run Condition Table
   //
-  plugin->SetRunPrefix("000");
+  if(!isMC) plugin->SetRunPrefix("000");
+
+  Int_t nruns=0;
 
   if(lhcPeriod=="LHC10b") {
-    Int_t nruns=33;
+    nruns=33;
     Int_t runlist[33]={117222, 117220, 117116, 117112, 117109, 117099, 117092, 117086, 117077, 117065, 117063, 117060, 117059, 117054, 117053, 117052, 117050, 117048, 116645, 116643, 116574, 116571, 116562, 116403, 116402, 116288, 116102, 115414, 115401, 115393, 115193, 115186, 114931};
    
     for(Int_t k=0;k<nruns;k++){
@@ -382,7 +390,7 @@ void AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod) {
   }
 
   if(lhcPeriod=="LHC10c") { 
-    Int_t nruns=46;
+    nruns=46;
     Int_t runlist[46]={120829, 120825, 120824, 120823, 120822, 120821, 120820, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120504, 120503, 120244, 120079, 120076, 120073, 120072, 120069, 120067, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 119163, 119161, 119159, 119086, 119085, 119084, 119079, 119077, 119067, 119061, 119047, 119041, 119037};
    
     for(Int_t k=0;k<nruns;k++){
@@ -392,7 +400,7 @@ void AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod) {
   }
 
   if(lhcPeriod=="LHC10dhighmu") { // only runs with high mu
-    Int_t nruns=19;
+    nruns=19;
     Int_t runlist[19]={124750, 124746, 124702, 124608, 124607, 124606, 124605, 124604, 124381, 124380, 124378, 124367, 124362, 124358, 124355, 124191, 124187, 122375, 122374};
    
     for(Int_t k=0;k<nruns;k++){
@@ -402,7 +410,7 @@ void AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod) {
   }
 
   if(lhcPeriod=="LHC10d") { // runs with high mu excluded
-    Int_t nruns=59;
+    nruns=59;
     Int_t runlist[59]={126437, 126432, 126425, 126424, 126422, 126409, 126408, 126407, 126406, 126405, 126404, 126403, 126359, 126352, 126351, 126350, 126285, 126284, 126283, 126168, 126167, 126160, 126158, 126097, 126090, 126088, 126082, 126081, 126078, 126073, 126008, 126007, 126004, 125855, 125851, 125850, 125849, 125848, 125847, 125844, 125843, 125842, 125633, 125632, 125630, 125628, 125296, 125186, 125156, 125140, 125139, 125134, 125133, 125101, 125100, 125097, 125085, 125023, 124751};
    
     for(Int_t k=0;k<nruns;k++){
@@ -412,5 +420,5 @@ void AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod) {
   }
 
 
-  return;
+  return nruns;
 }
