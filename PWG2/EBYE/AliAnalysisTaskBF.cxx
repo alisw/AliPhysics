@@ -10,6 +10,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliAODEvent.h"
+#include "AliAODTrack.h"
 #include "AliAODInputHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -118,7 +119,7 @@ void AliAnalysisTaskBF::Exec(Option_t *) {
     
     Printf("There are %d tracks in this event", fAOD->GetNumberOfTracks());
     for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
-      AliAODtrack* track = fAOD->GetTrack(iTracks);
+      AliAODTrack* track = fAOD->GetTrack(iTracks);
       if (!track) {
 	Printf("ERROR: Could not receive track %d", iTracks);
 	continue;
@@ -135,7 +136,7 @@ void AliAnalysisTaskBF::Exec(Option_t *) {
     
     Printf("There are %d tracks in this event", fMC->GetNumberOfPrimaries());
     for (Int_t iTracks = 0; iTracks < fMC->GetNumberOfPrimaries(); iTracks++) {
-      AliMCParticle* track = fMC->GetTrack(iTracks);
+      AliMCParticle* track = dynamic_cast<AliMCParticle *>(fMC->GetTrack(iTracks));
       if (!track) {
 	Printf("ERROR: Could not receive particle %d", iTracks);
 	continue;
