@@ -69,7 +69,7 @@ AliCollisionNormalizationTask::~AliCollisionNormalizationTask()
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
 
-  if (fOutput) {
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutput;
     fOutput = 0;
   }

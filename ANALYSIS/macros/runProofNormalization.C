@@ -2,7 +2,7 @@
 void runProofNormalization(const char * dataset = "LHC09b12_7TeV_0.5T", TString dataSetPath ="/PWG0/jgrosseo/",const char * filename = "LHC09b12_7TeV_0.5T_norm.root", Bool_t isMC = 1,Int_t nev =123456789) {
 
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  TProof::Open("alice-caf","workers=20");// limit the number of workers
+  TProof::Open("alice-caf","workers=26");// limit the number of workers
   //  gROOT->ProcessLine(Form(".include %s/include",gSystem->ExpandPathName("$ALICE_ROOT")));
   //  gSystem->AddIncludePath("-I${ALICE_ROOT}/include/ -I${ALICE_ROOT}/PWG0/ -I${ALICE_ROOT}/PWG0/dNdEta/");
   //  gSystem->AddIncludePath("-I${ALICE_ROOT}/include/");
