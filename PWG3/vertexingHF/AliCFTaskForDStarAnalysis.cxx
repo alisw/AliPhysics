@@ -172,7 +172,7 @@ void AliCFTaskForDStarAnalysis::UserExec(Option_t *)
   
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aodEvent->GetPrimaryVertex()) return;
+  if(!aodEvent->GetPrimaryVertex() || TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
 
   fEvents++;
   if (fEvents%10000 ==0) AliDebug(2,Form("Event %d",fEvents));
