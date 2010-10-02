@@ -477,6 +477,11 @@ class AliV0Reader : public TObject {
    * Gets the Eta cut value.
    */
   Double_t GetEtaCut() const{return fEtaCut;}
+
+  /*
+   * Gets the Rapidity Meson cut value.
+   */
+  Double_t GetRapidityMesonCut() const{return fRapidityMesonCut;}
 	
   /*
    * Gets the Pt cut value.
@@ -552,6 +557,11 @@ class AliV0Reader : public TObject {
    * Sets the EtaCut value.
    */
   void SetEtaCut(Double_t etaCut){fEtaCut=etaCut;}
+
+  /*
+   * Sets the Rapidity Meson Cut value.
+   */
+  void SetRapidityMesonCut(Double_t RapidityMesonCut){fRapidityMesonCut=RapidityMesonCut;}
 	
   /*
    * Sets the PtCut value.
@@ -885,6 +895,7 @@ class AliV0Reader : public TObject {
   Double_t fMaxR; //r cut
   Double_t fMinR; //r cut
   Double_t fEtaCut; //eta cut
+  Double_t fRapidityMesonCut; //rapidity for meson cut
   Double_t fPtCut; // pt cut
   Double_t fSinglePtCut; // pt cut for electron/positron
   Double_t fMaxZ; //z cut
@@ -953,7 +964,7 @@ class AliV0Reader : public TObject {
   Bool_t fUseChargedTrackMultiplicityForBG;
   Int_t fNumberOfGoodV0s;
 
-  ClassDef(AliV0Reader,15)
+  ClassDef(AliV0Reader,16)
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)
