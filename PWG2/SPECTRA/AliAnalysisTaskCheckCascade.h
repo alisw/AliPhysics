@@ -94,6 +94,8 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
         TH1F    *fHistTrackMultiplicityForTrigEvt;                //! Track multiplicity distribution (without any cut = include ITS stand-alone + global tracks)
         TH1F    *fHistTPCrefitTrackMultiplicityForTrigEvt;        //! Track multiplicity distribution for tracks with TPCrefit
         
+        // - General histos (filled for any triggered event + (|z(prim. vtx)| < 10 cm ) )
+        TH1F    *fHistCascadeMultiplicityForTrigEvtAndZprimVtx;   //! Cascade multiplicity distribution
 
         // - General histos (filled for events selected in this analysis (|z(prim. vtx)| < 10 cm + prim vtx = SPD or Tracking) )
         TH1F    *fHistCascadeMultiplicityForSelEvt;     //! Cascade multiplicity distribution
@@ -188,6 +190,8 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	TH2F	*f2dHistXiRadiusVsEffMassXiPlus;	//! transv. casc. decay radius Vs Xi+ Eff mass, under Xi+ hyp.
 	TH2F	*f2dHistXiRadiusVsEffMassOmegaMinus;	//! transv. casc. decay radius Vs Omega- Eff mass, under Omega- hyp.
 	TH2F	*f2dHistXiRadiusVsEffMassOmegaPlus;	//! transv. casc. decay radius Vs Omega+ Eff mass, under Omega+ hyp.
+        
+        TH2F    *f2dHistTPCdEdxOfCascDghters;           //! TPC Bethe-Bloch curve, populated with the cascade daughters
 	
 	
 	// PART 2 : TH3F needed for pt spectrum and yield extraction
@@ -196,22 +200,6 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	TH3F	*f3dHistXiPtVsEffMassVsYXiPlus;         //! casc. transv. momemtum Vs Xi+ Eff mass Vs Y
 	TH3F	*f3dHistXiPtVsEffMassVsYOmegaMinus;     //! casc. transv. momemtum Vs Omega- Eff mass Vs Y
 	TH3F	*f3dHistXiPtVsEffMassVsYOmegaPlus;      //! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
-	
-	// With single PID : proton PID for Xi (pion = useless) / bachelor PID for Omega
-	// = a priori, the most important PID info for each species
-	TH3F	*f3dHistXiPtVsEffMassVsYWithCombPIDXiMinus;     //! casc. transv. momemtum Vs Xi- Eff mass Vs Y
-	TH3F	*f3dHistXiPtVsEffMassVsYWithCombPIDXiPlus;      //! casc. transv. momemtum Vs Xi+ Eff mass Vs Y
-	TH3F	*f3dHistXiPtVsEffMassVsYWithCombPIDOmegaMinus;  //! casc. transv. momemtum Vs Omega- Eff mass Vs Y
-	TH3F	*f3dHistXiPtVsEffMassVsYWithCombPIDOmegaPlus;   //! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
-	
-	// With double PID : proton PID + bachelor PID for Omega
-	// = "second order" refinement for omegas
-	TH3F	*f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaMinus; //! casc. transv. momemtum Vs Omega- Eff mass Vs Y
-	TH3F	*f3dHistXiPtVsEffMassVsYWith2CombPIDOmegaPlus;  //! casc. transv. momemtum Vs Omega+ Eff mass Vs Y
-	
-	// With TPC PID : 3-sigma band on the Bethe-Bloch curve
-	// = directly detector-based
-	TH3F	*f3dHistXiPtVsEffMassVsYWithTpcPIDOmegaMinus;   //! casc. transv. momemtum Vs Omega- Eff mass Vs Y
 	
 	// Compilation of all PID plots (3D = casc. transv. momemtum Vs Casc Eff mass Vs Y), stored into an AliCFContainer
 	AliCFContainer  *fCFContCascadePIDXiMinus;      //! for Xi-   : Container to store any 3D histos with the different PID flavours
