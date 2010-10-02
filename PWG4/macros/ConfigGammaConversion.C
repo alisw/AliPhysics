@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 16;
+const int c_array_size = 17;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -44,11 +44,11 @@ Bool_t kGCApplyChi2Cut = kFALSE;
 Bool_t kGCUseRotationMethodInBG=kTRUE;
 Int_t kGCnDegreeRotationPMForBG=15;
 Int_t kGCnumberOfRotationEventsForBG=15;
-Bool_t kGCdoBGProbablity=kFALSE;
+Bool_t kGCdoBGProbability=kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="9001102040100010"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="90011020401000121"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=10;
 
@@ -68,6 +68,7 @@ Double_t kGCchi2CutConversion   = 30.;
 Double_t kGCchi2CutMeson   = 50.;
 Double_t kGCalphaCutMeson   = 0.7;
 Double_t kGCalphaMinCutMeson   = 0.0;
+Double_t kGCrapidityCutMeson    = 0.9;
 
 Double_t kGCLineCutZRSlope = tan(2*atan(exp(-kGCetaCut)));
 Double_t kGCLineCutZValue = 7.;
@@ -222,6 +223,7 @@ Bool_t kGCplotMCPhysicalPrimaryChargedPt                = kTRUE;
 
 Bool_t kGCplotMCPi0Eta			        	= kTRUE;
 Bool_t kGCplotMCPi0Rapid                                   = kTRUE;
+Bool_t kGCplotMCPi0PtvsRapid                               = kTRUE;
 Bool_t kGCplotMCPi0Phi                                     = kTRUE;
 Bool_t kGCplotMCPi0Pt                                      = kTRUE;
 Bool_t kGCplotMCPi0PtFiducial                              = kTRUE;
@@ -259,6 +261,7 @@ Bool_t kGCplotMCPi0SecondaryPtvsRapidConvGammaWithinAcceptance = kTRUE;
 
 Bool_t kGCplotMCEtaEta                                = kTRUE;
 Bool_t kGCplotMCEtaRapid                              = kTRUE;
+Bool_t kGCplotMCEtaPtvsRapid                          = kTRUE;
 Bool_t kGCplotMCEtaPhi                                = kTRUE;
 Bool_t kGCplotMCEtaPt                                 = kTRUE;
 Bool_t kGCplotMCEtaEnergy                             = kFALSE;
@@ -956,10 +959,10 @@ Bool_t scanArguments(TString arguments){
 	kGCcalculateBackground =kFALSE;
       }
       else if (argument.CompareTo("-bg-prob-off") == 0){
-	kGCdoBGProbablity = kFALSE;
+	kGCdoBGProbability = kFALSE;
       }
       else if (argument.CompareTo("-bg-prob-on") == 0){
-	kGCdoBGProbablity = kTRUE;
+	kGCdoBGProbability = kTRUE;
       }
       else if (argument.CompareTo("-bg-rotation-off") == 0){
 	kGCUseRotationMethodInBG = kFALSE;
@@ -1410,6 +1413,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetMaxRCut(kGCmaxRCut);
   v0Reader->SetMinRCut(kGCminRCut);
   v0Reader->SetEtaCut(kGCetaCut);
+  v0Reader->SetRapidityMesonCut(kGCrapidityCutMeson);
   v0Reader->SetPtCut(kGCptCut);
   v0Reader->SetSinglePtCut(kGCsingleptCut);
   v0Reader->SetLineCutZRSlope(kGCLineCutZRSlope);
@@ -1512,7 +1516,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetPMDegreesBG(kGCnDegreeRotationPMForBG);
   gammaconversion->SetDoRotation(kGCUseRotationMethodInBG);
   gammaconversion->SetNumberOfRotationsBG(kGCnumberOfRotationEventsForBG);
-  gammaconversion->SetCheckBGProbability(kGCdoBGProbablity);
+  gammaconversion->SetCheckBGProbability(kGCdoBGProbability);
 
   // for CF
   gammaconversion->SetCFManager(man);
@@ -2093,6 +2097,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDAllV0sCurrentFinder == kTRUE){histograms->AddHistogram("ESD_AllV0sCurrentFinder_InvMass" ,"All V0s Current Finder" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
 
     if(kGCplotESDAllV0sCurrentFinderQtAlfa== kTRUE){ histograms->AddHistogram("ESD_AllV0sCurrentFinder_alfa_qt" ,"" ,kGCnXBinsP, kGCfirstXBinAlphaG, kGClastXBinAlpha,kGCnYBinsQt, kGCfirstYBinQt, kGClastYBinQt,"", "");}
+    if(kGCplotESDAllV0sCurrentFinderQtAlfa== kTRUE){ histograms->AddHistogram("ESD_AllV0sCurrentFinder_goodtracks_alfa_qt" ,"" ,kGCnXBinsP, kGCfirstXBinAlphaG, kGClastXBinAlpha,kGCnYBinsQt, kGCfirstYBinQt, kGClastYBinQt,"", "");}
 
     if(kGCplotESDTrueConvGammaTrackLength == kTRUE){histograms->AddHistogram("ESD_TrueConvGamma_TrackLength","Track length of TrueConvGamma",kGCnXBinsTrackLength,kGCfirstXBinTrackLength,kGClastXBinTrackLength,"","");}
     if(kGCplotESDTrueConvGammaTrackLengthVSInvMass == kTRUE){histograms->AddHistogram("ESD_TrueConvGamma_TrackLengthVSInvMass","Track length of TrueConvGamma vs Inv mass",kGCnXBinsTrackLength,kGCfirstXBinTrackLength,kGClastXBinTrackLength,kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt,"","");}
@@ -2274,6 +2279,7 @@ histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha" ,"Invariant Mass vs P
       if(kGCplotMCPhysicalPrimaryChargedPt == kTRUE){ histograms->AddHistogram("MC_PhysicalPrimaryCharged_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCPi0Eta == kTRUE){ histograms->AddHistogram("MC_Pi0_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}	
       if(kGCplotMCPi0Rapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Rapid" ,"" , kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");}	
+      if(kGCplotMCPi0PtvsRapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt_vs_Rapid" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");}
       if(kGCplotMCPi0Phi == kTRUE){ histograms->AddHistogram("MC_Pi0_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
 
@@ -2329,6 +2335,7 @@ histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha" ,"Invariant Mass vs P
 		
       if(kGCplotMCEtaEta == kTRUE){ histograms->AddHistogram("MC_Eta_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}
       if(kGCplotMCEtaRapid == kTRUE){ histograms->AddHistogram("MC_Eta_Rapid" ,"" , kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");}
+      if(kGCplotMCEtaPtvsRapid == kTRUE){ histograms->AddHistogram("MC_Eta_Pt_vs_Rapid" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");}
       if(kGCplotMCEtaPhi == kTRUE){ histograms->AddHistogram("MC_Eta_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
       if(kGCplotMCEtaPt == kTRUE){ histograms->AddHistogram("MC_Eta_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCEtaEnergy == kTRUE){ histograms->AddHistogram("MC_Eta_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
@@ -2411,7 +2418,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t piMaxMomdedxSigmaCut=array[13];
   Int_t alphaMesonCut=array[14];
   Int_t minRCut=array[15];
+  Int_t RapidityMesonCut=array[16];
 
+  cout<<"RapidityMesonCut::"<<RapidityMesonCut<<endl;	
   cout<<"minRCut::"<<minRCut<<endl;
   cout<<"alphaMesonCut::"<<alphaMesonCut<<endl;	
   cout<<"piMaxMomdedxSigmaCut::"<<piMaxMomdedxSigmaCut<<endl;
@@ -2767,7 +2776,21 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   default:
     return iResult;
   }
-  
+
+  switch(RapidityMesonCut){
+  case 0:  //
+    kGCrapidityCutMeson   = 0.9;
+    break;
+  case 1:  // 
+    kGCrapidityCutMeson   = 0.8;
+    break;
+  case 2:  // 
+    kGCrapidityCutMeson   = 0.7;
+    break;
+    
+  default:
+    return iResult;
+  }
   iResult=1;
   return iResult;
 }
@@ -2793,6 +2816,7 @@ void string2array(const std::string& number, int a[c_array_size])
         ASSIGNARRAY(13);
         ASSIGNARRAY(14);
         ASSIGNARRAY(15);
+        ASSIGNARRAY(16);
   }
 }
 
