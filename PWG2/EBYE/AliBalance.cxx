@@ -224,6 +224,7 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
   AliVParticle* track1 = 0;
   AliVParticle* track2 = 0;
     
+  //Printf("(AliBalance) Number of tracks: %d",gTrackArray->GetEntries());
   Int_t gNtrack = gTrackArray->GetEntries();
   for(i = 0; i < gNtrack; i++) {
     if(fAnalysisLevel == "ESD")

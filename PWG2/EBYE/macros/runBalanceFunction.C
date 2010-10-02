@@ -22,7 +22,7 @@ void runBalanceFunction(Int_t analysisMode = kLocal,
   if (analysisMode==kLocal || analysisMode == kLocalPAR) {
     TChain *chain = new TChain("esdTree");
     chain->Add("Set1/AliESDs.root");
-    chain->Add("Set2/AliESDs.root");
+    //chain->Add("Set2/AliESDs.root");
   }
 
   //___________________________________________________//
@@ -70,7 +70,7 @@ void runBalanceFunction(Int_t analysisMode = kLocal,
   timer.Print();
 }
 
-void runLocal(const char* mode) {
+/*void runLocal(const char* mode) {
   //____________________________________________________//
   //_____________Setting up the par files_______________//
   //____________________________________________________//
@@ -108,7 +108,7 @@ void runLocal(const char* mode) {
   // Add task
   mgr->AddTask(taskBF);
 
-  // Create containers for input/output
+  // Create conainers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("contBF", AliBalance::Class(), AliAnalysisManager::kOutputContainer, "BF.ESD.root");
 
@@ -125,7 +125,7 @@ void runLocal(const char* mode) {
   mgr->PrintStatus();
 
   mgr->StartAnalysis("local", chain);
-}
+  }*/
 
 //__________________________________________________________//
 Int_t setupPar(const char* pararchivename) {

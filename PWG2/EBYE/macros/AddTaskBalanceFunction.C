@@ -32,9 +32,11 @@ AliAnalysisTaskBF *AddTaskBalanceFunction() {
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWG2EbyE.outputBalanceFunctionAnalysis.root";
-  AliAnalysisDataContainer *cout_bf = mgr->CreateContainer("bfOutput", AliBalance::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutBF = mgr->CreateContainer("bfOutput", AliBalance::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutQA = mgr->CreateContainer("listQA", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskBF, 0, cout_bf);
+  mgr->ConnectOutput(taskBF, 1, coutBF);
+  mgr->ConnectOutput(taskBF, 2, coutQA);
 
   // Return task pointer at the end
   return taskBF;
