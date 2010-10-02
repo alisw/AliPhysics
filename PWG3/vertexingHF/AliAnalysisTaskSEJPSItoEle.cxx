@@ -388,7 +388,7 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
 
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex()) return;
+  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
   // load MC particles and read MC info (for sim only)
   TClonesArray* mcArray=0;

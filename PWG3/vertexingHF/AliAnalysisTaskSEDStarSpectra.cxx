@@ -215,7 +215,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aodEvent->GetPrimaryVertex()) return;
+  if(!aodEvent->GetPrimaryVertex() || TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
  
 
   fCEvents->Fill(1);
