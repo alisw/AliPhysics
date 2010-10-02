@@ -87,6 +87,7 @@ AliV0Reader::AliV0Reader() :
   fMaxR(10000),// 100 meter(outside of ALICE)
   fMinR(0),// 100 meter(outside of ALICE)
   fEtaCut(0.),
+  fRapidityMesonCut(0.),
   fPtCut(0.),
   fSinglePtCut(0.),
   fMaxZ(0.),
@@ -182,6 +183,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fMaxR(original.fMaxR),
   fMinR(original.fMinR),
   fEtaCut(original.fEtaCut),
+  fRapidityMesonCut(original.fRapidityMesonCut),
   fPtCut(original.fPtCut),
   fSinglePtCut(original.fSinglePtCut),
   fMaxZ(original.fMaxZ),
@@ -586,7 +588,8 @@ Bool_t AliV0Reader::NextV0(){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepKinks);		// for CF	
     }
  	
-
+    fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_goodtracks_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+ 
     if(fDodEdxSigmaCut == kTRUE){
       if( fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
 	  fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ||

@@ -736,7 +736,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
     /////////////////////End Chic Analysis////////////////////////////
 		
 		
-    if(TMath::Abs(particle->Eta())> fV0Reader->GetEtaCut() )	continue;
+    //    if(TMath::Abs(particle->Eta())> fV0Reader->GetEtaCut() )	continue;
 		
     if(particle->R()>fV0Reader->GetMaxRCut())	continue; // cuts on distance from collision point
 		
@@ -760,6 +760,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       if ( particle->GetPdgCode()== -211 ||  particle->GetPdgCode()== 211 ||
            particle->GetPdgCode()== 2212 ||  particle->GetPdgCode()==-2212 ||
            particle->GetPdgCode()== 321  ||  particle->GetPdgCode()==-321 ){
+	if(TMath::Abs(particle->Eta())> fV0Reader->GetEtaCut() )	continue;
 	fHistograms->FillHistogram("MC_PhysicalPrimaryCharged_Pt", particle->Pt());
       }
     }
@@ -768,7 +769,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 
     //process the gammas
     if (particle->GetPdgCode() == 22){
-      
+      if(TMath::Abs(particle->Eta())> fV0Reader->GetEtaCut() )	continue;      
 
       if(particle->GetMother(0) >-1 && fStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
 	continue; // no photon as mothers!
@@ -1021,7 +1022,9 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       TParticle* daughter1 = (TParticle*)fStack->Particle(particle->GetLastDaughter());
 			
       if(daughter0->GetPdgCode() != 22 || daughter1->GetPdgCode() != 22) continue; //check for gamma gamma daughters
-			
+
+      if(TMath::Abs(rapidity) > fV0Reader->GetRapidityMesonCut() ) continue; 
+
       // Check the acceptance for both gammas
       Bool_t gammaEtaCut = kTRUE;
       if(TMath::Abs(daughter0->Eta()) > fV0Reader->GetEtaCut() || TMath::Abs(daughter1->Eta()) > fV0Reader->GetEtaCut()  ) gammaEtaCut = kFALSE;
@@ -1121,6 +1124,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	  fHistograms->FillHistogram("MC_Pi0_Rapid", rapidity);
 	  fHistograms->FillHistogram("MC_Pi0_Phi", tmpPhi);
 	  fHistograms->FillHistogram("MC_Pi0_Pt", particle->Pt());
+	  fHistograms->FillHistogram("MC_Pi0_Pt_vs_Rapid", particle->Pt(),rapidity);
 	  fHistograms->FillHistogram("MC_Pi0_Energy", particle->Energy());
 	  fHistograms->FillHistogram("MC_Pi0_R", particle->R());
 	  fHistograms->FillHistogram("MC_Pi0_ZR", particle->Vz(),particle->R());
@@ -1173,6 +1177,7 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	fHistograms->FillHistogram("MC_Eta_Rapid", rapidity);
 	fHistograms->FillHistogram("MC_Eta_Phi",tmpPhi);
 	fHistograms->FillHistogram("MC_Eta_Pt", particle->Pt());
+	fHistograms->FillHistogram("MC_Eta_Pt_vs_Rapid", particle->Pt(),rapidity);
 	fHistograms->FillHistogram("MC_Eta_Energy", particle->Energy());
 	fHistograms->FillHistogram("MC_Eta_R", particle->R());
 	fHistograms->FillHistogram("MC_Eta_ZR", particle->Vz(),particle->R());
@@ -2021,6 +2026,13 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  else{
 	    rapidity = 0.5*(TMath::Log((twoGammaCandidate->GetE() +twoGammaCandidate->GetPz()) / (twoGammaCandidate->GetE()-twoGammaCandidate->GetPz())));
 	  }
+
+	  if(TMath::Abs(rapidity) > fV0Reader->GetRapidityMesonCut()){
+	    delete twoGammaCandidate;
+	    continue;   // rapidity cut
+	  }
+
+
 	  Double_t alfa=0.0;
 	  if( (twoGammaDecayCandidateDaughter0->GetE()+twoGammaDecayCandidateDaughter1->GetE()) != 0){
 	    alfa=TMath::Abs((twoGammaDecayCandidateDaughter0->GetE()-twoGammaDecayCandidateDaughter1->GetE())
@@ -2490,6 +2502,11 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	    if(backgroundCandidate->GetE() - backgroundCandidate->GetPz() == 0 || backgroundCandidate->GetE() + backgroundCandidate->GetPz() == 0) rapidity=0;
 	    else rapidity = 0.5*(TMath::Log((backgroundCandidate->GetE() +backgroundCandidate->GetPz()) / (backgroundCandidate->GetE()-backgroundCandidate->GetPz())));
 	  
+	    if(TMath::Abs(rapidity) > fV0Reader->GetRapidityMesonCut() ){
+	      delete backgroundCandidate;   
+	      continue;   // rapidity cut
+	    }			
+					
 	  
 	    Double_t alfa=0.0;
 	    if( (currentEventGoodV0.GetE()+currentEventGoodV02.GetE()) != 0){
@@ -2606,7 +2623,12 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	      } else {
 		rapidity = 0.5*(TMath::Log((backgroundCandidate->GetE() +backgroundCandidate->GetPz()) / (backgroundCandidate->GetE()-backgroundCandidate->GetPz())));
 	      }				
-					
+	      if(TMath::Abs(rapidity) > fV0Reader->GetRapidityMesonCut() ){
+		delete backgroundCandidate;   
+		continue;   // rapidity cut
+	      }			
+							
+	
 	      Double_t alfa=0.0;
 	      if( (currentEventGoodV0.GetE()+previousGoodV0.GetE()) != 0){
 		alfa=TMath::Abs((currentEventGoodV0.GetE()-previousGoodV0.GetE())
@@ -2721,7 +2743,12 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 		if(backgroundCandidate->GetE() - backgroundCandidate->GetPz() == 0 || backgroundCandidate->GetE() + backgroundCandidate->GetPz() == 0) rapidity=0;
 		else rapidity = 0.5*(TMath::Log((backgroundCandidate->GetE() +backgroundCandidate->GetPz()) / (backgroundCandidate->GetE()-backgroundCandidate->GetPz())));
 					
-					
+		if(TMath::Abs(rapidity) > fV0Reader->GetRapidityMesonCut() ){
+		  delete backgroundCandidate;   
+		  continue;   // rapidity cut
+		}			
+								
+
 		Double_t alfa=0.0;
 		if( (currentEventGoodV0.GetE()+previousGoodV0.GetE()) != 0){
 		  alfa=TMath::Abs((currentEventGoodV0.GetE()-previousGoodV0.GetE())
