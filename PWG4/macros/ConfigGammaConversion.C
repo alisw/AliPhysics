@@ -150,6 +150,9 @@ Bool_t kGCForceAOD = kFALSE;  // Call AliAnalysisManager::SetFillAOD(kTRUE) ever
 
 Bool_t kGCplotEventQuality              = kTRUE;
 
+
+// MC GAMMA DECAY PLOTS
+Bool_t kGCplotMCGammaFromDecay          = kTRUE;
 // NEUTRAL MESON PLOTS
 Bool_t kGCplotMCConversionR             = kTRUE;
 Bool_t kGCplotMCConversionZR            = kTRUE;
@@ -1776,6 +1779,18 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 
   }// end kGCrunChic
 	
+
+  //---------------------------------------------- Gamma from Decay ----------------------------------------------------
+  if(kGCplotMCGammaFromDecay == kTRUE && kGCdoMCTruth == kTRUE){
+     histograms->AddHistogram("MC_DecayPi0Gamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");  
+     histograms->AddHistogram("MC_DecayRho0Gamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+     histograms->AddHistogram("MC_DecayEtaGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+     histograms->AddHistogram("MC_DecayOmegaGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+     histograms->AddHistogram("MC_DecayK0sGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+     histograms->AddHistogram("MC_DecayEtapGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+     histograms->AddHistogram("MC_DecayAllGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+  }
+
   //---------------------------------------------- Neutral Meson ---------------------------------------------------------
   if(kGCrunNeutralMeson){
 		

@@ -777,7 +777,31 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       if(particle->GetMother(0) >= fStack->GetNprimary()){
 	continue; // the gamma has a mother, and it is not a primary particle
       }
-			
+		
+      if(particle->GetMother(0) >-1){
+	 fHistograms->FillHistogram("MC_DecayAllGamma_Pt", particle->Pt()); // All
+	 switch(fStack->Particle(particle->GetMother(0))->GetPdgCode()){
+	 case 111: // Pi0
+	    fHistograms->FillHistogram("MC_DecayPi0Gamma_Pt", particle->Pt());
+	    break;
+	 case 113: // Rho0
+	    fHistograms->FillHistogram("MC_DecayRho0Gamma_Pt", particle->Pt());
+	    break;
+	 case 221: // Eta
+	    fHistograms->FillHistogram("MC_DecayEtaGamma_Pt", particle->Pt());
+	    break;
+	 case 223: // Omega
+	    fHistograms->FillHistogram("MC_DecayOmegaGamma_Pt", particle->Pt());
+	    break;
+	 case 310: // K_s0
+	    fHistograms->FillHistogram("MC_DecayK0sGamma_Pt", particle->Pt());
+	    break;
+	 case 331: // Eta'
+	    fHistograms->FillHistogram("MC_DecayEtapGamma_Pt", particle->Pt());
+	    break;
+	 }
+      }
+	
       fHistograms->FillHistogram("MC_allGamma_Energy", particle->Energy());
       fHistograms->FillHistogram("MC_allGamma_Pt", particle->Pt());
       fHistograms->FillHistogram("MC_allGamma_Eta", particle->Eta());
