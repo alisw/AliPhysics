@@ -22,7 +22,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4);
+  //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
@@ -33,7 +33,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetTrackFilter(trkFilter);
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
-  esdTrackCutsSoftPi->SetMinNClustersITS(4);
+  esdTrackCutsSoftPi->SetMinNClustersITS(2);
   esdTrackCutsSoftPi->SetEtaRange(-0.8,+0.8);
   AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
