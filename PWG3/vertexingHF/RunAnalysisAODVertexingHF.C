@@ -293,7 +293,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //************************************************
    /*
    plugin->SetGridDataDir("/alice/data/2010/LHC10b"); // specify LHC period
-   plugin->SetDataPattern("pass2/AOD001/*AliAOD.root"); // specify reco pass and AOD set
+   plugin->SetDataPattern("pass2/AOD006/*AliAOD.root"); // specify reco pass and AOD set
    plugin->SetFriendChainName("./AliAOD.VertexingHF.root");
    // OR plugin->SetFriendChainName("deltas/AliAOD.VertexingHF.root");
    // Adds only the good runs from the Monalisa Run Condition Table
