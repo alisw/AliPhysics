@@ -17,6 +17,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliBalance.h"
 
@@ -32,7 +33,8 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   : AliAnalysisTaskSE(name), 
     fBalance(0),
     fList(0),
-    fHistEventStats(0) {
+    fHistEventStats(0),
+    fESDtrackCuts(0) {
   // Constructor
 
   // Define input and output slots here
@@ -66,6 +68,8 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   for(Int_t i = 1; i <= 4; i++)
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
+
+  if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
   // Post output data.
   PostData(1, fBalance);
@@ -105,6 +109,10 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	    Printf("ERROR: Could not receive track %d", iTracks);
 	    continue;
 	  }
+
+	  //ESD track cuts
+	  if(fESDtrackCuts) 
+	    if(!fESDtrackCuts->AcceptTrack(track)) continue;
 	  array->Add(track);
 	} //track loop
       }//vertex object valid

@@ -64,68 +64,9 @@ void runBalanceFunction(Int_t analysisMode = kLocal,
     mgr->StartAnalysis("grid");
   }
 
-  //runLocal(mode);
-
   timer.Stop();
   timer.Print();
 }
-
-/*void runLocal(const char* mode) {
-  //____________________________________________________//
-  //_____________Setting up the par files_______________//
-  //____________________________________________________//
-  //setupPar("STEERBase");
-  gSystem->Load("libSTEERBase.so");
-  //setupPar("ESD");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
-  //setupPar("AOD");
-  gSystem->Load("libAOD.so");
-  //setupPar("ANALYSIS");
-  gSystem->Load("libANALYSIS.so");
-  //setupPar("ANALYSISalice");
-  gSystem->Load("libANALYSISalice.so");
-  //setupPar("PWG2ebye");
-  gSystem->Load("libPWG2ebye.so");
-
-  //___________________________________________________//
-  TChain *chain = new TChain("esdTree");
-  chain->Add("AliESDs.root");
-
-  gROOT->LoadMacro("configBalanceFunctionAnalysis.C");
-  AliBalance *analysis = GetBalanceFunctionObject(mode);
-
-  //___________________________________________________//
-  // Create the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("testAnalysis");
-
-  AliVEventHandler* esdH = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdH);
-
-  // Create task
-  AliAnalysisTaskBF *taskBF = new AliAnalysisTaskBF("TaskBF");
-  taskBF->SetAnalysisObject(analysis);
-  // Add task
-  mgr->AddTask(taskBF);
-
-  // Create conainers for input/output
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("contBF", AliBalance::Class(), AliAnalysisManager::kOutputContainer, "BF.ESD.root");
-
-  // Connect input/output
-  mgr->ConnectInput(taskBF, 0, cinput);
-  mgr->ConnectOutput(taskBF, 0, coutput);
-
-  // Enable debug printouts
-  mgr->SetDebugLevel(2);
-
-  if (!mgr->InitAnalysis())
-    return;
-
-  mgr->PrintStatus();
-
-  mgr->StartAnalysis("local", chain);
-  }*/
 
 //__________________________________________________________//
 Int_t setupPar(const char* pararchivename) {

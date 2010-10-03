@@ -8,9 +8,7 @@ class TList;
 class TH1F;
 
 class AliBalance;
-class AliESDEvent;
-class AliAODEvent;
-class AliMCEvent;
+class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -25,11 +23,15 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
 
   void SetAnalysisObject(AliBalance *const analysis) {
     fBalance = analysis;}
+  void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
+    fESDtrackCuts = trackCuts;}
   
  private:
   AliBalance *fBalance; //BF object
   TList *fList; //fList object
   TH1F *fHistEventStats; //event stats
+
+  AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
 
   AliAnalysisTaskBF(const AliAnalysisTaskBF&); // not implemented
   AliAnalysisTaskBF& operator=(const AliAnalysisTaskBF&); // not implemented
