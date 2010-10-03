@@ -26,6 +26,7 @@ AliAnalysisTaskBF *AddTaskBalanceFunction() {
   AliAnalysisTaskBF *taskBF = new AliAnalysisTaskBF("TaskBF");
   mgr->AddTask(taskBF);
   taskBF->SetAnalysisObject(bf);
+  taskBF->SetVertexDiamond(0.3,0.3,10.);
 
   if (type=="ESD") {
     AliESDtrackCuts *trackCuts = GetTrackCutsObject();

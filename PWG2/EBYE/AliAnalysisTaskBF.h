@@ -25,13 +25,22 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fBalance = analysis;}
   void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
     fESDtrackCuts = trackCuts;}
-  
+  void SetVeretxDiamond(Double_t vx, Double_t vy, Double_t vz) {
+    fVxMax = vx;
+    fVyMax = vy;
+    fVzMax = vz;
+  }
+
  private:
   AliBalance *fBalance; //BF object
   TList *fList; //fList object
   TH1F *fHistEventStats; //event stats
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
+
+  Double_t fVxMax;//vxmax
+  Double_t fVyMax;//vxmax
+  Double_t fVzMax;//vxmax
 
   AliAnalysisTaskBF(const AliAnalysisTaskBF&); // not implemented
   AliAnalysisTaskBF& operator=(const AliAnalysisTaskBF&); // not implemented
