@@ -27,6 +27,11 @@ AliAnalysisTaskBF *AddTaskBalanceFunction() {
   mgr->AddTask(taskBF);
   taskBF->SetAnalysisObject(bf);
 
+  if (type=="ESD") {
+    AliESDtrackCuts *trackCuts = GetTrackCutsObject();
+    taskBF->SetAnalysisCutObject(trackCuts);
+  }
+
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
