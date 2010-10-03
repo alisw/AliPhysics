@@ -292,6 +292,13 @@ AliHLTUInt32_t AliHLTTPCDigitReaderUnpacked::GetAltroBlockHWaddr() const
   return (AliHLTUInt32_t)(fMapping->GetHwAddress((UInt_t)GetSortedRow(),(UInt_t)GetSortedPad()));//fTPCRawStream->GetHWAddress();
 }
 
+AliHLTTPCDigitData AliHLTTPCDigitReaderUnpacked::GetSortedDigit(){
+  // see header file for class documentation
+  assert(fData);
+  if (!fData) return AliHLTTPCDigitData();
+  return fData[fBinRowPositionSorted.at(fBin)];
+}
+
 Int_t AliHLTTPCDigitReaderUnpacked::GetSortedTime(){
   // see header file for class documentation
   assert(fData);
@@ -389,7 +396,7 @@ int AliHLTTPCDigitReaderUnpacked::NextBunch()
   fPrevPad = GetSortedPad();
   fPrevRow = GetSortedRow();
   fDataBunch.push_back(GetSortedSignal());
-  fDigitsVector.push_back(fData[fBin]);
+  fDigitsVector.push_back(GetSortedDigit());
 
   do{
     if(NextSignal()){
@@ -398,7 +405,7 @@ int AliHLTTPCDigitReaderUnpacked::NextBunch()
 	    fPrevTime = GetSortedTime();
 	    //fDataBunch.insert(fDataBunch.begin(), GetSortedSignal());// add the signal to the beginning of the buffer	    
 	    fDataBunch.push_back(GetSortedSignal());// add the signal to the beginning of the buffer
-	    fDigitsVector.push_back(fData[fBin]);
+	    fDigitsVector.push_back(GetSortedDigit());
 	  }
 	  else{//end of bunch but not of channel
 	    break;
