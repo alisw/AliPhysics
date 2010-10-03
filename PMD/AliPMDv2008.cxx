@@ -1508,71 +1508,37 @@ void AliPMDv2008::StepManager()
   //
 
   Int_t   copy;
-  Float_t hits[4], destep;
+  Float_t hits[5], destep;
   Float_t center[3] = {0,0,0};
-  Int_t   vol[10];
-  //  const char *namep;
+  Int_t   vol[6];
   
   if(gMC->CurrentMedium() == fMedSens && (destep = gMC->Edep())) {
   
     gMC->CurrentVolID(copy);
-    //     namep=gMC->CurrentVolName();
-    // printf("Current vol  is %s \n",namep);
-    vol[0]=copy;
+    vol[0] = copy;
 
     gMC->CurrentVolOffID(1,copy);
-    //namep=gMC->CurrentVolOffName(1);
-    // printf("Current vol 11 is %s \n",namep);
-    vol[1]=copy;
+    vol[1] = copy;
 
     gMC->CurrentVolOffID(2,copy);
-    //namep=gMC->CurrentVolOffName(2);
-    //printf("Current vol 22 is %s \n",namep);
-    vol[2]=copy;
-
-    //	if(strncmp(namep,"EHC1",4))vol[2]=1;
+    vol[2] = copy;
 
     gMC->CurrentVolOffID(3,copy);
-    // namep=gMC->CurrentVolOffName(3);
-    //printf("Current vol 33 is %s \n",namep);
-    vol[3]=copy;
+    vol[3] = copy;
 
     gMC->CurrentVolOffID(4,copy);
-    // namep=gMC->CurrentVolOffName(4);
-    // printf("Current vol 44 is %s \n",namep);
-    vol[4]=copy;
+    vol[4] = copy;
 
     gMC->CurrentVolOffID(5,copy);
-    // namep=gMC->CurrentVolOffName(5);
-    // printf("Current vol 55 is %s \n",namep);
-    vol[5]=copy;
-
-    gMC->CurrentVolOffID(6,copy);
-    // namep=gMC->CurrentVolOffName(6);
-    // printf("Current vol 66 is %s \n",namep);
-    vol[6]=copy;
-
-    gMC->CurrentVolOffID(7,copy);
-    //  namep=gMC->CurrentVolOffName(7);
-    // printf("Current vol 77 is %s \n",namep);
-    vol[7]=copy;
-
-    gMC->CurrentVolOffID(8,copy);
-    // namep=gMC->CurrentVolOffName(8);
-    // printf("Current vol 88 is %s \n",namep);
-    vol[8]=copy;
+    vol[5] = copy;
 
 
-    gMC->CurrentVolOffID(9,copy);
-    // namep=gMC->CurrentVolOffName(9);
-    // printf("Current vol 99 is %s \n",namep);
-    vol[9]=copy;
-
-
-    // printf("volume number %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %10.3f \n",vol[0],vol[1],vol[2],vol[3],vol[4],vol[5],vol[6],vol[7],vol[8],vol[9],destep*1000000);
-    
     gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
+
+    // this is for pile-up events
+    hits[4] = gMC->TrackTime();
+
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 
   }

@@ -146,56 +146,56 @@ void AliPMDQADataMakerSim::MakeHits()
     //make QA data from Hits
 
   Int_t premul = 0, cpvmul = 0;
-    Float_t edepkev = 0.;
-    TIter next(fHitsArray); 
-    AliPMDhit * hit; 
+  Float_t edepkev = 0.;
+  TIter next(fHitsArray); 
+  AliPMDhit * hit; 
     
-    while ( (hit = dynamic_cast<AliPMDhit *>(next())) )
-      {
-	if (hit->Z() > 361.5)
-	  {
-	    edepkev = (hit->GetEnergy())/1000.;
-	    GetHitsData(0)->Fill(edepkev);
-	    premul++;
-	  }
-	else if (hit->Z() < 361.5)
-	  {
-	    edepkev = (hit->GetEnergy())/1000.;
-	    GetHitsData(1)->Fill(edepkev);
-	    cpvmul++;
-	  }
-    }
-
-    if(premul <= 0)
+  while ( (hit = dynamic_cast<AliPMDhit *>(next())) )
     {
-	GetHitsData(2)->Fill(-1.); 
+      if (hit->Z() > 361.5)
+	{
+	  edepkev = (hit->GetEnergy())/1000.;
+	  GetHitsData(0)->Fill(edepkev);
+	  premul++;
+	}
+      else if (hit->Z() < 361.5)
+	{
+	  edepkev = (hit->GetEnergy())/1000.;
+	  GetHitsData(1)->Fill(edepkev);
+	  cpvmul++;
+	}
     }
-    else
+  
+  if(premul <= 0)
     {
-	GetHitsData(2)->Fill(premul); 
+      GetHitsData(2)->Fill(-1.); 
     }
-
-    if(cpvmul <= 0)
+  else
     {
-	GetHitsData(3)->Fill(-1.); 
+      GetHitsData(2)->Fill(premul); 
     }
-    else
+  
+  if(cpvmul <= 0)
     {
-	GetHitsData(3)->Fill(cpvmul); 
+      GetHitsData(3)->Fill(-1.); 
     }
-
+  else
+    {
+      GetHitsData(3)->Fill(cpvmul); 
+    }
+  
 }
 
 //____________________________________________________________________________
 void AliPMDQADataMakerSim::MakeHits(TTree * hitTree)
 {
-    // make QA data from Hit Tree
-
-    TBranch * branch = hitTree->GetBranch("PMD") ;
-    if ( ! branch )
+  // make QA data from Hit Tree
+  
+  TBranch * branch = hitTree->GetBranch("PMD") ;
+  if ( ! branch )
     {
-	AliWarning("PMD branch in Hit Tree not found") ;
-	return;
+      AliWarning("PMD branch in Hit Tree not found") ;
+      return;
     }
 
   if (fHitsArray) 
@@ -217,19 +217,19 @@ void AliPMDQADataMakerSim::MakeSDigits()
     // makes data from SDigits
 
   Int_t cpvmul = 0, premul = 0;
-    Float_t edepkev = 0.;
-
-    TIter next(fSDigitsArray) ; 
-    AliPMDsdigit * sdigit ; 
-    while ( (sdigit = dynamic_cast<AliPMDsdigit *>(next())) )
+  Float_t edepkev = 0.;
+  
+  TIter next(fSDigitsArray) ; 
+  AliPMDsdigit * sdigit ; 
+  while ( (sdigit = dynamic_cast<AliPMDsdigit *>(next())) )
     {
-	if(sdigit->GetDetector() == 0)
+      if(sdigit->GetDetector() == 0)
 	{
 	  edepkev = (sdigit->GetCellEdep())/1000.;
 	  GetSDigitsData(0)->Fill(edepkev);
 	  premul++;
 	}
-	if(sdigit->GetDetector() == 1)
+      if(sdigit->GetDetector() == 1)
 	{
 	  edepkev = (sdigit->GetCellEdep())/1000.;
 	  GetSDigitsData(1)->Fill(edepkev);
@@ -237,29 +237,31 @@ void AliPMDQADataMakerSim::MakeSDigits()
 	}
 	
     } 
-    if (premul > 0) GetSDigitsData(2)->Fill(premul);
-    if (cpvmul > 0) GetSDigitsData(3)->Fill(cpvmul);
-    
+  if (premul > 0) GetSDigitsData(2)->Fill(premul);
+  if (cpvmul > 0) GetSDigitsData(3)->Fill(cpvmul);
+  
 }
 
 //____________________________________________________________________________
 void AliPMDQADataMakerSim::MakeSDigits(TTree * sdigitTree)
 {
     // makes data from SDigit Tree
-
+  
   if (fSDigitsArray) 
     fSDigitsArray->Clear() ; 
   else 
     fSDigitsArray = new TClonesArray("AliPMDsdigit", 1000) ; 
     
-    TBranch * branch = sdigitTree->GetBranch("PMDSDigit") ;
-    branch->SetAddress(&fSDigitsArray) ;
-
-    if ( ! branch ){
+  TBranch * branch = sdigitTree->GetBranch("PMDSDigit") ;
+  if ( ! branch )
+    {
       AliWarning("PMD branch in SDigit Tree not found") ; 
-    } else {
-	    branch->GetEntry(0) ;
-	    MakeSDigits() ; 
+    }
+  else
+    {
+      branch->SetAddress(&fSDigitsArray) ;
+      branch->GetEntry(0) ;
+      MakeSDigits() ; 
     }
 }
 
@@ -269,27 +271,27 @@ void AliPMDQADataMakerSim::MakeDigits()
     // makes data from Digits
 
   Int_t cpvmul = 0, premul = 0;
-
-    TIter next(fDigitsArray) ; 
-    AliPMDdigit * digit ; 
-    while ( (digit = dynamic_cast<AliPMDdigit *>(next())) )
+  
+  TIter next(fDigitsArray) ; 
+  AliPMDdigit * digit ; 
+  while ( (digit = dynamic_cast<AliPMDdigit *>(next())) )
     {
-	if(digit->GetDetector() == 0)
+      if(digit->GetDetector() == 0)
 	{
-	    GetDigitsData(0)->Fill( digit->GetADC()) ;
-	    premul++;
+	  GetDigitsData(0)->Fill( digit->GetADC()) ;
+	  premul++;
 	}
-	if(digit->GetDetector() == 1)
+      if(digit->GetDetector() == 1)
 	{
-	    GetDigitsData(1)->Fill( digit->GetADC());
-	    cpvmul++;
+	  GetDigitsData(1)->Fill( digit->GetADC());
+	  cpvmul++;
 	}
     }  
-
-    if (premul > 0) GetDigitsData(2)->Fill(premul);
-    if (cpvmul > 0) GetDigitsData(3)->Fill(cpvmul);
-
-
+  
+  if (premul > 0) GetDigitsData(2)->Fill(premul);
+  if (cpvmul > 0) GetDigitsData(3)->Fill(cpvmul);
+  
+  
 }
 
 //____________________________________________________________________________
@@ -301,22 +303,22 @@ void AliPMDQADataMakerSim::MakeDigits(TTree * digitTree)
     fDigitsArray->Clear() ; 
   else 
     fDigitsArray = new TClonesArray("AliPMDdigit", 1000) ; 
-    
-    TBranch * branch = digitTree->GetBranch("PMDDigit") ;
-    branch->SetAddress(&fDigitsArray) ;
+  
+  TBranch * branch = digitTree->GetBranch("PMDDigit") ;
 
-    if ( ! branch )
+  if ( ! branch )
     {
-	AliWarning("PMD branch in Digit Tree not found") ; 
+      AliWarning("PMD branch in Digit Tree not found") ; 
     }
-    else
+  else
     {
-	for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
+      branch->SetAddress(&fDigitsArray) ;
+      for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
 	{
-    branch->GetEntry(ient) ; 
-    MakeDigits() ; 
-    fDigitsArray->Clear() ; 
-    
+	  branch->GetEntry(ient) ; 
+	  MakeDigits() ; 
+	  fDigitsArray->Clear() ; 
+	  
 	}
       
     }

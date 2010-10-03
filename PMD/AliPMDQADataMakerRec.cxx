@@ -360,20 +360,19 @@ void AliPMDQADataMakerRec::MakeDigits(TTree * digitTree)
     fDigitsArray = new TClonesArray("AliPMDdigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("PMDDigit") ;
-  branch->SetAddress(&fDigitsArray) ;
-  
   if ( ! branch )
     {
-    AliWarning("PMD branch in Digit Tree not found") ; 
+      AliWarning("PMD branch in Digit Tree not found") ; 
     }
   else
     {
-    for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
-      {
-	    branch->GetEntry(ient) ; 
-	    MakeDigits() ; 
-      }
-    
+      branch->SetAddress(&fDigitsArray) ;
+      for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
+	{
+	  branch->GetEntry(ient) ; 
+	  MakeDigits() ; 
+	}
+      
     }
 }
 
@@ -383,81 +382,82 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     // makes data from RecPoints
 
   Int_t multDdl0 = 0, multDdl1 = 0, multDdl2 = 0;
-    Int_t multDdl3 = 0, multDdl4 = 0, multDdl5 = 0;
-
-    AliPMDrecpoint1 * recpoint; 
-
+  Int_t multDdl3 = 0, multDdl4 = 0, multDdl5 = 0;
+  
+  AliPMDrecpoint1 * recpoint; 
+  
   if (fRecPointsArray) 
     fRecPointsArray->Clear() ; 
   else 
     fRecPointsArray = new TClonesArray("AliPMDrecpoint1", 1000) ; 
-    
-    TBranch * branch = clustersTree->GetBranch("PMDRecpoint") ;
-    branch->SetAddress(&fRecPointsArray) ;
+  
+  TBranch * branch = clustersTree->GetBranch("PMDRecpoint") ;
 
-    if ( ! branch )
+  if ( ! branch )
     {
-	AliWarning("PMD branch in Recpoints Tree not found") ; 
+      AliWarning("PMD branch in Recpoints Tree not found") ; 
     }
-    else
+  else
     {
-	for (Int_t imod = 0; imod < branch->GetEntries(); imod++)
+      branch->SetAddress(&fRecPointsArray) ;
+      
+      for (Int_t imod = 0; imod < branch->GetEntries(); imod++)
 	{
-	    branch->GetEntry(imod) ;
-
-	    TIter next(fRecPointsArray) ; 
-
-	    while ( (recpoint = dynamic_cast<AliPMDrecpoint1 *>(next())) )
-	      {
-		//Float_t xpos = recpoint->GetClusX();
-		//Float_t ypos = recpoint->GetClusY();
-		//Int_t smn = recpoint->GetSMNumber();
-		
-		  if(recpoint->GetDetector() == 0)
-		  {
-		    if(recpoint->GetSMNumber() >= 0 && recpoint->GetSMNumber() < 6)
-		      {
-			GetRecPointsData(0)->Fill(recpoint->GetClusCells());
-			multDdl0++;
-		      }
-		    if(recpoint->GetSMNumber() >= 6 && recpoint->GetSMNumber() < 12)
-		      {
-			GetRecPointsData(1)->Fill(recpoint->GetClusCells());
-			multDdl1++;
-		      }
-		    if(recpoint->GetSMNumber() >= 12 && recpoint->GetSMNumber() < 18)
-		      {
-			GetRecPointsData(2)->Fill(recpoint->GetClusCells());
-			multDdl2++;
-		      }
-		    if(recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24)
-		      {
-			GetRecPointsData(3)->Fill(recpoint->GetClusCells());
-			multDdl3++;
-		      }
-		  }
-
-		if(recpoint->GetDetector() == 1)
-		  {
-		    if((recpoint->GetSMNumber() >= 0 && recpoint->GetSMNumber() < 6) || 
-		       (recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24))
-		      {
-			GetRecPointsData(4)->Fill(recpoint->GetClusCells());
-			multDdl4++;
-		      }
-		    if(recpoint->GetSMNumber() >= 6 && recpoint->GetSMNumber() < 18 )
-		      {
-			GetRecPointsData(5)->Fill(recpoint->GetClusCells());
-			multDdl5++;
-		      }
-		  }
-	      } 
+	  branch->GetEntry(imod) ;
+	  
+	  TIter next(fRecPointsArray) ; 
+	  
+	  while ( (recpoint = dynamic_cast<AliPMDrecpoint1 *>(next())) )
+	    {
+	      //Float_t xpos = recpoint->GetClusX();
+	      //Float_t ypos = recpoint->GetClusY();
+	      //Int_t smn = recpoint->GetSMNumber();
+	      
+	      if(recpoint->GetDetector() == 0)
+		{
+		  if(recpoint->GetSMNumber() >= 0 && recpoint->GetSMNumber() < 6)
+		    {
+		      GetRecPointsData(0)->Fill(recpoint->GetClusCells());
+		      multDdl0++;
+		    }
+		  if(recpoint->GetSMNumber() >= 6 && recpoint->GetSMNumber() < 12)
+		    {
+		      GetRecPointsData(1)->Fill(recpoint->GetClusCells());
+		      multDdl1++;
+		    }
+		  if(recpoint->GetSMNumber() >= 12 && recpoint->GetSMNumber() < 18)
+		    {
+		      GetRecPointsData(2)->Fill(recpoint->GetClusCells());
+		      multDdl2++;
+		    }
+		  if(recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24)
+		    {
+		      GetRecPointsData(3)->Fill(recpoint->GetClusCells());
+		      multDdl3++;
+		    }
+		}
+	      
+	      if(recpoint->GetDetector() == 1)
+		{
+		  if((recpoint->GetSMNumber() >= 0 && recpoint->GetSMNumber() < 6) || 
+		     (recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24))
+		    {
+		      GetRecPointsData(4)->Fill(recpoint->GetClusCells());
+		      multDdl4++;
+		    }
+		  if(recpoint->GetSMNumber() >= 6 && recpoint->GetSMNumber() < 18 )
+		    {
+		      GetRecPointsData(5)->Fill(recpoint->GetClusCells());
+		      multDdl5++;
+		    }
+		}
+	    } 
 	}
     }
-    
-    GetRecPointsData(6)->Fill(multDdl0,multDdl1);
-    GetRecPointsData(7)->Fill(multDdl2,multDdl3);
-    GetRecPointsData(8)->Fill(multDdl4,multDdl5);
+  
+  GetRecPointsData(6)->Fill(multDdl0,multDdl1);
+  GetRecPointsData(7)->Fill(multDdl2,multDdl3);
+  GetRecPointsData(8)->Fill(multDdl4,multDdl5);
 }
 
 //____________________________________________________________________________

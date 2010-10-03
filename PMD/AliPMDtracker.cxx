@@ -212,6 +212,14 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 	      
 	      for (Int_t ient1 = 0; ient1 < nenbr1; ient1++)
 		{
+		  irow[ient1] = -99;
+		  icol[ient1] = -99;
+		  itra[ient1] = -99;
+		  ipid[ient1] = -99;
+		  cadc[ient1] = 0.;
+		}
+	      for (Int_t ient1 = 0; ient1 < nenbr1; ient1++)
+		{
 		  rechit = (AliPMDrechit*)fRechits->UncheckedAt(ient1);
 		  //irow[ient1] = rechit->GetCellX();
 		  //icol[ient1] = rechit->GetCellY();
@@ -473,6 +481,9 @@ void AliPMDtracker::AssignTrPidToCluster(Int_t nentry, Int_t *itra,
       delete [] sortcoord;
       
     }   // end of ngtrack >= 1
+
+  delete [] phentry;
+  delete [] hadentry;
   
 }
 //--------------------------------------------------------------------//
