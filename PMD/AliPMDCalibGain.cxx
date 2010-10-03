@@ -16,6 +16,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+#include "Riostream.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TObjString.h"
@@ -198,11 +199,11 @@ Int_t AliPMDCalibGain::ExtractHotChannel(const Char_t *rootFile)
 
       for (Int_t idet = 0; idet < kDet; idet++)
 	{
-	  for (Int_t ismn = 0; ismn < kMaxSMN; idet++)
+	  for (Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	    {
-	      for (Int_t irow = 0; irow < kMaxRow; idet++)
+	      for (Int_t irow = 0; irow < kMaxRow; irow++)
 		{
-		  for (Int_t icol = 0; icol < kMaxCol; idet++)
+		  for (Int_t icol = 0; icol < kMaxCol; icol++)
 		    {
 		      fHotFlag[idet][kMaxSMN][kMaxRow][kMaxCol] = 0.;
 		    }
@@ -244,8 +245,11 @@ void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
 {
   // Read the variables from the file
   
-  fpw = fopen(tempFile,"r");
+  //  fpw = fopen(tempFile,"r");
   
+  ifstream intmpfile;
+  intmpfile.open(tempFile);
+
   Float_t smcount = 0., smiso = 0.;
   Float_t cellcount = 0., celliso = 0.;
 
@@ -254,8 +258,8 @@ void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
     {
       for (Int_t ism = 0; ism < kMaxSMN; ism++)
 	{
-	  fscanf(fpw,"%d %d %f %f",&idet,&ism,&smcount,&smiso);
-	  
+	  //fscanf(fpw,"%d %d %f %f",&idet,&ism,&smcount,&smiso);
+	  intmpfile >> idet >> ism >> smcount >> smiso;
 	  fSMCount[idet][ism] = smcount;
 	  fSMIso[idet][ism]   = smiso;
 	}
@@ -269,9 +273,10 @@ void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
 	    {
 	      for (Int_t icol = 0; icol < kMaxCol; icol++)
 		{
-		  fscanf(fpw,"%d %d %d %d %f %f",&idet,&ism,&irow,&icol,
-			 &cellcount,&celliso);
-		  
+		  //fscanf(fpw,"%d %d %d %d %f %f",&idet,&ism,&irow,&icol,
+		  //	 &cellcount,&celliso);
+		  intmpfile >> idet >> ism >> irow >> icol 
+			    >> cellcount >> celliso;
 		  fCellCount[idet][ism][irow][icol] = cellcount;
 		  fCellIso[idet][ism][irow][icol]   = celliso;
 		}
@@ -279,7 +284,8 @@ void AliPMDCalibGain::ReadTempFile(const Char_t *tempFile)
 	}
     }
   
-  fclose(fpw);
+  //fclose(fpw);
+  intmpfile.close();
 
 }
 // ------------------------------------------------------------------------ //

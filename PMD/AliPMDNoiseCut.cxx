@@ -25,6 +25,10 @@ ClassImp(AliPMDNoiseCut)
 AliPMDNoiseCut::AliPMDNoiseCut()
 {
   // Default constructor
+  for(Int_t imod = 0; imod < 48; imod++)
+    {
+      fNoiseCut[imod] = 0.;
+    }
 }
 // ----------------------------------------------------------------- //
 AliPMDNoiseCut::AliPMDNoiseCut(const char* name)
@@ -34,6 +38,10 @@ AliPMDNoiseCut::AliPMDNoiseCut(const char* name)
   namst += name;
   SetName(namst.Data());
   SetTitle(namst.Data());
+  for(Int_t imod = 0; imod < 48; imod++)
+    {
+      fNoiseCut[imod] = 0.;
+    }
 }
 // ----------------------------------------------------------------- //
 AliPMDNoiseCut::AliPMDNoiseCut(const AliPMDNoiseCut& noisecut) :

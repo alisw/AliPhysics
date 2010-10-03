@@ -119,7 +119,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
   Float_t  clusdata[6] = {0.,0.,0.,0.,0.,0.};
   Double_t cutoff, ave;
   Double_t edepcell[kNMX];
-  Double_t cellenergy[11424];
+  Double_t cellenergy[kNMX];
   
   // ndimXr and ndimYr are different because of different module size
 
@@ -137,7 +137,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
       ndimYr = 96;
     }
 
-  for (i =0; i < 11424; i++)
+  for (i = 0; i < kNMX; i++)
   {
       cellenergy[i] = 0.;
   }
@@ -177,9 +177,10 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
       edepcell[i] = cellenergy[i];
     }
 
+  Bool_t jsort = true;
   Int_t iord1[kNMX];
-  TMath::Sort((Int_t)kNMX,edepcell,iord1);// order the data
-  cutoff = fCutoff;                       // cutoff to discard cells
+  TMath::Sort((Int_t)kNMX,edepcell,iord1,jsort);// order the data
+  cutoff = fCutoff;                             // cutoff to discard cells
   ave  = 0.;
   nmx1 = -1;
   for(i = 0;i < kNMX; i++)
@@ -461,8 +462,14 @@ void AliPMDClusteringV1::RefClust(Int_t incr, Double_t edepcell[])
   for(i = 0; i<ndim; i++)
     {
       ncl[i]  = -1; 
-      if (i < 6) clusdata[i] = 0.;
-      if (i < kNmaxCell) clxy[i]    = 0;
+    }
+  for(i = 0; i<6; i++)
+    {
+      clusdata[i] = 0.;
+    }
+  for(i = 0; i<19; i++)
+    {
+      clxy[i] = 0;
     }
 
   // clno counts the final clusters

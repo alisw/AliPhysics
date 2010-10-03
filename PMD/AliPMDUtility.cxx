@@ -578,11 +578,11 @@ void AliPMDUtility::DrawPMDModule(Int_t idet)
 	{
 	  if(idet == 0)
 	    {
-	      sprintf(smnumber,"%d",ism);
+	      snprintf(smnumber,10,"%d",ism);
 	    }
 	  else if (idet == 1)
 	    {
-	      sprintf(smnumber,"%d",24+ism);
+	      snprintf(smnumber,10,"%d",24+ism);
 	    }
 	    tt.DrawText(x1ism+deltaX,y1ism+deltaY,smnumber);
 	}

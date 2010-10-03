@@ -112,10 +112,16 @@ Int_t AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 
   UInt_t data = 0;
 
-  fRawReader->ReadNextData(fData);
+ // PMD raw data does not contain CDH
+
+  fRawReader->RequireHeader(kFALSE);
+
+  if (!fRawReader->ReadNextData(fData)) {
+    fRawReader->RequireHeader(kTRUE);
+    return kFALSE;
+  }
 
   fPosition = 0;
-
 
   Int_t ibus = 0;
 

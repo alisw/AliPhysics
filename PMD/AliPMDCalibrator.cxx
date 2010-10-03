@@ -148,25 +148,25 @@ void AliPMDCalibrator::Exec()
 void AliPMDCalibrator::Init()
 {
   // intializes everything
-  char hname2[kDet];
-  char htitle2[2];
-  char hname[kMaxSMN];
-  char hname24[kMaxSMN];
+  char hname[50];
+  char hname2[50];
+  char hname24[50];
   char hnameiso[120];
   char htitle1[120];
+  char htitle2[120];
   
   for(Int_t d = 0; d < kDet; d++) {
-    sprintf(hname2,"Isolated cell adc for Det Plane %d",d);
+    snprintf(hname2,50,"Isolated cell adc for Det Plane %d",d);
     fHdetIso[d]= new TH1F(hname2,htitle2,100,0,1000);
     for(Int_t i1 = 0; i1 < kMaxSMN; i1++) {
-      sprintf(hname,"det_%d_iso_sm_%2d",d,i1);
-      sprintf(hname24,"det_%d_iso_sm_%2d",d,i1);
+      snprintf(hname,50,"det_%d_iso_sm_%2d",d,i1);
+      snprintf(hname24,50,"det_%d_iso_sm_%2d",d,i1);
       fHsmIso[d][i1]= new TH1F(hname,hname24,100,0,1000);
       for(Int_t j1 = 0; j1 < kMaxRow; j1++) {
 	for(Int_t k1 = 0; k1 < kMaxCol; k1++) {
-	  sprintf(hnameiso,"Isolated Cell ADC for det_%d_cell_sm%d_row%d_col%d"
+	  snprintf(hnameiso,120,"Isolated Cell ADC for det_%d_cell_sm%d_row%d_col%d"
 		  ,d,i1,j1,k1);
-	  sprintf(htitle1,"Isolated Cell ADC for det_%d_cell_sm%d_row%d_col%d"
+	  snprintf(htitle1,120,"Isolated Cell ADC for det_%d_cell_sm%d_row%d_col%d"
 		  ,d,i1,j1,k1);
 	  
 	  TObject *old=gDirectory->GetList()->FindObject(hnameiso);
