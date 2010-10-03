@@ -27,7 +27,7 @@ void hltout_collect_esd()
   /////////////////////////////////////////////////////////////////////////
   //
   // setup of the HLT system
-  AliHLTSystem* pHLT=AliHLTPluginBase!::GetInstance();
+  AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
   if (!pHLT) {
     cerr << "fatal error: can not get HLT instance" << endl;
   }
