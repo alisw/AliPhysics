@@ -151,6 +151,9 @@ void mergeCorr(Int_t nEvents,
 #endif
 #endif
 
+  TObjArray *maps = new TObjArray;
+  maps->SetOwner(1);
+  Int_t lrun = 0;
   TObjArray *filenames = c->GetListOfFiles();
   Int_t nfiles = filenames->GetEntries();
   for(Int_t i=0; i<nfiles; ++i) {
@@ -224,6 +227,19 @@ void mergeCorr(Int_t nEvents,
       cinfo->fArrId = i;
       cinfo->fEntry = ev;
       einfos.insert( pair<ULong64_t, EvInfo*>(evtid,cinfo) );
+      if (lrun != header->fRun) {
+        for (Int_t lx=0;lx<4;++lx) {
+          lrun = header->fRun;
+          TString cname(Form("L%d_run%d_map",lx,lrun));
+          if (lx==3) 
+            cname=Form("TrigClass_run%d_map",lrun);
+          TMap *map = dynamic_cast<TMap*>(output->FindObject(cname));
+          if (map) {
+            maps->Add(map);
+            output->Remove(map);
+          }
+        }
+      }
     }
     delete output;
     file->Close();
@@ -257,6 +273,11 @@ void mergeCorr(Int_t nEvents,
 
   TFile *newFile = TFile::Open(outFileName,"recreate","Merged/Sorted MyTree created by mergeCorr.C",5);
   TDirectory::TContext cd(newFile);
+  for (Int_t m=0;m<maps->GetEntries();++m) {
+    TMap *map = (TMap*)maps->At(m);
+    //map->Print();
+    map->Write(map->GetName(),TObject::kSingleKey);
+  }
   TTree *newTree = new TTree("MyTree", "MyTree created by MyAliTask.cxx");
   newTree->Branch("header",&newHeader, 32*1024, 99);
   newTree->Branch("parts",&newParts, 256*1024, 99);
