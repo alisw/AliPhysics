@@ -27,18 +27,19 @@ void alieve_online_init()
   // Gentle-geom loading changes gGeoManager.
   TEveGeoManagerHolder mgrRestore;
 
-  AliEveMultiView *multiView = new AliEveMultiView;
+  AliEveMultiView *multiView = new AliEveMultiView(kTRUE);
 
   TEveUtil::LoadMacro("geom_gentle.C");
   multiView->InitGeomGentle(geom_gentle(),
                              geom_gentle_rphi(), 
+                             geom_gentle_rhoz(),
                              geom_gentle_rhoz());
 
   TEveUtil::LoadMacro("geom_gentle_trd.C");
   multiView->InitGeomGentleTrd(geom_gentle_trd());
 
   TEveUtil::LoadMacro("geom_gentle_muon.C");
-  multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kTRUE);
+  multiView->InitGeomGentleMuon(geom_gentle_muon(), kFALSE, kFALSE, kTRUE);
 
   //============================================================================
   // Standard macros to execute -- not all are enabled by default.
@@ -122,11 +123,14 @@ void alieve_online_init()
     vf->Layout();
   }
 
+  gEve->GetWindowManager()->HideAllEveDecorations();
+
   gEve->FullRedraw3D(kTRUE);
 
   TGLViewer *glv = multiView->Get3DView()->GetGLViewer();
-  glv->CurrentCamera().RotateRad(-0.4, 1);
-  glv->DoDraw();
+  gEve->FullRedraw3D(kTRUE);
+  glv->CurrentCamera().RotateRad(-0.4, -1.8);
+
 }
 
 //   multiView->Get3DView()->GetGLViewer()->CurrentCamera().RotateRad(-1, 1)
@@ -145,6 +149,7 @@ void alieve_online_on_new_event()
 
   AliEveMultiView *multiView = AliEveMultiView::Instance();
 
+/*
   TGLViewer *glv = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("3D View")))->GetGLViewer();
   
   if(gEve->GetScenes()->FirstChild()->FindChild("Gentle MUON"))
@@ -176,8 +181,8 @@ void alieve_online_on_new_event()
   }
 
   glv->DoDraw();
-
-//  TGLViewer *glv = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("3D View")))->GetGLViewer();
+*/
+  TGLViewer *glv = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("3D View")))->GetGLViewer();
   TGLViewer *glv1 = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("RPhi View")))->GetGLViewer();
   TGLViewer *glv2 = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("RhoZ View")))->GetGLViewer();
  
@@ -208,6 +213,8 @@ void alieve_online_on_new_event()
   if (gCenterProjectionsAtPrimaryVertex)
     multiView->SetCenterRhoZ(x[0], x[1], x[2]);
   multiView->ImportEventRhoZ(top);
+
+  if(multiView->IsMuonView()) multiView->ImportEventMuon(top);
 
   // Register image to amore.
   const TString pichost("aldaqacrs3");

@@ -25,12 +25,13 @@ AliEveMultiView* AliEveMultiView::Instance()
   return fgInstance;
 }
 
-AliEveMultiView::AliEveMultiView() :
-  fRPhiMgr(0), fRhoZMgr(0),
-  f3DView(0), fRPhiView(0), fRhoZView(0),
-  fRPhiGeomScene(0), fRhoZGeomScene(0), fRPhiEventScene(0), fRhoZEventScene(0),
+AliEveMultiView::AliEveMultiView(Bool_t setMuonView) :
+  fRPhiMgr(0), fRhoZMgr(0), fMuonMgr(0),
+  f3DView(0), fRPhiView(0), fRhoZView(0), fMuonView(0),
+  fRPhiGeomScene(0), fRhoZGeomScene(0), fMuonGeomScene(0),
+  fRPhiEventScene(0), fRhoZEventScene(0), fMuonEventScene(0),
   fGeomGentle(0), fGeomGentleRPhi(0), fGeomGentleRhoZ(0),
-  fGeomGentleTrd(0), fGeomGentleMuon(0)
+  fGeomGentleTrd(0), fGeomGentleMuon(0), fIsMuonView(kFALSE)
 {
   // Constructor --- creates required scenes, projection managers
   // and GL viewers.
@@ -46,11 +47,16 @@ AliEveMultiView::AliEveMultiView() :
                                         "Scene holding projected geometry for the RPhi view.");
   fRhoZGeomScene  = gEve->SpawnNewScene("RhoZ Geometry",
                                         "Scene holding projected geometry for the RhoZ view.");
+  fMuonGeomScene  = gEve->SpawnNewScene("Muon Geometry",
+                                        "Scene holding projected geometry for the Muon view.");
   fRPhiEventScene = gEve->SpawnNewScene("RPhi Event Data",
                                         "Scene holding projected event-data for the RPhi view.");
   fRhoZEventScene = gEve->SpawnNewScene("RhoZ Event Data",
                                         "Scene holding projected event-data for the RhoZ view.");
+  fMuonEventScene = gEve->SpawnNewScene("Muon Event Data",
+                                        "Scene holding projected event-data for the Muon view.");
 
+  fIsMuonView = setMuonView;
 
   // Projection managers
   //=====================
@@ -83,6 +89,22 @@ AliEveMultiView::AliEveMultiView() :
     fRhoZGeomScene->AddElement(a);
   }
 
+if(fIsMuonView)
+{
+  fMuonMgr = new TEveProjectionManager();
+  fMuonMgr->SetProjection(TEveProjection::kPT_RhoZ);
+  gEve->AddToListTree(fMuonMgr, kFALSE);
+  {
+    TEveProjectionAxes* a = new TEveProjectionAxes(fMuonMgr);
+    a->SetMainColor(kWhite);
+    a->SetTitle("Rho-Z Muon");
+    a->SetTitleSize(0.05);
+    a->SetTitleFont(102);
+    a->SetLabelSize(0.025);
+    a->SetLabelFont(102);
+    fMuonGeomScene->AddElement(a);
+  }
+}
 
   // Viewers
   //=========
@@ -113,20 +135,32 @@ AliEveMultiView::AliEveMultiView() :
   fRhoZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
   fRhoZView->AddScene(fRhoZGeomScene);
   fRhoZView->AddScene(fRhoZEventScene);
+
+if(fIsMuonView)
+{
+  pack->NewSlot()->MakeCurrent();
+  fMuonView = gEve->SpawnNewViewer("RhoZ View Muon", "");
+  fMuonView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+  fMuonView->AddScene(fMuonGeomScene);
+  fMuonView->AddScene(fMuonEventScene);
+}
+
 }
 
 //-------------------------------------------------------------------------
 
-void AliEveMultiView::InitGeomGentle(TEveGeoShape* g3d, TEveGeoShape* grphi, TEveGeoShape* grhoz)
+void AliEveMultiView::InitGeomGentle(TEveGeoShape* g3d, TEveGeoShape* grphi, TEveGeoShape* grhoz, TEveGeoShape* gmuon)
 {
   // Initialize gentle geometry.
 
   fGeomGentle     = g3d;
   fGeomGentleRPhi = grphi; fGeomGentleRPhi->IncDenyDestroy();
   fGeomGentleRhoZ = grhoz; fGeomGentleRhoZ->IncDenyDestroy();
+  if(fIsMuonView) { fGeomGentleMuon = gmuon; fGeomGentleMuon->IncDenyDestroy(); }
 
   ImportGeomRPhi(fGeomGentleRPhi);
   ImportGeomRhoZ(fGeomGentleRhoZ);
+  if(fIsMuonView) ImportGeomMuon(fGeomGentleMuon);
 }
 
 void AliEveMultiView::InitGeomGentleTrd(TEveGeoShape* gtrd)
@@ -136,15 +170,18 @@ void AliEveMultiView::InitGeomGentleTrd(TEveGeoShape* gtrd)
   fGeomGentleTrd = gtrd;
   ImportGeomRPhi(fGeomGentleTrd);
   ImportGeomRhoZ(fGeomGentleTrd);
+  if(fIsMuonView) ImportGeomMuon(fGeomGentleTrd);
 }
 
-void AliEveMultiView::InitGeomGentleMuon(TEveGeoShape* gmuon, Bool_t showRPhi, Bool_t showRhoZ)
+void AliEveMultiView::InitGeomGentleMuon(TEveGeoShape* gmuon, Bool_t showRPhi, Bool_t showRhoZ, Bool_t showMuon)
 {
   // Initialize gentle geometry for MUON.
 
   fGeomGentleMuon = gmuon;
   if (showRPhi) ImportGeomRPhi(fGeomGentleMuon);
   if (showRhoZ) ImportGeomRhoZ(fGeomGentleMuon);
+  if (showMuon && fIsMuonView) ImportGeomMuon(fGeomGentleMuon);
+
 }
 
 //-------------------------------------------------------------------------
@@ -155,6 +192,8 @@ void AliEveMultiView::SetDepth(Float_t d)
 
   fRPhiMgr->SetCurrentDepth(d);
   fRhoZMgr->SetCurrentDepth(d);
+  if(fIsMuonView) fMuonMgr->SetCurrentDepth(d);
+
 }
 
 //-------------------------------------------------------------------------
@@ -173,6 +212,13 @@ void AliEveMultiView::ImportGeomRhoZ(TEveElement* el)
   fRhoZMgr->ImportElements(el, fRhoZGeomScene);
 }
 
+void AliEveMultiView::ImportGeomMuon(TEveElement* el)
+{ 
+  // Import el into muon geometry scene.
+
+    if(fIsMuonView) fMuonMgr->ImportElements(el, fMuonGeomScene);
+}
+
 void AliEveMultiView::ImportEventRPhi(TEveElement* el)
 { 
   // Import el into r-phi event scene.
@@ -185,6 +231,13 @@ void AliEveMultiView::ImportEventRhoZ(TEveElement* el)
   // Import el into rho-z event scene.
 
   fRhoZMgr->ImportElements(el, fRhoZEventScene);
+}
+
+void AliEveMultiView::ImportEventMuon(TEveElement* el)
+{ 
+  // Import el into muon event scene.
+
+    if(fIsMuonView) fMuonMgr->ImportElements(el, fMuonEventScene);
 }
 
 void AliEveMultiView::DestroyEventRPhi()
@@ -200,6 +253,14 @@ void AliEveMultiView::DestroyEventRhoZ()
 
   fRhoZEventScene->DestroyElements();
 }
+
+void AliEveMultiView::DestroyEventMuon()
+{
+  // Destroy all elements in rho-z event scene.
+
+    if(fIsMuonView) fMuonEventScene->DestroyElements();
+}
+
 
 //-------------------------------------------------------------------------
 
@@ -217,6 +278,13 @@ void AliEveMultiView::SetCenterRhoZ(Double_t x, Double_t y, Double_t z)
   fRhoZMgr->SetCenter(x, y, z);
 }
 
+void AliEveMultiView::SetCenterMuon(Double_t x, Double_t y, Double_t z)
+{
+  // Set center of rho-z manager.
+
+    if(fIsMuonView) fMuonMgr->SetCenter(x, y, z);
+}
+
 void AliEveMultiView::DestroyAllGeometries()
 {
   // Destroy 3d, r-phi and rho-z geometries.
@@ -224,6 +292,7 @@ void AliEveMultiView::DestroyAllGeometries()
   fGeomGentle->DestroyElements();
   fGeomGentleRPhi->DestroyElements();
   fGeomGentleRhoZ->DestroyElements();
+  if(fIsMuonView) fGeomGentleMuon->DestroyElements();
 
 }
 
