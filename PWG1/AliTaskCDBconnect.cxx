@@ -71,7 +71,7 @@ void AliTaskCDBconnect::LocalInit()
 {
 // Init CDB locally if run number is defined.
   if (!fRun) {
-    AliWarning("AliTaskCDBconnect::LocalInit Run number not defined yet");
+    Info("LocalInit","AliTaskCDBconnect::LocalInit Run number not defined yet");
     return;
   }      
   // Create CDB manager
@@ -89,27 +89,6 @@ void AliTaskCDBconnect::LocalInit()
 void AliTaskCDBconnect::ConnectInputData(Option_t* /*option*/)
 {
 // Connect the input data, create CDB manager.
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) AliFatal("No analysis manager");
-  fESDhandler = dynamic_cast<AliESDInputHandler *>(mgr->GetInputEventHandler());
-    
-  if (fESDhandler) {
-     fESD = fESDhandler->GetEvent();
-  } else {
-     AliFatal("No ESD input event handler connected") ; 
-  }
-  // Create CDB manager
-  AliCDBManager *cdb = AliCDBManager::Instance();
-  // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
-//  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  cdb->SetDefaultStorage("raw://");
-  Int_t run = fESD->GetRunNumber();
-  if (run != fRun) fRunChanged = kTRUE;
-  else fRunChanged = kFALSE;
-  // Set run
-  if (fRunChanged) cdb->SetRun(fRun);
-  // Initialize GRP manager only once
-  InitGRP();
 }
 
 //______________________________________________________________________________
@@ -119,21 +98,21 @@ void AliTaskCDBconnect::InitGRP()
   if (!fGRPManager) {
   // magnetic field
     if (!TGeoGlobalMagField::Instance()->GetField()) {
-      printf("Loading field map...\n");
+      printf("AliCDBconnect: #### Loading field map...\n");
       fGRPManager = new AliGRPManager();
       if(!fGRPManager->ReadGRPEntry()) { 
-        printf("Cannot get GRP entry\n"); 
+        AliError("Cannot get GRP entry"); 
       }
       if( !fGRPManager->SetMagField() ) { 
-        printf("Problem with magnetic field setup\n"); 
+        AliError("Problem with magnetic field setup"); 
       }
     }
 
     // geometry
-    printf("Loading geometry...\n");
+    printf("AliCDBconnect: #### Loading geometry...\n");
     AliGeomManager::LoadGeometry();
     if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC") ) {
-      printf("Problem with align objects\n"); 
+      AliError("Problem with align objects"); 
     }
   }  
 }
@@ -141,7 +120,46 @@ void AliTaskCDBconnect::InitGRP()
 //______________________________________________________________________________
 void AliTaskCDBconnect::CreateOutputObjects()
 {
-// Nothing for the moment, but we may need ESD event replication here.
+// Init CDB locally if run number is defined.
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) AliFatal("No analysis manager");
+  fESDhandler = dynamic_cast<AliESDInputHandler *>(mgr->GetInputEventHandler());
+    
+  if (!fESDhandler) {
+     AliFatal("No ESD input event handler connected");
+     return;
+  }   
+  // Try to get event number before the first event is read
+  Int_t run = mgr->GetRunFromPath();
+  if (!run) run = fESD->GetRunNumber();
+  if (!run) {
+     AliWarning("AliTaskCDBconnect: Could not set run from path");
+     if (!fRun) return;
+  }
+  printf("AliCDBconnect: #### Setting run to #%d\n", run);
+  // Create CDB manager
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
+//  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  cdb->SetDefaultStorage("raw://");
+  if (run && (run != fRun)) {
+     fRunChanged = kTRUE;
+     fRun = run;
+  } else {
+     fRunChanged = kFALSE;
+  }   
+  // Set run
+  if (fRunChanged) cdb->SetRun(fRun);
+  // Initialize GRP manager only once
+  if (fRun) InitGRP();
+}
+
+//______________________________________________________________________________
+Bool_t AliTaskCDBconnect::Notify()
+{
+// Init CDB locally if run number is defined.
+  CreateOutputObjects();
+  return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -150,11 +168,11 @@ void AliTaskCDBconnect::Exec(Option_t* /*option*/)
 //
 // Execute all supplied analysis of one event. Notify run change via RunChanged().
   fESD = fESDhandler->GetEvent();
-
   // Intercept when the run number changed
   if (fRun != fESD->GetRunNumber()) {
     fRunChanged = kTRUE;
     fRun = fESD->GetRunNumber();
+    Warning("Exec", "Run number changed in ESDEvent to %d", fRun);
     AliCDBManager::Instance()->SetRun(fRun);
   }
 //  PostData(0, fESD);
