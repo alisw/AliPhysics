@@ -1675,7 +1675,7 @@ void build() {
   setupPar("PWG4GammaConv");
   gSystem->Load("libPWG4GammaConv.so");
   
-  gSystem->ChangeDirectory(pwd);
+  gSystem->ChangeDirectory(pwd.Data());
 }
 
 Int_t setupPar(const char* pararchivename) {

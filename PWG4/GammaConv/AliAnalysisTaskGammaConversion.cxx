@@ -669,69 +669,69 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
     }
 		
     ///////////////////////Begin Chic Analysis/////////////////////////////
-		
-    if(particle->GetPdgCode() == 443){//Is JPsi	
-      if(particle->GetNDaughters()==2){
-	if(TMath::Abs(fStack->Particle(particle->GetFirstDaughter())->GetPdgCode()) == 11 &&
-	   TMath::Abs(fStack->Particle(particle->GetLastDaughter())->GetPdgCode()) == 11){
+    if(fDoChic) {
+      if(particle->GetPdgCode() == 443){//Is JPsi	
+	if(particle->GetNDaughters()==2){
+	  if(TMath::Abs(fStack->Particle(particle->GetFirstDaughter())->GetPdgCode()) == 11 &&
+	     TMath::Abs(fStack->Particle(particle->GetLastDaughter())->GetPdgCode()) == 11){
 
+	    TParticle* daug0 = fStack->Particle(particle->GetFirstDaughter());
+	    TParticle* daug1 = fStack->Particle(particle->GetLastDaughter());
+	    if(TMath::Abs(daug0->Eta()) < 0.9 && TMath::Abs(daug1->Eta()) < 0.9)
+	      fHistograms->FillTable("Table_Electrons",3);//e+ e-  from J/Psi inside acceptance
+					
+	    if( TMath::Abs(daug0->Eta()) < 0.9){
+	      if(daug0->GetPdgCode() == -11)
+		fHistograms->FillTable("Table_Electrons",1);//e+  from J/Psi inside acceptance
+	      else
+		fHistograms->FillTable("Table_Electrons",2);//e-   from J/Psi inside acceptance
+						
+	    }
+	    if(TMath::Abs(daug1->Eta()) < 0.9){
+	      if(daug1->GetPdgCode() == -11)
+		fHistograms->FillTable("Table_Electrons",1);//e+  from J/Psi inside acceptance
+	      else
+		fHistograms->FillTable("Table_Electrons",2);//e-   from J/Psi inside acceptance
+	    }
+	  }
+	}
+      }
+      //              const int CHI_C0   = 10441;
+      //              const int CHI_C1   = 20443;
+      //              const int CHI_C2   = 445
+      if(particle->GetPdgCode() == 22){//gamma from JPsi
+	if(particle->GetMother(0) > -1){
+	  if(fStack->Particle(particle->GetMother(0))->GetPdgCode() == 10441 ||
+	     fStack->Particle(particle->GetMother(0))->GetPdgCode() == 20443 ||
+	     fStack->Particle(particle->GetMother(0))->GetPdgCode() == 445){
+	    if(TMath::Abs(particle->Eta()) < 1.2)
+	      fHistograms->FillTable("Table_Electrons",17);// gamma from chic inside accptance
+	  }
+	}
+      }
+      if(particle->GetPdgCode() == 10441 || particle->GetPdgCode() == 20443 || particle->GetPdgCode() == 445){
+	if( particle->GetNDaughters() == 2){
 	  TParticle* daug0 = fStack->Particle(particle->GetFirstDaughter());
 	  TParticle* daug1 = fStack->Particle(particle->GetLastDaughter());
-	  if(TMath::Abs(daug0->Eta()) < 0.9 && TMath::Abs(daug1->Eta()) < 0.9)
-	    fHistograms->FillTable("Table_Electrons",3);//e+ e-  from J/Psi inside acceptance
-					
-	  if( TMath::Abs(daug0->Eta()) < 0.9){
-	    if(daug0->GetPdgCode() == -11)
-	      fHistograms->FillTable("Table_Electrons",1);//e+  from J/Psi inside acceptance
-	    else
-	      fHistograms->FillTable("Table_Electrons",2);//e-   from J/Psi inside acceptance
-						
-	  }
-	  if(TMath::Abs(daug1->Eta()) < 0.9){
-	    if(daug1->GetPdgCode() == -11)
-	      fHistograms->FillTable("Table_Electrons",1);//e+  from J/Psi inside acceptance
-	    else
-	      fHistograms->FillTable("Table_Electrons",2);//e-   from J/Psi inside acceptance
-	  }
-	}
-      }
-    }
-    //              const int CHI_C0   = 10441;
-    //              const int CHI_C1   = 20443;
-    //              const int CHI_C2   = 445
-    if(particle->GetPdgCode() == 22){//gamma from JPsi
-      if(particle->GetMother(0) > -1){
-	if(fStack->Particle(particle->GetMother(0))->GetPdgCode() == 10441 ||
-	   fStack->Particle(particle->GetMother(0))->GetPdgCode() == 20443 ||
-	   fStack->Particle(particle->GetMother(0))->GetPdgCode() == 445){
-	  if(TMath::Abs(particle->Eta()) < 1.2)
-	    fHistograms->FillTable("Table_Electrons",17);// gamma from chic inside accptance
-	}
-      }
-    }
-    if(particle->GetPdgCode() == 10441 || particle->GetPdgCode() == 20443 || particle->GetPdgCode() == 445){
-      if( particle->GetNDaughters() == 2){
-	TParticle* daug0 = fStack->Particle(particle->GetFirstDaughter());
-	TParticle* daug1 = fStack->Particle(particle->GetLastDaughter());
 				
-	if( (daug0->GetPdgCode() == 443 || daug0->GetPdgCode() == 22) && (daug1->GetPdgCode() == 443 || daug1->GetPdgCode() == 22) ){
-	  if( daug0->GetPdgCode() == 443){
-	    TParticle* daugE0 = fStack->Particle(daug0->GetFirstDaughter());
-	    TParticle* daugE1 = fStack->Particle(daug0->GetLastDaughter());
-	    if( TMath::Abs(daug1->Eta()) < 1.2 && TMath::Abs(daugE0->Eta()) < 0.9 && TMath::Abs(daugE1->Eta()) < 0.9 )
-	      fHistograms->FillTable("Table_Electrons",18);
+	  if( (daug0->GetPdgCode() == 443 || daug0->GetPdgCode() == 22) && (daug1->GetPdgCode() == 443 || daug1->GetPdgCode() == 22) ){
+	    if( daug0->GetPdgCode() == 443){
+	      TParticle* daugE0 = fStack->Particle(daug0->GetFirstDaughter());
+	      TParticle* daugE1 = fStack->Particle(daug0->GetLastDaughter());
+	      if( TMath::Abs(daug1->Eta()) < 1.2 && TMath::Abs(daugE0->Eta()) < 0.9 && TMath::Abs(daugE1->Eta()) < 0.9 )
+		fHistograms->FillTable("Table_Electrons",18);
 						
-	  }//if
-	  else if (daug1->GetPdgCode() == 443){
-	    TParticle* daugE0 = fStack->Particle(daug1->GetFirstDaughter());
-	    TParticle* daugE1 = fStack->Particle(daug1->GetLastDaughter());
-	    if( TMath::Abs(daug0->Eta()) < 1.2 && TMath::Abs(daugE0->Eta()) < 0.9 && TMath::Abs(daugE1->Eta()) < 0.9 )
-	      fHistograms->FillTable("Table_Electrons",18);
-	  }//else if
-	}//gamma o Jpsi
-      }//GetNDaughters
+	    }//if
+	    else if (daug1->GetPdgCode() == 443){
+	      TParticle* daugE0 = fStack->Particle(daug1->GetFirstDaughter());
+	      TParticle* daugE1 = fStack->Particle(daug1->GetLastDaughter());
+	      if( TMath::Abs(daug0->Eta()) < 1.2 && TMath::Abs(daugE0->Eta()) < 0.9 && TMath::Abs(daugE1->Eta()) < 0.9 )
+		fHistograms->FillTable("Table_Electrons",18);
+	    }//else if
+	  }//gamma o Jpsi
+	}//GetNDaughters
+      }
     }
-		
 		
     /////////////////////End Chic Analysis////////////////////////////
 		
