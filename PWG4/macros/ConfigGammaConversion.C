@@ -1578,9 +1578,9 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 
 
   if( kGCrunDalitz ){
-    
-   gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddGammaConvDalitz.C");
-   gROOT->AddGammaConvDalitz( v0Reader, kGCcalculateBackground, kGCRunStandalone );
+   
+   gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskGammaConvDalitz.C");
+   AddTaskGammaConvDalitz( v0Reader, kGCcalculateBackground, kGCRunStandalone );
 
   }
 
@@ -1620,6 +1620,8 @@ void build() {
   timer.Start();
   gSystem->Load("libTree.so");
   gSystem->Load("libGeom");
+	
+  TString pwd = gSystem->WorkingDirectory();
 	
   ////
   //Setting up STEERBase.par//
@@ -1672,6 +1674,8 @@ void build() {
   cout<<"compiling PWG4GammaConv"<<endl;
   setupPar("PWG4GammaConv");
   gSystem->Load("libPWG4GammaConv.so");
+  
+  gSystem->ChangeDirectory(pwd);
 }
 
 Int_t setupPar(const char* pararchivename) {
