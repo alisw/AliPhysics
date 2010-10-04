@@ -30,6 +30,8 @@
 
 #include "AliRsnAnalysisMonitorTask.h"
 
+ClassImp(AliRsnAnalysisMonitorTask)
+
 //__________________________________________________________________________________________________
 AliRsnAnalysisMonitorTask::AliRsnAnalysisMonitorTask(const char *name) :
   AliAnalysisTaskSE(name),

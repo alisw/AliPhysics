@@ -163,8 +163,7 @@ void AliRsnCutESD2010::InitializeToDefaults(Bool_t isSim)
   fESDtrackCutsTPC.SetRequireTPCRefit(kTRUE);
   fESDtrackCutsTPC.SetRequireITSRefit(kTRUE);
   fESDtrackCutsTPC.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  //fESDtrackCutsTPC.SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9"); // DCA pt dependent: 7*(0.0050+0.0060/pt0.9)
-  fESDtrackCutsTPC.SetMaxDCAToVertexXYPtDep("0.035+0.03/pt^0.9"); // DCA pt dependent: 5*(0.0050+0.0060/pt0.9)
+  fESDtrackCutsTPC.SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9"); // DCA pt dependent: 7*(0.0050+0.0060/pt0.9)
   fESDtrackCutsTPC.SetMaxDCAToVertexZ(1e6); // disabled
   fESDtrackCutsTPC.SetDCAToVertex2D(kFALSE); // each DCA is checked separately
   fESDtrackCutsTPC.SetRequireSigmaToVertex(kFALSE);
@@ -175,8 +174,7 @@ void AliRsnCutESD2010::InitializeToDefaults(Bool_t isSim)
   fESDtrackCutsITS.SetMinNClustersITS(4);
   fESDtrackCutsITS.SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
   fESDtrackCutsITS.SetMaxChi2PerClusterITS(2.);
-  // fESDtrackCutsITS.SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55"); // DCA pt dependent (7 sigma)
-  fESDtrackCutsITS.SetMaxDCAToVertexXYPtDep("0.0425+0.013/pt^1.55"); // DCA pt dependent (5 sigma)
+  fESDtrackCutsITS.SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55"); // DCA pt dependent (7 sigma)
   fESDtrackCutsITS.SetMaxDCAToVertexZ(1e6); // disabled
   fESDtrackCutsITS.SetDCAToVertex2D(kFALSE); // each DCA is checked separately
   
@@ -271,14 +269,17 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *obj1, TObject* /*obj2*/)
   // if no reference event, skip
   if (!fEvent) return kFALSE;
   
+  // reject pseudorapidity too large
+  if (TMath::Abs(daughter->P().Eta()) > 0.9) return kFALSE;
+  
   // ITS stuff #1 create the response function
   AliITSPIDResponse itsrsp(fIsMC);
   
   // TOF: define fixed function for compatibility range
-  Double_t a1 = 0.01, a2 = -0.03;
-  Double_t b1 = 0.25, b2 =  0.25;
-  Double_t c1 = 0.05, c2 = -0.03;
-  Double_t ymax, ymin;
+  //Double_t a1 = 0.01, a2 = -0.03;
+  //Double_t b1 = 0.25, b2 =  0.25;
+  //Double_t c1 = 0.05, c2 = -0.03;
+  //Double_t ymax, ymin;
   
   ULong_t  status;
   Int_t    k, nITS;

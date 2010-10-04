@@ -44,6 +44,7 @@
 
 #pragma link C++ class AliRsnMonitorTrack+;
 #pragma link C++ class AliRsnAnalysisMonitorTask+;
+#pragma link C++ class AliRsnAnalysisMonitorPairTask+;
 //#pragma link C++ class AliRsnFitResult+;
 
 #endif
