@@ -5,6 +5,7 @@
 #include <TH1D.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TNtuple.h>
 #include <TMath.h>
 #include <TParticle.h>
 #include <TPDGCode.h>
@@ -126,6 +127,8 @@ void createGlauberTree(Int_t nEvents,
   tree->Branch("header",&myheader, 32*1024, 99);
   tree->Branch("response",&myresp, 32*1024, 99);
 
+  TNtuple *ntuple = new TNtuple("gnt", "Glauber ntuple", "npart:ncoll:b");
+
   Double_t etas[] = {-10,-5,-4,-3,-2,-1,0,1,2,3,4,5,10};
   TH1D *hNEta = new TH1D("hNeta","",12,etas);
   TH1D *hEtEta = new TH1D("hEteta","",12,etas);
@@ -200,7 +203,17 @@ void createGlauberTree(Int_t nEvents,
     myresp->fNchrn  = hNEta->GetBinContent(hNEta->FindBin(-10.5));
 
     tree->Fill();
+
+    if (ntuple) {
+      Int_t np = h->TargetParticipants() + h->ProjectileParticipants();
+      Int_t nc = h->NwNw() + h->NwN() + h->NNw() + h->NN();
+      Double_t b = h->ImpactParameter();
+      ntuple->Fill(np,nc,b);
+    }
+
   } // end of event loop
+
   tree->Write();
+  ntuple->Write();
   outFile->Close();
 }
