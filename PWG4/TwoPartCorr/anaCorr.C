@@ -33,19 +33,6 @@ inline Double_t DeltaEta(const MyPart &t1, const MyPart &t2);
 inline Bool_t   InBounds(Double_t val, Double_t min, Double_t max);
 inline Double_t InvMass(const MyPart &p1, const MyPart &p2);
 
-class Noti: public TObject
-{
-public:
-  Noti() : fc(0) {;}
-  virtual ~Noti() {;}
-  Bool_t Notify()         { fc=1; return 1; }
-  Bool_t Notified() const { return fc;      }
-  void   Reset()          { fc=0;           }
-protected:
-  Bool_t fc; //=1 when file changed
-  ClassDef (Noti,0)
-};
-
 //-----------------------------------------------------------------------------------------------------
 
 void anaCorr(const char *inFileNames,
