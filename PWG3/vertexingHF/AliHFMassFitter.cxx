@@ -362,7 +362,7 @@ void AliHFMassFitter::SetHisto(const TH1F *histoToFit){
 
   fhistoInvMass = new TH1F(*histoToFit);
   fhistoInvMass->SetDirectory(0);
-  cout<<"SetHisto pointer "<<fhistoInvMass<<endl;
+  //cout<<"SetHisto pointer "<<fhistoInvMass<<endl;
 }
 
 //___________________________________________________________________________
@@ -913,10 +913,10 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
 
   //Total integral
   Double_t totInt = fhistoInvMass->Integral(fminBinMass,fmaxBinMass, "width");
-  cout<<"Here tot integral is = "<<totInt<<"; integral in whole range is "<<fhistoInvMass->Integral("width")<<endl;
+  //cout<<"Here tot integral is = "<<totInt<<"; integral in whole range is "<<fhistoInvMass->Integral("width")<<endl;
   fSideBands = kTRUE;
   Double_t width=fhistoInvMass->GetBinWidth(8);
-  cout<<"fNbin"<<fNbin<<endl;
+  //cout<<"fNbin = "<<fNbin<<endl;
   if (fNbin==0) fNbin=fhistoInvMass->GetNbinsX();
 
   Bool_t ok=SideBandsBounds();
@@ -987,7 +987,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     intbkg1 = funcbkg->Integral(fminMass,fmaxMass);
     if(ftypeOfFit4Bkg!=3) slope1 = funcbkg->GetParameter(1);
     if(ftypeOfFit4Bkg==2) conc1 = funcbkg->GetParameter(2);
-    cout<<"First fit: \nintbkg1 = "<<intbkg1<<"\t(Compare with par0 = "<<funcbkg->GetParameter(0)<<")\nslope1= "<<slope1<<"\nconc1 = "<<conc1<<endl;
+    //cout<<"First fit: \nintbkg1 = "<<intbkg1<<"\t(Compare with par0 = "<<funcbkg->GetParameter(0)<<")\nslope1= "<<slope1<<"\nconc1 = "<<conc1<<endl;
   } 
   else cout<<"\t\t//"<<endl;
   
@@ -997,7 +997,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     cout<<"\nBACKGROUND FIT WITH REFLECTION"<<endl;
     bkgPar+=3;
     
-    cout<<"fNFinalPars = "<<fNFinalPars<<"\tbkgPar = "<<bkgPar<<endl;
+    //cout<<"fNFinalPars = "<<fNFinalPars<<"\tbkgPar = "<<bkgPar<<endl;
 
     funcbkg1 = new TF1(bkg1name.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,bkgPar,"AliHFMassFitter","FitFunction4Bkg");
     cout<<"Function name = "<<funcbkg1->GetName()<<endl;
@@ -1065,18 +1065,18 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   //sidebands integral - second approx (from fit)
   fSideBands = kFALSE;
   Double_t bkgInt;
-  cout<<"Compare intbkg1 = "<<intbkg1<<" and integral = ";
+  //cout<<"Compare intbkg1 = "<<intbkg1<<" and integral = ";
   if(ftypeOfFit4Sgn == 1) bkgInt=funcbkg1->Integral(fminMass,fmaxMass);
   else bkgInt=funcbkg->Integral(fminMass,fmaxMass);
-  cout<</*"------BkgInt(Fit) = "<<*/bkgInt<<endl;
+  //cout<</*"------BkgInt(Fit) = "<<*/bkgInt<<endl;
 
   //Signal integral - first approx
   Double_t sgnInt;
   sgnInt = totInt-bkgInt;
-  cout<<"------TotInt = "<<totInt<<"\tsgnInt = "<<sgnInt<<endl;
+  //cout<<"------TotInt = "<<totInt<<"\tsgnInt = "<<sgnInt<<endl;
   if (sgnInt <= 0){
     cout<<"Setting sgnInt = - sgnInt"<<endl;
-    sgnInt=- sgnInt;
+    sgnInt=(-1)*sgnInt;
   }
   /*Fit All Mass distribution with exponential + gaussian (+gaussian braodened) */
   TF1 *funcmass = new TF1(massname.Data(),this,&AliHFMassFitter::FitFunction4MassDistr,fminMass,fmaxMass,fNFinalPars,"AliHFMassFitter","FitFunction4MassDistr");
@@ -1093,23 +1093,18 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     //cout<<"Parameters set to: "<<totInt<<"\t"<<slope1<<"\t"<<sgnInt<<"\t"<<fMass<<"\t"<<fSigmaSgn<<"\t"<<endl;
     //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<fNFinalPars<<"\tgsidebands = "<<fSideBands<<endl;
     if(fFixPar[0]){
-      cout<<"fix1"<<endl;
       funcmass->FixParameter(0,totInt);
     }
     if(fFixPar[1]){
-      cout<<"fix2"<<endl;
       funcmass->FixParameter(1,slope1);
     }
     if(fFixPar[2]){
-      cout<<"fix3"<<endl;
       funcmass->FixParameter(2,sgnInt);
     }
     if(fFixPar[3]){
-      cout<<"fix4"<<endl;
       funcmass->FixParameter(3,fMass);
     }
     if(fFixPar[4]){
-      cout<<"fix5"<<endl;
       funcmass->FixParameter(4,fSigmaSgn);
     }
   }
@@ -1133,7 +1128,10 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     if(ftypeOfFit4Sgn == 1) funcmass->SetParameters(0.,0.5*totInt,fMass,fSigmaSgn);
     else funcmass->SetParameters(0.,totInt,fMass,fSigmaSgn);
     if(fFixPar[0]) funcmass->FixParameter(0,0.);
-    //cout<<"Parameters set to: "<<0.5*totInt<<"\t"<<fMass<<"\t"<<fSigmaSgn<<"\t"<<endl;
+    if(fFixPar[1])funcmass->FixParameter(1,sgnInt);
+    if(fFixPar[2])funcmass->FixParameter(2,fMass);
+    if(fFixPar[3])funcmass->FixParameter(3,fSigmaSgn);
+   //cout<<"Parameters set to: "<<0.5*totInt<<"\t"<<fMass<<"\t"<<fSigmaSgn<<"\t"<<endl;
     //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<fNFinalPars<<"\tgsidebands = "<<fSideBands<<endl;
 
   }
@@ -1350,7 +1348,7 @@ void AliHFMassFitter::AddFunctionsToHisto(){
 
   //Add the background function in the complete range to the list of functions attached to the histogram
 
-  cout<<"AddFunctionsToHisto called"<<endl;
+  //cout<<"AddFunctionsToHisto called"<<endl;
   TString bkgname = "funcbkg";
 
   Bool_t done1=kFALSE,done2=kFALSE;
@@ -1401,10 +1399,9 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     }
 
     bkgname += "FullRange";
-    TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars,"AliHFMassFitter","FitFunction4Bkg");
+    TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars-3,"AliHFMassFitter","FitFunction4Bkg");
     //cout<<bfullrange->GetName()<<endl;
-    for(Int_t i=0;i<fNFinalPars;i++){
-      //cout<<i<<" di "<<fNFinalPars<<endl;
+    for(Int_t i=0;i<fNFinalPars-3;i++){
       bfullrange->SetParName(i,b->GetParName(i));
       bfullrange->SetParameter(i,b->GetParameter(i));
       bfullrange->SetParError(i,b->GetParError(i));
@@ -1414,7 +1411,7 @@ void AliHFMassFitter::AddFunctionsToHisto(){
 
     bkgnamesave += "Recalc";
 
-    TF1 *blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars,"AliHFMassFitter","FitFunction4Bkg");
+    TF1 *blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars-3,"AliHFMassFitter","FitFunction4Bkg");
 
     TF1 *mass=fhistoInvMass->GetFunction("funcmass");
 
@@ -1426,11 +1423,11 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     //intBkg=intTot-intS
     blastpar->SetParameter(0,mass->GetParameter(0)-mass->GetParameter(fNFinalPars-3));
     blastpar->SetParError(0,mass->GetParError(fNFinalPars-3));
-    if (fNFinalPars>=2) {
+    if (fNFinalPars>=5) {
       blastpar->SetParameter(1,mass->GetParameter(1));
       blastpar->SetParError(1,mass->GetParError(1));
     }
-    if (fNFinalPars==3) {
+    if (fNFinalPars==6) {
       blastpar->SetParameter(2,mass->GetParameter(2));
       blastpar->SetParError(2,mass->GetParError(2));
     }
