@@ -38,8 +38,9 @@ public:
   EventPool* GetEventPool(Int_t iMult, Int_t iZvtx)             const;
   Int_t      InitEventPools(Int_t depth, 
                             Int_t nmultbins, Double_t multbins[], 
-                            Int_t nzvtxbins, Double_t zvtxbins[]);
-  Int_t      UpdatePools(Int_t iEvent, const MyHeader *ev, TClonesArray *trk);
+                            Int_t nzvtxbins, Double_t zvtxbins[],
+			    Double_t ptMin, Double_t ptMax);
+  Int_t      UpdatePools(Int_t iEvent, const MyHeader* ev, TClonesArray* trk);
 
 protected:
   Int_t      fNMultBins;                         // mult bins
