@@ -54,11 +54,6 @@ class AliESDInputHandler : public AliInputEventHandler {
     // Tag analysis
     void SetReadTags() {fUseTags = kTRUE;}
     AliRunTag           *GetRunTag() const {return fRunTag;}
-    // Mixing
-    void SetMixingHandler(AliInputEventHandler* mixing) 
-    {fMixingHandler = mixing;}
-    AliInputEventHandler* MixingHandler()
-    {return fMixingHandler;}
  private:
     AliESDInputHandler(const AliESDInputHandler& handler);             
     AliESDInputHandler& operator=(const AliESDInputHandler& handler);  

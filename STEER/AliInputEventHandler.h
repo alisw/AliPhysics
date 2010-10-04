@@ -57,6 +57,12 @@ class AliInputEventHandler : public AliVEventHandler {
 	{Bool_t ne = fNewEvent; fNewEvent = kFALSE; return ne;}
     virtual UInt_t       IsEventSelected() 
         {return fIsSelectedResult;}
+    // Mixing
+    void SetMixingHandler(AliInputEventHandler* mixing) 
+    {fMixingHandler = mixing;}
+    AliInputEventHandler* MixingHandler()
+    {return fMixingHandler;}
+
  protected:
     void SwitchOffBranches() const;
     void SwitchOnBranches()  const;
