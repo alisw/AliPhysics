@@ -174,6 +174,7 @@ void mergeCorr(Int_t nEvents,
 
     totnent += nent;
     cout << "Found "<< nent << " entries in " << fname << endl;
+    TObjArray *filesnames = dynamic_cast<TObjArray*>(output->FindObject("filesnames"));
 
     MyHeader *header = 0;
     TBranch *br = tree->GetBranch("header");
@@ -212,6 +213,8 @@ void mergeCorr(Int_t nEvents,
           cout << " Nseltracks: " << it->second->fNSelTracks << " vs " << header->fNSelTracks << endl; 
           cout << " Ntracklets: " << it->second->fNTracklets << " vs " << header->fNTracklets << endl; 
           cout << " Vz: " << it->second->fVz << " vs " << header->fVz << endl;
+          cout << " Duplicate event " << header->fEvNumberInFile << " in file " 
+               << filesnames->At(header->fFileId)->GetName() << endl;
           ++totndup;
         }
 #endif
