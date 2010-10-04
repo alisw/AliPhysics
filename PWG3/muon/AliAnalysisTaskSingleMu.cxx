@@ -44,6 +44,7 @@
 #include "TTimeStamp.h"
 #include "TMap.h"
 #include "TObjString.h"
+#include "TObjArray.h"
 #include "TIterator.h"
 #include "TParameter.h"
 #include "TMCProcess.h"
@@ -102,8 +103,8 @@ AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu(const char *name, Int_t fillTre
   fVarUInt(0),
   fVarFloatMC(0),
   fVarIntMC(0),
-  fVertexPerRun(new TMap()),
-  fRefTrigName(new TString [2])
+  fAuxObjects(new TMap()),
+  fTriggerClasses(0x0)
 {
   //
   /// Constructor.
@@ -119,9 +120,9 @@ AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu(const char *name, Int_t fillTre
   if ( fFillTreeScaleDown > 0 )
     DefineOutput(5, TTree::Class());
 
-  fVertexPerRun->SetOwner();
+  fAuxObjects->SetOwner();
 
-  SetRefTrigName();
+  SetTriggerClasses();
 }
 
 
@@ -145,8 +146,8 @@ AliAnalysisTaskSingleMu::~AliAnalysisTaskSingleMu()
   delete fVarUInt;
   delete fVarFloatMC;
   delete fVarIntMC;
-  delete fVertexPerRun;
-  delete [] fRefTrigName;
+  delete fAuxObjects;
+  delete fTriggerClasses;
 }
 
 
@@ -159,7 +160,6 @@ void AliAnalysisTaskSingleMu::NotifyRun()
   //  
   
   if ( fMCEvent ) {
-    SetRefTrigName("CINT1B", "MULow");
     AliInfo("Monte Carlo information is present");
   }
   else {
@@ -169,14 +169,14 @@ void AliAnalysisTaskSingleMu::NotifyRun()
   Int_t histoIndex = -1;
 
   TString histoName = Form("hVtx%u",InputEvent()->GetRunNumber());
-  if ( ! fVertexPerRun->GetValue(histoName.Data()) ) {
+  if ( ! fAuxObjects->GetValue(histoName.Data()) ) {
     histoIndex = GetHistoIndex(kHistoEventVz);
     AliInfo(Form("Creating histogram %s", histoName.Data()));
     TH1F* histo1D = (TH1F*)fHistoList->At(histoIndex)->Clone(histoName.Data());
     histo1D->Reset();
     histo1D->SetNormFactor(0.);
     histo1D->Sumw2();
-    fVertexPerRun->Add(new TObjString(histoName.Data()), histo1D);
+    fAuxObjects->Add(new TObjString(histoName.Data()), histo1D);
   }
 
   /*
@@ -199,10 +199,11 @@ void AliAnalysisTaskSingleMu::FinishTaskOutput()
   // to the total number of analyzed muons
   Int_t histoIndex = GetHistoIndex(kHistoEventVzNorm);
   TH1F* histoVtxAll = (TH1F*)fHistoList->At(histoIndex);
-  TIter nextVal(fVertexPerRun);
+  TIter nextVal(fAuxObjects);
   TObjString* objString = 0x0;
   while( ( objString = (TObjString*)nextVal() ) ){
-    TH1F* currHisto = (TH1F*)fVertexPerRun->GetValue(objString->String().Data());
+    if ( ! objString->GetString().Contains("hVtx") ) continue;
+    TH1F* currHisto = (TH1F*)fAuxObjects->GetValue(objString->String().Data());
     Double_t mbEventsPerRun = currHisto->Integral();
     if ( mbEventsPerRun == 0. )
       continue;
@@ -263,9 +264,9 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   Double_t ptMin = 0., ptMax = 30.;
   TString ptName("Pt"), ptTitle("p_{t}"), ptUnits("GeV/c");
 
-  Int_t nEtaBins = 25;
-  Double_t etaMin = -4.5, etaMax = -2.;
-  TString etaName("Eta"), etaTitle("#eta"), etaUnits("a.u.");
+  Int_t nRapidityBins = 25;
+  Double_t rapidityMin = -4.5, rapidityMax = -2.;
+  TString rapidityName("Rapidity"), rapidityTitle("y"), rapidityUnits("a.u.");
 
   Int_t nPhiBins = 36;
   Double_t phiMin = 0.; Double_t phiMax = 2*TMath::Pi();
@@ -291,8 +292,8 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   Double_t matchTrigMin = -0.5, matchTrigMax = 3.5;
   TString matchTrigName("MatchTrig"), matchTrigTitle("Trigger match"), matchTrigUnits("");
   
-  Int_t nTrigClassBins = 3;
-  Double_t trigClassMin = 0.5, trigClassMax = 3.5;
+  Int_t nTrigClassBins = fTriggerClasses->GetEntries();
+  Double_t trigClassMin = 0.5, trigClassMax = (Double_t)nTrigClassBins + 0.5;
   TString tricClassName("TrigClass"), trigClassTitle("Fired trigger class"), trigClassUnits("");
 
   Int_t nGoodVtxBins = 3;
@@ -323,13 +324,13 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   Int_t histoIndex = 0;
 
   // Multi-dimensional histo
-  Int_t nbins[kNvars] = {nPtBins, nEtaBins, nPhiBins, nDcaBins, nVzBins, nThetaAbsEndBins, nChargeBins, nMatchTrigBins, nTrigClassBins, nGoodVtxBins, nMotherTypeBins};
-  Double_t xmin[kNvars] = {ptMin, etaMin, phiMin, dcaMin, vzMin, thetaAbsEndMin, chargeMin, matchTrigMin, trigClassMin, goodVtxMin, motherTypeMin};
-  Double_t xmax[kNvars] = {ptMax, etaMax, phiMax, dcaMax, vzMax, thetaAbsEndMax, chargeMax, matchTrigMax, trigClassMax, goodVtxMax, motherTypeMax};
-  TString axisTitle[kNvars] = {ptTitle, etaTitle, phiTitle, dcaTitle, vzTitle, thetaAbsEndTitle, chargeTitle, matchTrigTitle, trigClassTitle, goodVtxTitle, motherTypeTitle};
-  TString axisUnits[kNvars] = {ptUnits, etaUnits, phiUnits, dcaUnits, vzUnits, thetaAbsEndUnits, chargeUnits, matchTrigUnits, trigClassUnits, goodVtxUnits, motherTypeUnits};
+  Int_t nbins[kNvars] = {nPtBins, nRapidityBins, nPhiBins, nDcaBins, nVzBins, nThetaAbsEndBins, nChargeBins, nMatchTrigBins, nTrigClassBins, nGoodVtxBins, nMotherTypeBins};
+  Double_t xmin[kNvars] = {ptMin, rapidityMin, phiMin, dcaMin, vzMin, thetaAbsEndMin, chargeMin, matchTrigMin, trigClassMin, goodVtxMin, motherTypeMin};
+  Double_t xmax[kNvars] = {ptMax, rapidityMax, phiMax, dcaMax, vzMax, thetaAbsEndMax, chargeMax, matchTrigMax, trigClassMax, goodVtxMax, motherTypeMax};
+  TString axisTitle[kNvars] = {ptTitle, rapidityTitle, phiTitle, dcaTitle, vzTitle, thetaAbsEndTitle, chargeTitle, matchTrigTitle, trigClassTitle, goodVtxTitle, motherTypeTitle};
+  TString axisUnits[kNvars] = {ptUnits, rapidityUnits, phiUnits, dcaUnits, vzUnits, thetaAbsEndUnits, chargeUnits, matchTrigUnits, trigClassUnits, goodVtxUnits, motherTypeUnits};
 
-  TString stepTitle[kNsteps] = {"reconstructed", "in acceptance", "reference mu", "generated", "in acceptance (MC)", "reference mu (MC)"};
+  TString stepTitle[kNsteps] = {"reconstructed", "in acceptance", "generated", "in acceptance (MC)"};
 
   // Create CF container
   AliCFContainer* container = new AliCFContainer("SingleMuonContainer","container for tracks",kNsteps,kNvars,nbins);
@@ -369,14 +370,7 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   AliCFTrackKineCuts *mcAccCuts = new AliCFTrackKineCuts();
   mcAccCuts->SetNameTitle("mcAccCuts","MC-level acceptance cuts");
   mcAccCuts->SetEtaRange(-4.,-2.5);
-  mcAccCuts->SetMomentumRange(4.,1e99);
   mcAccCuts->SetQAOn(fHistoListQA);
-
-  // MC reference cuts
-  AliCFTrackKineCuts *mcRefCuts = new AliCFTrackKineCuts();
-  mcRefCuts->SetNameTitle("mcMuonRefCuts","MC-level muon reference cuts");
-  mcRefCuts->SetPtRange(1.,10.);
-  mcRefCuts->SetQAOn(fHistoListQA);
 
   // Rec-Level kinematic cuts
   AliCFTrackKineCuts *recAccCuts = new AliCFTrackKineCuts();
@@ -384,28 +378,14 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   recAccCuts->SetEtaRange(-4.,-2.5);
   recAccCuts->SetQAOn(fHistoListQA);
 
-  // Rec reference cuts
-  AliCFTrackKineCuts *recRefCuts = new AliCFTrackKineCuts();
-  recRefCuts->SetNameTitle("recMuonRefCuts","Reco-level muon reference cuts");
-  recRefCuts->SetPtRange(1.,10.);
-  recRefCuts->SetQAOn(fHistoListQA);  
-
   TObjArray* mcGenList = new TObjArray(0) ;
   mcGenList->AddLast(mcGenCuts);
 
   TObjArray* mcAccList = new TObjArray(0);
   mcAccList->AddLast(mcAccCuts);
 
-  TObjArray* mcRefList = new TObjArray(0);
-  mcRefList->AddLast(mcAccCuts);
-  mcRefList->AddLast(mcRefCuts);
-
   TObjArray* recAccList = new TObjArray(0);
   recAccList->AddLast(recAccCuts);
-
-  TObjArray* recRefList = new TObjArray(0);
-  recRefList->AddLast(recAccCuts);
-  recRefList->AddLast(recRefCuts);
 
   // Create CF manager
   fCFManager = new AliCFManager() ;
@@ -423,10 +403,8 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
     fCFManager->SetParticleCutsList(istep,0x0);    
   }
   fCFManager->SetParticleCutsList(kStepAcceptance,recAccList);
-  fCFManager->SetParticleCutsList(kStepMuonRef,recRefList);
   fCFManager->SetParticleCutsList(kStepGeneratedMC,mcGenList);
   fCFManager->SetParticleCutsList(kStepAcceptanceMC,mcAccList);
-  fCFManager->SetParticleCutsList(kStepMuonRefMC,mcRefList);
 
   // Summary histos
   histoName = "histoNeventsPerTrig";
@@ -556,6 +534,11 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
       }
     } // loop on trees
   } // fillNTuple
+
+  PostData(1, fCFManager->GetParticleContainer());
+  PostData(2, fHistoList);
+  PostData(3, fHistoListQA);
+  if ( fMCEvent ) PostData(4, fHistoListMC);
 }
 
 //________________________________________________________________________
@@ -592,14 +575,16 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
   if ( fMCEvent ) {
     // Add the MB name (which is not there in simulation)
     // CAVEAT: to be checked if we perform beam-gas simulations
-    if ( ! firedTrigClasses.Contains("CINT") ) 
-      firedTrigClasses.Prepend(Form("%s ", fRefTrigName[0].Data()));
+    if ( ! firedTrigClasses.Contains("CINT") ) {
+      TString trigName = ((TObjString*)fTriggerClasses->At(0))->GetString();
+      firedTrigClasses.Prepend(Form("%s ", trigName.Data()));
+    }
   }
-  Float_t trigClassBin = GetBinTrigClass(firedTrigClasses.Data());
+
   fVarFloat[kVarIPVz] = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetZ() : aodEvent->GetPrimaryVertex()->GetZ();
   fVarInt[kVarNVtxContrib] = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetNContributors() : aodEvent->GetPrimaryVertex()->GetNContributors();
   fVarInt[kVarNspdTracklets] = ( esdEvent ) ? esdEvent->GetMultiplicity()->GetNumberOfTracklets() : aodEvent->GetTracklets()->GetNumberOfTracklets();
-  fVarInt[kVarIsPileup] = ( esdEvent ) ? esdEvent->IsPileupFromSPD(3,0.8) : 0; // REMEMBER TO CHECK
+  fVarInt[kVarIsPileup] = ( esdEvent ) ? esdEvent->IsPileupFromSPD(3,0.8) : aodEvent->IsPileupFromSPD(3,0.8); // REMEMBER TO CHECK
 
   fVarUInt[kVarRunNumber] = ( esdEvent ) ? esdEvent->GetRunNumber() : aodEvent->GetRunNumber();
 
@@ -653,25 +638,24 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
 	continue;
 
       containerInput[kHvarPt]  = mcPart->Pt();
-      containerInput[kHvarEta] = mcPart->Eta();
+      containerInput[kHvarY]   = mcPart->Y();
       containerInput[kHvarPhi] = mcPart->Phi();
       containerInput[kHvarDCA] = TMath::Sqrt(mcPart->Xv()*mcPart->Xv() +
 					     mcPart->Yv()*mcPart->Yv());
       containerInput[kHvarThetaZones] = GetBinThetaAbsEnd(TMath::Pi()-mcPart->Theta(),kTRUE);
       containerInput[kHvarCharge] = mcPart->Charge()/3.;
       containerInput[kHvarMatchTrig] = 1.;
-      containerInput[kHvarTrigClass] = trigClassBin;
       containerInput[kHvarMotherType] = (Double_t)RecoTrackMother(mcPart);
 
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepGeneratedMC);
-
-      if ( ! fCFManager->CheckParticleCuts(kStepAcceptanceMC,mcPart) )
-	continue;
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepAcceptanceMC);
-
-      if ( ! fCFManager->CheckParticleCuts(kStepMuonRefMC,mcPart) )
-	continue;
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepMuonRefMC);
+      for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); itrig++ ) {
+	TString trigName = ((TObjString*)fTriggerClasses->At(itrig))->GetString();
+	if ( ! firedTrigClasses.Contains(trigName.Data()) )
+	  continue;
+	containerInput[kHvarTrigClass] = (Double_t)(itrig+1);
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepGeneratedMC);
+	if ( fCFManager->CheckParticleCuts(kStepAcceptanceMC,mcPart) )
+	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepAcceptanceMC);
+      } // loop on trigger classes
     } // loop on MC particles
   } // is MC
 
@@ -730,7 +714,7 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     nMuons++;
 
     fVarFloat[kVarPt] = track->Pt();
-    fVarFloat[kVarEta] = track->Eta();
+    fVarFloat[kVarRapidity] = track->Y();
     fVarFloat[kVarXatDCA] = (esdEvent ) ? ((AliESDMuonTrack*)track)->GetNonBendingCoorAtDCA() : ((AliAODTrack*)track)->XAtDCA();
     fVarFloat[kVarYatDCA] = (esdEvent ) ? ((AliESDMuonTrack*)track)->GetBendingCoorAtDCA() : ((AliAODTrack*)track)->YAtDCA();
     fVarFloat[kVarDCA] = 
@@ -743,7 +727,7 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     if ( fillCurrentEventTree ){
       fVarInt[kVarIsMuon] = nMuons;
       fVarInt[kVarIsGhost] = 0;
-      fVarFloat[kVarRapidity] = track->Y();
+      fVarFloat[kVarEta] = track->Eta();
       fVarFloat[kVarPx] = track->Px();
       fVarFloat[kVarPy] = track->Py();
       fVarFloat[kVarPz] = track->Pz();
@@ -791,29 +775,29 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     } // if use MC
 
     containerInput[kHvarPt]  = fVarFloat[kVarPt];
-    containerInput[kHvarEta] = fVarFloat[kVarEta];
+    containerInput[kHvarY]   = fVarFloat[kVarRapidity];
     containerInput[kHvarPhi] = track->Phi();
     containerInput[kHvarDCA] = fVarFloat[kVarDCA];
     containerInput[kHvarVz]  = fVarFloat[kVarIPVz];
     containerInput[kHvarThetaZones] = GetBinThetaAbsEnd(fVarFloat[kVarRAtAbsEnd]);
     containerInput[kHvarCharge] = fVarFloat[kVarCharge];
     containerInput[kHvarMatchTrig] = (Double_t)fVarInt[kVarMatchTrig];
-    containerInput[kHvarTrigClass] = trigClassBin;
     containerInput[kHvarIsGoodVtx] = (Double_t)isGoodVtxBin;
     containerInput[kHvarMotherType] = (Double_t)fVarIntMC[kVarMotherType];
 
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed);
-
-    if ( fCFManager->CheckParticleCuts(kStepAcceptance,track) )
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepAcceptance);
-
-    if ( fCFManager->CheckParticleCuts(kStepMuonRef,track) )
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepMuonRef);
+    histoIndex = GetHistoIndex(kHistoNmuonsPerRun);
+    for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); itrig++ ) {
+      TString trigName = ((TObjString*)fTriggerClasses->At(itrig))->GetString();
+      if ( ! firedTrigClasses.Contains(trigName.Data()) )
+	continue;
+      containerInput[kHvarTrigClass] = (Double_t)(itrig+1);
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepReconstructed);
+      if ( fCFManager->CheckParticleCuts(kStepAcceptance,track) )
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepAcceptance);
+      ((TH2F*)fHistoList->At(histoIndex))->Fill(Form("%u",fVarUInt[kVarRunNumber]), containerInput[kHvarTrigClass], 1.);
+    } // loop on trigger classes
 
     if ( fillCurrentEventTree ) currTree->Fill();
-
-    histoIndex = GetHistoIndex(kHistoNmuonsPerRun);
-    ((TH2F*)fHistoList->At(histoIndex))->Fill(Form("%u",fVarUInt[kVarRunNumber]), trigClassBin, 1.);
   } // loop on tracks
 
   if ( fillCurrentEventTree && fKeepAll &&  ( ( nMuons + nGhosts ) == 0 ) ) {
@@ -821,39 +805,45 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     currTree->Fill();
   }
 
-  histoIndex = GetHistoIndex(kHistoNeventsPerTrig);
-  ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 1., 1.); // All events
-  ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 4., (Double_t)(fVarInt[kVarIsPileup]+1)); // All vertices
-  if ( isGoodVtxBin == 1 )
-    ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 2., 1.); // Good vtx events
-  else if ( isGoodVtxBin == 2 ) {
-    ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 3., 1.); // Pileup events
-    ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 5., 1.); // Pileup vertices
-  }
+  for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); itrig++ ) {
+    TString trigName = ((TObjString*)fTriggerClasses->At(itrig))->GetString();
+    if ( ! firedTrigClasses.Contains(trigName.Data()) )
+      continue;
+    Double_t trigClassBin = (Double_t)(itrig+1);
+    histoIndex = GetHistoIndex(kHistoNeventsPerTrig);
+    ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 1., 1.); // All events
+    ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 4., (Double_t)(fVarInt[kVarIsPileup]+1)); // All vertices
+    if ( isGoodVtxBin == 1 )
+      ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 2., 1.); // Good vtx events
+    else if ( isGoodVtxBin == 2 ) {
+      ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 3., 1.); // Pileup events
+      ((TH2F*)fHistoList->At(histoIndex))->Fill(trigClassBin, 5., 1.); // Pileup vertices
+    }
 
-
-  histoIndex = GetHistoIndex(kHistoMuonMultiplicity);
-  ((TH1F*)fHistoList->At(histoIndex))->Fill(nMuons, trigClassBin);
-
-  if ( isGoodVtxBin == 1  && firedTrigClasses.Contains(fRefTrigName[0].Data()) ) {
-    histoIndex = GetHistoIndex(kHistoEventVz);
-    ((TH1F*)fHistoList->At(histoIndex))->Fill(fVarFloat[kVarIPVz]);
+    histoIndex = GetHistoIndex(kHistoMuonMultiplicity);
+    ((TH1F*)fHistoList->At(histoIndex))->Fill(nMuons, trigClassBin);
     
-    TString histoName = Form("hVtx%u",fVarUInt[kVarRunNumber]);
-    TH1F* histoVtxCurrRun = (TH1F*)fVertexPerRun->GetValue(histoName.Data());
-    histoVtxCurrRun->Fill(fVarFloat[kVarIPVz]);
-    if ( nMuons + nGhosts > 0 )
-    histoVtxCurrRun->SetNormFactor(histoVtxCurrRun->GetNormFactor()+1.);
-  }
+    if ( isGoodVtxBin == 1  && itrig == 0 ) {
+      histoIndex = GetHistoIndex(kHistoEventVz);
+      ((TH1F*)fHistoList->At(histoIndex))->Fill(fVarFloat[kVarIPVz]);
+    
+      TString histoName = Form("hVtx%u",fVarUInt[kVarRunNumber]);
+      TH1F* histoVtxCurrRun = (TH1F*)fAuxObjects->GetValue(histoName.Data());
+      histoVtxCurrRun->Fill(fVarFloat[kVarIPVz]);
+      if ( nMuons + nGhosts > 0 )
+	histoVtxCurrRun->SetNormFactor(histoVtxCurrRun->GetNormFactor()+1.);
+    }
 
-  histoIndex = GetHistoIndex(kHistoNeventsPerRun);
-  ((TH2F*)fHistoList->At(histoIndex))->Fill(Form("%u",fVarUInt[kVarRunNumber]), trigClassBin, 1.);
+    histoIndex = GetHistoIndex(kHistoNeventsPerRun);
+    ((TH2F*)fHistoList->At(histoIndex))->Fill(Form("%u",fVarUInt[kVarRunNumber]), trigClassBin, 1.);
+  } // loop on trigger classes
+
 
   // Post final data. It will be written to a file with option "RECREATE"
   PostData(1, fCFManager->GetParticleContainer());
   PostData(2, fHistoList);
-  if ( fMCEvent ) PostData(3, fHistoListMC);
-  PostData(4, fHistoListQA);
+  PostData(3, fHistoListQA);
+  if ( fMCEvent ) PostData(4, fHistoListMC);
   if ( fFillTreeScaleDown > 0 )
     PostData(5, currTree);
 }
@@ -996,29 +986,6 @@ Float_t AliAnalysisTaskSingleMu::GetBinThetaAbsEnd(Float_t RAtAbsEnd, Bool_t isT
   return 3.;
 }
 
-//________________________________________________________________________
-Float_t AliAnalysisTaskSingleMu::GetBinTrigClass(const Char_t* trigClass)
-{
-  //
-  /// Get bin of trigger class
-  //
-  TString trigClassString(trigClass);
-
-  // Algorithm explanation:
-  // Only CINT1B      -> return 1
-  // Only CMUS1B      -> return 3
-  // CINT1B && CMUS1B -> return 2
-  Float_t returnValue = 0.;
-  if ( trigClassString.Contains(fRefTrigName[0].Data()) )
-    returnValue = 1.;
-  if ( trigClassString.Contains(fRefTrigName[1].Data())  )
-    returnValue = 3. - returnValue;
-
-  if ( returnValue < 0.5 )
-    AliWarning(Form("No MB or MU trigger found %s", trigClassString.Data()));
-
-  return returnValue;
-}
 
 //________________________________________________________________________
 void AliAnalysisTaskSingleMu::Reset(Bool_t keepGlobal)
@@ -1056,18 +1023,16 @@ void AliAnalysisTaskSingleMu::Reset(Bool_t keepGlobal)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSingleMu::SetRefTrigName(const Char_t* trigClassMB,
-					     const Char_t* trigClassMU)
+void AliAnalysisTaskSingleMu::SetTriggerClasses(TString triggerClasses)
 {
-  //
-  /// Set the name of the MB and MU trigger classes
-  //
-  fRefTrigName[0] = trigClassMB;
-  fRefTrigName[1] = trigClassMU;
-  AliInfo(Form("Set trigger name: MB -> %s ;  MU -> %s",
-	       fRefTrigName[0].Data(), fRefTrigName[1].Data()));
-}
+  /// Set trigger classes
+  if ( fTriggerClasses )
+    delete fTriggerClasses;
 
+  fTriggerClasses = triggerClasses.Tokenize(" ");
+  fTriggerClasses->SetOwner();
+
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskSingleMu::SetAxisLabel(TAxis* axis)
@@ -1075,11 +1040,9 @@ void AliAnalysisTaskSingleMu::SetAxisLabel(TAxis* axis)
   //
   /// Set the labels of trigger class axis
   //
-  TString mbMuName = Form("%s %s", fRefTrigName[0].Data(), fRefTrigName[1].Data());
-  TString mbMuLabel = Form("%s+%s", fRefTrigName[0].Data(), fRefTrigName[1].Data());
-  axis->SetBinLabel(axis->FindBin(GetBinTrigClass(fRefTrigName[0].Data())),fRefTrigName[0].Data());
-  axis->SetBinLabel(axis->FindBin(GetBinTrigClass(mbMuName.Data())),mbMuLabel.Data());
-  axis->SetBinLabel(axis->FindBin(GetBinTrigClass(fRefTrigName[1].Data())),fRefTrigName[1].Data());
-  axis->SetTitle("Fired class");
-
+  for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); itrig++ ) {
+    TString trigName = ((TObjString*)fTriggerClasses->At(itrig))->GetString();
+    axis->SetBinLabel(itrig+1,trigName.Data());
+  }
+    axis->SetTitle("Fired class");
 }
