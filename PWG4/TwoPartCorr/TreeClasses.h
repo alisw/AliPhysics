@@ -12,6 +12,19 @@
 #include <TH2F.h>
 #include <TMath.h>
 
+class Noti: public TObject
+{
+public:
+  Noti() : fc(0) {;}
+  virtual ~Noti() {;}
+  Bool_t Notify()         { fc=1; return 1; }
+  Bool_t Notified() const { return fc;      }
+  void   Reset()          { fc=0;           }
+protected:
+  Bool_t fc; //=1 when file changed
+  ClassDef (Noti,0) // Use to be notified when file in chain changes
+};
+
 class MyHeader
 {
 public:
