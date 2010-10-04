@@ -205,6 +205,6 @@ private:
 
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,8)  // Analysis manager class
+   ClassDef(AliAnalysisManager,9)  // Analysis manager class
 };   
 #endif
