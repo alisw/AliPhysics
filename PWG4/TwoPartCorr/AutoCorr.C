@@ -6,7 +6,8 @@ ClassImp(AutoCorr)
 
 Int_t AutoCorr::InitEventPools(Int_t depth, 
 			       Int_t nMultBins, Double_t multbin[], 
-			       Int_t nZvtxBins, Double_t zvtxbin[])
+			       Int_t nZvtxBins, Double_t zvtxbin[],
+			       Double_t ptMin, Double_t ptMax)
 {
   // First assign AutoCorr members
   fNMultBins = nMultBins;
@@ -17,7 +18,8 @@ Int_t AutoCorr::InitEventPools(Int_t depth,
     for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
       evp.push_back(new EventPool(depth, 
 				  multbin[iM], multbin[iM+1], 
-				  zvtxbin[iZ], zvtxbin[iZ+1] ));
+				  zvtxbin[iZ], zvtxbin[iZ+1],
+				  ptMin, ptMax ));
     }
     fEvPool.push_back(evp);
   }
@@ -136,7 +138,7 @@ Bool_t AutoCorr::IsPairOk(const MyPart &t1, const MyPart &t2) const
   Double_t deta = DeltaEta(t1, t2);
   Double_t dphi = DeltaPhi(t1, t2);
   Double_t dpmax = 0.03;
-  Double_t demax = 0.01;
+  Double_t demax = 0.03;
   Double_t dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
   return (dr > 1);
 }
@@ -145,8 +147,8 @@ Bool_t AutoCorr::IsMixedPairOk(const MyPart &t1, const MyPart &t2) const
 {
   Double_t deta = DeltaEta(t1, t2);
   Double_t dphi = DeltaPhi(t1, t2);
-  Double_t dpmax = 0.04;
-  Double_t demax = 0.04;
+  Double_t dpmax = 0.03;
+  Double_t demax = 0.03;
   Double_t dr = dphi*dphi/(dpmax*dpmax) + deta*deta/(demax*demax);
   return (dr > 1);
 }
