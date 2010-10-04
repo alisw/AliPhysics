@@ -2044,25 +2044,26 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	    continue;   // minimum opening angle to avoid using ghosttracks
 	  }
 			
-	  fHistograms->FillHistogram("ESD_Mother_GammaDaughter_OpeningAngle", openingAngleTwoGammaCandidate);
-	  fHistograms->FillHistogram("ESD_Mother_Energy", twoGammaCandidate->GetE());
-	  fHistograms->FillHistogram("ESD_Mother_Pt", momentumVectorTwoGammaCandidate.Pt());
-	  fHistograms->FillHistogram("ESD_Mother_Eta", momentumVectorTwoGammaCandidate.Eta());
-	  fHistograms->FillHistogram("ESD_Mother_Rapid", rapidity);					
-	  fHistograms->FillHistogram("ESD_Mother_Phi", spaceVectorTwoGammaCandidate.Phi());
-	  fHistograms->FillHistogram("ESD_Mother_Mass", massTwoGammaCandidate);
-	  fHistograms->FillHistogram("ESD_Mother_alfa", alfa);
-	  fHistograms->FillHistogram("ESD_Mother_R", spaceVectorTwoGammaCandidate.Pt());    // Pt in Space == R!!!
-	  fHistograms->FillHistogram("ESD_Mother_ZR", twoGammaCandidate->GetZ(), spaceVectorTwoGammaCandidate.Pt());
-	  fHistograms->FillHistogram("ESD_Mother_XY", twoGammaCandidate->GetX(), twoGammaCandidate->GetY());
-	  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 	  if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+	    fHistograms->FillHistogram("ESD_Mother_GammaDaughter_OpeningAngle", openingAngleTwoGammaCandidate);
+	    fHistograms->FillHistogram("ESD_Mother_Energy", twoGammaCandidate->GetE());
+	    fHistograms->FillHistogram("ESD_Mother_Pt", momentumVectorTwoGammaCandidate.Pt());
+	    fHistograms->FillHistogram("ESD_Mother_Eta", momentumVectorTwoGammaCandidate.Eta());
+	    fHistograms->FillHistogram("ESD_Mother_Rapid", rapidity);					
+	    fHistograms->FillHistogram("ESD_Mother_Phi", spaceVectorTwoGammaCandidate.Phi());
+	    fHistograms->FillHistogram("ESD_Mother_Mass", massTwoGammaCandidate);
+	    fHistograms->FillHistogram("ESD_Mother_alfa", alfa);
+	    fHistograms->FillHistogram("ESD_Mother_R", spaceVectorTwoGammaCandidate.Pt());    // Pt in Space == R!!!
+	    fHistograms->FillHistogram("ESD_Mother_ZR", twoGammaCandidate->GetZ(), spaceVectorTwoGammaCandidate.Pt());
+	    fHistograms->FillHistogram("ESD_Mother_XY", twoGammaCandidate->GetX(), twoGammaCandidate->GetY());
+	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+	    fHistograms->FillHistogram("ESD_Mother_InvMass",massTwoGammaCandidate);	    
 	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 	  }
 	  if(alfa<0.1){
 	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_E_alpha",massTwoGammaCandidate ,twoGammaCandidate->GetE());
 	  }
-	  fHistograms->FillHistogram("ESD_Mother_InvMass",massTwoGammaCandidate);
+
 
 	  if(fCalculateBackground){
 	    /* Kenneth, just for testing*/
@@ -2081,10 +2082,12 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	    }
 	    //	    cout<<"Filling bin number "<<zbin<<" and "<<mbin<<endl;
 	    //	    cout<<"Corresponding to z = "<<fV0Reader->GetVertexZ()<<" and m = "<<multKAA<<endl;
-	    fHistograms->FillHistogram(Form("%d%dESD_Mother_InvMass",zbin,mbin),massTwoGammaCandidate);
-	    fHistograms->FillHistogram(Form("%d%dESD_Mother_InvMass_vs_Pt",zbin,mbin),massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
-	    /* end Kenneth, just for testing*/
-	    fHistograms->FillHistogram(Form("%dESD_Mother_InvMass_vs_Pt",mbin),massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+	    if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+	      fHistograms->FillHistogram(Form("%d%dESD_Mother_InvMass",zbin,mbin),massTwoGammaCandidate);
+	      fHistograms->FillHistogram(Form("%d%dESD_Mother_InvMass_vs_Pt",zbin,mbin),massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+	      /* end Kenneth, just for testing*/
+	      fHistograms->FillHistogram(Form("%dESD_Mother_InvMass_vs_Pt",mbin),massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+	    }
 	  }
 	  /*	  if(fCalculateBackground){
 	    AliGammaConversionBGHandler * bgHandler = fV0Reader->GetBGHandler();
@@ -2141,106 +2144,106 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		  }
 
 		}
-
-		if(TMath::Abs(eta1)>0.9 && TMath::Abs(eta2)>0.9){
-		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_1212",massTwoGammaCandidate);
-		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-		  if(isRealPi0 || isRealEta){
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_1212",massTwoGammaCandidate);
-		    fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_1212",openingAngleTwoGammaCandidate);
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
-		    if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+		if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+		  if(TMath::Abs(eta1)>0.9 && TMath::Abs(eta2)>0.9){
+		    //		  fHistograms->FillHistogram("ESD_Mother_InvMass_1212",massTwoGammaCandidate);
+		    //		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		    if(isRealPi0 || isRealEta){
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_1212",massTwoGammaCandidate);
+		      fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_1212",openingAngleTwoGammaCandidate);
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
 		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 		    }
-		  }
-		  if(!isRealPi0 && !isRealEta){
-		    if(gamma1MotherLabel>-1 && gamma2MotherLabel>-1){
-		      fHistograms->FillHistogram("ESD_TrueBckGG_InvMass",massTwoGammaCandidate);
-		    }else{
-		      fHistograms->FillHistogram("ESD_TrueBckCont_InvMass",massTwoGammaCandidate);
-		    }
-		  }
 
-		}
-		else if(TMath::Abs(eta1)>0.9 || TMath::Abs(eta2)>0.9){
+		    if(!isRealPi0 && !isRealEta){
+		      if(gamma1MotherLabel>-1 && gamma2MotherLabel>-1){
+			fHistograms->FillHistogram("ESD_TrueBckGG_InvMass",massTwoGammaCandidate);
+		      }else{
+			fHistograms->FillHistogram("ESD_TrueBckCont_InvMass",massTwoGammaCandidate);
+		      }
+		    }
+
+		  }
+		  else if(TMath::Abs(eta1)>0.9 || TMath::Abs(eta2)>0.9){
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_0912",massTwoGammaCandidate);
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-		  if(isRealPi0 || isRealEta){
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_0912",massTwoGammaCandidate);
-		    fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_0912",openingAngleTwoGammaCandidate);
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
-		    if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+		  
+		    if(isRealPi0 || isRealEta){
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_0912",massTwoGammaCandidate);
+		      fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_0912",openingAngleTwoGammaCandidate);
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
 		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
 		    }
-		  }
-		  if(!isRealPi0 && !isRealEta){
-		    if(gamma1MotherLabel>-1 && gamma2MotherLabel>-1){
-		      fHistograms->FillHistogram("ESD_TrueBckGG_InvMass",massTwoGammaCandidate);
-		    }else{
-		      fHistograms->FillHistogram("ESD_TrueBckCont_InvMass",massTwoGammaCandidate);
+		    if(!isRealPi0 && !isRealEta){
+		      if(gamma1MotherLabel>-1 && gamma2MotherLabel>-1){
+			fHistograms->FillHistogram("ESD_TrueBckGG_InvMass",massTwoGammaCandidate);
+		      }else{
+			fHistograms->FillHistogram("ESD_TrueBckCont_InvMass",massTwoGammaCandidate);
+		      }
 		    }
 		  }
-		}
-		else{
+		  else{
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_0909",massTwoGammaCandidate);
 		  //		  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-		  if(isRealPi0 || isRealEta){
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_0909",massTwoGammaCandidate);
-		    fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_0909",openingAngleTwoGammaCandidate);
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
-		    fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
-		    if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+		    if(isRealPi0 || isRealEta){
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_0909",massTwoGammaCandidate);
+		      fHistograms->FillHistogram("ESD_TruePi0_OpeningAngle_0909",openingAngleTwoGammaCandidate);
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+		      fHistograms->FillHistogram("ESD_TruePi0_InvMass",massTwoGammaCandidate);
 		      fHistograms->FillHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+		      if(gamma1MotherLabel > fV0Reader->GetMCStack()->GetNprimary()){
+			fHistograms->FillHistogram("ESD_TruePi0Sec_InvMass",massTwoGammaCandidate);
+		      }
 		    }
-		    if(gamma1MotherLabel > fV0Reader->GetMCStack()->GetNprimary()){
-		      fHistograms->FillHistogram("ESD_TruePi0Sec_InvMass",massTwoGammaCandidate);
-		    }
-		  }
-		  if(!isRealPi0 && !isRealEta){
-		    if(gamma1MotherLabel>-1 && gamma2MotherLabel>-1){
-		      fHistograms->FillHistogram("ESD_TrueBckGG_InvMass",massTwoGammaCandidate);
-		    }else{
-		      fHistograms->FillHistogram("ESD_TrueBckCont_InvMass",massTwoGammaCandidate);
+		    if(!isRealPi0 && !isRealEta){
+		      if(gamma1MotherLabel>-1 && gamma2MotherLabel>-1){
+			fHistograms->FillHistogram("ESD_TrueBckGG_InvMass",massTwoGammaCandidate);
+		      }else{
+			fHistograms->FillHistogram("ESD_TrueBckCont_InvMass",massTwoGammaCandidate);
+		      }
 		    }
 		  }
 		}
 	      }
 	    }
 	  }
-	  if ( TMath::Abs(twoGammaDecayCandidateDaughter0->GetEta())<0.9 &&  TMath::Abs(twoGammaDecayCandidateDaughter1->GetEta())<0.9 ){
-	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt_Fiducial",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
-	    fHistograms->FillHistogram("ESD_Mother_InvMass_Fiducial",massTwoGammaCandidate);
-	  }
+	  if(alfa>fV0Reader->GetAlphaMinCutMeson() && alfa<fV0Reader->GetAlphaCutMeson()){
+	    if ( TMath::Abs(twoGammaDecayCandidateDaughter0->GetEta())<0.9 &&  TMath::Abs(twoGammaDecayCandidateDaughter1->GetEta())<0.9 ){
+	      fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt_Fiducial",massTwoGammaCandidate ,momentumVectorTwoGammaCandidate.Pt());
+	      fHistograms->FillHistogram("ESD_Mother_InvMass_Fiducial",massTwoGammaCandidate);
+	    }
+	    
+	    if(TMath::Abs(twoGammaDecayCandidateDaughter0->GetEta())>0.9 && TMath::Abs(twoGammaDecayCandidateDaughter1->GetEta())>0.9){
+	      fHistograms->FillHistogram("ESD_Mother_InvMass_1212",massTwoGammaCandidate);
+	      fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+	    }
+	    else if(TMath::Abs(twoGammaDecayCandidateDaughter0->GetEta())>0.9 || TMath::Abs(twoGammaDecayCandidateDaughter1->GetEta())>0.9){
+	      fHistograms->FillHistogram("ESD_Mother_InvMass_0912",massTwoGammaCandidate);
+	      fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+	    }
+	    else{
+	      fHistograms->FillHistogram("ESD_Mother_InvMass_0909",massTwoGammaCandidate);
+	      fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+	    }
 
-	  if(TMath::Abs(twoGammaDecayCandidateDaughter0->GetEta())>0.9 && TMath::Abs(twoGammaDecayCandidateDaughter1->GetEta())>0.9){
-	    fHistograms->FillHistogram("ESD_Mother_InvMass_1212",massTwoGammaCandidate);
-	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt1212",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
+	    Double_t lowMassPi0=0.1;
+	    Double_t highMassPi0=0.15;
+	    if (massTwoGammaCandidate > lowMassPi0 && massTwoGammaCandidate < highMassPi0 ){
+	      new((*fKFReconstructedPi0sTClone)[fKFReconstructedPi0sTClone->GetEntriesFast()])  AliKFParticle(*twoGammaCandidate);
+	      fGammav1.push_back(firstGammaIndex);
+	      fGammav2.push_back(secondGammaIndex);
+	      AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
+	    }
 	  }
-	  else if(TMath::Abs(twoGammaDecayCandidateDaughter0->GetEta())>0.9 || TMath::Abs(twoGammaDecayCandidateDaughter1->GetEta())>0.9){
-	    fHistograms->FillHistogram("ESD_Mother_InvMass_0912",massTwoGammaCandidate);
-	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0912",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-	  }
-	  else{
-	    fHistograms->FillHistogram("ESD_Mother_InvMass_0909",massTwoGammaCandidate);
-	    fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt0909",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
-	  }
-	  Double_t lowMassPi0=0.1;
-	  Double_t highMassPi0=0.15;
-	  if (massTwoGammaCandidate > lowMassPi0 && massTwoGammaCandidate < highMassPi0 ){
-            new((*fKFReconstructedPi0sTClone)[fKFReconstructedPi0sTClone->GetEntriesFast()])  AliKFParticle(*twoGammaCandidate);
-            fGammav1.push_back(firstGammaIndex);
-            fGammav2.push_back(secondGammaIndex);
-	    AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
-          }
 
 	}
 	  //}
-	  delete twoGammaCandidate;
+	delete twoGammaCandidate;
     }
   }
 }
@@ -2521,48 +2524,49 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	    }			
 	  
 	    // original
-	    fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
-	    fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
-	    fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
-	    fHistograms->FillHistogram("ESD_Background_Eta", momentumVectorbackgroundCandidate.Eta());
-	    fHistograms->FillHistogram("ESD_Background_Rapidity", rapidity);
-	    fHistograms->FillHistogram("ESD_Background_Phi", spaceVectorbackgroundCandidate.Phi());
-	    fHistograms->FillHistogram("ESD_Background_Mass", massBG);
-	    fHistograms->FillHistogram("ESD_Background_R", spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
-	    fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
-	    fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
-	    fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
-	    fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
-	  
 	    if(alfa>fV0Reader->GetAlphaMinCutMeson() &&   alfa<fV0Reader->GetAlphaCutMeson()){
+	      fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
+	      fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
+	      fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
+	      fHistograms->FillHistogram("ESD_Background_Eta", momentumVectorbackgroundCandidate.Eta());
+	      fHistograms->FillHistogram("ESD_Background_Rapidity", rapidity);
+	      fHistograms->FillHistogram("ESD_Background_Phi", spaceVectorbackgroundCandidate.Phi());
+	      fHistograms->FillHistogram("ESD_Background_Mass", massBG);
+	      fHistograms->FillHistogram("ESD_Background_R", spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
+	      fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
+	      fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
+	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
+	      fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
 	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
+
+
+	      if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(currentEventGoodV02.GetEta())<0.9 ){
+		fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
+		fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
+	      }
+	      
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_GammaDaughter_OpeningAngle",zbin,mbin), openingAngleBG);
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_Energy",zbin,mbin), backgroundCandidate->GetE());
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_Pt",zbin,mbin),  momentumVectorbackgroundCandidate.Pt());
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_Eta",zbin,mbin), momentumVectorbackgroundCandidate.Eta());
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_Rapidity",zbin,mbin), rapidity);
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_Phi",zbin,mbin), spaceVectorbackgroundCandidate.Phi());
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_Mass",zbin,mbin), massBG);
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_R",zbin,mbin), spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_ZR",zbin,mbin), backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_XY",zbin,mbin), backgroundCandidate->GetX(), backgroundCandidate->GetY());
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
+	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass",zbin,mbin),massBG);
+	      
+	      if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(currentEventGoodV02.GetEta())<0.9 ){
+		fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
+		fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
+	      }
 	    }
 	    if(alfa<0.1){
 	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_E_alpha",massBG ,backgroundCandidate->GetE());
 	    }
 
-	    if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(currentEventGoodV02.GetEta())<0.9 ){
-	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
-	      fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
-	    }
-	  
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_GammaDaughter_OpeningAngle",zbin,mbin), openingAngleBG);
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_Energy",zbin,mbin), backgroundCandidate->GetE());
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_Pt",zbin,mbin),  momentumVectorbackgroundCandidate.Pt());
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_Eta",zbin,mbin), momentumVectorbackgroundCandidate.Eta());
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_Rapidity",zbin,mbin), rapidity);
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_Phi",zbin,mbin), spaceVectorbackgroundCandidate.Phi());
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_Mass",zbin,mbin), massBG);
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_R",zbin,mbin), spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_ZR",zbin,mbin), backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_XY",zbin,mbin), backgroundCandidate->GetX(), backgroundCandidate->GetY());
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
-	    fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass",zbin,mbin),massBG);
-
-	    if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(currentEventGoodV02.GetEta())<0.9 ){
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
-	    }
 	  }
 	  //}
 	  delete backgroundCandidate;      
@@ -2642,51 +2646,51 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	      }			
 
 	      // original
-	      fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
-	      fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
-	      fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
-	      fHistograms->FillHistogram("ESD_Background_Eta", momentumVectorbackgroundCandidate.Eta());
-	      fHistograms->FillHistogram("ESD_Background_Rapidity", rapidity);
-	      fHistograms->FillHistogram("ESD_Background_Phi", spaceVectorbackgroundCandidate.Phi());
-	      fHistograms->FillHistogram("ESD_Background_Mass", massBG);
-	      fHistograms->FillHistogram("ESD_Background_R", spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
-	      fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
-	      fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
-	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
-	      fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
-
 	      if(alfa>fV0Reader->GetAlphaMinCutMeson() &&   alfa<fV0Reader->GetAlphaCutMeson()){
+		fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
+		fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
+		fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
+		fHistograms->FillHistogram("ESD_Background_Eta", momentumVectorbackgroundCandidate.Eta());
+		fHistograms->FillHistogram("ESD_Background_Rapidity", rapidity);
+		fHistograms->FillHistogram("ESD_Background_Phi", spaceVectorbackgroundCandidate.Phi());
+		fHistograms->FillHistogram("ESD_Background_Mass", massBG);
+		fHistograms->FillHistogram("ESD_Background_R", spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
+		fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
+		fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
+		fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
+		fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
 		fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
+
+
+		if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
+		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
+		  fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
+		}
+
+		// test
+		fHistograms->FillHistogram(Form("%d%dESD_Background_GammaDaughter_OpeningAngle",zbin,mbin), openingAngleBG);
+		fHistograms->FillHistogram(Form("%d%dESD_Background_Energy",zbin,mbin), backgroundCandidate->GetE());
+		fHistograms->FillHistogram(Form("%d%dESD_Background_Pt",zbin,mbin),  momentumVectorbackgroundCandidate.Pt());
+		fHistograms->FillHistogram(Form("%d%dESD_Background_Eta",zbin,mbin), momentumVectorbackgroundCandidate.Eta());
+		fHistograms->FillHistogram(Form("%d%dESD_Background_Rapidity",zbin,mbin), rapidity);
+		fHistograms->FillHistogram(Form("%d%dESD_Background_Phi",zbin,mbin), spaceVectorbackgroundCandidate.Phi());
+		fHistograms->FillHistogram(Form("%d%dESD_Background_Mass",zbin,mbin), massBG);
+		fHistograms->FillHistogram(Form("%d%dESD_Background_R",zbin,mbin), spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
+		fHistograms->FillHistogram(Form("%d%dESD_Background_ZR",zbin,mbin), backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
+		fHistograms->FillHistogram(Form("%d%dESD_Background_XY",zbin,mbin), backgroundCandidate->GetX(), backgroundCandidate->GetY());
+		fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
+		fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass",zbin,mbin),massBG);
+		
+		if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
+		}
+		//	  }
 	      }
 	      if(alfa<0.1){
 		fHistograms->FillHistogram("ESD_Background_InvMass_vs_E_alpha",massBG ,backgroundCandidate->GetE());
 	      }
 
-	      if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
-		fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
-		fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
-	      }
-	    
-	    
-	      // test
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_GammaDaughter_OpeningAngle",zbin,mbin), openingAngleBG);
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_Energy",zbin,mbin), backgroundCandidate->GetE());
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_Pt",zbin,mbin),  momentumVectorbackgroundCandidate.Pt());
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_Eta",zbin,mbin), momentumVectorbackgroundCandidate.Eta());
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_Rapidity",zbin,mbin), rapidity);
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_Phi",zbin,mbin), spaceVectorbackgroundCandidate.Phi());
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_Mass",zbin,mbin), massBG);
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_R",zbin,mbin), spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_ZR",zbin,mbin), backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_XY",zbin,mbin), backgroundCandidate->GetX(), backgroundCandidate->GetY());
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
-	      fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass",zbin,mbin),massBG);
-
-	      if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
-		fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
-		fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
-	      }
-	      //	  }
 	    }
 	    delete backgroundCandidate;      
 	  }
@@ -2761,55 +2765,58 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 		  continue;   // minimum opening angle to avoid using ghosttracks
 		}			
 
-		fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
-		fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
-		fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
-		fHistograms->FillHistogram("ESD_Background_Eta", momentumVectorbackgroundCandidate.Eta());
-		fHistograms->FillHistogram("ESD_Background_Rapidity", rapidity);
-		fHistograms->FillHistogram("ESD_Background_Phi", spaceVectorbackgroundCandidate.Phi());
-		fHistograms->FillHistogram("ESD_Background_Mass", massBG);
-		fHistograms->FillHistogram("ESD_Background_R", spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
-		fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
-		fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
-		fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
-		fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
-
 		if(alfa>fV0Reader->GetAlphaMinCutMeson() &&   alfa<fV0Reader->GetAlphaCutMeson()){
+		  fHistograms->FillHistogram("ESD_Background_GammaDaughter_OpeningAngle", openingAngleBG);
+		  fHistograms->FillHistogram("ESD_Background_Energy", backgroundCandidate->GetE());
+		  fHistograms->FillHistogram("ESD_Background_Pt",  momentumVectorbackgroundCandidate.Pt());
+		  fHistograms->FillHistogram("ESD_Background_Eta", momentumVectorbackgroundCandidate.Eta());
+		  fHistograms->FillHistogram("ESD_Background_Rapidity", rapidity);
+		  fHistograms->FillHistogram("ESD_Background_Phi", spaceVectorbackgroundCandidate.Phi());
+		  fHistograms->FillHistogram("ESD_Background_Mass", massBG);
+		  fHistograms->FillHistogram("ESD_Background_R", spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
+		  fHistograms->FillHistogram("ESD_Background_ZR", backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
+		  fHistograms->FillHistogram("ESD_Background_XY", backgroundCandidate->GetX(), backgroundCandidate->GetY());
+		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt",massBG,momentumVectorbackgroundCandidate.Pt());
+		  fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
+		  
+
 		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
+
+		  
+		  if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
+		    fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
+		    fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
+		  }
+		  
+		  if(massBG>0.5 && massBG<0.6){
+		    fHistograms->FillHistogram("ESD_Background_alfa_pt0506",momentumVectorbackgroundCandidate.Pt(),alfa);
+		  }
+		  if(massBG>0.3 && massBG<0.4){
+		    fHistograms->FillHistogram("ESD_Background_alfa_pt0304",momentumVectorbackgroundCandidate.Pt(),alfa);
+		  }
+		  
+		  // test
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_GammaDaughter_OpeningAngle",zbin,mbin), openingAngleBG);
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_Energy",zbin,mbin), backgroundCandidate->GetE());
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_Pt",zbin,mbin),  momentumVectorbackgroundCandidate.Pt());
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_Eta",zbin,mbin), momentumVectorbackgroundCandidate.Eta());
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_Rapidity",zbin,mbin), rapidity);
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_Phi",zbin,mbin), spaceVectorbackgroundCandidate.Phi());
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_Mass",zbin,mbin), massBG);
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_R",zbin,mbin), spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_ZR",zbin,mbin), backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_XY",zbin,mbin), backgroundCandidate->GetX(), backgroundCandidate->GetY());
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
+		  fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass",zbin,mbin),massBG);
+		  
+		  if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
+		    fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
+		    fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
+		  }
 		}
+
 		if(alfa<0.1){
 		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_E_alpha",massBG ,backgroundCandidate->GetE());
-		}
-
-		if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
-		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
-		  fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
-		}
-	    
-		if(massBG>0.5 && massBG<0.6){
-		  fHistograms->FillHistogram("ESD_Background_alfa_pt0506",momentumVectorbackgroundCandidate.Pt(),alfa);
-		}
-		if(massBG>0.3 && massBG<0.4){
-		  fHistograms->FillHistogram("ESD_Background_alfa_pt0304",momentumVectorbackgroundCandidate.Pt(),alfa);
-		}
-	    
-		// test
-		fHistograms->FillHistogram(Form("%d%dESD_Background_GammaDaughter_OpeningAngle",zbin,mbin), openingAngleBG);
-		fHistograms->FillHistogram(Form("%d%dESD_Background_Energy",zbin,mbin), backgroundCandidate->GetE());
-		fHistograms->FillHistogram(Form("%d%dESD_Background_Pt",zbin,mbin),  momentumVectorbackgroundCandidate.Pt());
-		fHistograms->FillHistogram(Form("%d%dESD_Background_Eta",zbin,mbin), momentumVectorbackgroundCandidate.Eta());
-		fHistograms->FillHistogram(Form("%d%dESD_Background_Rapidity",zbin,mbin), rapidity);
-		fHistograms->FillHistogram(Form("%d%dESD_Background_Phi",zbin,mbin), spaceVectorbackgroundCandidate.Phi());
-		fHistograms->FillHistogram(Form("%d%dESD_Background_Mass",zbin,mbin), massBG);
-		fHistograms->FillHistogram(Form("%d%dESD_Background_R",zbin,mbin), spaceVectorbackgroundCandidate.Pt());  // Pt in Space == R!!!!
-		fHistograms->FillHistogram(Form("%d%dESD_Background_ZR",zbin,mbin), backgroundCandidate->GetZ(), spaceVectorbackgroundCandidate.Pt());
-		fHistograms->FillHistogram(Form("%d%dESD_Background_XY",zbin,mbin), backgroundCandidate->GetX(), backgroundCandidate->GetY());
-		fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
-		fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass",zbin,mbin),massBG);
-
-		if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
-		  fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",zbin,mbin),massBG,momentumVectorbackgroundCandidate.Pt());
-		  fHistograms->FillHistogram(Form("%d%dESD_Background_InvMass_Fiducial",zbin,mbin),massBG);
 		}
 		//  }
 	      }
