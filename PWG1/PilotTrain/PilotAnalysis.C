@@ -6,22 +6,22 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
 Int_t runNumbers[5] = {121040};
 
+Bool_t doCDBconnect   = 1;
 Bool_t doQAsym        = 1;
-Bool_t doVZERO        = 0;   // there is a 2nd file
-Bool_t doVertex       = 0;
-Bool_t doSPD          = 0;   // needs RP   
-Bool_t doFMD          = 0;
-Bool_t doTPC          = 0;
+Bool_t doVZERO        = 1;   // there is a 2nd file
+Bool_t doVertex       = 1;
+Bool_t doSPD          = 1;   // needs RP   
+Bool_t doTPC          = 1;
 Bool_t doEventStat    = 1;
-Bool_t doSDD          = 0;   // needs RP
-Bool_t doSSDdEdx      = 0;
+Bool_t doSDD          = 1;   // needs RP
+Bool_t doSSDdEdx      = 1;
 // new 
-Bool_t doTRD          = 0;
-Bool_t doITS          = 0;
-Bool_t doCALO         = 0;
-Bool_t doMUONTrig     = 0;
-Bool_t doImpParRes    = 0;
-Bool_t doMUON         = 0;
+Bool_t doTRD          = 1;
+Bool_t doITS          = 1;
+Bool_t doCALO         = 1;
+Bool_t doMUONTrig     = 1;
+Bool_t doImpParRes    = 1;
+Bool_t doMUON         = 1;
 
 Bool_t doMUONEff      = 0;   // NEEDS geometry
 Bool_t doV0           = 0;   // NEEDS MCtruth 
@@ -44,7 +44,7 @@ TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/QA/QA$2";
                // Job splitting
 Int_t       grid_split         = 20;       // Splitting
                // Debug level
-Int_t       debug_level        = 0;        // Debugging
+Int_t       debug_level        = 1;        // Debugging
                // Data pattern - change as needed for test mode
 TString     data_pattern       = "*ESDs/pass2/*ESDs.root";
                // Output directory (DON'T CHANGE)
@@ -91,7 +91,6 @@ void PilotAnalysis(const char *plugin_mode = "full")
   out << "   doSPD           = " << doSPD << ";" << endl;
   out << "   doSDD           = " << doSDD << ";" << endl;
   out << "   doSSDdEdx       = " << doSSDdEdx << ";" << endl;
-  out << "   doFMD           = " << doFMD << ";" << endl;
   out << "   doTPC           = " << doTPC << ";" << endl;
   out << "   doTRD           = " << doTRD << ";" << endl;
   out << "   doImpParRes     = " << doImpParRes << ";" << endl;
@@ -155,9 +154,17 @@ void AddAnalysisTasks()
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   mgr->SetCommonFileName("QAresults.root");
   //
+  // CDB connection
+  //
+  if (doCDBconnect) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskCDBconnect.C");
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+    if (!taskCDB) return;
+  }    
+  
+  //
   // Event Statistics (Jan Fiete)
   //
-
   if (doEventStat) {
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
@@ -279,13 +286,6 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskV0QA.C");
       AliAnalysisTaskV0QA *taskv0QA = AddTaskV0QA(kFALSE);
   }
-  // FMD (Hans Hjersing Dalsgaard)
-  //
-  if (doFMD) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis/AddTaskFMD.C");
-    AliAnalysisTaskSE* taskfmd = AddTaskFMD();
-    taskfmd->SelectCollisionCandidates();
-  }  
   // Impact parameter resolution (xianbao.yuan@pd.infn.it, andrea.dainese@pd.infn.it)
   //
   if (doImpParRes) {
@@ -316,7 +316,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       plugin->AddDataFile(data_collection);
    }   
    plugin->SetJobTag(job_tag);
-   plugin->SetNtestFiles(1);
+   plugin->SetNtestFiles(3);
    plugin->SetCheckCopy(kFALSE);
    plugin->SetOneStageMerging(kTRUE);
 // Set versions of used packages

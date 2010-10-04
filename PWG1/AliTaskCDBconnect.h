@@ -39,7 +39,7 @@ public:
   virtual void              ConnectInputData(Option_t *option = "");
   virtual void              CreateOutputObjects();
   virtual void              LocalInit();
-  virtual Bool_t            Notify() {return kTRUE;}
+  virtual Bool_t            Notify();
   virtual void              Exec(Option_t *option);
     
   ClassDef(AliTaskCDBconnect,1)  // Class giving CDB connectivity
