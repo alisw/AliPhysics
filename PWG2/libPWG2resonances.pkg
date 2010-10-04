@@ -28,13 +28,14 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnVAnalysisTaskME.cxx \
       RESONANCES/AliRsnAnalysisSE.cxx \
       RESONANCES/AliRsnAnalysisME.cxx \
+      RESONANCES/AliRsnAnalysisEffSE.cxx \
       RESONANCES/AliRsnTOFT0maker.cxx \
       RESONANCES/AliRsnAnalysisPhi900GeV.cxx \
       RESONANCES/AliRsnAnalysisPhi7TeV.cxx \
       RESONANCES/AliRsnAnalysisPhi7TeVNoPID.cxx \
       RESONANCES/AliRsnMonitorTrack.cxx \
       RESONANCES/AliRsnAnalysisMonitorTask.cxx \
-      RESONANCES/AliRsnAnalysisEffSE.cxx \
+      RESONANCES/AliRsnAnalysisMonitorPairTask.cxx \
 #      RESONANCES/AliRsnFitResult.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
