@@ -1396,7 +1396,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     }
     AliGenEventHeader* genHeader = header->GenEventHeader();
     genHeader->PrimaryVertex(mcVertex);
-    printf("MC vertex: %f %f %f\n",mcVertex[0],mcVertex[1],mcVertex[2]);
+    //printf("MC vertex: %f %f %f\n",mcVertex[0],mcVertex[1],mcVertex[2]);
 
     Int_t ngenpart = (Int_t)stack->GetNtrack();
     //printf("# generated particles = %d\n",ngenpart);
@@ -1416,7 +1416,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       Double_t y = 0.5*TMath::Log((energy+pz+1.e-13)/(energy-pz+1.e-13));
       if(TMath::Abs(y)<1.0) dNchdy += 0.5; // count 1/2 of particles in |y|<1
     }
-    printf("# primary particles = %7.1f\n",dNchdy);
+    //printf("# primary particles = %7.1f\n",dNchdy);
   } 
   // ***********  MC info ***************
   Double_t mcVtxPos[3]={mcVertex[0],mcVertex[1],mcVertex[2]},mcVtxSigma[3]={0,0,0};
