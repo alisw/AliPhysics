@@ -25,8 +25,11 @@ AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(Int_t fillNtupleScaleDown=0, 
 
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("SingleMuonContainer",AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("SingleMuon",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("SingleMuonMC",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("SingleMuonQA",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("SingleMuonQA",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+   AliAnalysisDataContainer *coutput4 = 0x0;
+   if ( mgr->GetMCtruthEventHandler() )
+     coutput4 = mgr->CreateContainer("SingleMuonMC",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+
 
    AliAnalysisDataContainer *coutput5 = 0x0;    
    if ( fillNtupleScaleDown > 0 ) {
@@ -49,9 +52,10 @@ AliAnalysisTaskSingleMu *AddTaskSingleMuonAnalysis(Int_t fillNtupleScaleDown=0, 
    mgr->ConnectOutput (SingleMuonAnalysisTask,  1, coutput1);
    mgr->ConnectOutput (SingleMuonAnalysisTask,  2, coutput2);
    mgr->ConnectOutput (SingleMuonAnalysisTask,  3, coutput3);
-   mgr->ConnectOutput (SingleMuonAnalysisTask,  4, coutput4);
+   if ( coutput4 )
+     mgr->ConnectOutput (SingleMuonAnalysisTask,  4, coutput4);
 
-   if ( fillNtupleScaleDown > 0 )     
+   if ( coutput5 )
      mgr->ConnectOutput (SingleMuonAnalysisTask,  5, coutput5);
 
    return SingleMuonAnalysisTask;

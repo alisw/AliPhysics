@@ -8,6 +8,7 @@ class TList;
 class AliMCParticle;
 class TTree;
 class TMap;
+class TObjArray;
 //class TAxis;
 class AliCFManager;
 
@@ -22,15 +23,16 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
   virtual void   NotifyRun();
   virtual void   FinishTaskOutput();
 
-  void SetRefTrigName(const Char_t* trigClassMB = "CINT1B",
-		      const Char_t* trigClassMU = "CMUS1B");
+  // Please put the CINT1B class as first!
+  void SetTriggerClasses(TString triggerClasses = 
+			 "CINT1B-ABCE-NOPF-ALL CINT1A-ABCE-NOPF-ALL CINT1C-ABCE-NOPF-ALL CINT1-E-NOPF-ALL CMUS1B-ABCE-NOPF-MUON CMUS1A-ABCE-NOPF-MUON CMUS1C-ABCE-NOPF-MUON CMUS1-E-NOPF-MUON");
 
   /// Get CORRFW manager
   AliCFManager * GetCFManager() const { return fCFManager; }
 
   enum {
     kHvarPt,         ///< Pt at vertex
-    kHvarEta,        ///< Pseudo-rapidity
+    kHvarY,          ///< Rapidity
     kHvarPhi,        ///< Phi
     kHvarDCA,        ///< DCA
     kHvarVz,         ///< Z vertex position
@@ -40,16 +42,14 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kHvarTrigClass,  ///< Trigger classes
     kHvarIsGoodVtx,  ///< IP vertex correctly reconstructed
     kHvarMotherType, ///< Mother type (MC only)
-    kNvars      ///< THnSparse dimensions
+    kNvars           ///< THnSparse dimensions
   };  
 
   enum {
     kStepReconstructed,  ///< Reconstructed tracks
     kStepAcceptance,     ///< Track in acceptance
-    kStepMuonRef,        ///< Reference muon
     kStepGeneratedMC,    ///< Generated tracks (MC)
     kStepAcceptanceMC,   ///< Track in acceptance (MC)
-    kStepMuonRefMC,      ///< Reference muon) (MC)
     kNsteps              ///< Number of steps
   };
   
@@ -81,7 +81,7 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
   // Histograms for MC
   enum {
     kHistoCheckVzMC,    ///< Check vertex distribution
-    kNsummaryHistosMC ///< Summary histograms for MC
+    kNsummaryHistosMC   ///< Summary histograms for MC
   };
 
   enum {
@@ -207,8 +207,8 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
   UInt_t* fVarUInt; //!< Reconstructed parameters Uint
   Float_t* fVarFloatMC; //!< MC parameters float
   Int_t* fVarIntMC; //!< MC parameters int
-  TMap* fVertexPerRun; //!< Map of vertex distribution per run
-  TString* fRefTrigName; //!< reference trigger class name for MB and muon events
+  TMap* fAuxObjects; //!< Map of vertex distribution per run
+  TObjArray* fTriggerClasses; //!< full trigger class name
 
   ClassDef(AliAnalysisTaskSingleMu, 2); // Single muon analysis
 };
