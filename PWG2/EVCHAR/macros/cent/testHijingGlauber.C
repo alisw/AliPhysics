@@ -67,13 +67,14 @@ void Store(TObject *o, const char *name=0, const char *fname="gres");
 
 // macro starts here
 
-void testHijingGlauber() 
+void testHijingGlauber(const char *fname="hj-unquenched.root") 
 {
   Bool_t pImDist               = 0;
   Bool_t pNpDist               = 0;
-  Bool_t pNpDistSelWithImp     = 0;
+  Bool_t pNpDistSelWithImp     = 1;
   Bool_t pNpDistSelWithImpFits = 0;
   Bool_t pMidRecResStudy       = 0;
+  Bool_t pdNdEta               = 0;
 
   Double_t fwdres=0.00;
   Double_t midres=0.00;
@@ -87,7 +88,7 @@ void testHijingGlauber()
   gList = new TObjArray;
   gList->SetOwner(1);
 
-  TFile *f = TFile::Open("hj-unquenched.root");
+  TFile *f = TFile::Open(fname);
   TTree *t = (TTree*)f->Get("glaubertree");
   if (!t) {
     cerr << " not find glaubertree" <<endl;
@@ -269,6 +270,30 @@ void testHijingGlauber()
     }
     Store(ge1,Form("gMidrecMean_res%d",resint));
     Store(ge2,Form("gMidrecRms_res%d",resint));
+  }
+  if (pdNdEta) {
+    name="dNdEtaPerPartPair";
+    Canvas(name);
+    t->Draw("Nmid","1","");
+    Hist(name,"","Nch in -0.5<#eta<0.5","counts per bin");
+    TObjArray *arr = Draw("Nmid",0,"hist",1);
+    TGraphErrors *ge = new TGraphErrors(nclassesan);
+    ge->SetMarkerSize(1.2);
+    ge->SetMarkerStyle(20);
+    for (Int_t i=1;i<arr->GetEntries();++i) {
+      Int_t N=i-1;//nclassesan-i;
+      TH1F *h = (TH1F*)arr->At(i);
+      Double_t mean  = h->GetMean();
+      Double_t rms = h->GetRMS();
+      ge->SetPoint(N,npmean[N],2*mean/npmean[N]);
+      ge->SetPointError(N,nprms[N],2*rms/npmean[N]);
+      cout << i << " " << mean << " " << rms << " " << npmean[N] << " " << nprms[N] << endl;
+    }
+    TCanvas *c = new TCanvas("dndetaplot");
+    TH2F *h2f = new TH2F("h2f",";Npart;0.5/Npart dN/d#eta",1,0,400,1,0,11);
+    h2f->SetStats(0);
+    h2f->Draw();
+    ge->Draw("P");
   }
   if (0) {
     name="FwdSumCorr";
