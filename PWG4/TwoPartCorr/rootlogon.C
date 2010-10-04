@@ -19,11 +19,9 @@
   gROOT->LoadMacro("TreeClasses.C+g");
   gROOT->LoadMacro("EventPool.C+g");
   gROOT->LoadMacro("AutoCorr.C+g");
+  gROOT->LoadMacro("Utils.C+g");
   if (0) {
     gROOT->LoadMacro("EventPoolManager.C+g");
     gROOT->LoadMacro("anaCorr.C+g");
   }
 }
-
-
-
