@@ -2910,11 +2910,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       }   
       out << "// connect to AliEn and make the chain" << endl;
       out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
-      if (IsUsingTags()) {
-         out << "   TChain *chain = CreateChainFromTags(\"wn.xml\", anatype);" << endl << endl;
-      } else {
-         out << "   TChain *chain = CreateChain(\"wn.xml\", anatype);" << endl << endl;   
-      }   
       out << "// read the analysis manager from file" << endl;
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
@@ -2941,6 +2936,11 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             else
                out << "   AliLog::SetGlobalLogLevel(AliLog::kError);" << endl;
          }
+      }   
+      if (IsUsingTags()) {
+         out << "   TChain *chain = CreateChainFromTags(\"wn.xml\", anatype);" << endl << endl;
+      } else {
+         out << "   TChain *chain = CreateChain(\"wn.xml\", anatype);" << endl << endl;   
       }   
       out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
       out << "   timer.Stop();" << endl;
@@ -2992,6 +2992,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "TChain* CreateChain(const char *xmlfile, const char *type=\"ESD\")" << endl;
          out << "{" << endl;
          out << "// Create a chain using url's from xml file" << endl;
+         out << "   TString filename;" << endl;
+         out << "   Int_t run = 0;" << endl;
          out << "   TString treename = type;" << endl;
          out << "   treename.ToLower();" << endl;
          out << "   treename += \"Tree\";" << endl;
@@ -3003,13 +3005,23 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "      ::Error(\"CreateChain\", \"Cannot create an AliEn collection from %s\", xmlfile);" << endl;
          out << "      return NULL;" << endl;
          out << "   }" << endl;
+         out << "   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();" << endl;
          out << "   TChain *chain = new TChain(treename);" << endl;
          if(fFriendChainName!="") {
             out << "   TChain *chainFriend = new TChain(treename);" << endl;
          }
          out << "   coll->Reset();" << endl;
          out << "   while (coll->Next()) {" << endl;
-         out << "      chain->Add(coll->GetTURL(\"\"));" << endl;
+         out << "      filename = coll->GetTURL("");" << endl;
+         out << "      if (mgr) {" << endl;
+         out << "         Int_t nrun = AliAnalysisManager::GetRunFromAlienPath(filename);" << endl;
+         out << "         if (nrun && nrun != run) {" << endl;
+         out << "            printf(\"### Run number detected from chain: %d\\n\", nrun);" << endl;
+         out << "            mgr->SetRunFromPath(nrun);" << endl;
+         out << "            run = nrun;" << endl;
+         out << "         }" << endl;
+         out << "      }" << endl;
+         out << "      chain->Add(filename);" << endl;
          if(fFriendChainName!="") {
             out << "      TString fileFriend=coll->GetTURL(\"\");" << endl;
             out << "      fileFriend.ReplaceAll(\"AliAOD.root\",\""<<fFriendChainName.Data()<<"\");" << endl;

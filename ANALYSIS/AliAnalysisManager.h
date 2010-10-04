@@ -100,6 +100,7 @@ enum EAliAnalysisFlags {
    TString             GetExtraFiles() const      {return fExtraFiles;}
    AliVEventPool*      GetEventPool()  const      {return fEventPool;}
    Bool_t              GetFileFromWrapper(const char *filename, const TList *source);
+   static Int_t        GetRunFromAlienPath(const char *path);
    AliAnalysisGrid*    GetGridHandler()           {return fGridHandler;}
    TObjArray          *GetInputs() const          {return fInputs;}
    AliVEventHandler*   GetInputEventHandler() const   {return fInputEventHandler;}
@@ -107,6 +108,7 @@ enum EAliAnalysisFlags {
    AliVEventHandler*   GetOutputEventHandler() const  {return fOutputEventHandler;}
    TObjArray          *GetOutputs() const         {return fOutputs;}
    TObjArray          *GetParamOutputs() const    {return fParamCont;}
+   Int_t               GetRunFromPath() const     {return fRunFromPath;}
    TObjArray          *GetTasks() const           {return fTasks;}
    TObjArray          *GetTopTasks() const        {return fTopTasks;}
    TTree              *GetTree() const            {return fTree;}
@@ -129,6 +131,7 @@ enum EAliAnalysisFlags {
    void                SetMCtruthEventHandler(AliVEventHandler* const handler) {fMCtruthEventHandler = handler;}
    void                SetNSysInfo(Long64_t nevents)              {fNSysInfo = nevents;}
    void                SetOutputEventHandler(AliVEventHandler* const handler);
+   void                SetRunFromPath(Int_t run)                  {fRunFromPath = run;}
    void                SetSelector(AliAnalysisSelector * const sel)      {fSelector = sel;}
    void                SetSaveCanvases(Bool_t flag=kTRUE)         {TObject::SetBit(kSaveCanvases,flag);}
    void                SetSkipTerminate(Bool_t flag)              {TObject::SetBit(kSkipTerminate,flag);}
@@ -198,6 +201,7 @@ private:
    TString                 fExtraFiles;          // List of extra files to be merged
    Bool_t                  fAutoBranchHandling;  // def=kTRUE, turn off if you use LoadBranch
    THashTable              fTable;               // keep branch ptrs in case of manual branch loading
+   Int_t                   fRunFromPath;         // Run number retrieved from path to input data
 
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance

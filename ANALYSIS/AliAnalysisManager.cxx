@@ -83,7 +83,8 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fGridHandler(NULL),
                     fExtraFiles(""),
                     fAutoBranchHandling(kTRUE), 
-                    fTable()
+                    fTable(),
+                    fRunFromPath(0)
 {
 // Default constructor.
    fgAnalysisManager = this;
@@ -127,7 +128,8 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fGridHandler(NULL),
                     fExtraFiles(),
                     fAutoBranchHandling(other.fAutoBranchHandling), 
-                    fTable()
+                    fTable(),
+                    fRunFromPath(0)
 {
 // Copy constructor.
    fTasks      = new TObjArray(*other.fTasks);
@@ -174,7 +176,8 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fgCommonFileName = "AnalysisResults.root";
       fgAnalysisManager = this;
       fAutoBranchHandling = other.fAutoBranchHandling;
-      fTable.Clear("nodelete"); 
+      fTable.Clear("nodelete");
+      fRunFromPath = other.fRunFromPath;
    }
    return *this;
 }
@@ -208,7 +211,38 @@ Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
      return entry;
    return fTree ? fTree->GetTree()->GetEntry(entry, getall) : 0;
 }
-   
+
+//______________________________________________________________________________
+Int_t AliAnalysisManager::GetRunFromAlienPath(const char *path)
+{
+// Attempt to extract run number from input data path. Works only for paths to
+// alice data in alien.
+//    sim:  /alice/sim/<production>/run_no/...
+//    data: /alice/data/year/period/000run_no/... (ESD or AOD)
+   TString s(path);
+   TString srun;
+   Int_t run = 0;
+   Int_t index = s.Index("/alice/sim");
+   if (index >= 0) {
+      for (Int_t i=0; i<3; i++) {
+         index = s.Index("/", index+1);
+         if (index<0) return 0;
+      }
+      srun = s(index+1,6);
+      run = atoi(srun);
+   }
+   index = s.Index("/alice/data");
+   if (index >= 0) {
+      for (Int_t i=0; i<4; i++) {
+         index = s.Index("/", index+1);
+         if (index<0) return 0;
+      }
+      srun = s(index+1,9);
+      run = atoi(srun);
+   }
+   return run;
+}   
+
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::Init(TTree *tree)
 {
@@ -385,11 +419,11 @@ Bool_t AliAnalysisManager::Notify()
    }   
    
    if (fDebug > 1) printf("->AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
+   Int_t run = AliAnalysisManager::GetRunFromAlienPath(curfile->GetName());
+   if (run) SetRunFromPath(run);
+   if (fDebug > 1) printf("   ### run found from path: %d\n", run); 
    TIter next(fTasks);
    AliAnalysisTask *task;
-   // Call Notify for all tasks
-   while ((task=(AliAnalysisTask*)next())) 
-      task->Notify();
 	
    // Call Notify of the event handlers
    if (fInputEventHandler) {
@@ -403,6 +437,10 @@ Bool_t AliAnalysisManager::Notify()
    if (fMCtruthEventHandler) {
        fMCtruthEventHandler->Notify(curfile->GetName());
    }
+
+   // Call Notify for all tasks
+   while ((task=(AliAnalysisTask*)next())) 
+      task->Notify();
 
    if (fDebug > 1) printf("<-AliAnalysisManager::Notify()\n");
    return kTRUE;
