@@ -51,7 +51,7 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Bool_t fUseSpecialCuts;           // flag to switch on/off special cuts
   Bool_t fLowPt;           // flag to switch on/off different pid for low pt D0
   Bool_t fDefaultPID;      // flag to switch on/off the default pid
-  ClassDef(AliRDHFCutsD0toKpi,2);  // class for cuts on AOD reconstructed D0->Kpi
+  ClassDef(AliRDHFCutsD0toKpi,4);  // class for cuts on AOD reconstructed D0->Kpi
 };
 
 #endif
