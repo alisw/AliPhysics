@@ -5,34 +5,35 @@
 // .x runAutoCorr.C+
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include <TStopwatch.h>
-#include <TString.h>
-#include <TROOT.h>
 #include "TreeClasses.h"
 #include "EventPool.h"
 #include "AutoCorr.h"
+#include "TStopwatch.h"
+#include "TString.h"
+#include "TROOT.h"
 #endif
 
 bool debug = true;
 
 void runAutoCorr(const char* dataFile = 
-		 "../rootfiles/res_LHC10e_09122010/mergedruns/merged_run130601.root", 
-		 const char* outFileName = "output/130601.root")
+		 "../rootfiles/res_LHC10c_09212010/merged_run120824.root",
+		 //		 "../rootfiles/res_LHC10e_09122010/mergedruns/merged_run130601.root", 
+		 const char* outFileName = "output/120824.root")
 {
   TFile* outFile = new TFile(outFileName, "recreate");
   const double PI = TMath::Pi();
   Int_t poolsize = 50;
   Int_t nMix = 5;
   const Int_t nMultBins = 1;
-  Double_t multbin[nMultBins+1] = {100, 400}; 
+  Double_t multbin[nMultBins+1] = {50, 400}; 
   const Int_t nZvtxBins = 3;
   Double_t zvtxbin[nZvtxBins+1] = {-10, -3, 4, 11};
   const Int_t nPtBins = 1;
   Double_t ptbin[nPtBins+1] = {1.0, 2.0};
   Double_t etaMin = -1.4; // for track cuts
   Double_t etaMax = 1.4;
-  Double_t ptMin = 0.40; // for track cuts
-  Double_t ptMax = 10.0;
+  Double_t ptMin = ptbin[0]; // for track cuts
+  Double_t ptMax = ptbin[nPtBins];
   Double_t dEtaMax = 3.0; // for histogram limits
   TString sDataSet = "res_LHC10e_09122010";
 
@@ -54,7 +55,7 @@ void runAutoCorr(const char* dataFile =
   cuts->Add(new TNamed("data_sample", sDataSet.Data()));
   cuts->Add(new TNamed("mult_bins", sMultBins.Data()));
   cuts->Add(new TNamed("zvtx_bins", sZvtxBins.Data()));
-  cuts->Add(new TNamed("pt_bins", sPtBins.Data()));
+  cuts->Add(new TNamed("pt1_pt2_bins", sPtBins.Data()));
   cuts->Add(new TNamed("mass_cut", "No mass cut"));
   cuts->Add(new TNamed("eta_range", Form("%.1f < #eta < %.1f", etaMin, etaMax)));
   cuts->Add(new TNamed("z_vtx_range", Form("%.1f < z-vtx < %.1f", zMin, zMax)));
@@ -62,6 +63,7 @@ void runAutoCorr(const char* dataFile =
   cuts->Add(new TNamed("max_ntracklets", Form("No. trackets > %i", maxNTracklets)));
   cuts->Add(new TNamed("pool_size", Form("Event pool size = %i", poolsize )));
   cuts->Add(new TNamed("ntracks_mix", Form("Mixed tracks per real track = %i", nMix )));
+  cuts->Add(new TNamed("comments", "Using dphi x deta = 0.03 x 0.03 cut"));
 
   // Histos to hold binning info
   TH1F* hMultBins = new TH1F("hMultBins", "Event multiplicity binning", 
@@ -85,7 +87,8 @@ void runAutoCorr(const char* dataFile =
   trBranch->SetAddress(&trk);
 
   AutoCorr* ac = new AutoCorr();
-  ac->InitEventPools(poolsize, nMultBins, multbin, nZvtxBins, zvtxbin);
+  //  ac->InitEventPools(poolsize, nMultBins, multbin, nZvtxBins, zvtxbin);
+  ac->InitEventPools(poolsize, nMultBins, multbin, nZvtxBins, zvtxbin, ptMin, ptMax);
 
   if (debug) {
     cout << nMultBins << " x " << nZvtxBins 
@@ -180,18 +183,20 @@ void runAutoCorr(const char* dataFile =
 		    "accepted/sampled tracks");
   // ---------------------------------
 
-  Int_t nEvents = 400;//tree->GetEntries();
+  Int_t nEvents = tree->GetEntries();
   Int_t nAcceptedEvents = 0;
 
   TStopwatch* watch = new TStopwatch();
   watch->Start();
   for (int n=0; n<nEvents; n++) {
     evBranch->GetEntry(n);
+
+    // need to add trigger mask here!!
     if (!ac->IsEventOk(*ev, minVc, maxNTracklets, zMin, zMax))
       continue;
 
     trBranch->GetEntry(n);
-    if (n % 100 == 0) cout << n << endl;
+    if (n % 1 == 0) cout << n << endl;
 
     hMultAll->Fill(ev->fNSelTracks);     // No cuts
 
@@ -223,12 +228,14 @@ void runAutoCorr(const char* dataFile =
       for (int i=0; i<ntracks; i++) {
 	MyPart* t1 = (MyPart*)trk->At(i);
 	hPtAll->Fill(t1->fPt);
+	Int_t ptBin1 = hPtBins->FindBin(t1->fPt) - 1;
+	if (ptBin1 < 0 || ptBin1 >= nPtBins) 
+	  continue;
 	if (!ac->IsTrackOk(*t1, etaMin, etaMax, ptMin, ptMax))
 	  continue;
 	
 	hEta->Fill(t1->fEta);
 	hPtSel->Fill(t1->fPt);
-	Int_t ptBin1 = hPtBins->FindBin(t1->fPt) - 1;
 
 	// --- Same-event correlation loop ---
 	for (int j=i+1; j<ntracks; j++) {
@@ -249,11 +256,13 @@ void runAutoCorr(const char* dataFile =
 	    hMass->Fill(ac->InvMass(*t1, *t2));
 
 	    Int_t ptBin2 = hPtBins->FindBin(t2->fPt) - 1;
+	    if (ptBin2 < 0 || ptBin2 >= nPtBins) 
+	      continue;
 	    if (ptBin1==ptBin2)
 	      hSigPt[multBin][ptBin1]->Fill(dphi, deta);
 	  }
 	
-	  Int_t jMix = 0, jWatcher = 0, jLimit = 20*nMix;
+	  Int_t jMix = 0, jWatcher = 0, jLimit = 50*nMix;
 	  for (jMix=0; jMix<nMix;) {
 	    if (++jWatcher > jLimit) {
 	      cout << "Warning: mix loop count > " << jLimit 
@@ -278,7 +287,7 @@ void runAutoCorr(const char* dataFile =
 	      jMix++;
 	    }
 	  }
-	  hMixEff->Fill(ntracks, (Double_t)jMix/jWatcher);
+	  hMixEff->Fill(ntracks, (double)jMix/jWatcher);
 	}
       }
     }
@@ -295,7 +304,7 @@ void runAutoCorr(const char* dataFile =
   cout << " Real time: " << watch->RealTime() << endl;
 
   cuts->Add(new TNamed("run_number", Form("Run number = %i", runNumber )));
-  cuts->Add(new TNamed("n_events_file",Form("Events in file = %lld", tree->GetEntries())));
+  cuts->Add(new TNamed("n_events_file",Form("Events in file = %i", tree->GetEntries())));
   cuts->Add(new TNamed("n_events_loop", Form("Events looped = %i", nEvents )));
   cuts->Add(new TNamed("n_events_kept", Form("Events kept = %i", nAcceptedEvents )));
   cuts->Add(new TNamed("cpu_time", Form("CPU time = %f", watch->RealTime() )));
