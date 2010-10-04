@@ -2538,6 +2538,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 6:  // 0.3 GeV
     kGCPIDMinPnSigmaAbovePionLine=0.25;
     break;
+  case 7:  // 0.4 GeV
+    kGCPIDMinPnSigmaAbovePionLine=0.4;
+    break;
   default:
     return iResult;
   }
@@ -2618,6 +2621,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 5:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.0;
+    break;
+  case 6:  // 0% of findable clusters
+    kGCminClsTPCCutToF= 0.7;
     break;
   default:
     return iResult;
@@ -2758,7 +2764,10 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     kGCalphaMinCutMeson   = 0.5;
     kGCalphaCutMeson   = 1.;
     break;
-
+  case 3:  // 0.0-1 
+    kGCalphaMinCutMeson   = 0.0;
+    kGCalphaCutMeson   = 1.;
+    break;
   default:
     return iResult;
   }
@@ -2772,6 +2781,10 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 2:
     kGCminRCut=5.;
+    break;
+  case 3:
+    kGCmaxRCut = 70.;
+    kGCminRCut = 10.;
     break;
   default:
     return iResult;
