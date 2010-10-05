@@ -30,6 +30,7 @@
 #include "AliLog.h" 
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSPIDv1.h" 
+#include "AliPHOSReconstructor.h" 
 #include "AliPHOSAodCluster.h" 
 #include "AliPHOSCalibData.h"
 #include "AliAODCaloCells.h"
@@ -109,9 +110,9 @@ void AliPHOSAodCluster::EvalEnergy(){
    
 }
 //____________________________________________________________________________
-void AliPHOSAodCluster::EnergyCorrection(AliPHOSPIDv1 * pid){
+void AliPHOSAodCluster::EnergyCorrection(){
   //apply nonlinearity correction same as in AliPHOSPIDv1.
-  SetE(pid->GetCalibratedEnergy(E())) ;
+  SetE(AliPHOSReconstructor::CorrectNonlinearity(E())) ;
 }
 //____________________________________________________________________________
 void AliPHOSAodCluster::EvalPID(AliPHOSPIDv1 * /*pid*/){           

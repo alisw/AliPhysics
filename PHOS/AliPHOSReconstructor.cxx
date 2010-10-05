@@ -130,8 +130,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   else 
     fTSM->Clusters2TrackSegments("") ;
   
-  fPID->SetEnergyCorrectionOn(GetRecoParam()->GetEMCEnergyCorrectionOn());
-  
   fPID->SetInput(clustersTree, fTSM->GetTrackSegments()) ; 
   fPID->SetESD(esd) ; 
   if ( Debug() ) 
@@ -288,11 +286,14 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     Int_t  primMult  = 0;
     Int_t *primList =  emcRP->GetPrimaries(primMult);
 
-    Float_t energy;
+    Float_t energy=0.;
     if (GetRecoParam()->EMCEcore2ESD())
       energy = emcRP->GetCoreEnergy();
     else
       energy = rp->Energy();
+    //Apply nonlinearity correction
+    if(GetRecoParam()->GetEMCEnergyCorrectionOn())
+      energy=CorrectNonlinearity(energy) ;
 
     // fills the ESDCaloCluster
     ec->SetType(AliVCluster::kPHOSNeutral);
@@ -503,5 +504,24 @@ void AliPHOSReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
   }
 
 }
+//==================================================================================
+Float_t AliPHOSReconstructor::CorrectNonlinearity(Float_t en){
 
+  if(strcmp(GetRecoParam()->GetNonlinearityCorrectionVersion(),"NoCorrection")==0){
+    return en ;
+  }
+  if(strcmp(GetRecoParam()->GetNonlinearityCorrectionVersion(),"Gustavo2005")==0){
+    const Float_t *par=GetRecoParam()->GetNonlinearityParams() ;
+    return par[0]+par[1]*en + par[2]*en*en ;
+  }
+  if(strcmp(GetRecoParam()->GetNonlinearityCorrectionVersion(),"Henrik2010")==0){
+     const Float_t *par=GetRecoParam()->GetNonlinearityParams() ;
+     return en*(par[0]+par[1]*TMath::Exp(-en*par[2]))*(1.+par[3]*TMath::Exp(-en*par[4]))*(1.+par[6]/(en*en+par[5])) ;
+  }
+  //For backward compatibility
+  if(strcmp(GetRecoParam()->GetNonlinearityCorrectionVersion(),"")==0){
+    return 0.0241+1.0504*en+0.000249*en*en ;
+  }
+  return en ;
+}
 

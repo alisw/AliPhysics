@@ -69,9 +69,6 @@ class AliPHOSPID : public TObject {
 
   void SetESD(AliESDEvent *esd) { fESD = esd; }
 
-  void SetEnergyCorrectionOn(Bool_t on=kTRUE) {fEnergyCorrectionOn = on;}
-  Bool_t GetEnergyCorrectionOn() const  {return fEnergyCorrectionOn;}
-
   virtual const char * Version() const = 0;
 
 protected:
@@ -85,11 +82,9 @@ protected:
   TClonesArray *fTrackSegments;     //!Array with found track segments
   TClonesArray *fRecParticles;      //!Array with reconstructed particles (PID)
   
-  Bool_t   fEnergyCorrectionOn;     // Do energy correction in GetCalibratedEnergy()
-  
 private: 
 
-  ClassDef(AliPHOSPID,7)  // Particle Identifier algorithm (base class)
+  ClassDef(AliPHOSPID,8)  // Particle Identifier algorithm (base class)
 
 } ;
 

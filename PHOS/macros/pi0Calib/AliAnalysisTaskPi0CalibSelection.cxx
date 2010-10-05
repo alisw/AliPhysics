@@ -154,7 +154,7 @@ void AliAnalysisTaskPi0CalibSelection::UserExec(Option_t* /* option */)
     AliPHOSEsdCluster clu1(*c1);
     clu1.Recalibrate(fCalibData, phsCells);
     clu1.EvalAll(logWeight,vtx);
-    clu1.EnergyCorrection(&pid) ;
+    clu1.EnergyCorrection() ;
 
     clu1.GetMomentum(p1,v);
 
@@ -177,7 +177,7 @@ void AliAnalysisTaskPi0CalibSelection::UserExec(Option_t* /* option */)
       AliPHOSEsdCluster clu2(*c2);
       clu2.Recalibrate(fCalibData, phsCells);
       clu2.EvalAll(logWeight,vtx);
-      clu2.EnergyCorrection(&pid) ;
+      clu2.EnergyCorrection() ;
         
       clu2.GetMomentum(p2,v);
       Float_t E2_ii = clu2.E();

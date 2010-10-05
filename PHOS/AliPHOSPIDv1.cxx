@@ -591,24 +591,6 @@ Float_t  AliPHOSPIDv1::GetParameterCalibration(Int_t i) const
 }
 
 //____________________________________________________________________________
-Float_t  AliPHOSPIDv1::GetCalibratedEnergy(Float_t e) const
-{
-//      It calibrates Energy depending on the recpoint energy.
-//      The energy of the reconstructed cluster is corrected with 
-//      the formula A + B* E  + C* E^2, whose parameters where obtained 
-//      through the study of the reconstructed energy distribution of 
-//      monoenergetic photons.
-  
-  if(!fEnergyCorrectionOn) return e;
-  
-  Float_t p[]={0.,0.,0.};
-  for (Int_t i=0; i<3; i++) p[i] = GetParameterCalibration(i);
-  Float_t enerec = p[0] +  p[1]*e + p[2]*e*e;
-  return enerec ;
-
-}
-
-//____________________________________________________________________________
 Float_t  AliPHOSPIDv1::GetParameterCpv2Emc(Int_t i, TString axis) const 
 {
   // Get the i-th parameter "CPV-EMC distance" for the specified axis
@@ -739,36 +721,6 @@ Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TString 
   
   return par;
 }
-
-
-//DP____________________________________________________________________________
-//Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSCpvRecPoint * cpv, Option_t *  axis)const
-//{
-//  // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
-//  
-//  AliPHOSGeometry * geom =  AliPHOSGeometry::GetInstance();
-//  TVector3 vecEmc ;
-//  TVector3 vecCpv ;
-//  if(cpv){
-//    emc->GetLocalPosition(vecEmc) ;
-//    cpv->GetLocalPosition(vecCpv) ; 
-//    
-//    if(emc->GetPHOSMod() == cpv->GetPHOSMod()){      
-//      // Correct to difference in CPV and EMC position due to different distance to center.
-//      // we assume, that particle moves from center
-//      Float_t dCPV = geom->GetIPtoOuterCoverDistance();
-//      Float_t dEMC = geom->GetIPtoCrystalSurface() ;
-//      dEMC         = dEMC / dCPV ;
-//      vecCpv = dEMC * vecCpv  - vecEmc ; 
-//      if (axis == "X") return vecCpv.X();
-//      if (axis == "Y") return vecCpv.Y();
-//      if (axis == "Z") return vecCpv.Z();
-//      if (axis == "R") return vecCpv.Mag();
-//    }
-//    return 100000000 ;
-//  }
-//  return 100000000 ;
-//}
 //____________________________________________________________________________
 Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSTrackSegment * ts, Int_t effPur, Float_t e) const
 {
@@ -1368,7 +1320,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
 
     Float_t e = emc->GetEnergy() ;   
     
-    Float_t  lambda[2] ;
+    Float_t  lambda[2]={0.,0.} ;
     emc->GetElipsAxis(lambda) ;
  
     if((lambda[0]>0.01) && (lambda[1]>0.01)){
@@ -1442,10 +1394,9 @@ void  AliPHOSPIDv1::MakeRecParticles()
       rp->SetPIDBit(14) ; 
 
     //Set momentum, energy and other parameters 
-    Float_t  encal = GetCalibratedEnergy(e);
     TVector3 dir   = GetMomentumDirection(emc,cpv) ; 
-    dir.SetMag(encal) ;
-    rp->SetMomentum(dir.X(),dir.Y(),dir.Z(),encal) ;
+    dir.SetMag(e) ;
+    rp->SetMomentum(dir.X(),dir.Y(),dir.Z(),e) ;
     rp->SetCalcMass(0);
     rp->Name(); //If photon sets the particle pdg name to gamma
     rp->SetProductionVertex(fVtx.X(),fVtx.Y(),fVtx.Z(),0);

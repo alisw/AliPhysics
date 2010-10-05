@@ -79,7 +79,6 @@ public:
   Float_t GetParameterPi0Boundary    (Int_t i)               const;
 
   // Get energy-dependent PID parameters
-  Float_t GetCalibratedEnergy    (Float_t e)                 const;
   Float_t GetCpv2EmcDistanceCut  (TString axis, Float_t e)   const ;
   Float_t GetEllipseParameter    (TString particle, TString param, Float_t e) const;
 

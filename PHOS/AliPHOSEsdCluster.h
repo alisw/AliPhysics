@@ -31,7 +31,7 @@ public:
 
   void  EvalAll(Float_t logWeight, TVector3 &vtx) ; //re-calculate all cluster parameters
   void  Recalibrate(AliPHOSCalibData * calibData,AliESDCaloCells *phsCells) ; //Apply recalibration to this cluster
-  void  EnergyCorrection(AliPHOSPIDv1 * pid) ;  //Apply non-linearity correction
+  void  EnergyCorrection() ;  //Apply non-linearity correction
   void  EvalPID(AliPHOSPIDv1 * pid) ;           //re-evaluate identification parameters
 
 protected:

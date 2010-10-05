@@ -30,6 +30,7 @@
 #include "AliLog.h" 
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSPIDv1.h" 
+#include "AliPHOSReconstructor.h"
 #include "AliPHOSEsdCluster.h" 
 #include "AliPHOSCalibData.h"
 #include "AliESDCaloCells.h"
@@ -76,8 +77,12 @@ void AliPHOSEsdCluster::Recalibrate(AliPHOSCalibData * calibData,AliESDCaloCells
     Int_t   column = relId[3];
     Int_t   row    = relId[2];
     Double_t energy = phsCells->GetCellAmplitude(fCellsAbsId[i]) ;
+Double_t fr = fCellsAmpFraction[i] ;
     fCellsAmpFraction[i]*=energy*calibData->GetADCchannelEmc(module,column,row);
+    printf("      mod=%d, col=%d, row=%d \n",module,column,row);
+    printf("  cell=%d, Amp=%f, E(i)=%f, Fr=%f, ci=%f \n",i,energy,fCellsAmpFraction[i],fr,calibData->GetADCchannelEmc(module,column,row)) ;
   }
+printf("----\n") ;
   fRecalibrated=kTRUE; 
 }
 //____________________________________________________________________________
@@ -100,12 +105,19 @@ void AliPHOSEsdCluster::EvalEnergy(){
     fEnergy+=fCellsAmpFraction[iDigit] ;
   }
   //Correct for nonlinearity later
+  if(fEnergy==0.){
+    printf("fEnergy=0 \n") ;
+    printf("n Digits = %d \n",fNCells) ;
+    for(Int_t iDigit=0; iDigit<fNCells; iDigit++) {
+      printf("E(%d)=%f \n",iDigit,fCellsAmpFraction[iDigit]);
+    }
+  }
    
 }
 //____________________________________________________________________________
-void AliPHOSEsdCluster::EnergyCorrection(AliPHOSPIDv1 * pid){
-  //apply nonlinearity correction same as in AliPHOSPIDv1.
-  fEnergy = pid->GetCalibratedEnergy(fEnergy) ;
+void AliPHOSEsdCluster::EnergyCorrection(){
+  //apply nonlinearity correction 
+  fEnergy = AliPHOSReconstructor::CorrectNonlinearity(fEnergy) ;
 }
 //____________________________________________________________________________
 void AliPHOSEsdCluster::EvalPID(AliPHOSPIDv1 * /*pid*/){           

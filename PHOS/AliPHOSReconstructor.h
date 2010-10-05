@@ -90,6 +90,7 @@ public:
   
   static const AliPHOSRecoParam* GetRecoParam() {
     return dynamic_cast<const AliPHOSRecoParam*>(AliReconstructor::GetRecoParam(4)); }
+  static Float_t CorrectNonlinearity(Float_t oldEnergy) ;
 
 private:
   AliPHOSReconstructor(const AliPHOSReconstructor & rec); // Not implemented

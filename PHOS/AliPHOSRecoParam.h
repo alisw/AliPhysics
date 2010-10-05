@@ -8,6 +8,7 @@
 // Base class for the PHOS reconstruction parameters.
 // Do not use in the reconstruction; use derivative classes instead.
 
+#include "TArrayF.h"
 #include "AliDetectorRecoParam.h"
 
 class AliPHOSRecoParam : public AliDetectorRecoParam {
@@ -26,6 +27,7 @@ public:
   Float_t GetEMCLogWeight()           const { return fEMCW0;                   }
   Float_t GetEMCSampleQualityCut()    const { return fEMCSampleQualityCut;     }
   Float_t GetEMCEcoreRadius()         const { return fEMCEcoreRadius;          }
+  const Float_t * GetNonlinearityParams()   const { return fNonLinearityParams.GetArray() ;}
   Bool_t  EMCEcore2ESD()              const { return fEMCEcore2ESD;            }
   Bool_t  EMCSubtractPedestals()      const { return fEMCSubtractPedestals;    }
   Bool_t  EMCToUnfold()               const { return fEMCUnfold;               }
@@ -36,7 +38,8 @@ public:
   Float_t GetTimeGateAmpThresh()      const { return fTimeGateAmpThresh ;      }
   Float_t GetTimeGateLow()            const { return fTimeGateLow ;            }
   Float_t GetTimeGateHigh()           const { return fTimeGateHigh ;           }
- 
+
+  const char* GetNonlinearityCorrectionVersion()const{return fNonlinearityCorrVersion.Data();}
 
   Float_t GetCPVClusteringThreshold() const { return fCPVClusteringThreshold;  }
   Float_t GetCPVLocalMaxCut()         const { return fCPVLocMaxCut;            }
@@ -56,12 +59,14 @@ public:
   void SetEMCFitterVersion(const char* version="v1") { fEMCFitterVersion     =version ; }
   void SetEMCUnfolding(Bool_t toUnfold=kFALSE)       { fEMCUnfold             =toUnfold;}
   void SetEMCEnergyCorrectionOn(Bool_t on=kTRUE)     { fEMCEnergyCorrectionOn =on;      }
+  //Make sure to set first version and then parameters, otherwise parameters will be overwritten by default ones.
+  void SetNonlinearityParams(Int_t n, Float_t * params){fNonLinearityParams.Set(n,params);}
   void SetGlobalAltroOffset(Int_t offset=5)          { fGlobalAltroOffset     =offset ; }
   void SetGlobalAltroThreshold(Int_t ZSth=5)         { fGlobalAltroThreshold  =ZSth;    }
   void SetTimeGateAmpThresh(Float_t thrs=10)         { fTimeGateAmpThresh     = thrs ;  }
   void SetTimeGateLow(Float_t gate=1.e-7)            { fTimeGateLow = gate ;            }
   void SetTimeGateHigh(Float_t gate=1.e-8)           { fTimeGateHigh = gate;            }
- 
+  void SetNonlinearityCorrectionVersion(const char * ver="Gustavo2005");
 
   void SetCPVClusteringThreshold(Float_t cluth)      { fCPVClusteringThreshold=cluth;   }
   void SetCPVLocalMaxCut(Float_t cut)                { fCPVLocMaxCut          =cut;     }
@@ -76,6 +81,7 @@ public:
 
 protected:
 
+  TArrayF fNonLinearityParams;     // EMC: Array of non-linearity correction parameters
   Float_t fEMCClusteringThreshold; // EMC: Min.digit energy to start a new cluster, in GeV
   Float_t fEMCLocMaxCut;           // EMC: Min.energy difference between two local maxima, in GeV
   Float_t fEMCRawDigitThreshold;   // EMC: Min.amplitude of a digit produced from raw data in ADC
@@ -91,6 +97,7 @@ protected:
   Bool_t  fEMCUnfold;              // EMC: true if overlapped clusters should be unfolded
   Bool_t  fEMCEnergyCorrectionOn;  // EMC: if true do non-linear correction of cluster energy
   TString fEMCFitterVersion ;      // EMC: AliPHOSRawFitter version
+  TString fNonlinearityCorrVersion ;// EMC: choose which version of nenlinearity correction
   Int_t   fGlobalAltroOffset ;     // Offset used in ALTRO chips in SZ runs
   Int_t   fGlobalAltroThreshold ;  // Threshold used in ALTRO chips in SZ runs
 
