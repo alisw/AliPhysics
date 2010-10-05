@@ -285,6 +285,7 @@ void mergeCorr(Int_t nEvents,
   newTree->Branch("header",&newHeader, 32*1024, 99);
   newTree->Branch("parts",&newParts, 256*1024, 99);
   newTree->Branch("tracklets",&newTracklets, 256*1024, 99);
+  newTree->SetDirectory(newFile);
   Int_t newEntries = 0;
   for (map<ULong64_t, EvInfo*>::iterator it = einfos.begin();it!=einfos.end();++it) {
     Short_t id = it->second->fArrId;
