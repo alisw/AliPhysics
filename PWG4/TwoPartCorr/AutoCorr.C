@@ -7,7 +7,7 @@ ClassImp(AutoCorr)
 Int_t AutoCorr::InitEventPools(Int_t depth, 
 			       Int_t nMultBins, Double_t multbin[], 
 			       Int_t nZvtxBins, Double_t zvtxbin[],
-			       Double_t ptMin, Double_t ptMax)
+			       Double_t /*ptMin*/, Double_t /*ptMax*/)
 {
   // First assign AutoCorr members
   fNMultBins = nMultBins;
@@ -18,8 +18,7 @@ Int_t AutoCorr::InitEventPools(Int_t depth,
     for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
       evp.push_back(new EventPool(depth, 
 				  multbin[iM], multbin[iM+1], 
-				  zvtxbin[iZ], zvtxbin[iZ+1],
-				  ptMin, ptMax ));
+				  zvtxbin[iZ], zvtxbin[iZ+1]));
     }
     fEvPool.push_back(evp);
   }
