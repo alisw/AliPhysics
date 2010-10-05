@@ -25,17 +25,17 @@ case $2 in
 
     case $1 in
       "all")
-         parmaker ANALYSIS remote
-         parmaker ANALYSISalice remote
-         parmaker AOD remote
-         parmaker EMCALUtils remote
-         parmaker ESD remote
-         parmaker FASTJETAN remote
-         parmaker JETAN remote
-         parmaker PHOSUtils remote
-         parmaker PWG4PartCorrBase remote
-         parmaker PWG4PartCorrDep remote
-         parmaker STEERBase remote
+         ./parmaker ANALYSIS remote
+         ./parmaker ANALYSISalice remote
+         ./parmaker AOD remote
+         ./parmaker EMCALUtils remote
+         ./parmaker ESD remote
+         ./parmaker FASTJETAN remote
+         ./parmaker JETAN remote
+         ./parmaker PHOSUtils remote
+         ./parmaker PWG4PartCorrBase remote
+         ./parmaker PWG4PartCorrDep remote
+         ./parmaker STEERBase remote
          echo " "
          echo "finished making complete set of par files"
          exit

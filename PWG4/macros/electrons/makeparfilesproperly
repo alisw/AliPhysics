@@ -1,0 +1,28 @@
+#! /bin/bash
+
+echo "Making parfiles..."
+
+source /home/aron/root/setup.sh
+
+/home/aron/root/alice/AliRoot/PWG4/macros/electrons/./parmaker all remote
+
+tar xvf EMCALUtils.par
+
+echo "...copying"
+#cp /home/aron/root/alice/AliRoot/EMCAL/AliCaloPeakFinderConstants.h EMCALUtils/.
+cp -v /home/aron/root/alice/AliRoot/EMCAL/AliCaloConstants.h EMCALUtils/.
+
+echo "...removing"
+rm -v EMCALUtils.par
+
+echo "...remaking EMCALUtils.par"
+/home/aron/root/alice/AliRoot/PWG4/macros/electrons/./parmaker EMCALUtils
+
+echo "...removing EMCALUtils dir"
+rm -rfv EMCALUtils
+
+echo "...making directory GRID and copying important stuff there"
+mkdir GRID
+
+cp -v *.par parmaker anaJete.C run.C ConfigAnalysisElectron.C ConfigJetAnalysisFastJet.C anaJete.jdl validate.sh mergeout.jdl GRID/.
+
