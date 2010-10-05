@@ -632,6 +632,8 @@ void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
   if(fPHOSMatrix[mod]){ //have been set already. Can not be changed any more
     return ;
   }
+  if(m==NULL) //Matrix for non-existing modules? Remain zero, no need to re-set
+    return ;
   fPHOSMatrix[mod]= new TGeoHMatrix(*m) ;
 
   //If module does not exist, make sure all its matrices are zero
