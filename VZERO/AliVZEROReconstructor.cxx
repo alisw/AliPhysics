@@ -194,7 +194,10 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	fESDVZEROfriend->SetBBMBFlag(offlineCh,iBunch,rawStream.GetBBMBFlag(iChannel,iBunch));
 	fESDVZEROfriend->SetBGMBFlag(offlineCh,iBunch,rawStream.GetBGMBFlag(iChannel,iBunch));
       }
-
+      for (Int_t iEv = 0; iEv < AliESDVZEROfriend::kNEvOfInt; iEv++) {
+	  fESDVZEROfriend->SetBBFlag(offlineCh,iEv,rawStream.GetBBFlag(iChannel,iEv));
+	  fESDVZEROfriend->SetBGFlag(offlineCh,iEv,rawStream.GetBGFlag(iChannel,iEv));
+      }
     }  
 
     // Filling the global part of esd friend object that is available only for raw data
@@ -353,8 +356,6 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 	for (Int_t iEv = 0; iEv < AliESDVZEROfriend::kNEvOfInt; iEv++) {
 	  fESDVZEROfriend->SetPedestal(pmNumber,iEv,(Float_t)digit->ChargeADC(iEv));
 	  fESDVZEROfriend->SetIntegratorFlag(pmNumber,iEv,(iEv%2 == 0) ? integrator : !integrator);
-	  fESDVZEROfriend->SetBBFlag(pmNumber,iEv,aBBflag[pmNumber]);
-	  fESDVZEROfriend->SetBGFlag(pmNumber,iEv,aBGflag[pmNumber]);
 	}
 	fESDVZEROfriend->SetTime(pmNumber,digit->Time());
 	fESDVZEROfriend->SetWidth(pmNumber,digit->Width());
