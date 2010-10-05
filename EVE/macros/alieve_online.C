@@ -7,6 +7,9 @@
 class TEveProjectionManager;
 class TEveGeoShape;
 class TEveUtil;
+class AliTriggerAnalysis;
+
+TH2D* V0StateHistogram;
 
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
@@ -93,6 +96,31 @@ void alieve_online_init()
   exewin->PopulateMacros();
 
   //============================================================================
+  // VZERO state histogram
+  //============================================================================
+
+  slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
+  slot->StartEmbedding();  
+  TCanvas* pad = new TCanvas();
+
+  gStyle->SetCanvasColor(0);
+
+  V0StateHistogram = new TH2D("V0 Histogram","V0 Trigger State", 4, 0, 4, 4, 0, 4);
+  V0StateHistogram->Draw("colz");
+
+  V0StateHistogram->GetXaxis()->SetBinLabel(1,"V0A Invalid");
+  V0StateHistogram->GetXaxis()->SetBinLabel(2,"V0A Empty");
+  V0StateHistogram->GetXaxis()->SetBinLabel(3,"V0A BB");
+  V0StateHistogram->GetXaxis()->SetBinLabel(4,"V0A BG");
+
+  V0StateHistogram->GetYaxis()->SetBinLabel(1,"V0C Invalid");
+  V0StateHistogram->GetYaxis()->SetBinLabel(2,"V0C Empty");
+  V0StateHistogram->GetYaxis()->SetBinLabel(3,"V0C BB");
+  V0StateHistogram->GetYaxis()->SetBinLabel(4,"V0C BG");
+
+  slot->StopEmbedding("V0 Trigger State");
+
+  //============================================================================
   // Final GUI setup
   //============================================================================
 
@@ -141,6 +169,9 @@ TTimeStamp g_pic_prev(0, 0);
 
 void alieve_online_on_new_event()
 {
+
+  using namespace AliTriggerAnalysis;
+
   AliESDEvent* esd = AliEveEventManager::AssertESD();
   Double_t x[3] = { 0, 0, 0 };
   esd->GetPrimaryVertex()->GetXYZ(x);
@@ -182,6 +213,25 @@ void alieve_online_on_new_event()
 
   glv->DoDraw();
 */
+
+  V0Decision decisionV0a = V0Trigger(esd, kASide, kFALSE);
+  V0Decision decisionV0c = V0Trigger(esd, kCSide, kFALSE);
+
+  Double_t a = 0;
+  Double_t c = 0;
+
+  if( decisionV0a == kV0Invalid ) a = 0.5;
+  if( decisionV0a == kV0Empty ) a = 1.5;
+  if( decisionV0a == kV0BB ) a = 2.5;
+  if( decisionV0a == kV0BG ) a = 3.5;
+
+  if( decisionV0c == kV0Invalid ) c = 0.5;
+  if( decisionV0c == kV0Empty ) c = 1.5;
+  if( decisionV0c == kV0BB ) c = 2.5;
+  if( decisionV0c == kV0BG ) c = 3.5;
+
+  V0StateHistogram->Fill(a,c);
+
   TGLViewer *glv = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("3D View")))->GetGLViewer();
   TGLViewer *glv1 = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("RPhi View")))->GetGLViewer();
   TGLViewer *glv2 = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("RhoZ View")))->GetGLViewer();
