@@ -46,9 +46,6 @@ class AliHLTPHOSRecoParamHandler : public AliHLTCaloRecoParamHandler
 	/** Assignment operator, not implemented */
       AliHLTPHOSRecoParamHandler & operator = (const AliHLTPHOSRecoParamHandler &); //COMMENT
       
-      /** PHOS PID class */
-      AliPHOSPIDv1 *fPHOSPidPtr; // COMMENT
-
   };
 
 #endif // ALIHLTPHOSRECOPARAMHANDLER_H

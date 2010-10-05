@@ -18,16 +18,14 @@
 #include "AliPHOSRecoParam.h"
 #include "TMatrixF.h"
 #include "TVector3.h"
-#include "AliPHOSPIDv1.h"
+#include "AliPHOSReconstructor.h"
 #include "TObjArray.h"
 
 AliHLTPHOSRecoParamHandler::AliHLTPHOSRecoParamHandler() :
 AliHLTCaloRecoParamHandler("PHOS")
-,fPHOSPidPtr(0)
 {
    // See header file for class documentation
 
-   fPHOSPidPtr = new AliPHOSPIDv1();
 
 }
 
@@ -39,7 +37,7 @@ AliHLTPHOSRecoParamHandler::~AliHLTPHOSRecoParamHandler()
 Float_t AliHLTPHOSRecoParamHandler::GetCorrectedEnergy ( Float_t e )
 {
    // See header file for class documentation
-   return fPHOSPidPtr->GetCalibratedEnergy(e); 
+   return AliPHOSReconstructor::CorrectNonlinearity(e) ;
 }
 
 void AliHLTPHOSRecoParamHandler::FillParameters()
@@ -50,7 +48,6 @@ void AliHLTPHOSRecoParamHandler::FillParameters()
       fLogWeight = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCLogWeight();
       fRecPointMemberThreshold = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCMinE();
       fRecPointThreshold = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCClusteringThreshold();
-      HLTInfo("Succesfully got reconstruction parameters from OCDB. Cluster seed threshold: %f, cluster member threshold: %f", GetRecPointThreshold(), GetRecPointMemberThreshold());
    }
 }
 
