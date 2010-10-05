@@ -204,10 +204,11 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 		 if((hdata->GetBinContent(ibin))>10.){
 		   res=1.;
 		 }
-		 else if((hdata->GetBinContent(ibin))<10. && 
-		   (ibin==1 || ibin==6 || ibin==11 || ibin==12 || ibin==13 || ibin==18)){
+		 else if((hdata->GetBinContent(ibin))<10.){
 		   res=0.5;
-		   iDetPM = kFALSE;
+		   if(ibin==1 || ibin==6 || ibin==11 || ibin==12 || ibin==13 || ibin==18){
+		     iDetPM = kFALSE;
+		   }
 		 }
 		 //
 		 resADC += res;
@@ -225,11 +226,15 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    else if(irawHisto==23){
-	      Double_t refTDCs[6] = {-83.0,-78.1,-80.2,-79.3,-81.0,-80.9};
+	      Double_t refTDCs = -328.5;
 	      Float_t resTDC=0.;
-	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
-		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<4.){
+	      for(int ibin=5; ibin<=6; ibin++){
+		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs)<2.){
 		   res=1.;
+		 }
+		 else if((TMath::Abs((hdata->GetBinContent(ibin))-refTDCs)>=2.) &&
+		         (TMath::Abs((hdata->GetBinContent(ibin))-refTDCs)<=3.)){
+	           res=0.9;
 		 }
 		 else{
 		   res=0.5;
@@ -240,29 +245,14 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             	 count++;
 	      }
 	      Float_t rv=1.;
-	      if(hdata->GetNbinsX() != 0) rv = resTDC/hdata->GetNbinsX();
+	      if(hdata->GetNbinsX() != 0) rv = resTDC/2;
 	      if(rv == 1.) messages.Add(new TObjString("TDCs are OK!")); 
-	      else if(rv<1 && rv>0.9) messages.Add(new TObjString("Minor problem with TDCs"));
+	      else if(rv<1 && rv>=0.9) messages.Add(new TObjString("Minor problem with TDCs"));
 	      else{
 	        messages.Add(new TObjString("Serious problem in ZDC timing"));
                 messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
 	      }
 	      SetupHisto(messages, *hdata, rv);
-	    }
-	    else if(irawHisto==26){
-	      Double_t yZNC=hdata->GetBinContent(2);
-	      Double_t yZNA=hdata->GetBinContent(4);
-	      if(TMath::Abs(yZNC)<0.4 && TMath::Abs(yZNA)<0.4) res=1.;
-	      else res=0.7;
-	      test[specie] += res;
-              count++;
-	      //
-	      if(res == 1.) messages.Add(new TObjString("ZN positions are OK!")); 
-	      else{
-	        messages.Add(new TObjString("Problem in ZN positions!")); 
-                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
-	      }
-	      SetupHisto(messages, *hdata, res);
 	    }
 	    irawHisto++;
 	    

@@ -209,31 +209,27 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hRawSumQZPC, 16, expert, !image);
   Add2RawsList(hRawSumQZPA, 17, expert, !image);
   
-  TH1F * hRawTDCZEM1 = new TH1F("hRawTDCZEM1", "Raw TDC ZEM1;TDC [ns]",160, -100., -60.);
+  TH1F * hRawTDCZEM1 = new TH1F("hRawTDCZEM1", "Raw TDC ZEM1;TDC [ns]",160, -350., -310.);
   Add2RawsList(hRawTDCZEM1, 18, expert, !image);
-  TH1F * hRawTDCZPC = new TH1F("hRawTDCZPC", "Raw TDC ZPC;TDC [ns]",160, -100., -60.);
+  TH1F * hRawTDCZPC = new TH1F("hRawTDCZPC", "Raw TDC ZPC;TDC [ns]",160, -350., -310.);
   Add2RawsList(hRawTDCZPC, 19, expert, !image);
   
   TProfile * hRawADCProfs = new TProfile("hRawADCProfs", "ADC profiles;ADC id;Mean ADC values",22,-0.5,21.5,10.,1210.,"");
   Add2RawsList(hRawADCProfs, 20, expert, !image);
-  TProfile * hRawTDCProfs = new TProfile("hRawTDCProfs", "TDC profiles;TDC id;Mean TDC values",6,0.5,6.5,-100.,-60.,"S");
+  TProfile * hRawTDCProfs = new TProfile("hRawTDCProfs", "TDC profiles;TDC id;Mean TDC values",6,0.5,6.5,-350.,-310.,"S");
   Add2RawsList(hRawTDCProfs, 21, expert, !image);
   
   TH1F * hRawADCs = new TH1F("hRawADCs", "ADCs;ADC id;Mean ADC values",22,-0.5,21.5);
-  hRawADCs->SetMinimum(10);
   Add2RawsList(hRawADCs, 22, !expert, image);
  
   TH1F * hRawTDCs = new TH1F("hRawTDCs", "TDCs;TDC id;Mean TDC values",6,0.5,6.5);
-  hRawTDCs->SetMaximum(-60);
+  hRawTDCs->SetMaximum(-310);
   Add2RawsList(hRawTDCs, 23, !expert, image);
   
   TH2F *hZNCrawCentr  = new TH2F("hZNCrawCentr", "Centroid in ZNC;X (cm);Y(cm)", 100, -5.,5.,100,-5.,5.);
   Add2RawsList(hZNCrawCentr, 24, expert, !image);
   TH2F *hZNArawCentr  = new TH2F("hZNArawCentr", "Centroid in ZNA;X (cm);Y(cm)", 100, -5.,5.,100,-5.,5.);
   Add2RawsList(hZNArawCentr, 25, expert, !image);
-  
-  TH1F *hRawCentr = new TH1F("hRawCentr","Centroid in ZNCs; ZNC-ZNA coordinates; Coordinate value (cm)", 4, 0.5, 4.5);
-  Add2RawsList(hRawCentr, 26, !expert, image);
 }
 
 //____________________________________________________________________________
@@ -472,7 +468,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     for(Int_t i=0; i<10; i++){
        zncTDC[i]=zpcTDC[i]=zem1TDC[i]=zem2TDC[i]=znaTDC[i]=zpaTDC[i]=-999.;
     }
-    Float_t tdcL0=-999.;
+    Float_t tdcGate=-999.;
     Int_t iMultZNCTDC=0, iMultZPCTDC=0, iMultZEM1TDC=0, iMultZEM2TDC=0, iMultZNATDC=0, iMultZPATDC=0;
     
     const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
@@ -682,41 +678,41 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	    zem2TDC[iMultZEM2TDC] = (0.025*(stream.GetZDCTDCDatum()));
 	    iMultZEM2TDC++;
 	 }
-	 else if(stream.GetChannel()==16) tdcL0 = (0.025*(stream.GetZDCTDCDatum()));
+	 else if(stream.GetChannel()==15) tdcGate = (0.025*(stream.GetZDCTDCDatum()));
 	 
-	 if(stream.GetChannel()==16 && tdcL0!=-999.){
+	 if(stream.GetChannel()==16 && tdcGate!=-999.){
 	   for(Int_t iHit=0; iHit<10; iHit++){
 	      if(zncTDC[iHit]!=-999.){
-	        GetRawsData(21)->Fill(1, zncTDC[iHit]-tdcL0);
+	        GetRawsData(21)->Fill(1, zncTDC[iHit]-tdcGate);
 	        //GetRawsData(23)->SetBinContent(1, GetRawsData(21)->GetBinContent(1));
 	      }
 	      if(zpcTDC[iHit]!=-999.){
-	        Float_t diffZPC = zpcTDC[iHit]-tdcL0;
+	        Float_t diffZPC = zpcTDC[iHit]-tdcGate;
 	        GetRawsData(19)->Fill(diffZPC);
 		GetRawsData(21)->Fill(2, diffZPC);
 		//GetRawsData(23)->SetBinContent(2,  GetRawsData(21)->GetBinContent(3));
 	      }
 	      if(znaTDC[iHit]!=-999.){
-	        GetRawsData(21)->Fill(3, znaTDC[iHit]-tdcL0);
+	        GetRawsData(21)->Fill(3, znaTDC[iHit]-tdcGate);
 	        //GetRawsData(23)->SetBinContent(3,  GetRawsData(21)->GetBinContent(5));
 	      }
 	      if(zpaTDC[iHit]!=-999.){
-	        GetRawsData(21)->Fill(4, zpaTDC[iHit]-tdcL0);
+	        GetRawsData(21)->Fill(4, zpaTDC[iHit]-tdcGate);
 	        //GetRawsData(23)->SetBinContent(4,  GetRawsData(21)->GetBinContent(7));
 	      }
 	      if(zem1TDC[iHit]!=-999.){
-	        Float_t diffZEM1 = zem1TDC[iHit]-tdcL0;
+	        Float_t diffZEM1 = zem1TDC[iHit]-tdcGate;
 	        GetRawsData(18)->Fill(diffZEM1);
 		GetRawsData(21)->Fill(5, diffZEM1);
 		//GetRawsData(23)->SetBinContent(5,  GetRawsData(21)->GetBinContent(8));
 	      }
 	      if(zem2TDC[iHit]!=-999.){
-	        GetRawsData(21)->Fill(6, zem2TDC[iHit]-tdcL0);
+	        GetRawsData(21)->Fill(6, zem2TDC[iHit]-tdcGate);
 	        //GetRawsData(23)->SetBinContent(6,  GetRawsData(21)->GetBinContent(9));
               }
 	   }
 	   //
-	   tdcL0 = -999.;
+	   tdcGate = -999.;
            for(Int_t i=0; i<10; i++){
               zpcTDC[i] = zem1TDC[i] = -999.;
            } 
@@ -895,17 +891,6 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  GetRawsData(23)->SetBinError(ibin, GetRawsData(21)->GetBinError(ibin));
           GetRawsData(23)->SetLineColor(kAzure-3); GetRawsData(23)->SetLineWidth(2);
        }
-       //
-       Double_t xznc = GetRawsData(24)->GetMean(1);
-       Double_t yznc = GetRawsData(24)->GetMean(2);
-       GetRawsData(26)->SetBinContent(1., xznc);
-       GetRawsData(26)->SetBinContent(2., yznc);
-       Double_t xzna = GetRawsData(25)->GetMean(1);
-       Double_t yzna = GetRawsData(25)->GetMean(2);
-       GetRawsData(26)->SetBinContent(3., xzna);
-       GetRawsData(26)->SetBinContent(4., yzna);
-       GetRawsData(26)->SetLineColor(kPink-9); GetRawsData(26)->SetLineWidth(2); 
-       GetRawsData(26)->SetOption("E");
      }
   }
   	
