@@ -429,8 +429,6 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
 	
   if(DebugLevel() > 1) printf("AliAnalysisTaskPHOSPi0CalibSelection Will use fLogWeight %.3f .\n",fLogWeight);
 
-  AliPHOSPIDv1 pid;
-
   Int_t mod1 = -1;
   TLorentzVector p1;
   TLorentzVector p2;
@@ -459,7 +457,7 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
     AliPHOSAodCluster clu1(*c1);
     clu1.Recalibrate(fCalibData, phsCells);
     clu1.EvalAll(fLogWeight,vtx);
-    clu1.EnergyCorrection(&pid) ;
+    clu1.EnergyCorrection() ;
 
     clu1.GetMomentum(p1,v);
 
@@ -482,7 +480,7 @@ void AliAnalysisTaskPHOSPi0CalibSelection::UserExec(Option_t* /* option */)
       AliPHOSAodCluster clu2(*c2);
       clu2.Recalibrate(fCalibData, phsCells);
       clu2.EvalAll(fLogWeight,vtx);
-      clu2.EnergyCorrection(&pid) ;
+      clu2.EnergyCorrection() ;
         
       clu2.GetMomentum(p2,v);
 	  Float_t e2ii = clu2.E();
